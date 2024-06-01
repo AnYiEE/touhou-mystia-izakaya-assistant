@@ -1,0 +1,63 @@
+{
+	"name": "touhou-mystia-izakaya-assistant",
+	"version": "0.0.0",
+	"description": "东方夜雀食堂小助手",
+	"private": true,
+	"scripts": {
+		"dev": "next dev",
+		"build": "next build",
+		"start": "next start",
+		"lint": "next lint",
+		"format": "prettier --cache --write .",
+		"stylelint": "stylelint --allow-empty-input --cache app/**/*.css",
+		"stylelint:fix": "stylelint --allow-empty-input --cache --fix app/**/*.css",
+		"minify-svg": "svgo --config=svgo.config.cjs --quiet --recursive --folder app",
+		"preinstall": "npx only-allow pnpm",
+		"prepare": "husky"
+	},
+	"author": {
+		"name": "AnYiEE",
+		"email": "i@anyi.in"
+	},
+	"contributors": [
+		"Other contributors <https://github.com/AnYiEE/touhou-mystia-izakaya-assistant/graphs/contributors>"
+	],
+	"license": "GPL-3.0-or-later",
+	"homepage": "https://github.com/AnYiEE/touhou-mystia-izakaya-assistant",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/AnYiEE/touhou-mystia-izakaya-assistant.git"
+	},
+	"bugs": {
+		"url": "https://github.com/AnYiEE/touhou-mystia-izakaya-assistant/issues"
+	},
+	"keywords": [],
+	"dependencies": {
+		"next": "^14.2.3",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
+		"reset-css": "^5.0.2"
+	},
+	"devDependencies": {
+		"@commitlint/cli": "^19.3.0",
+		"@commitlint/config-conventional": "^19.2.2",
+		"@types/node": "^20.13.0",
+		"@types/react": "^18.3.3",
+		"@types/react-dom": "^18.3.0",
+		"autoprefixer": "^10.4.19",
+		"eslint": "^8.57.0",
+		"eslint-config-next": "^14.2.3",
+		"eslint-config-prettier": "^9.1.0",
+		"husky": "^9.0.11",
+		"only-allow": "^1.2.1",
+		"postcss": "^8.4.38",
+		"prettier": "^3.2.5",
+		"sass": "^1.77.4",
+		"stylelint": "^16.6.1",
+		"stylelint-config-css-modules": "^4.4.0",
+		"stylelint-config-standard": "^36.0.0",
+		"svgo": "^3.3.2",
+		"typescript": "^5.4.5",
+		"typescript-plugin-css-modules": "^5.1.0"
+	}
+}

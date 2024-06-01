@@ -1,0 +1,17 @@
+{
+	"recommendations": [
+		"andrewleedham.vscode-css-modules",
+		"cschlosser.doxdocgen",
+		"dbaeumer.vscode-eslint",
+		"EditorConfig.EditorConfig",
+		"esbenp.prettier-vscode",
+		"mgmcdermott.vscode-language-babel",
+		"ms-vscode.vscode-typescript-next",
+		"simonsiefke.svg-preview",
+		"stylelint.vscode-stylelint",
+		"syler.sass-indented",
+		"usernamehw.errorlens",
+		"webben.browserslist",
+		"yoavbls.pretty-ts-errors"
+	]
+}

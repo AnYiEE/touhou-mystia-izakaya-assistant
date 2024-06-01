@@ -1,0 +1,94 @@
+{
+	"diffEditor.codeLens": true,
+	"diffEditor.experimental.showMoves": true,
+	"diffEditor.ignoreTrimWhitespace": false,
+	"diffEditor.maxComputationTime": 0,
+	"editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+	"editor.cursorBlinking": "smooth",
+	"editor.cursorSmoothCaretAnimation": "on",
+	"editor.fontLigatures": true,
+	"editor.guides.bracketPairs": "active",
+	"editor.insertSpaces": false,
+	"editor.linkedEditing": true,
+	"editor.quickSuggestions": {
+		"strings": "on"
+	},
+	"editor.renderWhitespace": "all",
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.stickyScroll.enabled": true,
+	"files.associations": {
+		"*.css": "css"
+	},
+	"git.autoStash": true,
+	"git.allowForcePush": true,
+	"terminal.integrated.scrollback": 10000,
+	"eslint.enable": true,
+	"eslint.format.enable": true,
+	"prettier.enable": true,
+	"[markdown]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[css]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[scss]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[javascript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[javascriptreact]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[jsx]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[typescriptreact]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[tsx]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[json]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[jsonc]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[yml]": {
+		"editor.defaultFormatter": "redhat.vscode-yaml"
+	},
+	"[yaml]": {
+		"editor.defaultFormatter": "redhat.vscode-yaml"
+	},
+	"html.autoClosingTags": true,
+	"javascript.autoClosingTags": true,
+	"typescript.autoClosingTags": true,
+	"javascript.suggest.autoImports": true,
+	"typescript.suggest.autoImports": true,
+	"javascript.suggest.completeFunctionCalls": true,
+	"typescript.suggest.completeFunctionCalls": true,
+	"javascript.updateImportsOnFileMove.enabled": "always",
+	"typescript.updateImportsOnFileMove.enabled": "always",
+	"css.format.spaceAroundSelectorSeparator": true,
+	"css.lint.unknownAtRules": "ignore",
+	"css.lint.validProperties": ["composes"],
+	"errorLens.editorHoverPartsEnabled": {
+		"buttonsEnabled": false
+	},
+	"errorLens.enableOnDiffView": true,
+	"githubPullRequests.upstreamRemote": "never",
+	"stylelint.packageManager": "pnpm",
+	"explorer.fileNesting.enabled": true,
+	"explorer.fileNesting.expand": false,
+	"explorer.fileNesting.patterns": {
+		"next.config.mjs": "*.config.cjs, *.config.js, *.config.mjs, *.config.ts, next-env.d.ts",
+		"package.json": ".*cache, .*ignore, .*rc, .editorConfig, .git*, .lintstagedrc.mjs, pnpm-lock.yaml, tsconfig.json, LICENSE",
+		"readme*": "*.md"
+	},
+	"typescript.enablePromptUseWorkspaceTsdk": true,
+	"typescript.tsdk": "./node_modules/typescript/lib"
+}

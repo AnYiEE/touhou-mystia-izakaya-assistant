@@ -1,0 +1,17 @@
+{
+	"bracketSpacing": false,
+	"printWidth": 120,
+	"quoteProps": "as-needed",
+	"singleQuote": true,
+	"tabWidth": 4,
+	"trailingComma": "es5",
+	"useTabs": true,
+	"overrides": [
+		{
+			"files": ".eslintrc",
+			"options": {
+				"parser": "json"
+			}
+		}
+	]
+}
