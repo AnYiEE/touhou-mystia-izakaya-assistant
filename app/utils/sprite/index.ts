@@ -1,0 +1,92 @@
+import type {SpriteData, SpriteTarget, ISpriteConfig} from './types';
+
+class Sprite<Target extends SpriteTarget> {
+	#config: ISpriteConfig<Target>;
+	#data: SpriteData<Target>;
+
+	private spriteHeight: number;
+	private spriteWidth: number;
+
+	public constructor(data: SpriteData<Target>, config: ISpriteConfig<Target>) {
+		this.#config = config;
+		this.#data = data;
+
+		const {col, row, height, width} = config;
+
+		this.spriteHeight = height / row;
+		this.spriteWidth = width / col;
+	}
+
+	public get config() {
+		return structuredClone(this.#config);
+	}
+
+	public get data() {
+		return structuredClone(this.#data);
+	}
+
+	private checkIndexRange(index: number) {
+		if (index < 0 || index >= this.#data.length) {
+			throw new Error(`[Sprite]: index \`${index}\` out of range`);
+		}
+	}
+
+	private findIndexByName(name: SpriteData<Target>[number]['name']) {
+		const index: number = this.#data.findIndex(({name: target}) => target === name);
+		if (index === -1) {
+			throw new Error(`[Sprite]: name \`${name}\` not found`);
+		}
+
+		return index;
+	}
+
+	public getPosByIndex(index: number) {
+		this.checkIndexRange(index);
+
+		const {col} = this.#config;
+
+		return {
+			x: (index % col) * this.spriteWidth,
+			y: Math.floor(index / col) * this.spriteHeight,
+		};
+	}
+
+	public getPosByName(name: SpriteData<Target>[number]['name']) {
+		const index: number = this.findIndexByName(name);
+
+		return this.getPosByIndex(index);
+	}
+
+	public getBackgroundPropsByIndex(
+		index: number,
+		{displayHeight = this.spriteHeight, displayWidth = this.spriteWidth} = {}
+	) {
+		this.checkIndexRange(index);
+
+		const {spriteHeight, spriteWidth} = this;
+		const {height: sheetHeight, width: sheetWidth} = this.#config;
+		const backgroundSize: `${string}px` = `${sheetWidth * (displayWidth / spriteWidth)}px ${sheetHeight * (displayHeight / spriteHeight)}px`;
+		const {x, y} = this.getPosByIndex(index);
+
+		return {
+			backgroundSize,
+			backgroundPosition: `-${x * (displayWidth / spriteWidth)}px -${y * (displayHeight / spriteHeight)}px`,
+			height: displayHeight,
+			width: displayWidth,
+		};
+	}
+
+	public getBackgroundPropsByName(
+		name: SpriteData<Target>[number]['name'],
+		{displayHeight = this.spriteHeight, displayWidth = this.spriteWidth} = {}
+	) {
+		const index: number = this.findIndexByName(name);
+
+		return this.getBackgroundPropsByIndex(index, {
+			displayHeight,
+			displayWidth,
+		});
+	}
+}
+
+export {Sprite};
