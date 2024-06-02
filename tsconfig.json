@@ -20,7 +20,8 @@
 		"module": "ESNext",
 		"moduleResolution": "bundler",
 		"paths": {
-			"@/*": ["./*"]
+			"@/*": ["./app/*"],
+			"@data": ["./app/data/index.ts"]
 		},
 		"resolveJsonModule": true,
 
