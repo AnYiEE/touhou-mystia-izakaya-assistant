@@ -1,3 +1,4 @@
+import type {CSSProperties} from 'react';
 import type {SpriteData, SpriteTarget, ISpriteConfig} from './types';
 
 class Sprite<Target extends SpriteTarget> {
@@ -33,7 +34,7 @@ class Sprite<Target extends SpriteTarget> {
 		}
 	}
 
-	private findIndexByName(name: SpriteData<Target>[number]['name']) {
+	private findIndexByName<T extends string = SpriteData<Target>[number]['name']>(name: T) {
 		if (Sprite.nameIndexCache.has(name)) {
 			return Sprite.nameIndexCache.get(name)!;
 		}
@@ -59,7 +60,7 @@ class Sprite<Target extends SpriteTarget> {
 		};
 	}
 
-	public getPosByName(name: SpriteData<Target>[number]['name']) {
+	public getPosByName<T extends string = SpriteData<Target>[number]['name']>(name: T) {
 		const index: number = this.findIndexByName(name);
 
 		return this.getPosByIndex(index);
@@ -68,7 +69,7 @@ class Sprite<Target extends SpriteTarget> {
 	public getBackgroundPropsByIndex(
 		index: number,
 		{displayHeight = this.spriteHeight, displayWidth = this.spriteWidth} = {}
-	) {
+	): CSSProperties {
 		this.checkIndexRange(index);
 
 		const {spriteHeight, spriteWidth} = this;
@@ -84,10 +85,10 @@ class Sprite<Target extends SpriteTarget> {
 		};
 	}
 
-	public getBackgroundPropsByName(
-		name: SpriteData<Target>[number]['name'],
+	public getBackgroundPropsByName<T extends string = SpriteData<Target>[number]['name']>(
+		name: T,
 		{displayHeight = this.spriteHeight, displayWidth = this.spriteWidth} = {}
-	) {
+	): CSSProperties {
 		const index: number = this.findIndexByName(name);
 
 		return this.getBackgroundPropsByIndex(index, {
