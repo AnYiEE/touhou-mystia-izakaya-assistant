@@ -28,13 +28,16 @@ class Sprite<Target extends SpriteTarget> {
 		return structuredClone(this.#data);
 	}
 
-	private checkIndexRange(index: number) {
+	private checkIndexRange<_T, U extends SpriteData<Target>[number] | undefined>(
+		index: number,
+		_data?: U
+	): asserts _data {
 		if (index < 0 || index >= this.#data.length) {
 			throw new Error(`[Sprite]: index \`${index}\` out of range`);
 		}
 	}
 
-	public findIndexByName<T extends string = SpriteData<Target>[number]['name']>(name: T) {
+	public findIndexByName(name: SpriteData<Target>[number]['name']) {
 		if (Sprite.nameIndexCache.has(name)) {
 			return Sprite.nameIndexCache.get(name)!;
 		}
@@ -49,14 +52,15 @@ class Sprite<Target extends SpriteTarget> {
 		return index;
 	}
 
-	public findNameByIndex<T extends string = SpriteData<Target>[number]['name']>(index: number): T {
-		this.checkIndexRange(index);
+	public findNameByIndex<T extends SpriteData<Target>[number]['name']>(index: number): T {
+		const sprite = this.#data[index];
+		this.checkIndexRange(index, sprite);
 
 		if (Sprite.indexNameCache.has(index)) {
 			return Sprite.indexNameCache.get(index) as T;
 		}
 
-		const {name} = this.#data[index]!;
+		const {name} = sprite;
 		Sprite.indexNameCache.set(index, name);
 
 		return name as T;
@@ -73,7 +77,7 @@ class Sprite<Target extends SpriteTarget> {
 		};
 	}
 
-	public getPosByName<T extends string = SpriteData<Target>[number]['name']>(name: T) {
+	public getPosByName(name: SpriteData<Target>[number]['name']) {
 		const index: number = this.findIndexByName(name);
 
 		return this.getPosByIndex(index);
@@ -98,8 +102,8 @@ class Sprite<Target extends SpriteTarget> {
 		};
 	}
 
-	public getBackgroundPropsByName<T extends string = SpriteData<Target>[number]['name']>(
-		name: T,
+	public getBackgroundPropsByName(
+		name: SpriteData<Target>[number]['name'],
 		{displayHeight = this.spriteHeight, displayWidth = this.spriteWidth} = {}
 	): React.CSSProperties {
 		const index: number = this.findIndexByName(name);
