@@ -22,7 +22,7 @@ function getInstance(target: SpriteTarget) {
 		case 'beverages':
 			return sprite.beverageSpriteInstance;
 		case 'customer_normal':
-			return sprite.customerNormalInstance;
+			return sprite.customerNormalSpriteInstance;
 		case 'ingredients':
 			return sprite.ingredientSpriteInstance;
 		case 'kitchenwares':
