@@ -1,7 +1,7 @@
 import type {SpriteData, SpriteTarget, ISpriteConfig} from './types';
 
 class Sprite<Target extends SpriteTarget> {
-	#config: ISpriteConfig<Target>;
+	#config: ISpriteConfig;
 	#data: SpriteData<Target>;
 
 	private spriteHeight: number;
@@ -9,7 +9,7 @@ class Sprite<Target extends SpriteTarget> {
 
 	private static nameIndexCache: Map<string, number> = new Map();
 
-	public constructor(data: SpriteData<Target>, config: ISpriteConfig<Target>) {
+	public constructor(data: SpriteData<Target>, config: ISpriteConfig) {
 		this.#config = config;
 		this.#data = data;
 

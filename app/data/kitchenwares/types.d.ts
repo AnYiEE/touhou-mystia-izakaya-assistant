@@ -1,4 +1,4 @@
-import type {IItemBase} from '@data';
+import type {IItemBase} from '@/data/types';
 
 interface IKitchenware extends IItemBase {}
 

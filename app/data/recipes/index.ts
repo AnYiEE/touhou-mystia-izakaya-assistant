@@ -1,13 +1,11 @@
-import {Sprite} from '@utils';
-import {RECIPES_LIST} from './data';
+import type {ISpriteConfig} from '@/utils/sprite/types';
 
-const spriteInstance = new Sprite(RECIPES_LIST, {
-	target: 'recipes',
+const RECIPES_SPRITE_CONFIG = {
 	col: 10,
 	row: 17,
 	height: 1768,
 	width: 1040,
-});
+} as const satisfies ISpriteConfig;
 
 export * from './data';
-export default spriteInstance;
+export {RECIPES_SPRITE_CONFIG};

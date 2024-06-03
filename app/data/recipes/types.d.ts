@@ -1,4 +1,4 @@
-import type {IFoodBase} from '@data';
+import type {IFoodBase} from '@/data/types';
 import type {CustomerRareNames} from '../customer_rare';
 import type {IngredientNames} from '../ingredients';
 import type {kitchenwareNames} from '../kitchenwares';

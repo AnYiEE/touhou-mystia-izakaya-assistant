@@ -1,4 +1,4 @@
-import type {Businessman, CollectionLocation, Task, IFoodBase} from '@data';
+import type {Businessman, CollectionLocation, Task, IFoodBase} from '@/data/types';
 
 type Tag =
 	| '饱腹'

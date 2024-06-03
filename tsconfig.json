@@ -22,6 +22,7 @@
 		"paths": {
 			"@/*": ["./app/*"],
 			"@data": ["./app/data/index.ts"],
+			"@methods": ["./app/methods/index.ts"],
 			"@utils": ["./app/utils/index.ts"]
 		},
 		"resolveJsonModule": true,

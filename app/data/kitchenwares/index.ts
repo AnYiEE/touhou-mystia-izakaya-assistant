@@ -1,13 +1,11 @@
-import {Sprite} from '@utils';
-import {KITCHENWARE_LIST} from './data';
+import type {ISpriteConfig} from '@/utils/sprite/types';
 
-const spriteInstance = new Sprite(KITCHENWARE_LIST, {
-	target: 'kitchenwares',
+const KITCHENWARE_SPRITE_CONFIG = {
 	col: 5,
 	row: 1,
 	height: 104,
 	width: 520,
-});
+} as const satisfies ISpriteConfig;
 
 export * from './data';
-export default spriteInstance;
+export {KITCHENWARE_SPRITE_CONFIG};

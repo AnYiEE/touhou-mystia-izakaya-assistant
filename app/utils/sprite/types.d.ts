@@ -18,8 +18,7 @@ type SpriteData<T extends SpriteTarget> = T extends 'beverages'
 					? Recipes
 					: never;
 
-interface ISpriteConfig<T extends SpriteTarget> {
-	target: T;
+interface ISpriteConfig {
 	col: number;
 	row: number;
 	height: number;
