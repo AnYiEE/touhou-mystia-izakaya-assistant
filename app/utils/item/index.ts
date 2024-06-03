@@ -20,7 +20,7 @@ class Item<Target extends IItem[]> {
 		}
 	}
 
-	public findIndexByName(name: Target[number]['name']) {
+	public findIndexByName<T extends string = Target[number]['name']>(name: T) {
 		if (Item.nameIndexCache.has(name)) {
 			return Item.nameIndexCache.get(name)!;
 		}
@@ -35,7 +35,7 @@ class Item<Target extends IItem[]> {
 		return index;
 	}
 
-	public findNameByIndex<T extends Target[number]['name']>(index: number): T {
+	public findNameByIndex<T extends string = Target[number]['name']>(index: number): T {
 		const item = this._data[index];
 		this.checkIndexRange(index, item);
 
