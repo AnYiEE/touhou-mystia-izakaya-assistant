@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 
-import {BeverageNames, CustomerNormalNames, IngredientNames, KitchenwareNames, RecipesNames} from '@data';
+import {BeverageNames, CustomerNormalNames, IngredientNames, KitchenwareNames, RecipesNames} from '@/data';
 import * as sprite from '@/methods/sprite';
 import type {SpriteTarget} from '@/utils/sprite/types';
 
