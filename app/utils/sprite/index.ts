@@ -7,6 +7,8 @@ class Sprite<Target extends SpriteTarget> {
 	private spriteHeight: number;
 	private spriteWidth: number;
 
+	private static nameIndexCache: Map<string, number> = new Map();
+
 	public constructor(data: SpriteData<Target>, config: ISpriteConfig<Target>) {
 		this.#config = config;
 		this.#data = data;
@@ -32,10 +34,16 @@ class Sprite<Target extends SpriteTarget> {
 	}
 
 	private findIndexByName(name: SpriteData<Target>[number]['name']) {
+		if (Sprite.nameIndexCache.has(name)) {
+			return Sprite.nameIndexCache.get(name)!;
+		}
+
 		const index: number = this.#data.findIndex(({name: target}) => target === name);
 		if (index === -1) {
 			throw new Error(`[Sprite]: name \`${name}\` not found`);
 		}
+
+		Sprite.nameIndexCache.set(name, index);
 
 		return index;
 	}
