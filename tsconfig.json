@@ -21,6 +21,7 @@
 		"moduleResolution": "bundler",
 		"paths": {
 			"@/*": ["./app/*"],
+			"@components/*": ["./app/components/*"],
 			"@data": ["./app/data/index.ts"],
 			"@methods": ["./app/methods/index.ts"],
 			"@utils": ["./app/utils/index.ts"]

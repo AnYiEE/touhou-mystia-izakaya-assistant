@@ -1,0 +1,23 @@
+.sprite {
+	display: inline-block;
+	vertical-align: middle;
+	background-repeat: no-repeat;
+}
+
+.beverages {
+	background-image: url('/assets/sprite/beverages-sprite.webp');
+}
+.customer_normal {
+	background-image: url('/assets/sprite/character-normal-sprite.webp');
+}
+
+.ingredients {
+	background-image: url('/assets/sprite/ingredients-sprite.webp');
+}
+
+.kitchenwares {
+	background-image: url('/assets/sprite/kitchenwares-sprite.webp');
+}
+.recipes {
+	background-image: url('/assets/sprite/recipes-sprite.webp');
+}
