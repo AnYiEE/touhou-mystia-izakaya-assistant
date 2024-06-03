@@ -1,14 +1,14 @@
-import type {CSSProperties} from 'react';
 import type {SpriteData, SpriteTarget, ISpriteConfig} from './types';
 
 class Sprite<Target extends SpriteTarget> {
 	#config: ISpriteConfig;
 	#data: SpriteData<Target>;
 
-	private spriteHeight: number;
-	private spriteWidth: number;
-
+	private static indexNameCache: Map<number, string> = new Map();
 	private static nameIndexCache: Map<string, number> = new Map();
+
+	public spriteHeight: number;
+	public spriteWidth: number;
 
 	public constructor(data: SpriteData<Target>, config: ISpriteConfig) {
 		this.#config = config;
@@ -34,7 +34,7 @@ class Sprite<Target extends SpriteTarget> {
 		}
 	}
 
-	private findIndexByName<T extends string = SpriteData<Target>[number]['name']>(name: T) {
+	public findIndexByName<T extends string = SpriteData<Target>[number]['name']>(name: T) {
 		if (Sprite.nameIndexCache.has(name)) {
 			return Sprite.nameIndexCache.get(name)!;
 		}
@@ -47,6 +47,19 @@ class Sprite<Target extends SpriteTarget> {
 		Sprite.nameIndexCache.set(name, index);
 
 		return index;
+	}
+
+	public findNameByIndex<T extends string = SpriteData<Target>[number]['name']>(index: number): T {
+		this.checkIndexRange(index);
+
+		if (Sprite.indexNameCache.has(index)) {
+			return Sprite.indexNameCache.get(index) as T;
+		}
+
+		const {name} = this.#data[index]!;
+		Sprite.indexNameCache.set(index, name);
+
+		return name as T;
 	}
 
 	public getPosByIndex(index: number) {
@@ -69,7 +82,7 @@ class Sprite<Target extends SpriteTarget> {
 	public getBackgroundPropsByIndex(
 		index: number,
 		{displayHeight = this.spriteHeight, displayWidth = this.spriteWidth} = {}
-	): CSSProperties {
+	): React.CSSProperties {
 		this.checkIndexRange(index);
 
 		const {spriteHeight, spriteWidth} = this;
@@ -88,7 +101,7 @@ class Sprite<Target extends SpriteTarget> {
 	public getBackgroundPropsByName<T extends string = SpriteData<Target>[number]['name']>(
 		name: T,
 		{displayHeight = this.spriteHeight, displayWidth = this.spriteWidth} = {}
-	): CSSProperties {
+	): React.CSSProperties {
 		const index: number = this.findIndexByName(name);
 
 		return this.getBackgroundPropsByIndex(index, {
