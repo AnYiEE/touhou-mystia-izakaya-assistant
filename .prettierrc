@@ -1,4 +1,6 @@
 {
+	"plugins": ["prettier-plugin-tailwindcss"],
+	"tailwindAttributes": ["className", "tw"],
 	"bracketSpacing": false,
 	"printWidth": 120,
 	"quoteProps": "as-needed",

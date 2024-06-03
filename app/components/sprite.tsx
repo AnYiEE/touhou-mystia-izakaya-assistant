@@ -74,7 +74,7 @@ function Sprite({
 
 	return (
 		<span
-			className={classNames(styles.sprite, styles[target], className)}
+			className={classNames('inline-block text-nowrap align-middle', styles[target], className)}
 			style={{...calcStyle, ...style}}
 			title={title}
 			{...props}
