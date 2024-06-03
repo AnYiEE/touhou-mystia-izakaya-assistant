@@ -1,7 +1,7 @@
 import type {IFoodBase} from '@/data/types';
 import type {CustomerRareNames} from '../customer_rare';
 import type {IngredientNames} from '../ingredients';
-import type {kitchenwareNames} from '../kitchenwares';
+import type {KitchenwareNames} from '../kitchenwares';
 
 type Tag =
 	| '昂贵'
@@ -50,7 +50,7 @@ interface IRecipes extends IFoodBase {
 	ingredients: IngredientNames[];
 	positive: Tag[];
 	negative: Tag[];
-	kitchenware: kitchenwareNames;
+	kitchenware: KitchenwareNames;
 	max: number;
 	min: number;
 	from:

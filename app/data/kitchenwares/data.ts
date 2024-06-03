@@ -19,6 +19,6 @@ const KITCHENWARE_LIST = [
 ] as const satisfies IKitchenware[];
 
 type Kitchenwares = typeof KITCHENWARE_LIST;
-type kitchenwareNames = Kitchenwares[number]['name'];
+type KitchenwareNames = Kitchenwares[number]['name'];
 
-export {KITCHENWARE_LIST, type Kitchenwares, type kitchenwareNames};
+export {KITCHENWARE_LIST, type Kitchenwares, type KitchenwareNames};
