@@ -1,9 +1,14 @@
 {
-	"extends": ["stylelint-config-standard"],
-	"overrides": [
-		{
-			"files": ["**/*.module.css"],
-			"extends": ["stylelint-config-css-modules"]
-		}
-	]
+	"plugins": ["stylelint-scss"],
+	"extends": ["stylelint-config-standard-scss", "stylelint-config-css-modules"],
+	"rules": {
+		"at-rule-no-unknown": null,
+		"scss/at-rule-no-unknown": [
+			true,
+			{
+				"ignoreAtRules": ["tailwind"]
+			}
+		],
+		"selector-class-pattern": null
+	}
 }
