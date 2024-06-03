@@ -46,7 +46,7 @@ type Tag =
 	| '重油'
 	| '灼热';
 
-interface IRecipes extends IFoodBase {
+interface IRecipe extends IFoodBase {
 	ingredients: IngredientNames[];
 	positive: Tag[];
 	negative: Tag[];
@@ -67,4 +67,4 @@ interface IRecipes extends IFoodBase {
 		| string;
 }
 
-export type {IRecipes};
+export type {IRecipe};

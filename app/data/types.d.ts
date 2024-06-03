@@ -1,5 +1,5 @@
 import type {IBeverage} from './beverages/types';
-import type {IRecipes} from './recipes/types';
+import type {IRecipe} from './recipes/types';
 
 type Dlc = 0 | 1 | 2 | 3 | 4 | 5;
 type Level = 1 | 2 | 3 | 4 | 5;
@@ -119,7 +119,7 @@ type CollectionLocation =
 	| '月之都月虹池';
 
 type BeverageTag = IBeverage['tag'][number] | '全部';
-type RecipesTag = IRecipes['positive'][number] | IRecipes['negative'][number] | '流行喜爱' | '流行厌恶' | '全部';
+type RecipeTag = IRecipe['positive'][number] | IRecipe['negative'][number] | '流行喜爱' | '流行厌恶' | '全部';
 
 type Place =
 	| '博丽神社'
@@ -149,8 +149,8 @@ interface IItemBase {
 interface ICustomerBase extends IItemBase {
 	dlc: Dlc;
 	place: Place[];
-	positive: RecipesTag[];
-	negative: RecipesTag[];
+	positive: RecipeTag[];
+	negative: RecipeTag[];
 	beverage: BeverageTag[];
 }
 

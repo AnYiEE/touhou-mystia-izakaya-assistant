@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 
-import {BeverageNames, CustomerNormalNames, IngredientNames, KitchenwareNames, RecipesNames} from '@/data';
+import {BeverageNames, CustomerNormalNames, IngredientNames, KitchenwareNames, RecipeNames} from '@/data';
 import * as sprite from '@/methods/sprite';
 import type {SpriteTarget} from '@/utils/sprite/types';
 
@@ -9,7 +9,7 @@ import styles from './sprite.module.scss';
 interface ISpriteBase {
 	target: SpriteTarget;
 	index: number;
-	name: BeverageNames | CustomerNormalNames | IngredientNames | KitchenwareNames | RecipesNames;
+	name: BeverageNames | CustomerNormalNames | IngredientNames | KitchenwareNames | RecipeNames;
 	size: number;
 	height: number;
 	width: number;
@@ -28,7 +28,7 @@ function getInstance(target: SpriteTarget) {
 		case 'kitchenwares':
 			return sprite.kitchenwareSpriteInstance;
 		case 'recipes':
-			return sprite.recipesSpriteInstance;
+			return sprite.recipeSpriteInstance;
 		default:
 			return sprite.beverageSpriteInstance;
 	}
