@@ -1,18 +1,18 @@
 import type {SpriteData, SpriteTarget, ISpriteConfig} from './types';
 
-class Sprite<Target extends SpriteTarget> {
-	#config: ISpriteConfig;
-	#data: SpriteData<Target>;
+import {Item} from '@/utils/item';
 
-	private static indexNameCache: Map<number, string> = new Map();
-	private static nameIndexCache: Map<string, number> = new Map();
+class Sprite<Target extends SpriteTarget> extends Item<SpriteData<Target>> {
+	private _config: ISpriteConfig;
 
 	public spriteHeight: number;
 	public spriteWidth: number;
 
 	public constructor(data: SpriteData<Target>, config: ISpriteConfig) {
-		this.#config = config;
-		this.#data = data;
+		super(data);
+
+		this._config = config;
+		this._data = data;
 
 		const {col, row, height, width} = config;
 
@@ -20,56 +20,10 @@ class Sprite<Target extends SpriteTarget> {
 		this.spriteWidth = width / col;
 	}
 
-	public get config() {
-		return structuredClone(this.#config);
-	}
-
-	public get data() {
-		return structuredClone(this.#data);
-	}
-
-	private checkIndexRange<_T, U extends SpriteData<Target>[number] | undefined>(
-		index: number,
-		_data?: U
-	): asserts _data {
-		if (index < 0 || index >= this.#data.length) {
-			throw new Error(`[Sprite]: index \`${index}\` out of range`);
-		}
-	}
-
-	public findIndexByName(name: SpriteData<Target>[number]['name']) {
-		if (Sprite.nameIndexCache.has(name)) {
-			return Sprite.nameIndexCache.get(name)!;
-		}
-
-		const index: number = this.#data.findIndex(({name: target}) => target === name);
-		if (index === -1) {
-			throw new Error(`[Sprite]: name \`${name}\` not found`);
-		}
-
-		Sprite.nameIndexCache.set(name, index);
-
-		return index;
-	}
-
-	public findNameByIndex<T extends SpriteData<Target>[number]['name']>(index: number): T {
-		const sprite = this.#data[index];
-		this.checkIndexRange(index, sprite);
-
-		if (Sprite.indexNameCache.has(index)) {
-			return Sprite.indexNameCache.get(index) as T;
-		}
-
-		const {name} = sprite;
-		Sprite.indexNameCache.set(index, name);
-
-		return name as T;
-	}
-
 	public getPosByIndex(index: number) {
 		this.checkIndexRange(index);
 
-		const {col} = this.#config;
+		const {col} = this._config;
 
 		return {
 			x: (index % col) * this.spriteWidth,
@@ -90,7 +44,7 @@ class Sprite<Target extends SpriteTarget> {
 		this.checkIndexRange(index);
 
 		const {spriteHeight, spriteWidth} = this;
-		const {height: sheetHeight, width: sheetWidth} = this.#config;
+		const {height: sheetHeight, width: sheetWidth} = this._config;
 		const backgroundSize: `${string}px` = `${sheetWidth * (displayWidth / spriteWidth)}px ${sheetHeight * (displayHeight / spriteHeight)}px`;
 		const {x, y} = this.getPosByIndex(index);
 
