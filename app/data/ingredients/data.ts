@@ -4,7 +4,7 @@ const INGREDIENT_LIST = [
 	{
 		name: '海苔',
 		type: '蔬菜',
-		tag: ['鲜', '素'],
+		tag: ['素', '鲜'],
 		dlc: 0,
 		level: 1,
 		price: 3,
@@ -90,7 +90,7 @@ const INGREDIENT_LIST = [
 		level: 3,
 		price: 18,
 		from: {
-			buy: [['香霖堂', true], '魔法森林上海人形', '神灵庙道士'],
+			buy: [['香霖堂', true], '神灵庙道士', '魔法森林上海人形'],
 			collect: [
 				['妖怪兽道露水', true],
 				['红魔馆露水', true],
@@ -121,7 +121,7 @@ const INGREDIENT_LIST = [
 		level: 2,
 		price: 15,
 		from: {
-			buy: ['妖怪兽道商人', '人间之里农户', '魔法森林上海人形', '旧地狱鬼商'],
+			buy: ['妖怪兽道商人', '人间之里农户', '旧地狱鬼商', '魔法森林上海人形'],
 		},
 	},
 	{
@@ -144,7 +144,7 @@ const INGREDIENT_LIST = [
 		level: 2,
 		price: 15,
 		from: {
-			buy: [['香霖堂', true], '魔法森林上海人形', '命莲寺娜兹玲', '太阳花田太阳花精'],
+			buy: [['香霖堂', true], '命莲寺娜兹玲', '太阳花田太阳花精', '魔法森林上海人形'],
 			collect: [
 				'妖怪兽道蜂巢',
 				'妖怪之山蜂巢',
@@ -163,19 +163,19 @@ const INGREDIENT_LIST = [
 		level: 3,
 		price: 15,
 		from: {
-			buy: ['迷途竹林妖怪兔', '魔法森林上海人形', ['香霖堂', true]],
+			buy: ['迷途竹林妖怪兔', ['香霖堂', true], '魔法森林上海人形'],
 		},
 	},
 	{
 		name: '月光草',
 		type: '其他',
-		tag: ['不可思议', '清淡', '梦幻', '文化底蕴'],
+		tag: ['清淡', '梦幻', '不可思议', '文化底蕴'],
 		dlc: 0,
 		level: 5,
 		price: 70,
 		from: {
 			buy: [['迷途竹林妖怪兔', true], '地灵殿地狱鸦'],
-			collect: ['妖怪兽道南侧亭子月光草(需借道迷途竹林)'],
+			collect: ['妖怪兽道南侧亭子月光草（需借道迷途竹林）'],
 			task: ['阿求小姐的色纸'],
 		},
 	},
@@ -188,7 +188,7 @@ const INGREDIENT_LIST = [
 		price: 16,
 		from: {
 			buy: ['妖怪兽道商人', '人间之里农户', '旧地狱鬼商'],
-			collect: ['妖怪兽道花丛', ['博丽神社蘑菇', true], '魔法森林花丛', '人间之里农田', '太阳花田温室'],
+			collect: ['妖怪兽道花丛', '魔法森林花丛', '人间之里农田', '太阳花田温室', ['博丽神社蘑菇', true]],
 		},
 	},
 	{
@@ -229,8 +229,8 @@ const INGREDIENT_LIST = [
 		level: 1,
 		price: 2,
 		from: {
+			buy: [['妖怪兽道商人', true], '人间之里农户', '命莲寺娜兹玲', '旧地狱鬼商', '魔界小丑'],
 			collect: [['妖怪兽道花丛', true], '魔界辣椒丛'],
-			buy: ['妖怪兽道商人', '人间之里农户', '命莲寺娜兹玲', '旧地狱鬼商', '魔界小丑'],
 		},
 	},
 	{
@@ -259,7 +259,7 @@ const INGREDIENT_LIST = [
 	{
 		name: '桃子',
 		type: '其他',
-		tag: ['果味', '甜'],
+		tag: ['甜', '果味'],
 		dlc: 0,
 		level: 3,
 		price: 10,
@@ -283,7 +283,7 @@ const INGREDIENT_LIST = [
 	{
 		name: '鳟鱼',
 		type: '海鲜',
-		tag: ['鲜', '水产'],
+		tag: ['水产', '鲜'],
 		dlc: 0,
 		level: 1,
 		price: 8,
@@ -315,14 +315,14 @@ const INGREDIENT_LIST = [
 		level: 3,
 		price: 15,
 		from: {
-			buy: [['香霖堂', true], ['妖怪兽道商人', true], '旧地狱鬼商'],
-			collect: ['迷途竹林竹笋', ['迷途竹林竹子', true], '辉针城竹笋', ['辉针城竹子', true]],
+			buy: [['香霖堂', true], '旧地狱鬼商'],
+			collect: ['迷途竹林竹子', '辉针城竹子'],
 		},
 	},
 	{
 		name: '极上金枪鱼',
 		type: '海鲜',
-		tag: ['水产', '海味', '传说', '鲜', '高级'],
+		tag: ['水产', '高级', '传说', '鲜', '海味'],
 		dlc: 0,
 		level: 5,
 		price: 34,
@@ -341,7 +341,7 @@ const INGREDIENT_LIST = [
 	{
 		name: '南瓜',
 		type: '蔬菜',
-		tag: ['饱腹', '素'],
+		tag: ['素', '饱腹'],
 		dlc: 0,
 		level: 2,
 		price: 14,
@@ -377,12 +377,12 @@ const INGREDIENT_LIST = [
 	{
 		name: '和牛',
 		type: '肉类',
-		tag: ['肉', '传说', '高级'],
+		tag: ['肉', '高级', '传说'],
 		dlc: 0,
 		level: 5,
 		price: 40,
 		from: {
-			buy: ['博丽神社妖精女仆', '红魔馆地精', '迷途竹林妖怪兔', '神灵庙道士'],
+			buy: ['博丽神社妖精女仆', '红魔馆地精', '神灵庙道士', '迷途竹林妖怪兔'],
 			collect: ['旧地狱捕兽夹'],
 			task: ['阿求小姐的色纸'],
 		},
@@ -402,11 +402,12 @@ const INGREDIENT_LIST = [
 	{
 		name: '松露',
 		type: '蔬菜',
-		tag: ['素', '传说', '山珍', '鲜', '菌类', '高级'],
+		tag: ['素', '高级', '传说', '鲜', '山珍', '菌类'],
 		dlc: 0,
 		level: 5,
 		price: 50,
 		from: {
+			buy: [['博丽神社妖精女仆', true], '神灵庙道士', '辉针城不良少年', '太阳花田太阳花精', '魔法森林上海人形'],
 			collect: [
 				['妖怪兽道露水', true],
 				['红魔馆露水', true],
@@ -414,14 +415,13 @@ const INGREDIENT_LIST = [
 				['迷途竹林蘑菇', true],
 				['地灵殿蘑菇', true],
 			],
-			buy: [['博丽神社妖精女仆', true], '太阳花田太阳花精', '魔法森林上海人形', '神灵庙道士', '辉针城不良少年'],
 			task: ['阿求小姐的色纸'],
 		},
 	},
 	{
 		name: '河豚',
 		type: '海鲜',
-		tag: ['水产', '海味', '鲜'],
+		tag: ['水产', '鲜', '海味'],
 		dlc: 0,
 		level: 5,
 		price: 42,
@@ -434,13 +434,13 @@ const INGREDIENT_LIST = [
 	{
 		name: '幻昙华',
 		type: '其他',
-		tag: ['传说', '梦幻', '不可思议', '高级'],
+		tag: ['高级', '传说', '梦幻', '不可思议'],
 		dlc: 0,
 		level: 5,
 		price: 70,
 		from: {
 			collect: [
-				'妖怪兽道东侧山丘(需借道博丽神社)',
+				'妖怪兽道东侧山丘（需借道博丽神社）',
 				'地灵殿东侧喷泉',
 				['地灵殿西北侧游乐场', true],
 				'命莲寺西南花丛',
@@ -463,7 +463,7 @@ const INGREDIENT_LIST = [
 	{
 		name: '金枪鱼',
 		type: '海鲜',
-		tag: ['水产', '鲜', '高级'],
+		tag: ['水产', '高级', '鲜'],
 		dlc: 0,
 		level: 3,
 		price: 30,
@@ -525,7 +525,7 @@ const INGREDIENT_LIST = [
 	{
 		name: '葡萄',
 		type: '其他',
-		tag: ['果味', '甜'],
+		tag: ['甜', '果味'],
 		dlc: 0,
 		level: 1,
 		price: 5,
@@ -606,7 +606,7 @@ const INGREDIENT_LIST = [
 	{
 		name: '板栗',
 		type: '蔬菜',
-		tag: ['家常', '素'],
+		tag: ['素', '家常'],
 		dlc: 3,
 		level: 2,
 		price: 10,
@@ -641,7 +641,7 @@ const INGREDIENT_LIST = [
 	{
 		name: '并蒂莲',
 		type: '其他',
-		tag: ['文化底蕴', '高级', '传说', '清淡', '梦幻'],
+		tag: ['清淡', '高级', '传说', '梦幻', '文化底蕴'],
 		dlc: 2,
 		level: 3,
 		price: 36,
@@ -669,19 +669,19 @@ const INGREDIENT_LIST = [
 		price: 18,
 		from: {
 			buy: ['辉针城不良少年', '月之都月兔'],
-			collect: ['辉针城东部红豆树'],
+			collect: ['辉针城东侧红豆树'],
 		},
 	},
 	{
 		name: '梅子',
 		type: '其他',
-		tag: ['咸', '小巧'],
+		tag: ['小巧', '咸'],
 		dlc: 4,
 		level: 1,
 		price: 12,
 		from: {
 			buy: ['辉针城不良少年'],
-			collect: [['辉针城东部红豆树', true]],
+			collect: [['辉针城东侧红豆树', true]],
 		},
 	},
 	{
@@ -693,13 +693,13 @@ const INGREDIENT_LIST = [
 		price: 45,
 		from: {
 			buy: ['辉针城不良少年'],
-			collect: ['太阳花田西部鲜花', '太阳花田中部鲜花'],
+			collect: ['太阳花田西侧鲜花', '太阳花田中部鲜花'],
 		},
 	},
 	{
 		name: '香椿',
 		type: '蔬菜',
-		tag: ['毒', '素'],
+		tag: ['素', '毒'],
 		dlc: 4,
 		level: 2,
 		price: 20,
