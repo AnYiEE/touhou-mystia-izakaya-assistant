@@ -1,6 +1,13 @@
 import clsx from 'clsx';
 
-import {BeverageNames, CustomerNormalNames, IngredientNames, KitchenwareNames, RecipeNames} from '@/data';
+import {
+	BeverageNames,
+	CustomerNormalNames,
+	CustomerRareNames,
+	IngredientNames,
+	KitchenwareNames,
+	RecipeNames,
+} from '@/data';
 import * as sprite from '@/methods/sprite';
 import type {SpriteTarget} from '@/utils/sprite/types';
 
@@ -9,7 +16,7 @@ import styles from './sprite.module.scss';
 interface ISpriteBase {
 	target: SpriteTarget;
 	index: number;
-	name: BeverageNames | CustomerNormalNames | IngredientNames | KitchenwareNames | RecipeNames;
+	name: BeverageNames | CustomerNormalNames | CustomerRareNames | IngredientNames | KitchenwareNames | RecipeNames;
 	size: number;
 	height: number;
 	width: number;
@@ -23,6 +30,8 @@ function getInstance(target: SpriteTarget) {
 			return sprite.beverageSpriteInstance;
 		case 'customer_normal':
 			return sprite.customerNormalSpriteInstance;
+		case 'customer_rare':
+			return sprite.customerRareSpriteInstance;
 		case 'ingredients':
 			return sprite.ingredientSpriteInstance;
 		case 'kitchenwares':
