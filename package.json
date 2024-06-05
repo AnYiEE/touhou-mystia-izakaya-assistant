@@ -41,6 +41,10 @@
 		"东方夜雀食堂食谱"
 	],
 	"dependencies": {
+		"@fortawesome/fontawesome-svg-core": "^6.5.2",
+		"@fortawesome/free-brands-svg-icons": "^6.5.2",
+		"@fortawesome/free-solid-svg-icons": "^6.5.2",
+		"@fortawesome/react-fontawesome": "^0.2.2",
 		"@nextui-org/react": "^2.4.1",
 		"classnames": "^2.5.1",
 		"framer-motion": "^11.2.10",
