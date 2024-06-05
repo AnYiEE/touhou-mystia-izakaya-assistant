@@ -34,7 +34,7 @@ function getInstance(target: SpriteTarget) {
 	}
 }
 
-function Sprite({
+export default function Sprite({
 	target = 'beverages',
 	index = 0,
 	name,
@@ -74,12 +74,10 @@ function Sprite({
 
 	return (
 		<span
-			className={classNames('inline-block text-nowrap align-middle', styles[target], className)}
+			className={classNames('inline-block', styles[target], className)}
 			style={{...calcStyle, ...style}}
 			title={title}
 			{...props}
 		/>
 	);
 }
-
-export default Sprite;
