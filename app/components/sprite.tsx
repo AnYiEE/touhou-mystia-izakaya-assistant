@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 import {BeverageNames, CustomerNormalNames, IngredientNames, KitchenwareNames, RecipeNames} from '@/data';
 import * as sprite from '@/methods/sprite';
@@ -74,7 +74,7 @@ export default function Sprite({
 
 	return (
 		<span
-			className={classNames('inline-block', styles[target], className)}
+			className={clsx('inline-block', styles[target], className)}
 			style={{...calcStyle, ...style}}
 			title={title}
 			{...props}

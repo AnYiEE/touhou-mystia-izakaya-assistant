@@ -1,7 +1,7 @@
 'use client';
 
 import {type PropsWithChildren, type ReactNode} from 'react';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import {useTheme} from 'next-themes';
 
 import {useMounted} from '@/hooks';
@@ -29,7 +29,7 @@ function FooterLink({
 			<Link
 				isExternal
 				showAnchorIcon={isShowIcon}
-				className={classNames('text-xs', isLight ? 'opacity-30' : 'opacity-40', {
+				className={clsx('text-xs', isLight ? 'opacity-30' : 'opacity-40', {
 					'text-warning-400': !isLight,
 				})}
 				href={href}

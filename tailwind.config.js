@@ -7,6 +7,5 @@ module.exports = {
 	theme: {
 		extend: {},
 	},
-
 	plugins: [nextui()],
 };
