@@ -1,3 +1,4 @@
+import {type HTMLAttributes} from 'react';
 import clsx from 'clsx';
 
 import {
@@ -22,7 +23,7 @@ interface ISpriteBase {
 	width: number;
 }
 
-interface IProps extends Partial<ISpriteBase>, React.HTMLAttributes<HTMLSpanElement> {}
+interface IProps extends Partial<ISpriteBase>, HTMLAttributes<HTMLSpanElement> {}
 
 function getInstance(target: SpriteTarget) {
 	switch (target) {
