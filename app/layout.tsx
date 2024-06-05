@@ -1,9 +1,9 @@
 import {type ReactNode} from 'react';
 import {type Metadata, type Viewport} from 'next';
 
-import Navbar from './components/navbar';
-import Footer from './components/footer';
-import {Providers} from './providers';
+import Navbar from '@/(pages)/navbar';
+import Footer from '@/(pages)/footer';
+import {Providers} from '@/providers';
 
 import {siteConfig} from '@/configs';
 
