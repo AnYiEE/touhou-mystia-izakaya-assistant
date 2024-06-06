@@ -1,3 +1,5 @@
+import clsx from 'clsx';
+
 import {Link} from '@nextui-org/react';
 import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
 
@@ -6,13 +8,26 @@ interface IProps {
 	href?: string;
 	icon: FontAwesomeIconProps['icon'];
 	size?: FontAwesomeIconProps['size'];
+	isExternal?: boolean;
 	className?: string;
 }
 
-export default function FontAwesomeIconLink({ariaLabel = '', href = '', icon, size = '1x', className = ''}: IProps) {
+export default function FontAwesomeIconLink({
+	ariaLabel = '',
+	href = '',
+	icon,
+	size = '1x',
+	isExternal = true,
+	className = '',
+}: IProps) {
 	return (
-		<Link isExternal aria-label={ariaLabel} className={className} href={href}>
-			<FontAwesomeIcon icon={icon} size={size} />
+		<Link
+			aria-label={ariaLabel}
+			href={href}
+			isExternal={isExternal}
+			className={clsx('hover:opacity-1 text-default-500 hover:bg-default-100', className)}
+		>
+			<FontAwesomeIcon icon={icon} size={size} className="hover:opacity-80" />
 		</Link>
 	);
 }
