@@ -25,9 +25,9 @@ export default function FontAwesomeIconLink({
 			aria-label={ariaLabel}
 			href={href}
 			isExternal={isExternal}
-			className={clsx('hover:opacity-1 text-default-500 hover:bg-default-100', className)}
+			className={clsx('text-default-500', className)}
 		>
-			<FontAwesomeIcon icon={icon} size={size} className="hover:opacity-80" />
+			<FontAwesomeIcon icon={icon} size={size} />
 		</Link>
 	);
 }
