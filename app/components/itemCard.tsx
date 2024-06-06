@@ -1,4 +1,4 @@
-import {type ReactNode} from 'react';
+import {forwardRef, type ReactNode} from 'react';
 
 import {Card, type CardProps} from '@nextui-org/react';
 
@@ -12,11 +12,11 @@ interface IProps {
 	onPress: CardProps['onPress'];
 }
 
-export default function ItemCard(props: Partial<IProps>) {
+const ItemCard = forwardRef<HTMLDivElement, Partial<IProps>>(function ItemCard(props, ref) {
 	const {name, description, image, onPress, ...cardProps} = props;
 
 	return (
-		<Card shadow="sm" className="w-full" onPress={onPress ?? (() => {})} {...cardProps}>
+		<Card shadow="sm" className="w-full" onPress={onPress ?? (() => {})} {...cardProps} ref={ref}>
 			<div className="flex items-center">
 				<div className="m-1 flex rounded-xl shadow-[inset_0_0_2px] shadow-foreground-400">{image}</div>
 				<div className="mx-1 inline-flex flex-col text-left">
@@ -26,4 +26,6 @@ export default function ItemCard(props: Partial<IProps>) {
 			</div>
 		</Card>
 	);
-}
+});
+
+export default ItemCard;
