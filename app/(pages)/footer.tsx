@@ -13,6 +13,7 @@ import {siteConfig} from '@/configs';
 interface IFooterLinkProps {
 	href: string;
 	tipContent: ReactNode;
+	isExternal: boolean;
 	isLight: boolean;
 	isShowIcon: boolean;
 }
@@ -21,18 +22,19 @@ function FooterLink({
 	href = '#',
 	tipContent = '',
 	isLight = true,
+	isExternal = true,
 	isShowIcon = false,
 	children,
 }: Partial<PropsWithChildren<IFooterLinkProps>>) {
 	return (
 		<Tooltip showArrow content={tipContent}>
 			<Link
-				isExternal
+				isExternal={isExternal}
 				showAnchorIcon={isShowIcon}
+				href={href}
 				className={clsx('text-xs', isLight ? 'opacity-30' : 'opacity-40', {
 					'text-warning-400': !isLight,
 				})}
-				href={href}
 			>
 				{children}
 			</Link>
