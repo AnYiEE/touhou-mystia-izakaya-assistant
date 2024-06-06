@@ -46,7 +46,7 @@ function getInstance(target: SpriteTarget) {
 
 export default function Sprite({
 	target = 'beverages',
-	index = 0,
+	index,
 	name,
 	size,
 	height,
@@ -62,6 +62,8 @@ export default function Sprite({
 		name = instance.findNameByIndex(index) as typeof name;
 	} else if (name) {
 		index = instance.findIndexByName(name);
+	} else {
+		index = 0;
 	}
 
 	height ??= instance.spriteHeight;
