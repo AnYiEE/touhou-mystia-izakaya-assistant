@@ -1,4 +1,4 @@
-import type {Businessman, CollectionLocation, Task, IFoodBase, IFoodFrom} from '@/data/types';
+import type {Businessman, CollectionLocation, Task, IFoodBase} from '@/data/types';
 
 type Tag =
 	| '低酒精'
@@ -23,14 +23,16 @@ type Tag =
 	| '提神'
 	| '直饮';
 
+type FromBase = IFoodBase['from'];
+
+interface IFrom extends FromBase {
+	/** @description 初始拥有的饮品 */
+	self: boolean;
+}
+
 interface IBeverage extends IFoodBase {
 	tag: Tag[];
-	from:
-		| IFoodBase['from']
-		| {
-				/** @description 初始拥有的饮品 */
-				self: true;
-		  };
+	from: Partial<IFrom>;
 }
 
 export type {IBeverage};
