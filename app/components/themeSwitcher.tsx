@@ -4,7 +4,7 @@ import {useCallback, useEffect, useState} from 'react';
 import {useTheme} from 'next-themes';
 import clsx from 'clsx';
 
-import {useMounted} from '@/hooks';
+import {useMounted, useSystemTheme} from '@/hooks';
 
 import {useSwitch, Tooltip, type SwitchProps} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -18,23 +18,8 @@ interface ThemeSwitchProps {
 export default function ThemeSwitcher({className, classNames}: ThemeSwitchProps) {
 	const isMounted = useMounted();
 	const {theme, setTheme} = useTheme();
-	const [systemTheme, setSystemTheme] = useState('');
+	const systemTheme = useSystemTheme();
 	const [nextTheme, setNextTheme] = useState('');
-
-	useEffect(() => {
-		setSystemTheme(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-	}, []);
-
-	useEffect(() => {
-		const query = '(prefers-color-scheme: light)';
-		const handleChange = (event: MediaQueryListEvent) => {
-			setSystemTheme(event.matches ? 'light' : 'dark');
-		};
-		window.matchMedia(query).addEventListener('change', handleChange);
-		return () => {
-			window.matchMedia(query).removeEventListener('change', handleChange);
-		};
-	});
 
 	useEffect(() => {
 		if (theme === 'system') {
