@@ -50,7 +50,7 @@ export default function Footer() {
 		return null;
 	}
 
-	const isLight = theme === 'light';
+	const isLight = ['light', 'system'].includes(theme ?? '');
 
 	return (
 		<footer className="mx-auto flex max-w-[95%] items-center justify-center pb-3 md:max-w-full">
