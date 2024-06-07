@@ -41,6 +41,9 @@ export default function ThemeSwitcher({className, classNames}: ThemeSwitchProps)
 
 	const {Component, slots, isSelected, getBaseProps, getInputProps, getWrapperProps} = useSwitch({
 		onChange,
+		onKeyDown: ({key}) => {
+			[' ', 'Enter'].includes(key) && onChange();
+		},
 		isSelected: theme !== 'system',
 		'aria-label': label,
 	});
@@ -52,8 +55,14 @@ export default function ThemeSwitcher({className, classNames}: ThemeSwitchProps)
 	return (
 		<Component
 			{...getBaseProps({
-				className: clsx('cursor-pointer p-0 transition-opacity hover:opacity-80', className, classNames?.base),
+				className: clsx(
+					'cursor-pointer p-0 transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+					className,
+					classNames?.base
+				),
 			})}
+			tabIndex={0}
+			role="button"
 		>
 			<input className="hidden" {...getInputProps()} />
 			<Tooltip showArrow content={label}>
