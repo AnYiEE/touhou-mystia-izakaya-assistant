@@ -3,6 +3,8 @@
 import {useReducer} from 'react';
 import {usePathname} from 'next/navigation';
 
+import {useMounted} from '@/hooks';
+
 import {
 	Button,
 	Image,
@@ -14,6 +16,7 @@ import {
 	NavbarBrand,
 	NavbarItem,
 	NavbarMenuItem,
+	Spinner,
 	Tooltip,
 } from '@nextui-org/react';
 import {faGithub} from '@fortawesome/free-brands-svg-icons';
@@ -42,6 +45,8 @@ interface IGithubLinkProps {
 }
 
 function GithubLink({isShowTooltip = true}: Partial<IGithubLinkProps>) {
+	const isMounted = useMounted();
+
 	const IconLink = () => (
 		<FontAwesomeIconLink
 			ariaLabel={siteConfig.links.github.label}
@@ -50,6 +55,10 @@ function GithubLink({isShowTooltip = true}: Partial<IGithubLinkProps>) {
 			size="lg"
 		/>
 	);
+
+	if (!isMounted) {
+		return <Spinner color="default" size="sm" />;
+	}
 
 	if (isShowTooltip) {
 		return (

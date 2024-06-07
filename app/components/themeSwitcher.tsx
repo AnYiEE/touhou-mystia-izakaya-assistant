@@ -6,7 +6,7 @@ import clsx from 'clsx';
 
 import {useMounted, useSystemTheme} from '@/hooks';
 
-import {useSwitch, Tooltip, type SwitchProps} from '@nextui-org/react';
+import {useSwitch, Spinner, Tooltip, type SwitchProps} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleHalfStroke, faMoon, faSun} from '@fortawesome/free-solid-svg-icons';
 
@@ -45,7 +45,9 @@ export default function ThemeSwitcher({className, classNames}: ThemeSwitchProps)
 		'aria-label': label,
 	});
 
-	if (!isMounted) return null;
+	if (!isMounted) {
+		return <Spinner color="default" size="sm" />;
+	}
 
 	return (
 		<Component
