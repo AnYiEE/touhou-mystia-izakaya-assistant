@@ -44,18 +44,7 @@ function getInstance(target: SpriteTarget) {
 	}
 }
 
-export default function Sprite({
-	target = 'beverages',
-	index,
-	name,
-	size,
-	height,
-	width,
-	className,
-	style,
-	title,
-	...props
-}: IProps) {
+function Sprite({target = 'beverages', index, name, size, height, width, className, style, title, ...props}: IProps) {
 	const instance = getInstance(target);
 
 	if (index !== undefined) {
@@ -93,3 +82,6 @@ export default function Sprite({
 		/>
 	);
 }
+
+export default Sprite;
+export type {IProps as ISpriteProps};
