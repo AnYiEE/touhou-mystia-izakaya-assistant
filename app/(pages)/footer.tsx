@@ -1,8 +1,8 @@
 'use client';
 
 import {type PropsWithChildren, type ReactNode} from 'react';
-import clsx from 'clsx';
 import {useTheme} from 'next-themes';
+import clsx from 'clsx';
 
 import {useMounted} from '@/hooks';
 

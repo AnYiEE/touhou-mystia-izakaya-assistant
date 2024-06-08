@@ -6,17 +6,18 @@ interface IProps {
 	name: string;
 	description: string;
 	image: ReactNode;
-	isDisabled: CardProps['isDisabled'];
-	isHoverable: CardProps['isHoverable'];
-	isPressable: CardProps['isPressable'];
-	onPress: CardProps['onPress'];
+	isDisabled?: CardProps['isDisabled'];
+	isHoverable?: CardProps['isHoverable'];
+	isPressable?: CardProps['isPressable'];
+	onPress?: CardProps['onPress'];
 }
 
-const ItemCard = forwardRef<HTMLDivElement, Partial<IProps>>(function ItemCard(props, ref) {
-	const {name, description, image, onPress, ...cardProps} = props;
-
+const FoodCard = forwardRef<HTMLDivElement, IProps>(function FoodCard(
+	{name, description, image, onPress = () => {}, ...cardProps},
+	ref
+) {
 	return (
-		<Card shadow="sm" className="w-full" onPress={onPress ?? (() => {})} {...cardProps} ref={ref}>
+		<Card shadow="sm" className="w-full" onPress={onPress} {...cardProps} ref={ref}>
 			<div className="flex items-center">
 				<div className="m-1 flex rounded-xl shadow-[inset_0_0_2px] shadow-foreground-400">{image}</div>
 				<div className="mx-1 inline-flex flex-col text-left">
@@ -28,4 +29,4 @@ const ItemCard = forwardRef<HTMLDivElement, Partial<IProps>>(function ItemCard(p
 	);
 });
 
-export default ItemCard;
+export default FoodCard;
