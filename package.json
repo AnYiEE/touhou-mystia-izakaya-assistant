@@ -6,7 +6,7 @@
 	"scripts": {
 		"dev": "next dev",
 		"build": "next build",
-		"start": "next start",
+		"start": "pnpx serve out",
 		"lint": "next lint",
 		"format": "prettier --cache --write .",
 		"stylelint": "stylelint --allow-empty-input --cache app/**/*.scss",
