@@ -4,7 +4,7 @@ import type {ITagStyle} from '@/constants/types';
 
 import Sprite, {type ISpriteProps} from '@/components/sprite';
 
-type TagStyle = Omit<ITagStyle, 'beverages'>;
+type TagStyle = Omit<ITagStyle, 'beverage'>;
 
 interface IProps extends PropsWithChildren {
 	name: string;

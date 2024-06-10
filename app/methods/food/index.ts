@@ -6,4 +6,10 @@ const beverageInstance = new Beverage(BEVERAGE_LIST);
 const ingredientInstance = new Ingredient(INGREDIENT_LIST);
 const recipeInstance = new Recipe(RECIPE_LIST);
 
-export {beverageInstance, ingredientInstance, recipeInstance};
+const foodInstances = {
+	beverage: beverageInstance,
+	ingredient: ingredientInstance,
+	recipe: recipeInstance,
+} as const;
+
+export {foodInstances};

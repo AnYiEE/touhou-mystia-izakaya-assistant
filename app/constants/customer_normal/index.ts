@@ -3,7 +3,7 @@ import {RECIPE_TAG_STYLE} from '@/constants/recipes';
 import type {ITagStyle} from '@/constants/types';
 
 const CUSTOMER_NORMAL_TAG_STYLE = {
-	beverages: BEVERAGE_TAG_STYLE.positive,
+	beverage: BEVERAGE_TAG_STYLE.positive,
 	...RECIPE_TAG_STYLE,
 } as const satisfies ITagStyle;
 

@@ -5,19 +5,19 @@ import type {Ingredients} from '@/data/ingredients';
 import type {Kitchenwares} from '@/data/kitchenwares';
 import type {Recipes} from '@/data/recipes';
 
-type SpriteTarget = 'beverages' | 'customer_normal' | 'customer_rare' | 'ingredients' | 'kitchenwares' | 'recipes';
+type SpriteTarget = 'beverage' | 'customer_normal' | 'customer_rare' | 'ingredient' | 'kitchenware' | 'recipe';
 
-type SpriteData<T extends SpriteTarget> = T extends 'beverages'
+type SpriteData<T extends SpriteTarget> = T extends 'beverage'
 	? Beverages
 	: T extends 'customer_normal'
 		? CustomerNormals
 		: T extends 'customer_rare'
 			? CustomerRares
-			: T extends 'ingredients'
+			: T extends 'ingredient'
 				? Ingredients
-				: T extends 'kitchenwares'
+				: T extends 'kitchenware'
 					? Kitchenwares
-					: T extends 'recipes'
+					: T extends 'recipe'
 						? Recipes
 						: never;
 

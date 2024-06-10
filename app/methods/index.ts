@@ -1,4 +1,12 @@
-export * from './customer';
-export * from './food';
-export * from './kitchenwares';
-export * from './sprite';
+import {customerInstances} from './customer';
+import {foodInstances} from './food';
+import {kitchenwareInstance} from './kitchenwares';
+
+const instances = {
+	customer: customerInstances,
+	food: foodInstances,
+	kitchenware: kitchenwareInstance,
+} as const;
+
+export {instances};
+export {spriteInstances} from './sprite';

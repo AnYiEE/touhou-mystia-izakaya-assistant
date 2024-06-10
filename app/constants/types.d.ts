@@ -5,7 +5,7 @@ type TagStyle = {
 };
 
 interface ITagStyle {
-	beverages?: TagStyle;
+	beverage?: TagStyle;
 	positive?: TagStyle;
 	negative?: TagStyle;
 }

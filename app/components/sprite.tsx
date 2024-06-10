@@ -2,14 +2,14 @@ import {type HTMLAttributes} from 'react';
 import clsx from 'clsx';
 
 import {
-	BeverageNames,
-	CustomerNormalNames,
-	CustomerRareNames,
-	IngredientNames,
-	KitchenwareNames,
-	RecipeNames,
+	type BeverageNames,
+	type CustomerNormalNames,
+	type CustomerRareNames,
+	type IngredientNames,
+	type KitchenwareNames,
+	type RecipeNames,
 } from '@/data';
-import * as sprite from '@/methods/sprite';
+import {spriteInstances} from '@/methods';
 import type {SpriteTarget} from '@/utils/sprite/types';
 
 import styles from './sprite.module.scss';
@@ -25,30 +25,11 @@ interface ISpriteBase {
 
 interface IProps extends Partial<ISpriteBase>, HTMLAttributes<HTMLSpanElement> {}
 
-function getInstance(target: SpriteTarget) {
-	switch (target) {
-		case 'beverages':
-			return sprite.beverageSpriteInstance;
-		case 'customer_normal':
-			return sprite.customerNormalSpriteInstance;
-		case 'customer_rare':
-			return sprite.customerRareSpriteInstance;
-		case 'ingredients':
-			return sprite.ingredientSpriteInstance;
-		case 'kitchenwares':
-			return sprite.kitchenwareSpriteInstance;
-		case 'recipes':
-			return sprite.recipeSpriteInstance;
-		default:
-			return sprite.beverageSpriteInstance;
-	}
-}
-
-function Sprite({target = 'beverages', index, name, size, height, width, className, style, title, ...props}: IProps) {
-	const instance = getInstance(target);
+function Sprite({target = 'beverage', index, name, size, height, width, className, style, title, ...props}: IProps) {
+	const instance = spriteInstances[target];
 
 	if (index !== undefined) {
-		name = instance.findNameByIndex(index) as typeof name;
+		name = instance.findNameByIndex(index);
 	} else if (name) {
 		index = instance.findIndexByName(name);
 	} else {
