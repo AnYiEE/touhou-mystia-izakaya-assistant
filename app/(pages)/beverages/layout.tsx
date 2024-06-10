@@ -1,17 +1,10 @@
 import {type ReactNode} from 'react';
 import {type Metadata} from 'next';
 
-import {siteConfig} from '@/configs';
+import {getPageTitle} from '@/utils';
 
 export const metadata: Metadata = {
-	title: siteConfig.navItems
-		.map(({label, href}) => {
-			if (href === '/beverages') {
-				return label;
-			}
-			return '';
-		})
-		.join(''),
+	title: getPageTitle('/beverages'),
 };
 
 export default function BeveragesLayout({
