@@ -10,12 +10,12 @@ import {useSwitch, Spinner, Tooltip, type SwitchProps} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleHalfStroke, faMoon, faSun} from '@fortawesome/free-solid-svg-icons';
 
-interface ThemeSwitchProps {
+interface IProps {
 	className?: string;
 	classNames?: SwitchProps['classNames'];
 }
 
-export default function ThemeSwitcher({className, classNames}: ThemeSwitchProps) {
+export default function ThemeSwitcher({className, classNames}: IProps) {
 	const isMounted = useMounted();
 	const {theme, setTheme} = useTheme();
 	const systemTheme = useSystemTheme();
