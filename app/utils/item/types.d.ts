@@ -4,4 +4,8 @@ interface IItem<T = string> extends IItemBase {
 	name: T;
 }
 
-export type {IItem};
+type TItemProcessed<T> = T & {
+	pinyin: string[];
+};
+
+export type {IItem, TItemProcessed};
