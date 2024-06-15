@@ -34,9 +34,11 @@ type Tag =
 
 type Type = '肉类' | '海鲜' | '蔬菜' | '其他';
 
-interface IIngredient extends IFoodBase {
+export interface IIngredient extends IFoodBase {
 	type: Type;
 	tag: Tag[];
 }
 
-export type {IIngredient};
+export type Ingredients = typeof import('./data').INGREDIENT_LIST;
+
+export type IngredientNames = Ingredients[number]['name'];

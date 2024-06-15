@@ -12,7 +12,6 @@ import {
 	RECIPE_LIST,
 	RECIPE_SPRITE_CONFIG,
 } from '@/data';
-
 import {Sprite} from '@/utils';
 
 const beverageSpriteInstance = new Sprite<'beverage'>(BEVERAGE_LIST, BEVERAGE_SPRITE_CONFIG);

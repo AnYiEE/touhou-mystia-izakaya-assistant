@@ -1,13 +1,21 @@
-import type {Beverages} from '@/data/beverages';
-import type {CustomerNormals} from '@/data/customer_normal';
-import type {CustomerRares} from '@/data/customer_rare';
-import type {Ingredients} from '@/data/ingredients';
-import type {Kitchenwares} from '@/data/kitchenwares';
-import type {Recipes} from '@/data/recipes';
+import {
+	type Beverages,
+	type BeverageNames,
+	type CustomerNormals,
+	type CustomerNormalNames,
+	type CustomerRares,
+	type CustomerRareNames,
+	type Ingredients,
+	type IngredientNames,
+	type Kitchenwares,
+	type KitchenwareNames,
+	type Recipes,
+	type RecipeNames,
+} from '@/data';
 
-type SpriteTarget = 'beverage' | 'customer_normal' | 'customer_rare' | 'ingredient' | 'kitchenware' | 'recipe';
+export type SpriteTarget = 'beverage' | 'customer_normal' | 'customer_rare' | 'ingredient' | 'kitchenware' | 'recipe';
 
-type SpriteData<T extends SpriteTarget> = T extends 'beverage'
+export type SpriteData<T extends SpriteTarget = string> = T extends 'beverage'
 	? Beverages
 	: T extends 'customer_normal'
 		? CustomerNormals
@@ -19,13 +27,31 @@ type SpriteData<T extends SpriteTarget> = T extends 'beverage'
 					? Kitchenwares
 					: T extends 'recipe'
 						? Recipes
-						: never;
+						: Beverages | CustomerNormals | CustomerRares | Ingredients | Kitchenwares | Recipes;
 
-interface ISpriteConfig {
+export type SpriteNames<T extends SpriteTarget = string> = T extends 'beverage'
+	? BeverageNames
+	: T extends 'customer_normal'
+		? CustomerNormalNames
+		: T extends 'customer_rare'
+			? CustomerRareNames
+			: T extends 'ingredient'
+				? IngredientNames
+				: T extends 'kitchenware'
+					? KitchenwareNames
+					: T extends 'recipe'
+						? RecipeNames
+						:
+								| BeverageNames
+								| CustomerNormalNames
+								| CustomerRareNames
+								| IngredientNames
+								| KitchenwareNames
+								| RecipeNames;
+
+export interface ISpriteConfig {
 	col: number;
 	row: number;
 	height: number;
 	width: number;
 }
-
-export type {SpriteData, SpriteTarget, ISpriteConfig};

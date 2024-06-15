@@ -1,13 +1,14 @@
 import {type PropsWithChildren, type ReactNode} from 'react';
 
-import type {ITagStyle} from '@/constants/types';
+import Sprite from '@/components/sprite';
 
-import Sprite, {type ISpriteProps} from '@/components/sprite';
+import type {ITagStyle} from '@/constants/types';
+import {type FoodNames} from '@/data';
 
 type TagStyle = Omit<ITagStyle, 'beverage'>;
 
 interface IProps extends PropsWithChildren {
-	name: string;
+	name: FoodNames;
 	description?: ReactNode;
 	dlc?: number | string;
 	tags?: {
@@ -20,7 +21,7 @@ export default function FoodPopoverCard({name, description, dlc, tags, tagColors
 	return (
 		<div className="flex max-w-64 flex-col p-2 text-xs">
 			<div className="flex items-center gap-x-2 text-sm">
-				<Sprite name={name as NonNullable<ISpriteProps['name']>} size={32} />
+				<Sprite name={name} size={32} />
 				<span className="font-bold">
 					{dlc !== undefined && `【DLC${dlc}】`}
 					{name}

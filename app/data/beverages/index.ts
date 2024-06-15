@@ -1,6 +1,6 @@
 import type {ISpriteConfig} from '@/utils/sprite/types';
 
-const BEVERAGE_SPRITE_CONFIG = {
+export const BEVERAGE_SPRITE_CONFIG = {
 	col: 10,
 	row: 5,
 	height: 420,
@@ -8,4 +8,3 @@ const BEVERAGE_SPRITE_CONFIG = {
 } as const satisfies ISpriteConfig;
 
 export * from './data';
-export {BEVERAGE_SPRITE_CONFIG};

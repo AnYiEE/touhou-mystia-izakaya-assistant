@@ -1,6 +1,6 @@
 import type {IRecipe} from './types';
 
-const RECIPE_LIST = [
+export const RECIPE_LIST = [
 	{
 		name: '海鲜味噌汤',
 		ingredients: ['海苔'],
@@ -2835,8 +2835,3 @@ const RECIPE_LIST = [
 		from: '',
 	},
 ] as const satisfies IRecipe[];
-
-type Recipes = typeof RECIPE_LIST;
-type RecipeNames = Recipes[number]['name'];
-
-export {RECIPE_LIST, type Recipes, type RecipeNames};

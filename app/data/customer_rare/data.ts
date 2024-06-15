@@ -1,6 +1,6 @@
 import type {ICustomerRare} from './types';
 
-const CUSTOMER_RARE_LIST = [
+export const CUSTOMER_RARE_LIST = [
 	{
 		name: '莉格露',
 		dlc: 0,
@@ -621,8 +621,3 @@ const CUSTOMER_RARE_LIST = [
 		beverage: ['古典', '中酒精', '高酒精', '烧酒'],
 	},
 ] as const satisfies ICustomerRare[];
-
-type CustomerRares = typeof CUSTOMER_RARE_LIST;
-type CustomerRareNames = CustomerRares[number]['name'];
-
-export {CUSTOMER_RARE_LIST, type CustomerRares, type CustomerRareNames};

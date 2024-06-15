@@ -1,6 +1,6 @@
 import type {IBeverage} from './types';
 
-const BEVERAGE_LIST = [
+export const BEVERAGE_LIST = [
 	{
 		name: '绿茶',
 		tag: ['无酒精'],
@@ -485,8 +485,3 @@ const BEVERAGE_LIST = [
 		},
 	},
 ] as const satisfies IBeverage[];
-
-type Beverages = typeof BEVERAGE_LIST;
-type BeverageNames = Beverages[number]['name'];
-
-export {BEVERAGE_LIST, type Beverages, type BeverageNames};

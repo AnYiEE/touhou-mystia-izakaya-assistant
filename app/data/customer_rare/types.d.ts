@@ -1,7 +1,9 @@
 import type {ICustomerBase} from '@/data/types';
 
-interface ICustomerRare extends ICustomerBase {
+export interface ICustomerRare extends ICustomerBase {
 	price: `${string}-${string}`;
 }
 
-export type {ICustomerRare};
+export type CustomerRares = typeof import('./data').CUSTOMER_RARE_LIST;
+
+export type CustomerRareNames = CustomerRares[number]['name'];

@@ -1,7 +1,7 @@
 import type {IFoodBase} from '@/data/types';
-import type {CustomerRareNames} from '../customer_rare';
-import type {IngredientNames} from '../ingredients';
-import type {KitchenwareNames} from '../kitchenwares';
+import type {CustomerRareNames} from '../customer_rare/types';
+import type {IngredientNames} from '../ingredients/types';
+import type {KitchenwareNames} from '../kitchenwares/types';
 
 type Tag =
 	| '昂贵'
@@ -46,7 +46,7 @@ type Tag =
 	| '重油'
 	| '灼热';
 
-interface IRecipe extends IFoodBase {
+export interface IRecipe extends IFoodBase {
 	ingredients: IngredientNames[];
 	positive: Tag[];
 	negative: Tag[];
@@ -67,4 +67,6 @@ interface IRecipe extends IFoodBase {
 		| string;
 }
 
-export type {IRecipe};
+export type Recipes = typeof import('./data').RECIPE_LIST;
+
+export type RecipeNames = Recipes[number]['name'];

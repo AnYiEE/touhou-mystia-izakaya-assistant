@@ -1,12 +1,10 @@
 import {Food} from './base';
-import type {Ingredients} from '@/data/ingredients';
+import {type Ingredients} from '@/data';
 
-class Ingredient extends Food<Ingredients> {
+export class Ingredient extends Food<Ingredients> {
 	constructor(data: Ingredients) {
 		super(data);
 
 		this._data = data;
 	}
 }
-
-export {Ingredient};

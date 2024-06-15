@@ -17,7 +17,7 @@ interface IProps {
 	className?: string;
 }
 
-function FontAwesomeIconButton({
+export default function FontAwesomeIconButton({
 	color = 'default',
 	radius = 'full',
 	size = 'sm',
@@ -47,5 +47,4 @@ function FontAwesomeIconButton({
 	);
 }
 
-export default FontAwesomeIconButton;
 export type {IProps as IFontAwesomeIconButtonProps};

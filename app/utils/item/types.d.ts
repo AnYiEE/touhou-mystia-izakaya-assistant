@@ -1,11 +1,9 @@
 import type {IItemBase} from '@/data/types';
 
-interface IItem<T = string> extends IItemBase {
+export interface IItem<T extends string = string> extends IItemBase {
 	name: T;
 }
 
-type TItemProcessed<T> = T & {
+export type TItemWithPinyin<T> = T & {
 	pinyin: string[];
 };
-
-export type {IItem, TItemProcessed};

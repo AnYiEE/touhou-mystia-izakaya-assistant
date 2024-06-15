@@ -1,6 +1,6 @@
 import type {ICustomerNormal} from './types';
 
-const CUSTOMER_NORMAL_LIST = [
+export const CUSTOMER_NORMAL_LIST = [
 	{
 		name: '妖怪兔',
 		dlc: 0,
@@ -378,8 +378,3 @@ const CUSTOMER_NORMAL_LIST = [
 		beverage: ['无酒精', '现代', '苦', '提神', '可加热'],
 	},
 ] as const satisfies ICustomerNormal[];
-
-type CustomerNormals = typeof CUSTOMER_NORMAL_LIST;
-type CustomerNormalNames = CustomerNormals[number]['name'];
-
-export {CUSTOMER_NORMAL_LIST, type CustomerNormals, type CustomerNormalNames};

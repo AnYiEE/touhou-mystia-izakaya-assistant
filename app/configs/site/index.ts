@@ -1,7 +1,7 @@
 import PACKAGE from '@/../package.json';
 import type {ISiteConfig} from './types';
 
-const siteConfig = {
+export const siteConfig = {
 	name: '东方夜雀食堂小助手',
 	shortName: '夜雀助手',
 	author: {
@@ -50,7 +50,3 @@ const siteConfig = {
 		},
 	},
 } as const satisfies ISiteConfig;
-
-type SiteConfig = typeof siteConfig;
-
-export {siteConfig, type SiteConfig};

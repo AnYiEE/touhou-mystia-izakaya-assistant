@@ -1,4 +1,5 @@
-import {siteConfig, type SiteConfig} from '@/configs';
+import {siteConfig} from '@/configs';
+import type {SiteConfig} from '@/configs/site/types';
 
 type ValidHref = SiteConfig['navItems'][number]['href'];
 

@@ -1,5 +1,7 @@
 import type {IItemBase} from '@/data/types';
 
-interface IKitchenware extends IItemBase {}
+export interface IKitchenware extends IItemBase {}
 
-export type {IKitchenware};
+export type Kitchenwares = typeof import('./data').KITCHENWARE_LIST;
+
+export type KitchenwareNames = Kitchenwares[number]['name'];

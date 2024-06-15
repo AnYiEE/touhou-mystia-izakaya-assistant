@@ -1,14 +1,17 @@
+import {Item} from '@/utils/item';
 import type {SpriteData, SpriteTarget, ISpriteConfig} from './types';
 
-import {Item} from '@/utils/item';
-
-class Sprite<Target extends SpriteTarget> extends Item<SpriteData<Target>> {
+export class Sprite<
+	Target extends SpriteTarget,
+	Data extends SpriteData<Target> = SpriteData<Target>,
+	Name extends Data[number]['name'] = Data[number]['name'],
+> extends Item<Data> {
 	private _config: ISpriteConfig;
 
 	public spriteHeight: number;
 	public spriteWidth: number;
 
-	public constructor(data: SpriteData<Target>, config: ISpriteConfig) {
+	public constructor(data: Data, config: ISpriteConfig) {
 		super(data);
 
 		this._config = config;
@@ -31,7 +34,7 @@ class Sprite<Target extends SpriteTarget> extends Item<SpriteData<Target>> {
 		};
 	}
 
-	public getPosByName(name: SpriteData<Target>[number]['name']) {
+	public getPosByName(name: Name) {
 		const index: number = this.findIndexByName(name);
 
 		return this.getPosByIndex(index);
@@ -57,7 +60,7 @@ class Sprite<Target extends SpriteTarget> extends Item<SpriteData<Target>> {
 	}
 
 	public getBackgroundPropsByName(
-		name: SpriteData<Target>[number]['name'],
+		name: Name,
 		{displayHeight = this.spriteHeight, displayWidth = this.spriteWidth} = {}
 	): React.CSSProperties {
 		const index: number = this.findIndexByName(name);
@@ -68,5 +71,3 @@ class Sprite<Target extends SpriteTarget> extends Item<SpriteData<Target>> {
 		});
 	}
 }
-
-export {Sprite};

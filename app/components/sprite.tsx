@@ -1,15 +1,9 @@
 import {type HTMLAttributes} from 'react';
 import clsx from 'clsx';
 
-import {
-	type BeverageNames,
-	type CustomerNormalNames,
-	type CustomerRareNames,
-	type IngredientNames,
-	type KitchenwareNames,
-	type RecipeNames,
-} from '@/data';
+import {type ItemNames} from '@/data';
 import {spriteInstances} from '@/methods';
+import type {SpriteInstances} from '@/methods/types';
 import type {SpriteTarget} from '@/utils/sprite/types';
 
 import styles from './sprite.module.scss';
@@ -17,7 +11,7 @@ import styles from './sprite.module.scss';
 interface ISpriteBase {
 	target: SpriteTarget;
 	index: number;
-	name: BeverageNames | CustomerNormalNames | CustomerRareNames | IngredientNames | KitchenwareNames | RecipeNames;
+	name: ItemNames;
 	size: number;
 	height: number;
 	width: number;
@@ -25,8 +19,19 @@ interface ISpriteBase {
 
 interface IProps extends Partial<ISpriteBase>, HTMLAttributes<HTMLSpanElement> {}
 
-function Sprite({target = 'beverage', index, name, size, height, width, className, style, title, ...props}: IProps) {
-	const instance = spriteInstances[target];
+export default function Sprite({
+	target = 'beverage',
+	index,
+	name,
+	size,
+	height,
+	width,
+	className,
+	style,
+	title,
+	...props
+}: IProps) {
+	const instance: SpriteInstances = spriteInstances[target];
 
 	if (index !== undefined) {
 		name = instance.findNameByIndex(index);
@@ -64,5 +69,4 @@ function Sprite({target = 'beverage', index, name, size, height, width, classNam
 	);
 }
 
-export default Sprite;
 export type {IProps as ISpriteProps};

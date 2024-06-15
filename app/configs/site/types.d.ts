@@ -3,7 +3,7 @@ type Href = {
 	href: string;
 };
 
-interface ISiteConfig {
+export interface ISiteConfig {
 	name: string;
 	shortName: string;
 	author: {
@@ -18,4 +18,4 @@ interface ISiteConfig {
 	links: Record<string, Href>;
 }
 
-export {ISiteConfig};
+export type SiteConfig = typeof import('./index').siteConfig;

@@ -1,6 +1,6 @@
 import type {IKitchenware} from './types';
 
-const KITCHENWARE_LIST = [
+export const KITCHENWARE_LIST = [
 	{
 		name: '烤架',
 	},
@@ -17,8 +17,3 @@ const KITCHENWARE_LIST = [
 		name: '煮锅',
 	},
 ] as const satisfies IKitchenware[];
-
-type Kitchenwares = typeof KITCHENWARE_LIST;
-type KitchenwareNames = Kitchenwares[number]['name'];
-
-export {KITCHENWARE_LIST, type Kitchenwares, type KitchenwareNames};

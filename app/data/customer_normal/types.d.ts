@@ -1,5 +1,7 @@
 import type {ICustomerBase} from '@/data/types';
 
-interface ICustomerNormal extends ICustomerBase {}
+export interface ICustomerNormal extends ICustomerBase {}
 
-export type {ICustomerNormal};
+export type CustomerNormals = typeof import('./data').CUSTOMER_NORMAL_LIST;
+
+export type CustomerNormalNames = CustomerNormals[number]['name'];

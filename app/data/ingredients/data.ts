@@ -1,6 +1,6 @@
 import type {IIngredient} from './types';
 
-const INGREDIENT_LIST = [
+export const INGREDIENT_LIST = [
 	{
 		name: '海苔',
 		type: '蔬菜',
@@ -753,8 +753,3 @@ const INGREDIENT_LIST = [
 		},
 	},
 ] as const satisfies IIngredient[];
-
-type Ingredients = typeof INGREDIENT_LIST;
-type IngredientNames = Ingredients[number]['name'];
-
-export {INGREDIENT_LIST, type Ingredients, type IngredientNames};

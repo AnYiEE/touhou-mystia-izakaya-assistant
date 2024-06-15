@@ -1,17 +1,17 @@
 import {pinyin as pinyinPro} from 'pinyin-pro';
 
-import type {IItem, TItemProcessed} from './types';
+import type {IItem, TItemWithPinyin} from './types';
 
-class Item<
+export class Item<
 	Target extends IItem[],
 	Item extends Target[number] = Target[number],
-	Name extends Item['name'] = Item['name'],
-	ItemProcessed extends TItemProcessed<Item> = TItemProcessed<Item>,
+	ItemWithPinyin extends TItemWithPinyin<Item> = TItemWithPinyin<Item>,
+	Name extends ItemWithPinyin['name'] = ItemWithPinyin['name'],
 > {
 	protected _data: Target;
-	protected _dataWithPinyin: ItemProcessed[];
+	protected _dataWithPinyin: ItemWithPinyin[];
 
-	protected pinyinSortedCache: ItemProcessed[] | undefined;
+	protected pinyinSortedCache: ItemWithPinyin[] | undefined;
 	protected static indexNameCache: Map<number, string> = new Map();
 	protected static nameIndexCache: Map<string, number> = new Map();
 
@@ -26,7 +26,7 @@ class Item<
 						type: 'array',
 						v: true,
 					}),
-				}) as ItemProcessed
+				}) as ItemWithPinyin
 		);
 	}
 
@@ -34,7 +34,7 @@ class Item<
 		return structuredClone(this._dataWithPinyin);
 	}
 
-	public get dataPinyinSorted(): ItemProcessed[] {
+	public get dataPinyinSorted(): ItemWithPinyin[] {
 		if (this.pinyinSortedCache) {
 			return structuredClone(this.pinyinSortedCache);
 		}
@@ -106,9 +106,9 @@ class Item<
 		return name as Name;
 	}
 
-	public getPropsByIndex(index: number): ItemProcessed;
-	public getPropsByIndex<T extends ItemProcessed>(index: number, prop: keyof T): T[keyof T];
-	public getPropsByIndex<T extends ItemProcessed>(index: number, prop?: keyof T): T | T[keyof T] {
+	public getPropsByIndex(index: number): ItemWithPinyin;
+	public getPropsByIndex<T extends ItemWithPinyin>(index: number, prop: keyof T): T[keyof T];
+	public getPropsByIndex<T extends ItemWithPinyin>(index: number, prop?: keyof T): T | T[keyof T] {
 		const item = this._dataWithPinyin[index];
 		this.checkIndexRange(index, item);
 
@@ -119,13 +119,14 @@ class Item<
 		return structuredClone(item[prop as keyof IItem] as T[keyof T]);
 	}
 
-	public getPropsByName(name: Name): ItemProcessed;
-	public getPropsByName<T extends ItemProcessed, U extends Exclude<keyof T, 'name'>>(name: Name, prop: U): T[U];
-	public getPropsByName<T extends ItemProcessed, U extends Exclude<keyof T, 'name'>>(name: Name, prop?: U): T | T[U] {
+	public getPropsByName(name: Name): ItemWithPinyin;
+	public getPropsByName<T extends ItemWithPinyin, U extends Exclude<keyof T, 'name'>>(name: Name, prop: U): T[U];
+	public getPropsByName<T extends ItemWithPinyin, U extends Exclude<keyof T, 'name'>>(
+		name: Name,
+		prop?: U
+	): T | T[U] {
 		const index = this.findIndexByName(name);
 
 		return this.getPropsByIndex<T>(index, prop as NonNullable<typeof prop>) as T | T[U];
 	}
 }
-
-export {Item};

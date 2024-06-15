@@ -4,10 +4,8 @@ type TagStyle = {
 	color: string;
 };
 
-interface ITagStyle {
+export interface ITagStyle {
 	beverage?: TagStyle;
 	positive?: TagStyle;
 	negative?: TagStyle;
 }
-
-export type {ITagStyle};

@@ -30,9 +30,11 @@ interface IFrom extends FromBase {
 	self: boolean;
 }
 
-interface IBeverage extends IFoodBase {
+export interface IBeverage extends IFoodBase {
 	tag: Tag[];
 	from: Partial<IFrom>;
 }
 
-export type {IBeverage};
+export type Beverages = typeof import('./data').BEVERAGE_LIST;
+
+export type BeverageNames = Beverages[number]['name'];
