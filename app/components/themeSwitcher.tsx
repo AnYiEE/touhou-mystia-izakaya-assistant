@@ -11,12 +11,12 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleHalfStroke, faMoon, faSun} from '@fortawesome/free-solid-svg-icons';
 
 interface IProps {
-	isShowTooltip: boolean;
+	isMenu: boolean;
 	className: string;
 	classNames: SwitchProps['classNames'];
 }
 
-export default function ThemeSwitcher({isShowTooltip = true, className, classNames}: Partial<IProps>) {
+export default function ThemeSwitcher({isMenu, className, classNames}: Partial<IProps>) {
 	const isMounted = useMounted();
 	const {theme, setTheme} = useTheme();
 	const systemTheme = useSystemTheme();
@@ -49,29 +49,6 @@ export default function ThemeSwitcher({isShowTooltip = true, className, classNam
 		'aria-label': label,
 	});
 
-	const Icon = ({isMenu = false}) => (
-		<div
-			{...getWrapperProps()}
-			className={slots.wrapper({
-				class: clsx(
-					'm-0 h-auto w-auto bg-transparent p-0 group-data-[selected=true]:bg-transparent',
-					isMenu ? '!text-foreground' : '!text-default-500',
-					classNames?.wrapper
-				),
-			})}
-		>
-			{isSelected ? (
-				theme === 'light' ? (
-					<FontAwesomeIcon icon={faMoon} size="lg" />
-				) : (
-					<FontAwesomeIcon icon={faSun} size="lg" />
-				)
-			) : (
-				<FontAwesomeIcon icon={faCircleHalfStroke} size="lg" />
-			)}
-		</div>
-	);
-
 	if (!isMounted) {
 		return <Spinner color="default" classNames={{wrapper: 'h-4 w-4'}} />;
 	}
@@ -89,15 +66,28 @@ export default function ThemeSwitcher({isShowTooltip = true, className, classNam
 			role="button"
 		>
 			<input className="hidden" {...getInputProps()} />
-			{isShowTooltip ? (
-				<Tooltip showArrow content={label}>
-					<span className="flex">
-						<Icon />
-					</span>
-				</Tooltip>
-			) : (
-				<Icon isMenu />
-			)}
+			<Tooltip showArrow content={label}>
+				<div
+					{...getWrapperProps()}
+					className={slots.wrapper({
+						class: clsx(
+							'm-0 h-auto w-auto bg-transparent p-0 group-data-[selected=true]:bg-transparent',
+							isMenu ? '!text-foreground' : '!text-default-500',
+							classNames?.wrapper
+						),
+					})}
+				>
+					{isSelected ? (
+						theme === 'light' ? (
+							<FontAwesomeIcon icon={faMoon} size="lg" />
+						) : (
+							<FontAwesomeIcon icon={faSun} size="lg" />
+						)
+					) : (
+						<FontAwesomeIcon icon={faCircleHalfStroke} size="lg" />
+					)}
+				</div>
+			</Tooltip>
 		</Component>
 	);
 }
