@@ -38,21 +38,22 @@ function NavbarLink({href = '#', isActive = false, label: children}: Partial<Pro
 }
 
 interface IGithubLinkProps {
-	isShowTooltip: boolean;
+	showTooltip: boolean;
 }
 
-function GithubLink({isShowTooltip = true}: Partial<IGithubLinkProps>) {
-	const IconLink = () => (
+function GithubLink({showTooltip}: Partial<IGithubLinkProps>) {
+	const IconLink = ({className}: {className?: string}) => (
 		<FontAwesomeIconLink
 			isExternal
 			icon={faGithub}
 			size="lg"
 			aria-label={siteConfig.links.github.label}
 			href={siteConfig.links.github.href}
+			className={className}
 		/>
 	);
 
-	if (isShowTooltip) {
+	if (showTooltip) {
 		return (
 			<Tooltip showArrow content={siteConfig.links.github.label}>
 				<span className="flex">
@@ -62,7 +63,12 @@ function GithubLink({isShowTooltip = true}: Partial<IGithubLinkProps>) {
 		);
 	}
 
-	return <IconLink />;
+	return (
+		<span className="flex gap-1">
+			<IconLink className="text-foreground" />
+			{siteConfig.links.github.label}
+		</span>
+	);
 }
 
 export default function Navbar() {
@@ -95,7 +101,7 @@ export default function Navbar() {
 
 			<NavbarContent justify="end" className="hidden basis-1/5 sm:flex sm:basis-full">
 				<NavbarItem className="hidden gap-2 sm:flex">
-					<GithubLink />
+					<GithubLink showTooltip />
 				</NavbarItem>
 				<ThemeSwitcher />
 			</NavbarContent>
@@ -123,7 +129,7 @@ export default function Navbar() {
 						);
 					})}
 					<NavbarMenuItem>
-						<GithubLink isShowTooltip={false} />
+						<GithubLink />
 					</NavbarMenuItem>
 				</div>
 			</NavbarMenu>
