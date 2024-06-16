@@ -10,17 +10,17 @@ import styles from './sprite.module.scss';
 
 interface ISpriteBase {
 	target: SpriteTarget;
-	index: number;
-	name: ItemNames;
-	size: number;
-	height: number;
-	width: number;
+	index?: number;
+	name?: ItemNames;
+	size?: number;
+	height?: number;
+	width?: number;
 }
 
-interface IProps extends Partial<ISpriteBase>, HTMLAttributes<HTMLSpanElement> {}
+interface IProps extends ISpriteBase, HTMLAttributes<HTMLSpanElement> {}
 
 export default forwardRef<HTMLSpanElement | null, IProps>(function Sprite(
-	{target = 'beverage', index, name, size, height, width, className, style, title, ...props},
+	{target, index, name, size, height, width, className, style, title, ...props},
 	ref
 ) {
 	const instance: SpriteInstances = spriteInstances[target];
@@ -61,4 +61,5 @@ export default forwardRef<HTMLSpanElement | null, IProps>(function Sprite(
 		/>
 	);
 });
+
 export type {IProps as ISpriteProps};
