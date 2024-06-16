@@ -31,12 +31,12 @@ export class Item<
 	}
 
 	public get data() {
-		return structuredClone(this._dataWithPinyin);
+		return this._dataWithPinyin;
 	}
 
 	public get dataPinyinSorted(): ItemWithPinyin[] {
 		if (this.pinyinSortedCache) {
-			return structuredClone(this.pinyinSortedCache);
+			return this.pinyinSortedCache;
 		}
 
 		const getTone = (pinyin: string): number => parseInt(pinyin.match(/\d/)?.[0] ?? '0');
@@ -112,11 +112,11 @@ export class Item<
 		const item = this._dataWithPinyin[index];
 		this.checkIndexRange(index, item);
 
-		if (!prop) {
-			return structuredClone(item as T);
+		if (prop) {
+			return item[prop as keyof IItem] as T[keyof T];
 		}
 
-		return structuredClone(item[prop as keyof IItem] as T[keyof T]);
+		return item as T;
 	}
 
 	public getPropsByName<T extends string = Name>(name: T): ItemWithPinyin;
