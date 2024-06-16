@@ -39,34 +39,7 @@ export class Item<
 			return this.pinyinSortedCache;
 		}
 
-		const getTone = (pinyin: string): number => parseInt(pinyin.match(/\d/)?.[0] ?? '0');
-		const removeTone = (pinyin: string): string => pinyin.replace(/\d/, '');
-
-		this.pinyinSortedCache = this.data.sort(({pinyin: a}, {pinyin: b}) => {
-			const length = Math.min(a.length, b.length);
-
-			for (let i = 0; i < length; i++) {
-				const itemA = a[i] as string;
-				const itemB = b[i] as string;
-
-				const pinyinA = removeTone(itemA);
-				const pinyinB = removeTone(itemB);
-				if (pinyinA < pinyinB) {
-					return -1;
-				}
-				if (pinyinA > pinyinB) {
-					return 1;
-				}
-
-				const toneA = getTone(itemA);
-				const toneB = getTone(itemB);
-				if (toneA !== toneB) {
-					return toneA - toneB;
-				}
-			}
-
-			return a.length - b.length;
-		});
+		this.pinyinSortedCache = this.sortByPinyin(this.data);
 
 		return this.dataPinyinSorted;
 	}
@@ -133,5 +106,36 @@ export class Item<
 		const index = this.findIndexByName(name);
 
 		return this.getPropsByIndex<U>(index, prop as NonNullable<typeof prop>) as U | U[S];
+	}
+
+	public sortByPinyin(data: ItemWithPinyin[]) {
+		const getTone = (pinyin: string): number => parseInt(pinyin.match(/\d/)?.[0] ?? '0');
+		const removeTone = (pinyin: string): string => pinyin.replace(/\d/, '');
+
+		return data.toSorted(({pinyin: a}, {pinyin: b}) => {
+			const length = Math.min(a.length, b.length);
+
+			for (let i = 0; i < length; i++) {
+				const itemA = a[i] as string;
+				const itemB = b[i] as string;
+
+				const pinyinA = removeTone(itemA);
+				const pinyinB = removeTone(itemB);
+				if (pinyinA < pinyinB) {
+					return -1;
+				}
+				if (pinyinA > pinyinB) {
+					return 1;
+				}
+
+				const toneA = getTone(itemA);
+				const toneB = getTone(itemB);
+				if (toneA !== toneB) {
+					return toneA - toneB;
+				}
+			}
+
+			return a.length - b.length;
+		});
 	}
 }
