@@ -6,19 +6,20 @@ function useSystemTheme() {
 	const [systemTheme, setSystemTheme] = useState<Theme>('system');
 
 	useEffect(() => {
-		setSystemTheme(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-	}, []);
+		const mediaQueryList = window.matchMedia('(prefers-color-scheme: light)');
 
-	useEffect(() => {
-		const query = '(prefers-color-scheme: light)';
+		setSystemTheme(mediaQueryList.matches ? 'light' : 'dark');
+
 		const handleChange = (event: MediaQueryListEvent) => {
 			setSystemTheme(event.matches ? 'light' : 'dark');
 		};
-		window.matchMedia(query).addEventListener('change', handleChange);
+
+		mediaQueryList.addEventListener('change', handleChange);
+
 		return () => {
-			window.matchMedia(query).removeEventListener('change', handleChange);
+			mediaQueryList.removeEventListener('change', handleChange);
 		};
-	});
+	}, []);
 
 	return systemTheme;
 }
