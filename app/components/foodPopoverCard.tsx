@@ -19,6 +19,24 @@ interface IProps extends Pick<ISpriteProps, 'target'> {
 	tagColors?: TagStyle;
 }
 
+const renderTags = (
+	tags: NonNullable<IProps['tags']>[keyof TagStyle],
+	tagColors: Partial<NonNullable<TagStyle[keyof TagStyle]>> = {}
+) =>
+	tags?.map((tag, index) => (
+		<div
+			key={index}
+			className="max-w-1/5 rounded border-1 border-solid px-1"
+			style={{
+				backgroundColor: tagColors.backgroundColor ?? '#fff',
+				borderColor: tagColors.borderColor ?? '#000',
+				color: tagColors.color ?? 'inherit',
+			}}
+		>
+			{tag}
+		</div>
+	));
+
 export default forwardRef<HTMLDivElement | null, PropsWithChildren<IProps>>(function FoodPopoverCard(
 	{target, name, description, dlc, ingredients, kitchenware, tags, tagColors, children},
 	ref
@@ -43,32 +61,8 @@ export default forwardRef<HTMLDivElement | null, PropsWithChildren<IProps>>(func
 			{description !== undefined && <div className="mt-2 flex gap-x-4 text-default-500">{description}</div>}
 			{tags && (
 				<div className="mt-2 flex flex-wrap gap-x-2 gap-y-1 break-keep">
-					{tags.positive?.map((tag, index) => (
-						<div
-							key={index}
-							className="max-w-1/5 rounded border-1 border-solid px-1"
-							style={{
-								backgroundColor: tagColors?.positive?.backgroundColor ?? '#fff',
-								borderColor: tagColors?.positive?.borderColor ?? '#000',
-								color: tagColors?.positive?.color ?? 'inherit',
-							}}
-						>
-							{tag}
-						</div>
-					))}
-					{tags.negative?.map((tag, index) => (
-						<div
-							key={index}
-							className="max-w-1/5 rounded border-1 border-solid px-1"
-							style={{
-								backgroundColor: tagColors?.negative?.backgroundColor ?? '#fff',
-								borderColor: tagColors?.negative?.borderColor ?? '#000',
-								color: tagColors?.negative?.color ?? 'inherit',
-							}}
-						>
-							{tag}
-						</div>
-					))}
+					{renderTags(tags.positive, tagColors?.positive)}
+					{renderTags(tags.negative, tagColors?.negative)}
 				</div>
 			)}
 			{children !== undefined && <div className="mt-2 flex flex-col gap-y-1 text-default-500">{children}</div>}
