@@ -1,6 +1,6 @@
 'use client';
 
-import {useReducer} from 'react';
+import {useReducer, type PropsWithChildren, type ReactNode} from 'react';
 import {usePathname} from 'next/navigation';
 
 import {
@@ -15,6 +15,7 @@ import {
 	NavbarItem,
 	NavbarMenuItem,
 	Tooltip,
+	type LinkProps,
 } from '@nextui-org/react';
 import {faGithub} from '@fortawesome/free-brands-svg-icons';
 
@@ -23,16 +24,15 @@ import ThemeSwitcher from '@/components/themeSwitcher';
 
 import {siteConfig} from '@/configs';
 
-interface INavbarLinkProps {
-	href: string;
-	label: string;
+interface INavbarLinkProps extends Pick<LinkProps, 'href'> {
+	label: ReactNode;
 	isActive: boolean;
 }
 
-function NavbarLink({href = '', label = '', isActive = false}: Partial<INavbarLinkProps>) {
+function NavbarLink({href = '#', isActive = false, label: children}: Partial<PropsWithChildren<INavbarLinkProps>>) {
 	return (
-		<Button as={Link} className="text-base" href={href} size="sm" variant={isActive ? 'faded' : 'light'}>
-			{label}
+		<Button as={Link} size="sm" variant={isActive ? 'faded' : 'light'} href={href} className="text-base">
+			{children}
 		</Button>
 	);
 }
@@ -44,10 +44,11 @@ interface IGithubLinkProps {
 function GithubLink({isShowTooltip = true}: Partial<IGithubLinkProps>) {
 	const IconLink = () => (
 		<FontAwesomeIconLink
-			ariaLabel={siteConfig.links.github.label}
-			href={siteConfig.links.github.href}
+			isExternal
 			icon={faGithub}
 			size="lg"
+			aria-label={siteConfig.links.github.label}
+			href={siteConfig.links.github.href}
 		/>
 	);
 
@@ -72,7 +73,7 @@ export default function Navbar() {
 		<NextUINavbar maxWidth="xl" position="sticky" isMenuOpen={isMenuOpen} onMenuOpenChange={setMenuOpen}>
 			<NavbarContent justify="start" className="basis-1/5 sm:basis-full">
 				<NavbarBrand as="li" className="max-w-fit gap-3">
-					<Link color="foreground" className="flex select-none items-center justify-start gap-1" href="/">
+					<Link color="foreground" href="/" className="flex select-none items-center justify-start gap-1">
 						<Image alt="Logo" src="/favicon.png" className="w-8" />
 						<p className="font-bold">
 							<span className="hidden xl:inline">{siteConfig.name}</span>
@@ -85,7 +86,7 @@ export default function Navbar() {
 						const isActive = href === pathname;
 						return (
 							<NavbarItem key={href} isActive={isActive}>
-								<NavbarLink href={href} label={label} isActive={isActive} />
+								<NavbarLink isActive={isActive} href={href} label={label} />
 							</NavbarItem>
 						);
 					})}
@@ -112,9 +113,9 @@ export default function Navbar() {
 							<NavbarMenuItem key={href} isActive={isActive}>
 								<Link
 									color={isActive ? 'primary' : 'foreground'}
-									href={href}
 									size="lg"
-									onPress={() => setMenuOpen()}
+									onPress={setMenuOpen}
+									href={href}
 								>
 									{label}
 								</Link>

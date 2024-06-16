@@ -1,3 +1,5 @@
+import {forwardRef} from 'react';
+
 import {faArrowDownAZ, faArrowUpAZ} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
@@ -8,18 +10,22 @@ export enum PinyinSortState {
 	ZA = 2,
 }
 
-interface IProps extends Omit<IFontAwesomeIconButtonProps, 'color' | 'icon'> {
+interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color' | 'icon' | 'variant'> {
 	pinyinSortState: PinyinSortState;
 }
 
-export default function SidePinyinSortIconButton({pinyinSortState, ...props}: IProps) {
+export default forwardRef<HTMLButtonElement | null, IProps>(function SidePinyinSortIconButton(
+	{pinyinSortState, ...props},
+	ref
+) {
 	return (
 		<FontAwesomeIconButton
 			color={pinyinSortState === PinyinSortState.NONE ? 'primary' : 'warning'}
-			variant="shadow"
 			icon={pinyinSortState === PinyinSortState.ZA ? faArrowUpAZ : faArrowDownAZ}
-			ariaLabel="拼音排序"
+			variant="shadow"
+			aria-label="拼音排序"
 			{...props}
+			ref={ref}
 		/>
 	);
-}
+});

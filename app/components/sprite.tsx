@@ -1,4 +1,4 @@
-import {type HTMLAttributes} from 'react';
+import {forwardRef, type HTMLAttributes} from 'react';
 import clsx from 'clsx';
 
 import {type ItemNames} from '@/data';
@@ -19,18 +19,10 @@ interface ISpriteBase {
 
 interface IProps extends Partial<ISpriteBase>, HTMLAttributes<HTMLSpanElement> {}
 
-export default function Sprite({
-	target = 'beverage',
-	index,
-	name,
-	size,
-	height,
-	width,
-	className,
-	style,
-	title,
-	...props
-}: IProps) {
+export default forwardRef<HTMLSpanElement | null, IProps>(function Sprite(
+	{target = 'beverage', index, name, size, height, width, className, style, title, ...props},
+	ref
+) {
 	const instance: SpriteInstances = spriteInstances[target];
 
 	if (index !== undefined) {
@@ -65,8 +57,8 @@ export default function Sprite({
 			style={{...calcStyle, ...style}}
 			title={title}
 			{...props}
+			ref={ref}
 		/>
 	);
-}
-
+});
 export type {IProps as ISpriteProps};

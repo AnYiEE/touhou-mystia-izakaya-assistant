@@ -1,4 +1,4 @@
-import {type PropsWithChildren, type ReactNode} from 'react';
+import {forwardRef, type PropsWithChildren, type ReactNode} from 'react';
 
 import Sprite from '@/components/sprite';
 
@@ -7,7 +7,7 @@ import {type FoodNames} from '@/data';
 
 type TagStyle = Omit<ITagStyle, 'beverage'>;
 
-interface IProps extends PropsWithChildren {
+interface IProps {
 	name: FoodNames;
 	description?: ReactNode;
 	dlc?: number | string;
@@ -17,9 +17,12 @@ interface IProps extends PropsWithChildren {
 	tagColors?: TagStyle;
 }
 
-export default function FoodPopoverCard({name, description, dlc, tags, tagColors, children}: IProps) {
+export default forwardRef<HTMLDivElement | null, PropsWithChildren<IProps>>(function FoodPopoverCard(
+	{name, description, dlc, tags, tagColors, children},
+	ref
+) {
 	return (
-		<div className="flex max-w-64 flex-col p-2 text-xs">
+		<div className="flex max-w-64 flex-col p-2 text-xs" ref={ref}>
 			<div className="flex items-center gap-x-2 text-sm">
 				<Sprite name={name} size={32} />
 				<span className="font-bold">
@@ -61,4 +64,4 @@ export default function FoodPopoverCard({name, description, dlc, tags, tagColors
 			{children !== undefined && <div className="mt-2 flex flex-col gap-y-1 text-default-500">{children}</div>}
 		</div>
 	);
-}
+});

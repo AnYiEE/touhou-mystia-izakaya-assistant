@@ -4,22 +4,18 @@ import {Card, type CardProps} from '@nextui-org/react';
 
 import {type FoodNames} from '@/data';
 
-interface IProps {
+interface IProps extends Omit<CardProps, 'className'> {
 	name: FoodNames;
 	description: string;
 	image: ReactNode;
-	isDisabled?: CardProps['isDisabled'];
-	isHoverable?: CardProps['isHoverable'];
-	isPressable?: CardProps['isPressable'];
-	onPress?: CardProps['onPress'];
 }
 
-export default forwardRef<HTMLDivElement, IProps>(function FoodCard(
-	{name, description, image, onPress = () => {}, ...cardProps},
+export default forwardRef<HTMLDivElement | null, IProps>(function FoodCard(
+	{name, description, image, ...cardProps},
 	ref
 ) {
 	return (
-		<Card shadow="sm" className="w-full" onPress={onPress} {...cardProps} ref={ref}>
+		<Card shadow="sm" className="w-full" {...cardProps} ref={ref}>
 			<div className="flex items-center">
 				<div className="m-1 flex rounded-xl shadow-[inset_0_0_2px] shadow-foreground-400">{image}</div>
 				<div className="mx-1 inline-flex flex-col text-left">

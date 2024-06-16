@@ -1,15 +1,13 @@
-import {type HTMLAttributes, type PropsWithChildren} from 'react';
+import {forwardRef, type PropsWithChildren} from 'react';
 
-interface IProps extends HTMLAttributes<HTMLDivElement> {}
+interface IProps {}
 
-export default function SideButtonGroup({children, ...props}: PropsWithChildren<IProps>) {
+export default forwardRef<HTMLDivElement | null, PropsWithChildren<IProps>>(function SideButtonGroup({children}, ref) {
 	return (
-		<div className="absolute">
+		<div className="absolute" ref={ref}>
 			<div className="fixed bottom-6 right-6 z-20 md:bottom-[calc(50%-4rem)]">
-				<div className="flex flex-col gap-3" {...props}>
-					{children}
-				</div>
+				<div className="flex flex-col gap-3">{children}</div>
 			</div>
 		</div>
 	);
-}
+});

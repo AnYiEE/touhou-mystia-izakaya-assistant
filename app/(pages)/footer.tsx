@@ -1,28 +1,25 @@
-import {type PropsWithChildren, type ReactNode} from 'react';
+import {type PropsWithChildren} from 'react';
 
-import {Link, Tooltip} from '@nextui-org/react';
+import {Link, Tooltip, type LinkProps, type TooltipProps} from '@nextui-org/react';
 
 import {siteConfig} from '@/configs';
 
-interface IFooterLinkProps {
-	href: string;
-	tipContent: ReactNode;
-	isExternal: boolean;
-	isShowIcon: boolean;
-}
+interface IFooterLinkProps
+	extends Pick<LinkProps, 'href' | 'isExternal' | 'showAnchorIcon'>,
+		Pick<TooltipProps, 'content'> {}
 
 function FooterLink({
 	href = '#',
-	tipContent = '',
+	content = '',
 	isExternal = true,
-	isShowIcon = false,
+	showAnchorIcon = false,
 	children,
-}: Partial<PropsWithChildren<IFooterLinkProps>>) {
+}: PropsWithChildren<IFooterLinkProps>) {
 	return (
-		<Tooltip showArrow content={tipContent}>
+		<Tooltip showArrow content={content}>
 			<Link
 				isExternal={isExternal}
-				showAnchorIcon={isShowIcon}
+				showAnchorIcon={showAnchorIcon}
 				href={href}
 				className={'text-xs opacity-30 dark:text-warning-400 dark:opacity-40'}
 			>
@@ -36,11 +33,11 @@ export default function Footer() {
 	return (
 		<footer className="mx-auto flex max-w-[95%] items-center justify-center pb-3 md:max-w-full">
 			<p className="text-center text-xs text-default-300 dark:text-default-400">
-				<FooterLink href={siteConfig.links.github.href} tipContent={siteConfig.links.github.label}>
+				<FooterLink content={siteConfig.links.github.label} href={siteConfig.links.github.href}>
 					{siteConfig.shortName}
 				</FooterLink>
 				内所涉及的公司名称、商标、产品等均为其各自所有者的资产，仅供识别。游戏素材版权均归
-				<FooterLink isShowIcon href={siteConfig.links.steam.href} tipContent={siteConfig.links.steam.label}>
+				<FooterLink showAnchorIcon content={siteConfig.links.steam.label} href={siteConfig.links.steam.href}>
 					原作者
 				</FooterLink>
 				所有

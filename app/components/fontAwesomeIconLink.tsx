@@ -1,33 +1,18 @@
+import {forwardRef} from 'react';
 import clsx from 'clsx';
 
-import {Link} from '@nextui-org/react';
+import {Link, type LinkProps} from '@nextui-org/react';
 import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
 
-interface IProps {
-	ariaLabel?: string;
-	href?: string;
-	icon: FontAwesomeIconProps['icon'];
-	size?: FontAwesomeIconProps['size'];
-	isExternal?: boolean;
-	className?: string;
-}
+interface IProps extends Omit<LinkProps, 'size'>, Pick<FontAwesomeIconProps, 'icon' | 'size'> {}
 
-export default function FontAwesomeIconLink({
-	ariaLabel = '',
-	href = '',
-	icon,
-	size = '1x',
-	isExternal = true,
-	className = '',
-}: IProps) {
+export default forwardRef<HTMLAnchorElement | null, IProps>(function FontAwesomeIconLink(
+	{icon, size = '1x', className, ...props},
+	ref
+) {
 	return (
-		<Link
-			aria-label={ariaLabel}
-			href={href}
-			isExternal={isExternal}
-			className={clsx('text-default-500', className)}
-		>
+		<Link className={clsx('text-default-500', className)} {...props} ref={ref}>
 			<FontAwesomeIcon icon={icon} size={size} />
 		</Link>
 	);
-}
+});
