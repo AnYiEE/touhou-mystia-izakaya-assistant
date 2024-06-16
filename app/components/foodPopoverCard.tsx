@@ -1,16 +1,18 @@
 import {forwardRef, type PropsWithChildren, type ReactNode} from 'react';
 
-import Sprite from '@/components/sprite';
+import Sprite, {ISpriteProps} from '@/components/sprite';
 
 import type {ITagStyle} from '@/constants/types';
-import {type FoodNames} from '@/data';
+import {type FoodNames, type IngredientNames, type KitchenwareNames} from '@/data';
 
 type TagStyle = Omit<ITagStyle, 'beverage'>;
 
-interface IProps {
+interface IProps extends Pick<ISpriteProps, 'target'> {
 	name: FoodNames;
 	description?: ReactNode;
 	dlc?: number | string;
+	ingredients?: IngredientNames[];
+	kitchenware?: KitchenwareNames;
 	tags?: {
 		[key in keyof TagStyle]: string[];
 	};
@@ -18,18 +20,26 @@ interface IProps {
 }
 
 export default forwardRef<HTMLDivElement | null, PropsWithChildren<IProps>>(function FoodPopoverCard(
-	{name, description, dlc, tags, tagColors, children},
+	{target, name, description, dlc, ingredients, kitchenware, tags, tagColors, children},
 	ref
 ) {
 	return (
 		<div className="flex max-w-64 flex-col p-2 text-xs" ref={ref}>
 			<div className="flex items-center gap-x-2 text-sm">
-				<Sprite name={name} size={32} />
+				<Sprite target={target} name={name} size={32} />
 				<span className="font-bold">
 					{dlc !== undefined && `【DLC${dlc}】`}
 					{name}
 				</span>
 			</div>
+			{kitchenware && ingredients && (
+				<div className="mt-2 flex flex-wrap gap-x-2 gap-y-1">
+					<Sprite target="kitchenware" name={kitchenware} size={24} className="mr-4" />
+					{ingredients.map((item) => (
+						<Sprite key={item} target="ingredient" name={item} size={24} />
+					))}
+				</div>
+			)}
 			{description !== undefined && <div className="mt-2 flex gap-x-4 text-default-500">{description}</div>}
 			{tags && (
 				<div className="mt-2 flex flex-wrap gap-x-2 gap-y-1 break-keep">
