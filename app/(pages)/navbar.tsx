@@ -100,7 +100,7 @@ export default function Navbar() {
 			</NavbarContent>
 
 			<NavbarContent justify="end" className="basis-1 pl-4 sm:hidden">
-				<ThemeSwitcher />
+				<ThemeSwitcher isShowTooltip={false} />
 				<NavbarMenuToggle />
 			</NavbarContent>
 

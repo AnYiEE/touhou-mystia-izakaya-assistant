@@ -11,11 +11,12 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleHalfStroke, faMoon, faSun} from '@fortawesome/free-solid-svg-icons';
 
 interface IProps {
-	className?: string;
-	classNames?: SwitchProps['classNames'];
+	isShowTooltip: boolean;
+	className: string;
+	classNames: SwitchProps['classNames'];
 }
 
-export default function ThemeSwitcher({className, classNames}: IProps) {
+export default function ThemeSwitcher({isShowTooltip = true, className, classNames}: Partial<IProps>) {
 	const isMounted = useMounted();
 	const {theme, setTheme} = useTheme();
 	const systemTheme = useSystemTheme();
@@ -48,8 +49,31 @@ export default function ThemeSwitcher({className, classNames}: IProps) {
 		'aria-label': label,
 	});
 
+	const Icon = ({isMenu = false}) => (
+		<div
+			{...getWrapperProps()}
+			className={slots.wrapper({
+				class: clsx(
+					'm-0 h-auto w-auto bg-transparent p-0 group-data-[selected=true]:bg-transparent',
+					isMenu ? '!text-foreground' : '!text-default-500',
+					classNames?.wrapper
+				),
+			})}
+		>
+			{isSelected ? (
+				theme === 'light' ? (
+					<FontAwesomeIcon icon={faMoon} size="lg" />
+				) : (
+					<FontAwesomeIcon icon={faSun} size="lg" />
+				)
+			) : (
+				<FontAwesomeIcon icon={faCircleHalfStroke} size="lg" />
+			)}
+		</div>
+	);
+
 	if (!isMounted) {
-		return <Spinner color="default" size="sm" />;
+		return <Spinner color="default" classNames={{wrapper: 'h-4 w-4'}} />;
 	}
 
 	return (
@@ -65,27 +89,15 @@ export default function ThemeSwitcher({className, classNames}: IProps) {
 			role="button"
 		>
 			<input className="hidden" {...getInputProps()} />
-			<Tooltip showArrow content={label}>
-				<div
-					{...getWrapperProps()}
-					className={slots.wrapper({
-						class: clsx(
-							'm-0 h-auto w-auto bg-transparent p-0 !text-default-500 group-data-[selected=true]:bg-transparent',
-							classNames?.wrapper
-						),
-					})}
-				>
-					{isSelected ? (
-						theme === 'light' ? (
-							<FontAwesomeIcon icon={faMoon} size="lg" />
-						) : (
-							<FontAwesomeIcon icon={faSun} size="lg" />
-						)
-					) : (
-						<FontAwesomeIcon icon={faCircleHalfStroke} size="lg" />
-					)}
-				</div>
-			</Tooltip>
+			{isShowTooltip ? (
+				<Tooltip showArrow content={label}>
+					<span className="flex">
+						<Icon />
+					</span>
+				</Tooltip>
+			) : (
+				<Icon isMenu />
+			)}
 		</Component>
 	);
 }
