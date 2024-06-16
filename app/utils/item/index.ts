@@ -119,14 +119,19 @@ export class Item<
 		return structuredClone(item[prop as keyof IItem] as T[keyof T]);
 	}
 
-	public getPropsByName(name: Name): ItemWithPinyin;
-	public getPropsByName<T extends ItemWithPinyin, U extends Exclude<keyof T, 'name'>>(name: Name, prop: U): T[U];
-	public getPropsByName<T extends ItemWithPinyin, U extends Exclude<keyof T, 'name'>>(
-		name: Name,
-		prop?: U
-	): T | T[U] {
+	public getPropsByName<T extends string = Name>(name: T): ItemWithPinyin;
+	public getPropsByName<
+		T extends string = Name,
+		U extends ItemWithPinyin = ItemWithPinyin,
+		S extends Exclude<keyof U, 'name'> = Exclude<keyof U, 'name'>,
+	>(name: T, prop: S): U[S];
+	public getPropsByName<
+		T extends string = Name,
+		U extends ItemWithPinyin = ItemWithPinyin,
+		S extends Exclude<keyof U, 'name'> = Exclude<keyof U, 'name'>,
+	>(name: T, prop?: S): U | U[S] {
 		const index = this.findIndexByName(name);
 
-		return this.getPropsByIndex<T>(index, prop as NonNullable<typeof prop>) as T | T[U];
+		return this.getPropsByIndex<U>(index, prop as NonNullable<typeof prop>) as U | U[S];
 	}
 }

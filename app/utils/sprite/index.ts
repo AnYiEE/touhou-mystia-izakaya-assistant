@@ -34,7 +34,7 @@ export class Sprite<
 		};
 	}
 
-	public getPosByName(name: Name) {
+	public getPosByName<T extends string = Name>(name: T) {
 		const index: number = this.findIndexByName(name);
 
 		return this.getPosByIndex(index);
@@ -59,8 +59,8 @@ export class Sprite<
 		};
 	}
 
-	public getBackgroundPropsByName(
-		name: Name,
+	public getBackgroundPropsByName<T extends string = Name>(
+		name: T,
 		{displayHeight = this.spriteHeight, displayWidth = this.spriteWidth} = {}
 	): React.CSSProperties {
 		const index: number = this.findIndexByName(name);
