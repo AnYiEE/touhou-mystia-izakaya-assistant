@@ -1,4 +1,4 @@
-import {forwardRef} from 'react';
+import {forwardRef, type Dispatch, type SetStateAction} from 'react';
 
 import {faArrowDownAZ, faArrowUpAZ} from '@fortawesome/free-solid-svg-icons';
 
@@ -10,12 +10,26 @@ export enum PinyinSortState {
 	ZA = 2,
 }
 
-interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color' | 'icon' | 'variant'> {
+interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'> {
 	pinyinSortState: PinyinSortState;
+	setPinyinSortState: Dispatch<SetStateAction<PinyinSortState>>;
 }
 
+const getNextPinyinSortState = (currentState: PinyinSortState): PinyinSortState => {
+	switch (currentState) {
+		case PinyinSortState.NONE:
+			return PinyinSortState.AZ;
+		case PinyinSortState.AZ:
+			return PinyinSortState.ZA;
+		case PinyinSortState.ZA:
+			return PinyinSortState.NONE;
+		default:
+			return PinyinSortState.NONE;
+	}
+};
+
 export default forwardRef<HTMLButtonElement | null, IProps>(function SidePinyinSortIconButton(
-	{pinyinSortState, ...props},
+	{pinyinSortState, setPinyinSortState, ...props},
 	ref
 ) {
 	return (
@@ -23,6 +37,7 @@ export default forwardRef<HTMLButtonElement | null, IProps>(function SidePinyinS
 			color={pinyinSortState === PinyinSortState.NONE ? 'primary' : 'warning'}
 			icon={pinyinSortState === PinyinSortState.ZA ? faArrowUpAZ : faArrowDownAZ}
 			variant="shadow"
+			onPress={() => setPinyinSortState(getNextPinyinSortState(pinyinSortState))}
 			aria-label="拼音排序"
 			{...props}
 			ref={ref}
