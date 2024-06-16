@@ -10,6 +10,11 @@ import {siteConfig} from '@/configs';
 import 'reset-css';
 import './globals.scss';
 
+import {config as fontawesomeConfig} from '@fortawesome/fontawesome-svg-core';
+import '@fortawesome/fontawesome-svg-core/styles.css';
+
+fontawesomeConfig.autoAddCss = false;
+
 export const metadata: Metadata = {
 	title: {
 		default: siteConfig.name,

@@ -1,7 +1,3 @@
-'use client';
-
-import {useMounted} from '@/hooks';
-
 import {Button, type ButtonProps} from '@nextui-org/react';
 import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
 
@@ -10,7 +6,6 @@ interface IProps {
 	radius?: ButtonProps['radius'];
 	size?: ButtonProps['size'];
 	variant?: ButtonProps['variant'];
-	isLoading?: ButtonProps['isLoading'];
 	onPress?: ButtonProps['onPress'];
 	icon: FontAwesomeIconProps['icon'];
 	ariaLabel?: string;
@@ -22,18 +17,14 @@ export default function FontAwesomeIconButton({
 	radius = 'full',
 	size = 'sm',
 	variant = 'solid',
-	isLoading = false,
 	onPress = () => {},
 	icon,
 	ariaLabel = '',
 	className = '',
 }: IProps) {
-	const isMounted = useMounted();
-
 	return (
 		<Button
 			isIconOnly
-			isLoading={!isMounted && !isLoading}
 			color={color}
 			radius={radius}
 			size={size}
