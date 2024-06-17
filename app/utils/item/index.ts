@@ -1,5 +1,7 @@
 import {pinyin as pinyinPro} from 'pinyin-pro';
 
+import {generateArray} from '@/utils';
+
 import type {IItem, TItemWithPinyin} from './types';
 
 export class Item<
@@ -106,6 +108,27 @@ export class Item<
 		const index = this.findIndexByName(name);
 
 		return this.getPropsByIndex<S>(index, prop as NonNullable<typeof prop>);
+	}
+
+	public getValuesByProp<T extends keyof ItemWithPinyin>(
+		data: ItemWithPinyin[],
+		prop: T | T[],
+		wrap: true
+	): {value: FlatArray<ItemWithPinyin[T], number>}[];
+	public getValuesByProp<T extends keyof ItemWithPinyin>(
+		data: ItemWithPinyin[],
+		prop: T | T[],
+		wrap?: false
+	): FlatArray<ItemWithPinyin[T], number>[];
+	public getValuesByProp<T extends keyof ItemWithPinyin>(data: ItemWithPinyin[], prop: T | T[], wrap?: boolean) {
+		const props = generateArray(prop);
+		const values = [...new Set(data.map((item) => props.map((prop) => item[prop])).flat(Infinity))];
+
+		if (wrap) {
+			return values.map((value) => ({value}));
+		}
+
+		return values;
 	}
 
 	public sortByPinyin(data: ItemWithPinyin[]) {
