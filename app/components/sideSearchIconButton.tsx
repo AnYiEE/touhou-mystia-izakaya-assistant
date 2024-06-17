@@ -34,7 +34,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SideSearchIcon
 					variant="faded"
 					label="请输入您想要搜索的名称"
 					defaultItems={searchItems}
-					selectedKey={searchValue}
+					onInputChange={setSearchValue}
 					onSelectionChange={(key) => {
 						setSearchValue(key as string);
 					}}
