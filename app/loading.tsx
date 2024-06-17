@@ -7,7 +7,7 @@ export default function Loading() {
 
 	return (
 		<div className="flex h-full w-full select-none flex-col items-center justify-center text-sm tracking-widest">
-			<span className={clsx(styles.logo, 'h-16 w-16 animate-bounce')} title={label}></span>
+			<span className={clsx(styles['logo'], 'h-16 w-16 animate-bounce')} title={label}></span>
 			<p className="mt-1">{label}</p>
 		</div>
 	);

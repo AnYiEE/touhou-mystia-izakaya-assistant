@@ -82,7 +82,7 @@ export default function Navbar() {
 			<NavbarContent justify="start" className="basis-1/5 sm:basis-full">
 				<NavbarBrand as="li" className="max-w-fit gap-3">
 					<Link color="foreground" href="/" className="flex select-none items-center justify-start gap-1">
-						<span className={clsx(styles.logo, 'w-8')} title={siteConfig.shortName}></span>
+						<span className={clsx(styles['logo'], 'w-8')} title={siteConfig.shortName}></span>
 						<p className="font-bold">
 							<span className="hidden xl:inline">{siteConfig.name}</span>
 							<span className="inline xl:hidden">{siteConfig.shortName}</span>
