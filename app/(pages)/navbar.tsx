@@ -2,10 +2,10 @@
 
 import {useReducer, type PropsWithChildren, type ReactNode} from 'react';
 import {usePathname} from 'next/navigation';
+import clsx from 'clsx';
 
 import {
 	Button,
-	Image,
 	Link,
 	Navbar as NextUINavbar,
 	NavbarContent,
@@ -23,6 +23,8 @@ import FontAwesomeIconLink from '@/components/fontAwesomeIconLink';
 import ThemeSwitcher from '@/components/themeSwitcher';
 
 import {siteConfig} from '@/configs';
+
+import styles from './navbar.module.scss';
 
 interface INavbarLinkProps extends Pick<LinkProps, 'href'> {
 	label: ReactNode;
@@ -80,7 +82,7 @@ export default function Navbar() {
 			<NavbarContent justify="start" className="basis-1/5 sm:basis-full">
 				<NavbarBrand as="li" className="max-w-fit gap-3">
 					<Link color="foreground" href="/" className="flex select-none items-center justify-start gap-1">
-						<Image alt="Logo" src="/favicon.png" className="w-8" />
+						<span className={clsx(styles.logo, 'w-8')} title={siteConfig.shortName}></span>
 						<p className="font-bold">
 							<span className="hidden xl:inline">{siteConfig.name}</span>
 							<span className="inline xl:hidden">{siteConfig.shortName}</span>
