@@ -28,18 +28,18 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SideSearchIcon
 					{...props}
 				/>
 			</PopoverTrigger>
-			<PopoverContent>
+			<PopoverContent className="w-64">
 				<Autocomplete
 					allowsCustomValue
 					variant="faded"
-					label="请输入您想要搜索的名称"
 					defaultItems={searchItems}
+					label="请输入您想要搜索的名称"
 					onInputChange={setSearchValue}
 					onSelectionChange={(key) => {
 						setSearchValue(key as string);
 					}}
 				>
-					{(item) => <AutocompleteItem key={item.value}>{item.value}</AutocompleteItem>}
+					{({value}) => <AutocompleteItem key={value}>{value}</AutocompleteItem>}
 				</Autocomplete>
 			</PopoverContent>
 		</Popover>
