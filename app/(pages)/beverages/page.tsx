@@ -1,7 +1,6 @@
 'use client';
 
 import {Fragment, useMemo, useState} from 'react';
-import {usePathname, useRouter, useSearchParams} from 'next/navigation';
 
 import {useOpenedFoodPopover, useThrottle} from '@/hooks';
 
@@ -120,23 +119,8 @@ export default function Beverages() {
 		},
 	] as const satisfies SelectConfig;
 
-	const router = useRouter();
-	const pathname = usePathname();
-	const searchParams = useSearchParams();
-
 	const openedPopoverParam = 'select' as const;
 	const [openedPopover, setOpenedPopover] = useOpenedFoodPopover(openedPopoverParam);
-
-	const handleOpenChange = (name: string | null) => {
-		const params = new URLSearchParams(searchParams);
-		if (name) {
-			params.set(openedPopoverParam, name);
-		} else {
-			params.delete(openedPopoverParam);
-		}
-		router.push(`${pathname}?${params.toString()}`);
-		setOpenedPopover(name);
-	};
 
 	return (
 		<>
@@ -157,7 +141,7 @@ export default function Beverages() {
 						showArrow
 						isOpen={openedPopover === name}
 						onOpenChange={(isOpen) => {
-							handleOpenChange(isOpen ? name : null);
+							setOpenedPopover(isOpen ? name : '');
 						}}
 					>
 						<PopoverTrigger className="w-full">

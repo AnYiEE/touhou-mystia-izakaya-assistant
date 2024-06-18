@@ -1,5 +1,4 @@
 import {forwardRef, type FC, type PropsWithChildren, type ReactNode} from 'react';
-import {usePathname, useRouter, useSearchParams} from 'next/navigation';
 
 import {Tooltip, usePopoverContext} from '@nextui-org/react';
 import {faXmark} from '@fortawesome/free-solid-svg-icons';
@@ -9,6 +8,7 @@ import Sprite, {ISpriteProps} from '@/components/sprite';
 
 import type {ITagStyle} from '@/constants/types';
 import {type FoodNames, type IngredientNames, type KitchenwareNames} from '@/data';
+import {useParams} from '@/hooks';
 
 type TagStyle = Omit<ITagStyle, 'beverage'>;
 
@@ -49,18 +49,16 @@ function renderTags(
 
 const CloseButton: FC<ICloseButtonProps> = forwardRef<HTMLButtonElement | null, ICloseButtonProps>(
 	function FoodPopoverCardCloseButton({param}, ref) {
-		const router = useRouter();
-		const pathname = usePathname();
-		const searchParams = useSearchParams();
+		const [params, replace] = useParams();
 		const {getBackdropProps} = usePopoverContext();
 
 		const handleClose = (e: React.MouseEvent<HTMLButtonElement>) => {
 			getBackdropProps()?.onClick?.(e);
 
 			if (param) {
-				const params = new URLSearchParams(searchParams);
-				params.delete(param);
-				router.push(`${pathname}?${params.toString()}`);
+				const newParams = new URLSearchParams(params);
+				newParams.delete(param);
+				replace(newParams);
 			}
 		};
 
