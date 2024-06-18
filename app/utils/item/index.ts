@@ -1,6 +1,6 @@
 import {pinyin as pinyinPro} from 'pinyin-pro';
 
-import {generateArray} from '@/utils';
+import {generateArray, pinyinSort} from '@/utils';
 
 import type {IItem, TItemWithPinyin} from './types';
 
@@ -118,7 +118,7 @@ export class Item<
 	public getValuesByProp<T extends keyof ItemWithPinyin>(
 		data: ItemWithPinyin[],
 		prop: T | T[],
-		wrap?: false
+		wrap?: boolean
 	): FlatArray<ItemWithPinyin[T], number>[];
 	public getValuesByProp<T extends keyof ItemWithPinyin>(data: ItemWithPinyin[], prop: T | T[], wrap?: boolean) {
 		const props = generateArray(prop);
@@ -132,33 +132,6 @@ export class Item<
 	}
 
 	public sortByPinyin(data: ItemWithPinyin[]) {
-		const getTone = (pinyin: string): number => parseInt(pinyin.match(/\d/)?.[0] ?? '0');
-		const removeTone = (pinyin: string): string => pinyin.replace(/\d/, '');
-
-		return data.toSorted(({pinyin: a}, {pinyin: b}) => {
-			const length = Math.min(a.length, b.length);
-
-			for (let i = 0; i < length; i++) {
-				const itemA = a[i] as string;
-				const itemB = b[i] as string;
-
-				const pinyinA = removeTone(itemA);
-				const pinyinB = removeTone(itemB);
-				if (pinyinA < pinyinB) {
-					return -1;
-				}
-				if (pinyinA > pinyinB) {
-					return 1;
-				}
-
-				const toneA = getTone(itemA);
-				const toneB = getTone(itemB);
-				if (toneA !== toneB) {
-					return toneA - toneB;
-				}
-			}
-
-			return a.length - b.length;
-		});
+		return data.toSorted(({pinyin: a}, {pinyin: b}) => pinyinSort(a, b));
 	}
 }

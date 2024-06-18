@@ -5,3 +5,4 @@ export * from './sprite';
 
 export * from './generateArray';
 export * from './getPageTitle';
+export * from './pinyinSort';
