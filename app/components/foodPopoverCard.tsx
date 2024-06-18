@@ -1,5 +1,10 @@
-import {forwardRef, type PropsWithChildren, type ReactNode} from 'react';
+import {forwardRef, type FC, type PropsWithChildren, type ReactNode} from 'react';
+import {usePathname, useRouter, useSearchParams} from 'next/navigation';
 
+import {Tooltip, usePopoverContext} from '@nextui-org/react';
+import {faXmark} from '@fortawesome/free-solid-svg-icons';
+
+import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Sprite, {ISpriteProps} from '@/components/sprite';
 
 import type {ITagStyle} from '@/constants/types';
@@ -7,7 +12,7 @@ import {type FoodNames, type IngredientNames, type KitchenwareNames} from '@/dat
 
 type TagStyle = Omit<ITagStyle, 'beverage'>;
 
-interface IProps extends Pick<ISpriteProps, 'target'> {
+interface IFoodPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 	name: FoodNames;
 	description?: ReactNode;
 	dlc?: number | string;
@@ -19,11 +24,15 @@ interface IProps extends Pick<ISpriteProps, 'target'> {
 	tagColors?: TagStyle;
 }
 
-const renderTags = (
-	tags: NonNullable<IProps['tags']>[keyof TagStyle],
+interface ICloseButtonProps {
+	param?: string;
+}
+
+function renderTags(
+	tags: NonNullable<IFoodPopoverCardProps['tags']>[keyof TagStyle],
 	tagColors: Partial<NonNullable<TagStyle[keyof TagStyle]>> = {}
-) =>
-	tags?.map((tag, index) => (
+) {
+	return tags?.map((tag, index) => (
 		<div
 			key={index}
 			className="max-w-1/5 rounded border-1 border-solid px-1"
@@ -36,11 +45,46 @@ const renderTags = (
 			{tag}
 		</div>
 	));
+}
 
-export default forwardRef<HTMLDivElement | null, PropsWithChildren<IProps>>(function FoodPopoverCard(
-	{target, name, description, dlc, ingredients, kitchenware, tags, tagColors, children},
-	ref
-) {
+const CloseButton: FC<ICloseButtonProps> = forwardRef<HTMLButtonElement | null, ICloseButtonProps>(
+	function FoodPopoverCardCloseButton({param}, ref) {
+		const router = useRouter();
+		const pathname = usePathname();
+		const searchParams = useSearchParams();
+		const {getBackdropProps} = usePopoverContext();
+
+		const handleClose = (e: React.MouseEvent<HTMLButtonElement>) => {
+			getBackdropProps()?.onClick?.(e);
+
+			if (param) {
+				const params = new URLSearchParams(searchParams);
+				params.delete(param);
+				router.push(`${pathname}?${params.toString()}`);
+			}
+		};
+
+		const label = '关闭弹出框';
+
+		return (
+			<Tooltip showArrow content={label} offset={-5} placement="left">
+				<FontAwesomeIconButton
+					icon={faXmark}
+					variant="light"
+					aria-label={label}
+					onClick={handleClose}
+					className="absolute -right-1 -top-1 text-default-300 data-[hover]:bg-transparent"
+					ref={ref}
+				/>
+			</Tooltip>
+		);
+	}
+);
+
+const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = forwardRef<
+	HTMLDivElement | null,
+	PropsWithChildren<IFoodPopoverCardProps>
+>(function FoodPopoverCard({target, name, description, dlc, ingredients, kitchenware, tags, tagColors, children}, ref) {
 	return (
 		<div className="flex max-w-64 flex-col p-2 text-xs" ref={ref}>
 			<div className="flex items-center gap-x-2 text-sm">
@@ -69,3 +113,11 @@ export default forwardRef<HTMLDivElement | null, PropsWithChildren<IProps>>(func
 		</div>
 	);
 });
+
+const FoodPopoverCard = FoodPopoverCardComponent as typeof FoodPopoverCardComponent & {
+	CloseButton: typeof CloseButton;
+};
+
+FoodPopoverCard.CloseButton = CloseButton;
+
+export default FoodPopoverCard;
