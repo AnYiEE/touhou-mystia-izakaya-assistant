@@ -1,20 +1,32 @@
 import {forwardRef, type Dispatch, type SetStateAction} from 'react';
 
-import {Autocomplete, AutocompleteItem, Popover, PopoverContent, PopoverTrigger} from '@nextui-org/react';
+import {
+	Autocomplete,
+	AutocompleteItem,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	type AutocompleteProps,
+} from '@nextui-org/react';
 import {faMagnifyingGlass} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
 
-interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'> {
+export type SearchConfig = {
+	label: AutocompleteProps['label'];
 	searchItems: {
 		value: string;
 	}[];
 	searchValue: string | null;
-	setSearchValue: Dispatch<SetStateAction<IProps['searchValue']>>;
+	setSearchValue: Dispatch<SetStateAction<SearchConfig['searchValue']>>;
+};
+
+interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'> {
+	searchConfig: SearchConfig;
 }
 
 export default forwardRef<HTMLDivElement | null, IProps>(function SideSearchIconButton(
-	{searchItems, searchValue, setSearchValue, ...props},
+	{searchConfig: {label, searchItems, searchValue, setSearchValue}, ...props},
 	ref
 ) {
 	return (
@@ -33,7 +45,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SideSearchIcon
 					allowsCustomValue
 					variant="faded"
 					defaultItems={searchItems}
-					label="请输入您想要搜索的名称"
+					label={label}
 					onInputChange={setSearchValue}
 					onSelectionChange={(key) => {
 						setSearchValue(key as string);
