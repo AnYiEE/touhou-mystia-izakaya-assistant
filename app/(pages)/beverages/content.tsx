@@ -1,4 +1,4 @@
-import {Fragment} from 'react';
+import {Fragment, memo} from 'react';
 
 import {useOpenedFoodPopover} from '@/hooks';
 
@@ -16,7 +16,7 @@ interface IProps {
 	data: typeof instances.food.beverage.data;
 }
 
-export default function Content({data}: IProps) {
+export default memo(function Content({data}: IProps) {
 	const openedPopoverParam = 'select' as const;
 	const [openedPopover, setOpenedPopover] = useOpenedFoodPopover(openedPopoverParam);
 
@@ -103,4 +103,4 @@ export default function Content({data}: IProps) {
 			})}
 		</>
 	);
-}
+});

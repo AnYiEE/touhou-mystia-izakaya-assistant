@@ -1,4 +1,4 @@
-import {forwardRef, type ReactNode} from 'react';
+import {forwardRef, memo, type ReactNode} from 'react';
 
 import {Card, type CardProps} from '@nextui-org/react';
 
@@ -10,19 +10,18 @@ interface IProps extends Omit<CardProps, 'className'> {
 	image: ReactNode;
 }
 
-export default forwardRef<HTMLDivElement | null, IProps>(function FoodCard(
-	{name, description, image, ...cardProps},
-	ref
-) {
-	return (
-		<Card shadow="sm" className="w-full" {...cardProps} ref={ref}>
-			<div className="flex items-center">
-				<div className="m-1 flex rounded-xl shadow-[inset_0_0_2px] shadow-foreground-400">{image}</div>
-				<div className="mx-1 inline-flex flex-col text-left">
-					<p className="text-small font-medium">{name}</p>
-					<p className="mt-1 text-xs font-light text-default-500">{description}</p>
+export default memo(
+	forwardRef<HTMLDivElement | null, IProps>(function FoodCard({name, description, image, ...cardProps}, ref) {
+		return (
+			<Card shadow="sm" className="w-full" {...cardProps} ref={ref}>
+				<div className="flex items-center">
+					<div className="m-1 flex rounded-xl shadow-[inset_0_0_2px] shadow-foreground-400">{image}</div>
+					<div className="mx-1 inline-flex flex-col text-left">
+						<p className="text-small font-medium">{name}</p>
+						<p className="mt-1 text-xs font-light text-default-500">{description}</p>
+					</div>
 				</div>
-			</div>
-		</Card>
-	);
-});
+			</Card>
+		);
+	})
+);

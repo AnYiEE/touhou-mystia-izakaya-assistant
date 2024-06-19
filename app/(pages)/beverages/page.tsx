@@ -1,13 +1,13 @@
 'use client';
 
-import {useMemo, useState} from 'react';
+import {memo, useMemo, useState} from 'react';
 
 import {useThrottle} from '@/hooks';
 
 import Content from '@/(pages)/beverages/content';
 import SideButtonGroup from '@/components/sideButtonGroup';
 import SideFilterIconButton, {type SelectConfig} from '@/components/sideFilterIconButton';
-import SidePinyinSortIconButton, {PinyinSortState} from '@/components/sidePinyinSortIconButton';
+import SidePinyinSortIconButton, {type PinyinSortConfig, PinyinSortState} from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton, {type SearchConfig} from '@/components/sideSearchIconButton';
 import {instances} from '@/methods';
 import {numberSort} from '@/utils';
@@ -20,7 +20,7 @@ const allDlcs = instance.getValuesByProp(instance.data, 'dlc', true).sort(number
 const allLevels = instance.getValuesByProp(instance.data, 'level', true).sort(numberSort);
 const allTags = instance.sortedTag.map((value) => ({value}));
 
-export default function Beverages() {
+export default memo(function Beverages() {
 	const [pinyinSortState, setPinyinSortState] = useState<PinyinSortState>(PinyinSortState.NONE);
 
 	const allNames = useMemo(() => {
@@ -78,49 +78,66 @@ export default function Beverages() {
 		}
 	}, [filteredData, pinyinSortState]);
 
-	const searchConfig = {
-		label: '选择或输入酒水名称',
-		searchItems: allNames,
-		searchValue: searchValue,
-		setSearchValue: setSearchValue,
-	} as const satisfies SearchConfig;
+	const pinyinSortConfig = useMemo(
+		() =>
+			({
+				pinyinSortState,
+				setPinyinSortState,
+			}) as const satisfies PinyinSortConfig,
+		[pinyinSortState, setPinyinSortState]
+	);
 
-	const selectConfig = [
-		{
-			label: 'DLC',
-			items: allDlcs,
-			selectedKeys: filterDlc,
-			setSelectedKeys: (key) => setFilters((prev) => ({...prev, dlc: key})),
-		},
-		{
-			label: '酒水标签（包含）',
-			items: allTags,
-			selectedKeys: filterTag,
-			setSelectedKeys: (key) => setFilters((prev) => ({...prev, tag: key})),
-		},
-		{
-			label: '酒水标签（排除）',
-			items: allTags,
-			selectedKeys: filterNoTag,
-			setSelectedKeys: (key) => setFilters((prev) => ({...prev, noTag: key})),
-		},
-		{
-			label: '等级',
-			items: allLevels,
-			selectedKeys: filterLevel,
-			setSelectedKeys: (key) => setFilters((prev) => ({...prev, level: key})),
-		},
-	] as const satisfies SelectConfig;
+	const searchConfig = useMemo(
+		() =>
+			({
+				label: '选择或输入酒水名称',
+				searchItems: allNames,
+				searchValue: searchValue,
+				setSearchValue: setSearchValue,
+			}) as const satisfies SearchConfig,
+		[allNames, searchValue]
+	);
+
+	const selectConfig = useMemo(
+		() =>
+			[
+				{
+					label: 'DLC',
+					items: allDlcs,
+					selectedKeys: filterDlc,
+					setSelectedKeys: (key) => setFilters((prev) => ({...prev, dlc: key})),
+				},
+				{
+					label: '酒水标签（包含）',
+					items: allTags,
+					selectedKeys: filterTag,
+					setSelectedKeys: (key) => setFilters((prev) => ({...prev, tag: key})),
+				},
+				{
+					label: '酒水标签（排除）',
+					items: allTags,
+					selectedKeys: filterNoTag,
+					setSelectedKeys: (key) => setFilters((prev) => ({...prev, noTag: key})),
+				},
+				{
+					label: '等级',
+					items: allLevels,
+					selectedKeys: filterLevel,
+					setSelectedKeys: (key) => setFilters((prev) => ({...prev, level: key})),
+				},
+			] as const satisfies SelectConfig,
+		[filterDlc, filterLevel, filterTag, filterNoTag]
+	);
 
 	return (
 		<>
 			<SideButtonGroup>
 				<SideSearchIconButton searchConfig={searchConfig} />
-				<SidePinyinSortIconButton pinyinSortState={pinyinSortState} setPinyinSortState={setPinyinSortState} />
+				<SidePinyinSortIconButton pinyinSortConfig={pinyinSortConfig} />
 				<SideFilterIconButton selectConfig={selectConfig} />
 			</SideButtonGroup>
 
 			<Content data={sortedData} />
 		</>
 	);
-}
+});

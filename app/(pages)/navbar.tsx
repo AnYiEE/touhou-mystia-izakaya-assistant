@@ -1,6 +1,6 @@
 'use client';
 
-import {useReducer, type PropsWithChildren, type ReactNode} from 'react';
+import {memo, useReducer, type PropsWithChildren, type ReactNode} from 'react';
 import {usePathname} from 'next/navigation';
 import clsx from 'clsx';
 
@@ -31,19 +31,23 @@ interface INavbarLinkProps extends Pick<LinkProps, 'href'> {
 	isActive: boolean;
 }
 
-function NavbarLink({href = '#', isActive = false, label: children}: Partial<PropsWithChildren<INavbarLinkProps>>) {
+const NavbarLink = memo(function NavbarLink({
+	href = '#',
+	isActive = false,
+	label: children,
+}: Partial<PropsWithChildren<INavbarLinkProps>>) {
 	return (
 		<Button as={Link} size="sm" variant={isActive ? 'faded' : 'light'} href={href} className="text-base">
 			{children}
 		</Button>
 	);
-}
+});
 
 interface IGithubLinkProps {
 	showTooltip: boolean;
 }
 
-function GithubLink({showTooltip}: Partial<IGithubLinkProps>) {
+const GithubLink = memo(function GithubLink({showTooltip}: Partial<IGithubLinkProps>) {
 	const IconLink = ({className}: {className?: string}) => (
 		<FontAwesomeIconLink
 			isExternal
@@ -71,9 +75,9 @@ function GithubLink({showTooltip}: Partial<IGithubLinkProps>) {
 			{siteConfig.links.github.label}
 		</span>
 	);
-}
+});
 
-export default function Navbar() {
+export default memo(function Navbar() {
 	const pathname = usePathname();
 	const [isMenuOpen, setMenuOpen] = useReducer((current) => !current, false);
 
@@ -82,7 +86,7 @@ export default function Navbar() {
 			<NavbarContent justify="start" className="basis-1/5 sm:basis-full">
 				<NavbarBrand as="li" className="max-w-fit gap-3">
 					<Link color="foreground" href="/" className="flex select-none items-center justify-start gap-1">
-						<span className={clsx(styles['logo'], 'w-8')} title={siteConfig.shortName}></span>
+						<span className={clsx(styles['logo'], 'w-8')} title={siteConfig.shortName} />
 						<p className="font-bold">
 							<span className="hidden xl:inline">{siteConfig.name}</span>
 							<span className="inline xl:hidden">{siteConfig.shortName}</span>
@@ -137,4 +141,4 @@ export default function Navbar() {
 			</NavbarMenu>
 		</NextUINavbar>
 	);
-}
+});

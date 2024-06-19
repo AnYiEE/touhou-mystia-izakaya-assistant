@@ -1,22 +1,20 @@
 'use client';
 
-import {useCallback, useEffect, useState} from 'react';
+import {memo, useCallback, useEffect, useState} from 'react';
 import {useTheme} from 'next-themes';
 import clsx from 'clsx';
 
 import {useMounted, useSystemTheme} from '@/hooks';
 
-import {useSwitch, Spinner, Tooltip, type SwitchProps} from '@nextui-org/react';
+import {useSwitch, Spinner, Tooltip} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleHalfStroke, faMoon, faSun} from '@fortawesome/free-solid-svg-icons';
 
 interface IProps {
 	isMenu: boolean;
-	className: string;
-	classNames: SwitchProps['classNames'];
 }
 
-export default function ThemeSwitcher({isMenu, className, classNames}: Partial<IProps>) {
+export default memo(function ThemeSwitcher({isMenu}: Partial<IProps>) {
 	const isMounted = useMounted();
 	const {theme, setTheme} = useTheme();
 	const systemTheme = useSystemTheme();
@@ -56,11 +54,8 @@ export default function ThemeSwitcher({isMenu, className, classNames}: Partial<I
 	return (
 		<Component
 			{...getBaseProps({
-				className: clsx(
+				className:
 					'cursor-pointer p-0 transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
-					className,
-					classNames?.base
-				),
 			})}
 			tabIndex={0}
 			role="button"
@@ -72,8 +67,7 @@ export default function ThemeSwitcher({isMenu, className, classNames}: Partial<I
 					className={slots.wrapper({
 						class: clsx(
 							'm-0 h-auto w-auto bg-transparent p-0 group-data-[selected=true]:bg-transparent',
-							isMenu ? '!text-foreground' : '!text-default-500',
-							classNames?.wrapper
+							isMenu ? '!text-foreground' : '!text-default-500'
 						),
 					})}
 				>
@@ -90,4 +84,4 @@ export default function ThemeSwitcher({isMenu, className, classNames}: Partial<I
 			</Tooltip>
 		</Component>
 	);
-}
+});

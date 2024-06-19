@@ -1,4 +1,4 @@
-import {type PropsWithChildren} from 'react';
+import {memo, type PropsWithChildren} from 'react';
 
 import {Link, Tooltip, type LinkProps, type TooltipProps} from '@nextui-org/react';
 
@@ -8,7 +8,7 @@ interface IFooterLinkProps
 	extends Pick<LinkProps, 'href' | 'isExternal' | 'showAnchorIcon'>,
 		Pick<TooltipProps, 'content'> {}
 
-function FooterLink({
+const FooterLink = memo(function FooterLink({
 	href = '#',
 	content = '',
 	isExternal = true,
@@ -27,9 +27,9 @@ function FooterLink({
 			</Link>
 		</Tooltip>
 	);
-}
+});
 
-export default function Footer() {
+export default memo(function Footer() {
 	return (
 		<footer className="mx-auto flex max-w-[95%] items-center justify-center pb-3 md:max-w-full">
 			<p className="text-center text-xs text-default-300 dark:text-default-400">
@@ -44,4 +44,4 @@ export default function Footer() {
 			</p>
 		</footer>
 	);
-}
+});

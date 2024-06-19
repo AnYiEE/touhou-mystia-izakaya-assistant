@@ -1,4 +1,4 @@
-import {forwardRef, type Dispatch, type SetStateAction} from 'react';
+import {forwardRef, memo, type Dispatch, type SetStateAction} from 'react';
 
 import {faArrowDownAZ, faArrowUpAZ} from '@fortawesome/free-solid-svg-icons';
 
@@ -10,12 +10,16 @@ export enum PinyinSortState {
 	ZA = 2,
 }
 
-interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'> {
+export type PinyinSortConfig = {
 	pinyinSortState: PinyinSortState;
 	setPinyinSortState: Dispatch<SetStateAction<PinyinSortState>>;
+};
+
+interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'> {
+	pinyinSortConfig: PinyinSortConfig;
 }
 
-const getNextPinyinSortState = (currentState: PinyinSortState): PinyinSortState => {
+function getNextPinyinSortState(currentState: PinyinSortState) {
 	switch (currentState) {
 		case PinyinSortState.NONE:
 			return PinyinSortState.AZ;
@@ -26,21 +30,23 @@ const getNextPinyinSortState = (currentState: PinyinSortState): PinyinSortState 
 		default:
 			return PinyinSortState.NONE;
 	}
-};
+}
 
-export default forwardRef<HTMLButtonElement | null, IProps>(function SidePinyinSortIconButton(
-	{pinyinSortState, setPinyinSortState, ...props},
-	ref
-) {
-	return (
-		<FontAwesomeIconButton
-			color={pinyinSortState === PinyinSortState.NONE ? 'primary' : 'warning'}
-			icon={pinyinSortState === PinyinSortState.ZA ? faArrowUpAZ : faArrowDownAZ}
-			variant="shadow"
-			onPress={() => setPinyinSortState(getNextPinyinSortState(pinyinSortState))}
-			aria-label="拼音排序"
-			{...props}
-			ref={ref}
-		/>
-	);
-});
+export default memo(
+	forwardRef<HTMLButtonElement | null, IProps>(function SidePinyinSortIconButton(
+		{pinyinSortConfig: {pinyinSortState, setPinyinSortState}, ...props},
+		ref
+	) {
+		return (
+			<FontAwesomeIconButton
+				color={pinyinSortState === PinyinSortState.NONE ? 'primary' : 'warning'}
+				icon={pinyinSortState === PinyinSortState.ZA ? faArrowUpAZ : faArrowDownAZ}
+				variant="shadow"
+				onPress={() => setPinyinSortState(getNextPinyinSortState(pinyinSortState))}
+				aria-label="拼音排序"
+				{...props}
+				ref={ref}
+			/>
+		);
+	})
+);
