@@ -13,9 +13,11 @@ export interface ISiteConfig {
 	description: string;
 	keywords: string[];
 	locale: string;
+	version: string;
 	navItems: Href[];
 	navMenuItems: Href[];
 	links: Record<string, Href>;
+	isProduction: boolean;
 	isVercel: boolean;
 }
 

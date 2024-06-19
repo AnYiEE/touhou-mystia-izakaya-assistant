@@ -11,6 +11,7 @@ export const siteConfig = {
 	description: PACKAGE.description,
 	keywords: PACKAGE.keywords,
 	locale: 'zh-Hans-CN',
+	version: PACKAGE.version,
 	navItems: [
 		{
 			label: '首页',
@@ -49,5 +50,6 @@ export const siteConfig = {
 			href: 'https://store.steampowered.com/app/1584090/__Touhou_Mystias_Izakaya',
 		},
 	},
+	isProduction: process.env.NODE_ENV === 'production',
 	isVercel: !!process.env.VERCEL,
 } as const satisfies ISiteConfig;

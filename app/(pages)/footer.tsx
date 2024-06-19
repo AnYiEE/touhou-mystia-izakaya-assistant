@@ -1,4 +1,5 @@
-import {memo, type PropsWithChildren} from 'react';
+import {memo, useMemo, type PropsWithChildren} from 'react';
+import {execSync} from 'node:child_process';
 
 import {Link, Tooltip, type LinkProps, type TooltipProps} from '@nextui-org/react';
 
@@ -30,9 +31,17 @@ const FooterLink = memo(function FooterLink({
 });
 
 export default memo(function Footer() {
+	const sha = useMemo(
+		() =>
+			process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? siteConfig.isProduction
+				? execSync('git rev-parse --short HEAD').toString('utf-8')
+				: '',
+		[]
+	);
+
 	return (
-		<footer className="mx-auto flex max-w-[95%] items-center justify-center pb-3 md:max-w-full">
-			<p className="text-center text-xs text-default-300 dark:text-default-400">
+		<footer className="mx-auto flex max-w-[95%] flex-col items-center justify-center pb-3 text-center text-xs text-default-300 dark:text-default-400 md:max-w-full">
+			<p>
 				<FooterLink content={siteConfig.links.github.label} href={siteConfig.links.github.href}>
 					{siteConfig.shortName}
 				</FooterLink>
@@ -41,6 +50,22 @@ export default memo(function Footer() {
 					原作者
 				</FooterLink>
 				所有
+			</p>
+			<p>
+				当前版本：v{siteConfig.version}-
+				{sha ? (
+					<>
+						{siteConfig.isProduction && 'production-'}
+						<FooterLink
+							content="在Github上查看此提交"
+							href={`${siteConfig.links.github.href}/commit/${sha}`}
+						>
+							{sha}
+						</FooterLink>
+					</>
+				) : (
+					'dev'
+				)}
 			</p>
 		</footer>
 	);
