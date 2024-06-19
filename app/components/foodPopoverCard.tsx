@@ -9,7 +9,7 @@ import {
 	type ReactNode,
 } from 'react';
 
-import {Snippet, Tooltip, usePopoverContext} from '@nextui-org/react';
+import {Popover, PopoverContent, PopoverTrigger, Snippet, Tooltip, usePopoverContext} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faLink, faShare, faXmark} from '@fortawesome/free-solid-svg-icons';
 
@@ -66,7 +66,7 @@ interface IShareButtonProps {
 }
 
 const ShareButton: FC<IShareButtonProps> = memo(
-	forwardRef<HTMLButtonElement | null, IShareButtonProps>(function FoodPopoverCardShareButton({name, param}, ref) {
+	forwardRef<HTMLDivElement | null, IShareButtonProps>(function FoodPopoverCardShareButton({name, param}, ref) {
 		const [params] = useParams();
 
 		const generateUrl = useMemo(() => {
@@ -78,11 +78,24 @@ const ShareButton: FC<IShareButtonProps> = memo(
 		}, [name, param, params]);
 
 		return (
-			<Tooltip
-				showArrow
-				content={
+			<Popover showArrow ref={ref}>
+				<Tooltip showArrow content="分享当前选中项的链接" offset={-2} placement="left">
+					<div className="absolute -right-1 bottom-0">
+						<PopoverTrigger>
+							<FontAwesomeIconButton
+								icon={faShare}
+								variant="light"
+								aria-label="分享当前选中项"
+								className="h-4 text-default-300 data-[hover]:bg-transparent"
+							/>
+						</PopoverTrigger>
+					</div>
+				</Tooltip>
+				<PopoverContent>
 					<div className="flex flex-col">
-						<p className="self-end text-xs text-default-300">点击以复制到当前选中项的链接↓　</p>
+						<p className="cursor-default select-none self-end pr-4 text-xs text-default-300">
+							点击以复制到当前选中项的链接↓
+						</p>
 						<Snippet
 							disableTooltip
 							size="sm"
@@ -91,18 +104,8 @@ const ShareButton: FC<IShareButtonProps> = memo(
 							{generateUrl}
 						</Snippet>
 					</div>
-				}
-				offset={-5}
-				placement="left"
-			>
-				<FontAwesomeIconButton
-					icon={faShare}
-					variant="light"
-					aria-label="分享当前选中项"
-					className="absolute -right-1 bottom-1 h-4 text-default-300 data-[hover]:bg-transparent"
-					ref={ref}
-				/>
-			</Tooltip>
+				</PopoverContent>
+			</Popover>
 		);
 	})
 );

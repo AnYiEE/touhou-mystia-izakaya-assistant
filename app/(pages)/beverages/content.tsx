@@ -2,7 +2,7 @@ import {Fragment, memo} from 'react';
 
 import {useOpenedFoodPopover} from '@/hooks';
 
-import {Popover, PopoverTrigger, PopoverContent, Tooltip} from '@nextui-org/react';
+import {Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
 
 import FoodCard from '@/components/foodCard';
 import FoodPopoverCard from '@/components/foodPopoverCard';
@@ -64,36 +64,45 @@ export default memo(function Content({data}: IProps) {
 								tags={{positive: tags}}
 								tagColors={BEVERAGE_TAG_STYLE}
 							>
-								{Object.entries(from as IBeverage['from']).map(([method, target], index) => (
-									<div key={index}>
-										<span className="font-semibold">
-											{method === 'buy' ? '购买' : method === 'task' ? '任务' : '采集'}：
-										</span>
-										{Array.isArray(target)
-											? target.map((item, index) => (
-													<Fragment key={index}>
-														{Array.isArray(item) ? (
-															item[1] === true ? (
-																<Tooltip
-																	showArrow
-																	content={`概率${method === 'buy' ? '出售' : '掉落'}`}
-																>
-																	<span className="underline decoration-dotted">
-																		{item[0]}
-																	</span>
-																</Tooltip>
+								{Object.entries(from as IBeverage['from']).map(([method, target], index) => {
+									const probability = `概率${method === 'buy' ? '出售' : '掉落'}`;
+									const way = method === 'buy' ? '购买' : method === 'task' ? '任务' : '采集';
+
+									return (
+										<div key={index}>
+											<span className="font-semibold">{way}：</span>
+											{Array.isArray(target)
+												? target.map((item, index) => (
+														<Fragment key={index}>
+															{Array.isArray(item) ? (
+																item[1] === true ? (
+																	<Popover showArrow offset={0}>
+																		<Tooltip
+																			showArrow
+																			content={probability}
+																			offset={-1.5}
+																		>
+																			<span className="cursor-pointer underline decoration-dotted">
+																				<PopoverTrigger>
+																					<span>{item[0]}</span>
+																				</PopoverTrigger>
+																			</span>
+																		</Tooltip>
+																		<PopoverContent>{probability}</PopoverContent>
+																	</Popover>
+																) : (
+																	item[0]
+																)
 															) : (
-																item[0]
-															)
-														) : (
-															item
-														)}
-														{index < target.length - 1 && '、'}
-													</Fragment>
-												))
-											: '初始拥有'}
-									</div>
-								))}
+																item
+															)}
+															{index < target.length - 1 && '、'}
+														</Fragment>
+													))
+												: '初始拥有'}
+										</div>
+									);
+								})}
 							</FoodPopoverCard>
 						</PopoverContent>
 					</Popover>
