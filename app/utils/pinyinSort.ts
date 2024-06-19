@@ -1,5 +1,15 @@
 import {pinyin as pinyinPro} from 'pinyin-pro';
 
+type Value = string | string[];
+
+interface ValueObeject {
+	value: Value;
+}
+
+function checkValueObject(value: Value | ValueObeject): value is ValueObeject {
+	return typeof value === 'object' && value !== null && 'value' in value;
+}
+
 function getTone(pinyin: string) {
 	return parseInt(pinyin.match(/\d/)?.[0] ?? '0');
 }
@@ -8,7 +18,10 @@ function removeTone(pinyin: string) {
 	return pinyin.replace(/\d/, '');
 }
 
-export function pinyinSort(a: string | string[], b: string | string[]) {
+export function pinyinSort(a: Value | ValueObeject, b: Value | ValueObeject) {
+	a = checkValueObject(a) ? a.value : a;
+	b = checkValueObject(b) ? b.value : b;
+
 	if (typeof a === 'string') {
 		a = pinyinPro(a, {
 			toneType: 'num',
