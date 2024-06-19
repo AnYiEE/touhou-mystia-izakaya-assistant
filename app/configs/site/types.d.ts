@@ -16,6 +16,7 @@ export interface ISiteConfig {
 	navItems: Href[];
 	navMenuItems: Href[];
 	links: Record<string, Href>;
+	isVercel: boolean;
 }
 
 export type SiteConfig = typeof import('./index').siteConfig;

@@ -1,6 +1,9 @@
 import {type ReactNode} from 'react';
 import {type Metadata, type Viewport} from 'next';
 
+import {Analytics} from '@vercel/analytics/react';
+import {SpeedInsights} from '@vercel/speed-insights/next';
+
 import Navbar from '@/(pages)/navbar';
 import Footer from '@/(pages)/footer';
 import {Providers} from '@/providers';
@@ -52,6 +55,12 @@ export default function RootLayout({
 						<Footer />
 					</div>
 				</Providers>
+				{siteConfig.isVercel && (
+					<>
+						<Analytics />
+						<SpeedInsights />
+					</>
+				)}
 			</body>
 		</html>
 	);

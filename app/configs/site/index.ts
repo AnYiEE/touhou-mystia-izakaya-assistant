@@ -6,7 +6,7 @@ export const siteConfig = {
 	shortName: '夜雀助手',
 	author: {
 		name: PACKAGE.author.name,
-		url: PACKAGE.homepage,
+		url: PACKAGE.author.url,
 	},
 	description: PACKAGE.description,
 	keywords: PACKAGE.keywords,
@@ -42,11 +42,12 @@ export const siteConfig = {
 	links: {
 		github: {
 			label: '本项目代码仓库',
-			href: PACKAGE.homepage,
+			href: PACKAGE.repository.url,
 		},
 		steam: {
 			label: "Steam上的东方夜雀食堂 - Touhou Mystia's Izakaya",
 			href: 'https://store.steampowered.com/app/1584090/__Touhou_Mystias_Izakaya',
 		},
 	},
+	isVercel: !!process.env.VERCEL,
 } as const satisfies ISiteConfig;
