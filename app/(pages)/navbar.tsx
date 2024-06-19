@@ -72,7 +72,9 @@ const GithubLink = memo(function GithubLink({showTooltip}: Partial<IGithubLinkPr
 	return (
 		<span className="flex gap-1">
 			<IconLink className="text-foreground" />
-			{siteConfig.links.github.label}
+			<Link isExternal color="foreground" href={siteConfig.links.github.href}>
+				{siteConfig.links.github.label}
+			</Link>
 		</span>
 	);
 });
