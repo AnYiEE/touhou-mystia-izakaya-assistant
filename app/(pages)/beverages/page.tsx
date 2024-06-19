@@ -34,7 +34,7 @@ export default memo(function Beverages() {
 		}
 	}, [pinyinSortState]);
 
-	const [searchValue, setSearchValue] = useState<string | null>(null);
+	const [searchValue, setSearchValue] = useState('');
 	const throttledSearchValue = useThrottle(searchValue);
 
 	const searchResult = useMemo(() => {

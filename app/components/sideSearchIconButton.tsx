@@ -17,7 +17,7 @@ export type SearchConfig = {
 	searchItems: {
 		value: string;
 	}[];
-	searchValue: string | null;
+	searchValue: string;
 	setSearchValue: Dispatch<SetStateAction<SearchConfig['searchValue']>>;
 };
 
@@ -45,6 +45,7 @@ export default memo(
 					<Autocomplete
 						allowsCustomValue
 						variant="faded"
+						defaultInputValue={searchValue}
 						defaultItems={searchItems}
 						label={label}
 						onInputChange={setSearchValue}
