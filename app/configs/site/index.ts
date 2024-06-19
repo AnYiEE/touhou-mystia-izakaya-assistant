@@ -18,8 +18,16 @@ export const siteConfig = {
 			href: '/',
 		},
 		{
+			label: '料理',
+			href: '/recipes',
+		},
+		{
 			label: '酒水',
 			href: '/beverages',
+		},
+		{
+			label: '食材',
+			href: '/ingredients',
 		},
 		{
 			label: '关于',
@@ -32,8 +40,16 @@ export const siteConfig = {
 			href: '/',
 		},
 		{
+			label: '料理',
+			href: '/recipes',
+		},
+		{
 			label: '酒水',
 			href: '/beverages',
+		},
+		{
+			label: '食材',
+			href: '/ingredients',
 		},
 		{
 			label: '关于',

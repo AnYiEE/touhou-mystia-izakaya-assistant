@@ -4,23 +4,23 @@ import {memo, useMemo, useState} from 'react';
 
 import {useThrottle} from '@/hooks';
 
-import Content from '@/(pages)/beverages/content';
+import Content from '@/(pages)/ingredients/content';
 import SideButtonGroup from '@/components/sideButtonGroup';
 import SideFilterIconButton, {type SelectConfig} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton, {type PinyinSortConfig, PinyinSortState} from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton, {type SearchConfig} from '@/components/sideSearchIconButton';
 import {instances} from '@/methods';
-import {numberSort} from '@/utils';
+import {numberSort, pinyinSort} from '@/utils';
 
 const {
-	food: {beverage: instance},
+	food: {ingredient: instance},
 } = instances;
 
 const allDlcs = instance.getValuesByProp(instance.data, 'dlc', true).sort(numberSort);
 const allLevels = instance.getValuesByProp(instance.data, 'level', true).sort(numberSort);
-const allTags = instance.sortedTag.map((value) => ({value}));
+const allTags = instance.getValuesByProp(instance.data, 'tag', true).sort(pinyinSort);
 
-export default memo(function Beverages() {
+export default memo(function Ingredients() {
 	const [pinyinSortState, setPinyinSortState] = useState<PinyinSortState>(PinyinSortState.NONE);
 
 	const allNames = useMemo(() => {
@@ -90,7 +90,7 @@ export default memo(function Beverages() {
 	const searchConfig = useMemo(
 		() =>
 			({
-				label: '选择或输入酒水名称',
+				label: '选择或输入食材名称',
 				searchItems: allNames,
 				searchValue: searchValue,
 				setSearchValue: setSearchValue,
@@ -108,13 +108,13 @@ export default memo(function Beverages() {
 					setSelectedKeys: (key) => setFilters((prev) => ({...prev, dlc: key})),
 				},
 				{
-					label: '酒水标签（包含）',
+					label: '食材标签（包含）',
 					items: allTags,
 					selectedKeys: filterTag,
 					setSelectedKeys: (key) => setFilters((prev) => ({...prev, tag: key})),
 				},
 				{
-					label: '酒水标签（排除）',
+					label: '食材标签（排除）',
 					items: allTags,
 					selectedKeys: filterNoTag,
 					setSelectedKeys: (key) => setFilters((prev) => ({...prev, noTag: key})),
