@@ -1,7 +1,17 @@
-import {forwardRef, memo, type FC, type PropsWithChildren, type ReactNode} from 'react';
+import {
+	forwardRef,
+	memo,
+	useCallback,
+	useMemo,
+	type FC,
+	type MouseEvent,
+	type PropsWithChildren,
+	type ReactNode,
+} from 'react';
 
-import {Tooltip, usePopoverContext} from '@nextui-org/react';
-import {faXmark} from '@fortawesome/free-solid-svg-icons';
+import {Snippet, Tooltip, usePopoverContext} from '@nextui-org/react';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faLink, faShare, faXmark} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Sprite, {ISpriteProps} from '@/components/sprite';
@@ -19,15 +29,19 @@ const CloseButton: FC<ICloseButtonProps> = memo(
 		const [params, replace] = useParams();
 		const {getBackdropProps} = usePopoverContext();
 
-		const handleClose = (e: React.MouseEvent<HTMLButtonElement>) => {
-			getBackdropProps()?.onClick?.(e);
+		const handleClose = useCallback(
+			(e: MouseEvent<HTMLButtonElement>) => {
+				getBackdropProps()?.onClick?.(e);
 
-			if (param) {
-				const newParams = new URLSearchParams(params);
-				newParams.delete(param);
-				replace(newParams);
-			}
-		};
+				if (param && params.has(param)) {
+					const newParams = new URLSearchParams(params);
+
+					newParams.delete(param);
+					replace(newParams);
+				}
+			},
+			[getBackdropProps, param, params, replace]
+		);
 
 		const label = '关闭弹出框';
 
@@ -38,7 +52,54 @@ const CloseButton: FC<ICloseButtonProps> = memo(
 					variant="light"
 					aria-label={label}
 					onClick={handleClose}
-					className="absolute -right-1 -top-1 text-default-300 data-[hover]:bg-transparent"
+					className="absolute -right-1 top-1 h-4 text-default-300 data-[hover]:bg-transparent"
+					ref={ref}
+				/>
+			</Tooltip>
+		);
+	})
+);
+
+interface IShareButtonProps {
+	name: string;
+	param: string;
+}
+
+const ShareButton: FC<IShareButtonProps> = memo(
+	forwardRef<HTMLButtonElement | null, IShareButtonProps>(function FoodPopoverCardShareButton({name, param}, ref) {
+		const [params] = useParams();
+
+		const generateUrl = useMemo(() => {
+			const newParams = new URLSearchParams(params);
+
+			newParams.set(param, name);
+
+			return `${window.location.origin}${window.location.pathname}?${decodeURIComponent(newParams.toString())}`;
+		}, [name, param, params]);
+
+		return (
+			<Tooltip
+				showArrow
+				content={
+					<div className="flex flex-col">
+						<p className="self-end text-xs text-default-300">点击以复制到当前选中项的链接↓　</p>
+						<Snippet
+							disableTooltip
+							size="sm"
+							symbol={<FontAwesomeIcon icon={faLink} className="pr-1 !align-middle text-default-500" />}
+						>
+							{generateUrl}
+						</Snippet>
+					</div>
+				}
+				offset={-5}
+				placement="left"
+			>
+				<FontAwesomeIconButton
+					icon={faShare}
+					variant="light"
+					aria-label="分享当前选中项"
+					className="absolute -right-1 bottom-1 h-4 text-default-300 data-[hover]:bg-transparent"
 					ref={ref}
 				/>
 			</Tooltip>
@@ -118,8 +179,10 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 
 const FoodPopoverCard = FoodPopoverCardComponent as typeof FoodPopoverCardComponent & {
 	CloseButton: typeof CloseButton;
+	ShareButton: typeof ShareButton;
 };
 
 FoodPopoverCard.CloseButton = CloseButton;
+FoodPopoverCard.ShareButton = ShareButton;
 
 export default FoodPopoverCard;

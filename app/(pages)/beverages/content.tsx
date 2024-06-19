@@ -18,7 +18,7 @@ interface IProps {
 
 export default memo(function Content({data}: IProps) {
 	const openedPopoverParam = 'select' as const;
-	const [openedPopover, setOpenedPopover] = useOpenedFoodPopover(openedPopoverParam);
+	const [openedPopover] = useOpenedFoodPopover(openedPopoverParam);
 
 	return (
 		<>
@@ -31,10 +31,7 @@ export default memo(function Content({data}: IProps) {
 						key={index}
 						backdrop="opaque"
 						showArrow
-						isOpen={openedPopover === name}
-						onOpenChange={(isOpen) => {
-							setOpenedPopover(isOpen ? name : '');
-						}}
+						isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}
 					>
 						<PopoverTrigger className="w-full">
 							<FoodCard
@@ -47,6 +44,7 @@ export default memo(function Content({data}: IProps) {
 						</PopoverTrigger>
 						<PopoverContent>
 							<FoodPopoverCard.CloseButton param={openedPopoverParam} />
+							<FoodPopoverCard.ShareButton name={name} param={openedPopoverParam} />
 							<FoodPopoverCard
 								target="beverage"
 								name={name}
