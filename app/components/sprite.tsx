@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import {type ItemNames} from '@/data';
 import {spriteInstances} from '@/methods';
 import type {SpriteInstances} from '@/methods/types';
+import {remToPx} from '@/utils';
 import type {SpriteTarget} from '@/utils/sprite/types';
 
 import styles from './sprite.module.scss';
@@ -45,6 +46,7 @@ export default memo(
 			width = size;
 		}
 
+		size = remToPx(size);
 		title ||= name;
 
 		const calcStyle = instance.getBackgroundPropsByIndex(index, {

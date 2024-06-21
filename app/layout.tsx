@@ -46,7 +46,7 @@ export default function RootLayout({
 	children: ReactNode;
 }>) {
 	return (
-		<html lang={siteConfig.locale} suppressHydrationWarning>
+		<html lang={siteConfig.locale} suppressHydrationWarning className="text-[16px]">
 			<body className="min-h-screen bg-background font-sans font-normal text-default-900 antialiased">
 				<Providers locale={siteConfig.locale} themeProps={{attribute: 'class'}}>
 					<div className="relative flex h-screen flex-col">

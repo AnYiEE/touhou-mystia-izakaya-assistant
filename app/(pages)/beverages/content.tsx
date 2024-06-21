@@ -39,7 +39,7 @@ export default memo(function Content({data}: IProps) {
 								isPressable
 								name={name}
 								description={priceString}
-								image={<Sprite target="beverage" name={name} size={48} />}
+								image={<Sprite target="beverage" name={name} size={3} />}
 							/>
 						</PopoverTrigger>
 						<PopoverContent>

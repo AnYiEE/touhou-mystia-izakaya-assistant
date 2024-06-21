@@ -151,7 +151,7 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 		return (
 			<div className="flex max-w-64 flex-col p-2 text-xs" ref={ref}>
 				<div className="flex items-center gap-x-2 text-sm">
-					<Sprite target={target} name={name} size={32} />
+					<Sprite target={target} name={name} size={2} />
 					<p className="font-bold">
 						{dlc !== undefined && `【DLC${dlc}】`}
 						{name}
@@ -159,9 +159,9 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 				</div>
 				{kitchenware && ingredients && (
 					<div className="mt-2 flex flex-wrap gap-x-2 gap-y-1">
-						<Sprite target="kitchenware" name={kitchenware} size={24} className="mr-4" />
+						<Sprite target="kitchenware" name={kitchenware} size={1.5} className="mr-4" />
 						{ingredients.map((item) => (
-							<Sprite key={item} target="ingredient" name={item} size={24} />
+							<Sprite key={item} target="ingredient" name={item} size={1.5} />
 						))}
 					</div>
 				)}

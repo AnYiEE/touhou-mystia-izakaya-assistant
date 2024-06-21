@@ -1,3 +1,4 @@
+import {pxToRem} from '@/utils';
 import {Item} from '@/utils/item';
 import type {SpriteData, SpriteTarget, ISpriteConfig} from './types';
 
@@ -48,14 +49,14 @@ export class Sprite<
 
 		const {spriteHeight, spriteWidth} = this;
 		const {height: sheetHeight, width: sheetWidth} = this._config;
-		const backgroundSize: `${string}px` = `${sheetWidth * (displayWidth / spriteWidth)}px ${sheetHeight * (displayHeight / spriteHeight)}px`;
+		const backgroundSize: `${string}rem ${string}rem` = `${pxToRem(sheetWidth * (displayWidth / spriteWidth))}rem ${pxToRem(sheetHeight * (displayHeight / spriteHeight))}rem`;
 		const {x, y} = this.getPosByIndex(index);
 
 		return {
 			backgroundSize,
-			backgroundPosition: `-${x * (displayWidth / spriteWidth)}px -${y * (displayHeight / spriteHeight)}px`,
-			height: displayHeight,
-			width: displayWidth,
+			backgroundPosition: `-${pxToRem(x * (displayWidth / spriteWidth))}rem -${pxToRem(y * (displayHeight / spriteHeight))}rem`,
+			height: `${pxToRem(displayHeight)}rem`,
+			width: `${pxToRem(displayWidth)}rem`,
 		};
 	}
 
