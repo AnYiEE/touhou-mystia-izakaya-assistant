@@ -7,3 +7,5 @@ export * from './generateArray';
 export * from './getPageTitle';
 export * from './numberSort';
 export * from './pinyinSort';
+export * from './pxToRem';
+export * from './remToPx';
