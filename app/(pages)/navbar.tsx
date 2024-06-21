@@ -85,17 +85,17 @@ export default memo(function Navbar() {
 
 	return (
 		<NextUINavbar maxWidth="xl" position="sticky" isMenuOpen={isMenuOpen} onMenuOpenChange={setMenuOpen}>
-			<NavbarContent justify="start" className="basis-1/5 sm:basis-full">
+			<NavbarContent justify="start" className="basis-full md:basis-1/5">
 				<NavbarBrand as="li" className="max-w-fit gap-3">
 					<Link color="foreground" href="/" className="flex select-none items-center justify-start gap-1">
 						<span className={clsx(styles['logo'], 'w-8')} title={siteConfig.shortName} />
 						<p className="font-bold">
-							<span className="hidden xl:inline">{siteConfig.name}</span>
-							<span className="inline xl:hidden">{siteConfig.shortName}</span>
+							<span className="hidden lg:inline">{siteConfig.name}</span>
+							<span className="inline lg:hidden">{siteConfig.shortName}</span>
 						</p>
 					</Link>
 				</NavbarBrand>
-				<ul className="ml-2 hidden justify-start gap-4 sm:flex">
+				<ul className="ml-2 hidden justify-start gap-4 md:flex">
 					{siteConfig.navItems.map(({href, label}) => {
 						const isActive = href === pathname;
 						return (
@@ -107,14 +107,14 @@ export default memo(function Navbar() {
 				</ul>
 			</NavbarContent>
 
-			<NavbarContent justify="end" className="hidden basis-1/5 sm:flex sm:basis-full">
-				<NavbarItem className="hidden gap-2 sm:flex">
+			<NavbarContent justify="end" className="hidden basis-full md:flex md:basis-1/5">
+				<NavbarItem className="flex gap-2">
 					<GithubLink showTooltip />
 				</NavbarItem>
 				<ThemeSwitcher />
 			</NavbarContent>
 
-			<NavbarContent justify="end" className="basis-1 pl-4 sm:hidden">
+			<NavbarContent justify="end" className="basis-1 pl-4 md:hidden">
 				<ThemeSwitcher isMenu />
 				<NavbarMenuToggle />
 			</NavbarContent>
