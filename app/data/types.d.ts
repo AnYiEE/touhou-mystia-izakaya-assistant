@@ -4,7 +4,7 @@ import type {IRecipe} from './recipes/types';
 type Dlc = 0 | 1 | 2 | 3 | 4 | 5;
 type Level = 1 | 2 | 3 | 4 | 5;
 
-type Businessman =
+export type Businessman =
 	| '博丽神社河童'
 	| '博丽神社妖精女仆'
 	| '地灵殿地狱鸦'
@@ -30,7 +30,7 @@ type Businessman =
 	| '妖怪之山河童'
 	| '月之都月兔';
 
-type CollectionLocation =
+export type CollectionLocation =
 	| '博丽神社参道西侧银杏'
 	| '博丽神社花丛'
 	| '博丽神社蘑菇'
@@ -140,13 +140,13 @@ type Place =
 	| '妖怪之山'
 	| '月之都';
 
-type Task = '阿求小姐的色纸' | '女仆长的采购委托';
+export type Task = '阿求小姐的色纸' | '女仆长的采购委托';
 
-interface IItemBase {
+export interface IItemBase {
 	name: string;
 }
 
-interface ICustomerBase extends IItemBase {
+export interface ICustomerBase extends IItemBase {
 	dlc: Dlc;
 	place: Place[];
 	positive: RecipeTag[];
@@ -162,11 +162,9 @@ interface IFoodFrom {
 	task: Task[];
 }
 
-interface IFoodBase extends IItemBase {
+export interface IFoodBase extends IItemBase {
 	dlc: Dlc;
 	level: Level;
 	price: number;
 	from: Partial<IFoodFrom>;
 }
-
-export type {Businessman, CollectionLocation, Task, IItemBase, ICustomerBase, IFoodBase};

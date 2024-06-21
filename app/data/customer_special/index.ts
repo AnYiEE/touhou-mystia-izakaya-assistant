@@ -1,10 +1,10 @@
 import type {ISpriteConfig} from '@/utils/sprite/types';
 
-export const INGREDIENT_SPRITE_CONFIG = {
-	col: 10,
-	row: 6,
-	height: 624,
-	width: 1040,
+export const CUSTOMER_SPECIAL_SPRITE_CONFIG = {
+	col: 2,
+	row: 1,
+	height: 138,
+	width: 276,
 } as const satisfies ISpriteConfig;
 
 export * from './data';

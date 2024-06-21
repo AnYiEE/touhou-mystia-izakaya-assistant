@@ -3,11 +3,15 @@
 }
 
 .customer_normal {
-	background-image: url('/assets/sprite/character_normal.webp');
+	background-image: url('/assets/sprite/customer_normal.webp');
 }
 
 .customer_rare {
-	background-image: url('/assets/sprite/character_rare.webp');
+	background-image: url('/assets/sprite/customer_rare.webp');
+}
+
+.customer_special {
+	background-image: url('/assets/sprite/customer_special.webp');
 }
 
 .ingredient {
