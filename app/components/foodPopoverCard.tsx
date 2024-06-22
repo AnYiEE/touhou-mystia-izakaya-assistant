@@ -8,6 +8,7 @@ import {
 	type PropsWithChildren,
 	type ReactNode,
 } from 'react';
+import clsx from 'clsx';
 
 import {Popover, PopoverContent, PopoverTrigger, Snippet, Tooltip, usePopoverContext} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -124,14 +125,15 @@ interface IFoodPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 	tagColors?: TagStyle;
 }
 
-function renderTags(
+export function renderTags(
 	tags: NonNullable<IFoodPopoverCardProps['tags']>[keyof TagStyle],
-	tagColors: Partial<NonNullable<TagStyle[keyof TagStyle]>> = {}
+	tagColors: Partial<NonNullable<TagStyle[keyof TagStyle]>> = {},
+	className?: string
 ) {
 	return tags?.map((tag, index) => (
 		<div
 			key={index}
-			className="max-w-1/5 rounded border-1 border-solid px-1"
+			className={clsx('max-w-1/5 rounded border-1 border-solid px-1', className)}
 			style={{
 				backgroundColor: tagColors.backgroundColor ?? '#fff',
 				borderColor: tagColors.borderColor ?? '#000',
