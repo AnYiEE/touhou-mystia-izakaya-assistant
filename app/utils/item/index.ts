@@ -80,15 +80,19 @@ export class Item<
 
 	public getPropsByIndex(index: number): ItemWithPinyin;
 	public getPropsByIndex<T extends keyof ItemWithPinyin>(index: number, prop: T): ItemWithPinyin[T];
+	public getPropsByIndex<T extends keyof ItemWithPinyin>(index: number, ...props: T[]): ItemWithPinyin[T][];
 	public getPropsByIndex<T extends keyof ItemWithPinyin>(
 		index: number,
-		prop?: T
-	): ItemWithPinyin | ItemWithPinyin[T] {
+		...props: T[]
+	): ItemWithPinyin | ItemWithPinyin[T] | ItemWithPinyin[T][] {
 		const item = this._dataWithPinyin[index];
 		this.checkIndexRange(index, item);
 
-		if (prop) {
-			return item[prop];
+		if (props.length) {
+			if (props.length === 1) {
+				return item[props[0] as T];
+			}
+			return props.map((prop) => item[prop]) as ItemWithPinyin[T][];
 		}
 
 		return item;
@@ -104,10 +108,15 @@ export class Item<
 		T extends string = Name,
 		U extends keyof ItemWithPinyin = keyof ItemWithPinyin,
 		S extends Exclude<U, 'name'> = Exclude<U, 'name'>,
-	>(name: T, prop?: S): ItemWithPinyin | ItemWithPinyin[S] {
+	>(name: T, ...props: S[]): ItemWithPinyin[S][];
+	public getPropsByName<
+		T extends string = Name,
+		U extends keyof ItemWithPinyin = keyof ItemWithPinyin,
+		S extends Exclude<U, 'name'> = Exclude<U, 'name'>,
+	>(name: T, ...props: S[]): ItemWithPinyin | ItemWithPinyin[S] | ItemWithPinyin[S][] {
 		const index = this.findIndexByName(name);
 
-		return this.getPropsByIndex<S>(index, prop as NonNullable<typeof prop>);
+		return this.getPropsByIndex<S>(index, ...(props as NonNullable<typeof props>));
 	}
 
 	public getValuesByProp<T extends keyof ItemWithPinyin>(
