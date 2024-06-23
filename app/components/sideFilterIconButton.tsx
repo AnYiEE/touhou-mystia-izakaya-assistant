@@ -1,4 +1,4 @@
-import {forwardRef, memo, type Dispatch} from 'react';
+import {forwardRef, memo, useCallback, type Dispatch} from 'react';
 
 import {
 	Button,
@@ -34,14 +34,16 @@ export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function SideFilterIconButton({selectConfig, ...props}, ref) {
 		const isFiltering = selectConfig.some(({selectedKeys}) => selectedKeys.length > 0);
 
-		const handleSelectionChange =
+		const handleSelectionChange = useCallback(
 			(setSelectedKeys: SelectConfig[number]['setSelectedKeys']) => (key: Selection) => {
 				setSelectedKeys([...(key as Set<string>)].sort(pinyinSort));
-			};
+			},
+			[]
+		);
 
-		const handleResetFilters = () => {
+		const handleResetFilters = useCallback(() => {
 			selectConfig.forEach(({setSelectedKeys}) => setSelectedKeys([]));
-		};
+		}, [selectConfig]);
 
 		return (
 			<Popover backdrop="opaque" placement="left" showArrow shouldCloseOnInteractOutside={() => true} ref={ref}>

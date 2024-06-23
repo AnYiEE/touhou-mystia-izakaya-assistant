@@ -1,4 +1,4 @@
-import {forwardRef, memo, type HTMLAttributes} from 'react';
+import {forwardRef, memo, useMemo, type HTMLAttributes} from 'react';
 import clsx from 'clsx';
 
 import {type ItemNames} from '@/data';
@@ -25,40 +25,62 @@ export default memo(
 		{target, index, name, size, height, width, className, style, title, ...props},
 		ref
 	) {
-		const instance: SpriteInstances = spriteInstances[target];
+		const instance: SpriteInstances = useMemo(() => spriteInstances[target], [target]);
 
-		if (index !== undefined) {
-			name = instance.findNameByIndex(index);
-		} else if (name) {
-			index = instance.findIndexByName(name);
-		} else {
-			index = 0;
-		}
+		const {calculatedIndex, calculatedName} = useMemo(() => {
+			let calcIndex = index;
+			let calcName = name;
 
-		height ??= instance.spriteHeight;
-		width ??= instance.spriteWidth;
+			if (calcIndex !== undefined) {
+				calcName = instance.findNameByIndex(calcIndex);
+			} else if (calcName) {
+				calcIndex = instance.findIndexByName(calcName);
+			} else {
+				calcIndex = 0;
+			}
 
-		if (height === width) {
-			size ??= height;
-		}
-		if (size !== undefined) {
-			height = size;
-			width = size;
-		}
+			return {
+				calculatedIndex: calcIndex,
+				calculatedName: calcName,
+			};
+		}, [index, name, instance]);
 
-		size = remToPx(size);
-		title ||= name;
+		const {calculatedHeight, calculatedWidth, calculatedSize} = useMemo(() => {
+			let calcHeight = height ?? instance.spriteHeight;
+			let calcWidth = width ?? instance.spriteWidth;
+			let calcSize = size;
 
-		const calcStyle = instance.getBackgroundPropsByIndex(index, {
-			displayHeight: size ?? height,
-			displayWidth: size ?? width,
-		});
+			if (calcHeight === calcWidth) {
+				calcSize ??= calcHeight;
+			}
+			if (calcSize !== undefined) {
+				calcHeight = calcSize;
+				calcWidth = calcSize;
+			}
+
+			return {
+				calculatedHeight: calcHeight,
+				calculatedWidth: calcWidth,
+				calculatedSize: remToPx(calcSize),
+			};
+		}, [height, width, size, instance]);
+
+		const calcStyle = useMemo(
+			() =>
+				instance.getBackgroundPropsByIndex(calculatedIndex, {
+					displayHeight: calculatedSize ?? calculatedHeight,
+					displayWidth: calculatedSize ?? calculatedWidth,
+				}),
+			[calculatedIndex, calculatedSize, calculatedHeight, calculatedWidth, instance]
+		);
+
+		const finalTitle = title || calculatedName;
 
 		return (
 			<span
 				className={clsx('inline-block', styles[target], className)}
 				style={{...calcStyle, ...style}}
-				title={title}
+				title={finalTitle}
 				{...props}
 				ref={ref}
 			/>

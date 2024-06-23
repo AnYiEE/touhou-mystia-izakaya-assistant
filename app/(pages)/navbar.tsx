@@ -1,6 +1,6 @@
 'use client';
 
-import {memo, useReducer, type PropsWithChildren, type ReactNode} from 'react';
+import {memo, useCallback, useReducer, type PropsWithChildren, type ReactNode} from 'react';
 import {usePathname} from 'next/navigation';
 import clsx from 'clsx';
 
@@ -48,15 +48,18 @@ interface IGithubLinkProps {
 }
 
 const GithubLink = memo(function GithubLink({showTooltip}: Partial<IGithubLinkProps>) {
-	const IconLink = ({className}: {className?: string}) => (
-		<FontAwesomeIconLink
-			isExternal
-			icon={faGithub}
-			size="lg"
-			aria-label={siteConfig.links.github.label}
-			href={siteConfig.links.github.href}
-			className={className}
-		/>
+	const IconLink = useCallback(
+		({className}: {className?: string}) => (
+			<FontAwesomeIconLink
+				isExternal
+				icon={faGithub}
+				size="lg"
+				aria-label={siteConfig.links.github.label}
+				href={siteConfig.links.github.href}
+				className={className}
+			/>
+		),
+		[]
 	);
 
 	if (showTooltip) {
