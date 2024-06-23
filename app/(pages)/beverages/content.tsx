@@ -61,7 +61,7 @@ export default memo(function Content({data}: IProps) {
 									</>
 								}
 								dlc={dlc}
-								tags={{positive: tags}}
+								tags={{beverage: tags}}
 								tagColors={BEVERAGE_TAG_STYLE}
 							>
 								{Object.entries(from as IBeverage['from']).map(([method, target], index) => {

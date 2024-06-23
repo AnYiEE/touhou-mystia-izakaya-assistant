@@ -37,3 +37,4 @@ export type FoodNames =
 	| import('./recipes/types').RecipeNames;
 
 export type ItemNames = CustomerNames | FoodNames | import('./kitchenwares/types').KitchenwareNames;
+export type Tags = import('./types').BeverageTag | import('./types').RecipeTag;

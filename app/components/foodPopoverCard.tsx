@@ -8,7 +8,6 @@ import {
 	type PropsWithChildren,
 	type ReactNode,
 } from 'react';
-import clsx from 'clsx';
 
 import {Popover, PopoverContent, PopoverTrigger, Snippet, Tooltip, usePopoverContext} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -16,9 +15,10 @@ import {faLink, faShare, faXmark} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Sprite, {ISpriteProps} from '@/components/sprite';
+import TagsComponent from '@/components/tags';
 
 import type {ITagStyle} from '@/constants/types';
-import {type FoodNames, type IngredientNames, type KitchenwareNames} from '@/data';
+import {type FoodNames, type IngredientNames, type KitchenwareNames, type Tags} from '@/data';
 import {useParams} from '@/hooks';
 
 interface ICloseButtonProps {
@@ -111,8 +111,6 @@ const ShareButton: FC<IShareButtonProps> = memo(
 	})
 );
 
-type TagStyle = Omit<ITagStyle, 'beverage'>;
-
 interface IFoodPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 	name: FoodNames;
 	description?: ReactNode;
@@ -120,29 +118,9 @@ interface IFoodPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 	ingredients?: IngredientNames[];
 	kitchenware?: KitchenwareNames;
 	tags?: {
-		[key in keyof TagStyle]: string[];
+		[key in keyof ITagStyle]: Tags[];
 	};
-	tagColors?: TagStyle;
-}
-
-export function renderTags(
-	tags: NonNullable<IFoodPopoverCardProps['tags']>[keyof TagStyle],
-	tagColors: Partial<NonNullable<TagStyle[keyof TagStyle]>> = {},
-	className?: string
-) {
-	return tags?.map((tag, index) => (
-		<div
-			key={index}
-			className={clsx('max-w-1/5 rounded border-1 border-solid px-1', className)}
-			style={{
-				backgroundColor: tagColors.backgroundColor ?? '#fff',
-				borderColor: tagColors.borderColor ?? '#000',
-				color: tagColors.color ?? 'inherit',
-			}}
-		>
-			{tag}
-		</div>
-	));
+	tagColors?: ITagStyle;
 }
 
 const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = memo(
@@ -150,6 +128,20 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 		{target, name, description, dlc, ingredients, kitchenware, tags, tagColors, children},
 		ref
 	) {
+		const mergedTags = useMemo((): Omit<NonNullable<typeof tags>, 'beverage'> | undefined => {
+			if (!tags) {
+				return tags;
+			}
+
+			const mergedTagValues = [...new Set([...(tags.beverage ?? []), ...(tags.positive ?? [])])];
+			const {beverage, ...rest} = tags;
+
+			return {
+				...rest,
+				positive: mergedTagValues,
+			};
+		}, [tags]);
+
 		return (
 			<div className="flex max-w-64 flex-col p-2 text-xs" ref={ref}>
 				<div className="flex items-center gap-x-2 text-sm">
@@ -168,10 +160,10 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 					</div>
 				)}
 				{description !== undefined && <div className="mt-2 flex gap-x-4 text-default-500">{description}</div>}
-				{tags && (
+				{mergedTags && (
 					<div className="mt-2 flex flex-wrap gap-x-2 gap-y-1 break-keep">
-						{renderTags(tags.positive, tagColors?.positive)}
-						{renderTags(tags.negative, tagColors?.negative)}
+						<TagsComponent tags={mergedTags.positive} tagStyle={tagColors?.positive} />
+						<TagsComponent tags={mergedTags.negative} tagStyle={tagColors?.negative} />
 					</div>
 				)}
 				{children !== undefined && (

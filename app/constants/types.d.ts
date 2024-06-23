@@ -1,4 +1,4 @@
-type TagStyle = {
+export type TagStyle = {
 	backgroundColor: string;
 	borderColor: string;
 	color: string;
