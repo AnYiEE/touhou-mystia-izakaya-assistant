@@ -22,86 +22,70 @@ export default memo(function Content({data}: IProps) {
 
 	return (
 		<>
-			{data.map(({dlc, from, name, level, price, tag: tags}, index) => {
-				const levelString = `Lv.${level}`;
-				const priceString = `￥${price}`;
+			{data.map(({dlc, from, name, level, price, tag: tags}, index) => (
+				<Popover
+					key={index}
+					backdrop="opaque"
+					showArrow
+					isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}
+				>
+					<PopoverTrigger className="w-full">
+						<FoodCard
+							isHoverable
+							isPressable
+							name={name}
+							description={`￥${price}`}
+							image={<Sprite target="ingredient" name={name} size={3} />}
+						/>
+					</PopoverTrigger>
+					<PopoverContent>
+						<FoodPopoverCard.CloseButton param={openedPopoverParam} />
+						<FoodPopoverCard.ShareButton name={name} param={openedPopoverParam} />
+						<FoodPopoverCard
+							target="ingredient"
+							name={name}
+							description={{level, price}}
+							dlc={dlc}
+							tags={{positive: tags}}
+							tagColors={INGREDIENT_TAG_STYLE}
+						>
+							{Object.entries(from as IIngredient['from']).map(([method, target], index) => {
+								const probability = `概率${method === 'buy' ? '出售' : '掉落'}`;
+								const way = method === 'buy' ? '购买' : method === 'task' ? '任务' : '采集';
 
-				return (
-					<Popover
-						key={index}
-						backdrop="opaque"
-						showArrow
-						isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}
-					>
-						<PopoverTrigger className="w-full">
-							<FoodCard
-								isHoverable
-								isPressable
-								name={name}
-								description={priceString}
-								image={<Sprite target="ingredient" name={name} size={3} />}
-							/>
-						</PopoverTrigger>
-						<PopoverContent>
-							<FoodPopoverCard.CloseButton param={openedPopoverParam} />
-							<FoodPopoverCard.ShareButton name={name} param={openedPopoverParam} />
-							<FoodPopoverCard
-								target="ingredient"
-								name={name}
-								description={
-									<>
-										<span>
-											<span className="font-semibold">售价：</span>
-											{priceString}
-										</span>
-										<span>
-											<span className="font-semibold">等级：</span>
-											{levelString}
-										</span>
-									</>
-								}
-								dlc={dlc}
-								tags={{positive: tags}}
-								tagColors={INGREDIENT_TAG_STYLE}
-							>
-								{Object.entries(from as IIngredient['from']).map(([method, target], index) => {
-									const probability = `概率${method === 'buy' ? '出售' : '掉落'}`;
-									const way = method === 'buy' ? '购买' : method === 'task' ? '任务' : '采集';
-
-									return (
-										<div key={index}>
-											<span className="font-semibold">{way}：</span>
-											{target.map((item, index) => (
-												<Fragment key={index}>
-													{Array.isArray(item) ? (
-														item[1] === true ? (
-															<Popover showArrow offset={0}>
-																<Tooltip showArrow content={probability} offset={-1.5}>
-																	<span className="cursor-pointer underline decoration-dotted">
-																		<PopoverTrigger>
-																			<span>{item[0]}</span>
-																		</PopoverTrigger>
-																	</span>
-																</Tooltip>
-																<PopoverContent>{probability}</PopoverContent>
-															</Popover>
-														) : (
-															item[0]
-														)
+								return (
+									<div key={index}>
+										<span className="font-semibold">{way}：</span>
+										{target.map((item, index) => (
+											<Fragment key={index}>
+												{Array.isArray(item) ? (
+													item[1] === true ? (
+														<Popover showArrow offset={0}>
+															<Tooltip showArrow content={probability} offset={-1.5}>
+																<span className="cursor-pointer underline decoration-dotted">
+																	<PopoverTrigger>
+																		<span>{item[0]}</span>
+																	</PopoverTrigger>
+																</span>
+															</Tooltip>
+															<PopoverContent>{probability}</PopoverContent>
+														</Popover>
 													) : (
-														item
-													)}
-													{index < target.length - 1 && '、'}
-												</Fragment>
-											))}
-										</div>
-									);
-								})}
-							</FoodPopoverCard>
-						</PopoverContent>
-					</Popover>
-				);
-			})}
+														item[0]
+													)
+												) : (
+													item
+												)}
+												{index < target.length - 1 && '、'}
+											</Fragment>
+										))}
+									</div>
+								);
+							})}
+						</FoodPopoverCard>
+					</PopoverContent>
+				</Popover>
+			))}
 		</>
 	);
 });

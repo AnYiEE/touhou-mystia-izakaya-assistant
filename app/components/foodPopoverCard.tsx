@@ -1,13 +1,4 @@
-import {
-	forwardRef,
-	memo,
-	useCallback,
-	useMemo,
-	type FC,
-	type MouseEvent,
-	type PropsWithChildren,
-	type ReactNode,
-} from 'react';
+import {forwardRef, memo, useCallback, useMemo, type FC, type MouseEvent, type PropsWithChildren} from 'react';
 
 import {Popover, PopoverContent, PopoverTrigger, Snippet, Tooltip, usePopoverContext} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -113,7 +104,10 @@ const ShareButton: FC<IShareButtonProps> = memo(
 
 interface IFoodPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 	name: FoodNames;
-	description?: ReactNode;
+	description?: {
+		level: number | string;
+		price: number | string;
+	};
 	dlc?: number | string;
 	ingredients?: IngredientNames[];
 	kitchenware?: KitchenwareNames;
@@ -159,7 +153,18 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 						))}
 					</div>
 				)}
-				{description !== undefined && <div className="mt-2 flex gap-x-4 text-default-500">{description}</div>}
+				{description !== undefined && (
+					<div className="mt-2 flex gap-x-4 text-default-500">
+						<span>
+							<span className="font-semibold">售价：</span>
+							{description.price}
+						</span>
+						<span>
+							<span className="font-semibold">等级：</span>
+							{description.level}
+						</span>
+					</div>
+				)}
 				{mergedTags && (
 					<div className="mt-2 flex flex-wrap gap-x-2 gap-y-1 break-keep">
 						<TagsComponent tags={mergedTags.positive} tagStyle={tagColors?.positive} />
