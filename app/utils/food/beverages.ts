@@ -1,12 +1,12 @@
 import {isEqual} from 'lodash';
 
 import {Food} from './base';
-import {type Beverages, type IBeverage} from '@/data';
+import {type TBeverages, type IBeverage} from '@/data';
 
-export class Beverage extends Food<Beverages> {
+export class Beverage extends Food<TBeverages> {
 	private static isTagChecked: boolean;
 
-	constructor(data: Beverages) {
+	constructor(data: TBeverages) {
 		super(data);
 
 		this._data = data;

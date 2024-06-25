@@ -2,22 +2,22 @@ import {pinyin as pinyinPro} from 'pinyin-pro';
 
 import {generateArray, pinyinSort} from '@/utils';
 
-import type {IItem, TItemWithPinyin} from './types';
+import type {IItem, TItemWithPinyin as _TItemWithPinyin} from './types';
 
 export class Item<
-	Target extends IItem[],
-	Item extends Target[number] = Target[number],
-	ItemWithPinyin extends TItemWithPinyin<Item> = TItemWithPinyin<Item>,
-	Name extends ItemWithPinyin['name'] = ItemWithPinyin['name'],
+	TTarget extends IItem[],
+	TItem extends TTarget[number] = TTarget[number],
+	TItemWithPinyin extends _TItemWithPinyin<TItem> = _TItemWithPinyin<TItem>,
+	TName extends TItemWithPinyin['name'] = TItemWithPinyin['name'],
 > {
-	protected _data: Target;
-	protected _dataWithPinyin: ItemWithPinyin[];
+	protected _data: TTarget;
+	protected _dataWithPinyin: TItemWithPinyin[];
 
-	protected pinyinSortedCache?: ItemWithPinyin[];
+	protected pinyinSortedCache?: TItemWithPinyin[];
 	protected static indexNameCache: Map<number, string> = new Map();
 	protected static nameIndexCache: Map<string, number> = new Map();
 
-	public constructor(data: Target) {
+	public constructor(data: TTarget) {
 		this._data = structuredClone(data);
 		this._dataWithPinyin = structuredClone(this._data).map((item) => ({
 			...item,
@@ -26,14 +26,14 @@ export class Item<
 				type: 'array',
 				v: true,
 			}),
-		})) as ItemWithPinyin[];
+		})) as TItemWithPinyin[];
 	}
 
 	public get data() {
 		return this._dataWithPinyin;
 	}
 
-	public get dataPinyinSorted(): ItemWithPinyin[] {
+	public get dataPinyinSorted(): TItemWithPinyin[] {
 		if (this.pinyinSortedCache) {
 			return this.pinyinSortedCache;
 		}
@@ -49,7 +49,7 @@ export class Item<
 		}
 	}
 
-	public findIndexByName<T extends string = Name>(name: T) {
+	public findIndexByName<T extends string = TName>(name: T) {
 		if (Item.nameIndexCache.has(name)) {
 			return Item.nameIndexCache.get(name)!;
 		}
@@ -64,27 +64,27 @@ export class Item<
 		return index;
 	}
 
-	public findNameByIndex(index: number): Name {
+	public findNameByIndex(index: number): TName {
 		const item = this._data[index];
 		this.checkIndexRange(index, item);
 
 		if (Item.indexNameCache.has(index)) {
-			return Item.indexNameCache.get(index) as Name;
+			return Item.indexNameCache.get(index) as TName;
 		}
 
 		const {name} = item;
 		Item.indexNameCache.set(index, name);
 
-		return name as Name;
+		return name as TName;
 	}
 
-	public getPropsByIndex(index: number): ItemWithPinyin;
-	public getPropsByIndex<T extends keyof ItemWithPinyin>(index: number, prop: T): ItemWithPinyin[T];
-	public getPropsByIndex<T extends keyof ItemWithPinyin>(index: number, ...props: T[]): ItemWithPinyin[T][];
-	public getPropsByIndex<T extends keyof ItemWithPinyin>(
+	public getPropsByIndex(index: number): TItemWithPinyin;
+	public getPropsByIndex<T extends keyof TItemWithPinyin>(index: number, prop: T): TItemWithPinyin[T];
+	public getPropsByIndex<T extends keyof TItemWithPinyin>(index: number, ...props: T[]): TItemWithPinyin[T][];
+	public getPropsByIndex<T extends keyof TItemWithPinyin>(
 		index: number,
 		...props: T[]
-	): ItemWithPinyin | ItemWithPinyin[T] | ItemWithPinyin[T][] {
+	): TItemWithPinyin | TItemWithPinyin[T] | TItemWithPinyin[T][] {
 		const item = this._dataWithPinyin[index];
 		this.checkIndexRange(index, item);
 
@@ -92,44 +92,44 @@ export class Item<
 			if (props.length === 1) {
 				return item[props[0] as T];
 			}
-			return props.map((prop) => item[prop]) as ItemWithPinyin[T][];
+			return props.map((prop) => item[prop]) as TItemWithPinyin[T][];
 		}
 
 		return item;
 	}
 
-	public getPropsByName<T extends string = Name>(name: T): ItemWithPinyin;
+	public getPropsByName<T extends string = TName>(name: T): TItemWithPinyin;
 	public getPropsByName<
-		T extends string = Name,
-		U extends keyof ItemWithPinyin = keyof ItemWithPinyin,
+		T extends string = TName,
+		U extends keyof TItemWithPinyin = keyof TItemWithPinyin,
 		S extends Exclude<U, 'name'> = Exclude<U, 'name'>,
-	>(name: T, prop: S): ItemWithPinyin[S];
+	>(name: T, prop: S): TItemWithPinyin[S];
 	public getPropsByName<
-		T extends string = Name,
-		U extends keyof ItemWithPinyin = keyof ItemWithPinyin,
+		T extends string = TName,
+		U extends keyof TItemWithPinyin = keyof TItemWithPinyin,
 		S extends Exclude<U, 'name'> = Exclude<U, 'name'>,
-	>(name: T, ...props: S[]): ItemWithPinyin[S][];
+	>(name: T, ...props: S[]): TItemWithPinyin[S][];
 	public getPropsByName<
-		T extends string = Name,
-		U extends keyof ItemWithPinyin = keyof ItemWithPinyin,
+		T extends string = TName,
+		U extends keyof TItemWithPinyin = keyof TItemWithPinyin,
 		S extends Exclude<U, 'name'> = Exclude<U, 'name'>,
-	>(name: T, ...props: S[]): ItemWithPinyin | ItemWithPinyin[S] | ItemWithPinyin[S][] {
+	>(name: T, ...props: S[]): TItemWithPinyin | TItemWithPinyin[S] | TItemWithPinyin[S][] {
 		const index = this.findIndexByName(name);
 
 		return this.getPropsByIndex<S>(index, ...(props as NonNullable<typeof props>));
 	}
 
-	public getValuesByProp<T extends keyof ItemWithPinyin>(
-		data: ItemWithPinyin[],
+	public getValuesByProp<T extends keyof TItemWithPinyin>(
+		data: TItemWithPinyin[],
 		prop: T | T[],
 		wrap: true
-	): {value: FlatArray<ItemWithPinyin[T], number>}[];
-	public getValuesByProp<T extends keyof ItemWithPinyin>(
-		data: ItemWithPinyin[],
+	): {value: FlatArray<TItemWithPinyin[T], number>}[];
+	public getValuesByProp<T extends keyof TItemWithPinyin>(
+		data: TItemWithPinyin[],
 		prop: T | T[],
 		wrap?: boolean
-	): FlatArray<ItemWithPinyin[T], number>[];
-	public getValuesByProp<T extends keyof ItemWithPinyin>(data: ItemWithPinyin[], prop: T | T[], wrap?: boolean) {
+	): FlatArray<TItemWithPinyin[T], number>[];
+	public getValuesByProp<T extends keyof TItemWithPinyin>(data: TItemWithPinyin[], prop: T | T[], wrap?: boolean) {
 		const props = generateArray(prop);
 		const values = [...new Set(data.map((item) => props.map((prop) => item[prop])).flat(Infinity))];
 
@@ -140,7 +140,7 @@ export class Item<
 		return values;
 	}
 
-	public sortByPinyin(data: ItemWithPinyin[]) {
+	public sortByPinyin(data: TItemWithPinyin[]) {
 		return data.toSorted(({pinyin: a}, {pinyin: b}) => pinyinSort(a, b));
 	}
 }

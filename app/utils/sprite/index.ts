@@ -1,18 +1,18 @@
 import {pxToRem} from '@/utils';
 import {Item} from '@/utils/item';
-import type {SpriteData, SpriteTarget, ISpriteConfig} from './types';
+import type {TSpriteData, TSpriteTarget, ISpriteConfig} from './types';
 
 export class Sprite<
-	Target extends SpriteTarget,
-	Data extends SpriteData<Target> = SpriteData<Target>,
-	Name extends Data[number]['name'] = Data[number]['name'],
-> extends Item<Data> {
+	TTarget extends TSpriteTarget,
+	TData extends TSpriteData<TTarget> = TSpriteData<TTarget>,
+	TName extends TData[number]['name'] = TData[number]['name'],
+> extends Item<TData> {
 	private _config: ISpriteConfig;
 
 	public spriteHeight: number;
 	public spriteWidth: number;
 
-	public constructor(data: Data, config: ISpriteConfig) {
+	public constructor(data: TData, config: ISpriteConfig) {
 		super(data);
 
 		this._config = config;
@@ -35,7 +35,7 @@ export class Sprite<
 		};
 	}
 
-	public getPosByName<T extends string = Name>(name: T) {
+	public getPosByName<T extends string = TName>(name: T) {
 		const index: number = this.findIndexByName(name);
 
 		return this.getPosByIndex(index);
@@ -60,7 +60,7 @@ export class Sprite<
 		};
 	}
 
-	public getBackgroundPropsByName<T extends string = Name>(
+	public getBackgroundPropsByName<T extends string = TName>(
 		name: T,
 		{displayHeight = this.spriteHeight, displayWidth = this.spriteWidth} = {}
 	): React.CSSProperties {

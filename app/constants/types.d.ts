@@ -1,11 +1,11 @@
-export type TagStyle = {
+export type TTagStyle = {
 	backgroundColor: string;
 	borderColor: string;
 	color: string;
 };
 
 export interface ITagStyle {
-	beverage?: TagStyle;
-	positive?: TagStyle;
-	negative?: TagStyle;
+	beverage?: TTagStyle;
+	positive?: TTagStyle;
+	negative?: TTagStyle;
 }

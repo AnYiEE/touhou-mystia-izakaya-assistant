@@ -2,13 +2,13 @@ import {useMemo} from 'react';
 
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
-import type {CustomerInstances, FoodInstances} from '@/methods/types';
+import type {TCustomerInstances, TFoodInstances} from '@/methods/types';
 import {type Item} from '@/utils/item';
 
-type TargetInstance = CustomerInstances | FoodInstances;
-type Names<T extends TargetInstance> = T['data'][number]['name'];
+type TTargetInstance = TCustomerInstances | TFoodInstances;
+type TNames<T extends TTargetInstance> = T['data'][number]['name'];
 
-export function useAllItemNames<T extends TargetInstance>(instance: T, pinyinSortState: PinyinSortState) {
+export function useAllItemNames<T extends TTargetInstance>(instance: T, pinyinSortState: PinyinSortState) {
 	const allNames = useMemo(() => {
 		switch (pinyinSortState) {
 			case PinyinSortState.AZ:
@@ -21,6 +21,6 @@ export function useAllItemNames<T extends TargetInstance>(instance: T, pinyinSor
 	}, [pinyinSortState, instance]);
 
 	return allNames as {
-		value: Names<T>;
+		value: TNames<T>;
 	}[];
 }

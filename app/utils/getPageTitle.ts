@@ -1,9 +1,9 @@
 import {siteConfig} from '@/configs';
-import type {SiteConfig} from '@/configs/site/types';
+import type {TSiteConfig} from '@/configs/site/types';
 
-type ValidHref = SiteConfig['navItems'][number]['href'];
+type THref = TSiteConfig['navItems'][number]['href'];
 
-function getPageTitle(target: ValidHref) {
+function getPageTitle(target: THref) {
 	return siteConfig.navItems
 		.map(({label, href}) => {
 			if (href === target) {

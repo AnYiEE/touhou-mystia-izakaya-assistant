@@ -1,6 +1,6 @@
-import type {Businessman, CollectionLocation, Task, IFoodBase} from '@/data/types';
+import type {TBusinessman, TCollectionLocation, TTask, IFoodBase} from '@/data/types';
 
-type Tag =
+type TTag =
 	| '低酒精'
 	| '中酒精'
 	| '高酒精'
@@ -23,18 +23,18 @@ type Tag =
 	| '提神'
 	| '直饮';
 
-type FromBase = IFoodBase['from'];
+type TFromBase = IFoodBase['from'];
 
-interface IFrom extends FromBase {
+interface IFrom extends TFromBase {
 	/** @description 初始拥有的饮品 */
 	self: boolean;
 }
 
 export interface IBeverage extends IFoodBase {
-	tag: Tag[];
+	tag: TTag[];
 	from: Partial<IFrom>;
 }
 
-export type Beverages = typeof import('./data').BEVERAGE_LIST;
+export type TBeverages = typeof import('./data').BEVERAGE_LIST;
 
-export type BeverageNames = Beverages[number]['name'];
+export type TBeverageNames = TBeverages[number]['name'];

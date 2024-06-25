@@ -1,18 +1,18 @@
 import {forwardRef, memo, useMemo, type HTMLAttributes} from 'react';
 import clsx from 'clsx';
 
-import {type ItemNames} from '@/data';
+import {type TItemNames} from '@/data';
 import {spriteInstances} from '@/methods';
-import type {SpriteInstances} from '@/methods/types';
+import type {TSpriteInstances} from '@/methods/types';
 import {remToPx} from '@/utils';
-import type {SpriteTarget} from '@/utils/sprite/types';
+import type {TSpriteTarget} from '@/utils/sprite/types';
 
 import styles from './sprite.module.scss';
 
 interface ISpriteBase {
-	target: SpriteTarget;
+	target: TSpriteTarget;
 	index?: number;
-	name?: ItemNames;
+	name?: TItemNames;
 	size?: number;
 	height?: number;
 	width?: number;
@@ -25,7 +25,7 @@ export default memo(
 		{target, index, name, size, height, width, className, style, title, ...props},
 		ref
 	) {
-		const instance: SpriteInstances = useMemo(() => spriteInstances[target], [target]);
+		const instance: TSpriteInstances = useMemo(() => spriteInstances[target], [target]);
 
 		const {calculatedIndex, calculatedName} = useMemo(() => {
 			let calcIndex = index;

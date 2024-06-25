@@ -1,3 +1,3 @@
 import {type kitchenwareInstance} from './index';
 
-export type KitchenwareInstance = typeof kitchenwareInstance;
+export type TKitchenwareInstance = typeof kitchenwareInstance;

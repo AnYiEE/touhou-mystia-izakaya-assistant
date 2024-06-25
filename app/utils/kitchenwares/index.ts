@@ -1,8 +1,8 @@
 import {Item} from '@/utils/item';
 import type {IKitchenware} from './types';
 
-export class Kitchenware<Target extends IKitchenware[]> extends Item<Target> {
-	public constructor(data: Target) {
+export class Kitchenware<TTarget extends IKitchenware[]> extends Item<TTarget> {
+	public constructor(data: TTarget) {
 		super(data);
 
 		this._data = data;

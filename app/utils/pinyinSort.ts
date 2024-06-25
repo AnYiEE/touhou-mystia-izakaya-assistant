@@ -1,12 +1,12 @@
 import {pinyin as pinyinPro} from 'pinyin-pro';
 
-type Value = string | string[];
+type TValue = string | string[];
 
-interface ValueObeject {
-	value: Value;
+interface IValueObeject {
+	value: TValue;
 }
 
-function checkValueObject(value: Value | ValueObeject): value is ValueObeject {
+function checkValueObject(value: TValue | IValueObeject): value is IValueObeject {
 	return typeof value === 'object' && value !== null && 'value' in value;
 }
 
@@ -18,7 +18,7 @@ function removeTone(pinyin: string) {
 	return pinyin.replace(/\d/, '');
 }
 
-export function pinyinSort(a: Value | ValueObeject, b: Value | ValueObeject) {
+export function pinyinSort(a: TValue | IValueObeject, b: TValue | IValueObeject) {
 	a = checkValueObject(a) ? a.value : a;
 	b = checkValueObject(b) ? b.value : b;
 

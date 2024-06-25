@@ -10,13 +10,13 @@ export enum PinyinSortState {
 	ZA = 2,
 }
 
-export type PinyinSortConfig = {
+export interface IPinyinSortConfig {
 	pinyinSortState: PinyinSortState;
 	setPinyinSortState: Dispatch<SetStateAction<PinyinSortState>>;
-};
+}
 
 interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'> {
-	pinyinSortConfig: PinyinSortConfig;
+	pinyinSortConfig: IPinyinSortConfig;
 }
 
 function getNextPinyinSortState(currentState: PinyinSortState) {

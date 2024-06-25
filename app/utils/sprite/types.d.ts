@@ -1,21 +1,21 @@
 import {
-	type Beverages,
-	type BeverageNames,
-	type CustomerNormals,
-	type CustomerNormalNames,
-	type CustomerRares,
-	type CustomerRareNames,
-	type CustomerSpecials,
-	type CustomerSpecialNames,
-	type Ingredients,
-	type IngredientNames,
-	type Kitchenwares,
-	type KitchenwareNames,
-	type Recipes,
-	type RecipeNames,
+	type TBeverages,
+	type TBeverageNames,
+	type TCustomerNormals,
+	type TCustomerNormalNames,
+	type TCustomerRares,
+	type TCustomerRareNames,
+	type TCustomerSpecials,
+	type TCustomerSpecialNames,
+	type TIngredients,
+	type TIngredientNames,
+	type TKitchenwares,
+	type TKitchenwareNames,
+	type TRecipes,
+	type TRecipeNames,
 } from '@/data';
 
-export type SpriteTarget =
+export type TSpriteTarget =
 	| 'beverage'
 	| 'customer_normal'
 	| 'customer_rare'
@@ -24,51 +24,51 @@ export type SpriteTarget =
 	| 'kitchenware'
 	| 'recipe';
 
-export type SpriteData<T extends SpriteTarget = string> = T extends 'beverage'
-	? Beverages
+export type TSpriteData<T extends TSpriteTarget = string> = T extends 'beverage'
+	? TBeverages
 	: T extends 'customer_normal'
-		? CustomerNormals
+		? TCustomerNormals
 		: T extends 'customer_rare'
-			? CustomerRares
+			? TCustomerRares
 			: T extends 'customer_special'
-				? CustomerSpecials
+				? TCustomerSpecials
 				: T extends 'ingredient'
-					? Ingredients
+					? TIngredients
 					: T extends 'kitchenware'
-						? Kitchenwares
+						? TKitchenwares
 						: T extends 'recipe'
-							? Recipes
+							? TRecipes
 							:
-									| Beverages
-									| CustomerNormals
-									| CustomerRares
-									| CustomerSpecials
-									| Ingredients
-									| Kitchenwares
-									| Recipes;
+									| TBeverages
+									| TCustomerNormals
+									| TCustomerRares
+									| TCustomerSpecials
+									| TIngredients
+									| TKitchenwares
+									| TRecipes;
 
-export type SpriteNames<T extends SpriteTarget = string> = T extends 'beverage'
-	? BeverageNames
+export type TSpriteNames<T extends TSpriteTarget = string> = T extends 'beverage'
+	? TBeverageNames
 	: T extends 'customer_normal'
-		? CustomerNormalNames
+		? TCustomerNormalNames
 		: T extends 'customer_rare'
-			? CustomerRareNames
+			? TCustomerRareNames
 			: T extends 'customer_special'
-				? CustomerSpecialNames
+				? TCustomerSpecialNames
 				: T extends 'ingredient'
-					? IngredientNames
+					? TIngredientNames
 					: T extends 'kitchenware'
-						? KitchenwareNames
+						? TKitchenwareNames
 						: T extends 'recipe'
-							? RecipeNames
+							? TRecipeNames
 							:
-									| BeverageNames
-									| CustomerNormalNames
-									| CustomerRareNames
-									| CustomerSpecialNames
-									| IngredientNames
-									| KitchenwareNames
-									| RecipeNames;
+									| TBeverageNames
+									| TCustomerNormalNames
+									| TCustomerRareNames
+									| TCustomerSpecialNames
+									| TIngredientNames
+									| TKitchenwareNames
+									| TRecipeNames;
 
 export interface ISpriteConfig {
 	col: number;

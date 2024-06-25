@@ -1,6 +1,6 @@
 import type {IKitchenware as _IKitchenware} from '@/data/kitchenwares/types';
-import type {KitchenwareNames} from '@/data';
+import type {TKitchenwareNames} from '@/data';
 
-export interface IKitchenware<T extends KitchenwareNames = KitchenwareNames> extends _IKitchenware {
+export interface IKitchenware<T extends TKitchenwareNames = TKitchenwareNames> extends _IKitchenware {
 	name: T;
 }

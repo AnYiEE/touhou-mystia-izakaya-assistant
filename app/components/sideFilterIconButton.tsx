@@ -16,18 +16,19 @@ import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/compone
 
 import {pinyinSort} from '@/utils';
 
-export type SelectConfig = {
+interface ISelectConfigItem {
 	label: SelectProps['label'];
 	items: {
 		value: number | string;
 	}[];
 	selectedKeys: string[];
 	selectionMode?: SelectProps['selectionMode'];
-	setSelectedKeys: Dispatch<SelectConfig[number]['selectedKeys']>;
-}[];
+	setSelectedKeys: Dispatch<ISelectConfigItem['selectedKeys']>;
+}
+export type TSelectConfig = ISelectConfigItem[];
 
 interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'> {
-	selectConfig: SelectConfig;
+	selectConfig: TSelectConfig;
 }
 
 export default memo(
@@ -35,7 +36,7 @@ export default memo(
 		const isFiltering = selectConfig.some(({selectedKeys}) => selectedKeys.length > 0);
 
 		const handleSelectionChange = useCallback(
-			(setSelectedKeys: SelectConfig[number]['setSelectedKeys']) => (key: Selection) => {
+			(setSelectedKeys: ISelectConfigItem['setSelectedKeys']) => (key: Selection) => {
 				setSelectedKeys([...(key as Set<string>)].sort(pinyinSort));
 			},
 			[]

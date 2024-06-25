@@ -2,14 +2,14 @@ import {useMemo} from 'react';
 
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
-import type {CustomerInstances, FoodInstances} from '@/methods/types';
+import type {TCustomerInstances, TFoodInstances} from '@/methods/types';
 
-type TargetInstance = CustomerInstances | FoodInstances;
-type Data<T extends TargetInstance> = T['data'];
+type TTargetInstance = TCustomerInstances | TFoodInstances;
+type TData<T extends TTargetInstance> = T['data'];
 
-export function useSortedData<T extends TargetInstance>(
+export function useSortedData<T extends TTargetInstance>(
 	instance: T,
-	filteredData: Data<T>,
+	filteredData: TData<T>,
 	pinyinSortState: PinyinSortState
 ) {
 	const sortedData = useMemo(() => {
@@ -23,5 +23,5 @@ export function useSortedData<T extends TargetInstance>(
 		}
 	}, [instance, filteredData, pinyinSortState]);
 
-	return sortedData as Data<T>;
+	return sortedData as TData<T>;
 }

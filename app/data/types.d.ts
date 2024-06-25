@@ -1,10 +1,10 @@
 import type {IBeverage} from './beverages/types';
 import type {IRecipe} from './recipes/types';
 
-type Dlc = 0 | 1 | 2 | 3 | 4 | 5;
-type Level = 1 | 2 | 3 | 4 | 5;
+type TDlc = 0 | 1 | 2 | 3 | 4 | 5;
+type TLevel = 1 | 2 | 3 | 4 | 5;
 
-export type Businessman =
+export type TBusinessman =
 	| '博丽神社河童'
 	| '博丽神社妖精女仆'
 	| '地灵殿地狱鸦'
@@ -30,7 +30,7 @@ export type Businessman =
 	| '妖怪之山河童'
 	| '月之都月兔';
 
-export type CollectionLocation =
+export type TCollectionLocation =
 	| '博丽神社参道西侧银杏'
 	| '博丽神社花丛'
 	| '博丽神社蘑菇'
@@ -120,10 +120,10 @@ export type CollectionLocation =
 	| '妖怪之山中心瀑布'
 	| '月之都月虹池';
 
-type BeverageTag = IBeverage['tag'][number] | '全部';
-type RecipeTag = IRecipe['positive'][number] | IRecipe['negative'][number] | '流行喜爱' | '流行厌恶' | '全部';
+type TBeverageTag = IBeverage['tag'][number] | '全部';
+type TRecipeTag = IRecipe['positive'][number] | IRecipe['negative'][number] | '流行喜爱' | '流行厌恶' | '全部';
 
-type Place =
+type TPlace =
 	| '博丽神社'
 	| '地灵殿'
 	| '红魔馆'
@@ -140,31 +140,31 @@ type Place =
 	| '妖怪之山'
 	| '月之都';
 
-export type Task = '阿求小姐的色纸' | '女仆长的采购委托';
+export type TTask = '阿求小姐的色纸' | '女仆长的采购委托';
 
 export interface IItemBase {
 	name: string;
 }
 
 export interface ICustomerBase extends IItemBase {
-	dlc: Dlc;
-	place: Place[];
-	positive: RecipeTag[];
-	negative: RecipeTag[];
-	beverage: BeverageTag[];
+	dlc: TDlc;
+	place: TPlace[];
+	positive: TRecipeTag[];
+	negative: TRecipeTag[];
+	beverage: TBeverageTag[];
 }
 
 interface IFoodFrom {
 	/** @description 如果是数组，则第一个元素为出售角色，第二个元素代表是否为必然出售 */
-	buy: Array<Businessman | [Businessman, boolean]>;
+	buy: Array<TBusinessman | [TBusinessman, boolean]>;
 	/** @description 如果是数组，则第一个元素为采集地点，第二个元素代表是否为概率获得 */
-	collect: Array<CollectionLocation | [CollectionLocation, boolean]>;
-	task: Task[];
+	collect: Array<TCollectionLocation | [TCollectionLocation, boolean]>;
+	task: TTask[];
 }
 
 export interface IFoodBase extends IItemBase {
-	dlc: Dlc;
-	level: Level;
+	dlc: TDlc;
+	level: TLevel;
 	price: number;
 	from: Partial<IFoodFrom>;
 }

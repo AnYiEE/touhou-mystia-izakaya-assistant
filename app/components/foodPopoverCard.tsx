@@ -9,7 +9,7 @@ import Sprite, {ISpriteProps} from '@/components/sprite';
 import TagsComponent from '@/components/tags';
 
 import type {ITagStyle} from '@/constants/types';
-import {type FoodNames, type IngredientNames, type KitchenwareNames, type Tags} from '@/data';
+import {type TFoodNames, type TIngredientNames, type TKitchenwareNames, type TTags} from '@/data';
 import {useParams} from '@/hooks';
 
 interface ICloseButtonProps {
@@ -103,16 +103,16 @@ const ShareButton: FC<IShareButtonProps> = memo(
 );
 
 interface IFoodPopoverCardProps extends Pick<ISpriteProps, 'target'> {
-	name: FoodNames;
+	name: TFoodNames;
 	description?: {
 		level: number | string;
 		price: number | string;
 	};
 	dlc?: number | string;
-	ingredients?: IngredientNames[];
-	kitchenware?: KitchenwareNames;
+	ingredients?: TIngredientNames[];
+	kitchenware?: TKitchenwareNames;
 	tags?: {
-		[key in keyof ITagStyle]: Tags[];
+		[key in keyof ITagStyle]: TTags[];
 	};
 	tagColors?: ITagStyle;
 }

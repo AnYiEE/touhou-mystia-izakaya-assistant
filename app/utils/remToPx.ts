@@ -1,14 +1,14 @@
-type RemString = `${string}rem`;
+type TRemString = `${string}rem`;
 
-export function remToPx<T extends number | RemString | null | undefined>(
+export function remToPx<T extends number | TRemString | null | undefined>(
 	rem: T,
 	rootFontSize = 16
-): T extends RemString ? number : T {
+): T extends TRemString ? number : T {
 	if (rem === null || rem === undefined) {
-		return rem as T extends RemString ? number : T;
+		return rem as T extends TRemString ? number : T;
 	}
 
 	const numericValue = typeof rem === 'number' ? rem : Number(rem.slice(0, -3));
 
-	return (numericValue * rootFontSize) as T extends RemString ? number : T;
+	return (numericValue * rootFontSize) as T extends TRemString ? number : T;
 }

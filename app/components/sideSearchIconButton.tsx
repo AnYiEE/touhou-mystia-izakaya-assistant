@@ -12,17 +12,17 @@ import {faMagnifyingGlass} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
 
-export type SearchConfig = {
+export interface ISearchConfig {
 	label: AutocompleteProps['label'];
 	searchItems: {
 		value: string;
 	}[];
 	searchValue: string;
-	setSearchValue: Dispatch<SetStateAction<SearchConfig['searchValue']>>;
-};
+	setSearchValue: Dispatch<SetStateAction<ISearchConfig['searchValue']>>;
+}
 
 interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'> {
-	searchConfig: SearchConfig;
+	searchConfig: ISearchConfig;
 }
 
 export default memo(

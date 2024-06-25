@@ -1,10 +1,10 @@
-import type {CustomerInstances} from './customer/types';
-import type {FoodInstances} from './food/types';
-import type {KitchenwareInstance} from './kitchenwares/types';
+import type {TCustomerInstances} from './customer/types';
+import type {TFoodInstances} from './food/types';
+import type {TKitchenwareInstance} from './kitchenwares/types';
 
-export type Instances = CustomerInstances | FoodInstances | KitchenwareInstance;
-export type {CustomerInstances} from './customer/types';
-export type {FoodInstances} from './food/types';
-export type {KitchenwareInstance} from './kitchenwares/types';
+export type TInstances = TCustomerInstances | TFoodInstances | TKitchenwareInstance;
+export type {TCustomerInstances} from './customer/types';
+export type {TFoodInstances} from './food/types';
+export type {TKitchenwareInstance} from './kitchenwares/types';
 
-export type {SpriteInstances} from './sprite/types';
+export type {TSpriteInstances} from './sprite/types';

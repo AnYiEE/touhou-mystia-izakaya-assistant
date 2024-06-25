@@ -1,8 +1,8 @@
 import {Customer} from './base';
-import {type CustomerRares} from '@/data';
+import {type TCustomerRares} from '@/data';
 
-export class CustomerRare extends Customer<CustomerRares> {
-	constructor(data: CustomerRares) {
+export class CustomerRare extends Customer<TCustomerRares> {
+	constructor(data: TCustomerRares) {
 		super(data);
 
 		this._data = data;

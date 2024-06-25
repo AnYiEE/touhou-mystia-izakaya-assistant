@@ -1,9 +1,9 @@
 import type {IFoodBase} from '@/data/types';
-import type {CustomerRareNames} from '../customer_rare/types';
-import type {IngredientNames} from '../ingredients/types';
-import type {KitchenwareNames} from '../kitchenwares/types';
+import type {TCustomerRareNames} from '../customer_rare/types';
+import type {TIngredientNames} from '../ingredients/types';
+import type {TKitchenwareNames} from '../kitchenwares/types';
 
-type Tag =
+type TTag =
 	| '昂贵'
 	| '饱腹'
 	| '不可思议'
@@ -47,16 +47,16 @@ type Tag =
 	| '灼热';
 
 export interface IRecipe extends IFoodBase {
-	ingredients: IngredientNames[];
-	positive: Tag[];
-	negative: Tag[];
-	kitchenware: KitchenwareNames;
+	ingredients: TIngredientNames[];
+	positive: TTag[];
+	negative: TTag[];
+	kitchenware: TKitchenwareNames;
 	max: number;
 	min: number;
 	from:
 		| Partial<{
 				goodwill: {
-					name: CustomerRareNames | '村纱水蜜' | '物部布都' | '铃仙';
+					name: TCustomerRareNames | '村纱水蜜' | '物部布都' | '铃仙';
 					level: number;
 				};
 				/** @description 初始拥有的菜品 */
@@ -67,6 +67,6 @@ export interface IRecipe extends IFoodBase {
 		| string;
 }
 
-export type Recipes = typeof import('./data').RECIPE_LIST;
+export type TRecipes = typeof import('./data').RECIPE_LIST;
 
-export type RecipeNames = Recipes[number]['name'];
+export type TRecipeNames = TRecipes[number]['name'];

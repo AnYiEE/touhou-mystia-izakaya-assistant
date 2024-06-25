@@ -1,17 +1,21 @@
 import {useEffect, useState} from 'react';
 
-type Theme = 'dark' | 'light' | 'system';
+export enum Theme {
+	dark = 'dark',
+	light = 'light',
+	system = 'system',
+}
 
 function useSystemTheme() {
-	const [systemTheme, setSystemTheme] = useState<Theme>('system');
+	const [systemTheme, setSystemTheme] = useState<Theme>(Theme.system);
 
 	useEffect(() => {
 		const mediaQueryList = window.matchMedia('(prefers-color-scheme: light)');
 
-		setSystemTheme(mediaQueryList.matches ? 'light' : 'dark');
+		setSystemTheme(mediaQueryList.matches ? Theme.light : Theme.dark);
 
 		const handleChange = (event: MediaQueryListEvent) => {
-			setSystemTheme(event.matches ? 'light' : 'dark');
+			setSystemTheme(event.matches ? Theme.light : Theme.dark);
 		};
 
 		mediaQueryList.addEventListener('change', handleChange);

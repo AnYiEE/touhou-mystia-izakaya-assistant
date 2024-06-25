@@ -2,10 +2,10 @@ import {forwardRef, memo, type ReactNode} from 'react';
 
 import {Card, type CardProps} from '@nextui-org/react';
 
-import {type FoodNames} from '@/data';
+import {type TFoodNames} from '@/data';
 
 interface IProps extends Omit<CardProps, 'className'> {
-	name: FoodNames;
+	name: TFoodNames;
 	description: string;
 	image: ReactNode;
 }

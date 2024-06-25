@@ -1,6 +1,6 @@
-import type {Businessman, CollectionLocation, Task, IFoodBase} from '@/data/types';
+import type {TBusinessman, TCollectionLocation, TTask, IFoodBase} from '@/data/types';
 
-type Tag =
+type TTag =
 	| '饱腹'
 	| '不可思议'
 	| '传说'
@@ -32,13 +32,13 @@ type Tag =
 	| '招牌'
 	| '重油';
 
-type Type = '肉类' | '海鲜' | '蔬菜' | '其他';
+type TType = '肉类' | '海鲜' | '蔬菜' | '其他';
 
 export interface IIngredient extends IFoodBase {
-	type: Type;
-	tag: Tag[];
+	type: TType;
+	tag: TTag[];
 }
 
-export type Ingredients = typeof import('./data').INGREDIENT_LIST;
+export type TIngredients = typeof import('./data').INGREDIENT_LIST;
 
-export type IngredientNames = Ingredients[number]['name'];
+export type TIngredientNames = TIngredients[number]['name'];

@@ -1,3 +1,3 @@
 import {type customerInstances} from './index';
 
-export type CustomerInstances = (typeof customerInstances)[keyof typeof customerInstances];
+export type TCustomerInstances = (typeof customerInstances)[keyof typeof customerInstances];

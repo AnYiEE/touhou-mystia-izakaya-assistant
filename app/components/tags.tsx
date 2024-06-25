@@ -1,18 +1,18 @@
 import {forwardRef, memo, type FC, type HTMLAttributes, type MouseEvent} from 'react';
 import clsx from 'clsx';
 
-import type {TagStyle} from '@/constants/types';
-import type {Tags} from '@/data';
+import type {TTagStyle} from '@/constants/types';
+import type {TTags} from '@/data';
 
-interface HandleClick {
-	handleClick?: ((tag: Tags, e?: MouseEvent<HTMLDivElement>) => void) | undefined;
+interface IHandleClick {
+	handleClick?: ((tag: TTags, e?: MouseEvent<HTMLDivElement>) => void) | undefined;
 }
 
-interface ITagProps extends ITagPropsBase, HandleClick, HTMLAttributes<HTMLDivElement> {}
+interface ITagProps extends ITagPropsBase, IHandleClick, HTMLAttributes<HTMLDivElement> {}
 
 interface ITagPropsBase {
-	tag: Tags;
-	tagStyle?: Partial<TagStyle>;
+	tag: TTags;
+	tagStyle?: Partial<TTagStyle>;
 }
 
 const Tag: FC<ITagProps> = memo(
@@ -41,11 +41,11 @@ const Tag: FC<ITagProps> = memo(
 );
 
 interface ITagsPropsBase {
-	tags: Tags[] | undefined;
-	tagStyle?: Partial<TagStyle> | undefined;
+	tags: TTags[] | undefined;
+	tagStyle?: Partial<TTagStyle> | undefined;
 }
 
-interface ITagsProps extends ITagsPropsBase, HandleClick {
+interface ITagsProps extends ITagsPropsBase, IHandleClick {
 	className?: string;
 }
 

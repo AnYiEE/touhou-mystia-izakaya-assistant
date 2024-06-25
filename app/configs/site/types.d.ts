@@ -1,4 +1,4 @@
-type Href = {
+type THref = {
 	label: string;
 	href: string;
 };
@@ -14,12 +14,12 @@ export interface ISiteConfig {
 	keywords: string[];
 	locale: string;
 	version: string;
-	navItems: Href[];
-	navMenuItems: Href[];
-	links: Record<string, Href>;
+	navItems: THref[];
+	navMenuItems: THref[];
+	links: Record<string, THref>;
 	nodeEnv: NodeJS.ProcessEnv['NODE_ENV'];
 	vercelEnv: NodeJS.ProcessEnv['NODE_ENV'] | undefined;
 	isVercel: boolean;
 }
 
-export type SiteConfig = typeof import('./index').siteConfig;
+export type TSiteConfig = typeof import('./index').siteConfig;

@@ -13,7 +13,7 @@ import {
 
 import Content from '@/(pages)/recipes/content';
 import SideButtonGroup from '@/components/sideButtonGroup';
-import SideFilterIconButton, {type SelectConfig} from '@/components/sideFilterIconButton';
+import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton, {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 import {instances} from '@/methods';
@@ -182,7 +182,7 @@ export default memo(function Recipess() {
 					selectedKeys: filterLevel,
 					setSelectedKeys: (key) => setFilters((prev) => ({...prev, level: key})),
 				},
-			] as const satisfies SelectConfig,
+			] as const satisfies TSelectConfig,
 		[
 			filterDlc,
 			filterLevel,
