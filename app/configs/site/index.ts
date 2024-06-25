@@ -66,6 +66,7 @@ export const siteConfig = {
 			href: 'https://store.steampowered.com/app/1584090/__Touhou_Mystias_Izakaya',
 		},
 	},
-	isProduction: process.env.NODE_ENV === 'production',
+	nodeEnv: process.env.NODE_ENV,
+	vercelEnv: process.env.VERCEL_ENV,
 	isVercel: !!process.env.VERCEL,
 } as const satisfies ISiteConfig;

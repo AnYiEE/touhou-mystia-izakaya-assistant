@@ -17,7 +17,8 @@ export interface ISiteConfig {
 	navItems: Href[];
 	navMenuItems: Href[];
 	links: Record<string, Href>;
-	isProduction: boolean;
+	nodeEnv: NodeJS.ProcessEnv['NODE_ENV'];
+	vercelEnv: NodeJS.ProcessEnv['NODE_ENV'] | undefined;
 	isVercel: boolean;
 }
 
