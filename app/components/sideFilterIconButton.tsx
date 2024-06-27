@@ -13,8 +13,10 @@ import {
 import {faFilter} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
+import Sprite from '@/components/sprite';
 
 import {pinyinSort} from '@/utils';
+import {TSpriteTarget} from '@/utils/sprite/types';
 
 interface ISelectConfigItem {
 	label: SelectProps['label'];
@@ -24,6 +26,7 @@ interface ISelectConfigItem {
 	selectedKeys: string[];
 	selectionMode?: SelectProps['selectionMode'];
 	setSelectedKeys: Dispatch<ISelectConfigItem['selectedKeys']>;
+	spriteTarget?: TSpriteTarget;
 }
 export type TSelectConfig = ISelectConfigItem[];
 
@@ -59,19 +62,32 @@ export default memo(
 				</PopoverTrigger>
 				<PopoverContent className="w-64">
 					<div className="flex w-full flex-col gap-1">
-						{selectConfig.map(({label, items, selectedKeys, selectionMode, setSelectedKeys}, index) => (
-							<Select
-								key={`${label}${index}`}
-								size="sm"
-								items={items}
-								selectedKeys={selectedKeys}
-								selectionMode={selectionMode ?? 'multiple'}
-								label={label}
-								onSelectionChange={handleSelectionChange(setSelectedKeys)}
-							>
-								{({value}) => <SelectItem key={value}>{value.toString()}</SelectItem>}
-							</Select>
-						))}
+						{selectConfig.map(
+							({label, items, selectedKeys, selectionMode, setSelectedKeys, spriteTarget}, index) => (
+								<Select
+									key={`${label}${index}`}
+									size="sm"
+									items={items}
+									selectedKeys={selectedKeys}
+									selectionMode={selectionMode ?? 'multiple'}
+									label={label}
+									onSelectionChange={handleSelectionChange(setSelectedKeys)}
+								>
+									{({value}) =>
+										spriteTarget ? (
+											<SelectItem key={value} textValue={value as string}>
+												<div className="flex items-center">
+													<Sprite target={spriteTarget} name={value as never} size={1} />
+													<span className="ml-1">{value}</span>
+												</div>
+											</SelectItem>
+										) : (
+											<SelectItem key={value}>{value.toString()}</SelectItem>
+										)
+									}
+								</Select>
+							)
+						)}
 						{isFiltering && (
 							<Button
 								color="danger"

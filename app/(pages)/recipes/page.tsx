@@ -163,18 +163,21 @@ export default memo(function Recipess() {
 					items: allIngredients,
 					selectedKeys: filterIngredient,
 					setSelectedKeys: (key) => setFilters((prev) => ({...prev, ingredient: key})),
+					spriteTarget: 'ingredient',
 				},
 				{
 					label: '食材（排除）',
 					items: allIngredients,
 					selectedKeys: filterNoIngredient,
 					setSelectedKeys: (key) => setFilters((prev) => ({...prev, noIngredient: key})),
+					spriteTarget: 'ingredient',
 				},
 				{
 					label: '厨具',
 					items: allKitchenwares,
 					selectedKeys: filterKitchenware,
 					setSelectedKeys: (key) => setFilters((prev) => ({...prev, kitchenware: key})),
+					spriteTarget: 'kitchenware',
 				},
 				{
 					label: '等级',
