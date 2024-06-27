@@ -24,8 +24,8 @@ const Tag: FC<ITagProps> = memo(
 			<div
 				className={clsx('max-w-1/5 rounded border-1 border-solid px-1', className)}
 				style={{
-					backgroundColor: tagStyle.backgroundColor ?? '#fff',
-					borderColor: tagStyle.borderColor ?? '#000',
+					backgroundColor: tagStyle.backgroundColor ?? 'inherit',
+					borderColor: tagStyle.borderColor ?? 'inherit',
 					color: tagStyle.color ?? 'inherit',
 				}}
 				onClick={(e) => {
@@ -54,14 +54,8 @@ const TagsComponent: FC<ITagsProps> = memo(function Tags({tags, tagStyle = {}, h
 		<>
 			{tags &&
 				tags.length > 0 &&
-				tags.map((tag, index) => (
-					<Tag
-						key={tag + index}
-						tag={tag}
-						tagStyle={tagStyle}
-						handleClick={handleClick}
-						className={className}
-					/>
+				tags.map((tag) => (
+					<Tag key={tag} tag={tag} tagStyle={tagStyle} handleClick={handleClick} className={className} />
 				))}
 		</>
 	);
