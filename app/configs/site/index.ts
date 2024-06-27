@@ -18,6 +18,10 @@ export const siteConfig = {
 			href: '/',
 		},
 		{
+			label: '稀客',
+			href: '/customer-rare',
+		},
+		{
 			label: '料理',
 			href: '/recipes',
 		},
@@ -38,6 +42,10 @@ export const siteConfig = {
 		{
 			label: '首页',
 			href: '/',
+		},
+		{
+			label: '稀客',
+			href: '/customer-rare',
 		},
 		{
 			label: '料理',
