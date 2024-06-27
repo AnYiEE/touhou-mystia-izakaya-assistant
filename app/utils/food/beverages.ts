@@ -3,7 +3,11 @@ import {isEqual} from 'lodash';
 import {Food} from './base';
 import {type TBeverages, type IBeverage} from '@/data';
 
-export class Beverage extends Food<TBeverages> {
+export class Beverage<
+	TItem extends TBeverages[number] = TBeverages[number],
+	TName extends TItem['name'] = TItem['name'],
+	TTags extends TItem['tag'] = TItem['tag'],
+> extends Food<TBeverages> {
 	private static isTagChecked: boolean;
 
 	constructor(data: TBeverages) {
@@ -51,5 +55,17 @@ export class Beverage extends Food<TBeverages> {
 		Beverage.isTagChecked = true;
 
 		return tags;
+	}
+
+	public getCustomerSuitability(name: TName, customerTags: string[]) {
+		const beverage = this.getPropsByName(name);
+
+		const {tag} = beverage;
+		const {commonTags, count} = this.getCommonTags(tag, customerTags);
+
+		return {
+			suitability: count,
+			tag: commonTags as TTags,
+		};
 	}
 }

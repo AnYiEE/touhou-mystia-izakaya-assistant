@@ -1,4 +1,4 @@
-import {forwardRef, memo, type Dispatch, type SetStateAction} from 'react';
+import {forwardRef, memo, useMemo, type Dispatch, type SetStateAction} from 'react';
 import clsx from 'clsx';
 
 import {
@@ -19,14 +19,17 @@ import Tags from '@/components/tags';
 import Sprite from '@/components/sprite';
 
 import {customerTagStyleMap, instance_beverage} from './constants';
-import type {ICurrentCustomer, TRecipe} from './types';
+import type {ICurrentCustomer, TBeverage, TRecipe} from './types';
 import {getCustomerInstance} from './utils';
 import {getIntersection, pinyinSort} from '@/utils';
 
 interface IProps {
 	currentCustomer: ICurrentCustomer | null;
+	currentBeverage: TBeverage | null;
 	currentRecipe: TRecipe | null;
 	refreshCustomer: () => void;
+	selectedCustomerBeverageTags: Selection;
+	setSelectedCustomerBeverageTags: Dispatch<SetStateAction<IProps['selectedCustomerBeverageTags']>>;
 	selectedCustomerPositiveTags: Selection;
 	setSelectedCustomerPositiveTags: Dispatch<SetStateAction<IProps['selectedCustomerPositiveTags']>>;
 }
@@ -35,13 +38,27 @@ export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(
 		{
 			currentCustomer,
+			currentBeverage,
 			currentRecipe,
 			refreshCustomer,
+			selectedCustomerBeverageTags,
+			setSelectedCustomerBeverageTags,
 			selectedCustomerPositiveTags,
 			setSelectedCustomerPositiveTags,
 		},
 		ref
 	) {
+		const hasSelected = useMemo(
+			() =>
+				Boolean(
+					currentBeverage ||
+						currentRecipe ||
+						(typeof selectedCustomerBeverageTags !== 'string' && selectedCustomerBeverageTags.size > 0) ||
+						(typeof selectedCustomerPositiveTags !== 'string' && selectedCustomerPositiveTags.size > 0)
+				),
+			[currentBeverage, currentRecipe, selectedCustomerBeverageTags, selectedCustomerPositiveTags]
+		);
+
 		if (!currentCustomer) {
 			return null;
 		}
@@ -163,9 +180,17 @@ export default memo(
 													tag={tag}
 													tagStyle={customerTagStyleMap[target].beverage}
 													handleClick={(tag) => {
-														console.log(tag);
+														setSelectedCustomerBeverageTags(
+															(prev) => new Set([...prev, tag])
+														);
 													}}
-													className="cursor-pointer p-0.5"
+													className={clsx(
+														'cursor-pointer p-0.5',
+														!(
+															currentBeverage &&
+															(currentBeverage.tag as string[]).includes(tag)
+														) && 'opacity-50'
+													)}
 												/>
 											))}
 										</TagGroup>
@@ -174,9 +199,7 @@ export default memo(
 							);
 						})()}
 					</div>
-					{(currentRecipe ||
-						(typeof selectedCustomerPositiveTags !== 'string' &&
-							selectedCustomerPositiveTags.size > 0)) && (
+					{hasSelected && (
 						<Tooltip showArrow content="重置当前选定项" offset={1}>
 							<FontAwesomeIconButton
 								icon={faArrowsRotate}

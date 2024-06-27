@@ -42,34 +42,31 @@ import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 
-import {customerTagStyleMap, instance_recipe} from './constants';
+import {customerTagStyleMap, instance_beverage} from './constants';
 import type {
 	ICurrentCustomer,
 	ITableColumn,
 	ITableSortDescriptor,
-	TRecipe,
-	TRecipeWithSuitability,
-	TRecipesWithSuitability,
+	TBeverage,
+	TBeverageWithSuitability,
+	TBeveragesWithSuitability,
 } from './types';
 import {getCustomerInstance} from './utils';
 import {pinyinSort, numberSort} from '@/utils';
 
-const {data: originalData} = instance_recipe;
+const {data: originalData} = instance_beverage;
 
-const allKitchenwares = instance_recipe.getValuesByProp(originalData, 'kitchenware', true).sort(pinyinSort);
-const allRecipeNames = instance_recipe.getValuesByProp(originalData, 'name', true).sort(pinyinSort);
-const allRecipeTags = instance_recipe.getValuesByProp(originalData, 'positive', true).sort(pinyinSort);
+const allBeverageNames = instance_beverage.getValuesByProp(originalData, 'name', true).sort(pinyinSort);
+const allBeverageTags = instance_beverage.sortedTag.map((value) => ({value}));
 
-type TTableColumnKey = 'recipe' | 'kitchenware' | 'ingredient' | 'price' | 'suitability' | 'action';
+type TTableColumnKey = 'beverage' | 'price' | 'suitability' | 'action';
 type TTableColumns = ITableColumn<TTableColumnKey>[];
 
-type TTableSortKey = Exclude<TTableColumnKey, 'kitchenware' | 'ingredient' | 'action'>;
+type TTableSortKey = Exclude<TTableColumnKey, 'action'>;
 type TTableSortDescriptor = ITableSortDescriptor<TTableSortKey>;
 
 const tableColumns = [
-	{key: 'recipe', label: '料理', sortable: true},
-	{key: 'kitchenware', label: '厨具', sortable: false},
-	{key: 'ingredient', label: '食材', sortable: false},
+	{key: 'beverage', label: '酒水', sortable: true},
 	{key: 'price', label: '售价', sortable: true},
 	{key: 'suitability', label: '匹配度', sortable: true},
 	{key: 'action', label: '操作', sortable: false},
@@ -77,24 +74,23 @@ const tableColumns = [
 
 interface IProps {
 	currentCustomer: ICurrentCustomer | null;
-	currentRecipe: TRecipe | null;
-	setCurrentRecipe: Dispatch<SetStateAction<IProps['currentRecipe']>>;
-	selectedCustomerPositiveTags: Selection;
-	setSelectedCustomerPositiveTags: Dispatch<SetStateAction<IProps['selectedCustomerPositiveTags']>>;
+	currentBeverage: TBeverage | null;
+	setCurrentBeverage: Dispatch<SetStateAction<IProps['currentBeverage']>>;
+	selectedCustomerBeverageTags: Selection;
+	setSelectedCustomerBeverageTags: Dispatch<SetStateAction<IProps['selectedCustomerBeverageTags']>>;
 }
 
 export default memo(
-	forwardRef<HTMLTableElement | null, IProps>(function RecipeTabContent(
+	forwardRef<HTMLTableElement | null, IProps>(function BeverageTabContent(
 		{
 			currentCustomer,
-			currentRecipe,
-			setCurrentRecipe,
-			selectedCustomerPositiveTags,
-			setSelectedCustomerPositiveTags,
+			currentBeverage,
+			setCurrentBeverage,
+			selectedCustomerBeverageTags,
+			setSelectedCustomerBeverageTags,
 		},
 		ref
 	) {
-		const [selectedKitchenwares, setSelectedKitchenwares] = useState<Selection>(new Set());
 		const [searchValue, setSearchValue] = useState('');
 		const hasNameFilter = useMemo(() => Boolean(searchValue), [searchValue]);
 
@@ -102,69 +98,55 @@ export default memo(
 		const [tableRowsPerPage, setTableRowsPerPage] = useState(7);
 		const [tableSortDescriptor, setSortDescriptor] = useState<TTableSortDescriptor>({});
 		const [tableVisibleColumns, setTableVisibleColumns] = useState<Selection>(
-			new Set(tableColumns.filter(({key}) => key !== 'kitchenware').map(({key}) => key))
+			new Set(tableColumns.map(({key}) => key))
 		);
 
 		const filteredData = useMemo(() => {
-			let clonedData = structuredClone(originalData) as TRecipesWithSuitability;
+			let clonedData = structuredClone(originalData) as TBeveragesWithSuitability;
 
 			if (!currentCustomer) {
 				return clonedData.map((item) => ({
 					...item,
 					suitability: 0,
-					matchedPositiveTags: [] as string[],
-					matchedNegativeTags: [] as string[],
+					matchedTags: [] as string[],
 				}));
 			}
 
 			const {target, name: customerName} = currentCustomer;
 			const customerInstance = getCustomerInstance(target);
-			const {positive, negative} = customerInstance.getPropsByName(customerName);
+			const {beverage} = customerInstance.getPropsByName(customerName);
 
 			clonedData = clonedData.map((item) => {
-				const {
-					suitability,
-					positive: matchedPositiveTags,
-					negative: matchedNegativeTags,
-				} = instance_recipe.getCustomerSuitability(item.name, positive, negative);
+				const {suitability, tag: matchedTags} = instance_beverage.getCustomerSuitability(item.name, beverage);
 
 				return {
 					...item,
 					suitability,
-					matchedPositiveTags,
-					matchedNegativeTags,
+					matchedTags,
 				};
 			});
 
-			if (
-				!hasNameFilter &&
-				(selectedKitchenwares === 'all' || !selectedKitchenwares.size) &&
-				(selectedCustomerPositiveTags === 'all' || !selectedCustomerPositiveTags.size)
-			) {
+			if (!hasNameFilter && (selectedCustomerBeverageTags === 'all' || !selectedCustomerBeverageTags.size)) {
 				return clonedData;
 			}
 
-			return clonedData.filter(({name, kitchenware, positive: tags}) => {
+			return clonedData.filter(({name, tag: tags}) => {
 				const isNameMatch = hasNameFilter ? name.includes(searchValue) : true;
-				const isKitchenwareMatch =
-					selectedKitchenwares !== 'all' && selectedKitchenwares.size
-						? selectedKitchenwares.has(kitchenware)
-						: true;
-				const isPositiveTagsMatch =
-					selectedCustomerPositiveTags !== 'all' && selectedCustomerPositiveTags.size
-						? [...selectedCustomerPositiveTags].every((tag) => (tags as string[]).includes(tag as string))
+				const isTagsMatch =
+					selectedCustomerBeverageTags !== 'all' && selectedCustomerBeverageTags.size
+						? [...selectedCustomerBeverageTags].every((tag) => (tags as string[]).includes(tag as string))
 						: true;
 
-				return isNameMatch && isKitchenwareMatch && isPositiveTagsMatch;
+				return isNameMatch && isTagsMatch;
 			});
-		}, [currentCustomer, hasNameFilter, searchValue, selectedKitchenwares, selectedCustomerPositiveTags]);
+		}, [currentCustomer, hasNameFilter, selectedCustomerBeverageTags, searchValue]);
 
 		const sortedData = useMemo(() => {
 			const {column, direction} = tableSortDescriptor;
 			const isAscending = direction === 'ascending';
 
 			switch (column) {
-				case 'recipe':
+				case 'beverage':
 					return filteredData.toSorted(({name: a}, {name: b}) =>
 						isAscending ? pinyinSort(a, b) : pinyinSort(b, a)
 					);
@@ -201,54 +183,36 @@ export default memo(
 			[filteredData.length, tableRowsPerPage]
 		);
 
-		const tabelSelectedKeys = useMemo(() => new Set([currentRecipe?.name ?? '']), [currentRecipe?.name]);
+		const tabelSelectedKeys = useMemo(() => new Set([currentBeverage?.name ?? '']), [currentBeverage?.name]);
 
 		const renderTableCell = useCallback(
-			(data: TRecipeWithSuitability, columnKey: TTableColumnKey) => {
-				const {
-					name,
-					kitchenware,
-					ingredients,
-					positive,
-					price,
-					suitability,
-					matchedPositiveTags,
-					matchedNegativeTags,
-				} = data;
+			(data: TBeverageWithSuitability, columnKey: TTableColumnKey) => {
+				const {name, tag: beverageTags, price, suitability, matchedTags} = data;
 
 				if (!currentCustomer) {
 					return null;
 				}
 
-				const {positive: positiveTagStyle, negative: negativeTagStyle} =
-					customerTagStyleMap[currentCustomer.target];
+				const {beverage: beverageTagStyle} = customerTagStyleMap[currentCustomer.target];
 
 				const tags = (
 					<TagGroup>
-						{positive.toSorted(pinyinSort).map((tag) => (
+						{beverageTags.toSorted(pinyinSort).map((tag) => (
 							<Tags.Tag
 								key={tag}
 								tag={tag}
-								tagStyle={
-									matchedPositiveTags.includes(tag)
-										? positiveTagStyle
-										: matchedNegativeTags.includes(tag)
-											? negativeTagStyle
-											: {}
-								}
-								className={clsx(
-									![...matchedPositiveTags, ...matchedNegativeTags].includes(tag) && 'opacity-50'
-								)}
+								tagStyle={matchedTags.includes(tag) ? beverageTagStyle : {}}
+								className={clsx(!matchedTags.includes(tag) && 'opacity-50')}
 							/>
 						))}
 					</TagGroup>
 				);
 
 				switch (columnKey) {
-					case 'recipe':
+					case 'beverage':
 						return (
 							<div className="flex items-center">
-								<Sprite target="recipe" name={name} size={2} className="mr-2" />
+								<Sprite target="beverage" name={name} size={2} className="mr-2" />
 								<div className="inline-flex flex-1 items-center text-nowrap">
 									<p className="text-small font-medium">{name}</p>
 									<div className="-ml-2">
@@ -259,7 +223,7 @@ export default memo(
 														<FontAwesomeIconButton
 															icon={faTags}
 															variant="light"
-															aria-label="料理标签"
+															aria-label="酒水标签"
 															className="inline h-4 w-4 scale-75 text-default-400 data-[hover]:bg-transparent"
 														/>
 													</PopoverTrigger>
@@ -269,20 +233,6 @@ export default memo(
 										</Popover>
 									</div>
 								</div>
-							</div>
-						);
-					case 'kitchenware':
-						return (
-							<div className="flex">
-								<Sprite target="kitchenware" name={kitchenware} size={2} />
-							</div>
-						);
-					case 'ingredient':
-						return (
-							<div className="flex flex-nowrap">
-								{ingredients.map((ingredient, index) => (
-									<Sprite key={index} target="ingredient" name={ingredient} size={2} />
-								))}
 							</div>
 						);
 					case 'price':
@@ -298,7 +248,7 @@ export default memo(
 										size="sm"
 										variant="light"
 										onPress={() => {
-											setCurrentRecipe(instance_recipe.getPropsByName(name));
+											setCurrentBeverage(instance_beverage.getPropsByName(name));
 										}}
 									>
 										<FontAwesomeIcon icon={faPlus} />
@@ -308,20 +258,15 @@ export default memo(
 						);
 				}
 			},
-			[currentCustomer, setCurrentRecipe]
+			[currentCustomer, setCurrentBeverage]
 		);
 
-		const onSelectedKitchenwaresChange = useCallback((value: Selection) => {
-			setSelectedKitchenwares(value);
-			setTableCurrentPage(1);
-		}, []);
-
-		const onSelectedPositiveTagsChange = useCallback(
+		const onSelectedBeverageTagsChange = useCallback(
 			(value: Selection) => {
-				setSelectedCustomerPositiveTags(value);
+				setSelectedCustomerBeverageTags(value);
 				setTableCurrentPage(1);
 			},
-			[setSelectedCustomerPositiveTags]
+			[setSelectedCustomerBeverageTags]
 		);
 
 		const onSearchValueChange = useCallback((value: Key | null) => {
@@ -351,7 +296,7 @@ export default memo(
 							<Autocomplete
 								allowsCustomValue
 								defaultInputValue={searchValue}
-								defaultItems={allRecipeNames}
+								defaultItems={allBeverageNames}
 								placeholder="名称"
 								size="sm"
 								startContent={<FontAwesomeIcon icon={faMagnifyingGlass} />}
@@ -359,57 +304,27 @@ export default memo(
 								onClear={onSearchValueClear}
 								onInputChange={onSearchValueChange}
 								onSelectionChange={onSearchValueChange}
-								aria-label="选择或输入料理名称"
+								aria-label="选择或输入酒水名称"
 							>
 								{({value}) => <AutocompleteItem key={value}>{value}</AutocompleteItem>}
 							</Autocomplete>
 
 							<Select
-								items={allRecipeTags}
-								defaultSelectedKeys={selectedCustomerPositiveTags}
-								selectedKeys={selectedCustomerPositiveTags}
+								items={allBeverageTags}
+								defaultSelectedKeys={selectedCustomerBeverageTags}
+								selectedKeys={selectedCustomerBeverageTags}
 								selectionMode="multiple"
 								placeholder="标签"
 								size="sm"
 								startContent={<FontAwesomeIcon icon={faTags} />}
 								variant="flat"
-								onSelectionChange={onSelectedPositiveTagsChange}
-								aria-label="选择目标料理所包含的标签"
+								onSelectionChange={onSelectedBeverageTagsChange}
+								aria-label="选择目标酒水所包含的标签"
 							>
 								{({value}) => <SelectItem key={value}>{value}</SelectItem>}
 							</Select>
 						</div>
 						<div className="flex w-full gap-3 md:w-auto">
-							<Dropdown showArrow>
-								<DropdownTrigger>
-									<Button
-										endContent={<FontAwesomeIcon icon={faChevronDown} />}
-										size="sm"
-										variant="flat"
-									>
-										厨具
-									</Button>
-								</DropdownTrigger>
-								<DropdownMenu
-									closeOnSelect={false}
-									items={allKitchenwares}
-									defaultSelectedKeys={selectedKitchenwares}
-									selectedKeys={selectedKitchenwares}
-									selectionMode="multiple"
-									variant="flat"
-									onSelectionChange={onSelectedKitchenwaresChange}
-									aria-label="选择目标料理所使用的厨具"
-								>
-									{({value}) => (
-										<DropdownItem key={value} textValue={value}>
-											<div className="flex items-center">
-												<Sprite target="kitchenware" name={value} size={1} />
-												<span className="ml-1">{value}</span>
-											</div>
-										</DropdownItem>
-									)}
-								</DropdownMenu>
-							</Dropdown>
 							<Dropdown showArrow>
 								<DropdownTrigger>
 									<Button
@@ -424,7 +339,7 @@ export default memo(
 									closeOnSelect={false}
 									disallowEmptySelection
 									defaultSelectedKeys={tableVisibleColumns}
-									disabledKeys={['action', 'recipe'] satisfies TTableColumnKey[]}
+									disabledKeys={['action', 'beverage'] satisfies TTableColumnKey[]}
 									selectedKeys={tableVisibleColumns}
 									selectionMode="multiple"
 									variant="flat"
@@ -439,7 +354,7 @@ export default memo(
 						</div>
 					</div>
 					<div className="flex justify-between text-small text-default-400">
-						<span>总计{filteredData.length}道料理</span>
+						<span>总计{filteredData.length}种酒水</span>
 						<label className="flex">
 							<span className="cursor-auto">表格行数：</span>
 							<select
@@ -461,12 +376,10 @@ export default memo(
 				filteredData.length,
 				onSearchValueChange,
 				onSearchValueClear,
-				onSelectedKitchenwaresChange,
-				onSelectedPositiveTagsChange,
+				onSelectedBeverageTagsChange,
 				onTableRowsPerPageChange,
 				searchValue,
-				selectedCustomerPositiveTags,
-				selectedKitchenwares,
+				selectedCustomerBeverageTags,
 				tableRowsPerPage,
 				tableVisibleColumns,
 			]
@@ -501,7 +414,7 @@ export default memo(
 				topContent={tableToolbar}
 				topContentPlacement="outside"
 				onSortChange={(config) => setSortDescriptor(config as TTableSortDescriptor)}
-				aria-label="料理选择表格"
+				aria-label="酒水选择表格"
 				classNames={{
 					wrapper: 'max-h-[calc(100vh-19rem)]',
 				}}

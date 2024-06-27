@@ -25,8 +25,9 @@ import SidePinyinSortIconButton, {PinyinSortState} from '@/components/sidePinyin
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import {instance_rate, instance_special} from './constants';
-import type {ICurrentCustomer, ICustomerTabState, TRecipe} from './types';
+import type {ICurrentCustomer, ICustomerTabState, TBeverage, TRecipe} from './types';
 import {numberSort, pinyinSort} from '@/utils';
+import BeverageTabContent from './beverageTabContent';
 
 const rareDlcs = instance_rate.getValuesByProp(instance_rate.data, 'dlc').sort(numberSort);
 const specialDlcs = instance_special.getValuesByProp(instance_special.data, 'dlc').sort(numberSort);
@@ -59,11 +60,15 @@ function customerTabStateReducer(state: ICustomerTabState) {
 
 export default memo(function CustomerRare() {
 	const [currentCustomer, setCurrentCustomer] = useState<ICurrentCustomer | null>(null);
+	const [currentBeverage, setCurrentBeverage] = useState<TBeverage | null>(null);
 	const [currentRecipe, setCurrentRecipe] = useState<TRecipe | null>(null);
+	const [selectedCustomerBeverageTags, setSelectedCustomerBeverageTags] = useState<Selection>(new Set());
 	const [selectedCustomerPositiveTags, setSelectedCustomerPositiveTags] = useState<Selection>(new Set());
 
 	const refreshCustomer = useCallback(() => {
+		setCurrentBeverage(null);
 		setCurrentRecipe(null);
+		setSelectedCustomerBeverageTags(new Set());
 		setSelectedCustomerPositiveTags(new Set());
 	}, []);
 
@@ -199,9 +204,13 @@ export default memo(function CustomerRare() {
 						/>
 					</Tab>
 					<Tab isDisabled={!currentCustomer} key="beverage" title="酒水">
-						<div className="h-[calc(50vh-9rem)] break-all xl:h-[calc(100vh-9rem)]">
-							emptyemptyemptyemptyemptyemptyempty
-						</div>
+						<BeverageTabContent
+							currentCustomer={currentCustomer}
+							currentBeverage={currentBeverage}
+							setCurrentBeverage={setCurrentBeverage}
+							selectedCustomerBeverageTags={selectedCustomerBeverageTags}
+							setSelectedCustomerBeverageTags={setSelectedCustomerBeverageTags}
+						/>
 					</Tab>
 					<Tab isDisabled={!(currentCustomer && currentRecipe)} key="ingredient" title="食材">
 						<div className="h-[calc(50vh-9rem)] break-all xl:h-[calc(100vh-9rem)]">
@@ -215,8 +224,11 @@ export default memo(function CustomerRare() {
 				{currentCustomer ? (
 					<CustomerCard
 						currentCustomer={currentCustomer}
+						currentBeverage={currentBeverage}
 						currentRecipe={currentRecipe}
 						refreshCustomer={refreshCustomer}
+						selectedCustomerBeverageTags={selectedCustomerBeverageTags}
+						setSelectedCustomerBeverageTags={setSelectedCustomerBeverageTags}
 						selectedCustomerPositiveTags={selectedCustomerPositiveTags}
 						setSelectedCustomerPositiveTags={setSelectedCustomerPositiveTags}
 					/>

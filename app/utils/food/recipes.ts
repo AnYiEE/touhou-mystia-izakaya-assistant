@@ -13,15 +13,12 @@ export class Recipe<
 		this._data = data;
 	}
 
-	public getCustomerSuitability(name: TName, customerPositiveTags: string[], costomerNegativeTags?: string[]) {
+	public getCustomerSuitability(name: TName, customerPositiveTags: string[], costomerNegativeTags: string[]) {
 		const recipe = this.getPropsByName(name);
 
 		const {positive: recipeTags} = recipe;
 		const {commonTags: positiveTags, count: positiveCount} = this.getCommonTags(recipeTags, customerPositiveTags);
-		const {commonTags: negativeTags, count: negativeCount} = this.getCommonTags(
-			recipeTags,
-			costomerNegativeTags ?? []
-		);
+		const {commonTags: negativeTags, count: negativeCount} = this.getCommonTags(recipeTags, costomerNegativeTags);
 
 		return {
 			suitability: positiveCount - negativeCount,
