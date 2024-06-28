@@ -19,10 +19,10 @@ const ingredientsStore = store(
 		tags: instance.getValuesByProp(instance.data, 'tag', true).sort(pinyinSort),
 		page: {
 			filters: {
-				dlc: [] as string[],
-				level: [] as string[],
-				tag: [] as string[],
-				noTag: [] as string[],
+				dlcs: [] as string[],
+				levels: [] as string[],
+				tags: [] as string[],
+				noTags: [] as string[],
 			},
 			pinyinSortState: PinyinSortState.NONE,
 			searchValue: '',

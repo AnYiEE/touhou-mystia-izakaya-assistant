@@ -1,91 +1,70 @@
 'use client';
 
-import {memo, useMemo, useState} from 'react';
+import {memo, useMemo} from 'react';
 
-import {
-	useAllItemNames,
-	usePinyinSortConfig,
-	useSearchConfig,
-	useSearchResult,
-	useSortedData,
-	useThrottle,
-} from '@/hooks';
+import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
 
 import Content from '@/(pages)/recipes/content';
+import Loading from '@/loading';
 import SideButtonGroup from '@/components/sideButtonGroup';
 import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
-import SidePinyinSortIconButton, {PinyinSortState} from '@/components/sidePinyinSortIconButton';
+import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
-import {instances} from '@/methods';
-import {numberSort, pinyinSort} from '@/utils';
 
-const {
-	food: {recipe: instance},
-} = instances;
-
-const allDlcs = instance.getValuesByProp(instance.data, 'dlc', true).sort(numberSort);
-const allLevels = instance.getValuesByProp(instance.data, 'level', true).sort(numberSort);
-const allKitchenwares = instance.getValuesByProp(instance.data, 'kitchenware', true).sort(pinyinSort);
-const allPositiveTags = instance.getValuesByProp(instance.data, 'positive', true).sort(pinyinSort);
-const allNegativeTags = instance.getValuesByProp(instance.data, 'negative', true).sort(pinyinSort);
-const allIngredients = instance.getValuesByProp(instance.data, 'ingredients', true).sort(pinyinSort);
+import {useRecipesStore} from '@/stores';
 
 export default memo(function Recipess() {
-	const [pinyinSortState, setPinyinSortState] = useState<PinyinSortState>(PinyinSortState.NONE);
+	const store = useRecipesStore();
 
-	const allNames = useAllItemNames(instance, pinyinSortState);
+	const instance = store.instance.get();
 
-	const [searchValue, setSearchValue] = useState('');
+	const allNames = store.names.use();
+	const allDlcs = store.dlcs.get();
+	const allLevels = store.levels.get();
+	const allKitchenwares = store.kitchenwares.get();
+	const allPositiveTags = store.positiveTags.get();
+	const allNegativeTags = store.negativeTags.get();
+	const allIngredients = store.ingredients.get();
+
+	const pinyinSortState = store.page.pinyinSortState.use();
+	const searchValue = store.page.searchValue.use();
+
 	const throttledSearchValue = useThrottle(searchValue);
-
 	const searchResult = useSearchResult(instance, throttledSearchValue);
 
-	const [filters, setFilters] = useState({
-		dlc: [] as string[],
-		level: [] as string[],
-		kitchenware: [] as string[],
-		positiveTag: [] as string[],
-		noPositiveTag: [] as string[],
-		negativeTag: [] as string[],
-		noNegativeTag: [] as string[],
-		ingredient: [] as string[],
-		noIngredient: [] as string[],
-	});
-	const {
-		dlc: filterDlc,
-		level: filterLevel,
-		kitchenware: filterKitchenware,
-		positiveTag: filterPositiveTag,
-		noPositiveTag: filterNoPositiveTag,
-		negativeTag: filterNegativeTag,
-		noNegativeTag: filterNoNegativeTag,
-		ingredient: filterIngredient,
-		noIngredient: filterNoIngredient,
-	} = filters;
+	const filterDlcs = store.page.filters.dlcs.use();
+	const filterLevels = store.page.filters.levels.use();
+	const filterKitchenwares = store.page.filters.kitchenwares.use();
+	const filterPositiveTags = store.page.filters.positiveTags.use();
+	const filterNoPositiveTags = store.page.filters.noPositiveTags.use();
+	const filterNegativeTags = store.page.filters.negativeTags.use();
+	const filterNoNegativeTags = store.page.filters.noNegativeTags.use();
+	const filterIngredients = store.page.filters.ingredients.use();
+	const filterNoIngredients = store.page.filters.noIngredients.use();
 
 	const filteredData = useMemo(
 		() =>
 			searchResult.filter(({dlc, level, kitchenware, positive, negative, ingredients}) => {
-				const isDlcMatch = filterDlc.length ? filterDlc.includes(dlc.toString()) : true;
-				const isLevelMatch = filterLevel.length ? filterLevel.includes(level.toString()) : true;
-				const isKitchenwareMatch = filterKitchenware.length ? filterKitchenware.includes(kitchenware) : true;
-				const isPositiveTagMatch = filterPositiveTag.length
-					? filterPositiveTag.some((tag) => (positive as string[]).includes(tag))
+				const isDlcMatch = filterDlcs.length ? filterDlcs.includes(dlc.toString()) : true;
+				const isLevelMatch = filterLevels.length ? filterLevels.includes(level.toString()) : true;
+				const isKitchenwareMatch = filterKitchenwares.length ? filterKitchenwares.includes(kitchenware) : true;
+				const isPositiveTagMatch = filterPositiveTags.length
+					? filterPositiveTags.some((tag) => (positive as string[]).includes(tag))
 					: true;
-				const isNoPositiveTagMatch = filterNoPositiveTag.length
-					? !filterNoPositiveTag.some((tag) => (positive as string[]).includes(tag))
+				const isNoPositiveTagMatch = filterNoPositiveTags.length
+					? !filterNoPositiveTags.some((tag) => (positive as string[]).includes(tag))
 					: true;
-				const isNegativeTagMatch = filterNegativeTag.length
-					? filterNegativeTag.some((tag) => (negative as string[]).includes(tag))
+				const isNegativeTagMatch = filterNegativeTags.length
+					? filterNegativeTags.some((tag) => (negative as string[]).includes(tag))
 					: true;
-				const isNoNegativeTagMatch = filterNoNegativeTag.length
-					? !filterNoNegativeTag.some((tag) => (negative as string[]).includes(tag))
+				const isNoNegativeTagMatch = filterNoNegativeTags.length
+					? !filterNoNegativeTags.some((tag) => (negative as string[]).includes(tag))
 					: true;
-				const isIngredientMatch = filterIngredient.length
-					? filterIngredient.some((ingredient) => (ingredients as string[]).includes(ingredient))
+				const isIngredientMatch = filterIngredients.length
+					? filterIngredients.some((ingredient) => (ingredients as string[]).includes(ingredient))
 					: true;
-				const isNoIngredientMatch = filterNoIngredient.length
-					? !filterNoIngredient.some((ingredient) => (ingredients as string[]).includes(ingredient))
+				const isNoIngredientMatch = filterNoIngredients.length
+					? !filterNoIngredients.some((ingredient) => (ingredients as string[]).includes(ingredient))
 					: true;
 
 				return (
@@ -101,28 +80,28 @@ export default memo(function Recipess() {
 				);
 			}),
 		[
-			filterDlc,
-			filterKitchenware,
-			filterLevel,
-			filterPositiveTag,
-			filterNoPositiveTag,
-			filterNegativeTag,
-			filterNoNegativeTag,
-			filterIngredient,
-			filterNoIngredient,
+			filterDlcs,
+			filterIngredients,
+			filterKitchenwares,
+			filterLevels,
+			filterNegativeTags,
+			filterNoIngredients,
+			filterNoNegativeTags,
+			filterNoPositiveTags,
+			filterPositiveTags,
 			searchResult,
 		]
 	);
 
 	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
 
-	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, setPinyinSortState);
+	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, store.page.pinyinSortState.set);
 
 	const searchConfig = useSearchConfig({
 		label: '选择或输入料理名称',
 		searchItems: allNames,
 		searchValue: searchValue,
-		setSearchValue: setSearchValue,
+		setSearchValue: store.page.searchValue.set,
 	});
 
 	const selectConfig = useMemo(
@@ -131,76 +110,96 @@ export default memo(function Recipess() {
 				{
 					label: 'DLC',
 					items: allDlcs,
-					selectedKeys: filterDlc,
-					setSelectedKeys: (key) => setFilters((prev) => ({...prev, dlc: key})),
+					selectedKeys: filterDlcs,
+					setSelectedKeys: store.page.filters.dlcs.set,
 				},
 				{
 					label: '正特性（包含）',
 					items: allPositiveTags,
-					selectedKeys: filterPositiveTag,
-					setSelectedKeys: (key) => setFilters((prev) => ({...prev, positiveTag: key})),
+					selectedKeys: filterPositiveTags,
+					setSelectedKeys: store.page.filters.positiveTags.set,
 				},
 				{
 					label: '正特性（排除）',
 					items: allPositiveTags,
-					selectedKeys: filterNoPositiveTag,
-					setSelectedKeys: (key) => setFilters((prev) => ({...prev, noPositiveTag: key})),
+					selectedKeys: filterNoPositiveTags,
+					setSelectedKeys: store.page.filters.noPositiveTags.set,
 				},
 				{
 					label: '反特性（包含）',
 					items: allNegativeTags,
-					selectedKeys: filterNegativeTag,
-					setSelectedKeys: (key) => setFilters((prev) => ({...prev, negativeTag: key})),
+					selectedKeys: filterNegativeTags,
+					setSelectedKeys: store.page.filters.negativeTags.set,
 				},
 				{
 					label: '反特性（排除）',
 					items: allNegativeTags,
-					selectedKeys: filterNoNegativeTag,
-					setSelectedKeys: (key) => setFilters((prev) => ({...prev, noNegativeTag: key})),
+					selectedKeys: filterNoNegativeTags,
+					setSelectedKeys: store.page.filters.noNegativeTags.set,
 				},
 				{
 					label: '食材（包含）',
 					items: allIngredients,
-					selectedKeys: filterIngredient,
-					setSelectedKeys: (key) => setFilters((prev) => ({...prev, ingredient: key})),
+					selectedKeys: filterIngredients,
+					setSelectedKeys: store.page.filters.ingredients.set,
 					spriteTarget: 'ingredient',
 				},
 				{
 					label: '食材（排除）',
 					items: allIngredients,
-					selectedKeys: filterNoIngredient,
-					setSelectedKeys: (key) => setFilters((prev) => ({...prev, noIngredient: key})),
+					selectedKeys: filterNoIngredients,
+					setSelectedKeys: store.page.filters.noIngredients.set,
 					spriteTarget: 'ingredient',
 				},
 				{
 					label: '厨具',
 					items: allKitchenwares,
-					selectedKeys: filterKitchenware,
-					setSelectedKeys: (key) => setFilters((prev) => ({...prev, kitchenware: key})),
+					selectedKeys: filterKitchenwares,
+					setSelectedKeys: store.page.filters.kitchenwares.set,
 					spriteTarget: 'kitchenware',
 				},
 				{
 					label: '等级',
 					items: allLevels,
-					selectedKeys: filterLevel,
-					setSelectedKeys: (key) => setFilters((prev) => ({...prev, level: key})),
+					selectedKeys: filterLevels,
+					setSelectedKeys: store.page.filters.levels.set,
 				},
 			] as const satisfies TSelectConfig,
 		[
-			filterDlc,
-			filterLevel,
-			filterKitchenware,
-			filterPositiveTag,
-			filterNoPositiveTag,
-			filterIngredient,
-			filterNoIngredient,
-			filterNegativeTag,
-			filterNoNegativeTag,
+			allDlcs,
+			allIngredients,
+			allKitchenwares,
+			allLevels,
+			allNegativeTags,
+			allPositiveTags,
+			filterDlcs,
+			filterIngredients,
+			filterKitchenwares,
+			filterLevels,
+			filterNegativeTags,
+			filterNoIngredients,
+			filterNoNegativeTags,
+			filterNoPositiveTags,
+			filterPositiveTags,
+			store.page.filters.dlcs.set,
+			store.page.filters.ingredients.set,
+			store.page.filters.kitchenwares.set,
+			store.page.filters.levels.set,
+			store.page.filters.negativeTags.set,
+			store.page.filters.noIngredients.set,
+			store.page.filters.noNegativeTags.set,
+			store.page.filters.noPositiveTags.set,
+			store.page.filters.positiveTags.set,
 		]
 	);
 
+	const isMounted = useMounted();
+	if (!isMounted) {
+		return <Loading />;
+	}
+
 	return (
-		<>
+		<div className="grid grid-cols-2 justify-items-center gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
 			<SideButtonGroup>
 				<SideSearchIconButton searchConfig={searchConfig} />
 				<SidePinyinSortIconButton pinyinSortConfig={pinyinSortConfig} />
@@ -208,6 +207,6 @@ export default memo(function Recipess() {
 			</SideButtonGroup>
 
 			<Content data={sortedData} />
-		</>
+		</div>
 	);
 });

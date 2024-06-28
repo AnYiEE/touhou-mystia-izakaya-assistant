@@ -29,24 +29,26 @@ export default memo(function Beverages() {
 	const throttledSearchValue = useThrottle(searchValue);
 	const searchResult = useSearchResult(instance, throttledSearchValue);
 
-	const filterDlc = store.page.filters.dlc.use();
-	const filterLevel = store.page.filters.level.use();
-	const filterTag = store.page.filters.tag.use();
-	const filterNoTag = store.page.filters.noTag.use();
+	const filterDlcs = store.page.filters.dlcs.use();
+	const filterLevels = store.page.filters.levels.use();
+	const filterTags = store.page.filters.tags.use();
+	const filterNoTags = store.page.filters.noTags.use();
 
 	const filteredData = useMemo(
 		() =>
 			searchResult.filter(({dlc, level, tag: tags}) => {
-				const isDlcMatch = filterDlc.length ? filterDlc.includes(dlc.toString()) : true;
-				const isLevelMatch = filterLevel.length ? filterLevel.includes(level.toString()) : true;
-				const isTagMatch = filterTag.length ? filterTag.some((tag) => (tags as string[]).includes(tag)) : true;
-				const isNoTagMatch = filterNoTag.length
-					? !filterNoTag.some((tag) => (tags as string[]).includes(tag))
+				const isDlcMatch = filterDlcs.length ? filterDlcs.includes(dlc.toString()) : true;
+				const isLevelMatch = filterLevels.length ? filterLevels.includes(level.toString()) : true;
+				const isTagMatch = filterTags.length
+					? filterTags.some((tag) => (tags as string[]).includes(tag))
+					: true;
+				const isNoTagMatch = filterNoTags.length
+					? !filterNoTags.some((tag) => (tags as string[]).includes(tag))
 					: true;
 
 				return isDlcMatch && isLevelMatch && isTagMatch && isNoTagMatch;
 			}),
-		[filterDlc, filterLevel, filterNoTag, filterTag, searchResult]
+		[filterDlcs, filterLevels, filterNoTags, filterTags, searchResult]
 	);
 
 	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
@@ -66,40 +68,40 @@ export default memo(function Beverages() {
 				{
 					label: 'DLC',
 					items: allDlcs,
-					selectedKeys: filterDlc,
-					setSelectedKeys: store.page.filters.dlc.set,
+					selectedKeys: filterDlcs,
+					setSelectedKeys: store.page.filters.dlcs.set,
 				},
 				{
 					label: '酒水标签（包含）',
 					items: allTags,
-					selectedKeys: filterTag,
-					setSelectedKeys: store.page.filters.tag.set,
+					selectedKeys: filterTags,
+					setSelectedKeys: store.page.filters.tags.set,
 				},
 				{
 					label: '酒水标签（排除）',
 					items: allTags,
-					selectedKeys: filterNoTag,
-					setSelectedKeys: store.page.filters.noTag.set,
+					selectedKeys: filterNoTags,
+					setSelectedKeys: store.page.filters.noTags.set,
 				},
 				{
 					label: '等级',
 					items: allLevels,
-					selectedKeys: filterLevel,
-					setSelectedKeys: store.page.filters.level.set,
+					selectedKeys: filterLevels,
+					setSelectedKeys: store.page.filters.levels.set,
 				},
 			] as const satisfies TSelectConfig,
 		[
 			allDlcs,
 			allLevels,
 			allTags,
-			filterDlc,
-			filterLevel,
-			filterNoTag,
-			filterTag,
-			store.page.filters.dlc.set,
-			store.page.filters.level.set,
-			store.page.filters.noTag.set,
-			store.page.filters.tag.set,
+			filterDlcs,
+			filterLevels,
+			filterNoTags,
+			filterTags,
+			store.page.filters.dlcs.set,
+			store.page.filters.levels.set,
+			store.page.filters.noTags.set,
+			store.page.filters.tags.set,
 		]
 	);
 
