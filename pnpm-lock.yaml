@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@davstack/store':
+        specifier: ^1.4.2
+        version: 1.4.2(@types/react@18.3.3)(react@18.3.1)
       '@fortawesome/fontawesome-svg-core':
         specifier: ^6.5.2
         version: 6.5.2
@@ -56,6 +59,9 @@ importers:
       reset-css:
         specifier: ^5.0.2
         version: 5.0.2
+      zustand:
+        specifier: ^4.5.4
+        version: 4.5.4(@types/react@18.3.3)(immer@10.1.1)(react@18.3.1)
     devDependencies:
       '@commitlint/cli':
         specifier: ^19.3.0
@@ -457,6 +463,9 @@ packages:
     engines: {node: ^14 || ^16 || >=18}
     peerDependencies:
       postcss: ^8.4
+
+  '@davstack/store@1.4.2':
+    resolution: {integrity: sha512-RpC7xTo2V9fefJbch6ASScPUqtev0ECF5ckBBFOxLmjYxYyZ8RTwe5yUy9T0fO/9m/Kh7vUnGwlUPKIM753KTA==}
 
   '@dual-bundle/import-meta-resolve@4.1.0':
     resolution: {integrity: sha512-+nxncfwHM5SgAtrVzgpzJOI1ol0PkumhVo469KCf9lUi21IGcY90G98VuHm9VRrUypmAzawAHO9bs6hqeADaVg==}
@@ -2492,6 +2501,9 @@ packages:
     engines: {node: '>=0.10.0'}
     hasBin: true
 
+  immer@10.1.1:
+    resolution: {integrity: sha512-s2MPrmjovJcoMaHtx6K11Ra7oD05NT97w1IC5zpMkT6Atjr7H8LjaDd81iIxUYpMKSRRNMJE703M1Fhr/TctHw==}
+
   immutable@4.3.6:
     resolution: {integrity: sha512-Ju0+lEMyzMVZarkTn/gqRpdqd5dOPaz1mCZ0SH3JV6iFw81PldE/PEB1hWVEA288HPt4WXW8O7AWxB10M+03QQ==}
 
@@ -3914,6 +3926,11 @@ packages:
       '@types/react':
         optional: true
 
+  use-sync-external-store@1.2.0:
+    resolution: {integrity: sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
@@ -3992,6 +4009,21 @@ packages:
   yocto-queue@1.0.0:
     resolution: {integrity: sha512-9bnSc/HEW2uRy67wc+T8UwauLuPJVn28jb+GtJY16iiKWyvmYJRXVT4UamsAEGQfPohgr2q4Tq0sQbQlxTfi1g==}
     engines: {node: '>=12.20'}
+
+  zustand@4.5.4:
+    resolution: {integrity: sha512-/BPMyLKJPtFEvVL0E9E9BTUM63MNyhPGlvxk1XjrfWTUlV+BR8jufjsovHzrtR6YNcBEcL7cMHovL1n9xHawEg==}
+    engines: {node: '>=12.7.0'}
+    peerDependencies:
+      '@types/react': '>=16.8'
+      immer: '>=9.0.6'
+      react: '>=16.8'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      immer:
+        optional: true
+      react:
+        optional: true
 
 snapshots:
 
@@ -4357,6 +4389,15 @@ snapshots:
   '@csstools/utilities@1.0.0(postcss@8.4.38)':
     dependencies:
       postcss: 8.4.38
+
+  '@davstack/store@1.4.2(@types/react@18.3.3)(react@18.3.1)':
+    dependencies:
+      immer: 10.1.1
+      react-dom: 18.3.1(react@18.3.1)
+      zustand: 4.5.4(@types/react@18.3.3)(immer@10.1.1)(react@18.3.1)
+    transitivePeerDependencies:
+      - '@types/react'
+      - react
 
   '@dual-bundle/import-meta-resolve@4.1.0': {}
 
@@ -7323,6 +7364,8 @@ snapshots:
   image-size@0.5.5:
     optional: true
 
+  immer@10.1.1: {}
+
   immutable@4.3.6: {}
 
   import-fresh@3.3.0:
@@ -8776,6 +8819,10 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.3
 
+  use-sync-external-store@1.2.0(react@18.3.1):
+    dependencies:
+      react: 18.3.1
+
   util-deprecate@1.0.2: {}
 
   which-boxed-primitive@1.0.2:
@@ -8868,3 +8915,11 @@ snapshots:
   yocto-queue@0.1.0: {}
 
   yocto-queue@1.0.0: {}
+
+  zustand@4.5.4(@types/react@18.3.3)(immer@10.1.1)(react@18.3.1):
+    dependencies:
+      use-sync-external-store: 1.2.0(react@18.3.1)
+    optionalDependencies:
+      '@types/react': 18.3.3
+      immer: 10.1.1
+      react: 18.3.1

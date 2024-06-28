@@ -42,6 +42,7 @@
 		"东方夜雀食堂食谱"
 	],
 	"dependencies": {
+		"@davstack/store": "^1.4.2",
 		"@fortawesome/fontawesome-svg-core": "^6.5.2",
 		"@fortawesome/free-brands-svg-icons": "^6.5.2",
 		"@fortawesome/free-solid-svg-icons": "^6.5.2",
@@ -57,7 +58,8 @@
 		"pinyin-pro": "^3.22.2",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
-		"reset-css": "^5.0.2"
+		"reset-css": "^5.0.2",
+		"zustand": "^4.5.4"
 	},
 	"devDependencies": {
 		"@commitlint/cli": "^19.3.0",

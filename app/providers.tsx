@@ -3,6 +3,8 @@
 import {type ReactNode} from 'react';
 import {useRouter} from 'next/navigation';
 
+import {GlobalStoreProvider} from '@/stores';
+
 import {NextUIProvider} from '@nextui-org/react';
 import {ThemeProvider as NextThemesProvider} from 'next-themes';
 import type {ThemeProviderProps} from 'next-themes/dist/types';
@@ -18,7 +20,9 @@ export function Providers({children, locale, themeProps}: IProvidersProps) {
 
 	return (
 		<NextUIProvider locale={locale} navigate={router.push}>
-			<NextThemesProvider {...themeProps}>{children}</NextThemesProvider>
+			<NextThemesProvider {...themeProps}>
+				<GlobalStoreProvider>{children}</GlobalStoreProvider>
+			</NextThemesProvider>
 		</NextUIProvider>
 	);
 }
