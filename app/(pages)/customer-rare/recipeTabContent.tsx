@@ -494,7 +494,7 @@ export default memo(
 				onSortChange={(config) => customerStore.share.recipe.sortDescriptor.set(config as TTableSortDescriptor)}
 				aria-label="料理选择表格"
 				classNames={{
-					wrapper: 'max-h-[calc(100vh-19rem)]',
+					wrapper: 'max-h-[calc(100vh-17.5rem)]',
 				}}
 				ref={ref}
 			>

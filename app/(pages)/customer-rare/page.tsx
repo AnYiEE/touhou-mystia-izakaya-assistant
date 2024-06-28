@@ -12,6 +12,7 @@ import {faChevronDown, faChevronUp} from '@fortawesome/free-solid-svg-icons';
 import BeverageTabContent from './beverageTabContent';
 import CustomerCard from './customerCard';
 import CustomerTabContent from './customerTabContent';
+import Placeholder from './placeholder';
 import RecipeTabContent from './recipeTabContent';
 import Loading from '@/loading';
 import SideButtonGroup from '@/components/sideButtonGroup';
@@ -194,19 +195,24 @@ export default memo(function CustomerRare() {
 					</Tab>
 					<Tab isDisabled={!(currentCustomer && currentRecipe)} key="ingredient" title="食材">
 						<div className="h-[calc(50vh-9rem)] break-all xl:h-[calc(100vh-9rem)]">
-							emptyemptyemptyemptyemptyemptyempty
+							<Placeholder>emptyemptyemptyemptyemptyemptyempty</Placeholder>
 						</div>
 					</Tab>
 				</Tabs>
 			</div>
 
-			<div className="flex w-full flex-col xl:min-h-[calc(100vh-6.25rem)]">
+			<div className="flex w-full flex-col xl:min-h-[calc(100vh-6.75rem)]">
 				{currentCustomer ? (
-					<CustomerCard />
+					<>
+						<CustomerCard />
+						{currentRecipe ? (
+							<Placeholder className="pb-8 pt-16">{currentRecipe.name}</Placeholder>
+						) : (
+							<Placeholder className="pb-8 pt-16">选择一种料理或酒水以继续</Placeholder>
+						)}
+					</>
 				) : (
-					<span className="my-auto select-none p-2 text-center font-semibold text-default-300">
-						选择角色以继续
-					</span>
+					<Placeholder className="pb-4 pt-8">选择角色以继续</Placeholder>
 				)}
 			</div>
 		</div>
