@@ -16,7 +16,7 @@ const ingredientsStore = store(
 		instance,
 		dlcs: instance.getValuesByProp(instance.data, 'dlc', true).sort(numberSort),
 		levels: instance.getValuesByProp(instance.data, 'level', true).sort(numberSort),
-		tags: instance.getValuesByProp(instance.data, 'tag', true).sort(pinyinSort),
+		tags: instance.getValuesByProp(instance.data, 'tags', true).sort(pinyinSort),
 		page: {
 			filters: {
 				dlcs: [] as string[],

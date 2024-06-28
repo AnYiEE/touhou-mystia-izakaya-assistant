@@ -44,21 +44,21 @@ export default memo(function Recipess() {
 
 	const filteredData = useMemo(
 		() =>
-			searchResult.filter(({dlc, level, kitchenware, positive, negative, ingredients}) => {
+			searchResult.filter(({dlc, level, kitchenware, positiveTags, negativeTags, ingredients}) => {
 				const isDlcMatch = filterDlcs.length ? filterDlcs.includes(dlc.toString()) : true;
 				const isLevelMatch = filterLevels.length ? filterLevels.includes(level.toString()) : true;
 				const isKitchenwareMatch = filterKitchenwares.length ? filterKitchenwares.includes(kitchenware) : true;
 				const isPositiveTagMatch = filterPositiveTags.length
-					? filterPositiveTags.some((tag) => (positive as string[]).includes(tag))
+					? filterPositiveTags.some((tag) => (positiveTags as string[]).includes(tag))
 					: true;
 				const isNoPositiveTagMatch = filterNoPositiveTags.length
-					? !filterNoPositiveTags.some((tag) => (positive as string[]).includes(tag))
+					? !filterNoPositiveTags.some((tag) => (positiveTags as string[]).includes(tag))
 					: true;
 				const isNegativeTagMatch = filterNegativeTags.length
-					? filterNegativeTags.some((tag) => (negative as string[]).includes(tag))
+					? filterNegativeTags.some((tag) => (negativeTags as string[]).includes(tag))
 					: true;
 				const isNoNegativeTagMatch = filterNoNegativeTags.length
-					? !filterNoNegativeTags.some((tag) => (negative as string[]).includes(tag))
+					? !filterNoNegativeTags.some((tag) => (negativeTags as string[]).includes(tag))
 					: true;
 				const isIngredientMatch = filterIngredients.length
 					? filterIngredients.some((ingredient) => (ingredients as string[]).includes(ingredient))

@@ -33,8 +33,8 @@ const rareDlcs = instance_rate.getValuesByProp(instance_rate.data, 'dlc').sort(n
 const specialDlcs = instance_special.getValuesByProp(instance_special.data, 'dlc').sort(numberSort);
 const allDlcs = [...new Set([...rareDlcs, ...specialDlcs])].map((value) => ({value}));
 
-const rarePlaces = instance_rate.getValuesByProp(instance_rate.data, 'place').sort(pinyinSort);
-const specialPlaces = instance_special.getValuesByProp(instance_special.data, 'place').sort(pinyinSort);
+const rarePlaces = instance_rate.getValuesByProp(instance_rate.data, 'places').sort(pinyinSort);
+const specialPlaces = instance_special.getValuesByProp(instance_special.data, 'places').sort(pinyinSort);
 const allPlaces = [...new Set([...rarePlaces, ...specialPlaces])].map((value) => ({value}));
 
 const customerTabExpandState = {
@@ -93,7 +93,7 @@ export default memo(function CustomerRare() {
 
 	const customerFilter = useCallback(
 		function customerFilter<T extends TSearchResult>(target: T) {
-			return target.filter(({dlc, place: places}) => {
+			return target.filter(({dlc, places}) => {
 				const isDlcMatch = customerFilterDlc.length ? customerFilterDlc.includes(dlc.toString()) : true;
 				const isPlaceMatch = customerFilterPlace.length
 					? customerFilterPlace.some((place) => (places as string[]).includes(place))

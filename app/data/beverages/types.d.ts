@@ -31,7 +31,7 @@ interface IFrom extends TFromBase {
 }
 
 export interface IBeverage extends IFoodBase {
-	tag: TTag[];
+	tags: TTag[];
 	from: Partial<IFrom>;
 }
 

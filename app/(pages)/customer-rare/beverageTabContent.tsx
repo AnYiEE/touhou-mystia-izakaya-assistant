@@ -114,10 +114,13 @@ export default memo(
 
 			const {target, name: customerName} = currentCustomer;
 			const customerInstance = getCustomerInstance(target);
-			const {beverage} = customerInstance.getPropsByName(customerName);
+			const {beverageTags} = customerInstance.getPropsByName(customerName);
 
 			clonedData = clonedData.map((item) => {
-				const {suitability, tag: matchedTags} = instance_beverage.getCustomerSuitability(item.name, beverage);
+				const {suitability, tags: matchedTags} = instance_beverage.getCustomerSuitability(
+					item.name,
+					beverageTags
+				);
 
 				return {
 					...item,
@@ -130,7 +133,7 @@ export default memo(
 				return clonedData;
 			}
 
-			return clonedData.filter(({name, tag: tags}) => {
+			return clonedData.filter(({name, tags}) => {
 				const isNameMatch = hasNameFilter ? name.includes(searchValue) : true;
 				const isTagsMatch =
 					selectedCustomerBeverageTags !== 'all' && selectedCustomerBeverageTags.size
@@ -187,7 +190,7 @@ export default memo(
 
 		const renderTableCell = useCallback(
 			(data: TBeverageWithSuitability, columnKey: TTableColumnKey) => {
-				const {name, tag: beverageTags, price, suitability, matchedTags} = data;
+				const {name, tags: beverageTags, price, suitability, matchedTags} = data;
 
 				if (!currentCustomer) {
 					return null;

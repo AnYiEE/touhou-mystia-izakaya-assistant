@@ -120,8 +120,8 @@ export type TCollectionLocation =
 	| '妖怪之山中心瀑布'
 	| '月之都月虹池';
 
-type TBeverageTag = IBeverage['tag'][number] | '全部';
-type TRecipeTag = IRecipe['positive'][number] | IRecipe['negative'][number] | '流行喜爱' | '流行厌恶' | '全部';
+type TBeverageTag = IBeverage['tags'][number] | '全部';
+type TRecipeTag = IRecipe['positiveTags'][number] | IRecipe['negativeTags'][number] | '流行喜爱' | '流行厌恶' | '全部';
 
 type TPlace =
 	| '博丽神社'
@@ -148,10 +148,10 @@ export interface IItemBase {
 
 export interface ICustomerBase extends IItemBase {
 	dlc: TDlc;
-	place: TPlace[];
-	positive: TRecipeTag[];
-	negative: TRecipeTag[];
-	beverage: TBeverageTag[];
+	places: TPlace[];
+	positiveTags: TRecipeTag[];
+	negativeTags: TRecipeTag[];
+	beverageTags: TBeverageTag[];
 }
 
 interface IFoodFrom {

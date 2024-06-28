@@ -27,7 +27,7 @@ const ingredientSpriteInstance = new Sprite<'ingredient'>(INGREDIENT_LIST, INGRE
 const kitchenwareSpriteInstance = new Sprite<'kitchenware'>(KITCHENWARE_LIST, KITCHENWARE_SPRITE_CONFIG);
 const recipeSpriteInstance = new Sprite<'recipe'>(RECIPE_LIST, RECIPE_SPRITE_CONFIG);
 
-const spriteInstances = {
+export const spriteInstances = {
 	beverage: beverageSpriteInstance,
 	customer_normal: customerNormalSpriteInstance,
 	customer_rare: customerRareSpriteInstance,
@@ -36,5 +36,3 @@ const spriteInstances = {
 	kitchenware: kitchenwareSpriteInstance,
 	recipe: recipeSpriteInstance,
 } as const;
-
-export {spriteInstances};

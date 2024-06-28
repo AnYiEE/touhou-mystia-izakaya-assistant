@@ -36,7 +36,7 @@ export default memo(function Beverages() {
 
 	const filteredData = useMemo(
 		() =>
-			searchResult.filter(({dlc, level, tag: tags}) => {
+			searchResult.filter(({dlc, level, tags}) => {
 				const isDlcMatch = filterDlcs.length ? filterDlcs.includes(dlc.toString()) : true;
 				const isLevelMatch = filterLevels.length ? filterLevels.includes(level.toString()) : true;
 				const isTagMatch = filterTags.length

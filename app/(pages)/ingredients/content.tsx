@@ -22,7 +22,7 @@ export default memo(function Content({data}: IProps) {
 
 	return (
 		<>
-			{data.map(({dlc, from, name, level, price, tag: tags}, index) => (
+			{data.map(({dlc, from, name, level, price, tags}, index) => (
 				<Popover
 					key={index}
 					backdrop="opaque"

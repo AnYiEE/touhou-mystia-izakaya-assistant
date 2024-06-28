@@ -48,8 +48,8 @@ type TTag =
 
 export interface IRecipe extends IFoodBase {
 	ingredients: TIngredientNames[];
-	positive: TTag[];
-	negative: TTag[];
+	positiveTags: TTag[];
+	negativeTags: TTag[];
 	kitchenware: TKitchenwareNames;
 	max: number;
 	min: number;

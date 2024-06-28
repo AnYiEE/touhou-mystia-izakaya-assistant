@@ -58,7 +58,7 @@ const {data: originalData} = instance_recipe;
 
 const allKitchenwares = instance_recipe.getValuesByProp(originalData, 'kitchenware', true).sort(pinyinSort);
 const allRecipeNames = instance_recipe.getValuesByProp(originalData, 'name', true).sort(pinyinSort);
-const allRecipeTags = instance_recipe.getValuesByProp(originalData, 'positive', true).sort(pinyinSort);
+const allRecipeTags = instance_recipe.getValuesByProp(originalData, 'positiveTags', true).sort(pinyinSort);
 
 type TTableColumnKey = 'recipe' | 'kitchenware' | 'ingredient' | 'price' | 'suitability' | 'action';
 type TTableColumns = ITableColumn<TTableColumnKey>[];
@@ -119,14 +119,14 @@ export default memo(
 
 			const {target, name: customerName} = currentCustomer;
 			const customerInstance = getCustomerInstance(target);
-			const {positive, negative} = customerInstance.getPropsByName(customerName);
+			const {positiveTags, negativeTags} = customerInstance.getPropsByName(customerName);
 
 			clonedData = clonedData.map((item) => {
 				const {
 					suitability,
-					positive: matchedPositiveTags,
-					negative: matchedNegativeTags,
-				} = instance_recipe.getCustomerSuitability(item.name, positive, negative);
+					positiveTags: matchedPositiveTags,
+					negativeTags: matchedNegativeTags,
+				} = instance_recipe.getCustomerSuitability(item.name, positiveTags, negativeTags);
 
 				return {
 					...item,
@@ -144,7 +144,7 @@ export default memo(
 				return clonedData;
 			}
 
-			return clonedData.filter(({name, kitchenware, positive: tags}) => {
+			return clonedData.filter(({name, kitchenware, positiveTags}) => {
 				const isNameMatch = hasNameFilter ? name.includes(searchValue) : true;
 				const isKitchenwareMatch =
 					selectedKitchenwares !== 'all' && selectedKitchenwares.size
@@ -152,7 +152,9 @@ export default memo(
 						: true;
 				const isPositiveTagsMatch =
 					selectedCustomerPositiveTags !== 'all' && selectedCustomerPositiveTags.size
-						? [...selectedCustomerPositiveTags].every((tag) => (tags as string[]).includes(tag as string))
+						? [...selectedCustomerPositiveTags].every((tag) =>
+								(positiveTags as string[]).includes(tag as string)
+							)
 						: true;
 
 				return isNameMatch && isKitchenwareMatch && isPositiveTagsMatch;
@@ -209,7 +211,7 @@ export default memo(
 					name,
 					kitchenware,
 					ingredients,
-					positive,
+					positiveTags,
 					price,
 					suitability,
 					matchedPositiveTags,
@@ -225,7 +227,7 @@ export default memo(
 
 				const tags = (
 					<TagGroup>
-						{positive.toSorted(pinyinSort).map((tag) => (
+						{positiveTags.toSorted(pinyinSort).map((tag) => (
 							<Tags.Tag
 								key={tag}
 								tag={tag}

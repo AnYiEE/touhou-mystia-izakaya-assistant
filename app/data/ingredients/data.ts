@@ -4,7 +4,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '海苔',
 		type: '蔬菜',
-		tag: ['素', '鲜'],
+		tags: ['素', '鲜'],
 		dlc: 0,
 		level: 1,
 		price: 3,
@@ -16,7 +16,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '黄油',
 		type: '其他',
-		tag: ['重油'],
+		tags: ['重油'],
 		dlc: 0,
 		level: 2,
 		price: 8,
@@ -27,7 +27,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '面粉',
 		type: '其他',
-		tag: ['饱腹'],
+		tags: ['饱腹'],
 		dlc: 0,
 		level: 2,
 		price: 10,
@@ -38,7 +38,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '猪肉',
 		type: '肉类',
-		tag: ['肉'],
+		tags: ['肉'],
 		dlc: 0,
 		level: 1,
 		price: 10,
@@ -50,7 +50,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '豆腐',
 		type: '蔬菜',
-		tag: ['素', '家常', '清淡'],
+		tags: ['素', '家常', '清淡'],
 		dlc: 0,
 		level: 1,
 		price: 8,
@@ -61,7 +61,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '鸡蛋',
 		type: '其他',
-		tag: ['生'],
+		tags: ['生'],
 		dlc: 0,
 		level: 1,
 		price: 4,
@@ -73,7 +73,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '露水',
 		type: '其他',
-		tag: ['清淡'],
+		tags: ['清淡'],
 		dlc: 0,
 		level: 1,
 		price: 10,
@@ -85,7 +85,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '蘑菇',
 		type: '蔬菜',
-		tag: ['素', '鲜', '菌类'],
+		tags: ['素', '鲜', '菌类'],
 		dlc: 0,
 		level: 3,
 		price: 18,
@@ -105,7 +105,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '蝉蜕',
 		type: '其他',
-		tag: ['猎奇'],
+		tags: ['猎奇'],
 		dlc: 0,
 		level: 1,
 		price: 5,
@@ -116,7 +116,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '牛肉',
 		type: '肉类',
-		tag: ['肉'],
+		tags: ['肉'],
 		dlc: 0,
 		level: 2,
 		price: 15,
@@ -127,7 +127,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '洋葱',
 		type: '蔬菜',
-		tag: ['素', '鲜'],
+		tags: ['素', '鲜'],
 		dlc: 0,
 		level: 2,
 		price: 12,
@@ -139,7 +139,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '蜂蜜',
 		type: '其他',
-		tag: ['甜'],
+		tags: ['甜'],
 		dlc: 0,
 		level: 2,
 		price: 15,
@@ -158,7 +158,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '糯米',
 		type: '其他',
-		tag: [],
+		tags: [],
 		dlc: 0,
 		level: 3,
 		price: 15,
@@ -169,7 +169,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '月光草',
 		type: '其他',
-		tag: ['清淡', '梦幻', '不可思议', '文化底蕴'],
+		tags: ['清淡', '梦幻', '不可思议', '文化底蕴'],
 		dlc: 0,
 		level: 5,
 		price: 70,
@@ -182,7 +182,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '萝卜',
 		type: '蔬菜',
-		tag: ['素', '下酒'],
+		tags: ['素', '下酒'],
 		dlc: 0,
 		level: 2,
 		price: 16,
@@ -194,7 +194,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '土豆',
 		type: '蔬菜',
-		tag: ['素', '家常'],
+		tags: ['素', '家常'],
 		dlc: 0,
 		level: 2,
 		price: 10,
@@ -206,7 +206,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '八目鳗',
 		type: '海鲜',
-		tag: ['水产', '招牌', '鲜'],
+		tags: ['水产', '招牌', '鲜'],
 		dlc: 0,
 		level: 2,
 		price: 14,
@@ -224,7 +224,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '辣椒',
 		type: '其他',
-		tag: ['辣'],
+		tags: ['辣'],
 		dlc: 0,
 		level: 1,
 		price: 2,
@@ -236,7 +236,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '竹笋',
 		type: '蔬菜',
-		tag: ['素', '清淡'],
+		tags: ['素', '清淡'],
 		dlc: 0,
 		level: 3,
 		price: 40,
@@ -248,7 +248,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '虾',
 		type: '海鲜',
-		tag: ['水产', '鲜'],
+		tags: ['水产', '鲜'],
 		dlc: 0,
 		level: 2,
 		price: 30,
@@ -259,7 +259,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '桃子',
 		type: '其他',
-		tag: ['甜', '果味'],
+		tags: ['甜', '果味'],
 		dlc: 0,
 		level: 3,
 		price: 10,
@@ -271,7 +271,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '冰块',
 		type: '其他',
-		tag: ['凉爽'],
+		tags: ['凉爽'],
 		dlc: 0,
 		level: 1,
 		price: 2,
@@ -283,7 +283,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '鳟鱼',
 		type: '海鲜',
-		tag: ['水产', '鲜'],
+		tags: ['水产', '鲜'],
 		dlc: 0,
 		level: 1,
 		price: 8,
@@ -295,7 +295,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '野猪肉',
 		type: '肉类',
-		tag: ['肉'],
+		tags: ['肉'],
 		dlc: 0,
 		level: 3,
 		price: 25,
@@ -310,7 +310,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '竹子',
 		type: '其他',
-		tag: ['适合拍照'],
+		tags: ['适合拍照'],
 		dlc: 0,
 		level: 3,
 		price: 15,
@@ -322,7 +322,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '极上金枪鱼',
 		type: '海鲜',
-		tag: ['水产', '高级', '传说', '鲜', '海味'],
+		tags: ['水产', '高级', '传说', '鲜', '海味'],
 		dlc: 0,
 		level: 5,
 		price: 34,
@@ -341,7 +341,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '南瓜',
 		type: '蔬菜',
-		tag: ['素', '饱腹'],
+		tags: ['素', '饱腹'],
 		dlc: 0,
 		level: 2,
 		price: 14,
@@ -353,7 +353,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '三文鱼',
 		type: '海鲜',
-		tag: ['水产', '高级', '鲜'],
+		tags: ['水产', '高级', '鲜'],
 		dlc: 0,
 		level: 3,
 		price: 24,
@@ -365,7 +365,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '白果',
 		type: '其他',
-		tag: ['适合拍照'],
+		tags: ['适合拍照'],
 		dlc: 0,
 		level: 2,
 		price: 7,
@@ -377,7 +377,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '和牛',
 		type: '肉类',
-		tag: ['肉', '高级', '传说'],
+		tags: ['肉', '高级', '传说'],
 		dlc: 0,
 		level: 5,
 		price: 40,
@@ -390,7 +390,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '黑毛猪肉',
 		type: '肉类',
-		tag: ['肉', '传说', '山珍'],
+		tags: ['肉', '传说', '山珍'],
 		dlc: 0,
 		level: 4,
 		price: 35,
@@ -402,7 +402,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '松露',
 		type: '蔬菜',
-		tag: ['素', '高级', '传说', '鲜', '山珍', '菌类'],
+		tags: ['素', '高级', '传说', '鲜', '山珍', '菌类'],
 		dlc: 0,
 		level: 5,
 		price: 50,
@@ -421,7 +421,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '河豚',
 		type: '海鲜',
-		tag: ['水产', '鲜', '海味'],
+		tags: ['水产', '鲜', '海味'],
 		dlc: 0,
 		level: 5,
 		price: 42,
@@ -434,7 +434,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '幻昙华',
 		type: '其他',
-		tag: ['高级', '传说', '梦幻', '不可思议'],
+		tags: ['高级', '传说', '梦幻', '不可思议'],
 		dlc: 0,
 		level: 5,
 		price: 70,
@@ -451,7 +451,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '鹿肉',
 		type: '肉类',
-		tag: ['肉'],
+		tags: ['肉'],
 		dlc: 0,
 		level: 2,
 		price: 20,
@@ -463,7 +463,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '金枪鱼',
 		type: '海鲜',
-		tag: ['水产', '高级', '鲜'],
+		tags: ['水产', '高级', '鲜'],
 		dlc: 0,
 		level: 3,
 		price: 30,
@@ -475,7 +475,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '黄瓜',
 		type: '蔬菜',
-		tag: ['家常', '素', '清淡'],
+		tags: ['家常', '素', '清淡'],
 		dlc: 1,
 		level: 1,
 		price: 7,
@@ -490,7 +490,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '黑盐',
 		type: '其他',
-		tag: ['咸'],
+		tags: ['咸'],
 		dlc: 1,
 		level: 1,
 		price: 3,
@@ -502,7 +502,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '奶油',
 		type: '其他',
-		tag: ['家常', '甜', '西式'],
+		tags: ['家常', '甜', '西式'],
 		dlc: 1,
 		level: 1,
 		price: 9,
@@ -513,7 +513,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '章鱼',
 		type: '海鲜',
-		tag: ['水产', '鲜', '海味'],
+		tags: ['水产', '鲜', '海味'],
 		dlc: 1,
 		level: 2,
 		price: 12,
@@ -525,7 +525,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '葡萄',
 		type: '其他',
-		tag: ['甜', '果味'],
+		tags: ['甜', '果味'],
 		dlc: 0,
 		level: 1,
 		price: 5,
@@ -540,7 +540,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '螃蟹',
 		type: '海鲜',
-		tag: ['水产', '高级', '鲜'],
+		tags: ['水产', '高级', '鲜'],
 		dlc: 1,
 		level: 3,
 		price: 10,
@@ -555,7 +555,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '海胆',
 		type: '海鲜',
-		tag: ['水产', '高级', '传说', '鲜', '海味'],
+		tags: ['水产', '高级', '传说', '鲜', '海味'],
 		dlc: 1,
 		level: 3,
 		price: 18,
@@ -570,7 +570,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '芝士',
 		type: '其他',
-		tag: ['高级', '咸', '鲜'],
+		tags: ['高级', '咸', '鲜'],
 		dlc: 2,
 		level: 2,
 		price: 18,
@@ -582,7 +582,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '柠檬',
 		type: '其他',
-		tag: ['酸', '果味'],
+		tags: ['酸', '果味'],
 		dlc: 2,
 		level: 1,
 		price: 8,
@@ -594,7 +594,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '地瓜',
 		type: '其他',
-		tag: ['饱腹'],
+		tags: ['饱腹'],
 		dlc: 3,
 		level: 1,
 		price: 8,
@@ -606,7 +606,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '板栗',
 		type: '蔬菜',
-		tag: ['素', '家常'],
+		tags: ['素', '家常'],
 		dlc: 3,
 		level: 2,
 		price: 10,
@@ -618,7 +618,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '松子',
 		type: '其他',
-		tag: ['招牌', '清淡', '高级'],
+		tags: ['招牌', '清淡', '高级'],
 		dlc: 3,
 		level: 2,
 		price: 15,
@@ -630,7 +630,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '莲子',
 		type: '其他',
-		tag: ['招牌', '清淡', '文化底蕴'],
+		tags: ['招牌', '清淡', '文化底蕴'],
 		dlc: 3,
 		level: 3,
 		price: 22,
@@ -641,7 +641,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '并蒂莲',
 		type: '其他',
-		tag: ['清淡', '高级', '传说', '梦幻', '文化底蕴'],
+		tags: ['清淡', '高级', '传说', '梦幻', '文化底蕴'],
 		dlc: 2,
 		level: 3,
 		price: 36,
@@ -652,7 +652,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '西红柿',
 		type: '蔬菜',
-		tag: ['素'],
+		tags: ['素'],
 		dlc: 4,
 		level: 1,
 		price: 8,
@@ -663,7 +663,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '红豆',
 		type: '其他',
-		tag: ['家常'],
+		tags: ['家常'],
 		dlc: 4,
 		level: 2,
 		price: 18,
@@ -675,7 +675,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '梅子',
 		type: '其他',
-		tag: ['小巧', '咸'],
+		tags: ['小巧', '咸'],
 		dlc: 4,
 		level: 1,
 		price: 12,
@@ -687,7 +687,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '鲜花',
 		type: '其他',
-		tag: ['梦幻', '适合拍照'],
+		tags: ['梦幻', '适合拍照'],
 		dlc: 4,
 		level: 3,
 		price: 45,
@@ -699,7 +699,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '香椿',
 		type: '蔬菜',
-		tag: ['素', '毒'],
+		tags: ['素', '毒'],
 		dlc: 4,
 		level: 2,
 		price: 20,
@@ -711,7 +711,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '薜茘',
 		type: '其他',
-		tag: ['凉爽', '梦幻'],
+		tags: ['凉爽', '梦幻'],
 		dlc: 5,
 		level: 2,
 		price: 21,
@@ -722,7 +722,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '可可豆',
 		type: '其他',
-		tag: ['甜', '不可思议'],
+		tags: ['甜', '不可思议'],
 		dlc: 5,
 		level: 3,
 		price: 22,
@@ -733,7 +733,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '银耳',
 		type: '其他',
-		tag: ['菌类', '清淡'],
+		tags: ['菌类', '清淡'],
 		dlc: 5,
 		level: 3,
 		price: 14,
@@ -744,7 +744,7 @@ export const INGREDIENT_LIST = [
 	{
 		name: '西兰花',
 		type: '蔬菜',
-		tag: ['素', '家常'],
+		tags: ['素', '家常'],
 		dlc: 5,
 		level: 2,
 		price: 18,

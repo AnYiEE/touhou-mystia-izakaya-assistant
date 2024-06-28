@@ -78,13 +78,13 @@ export default memo(
 						<div className="flex flex-col gap-2 text-nowrap pt-2">
 							{(() => {
 								const {name, target} = currentCustomer;
-								const [dlc, place, price] = getCustomerInstance(target).getPropsByName(
+								const [dlc, places, price] = getCustomerInstance(target).getPropsByName(
 									name,
 									'dlc',
-									'place',
+									'places',
 									'price'
 								);
-								const clonePlace = structuredClone(place as string[]);
+								const clonePlace = structuredClone(places as string[]);
 								const mainPlace = clonePlace.shift();
 								const content = clonePlace.length
 									? `其他出没地点：${clonePlace.join('、')}`
@@ -118,17 +118,14 @@ export default memo(
 					<div className="flex w-full flex-col justify-evenly gap-3 text-nowrap">
 						{(() => {
 							const {name, target} = currentCustomer;
-							const [beverage, positive, negative] = getCustomerInstance(target).getPropsByName(
-								name,
-								'beverage',
-								'positive',
-								'negative'
-							);
+							const [beverageTags, positiveTags, negativeTags] = getCustomerInstance(
+								target
+							).getPropsByName(name, 'beverageTags', 'positiveTags', 'negativeTags');
 							return (
 								<>
-									{positive && positive.length > 0 && (
+									{positiveTags && positiveTags.length > 0 && (
 										<TagGroup>
-											{positive.toSorted(pinyinSort).map((tag) => (
+											{positiveTags.toSorted(pinyinSort).map((tag) => (
 												<Tags.Tag
 													key={tag}
 													tag={tag}
@@ -147,16 +144,16 @@ export default memo(
 														'cursor-pointer p-0.5',
 														!(
 															currentRecipe &&
-															(currentRecipe.positive as string[]).includes(tag)
+															(currentRecipe.positiveTags as string[]).includes(tag)
 														) && 'opacity-50'
 													)}
 												/>
 											))}
 										</TagGroup>
 									)}
-									{negative && negative.length > 0 && (
+									{negativeTags && negativeTags.length > 0 && (
 										<TagGroup>
-											{negative.toSorted(pinyinSort).map((tag) => (
+											{negativeTags.toSorted(pinyinSort).map((tag) => (
 												<Tags.Tag
 													key={tag}
 													tag={tag}
@@ -165,16 +162,16 @@ export default memo(
 														'p-0.5',
 														!(
 															currentRecipe &&
-															(currentRecipe.positive as string[]).includes(tag)
+															(currentRecipe.positiveTags as string[]).includes(tag)
 														) && 'opacity-50'
 													)}
 												/>
 											))}
 										</TagGroup>
 									)}
-									{beverage && beverage.length > 0 && (
+									{beverageTags && beverageTags.length > 0 && (
 										<TagGroup>
-											{getIntersection(instance_beverage.sortedTag, beverage).map((tag) => (
+											{getIntersection(instance_beverage.sortedTag, beverageTags).map((tag) => (
 												<Tags.Tag
 													key={tag}
 													tag={tag}
@@ -188,7 +185,7 @@ export default memo(
 														'cursor-pointer p-0.5',
 														!(
 															currentBeverage &&
-															(currentBeverage.tag as string[]).includes(tag)
+															(currentBeverage.tags as string[]).includes(tag)
 														) && 'opacity-50'
 													)}
 												/>

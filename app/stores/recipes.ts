@@ -17,8 +17,8 @@ const recipesStore = store(
 		dlcs: instance.getValuesByProp(instance.data, 'dlc', true).sort(numberSort),
 		levels: instance.getValuesByProp(instance.data, 'level', true).sort(numberSort),
 		kitchenwares: instance.getValuesByProp(instance.data, 'kitchenware', true).sort(pinyinSort),
-		positiveTags: instance.getValuesByProp(instance.data, 'positive', true).sort(pinyinSort),
-		negativeTags: instance.getValuesByProp(instance.data, 'negative', true).sort(pinyinSort),
+		positiveTags: instance.getValuesByProp(instance.data, 'positiveTags', true).sort(pinyinSort),
+		negativeTags: instance.getValuesByProp(instance.data, 'negativeTags', true).sort(pinyinSort),
 		ingredients: instance.getValuesByProp(instance.data, 'ingredients', true).sort(pinyinSort),
 		page: {
 			filters: {
