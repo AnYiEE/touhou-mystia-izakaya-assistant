@@ -1,49 +1,38 @@
 'use client';
 
-import {memo, useMemo, useState} from 'react';
+import {memo, useMemo} from 'react';
 
-import {
-	useAllItemNames,
-	usePinyinSortConfig,
-	useSearchConfig,
-	useSearchResult,
-	useSortedData,
-	useThrottle,
-} from '@/hooks';
+import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
 
 import Content from '@/(pages)/beverages/content';
+import Loading from '@/loading';
 import SideButtonGroup from '@/components/sideButtonGroup';
 import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
-import SidePinyinSortIconButton, {PinyinSortState} from '@/components/sidePinyinSortIconButton';
+import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
-import {instances} from '@/methods';
-import {numberSort} from '@/utils';
 
-const {
-	food: {beverage: instance},
-} = instances;
-
-const allDlcs = instance.getValuesByProp(instance.data, 'dlc', true).sort(numberSort);
-const allLevels = instance.getValuesByProp(instance.data, 'level', true).sort(numberSort);
-const allTags = instance.sortedTag.map((value) => ({value}));
+import {useBeveragesStore} from '@/stores';
 
 export default memo(function Beverages() {
-	const [pinyinSortState, setPinyinSortState] = useState<PinyinSortState>(PinyinSortState.NONE);
+	const store = useBeveragesStore();
 
-	const allNames = useAllItemNames(instance, pinyinSortState);
+	const instance = store.instance.get();
 
-	const [searchValue, setSearchValue] = useState('');
+	const allNames = store.names.use();
+	const allDlcs = store.dlcs.get();
+	const allLevels = store.levels.get();
+	const allTags = store.tags.get();
+
+	const pinyinSortState = store.page.pinyinSortState.use();
+	const searchValue = store.page.searchValue.use();
+
 	const throttledSearchValue = useThrottle(searchValue);
-
 	const searchResult = useSearchResult(instance, throttledSearchValue);
 
-	const [filters, setFilters] = useState({
-		dlc: [] as string[],
-		level: [] as string[],
-		tag: [] as string[],
-		noTag: [] as string[],
-	});
-	const {dlc: filterDlc, level: filterLevel, tag: filterTag, noTag: filterNoTag} = filters;
+	const filterDlc = store.page.filters.dlc.use();
+	const filterLevel = store.page.filters.level.use();
+	const filterTag = store.page.filters.tag.use();
+	const filterNoTag = store.page.filters.noTag.use();
 
 	const filteredData = useMemo(
 		() =>
@@ -57,18 +46,18 @@ export default memo(function Beverages() {
 
 				return isDlcMatch && isLevelMatch && isTagMatch && isNoTagMatch;
 			}),
-		[filterDlc, filterTag, filterNoTag, filterLevel, searchResult]
+		[filterDlc, filterLevel, filterNoTag, filterTag, searchResult]
 	);
 
 	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
 
-	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, setPinyinSortState);
+	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, store.page.pinyinSortState.set);
 
 	const searchConfig = useSearchConfig({
 		label: '选择或输入酒水名称',
 		searchItems: allNames,
 		searchValue: searchValue,
-		setSearchValue: setSearchValue,
+		setSearchValue: store.page.searchValue.set,
 	});
 
 	const selectConfig = useMemo(
@@ -78,32 +67,49 @@ export default memo(function Beverages() {
 					label: 'DLC',
 					items: allDlcs,
 					selectedKeys: filterDlc,
-					setSelectedKeys: (key) => setFilters((prev) => ({...prev, dlc: key})),
+					setSelectedKeys: store.page.filters.dlc.set,
 				},
 				{
 					label: '酒水标签（包含）',
 					items: allTags,
 					selectedKeys: filterTag,
-					setSelectedKeys: (key) => setFilters((prev) => ({...prev, tag: key})),
+					setSelectedKeys: store.page.filters.tag.set,
 				},
 				{
 					label: '酒水标签（排除）',
 					items: allTags,
 					selectedKeys: filterNoTag,
-					setSelectedKeys: (key) => setFilters((prev) => ({...prev, noTag: key})),
+					setSelectedKeys: store.page.filters.noTag.set,
 				},
 				{
 					label: '等级',
 					items: allLevels,
 					selectedKeys: filterLevel,
-					setSelectedKeys: (key) => setFilters((prev) => ({...prev, level: key})),
+					setSelectedKeys: store.page.filters.level.set,
 				},
 			] as const satisfies TSelectConfig,
-		[filterDlc, filterLevel, filterTag, filterNoTag]
+		[
+			allDlcs,
+			allLevels,
+			allTags,
+			filterDlc,
+			filterLevel,
+			filterNoTag,
+			filterTag,
+			store.page.filters.dlc.set,
+			store.page.filters.level.set,
+			store.page.filters.noTag.set,
+			store.page.filters.tag.set,
+		]
 	);
 
+	const isMounted = useMounted();
+	if (!isMounted) {
+		return <Loading />;
+	}
+
 	return (
-		<>
+		<div className="grid grid-cols-2 justify-items-center gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
 			<SideButtonGroup>
 				<SideSearchIconButton searchConfig={searchConfig} />
 				<SidePinyinSortIconButton pinyinSortConfig={pinyinSortConfig} />
@@ -111,6 +117,6 @@ export default memo(function Beverages() {
 			</SideButtonGroup>
 
 			<Content data={sortedData} />
-		</>
+		</div>
 	);
 });
