@@ -9,7 +9,7 @@ import Sprite, {ISpriteProps} from '@/components/sprite';
 import TagsComponent from '@/components/tags';
 
 import type {ITagStyle} from '@/constants/types';
-import {type TFoodNames, type TIngredientNames, type TKitchenwareNames, type TTags} from '@/data';
+import {type IIngredient, type TFoodNames, type TIngredientNames, type TKitchenwareNames, type TTags} from '@/data';
 import {useParams} from '@/hooks';
 
 interface ICloseButtonProps {
@@ -110,6 +110,7 @@ interface IFoodPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 	};
 	dlc?: number | string;
 	ingredients?: TIngredientNames[];
+	ingredientType?: IIngredient['type'];
 	kitchenware?: TKitchenwareNames;
 	tags?: {
 		[key in keyof ITagStyle]: TTags[];
@@ -119,7 +120,7 @@ interface IFoodPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 
 const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = memo(
 	forwardRef<HTMLDivElement | null, PropsWithChildren<IFoodPopoverCardProps>>(function FoodPopoverCard(
-		{target, name, description, dlc, ingredients, kitchenware, tags, tagColors, children},
+		{target, name, description, dlc, ingredients, ingredientType, kitchenware, tags, tagColors, children},
 		ref
 	) {
 		const mergedTags = useMemo((): Omit<NonNullable<typeof tags>, 'beverage'> | undefined => {
@@ -155,14 +156,20 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 				)}
 				{description !== undefined && (
 					<div className="mt-2 flex gap-x-4 text-default-500">
-						<span>
+						<p>
 							<span className="font-semibold">售价：</span>
 							{description.price}
-						</span>
-						<span>
+						</p>
+						<p>
 							<span className="font-semibold">等级：</span>
 							{description.level}
-						</span>
+						</p>
+						{ingredientType !== undefined && (
+							<p>
+								<span className="font-semibold">种类：</span>
+								{ingredientType}
+							</p>
+						)}
 					</div>
 				)}
 				{mergedTags && (

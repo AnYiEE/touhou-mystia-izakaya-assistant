@@ -22,7 +22,7 @@ export default memo(function Content({data}: IProps) {
 
 	return (
 		<>
-			{data.map(({dlc, from, name, level, price, tags}, index) => (
+			{data.map(({dlc, from, name, level, price, tags, type}, index) => (
 				<Popover
 					key={index}
 					backdrop="opaque"
@@ -46,6 +46,7 @@ export default memo(function Content({data}: IProps) {
 							name={name}
 							description={{level, price}}
 							dlc={dlc}
+							ingredientType={type}
 							tags={{positive: tags}}
 							tagColors={INGREDIENT_TAG_STYLE}
 						>
@@ -54,7 +55,7 @@ export default memo(function Content({data}: IProps) {
 								const way = method === 'buy' ? '购买' : method === 'task' ? '任务' : '采集';
 
 								return (
-									<div key={index}>
+									<p key={index}>
 										<span className="font-semibold">{way}：</span>
 										{target.map((item, index) => (
 											<Fragment key={index}>
@@ -79,7 +80,7 @@ export default memo(function Content({data}: IProps) {
 												{index < target.length - 1 && '、'}
 											</Fragment>
 										))}
-									</div>
+									</p>
 								);
 							})}
 						</FoodPopoverCard>
