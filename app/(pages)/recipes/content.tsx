@@ -23,7 +23,10 @@ export default memo(function Content({data}: IProps) {
 	return (
 		<>
 			{data.map(
-				({dlc, from, name, level, price, kitchenware, positiveTags, negativeTags, ingredients}, index) => (
+				(
+					{dlc, from, name, level, price, kitchenware, positiveTags, negativeTags, ingredients, max, min},
+					index
+				) => (
 					<Popover
 						key={index}
 						backdrop="opaque"
@@ -52,7 +55,7 @@ export default memo(function Content({data}: IProps) {
 								tags={{positive: positiveTags, negative: negativeTags}}
 								tagColors={RECIPE_TAG_STYLE}
 							>
-								<div>
+								<p>
 									<span className="font-semibold">菜谱来源：</span>
 									{typeof from === 'string'
 										? from
@@ -74,7 +77,12 @@ export default memo(function Content({data}: IProps) {
 													</Fragment>
 												)
 											)}
-								</div>
+								</p>
+								<p>
+									<span className="font-semibold">烹饪时间：</span>
+									{min}秒<span className="px-1">-</span>
+									{max}秒
+								</p>
 							</FoodPopoverCard>
 						</PopoverContent>
 					</Popover>
