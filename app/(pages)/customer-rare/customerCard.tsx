@@ -109,8 +109,8 @@ export default memo(
 													tagStyle={customerTagStyleMap[target].positive}
 													handleClick={(tag) => {
 														customerStore.share.customer.positiveTags.set((prev) => {
-															if (!tag.startsWith('流行')) {
-																(prev as Set<string>).add(tag);
+															if (prev instanceof Set && !tag.startsWith('流行')) {
+																prev.has(tag) ? prev.delete(tag) : prev.add(tag);
 															}
 														});
 													}}
@@ -155,7 +155,9 @@ export default memo(
 													tagStyle={customerTagStyleMap[target].beverage}
 													handleClick={(tag) => {
 														customerStore.share.customer.beverageTags.set((prev) => {
-															(prev as Set<string>).add(tag);
+															if (prev instanceof Set) {
+																prev.has(tag) ? prev.delete(tag) : prev.add(tag);
+															}
 														});
 													}}
 													className={clsx(
