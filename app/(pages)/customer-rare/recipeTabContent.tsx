@@ -1,14 +1,4 @@
-import {
-	forwardRef,
-	memo,
-	useCallback,
-	useMemo,
-	useState,
-	type ChangeEvent,
-	type Dispatch,
-	type Key,
-	type SetStateAction,
-} from 'react';
+import {forwardRef, memo, useCallback, useMemo, type ChangeEvent, type Key} from 'react';
 import clsx from 'clsx';
 
 import {
@@ -42,71 +32,48 @@ import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 
-import {customerTagStyleMap, instance_recipe} from './constants';
-import type {
-	ICurrentCustomer,
-	ITableColumn,
-	ITableSortDescriptor,
-	TRecipe,
-	TRecipeWithSuitability,
-	TRecipesWithSuitability,
-} from './types';
-import {getCustomerInstance} from './utils';
-import {pinyinSort, numberSort} from '@/utils';
-
-const {data: originalData} = instance_recipe;
-
-const allKitchenwares = instance_recipe.getValuesByProp(originalData, 'kitchenware', true).sort(pinyinSort);
-const allRecipeNames = instance_recipe.getValuesByProp(originalData, 'name', true).sort(pinyinSort);
-const allRecipeTags = instance_recipe.getValuesByProp(originalData, 'positiveTags', true).sort(pinyinSort);
+import {customerTagStyleMap, recipeTableColumns as tableColumns} from './constants';
+import type {ITableColumn, ITableSortDescriptor, TRecipeWithSuitability, TRecipesWithSuitability} from './types';
+import {useCustomerRareStore, useRecipesStore} from '@/stores';
+import {numberSort, pinyinSort} from '@/utils';
 
 type TTableColumnKey = 'recipe' | 'kitchenware' | 'ingredient' | 'price' | 'suitability' | 'action';
-type TTableColumns = ITableColumn<TTableColumnKey>[];
+export type TTableColumns = ITableColumn<TTableColumnKey>[];
 
 type TTableSortKey = Exclude<TTableColumnKey, 'kitchenware' | 'ingredient' | 'action'>;
-type TTableSortDescriptor = ITableSortDescriptor<TTableSortKey>;
+export type TTableSortDescriptor = ITableSortDescriptor<TTableSortKey>;
 
-const tableColumns = [
-	{key: 'recipe', label: '料理', sortable: true},
-	{key: 'kitchenware', label: '厨具', sortable: false},
-	{key: 'ingredient', label: '食材', sortable: false},
-	{key: 'price', label: '售价', sortable: true},
-	{key: 'suitability', label: '匹配度', sortable: true},
-	{key: 'action', label: '操作', sortable: false},
-] as const satisfies TTableColumns;
-
-interface IProps {
-	currentCustomer: ICurrentCustomer | null;
-	currentRecipe: TRecipe | null;
-	setCurrentRecipe: Dispatch<SetStateAction<IProps['currentRecipe']>>;
-	selectedCustomerPositiveTags: Selection;
-	setSelectedCustomerPositiveTags: Dispatch<SetStateAction<IProps['selectedCustomerPositiveTags']>>;
-}
+interface IProps {}
 
 export default memo(
-	forwardRef<HTMLTableElement | null, IProps>(function RecipeTabContent(
-		{
-			currentCustomer,
-			currentRecipe,
-			setCurrentRecipe,
-			selectedCustomerPositiveTags,
-			setSelectedCustomerPositiveTags,
-		},
-		ref
-	) {
-		const [selectedKitchenwares, setSelectedKitchenwares] = useState<Selection>(new Set());
-		const [searchValue, setSearchValue] = useState('');
+	forwardRef<HTMLTableElement | null, IProps>(function RecipeTabContent(_props, ref) {
+		const customerStore = useCustomerRareStore();
+		const recipesStore = useRecipesStore();
+
+		const currentCustomer = customerStore.share.customer.data.use();
+		const selectedCustomerPositiveTags = customerStore.share.customer.positiveTags.use();
+
+		const currentRecipe = customerStore.share.recipe.data.use();
+		const selectedKitchenwares = customerStore.share.recipe.kitchenwares.use();
+
+		const instance_recipe = recipesStore.instance.get();
+		const allKitchenwares = recipesStore.kitchenwares.get();
+		const allRecipeNames = useMemo(
+			() => instance_recipe.getValuesByProp(instance_recipe.data, 'name', true).sort(pinyinSort),
+			[instance_recipe]
+		);
+		const allRecipeTags = recipesStore.positiveTags.get();
+
+		const searchValue = customerStore.share.recipe.searchValue.use();
 		const hasNameFilter = useMemo(() => Boolean(searchValue), [searchValue]);
 
-		const [tableCurrentPage, setTableCurrentPage] = useState(1);
-		const [tableRowsPerPage, setTableRowsPerPage] = useState(7);
-		const [tableSortDescriptor, setSortDescriptor] = useState<TTableSortDescriptor>({});
-		const [tableVisibleColumns, setTableVisibleColumns] = useState<Selection>(
-			new Set(tableColumns.filter(({key}) => key !== 'kitchenware').map(({key}) => key))
-		);
+		const tableCurrentPage = customerStore.share.recipe.page.use();
+		const tableRowsPerPage = customerStore.page.recipe.table.rows.use();
+		const tableSortDescriptor = customerStore.share.recipe.sortDescriptor.use();
+		const tableVisibleColumns = customerStore.recipeTableColumns.use();
 
 		const filteredData = useMemo(() => {
-			let clonedData = structuredClone(originalData) as TRecipesWithSuitability;
+			let clonedData = structuredClone(instance_recipe.data) as TRecipesWithSuitability;
 
 			if (!currentCustomer) {
 				return clonedData.map((item) => ({
@@ -118,8 +85,9 @@ export default memo(
 			}
 
 			const {target, name: customerName} = currentCustomer;
-			const customerInstance = getCustomerInstance(target);
-			const {positiveTags, negativeTags} = customerInstance.getPropsByName(customerName);
+			const {positiveTags, negativeTags} = customerStore.instances[target as 'customer_rare']
+				.get()
+				.getPropsByName(customerName);
 
 			clonedData = clonedData.map((item) => {
 				const {
@@ -145,7 +113,7 @@ export default memo(
 			}
 
 			return clonedData.filter(({name, kitchenware, positiveTags}) => {
-				const isNameMatch = hasNameFilter ? name.includes(searchValue) : true;
+				const isNameMatch = hasNameFilter ? name.toLowerCase().includes(searchValue.toLowerCase()) : true;
 				const isKitchenwareMatch =
 					selectedKitchenwares !== 'all' && selectedKitchenwares.size
 						? selectedKitchenwares.has(kitchenware)
@@ -159,7 +127,15 @@ export default memo(
 
 				return isNameMatch && isKitchenwareMatch && isPositiveTagsMatch;
 			});
-		}, [currentCustomer, hasNameFilter, searchValue, selectedKitchenwares, selectedCustomerPositiveTags]);
+		}, [
+			currentCustomer,
+			customerStore.instances,
+			hasNameFilter,
+			instance_recipe,
+			searchValue,
+			selectedCustomerPositiveTags,
+			selectedKitchenwares,
+		]);
 
 		const sortedData = useMemo(() => {
 			const {column, direction} = tableSortDescriptor;
@@ -300,7 +276,7 @@ export default memo(
 										size="sm"
 										variant="light"
 										onPress={() => {
-											setCurrentRecipe(instance_recipe.getPropsByName(name));
+											customerStore.share.recipe.data.set(instance_recipe.getPropsByName(name));
 										}}
 									>
 										<FontAwesomeIcon icon={faPlus} />
@@ -310,40 +286,49 @@ export default memo(
 						);
 				}
 			},
-			[currentCustomer, setCurrentRecipe]
+			[currentCustomer, customerStore.share.recipe.data, instance_recipe]
 		);
 
-		const onSelectedKitchenwaresChange = useCallback((value: Selection) => {
-			setSelectedKitchenwares(value);
-			setTableCurrentPage(1);
-		}, []);
+		const onSelectedKitchenwaresChange = useCallback(
+			(value: Selection) => {
+				customerStore.share.recipe.kitchenwares.set(value);
+				customerStore.share.recipe.page.set(1);
+			},
+			[customerStore.share.recipe.kitchenwares, customerStore.share.recipe.page]
+		);
 
 		const onSelectedPositiveTagsChange = useCallback(
 			(value: Selection) => {
-				setSelectedCustomerPositiveTags(value);
-				setTableCurrentPage(1);
+				customerStore.share.customer.positiveTags.set(value);
+				customerStore.share.recipe.page.set(1);
 			},
-			[setSelectedCustomerPositiveTags]
+			[customerStore.share.customer.positiveTags, customerStore.share.recipe.page]
 		);
 
-		const onSearchValueChange = useCallback((value: Key | null) => {
-			if (value) {
-				setSearchValue(value as string);
-				setTableCurrentPage(1);
-			} else {
-				setSearchValue('');
-			}
-		}, []);
+		const onSearchValueChange = useCallback(
+			(value: Key | null) => {
+				if (value) {
+					customerStore.share.recipe.searchValue.set(value as string);
+					customerStore.share.recipe.page.set(1);
+				} else {
+					customerStore.share.recipe.searchValue.set('');
+				}
+			},
+			[customerStore.share.recipe.page, customerStore.share.recipe.searchValue]
+		);
 
 		const onSearchValueClear = useCallback(() => {
-			setSearchValue('');
-			setTableCurrentPage(1);
-		}, []);
+			customerStore.share.recipe.searchValue.set('');
+			customerStore.share.recipe.page.set(1);
+		}, [customerStore.share.recipe.page, customerStore.share.recipe.searchValue]);
 
-		const onTableRowsPerPageChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
-			setTableRowsPerPage(Number(event.target.value));
-			setTableCurrentPage(1);
-		}, []);
+		const onTableRowsPerPageChange = useCallback(
+			(event: ChangeEvent<HTMLSelectElement>) => {
+				customerStore.page.recipe.table.rows.set(Number(event.target.value));
+				customerStore.share.recipe.page.set(1);
+			},
+			[customerStore.page.recipe.table.rows, customerStore.share.recipe.page]
+		);
 
 		const tableToolbar = useMemo(
 			() => (
@@ -430,7 +415,7 @@ export default memo(
 									selectedKeys={tableVisibleColumns}
 									selectionMode="multiple"
 									variant="flat"
-									onSelectionChange={setTableVisibleColumns}
+									onSelectionChange={customerStore.recipeTableColumns.set}
 									aria-label="选择表格所显示的列"
 								>
 									{tableColumns.map(({label: name, key}) => (
@@ -460,6 +445,10 @@ export default memo(
 				</div>
 			),
 			[
+				allKitchenwares,
+				allRecipeNames,
+				allRecipeTags,
+				customerStore.recipeTableColumns.set,
 				filteredData.length,
 				onSearchValueChange,
 				onSearchValueClear,
@@ -485,11 +474,11 @@ export default memo(
 						size="sm"
 						page={tableCurrentPage}
 						total={tableTotalPages}
-						onChange={setTableCurrentPage}
+						onChange={customerStore.share.recipe.page.set}
 					/>
 				</div>
 			),
-			[tableCurrentPage, tableTotalPages]
+			[customerStore.share.recipe.page.set, tableCurrentPage, tableTotalPages]
 		);
 
 		return (
@@ -502,7 +491,7 @@ export default memo(
 				sortDescriptor={tableSortDescriptor}
 				topContent={tableToolbar}
 				topContentPlacement="outside"
-				onSortChange={(config) => setSortDescriptor(config as TTableSortDescriptor)}
+				onSortChange={(config) => customerStore.share.recipe.sortDescriptor.set(config as TTableSortDescriptor)}
 				aria-label="料理选择表格"
 				classNames={{
 					wrapper: 'max-h-[calc(100vh-19rem)]',

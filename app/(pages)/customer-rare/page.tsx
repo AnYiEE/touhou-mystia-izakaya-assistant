@@ -1,111 +1,87 @@
 'use client';
 
-import {memo, useCallback, useMemo, useReducer, useState} from 'react';
+import {memo, useCallback, useMemo, useState} from 'react';
 import clsx from 'clsx';
 
-import {
-	useAllItemNames,
-	usePinyinSortConfig,
-	useSearchConfig,
-	useSearchResult,
-	useSortedData,
-	useThrottle,
-} from '@/hooks';
+import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
 
-import {Tab, Tabs, type Selection} from '@nextui-org/react';
+import {Tab, Tabs} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faChevronDown, faChevronUp} from '@fortawesome/free-solid-svg-icons';
 
+import BeverageTabContent from './beverageTabContent';
 import CustomerCard from './customerCard';
 import CustomerTabContent from './customerTabContent';
 import RecipeTabContent from './recipeTabContent';
+import Loading from '@/loading';
 import SideButtonGroup from '@/components/sideButtonGroup';
-import SideFilterIconButton, {TSelectConfig} from '@/components/sideFilterIconButton';
-import SidePinyinSortIconButton, {PinyinSortState} from '@/components/sidePinyinSortIconButton';
+import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
+import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
-import {instance_rate, instance_special} from './constants';
-import type {ICurrentCustomer, ICustomerTabState, TBeverage, TRecipe} from './types';
-import {numberSort, pinyinSort} from '@/utils';
-import BeverageTabContent from './beverageTabContent';
+import type {ICustomerTabStyleMap} from './types';
+import {useCustomerRareStore} from '@/stores';
 
-const rareDlcs = instance_rate.getValuesByProp(instance_rate.data, 'dlc').sort(numberSort);
-const specialDlcs = instance_special.getValuesByProp(instance_special.data, 'dlc').sort(numberSort);
-const allDlcs = [...new Set([...rareDlcs, ...specialDlcs])].map((value) => ({value}));
-
-const rarePlaces = instance_rate.getValuesByProp(instance_rate.data, 'places').sort(pinyinSort);
-const specialPlaces = instance_special.getValuesByProp(instance_special.data, 'places').sort(pinyinSort);
-const allPlaces = [...new Set([...rarePlaces, ...specialPlaces])].map((value) => ({value}));
-
-const customerTabExpandState = {
-	label: 'expand',
-	buttonNode: <FontAwesomeIcon icon={faChevronDown} size="sm" />,
-	contentClassName: 'h-[calc(50vh-9.25rem)] min-h-[20vw]',
-	sideButtonGroupClassName: 'hidden xl:block',
-} as const satisfies ICustomerTabState;
-
-const customerTabCollapseState = {
-	label: 'collapse',
-	buttonNode: <FontAwesomeIcon icon={faChevronUp} size="sm" />,
-	contentClassName: 'h-[50vmax]',
-	sideButtonGroupClassName: '',
-} as const satisfies ICustomerTabState;
-
-function customerTabStateReducer(state: ICustomerTabState) {
-	if (state.label === 'expand') {
-		return customerTabCollapseState;
-	}
-	return customerTabExpandState;
-}
+const customerTabStyleMap = {
+	collapse: {
+		buttonNode: <FontAwesomeIcon icon={faChevronDown} size="sm" />,
+		contentClassName: 'h-[calc(50vh-9.25rem)] min-h-[20vw]',
+		sideButtonGroupClassName: 'hidden xl:block',
+	},
+	expand: {
+		buttonNode: <FontAwesomeIcon icon={faChevronUp} size="sm" />,
+		contentClassName: 'h-[50vmax]',
+		sideButtonGroupClassName: '',
+	},
+} as const satisfies ICustomerTabStyleMap;
 
 export default memo(function CustomerRare() {
-	const [currentCustomer, setCurrentCustomer] = useState<ICurrentCustomer | null>(null);
-	const [currentBeverage, setCurrentBeverage] = useState<TBeverage | null>(null);
-	const [currentRecipe, setCurrentRecipe] = useState<TRecipe | null>(null);
-	const [selectedCustomerBeverageTags, setSelectedCustomerBeverageTags] = useState<Selection>(new Set());
-	const [selectedCustomerPositiveTags, setSelectedCustomerPositiveTags] = useState<Selection>(new Set());
+	const store = useCustomerRareStore();
 
-	const refreshCustomer = useCallback(() => {
-		setCurrentBeverage(null);
-		setCurrentRecipe(null);
-		setSelectedCustomerBeverageTags(new Set());
-		setSelectedCustomerPositiveTags(new Set());
-	}, []);
+	const currentCustomer = store.share.customer.data.use();
+	const currentRecipe = store.share.recipe.data.use();
 
-	const [customerPinyinSortState, setCustomerPinyinSortState] = useState<PinyinSortState>(PinyinSortState.NONE);
+	store.share.customer.data.onChange(() => {
+		store.refreshCustomerSelectedItems();
+		store.refreshAllSelectedItems();
+	});
 
-	const rareNames = useAllItemNames(instance_rate, customerPinyinSortState);
-	const specialNames = useAllItemNames(instance_special, customerPinyinSortState);
+	const instance_rare = store.instances.customer_rare.get();
+	const instance_special = store.instances.customer_special.get();
 
-	const [customerSearchValue, setCustomerSearchValue] = useState('');
+	const rareNames = store.rareNames.use();
+	const specialNames = store.specialNames.use();
+	const allDlcs = store.customer.dlcs.get();
+	const allPlaces = store.customer.places.get();
+
+	const customerPinyinSortState = store.page.customer.pinyinSortState.use();
+
+	const customerSearchValue = store.page.customer.searchValue.use();
 	const throttledCustomerSearchValue = useThrottle(customerSearchValue);
 
-	const rareSearchResult = useSearchResult(instance_rate, throttledCustomerSearchValue);
+	const rareSearchResult = useSearchResult(instance_rare, throttledCustomerSearchValue);
 	const specialSearchResult = useSearchResult(instance_special, throttledCustomerSearchValue);
 	type TSearchResult = typeof rareSearchResult | typeof specialSearchResult;
 
-	const [customerFilters, setCustomerFilters] = useState({
-		dlc: [] as string[],
-		place: [] as string[],
-		noPlace: [] as string[],
-	});
-	const {dlc: customerFilterDlc, place: customerFilterPlace, noPlace: customerFilterNoPlace} = customerFilters;
+	const customerFilterDlcs = store.page.customer.filters.dlcs.use();
+	const customerFilterPlaces = store.page.customer.filters.places.use();
+	const customerFilterNoPlaces = store.page.customer.filters.noPlaces.use();
 
 	const customerFilter = useCallback(
 		function customerFilter<T extends TSearchResult>(target: T) {
 			return target.filter(({dlc, places}) => {
-				const isDlcMatch = customerFilterDlc.length ? customerFilterDlc.includes(dlc.toString()) : true;
-				const isPlaceMatch = customerFilterPlace.length
-					? customerFilterPlace.some((place) => (places as string[]).includes(place))
+				const isDlcMatch = customerFilterDlcs.length ? customerFilterDlcs.includes(dlc.toString()) : true;
+				const isPlaceMatch = customerFilterPlaces.length
+					? customerFilterPlaces.some((place) => (places as string[]).includes(place))
 					: true;
-				const isNoPlaceMatch = customerFilterNoPlace.length
-					? !customerFilterNoPlace.some((place) => (places as string[]).includes(place))
+				const isNoPlaceMatch = customerFilterNoPlaces.length
+					? !customerFilterNoPlaces.some((place) => (places as string[]).includes(place))
 					: true;
 
 				return isDlcMatch && isPlaceMatch && isNoPlaceMatch;
 			}) as T;
 		},
-		[customerFilterDlc, customerFilterPlace, customerFilterNoPlace]
+		[customerFilterDlcs, customerFilterPlaces, customerFilterNoPlaces]
 	);
 
 	const rareFilteredData = useMemo(() => customerFilter(rareSearchResult), [customerFilter, rareSearchResult]);
@@ -114,7 +90,7 @@ export default memo(function CustomerRare() {
 		[customerFilter, specialSearchResult]
 	);
 
-	const rareSortedData = useSortedData(instance_rate, rareFilteredData, customerPinyinSortState);
+	const rareSortedData = useSortedData(instance_rare, rareFilteredData, customerPinyinSortState);
 	const specialSortedData = useSortedData(instance_special, specialFilteredData, customerPinyinSortState);
 	const customerSortedData = useMemo(
 		() =>
@@ -125,13 +101,16 @@ export default memo(function CustomerRare() {
 		[rareSortedData, specialSortedData]
 	);
 
-	const customerPinyinSortConfig = usePinyinSortConfig(customerPinyinSortState, setCustomerPinyinSortState);
+	const customerPinyinSortConfig = usePinyinSortConfig(
+		customerPinyinSortState,
+		store.page.customer.pinyinSortState.set
+	);
 
 	const customerSearchConfig = useSearchConfig({
 		label: '选择或输入稀客名称',
 		searchItems: [...rareNames, ...specialNames],
 		searchValue: customerSearchValue,
-		setSearchValue: setCustomerSearchValue,
+		setSearchValue: store.page.customer.searchValue.set,
 	});
 
 	const costomerSelectConfig = useMemo(
@@ -140,34 +119,54 @@ export default memo(function CustomerRare() {
 				{
 					label: 'DLC',
 					items: allDlcs,
-					selectedKeys: customerFilterDlc,
-					setSelectedKeys: (key) => setCustomerFilters((prev) => ({...prev, dlc: key})),
+					selectedKeys: customerFilterDlcs,
+					setSelectedKeys: store.page.customer.filters.dlcs.set,
 				},
 				{
 					label: '出没地点（包含）',
 					items: allPlaces,
-					selectedKeys: customerFilterPlace,
-					setSelectedKeys: (key) => setCustomerFilters((prev) => ({...prev, place: key})),
+					selectedKeys: customerFilterPlaces,
+					setSelectedKeys: store.page.customer.filters.places.set,
 				},
 				{
 					label: '出没地点（排除）',
 					items: allPlaces,
-					selectedKeys: customerFilterNoPlace,
-					setSelectedKeys: (key) => setCustomerFilters((prev) => ({...prev, noPlace: key})),
+					selectedKeys: customerFilterNoPlaces,
+					setSelectedKeys: store.page.customer.filters.noPlaces.set,
 				},
 			] as const satisfies TSelectConfig,
-		[customerFilterDlc, customerFilterNoPlace, customerFilterPlace]
+		[
+			allDlcs,
+			allPlaces,
+			customerFilterDlcs,
+			customerFilterNoPlaces,
+			customerFilterPlaces,
+			store.page.customer.filters.dlcs.set,
+			store.page.customer.filters.noPlaces.set,
+			store.page.customer.filters.places.set,
+		]
 	);
 
-	const [customerTabState, toggleCustomerTabState] = useReducer(customerTabStateReducer, customerTabExpandState);
+	const customerTabVisibilityState = store.page.customer.tabVisibility.use();
+
+	const customerTabStyle = useMemo(
+		() => customerTabStyleMap[customerTabVisibilityState],
+		[customerTabVisibilityState]
+	);
+
 	const [isCustomerTabFilterHidden, setIsCustomerTabFilterHidden] = useState(false);
 
+	const isMounted = useMounted();
+	if (!isMounted) {
+		return <Loading />;
+	}
+
 	return (
-		<>
+		<div className="grid grid-cols-1 justify-items-center gap-4 xl:grid-cols-2">
 			<SideButtonGroup
 				className={clsx(
 					'md:bottom-6 xl:bottom-[calc(50%-4rem)] xl:left-6',
-					customerTabState.sideButtonGroupClassName,
+					customerTabStyle.sideButtonGroupClassName,
 					isCustomerTabFilterHidden && '!hidden'
 				)}
 			>
@@ -185,32 +184,13 @@ export default memo(function CustomerRare() {
 					}}
 				>
 					<Tab key="customer_rare" title="稀客" className="relative">
-						<CustomerTabContent
-							currentCustomer={currentCustomer}
-							setCurrentCustomer={setCurrentCustomer}
-							customerTabState={customerTabState}
-							toggleCustomerTabState={toggleCustomerTabState}
-							refreshCustomer={refreshCustomer}
-							sortedData={customerSortedData}
-						/>
+						<CustomerTabContent customerTabStyle={customerTabStyle} sortedData={customerSortedData} />
 					</Tab>
 					<Tab isDisabled={!currentCustomer} key="recipe" title="料理">
-						<RecipeTabContent
-							currentCustomer={currentCustomer}
-							currentRecipe={currentRecipe}
-							setCurrentRecipe={setCurrentRecipe}
-							selectedCustomerPositiveTags={selectedCustomerPositiveTags}
-							setSelectedCustomerPositiveTags={setSelectedCustomerPositiveTags}
-						/>
+						<RecipeTabContent />
 					</Tab>
 					<Tab isDisabled={!currentCustomer} key="beverage" title="酒水">
-						<BeverageTabContent
-							currentCustomer={currentCustomer}
-							currentBeverage={currentBeverage}
-							setCurrentBeverage={setCurrentBeverage}
-							selectedCustomerBeverageTags={selectedCustomerBeverageTags}
-							setSelectedCustomerBeverageTags={setSelectedCustomerBeverageTags}
-						/>
+						<BeverageTabContent />
 					</Tab>
 					<Tab isDisabled={!(currentCustomer && currentRecipe)} key="ingredient" title="食材">
 						<div className="h-[calc(50vh-9rem)] break-all xl:h-[calc(100vh-9rem)]">
@@ -222,22 +202,13 @@ export default memo(function CustomerRare() {
 
 			<div className="flex w-full flex-col xl:min-h-[calc(100vh-6.25rem)]">
 				{currentCustomer ? (
-					<CustomerCard
-						currentCustomer={currentCustomer}
-						currentBeverage={currentBeverage}
-						currentRecipe={currentRecipe}
-						refreshCustomer={refreshCustomer}
-						selectedCustomerBeverageTags={selectedCustomerBeverageTags}
-						setSelectedCustomerBeverageTags={setSelectedCustomerBeverageTags}
-						selectedCustomerPositiveTags={selectedCustomerPositiveTags}
-						setSelectedCustomerPositiveTags={setSelectedCustomerPositiveTags}
-					/>
+					<CustomerCard />
 				) : (
 					<span className="my-auto select-none p-2 text-center font-semibold text-default-300">
 						选择角色以继续
 					</span>
 				)}
 			</div>
-		</>
+		</div>
 	);
 });

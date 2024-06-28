@@ -4,6 +4,7 @@ enableMapSet();
 
 export * from './global';
 
+export * from './customer-rare';
 export * from './beverages';
 export * from './ingredients';
 export * from './recipes';

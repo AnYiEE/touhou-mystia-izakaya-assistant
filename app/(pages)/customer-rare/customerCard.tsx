@@ -1,16 +1,7 @@
-import {forwardRef, memo, useMemo, type Dispatch, type SetStateAction} from 'react';
+import {forwardRef, memo, useMemo} from 'react';
 import clsx from 'clsx';
 
-import {
-	Avatar,
-	Card,
-	Divider,
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-	Tooltip,
-	type Selection,
-} from '@nextui-org/react';
+import {Avatar, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
 import {faArrowsRotate} from '@fortawesome/free-solid-svg-icons';
 
 import TagGroup from './tagGroup';
@@ -18,36 +9,23 @@ import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Tags from '@/components/tags';
 import Sprite from '@/components/sprite';
 
-import {customerTagStyleMap, instance_beverage} from './constants';
-import type {ICurrentCustomer, TBeverage, TRecipe} from './types';
-import {getCustomerInstance} from './utils';
+import {customerTagStyleMap} from './constants';
+import {useBeveragesStore, useCustomerRareStore} from '@/stores';
 import {getIntersection, pinyinSort} from '@/utils';
 
-interface IProps {
-	currentCustomer: ICurrentCustomer | null;
-	currentBeverage: TBeverage | null;
-	currentRecipe: TRecipe | null;
-	refreshCustomer: () => void;
-	selectedCustomerBeverageTags: Selection;
-	setSelectedCustomerBeverageTags: Dispatch<SetStateAction<IProps['selectedCustomerBeverageTags']>>;
-	selectedCustomerPositiveTags: Selection;
-	setSelectedCustomerPositiveTags: Dispatch<SetStateAction<IProps['selectedCustomerPositiveTags']>>;
-}
+interface IProps {}
 
 export default memo(
-	forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(
-		{
-			currentCustomer,
-			currentBeverage,
-			currentRecipe,
-			refreshCustomer,
-			selectedCustomerBeverageTags,
-			setSelectedCustomerBeverageTags,
-			selectedCustomerPositiveTags,
-			setSelectedCustomerPositiveTags,
-		},
-		ref
-	) {
+	forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_props, ref) {
+		const beveragesStore = useBeveragesStore();
+		const customerStore = useCustomerRareStore();
+
+		const currentCustomer = customerStore.share.customer.data.use();
+		const selectedCustomerBeverageTags = customerStore.share.customer.beverageTags.use();
+		const selectedCustomerPositiveTags = customerStore.share.customer.positiveTags.use();
+		const currentBeverage = customerStore.share.beverage.data.use();
+		const currentRecipe = customerStore.share.recipe.data.use();
+
 		const hasSelected = useMemo(
 			() =>
 				Boolean(
@@ -78,12 +56,9 @@ export default memo(
 						<div className="flex flex-col gap-2 text-nowrap pt-2">
 							{(() => {
 								const {name, target} = currentCustomer;
-								const [dlc, places, price] = getCustomerInstance(target).getPropsByName(
-									name,
-									'dlc',
-									'places',
-									'price'
-								);
+								const [dlc, places, price] = customerStore.instances[target as 'customer_rare']
+									.get()
+									.getPropsByName(name, 'dlc', 'places', 'price');
 								const clonePlace = structuredClone(places as string[]);
 								const mainPlace = clonePlace.shift();
 								const content = clonePlace.length
@@ -118,9 +93,11 @@ export default memo(
 					<div className="flex w-full flex-col justify-evenly gap-3 text-nowrap">
 						{(() => {
 							const {name, target} = currentCustomer;
-							const [beverageTags, positiveTags, negativeTags] = getCustomerInstance(
-								target
-							).getPropsByName(name, 'beverageTags', 'positiveTags', 'negativeTags');
+							const [beverageTags, positiveTags, negativeTags] = customerStore.instances[
+								target as 'customer_rare'
+							]
+								.get()
+								.getPropsByName(name, 'beverageTags', 'positiveTags', 'negativeTags');
 							return (
 								<>
 									{positiveTags && positiveTags.length > 0 && (
@@ -131,14 +108,11 @@ export default memo(
 													tag={tag}
 													tagStyle={customerTagStyleMap[target].positive}
 													handleClick={(tag) => {
-														setSelectedCustomerPositiveTags(
-															(prev) =>
-																new Set(
-																	[...prev, tag].filter(
-																		(key) => !(key as string).includes('流行')
-																	)
-																)
-														);
+														customerStore.share.customer.positiveTags.set((prev) => {
+															if (!tag.startsWith('流行')) {
+																(prev as Set<string>).add(tag);
+															}
+														});
 													}}
 													className={clsx(
 														'cursor-pointer p-0.5',
@@ -171,15 +145,18 @@ export default memo(
 									)}
 									{beverageTags && beverageTags.length > 0 && (
 										<TagGroup>
-											{getIntersection(instance_beverage.sortedTag, beverageTags).map((tag) => (
+											{getIntersection(
+												beveragesStore.tags.get().map(({value}) => value),
+												beverageTags
+											).map((tag) => (
 												<Tags.Tag
 													key={tag}
 													tag={tag}
 													tagStyle={customerTagStyleMap[target].beverage}
 													handleClick={(tag) => {
-														setSelectedCustomerBeverageTags(
-															(prev) => new Set([...prev, tag])
-														);
+														customerStore.share.customer.beverageTags.set((prev) => {
+															(prev as Set<string>).add(tag);
+														});
 													}}
 													className={clsx(
 														'cursor-pointer p-0.5',
@@ -201,7 +178,7 @@ export default memo(
 							<FontAwesomeIconButton
 								icon={faArrowsRotate}
 								variant="light"
-								onPress={refreshCustomer}
+								onPress={customerStore.refreshCustomerSelectedItems}
 								aria-label="重置当前选定项"
 								className="absolute -right-1 top-1 h-4 w-4 text-default-400 data-[hover]:bg-transparent"
 							/>

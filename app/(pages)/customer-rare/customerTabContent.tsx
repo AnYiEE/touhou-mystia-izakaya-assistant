@@ -1,36 +1,34 @@
-import {forwardRef, memo, type Dispatch, type DispatchWithoutAction, type SetStateAction} from 'react';
+import {forwardRef, memo} from 'react';
 import clsx from 'clsx';
 
 import {Avatar, Button, ScrollShadow} from '@nextui-org/react';
 
 import Sprite from '@/components/sprite';
 
-import type {ICurrentCustomer, ICustomerTabState, TCustomerTarget} from './types';
-import type {TCustomerInstances} from '@/methods/customer/types';
+import type {ICustomerTabStyle, TCustomerTarget} from './types';
+import type {TCustomerInstances} from '@/methods/types';
+import {useCustomerRareStore} from '@/stores';
 
 interface IProps {
-	currentCustomer: ICurrentCustomer | null;
-	setCurrentCustomer: Dispatch<SetStateAction<IProps['currentCustomer']>>;
-	customerTabState: ICustomerTabState;
-	toggleCustomerTabState: DispatchWithoutAction;
-	refreshCustomer: () => void;
+	customerTabStyle: ICustomerTabStyle;
 	sortedData: {
 		[key in TCustomerTarget]: TCustomerInstances['dataPinyinSorted'];
 	};
 }
 
 export default memo(
-	forwardRef<HTMLDivElement | null, IProps>(function CustomerTabContent(
-		{currentCustomer, setCurrentCustomer, customerTabState, toggleCustomerTabState, refreshCustomer, sortedData},
-		ref
-	) {
+	forwardRef<HTMLDivElement | null, IProps>(function CustomerTabContent({customerTabStyle, sortedData}, ref) {
+		const store = useCustomerRareStore();
+
+		const currentCustomer = store.share.customer.data.use();
+
 		return (
 			<>
 				<ScrollShadow
 					hideScrollBar
 					className={clsx(
 						'transition-[height] xl:h-[calc(100vh-9.75rem)]',
-						customerTabState.contentClassName
+						customerTabStyle.contentClassName
 					)}
 					ref={ref}
 				>
@@ -40,8 +38,7 @@ export default memo(
 								<div
 									key={name}
 									onClick={() => {
-										refreshCustomer();
-										setCurrentCustomer({name, target: target as TCustomerTarget});
+										store.share.customer.data.set({name, target: target as TCustomerTarget});
 									}}
 									className="flex cursor-pointer flex-col items-center gap-1"
 								>
@@ -67,10 +64,10 @@ export default memo(
 						isIconOnly
 						size="sm"
 						variant="flat"
-						onPress={toggleCustomerTabState}
+						onPress={store.toggleCustomerTabVisibilityState}
 						className="h-4 w-4/5 text-default-500"
 					>
-						{customerTabState.buttonNode}
+						{customerTabStyle.buttonNode}
 					</Button>
 				</div>
 			</>

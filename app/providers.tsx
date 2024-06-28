@@ -3,7 +3,13 @@
 import {type ReactNode} from 'react';
 import {useRouter} from 'next/navigation';
 
-import {GlobalStoreProvider, BeveragesStoreProvider, IngredientsStoreProvider, RecipesStoreProvider} from '@/stores';
+import {
+	GlobalStoreProvider,
+	CustomerRareStoreProvider,
+	BeveragesStoreProvider,
+	IngredientsStoreProvider,
+	RecipesStoreProvider,
+} from '@/stores';
 
 import {NextUIProvider} from '@nextui-org/react';
 import {ThemeProvider as NextThemesProvider} from 'next-themes';
@@ -22,11 +28,13 @@ export function Providers({children, locale, themeProps}: IProvidersProps) {
 		<NextUIProvider locale={locale} navigate={router.push}>
 			<NextThemesProvider {...themeProps}>
 				<GlobalStoreProvider>
-					<BeveragesStoreProvider>
-						<IngredientsStoreProvider>
-							<RecipesStoreProvider>{children}</RecipesStoreProvider>
-						</IngredientsStoreProvider>
-					</BeveragesStoreProvider>
+					<CustomerRareStoreProvider>
+						<BeveragesStoreProvider>
+							<IngredientsStoreProvider>
+								<RecipesStoreProvider>{children}</RecipesStoreProvider>
+							</IngredientsStoreProvider>
+						</BeveragesStoreProvider>
+					</CustomerRareStoreProvider>
 				</GlobalStoreProvider>
 			</NextThemesProvider>
 		</NextUIProvider>

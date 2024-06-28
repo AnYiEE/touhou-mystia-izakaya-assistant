@@ -12,5 +12,5 @@ export default function CustomerRareLayout({
 }: Readonly<{
 	children: ReactNode;
 }>) {
-	return <div className="grid grid-cols-1 justify-items-center gap-4 xl:grid-cols-2">{children}</div>;
+	return children;
 }

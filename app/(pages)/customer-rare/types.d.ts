@@ -1,8 +1,9 @@
 import {type ReactNode} from 'react';
 import {type SortDescriptor} from '@nextui-org/react';
 
-import {type instance_beverage, type instance_recipe} from './constants';
+import {type CustomerTabVisibilityState} from './constants';
 import {type TCustomerNames} from '@/data';
+import {type foodInstances} from '@/methods/food';
 
 export type TCustomerTarget = 'customer_rare' | 'customer_special';
 
@@ -11,11 +12,14 @@ export interface ICurrentCustomer {
 	target: TCustomerTarget;
 }
 
-export interface ICustomerTabState {
-	label: 'expand' | 'collapse';
+export interface ICustomerTabStyle {
 	buttonNode: ReactNode;
 	contentClassName: string;
 	sideButtonGroupClassName: string;
+}
+
+export interface ICustomerTabStyleMap {
+	[key in CustomerTabVisibilityState]: ICustomerTab;
 }
 
 export interface ITableColumn<T extends string> {
@@ -34,7 +38,7 @@ type TBeverageSuitability = {
 	matchedTags: string[];
 };
 
-export type TBeverages = (typeof instance_beverage)['data'];
+export type TBeverages = (typeof foodInstances)['beverage']['data'];
 export type TBeverage = TBeverages[number];
 export type TBeverageWithSuitability = TBeverage & TBeverageSuitability;
 export type TBeveragesWithSuitability = TBeverageWithSuitability[];
@@ -45,7 +49,7 @@ type TRecipeSuitability = {
 	matchedNegativeTags: string[];
 };
 
-export type TRecipes = (typeof instance_recipe)['data'];
+export type TRecipes = (typeof foodInstances)['recipe']['data'];
 export type TRecipe = TRecipes[number];
 export type TRecipeWithSuitability = TRecipe & TRecipeSuitability;
 export type TRecipesWithSuitability = TRecipeWithSuitability[];
