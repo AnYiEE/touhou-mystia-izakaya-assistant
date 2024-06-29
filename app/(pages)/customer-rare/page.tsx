@@ -5,7 +5,7 @@ import clsx from 'clsx';
 
 import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
 
-import {Spacer, Tab, Tabs} from '@nextui-org/react';
+import {Tab, Tabs} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faChevronDown, faChevronUp} from '@fortawesome/free-solid-svg-icons';
 
@@ -178,10 +178,10 @@ export default memo(function CustomerRare() {
 	}
 
 	return (
-		<div className="grid grid-cols-1 justify-items-center gap-4 xl:grid-cols-2">
+		<div className="grid h-full grid-cols-1 justify-items-center gap-4 xl:grid-cols-2">
 			<SideButtonGroup
 				className={clsx(
-					'md:bottom-6 xl:bottom-[calc(50%-4rem)] xl:left-6',
+					'md:bottom-6 xl:bottom-[calc(50%-3.5rem)] xl:left-6',
 					customerTabStyle.sideButtonGroupClassName,
 					isCustomerTabFilterHidden && '!hidden'
 				)}
@@ -216,15 +216,14 @@ export default memo(function CustomerRare() {
 				</Tabs>
 			</div>
 
-			<div className="flex w-full flex-col xl:min-h-[calc(100vh-6.75rem)]">
+			<div className="flex w-full flex-col gap-4 xl:min-h-[calc(100vh-6.75rem)]">
 				{currentCustomer ? (
 					<>
 						<CustomerCard />
-						<Spacer y={4} />
 						<ResultCard />
 					</>
 				) : (
-					<Placeholder className="pb-4 pt-8">选择角色以继续</Placeholder>
+					<Placeholder className="pb-24 pt-32 xl:pb-[6.5rem] xl:pt-0">选择角色以继续</Placeholder>
 				)}
 			</div>
 		</div>

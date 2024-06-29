@@ -104,8 +104,10 @@ export default memo(
 	forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
 		const store = useCustomerRareStore();
 
+		const currentCustomerName = store.share.customer.data.use()?.name;
 		const currentBeverage = store.share.beverage.data.use();
 		const currentRecipe = store.share.recipe.data.use();
+		const savedMeal = store.page.selected.use();
 
 		const handleSaveButtonPress = useCallback(() => {
 			const customerName = store.share.customer.data.get()!.name;
@@ -127,8 +129,11 @@ export default memo(
 		}, [store.page.selected, store.share.customer.data, store.share.selected]);
 
 		if (!currentRecipe && !currentBeverage) {
+			if (currentCustomerName && currentCustomerName in savedMeal && savedMeal[currentCustomerName].length) {
+				return null;
+			}
 			return (
-				<Placeholder className="pb-8 pt-12" ref={ref}>
+				<Placeholder className="pb-8 pt-16 xl:p-0" ref={ref}>
 					选择一种料理或酒水以继续
 				</Placeholder>
 			);
