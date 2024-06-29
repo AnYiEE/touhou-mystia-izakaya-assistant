@@ -25,16 +25,26 @@ export default memo(
 		const selectedCustomerPositiveTags = customerStore.share.customer.positiveTags.use();
 		const currentBeverage = customerStore.share.beverage.data.use();
 		const currentRecipe = customerStore.share.recipe.data.use();
+		const currentSelected = customerStore.share.selected.use();
 
 		const hasSelected = useMemo(
 			() =>
 				Boolean(
 					currentBeverage ||
 						currentRecipe ||
-						(typeof selectedCustomerBeverageTags !== 'string' && selectedCustomerBeverageTags.size > 0) ||
-						(typeof selectedCustomerPositiveTags !== 'string' && selectedCustomerPositiveTags.size > 0)
+						currentSelected.recipe ||
+						currentSelected.beverage ||
+						(typeof selectedCustomerBeverageTags !== 'string' && selectedCustomerBeverageTags.size) ||
+						(typeof selectedCustomerPositiveTags !== 'string' && selectedCustomerPositiveTags.size)
 				),
-			[currentBeverage, currentRecipe, selectedCustomerBeverageTags, selectedCustomerPositiveTags]
+			[
+				currentBeverage,
+				currentRecipe,
+				currentSelected.beverage,
+				currentSelected.recipe,
+				selectedCustomerBeverageTags,
+				selectedCustomerPositiveTags,
+			]
 		);
 
 		if (!currentCustomer) {
@@ -42,7 +52,7 @@ export default memo(
 		}
 
 		return (
-			<Card shadow="sm" className="w-full" ref={ref}>
+			<Card fullWidth shadow="sm" ref={ref}>
 				<div className="flex flex-col gap-3 p-4 md:flex-row">
 					<div className="flex flex-col items-center justify-center text-center">
 						<Avatar

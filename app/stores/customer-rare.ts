@@ -9,7 +9,13 @@ import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)
 import type {ICurrentCustomer, TBeverage, TRecipe} from '@/(pages)/customer-rare/types';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
-import {type TBeverageNames, type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
+import {
+	type TBeverageNames,
+	type TCustomerNames,
+	type TIngredientNames,
+	type TKitchenwareNames,
+	type TRecipeNames,
+} from '@/data';
 import {instances} from '@/methods';
 import {getAllItemNames} from '@/stores/utils';
 import {numberSort, pinyinSort} from '@/utils';
@@ -57,11 +63,12 @@ const customerRareStore = store(
 				},
 			},
 			selected: {} as {
-				[key in TCustomerNames]: {
+				[key in TCustomerNames]?: {
 					index: number;
 					recipe: TRecipeNames;
 					beverage: TBeverageNames;
 					ingredients: {index: number; name: TIngredientNames; removeable: boolean}[];
+					kitchenware: TKitchenwareNames;
 				}[];
 			},
 		},
@@ -85,9 +92,12 @@ const customerRareStore = store(
 				sortDescriptor: {} as TBeverageTableSortDescriptor,
 			},
 			selected: {
-				recipe: null as TRecipeNames | null,
+				recipe: null as {
+					name: TRecipeNames;
+					ingredients: {index: number; name: TIngredientNames; removeable: boolean}[];
+					kitchenware: TKitchenwareNames;
+				} | null,
 				beverage: null as TBeverageNames | null,
-				ingredients: null as {index: number; name: TIngredientNames; removeable: boolean}[] | null,
 			},
 		},
 	},
@@ -131,6 +141,10 @@ const customerRareStore = store(
 			store.share.recipe.page.set(1);
 			store.share.beverage.data.set(null);
 			store.share.beverage.page.set(1);
+			store.share.selected.set({
+				recipe: null,
+				beverage: null,
+			});
 		},
 		refreshAllSelectedItems() {
 			store.share.recipe.kitchenwares.set(new Set());

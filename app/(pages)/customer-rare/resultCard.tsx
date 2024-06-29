@@ -15,7 +15,7 @@ interface IPlusProps {
 	size?: number;
 }
 
-const Plus = memo(
+export const Plus = memo(
 	forwardRef<HTMLSpanElement | null, IPlusProps>(function Plus({className, size = 1}, ref) {
 		const remString = `${size}rem`;
 
@@ -63,9 +63,9 @@ const UnknownItem = memo(
 const IngredientList = memo(function IngredientsList() {
 	const store = useCustomerRareStore();
 
-	const selectedMealIngredients = store.share.selected.ingredients.use();
+	const selectedMealRecipe = store.share.selected.recipe.use();
 
-	const ingredients = useMemo(() => selectedMealIngredients ?? [], [selectedMealIngredients]);
+	const ingredients = useMemo(() => selectedMealRecipe?.ingredients ?? [], [selectedMealRecipe?.ingredients]);
 	const filledIngredients = useMemo(() => [...ingredients, ...Array<null>(5).fill(null)].slice(0, 5), [ingredients]);
 
 	return (
@@ -75,11 +75,15 @@ const IngredientList = memo(function IngredientsList() {
 					ingredient.removeable ? (
 						<span className="flex items-center">
 							<span
-								onClick={() =>
-									store.share.selected.ingredients.set(
-										ingredients.filter((item) => item.index !== ingredient.index)
-									)
-								}
+								onClick={() => {
+									store.share.selected.recipe.set((prev) => {
+										if (prev) {
+											prev.ingredients = ingredients.filter(
+												(item) => item.index !== ingredient.index
+											);
+										}
+									});
+								}}
 								className="absolute flex h-10 w-10 cursor-pointer items-center justify-center bg-foreground bg-opacity-50 text-background opacity-0 transition-opacity hover:opacity-100"
 								title={`删除${ingredient.name}`}
 							>
@@ -107,29 +111,34 @@ export default memo(
 		const currentCustomerName = store.share.customer.data.use()?.name;
 		const currentBeverage = store.share.beverage.data.use();
 		const currentRecipe = store.share.recipe.data.use();
+		const currentSelected = store.share.selected.use();
 		const savedMeal = store.page.selected.use();
 
 		const handleSaveButtonPress = useCallback(() => {
-			const customerName = store.share.customer.data.get()!.name;
-			const currentSelected = store.share.selected.get();
+			if (!currentCustomerName) {
+				return;
+			}
 
 			const saveObject = {
-				recipe: currentSelected.recipe!,
+				recipe: currentSelected.recipe!.name,
 				beverage: currentSelected.beverage!,
-				ingredients: currentSelected.ingredients!.filter((ingredient) => ingredient !== null),
+				ingredients: currentSelected.recipe!.ingredients.filter((ingredient) => ingredient !== null),
+				kitchenware: currentSelected.recipe!.kitchenware,
 			} as const;
 
 			store.page.selected.set((prev) => {
-				if (customerName in prev) {
-					prev[customerName].push({index: prev[customerName].length, ...saveObject});
+				if (currentCustomerName in prev) {
+					const lastItem = prev[currentCustomerName]!.at(-1);
+					const index = lastItem ? lastItem.index + 1 : 0;
+					prev[currentCustomerName]!.push({...saveObject, index});
 				} else {
-					prev[customerName] = [{index: 0, ...saveObject}];
+					prev[currentCustomerName] = [{index: 0, ...saveObject}];
 				}
 			});
-		}, [store.page.selected, store.share.customer.data, store.share.selected]);
+		}, [currentCustomerName, currentSelected.beverage, currentSelected.recipe, store.page.selected]);
 
-		if (!currentRecipe && !currentBeverage) {
-			if (currentCustomerName && currentCustomerName in savedMeal && savedMeal[currentCustomerName].length) {
+		if (!currentRecipe && !currentBeverage && !currentSelected.recipe && !currentSelected.beverage) {
+			if (currentCustomerName && savedMeal[currentCustomerName]?.length) {
 				return null;
 			}
 			return (
@@ -140,14 +149,14 @@ export default memo(
 		}
 
 		return (
-			<Card shadow="sm" className="w-full" ref={ref}>
+			<Card fullWidth shadow="sm" ref={ref}>
 				<div className="flex flex-col items-center gap-4 p-4 md:flex-row">
 					<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
 						<div className="flex items-center gap-2">
-							{currentRecipe ? (
+							{currentSelected.recipe ? (
 								<>
-									<Sprite target="kitchenware" name={currentRecipe.kitchenware} size={2} />
-									<Sprite target="recipe" name={currentRecipe.name} size={2.5} />
+									<Sprite target="kitchenware" name={currentSelected.recipe.kitchenware} size={2} />
+									<Sprite target="recipe" name={currentSelected.recipe.name} size={2.5} />
 								</>
 							) : (
 								<>
@@ -156,8 +165,8 @@ export default memo(
 								</>
 							)}
 							<Plus />
-							{currentBeverage ? (
-								<Sprite target="beverage" name={currentBeverage.name} size={2.5} />
+							{currentSelected.beverage ? (
+								<Sprite target="beverage" name={currentSelected.beverage} size={2.5} />
 							) : (
 								<UnknownItem title="请选择酒水" />
 							)}
@@ -167,11 +176,12 @@ export default memo(
 					</div>
 					<Button
 						color="primary"
-						isDisabled={!currentRecipe || !currentBeverage}
+						fullWidth
+						isDisabled={!currentSelected.recipe || !currentSelected.beverage}
 						size="sm"
 						variant="flat"
 						onPress={handleSaveButtonPress}
-						className="w-full md:w-auto"
+						className="md:w-auto"
 					>
 						保存套餐
 					</Button>

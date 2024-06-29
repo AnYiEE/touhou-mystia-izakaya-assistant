@@ -15,6 +15,7 @@ import CustomerTabContent from './customerTabContent';
 import Placeholder from './placeholder';
 import RecipeTabContent from './recipeTabContent';
 import ResultCard from './resultCard';
+import SavedMealCard from './savedMealCard';
 import Loading from '@/loading';
 import SideButtonGroup from '@/components/sideButtonGroup';
 import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
@@ -49,13 +50,21 @@ export default memo(function CustomerRare() {
 	});
 	store.share.recipe.data.onChange((recipe) => {
 		if (recipe) {
-			store.share.selected.recipe.set(recipe.name);
-			store.share.selected.ingredients.set(
-				recipe.ingredients.map((ingredient, index) => ({index, name: ingredient, removeable: false}))
-			);
+			store.share.selected.set((prev) => {
+				prev.recipe = {
+					name: recipe.name,
+					ingredients: recipe.ingredients.map((ingredient, index) => ({
+						index,
+						name: ingredient,
+						removeable: false,
+					})),
+					kitchenware: recipe.kitchenware,
+				};
+			});
 		} else {
-			store.share.selected.recipe.set(null);
-			store.share.selected.ingredients.set(null);
+			store.share.selected.set((prev) => {
+				prev.recipe = null;
+			});
 		}
 	});
 	store.share.beverage.data.onChange((beverage) => {
@@ -221,6 +230,7 @@ export default memo(function CustomerRare() {
 					<>
 						<CustomerCard />
 						<ResultCard />
+						<SavedMealCard />
 					</>
 				) : (
 					<Placeholder className="pb-24 pt-32 xl:pb-[6.5rem] xl:pt-0">选择角色以继续</Placeholder>
