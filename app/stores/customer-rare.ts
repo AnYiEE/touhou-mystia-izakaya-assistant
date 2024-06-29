@@ -3,7 +3,7 @@ import {createJSONStorage} from 'zustand/middleware';
 
 import {type Selection} from '@nextui-org/react';
 
-import {beverageTableColumns, recipeTableColumns, CustomerTabVisibilityState} from '@/(pages)/customer-rare/constants';
+import {beverageTableColumns, recipeTableColumns, TabVisibilityState} from '@/(pages)/customer-rare/constants';
 import {type TTableSortDescriptor as TBeverageTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
 import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
 import type {ICurrentCustomer, TBeverage, TRecipe} from '@/(pages)/customer-rare/types';
@@ -16,13 +16,9 @@ import {
 	type TKitchenwareNames,
 	type TRecipeNames,
 } from '@/data';
-import {instances} from '@/methods';
+import {customerRareInstance as instance_rare, customerSpecialInstance as instance_special} from '@/methods/customer';
 import {getAllItemNames} from '@/stores/utils';
 import {numberSort, pinyinSort} from '@/utils';
-
-const {
-	customer: {customer_rare: instance_rare, customer_special: instance_special},
-} = instances;
 
 const rareDlcs = instance_rare.getValuesByProp(instance_rare.data, 'dlc').sort(numberSort);
 const rarePlaces = instance_rare.getValuesByProp(instance_rare.data, 'places').sort(pinyinSort);
@@ -46,7 +42,7 @@ const customerRareStore = store(
 					places: [] as string[],
 					noPlaces: [] as string[],
 				},
-				tabVisibility: CustomerTabVisibilityState.collapse,
+				tabVisibility: TabVisibilityState.collapse,
 				pinyinSortState: PinyinSortState.NONE,
 				searchValue: '',
 			},
@@ -131,9 +127,9 @@ const customerRareStore = store(
 	.actions((store) => ({
 		toggleCustomerTabVisibilityState() {
 			store.page.customer.tabVisibility.set(
-				store.page.customer.tabVisibility.get() === CustomerTabVisibilityState.expand
-					? CustomerTabVisibilityState.collapse
-					: CustomerTabVisibilityState.expand
+				store.page.customer.tabVisibility.get() === TabVisibilityState.expand
+					? TabVisibilityState.collapse
+					: TabVisibilityState.expand
 			);
 		},
 		refreshCustomerSelectedItems() {

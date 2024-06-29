@@ -10,10 +10,10 @@ import Sprite from '@/components/sprite';
 
 import {RECIPE_TAG_STYLE} from '@/constants';
 import {type IRecipe} from '@/data';
-import {type instances} from '@/methods';
+import type {TRecipeInstance} from '@/methods/food/types';
 
 interface IProps {
-	data: typeof instances.food.recipe.data;
+	data: TRecipeInstance['data'];
 }
 
 export default memo(function Content({data}: IProps) {

@@ -7,7 +7,7 @@ export const customerTagStyleMap = {
 	customer_special: CUSTOMER_SPECIAL_TAG_STYLE,
 } as const;
 
-export enum CustomerTabVisibilityState {
+export enum TabVisibilityState {
 	collapse = 'collapse',
 	expand = 'expand',
 }

@@ -1,9 +1,9 @@
 import {type ReactNode} from 'react';
 import {type SortDescriptor} from '@nextui-org/react';
 
-import {type CustomerTabVisibilityState} from './constants';
+import {type TabVisibilityState} from './constants';
 import {type TCustomerNames} from '@/data';
-import {type foodInstances} from '@/methods/food';
+import {type TBeverageInstance, type TRecipeInstance} from '@/methods/food/types';
 
 export type TCustomerTarget = 'customer_rare' | 'customer_special';
 
@@ -19,7 +19,7 @@ export interface ICustomerTabStyle {
 }
 
 export interface ICustomerTabStyleMap {
-	[key in CustomerTabVisibilityState]: ICustomerTab;
+	[key in TabVisibilityState]: ICustomerTab;
 }
 
 export interface ITableColumn<T extends string> {
@@ -38,7 +38,7 @@ type TBeverageSuitability = {
 	matchedTags: string[];
 };
 
-export type TBeverages = (typeof foodInstances)['beverage']['data'];
+export type TBeverages = TBeverageInstance['data'];
 export type TBeverage = TBeverages[number];
 export type TBeverageWithSuitability = TBeverage & TBeverageSuitability;
 export type TBeveragesWithSuitability = TBeverageWithSuitability[];
@@ -49,7 +49,7 @@ type TRecipeSuitability = {
 	matchedNegativeTags: string[];
 };
 
-export type TRecipes = (typeof foodInstances)['recipe']['data'];
+export type TRecipes = TRecipeInstance['data'];
 export type TRecipe = TRecipes[number];
 export type TRecipeWithSuitability = TRecipe & TRecipeSuitability;
 export type TRecipesWithSuitability = TRecipeWithSuitability[];

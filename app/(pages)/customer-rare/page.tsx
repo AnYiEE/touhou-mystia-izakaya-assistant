@@ -39,18 +39,18 @@ const customerTabStyleMap = {
 } as const satisfies ICustomerTabStyleMap;
 
 export default memo(function CustomerRare() {
-	const store = useCustomerRareStore();
+	const customerStore = useCustomerRareStore();
 
-	const currentCustomer = store.share.customer.data.use();
-	const currentRecipe = store.share.recipe.data.use();
+	const currentCustomer = customerStore.share.customer.data.use();
+	const currentRecipe = customerStore.share.recipe.data.use();
 
-	store.share.customer.data.onChange(() => {
-		store.refreshCustomerSelectedItems();
-		store.refreshAllSelectedItems();
+	customerStore.share.customer.data.onChange(() => {
+		customerStore.refreshCustomerSelectedItems();
+		customerStore.refreshAllSelectedItems();
 	});
-	store.share.recipe.data.onChange((recipe) => {
+	customerStore.share.recipe.data.onChange((recipe) => {
 		if (recipe) {
-			store.share.selected.set((prev) => {
+			customerStore.share.selected.set((prev) => {
 				prev.recipe = {
 					name: recipe.name,
 					ingredients: recipe.ingredients.map((ingredient, index) => ({
@@ -62,35 +62,35 @@ export default memo(function CustomerRare() {
 				};
 			});
 		} else {
-			store.share.selected.set((prev) => {
+			customerStore.share.selected.set((prev) => {
 				prev.recipe = null;
 			});
 		}
 	});
-	store.share.beverage.data.onChange((beverage) => {
-		store.share.selected.beverage.set(beverage ? beverage.name : null);
+	customerStore.share.beverage.data.onChange((beverage) => {
+		customerStore.share.selected.beverage.set(beverage ? beverage.name : null);
 	});
 
-	const instance_rare = store.instances.customer_rare.get();
-	const instance_special = store.instances.customer_special.get();
+	const instance_rare = customerStore.instances.customer_rare.get();
+	const instance_special = customerStore.instances.customer_special.get();
 
-	const rareNames = store.rareNames.use();
-	const specialNames = store.specialNames.use();
-	const allDlcs = store.customer.dlcs.get();
-	const allPlaces = store.customer.places.get();
+	const rareNames = customerStore.rareNames.use();
+	const specialNames = customerStore.specialNames.use();
+	const allCustomerDlcs = customerStore.customer.dlcs.get();
+	const allCustomerPlaces = customerStore.customer.places.get();
 
-	const customerPinyinSortState = store.page.customer.pinyinSortState.use();
+	const customerPinyinSortState = customerStore.page.customer.pinyinSortState.use();
 
-	const customerSearchValue = store.page.customer.searchValue.use();
+	const customerSearchValue = customerStore.page.customer.searchValue.use();
 	const throttledCustomerSearchValue = useThrottle(customerSearchValue);
 
 	const rareSearchResult = useSearchResult(instance_rare, throttledCustomerSearchValue);
 	const specialSearchResult = useSearchResult(instance_special, throttledCustomerSearchValue);
 	type TSearchResult = typeof rareSearchResult | typeof specialSearchResult;
 
-	const customerFilterDlcs = store.page.customer.filters.dlcs.use();
-	const customerFilterPlaces = store.page.customer.filters.places.use();
-	const customerFilterNoPlaces = store.page.customer.filters.noPlaces.use();
+	const customerFilterDlcs = customerStore.page.customer.filters.dlcs.use();
+	const customerFilterPlaces = customerStore.page.customer.filters.places.use();
+	const customerFilterNoPlaces = customerStore.page.customer.filters.noPlaces.use();
 
 	const customerFilter = useCallback(
 		function customerFilter<T extends TSearchResult>(target: T) {
@@ -128,14 +128,14 @@ export default memo(function CustomerRare() {
 
 	const customerPinyinSortConfig = usePinyinSortConfig(
 		customerPinyinSortState,
-		store.page.customer.pinyinSortState.set
+		customerStore.page.customer.pinyinSortState.set
 	);
 
 	const customerSearchConfig = useSearchConfig({
 		label: '选择或输入稀客名称',
 		searchItems: [...rareNames, ...specialNames],
 		searchValue: customerSearchValue,
-		setSearchValue: store.page.customer.searchValue.set,
+		setSearchValue: customerStore.page.customer.searchValue.set,
 	});
 
 	const costomerSelectConfig = useMemo(
@@ -143,36 +143,36 @@ export default memo(function CustomerRare() {
 			[
 				{
 					label: 'DLC',
-					items: allDlcs,
+					items: allCustomerDlcs,
 					selectedKeys: customerFilterDlcs,
-					setSelectedKeys: store.page.customer.filters.dlcs.set,
+					setSelectedKeys: customerStore.page.customer.filters.dlcs.set,
 				},
 				{
 					label: '出没地点（包含）',
-					items: allPlaces,
+					items: allCustomerPlaces,
 					selectedKeys: customerFilterPlaces,
-					setSelectedKeys: store.page.customer.filters.places.set,
+					setSelectedKeys: customerStore.page.customer.filters.places.set,
 				},
 				{
 					label: '出没地点（排除）',
-					items: allPlaces,
+					items: allCustomerPlaces,
 					selectedKeys: customerFilterNoPlaces,
-					setSelectedKeys: store.page.customer.filters.noPlaces.set,
+					setSelectedKeys: customerStore.page.customer.filters.noPlaces.set,
 				},
 			] as const satisfies TSelectConfig,
 		[
-			allDlcs,
-			allPlaces,
+			allCustomerDlcs,
+			allCustomerPlaces,
 			customerFilterDlcs,
 			customerFilterNoPlaces,
 			customerFilterPlaces,
-			store.page.customer.filters.dlcs.set,
-			store.page.customer.filters.noPlaces.set,
-			store.page.customer.filters.places.set,
+			customerStore.page.customer.filters.dlcs.set,
+			customerStore.page.customer.filters.noPlaces.set,
+			customerStore.page.customer.filters.places.set,
 		]
 	);
 
-	const customerTabVisibilityState = store.page.customer.tabVisibility.use();
+	const customerTabVisibilityState = customerStore.page.customer.tabVisibility.use();
 
 	const customerTabStyle = useMemo(
 		() => customerTabStyleMap[customerTabVisibilityState],
