@@ -80,6 +80,7 @@ const customerRareStore = store(
 			},
 			recipe: {
 				data: null as TRecipe | null,
+				dlcs: new Set() as Selection,
 				kitchenwares: new Set() as Selection,
 				page: 1,
 				searchValue: '',
@@ -87,6 +88,7 @@ const customerRareStore = store(
 			},
 			beverage: {
 				data: null as TBeverage | null,
+				dlcs: new Set() as Selection,
 				page: 1,
 				searchValue: '',
 				sortDescriptor: {} as TBeverageTableSortDescriptor,
@@ -147,9 +149,11 @@ const customerRareStore = store(
 			});
 		},
 		refreshAllSelectedItems() {
+			store.share.recipe.dlcs.set(new Set());
 			store.share.recipe.kitchenwares.set(new Set());
 			store.share.recipe.searchValue.set('');
 			store.share.recipe.sortDescriptor.set({});
+			store.share.beverage.dlcs.set(new Set());
 			store.share.beverage.searchValue.set('');
 			store.share.beverage.sortDescriptor.set({});
 		},

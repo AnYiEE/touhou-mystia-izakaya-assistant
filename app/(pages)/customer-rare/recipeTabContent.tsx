@@ -54,9 +54,11 @@ export default memo(
 		const selectedCustomerPositiveTags = customerStore.share.customer.positiveTags.use();
 
 		const currentRecipe = customerStore.share.recipe.data.use();
+		const selectedDlcs = customerStore.share.recipe.dlcs.use();
 		const selectedKitchenwares = customerStore.share.recipe.kitchenwares.use();
 
 		const instance_recipe = recipesStore.instance.get();
+		const allDlcs = recipesStore.dlcs.get();
 		const allKitchenwares = recipesStore.kitchenwares.get();
 		const allRecipeNames = useMemo(
 			() => instance_recipe.getValuesByProp(instance_recipe.data, 'name', true).sort(pinyinSort),
@@ -106,14 +108,17 @@ export default memo(
 
 			if (
 				!hasNameFilter &&
+				(selectedDlcs === 'all' || !selectedDlcs.size) &&
 				(selectedKitchenwares === 'all' || !selectedKitchenwares.size) &&
 				(selectedCustomerPositiveTags === 'all' || !selectedCustomerPositiveTags.size)
 			) {
 				return clonedData;
 			}
 
-			return clonedData.filter(({name, kitchenware, positiveTags}) => {
+			return clonedData.filter(({name, dlc, kitchenware, positiveTags}) => {
 				const isNameMatch = hasNameFilter ? name.toLowerCase().includes(searchValue.toLowerCase()) : true;
+				const isDlcMatch =
+					selectedDlcs !== 'all' && selectedDlcs.size ? selectedDlcs.has(dlc.toString()) : true;
 				const isKitchenwareMatch =
 					selectedKitchenwares !== 'all' && selectedKitchenwares.size
 						? selectedKitchenwares.has(kitchenware)
@@ -125,7 +130,7 @@ export default memo(
 							)
 						: true;
 
-				return isNameMatch && isKitchenwareMatch && isPositiveTagsMatch;
+				return isNameMatch && isDlcMatch && isKitchenwareMatch && isPositiveTagsMatch;
 			});
 		}, [
 			currentCustomer,
@@ -134,6 +139,7 @@ export default memo(
 			instance_recipe,
 			searchValue,
 			selectedCustomerPositiveTags,
+			selectedDlcs,
 			selectedKitchenwares,
 		]);
 
@@ -289,6 +295,14 @@ export default memo(
 			[currentCustomer, customerStore.share.recipe.data, instance_recipe]
 		);
 
+		const onSelectedDlcsChange = useCallback(
+			(value: Selection) => {
+				customerStore.share.recipe.dlcs.set(value);
+				customerStore.share.recipe.page.set(1);
+			},
+			[customerStore.share.recipe.dlcs, customerStore.share.recipe.page]
+		);
+
 		const onSelectedKitchenwaresChange = useCallback(
 			(value: Selection) => {
 				customerStore.share.recipe.kitchenwares.set(value);
@@ -350,7 +364,6 @@ export default memo(
 							>
 								{({value}) => <AutocompleteItem key={value}>{value}</AutocompleteItem>}
 							</Autocomplete>
-
 							<Select
 								items={allRecipeTags}
 								defaultSelectedKeys={selectedCustomerPositiveTags}
@@ -404,6 +417,29 @@ export default memo(
 										size="sm"
 										variant="flat"
 									>
+										DLC
+									</Button>
+								</DropdownTrigger>
+								<DropdownMenu
+									closeOnSelect={false}
+									items={allDlcs}
+									defaultSelectedKeys={selectedDlcs}
+									selectedKeys={selectedDlcs}
+									selectionMode="multiple"
+									variant="flat"
+									onSelectionChange={onSelectedDlcsChange}
+									aria-label="选择特定DLC中的料理"
+								>
+									{({value}) => <DropdownItem key={value}>{value}</DropdownItem>}
+								</DropdownMenu>
+							</Dropdown>
+							<Dropdown showArrow>
+								<DropdownTrigger>
+									<Button
+										endContent={<FontAwesomeIcon icon={faChevronDown} />}
+										size="sm"
+										variant="flat"
+									>
 										条目
 									</Button>
 								</DropdownTrigger>
@@ -445,6 +481,7 @@ export default memo(
 				</div>
 			),
 			[
+				allDlcs,
 				allKitchenwares,
 				allRecipeNames,
 				allRecipeTags,
@@ -452,11 +489,13 @@ export default memo(
 				filteredData.length,
 				onSearchValueChange,
 				onSearchValueClear,
+				onSelectedDlcsChange,
 				onSelectedKitchenwaresChange,
 				onSelectedPositiveTagsChange,
 				onTableRowsPerPageChange,
 				searchValue,
 				selectedCustomerPositiveTags,
+				selectedDlcs,
 				selectedKitchenwares,
 				tableRowsPerPage,
 				tableVisibleColumns,

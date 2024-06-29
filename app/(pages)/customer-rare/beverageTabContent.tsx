@@ -54,6 +54,7 @@ export default memo(
 		const selectedCustomerBeverageTags = customerStore.share.customer.beverageTags.use();
 
 		const currentBeverage = customerStore.share.beverage.data.use();
+		const selectedDlcs = customerStore.share.beverage.dlcs.use();
 
 		const instance_beverage = beveragesStore.instance.get();
 		const allBeverageNames = useMemo(
@@ -61,6 +62,7 @@ export default memo(
 			[instance_beverage]
 		);
 		const allBeverageTags = beveragesStore.tags.get();
+		const allDlcs = beveragesStore.dlcs.get();
 
 		const searchValue = customerStore.share.beverage.searchValue.use();
 		const hasNameFilter = useMemo(() => Boolean(searchValue), [searchValue]);
@@ -99,18 +101,24 @@ export default memo(
 				};
 			});
 
-			if (!hasNameFilter && (selectedCustomerBeverageTags === 'all' || !selectedCustomerBeverageTags.size)) {
+			if (
+				!hasNameFilter &&
+				(selectedDlcs === 'all' || !selectedDlcs.size) &&
+				(selectedCustomerBeverageTags === 'all' || !selectedCustomerBeverageTags.size)
+			) {
 				return clonedData;
 			}
 
-			return clonedData.filter(({name, tags}) => {
+			return clonedData.filter(({name, dlc, tags}) => {
 				const isNameMatch = hasNameFilter ? name.toLowerCase().includes(searchValue.toLowerCase()) : true;
+				const isDlcMatch =
+					selectedDlcs !== 'all' && selectedDlcs.size ? selectedDlcs.has(dlc.toString()) : true;
 				const isTagsMatch =
 					selectedCustomerBeverageTags !== 'all' && selectedCustomerBeverageTags.size
 						? [...selectedCustomerBeverageTags].every((tag) => (tags as string[]).includes(tag as string))
 						: true;
 
-				return isNameMatch && isTagsMatch;
+				return isNameMatch && isDlcMatch && isTagsMatch;
 			});
 		}, [
 			currentCustomer,
@@ -119,6 +127,7 @@ export default memo(
 			instance_beverage,
 			searchValue,
 			selectedCustomerBeverageTags,
+			selectedDlcs,
 		]);
 
 		const sortedData = useMemo(() => {
@@ -251,6 +260,14 @@ export default memo(
 			[customerStore.share.beverage.page, customerStore.share.customer.beverageTags]
 		);
 
+		const onSelectedDlcsChange = useCallback(
+			(value: Selection) => {
+				customerStore.share.beverage.dlcs.set(value);
+				customerStore.share.beverage.page.set(1);
+			},
+			[customerStore.share.beverage.dlcs, customerStore.share.beverage.page]
+		);
+
 		const onSearchValueChange = useCallback(
 			(value: Key | null) => {
 				if (value) {
@@ -296,7 +313,6 @@ export default memo(
 							>
 								{({value}) => <AutocompleteItem key={value}>{value}</AutocompleteItem>}
 							</Autocomplete>
-
 							<Select
 								items={allBeverageTags}
 								defaultSelectedKeys={selectedCustomerBeverageTags}
@@ -313,6 +329,29 @@ export default memo(
 							</Select>
 						</div>
 						<div className="flex w-full gap-3 md:w-auto">
+							<Dropdown showArrow>
+								<DropdownTrigger>
+									<Button
+										endContent={<FontAwesomeIcon icon={faChevronDown} />}
+										size="sm"
+										variant="flat"
+									>
+										DLC
+									</Button>
+								</DropdownTrigger>
+								<DropdownMenu
+									closeOnSelect={false}
+									items={allDlcs}
+									defaultSelectedKeys={selectedDlcs}
+									selectedKeys={selectedDlcs}
+									selectionMode="multiple"
+									variant="flat"
+									onSelectionChange={onSelectedDlcsChange}
+									aria-label="选择特定DLC中的酒水"
+								>
+									{({value}) => <DropdownItem key={value}>{value}</DropdownItem>}
+								</DropdownMenu>
+							</Dropdown>
 							<Dropdown showArrow>
 								<DropdownTrigger>
 									<Button
@@ -363,14 +402,17 @@ export default memo(
 			[
 				allBeverageNames,
 				allBeverageTags,
+				allDlcs,
 				customerStore.beverageTableColumns.set,
 				filteredData.length,
 				onSearchValueChange,
 				onSearchValueClear,
 				onSelectedBeverageTagsChange,
+				onSelectedDlcsChange,
 				onTableRowsPerPageChange,
 				searchValue,
 				selectedCustomerBeverageTags,
+				selectedDlcs,
 				tableRowsPerPage,
 				tableVisibleColumns,
 			]
