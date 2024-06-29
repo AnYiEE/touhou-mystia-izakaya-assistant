@@ -9,6 +9,7 @@ import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)
 import type {ICurrentCustomer, TBeverage, TRecipe} from '@/(pages)/customer-rare/types';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
+import {type TBeverageNames, type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
 import {instances} from '@/methods';
 import {getAllItemNames} from '@/stores/utils';
 import {numberSort, pinyinSort} from '@/utils';
@@ -55,6 +56,14 @@ const customerRareStore = store(
 					visibleColumns: beverageTableColumns.map(({key}) => key),
 				},
 			},
+			selected: {} as {
+				[key in TCustomerNames]: {
+					index: number;
+					recipe: TRecipeNames;
+					beverage: TBeverageNames;
+					ingredients: {index: number; name: TIngredientNames; removeable: boolean}[];
+				}[];
+			},
 		},
 		share: {
 			customer: {
@@ -74,6 +83,11 @@ const customerRareStore = store(
 				page: 1,
 				searchValue: '',
 				sortDescriptor: {} as TBeverageTableSortDescriptor,
+			},
+			selected: {
+				recipe: null as TRecipeNames | null,
+				beverage: null as TBeverageNames | null,
+				ingredients: null as {index: number; name: TIngredientNames; removeable: boolean}[] | null,
 			},
 		},
 	},

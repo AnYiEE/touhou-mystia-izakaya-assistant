@@ -5,7 +5,7 @@ import clsx from 'clsx';
 
 import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
 
-import {Tab, Tabs} from '@nextui-org/react';
+import {Spacer, Tab, Tabs} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faChevronDown, faChevronUp} from '@fortawesome/free-solid-svg-icons';
 
@@ -14,6 +14,7 @@ import CustomerCard from './customerCard';
 import CustomerTabContent from './customerTabContent';
 import Placeholder from './placeholder';
 import RecipeTabContent from './recipeTabContent';
+import ResultCard from './resultCard';
 import Loading from '@/loading';
 import SideButtonGroup from '@/components/sideButtonGroup';
 import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
@@ -45,6 +46,20 @@ export default memo(function CustomerRare() {
 	store.share.customer.data.onChange(() => {
 		store.refreshCustomerSelectedItems();
 		store.refreshAllSelectedItems();
+	});
+	store.share.recipe.data.onChange((recipe) => {
+		if (recipe) {
+			store.share.selected.recipe.set(recipe.name);
+			store.share.selected.ingredients.set(
+				recipe.ingredients.map((ingredient, index) => ({index, name: ingredient, removeable: false}))
+			);
+		} else {
+			store.share.selected.recipe.set(null);
+			store.share.selected.ingredients.set(null);
+		}
+	});
+	store.share.beverage.data.onChange((beverage) => {
+		store.share.selected.beverage.set(beverage ? beverage.name : null);
 	});
 
 	const instance_rare = store.instances.customer_rare.get();
@@ -205,11 +220,8 @@ export default memo(function CustomerRare() {
 				{currentCustomer ? (
 					<>
 						<CustomerCard />
-						{currentRecipe ? (
-							<Placeholder className="pb-8 pt-16">{currentRecipe.name}</Placeholder>
-						) : (
-							<Placeholder className="pb-8 pt-16">选择一种料理或酒水以继续</Placeholder>
-						)}
+						<Spacer y={4} />
+						<ResultCard />
 					</>
 				) : (
 					<Placeholder className="pb-4 pt-8">选择角色以继续</Placeholder>
