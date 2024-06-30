@@ -9,6 +9,5 @@ const buildEslintCommand = (filenames) =>
 export default {
 	'*.scss': ['prettier --write', 'stylelint --allow-empty-input --fix'],
 	'*.{cjs,mjs,js,jsx,ts,tsx}': ['prettier --write', buildEslintCommand],
-	'*.svg': 'svgo --config=svgo.config.cjs --quiet --input',
-	'!*.{scss,cjs,mjs,js,jsx,ts,tsx,svg}': 'prettier --ignore-unknown --write',
+	'!*.{scss,cjs,mjs,js,jsx,ts,tsx}': 'prettier --ignore-unknown --write',
 };
