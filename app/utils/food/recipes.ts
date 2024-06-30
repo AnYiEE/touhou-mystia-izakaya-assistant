@@ -21,9 +21,9 @@ export class Recipe<
 		const {commonTags: negativeTags, count: negativeCount} = this.getCommonTags(recipeTags, costomerNegativeTags);
 
 		return {
-			suitability: positiveCount - negativeCount,
-			positiveTags: positiveTags as TPositiveTags,
 			negativeTags: negativeTags as TNegativeTags,
+			positiveTags: positiveTags as TPositiveTags,
+			suitability: positiveCount - negativeCount,
 		};
 	}
 }

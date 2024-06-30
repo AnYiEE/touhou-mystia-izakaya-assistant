@@ -1,4 +1,4 @@
-import {forwardRef, memo, type PropsWithChildren} from 'react';
+import {type PropsWithChildren, forwardRef, memo} from 'react';
 import clsx from 'clsx';
 
 interface IProps {

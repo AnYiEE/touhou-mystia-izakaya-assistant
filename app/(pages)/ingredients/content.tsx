@@ -17,14 +17,14 @@ interface IProps {
 }
 
 export default memo(function Content({data}: IProps) {
-	const openedPopoverParam = 'select' as const;
+	const openedPopoverParam = 'select';
 	const [openedPopover] = useOpenedFoodPopover(openedPopoverParam);
 
 	return (
 		<>
-			{data.map(({dlc, from, name, level, price, tags, type}, index) => (
+			{data.map(({dlc, from, name, level, price, tags, type}, dataIndex) => (
 				<Popover
-					key={index}
+					key={dataIndex}
 					backdrop="opaque"
 					showArrow
 					isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}
@@ -50,17 +50,17 @@ export default memo(function Content({data}: IProps) {
 							tags={{positive: tags}}
 							tagColors={INGREDIENT_TAG_STYLE}
 						>
-							{Object.entries(from as IIngredient['from']).map(([method, target], index) => {
+							{Object.entries(from as IIngredient['from']).map(([method, target], fromIndex) => {
 								const probability = `概率${method === 'buy' ? '出售' : '掉落'}`;
 								const way = method === 'buy' ? '购买' : method === 'task' ? '任务' : '采集';
 
 								return (
-									<p key={index}>
+									<p key={fromIndex}>
 										<span className="font-semibold">{way}：</span>
 										{target.map((item, index) => (
 											<Fragment key={index}>
 												{Array.isArray(item) ? (
-													item[1] === true ? (
+													item[1] ? (
 														<Popover showArrow offset={0}>
 															<Tooltip showArrow content={probability} offset={-1.5}>
 																<span className="cursor-pointer underline decoration-dotted">

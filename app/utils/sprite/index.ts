@@ -1,6 +1,6 @@
+import type {ISpriteConfig, TSpriteData, TSpriteTarget} from './types';
 import {pxToRem} from '@/utils';
 import {Item} from '@/utils/item';
-import type {TSpriteData, TSpriteTarget, ISpriteConfig} from './types';
 
 export class Sprite<
 	TTarget extends TSpriteTarget,
@@ -47,14 +47,14 @@ export class Sprite<
 	): React.CSSProperties {
 		this.checkIndexRange(index);
 
-		const {spriteHeight, spriteWidth} = this;
-		const {height: sheetHeight, width: sheetWidth} = this._config;
+		const {spriteHeight, spriteWidth, _config} = this;
+		const {height: sheetHeight, width: sheetWidth} = _config;
 		const backgroundSize: `${string}rem ${string}rem` = `${pxToRem(sheetWidth * (displayWidth / spriteWidth))}rem ${pxToRem(sheetHeight * (displayHeight / spriteHeight))}rem`;
 		const {x, y} = this.getPosByIndex(index);
 
 		return {
-			backgroundSize,
 			backgroundPosition: `-${pxToRem(x * (displayWidth / spriteWidth))}rem -${pxToRem(y * (displayHeight / spriteHeight))}rem`,
+			backgroundSize,
 			height: `${pxToRem(displayHeight)}rem`,
 			width: `${pxToRem(displayWidth)}rem`,
 		};

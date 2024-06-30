@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import {useEffect, useState} from 'react';
 
 function useMounted() {
 	const [mounted, setMounted] = useState(false);

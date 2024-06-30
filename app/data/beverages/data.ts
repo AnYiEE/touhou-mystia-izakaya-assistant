@@ -1,3 +1,4 @@
+/* eslint-disable sort-keys */
 import type {IBeverage} from './types';
 
 export const BEVERAGE_LIST = [

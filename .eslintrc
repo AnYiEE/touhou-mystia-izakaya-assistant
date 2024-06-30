@@ -1,9 +1,167 @@
 {
 	"root": true,
-	"extends": ["next/core-web-vitals", "prettier"],
+	"plugins": ["@typescript-eslint", "unicorn"],
+	"extends": [
+		"eslint:recommended",
+		"plugin:@typescript-eslint/strict-type-checked",
+		"plugin:unicorn/recommended",
+		"next/core-web-vitals",
+		"prettier"
+	],
+	"env": {
+		"es2024": true
+	},
+	"parser": "@typescript-eslint/parser",
+	"parserOptions": {
+		"ecmaVersion": "latest",
+		"project": true
+	},
 	"rules": {
+		"array-callback-return": [
+			"error",
+			{
+				"allowImplicit": true
+			}
+		],
+		"no-constructor-return": "error",
+		"no-duplicate-imports": "error",
+		"no-promise-executor-return": "error",
+		"no-self-compare": "error",
+		"no-unmodified-loop-condition": "error",
+		"no-unreachable-loop": "error",
+		"require-atomic-updates": "error",
+
+		"accessor-pairs": "error",
 		"arrow-body-style": ["error", "as-needed"],
-		"prefer-destructuring": [
+		"block-scoped-var": "error",
+		"curly": "error",
+		"default-case-last": "error",
+		"eqeqeq": "error",
+		"func-name-matching": "error",
+		"func-names": ["error", "as-needed"],
+		"grouped-accessor-pairs": ["error", "getBeforeSet"],
+		"guard-for-in": "error",
+		"logical-assignment-operators": [
+			"error",
+			"always",
+			{
+				"enforceForIfStatements": true
+			}
+		],
+		"no-else-return": "error",
+		"no-extra-bind": "error",
+		"no-implicit-coercion": [
+			"error",
+			{
+				"boolean": false
+			}
+		],
+		"no-iterator": "error",
+		"no-labels": "error",
+		"no-lone-blocks": "error",
+		"no-lonely-if": "error",
+		"no-multi-assign": "error",
+		"no-multi-str": "error",
+		"no-negated-condition": "error",
+		"no-new-func": "error",
+		"no-new-wrappers": "error",
+		"no-object-constructor": "error",
+		"no-octal-escape": "error",
+		"no-proto": "error",
+		"no-return-assign": "error",
+		"no-undef-init": "error",
+		"no-unneeded-ternary": "error",
+		"no-useless-call": "error",
+		"no-useless-computed-key": "error",
+		"no-useless-concat": "error",
+		"no-useless-constructor": "error",
+		"no-useless-rename": "error",
+		"no-useless-return": "error",
+		"no-var": "error",
+		"no-void": [
+			"error",
+			{
+				"allowAsStatement": true
+			}
+		],
+		"object-shorthand": "error",
+		"operator-assignment": "error",
+		"prefer-arrow-callback": [
+			"error",
+			{
+				"allowNamedFunctions": true
+			}
+		],
+		"prefer-const": "error",
+		"prefer-exponentiation-operator": "error",
+		"prefer-object-has-own": "error",
+		"prefer-object-spread": "error",
+		"prefer-regex-literals": "error",
+		"prefer-rest-params": "error",
+		"prefer-spread": "error",
+		"prefer-template": "error",
+		"require-unicode-regexp": "error",
+		"sort-imports": [
+			"error",
+			{
+				"ignoreDeclarationSort": true,
+				"allowSeparatedGroups": true
+			}
+		],
+		"sort-keys": [
+			"error",
+			"asc",
+			{
+				"allowLineSeparatedGroups": true,
+				"caseSensitive": false,
+				"natural": true
+			}
+		],
+		"symbol-description": "error",
+		"template-curly-spacing": ["error", "never"],
+		"vars-on-top": "error",
+		"yoda": "error",
+
+		"getter-return": [
+			"error",
+			{
+				"allowImplicit": true
+			}
+		],
+
+		"@typescript-eslint/no-empty-function": [
+			"error",
+			{
+				"allow": ["arrowFunctions"]
+			}
+		],
+		"@typescript-eslint/no-floating-promises": [
+			"warn",
+			{
+				"ignoreIIFE": true
+			}
+		],
+		"@typescript-eslint/no-loop-func": "error",
+		"@typescript-eslint/no-shadow": "error",
+		"@typescript-eslint/no-unsafe-argument": "warn",
+		"@typescript-eslint/no-unsafe-assignment": "warn",
+		"@typescript-eslint/no-unsafe-call": "warn",
+		"@typescript-eslint/no-unsafe-member-access": "off",
+		"@typescript-eslint/no-unsafe-return": "warn",
+		"@typescript-eslint/no-unused-expressions": [
+			"error",
+			{
+				"enforceForJSX": true
+			}
+		],
+		"@typescript-eslint/no-unused-vars": [
+			"warn",
+			{
+				"varsIgnorePattern": "^_"
+			}
+		],
+		"@typescript-eslint/no-use-before-define": "error",
+		"@typescript-eslint/prefer-destructuring": [
 			"error",
 			{
 				"VariableDeclarator": {
@@ -16,6 +174,41 @@
 				}
 			}
 		],
-		"prefer-template": "error"
+		"@typescript-eslint/restrict-template-expressions": [
+			"error",
+			{
+				"allowNumber": true
+			}
+		],
+		"@typescript-eslint/unbound-method": "off",
+
+		"unicorn/consistent-destructuring": "error",
+		"unicorn/custom-error-definition": "error",
+		"unicorn/no-unused-properties": "error",
+
+		"unicorn/consistent-function-scoping": "off",
+		"unicorn/filename-case": "off",
+		"unicorn/import-style": "off",
+		"unicorn/no-abusive-eslint-disable": "off",
+		"unicorn/no-array-callback-reference": "off",
+		"unicorn/no-array-reduce": "off",
+		"unicorn/no-document-cookie": "off",
+		"unicorn/no-keyword-prefix": "off",
+		"unicorn/no-nested-ternary": "off",
+		"unicorn/no-new-array": "off",
+		"unicorn/no-null": "off",
+		"unicorn/no-this-assignment": "off",
+		"unicorn/no-unreadable-array-destructuring": "off",
+		"unicorn/numeric-separators-style": [
+			"error",
+			{
+				"onlyIfContainsSeparator": true
+			}
+		],
+		"unicorn/prefer-set-has": "off",
+		"unicorn/prefer-ternary": "off",
+		"unicorn/prevent-abbreviations": "off",
+		"unicorn/require-post-message-target-origin": "off",
+		"unicorn/switch-case-braces": ["error", "avoid"]
 	}
 }

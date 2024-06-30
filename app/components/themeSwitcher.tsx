@@ -6,7 +6,7 @@ import clsx from 'clsx';
 
 import {Theme, useMounted, useSystemTheme} from '@/hooks';
 
-import {useSwitch, Spinner, Tooltip} from '@nextui-org/react';
+import {Spinner, Tooltip, useSwitch} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleHalfStroke, faMoon, faSun} from '@fortawesome/free-solid-svg-icons';
 
@@ -36,21 +36,23 @@ export default memo(function ThemeSwitcher({isMenu}: Partial<IProps>) {
 
 	const onChange = useCallback(() => {
 		if (theme === Theme.system) {
-			systemTheme === Theme.light ? setTheme(Theme.dark) : setTheme(Theme.light);
+			setTheme(systemTheme === Theme.light ? Theme.dark : Theme.light);
 		} else {
-			theme === Theme.light ? setTheme(Theme.dark) : setTheme(Theme.light);
+			setTheme(theme === Theme.light ? Theme.dark : Theme.light);
 		}
 	}, [theme, systemTheme, setTheme]);
 
 	const label = `切换至${nextTheme}模式`;
 
 	const {Component, slots, isSelected, getBaseProps, getInputProps, getWrapperProps} = useSwitch({
+		'aria-label': label,
+		isSelected: theme !== Theme.system,
 		onChange,
 		onKeyDown: ({key}) => {
-			[' ', 'Enter'].includes(key) && onChange();
+			if ([' ', 'Enter'].includes(key)) {
+				onChange();
+			}
 		},
-		isSelected: theme !== Theme.system,
-		'aria-label': label,
 	});
 
 	if (!isMounted) {

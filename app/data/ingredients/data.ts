@@ -1,3 +1,4 @@
+/* eslint-disable sort-keys */
 import type {IIngredient} from './types';
 
 export const INGREDIENT_LIST = [

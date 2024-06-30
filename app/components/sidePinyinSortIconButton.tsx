@@ -1,4 +1,4 @@
-import {forwardRef, memo, type Dispatch, type SetStateAction} from 'react';
+import {type Dispatch, type SetStateAction, forwardRef, memo} from 'react';
 
 import {faArrowDownAZ, faArrowUpAZ} from '@fortawesome/free-solid-svg-icons';
 
@@ -42,7 +42,9 @@ export default memo(
 				color={pinyinSortState === PinyinSortState.NONE ? 'primary' : 'warning'}
 				icon={pinyinSortState === PinyinSortState.ZA ? faArrowUpAZ : faArrowDownAZ}
 				variant="shadow"
-				onPress={() => setPinyinSortState(getNextPinyinSortState(pinyinSortState))}
+				onPress={() => {
+					setPinyinSortState(getNextPinyinSortState(pinyinSortState));
+				}}
 				aria-label="拼音排序"
 				{...props}
 				ref={ref}

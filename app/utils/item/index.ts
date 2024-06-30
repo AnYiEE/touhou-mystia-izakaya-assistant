@@ -21,7 +21,7 @@ export class Item<
 		this._data = structuredClone(data);
 		this._dataWithPinyin = structuredClone(this._data).map((item) => ({
 			...item,
-			pinyin: pinyinPro(item.name as string, {
+			pinyin: pinyinPro(item.name, {
 				toneType: 'num',
 				type: 'array',
 				v: true,
@@ -43,7 +43,7 @@ export class Item<
 		return this.dataPinyinSorted;
 	}
 
-	protected checkIndexRange<_T, U extends any>(index: number, _data?: U): asserts _data {
+	protected checkIndexRange<_T, U>(index: number, _data?: U): asserts _data {
 		if (index < 0 || index >= this._data.length) {
 			throw new Error(`[Item]: index \`${index}\` out of range`);
 		}
@@ -51,6 +51,7 @@ export class Item<
 
 	public findIndexByName<T extends string = TName>(name: T) {
 		if (Item.nameIndexCache.has(name)) {
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			return Item.nameIndexCache.get(name)!;
 		}
 
@@ -88,7 +89,7 @@ export class Item<
 		const item = this._dataWithPinyin[index];
 		this.checkIndexRange(index, item);
 
-		if (props.length) {
+		if (props.length > 0) {
 			if (props.length === 1) {
 				return item[props[0] as T];
 			}
@@ -116,7 +117,7 @@ export class Item<
 	>(name: T, ...props: S[]): TItemWithPinyin | TItemWithPinyin[S] | TItemWithPinyin[S][] {
 		const index = this.findIndexByName(name);
 
-		return this.getPropsByIndex<S>(index, ...(props as NonNullable<typeof props>));
+		return this.getPropsByIndex<S>(index, ...props);
 	}
 
 	public getValuesByProp<T extends keyof TItemWithPinyin>(
@@ -131,7 +132,7 @@ export class Item<
 	): FlatArray<TItemWithPinyin[T], number>[];
 	public getValuesByProp<T extends keyof TItemWithPinyin>(data: TItemWithPinyin[], prop: T | T[], wrap?: boolean) {
 		const props = generateArray(prop);
-		const values = [...new Set(data.map((item) => props.map((prop) => item[prop])).flat(Infinity))];
+		const values = [...new Set(data.map((item) => props.map((key) => item[key])).flat(Infinity))];
 
 		if (wrap) {
 			return values.map((value) => ({value}));

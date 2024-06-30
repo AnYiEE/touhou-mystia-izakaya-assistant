@@ -1,4 +1,4 @@
-import {forwardRef, memo, useCallback, useMemo, type FC, type MouseEvent, type PropsWithChildren} from 'react';
+import {type FC, type MouseEvent, type PropsWithChildren, forwardRef, memo, useCallback, useMemo} from 'react';
 
 import {Popover, PopoverContent, PopoverTrigger, Snippet, Tooltip, usePopoverContext} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -23,7 +23,7 @@ const CloseButton: FC<ICloseButtonProps> = memo(
 
 		const handleClose = useCallback(
 			(e: MouseEvent<HTMLButtonElement>) => {
-				getBackdropProps()?.onClick?.(e);
+				getBackdropProps().onClick?.(e);
 
 				if (param && params.has(param)) {
 					const newParams = new URLSearchParams(params);
@@ -129,7 +129,7 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 			}
 
 			const mergedTagValues = [...new Set([...(tags.beverage ?? []), ...(tags.positive ?? [])])];
-			const {beverage, ...rest} = tags;
+			const {beverage: _beverage, ...rest} = tags;
 
 			return {
 				...rest,

@@ -1,3 +1,4 @@
+/* eslint-disable sort-keys */
 import PACKAGE from '@/../package.json';
 import type {ISiteConfig} from './types';
 

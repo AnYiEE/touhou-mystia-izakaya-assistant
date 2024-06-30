@@ -17,7 +17,7 @@ interface IProps {
 }
 
 export default memo(function Content({data}: IProps) {
-	const openedPopoverParam = 'select' as const;
+	const openedPopoverParam = 'select';
 	const [openedPopover] = useOpenedFoodPopover(openedPopoverParam);
 
 	return (
@@ -25,10 +25,10 @@ export default memo(function Content({data}: IProps) {
 			{data.map(
 				(
 					{dlc, from, name, level, price, kitchenware, positiveTags, negativeTags, ingredients, max, min},
-					index
+					dataIndex
 				) => (
 					<Popover
-						key={index}
+						key={dataIndex}
 						backdrop="opaque"
 						showArrow
 						isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}
@@ -52,7 +52,7 @@ export default memo(function Content({data}: IProps) {
 								dlc={dlc}
 								kitchenware={kitchenware}
 								ingredients={ingredients}
-								tags={{positive: positiveTags, negative: negativeTags}}
+								tags={{negative: negativeTags, positive: positiveTags}}
 								tagColors={RECIPE_TAG_STYLE}
 							>
 								<p>

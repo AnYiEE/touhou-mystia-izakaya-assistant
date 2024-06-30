@@ -1,4 +1,4 @@
-import {store, createStoreContext} from '@davstack/store';
+import {createStoreContext, store} from '@davstack/store';
 
 const globalStore = store({});
 

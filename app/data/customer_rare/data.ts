@@ -1,3 +1,4 @@
+/* eslint-disable sort-keys */
 import type {ICustomerRare} from './types';
 
 export const CUSTOMER_RARE_LIST = [

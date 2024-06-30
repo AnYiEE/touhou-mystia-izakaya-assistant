@@ -4,7 +4,7 @@ import type {IRecipe} from './recipes/types';
 type TDlc = 0 | 1 | 2 | 3 | 4 | 5;
 type TLevel = 1 | 2 | 3 | 4 | 5;
 
-export type TBusinessman =
+type TBusinessman =
 	| '博丽神社河童'
 	| '博丽神社妖精女仆'
 	| '地灵殿地狱鸦'
@@ -30,7 +30,7 @@ export type TBusinessman =
 	| '妖怪之山河童'
 	| '月之都月兔';
 
-export type TCollectionLocation =
+type TCollectionLocation =
 	| '博丽神社参道西侧银杏'
 	| '博丽神社花丛'
 	| '博丽神社蘑菇'
@@ -120,8 +120,14 @@ export type TCollectionLocation =
 	| '妖怪之山中心瀑布'
 	| '月之都月虹池';
 
-type TBeverageTag = IBeverage['tags'][number] | '全部';
-type TRecipeTag = IRecipe['positiveTags'][number] | IRecipe['negativeTags'][number] | '流行喜爱' | '流行厌恶' | '全部';
+export type TBeverageTag = IBeverage['tags'][number] | '全部';
+export type TRecipeTag =
+	| IRecipe['positiveTags'][number]
+	// eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
+	| IRecipe['negativeTags'][number]
+	| '流行喜爱'
+	| '流行厌恶'
+	| '全部';
 
 type TPlace =
 	| '博丽神社'
@@ -140,7 +146,7 @@ type TPlace =
 	| '妖怪之山'
 	| '月之都';
 
-export type TTask = '阿求小姐的色纸' | '女仆长的采购委托';
+type TTask = '阿求小姐的色纸' | '女仆长的采购委托';
 
 export interface IItemBase {
 	name: string;

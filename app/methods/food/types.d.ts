@@ -1,4 +1,4 @@
-import {type foodInstances, type beverageInstance, type ingredientInstance, type recipeInstance} from './index';
+import {type beverageInstance, type foodInstances, type ingredientInstance, type recipeInstance} from './index';
 
 export type TBeverageInstance = typeof beverageInstance;
 export type TIngredientInstance = typeof ingredientInstance;

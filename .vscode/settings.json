@@ -7,6 +7,7 @@
 	"editor.cursorBlinking": "smooth",
 	"editor.cursorSmoothCaretAnimation": "on",
 	"editor.fontLigatures": true,
+	"editor.formatOnSave": true,
 	"editor.guides.bracketPairs": "active",
 	"editor.insertSpaces": false,
 	"editor.linkedEditing": true,

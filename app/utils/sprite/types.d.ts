@@ -1,18 +1,18 @@
 import {
-	type TBeverages,
 	type TBeverageNames,
-	type TCustomerNormals,
+	type TBeverages,
 	type TCustomerNormalNames,
-	type TCustomerRares,
+	type TCustomerNormals,
 	type TCustomerRareNames,
-	type TCustomerSpecials,
+	type TCustomerRares,
 	type TCustomerSpecialNames,
-	type TIngredients,
+	type TCustomerSpecials,
 	type TIngredientNames,
-	type TKitchenwares,
+	type TIngredients,
 	type TKitchenwareNames,
-	type TRecipes,
+	type TKitchenwares,
 	type TRecipeNames,
+	type TRecipes,
 } from '@/data';
 
 export type TSpriteTarget =

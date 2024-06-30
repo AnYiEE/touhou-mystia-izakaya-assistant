@@ -45,27 +45,34 @@ export default memo(function Recipess() {
 	const filteredData = useMemo(
 		() =>
 			searchResult.filter(({dlc, level, kitchenware, positiveTags, negativeTags, ingredients}) => {
-				const isDlcMatch = filterDlcs.length ? filterDlcs.includes(dlc.toString()) : true;
-				const isLevelMatch = filterLevels.length ? filterLevels.includes(level.toString()) : true;
-				const isKitchenwareMatch = filterKitchenwares.length ? filterKitchenwares.includes(kitchenware) : true;
-				const isPositiveTagMatch = filterPositiveTags.length
-					? filterPositiveTags.some((tag) => (positiveTags as string[]).includes(tag))
-					: true;
-				const isNoPositiveTagMatch = filterNoPositiveTags.length
-					? !filterNoPositiveTags.some((tag) => (positiveTags as string[]).includes(tag))
-					: true;
-				const isNegativeTagMatch = filterNegativeTags.length
-					? filterNegativeTags.some((tag) => (negativeTags as string[]).includes(tag))
-					: true;
-				const isNoNegativeTagMatch = filterNoNegativeTags.length
-					? !filterNoNegativeTags.some((tag) => (negativeTags as string[]).includes(tag))
-					: true;
-				const isIngredientMatch = filterIngredients.length
-					? filterIngredients.some((ingredient) => (ingredients as string[]).includes(ingredient))
-					: true;
-				const isNoIngredientMatch = filterNoIngredients.length
-					? !filterNoIngredients.some((ingredient) => (ingredients as string[]).includes(ingredient))
-					: true;
+				const isDlcMatch = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
+				const isLevelMatch = filterLevels.length > 0 ? filterLevels.includes(level.toString()) : true;
+				const isKitchenwareMatch =
+					filterKitchenwares.length > 0 ? filterKitchenwares.includes(kitchenware) : true;
+				const isPositiveTagMatch =
+					filterPositiveTags.length > 0
+						? filterPositiveTags.some((tag) => (positiveTags as string[]).includes(tag))
+						: true;
+				const isNoPositiveTagMatch =
+					filterNoPositiveTags.length > 0
+						? !filterNoPositiveTags.some((tag) => (positiveTags as string[]).includes(tag))
+						: true;
+				const isNegativeTagMatch =
+					filterNegativeTags.length > 0
+						? filterNegativeTags.some((tag) => (negativeTags as string[]).includes(tag))
+						: true;
+				const isNoNegativeTagMatch =
+					filterNoNegativeTags.length > 0
+						? !filterNoNegativeTags.some((tag) => (negativeTags as string[]).includes(tag))
+						: true;
+				const isIngredientMatch =
+					filterIngredients.length > 0
+						? filterIngredients.some((ingredient) => (ingredients as string[]).includes(ingredient))
+						: true;
+				const isNoIngredientMatch =
+					filterNoIngredients.length > 0
+						? !filterNoIngredients.some((ingredient) => (ingredients as string[]).includes(ingredient))
+						: true;
 
 				return (
 					isDlcMatch &&
@@ -100,7 +107,7 @@ export default memo(function Recipess() {
 	const searchConfig = useSearchConfig({
 		label: '选择或输入料理名称',
 		searchItems: allNames,
-		searchValue: searchValue,
+		searchValue,
 		setSearchValue: store.page.searchValue.set,
 	});
 
@@ -108,59 +115,59 @@ export default memo(function Recipess() {
 		() =>
 			[
 				{
-					label: 'DLC',
 					items: allDlcs,
+					label: 'DLC',
 					selectedKeys: filterDlcs,
 					setSelectedKeys: store.page.filters.dlcs.set,
 				},
 				{
-					label: '正特性（包含）',
 					items: allPositiveTags,
+					label: '正特性（包含）',
 					selectedKeys: filterPositiveTags,
 					setSelectedKeys: store.page.filters.positiveTags.set,
 				},
 				{
-					label: '正特性（排除）',
 					items: allPositiveTags,
+					label: '正特性（排除）',
 					selectedKeys: filterNoPositiveTags,
 					setSelectedKeys: store.page.filters.noPositiveTags.set,
 				},
 				{
-					label: '反特性（包含）',
 					items: allNegativeTags,
+					label: '反特性（包含）',
 					selectedKeys: filterNegativeTags,
 					setSelectedKeys: store.page.filters.negativeTags.set,
 				},
 				{
-					label: '反特性（排除）',
 					items: allNegativeTags,
+					label: '反特性（排除）',
 					selectedKeys: filterNoNegativeTags,
 					setSelectedKeys: store.page.filters.noNegativeTags.set,
 				},
 				{
-					label: '食材（包含）',
 					items: allIngredients,
+					label: '食材（包含）',
 					selectedKeys: filterIngredients,
 					setSelectedKeys: store.page.filters.ingredients.set,
 					spriteTarget: 'ingredient',
 				},
 				{
-					label: '食材（排除）',
 					items: allIngredients,
+					label: '食材（排除）',
 					selectedKeys: filterNoIngredients,
 					setSelectedKeys: store.page.filters.noIngredients.set,
 					spriteTarget: 'ingredient',
 				},
 				{
-					label: '厨具',
 					items: allKitchenwares,
+					label: '厨具',
 					selectedKeys: filterKitchenwares,
 					setSelectedKeys: store.page.filters.kitchenwares.set,
 					spriteTarget: 'kitchenware',
 				},
 				{
-					label: '等级',
 					items: allLevels,
+					label: '等级',
 					selectedKeys: filterLevels,
 					setSelectedKeys: store.page.filters.levels.set,
 				},

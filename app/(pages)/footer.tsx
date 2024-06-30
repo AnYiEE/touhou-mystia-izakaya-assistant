@@ -1,7 +1,7 @@
-import {memo, type PropsWithChildren} from 'react';
+import {type PropsWithChildren, memo} from 'react';
 import {execSync} from 'node:child_process';
 
-import {Link, Tooltip, type LinkProps, type TooltipProps} from '@nextui-org/react';
+import {Link, type LinkProps, Tooltip, type TooltipProps} from '@nextui-org/react';
 
 import {siteConfig} from '@/configs';
 
@@ -33,7 +33,7 @@ const FooterLink = memo(function FooterLink({
 const isProduction = siteConfig.nodeEnv === 'production';
 const sha =
 	process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? isProduction
-		? execSync('git rev-parse --short HEAD').toString('utf-8')
+		? execSync('git rev-parse --short HEAD').toString('utf8')
 		: null;
 
 export default memo(function Footer() {

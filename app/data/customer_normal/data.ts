@@ -1,3 +1,4 @@
+/* eslint-disable sort-keys */
 import type {ICustomerNormal} from './types';
 
 export const CUSTOMER_NORMAL_LIST = [

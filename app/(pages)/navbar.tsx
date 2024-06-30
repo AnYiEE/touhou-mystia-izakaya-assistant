@@ -1,21 +1,21 @@
 'use client';
 
-import {memo, useCallback, useReducer, type PropsWithChildren, type ReactNode} from 'react';
+import {type PropsWithChildren, type ReactNode, memo, useCallback, useReducer} from 'react';
 import {usePathname} from 'next/navigation';
 import clsx from 'clsx';
 
 import {
 	Button,
 	Link,
-	Navbar as NextUINavbar,
-	NavbarContent,
-	NavbarMenu,
-	NavbarMenuToggle,
-	NavbarBrand,
-	NavbarItem,
-	NavbarMenuItem,
-	Tooltip,
 	type LinkProps,
+	NavbarBrand,
+	NavbarContent,
+	NavbarItem,
+	NavbarMenu,
+	NavbarMenuItem,
+	NavbarMenuToggle,
+	Navbar as NextUINavbar,
+	Tooltip,
 } from '@nextui-org/react';
 import {faGithub} from '@fortawesome/free-brands-svg-icons';
 

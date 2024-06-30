@@ -1,4 +1,4 @@
-import {useMemo, type Dispatch, type SetStateAction} from 'react';
+import {type Dispatch, type SetStateAction, useMemo} from 'react';
 
 import {type IPinyinSortConfig, PinyinSortState} from '@/components/sidePinyinSortIconButton';
 

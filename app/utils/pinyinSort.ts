@@ -7,15 +7,15 @@ interface IValueObeject {
 }
 
 function checkValueObject(value: TValue | IValueObeject): value is IValueObeject {
-	return typeof value === 'object' && value !== null && 'value' in value;
+	return typeof value === 'object' && 'value' in value;
 }
 
 function getTone(pinyin: string) {
-	return parseInt(pinyin.match(/\d/)?.[0] ?? '0');
+	return Number.parseInt(pinyin.match(/\d/u)?.[0] ?? '0');
 }
 
 function removeTone(pinyin: string) {
-	return pinyin.replace(/\d/, '');
+	return pinyin.replace(/\d/u, '');
 }
 
 export function pinyinSort(a: TValue | IValueObeject, b: TValue | IValueObeject) {

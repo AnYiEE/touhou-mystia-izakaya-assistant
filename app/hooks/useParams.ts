@@ -8,7 +8,9 @@ export function useParams() {
 
 	const params = useMemo(() => new URLSearchParams(searchParams), [searchParams]);
 	const replace = useCallback(
-		(newParams: typeof params) => router.replace(`${pathname}?${newParams.toString()}`),
+		(newParams: typeof params) => {
+			router.replace(`${pathname}?${newParams.toString()}`);
+		},
 		[pathname, router]
 	);
 

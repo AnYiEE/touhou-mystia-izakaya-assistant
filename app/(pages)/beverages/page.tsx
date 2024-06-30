@@ -37,14 +37,12 @@ export default memo(function Beverages() {
 	const filteredData = useMemo(
 		() =>
 			searchResult.filter(({dlc, level, tags}) => {
-				const isDlcMatch = filterDlcs.length ? filterDlcs.includes(dlc.toString()) : true;
-				const isLevelMatch = filterLevels.length ? filterLevels.includes(level.toString()) : true;
-				const isTagMatch = filterTags.length
-					? filterTags.some((tag) => (tags as string[]).includes(tag))
-					: true;
-				const isNoTagMatch = filterNoTags.length
-					? !filterNoTags.some((tag) => (tags as string[]).includes(tag))
-					: true;
+				const isDlcMatch = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
+				const isLevelMatch = filterLevels.length > 0 ? filterLevels.includes(level.toString()) : true;
+				const isTagMatch =
+					filterTags.length > 0 ? filterTags.some((tag) => (tags as string[]).includes(tag)) : true;
+				const isNoTagMatch =
+					filterNoTags.length > 0 ? !filterNoTags.some((tag) => (tags as string[]).includes(tag)) : true;
 
 				return isDlcMatch && isLevelMatch && isTagMatch && isNoTagMatch;
 			}),
@@ -58,7 +56,7 @@ export default memo(function Beverages() {
 	const searchConfig = useSearchConfig({
 		label: '选择或输入酒水名称',
 		searchItems: allNames,
-		searchValue: searchValue,
+		searchValue,
 		setSearchValue: store.page.searchValue.set,
 	});
 
@@ -66,26 +64,26 @@ export default memo(function Beverages() {
 		() =>
 			[
 				{
-					label: 'DLC',
 					items: allDlcs,
+					label: 'DLC',
 					selectedKeys: filterDlcs,
 					setSelectedKeys: store.page.filters.dlcs.set,
 				},
 				{
-					label: '酒水标签（包含）',
 					items: allTags,
+					label: '酒水标签（包含）',
 					selectedKeys: filterTags,
 					setSelectedKeys: store.page.filters.tags.set,
 				},
 				{
-					label: '酒水标签（排除）',
 					items: allTags,
+					label: '酒水标签（排除）',
 					selectedKeys: filterNoTags,
 					setSelectedKeys: store.page.filters.noTags.set,
 				},
 				{
-					label: '等级',
 					items: allLevels,
+					label: '等级',
 					selectedKeys: filterLevels,
 					setSelectedKeys: store.page.filters.levels.set,
 				},

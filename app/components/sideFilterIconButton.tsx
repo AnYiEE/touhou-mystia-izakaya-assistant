@@ -1,4 +1,4 @@
-import {forwardRef, memo, useCallback, type Dispatch} from 'react';
+import {type Dispatch, forwardRef, memo, useCallback} from 'react';
 
 import {
 	Button,
@@ -46,7 +46,9 @@ export default memo(
 		);
 
 		const handleResetFilters = useCallback(() => {
-			selectConfig.forEach(({setSelectedKeys}) => setSelectedKeys([]));
+			for (const {setSelectedKeys} of selectConfig) {
+				setSelectedKeys([]);
+			}
 		}, [selectConfig]);
 
 		return (
@@ -65,7 +67,7 @@ export default memo(
 						{selectConfig.map(
 							({label, items, selectedKeys, selectionMode, setSelectedKeys, spriteTarget}, index) => (
 								<Select
-									key={`${label}${index}`}
+									key={`${label as string}${index}`}
 									size="sm"
 									items={items}
 									selectedKeys={selectedKeys}

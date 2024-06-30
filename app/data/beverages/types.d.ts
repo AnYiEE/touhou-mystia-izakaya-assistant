@@ -1,4 +1,4 @@
-import type {TBusinessman, TCollectionLocation, TTask, IFoodBase} from '@/data/types';
+import type {IFoodBase} from '@/data/types';
 
 type TTag =
 	| '低酒精'

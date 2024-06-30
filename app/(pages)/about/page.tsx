@@ -1,8 +1,8 @@
-import {forwardRef, memo, type PropsWithChildren} from 'react';
+import {type PropsWithChildren, forwardRef, memo} from 'react';
 import {Link} from '@nextui-org/react';
 
 const H1 = memo(
-	forwardRef<HTMLHeadingElement | null, PropsWithChildren<{}>>(function H1({children}, ref) {
+	forwardRef<HTMLHeadingElement | null, PropsWithChildren<object>>(function H1({children}, ref) {
 		return (
 			<h1 className="mb-4 mt-2 text-2xl font-bold" ref={ref}>
 				{children}

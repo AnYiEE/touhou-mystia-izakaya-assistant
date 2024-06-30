@@ -1,12 +1,12 @@
-import {forwardRef, memo, type Dispatch, type SetStateAction} from 'react';
+import {type Dispatch, type SetStateAction, forwardRef, memo} from 'react';
 
 import {
 	Autocomplete,
 	AutocompleteItem,
+	type AutocompleteProps,
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-	type AutocompleteProps,
 } from '@nextui-org/react';
 import {faMagnifyingGlass} from '@fortawesome/free-solid-svg-icons';
 

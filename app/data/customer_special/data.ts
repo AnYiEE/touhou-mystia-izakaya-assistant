@@ -1,3 +1,4 @@
+/* eslint-disable sort-keys */
 import type {ICustomerSpecial} from './types';
 
 export const CUSTOMER_SPECIAL_LIST = [

@@ -1,4 +1,4 @@
-import {forwardRef, memo, type FC, type HTMLAttributes, type MouseEvent} from 'react';
+import {type FC, type HTMLAttributes, type MouseEvent, forwardRef, memo} from 'react';
 import clsx from 'clsx';
 
 import type {TTagStyle} from '@/constants/types';

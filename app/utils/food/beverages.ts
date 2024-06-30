@@ -1,7 +1,7 @@
 import {isEqual} from 'lodash';
 
 import {Food} from './base';
-import {type TBeverages, type IBeverage} from '@/data';
+import {type IBeverage, type TBeverages} from '@/data';
 
 export class Beverage<
 	TItem extends TBeverages[number] = TBeverages[number],

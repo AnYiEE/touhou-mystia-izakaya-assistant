@@ -6,6 +6,6 @@ export type TTagStyle = {
 
 export interface ITagStyle {
 	beverage?: TTagStyle;
-	positive?: TTagStyle;
 	negative?: TTagStyle;
+	positive?: TTagStyle;
 }

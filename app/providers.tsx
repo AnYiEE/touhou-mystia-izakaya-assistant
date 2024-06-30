@@ -4,9 +4,9 @@ import {type ReactNode} from 'react';
 import {useRouter} from 'next/navigation';
 
 import {
-	GlobalStoreProvider,
-	CustomerRareStoreProvider,
 	BeveragesStoreProvider,
+	CustomerRareStoreProvider,
+	GlobalStoreProvider,
 	IngredientsStoreProvider,
 	RecipesStoreProvider,
 } from '@/stores';

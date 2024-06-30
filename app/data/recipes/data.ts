@@ -1,3 +1,4 @@
+/* eslint-disable sort-keys */
 import type {IRecipe} from './types';
 
 export const RECIPE_LIST = [

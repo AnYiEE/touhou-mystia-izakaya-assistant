@@ -23,14 +23,18 @@ export const metadata: Metadata = {
 		default: siteConfig.name,
 		template: `%s - ${siteConfig.name}`,
 	},
+
 	description: siteConfig.description,
 	keywords: siteConfig.keywords,
-	applicationName: siteConfig.name,
+
 	appleWebApp: true,
+	applicationName: siteConfig.name,
+
 	authors: siteConfig.author,
 	icons: {
 		icon: '/favicon.png',
 	},
+
 	twitter: {
 		card: 'summary',
 	},
@@ -38,8 +42,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
 	themeColor: [
-		{media: '(prefers-color-scheme: light)', color: '#fff'},
-		{media: '(prefers-color-scheme: dark)', color: '#000'},
+		{color: '#fff', media: '(prefers-color-scheme: light)'},
+		{color: '#000', media: '(prefers-color-scheme: dark)'},
 	],
 };
 

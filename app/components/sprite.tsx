@@ -1,4 +1,4 @@
-import {forwardRef, memo, useMemo, type HTMLAttributes} from 'react';
+import {type HTMLAttributes, forwardRef, memo, useMemo} from 'react';
 import clsx from 'clsx';
 
 import {type TItemNames} from '@/data';
@@ -61,6 +61,7 @@ export default memo(
 			return {
 				calculatedHeight: calcHeight,
 				calculatedWidth: calcWidth,
+
 				calculatedSize: remToPx(calcSize),
 			};
 		}, [height, width, size, instance]);
