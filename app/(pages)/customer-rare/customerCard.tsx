@@ -154,7 +154,8 @@ export default memo(
 													}}
 													className={clsx(
 														'p-0.5',
-														!tag.startsWith('流行') && 'cursor-pointer p-0.5',
+														!tag.startsWith('流行') &&
+															'cursor-pointer p-0.5 hover:opacity-80',
 														!recipePositiveTags.includes(tag) && 'opacity-50'
 													)}
 												/>
@@ -199,7 +200,7 @@ export default memo(
 														});
 													}}
 													className={clsx(
-														'cursor-pointer p-0.5',
+														'cursor-pointer p-0.5 hover:opacity-80',
 														!beverageTags.includes(tag) && 'opacity-50'
 													)}
 												/>
@@ -217,7 +218,7 @@ export default memo(
 								variant="light"
 								onPress={store.refreshCustomerSelectedItems}
 								aria-label="重置当前选定项"
-								className="absolute -right-1 top-1 h-4 w-4 text-default-400 data-[hover]:bg-transparent"
+								className="absolute -right-1 top-1 h-4 w-4 text-default-400 hover:opacity-80 data-[hover]:bg-transparent"
 							/>
 						</Tooltip>
 					)}

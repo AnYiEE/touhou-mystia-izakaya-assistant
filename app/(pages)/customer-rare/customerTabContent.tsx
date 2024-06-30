@@ -51,7 +51,7 @@ export default memo(
 										icon={<Sprite target={target as TCustomerTarget} name={name} size={5} />}
 										classNames={{
 											base: 'h-16 w-16 lg:h-20 lg:w-20',
-											icon: 'inline-table lg:inline-block',
+											icon: 'inline-table transition hover:scale-125 lg:inline-block',
 										}}
 									/>
 									<span className="break-keep text-xs">{name}</span>

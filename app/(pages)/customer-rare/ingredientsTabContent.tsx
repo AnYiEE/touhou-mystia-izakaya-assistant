@@ -70,64 +70,71 @@ export default memo(
 					ref={ref}
 				>
 					<div className="m-2 grid grid-cols-[repeat(auto-fill,3rem)] justify-around gap-4">
-						{sortedData.map(({name, tags}, index) => (
-							<div
-								key={index}
-								onClick={() => {
-									store.share.recipe.data.set((prev) => {
-										if (
-											currentRecipe &&
-											prev &&
-											currentRecipe.ingredients.length + prev.extraIngredients.length < 5
-										) {
-											prev.extraIngredients.push(name);
-										}
-									});
-								}}
-								className="flex cursor-pointer flex-col items-center"
-							>
-								<Badge
-									content={(() => {
-										if (currentRecipe) {
-											const {extraIngredients} = currentRecipeData;
-											if (currentRecipe.ingredients.length + extraIngredients.length >= 5) {
-												return;
+						{sortedData.map(({name, tags}, index) => {
+							if (!currentRecipe) {
+								return null;
+							}
+							const {extraIngredients} = currentRecipeData;
+							if (currentRecipe.ingredients.length + extraIngredients.length >= 5) {
+								return (
+									<div key={index} className="flex flex-col items-center">
+										<Sprite target="ingredient" name={name} size={3} />
+										<span className="break-keep text-xs">{name}</span>
+									</div>
+								);
+							}
+							const extraTags: string[] = [];
+							for (const extraIngredient of extraIngredients) {
+								extraTags.push(...instance_ingredient.getPropsByName(extraIngredient, 'tags'));
+							}
+							const before = instance_recipe.composeTags(
+								currentRecipe.ingredients,
+								extraIngredients,
+								currentRecipe.positiveTags,
+								extraTags
+							);
+							const after = instance_recipe.composeTags(
+								currentRecipe.ingredients,
+								extraIngredients,
+								currentRecipe.positiveTags,
+								[...extraTags, ...tags]
+							);
+							const scoreChange = instance_recipe.getIngredientScoreChange(
+								before,
+								after,
+								customerPositiveTags,
+								customerNegativeTags
+							);
+							return (
+								<div
+									key={index}
+									onClick={() => {
+										store.share.recipe.data.set((prev) => {
+											if (
+												prev &&
+												currentRecipe.ingredients.length + prev.extraIngredients.length < 5
+											) {
+												prev.extraIngredients.push(name);
 											}
-											const extraTags: string[] = [];
-											for (const extraIngredient of extraIngredients) {
-												extraTags.push(
-													...instance_ingredient.getPropsByName(extraIngredient, 'tags')
-												);
-											}
-											const before = instance_recipe.composeTags(
-												currentRecipe.ingredients,
-												extraIngredients,
-												currentRecipe.positiveTags,
-												extraTags
-											);
-											const after = instance_recipe.composeTags(
-												currentRecipe.ingredients,
-												extraIngredients,
-												currentRecipe.positiveTags,
-												[...extraTags, ...tags]
-											);
-											const scoreChange = instance_recipe.getIngredientScoreChange(
-												before,
-												after,
-												customerPositiveTags,
-												customerNegativeTags
-											);
-											return scoreChange;
-										}
-										return '?';
-									})()}
-									size="sm"
+										});
+									}}
+									className="flex cursor-pointer flex-col items-center"
+									title={`加入${name}`}
 								>
-									<Sprite target="ingredient" name={name} size={3} />
-								</Badge>
-								<span className="break-keep text-xs">{name}</span>
-							</div>
-						))}
+									<Badge
+										color={scoreChange > 0 ? 'success' : scoreChange < 0 ? 'danger' : 'default'}
+										content={
+											scoreChange > 0 ? `+${scoreChange}` : scoreChange < 0 ? scoreChange : ''
+										}
+										isDot={scoreChange === 0}
+										size="sm"
+									>
+										<Sprite target="ingredient" name={name} size={3} title={`加入${name}`} />
+									</Badge>
+									<span className="break-keep text-xs">{name}</span>
+								</div>
+							);
+						})}
 					</div>
 					{darkIngredients.size > 0 && (
 						<>
