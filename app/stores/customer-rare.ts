@@ -175,6 +175,14 @@ const customerRareStore = store(
 			currentStore.share.recipe.page.set(1);
 			currentStore.share.beverage.name.set(null);
 			currentStore.share.beverage.page.set(1);
+			currentStore.share.ingredient.filterVisibility.set(false);
+			if (currentStore.share.tab.get() === 'ingredient') {
+				if (currentStore.share.customer.data.get()) {
+					currentStore.share.tab.set('recipe');
+				} else {
+					currentStore.share.tab.set('customer');
+				}
+			}
 		},
 		toggleCustomerTabVisibilityState() {
 			currentStore.page.customer.tabVisibility.set(

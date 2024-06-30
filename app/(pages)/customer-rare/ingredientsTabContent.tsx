@@ -3,7 +3,6 @@ import clsx from 'clsx';
 
 import {Badge, Button, ScrollShadow} from '@nextui-org/react';
 
-import Placeholder from './placeholder';
 import Sprite from '@/components/sprite';
 
 import type {IIngredientsTabStyle} from './types';
@@ -39,17 +38,7 @@ export default memo(
 		sortedData = sortedData.filter(({name}) => !darkIngredients.has(name));
 
 		if (!currentCustomer || !currentRecipeData) {
-			store.share.ingredient.filterVisibility.set(false);
-			if (currentCustomer) {
-				store.share.tab.set('recipe');
-			} else {
-				store.share.tab.set('customer');
-			}
-			return (
-				<Placeholder className="pt-12 md:pt-[5.5rem] lg:pt-20 xl:pt-0" ref={ref}>
-					选择一种料理以继续
-				</Placeholder>
-			);
+			return null;
 		}
 
 		const {target, name: customerName} = currentCustomer;
