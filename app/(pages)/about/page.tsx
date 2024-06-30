@@ -1,5 +1,6 @@
 import {Link} from '@nextui-org/react';
 
+import DataManager from './dataManager';
 import H1 from './h1';
 
 import {siteConfig} from '@/configs';
@@ -64,6 +65,7 @@ export default function About() {
 					尚未提供相关设置项
 				</li>
 			</ul>
+			<DataManager />
 		</div>
 	);
 }
