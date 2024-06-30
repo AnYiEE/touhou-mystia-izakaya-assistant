@@ -10,3 +10,4 @@ export * from './numberSort';
 export * from './pinyinSort';
 export * from './pxToRem';
 export * from './remToPx';
+export * from './removeLastElement';

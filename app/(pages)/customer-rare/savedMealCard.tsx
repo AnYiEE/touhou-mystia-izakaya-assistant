@@ -1,4 +1,4 @@
-import {forwardRef, Fragment, memo} from 'react';
+import {Fragment, forwardRef, memo} from 'react';
 import {Button, Card, Divider} from '@nextui-org/react';
 
 import {Plus} from './resultCard';
@@ -15,30 +15,39 @@ export default memo(
 		const currentCustomerName = store.share.customer.data.use()?.name;
 		const savedMeal = store.page.selected.use();
 
+		const instance_recipe = store.instances.recipe.get();
+
 		if (!currentCustomerName || !savedMeal[currentCustomerName]?.length) {
 			return null;
 		}
 
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const savedCustomerMeal = savedMeal[currentCustomerName]!;
 
 		return (
 			<Card fullWidth shadow="sm" ref={ref}>
 				<div className="flex flex-col gap-3 p-4">
-					{savedCustomerMeal.map(({index, recipe, beverage, ingredients, kitchenware}, loopIndex) => (
+					{savedCustomerMeal.map(({index: mealIndex, beverage, recipe, extraIngredients}, loopIndex) => (
 						<Fragment key={loopIndex}>
 							<div className="flex flex-col items-center gap-4 md:flex-row">
 								<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
 									<div className="flex items-center gap-2">
-										<Sprite target="kitchenware" name={kitchenware} size={1.5} />
+										<Sprite
+											target="kitchenware"
+											name={instance_recipe.getPropsByName(recipe, 'kitchenware')}
+											size={1.5}
+										/>
 										<Sprite target="recipe" name={recipe} size={2} />
 										<Plus size={0.75} />
 										<Sprite target="beverage" name={beverage} size={2} />
 									</div>
 									<Plus size={0.75} />
 									<div className="flex items-center gap-x-3">
-										{ingredients.map(({index, name}) => (
-											<Sprite key={index} target="ingredient" name={name} size={2} />
-										))}
+										{[...instance_recipe.getPropsByName(recipe, 'ingredients'), ...extraIngredients]
+											.slice(0, 5)
+											.map((name, index) => (
+												<Sprite key={index} target="ingredient" name={name} size={2} />
+											))}
 									</div>
 								</div>
 								<div className="flex w-full justify-center gap-2 md:w-auto">
@@ -49,7 +58,7 @@ export default memo(
 										variant="flat"
 										onPress={() => {
 											store.page.selected[currentCustomerName]?.set(
-												savedCustomerMeal.filter((meal) => meal.index !== index)
+												savedCustomerMeal.filter((meal) => meal.index !== mealIndex)
 											);
 										}}
 										className="md:w-auto"
@@ -62,14 +71,11 @@ export default memo(
 										size="sm"
 										variant="flat"
 										onPress={() => {
-											store.share.selected.set({
-												beverage,
-												recipe: {
-													ingredients,
-													kitchenware,
-													name: recipe,
-												},
+											store.share.recipe.data.set({
+												extraIngredients,
+												name: recipe,
 											});
+											store.share.beverage.name.set(beverage);
 										}}
 										className="md:w-auto"
 									>

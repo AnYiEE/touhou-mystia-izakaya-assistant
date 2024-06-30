@@ -1,4 +1,4 @@
-import {forwardRef, memo, useCallback, useMemo, type ChangeEvent, type Key} from 'react';
+import {type ChangeEvent, type Key, forwardRef, memo, useCallback, useMemo} from 'react';
 import clsx from 'clsx';
 
 import {
@@ -15,6 +15,7 @@ import {
 	PopoverTrigger,
 	Select,
 	SelectItem,
+	type Selection,
 	Table,
 	TableBody,
 	TableCell,
@@ -22,7 +23,6 @@ import {
 	TableHeader,
 	TableRow,
 	Tooltip,
-	type Selection,
 } from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faChevronDown, faMagnifyingGlass, faPlus, faTags} from '@fortawesome/free-solid-svg-icons';
@@ -34,7 +34,7 @@ import Tags from '@/components/tags';
 
 import {customerTagStyleMap, beverageTableColumns as tableColumns} from './constants';
 import type {ITableColumn, ITableSortDescriptor, TBeverageWithSuitability, TBeveragesWithSuitability} from './types';
-import {useBeveragesStore, useCustomerRareStore} from '@/stores';
+import {useCustomerRareStore} from '@/stores';
 import {numberSort, pinyinSort} from '@/utils';
 
 type TTableColumnKey = 'beverage' | 'price' | 'suitability' | 'action';
@@ -47,30 +47,27 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLTableElement | null, IProps>(function BeverageTabContent(_props, ref) {
-		const customerStore = useCustomerRareStore();
-		const beveragesStore = useBeveragesStore();
+		const store = useCustomerRareStore();
 
-		const currentCustomer = customerStore.share.customer.data.use();
-		const selectedCustomerBeverageTags = customerStore.share.customer.beverageTags.use();
+		const currentCustomer = store.share.customer.data.use();
+		const selectedCustomerBeverageTags = store.share.customer.beverageTags.use();
 
-		const currentBeverage = customerStore.share.beverage.data.use();
-		const selectedDlcs = customerStore.share.beverage.dlcs.use();
+		const currentBeverageName = store.share.beverage.name.use();
+		const selectedDlcs = store.share.beverage.dlcs.use();
 
-		const instance_beverage = beveragesStore.instance.get();
-		const allBeverageNames = useMemo(
-			() => instance_beverage.getValuesByProp(instance_beverage.data, 'name', true).sort(pinyinSort),
-			[instance_beverage]
-		);
-		const allBeverageTags = beveragesStore.tags.get();
-		const allDlcs = beveragesStore.dlcs.get();
+		const instance_beverage = store.instances.beverage.get();
 
-		const searchValue = customerStore.share.beverage.searchValue.use();
+		const allBeverageNames = store.beverage.names.get();
+		const allBeverageDlcs = store.beverage.dlcs.get();
+		const allBeverageTags = store.beverage.tags.get();
+
+		const searchValue = store.share.beverage.searchValue.use();
 		const hasNameFilter = useMemo(() => Boolean(searchValue), [searchValue]);
 
-		const tableCurrentPage = customerStore.share.beverage.page.use();
-		const tableRowsPerPage = customerStore.page.beverage.table.rows.use();
-		const tableSortDescriptor = customerStore.share.beverage.sortDescriptor.use();
-		const tableVisibleColumns = customerStore.beverageTableColumns.use();
+		const tableCurrentPage = store.share.beverage.page.use();
+		const tableRowsPerPage = store.page.beverage.table.rows.use();
+		const tableSortDescriptor = store.share.beverage.sortDescriptor.use();
+		const tableVisibleColumns = store.beverageTableColumns.use();
 
 		const filteredData = useMemo(() => {
 			let clonedData = structuredClone(instance_beverage.data) as TBeveragesWithSuitability;
@@ -78,15 +75,13 @@ export default memo(
 			if (!currentCustomer) {
 				return clonedData.map((item) => ({
 					...item,
-					suitability: 0,
 					matchedTags: [] as string[],
+					suitability: 0,
 				}));
 			}
 
 			const {target, name: customerName} = currentCustomer;
-			const {beverageTags} = customerStore.instances[target as 'customer_rare']
-				.get()
-				.getPropsByName(customerName);
+			const {beverageTags} = store.instances[target as 'customer_rare'].get().getPropsByName(customerName);
 
 			clonedData = clonedData.map((item) => {
 				const {suitability, tags: matchedTags} = instance_beverage.getCustomerSuitability(
@@ -96,15 +91,15 @@ export default memo(
 
 				return {
 					...item,
-					suitability,
 					matchedTags,
+					suitability,
 				};
 			});
 
 			if (
 				!hasNameFilter &&
-				(selectedDlcs === 'all' || !selectedDlcs.size) &&
-				(selectedCustomerBeverageTags === 'all' || !selectedCustomerBeverageTags.size)
+				(selectedDlcs === 'all' || selectedDlcs.size === 0) &&
+				(selectedCustomerBeverageTags === 'all' || selectedCustomerBeverageTags.size === 0)
 			) {
 				return clonedData;
 			}
@@ -112,9 +107,9 @@ export default memo(
 			return clonedData.filter(({name, dlc, tags}) => {
 				const isNameMatch = hasNameFilter ? name.toLowerCase().includes(searchValue.toLowerCase()) : true;
 				const isDlcMatch =
-					selectedDlcs !== 'all' && selectedDlcs.size ? selectedDlcs.has(dlc.toString()) : true;
+					selectedDlcs !== 'all' && selectedDlcs.size > 0 ? selectedDlcs.has(dlc.toString()) : true;
 				const isTagsMatch =
-					selectedCustomerBeverageTags !== 'all' && selectedCustomerBeverageTags.size
+					selectedCustomerBeverageTags !== 'all' && selectedCustomerBeverageTags.size > 0
 						? [...selectedCustomerBeverageTags].every((tag) => (tags as string[]).includes(tag as string))
 						: true;
 
@@ -122,12 +117,12 @@ export default memo(
 			});
 		}, [
 			currentCustomer,
-			customerStore.instances,
 			hasNameFilter,
 			instance_beverage,
 			searchValue,
 			selectedCustomerBeverageTags,
 			selectedDlcs,
+			store.instances,
 		]);
 
 		const sortedData = useMemo(() => {
@@ -172,7 +167,7 @@ export default memo(
 			[filteredData.length, tableRowsPerPage]
 		);
 
-		const tabelSelectedKeys = useMemo(() => new Set([currentBeverage?.name ?? '']), [currentBeverage?.name]);
+		const tabelSelectedKeys = useMemo(() => new Set([currentBeverageName ?? '']), [currentBeverageName]);
 
 		const renderTableCell = useCallback(
 			(data: TBeverageWithSuitability, columnKey: TTableColumnKey) => {
@@ -237,9 +232,7 @@ export default memo(
 										size="sm"
 										variant="light"
 										onPress={() => {
-											customerStore.share.beverage.data.set(
-												instance_beverage.getPropsByName(name)
-											);
+											store.share.beverage.name.set(name);
 										}}
 									>
 										<FontAwesomeIcon icon={faPlus} />
@@ -249,48 +242,48 @@ export default memo(
 						);
 				}
 			},
-			[currentCustomer, customerStore.share.beverage.data, instance_beverage]
+			[currentCustomer, store.share.beverage.name]
 		);
 
 		const onSelectedBeverageTagsChange = useCallback(
 			(value: Selection) => {
-				customerStore.share.customer.beverageTags.set(value);
-				customerStore.share.beverage.page.set(1);
+				store.share.customer.beverageTags.set(value);
+				store.share.beverage.page.set(1);
 			},
-			[customerStore.share.beverage.page, customerStore.share.customer.beverageTags]
+			[store.share.beverage.page, store.share.customer.beverageTags]
 		);
 
 		const onSelectedDlcsChange = useCallback(
 			(value: Selection) => {
-				customerStore.share.beverage.dlcs.set(value);
-				customerStore.share.beverage.page.set(1);
+				store.share.beverage.dlcs.set(value);
+				store.share.beverage.page.set(1);
 			},
-			[customerStore.share.beverage.dlcs, customerStore.share.beverage.page]
+			[store.share.beverage.dlcs, store.share.beverage.page]
 		);
 
 		const onSearchValueChange = useCallback(
 			(value: Key | null) => {
 				if (value) {
-					customerStore.share.beverage.searchValue.set(value as string);
-					customerStore.share.beverage.page.set(1);
+					store.share.beverage.searchValue.set(value as string);
+					store.share.beverage.page.set(1);
 				} else {
-					customerStore.share.beverage.searchValue.set('');
+					store.share.beverage.searchValue.set('');
 				}
 			},
-			[customerStore.share.beverage.page, customerStore.share.beverage.searchValue]
+			[store.share.beverage.page, store.share.beverage.searchValue]
 		);
 
 		const onSearchValueClear = useCallback(() => {
-			customerStore.share.beverage.searchValue.set('');
-			customerStore.share.beverage.page.set(1);
-		}, [customerStore.share.beverage.page, customerStore.share.beverage.searchValue]);
+			store.share.beverage.searchValue.set('');
+			store.share.beverage.page.set(1);
+		}, [store.share.beverage.page, store.share.beverage.searchValue]);
 
 		const onTableRowsPerPageChange = useCallback(
 			(event: ChangeEvent<HTMLSelectElement>) => {
-				customerStore.page.beverage.table.rows.set(Number(event.target.value));
-				customerStore.share.beverage.page.set(1);
+				store.page.beverage.table.rows.set(Number(event.target.value));
+				store.share.beverage.page.set(1);
 			},
-			[customerStore.page.beverage.table.rows, customerStore.share.beverage.page]
+			[store.page.beverage.table.rows, store.share.beverage.page]
 		);
 
 		const tableToolbar = useMemo(
@@ -341,7 +334,7 @@ export default memo(
 								</DropdownTrigger>
 								<DropdownMenu
 									closeOnSelect={false}
-									items={allDlcs}
+									items={allBeverageDlcs}
 									defaultSelectedKeys={selectedDlcs}
 									selectedKeys={selectedDlcs}
 									selectionMode="multiple"
@@ -370,7 +363,7 @@ export default memo(
 									selectedKeys={tableVisibleColumns}
 									selectionMode="multiple"
 									variant="flat"
-									onSelectionChange={customerStore.beverageTableColumns.set}
+									onSelectionChange={store.beverageTableColumns.set}
 									aria-label="选择表格所显示的列"
 								>
 									{tableColumns.map(({label: name, key}) => (
@@ -400,10 +393,9 @@ export default memo(
 				</div>
 			),
 			[
+				allBeverageDlcs,
 				allBeverageNames,
 				allBeverageTags,
-				allDlcs,
-				customerStore.beverageTableColumns.set,
 				filteredData.length,
 				onSearchValueChange,
 				onSearchValueClear,
@@ -413,6 +405,7 @@ export default memo(
 				searchValue,
 				selectedCustomerBeverageTags,
 				selectedDlcs,
+				store.beverageTableColumns.set,
 				tableRowsPerPage,
 				tableVisibleColumns,
 			]
@@ -429,11 +422,11 @@ export default memo(
 						size="sm"
 						page={tableCurrentPage}
 						total={tableTotalPages}
-						onChange={customerStore.share.beverage.page.set}
+						onChange={store.share.beverage.page.set}
 					/>
 				</div>
 			),
-			[customerStore.share.beverage.page.set, tableCurrentPage, tableTotalPages]
+			[store.share.beverage.page.set, tableCurrentPage, tableTotalPages]
 		);
 
 		return (
@@ -446,9 +439,9 @@ export default memo(
 				sortDescriptor={tableSortDescriptor}
 				topContent={tableToolbar}
 				topContentPlacement="outside"
-				onSortChange={(config) =>
-					customerStore.share.beverage.sortDescriptor.set(config as TTableSortDescriptor)
-				}
+				onSortChange={(config) => {
+					store.share.beverage.sortDescriptor.set(config as TTableSortDescriptor);
+				}}
 				aria-label="酒水选择表格"
 				classNames={{
 					wrapper: 'max-h-[calc(100vh-17.5rem)]',
@@ -462,7 +455,6 @@ export default memo(
 						</TableColumn>
 					)}
 				</TableHeader>
-
 				<TableBody emptyContent={'数据为空'} items={tableCurrentPageItems}>
 					{(item) => (
 						<TableRow key={item.name}>

@@ -6,7 +6,6 @@ import {type IBeverage, type TBeverages} from '@/data';
 export class Beverage<
 	TItem extends TBeverages[number] = TBeverages[number],
 	TName extends TItem['name'] = TItem['name'],
-	TTags extends TItem['tags'] = TItem['tags'],
 > extends Food<TBeverages> {
 	private static isTagChecked: boolean;
 
@@ -57,7 +56,7 @@ export class Beverage<
 		return tags;
 	}
 
-	public getCustomerSuitability(name: TName, customerTags: string[]) {
+	public getCustomerSuitability<T extends TName, U extends string>(name: T, customerTags: U[]) {
 		const beverage = this.getPropsByName(name);
 
 		const {tags} = beverage;
@@ -65,7 +64,7 @@ export class Beverage<
 
 		return {
 			suitability: count,
-			tags: commonTags as TTags,
+			tags: commonTags,
 		};
 	}
 }

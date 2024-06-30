@@ -1,4 +1,4 @@
-import {forwardRef, memo, useCallback, useMemo, type ChangeEvent, type Key} from 'react';
+import {type ChangeEvent, type Key, forwardRef, memo, useCallback, useMemo} from 'react';
 import clsx from 'clsx';
 
 import {
@@ -15,6 +15,7 @@ import {
 	PopoverTrigger,
 	Select,
 	SelectItem,
+	type Selection,
 	Table,
 	TableBody,
 	TableCell,
@@ -22,7 +23,6 @@ import {
 	TableHeader,
 	TableRow,
 	Tooltip,
-	type Selection,
 } from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faChevronDown, faMagnifyingGlass, faPlus, faTags} from '@fortawesome/free-solid-svg-icons';
@@ -34,7 +34,7 @@ import Tags from '@/components/tags';
 
 import {customerTagStyleMap, recipeTableColumns as tableColumns} from './constants';
 import type {ITableColumn, ITableSortDescriptor, TRecipeWithSuitability, TRecipesWithSuitability} from './types';
-import {useCustomerRareStore, useRecipesStore} from '@/stores';
+import {useCustomerRareStore} from '@/stores';
 import {numberSort, pinyinSort} from '@/utils';
 
 type TTableColumnKey = 'recipe' | 'kitchenware' | 'ingredient' | 'price' | 'suitability' | 'action';
@@ -47,32 +47,29 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLTableElement | null, IProps>(function RecipeTabContent(_props, ref) {
-		const customerStore = useCustomerRareStore();
-		const recipesStore = useRecipesStore();
+		const store = useCustomerRareStore();
 
-		const currentCustomer = customerStore.share.customer.data.use();
-		const selectedCustomerPositiveTags = customerStore.share.customer.positiveTags.use();
+		const currentCustomer = store.share.customer.data.use();
+		const selectedCustomerPositiveTags = store.share.customer.positiveTags.use();
 
-		const currentRecipe = customerStore.share.recipe.data.use();
-		const selectedDlcs = customerStore.share.recipe.dlcs.use();
-		const selectedKitchenwares = customerStore.share.recipe.kitchenwares.use();
+		const currentRecipe = store.share.recipe.data.use();
+		const selectedDlcs = store.share.recipe.dlcs.use();
+		const selectedKitchenwares = store.share.recipe.kitchenwares.use();
 
-		const instance_recipe = recipesStore.instance.get();
-		const allDlcs = recipesStore.dlcs.get();
-		const allKitchenwares = recipesStore.kitchenwares.get();
-		const allRecipeNames = useMemo(
-			() => instance_recipe.getValuesByProp(instance_recipe.data, 'name', true).sort(pinyinSort),
-			[instance_recipe]
-		);
-		const allRecipeTags = recipesStore.positiveTags.get();
+		const instance_recipe = store.instances.recipe.get();
 
-		const searchValue = customerStore.share.recipe.searchValue.use();
+		const allRecipeDlcs = store.recipe.dlcs.get();
+		const allRecipeNames = store.recipe.names.get();
+		const allRecipePositiveTags = store.recipe.positiveTags.get();
+		const allKitchenwares = store.recipe.kitchenwares.get();
+
+		const searchValue = store.share.recipe.searchValue.use();
 		const hasNameFilter = useMemo(() => Boolean(searchValue), [searchValue]);
 
-		const tableCurrentPage = customerStore.share.recipe.page.use();
-		const tableRowsPerPage = customerStore.page.recipe.table.rows.use();
-		const tableSortDescriptor = customerStore.share.recipe.sortDescriptor.use();
-		const tableVisibleColumns = customerStore.recipeTableColumns.use();
+		const tableCurrentPage = store.share.recipe.page.use();
+		const tableRowsPerPage = store.page.recipe.table.rows.use();
+		const tableSortDescriptor = store.share.recipe.sortDescriptor.use();
+		const tableVisibleColumns = store.recipeTableColumns.use();
 
 		const filteredData = useMemo(() => {
 			let clonedData = structuredClone(instance_recipe.data) as TRecipesWithSuitability;
@@ -80,14 +77,16 @@ export default memo(
 			if (!currentCustomer) {
 				return clonedData.map((item) => ({
 					...item,
-					suitability: 0,
-					matchedPositiveTags: [] as string[],
 					matchedNegativeTags: [] as string[],
+					matchedPositiveTags: [] as string[],
+					suitability: 0,
 				}));
 			}
 
 			const {target, name: customerName} = currentCustomer;
-			const {positiveTags, negativeTags} = customerStore.instances[target as 'customer_rare']
+			const {positiveTags: customerPositiveTags, negativeTags: customerNegativeTags} = store.instances[
+				target as 'customer_rare'
+			]
 				.get()
 				.getPropsByName(customerName);
 
@@ -96,21 +95,21 @@ export default memo(
 					suitability,
 					positiveTags: matchedPositiveTags,
 					negativeTags: matchedNegativeTags,
-				} = instance_recipe.getCustomerSuitability(item.name, positiveTags, negativeTags);
+				} = instance_recipe.getCustomerSuitability(item.name, customerPositiveTags, customerNegativeTags);
 
 				return {
 					...item,
-					suitability,
-					matchedPositiveTags,
 					matchedNegativeTags,
+					matchedPositiveTags,
+					suitability,
 				};
 			});
 
 			if (
 				!hasNameFilter &&
-				(selectedDlcs === 'all' || !selectedDlcs.size) &&
-				(selectedKitchenwares === 'all' || !selectedKitchenwares.size) &&
-				(selectedCustomerPositiveTags === 'all' || !selectedCustomerPositiveTags.size)
+				(selectedDlcs === 'all' || selectedDlcs.size === 0) &&
+				(selectedKitchenwares === 'all' || selectedKitchenwares.size === 0) &&
+				(selectedCustomerPositiveTags === 'all' || selectedCustomerPositiveTags.size === 0)
 			) {
 				return clonedData;
 			}
@@ -118,13 +117,13 @@ export default memo(
 			return clonedData.filter(({name, dlc, kitchenware, positiveTags}) => {
 				const isNameMatch = hasNameFilter ? name.toLowerCase().includes(searchValue.toLowerCase()) : true;
 				const isDlcMatch =
-					selectedDlcs !== 'all' && selectedDlcs.size ? selectedDlcs.has(dlc.toString()) : true;
+					selectedDlcs !== 'all' && selectedDlcs.size > 0 ? selectedDlcs.has(dlc.toString()) : true;
 				const isKitchenwareMatch =
-					selectedKitchenwares !== 'all' && selectedKitchenwares.size
+					selectedKitchenwares !== 'all' && selectedKitchenwares.size > 0
 						? selectedKitchenwares.has(kitchenware)
 						: true;
 				const isPositiveTagsMatch =
-					selectedCustomerPositiveTags !== 'all' && selectedCustomerPositiveTags.size
+					selectedCustomerPositiveTags !== 'all' && selectedCustomerPositiveTags.size > 0
 						? [...selectedCustomerPositiveTags].every((tag) =>
 								(positiveTags as string[]).includes(tag as string)
 							)
@@ -134,13 +133,13 @@ export default memo(
 			});
 		}, [
 			currentCustomer,
-			customerStore.instances,
 			hasNameFilter,
 			instance_recipe,
 			searchValue,
 			selectedCustomerPositiveTags,
 			selectedDlcs,
 			selectedKitchenwares,
+			store.instances,
 		]);
 
 		const sortedData = useMemo(() => {
@@ -282,7 +281,10 @@ export default memo(
 										size="sm"
 										variant="light"
 										onPress={() => {
-											customerStore.share.recipe.data.set(instance_recipe.getPropsByName(name));
+											store.share.recipe.data.set({
+												extraIngredients: [],
+												name,
+											});
 										}}
 									>
 										<FontAwesomeIcon icon={faPlus} />
@@ -292,56 +294,56 @@ export default memo(
 						);
 				}
 			},
-			[currentCustomer, customerStore.share.recipe.data, instance_recipe]
+			[currentCustomer, store.share.recipe.data]
 		);
 
 		const onSelectedDlcsChange = useCallback(
 			(value: Selection) => {
-				customerStore.share.recipe.dlcs.set(value);
-				customerStore.share.recipe.page.set(1);
+				store.share.recipe.dlcs.set(value);
+				store.share.recipe.page.set(1);
 			},
-			[customerStore.share.recipe.dlcs, customerStore.share.recipe.page]
+			[store.share.recipe.dlcs, store.share.recipe.page]
 		);
 
 		const onSelectedKitchenwaresChange = useCallback(
 			(value: Selection) => {
-				customerStore.share.recipe.kitchenwares.set(value);
-				customerStore.share.recipe.page.set(1);
+				store.share.recipe.kitchenwares.set(value);
+				store.share.recipe.page.set(1);
 			},
-			[customerStore.share.recipe.kitchenwares, customerStore.share.recipe.page]
+			[store.share.recipe.kitchenwares, store.share.recipe.page]
 		);
 
 		const onSelectedPositiveTagsChange = useCallback(
 			(value: Selection) => {
-				customerStore.share.customer.positiveTags.set(value);
-				customerStore.share.recipe.page.set(1);
+				store.share.customer.positiveTags.set(value);
+				store.share.recipe.page.set(1);
 			},
-			[customerStore.share.customer.positiveTags, customerStore.share.recipe.page]
+			[store.share.customer.positiveTags, store.share.recipe.page]
 		);
 
 		const onSearchValueChange = useCallback(
 			(value: Key | null) => {
 				if (value) {
-					customerStore.share.recipe.searchValue.set(value as string);
-					customerStore.share.recipe.page.set(1);
+					store.share.recipe.searchValue.set(value as string);
+					store.share.recipe.page.set(1);
 				} else {
-					customerStore.share.recipe.searchValue.set('');
+					store.share.recipe.searchValue.set('');
 				}
 			},
-			[customerStore.share.recipe.page, customerStore.share.recipe.searchValue]
+			[store.share.recipe.page, store.share.recipe.searchValue]
 		);
 
 		const onSearchValueClear = useCallback(() => {
-			customerStore.share.recipe.searchValue.set('');
-			customerStore.share.recipe.page.set(1);
-		}, [customerStore.share.recipe.page, customerStore.share.recipe.searchValue]);
+			store.share.recipe.searchValue.set('');
+			store.share.recipe.page.set(1);
+		}, [store.share.recipe.page, store.share.recipe.searchValue]);
 
 		const onTableRowsPerPageChange = useCallback(
 			(event: ChangeEvent<HTMLSelectElement>) => {
-				customerStore.page.recipe.table.rows.set(Number(event.target.value));
-				customerStore.share.recipe.page.set(1);
+				store.page.recipe.table.rows.set(Number(event.target.value));
+				store.share.recipe.page.set(1);
 			},
-			[customerStore.page.recipe.table.rows, customerStore.share.recipe.page]
+			[store.page.recipe.table.rows, store.share.recipe.page]
 		);
 
 		const tableToolbar = useMemo(
@@ -365,7 +367,7 @@ export default memo(
 								{({value}) => <AutocompleteItem key={value}>{value}</AutocompleteItem>}
 							</Autocomplete>
 							<Select
-								items={allRecipeTags}
+								items={allRecipePositiveTags}
 								defaultSelectedKeys={selectedCustomerPositiveTags}
 								selectedKeys={selectedCustomerPositiveTags}
 								selectionMode="multiple"
@@ -422,7 +424,7 @@ export default memo(
 								</DropdownTrigger>
 								<DropdownMenu
 									closeOnSelect={false}
-									items={allDlcs}
+									items={allRecipeDlcs}
 									defaultSelectedKeys={selectedDlcs}
 									selectedKeys={selectedDlcs}
 									selectionMode="multiple"
@@ -451,7 +453,7 @@ export default memo(
 									selectedKeys={tableVisibleColumns}
 									selectionMode="multiple"
 									variant="flat"
-									onSelectionChange={customerStore.recipeTableColumns.set}
+									onSelectionChange={store.recipeTableColumns.set}
 									aria-label="选择表格所显示的列"
 								>
 									{tableColumns.map(({label: name, key}) => (
@@ -481,11 +483,10 @@ export default memo(
 				</div>
 			),
 			[
-				allDlcs,
 				allKitchenwares,
+				allRecipeDlcs,
 				allRecipeNames,
-				allRecipeTags,
-				customerStore.recipeTableColumns.set,
+				allRecipePositiveTags,
 				filteredData.length,
 				onSearchValueChange,
 				onSearchValueClear,
@@ -497,6 +498,7 @@ export default memo(
 				selectedCustomerPositiveTags,
 				selectedDlcs,
 				selectedKitchenwares,
+				store.recipeTableColumns.set,
 				tableRowsPerPage,
 				tableVisibleColumns,
 			]
@@ -513,11 +515,11 @@ export default memo(
 						size="sm"
 						page={tableCurrentPage}
 						total={tableTotalPages}
-						onChange={customerStore.share.recipe.page.set}
+						onChange={store.share.recipe.page.set}
 					/>
 				</div>
 			),
-			[customerStore.share.recipe.page.set, tableCurrentPage, tableTotalPages]
+			[store.share.recipe.page.set, tableCurrentPage, tableTotalPages]
 		);
 
 		return (
@@ -530,7 +532,9 @@ export default memo(
 				sortDescriptor={tableSortDescriptor}
 				topContent={tableToolbar}
 				topContentPlacement="outside"
-				onSortChange={(config) => customerStore.share.recipe.sortDescriptor.set(config as TTableSortDescriptor)}
+				onSortChange={(config) => {
+					store.share.recipe.sortDescriptor.set(config as TTableSortDescriptor);
+				}}
 				aria-label="料理选择表格"
 				classNames={{
 					wrapper: 'max-h-[calc(100vh-17.5rem)]',
@@ -544,7 +548,6 @@ export default memo(
 						</TableColumn>
 					)}
 				</TableHeader>
-
 				<TableBody emptyContent={'数据为空'} items={tableCurrentPageItems}>
 					{(item) => (
 						<TableRow key={item.name}>

@@ -1,5 +1,6 @@
 import {Item} from '@/utils/item';
 import type {IFood} from './types';
+import {getIntersection} from '@/utils';
 
 export class Food<TTarget extends IFood[]> extends Item<TTarget> {
 	public constructor(data: TTarget) {
@@ -8,22 +9,12 @@ export class Food<TTarget extends IFood[]> extends Item<TTarget> {
 		this._data = data;
 	}
 
-	public getCommonTags<T>(arrayA: T[], arrayB: T[]) {
-		const setArrayB = new Set(arrayB);
-
-		const commonTags: T[] = [];
-		let count = 0;
-
-		for (const item of arrayA) {
-			if (setArrayB.has(item)) {
-				commonTags.push(item);
-				count++;
-			}
-		}
+	public getCommonTags<T extends string, U extends string>(arrayA: T[], arrayB: U[]) {
+		const intersectionArray = getIntersection(arrayA as unknown as U[], arrayB);
 
 		return {
-			commonTags,
-			count,
+			commonTags: intersectionArray,
+			count: intersectionArray.length,
 		};
 	}
 }

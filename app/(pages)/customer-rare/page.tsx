@@ -1,6 +1,6 @@
 'use client';
 
-import {memo, useCallback, useMemo, useState} from 'react';
+import {memo, useCallback, useMemo} from 'react';
 import clsx from 'clsx';
 
 import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
@@ -12,6 +12,7 @@ import {faChevronDown, faChevronUp} from '@fortawesome/free-solid-svg-icons';
 import BeverageTabContent from './beverageTabContent';
 import CustomerCard from './customerCard';
 import CustomerTabContent from './customerTabContent';
+import IngredientsTabContent from './ingredientsTabContent';
 import Placeholder from './placeholder';
 import RecipeTabContent from './recipeTabContent';
 import ResultCard from './resultCard';
@@ -22,7 +23,7 @@ import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterI
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
-import type {ICustomerTabStyleMap} from './types';
+import type {ICustomerTabStyleMap, IIngredientsTabStyleMap} from './types';
 import {useCustomerRareStore} from '@/stores';
 
 const customerTabStyleMap = {
@@ -38,70 +39,63 @@ const customerTabStyleMap = {
 	},
 } as const satisfies ICustomerTabStyleMap;
 
+const ingredientTabStyleMap = {
+	collapse: {
+		buttonNode: <FontAwesomeIcon icon={faChevronDown} size="sm" />,
+		contentClassName: 'h-[calc(50vh-9.25rem)] min-h-[20vw]',
+		sideButtonGroupClassName: 'hidden xl:block',
+	},
+	expand: {
+		buttonNode: <FontAwesomeIcon icon={faChevronUp} size="sm" />,
+		contentClassName: 'h-[50vmax]',
+		sideButtonGroupClassName: '',
+	},
+} as const satisfies IIngredientsTabStyleMap;
+
 export default memo(function CustomerRare() {
-	const customerStore = useCustomerRareStore();
+	const store = useCustomerRareStore();
 
-	const currentCustomer = customerStore.share.customer.data.use();
-	const currentRecipe = customerStore.share.recipe.data.use();
-
-	customerStore.share.customer.data.onChange(() => {
-		customerStore.refreshCustomerSelectedItems();
-		customerStore.refreshAllSelectedItems();
-	});
-	customerStore.share.recipe.data.onChange((recipe) => {
-		if (recipe) {
-			customerStore.share.selected.set((prev) => {
-				prev.recipe = {
-					name: recipe.name,
-					ingredients: recipe.ingredients.map((ingredient, index) => ({
-						index,
-						name: ingredient,
-						removeable: false,
-					})),
-					kitchenware: recipe.kitchenware,
-				};
-			});
-		} else {
-			customerStore.share.selected.set((prev) => {
-				prev.recipe = null;
-			});
-		}
-	});
-	customerStore.share.beverage.data.onChange((beverage) => {
-		customerStore.share.selected.beverage.set(beverage ? beverage.name : null);
+	store.share.customer.data.onChange(() => {
+		store.refreshCustomerSelectedItems();
+		store.refreshAllSelectedItems();
 	});
 
-	const instance_rare = customerStore.instances.customer_rare.get();
-	const instance_special = customerStore.instances.customer_special.get();
+	const currentCustomer = store.share.customer.data.use();
+	const currentRecipe = store.share.recipe.data.use();
 
-	const rareNames = customerStore.rareNames.use();
-	const specialNames = customerStore.specialNames.use();
-	const allCustomerDlcs = customerStore.customer.dlcs.get();
-	const allCustomerPlaces = customerStore.customer.places.get();
+	const instance_rare = store.instances.customer_rare.get();
+	const instance_special = store.instances.customer_special.get();
 
-	const customerPinyinSortState = customerStore.page.customer.pinyinSortState.use();
+	const rareNames = store.rareNames.use();
+	const specialNames = store.specialNames.use();
+	const allCustomerDlcs = store.customer.dlcs.get();
+	const allCustomerPlaces = store.customer.places.get();
 
-	const customerSearchValue = customerStore.page.customer.searchValue.use();
+	const customerPinyinSortState = store.page.customer.pinyinSortState.use();
+
+	const customerSearchValue = store.page.customer.searchValue.use();
 	const throttledCustomerSearchValue = useThrottle(customerSearchValue);
 
 	const rareSearchResult = useSearchResult(instance_rare, throttledCustomerSearchValue);
 	const specialSearchResult = useSearchResult(instance_special, throttledCustomerSearchValue);
 	type TSearchResult = typeof rareSearchResult | typeof specialSearchResult;
 
-	const customerFilterDlcs = customerStore.page.customer.filters.dlcs.use();
-	const customerFilterPlaces = customerStore.page.customer.filters.places.use();
-	const customerFilterNoPlaces = customerStore.page.customer.filters.noPlaces.use();
+	const customerFilterDlcs = store.page.customer.filters.dlcs.use();
+	const customerFilterPlaces = store.page.customer.filters.places.use();
+	const customerFilterNoPlaces = store.page.customer.filters.noPlaces.use();
 
 	const customerFilter = useCallback(
 		function customerFilter<T extends TSearchResult>(target: T) {
 			return target.filter(({dlc, places}) => {
-				const isDlcMatch = customerFilterDlcs.length ? customerFilterDlcs.includes(dlc.toString()) : true;
-				const isPlaceMatch = customerFilterPlaces.length
-					? customerFilterPlaces.some((place) => (places as string[]).includes(place))
-					: true;
-				const isNoPlaceMatch = customerFilterNoPlaces.length
-					? !customerFilterNoPlaces.some((place) => (places as string[]).includes(place))
-					: true;
+				const isDlcMatch = customerFilterDlcs.length > 0 ? customerFilterDlcs.includes(dlc.toString()) : true;
+				const isPlaceMatch =
+					customerFilterPlaces.length > 0
+						? customerFilterPlaces.some((place) => (places as string[]).includes(place))
+						: true;
+				const isNoPlaceMatch =
+					customerFilterNoPlaces.length > 0
+						? !customerFilterNoPlaces.some((place) => (places as string[]).includes(place))
+						: true;
 
 				return isDlcMatch && isPlaceMatch && isNoPlaceMatch;
 			}) as T;
@@ -128,36 +122,36 @@ export default memo(function CustomerRare() {
 
 	const customerPinyinSortConfig = usePinyinSortConfig(
 		customerPinyinSortState,
-		customerStore.page.customer.pinyinSortState.set
+		store.page.customer.pinyinSortState.set
 	);
 
 	const customerSearchConfig = useSearchConfig({
 		label: '选择或输入稀客名称',
 		searchItems: [...rareNames, ...specialNames],
 		searchValue: customerSearchValue,
-		setSearchValue: customerStore.page.customer.searchValue.set,
+		setSearchValue: store.page.customer.searchValue.set,
 	});
 
 	const costomerSelectConfig = useMemo(
 		() =>
 			[
 				{
-					label: 'DLC',
 					items: allCustomerDlcs,
+					label: 'DLC',
 					selectedKeys: customerFilterDlcs,
-					setSelectedKeys: customerStore.page.customer.filters.dlcs.set,
+					setSelectedKeys: store.page.customer.filters.dlcs.set,
 				},
 				{
+					items: allCustomerPlaces,
 					label: '出没地点（包含）',
-					items: allCustomerPlaces,
 					selectedKeys: customerFilterPlaces,
-					setSelectedKeys: customerStore.page.customer.filters.places.set,
+					setSelectedKeys: store.page.customer.filters.places.set,
 				},
 				{
-					label: '出没地点（排除）',
 					items: allCustomerPlaces,
+					label: '出没地点（排除）',
 					selectedKeys: customerFilterNoPlaces,
-					setSelectedKeys: customerStore.page.customer.filters.noPlaces.set,
+					setSelectedKeys: store.page.customer.filters.noPlaces.set,
 				},
 			] as const satisfies TSelectConfig,
 		[
@@ -166,20 +160,74 @@ export default memo(function CustomerRare() {
 			customerFilterDlcs,
 			customerFilterNoPlaces,
 			customerFilterPlaces,
-			customerStore.page.customer.filters.dlcs.set,
-			customerStore.page.customer.filters.noPlaces.set,
-			customerStore.page.customer.filters.places.set,
+			store.page.customer.filters.dlcs.set,
+			store.page.customer.filters.noPlaces.set,
+			store.page.customer.filters.places.set,
 		]
 	);
 
-	const customerTabVisibilityState = customerStore.page.customer.tabVisibility.use();
+	const customerTabVisibilityState = store.page.customer.tabVisibility.use();
 
 	const customerTabStyle = useMemo(
 		() => customerTabStyleMap[customerTabVisibilityState],
 		[customerTabVisibilityState]
 	);
 
-	const [isCustomerTabFilterHidden, setIsCustomerTabFilterHidden] = useState(false);
+	const isCustomerTabFilterVisible = store.share.customer.filterVisibility.use();
+
+	const instance_ingredient = store.instances.ingredient.get();
+
+	const allIngredientDlcs = store.ingredient.dlcs.get();
+
+	const ingredientsPinyinSortState = store.page.ingredient.pinyinSortState.use();
+
+	const ingredientsFilterDlcs = store.page.ingredient.filters.dlcs.use();
+
+	const ingredientsFilteredData = useMemo(
+		() =>
+			instance_ingredient.data.filter(({dlc}) => {
+				const isDlcMatch =
+					ingredientsFilterDlcs.length > 0 ? ingredientsFilterDlcs.includes(dlc.toString()) : true;
+
+				return isDlcMatch;
+			}),
+		[ingredientsFilterDlcs, instance_ingredient.data]
+	);
+
+	const ingredientsSortedData = useSortedData(
+		instance_ingredient,
+		ingredientsFilteredData,
+		ingredientsPinyinSortState
+	);
+
+	const ingredientsPinyinSortConfig = usePinyinSortConfig(
+		ingredientsPinyinSortState,
+		store.page.ingredient.pinyinSortState.set
+	);
+
+	const ingredientsSelectConfig = useMemo(
+		() =>
+			[
+				{
+					items: allIngredientDlcs,
+					label: 'DLC',
+					selectedKeys: ingredientsFilterDlcs,
+					setSelectedKeys: store.page.ingredient.filters.dlcs.set,
+				},
+			] as const satisfies TSelectConfig,
+		[allIngredientDlcs, ingredientsFilterDlcs, store.page.ingredient.filters.dlcs.set]
+	);
+
+	const ingredientTabVisibilityState = store.page.ingredient.tabVisibility.use();
+
+	const ingredientTabStyle = useMemo(
+		() => ingredientTabStyleMap[ingredientTabVisibilityState],
+		[ingredientTabVisibilityState]
+	);
+
+	const isIngredientTabFilterVisible = store.share.ingredient.filterVisibility.use();
+
+	const selectedTabKey = store.share.tab.use();
 
 	const isMounted = useMounted();
 	if (!isMounted) {
@@ -192,7 +240,7 @@ export default memo(function CustomerRare() {
 				className={clsx(
 					'md:bottom-6 xl:bottom-[calc(50%-3.5rem)] xl:left-6',
 					customerTabStyle.sideButtonGroupClassName,
-					isCustomerTabFilterHidden && '!hidden'
+					!isCustomerTabFilterVisible && '!hidden'
 				)}
 			>
 				<SideSearchIconButton searchConfig={customerSearchConfig} />
@@ -200,12 +248,26 @@ export default memo(function CustomerRare() {
 				<SideFilterIconButton selectConfig={costomerSelectConfig} />
 			</SideButtonGroup>
 
+			<SideButtonGroup
+				className={clsx(
+					'md:bottom-6 xl:bottom-[calc(50%-2rem)] xl:left-6',
+					ingredientTabStyle.sideButtonGroupClassName,
+					!isIngredientTabFilterVisible && '!hidden'
+				)}
+			>
+				<SidePinyinSortIconButton pinyinSortConfig={ingredientsPinyinSortConfig} />
+				<SideFilterIconButton selectConfig={ingredientsSelectConfig} />
+			</SideButtonGroup>
+
 			<div className="w-full">
 				<Tabs
 					fullWidth
 					size="sm"
+					selectedKey={selectedTabKey}
 					onSelectionChange={(key) => {
-						setIsCustomerTabFilterHidden(key !== 'customer_rare');
+						store.share.tab.set(key);
+						store.share.customer.filterVisibility.set(key === 'customer_rare');
+						store.share.ingredient.filterVisibility.set(key === 'ingredient');
 					}}
 				>
 					<Tab key="customer_rare" title="稀客" className="relative">
@@ -218,9 +280,10 @@ export default memo(function CustomerRare() {
 						<BeverageTabContent />
 					</Tab>
 					<Tab isDisabled={!(currentCustomer && currentRecipe)} key="ingredient" title="食材">
-						<div className="h-[calc(50vh-9rem)] break-all xl:h-[calc(100vh-9rem)]">
-							<Placeholder>emptyemptyemptyemptyemptyemptyempty</Placeholder>
-						</div>
+						<IngredientsTabContent
+							ingredientsTabStyle={ingredientTabStyle}
+							sortedData={ingredientsSortedData}
+						/>
 					</Tab>
 				</Tabs>
 			</div>

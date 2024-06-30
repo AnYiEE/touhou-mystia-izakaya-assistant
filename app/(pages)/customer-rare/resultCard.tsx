@@ -9,6 +9,7 @@ import Placeholder from './placeholder';
 import Sprite from '@/components/sprite';
 
 import {useCustomerRareStore} from '@/stores';
+import {removeLastElement} from '@/utils';
 
 interface IPlusProps {
 	className?: string;
@@ -63,36 +64,51 @@ const UnknownItem = memo(
 const IngredientList = memo(function IngredientsList() {
 	const store = useCustomerRareStore();
 
-	const selectedMealRecipe = store.share.selected.recipe.use();
+	const currentRecipe = store.share.recipe.data.use();
 
-	const ingredients = useMemo(() => selectedMealRecipe?.ingredients ?? [], [selectedMealRecipe?.ingredients]);
-	const filledIngredients = useMemo(() => [...ingredients, ...Array<null>(5).fill(null)].slice(0, 5), [ingredients]);
+	const instance_recipe = store.instances.recipe.get();
+
+	const originalIngredients = useMemo(
+		() => (currentRecipe ? instance_recipe.getPropsByName(currentRecipe.name, 'ingredients') : []),
+		[currentRecipe, instance_recipe]
+	);
+
+	const filledIngredients = useMemo(
+		() =>
+			[
+				...originalIngredients,
+				...(currentRecipe?.extraIngredients ?? []),
+				...new Array<null>(5).fill(null),
+			].slice(0, 5),
+		[currentRecipe?.extraIngredients, originalIngredients]
+	);
 
 	return (
 		<div className="flex items-center gap-x-3">
 			{filledIngredients.map((ingredient, index) =>
 				ingredient ? (
-					ingredient.removeable ? (
-						<span className="flex items-center">
+					index >= originalIngredients.length ? (
+						<span key={index} className="flex items-center">
 							<span
 								onClick={() => {
-									store.share.selected.recipe.set((prev) => {
+									store.share.recipe.data.set((prev) => {
 										if (prev) {
-											prev.ingredients = ingredients.filter(
-												(item) => item.index !== ingredient.index
+											prev.extraIngredients = removeLastElement(
+												prev.extraIngredients,
+												ingredient
 											);
 										}
 									});
 								}}
 								className="absolute flex h-10 w-10 cursor-pointer items-center justify-center bg-foreground bg-opacity-50 text-background opacity-0 transition-opacity hover:opacity-100"
-								title={`删除${ingredient.name}`}
+								title={`删除${ingredient}`}
 							>
 								<FontAwesomeIcon icon={faCircleXmark} size="1x" />
 							</span>
-							<Sprite key={index} target="ingredient" name={ingredient.name} size={2.5} />
+							<Sprite target="ingredient" name={ingredient} size={2.5} />
 						</span>
 					) : (
-						<Sprite key={index} target="ingredient" name={ingredient.name} size={2.5} />
+						<Sprite key={index} target="ingredient" name={ingredient} size={2.5} />
 					)
 				) : (
 					<UnknownItem key={index} title="空食材" />
@@ -109,35 +125,35 @@ export default memo(
 		const store = useCustomerRareStore();
 
 		const currentCustomerName = store.share.customer.data.use()?.name;
-		const currentBeverage = store.share.beverage.data.use();
+		const currentBeverageName = store.share.beverage.name.use();
 		const currentRecipe = store.share.recipe.data.use();
-		const currentSelected = store.share.selected.use();
 		const savedMeal = store.page.selected.use();
 
+		const instance_recipe = store.instances.recipe.get();
+
 		const handleSaveButtonPress = useCallback(() => {
-			if (!currentCustomerName) {
+			if (!currentCustomerName || !currentBeverageName || !currentRecipe) {
 				return;
 			}
 
 			const saveObject = {
-				recipe: currentSelected.recipe!.name,
-				beverage: currentSelected.beverage!,
-				ingredients: currentSelected.recipe!.ingredients.filter((ingredient) => ingredient !== null),
-				kitchenware: currentSelected.recipe!.kitchenware,
+				beverage: currentBeverageName,
+				extraIngredients: currentRecipe.extraIngredients,
+				recipe: currentRecipe.name,
 			} as const;
 
 			store.page.selected.set((prev) => {
 				if (currentCustomerName in prev) {
-					const lastItem = prev[currentCustomerName]!.at(-1);
+					const lastItem = prev[currentCustomerName]?.at(-1);
 					const index = lastItem ? lastItem.index + 1 : 0;
-					prev[currentCustomerName]!.push({...saveObject, index});
+					prev[currentCustomerName]?.push({...saveObject, index});
 				} else {
-					prev[currentCustomerName] = [{index: 0, ...saveObject}];
+					prev[currentCustomerName] = [{...saveObject, index: 0}];
 				}
 			});
-		}, [currentCustomerName, currentSelected.beverage, currentSelected.recipe, store.page.selected]);
+		}, [currentBeverageName, currentCustomerName, currentRecipe, store.page.selected]);
 
-		if (!currentRecipe && !currentBeverage && !currentSelected.recipe && !currentSelected.beverage) {
+		if (!currentBeverageName && !currentRecipe) {
 			if (currentCustomerName && savedMeal[currentCustomerName]?.length) {
 				return null;
 			}
@@ -153,10 +169,14 @@ export default memo(
 				<div className="flex flex-col items-center gap-4 p-4 md:flex-row">
 					<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
 						<div className="flex items-center gap-2">
-							{currentSelected.recipe ? (
+							{currentRecipe ? (
 								<>
-									<Sprite target="kitchenware" name={currentSelected.recipe.kitchenware} size={2} />
-									<Sprite target="recipe" name={currentSelected.recipe.name} size={2.5} />
+									<Sprite
+										target="kitchenware"
+										name={instance_recipe.getPropsByName(currentRecipe.name, 'kitchenware')}
+										size={2}
+									/>
+									<Sprite target="recipe" name={currentRecipe.name} size={2.5} />
 								</>
 							) : (
 								<>
@@ -165,8 +185,8 @@ export default memo(
 								</>
 							)}
 							<Plus />
-							{currentSelected.beverage ? (
-								<Sprite target="beverage" name={currentSelected.beverage} size={2.5} />
+							{currentBeverageName ? (
+								<Sprite target="beverage" name={currentBeverageName} size={2.5} />
 							) : (
 								<UnknownItem title="请选择酒水" />
 							)}
@@ -177,7 +197,7 @@ export default memo(
 					<Button
 						color="primary"
 						fullWidth
-						isDisabled={!currentSelected.recipe || !currentSelected.beverage}
+						isDisabled={!currentBeverageName || !currentRecipe}
 						size="sm"
 						variant="flat"
 						onPress={handleSaveButtonPress}

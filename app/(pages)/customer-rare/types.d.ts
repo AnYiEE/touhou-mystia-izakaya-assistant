@@ -22,6 +22,16 @@ export interface ICustomerTabStyleMap {
 	[key in TabVisibilityState]: ICustomerTab;
 }
 
+export interface IIngredientsTabStyle {
+	buttonNode: ReactNode;
+	contentClassName: string;
+	sideButtonGroupClassName: string;
+}
+
+export interface IIngredientsTabStyleMap {
+	[key in TabVisibilityState]: ICustomerTab;
+}
+
 export interface ITableColumn<T extends string> {
 	key: T;
 	label: string;
@@ -34,22 +44,22 @@ export interface ITableSortDescriptor<T extends string> extends SortDescriptor {
 }
 
 type TBeverageSuitability = {
-	suitability: number;
 	matchedTags: string[];
+	suitability: number;
 };
 
-export type TBeverages = TBeverageInstance['data'];
-export type TBeverage = TBeverages[number];
+type TBeverages = TBeverageInstance['data'];
+type TBeverage = TBeverages[number];
 export type TBeverageWithSuitability = TBeverage & TBeverageSuitability;
 export type TBeveragesWithSuitability = TBeverageWithSuitability[];
 
 type TRecipeSuitability = {
-	suitability: number;
-	matchedPositiveTags: string[];
 	matchedNegativeTags: string[];
+	matchedPositiveTags: string[];
+	suitability: number;
 };
 
-export type TRecipes = TRecipeInstance['data'];
-export type TRecipe = TRecipes[number];
+type TRecipes = TRecipeInstance['data'];
+type TRecipe = TRecipes[number];
 export type TRecipeWithSuitability = TRecipe & TRecipeSuitability;
 export type TRecipesWithSuitability = TRecipeWithSuitability[];
