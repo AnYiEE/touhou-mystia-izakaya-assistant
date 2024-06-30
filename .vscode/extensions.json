@@ -1,6 +1,7 @@
 {
 	"recommendations": [
 		"andrewleedham.vscode-css-modules",
+		"bradlc.vscode-tailwindcss",
 		"cschlosser.doxdocgen",
 		"dbaeumer.vscode-eslint",
 		"EditorConfig.EditorConfig",
