@@ -21,7 +21,7 @@ export default memo(
 			return null;
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-type-assertion
 		const savedCustomerMeal = savedMeal[currentCustomerName]!;
 
 		return (
