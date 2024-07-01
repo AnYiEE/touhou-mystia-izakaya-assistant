@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useReducer, useState} from 'react';
+import {memo, useEffect, useReducer, useState} from 'react';
 
 import {useThrottle} from '@/hooks';
 
@@ -10,7 +10,7 @@ import H1 from './h1';
 
 import {useCustomerRareStore} from '@/stores';
 
-export default function DataManager() {
+export default memo(function DataManager() {
 	const [value, setValue] = useState('');
 	const throttledValue = useThrottle(value);
 
@@ -44,6 +44,7 @@ export default function DataManager() {
 					defaultSelectedKey="reset"
 					destroyInactiveTabPanel={false}
 					variant="underlined"
+					aria-label="数据管理选项卡"
 					onSelectionChange={() => {
 						setValue('');
 					}}
@@ -122,4 +123,4 @@ export default function DataManager() {
 			</div>
 		</>
 	);
-}
+});

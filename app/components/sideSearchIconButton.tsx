@@ -31,7 +31,7 @@ export default memo(
 		ref
 	) {
 		return (
-			<Popover backdrop="opaque" placement="left" showArrow shouldCloseOnInteractOutside={() => true} ref={ref}>
+			<Popover showArrow backdrop="opaque" placement="left" shouldCloseOnInteractOutside={() => true} ref={ref}>
 				<PopoverTrigger>
 					<FontAwesomeIconButton
 						color={searchValue ? 'warning' : 'primary'}

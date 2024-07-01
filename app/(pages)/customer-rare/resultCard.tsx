@@ -1,4 +1,4 @@
-import {forwardRef, memo, useCallback, useMemo} from 'react';
+import {type HTMLAttributes, forwardRef, memo, useCallback, useMemo} from 'react';
 import clsx from 'clsx';
 
 import {Button, Card} from '@nextui-org/react';
@@ -11,8 +11,7 @@ import Sprite from '@/components/sprite';
 import {useCustomerRareStore} from '@/stores';
 import {removeLastElement} from '@/utils';
 
-interface IPlusProps {
-	className?: string;
+interface IPlusProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'className'> {
 	size?: number;
 }
 
@@ -35,9 +34,7 @@ export const Plus = memo(
 	})
 );
 
-interface IUnknownItemProps {
-	className?: string;
-	title: string;
+interface IUnknownItemProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'className' | 'title'> {
 	size?: number;
 }
 

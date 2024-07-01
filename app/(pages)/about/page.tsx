@@ -1,3 +1,5 @@
+import {memo} from 'react';
+
 import {Link} from '@nextui-org/react';
 
 import DataManager from './dataManager';
@@ -7,7 +9,7 @@ import {siteConfig} from '@/configs';
 
 const {description, name, shortName, links} = siteConfig;
 
-export default function About() {
+export default memo(function About() {
 	return (
 		<div>
 			<H1 isFirst>项目介绍</H1>
@@ -68,4 +70,4 @@ export default function About() {
 			<DataManager />
 		</div>
 	);
-}
+});

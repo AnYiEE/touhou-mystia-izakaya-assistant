@@ -84,7 +84,7 @@ export default memo(
 			}
 
 			const {target, name: customerName} = currentCustomer;
-			const {positiveTags: customerPositiveTags, negativeTags: customerNegativeTags} = store.instances[
+			const {negativeTags: customerNegativeTags, positiveTags: customerPositiveTags} = store.instances[
 				target as 'customer_rare'
 			]
 				.get()
@@ -93,8 +93,8 @@ export default memo(
 			clonedData = clonedData.map((item) => {
 				const {
 					suitability,
-					positiveTags: matchedPositiveTags,
 					negativeTags: matchedNegativeTags,
+					positiveTags: matchedPositiveTags,
 				} = instance_recipe.getCustomerSuitability(item.name, customerPositiveTags, customerNegativeTags);
 
 				return {
@@ -195,8 +195,8 @@ export default memo(
 					positiveTags,
 					price,
 					suitability,
-					matchedPositiveTags,
 					matchedNegativeTags,
+					matchedPositiveTags,
 				} = data;
 
 				if (!currentCustomer) {
@@ -363,6 +363,7 @@ export default memo(
 								onInputChange={onSearchValueChange}
 								onSelectionChange={onSearchValueChange}
 								aria-label="选择或输入料理名称"
+								title="选择或输入料理名称"
 							>
 								{({value}) => <AutocompleteItem key={value}>{value}</AutocompleteItem>}
 							</Autocomplete>
@@ -377,6 +378,7 @@ export default memo(
 								variant="flat"
 								onSelectionChange={onSelectedPositiveTagsChange}
 								aria-label="选择目标料理所包含的标签"
+								title="选择目标料理所包含的标签"
 							>
 								{({value}) => <SelectItem key={value}>{value}</SelectItem>}
 							</Select>

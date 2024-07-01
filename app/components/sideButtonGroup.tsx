@@ -1,9 +1,7 @@
-import {type PropsWithChildren, forwardRef, memo} from 'react';
+import {type HTMLAttributes, type PropsWithChildren, forwardRef, memo} from 'react';
 import clsx from 'clsx';
 
-interface IProps {
-	className?: string;
-}
+interface IProps extends Pick<HTMLAttributes<HTMLDivElement>, 'className'> {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, PropsWithChildren<IProps>>(function SideButtonGroup({className, children}, ref) {

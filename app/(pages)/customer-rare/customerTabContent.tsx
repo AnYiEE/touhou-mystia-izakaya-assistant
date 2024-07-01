@@ -42,13 +42,21 @@ export default memo(
 										store.share.customer.data.set({name, target: target as TCustomerTarget});
 									}}
 									className="flex cursor-pointer flex-col items-center gap-1"
+									title={`选择${name}`}
 								>
 									<Avatar
 										isBordered
 										isFocusable
 										color={name === currentCustomer?.name ? 'primary' : 'default'}
 										radius="sm"
-										icon={<Sprite target={target as TCustomerTarget} name={name} size={5} />}
+										icon={
+											<Sprite
+												target={target as TCustomerTarget}
+												name={name}
+												size={5}
+												title={`选择${name}`}
+											/>
+										}
 										classNames={{
 											base: 'h-16 w-16 lg:h-20 lg:w-20',
 											icon: 'inline-table transition hover:scale-125 lg:inline-block',

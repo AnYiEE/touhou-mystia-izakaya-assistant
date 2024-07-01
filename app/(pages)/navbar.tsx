@@ -26,6 +26,8 @@ import {siteConfig} from '@/configs';
 
 import styles from './navbar.module.scss';
 
+const {links, name, navItems, navMenuItems, shortName} = siteConfig;
+
 interface INavbarLinkProps extends Pick<LinkProps, 'href'> {
 	label: ReactNode;
 	isActive: boolean;
@@ -54,8 +56,8 @@ const GithubLink = memo(function GithubLink({showTooltip}: Partial<IGithubLinkPr
 				isExternal
 				icon={faGithub}
 				size="lg"
-				aria-label={siteConfig.links.github.label}
-				href={siteConfig.links.github.href}
+				aria-label={links.github.label}
+				href={links.github.href}
 				className={className}
 			/>
 		),
@@ -64,7 +66,7 @@ const GithubLink = memo(function GithubLink({showTooltip}: Partial<IGithubLinkPr
 
 	if (showTooltip) {
 		return (
-			<Tooltip showArrow content={siteConfig.links.github.label}>
+			<Tooltip showArrow content={links.github.label}>
 				<span className="flex">
 					<IconLink />
 				</span>
@@ -75,8 +77,8 @@ const GithubLink = memo(function GithubLink({showTooltip}: Partial<IGithubLinkPr
 	return (
 		<span className="flex gap-1">
 			<IconLink className="text-foreground" />
-			<Link isExternal color="foreground" href={siteConfig.links.github.href}>
-				{siteConfig.links.github.label}
+			<Link isExternal color="foreground" href={links.github.href}>
+				{links.github.label}
 			</Link>
 		</span>
 	);
@@ -93,13 +95,13 @@ export default memo(function Navbar() {
 					<Link color="foreground" href="/" className="flex select-none items-center justify-start gap-1">
 						<span className={clsx(styles['logo'], 'h-10 w-10 rounded-full')} title={shortName} />
 						<p className="font-bold">
-							<span className="hidden lg:inline">{siteConfig.name}</span>
-							<span className="inline lg:hidden">{siteConfig.shortName}</span>
+							<span className="hidden lg:inline">{name}</span>
+							<span className="inline lg:hidden">{shortName}</span>
 						</p>
 					</Link>
 				</NavbarBrand>
 				<ul className="ml-2 hidden justify-start gap-4 md:flex">
-					{siteConfig.navItems.map(({href, label}) => {
+					{navItems.map(({href, label}) => {
 						const isActive = href === pathname;
 						return (
 							<NavbarItem key={href} isActive={isActive}>
@@ -119,12 +121,14 @@ export default memo(function Navbar() {
 
 			<NavbarContent justify="end" className="basis-1 pl-4 md:hidden">
 				<ThemeSwitcher isMenu />
-				<NavbarMenuToggle />
+				<Tooltip showArrow content={isMenuOpen ? '收起菜单' : '打开菜单'} placement="left">
+					<NavbarMenuToggle aria-label={isMenuOpen ? '收起菜单' : '打开菜单'} />
+				</Tooltip>
 			</NavbarContent>
 
 			<NavbarMenu>
 				<div className="mx-4 mt-2 flex flex-col gap-2">
-					{siteConfig.navMenuItems.map(({href, label}) => {
+					{navMenuItems.map(({href, label}) => {
 						const isActive = href === pathname;
 						return (
 							<NavbarMenuItem key={href} isActive={isActive}>

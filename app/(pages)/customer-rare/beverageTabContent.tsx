@@ -171,7 +171,7 @@ export default memo(
 
 		const renderTableCell = useCallback(
 			(data: TBeverageWithSuitability, columnKey: TTableColumnKey) => {
-				const {name, tags: beverageTags, price, suitability, matchedTags} = data;
+				const {name, price, suitability, matchedTags, tags: beverageTags} = data;
 
 				if (!currentCustomer) {
 					return null;
@@ -303,6 +303,7 @@ export default memo(
 								onInputChange={onSearchValueChange}
 								onSelectionChange={onSearchValueChange}
 								aria-label="选择或输入酒水名称"
+								title="选择或输入酒水名称"
 							>
 								{({value}) => <AutocompleteItem key={value}>{value}</AutocompleteItem>}
 							</Autocomplete>
@@ -317,6 +318,7 @@ export default memo(
 								variant="flat"
 								onSelectionChange={onSelectedBeverageTagsChange}
 								aria-label="选择目标酒水所包含的标签"
+								title="选择目标酒水所包含的标签"
 							>
 								{({value}) => <SelectItem key={value}>{value}</SelectItem>}
 							</Select>

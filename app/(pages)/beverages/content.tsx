@@ -54,7 +54,7 @@ export default memo(function Content({data}: IProps) {
 								const way = method === 'buy' ? '购买' : method === 'task' ? '任务' : '采集';
 
 								return (
-									<div key={fromIndex}>
+									<p key={fromIndex}>
 										<span className="font-semibold">{way}：</span>
 										{Array.isArray(target)
 											? target.map((item, index) => (
@@ -85,7 +85,7 @@ export default memo(function Content({data}: IProps) {
 													</Fragment>
 												))
 											: '初始拥有'}
-									</div>
+									</p>
 								);
 							})}
 						</FoodPopoverCard>

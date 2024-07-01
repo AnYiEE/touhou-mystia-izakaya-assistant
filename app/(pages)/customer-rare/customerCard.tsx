@@ -20,8 +20,8 @@ export default memo(
 		const store = useCustomerRareStore();
 
 		const currentCustomer = store.share.customer.data.use();
-		const selectedCustomerPositiveTags = store.share.customer.positiveTags.use();
 		const selectedCustomerBeverageTags = store.share.customer.beverageTags.use();
+		const selectedCustomerPositiveTags = store.share.customer.positiveTags.use();
 
 		const currentBeverageName = store.share.beverage.name.use();
 		const currentRecipe = store.share.recipe.data.use();
@@ -45,7 +45,7 @@ export default memo(
 			return null;
 		}
 
-		const instance_customer = store.instances[currentCustomer.target as 'customer_rare'].use();
+		const instance_customer = store.instances[currentCustomer.target as 'customer_rare'].get();
 
 		return (
 			<Card fullWidth shadow="sm" ref={ref}>

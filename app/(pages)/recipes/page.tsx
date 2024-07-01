@@ -13,7 +13,7 @@ import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import {useRecipesStore} from '@/stores';
 
-export default memo(function Recipess() {
+export default memo(function Recipes() {
 	const store = useRecipesStore();
 
 	const instance = store.instance.get();
@@ -22,9 +22,9 @@ export default memo(function Recipess() {
 	const allDlcs = store.dlcs.get();
 	const allLevels = store.levels.get();
 	const allKitchenwares = store.kitchenwares.get();
-	const allPositiveTags = store.positiveTags.get();
-	const allNegativeTags = store.negativeTags.get();
 	const allIngredients = store.ingredients.get();
+	const allNegativeTags = store.negativeTags.get();
+	const allPositiveTags = store.positiveTags.get();
 
 	const pinyinSortState = store.page.pinyinSortState.use();
 	const searchValue = store.page.searchValue.use();
@@ -34,37 +34,19 @@ export default memo(function Recipess() {
 
 	const filterDlcs = store.page.filters.dlcs.use();
 	const filterLevels = store.page.filters.levels.use();
-	const filterKitchenwares = store.page.filters.kitchenwares.use();
-	const filterPositiveTags = store.page.filters.positiveTags.use();
-	const filterNoPositiveTags = store.page.filters.noPositiveTags.use();
-	const filterNegativeTags = store.page.filters.negativeTags.use();
-	const filterNoNegativeTags = store.page.filters.noNegativeTags.use();
 	const filterIngredients = store.page.filters.ingredients.use();
 	const filterNoIngredients = store.page.filters.noIngredients.use();
+	const filterKitchenwares = store.page.filters.kitchenwares.use();
+	const filterNegativeTags = store.page.filters.negativeTags.use();
+	const filterNoNegativeTags = store.page.filters.noNegativeTags.use();
+	const filterPositiveTags = store.page.filters.positiveTags.use();
+	const filterNoPositiveTags = store.page.filters.noPositiveTags.use();
 
 	const filteredData = useMemo(
 		() =>
-			searchResult.filter(({dlc, level, kitchenware, positiveTags, negativeTags, ingredients}) => {
+			searchResult.filter(({dlc, level, ingredients, kitchenware, negativeTags, positiveTags}) => {
 				const isDlcMatch = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
 				const isLevelMatch = filterLevels.length > 0 ? filterLevels.includes(level.toString()) : true;
-				const isKitchenwareMatch =
-					filterKitchenwares.length > 0 ? filterKitchenwares.includes(kitchenware) : true;
-				const isPositiveTagMatch =
-					filterPositiveTags.length > 0
-						? filterPositiveTags.some((tag) => (positiveTags as string[]).includes(tag))
-						: true;
-				const isNoPositiveTagMatch =
-					filterNoPositiveTags.length > 0
-						? !filterNoPositiveTags.some((tag) => (positiveTags as string[]).includes(tag))
-						: true;
-				const isNegativeTagMatch =
-					filterNegativeTags.length > 0
-						? filterNegativeTags.some((tag) => (negativeTags as string[]).includes(tag))
-						: true;
-				const isNoNegativeTagMatch =
-					filterNoNegativeTags.length > 0
-						? !filterNoNegativeTags.some((tag) => (negativeTags as string[]).includes(tag))
-						: true;
 				const isIngredientMatch =
 					filterIngredients.length > 0
 						? filterIngredients.some((ingredient) => (ingredients as string[]).includes(ingredient))
@@ -73,17 +55,35 @@ export default memo(function Recipess() {
 					filterNoIngredients.length > 0
 						? !filterNoIngredients.some((ingredient) => (ingredients as string[]).includes(ingredient))
 						: true;
+				const isKitchenwareMatch =
+					filterKitchenwares.length > 0 ? filterKitchenwares.includes(kitchenware) : true;
+				const isNegativeTagMatch =
+					filterNegativeTags.length > 0
+						? filterNegativeTags.some((tag) => (negativeTags as string[]).includes(tag))
+						: true;
+				const isNoNegativeTagMatch =
+					filterNoNegativeTags.length > 0
+						? !filterNoNegativeTags.some((tag) => (negativeTags as string[]).includes(tag))
+						: true;
+				const isPositiveTagMatch =
+					filterPositiveTags.length > 0
+						? filterPositiveTags.some((tag) => (positiveTags as string[]).includes(tag))
+						: true;
+				const isNoPositiveTagMatch =
+					filterNoPositiveTags.length > 0
+						? !filterNoPositiveTags.some((tag) => (positiveTags as string[]).includes(tag))
+						: true;
 
 				return (
 					isDlcMatch &&
 					isLevelMatch &&
+					isIngredientMatch &&
+					isNoIngredientMatch &&
 					isKitchenwareMatch &&
-					isPositiveTagMatch &&
-					isNoPositiveTagMatch &&
 					isNegativeTagMatch &&
 					isNoNegativeTagMatch &&
-					isIngredientMatch &&
-					isNoIngredientMatch
+					isPositiveTagMatch &&
+					isNoPositiveTagMatch
 				);
 			}),
 		[

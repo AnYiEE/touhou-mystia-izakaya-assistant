@@ -52,7 +52,7 @@ export default memo(
 		}, [selectConfig]);
 
 		return (
-			<Popover backdrop="opaque" placement="left" showArrow shouldCloseOnInteractOutside={() => true} ref={ref}>
+			<Popover showArrow backdrop="opaque" placement="left" shouldCloseOnInteractOutside={() => true} ref={ref}>
 				<PopoverTrigger>
 					<FontAwesomeIconButton
 						color={isFiltering ? 'warning' : 'primary'}
