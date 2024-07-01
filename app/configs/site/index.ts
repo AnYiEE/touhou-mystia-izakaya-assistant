@@ -43,6 +43,10 @@ export const siteConfig = {
 	navItems: [...navItems],
 	navMenuItems: [...navItems],
 	links: {
+		donate: {
+			label: '支付宝收款码',
+			href: 'https://static.sukiu.net/assets/alipay.jpg',
+		},
 		github: {
 			label: '本项目代码仓库',
 			href: PACKAGE.repository.url,

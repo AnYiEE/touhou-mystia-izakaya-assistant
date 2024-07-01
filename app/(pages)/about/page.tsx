@@ -50,6 +50,16 @@ export default memo(function About() {
 					.xls”等几份文件。由于数据核对程度、游戏版本迭代等各方面因素，{shortName}
 					所提供的信息可能与现时游戏中的信息存在差异，敬请知悉，并以游戏中的信息为准。
 				</p>
+				<p>
+					如果{shortName}对您的游玩过程有所帮助，您可以考虑
+					<Link isExternal href={links.donate.href} title={links.donate.label} className="contents">
+						向我捐赠
+					</Link>
+					。但请您注意，这仅是捐赠，无论捐赠与否都不会影响您使用{shortName}的体验。{shortName}
+					始终在不断更改和改进，可能随时增加或删除功能，也可能暂停或彻底停止服务。无论您捐赠与否，{shortName}
+					不为具体功能、可靠性、可用性或满足您需要的能力作任何承诺。某些司法管辖区域会规定特定保证，例如适销性、特定目的适用性及不侵权的默示保证。在法律允许的范围内，
+					{shortName}排除所有保证。
+				</p>
 			</div>
 			<H1>已知问题</H1>
 			<ul className="flex list-inside list-decimal flex-col gap-2">
