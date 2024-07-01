@@ -1,5 +1,6 @@
 import {type ReactNode} from 'react';
 import {type Metadata, type Viewport} from 'next';
+import Script from 'next/script';
 
 import {Analytics} from '@vercel/analytics/react';
 import {SpeedInsights} from '@vercel/speed-insights/next';
@@ -62,6 +63,10 @@ export default function RootLayout({
 						<Footer />
 					</div>
 				</Providers>
+				<Script
+					async
+					src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/smoothscroll/1.4.10/SmoothScroll.min.js"
+				/>
 				{siteConfig.isVercel && (
 					<>
 						<Analytics />
