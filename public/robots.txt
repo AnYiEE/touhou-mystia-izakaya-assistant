@@ -1,4 +1,44 @@
-User-agent: *
+User-agent: AdIdxBot
 Disallow: /
-User-agent: vitals.vercel-insights.com
-Allow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: coccocbot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: EasouSpider
+Disallow: /
+
+User-agent: ia_archiver
+Disallow: /
+
+User-agent: iaskspider
+Disallow: /
+
+User-agent: MBCrawler
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: MSNot-media
+Disallow: /
+
+User-agent: Semrush
+Disallow: /
+
+User-agent: Teoma
+Disallow: /
+
+User-agent: YandexBot
+Disallow: /
+
+User-agent: YisouSpider
+Disallow: /
