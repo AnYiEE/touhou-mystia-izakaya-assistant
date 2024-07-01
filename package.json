@@ -1,6 +1,6 @@
 {
 	"name": "touhou-mystia-izakaya-assistant",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "东方夜雀食堂小助手是为游戏《东方夜雀食堂》所打造的工具，旨在为玩家的游玩过程提供帮助。",
 	"private": true,
 	"scripts": {
@@ -24,7 +24,7 @@
 		"Other contributors <https://github.com/AnYiEE/touhou-mystia-izakaya-assistant/graphs/contributors>"
 	],
 	"license": "GPL-3.0-or-later",
-	"homepage": "https://touhou-mystia-izakaya-assistant.vercel.app",
+	"homepage": "https://izakaya.cc",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/AnYiEE/touhou-mystia-izakaya-assistant"
