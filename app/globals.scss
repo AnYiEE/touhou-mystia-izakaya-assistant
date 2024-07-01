@@ -1,3 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+::-webkit-scrollbar {
+	height: 0.5rem;
+	width: 0.5rem;
+}
+
+::-webkit-scrollbar-thumb:horizontal {
+	background-color: hsl(var(--nextui-default-300));
+	border-radius: 1rem;
+}
+
+::-webkit-scrollbar-thumb:vertical {
+	background-color: hsl(var(--nextui-default-300));
+	border-radius: 1rem;
+}
+
+::-webkit-scrollbar-track-piece {
+	background-color: hsl(var(--nextui-default-100));
+}
