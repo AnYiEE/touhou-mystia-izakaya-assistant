@@ -44,7 +44,7 @@ export class Item<
 		return this.dataPinyinSorted;
 	}
 
-	protected checkIndexRange<_T, U>(index: number, _data?: U): asserts _data {
+	protected checkIndexRange<T>(index: number, _data?: T): asserts _data {
 		if (index < 0 || index >= this._data.length) {
 			throw new Error(`[Item]: index \`${index}\` out of range`);
 		}
