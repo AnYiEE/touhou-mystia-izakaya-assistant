@@ -21,7 +21,7 @@ interface IProvidersProps {
 	themeProps?: Omit<ThemeProviderProps, 'children'> & {children?: ReactNode};
 }
 
-export function Providers({children, locale, themeProps}: IProvidersProps) {
+export default function Providers({children, locale, themeProps}: IProvidersProps) {
 	const router = useRouter();
 
 	return (
