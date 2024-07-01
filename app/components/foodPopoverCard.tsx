@@ -85,7 +85,7 @@ const ShareButton: FC<IShareButtonProps> = memo(
 				</Tooltip>
 				<PopoverContent>
 					<div className="flex flex-col">
-						<p className="cursor-default select-none self-end pr-4 text-xs text-default-300">
+						<p className="cursor-default select-none self-end pr-4 text-xs text-default-500 dark:text-default-300">
 							点击以复制到当前选中项的链接↓
 						</p>
 						<Snippet

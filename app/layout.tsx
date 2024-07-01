@@ -48,7 +48,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
 	themeColor: [
-		{color: '#fff', media: '(prefers-color-scheme: light)'},
+		{color: '#fff2e3', media: '(prefers-color-scheme: light)'},
 		{color: '#000', media: '(prefers-color-scheme: dark)'},
 	],
 };
@@ -64,7 +64,7 @@ export default function RootLayout({
 	children: ReactNode;
 }>) {
 	return (
-		<html lang={locale} suppressHydrationWarning className="text-[16px]">
+		<html lang={locale} suppressHydrationWarning className="text-[16px] light:izakaya">
 			<head>
 				{isProduction && <Script async src={`/registerServiceWorker.js?v=${sha}`} />}
 				<Script

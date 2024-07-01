@@ -17,8 +17,8 @@ export default memo(
 				<div className="flex items-center">
 					<div className="m-1 flex rounded-xl shadow-[inset_0_0_2px] shadow-foreground-400">{image}</div>
 					<div className="mx-1 inline-flex flex-col text-left">
-						<p className="text-small font-medium">{name}</p>
-						<p className="mt-1 text-xs font-light text-default-500">{description}</p>
+						<p className="text-small font-medium text-default-700">{name}</p>
+						<p className="mt-1 text-xs text-default-500">{description}</p>
 					</div>
 				</div>
 			</Card>
