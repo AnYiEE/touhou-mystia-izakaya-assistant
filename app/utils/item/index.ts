@@ -1,3 +1,4 @@
+import {cloneDeep} from 'lodash';
 import {pinyin as pinyinPro} from 'pinyin-pro';
 
 import {generateArray, pinyinSort} from '@/utils';
@@ -18,8 +19,8 @@ export class Item<
 	protected static nameIndexCache: Map<string, number> = new Map();
 
 	public constructor(data: TTarget) {
-		this._data = structuredClone(data);
-		this._dataWithPinyin = structuredClone(this._data).map((item) => ({
+		this._data = cloneDeep(data);
+		this._dataWithPinyin = cloneDeep(this._data).map((item) => ({
 			...item,
 			pinyin: pinyinPro(item.name, {
 				toneType: 'num',
@@ -142,6 +143,6 @@ export class Item<
 	}
 
 	public sortByPinyin(data: TItemWithPinyin[]) {
-		return data.toSorted(({pinyin: a}, {pinyin: b}) => pinyinSort(a, b));
+		return cloneDeep(data).sort(({pinyin: a}, {pinyin: b}) => pinyinSort(a, b));
 	}
 }

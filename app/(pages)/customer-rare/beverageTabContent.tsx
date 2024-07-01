@@ -1,5 +1,6 @@
 import {type ChangeEvent, type Key, forwardRef, memo, useCallback, useMemo} from 'react';
 import clsx from 'clsx';
+import {cloneDeep} from 'lodash';
 
 import {
 	Autocomplete,
@@ -70,7 +71,7 @@ export default memo(
 		const tableVisibleColumns = store.beverageTableColumns.use();
 
 		const filteredData = useMemo(() => {
-			let clonedData = structuredClone(instance_beverage.data) as TBeveragesWithSuitability;
+			let clonedData = cloneDeep(instance_beverage.data) as TBeveragesWithSuitability;
 
 			if (!currentCustomer) {
 				return clonedData.map((item) => ({
@@ -131,15 +132,15 @@ export default memo(
 
 			switch (column) {
 				case 'beverage':
-					return filteredData.toSorted(({name: a}, {name: b}) =>
+					return cloneDeep(filteredData).sort(({name: a}, {name: b}) =>
 						isAscending ? pinyinSort(a, b) : pinyinSort(b, a)
 					);
 				case 'price':
-					return filteredData.toSorted(({price: a}, {price: b}) =>
+					return cloneDeep(filteredData).sort(({price: a}, {price: b}) =>
 						isAscending ? numberSort(a, b) : numberSort(b, a)
 					);
 				case 'suitability':
-					return filteredData.toSorted(({suitability: a}, {suitability: b}) =>
+					return cloneDeep(filteredData).sort(({suitability: a}, {suitability: b}) =>
 						isAscending ? numberSort(a, b) : numberSort(b, a)
 					);
 				default:
@@ -181,7 +182,7 @@ export default memo(
 
 				const tags = (
 					<TagGroup>
-						{beverageTags.toSorted(pinyinSort).map((tag) => (
+						{[...beverageTags].sort(pinyinSort).map((tag) => (
 							<Tags.Tag
 								key={tag}
 								tag={tag}

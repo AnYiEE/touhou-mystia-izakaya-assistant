@@ -44,7 +44,7 @@ export class Beverage<
 			return tags;
 		}
 
-		const _isTagsEqual = isEqual(tags.toSorted(), this.getValuesByProp(this.data, 'tags').sort());
+		const _isTagsEqual = isEqual([...tags].sort(), this.getValuesByProp(this.data, 'tags').sort());
 		if (!_isTagsEqual) {
 			throw new Error(
 				'[components/Beverages]: the given tags is inconsistent with the tags in the original data'

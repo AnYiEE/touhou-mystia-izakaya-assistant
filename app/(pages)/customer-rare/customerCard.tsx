@@ -68,7 +68,7 @@ export default memo(
 									'places',
 									'price'
 								);
-								const clonePlace = structuredClone(places as string[]);
+								const clonePlace = [...(places as string[])];
 								const mainPlace = clonePlace.shift();
 								const content =
 									clonePlace.length > 0
@@ -135,7 +135,7 @@ export default memo(
 								<>
 									{customerPositiveTags && customerPositiveTags.length > 0 && (
 										<TagGroup>
-											{customerPositiveTags.toSorted(pinyinSort).map((tag) => (
+											{[...customerPositiveTags].sort(pinyinSort).map((tag) => (
 												<Tags.Tag
 													key={tag}
 													tag={tag}
@@ -164,7 +164,7 @@ export default memo(
 									)}
 									{costomerNegativeTags && costomerNegativeTags.length > 0 && (
 										<TagGroup>
-											{costomerNegativeTags.toSorted(pinyinSort).map((tag) => (
+											{[...costomerNegativeTags].sort(pinyinSort).map((tag) => (
 												<Tags.Tag
 													key={tag}
 													tag={tag}
