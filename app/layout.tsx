@@ -1,6 +1,7 @@
 import {type ReactNode} from 'react';
 import {type Metadata, type Viewport} from 'next';
 import Script from 'next/script';
+import {execSync} from 'node:child_process';
 
 import {Analytics} from '@vercel/analytics/react';
 import {SpeedInsights} from '@vercel/speed-insights/next';
@@ -19,21 +20,25 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 
 fontawesomeConfig.autoAddCss = false;
 
+const {author, description, keywords, locale, name, shortName, isVercel, nodeEnv} = siteConfig;
+
 export const metadata: Metadata = {
 	title: {
-		default: siteConfig.name,
-		template: `%s - ${siteConfig.name}`,
+		default: name,
+		template: `%s - ${name}`,
 	},
 
-	description: siteConfig.description,
-	keywords: siteConfig.keywords,
+	description,
+	keywords,
 
 	appleWebApp: true,
-	applicationName: siteConfig.name,
+	applicationName: shortName,
+	manifest: '/manifest.json',
 
-	authors: siteConfig.author,
+	authors: author,
 	icons: {
-		icon: '/favicon.png',
+		apple: '/icons/apple-touch-icon.png',
+		icon: '/favicon.ico',
 	},
 
 	twitter: {
@@ -48,26 +53,34 @@ export const viewport: Viewport = {
 	],
 };
 
+const isProduction = nodeEnv === 'production';
+const sha = (
+	process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? execSync('git rev-parse --short HEAD').toString('utf8')
+).trim();
+
 export default function RootLayout({
 	children,
 }: Readonly<{
 	children: ReactNode;
 }>) {
 	return (
-		<html lang={siteConfig.locale} suppressHydrationWarning className="text-[16px]">
+		<html lang={locale} suppressHydrationWarning className="text-[16px]">
+			<head>
+				{isProduction && <Script async src={`/registerServiceWorker.js?v=${sha}`} />}
+				<Script
+					async
+					src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/smoothscroll/1.4.10/SmoothScroll.min.js"
+				/>
+			</head>
 			<body className="min-h-screen bg-background font-sans font-normal text-default-900 antialiased">
-				<Providers locale={siteConfig.locale} themeProps={{attribute: 'class'}}>
+				<Providers locale={locale} themeProps={{attribute: 'class'}}>
 					<div className="relative flex h-screen flex-col">
 						<Navbar />
 						<main className="container mx-auto max-w-7xl flex-grow px-6 py-8">{children}</main>
 						<Footer />
 					</div>
 				</Providers>
-				<Script
-					async
-					src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/smoothscroll/1.4.10/SmoothScroll.min.js"
-				/>
-				{siteConfig.isVercel && (
+				{isVercel && (
 					<>
 						<Analytics />
 						<SpeedInsights />

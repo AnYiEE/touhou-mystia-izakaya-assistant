@@ -91,7 +91,7 @@ export default memo(function Navbar() {
 			<NavbarContent justify="start" className="basis-full md:basis-1/5">
 				<NavbarBrand as="li" className="max-w-fit gap-3">
 					<Link color="foreground" href="/" className="flex select-none items-center justify-start gap-1">
-						<span className={clsx(styles['logo'], 'w-8')} title={siteConfig.shortName} />
+						<span className={clsx(styles['logo'], 'h-10 w-10 rounded-full')} title={shortName} />
 						<p className="font-bold">
 							<span className="hidden lg:inline">{siteConfig.name}</span>
 							<span className="inline lg:hidden">{siteConfig.shortName}</span>

@@ -5,7 +5,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "next dev",
-		"build": "next build",
+		"build": "node scripts/generateServiceWorker.js && next build",
 		"start": "pnpx serve out",
 		"lint": "next lint",
 		"format": "prettier --cache --write .",

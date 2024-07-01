@@ -16,6 +16,12 @@
 		"ecmaVersion": "latest",
 		"project": true
 	},
+	"overrides": [
+		{
+			"files": ["*.js"],
+			"extends": ["plugin:@typescript-eslint/disable-type-checked"]
+		}
+	],
 	"rules": {
 		"array-callback-return": [
 			"error",

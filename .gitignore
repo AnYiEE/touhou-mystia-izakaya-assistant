@@ -6,7 +6,7 @@
 /out/
 
 # production
-/build
+/public/*.js
 
 # local env files
 .env*.local
