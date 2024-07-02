@@ -347,7 +347,11 @@ export default memo(
 									onSelectionChange={onSelectedDlcsChange}
 									aria-label="选择特定DLC中的酒水"
 								>
-									{({value}) => <DropdownItem key={value}>{value}</DropdownItem>}
+									{({value}) => (
+										<DropdownItem key={value} textValue={value.toString()}>
+											{value}
+										</DropdownItem>
+									)}
 								</DropdownMenu>
 							</Dropdown>
 							<Dropdown showArrow>
