@@ -100,25 +100,49 @@ export default memo(
 			<Card fullWidth shadow="sm" ref={ref}>
 				<div className="flex flex-col gap-3 p-4 md:flex-row">
 					<div className="flex flex-col items-center justify-center text-center">
-						<Tooltip
+						<Popover
 							showArrow
 							color={currentCustomerRating ? customerRatingColorMap[currentCustomerRating] : undefined}
-							content={currentCustomerRating ?? '继续选择以评分'}
+							offset={11}
 						>
-							<Avatar
-								isBordered={Boolean(currentCustomerRating)}
+							<Tooltip
+								showArrow
 								color={
 									currentCustomerRating ? customerRatingColorMap[currentCustomerRating] : undefined
 								}
-								radius="full"
-								icon={<Sprite target={currentCustomer.target} name={currentCustomer.name} size={4} />}
-								classNames={{
-									base: clsx('h-12 w-12 lg:h-16 lg:w-16', Boolean(currentCustomerRating) && 'ring-4'),
-									icon: 'inline-table lg:inline-block',
-								}}
-							/>
-						</Tooltip>
-						<div className="flex flex-col gap-2 text-nowrap pt-2">
+								content={currentCustomerRating ?? '继续选择以评分'}
+							>
+								<span className="cursor-pointer">
+									<PopoverTrigger>
+										<Avatar
+											isBordered={Boolean(currentCustomerRating)}
+											color={
+												currentCustomerRating
+													? customerRatingColorMap[currentCustomerRating]
+													: undefined
+											}
+											radius="full"
+											icon={
+												<Sprite
+													target={currentCustomer.target}
+													name={currentCustomer.name}
+													size={4}
+												/>
+											}
+											classNames={{
+												base: clsx(
+													'h-12 w-12 lg:h-16 lg:w-16',
+													Boolean(currentCustomerRating) && 'ring-4'
+												),
+												icon: 'inline-table lg:inline-block',
+											}}
+										/>
+									</PopoverTrigger>
+								</span>
+							</Tooltip>
+							<PopoverContent>{currentCustomerRating ?? '继续选择以评分'}</PopoverContent>
+						</Popover>
+						<div className="flex flex-col gap-2 text-nowrap break-keep pt-2">
 							{(() => {
 								const {name: currentCustomerName} = currentCustomer;
 								const [dlc, places, price] = instance_customer.getPropsByName(
