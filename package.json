@@ -1,6 +1,6 @@
 {
 	"name": "touhou-mystia-izakaya-assistant",
-	"version": "0.2.1",
+	"version": "0.3.0",
 	"description": "东方夜雀食堂小助手是为游戏《东方夜雀食堂》所打造的工具，旨在为玩家的游玩过程提供帮助。",
 	"private": true,
 	"scripts": {
@@ -11,7 +11,6 @@
 		"format": "prettier --cache --write .",
 		"stylelint": "stylelint --allow-empty-input --cache app/**/*.scss",
 		"stylelint:fix": "stylelint --allow-empty-input --cache --fix app/**/*.scss",
-		"minify-svg": "svgo --config=svgo.config.cjs --quiet --recursive --folder app",
 		"preinstall": "npx only-allow pnpm",
 		"prepare": "husky"
 	},
