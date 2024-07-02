@@ -1,4 +1,4 @@
-import {type ChangeEvent, type Key, forwardRef, memo, useCallback, useMemo} from 'react';
+import {type Key, forwardRef, memo, useCallback, useMemo} from 'react';
 import clsx from 'clsx';
 import {cloneDeep} from 'lodash';
 
@@ -66,7 +66,9 @@ export default memo(
 		const hasNameFilter = useMemo(() => Boolean(searchValue), [searchValue]);
 
 		const tableCurrentPage = store.share.beverage.page.use();
-		const tableRowsPerPage = store.page.beverage.table.rows.use();
+		const tableRowsPerPage = store.recipeTableRows.use();
+		const tableRowsPerPageNumber = store.page.beverage.table.rows.use();
+		const tableSelectableRows = store.share.beverage.selectableRows.get();
 		const tableSortDescriptor = store.share.beverage.sortDescriptor.use();
 		const tableVisibleColumns = store.beverageTableColumns.use();
 
@@ -149,11 +151,11 @@ export default memo(
 		}, [filteredData, tableSortDescriptor]);
 
 		const tableCurrentPageItems = useMemo(() => {
-			const start = (tableCurrentPage - 1) * tableRowsPerPage;
-			const end = start + tableRowsPerPage;
+			const start = (tableCurrentPage - 1) * tableRowsPerPageNumber;
+			const end = start + tableRowsPerPageNumber;
 
 			return sortedData.slice(start, end);
-		}, [sortedData, tableCurrentPage, tableRowsPerPage]);
+		}, [sortedData, tableCurrentPage, tableRowsPerPageNumber]);
 
 		const tableHeaderColumns = useMemo(() => {
 			if (tableVisibleColumns === 'all') {
@@ -164,8 +166,8 @@ export default memo(
 		}, [tableVisibleColumns]);
 
 		const tableTotalPages = useMemo(
-			() => Math.ceil(filteredData.length / tableRowsPerPage),
-			[filteredData.length, tableRowsPerPage]
+			() => Math.ceil(filteredData.length / tableRowsPerPageNumber),
+			[filteredData.length, tableRowsPerPageNumber]
 		);
 
 		const tabelSelectedKeys = useMemo(() => new Set([currentBeverageName ?? '']), [currentBeverageName]);
@@ -280,11 +282,11 @@ export default memo(
 		}, [store.share.beverage.page, store.share.beverage.searchValue]);
 
 		const onTableRowsPerPageChange = useCallback(
-			(event: ChangeEvent<HTMLSelectElement>) => {
-				store.page.beverage.table.rows.set(Number(event.target.value));
+			(value: Selection) => {
+				store.beverageTableRows.set(value);
 				store.share.beverage.page.set(1);
 			},
-			[store.page.beverage.table.rows, store.share.beverage.page]
+			[store.beverageTableRows, store.share.beverage.page]
 		);
 
 		const tableToolbar = useMemo(
@@ -376,21 +378,32 @@ export default memo(
 							</Dropdown>
 						</div>
 					</div>
-					<div className="flex justify-between text-small text-default-400">
+					<div className="flex items-center justify-between text-small text-default-400">
 						<span>总计{filteredData.length}种酒水</span>
-						<label className="flex">
-							<span className="cursor-auto">表格行数：</span>
-							<select
-								defaultValue={tableRowsPerPage}
-								onChange={onTableRowsPerPageChange}
-								className="cursor-pointer bg-transparent outline-none"
+						<label className="flex items-center">
+							<span className="mr-2 cursor-auto text-nowrap">表格行数</span>
+							<Select
+								items={tableSelectableRows}
+								defaultSelectedKeys={tableRowsPerPage}
+								selectedKeys={tableRowsPerPage}
+								size="sm"
+								variant="flat"
+								onSelectionChange={onTableRowsPerPageChange}
+								aria-label="选择表格每页最大行数"
+								title="选择表格每页最大行数"
+								classNames={{
+									base: 'min-w-16',
+									popoverContent: 'min-w-20',
+									trigger: 'h-6 min-h-6',
+									value: '!text-default-400',
+								}}
 							>
-								{[5, 7, 10, 15, 20].map((num) => (
-									<option key={num} value={num.toString()}>
-										{num}
-									</option>
-								))}
-							</select>
+								{({value}) => (
+									<SelectItem key={value} textValue={value.toString()}>
+										{value}
+									</SelectItem>
+								)}
+							</Select>
 						</label>
 					</div>
 				</div>
@@ -410,6 +423,7 @@ export default memo(
 				selectedDlcs,
 				store.beverageTableColumns.set,
 				tableRowsPerPage,
+				tableSelectableRows,
 				tableVisibleColumns,
 			]
 		);

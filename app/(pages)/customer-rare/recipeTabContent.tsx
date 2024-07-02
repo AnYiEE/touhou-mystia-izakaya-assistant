@@ -1,4 +1,4 @@
-import {type ChangeEvent, type Key, forwardRef, memo, useCallback, useMemo} from 'react';
+import {type Key, forwardRef, memo, useCallback, useMemo} from 'react';
 import clsx from 'clsx';
 import {cloneDeep} from 'lodash';
 
@@ -68,7 +68,9 @@ export default memo(
 		const hasNameFilter = useMemo(() => Boolean(searchValue), [searchValue]);
 
 		const tableCurrentPage = store.share.recipe.page.use();
-		const tableRowsPerPage = store.page.recipe.table.rows.use();
+		const tableRowsPerPage = store.recipeTableRows.use();
+		const tableRowsPerPageNumber = store.page.recipe.table.rows.use();
+		const tableSelectableRows = store.share.recipe.selectableRows.get();
 		const tableSortDescriptor = store.share.recipe.sortDescriptor.use();
 		const tableVisibleColumns = store.recipeTableColumns.use();
 
@@ -166,11 +168,11 @@ export default memo(
 		}, [filteredData, tableSortDescriptor]);
 
 		const tableCurrentPageItems = useMemo(() => {
-			const start = (tableCurrentPage - 1) * tableRowsPerPage;
-			const end = start + tableRowsPerPage;
+			const start = (tableCurrentPage - 1) * tableRowsPerPageNumber;
+			const end = start + tableRowsPerPageNumber;
 
 			return sortedData.slice(start, end);
-		}, [sortedData, tableCurrentPage, tableRowsPerPage]);
+		}, [sortedData, tableCurrentPage, tableRowsPerPageNumber]);
 
 		const tableHeaderColumns = useMemo(() => {
 			if (tableVisibleColumns === 'all') {
@@ -181,8 +183,8 @@ export default memo(
 		}, [tableVisibleColumns]);
 
 		const tableTotalPages = useMemo(
-			() => Math.ceil(filteredData.length / tableRowsPerPage),
-			[filteredData.length, tableRowsPerPage]
+			() => Math.ceil(filteredData.length / tableRowsPerPageNumber),
+			[filteredData.length, tableRowsPerPageNumber]
 		);
 
 		const tabelSelectedKeys = useMemo(() => new Set([currentRecipe?.name ?? '']), [currentRecipe?.name]);
@@ -340,11 +342,11 @@ export default memo(
 		}, [store.share.recipe.page, store.share.recipe.searchValue]);
 
 		const onTableRowsPerPageChange = useCallback(
-			(event: ChangeEvent<HTMLSelectElement>) => {
-				store.page.recipe.table.rows.set(Number(event.target.value));
+			(value: Selection) => {
+				store.recipeTableRows.set(value);
 				store.share.recipe.page.set(1);
 			},
-			[store.page.recipe.table.rows, store.share.recipe.page]
+			[store.recipeTableRows, store.share.recipe.page]
 		);
 
 		const tableToolbar = useMemo(
@@ -466,21 +468,32 @@ export default memo(
 							</Dropdown>
 						</div>
 					</div>
-					<div className="flex justify-between text-small text-default-400">
+					<div className="flex items-center justify-between text-small text-default-400">
 						<span>总计{filteredData.length}道料理</span>
-						<label className="flex">
-							<span className="cursor-auto">表格行数：</span>
-							<select
-								defaultValue={tableRowsPerPage}
-								onChange={onTableRowsPerPageChange}
-								className="cursor-pointer bg-transparent outline-none"
+						<label className="flex items-center">
+							<span className="mr-2 cursor-auto text-nowrap">表格行数</span>
+							<Select
+								items={tableSelectableRows}
+								defaultSelectedKeys={tableRowsPerPage}
+								selectedKeys={tableRowsPerPage}
+								size="sm"
+								variant="flat"
+								onSelectionChange={onTableRowsPerPageChange}
+								aria-label="选择表格每页最大行数"
+								title="选择表格每页最大行数"
+								classNames={{
+									base: 'min-w-16',
+									popoverContent: 'min-w-20',
+									trigger: 'h-6 min-h-6',
+									value: '!text-default-400',
+								}}
 							>
-								{[5, 7, 10, 15, 20].map((num) => (
-									<option key={num} value={num.toString()}>
-										{num}
-									</option>
-								))}
-							</select>
+								{({value}) => (
+									<SelectItem key={value} textValue={value.toString()}>
+										{value}
+									</SelectItem>
+								)}
+							</Select>
 						</label>
 					</div>
 				</div>
@@ -503,6 +516,7 @@ export default memo(
 				selectedKitchenwares,
 				store.recipeTableColumns.set,
 				tableRowsPerPage,
+				tableSelectableRows,
 				tableVisibleColumns,
 			]
 		);

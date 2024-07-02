@@ -101,6 +101,7 @@ const customerRareStore = store(
 				dlcs: new Set() as Selection,
 				page: 1,
 				searchValue: '',
+				selectableRows: [5, 7, 10, 15, 20].map((value) => ({value})),
 				sortDescriptor: {} as TBeverageTableSortDescriptor,
 			},
 			customer: {
@@ -124,6 +125,7 @@ const customerRareStore = store(
 				kitchenwares: new Set() as Selection,
 				page: 1,
 				searchValue: '',
+				selectableRows: [5, 7, 10, 15, 20].map((value) => ({value})),
 				sortDescriptor: {} as TRecipeTableSortDescriptor,
 			},
 			tab: 'customer' as string | number,
@@ -152,10 +154,22 @@ const customerRareStore = store(
 				currentStore.page.beverage.table.visibleColumns.set([...columns] as never);
 			},
 		},
+		beverageTableRows: {
+			read: () => new Set([currentStore.page.beverage.table.rows.use().toString()]) as Selection,
+			write: (columns: Selection) => {
+				currentStore.page.beverage.table.rows.set(Number.parseInt([...columns][0] as string));
+			},
+		},
 		recipeTableColumns: {
 			read: () => new Set(currentStore.page.recipe.table.visibleColumns.use()) as Selection,
 			write: (columns: Selection) => {
 				currentStore.page.recipe.table.visibleColumns.set([...columns] as never);
+			},
+		},
+		recipeTableRows: {
+			read: () => new Set([currentStore.page.recipe.table.rows.use().toString()]) as Selection,
+			write: (columns: Selection) => {
+				currentStore.page.recipe.table.rows.set(Number.parseInt([...columns][0] as string));
 			},
 		},
 	}))
