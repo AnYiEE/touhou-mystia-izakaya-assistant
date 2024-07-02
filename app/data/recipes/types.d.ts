@@ -3,8 +3,9 @@ import type {TCustomerRareNames} from '../customer_rare/types';
 import type {TIngredientNames} from '../ingredients/types';
 import type {TKitchenwareNames} from '../kitchenwares/types';
 
+export type TCalcTag = '昂贵' | '实惠';
+
 type TTag =
-	| '昂贵'
 	| '饱腹'
 	| '不可思议'
 	| '传说'
@@ -27,7 +28,6 @@ type TTag =
 	| '山珍'
 	| '烧烤'
 	| '生'
-	| '实惠'
 	| '适合拍照'
 	| '水产'
 	| '素'

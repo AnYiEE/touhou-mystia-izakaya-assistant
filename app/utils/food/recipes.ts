@@ -1,10 +1,18 @@
+import {cloneDeep} from 'lodash';
+
 import {Food} from './base';
 import {type TRecipes} from '@/data';
+import {type TRecipeTag} from '@/data/types';
+
+type TRecipe = TRecipes[number];
+type TProcessPositiveTags<T extends TRecipe> = Omit<T, 'positiveTags'> & {
+	positiveTags: TRecipeTag[];
+};
 
 export class Recipe<
 	TItem extends TRecipes[number] = TRecipes[number],
 	TName extends TItem['name'] = TItem['name'],
-> extends Food<TRecipes> {
+> extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 	private static tagCoverMap = {
 		大份: '小巧',
 		灼热: '凉爽',
@@ -13,10 +21,21 @@ export class Recipe<
 		饱腹: '下酒',
 	} as const;
 
-	constructor(data: TRecipes) {
-		super(data);
+	constructor(data: TProcessPositiveTags<TRecipes[number]>[]) {
+		const clonedData = cloneDeep(data);
 
-		this._data = data;
+		for (const recipe of clonedData) {
+			const {positiveTags, price} = recipe;
+			if (price > 60) {
+				positiveTags.push('昂贵');
+			} else if (price < 20) {
+				positiveTags.push('实惠');
+			}
+		}
+
+		super(clonedData);
+
+		this._data = clonedData;
 	}
 
 	public composeTags<T extends string, U extends string>(
