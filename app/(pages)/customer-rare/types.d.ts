@@ -1,5 +1,5 @@
 import {type ReactNode} from 'react';
-import {type SortDescriptor} from '@nextui-org/react';
+import {type AvatarProps, type SortDescriptor} from '@nextui-org/react';
 
 import {type TabVisibilityState} from './constants';
 import {type TCustomerNames} from '@/data';
@@ -10,6 +10,12 @@ export type TCustomerTarget = 'customer_rare' | 'customer_special';
 export interface ICurrentCustomer {
 	name: TCustomerNames;
 	target: TCustomerTarget;
+}
+
+export type TCustomerRating = '极度不满' | '不满' | '普通' | '满意' | '完美';
+
+export interface ICustomerRatingMap {
+	[key in TCustomerRating]: AvatarProps['color'];
 }
 
 export interface ICustomerTabStyle {

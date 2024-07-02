@@ -63,10 +63,27 @@ export class Recipe<
 		name: T,
 		customerPositiveTags: U[],
 		costomerNegativeTags: S[]
+	): {
+		negativeTags: U[];
+		positiveTags: U[];
+		suitability: number;
+	};
+	public getCustomerSuitability<T extends string[], U extends string, S extends string>(
+		recipeTags: T,
+		customerPositiveTags: U[],
+		costomerNegativeTags: S[]
+	): {
+		negativeTags: U[];
+		positiveTags: U[];
+		suitability: number;
+	};
+	public getCustomerSuitability<T extends string, U extends string>(
+		nameOrtags: string | string[],
+		customerPositiveTags: T[],
+		costomerNegativeTags: U[]
 	) {
-		const recipe = this.getPropsByName(name);
+		const recipeTags = typeof nameOrtags === 'string' ? this.getPropsByName(nameOrtags).positiveTags : nameOrtags;
 
-		const {positiveTags: recipeTags} = recipe;
 		const {commonTags: positiveTags, count: positiveCount} = this.getCommonTags(recipeTags, customerPositiveTags);
 		const {commonTags: negativeTags, count: negativeCount} = this.getCommonTags(recipeTags, costomerNegativeTags);
 

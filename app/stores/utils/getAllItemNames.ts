@@ -11,18 +11,15 @@ type TNameObject<T extends TTargetInstance> = {
 
 export function getAllItemNames<T extends TTargetInstance>(instance: T, pinyinSortState: PinyinSortState) {
 	switch (pinyinSortState) {
-		case PinyinSortState.AZ:
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		case PinyinSortState.AZ: // eslint-disable-next-line @typescript-eslint/no-explicit-any
 			return (instance as Item<any>).getValuesByProp(instance.dataPinyinSorted, 'name', true) as TNameObject<T>;
-		case PinyinSortState.ZA:
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		case PinyinSortState.ZA: // eslint-disable-next-line @typescript-eslint/no-explicit-any
 			return (instance as Item<any>).getValuesByProp(
 				instance.dataPinyinSorted.toReversed(),
 				'name',
 				true
 			) as TNameObject<T>;
-		default:
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		default: // eslint-disable-next-line @typescript-eslint/no-explicit-any
 			return (instance as Item<any>).getValuesByProp(instance.data, 'name', true) as TNameObject<T>;
 	}
 }

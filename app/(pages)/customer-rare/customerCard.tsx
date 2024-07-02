@@ -10,9 +10,56 @@ import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Tags from '@/components/tags';
 import Sprite from '@/components/sprite';
 
-import {customerTagStyleMap} from './constants';
+import {customerRatingColorMap, customerTagStyleMap} from './constants';
+import type {TCustomerRating} from './types';
 import {useCustomerRareStore} from '@/stores';
 import {pinyinSort} from '@/utils';
+
+function evaluateRecipe({
+	customBadget,
+	matchedBeverageTagsLength,
+	matchedRecipeTagsLength,
+	mealPrice,
+	recipeSuitability,
+}: {
+	customBadget: number;
+	matchedBeverageTagsLength: number;
+	matchedRecipeTagsLength: number;
+	mealPrice: number;
+	recipeSuitability: number;
+}) {
+	if (recipeSuitability <= 0 || mealPrice > customBadget + 200) {
+		return '极度不满';
+	}
+	if (recipeSuitability === 1 || (matchedBeverageTagsLength === 0 && matchedRecipeTagsLength === 0)) {
+		return '不满';
+	}
+	if (
+		(recipeSuitability === 2 && (matchedBeverageTagsLength >= 1 || matchedRecipeTagsLength >= 1)) ||
+		mealPrice > customBadget
+	) {
+		return '普通';
+	}
+	if (recipeSuitability === 3 && (matchedBeverageTagsLength >= 1 || matchedRecipeTagsLength >= 1)) {
+		return '满意';
+	}
+	if (recipeSuitability >= 4 && matchedBeverageTagsLength >= 1 && matchedRecipeTagsLength >= 1) {
+		return '完美';
+	}
+	if (recipeSuitability === 4) {
+		return '满意';
+	}
+	if (recipeSuitability === 3) {
+		return '普通';
+	}
+	if (recipeSuitability === 2) {
+		return '不满';
+	}
+	if (recipeSuitability === 1 || recipeSuitability === 0) {
+		return '极度不满';
+	}
+	return null;
+}
 
 interface IProps {}
 
@@ -21,6 +68,7 @@ export default memo(
 		const store = useCustomerRareStore();
 
 		const currentCustomer = store.share.customer.data.use();
+		const currentCustomerRating = store.share.customer.rating.use();
 		const selectedCustomerBeverageTags = store.share.customer.beverageTags.use();
 		const selectedCustomerPositiveTags = store.share.customer.positiveTags.use();
 
@@ -52,14 +100,24 @@ export default memo(
 			<Card fullWidth shadow="sm" ref={ref}>
 				<div className="flex flex-col gap-3 p-4 md:flex-row">
 					<div className="flex flex-col items-center justify-center text-center">
-						<Avatar
-							radius="full"
-							icon={<Sprite target={currentCustomer.target} name={currentCustomer.name} size={4} />}
-							classNames={{
-								base: 'h-12 w-12 lg:h-16 lg:w-16',
-								icon: 'inline-table lg:inline-block',
-							}}
-						/>
+						<Tooltip
+							showArrow
+							color={currentCustomerRating ? customerRatingColorMap[currentCustomerRating] : undefined}
+							content={currentCustomerRating ?? '继续选择以评分'}
+						>
+							<Avatar
+								isBordered={Boolean(currentCustomerRating)}
+								color={
+									currentCustomerRating ? customerRatingColorMap[currentCustomerRating] : undefined
+								}
+								radius="full"
+								icon={<Sprite target={currentCustomer.target} name={currentCustomer.name} size={4} />}
+								classNames={{
+									base: clsx('h-12 w-12 lg:h-16 lg:w-16', Boolean(currentCustomerRating) && 'ring-4'),
+									icon: 'inline-table lg:inline-block',
+								}}
+							/>
+						</Tooltip>
 						<div className="flex flex-col gap-2 text-nowrap pt-2">
 							{(() => {
 								const {name: currentCustomerName} = currentCustomer;
@@ -104,21 +162,26 @@ export default memo(
 					<div className="flex w-full flex-col justify-evenly gap-3 text-nowrap">
 						{(() => {
 							const {name: currentCustomerName, target} = currentCustomer;
-							const [customerBeverageTags, costomerNegativeTags, customerPositiveTags] =
-								instance_customer.getPropsByName(
-									currentCustomerName,
-									'beverageTags',
-									'negativeTags',
-									'positiveTags'
-								);
-							const beverageTags = currentBeverageName
-								? (instance_beverage.getPropsByName(currentBeverageName, 'tags') as string[])
-								: [];
+							const {
+								beverageTags: customerBeverageTags,
+								negativeTags: costomerNegativeTags,
+								positiveTags: customerPositiveTags,
+								price: customerPrice,
+							} = instance_customer.getPropsByName(currentCustomerName);
+							let beveragePrice = 0;
+							let beverageTags: string[] = [];
+							if (currentBeverageName) {
+								const beverage = instance_beverage.getPropsByName(currentBeverageName);
+								beveragePrice = beverage.price;
+								beverageTags = beverage.tags;
+							}
+							let recipePrice = 0;
 							const recipePositiveTags: string[] = [];
 							if (currentRecipe) {
 								const {extraIngredients, name: currentRecipeName} = currentRecipe;
-								const {ingredients: originalIngredients, positiveTags: originalTags} =
-									instance_recipe.getPropsByName(currentRecipeName);
+								const recipe = instance_recipe.getPropsByName(currentRecipeName);
+								const {ingredients: originalIngredients, positiveTags: originalTags, price} = recipe;
+								recipePrice = price;
 								const extraTags: string[] = [];
 								for (const extraIngredient of extraIngredients) {
 									extraTags.push(...instance_ingredient.getPropsByName(extraIngredient, 'tags'));
@@ -132,9 +195,36 @@ export default memo(
 									)
 								);
 							}
+							let calcCustomerRating: TCustomerRating | null = null;
+							const customBadget = Number.parseInt(customerPrice.split('-')[1] as string);
+							const mealPrice = beveragePrice + recipePrice;
+							const {suitability: recipeSuitability} = instance_recipe.getCustomerSuitability(
+								recipePositiveTags,
+								customerPositiveTags,
+								costomerNegativeTags
+							);
+							const matchedBeverageTagsLength = intersection(beverageTags, customerBeverageTags).length;
+							const matchedRecipeTagsLength = intersection(
+								recipePositiveTags,
+								customerPositiveTags
+							).length;
+							if (currentBeverageName || currentRecipe) {
+								calcCustomerRating = evaluateRecipe({
+									customBadget,
+									matchedBeverageTagsLength,
+									matchedRecipeTagsLength,
+									mealPrice,
+									recipeSuitability,
+								});
+							}
+							if (calcCustomerRating !== currentCustomerRating) {
+								setTimeout(() => {
+									store.share.customer.rating.set(calcCustomerRating);
+								}, 0);
+							}
 							return (
 								<>
-									{customerPositiveTags && customerPositiveTags.length > 0 && (
+									{customerPositiveTags.length > 0 && (
 										<TagGroup>
 											{[...customerPositiveTags].sort(pinyinSort).map((tag) => (
 												<Tags.Tag
@@ -163,7 +253,7 @@ export default memo(
 											))}
 										</TagGroup>
 									)}
-									{costomerNegativeTags && costomerNegativeTags.length > 0 && (
+									{costomerNegativeTags.length > 0 && (
 										<TagGroup>
 											{[...costomerNegativeTags].sort(pinyinSort).map((tag) => (
 												<Tags.Tag
@@ -178,7 +268,7 @@ export default memo(
 											))}
 										</TagGroup>
 									)}
-									{customerBeverageTags && customerBeverageTags.length > 0 && (
+									{customerBeverageTags.length > 0 && (
 										<TagGroup>
 											{intersection(
 												store.beverage.tags.get().map(({value}) => value),

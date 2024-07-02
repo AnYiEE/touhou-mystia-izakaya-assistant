@@ -122,6 +122,7 @@ export default memo(
 		const store = useCustomerRareStore();
 
 		const currentCustomerName = store.share.customer.data.use()?.name;
+		const currentCustomerRating = store.share.customer.rating.use();
 		const currentBeverageName = store.share.beverage.name.use();
 		const currentRecipe = store.share.recipe.data.use();
 		const savedMeal = store.page.selected.use();
@@ -135,7 +136,8 @@ export default memo(
 
 			const saveObject = {
 				beverage: currentBeverageName,
-				extraIngredients: currentRecipe.extraIngredients,
+				extraIngredients: currentRecipe.extraIngredients, // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				rating: currentCustomerRating!,
 				recipe: currentRecipe.name,
 			} as const;
 
@@ -148,7 +150,7 @@ export default memo(
 					prev[currentCustomerName] = [{...saveObject, index: 0}];
 				}
 			});
-		}, [currentBeverageName, currentCustomerName, currentRecipe, store.page.selected]);
+		}, [currentBeverageName, currentCustomerName, currentCustomerRating, currentRecipe, store.page.selected]);
 
 		if (!currentBeverageName && !currentRecipe) {
 			if (currentCustomerName && savedMeal[currentCustomerName]?.length) {

@@ -7,7 +7,7 @@ import {type Selection} from '@nextui-org/react';
 import {TabVisibilityState, beverageTableColumns, recipeTableColumns} from '@/(pages)/customer-rare/constants';
 import {type TTableSortDescriptor as TBeverageTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
 import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
-import type {ICurrentCustomer} from '@/(pages)/customer-rare/types';
+import type {ICurrentCustomer, TCustomerRating} from '@/(pages)/customer-rare/types';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import {type TBeverageNames, type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
@@ -25,125 +25,144 @@ const rarePlaces = instance_rare.getValuesByProp(instance_rare.data, 'places').s
 const specialDlcs = instance_special.getValuesByProp(instance_special.data, 'dlc').sort(numberSort);
 const specialPlaces = instance_special.getValuesByProp(instance_special.data, 'places').sort(pinyinSort);
 
-const customerRareStore = store(
-	{
-		instances: {
-			beverage: instance_beverage,
-			customer_rare: instance_rare,
-			customer_special: instance_special,
-			ingredient: instance_ingredient,
-			recipe: instance_recipe,
-		},
+const storeVersion = {
+	initial: 0,
+	rating: 1,
+} as const;
 
+const state = {
+	instances: {
+		beverage: instance_beverage,
+		customer_rare: instance_rare,
+		customer_special: instance_special,
+		ingredient: instance_ingredient,
+		recipe: instance_recipe,
+	},
+
+	beverage: {
+		dlcs: instance_beverage.getValuesByProp(instance_beverage.data, 'dlc', true).sort(numberSort),
+		names: instance_beverage.getValuesByProp(instance_beverage.data, 'name', true).sort(pinyinSort),
+		tags: instance_beverage.sortedTag.map((value) => ({value})),
+	},
+	customer: {
+		dlcs: union(rareDlcs, specialDlcs).map((value) => ({value})),
+		places: union(rarePlaces, specialPlaces).map((value) => ({value})),
+	},
+	ingredient: {
+		dlcs: instance_ingredient.getValuesByProp(instance_ingredient.data, 'dlc', true).sort(numberSort),
+	},
+	recipe: {
+		dlcs: instance_recipe.getValuesByProp(instance_recipe.data, 'dlc', true).sort(numberSort),
+		kitchenwares: instance_recipe.getValuesByProp(instance_recipe.data, 'kitchenware', true).sort(pinyinSort),
+		names: instance_recipe.getValuesByProp(instance_recipe.data, 'name', true).sort(pinyinSort),
+		negativeTags: instance_recipe.getValuesByProp(instance_recipe.data, 'negativeTags', true).sort(pinyinSort),
+		positiveTags: instance_recipe.getValuesByProp(instance_recipe.data, 'positiveTags', true).sort(pinyinSort),
+	},
+
+	page: {
 		beverage: {
-			dlcs: instance_beverage.getValuesByProp(instance_beverage.data, 'dlc', true).sort(numberSort),
-			names: instance_beverage.getValuesByProp(instance_beverage.data, 'name', true).sort(pinyinSort),
-			tags: instance_beverage.sortedTag.map((value) => ({value})),
+			table: {
+				rows: 7,
+				visibleColumns: beverageTableColumns.map(({key}) => key),
+			},
 		},
 		customer: {
-			dlcs: union(rareDlcs, specialDlcs).map((value) => ({value})),
-			places: union(rarePlaces, specialPlaces).map((value) => ({value})),
+			filters: {
+				dlcs: [] as string[],
+				noPlaces: [] as string[],
+				places: [] as string[],
+			},
+			pinyinSortState: PinyinSortState.NONE,
+			searchValue: '',
+			tabVisibility: TabVisibilityState.collapse,
 		},
 		ingredient: {
-			dlcs: instance_ingredient.getValuesByProp(instance_ingredient.data, 'dlc', true).sort(numberSort),
+			filters: {
+				dlcs: [] as string[],
+			},
+			pinyinSortState: PinyinSortState.NONE,
+			tabVisibility: TabVisibilityState.collapse,
 		},
 		recipe: {
-			dlcs: instance_recipe.getValuesByProp(instance_recipe.data, 'dlc', true).sort(numberSort),
-			kitchenwares: instance_recipe.getValuesByProp(instance_recipe.data, 'kitchenware', true).sort(pinyinSort),
-			names: instance_recipe.getValuesByProp(instance_recipe.data, 'name', true).sort(pinyinSort),
-			negativeTags: instance_recipe.getValuesByProp(instance_recipe.data, 'negativeTags', true).sort(pinyinSort),
-			positiveTags: instance_recipe.getValuesByProp(instance_recipe.data, 'positiveTags', true).sort(pinyinSort),
-		},
-
-		page: {
-			beverage: {
-				table: {
-					rows: 7,
-					visibleColumns: beverageTableColumns.map(({key}) => key),
-				},
-			},
-			customer: {
-				filters: {
-					dlcs: [] as string[],
-					noPlaces: [] as string[],
-					places: [] as string[],
-				},
-				pinyinSortState: PinyinSortState.NONE,
-				searchValue: '',
-				tabVisibility: TabVisibilityState.collapse,
-			},
-			ingredient: {
-				filters: {
-					dlcs: [] as string[],
-				},
-				pinyinSortState: PinyinSortState.NONE,
-				tabVisibility: TabVisibilityState.collapse,
-			},
-			recipe: {
-				table: {
-					rows: 7,
-					visibleColumns: recipeTableColumns.filter(({key}) => key !== 'kitchenware').map(({key}) => key),
-				},
-			},
-			selected: {} as {
-				[key in TCustomerNames]?: {
-					index: number;
-					beverage: TBeverageNames;
-					recipe: TRecipeNames;
-					extraIngredients: TIngredientNames[];
-				}[];
+			table: {
+				rows: 7,
+				visibleColumns: recipeTableColumns.filter(({key}) => key !== 'kitchenware').map(({key}) => key),
 			},
 		},
-		share: {
-			beverage: {
-				name: null as TBeverageNames | null,
-
-				dlcs: new Set() as Selection,
-				page: 1,
-				searchValue: '',
-				selectableRows: [5, 7, 10, 15, 20].map((value) => ({value})),
-				sortDescriptor: {} as TBeverageTableSortDescriptor,
-			},
-			customer: {
-				data: null as ICurrentCustomer | null,
-
-				beverageTags: new Set() as Selection,
-				positiveTags: new Set() as Selection,
-
-				filterVisibility: false,
-			},
-			ingredient: {
-				filterVisibility: false,
-			},
-			recipe: {
-				data: null as {
-					name: TRecipeNames;
-					extraIngredients: TIngredientNames[];
-				} | null,
-
-				dlcs: new Set() as Selection,
-				kitchenwares: new Set() as Selection,
-				page: 1,
-				searchValue: '',
-				selectableRows: [5, 7, 10, 15, 20].map((value) => ({value})),
-				sortDescriptor: {} as TRecipeTableSortDescriptor,
-			},
-			tab: 'customer' as string | number,
+		selected: {} as {
+			[key in TCustomerNames]?: {
+				index: number;
+				rating: TCustomerRating;
+				beverage: TBeverageNames;
+				recipe: TRecipeNames;
+				extraIngredients: TIngredientNames[];
+			}[];
 		},
 	},
-	{
-		persist: {
-			enabled: true,
-			name: 'page-customer_rare-storage',
-			partialize(currentStore) {
-				return {
-					page: currentStore.page,
-				} as typeof currentStore;
-			},
-			storage: createJSONStorage(() => localStorage),
+	share: {
+		beverage: {
+			name: null as TBeverageNames | null,
+
+			dlcs: new Set() as Selection,
+			page: 1,
+			searchValue: '',
+			selectableRows: [5, 7, 10, 15, 20].map((value) => ({value})),
+			sortDescriptor: {} as TBeverageTableSortDescriptor,
 		},
-	}
-)
+		customer: {
+			data: null as ICurrentCustomer | null,
+
+			beverageTags: new Set() as Selection,
+			positiveTags: new Set() as Selection,
+
+			filterVisibility: false,
+			rating: null as TCustomerRating | null,
+		},
+		ingredient: {
+			filterVisibility: false,
+		},
+		recipe: {
+			data: null as {
+				name: TRecipeNames;
+				extraIngredients: TIngredientNames[];
+			} | null,
+
+			dlcs: new Set() as Selection,
+			kitchenwares: new Set() as Selection,
+			page: 1,
+			searchValue: '',
+			selectableRows: [5, 7, 10, 15, 20].map((value) => ({value})),
+			sortDescriptor: {} as TRecipeTableSortDescriptor,
+		},
+		tab: 'customer' as string | number,
+	},
+};
+
+const customerRareStore = store(state, {
+	persist: {
+		enabled: true,
+		name: 'page-customer_rare-storage',
+		version: storeVersion.rating,
+
+		migrate(persistedState, version) {
+			if (version < storeVersion.rating) {
+				const oldState = persistedState as typeof state;
+				for (const meals of Object.values(oldState.page.selected)) {
+					for (const meal of meals) {
+						meal.rating = '完美';
+					}
+				}
+			}
+			return persistedState as typeof state;
+		},
+		partialize(currentStore) {
+			return {
+				page: currentStore.page,
+			} as typeof currentStore;
+		},
+		storage: createJSONStorage(() => localStorage),
+	},
+})
 	.computed((currentStore) => ({
 		rareNames: () => getAllItemNames(instance_rare, currentStore.page.customer.pinyinSortState.get()),
 		specialNames: () => getAllItemNames(instance_special, currentStore.page.customer.pinyinSortState.get()),
@@ -184,6 +203,7 @@ const customerRareStore = store(
 			currentStore.share.beverage.sortDescriptor.set({});
 		},
 		refreshCustomerSelectedItems() {
+			currentStore.share.customer.rating.set(null);
 			currentStore.share.customer.beverageTags.set(new Set());
 			currentStore.share.customer.positiveTags.set(new Set());
 			currentStore.share.recipe.data.set(null);

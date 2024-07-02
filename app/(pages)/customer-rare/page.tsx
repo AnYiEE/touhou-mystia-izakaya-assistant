@@ -296,7 +296,9 @@ export default memo(function CustomerRare() {
 						<SavedMealCard />
 					</>
 				) : (
-					<Placeholder className="pb-24 pt-32 md:py-8 xl:pb-[6.5rem] xl:pt-0">选择角色以继续</Placeholder>
+					<Placeholder className="pb-24 pt-32 md:pb-4 md:pt-0 xl:pb-[6.5rem] xl:pt-0">
+						选择角色以继续
+					</Placeholder>
 				)}
 			</div>
 		</div>

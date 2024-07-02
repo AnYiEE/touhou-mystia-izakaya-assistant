@@ -122,8 +122,7 @@ type TCollectionLocation =
 
 export type TBeverageTag = IBeverage['tags'][number] | '全部';
 export type TRecipeTag =
-	| IRecipe['positiveTags'][number]
-	// eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
+	| IRecipe['positiveTags'][number] // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
 	| IRecipe['negativeTags'][number]
 	| TCalcTag
 	| '流行喜爱'

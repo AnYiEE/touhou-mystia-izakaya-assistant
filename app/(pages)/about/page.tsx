@@ -11,9 +11,9 @@ const {description, name, shortName, links} = siteConfig;
 
 export default memo(function About() {
 	return (
-		<div>
+		<div className="leading-6">
 			<H1 isFirst>项目介绍</H1>
-			<div className="flex flex-col gap-2 break-all indent-8 leading-6">
+			<div className="flex flex-col gap-2 break-all indent-8">
 				<p>{description}</p>
 				<p>
 					使用{name}（以下简称“{shortName}”）并不意味您拥有
@@ -64,17 +64,21 @@ export default memo(function About() {
 			<H1>已知问题</H1>
 			<ul className="flex list-inside list-decimal flex-col gap-2">
 				<li>
-					表格无法排序多个列：
-					<Link isExternal showAnchorIcon href="https://github.com/nextui-org/nextui/issues/2282">
+					表格无法排序多个列：见
+					<Link isExternal href="https://github.com/nextui-org/nextui/issues/2282">
 						issue#2282
 					</Link>
+					。
 				</li>
 				<li>
 					表格点击排序后默认升序：NextUI的
-					<Link isExternal showAnchorIcon href="https://nextui.org/docs/components/table#api">
+					<Link isExternal href="https://nextui.org/docs/components/table#api">
 						Table组件
 					</Link>
-					尚未提供相关设置项
+					尚未提供相关设置项。
+				</li>
+				<li>
+					稀客需求评分准确度欠缺：根据前述群内文件中的描述，极度不满（即黑评）的标准之一是套餐搭配严重超出当前稀客的预算。但“严重超出”的标准不明，故而暂时采用该稀客最高预算加两百円作为评级标准。
 				</li>
 			</ul>
 			<DataManager />
