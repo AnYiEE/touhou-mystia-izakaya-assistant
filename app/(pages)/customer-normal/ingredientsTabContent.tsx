@@ -65,7 +65,7 @@ export default memo(
 								return (
 									<div key={index} className="flex flex-col items-center">
 										<Sprite target="ingredient" name={name} size={3} />
-										<span className="break-keep text-xs">{name}</span>
+										<span className="text-nowrap break-keep text-xs">{name}</span>
 									</div>
 								);
 							}
@@ -117,7 +117,7 @@ export default memo(
 									>
 										<Sprite target="ingredient" name={name} size={3} title={`加入${name}`} />
 									</Badge>
-									<span className="break-keep text-xs">{name}</span>
+									<span className="text-nowrap break-keep text-xs">{name}</span>
 								</div>
 							);
 						})}
@@ -126,7 +126,7 @@ export default memo(
 						<>
 							<div className="my-4 flex items-center">
 								<div className="h-px w-full bg-foreground-300"></div>
-								<div className="select-none text-nowrap text-sm font-light text-foreground-500">
+								<div className="select-none text-nowrap break-keep text-sm font-light text-foreground-500">
 									制作黑暗料理？
 								</div>
 								<div className="h-px w-full bg-foreground-300"></div>
@@ -135,7 +135,7 @@ export default memo(
 								{[...darkIngredients].map((name, index) => (
 									<div key={index} className="flex flex-col items-center">
 										<Sprite target="ingredient" name={name} size={3} />
-										<span className="break-keep text-xs">{name}</span>
+										<span className="text-nowrap break-keep text-xs">{name}</span>
 									</div>
 								))}
 							</div>

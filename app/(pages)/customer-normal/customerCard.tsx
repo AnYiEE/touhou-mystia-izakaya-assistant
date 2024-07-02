@@ -60,7 +60,7 @@ export default memo(
 								icon: 'inline-table lg:inline-block',
 							}}
 						/>
-						<div className="flex min-w-24 flex-col gap-2 text-nowrap pt-2 lg:min-w-28">
+						<div className="flex min-w-24 flex-col gap-2 text-nowrap break-keep pt-2 lg:min-w-28">
 							{(() => {
 								const [dlc, places] = instance_customer.getPropsByName(
 									currentCustomerName,
@@ -95,7 +95,7 @@ export default memo(
 					</div>
 					<Divider className="md:hidden" />
 					<Divider orientation="vertical" className="hidden md:block" />
-					<div className="flex w-full flex-col justify-evenly gap-3 text-nowrap">
+					<div className="flex w-full flex-col justify-evenly gap-3 text-nowrap break-keep">
 						{(() => {
 							const {
 								beverageTags: customerBeverageTags,

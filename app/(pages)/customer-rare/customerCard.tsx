@@ -150,7 +150,7 @@ export default memo(
 													<PopoverContent>{content}</PopoverContent>
 												</Popover>
 											</span>
-											<p className="text-justify">持有金：￥{price}</p>
+											<p className="text-nowrap break-keep text-justify">持有金：￥{price}</p>
 										</span>
 									</>
 								);
@@ -159,7 +159,7 @@ export default memo(
 					</div>
 					<Divider className="md:hidden" />
 					<Divider orientation="vertical" className="hidden md:block" />
-					<div className="flex w-full flex-col justify-evenly gap-3 text-nowrap">
+					<div className="flex w-full flex-col justify-evenly gap-3 text-nowrap break-keep">
 						{(() => {
 							const {name: currentCustomerName, target} = currentCustomer;
 							const {

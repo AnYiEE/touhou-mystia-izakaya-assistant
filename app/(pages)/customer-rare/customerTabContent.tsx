@@ -62,7 +62,7 @@ export default memo(
 											icon: 'inline-table transition hover:scale-125 lg:inline-block',
 										}}
 									/>
-									<span className="break-keep text-xs">{name}</span>
+									<span className="text-nowrap break-keep text-xs">{name}</span>
 								</div>
 							))
 						)}
