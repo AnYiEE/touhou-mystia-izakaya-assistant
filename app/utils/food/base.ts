@@ -1,6 +1,7 @@
-import {Item} from '@/utils/item';
+import {intersection} from 'lodash';
+
 import type {IFood} from './types';
-import {getIntersection} from '@/utils';
+import {Item} from '@/utils/item';
 
 export class Food<TTarget extends IFood[]> extends Item<TTarget> {
 	public constructor(data: TTarget) {
@@ -10,7 +11,7 @@ export class Food<TTarget extends IFood[]> extends Item<TTarget> {
 	}
 
 	public getCommonTags<T extends string, U extends string>(arrayA: T[], arrayB: U[]) {
-		const intersectionArray = getIntersection(arrayA as unknown as U[], arrayB);
+		const intersectionArray = intersection(arrayA as unknown as U[], arrayB);
 
 		return {
 			commonTags: intersectionArray,

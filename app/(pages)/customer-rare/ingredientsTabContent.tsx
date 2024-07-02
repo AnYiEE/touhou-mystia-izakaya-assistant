@@ -1,5 +1,6 @@
 import {forwardRef, memo} from 'react';
 import clsx from 'clsx';
+import {intersection} from 'lodash';
 
 import {Badge, Button, ScrollShadow} from '@nextui-org/react';
 
@@ -9,7 +10,6 @@ import type {IIngredientsTabStyle} from './types';
 import {TIngredientNames} from '@/data';
 import type {TIngredientInstance} from '@/methods/food/types';
 import {useCustomerRareStore} from '@/stores';
-import {getIntersection} from '@/utils';
 
 interface IProps {
 	ingredientsTabStyle: IIngredientsTabStyle;
@@ -30,7 +30,7 @@ export default memo(
 
 		const darkIngredients = new Set<TIngredientNames>();
 		for (const {name, tags} of sortedData) {
-			if (getIntersection(tags, currentRecipe?.negativeTags ?? []).length > 0) {
+			if (intersection(tags, currentRecipe?.negativeTags ?? []).length > 0) {
 				darkIngredients.add(name);
 			}
 		}

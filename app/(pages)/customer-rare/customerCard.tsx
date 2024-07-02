@@ -1,5 +1,6 @@
 import {forwardRef, memo, useMemo} from 'react';
 import clsx from 'clsx';
+import {intersection} from 'lodash';
 
 import {Avatar, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
 import {faArrowsRotate} from '@fortawesome/free-solid-svg-icons';
@@ -11,7 +12,7 @@ import Sprite from '@/components/sprite';
 
 import {customerTagStyleMap} from './constants';
 import {useCustomerRareStore} from '@/stores';
-import {getIntersection, pinyinSort} from '@/utils';
+import {pinyinSort} from '@/utils';
 
 interface IProps {}
 
@@ -179,7 +180,7 @@ export default memo(
 									)}
 									{customerBeverageTags && customerBeverageTags.length > 0 && (
 										<TagGroup>
-											{getIntersection(
+											{intersection(
 												store.beverage.tags.get().map(({value}) => value),
 												customerBeverageTags
 											).map((tag) => (

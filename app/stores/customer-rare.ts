@@ -1,5 +1,6 @@
 import {createStoreContext, store} from '@davstack/store';
 import {createJSONStorage} from 'zustand/middleware';
+import {union} from 'lodash';
 
 import {type Selection} from '@nextui-org/react';
 
@@ -40,8 +41,8 @@ const customerRareStore = store(
 			tags: instance_beverage.sortedTag.map((value) => ({value})),
 		},
 		customer: {
-			dlcs: [...new Set([...rareDlcs, ...specialDlcs])].map((value) => ({value})),
-			places: [...new Set([...rarePlaces, ...specialPlaces])].map((value) => ({value})),
+			dlcs: union(rareDlcs, specialDlcs).map((value) => ({value})),
+			places: union(rarePlaces, specialPlaces).map((value) => ({value})),
 		},
 		ingredient: {
 			dlcs: instance_ingredient.getValuesByProp(instance_ingredient.data, 'dlc', true).sort(numberSort),

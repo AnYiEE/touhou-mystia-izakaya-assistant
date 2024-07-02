@@ -1,4 +1,5 @@
 import {type FC, type MouseEvent, type PropsWithChildren, forwardRef, memo, useCallback, useMemo} from 'react';
+import {uniq} from 'lodash';
 
 import {Popover, PopoverContent, PopoverTrigger, Snippet, Tooltip, usePopoverContext} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -128,7 +129,7 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 				return tags;
 			}
 
-			const mergedTagValues = [...new Set([...(tags.beverage ?? []), ...(tags.positive ?? [])])];
+			const mergedTagValues = uniq([...(tags.beverage ?? []), ...(tags.positive ?? [])]);
 			const {beverage: _beverage, ...rest} = tags;
 
 			return {

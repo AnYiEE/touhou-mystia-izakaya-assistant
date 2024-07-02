@@ -1,7 +1,7 @@
-import {cloneDeep} from 'lodash';
+import {cloneDeep, flatten, uniq} from 'lodash';
 import {pinyin as pinyinPro} from 'pinyin-pro';
 
-import {generateArray, pinyinSort} from '@/utils';
+import {pinyinSort} from '@/utils';
 
 import type {IItem, TItemWithPinyin as _TItemWithPinyin} from './types';
 
@@ -132,8 +132,8 @@ export class Item<
 		wrap?: boolean
 	): FlatArray<TItemWithPinyin[T], number>[];
 	public getValuesByProp<T extends keyof TItemWithPinyin>(data: TItemWithPinyin[], prop: T | T[], wrap?: boolean) {
-		const props = generateArray(prop);
-		const values = [...new Set(data.map((item) => props.map((key) => item[key])).flat(Infinity))];
+		const props = flatten([prop]);
+		const values = uniq(data.map((item) => props.map((key) => item[key])).flat(Infinity));
 
 		if (wrap) {
 			return values.map((value) => ({value}));
