@@ -1,6 +1,6 @@
 'use client';
 
-import {memo, useCallback, useMemo} from 'react';
+import {memo, useMemo} from 'react';
 import clsx from 'clsx';
 
 import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
@@ -24,7 +24,7 @@ import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import type {ICustomerTabStyleMap, IIngredientsTabStyleMap} from './types';
-import {useCustomerRareStore} from '@/stores';
+import {useCustomerNormalStore} from '@/stores';
 
 const customerTabStyleMap = {
 	collapse: {
@@ -52,22 +52,20 @@ const ingredientTabStyleMap = {
 	},
 } as const satisfies IIngredientsTabStyleMap;
 
-export default memo(function CustomerRare() {
-	const store = useCustomerRareStore();
+export default memo(function CustomerNormal() {
+	const store = useCustomerNormalStore();
 
-	store.share.customer.data.onChange(() => {
+	store.share.customer.name.onChange(() => {
 		store.refreshCustomerSelectedItems();
 		store.refreshAllSelectedItems();
 	});
 
-	const currentCustomer = store.share.customer.data.use();
+	const currentCustomerName = store.share.customer.name.use();
 	const currentRecipe = store.share.recipe.data.use();
 
-	const instance_rare = store.instances.customer_rare.get();
-	const instance_special = store.instances.customer_special.get();
+	const instance_customer = store.instances.customer.get();
 
-	const rareNames = store.rareNames.use();
-	const specialNames = store.specialNames.use();
+	const allCustomerNames = store.names.use();
 	const allCustomerDlcs = store.customer.dlcs.get();
 	const allCustomerPlaces = store.customer.places.get();
 
@@ -76,17 +74,15 @@ export default memo(function CustomerRare() {
 	const customerSearchValue = store.page.customer.searchValue.use();
 	const throttledCustomerSearchValue = useThrottle(customerSearchValue);
 
-	const rareSearchResult = useSearchResult(instance_rare, throttledCustomerSearchValue);
-	const specialSearchResult = useSearchResult(instance_special, throttledCustomerSearchValue);
-	type TSearchResult = typeof rareSearchResult | typeof specialSearchResult;
+	const customerSearchResult = useSearchResult(instance_customer, throttledCustomerSearchValue);
 
 	const customerFilterDlcs = store.page.customer.filters.dlcs.use();
 	const customerFilterPlaces = store.page.customer.filters.places.use();
 	const customerFilterNoPlaces = store.page.customer.filters.noPlaces.use();
 
-	const customerFilter = useCallback(
-		function customerFilter<T extends TSearchResult>(target: T) {
-			return target.filter(({dlc, places}) => {
+	const customerFilteredData = useMemo(
+		() =>
+			customerSearchResult.filter(({dlc, places}) => {
 				const isDlcMatch = customerFilterDlcs.length > 0 ? customerFilterDlcs.includes(dlc.toString()) : true;
 				const isPlaceMatch =
 					customerFilterPlaces.length > 0
@@ -98,27 +94,11 @@ export default memo(function CustomerRare() {
 						: true;
 
 				return isDlcMatch && isPlaceMatch && isNoPlaceMatch;
-			}) as T;
-		},
-		[customerFilterDlcs, customerFilterPlaces, customerFilterNoPlaces]
+			}),
+		[customerFilterDlcs, customerFilterNoPlaces, customerFilterPlaces, customerSearchResult]
 	);
 
-	const rareFilteredData = useMemo(() => customerFilter(rareSearchResult), [customerFilter, rareSearchResult]);
-	const specialFilteredData = useMemo(
-		() => customerFilter(specialSearchResult),
-		[customerFilter, specialSearchResult]
-	);
-
-	const rareSortedData = useSortedData(instance_rare, rareFilteredData, customerPinyinSortState);
-	const specialSortedData = useSortedData(instance_special, specialFilteredData, customerPinyinSortState);
-	const customerSortedData = useMemo(
-		() =>
-			({
-				customer_rare: rareSortedData,
-				customer_special: specialSortedData,
-			}) as const,
-		[rareSortedData, specialSortedData]
-	);
+	const customerSortedData = useSortedData(instance_customer, customerFilteredData, customerPinyinSortState);
 
 	const customerPinyinSortConfig = usePinyinSortConfig(
 		customerPinyinSortState,
@@ -126,8 +106,8 @@ export default memo(function CustomerRare() {
 	);
 
 	const customerSearchConfig = useSearchConfig({
-		label: '选择或输入稀客名称',
-		searchItems: [...rareNames, ...specialNames],
+		label: '选择或输入普客名称',
+		searchItems: allCustomerNames,
 		searchValue: customerSearchValue,
 		setSearchValue: store.page.customer.searchValue.set,
 	});
@@ -270,16 +250,16 @@ export default memo(function CustomerRare() {
 						store.share.ingredient.filterVisibility.set(key === 'ingredient');
 					}}
 				>
-					<Tab key="customer" title="稀客" className="relative">
+					<Tab key="customer" title="普客" className="relative">
 						<CustomerTabContent customerTabStyle={customerTabStyle} sortedData={customerSortedData} />
 					</Tab>
-					<Tab isDisabled={!currentCustomer} key="recipe" title="料理">
+					<Tab isDisabled={!currentCustomerName} key="recipe" title="料理">
 						<RecipeTabContent />
 					</Tab>
-					<Tab isDisabled={!currentCustomer} key="beverage" title="酒水">
+					<Tab isDisabled={!currentCustomerName} key="beverage" title="酒水">
 						<BeverageTabContent />
 					</Tab>
-					<Tab isDisabled={!(currentCustomer && currentRecipe)} key="ingredient" title="食材">
+					<Tab isDisabled={!(currentCustomerName && currentRecipe)} key="ingredient" title="食材">
 						<IngredientsTabContent
 							ingredientsTabStyle={ingredientTabStyle}
 							sortedData={ingredientsSortedData}
@@ -289,7 +269,7 @@ export default memo(function CustomerRare() {
 			</div>
 
 			<div className="flex w-full flex-col gap-4 xl:min-h-[calc(100vh-6.75rem)]">
-				{currentCustomer ? (
+				{currentCustomerName ? (
 					<>
 						<CustomerCard />
 						<ResultCard />

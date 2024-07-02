@@ -115,7 +115,7 @@ const state = {
 			beverageTags: new Set() as Selection,
 			positiveTags: new Set() as Selection,
 
-			filterVisibility: false,
+			filterVisibility: true,
 			rating: null as TCustomerRating | null,
 		},
 		ingredient: {

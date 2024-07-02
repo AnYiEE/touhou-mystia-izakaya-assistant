@@ -5,6 +5,7 @@ import {useRouter} from 'next/navigation';
 
 import {
 	BeveragesStoreProvider,
+	CustomerNormalStoreProvider,
 	CustomerRareStoreProvider,
 	GlobalStoreProvider,
 	IngredientsStoreProvider,
@@ -28,13 +29,15 @@ export default function Providers({children, locale, themeProps}: IProvidersProp
 		<NextUIProvider locale={locale} navigate={router.push}>
 			<NextThemesProvider {...themeProps}>
 				<GlobalStoreProvider>
-					<CustomerRareStoreProvider>
-						<BeveragesStoreProvider>
-							<IngredientsStoreProvider>
-								<RecipesStoreProvider>{children}</RecipesStoreProvider>
-							</IngredientsStoreProvider>
-						</BeveragesStoreProvider>
-					</CustomerRareStoreProvider>
+					<CustomerNormalStoreProvider>
+						<CustomerRareStoreProvider>
+							<BeveragesStoreProvider>
+								<IngredientsStoreProvider>
+									<RecipesStoreProvider>{children}</RecipesStoreProvider>
+								</IngredientsStoreProvider>
+							</BeveragesStoreProvider>
+						</CustomerRareStoreProvider>
+					</CustomerNormalStoreProvider>
 				</GlobalStoreProvider>
 			</NextThemesProvider>
 		</NextUIProvider>

@@ -12,6 +12,10 @@ const navItems = [
 		href: '/customer-rare',
 	},
 	{
+		label: '普客',
+		href: '/customer-normal',
+	},
+	{
 		label: '料理',
 		href: '/recipes',
 	},
