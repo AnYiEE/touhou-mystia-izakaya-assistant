@@ -4,11 +4,11 @@ if (Reflect.has(navigator, 'serviceWorker') && Reflect.has(self, 'caches')) {
 		.register('/serviceWorker.js?v={{version}}')
 		.then(function (registration) {
 			if (registration.installing) {
-				console.log('ServiceWorker is installing.');
+				console.info('ServiceWorker is installing.');
 			} else if (registration.waiting) {
-				console.log('ServiceWorker is waiting.');
+				console.info('ServiceWorker is waiting.');
 			} else if (registration.active) {
-				console.log('ServiceWorker actived.');
+				console.info('ServiceWorker actived.');
 			}
 		})
 		['catch'](function (error) {

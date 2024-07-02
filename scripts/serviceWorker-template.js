@@ -45,12 +45,12 @@ function networkFirst(request) {
 		});
 }
 
-self.addEventListener('activate', function (event) {
-	event.waitUntil(self.clients.claim());
+self.addEventListener('install', function (event) {
+	event.waitUntil(self.skipWaiting());
 });
 
-self.addEventListener('install', function (event) {
-	event.waitUntil(Promise.all([deleteOldCaches(), self.skipWaiting()]));
+self.addEventListener('activate', function (event) {
+	event.waitUntil(Promise.all([self.clients.claim(), deleteOldCaches()]));
 });
 
 self.addEventListener('fetch', function (event) {
