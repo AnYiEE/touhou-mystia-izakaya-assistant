@@ -134,7 +134,7 @@ export default memo(
 								</div>
 								<div className="h-px w-full bg-foreground-300"></div>
 							</div>
-							<div className="m-2 grid grid-cols-[repeat(auto-fill,2.5rem)] justify-around gap-4 lg:grid-cols-[repeat(auto-fill,3rem)]">
+							<div className="m-2 grid grid-cols-[repeat(auto-fill,3rem)] justify-around gap-4">
 								{[...darkIngredients].map((name, index) => (
 									<div key={index} className="flex flex-col items-center">
 										<Sprite target="ingredient" name={name} size={3} />
