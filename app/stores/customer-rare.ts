@@ -57,8 +57,9 @@ const state = {
 		dlcs: instance_recipe.getValuesByProp(instance_recipe.data, 'dlc', true).sort(numberSort),
 		kitchenwares: instance_recipe.getValuesByProp(instance_recipe.data, 'kitchenware', true).sort(pinyinSort),
 		names: instance_recipe.getValuesByProp(instance_recipe.data, 'name', true).sort(pinyinSort),
-		negativeTags: instance_recipe.getValuesByProp(instance_recipe.data, 'negativeTags', true).sort(pinyinSort),
-		positiveTags: instance_recipe.getValuesByProp(instance_recipe.data, 'positiveTags', true).sort(pinyinSort),
+		positiveTags: [...instance_recipe.getValuesByProp(instance_recipe.data, 'positiveTags'), '流行喜爱', '流行厌恶']
+			.map((value) => ({value}))
+			.sort(pinyinSort) as {value: TRecipeTag}[],
 	},
 
 	persistence: {
@@ -218,8 +219,8 @@ const customerRareStore = store(state, {
 		},
 		beverageTableRows: {
 			read: () => new Set([currentStore.persistence.beverage.table.rows.use().toString()]) as Selection,
-			write: (columns: Selection) => {
-				currentStore.persistence.beverage.table.rows.set(Number.parseInt([...columns][0] as string));
+			write: (rows: Selection) => {
+				currentStore.persistence.beverage.table.rows.set(Number.parseInt([...rows][0] as string));
 			},
 		},
 		recipeTableColumns: {
@@ -230,8 +231,8 @@ const customerRareStore = store(state, {
 		},
 		recipeTableRows: {
 			read: () => new Set([currentStore.persistence.recipe.table.rows.use().toString()]) as Selection,
-			write: (columns: Selection) => {
-				currentStore.persistence.recipe.table.rows.set(Number.parseInt([...columns][0] as string));
+			write: (rows: Selection) => {
+				currentStore.persistence.recipe.table.rows.set(Number.parseInt([...rows][0] as string));
 			},
 		},
 	}))

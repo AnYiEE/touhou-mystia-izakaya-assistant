@@ -51,6 +51,7 @@ export default memo(
 		const store = useCustomerRareStore();
 
 		const currentCustomer = store.shared.customer.data.use();
+		const currentCustomerPopular = store.shared.customer.popular.use();
 		const selectedCustomerPositiveTags = store.shared.customer.positiveTags.use();
 
 		const currentRecipe = store.shared.recipe.data.use();
@@ -61,7 +62,7 @@ export default memo(
 
 		const allRecipeDlcs = store.recipe.dlcs.get();
 		const allRecipeNames = store.recipe.names.get();
-		const allRecipePositiveTags = store.recipe.positiveTags.get();
+		const allRecipeTags = store.recipe.positiveTags.get();
 		const allKitchenwares = store.recipe.kitchenwares.get();
 
 		const searchValue = store.shared.recipe.searchValue.use();
@@ -94,11 +95,20 @@ export default memo(
 				.getPropsByName(customerName);
 
 			clonedData = clonedData.map((item) => {
+				const recipeTagsWithPopular = instance_recipe.calcTagsWithPopular(
+					item.positiveTags,
+					currentCustomerPopular
+				);
+
 				const {
 					suitability,
 					negativeTags: matchedNegativeTags,
 					positiveTags: matchedPositiveTags,
-				} = instance_recipe.getCustomerSuitability(item.name, customerPositiveTags, customerNegativeTags);
+				} = instance_recipe.getCustomerSuitability(
+					recipeTagsWithPopular,
+					customerPositiveTags,
+					customerNegativeTags
+				);
 
 				return {
 					...item,
@@ -118,6 +128,8 @@ export default memo(
 			}
 
 			return clonedData.filter(({name, dlc, kitchenware, positiveTags}) => {
+				const recipeTagsWithPopular = instance_recipe.calcTagsWithPopular(positiveTags, currentCustomerPopular);
+
 				const isNameMatch = hasNameFilter ? name.toLowerCase().includes(searchValue.toLowerCase()) : true;
 				const isDlcMatch =
 					selectedDlcs !== 'all' && selectedDlcs.size > 0 ? selectedDlcs.has(dlc.toString()) : true;
@@ -128,7 +140,7 @@ export default memo(
 				const isPositiveTagsMatch =
 					selectedCustomerPositiveTags !== 'all' && selectedCustomerPositiveTags.size > 0
 						? [...selectedCustomerPositiveTags].every((tag) =>
-								(positiveTags as string[]).includes(tag as string)
+								(recipeTagsWithPopular as string[]).includes(tag as string)
 							)
 						: true;
 
@@ -136,6 +148,7 @@ export default memo(
 			});
 		}, [
 			currentCustomer,
+			currentCustomerPopular,
 			hasNameFilter,
 			instance_recipe,
 			searchValue,
@@ -206,12 +219,13 @@ export default memo(
 					return null;
 				}
 
+				const recipeTagsWithPopular = instance_recipe.calcTagsWithPopular(positiveTags, currentCustomerPopular);
 				const {positive: positiveTagStyle, negative: negativeTagStyle} =
 					customerTagStyleMap[currentCustomer.target];
 
 				const tags = (
 					<TagGroup>
-						{[...positiveTags].sort(pinyinSort).map((tag) => (
+						{recipeTagsWithPopular.sort(pinyinSort).map((tag) => (
 							<Tags.Tag
 								key={tag}
 								tag={tag}
@@ -297,7 +311,7 @@ export default memo(
 						);
 				}
 			},
-			[currentCustomer, store.shared.recipe.data]
+			[currentCustomer, currentCustomerPopular, instance_recipe, store.shared.recipe.data]
 		);
 
 		const onSelectedDlcsChange = useCallback(
@@ -371,7 +385,7 @@ export default memo(
 								{({value}) => <AutocompleteItem key={value}>{value}</AutocompleteItem>}
 							</Autocomplete>
 							<Select
-								items={allRecipePositiveTags}
+								items={allRecipeTags}
 								defaultSelectedKeys={selectedCustomerPositiveTags}
 								selectedKeys={selectedCustomerPositiveTags}
 								selectionMode="multiple"
@@ -506,7 +520,7 @@ export default memo(
 				allKitchenwares,
 				allRecipeDlcs,
 				allRecipeNames,
-				allRecipePositiveTags,
+				allRecipeTags,
 				filteredData.length,
 				onSearchValueChange,
 				onSearchValueClear,

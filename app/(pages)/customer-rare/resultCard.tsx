@@ -8,7 +8,7 @@ import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-ico
 import Placeholder from './placeholder';
 import Sprite from '@/components/sprite';
 
-import {useCustomerRareStore, useGlobalStore} from '@/stores';
+import {useCustomerRareStore} from '@/stores';
 import {removeLastElement} from '@/utils';
 
 interface IPlusProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'className'> {
@@ -120,14 +120,13 @@ interface IResultCardProps {}
 export default memo(
 	forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
 		const customerStore = useCustomerRareStore();
-		const globalStore = useGlobalStore();
 
 		const currentCustomerName = customerStore.shared.customer.data.use()?.name;
 		const currentBeverageName = customerStore.shared.beverage.name.use();
 		const currentRecipe = customerStore.shared.recipe.data.use();
 		const hasMystiaKitchenwware = customerStore.shared.customer.hasMystiaKitchenwware.use();
 		const currentOrder = customerStore.shared.customer.order.use();
-		const currentPopular = globalStore.persistence.popular.use();
+		const currentCustomerPopular = customerStore.shared.customer.popular.use();
 		const currentRating = customerStore.shared.customer.rating.use();
 		const savedMeal = customerStore.persistence.meals.use();
 
@@ -143,7 +142,7 @@ export default memo(
 				extraIngredients: currentRecipe.extraIngredients,
 				hasMystiaKitchenwware,
 				order: currentOrder,
-				popular: currentPopular, // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				popular: currentCustomerPopular, // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				rating: currentRating!,
 				recipe: currentRecipe.name,
 			} as const;
@@ -161,7 +160,7 @@ export default memo(
 			currentBeverageName,
 			currentCustomerName,
 			currentOrder,
-			currentPopular,
+			currentCustomerPopular,
 			currentRating,
 			currentRecipe,
 			customerStore.persistence.meals,

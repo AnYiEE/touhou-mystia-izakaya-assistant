@@ -7,7 +7,8 @@ import {Badge, Button, ScrollShadow} from '@nextui-org/react';
 import Sprite from '@/components/sprite';
 
 import type {IIngredientsTabStyle} from './types';
-import {TIngredientNames} from '@/data';
+import {type TIngredientNames} from '@/data';
+import type {TIngredientTag} from '@/data/types';
 import type {TIngredientInstance} from '@/methods/food/types';
 import {useCustomerRareStore} from '@/stores';
 
@@ -21,6 +22,7 @@ export default memo(
 		const store = useCustomerRareStore();
 
 		const currentCustomer = store.shared.customer.data.use();
+		const currentCustomerPopular = store.shared.customer.popular.use();
 		const currentRecipeData = store.shared.recipe.data.use();
 
 		const instance_ingredient = store.instances.ingredient.get();
@@ -72,21 +74,29 @@ export default memo(
 									</div>
 								);
 							}
-							const extraTags: string[] = [];
+							const extraTags: TIngredientTag[] = [];
 							for (const extraIngredient of extraIngredients) {
 								extraTags.push(...instance_ingredient.getPropsByName(extraIngredient, 'tags'));
 							}
+							const extraTagsWithPopular = instance_ingredient.calcTagsWithPopular(
+								extraTags,
+								currentCustomerPopular
+							);
 							const before = instance_recipe.composeTags(
 								currentRecipe.ingredients,
 								extraIngredients,
 								currentRecipe.positiveTags,
-								extraTags
+								extraTagsWithPopular
+							);
+							const tagsWithPopular = instance_ingredient.calcTagsWithPopular(
+								tags,
+								currentCustomerPopular
 							);
 							const after = instance_recipe.composeTags(
 								currentRecipe.ingredients,
 								extraIngredients,
 								currentRecipe.positiveTags,
-								[...extraTags, ...tags]
+								[...extraTagsWithPopular, ...tagsWithPopular]
 							);
 							const scoreChange = instance_recipe.getIngredientScoreChange(
 								before,

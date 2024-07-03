@@ -1,18 +1,15 @@
 import {cloneDeep} from 'lodash';
 
 import {Food} from './base';
-import {type TRecipes} from '@/data';
-import {type TRecipeTag} from '@/data/types';
+import {type TIngredientNames, type TRecipes} from '@/data';
+import {type TIngredientTag, type TRecipeTag} from '@/data/types';
 
 type TRecipe = TRecipes[number];
 type TProcessPositiveTags<T extends TRecipe> = Omit<T, 'positiveTags'> & {
 	positiveTags: TRecipeTag[];
 };
 
-export class Recipe<
-	TItem extends TRecipes[number] = TRecipes[number],
-	TName extends TItem['name'] = TItem['name'],
-> extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
+export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 	private static tagCoverMap = {
 		大份: '小巧',
 		灼热: '凉爽',
@@ -38,54 +35,51 @@ export class Recipe<
 		this._data = clonedData;
 	}
 
-	public composeTags<T extends string, U extends string>(
-		originalIngredients: T[],
-		extraIngredients: T[],
-		originalRecipePositiveTags: U[],
-		extraIngredientTags: U[]
+	public calcTagsWithPopular(
+		recipeTags: TRecipeTag[],
+		popular: {
+			isNegative: boolean;
+			tag: TIngredientTag | TRecipeTag | null;
+		}
+	) {
+		const recipeTagsWithPopular = [...recipeTags];
+		const {isNegative: currentPopularTagIsNegative, tag: currentPopularTag} = popular;
+
+		if (currentPopularTag && recipeTags.includes(currentPopularTag as TRecipeTag)) {
+			recipeTagsWithPopular.push(currentPopularTagIsNegative ? '流行厌恶' : '流行喜爱');
+		}
+
+		return recipeTagsWithPopular;
+	}
+
+	public composeTags(
+		originalIngredients: TIngredientNames[],
+		extraIngredients: TIngredientNames[],
+		originalRecipePositiveTags: TRecipeTag[],
+		extraIngredientTags: (TIngredientTag | '流行厌恶' | '流行喜爱')[]
 	) {
 		const resultTags = new Set([...originalRecipePositiveTags, ...extraIngredientTags]);
 
 		if (originalIngredients.length + extraIngredients.length >= 5) {
-			resultTags.add('大份' as U);
+			resultTags.add('大份');
 		}
 
 		for (const [targetTag, coveredTag] of Object.entries(Recipe.tagCoverMap)) {
-			if (resultTags.has(targetTag as U)) {
-				resultTags.delete(coveredTag as U);
+			if (resultTags.has(targetTag as TRecipeTag)) {
+				resultTags.delete(coveredTag);
 			}
 		}
 
 		return [...resultTags];
 	}
 
-	public getCustomerSuitability<T extends TName, U extends string, S extends string>(
-		name: T,
-		customerPositiveTags: U[],
-		costomerNegativeTags: S[]
-	): {
-		negativeTags: U[];
-		positiveTags: U[];
-		suitability: number;
-	};
-	public getCustomerSuitability<T extends string[], U extends string, S extends string>(
-		recipeTags: T,
-		customerPositiveTags: U[],
-		costomerNegativeTags: S[]
-	): {
-		negativeTags: U[];
-		positiveTags: U[];
-		suitability: number;
-	};
-	public getCustomerSuitability<T extends string, U extends string>(
-		nameOrTags: string | string[],
-		customerPositiveTags: T[],
-		costomerNegativeTags: U[]
+	public getCustomerSuitability(
+		recipeTags: TRecipeTag[],
+		customerPositiveTags: TRecipeTag[],
+		customerNegativeTags: TRecipeTag[]
 	) {
-		const recipeTags = typeof nameOrTags === 'string' ? this.getPropsByName(nameOrTags).positiveTags : nameOrTags;
-
 		const {commonTags: positiveTags, count: positiveCount} = this.getCommonTags(recipeTags, customerPositiveTags);
-		const {commonTags: negativeTags, count: negativeCount} = this.getCommonTags(recipeTags, costomerNegativeTags);
+		const {commonTags: negativeTags, count: negativeCount} = this.getCommonTags(recipeTags, customerNegativeTags);
 
 		return {
 			negativeTags,
@@ -95,9 +89,9 @@ export class Recipe<
 	}
 
 	private calculateScore(
-		recipePositiveTags: string[],
-		customerPositiveTags: string[],
-		costomerNegativeTags: string[]
+		recipePositiveTags: TRecipeTag[],
+		customerPositiveTags: TRecipeTag[],
+		costomerNegativeTags: TRecipeTag[]
 	) {
 		let score = 0;
 
@@ -113,11 +107,11 @@ export class Recipe<
 		return score;
 	}
 
-	public getIngredientScoreChange<T extends string, U extends string>(
-		oldRecipePositiveTags: T[],
-		newRecipePositiveTags: T[],
-		customerPositiveTags: U[],
-		costomerNegativeTags: U[]
+	public getIngredientScoreChange(
+		oldRecipePositiveTags: TRecipeTag[],
+		newRecipePositiveTags: TRecipeTag[],
+		customerPositiveTags: TRecipeTag[],
+		costomerNegativeTags: TRecipeTag[]
 	) {
 		const originalScore = this.calculateScore(oldRecipePositiveTags, customerPositiveTags, costomerNegativeTags);
 		const newScore = this.calculateScore(newRecipePositiveTags, customerPositiveTags, costomerNegativeTags);

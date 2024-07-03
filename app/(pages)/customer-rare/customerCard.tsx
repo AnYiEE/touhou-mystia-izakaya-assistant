@@ -5,61 +5,16 @@ import {intersection} from 'lodash';
 import {Avatar, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
 import {faArrowsRotate} from '@fortawesome/free-solid-svg-icons';
 
+import PopularTagSettingButton from './popularTagSettingButton';
 import TagGroup from './tagGroup';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Tags from '@/components/tags';
 import Sprite from '@/components/sprite';
 
 import {customerRatingColorMap, customerTagStyleMap} from './constants';
-import type {TCustomerRating} from './types';
+import type {TBeverageTag, TIngredientTag, TRecipeTag} from '@/data/types';
 import {useCustomerRareStore} from '@/stores';
 import {pinyinSort} from '@/utils';
-
-function evaluateRecipe({
-	customBadget,
-	matchedBeverageTagsLength,
-	matchedRecipeTagsLength,
-	mealPrice,
-	recipeSuitability,
-}: {
-	customBadget: number;
-	matchedBeverageTagsLength: number;
-	matchedRecipeTagsLength: number;
-	mealPrice: number;
-	recipeSuitability: number;
-}) {
-	if (recipeSuitability <= 0 || mealPrice > customBadget + 200) {
-		return '极度不满';
-	}
-	if (recipeSuitability === 1 || (matchedBeverageTagsLength === 0 && matchedRecipeTagsLength === 0)) {
-		return '不满';
-	}
-	if (
-		(recipeSuitability === 2 && (matchedBeverageTagsLength >= 1 || matchedRecipeTagsLength >= 1)) ||
-		mealPrice > customBadget
-	) {
-		return '普通';
-	}
-	if (recipeSuitability === 3 && (matchedBeverageTagsLength >= 1 || matchedRecipeTagsLength >= 1)) {
-		return '满意';
-	}
-	if (recipeSuitability >= 4 && matchedBeverageTagsLength >= 1 && matchedRecipeTagsLength >= 1) {
-		return '完美';
-	}
-	if (recipeSuitability === 4) {
-		return '满意';
-	}
-	if (recipeSuitability === 3) {
-		return '普通';
-	}
-	if (recipeSuitability === 2) {
-		return '不满';
-	}
-	if (recipeSuitability === 1 || recipeSuitability === 0) {
-		return '极度不满';
-	}
-	return null;
-}
 
 interface IProps {}
 
@@ -70,6 +25,7 @@ export default memo(
 		const currentCustomer = store.shared.customer.data.use();
 		const selectedCustomerBeverageTags = store.shared.customer.beverageTags.use();
 		const selectedCustomerPositiveTags = store.shared.customer.positiveTags.use();
+		const currentCustomerPopular = store.shared.customer.popular.use();
 		const currentRating = store.shared.customer.rating.use();
 
 		const currentBeverageName = store.shared.beverage.name.use();
@@ -182,63 +138,32 @@ export default memo(
 							const {name: currentCustomerName, target} = currentCustomer;
 							const {
 								beverageTags: customerBeverageTags,
-								negativeTags: costomerNegativeTags,
+								negativeTags: customerNegativeTags,
 								positiveTags: customerPositiveTags,
-								price: customerPrice,
 							} = instance_customer.getPropsByName(currentCustomerName);
-							let beveragePrice = 0;
-							let beverageTags: string[] = [];
+							let beverageTags: TBeverageTag[] = [];
 							if (currentBeverageName) {
 								const beverage = instance_beverage.getPropsByName(currentBeverageName);
-								beveragePrice = beverage.price;
 								beverageTags = beverage.tags;
 							}
-							let recipePrice = 0;
-							const recipePositiveTags: string[] = [];
+							const recipeTagsWithPopular: TRecipeTag[] = [];
 							if (currentRecipe) {
 								const {extraIngredients, name: currentRecipeName} = currentRecipe;
 								const recipe = instance_recipe.getPropsByName(currentRecipeName);
-								const {ingredients: originalIngredients, positiveTags: originalTags, price} = recipe;
-								recipePrice = price;
-								const extraTags: string[] = [];
+								const {ingredients: originalIngredients, positiveTags: originalTags} = recipe;
+								const extraTags: TIngredientTag[] = [];
 								for (const extraIngredient of extraIngredients) {
 									extraTags.push(...instance_ingredient.getPropsByName(extraIngredient, 'tags'));
 								}
-								recipePositiveTags.push(
-									...instance_recipe.composeTags(
-										originalIngredients,
-										extraIngredients,
-										originalTags,
-										extraTags
-									)
+								const composedRecipeTags = instance_recipe.composeTags(
+									originalIngredients,
+									extraIngredients,
+									originalTags,
+									extraTags
 								);
-							}
-							let calcCustomerRating: TCustomerRating | null = null;
-							const customBadget = Number.parseInt(customerPrice.split('-')[1] as string);
-							const mealPrice = beveragePrice + recipePrice;
-							const {suitability: recipeSuitability} = instance_recipe.getCustomerSuitability(
-								recipePositiveTags,
-								customerPositiveTags,
-								costomerNegativeTags
-							);
-							const matchedBeverageTagsLength = intersection(beverageTags, customerBeverageTags).length;
-							const matchedRecipeTagsLength = intersection(
-								recipePositiveTags,
-								customerPositiveTags
-							).length;
-							if (currentBeverageName || currentRecipe) {
-								calcCustomerRating = evaluateRecipe({
-									customBadget,
-									matchedBeverageTagsLength,
-									matchedRecipeTagsLength,
-									mealPrice,
-									recipeSuitability,
-								});
-							}
-							if (calcCustomerRating !== currentRating) {
-								setTimeout(() => {
-									store.shared.customer.rating.set(calcCustomerRating);
-								}, 0);
+								recipeTagsWithPopular.push(
+									...instance_recipe.calcTagsWithPopular(composedRecipeTags, currentCustomerPopular)
+								);
 							}
 							return (
 								<>
@@ -252,7 +177,7 @@ export default memo(
 													handleClick={(clickedTag) => {
 														store.shared.tab.set('recipe');
 														store.shared.customer.positiveTags.set((prev) => {
-															if (prev instanceof Set && !clickedTag.startsWith('流行')) {
+															if (prev instanceof Set) {
 																if (prev.has(clickedTag)) {
 																	prev.delete(clickedTag);
 																} else {
@@ -262,25 +187,23 @@ export default memo(
 														});
 													}}
 													className={clsx(
-														'p-0.5',
-														!tag.startsWith('流行') &&
-															'cursor-pointer p-0.5 hover:opacity-80',
-														!recipePositiveTags.includes(tag) && 'opacity-50'
+														'cursor-pointer p-0.5 hover:opacity-80',
+														!recipeTagsWithPopular.includes(tag) && 'opacity-50'
 													)}
 												/>
 											))}
 										</TagGroup>
 									)}
-									{costomerNegativeTags.length > 0 && (
+									{customerNegativeTags.length > 0 && (
 										<TagGroup>
-											{[...costomerNegativeTags].sort(pinyinSort).map((tag) => (
+											{[...customerNegativeTags].sort(pinyinSort).map((tag) => (
 												<Tags.Tag
 													key={tag}
 													tag={tag}
 													tagStyle={customerTagStyleMap[target].negative}
 													className={clsx(
 														'p-0.5',
-														!recipePositiveTags.includes(tag) && 'opacity-50'
+														!recipeTagsWithPopular.includes(tag) && 'opacity-50'
 													)}
 												/>
 											))}
@@ -321,7 +244,7 @@ export default memo(
 						})()}
 					</div>
 					{hasSelected && (
-						<Tooltip showArrow content="重置当前选定项" offset={1}>
+						<Tooltip showArrow content="重置当前选定项" offset={0} placement="left">
 							<FontAwesomeIconButton
 								icon={faArrowsRotate}
 								variant="light"
@@ -331,6 +254,7 @@ export default memo(
 							/>
 						</Tooltip>
 					)}
+					<PopularTagSettingButton />
 				</div>
 			</Card>
 		);

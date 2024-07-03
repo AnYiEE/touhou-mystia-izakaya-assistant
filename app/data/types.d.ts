@@ -1,4 +1,5 @@
 import type {IBeverage} from './beverages/types';
+import type {IIngredient} from './ingredients/types';
 import type {IRecipe, TCalcTag} from './recipes/types';
 
 type TDlc = 0 | 1 | 2 | 3 | 4 | 5;
@@ -128,6 +129,7 @@ export type TRecipeTag =
 	| '流行喜爱'
 	| '流行厌恶'
 	| '全部';
+export type TIngredientTag = IIngredient['tags'][number];
 
 type TPlace =
 	| '博丽神社'
