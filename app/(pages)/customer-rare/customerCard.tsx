@@ -67,13 +67,13 @@ export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_props, ref) {
 		const store = useCustomerRareStore();
 
-		const currentCustomer = store.share.customer.data.use();
-		const currentCustomerRating = store.share.customer.rating.use();
-		const selectedCustomerBeverageTags = store.share.customer.beverageTags.use();
-		const selectedCustomerPositiveTags = store.share.customer.positiveTags.use();
+		const currentCustomer = store.shared.customer.data.use();
+		const selectedCustomerBeverageTags = store.shared.customer.beverageTags.use();
+		const selectedCustomerPositiveTags = store.shared.customer.positiveTags.use();
+		const currentRating = store.shared.customer.rating.use();
 
-		const currentBeverageName = store.share.beverage.name.use();
-		const currentRecipe = store.share.recipe.data.use();
+		const currentBeverageName = store.shared.beverage.name.use();
+		const currentRecipe = store.shared.recipe.data.use();
 
 		const instance_beverage = store.instances.beverage.get();
 		const instance_ingredient = store.instances.ingredient.get();
@@ -102,25 +102,19 @@ export default memo(
 					<div className="flex flex-col items-center justify-center text-center">
 						<Popover
 							showArrow
-							color={currentCustomerRating ? customerRatingColorMap[currentCustomerRating] : undefined}
+							color={currentRating ? customerRatingColorMap[currentRating] : undefined}
 							offset={11}
 						>
 							<Tooltip
 								showArrow
-								color={
-									currentCustomerRating ? customerRatingColorMap[currentCustomerRating] : undefined
-								}
-								content={currentCustomerRating ?? '继续选择以评分'}
+								color={currentRating ? customerRatingColorMap[currentRating] : undefined}
+								content={currentRating ?? '继续选择以评分'}
 							>
 								<span className="cursor-pointer">
 									<PopoverTrigger>
 										<Avatar
-											isBordered={Boolean(currentCustomerRating)}
-											color={
-												currentCustomerRating
-													? customerRatingColorMap[currentCustomerRating]
-													: undefined
-											}
+											isBordered={Boolean(currentRating)}
+											color={currentRating ? customerRatingColorMap[currentRating] : undefined}
 											radius="full"
 											icon={
 												<Sprite
@@ -132,7 +126,7 @@ export default memo(
 											classNames={{
 												base: clsx(
 													'h-12 w-12 lg:h-16 lg:w-16',
-													Boolean(currentCustomerRating) && 'ring-4'
+													Boolean(currentRating) && 'ring-4'
 												),
 												icon: 'inline-table lg:inline-block',
 											}}
@@ -140,7 +134,7 @@ export default memo(
 									</PopoverTrigger>
 								</span>
 							</Tooltip>
-							<PopoverContent>{currentCustomerRating ?? '继续选择以评分'}</PopoverContent>
+							<PopoverContent>{currentRating ?? '继续选择以评分'}</PopoverContent>
 						</Popover>
 						<div className="flex flex-col gap-2 text-nowrap break-keep pt-2">
 							{(() => {
@@ -241,9 +235,9 @@ export default memo(
 									recipeSuitability,
 								});
 							}
-							if (calcCustomerRating !== currentCustomerRating) {
+							if (calcCustomerRating !== currentRating) {
 								setTimeout(() => {
-									store.share.customer.rating.set(calcCustomerRating);
+									store.shared.customer.rating.set(calcCustomerRating);
 								}, 0);
 							}
 							return (
@@ -256,8 +250,8 @@ export default memo(
 													tag={tag}
 													tagStyle={customerTagStyleMap[target].positive}
 													handleClick={(clickedTag) => {
-														store.share.tab.set('recipe');
-														store.share.customer.positiveTags.set((prev) => {
+														store.shared.tab.set('recipe');
+														store.shared.customer.positiveTags.set((prev) => {
 															if (prev instanceof Set && !clickedTag.startsWith('流行')) {
 																if (prev.has(clickedTag)) {
 																	prev.delete(clickedTag);
@@ -303,8 +297,8 @@ export default memo(
 													tag={tag}
 													tagStyle={customerTagStyleMap[target].beverage}
 													handleClick={(clickedTag) => {
-														store.share.tab.set('beverage');
-														store.share.customer.beverageTags.set((prev) => {
+														store.shared.tab.set('beverage');
+														store.shared.customer.beverageTags.set((prev) => {
 															if (prev instanceof Set) {
 																if (prev.has(clickedTag)) {
 																	prev.delete(clickedTag);

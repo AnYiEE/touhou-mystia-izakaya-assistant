@@ -26,21 +26,21 @@ export default memo(function Recipes() {
 	const allNegativeTags = store.negativeTags.get();
 	const allPositiveTags = store.positiveTags.get();
 
-	const pinyinSortState = store.page.pinyinSortState.use();
-	const searchValue = store.page.searchValue.use();
+	const pinyinSortState = store.persistence.pinyinSortState.use();
+	const searchValue = store.persistence.searchValue.use();
 
 	const throttledSearchValue = useThrottle(searchValue);
 	const searchResult = useSearchResult(instance, throttledSearchValue);
 
-	const filterDlcs = store.page.filters.dlcs.use();
-	const filterLevels = store.page.filters.levels.use();
-	const filterIngredients = store.page.filters.ingredients.use();
-	const filterNoIngredients = store.page.filters.noIngredients.use();
-	const filterKitchenwares = store.page.filters.kitchenwares.use();
-	const filterNegativeTags = store.page.filters.negativeTags.use();
-	const filterNoNegativeTags = store.page.filters.noNegativeTags.use();
-	const filterPositiveTags = store.page.filters.positiveTags.use();
-	const filterNoPositiveTags = store.page.filters.noPositiveTags.use();
+	const filterDlcs = store.persistence.filters.dlcs.use();
+	const filterLevels = store.persistence.filters.levels.use();
+	const filterIngredients = store.persistence.filters.ingredients.use();
+	const filterNoIngredients = store.persistence.filters.noIngredients.use();
+	const filterKitchenwares = store.persistence.filters.kitchenwares.use();
+	const filterNegativeTags = store.persistence.filters.negativeTags.use();
+	const filterNoNegativeTags = store.persistence.filters.noNegativeTags.use();
+	const filterPositiveTags = store.persistence.filters.positiveTags.use();
+	const filterNoPositiveTags = store.persistence.filters.noPositiveTags.use();
 
 	const filteredData = useMemo(
 		() =>
@@ -102,13 +102,13 @@ export default memo(function Recipes() {
 
 	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
 
-	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, store.page.pinyinSortState.set);
+	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, store.persistence.pinyinSortState.set);
 
 	const searchConfig = useSearchConfig({
 		label: '选择或输入料理名称',
 		searchItems: allNames,
 		searchValue,
-		setSearchValue: store.page.searchValue.set,
+		setSearchValue: store.persistence.searchValue.set,
 	});
 
 	const selectConfig = useMemo(
@@ -118,58 +118,58 @@ export default memo(function Recipes() {
 					items: allDlcs,
 					label: 'DLC',
 					selectedKeys: filterDlcs,
-					setSelectedKeys: store.page.filters.dlcs.set,
+					setSelectedKeys: store.persistence.filters.dlcs.set,
 				},
 				{
 					items: allPositiveTags,
 					label: '正特性（包含）',
 					selectedKeys: filterPositiveTags,
-					setSelectedKeys: store.page.filters.positiveTags.set,
+					setSelectedKeys: store.persistence.filters.positiveTags.set,
 				},
 				{
 					items: allPositiveTags,
 					label: '正特性（排除）',
 					selectedKeys: filterNoPositiveTags,
-					setSelectedKeys: store.page.filters.noPositiveTags.set,
+					setSelectedKeys: store.persistence.filters.noPositiveTags.set,
 				},
 				{
 					items: allNegativeTags,
 					label: '反特性（包含）',
 					selectedKeys: filterNegativeTags,
-					setSelectedKeys: store.page.filters.negativeTags.set,
+					setSelectedKeys: store.persistence.filters.negativeTags.set,
 				},
 				{
 					items: allNegativeTags,
 					label: '反特性（排除）',
 					selectedKeys: filterNoNegativeTags,
-					setSelectedKeys: store.page.filters.noNegativeTags.set,
+					setSelectedKeys: store.persistence.filters.noNegativeTags.set,
 				},
 				{
 					items: allIngredients,
 					label: '食材（包含）',
 					selectedKeys: filterIngredients,
-					setSelectedKeys: store.page.filters.ingredients.set,
+					setSelectedKeys: store.persistence.filters.ingredients.set,
 					spriteTarget: 'ingredient',
 				},
 				{
 					items: allIngredients,
 					label: '食材（排除）',
 					selectedKeys: filterNoIngredients,
-					setSelectedKeys: store.page.filters.noIngredients.set,
+					setSelectedKeys: store.persistence.filters.noIngredients.set,
 					spriteTarget: 'ingredient',
 				},
 				{
 					items: allKitchenwares,
 					label: '厨具',
 					selectedKeys: filterKitchenwares,
-					setSelectedKeys: store.page.filters.kitchenwares.set,
+					setSelectedKeys: store.persistence.filters.kitchenwares.set,
 					spriteTarget: 'kitchenware',
 				},
 				{
 					items: allLevels,
 					label: '等级',
 					selectedKeys: filterLevels,
-					setSelectedKeys: store.page.filters.levels.set,
+					setSelectedKeys: store.persistence.filters.levels.set,
 				},
 			] as const satisfies TSelectConfig,
 		[
@@ -188,15 +188,15 @@ export default memo(function Recipes() {
 			filterNoNegativeTags,
 			filterNoPositiveTags,
 			filterPositiveTags,
-			store.page.filters.dlcs.set,
-			store.page.filters.ingredients.set,
-			store.page.filters.kitchenwares.set,
-			store.page.filters.levels.set,
-			store.page.filters.negativeTags.set,
-			store.page.filters.noIngredients.set,
-			store.page.filters.noNegativeTags.set,
-			store.page.filters.noPositiveTags.set,
-			store.page.filters.positiveTags.set,
+			store.persistence.filters.dlcs.set,
+			store.persistence.filters.ingredients.set,
+			store.persistence.filters.kitchenwares.set,
+			store.persistence.filters.levels.set,
+			store.persistence.filters.negativeTags.set,
+			store.persistence.filters.noIngredients.set,
+			store.persistence.filters.noNegativeTags.set,
+			store.persistence.filters.noPositiveTags.set,
+			store.persistence.filters.positiveTags.set,
 		]
 	);
 

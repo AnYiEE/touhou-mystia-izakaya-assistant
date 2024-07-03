@@ -51,11 +51,11 @@ export default memo(
 	forwardRef<HTMLTableElement | null, IProps>(function BeverageTabContent(_props, ref) {
 		const store = useCustomerNormalStore();
 
-		const currentCustomerName = store.share.customer.name.use();
-		const selectedCustomerBeverageTags = store.share.customer.beverageTags.use();
+		const currentCustomerName = store.shared.customer.name.use();
+		const selectedCustomerBeverageTags = store.shared.customer.beverageTags.use();
 
-		const currentBeverageName = store.share.beverage.name.use();
-		const selectedDlcs = store.share.beverage.dlcs.use();
+		const currentBeverageName = store.shared.beverage.name.use();
+		const selectedDlcs = store.shared.beverage.dlcs.use();
 
 		const instance_beverage = store.instances.beverage.get();
 
@@ -63,14 +63,14 @@ export default memo(
 		const allBeverageDlcs = store.beverage.dlcs.get();
 		const allBeverageTags = store.beverage.tags.get();
 
-		const searchValue = store.share.beverage.searchValue.use();
+		const searchValue = store.shared.beverage.searchValue.use();
 		const hasNameFilter = useMemo(() => Boolean(searchValue), [searchValue]);
 
-		const tableCurrentPage = store.share.beverage.page.use();
+		const tableCurrentPage = store.shared.beverage.page.use();
 		const tableRowsPerPage = store.recipeTableRows.use();
-		const tableRowsPerPageNumber = store.page.beverage.table.rows.use();
-		const tableSelectableRows = store.share.beverage.selectableRows.get();
-		const tableSortDescriptor = store.share.beverage.sortDescriptor.use();
+		const tableRowsPerPageNumber = store.persistence.beverage.table.rows.use();
+		const tableSelectableRows = store.shared.beverage.selectableRows.get();
+		const tableSortDescriptor = store.shared.beverage.sortDescriptor.use();
 		const tableVisibleColumns = store.beverageTableColumns.use();
 
 		const filteredData = useMemo(() => {
@@ -235,7 +235,7 @@ export default memo(
 										size="sm"
 										variant="light"
 										onPress={() => {
-											store.share.beverage.name.set(name);
+											store.shared.beverage.name.set(name);
 										}}
 									>
 										<FontAwesomeIcon icon={faPlus} />
@@ -245,48 +245,48 @@ export default memo(
 						);
 				}
 			},
-			[currentCustomerName, store.share.beverage.name]
+			[currentCustomerName, store.shared.beverage.name]
 		);
 
 		const onSelectedBeverageTagsChange = useCallback(
 			(value: Selection) => {
-				store.share.customer.beverageTags.set(value);
-				store.share.beverage.page.set(1);
+				store.shared.customer.beverageTags.set(value);
+				store.shared.beverage.page.set(1);
 			},
-			[store.share.beverage.page, store.share.customer.beverageTags]
+			[store.shared.beverage.page, store.shared.customer.beverageTags]
 		);
 
 		const onSelectedDlcsChange = useCallback(
 			(value: Selection) => {
-				store.share.beverage.dlcs.set(value);
-				store.share.beverage.page.set(1);
+				store.shared.beverage.dlcs.set(value);
+				store.shared.beverage.page.set(1);
 			},
-			[store.share.beverage.dlcs, store.share.beverage.page]
+			[store.shared.beverage.dlcs, store.shared.beverage.page]
 		);
 
 		const onSearchValueChange = useCallback(
 			(value: Key | null) => {
 				if (value) {
-					store.share.beverage.searchValue.set(value as string);
-					store.share.beverage.page.set(1);
+					store.shared.beverage.searchValue.set(value as string);
+					store.shared.beverage.page.set(1);
 				} else {
-					store.share.beverage.searchValue.set('');
+					store.shared.beverage.searchValue.set('');
 				}
 			},
-			[store.share.beverage.page, store.share.beverage.searchValue]
+			[store.shared.beverage.page, store.shared.beverage.searchValue]
 		);
 
 		const onSearchValueClear = useCallback(() => {
-			store.share.beverage.searchValue.set('');
-			store.share.beverage.page.set(1);
-		}, [store.share.beverage.page, store.share.beverage.searchValue]);
+			store.shared.beverage.searchValue.set('');
+			store.shared.beverage.page.set(1);
+		}, [store.shared.beverage.page, store.shared.beverage.searchValue]);
 
 		const onTableRowsPerPageChange = useCallback(
 			(value: Selection) => {
 				store.beverageTableRows.set(value);
-				store.share.beverage.page.set(1);
+				store.shared.beverage.page.set(1);
 			},
-			[store.beverageTableRows, store.share.beverage.page]
+			[store.beverageTableRows, store.shared.beverage.page]
 		);
 
 		const tableToolbar = useMemo(
@@ -443,11 +443,11 @@ export default memo(
 						size="sm"
 						page={tableCurrentPage}
 						total={tableTotalPages}
-						onChange={store.share.beverage.page.set}
+						onChange={store.shared.beverage.page.set}
 					/>
 				</div>
 			),
-			[store.share.beverage.page.set, tableCurrentPage, tableTotalPages]
+			[store.shared.beverage.page.set, tableCurrentPage, tableTotalPages]
 		);
 
 		return (
@@ -461,7 +461,7 @@ export default memo(
 				topContent={tableToolbar}
 				topContentPlacement="outside"
 				onSortChange={(config) => {
-					store.share.beverage.sortDescriptor.set(config as TTableSortDescriptor);
+					store.shared.beverage.sortDescriptor.set(config as TTableSortDescriptor);
 				}}
 				aria-label="酒水选择表格"
 				classNames={{

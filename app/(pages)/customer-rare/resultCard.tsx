@@ -8,7 +8,7 @@ import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-ico
 import Placeholder from './placeholder';
 import Sprite from '@/components/sprite';
 
-import {useCustomerRareStore} from '@/stores';
+import {useCustomerRareStore, useGlobalStore} from '@/stores';
 import {removeLastElement} from '@/utils';
 
 interface IPlusProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'className'> {
@@ -61,7 +61,7 @@ const UnknownItem = memo(
 const IngredientList = memo(function IngredientsList() {
 	const store = useCustomerRareStore();
 
-	const currentRecipe = store.share.recipe.data.use();
+	const currentRecipe = store.shared.recipe.data.use();
 
 	const instance_recipe = store.instances.recipe.get();
 
@@ -88,7 +88,7 @@ const IngredientList = memo(function IngredientsList() {
 						<span key={index} className="flex items-center">
 							<span
 								onClick={() => {
-									store.share.recipe.data.set((prev) => {
+									store.shared.recipe.data.set((prev) => {
 										if (prev) {
 											prev.extraIngredients = removeLastElement(
 												prev.extraIngredients,
@@ -119,15 +119,19 @@ interface IResultCardProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
-		const store = useCustomerRareStore();
+		const customerStore = useCustomerRareStore();
+		const globalStore = useGlobalStore();
 
-		const currentCustomerName = store.share.customer.data.use()?.name;
-		const currentCustomerRating = store.share.customer.rating.use();
-		const currentBeverageName = store.share.beverage.name.use();
-		const currentRecipe = store.share.recipe.data.use();
-		const savedMeal = store.page.selected.use();
+		const currentCustomerName = customerStore.shared.customer.data.use()?.name;
+		const currentBeverageName = customerStore.shared.beverage.name.use();
+		const currentRecipe = customerStore.shared.recipe.data.use();
+		const hasMystiaKitchenwware = customerStore.shared.customer.hasMystiaKitchenwware.use();
+		const currentOrder = customerStore.shared.customer.order.use();
+		const currentPopular = globalStore.persistence.popular.use();
+		const currentRating = customerStore.shared.customer.rating.use();
+		const savedMeal = customerStore.persistence.meals.use();
 
-		const instance_recipe = store.instances.recipe.get();
+		const instance_recipe = customerStore.instances.recipe.get();
 
 		const handleSaveButtonPress = useCallback(() => {
 			if (!currentCustomerName || !currentBeverageName || !currentRecipe) {
@@ -136,12 +140,15 @@ export default memo(
 
 			const saveObject = {
 				beverage: currentBeverageName,
-				extraIngredients: currentRecipe.extraIngredients, // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				rating: currentCustomerRating!,
+				extraIngredients: currentRecipe.extraIngredients,
+				hasMystiaKitchenwware,
+				order: currentOrder,
+				popular: currentPopular, // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				rating: currentRating!,
 				recipe: currentRecipe.name,
 			} as const;
 
-			store.page.selected.set((prev) => {
+			customerStore.persistence.meals.set((prev) => {
 				if (currentCustomerName in prev) {
 					const lastItem = prev[currentCustomerName]?.at(-1);
 					const index = lastItem ? lastItem.index + 1 : 0;
@@ -150,7 +157,16 @@ export default memo(
 					prev[currentCustomerName] = [{...saveObject, index: 0}];
 				}
 			});
-		}, [currentBeverageName, currentCustomerName, currentCustomerRating, currentRecipe, store.page.selected]);
+		}, [
+			currentBeverageName,
+			currentCustomerName,
+			currentOrder,
+			currentPopular,
+			currentRating,
+			currentRecipe,
+			customerStore.persistence.meals,
+			hasMystiaKitchenwware,
+		]);
 
 		if (!currentBeverageName && !currentRecipe) {
 			if (currentCustomerName && savedMeal[currentCustomerName]?.length) {

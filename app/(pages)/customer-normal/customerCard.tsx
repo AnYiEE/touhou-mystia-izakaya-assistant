@@ -20,12 +20,12 @@ export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_props, ref) {
 		const store = useCustomerNormalStore();
 
-		const currentCustomerName = store.share.customer.name.use();
-		const selectedCustomerBeverageTags = store.share.customer.beverageTags.use();
-		const selectedCustomerPositiveTags = store.share.customer.positiveTags.use();
+		const currentCustomerName = store.shared.customer.name.use();
+		const selectedCustomerBeverageTags = store.shared.customer.beverageTags.use();
+		const selectedCustomerPositiveTags = store.shared.customer.positiveTags.use();
 
-		const currentBeverageName = store.share.beverage.name.use();
-		const currentRecipe = store.share.recipe.data.use();
+		const currentBeverageName = store.shared.beverage.name.use();
+		const currentRecipe = store.shared.recipe.data.use();
 
 		const instance_beverage = store.instances.beverage.get();
 		const instance_ingredient = store.instances.ingredient.get();
@@ -133,8 +133,8 @@ export default memo(
 													tag={tag}
 													tagStyle={CUSTOMER_NORMAL_TAG_STYLE.positive}
 													handleClick={(clickedTag) => {
-														store.share.tab.set('recipe');
-														store.share.customer.positiveTags.set((prev) => {
+														store.shared.tab.set('recipe');
+														store.shared.customer.positiveTags.set((prev) => {
 															if (prev instanceof Set && !clickedTag.startsWith('流行')) {
 																if (prev.has(clickedTag)) {
 																	prev.delete(clickedTag);
@@ -183,8 +183,8 @@ export default memo(
 													tag={tag}
 													tagStyle={CUSTOMER_NORMAL_TAG_STYLE.beverage}
 													handleClick={(clickedTag) => {
-														store.share.tab.set('beverage');
-														store.share.customer.beverageTags.set((prev) => {
+														store.shared.tab.set('beverage');
+														store.shared.customer.beverageTags.set((prev) => {
 															if (prev instanceof Set) {
 																if (prev.has(clickedTag)) {
 																	prev.delete(clickedTag);

@@ -51,12 +51,12 @@ export default memo(
 	forwardRef<HTMLTableElement | null, IProps>(function RecipeTabContent(_props, ref) {
 		const store = useCustomerNormalStore();
 
-		const currentCustomerName = store.share.customer.name.use();
-		const selectedCustomerPositiveTags = store.share.customer.positiveTags.use();
+		const currentCustomerName = store.shared.customer.name.use();
+		const selectedCustomerPositiveTags = store.shared.customer.positiveTags.use();
 
-		const currentRecipe = store.share.recipe.data.use();
-		const selectedDlcs = store.share.recipe.dlcs.use();
-		const selectedKitchenwares = store.share.recipe.kitchenwares.use();
+		const currentRecipe = store.shared.recipe.data.use();
+		const selectedDlcs = store.shared.recipe.dlcs.use();
+		const selectedKitchenwares = store.shared.recipe.kitchenwares.use();
 
 		const instance_recipe = store.instances.recipe.get();
 
@@ -65,14 +65,14 @@ export default memo(
 		const allRecipePositiveTags = store.recipe.positiveTags.get();
 		const allKitchenwares = store.recipe.kitchenwares.get();
 
-		const searchValue = store.share.recipe.searchValue.use();
+		const searchValue = store.shared.recipe.searchValue.use();
 		const hasNameFilter = useMemo(() => Boolean(searchValue), [searchValue]);
 
-		const tableCurrentPage = store.share.recipe.page.use();
+		const tableCurrentPage = store.shared.recipe.page.use();
 		const tableRowsPerPage = store.recipeTableRows.use();
-		const tableRowsPerPageNumber = store.page.recipe.table.rows.use();
-		const tableSelectableRows = store.share.recipe.selectableRows.get();
-		const tableSortDescriptor = store.share.recipe.sortDescriptor.use();
+		const tableRowsPerPageNumber = store.persistence.recipe.table.rows.use();
+		const tableSelectableRows = store.shared.recipe.selectableRows.get();
+		const tableSortDescriptor = store.shared.recipe.sortDescriptor.use();
 		const tableVisibleColumns = store.recipeTableColumns.use();
 
 		const filteredData = useMemo(() => {
@@ -281,7 +281,7 @@ export default memo(
 										size="sm"
 										variant="light"
 										onPress={() => {
-											store.share.recipe.data.set({
+											store.shared.recipe.data.set({
 												extraIngredients: [],
 												name,
 											});
@@ -294,56 +294,56 @@ export default memo(
 						);
 				}
 			},
-			[currentCustomerName, store.share.recipe.data]
+			[currentCustomerName, store.shared.recipe.data]
 		);
 
 		const onSelectedDlcsChange = useCallback(
 			(value: Selection) => {
-				store.share.recipe.dlcs.set(value);
-				store.share.recipe.page.set(1);
+				store.shared.recipe.dlcs.set(value);
+				store.shared.recipe.page.set(1);
 			},
-			[store.share.recipe.dlcs, store.share.recipe.page]
+			[store.shared.recipe.dlcs, store.shared.recipe.page]
 		);
 
 		const onSelectedKitchenwaresChange = useCallback(
 			(value: Selection) => {
-				store.share.recipe.kitchenwares.set(value);
-				store.share.recipe.page.set(1);
+				store.shared.recipe.kitchenwares.set(value);
+				store.shared.recipe.page.set(1);
 			},
-			[store.share.recipe.kitchenwares, store.share.recipe.page]
+			[store.shared.recipe.kitchenwares, store.shared.recipe.page]
 		);
 
 		const onSelectedPositiveTagsChange = useCallback(
 			(value: Selection) => {
-				store.share.customer.positiveTags.set(value);
-				store.share.recipe.page.set(1);
+				store.shared.customer.positiveTags.set(value);
+				store.shared.recipe.page.set(1);
 			},
-			[store.share.customer.positiveTags, store.share.recipe.page]
+			[store.shared.customer.positiveTags, store.shared.recipe.page]
 		);
 
 		const onSearchValueChange = useCallback(
 			(value: Key | null) => {
 				if (value) {
-					store.share.recipe.searchValue.set(value as string);
-					store.share.recipe.page.set(1);
+					store.shared.recipe.searchValue.set(value as string);
+					store.shared.recipe.page.set(1);
 				} else {
-					store.share.recipe.searchValue.set('');
+					store.shared.recipe.searchValue.set('');
 				}
 			},
-			[store.share.recipe.page, store.share.recipe.searchValue]
+			[store.shared.recipe.page, store.shared.recipe.searchValue]
 		);
 
 		const onSearchValueClear = useCallback(() => {
-			store.share.recipe.searchValue.set('');
-			store.share.recipe.page.set(1);
-		}, [store.share.recipe.page, store.share.recipe.searchValue]);
+			store.shared.recipe.searchValue.set('');
+			store.shared.recipe.page.set(1);
+		}, [store.shared.recipe.page, store.shared.recipe.searchValue]);
 
 		const onTableRowsPerPageChange = useCallback(
 			(value: Selection) => {
 				store.recipeTableRows.set(value);
-				store.share.recipe.page.set(1);
+				store.shared.recipe.page.set(1);
 			},
-			[store.recipeTableRows, store.share.recipe.page]
+			[store.recipeTableRows, store.shared.recipe.page]
 		);
 
 		const tableToolbar = useMemo(
@@ -533,11 +533,11 @@ export default memo(
 						size="sm"
 						page={tableCurrentPage}
 						total={tableTotalPages}
-						onChange={store.share.recipe.page.set}
+						onChange={store.shared.recipe.page.set}
 					/>
 				</div>
 			),
-			[store.share.recipe.page.set, tableCurrentPage, tableTotalPages]
+			[store.shared.recipe.page.set, tableCurrentPage, tableTotalPages]
 		);
 
 		return (
@@ -551,7 +551,7 @@ export default memo(
 				topContent={tableToolbar}
 				topContentPlacement="outside"
 				onSortChange={(config) => {
-					store.share.recipe.sortDescriptor.set(config as TTableSortDescriptor);
+					store.shared.recipe.sortDescriptor.set(config as TTableSortDescriptor);
 				}}
 				aria-label="料理选择表格"
 				classNames={{

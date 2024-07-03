@@ -11,6 +11,7 @@ import type {ICurrentCustomer, TCustomerRating} from '@/(pages)/customer-rare/ty
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import {type TBeverageNames, type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
+import {type TBeverageTag, type TIngredientTag, type TRecipeTag} from '@/data/types';
 import {customerRareInstance as instance_rare, customerSpecialInstance as instance_special} from '@/methods/customer';
 import {
 	beverageInstance as instance_beverage,
@@ -27,7 +28,8 @@ const specialPlaces = instance_special.getValuesByProp(instance_special.data, 'p
 
 const storeVersion = {
 	initial: 0,
-	rating: 1,
+	rating: 1, // eslint-disable-next-line sort-keys
+	popular: 2,
 } as const;
 
 const state = {
@@ -59,7 +61,7 @@ const state = {
 		positiveTags: instance_recipe.getValuesByProp(instance_recipe.data, 'positiveTags', true).sort(pinyinSort),
 	},
 
-	page: {
+	persistence: {
 		beverage: {
 			table: {
 				rows: 7,
@@ -89,9 +91,19 @@ const state = {
 				visibleColumns: recipeTableColumns.filter(({key}) => key !== 'kitchenware').map(({key}) => key),
 			},
 		},
-		selected: {} as {
+
+		meals: {} as {
 			[key in TCustomerNames]?: {
 				index: number;
+				hasMystiaKitchenwware: boolean;
+				order: {
+					beverageTag: TBeverageTag | null;
+					recipeTag: TRecipeTag | null;
+				};
+				popular: {
+					isNegative: boolean;
+					tag: TIngredientTag | TRecipeTag | null;
+				};
 				rating: TCustomerRating;
 				beverage: TBeverageNames;
 				recipe: TRecipeNames;
@@ -99,7 +111,7 @@ const state = {
 			}[];
 		},
 	},
-	share: {
+	shared: {
 		beverage: {
 			name: null as TBeverageNames | null,
 
@@ -116,6 +128,16 @@ const state = {
 			positiveTags: new Set() as Selection,
 
 			filterVisibility: true,
+
+			hasMystiaKitchenwware: false,
+			order: {
+				beverageTag: null as TBeverageTag | null,
+				recipeTag: null as TRecipeTag | null,
+			},
+			popular: {
+				isNegative: false,
+				tag: null as TRecipeTag | null,
+			},
 			rating: null as TCustomerRating | null,
 		},
 		ingredient: {
@@ -142,93 +164,119 @@ const customerRareStore = store(state, {
 	persist: {
 		enabled: true,
 		name: 'page-customer_rare-storage',
-		version: storeVersion.rating,
+		version: storeVersion.popular,
 
 		migrate(persistedState, version) {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+			const oldState = persistedState as any;
 			if (version < storeVersion.rating) {
-				const oldState = persistedState as typeof state;
-				for (const meals of Object.values(oldState.page.selected)) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+				for (const meals of Object.values(oldState.page.selected) as any) {
 					for (const meal of meals) {
 						meal.rating = '完美';
 					}
 				}
 			}
+			if (version < storeVersion.popular) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				oldState.persistence = oldState.page;
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				oldState.persistence.meals = {
+					...oldState.page.selected,
+					hasMystiaKitchenwware: false,
+					order: {
+						beverageTag: null,
+						recipeTag: null,
+					},
+					popular: {
+						isNegative: false,
+						tag: null,
+					},
+				};
+				delete oldState.persistence.selected;
+				delete oldState.page;
+			}
 			return persistedState as typeof state;
 		},
 		partialize(currentStore) {
 			return {
-				page: currentStore.page,
+				persistence: currentStore.persistence,
 			} as typeof currentStore;
 		},
 		storage: createJSONStorage(() => localStorage),
 	},
 })
 	.computed((currentStore) => ({
-		rareNames: () => getAllItemNames(instance_rare, currentStore.page.customer.pinyinSortState.get()),
-		specialNames: () => getAllItemNames(instance_special, currentStore.page.customer.pinyinSortState.get()),
+		rareNames: () => getAllItemNames(instance_rare, currentStore.persistence.customer.pinyinSortState.get()),
+		specialNames: () => getAllItemNames(instance_special, currentStore.persistence.customer.pinyinSortState.get()),
 
 		beverageTableColumns: {
-			read: () => new Set(currentStore.page.beverage.table.visibleColumns.use()) as Selection,
+			read: () => new Set(currentStore.persistence.beverage.table.visibleColumns.use()) as Selection,
 			write: (columns: Selection) => {
-				currentStore.page.beverage.table.visibleColumns.set([...columns] as never);
+				currentStore.persistence.beverage.table.visibleColumns.set([...columns] as never);
 			},
 		},
 		beverageTableRows: {
-			read: () => new Set([currentStore.page.beverage.table.rows.use().toString()]) as Selection,
+			read: () => new Set([currentStore.persistence.beverage.table.rows.use().toString()]) as Selection,
 			write: (columns: Selection) => {
-				currentStore.page.beverage.table.rows.set(Number.parseInt([...columns][0] as string));
+				currentStore.persistence.beverage.table.rows.set(Number.parseInt([...columns][0] as string));
 			},
 		},
 		recipeTableColumns: {
-			read: () => new Set(currentStore.page.recipe.table.visibleColumns.use()) as Selection,
+			read: () => new Set(currentStore.persistence.recipe.table.visibleColumns.use()) as Selection,
 			write: (columns: Selection) => {
-				currentStore.page.recipe.table.visibleColumns.set([...columns] as never);
+				currentStore.persistence.recipe.table.visibleColumns.set([...columns] as never);
 			},
 		},
 		recipeTableRows: {
-			read: () => new Set([currentStore.page.recipe.table.rows.use().toString()]) as Selection,
+			read: () => new Set([currentStore.persistence.recipe.table.rows.use().toString()]) as Selection,
 			write: (columns: Selection) => {
-				currentStore.page.recipe.table.rows.set(Number.parseInt([...columns][0] as string));
+				currentStore.persistence.recipe.table.rows.set(Number.parseInt([...columns][0] as string));
 			},
 		},
 	}))
 	.actions((currentStore) => ({
 		refreshAllSelectedItems() {
-			currentStore.share.recipe.dlcs.set(new Set());
-			currentStore.share.recipe.kitchenwares.set(new Set());
-			currentStore.share.recipe.searchValue.set('');
-			currentStore.share.recipe.sortDescriptor.set({});
-			currentStore.share.beverage.dlcs.set(new Set());
-			currentStore.share.beverage.searchValue.set('');
-			currentStore.share.beverage.sortDescriptor.set({});
+			currentStore.shared.recipe.dlcs.set(new Set());
+			currentStore.shared.recipe.kitchenwares.set(new Set());
+			currentStore.shared.recipe.searchValue.set('');
+			currentStore.shared.recipe.sortDescriptor.set({});
+			currentStore.shared.beverage.dlcs.set(new Set());
+			currentStore.shared.beverage.searchValue.set('');
+			currentStore.shared.beverage.sortDescriptor.set({});
 		},
 		refreshCustomerSelectedItems() {
-			currentStore.share.customer.rating.set(null);
-			currentStore.share.customer.beverageTags.set(new Set());
-			currentStore.share.customer.positiveTags.set(new Set());
-			currentStore.share.recipe.data.set(null);
-			currentStore.share.recipe.page.set(1);
-			currentStore.share.beverage.name.set(null);
-			currentStore.share.beverage.page.set(1);
-			currentStore.share.ingredient.filterVisibility.set(false);
-			if (currentStore.share.tab.get() === 'ingredient') {
-				if (currentStore.share.customer.data.get()) {
-					currentStore.share.tab.set('recipe');
+			currentStore.shared.customer.beverageTags.set(new Set());
+			currentStore.shared.customer.positiveTags.set(new Set());
+			currentStore.shared.customer.hasMystiaKitchenwware.set(false);
+			currentStore.shared.customer.order.set({
+				beverageTag: null,
+				recipeTag: null,
+			});
+			currentStore.shared.customer.rating.set(null);
+			currentStore.shared.recipe.data.set(null);
+			currentStore.shared.recipe.page.set(1);
+			currentStore.shared.beverage.name.set(null);
+			currentStore.shared.beverage.page.set(1);
+			currentStore.shared.ingredient.filterVisibility.set(false);
+			if (currentStore.shared.tab.get() === 'ingredient') {
+				if (currentStore.shared.customer.data.get()) {
+					currentStore.shared.tab.set('recipe');
 				} else {
-					currentStore.share.tab.set('customer');
+					currentStore.shared.tab.set('customer');
 				}
 			}
 		},
 		toggleCustomerTabVisibilityState() {
-			currentStore.page.customer.tabVisibility.set(
-				currentStore.page.customer.tabVisibility.get() === TabVisibilityState.expand
+			currentStore.persistence.customer.tabVisibility.set(
+				currentStore.persistence.customer.tabVisibility.get() === TabVisibilityState.expand
 					? TabVisibilityState.collapse
 					: TabVisibilityState.expand
 			);
 		},
 		toggleIngredientTabVisibilityState() {
-			currentStore.page.ingredient.tabVisibility.set(
-				currentStore.page.ingredient.tabVisibility.get() === TabVisibilityState.expand
+			currentStore.persistence.ingredient.tabVisibility.set(
+				currentStore.persistence.ingredient.tabVisibility.get() === TabVisibilityState.expand
 					? TabVisibilityState.collapse
 					: TabVisibilityState.expand
 			);

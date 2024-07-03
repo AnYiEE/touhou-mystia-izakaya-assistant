@@ -61,7 +61,7 @@ const UnknownItem = memo(
 const IngredientList = memo(function IngredientsList() {
 	const store = useCustomerNormalStore();
 
-	const currentRecipe = store.share.recipe.data.use();
+	const currentRecipe = store.shared.recipe.data.use();
 
 	const instance_recipe = store.instances.recipe.get();
 
@@ -88,7 +88,7 @@ const IngredientList = memo(function IngredientsList() {
 						<span key={index} className="flex items-center">
 							<span
 								onClick={() => {
-									store.share.recipe.data.set((prev) => {
+									store.shared.recipe.data.set((prev) => {
 										if (prev) {
 											prev.extraIngredients = removeLastElement(
 												prev.extraIngredients,
@@ -121,10 +121,10 @@ export default memo(
 	forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
 		const store = useCustomerNormalStore();
 
-		const currentCustomerName = store.share.customer.name.use();
-		const currentBeverageName = store.share.beverage.name.use();
-		const currentRecipe = store.share.recipe.data.use();
-		const savedMeal = store.page.selected.use();
+		const currentCustomerName = store.shared.customer.name.use();
+		const currentBeverageName = store.shared.beverage.name.use();
+		const currentRecipe = store.shared.recipe.data.use();
+		const savedMeal = store.persistence.meals.use();
 
 		const instance_recipe = store.instances.recipe.get();
 
@@ -139,7 +139,7 @@ export default memo(
 				recipe: currentRecipe.name,
 			} as const;
 
-			store.page.selected.set((prev) => {
+			store.persistence.meals.set((prev) => {
 				if (currentCustomerName in prev) {
 					const lastItem = prev[currentCustomerName]?.at(-1);
 					const index = lastItem ? lastItem.index + 1 : 0;
@@ -148,7 +148,7 @@ export default memo(
 					prev[currentCustomerName] = [{...saveObject, index: 0}];
 				}
 			});
-		}, [currentBeverageName, currentCustomerName, currentRecipe, store.page.selected]);
+		}, [currentBeverageName, currentCustomerName, currentRecipe, store.persistence.meals]);
 
 		if (!currentBeverageName && !currentRecipe) {
 			if (currentCustomerName && savedMeal[currentCustomerName]?.length) {

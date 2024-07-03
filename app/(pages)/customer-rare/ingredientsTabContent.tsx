@@ -20,8 +20,8 @@ export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function IngredientsTabContent({ingredientsTabStyle, sortedData}, ref) {
 		const store = useCustomerRareStore();
 
-		const currentCustomer = store.share.customer.data.use();
-		const currentRecipeData = store.share.recipe.data.use();
+		const currentCustomer = store.shared.customer.data.use();
+		const currentRecipeData = store.shared.recipe.data.use();
 
 		const instance_ingredient = store.instances.ingredient.get();
 		const instance_recipe = store.instances.recipe.get();
@@ -98,7 +98,7 @@ export default memo(
 								<div
 									key={index}
 									onClick={() => {
-										store.share.recipe.data.set((prev) => {
+										store.shared.recipe.data.set((prev) => {
 											if (
 												prev &&
 												currentRecipe.ingredients.length + prev.extraIngredients.length < 5

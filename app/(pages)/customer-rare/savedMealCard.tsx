@@ -14,8 +14,8 @@ export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(_props, ref) {
 		const store = useCustomerRareStore();
 
-		const currentCustomerName = store.share.customer.data.use()?.name;
-		const savedMeal = store.page.selected.use();
+		const currentCustomerName = store.shared.customer.data.use()?.name;
+		const savedMeal = store.persistence.meals.use();
 
 		const instance_recipe = store.instances.recipe.get();
 
@@ -30,7 +30,19 @@ export default memo(
 			<Card fullWidth shadow="sm" ref={ref}>
 				<div className="flex flex-col gap-3 p-4">
 					{savedCustomerMeal.map(
-						({index: mealIndex, rating, beverage, recipe, extraIngredients}, loopIndex) => (
+						(
+							{
+								index: mealIndex,
+								hasMystiaKitchenwware,
+								order,
+								popular,
+								rating,
+								beverage,
+								recipe,
+								extraIngredients,
+							},
+							loopIndex
+						) => (
 							<Fragment key={loopIndex}>
 								<div className="flex flex-col items-center gap-4 md:flex-row">
 									<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
@@ -86,7 +98,7 @@ export default memo(
 											size="sm"
 											variant="flat"
 											onPress={() => {
-												store.page.selected[currentCustomerName]?.set(
+												store.persistence.meals[currentCustomerName]?.set(
 													savedCustomerMeal.filter((meal) => meal.index !== mealIndex)
 												);
 											}}
@@ -100,12 +112,15 @@ export default memo(
 											size="sm"
 											variant="flat"
 											onPress={() => {
-												store.share.customer.rating.set(rating);
-												store.share.recipe.data.set({
+												store.shared.customer.hasMystiaKitchenwware.set(hasMystiaKitchenwware);
+												store.shared.customer.order.set(order);
+												store.shared.customer.popular.set(popular);
+												store.shared.customer.rating.set(rating);
+												store.shared.beverage.name.set(beverage);
+												store.shared.recipe.data.set({
 													extraIngredients,
 													name: recipe,
 												});
-												store.share.beverage.name.set(beverage);
 											}}
 											className="md:w-auto"
 										>

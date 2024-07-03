@@ -21,7 +21,7 @@ export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function CustomerTabContent({customerTabStyle, sortedData}, ref) {
 		const store = useCustomerRareStore();
 
-		const currentCustomer = store.share.customer.data.use();
+		const currentCustomer = store.shared.customer.data.use();
 
 		return (
 			<>
@@ -39,7 +39,7 @@ export default memo(
 								<div
 									key={name}
 									onClick={() => {
-										store.share.customer.data.set({name, target: target as TCustomerTarget});
+										store.shared.customer.data.set({name, target: target as TCustomerTarget});
 									}}
 									className="flex cursor-pointer flex-col items-center gap-1"
 									title={`选择${name}`}

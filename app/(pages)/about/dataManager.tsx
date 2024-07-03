@@ -20,7 +20,7 @@ export default memo(function DataManager() {
 
 	const store = useCustomerRareStore();
 
-	const mealData = store.page.selected.use();
+	const mealData = store.persistence.meals.use();
 	const jsonString = JSON.stringify(mealData, null, '\t');
 
 	useEffect(() => {
@@ -49,7 +49,7 @@ export default memo(function DataManager() {
 						setValue('');
 					}}
 				>
-					<Tab key="backup" title="备份" download="http://127.0.0.1">
+					<Tab key="backup" title="备份">
 						<Snippet
 							hideSymbol
 							tooltipProps={{
@@ -89,7 +89,7 @@ export default memo(function DataManager() {
 										onPress={() => {
 											setIsSavePopoverOpen();
 											// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-											store.page.selected.set(JSON.parse(throttledValue));
+											store.persistence.meals.set(JSON.parse(throttledValue));
 										}}
 									>
 										确认保存
@@ -111,7 +111,7 @@ export default memo(function DataManager() {
 									variant="ghost"
 									onPress={() => {
 										setIsResetPopoverOpen();
-										store.page.selected.set({});
+										store.persistence.meals.set({});
 									}}
 								>
 									确认重置

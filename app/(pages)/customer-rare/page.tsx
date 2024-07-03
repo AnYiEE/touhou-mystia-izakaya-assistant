@@ -55,13 +55,13 @@ const ingredientTabStyleMap = {
 export default memo(function CustomerRare() {
 	const store = useCustomerRareStore();
 
-	store.share.customer.data.onChange(() => {
+	store.shared.customer.data.onChange(() => {
 		store.refreshCustomerSelectedItems();
 		store.refreshAllSelectedItems();
 	});
 
-	const currentCustomer = store.share.customer.data.use();
-	const currentRecipe = store.share.recipe.data.use();
+	const currentCustomer = store.shared.customer.data.use();
+	const currentRecipe = store.shared.recipe.data.use();
 
 	const instance_rare = store.instances.customer_rare.get();
 	const instance_special = store.instances.customer_special.get();
@@ -71,18 +71,18 @@ export default memo(function CustomerRare() {
 	const allCustomerDlcs = store.customer.dlcs.get();
 	const allCustomerPlaces = store.customer.places.get();
 
-	const customerPinyinSortState = store.page.customer.pinyinSortState.use();
+	const customerPinyinSortState = store.persistence.customer.pinyinSortState.use();
 
-	const customerSearchValue = store.page.customer.searchValue.use();
+	const customerSearchValue = store.persistence.customer.searchValue.use();
 	const throttledCustomerSearchValue = useThrottle(customerSearchValue);
 
 	const rareSearchResult = useSearchResult(instance_rare, throttledCustomerSearchValue);
 	const specialSearchResult = useSearchResult(instance_special, throttledCustomerSearchValue);
 	type TSearchResult = typeof rareSearchResult | typeof specialSearchResult;
 
-	const customerFilterDlcs = store.page.customer.filters.dlcs.use();
-	const customerFilterPlaces = store.page.customer.filters.places.use();
-	const customerFilterNoPlaces = store.page.customer.filters.noPlaces.use();
+	const customerFilterDlcs = store.persistence.customer.filters.dlcs.use();
+	const customerFilterPlaces = store.persistence.customer.filters.places.use();
+	const customerFilterNoPlaces = store.persistence.customer.filters.noPlaces.use();
 
 	const customerFilter = useCallback(
 		function customerFilter<T extends TSearchResult>(target: T) {
@@ -122,14 +122,14 @@ export default memo(function CustomerRare() {
 
 	const customerPinyinSortConfig = usePinyinSortConfig(
 		customerPinyinSortState,
-		store.page.customer.pinyinSortState.set
+		store.persistence.customer.pinyinSortState.set
 	);
 
 	const customerSearchConfig = useSearchConfig({
 		label: '选择或输入稀客名称',
 		searchItems: [...rareNames, ...specialNames],
 		searchValue: customerSearchValue,
-		setSearchValue: store.page.customer.searchValue.set,
+		setSearchValue: store.persistence.customer.searchValue.set,
 	});
 
 	const costomerSelectConfig = useMemo(
@@ -139,19 +139,19 @@ export default memo(function CustomerRare() {
 					items: allCustomerDlcs,
 					label: 'DLC',
 					selectedKeys: customerFilterDlcs,
-					setSelectedKeys: store.page.customer.filters.dlcs.set,
+					setSelectedKeys: store.persistence.customer.filters.dlcs.set,
 				},
 				{
 					items: allCustomerPlaces,
 					label: '出没地点（包含）',
 					selectedKeys: customerFilterPlaces,
-					setSelectedKeys: store.page.customer.filters.places.set,
+					setSelectedKeys: store.persistence.customer.filters.places.set,
 				},
 				{
 					items: allCustomerPlaces,
 					label: '出没地点（排除）',
 					selectedKeys: customerFilterNoPlaces,
-					setSelectedKeys: store.page.customer.filters.noPlaces.set,
+					setSelectedKeys: store.persistence.customer.filters.noPlaces.set,
 				},
 			] as const satisfies TSelectConfig,
 		[
@@ -160,28 +160,28 @@ export default memo(function CustomerRare() {
 			customerFilterDlcs,
 			customerFilterNoPlaces,
 			customerFilterPlaces,
-			store.page.customer.filters.dlcs.set,
-			store.page.customer.filters.noPlaces.set,
-			store.page.customer.filters.places.set,
+			store.persistence.customer.filters.dlcs.set,
+			store.persistence.customer.filters.noPlaces.set,
+			store.persistence.customer.filters.places.set,
 		]
 	);
 
-	const customerTabVisibilityState = store.page.customer.tabVisibility.use();
+	const customerTabVisibilityState = store.persistence.customer.tabVisibility.use();
 
 	const customerTabStyle = useMemo(
 		() => customerTabStyleMap[customerTabVisibilityState],
 		[customerTabVisibilityState]
 	);
 
-	const isCustomerTabFilterVisible = store.share.customer.filterVisibility.use();
+	const isCustomerTabFilterVisible = store.shared.customer.filterVisibility.use();
 
 	const instance_ingredient = store.instances.ingredient.get();
 
 	const allIngredientDlcs = store.ingredient.dlcs.get();
 
-	const ingredientsPinyinSortState = store.page.ingredient.pinyinSortState.use();
+	const ingredientsPinyinSortState = store.persistence.ingredient.pinyinSortState.use();
 
-	const ingredientsFilterDlcs = store.page.ingredient.filters.dlcs.use();
+	const ingredientsFilterDlcs = store.persistence.ingredient.filters.dlcs.use();
 
 	const ingredientsFilteredData = useMemo(
 		() =>
@@ -202,7 +202,7 @@ export default memo(function CustomerRare() {
 
 	const ingredientsPinyinSortConfig = usePinyinSortConfig(
 		ingredientsPinyinSortState,
-		store.page.ingredient.pinyinSortState.set
+		store.persistence.ingredient.pinyinSortState.set
 	);
 
 	const ingredientsSelectConfig = useMemo(
@@ -212,22 +212,22 @@ export default memo(function CustomerRare() {
 					items: allIngredientDlcs,
 					label: 'DLC',
 					selectedKeys: ingredientsFilterDlcs,
-					setSelectedKeys: store.page.ingredient.filters.dlcs.set,
+					setSelectedKeys: store.persistence.ingredient.filters.dlcs.set,
 				},
 			] as const satisfies TSelectConfig,
-		[allIngredientDlcs, ingredientsFilterDlcs, store.page.ingredient.filters.dlcs.set]
+		[allIngredientDlcs, ingredientsFilterDlcs, store.persistence.ingredient.filters.dlcs.set]
 	);
 
-	const ingredientTabVisibilityState = store.page.ingredient.tabVisibility.use();
+	const ingredientTabVisibilityState = store.persistence.ingredient.tabVisibility.use();
 
 	const ingredientTabStyle = useMemo(
 		() => ingredientTabStyleMap[ingredientTabVisibilityState],
 		[ingredientTabVisibilityState]
 	);
 
-	const isIngredientTabFilterVisible = store.share.ingredient.filterVisibility.use();
+	const isIngredientTabFilterVisible = store.shared.ingredient.filterVisibility.use();
 
-	const selectedTabKey = store.share.tab.use();
+	const selectedTabKey = store.shared.tab.use();
 
 	const isMounted = useMounted();
 	if (!isMounted) {
@@ -265,9 +265,9 @@ export default memo(function CustomerRare() {
 					size="sm"
 					selectedKey={selectedTabKey}
 					onSelectionChange={(key) => {
-						store.share.tab.set(key);
-						store.share.customer.filterVisibility.set(key === 'customer');
-						store.share.ingredient.filterVisibility.set(key === 'ingredient');
+						store.shared.tab.set(key);
+						store.shared.customer.filterVisibility.set(key === 'customer');
+						store.shared.ingredient.filterVisibility.set(key === 'ingredient');
 					}}
 				>
 					<Tab key="customer" title="稀客" className="relative">

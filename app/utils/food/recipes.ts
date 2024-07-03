@@ -78,11 +78,11 @@ export class Recipe<
 		suitability: number;
 	};
 	public getCustomerSuitability<T extends string, U extends string>(
-		nameOrtags: string | string[],
+		nameOrTags: string | string[],
 		customerPositiveTags: T[],
 		costomerNegativeTags: U[]
 	) {
-		const recipeTags = typeof nameOrtags === 'string' ? this.getPropsByName(nameOrtags).positiveTags : nameOrtags;
+		const recipeTags = typeof nameOrTags === 'string' ? this.getPropsByName(nameOrTags).positiveTags : nameOrTags;
 
 		const {commonTags: positiveTags, count: positiveCount} = this.getCommonTags(recipeTags, customerPositiveTags);
 		const {commonTags: negativeTags, count: negativeCount} = this.getCommonTags(recipeTags, costomerNegativeTags);

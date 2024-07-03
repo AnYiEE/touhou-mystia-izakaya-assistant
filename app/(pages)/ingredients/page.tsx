@@ -23,16 +23,16 @@ export default memo(function Ingredients() {
 	const allLevels = store.levels.get();
 	const allTags = store.tags.get();
 
-	const pinyinSortState = store.page.pinyinSortState.use();
-	const searchValue = store.page.searchValue.use();
+	const pinyinSortState = store.persistence.pinyinSortState.use();
+	const searchValue = store.persistence.searchValue.use();
 
 	const throttledSearchValue = useThrottle(searchValue);
 	const searchResult = useSearchResult(instance, throttledSearchValue);
 
-	const filterDlcs = store.page.filters.dlcs.use();
-	const filterLevels = store.page.filters.levels.use();
-	const filterTags = store.page.filters.tags.use();
-	const filterNoTags = store.page.filters.noTags.use();
+	const filterDlcs = store.persistence.filters.dlcs.use();
+	const filterLevels = store.persistence.filters.levels.use();
+	const filterTags = store.persistence.filters.tags.use();
+	const filterNoTags = store.persistence.filters.noTags.use();
 
 	const filteredData = useMemo(
 		() =>
@@ -51,13 +51,13 @@ export default memo(function Ingredients() {
 
 	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
 
-	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, store.page.pinyinSortState.set);
+	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, store.persistence.pinyinSortState.set);
 
 	const searchConfig = useSearchConfig({
 		label: '选择或输入食材名称',
 		searchItems: allNames,
 		searchValue,
-		setSearchValue: store.page.searchValue.set,
+		setSearchValue: store.persistence.searchValue.set,
 	});
 
 	const selectConfig = useMemo(
@@ -67,25 +67,25 @@ export default memo(function Ingredients() {
 					items: allDlcs,
 					label: 'DLC',
 					selectedKeys: filterDlcs,
-					setSelectedKeys: store.page.filters.dlcs.set,
+					setSelectedKeys: store.persistence.filters.dlcs.set,
 				},
 				{
 					items: allTags,
 					label: '食材标签（包含）',
 					selectedKeys: filterTags,
-					setSelectedKeys: store.page.filters.tags.set,
+					setSelectedKeys: store.persistence.filters.tags.set,
 				},
 				{
 					items: allTags,
 					label: '食材标签（排除）',
 					selectedKeys: filterNoTags,
-					setSelectedKeys: store.page.filters.noTags.set,
+					setSelectedKeys: store.persistence.filters.noTags.set,
 				},
 				{
 					items: allLevels,
 					label: '等级',
 					selectedKeys: filterLevels,
-					setSelectedKeys: store.page.filters.levels.set,
+					setSelectedKeys: store.persistence.filters.levels.set,
 				},
 			] as const satisfies TSelectConfig,
 		[
@@ -96,10 +96,10 @@ export default memo(function Ingredients() {
 			filterLevels,
 			filterNoTags,
 			filterTags,
-			store.page.filters.dlcs.set,
-			store.page.filters.levels.set,
-			store.page.filters.noTags.set,
-			store.page.filters.tags.set,
+			store.persistence.filters.dlcs.set,
+			store.persistence.filters.levels.set,
+			store.persistence.filters.noTags.set,
+			store.persistence.filters.tags.set,
 		]
 	);
 

@@ -13,8 +13,8 @@ export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(_props, ref) {
 		const store = useCustomerNormalStore();
 
-		const currentCustomerName = store.share.customer.name.use();
-		const savedMeal = store.page.selected.use();
+		const currentCustomerName = store.shared.customer.name.use();
+		const savedMeal = store.persistence.meals.use();
 
 		const instance_recipe = store.instances.recipe.get();
 
@@ -64,7 +64,7 @@ export default memo(
 										size="sm"
 										variant="flat"
 										onPress={() => {
-											store.page.selected[currentCustomerName]?.set(
+											store.persistence.meals[currentCustomerName]?.set(
 												savedCustomerMeal.filter((meal) => meal.index !== mealIndex)
 											);
 										}}
@@ -78,11 +78,11 @@ export default memo(
 										size="sm"
 										variant="flat"
 										onPress={() => {
-											store.share.recipe.data.set({
+											store.shared.recipe.data.set({
 												extraIngredients,
 												name: recipe,
 											});
-											store.share.beverage.name.set(beverage);
+											store.shared.beverage.name.set(beverage);
 										}}
 										className="md:w-auto"
 									>
