@@ -60,34 +60,37 @@ export default memo(function PopularTagSettingButton() {
 				</span>
 			</Tooltip>
 			<PopoverContent>
-				<div className="flex flex-col gap-2 px-1 py-2">
-					<div className="flex items-center">
-						<span className="mr-2">流行喜爱</span>
-						<Switch
-							isSelected={popularTagIsNegative}
-							size="sm"
-							onValueChange={onPopularTagIsNegativeChange}
-							aria-label="设置为流行厌恶"
-							classNames={{
-								wrapper: 'bg-primary',
-							}}
-						/>
-						<span>流行厌恶</span>
-					</div>
-					<div className="flex items-center">
-						<span className="mr-2 text-nowrap break-keep">标签</span>
-						<Select
-							items={popularTags}
-							defaultSelectedKeys={selectedPopularTag}
-							selectedKeys={selectedPopularTag}
-							size="sm"
-							variant="flat"
-							onSelectionChange={onSelectedPopularTagChange}
-							aria-label="选择表格每页最大行数"
-							title="选择表格每页最大行数"
-						>
-							{({value}) => <SelectItem key={value}>{value}</SelectItem>}
-						</Select>
+				<div className="flex flex-col px-1 py-2">
+					<p className="mb-2 text-base font-bold">全局设置</p>
+					<div className="flex flex-col gap-2">
+						<div className="flex items-center">
+							<span className="mr-2">流行喜爱</span>
+							<Switch
+								isSelected={popularTagIsNegative}
+								size="sm"
+								onValueChange={onPopularTagIsNegativeChange}
+								aria-label="设置为流行厌恶"
+								classNames={{
+									wrapper: 'bg-primary',
+								}}
+							/>
+							<span>流行厌恶</span>
+						</div>
+						<div className="flex items-center">
+							<span className="mr-2 text-nowrap break-keep">标签</span>
+							<Select
+								items={popularTags}
+								defaultSelectedKeys={selectedPopularTag}
+								selectedKeys={selectedPopularTag}
+								size="sm"
+								variant="flat"
+								onSelectionChange={onSelectedPopularTagChange}
+								aria-label="选择表格每页最大行数"
+								title="选择表格每页最大行数"
+							>
+								{({value}) => <SelectItem key={value}>{value}</SelectItem>}
+							</Select>
+						</div>
 					</div>
 				</div>
 			</PopoverContent>
