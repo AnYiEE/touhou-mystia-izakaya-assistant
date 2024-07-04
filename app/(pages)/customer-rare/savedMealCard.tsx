@@ -6,7 +6,11 @@ import {Plus} from './resultCard';
 import Sprite from '@/components/sprite';
 
 import {customerRatingColorMap} from './constants';
+import {BEVERAGE_TAG_STYLE, RECIPE_TAG_STYLE} from '@/constants';
 import {useCustomerRareStore} from '@/stores';
+import clsx from 'clsx';
+import TagGroup from './tagGroup';
+import Tags from '@/components/tags';
 
 interface IProps {}
 
@@ -28,7 +32,7 @@ export default memo(
 
 		return (
 			<Card fullWidth shadow="sm" ref={ref}>
-				<div className="flex flex-col gap-3 p-4">
+				<div className="flex flex-col gap-3 p-4 xl:gap-2 xl:px-2 xl:py-3">
 					{savedCustomerMeal.map(
 						(
 							{
@@ -49,26 +53,66 @@ export default memo(
 										<Tooltip
 											showArrow
 											color={customerRatingColorMap[rating]}
-											content={rating}
+											content={
+												<>
+													{rating}
+													{order.recipeTag?.startsWith('流行') && popular.tag && (
+														<>
+															•{popular.isNegative ? '流行厌恶' : '流行喜爱'}•
+															{popular.tag}
+														</>
+													)}
+												</>
+											}
 											placement="left"
 										>
 											<Avatar
 												isBordered
 												showFallback
 												color={customerRatingColorMap[rating]}
-												fallback={<div></div>}
+												fallback={
+													<TagGroup className="flex-nowrap text-nowrap break-keep">
+														{order.recipeTag && (
+															<Tags.Tag
+																tag={order.recipeTag}
+																tagStyle={RECIPE_TAG_STYLE.positive}
+															/>
+														)}
+														{order.beverageTag && (
+															<Tags.Tag
+																tag={order.beverageTag}
+																tagStyle={BEVERAGE_TAG_STYLE.positive}
+															/>
+														)}
+													</TagGroup>
+												}
 												radius="sm"
 												classNames={{
-													base: 'h-1 w-6 ring-offset-0 md:h-6 md:w-1',
+													base: 'h-[1.25rem] w-28 ring-offset-0',
 												}}
 											/>
 										</Tooltip>
 										<div className="flex items-center gap-2">
-											<Sprite
-												target="kitchenware"
-												name={instance_recipe.getPropsByName(recipe, 'kitchenware')}
-												size={1.5}
-											/>
+											<Tooltip
+												showArrow
+												content="此点单使用夜雀系列厨具制作"
+												isDisabled={!hasMystiaKitchenwware}
+											>
+												<Sprite
+													target="kitchenware"
+													name={instance_recipe.getPropsByName(recipe, 'kitchenware')}
+													size={1.5}
+													onClick={() => {
+														store.shared.customer.hasMystiaKitchenwware.set(
+															!hasMystiaKitchenwware
+														);
+													}}
+													className={clsx(
+														hasMystiaKitchenwware &&
+															'rounded-full ring-2 ring-warning-400 dark:ring-warning-200'
+													)}
+												/>
+											</Tooltip>
 											<Tooltip showArrow content={recipe} offset={2}>
 												<Sprite target="recipe" name={recipe} size={2} />
 											</Tooltip>
@@ -91,7 +135,7 @@ export default memo(
 												))}
 										</div>
 									</div>
-									<div className="flex w-full justify-center gap-2 md:w-auto">
+									<div className="flex w-full justify-center gap-2 md:w-auto xl:flex-col-reverse">
 										<Button
 											color="danger"
 											fullWidth
@@ -102,7 +146,7 @@ export default memo(
 													savedCustomerMeal.filter((meal) => meal.index !== mealIndex)
 												);
 											}}
-											className="md:w-auto"
+											className="md:w-auto xl:h-6"
 										>
 											删除
 										</Button>
@@ -122,7 +166,7 @@ export default memo(
 													name: recipe,
 												});
 											}}
-											className="md:w-auto"
+											className="md:w-auto xl:h-6"
 										>
 											选择
 										</Button>

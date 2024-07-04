@@ -1,4 +1,4 @@
-import {forwardRef, memo} from 'react';
+import {forwardRef, memo, useMemo} from 'react';
 import clsx from 'clsx';
 import {intersection} from 'lodash';
 
@@ -10,7 +10,7 @@ import type {IIngredientsTabStyle} from './types';
 import {type TIngredientNames} from '@/data';
 import type {TIngredientTag} from '@/data/types';
 import type {TIngredientInstance} from '@/methods/food/types';
-import {useCustomerRareStore} from '@/stores';
+import {useCustomerRareStore, useGlobalStore} from '@/stores';
 
 interface IProps {
 	ingredientsTabStyle: IIngredientsTabStyle;
@@ -19,32 +19,44 @@ interface IProps {
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function IngredientsTabContent({ingredientsTabStyle, sortedData}, ref) {
-		const store = useCustomerRareStore();
+		const customerStore = useCustomerRareStore();
+		const globalStore = useGlobalStore();
 
-		const currentCustomer = store.shared.customer.data.use();
-		const currentCustomerPopular = store.shared.customer.popular.use();
-		const currentRecipeData = store.shared.recipe.data.use();
+		const currentCustomer = customerStore.shared.customer.data.use();
+		const currentCustomerPopular = customerStore.shared.customer.popular.use();
+		const currentRecipeData = customerStore.shared.recipe.data.use();
 
-		const instance_ingredient = store.instances.ingredient.get();
-		const instance_recipe = store.instances.recipe.get();
+		const currentGlobalPopular = globalStore.persistence.popular.use();
 
-		const currentRecipe = currentRecipeData ? instance_recipe.getPropsByName(currentRecipeData.name) : null;
+		const instance_ingredient = customerStore.instances.ingredient.get();
+		const instance_recipe = customerStore.instances.recipe.get();
 
-		const darkIngredients = new Set<TIngredientNames>();
-		for (const {name, tags} of sortedData) {
-			if (intersection(tags, currentRecipe?.negativeTags ?? []).length > 0) {
-				darkIngredients.add(name);
+		const currentRecipe = useMemo(
+			() => (currentRecipeData ? instance_recipe.getPropsByName(currentRecipeData.name) : null),
+			[currentRecipeData, instance_recipe]
+		);
+
+		const darkIngredients = useMemo(() => {
+			const _darkIngredients = new Set<TIngredientNames>();
+			for (const {name, tags} of sortedData) {
+				if (intersection(tags, currentRecipe?.negativeTags ?? []).length > 0) {
+					darkIngredients.add(name);
+				}
 			}
-		}
+			return _darkIngredients;
+		}, [currentRecipe?.negativeTags, sortedData]);
 
-		sortedData = sortedData.filter(({name}) => !darkIngredients.has(name));
+		sortedData = useMemo(
+			() => sortedData.filter(({name}) => !darkIngredients.has(name)),
+			[darkIngredients, sortedData]
+		);
 
 		if (!currentCustomer || !currentRecipeData) {
 			return null;
 		}
 
 		const {target, name: customerName} = currentCustomer;
-		const {negativeTags: customerNegativeTags, positiveTags: customerPositiveTags} = store.instances[
+		const {negativeTags: customerNegativeTags, positiveTags: customerPositiveTags} = customerStore.instances[
 			target as 'customer_rare'
 		]
 			.get()
@@ -108,7 +120,8 @@ export default memo(
 								<div
 									key={index}
 									onClick={() => {
-										store.shared.recipe.data.set((prev) => {
+										customerStore.shared.customer.popular.set(currentGlobalPopular);
+										customerStore.shared.recipe.data.set((prev) => {
 											if (
 												prev &&
 												currentRecipe.ingredients.length + prev.extraIngredients.length < 5
@@ -160,7 +173,7 @@ export default memo(
 						isIconOnly
 						size="sm"
 						variant="flat"
-						onPress={store.toggleIngredientTabVisibilityState}
+						onPress={customerStore.toggleIngredientTabVisibilityState}
 						className="h-4 w-4/5 text-default-500"
 					>
 						{ingredientsTabStyle.buttonNode}

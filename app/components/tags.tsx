@@ -4,11 +4,11 @@ import clsx from 'clsx';
 import type {TTagStyle} from '@/constants/types';
 import type {TTags} from '@/data';
 
-interface IHandleClick {
-	handleClick?: ((tag: TTags, e?: MouseEvent<HTMLDivElement>) => void) | undefined;
+interface IHandleDoubleClick {
+	handleDoubleClick?: ((tag: TTags, e: MouseEvent<HTMLDivElement>) => void) | undefined;
 }
 
-interface ITagProps extends ITagPropsBase, IHandleClick, HTMLAttributes<HTMLDivElement> {}
+interface ITagProps extends ITagPropsBase, IHandleDoubleClick, HTMLAttributes<HTMLDivElement> {}
 
 interface ITagPropsBase {
 	tag: TTags;
@@ -17,7 +17,7 @@ interface ITagPropsBase {
 
 const Tag: FC<ITagProps> = memo(
 	forwardRef<HTMLDivElement | null, ITagProps>(function Tag(
-		{tag, tagStyle = {}, handleClick, className, ...props},
+		{tag, tagStyle = {}, handleDoubleClick, className, ...props},
 		ref
 	) {
 		return (
@@ -28,8 +28,8 @@ const Tag: FC<ITagProps> = memo(
 					borderColor: tagStyle.borderColor ?? 'inherit',
 					color: tagStyle.color ?? 'inherit',
 				}}
-				onClick={(e) => {
-					handleClick?.(tag, e);
+				onDoubleClick={(e) => {
+					handleDoubleClick?.(tag, e);
 				}}
 				{...props}
 				ref={ref}
@@ -45,17 +45,23 @@ interface ITagsPropsBase {
 	tagStyle?: Partial<TTagStyle> | undefined;
 }
 
-interface ITagsProps extends ITagsPropsBase, IHandleClick {
+interface ITagsProps extends ITagsPropsBase, IHandleDoubleClick {
 	className?: string;
 }
 
-const TagsComponent: FC<ITagsProps> = memo(function Tags({tags, tagStyle = {}, handleClick, className}) {
+const TagsComponent: FC<ITagsProps> = memo(function Tags({tags, tagStyle = {}, handleDoubleClick, className}) {
 	return (
 		<>
 			{tags &&
 				tags.length > 0 &&
 				tags.map((tag) => (
-					<Tag key={tag} tag={tag} tagStyle={tagStyle} handleClick={handleClick} className={className} />
+					<Tag
+						key={tag}
+						tag={tag}
+						tagStyle={tagStyle}
+						handleDoubleClick={handleDoubleClick}
+						className={className}
+					/>
 				))}
 		</>
 	);

@@ -152,6 +152,8 @@ const state = {
 
 			dlcs: new Set() as Selection,
 			kitchenwares: new Set() as Selection,
+			tagsWithPopular: [] as TRecipeTag[],
+
 			page: 1,
 			searchValue: '',
 			selectableRows: [5, 7, 10, 15, 20].map((value) => ({value})),
@@ -256,6 +258,7 @@ const customerRareStore = store(state, {
 			});
 			currentStore.shared.customer.rating.set(null);
 			currentStore.shared.recipe.data.set(null);
+			currentStore.shared.recipe.tagsWithPopular.set([]);
 			currentStore.shared.recipe.page.set(1);
 			currentStore.shared.beverage.name.set(null);
 			currentStore.shared.beverage.page.set(1);

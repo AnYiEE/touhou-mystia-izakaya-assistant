@@ -1,7 +1,7 @@
 import {type HTMLAttributes, forwardRef, memo, useCallback, useMemo} from 'react';
 import clsx from 'clsx';
 
-import {Button, Card} from '@nextui-org/react';
+import {Button, Card, Tooltip} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-icons';
 
@@ -132,6 +132,21 @@ export default memo(
 
 		const instance_recipe = customerStore.instances.recipe.get();
 
+		const isSaveButtonDisabled = useMemo(
+			() =>
+				!currentBeverageName ||
+				!currentRecipe ||
+				!currentOrder.beverageTag ||
+				!(currentOrder.recipeTag || hasMystiaKitchenwware),
+			[
+				currentBeverageName,
+				currentOrder.beverageTag,
+				currentOrder.recipeTag,
+				currentRecipe,
+				hasMystiaKitchenwware,
+			]
+		);
+
 		const handleSaveButtonPress = useCallback(() => {
 			if (!currentCustomerName || !currentBeverageName || !currentRecipe) {
 				return;
@@ -185,11 +200,25 @@ export default memo(
 						<div className="flex items-center gap-2">
 							{currentRecipe ? (
 								<>
-									<Sprite
-										target="kitchenware"
-										name={instance_recipe.getPropsByName(currentRecipe.name, 'kitchenware')}
-										size={2}
-									/>
+									<Tooltip
+										showArrow
+										content={`单击：将此点单标记为使用${hasMystiaKitchenwware ? '非' : ''}夜雀系列厨具制作`}
+									>
+										<Sprite
+											target="kitchenware"
+											name={instance_recipe.getPropsByName(currentRecipe.name, 'kitchenware')}
+											size={2}
+											onClick={() => {
+												customerStore.shared.customer.hasMystiaKitchenwware.set(
+													!hasMystiaKitchenwware
+												);
+											}}
+											className={clsx(
+												hasMystiaKitchenwware &&
+													'rounded-full ring-4 ring-warning-400 dark:ring-warning-200'
+											)}
+										/>
+									</Tooltip>
 									<Sprite target="recipe" name={currentRecipe.name} size={2.5} />
 								</>
 							) : (
@@ -208,17 +237,25 @@ export default memo(
 						<Plus />
 						<IngredientList />
 					</div>
-					<Button
-						color="primary"
-						fullWidth
-						isDisabled={!currentBeverageName || !currentRecipe}
-						size="sm"
-						variant="flat"
-						onPress={handleSaveButtonPress}
-						className="md:w-auto"
+					<Tooltip
+						showArrow
+						content={`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipe ? '' : '料理、'}客人点单需求`}
+						isDisabled={!isSaveButtonDisabled}
 					>
-						保存套餐
-					</Button>
+						<span>
+							<Button
+								color="primary"
+								fullWidth
+								isDisabled={isSaveButtonDisabled}
+								size="sm"
+								variant="flat"
+								onPress={handleSaveButtonPress}
+								className="md:w-auto"
+							>
+								保存套餐
+							</Button>
+						</span>
+					</Tooltip>
 				</div>
 			</Card>
 		);

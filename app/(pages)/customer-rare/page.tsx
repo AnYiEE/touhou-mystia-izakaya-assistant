@@ -1,6 +1,6 @@
 'use client';
 
-import {memo, useCallback, useMemo} from 'react';
+import {memo, useCallback, useEffect, useMemo} from 'react';
 import clsx from 'clsx';
 
 import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
@@ -23,7 +23,9 @@ import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterI
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
+import {evaluateMeal} from './evaluateMeal';
 import type {ICustomerTabStyleMap, IIngredientsTabStyleMap} from './types';
+import type {TBeverageTag} from '@/data/types';
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
 
 const customerTabStyleMap = {
@@ -56,16 +58,22 @@ export default memo(function CustomerRare() {
 	const customerStore = useCustomerRareStore();
 	const globalStore = useGlobalStore();
 
+	useEffect(() => {
+		customerStore.shared.customer.popular.set(globalStore.persistence.popular.get());
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
 	customerStore.shared.customer.data.onChange(() => {
+		customerStore.shared.customer.popular.set(globalStore.persistence.popular.get());
 		customerStore.refreshCustomerSelectedItems();
 		customerStore.refreshAllSelectedItems();
 	});
 
-	const currentGlobalPopular = globalStore.persistence.popular.use();
-	customerStore.shared.customer.popular.set(currentGlobalPopular);
-
-	globalStore.persistence.popular.onChange((popular) => {
-		customerStore.shared.customer.popular.set(popular);
+	globalStore.persistence.popular.isNegative.onChange((isNegative) => {
+		customerStore.shared.customer.popular.isNegative.set(isNegative);
+	});
+	globalStore.persistence.popular.tag.onChange((popular) => {
+		customerStore.shared.customer.popular.tag.set(popular);
 	});
 
 	const currentCustomer = customerStore.shared.customer.data.use();
@@ -73,6 +81,62 @@ export default memo(function CustomerRare() {
 
 	const instance_rare = customerStore.instances.customer_rare.get();
 	const instance_special = customerStore.instances.customer_special.get();
+
+	const evaluateMealHelper = useCallback(() => {
+		if (!currentCustomer) {
+			return;
+		}
+
+		const {name: currentCustomerName, target: currentCustomerTarget} = currentCustomer;
+		const instance_customer = (
+			currentCustomerTarget === 'customer_rare' ? instance_rare : instance_special
+		) as typeof instance_rare;
+
+		const {
+			beverageTags: currentCustomerBeverageTags,
+			negativeTags: currentCustomerNegativeTags,
+			positiveTags: currentCustomerPositiveTags,
+		} = instance_customer.getPropsByName(currentCustomerName);
+		const currentCustomerOrder = customerStore.shared.customer.order.get();
+		const hasMystiaKitchenwware = customerStore.shared.customer.hasMystiaKitchenwware.get();
+
+		let currentBeverageTags: TBeverageTag[] = [];
+		const currentBeverageName = customerStore.shared.beverage.name.get();
+		if (currentBeverageName) {
+			const beverage = customerStore.instances.beverage.get().getPropsByName(currentBeverageName);
+			currentBeverageTags = beverage.tags;
+		}
+
+		const currentRecipeTagsWithPopular = customerStore.shared.recipe.tagsWithPopular.get();
+
+		const rating = evaluateMeal({
+			currentBeverageTags,
+			currentCustomerBeverageTags,
+			currentCustomerNegativeTags,
+			currentCustomerOrder,
+			currentCustomerPositiveTags,
+			currentRecipeTagsWithPopular,
+			hasMystiaKitchenwware,
+		});
+
+		customerStore.shared.customer.rating.set(rating);
+	}, [
+		currentCustomer,
+		customerStore.instances.beverage,
+		customerStore.shared.beverage.name,
+		customerStore.shared.customer.hasMystiaKitchenwware,
+		customerStore.shared.customer.order,
+		customerStore.shared.customer.rating,
+		customerStore.shared.recipe.tagsWithPopular,
+		instance_rare,
+		instance_special,
+	]);
+
+	customerStore.shared.customer.hasMystiaKitchenwware.onChange(evaluateMealHelper);
+	customerStore.shared.customer.order.onChange(evaluateMealHelper);
+	customerStore.shared.customer.popular.onChange(evaluateMealHelper);
+	customerStore.shared.beverage.name.onChange(evaluateMealHelper);
+	customerStore.shared.recipe.tagsWithPopular.onChange(evaluateMealHelper);
 
 	const rareNames = customerStore.rareNames.use();
 	const specialNames = customerStore.specialNames.use();
