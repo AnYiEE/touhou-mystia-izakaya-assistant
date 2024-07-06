@@ -57,8 +57,9 @@ export default memo(function SettingsButton() {
 						<FontAwesomeIconButton
 							icon={faGear}
 							variant="light"
-							aria-label="设置流行喜爱或流行厌恶标签"
+							aria-label="全局设置和更多信息"
 							className="h-4 w-4 text-default-400 hover:opacity-80 data-[hover]:bg-transparent"
+							id="global_settings-button"
 						/>
 					</PopoverTrigger>
 				</span>

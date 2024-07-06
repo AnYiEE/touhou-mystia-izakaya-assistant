@@ -1,5 +1,6 @@
-import {type HTMLAttributes, forwardRef, memo, useCallback, useMemo} from 'react';
+import {type HTMLAttributes, forwardRef, memo, useCallback, useEffect, useMemo} from 'react';
 import clsx from 'clsx';
+import {driver} from 'driver.js';
 
 import {Button, Card, Tooltip} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -8,7 +9,7 @@ import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-ico
 import Placeholder from './placeholder';
 import Sprite from '@/components/sprite';
 
-import {useCustomerRareStore} from '@/stores';
+import {useCustomerRareStore, useGlobalStore} from '@/stores';
 import {removeLastElement} from '@/utils';
 
 interface IPlusProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'className'> {
@@ -120,6 +121,7 @@ interface IResultCardProps {}
 export default memo(
 	forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
 		const customerStore = useCustomerRareStore();
+		const globalStore = useGlobalStore();
 
 		const currentCustomerName = customerStore.shared.customer.data.use()?.name;
 		const currentBeverageName = customerStore.shared.beverage.name.use();
@@ -175,6 +177,29 @@ export default memo(
 			customerStore.persistence.meals,
 			hasMystiaKitchenware,
 		]);
+
+		useEffect(() => {
+			const key = 'global_settings-button';
+
+			if (globalStore.persistence.dirver.get().includes(key) || (!currentBeverageName && !currentRecipe?.name)) {
+				return;
+			}
+
+			driver({
+				onDestroyed: () => {
+					globalStore.persistence.dirver.set((prev) => {
+						prev.push(key);
+					});
+				},
+				popoverClass: '!bg-background-50 dark:!bg-foreground-50 !text-foreground',
+				stagePadding: 5,
+			}).highlight({
+				element: `#${key}`,
+				popover: {
+					description: '点击此处可以修改全局设置和查看更多信息',
+				},
+			});
+		}, [currentBeverageName, currentRecipe?.name, globalStore.persistence.dirver]);
 
 		if (!currentBeverageName && !currentRecipe) {
 			if (currentCustomerName && savedMeal[currentCustomerName]?.length) {
