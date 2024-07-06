@@ -175,7 +175,7 @@ export default memo(
 			[filteredData.length, tableRowsPerPageNumber]
 		);
 
-		const tabelSelectedKeys = useMemo(() => new Set([currentBeverageName ?? '']), [currentBeverageName]);
+		const tableSelectedKeys = useMemo(() => new Set([currentBeverageName ?? '']), [currentBeverageName]);
 
 		const renderTableCell = useCallback(
 			(data: TBeverageWithSuitability, columnKey: TTableColumnKey) => {
@@ -466,7 +466,7 @@ export default memo(
 				isHeaderSticky
 				bottomContent={tablePagination}
 				bottomContentPlacement="outside"
-				selectedKeys={tabelSelectedKeys}
+				selectedKeys={tableSelectedKeys}
 				selectionMode="single"
 				sortDescriptor={tableSortDescriptor}
 				topContent={tableToolbar}

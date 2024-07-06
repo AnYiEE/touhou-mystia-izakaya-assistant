@@ -8,7 +8,7 @@ if (Reflect.has(navigator, 'serviceWorker') && Reflect.has(self, 'caches')) {
 			} else if (registration.waiting) {
 				console.info('ServiceWorker is waiting.');
 			} else if (registration.active) {
-				console.info('ServiceWorker actived.');
+				console.info('ServiceWorker activated.');
 			}
 		})
 		['catch'](function (error) {

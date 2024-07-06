@@ -37,7 +37,7 @@ export default memo(
 						(
 							{
 								index: mealIndex,
-								hasMystiaKitchenwware,
+								hasMystiaKitchenware,
 								order,
 								popular,
 								rating,
@@ -96,7 +96,7 @@ export default memo(
 											<Tooltip
 												showArrow
 												content="此点单使用夜雀系列厨具制作"
-												isDisabled={!hasMystiaKitchenwware}
+												isDisabled={!hasMystiaKitchenware}
 											>
 												<Sprite
 													target="kitchenware"
@@ -108,7 +108,7 @@ export default memo(
 														);
 													}}
 													className={clsx(
-														hasMystiaKitchenwware &&
+														hasMystiaKitchenware &&
 															'rounded-full ring-2 ring-warning-400 dark:ring-warning-200'
 													)}
 												/>
@@ -156,7 +156,7 @@ export default memo(
 											size="sm"
 											variant="flat"
 											onPress={() => {
-												store.shared.customer.hasMystiaKitchenwware.set(hasMystiaKitchenwware);
+												store.shared.customer.hasMystiaKitchenware.set(hasMystiaKitchenware);
 												store.shared.customer.order.set(order);
 												store.shared.customer.popular.set(popular);
 												store.shared.customer.rating.set(rating);

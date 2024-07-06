@@ -9,8 +9,8 @@ import {ingredientInstance as instance_ingredient, recipeInstance as instance_re
 import {pinyinSort} from '@/utils';
 
 const ingredientTags = instance_ingredient.getValuesByProp(instance_ingredient.data, 'tags');
-const recipePpositiveTags = instance_recipe.getValuesByProp(instance_recipe.data, 'positiveTags');
-const popularValidTags = union(ingredientTags, recipePpositiveTags)
+const recipePositiveTags = instance_recipe.getValuesByProp(instance_recipe.data, 'positiveTags');
+const popularValidTags = union(ingredientTags, recipePositiveTags)
 	.map((value) => ({value}))
 	.sort(pinyinSort) as {
 	value: TIngredientTag | TRecipeTag;

@@ -91,7 +91,7 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 	private calculateScore(
 		recipePositiveTags: TRecipeTag[],
 		customerPositiveTags: TRecipeTag[],
-		costomerNegativeTags: TRecipeTag[]
+		customerNegativeTags: TRecipeTag[]
 	) {
 		let score = 0;
 
@@ -99,7 +99,7 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 			if (customerPositiveTags.includes(tag)) {
 				score += 1;
 			}
-			if (costomerNegativeTags.includes(tag)) {
+			if (customerNegativeTags.includes(tag)) {
 				score -= 1;
 			}
 		}
@@ -111,10 +111,10 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 		oldRecipePositiveTags: TRecipeTag[],
 		newRecipePositiveTags: TRecipeTag[],
 		customerPositiveTags: TRecipeTag[],
-		costomerNegativeTags: TRecipeTag[]
+		customerNegativeTags: TRecipeTag[]
 	) {
-		const originalScore = this.calculateScore(oldRecipePositiveTags, customerPositiveTags, costomerNegativeTags);
-		const newScore = this.calculateScore(newRecipePositiveTags, customerPositiveTags, costomerNegativeTags);
+		const originalScore = this.calculateScore(oldRecipePositiveTags, customerPositiveTags, customerNegativeTags);
+		const newScore = this.calculateScore(newRecipePositiveTags, customerPositiveTags, customerNegativeTags);
 
 		return newScore - originalScore;
 	}

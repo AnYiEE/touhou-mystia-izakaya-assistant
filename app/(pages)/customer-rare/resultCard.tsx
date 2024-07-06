@@ -124,7 +124,7 @@ export default memo(
 		const currentCustomerName = customerStore.shared.customer.data.use()?.name;
 		const currentBeverageName = customerStore.shared.beverage.name.use();
 		const currentRecipe = customerStore.shared.recipe.data.use();
-		const hasMystiaKitchenwware = customerStore.shared.customer.hasMystiaKitchenwware.use();
+		const hasMystiaKitchenware = customerStore.shared.customer.hasMystiaKitchenware.use();
 		const currentOrder = customerStore.shared.customer.order.use();
 		const currentCustomerPopular = customerStore.shared.customer.popular.use();
 		const currentRating = customerStore.shared.customer.rating.use();
@@ -137,14 +137,8 @@ export default memo(
 				!currentBeverageName ||
 				!currentRecipe ||
 				!currentOrder.beverageTag ||
-				!(currentOrder.recipeTag || hasMystiaKitchenwware),
-			[
-				currentBeverageName,
-				currentOrder.beverageTag,
-				currentOrder.recipeTag,
-				currentRecipe,
-				hasMystiaKitchenwware,
-			]
+				!(currentOrder.recipeTag || hasMystiaKitchenware),
+			[currentBeverageName, currentOrder.beverageTag, currentOrder.recipeTag, currentRecipe, hasMystiaKitchenware]
 		);
 
 		const handleSaveButtonPress = useCallback(() => {
@@ -155,7 +149,7 @@ export default memo(
 			const saveObject = {
 				beverage: currentBeverageName,
 				extraIngredients: currentRecipe.extraIngredients,
-				hasMystiaKitchenwware,
+				hasMystiaKitchenware,
 				order: currentOrder,
 				popular: currentCustomerPopular, // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				rating: currentRating!,
@@ -179,7 +173,7 @@ export default memo(
 			currentRating,
 			currentRecipe,
 			customerStore.persistence.meals,
-			hasMystiaKitchenwware,
+			hasMystiaKitchenware,
 		]);
 
 		if (!currentBeverageName && !currentRecipe) {
@@ -202,19 +196,17 @@ export default memo(
 								<>
 									<Tooltip
 										showArrow
-										content={`单击：将此点单标记为使用${hasMystiaKitchenwware ? '非' : ''}夜雀系列厨具制作`}
+										content={`单击：将此点单标记为使用${hasMystiaKitchenware ? '非' : ''}夜雀系列厨具制作`}
 									>
 										<Sprite
 											target="kitchenware"
 											name={instance_recipe.getPropsByName(currentRecipe.name, 'kitchenware')}
 											size={2}
 											onClick={() => {
-												customerStore.shared.customer.hasMystiaKitchenwware.set(
-													!hasMystiaKitchenwware
-												);
+												customerStore.shared.customer.hasMystiaKitchenware.set((prev) => !prev);
 											}}
 											className={clsx(
-												hasMystiaKitchenwware &&
+												hasMystiaKitchenware &&
 													'rounded-full ring-4 ring-warning-400 dark:ring-warning-200'
 											)}
 										/>

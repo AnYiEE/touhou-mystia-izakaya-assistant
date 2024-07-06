@@ -203,7 +203,7 @@ export default memo(
 			[filteredData.length, tableRowsPerPageNumber]
 		);
 
-		const tabelSelectedKeys = useMemo(() => new Set([currentRecipe?.name ?? '']), [currentRecipe?.name]);
+		const tableSelectedKeys = useMemo(() => new Set([currentRecipe?.name ?? '']), [currentRecipe?.name]);
 
 		const renderTableCell = useCallback(
 			(data: TRecipeWithSuitability, columnKey: TTableColumnKey) => {
@@ -573,7 +573,7 @@ export default memo(
 				isHeaderSticky
 				bottomContent={tablePagination}
 				bottomContentPlacement="outside"
-				selectedKeys={tabelSelectedKeys}
+				selectedKeys={tableSelectedKeys}
 				selectionMode="single"
 				sortDescriptor={tableSortDescriptor}
 				topContent={tableToolbar}

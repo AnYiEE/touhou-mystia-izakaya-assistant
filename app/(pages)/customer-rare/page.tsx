@@ -98,7 +98,7 @@ export default memo(function CustomerRare() {
 			positiveTags: currentCustomerPositiveTags,
 		} = instance_customer.getPropsByName(currentCustomerName);
 		const currentCustomerOrder = customerStore.shared.customer.order.get();
-		const hasMystiaKitchenwware = customerStore.shared.customer.hasMystiaKitchenwware.get();
+		const hasMystiaKitchenware = customerStore.shared.customer.hasMystiaKitchenware.get();
 
 		let currentBeverageTags: TBeverageTag[] = [];
 		const currentBeverageName = customerStore.shared.beverage.name.get();
@@ -204,7 +204,7 @@ export default memo(function CustomerRare() {
 		setSearchValue: customerStore.persistence.customer.searchValue.set,
 	});
 
-	const costomerSelectConfig = useMemo(
+	const customerSelectConfig = useMemo(
 		() =>
 			[
 				{
@@ -317,7 +317,7 @@ export default memo(function CustomerRare() {
 			>
 				<SideSearchIconButton searchConfig={customerSearchConfig} />
 				<SidePinyinSortIconButton pinyinSortConfig={customerPinyinSortConfig} />
-				<SideFilterIconButton selectConfig={costomerSelectConfig} />
+				<SideFilterIconButton selectConfig={customerSelectConfig} />
 			</SideButtonGroup>
 
 			<SideButtonGroup

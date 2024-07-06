@@ -30,6 +30,7 @@ const storeVersion = {
 	initial: 0,
 	rating: 1, // eslint-disable-next-line sort-keys
 	popular: 2,
+	popularTypo: 3,
 } as const;
 
 const state = {
@@ -96,7 +97,7 @@ const state = {
 		meals: {} as {
 			[key in TCustomerNames]?: {
 				index: number;
-				hasMystiaKitchenwware: boolean;
+				hasMystiaKitchenware: boolean;
 				order: {
 					beverageTag: TBeverageTag | null;
 					recipeTag: TRecipeTag | null;
@@ -130,7 +131,7 @@ const state = {
 
 			filterVisibility: true,
 
-			hasMystiaKitchenwware: false,
+			hasMystiaKitchenware: false,
 			order: {
 				beverageTag: null as TBeverageTag | null,
 				recipeTag: null as TRecipeTag | null,
@@ -167,7 +168,7 @@ const customerRareStore = store(state, {
 	persist: {
 		enabled: true,
 		name: 'page-customer_rare-storage',
-		version: storeVersion.popular,
+		version: storeVersion.popularTypo,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -198,6 +199,17 @@ const customerRareStore = store(state, {
 				};
 				delete oldState.persistence.selected;
 				delete oldState.page;
+			}
+			if (version < storeVersion.popularTypo) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+				for (const meals of Object.values(oldState.persistence.meals) as any) {
+					for (const meal of meals) {
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+						meal.hasMystiaKitchenware = meal.hasMystiaKitchenwware;
+						// cSpell:ignore kitchenwware
+						delete meal.hasMystiaKitchenwware;
+					}
+				}
 			}
 			return persistedState as typeof state;
 		},
@@ -251,7 +263,7 @@ const customerRareStore = store(state, {
 		refreshCustomerSelectedItems() {
 			currentStore.shared.customer.beverageTags.set(new Set());
 			currentStore.shared.customer.positiveTags.set(new Set());
-			currentStore.shared.customer.hasMystiaKitchenwware.set(false);
+			currentStore.shared.customer.hasMystiaKitchenware.set(false);
 			currentStore.shared.customer.order.set({
 				beverageTag: null,
 				recipeTag: null,

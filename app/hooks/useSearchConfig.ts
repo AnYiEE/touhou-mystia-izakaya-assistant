@@ -2,18 +2,18 @@ import {type Dispatch, type SetStateAction, useMemo} from 'react';
 
 import {type ISearchConfig} from '@/components/sideSearchIconButton';
 
-interface IValueObeject {
+interface IValueObject {
 	value: string;
 }
 
-interface IUseSearchConfig<T extends IValueObeject[]> {
+interface IUseSearchConfig<T extends IValueObject[]> {
 	label: string;
 	searchItems: T;
 	searchValue: string;
 	setSearchValue: Dispatch<SetStateAction<string>>;
 }
 
-export function useSearchConfig<T extends IValueObeject[]>({
+export function useSearchConfig<T extends IValueObject[]>({
 	label,
 	searchItems,
 	searchValue,
