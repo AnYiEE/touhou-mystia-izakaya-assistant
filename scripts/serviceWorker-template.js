@@ -57,9 +57,14 @@ self.addEventListener('fetch', function (event) {
 	if (event.request.headers.has('range') || event.request.method !== 'GET') {
 		return;
 	}
+
 	var urlObject = new URL(event.request.url, location.origin);
 	if (urlObject.host !== location.host || urlObject.protocol !== 'https:') {
 		return;
 	}
+	if (urlObject.pathname.startsWith('/_vercel')) {
+		return;
+	}
+
 	event.respondWith(networkFirst(event.request));
 });
