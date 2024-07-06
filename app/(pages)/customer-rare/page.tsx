@@ -25,6 +25,7 @@ import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import {evaluateMeal} from './evaluateMeal';
 import type {ICustomerTabStyleMap, IIngredientsTabStyleMap} from './types';
+import {type TIngredientNames, type TRecipeNames} from '@/data';
 import type {TBeverageTag} from '@/data/types';
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
 
@@ -107,34 +108,52 @@ export default memo(function CustomerRare() {
 			currentBeverageTags = beverage.tags;
 		}
 
+		let currentRecipeName: TRecipeNames | null = null;
+		const currentIngredients: TIngredientNames[] = [];
+		const currentRecipeData = customerStore.shared.recipe.data.get();
+		if (currentRecipeData) {
+			currentRecipeName = currentRecipeData.name;
+			currentIngredients.push(
+				...customerStore.instances.recipe.get().getPropsByName(currentRecipeName).ingredients,
+				...currentRecipeData.extraIngredients
+			);
+		}
+
 		const currentRecipeTagsWithPopular = customerStore.shared.recipe.tagsWithPopular.get();
 
 		const rating = evaluateMeal({
 			currentBeverageTags,
 			currentCustomerBeverageTags,
+			currentCustomerName,
 			currentCustomerNegativeTags,
 			currentCustomerOrder,
 			currentCustomerPositiveTags,
+			currentIngredients,
+			currentRecipeName,
 			currentRecipeTagsWithPopular,
-			hasMystiaKitchenwware,
+			hasMystiaKitchenware,
 		});
 
 		customerStore.shared.customer.rating.set(rating);
 	}, [
 		currentCustomer,
 		customerStore.instances.beverage,
+		customerStore.instances.recipe,
 		customerStore.shared.beverage.name,
-		customerStore.shared.customer.hasMystiaKitchenwware,
+		customerStore.shared.customer.hasMystiaKitchenware,
 		customerStore.shared.customer.order,
 		customerStore.shared.customer.rating,
+		customerStore.shared.recipe.data,
 		customerStore.shared.recipe.tagsWithPopular,
 		instance_rare,
 		instance_special,
 	]);
 
-	customerStore.shared.customer.hasMystiaKitchenwware.onChange(evaluateMealHelper);
-	customerStore.shared.customer.order.onChange(evaluateMealHelper);
-	customerStore.shared.customer.popular.onChange(evaluateMealHelper);
+	customerStore.shared.customer.hasMystiaKitchenware.onChange(evaluateMealHelper);
+	customerStore.shared.customer.order.beverageTag.onChange(evaluateMealHelper);
+	customerStore.shared.customer.order.recipeTag.onChange(evaluateMealHelper);
+	customerStore.shared.customer.popular.isNegative.onChange(evaluateMealHelper);
+	customerStore.shared.customer.popular.tag.onChange(evaluateMealHelper);
 	customerStore.shared.beverage.name.onChange(evaluateMealHelper);
 	customerStore.shared.recipe.tagsWithPopular.onChange(evaluateMealHelper);
 

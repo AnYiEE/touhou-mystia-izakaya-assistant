@@ -7,7 +7,7 @@ import {useLongPress} from 'use-long-press';
 import {Avatar, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
 import {faArrowsRotate} from '@fortawesome/free-solid-svg-icons';
 
-import PopularTagSettingButton from './popularTagSettingButton';
+import SettingsButton from './settingsButton';
 import TagGroup from './tagGroup';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Tags from '@/components/tags';
@@ -61,12 +61,12 @@ export default memo(
 			]
 		);
 
-		const bindRecipePositiveTagLongPress = useLongPress((_, context) => {
+		const bindRecipePositiveTagLongPress = useLongPress((_longPressReactEvents, context) => {
 			const {context: tag} = context as {context: TRecipeTag};
 			customerStore.shared.customer.order.recipeTag.set((prev) => (prev === tag ? null : tag));
 		});
 
-		const bindBeverageTagLongPress = useLongPress((_, context) => {
+		const bindBeverageTagLongPress = useLongPress((_longPressReactEvents, context) => {
 			const {context: tag} = context as {context: TBeverageTag};
 			customerStore.shared.customer.order.beverageTag.set((prev) => (prev === tag ? null : tag));
 		});
@@ -312,7 +312,7 @@ export default memo(
 							/>
 						</Tooltip>
 					)}
-					<PopularTagSettingButton />
+					<SettingsButton />
 				</div>
 			</Card>
 		);

@@ -225,8 +225,8 @@ const customerRareStore = store(state, {
 	},
 })
 	.computed((currentStore) => ({
-		rareNames: () => getAllItemNames(instance_rare, currentStore.persistence.customer.pinyinSortState.get()),
-		specialNames: () => getAllItemNames(instance_special, currentStore.persistence.customer.pinyinSortState.get()),
+		rareNames: () => getAllItemNames(instance_rare, currentStore.persistence.customer.pinyinSortState.use()),
+		specialNames: () => getAllItemNames(instance_special, currentStore.persistence.customer.pinyinSortState.use()),
 
 		beverageTableColumns: {
 			read: () => new Set(currentStore.persistence.beverage.table.visibleColumns.use()) as Selection,

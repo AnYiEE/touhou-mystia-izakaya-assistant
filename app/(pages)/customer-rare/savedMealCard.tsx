@@ -1,16 +1,16 @@
 import {Fragment, forwardRef, memo} from 'react';
+import clsx from 'clsx';
 
 import {Avatar, Button, Card, Divider, Tooltip} from '@nextui-org/react';
 
 import {Plus} from './resultCard';
+import TagGroup from './tagGroup';
 import Sprite from '@/components/sprite';
+import Tags from '@/components/tags';
 
 import {customerRatingColorMap} from './constants';
 import {BEVERAGE_TAG_STYLE, RECIPE_TAG_STYLE} from '@/constants';
 import {useCustomerRareStore} from '@/stores';
-import clsx from 'clsx';
-import TagGroup from './tagGroup';
-import Tags from '@/components/tags';
 
 interface IProps {}
 
