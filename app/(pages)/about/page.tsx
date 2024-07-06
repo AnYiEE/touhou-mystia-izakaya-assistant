@@ -13,7 +13,7 @@ export default memo(function About() {
 	return (
 		<div className="leading-6">
 			<H1 isFirst>项目介绍</H1>
-			<div className="flex flex-col gap-2 break-all indent-8">
+			<div className="flex flex-col gap-2 break-all text-justify indent-8">
 				<p>{description}</p>
 				<p>
 					使用{name}（以下简称“{shortName}”）并不意味您拥有

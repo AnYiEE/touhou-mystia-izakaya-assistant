@@ -256,7 +256,7 @@ export default memo(
 									<p className="text-small font-medium">{name}</p>
 									<div className="-ml-2">
 										<Popover showArrow>
-											<Tooltip showArrow content={tags} offset={0}>
+											<Tooltip showArrow content={tags} offset={-2} placement="right">
 												<span className="cursor-pointer underline decoration-dotted">
 													<PopoverTrigger>
 														<FontAwesomeIconButton
@@ -295,7 +295,7 @@ export default memo(
 					case 'action':
 						return (
 							<div className="flex justify-center">
-								<Tooltip showArrow content="选择此项" offset={0}>
+								<Tooltip showArrow content="选择此项" placement="left">
 									<Button
 										isIconOnly
 										size="sm"

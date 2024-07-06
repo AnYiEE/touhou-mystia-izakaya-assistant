@@ -243,7 +243,7 @@ export default memo(
 										tag={tag}
 										tagStyle={customerTagStyleMap[currentCustomerTarget].negative}
 										className={clsx(
-											'p-0.5',
+											'cursor-not-allowed p-0.5',
 											!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50'
 										)}
 									/>

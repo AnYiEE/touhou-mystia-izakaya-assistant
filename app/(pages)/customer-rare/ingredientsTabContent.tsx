@@ -130,7 +130,7 @@ export default memo(
 											}
 										});
 									}}
-									className="flex cursor-pointer flex-col items-center"
+									className="flex cursor-pointer flex-col items-center transition hover:scale-105"
 									title={`加入${name}`}
 								>
 									<Badge
@@ -159,7 +159,7 @@ export default memo(
 							</div>
 							<div className="m-2 grid grid-cols-[repeat(auto-fill,3rem)] justify-around gap-4">
 								{[...darkIngredients].map((name, index) => (
-									<div key={index} className="flex flex-col items-center">
+									<div key={index} className="flex cursor-not-allowed flex-col items-center">
 										<Sprite target="ingredient" name={name} size={3} />
 										<span className="text-nowrap break-keep text-xs">{name}</span>
 									</div>
