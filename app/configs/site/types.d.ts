@@ -4,6 +4,7 @@ type THref = {
 };
 
 export interface ISiteConfig {
+	domain: string;
 	name: string;
 	shortName: string;
 	author: {

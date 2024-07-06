@@ -34,6 +34,7 @@ const navItems = [
 ] as const satisfies ISiteConfig['navItems'];
 
 export const siteConfig = {
+	domain: new URL(PACKAGE.homepage).hostname,
 	name: '东方夜雀食堂小助手',
 	shortName: '夜雀助手',
 	author: {

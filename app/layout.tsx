@@ -3,13 +3,13 @@ import {type Metadata, type Viewport} from 'next';
 import Script from 'next/script';
 import {execSync} from 'node:child_process';
 
-import {Analytics} from '@vercel/analytics/react';
 import {SpeedInsights} from '@vercel/speed-insights/next';
 
 import Navbar from '@/(pages)/navbar';
 import Footer from '@/(pages)/footer';
-import Providers from '@/providers';
+import Analytics from '@/components/analytics';
 import ErrorBoundary from '@/components/errorBoundary';
+import Providers from '@/providers';
 
 import {siteConfig} from '@/configs';
 

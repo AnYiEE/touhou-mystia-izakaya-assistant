@@ -6,7 +6,7 @@
 /out/
 
 # production
-/public/*.js
+/public/*serviceworker*.js
 
 # local env files
 .env*.local

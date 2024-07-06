@@ -6,6 +6,12 @@ declare global {
 			VERCEL_GIT_COMMIT_SHA?: string;
 		}
 	}
+
+	interface Window {
+		_paq: {
+			push: (...args: unknown[]) => void;
+		};
+	}
 }
 
 export {};

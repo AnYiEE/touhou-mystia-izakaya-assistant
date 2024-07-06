@@ -9,3 +9,4 @@ export * from './pinyinSort';
 export * from './pxToRem';
 export * from './remToPx';
 export * from './removeLastElement';
+export * from './setScriptUrlTag';
