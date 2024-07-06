@@ -285,7 +285,7 @@ export const RECIPE_LIST = [
 	{
 		name: '幻昙花糕',
 		ingredients: ['幻昙华', '露水'],
-		positiveTags: ['高级', '传说', '甜', '梦幻', '适合拍照'],
+		positiveTags: ['高级', '传说', '甜', '不可思议', '梦幻', '适合拍照'],
 		negativeTags: ['肉', '水产'],
 		kitchenware: '蒸锅',
 		min: 4.2,
