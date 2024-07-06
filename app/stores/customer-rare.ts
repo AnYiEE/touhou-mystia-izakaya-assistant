@@ -184,19 +184,22 @@ const customerRareStore = store(state, {
 			if (version < storeVersion.popular) {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				oldState.persistence = oldState.page;
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+				for (const meals of Object.values(oldState.persistence.selected) as any) {
+					for (const meal of meals) {
+						meal.hasMystiaKitchenware = false;
+						meal.order = {
+							beverageTag: null,
+							recipeTag: null,
+						};
+						meal.popular = {
+							isNegative: false,
+							tag: null,
+						};
+					}
+				}
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				oldState.persistence.meals = {
-					...oldState.page.selected,
-					hasMystiaKitchenwware: false,
-					order: {
-						beverageTag: null,
-						recipeTag: null,
-					},
-					popular: {
-						isNegative: false,
-						tag: null,
-					},
-				};
+				oldState.persistence.meals = oldState.page.selected;
 				delete oldState.persistence.selected;
 				delete oldState.page;
 			}
