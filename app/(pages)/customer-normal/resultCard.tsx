@@ -1,7 +1,7 @@
 import {type HTMLAttributes, forwardRef, memo, useCallback, useMemo} from 'react';
 import clsx from 'clsx';
 
-import {Button, Card} from '@nextui-org/react';
+import {Button, Card, Tooltip} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-icons';
 
@@ -119,14 +119,20 @@ interface IResultCardProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
-		const store = useCustomerNormalStore();
+		const customerStore = useCustomerNormalStore();
 
-		const currentCustomerName = store.shared.customer.name.use();
-		const currentBeverageName = store.shared.beverage.name.use();
-		const currentRecipe = store.shared.recipe.data.use();
-		const savedMeal = store.persistence.meals.use();
+		const currentCustomerName = customerStore.shared.customer.name.use();
+		const currentBeverageName = customerStore.shared.beverage.name.use();
+		const currentRecipe = customerStore.shared.recipe.data.use();
+		const currentCustomerPopular = customerStore.shared.customer.popular.use();
+		const savedMeal = customerStore.persistence.meals.use();
 
-		const instance_recipe = store.instances.recipe.get();
+		const instance_recipe = customerStore.instances.recipe.get();
+
+		const isSaveButtonDisabled = useMemo(
+			() => !currentBeverageName || !currentRecipe,
+			[currentBeverageName, currentRecipe]
+		);
 
 		const handleSaveButtonPress = useCallback(() => {
 			if (!currentCustomerName || !currentBeverageName || !currentRecipe) {
@@ -136,10 +142,11 @@ export default memo(
 			const saveObject = {
 				beverage: currentBeverageName,
 				extraIngredients: currentRecipe.extraIngredients,
+				popular: currentCustomerPopular,
 				recipe: currentRecipe.name,
 			} as const;
 
-			store.persistence.meals.set((prev) => {
+			customerStore.persistence.meals.set((prev) => {
 				if (currentCustomerName in prev) {
 					const lastItem = prev[currentCustomerName]?.at(-1);
 					const index = lastItem ? lastItem.index + 1 : 0;
@@ -148,7 +155,13 @@ export default memo(
 					prev[currentCustomerName] = [{...saveObject, index: 0}];
 				}
 			});
-		}, [currentBeverageName, currentCustomerName, currentRecipe, store.persistence.meals]);
+		}, [
+			currentBeverageName,
+			currentCustomerName,
+			currentCustomerPopular,
+			currentRecipe,
+			customerStore.persistence.meals,
+		]);
 
 		if (!currentBeverageName && !currentRecipe) {
 			if (currentCustomerName && savedMeal[currentCustomerName]?.length) {
@@ -191,17 +204,25 @@ export default memo(
 						<Plus />
 						<IngredientList />
 					</div>
-					<Button
-						color="primary"
-						fullWidth
-						isDisabled={!currentBeverageName || !currentRecipe}
-						size="sm"
-						variant="flat"
-						onPress={handleSaveButtonPress}
-						className="md:w-auto"
+					<Tooltip
+						showArrow
+						content={`请选择${currentBeverageName ? '' : '酒水'}${currentRecipe ? '' : '料理'}`}
+						isDisabled={!isSaveButtonDisabled}
 					>
-						保存套餐
-					</Button>
+						<span>
+							<Button
+								color="primary"
+								fullWidth
+								isDisabled={isSaveButtonDisabled}
+								size="sm"
+								variant="flat"
+								onPress={handleSaveButtonPress}
+								className="md:w-auto"
+							>
+								保存套餐
+							</Button>
+						</span>
+					</Tooltip>
 				</div>
 			</Card>
 		);

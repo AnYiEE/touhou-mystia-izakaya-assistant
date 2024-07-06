@@ -1,4 +1,4 @@
-import {forwardRef, memo} from 'react';
+import {forwardRef, memo, useMemo} from 'react';
 import clsx from 'clsx';
 import {intersection} from 'lodash';
 
@@ -7,9 +7,10 @@ import {Badge, Button, ScrollShadow} from '@nextui-org/react';
 import Sprite from '@/components/sprite';
 
 import type {IIngredientsTabStyle} from './types';
-import {TIngredientNames} from '@/data';
+import {type TIngredientNames} from '@/data';
+import type {TIngredientTag, TRecipeTag} from '@/data/types';
 import type {TIngredientInstance} from '@/methods/food/types';
-import {useCustomerNormalStore} from '@/stores';
+import {useCustomerNormalStore, useGlobalStore} from '@/stores';
 
 interface IProps {
 	ingredientsTabStyle: IIngredientsTabStyle;
@@ -18,32 +19,45 @@ interface IProps {
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function IngredientsTabContent({ingredientsTabStyle, sortedData}, ref) {
-		const store = useCustomerNormalStore();
+		const customerStore = useCustomerNormalStore();
+		const globalStore = useGlobalStore();
 
-		const currentCustomerName = store.shared.customer.name.use();
-		const currentRecipeData = store.shared.recipe.data.use();
+		const currentCustomerName = customerStore.shared.customer.name.use();
+		const currentCustomerPopular = customerStore.shared.customer.popular.use();
+		const currentRecipeData = customerStore.shared.recipe.data.use();
 
-		const instance_ingredient = store.instances.ingredient.get();
-		const instance_recipe = store.instances.recipe.get();
+		const currentGlobalPopular = globalStore.persistence.popular.use();
 
-		const currentRecipe = currentRecipeData ? instance_recipe.getPropsByName(currentRecipeData.name) : null;
+		const instance_customer = customerStore.instances.customer.get();
+		const instance_ingredient = customerStore.instances.ingredient.get();
+		const instance_recipe = customerStore.instances.recipe.get();
 
-		const darkIngredients = new Set<TIngredientNames>();
-		for (const {name, tags} of sortedData) {
-			if (intersection(tags, currentRecipe?.negativeTags ?? []).length > 0) {
-				darkIngredients.add(name);
+		const currentRecipe = useMemo(
+			() => (currentRecipeData ? instance_recipe.getPropsByName(currentRecipeData.name) : null),
+			[currentRecipeData, instance_recipe]
+		);
+
+		const darkIngredients = useMemo(() => {
+			const _darkIngredients = new Set<TIngredientNames>();
+			for (const {name, tags} of sortedData) {
+				if (intersection(tags, currentRecipe?.negativeTags ?? []).length > 0) {
+					_darkIngredients.add(name);
+				}
 			}
-		}
+			return _darkIngredients;
+		}, [currentRecipe?.negativeTags, sortedData]);
 
-		sortedData = sortedData.filter(({name}) => !darkIngredients.has(name));
+		sortedData = useMemo(
+			() => sortedData.filter(({name}) => !darkIngredients.has(name)),
+			[darkIngredients, sortedData]
+		);
 
 		if (!currentCustomerName || !currentRecipeData) {
 			return null;
 		}
 
-		const {negativeTags: customerNegativeTags, positiveTags: customerPositiveTags} = store.instances.customer
-			.get()
-			.getPropsByName(currentCustomerName);
+		const {negativeTags: customerNegativeTags, positiveTags: customerPositiveTags} =
+			instance_customer.getPropsByName(currentCustomerName);
 
 		return (
 			<>
@@ -69,33 +83,48 @@ export default memo(
 									</div>
 								);
 							}
-							const extraTags: string[] = [];
+							const extraTags: TIngredientTag[] = [];
 							for (const extraIngredient of extraIngredients) {
 								extraTags.push(...instance_ingredient.getPropsByName(extraIngredient, 'tags'));
 							}
+							const extraTagsWithPopular = instance_ingredient.calcTagsWithPopular(
+								extraTags,
+								currentCustomerPopular
+							);
 							const before = instance_recipe.composeTags(
 								currentRecipe.ingredients,
 								extraIngredients,
 								currentRecipe.positiveTags,
-								extraTags
+								extraTagsWithPopular
+							);
+							const tagsWithPopular = instance_ingredient.calcTagsWithPopular(
+								tags,
+								currentCustomerPopular
 							);
 							const after = instance_recipe.composeTags(
 								currentRecipe.ingredients,
 								extraIngredients,
 								currentRecipe.positiveTags,
-								[...extraTags, ...tags]
+								[...extraTagsWithPopular, ...tagsWithPopular]
 							);
-							const scoreChange = instance_recipe.getIngredientScoreChange(
+							let scoreChange = instance_recipe.getIngredientScoreChange(
 								before,
 								after,
 								customerPositiveTags,
 								customerNegativeTags
 							);
+							if (
+								(customerNegativeTags as TRecipeTag[]).includes('大份') &&
+								currentRecipe.ingredients.length + extraIngredients.length === 4
+							) {
+								scoreChange -= 1;
+							}
 							return (
 								<div
 									key={index}
 									onClick={() => {
-										store.shared.recipe.data.set((prev) => {
+										customerStore.shared.customer.popular.set(currentGlobalPopular);
+										customerStore.shared.recipe.data.set((prev) => {
 											if (
 												prev &&
 												currentRecipe.ingredients.length + prev.extraIngredients.length < 5
@@ -104,7 +133,7 @@ export default memo(
 											}
 										});
 									}}
-									className="flex cursor-pointer flex-col items-center"
+									className="flex cursor-pointer flex-col items-center transition hover:scale-105"
 									title={`加入${name}`}
 								>
 									<Badge
@@ -133,7 +162,7 @@ export default memo(
 							</div>
 							<div className="m-2 grid grid-cols-[repeat(auto-fill,3rem)] justify-around gap-4">
 								{[...darkIngredients].map((name, index) => (
-									<div key={index} className="flex flex-col items-center">
+									<div key={index} className="flex cursor-not-allowed flex-col items-center">
 										<Sprite target="ingredient" name={name} size={3} />
 										<span className="text-nowrap break-keep text-xs">{name}</span>
 									</div>
@@ -147,7 +176,7 @@ export default memo(
 						isIconOnly
 						size="sm"
 						variant="flat"
-						onPress={store.toggleIngredientTabVisibilityState}
+						onPress={customerStore.toggleIngredientTabVisibilityState}
 						className="h-4 w-4/5 text-default-500"
 					>
 						{ingredientsTabStyle.buttonNode}

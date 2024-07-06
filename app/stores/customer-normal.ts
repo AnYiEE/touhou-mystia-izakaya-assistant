@@ -9,6 +9,7 @@ import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import {type TBeverageNames, type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
+import {type TIngredientTag, type TRecipeTag} from '@/data/types';
 import {customerNormalInstance as instance_customer} from '@/methods/customer';
 import {
 	beverageInstance as instance_beverage,
@@ -21,6 +22,7 @@ import {numberSort, pinyinSort} from '@/utils';
 const storeVersion = {
 	initial: 0,
 	popular: 1,
+	popularFull: 2,
 } as const;
 
 const state = {
@@ -47,7 +49,6 @@ const state = {
 		dlcs: instance_recipe.getValuesByProp(instance_recipe.data, 'dlc', true).sort(numberSort),
 		kitchenwares: instance_recipe.getValuesByProp(instance_recipe.data, 'kitchenware', true).sort(pinyinSort),
 		names: instance_recipe.getValuesByProp(instance_recipe.data, 'name', true).sort(pinyinSort),
-		negativeTags: instance_recipe.getValuesByProp(instance_recipe.data, 'negativeTags', true).sort(pinyinSort),
 		positiveTags: instance_recipe.getValuesByProp(instance_recipe.data, 'positiveTags', true).sort(pinyinSort),
 	},
 
@@ -85,6 +86,10 @@ const state = {
 		meals: {} as {
 			[key in TCustomerNames]?: {
 				index: number;
+				popular: {
+					isNegative: boolean;
+					tag: TIngredientTag | TRecipeTag | null;
+				};
 				beverage: TBeverageNames;
 				recipe: TRecipeNames;
 				extraIngredients: TIngredientNames[];
@@ -108,6 +113,11 @@ const state = {
 			positiveTags: new Set() as Selection,
 
 			filterVisibility: true,
+
+			popular: {
+				isNegative: false,
+				tag: null as TRecipeTag | null,
+			},
 		},
 		ingredient: {
 			filterVisibility: false,
@@ -120,6 +130,8 @@ const state = {
 
 			dlcs: new Set() as Selection,
 			kitchenwares: new Set() as Selection,
+			tagsWithPopular: [] as TRecipeTag[],
+
 			page: 1,
 			searchValue: '',
 			selectableRows: [5, 7, 10, 15, 20].map((value) => ({value})),
@@ -133,7 +145,7 @@ const customerNormalStore = store(state, {
 	persist: {
 		enabled: true,
 		name: 'page-customer_normal-storage',
-		version: storeVersion.popular,
+		version: storeVersion.popularFull,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -146,6 +158,17 @@ const customerNormalStore = store(state, {
 				delete oldState.persistence.selected;
 				delete oldState.page;
 			}
+			if (version < storeVersion.popularFull) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+				for (const meals of Object.values(oldState.persistence.meals) as any) {
+					for (const meal of meals) {
+						meal.popular = {
+							isNegative: false,
+							tag: null,
+						};
+					}
+				}
+			}
 			return persistedState as typeof state;
 		},
 		partialize(currentStore) {
@@ -157,7 +180,7 @@ const customerNormalStore = store(state, {
 	},
 })
 	.computed((currentStore) => ({
-		names: () => getAllItemNames(instance_customer, currentStore.persistence.customer.pinyinSortState.get()),
+		names: () => getAllItemNames(instance_customer, currentStore.persistence.customer.pinyinSortState.use()),
 
 		beverageTableColumns: {
 			read: () => new Set(currentStore.persistence.beverage.table.visibleColumns.use()) as Selection,
@@ -167,8 +190,8 @@ const customerNormalStore = store(state, {
 		},
 		beverageTableRows: {
 			read: () => new Set([currentStore.persistence.beverage.table.rows.use().toString()]) as Selection,
-			write: (columns: Selection) => {
-				currentStore.persistence.beverage.table.rows.set(Number.parseInt([...columns][0] as string));
+			write: (rows: Selection) => {
+				currentStore.persistence.beverage.table.rows.set(Number.parseInt([...rows][0] as string));
 			},
 		},
 		recipeTableColumns: {
@@ -179,8 +202,8 @@ const customerNormalStore = store(state, {
 		},
 		recipeTableRows: {
 			read: () => new Set([currentStore.persistence.recipe.table.rows.use().toString()]) as Selection,
-			write: (columns: Selection) => {
-				currentStore.persistence.recipe.table.rows.set(Number.parseInt([...columns][0] as string));
+			write: (rows: Selection) => {
+				currentStore.persistence.recipe.table.rows.set(Number.parseInt([...rows][0] as string));
 			},
 		},
 	}))
@@ -198,6 +221,7 @@ const customerNormalStore = store(state, {
 			currentStore.shared.customer.beverageTags.set(new Set());
 			currentStore.shared.customer.positiveTags.set(new Set());
 			currentStore.shared.recipe.data.set(null);
+			currentStore.shared.recipe.tagsWithPopular.set([]);
 			currentStore.shared.recipe.page.set(1);
 			currentStore.shared.beverage.name.set(null);
 			currentStore.shared.beverage.page.set(1);

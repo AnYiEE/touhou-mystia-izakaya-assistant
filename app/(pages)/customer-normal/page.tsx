@@ -1,6 +1,6 @@
 'use client';
 
-import {memo, useMemo} from 'react';
+import {memo, useEffect, useMemo} from 'react';
 import clsx from 'clsx';
 
 import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
@@ -24,7 +24,7 @@ import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import type {ICustomerTabStyleMap, IIngredientsTabStyleMap} from './types';
-import {useCustomerNormalStore} from '@/stores';
+import {useCustomerNormalStore, useGlobalStore} from '@/stores';
 
 const customerTabStyleMap = {
 	collapse: {
@@ -53,32 +53,46 @@ const ingredientTabStyleMap = {
 } as const satisfies IIngredientsTabStyleMap;
 
 export default memo(function CustomerNormal() {
-	const store = useCustomerNormalStore();
+	const customerStore = useCustomerNormalStore();
+	const globalStore = useGlobalStore();
 
-	store.shared.customer.name.onChange(() => {
-		store.refreshCustomerSelectedItems();
-		store.refreshAllSelectedItems();
+	useEffect(() => {
+		customerStore.shared.customer.popular.set(globalStore.persistence.popular.get());
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	customerStore.shared.customer.name.onChange(() => {
+		customerStore.shared.customer.popular.set(globalStore.persistence.popular.get());
+		customerStore.refreshCustomerSelectedItems();
+		customerStore.refreshAllSelectedItems();
 	});
 
-	const currentCustomerName = store.shared.customer.name.use();
-	const currentRecipe = store.shared.recipe.data.use();
+	globalStore.persistence.popular.isNegative.onChange((isNegative) => {
+		customerStore.shared.customer.popular.isNegative.set(isNegative);
+	});
+	globalStore.persistence.popular.tag.onChange((popular) => {
+		customerStore.shared.customer.popular.tag.set(popular);
+	});
 
-	const instance_customer = store.instances.customer.get();
+	const currentCustomerName = customerStore.shared.customer.name.use();
+	const currentRecipe = customerStore.shared.recipe.data.use();
 
-	const allCustomerNames = store.names.use();
-	const allCustomerDlcs = store.customer.dlcs.get();
-	const allCustomerPlaces = store.customer.places.get();
+	const instance_customer = customerStore.instances.customer.get();
 
-	const customerPinyinSortState = store.persistence.customer.pinyinSortState.use();
+	const allCustomerNames = customerStore.names.use();
+	const allCustomerDlcs = customerStore.customer.dlcs.get();
+	const allCustomerPlaces = customerStore.customer.places.get();
 
-	const customerSearchValue = store.persistence.customer.searchValue.use();
+	const customerPinyinSortState = customerStore.persistence.customer.pinyinSortState.use();
+
+	const customerSearchValue = customerStore.persistence.customer.searchValue.use();
 	const throttledCustomerSearchValue = useThrottle(customerSearchValue);
 
 	const customerSearchResult = useSearchResult(instance_customer, throttledCustomerSearchValue);
 
-	const customerFilterDlcs = store.persistence.customer.filters.dlcs.use();
-	const customerFilterPlaces = store.persistence.customer.filters.places.use();
-	const customerFilterNoPlaces = store.persistence.customer.filters.noPlaces.use();
+	const customerFilterDlcs = customerStore.persistence.customer.filters.dlcs.use();
+	const customerFilterPlaces = customerStore.persistence.customer.filters.places.use();
+	const customerFilterNoPlaces = customerStore.persistence.customer.filters.noPlaces.use();
 
 	const customerFilteredData = useMemo(
 		() =>
@@ -102,36 +116,36 @@ export default memo(function CustomerNormal() {
 
 	const customerPinyinSortConfig = usePinyinSortConfig(
 		customerPinyinSortState,
-		store.persistence.customer.pinyinSortState.set
+		customerStore.persistence.customer.pinyinSortState.set
 	);
 
 	const customerSearchConfig = useSearchConfig({
 		label: '选择或输入普客名称',
 		searchItems: allCustomerNames,
 		searchValue: customerSearchValue,
-		setSearchValue: store.persistence.customer.searchValue.set,
+		setSearchValue: customerStore.persistence.customer.searchValue.set,
 	});
 
-	const costomerSelectConfig = useMemo(
+	const customerSelectConfig = useMemo(
 		() =>
 			[
 				{
 					items: allCustomerDlcs,
 					label: 'DLC',
 					selectedKeys: customerFilterDlcs,
-					setSelectedKeys: store.persistence.customer.filters.dlcs.set,
+					setSelectedKeys: customerStore.persistence.customer.filters.dlcs.set,
 				},
 				{
 					items: allCustomerPlaces,
 					label: '出没地点（包含）',
 					selectedKeys: customerFilterPlaces,
-					setSelectedKeys: store.persistence.customer.filters.places.set,
+					setSelectedKeys: customerStore.persistence.customer.filters.places.set,
 				},
 				{
 					items: allCustomerPlaces,
 					label: '出没地点（排除）',
 					selectedKeys: customerFilterNoPlaces,
-					setSelectedKeys: store.persistence.customer.filters.noPlaces.set,
+					setSelectedKeys: customerStore.persistence.customer.filters.noPlaces.set,
 				},
 			] as const satisfies TSelectConfig,
 		[
@@ -140,28 +154,28 @@ export default memo(function CustomerNormal() {
 			customerFilterDlcs,
 			customerFilterNoPlaces,
 			customerFilterPlaces,
-			store.persistence.customer.filters.dlcs.set,
-			store.persistence.customer.filters.noPlaces.set,
-			store.persistence.customer.filters.places.set,
+			customerStore.persistence.customer.filters.dlcs.set,
+			customerStore.persistence.customer.filters.noPlaces.set,
+			customerStore.persistence.customer.filters.places.set,
 		]
 	);
 
-	const customerTabVisibilityState = store.persistence.customer.tabVisibility.use();
+	const customerTabVisibilityState = customerStore.persistence.customer.tabVisibility.use();
 
 	const customerTabStyle = useMemo(
 		() => customerTabStyleMap[customerTabVisibilityState],
 		[customerTabVisibilityState]
 	);
 
-	const isCustomerTabFilterVisible = store.shared.customer.filterVisibility.use();
+	const isCustomerTabFilterVisible = customerStore.shared.customer.filterVisibility.use();
 
-	const instance_ingredient = store.instances.ingredient.get();
+	const instance_ingredient = customerStore.instances.ingredient.get();
 
-	const allIngredientDlcs = store.ingredient.dlcs.get();
+	const allIngredientDlcs = customerStore.ingredient.dlcs.get();
 
-	const ingredientsPinyinSortState = store.persistence.ingredient.pinyinSortState.use();
+	const ingredientsPinyinSortState = customerStore.persistence.ingredient.pinyinSortState.use();
 
-	const ingredientsFilterDlcs = store.persistence.ingredient.filters.dlcs.use();
+	const ingredientsFilterDlcs = customerStore.persistence.ingredient.filters.dlcs.use();
 
 	const ingredientsFilteredData = useMemo(
 		() =>
@@ -182,7 +196,7 @@ export default memo(function CustomerNormal() {
 
 	const ingredientsPinyinSortConfig = usePinyinSortConfig(
 		ingredientsPinyinSortState,
-		store.persistence.ingredient.pinyinSortState.set
+		customerStore.persistence.ingredient.pinyinSortState.set
 	);
 
 	const ingredientsSelectConfig = useMemo(
@@ -192,22 +206,22 @@ export default memo(function CustomerNormal() {
 					items: allIngredientDlcs,
 					label: 'DLC',
 					selectedKeys: ingredientsFilterDlcs,
-					setSelectedKeys: store.persistence.ingredient.filters.dlcs.set,
+					setSelectedKeys: customerStore.persistence.ingredient.filters.dlcs.set,
 				},
 			] as const satisfies TSelectConfig,
-		[allIngredientDlcs, ingredientsFilterDlcs, store.persistence.ingredient.filters.dlcs.set]
+		[allIngredientDlcs, ingredientsFilterDlcs, customerStore.persistence.ingredient.filters.dlcs.set]
 	);
 
-	const ingredientTabVisibilityState = store.persistence.ingredient.tabVisibility.use();
+	const ingredientTabVisibilityState = customerStore.persistence.ingredient.tabVisibility.use();
 
 	const ingredientTabStyle = useMemo(
 		() => ingredientTabStyleMap[ingredientTabVisibilityState],
 		[ingredientTabVisibilityState]
 	);
 
-	const isIngredientTabFilterVisible = store.shared.ingredient.filterVisibility.use();
+	const isIngredientTabFilterVisible = customerStore.shared.ingredient.filterVisibility.use();
 
-	const selectedTabKey = store.shared.tab.use();
+	const selectedTabKey = customerStore.shared.tab.use();
 
 	const isMounted = useMounted();
 	if (!isMounted) {
@@ -225,7 +239,7 @@ export default memo(function CustomerNormal() {
 			>
 				<SideSearchIconButton searchConfig={customerSearchConfig} />
 				<SidePinyinSortIconButton pinyinSortConfig={customerPinyinSortConfig} />
-				<SideFilterIconButton selectConfig={costomerSelectConfig} />
+				<SideFilterIconButton selectConfig={customerSelectConfig} />
 			</SideButtonGroup>
 
 			<SideButtonGroup
@@ -245,9 +259,9 @@ export default memo(function CustomerNormal() {
 					size="sm"
 					selectedKey={selectedTabKey}
 					onSelectionChange={(key) => {
-						store.shared.tab.set(key);
-						store.shared.customer.filterVisibility.set(key === 'customer');
-						store.shared.ingredient.filterVisibility.set(key === 'ingredient');
+						customerStore.shared.tab.set(key);
+						customerStore.shared.customer.filterVisibility.set(key === 'customer');
+						customerStore.shared.ingredient.filterVisibility.set(key === 'ingredient');
 					}}
 				>
 					<Tab key="customer" title="普客" className="relative">

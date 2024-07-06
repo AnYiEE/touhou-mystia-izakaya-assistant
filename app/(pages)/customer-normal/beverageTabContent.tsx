@@ -36,7 +36,7 @@ import Tags from '@/components/tags';
 import {beverageTableColumns as tableColumns} from './constants';
 import type {ITableColumn, ITableSortDescriptor, TBeverageWithSuitability, TBeveragesWithSuitability} from './types';
 import {CUSTOMER_NORMAL_TAG_STYLE} from '@/constants';
-import {useCustomerNormalStore} from '@/stores';
+import {useCustomerNormalStore, useGlobalStore} from '@/stores';
 import {numberSort, pinyinSort} from '@/utils';
 
 type TTableColumnKey = 'beverage' | 'price' | 'suitability' | 'action';
@@ -49,29 +49,33 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLTableElement | null, IProps>(function BeverageTabContent(_props, ref) {
-		const store = useCustomerNormalStore();
+		const customerStore = useCustomerNormalStore();
+		const globalStore = useGlobalStore();
 
-		const currentCustomerName = store.shared.customer.name.use();
-		const selectedCustomerBeverageTags = store.shared.customer.beverageTags.use();
+		const currentCustomerName = customerStore.shared.customer.name.use();
+		const selectedCustomerBeverageTags = customerStore.shared.customer.beverageTags.use();
 
-		const currentBeverageName = store.shared.beverage.name.use();
-		const selectedDlcs = store.shared.beverage.dlcs.use();
+		const currentBeverageName = customerStore.shared.beverage.name.use();
+		const selectedDlcs = customerStore.shared.beverage.dlcs.use();
 
-		const instance_beverage = store.instances.beverage.get();
+		const currentGlobalPopular = globalStore.persistence.popular.use();
 
-		const allBeverageNames = store.beverage.names.get();
-		const allBeverageDlcs = store.beverage.dlcs.get();
-		const allBeverageTags = store.beverage.tags.get();
+		const instance_beverage = customerStore.instances.beverage.get();
+		const instance_customer = customerStore.instances.customer.get();
 
-		const searchValue = store.shared.beverage.searchValue.use();
+		const allBeverageNames = customerStore.beverage.names.get();
+		const allBeverageDlcs = customerStore.beverage.dlcs.get();
+		const allBeverageTags = customerStore.beverage.tags.get();
+
+		const searchValue = customerStore.shared.beverage.searchValue.use();
 		const hasNameFilter = useMemo(() => Boolean(searchValue), [searchValue]);
 
-		const tableCurrentPage = store.shared.beverage.page.use();
-		const tableRowsPerPage = store.recipeTableRows.use();
-		const tableRowsPerPageNumber = store.persistence.beverage.table.rows.use();
-		const tableSelectableRows = store.shared.beverage.selectableRows.get();
-		const tableSortDescriptor = store.shared.beverage.sortDescriptor.use();
-		const tableVisibleColumns = store.beverageTableColumns.use();
+		const tableCurrentPage = customerStore.shared.beverage.page.use();
+		const tableRowsPerPage = customerStore.recipeTableRows.use();
+		const tableRowsPerPageNumber = customerStore.persistence.beverage.table.rows.use();
+		const tableSelectableRows = customerStore.shared.beverage.selectableRows.get();
+		const tableSortDescriptor = customerStore.shared.beverage.sortDescriptor.use();
+		const tableVisibleColumns = customerStore.beverageTableColumns.use();
 
 		const filteredData = useMemo(() => {
 			let clonedData = cloneDeep(instance_beverage.data) as TBeveragesWithSuitability;
@@ -84,7 +88,7 @@ export default memo(
 				}));
 			}
 
-			const {beverageTags} = store.instances.customer.get().getPropsByName(currentCustomerName);
+			const {beverageTags} = instance_customer.getPropsByName(currentCustomerName);
 
 			clonedData = clonedData.map((item) => {
 				const {suitability, tags: matchedTags} = instance_beverage.getCustomerSuitability(
@@ -122,10 +126,10 @@ export default memo(
 			currentCustomerName,
 			hasNameFilter,
 			instance_beverage,
+			instance_customer,
 			searchValue,
 			selectedCustomerBeverageTags,
 			selectedDlcs,
-			store.instances,
 		]);
 
 		const sortedData = useMemo(() => {
@@ -170,7 +174,7 @@ export default memo(
 			[filteredData.length, tableRowsPerPageNumber]
 		);
 
-		const tabelSelectedKeys = useMemo(() => new Set([currentBeverageName ?? '']), [currentBeverageName]);
+		const tableSelectedKeys = useMemo(() => new Set([currentBeverageName ?? '']), [currentBeverageName]);
 
 		const renderTableCell = useCallback(
 			(data: TBeverageWithSuitability, columnKey: TTableColumnKey) => {
@@ -204,7 +208,7 @@ export default memo(
 									<p className="text-small font-medium">{name}</p>
 									<div className="-ml-2">
 										<Popover showArrow>
-											<Tooltip showArrow content={tags} offset={0}>
+											<Tooltip showArrow content={tags} offset={-2} placement="right">
 												<span className="cursor-pointer underline decoration-dotted">
 													<PopoverTrigger>
 														<FontAwesomeIconButton
@@ -229,13 +233,14 @@ export default memo(
 					case 'action':
 						return (
 							<div className="flex justify-center">
-								<Tooltip showArrow content="选择此项" offset={0}>
+								<Tooltip showArrow content="选择此项" placement="left">
 									<Button
 										isIconOnly
 										size="sm"
 										variant="light"
 										onPress={() => {
-											store.shared.beverage.name.set(name);
+											customerStore.shared.customer.popular.set(currentGlobalPopular);
+											customerStore.shared.beverage.name.set(name);
 										}}
 									>
 										<FontAwesomeIcon icon={faPlus} />
@@ -245,48 +250,53 @@ export default memo(
 						);
 				}
 			},
-			[currentCustomerName, store.shared.beverage.name]
+			[
+				currentCustomerName,
+				currentGlobalPopular,
+				customerStore.shared.beverage.name,
+				customerStore.shared.customer.popular,
+			]
 		);
 
 		const onSelectedBeverageTagsChange = useCallback(
 			(value: Selection) => {
-				store.shared.customer.beverageTags.set(value);
-				store.shared.beverage.page.set(1);
+				customerStore.shared.customer.beverageTags.set(value);
+				customerStore.shared.beverage.page.set(1);
 			},
-			[store.shared.beverage.page, store.shared.customer.beverageTags]
+			[customerStore.shared.beverage.page, customerStore.shared.customer.beverageTags]
 		);
 
 		const onSelectedDlcsChange = useCallback(
 			(value: Selection) => {
-				store.shared.beverage.dlcs.set(value);
-				store.shared.beverage.page.set(1);
+				customerStore.shared.beverage.dlcs.set(value);
+				customerStore.shared.beverage.page.set(1);
 			},
-			[store.shared.beverage.dlcs, store.shared.beverage.page]
+			[customerStore.shared.beverage.dlcs, customerStore.shared.beverage.page]
 		);
 
 		const onSearchValueChange = useCallback(
 			(value: Key | null) => {
 				if (value) {
-					store.shared.beverage.searchValue.set(value as string);
-					store.shared.beverage.page.set(1);
+					customerStore.shared.beverage.searchValue.set(value as string);
+					customerStore.shared.beverage.page.set(1);
 				} else {
-					store.shared.beverage.searchValue.set('');
+					customerStore.shared.beverage.searchValue.set('');
 				}
 			},
-			[store.shared.beverage.page, store.shared.beverage.searchValue]
+			[customerStore.shared.beverage.page, customerStore.shared.beverage.searchValue]
 		);
 
 		const onSearchValueClear = useCallback(() => {
-			store.shared.beverage.searchValue.set('');
-			store.shared.beverage.page.set(1);
-		}, [store.shared.beverage.page, store.shared.beverage.searchValue]);
+			customerStore.shared.beverage.searchValue.set('');
+			customerStore.shared.beverage.page.set(1);
+		}, [customerStore.shared.beverage.page, customerStore.shared.beverage.searchValue]);
 
 		const onTableRowsPerPageChange = useCallback(
 			(value: Selection) => {
-				store.beverageTableRows.set(value);
-				store.shared.beverage.page.set(1);
+				customerStore.beverageTableRows.set(value);
+				customerStore.shared.beverage.page.set(1);
 			},
-			[store.beverageTableRows, store.shared.beverage.page]
+			[customerStore.beverageTableRows, customerStore.shared.beverage.page]
 		);
 
 		const tableToolbar = useMemo(
@@ -372,7 +382,7 @@ export default memo(
 									selectedKeys={tableVisibleColumns}
 									selectionMode="multiple"
 									variant="flat"
-									onSelectionChange={store.beverageTableColumns.set}
+									onSelectionChange={customerStore.beverageTableColumns.set}
 									aria-label="选择表格所显示的列"
 								>
 									{tableColumns.map(({label: name, key}) => (
@@ -425,7 +435,7 @@ export default memo(
 				searchValue,
 				selectedCustomerBeverageTags,
 				selectedDlcs,
-				store.beverageTableColumns.set,
+				customerStore.beverageTableColumns.set,
 				tableRowsPerPage,
 				tableSelectableRows,
 				tableVisibleColumns,
@@ -443,11 +453,11 @@ export default memo(
 						size="sm"
 						page={tableCurrentPage}
 						total={tableTotalPages}
-						onChange={store.shared.beverage.page.set}
+						onChange={customerStore.shared.beverage.page.set}
 					/>
 				</div>
 			),
-			[store.shared.beverage.page.set, tableCurrentPage, tableTotalPages]
+			[customerStore.shared.beverage.page.set, tableCurrentPage, tableTotalPages]
 		);
 
 		return (
@@ -455,13 +465,13 @@ export default memo(
 				isHeaderSticky
 				bottomContent={tablePagination}
 				bottomContentPlacement="outside"
-				selectedKeys={tabelSelectedKeys}
+				selectedKeys={tableSelectedKeys}
 				selectionMode="single"
 				sortDescriptor={tableSortDescriptor}
 				topContent={tableToolbar}
 				topContentPlacement="outside"
 				onSortChange={(config) => {
-					store.shared.beverage.sortDescriptor.set(config as TTableSortDescriptor);
+					customerStore.shared.beverage.sortDescriptor.set(config as TTableSortDescriptor);
 				}}
 				aria-label="酒水选择表格"
 				classNames={{
