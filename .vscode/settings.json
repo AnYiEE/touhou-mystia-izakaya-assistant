@@ -92,5 +92,29 @@
 		"readme*": "*.md"
 	},
 	"typescript.enablePromptUseWorkspaceTsdk": true,
-	"typescript.tsdk": "./node_modules/typescript/lib"
+	"typescript.tsdk": "./node_modules/typescript/lib",
+	"cSpell.words": [
+		"clsx",
+		"commitlint",
+		"davstack",
+		"Dlcs",
+		"fontawesome",
+		"fortawesome",
+		"Hoverable",
+		"immer",
+		"Izakaya",
+		"kitchenwares",
+		"Mystia",
+		"nextui",
+		"partialize",
+		"pnpx",
+		"preinstall",
+		"Pressable",
+		"stylelint",
+		"tailwindcss",
+		"Touhou",
+		"webp",
+		"Xmark",
+		"zustand"
+	]
 }
