@@ -98,8 +98,9 @@ export default memo(
 				.getPropsByName(customerName);
 
 			clonedData = clonedData.map((item) => {
+				const composedRecipeTags = instance_recipe.composeTags(item.ingredients, [], item.positiveTags, []);
 				const recipeTagsWithPopular = instance_recipe.calcTagsWithPopular(
-					item.positiveTags,
+					composedRecipeTags,
 					currentCustomerPopular
 				);
 
@@ -222,7 +223,11 @@ export default memo(
 					return null;
 				}
 
-				const recipeTagsWithPopular = instance_recipe.calcTagsWithPopular(positiveTags, currentCustomerPopular);
+				const composedRecipeTags = instance_recipe.composeTags(ingredients, [], positiveTags, []);
+				const recipeTagsWithPopular = instance_recipe.calcTagsWithPopular(
+					composedRecipeTags,
+					currentCustomerPopular
+				);
 				const {positive: positiveTagStyle, negative: negativeTagStyle} =
 					customerTagStyleMap[currentCustomer.target];
 

@@ -8,7 +8,7 @@ import Sprite from '@/components/sprite';
 
 import type {IIngredientsTabStyle} from './types';
 import {type TIngredientNames} from '@/data';
-import type {TIngredientTag} from '@/data/types';
+import type {TIngredientTag, TRecipeTag} from '@/data/types';
 import type {TIngredientInstance} from '@/methods/food/types';
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
 
@@ -40,7 +40,7 @@ export default memo(
 			const _darkIngredients = new Set<TIngredientNames>();
 			for (const {name, tags} of sortedData) {
 				if (intersection(tags, currentRecipe?.negativeTags ?? []).length > 0) {
-					darkIngredients.add(name);
+					_darkIngredients.add(name);
 				}
 			}
 			return _darkIngredients;
@@ -110,12 +110,18 @@ export default memo(
 								currentRecipe.positiveTags,
 								[...extraTagsWithPopular, ...tagsWithPopular]
 							);
-							const scoreChange = instance_recipe.getIngredientScoreChange(
+							let scoreChange = instance_recipe.getIngredientScoreChange(
 								before,
 								after,
 								customerPositiveTags,
 								customerNegativeTags
 							);
+							if (
+								(customerNegativeTags as TRecipeTag[]).includes('大份') &&
+								currentRecipe.ingredients.length + extraIngredients.length === 4
+							) {
+								scoreChange -= 1;
+							}
 							return (
 								<div
 									key={index}
