@@ -102,11 +102,6 @@ export default memo(
 													target="kitchenware"
 													name={instance_recipe.getPropsByName(recipe, 'kitchenware')}
 													size={1.5}
-													onClick={() => {
-														store.shared.customer.hasMystiaKitchenwware.set(
-															!hasMystiaKitchenwware
-														);
-													}}
 													className={clsx(
 														hasMystiaKitchenware &&
 															'rounded-full ring-2 ring-warning-400 dark:ring-warning-200'
