@@ -83,7 +83,7 @@
 	"errorLens.enableOnDiffView": true,
 	"githubPullRequests.upstreamRemote": "never",
 	"stylelint.packageManager": "pnpm",
-	"tailwindCSS.classAttributes": ["className", "classNames", "tw"],
+	"tailwindCSS.classAttributes": ["className", "classNames", "itemClasses", "tw"],
 	"explorer.fileNesting.enabled": true,
 	"explorer.fileNesting.expand": false,
 	"explorer.fileNesting.patterns": {
