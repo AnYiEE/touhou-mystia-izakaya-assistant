@@ -1,6 +1,6 @@
 {
 	"name": "touhou-mystia-izakaya-assistant",
-	"version": "0.3.1",
+	"version": "0.4.0",
 	"description": "东方夜雀食堂小助手是为游戏《东方夜雀食堂》所打造的工具，旨在为玩家的游玩过程提供帮助。",
 	"private": true,
 	"scripts": {
@@ -32,13 +32,23 @@
 		"url": "https://github.com/AnYiEE/touhou-mystia-izakaya-assistant/issues"
 	},
 	"keywords": [
-		"东方夜雀食堂",
 		"夜雀助手",
+		"夜雀食堂助手",
+		"东方夜雀食堂助手",
+		"夜雀食堂小助手",
 		"东方夜雀食堂小助手",
+		"夜雀食堂辅助",
 		"东方夜雀食堂辅助",
+		"夜雀食堂工具",
+		"东方夜雀食堂工具",
+		"夜雀食堂攻略",
 		"东方夜雀食堂攻略",
+		"夜雀食堂菜谱",
 		"东方夜雀食堂菜谱",
-		"东方夜雀食堂食谱"
+		"夜雀食堂食谱",
+		"东方夜雀食堂食谱",
+		"夜雀食堂",
+		"东方夜雀食堂"
 	],
 	"dependencies": {
 		"@davstack/store": "^1.4.2",
