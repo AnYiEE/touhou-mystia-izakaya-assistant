@@ -31,6 +31,7 @@ const storeVersion = {
 	rating: 1, // eslint-disable-next-line sort-keys
 	popular: 2,
 	popularTypo: 3,
+	price: 4,
 } as const;
 
 const state = {
@@ -110,6 +111,7 @@ const state = {
 				beverage: TBeverageNames;
 				recipe: TRecipeNames;
 				extraIngredients: TIngredientNames[];
+				price: number;
 			}[];
 		},
 	},
@@ -168,7 +170,7 @@ const customerRareStore = store(state, {
 	persist: {
 		enabled: true,
 		name: 'page-customer_rare-storage',
-		version: storeVersion.popularTypo,
+		version: storeVersion.price,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -211,6 +213,14 @@ const customerRareStore = store(state, {
 						meal.hasMystiaKitchenware = meal.hasMystiaKitchenwware;
 						// cSpell:ignore kitchenwware
 						delete meal.hasMystiaKitchenwware;
+					}
+				}
+			}
+			if (version < storeVersion.price) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+				for (const meals of Object.values(oldState.persistence.meals) as any) {
+					for (const meal of meals) {
+						meal.price = 0;
 					}
 				}
 			}

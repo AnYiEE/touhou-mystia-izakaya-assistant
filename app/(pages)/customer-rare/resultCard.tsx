@@ -132,6 +132,7 @@ export default memo(
 		const currentRating = customerStore.shared.customer.rating.use();
 		const savedMeal = customerStore.persistence.meals.use();
 
+		const instance_beverage = customerStore.instances.beverage.get();
 		const instance_recipe = customerStore.instances.recipe.get();
 
 		const isSaveButtonDisabled = useMemo(
@@ -153,7 +154,10 @@ export default memo(
 				extraIngredients: currentRecipe.extraIngredients,
 				hasMystiaKitchenware,
 				order: currentOrder,
-				popular: currentCustomerPopular, // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				popular: currentCustomerPopular,
+				price:
+					instance_beverage.getPropsByName(currentBeverageName).price +
+					instance_recipe.getPropsByName(currentRecipe.name).price, // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				rating: currentRating!,
 				recipe: currentRecipe.name,
 			} as const;
@@ -170,12 +174,14 @@ export default memo(
 		}, [
 			currentBeverageName,
 			currentCustomerName,
-			currentOrder,
 			currentCustomerPopular,
+			currentOrder,
 			currentRating,
 			currentRecipe,
 			customerStore.persistence.meals,
 			hasMystiaKitchenware,
+			instance_beverage,
+			instance_recipe,
 		]);
 
 		useEffect(() => {

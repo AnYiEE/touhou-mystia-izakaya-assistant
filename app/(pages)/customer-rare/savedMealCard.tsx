@@ -44,11 +44,12 @@ export default memo(
 								beverage,
 								recipe,
 								extraIngredients,
+								price,
 							},
 							loopIndex
 						) => (
 							<Fragment key={loopIndex}>
-								<div className="flex flex-col items-center gap-4 md:flex-row">
+								<div className="flex flex-col items-center gap-4 md:flex-row xl:gap-3">
 									<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
 										<Tooltip
 											showArrow
@@ -72,6 +73,9 @@ export default memo(
 												color={customerRatingColorMap[rating]}
 												fallback={
 													<TagGroup className="flex-nowrap text-nowrap break-keep">
+														{price !== 0 && (
+															<Tags.Tag tag={`￥${price}` as never} tagStyle={{}} />
+														)}
 														{order.recipeTag && (
 															<Tags.Tag
 																tag={order.recipeTag}
@@ -88,7 +92,7 @@ export default memo(
 												}
 												radius="sm"
 												classNames={{
-													base: 'h-[1.25rem] w-28 ring-offset-0',
+													base: 'h-[1.25rem] w-32 ring-offset-0',
 												}}
 											/>
 										</Tooltip>
@@ -111,13 +115,13 @@ export default memo(
 											<Tooltip showArrow content={recipe} offset={2}>
 												<Sprite target="recipe" name={recipe} size={2} />
 											</Tooltip>
-											<Plus size={0.75} />
+											<Plus size={0.75} className="mx-2" />
 											<Tooltip showArrow content={beverage} offset={2}>
 												<Sprite target="beverage" name={beverage} size={2} />
 											</Tooltip>
 										</div>
 										<Plus size={0.75} />
-										<div className="flex items-center gap-x-3">
+										<div className="flex items-center gap-x-3 xl:gap-2">
 											{[
 												...instance_recipe.getPropsByName(recipe, 'ingredients'),
 												...extraIngredients,
