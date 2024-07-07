@@ -97,7 +97,7 @@ export default memo(
 
 			clonedData = clonedData.map((item) => {
 				const composedRecipeTags = instance_recipe.composeTags(item.ingredients, [], item.positiveTags, []);
-				const recipeTagsWithPopular = instance_recipe.calcTagsWithPopular(
+				const recipeTagsWithPopular = instance_recipe.calculateTagsWithPopular(
 					composedRecipeTags,
 					currentCustomerPopular
 				);
@@ -130,7 +130,10 @@ export default memo(
 			}
 
 			return clonedData.filter(({name, dlc, kitchenware, positiveTags}) => {
-				const recipeTagsWithPopular = instance_recipe.calcTagsWithPopular(positiveTags, currentCustomerPopular);
+				const recipeTagsWithPopular = instance_recipe.calculateTagsWithPopular(
+					positiveTags,
+					currentCustomerPopular
+				);
 
 				const isNameMatched = hasNameFilter ? name.toLowerCase().includes(searchValue.toLowerCase()) : true;
 				const isDlcMatched =
@@ -222,7 +225,7 @@ export default memo(
 				}
 
 				const composedRecipeTags = instance_recipe.composeTags(ingredients, [], positiveTags, []);
-				const recipeTagsWithPopular = instance_recipe.calcTagsWithPopular(
+				const recipeTagsWithPopular = instance_recipe.calculateTagsWithPopular(
 					composedRecipeTags,
 					currentCustomerPopular
 				);

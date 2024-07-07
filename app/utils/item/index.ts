@@ -20,7 +20,7 @@ export class Item<
 
 	public constructor(data: TTarget) {
 		this._data = cloneDeep(data);
-		this._dataWithPinyin = cloneDeep(this._data).map((item) => ({
+		this._dataWithPinyin = cloneDeep(data).map((item) => ({
 			...item,
 			pinyin: pinyinPro(item.name, {
 				toneType: 'num',

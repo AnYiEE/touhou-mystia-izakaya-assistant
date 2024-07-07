@@ -94,7 +94,7 @@ export default memo(
 			);
 
 			currentRecipeTagsWithPopular.push(
-				...instance_recipe.calcTagsWithPopular(composedRecipeTags, currentCustomerPopular)
+				...instance_recipe.calculateTagsWithPopular(composedRecipeTags, currentCustomerPopular)
 			);
 			setTimeout(() => {
 				customerStore.shared.recipe.tagsWithPopular.set(currentRecipeTagsWithPopular);

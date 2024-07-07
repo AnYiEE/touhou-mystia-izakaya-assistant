@@ -9,7 +9,7 @@ export class Ingredient extends Food<TIngredients> {
 		this._data = data;
 	}
 
-	public calcTagsWithPopular(
+	public calculateTagsWithPopular(
 		ingredientTags: TIngredientTag[],
 		popular: {
 			isNegative: boolean;
@@ -17,10 +17,10 @@ export class Ingredient extends Food<TIngredients> {
 		}
 	) {
 		const ingredientTagsWithPopular = [...ingredientTags] as (TIngredientTag | '流行厌恶' | '流行喜爱')[];
-		const {isNegative: currentPopularTagIsNegative, tag: currentPopularTag} = popular;
+		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popular;
 
 		if (currentPopularTag && ingredientTags.includes(currentPopularTag as TIngredientTag)) {
-			ingredientTagsWithPopular.push(currentPopularTagIsNegative ? '流行厌恶' : '流行喜爱');
+			ingredientTagsWithPopular.push(isNegativePopularTag ? '流行厌恶' : '流行喜爱');
 		}
 
 		return ingredientTagsWithPopular;

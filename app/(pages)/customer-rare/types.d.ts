@@ -3,7 +3,7 @@ import {type AvatarProps, type SortDescriptor} from '@nextui-org/react';
 
 import {type TabVisibilityState} from './constants';
 import {type TCustomerNames} from '@/data';
-import {type TBeverageInstance, type TRecipeInstance} from '@/methods/food/types';
+import type {TBeverageInstance, TRecipeInstance} from '@/methods/food/types';
 
 export type TCustomerTarget = 'customer_rare' | 'customer_special';
 

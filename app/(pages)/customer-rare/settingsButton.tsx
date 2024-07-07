@@ -25,10 +25,10 @@ export default memo(function SettingsButton() {
 	const globalStore = useGlobalStore();
 
 	const popularTags = globalStore.popularTags.get();
-	const isPopularTagNegative = globalStore.persistence.popular.isNegative.use();
+	const isNegativePopularTag = globalStore.persistence.popular.isNegative.use();
 	const selectedPopularTag = globalStore.selectedPopularTag.use();
 
-	const onIsPopularTagNegativeChange = useCallback(
+	const onIsNegativePopularTagChange = useCallback(
 		(value: boolean) => {
 			globalStore.persistence.popular.isNegative.set(value);
 			customerStore.shared.recipe.page.set(1);
@@ -71,9 +71,9 @@ export default memo(function SettingsButton() {
 						<div className="flex items-center">
 							<span className="mr-2">流行喜爱</span>
 							<Switch
-								isSelected={isPopularTagNegative}
+								isSelected={isNegativePopularTag}
 								size="sm"
-								onValueChange={onIsPopularTagNegativeChange}
+								onValueChange={onIsNegativePopularTagChange}
 								aria-label="设置为流行厌恶"
 								classNames={{
 									wrapper: 'bg-primary',

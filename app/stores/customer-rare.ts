@@ -11,7 +11,7 @@ import type {ICurrentCustomer, TCustomerRating} from '@/(pages)/customer-rare/ty
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import {type TBeverageNames, type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
-import {type TBeverageTag, type TIngredientTag, type TRecipeTag} from '@/data/types';
+import type {TBeverageTag, TIngredientTag, TRecipeTag} from '@/data/types';
 import {customerRareInstance as instance_rare, customerSpecialInstance as instance_special} from '@/methods/customer';
 import {
 	beverageInstance as instance_beverage,

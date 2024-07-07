@@ -21,7 +21,7 @@ interface IParameters {
 	hasMystiaKitchenware: boolean;
 }
 
-function calcMaxScore({
+function calculateMaxScore({
 	currentBeverageTags,
 	currentCustomerOrder,
 	currentRecipeTagsWithPopular,
@@ -162,7 +162,12 @@ export function evaluateMeal({
 
 	let mealScore = Math.min(
 		beverageScore + recipeScore,
-		calcMaxScore({currentBeverageTags, currentCustomerOrder, currentRecipeTagsWithPopular, hasMystiaKitchenware})
+		calculateMaxScore({
+			currentBeverageTags,
+			currentCustomerOrder,
+			currentRecipeTagsWithPopular,
+			hasMystiaKitchenware,
+		})
 	);
 
 	mealScore = checkEasterEgg({currentCustomerName, currentIngredients, currentRecipeName, mealScore});

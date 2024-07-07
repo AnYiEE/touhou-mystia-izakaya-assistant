@@ -1,6 +1,6 @@
 import type {IBeverage} from './beverages/types';
 import type {IIngredient} from './ingredients/types';
-import type {IRecipe, TCalcTag} from './recipes/types';
+import type {IRecipe, TTagNeedCalculate} from './recipes/types';
 
 type TDlc = 0 | 1 | 2 | 3 | 4 | 5;
 type TLevel = 1 | 2 | 3 | 4 | 5;
@@ -125,7 +125,7 @@ export type TBeverageTag = IBeverage['tags'][number] | '全部';
 export type TRecipeTag =
 	| IRecipe['positiveTags'][number] // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
 	| IRecipe['negativeTags'][number]
-	| TCalcTag
+	| TTagNeedCalculate
 	| '流行喜爱'
 	| '流行厌恶'
 	| '全部';

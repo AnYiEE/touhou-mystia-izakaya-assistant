@@ -9,7 +9,7 @@ import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import {type TBeverageNames, type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
-import {type TIngredientTag, type TRecipeTag} from '@/data/types';
+import type {TIngredientTag, TRecipeTag} from '@/data/types';
 import {customerNormalInstance as instance_customer} from '@/methods/customer';
 import {
 	beverageInstance as instance_beverage,

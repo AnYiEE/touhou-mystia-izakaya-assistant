@@ -28,6 +28,8 @@ export default memo(
 
 		const currentGlobalPopular = globalStore.persistence.popular.use();
 
+		const instance_rare = customerStore.instances.customer_rare.get();
+		const instance_special = customerStore.instances.customer_special.get();
 		const instance_ingredient = customerStore.instances.ingredient.get();
 		const instance_recipe = customerStore.instances.recipe.get();
 
@@ -56,11 +58,13 @@ export default memo(
 		}
 
 		const {target, name: customerName} = currentCustomer;
-		const {negativeTags: customerNegativeTags, positiveTags: customerPositiveTags} = customerStore.instances[
-			target as 'customer_rare'
-		]
-			.get()
-			.getPropsByName(customerName);
+
+		const instance_customer = (
+			target === 'customer_rare' ? instance_rare : instance_special
+		) as typeof instance_rare;
+
+		const {negativeTags: customerNegativeTags, positiveTags: customerPositiveTags} =
+			instance_customer.getPropsByName(customerName);
 
 		return (
 			<>
@@ -90,7 +94,7 @@ export default memo(
 							for (const extraIngredient of extraIngredients) {
 								extraTags.push(...instance_ingredient.getPropsByName(extraIngredient, 'tags'));
 							}
-							const extraTagsWithPopular = instance_ingredient.calcTagsWithPopular(
+							const extraTagsWithPopular = instance_ingredient.calculateTagsWithPopular(
 								extraTags,
 								currentCustomerPopular
 							);
@@ -100,7 +104,7 @@ export default memo(
 								currentRecipe.positiveTags,
 								extraTagsWithPopular
 							);
-							const tagsWithPopular = instance_ingredient.calcTagsWithPopular(
+							const tagsWithPopular = instance_ingredient.calculateTagsWithPopular(
 								tags,
 								currentCustomerPopular
 							);

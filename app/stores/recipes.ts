@@ -63,7 +63,7 @@ const recipesStore = store(state, {
 		storage: createJSONStorage(() => localStorage),
 	},
 }).computed((currentStore) => ({
-	names: () => getAllItemNames(instance, currentStore.persistence.pinyinSortState.get()),
+	names: () => getAllItemNames(instance, currentStore.persistence.pinyinSortState.use()),
 }));
 
 export const {Provider: RecipesStoreProvider, useStore: useRecipesStore} = createStoreContext(recipesStore);

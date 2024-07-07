@@ -87,7 +87,7 @@ export default memo(
 							for (const extraIngredient of extraIngredients) {
 								extraTags.push(...instance_ingredient.getPropsByName(extraIngredient, 'tags'));
 							}
-							const extraTagsWithPopular = instance_ingredient.calcTagsWithPopular(
+							const extraTagsWithPopular = instance_ingredient.calculateTagsWithPopular(
 								extraTags,
 								currentCustomerPopular
 							);
@@ -97,7 +97,7 @@ export default memo(
 								currentRecipe.positiveTags,
 								extraTagsWithPopular
 							);
-							const tagsWithPopular = instance_ingredient.calcTagsWithPopular(
+							const tagsWithPopular = instance_ingredient.calculateTagsWithPopular(
 								tags,
 								currentCustomerPopular
 							);

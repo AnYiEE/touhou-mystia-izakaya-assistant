@@ -61,6 +61,8 @@ export default memo(
 
 		const currentGlobalPopular = globalStore.persistence.popular.use();
 
+		const instance_rare = customerStore.instances.customer_rare.get();
+		const instance_special = customerStore.instances.customer_special.get();
 		const instance_recipe = customerStore.instances.recipe.get();
 
 		const allRecipeDlcs = customerStore.recipe.dlcs.get();
@@ -91,15 +93,17 @@ export default memo(
 			}
 
 			const {target, name: customerName} = currentCustomer;
-			const {negativeTags: customerNegativeTags, positiveTags: customerPositiveTags} = customerStore.instances[
-				target as 'customer_rare'
-			]
-				.get()
-				.getPropsByName(customerName);
+
+			const instance_customer = (
+				target === 'customer_rare' ? instance_rare : instance_special
+			) as typeof instance_rare;
+
+			const {negativeTags: customerNegativeTags, positiveTags: customerPositiveTags} =
+				instance_customer.getPropsByName(customerName);
 
 			clonedData = clonedData.map((item) => {
 				const composedRecipeTags = instance_recipe.composeTags(item.ingredients, [], item.positiveTags, []);
-				const recipeTagsWithPopular = instance_recipe.calcTagsWithPopular(
+				const recipeTagsWithPopular = instance_recipe.calculateTagsWithPopular(
 					composedRecipeTags,
 					currentCustomerPopular
 				);
@@ -132,7 +136,10 @@ export default memo(
 			}
 
 			return clonedData.filter(({name, dlc, kitchenware, positiveTags}) => {
-				const recipeTagsWithPopular = instance_recipe.calcTagsWithPopular(positiveTags, currentCustomerPopular);
+				const recipeTagsWithPopular = instance_recipe.calculateTagsWithPopular(
+					positiveTags,
+					currentCustomerPopular
+				);
 
 				const isNameMatched = hasNameFilter ? name.toLowerCase().includes(searchValue.toLowerCase()) : true;
 				const isDlcMatched =
@@ -154,12 +161,13 @@ export default memo(
 			currentCustomer,
 			currentCustomerPopular,
 			hasNameFilter,
+			instance_rare,
 			instance_recipe,
+			instance_special,
 			searchValue,
 			selectedCustomerPositiveTags,
 			selectedDlcs,
 			selectedKitchenwares,
-			customerStore.instances,
 		]);
 
 		const sortedData = useMemo(() => {
@@ -224,7 +232,7 @@ export default memo(
 				}
 
 				const composedRecipeTags = instance_recipe.composeTags(ingredients, [], positiveTags, []);
-				const recipeTagsWithPopular = instance_recipe.calcTagsWithPopular(
+				const recipeTagsWithPopular = instance_recipe.calculateTagsWithPopular(
 					composedRecipeTags,
 					currentCustomerPopular
 				);

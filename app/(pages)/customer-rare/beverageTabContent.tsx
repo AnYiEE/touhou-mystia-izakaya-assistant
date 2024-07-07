@@ -59,6 +59,8 @@ export default memo(
 
 		const currentGlobalPopular = globalStore.persistence.popular.use();
 
+		const instance_rare = customerStore.instances.customer_rare.get();
+		const instance_special = customerStore.instances.customer_special.get();
 		const instance_beverage = customerStore.instances.beverage.get();
 
 		const allBeverageNames = customerStore.beverage.names.get();
@@ -87,9 +89,12 @@ export default memo(
 			}
 
 			const {target, name: customerName} = currentCustomer;
-			const {beverageTags} = customerStore.instances[target as 'customer_rare']
-				.get()
-				.getPropsByName(customerName);
+
+			const instance_customer = (
+				target === 'customer_rare' ? instance_rare : instance_special
+			) as typeof instance_rare;
+
+			const {beverageTags} = instance_customer.getPropsByName(customerName);
 
 			clonedData = clonedData.map((item) => {
 				const {suitability, tags: matchedTags} = instance_beverage.getCustomerSuitability(
@@ -127,10 +132,11 @@ export default memo(
 			currentCustomer,
 			hasNameFilter,
 			instance_beverage,
+			instance_rare,
+			instance_special,
 			searchValue,
 			selectedCustomerBeverageTags,
 			selectedDlcs,
-			customerStore.instances,
 		]);
 
 		const sortedData = useMemo(() => {

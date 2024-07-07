@@ -3,7 +3,7 @@ import type {TCustomerRareNames} from '../customer_rare/types';
 import type {TIngredientNames} from '../ingredients/types';
 import type {TKitchenwareNames} from '../kitchenwares/types';
 
-export type TCalcTag = '昂贵' | '实惠';
+export type TTagNeedCalculate = '昂贵' | '实惠';
 
 type TTag =
 	| '饱腹'

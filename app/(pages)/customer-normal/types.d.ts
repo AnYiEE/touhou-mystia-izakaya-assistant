@@ -2,7 +2,7 @@ import {type ReactNode} from 'react';
 import {type SortDescriptor} from '@nextui-org/react';
 
 import {type TabVisibilityState} from './constants';
-import {type TBeverageInstance, type TRecipeInstance} from '@/methods/food/types';
+import type {TBeverageInstance, TRecipeInstance} from '@/methods/food/types';
 
 export interface ICustomerTabStyle {
 	buttonNode: ReactNode;

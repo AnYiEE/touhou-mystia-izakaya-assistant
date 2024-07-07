@@ -2,7 +2,7 @@ import {cloneDeep} from 'lodash';
 
 import {Food} from './base';
 import {type TIngredientNames, type TRecipes} from '@/data';
-import {type TIngredientTag, type TRecipeTag} from '@/data/types';
+import type {TIngredientTag, TRecipeTag} from '@/data/types';
 
 type TRecipe = TRecipes[number];
 type TProcessPositiveTags<T extends TRecipe> = Omit<T, 'positiveTags'> & {
@@ -35,7 +35,7 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 		this._data = clonedData;
 	}
 
-	public calcTagsWithPopular(
+	public calculateTagsWithPopular(
 		recipeTags: TRecipeTag[],
 		popular: {
 			isNegative: boolean;
@@ -43,10 +43,10 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 		}
 	) {
 		const recipeTagsWithPopular = [...recipeTags];
-		const {isNegative: currentPopularTagIsNegative, tag: currentPopularTag} = popular;
+		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popular;
 
 		if (currentPopularTag && recipeTags.includes(currentPopularTag as TRecipeTag)) {
-			recipeTagsWithPopular.push(currentPopularTagIsNegative ? '流行厌恶' : '流行喜爱');
+			recipeTagsWithPopular.push(isNegativePopularTag ? '流行厌恶' : '流行喜爱');
 		}
 
 		return recipeTagsWithPopular;

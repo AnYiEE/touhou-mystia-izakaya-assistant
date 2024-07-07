@@ -82,6 +82,8 @@ export default memo(function CustomerRare() {
 
 	const instance_rare = customerStore.instances.customer_rare.get();
 	const instance_special = customerStore.instances.customer_special.get();
+	const instance_beverage = customerStore.instances.beverage.get();
+	const instance_recipe = customerStore.instances.recipe.get();
 
 	const evaluateMealHelper = useCallback(() => {
 		if (!currentCustomer) {
@@ -104,7 +106,7 @@ export default memo(function CustomerRare() {
 		let currentBeverageTags: TBeverageTag[] = [];
 		const currentBeverageName = customerStore.shared.beverage.name.get();
 		if (currentBeverageName) {
-			const beverage = customerStore.instances.beverage.get().getPropsByName(currentBeverageName);
+			const beverage = instance_beverage.getPropsByName(currentBeverageName);
 			currentBeverageTags = beverage.tags;
 		}
 
@@ -114,7 +116,7 @@ export default memo(function CustomerRare() {
 		if (currentRecipeData) {
 			currentRecipeName = currentRecipeData.name;
 			currentIngredients.push(
-				...customerStore.instances.recipe.get().getPropsByName(currentRecipeName).ingredients,
+				...instance_recipe.getPropsByName(currentRecipeName).ingredients,
 				...currentRecipeData.extraIngredients
 			);
 		}
@@ -137,15 +139,15 @@ export default memo(function CustomerRare() {
 		customerStore.shared.customer.rating.set(rating);
 	}, [
 		currentCustomer,
-		customerStore.instances.beverage,
-		customerStore.instances.recipe,
 		customerStore.shared.beverage.name,
 		customerStore.shared.customer.hasMystiaKitchenware,
 		customerStore.shared.customer.order,
 		customerStore.shared.customer.rating,
 		customerStore.shared.recipe.data,
 		customerStore.shared.recipe.tagsWithPopular,
+		instance_beverage,
 		instance_rare,
+		instance_recipe,
 		instance_special,
 	]);
 
@@ -159,6 +161,7 @@ export default memo(function CustomerRare() {
 
 	const rareNames = customerStore.rareNames.use();
 	const specialNames = customerStore.specialNames.use();
+	const allCustomerNames = useMemo(() => [...rareNames, ...specialNames], [rareNames, specialNames]);
 	const allCustomerDlcs = customerStore.customer.dlcs.get();
 	const allCustomerPlaces = customerStore.customer.places.get();
 
@@ -218,7 +221,7 @@ export default memo(function CustomerRare() {
 
 	const customerSearchConfig = useSearchConfig({
 		label: '选择或输入稀客名称',
-		searchItems: [...rareNames, ...specialNames],
+		searchItems: allCustomerNames,
 		searchValue: customerSearchValue,
 		setSearchValue: customerStore.persistence.customer.searchValue.set,
 	});

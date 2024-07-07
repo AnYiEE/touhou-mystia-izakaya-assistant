@@ -4,7 +4,7 @@ import {union} from 'lodash';
 
 import {type Selection} from '@nextui-org/react';
 
-import {type TIngredientTag, type TRecipeTag} from '@/data/types';
+import type {TIngredientTag, TRecipeTag} from '@/data/types';
 import {ingredientInstance as instance_ingredient, recipeInstance as instance_recipe} from '@/methods/food';
 import {pinyinSort} from '@/utils';
 

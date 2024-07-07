@@ -28,45 +28,45 @@ export default memo(
 		const instance: TSpriteInstances = useMemo(() => spriteInstances[target], [target]);
 
 		const {calculatedIndex, calculatedName} = useMemo(() => {
-			let calcIndex = index;
-			let calcName = name;
+			let _calculatedIndex = index;
+			let _calculatedName = name;
 
-			if (calcIndex !== undefined) {
-				calcName = instance.findNameByIndex(calcIndex);
-			} else if (calcName) {
-				calcIndex = instance.findIndexByName(calcName);
+			if (_calculatedIndex !== undefined) {
+				_calculatedName = instance.findNameByIndex(_calculatedIndex);
+			} else if (_calculatedName) {
+				_calculatedIndex = instance.findIndexByName(_calculatedName);
 			} else {
-				calcIndex = 0;
+				_calculatedIndex = 0;
 			}
 
 			return {
-				calculatedIndex: calcIndex,
-				calculatedName: calcName,
+				calculatedIndex: _calculatedIndex,
+				calculatedName: _calculatedName,
 			};
 		}, [index, name, instance]);
 
 		const {calculatedHeight, calculatedWidth, calculatedSize} = useMemo(() => {
-			let calcHeight = height ?? instance.spriteHeight;
-			let calcWidth = width ?? instance.spriteWidth;
-			let calcSize = size;
+			let _calculatedHeight = height ?? instance.spriteHeight;
+			let _calculateWidth = width ?? instance.spriteWidth;
+			let _calculateSize = size;
 
-			if (calcHeight === calcWidth) {
-				calcSize ??= calcHeight;
+			if (_calculatedHeight === _calculateWidth) {
+				_calculateSize ??= _calculatedHeight;
 			}
-			if (calcSize !== undefined) {
-				calcHeight = calcSize;
-				calcWidth = calcSize;
+			if (_calculateSize !== undefined) {
+				_calculatedHeight = _calculateSize;
+				_calculateWidth = _calculateSize;
 			}
 
 			return {
-				calculatedHeight: calcHeight,
-				calculatedWidth: calcWidth,
+				calculatedHeight: _calculatedHeight,
+				calculatedWidth: _calculateWidth,
 
-				calculatedSize: remToPx(calcSize),
+				calculatedSize: remToPx(_calculateSize),
 			};
 		}, [height, width, size, instance]);
 
-		const calcStyle = useMemo(
+		const calculatedStyle = useMemo(
 			() =>
 				instance.getBackgroundPropsByIndex(calculatedIndex, {
 					displayHeight: calculatedSize ?? calculatedHeight,
@@ -81,7 +81,7 @@ export default memo(
 			<span
 				title={finalTitle}
 				className={clsx('inline-block', styles[target], className)}
-				style={{...calcStyle, ...style}}
+				style={{...calculatedStyle, ...style}}
 				{...props}
 				ref={ref}
 			/>
