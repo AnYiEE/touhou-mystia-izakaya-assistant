@@ -1,13 +1,14 @@
 import {isEqual} from 'lodash';
 
 import {Food} from './base';
-import {type IBeverage, type TBeverages} from '@/data';
+import {type TBeverages} from '@/data';
+import type {TBeverageTag} from '@/data/types';
 
 export class Beverage<
 	TItem extends TBeverages[number] = TBeverages[number],
 	TName extends TItem['name'] = TItem['name'],
 > extends Food<TBeverages> {
-	private static isTagChecked: boolean;
+	private static isTagsChecked: boolean;
 
 	constructor(data: TBeverages) {
 		super(data);
@@ -15,32 +16,32 @@ export class Beverage<
 		this._data = data;
 	}
 
-	public get sortedTag() {
+	public get sortedTags() {
 		const tags = [
+			'无酒精',
 			'低酒精',
 			'中酒精',
 			'高酒精',
-			'无酒精',
-			'鸡尾酒',
-			'利口酒',
-			'啤酒',
-			'清酒',
-			'烧酒',
-			'西洋酒',
 			'可加冰',
 			'可加热',
+			'烧酒',
+			'清酒',
+			'鸡尾酒',
+			'西洋酒',
+			'利口酒',
+			'啤酒',
+			'直饮',
+			'水果',
 			'甘',
-			'苦',
 			'辛',
+			'苦',
+			'气泡',
 			'古典',
 			'现代',
-			'气泡',
-			'水果',
 			'提神',
-			'直饮',
-		] as const satisfies IBeverage['tags'];
+		] as const satisfies TBeverageTag[];
 
-		if (Beverage.isTagChecked) {
+		if (Beverage.isTagsChecked) {
 			return tags;
 		}
 
@@ -51,7 +52,7 @@ export class Beverage<
 			);
 		}
 
-		Beverage.isTagChecked = true;
+		Beverage.isTagsChecked = true;
 
 		return tags;
 	}

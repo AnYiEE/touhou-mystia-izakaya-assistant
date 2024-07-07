@@ -17,7 +17,7 @@ const state = {
 
 	dlcs: instance.getValuesByProp(instance.data, 'dlc', true).sort(numberSort),
 	levels: instance.getValuesByProp(instance.data, 'level', true).sort(numberSort),
-	tags: instance.sortedTag.map((value) => ({value})),
+	tags: instance.sortedTags.map((value) => ({value})),
 
 	persistence: {
 		filters: {

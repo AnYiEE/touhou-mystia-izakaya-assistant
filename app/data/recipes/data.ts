@@ -5,7 +5,7 @@ export const RECIPE_LIST = [
 	{
 		name: '海鲜味噌汤',
 		ingredients: ['海苔'],
-		positiveTags: ['家常', '素', '汤羹'],
+		positiveTags: ['素', '家常', '汤羹'],
 		negativeTags: ['重油'],
 		kitchenware: '煮锅',
 		min: 3.6,
@@ -20,7 +20,7 @@ export const RECIPE_LIST = [
 	{
 		name: '烤八目鳗',
 		ingredients: ['八目鳗'],
-		positiveTags: ['招牌', '水产', '烧烤'],
+		positiveTags: ['水产', '招牌', '烧烤'],
 		negativeTags: ['肉', '素'],
 		kitchenware: '烤架',
 		min: 4.2,
@@ -35,7 +35,7 @@ export const RECIPE_LIST = [
 	{
 		name: '冷豆腐',
 		ingredients: ['豆腐', '萝卜'],
-		positiveTags: ['家常', '素', '下酒', '清淡', '小巧'],
+		positiveTags: ['素', '家常', '清淡', '下酒', '小巧'],
 		negativeTags: [],
 		kitchenware: '料理台',
 		min: 3,
@@ -68,7 +68,7 @@ export const RECIPE_LIST = [
 	{
 		name: '秘制小鱼干',
 		ingredients: ['鳟鱼'],
-		positiveTags: ['水产', '小巧', '咸', '鲜'],
+		positiveTags: ['水产', '咸', '鲜', '小巧'],
 		negativeTags: [],
 		kitchenware: '料理台',
 		min: 4.8,
@@ -86,7 +86,7 @@ export const RECIPE_LIST = [
 	{
 		name: '饭团',
 		ingredients: ['海苔'],
-		positiveTags: ['家常', '素', '饱腹', '和风'],
+		positiveTags: ['素', '家常', '饱腹', '和风'],
 		negativeTags: [],
 		kitchenware: '料理台',
 		min: 3,
@@ -119,7 +119,7 @@ export const RECIPE_LIST = [
 	{
 		name: '臭豆腐',
 		ingredients: ['豆腐', '辣椒'],
-		positiveTags: ['素', '辣', '猎奇', '中华'],
+		positiveTags: ['素', '中华', '猎奇', '辣'],
 		negativeTags: ['甜', '果味'],
 		kitchenware: '油锅',
 		min: 3,
@@ -155,7 +155,7 @@ export const RECIPE_LIST = [
 	{
 		name: '猪肉盖浇饭',
 		ingredients: ['猪肉'],
-		positiveTags: ['家常', '肉', '饱腹'],
+		positiveTags: ['肉', '家常', '饱腹'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 4.2,
@@ -170,7 +170,7 @@ export const RECIPE_LIST = [
 	{
 		name: '煮豆腐',
 		ingredients: ['豆腐'],
-		positiveTags: ['家常', '素', '清淡'],
+		positiveTags: ['素', '家常', '清淡'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 4.2,
@@ -185,7 +185,7 @@ export const RECIPE_LIST = [
 	{
 		name: '猪肉鳟鱼熏',
 		ingredients: ['鳟鱼', '猪肉'],
-		positiveTags: ['家常', '肉', '水产', '烧烤'],
+		positiveTags: ['肉', '水产', '家常', '烧烤'],
 		negativeTags: [],
 		kitchenware: '烤架',
 		min: 4.2,
@@ -203,7 +203,7 @@ export const RECIPE_LIST = [
 	{
 		name: '炸八目鳗',
 		ingredients: ['八目鳗'],
-		positiveTags: ['招牌', '水产', '重油'],
+		positiveTags: ['水产', '重油', '招牌'],
 		negativeTags: ['凉爽'],
 		kitchenware: '油锅',
 		min: 4.2,
@@ -250,7 +250,7 @@ export const RECIPE_LIST = [
 		name: '力量汤',
 		ingredients: ['野猪肉', '海苔'],
 		positiveTags: ['肉', '山珍', '灼热', '力量涌现', '汤羹'],
-		negativeTags: ['小巧', '凉爽'],
+		negativeTags: ['凉爽', '小巧'],
 		kitchenware: '煮锅',
 		min: 7.2,
 		max: 12,
@@ -267,7 +267,7 @@ export const RECIPE_LIST = [
 	{
 		name: '赛熊掌',
 		ingredients: ['河豚', '黑毛猪肉', '竹笋'],
-		positiveTags: ['肉', '水产', '高级', '鲜', '山珍', '不可思议', '力量涌现'],
+		positiveTags: ['肉', '水产', '高级', '山珍', '鲜', '力量涌现', '不可思议'],
 		negativeTags: [],
 		kitchenware: '蒸锅',
 		min: 7.2,
@@ -285,7 +285,7 @@ export const RECIPE_LIST = [
 	{
 		name: '幻昙花糕',
 		ingredients: ['幻昙华', '露水'],
-		positiveTags: ['高级', '传说', '甜', '不可思议', '梦幻', '适合拍照'],
+		positiveTags: ['高级', '传说', '甜', '适合拍照', '不可思议', '梦幻'],
 		negativeTags: ['肉', '水产'],
 		kitchenware: '蒸锅',
 		min: 4.2,
@@ -303,7 +303,7 @@ export const RECIPE_LIST = [
 	{
 		name: '豚骨拉面',
 		ingredients: ['猪肉', '海苔', '鸡蛋'],
-		positiveTags: ['家常', '肉', '饱腹', '咸'],
+		positiveTags: ['肉', '家常', '饱腹', '咸'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 4.8,
@@ -318,7 +318,7 @@ export const RECIPE_LIST = [
 	{
 		name: '豆腐锅',
 		ingredients: ['豆腐'],
-		positiveTags: ['素', '清淡', '灼热', '和风'],
+		positiveTags: ['素', '清淡', '和风', '灼热'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 3,
@@ -336,7 +336,7 @@ export const RECIPE_LIST = [
 	{
 		name: '油豆腐',
 		ingredients: ['豆腐'],
-		positiveTags: ['家常', '素', '重油', '和风'],
+		positiveTags: ['素', '家常', '重油', '和风'],
 		negativeTags: [],
 		kitchenware: '油锅',
 		min: 4.2,
@@ -354,7 +354,7 @@ export const RECIPE_LIST = [
 	{
 		name: '豆腐味噌',
 		ingredients: ['豆腐'],
-		positiveTags: ['家常', '素', '清淡', '汤羹', '和风'],
+		positiveTags: ['素', '家常', '清淡', '和风', '汤羹'],
 		negativeTags: ['重油'],
 		kitchenware: '煮锅',
 		min: 4.2,
@@ -372,7 +372,7 @@ export const RECIPE_LIST = [
 	{
 		name: '诗礼银杏',
 		ingredients: ['白果', '蜂蜜'],
-		positiveTags: ['素', '甜', '文化底蕴', '中华'],
+		positiveTags: ['素', '中华', '甜', '文化底蕴'],
 		negativeTags: ['咸'],
 		kitchenware: '蒸锅',
 		min: 4.8,
@@ -408,7 +408,7 @@ export const RECIPE_LIST = [
 	{
 		name: '牛肉盖浇饭',
 		ingredients: ['牛肉'],
-		positiveTags: ['家常', '肉', '饱腹'],
+		positiveTags: ['肉', '家常', '饱腹'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 4.2,
@@ -426,7 +426,7 @@ export const RECIPE_LIST = [
 	{
 		name: '炙猪肉饭团',
 		ingredients: ['猪肉'],
-		positiveTags: ['家常', '肉', '饱腹', '和风'],
+		positiveTags: ['肉', '家常', '饱腹', '和风'],
 		negativeTags: [],
 		kitchenware: '料理台',
 		min: 3.6,
@@ -439,7 +439,7 @@ export const RECIPE_LIST = [
 	{
 		name: '樱落雪',
 		ingredients: ['极上金枪鱼'],
-		positiveTags: ['水产', '小巧', '高级', '生', '海味', '适合拍照', '和风'],
+		positiveTags: ['水产', '高级', '海味', '和风', '生', '适合拍照', '小巧'],
 		negativeTags: ['重油'],
 		kitchenware: '料理台',
 		min: 7.2,
@@ -457,7 +457,7 @@ export const RECIPE_LIST = [
 	{
 		name: '温暖饭团',
 		ingredients: ['鳟鱼', '洋葱'],
-		positiveTags: ['家常', '素', '水产', '饱腹', '灼热', '和风'],
+		positiveTags: ['水产', '素', '家常', '饱腹', '和风', '灼热'],
 		negativeTags: [],
 		kitchenware: '料理台',
 		min: 4.8,
@@ -475,7 +475,7 @@ export const RECIPE_LIST = [
 	{
 		name: '凉菜雕花',
 		ingredients: ['萝卜'],
-		positiveTags: ['素', '清淡', '凉爽', '适合拍照'],
+		positiveTags: ['素', '清淡', '适合拍照', '凉爽'],
 		negativeTags: ['肉', '灼热'],
 		kitchenware: '料理台',
 		min: 3,
@@ -493,7 +493,7 @@ export const RECIPE_LIST = [
 	{
 		name: '野味加农',
 		ingredients: ['黑毛猪肉', '土豆', '南瓜'],
-		positiveTags: ['肉', '饱腹', '重油', '山珍', '灼热'],
+		positiveTags: ['肉', '重油', '饱腹', '山珍', '灼热'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 4.8,
@@ -511,7 +511,7 @@ export const RECIPE_LIST = [
 	{
 		name: '白雪',
 		ingredients: ['八目鳗', '河豚', '海苔'],
-		positiveTags: ['肉', '水产', '高级', '文化底蕴', '和风'],
+		positiveTags: ['肉', '水产', '高级', '和风', '文化底蕴'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 7.2,
@@ -529,7 +529,7 @@ export const RECIPE_LIST = [
 	{
 		name: '炸猪肉排',
 		ingredients: ['猪肉'],
-		positiveTags: ['家常', '肉', '饱腹', '重油'],
+		positiveTags: ['肉', '家常', '重油', '饱腹'],
 		negativeTags: [],
 		kitchenware: '油锅',
 		min: 4.2,
@@ -547,7 +547,7 @@ export const RECIPE_LIST = [
 	{
 		name: '杂炊',
 		ingredients: ['鳟鱼', '豆腐', '海苔'],
-		positiveTags: ['家常', '肉', '鲜', '灼热'],
+		positiveTags: ['肉', '家常', '鲜', '灼热'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 3,
@@ -565,7 +565,7 @@ export const RECIPE_LIST = [
 	{
 		name: '桃花羹',
 		ingredients: ['桃子', '露水', '冰块'],
-		positiveTags: ['素', '甜', '果味', '凉爽', '适合拍照', '汤羹'],
+		positiveTags: ['素', '甜', '适合拍照', '凉爽', '果味', '汤羹'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 4.2,
@@ -583,7 +583,7 @@ export const RECIPE_LIST = [
 	{
 		name: '北极甜虾蜜桃色拉',
 		ingredients: ['虾', '桃子', '冰块'],
-		positiveTags: ['素', '水产', '清淡', '甜', '果味', '不可思议', '适合拍照'],
+		positiveTags: ['水产', '素', '清淡', '甜', '适合拍照', '不可思议', '果味'],
 		negativeTags: ['肉', '咸'],
 		kitchenware: '料理台',
 		min: 6,
@@ -601,7 +601,7 @@ export const RECIPE_LIST = [
 	{
 		name: '大奢宴',
 		ingredients: ['河豚', '黑毛猪肉', '和牛'],
-		positiveTags: ['肉', '水产', '饱腹', '高级', '山珍'],
+		positiveTags: ['肉', '水产', '高级', '饱腹', '山珍'],
 		negativeTags: ['家常'],
 		kitchenware: '煮锅',
 		min: 6,
@@ -619,7 +619,7 @@ export const RECIPE_LIST = [
 	{
 		name: '二天一流',
 		ingredients: ['野猪肉', '黑毛猪肉'],
-		positiveTags: ['肉', '高级', '山珍', '燃起来了', '文化底蕴', '烧烤'],
+		positiveTags: ['肉', '高级', '山珍', '文化底蕴', '烧烤', '燃起来了'],
 		negativeTags: ['家常'],
 		kitchenware: '烤架',
 		min: 10.8,
@@ -637,7 +637,7 @@ export const RECIPE_LIST = [
 	{
 		name: '香煎三文鱼',
 		ingredients: ['三文鱼', '竹笋'],
-		positiveTags: ['肉', '鲜', '西式'],
+		positiveTags: ['肉', '西式', '鲜'],
 		negativeTags: [],
 		kitchenware: '油锅',
 		min: 6,
@@ -652,7 +652,7 @@ export const RECIPE_LIST = [
 	{
 		name: '热松饼',
 		ingredients: ['鸡蛋', '蜂蜜', '面粉'],
-		positiveTags: ['饱腹', '甜', '西式'],
+		positiveTags: ['饱腹', '西式', '甜'],
 		negativeTags: [],
 		kitchenware: '油锅',
 		min: 5.4,
@@ -667,7 +667,7 @@ export const RECIPE_LIST = [
 	{
 		name: '真·海鲜味噌汤',
 		ingredients: ['鳟鱼', '三文鱼'],
-		positiveTags: ['家常', '水产', '清淡', '汤羹'],
+		positiveTags: ['水产', '家常', '清淡', '汤羹'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 4.8,
@@ -685,7 +685,7 @@ export const RECIPE_LIST = [
 	{
 		name: '红烧鳗鱼',
 		ingredients: ['八目鳗', '洋葱'],
-		positiveTags: ['招牌', '素', '水产', '重油', '鲜'],
+		positiveTags: ['水产', '素', '重油', '鲜', '招牌'],
 		negativeTags: [],
 		kitchenware: '油锅',
 		min: 4.8,
@@ -703,7 +703,7 @@ export const RECIPE_LIST = [
 	{
 		name: '班尼迪克蛋',
 		ingredients: ['竹笋', '鸡蛋', '黄油', '面粉'],
-		positiveTags: ['饱腹', '小巧', '生', '西式'],
+		positiveTags: ['饱腹', '西式', '生', '小巧'],
 		negativeTags: ['甜', '果味'],
 		kitchenware: '油锅',
 		min: 4.2,
@@ -721,7 +721,7 @@ export const RECIPE_LIST = [
 	{
 		name: '白果萝卜排骨汤',
 		ingredients: ['猪肉', '萝卜', '白果'],
-		positiveTags: ['肉', '灼热', '汤羹', '中华'],
+		positiveTags: ['肉', '中华', '灼热', '汤羹'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 3.6,
@@ -739,7 +739,7 @@ export const RECIPE_LIST = [
 	{
 		name: '炒肉丝',
 		ingredients: ['猪肉'],
-		positiveTags: ['家常', '肉', '下酒', '重油', '中华'],
+		positiveTags: ['肉', '家常', '重油', '下酒', '中华'],
 		negativeTags: [],
 		kitchenware: '油锅',
 		min: 4.8,
@@ -752,7 +752,7 @@ export const RECIPE_LIST = [
 	{
 		name: '蜜汁叉烧',
 		ingredients: ['猪肉', '蜂蜜'],
-		positiveTags: ['肉', '重油', '甜', '不可思议', '中华'],
+		positiveTags: ['肉', '重油', '中华', '甜', '不可思议'],
 		negativeTags: [],
 		kitchenware: '烤架',
 		min: 4.2,
@@ -765,7 +765,7 @@ export const RECIPE_LIST = [
 	{
 		name: '黄油牛排',
 		ingredients: ['和牛', '黄油'],
-		positiveTags: ['肉', '饱腹', '重油', '西式'],
+		positiveTags: ['肉', '重油', '饱腹', '西式'],
 		negativeTags: ['甜', '凉爽'],
 		kitchenware: '油锅',
 		min: 4.2,
@@ -778,7 +778,7 @@ export const RECIPE_LIST = [
 	{
 		name: '刺身拼盘',
 		ingredients: ['三文鱼', '金枪鱼'],
-		positiveTags: ['水产', '高级', '生', '适合拍照', '和风'],
+		positiveTags: ['水产', '高级', '和风', '生', '适合拍照'],
 		negativeTags: ['灼热'],
 		kitchenware: '料理台',
 		min: 3,
@@ -796,7 +796,7 @@ export const RECIPE_LIST = [
 	{
 		name: '水饺',
 		ingredients: ['面粉'],
-		positiveTags: ['家常', '素', '文化底蕴', '中华'],
+		positiveTags: ['素', '家常', '中华', '文化底蕴'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 3,
@@ -809,7 +809,7 @@ export const RECIPE_LIST = [
 	{
 		name: '意式烩饭',
 		ingredients: ['洋葱', '蘑菇', '竹笋', '黄油'],
-		positiveTags: ['饱腹', '鲜', '西式', '菌类'],
+		positiveTags: ['饱腹', '西式', '鲜', '菌类'],
 		negativeTags: ['甜'],
 		kitchenware: '蒸锅',
 		min: 3.6,
@@ -827,7 +827,7 @@ export const RECIPE_LIST = [
 	{
 		name: '麻薯',
 		ingredients: ['糯米'],
-		positiveTags: ['小巧', '甜', '和风'],
+		positiveTags: ['和风', '甜', '小巧'],
 		negativeTags: ['肉', '水产', '咸', '鲜'],
 		kitchenware: '料理台',
 		min: 4.2,
@@ -845,7 +845,7 @@ export const RECIPE_LIST = [
 	{
 		name: '华光玉煎包',
 		ingredients: ['黑毛猪肉', '蘑菇'],
-		positiveTags: ['肉', '高级', '传说', '梦幻', '菌类', '中华'],
+		positiveTags: ['肉', '高级', '传说', '中华', '菌类', '梦幻'],
 		negativeTags: [],
 		kitchenware: '油锅',
 		min: 4.8,
@@ -863,8 +863,8 @@ export const RECIPE_LIST = [
 	{
 		name: '月光团子',
 		ingredients: ['糯米', '月光草'],
-		positiveTags: ['甜', '不可思议', '特产', '和风'],
-		negativeTags: ['肉', '鲜', '咸', '水产'],
+		positiveTags: ['和风', '甜', '不可思议', '特产'],
+		negativeTags: ['肉', '水产', '咸', '鲜'],
 		kitchenware: '料理台',
 		min: 4.8,
 		max: 8,
@@ -881,7 +881,7 @@ export const RECIPE_LIST = [
 	{
 		name: '白桃生八桥',
 		ingredients: ['桃子', '糯米'],
-		positiveTags: ['甜', '果味', '和风'],
+		positiveTags: ['和风', '甜', '果味'],
 		negativeTags: ['肉', '水产', '咸', '鲜'],
 		kitchenware: '料理台',
 		min: 3,
@@ -935,7 +935,7 @@ export const RECIPE_LIST = [
 	{
 		name: '竹取姬',
 		ingredients: ['黑毛猪肉', '松露', '竹笋', '白果', '竹子'],
-		positiveTags: ['肉', '高级', '传说', '适合拍照', '文化底蕴', '特产', '和风'],
+		positiveTags: ['肉', '高级', '传说', '和风', '适合拍照', '文化底蕴', '特产'],
 		negativeTags: [],
 		kitchenware: '蒸锅',
 		min: 7.2,
@@ -948,7 +948,7 @@ export const RECIPE_LIST = [
 	{
 		name: '不死鸟',
 		ingredients: ['土豆', '洋葱', '萝卜', '蜂蜜', '面粉'],
-		positiveTags: ['高级', '传说', '燃起来了', '适合拍照', '烧烤', '西式'],
+		positiveTags: ['高级', '传说', '西式', '适合拍照', '烧烤', '燃起来了'],
 		negativeTags: [],
 		kitchenware: '烤架',
 		min: 7.2,
@@ -961,8 +961,8 @@ export const RECIPE_LIST = [
 	{
 		name: '麻婆豆腐',
 		ingredients: ['猪肉', '豆腐', '辣椒'],
-		positiveTags: ['素', '辣', '灼热', '中华'],
-		negativeTags: ['甜', '果味', '凉爽'],
+		positiveTags: ['素', '中华', '灼热', '辣'],
+		negativeTags: ['甜', '凉爽', '果味'],
 		kitchenware: '油锅',
 		min: 3.6,
 		max: 6,
@@ -997,7 +997,7 @@ export const RECIPE_LIST = [
 	{
 		name: '月之恋人',
 		ingredients: ['鸡蛋', '黄油', '面粉', '月光草'],
-		positiveTags: ['小巧', '甜', '适合拍照', '特产'],
+		positiveTags: ['甜', '适合拍照', '小巧', '特产'],
 		negativeTags: ['肉', '水产', '素'],
 		kitchenware: '料理台',
 		min: 6,
@@ -1015,8 +1015,8 @@ export const RECIPE_LIST = [
 	{
 		name: '水煮鱼',
 		ingredients: ['鳟鱼', '辣椒'],
-		positiveTags: ['水产', '辣', '灼热', '燃起来了', '中华'],
-		negativeTags: ['肉', '甜', '果味', '凉爽'],
+		positiveTags: ['水产', '中华', '灼热', '燃起来了', '辣'],
+		negativeTags: ['肉', '甜', '凉爽', '果味'],
 		kitchenware: '煮锅',
 		min: 4.8,
 		max: 8,
@@ -1051,7 +1051,7 @@ export const RECIPE_LIST = [
 	{
 		name: '毛玉熔岩豆腐',
 		ingredients: ['牛肉', '豆腐', '洋葱', '辣椒'],
-		positiveTags: ['素', '鲜', '不可思议', '适合拍照', '中华'],
+		positiveTags: ['素', '中华', '鲜', '适合拍照', '不可思议'],
 		negativeTags: [],
 		kitchenware: '料理台',
 		min: 4.8,
@@ -1064,7 +1064,7 @@ export const RECIPE_LIST = [
 	{
 		name: '岩浆',
 		ingredients: ['河豚', '牛肉', '和牛', '松露'],
-		positiveTags: ['肉', '水产', '饱腹', '高级', '灼热', '力量涌现', '菌类'],
+		positiveTags: ['肉', '水产', '高级', '饱腹', '灼热', '力量涌现', '菌类'],
 		negativeTags: ['凉爽'],
 		kitchenware: '煮锅',
 		min: 4.8,
@@ -1082,7 +1082,7 @@ export const RECIPE_LIST = [
 	{
 		name: '毛玉三色冰激凌',
 		ingredients: ['豆腐', '鸡蛋', '蜂蜜', '露水'],
-		positiveTags: ['甜', '凉爽', '梦幻', '适合拍照', '西式'],
+		positiveTags: ['西式', '甜', '适合拍照', '凉爽', '梦幻'],
 		negativeTags: [],
 		kitchenware: '料理台',
 		min: 4.8,
@@ -1095,7 +1095,7 @@ export const RECIPE_LIST = [
 	{
 		name: '无意识妖怪慕斯',
 		ingredients: ['豆腐', '洋葱', '蜂蜜', '黄油'],
-		positiveTags: ['高级', '甜', '梦幻', '适合拍照', '西式'],
+		positiveTags: ['高级', '西式', '甜', '适合拍照', '梦幻'],
 		negativeTags: [],
 		kitchenware: '料理台',
 		min: 4.8,
@@ -1136,7 +1136,7 @@ export const RECIPE_LIST = [
 	{
 		name: '汤圆',
 		ingredients: ['糯米'],
-		positiveTags: ['家常', '素', '文化底蕴', '中华'],
+		positiveTags: ['素', '家常', '中华', '文化底蕴'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 3,
@@ -1149,7 +1149,7 @@ export const RECIPE_LIST = [
 	{
 		name: '猩红恶魔蛋糕',
 		ingredients: ['土豆', '南瓜', '蜂蜜', '露水'],
-		positiveTags: ['甜', '梦幻', '猎奇', '适合拍照', '西式'],
+		positiveTags: ['西式', '甜', '适合拍照', '猎奇', '梦幻'],
 		negativeTags: [],
 		kitchenware: '料理台',
 		min: 4.8,
@@ -1162,7 +1162,7 @@ export const RECIPE_LIST = [
 	{
 		name: '奶油炖菜',
 		ingredients: ['洋葱', '蘑菇', '黄油'],
-		positiveTags: ['素', '菌类', '汤羹', '西式'],
+		positiveTags: ['素', '西式', '菌类', '汤羹'],
 		negativeTags: [],
 		kitchenware: '蒸锅',
 		min: 5.4,
@@ -1177,7 +1177,7 @@ export const RECIPE_LIST = [
 	{
 		name: '竹笋炒肉',
 		ingredients: ['猪肉', '竹笋'],
-		positiveTags: ['家常', '肉', '下酒'],
+		positiveTags: ['肉', '家常', '下酒'],
 		negativeTags: [],
 		kitchenware: '油锅',
 		min: 6,
@@ -1192,7 +1192,7 @@ export const RECIPE_LIST = [
 	{
 		name: '蘑菇肉片',
 		ingredients: ['猪肉', '蘑菇'],
-		positiveTags: ['家常', '肉', '重油', '菌类'],
+		positiveTags: ['肉', '家常', '重油', '菌类'],
 		negativeTags: [],
 		kitchenware: '油锅',
 		min: 3.6,
@@ -1210,7 +1210,7 @@ export const RECIPE_LIST = [
 	{
 		name: '手握寿司',
 		ingredients: ['三文鱼', '金枪鱼'],
-		positiveTags: ['水产', '清淡', '鲜', '生', '文化底蕴', '和风'],
+		positiveTags: ['水产', '清淡', '和风', '鲜', '生', '文化底蕴'],
 		negativeTags: [],
 		kitchenware: '料理台',
 		min: 3.6,
@@ -1228,7 +1228,7 @@ export const RECIPE_LIST = [
 	{
 		name: '秘制鲜菌煲',
 		ingredients: ['蘑菇', '松露', '露水'],
-		positiveTags: ['鲜', '菌类', '特产', '和风'],
+		positiveTags: ['和风', '鲜', '菌类', '特产'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 5.4,
@@ -1264,7 +1264,7 @@ export const RECIPE_LIST = [
 	{
 		name: '腌黄瓜',
 		ingredients: ['黄瓜', '黑盐'],
-		positiveTags: ['素', '下酒', '小巧', '咸'],
+		positiveTags: ['素', '下酒', '咸', '小巧'],
 		negativeTags: [],
 		kitchenware: '料理台',
 		min: 3.6,
@@ -1282,7 +1282,7 @@ export const RECIPE_LIST = [
 	{
 		name: '炸虾天妇罗',
 		ingredients: ['虾', '面粉'],
-		positiveTags: ['下酒', '重油'],
+		positiveTags: ['重油', '下酒'],
 		negativeTags: ['清淡'],
 		kitchenware: '油锅',
 		min: 3.6,
@@ -1300,7 +1300,7 @@ export const RECIPE_LIST = [
 	{
 		name: '大阪烧',
 		ingredients: ['萝卜', '鸡蛋', '面粉'],
-		positiveTags: ['招牌', '小巧', '适合拍照', '和风'],
+		positiveTags: ['和风', '招牌', '适合拍照', '小巧'],
 		negativeTags: [],
 		kitchenware: '油锅',
 		min: 3.6,
@@ -1318,7 +1318,7 @@ export const RECIPE_LIST = [
 	{
 		name: '蘑女的舞踏烩',
 		ingredients: ['虾', '蘑菇', '辣椒', '章鱼'],
-		positiveTags: ['水产', '重油', '辣', '咸', '鲜', '灼热', '适合拍照', '菌类'],
+		positiveTags: ['水产', '重油', '咸', '鲜', '适合拍照', '灼热', '菌类', '辣'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 8.4,
@@ -1336,7 +1336,7 @@ export const RECIPE_LIST = [
 	{
 		name: '奶油焗蟹',
 		ingredients: ['螃蟹', '奶油'],
-		positiveTags: ['招牌', '下酒', '高级', '鲜', '海味', '适合拍照'],
+		positiveTags: ['高级', '下酒', '海味', '鲜', '招牌', '适合拍照'],
 		negativeTags: [],
 		kitchenware: '油锅',
 		min: 7.2,
@@ -1354,7 +1354,7 @@ export const RECIPE_LIST = [
 	{
 		name: '黄金酥鱼饼',
 		ingredients: ['鳟鱼', '蜂蜜', '面粉'],
-		positiveTags: ['水产', '下酒', '重油', '力量涌现'],
+		positiveTags: ['水产', '重油', '下酒', '力量涌现'],
 		negativeTags: [],
 		kitchenware: '油锅',
 		min: 5.4,
@@ -1372,7 +1372,7 @@ export const RECIPE_LIST = [
 	{
 		name: '章鱼烧',
 		ingredients: ['海苔', '面粉', '章鱼'],
-		positiveTags: ['招牌', '水产', '饱腹', '小巧', '适合拍照'],
+		positiveTags: ['水产', '饱腹', '招牌', '适合拍照', '小巧'],
 		negativeTags: [],
 		kitchenware: '油锅',
 		min: 4.8,
@@ -1390,7 +1390,7 @@ export const RECIPE_LIST = [
 	{
 		name: '南瓜虾盅',
 		ingredients: ['虾', '豆腐', '南瓜'],
-		positiveTags: ['水产', '饱腹', '清淡', '甜', '鲜', '适合拍照', '特产'],
+		positiveTags: ['水产', '清淡', '饱腹', '鲜', '甜', '适合拍照', '特产'],
 		negativeTags: [],
 		kitchenware: '蒸锅',
 		min: 5.4,
@@ -1408,7 +1408,7 @@ export const RECIPE_LIST = [
 	{
 		name: '拟尻子玉',
 		ingredients: ['鹿肉', '松露', '蝉蜕'],
-		positiveTags: ['下酒', '小巧', '传说', '梦幻', '猎奇', '灼热'],
+		positiveTags: ['传说', '下酒', '灼热', '猎奇', '小巧', '梦幻'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 7.2,
@@ -1426,7 +1426,7 @@ export const RECIPE_LIST = [
 	{
 		name: '普通小蛋糕',
 		ingredients: ['鸡蛋', '葡萄', '奶油'],
-		positiveTags: ['高级', '甜', '果味', '适合拍照', '文化底蕴'],
+		positiveTags: ['高级', '甜', '适合拍照', '文化底蕴', '果味'],
 		negativeTags: [],
 		kitchenware: '蒸锅',
 		min: 4.8,
@@ -1444,7 +1444,7 @@ export const RECIPE_LIST = [
 	{
 		name: '海胆刺身',
 		ingredients: ['露水', '海胆'],
-		positiveTags: ['小巧', '高级', '甜', '海味', '不可思议', '适合拍照', '特产'],
+		positiveTags: ['高级', '海味', '甜', '适合拍照', '不可思议', '小巧', '特产'],
 		negativeTags: [],
 		kitchenware: '料理台',
 		min: 4.8,
@@ -1462,7 +1462,7 @@ export const RECIPE_LIST = [
 	{
 		name: '全肉盛宴',
 		ingredients: ['鹿肉', '野猪肉', '黑毛猪肉', '和牛'],
-		positiveTags: ['肉', '下酒', '大份', '高级', '咸', '山珍', '灼热', '适合拍照'],
+		positiveTags: ['肉', '高级', '下酒', '山珍', '咸', '适合拍照', '灼热', '大份'],
 		negativeTags: [],
 		kitchenware: '烤架',
 		min: 8.4,
@@ -1486,12 +1486,12 @@ export const RECIPE_LIST = [
 			'高级',
 			'传说',
 			'山珍',
-			'力量涌现',
+			'中华',
 			'适合拍照',
+			'力量涌现',
 			'文化底蕴',
 			'菌类',
 			'特产',
-			'中华',
 		],
 		negativeTags: [],
 		kitchenware: '煮锅',
@@ -1510,7 +1510,7 @@ export const RECIPE_LIST = [
 	{
 		name: '七色羊羹',
 		ingredients: ['海苔', '幻昙华', '露水', '葡萄'],
-		positiveTags: ['高级', '甜', '果味', '梦幻', '不可思议', '适合拍照', '文化底蕴'],
+		positiveTags: ['高级', '甜', '适合拍照', '文化底蕴', '不可思议', '梦幻', '果味'],
 		negativeTags: [],
 		kitchenware: '蒸锅',
 		min: 4.8,
@@ -1546,7 +1546,7 @@ export const RECIPE_LIST = [
 	{
 		name: '猫饭',
 		ingredients: ['鳟鱼', '露水', '面粉'],
-		positiveTags: ['水产', '小巧', '鲜'],
+		positiveTags: ['水产', '鲜', '小巧'],
 		negativeTags: ['重油'],
 		kitchenware: '料理台',
 		min: 3,
@@ -1564,7 +1564,7 @@ export const RECIPE_LIST = [
 	{
 		name: '樱花布丁',
 		ingredients: ['桃子', '蜂蜜'],
-		positiveTags: ['小巧', '甜', '果味', '凉爽', '适合拍照', '特产'],
+		positiveTags: ['甜', '适合拍照', '凉爽', '小巧', '特产', '果味'],
 		negativeTags: ['重油', '咸'],
 		kitchenware: '蒸锅',
 		min: 3.6,
@@ -1582,7 +1582,7 @@ export const RECIPE_LIST = [
 	{
 		name: '狮子头',
 		ingredients: ['牛肉'],
-		positiveTags: ['招牌', '肉', '下酒', '鲜', '特产'],
+		positiveTags: ['肉', '下酒', '鲜', '招牌', '特产'],
 		negativeTags: ['水产', '饱腹'],
 		kitchenware: '煮锅',
 		min: 4.2,
@@ -1636,7 +1636,7 @@ export const RECIPE_LIST = [
 	{
 		name: '三文鱼天妇罗',
 		ingredients: ['三文鱼', '鸡蛋', '黄油', '面粉'],
-		positiveTags: ['水产', '重油', '小巧', '高级', '鲜'],
+		positiveTags: ['水产', '高级', '重油', '鲜', '小巧'],
 		negativeTags: [],
 		kitchenware: '油锅',
 		min: 4.8,
@@ -1654,7 +1654,7 @@ export const RECIPE_LIST = [
 	{
 		name: '一击☆必杀',
 		ingredients: ['鹿肉', '野猪肉', '洋葱'],
-		positiveTags: ['肉', '饱腹', '重油', '山珍', '力量涌现', '烧烤'],
+		positiveTags: ['肉', '重油', '饱腹', '山珍', '力量涌现', '烧烤'],
 		negativeTags: [],
 		kitchenware: '烤架',
 		min: 5.4,
@@ -1672,7 +1672,7 @@ export const RECIPE_LIST = [
 	{
 		name: '阴郁水果派',
 		ingredients: ['葡萄', '柠檬', '芝士'],
-		positiveTags: ['酸', '咸', '鲜', '果味', '特产'],
+		positiveTags: ['咸', '鲜', '特产', '果味', '酸'],
 		negativeTags: [],
 		kitchenware: '料理台',
 		min: 4.8,
@@ -1690,7 +1690,7 @@ export const RECIPE_LIST = [
 	{
 		name: '巨人玉子烧',
 		ingredients: ['鸡蛋', '鸡蛋', '面粉', '面粉'],
-		positiveTags: ['饱腹', '高级', '甜', '力量涌现', '和风'],
+		positiveTags: ['高级', '饱腹', '和风', '甜', '力量涌现'],
 		negativeTags: ['下酒'],
 		kitchenware: '油锅',
 		min: 7.2,
@@ -1708,7 +1708,7 @@ export const RECIPE_LIST = [
 	{
 		name: '仰望天花板派',
 		ingredients: ['鳟鱼', '桃子', '面粉'],
-		positiveTags: ['招牌', '下酒', '海味', '猎奇', '适合拍照', '特产'],
+		positiveTags: ['下酒', '海味', '招牌', '适合拍照', '猎奇', '特产'],
 		negativeTags: ['肉'],
 		kitchenware: '蒸锅',
 		min: 5.4,
@@ -1726,7 +1726,7 @@ export const RECIPE_LIST = [
 	{
 		name: '鱼跃龙门',
 		ingredients: ['极上金枪鱼', '鹿肉', '松露', '蜂蜜', '月光草'],
-		positiveTags: ['肉', '水产', '大份', '高级', '甜', '鲜', '海味', '梦幻', '文化底蕴', '菌类', '中华'],
+		positiveTags: ['肉', '水产', '高级', '海味', '中华', '鲜', '甜', '文化底蕴', '菌类', '梦幻', '大份'],
 		negativeTags: [],
 		kitchenware: '蒸锅',
 		min: 7.2,
@@ -1744,8 +1744,8 @@ export const RECIPE_LIST = [
 	{
 		name: '地狱激辛警告！',
 		ingredients: ['牛肉', '辣椒', '辣椒', '辣椒', '芝士'],
-		positiveTags: ['肉', '重油', '辣', '咸', '猎奇', '灼热', '力量涌现', '适合拍照'],
-		negativeTags: ['清淡', '素'],
+		positiveTags: ['肉', '重油', '咸', '适合拍照', '灼热', '力量涌现', '猎奇', '辣'],
+		negativeTags: ['素', '清淡'],
 		kitchenware: '油锅',
 		min: 7.2,
 		max: 12,
@@ -1762,7 +1762,7 @@ export const RECIPE_LIST = [
 	{
 		name: '绝叫关东煮',
 		ingredients: ['牛肉', '豆腐', '萝卜', '辣椒', '辣椒'],
-		positiveTags: ['肉', '饱腹', '大份', '高级', '辣', '鲜', '灼热', '力量涌现', '特产'],
+		positiveTags: ['肉', '高级', '饱腹', '鲜', '灼热', '力量涌现', '特产', '辣', '大份'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 7.2,
@@ -1780,7 +1780,7 @@ export const RECIPE_LIST = [
 	{
 		name: '提神布丁',
 		ingredients: ['葡萄', '葡萄', '柠檬'],
-		positiveTags: ['小巧', '酸', '甜', '果味', '凉爽', '力量涌现'],
+		positiveTags: ['甜', '凉爽', '力量涌现', '小巧', '果味', '酸'],
 		negativeTags: ['重油', '咸'],
 		kitchenware: '蒸锅',
 		min: 4.8,
@@ -1798,7 +1798,7 @@ export const RECIPE_LIST = [
 	{
 		name: '兜甲蒸糕',
 		ingredients: ['黑毛猪肉', '蜂蜜', '蝉蜕', '面粉'],
-		positiveTags: ['招牌', '饱腹', '高级', '鲜', '生', '猎奇', '力量涌现', '适合拍照', '特产'],
+		positiveTags: ['高级', '饱腹', '鲜', '生', '招牌', '适合拍照', '力量涌现', '猎奇', '特产'],
 		negativeTags: [],
 		kitchenware: '蒸锅',
 		min: 7.2,
@@ -1816,7 +1816,7 @@ export const RECIPE_LIST = [
 	{
 		name: '大江户船祭',
 		ingredients: ['鳟鱼', '三文鱼', '金枪鱼', '极上金枪鱼', '冰块'],
-		positiveTags: ['招牌', '水产', '下酒', '高级', '传说', '鲜', '生', '海味', '适合拍照', '文化底蕴', '和风'],
+		positiveTags: ['水产', '高级', '传说', '下酒', '海味', '和风', '鲜', '生', '招牌', '适合拍照', '文化底蕴'],
 		negativeTags: [],
 		kitchenware: '料理台',
 		min: 14.4,
@@ -1834,7 +1834,7 @@ export const RECIPE_LIST = [
 	{
 		name: '燃尽布丁',
 		ingredients: ['蜂蜜', '葡萄', '柠檬', '柠檬'],
-		positiveTags: ['招牌', '小巧', '酸', '甜', '果味', '凉爽', '梦幻', '力量涌现'],
+		positiveTags: ['甜', '招牌', '凉爽', '力量涌现', '小巧', '梦幻', '果味', '酸'],
 		negativeTags: ['重油', '咸'],
 		kitchenware: '蒸锅',
 		min: 4.8,
@@ -1852,7 +1852,7 @@ export const RECIPE_LIST = [
 	{
 		name: '蜜饯栗子',
 		ingredients: ['蜂蜜', '板栗'],
-		positiveTags: ['小巧', '甜', '特产'],
+		positiveTags: ['甜', '小巧', '特产'],
 		negativeTags: [],
 		kitchenware: '料理台',
 		min: 3.6,
@@ -1870,7 +1870,7 @@ export const RECIPE_LIST = [
 	{
 		name: '拔丝地瓜',
 		ingredients: ['蜂蜜', '地瓜'],
-		positiveTags: ['家常', '素', '饱腹', '甜'],
+		positiveTags: ['素', '家常', '饱腹', '甜'],
 		negativeTags: ['生'],
 		kitchenware: '油锅',
 		min: 3.6,
@@ -1924,7 +1924,7 @@ export const RECIPE_LIST = [
 	{
 		name: '云山棉花糖',
 		ingredients: ['桃子', '蜂蜜'],
-		positiveTags: ['甜', '果味', '不可思议', '特产'],
+		positiveTags: ['甜', '不可思议', '特产', '果味'],
 		negativeTags: ['肉', '咸'],
 		kitchenware: '油锅',
 		min: 4.8,
@@ -1960,7 +1960,7 @@ export const RECIPE_LIST = [
 	{
 		name: '香煎双菇肉卷',
 		ingredients: ['猪肉', '蘑菇', '松露'],
-		positiveTags: ['招牌', '家常', '肉', '下酒', '重油', '灼热', '菌类'],
+		positiveTags: ['肉', '家常', '重油', '下酒', '招牌', '灼热', '菌类'],
 		negativeTags: ['凉爽'],
 		kitchenware: '油锅',
 		min: 5.4,
@@ -1978,7 +1978,7 @@ export const RECIPE_LIST = [
 	{
 		name: '圣白莲子糕',
 		ingredients: ['白果', '黄油', '面粉', '莲子'],
-		positiveTags: ['素', '清淡', '小巧', '适合拍照', '特产'],
+		positiveTags: ['素', '清淡', '适合拍照', '小巧', '特产'],
 		negativeTags: ['辣'],
 		kitchenware: '蒸锅',
 		min: 6,
@@ -1996,7 +1996,7 @@ export const RECIPE_LIST = [
 	{
 		name: '瘦马团子',
 		ingredients: ['糯米', '糯米'],
-		positiveTags: ['饱腹', '猎奇', '适合拍照', '文化底蕴'],
+		positiveTags: ['饱腹', '适合拍照', '猎奇', '文化底蕴'],
 		negativeTags: ['肉'],
 		kitchenware: '料理台',
 		min: 5.4,
@@ -2014,7 +2014,7 @@ export const RECIPE_LIST = [
 	{
 		name: '天师板栗焖菇',
 		ingredients: ['蘑菇', '松露', '板栗'],
-		positiveTags: ['家常', '素', '菌类', '特产', '中华'],
+		positiveTags: ['素', '家常', '中华', '菌类', '特产'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 4.8,
@@ -2032,7 +2032,7 @@ export const RECIPE_LIST = [
 	{
 		name: '海盗熏肉',
 		ingredients: ['牛肉', '蜂蜜', '辣椒', '黑盐'],
-		positiveTags: ['肉', '大份', '传说', '力量涌现', '特产'],
+		positiveTags: ['肉', '传说', '力量涌现', '特产', '大份'],
 		negativeTags: ['酸'],
 		kitchenware: '烤架',
 		min: 5.4,
@@ -2050,7 +2050,7 @@ export const RECIPE_LIST = [
 	{
 		name: '荷花鱼米盏',
 		ingredients: ['极上金枪鱼', '露水', '并蒂莲', '莲子'],
-		positiveTags: ['水产', '清淡', '传说', '梦幻', '不可思议', '文化底蕴', '中华'],
+		positiveTags: ['水产', '传说', '清淡', '中华', '文化底蕴', '不可思议', '梦幻'],
 		negativeTags: [],
 		kitchenware: '蒸锅',
 		min: 6.6,
@@ -2068,7 +2068,7 @@ export const RECIPE_LIST = [
 	{
 		name: '什锦天妇罗',
 		ingredients: ['八目鳗', '黑毛猪肉', '松露', '月光草'],
-		positiveTags: ['招牌', '家常', '下酒', '重油', '力量涌现', '菌类', '和风'],
+		positiveTags: ['家常', '重油', '下酒', '和风', '招牌', '力量涌现', '菌类'],
 		negativeTags: [],
 		kitchenware: '油锅',
 		min: 4.2,
@@ -2104,7 +2104,7 @@ export const RECIPE_LIST = [
 	{
 		name: '幻想星莲船',
 		ingredients: ['金枪鱼', '南瓜', '月光草', '并蒂莲', '莲子'],
-		positiveTags: ['招牌', '高级', '鲜', '生', '凉爽', '梦幻', '不可思议', '适合拍照', '特产'],
+		positiveTags: ['高级', '鲜', '生', '招牌', '适合拍照', '凉爽', '不可思议', '梦幻', '特产'],
 		negativeTags: ['猎奇'],
 		kitchenware: '料理台',
 		min: 7.8,
@@ -2122,7 +2122,7 @@ export const RECIPE_LIST = [
 	{
 		name: '惊吓！大冒险',
 		ingredients: ['蘑菇', '蜂蜜', '幻昙华', '奶油'],
-		positiveTags: ['梦幻', '猎奇', '不可思议', '力量涌现', '适合拍照', '特产'],
+		positiveTags: ['适合拍照', '力量涌现', '猎奇', '不可思议', '梦幻', '特产'],
 		negativeTags: ['家常'],
 		kitchenware: '蒸锅',
 		min: 7.2,
@@ -2140,7 +2140,7 @@ export const RECIPE_LIST = [
 	{
 		name: '罗汉上素',
 		ingredients: ['松露', '竹笋', '幻昙华', '莲子', '松子'],
-		positiveTags: ['素', '清淡', '高级', '鲜', '凉爽', '梦幻', '文化底蕴', '特产'],
+		positiveTags: ['素', '高级', '清淡', '鲜', '凉爽', '文化底蕴', '梦幻', '特产'],
 		negativeTags: ['肉', '辣'],
 		kitchenware: '煮锅',
 		min: 7.2,
@@ -2158,7 +2158,7 @@ export const RECIPE_LIST = [
 	{
 		name: '太极八卦鱼肚',
 		ingredients: ['极上金枪鱼', '萝卜', '蘑菇', '鸡蛋', '白果'],
-		positiveTags: ['水产', '清淡', '高级', '鲜', '凉爽', '文化底蕴'],
+		positiveTags: ['水产', '高级', '清淡', '鲜', '凉爽', '文化底蕴'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 8.4,
@@ -2230,7 +2230,7 @@ export const RECIPE_LIST = [
 	{
 		name: '炸番茄条',
 		ingredients: ['西红柿', '土豆'],
-		positiveTags: ['小巧', '猎奇', '不可思议'],
+		positiveTags: ['猎奇', '不可思议', '小巧'],
 		negativeTags: ['水产'],
 		kitchenware: '油锅',
 		min: 3.6,
@@ -2248,7 +2248,7 @@ export const RECIPE_LIST = [
 	{
 		name: '红豆大福',
 		ingredients: ['红豆', '糯米'],
-		positiveTags: ['小巧', '甜', '和风'],
+		positiveTags: ['和风', '甜', '小巧'],
 		negativeTags: [],
 		kitchenware: '料理台',
 		min: 4.2,
@@ -2266,7 +2266,7 @@ export const RECIPE_LIST = [
 	{
 		name: '海胆蒸蛋',
 		ingredients: ['海胆', '鸡蛋'],
-		positiveTags: ['鲜', '海味', '适合拍照'],
+		positiveTags: ['海味', '鲜', '适合拍照'],
 		negativeTags: ['山珍'],
 		kitchenware: '蒸锅',
 		min: 4.2,
@@ -2284,7 +2284,7 @@ export const RECIPE_LIST = [
 	{
 		name: '毒瘴花园',
 		ingredients: ['河豚', '梅子', '八目鳗', '白果'],
-		positiveTags: ['招牌', '水产', '毒', '猎奇'],
+		positiveTags: ['水产', '招牌', '猎奇', '毒'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 4.8,
@@ -2302,7 +2302,7 @@ export const RECIPE_LIST = [
 	{
 		name: '铜锣烧',
 		ingredients: ['红豆', '鸡蛋', '面粉'],
-		positiveTags: ['素', '甜', '特产', '和风'],
+		positiveTags: ['素', '和风', '甜', '特产'],
 		negativeTags: ['肉'],
 		kitchenware: '油锅',
 		min: 3.6,
@@ -2320,7 +2320,7 @@ export const RECIPE_LIST = [
 	{
 		name: '蜜桃红烧肉',
 		ingredients: ['蜂蜜', '桃子', '猪肉'],
-		positiveTags: ['肉', '下酒', '果味', '不可思议'],
+		positiveTags: ['肉', '下酒', '不可思议', '果味'],
 		negativeTags: [],
 		kitchenware: '油锅',
 		min: 4.8,
@@ -2338,7 +2338,7 @@ export const RECIPE_LIST = [
 	{
 		name: '石锅竹笋炖肉',
 		ingredients: ['牛肉', '竹子', '竹笋'],
-		positiveTags: ['家常', '肉', '饱腹'],
+		positiveTags: ['肉', '家常', '饱腹'],
 		negativeTags: [],
 		kitchenware: '煮锅',
 		min: 4.2,
@@ -2356,8 +2356,8 @@ export const RECIPE_LIST = [
 	{
 		name: '花鸟风月',
 		ingredients: ['鲜花', '月光草', '奶油'],
-		positiveTags: ['高级', '梦幻', '不可思议', '特产'],
-		negativeTags: ['灼热', '重油'],
+		positiveTags: ['高级', '不可思议', '梦幻', '特产'],
+		negativeTags: ['重油', '灼热'],
 		kitchenware: '蒸锅',
 		min: 5.4,
 		max: 9,
@@ -2374,7 +2374,7 @@ export const RECIPE_LIST = [
 	{
 		name: '竹筒粉蒸肉',
 		ingredients: ['竹子', '露水', '黑毛猪肉'],
-		positiveTags: ['家常', '肉', '山珍'],
+		positiveTags: ['肉', '家常', '山珍'],
 		negativeTags: ['生'],
 		kitchenware: '蒸锅',
 		min: 5.4,
@@ -2392,8 +2392,8 @@ export const RECIPE_LIST = [
 	{
 		name: '幻想风靡',
 		ingredients: ['洋葱', '野猪肉', '牛肉', '松露', '西红柿'],
-		positiveTags: ['招牌', '肉', '饱腹', '重油', '生', '力量涌现', '适合拍照'],
-		negativeTags: ['凉爽', '清淡'],
+		positiveTags: ['肉', '重油', '饱腹', '生', '招牌', '适合拍照', '力量涌现'],
+		negativeTags: ['清淡', '凉爽'],
 		kitchenware: '烤架',
 		min: 10.8,
 		max: 18,
@@ -2410,7 +2410,7 @@ export const RECIPE_LIST = [
 	{
 		name: '逆转天地！',
 		ingredients: ['竹子', '鲜花', '梅子', '黑毛猪肉', '松露'],
-		positiveTags: ['山珍', '凉爽', '梦幻', '猎奇', '不可思议', '燃起来了', '菌类'],
+		positiveTags: ['山珍', '凉爽', '猎奇', '菌类', '不可思议', '梦幻', '燃起来了'],
 		negativeTags: [],
 		kitchenware: '料理台',
 		min: 7.2,
@@ -2428,7 +2428,7 @@ export const RECIPE_LIST = [
 	{
 		name: '汉宫藏娇',
 		ingredients: ['八目鳗', '豆腐', '螃蟹', '竹子', '露水'],
-		positiveTags: ['水产', '高级', '传说', '猎奇', '文化底蕴', '汤羹', '中华'],
+		positiveTags: ['水产', '高级', '传说', '中华', '猎奇', '文化底蕴', '汤羹'],
 		negativeTags: ['重油'],
 		kitchenware: '煮锅',
 		min: 7.2,
@@ -2446,8 +2446,8 @@ export const RECIPE_LIST = [
 	{
 		name: '幽梦',
 		ingredients: ['鲜花', '幻昙华', '月光草', '露水', '奶油'],
-		positiveTags: ['清淡', '高级', '甜', '凉爽', '梦幻', '适合拍照', '西式'],
-		negativeTags: ['肉', '下酒', '水产'],
+		positiveTags: ['高级', '清淡', '西式', '甜', '适合拍照', '凉爽', '梦幻'],
+		negativeTags: ['肉', '水产', '下酒'],
 		kitchenware: '蒸锅',
 		min: 7.2,
 		max: 12,
@@ -2464,7 +2464,7 @@ export const RECIPE_LIST = [
 	{
 		name: '小小的甜蜜「毒药」',
 		ingredients: ['幻昙华', '奶油', '葡萄', '白果'],
-		positiveTags: ['小巧', '高级', '甜', '梦幻', '适合拍照'],
+		positiveTags: ['高级', '甜', '适合拍照', '小巧', '梦幻'],
 		negativeTags: ['肉'],
 		kitchenware: '蒸锅',
 		min: 6,
@@ -2482,7 +2482,7 @@ export const RECIPE_LIST = [
 	{
 		name: '翠竹迎春',
 		ingredients: ['黄瓜', '鸡蛋', '萝卜', '鹿肉', '月光草'],
-		positiveTags: ['招牌', '高级', '山珍', '适合拍照', '文化底蕴'],
+		positiveTags: ['高级', '山珍', '招牌', '适合拍照', '文化底蕴'],
 		negativeTags: ['猎奇', '菌类'],
 		kitchenware: '蒸锅',
 		min: 8.4,
@@ -2500,7 +2500,7 @@ export const RECIPE_LIST = [
 	{
 		name: '鳗鱼嫩蛋丼',
 		ingredients: ['八目鳗', '鸡蛋'],
-		positiveTags: ['招牌', '水产', '生'],
+		positiveTags: ['水产', '生', '招牌'],
 		negativeTags: [],
 		kitchenware: '油锅',
 		min: 3,
@@ -2555,7 +2555,7 @@ export const RECIPE_LIST = [
 		name: '桃花琉璃卷',
 		ingredients: ['桃子', '红豆', '薜茘'],
 		positiveTags: ['高级', '和风', '甜', '适合拍照', '小巧', '梦幻', '特产'],
-		negativeTags: ['肉', '猎奇', '饱腹', '菌类'],
+		negativeTags: ['肉', '饱腹', '猎奇', '菌类'],
 		kitchenware: '蒸锅',
 		min: 4.8,
 		max: 8,
@@ -2626,7 +2626,7 @@ export const RECIPE_LIST = [
 	{
 		name: '胡辣汤',
 		ingredients: ['辣椒', '牛肉', '豆腐'],
-		positiveTags: ['家常', '中华', '灼热', '汤羹', '辣', '燃起来了'],
+		positiveTags: ['家常', '中华', '灼热', '汤羹', '燃起来了', '辣'],
 		negativeTags: [],
 		kitchenware: '油锅',
 		min: 4.8,
@@ -2645,7 +2645,7 @@ export const RECIPE_LIST = [
 		name: '荷塘月色',
 		ingredients: ['葡萄', '薜茘', '奶油', '银耳'],
 		positiveTags: ['高级', '清淡', '中华', '甜', '适合拍照', '凉爽', '文化底蕴'],
-		negativeTags: ['肉', '猎奇', '下酒', '灼热'],
+		negativeTags: ['肉', '下酒', '灼热', '猎奇'],
 		kitchenware: '料理台',
 		min: 7.2,
 		max: 12,
@@ -2735,7 +2735,7 @@ export const RECIPE_LIST = [
 		name: '龙吟桃子',
 		ingredients: ['可可豆', '桃子', '桃子', '桃子', '桃子'],
 		positiveTags: ['高级', '传说', '清淡', '甜', '凉爽', '不可思议', '特产', '果味'],
-		negativeTags: ['菌类', '肉', '海味', '猎奇', '生'],
+		negativeTags: ['肉', '海味', '生', '猎奇', '菌类'],
 		kitchenware: '料理台',
 		min: 10.8,
 		max: 18,
@@ -2824,7 +2824,7 @@ export const RECIPE_LIST = [
 	{
 		name: '月饼',
 		ingredients: ['蜂蜜', '面粉', '糯米', '月光草'],
-		positiveTags: ['饱腹', '小巧', '甜', '不可思议', '文化底蕴', '中华'],
+		positiveTags: ['饱腹', '中华', '甜', '文化底蕴', '不可思议', '小巧'],
 		negativeTags: [],
 		kitchenware: '蒸锅',
 		min: 6,

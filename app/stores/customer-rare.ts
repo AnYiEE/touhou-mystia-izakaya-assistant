@@ -45,7 +45,7 @@ const state = {
 	beverage: {
 		dlcs: instance_beverage.getValuesByProp(instance_beverage.data, 'dlc', true).sort(numberSort),
 		names: instance_beverage.getValuesByProp(instance_beverage.data, 'name', true).sort(pinyinSort),
-		tags: instance_beverage.sortedTag.map((value) => ({value})),
+		tags: instance_beverage.sortedTags.map((value) => ({value})),
 	},
 	customer: {
 		dlcs: union(rareDlcs, specialDlcs).map((value) => ({value})),

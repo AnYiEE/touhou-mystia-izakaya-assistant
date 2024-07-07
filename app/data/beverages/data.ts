@@ -44,7 +44,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '淇',
-		tags: ['低酒精', '可加冰', '清酒', '鸡尾酒', '气泡', '甘', '苦', '辛'],
+		tags: ['低酒精', '可加冰', '清酒', '鸡尾酒', '甘', '辛', '苦', '气泡'],
 		dlc: 0,
 		level: 1,
 		price: 18,
@@ -76,7 +76,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '波子汽水',
-		tags: ['无酒精', '现代', '气泡'],
+		tags: ['无酒精', '气泡', '现代'],
 		dlc: 0,
 		level: 2,
 		price: 30,
@@ -118,7 +118,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '十四夜',
-		tags: ['中酒精', '可加冰', '可加热', '清酒', '古典', '甘'],
+		tags: ['中酒精', '可加冰', '可加热', '清酒', '甘', '古典'],
 		dlc: 0,
 		level: 4,
 		price: 440,
@@ -148,7 +148,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '冬酿',
-		tags: ['低酒精', '可加冰', '可加热', '古典', '甘'],
+		tags: ['低酒精', '可加冰', '可加热', '甘', '古典'],
 		dlc: 0,
 		level: 2,
 		price: 60,
@@ -158,7 +158,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '教父',
-		tags: ['高酒精', '可加冰', '西洋酒', '鸡尾酒', '古典', '苦'],
+		tags: ['高酒精', '可加冰', '鸡尾酒', '西洋酒', '苦', '古典'],
 		dlc: 0,
 		level: 3,
 		price: 180,
@@ -182,7 +182,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '猩红恶魔',
-		tags: ['低酒精', '可加冰', '西洋酒', '鸡尾酒'],
+		tags: ['低酒精', '可加冰', '鸡尾酒', '西洋酒'],
 		dlc: 0,
 		level: 2,
 		price: 45,
@@ -192,7 +192,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '尼格罗尼',
-		tags: ['中酒精', '可加冰', '西洋酒', '鸡尾酒', '水果', '苦'],
+		tags: ['中酒精', '可加冰', '鸡尾酒', '西洋酒', '水果', '苦'],
 		dlc: 0,
 		level: 3,
 		price: 100,
@@ -203,7 +203,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '风祝',
-		tags: ['中酒精', '可加冰', '鸡尾酒', '现代', '甘'],
+		tags: ['中酒精', '可加冰', '鸡尾酒', '甘', '现代'],
 		dlc: 0,
 		level: 3,
 		price: 130,
@@ -254,7 +254,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '阿芙加朵',
-		tags: ['无酒精', '可加冰', '提神', '甘', '苦'],
+		tags: ['无酒精', '可加冰', '甘', '苦', '提神'],
 		dlc: 0,
 		level: 2,
 		price: 35,
@@ -264,7 +264,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '冰山毛玉冻柠',
-		tags: ['无酒精', '可加冰', '气泡', '水果', '提神', '直饮', '甘'],
+		tags: ['无酒精', '可加冰', '直饮', '水果', '甘', '气泡', '提神'],
 		dlc: 0,
 		level: 2,
 		price: 45,
@@ -294,7 +294,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '“大冰棍儿！”',
-		tags: ['无酒精', '提神', '甘', '现代'],
+		tags: ['无酒精', '甘', '现代', '提神'],
 		dlc: 0,
 		level: 2,
 		price: 35,
@@ -304,7 +304,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '月面火箭',
-		tags: ['无酒精', '可加冰', '现代', '气泡'],
+		tags: ['无酒精', '可加冰', '气泡', '现代'],
 		dlc: 0,
 		level: 2,
 		price: 45,
@@ -324,7 +324,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '普通健身茶',
-		tags: ['中酒精', '利口酒', '气泡', '苦'],
+		tags: ['中酒精', '利口酒', '苦', '气泡'],
 		dlc: 1,
 		level: 2,
 		price: 32,
@@ -334,7 +334,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '咖啡',
-		tags: ['无酒精', '可加冰', '可加热', '现代', '提神', '苦'],
+		tags: ['无酒精', '可加冰', '可加热', '苦', '现代', '提神'],
 		dlc: 1,
 		level: 2,
 		price: 62,
@@ -354,7 +354,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '大吟酿',
-		tags: ['中酒精', '可加冰', '清酒', '古典', '水果', '直饮', '甘'],
+		tags: ['中酒精', '可加冰', '清酒', '直饮', '水果', '甘', '古典'],
 		dlc: 1,
 		level: 3,
 		price: 210,
@@ -364,7 +364,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '鬼杀',
-		tags: ['高酒精', '可加冰', '烧酒', '古典', '辛'],
+		tags: ['高酒精', '可加冰', '烧酒', '辛', '古典'],
 		dlc: 2,
 		level: 4,
 		price: 320,
@@ -374,7 +374,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '气保健',
-		tags: ['无酒精', '提神', '直饮', '甘'],
+		tags: ['无酒精', '直饮', '甘', '提神'],
 		dlc: 2,
 		level: 2,
 		price: 45,
@@ -384,7 +384,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '古明地冰激凌',
-		tags: ['无酒精', '现代', '水果', '甘'],
+		tags: ['无酒精', '水果', '甘', '现代'],
 		dlc: 2,
 		level: 2,
 		price: 35,
@@ -425,7 +425,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '伶人醉',
-		tags: ['低酒精', '古典', '水果', '直饮', '甘'],
+		tags: ['低酒精', '直饮', '水果', '甘', '古典'],
 		dlc: 4,
 		level: 3,
 		price: 100,
@@ -436,7 +436,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '海的女儿',
-		tags: ['低酒精', '气泡', '辛', '古典'],
+		tags: ['低酒精', '辛', '气泡', '古典'],
 		dlc: 5,
 		level: 3,
 		price: 80,
@@ -446,7 +446,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '魔界咖啡',
-		tags: ['高酒精', '提神', '可加热', '西洋酒'],
+		tags: ['高酒精', '可加热', '西洋酒', '提神'],
 		dlc: 5,
 		level: 4,
 		price: 210,
@@ -457,7 +457,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '莫吉托爆浆球',
-		tags: ['低酒精', '气泡', '现代', '鸡尾酒'],
+		tags: ['低酒精', '鸡尾酒', '气泡', '现代'],
 		dlc: 5,
 		level: 4,
 		price: 300,
@@ -467,7 +467,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '太空啤酒',
-		tags: ['中酒精', '现代', '水果', '啤酒'],
+		tags: ['中酒精', '啤酒', '水果', '现代'],
 		dlc: 5,
 		level: 3,
 		price: 42,
@@ -477,7 +477,7 @@ export const BEVERAGE_LIST = [
 	},
 	{
 		name: '卫星冰咖啡',
-		tags: ['无酒精', '现代', '提神', '苦'],
+		tags: ['无酒精', '苦', '现代', '提神'],
 		dlc: 5,
 		level: 3,
 		price: 96,
