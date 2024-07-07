@@ -37,14 +37,14 @@ export default memo(function Ingredients() {
 	const filteredData = useMemo(
 		() =>
 			searchResult.filter(({dlc, level, tags}) => {
-				const isDlcMatch = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
-				const isLevelMatch = filterLevels.length > 0 ? filterLevels.includes(level.toString()) : true;
-				const isTagMatch =
+				const isDlcMatched = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
+				const isLevelMatched = filterLevels.length > 0 ? filterLevels.includes(level.toString()) : true;
+				const isTagMatched =
 					filterTags.length > 0 ? filterTags.some((tag) => (tags as string[]).includes(tag)) : true;
-				const isNoTagMatch =
+				const isNoTagMatched =
 					filterNoTags.length > 0 ? !filterNoTags.some((tag) => (tags as string[]).includes(tag)) : true;
 
-				return isDlcMatch && isLevelMatch && isTagMatch && isNoTagMatch;
+				return isDlcMatched && isLevelMatched && isTagMatched && isNoTagMatched;
 			}),
 		[filterDlcs, filterLevels, filterNoTags, filterTags, searchResult]
 	);

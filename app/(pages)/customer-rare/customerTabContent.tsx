@@ -41,8 +41,8 @@ export default memo(
 									onClick={() => {
 										store.shared.customer.data.set({name, target: target as TCustomerTarget});
 									}}
-									className="flex cursor-pointer flex-col items-center gap-1"
 									title={`选择${name}`}
+									className="flex cursor-pointer flex-col items-center gap-1"
 								>
 									<Avatar
 										isBordered

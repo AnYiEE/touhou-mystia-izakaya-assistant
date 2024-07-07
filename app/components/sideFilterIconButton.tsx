@@ -1,4 +1,4 @@
-import {type Dispatch, forwardRef, memo, useCallback} from 'react';
+import {type Dispatch, forwardRef, memo, useCallback, useMemo} from 'react';
 
 import {
 	Button,
@@ -16,7 +16,7 @@ import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/compone
 import Sprite from '@/components/sprite';
 
 import {pinyinSort} from '@/utils';
-import {TSpriteTarget} from '@/utils/sprite/types';
+import type {TSpriteTarget} from '@/utils/sprite/types';
 
 interface ISelectConfigItem {
 	label: SelectProps['label'];
@@ -36,7 +36,7 @@ interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function SideFilterIconButton({selectConfig, ...props}, ref) {
-		const isFiltering = selectConfig.some(({selectedKeys}) => selectedKeys.length > 0);
+		const hasFilter = useMemo(() => selectConfig.some(({selectedKeys}) => selectedKeys.length > 0), [selectConfig]);
 
 		const handleSelectionChange = useCallback(
 			(setSelectedKeys: ISelectConfigItem['setSelectedKeys']) => (key: Selection) => {
@@ -55,7 +55,7 @@ export default memo(
 			<Popover showArrow backdrop="opaque" placement="left" shouldCloseOnInteractOutside={() => true} ref={ref}>
 				<PopoverTrigger>
 					<FontAwesomeIconButton
-						color={isFiltering ? 'warning' : 'primary'}
+						color={hasFilter ? 'warning' : 'primary'}
 						icon={faFilter}
 						variant="shadow"
 						aria-label="筛选"
@@ -90,7 +90,7 @@ export default memo(
 								</Select>
 							)
 						)}
-						{isFiltering && (
+						{hasFilter && (
 							<Button
 								color="danger"
 								size="sm"

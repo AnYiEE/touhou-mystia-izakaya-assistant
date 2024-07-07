@@ -45,45 +45,45 @@ export default memo(function Recipes() {
 	const filteredData = useMemo(
 		() =>
 			searchResult.filter(({dlc, level, ingredients, kitchenware, negativeTags, positiveTags}) => {
-				const isDlcMatch = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
-				const isLevelMatch = filterLevels.length > 0 ? filterLevels.includes(level.toString()) : true;
-				const isIngredientMatch =
+				const isDlcMatched = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
+				const isLevelMatched = filterLevels.length > 0 ? filterLevels.includes(level.toString()) : true;
+				const isIngredientMatched =
 					filterIngredients.length > 0
 						? filterIngredients.some((ingredient) => (ingredients as string[]).includes(ingredient))
 						: true;
-				const isNoIngredientMatch =
+				const isNoIngredientMatched =
 					filterNoIngredients.length > 0
 						? !filterNoIngredients.some((ingredient) => (ingredients as string[]).includes(ingredient))
 						: true;
-				const isKitchenwareMatch =
+				const isKitchenwareMatched =
 					filterKitchenwares.length > 0 ? filterKitchenwares.includes(kitchenware) : true;
-				const isNegativeTagMatch =
+				const isNegativeTagMatched =
 					filterNegativeTags.length > 0
 						? filterNegativeTags.some((tag) => (negativeTags as string[]).includes(tag))
 						: true;
-				const isNoNegativeTagMatch =
+				const isNoNegativeTagMatched =
 					filterNoNegativeTags.length > 0
 						? !filterNoNegativeTags.some((tag) => (negativeTags as string[]).includes(tag))
 						: true;
-				const isPositiveTagMatch =
+				const isPositiveTagMatched =
 					filterPositiveTags.length > 0
 						? filterPositiveTags.some((tag) => (positiveTags as string[]).includes(tag))
 						: true;
-				const isNoPositiveTagMatch =
+				const isNoPositiveTagMatched =
 					filterNoPositiveTags.length > 0
 						? !filterNoPositiveTags.some((tag) => (positiveTags as string[]).includes(tag))
 						: true;
 
 				return (
-					isDlcMatch &&
-					isLevelMatch &&
-					isIngredientMatch &&
-					isNoIngredientMatch &&
-					isKitchenwareMatch &&
-					isNegativeTagMatch &&
-					isNoNegativeTagMatch &&
-					isPositiveTagMatch &&
-					isNoPositiveTagMatch
+					isDlcMatched &&
+					isLevelMatched &&
+					isIngredientMatched &&
+					isNoIngredientMatched &&
+					isKitchenwareMatched &&
+					isNegativeTagMatched &&
+					isNoNegativeTagMatched &&
+					isPositiveTagMatched &&
+					isNoPositiveTagMatched
 				);
 			}),
 		[

@@ -22,7 +22,7 @@ const FooterLink = memo(function FooterLink({
 				isExternal={isExternal}
 				showAnchorIcon={showAnchorIcon}
 				href={href}
-				className={'text-xs opacity-30 dark:text-warning-400 dark:opacity-40'}
+				className="text-xs opacity-30 dark:text-warning-400 dark:opacity-40"
 			>
 				{children}
 			</Link>

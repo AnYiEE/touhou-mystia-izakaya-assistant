@@ -56,8 +56,8 @@ const GithubLink = memo(function GithubLink({showTooltip}: Partial<IGithubLinkPr
 				isExternal
 				icon={faGithub}
 				size="lg"
-				aria-label={links.github.label}
 				href={links.github.href}
+				aria-label={links.github.label}
 				className={className}
 			/>
 		),
@@ -86,14 +86,14 @@ const GithubLink = memo(function GithubLink({showTooltip}: Partial<IGithubLinkPr
 
 export default memo(function Navbar() {
 	const pathname = usePathname();
-	const [isMenuOpen, setMenuOpen] = useReducer((current) => !current, false);
+	const [isMenuOpened, setMenuOpened] = useReducer((current) => !current, false);
 
 	return (
-		<NextUINavbar maxWidth="xl" position="sticky" isMenuOpen={isMenuOpen} onMenuOpenChange={setMenuOpen}>
+		<NextUINavbar maxWidth="xl" position="sticky" isMenuOpen={isMenuOpened} onMenuOpenChange={setMenuOpened}>
 			<NavbarContent justify="start" className="basis-full md:basis-1/5">
 				<NavbarBrand as="li" className="max-w-fit gap-3">
 					<Link color="foreground" href="/" className="flex select-none items-center justify-start gap-1">
-						<span className={clsx(styles['logo'], 'h-10 w-10 rounded-full')} title={shortName} />
+						<span title={shortName} className={clsx(styles['logo'], 'h-10 w-10 rounded-full')} />
 						<p className="font-bold">
 							<span className="hidden lg:inline">{name}</span>
 							<span className="inline lg:hidden">{shortName}</span>
@@ -102,10 +102,10 @@ export default memo(function Navbar() {
 				</NavbarBrand>
 				<ul className="ml-2 hidden justify-start gap-4 md:flex">
 					{navItems.map(({href, label}) => {
-						const isActive = href === pathname;
+						const isActivated = href === pathname;
 						return (
-							<NavbarItem key={href} isActive={isActive}>
-								<NavbarLink isActive={isActive} href={href} label={label} />
+							<NavbarItem key={href} isActive={isActivated}>
+								<NavbarLink isActive={isActivated} href={href} label={label} />
 							</NavbarItem>
 						);
 					})}
@@ -121,21 +121,21 @@ export default memo(function Navbar() {
 
 			<NavbarContent justify="end" className="basis-1 pl-4 md:hidden">
 				<ThemeSwitcher isMenu />
-				<Tooltip showArrow content={isMenuOpen ? '收起菜单' : '打开菜单'} placement="left">
-					<NavbarMenuToggle aria-label={isMenuOpen ? '收起菜单' : '打开菜单'} />
+				<Tooltip showArrow content={isMenuOpened ? '收起菜单' : '打开菜单'} placement="left">
+					<NavbarMenuToggle aria-label={isMenuOpened ? '收起菜单' : '打开菜单'} />
 				</Tooltip>
 			</NavbarContent>
 
 			<NavbarMenu>
 				<div className="mx-4 mt-2 flex flex-col gap-2">
 					{navMenuItems.map(({href, label}) => {
-						const isActive = href === pathname;
+						const isActivated = href === pathname;
 						return (
-							<NavbarMenuItem key={href} isActive={isActive}>
+							<NavbarMenuItem key={href} isActive={isActivated}>
 								<Link
-									color={isActive ? 'primary' : 'foreground'}
+									color={isActivated ? 'primary' : 'foreground'}
 									size="lg"
-									onPress={setMenuOpen}
+									onPress={setMenuOpened}
 									href={href}
 								>
 									{label}

@@ -132,21 +132,21 @@ export default memo(
 			return clonedData.filter(({name, dlc, kitchenware, positiveTags}) => {
 				const recipeTagsWithPopular = instance_recipe.calcTagsWithPopular(positiveTags, currentCustomerPopular);
 
-				const isNameMatch = hasNameFilter ? name.toLowerCase().includes(searchValue.toLowerCase()) : true;
-				const isDlcMatch =
+				const isNameMatched = hasNameFilter ? name.toLowerCase().includes(searchValue.toLowerCase()) : true;
+				const isDlcMatched =
 					selectedDlcs !== 'all' && selectedDlcs.size > 0 ? selectedDlcs.has(dlc.toString()) : true;
-				const isKitchenwareMatch =
+				const isKitchenwareMatched =
 					selectedKitchenwares !== 'all' && selectedKitchenwares.size > 0
 						? selectedKitchenwares.has(kitchenware)
 						: true;
-				const isPositiveTagsMatch =
+				const isPositiveTagsMatched =
 					selectedCustomerPositiveTags !== 'all' && selectedCustomerPositiveTags.size > 0
 						? [...selectedCustomerPositiveTags].every((tag) =>
 								(recipeTagsWithPopular as string[]).includes(tag as string)
 							)
 						: true;
 
-				return isNameMatch && isDlcMatch && isKitchenwareMatch && isPositiveTagsMatch;
+				return isNameMatched && isDlcMatched && isKitchenwareMatched && isPositiveTagsMatched;
 			});
 		}, [
 			currentCustomerName,
@@ -596,7 +596,7 @@ export default memo(
 						</TableColumn>
 					)}
 				</TableHeader>
-				<TableBody emptyContent={'数据为空'} items={tableCurrentPageItems}>
+				<TableBody emptyContent="数据为空" items={tableCurrentPageItems}>
 					{(item) => (
 						<TableRow key={item.name}>
 							{(columnKey) => (

@@ -6,7 +6,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faLink, faShare, faXmark} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
-import Sprite, {ISpriteProps} from '@/components/sprite';
+import Sprite, {type ISpriteProps} from '@/components/sprite';
 import TagsComponent from '@/components/tags';
 
 import type {ITagStyle} from '@/constants/types';
@@ -23,8 +23,8 @@ const CloseButton: FC<ICloseButtonProps> = memo(
 		const {getBackdropProps} = usePopoverContext();
 
 		const handleClose = useCallback(
-			(e: MouseEvent<HTMLButtonElement>) => {
-				getBackdropProps().onClick?.(e);
+			(event: MouseEvent<HTMLButtonElement>) => {
+				getBackdropProps().onClick?.(event);
 
 				if (param && params.has(param)) {
 					const newParams = new URLSearchParams(params);
@@ -43,8 +43,8 @@ const CloseButton: FC<ICloseButtonProps> = memo(
 				<FontAwesomeIconButton
 					icon={faXmark}
 					variant="light"
-					aria-label={label}
 					onClick={handleClose}
+					aria-label={label}
 					className="absolute -right-1 top-1 h-4 text-default-300 data-[hover]:bg-transparent"
 					ref={ref}
 				/>

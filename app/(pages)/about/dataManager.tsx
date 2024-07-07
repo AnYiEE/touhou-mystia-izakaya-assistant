@@ -1,6 +1,6 @@
 'use client';
 
-import {memo, useEffect, useReducer, useState} from 'react';
+import {memo, useEffect, useMemo, useReducer, useState} from 'react';
 
 import {useThrottle} from '@/hooks';
 
@@ -15,19 +15,19 @@ export default memo(function DataManager() {
 	const throttledValue = useThrottle(value);
 
 	const [isSaveButtonDisabled, setIsSaveButtonDisabled] = useState(true);
-	const [isSavePopoverOpen, setIsSavePopoverOpen] = useReducer((current) => !current, false);
-	const [isResetPopoverOpen, setIsResetPopoverOpen] = useReducer((current) => !current, false);
+	const [isSavePopoverOpened, setIsSavePopoverOpened] = useReducer((current) => !current, false);
+	const [isResetPopoverOpened, setIsResetPopoverOpened] = useReducer((current) => !current, false);
 
 	const store = useCustomerRareStore();
 
 	const mealData = store.persistence.meals.use();
-	const jsonString = JSON.stringify(mealData, null, '\t');
+	const jsonString = useMemo(() => JSON.stringify(mealData, null, '\t'), [mealData]);
 
 	useEffect(() => {
 		try {
 			const json = JSON.parse(throttledValue) as unknown;
 			if (Array.isArray(json) || typeof json !== 'object') {
-				throw new TypeError('not an array');
+				throw new TypeError('not an object');
 			}
 			setIsSaveButtonDisabled(false);
 		} catch {
@@ -44,10 +44,10 @@ export default memo(function DataManager() {
 					defaultSelectedKey="reset"
 					destroyInactiveTabPanel={false}
 					variant="underlined"
-					aria-label="数据管理选项卡"
 					onSelectionChange={() => {
 						setValue('');
 					}}
+					aria-label="数据管理选项卡"
 				>
 					<Tab key="backup" title="备份">
 						<Snippet
@@ -70,14 +70,14 @@ export default memo(function DataManager() {
 					<Tab key="restore" title="还原">
 						<div className="flex w-full flex-col gap-2 lg:w-1/2">
 							<Textarea placeholder="输入稀客套餐数据" value={value} onValueChange={setValue} />
-							<Popover showArrow isOpen={isSavePopoverOpen}>
+							<Popover showArrow isOpen={isSavePopoverOpened}>
 								<PopoverTrigger>
 									<Button
 										fullWidth
 										color="primary"
 										isDisabled={isSaveButtonDisabled}
 										variant="flat"
-										onClick={setIsSavePopoverOpen}
+										onClick={setIsSavePopoverOpened}
 									>
 										保存
 									</Button>
@@ -87,7 +87,7 @@ export default memo(function DataManager() {
 										color="primary"
 										variant="ghost"
 										onPress={() => {
-											setIsSavePopoverOpen();
+											setIsSavePopoverOpened();
 											// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 											store.persistence.meals.set(JSON.parse(throttledValue));
 										}}
@@ -99,9 +99,9 @@ export default memo(function DataManager() {
 						</div>
 					</Tab>
 					<Tab key="reset" title="重置">
-						<Popover showArrow isOpen={isResetPopoverOpen}>
+						<Popover showArrow isOpen={isResetPopoverOpened}>
 							<PopoverTrigger>
-								<Button color="danger" variant="flat" onClick={setIsResetPopoverOpen}>
+								<Button color="danger" variant="flat" onClick={setIsResetPopoverOpened}>
 									重置现有稀客套餐数据（数据出错时可使用）
 								</Button>
 							</PopoverTrigger>
@@ -110,7 +110,7 @@ export default memo(function DataManager() {
 									color="danger"
 									variant="ghost"
 									onPress={() => {
-										setIsResetPopoverOpen();
+										setIsResetPopoverOpened();
 										store.persistence.meals.set({});
 									}}
 								>

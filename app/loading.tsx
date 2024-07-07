@@ -14,7 +14,7 @@ export default memo(
 				className="flex h-full w-full select-none flex-col items-center justify-center text-sm tracking-widest"
 				ref={ref}
 			>
-				<span className={clsx(styles['logo'], 'h-16 w-16 animate-bounce')} title={content} />
+				<span title={content} className={clsx(styles['logo'], 'h-16 w-16 animate-bounce')} />
 				<p className="mt-1">{content}</p>
 			</div>
 		);

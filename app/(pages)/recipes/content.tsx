@@ -29,8 +29,8 @@ export default memo(function Content({data}: IProps) {
 				) => (
 					<Popover
 						key={dataIndex}
-						backdrop="opaque"
 						showArrow
+						backdrop="opaque"
 						isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}
 					>
 						<PopoverTrigger className="w-full">

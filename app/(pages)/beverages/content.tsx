@@ -25,8 +25,8 @@ export default memo(function Content({data}: IProps) {
 			{data.map(({dlc, from, name, level, price, tags}, dataIndex) => (
 				<Popover
 					key={dataIndex}
-					backdrop="opaque"
 					showArrow
+					backdrop="opaque"
 					isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}
 				>
 					<PopoverTrigger className="w-full">

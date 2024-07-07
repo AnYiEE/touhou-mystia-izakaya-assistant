@@ -113,15 +113,15 @@ export default memo(
 			}
 
 			return clonedData.filter(({name, dlc, tags}) => {
-				const isNameMatch = hasNameFilter ? name.toLowerCase().includes(searchValue.toLowerCase()) : true;
-				const isDlcMatch =
+				const isNameMatched = hasNameFilter ? name.toLowerCase().includes(searchValue.toLowerCase()) : true;
+				const isDlcMatched =
 					selectedDlcs !== 'all' && selectedDlcs.size > 0 ? selectedDlcs.has(dlc.toString()) : true;
-				const isTagsMatch =
+				const isTagsMatched =
 					selectedCustomerBeverageTags !== 'all' && selectedCustomerBeverageTags.size > 0
 						? [...selectedCustomerBeverageTags].every((tag) => (tags as string[]).includes(tag as string))
 						: true;
 
-				return isNameMatch && isDlcMatch && isTagsMatch;
+				return isNameMatched && isDlcMatched && isTagsMatched;
 			});
 		}, [
 			currentCustomer,
@@ -487,7 +487,7 @@ export default memo(
 						</TableColumn>
 					)}
 				</TableHeader>
-				<TableBody emptyContent={'数据为空'} items={tableCurrentPageItems}>
+				<TableBody emptyContent="数据为空" items={tableCurrentPageItems}>
 					{(item) => (
 						<TableRow key={item.name}>
 							{(columnKey) => (

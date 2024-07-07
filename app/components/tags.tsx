@@ -2,10 +2,10 @@ import {type FC, type HTMLAttributes, type MouseEvent, forwardRef, memo} from 'r
 import clsx from 'clsx';
 
 import type {TTagStyle} from '@/constants/types';
-import type {TTags} from '@/data';
+import {type TTags} from '@/data';
 
 interface IHandleDoubleClick {
-	handleDoubleClick?: ((tag: TTags, e: MouseEvent<HTMLDivElement>) => void) | undefined;
+	handleDoubleClick?: ((tag: TTags, event: MouseEvent<HTMLDivElement>) => void) | undefined;
 }
 
 interface ITagProps extends ITagPropsBase, IHandleDoubleClick, HTMLAttributes<HTMLDivElement> {}
@@ -28,8 +28,8 @@ const Tag: FC<ITagProps> = memo(
 					borderColor: tagStyle.borderColor ?? 'inherit',
 					color: tagStyle.color ?? 'inherit',
 				}}
-				onDoubleClick={(e) => {
-					handleDoubleClick?.(tag, e);
+				onDoubleClick={(event) => {
+					handleDoubleClick?.(tag, event);
 				}}
 				{...props}
 				ref={ref}
@@ -46,7 +46,7 @@ interface ITagsPropsBase {
 }
 
 interface ITagsProps extends ITagsPropsBase, IHandleDoubleClick {
-	className?: string;
+	className?: HTMLAttributes<HTMLDivElement>['className'];
 }
 
 const TagsComponent: FC<ITagsProps> = memo(function Tags({tags, tagStyle = {}, handleDoubleClick, className}) {

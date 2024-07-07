@@ -79,9 +79,9 @@ export default memo(
 
 		return (
 			<span
+				title={finalTitle}
 				className={clsx('inline-block', styles[target], className)}
 				style={{...calcStyle, ...style}}
-				title={finalTitle}
 				{...props}
 				ref={ref}
 			/>

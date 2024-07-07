@@ -133,8 +133,8 @@ export default memo(
 											}
 										});
 									}}
-									className="flex cursor-pointer flex-col items-center transition hover:scale-105"
 									title={`加入${name}`}
+									className="flex cursor-pointer flex-col items-center transition hover:scale-105"
 								>
 									<Badge
 										color={scoreChange > 0 ? 'success' : scoreChange < 0 ? 'danger' : 'default'}

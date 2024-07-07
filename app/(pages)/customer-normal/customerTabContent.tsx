@@ -37,8 +37,8 @@ export default memo(
 								onClick={() => {
 									store.shared.customer.name.set(name);
 								}}
-								className="flex cursor-pointer flex-col items-center gap-1"
 								title={`选择${name}`}
+								className="flex cursor-pointer flex-col items-center gap-1"
 							>
 								<Avatar
 									isBordered
@@ -46,7 +46,7 @@ export default memo(
 									color={name === currentCustomerName ? 'primary' : 'default'}
 									radius="sm"
 									icon={
-										<Sprite target={'customer_normal'} name={name} size={5} title={`选择${name}`} />
+										<Sprite target="customer_normal" name={name} size={5} title={`选择${name}`} />
 									}
 									classNames={{
 										base: 'h-20 w-20 scale-90 lg:scale-100',

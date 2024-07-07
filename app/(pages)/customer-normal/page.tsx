@@ -97,17 +97,17 @@ export default memo(function CustomerNormal() {
 	const customerFilteredData = useMemo(
 		() =>
 			customerSearchResult.filter(({dlc, places}) => {
-				const isDlcMatch = customerFilterDlcs.length > 0 ? customerFilterDlcs.includes(dlc.toString()) : true;
-				const isPlaceMatch =
+				const isDlcMatched = customerFilterDlcs.length > 0 ? customerFilterDlcs.includes(dlc.toString()) : true;
+				const isPlaceMatched =
 					customerFilterPlaces.length > 0
 						? customerFilterPlaces.some((place) => (places as string[]).includes(place))
 						: true;
-				const isNoPlaceMatch =
+				const isNoPlaceMatched =
 					customerFilterNoPlaces.length > 0
 						? !customerFilterNoPlaces.some((place) => (places as string[]).includes(place))
 						: true;
 
-				return isDlcMatch && isPlaceMatch && isNoPlaceMatch;
+				return isDlcMatched && isPlaceMatched && isNoPlaceMatched;
 			}),
 		[customerFilterDlcs, customerFilterNoPlaces, customerFilterPlaces, customerSearchResult]
 	);
@@ -180,10 +180,10 @@ export default memo(function CustomerNormal() {
 	const ingredientsFilteredData = useMemo(
 		() =>
 			instance_ingredient.data.filter(({dlc}) => {
-				const isDlcMatch =
+				const isDlcMatched =
 					ingredientsFilterDlcs.length > 0 ? ingredientsFilterDlcs.includes(dlc.toString()) : true;
 
-				return isDlcMatch;
+				return isDlcMatched;
 			}),
 		[ingredientsFilterDlcs, instance_ingredient.data]
 	);

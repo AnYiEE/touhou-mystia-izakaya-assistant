@@ -13,21 +13,30 @@ interface IProps extends PropsWithChildren<object> {}
 export default class ErrorBoundary extends Component<IProps, IErrorBoundaryState> {
 	public constructor(props: IProps) {
 		super(props);
+
 		this.state = {error: null, hasError: false, info: null};
 	}
 
 	private handleClick() {
-		localStorage.clear();
-		location.reload();
+		try {
+			localStorage.clear();
+		} finally {
+			location.reload();
+		}
 	}
 
 	static getDerivedStateFromError(error: Error) {
-		return {error, hasError: true};
+		return {
+			error,
+			hasError: true,
+		};
 	}
 
 	public override componentDidCatch(_error: Error, info: ErrorInfo) {
 		if (!this.state.hasError) {
-			this.setState({info});
+			this.setState({
+				info,
+			});
 		}
 	}
 

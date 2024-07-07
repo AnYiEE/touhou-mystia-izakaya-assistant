@@ -56,7 +56,14 @@ export default memo(function ThemeSwitcher({isMenu}: Partial<IProps>) {
 	});
 
 	if (!isMounted) {
-		return <Spinner color="default" classNames={{wrapper: 'h-4 w-4'}} />;
+		return (
+			<Spinner
+				color="default"
+				classNames={{
+					wrapper: 'h-4 w-4',
+				}}
+			/>
+		);
 	}
 
 	return (

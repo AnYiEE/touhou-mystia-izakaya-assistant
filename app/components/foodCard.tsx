@@ -13,7 +13,14 @@ interface IProps extends Omit<CardProps, 'className'> {
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function FoodCard({name, description, image, ...cardProps}, ref) {
 		return (
-			<Card shadow="sm" classNames={{base: 'w-full justify-center'}} {...cardProps} ref={ref}>
+			<Card
+				shadow="sm"
+				classNames={{
+					base: 'w-full justify-center',
+				}}
+				{...cardProps}
+				ref={ref}
+			>
 				<div className="flex items-center">
 					<div className="m-1 flex rounded-xl shadow-[inset_0_0_2px] shadow-foreground-400">{image}</div>
 					<div className="mx-1 inline-flex flex-col text-left">

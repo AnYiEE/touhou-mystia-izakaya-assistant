@@ -98,8 +98,8 @@ const IngredientList = memo(function IngredientsList() {
 										}
 									});
 								}}
-								className="absolute flex h-10 w-10 cursor-pointer items-center justify-center bg-foreground bg-opacity-50 text-background opacity-0 transition-opacity hover:opacity-100"
 								title={`删除${ingredient}`}
+								className="absolute flex h-10 w-10 cursor-pointer items-center justify-center bg-foreground bg-opacity-50 text-background opacity-0 transition-opacity hover:opacity-100"
 							>
 								<FontAwesomeIcon icon={faCircleXmark} size="1x" />
 							</span>
