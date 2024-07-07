@@ -804,7 +804,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 35,
-		from: '香霖堂兑换（银色的青蛙硬币×5）',
+		from: '人间之里香霖堂兑换（银色的青蛙硬币×5）',
 	},
 	{
 		name: '意式烩饭',
@@ -943,7 +943,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 4,
 		price: 65,
-		from: '竹林主线，藤原妹红',
+		from: '迷途竹林主线，藤原妹红',
 	},
 	{
 		name: '不死鸟',
@@ -956,7 +956,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 4,
 		price: 65,
-		from: '竹林主线，蓬莱山辉夜',
+		from: '迷途竹林主线，蓬莱山辉夜',
 	},
 	{
 		name: '麻婆豆腐',
@@ -1059,7 +1059,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 85,
-		from: '妖怪兽道萌澄果处购买',
+		from: '妖怪兽道，萌澄果',
 	},
 	{
 		name: '岩浆',
@@ -1090,7 +1090,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 75,
-		from: '妖怪兽道萌澄果处购买',
+		from: '妖怪兽道，萌澄果',
 	},
 	{
 		name: '无意识妖怪慕斯',
@@ -1103,7 +1103,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 60,
-		from: '妖怪兽道三妖精处购买',
+		from: '妖怪兽道，蹦蹦跳跳的三妖精',
 	},
 	{
 		name: '流水素面',
@@ -1144,7 +1144,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 35,
-		from: '香霖堂兑换（银色的青蛙硬币×5）',
+		from: '人间之里香霖堂兑换（银色的青蛙硬币×5）',
 	},
 	{
 		name: '猩红恶魔蛋糕',
@@ -1157,7 +1157,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 60,
-		from: '妖怪兽道三妖精处购买',
+		from: '妖怪兽道，蹦蹦跳跳的三妖精',
 	},
 	{
 		name: '奶油炖菜',

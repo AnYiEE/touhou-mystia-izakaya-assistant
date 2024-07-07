@@ -56,7 +56,7 @@ export const INGREDIENT_LIST = [
 		level: 1,
 		price: 8,
 		from: {
-			buy: ['妖怪兽道商人', '人间之里农户', ['香霖堂', true], '地灵殿地狱鸦'],
+			buy: ['妖怪兽道商人', '人间之里农户', ['人间之里香霖堂', true], '地灵殿地狱鸦'],
 		},
 	},
 	{
@@ -67,7 +67,7 @@ export const INGREDIENT_LIST = [
 		level: 1,
 		price: 4,
 		from: {
-			buy: ['妖怪兽道商人', '人间之里农户', ['香霖堂', true], '魔法森林上海人形', '魔界小丑'],
+			buy: ['妖怪兽道商人', '人间之里农户', ['人间之里香霖堂', true], '魔法森林上海人形', '魔界小丑'],
 			collect: ['人间之里鸡窝', '旧地狱鸡窝'],
 		},
 	},
@@ -91,11 +91,11 @@ export const INGREDIENT_LIST = [
 		level: 3,
 		price: 18,
 		from: {
-			buy: [['香霖堂', true], '神灵庙道士', '魔法森林上海人形'],
+			buy: [['人间之里香霖堂', true], '魔法森林上海人形', '神灵庙道士'],
 			collect: [
 				['妖怪兽道露水', true],
-				['红魔馆露水', true],
 				'博丽神社蘑菇',
+				['红魔馆露水', true],
 				'迷途竹林蘑菇',
 				'魔法森林蘑菇',
 				'地灵殿蘑菇',
@@ -122,7 +122,7 @@ export const INGREDIENT_LIST = [
 		level: 2,
 		price: 15,
 		from: {
-			buy: ['妖怪兽道商人', '人间之里农户', '旧地狱鬼商', '魔法森林上海人形'],
+			buy: ['妖怪兽道商人', '人间之里农户', '魔法森林上海人形', '旧地狱鬼商'],
 		},
 	},
 	{
@@ -145,14 +145,14 @@ export const INGREDIENT_LIST = [
 		level: 2,
 		price: 15,
 		from: {
-			buy: [['香霖堂', true], '命莲寺娜兹玲', '太阳花田太阳花精', '魔法森林上海人形'],
+			buy: [['人间之里香霖堂', true], '魔法森林上海人形', '命莲寺娜兹玲', '太阳花田太阳花精'],
 			collect: [
 				'妖怪兽道蜂巢',
+				['人间之里银杏', true],
+				['博丽神社银杏', true],
 				'妖怪之山蜂巢',
 				'命莲寺蜂巢',
 				'太阳花田蜂巢',
-				['人间之里银杏', true],
-				['博丽神社银杏', true],
 			],
 		},
 	},
@@ -164,7 +164,7 @@ export const INGREDIENT_LIST = [
 		level: 3,
 		price: 15,
 		from: {
-			buy: ['迷途竹林妖怪兔', ['香霖堂', true], '魔法森林上海人形'],
+			buy: [['人间之里香霖堂', true], '迷途竹林妖怪兔', '魔法森林上海人形'],
 		},
 	},
 	{
@@ -189,7 +189,7 @@ export const INGREDIENT_LIST = [
 		price: 16,
 		from: {
 			buy: ['妖怪兽道商人', '人间之里农户', '旧地狱鬼商'],
-			collect: ['妖怪兽道花丛', '魔法森林花丛', '人间之里农田', '太阳花田温室', ['博丽神社蘑菇', true]],
+			collect: ['妖怪兽道花丛', '人间之里农田', ['博丽神社蘑菇', true], '魔法森林花丛', '太阳花田温室'],
 		},
 	},
 	{
@@ -230,7 +230,7 @@ export const INGREDIENT_LIST = [
 		level: 1,
 		price: 2,
 		from: {
-			buy: [['妖怪兽道商人', true], '人间之里农户', '命莲寺娜兹玲', '旧地狱鬼商', '魔界小丑'],
+			buy: [['妖怪兽道商人', true], '人间之里农户', '旧地狱鬼商', '命莲寺娜兹玲', '魔界小丑'],
 			collect: [['妖怪兽道花丛', true], '魔界辣椒丛'],
 		},
 	},
@@ -242,7 +242,7 @@ export const INGREDIENT_LIST = [
 		level: 3,
 		price: 40,
 		from: {
-			buy: [['香霖堂', true], ['妖怪兽道商人', true], '旧地狱鬼商', '月之都月兔'],
+			buy: [['妖怪兽道商人', true], ['人间之里香霖堂', true], '旧地狱鬼商', '月之都月兔'],
 			collect: ['迷途竹林竹笋', '辉针城竹笋', ['辉针城竹子', true]],
 		},
 	},
@@ -254,7 +254,7 @@ export const INGREDIENT_LIST = [
 		level: 2,
 		price: 30,
 		from: {
-			collect: [['非妖怪兽道河流', true], '命莲寺东北莲花池', '神灵庙水涡'],
+			collect: ['命莲寺东北莲花池', '神灵庙水涡', ['非妖怪兽道河流', true]],
 		},
 	},
 	{
@@ -265,7 +265,7 @@ export const INGREDIENT_LIST = [
 		level: 3,
 		price: 10,
 		from: {
-			buy: [['香霖堂', true], '月之都月兔'],
+			buy: [['人间之里香霖堂', true], '月之都月兔'],
 			collect: ['博丽神社桃树', '魔法森林桃树', '太阳花田桃树'],
 		},
 	},
@@ -277,7 +277,7 @@ export const INGREDIENT_LIST = [
 		level: 1,
 		price: 2,
 		from: {
-			buy: [['香霖堂', true]],
+			buy: [['人间之里香霖堂', true]],
 			collect: ['红魔馆河流', '神灵庙北部冰块'],
 		},
 	},
@@ -316,7 +316,7 @@ export const INGREDIENT_LIST = [
 		level: 3,
 		price: 15,
 		from: {
-			buy: [['香霖堂', true], '旧地狱鬼商'],
+			buy: [['人间之里香霖堂', true], '旧地狱鬼商'],
 			collect: ['迷途竹林竹子', '辉针城竹子'],
 		},
 	},
@@ -360,7 +360,7 @@ export const INGREDIENT_LIST = [
 		price: 24,
 		from: {
 			buy: [['妖怪兽道商人', true], '旧地狱鬼商', '神灵庙道士'],
-			collect: [['非妖怪兽道河流', true], '神灵庙水涡', '辉针城水涡', ['辉针城碗之后', true]],
+			collect: ['神灵庙水涡', '辉针城水涡', ['辉针城碗之后', true], ['非妖怪兽道河流', true]],
 		},
 	},
 	{
@@ -371,8 +371,8 @@ export const INGREDIENT_LIST = [
 		level: 2,
 		price: 7,
 		from: {
-			buy: ['地灵殿地狱鸦', '魔法森林上海人形'],
-			collect: ['人间之里银杏', '博丽神社银杏', '魔法森林银杏', '太阳花田银杏', '妖怪之山蜂巢', '地灵殿花丛'],
+			buy: ['魔法森林上海人形', '地灵殿地狱鸦'],
+			collect: ['人间之里银杏', '博丽神社银杏', '妖怪之山蜂巢', '魔法森林银杏', '地灵殿花丛', '太阳花田银杏'],
 		},
 	},
 	{
@@ -383,7 +383,7 @@ export const INGREDIENT_LIST = [
 		level: 5,
 		price: 40,
 		from: {
-			buy: ['博丽神社妖精女仆', '红魔馆地精', '神灵庙道士', '迷途竹林妖怪兔'],
+			buy: ['博丽神社妖精女仆', '红魔馆地精', '迷途竹林妖怪兔', '神灵庙道士'],
 			collect: ['旧地狱捕兽夹'],
 			task: ['阿求小姐的色纸'],
 		},
@@ -408,11 +408,11 @@ export const INGREDIENT_LIST = [
 		level: 5,
 		price: 50,
 		from: {
-			buy: [['博丽神社妖精女仆', true], '神灵庙道士', '辉针城不良少年', '太阳花田太阳花精', '魔法森林上海人形'],
+			buy: [['博丽神社妖精女仆', true], '魔法森林上海人形', '神灵庙道士', '辉针城不良少年', '太阳花田太阳花精'],
 			collect: [
 				['妖怪兽道露水', true],
-				['红魔馆露水', true],
 				['博丽神社蘑菇', true],
+				['红魔馆露水', true],
 				['迷途竹林蘑菇', true],
 				['地灵殿蘑菇', true],
 			],
@@ -470,7 +470,7 @@ export const INGREDIENT_LIST = [
 		price: 30,
 		from: {
 			buy: ['神灵庙道士'],
-			collect: [['非妖怪兽道河流', true], '神灵庙水涡', ['辉针城碗之后', true]],
+			collect: ['神灵庙水涡', ['辉针城碗之后', true], ['非妖怪兽道河流', true]],
 		},
 	},
 	{
@@ -647,7 +647,7 @@ export const INGREDIENT_LIST = [
 		level: 3,
 		price: 36,
 		from: {
-			collect: ['旧地狱桥头并蒂莲', '神灵庙桥头并蒂莲', '命莲寺东北并蒂莲'],
+			collect: ['旧地狱桥头并蒂莲', '命莲寺东北并蒂莲', '神灵庙桥头并蒂莲'],
 		},
 	},
 	{
