@@ -43,13 +43,17 @@ export default class ErrorBoundary extends Component<IProps, IErrorBoundaryState
 	public override render() {
 		if (this.state.hasError) {
 			return (
-				<div>
-					<h2 style={{all: 'revert'}}>Oops, something went wrong!</h2>
-					<pre style={{all: 'revert', margin: '2rem 0'}}>
-						<code>{this.state.error?.toString()}</code>
+				<div className="m-4 flex flex-col gap-3">
+					<h2 className="text-2xl font-bold">Oops, something went wrong!</h2>
+					<p className="text-lg">{this.state.error?.toString()}</p>
+					<pre className="flex flex-col gap-2 text-wrap break-all font-mono">
+						<code>{this.state.error?.stack}</code>
 						<code>{this.state.info?.componentStack}</code>
 					</pre>
-					<button onClick={this.handleClick.bind(this)} style={{all: 'revert', cursor: 'pointer'}}>
+					<button
+						className="cursor-pointer bg-content1 p-2 hover:bg-content2"
+						onClick={this.handleClick.bind(this)}
+					>
 						Click here to reset local storage and reload the page.
 					</button>
 				</div>
