@@ -167,7 +167,7 @@ export default memo(
 
 		useEffect(() => {
 			const key = 'global_settings-button';
-			if (globalStore.persistence.dirver.get().includes(key) || (!currentBeverageName && !currentRecipe)) {
+			if (globalStore.persistence.dirver.get().includes(key) || !(currentBeverageName && currentRecipe?.name)) {
 				return;
 			}
 
@@ -185,7 +185,7 @@ export default memo(
 					description: '点击此处可以修改全局设置和查看更多信息',
 				},
 			});
-		}, [currentBeverageName, currentRecipe, globalStore.persistence.dirver]);
+		}, [currentBeverageName, currentRecipe?.name, globalStore.persistence.dirver]);
 
 		if (!currentBeverageName && !currentRecipe) {
 			if (currentCustomerName && savedMeal[currentCustomerName]?.length) {

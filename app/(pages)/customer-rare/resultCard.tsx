@@ -181,7 +181,7 @@ export default memo(
 		useEffect(() => {
 			const key = 'global_settings-button';
 
-			if (globalStore.persistence.dirver.get().includes(key) || (!currentBeverageName && !currentRecipe?.name)) {
+			if (globalStore.persistence.dirver.get().includes(key) || !(currentBeverageName && currentRecipe?.name)) {
 				return;
 			}
 
