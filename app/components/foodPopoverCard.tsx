@@ -1,5 +1,16 @@
-import {type FC, type MouseEvent, type PropsWithChildren, forwardRef, memo, useCallback, useMemo} from 'react';
+import {
+	type FC,
+	type KeyboardEvent,
+	type MouseEvent,
+	type PropsWithChildren,
+	forwardRef,
+	memo,
+	useCallback,
+	useMemo,
+} from 'react';
 import {uniq} from 'lodash';
+
+import {useParams} from '@/hooks';
 
 import {Popover, PopoverContent, PopoverTrigger, Snippet, Tooltip, usePopoverContext} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -11,7 +22,7 @@ import TagsComponent from '@/components/tags';
 
 import type {ITagStyle} from '@/constants/types';
 import {type IIngredient, type TFoodNames, type TIngredientNames, type TKitchenwareNames, type TTags} from '@/data';
-import {useParams} from '@/hooks';
+import {checkA11yConfirmKey} from '@/utils';
 
 interface ICloseButtonProps {
 	param?: string;
@@ -23,8 +34,12 @@ const CloseButton: FC<ICloseButtonProps> = memo(
 		const {getBackdropProps} = usePopoverContext();
 
 		const handleClose = useCallback(
-			(event: MouseEvent<HTMLButtonElement>) => {
-				getBackdropProps().onClick?.(event);
+			(event: KeyboardEvent<HTMLButtonElement> | MouseEvent<HTMLButtonElement>) => {
+				if (!checkA11yConfirmKey(event)) {
+					return;
+				}
+
+				getBackdropProps().onClick?.(event as MouseEvent<HTMLButtonElement>);
 
 				if (param && params.has(param)) {
 					const newParams = new URLSearchParams(params);
@@ -44,6 +59,7 @@ const CloseButton: FC<ICloseButtonProps> = memo(
 					icon={faXmark}
 					variant="light"
 					onClick={handleClose}
+					onKeyDown={handleClose}
 					aria-label={label}
 					className="absolute -right-1 top-1 h-4 text-default-300 data-[hover]:bg-transparent"
 					ref={ref}

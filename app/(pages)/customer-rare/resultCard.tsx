@@ -9,8 +9,9 @@ import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-ico
 import Placeholder from './placeholder';
 import Sprite from '@/components/sprite';
 
+import {type TIngredientNames} from '@/data';
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
-import {removeLastElement} from '@/utils';
+import {checkA11yConfirmKey, removeLastElement} from '@/utils';
 
 interface IPlusProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'className'> {
 	size?: number;
@@ -81,23 +82,39 @@ const IngredientList = memo(function IngredientsList() {
 		[currentRecipe?.extraIngredients, originalIngredients]
 	);
 
+	const handleDelete = useCallback(
+		(ingredient: TIngredientNames) => {
+			store.shared.recipe.data.set((prev) => {
+				if (prev) {
+					prev.extraIngredients = removeLastElement(prev.extraIngredients, ingredient);
+				}
+			});
+		},
+		[store.shared.recipe.data]
+	);
+
 	return (
 		<div className="flex items-center gap-x-3">
 			{filledIngredients.map((ingredient, index) =>
 				ingredient ? (
 					index >= originalIngredients.length ? (
-						<span key={index} className="flex items-center">
+						<span
+							key={index}
+							onKeyDown={(event) => {
+								if (checkA11yConfirmKey(event)) {
+									handleDelete(ingredient);
+								}
+							}}
+							tabIndex={0}
+							aria-label={`删除${ingredient}`}
+							className="flex items-center"
+						>
 							<span
 								onClick={() => {
-									store.shared.recipe.data.set((prev) => {
-										if (prev) {
-											prev.extraIngredients = removeLastElement(
-												prev.extraIngredients,
-												ingredient
-											);
-										}
-									});
+									handleDelete(ingredient);
 								}}
+								role="button"
+								tabIndex={1}
 								title={`删除${ingredient}`}
 								className="absolute flex h-10 w-10 cursor-pointer items-center justify-center bg-foreground bg-opacity-50 text-background opacity-0 transition-opacity hover:opacity-100"
 							>
@@ -236,6 +253,15 @@ export default memo(
 											onClick={() => {
 												customerStore.shared.customer.hasMystiaKitchenware.set((prev) => !prev);
 											}}
+											onKeyDown={(event) => {
+												if (checkA11yConfirmKey(event)) {
+													customerStore.shared.customer.hasMystiaKitchenware.set(
+														(prev) => !prev
+													);
+												}
+											}}
+											tabIndex={0}
+											aria-label={`单击：将此点单标记为使用${hasMystiaKitchenware ? '非' : ''}夜雀系列厨具制作`}
 											className={clsx(
 												hasMystiaKitchenware &&
 													'rounded-full ring-4 ring-warning-400 dark:ring-warning-200'
@@ -273,6 +299,7 @@ export default memo(
 								size="sm"
 								variant="flat"
 								onPress={handleSaveButtonPress}
+								aria-label={`保存套餐，当前评级为${currentRating}`}
 								className="md:w-auto"
 							>
 								保存套餐

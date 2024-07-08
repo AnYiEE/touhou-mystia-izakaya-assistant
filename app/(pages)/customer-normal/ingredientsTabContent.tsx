@@ -1,4 +1,4 @@
-import {forwardRef, memo, useMemo} from 'react';
+import {forwardRef, memo, useCallback, useMemo} from 'react';
 import clsx from 'clsx';
 import {intersection} from 'lodash';
 
@@ -50,6 +50,23 @@ export default memo(
 		sortedData = useMemo(
 			() => sortedData.filter(({name}) => !darkIngredients.has(name)),
 			[darkIngredients, sortedData]
+		);
+
+		const onSelected = useCallback(
+			(ingredient: TIngredientNames) => {
+				customerStore.shared.customer.popular.set(currentGlobalPopular);
+				customerStore.shared.recipe.data.set((prev) => {
+					if (prev && currentRecipe && currentRecipe.ingredients.length + prev.extraIngredients.length < 5) {
+						prev.extraIngredients.push(ingredient);
+					}
+				});
+			},
+			[
+				currentGlobalPopular,
+				currentRecipe,
+				customerStore.shared.customer.popular,
+				customerStore.shared.recipe.data,
+			]
 		);
 
 		if (!currentCustomerName || !currentRecipeData) {
@@ -123,16 +140,11 @@ export default memo(
 								<div
 									key={index}
 									onClick={() => {
-										customerStore.shared.customer.popular.set(currentGlobalPopular);
-										customerStore.shared.recipe.data.set((prev) => {
-											if (
-												prev &&
-												currentRecipe.ingredients.length + prev.extraIngredients.length < 5
-											) {
-												prev.extraIngredients.push(name);
-											}
-										});
+										onSelected(name);
 									}}
+									role="button"
+									tabIndex={0}
+									aria-label={`加入${name}，匹配度${scoreChange}`}
 									title={`加入${name}`}
 									className="flex cursor-pointer flex-col items-center transition hover:scale-105"
 								>

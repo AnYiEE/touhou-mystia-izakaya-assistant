@@ -1,4 +1,4 @@
-import {forwardRef, memo, useMemo} from 'react';
+import {forwardRef, memo, useCallback, useMemo} from 'react';
 import clsx from 'clsx';
 import {intersection} from 'lodash';
 
@@ -12,9 +12,10 @@ import Tags from '@/components/tags';
 import Sprite from '@/components/sprite';
 
 import {CUSTOMER_NORMAL_TAG_STYLE} from '@/constants';
+import {type TTags} from '@/data';
 import type {TBeverageTag, TIngredientTag, TRecipeTag} from '@/data/types';
 import {useCustomerNormalStore, useGlobalStore} from '@/stores';
-import {pinyinSort} from '@/utils';
+import {checkA11yConfirmKey, pinyinSort} from '@/utils';
 
 interface IProps {}
 
@@ -47,6 +48,38 @@ export default memo(
 						(typeof selectedCustomerPositiveTags !== 'string' && selectedCustomerPositiveTags.size > 0)
 				),
 			[currentBeverageName, currentRecipe, selectedCustomerBeverageTags, selectedCustomerPositiveTags]
+		);
+
+		const handleBeverageTagSelected = useCallback(
+			(pressedTag: TTags) => {
+				customerStore.shared.tab.set('beverage');
+				customerStore.shared.customer.beverageTags.set((prev) => {
+					if (prev instanceof Set) {
+						if (prev.has(pressedTag)) {
+							prev.delete(pressedTag);
+						} else {
+							prev.add(pressedTag);
+						}
+					}
+				});
+			},
+			[customerStore.shared.customer.beverageTags, customerStore.shared.tab]
+		);
+
+		const handleRecipePositiveTagSelected = useCallback(
+			(pressedTag: TTags) => {
+				customerStore.shared.tab.set('recipe');
+				customerStore.shared.customer.positiveTags.set((prev) => {
+					if (prev instanceof Set) {
+						if (prev.has(pressedTag)) {
+							prev.delete(pressedTag);
+						} else {
+							prev.add(pressedTag);
+						}
+					}
+				});
+			},
+			[customerStore.shared.customer.positiveTags, customerStore.shared.tab]
 		);
 
 		if (!currentCustomerName) {
@@ -113,22 +146,20 @@ export default memo(
 								icon: 'inline-table lg:inline-block',
 							}}
 						/>
-						<div className="flex min-w-24 flex-col gap-2 text-nowrap break-keep pt-2 lg:min-w-28">
-							<span className="text-xs font-medium text-default-500">
-								<span className="flex justify-between">
-									<span>DLC{currentCustomerDlc}</span>
-									<Popover showArrow offset={0}>
-										<Tooltip showArrow content={placeContent} offset={-1.5}>
-											<span className="cursor-pointer">
-												<PopoverTrigger>
-													<span>{currentCustomerMainPlace}</span>
-												</PopoverTrigger>
-											</span>
-										</Tooltip>
-										<PopoverContent>{placeContent}</PopoverContent>
-									</Popover>
-								</span>
-							</span>
+						<div className="min-w-24 gap-2 pt-2 lg:min-w-28">
+							<p className="flex justify-between text-nowrap break-keep text-xs font-medium text-default-500">
+								<span>DLC{currentCustomerDlc}</span>
+								<Popover showArrow offset={0}>
+									<Tooltip showArrow content={placeContent} offset={-1.5}>
+										<span className="cursor-pointer">
+											<PopoverTrigger>
+												<span tabIndex={0}>{currentCustomerMainPlace}</span>
+											</PopoverTrigger>
+										</span>
+									</Tooltip>
+									<PopoverContent>{placeContent}</PopoverContent>
+								</Popover>
+							</p>
 						</div>
 					</div>
 					<Divider className="md:hidden" />
@@ -161,6 +192,13 @@ export default memo(
 													}
 												});
 											}}
+											onKeyDown={(event) => {
+												if (checkA11yConfirmKey(event)) {
+													handleRecipePositiveTagSelected(tag);
+												}
+											}}
+											role="button"
+											tabIndex={0}
 											className={clsx(
 												'cursor-pointer select-none p-0.5 hover:opacity-80',
 												!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50'
@@ -215,6 +253,13 @@ export default memo(
 													}
 												});
 											}}
+											onKeyDown={(event) => {
+												if (checkA11yConfirmKey(event)) {
+													handleBeverageTagSelected(tag);
+												}
+											}}
+											role="button"
+											tabIndex={0}
 											className={clsx(
 												'cursor-pointer select-none p-0.5 hover:opacity-80',
 												!beverageTags.includes(tag) && 'opacity-50'

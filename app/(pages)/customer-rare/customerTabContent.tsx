@@ -8,6 +8,7 @@ import Sprite from '@/components/sprite';
 import type {ICustomerTabStyle, TCustomerTarget} from './types';
 import type {TCustomerRareInstances, TCustomerSpecialInstances} from '@/methods/customer/types';
 import {useCustomerRareStore} from '@/stores';
+import {checkA11yConfirmKey} from '@/utils';
 
 interface IProps {
 	customerTabStyle: ICustomerTabStyle;
@@ -40,6 +41,11 @@ export default memo(
 									key={name}
 									onClick={() => {
 										store.shared.customer.data.set({name, target: target as TCustomerTarget});
+									}}
+									onKeyDown={(event) => {
+										if (checkA11yConfirmKey(event)) {
+											store.shared.customer.data.set({name, target: target as TCustomerTarget});
+										}
 									}}
 									title={`选择${name}`}
 									className="flex cursor-pointer flex-col items-center gap-1"

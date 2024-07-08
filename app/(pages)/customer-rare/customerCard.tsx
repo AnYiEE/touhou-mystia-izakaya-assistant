@@ -1,4 +1,4 @@
-import {forwardRef, memo, useMemo} from 'react';
+import {forwardRef, memo, useCallback, useMemo} from 'react';
 import clsx from 'clsx';
 import {intersection} from 'lodash';
 
@@ -14,9 +14,10 @@ import Tags from '@/components/tags';
 import Sprite from '@/components/sprite';
 
 import {customerRatingColorMap, customerTagStyleMap} from './constants';
+import {type TTags} from '@/data';
 import type {TBeverageTag, TIngredientTag, TRecipeTag} from '@/data/types';
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
-import {pinyinSort} from '@/utils';
+import {checkA11yConfirmKey, pinyinSort} from '@/utils';
 
 interface IProps {}
 
@@ -61,15 +62,31 @@ export default memo(
 			]
 		);
 
+		const bindBeverageTagLongPress = useLongPress((_longPressReactEvents, context) => {
+			const {context: tag} = context as {context: TBeverageTag};
+			customerStore.shared.customer.order.beverageTag.set((prev) => (prev === tag ? null : tag));
+		});
+
 		const bindRecipePositiveTagLongPress = useLongPress((_longPressReactEvents, context) => {
 			const {context: tag} = context as {context: TRecipeTag};
 			customerStore.shared.customer.order.recipeTag.set((prev) => (prev === tag ? null : tag));
 		});
 
-		const bindBeverageTagLongPress = useLongPress((_longPressReactEvents, context) => {
-			const {context: tag} = context as {context: TBeverageTag};
-			customerStore.shared.customer.order.beverageTag.set((prev) => (prev === tag ? null : tag));
-		});
+		const handleBeverageTagSelected = useCallback(
+			(pressedTag: TTags) => {
+				const tag = pressedTag as TBeverageTag;
+				customerStore.shared.customer.order.beverageTag.set((prev) => (prev === tag ? null : tag));
+			},
+			[customerStore.shared.customer.order.beverageTag]
+		);
+
+		const handleRecipePositiveTagSelected = useCallback(
+			(pressedTag: TTags) => {
+				const tag = pressedTag as TRecipeTag;
+				customerStore.shared.customer.order.recipeTag.set((prev) => (prev === tag ? null : tag));
+			},
+			[customerStore.shared.customer.order.recipeTag]
+		);
 
 		if (!currentCustomer) {
 			return null;
@@ -131,7 +148,7 @@ export default memo(
 		return (
 			<Card fullWidth shadow="sm" ref={ref}>
 				<div className="flex flex-col gap-3 p-4 md:flex-row">
-					<div className="flex flex-col items-center justify-center text-center">
+					<div className="flex flex-col">
 						<Popover
 							showArrow
 							color={currentRating ? customerRatingColorMap[currentRating] : undefined}
@@ -142,50 +159,52 @@ export default memo(
 								color={currentRating ? customerRatingColorMap[currentRating] : undefined}
 								content={currentRating ?? '继续选择以评分'}
 							>
-								<span className="cursor-pointer">
+								<div className="cursor-pointer">
 									<PopoverTrigger>
-										<Avatar
-											isBordered={Boolean(currentRating)}
-											color={currentRating ? customerRatingColorMap[currentRating] : undefined}
-											radius="full"
-											icon={
-												<Sprite
-													target={currentCustomerTarget}
-													name={currentCustomerName}
-													size={4}
-												/>
-											}
-											classNames={{
-												base: clsx(
-													'h-12 w-12 lg:h-16 lg:w-16',
-													Boolean(currentRating) && 'ring-4'
-												),
-												icon: 'inline-table lg:inline-block',
-											}}
-										/>
+										<div tabIndex={0} className="flex flex-col items-center gap-2">
+											<Avatar
+												isBordered={Boolean(currentRating)}
+												color={
+													currentRating ? customerRatingColorMap[currentRating] : undefined
+												}
+												radius="full"
+												icon={
+													<Sprite
+														target={currentCustomerTarget}
+														name={currentCustomerName}
+														size={4}
+													/>
+												}
+												classNames={{
+													base: clsx(
+														'h-12 w-12 lg:h-16 lg:w-16',
+														Boolean(currentRating) && 'ring-4'
+													),
+													icon: 'inline-table lg:inline-block',
+												}}
+											/>
+											<p className="text-md font-semibold">{currentCustomerName}</p>
+										</div>
 									</PopoverTrigger>
-								</span>
+								</div>
 							</Tooltip>
 							<PopoverContent>{currentRating ?? '继续选择以评分'}</PopoverContent>
 						</Popover>
-						<div className="flex flex-col gap-2 text-nowrap break-keep pt-2">
-							<p className="text-md font-semibold">{currentCustomerName}</p>
-							<span className="text-xs font-medium text-default-500">
-								<span className="flex justify-between">
-									<span>DLC{currentCustomerDlc}</span>
-									<Popover showArrow offset={0}>
-										<Tooltip showArrow content={placeContent} offset={-1.5}>
-											<span className="cursor-pointer">
-												<PopoverTrigger>
-													<span>{currentCustomerMainPlace}</span>
-												</PopoverTrigger>
-											</span>
-										</Tooltip>
-										<PopoverContent>{placeContent}</PopoverContent>
-									</Popover>
-								</span>
-								<p className="text-nowrap break-keep text-justify">持有金：￥{currentCustomerPrice}</p>
-							</span>
+						<div className="flex flex-col text-nowrap break-keep pt-2 text-xs font-medium text-default-500">
+							<p className="flex justify-between">
+								<span>DLC{currentCustomerDlc}</span>
+								<Popover showArrow offset={0}>
+									<Tooltip showArrow content={placeContent} offset={-1.5}>
+										<span className="cursor-pointer">
+											<PopoverTrigger>
+												<span tabIndex={0}>{currentCustomerMainPlace}</span>
+											</PopoverTrigger>
+										</span>
+									</Tooltip>
+									<PopoverContent>{placeContent}</PopoverContent>
+								</Popover>
+							</p>
+							<p className="text-justify">持有金：￥{currentCustomerPrice}</p>
 						</div>
 					</div>
 					<Divider className="md:hidden" />
@@ -224,6 +243,13 @@ export default memo(
 													}
 												});
 											}}
+											onKeyDown={(event) => {
+												if (checkA11yConfirmKey(event)) {
+													handleRecipePositiveTagSelected(tag);
+												}
+											}}
+											role="button"
+											tabIndex={0}
 											className={clsx(
 												'cursor-pointer select-none p-0.5 hover:opacity-80',
 												!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50',
@@ -286,6 +312,13 @@ export default memo(
 													}
 												});
 											}}
+											onKeyDown={(event) => {
+												if (checkA11yConfirmKey(event)) {
+													handleBeverageTagSelected(tag);
+												}
+											}}
+											role="button"
+											tabIndex={0}
 											className={clsx(
 												'cursor-pointer select-none p-0.5 hover:opacity-80',
 												!beverageTags.includes(tag) && 'opacity-50',

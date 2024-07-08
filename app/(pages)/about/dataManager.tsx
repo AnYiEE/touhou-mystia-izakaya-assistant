@@ -1,6 +1,7 @@
 'use client';
 
-import {memo, useEffect, useMemo, useReducer, useState} from 'react';
+import {type KeyboardEvent, memo, useEffect, useMemo, useReducer, useState} from 'react';
+import {debounce} from 'lodash';
 
 import {useThrottle} from '@/hooks';
 
@@ -9,6 +10,7 @@ import {Button, Popover, PopoverContent, PopoverTrigger, Snippet, Tab, Tabs, Tex
 import H1 from './h1';
 
 import {useCustomerRareStore} from '@/stores';
+import {checkA11yConfirmKey} from '@/utils';
 
 export default memo(function DataManager() {
 	const [value, setValue] = useState('');
@@ -78,6 +80,11 @@ export default memo(function DataManager() {
 										isDisabled={isSaveButtonDisabled}
 										variant="flat"
 										onClick={setIsSavePopoverOpened}
+										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
+											if (checkA11yConfirmKey(event)) {
+												setIsSavePopoverOpened();
+											}
+										})}
 									>
 										保存
 									</Button>
@@ -86,11 +93,21 @@ export default memo(function DataManager() {
 									<Button
 										color="primary"
 										variant="ghost"
-										onPress={() => {
+										onClick={() => {
 											setIsSavePopoverOpened();
 											// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 											store.persistence.meals.set(JSON.parse(throttledValue));
 										}}
+										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
+											if (event.key === 'Escape') {
+												setIsSavePopoverOpened();
+											}
+											if (checkA11yConfirmKey(event)) {
+												setIsSavePopoverOpened();
+												// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+												store.persistence.meals.set(JSON.parse(throttledValue));
+											}
+										})}
 									>
 										确认保存
 									</Button>
@@ -101,7 +118,16 @@ export default memo(function DataManager() {
 					<Tab key="reset" title="重置">
 						<Popover showArrow isOpen={isResetPopoverOpened}>
 							<PopoverTrigger>
-								<Button color="danger" variant="flat" onClick={setIsResetPopoverOpened}>
+								<Button
+									color="danger"
+									variant="flat"
+									onClick={setIsResetPopoverOpened}
+									onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
+										if (checkA11yConfirmKey(event)) {
+											setIsResetPopoverOpened();
+										}
+									})}
+								>
 									重置现有稀客套餐数据（数据出错时可使用）
 								</Button>
 							</PopoverTrigger>
@@ -109,10 +135,19 @@ export default memo(function DataManager() {
 								<Button
 									color="danger"
 									variant="ghost"
-									onPress={() => {
+									onClick={() => {
 										setIsResetPopoverOpened();
 										store.persistence.meals.set({});
 									}}
+									onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
+										if (event.key === 'Escape') {
+											setIsResetPopoverOpened();
+										}
+										if (checkA11yConfirmKey(event)) {
+											setIsResetPopoverOpened();
+											store.persistence.meals.set({});
+										}
+									})}
 								>
 									确认重置
 								</Button>

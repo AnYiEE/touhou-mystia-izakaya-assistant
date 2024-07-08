@@ -9,6 +9,7 @@ import {Theme, useMounted, useSystemTheme} from '@/hooks';
 import {Spinner, Tooltip, useSwitch} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleHalfStroke, faMoon, faSun} from '@fortawesome/free-solid-svg-icons';
+import {checkA11yConfirmKey} from '@/utils';
 
 enum ThemeLabel {
 	dark = '深色',
@@ -48,8 +49,8 @@ export default memo(function ThemeSwitcher({isMenu}: Partial<IProps>) {
 		'aria-label': label,
 		isSelected: theme !== Theme.system,
 		onChange,
-		onKeyDown: ({key}) => {
-			if ([' ', 'Enter'].includes(key)) {
+		onKeyDown: (event) => {
+			if (checkA11yConfirmKey(event)) {
 				onChange();
 			}
 		},
