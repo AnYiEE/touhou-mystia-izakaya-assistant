@@ -51,7 +51,7 @@
 		"东方夜雀食堂"
 	],
 	"dependencies": {
-		"@davstack/store": "^1.4.2",
+		"@davstack/store": "^1.4.6",
 		"@fortawesome/fontawesome-svg-core": "^6.5.2",
 		"@fortawesome/free-brands-svg-icons": "^6.5.2",
 		"@fortawesome/free-solid-svg-icons": "^6.5.2",
@@ -88,7 +88,7 @@
 		"husky": "^9.0.11",
 		"only-allow": "^1.2.1",
 		"postcss": "^8.4.39",
-		"postcss-preset-env": "^9.5.16",
+		"postcss-preset-env": "^9.6.0",
 		"prettier": "^3.3.2",
 		"prettier-plugin-tailwindcss": "^0.6.5",
 		"sass": "^1.77.6",
