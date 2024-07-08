@@ -3,20 +3,17 @@
 @tailwind utilities;
 
 ::-webkit-scrollbar {
-	height: 0.5rem;
-	width: 0.5rem;
+	@apply h-2 w-2;
 }
 
 ::-webkit-scrollbar-thumb:horizontal {
-	background-color: hsl(var(--nextui-default-300));
-	border-radius: 1rem;
+	@apply rounded-2xl bg-default-300;
 }
 
 ::-webkit-scrollbar-thumb:vertical {
-	background-color: hsl(var(--nextui-default-300));
-	border-radius: 1rem;
+	@apply rounded-2xl bg-default-300;
 }
 
 ::-webkit-scrollbar-track-piece {
-	background-color: hsl(var(--nextui-default-100));
+	@apply rounded-2xl bg-default-100;
 }
