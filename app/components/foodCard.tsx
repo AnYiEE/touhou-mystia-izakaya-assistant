@@ -14,9 +14,10 @@ export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function FoodCard({name, description, image, ...cardProps}, ref) {
 		return (
 			<Card
+				fullWidth
 				shadow="sm"
 				classNames={{
-					base: 'w-full justify-center',
+					base: 'justify-center',
 				}}
 				{...cardProps}
 				ref={ref}

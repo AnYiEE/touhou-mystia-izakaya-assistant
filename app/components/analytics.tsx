@@ -26,12 +26,12 @@ export default memo(function Analytics() {
 		);
 
 		setScriptUrlTag('/track.js', 'async', true)
-			.then((): void => {
+			.then(() => {
 				// eslint-disable-next-line unicorn/consistent-destructuring
 				window._paq.push(['setCustomUrl', location.href], ['trackPageView']);
 				console.info('Analytics load succeeded.');
 			})
-			.catch((): void => {
+			.catch(() => {
 				console.info('Analytics load failed.');
 			});
 	}, []);

@@ -5,6 +5,15 @@ import {Link, type LinkProps, Tooltip, type TooltipProps} from '@nextui-org/reac
 
 import {siteConfig} from '@/configs';
 
+const {links, shortName, version, nodeEnv, vercelEnv} = siteConfig;
+
+const isProduction = nodeEnv === 'production';
+const sha = (
+	process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? isProduction
+		? execSync('git rev-parse --short HEAD').toString('utf8')
+		: null
+)?.trim();
+
 interface IFooterLinkProps
 	extends Pick<LinkProps, 'href' | 'isExternal' | 'showAnchorIcon'>,
 		Pick<TooltipProps, 'content'> {}
@@ -22,22 +31,13 @@ const FooterLink = memo(function FooterLink({
 				isExternal={isExternal}
 				showAnchorIcon={showAnchorIcon}
 				href={href}
-				className="text-xs opacity-30 dark:text-warning-400 dark:opacity-40"
+				className="text-xs opacity-60 dark:text-warning-400 dark:opacity-40 dark:hover:opacity-60"
 			>
 				{children}
 			</Link>
 		</Tooltip>
 	);
 });
-
-const {links, shortName, version, nodeEnv, vercelEnv} = siteConfig;
-
-const isProduction = nodeEnv === 'production';
-const sha = (
-	process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? isProduction
-		? execSync('git rev-parse --short HEAD').toString('utf8')
-		: null
-)?.trim();
 
 export default memo(function Footer() {
 	return (

@@ -61,7 +61,7 @@ const CloseButton: FC<ICloseButtonProps> = memo(
 					onClick={handleClose}
 					onKeyDown={handleClose}
 					aria-label={label}
-					className="absolute -right-1 top-1 h-4 text-default-300 data-[hover]:bg-transparent"
+					className="absolute -right-1 top-1 h-4 text-default-300 data-[hover]:bg-transparent data-[hover]:text-default-400"
 					ref={ref}
 				/>
 			</Tooltip>
@@ -95,16 +95,16 @@ const ShareButton: FC<IShareButtonProps> = memo(
 								icon={faShare}
 								variant="light"
 								aria-label="分享当前选中项"
-								className="h-4 text-default-300 data-[hover]:bg-transparent"
+								className="h-4 text-default-300 data-[hover]:bg-transparent data-[hover]:text-default-400"
 							/>
 						</PopoverTrigger>
 					</div>
 				</Tooltip>
 				<PopoverContent>
 					<div className="flex flex-col">
-						<p className="cursor-default select-none self-end pr-4 text-xs text-default-500 dark:text-default-300">
+						<span className="cursor-default select-none self-end pr-4 text-xs text-default-500 dark:text-default-400">
 							点击以复制到当前选中项的链接↓
-						</p>
+						</span>
 						<Snippet
 							disableTooltip
 							size="sm"
@@ -155,8 +155,8 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 		}, [tags]);
 
 		return (
-			<div className="flex max-w-64 flex-col p-2 text-xs" ref={ref}>
-				<div className="flex items-center gap-x-2 text-sm">
+			<div className="flex max-w-64 flex-col p-2 text-xs text-default-500" ref={ref}>
+				<div className="flex items-center gap-x-2 text-sm text-foreground">
 					<Sprite target={target} name={name} size={2} />
 					<p className="font-bold">
 						{dlc !== undefined && `【DLC${dlc}】`}
@@ -172,7 +172,7 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 					</div>
 				)}
 				{description !== undefined && (
-					<div className="mt-2 flex gap-x-4 text-default-500">
+					<div className="mt-2 flex gap-x-4">
 						<p>
 							<span className="font-semibold">售价：</span>
 							{description.price}
@@ -195,9 +195,7 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 						<TagsComponent tags={mergedTags.negative} tagStyle={tagColors?.negative} />
 					</div>
 				)}
-				{children !== undefined && (
-					<div className="mt-2 flex flex-col gap-y-1 text-default-500">{children}</div>
-				)}
+				{children !== undefined && <div className="mt-2 flex flex-col gap-y-1">{children}</div>}
 			</div>
 		);
 	})

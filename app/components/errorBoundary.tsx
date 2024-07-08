@@ -2,7 +2,7 @@
 
 import {Component, type ErrorInfo, type PropsWithChildren} from 'react';
 
-interface IErrorBoundaryState {
+interface IState {
 	error: Error | null;
 	info: ErrorInfo | null;
 	hasError: boolean;
@@ -10,7 +10,7 @@ interface IErrorBoundaryState {
 
 interface IProps extends PropsWithChildren<object> {}
 
-export default class ErrorBoundary extends Component<IProps, IErrorBoundaryState> {
+export default class ErrorBoundary extends Component<IProps, IState> {
 	public constructor(props: IProps) {
 		super(props);
 
@@ -44,7 +44,7 @@ export default class ErrorBoundary extends Component<IProps, IErrorBoundaryState
 		if (this.state.hasError) {
 			return (
 				<div className="m-4 flex flex-col gap-3">
-					<h2 className="text-2xl font-bold">Oops, something went wrong!</h2>
+					<h1 className="text-2xl font-bold">Oops, something went wrong!</h1>
 					<p className="text-lg">{this.state.error?.toString()}</p>
 					<pre className="flex flex-col gap-2 text-wrap break-all font-mono">
 						<code>{this.state.error?.stack}</code>

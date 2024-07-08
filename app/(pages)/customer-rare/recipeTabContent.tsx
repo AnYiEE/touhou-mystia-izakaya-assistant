@@ -266,8 +266,8 @@ export default memo(
 							<div className="flex items-center">
 								<Sprite target="recipe" name={name} size={2} className="mr-2" />
 								<div className="inline-flex flex-1 items-center text-nowrap break-keep">
-									<p className="text-small font-medium">{name}</p>
-									<div className="-ml-2">
+									<span className="text-small font-medium">{name}</span>
+									<span className="-ml-2">
 										<Popover showArrow>
 											<Tooltip showArrow content={tags} offset={-2} placement="right">
 												<span className="cursor-pointer underline decoration-dotted">
@@ -283,7 +283,7 @@ export default memo(
 											</Tooltip>
 											<PopoverContent>{tags}</PopoverContent>
 										</Popover>
-									</div>
+									</span>
 								</div>
 							</div>
 						);

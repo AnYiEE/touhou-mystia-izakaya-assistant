@@ -29,7 +29,7 @@ export default memo(function Content({data}: IProps) {
 					backdrop="opaque"
 					isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}
 				>
-					<PopoverTrigger className="w-full">
+					<PopoverTrigger>
 						<FoodCard
 							isHoverable
 							isPressable

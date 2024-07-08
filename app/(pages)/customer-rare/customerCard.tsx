@@ -183,7 +183,7 @@ export default memo(
 													icon: 'inline-table lg:inline-block',
 												}}
 											/>
-											<p className="text-md font-semibold">{currentCustomerName}</p>
+											<span className="text-md font-semibold">{currentCustomerName}</span>
 										</div>
 									</PopoverTrigger>
 								</div>

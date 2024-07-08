@@ -64,7 +64,7 @@ export default memo(function SettingsButton() {
 			</Tooltip>
 			<PopoverContent>
 				<div className="flex max-w-44 flex-col px-1 py-2">
-					<p className="mb-2 text-base font-bold">全局设置</p>
+					<h2 className="mb-2 text-base font-bold">全局设置</h2>
 					<div className="flex flex-col gap-2">
 						<div className="flex items-center">
 							<span className="mr-2">流行喜爱</span>
