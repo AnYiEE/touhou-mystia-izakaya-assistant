@@ -53,7 +53,6 @@ export default memo(
 									<Avatar
 										isBordered
 										isFocusable
-										color={name === currentCustomer?.name ? 'primary' : 'default'}
 										radius="sm"
 										icon={
 											<Sprite
@@ -64,7 +63,10 @@ export default memo(
 											/>
 										}
 										classNames={{
-											base: 'h-16 w-16 lg:h-20 lg:w-20',
+											base: clsx(
+												'h-16 w-16 ring-default hover:ring-warning lg:h-20 lg:w-20',
+												name === currentCustomer?.name && 'ring-primary'
+											),
 											icon: 'inline-table transition hover:scale-125 lg:inline-block',
 										}}
 									/>
