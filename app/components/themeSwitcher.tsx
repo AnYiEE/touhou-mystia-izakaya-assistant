@@ -1,6 +1,7 @@
 'use client';
 
 import {memo, useCallback, useEffect, useState} from 'react';
+import {usePathname} from 'next/navigation';
 import {useTheme} from 'next-themes';
 import clsx from 'clsx';
 
@@ -23,9 +24,19 @@ interface IProps {
 
 export default memo(function ThemeSwitcher({isMenu}: Partial<IProps>) {
 	const isMounted = useMounted();
+	const pathname = usePathname();
 	const {theme, setTheme} = useTheme();
 	const systemTheme = useSystemTheme();
 	const [nextTheme, setNextTheme] = useState('');
+
+	useEffect(() => {
+		if (theme !== Theme.system) {
+			for (const metaTag of document.querySelectorAll('meta[name="theme-color"]')) {
+				metaTag.removeAttribute('media');
+				metaTag.setAttribute('content', theme === Theme.light ? '#fef7e4' : '#000');
+			}
+		}
+	}, [pathname, theme]);
 
 	useEffect(() => {
 		if (theme === Theme.system) {

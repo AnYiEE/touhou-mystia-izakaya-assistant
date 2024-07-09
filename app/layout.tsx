@@ -53,6 +53,7 @@ export const viewport: Viewport = {
 		{color: '#fef7e4', media: '(prefers-color-scheme: light)'},
 		{color: '#000', media: '(prefers-color-scheme: dark)'},
 	],
+	viewportFit: 'cover',
 };
 
 const isProduction = nodeEnv === 'production';

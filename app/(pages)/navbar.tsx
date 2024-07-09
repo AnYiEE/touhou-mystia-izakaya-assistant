@@ -89,7 +89,15 @@ export default memo(function Navbar() {
 	const [isMenuOpened, setMenuOpened] = useReducer((current) => !current, false);
 
 	return (
-		<NextUINavbar maxWidth="xl" position="sticky" isMenuOpen={isMenuOpened} onMenuOpenChange={setMenuOpened}>
+		<NextUINavbar
+			maxWidth="xl"
+			position="sticky"
+			isMenuOpen={isMenuOpened}
+			onMenuOpenChange={setMenuOpened}
+			classNames={{
+				base: 'pt-[env(titlebar-area-height,0rem)]',
+			}}
+		>
 			<NavbarContent justify="start" className="basis-full md:basis-1/5">
 				<NavbarBrand as="li" className="max-w-fit gap-3">
 					<Link color="foreground" href="/" className="flex select-none items-center justify-start gap-1">

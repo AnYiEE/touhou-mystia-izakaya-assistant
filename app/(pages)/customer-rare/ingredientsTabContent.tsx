@@ -89,7 +89,7 @@ export default memo(
 				<ScrollShadow
 					hideScrollBar
 					className={clsx(
-						'transition-[height] xl:h-[calc(100vh-9.75rem)]',
+						'transition-[height] xl:h-[calc(100vh-9.75rem-env(titlebar-area-height,0rem))]',
 						ingredientsTabStyle.contentClassName
 					)}
 					ref={ref}
