@@ -1015,7 +1015,7 @@ export const RECIPE_LIST = [
 	{
 		name: '水煮鱼',
 		ingredients: ['鳟鱼', '辣椒'],
-		positiveTags: ['水产', '中华', '灼热', '燃起来了', '辣'],
+		positiveTags: ['水产', '中华', '灼热', '辣', '燃起来了'],
 		negativeTags: ['肉', '甜', '凉爽', '果味'],
 		cooker: '煮锅',
 		min: 4.8,
@@ -2626,7 +2626,7 @@ export const RECIPE_LIST = [
 	{
 		name: '胡辣汤',
 		ingredients: ['辣椒', '牛肉', '豆腐'],
-		positiveTags: ['家常', '中华', '灼热', '汤羹', '燃起来了', '辣'],
+		positiveTags: ['家常', '中华', '灼热', '汤羹', '辣', '燃起来了'],
 		negativeTags: [],
 		cooker: '油锅',
 		min: 4.8,
