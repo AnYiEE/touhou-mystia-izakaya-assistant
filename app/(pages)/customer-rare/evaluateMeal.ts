@@ -153,9 +153,13 @@ export function evaluateMeal({
 		hasMystiaCooker ? matchedRecipePositiveTags[0] : customerOrderRecipeTag
 	);
 	const matchedRecipeNegativeTags = intersection(currentRecipeTagsWithPopular, currentCustomerNegativeTags);
-	const orderedRecipeScore = Number(
-		hasMystiaCooker || (customerOrderRecipeTag ? matchedRecipePositiveTags.includes(customerOrderRecipeTag) : 0)
-	);
+	const orderedRecipeScore =
+		matchedRecipePositiveTags.length > 0
+			? Number(
+					hasMystiaCooker ||
+						(customerOrderRecipeTag ? matchedRecipePositiveTags.includes(customerOrderRecipeTag) : 0)
+				)
+			: 0;
 	const matchedRecipePositiveScore = matchedRecipePositiveTagsWithoutOrderedRecipe.length;
 	const matchedRecipeNegativeScore = matchedRecipeNegativeTags.length;
 	const recipeScore = orderedRecipeScore + matchedRecipePositiveScore - matchedRecipeNegativeScore;
