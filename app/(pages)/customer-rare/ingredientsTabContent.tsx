@@ -202,6 +202,7 @@ export default memo(
 						size="sm"
 						variant="flat"
 						onPress={customerStore.toggleIngredientTabVisibilityState}
+						aria-label={ingredientsTabStyle.ariaLabel}
 						className="h-4 w-4/5 text-default-500"
 					>
 						{ingredientsTabStyle.buttonNode}

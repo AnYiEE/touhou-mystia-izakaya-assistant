@@ -80,6 +80,7 @@ export default memo(
 						size="sm"
 						variant="flat"
 						onPress={store.toggleCustomerTabVisibilityState}
+						aria-label={customerTabStyle.ariaLabel}
 						className="h-4 w-4/5 text-default-500"
 					>
 						{customerTabStyle.buttonNode}

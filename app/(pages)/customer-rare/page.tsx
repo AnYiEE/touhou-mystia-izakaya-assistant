@@ -31,11 +31,13 @@ import {useCustomerRareStore, useGlobalStore} from '@/stores';
 
 const customerTabStyleMap = {
 	collapse: {
+		ariaLabel: '展开',
 		buttonNode: <FontAwesomeIcon icon={faChevronDown} size="sm" />,
 		contentClassName: 'h-[calc(50vh-9.25rem)] min-h-[20vw]',
 		sideButtonGroupClassName: 'hidden xl:block',
 	},
 	expand: {
+		ariaLabel: '收起',
 		buttonNode: <FontAwesomeIcon icon={faChevronUp} size="sm" />,
 		contentClassName: 'h-[50vmax]',
 		sideButtonGroupClassName: '',
@@ -44,11 +46,13 @@ const customerTabStyleMap = {
 
 const ingredientTabStyleMap = {
 	collapse: {
+		ariaLabel: '展开',
 		buttonNode: <FontAwesomeIcon icon={faChevronDown} size="sm" />,
 		contentClassName: 'h-[calc(50vh-9.25rem)] min-h-[20vw]',
 		sideButtonGroupClassName: 'hidden xl:block',
 	},
 	expand: {
+		ariaLabel: '收起',
 		buttonNode: <FontAwesomeIcon icon={faChevronUp} size="sm" />,
 		contentClassName: 'h-[50vmax]',
 		sideButtonGroupClassName: '',

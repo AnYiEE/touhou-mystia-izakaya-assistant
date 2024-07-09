@@ -5,23 +5,25 @@ import {type TabVisibilityState} from './constants';
 import type {TBeverageInstance, TRecipeInstance} from '@/methods/food/types';
 
 export interface ICustomerTabStyle {
+	ariaLabel: string;
 	buttonNode: ReactNode;
 	contentClassName: string;
 	sideButtonGroupClassName: string;
 }
 
 export interface ICustomerTabStyleMap {
-	[key in TabVisibilityState]: ICustomerTab;
+	[key in TabVisibilityState]: ICustomerTabStyle;
 }
 
 export interface IIngredientsTabStyle {
+	ariaLabel: string;
 	buttonNode: ReactNode;
 	contentClassName: string;
 	sideButtonGroupClassName: string;
 }
 
 export interface IIngredientsTabStyleMap {
-	[key in TabVisibilityState]: ICustomerTab;
+	[key in TabVisibilityState]: IIngredientsTabStyle;
 }
 
 export interface ITableColumn<T extends string> {
