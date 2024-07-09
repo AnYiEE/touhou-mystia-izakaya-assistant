@@ -33,7 +33,7 @@ function calculateMaxScore({
 	const {beverageTag: customerOrderBeverageTag, recipeTag: customerOrderRecipeTag} = currentCustomerOrder;
 
 	if (!customerOrderBeverageTag && !customerOrderRecipeTag) {
-		return 1;
+		return 0;
 	}
 
 	const beverageMaxScore = customerOrderBeverageTag
@@ -142,21 +142,22 @@ export function evaluateMeal({
 	}
 
 	const matchedBeverageTags = intersection(currentBeverageTags, currentCustomerBeverageTags);
+	const matchedBeverageTagsWithOrderedBeverage = without(matchedBeverageTags, customerOrderBeverageTag);
 	const orderedBeverageScore = matchedBeverageTags.includes(customerOrderBeverageTag) ? 1 : 0;
-	const matchedBeverageScore = without(matchedBeverageTags, customerOrderBeverageTag).length;
+	const matchedBeverageScore = matchedBeverageTagsWithOrderedBeverage.length;
 	const beverageScore = orderedBeverageScore + matchedBeverageScore;
 
 	const matchedRecipePositiveTags = intersection(currentRecipeTagsWithPopular, currentCustomerPositiveTags);
+	const matchedRecipePositiveTagsWithoutOrderedRecipe = without(
+		matchedRecipePositiveTags,
+		hasMystiaCooker ? matchedRecipePositiveTags[0] : customerOrderRecipeTag
+	);
 	const matchedRecipeNegativeTags = intersection(currentRecipeTagsWithPopular, currentCustomerNegativeTags);
 	const orderedRecipeScore = Number(
-		(customerOrderRecipeTag ? matchedRecipePositiveTags.includes(customerOrderRecipeTag) : 0) || hasMystiaCooker
+		hasMystiaCooker || (customerOrderRecipeTag ? matchedRecipePositiveTags.includes(customerOrderRecipeTag) : 0)
 	);
-	const [matchedRecipePositiveScore, matchedRecipeNegativeScore] = [
-		matchedRecipePositiveTags,
-		matchedRecipeNegativeTags,
-	]
-		.map((value) => (orderedRecipeScore ? without(value, customerOrderRecipeTag) : value))
-		.map(({length}) => length) as [number, number];
+	const matchedRecipePositiveScore = matchedRecipePositiveTagsWithoutOrderedRecipe.length;
+	const matchedRecipeNegativeScore = matchedRecipeNegativeTags.length;
 	const recipeScore = orderedRecipeScore + matchedRecipePositiveScore - matchedRecipeNegativeScore;
 
 	let mealScore = Math.min(
