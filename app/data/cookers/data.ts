@@ -1,6 +1,6 @@
-import type {IKitchenware} from './types';
+import type {ICooker} from './types';
 
-export const KITCHENWARE_LIST = [
+export const COOKER_LIST = [
 	{
 		name: '烤架',
 	},
@@ -16,4 +16,4 @@ export const KITCHENWARE_LIST = [
 	{
 		name: '煮锅',
 	},
-] as const satisfies IKitchenware[];
+] as const satisfies ICooker[];

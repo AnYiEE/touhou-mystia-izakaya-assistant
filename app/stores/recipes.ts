@@ -9,7 +9,8 @@ import {numberSort, pinyinSort} from '@/utils';
 
 const storeVersion = {
 	initial: 0,
-	popular: 1,
+	popular: 1, // eslint-disable-next-line sort-keys
+	cooker: 2,
 } as const;
 
 const state = {
@@ -18,16 +19,16 @@ const state = {
 	dlcs: instance.getValuesByProp(instance.data, 'dlc', true).sort(numberSort),
 	levels: instance.getValuesByProp(instance.data, 'level', true).sort(numberSort),
 
+	cookers: instance.getValuesByProp(instance.data, 'cooker', true).sort(pinyinSort),
 	ingredients: instance.getValuesByProp(instance.data, 'ingredients', true).sort(pinyinSort),
-	kitchenwares: instance.getValuesByProp(instance.data, 'kitchenware', true).sort(pinyinSort),
 	negativeTags: instance.getValuesByProp(instance.data, 'negativeTags', true).sort(pinyinSort),
 	positiveTags: instance.getValuesByProp(instance.data, 'positiveTags', true).sort(pinyinSort),
 
 	persistence: {
 		filters: {
+			cookers: [] as string[],
 			dlcs: [] as string[],
 			ingredients: [] as string[],
-			kitchenwares: [] as string[],
 			levels: [] as string[],
 			negativeTags: [] as string[],
 			noIngredients: [] as string[],
@@ -44,7 +45,7 @@ const recipesStore = store(state, {
 	persist: {
 		enabled: true,
 		name: 'page-recipes-storage',
-		version: storeVersion.popular,
+		version: storeVersion.cooker,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -53,6 +54,12 @@ const recipesStore = store(state, {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				oldState.persistence = oldState.page;
 				delete oldState.page;
+			}
+			if (version < storeVersion.cooker) {
+				// cSpell:ignore kitchenwares
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				oldState.persistence.filters.cookers = oldState.persistence.filters.kitchenwares;
+				delete oldState.persistence.filters.kitchenwares;
 			}
 			return persistedState as typeof state;
 		},

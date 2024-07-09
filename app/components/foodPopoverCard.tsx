@@ -21,7 +21,7 @@ import Sprite, {type ISpriteProps} from '@/components/sprite';
 import TagsComponent from '@/components/tags';
 
 import type {ITagStyle} from '@/constants/types';
-import {type IIngredient, type TFoodNames, type TIngredientNames, type TKitchenwareNames, type TTags} from '@/data';
+import {type IIngredient, type TCookerNames, type TFoodNames, type TIngredientNames, type TTags} from '@/data';
 import {checkA11yConfirmKey} from '@/utils';
 
 interface ICloseButtonProps {
@@ -126,9 +126,9 @@ interface IFoodPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 		price: number | string;
 	};
 	dlc?: number | string;
+	cooker?: TCookerNames;
 	ingredients?: TIngredientNames[];
 	ingredientType?: IIngredient['type'];
-	kitchenware?: TKitchenwareNames;
 	tags?: {
 		[key in keyof ITagStyle]: TTags[];
 	};
@@ -137,7 +137,7 @@ interface IFoodPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 
 const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = memo(
 	forwardRef<HTMLDivElement | null, PropsWithChildren<IFoodPopoverCardProps>>(function FoodPopoverCard(
-		{target, name, description, dlc, ingredients, ingredientType, kitchenware, tags, tagColors, children},
+		{target, name, description, dlc, cooker, ingredients, ingredientType, tags, tagColors, children},
 		ref
 	) {
 		const mergedTags = useMemo((): Omit<NonNullable<typeof tags>, 'beverage'> | undefined => {
@@ -163,9 +163,9 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 						{name}
 					</p>
 				</div>
-				{kitchenware && ingredients && (
+				{cooker && ingredients && (
 					<div className="mt-2 flex flex-wrap gap-x-2 gap-y-1">
-						<Sprite target="kitchenware" name={kitchenware} size={1.5} className="mr-4" />
+						<Sprite target="cooker" name={cooker} size={1.5} className="mr-4" />
 						{ingredients.map((item) => (
 							<Sprite key={item} target="ingredient" name={item} size={1.5} />
 						))}

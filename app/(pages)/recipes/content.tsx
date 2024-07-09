@@ -24,7 +24,7 @@ export default memo(function Content({data}: IProps) {
 		<>
 			{data.map(
 				(
-					{dlc, from, name, level, price, ingredients, kitchenware, negativeTags, positiveTags, max, min},
+					{dlc, from, name, level, price, cooker, ingredients, negativeTags, positiveTags, max, min},
 					dataIndex
 				) => (
 					<Popover
@@ -50,8 +50,8 @@ export default memo(function Content({data}: IProps) {
 								name={name}
 								description={{level, price}}
 								dlc={dlc}
+								cooker={cooker}
 								ingredients={ingredients}
-								kitchenware={kitchenware}
 								tags={{negative: negativeTags, positive: positiveTags}}
 								tagColors={RECIPE_TAG_STYLE}
 							>

@@ -38,10 +38,10 @@ import type {ITableColumn, ITableSortDescriptor, TRecipeWithSuitability, TRecipe
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
 import {numberSort, pinyinSort} from '@/utils';
 
-type TTableColumnKey = 'recipe' | 'kitchenware' | 'ingredient' | 'price' | 'suitability' | 'action';
+type TTableColumnKey = 'recipe' | 'cooker' | 'ingredient' | 'price' | 'suitability' | 'action';
 export type TTableColumns = ITableColumn<TTableColumnKey>[];
 
-type TTableSortKey = Exclude<TTableColumnKey, 'kitchenware' | 'ingredient' | 'action'>;
+type TTableSortKey = Exclude<TTableColumnKey, 'cooker' | 'ingredient' | 'action'>;
 export type TTableSortDescriptor = ITableSortDescriptor<TTableSortKey>;
 
 interface IProps {}
@@ -57,7 +57,7 @@ export default memo(
 
 		const currentRecipe = customerStore.shared.recipe.data.use();
 		const selectedDlcs = customerStore.shared.recipe.dlcs.use();
-		const selectedKitchenwares = customerStore.shared.recipe.kitchenwares.use();
+		const selectedCookers = customerStore.shared.recipe.cookers.use();
 
 		const currentGlobalPopular = globalStore.persistence.popular.use();
 
@@ -68,7 +68,7 @@ export default memo(
 		const allRecipeDlcs = customerStore.recipe.dlcs.get();
 		const allRecipeNames = customerStore.recipe.names.get();
 		const allRecipeTags = customerStore.recipe.positiveTags.get();
-		const allKitchenwares = customerStore.recipe.kitchenwares.get();
+		const allCookers = customerStore.recipe.cookers.get();
 
 		const searchValue = customerStore.shared.recipe.searchValue.use();
 		const hasNameFilter = useMemo(() => Boolean(searchValue), [searchValue]);
@@ -129,13 +129,13 @@ export default memo(
 			if (
 				!hasNameFilter &&
 				(selectedDlcs === 'all' || selectedDlcs.size === 0) &&
-				(selectedKitchenwares === 'all' || selectedKitchenwares.size === 0) &&
+				(selectedCookers === 'all' || selectedCookers.size === 0) &&
 				(selectedCustomerPositiveTags === 'all' || selectedCustomerPositiveTags.size === 0)
 			) {
 				return clonedData;
 			}
 
-			return clonedData.filter(({name, dlc, kitchenware, positiveTags}) => {
+			return clonedData.filter(({name, dlc, cooker, positiveTags}) => {
 				const recipeTagsWithPopular = instance_recipe.calculateTagsWithPopular(
 					positiveTags,
 					currentCustomerPopular
@@ -144,10 +144,8 @@ export default memo(
 				const isNameMatched = hasNameFilter ? name.toLowerCase().includes(searchValue.toLowerCase()) : true;
 				const isDlcMatched =
 					selectedDlcs !== 'all' && selectedDlcs.size > 0 ? selectedDlcs.has(dlc.toString()) : true;
-				const isKitchenwareMatched =
-					selectedKitchenwares !== 'all' && selectedKitchenwares.size > 0
-						? selectedKitchenwares.has(kitchenware)
-						: true;
+				const isCookerMatched =
+					selectedCookers !== 'all' && selectedCookers.size > 0 ? selectedCookers.has(cooker) : true;
 				const isPositiveTagsMatched =
 					selectedCustomerPositiveTags !== 'all' && selectedCustomerPositiveTags.size > 0
 						? [...selectedCustomerPositiveTags].every((tag) =>
@@ -155,7 +153,7 @@ export default memo(
 							)
 						: true;
 
-				return isNameMatched && isDlcMatched && isKitchenwareMatched && isPositiveTagsMatched;
+				return isNameMatched && isDlcMatched && isCookerMatched && isPositiveTagsMatched;
 			});
 		}, [
 			currentCustomer,
@@ -165,9 +163,9 @@ export default memo(
 			instance_recipe,
 			instance_special,
 			searchValue,
+			selectedCookers,
 			selectedCustomerPositiveTags,
 			selectedDlcs,
-			selectedKitchenwares,
 		]);
 
 		const sortedData = useMemo(() => {
@@ -218,7 +216,7 @@ export default memo(
 			(data: TRecipeWithSuitability, columnKey: TTableColumnKey) => {
 				const {
 					name,
-					kitchenware,
+					cooker,
 					ingredients,
 					positiveTags,
 					price,
@@ -287,10 +285,10 @@ export default memo(
 								</div>
 							</div>
 						);
-					case 'kitchenware':
+					case 'cooker':
 						return (
 							<div className="flex">
-								<Sprite target="kitchenware" name={kitchenware} size={2} />
+								<Sprite target="cooker" name={cooker} size={2} />
 							</div>
 						);
 					case 'ingredient':
@@ -346,12 +344,12 @@ export default memo(
 			[customerStore.shared.recipe.dlcs, customerStore.shared.recipe.page]
 		);
 
-		const onSelectedKitchenwaresChange = useCallback(
+		const onSelectedCookersChange = useCallback(
 			(value: Selection) => {
-				customerStore.shared.recipe.kitchenwares.set(value);
+				customerStore.shared.recipe.cookers.set(value);
 				customerStore.shared.recipe.page.set(1);
 			},
-			[customerStore.shared.recipe.kitchenwares, customerStore.shared.recipe.page]
+			[customerStore.shared.recipe.cookers, customerStore.shared.recipe.page]
 		);
 
 		const onSelectedPositiveTagsChange = useCallback(
@@ -437,18 +435,18 @@ export default memo(
 								</DropdownTrigger>
 								<DropdownMenu
 									closeOnSelect={false}
-									items={allKitchenwares}
-									defaultSelectedKeys={selectedKitchenwares}
-									selectedKeys={selectedKitchenwares}
+									items={allCookers}
+									defaultSelectedKeys={selectedCookers}
+									selectedKeys={selectedCookers}
 									selectionMode="multiple"
 									variant="flat"
-									onSelectionChange={onSelectedKitchenwaresChange}
+									onSelectionChange={onSelectedCookersChange}
 									aria-label="选择目标料理所使用的厨具"
 								>
 									{({value}) => (
 										<DropdownItem key={value} textValue={value}>
 											<div className="flex items-center">
-												<Sprite target="kitchenware" name={value} size={1} />
+												<Sprite target="cooker" name={value} size={1} />
 												<span className="ml-1">{value}</span>
 											</div>
 										</DropdownItem>
@@ -541,22 +539,22 @@ export default memo(
 				</div>
 			),
 			[
-				allKitchenwares,
+				allCookers,
 				allRecipeDlcs,
 				allRecipeNames,
 				allRecipeTags,
+				customerStore.recipeTableColumns.set,
 				filteredData.length,
 				onSearchValueChange,
 				onSearchValueClear,
+				onSelectedCookersChange,
 				onSelectedDlcsChange,
-				onSelectedKitchenwaresChange,
 				onSelectedPositiveTagsChange,
 				onTableRowsPerPageChange,
 				searchValue,
+				selectedCookers,
 				selectedCustomerPositiveTags,
 				selectedDlcs,
-				selectedKitchenwares,
-				customerStore.recipeTableColumns.set,
 				tableRowsPerPage,
 				tableSelectableRows,
 				tableVisibleColumns,

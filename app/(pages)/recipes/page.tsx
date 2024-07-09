@@ -21,7 +21,7 @@ export default memo(function Recipes() {
 	const allNames = store.names.use();
 	const allDlcs = store.dlcs.get();
 	const allLevels = store.levels.get();
-	const allKitchenwares = store.kitchenwares.get();
+	const allCookers = store.cookers.get();
 	const allIngredients = store.ingredients.get();
 	const allNegativeTags = store.negativeTags.get();
 	const allPositiveTags = store.positiveTags.get();
@@ -34,9 +34,9 @@ export default memo(function Recipes() {
 
 	const filterDlcs = store.persistence.filters.dlcs.use();
 	const filterLevels = store.persistence.filters.levels.use();
+	const filterCookers = store.persistence.filters.cookers.use();
 	const filterIngredients = store.persistence.filters.ingredients.use();
 	const filterNoIngredients = store.persistence.filters.noIngredients.use();
-	const filterKitchenwares = store.persistence.filters.kitchenwares.use();
 	const filterNegativeTags = store.persistence.filters.negativeTags.use();
 	const filterNoNegativeTags = store.persistence.filters.noNegativeTags.use();
 	const filterPositiveTags = store.persistence.filters.positiveTags.use();
@@ -44,9 +44,10 @@ export default memo(function Recipes() {
 
 	const filteredData = useMemo(
 		() =>
-			searchResult.filter(({dlc, level, ingredients, kitchenware, negativeTags, positiveTags}) => {
+			searchResult.filter(({dlc, level, cooker, ingredients, negativeTags, positiveTags}) => {
 				const isDlcMatched = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
 				const isLevelMatched = filterLevels.length > 0 ? filterLevels.includes(level.toString()) : true;
+				const isCookerMatched = filterCookers.length > 0 ? filterCookers.includes(cooker) : true;
 				const isIngredientMatched =
 					filterIngredients.length > 0
 						? filterIngredients.some((ingredient) => (ingredients as string[]).includes(ingredient))
@@ -55,8 +56,6 @@ export default memo(function Recipes() {
 					filterNoIngredients.length > 0
 						? !filterNoIngredients.some((ingredient) => (ingredients as string[]).includes(ingredient))
 						: true;
-				const isKitchenwareMatched =
-					filterKitchenwares.length > 0 ? filterKitchenwares.includes(kitchenware) : true;
 				const isNegativeTagMatched =
 					filterNegativeTags.length > 0
 						? filterNegativeTags.some((tag) => (negativeTags as string[]).includes(tag))
@@ -79,7 +78,7 @@ export default memo(function Recipes() {
 					isLevelMatched &&
 					isIngredientMatched &&
 					isNoIngredientMatched &&
-					isKitchenwareMatched &&
+					isCookerMatched &&
 					isNegativeTagMatched &&
 					isNoNegativeTagMatched &&
 					isPositiveTagMatched &&
@@ -87,9 +86,9 @@ export default memo(function Recipes() {
 				);
 			}),
 		[
+			filterCookers,
 			filterDlcs,
 			filterIngredients,
-			filterKitchenwares,
 			filterLevels,
 			filterNegativeTags,
 			filterNoIngredients,
@@ -159,11 +158,11 @@ export default memo(function Recipes() {
 					spriteTarget: 'ingredient',
 				},
 				{
-					items: allKitchenwares,
+					items: allCookers,
 					label: '厨具',
-					selectedKeys: filterKitchenwares,
-					setSelectedKeys: store.persistence.filters.kitchenwares.set,
-					spriteTarget: 'kitchenware',
+					selectedKeys: filterCookers,
+					setSelectedKeys: store.persistence.filters.cookers.set,
+					spriteTarget: 'cooker',
 				},
 				{
 					items: allLevels,
@@ -173,24 +172,24 @@ export default memo(function Recipes() {
 				},
 			] as const satisfies TSelectConfig,
 		[
+			allCookers,
 			allDlcs,
 			allIngredients,
-			allKitchenwares,
 			allLevels,
 			allNegativeTags,
 			allPositiveTags,
+			filterCookers,
 			filterDlcs,
 			filterIngredients,
-			filterKitchenwares,
 			filterLevels,
 			filterNegativeTags,
 			filterNoIngredients,
 			filterNoNegativeTags,
 			filterNoPositiveTags,
 			filterPositiveTags,
+			store.persistence.filters.cookers.set,
 			store.persistence.filters.dlcs.set,
 			store.persistence.filters.ingredients.set,
-			store.persistence.filters.kitchenwares.set,
 			store.persistence.filters.levels.set,
 			store.persistence.filters.negativeTags.set,
 			store.persistence.filters.noIngredients.set,

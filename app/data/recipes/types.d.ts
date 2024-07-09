@@ -1,7 +1,7 @@
 import type {IFoodBase} from '@/data/types';
+import type {TCookerNames} from '../cookers/types';
 import type {TCustomerRareNames} from '../customer_rare/types';
 import type {TIngredientNames} from '../ingredients/types';
-import type {TKitchenwareNames} from '../kitchenwares/types';
 
 export type TTagNeedCalculate = '昂贵' | '实惠';
 
@@ -50,7 +50,7 @@ export interface IRecipe extends IFoodBase {
 	ingredients: TIngredientNames[];
 	positiveTags: TTag[];
 	negativeTags: TTag[];
-	kitchenware: TKitchenwareNames;
+	cooker: TCookerNames;
 	max: number;
 	min: number;
 	from:

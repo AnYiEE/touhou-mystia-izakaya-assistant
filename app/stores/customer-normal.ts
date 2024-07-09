@@ -46,8 +46,8 @@ const state = {
 		dlcs: instance_ingredient.getValuesByProp(instance_ingredient.data, 'dlc', true).sort(numberSort),
 	},
 	recipe: {
+		cookers: instance_recipe.getValuesByProp(instance_recipe.data, 'cooker', true).sort(pinyinSort),
 		dlcs: instance_recipe.getValuesByProp(instance_recipe.data, 'dlc', true).sort(numberSort),
-		kitchenwares: instance_recipe.getValuesByProp(instance_recipe.data, 'kitchenware', true).sort(pinyinSort),
 		names: instance_recipe.getValuesByProp(instance_recipe.data, 'name', true).sort(pinyinSort),
 		positiveTags: instance_recipe.getValuesByProp(instance_recipe.data, 'positiveTags', true).sort(pinyinSort),
 	},
@@ -79,7 +79,7 @@ const state = {
 		recipe: {
 			table: {
 				rows: 7,
-				visibleColumns: recipeTableColumns.filter(({key}) => key !== 'kitchenware').map(({key}) => key),
+				visibleColumns: recipeTableColumns.filter(({key}) => key !== 'cooker').map(({key}) => key),
 			},
 		},
 
@@ -128,8 +128,8 @@ const state = {
 				extraIngredients: TIngredientNames[];
 			} | null,
 
+			cookers: new Set() as Selection,
 			dlcs: new Set() as Selection,
-			kitchenwares: new Set() as Selection,
 			tagsWithPopular: [] as TRecipeTag[],
 
 			page: 1,
@@ -209,8 +209,8 @@ const customerNormalStore = store(state, {
 	}))
 	.actions((currentStore) => ({
 		refreshAllSelectedItems() {
+			currentStore.shared.recipe.cookers.set(new Set());
 			currentStore.shared.recipe.dlcs.set(new Set());
-			currentStore.shared.recipe.kitchenwares.set(new Set());
 			currentStore.shared.recipe.searchValue.set('');
 			currentStore.shared.recipe.sortDescriptor.set({});
 			currentStore.shared.beverage.dlcs.set(new Set());

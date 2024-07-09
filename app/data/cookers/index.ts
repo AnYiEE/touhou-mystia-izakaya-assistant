@@ -1,6 +1,6 @@
 import type {ISpriteConfig} from '@/utils/sprite/types';
 
-export const KITCHENWARE_SPRITE_CONFIG = {
+export const COOKER_SPRITE_CONFIG = {
 	col: 5,
 	row: 1,
 

@@ -15,7 +15,7 @@ export const beverageTableColumns = [
 
 export const recipeTableColumns = [
 	{key: 'recipe', label: '料理', sortable: true},
-	{key: 'kitchenware', label: '厨具', sortable: false},
+	{key: 'cooker', label: '厨具', sortable: false},
 	{key: 'ingredient', label: '食材', sortable: false},
 	{key: 'price', label: '售价', sortable: true},
 	{key: 'suitability', label: '匹配度', sortable: true},

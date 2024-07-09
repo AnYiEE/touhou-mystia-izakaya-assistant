@@ -31,7 +31,8 @@ const storeVersion = {
 	rating: 1, // eslint-disable-next-line sort-keys
 	popular: 2,
 	popularTypo: 3,
-	price: 4,
+	price: 4, // eslint-disable-next-line sort-keys
+	cooker: 5,
 } as const;
 
 const state = {
@@ -56,8 +57,8 @@ const state = {
 		dlcs: instance_ingredient.getValuesByProp(instance_ingredient.data, 'dlc', true).sort(numberSort),
 	},
 	recipe: {
+		cookers: instance_recipe.getValuesByProp(instance_recipe.data, 'cooker', true).sort(pinyinSort),
 		dlcs: instance_recipe.getValuesByProp(instance_recipe.data, 'dlc', true).sort(numberSort),
-		kitchenwares: instance_recipe.getValuesByProp(instance_recipe.data, 'kitchenware', true).sort(pinyinSort),
 		names: instance_recipe.getValuesByProp(instance_recipe.data, 'name', true).sort(pinyinSort),
 		positiveTags: [...instance_recipe.getValuesByProp(instance_recipe.data, 'positiveTags'), '流行喜爱', '流行厌恶']
 			.map((value) => ({value}))
@@ -91,14 +92,14 @@ const state = {
 		recipe: {
 			table: {
 				rows: 7,
-				visibleColumns: recipeTableColumns.filter(({key}) => key !== 'kitchenware').map(({key}) => key),
+				visibleColumns: recipeTableColumns.filter(({key}) => key !== 'cooker').map(({key}) => key),
 			},
 		},
 
 		meals: {} as {
 			[key in TCustomerNames]?: {
 				index: number;
-				hasMystiaKitchenware: boolean;
+				hasMystiaCooker: boolean;
 				order: {
 					beverageTag: TBeverageTag | null;
 					recipeTag: TRecipeTag | null;
@@ -133,7 +134,7 @@ const state = {
 
 			filterVisibility: true,
 
-			hasMystiaKitchenware: false,
+			hasMystiaCooker: false,
 			order: {
 				beverageTag: null as TBeverageTag | null,
 				recipeTag: null as TRecipeTag | null,
@@ -153,8 +154,8 @@ const state = {
 				extraIngredients: TIngredientNames[];
 			} | null,
 
+			cookers: new Set() as Selection,
 			dlcs: new Set() as Selection,
-			kitchenwares: new Set() as Selection,
 			tagsWithPopular: [] as TRecipeTag[],
 
 			page: 1,
@@ -170,7 +171,7 @@ const customerRareStore = store(state, {
 	persist: {
 		enabled: true,
 		name: 'page-customer_rare-storage',
-		version: storeVersion.price,
+		version: storeVersion.cooker,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -224,6 +225,16 @@ const customerRareStore = store(state, {
 					}
 				}
 			}
+			if (version < storeVersion.cooker) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+				for (const meals of Object.values(oldState.persistence.meals) as any) {
+					for (const meal of meals) {
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+						meal.hasMystiaCooker = meal.hasMystiaKitchenware;
+						delete meal.hasMystiaKitchenware;
+					}
+				}
+			}
 			return persistedState as typeof state;
 		},
 		partialize(currentStore) {
@@ -265,8 +276,8 @@ const customerRareStore = store(state, {
 	}))
 	.actions((currentStore) => ({
 		refreshAllSelectedItems() {
+			currentStore.shared.recipe.cookers.set(new Set());
 			currentStore.shared.recipe.dlcs.set(new Set());
-			currentStore.shared.recipe.kitchenwares.set(new Set());
 			currentStore.shared.recipe.searchValue.set('');
 			currentStore.shared.recipe.sortDescriptor.set({});
 			currentStore.shared.beverage.dlcs.set(new Set());
@@ -276,7 +287,7 @@ const customerRareStore = store(state, {
 		refreshCustomerSelectedItems() {
 			currentStore.shared.customer.beverageTags.set(new Set());
 			currentStore.shared.customer.positiveTags.set(new Set());
-			currentStore.shared.customer.hasMystiaKitchenware.set(false);
+			currentStore.shared.customer.hasMystiaCooker.set(false);
 			currentStore.shared.customer.order.set({
 				beverageTag: null,
 				recipeTag: null,

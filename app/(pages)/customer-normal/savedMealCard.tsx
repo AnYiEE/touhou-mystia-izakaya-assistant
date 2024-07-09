@@ -35,8 +35,8 @@ export default memo(
 									<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
 										<div className="flex items-center gap-2">
 											<Sprite
-												target="kitchenware"
-												name={instance_recipe.getPropsByName(recipe, 'kitchenware')}
+												target="cooker"
+												name={instance_recipe.getPropsByName(recipe, 'cooker')}
 												size={1.5}
 											/>
 											<Tooltip showArrow content={recipe} offset={2}>

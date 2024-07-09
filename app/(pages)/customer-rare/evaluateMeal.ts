@@ -18,17 +18,17 @@ interface IParameters {
 	currentIngredients: TIngredientNames[];
 	currentRecipeName: TRecipeNames | null;
 	currentRecipeTagsWithPopular: TRecipeTag[];
-	hasMystiaKitchenware: boolean;
+	hasMystiaCooker: boolean;
 }
 
 function calculateMaxScore({
 	currentBeverageTags,
 	currentCustomerOrder,
 	currentRecipeTagsWithPopular,
-	hasMystiaKitchenware,
+	hasMystiaCooker,
 }: Pick<
 	IParameters,
-	'currentBeverageTags' | 'currentCustomerOrder' | 'currentRecipeTagsWithPopular' | 'hasMystiaKitchenware'
+	'currentBeverageTags' | 'currentCustomerOrder' | 'currentRecipeTagsWithPopular' | 'hasMystiaCooker'
 >) {
 	const {beverageTag: customerOrderBeverageTag, recipeTag: customerOrderRecipeTag} = currentCustomerOrder;
 
@@ -39,7 +39,7 @@ function calculateMaxScore({
 	const beverageMaxScore = customerOrderBeverageTag
 		? Number(currentBeverageTags.includes(customerOrderBeverageTag))
 		: 0;
-	const recipeMaxScore = hasMystiaKitchenware
+	const recipeMaxScore = hasMystiaCooker
 		? 1
 		: customerOrderRecipeTag
 			? Number(currentRecipeTagsWithPopular.includes(customerOrderRecipeTag))
@@ -126,7 +126,7 @@ export function evaluateMeal({
 	currentIngredients,
 	currentRecipeName,
 	currentRecipeTagsWithPopular,
-	hasMystiaKitchenware,
+	hasMystiaCooker,
 }: IParameters) {
 	if (currentBeverageTags.length === 0 && currentRecipeTagsWithPopular.length === 0) {
 		return null;
@@ -137,7 +137,7 @@ export function evaluateMeal({
 	if (!customerOrderBeverageTag) {
 		return null;
 	}
-	if (!hasMystiaKitchenware && !customerOrderRecipeTag) {
+	if (!hasMystiaCooker && !customerOrderRecipeTag) {
 		return null;
 	}
 
@@ -149,8 +149,7 @@ export function evaluateMeal({
 	const matchedRecipePositiveTags = intersection(currentRecipeTagsWithPopular, currentCustomerPositiveTags);
 	const matchedRecipeNegativeTags = intersection(currentRecipeTagsWithPopular, currentCustomerNegativeTags);
 	const orderedRecipeScore = Number(
-		(customerOrderRecipeTag ? matchedRecipePositiveTags.includes(customerOrderRecipeTag) : 0) ||
-			hasMystiaKitchenware
+		(customerOrderRecipeTag ? matchedRecipePositiveTags.includes(customerOrderRecipeTag) : 0) || hasMystiaCooker
 	);
 	const [matchedRecipePositiveScore, matchedRecipeNegativeScore] = [
 		matchedRecipePositiveTags,
@@ -166,7 +165,7 @@ export function evaluateMeal({
 			currentBeverageTags,
 			currentCustomerOrder,
 			currentRecipeTagsWithPopular,
-			hasMystiaKitchenware,
+			hasMystiaCooker,
 		})
 	);
 

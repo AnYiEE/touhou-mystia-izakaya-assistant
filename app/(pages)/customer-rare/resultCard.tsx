@@ -143,7 +143,7 @@ export default memo(
 		const currentCustomerName = customerStore.shared.customer.data.use()?.name;
 		const currentBeverageName = customerStore.shared.beverage.name.use();
 		const currentRecipe = customerStore.shared.recipe.data.use();
-		const hasMystiaKitchenware = customerStore.shared.customer.hasMystiaKitchenware.use();
+		const hasMystiaCooker = customerStore.shared.customer.hasMystiaCooker.use();
 		const currentOrder = customerStore.shared.customer.order.use();
 		const currentCustomerPopular = customerStore.shared.customer.popular.use();
 		const currentRating = customerStore.shared.customer.rating.use();
@@ -157,8 +157,8 @@ export default memo(
 				!currentBeverageName ||
 				!currentRecipe ||
 				!currentOrder.beverageTag ||
-				!(currentOrder.recipeTag || hasMystiaKitchenware),
-			[currentBeverageName, currentOrder.beverageTag, currentOrder.recipeTag, currentRecipe, hasMystiaKitchenware]
+				!(currentOrder.recipeTag || hasMystiaCooker),
+			[currentBeverageName, currentOrder.beverageTag, currentOrder.recipeTag, currentRecipe, hasMystiaCooker]
 		);
 
 		const handleSaveButtonPress = useCallback(() => {
@@ -169,7 +169,7 @@ export default memo(
 			const saveObject = {
 				beverage: currentBeverageName,
 				extraIngredients: currentRecipe.extraIngredients,
-				hasMystiaKitchenware,
+				hasMystiaCooker,
 				order: currentOrder,
 				popular: currentCustomerPopular,
 				price:
@@ -196,7 +196,7 @@ export default memo(
 			currentRating,
 			currentRecipe,
 			customerStore.persistence.meals,
-			hasMystiaKitchenware,
+			hasMystiaCooker,
 			instance_beverage,
 			instance_recipe,
 		]);
@@ -244,26 +244,24 @@ export default memo(
 								<>
 									<Tooltip
 										showArrow
-										content={`单击：将此点单标记为使用${hasMystiaKitchenware ? '非' : ''}夜雀系列厨具制作`}
+										content={`单击：将此点单标记为使用${hasMystiaCooker ? '非' : ''}夜雀系列厨具制作`}
 									>
 										<Sprite
-											target="kitchenware"
-											name={instance_recipe.getPropsByName(currentRecipe.name, 'kitchenware')}
+											target="cooker"
+											name={instance_recipe.getPropsByName(currentRecipe.name, 'cooker')}
 											size={2}
 											onClick={() => {
-												customerStore.shared.customer.hasMystiaKitchenware.set((prev) => !prev);
+												customerStore.shared.customer.hasMystiaCooker.set((prev) => !prev);
 											}}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
-													customerStore.shared.customer.hasMystiaKitchenware.set(
-														(prev) => !prev
-													);
+													customerStore.shared.customer.hasMystiaCooker.set((prev) => !prev);
 												}
 											}}
 											tabIndex={0}
-											aria-label={`单击：将此点单标记为使用${hasMystiaKitchenware ? '非' : ''}夜雀系列厨具制作`}
+											aria-label={`单击：将此点单标记为使用${hasMystiaCooker ? '非' : ''}夜雀系列厨具制作`}
 											className={clsx(
-												hasMystiaKitchenware &&
+												hasMystiaCooker &&
 													'rounded-full ring-4 ring-warning-400 dark:ring-warning-200'
 											)}
 										/>

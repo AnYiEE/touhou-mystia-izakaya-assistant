@@ -101,7 +101,7 @@ export default memo(function CustomerRare() {
 			positiveTags: currentCustomerPositiveTags,
 		} = instance_customer.getPropsByName(currentCustomerName);
 		const currentCustomerOrder = customerStore.shared.customer.order.get();
-		const hasMystiaKitchenware = customerStore.shared.customer.hasMystiaKitchenware.get();
+		const hasMystiaCooker = customerStore.shared.customer.hasMystiaCooker.get();
 
 		let currentBeverageTags: TBeverageTag[] = [];
 		const currentBeverageName = customerStore.shared.beverage.name.get();
@@ -133,14 +133,14 @@ export default memo(function CustomerRare() {
 			currentIngredients,
 			currentRecipeName,
 			currentRecipeTagsWithPopular,
-			hasMystiaKitchenware,
+			hasMystiaCooker,
 		});
 
 		customerStore.shared.customer.rating.set(rating);
 	}, [
 		currentCustomer,
 		customerStore.shared.beverage.name,
-		customerStore.shared.customer.hasMystiaKitchenware,
+		customerStore.shared.customer.hasMystiaCooker,
 		customerStore.shared.customer.order,
 		customerStore.shared.customer.rating,
 		customerStore.shared.recipe.data,
@@ -151,7 +151,7 @@ export default memo(function CustomerRare() {
 		instance_special,
 	]);
 
-	customerStore.shared.customer.hasMystiaKitchenware.onChange(evaluateMealHelper);
+	customerStore.shared.customer.hasMystiaCooker.onChange(evaluateMealHelper);
 	customerStore.shared.customer.order.beverageTag.onChange(evaluateMealHelper);
 	customerStore.shared.customer.order.recipeTag.onChange(evaluateMealHelper);
 	customerStore.shared.customer.popular.isNegative.onChange(evaluateMealHelper);

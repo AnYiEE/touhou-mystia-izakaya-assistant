@@ -223,8 +223,8 @@ export default memo(
 							{currentRecipe ? (
 								<>
 									<Sprite
-										target="kitchenware"
-										name={instance_recipe.getPropsByName(currentRecipe.name, 'kitchenware')}
+										target="cooker"
+										name={instance_recipe.getPropsByName(currentRecipe.name, 'cooker')}
 										size={2}
 									/>
 									<Sprite target="recipe" name={currentRecipe.name} size={2.5} />
