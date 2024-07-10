@@ -17,3 +17,7 @@
 ::-webkit-scrollbar-track-piece {
 	@apply rounded-2xl bg-default-100;
 }
+
+:not(body) div:has(> .driver-active-element) {
+	@apply p-1;
+}

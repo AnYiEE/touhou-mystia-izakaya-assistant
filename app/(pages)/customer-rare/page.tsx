@@ -12,6 +12,7 @@ import {faChevronDown, faChevronUp} from '@fortawesome/free-solid-svg-icons';
 import BeverageTabContent from './beverageTabContent';
 import CustomerCard from './customerCard';
 import CustomerTabContent from './customerTabContent';
+import Driver from './driver';
 import IngredientsTabContent from './ingredientsTabContent';
 import Placeholder from './placeholder';
 import RecipeTabContent from './recipeTabContent';
@@ -334,6 +335,8 @@ export default memo(function CustomerRare() {
 
 	return (
 		<div className="grid h-full grid-cols-1 justify-items-center gap-4 md:flex md:flex-col-reverse md:justify-end xl:grid xl:grid-cols-2">
+			<Driver />
+
 			<SideButtonGroup
 				className={clsx(
 					'md:!bottom-6 xl:!bottom-[calc(50%-3.5rem)] xl:left-6',
