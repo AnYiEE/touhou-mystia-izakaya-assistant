@@ -236,7 +236,7 @@ export default memo(function CustomerNormal() {
 		<div className="grid h-full grid-cols-1 justify-items-center gap-4 md:flex md:flex-col-reverse md:justify-end xl:grid xl:grid-cols-2">
 			<SideButtonGroup
 				className={clsx(
-					'md:!bottom-6 xl:!bottom-[calc(50%-3.5rem)] xl:left-6',
+					'md:!bottom-6 xl:!bottom-[calc(50%-3.75rem)] xl:left-6',
 					customerTabStyle.sideButtonGroupClassName,
 					!isCustomerTabFilterVisible && '!hidden'
 				)}
@@ -248,7 +248,7 @@ export default memo(function CustomerNormal() {
 
 			<SideButtonGroup
 				className={clsx(
-					'md:!bottom-6 xl:!bottom-[calc(50%-2rem)] xl:left-6',
+					'md:!bottom-6 xl:!bottom-[calc(50%-2.25rem)] xl:left-6',
 					ingredientTabStyle.sideButtonGroupClassName,
 					!isIngredientTabFilterVisible && '!hidden'
 				)}

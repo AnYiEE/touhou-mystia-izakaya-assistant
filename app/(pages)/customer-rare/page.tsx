@@ -339,7 +339,7 @@ export default memo(function CustomerRare() {
 
 			<SideButtonGroup
 				className={clsx(
-					'md:!bottom-6 xl:!bottom-[calc(50%-3.5rem)] xl:left-6',
+					'md:!bottom-6 xl:!bottom-[calc(50%-3.75rem)] xl:left-6',
 					customerTabStyle.sideButtonGroupClassName,
 					!isCustomerTabFilterVisible && '!hidden'
 				)}
@@ -351,7 +351,7 @@ export default memo(function CustomerRare() {
 
 			<SideButtonGroup
 				className={clsx(
-					'md:!bottom-6 xl:!bottom-[calc(50%-2rem)] xl:left-6',
+					'md:!bottom-6 xl:!bottom-[calc(50%-2.25rem)] xl:left-6',
 					ingredientTabStyle.sideButtonGroupClassName,
 					!isIngredientTabFilterVisible && '!hidden'
 				)}
