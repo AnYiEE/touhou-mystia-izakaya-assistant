@@ -33,7 +33,7 @@ export default memo(function About() {
 					{shortName}的源代码基于GNU General Public License v3.0协议或其更新版本开源，协议
 					<Link
 						isExternal
-						href={links.steam.href}
+						href="https://www.gnu.org/licenses/gpl-3.0-standalone.html"
 						title="The GNU General Public License v3.0"
 						className="contents"
 					>
