@@ -336,7 +336,7 @@ export default memo(function CustomerRare() {
 		<div className="grid h-full grid-cols-1 justify-items-center gap-4 md:flex md:flex-col-reverse md:justify-end xl:grid xl:grid-cols-2">
 			<SideButtonGroup
 				className={clsx(
-					'md:!bottom-6 xl:!bottom-[calc(50%-3.75rem)] xl:left-6',
+					'md:!bottom-6 xl:!bottom-[calc(50%-3.75rem-env(titlebar-area-height,0rem)/2)] xl:left-6',
 					customerTabStyle.sideButtonGroupClassName,
 					!isCustomerTabFilterVisible && '!hidden'
 				)}
@@ -348,7 +348,7 @@ export default memo(function CustomerRare() {
 
 			<SideButtonGroup
 				className={clsx(
-					'md:!bottom-6 xl:!bottom-[calc(50%-2.25rem)] xl:left-6',
+					'md:!bottom-6 xl:!bottom-[calc(50%-2.25rem-env(titlebar-area-height,0rem)/2)] xl:left-6',
 					ingredientTabStyle.sideButtonGroupClassName,
 					!isIngredientTabFilterVisible && '!hidden'
 				)}
@@ -394,7 +394,7 @@ export default memo(function CustomerRare() {
 						<SavedMealCard />
 					</>
 				) : (
-					<Placeholder className="pb-24 pt-32 md:pb-4 md:pt-0 xl:pb-[6.5rem] xl:pt-0">
+					<Placeholder className="pb-24 pt-16 md:pb-8 md:pt-0 xl:pb-[6.25rem] xl:pt-0">
 						选择角色以继续
 					</Placeholder>
 				)}
