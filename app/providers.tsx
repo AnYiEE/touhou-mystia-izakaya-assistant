@@ -3,6 +3,12 @@
 import {type ReactNode} from 'react';
 import {useRouter} from 'next/navigation';
 
+import {NextUIProvider} from '@nextui-org/react';
+import {ThemeProvider as NextThemesProvider} from 'next-themes';
+import type {ThemeProviderProps} from 'next-themes/dist/types';
+
+import CustomerRareTutorial from '@/components/customerRareTutorial';
+
 import {
 	BeveragesStoreProvider,
 	CustomerNormalStoreProvider,
@@ -11,10 +17,6 @@ import {
 	IngredientsStoreProvider,
 	RecipesStoreProvider,
 } from '@/stores';
-
-import {NextUIProvider} from '@nextui-org/react';
-import {ThemeProvider as NextThemesProvider} from 'next-themes';
-import type {ThemeProviderProps} from 'next-themes/dist/types';
 
 interface IProvidersProps {
 	children: ReactNode;
@@ -33,7 +35,12 @@ export default function Providers({children, locale, themeProps}: IProvidersProp
 						<CustomerRareStoreProvider>
 							<BeveragesStoreProvider>
 								<IngredientsStoreProvider>
-									<RecipesStoreProvider>{children}</RecipesStoreProvider>
+									<RecipesStoreProvider>
+										<>
+											{children}
+											<CustomerRareTutorial />
+										</>
+									</RecipesStoreProvider>
 								</IngredientsStoreProvider>
 							</BeveragesStoreProvider>
 						</CustomerRareStoreProvider>

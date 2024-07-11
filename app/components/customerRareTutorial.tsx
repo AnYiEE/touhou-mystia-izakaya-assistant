@@ -1,6 +1,8 @@
 import {useEffect, useMemo, useRef} from 'react';
 import {driver} from 'driver.js';
 
+import {usePathname} from 'next/navigation';
+
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
 
 const key = 'customer_rare_tutorial';
@@ -8,6 +10,7 @@ const key = 'customer_rare_tutorial';
 export default function Driver() {
 	const customerStore = useCustomerRareStore();
 	const globalStore = useGlobalStore();
+	const pathname = usePathname();
 
 	const currentCustomerName = customerStore.shared.customer.data.use()?.name;
 
@@ -28,6 +31,8 @@ export default function Driver() {
 	const dirverState = globalStore.persistence.dirver.get();
 	const isCompleted = useMemo(() => dirverState.includes(key), [dirverState]);
 
+	const isTargetPage = pathname === '/customer-rare';
+
 	const driverRef = useRef(
 		driver({
 			allowClose: false,
@@ -37,9 +42,11 @@ export default function Driver() {
 			showProgress: true,
 
 			onDestroyed() {
-				globalStore.persistence.dirver.set((prev) => {
-					prev.push(key);
-				});
+				if (isTargetPage) {
+					globalStore.persistence.dirver.set((prev) => {
+						prev.push(key);
+					});
+				}
 			},
 
 			steps: [
@@ -239,11 +246,13 @@ export default function Driver() {
 	]);
 
 	useEffect(() => {
-		if (!isCompleted) {
+		if (isTargetPage && !isCompleted && !driverRef.current.isActive()) {
 			driverRef.current.drive();
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+		if (!isTargetPage) {
+			driverRef.current.destroy();
+		}
+	}, [isCompleted, isTargetPage]);
 
 	return null;
 }
