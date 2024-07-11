@@ -68,7 +68,7 @@ export default memo(
 		const allBeverageTags = customerStore.beverage.tags.get();
 
 		const searchValue = customerStore.shared.beverage.searchValue.use();
-		const hasNameFilter = useMemo(() => Boolean(searchValue), [searchValue]);
+		const hasNameFilter = Boolean(searchValue);
 
 		const tableCurrentPage = customerStore.shared.beverage.page.use();
 		const tableRowsPerPage = customerStore.recipeTableRows.use();
@@ -181,7 +181,7 @@ export default memo(
 			[filteredData.length, tableRowsPerPageNumber]
 		);
 
-		const tableSelectedKeys = useMemo(() => new Set([currentBeverageName ?? '']), [currentBeverageName]);
+		const tableSelectedKeys = new Set([currentBeverageName ?? '']);
 
 		const renderTableCell = useCallback(
 			(data: TBeverageWithSuitability, columnKey: TTableColumnKey) => {

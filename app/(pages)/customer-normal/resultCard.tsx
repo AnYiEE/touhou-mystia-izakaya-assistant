@@ -146,10 +146,7 @@ export default memo(
 
 		const instance_recipe = store.instances.recipe.get();
 
-		const isSaveButtonDisabled = useMemo(
-			() => !currentBeverageName || !currentRecipe,
-			[currentBeverageName, currentRecipe]
-		);
+		const isSaveButtonDisabled = !currentBeverageName || !currentRecipe;
 
 		const handleSaveButtonPress = useCallback(() => {
 			if (!currentCustomerName || !currentBeverageName || !currentRecipe) {

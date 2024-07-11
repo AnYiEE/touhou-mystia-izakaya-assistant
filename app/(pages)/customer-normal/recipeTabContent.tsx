@@ -71,7 +71,7 @@ export default memo(
 		const allCookers = customerStore.recipe.cookers.get();
 
 		const searchValue = customerStore.shared.recipe.searchValue.use();
-		const hasNameFilter = useMemo(() => Boolean(searchValue), [searchValue]);
+		const hasNameFilter = Boolean(searchValue);
 
 		const tableCurrentPage = customerStore.shared.recipe.page.use();
 		const tableRowsPerPage = customerStore.recipeTableRows.use();
@@ -203,7 +203,7 @@ export default memo(
 			[filteredData.length, tableRowsPerPageNumber]
 		);
 
-		const tableSelectedKeys = useMemo(() => new Set([currentRecipe?.name ?? '']), [currentRecipe?.name]);
+		const tableSelectedKeys = new Set([currentRecipe?.name ?? '']);
 
 		const renderTableCell = useCallback(
 			(data: TRecipeWithSuitability, columnKey: TTableColumnKey) => {
