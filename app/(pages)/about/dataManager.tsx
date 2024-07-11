@@ -39,9 +39,8 @@ export default memo(function DataManager() {
 
 	return (
 		<>
-			<H1>数据管理</H1>
-			<div className="flex flex-col">
-				<span className="-mt-4 mb-2 text-foreground-500">备份/还原/重置稀客套餐数据</span>
+			<H1 subTitle="备份/还原/重置稀客套餐数据">数据管理</H1>
+			<div className="-mt-2 flex flex-col">
 				<Tabs
 					defaultSelectedKey="reset"
 					destroyInactiveTabPanel={false}

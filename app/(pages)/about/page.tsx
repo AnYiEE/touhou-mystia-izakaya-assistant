@@ -62,19 +62,24 @@ export default memo(function About() {
 					{shortName}排除所有保证。
 				</p>
 			</div>
-			<H1>更新日志</H1>
-			<span className="-mt-4 mb-4 block text-foreground-500">
-				以下为更新摘要，前往
-				<Link
-					isExternal
-					href={`${links.github.href}/commits`}
-					title={`${links.github.label}提交记录`}
-					className="contents"
-				>
-					Github
-				</Link>
-				查看完整的提交记录。
-			</span>
+			<H1
+				subTitle={
+					<>
+						以下为更新摘要，前往
+						<Link
+							isExternal
+							href={`${links.github.href}/commits`}
+							title={`${links.github.label}提交记录`}
+							className="contents"
+						>
+							Github
+						</Link>
+						可以查看完整的提交记录。
+					</>
+				}
+			>
+				更新日志
+			</H1>
 			<H2 isFirst>v0.1</H2>
 			<ul className="flex list-inside list-decimal flex-col gap-2">
 				<li>新增：料理、酒水和食材页面。</li>
