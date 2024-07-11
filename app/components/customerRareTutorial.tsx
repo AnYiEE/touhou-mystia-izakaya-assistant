@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useRef} from 'react';
+import {memo, useEffect, useMemo, useRef} from 'react';
 import {driver} from 'driver.js';
 
 import {usePathname} from 'next/navigation';
@@ -7,7 +7,7 @@ import {useCustomerRareStore, useGlobalStore} from '@/stores';
 
 const key = 'customer_rare_tutorial';
 
-export default function Driver() {
+export default memo(function Driver() {
 	const customerStore = useCustomerRareStore();
 	const globalStore = useGlobalStore();
 	const pathname = usePathname();
@@ -255,4 +255,4 @@ export default function Driver() {
 	}, [isCompleted, isTargetPage]);
 
 	return null;
-}
+});
