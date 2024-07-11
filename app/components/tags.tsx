@@ -1,5 +1,5 @@
 import {type FC, type HTMLAttributes, type MouseEvent, forwardRef, memo} from 'react';
-import clsx from 'clsx';
+import clsx from 'clsx/lite';
 
 import type {TTagStyle} from '@/constants/types';
 import {type TTags} from '@/data';

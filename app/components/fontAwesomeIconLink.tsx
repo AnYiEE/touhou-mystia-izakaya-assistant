@@ -1,5 +1,5 @@
 import {forwardRef, memo} from 'react';
-import clsx from 'clsx';
+import clsx from 'clsx/lite';
 
 import {Link, type LinkProps} from '@nextui-org/react';
 import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fontawesome';

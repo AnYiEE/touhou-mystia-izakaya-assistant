@@ -1,5 +1,5 @@
 import {Fragment, forwardRef, memo} from 'react';
-import clsx from 'clsx';
+import clsx from 'clsx/lite';
 
 import {Avatar, Button, Card, Divider, Tooltip} from '@nextui-org/react';
 

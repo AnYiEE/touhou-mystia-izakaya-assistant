@@ -1,5 +1,5 @@
 import {forwardRef, memo, useCallback, useMemo} from 'react';
-import clsx from 'clsx';
+import clsx from 'clsx/lite';
 import {intersection} from 'lodash';
 
 import {Avatar, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';

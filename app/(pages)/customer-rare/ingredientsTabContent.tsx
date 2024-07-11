@@ -1,5 +1,5 @@
 import {forwardRef, memo, useCallback, useMemo} from 'react';
-import clsx from 'clsx';
+import clsx from 'clsx/lite';
 import {intersection} from 'lodash';
 
 import {Badge, Button, ScrollShadow} from '@nextui-org/react';

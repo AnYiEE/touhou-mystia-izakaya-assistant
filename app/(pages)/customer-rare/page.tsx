@@ -1,7 +1,7 @@
 'use client';
 
 import {memo, useCallback, useEffect, useMemo} from 'react';
-import clsx from 'clsx';
+import clsx from 'clsx/lite';
 
 import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
 

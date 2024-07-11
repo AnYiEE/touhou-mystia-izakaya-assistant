@@ -1,5 +1,5 @@
 import {type HTMLAttributes, type PropsWithChildren, forwardRef, memo} from 'react';
-import clsx from 'clsx';
+import clsx from 'clsx/lite';
 
 interface IProps extends Pick<HTMLAttributes<HTMLDivElement>, 'className'> {}
 

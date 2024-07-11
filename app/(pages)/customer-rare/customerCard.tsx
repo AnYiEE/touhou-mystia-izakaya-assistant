@@ -1,5 +1,5 @@
 import {forwardRef, memo, useCallback, useMemo} from 'react';
-import clsx from 'clsx';
+import clsx from 'clsx/lite';
 import {intersection} from 'lodash';
 
 import {useLongPress} from 'use-long-press';
@@ -176,10 +176,7 @@ export default memo(
 													/>
 												}
 												classNames={{
-													base: clsx(
-														'h-12 w-12 lg:h-16 lg:w-16',
-														Boolean(currentRating) && 'ring-4'
-													),
+													base: clsx('h-12 w-12 lg:h-16 lg:w-16', currentRating && 'ring-4'),
 													icon: 'inline-table lg:inline-block',
 												}}
 											/>

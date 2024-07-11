@@ -2,7 +2,7 @@
 
 import {type PropsWithChildren, type ReactNode, memo, useCallback, useReducer} from 'react';
 import {usePathname} from 'next/navigation';
-import clsx from 'clsx';
+import clsx from 'clsx/lite';
 
 import {
 	Button,

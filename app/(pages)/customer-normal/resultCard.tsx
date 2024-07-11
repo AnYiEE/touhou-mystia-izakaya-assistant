@@ -1,5 +1,5 @@
 import {type HTMLAttributes, forwardRef, memo, useCallback, useMemo} from 'react';
-import clsx from 'clsx';
+import clsx from 'clsx/lite';
 
 import {Button, Card, Tooltip} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';

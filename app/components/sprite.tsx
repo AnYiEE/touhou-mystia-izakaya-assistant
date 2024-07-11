@@ -1,5 +1,5 @@
 import {type HTMLAttributes, forwardRef, memo, useMemo} from 'react';
-import clsx from 'clsx';
+import clsx from 'clsx/lite';
 
 import {type TItemNames} from '@/data';
 import {spriteInstances} from '@/methods';

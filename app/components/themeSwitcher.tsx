@@ -3,7 +3,7 @@
 import {memo, useCallback, useEffect, useState} from 'react';
 import {usePathname} from 'next/navigation';
 import {useTheme} from 'next-themes';
-import clsx from 'clsx';
+import clsx from 'clsx/lite';
 
 import {Theme, useMounted, useSystemTheme} from '@/hooks';
 

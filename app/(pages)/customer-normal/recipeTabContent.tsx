@@ -1,5 +1,5 @@
 import {type Key, forwardRef, memo, useCallback, useMemo} from 'react';
-import clsx from 'clsx';
+import clsx from 'clsx/lite';
 import {cloneDeep} from 'lodash';
 
 import {

@@ -1,5 +1,5 @@
 import {type PropsWithChildren, forwardRef, memo} from 'react';
-import clsx from 'clsx';
+import clsx from 'clsx/lite';
 
 interface IH1Props {
 	isFirst?: boolean;

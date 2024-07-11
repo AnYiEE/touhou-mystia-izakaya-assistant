@@ -1,5 +1,5 @@
 import {forwardRef, memo} from 'react';
-import clsx from 'clsx';
+import clsx from 'clsx/lite';
 
 import {Avatar, Button, ScrollShadow} from '@nextui-org/react';
 
