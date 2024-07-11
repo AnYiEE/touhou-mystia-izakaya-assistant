@@ -3,13 +3,20 @@
 import {type KeyboardEvent, memo, useEffect, useMemo, useReducer, useState} from 'react';
 import {debounce} from 'lodash';
 
+import {useRouter} from 'next/navigation';
+
 import {useThrottle} from '@/hooks';
 
 import {Button, Popover, PopoverContent, PopoverTrigger, Snippet, Tab, Tabs, Textarea} from '@nextui-org/react';
+import {
+	customerRareTutorialPathname,
+	customerRareTutorialResetLabel,
+	customerRareTutorialStoreKey,
+} from '@/components/customerRareTutorial';
 
 import H1 from './h1';
 
-import {useCustomerRareStore} from '@/stores';
+import {useCustomerRareStore, useGlobalStore} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
 export default memo(function DataManager() {
@@ -20,9 +27,11 @@ export default memo(function DataManager() {
 	const [isSavePopoverOpened, setIsSavePopoverOpened] = useReducer((current) => !current, false);
 	const [isResetPopoverOpened, setIsResetPopoverOpened] = useReducer((current) => !current, false);
 
-	const store = useCustomerRareStore();
+	const customerStore = useCustomerRareStore();
+	const globalStore = useGlobalStore();
+	const router = useRouter();
 
-	const mealData = store.persistence.meals.use();
+	const mealData = customerStore.persistence.meals.use();
 	const jsonString = useMemo(() => JSON.stringify(mealData, null, '\t'), [mealData]);
 
 	useEffect(() => {
@@ -95,7 +104,7 @@ export default memo(function DataManager() {
 										onClick={() => {
 											setIsSavePopoverOpened();
 											// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-											store.persistence.meals.set(JSON.parse(throttledValue));
+											customerStore.persistence.meals.set(JSON.parse(throttledValue));
 										}}
 										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
 											if (event.key === 'Escape') {
@@ -104,7 +113,7 @@ export default memo(function DataManager() {
 											if (checkA11yConfirmKey(event)) {
 												setIsSavePopoverOpened();
 												// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-												store.persistence.meals.set(JSON.parse(throttledValue));
+												customerStore.persistence.meals.set(JSON.parse(throttledValue));
 											}
 										})}
 									>
@@ -115,43 +124,62 @@ export default memo(function DataManager() {
 						</div>
 					</Tab>
 					<Tab key="reset" title="重置">
-						<Popover showArrow isOpen={isResetPopoverOpened}>
-							<PopoverTrigger>
-								<Button
-									color="danger"
-									variant="flat"
-									onClick={setIsResetPopoverOpened}
-									onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
-										if (checkA11yConfirmKey(event)) {
+						<div className="flex w-full flex-col gap-2 md:w-1/2 lg:w-1/3">
+							<Popover showArrow isOpen={isResetPopoverOpened}>
+								<PopoverTrigger>
+									<Button
+										color="danger"
+										variant="flat"
+										onClick={setIsResetPopoverOpened}
+										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
+											if (checkA11yConfirmKey(event)) {
+												setIsResetPopoverOpened();
+											}
+										})}
+									>
+										重置现有稀客套餐数据（数据出错时可使用）
+									</Button>
+								</PopoverTrigger>
+								<PopoverContent className="p-0">
+									<Button
+										color="danger"
+										variant="ghost"
+										onClick={() => {
 											setIsResetPopoverOpened();
-										}
-									})}
-								>
-									重置现有稀客套餐数据（数据出错时可使用）
-								</Button>
-							</PopoverTrigger>
-							<PopoverContent className="p-0">
-								<Button
-									color="danger"
-									variant="ghost"
-									onClick={() => {
-										setIsResetPopoverOpened();
-										store.persistence.meals.set({});
-									}}
-									onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
-										if (event.key === 'Escape') {
-											setIsResetPopoverOpened();
-										}
-										if (checkA11yConfirmKey(event)) {
-											setIsResetPopoverOpened();
-											store.persistence.meals.set({});
-										}
-									})}
-								>
-									确认重置
-								</Button>
-							</PopoverContent>
-						</Popover>
+											customerStore.persistence.meals.set({});
+										}}
+										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
+											if (event.key === 'Escape') {
+												setIsResetPopoverOpened();
+											}
+											if (checkA11yConfirmKey(event)) {
+												setIsResetPopoverOpened();
+												customerStore.persistence.meals.set({});
+											}
+										})}
+									>
+										确认重置
+									</Button>
+								</PopoverContent>
+							</Popover>
+							<Button
+								color="primary"
+								variant="flat"
+								onPress={() => {
+									customerStore.shared.customer.data.set(null);
+									customerStore.shared.tab.set('customer');
+									globalStore.persistence.set((prev) => {
+										const dirver = prev.dirver.filter(
+											(item) => item !== customerRareTutorialStoreKey
+										);
+										prev.dirver = dirver;
+									});
+									router.push(customerRareTutorialPathname);
+								}}
+							>
+								{customerRareTutorialResetLabel}
+							</Button>
+						</div>
 					</Tab>
 				</Tabs>
 			</div>

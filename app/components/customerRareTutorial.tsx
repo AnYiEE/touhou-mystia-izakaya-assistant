@@ -4,13 +4,16 @@ import {driver} from 'driver.js';
 import {usePathname} from 'next/navigation';
 
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
+import {getPageTitle} from '@/utils';
 
 const key = 'customer_rare_tutorial';
+const pathname = '/customer-rare';
+const resetLabel = '重新进入稀客套餐搭配教程';
 
 export default memo(function Driver() {
 	const customerStore = useCustomerRareStore();
 	const globalStore = useGlobalStore();
-	const pathname = usePathname();
+	const currentPathname = usePathname();
 
 	const currentCustomerName = customerStore.shared.customer.data.use()?.name;
 
@@ -31,7 +34,7 @@ export default memo(function Driver() {
 	const dirverState = globalStore.persistence.dirver.get();
 	const isCompleted = useMemo(() => dirverState.includes(key), [dirverState]);
 
-	const isTargetPage = pathname === '/customer-rare';
+	const isTargetPage = currentPathname === pathname;
 
 	const driverRef = useRef(
 		driver({
@@ -52,8 +55,8 @@ export default memo(function Driver() {
 			steps: [
 				{
 					popover: {
-						title: '稀客套餐搭配教学', // eslint-disable-next-line sort-keys
-						description: '跟随指引，搭配一次完美评级的稀客套餐。',
+						title: '稀客套餐搭配教程', // eslint-disable-next-line sort-keys
+						description: `<div class="flex flex-col gap-2"><p>跟随指引，搭配一次完美评级的稀客套餐。</p><p class="text-xs text-foreground-500">注：本教程可随时通过“${getPageTitle('/about')}”页面的“${resetLabel}”按钮再次进入。</p></div>`,
 						onPopoverRender(popover) {
 							const skipButton = document.createElement('button');
 							skipButton.textContent = '跳过';
@@ -78,7 +81,7 @@ export default memo(function Driver() {
 					element: 'div>:last-child>div+[style*="color"]',
 					popover: {
 						title: '选择酒水标签', // eslint-disable-next-line sort-keys
-						description: '长按标签，选中“可加冰”标签。此次教学中，假设莉格露点单“可加冰”的酒水。',
+						description: '长按标签，选中“可加冰”标签。此次教程中，假设莉格露点单“可加冰”的酒水。',
 					},
 				},
 				{
@@ -107,7 +110,7 @@ export default memo(function Driver() {
 					popover: {
 						title: '选择料理', // eslint-disable-next-line sort-keys
 						description:
-							'如果使用夜雀系列厨具，则可直接挑选目标料理。否则，应类比选择酒水的流程，以稀客点单作为选择基准。此次教学中，假设使用夜雀系列厨具制作料理。',
+							'如果使用夜雀系列厨具，则可直接挑选目标料理。否则，应类比选择酒水的流程，以稀客点单作为选择基准。此次教程中，假设使用夜雀系列厨具制作料理。',
 					},
 				},
 				{
@@ -122,7 +125,7 @@ export default memo(function Driver() {
 					popover: {
 						title: '标记为使用夜雀系列厨具制作', // eslint-disable-next-line sort-keys
 						description:
-							'点击图标，将当前套餐标记为使用夜雀系列厨具制作。根据实际情况选择即可，此次教学中，假设使用夜雀系列厨具制作料理。',
+							'点击图标，将当前套餐标记为使用夜雀系列厨具制作。根据实际情况选择即可，此次教程中，假设使用夜雀系列厨具制作料理。',
 					},
 				},
 				{
@@ -256,3 +259,9 @@ export default memo(function Driver() {
 
 	return null;
 });
+
+export {
+	pathname as customerRareTutorialPathname,
+	resetLabel as customerRareTutorialResetLabel,
+	key as customerRareTutorialStoreKey,
+};
