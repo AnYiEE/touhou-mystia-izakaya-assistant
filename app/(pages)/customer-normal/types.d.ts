@@ -1,4 +1,3 @@
-import {type ReactNode} from 'react';
 import {type SortDescriptor} from '@nextui-org/react';
 
 import {type TabVisibilityState} from './constants';
@@ -6,7 +5,7 @@ import type {TBeverageInstance, TRecipeInstance} from '@/methods/food/types';
 
 export interface ICustomerTabStyle {
 	ariaLabel: string;
-	buttonNode: ReactNode;
+	buttonNode: ReactNodeWithoutBoolean;
 	contentClassName: string;
 	sideButtonGroupClassName: string;
 }
@@ -17,7 +16,7 @@ export interface ICustomerTabStyleMap {
 
 export interface IIngredientsTabStyle {
 	ariaLabel: string;
-	buttonNode: ReactNode;
+	buttonNode: ReactNodeWithoutBoolean;
 	contentClassName: string;
 	sideButtonGroupClassName: string;
 }

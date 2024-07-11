@@ -1,4 +1,4 @@
-import {type ReactNode, forwardRef, memo} from 'react';
+import {forwardRef, memo} from 'react';
 
 import {Card, type CardProps} from '@nextui-org/react';
 
@@ -7,7 +7,7 @@ import {type TFoodNames} from '@/data';
 interface IProps extends Omit<CardProps, 'className'> {
 	name: TFoodNames;
 	description: string;
-	image: ReactNode;
+	image: ReactNodeWithoutBoolean;
 }
 
 export default memo(

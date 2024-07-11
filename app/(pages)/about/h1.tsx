@@ -1,9 +1,9 @@
-import {type PropsWithChildren, type ReactNode, forwardRef, memo} from 'react';
+import {type PropsWithChildren, forwardRef, memo} from 'react';
 import clsx from 'clsx/lite';
 
 interface IH1Props {
 	isFirst?: boolean;
-	subTitle?: Exclude<ReactNode, boolean>;
+	subTitle?: ReactNodeWithoutBoolean;
 }
 
 export default memo(

@@ -1,6 +1,6 @@
 'use client';
 
-import {type PropsWithChildren, type ReactNode, memo, useCallback, useReducer} from 'react';
+import {type PropsWithChildren, memo, useCallback, useReducer} from 'react';
 import {usePathname} from 'next/navigation';
 import clsx from 'clsx/lite';
 
@@ -29,7 +29,7 @@ import styles from './navbar.module.scss';
 const {links, name, navItems, navMenuItems, shortName} = siteConfig;
 
 interface INavbarLinkProps extends Pick<LinkProps, 'href'> {
-	label: ReactNode;
+	label: ReactNodeWithoutBoolean;
 	isActive: boolean;
 }
 
