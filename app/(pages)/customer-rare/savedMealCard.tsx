@@ -57,7 +57,7 @@ export default memo(
 											content={
 												<>
 													{rating}
-													{order.recipeTag?.startsWith('流行') && popular.tag && (
+													{popular.tag && (
 														<>
 															•{popular.isNegative ? '流行厌恶' : '流行喜爱'}•
 															{popular.tag}
