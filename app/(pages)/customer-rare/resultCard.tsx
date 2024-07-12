@@ -230,9 +230,11 @@ export default memo(
 													store.shared.customer.hasMystiaCooker.set((prev) => !prev);
 												}
 											}}
+											role="button"
 											tabIndex={0}
 											aria-label={`单击：将此点单标记为使用${hasMystiaCooker ? '非' : ''}夜雀系列厨具制作`}
 											className={clsx(
+												'cursor-pointer',
 												hasMystiaCooker &&
 													'rounded-full ring-4 ring-warning-400 dark:ring-warning-200'
 											)}
