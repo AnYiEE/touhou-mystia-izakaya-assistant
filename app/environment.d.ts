@@ -8,7 +8,7 @@ declare global {
 	}
 
 	interface Window {
-		_paq: {
+		_paq?: {
 			push: (...args: unknown[]) => void;
 		};
 	}
