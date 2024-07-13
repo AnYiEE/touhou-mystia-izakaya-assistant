@@ -10,7 +10,7 @@ import {setScriptUrlTag} from '@/utils';
 const {domain} = siteConfig;
 
 // cSpell:ignore sukiu
-const trackerBaseUrl = '//track.sukiu.net';
+const trackerBaseUrl = 'https://track.sukiu.net';
 const siteId = 11;
 
 export enum TrackCategory {
@@ -69,12 +69,13 @@ export default memo(function Analytics() {
 			['enableLinkTracking'],
 			['setCookieDomain', `*.${domain}`],
 			['setDomains', [`*.${domain}`]],
-			['setTrackerUrl', `${trackerBaseUrl}/track.php`],
+			['setRequestMethod', 'GET'],
+			['setTrackerUrl', `${trackerBaseUrl}/api.php`],
 			['setSecureCookie', true],
 			['setSiteId', siteId.toString()]
 		);
 
-		setScriptUrlTag('/track.js', 'async', true)
+		setScriptUrlTag('/api.js', 'async', true)
 			.then(() => {
 				console.info('Analytics load succeeded.');
 				trackPageView();
