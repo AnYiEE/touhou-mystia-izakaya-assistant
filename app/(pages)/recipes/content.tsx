@@ -69,9 +69,9 @@ export default memo(function Content({data}: IProps) {
 																: typeof target === 'object' && (
 																		<>
 																			<span className="pr-1">{target.name}</span>
-																			Lv.{target.level}
+																			Lv.{target.level - 1}
 																			<span className="px-1">→</span>Lv.
-																			{target.level + 1}
+																			{target.level}
 																		</>
 																	)}
 													</Fragment>
