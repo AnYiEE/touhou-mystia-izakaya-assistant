@@ -29,6 +29,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faChevronDown, faMagnifyingGlass, faPlus, faTags} from '@fortawesome/free-solid-svg-icons';
 
 import TagGroup from './tagGroup';
+import {TrackCategory, trackEvent} from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
@@ -248,6 +249,7 @@ export default memo(
 										onPress={() => {
 											customerStore.shared.customer.popular.set(currentGlobalPopular);
 											customerStore.shared.beverage.name.set(name);
+											trackEvent(TrackCategory.Select, 'Beverage', name);
 										}}
 									>
 										<FontAwesomeIcon icon={faPlus} />

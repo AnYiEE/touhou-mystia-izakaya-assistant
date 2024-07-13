@@ -9,6 +9,7 @@ import {faArrowsRotate} from '@fortawesome/free-solid-svg-icons';
 
 import SettingsButton from './settingsButton';
 import TagGroup from './tagGroup';
+import {TrackCategory, trackEvent} from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Tags from '@/components/tags';
 import Sprite from '@/components/sprite';
@@ -62,20 +63,18 @@ export default memo(
 			]
 		);
 
-		const bindBeverageTagLongPress = useLongPress((_longPressReactEvents, context) => {
-			const {context: tag} = context as {context: TBeverageTag};
-			customerStore.shared.customer.order.beverageTag.set((prev) => (prev === tag ? null : tag));
-		});
-
-		const bindRecipePositiveTagLongPress = useLongPress((_longPressReactEvents, context) => {
-			const {context: tag} = context as {context: TRecipeTag};
-			customerStore.shared.customer.order.recipeTag.set((prev) => (prev === tag ? null : tag));
-		});
-
 		const handleBeverageTagSelected = useCallback(
 			(pressedTag: TTags) => {
 				const tag = pressedTag as TBeverageTag;
-				customerStore.shared.customer.order.beverageTag.set((prev) => (prev === tag ? null : tag));
+				customerStore.shared.customer.order.beverageTag.set((prev) => {
+					if (prev === tag) {
+						trackEvent(TrackCategory.Unselect, 'Customer Tag', tag);
+						return null;
+					}
+
+					trackEvent(TrackCategory.Select, 'Customer Tag', tag);
+					return tag;
+				});
 			},
 			[customerStore.shared.customer.order.beverageTag]
 		);
@@ -83,10 +82,28 @@ export default memo(
 		const handleRecipePositiveTagSelected = useCallback(
 			(pressedTag: TTags) => {
 				const tag = pressedTag as TRecipeTag;
-				customerStore.shared.customer.order.recipeTag.set((prev) => (prev === tag ? null : tag));
+				customerStore.shared.customer.order.recipeTag.set((prev) => {
+					if (prev === tag) {
+						trackEvent(TrackCategory.Unselect, 'Customer Tag', tag);
+						return null;
+					}
+
+					trackEvent(TrackCategory.Select, 'Customer Tag', tag);
+					return tag;
+				});
 			},
 			[customerStore.shared.customer.order.recipeTag]
 		);
+
+		const bindBeverageTagLongPress = useLongPress((_longPressReactEvents, context) => {
+			const {context: tag} = context as {context: TBeverageTag};
+			handleBeverageTagSelected(tag);
+		});
+
+		const bindRecipePositiveTagLongPress = useLongPress((_longPressReactEvents, context) => {
+			const {context: tag} = context as {context: TRecipeTag};
+			handleRecipePositiveTagSelected(tag);
+		});
 
 		if (!currentCustomer) {
 			return null;
@@ -338,6 +355,7 @@ export default memo(
 								onPress={() => {
 									customerStore.shared.customer.popular.set(currentGlobalPopular);
 									customerStore.refreshCustomerSelectedItems();
+									trackEvent(TrackCategory.Click, 'Reset Button', currentCustomerName);
 								}}
 								aria-label="重置当前选定项"
 								className="absolute -right-1 top-1 h-4 w-4 text-default-400 hover:opacity-80 data-[hover]:bg-transparent"

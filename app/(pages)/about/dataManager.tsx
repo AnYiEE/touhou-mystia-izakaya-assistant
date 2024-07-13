@@ -1,6 +1,6 @@
 'use client';
 
-import {type KeyboardEvent, memo, useEffect, useMemo, useReducer, useState} from 'react';
+import {type KeyboardEvent, memo, useCallback, useEffect, useMemo, useReducer, useState} from 'react';
 import {debounce} from 'lodash';
 
 import {useRouter} from 'next/navigation';
@@ -8,6 +8,8 @@ import {useRouter} from 'next/navigation';
 import {useThrottle} from '@/hooks';
 
 import {Button, Popover, PopoverContent, PopoverTrigger, Snippet, Tab, Tabs, Textarea} from '@nextui-org/react';
+
+import {TrackCategory, trackEvent} from '@/components/analytics';
 import {
 	customerRareTutorialPathname,
 	customerRareTutorialResetLabel,
@@ -24,8 +26,8 @@ export default memo(function DataManager() {
 	const throttledValue = useThrottle(value);
 
 	const [isSaveButtonDisabled, setIsSaveButtonDisabled] = useState(true);
-	const [isSavePopoverOpened, setIsSavePopoverOpened] = useReducer((current) => !current, false);
-	const [isResetPopoverOpened, setIsResetPopoverOpened] = useReducer((current) => !current, false);
+	const [isSavePopoverOpened, toggleSavePopoverOpened] = useReducer((current) => !current, false);
+	const [isResetPopoverOpened, toggleResetPopoverOpened] = useReducer((current) => !current, false);
 
 	const customerStore = useCustomerRareStore();
 	const globalStore = useGlobalStore();
@@ -45,6 +47,19 @@ export default memo(function DataManager() {
 			setIsSaveButtonDisabled(true);
 		}
 	}, [throttledValue]);
+
+	const handleImportData = useCallback(() => {
+		toggleSavePopoverOpened();
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+		customerStore.persistence.meals.set(JSON.parse(throttledValue));
+		trackEvent(TrackCategory.Click, 'Import Button', 'Customer Rare Data');
+	}, [customerStore.persistence.meals, throttledValue]);
+
+	const handleResetData = useCallback(() => {
+		toggleResetPopoverOpened();
+		customerStore.persistence.meals.set({});
+		trackEvent(TrackCategory.Click, 'Reset Button', 'Customer Rare Data');
+	}, [customerStore.persistence.meals]);
 
 	return (
 		<>
@@ -87,10 +102,10 @@ export default memo(function DataManager() {
 										color="primary"
 										isDisabled={isSaveButtonDisabled}
 										variant="flat"
-										onClick={setIsSavePopoverOpened}
+										onClick={toggleSavePopoverOpened}
 										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
 											if (checkA11yConfirmKey(event)) {
-												setIsSavePopoverOpened();
+												toggleSavePopoverOpened();
 											}
 										})}
 									>
@@ -101,19 +116,13 @@ export default memo(function DataManager() {
 									<Button
 										color="primary"
 										variant="ghost"
-										onClick={() => {
-											setIsSavePopoverOpened();
-											// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-											customerStore.persistence.meals.set(JSON.parse(throttledValue));
-										}}
+										onClick={handleImportData}
 										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
 											if (event.key === 'Escape') {
-												setIsSavePopoverOpened();
+												toggleSavePopoverOpened();
 											}
 											if (checkA11yConfirmKey(event)) {
-												setIsSavePopoverOpened();
-												// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-												customerStore.persistence.meals.set(JSON.parse(throttledValue));
+												handleImportData();
 											}
 										})}
 									>
@@ -130,10 +139,10 @@ export default memo(function DataManager() {
 									<Button
 										color="danger"
 										variant="flat"
-										onClick={setIsResetPopoverOpened}
+										onClick={toggleResetPopoverOpened}
 										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
 											if (checkA11yConfirmKey(event)) {
-												setIsResetPopoverOpened();
+												toggleResetPopoverOpened();
 											}
 										})}
 									>
@@ -144,17 +153,13 @@ export default memo(function DataManager() {
 									<Button
 										color="danger"
 										variant="ghost"
-										onClick={() => {
-											setIsResetPopoverOpened();
-											customerStore.persistence.meals.set({});
-										}}
+										onClick={handleResetData}
 										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
 											if (event.key === 'Escape') {
-												setIsResetPopoverOpened();
+												toggleResetPopoverOpened();
 											}
 											if (checkA11yConfirmKey(event)) {
-												setIsResetPopoverOpened();
-												customerStore.persistence.meals.set({});
+												handleResetData();
 											}
 										})}
 									>
@@ -175,6 +180,7 @@ export default memo(function DataManager() {
 										prev.dirver = dirver;
 									});
 									router.push(customerRareTutorialPathname);
+									trackEvent(TrackCategory.Click, 'Reset Button', 'Customer Rare Tutorial');
 								}}
 							>
 								{customerRareTutorialResetLabel}

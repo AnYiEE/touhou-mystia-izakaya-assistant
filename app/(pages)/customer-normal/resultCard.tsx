@@ -6,6 +6,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-icons';
 
 import Placeholder from './placeholder';
+import {TrackCategory, trackEvent} from '@/components/analytics';
 import Sprite from '@/components/sprite';
 
 import {type TIngredientNames} from '@/data';
@@ -88,6 +89,7 @@ const IngredientList = memo(function IngredientsList() {
 					prev.extraIngredients = removeLastElement(prev.extraIngredients, ingredient);
 				}
 			});
+			trackEvent(TrackCategory.Unselect, 'Ingredient', ingredient);
 		},
 		[store.shared.recipe.data]
 	);
@@ -153,11 +155,13 @@ export default memo(
 				return;
 			}
 
+			const {extraIngredients, name: currentRecipeName} = currentRecipe;
+
 			const saveObject = {
 				beverage: currentBeverageName,
-				extraIngredients: currentRecipe.extraIngredients,
+				extraIngredients,
 				popular: currentCustomerPopular,
-				recipe: currentRecipe.name,
+				recipe: currentRecipeName,
 			} as const;
 
 			store.persistence.meals.set((prev) => {
@@ -169,6 +173,12 @@ export default memo(
 					prev[currentCustomerName] = [{...saveObject, index: 0}];
 				}
 			});
+
+			trackEvent(
+				TrackCategory.Click,
+				'Save Button',
+				`${currentRecipeName} - ${currentBeverageName}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
+			);
 		}, [currentBeverageName, currentCustomerName, currentCustomerPopular, currentRecipe, store.persistence.meals]);
 
 		if (!currentBeverageName && !currentRecipe) {

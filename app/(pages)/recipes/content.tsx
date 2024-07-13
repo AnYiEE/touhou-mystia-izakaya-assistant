@@ -4,6 +4,7 @@ import {useOpenedFoodPopover} from '@/hooks';
 
 import {Popover, PopoverContent, PopoverTrigger} from '@nextui-org/react';
 
+import {TrackCategory, trackEvent} from '@/components/analytics';
 import FoodCard from '@/components/foodCard';
 import FoodPopoverCard from '@/components/foodPopoverCard';
 import Sprite from '@/components/sprite';
@@ -40,6 +41,9 @@ export default memo(function Content({data}: IProps) {
 								name={name}
 								description={`￥${price}`}
 								image={<Sprite target="recipe" name={name} size={3} />}
+								onPress={() => {
+									trackEvent(TrackCategory.Click, 'Recipe Card', name);
+								}}
 							/>
 						</PopoverTrigger>
 						<PopoverContent>

@@ -7,6 +7,7 @@ import {faArrowsRotate} from '@fortawesome/free-solid-svg-icons';
 
 import SettingsButton from './settingsButton';
 import TagGroup from './tagGroup';
+import {TrackCategory, trackEvent} from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Tags from '@/components/tags';
 import Sprite from '@/components/sprite';
@@ -180,18 +181,7 @@ export default memo(
 										<Tags.Tag
 											tag={tag}
 											tagStyle={CUSTOMER_NORMAL_TAG_STYLE.positive}
-											handleDoubleClick={(clickedTag) => {
-												customerStore.shared.tab.set('recipe');
-												customerStore.shared.customer.positiveTags.set((prev) => {
-													if (prev instanceof Set) {
-														if (prev.has(clickedTag)) {
-															prev.delete(clickedTag);
-														} else {
-															prev.add(clickedTag);
-														}
-													}
-												});
-											}}
+											handleDoubleClick={handleRecipePositiveTagSelected}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
 													handleRecipePositiveTagSelected(tag);
@@ -241,18 +231,7 @@ export default memo(
 										<Tags.Tag
 											tag={tag}
 											tagStyle={CUSTOMER_NORMAL_TAG_STYLE.beverage}
-											handleDoubleClick={(clickedTag) => {
-												customerStore.shared.tab.set('beverage');
-												customerStore.shared.customer.beverageTags.set((prev) => {
-													if (prev instanceof Set) {
-														if (prev.has(clickedTag)) {
-															prev.delete(clickedTag);
-														} else {
-															prev.add(clickedTag);
-														}
-													}
-												});
-											}}
+											handleDoubleClick={handleBeverageTagSelected}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
 													handleBeverageTagSelected(tag);
@@ -278,6 +257,7 @@ export default memo(
 								onPress={() => {
 									customerStore.shared.customer.popular.set(currentGlobalPopular);
 									customerStore.refreshCustomerSelectedItems();
+									trackEvent(TrackCategory.Click, 'Reset Button', currentCustomerName);
 								}}
 								aria-label="重置当前选定项"
 								className="absolute -right-1 top-1 h-4 w-4 text-default-400 hover:opacity-80 data-[hover]:bg-transparent"

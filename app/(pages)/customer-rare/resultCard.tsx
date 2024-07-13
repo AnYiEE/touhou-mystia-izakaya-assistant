@@ -6,6 +6,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-icons';
 
 import Placeholder from './placeholder';
+import {TrackCategory, trackEvent} from '@/components/analytics';
 import Sprite from '@/components/sprite';
 
 import {type TIngredientNames} from '@/data';
@@ -88,6 +89,7 @@ const IngredientList = memo(function IngredientsList() {
 					prev.extraIngredients = removeLastElement(prev.extraIngredients, ingredient);
 				}
 			});
+			trackEvent(TrackCategory.Unselect, 'Ingredient', ingredient);
 		},
 		[store.shared.recipe.data]
 	);
@@ -161,17 +163,19 @@ export default memo(
 				return;
 			}
 
+			const {extraIngredients, name: currentRecipeName} = currentRecipe;
+
 			const saveObject = {
 				beverage: currentBeverageName,
-				extraIngredients: currentRecipe.extraIngredients,
+				extraIngredients,
 				hasMystiaCooker,
 				order: currentOrder,
 				popular: currentCustomerPopular,
 				price:
 					instance_beverage.getPropsByName(currentBeverageName).price +
-					instance_recipe.getPropsByName(currentRecipe.name).price, // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+					instance_recipe.getPropsByName(currentRecipeName).price, // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				rating: currentRating!,
-				recipe: currentRecipe.name,
+				recipe: currentRecipeName,
 			} as const;
 
 			store.persistence.meals.set((prev) => {
@@ -183,6 +187,12 @@ export default memo(
 					prev[currentCustomerName] = [{...saveObject, index: 0}];
 				}
 			});
+
+			trackEvent(
+				TrackCategory.Click,
+				'Save Button',
+				`${currentRecipeName} - ${currentBeverageName}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
+			);
 		}, [
 			currentBeverageName,
 			currentCustomerName,

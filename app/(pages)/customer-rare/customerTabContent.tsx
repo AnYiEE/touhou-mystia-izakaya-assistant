@@ -1,11 +1,12 @@
-import {forwardRef, memo} from 'react';
+import {forwardRef, memo, useCallback} from 'react';
 import clsx from 'clsx/lite';
 
 import {Avatar, Button, ScrollShadow} from '@nextui-org/react';
 
+import {TrackCategory, trackEvent} from '@/components/analytics';
 import Sprite from '@/components/sprite';
 
-import type {ICustomerTabStyle, TCustomerTarget} from './types';
+import type {ICurrentCustomer, ICustomerTabStyle} from './types';
 import type {TCustomerRareInstances, TCustomerSpecialInstances} from '@/methods/customer/types';
 import {useCustomerRareStore} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
@@ -24,6 +25,14 @@ export default memo(
 
 		const currentCustomer = store.shared.customer.data.use();
 
+		const handleSelect = useCallback(
+			(customer: ICurrentCustomer) => {
+				store.shared.customer.data.set(customer);
+				trackEvent(TrackCategory.Select, 'Customer', customer.name);
+			},
+			[store.shared.customer.data]
+		);
+
 		return (
 			<>
 				<ScrollShadow
@@ -40,11 +49,11 @@ export default memo(
 								<div
 									key={name}
 									onClick={() => {
-										store.shared.customer.data.set({name, target: target as TCustomerTarget});
+										handleSelect({name, target} as ICurrentCustomer);
 									}}
 									onKeyDown={(event) => {
 										if (checkA11yConfirmKey(event)) {
-											store.shared.customer.data.set({name, target: target as TCustomerTarget});
+											handleSelect({name, target} as ICurrentCustomer);
 										}
 									}}
 									title={`选择${name}`}
@@ -56,7 +65,7 @@ export default memo(
 										radius="sm"
 										icon={
 											<Sprite
-												target={target as TCustomerTarget}
+												target={target as ICurrentCustomer['target']}
 												name={name}
 												size={5}
 												title={`选择${name}`}

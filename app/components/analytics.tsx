@@ -13,11 +13,43 @@ const {domain} = siteConfig;
 const trackerBaseUrl = '//track.sukiu.net';
 const siteId = 11;
 
-function trackPageView() {
-	if (!window._paq) {
-		return;
-	}
+export enum TrackCategory {
+	Click = 'Click',
+	Select = 'Select',
+	Unselect = 'Unselect',
+}
 
+type TAction = 'Import' | 'Remove' | 'Reset' | 'Save' | 'Select';
+type TFood = 'Beverage' | 'Ingredient' | 'Recipe';
+
+export function trackEvent(
+	category: TrackCategory.Click,
+	action: `${TAction} Button` | `${TFood} Card`,
+	name?: string,
+	value?: number | string
+): void;
+export function trackEvent(
+	category: TrackCategory.Select | TrackCategory.Unselect,
+	action: 'Customer' | 'Customer Tag' | TFood,
+	name?: string,
+	value?: number | string
+): void;
+export function trackEvent(
+	category: keyof typeof TrackCategory,
+	action: `${TAction} Button` | `${TFood} Card` | 'Customer' | 'Customer Tag' | TFood,
+	name?: string,
+	value?: number | string
+) {
+	window._paq ??= [] as unknown as NonNullable<Window['_paq']>;
+	window._paq.push(
+		['setCustomUrl', location.href],
+		['setDocumentTitle', document.title],
+		['trackEvent', category, action, name, value]
+	);
+}
+
+function trackPageView() {
+	window._paq ??= [] as unknown as NonNullable<Window['_paq']>;
 	window._paq.push(['setCustomUrl', location.href], ['setDocumentTitle', document.title], ['trackPageView']);
 }
 
@@ -31,8 +63,9 @@ export default memo(function Analytics() {
 			return;
 		}
 
-		window._paq = [] as unknown as NonNullable<Window['_paq']>;
+		window._paq ??= [] as unknown as NonNullable<Window['_paq']>;
 		window._paq.push(
+			['enableHeartBeatTimer'],
 			['enableLinkTracking'],
 			['setCookieDomain', `*.${domain}`],
 			['setDomains', [`*.${domain}`]],

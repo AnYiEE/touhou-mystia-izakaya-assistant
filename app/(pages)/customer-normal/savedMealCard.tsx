@@ -3,6 +3,7 @@ import {Fragment, forwardRef, memo} from 'react';
 import {Button, Card, Divider, Tooltip} from '@nextui-org/react';
 
 import {Plus} from './resultCard';
+import {TrackCategory, trackEvent} from '@/components/analytics';
 import Sprite from '@/components/sprite';
 
 import {useCustomerNormalStore} from '@/stores';
@@ -71,6 +72,11 @@ export default memo(
 												store.persistence.meals[currentCustomerName]?.set(
 													savedCustomerMeal.filter((meal) => meal.index !== mealIndex)
 												);
+												trackEvent(
+													TrackCategory.Click,
+													'Remove Button',
+													`${recipe} - ${beverage}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
+												);
 											}}
 											className="md:w-auto"
 										>
@@ -88,6 +94,11 @@ export default memo(
 													extraIngredients,
 													name: recipe,
 												});
+												trackEvent(
+													TrackCategory.Click,
+													'Select Button',
+													`${recipe} - ${beverage}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
+												);
 											}}
 											className="md:w-auto"
 										>

@@ -29,6 +29,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faChevronDown, faMagnifyingGlass, faPlus, faTags} from '@fortawesome/free-solid-svg-icons';
 
 import TagGroup from './tagGroup';
+import {TrackCategory, trackEvent} from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
@@ -317,6 +318,7 @@ export default memo(
 												extraIngredients: [],
 												name,
 											});
+											trackEvent(TrackCategory.Select, 'Recipe', name);
 										}}
 									>
 										<FontAwesomeIcon icon={faPlus} />

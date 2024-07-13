@@ -4,6 +4,7 @@ import {intersection} from 'lodash';
 
 import {Badge, Button, ScrollShadow} from '@nextui-org/react';
 
+import {TrackCategory, trackEvent} from '@/components/analytics';
 import Sprite from '@/components/sprite';
 
 import type {IIngredientsTabStyle} from './types';
@@ -52,7 +53,7 @@ export default memo(
 			[darkIngredients, sortedData]
 		);
 
-		const onSelected = useCallback(
+		const handleSelect = useCallback(
 			(ingredient: TIngredientNames) => {
 				customerStore.shared.customer.popular.set(currentGlobalPopular);
 				customerStore.shared.recipe.data.set((prev) => {
@@ -60,6 +61,7 @@ export default memo(
 						prev.extraIngredients.push(ingredient);
 					}
 				});
+				trackEvent(TrackCategory.Select, 'Ingredient', ingredient);
 			},
 			[
 				currentGlobalPopular,
@@ -140,7 +142,7 @@ export default memo(
 								<div
 									key={index}
 									onClick={() => {
-										onSelected(name);
+										handleSelect(name);
 									}}
 									role="button"
 									tabIndex={0}
