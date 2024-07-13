@@ -2068,7 +2068,7 @@ export const RECIPE_LIST = [
 	{
 		name: '什锦天妇罗',
 		ingredients: ['八目鳗', '黑毛猪肉', '松露', '月光草'],
-		positiveTags: ['家常', '重油', '下酒', '和风', '招牌', '力量涌现', '菌类'],
+		positiveTags: ['肉', '家常', '重油', '下酒', '和风', '招牌', '力量涌现', '菌类'],
 		negativeTags: [],
 		cooker: '油锅',
 		min: 4.2,
