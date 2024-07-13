@@ -9,9 +9,8 @@ const {links, shortName, version, nodeEnv, vercelEnv} = siteConfig;
 
 const isProduction = nodeEnv === 'production';
 const sha = (
-	process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? isProduction
-		? execSync('git rev-parse --short HEAD').toString('utf8')
-		: null
+	process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ??
+	(isProduction ? execSync('git rev-parse --short HEAD').toString('utf8') : null)
 )?.trim();
 
 interface IFooterLinkProps
