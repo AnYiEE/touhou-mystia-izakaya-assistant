@@ -1,6 +1,5 @@
 export * from './useMounted';
 export * from './useParams';
-export * from './useSystemTheme';
 export * from './useThrottle';
 
 export * from './useOpenedFoodPopover';

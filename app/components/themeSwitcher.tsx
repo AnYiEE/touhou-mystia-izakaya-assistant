@@ -1,22 +1,39 @@
 'use client';
 
 import {memo, useCallback, useEffect, useState} from 'react';
-import {usePathname} from 'next/navigation';
-import {useTheme} from 'next-themes';
 import clsx from 'clsx/lite';
 
-import {Theme, useMounted, useSystemTheme} from '@/hooks';
+import {usePathname} from 'next/navigation';
+import {useTheme} from 'next-themes';
 
-import {Spinner, Tooltip, useSwitch} from '@nextui-org/react';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {useMounted} from '@/hooks';
+
+import {
+	Dropdown,
+	DropdownItem,
+	DropdownMenu,
+	DropdownTrigger,
+	type Selection,
+	Spinner,
+	Tooltip,
+} from '@nextui-org/react';
 import {faCircleHalfStroke, faMoon, faSun} from '@fortawesome/free-solid-svg-icons';
-import {checkA11yConfirmKey} from '@/utils';
+
+import FontAwesomeIconButton from './fontAwesomeIconButton';
+
+enum Theme {
+	dark = 'dark',
+	light = 'light',
+	system = 'system',
+}
 
 enum ThemeLabel {
-	dark = '深色',
-	light = '浅色',
+	dark = '深色主题',
+	light = '浅色主题',
 	system = '跟随系统',
 }
+
+type TSingleSelection = Exclude<Selection, 'all'>;
 
 interface IProps {
 	isMenu: boolean;
@@ -26,8 +43,24 @@ export default memo(function ThemeSwitcher({isMenu}: Partial<IProps>) {
 	const isMounted = useMounted();
 	const pathname = usePathname();
 	const {theme, setTheme} = useTheme();
-	const systemTheme = useSystemTheme();
-	const [nextTheme, setNextTheme] = useState('');
+	const [selectedTheme, setSelectedTheme] = useState(new Set([theme]) as TSingleSelection);
+
+	const onSelectedThemeChange = useCallback(
+		(value: Selection) => {
+			const newValue = value as TSingleSelection;
+
+			if (newValue.has(Theme.dark)) {
+				setTheme(Theme.dark);
+			} else if (newValue.has(Theme.light)) {
+				setTheme(Theme.light);
+			} else if (newValue.has(Theme.system)) {
+				setTheme(Theme.system);
+			}
+
+			setSelectedTheme(newValue);
+		},
+		[setTheme]
+	);
 
 	useEffect(() => {
 		if (theme !== Theme.system) {
@@ -37,35 +70,6 @@ export default memo(function ThemeSwitcher({isMenu}: Partial<IProps>) {
 			}
 		}
 	}, [pathname, theme]);
-
-	useEffect(() => {
-		if (theme === Theme.system) {
-			setNextTheme(systemTheme === Theme.light ? ThemeLabel.dark : ThemeLabel.light);
-		} else {
-			setNextTheme(theme === Theme.light ? ThemeLabel.dark : ThemeLabel.light);
-		}
-	}, [theme, systemTheme]);
-
-	const onChange = useCallback(() => {
-		if (theme === Theme.system) {
-			setTheme(systemTheme === Theme.light ? Theme.dark : Theme.light);
-		} else {
-			setTheme(theme === Theme.light ? Theme.dark : Theme.light);
-		}
-	}, [theme, systemTheme, setTheme]);
-
-	const label = `切换至${nextTheme}模式`;
-
-	const {Component, slots, isSelected, getBaseProps, getInputProps, getWrapperProps} = useSwitch({
-		'aria-label': label,
-		isSelected: theme !== Theme.system,
-		onChange,
-		onKeyDown: (event) => {
-			if (checkA11yConfirmKey(event)) {
-				onChange();
-			}
-		},
-	});
 
 	if (!isMounted) {
 		return (
@@ -79,36 +83,44 @@ export default memo(function ThemeSwitcher({isMenu}: Partial<IProps>) {
 	}
 
 	return (
-		<Component
-			{...getBaseProps({
-				className:
-					'cursor-pointer p-0 transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
-			})}
-			tabIndex={0}
-			role="button"
+		<Dropdown
+			showArrow
+			classNames={{
+				content: 'min-w-28',
+			}}
 		>
-			<input className="hidden" {...getInputProps()} />
-			<Tooltip showArrow content={label}>
-				<div
-					{...getWrapperProps()}
-					className={slots.wrapper({
-						class: clsx(
-							'm-0 h-auto w-auto bg-transparent p-0 group-data-[selected=true]:bg-transparent',
-							isMenu ? '!text-foreground' : '!text-default-500'
-						),
-					})}
-				>
-					{isSelected ? (
-						theme === Theme.light ? (
-							<FontAwesomeIcon icon={faMoon} size="lg" />
-						) : (
-							<FontAwesomeIcon icon={faSun} size="lg" />
-						)
-					) : (
-						<FontAwesomeIcon icon={faCircleHalfStroke} size="lg" />
-					)}
-				</div>
+			<Tooltip showArrow content="切换主题">
+				<span className="flex">
+					<DropdownTrigger>
+						<FontAwesomeIconButton
+							icon={
+								selectedTheme.has(Theme.light)
+									? faSun
+									: selectedTheme.has(Theme.dark)
+										? faMoon
+										: faCircleHalfStroke
+							}
+							className={clsx(
+								'h-min w-min min-w-min bg-transparent text-medium',
+								isMenu ? '!text-foreground' : '!text-default-500'
+							)}
+						/>
+					</DropdownTrigger>
+				</span>
 			</Tooltip>
-		</Component>
+			<DropdownMenu
+				disallowEmptySelection
+				defaultSelectedKeys={selectedTheme}
+				selectedKeys={selectedTheme}
+				selectionMode="single"
+				onSelectionChange={onSelectedThemeChange}
+				aria-label="切换主题"
+				className="w-28"
+			>
+				<DropdownItem key={Theme.dark}>{ThemeLabel.dark}</DropdownItem>
+				<DropdownItem key={Theme.light}>{ThemeLabel.light}</DropdownItem>
+				<DropdownItem key={Theme.system}>{ThemeLabel.system}</DropdownItem>
+			</DropdownMenu>
+		</Dropdown>
 	);
 });

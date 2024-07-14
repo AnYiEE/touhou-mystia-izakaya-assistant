@@ -107,6 +107,7 @@ export default memo(function About() {
 			<H2>v0.5</H2>
 			<ul className="flex list-inside list-decimal flex-col gap-2">
 				<li>新增：首次进入稀客套餐搭配页面时，展示使用教程。</li>
+				<li>新增：主题切换器支持选择“跟随系统”。</li>
 				<li>修复：作为渐进式网络应用程序安装后，导航栏的部分按钮被窗口控件遮挡。</li>
 			</ul>
 			<H1>已知问题</H1>
