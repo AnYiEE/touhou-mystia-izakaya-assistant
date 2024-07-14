@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {intersection, without} from 'lodash';
 
 import type {TCustomerRating} from './types';
@@ -147,12 +146,12 @@ export function evaluateMeal({
 	const matchedBeverageScore = matchedBeverageTagsWithOrderedBeverage.length;
 	const beverageScore = orderedBeverageScore + matchedBeverageScore;
 
+	const matchedRecipeNegativeTags = intersection(currentRecipeTagsWithPopular, currentCustomerNegativeTags);
 	const matchedRecipePositiveTags = intersection(currentRecipeTagsWithPopular, currentCustomerPositiveTags);
 	const matchedRecipePositiveTagsWithoutOrderedRecipe = without(
 		matchedRecipePositiveTags,
 		hasMystiaCooker ? matchedRecipePositiveTags[0] : customerOrderRecipeTag
 	);
-	const matchedRecipeNegativeTags = intersection(currentRecipeTagsWithPopular, currentCustomerNegativeTags);
 	const orderedRecipeScore =
 		matchedRecipePositiveTags.length > 0
 			? Number(
@@ -160,8 +159,8 @@ export function evaluateMeal({
 						(customerOrderRecipeTag ? matchedRecipePositiveTags.includes(customerOrderRecipeTag) : 0)
 				)
 			: 0;
-	const matchedRecipePositiveScore = matchedRecipePositiveTagsWithoutOrderedRecipe.length;
 	const matchedRecipeNegativeScore = matchedRecipeNegativeTags.length;
+	const matchedRecipePositiveScore = matchedRecipePositiveTagsWithoutOrderedRecipe.length;
 	const recipeScore = orderedRecipeScore + matchedRecipePositiveScore - matchedRecipeNegativeScore;
 
 	let mealScore = Math.min(
