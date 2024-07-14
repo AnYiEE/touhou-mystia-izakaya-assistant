@@ -15,7 +15,7 @@ export default memo(function About() {
 	return (
 		<div className="leading-6">
 			<H1 isFirst>项目介绍</H1>
-			<div className="flex flex-col gap-2 break-all text-justify indent-8">
+			<div className="space-y-2 break-all text-justify indent-8">
 				<p>{description}</p>
 				<p>
 					使用{name}（以下简称“{shortName}”）并不意味您拥有
@@ -25,7 +25,13 @@ export default memo(function About() {
 					{shortName}上显示的或随{shortName}一同显示的任何条款、政策或法律声明。
 					{shortName}
 					内所涉及的公司名称、商标、产品等均为其各自所有者的资产，仅供识别。游戏素材版权均归
-					<Link isExternal href={links.steam.href} title={links.steam.label} className="contents">
+					<Link
+						isExternal
+						showAnchorIcon
+						href={links.steam.href}
+						title={links.steam.label}
+						className="indent-0"
+					>
 						原作者
 					</Link>
 					所有。
@@ -34,14 +40,21 @@ export default memo(function About() {
 					{shortName}的源代码基于GNU General Public License v3.0协议或其更新版本开源，协议
 					<Link
 						isExternal
+						showAnchorIcon
 						href="https://www.gnu.org/licenses/gpl-3.0-standalone.html"
 						title="The GNU General Public License v3.0"
-						className="contents"
+						className="indent-0"
 					>
 						见此
 					</Link>
 					，您可以在遵守该协议的前提下自由使用所有公开内容。您也可以前往
-					<Link isExternal href={links.github.href} title={links.github.label} className="contents">
+					<Link
+						isExternal
+						showAnchorIcon
+						href={links.github.href}
+						title={links.github.label}
+						className="indent-0"
+					>
 						Github
 					</Link>
 					反馈任何问题、提出建议或发起合并请求。
@@ -54,7 +67,13 @@ export default memo(function About() {
 				</p>
 				<p>
 					如果{shortName}对您的游玩过程有所帮助，您可以考虑
-					<Link isExternal href={links.donate.href} title={links.donate.label} className="contents">
+					<Link
+						isExternal
+						showAnchorIcon
+						href={links.donate.href}
+						title={links.donate.label}
+						className="indent-0"
+					>
 						向我捐赠
 					</Link>
 					。但请您注意，这仅是捐赠，无论捐赠与否都不会影响您使用{shortName}的体验。{shortName}

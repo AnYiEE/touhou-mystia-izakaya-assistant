@@ -102,13 +102,13 @@ const ShareButton: FC<IShareButtonProps> = memo(
 				</Tooltip>
 				<PopoverContent>
 					<div className="flex flex-col">
-						<span className="cursor-default select-none self-end pr-4 text-xs text-default-500 dark:text-default-400">
+						<span className="mr-4 cursor-default select-none self-end text-xs text-default-500 dark:text-default-400">
 							点击以复制到当前选中项的链接↓
 						</span>
 						<Snippet
 							disableTooltip
 							size="sm"
-							symbol={<FontAwesomeIcon icon={faLink} className="pr-1 !align-middle text-default-500" />}
+							symbol={<FontAwesomeIcon icon={faLink} className="mr-1 !align-middle text-default-500" />}
 						>
 							{generateUrl}
 						</Snippet>
@@ -155,8 +155,8 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 		}, [tags]);
 
 		return (
-			<div className="flex max-w-64 flex-col p-2 text-xs text-default-500" ref={ref}>
-				<div className="flex items-center gap-x-2 text-sm text-foreground">
+			<div className="flex max-w-64 flex-col gap-2 p-2 text-xs text-default-500" ref={ref}>
+				<div className="flex items-center gap-2 text-sm text-foreground">
 					<Sprite target={target} name={name} size={2} />
 					<p className="font-bold">
 						{dlc !== undefined && `【DLC${dlc}】`}
@@ -164,7 +164,7 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 					</p>
 				</div>
 				{cooker && ingredients && (
-					<div className="mt-2 flex flex-wrap gap-x-2 gap-y-1">
+					<div className="flex flex-wrap gap-x-2 gap-y-1">
 						<Sprite target="cooker" name={cooker} size={1.5} className="mr-4" />
 						{ingredients.map((item) => (
 							<Sprite key={item} target="ingredient" name={item} size={1.5} />
@@ -172,7 +172,7 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 					</div>
 				)}
 				{description !== undefined && (
-					<div className="mt-2 flex gap-x-4">
+					<div className="flex gap-4">
 						<p>
 							<span className="font-semibold">售价：</span>
 							{description.price}
@@ -190,12 +190,12 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 					</div>
 				)}
 				{mergedTags && (
-					<div className="mt-2 flex flex-wrap gap-x-2 gap-y-1 text-nowrap break-keep">
+					<div className="flex flex-wrap gap-x-2 gap-y-1 text-nowrap break-keep">
 						<TagsComponent tags={mergedTags.positive} tagStyle={tagColors?.positive} />
 						<TagsComponent tags={mergedTags.negative} tagStyle={tagColors?.negative} />
 					</div>
 				)}
-				{children !== undefined && <div className="mt-2 flex flex-col gap-y-1">{children}</div>}
+				{children !== undefined && <div className="flex flex-col gap-1">{children}</div>}
 			</div>
 		);
 	})

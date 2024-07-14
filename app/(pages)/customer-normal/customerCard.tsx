@@ -138,7 +138,7 @@ export default memo(
 		return (
 			<Card fullWidth shadow="sm" ref={ref}>
 				<div className="flex flex-col gap-3 p-4 md:flex-row">
-					<div className="flex flex-col items-center justify-center text-center">
+					<div className="flex flex-col items-center justify-center gap-2 text-center">
 						<Avatar
 							radius="sm"
 							icon={<Sprite target="customer_normal" name={currentCustomerName} size={6} />}
@@ -147,7 +147,7 @@ export default memo(
 								icon: 'inline-table lg:inline-block',
 							}}
 						/>
-						<div className="min-w-24 gap-2 pt-2 lg:min-w-28">
+						<div className="min-w-24 gap-2 lg:min-w-28">
 							<p className="flex justify-between text-nowrap break-keep text-xs font-medium text-default-500">
 								<span>DLC{currentCustomerDlc}</span>
 								<Popover showArrow offset={0}>

@@ -22,11 +22,11 @@ export default memo(
 				{...cardProps}
 				ref={ref}
 			>
-				<div className="flex items-center">
+				<div className="flex items-center gap-1">
 					<div className="m-1 flex rounded-xl shadow-[inset_0_0_2px] shadow-foreground-400">{image}</div>
-					<div className="mx-1 inline-flex flex-col text-left">
+					<div className="inline-flex flex-col gap-1 text-left">
 						<p className="text-small font-medium text-default-700">{name}</p>
-						<p className="mt-1 text-xs text-default-500">{description}</p>
+						<p className="text-xs text-default-500">{description}</p>
 					</div>
 				</div>
 			</Card>

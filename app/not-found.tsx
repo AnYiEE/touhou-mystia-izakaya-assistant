@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default memo(function NotFound() {
 	return (
-		<div className="flex h-full items-center justify-center space-x-4">
+		<div className="flex h-full items-center justify-center gap-4">
 			<h1 className="text-6xl font-bold">404</h1>
 			<Divider orientation="vertical" className="h-12" />
 			<p className="hidden text-xl md:inline">找不到您所请求的资源</p>

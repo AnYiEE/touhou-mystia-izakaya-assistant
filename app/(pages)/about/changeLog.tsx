@@ -18,9 +18,9 @@ export default memo(function ChangeLog() {
 						以下为更新摘要，前往
 						<Link
 							isExternal
+							showAnchorIcon
 							href={`${links.github.href}/commits`}
 							title={`${links.github.label}提交记录`}
-							className="contents"
 						>
 							Github
 						</Link>
@@ -31,11 +31,11 @@ export default memo(function ChangeLog() {
 				更新日志
 			</H1>
 			<H2 isFirst>v0.1</H2>
-			<ul className="flex list-inside list-decimal flex-col gap-2">
+			<ul className="list-inside list-decimal space-y-2">
 				<li>新增：料理、酒水和食材页面。</li>
 			</ul>
 			<H2>v0.2</H2>
-			<ul className="flex list-inside list-decimal flex-col gap-2">
+			<ul className="list-inside list-decimal space-y-2">
 				<li>新增：稀客套餐搭配页面。</li>
 				<li>新增：支持导出稀客套餐搭配数据。</li>
 				<li>新增：支持作为渐进式网络应用程序安装。</li>
@@ -43,19 +43,19 @@ export default memo(function ChangeLog() {
 				<li>新增：自定义亮色主题“izakaya”。</li>
 			</ul>
 			<H2>v0.3</H2>
-			<ul className="flex list-inside list-decimal flex-col gap-2">
+			<ul className="list-inside list-decimal space-y-2">
 				<li>新增：普客套餐搭配页面。</li>
 				<li>新增：稀客套餐评级功能。</li>
 			</ul>
 			<H2>v0.4</H2>
-			<ul className="flex list-inside list-decimal flex-col gap-2">
+			<ul className="list-inside list-decimal space-y-2">
 				<li>新增：搭配稀客套餐时，支持设置流行喜爱和流行厌恶标签。</li>
 				<li>新增：作为渐进式网络应用程序安装后，提供常用功能的快捷方式。</li>
 				<li>改善：无障碍（键盘导航）支持。</li>
 				<li>修复：稀客套餐评分逻辑。</li>
 			</ul>
 			<H2>v0.5</H2>
-			<ul className="flex list-inside list-decimal flex-col gap-2">
+			<ul className="list-inside list-decimal space-y-2">
 				<li>新增：首次进入稀客套餐搭配页面时，展示使用教程。</li>
 				<li>新增：主题切换器支持选择“跟随系统”。</li>
 				<li>修复：作为渐进式网络应用程序安装后，导航栏的部分按钮被窗口控件遮挡。</li>

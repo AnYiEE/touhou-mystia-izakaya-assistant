@@ -45,9 +45,7 @@ interface ITagsPropsBase {
 	tagStyle?: Partial<TTagStyle> | undefined;
 }
 
-interface ITagsProps extends ITagsPropsBase, IHandleDoubleClick {
-	className?: HTMLAttributes<HTMLDivElement>['className'];
-}
+interface ITagsProps extends ITagsPropsBase, IHandleDoubleClick, Pick<HTMLAttributes<HTMLDivElement>, 'className'> {}
 
 const TagsComponent: FC<ITagsProps> = memo(function Tags({tags, tagStyle = {}, handleDoubleClick, className}) {
 	return (

@@ -165,7 +165,7 @@ export default memo(
 		return (
 			<Card fullWidth shadow="sm" ref={ref}>
 				<div className="flex flex-col gap-3 p-4 md:flex-row">
-					<div className="flex flex-col">
+					<div className="flex flex-col gap-2">
 						<Popover
 							showArrow
 							color={currentRating ? customerRatingColorMap[currentRating] : undefined}
@@ -206,7 +206,7 @@ export default memo(
 							</Tooltip>
 							<PopoverContent>{currentRating ?? '继续选择以评分'}</PopoverContent>
 						</Popover>
-						<div className="flex flex-col text-nowrap break-keep pt-2 text-xs font-medium text-default-500">
+						<div className="flex flex-col text-nowrap break-keep text-xs font-medium text-default-500">
 							<p className="flex justify-between">
 								<span>DLC{currentCustomerDlc}</span>
 								<Popover showArrow offset={0}>
