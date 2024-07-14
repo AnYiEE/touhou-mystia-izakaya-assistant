@@ -42,7 +42,7 @@ export default memo(function Home() {
 						icon={faQq}
 						href="https://qm.qq.com/q/Zham0MdxyA"
 						title="点击加入QQ群"
-						className="text-xl"
+						className="text-xl text-[#1479D7]"
 					/>
 				</Tooltip>
 				<Tooltip
@@ -72,7 +72,7 @@ export default memo(function Home() {
 						title="点击加入小红书群"
 						className="h-5"
 					>
-						<Xiaohongshu className="fill-transparent" />
+						<Xiaohongshu />
 					</Button>
 				</Tooltip>
 			</div>
