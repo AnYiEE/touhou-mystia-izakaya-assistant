@@ -1,5 +1,12 @@
-/* eslint-disable func-names, no-var, prefer-arrow-callback, vars-on-top */
+/* eslint-disable func-names, no-var, prefer-arrow-callback, vars-on-top, unicorn/prefer-includes */
 var VERSION = 'offline/{{version}}';
+
+var networkErrorResponse = new Response('A network error occurred, but no cached resources were found.', {
+	headers: {
+		'Content-Type': 'text/plain',
+	},
+	status: 418,
+});
 
 function deleteCache(key) {
 	return caches['delete'](key);
@@ -24,25 +31,33 @@ function putInCache(request, response, version) {
 	});
 }
 
-function networkFirst(request) {
-	return fetch(request)
-		.then(function (responseFromNetwork) {
-			putInCache(request, responseFromNetwork.clone(), VERSION);
-			return responseFromNetwork;
-		})
-		['catch'](function () {
-			return caches.match(request).then(function (responseFromCache) {
-				if (responseFromCache) {
-					return responseFromCache;
-				}
-				return new Response('A network error occurred, but no cached resources were found.', {
-					headers: {
-						'Content-Type': 'text/plain',
-					},
-					status: 418,
-				});
-			});
+function fetchAndCache(request) {
+	return fetch(request).then(function (response) {
+		putInCache(request, response.clone(), VERSION);
+		return response;
+	});
+}
+
+function cacheFirst(request) {
+	return caches.match(request).then(function (responseFromCache) {
+		if (responseFromCache) {
+			return responseFromCache;
+		}
+		return fetchAndCache(request)['catch'](function () {
+			return networkErrorResponse.clone();
 		});
+	});
+}
+
+function networkFirst(request) {
+	return fetchAndCache(request)['catch'](function () {
+		return caches.match(request).then(function (responseFromCache) {
+			if (responseFromCache) {
+				return responseFromCache;
+			}
+			return networkErrorResponse.clone();
+		});
+	});
 }
 
 self.addEventListener('install', function (event) {
@@ -66,5 +81,9 @@ self.addEventListener('fetch', function (event) {
 		return;
 	}
 
-	event.respondWith(networkFirst(event.request));
+	if (urlObject.pathname.indexOf('.') === -1) {
+		event.respondWith(networkFirst(event.request));
+	} else {
+		event.respondWith(cacheFirst(event.request));
+	}
 });
