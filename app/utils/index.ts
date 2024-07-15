@@ -4,6 +4,7 @@ export * from './food';
 export * from './sprite';
 
 export * from './checkA11yConfirmKey';
+export * from './domReady';
 export * from './getPageTitle';
 export * from './numberSort';
 export * from './pinyinSort';

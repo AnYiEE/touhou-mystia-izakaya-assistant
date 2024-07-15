@@ -83,6 +83,14 @@ const purple = {
 module.exports = {
 	content: ['./app/**/*.tsx', './node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}'],
 	darkMode: 'class',
+	safelist: [
+		// For compatible with Safari <= 14
+		{
+			// eslint-disable-next-line require-unicode-regexp
+			pattern: /space-(x|y)/,
+			variants: ['md', 'xl'],
+		},
+	],
 	theme: {
 		extend: {}, // cSpell:disable
 		fontFamily: {
