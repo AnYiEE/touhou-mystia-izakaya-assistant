@@ -305,7 +305,7 @@ export default memo(
 			() => (
 				<div className="flex flex-col gap-2">
 					<div className="flex flex-col justify-between gap-x-3 gap-y-2 md:flex-row">
-						<div className="flex flex-1 gap-3">
+						<div className="flex flex-1 items-end gap-3">
 							<Autocomplete
 								allowsCustomValue
 								defaultInputValue={searchValue}

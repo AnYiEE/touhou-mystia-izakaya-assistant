@@ -108,7 +108,7 @@ export default memo(function Navbar() {
 						</p>
 					</Link>
 				</NavbarBrand>
-				<ul className="ml-2 hidden justify-start gap-4 md:flex">
+				<ul className="hidden justify-start gap-4 pl-2 md:flex">
 					{navItems.map(({href, label}) => {
 						const isActivated = href === pathname;
 						return (
