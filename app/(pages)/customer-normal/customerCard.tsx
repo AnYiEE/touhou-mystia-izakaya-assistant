@@ -154,7 +154,9 @@ export default memo(
 									<Tooltip showArrow content={placeContent} offset={-1.5}>
 										<span className="cursor-pointer">
 											<PopoverTrigger>
-												<span tabIndex={0}>{currentCustomerMainPlace}</span>
+												<span role="button" tabIndex={0}>
+													{currentCustomerMainPlace}
+												</span>
 											</PopoverTrigger>
 										</span>
 									</Tooltip>
@@ -187,6 +189,7 @@ export default memo(
 													handleRecipePositiveTagSelected(tag);
 												}
 											}}
+											aria-label={`${tag}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
 											role="button"
 											tabIndex={0}
 											className={clsx(
@@ -237,6 +240,7 @@ export default memo(
 													handleBeverageTagSelected(tag);
 												}
 											}}
+											aria-label={`${tag}${beverageTags.includes(tag) ? '/已满足' : ''}`}
 											role="button"
 											tabIndex={0}
 											className={clsx(

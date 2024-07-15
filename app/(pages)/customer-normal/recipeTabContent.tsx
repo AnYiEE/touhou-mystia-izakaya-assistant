@@ -312,6 +312,7 @@ export default memo(
 											});
 											trackEvent(TrackCategory.Select, 'Recipe', name);
 										}}
+										aria-label="选择此项"
 									>
 										<FontAwesomeIcon icon={faPlus} />
 									</Button>

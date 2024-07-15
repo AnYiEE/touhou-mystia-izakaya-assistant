@@ -251,6 +251,7 @@ export default memo(
 											customerStore.shared.beverage.name.set(name);
 											trackEvent(TrackCategory.Select, 'Beverage', name);
 										}}
+										aria-label="选择此项"
 									>
 										<FontAwesomeIcon icon={faPlus} />
 									</Button>

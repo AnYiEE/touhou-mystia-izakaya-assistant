@@ -79,6 +79,7 @@ export default memo(
 
 		return (
 			<span
+				role="img"
 				title={finalTitle}
 				className={clsx('inline-block', styles[target], className)}
 				style={{...calculatedStyle, ...style}}

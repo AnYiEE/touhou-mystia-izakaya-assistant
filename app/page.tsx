@@ -69,6 +69,7 @@ export default memo(function Home() {
 						isExternal
 						isIconOnly
 						href="https://www.xiaohongshu.com/sns/invitation/group-chat?groupId=136956731996869234&token=xMbzu2IneK_mgPAGyJxxpYKyeP-zm1PsHZlLjIcS1uXycTLrNNVeaQoPbTJuXF0pMpFI1jYfuoDcRJQ1JhHwwPU3mAO9sg7JQchjlQGp6bs"
+						role="link"
 						title="点击加入小红书群"
 						className="h-5"
 					>

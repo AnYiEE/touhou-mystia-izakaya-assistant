@@ -71,6 +71,7 @@ export default memo(
 												title={`选择${name}`}
 											/>
 										}
+										role="button"
 										classNames={{
 											base: clsx(
 												'h-16 w-16 ring-default hover:ring-warning lg:h-20 lg:w-20',

@@ -18,6 +18,7 @@ export default memo(
 			>
 				<div className="mb-3 scale-[175%]">
 					<span
+						role="img"
 						title={title ?? (content as string)}
 						className={clsx(styles['logo'], 'inline-block animate-bounce')}
 					/>

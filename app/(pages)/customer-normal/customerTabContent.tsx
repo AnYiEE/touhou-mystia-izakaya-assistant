@@ -63,6 +63,7 @@ export default memo(
 									icon={
 										<Sprite target="customer_normal" name={name} size={5} title={`选择${name}`} />
 									}
+									role="button"
 									classNames={{
 										base: clsx(
 											'h-20 w-20 scale-90 ring-default hover:ring-warning lg:scale-100',

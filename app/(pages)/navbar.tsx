@@ -39,7 +39,14 @@ const NavbarLink = memo(function NavbarLink({
 	label: children,
 }: Partial<PropsWithChildren<INavbarLinkProps>>) {
 	return (
-		<Button as={Link} size="sm" variant={isActive ? 'faded' : 'light'} href={href} className="text-base">
+		<Button
+			as={Link}
+			size="sm"
+			variant={isActive ? 'faded' : 'light'}
+			href={href}
+			role="link"
+			className="text-base"
+		>
 			{children}
 		</Button>
 	);
@@ -100,8 +107,13 @@ export default memo(function Navbar() {
 		>
 			<NavbarContent justify="start" className="basis-full md:basis-1/5">
 				<NavbarBrand as="li" className="max-w-fit gap-3">
-					<Link color="foreground" href="/" className="flex select-none items-center justify-start gap-1">
-						<span title={shortName} className={clsx(styles['logo'], 'h-10 w-10 rounded-full')} />
+					<Link
+						color="foreground"
+						href="/"
+						aria-label="首页"
+						className="flex select-none items-center justify-start gap-1"
+					>
+						<span role="img" title={shortName} className={clsx(styles['logo'], 'h-10 w-10 rounded-full')} />
 						<p className="font-bold">
 							<span className="hidden lg:inline">{name}</span>
 							<span className="inline lg:hidden">{shortName}</span>

@@ -1,7 +1,7 @@
 import {type PropsWithChildren, memo} from 'react';
 import {execSync} from 'node:child_process';
 
-import {Link, type LinkProps, Tooltip, type TooltipProps} from '@nextui-org/react';
+import {Link, type LinkProps, Tooltip} from '@nextui-org/react';
 
 import {siteConfig} from '@/configs';
 
@@ -13,13 +13,13 @@ const sha = (
 	(isProduction ? execSync('git rev-parse --short HEAD').toString('utf8') : null)
 )?.trim();
 
-interface IFooterLinkProps
-	extends Pick<LinkProps, 'href' | 'isExternal' | 'showAnchorIcon'>,
-		Pick<TooltipProps, 'content'> {}
+interface IFooterLinkProps extends Pick<LinkProps, 'href' | 'isExternal' | 'showAnchorIcon'> {
+	content: string;
+}
 
 const FooterLink = memo(function FooterLink({
 	href = '#',
-	content = '',
+	content,
 	isExternal = true,
 	showAnchorIcon = false,
 	children,
@@ -30,6 +30,7 @@ const FooterLink = memo(function FooterLink({
 				isExternal={isExternal}
 				showAnchorIcon={showAnchorIcon}
 				href={href}
+				aria-label={content}
 				className="text-xs opacity-60 dark:text-warning-400 dark:opacity-40 dark:hover:opacity-60"
 			>
 				{children}

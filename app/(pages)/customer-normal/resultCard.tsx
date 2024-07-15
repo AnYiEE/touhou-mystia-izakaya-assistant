@@ -46,12 +46,13 @@ const UnknownItem = memo(
 
 		return (
 			<span
+				role="img"
+				title={title}
 				className={clsx('outline-3 inline-block text-center outline-double', className)}
 				style={{
 					fontSize: remString,
 					width: remString,
 				}}
-				title={title}
 				ref={ref}
 			>
 				<FontAwesomeIcon icon={faQuestion} className="rotate-12" />

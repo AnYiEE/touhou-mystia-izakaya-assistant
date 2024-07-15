@@ -100,6 +100,7 @@ export default memo(function ThemeSwitcher({isMenu}: Partial<IProps>) {
 										? faMoon
 										: faCircleHalfStroke
 							}
+							aria-label="切换主题"
 							className={clsx(
 								'h-min w-min min-w-min bg-transparent text-medium',
 								isMenu ? '!text-foreground' : '!text-default-500'
@@ -114,7 +115,7 @@ export default memo(function ThemeSwitcher({isMenu}: Partial<IProps>) {
 				selectedKeys={selectedTheme}
 				selectionMode="single"
 				onSelectionChange={onSelectedThemeChange}
-				aria-label="切换主题"
+				aria-label="可选主题列表"
 				className="w-28"
 			>
 				<DropdownItem key={Theme.dark}>{ThemeLabel.dark}</DropdownItem>

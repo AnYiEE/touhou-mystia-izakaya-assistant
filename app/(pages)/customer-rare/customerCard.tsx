@@ -178,7 +178,7 @@ export default memo(
 							>
 								<div className="cursor-pointer">
 									<PopoverTrigger>
-										<div tabIndex={0} className="flex flex-col items-center gap-2">
+										<div role="button" tabIndex={0} className="flex flex-col items-center gap-2">
 											<Avatar
 												isBordered={Boolean(currentRating)}
 												color={
@@ -213,7 +213,9 @@ export default memo(
 									<Tooltip showArrow content={placeContent} offset={-1.5}>
 										<span className="cursor-pointer">
 											<PopoverTrigger>
-												<span tabIndex={0}>{currentCustomerMainPlace}</span>
+												<span role="button" tabIndex={0}>
+													{currentCustomerMainPlace}
+												</span>
 											</PopoverTrigger>
 										</span>
 									</Tooltip>
@@ -264,6 +266,7 @@ export default memo(
 													handleRecipePositiveTagSelected(tag);
 												}
 											}}
+											aria-label={`${tag}${currentCustomerOrder.recipeTag === tag ? '/已选定' : ''}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
 											role="button"
 											tabIndex={0}
 											className={clsx(
@@ -333,6 +336,7 @@ export default memo(
 													handleBeverageTagSelected(tag);
 												}
 											}}
+											aria-label={`${tag}${currentCustomerOrder.beverageTag === tag ? '/已选定' : ''}${beverageTags.includes(tag) ? '/已满足' : ''}`}
 											role="button"
 											tabIndex={0}
 											className={clsx(

@@ -46,12 +46,13 @@ const UnknownItem = memo(
 
 		return (
 			<span
+				role="img"
+				title={title}
 				className={clsx('outline-3 inline-block text-center outline-double', className)}
 				style={{
 					fontSize: remString,
 					width: remString,
 				}}
-				title={title}
 				ref={ref}
 			>
 				<FontAwesomeIcon icon={faQuestion} className="rotate-12" />
@@ -281,7 +282,7 @@ export default memo(
 								size="sm"
 								variant="flat"
 								onPress={handleSaveButtonPress}
-								aria-label={`保存套餐，当前评级为${currentRating}`}
+								aria-label={`保存套餐，当前${currentRating ? `评级为${currentRating}` : '未评级'}`}
 								className="md:w-auto"
 							>
 								保存套餐

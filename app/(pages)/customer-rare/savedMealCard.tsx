@@ -92,6 +92,7 @@ export default memo(
 													</TagGroup>
 												}
 												radius="sm"
+												role="banner"
 												classNames={{
 													base: 'h-[1.25rem] w-44 ring-offset-0',
 												}}
