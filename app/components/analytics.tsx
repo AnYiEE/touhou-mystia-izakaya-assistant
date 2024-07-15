@@ -9,8 +9,7 @@ import {setScriptUrlTag} from '@/utils';
 
 const {domain} = siteConfig;
 
-// cSpell:ignore sukiu
-const trackerBaseUrl = 'https://track.sukiu.net';
+const trackerBaseUrl = 'https://track.izakaya.cc';
 const siteId = 11;
 
 export enum TrackCategory {
@@ -75,7 +74,7 @@ export default memo(function Analytics() {
 			['setSiteId', siteId.toString()]
 		);
 
-		setScriptUrlTag('/api.js', 'async', true)
+		setScriptUrlTag(`${trackerBaseUrl}/api.js`, 'async', true)
 			.then(() => {
 				console.info('Analytics load succeeded.');
 				trackPageView();
