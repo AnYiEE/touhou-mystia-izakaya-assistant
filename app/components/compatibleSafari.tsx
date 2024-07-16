@@ -1,4 +1,6 @@
 import {useEffect} from 'react';
+import {Observable, type Subscription, from, merge} from 'rxjs';
+import {filter, map, mergeMap} from 'rxjs/operators';
 import {UAParser} from 'ua-parser-js';
 
 import {domReady} from '@/utils';
@@ -64,64 +66,87 @@ function replaceGapClasses(element: Element) {
 		return;
 	}
 
-	const gapClasses = [...element.classList].filter(
-		(gapClass) => gapClass.includes('gap-') || gapClass.includes('gap-x-') || gapClass.includes('gap-y-')
-	);
-
-	for (const gapClass of gapClasses) {
-		const newClass = getReplacementClass(element, gapClass);
-		if (newClass) {
-			element.classList.add(...newClass.split(' '));
-			element.classList.remove(gapClass);
-		}
-	}
-}
-
-export default function CompatibleSafari() {
-	useEffect(() => {
-		const {
-			browser: {name, version},
-		} = UAParser();
-
-		const isSafari = name?.toLowerCase().includes('safari');
-		if (!isSafari) {
-			return;
-		}
-
-		const isSupportedFlexGapVersion = version && Number.parseInt(version) > 14;
-		if (isSupportedFlexGapVersion) {
-			return;
-		}
-
-		const observer = new MutationObserver((mutations) => {
-			for (const mutation of mutations) {
-				for (const node of mutation.addedNodes) {
-					if (node.nodeType === 1) {
-						const element = node as Element;
-
-						replaceGapClasses(element);
-
-						// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-						if (element.querySelectorAll) {
-							for (const child of element.querySelectorAll('*')) {
-								replaceGapClasses(child);
-							}
-						}
-					}
-				}
+	[...element.classList]
+		.filter((gapClass) => gapClass.includes('gap-') || gapClass.includes('gap-x-') || gapClass.includes('gap-y-'))
+		.forEach((gapClass) => {
+			const newClass = getReplacementClass(element, gapClass);
+			if (newClass) {
+				element.classList.add(...newClass.split(' '));
+				element.classList.remove(gapClass);
 			}
 		});
+}
 
+function nodeIsElement(node: Node): node is Element {
+	return node instanceof Element;
+}
+
+function getChildElements(element: Element) {
+	return [...element.querySelectorAll('*')].filter(nodeIsElement);
+}
+
+function processAllElements(element: Element) {
+	replaceGapClasses(element);
+	getChildElements(element).forEach(replaceGapClasses);
+}
+
+function initSafariFlexGapFix() {
+	const {
+		browser: {name, version},
+	} = UAParser();
+
+	const isSafari = name?.toLowerCase().includes('safari');
+	if (!isSafari) {
+		return;
+	}
+
+	const isSupportedFlexGapVersion = version && Number.parseInt(version, 10) > 14;
+	if (isSupportedFlexGapVersion) {
+		return;
+	}
+
+	const observer = new MutationObserver((mutations) => {
+		mutations.forEach((mutation) => {
+			[...mutation.addedNodes].filter(nodeIsElement).forEach(processAllElements);
+		});
+	});
+
+	const observer$ = new Observable(() => {
 		observer.observe(document.body, {
 			childList: true,
 			subtree: true,
 		});
 
-		void domReady().then(() => {
-			for (const element of document.body.querySelectorAll('*')) {
-				replaceGapClasses(element);
-			}
-		});
+		return () => {
+			observer.disconnect();
+		};
+	}).pipe(
+		mergeMap(() => from(observer.takeRecords())),
+		mergeMap((mutation) => from(mutation.addedNodes)),
+		filter(nodeIsElement),
+		map(processAllElements)
+	);
+
+	const domReady$ = domReady().pipe(
+		mergeMap(() => from(getChildElements(document.body))),
+		map(replaceGapClasses)
+	);
+
+	let subscription: Subscription | undefined;
+	requestAnimationFrame(() => {
+		subscription = merge(observer$, domReady$).subscribe();
+	});
+
+	return subscription;
+}
+
+export default function CompatibleSafari() {
+	useEffect(() => {
+		const subscription = initSafariFlexGapFix();
+
+		return () => {
+			subscription?.unsubscribe();
+		};
 	}, []);
 
 	return null;
