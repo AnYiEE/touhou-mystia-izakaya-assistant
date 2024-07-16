@@ -112,6 +112,7 @@
 		"preinstall",
 		"Pressable",
 		"proto",
+		"serviceworker",
 		"stylelint",
 		"tailwindcss",
 		"Touhou",

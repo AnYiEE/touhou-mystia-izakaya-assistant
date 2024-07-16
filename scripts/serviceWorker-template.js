@@ -1,79 +1,84 @@
-/* eslint-disable func-names, no-var, prefer-arrow-callback, vars-on-top, unicorn/prefer-includes */
-var VERSION = 'offline/{{version}}';
+// @ts-check
+/* eslint-disable unicorn/prefer-module */
+'use strict';
 
-var networkErrorResponse = new Response('A network error occurred, but no cached resources were found.', {
+const VERSION = 'offline/{{version}}';
+
+const networkErrorResponse = new Response('A network error occurred, but no cached resources were found.', {
 	headers: {
 		'Content-Type': 'text/plain',
 	},
 	status: 418,
 });
 
-function deleteCache(key) {
-	return caches['delete'](key);
+async function deleteCache(/** @type {string} */ key) {
+	await caches.delete(key);
 }
 
-function deleteOldCaches() {
-	return caches.keys().then(function (keyArray) {
-		var cachesToDelete = keyArray.filter(function (key) {
-			return key !== VERSION;
-		});
-		return Promise.all(
-			cachesToDelete.map(function (key) {
-				return deleteCache(key);
-			})
-		);
-	});
+async function deleteOldCaches() {
+	const keyArray = await caches.keys();
+	const cachesToDelete = keyArray.filter((key) => key !== VERSION);
+
+	await Promise.all(cachesToDelete.map(deleteCache));
 }
 
-function putInCache(request, response, version) {
-	return caches.open(version).then(function (cache) {
-		return cache.put(request, response);
-	});
+async function putInCache(
+	/** @type {Request} */ request,
+	/** @type {Response} */ response,
+	/** @type {string} */ version
+) {
+	const cache = await caches.open(version);
+
+	await cache.put(request, response);
 }
 
-function fetchAndCache(request) {
-	return fetch(request).then(function (response) {
-		putInCache(request, response.clone(), VERSION);
-		return response;
-	});
+async function fetchAndCache(/** @type {Request} */ request) {
+	const response = await fetch(request);
+
+	void putInCache(request, response.clone(), VERSION);
+
+	return response;
 }
 
-function cacheFirst(request) {
-	return caches.match(request).then(function (responseFromCache) {
+async function cacheFirst(/** @type {Request} */ request) {
+	const responseFromCache = await caches.match(request);
+	if (responseFromCache) {
+		return responseFromCache;
+	}
+
+	try {
+		return await fetchAndCache(request);
+	} catch {
+		return networkErrorResponse.clone();
+	}
+}
+
+async function networkFirst(/** @type {Request} */ request) {
+	try {
+		return await fetchAndCache(request);
+	} catch {
+		const responseFromCache = await caches.match(request);
 		if (responseFromCache) {
 			return responseFromCache;
 		}
-		return fetchAndCache(request)['catch'](function () {
-			return networkErrorResponse.clone();
-		});
-	});
+		return networkErrorResponse.clone();
+	}
 }
 
-function networkFirst(request) {
-	return fetchAndCache(request)['catch'](function () {
-		return caches.match(request).then(function (responseFromCache) {
-			if (responseFromCache) {
-				return responseFromCache;
-			}
-			return networkErrorResponse.clone();
-		});
-	});
-}
-
-self.addEventListener('install', function (event) {
+self.addEventListener('install', (/** @type {ExtendableEvent} */ event) => {
 	event.waitUntil(self.skipWaiting());
 });
 
-self.addEventListener('activate', function (event) {
+self.addEventListener('activate', (/** @type {ExtendableEvent} */ event) => {
 	event.waitUntil(Promise.all([self.clients.claim(), deleteOldCaches()]));
 });
 
-self.addEventListener('fetch', function (event) {
+self.addEventListener('fetch', (/** @type {FetchEvent} */ event) => {
 	if (event.request.headers.has('range') || event.request.method !== 'GET') {
 		return;
 	}
 
-	var urlObject = new URL(event.request.url, location.origin);
+	const urlObject = new URL(event.request.url, location.origin);
 	if (urlObject.host !== location.host || urlObject.protocol !== 'https:') {
 		return;
 	}
@@ -81,9 +86,9 @@ self.addEventListener('fetch', function (event) {
 		return;
 	}
 
-	if (urlObject.pathname.indexOf('.') === -1) {
-		event.respondWith(networkFirst(event.request));
-	} else {
+	if (urlObject.pathname.includes('.')) {
 		event.respondWith(cacheFirst(event.request));
+	} else {
+		event.respondWith(networkFirst(event.request));
 	}
 });
