@@ -117,9 +117,7 @@ function initSafariFlexGapFix() {
 			subtree: true,
 		});
 
-		return () => {
-			observer.disconnect();
-		};
+		return observer.disconnect.bind(observer);
 	}).pipe(
 		mergeMap(() => from(observer.takeRecords())),
 		mergeMap((mutation) => from(mutation.addedNodes)),
@@ -144,9 +142,7 @@ export default function CompatibleSafari() {
 	useEffect(() => {
 		const subscription = initSafariFlexGapFix();
 
-		return () => {
-			subscription?.unsubscribe();
-		};
+		return subscription?.unsubscribe.bind(subscription);
 	}, []);
 
 	return null;

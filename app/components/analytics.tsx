@@ -90,9 +90,7 @@ export default memo(function Analytics() {
 				}
 			});
 
-		return () => {
-			subscription.unsubscribe();
-		};
+		return subscription.unsubscribe.bind(subscription);
 	}, []);
 
 	useEffect(() => {

@@ -30,8 +30,6 @@ export function setScriptUrlTag(url: string, method?: 'async' | 'defer', crossOr
 
 		document.head.append(scriptElement);
 
-		return () => {
-			scriptElement.remove();
-		};
+		return scriptElement.remove.bind(scriptElement);
 	});
 }
