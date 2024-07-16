@@ -9,7 +9,7 @@ import Sprite from '@/components/sprite';
 
 import type {IIngredientsTabStyle} from './types';
 import {type TIngredientNames} from '@/data';
-import type {TIngredientTag, TRecipeTag} from '@/data/types';
+import type {TRecipeTag} from '@/data/types';
 import type {TIngredientInstance} from '@/methods/food/types';
 import {useCustomerNormalStore, useGlobalStore} from '@/stores';
 
@@ -38,15 +38,15 @@ export default memo(
 			[currentRecipeData, instance_recipe]
 		);
 
-		const darkIngredients = useMemo(() => {
-			const _darkIngredients = new Set<TIngredientNames>();
-			for (const {name, tags} of sortedData) {
-				if (intersection(tags, currentRecipe?.negativeTags ?? []).length > 0) {
-					_darkIngredients.add(name);
-				}
-			}
-			return _darkIngredients;
-		}, [currentRecipe?.negativeTags, sortedData]);
+		const darkIngredients = useMemo(
+			() =>
+				new Set(
+					sortedData
+						.filter(({tags}) => intersection(tags, currentRecipe?.negativeTags ?? []).length > 0)
+						.map(({name}) => name)
+				),
+			[currentRecipe?.negativeTags, sortedData]
+		);
 
 		sortedData = useMemo(
 			() => sortedData.filter(({name}) => !darkIngredients.has(name)),
@@ -102,10 +102,9 @@ export default memo(
 									</div>
 								);
 							}
-							const extraTags: TIngredientTag[] = [];
-							for (const extraIngredient of extraIngredients) {
-								extraTags.push(...instance_ingredient.getPropsByName(extraIngredient, 'tags'));
-							}
+							const extraTags = extraIngredients.flatMap((extraIngredient) =>
+								instance_ingredient.getPropsByName(extraIngredient, 'tags')
+							);
 							const extraTagsWithPopular = instance_ingredient.calculateTagsWithPopular(
 								extraTags,
 								currentCustomerPopular

@@ -46,9 +46,9 @@ export default memo(
 		);
 
 		const handleResetFilters = useCallback(() => {
-			for (const {setSelectedKeys} of selectConfig) {
+			selectConfig.forEach(({setSelectedKeys}) => {
 				setSelectedKeys([]);
-			}
+			});
 		}, [selectConfig]);
 
 		return (

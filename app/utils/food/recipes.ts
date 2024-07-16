@@ -21,14 +21,14 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 	constructor(data: TProcessPositiveTags<TRecipes[number]>[]) {
 		const clonedData = cloneDeep(data);
 
-		for (const recipe of clonedData) {
+		clonedData.forEach((recipe) => {
 			const {positiveTags, price} = recipe;
 			if (price > 60) {
 				positiveTags.push('昂贵');
 			} else if (price < 20) {
 				positiveTags.push('实惠');
 			}
-		}
+		});
 
 		super(clonedData);
 
@@ -64,11 +64,11 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 			resultTags.add('大份');
 		}
 
-		for (const [targetTag, coveredTag] of Object.entries(Recipe.tagCoverMap)) {
-			if (resultTags.has(targetTag as TRecipeTag)) {
+		Object.entries(Recipe.tagCoverMap)
+			.filter(([targetTag]) => resultTags.has(targetTag as TRecipeTag))
+			.forEach(([, coveredTag]) => {
 				resultTags.delete(coveredTag);
-			}
-		}
+			});
 
 		return [...resultTags];
 	}
@@ -95,14 +95,14 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 	) {
 		let score = 0;
 
-		for (const tag of recipePositiveTags) {
+		recipePositiveTags.forEach((tag) => {
 			if (customerPositiveTags.includes(tag)) {
 				score += 1;
 			}
 			if (customerNegativeTags.includes(tag)) {
 				score -= 1;
 			}
-		}
+		});
 
 		return score;
 	}

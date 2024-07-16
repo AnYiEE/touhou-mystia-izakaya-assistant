@@ -64,10 +64,10 @@ export default memo(function ThemeSwitcher({isMenu}: Partial<IProps>) {
 
 	useEffect(() => {
 		if (theme !== Theme.system) {
-			for (const metaTag of document.querySelectorAll('meta[name="theme-color"]')) {
+			document.querySelectorAll('meta[name="theme-color"]').forEach((metaTag) => {
 				metaTag.removeAttribute('media');
 				metaTag.setAttribute('content', theme === Theme.light ? '#fef7e4' : '#000');
-			}
+			});
 		}
 	}, [pathname, theme]);
 

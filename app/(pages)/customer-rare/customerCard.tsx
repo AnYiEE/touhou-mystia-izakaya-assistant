@@ -16,7 +16,7 @@ import Sprite from '@/components/sprite';
 
 import {customerRatingColorMap, customerTagStyleMap} from './constants';
 import {type TTags} from '@/data';
-import type {TBeverageTag, TIngredientTag, TRecipeTag} from '@/data/types';
+import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
 import {checkA11yConfirmKey, pinyinSort} from '@/utils';
 
@@ -50,8 +50,8 @@ export default memo(
 						currentCustomerOrder.recipeTag ||
 						currentBeverageName ||
 						currentRecipe ||
-						(typeof selectedCustomerBeverageTags !== 'string' && selectedCustomerBeverageTags.size > 0) ||
-						(typeof selectedCustomerPositiveTags !== 'string' && selectedCustomerPositiveTags.size > 0)
+						(selectedCustomerBeverageTags instanceof Set && selectedCustomerBeverageTags.size > 0) ||
+						(selectedCustomerPositiveTags instanceof Set && selectedCustomerPositiveTags.size > 0)
 				),
 			[
 				currentBeverageName,
@@ -142,10 +142,9 @@ export default memo(
 			const recipe = instance_recipe.getPropsByName(currentRecipeName);
 			const {ingredients: originalIngredients, positiveTags: originalTags} = recipe;
 
-			const extraTags: TIngredientTag[] = [];
-			for (const extraIngredient of extraIngredients) {
-				extraTags.push(...instance_ingredient.getPropsByName(extraIngredient, 'tags'));
-			}
+			const extraTags = extraIngredients.flatMap((extraIngredient) =>
+				instance_ingredient.getPropsByName(extraIngredient, 'tags')
+			);
 
 			const composedRecipeTags = instance_recipe.composeTags(
 				originalIngredients,

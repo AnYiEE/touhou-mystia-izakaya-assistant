@@ -1,4 +1,5 @@
 import {Fragment, memo} from 'react';
+import {isObject, isString} from 'lodash';
 
 import {useOpenedFoodPopover} from '@/hooks';
 
@@ -61,7 +62,7 @@ export default memo(function Content({data}: IProps) {
 							>
 								<p>
 									<span className="font-semibold">菜谱来源：</span>
-									{typeof from === 'string'
+									{isString(from)
 										? from
 										: Object.entries(from as Exclude<IRecipe['from'], string>).map(
 												([method, target], index) => (
@@ -70,7 +71,7 @@ export default memo(function Content({data}: IProps) {
 															? '初始拥有'
 															: method === 'levelup'
 																? '升级'
-																: typeof target === 'object' && (
+																: isObject(target) && (
 																		<>
 																			<span className="pr-1">{target.name}</span>
 																			Lv.{target.level - 1}
