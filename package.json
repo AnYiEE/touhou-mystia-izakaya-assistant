@@ -86,6 +86,7 @@
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"reset-css": "^5.0.2",
+		"rxjs": "^7.8.1",
 		"ua-parser-js": "^1.0.38",
 		"use-long-press": "^3.2.0",
 		"zustand": "^4.5.4"
