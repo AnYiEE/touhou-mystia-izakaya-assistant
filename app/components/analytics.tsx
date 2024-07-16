@@ -1,6 +1,8 @@
 'use client';
 
 import {memo, useEffect, useRef} from 'react';
+import {of} from 'rxjs';
+import {catchError} from 'rxjs/operators';
 
 import {usePathname} from 'next/navigation';
 
@@ -74,14 +76,23 @@ export default memo(function Analytics() {
 			['setSiteId', siteId.toString()]
 		);
 
-		setScriptUrlTag(`${trackerBaseUrl}/api.js`, 'async', true)
-			.then(() => {
-				console.info('Analytics load succeeded.');
-				trackPageView();
-			})
-			.catch(() => {
-				console.info('Analytics load failed.');
+		const subscription = setScriptUrlTag(`${trackerBaseUrl}/api.js`, 'async', true)
+			.pipe(
+				catchError((error) => {
+					console.info('Analytics load failed.', error);
+					return of(false);
+				})
+			)
+			.subscribe((isSuccess) => {
+				if (isSuccess) {
+					console.info('Analytics load succeeded.');
+					trackPageView();
+				}
 			});
+
+		return () => {
+			subscription.unsubscribe();
+		};
 	}, []);
 
 	useEffect(() => {

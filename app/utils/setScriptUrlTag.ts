@@ -1,8 +1,10 @@
-/* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
+import {Observable} from 'rxjs';
+
 export function setScriptUrlTag(url: string, method?: 'async' | 'defer', crossOrigin?: boolean) {
-	return new Promise<boolean>((resolve, reject) => {
+	return new Observable<boolean>((subscriber) => {
 		if (!url) {
-			reject(false);
+			subscriber.error(false);
+			return;
 		}
 
 		const scriptElement = document.createElement('script');
@@ -19,12 +21,17 @@ export function setScriptUrlTag(url: string, method?: 'async' | 'defer', crossOr
 		}
 
 		scriptElement.addEventListener('load', () => {
-			resolve(true);
+			subscriber.next(true);
+			subscriber.complete();
 		});
 		scriptElement.addEventListener('error', () => {
-			reject(false);
+			subscriber.error(false);
 		});
 
 		document.head.append(scriptElement);
+
+		return () => {
+			scriptElement.remove();
+		};
 	});
 }
