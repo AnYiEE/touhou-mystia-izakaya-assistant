@@ -1,5 +1,10 @@
+// @ts-check
 /* eslint-disable sort-keys, @typescript-eslint/no-var-requires, unicorn/prefer-module */
+'use strict';
+
 const {nextui} = require('@nextui-org/react');
+
+const isProduction = process.env.NODE_ENV === 'production';
 
 const black = {
 	50: '#f3f3ec',
@@ -83,14 +88,16 @@ const purple = {
 module.exports = {
 	content: ['./app/**/*.tsx', './node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}'],
 	darkMode: 'class',
-	safelist: [
-		// For compatible with Safari <= 14
-		{
-			// eslint-disable-next-line require-unicode-regexp
-			pattern: /space-(x|y)/,
-			variants: ['md', 'xl'],
-		},
-	],
+	safelist: isProduction
+		? [
+				// For compatible with Safari <= 14
+				{
+					// eslint-disable-next-line require-unicode-regexp
+					pattern: /space-(x|y)/,
+					variants: ['md', 'xl'],
+				},
+			]
+		: undefined,
 	theme: {
 		extend: {}, // cSpell:disable
 		fontFamily: {
