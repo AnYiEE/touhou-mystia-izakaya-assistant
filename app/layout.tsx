@@ -22,7 +22,7 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 
 fontawesomeConfig.autoAddCss = false;
 
-const {author, description, keywords, locale, name, shortName, isVercel, nodeEnv} = siteConfig;
+const {author, description, keywords, locale, name, shortName, isHosted, isVercel, nodeEnv} = siteConfig;
 
 export const metadata: Metadata = {
 	title: {
@@ -84,7 +84,8 @@ export default function RootLayout({
 							<Footer />
 						</div>
 					</Providers>
-					{isVercel && (
+					{isProduction && isHosted && !isVercel && <Analytics />}
+					{isProduction && isVercel && (
 						<>
 							<Analytics />
 							<SpeedInsights />
