@@ -58,6 +58,7 @@ export default memo(function ChangeLog() {
 			<ul className="list-inside list-decimal space-y-2">
 				<li>新增：首次进入稀客套餐搭配页面时，展示使用教程。</li>
 				<li>新增：主题切换器支持选择“跟随系统”。</li>
+				<li>改善：与iOS 15以下版本系统上的浏览器和macOS系统上的15以下版本Safari的兼容性。</li>
 				<li>修复：作为渐进式网络应用程序安装后，导航栏的部分按钮被窗口控件遮挡。</li>
 			</ul>
 		</>

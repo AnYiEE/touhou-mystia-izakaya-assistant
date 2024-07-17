@@ -1,5 +1,7 @@
-import {type HTMLAttributes, forwardRef, memo, useMemo} from 'react';
+import {type HTMLAttributes, forwardRef, memo, useEffect, useMemo, useState} from 'react';
 import clsx from 'clsx/lite';
+
+import {checkModernSafari} from '@/components/compatibleSafari';
 
 import {type TItemNames} from '@/data';
 import {spriteInstances} from '@/methods';
@@ -25,6 +27,12 @@ export default memo(
 		{target, index, name, size, height, width, className, style, title, ...props},
 		ref
 	) {
+		const [isModernSafari, setIsModernSafari] = useState(true);
+
+		useEffect(() => {
+			setIsModernSafari(checkModernSafari());
+		}, []);
+
 		const instance: TSpriteInstances = useMemo(() => spriteInstances[target], [target]);
 
 		const {calculatedIndex, calculatedName} = useMemo(() => {
@@ -81,7 +89,11 @@ export default memo(
 			<span
 				role="img"
 				title={finalTitle}
-				className={clsx('inline-block', styles[target], className)}
+				className={clsx(
+					'inline-block',
+					styles[isModernSafari ? target : (`png-${target}` as const)],
+					className
+				)}
 				style={{...calculatedStyle, ...style}}
 				{...props}
 				ref={ref}

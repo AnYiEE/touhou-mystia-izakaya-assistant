@@ -5,6 +5,27 @@ import {UAParser} from 'ua-parser-js';
 
 import {domReady} from '@/utils';
 
+export function checkModernSafari() {
+	const {
+		browser: {name: browserName, version: browserVersion},
+		os: {name: osName, version: osVersion},
+	} = UAParser();
+
+	const isSafariOrIOS = browserName?.toLowerCase().includes('safari') ?? osName?.toLowerCase().includes('ios');
+	if (!isSafariOrIOS) {
+		return true;
+	}
+
+	const isSupportedFlexGapAndWebpVersion =
+		(browserVersion && Number.parseInt(browserVersion, 10) > 14) ||
+		(osVersion && Number.parseInt(osVersion, 10) > 14);
+	if (isSupportedFlexGapAndWebpVersion) {
+		return true;
+	}
+
+	return false;
+}
+
 function getReplacementClass(element: Element, gapClass: string) {
 	if (gapClass.includes('gap-x-')) {
 		return gapClass.replace('gap-x-', 'space-x-');
@@ -91,20 +112,6 @@ function processAllElements(element: Element) {
 }
 
 function initSafariFlexGapFix() {
-	const {
-		browser: {name, version},
-	} = UAParser();
-
-	const isSafari = name?.toLowerCase().includes('safari');
-	if (!isSafari) {
-		return;
-	}
-
-	const isSupportedFlexGapVersion = version && Number.parseInt(version, 10) > 14;
-	if (isSupportedFlexGapVersion) {
-		return;
-	}
-
 	const observer = new MutationObserver((mutations) => {
 		mutations.forEach((mutation) => {
 			[...mutation.addedNodes].filter(nodeIsElement).forEach(processAllElements);
@@ -140,6 +147,10 @@ function initSafariFlexGapFix() {
 
 export default function CompatibleSafari() {
 	useEffect(() => {
+		if (checkModernSafari()) {
+			return;
+		}
+
 		const subscription = initSafariFlexGapFix();
 
 		return subscription?.unsubscribe.bind(subscription);
