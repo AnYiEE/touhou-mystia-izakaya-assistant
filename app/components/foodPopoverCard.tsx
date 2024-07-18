@@ -83,7 +83,7 @@ const ShareButton: FC<IShareButtonProps> = memo(
 
 			newParams.set(param, name);
 
-			return `${window.location.origin}${window.location.pathname}?${decodeURIComponent(newParams.toString())}`;
+			return `${window.location.origin}${window.location.pathname}?${newParams.toString()}`;
 		}, [name, param, params]);
 
 		return (
@@ -109,6 +109,9 @@ const ShareButton: FC<IShareButtonProps> = memo(
 							disableTooltip
 							size="sm"
 							symbol={<FontAwesomeIcon icon={faLink} className="mr-1 !align-middle text-default-500" />}
+							classNames={{
+								pre: 'flex max-w-[60vw] items-center whitespace-normal break-all',
+							}}
 						>
 							{generateUrl}
 						</Snippet>
