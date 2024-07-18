@@ -19,15 +19,15 @@ import {
 import H1 from './h1';
 
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
-import {checkA11yConfirmKey} from '@/utils';
+import {checkA11yConfirmKey, toggleBoolean} from '@/utils';
 
 export default memo(function DataManager() {
 	const [value, setValue] = useState('');
 	const throttledValue = useThrottle(value);
 
 	const [isSaveButtonDisabled, setIsSaveButtonDisabled] = useState(true);
-	const [isSavePopoverOpened, toggleSavePopoverOpened] = useReducer((current) => !current, false);
-	const [isResetPopoverOpened, toggleResetPopoverOpened] = useReducer((current) => !current, false);
+	const [isSavePopoverOpened, toggleSavePopoverOpened] = useReducer(toggleBoolean, false);
+	const [isResetPopoverOpened, toggleResetPopoverOpened] = useReducer(toggleBoolean, false);
 
 	const customerStore = useCustomerRareStore();
 	const globalStore = useGlobalStore();

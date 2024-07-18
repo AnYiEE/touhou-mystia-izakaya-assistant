@@ -12,3 +12,4 @@ export * from './pxToRem';
 export * from './remToPx';
 export * from './removeLastElement';
 export * from './setScriptUrlTag';
+export * from './toggleBoolean';

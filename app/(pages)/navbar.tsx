@@ -23,6 +23,7 @@ import FontAwesomeIconLink from '@/components/fontAwesomeIconLink';
 import ThemeSwitcher from '@/components/themeSwitcher';
 
 import {siteConfig} from '@/configs';
+import {toggleBoolean} from '@/utils';
 
 import styles from './navbar.module.scss';
 
@@ -93,7 +94,7 @@ const GithubLink = memo(function GithubLink({showTooltip}: Partial<IGithubLinkPr
 
 export default memo(function Navbar() {
 	const pathname = usePathname();
-	const [isMenuOpened, setMenuOpened] = useReducer((current) => !current, false);
+	const [isMenuOpened, setMenuOpened] = useReducer(toggleBoolean, false);
 
 	return (
 		<NextUINavbar
