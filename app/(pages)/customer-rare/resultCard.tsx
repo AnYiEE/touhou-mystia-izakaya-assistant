@@ -160,7 +160,7 @@ export default memo(
 			!(currentOrder.recipeTag || hasMystiaCooker);
 
 		const handleSaveButtonPress = useCallback(() => {
-			if (!currentCustomerName || !currentBeverageName || !currentRecipe) {
+			if (!currentCustomerName || !currentBeverageName || !currentRecipe || currentRating === null) {
 				return;
 			}
 
@@ -174,8 +174,8 @@ export default memo(
 				popular: currentCustomerPopular,
 				price:
 					instance_beverage.getPropsByName(currentBeverageName).price +
-					instance_recipe.getPropsByName(currentRecipeName).price, // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				rating: currentRating!,
+					instance_recipe.getPropsByName(currentRecipeName).price,
+				rating: currentRating,
 				recipe: currentRecipeName,
 			} as const;
 

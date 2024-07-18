@@ -52,8 +52,7 @@ export class Item<
 
 	public findIndexByName<T extends string = TName>(name: T) {
 		if (Item.nameIndexCache.has(name)) {
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			return Item.nameIndexCache.get(name)!;
+			return Item.nameIndexCache.get(name);
 		}
 
 		const index = this._data.findIndex(({name: target}) => target === name);
