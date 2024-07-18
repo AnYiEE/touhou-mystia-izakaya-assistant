@@ -13,6 +13,7 @@ export interface ISiteConfig {
 	};
 	description: string;
 	keywords: string[];
+	/** @see {@link https://nextui.org/docs/api-references/nextui-provider} */
 	locale: string;
 	version: string;
 	navItems: THref[];

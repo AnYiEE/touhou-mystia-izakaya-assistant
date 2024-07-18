@@ -43,7 +43,7 @@ export const siteConfig = {
 	},
 	description: PACKAGE.description,
 	keywords: PACKAGE.keywords,
-	locale: 'zh-Hans-CN',
+	locale: 'zh-CN',
 	version: PACKAGE.version,
 	navItems: [...navItems],
 	navMenuItems: [...navItems],
