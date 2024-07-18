@@ -7,6 +7,7 @@ import {Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/reac
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import FoodCard from '@/components/foodCard';
 import FoodPopoverCard from '@/components/foodPopoverCard';
+import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 
 import {BEVERAGE_TAG_STYLE} from '@/constants';
@@ -35,7 +36,7 @@ export default memo(function Content({data}: IProps) {
 							isHoverable
 							isPressable
 							name={name}
-							description={`￥${price}`}
+							description={<Price>{price}</Price>}
 							image={<Sprite target="beverage" name={name} size={3} />}
 							onPress={() => {
 								trackEvent(TrackCategory.Click, 'Beverage Card', name);

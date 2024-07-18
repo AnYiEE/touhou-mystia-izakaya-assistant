@@ -31,6 +31,7 @@ import {faChevronDown, faMagnifyingGlass, faPlus, faTags} from '@fortawesome/fre
 import TagGroup from './tagGroup';
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
+import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 
@@ -293,7 +294,11 @@ export default memo(
 							</div>
 						);
 					case 'price':
-						return <div className="flex">￥{price}</div>;
+						return (
+							<div className="flex">
+								<Price>{price}</Price>
+							</div>
+						);
 					case 'suitability':
 						return <div className="flex">{suitability}</div>;
 					case 'action':

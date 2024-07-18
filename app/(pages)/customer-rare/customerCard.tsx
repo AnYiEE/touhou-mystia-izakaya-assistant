@@ -11,6 +11,7 @@ import SettingsButton from './settingsButton';
 import TagGroup from './tagGroup';
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
+import Price from '@/components/price';
 import Tags from '@/components/tags';
 import Sprite from '@/components/sprite';
 
@@ -224,7 +225,9 @@ export default memo(
 									<PopoverContent>{placeContent}</PopoverContent>
 								</Popover>
 							</p>
-							<p className="text-justify">持有金：￥{currentCustomerPrice}</p>
+							<p className="text-justify">
+								持有金：<Price>{currentCustomerPrice}</Price>
+							</p>
 						</div>
 					</div>
 					<Divider className="md:hidden" />

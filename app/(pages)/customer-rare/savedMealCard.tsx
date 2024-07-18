@@ -5,6 +5,7 @@ import {Avatar, Button, Card, Divider, Tooltip} from '@nextui-org/react';
 
 import {Plus} from './resultCard';
 import TagGroup from './tagGroup';
+import Price from '@/components/price';
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
@@ -74,7 +75,10 @@ export default memo(
 												fallback={
 													<TagGroup className="h-4 flex-nowrap text-nowrap break-keep">
 														{price !== 0 && (
-															<Tags.Tag tag={`￥${price}` as never} tagStyle={{}} />
+															<Tags.Tag
+																tag={(<Price>{price}</Price>) as never}
+																tagStyle={{}}
+															/>
 														)}
 														{order.recipeTag && (
 															<Tags.Tag

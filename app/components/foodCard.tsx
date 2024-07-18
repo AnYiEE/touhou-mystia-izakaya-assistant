@@ -6,7 +6,7 @@ import {type TFoodNames} from '@/data';
 
 interface IProps extends Omit<CardProps, 'className'> {
 	name: TFoodNames;
-	description: string;
+	description: ReactNodeWithoutBoolean;
 	image: ReactNodeWithoutBoolean;
 }
 
