@@ -3,12 +3,13 @@ import {memo} from 'react';
 import {Link} from '@nextui-org/react';
 
 import H1 from './h1';
+import Ul from './ul';
 
 export default memo(function KnownIssue() {
 	return (
 		<>
 			<H1>已知问题</H1>
-			<ul className="list-inside list-decimal space-y-2">
+			<Ul>
 				<li>
 					表格无法排序多个列：见
 					<Link isExternal showAnchorIcon href="https://github.com/nextui-org/nextui/issues/2282">
@@ -23,7 +24,7 @@ export default memo(function KnownIssue() {
 					</Link>
 					尚未提供相关设置项。
 				</li>
-			</ul>
+			</Ul>
 		</>
 	);
 });
