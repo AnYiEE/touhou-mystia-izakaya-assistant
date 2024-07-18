@@ -1,6 +1,6 @@
 'use client';
 
-import {type ReactNode} from 'react';
+import {type PropsWithChildren} from 'react';
 import {useRouter} from 'next/navigation';
 
 import {NextUIProvider} from '@nextui-org/react';
@@ -19,13 +19,12 @@ import {
 	RecipesStoreProvider,
 } from '@/stores';
 
-interface IProvidersProps {
-	children: ReactNode;
+interface IProps {
 	locale: string;
-	themeProps?: Omit<ThemeProviderProps, 'children'> & {children?: ReactNode};
+	themeProps?: PropsWithChildren<Omit<ThemeProviderProps, 'children'>>;
 }
 
-export default function Providers({children, locale, themeProps}: IProvidersProps) {
+export default function Providers({children, locale, themeProps}: PropsWithChildren<IProps>) {
 	const router = useRouter();
 
 	return (
