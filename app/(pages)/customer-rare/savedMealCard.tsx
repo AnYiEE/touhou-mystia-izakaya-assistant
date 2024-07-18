@@ -72,7 +72,7 @@ export default memo(
 												showFallback
 												color={customerRatingColorMap[rating]}
 												fallback={
-													<TagGroup className="flex-nowrap text-nowrap break-keep">
+													<TagGroup className="h-4 flex-nowrap text-nowrap break-keep">
 														{price !== 0 && (
 															<Tags.Tag tag={`￥${price}` as never} tagStyle={{}} />
 														)}
@@ -93,7 +93,7 @@ export default memo(
 												radius="sm"
 												role="banner"
 												classNames={{
-													base: 'h-[1.25rem] w-44 ring-offset-0',
+													base: 'h-5 w-44 ring-offset-0',
 												}}
 											/>
 										</Tooltip>

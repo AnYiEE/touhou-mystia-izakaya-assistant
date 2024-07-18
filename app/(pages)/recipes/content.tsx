@@ -75,7 +75,7 @@ export default memo(function Content({data}: IProps) {
 																		<>
 																			<span className="pr-1">{target.name}</span>
 																			Lv.{target.level - 1}
-																			<span className="px-1">→</span>Lv.
+																			<span className="px-0.5">→</span>Lv.
 																			{target.level}
 																		</>
 																	)}
@@ -85,7 +85,7 @@ export default memo(function Content({data}: IProps) {
 								</p>
 								<p>
 									<span className="font-semibold">烹饪时间：</span>
-									{min}秒<span className="px-1">-</span>
+									{min}秒<span className="px-0.5">-</span>
 									{max}秒
 								</p>
 							</FoodPopoverCard>
