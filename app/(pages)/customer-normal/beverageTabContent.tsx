@@ -1,5 +1,5 @@
 import {type Key, forwardRef, memo, useCallback, useMemo} from 'react';
-import clsx from 'clsx/lite';
+import {twJoin} from 'tailwind-merge';
 import {cloneDeep} from 'lodash';
 
 import {
@@ -194,7 +194,7 @@ export default memo(
 								key={tag}
 								tag={tag}
 								tagStyle={matchedTags.includes(tag) ? beverageTagStyle : {}}
-								className={clsx(!matchedTags.includes(tag) && 'opacity-50')}
+								className={twJoin(!matchedTags.includes(tag) && 'opacity-50')}
 							/>
 						))}
 					</TagGroup>

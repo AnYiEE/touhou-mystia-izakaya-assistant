@@ -1,5 +1,5 @@
 import {type PropsWithChildren, forwardRef, memo} from 'react';
-import clsx from 'clsx/lite';
+import {twJoin} from 'tailwind-merge';
 
 interface IProps {
 	isFirst?: boolean;
@@ -8,7 +8,7 @@ interface IProps {
 export default memo(
 	forwardRef<HTMLHeadingElement | null, PropsWithChildren<IProps>>(function H1({isFirst, children}, ref) {
 		return (
-			<h2 className={clsx('mb-3 text-xl font-semibold', !isFirst && 'mt-6')} ref={ref}>
+			<h2 className={twJoin('mb-3 text-xl font-semibold', !isFirst && 'mt-6')} ref={ref}>
 				{children}
 			</h2>
 		);

@@ -1,5 +1,5 @@
 import {type HTMLAttributes, forwardRef, memo, useEffect, useMemo, useState} from 'react';
-import clsx from 'clsx/lite';
+import {twMerge} from 'tailwind-merge';
 
 import {checkModernSafari} from '@/components/compatibleSafari';
 
@@ -89,7 +89,7 @@ export default memo(
 			<span
 				role="img"
 				title={finalTitle}
-				className={clsx(
+				className={twMerge(
 					'inline-block',
 					styles[isModernSafari ? target : (`png-${target}` as const)],
 					className

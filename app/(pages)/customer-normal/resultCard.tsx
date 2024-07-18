@@ -1,5 +1,5 @@
 import {type HTMLAttributes, forwardRef, memo, useCallback, useMemo} from 'react';
-import clsx from 'clsx/lite';
+import {twMerge} from 'tailwind-merge';
 
 import {Button, Card, Tooltip} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -23,7 +23,7 @@ export const Plus = memo(
 
 		return (
 			<span
-				className={clsx('mx-1 text-center', className)}
+				className={twMerge('mx-1 text-center', className)}
 				style={{
 					fontSize: remString,
 					width: remString,
@@ -48,7 +48,7 @@ const UnknownItem = memo(
 			<span
 				role="img"
 				title={title}
-				className={clsx('outline-3 inline-block text-center outline-double', className)}
+				className={twMerge('outline-3 inline-block text-center outline-double', className)}
 				style={{
 					fontSize: remString,
 					width: remString,

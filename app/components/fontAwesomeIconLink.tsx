@@ -1,5 +1,5 @@
 import {forwardRef, memo} from 'react';
-import clsx from 'clsx/lite';
+import {twMerge} from 'tailwind-merge';
 
 import {Link, type LinkProps} from '@nextui-org/react';
 import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
@@ -12,7 +12,7 @@ export default memo(
 		ref
 	) {
 		return (
-			<Link className={clsx('text-default-500', className)} {...props} ref={ref}>
+			<Link className={twMerge('text-default-500', className)} {...props} ref={ref}>
 				<FontAwesomeIcon icon={icon} size={size} />
 			</Link>
 		);

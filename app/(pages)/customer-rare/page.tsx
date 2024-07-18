@@ -1,7 +1,7 @@
 'use client';
 
 import {memo, useCallback, useEffect, useMemo} from 'react';
-import clsx from 'clsx/lite';
+import {twMerge} from 'tailwind-merge';
 
 import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
 
@@ -335,7 +335,7 @@ export default memo(function CustomerRare() {
 	return (
 		<div className="grid h-full grid-cols-1 justify-items-center gap-4 md:flex md:flex-col-reverse md:justify-end xl:grid xl:grid-cols-2">
 			<SideButtonGroup
-				className={clsx(
+				className={twMerge(
 					'md:!bottom-6 xl:!bottom-[calc(50%-3.75rem-env(titlebar-area-height,0rem)/2)] xl:left-6',
 					customerTabStyle.sideButtonGroupClassName,
 					!isCustomerTabFilterVisible && '!hidden'
@@ -347,7 +347,7 @@ export default memo(function CustomerRare() {
 			</SideButtonGroup>
 
 			<SideButtonGroup
-				className={clsx(
+				className={twMerge(
 					'md:!bottom-6 xl:!bottom-[calc(50%-2.25rem-env(titlebar-area-height,0rem)/2)] xl:left-6',
 					ingredientTabStyle.sideButtonGroupClassName,
 					!isIngredientTabFilterVisible && '!hidden'

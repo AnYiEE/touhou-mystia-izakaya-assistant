@@ -1,7 +1,7 @@
 'use client';
 
 import {memo, useCallback, useEffect, useState} from 'react';
-import clsx from 'clsx/lite';
+import {twJoin} from 'tailwind-merge';
 
 import {usePathname} from 'next/navigation';
 import {useTheme} from 'next-themes';
@@ -101,7 +101,7 @@ export default memo(function ThemeSwitcher({isMenu}: Partial<IProps>) {
 										: faCircleHalfStroke
 							}
 							aria-label="切换主题"
-							className={clsx(
+							className={twJoin(
 								'h-min w-min min-w-min bg-transparent text-medium',
 								isMenu ? '!text-foreground' : '!text-default-500'
 							)}

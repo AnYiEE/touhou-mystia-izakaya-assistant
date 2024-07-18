@@ -1,5 +1,5 @@
 import {forwardRef, memo, useCallback, useMemo} from 'react';
-import clsx from 'clsx/lite';
+import {twMerge} from 'tailwind-merge';
 import {intersection} from 'lodash';
 
 import {Badge, Button, ScrollShadow} from '@nextui-org/react';
@@ -82,7 +82,7 @@ export default memo(
 			<>
 				<ScrollShadow
 					hideScrollBar
-					className={clsx(
+					className={twMerge(
 						'transition-[height] xl:h-[calc(100vh-9.75rem-env(titlebar-area-height,0rem))]',
 						ingredientsTabStyle.contentClassName
 					)}

@@ -1,5 +1,5 @@
 import {type FC, type HTMLAttributes, type MouseEvent, forwardRef, memo} from 'react';
-import clsx from 'clsx/lite';
+import {twMerge} from 'tailwind-merge';
 
 import type {TTagStyle} from '@/constants/types';
 import {type TTags} from '@/data';
@@ -22,7 +22,7 @@ const Tag: FC<ITagProps> = memo(
 	) {
 		return (
 			<div
-				className={clsx('max-w-1/5 rounded border-1 border-solid px-1', className)}
+				className={twMerge('max-w-1/5 rounded border-1 border-solid px-1', className)}
 				style={{
 					backgroundColor: tagStyle.backgroundColor ?? 'inherit',
 					borderColor: tagStyle.borderColor ?? 'inherit',

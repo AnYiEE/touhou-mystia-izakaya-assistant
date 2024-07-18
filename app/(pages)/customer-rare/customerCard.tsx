@@ -1,5 +1,5 @@
 import {forwardRef, memo, useCallback, useMemo} from 'react';
-import clsx from 'clsx/lite';
+import {twJoin} from 'tailwind-merge';
 import {intersection} from 'lodash';
 
 import {useLongPress} from 'use-long-press';
@@ -192,7 +192,10 @@ export default memo(
 													/>
 												}
 												classNames={{
-													base: clsx('h-12 w-12 lg:h-16 lg:w-16', currentRating && 'ring-4'),
+													base: twJoin(
+														'h-12 w-12 lg:h-16 lg:w-16',
+														currentRating && 'ring-4'
+													),
 													icon: 'inline-table lg:inline-block',
 												}}
 											/>
@@ -268,8 +271,8 @@ export default memo(
 											aria-label={`${tag}${currentCustomerOrder.recipeTag === tag ? '/已选定' : ''}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
 											role="button"
 											tabIndex={0}
-											className={clsx(
-												'cursor-pointer select-none p-0.5 hover:opacity-80',
+											className={twJoin(
+												'cursor-pointer select-none py-0.5 hover:opacity-80',
 												!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50',
 												currentCustomerOrder.recipeTag === tag && 'ring-2 ring-current'
 											)}
@@ -286,8 +289,8 @@ export default memo(
 										key={tag}
 										tag={tag}
 										tagStyle={customerTagStyleMap[currentCustomerTarget].negative}
-										className={clsx(
-											'cursor-not-allowed p-0.5',
+										className={twJoin(
+											'cursor-not-allowed py-0.5',
 											!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50'
 										)}
 									/>
@@ -338,8 +341,8 @@ export default memo(
 											aria-label={`${tag}${currentCustomerOrder.beverageTag === tag ? '/已选定' : ''}${beverageTags.includes(tag) ? '/已满足' : ''}`}
 											role="button"
 											tabIndex={0}
-											className={clsx(
-												'cursor-pointer select-none p-0.5 hover:opacity-80',
+											className={twJoin(
+												'cursor-pointer select-none py-0.5 hover:opacity-80',
 												!beverageTags.includes(tag) && 'opacity-50',
 												currentCustomerOrder.beverageTag === tag && 'ring-2 ring-current'
 											)}

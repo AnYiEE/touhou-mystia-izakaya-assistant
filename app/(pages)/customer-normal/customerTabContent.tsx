@@ -1,5 +1,5 @@
 import {forwardRef, memo, useCallback} from 'react';
-import clsx from 'clsx/lite';
+import {twJoin, twMerge} from 'tailwind-merge';
 
 import {Avatar, Button, ScrollShadow} from '@nextui-org/react';
 
@@ -35,7 +35,7 @@ export default memo(
 			<>
 				<ScrollShadow
 					hideScrollBar
-					className={clsx(
+					className={twMerge(
 						'transition-[height] xl:h-[calc(100vh-9.75rem-env(titlebar-area-height,0rem))]',
 						customerTabStyle.contentClassName
 					)}
@@ -65,7 +65,7 @@ export default memo(
 									}
 									role="button"
 									classNames={{
-										base: clsx(
+										base: twJoin(
 											'h-20 w-20 scale-90 ring-default hover:ring-warning lg:scale-100',
 											name === currentCustomerName && 'ring-primary'
 										),

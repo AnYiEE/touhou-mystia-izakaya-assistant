@@ -4,9 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  clsx: latest
-
 importers:
 
   .:
@@ -32,9 +29,6 @@ importers:
       '@vercel/speed-insights':
         specifier: ^1.0.12
         version: 1.0.12(next@14.2.5(@babel/core@7.24.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.77.8))(react@18.3.1)
-      clsx:
-        specifier: latest
-        version: 2.1.1
       driver.js:
         specifier: ^1.3.1
         version: 1.3.1
@@ -68,6 +62,9 @@ importers:
       rxjs:
         specifier: ^7.8.1
         version: 7.8.1
+      tailwind-merge:
+        specifier: ^2.4.0
+        version: 2.4.0
       ua-parser-js:
         specifier: ^1.0.38
         version: 1.0.38
@@ -2515,6 +2512,10 @@ packages:
     resolution: {integrity: sha512-BSeNnyus75C4//NQ9gQt1/csTXyo/8Sb+afLAkzAptFuMsod9HFokGNudZpi/oQV73hnVK+sR+5PVRMd+Dr7YQ==}
     engines: {node: '>=12'}
 
+  clsx@1.2.1:
+    resolution: {integrity: sha512-EcR6r5a8bj6pu3ycsa/E/cKVGuTgZJZdsyUYHOksG/UHIiKfjxzRxYJpyVBwYaQeOvghal9fcc4PidlgzugAQg==}
+    engines: {node: '>=6'}
+
   clsx@2.1.1:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
     engines: {node: '>=6'}
@@ -4588,6 +4589,9 @@ packages:
 
   tailwind-merge@1.14.0:
     resolution: {integrity: sha512-3mFKyCo/MBcgyOTlrY8T7odzZFx+w+qKSMAmdFzRvqBfLlSigU6TZnlFHK0lkMwj9Bj8OYU+9yW9lmGuS0QEnQ==}
+
+  tailwind-merge@2.4.0:
+    resolution: {integrity: sha512-49AwoOQNKdqKPd9CViyH5wJoSKsCDjUlzL8DxuGp3P1FsGY36NJDAa18jLZcaHAUUuTj+JB8IAo8zWgBNvBF7A==}
 
   tailwind-variants@0.1.20:
     resolution: {integrity: sha512-AMh7x313t/V+eTySKB0Dal08RHY7ggYK0MSn/ad8wKWOrDUIzyiWNayRUm2PIJ4VRkvRnfNuyRuKbLV3EN+ewQ==}
@@ -6901,7 +6905,7 @@ snapshots:
   '@nextui-org/system-rsc@2.1.3(@nextui-org/theme@2.2.7(tailwindcss@3.4.6))(react@18.3.1)':
     dependencies:
       '@nextui-org/theme': 2.2.7(tailwindcss@3.4.6)
-      clsx: 2.1.1
+      clsx: 1.2.1
       react: 18.3.1
 
   '@nextui-org/system@2.2.3(@nextui-org/theme@2.2.7(tailwindcss@3.4.6))(framer-motion@11.3.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
@@ -6964,7 +6968,7 @@ snapshots:
 
   '@nextui-org/theme@2.2.7(tailwindcss@3.4.6)':
     dependencies:
-      clsx: 2.1.1
+      clsx: 1.2.1
       color: 4.2.3
       color2k: 2.0.3
       deepmerge: 4.3.1
@@ -8303,6 +8307,8 @@ snapshots:
       string-width: 4.2.3
       strip-ansi: 6.0.1
       wrap-ansi: 7.0.0
+
+  clsx@1.2.1: {}
 
   clsx@2.1.1: {}
 
@@ -10551,6 +10557,8 @@ snapshots:
       strip-ansi: 6.0.1
 
   tailwind-merge@1.14.0: {}
+
+  tailwind-merge@2.4.0: {}
 
   tailwind-variants@0.1.20(tailwindcss@3.4.6):
     dependencies:

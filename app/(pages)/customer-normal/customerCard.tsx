@@ -1,5 +1,5 @@
 import {forwardRef, memo, useCallback, useMemo} from 'react';
-import clsx from 'clsx/lite';
+import {twJoin} from 'tailwind-merge';
 import {intersection} from 'lodash';
 
 import {Avatar, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
@@ -191,8 +191,8 @@ export default memo(
 											aria-label={`${tag}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
 											role="button"
 											tabIndex={0}
-											className={clsx(
-												'cursor-pointer select-none p-0.5 hover:opacity-80',
+											className={twJoin(
+												'cursor-pointer select-none p-1 hover:opacity-80',
 												!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50'
 											)}
 										/>
@@ -207,8 +207,8 @@ export default memo(
 										key={tag}
 										tag={tag}
 										tagStyle={CUSTOMER_NORMAL_TAG_STYLE.negative}
-										className={clsx(
-											'cursor-not-allowed p-0.5',
+										className={twJoin(
+											'cursor-not-allowed p-1',
 											!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50'
 										)}
 									/>
@@ -242,8 +242,8 @@ export default memo(
 											aria-label={`${tag}${beverageTags.includes(tag) ? '/已满足' : ''}`}
 											role="button"
 											tabIndex={0}
-											className={clsx(
-												'cursor-pointer select-none p-0.5 hover:opacity-80',
+											className={twJoin(
+												'cursor-pointer select-none p-1 hover:opacity-80',
 												!beverageTags.includes(tag) && 'opacity-50'
 											)}
 										/>

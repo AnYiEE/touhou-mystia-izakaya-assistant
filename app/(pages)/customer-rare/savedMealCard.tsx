@@ -1,5 +1,5 @@
 import {Fragment, forwardRef, memo} from 'react';
-import clsx from 'clsx/lite';
+import {twJoin} from 'tailwind-merge';
 
 import {Avatar, Button, Card, Divider, Tooltip} from '@nextui-org/react';
 
@@ -107,7 +107,7 @@ export default memo(
 													target="cooker"
 													name={instance_recipe.getPropsByName(recipe, 'cooker')}
 													size={1.5}
-													className={clsx(
+													className={twJoin(
 														hasMystiaCooker &&
 															'rounded-full ring-2 ring-warning-400 dark:ring-warning-200'
 													)}

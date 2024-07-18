@@ -2,7 +2,7 @@
 
 import {type PropsWithChildren, memo, useCallback, useReducer} from 'react';
 import {usePathname} from 'next/navigation';
-import clsx from 'clsx/lite';
+import {twJoin} from 'tailwind-merge';
 
 import {
 	Button,
@@ -114,7 +114,11 @@ export default memo(function Navbar() {
 						aria-label="首页"
 						className="flex select-none items-center justify-start gap-1"
 					>
-						<span role="img" title={shortName} className={clsx(styles['logo'], 'h-10 w-10 rounded-full')} />
+						<span
+							role="img"
+							title={shortName}
+							className={twJoin(styles['logo'], 'h-10 w-10 rounded-full')}
+						/>
 						<p className="font-bold">
 							<span className="hidden lg:inline">{name}</span>
 							<span className="inline lg:hidden">{shortName}</span>

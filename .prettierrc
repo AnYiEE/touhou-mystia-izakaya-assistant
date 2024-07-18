@@ -1,7 +1,7 @@
 {
 	"plugins": ["prettier-plugin-tailwindcss"],
 	"tailwindAttributes": ["className", "classNames", "itemClasses", "tw"],
-	"tailwindFunctions": ["clsx"],
+	"tailwindFunctions": ["twJoin", "twMerge"],
 	"bracketSpacing": false,
 	"printWidth": 120,
 	"quoteProps": "as-needed",
