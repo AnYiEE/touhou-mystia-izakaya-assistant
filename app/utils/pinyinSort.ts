@@ -1,13 +1,17 @@
 import {pinyin as pinyinPro} from 'pinyin-pro';
 import {isObject, isString} from 'lodash';
 
+import {numberSort} from '@/utils';
+
 type TValue = string | string[];
 
 interface IValueObject {
 	value: TValue;
 }
 
-function checkValueObject(value: TValue | IValueObject): value is IValueObject {
+type TTarget = TValue | IValueObject;
+
+function checkValueObject(value: TTarget): value is IValueObject {
 	return isObject(value) && 'value' in value;
 }
 
@@ -19,7 +23,7 @@ function removeTone(pinyin: string) {
 	return pinyin.replace(/\d/u, '');
 }
 
-export function pinyinSort(a: TValue | IValueObject, b: TValue | IValueObject) {
+export function pinyinSort(a: TTarget, b: TTarget) {
 	a = checkValueObject(a) ? a.value : a;
 	b = checkValueObject(b) ? b.value : b;
 
@@ -56,9 +60,9 @@ export function pinyinSort(a: TValue | IValueObject, b: TValue | IValueObject) {
 		const toneA = getTone(itemA);
 		const toneB = getTone(itemB);
 		if (toneA !== toneB) {
-			return toneA - toneB;
+			return numberSort(toneA, toneB);
 		}
 	}
 
-	return a.length - b.length;
+	return numberSort(a.length, b.length);
 }
