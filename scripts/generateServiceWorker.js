@@ -1,5 +1,6 @@
 // @ts-check
-/* eslint-disable require-unicode-regexp, @typescript-eslint/no-var-requires, unicorn/prefer-module, unicorn/prefer-string-replace-all */
+/// <reference lib="ESNext" />
+/* eslint-disable @typescript-eslint/no-var-requires, unicorn/prefer-module */
 'use strict';
 
 const {execSync} = require('node:child_process');
@@ -13,8 +14,8 @@ const sha = (
 const registerTemplate = readFileSync(resolve(__dirname, 'registerServiceWorker-template.js'), 'utf8');
 const swTemplate = readFileSync(resolve(__dirname, 'serviceWorker-template.js'), 'utf8');
 
-const registerResult = registerTemplate.replace(/{{version}}/g, sha);
-const swResult = swTemplate.replace(/{{version}}/g, sha);
+const registerResult = registerTemplate.replaceAll('{{version}}', sha);
+const swResult = swTemplate.replaceAll('{{version}}', sha);
 
 writeFileSync(resolve(__dirname, '../public', 'registerServiceWorker.js'), registerResult, 'utf8');
 writeFileSync(resolve(__dirname, '../public', 'serviceWorker.js'), swResult, 'utf8');

@@ -46,8 +46,7 @@ function getReplacementClass(element: Element, gapClass: string) {
 		const isSpecific = isMdSpecific || isXlSpecific;
 		const hasPrefix = gapClass.includes(':');
 
-		// eslint-disable-next-line require-unicode-regexp
-		const prefixRegExp = /((?:md|xl):)?gap-(\S+)/;
+		const prefixRegExp = /((?:md|xl):)?gap-(\S+)/u;
 
 		if (isFlexCol && !isMdFlexRow && !isXlFlexRow) {
 			return gapClass.replace('gap-', 'space-y-');

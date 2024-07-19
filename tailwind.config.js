@@ -92,8 +92,7 @@ module.exports = {
 		? [
 				// For compatible with Safari <= 14
 				{
-					// eslint-disable-next-line require-unicode-regexp
-					pattern: /space-(x|y)/,
+					pattern: /space-(x|y)/u,
 					variants: ['md', 'xl'],
 				},
 			]
