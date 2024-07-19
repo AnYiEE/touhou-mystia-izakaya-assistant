@@ -1,17 +1,20 @@
-import {isNumber} from 'lodash';
+import {isObject} from 'lodash';
 
-type TNumberObject = {
-	value: number;
-};
+type TValue = number;
 
-type TTarget = number | TNumberObject;
+interface IValueObject {
+	value: TValue;
+}
 
-export function numberSort(a: number, b: number): number;
-export function numberSort(a: TNumberObject, b: TNumberObject): number;
+type TTarget = TValue | IValueObject;
+
+function checkValueObject(value: TTarget): value is IValueObject {
+	return isObject(value) && 'value' in value;
+}
+
 export function numberSort(a: TTarget, b: TTarget) {
-	if (isNumber(a) && isNumber(b)) {
-		return a - b;
-	}
+	a = checkValueObject(a) ? a.value : a;
+	b = checkValueObject(b) ? b.value : b;
 
-	return (a as TNumberObject).value - (b as TNumberObject).value;
+	return a - b;
 }
