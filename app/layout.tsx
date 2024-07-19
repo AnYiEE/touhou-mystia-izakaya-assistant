@@ -82,6 +82,23 @@ export default function RootLayout({
 				/>
 				<script
 					dangerouslySetInnerHTML={{
+						/**
+						 * @description Add `queueMicrotask` polyfill for Chrome < 71.
+						 */
+						__html: `if (typeof queueMicrotask !== 'function') {
+	const promise = Promise.resolve();
+	globalThis.queueMicrotask = (callback) => {
+		promise.then(callback).catch((error) => {
+			setTimeout(() => {
+				throw error;
+			}, 0);
+		});
+	};
+}`,
+					}}
+				/>
+				<script
+					dangerouslySetInnerHTML={{
 						__html: `(() => {
 	const colorDark = '#000';
 	const colorLight = '#fef7e4';
