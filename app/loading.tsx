@@ -16,13 +16,11 @@ export default memo(
 				className={twMerge('flex h-full w-full select-none flex-col items-center justify-center', className)}
 				ref={ref}
 			>
-				<div className="mb-3 scale-[175%]">
-					<span
-						role="img"
-						title={title ?? (content as string)}
-						className={twJoin(styles['logo'], 'inline-block animate-bounce')}
-					/>
-				</div>
+				<span
+					role="img"
+					title={title ?? (content as string)}
+					className={twJoin(styles['logo'], 'inline-block animate-bounce')}
+				/>
 				<p className="text-sm tracking-widest">{content}</p>
 			</div>
 		);
