@@ -63,12 +63,15 @@ export default memo(function ThemeSwitcher({isMenu}: Partial<IProps>) {
 	);
 
 	useEffect(() => {
-		if (theme !== Theme.system) {
-			document.querySelectorAll('meta[name="theme-color"]').forEach((metaTag) => {
-				metaTag.removeAttribute('media');
-				metaTag.setAttribute('content', theme === Theme.light ? '#fef7e4' : '#000');
-			});
-		}
+		document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((metaTag) => {
+			if (theme === Theme.system) {
+				metaTag.content = metaTag.getAttribute('default-content') as string;
+			} else {
+				requestAnimationFrame(() => {
+					metaTag.content = getComputedStyle(document.body).backgroundColor;
+				});
+			}
+		});
 	}, [pathname, theme]);
 
 	if (!isMounted) {

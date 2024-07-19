@@ -49,10 +49,6 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-	themeColor: [
-		{color: '#fef7e4', media: '(prefers-color-scheme: light)'},
-		{color: '#000', media: '(prefers-color-scheme: dark)'},
-	],
 	viewportFit: 'cover',
 };
 
@@ -69,6 +65,40 @@ export default function RootLayout({
 	return (
 		<html lang={locale} suppressHydrationWarning className="text-[16px] light:izakaya">
 			<head>
+				<script
+					dangerouslySetInnerHTML={{
+						__html: `(() => {
+	const colorDark = '#000';
+	const colorLight = '#fef7e4';
+	const customAttribute = 'default-content';
+	const metaName = 'theme-color';
+	let theme = 'system';
+	try {
+		theme = localStorage.getItem('theme');
+	} catch (e) {}
+	const isDark = theme === 'dark';
+	const isLight = theme === 'light';
+	const metaDark = document.createElement('meta');
+	metaDark.name = metaName;
+	metaDark.media = '(prefers-color-scheme: dark)';
+	metaDark.setAttribute(customAttribute, colorDark);
+	const metaLight = document.createElement('meta');
+	metaLight.name = metaName;
+	metaLight.media = '(prefers-color-scheme: light)';
+	metaLight.setAttribute(customAttribute, colorLight);
+	if (isDark || isLight) {
+		const color = isDark ? colorDark : colorLight;
+		metaDark.content = color;
+		metaLight.content = color;
+	} else {
+		metaDark.content = colorDark;
+		metaLight.content = colorLight;
+	}
+	document.head.append(metaDark);
+	document.head.append(metaLight);
+})();`,
+					}}
+				/>
 				{isProduction && <Script async src={`/registerServiceWorker.js?v=${sha}`} />}
 				<Script
 					async
