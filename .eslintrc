@@ -1,10 +1,11 @@
 {
 	"root": true,
-	"plugins": ["@typescript-eslint", "unicorn"],
+	"plugins": ["@typescript-eslint", "unicorn", "compat"],
 	"extends": [
 		"eslint:recommended",
 		"plugin:@typescript-eslint/strict-type-checked",
 		"plugin:unicorn/recommended",
+		"plugin:eslint-comments/recommended",
 		"next/core-web-vitals",
 		"prettier"
 	],
@@ -195,6 +196,7 @@
 		"unicorn/consistent-function-scoping": "off",
 		"unicorn/filename-case": "off",
 		"unicorn/import-style": "off",
+		"unicorn/no-abusive-eslint-disable": "warn",
 		"unicorn/no-array-callback-reference": "off",
 		"unicorn/no-array-for-each": "off",
 		"unicorn/no-array-reduce": "off",
@@ -215,6 +217,16 @@
 		"unicorn/prefer-ternary": "off",
 		"unicorn/prevent-abbreviations": "off",
 		"unicorn/require-post-message-target-origin": "off",
-		"unicorn/switch-case-braces": ["error", "avoid"]
+		"unicorn/switch-case-braces": ["error", "avoid"],
+
+		"eslint-comments/disable-enable-pair": "off",
+		"eslint-comments/no-unlimited-disable": "off",
+		"eslint-comments/no-unused-disable": "warn",
+
+		"compat/compat": ["error", "chrome 64,edge 79,firefox 67,opera 51,safari 12"]
+	},
+
+	"settings": {
+		"polyfills": ["Object.hasOwn", "Promise.allSettled", "String.trimEnd", "String.trimStart", "URL.toJSON"]
 	}
 }
