@@ -7,7 +7,7 @@ import {NextUIProvider} from '@nextui-org/react';
 import {ThemeProvider as NextThemesProvider} from 'next-themes';
 import type {ThemeProviderProps} from 'next-themes/dist/types';
 
-import CompatibleSafari from '@/components/compatibleSafari';
+import CompatibleBrowser from '@/components/compatibleBrowser';
 import CustomerRareTutorial from '@/components/customerRareTutorial';
 
 import {
@@ -38,7 +38,7 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 									<RecipesStoreProvider>
 										<>
 											{children}
-											<CompatibleSafari />
+											<CompatibleBrowser />
 											<CustomerRareTutorial />
 										</>
 									</RecipesStoreProvider>

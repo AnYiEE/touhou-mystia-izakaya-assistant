@@ -5,25 +5,45 @@ import {UAParser} from 'ua-parser-js';
 
 import {domReady} from '@/utils';
 
-export function checkModernSafari() {
+type TFeature = 'flexGap' | 'webp';
+
+export function checkCompatibility() {
+	const result: Record<TFeature, boolean> = {
+		flexGap: true,
+		webp: true,
+	};
+
 	const {
-		browser: {name: browserName, version: browserVersion},
-		os: {name: osName, version: osVersion},
+		browser: {name: _browserName, version: _browserVersion},
+		os: {name: _osName, version: _osVersion},
 	} = UAParser();
+	const browserName = _browserName?.toLowerCase();
+	const browserVersion = _browserVersion && Number.parseInt(_browserVersion, 10);
+	const osName = _osName?.toLowerCase();
+	const osVersion = _osVersion && Number.parseInt(_osVersion, 10);
 
-	const isSafariOrIOS = browserName?.toLowerCase().includes('safari') ?? osName?.toLowerCase().includes('ios');
-	if (!isSafariOrIOS) {
-		return true;
+	const isChromium =
+		browserName?.includes('chromium') || browserName?.includes('chrome') || browserName?.includes('edge');
+	const isFirefox = browserName?.includes('firefox');
+	const isSafari = browserName?.includes('safari') || osName?.includes('ios');
+
+	const isSupportedFlexGapChromium = browserVersion && browserVersion > 83;
+	const isSupportedFlexGapFirefox = browserVersion && browserVersion > 62;
+	const isSupportedFlexGapSafari = (browserVersion && browserVersion > 14) || (osVersion && osVersion > 14);
+	const isSupportedWebpFirefox = browserVersion && browserVersion > 64;
+	const isSupportedWebpSafari = (browserVersion && browserVersion > 15) || (osVersion && osVersion > 15);
+
+	if (isChromium) {
+		result.flexGap = Boolean(isSupportedFlexGapChromium);
+	} else if (isFirefox) {
+		result.flexGap = Boolean(isSupportedFlexGapFirefox);
+		result.webp = Boolean(isSupportedWebpFirefox);
+	} else if (isSafari) {
+		result.flexGap = Boolean(isSupportedFlexGapSafari);
+		result.webp = Boolean(isSupportedWebpSafari);
 	}
 
-	const isSupportedFlexGapAndWebpVersion =
-		(browserVersion && Number.parseInt(browserVersion, 10) > 14) ||
-		(osVersion && Number.parseInt(osVersion, 10) > 14);
-	if (isSupportedFlexGapAndWebpVersion) {
-		return true;
-	}
-
-	return false;
+	return result;
 }
 
 function getReplacementClass(element: Element, gapClass: string) {
@@ -110,7 +130,7 @@ function processAllElements(element: Element) {
 	getChildElements(element).forEach(replaceGapClasses);
 }
 
-function initSafariFlexGapFix() {
+function initFlexGapFix() {
 	const observer = new MutationObserver((mutations) => {
 		mutations.forEach((mutation) => {
 			[...mutation.addedNodes].filter(nodeIsElement).forEach(processAllElements);
@@ -144,13 +164,13 @@ function initSafariFlexGapFix() {
 	return subscription;
 }
 
-export default function CompatibleSafari() {
+export default function CompatibleBrowser() {
 	useEffect(() => {
-		if (checkModernSafari()) {
+		if (checkCompatibility()['flexGap']) {
 			return;
 		}
 
-		const subscription = initSafariFlexGapFix();
+		const subscription = initFlexGapFix();
 
 		return subscription?.unsubscribe.bind(subscription);
 	}, []);

@@ -1,7 +1,7 @@
 import {type HTMLAttributes, forwardRef, memo, useEffect, useMemo, useState} from 'react';
 import {twMerge} from 'tailwind-merge';
 
-import {checkModernSafari} from '@/components/compatibleSafari';
+import {checkCompatibility} from '@/components/compatibleBrowser';
 
 import {type TItemNames} from '@/data';
 import {spriteInstances} from '@/methods';
@@ -27,10 +27,10 @@ export default memo(
 		{target, index, name, size, height, width, className, style, title, ...props},
 		ref
 	) {
-		const [isModernSafari, setIsModernSafari] = useState(true);
+		const [isSupportedWebp, setIsSupportedWebp] = useState(true);
 
 		useEffect(() => {
-			setIsModernSafari(checkModernSafari());
+			setIsSupportedWebp(checkCompatibility()['webp']);
 		}, []);
 
 		const instance: TSpriteInstances = useMemo(() => spriteInstances[target], [target]);
@@ -91,7 +91,7 @@ export default memo(
 				title={finalTitle}
 				className={twMerge(
 					'inline-block',
-					styles[isModernSafari ? target : (`png-${target}` as const)],
+					styles[isSupportedWebp ? target : (`png-${target}` as const)],
 					className
 				)}
 				style={{...calculatedStyle, ...style}}
