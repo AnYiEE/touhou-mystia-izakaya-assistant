@@ -334,29 +334,6 @@ export default memo(function CustomerRare() {
 
 	return (
 		<div className="grid h-full grid-cols-1 justify-items-center gap-4 md:flex md:flex-col-reverse md:justify-end xl:grid xl:grid-cols-2">
-			<SideButtonGroup
-				className={twMerge(
-					'md:!bottom-6 xl:!bottom-[calc(50%-3.75rem-env(titlebar-area-height,0rem)/2)] xl:left-6',
-					customerTabStyle.sideButtonGroupClassName,
-					!isCustomerTabFilterVisible && '!hidden'
-				)}
-			>
-				<SideSearchIconButton searchConfig={customerSearchConfig} />
-				<SidePinyinSortIconButton pinyinSortConfig={customerPinyinSortConfig} />
-				<SideFilterIconButton selectConfig={customerSelectConfig} />
-			</SideButtonGroup>
-
-			<SideButtonGroup
-				className={twMerge(
-					'md:!bottom-6 xl:!bottom-[calc(50%-2.25rem-env(titlebar-area-height,0rem)/2)] xl:left-6',
-					ingredientTabStyle.sideButtonGroupClassName,
-					!isIngredientTabFilterVisible && '!hidden'
-				)}
-			>
-				<SidePinyinSortIconButton pinyinSortConfig={ingredientsPinyinSortConfig} />
-				<SideFilterIconButton selectConfig={ingredientsSelectConfig} />
-			</SideButtonGroup>
-
 			<div className="w-full">
 				<Tabs
 					fullWidth
@@ -399,6 +376,29 @@ export default memo(function CustomerRare() {
 					</Placeholder>
 				)}
 			</div>
+
+			<SideButtonGroup
+				className={twMerge(
+					'md:!bottom-6 xl:!bottom-[calc(50%-3.75rem-env(titlebar-area-height,0rem)/2)] xl:left-6',
+					customerTabStyle.sideButtonGroupClassName,
+					!isCustomerTabFilterVisible && '!hidden'
+				)}
+			>
+				<SideSearchIconButton searchConfig={customerSearchConfig} />
+				<SidePinyinSortIconButton pinyinSortConfig={customerPinyinSortConfig} />
+				<SideFilterIconButton selectConfig={customerSelectConfig} />
+			</SideButtonGroup>
+
+			<SideButtonGroup
+				className={twMerge(
+					'md:!bottom-6 xl:!bottom-[calc(50%-2.25rem-env(titlebar-area-height,0rem)/2)] xl:left-6',
+					ingredientTabStyle.sideButtonGroupClassName,
+					!isIngredientTabFilterVisible && '!hidden'
+				)}
+			>
+				<SidePinyinSortIconButton pinyinSortConfig={ingredientsPinyinSortConfig} />
+				<SideFilterIconButton selectConfig={ingredientsSelectConfig} />
+			</SideButtonGroup>
 		</div>
 	);
 });

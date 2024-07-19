@@ -102,7 +102,12 @@ function getReplacementClass(element: Element, gapClass: string) {
 }
 
 function replaceGapClasses(element: Element) {
-	if (element.classList.length === 0 || !element.classList.contains('flex')) {
+	if (
+		element.classList.length === 0 ||
+		(!element.classList.contains('flex') &&
+			!element.classList.contains('md:flex') &&
+			!element.classList.contains('xl:flex'))
+	) {
 		return;
 	}
 
