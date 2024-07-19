@@ -67,6 +67,21 @@ export default function RootLayout({
 			<head>
 				<script
 					dangerouslySetInnerHTML={{
+						/**
+						 * @description Add `globalThis` polyfill for Chrome < 71.
+						 * @see {@link https://mathiasbynens.be/notes/globalthis}
+						 */
+						__html: `if (typeof globalThis !== 'object') {
+	Object.prototype.__defineGetter__('__magic__', function () {
+		return this;
+	});
+	__magic__.globalThis = __magic__;
+	delete Object.prototype.__magic__;
+}`,
+					}}
+				/>
+				<script
+					dangerouslySetInnerHTML={{
 						__html: `(() => {
 	const colorDark = '#000';
 	const colorLight = '#fef7e4';
