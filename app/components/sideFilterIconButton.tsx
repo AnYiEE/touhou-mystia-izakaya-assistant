@@ -18,13 +18,11 @@ import Sprite from '@/components/sprite';
 import {pinyinSort} from '@/utils';
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
-interface ISelectConfigItem {
-	label: SelectProps['label'];
+interface ISelectConfigItem extends Pick<SelectProps, 'label' | 'selectionMode'> {
 	items: {
 		value: number | string;
 	}[];
 	selectedKeys: string[];
-	selectionMode?: SelectProps['selectionMode'];
 	setSelectedKeys: Dispatch<ISelectConfigItem['selectedKeys']>;
 	spriteTarget?: TSpriteTarget;
 }
