@@ -1,5 +1,5 @@
 import {pinyin as pinyinPro} from 'pinyin-pro';
-import {isObject, isString} from 'lodash';
+import {isObjectLike} from 'lodash';
 
 import {numberSort} from '@/utils';
 
@@ -12,7 +12,7 @@ interface IValueObject {
 type TTarget = TValue | IValueObject;
 
 function checkValueObject(value: TTarget): value is IValueObject {
-	return isObject(value) && 'value' in value;
+	return isObjectLike(value) && 'value' in value;
 }
 
 function getTone(pinyin: string) {
@@ -29,7 +29,7 @@ export function pinyinSort(a: TTarget, b: TTarget) {
 	a = checkValueObject(a) ? a.value : a;
 	b = checkValueObject(b) ? b.value : b;
 
-	if (isString(a)) {
+	if (typeof a === 'string') {
 		if (pinyinCache.has(a)) {
 			a = pinyinCache.get(a);
 		} else {
@@ -42,7 +42,7 @@ export function pinyinSort(a: TTarget, b: TTarget) {
 			a = pinyinA;
 		}
 	}
-	if (isString(b)) {
+	if (typeof b === 'string') {
 		if (pinyinCache.has(b)) {
 			b = pinyinCache.get(b);
 		} else {

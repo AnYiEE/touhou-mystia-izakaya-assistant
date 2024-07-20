@@ -1,4 +1,4 @@
-import {isObject} from 'lodash';
+import {isObjectLike} from 'lodash';
 
 type TValue = number;
 
@@ -9,7 +9,7 @@ interface IValueObject {
 type TTarget = TValue | IValueObject;
 
 function checkValueObject(value: TTarget): value is IValueObject {
-	return isObject(value) && 'value' in value;
+	return isObjectLike(value) && 'value' in value;
 }
 
 export function numberSort(a: TTarget, b: TTarget) {

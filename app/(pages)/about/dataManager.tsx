@@ -1,7 +1,7 @@
 'use client';
 
 import {type KeyboardEvent, memo, useCallback, useEffect, useMemo, useReducer, useState} from 'react';
-import {debounce, isObject} from 'lodash';
+import {debounce, isObjectLike} from 'lodash';
 
 import {useRouter} from 'next/navigation';
 
@@ -39,7 +39,7 @@ export default memo(function DataManager() {
 	useEffect(() => {
 		try {
 			const json = JSON.parse(throttledValue) as unknown;
-			if (Array.isArray(json) || !isObject(json)) {
+			if (Array.isArray(json) || !isObjectLike(json)) {
 				throw new TypeError('not an object');
 			}
 			setIsSaveButtonDisabled(false);
