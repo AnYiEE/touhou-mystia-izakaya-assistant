@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  '@types/lodash@4.17.7':
+    hash: o7xtuvkox2mp3ircotp35wszsm
+    path: patches/@types__lodash@4.17.7.patch
+
 importers:
 
   .:
@@ -89,7 +94,7 @@ importers:
         version: 19.2.2
       '@types/lodash':
         specifier: ^4.17.7
-        version: 4.17.7
+        version: 4.17.7(patch_hash=o7xtuvkox2mp3ircotp35wszsm)
       '@types/node':
         specifier: ^20.14.11
         version: 20.14.11
@@ -7918,9 +7923,9 @@ snapshots:
 
   '@types/lodash.debounce@4.0.9':
     dependencies:
-      '@types/lodash': 4.17.7
+      '@types/lodash': 4.17.7(patch_hash=o7xtuvkox2mp3ircotp35wszsm)
 
-  '@types/lodash@4.17.7': {}
+  '@types/lodash@4.17.7(patch_hash=o7xtuvkox2mp3ircotp35wszsm)': {}
 
   '@types/node@20.14.11':
     dependencies:
