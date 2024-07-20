@@ -1,6 +1,5 @@
 import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
-import {intersection} from 'lodash';
 
 import {useLongPress} from 'use-long-press';
 
@@ -19,7 +18,7 @@ import {customerRatingColorMap, customerTagStyleMap} from './constants';
 import {type TTags} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
-import {checkA11yConfirmKey, pinyinSort} from '@/utils';
+import {checkA11yConfirmKey, intersection, pinyinSort} from '@/utils';
 
 interface IProps {}
 

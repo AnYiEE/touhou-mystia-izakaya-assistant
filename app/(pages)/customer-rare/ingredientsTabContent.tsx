@@ -1,6 +1,5 @@
 import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twMerge} from 'tailwind-merge';
-import {intersection} from 'lodash';
 
 import {Badge, Button, ScrollShadow} from '@nextui-org/react';
 
@@ -12,7 +11,7 @@ import {type TIngredientNames} from '@/data';
 import type {TRecipeTag} from '@/data/types';
 import type {TIngredientInstance} from '@/methods/food/types';
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
-import {checkA11yConfirmKey} from '@/utils';
+import {checkA11yConfirmKey, intersection} from '@/utils';
 
 interface IProps {
 	ingredientsTabStyle: IIngredientsTabStyle;

@@ -1,6 +1,5 @@
 import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
-import {intersection} from 'lodash';
 
 import {Avatar, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
 import {faArrowsRotate} from '@fortawesome/free-solid-svg-icons';
@@ -16,7 +15,7 @@ import {CUSTOMER_NORMAL_TAG_STYLE} from '@/constants';
 import {type TTags} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {useCustomerNormalStore, useGlobalStore} from '@/stores';
-import {checkA11yConfirmKey, pinyinSort} from '@/utils';
+import {checkA11yConfirmKey, intersection, pinyinSort} from '@/utils';
 
 interface IProps {}
 

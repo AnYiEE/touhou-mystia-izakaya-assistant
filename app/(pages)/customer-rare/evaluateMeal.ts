@@ -1,8 +1,7 @@
-import {intersection, without} from 'lodash';
-
 import type {TCustomerRating} from './types';
 import {type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
+import {intersection, without} from '@/utils';
 
 interface IParameters {
 	currentBeverageTags: TBeverageTag[];

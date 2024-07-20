@@ -8,7 +8,6 @@ import {
 	useCallback,
 	useMemo,
 } from 'react';
-import {uniq} from 'lodash';
 
 import {useParams} from '@/hooks';
 
@@ -22,7 +21,7 @@ import TagsComponent from '@/components/tags';
 
 import type {ITagStyle} from '@/constants/types';
 import {type IIngredient, type TCookerNames, type TFoodNames, type TIngredientNames, type TTags} from '@/data';
-import {checkA11yConfirmKey} from '@/utils';
+import {checkA11yConfirmKey, uniq} from '@/utils';
 
 interface ICloseButtonProps {
 	param?: string;

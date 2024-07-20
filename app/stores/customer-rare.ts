@@ -1,6 +1,5 @@
 import {createStoreContext, store} from '@davstack/store';
 import {createJSONStorage} from 'zustand/middleware';
-import {union} from 'lodash';
 
 import {type Selection} from '@nextui-org/react';
 
@@ -19,7 +18,7 @@ import {
 	recipeInstance as instance_recipe,
 } from '@/methods/food';
 import {getAllItemNames} from '@/stores/utils';
-import {numberSort, pinyinSort} from '@/utils';
+import {numberSort, pinyinSort, union} from '@/utils';
 
 const rareDlcs = instance_rare.getValuesByProp(instance_rare.data, 'dlc').sort(numberSort);
 const rarePlaces = instance_rare.getValuesByProp(instance_rare.data, 'places').sort(pinyinSort);

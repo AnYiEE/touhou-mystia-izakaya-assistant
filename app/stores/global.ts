@@ -1,12 +1,11 @@
 import {createStoreContext, store} from '@davstack/store';
 import {createJSONStorage} from 'zustand/middleware';
-import {union} from 'lodash';
 
 import {type Selection} from '@nextui-org/react';
 
 import type {TIngredientTag, TRecipeTag} from '@/data/types';
 import {ingredientInstance as instance_ingredient, recipeInstance as instance_recipe} from '@/methods/food';
-import {pinyinSort} from '@/utils';
+import {pinyinSort, union} from '@/utils';
 
 const ingredientTags = instance_ingredient.getValuesByProp(instance_ingredient.data, 'tags');
 const recipePositiveTags = instance_recipe.getValuesByProp(instance_recipe.data, 'positiveTags');
