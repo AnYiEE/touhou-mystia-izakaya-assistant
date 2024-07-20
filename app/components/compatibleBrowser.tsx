@@ -6,9 +6,15 @@ import {UAParser} from 'ua-parser-js';
 import {domReady} from '@/utils';
 
 type TFeature = 'flexGap' | 'webp';
+type TCompatibility = Record<TFeature, boolean>;
 
+let compatibilityCache: TCompatibility | undefined;
 export function checkCompatibility() {
-	const result: Record<TFeature, boolean> = {
+	if (compatibilityCache) {
+		return compatibilityCache;
+	}
+
+	const compatibility: TCompatibility = {
 		flexGap: true,
 		webp: true,
 	};
@@ -34,16 +40,18 @@ export function checkCompatibility() {
 	const isSupportedWebpSafari = (browserVersion && browserVersion > 15) || (osVersion && osVersion > 15);
 
 	if (isChromium) {
-		result.flexGap = Boolean(isSupportedFlexGapChromium);
+		compatibility.flexGap = Boolean(isSupportedFlexGapChromium);
 	} else if (isFirefox) {
-		result.flexGap = Boolean(isSupportedFlexGapFirefox);
-		result.webp = Boolean(isSupportedWebpFirefox);
+		compatibility.flexGap = Boolean(isSupportedFlexGapFirefox);
+		compatibility.webp = Boolean(isSupportedWebpFirefox);
 	} else if (isSafari) {
-		result.flexGap = Boolean(isSupportedFlexGapSafari);
-		result.webp = Boolean(isSupportedWebpSafari);
+		compatibility.flexGap = Boolean(isSupportedFlexGapSafari);
+		compatibility.webp = Boolean(isSupportedWebpSafari);
 	}
 
-	return result;
+	compatibilityCache = compatibility;
+
+	return compatibility;
 }
 
 function getReplacementClass(element: Element, gapClass: string) {
