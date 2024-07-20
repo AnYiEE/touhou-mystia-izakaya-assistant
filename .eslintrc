@@ -227,6 +227,14 @@
 	},
 
 	"settings": {
-		"polyfills": ["Object.hasOwn", "Promise.allSettled", "String.trimEnd", "String.trimStart", "URL.toJSON"]
+		"polyfills": [
+			"Array.flat",
+			"Array.flatMap",
+			"Object.hasOwn",
+			"Promise.allSettled",
+			"String.trimEnd",
+			"String.trimStart",
+			"URL.toJSON"
+		]
 	}
 }
