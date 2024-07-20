@@ -1,15 +1,16 @@
 export function removeLastElement<T>(array: T[], elementToRemove: T, elementToInsert?: T): T[] {
+	const copiedArray = [...array];
+
 	const index = array.lastIndexOf(elementToRemove);
 	if (index === -1) {
-		return array;
+		return copiedArray;
 	}
 
-	const newArray = [...array];
-	newArray.splice(index, 1);
+	copiedArray.splice(index, 1);
 
 	if (elementToInsert !== undefined) {
-		newArray.splice(index, 0, elementToInsert);
+		copiedArray.splice(index, 0, elementToInsert);
 	}
 
-	return newArray;
+	return copiedArray;
 }
