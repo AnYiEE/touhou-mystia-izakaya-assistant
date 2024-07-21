@@ -46,7 +46,7 @@ export default class ErrorBoundary extends Component<IProps, IState> {
 				<div className="m-4 flex flex-col gap-3">
 					<h1 className="text-2xl font-bold">Oops, something went wrong!</h1>
 					<p className="text-lg">{this.state.error?.toString()}</p>
-					<pre className="flex flex-col gap-2 text-wrap break-all font-mono">
+					<pre className="flex flex-col gap-2 whitespace-pre-wrap break-all font-mono">
 						<code>{this.state.error?.stack}</code>
 						<code>{this.state.info?.componentStack}</code>
 					</pre>

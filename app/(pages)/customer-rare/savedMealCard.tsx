@@ -73,7 +73,7 @@ export default memo(
 												showFallback
 												color={customerRatingColorMap[rating]}
 												fallback={
-													<TagGroup className="h-4 flex-nowrap text-nowrap break-keep">
+													<TagGroup className="h-4 flex-nowrap whitespace-nowrap">
 														{price !== 0 && (
 															<Tags.Tag
 																tag={(<Price>{price}</Price>) as never}

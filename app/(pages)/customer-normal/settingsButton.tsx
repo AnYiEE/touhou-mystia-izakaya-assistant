@@ -66,7 +66,7 @@ export default memo(function SettingsButton() {
 					<h2 className="mb-2 text-base font-bold">全局设置</h2>
 					<div className="flex flex-col gap-2">
 						<div className="flex items-center">
-							<span className="mr-2 text-nowrap break-keep">流行喜爱</span>
+							<span className="mr-2 whitespace-nowrap">流行喜爱</span>
 							<Switch
 								isSelected={isNegativePopularTag}
 								size="sm"
@@ -76,10 +76,10 @@ export default memo(function SettingsButton() {
 									wrapper: 'bg-primary',
 								}}
 							/>
-							<span className="text-nowrap break-keep">流行厌恶</span>
+							<span className="whitespace-nowrap">流行厌恶</span>
 						</div>
 						<div className="flex items-center">
-							<span className="mr-2 text-nowrap break-keep">标签</span>
+							<span className="mr-2 whitespace-nowrap">标签</span>
 							<Select
 								items={popularTags}
 								defaultSelectedKeys={selectedPopularTag}

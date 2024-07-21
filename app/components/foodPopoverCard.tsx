@@ -192,7 +192,7 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 					</div>
 				)}
 				{mergedTags && (
-					<div className="flex flex-wrap items-end gap-x-2 gap-y-1 text-nowrap break-keep">
+					<div className="flex flex-wrap items-end gap-x-2 gap-y-1 whitespace-nowrap">
 						<TagsComponent tags={mergedTags.positive} tagStyle={tagColors?.positive} />
 						<TagsComponent tags={mergedTags.negative} tagStyle={tagColors?.negative} />
 					</div>

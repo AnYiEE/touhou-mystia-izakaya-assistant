@@ -208,7 +208,7 @@ export default memo(
 							</Tooltip>
 							<PopoverContent>{currentRating ?? '继续选择以评级'}</PopoverContent>
 						</Popover>
-						<div className="flex flex-col text-nowrap break-keep text-xs font-medium text-default-500">
+						<div className="flex flex-col whitespace-nowrap text-xs font-medium text-default-500">
 							<p className="flex justify-between">
 								<span>DLC{currentCustomerDlc}</span>
 								<Popover showArrow offset={0}>
@@ -231,7 +231,7 @@ export default memo(
 					</div>
 					<Divider className="md:hidden" />
 					<Divider orientation="vertical" className="hidden md:block" />
-					<div className="flex w-full flex-col justify-evenly gap-3 text-nowrap break-keep">
+					<div className="flex w-full flex-col justify-evenly gap-3 whitespace-nowrap">
 						{currentCustomerPositiveTags.length > 0 && (
 							<TagGroup>
 								{[...currentCustomerPositiveTags].sort(pinyinSort).map((tag) => (

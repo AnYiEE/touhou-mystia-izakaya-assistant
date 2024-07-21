@@ -146,7 +146,7 @@ export default memo(
 							}}
 						/>
 						<div className="min-w-24 gap-2 lg:min-w-28">
-							<p className="flex justify-between text-nowrap break-keep text-xs font-medium text-default-500">
+							<p className="flex justify-between whitespace-nowrap text-xs font-medium text-default-500">
 								<span>DLC{currentCustomerDlc}</span>
 								<Popover showArrow offset={0}>
 									<Tooltip showArrow content={placeContent} offset={-1.5}>
@@ -165,7 +165,7 @@ export default memo(
 					</div>
 					<Divider className="md:hidden" />
 					<Divider orientation="vertical" className="hidden md:block" />
-					<div className="flex w-full flex-col justify-evenly gap-3 text-nowrap break-keep">
+					<div className="flex w-full flex-col justify-evenly gap-3 whitespace-nowrap">
 						{currentCustomerPositiveTags.length > 0 && (
 							<TagGroup>
 								{[...currentCustomerPositiveTags].sort(pinyinSort).map((tag) => (

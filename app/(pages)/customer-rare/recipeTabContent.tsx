@@ -265,7 +265,7 @@ export default memo(
 						return (
 							<div className="flex items-center">
 								<Sprite target="recipe" name={name} size={2} className="mr-2" />
-								<div className="inline-flex flex-1 items-center text-nowrap break-keep">
+								<div className="inline-flex flex-1 items-center whitespace-nowrap">
 									<span className="text-small font-medium">{name}</span>
 									<span className="-ml-2">
 										<Popover showArrow>
@@ -519,7 +519,7 @@ export default memo(
 					<div className="flex items-center justify-between text-small text-default-400">
 						<span>总计{filteredData.length}道料理</span>
 						<label className="flex items-center">
-							<span className="mr-2 cursor-auto text-nowrap break-keep">表格行数</span>
+							<span className="mr-2 cursor-auto whitespace-nowrap">表格行数</span>
 							<Select
 								items={tableSelectableRows}
 								defaultSelectedKeys={tableRowsPerPage}
