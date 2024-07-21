@@ -173,7 +173,7 @@ export default memo(
 							<Tooltip
 								showArrow
 								color={currentRating ? customerRatingColorMap[currentRating] : undefined}
-								content={currentRating ?? '继续选择以评分'}
+								content={currentRating ?? '继续选择以评级'}
 							>
 								<div className="cursor-pointer">
 									<PopoverTrigger>
@@ -206,7 +206,7 @@ export default memo(
 									</PopoverTrigger>
 								</div>
 							</Tooltip>
-							<PopoverContent>{currentRating ?? '继续选择以评分'}</PopoverContent>
+							<PopoverContent>{currentRating ?? '继续选择以评级'}</PopoverContent>
 						</Popover>
 						<div className="flex flex-col text-nowrap break-keep text-xs font-medium text-default-500">
 							<p className="flex justify-between">
