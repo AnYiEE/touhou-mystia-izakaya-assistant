@@ -1,4 +1,6 @@
-import type {TCustomerRating} from './types';
+import {isObjectLike} from 'lodash';
+
+import type {TCustomerRating, TRecipe} from './types';
 import {type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {intersection, without} from '@/utils';
@@ -14,7 +16,7 @@ interface IParameters {
 	};
 	currentCustomerPositiveTags: TRecipeTag[];
 	currentIngredients: TIngredientNames[];
-	currentRecipeName: TRecipeNames | null;
+	currentRecipe: TRecipe | null;
 	currentRecipeTagsWithPopular: TRecipeTag[];
 	hasMystiaCooker: boolean;
 }
@@ -55,7 +57,8 @@ function checkEasterEgg({
 	currentIngredients,
 	currentRecipeName,
 	mealScore,
-}: Pick<IParameters, 'currentCustomerName' | 'currentIngredients' | 'currentRecipeName'> & {
+}: Pick<IParameters, 'currentCustomerName' | 'currentIngredients'> & {
+	currentRecipeName: TRecipeNames;
 	mealScore: number;
 }) {
 	switch (currentCustomerName) {
@@ -95,6 +98,26 @@ function checkEasterEgg({
 	return mealScore;
 }
 
+function checkRecipeFrom({
+	currentCustomerName,
+	currentRecipe,
+	mealScore,
+}: Pick<IParameters, 'currentCustomerName' | 'currentRecipe'> & {
+	mealScore: number;
+}) {
+	if (currentRecipe === null) {
+		return mealScore;
+	}
+
+	const {from} = currentRecipe;
+
+	if (isObjectLike(from) && 'goodwill' in from && from.goodwill.name === currentCustomerName) {
+		return Math.max(mealScore, 2);
+	}
+
+	return mealScore;
+}
+
 function getRatingKey(mealScore: number): TCustomerRating | null {
 	if (mealScore <= 0) {
 		return '极度不满';
@@ -122,7 +145,7 @@ export function evaluateMeal({
 	currentCustomerOrder,
 	currentCustomerPositiveTags,
 	currentIngredients,
-	currentRecipeName,
+	currentRecipe,
 	currentRecipeTagsWithPopular,
 	hasMystiaCooker,
 }: IParameters) {
@@ -172,7 +195,11 @@ export function evaluateMeal({
 		})
 	);
 
-	mealScore = checkEasterEgg({currentCustomerName, currentIngredients, currentRecipeName, mealScore});
+	if (currentRecipe) {
+		const {name: currentRecipeName} = currentRecipe;
+		mealScore = checkEasterEgg({currentCustomerName, currentIngredients, currentRecipeName, mealScore});
+		mealScore = checkRecipeFrom({currentCustomerName, currentRecipe, mealScore});
+	}
 
 	return getRatingKey(mealScore);
 }

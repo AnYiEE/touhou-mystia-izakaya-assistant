@@ -61,6 +61,7 @@ export default memo(function ChangeLog() {
 				<li>新增：主题切换器支持选择“跟随系统”。</li>
 				<li>改善：与iOS 15以下版本系统上的浏览器和macOS系统上的15以下版本Safari的兼容性。</li>
 				<li>修复：作为渐进式网络应用程序安装后，导航栏的部分按钮被窗口控件遮挡。</li>
+				<li>修复：将菜谱来源纳入稀客套餐评级维度。</li>
 			</Ul>
 		</>
 	);

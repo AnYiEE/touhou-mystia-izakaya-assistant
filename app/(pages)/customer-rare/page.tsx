@@ -24,8 +24,8 @@ import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import {evaluateMeal} from './evaluateMeal';
-import type {ICustomerTabStyleMap, IIngredientsTabStyleMap} from './types';
-import {type TIngredientNames, type TRecipeNames} from '@/data';
+import type {ICustomerTabStyleMap, IIngredientsTabStyleMap, TRecipe} from './types';
+import {type TIngredientNames} from '@/data';
 import type {TBeverageTag} from '@/data/types';
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
 
@@ -114,15 +114,13 @@ export default memo(function CustomerRare() {
 			currentBeverageTags = beverage.tags;
 		}
 
-		let currentRecipeName: TRecipeNames | null = null;
+		let recipe: TRecipe | null = null;
 		const currentIngredients: TIngredientNames[] = [];
 		const currentRecipeData = customerStore.shared.recipe.data.get();
 		if (currentRecipeData) {
-			currentRecipeName = currentRecipeData.name;
-			currentIngredients.push(
-				...instance_recipe.getPropsByName(currentRecipeName).ingredients,
-				...currentRecipeData.extraIngredients
-			);
+			const {extraIngredients, name: currentRecipeName} = currentRecipeData;
+			recipe = instance_recipe.getPropsByName(currentRecipeName);
+			currentIngredients.push(...recipe.ingredients, ...extraIngredients);
 		}
 
 		const currentRecipeTagsWithPopular = customerStore.shared.recipe.tagsWithPopular.get();
@@ -135,7 +133,7 @@ export default memo(function CustomerRare() {
 			currentCustomerOrder,
 			currentCustomerPositiveTags,
 			currentIngredients,
-			currentRecipeName,
+			currentRecipe: recipe,
 			currentRecipeTagsWithPopular,
 			hasMystiaCooker,
 		});

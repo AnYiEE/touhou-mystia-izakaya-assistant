@@ -67,6 +67,6 @@ type TRecipeSuitability = {
 };
 
 type TRecipes = TRecipeInstance['data'];
-type TRecipe = TRecipes[number];
+export type TRecipe = TRecipes[number];
 export type TRecipeWithSuitability = TRecipe & TRecipeSuitability;
 export type TRecipesWithSuitability = TRecipeWithSuitability[];
