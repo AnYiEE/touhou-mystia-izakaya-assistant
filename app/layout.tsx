@@ -46,6 +46,11 @@ export const metadata: Metadata = {
 	twitter: {
 		card: 'summary',
 	},
+
+	other: {
+		// cSpell:ignore codeva
+		'baidu-site-verification': 'codeva-aSffMaEHAj',
+	},
 };
 
 export const viewport: Viewport = {
