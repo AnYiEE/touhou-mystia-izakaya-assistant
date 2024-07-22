@@ -9,6 +9,7 @@ export * from './getPageTitle';
 export * from './intersection';
 export * from './numberSort';
 export * from './pinyinSort';
+export * from './processPinyin';
 export * from './pxToRem';
 export * from './remToPx';
 export * from './removeLastElement';

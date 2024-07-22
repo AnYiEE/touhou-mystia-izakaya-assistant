@@ -39,7 +39,7 @@ import {recipeTableColumns as tableColumns} from './constants';
 import type {ITableColumn, ITableSortDescriptor, TRecipeWithSuitability, TRecipesWithSuitability} from './types';
 import {CUSTOMER_NORMAL_TAG_STYLE} from '@/constants';
 import {useCustomerNormalStore, useGlobalStore} from '@/stores';
-import {numberSort, pinyinSort} from '@/utils';
+import {numberSort, pinyinSort, processPinyin} from '@/utils';
 
 type TTableColumnKey = 'recipe' | 'cooker' | 'ingredient' | 'price' | 'suitability' | 'action';
 export type TTableColumns = ITableColumn<TTableColumnKey>[];
@@ -131,13 +131,20 @@ export default memo(
 				return clonedData;
 			}
 
-			return clonedData.filter(({name, dlc, cooker, positiveTags}) => {
+			const searchValueLowerCase = searchValue.toLowerCase();
+
+			return clonedData.filter(({name, pinyin, dlc, cooker, positiveTags}) => {
+				const {pinyinFirstLetters, pinyinWithoutTone} = processPinyin(pinyin);
 				const recipeTagsWithPopular = instance_recipe.calculateTagsWithPopular(
 					positiveTags,
 					currentCustomerPopular
 				);
 
-				const isNameMatched = hasNameFilter ? name.toLowerCase().includes(searchValue.toLowerCase()) : true;
+				const isNameMatched = hasNameFilter
+					? name.toLowerCase().includes(searchValueLowerCase) ||
+						pinyinWithoutTone.join('').includes(searchValueLowerCase) ||
+						pinyinFirstLetters.includes(searchValueLowerCase)
+					: true;
 				const isDlcMatched =
 					selectedDlcs !== 'all' && selectedDlcs.size > 0 ? selectedDlcs.has(dlc.toString()) : true;
 				const isCookerMatched =
