@@ -121,14 +121,13 @@ type TCollectionLocation =
 	| '妖怪之山中心瀑布'
 	| '月之都月虹池';
 
-export type TBeverageTag = IBeverage['tags'][number] | '全部';
+export type TBeverageTag = IBeverage['tags'][number];
 export type TRecipeTag =
 	| IRecipe['positiveTags'][number] // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
 	| IRecipe['negativeTags'][number]
 	| TTagNeedCalculate
 	| '流行喜爱'
-	| '流行厌恶'
-	| '全部';
+	| '流行厌恶';
 export type TIngredientTag = IIngredient['tags'][number];
 
 type TPlace =
