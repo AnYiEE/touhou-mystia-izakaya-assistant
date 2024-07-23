@@ -40,7 +40,7 @@ import type {ITableColumn, ITableSortDescriptor, TRecipeWithSuitability, TRecipe
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
 import {numberSort, pinyinSort, processPinyin} from '@/utils';
 
-type TTableColumnKey = 'recipe' | 'cooker' | 'ingredient' | 'price' | 'suitability' | 'action';
+type TTableColumnKey = 'recipe' | 'cooker' | 'ingredient' | 'price' | 'suitability' | 'time' | 'action';
 export type TTableColumns = ITableColumn<TTableColumnKey>[];
 
 type TTableSortKey = Exclude<TTableColumnKey, 'cooker' | 'ingredient' | 'action'>;
@@ -194,6 +194,10 @@ export default memo(
 					return cloneDeep(filteredData).sort(({suitability: a}, {suitability: b}) =>
 						isAscending ? numberSort(a, b) : numberSort(b, a)
 					);
+				case 'time':
+					return cloneDeep(filteredData).sort(({min: a}, {min: b}) =>
+						isAscending ? numberSort(a, b) : numberSort(b, a)
+					);
 				default:
 					return filteredData;
 			}
@@ -230,6 +234,8 @@ export default memo(
 					positiveTags,
 					price,
 					suitability,
+					max,
+					min,
 					matchedNegativeTags,
 					matchedPositiveTags,
 				} = data;
@@ -316,6 +322,14 @@ export default memo(
 						);
 					case 'suitability':
 						return <div className="flex">{suitability}</div>;
+					case 'time':
+						return (
+							<div className="flex">
+								{min}
+								<span className="px-0.5">-</span>
+								{max}秒
+							</div>
+						);
 					case 'action':
 						return (
 							<div className="flex justify-center">

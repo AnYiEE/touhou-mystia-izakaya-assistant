@@ -19,5 +19,6 @@ export const recipeTableColumns = [
 	{key: 'ingredient', label: '食材', sortable: false},
 	{key: 'price', label: '售价', sortable: true},
 	{key: 'suitability', label: '匹配度', sortable: true},
+	{key: 'time', label: '烹饪时间', sortable: true},
 	{key: 'action', label: '操作', sortable: false},
 ] as const satisfies TRecipeTableColumns;
