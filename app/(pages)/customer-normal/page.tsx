@@ -176,20 +176,24 @@ export default memo(function CustomerNormal() {
 	const instance_ingredient = customerStore.instances.ingredient.get();
 
 	const allIngredientDlcs = customerStore.ingredient.dlcs.get();
+	const allIngredientLevels = customerStore.ingredient.levels.get();
 
 	const ingredientsPinyinSortState = customerStore.persistence.ingredient.pinyinSortState.use();
 
 	const ingredientsFilterDlcs = customerStore.persistence.ingredient.filters.dlcs.use();
+	const ingredientsFilterLevels = customerStore.persistence.ingredient.filters.levels.use();
 
 	const ingredientsFilteredData = useMemo(
 		() =>
-			instance_ingredient.data.filter(({dlc}) => {
+			instance_ingredient.data.filter(({dlc, level}) => {
 				const isDlcMatched =
 					ingredientsFilterDlcs.length > 0 ? ingredientsFilterDlcs.includes(dlc.toString()) : true;
+				const isLevelMatched =
+					ingredientsFilterLevels.length > 0 ? ingredientsFilterLevels.includes(level.toString()) : true;
 
-				return isDlcMatched;
+				return isDlcMatched && isLevelMatched;
 			}),
-		[ingredientsFilterDlcs, instance_ingredient.data]
+		[ingredientsFilterDlcs, ingredientsFilterLevels, instance_ingredient.data]
 	);
 
 	const ingredientsSortedData = useSortedData(
@@ -212,8 +216,21 @@ export default memo(function CustomerNormal() {
 					selectedKeys: ingredientsFilterDlcs,
 					setSelectedKeys: customerStore.persistence.ingredient.filters.dlcs.set,
 				},
+				{
+					items: allIngredientLevels,
+					label: '等级',
+					selectedKeys: ingredientsFilterLevels,
+					setSelectedKeys: customerStore.persistence.ingredient.filters.levels.set,
+				},
 			] as const satisfies TSelectConfig,
-		[allIngredientDlcs, ingredientsFilterDlcs, customerStore.persistence.ingredient.filters.dlcs.set]
+		[
+			allIngredientDlcs,
+			ingredientsFilterDlcs,
+			customerStore.persistence.ingredient.filters.dlcs.set,
+			customerStore.persistence.ingredient.filters.levels.set,
+			allIngredientLevels,
+			ingredientsFilterLevels,
+		]
 	);
 
 	const ingredientTabVisibilityState = customerStore.persistence.ingredient.tabVisibility.use();

@@ -32,6 +32,7 @@ const storeVersion = {
 	popularTypo: 3,
 	price: 4, // eslint-disable-next-line sort-keys
 	cooker: 5,
+	ingredientLevel: 6,
 } as const;
 
 const state = {
@@ -54,6 +55,7 @@ const state = {
 	},
 	ingredient: {
 		dlcs: instance_ingredient.getValuesByProp(instance_ingredient.data, 'dlc', true).sort(numberSort),
+		levels: instance_ingredient.getValuesByProp(instance_ingredient.data, 'level', true).sort(numberSort),
 	},
 	recipe: {
 		cookers: instance_recipe.getValuesByProp(instance_recipe.data, 'cooker', true).sort(pinyinSort),
@@ -84,6 +86,7 @@ const state = {
 		ingredient: {
 			filters: {
 				dlcs: [] as string[],
+				levels: [] as string[],
 			},
 			pinyinSortState: PinyinSortState.NONE,
 			tabVisibility: TabVisibilityState.collapse,
@@ -170,7 +173,7 @@ const customerRareStore = store(state, {
 	persist: {
 		enabled: true,
 		name: 'page-customer_rare-storage',
-		version: storeVersion.cooker,
+		version: storeVersion.ingredientLevel,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -233,6 +236,11 @@ const customerRareStore = store(state, {
 						delete meal.hasMystiaKitchenware;
 					}
 				}
+			}
+			if (version < storeVersion.ingredientLevel) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				const {filters} = oldState.persistence.ingredient;
+				filters.levels = [];
 			}
 			return persistedState as typeof state;
 		},

@@ -22,7 +22,8 @@ import {numberSort, pinyinSort} from '@/utils';
 const storeVersion = {
 	initial: 0,
 	popular: 1,
-	popularFull: 2,
+	popularFull: 2, // eslint-disable-next-line sort-keys
+	ingredientLevel: 3,
 } as const;
 
 const state = {
@@ -44,6 +45,7 @@ const state = {
 	},
 	ingredient: {
 		dlcs: instance_ingredient.getValuesByProp(instance_ingredient.data, 'dlc', true).sort(numberSort),
+		levels: instance_ingredient.getValuesByProp(instance_ingredient.data, 'level', true).sort(numberSort),
 	},
 	recipe: {
 		cookers: instance_recipe.getValuesByProp(instance_recipe.data, 'cooker', true).sort(pinyinSort),
@@ -72,6 +74,7 @@ const state = {
 		ingredient: {
 			filters: {
 				dlcs: [] as string[],
+				levels: [] as string[],
 			},
 			pinyinSortState: PinyinSortState.NONE,
 			tabVisibility: TabVisibilityState.collapse,
@@ -145,7 +148,7 @@ const customerNormalStore = store(state, {
 	persist: {
 		enabled: true,
 		name: 'page-customer_normal-storage',
-		version: storeVersion.popularFull,
+		version: storeVersion.ingredientLevel,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -168,6 +171,11 @@ const customerNormalStore = store(state, {
 						};
 					}
 				}
+			}
+			if (version < storeVersion.ingredientLevel) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				const {filters} = oldState.persistence.ingredient;
+				filters.levels = [];
 			}
 			return persistedState as typeof state;
 		},
