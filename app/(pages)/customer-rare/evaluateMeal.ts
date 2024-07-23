@@ -149,7 +149,7 @@ export function evaluateMeal({
 	currentRecipeTagsWithPopular,
 	hasMystiaCooker,
 }: IParameters) {
-	if (currentBeverageTags.length === 0 && currentRecipeTagsWithPopular.length === 0) {
+	if (currentBeverageTags.length === 0 || !currentRecipe) {
 		return null;
 	}
 
@@ -195,11 +195,9 @@ export function evaluateMeal({
 		})
 	);
 
-	if (currentRecipe) {
-		const {name: currentRecipeName} = currentRecipe;
-		mealScore = checkEasterEgg({currentCustomerName, currentIngredients, currentRecipeName, mealScore});
-		mealScore = checkRecipeFrom({currentCustomerName, currentRecipe, mealScore});
-	}
+	const {name: currentRecipeName} = currentRecipe;
+	mealScore = checkEasterEgg({currentCustomerName, currentIngredients, currentRecipeName, mealScore});
+	mealScore = checkRecipeFrom({currentCustomerName, currentRecipe, mealScore});
 
 	return getRatingKey(mealScore);
 }
