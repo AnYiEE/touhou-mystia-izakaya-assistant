@@ -173,7 +173,10 @@ export default memo(
 							<Tooltip
 								showArrow
 								color={currentRating ? customerRatingColorMap[currentRating] : undefined}
-								content={currentRating ?? '继续选择以评级'}
+								content={
+									currentRating ??
+									`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipe ? '' : '料理、'}客人点单需求以评级`
+								}
 							>
 								<div className="cursor-pointer">
 									<PopoverTrigger>
