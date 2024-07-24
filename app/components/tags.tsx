@@ -22,7 +22,7 @@ const Tag: FC<ITagProps> = memo(
 	) {
 		return (
 			<div
-				className={twMerge('max-w-1/5 rounded border-1 border-solid px-1', className)}
+				className={twMerge('max-w-1/5 flex items-center rounded border-1 border-solid px-1', className)}
 				style={{
 					backgroundColor: tagStyle.backgroundColor ?? 'inherit',
 					borderColor: tagStyle.borderColor ?? 'inherit',
