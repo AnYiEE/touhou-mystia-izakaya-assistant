@@ -219,7 +219,7 @@ export default memo(
 									<span className="-ml-2">
 										<Popover showArrow>
 											<Tooltip showArrow content={tags} offset={-2} placement="right">
-												<span className="cursor-pointer underline decoration-dotted">
+												<span>
 													<PopoverTrigger>
 														<FontAwesomeIconButton
 															icon={faTags}
