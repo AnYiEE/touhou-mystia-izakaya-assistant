@@ -72,7 +72,7 @@ export default memo(function Content({data}: IProps) {
 																		content={probability}
 																		offset={-1.5}
 																	>
-																		<span className="cursor-pointer underline decoration-dotted">
+																		<span className="cursor-pointer underline decoration-dotted underline-offset-2">
 																			<PopoverTrigger>
 																				<span tabIndex={0}>{item[0]}</span>
 																			</PopoverTrigger>
