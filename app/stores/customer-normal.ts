@@ -82,7 +82,9 @@ const state = {
 		recipe: {
 			table: {
 				rows: 7,
-				visibleColumns: recipeTableColumns.filter(({key}) => key !== 'cooker').map(({key}) => key),
+				visibleColumns: recipeTableColumns
+					.filter(({key}) => !['cooker', 'time'].includes(key))
+					.map(({key}) => key),
 			},
 		},
 
