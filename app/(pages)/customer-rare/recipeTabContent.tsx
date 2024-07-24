@@ -425,7 +425,9 @@ export default memo(
 								defaultItems={allRecipeNames}
 								placeholder="名称"
 								size="sm"
-								startContent={<FontAwesomeIcon icon={faMagnifyingGlass} />}
+								startContent={
+									<FontAwesomeIcon icon={faMagnifyingGlass} className="pointer-events-none" />
+								}
 								variant="flat"
 								onClear={onSearchValueClear}
 								onInputChange={onSearchValueChange}
