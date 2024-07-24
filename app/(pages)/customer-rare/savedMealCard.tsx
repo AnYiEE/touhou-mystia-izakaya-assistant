@@ -78,18 +78,21 @@ export default memo(
 															<Tags.Tag
 																tag={(<Price>{price}</Price>) as never}
 																tagStyle={{}}
+																className="leading-none"
 															/>
 														)}
 														{order.recipeTag && (
 															<Tags.Tag
 																tag={order.recipeTag}
 																tagStyle={RECIPE_TAG_STYLE.positive}
+																className="leading-none"
 															/>
 														)}
 														{order.beverageTag && (
 															<Tags.Tag
 																tag={order.beverageTag}
 																tagStyle={BEVERAGE_TAG_STYLE.positive}
+																className="leading-none"
 															/>
 														)}
 													</TagGroup>
