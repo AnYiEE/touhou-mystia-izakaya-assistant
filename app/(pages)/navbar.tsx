@@ -107,7 +107,7 @@ export default memo(function Navbar() {
 			}}
 		>
 			<NavbarContent justify="start" className="basis-full md:basis-1/5">
-				<NavbarBrand as="li" className="max-w-fit gap-3">
+				<NavbarBrand as="li" className="max-w-fit">
 					<Link
 						color="foreground"
 						href="/"
@@ -125,7 +125,7 @@ export default memo(function Navbar() {
 						</p>
 					</Link>
 				</NavbarBrand>
-				<ul className="hidden justify-start gap-4 pl-2 md:flex">
+				<ul className="hidden justify-start gap-3 pl-2 md:flex lg:gap-4">
 					{navItems.map(({href, label}) => {
 						const isActivated = href === pathname;
 						return (
