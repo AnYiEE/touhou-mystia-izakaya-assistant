@@ -83,7 +83,7 @@ export default memo(
 			[calculatedIndex, calculatedSize, calculatedHeight, calculatedWidth, instance]
 		);
 
-		const finalTitle = title || calculatedName;
+		const finalTitle = title ?? calculatedName;
 
 		return (
 			<span
