@@ -14,6 +14,11 @@ const {domain} = siteConfig;
 const trackerBaseUrl = 'https://track.izakaya.cc';
 const siteId = 11;
 
+function push(...args: unknown[][]) {
+	window._paq ??= [];
+	window._paq.push(...args);
+}
+
 export enum TrackCategory {
 	Click = 'Click',
 	Select = 'Select',
@@ -41,8 +46,7 @@ export function trackEvent(
 	name?: string,
 	value?: number | string
 ) {
-	window._paq ??= [] as unknown as NonNullable<Window['_paq']>;
-	window._paq.push(
+	push(
 		['setCustomUrl', location.href],
 		['setDocumentTitle', document.title],
 		['trackEvent', category, action, name, value]
@@ -50,8 +54,7 @@ export function trackEvent(
 }
 
 function trackPageView() {
-	window._paq ??= [] as unknown as NonNullable<Window['_paq']>;
-	window._paq.push(['setCustomUrl', location.href], ['setDocumentTitle', document.title], ['trackPageView']);
+	push(['setCustomUrl', location.href], ['setDocumentTitle', document.title], ['trackPageView']);
 }
 
 export default memo(function Analytics() {
@@ -64,8 +67,7 @@ export default memo(function Analytics() {
 			return;
 		}
 
-		window._paq ??= [] as unknown as NonNullable<Window['_paq']>;
-		window._paq.push(
+		push(
 			['enableHeartBeatTimer'],
 			['enableLinkTracking'],
 			['setCookieDomain', `*.${domain}`],
