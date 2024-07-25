@@ -3,7 +3,16 @@ import {twJoin} from 'tailwind-merge';
 
 import {useLongPress} from 'use-long-press';
 
-import {Avatar, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
+import {
+	Avatar,
+	Card,
+	Divider,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	type Selection,
+	Tooltip,
+} from '@nextui-org/react';
 import {faArrowsRotate} from '@fortawesome/free-solid-svg-icons';
 
 import SettingsButton from './settingsButton';
@@ -161,31 +170,33 @@ export default memo(
 			}, 0);
 		}
 
+		const avatarRatingColor = currentRating ? customerRatingColorMap[currentRating] : undefined;
+		const avatarRatingContent =
+			currentRating ??
+			`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipe ? '' : '料理、'}客人点单需求以评级`;
+
+		const getTagTooltip = (selectedTags: Selection, tag: string) => (
+			<div>
+				<p>
+					双击：将此标签
+					{(selectedTags as Set<string>).has(tag) ? '从筛选列表中移除' : '加入至筛选列表中'}
+				</p>
+				<p>长按：将此标签视为客人点单需求</p>
+			</div>
+		);
+
 		return (
 			<Card fullWidth shadow="sm" ref={ref}>
 				<div className="flex flex-col gap-3 p-4 md:flex-row">
 					<div className="flex flex-col gap-2">
-						<Popover
-							showArrow
-							color={currentRating ? customerRatingColorMap[currentRating] : undefined}
-							offset={11}
-						>
-							<Tooltip
-								showArrow
-								color={currentRating ? customerRatingColorMap[currentRating] : undefined}
-								content={
-									currentRating ??
-									`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipe ? '' : '料理、'}客人点单需求以评级`
-								}
-							>
+						<Popover showArrow color={avatarRatingColor} offset={11}>
+							<Tooltip showArrow color={avatarRatingColor} content={avatarRatingContent}>
 								<div className="cursor-pointer">
 									<PopoverTrigger>
 										<div role="button" tabIndex={0} className="flex flex-col items-center gap-2">
 											<Avatar
 												isBordered={Boolean(currentRating)}
-												color={
-													currentRating ? customerRatingColorMap[currentRating] : undefined
-												}
+												color={avatarRatingColor}
 												radius="full"
 												icon={
 													<Sprite
@@ -209,10 +220,7 @@ export default memo(
 									</PopoverTrigger>
 								</div>
 							</Tooltip>
-							<PopoverContent>
-								{currentRating ??
-									`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipe ? '' : '料理、'}客人点单需求以评级`}
-							</PopoverContent>
+							<PopoverContent>{avatarRatingContent}</PopoverContent>
 						</Popover>
 						<div className="flex flex-col whitespace-nowrap text-xs font-medium text-default-500">
 							<p className="flex justify-between">
@@ -244,17 +252,7 @@ export default memo(
 									<Tooltip
 										key={tag}
 										showArrow
-										content={
-											<div>
-												<p>
-													双击：将此标签
-													{(selectedCustomerPositiveTags as Set<string>).has(tag)
-														? '从筛选列表中移除'
-														: '加入至筛选列表中'}
-												</p>
-												<p>长按：将此标签视为客人点单需求</p>
-											</div>
-										}
+										content={getTagTooltip(selectedCustomerPositiveTags, tag)}
 									>
 										<Tags.Tag
 											tag={tag}
@@ -314,17 +312,7 @@ export default memo(
 									<Tooltip
 										key={tag}
 										showArrow
-										content={
-											<div>
-												<p>
-													双击：将此标签
-													{(selectedCustomerBeverageTags as Set<string>).has(tag)
-														? '从筛选列表中移除'
-														: '加入至筛选列表中'}
-												</p>
-												<p>长按：将此标签视为客人点单需求</p>
-											</div>
-										}
+										content={getTagTooltip(selectedCustomerBeverageTags, tag)}
 									>
 										<Tags.Tag
 											tag={tag}

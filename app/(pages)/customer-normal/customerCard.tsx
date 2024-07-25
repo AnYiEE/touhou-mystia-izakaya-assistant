@@ -1,7 +1,16 @@
 import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
-import {Avatar, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
+import {
+	Avatar,
+	Card,
+	Divider,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	type Selection,
+	Tooltip,
+} from '@nextui-org/react';
 import {faArrowsRotate} from '@fortawesome/free-solid-svg-icons';
 
 import SettingsButton from './settingsButton';
@@ -133,6 +142,9 @@ export default memo(
 			}, 0);
 		}
 
+		const getTagTooltip = (selectedTags: Selection, tag: string) =>
+			`双击：将此标签${(selectedTags as Set<string>).has(tag) ? '从筛选列表中移除' : '加入至筛选列表中'}`;
+
 		return (
 			<Card fullWidth shadow="sm" ref={ref}>
 				<div className="flex flex-col gap-3 p-4 md:flex-row">
@@ -172,11 +184,7 @@ export default memo(
 									<Tooltip
 										key={tag}
 										showArrow
-										content={`双击：将此标签${
-											(selectedCustomerPositiveTags as Set<string>).has(tag)
-												? '从筛选列表中移除'
-												: '加入至筛选列表中'
-										}`}
+										content={getTagTooltip(selectedCustomerPositiveTags, tag)}
 									>
 										<Tags.Tag
 											tag={tag}
@@ -223,11 +231,7 @@ export default memo(
 									<Tooltip
 										key={tag}
 										showArrow
-										content={`双击：将此标签${
-											(selectedCustomerPositiveTags as Set<string>).has(tag)
-												? '从筛选列表中移除'
-												: '加入至筛选列表中'
-										}`}
+										content={getTagTooltip(selectedCustomerBeverageTags, tag)}
 									>
 										<Tags.Tag
 											tag={tag}
