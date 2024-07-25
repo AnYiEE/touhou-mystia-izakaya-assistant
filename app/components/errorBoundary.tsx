@@ -2,7 +2,7 @@
 
 import {Component, type ErrorInfo, type PropsWithChildren} from 'react';
 
-interface IState {
+interface IStates {
 	error: Error | null;
 	info: ErrorInfo | null;
 	hasError: boolean;
@@ -10,7 +10,7 @@ interface IState {
 
 interface IProps extends PropsWithChildren<object> {}
 
-export default class ErrorBoundary extends Component<IProps, IState> {
+export default class ErrorBoundary extends Component<IProps, IStates> {
 	public constructor(props: IProps) {
 		super(props);
 
@@ -44,7 +44,7 @@ export default class ErrorBoundary extends Component<IProps, IState> {
 		if (this.state.hasError) {
 			return (
 				<div className="m-4 flex flex-col gap-3">
-					<h1 className="text-2xl font-bold">Oops, something went wrong!</h1>
+					<h1 className="text-2xl font-bold">出错啦！以下是错误信息：</h1>
 					<p className="text-lg">{this.state.error?.toString()}</p>
 					<pre className="flex flex-col gap-2 whitespace-pre-wrap break-all font-mono">
 						<code>{this.state.error?.stack}</code>
@@ -54,7 +54,7 @@ export default class ErrorBoundary extends Component<IProps, IState> {
 						className="cursor-pointer bg-content1 p-2 hover:bg-content2"
 						onClick={this.handleClick.bind(this)}
 					>
-						Click here to reset local storage and reload the page.
+						点此重试（将清空已保存的数据）
 					</button>
 				</div>
 			);
