@@ -181,7 +181,7 @@ export default memo(
 					双击：将此标签
 					{(selectedTags as Set<string>).has(tag) ? '从筛选列表中移除' : '加入至筛选列表中'}
 				</p>
-				<p>长按：将此标签视为客人点单需求</p>
+				<p>长按：{currentCustomerOrder.beverageTag === tag ? '不再' : ''}将此标签视为客人点单需求</p>
 			</div>
 		);
 
