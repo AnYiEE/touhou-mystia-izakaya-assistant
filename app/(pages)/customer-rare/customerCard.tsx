@@ -209,7 +209,10 @@ export default memo(
 									</PopoverTrigger>
 								</div>
 							</Tooltip>
-							<PopoverContent>{currentRating ?? '继续选择以评级'}</PopoverContent>
+							<PopoverContent>
+								{currentRating ??
+									`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipe ? '' : '料理、'}客人点单需求以评级`}
+							</PopoverContent>
 						</Popover>
 						<div className="flex flex-col whitespace-nowrap text-xs font-medium text-default-500">
 							<p className="flex justify-between">
