@@ -1,6 +1,6 @@
 import {Fragment, forwardRef, memo} from 'react';
 
-import {Button, Card, Divider, Tooltip} from '@nextui-org/react';
+import {Button, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
 
 import {Plus} from './resultCard';
 import {TrackCategory, trackEvent} from '@/components/analytics';
@@ -34,18 +34,47 @@ export default memo(
 								<div className="flex flex-col items-center gap-4 md:flex-row">
 									<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
 										<div className="flex items-center gap-2">
-											<Sprite
-												target="cooker"
-												name={instance_recipe.getPropsByName(recipe, 'cooker')}
-												size={1.5}
-											/>
-											<Tooltip showArrow content={recipe} offset={2}>
-												<Sprite target="recipe" name={recipe} size={2} />
-											</Tooltip>
+											{(() => {
+												const cooker = instance_recipe.getPropsByName(recipe, 'cooker');
+												return (
+													<Popover showArrow offset={10}>
+														<Tooltip showArrow content={cooker}>
+															<span className="cursor-pointer">
+																<PopoverTrigger>
+																	<Sprite
+																		target="cooker"
+																		name={cooker}
+																		size={1.5}
+																		title=""
+																	/>
+																</PopoverTrigger>
+															</span>
+														</Tooltip>
+														<PopoverContent>{cooker}</PopoverContent>
+													</Popover>
+												);
+											})()}
+											<Popover showArrow offset={6}>
+												<Tooltip showArrow content={recipe} offset={2}>
+													<span className="cursor-pointer">
+														<PopoverTrigger>
+															<Sprite target="recipe" name={recipe} size={2} />
+														</PopoverTrigger>
+													</span>
+												</Tooltip>
+												<PopoverContent>{recipe}</PopoverContent>
+											</Popover>
 											<Plus size={0.75} />
-											<Tooltip showArrow content={beverage} offset={2}>
-												<Sprite target="beverage" name={beverage} size={2} />
-											</Tooltip>
+											<Popover showArrow offset={6}>
+												<Tooltip showArrow content={beverage} offset={2}>
+													<span className="cursor-pointer">
+														<PopoverTrigger>
+															<Sprite target="beverage" name={beverage} size={2} />
+														</PopoverTrigger>
+													</span>
+												</Tooltip>
+												<PopoverContent>{beverage}</PopoverContent>
+											</Popover>
 										</div>
 										<Plus size={0.75} />
 										<div className="flex items-center gap-x-3">
@@ -55,9 +84,16 @@ export default memo(
 											]
 												.slice(0, 5)
 												.map((name, index) => (
-													<Tooltip key={index} showArrow content={name} offset={2}>
-														<Sprite target="ingredient" name={name} size={2} />
-													</Tooltip>
+													<Popover key={index} showArrow offset={6}>
+														<Tooltip showArrow content={name} offset={2}>
+															<span className="cursor-pointer">
+																<PopoverTrigger>
+																	<Sprite target="ingredient" name={name} size={2} />
+																</PopoverTrigger>
+															</span>
+														</Tooltip>
+														<PopoverContent>{name}</PopoverContent>
+													</Popover>
 												))}
 										</div>
 									</div>

@@ -1,7 +1,7 @@
 import {Fragment, forwardRef, memo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
-import {Avatar, Button, Card, Divider, Tooltip} from '@nextui-org/react';
+import {Avatar, Button, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
 
 import {Plus} from './resultCard';
 import TagGroup from './tagGroup';
@@ -105,28 +105,54 @@ export default memo(
 											/>
 										</Tooltip>
 										<div className="flex items-center gap-2">
-											<Tooltip
-												showArrow
-												content="此点单使用夜雀系列厨具制作"
-												isDisabled={!hasMystiaCooker}
-											>
-												<Sprite
-													target="cooker"
-													name={instance_recipe.getPropsByName(recipe, 'cooker')}
-													size={1.5}
-													className={twJoin(
-														hasMystiaCooker &&
-															'rounded-full ring-2 ring-warning-400 dark:ring-warning-200'
-													)}
-												/>
-											</Tooltip>
-											<Tooltip showArrow content={recipe} offset={2}>
-												<Sprite target="recipe" name={recipe} size={2} />
-											</Tooltip>
+											{(() => {
+												const originalCooker = instance_recipe.getPropsByName(recipe, 'cooker');
+												const cooker = hasMystiaCooker
+													? `夜雀${originalCooker}`
+													: originalCooker;
+												return (
+													<Popover showArrow offset={10}>
+														<Tooltip showArrow content={cooker}>
+															<span className="cursor-pointer">
+																<PopoverTrigger>
+																	<Sprite
+																		target="cooker"
+																		name={originalCooker}
+																		size={1.5}
+																		title=""
+																		className={twJoin(
+																			hasMystiaCooker &&
+																				'rounded-full ring-2 ring-warning-400 dark:ring-warning-200'
+																		)}
+																	/>
+																</PopoverTrigger>
+															</span>
+														</Tooltip>
+														<PopoverContent>{cooker}</PopoverContent>
+													</Popover>
+												);
+											})()}
+											<Popover showArrow offset={6}>
+												<Tooltip showArrow content={recipe} offset={2}>
+													<span className="cursor-pointer">
+														<PopoverTrigger>
+															<Sprite target="recipe" name={recipe} size={2} />
+														</PopoverTrigger>
+													</span>
+												</Tooltip>
+												<PopoverContent>{recipe}</PopoverContent>
+											</Popover>
 											<Plus size={0.75} className="mx-2 xl:m-0" />
-											<Tooltip showArrow content={beverage} offset={2}>
-												<Sprite target="beverage" name={beverage} size={2} />
-											</Tooltip>
+											<Popover showArrow offset={6}>
+												<Tooltip showArrow content={beverage} offset={2}>
+													<span className="cursor-pointer">
+														<PopoverTrigger>
+															<Sprite target="beverage" name={beverage} size={2} />
+														</PopoverTrigger>
+													</span>
+												</Tooltip>
+												<PopoverContent>{beverage}</PopoverContent>
+											</Popover>
 										</div>
 										<Plus size={0.75} className="xl:m-0" />
 										<div className="flex items-center gap-x-3 xl:gap-1">
@@ -136,9 +162,16 @@ export default memo(
 											]
 												.slice(0, 5)
 												.map((name, index) => (
-													<Tooltip key={index} showArrow content={name} offset={2}>
-														<Sprite target="ingredient" name={name} size={2} />
-													</Tooltip>
+													<Popover key={index} showArrow offset={6}>
+														<Tooltip showArrow content={name} offset={2}>
+															<span className="cursor-pointer">
+																<PopoverTrigger>
+																	<Sprite target="ingredient" name={name} size={2} />
+																</PopoverTrigger>
+															</span>
+														</Tooltip>
+														<PopoverContent>{name}</PopoverContent>
+													</Popover>
 												))}
 										</div>
 									</div>
