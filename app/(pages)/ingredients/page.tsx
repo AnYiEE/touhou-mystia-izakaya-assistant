@@ -40,7 +40,7 @@ export default memo(function Ingredients() {
 				const isDlcMatched = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
 				const isLevelMatched = filterLevels.length > 0 ? filterLevels.includes(level.toString()) : true;
 				const isTagMatched =
-					filterTags.length > 0 ? filterTags.some((tag) => (tags as string[]).includes(tag)) : true;
+					filterTags.length > 0 ? filterTags.every((tag) => (tags as string[]).includes(tag)) : true;
 				const isNoTagMatched =
 					filterNoTags.length > 0 ? !filterNoTags.some((tag) => (tags as string[]).includes(tag)) : true;
 

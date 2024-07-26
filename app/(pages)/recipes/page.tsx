@@ -50,7 +50,7 @@ export default memo(function Recipes() {
 				const isCookerMatched = filterCookers.length > 0 ? filterCookers.includes(cooker) : true;
 				const isIngredientMatched =
 					filterIngredients.length > 0
-						? filterIngredients.some((ingredient) => (ingredients as string[]).includes(ingredient))
+						? filterIngredients.every((ingredient) => (ingredients as string[]).includes(ingredient))
 						: true;
 				const isNoIngredientMatched =
 					filterNoIngredients.length > 0
@@ -58,7 +58,7 @@ export default memo(function Recipes() {
 						: true;
 				const isNegativeTagMatched =
 					filterNegativeTags.length > 0
-						? filterNegativeTags.some((tag) => (negativeTags as string[]).includes(tag))
+						? filterNegativeTags.every((tag) => (negativeTags as string[]).includes(tag))
 						: true;
 				const isNoNegativeTagMatched =
 					filterNoNegativeTags.length > 0
@@ -66,7 +66,7 @@ export default memo(function Recipes() {
 						: true;
 				const isPositiveTagMatched =
 					filterPositiveTags.length > 0
-						? filterPositiveTags.some((tag) => (positiveTags as string[]).includes(tag))
+						? filterPositiveTags.every((tag) => (positiveTags as string[]).includes(tag))
 						: true;
 				const isNoPositiveTagMatched =
 					filterNoPositiveTags.length > 0
