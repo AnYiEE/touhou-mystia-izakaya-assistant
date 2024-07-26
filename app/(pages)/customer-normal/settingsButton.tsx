@@ -71,7 +71,7 @@ export default memo(function SettingsButton() {
 								isSelected={isNegativePopularTag}
 								size="sm"
 								onValueChange={onIsNegativePopularTagChange}
-								aria-label="设置为流行厌恶"
+								aria-label={`设置为流行${isNegativePopularTag ? '喜爱' : '厌恶'}`}
 								classNames={{
 									wrapper: 'bg-primary',
 								}}
