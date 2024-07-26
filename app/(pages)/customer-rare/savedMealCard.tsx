@@ -111,9 +111,9 @@ export default memo(
 													? `夜雀${originalCooker}`
 													: originalCooker;
 												return (
-													<Popover showArrow offset={10}>
+													<Popover showArrow offset={11}>
 														<Tooltip showArrow content={cooker}>
-															<span className="cursor-pointer">
+															<span className="flex cursor-pointer">
 																<PopoverTrigger>
 																	<Sprite
 																		target="cooker"
@@ -122,7 +122,7 @@ export default memo(
 																		title=""
 																		className={twJoin(
 																			hasMystiaCooker &&
-																				'rounded-full ring-2 ring-warning-400 dark:ring-warning-200'
+																				'rounded-full ring-2 ring-warning-400 ring-offset-1 dark:ring-warning-200'
 																		)}
 																	/>
 																</PopoverTrigger>
@@ -132,9 +132,9 @@ export default memo(
 													</Popover>
 												);
 											})()}
-											<Popover showArrow offset={6}>
-												<Tooltip showArrow content={recipe} offset={2}>
-													<span className="cursor-pointer">
+											<Popover showArrow offset={8}>
+												<Tooltip showArrow content={recipe} offset={4}>
+													<span className="flex cursor-pointer">
 														<PopoverTrigger>
 															<Sprite target="recipe" name={recipe} size={2} />
 														</PopoverTrigger>
@@ -143,9 +143,9 @@ export default memo(
 												<PopoverContent>{recipe}</PopoverContent>
 											</Popover>
 											<Plus size={0.75} className="mx-2 xl:m-0" />
-											<Popover showArrow offset={6}>
-												<Tooltip showArrow content={beverage} offset={2}>
-													<span className="cursor-pointer">
+											<Popover showArrow offset={8}>
+												<Tooltip showArrow content={beverage} offset={4}>
+													<span className="flex cursor-pointer">
 														<PopoverTrigger>
 															<Sprite target="beverage" name={beverage} size={2} />
 														</PopoverTrigger>
@@ -155,25 +155,63 @@ export default memo(
 											</Popover>
 										</div>
 										<Plus size={0.75} className="xl:m-0" />
-										<div className="flex items-center gap-x-3 xl:gap-1">
-											{[
-												...instance_recipe.getPropsByName(recipe, 'ingredients'),
-												...extraIngredients,
-											]
-												.slice(0, 5)
-												.map((name, index) => (
-													<Popover key={index} showArrow offset={6}>
-														<Tooltip showArrow content={name} offset={2}>
-															<span className="cursor-pointer">
-																<PopoverTrigger>
-																	<Sprite target="ingredient" name={name} size={2} />
-																</PopoverTrigger>
-															</span>
-														</Tooltip>
-														<PopoverContent>{name}</PopoverContent>
-													</Popover>
-												))}
-										</div>
+										{(() => {
+											const originalIngredients = instance_recipe.getPropsByName(
+												recipe,
+												'ingredients'
+											);
+											const lestExtraIngredientsLength = Math.max(
+												5 - originalIngredients.length,
+												0
+											);
+											const lestExtraIngredients = extraIngredients.slice(
+												0,
+												lestExtraIngredientsLength
+											);
+											return (
+												<div className="flex items-center gap-x-3 xl:gap-1">
+													{originalIngredients.map((name, index) => (
+														<Popover key={index} showArrow offset={8}>
+															<Tooltip showArrow content={name} offset={4}>
+																<span className="flex cursor-pointer">
+																	<PopoverTrigger>
+																		<Sprite
+																			target="ingredient"
+																			name={name}
+																			size={2}
+																		/>
+																	</PopoverTrigger>
+																</span>
+															</Tooltip>
+															<PopoverContent>{name}</PopoverContent>
+														</Popover>
+													))}
+													{lestExtraIngredients.length > 0 && (
+														<div className="flex items-center gap-x-3 rounded outline outline-2 outline-offset-1 outline-divider xl:gap-1">
+															{lestExtraIngredients.map((name, index) => {
+																const content = `额外食材：${name}`;
+																return (
+																	<Popover key={index} showArrow offset={8}>
+																		<Tooltip showArrow content={content} offset={4}>
+																			<span className="flex cursor-pointer">
+																				<PopoverTrigger>
+																					<Sprite
+																						target="ingredient"
+																						name={name}
+																						size={2}
+																					/>
+																				</PopoverTrigger>
+																			</span>
+																		</Tooltip>
+																		<PopoverContent>{content}</PopoverContent>
+																	</Popover>
+																);
+															})}
+														</div>
+													)}
+												</div>
+											);
+										})()}
 									</div>
 									<div className="flex w-full justify-center gap-2 md:w-auto xl:flex-col-reverse">
 										<Button
