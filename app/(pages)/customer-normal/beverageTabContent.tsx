@@ -105,11 +105,7 @@ export default memo(
 				};
 			});
 
-			if (
-				!hasNameFilter &&
-				(selectedDlcs === 'all' || selectedDlcs.size === 0) &&
-				(selectedCustomerBeverageTags === 'all' || selectedCustomerBeverageTags.size === 0)
-			) {
+			if (!hasNameFilter && selectedDlcs.size === 0 && selectedCustomerBeverageTags.size === 0) {
 				return clonedData;
 			}
 
@@ -123,10 +119,9 @@ export default memo(
 						pinyinWithoutTone.join('').includes(searchValueLowerCase) ||
 						pinyinFirstLetters.includes(searchValueLowerCase)
 					: true;
-				const isDlcMatched =
-					selectedDlcs !== 'all' && selectedDlcs.size > 0 ? selectedDlcs.has(dlc.toString()) : true;
+				const isDlcMatched = selectedDlcs.size > 0 ? selectedDlcs.has(dlc.toString()) : true;
 				const isTagsMatched =
-					selectedCustomerBeverageTags !== 'all' && selectedCustomerBeverageTags.size > 0
+					selectedCustomerBeverageTags.size > 0
 						? [...selectedCustomerBeverageTags].every((tag) => (tags as string[]).includes(tag as string))
 						: true;
 
@@ -171,13 +166,10 @@ export default memo(
 			return sortedData.slice(start, end);
 		}, [sortedData, tableCurrentPage, tableRowsPerPageNumber]);
 
-		const tableHeaderColumns = useMemo(() => {
-			if (tableVisibleColumns === 'all') {
-				return tableColumns;
-			}
-
-			return tableColumns.filter(({key}) => tableVisibleColumns.has(key));
-		}, [tableVisibleColumns]);
+		const tableHeaderColumns = useMemo(
+			() => tableColumns.filter(({key}) => tableVisibleColumns.has(key)),
+			[tableVisibleColumns]
+		);
 
 		const tableTotalPages = useMemo(
 			() => Math.ceil(filteredData.length / tableRowsPerPageNumber),
@@ -276,7 +268,7 @@ export default memo(
 
 		const onSelectedBeverageTagsChange = useCallback(
 			(value: Selection) => {
-				customerStore.shared.customer.beverageTags.set(value);
+				customerStore.shared.customer.beverageTags.set(value as SelectionSet);
 				customerStore.shared.beverage.page.set(1);
 			},
 			[customerStore.shared.beverage.page, customerStore.shared.customer.beverageTags]
@@ -284,7 +276,7 @@ export default memo(
 
 		const onSelectedDlcsChange = useCallback(
 			(value: Selection) => {
-				customerStore.shared.beverage.dlcs.set(value);
+				customerStore.shared.beverage.dlcs.set(value as SelectionSet);
 				customerStore.shared.beverage.page.set(1);
 			},
 			[customerStore.shared.beverage.dlcs, customerStore.shared.beverage.page]
@@ -444,6 +436,7 @@ export default memo(
 				allBeverageDlcs,
 				allBeverageNames,
 				allBeverageTags,
+				customerStore.beverageTableColumns.set,
 				filteredData.length,
 				onSearchValueChange,
 				onSearchValueClear,
@@ -453,7 +446,6 @@ export default memo(
 				searchValue,
 				selectedCustomerBeverageTags,
 				selectedDlcs,
-				customerStore.beverageTableColumns.set,
 				tableRowsPerPage,
 				tableSelectableRows,
 				tableVisibleColumns,

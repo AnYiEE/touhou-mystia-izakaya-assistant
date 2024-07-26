@@ -195,11 +195,7 @@ export default memo(function CustomerRareTutorial() {
 			isBeverageTableSorted.current = true;
 			driverRef.current.moveNext();
 		}
-		if (
-			currentFilteredBeverageTags instanceof Set &&
-			currentFilteredBeverageTags.size > 0 &&
-			!hasFilteredBeverageTags.current
-		) {
+		if (currentFilteredBeverageTags.size > 0 && !hasFilteredBeverageTags.current) {
 			hasFilteredBeverageTags.current = true;
 			driverRef.current.moveNext();
 		}

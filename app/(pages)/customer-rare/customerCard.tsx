@@ -59,8 +59,8 @@ export default memo(
 						currentCustomerOrder.recipeTag ||
 						currentBeverageName ||
 						currentRecipe ||
-						(selectedCustomerBeverageTags instanceof Set && selectedCustomerBeverageTags.size > 0) ||
-						(selectedCustomerPositiveTags instanceof Set && selectedCustomerPositiveTags.size > 0)
+						selectedCustomerBeverageTags.size > 0 ||
+						selectedCustomerPositiveTags.size > 0
 				),
 			[
 				currentBeverageName,
@@ -179,7 +179,7 @@ export default memo(
 			<div>
 				<p>
 					双击：将此标签
-					{(selectedTags as Set<string>).has(tag) ? '从筛选列表中移除' : '加入至筛选列表中'}
+					{(selectedTags as SelectionSet).has(tag) ? '从筛选列表中移除' : '加入至筛选列表中'}
 				</p>
 				<p>长按：{currentCustomerOrder.beverageTag === tag ? '不再' : ''}将此标签视为客人点单需求</p>
 			</div>
@@ -260,12 +260,10 @@ export default memo(
 											handleDoubleClick={(clickedTag) => {
 												customerStore.shared.tab.set('recipe');
 												customerStore.shared.customer.positiveTags.set((prev) => {
-													if (prev instanceof Set) {
-														if (prev.has(clickedTag)) {
-															prev.delete(clickedTag);
-														} else {
-															prev.add(clickedTag);
-														}
+													if (prev.has(clickedTag)) {
+														prev.delete(clickedTag);
+													} else {
+														prev.add(clickedTag);
 													}
 												});
 											}}
@@ -320,12 +318,10 @@ export default memo(
 											handleDoubleClick={(clickedTag) => {
 												customerStore.shared.tab.set('beverage');
 												customerStore.shared.customer.beverageTags.set((prev) => {
-													if (prev instanceof Set) {
-														if (prev.has(clickedTag)) {
-															prev.delete(clickedTag);
-														} else {
-															prev.add(clickedTag);
-														}
+													if (prev.has(clickedTag)) {
+														prev.delete(clickedTag);
+													} else {
+														prev.add(clickedTag);
 													}
 												});
 											}}

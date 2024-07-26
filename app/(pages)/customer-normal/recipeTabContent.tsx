@@ -124,9 +124,9 @@ export default memo(
 
 			if (
 				!hasNameFilter &&
-				(selectedDlcs === 'all' || selectedDlcs.size === 0) &&
-				(selectedCookers === 'all' || selectedCookers.size === 0) &&
-				(selectedCustomerPositiveTags === 'all' || selectedCustomerPositiveTags.size === 0)
+				selectedDlcs.size === 0 &&
+				selectedCookers.size === 0 &&
+				selectedCustomerPositiveTags.size === 0
 			) {
 				return clonedData;
 			}
@@ -145,12 +145,10 @@ export default memo(
 						pinyinWithoutTone.join('').includes(searchValueLowerCase) ||
 						pinyinFirstLetters.includes(searchValueLowerCase)
 					: true;
-				const isDlcMatched =
-					selectedDlcs !== 'all' && selectedDlcs.size > 0 ? selectedDlcs.has(dlc.toString()) : true;
-				const isCookerMatched =
-					selectedCookers !== 'all' && selectedCookers.size > 0 ? selectedCookers.has(cooker) : true;
+				const isDlcMatched = selectedDlcs.size > 0 ? selectedDlcs.has(dlc.toString()) : true;
+				const isCookerMatched = selectedCookers.size > 0 ? selectedCookers.has(cooker) : true;
 				const isPositiveTagsMatched =
-					selectedCustomerPositiveTags !== 'all' && selectedCustomerPositiveTags.size > 0
+					selectedCustomerPositiveTags.size > 0
 						? [...selectedCustomerPositiveTags].every((tag) =>
 								(recipeTagsWithPopular as string[]).includes(tag as string)
 							)
@@ -203,13 +201,10 @@ export default memo(
 			return sortedData.slice(start, end);
 		}, [sortedData, tableCurrentPage, tableRowsPerPageNumber]);
 
-		const tableHeaderColumns = useMemo(() => {
-			if (tableVisibleColumns === 'all') {
-				return tableColumns;
-			}
-
-			return tableColumns.filter(({key}) => tableVisibleColumns.has(key));
-		}, [tableVisibleColumns]);
+		const tableHeaderColumns = useMemo(
+			() => tableColumns.filter(({key}) => tableVisibleColumns.has(key)),
+			[tableVisibleColumns]
+		);
 
 		const tableTotalPages = useMemo(
 			() => Math.ceil(filteredData.length / tableRowsPerPageNumber),
@@ -359,7 +354,7 @@ export default memo(
 
 		const onSelectedDlcsChange = useCallback(
 			(value: Selection) => {
-				customerStore.shared.recipe.dlcs.set(value);
+				customerStore.shared.recipe.dlcs.set(value as SelectionSet);
 				customerStore.shared.recipe.page.set(1);
 			},
 			[customerStore.shared.recipe.dlcs, customerStore.shared.recipe.page]
@@ -367,7 +362,7 @@ export default memo(
 
 		const onSelectedCookersChange = useCallback(
 			(value: Selection) => {
-				customerStore.shared.recipe.cookers.set(value);
+				customerStore.shared.recipe.cookers.set(value as SelectionSet);
 				customerStore.shared.recipe.page.set(1);
 			},
 			[customerStore.shared.recipe.cookers, customerStore.shared.recipe.page]
@@ -375,7 +370,7 @@ export default memo(
 
 		const onSelectedPositiveTagsChange = useCallback(
 			(value: Selection) => {
-				customerStore.shared.customer.positiveTags.set(value);
+				customerStore.shared.customer.positiveTags.set(value as SelectionSet);
 				customerStore.shared.recipe.page.set(1);
 			},
 			[customerStore.shared.customer.positiveTags, customerStore.shared.recipe.page]

@@ -53,8 +53,8 @@ export default memo(
 				Boolean(
 					currentBeverageName ||
 						currentRecipe ||
-						(selectedCustomerBeverageTags instanceof Set && selectedCustomerBeverageTags.size > 0) ||
-						(selectedCustomerPositiveTags instanceof Set && selectedCustomerPositiveTags.size > 0)
+						selectedCustomerBeverageTags.size > 0 ||
+						selectedCustomerPositiveTags.size > 0
 				),
 			[currentBeverageName, currentRecipe, selectedCustomerBeverageTags, selectedCustomerPositiveTags]
 		);
@@ -63,12 +63,10 @@ export default memo(
 			(pressedTag: TTags) => {
 				customerStore.shared.tab.set('beverage');
 				customerStore.shared.customer.beverageTags.set((prev) => {
-					if (prev instanceof Set) {
-						if (prev.has(pressedTag)) {
-							prev.delete(pressedTag);
-						} else {
-							prev.add(pressedTag);
-						}
+					if (prev.has(pressedTag)) {
+						prev.delete(pressedTag);
+					} else {
+						prev.add(pressedTag);
 					}
 				});
 			},
@@ -79,12 +77,10 @@ export default memo(
 			(pressedTag: TTags) => {
 				customerStore.shared.tab.set('recipe');
 				customerStore.shared.customer.positiveTags.set((prev) => {
-					if (prev instanceof Set) {
-						if (prev.has(pressedTag)) {
-							prev.delete(pressedTag);
-						} else {
-							prev.add(pressedTag);
-						}
+					if (prev.has(pressedTag)) {
+						prev.delete(pressedTag);
+					} else {
+						prev.add(pressedTag);
 					}
 				});
 			},
@@ -143,7 +139,7 @@ export default memo(
 		}
 
 		const getTagTooltip = (selectedTags: Selection, tag: string) =>
-			`双击：将此标签${(selectedTags as Set<string>).has(tag) ? '从筛选列表中移除' : '加入至筛选列表中'}`;
+			`双击：将此标签${(selectedTags as SelectionSet).has(tag) ? '从筛选列表中移除' : '加入至筛选列表中'}`;
 
 		return (
 			<Card fullWidth shadow="sm" ref={ref}>

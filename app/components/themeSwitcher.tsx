@@ -33,8 +33,6 @@ enum ThemeLabel {
 	system = '跟随系统',
 }
 
-type TSingleSelection = Exclude<Selection, 'all'>;
-
 interface IProps {
 	isMenu: boolean;
 }
@@ -43,11 +41,11 @@ export default memo(function ThemeSwitcher({isMenu}: Partial<IProps>) {
 	const isMounted = useMounted();
 	const pathname = usePathname();
 	const {theme, setTheme} = useTheme();
-	const [selectedTheme, setSelectedTheme] = useState(new Set([theme]) as TSingleSelection);
+	const [selectedTheme, setSelectedTheme] = useState(new Set([theme]) as SelectionSet);
 
 	const onSelectedThemeChange = useCallback(
 		(value: Selection) => {
-			const newValue = value as TSingleSelection;
+			const newValue = value as SelectionSet;
 
 			if (newValue.has(Theme.dark)) {
 				setTheme(Theme.dark);

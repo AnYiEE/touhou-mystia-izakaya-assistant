@@ -124,7 +124,7 @@ const state = {
 		beverage: {
 			name: null as TBeverageNames | null,
 
-			dlcs: new Set() as Selection,
+			dlcs: new Set() as SelectionSet,
 			page: 1,
 			searchValue: '',
 			selectableRows: [5, 7, 10, 15, 20].map((value) => ({value})),
@@ -133,8 +133,8 @@ const state = {
 		customer: {
 			data: null as ICurrentCustomer | null,
 
-			beverageTags: new Set() as Selection,
-			positiveTags: new Set() as Selection,
+			beverageTags: new Set() as SelectionSet,
+			positiveTags: new Set() as SelectionSet,
 
 			filterVisibility: true,
 
@@ -158,8 +158,8 @@ const state = {
 				extraIngredients: TIngredientNames[];
 			} | null,
 
-			cookers: new Set() as Selection,
-			dlcs: new Set() as Selection,
+			cookers: new Set() as SelectionSet,
+			dlcs: new Set() as SelectionSet,
 			tagsWithPopular: [] as TRecipeTag[],
 
 			page: 1,
@@ -259,25 +259,25 @@ const customerRareStore = store(state, {
 		specialNames: () => getAllItemNames(instance_special, currentStore.persistence.customer.pinyinSortState.use()),
 
 		beverageTableColumns: {
-			read: () => new Set(currentStore.persistence.beverage.table.visibleColumns.use()) as Selection,
+			read: () => new Set(currentStore.persistence.beverage.table.visibleColumns.use()) as SelectionSet,
 			write: (columns: Selection) => {
 				currentStore.persistence.beverage.table.visibleColumns.set([...columns] as never);
 			},
 		},
 		beverageTableRows: {
-			read: () => new Set([currentStore.persistence.beverage.table.rows.use().toString()]) as Selection,
+			read: () => new Set([currentStore.persistence.beverage.table.rows.use().toString()]) as SelectionSet,
 			write: (rows: Selection) => {
 				currentStore.persistence.beverage.table.rows.set(Number.parseInt([...rows][0] as string));
 			},
 		},
 		recipeTableColumns: {
-			read: () => new Set(currentStore.persistence.recipe.table.visibleColumns.use()) as Selection,
+			read: () => new Set(currentStore.persistence.recipe.table.visibleColumns.use()) as SelectionSet,
 			write: (columns: Selection) => {
 				currentStore.persistence.recipe.table.visibleColumns.set([...columns] as never);
 			},
 		},
 		recipeTableRows: {
-			read: () => new Set([currentStore.persistence.recipe.table.rows.use().toString()]) as Selection,
+			read: () => new Set([currentStore.persistence.recipe.table.rows.use().toString()]) as SelectionSet,
 			write: (rows: Selection) => {
 				currentStore.persistence.recipe.table.rows.set(Number.parseInt([...rows][0] as string));
 			},

@@ -3,3 +3,4 @@ interface Map<K, V> {
 }
 
 type ReactNodeWithoutBoolean = Exclude<React.ReactNode, boolean>;
+type SelectionSet = Exclude<import('@nextui-org/react').Selection, 'all'>;
