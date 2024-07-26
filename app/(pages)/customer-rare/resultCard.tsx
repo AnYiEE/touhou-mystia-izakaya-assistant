@@ -247,7 +247,7 @@ export default memo(
 											className={twJoin(
 												'cursor-pointer',
 												hasMystiaCooker &&
-													'rounded-full ring-4 ring-warning-400 dark:ring-warning-200'
+													'rounded-full ring-2 ring-warning-400 ring-offset-1 dark:ring-warning-200'
 											)}
 										/>
 									</Tooltip>
