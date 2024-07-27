@@ -100,7 +100,7 @@ export default memo(function Navbar() {
 			isMenuOpen={isMenuOpened}
 			onMenuOpenChange={setMenuOpened}
 			classNames={{
-				base: 'pt-[env(titlebar-area-height,0rem)]',
+				base: 'pt-titlebar',
 			}}
 		>
 			<NavbarContent justify="start" className="basis-full md:basis-1/5">

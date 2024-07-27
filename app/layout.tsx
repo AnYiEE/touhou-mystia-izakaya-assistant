@@ -70,7 +70,7 @@ export default function RootLayout({
 	children: ReactNode;
 }>) {
 	return (
-		<html lang={locale} suppressHydrationWarning className="text-[16px] light:izakaya">
+		<html lang={locale} suppressHydrationWarning className="light:izakaya">
 			<head>
 				<script
 					dangerouslySetInnerHTML={{

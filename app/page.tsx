@@ -56,7 +56,7 @@ export default memo(function Home() {
 							icon={faQq}
 							href="https://qm.qq.com/q/Zham0MdxyA"
 							title="点击加入QQ群"
-							className="text-xl text-[#1479D7]"
+							className="text-xl text-qq-blue"
 						/>
 					</Tooltip>
 					<Tooltip

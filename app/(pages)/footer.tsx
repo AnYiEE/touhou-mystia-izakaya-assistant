@@ -41,7 +41,7 @@ const FooterLink = memo(function FooterLink({
 
 export default memo(function Footer() {
 	return (
-		<footer className="mx-auto flex max-w-[95%] flex-col items-center justify-center pb-3 text-center text-xs text-default-300 dark:text-default-400 md:max-w-full">
+		<footer className="mx-auto flex max-w-p-95 flex-col items-center justify-center pb-3 text-center text-xs text-default-300 dark:text-default-400 md:max-w-full">
 			<p>
 				<FooterLink content={links.github.label} href={links.github.href}>
 					{shortName}

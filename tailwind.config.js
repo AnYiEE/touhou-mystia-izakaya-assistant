@@ -106,13 +106,29 @@ module.exports = {
 			backgroundSize: {
 				'y-auto': 'auto 100%',
 			},
+			colors: {
+				'qq-blue': '#1479D7',
+				xiaohongshu: '#ff2741',
+			},
+			gridTemplateColumns: {
+				'fill-12': 'repeat(auto-fill,3rem)',
+				'fill-16': 'repeat(auto-fill,4rem)',
+				'fill-20': 'repeat(auto-fill,5rem)',
+			},
 			height: {
 				loading: '37px',
 				'loading-1.8x': '66px',
 			},
+			maxWidth: {
+				'p-95': '95%',
+			},
 			width: {
+				'p-99': '99%',
 				loading: '27px',
 				'loading-1.8x': '48px',
+			},
+			padding: {
+				titlebar: 'env(titlebar-area-height,0rem)',
 			},
 		}, // cSpell:disable
 		fontFamily: {

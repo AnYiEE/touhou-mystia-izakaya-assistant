@@ -36,12 +36,12 @@ export default memo(
 				<ScrollShadow
 					hideScrollBar
 					className={twMerge(
-						'transition-[height] xl:h-[calc(100vh-9.75rem-env(titlebar-area-height,0rem))]',
+						'transition-height xl:h-[calc(100vh-9.75rem-env(titlebar-area-height,0rem))]',
 						customerTabStyle.contentClassName
 					)}
 					ref={ref}
 				>
-					<div className="m-2 grid grid-cols-[repeat(auto-fill,4rem)] justify-around gap-4 lg:grid-cols-[repeat(auto-fill,5rem)]">
+					<div className="m-2 grid grid-cols-fill-16 justify-around gap-4 lg:grid-cols-fill-20">
 						{sortedData.map(({name}) => (
 							<div
 								key={name}
@@ -76,7 +76,7 @@ export default memo(
 						))}
 					</div>
 				</ScrollShadow>
-				<div className="absolute flex w-[99%] justify-center xl:hidden">
+				<div className="absolute flex w-p-99 justify-center xl:hidden">
 					<Button
 						isIconOnly
 						size="sm"

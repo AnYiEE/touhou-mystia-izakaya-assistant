@@ -83,12 +83,12 @@ export default memo(
 				<ScrollShadow
 					hideScrollBar
 					className={twMerge(
-						'transition-[height] xl:h-[calc(100vh-9.75rem-env(titlebar-area-height,0rem))]',
+						'transition-height xl:h-[calc(100vh-9.75rem-env(titlebar-area-height,0rem))]',
 						ingredientsTabStyle.contentClassName
 					)}
 					ref={ref}
 				>
-					<div className="m-2 grid grid-cols-[repeat(auto-fill,3rem)] justify-around gap-4">
+					<div className="m-2 grid grid-cols-fill-12 justify-around gap-4">
 						{sortedData.map(({name, tags}, index) => {
 							if (!currentRecipe) {
 								return null;
@@ -173,7 +173,7 @@ export default memo(
 								</div>
 								<div className="h-px w-full bg-foreground-300"></div>
 							</div>
-							<div className="m-2 grid grid-cols-[repeat(auto-fill,3rem)] justify-around gap-4">
+							<div className="m-2 grid grid-cols-fill-12 justify-around gap-4">
 								{[...darkIngredients].map((name, index) => (
 									<div key={index} className="flex cursor-not-allowed flex-col items-center">
 										<Sprite target="ingredient" name={name} size={3} />
