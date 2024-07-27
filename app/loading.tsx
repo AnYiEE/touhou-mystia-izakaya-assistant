@@ -1,7 +1,5 @@
 import {type HTMLAttributes, forwardRef, memo} from 'react';
-import {twJoin, twMerge} from 'tailwind-merge';
-
-import styles from './loading.module.scss';
+import {twMerge} from 'tailwind-merge';
 
 interface IProps
 	extends Pick<HTMLAttributes<HTMLDivElement>, 'className'>,
@@ -19,7 +17,7 @@ export default memo(
 				<span
 					role="img"
 					title={title ?? (content as string)}
-					className={twJoin(styles['logo'], 'inline-block animate-bounce')}
+					className="inline-block h-loading-1.8x w-loading-1.8x animate-bounce bg-loading bg-y-auto bg-no-repeat"
 				/>
 				<p className="text-sm tracking-widest">{content}</p>
 			</div>

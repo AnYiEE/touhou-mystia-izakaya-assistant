@@ -98,7 +98,23 @@ module.exports = {
 			]
 		: undefined,
 	theme: {
-		extend: {}, // cSpell:disable
+		extend: {
+			backgroundImage: {
+				loading: 'url("/assets/loading.png")',
+				logo: 'url("/assets/icon.png")',
+			},
+			backgroundSize: {
+				'y-auto': 'auto 100%',
+			},
+			height: {
+				loading: '37px',
+				'loading-1.8x': '66px',
+			},
+			width: {
+				loading: '27px',
+				'loading-1.8x': '48px',
+			},
+		}, // cSpell:disable
 		fontFamily: {
 			mono: [
 				'"DejaVu Sans Code"',

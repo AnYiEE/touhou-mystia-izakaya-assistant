@@ -2,7 +2,6 @@
 
 import {type PropsWithChildren, memo, useCallback, useReducer} from 'react';
 import {usePathname} from 'next/navigation';
-import {twJoin} from 'tailwind-merge';
 
 import {
 	Button,
@@ -24,8 +23,6 @@ import ThemeSwitcher from '@/components/themeSwitcher';
 
 import {siteConfig} from '@/configs';
 import {toggleBoolean} from '@/utils';
-
-import styles from './navbar.module.scss';
 
 const {links, name, navItems, navMenuItems, shortName} = siteConfig;
 
@@ -117,7 +114,7 @@ export default memo(function Navbar() {
 						<span
 							role="img"
 							title={shortName}
-							className={twJoin(styles['logo'], 'h-10 w-10 rounded-full')}
+							className="h-10 w-10 rounded-full bg-logo bg-cover bg-no-repeat"
 						/>
 						<p className="font-bold">
 							<span className="hidden lg:inline">{name}</span>
