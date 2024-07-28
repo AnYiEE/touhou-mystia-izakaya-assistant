@@ -12,7 +12,10 @@ import Tags from '@/components/tags';
 
 import {customerRatingColorMap} from './constants';
 import {BEVERAGE_TAG_STYLE, RECIPE_TAG_STYLE} from '@/constants';
+import {type TCustomerNames, type TTags} from '@/data';
 import {useCustomerRareStore} from '@/stores';
+
+const customerTagsCache = new Map<TCustomerNames, Set<TTags>>();
 
 interface IProps {}
 
@@ -20,13 +23,35 @@ export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(_props, ref) {
 		const store = useCustomerRareStore();
 
-		const currentCustomerName = store.shared.customer.data.use()?.name;
+		const currentCustomer = store.shared.customer.data.use();
 		const savedMeal = store.persistence.meals.use();
 
 		const instance_recipe = store.instances.recipe.get();
 
-		if (!currentCustomerName || !savedMeal[currentCustomerName]?.length) {
+		if (!currentCustomer) {
 			return null;
+		}
+
+		const {name: currentCustomerName, target: currentCustomerTarget} = currentCustomer;
+
+		if (!savedMeal[currentCustomerName]?.length) {
+			return null;
+		}
+
+		let customerTags: Set<TTags>;
+		if (customerTagsCache.has(currentCustomerName)) {
+			customerTags = customerTagsCache.get(currentCustomerName);
+		} else {
+			const instance_rare = store.instances.customer_rare.get();
+			const instance_special = store.instances.customer_special.get();
+			const instance_customer = (
+				currentCustomerTarget === 'customer_rare' ? instance_rare : instance_special
+			) as typeof instance_rare;
+
+			const {negativeTags: customerNegativeTags, positiveTags: customerPositiveTags} =
+				instance_customer.getPropsByName(currentCustomerName);
+
+			customerTags = new Set([...customerNegativeTags, ...customerPositiveTags]);
 		}
 
 		const savedCustomerMeal = savedMeal[currentCustomerName];
@@ -56,7 +81,7 @@ export default memo(
 											const content = (
 												<span className="whitespace-nowrap">
 													{rating}
-													{popular.tag && (
+													{popular.tag && customerTags.has(popular.tag) && (
 														<>
 															•{popular.isNegative ? '流行厌恶' : '流行喜爱'}•
 															{popular.tag}
