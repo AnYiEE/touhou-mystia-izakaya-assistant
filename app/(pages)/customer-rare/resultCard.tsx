@@ -1,4 +1,4 @@
-import {type HTMLAttributes, forwardRef, memo, useCallback, useMemo} from 'react';
+import {type HTMLAttributes, forwardRef, memo, useCallback, useMemo, useRef, useState} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {Button, Card, Tooltip} from '@nextui-org/react';
@@ -153,6 +153,8 @@ export default memo(
 		const instance_beverage = store.instances.beverage.get();
 		const instance_recipe = store.instances.recipe.get();
 
+		const saveButtonTooltipTimer = useRef<NodeJS.Timeout>();
+		const [isShowSaveButtonTooltip, setIsShowSaveButtonTooltip] = useState(false);
 		const isSaveButtonDisabled =
 			!currentBeverageName ||
 			!currentRecipe ||
@@ -160,7 +162,20 @@ export default memo(
 			!(currentOrder.recipeTag || hasMystiaCooker);
 
 		const handleSaveButtonPress = useCallback(() => {
-			if (!currentCustomerName || !currentBeverageName || !currentRecipe || currentRating === null) {
+			if (isSaveButtonDisabled) {
+				if (isShowSaveButtonTooltip) {
+					setIsShowSaveButtonTooltip(false);
+					clearTimeout(saveButtonTooltipTimer.current);
+				} else {
+					setIsShowSaveButtonTooltip(true);
+					saveButtonTooltipTimer.current = setTimeout(() => {
+						setIsShowSaveButtonTooltip(false);
+					}, 3000);
+				}
+				return;
+			}
+
+			if (!currentCustomerName || currentRating === null) {
 				return;
 			}
 
@@ -204,6 +219,8 @@ export default memo(
 			hasMystiaCooker,
 			instance_beverage,
 			instance_recipe,
+			isSaveButtonDisabled,
+			isShowSaveButtonTooltip,
 			store.persistence.meals,
 		]);
 
@@ -272,18 +289,17 @@ export default memo(
 					<Tooltip
 						showArrow
 						content={`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipe ? '' : '料理、'}客人点单需求`}
-						isDisabled={!isSaveButtonDisabled}
+						isOpen={isShowSaveButtonTooltip}
 					>
 						<span>
 							<Button
 								color="primary"
 								fullWidth
-								isDisabled={isSaveButtonDisabled}
 								size="sm"
 								variant="flat"
 								onPress={handleSaveButtonPress}
 								aria-label={`保存套餐，当前${currentRating ? `评级为${currentRating}` : '未评级'}`}
-								className="md:w-auto"
+								className={twJoin(isSaveButtonDisabled && 'opacity-disabled', 'md:w-auto')}
 							>
 								保存套餐
 							</Button>

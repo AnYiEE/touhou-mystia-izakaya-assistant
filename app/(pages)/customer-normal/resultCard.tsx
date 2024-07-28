@@ -1,5 +1,5 @@
-import {type HTMLAttributes, forwardRef, memo, useCallback, useMemo} from 'react';
-import {twMerge} from 'tailwind-merge';
+import {type HTMLAttributes, forwardRef, memo, useCallback, useMemo, useRef, useState} from 'react';
+import {twJoin, twMerge} from 'tailwind-merge';
 
 import {Button, Card, Tooltip} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -149,10 +149,25 @@ export default memo(
 
 		const instance_recipe = store.instances.recipe.get();
 
+		const saveButtonTooltipTimer = useRef<NodeJS.Timeout>();
+		const [isShowSaveButtonTooltip, setIsShowSaveButtonTooltip] = useState(false);
 		const isSaveButtonDisabled = !currentBeverageName || !currentRecipe;
 
 		const handleSaveButtonPress = useCallback(() => {
-			if (!currentCustomerName || !currentBeverageName || !currentRecipe) {
+			if (isSaveButtonDisabled) {
+				if (isShowSaveButtonTooltip) {
+					setIsShowSaveButtonTooltip(false);
+					clearTimeout(saveButtonTooltipTimer.current);
+				} else {
+					setIsShowSaveButtonTooltip(true);
+					saveButtonTooltipTimer.current = setTimeout(() => {
+						setIsShowSaveButtonTooltip(false);
+					}, 3000);
+				}
+				return;
+			}
+
+			if (!currentCustomerName) {
 				return;
 			}
 
@@ -180,7 +195,15 @@ export default memo(
 				'Save Button',
 				`${currentRecipeName} - ${currentBeverageName}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
 			);
-		}, [currentBeverageName, currentCustomerName, currentCustomerPopular, currentRecipe, store.persistence.meals]);
+		}, [
+			currentBeverageName,
+			currentCustomerName,
+			currentCustomerPopular,
+			currentRecipe,
+			isSaveButtonDisabled,
+			isShowSaveButtonTooltip,
+			store.persistence.meals,
+		]);
 
 		if (!currentBeverageName && !currentRecipe) {
 			if (currentCustomerName && savedMeal[currentCustomerName]?.length) {
@@ -226,17 +249,16 @@ export default memo(
 					<Tooltip
 						showArrow
 						content={`请选择${currentBeverageName ? '' : '酒水'}${currentRecipe ? '' : '料理'}`}
-						isDisabled={!isSaveButtonDisabled}
+						isOpen={isShowSaveButtonTooltip}
 					>
 						<span>
 							<Button
 								color="primary"
 								fullWidth
-								isDisabled={isSaveButtonDisabled}
 								size="sm"
 								variant="flat"
 								onPress={handleSaveButtonPress}
-								className="md:w-auto"
+								className={twJoin(isSaveButtonDisabled && 'opacity-disabled', 'md:w-auto')}
 							>
 								保存套餐
 							</Button>
