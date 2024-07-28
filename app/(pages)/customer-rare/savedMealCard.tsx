@@ -52,11 +52,9 @@ export default memo(
 							<Fragment key={loopIndex}>
 								<div className="flex flex-col items-center gap-4 md:flex-row xl:gap-3">
 									<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap xl:gap-2">
-										<Tooltip
-											showArrow
-											color={customerRatingColorMap[rating]}
-											content={
-												<>
+										{(() => {
+											const content = (
+												<span className="whitespace-nowrap">
 													{rating}
 													{popular.tag && (
 														<>
@@ -64,46 +62,72 @@ export default memo(
 															{popular.tag}
 														</>
 													)}
-												</>
-											}
-											placement="left"
-										>
-											<Avatar
-												isBordered
-												showFallback
-												color={customerRatingColorMap[rating]}
-												fallback={
-													<TagGroup className="h-4 flex-nowrap whitespace-nowrap">
-														{price !== 0 && (
-															<Tags.Tag
-																tag={(<Price>{price}</Price>) as never}
-																tagStyle={{}}
-																className="leading-none"
-															/>
-														)}
-														{order.recipeTag && (
-															<Tags.Tag
-																tag={order.recipeTag}
-																tagStyle={RECIPE_TAG_STYLE.positive}
-																className="leading-none"
-															/>
-														)}
-														{order.beverageTag && (
-															<Tags.Tag
-																tag={order.beverageTag}
-																tagStyle={BEVERAGE_TAG_STYLE.positive}
-																className="leading-none"
-															/>
-														)}
-													</TagGroup>
-												}
-												radius="sm"
-												role="banner"
-												classNames={{
-													base: 'h-5 w-44 ring-offset-0',
-												}}
-											/>
-										</Tooltip>
+												</span>
+											);
+											const customerRatingColor = customerRatingColorMap[rating];
+											return (
+												<Popover
+													showArrow
+													color={customerRatingColor}
+													offset={13}
+													placement="left"
+												>
+													<Tooltip
+														showArrow
+														color={customerRatingColor}
+														content={content}
+														placement="left"
+													>
+														<span className="cursor-pointer">
+															<PopoverTrigger>
+																<Avatar
+																	isBordered
+																	showFallback
+																	color={customerRatingColor}
+																	fallback={
+																		<TagGroup className="h-4 flex-nowrap whitespace-nowrap">
+																			{price !== 0 && (
+																				<Tags.Tag
+																					tag={
+																						(
+																							<Price>{price}</Price>
+																						) as never
+																					}
+																					tagStyle={{}}
+																					className="leading-none"
+																				/>
+																			)}
+																			{order.recipeTag && (
+																				<Tags.Tag
+																					tag={order.recipeTag}
+																					tagStyle={RECIPE_TAG_STYLE.positive}
+																					className="leading-none"
+																				/>
+																			)}
+																			{order.beverageTag && (
+																				<Tags.Tag
+																					tag={order.beverageTag}
+																					tagStyle={
+																						BEVERAGE_TAG_STYLE.positive
+																					}
+																					className="leading-none"
+																				/>
+																			)}
+																		</TagGroup>
+																	}
+																	radius="sm"
+																	role="banner"
+																	classNames={{
+																		base: 'h-5 w-44 ring-offset-0',
+																	}}
+																/>
+															</PopoverTrigger>
+														</span>
+													</Tooltip>
+													<PopoverContent>{content}</PopoverContent>
+												</Popover>
+											);
+										})()}
 										<div className="flex items-center gap-2">
 											{(() => {
 												const originalCooker = instance_recipe.getPropsByName(recipe, 'cooker');
