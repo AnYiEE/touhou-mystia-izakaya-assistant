@@ -16,6 +16,9 @@ export default memo(function Home() {
 		<div className="flex h-full flex-col items-center justify-center gap-4 md:flex-row md:gap-8">
 			<div className="flex flex-col items-center">
 				<Loading content={`欢迎使用${shortName}`} className="h-max w-max" />
+				<p className="hidden select-none flex-wrap items-center text-xs text-foreground-500 md:flex">
+					点击顶部的按钮以使用各项功能
+				</p>
 				<p className="flex select-none flex-wrap items-center text-xs text-foreground-500 md:hidden">
 					点击右上角的
 					<span className="mx-1 block h-4 rounded bg-default-100" role="img" aria-label="菜单按钮">
