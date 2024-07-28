@@ -4,6 +4,7 @@ import {
 	Accordion,
 	AccordionItem,
 	Avatar,
+	Divider,
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
@@ -27,6 +28,8 @@ export default memo(function SettingsButton() {
 	const popularTags = globalStore.popularTags.get();
 	const isNegativePopularTag = globalStore.persistence.popular.isNegative.use();
 	const selectedPopularTag = globalStore.selectedPopularTag.use();
+
+	const isShowTagDescription = customerStore.persistence.customer.showTagDescription.use();
 
 	const onIsNegativePopularTagChange = useCallback(
 		(value: boolean) => {
@@ -95,6 +98,24 @@ export default memo(function SettingsButton() {
 								{({value}) => <SelectItem key={value}>{value}</SelectItem>}
 							</Select>
 						</div>
+						<Divider />
+						<div className="flex items-center">
+							<span className="mr-2 whitespace-nowrap">显示料理标签描述</span>
+							<Switch
+								endContent={<span>关</span>}
+								startContent={<span>开</span>}
+								isSelected={isShowTagDescription}
+								size="sm"
+								onValueChange={customerStore.persistence.customer.showTagDescription.set}
+								aria-label={`${isShowTagDescription ? '隐藏' : '显示'}料理标签描述`}
+								classNames={{
+									endContent: 'leading-none',
+									startContent: 'leading-none',
+									wrapper: 'bg-default-300 dark:bg-default-200',
+								}}
+							/>
+						</div>
+						<Divider />
 					</div>
 					<Accordion
 						isCompact

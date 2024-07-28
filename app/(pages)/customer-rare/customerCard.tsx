@@ -42,6 +42,7 @@ export default memo(
 		const currentCustomerOrder = customerStore.shared.customer.order.use();
 		const currentCustomerPopular = customerStore.shared.customer.popular.use();
 		const currentRating = customerStore.shared.customer.rating.use();
+		const isShowTagDescription = customerStore.persistence.customer.showTagDescription.use();
 
 		const currentBeverageName = customerStore.shared.beverage.name.use();
 		const currentRecipe = customerStore.shared.recipe.data.use();
@@ -129,6 +130,7 @@ export default memo(
 			beverageTags: currentCustomerBeverageTags,
 			negativeTags: currentCustomerNegativeTags,
 			positiveTags: currentCustomerPositiveTags,
+			positiveTagMapping: currentCustomerPositiveTagMapping,
 		} = instance_customer.getPropsByName(currentCustomerName);
 
 		const clonedCurrentCustomerPlaces = [...currentCustomerPlaces];
@@ -188,7 +190,7 @@ export default memo(
 		return (
 			<Card fullWidth shadow="sm" ref={ref}>
 				<div className="flex flex-col gap-3 p-4 md:flex-row">
-					<div className="flex flex-col gap-2">
+					<div className="flex flex-col justify-evenly gap-2">
 						<Popover showArrow color={avatarRatingColor} offset={11}>
 							<Tooltip showArrow color={avatarRatingColor} content={avatarRatingContent}>
 								<div className="cursor-pointer">
@@ -255,7 +257,16 @@ export default memo(
 										content={getTagTooltip(selectedCustomerPositiveTags, tag)}
 									>
 										<Tags.Tag
-											tag={tag}
+											tag={
+												isShowTagDescription && tag in currentCustomerPositiveTagMapping
+													? [
+															tag,
+															currentCustomerPositiveTagMapping[
+																tag as keyof typeof currentCustomerPositiveTagMapping
+															],
+														]
+													: tag
+											}
 											tagStyle={customerTagStyleMap[currentCustomerTarget].positive}
 											handleDoubleClick={(clickedTag) => {
 												customerStore.shared.tab.set('recipe');

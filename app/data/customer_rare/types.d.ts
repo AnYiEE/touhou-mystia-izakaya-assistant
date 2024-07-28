@@ -1,6 +1,7 @@
-import type {ICustomerBase} from '@/data/types';
+import type {ICustomerBase, TRecipeTag} from '@/data/types';
 
 export interface ICustomerRare extends ICustomerBase {
+	positiveTagMapping: Partial<Record<TRecipeTag, string>>;
 	price: `${string}-${string}`;
 }
 

@@ -10,6 +10,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '甜', '生', '猎奇'],
 		negativeTags: ['素', '清淡', '凉爽'],
 		beverageTags: ['低酒精', '可加冰'],
+		positiveTagMapping: {},
 	},
 	{
 		name: '露米娅',
@@ -19,6 +20,10 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '饱腹', '生', '招牌', '猎奇', '流行喜爱'],
 		negativeTags: ['下酒', '昂贵', '流行厌恶'],
 		beverageTags: ['苦', '气泡'],
+		positiveTagMapping: {
+			生: '新鲜',
+			招牌: '拿手好菜',
+		},
 	},
 	{
 		name: '橙',
@@ -28,6 +33,10 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '水产', '重油', '甜', '烧烤', '流行喜爱'],
 		negativeTags: ['素', '灼热', '猎奇', '流行厌恶'],
 		beverageTags: ['水果', '辛'],
+		positiveTagMapping: {
+			水产: '猫吃鱼',
+			烧烤: '肉串起来',
+		},
 	},
 	{
 		name: '上白泽慧音',
@@ -37,6 +46,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['素', '家常', '清淡', '和风', '中华', '文化底蕴', '流行喜爱'],
 		negativeTags: ['重油', '咸', '大份', '流行厌恶'],
 		beverageTags: ['烧酒', '清酒', '利口酒'],
+		positiveTagMapping: {},
 	},
 	{
 		name: '稗田阿求',
@@ -46,6 +56,10 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '清淡', '和风', '甜', '文化底蕴', '汤羹', '流行喜爱'],
 		negativeTags: ['重油', '咸', '灼热', '流行厌恶'],
 		beverageTags: ['可加热', '清酒'],
+		positiveTagMapping: {
+			甜: '甜食不健康',
+			高级: '稗田家主',
+		},
 	},
 	{
 		name: '茨木华扇',
@@ -55,6 +69,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '下酒', '和风', '文化底蕴'],
 		negativeTags: ['生', '辣', '实惠'],
 		beverageTags: ['中酒精', '直饮', '古典'],
+		positiveTagMapping: {},
 	},
 	{
 		name: '博丽灵梦',
@@ -64,6 +79,11 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '饱腹', '甜', '不可思议', '实惠', '流行喜爱'],
 		negativeTags: ['下酒', '昂贵', '流行厌恶'],
 		beverageTags: ['无酒精', '低酒精', '可加热'],
+		positiveTagMapping: {
+			高级: '便宜高级料理',
+			不可思议: '符合我的称号',
+			实惠: '贵的买不起',
+		},
 	},
 	{
 		name: '伊吹萃香',
@@ -73,6 +93,9 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '下酒', '和风', '力量涌现', '小巧', '流行喜爱'],
 		negativeTags: ['重油', '流行厌恶'],
 		beverageTags: ['高酒精', '直饮'],
+		positiveTagMapping: {
+			小巧: '分身多个',
+		},
 	},
 	{
 		name: '比那名居天子',
@@ -82,6 +105,11 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['素', '传说', '清淡', '甜', '适合拍照', '果味', '昂贵', '流行厌恶'],
 		negativeTags: ['肉', '家常', '重油', '流行喜爱'],
 		beverageTags: ['高酒精', '鸡尾酒'],
+		positiveTagMapping: {
+			清淡: '重油下等',
+			适合拍照: '卖相要好',
+			昂贵: '我不缺钱',
+		},
 	},
 	{
 		name: '红美铃',
@@ -91,6 +119,9 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '饱腹', '中华', '力量涌现', '流行喜爱'],
 		negativeTags: ['西式', '猎奇', '果味', '流行厌恶'],
 		beverageTags: ['可加热', '古典', '提神'],
+		positiveTagMapping: {
+			中华: '家乡的味道',
+		},
 	},
 	{
 		name: '琪露诺',
@@ -100,6 +131,10 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['甜', '适合拍照', '凉爽', '猎奇', '流行厌恶'],
 		negativeTags: ['下酒', '文化底蕴', '昂贵', '流行喜爱'],
 		beverageTags: ['可加冰', '水果', '甘'],
+		positiveTagMapping: {
+			适合拍照: '丑拒',
+			猎奇: '真正的勇士',
+		},
 	},
 	{
 		name: '帕秋莉',
@@ -109,6 +144,10 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '西式', '甜', '适合拍照', '梦幻'],
 		negativeTags: ['咸', '生', '灼热', '猎奇'],
 		beverageTags: ['鸡尾酒', '利口酒', '气泡'],
+		positiveTagMapping: {
+			西式: '文化差异',
+			适合拍照: '卖相好',
+		},
 	},
 	{
 		name: '藤原妹红',
@@ -118,6 +157,9 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['灼热', '果味', '烧烤', '燃起来了', '辣'],
 		negativeTags: ['高级', '不可思议', '昂贵'],
 		beverageTags: ['烧酒', '辛', '苦'],
+		positiveTagMapping: {
+			燃起来了: '不灭火焰',
+		},
 	},
 	{
 		name: '蓬莱山辉夜',
@@ -127,6 +169,10 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['传说', '和风', '文化底蕴', '不可思议', '流行喜爱'],
 		negativeTags: ['招牌', '猎奇', '大份', '流行厌恶'],
 		beverageTags: ['清酒', '古典', '现代'],
+		positiveTagMapping: {
+			和风: '大和抚子',
+			文化底蕴: '地上历史',
+		},
 	},
 	{
 		name: '因幡帝',
@@ -136,6 +182,9 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['传说', '甜', '凉爽', '小巧', '梦幻', '流行喜爱'],
 		negativeTags: ['重油', '山珍', '猎奇', '流行厌恶'],
 		beverageTags: ['无酒精', '水果', '甘'],
+		positiveTagMapping: {
+			小巧: '三分饱',
+		},
 	},
 	{
 		name: '河城荷取',
@@ -145,6 +194,10 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['水产', '高级', '下酒', '咸', '招牌', '猎奇'],
 		negativeTags: ['素', '山珍', '文化底蕴'],
 		beverageTags: ['中酒精', '高酒精', '清酒', '直饮'],
+		positiveTagMapping: {
+			高级: '上最好的',
+			猎奇: '无法理解的口味',
+		},
 	},
 	{
 		name: '犬走椛',
@@ -154,6 +207,11 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '重油', '下酒', '山珍', '大份'],
 		negativeTags: ['素', '清淡', '猎奇'],
 		beverageTags: ['中酒精', '高酒精', '直饮'],
+		positiveTagMapping: {
+			肉: '身为狼',
+			重油: '不健康',
+			大份: '多吃点',
+		},
 	},
 	{
 		name: '东风谷早苗',
@@ -163,6 +221,12 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '和风', '甜', '适合拍照', '梦幻', '流行喜爱'],
 		negativeTags: ['重油', '生', '灼热', '猎奇', '流行厌恶'],
 		beverageTags: ['无酒精', '低酒精', '清酒', '直饮', '水果', '甘', '苦', '气泡', '现代'],
+		positiveTagMapping: {
+			家常: '二神所在之地',
+			和风: '大和民族',
+			适合拍照: '手机',
+			梦幻: '女孩子',
+		},
 	},
 	{
 		name: '爱丽丝',
@@ -172,6 +236,9 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '高级', '西式', '甜', '文化底蕴'],
 		negativeTags: ['肉', '重油', '饱腹', '猎奇'],
 		beverageTags: ['低酒精', '西洋酒', '现代'],
+		positiveTagMapping: {
+			高级: '低级趣味',
+		},
 	},
 	{
 		name: '雾雨魔理沙',
@@ -195,6 +262,11 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['传说', '重油', '和风', '灼热', '菌类', '流行喜爱'],
 		negativeTags: ['猎奇', '流行厌恶'],
 		beverageTags: ['低酒精', '可加冰'],
+		positiveTagMapping: {
+			传说: '古老价值',
+			重油: '麻辣烫/不要清淡',
+			灼热: '八卦炉/发光发热',
+		},
 	},
 	{
 		name: '矢田寺成美',
@@ -204,6 +276,10 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['清淡', '山珍', '和风', '文化底蕴', '特产'],
 		negativeTags: ['重油', '饱腹'],
 		beverageTags: ['低酒精', '中酒精', '可加冰', '直饮', '古典'],
+		positiveTagMapping: {
+			和风: '曾经土地唯一',
+			特产: '想尝美食但懒',
+		},
 	},
 	{
 		name: '黑谷山女',
@@ -213,6 +289,10 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['鲜', '甜', '生', '适合拍照', '猎奇', '流行喜爱'],
 		negativeTags: ['重油', '咸', '灼热'],
 		beverageTags: ['低酒精', '中酒精', '啤酒', '甘'],
+		positiveTagMapping: {
+			生: '太熟吃不惯',
+			猎奇: '蜘蛛的口味',
+		},
 	},
 	{
 		name: '水桥帕露西',
@@ -222,6 +302,11 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '咸', '鲜', '果味', '辣', '酸', '流行厌恶'],
 		negativeTags: ['甜'],
 		beverageTags: ['无酒精', '可加热', '直饮', '辛', '苦'],
+		positiveTagMapping: {
+			咸: '眼泪的味道',
+			辣: '愤怒的味道',
+			酸: '妒意的味道',
+		},
 	},
 	{
 		name: '星熊勇仪',
@@ -231,6 +316,10 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['传说', '下酒', '和风', '招牌', '力量涌现', '燃起来了', '大份', '流行喜爱'],
 		negativeTags: ['素', '猎奇', '小巧'],
 		beverageTags: ['高酒精', '清酒', '啤酒', '古典'],
+		positiveTagMapping: {
+			燃起来了: '热血沸腾起来',
+			大份: '饱餐一顿',
+		},
 	},
 	{
 		name: '火焰猫燐',
@@ -240,6 +329,9 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['水产', '海味', '鲜', '甜', '猎奇', '梦幻', '流行喜爱'],
 		negativeTags: ['生', '灼热'],
 		beverageTags: ['低酒精', '清酒', '水果'],
+		positiveTagMapping: {
+			海味: '地底海底相连',
+		},
 	},
 	{
 		name: '灵乌路空',
@@ -249,6 +341,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '重油', '咸', '灼热', '力量涌现', '辣'],
 		negativeTags: ['清淡', '菌类'],
 		beverageTags: ['中酒精', '可加热', '鸡尾酒'],
+		positiveTagMapping: {},
 	},
 	{
 		name: '古明地觉',
@@ -258,6 +351,10 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '甜', '力量涌现', '小巧', '梦幻', '特产'],
 		negativeTags: ['肉', '山珍', '灼热', '猎奇', '大份'],
 		beverageTags: ['无酒精', '苦', '气泡', '提神'],
+		positiveTagMapping: {
+			小巧: '吃太饱不利于思考',
+			特产: '缩短他乡与故乡的距离',
+		},
 	},
 	{
 		name: '多多良小伞',
@@ -267,6 +364,11 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '饱腹', '甜', '适合拍照', '力量涌现', '猎奇', '不可思议', '流行喜爱'],
 		negativeTags: ['灼热', '汤羹', '辣'],
 		beverageTags: ['中酒精', '可加冰', '水果', '古典'],
+		positiveTagMapping: {
+			饱腹: '肚子总是空空',
+			适合拍照: '好看的食物',
+			猎奇: '让人吓一跳',
+		},
 	},
 	{
 		name: '村莎水蜜',
@@ -276,6 +378,12 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '高级', '饱腹', '咸', '鲜', '力量涌现', '特产'],
 		negativeTags: ['素', '猎奇', '小巧', '酸'],
 		beverageTags: ['高酒精', '可加冰', '西洋酒', '辛'],
+		positiveTagMapping: {
+			高级: '混到船长地位',
+			饱腹: '连船舵都转不动',
+			鲜: '保质期一小时',
+			特产: '食物的相逢',
+		},
 	},
 	{
 		name: '封兽鵺',
@@ -285,6 +393,10 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '鲜', '生', '招牌', '适合拍照', '猎奇', '不可思议', '特产', '流行厌恶'],
 		negativeTags: ['西式', '酸', '流行喜爱'],
 		beverageTags: ['可加热', '烧酒', '直饮', '古典'],
+		positiveTagMapping: {
+			鲜: '腐肉吃得够多了',
+			适合拍照: '对我拍个不停',
+		},
 	},
 	{
 		name: '物布部都',
@@ -294,6 +406,10 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '传说', '清淡', '山珍', '和风', '燃起来了', '流行喜爱'],
 		negativeTags: ['西式', '生', '流行厌恶'],
 		beverageTags: ['中酒精', '可加热', '直饮', '气泡'],
+		positiveTagMapping: {
+			和风: '吾之时代',
+			燃起来了: '内心燃烧',
+		},
 	},
 	{
 		name: '霍青娥',
@@ -303,6 +419,12 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['素', '传说', '中华', '甜', '不可思议', '小巧', '特产', '流行喜爱'],
 		negativeTags: ['重油', '饱腹'],
 		beverageTags: ['低酒精', '清酒', '水果', '现代'],
+		positiveTagMapping: {
+			素: '满嘴荤腥',
+			中华: '我的家乡',
+			小巧: '宵夜宜少',
+			特产: '各地美食',
+		},
 	},
 	{
 		name: '苏我屠自古',
@@ -312,6 +434,13 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '重油', '饱腹', '和风', '招牌', '力量涌现', '烧烤'],
 		negativeTags: ['甜', '凉爽'],
 		beverageTags: ['高酒精', '烧酒', '啤酒', '苦'],
+		positiveTagMapping: {
+			家常: '孤独守护千年',
+			重油: '成为亡灵之后都能吃',
+			饱腹: '就用肚子来装',
+			和风: '过去吃过的',
+			烧烤: '被雷劈过一样',
+		},
 	},
 	{
 		name: '少名针妙丸',
@@ -321,6 +450,12 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['传说', '和风', '甜', '适合拍照', '文化底蕴', '小巧', '燃起来了', '流行喜爱'],
 		negativeTags: ['西式', '大份'],
 		beverageTags: ['低酒精', '可加热', '气泡', '古典'],
+		positiveTagMapping: {
+			传说: '充满勇气的故事',
+			和风: '小人的祖先',
+			适合拍照: '和别人分享',
+			小巧: '看我的样子',
+		},
 	},
 	{
 		name: '鬼人正邪',
@@ -330,6 +465,11 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['重油', '下酒', '灼热', '力量涌现', '猎奇', '不可思议', '燃起来了', '流行厌恶'],
 		negativeTags: ['高级', '流行喜爱'],
 		beverageTags: ['中酒精', '烧酒', '直饮', '辛'],
+		positiveTagMapping: {
+			灼热: '滋滋冒气',
+			不可思议: '不可能实现',
+			燃起来了: '弱者颠覆强者',
+		},
 	},
 	{
 		name: '今泉影狼',
@@ -339,6 +479,11 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '家常', '山珍', '和风', '适合拍照', '凉爽', '流行喜爱'],
 		negativeTags: ['灼热'],
 		beverageTags: ['中酒精', '可加冰', '清酒', '直饮'],
+		positiveTagMapping: {
+			肉: '人家是狼',
+			和风: '本州狼',
+			凉爽: '从胃里降温',
+		},
 	},
 	{
 		name: '射命丸文',
@@ -362,6 +507,9 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '家常', '下酒', '和风', '招牌', '适合拍照', '流行喜爱'],
 		negativeTags: ['西式', '流行厌恶'],
 		beverageTags: ['高酒精', '可加冰', '烧酒', '提神'],
+		positiveTagMapping: {
+			适合拍照: '入我相机',
+		},
 	},
 	{
 		name: '风见幽香',
@@ -371,6 +519,13 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '传说', '清淡', '西式', '不可思议', '梦幻', '特产', '流行喜爱'],
 		negativeTags: ['饱腹', '和风', '咸', '灼热'],
 		beverageTags: ['鸡尾酒', '西洋酒', '利口酒', '现代'],
+		positiveTagMapping: {
+			传说: '流传至今的过去',
+			清淡: '不要油手碰花',
+			西式: '绅士风度',
+			不可思议: '冬紫罗兰',
+			梦幻: '蓝色满天星',
+		},
 	},
 	{
 		name: '梅蒂欣',
@@ -380,6 +535,12 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['甜', '招牌', '适合拍照', '凉爽', '菌类', '小巧', '梦幻', '毒'],
 		negativeTags: ['文化底蕴'],
 		beverageTags: ['无酒精', '水果', '甘', '苦'],
+		positiveTagMapping: {
+			甜: '毒的基础是甜',
+			凉爽: '不能受热',
+			菌类: '森林里疯长的',
+			梦幻: '故意中毒',
+		},
 	},
 	{
 		name: '魅魔',
@@ -389,6 +550,11 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['水产', '山珍', '鲜', '生', '力量涌现', '猎奇', '菌类'],
 		negativeTags: ['高级', '清淡'],
 		beverageTags: ['高酒精', '可加冰', '烧酒', '西洋酒', '辛'],
+		positiveTagMapping: {
+			鲜: '陈腐东西不能入口',
+			生: '最原始的味道',
+			力量涌现: '激活身体和思维',
+		},
 	},
 	{
 		name: '露易兹',
@@ -413,6 +579,11 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['水产', '西式', '甜', '适合拍照', '小巧', '特产', '流行喜爱'],
 		negativeTags: ['重油', '饱腹'],
 		beverageTags: ['中酒精', '可加冰', '鸡尾酒', '啤酒', '现代'],
+		positiveTagMapping: {
+			适合拍照: '适合发博客',
+			小巧: '晚上不宜太饱',
+			特产: '旅行的乐趣',
+		},
 	},
 	{
 		name: '爱莲',
@@ -422,6 +593,9 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '饱腹', '西式', '甜', '凉爽', '梦幻', '流行喜爱'],
 		negativeTags: ['水产', '重油', '生'],
 		beverageTags: ['低酒精', '可加热', '啤酒', '甘', '古典'],
+		positiveTagMapping: {
+			凉爽: '毕竟是猫舌头',
+		},
 	},
 	{
 		name: '铃仙',
@@ -431,6 +605,13 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '山珍', '海味', '中华', '甜', '小巧', '特产'],
 		negativeTags: ['不可思议', '昂贵'],
 		beverageTags: ['高酒精', '可加热', '烧酒', '啤酒', '苦'],
+		positiveTagMapping: {
+			山珍: '月都如果有山',
+			海味: '静海不那么死气沉沉',
+			中华: '月兔也是仙子',
+			小巧: '兔子的胃很小',
+			特产: '无法抵达的地方',
+		},
 	},
 	{
 		name: '绵月丰姬',
@@ -440,6 +621,12 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['素', '高级', '和风', '甜', '凉爽', '文化底蕴', '果味', '流行喜爱'],
 		negativeTags: ['山珍', '咸', '力量涌现'],
 		beverageTags: ['高酒精', '可加冰', '清酒', '水果', '古典'],
+		positiveTagMapping: {
+			素: '吃草助消化',
+			和风: '喜欢上和歌了',
+			凉爽: '好热',
+			文化底蕴: '料理里的故事',
+		},
 	},
 	{
 		name: '绵月依姬',
@@ -449,6 +636,12 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '传说', '清淡', '中华', '灼热', '力量涌现', '文化底蕴', '小巧'],
 		negativeTags: ['山珍', '菌类'],
 		beverageTags: ['可加热', '烧酒', '直饮', '辛', '提神'],
+		positiveTagMapping: {
+			高级: '月之民不食糟糠',
+			传说: '令后人传诵的功绩',
+			灼热: '不要让血冷下来',
+			小巧: '锻炼不宜多吃',
+		},
 	},
 	{
 		name: '森近霖之助',
@@ -458,6 +651,9 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '饱腹', '鲜', '流行喜爱'],
 		negativeTags: ['重油', '下酒', '猎奇', '流行厌恶'],
 		beverageTags: ['烧酒', '啤酒'],
+		positiveTagMapping: {
+			鲜: '嘴很刁',
+		},
 	},
 	{
 		name: '蕾米莉亚',
@@ -467,6 +663,9 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '传说', '西式', '甜', '生', '流行喜爱'],
 		negativeTags: ['咸', '辣', '酸', '实惠'],
 		beverageTags: ['高酒精', '西洋酒', '水果', '甘', '古典'],
+		positiveTagMapping: {
+			西式: '异国风味',
+		},
 	},
 	{
 		name: '魂魄妖梦',
@@ -476,6 +675,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '清淡', '鲜', '力量涌现'],
 		negativeTags: ['重油', '咸', '猎奇'],
 		beverageTags: ['无酒精', '可加热', '水果'],
+		positiveTagMapping: {},
 	},
 	{
 		name: '西行寺幽幽子',
@@ -485,6 +685,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '水产', '高级', '传说', '饱腹', '和风', '中华', '大份'],
 		negativeTags: ['素', '清淡', '小巧'],
 		beverageTags: ['高酒精', '可加冰', '鸡尾酒'],
+		positiveTagMapping: {},
 	},
 	{
 		name: '冴月麟',
@@ -494,6 +695,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['水产', '家常', '中华', '辣', '流行喜爱'],
 		negativeTags: ['重油', '下酒', '生', '流行厌恶'],
 		beverageTags: ['无酒精', '甘', '气泡'],
+		positiveTagMapping: {},
 	},
 	{
 		name: '立空汐',
@@ -503,6 +705,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '下酒', '山珍', '和风', '力量涌现', '昂贵', '流行厌恶'],
 		negativeTags: ['素', '清淡', '流行喜爱'],
 		beverageTags: ['高酒精', '可加冰', '可加热'],
+		positiveTagMapping: {},
 	},
 	{
 		name: '时焉侑',
@@ -512,6 +715,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['传说', '下酒', '西式', '中华', '文化底蕴', '特产'],
 		negativeTags: ['水产', '重油', '饱腹'],
 		beverageTags: ['中酒精', '可加冰', '鸡尾酒', '西洋酒'],
+		positiveTagMapping: {},
 	},
 	{
 		name: '饕餮尤魔',
@@ -534,6 +738,12 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '高级', '传说', '饱腹', '鲜', '生', '力量涌现', '不可思议', '大份'],
 		negativeTags: [],
 		beverageTags: ['高酒精', '烧酒', '直饮', '辛'],
+		positiveTagMapping: {
+			饱腹: '无限胃袋',
+			鲜: '不要馊掉了',
+			生: '血淋淋',
+			大份: '指缝都塞不满',
+		},
 	},
 	{
 		name: '古明地恋',
@@ -557,6 +767,9 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['咸', '甜', '生', '猎奇', '不可思议', '梦幻'],
 		negativeTags: [],
 		beverageTags: ['高酒精', '烧酒', '苦', '气泡'],
+		positiveTagMapping: {
+			不可思议: '永远猜不到我想要什么',
+		},
 	},
 	{
 		name: '二岩猯藏',
@@ -566,6 +779,9 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '水产', '家常', '传说', '下酒', '和风', '果味', '流行喜爱'],
 		negativeTags: ['灼热', '辣'],
 		beverageTags: ['高酒精', '可加热', '烧酒', '古典'],
+		positiveTagMapping: {
+			和风: '佐渡老家',
+		},
 	},
 	{
 		name: '八云紫',
@@ -590,5 +806,8 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '高级', '传说', '适合拍照', '凉爽', '猎奇', '汤羹'],
 		negativeTags: ['饱腹', '菌类'],
 		beverageTags: ['中酒精', '高酒精', '烧酒', '古典'],
+		positiveTagMapping: {
+			适合拍照: '食之品相',
+		},
 	},
 ] as const satisfies ICustomerRare[];

@@ -11,7 +11,7 @@ interface IHandleDoubleClick {
 interface ITagProps extends ITagPropsBase, IHandleDoubleClick, HTMLAttributes<HTMLDivElement> {}
 
 interface ITagPropsBase {
-	tag: TTags;
+	tag: TTags | [TTags, string];
 	tagStyle?: Partial<TTagStyle>;
 }
 
@@ -20,6 +20,10 @@ const Tag: FC<ITagProps> = memo(
 		{tag, tagStyle = {}, handleDoubleClick, className, ...props},
 		ref
 	) {
+		const isArray = Array.isArray(tag);
+		const tagDescription = isArray ? `（${tag[1]}）` : '';
+		const tagName = isArray ? tag[0] : tag;
+
 		return (
 			<div
 				className={twMerge('max-w-1/5 flex items-center rounded border-1 border-solid px-1', className)}
@@ -29,12 +33,13 @@ const Tag: FC<ITagProps> = memo(
 					color: tagStyle.color ?? 'inherit',
 				}}
 				onDoubleClick={(event) => {
-					handleDoubleClick?.(tag, event);
+					handleDoubleClick?.(tagName, event);
 				}}
 				{...props}
 				ref={ref}
 			>
-				{tag}
+				{tagName}
+				{tagDescription}
 			</div>
 		);
 	})

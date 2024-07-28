@@ -33,6 +33,7 @@ const storeVersion = {
 	price: 4, // eslint-disable-next-line sort-keys
 	cooker: 5,
 	ingredientLevel: 6,
+	tagDescription: 7,
 } as const;
 
 const state = {
@@ -81,6 +82,7 @@ const state = {
 			},
 			pinyinSortState: PinyinSortState.NONE,
 			searchValue: '',
+			showTagDescription: true,
 			tabVisibility: TabVisibilityState.collapse,
 		},
 		ingredient: {
@@ -175,7 +177,7 @@ const customerRareStore = store(state, {
 	persist: {
 		enabled: true,
 		name: 'page-customer_rare-storage',
-		version: storeVersion.ingredientLevel,
+		version: storeVersion.tagDescription,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -243,6 +245,11 @@ const customerRareStore = store(state, {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				const {filters} = oldState.persistence.ingredient;
 				filters.levels = [];
+			}
+			if (version < storeVersion.tagDescription) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				const {customer} = oldState.persistence;
+				customer.showTagDescription = true;
 			}
 			return persistedState as typeof state;
 		},

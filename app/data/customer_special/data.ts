@@ -10,6 +10,7 @@ export const CUSTOMER_SPECIAL_LIST = [
 		positiveTags: ['家常', '甜', '凉爽', '菌类', '小巧', '梦幻', '流行喜爱'],
 		negativeTags: ['生', '灼热', '猎奇', '流行厌恶'],
 		beverageTags: ['无酒精', '水果', '甘', '苦'],
+		positiveTagMapping: {},
 	},
 	{
 		name: '萌澄果',
@@ -31,5 +32,6 @@ export const CUSTOMER_SPECIAL_LIST = [
 		positiveTags: ['肉', '水产', '甜', '梦幻', '流行喜爱'],
 		negativeTags: ['灼热', '猎奇', '流行厌恶'],
 		beverageTags: ['可加冰', '水果', '甘', '辛'],
+		positiveTagMapping: {},
 	},
 ] as const satisfies ICustomerSpecial[];
