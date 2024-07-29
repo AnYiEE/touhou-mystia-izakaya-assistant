@@ -81,7 +81,7 @@
 		"lodash": "^4.17.21",
 		"next": "^14.2.5",
 		"next-themes": "^0.3.0",
-		"pinyin-pro": "^3.23.1",
+		"pinyin-pro": "^3.24.0",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"reset-css": "^5.0.2",
