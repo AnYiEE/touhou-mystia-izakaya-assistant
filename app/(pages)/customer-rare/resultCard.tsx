@@ -1,4 +1,4 @@
-import {type HTMLAttributes, forwardRef, memo, useCallback, useMemo, useRef, useState} from 'react';
+import {type HTMLAttributes, forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {Button, Card, Tooltip} from '@nextui-org/react';
@@ -156,26 +156,32 @@ export default memo(
 		const saveButtonTooltipTimer = useRef<NodeJS.Timeout>();
 		const [isShowSaveButtonTooltip, setIsShowSaveButtonTooltip] = useState(false);
 		const isSaveButtonDisabled =
+			!currentCustomerName ||
 			!currentBeverageName ||
 			!currentRecipe ||
 			!currentOrder.beverageTag ||
-			!(currentOrder.recipeTag || hasMystiaCooker);
+			!(currentOrder.recipeTag || hasMystiaCooker) ||
+			currentRating === null;
+
+		const hideTooltip = useCallback(() => {
+			setIsShowSaveButtonTooltip(false);
+			clearTimeout(saveButtonTooltipTimer.current);
+		}, []);
+
+		const showTooltip = useCallback(() => {
+			setIsShowSaveButtonTooltip(true);
+			saveButtonTooltipTimer.current = setTimeout(() => {
+				setIsShowSaveButtonTooltip(false);
+			}, 3000);
+		}, []);
 
 		const handleSaveButtonPress = useCallback(() => {
 			if (isSaveButtonDisabled) {
 				if (isShowSaveButtonTooltip) {
-					setIsShowSaveButtonTooltip(false);
-					clearTimeout(saveButtonTooltipTimer.current);
+					hideTooltip();
 				} else {
-					setIsShowSaveButtonTooltip(true);
-					saveButtonTooltipTimer.current = setTimeout(() => {
-						setIsShowSaveButtonTooltip(false);
-					}, 3000);
+					showTooltip();
 				}
-				return;
-			}
-
-			if (!currentCustomerName || currentRating === null) {
 				return;
 			}
 
@@ -217,12 +223,20 @@ export default memo(
 			currentRating,
 			currentRecipe,
 			hasMystiaCooker,
+			hideTooltip,
 			instance_beverage,
 			instance_recipe,
 			isSaveButtonDisabled,
 			isShowSaveButtonTooltip,
+			showTooltip,
 			store.persistence.meals,
 		]);
+
+		useEffect(() => {
+			if (isShowSaveButtonTooltip && !isSaveButtonDisabled) {
+				hideTooltip();
+			}
+		}, [hideTooltip, isSaveButtonDisabled, isShowSaveButtonTooltip]);
 
 		if (!currentBeverageName && !currentRecipe) {
 			if (currentCustomerName && savedMeal[currentCustomerName]?.length) {

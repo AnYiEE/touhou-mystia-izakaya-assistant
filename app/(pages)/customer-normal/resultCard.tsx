@@ -1,4 +1,4 @@
-import {type HTMLAttributes, forwardRef, memo, useCallback, useMemo, useRef, useState} from 'react';
+import {type HTMLAttributes, forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {Button, Card, Tooltip} from '@nextui-org/react';
@@ -151,23 +151,27 @@ export default memo(
 
 		const saveButtonTooltipTimer = useRef<NodeJS.Timeout>();
 		const [isShowSaveButtonTooltip, setIsShowSaveButtonTooltip] = useState(false);
-		const isSaveButtonDisabled = !currentBeverageName || !currentRecipe;
+		const isSaveButtonDisabled = !currentCustomerName || !currentBeverageName || !currentRecipe;
+
+		const hideTooltip = useCallback(() => {
+			setIsShowSaveButtonTooltip(false);
+			clearTimeout(saveButtonTooltipTimer.current);
+		}, []);
+
+		const showTooltip = useCallback(() => {
+			setIsShowSaveButtonTooltip(true);
+			saveButtonTooltipTimer.current = setTimeout(() => {
+				setIsShowSaveButtonTooltip(false);
+			}, 3000);
+		}, []);
 
 		const handleSaveButtonPress = useCallback(() => {
 			if (isSaveButtonDisabled) {
 				if (isShowSaveButtonTooltip) {
-					setIsShowSaveButtonTooltip(false);
-					clearTimeout(saveButtonTooltipTimer.current);
+					hideTooltip();
 				} else {
-					setIsShowSaveButtonTooltip(true);
-					saveButtonTooltipTimer.current = setTimeout(() => {
-						setIsShowSaveButtonTooltip(false);
-					}, 3000);
+					showTooltip();
 				}
-				return;
-			}
-
-			if (!currentCustomerName) {
 				return;
 			}
 
@@ -200,10 +204,18 @@ export default memo(
 			currentCustomerName,
 			currentCustomerPopular,
 			currentRecipe,
+			hideTooltip,
 			isSaveButtonDisabled,
 			isShowSaveButtonTooltip,
+			showTooltip,
 			store.persistence.meals,
 		]);
+
+		useEffect(() => {
+			if (isShowSaveButtonTooltip && !isSaveButtonDisabled) {
+				hideTooltip();
+			}
+		}, [hideTooltip, isSaveButtonDisabled, isShowSaveButtonTooltip]);
 
 		if (!currentBeverageName && !currentRecipe) {
 			if (currentCustomerName && savedMeal[currentCustomerName]?.length) {
