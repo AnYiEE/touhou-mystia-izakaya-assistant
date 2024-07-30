@@ -1,3 +1,4 @@
+export * from './useIsTouchOnlyDevice';
 export * from './useMounted';
 export * from './useParams';
 export * from './useThrottle';
