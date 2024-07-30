@@ -1,6 +1,8 @@
 import {type HTMLAttributes, forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
+import {useIsTouchOnlyDevice} from '@/hooks';
+
 import {Button, Card, Tooltip} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-icons';
@@ -139,6 +141,7 @@ interface IResultCardProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
+		const isTouchOnlyDevice = useIsTouchOnlyDevice();
 		const store = useCustomerNormalStore();
 
 		const currentCustomerName = store.shared.customer.name.use();
@@ -160,16 +163,27 @@ export default memo(
 
 		const showTooltip = useCallback(() => {
 			setIsShowSaveButtonTooltip(true);
+			clearTimeout(saveButtonTooltipTimer.current);
 			saveButtonTooltipTimer.current = setTimeout(() => {
-				setIsShowSaveButtonTooltip(false);
+				hideTooltip();
 			}, 3000);
-		}, []);
+		}, [hideTooltip]);
+
+		const handleSaveButtonMouseEnter = useCallback(() => {
+			if (isSaveButtonDisabled && !isTouchOnlyDevice) {
+				setIsShowSaveButtonTooltip(true);
+			}
+		}, [isTouchOnlyDevice, isSaveButtonDisabled]);
+
+		const handleSaveButtonMouseLeave = useCallback(() => {
+			if (!isTouchOnlyDevice) {
+				setIsShowSaveButtonTooltip(false);
+			}
+		}, [isTouchOnlyDevice]);
 
 		const handleSaveButtonPress = useCallback(() => {
 			if (isSaveButtonDisabled) {
-				if (isShowSaveButtonTooltip) {
-					hideTooltip();
-				} else {
+				if (isTouchOnlyDevice) {
 					showTooltip();
 				}
 				return;
@@ -204,9 +218,8 @@ export default memo(
 			currentCustomerName,
 			currentCustomerPopular,
 			currentRecipe,
-			hideTooltip,
 			isSaveButtonDisabled,
-			isShowSaveButtonTooltip,
+			isTouchOnlyDevice,
 			showTooltip,
 			store.persistence.meals,
 		]);
@@ -265,12 +278,19 @@ export default memo(
 					>
 						<span>
 							<Button
-								color="primary"
 								fullWidth
+								color="primary"
+								disableAnimation={isSaveButtonDisabled}
 								size="sm"
 								variant="flat"
+								onMouseEnter={handleSaveButtonMouseEnter}
+								onMouseLeave={handleSaveButtonMouseLeave}
 								onPress={handleSaveButtonPress}
-								className={twJoin(isSaveButtonDisabled && 'opacity-disabled', 'md:w-auto')}
+								className={twJoin(
+									isSaveButtonDisabled &&
+										'cursor-default opacity-disabled data-[hover]:opacity-disabled',
+									'md:w-auto'
+								)}
 							>
 								保存套餐
 							</Button>
