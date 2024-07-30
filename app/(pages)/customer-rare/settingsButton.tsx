@@ -51,7 +51,7 @@ export default memo(function SettingsButton() {
 		<Popover showArrow offset={10} placement="bottom-end">
 			<Tooltip
 				showArrow
-				content={<p title="全局设置会影响所有客人">全局设置和更多信息</p>}
+				content={<p title="全局设置会影响所有顾客">全局设置和更多信息</p>}
 				offset={0}
 				placement="left"
 			>
@@ -135,10 +135,10 @@ export default memo(function SettingsButton() {
 										单击套餐卡片中的厨具可以为当前套餐标记是否使用“夜雀”系列厨具，厨具类别是套餐最终评级的参考维度之一。
 									</li>
 									<li>
-										长按客人卡片中的标签可以将该标签视为客人的点单需求，客人的点单需求是否被满足是最终评级的参考维度之一。
+										长按顾客卡片中的标签可以将该标签视为顾客的点单需求，顾客的点单需求是否被满足是最终评级的参考维度之一。
 									</li>
-									<li>双击客人卡片中的标签可以将该标签添加至表格筛选列表或从中移除。</li>
-									<li>“保存套餐”按钮仅会在选择了料理和酒水，且选定了客人的点单需求标签时被启用。</li>
+									<li>双击顾客卡片中的标签可以将该标签添加至表格筛选列表或从中移除。</li>
+									<li>“保存套餐”按钮仅会在选择了料理和酒水，且选定了顾客的点单需求标签时被启用。</li>
 								</ol>
 							</div>
 						</AccordionItem>

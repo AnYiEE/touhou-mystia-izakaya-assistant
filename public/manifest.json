@@ -8,7 +8,7 @@
 	"start_url": "/",
 	"shortcuts": [
 		{
-			"name": "为特殊客人搭配料理套餐",
+			"name": "为稀有顾客搭配料理套餐",
 			"short_name": "搭配稀客套餐",
 			"url": "/customer-rare",
 			"icons": [

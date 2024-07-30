@@ -175,7 +175,7 @@ export default memo(
 		const avatarRatingColor = currentRating ? customerRatingColorMap[currentRating] : undefined;
 		const avatarRatingContent =
 			currentRating ??
-			`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipe ? '' : '料理、'}客人点单需求以评级`;
+			`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipe ? '' : '料理、'}顾客点单需求以评级`;
 
 		const getTagTooltip = (selectedTags: Selection, tag: string) => (
 			<div>
@@ -183,7 +183,7 @@ export default memo(
 					双击：将此标签
 					{(selectedTags as SelectionSet).has(tag) ? '从筛选列表中移除' : '加入至筛选列表中'}
 				</p>
-				<p>长按：{currentCustomerOrder.beverageTag === tag ? '不再' : ''}将此标签视为客人点单需求</p>
+				<p>长按：{currentCustomerOrder.beverageTag === tag ? '不再' : ''}将此标签视为顾客点单需求</p>
 			</div>
 		);
 

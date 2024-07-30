@@ -315,7 +315,7 @@ export default memo(
 					</div>
 					<Tooltip
 						showArrow
-						content={`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipe ? '' : '料理、'}客人点单需求`}
+						content={`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipe ? '' : '料理、'}顾客点单需求`}
 						isOpen={isShowSaveButtonTooltip}
 					>
 						<span>
