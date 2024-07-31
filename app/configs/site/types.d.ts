@@ -16,7 +16,7 @@ export interface ISiteConfig {
 	/** @see {@link https://nextui.org/docs/api-references/nextui-provider} */
 	locale: string;
 	version: string;
-	navItems: THref[];
+	navItems: Array<THref | Record<string, THref[]>>;
 	navMenuItems: THref[];
 	links: Record<string, THref>;
 	nodeEnv: NodeJS.ProcessEnv['NODE_ENV'];

@@ -2,6 +2,8 @@
 import PACKAGE from '@/../package.json';
 import type {ISiteConfig} from './types';
 
+type TNavMenuItems = ISiteConfig['navMenuItems'];
+
 const navItems = [
 	{
 		label: '首页',
@@ -16,16 +18,20 @@ const navItems = [
 		href: '/customer-normal',
 	},
 	{
-		label: '料理',
-		href: '/recipes',
-	},
-	{
-		label: '酒水',
-		href: '/beverages',
-	},
-	{
-		label: '食材',
-		href: '/ingredients',
+		查询: [
+			{
+				label: '料理',
+				href: '/recipes',
+			},
+			{
+				label: '酒水',
+				href: '/beverages',
+			},
+			{
+				label: '食材',
+				href: '/ingredients',
+			},
+		],
 	},
 	{
 		label: '关于',
@@ -45,8 +51,20 @@ export const siteConfig = {
 	keywords: PACKAGE.keywords,
 	locale: 'zh-CN',
 	version: PACKAGE.version,
-	navItems: [...navItems],
-	navMenuItems: [...navItems],
+	navItems,
+	navMenuItems: navItems.reduce<TNavMenuItems>((acc, navItem) => {
+		let hasNestedArray = false as boolean;
+		Object.keys(navItem).forEach((key) => {
+			if (Array.isArray(navItem[key as never])) {
+				hasNestedArray = true;
+				acc.push(...(navItem[key as never] as TNavMenuItems));
+			}
+		});
+		if (!hasNestedArray) {
+			acc.push(navItem as TNavMenuItems[number]);
+		}
+		return acc;
+	}, []),
 	links: {
 		donate: {
 			label: '支付宝收款码',

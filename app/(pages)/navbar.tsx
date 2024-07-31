@@ -1,10 +1,16 @@
 'use client';
 
-import {type PropsWithChildren, memo, useCallback, useReducer} from 'react';
+import {type JSX, type PropsWithChildren, memo, useCallback, useReducer} from 'react';
 import {usePathname} from 'next/navigation';
+import {twMerge} from 'tailwind-merge';
 
 import {
 	Button,
+	type ButtonProps,
+	Dropdown,
+	DropdownItem,
+	DropdownMenu,
+	DropdownTrigger,
 	Link,
 	type LinkProps,
 	NavbarBrand,
@@ -16,7 +22,9 @@ import {
 	Navbar as NextUINavbar,
 	Tooltip,
 } from '@nextui-org/react';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faGithub} from '@fortawesome/free-brands-svg-icons';
+import {faChevronDown} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconLink from '@/components/fontAwesomeIconLink';
 import ThemeSwitcher from '@/components/themeSwitcher';
@@ -26,24 +34,27 @@ import {toggleBoolean} from '@/utils';
 
 const {links, name, navItems, navMenuItems, shortName} = siteConfig;
 
-interface INavbarLinkProps extends Pick<LinkProps, 'href'> {
+interface INavbarLinkProps extends Pick<ButtonProps, 'className' | 'fullWidth'>, Pick<LinkProps, 'href'> {
 	label: ReactNodeWithoutBoolean;
-	isActive: boolean;
+	isActivated: boolean;
 }
 
 const NavbarLink = memo(function NavbarLink({
+	className,
+	fullWidth,
 	href = '#',
-	isActive = false,
+	isActivated = false,
 	label: children,
 }: Partial<PropsWithChildren<INavbarLinkProps>>) {
 	return (
 		<Button
 			as={Link}
+			fullWidth={fullWidth}
 			size="sm"
-			variant={isActive ? 'faded' : 'light'}
+			variant={isActivated ? 'faded' : 'light'}
 			href={href}
 			role="link"
-			className="text-base"
+			className={twMerge('text-base', className)}
 		>
 			{children}
 		</Button>
@@ -122,14 +133,61 @@ export default memo(function Navbar() {
 						</p>
 					</Link>
 				</NavbarBrand>
-				<ul className="hidden justify-start gap-3 pl-2 md:flex lg:gap-4">
-					{navItems.map(({href, label}) => {
-						const isActivated = href === pathname;
-						return (
-							<NavbarItem key={href} isActive={isActivated}>
-								<NavbarLink isActive={isActivated} href={href} label={label} />
-							</NavbarItem>
-						);
+				<ul className="hidden justify-start gap-4 pl-2 md:flex">
+					{navItems.map((navItem) => {
+						if ('href' in navItem) {
+							const {href, label} = navItem;
+							const isActivated = href === pathname;
+							return (
+								<NavbarItem key={href} isActive={isActivated}>
+									<NavbarLink isActivated={isActivated} href={href} label={label} />
+								</NavbarItem>
+							);
+						}
+						return Object.entries(navItem).reduce<JSX.Element[]>((acc, [dropdownLabel, dropdownItems]) => {
+							const isDropdownActivated = dropdownItems.some(({href}) => href === pathname);
+							const dropdownElement = (
+								<Dropdown
+									key={dropdownLabel}
+									classNames={{
+										content: 'min-w-20 p-0',
+									}}
+								>
+									<NavbarItem>
+										<DropdownTrigger>
+											<Button
+												endContent={<FontAwesomeIcon icon={faChevronDown} size="sm" />}
+												size="sm"
+												variant={isDropdownActivated ? 'faded' : 'light'}
+												className="border-none text-base"
+											>
+												{dropdownLabel}
+											</Button>
+										</DropdownTrigger>
+									</NavbarItem>
+									<DropdownMenu
+										aria-label={`${dropdownLabel}列表`}
+										className="w-20"
+										itemClasses={{
+											base: 'my-px p-0',
+										}}
+									>
+										{dropdownItems.map(({href, label}) => (
+											<DropdownItem key={href} textValue={label}>
+												<NavbarLink
+													fullWidth
+													isActivated={href === pathname}
+													href={href}
+													label={label}
+													className="justify-start text-sm"
+												/>
+											</DropdownItem>
+										))}
+									</DropdownMenu>
+								</Dropdown>
+							);
+							return [...acc, dropdownElement];
+						}, []);
 					})}
 				</ul>
 			</NavbarContent>

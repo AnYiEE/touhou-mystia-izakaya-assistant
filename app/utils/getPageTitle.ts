@@ -1,7 +1,8 @@
 import {siteConfig} from '@/configs';
 import type {TSiteConfig} from '@/configs/site/types';
 
-type THref = TSiteConfig['navItems'][number]['href'];
+type ExtractNestedHref<T> = T extends {href: infer U} ? U : {[K in keyof T]: ExtractNestedHref<T[K]>}[keyof T];
+type THref = ExtractNestedHref<TSiteConfig['navItems'][number]>;
 
 const pageTitleCache = new Map<THref, string>();
 
@@ -10,7 +11,7 @@ function getPageTitle(target: THref) {
 		return pageTitleCache.get(target);
 	}
 
-	const pageTitle = siteConfig.navItems
+	const pageTitle = siteConfig.navMenuItems
 		.map(({label, href}) => {
 			if (href === target) {
 				return label;
