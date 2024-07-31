@@ -65,28 +65,25 @@ function getReplacementClass(element: Element, gapClass: string) {
 		const isFlexCol = classList.contains('flex-col');
 		const isFlexRow = classList.contains('flex-row');
 		const isMdFlexRow = classList.contains('md:flex-row');
-		const isLgFlexRow = classList.contains('lg:flex-row');
 		const isXlFlexRow = classList.contains('xl:flex-row');
 		const isMdFlexCol = classList.contains('md:flex-col');
-		const isLgFlexCol = classList.contains('lg:flex-col');
 		const isXlFlexCol = classList.contains('xl:flex-col');
 
 		const isMdSpecific = classList.contains(`md:${gapClass}`);
-		const isLgSpecific = classList.contains(`lg:${gapClass}`);
 		const isXlSpecific = classList.contains(`xl:${gapClass}`);
-		const isSpecific = isMdSpecific || isLgSpecific || isXlSpecific;
+		const isSpecific = isMdSpecific || isXlSpecific;
 		const hasPrefix = gapClass.includes(':');
 
-		const prefixRegExp = /((?:md|lg|xl):)?gap-(\S+)/u;
+		const prefixRegExp = /((?:md|xl):)?gap-(\S+)/u;
 
-		if (isFlexCol && !isMdFlexRow && !isLgFlexRow && !isXlFlexRow) {
+		if (isFlexCol && !isMdFlexRow && !isXlFlexRow) {
 			return gapClass.replace('gap-', 'space-y-');
 		}
-		if (isFlexRow && !isMdFlexCol && !isLgFlexCol && !isXlFlexCol) {
+		if (isFlexRow && !isMdFlexCol && !isXlFlexCol) {
 			return gapClass.replace('gap-', 'space-x-');
 		}
-		if (isFlexCol && (isMdFlexRow || isLgFlexRow || isXlFlexRow)) {
-			const prefix = isMdFlexRow ? 'md' : isLgFlexRow ? 'lg' : 'xl';
+		if (isFlexCol && (isMdFlexRow || isXlFlexRow)) {
+			const prefix = isMdFlexRow ? 'md' : 'xl';
 			return gapClass.replace(
 				prefixRegExp,
 				!hasPrefix && !isSpecific
@@ -96,8 +93,8 @@ function getReplacementClass(element: Element, gapClass: string) {
 						: 'space-y-$2'
 			);
 		}
-		if (isFlexRow && (isMdFlexCol || isLgFlexCol || isXlFlexCol)) {
-			const prefix = isMdFlexCol ? 'md' : isLgFlexCol ? 'lg' : 'xl';
+		if (isFlexRow && (isMdFlexCol || isXlFlexCol)) {
+			const prefix = isMdFlexCol ? 'md' : 'xl';
 			return gapClass.replace(
 				prefixRegExp,
 				!hasPrefix && !isSpecific
@@ -119,7 +116,6 @@ function replaceGapClasses(element: Element) {
 		element.classList.length === 0 ||
 		(!element.classList.contains('flex') &&
 			!element.classList.contains('md:flex') &&
-			!element.classList.contains('lg:flex') &&
 			!element.classList.contains('xl:flex'))
 	) {
 		return;

@@ -93,7 +93,7 @@ module.exports = {
 				// For compatible with Safari <= 14
 				{
 					pattern: /space-(x|y)/u,
-					variants: ['md', 'lg', 'xl'],
+					variants: ['md', 'xl'],
 				},
 			]
 		: undefined,
