@@ -22,14 +22,17 @@ const navItems = [
 			{
 				label: '料理',
 				href: '/recipes',
+				sprite: 'recipe',
 			},
 			{
 				label: '酒水',
 				href: '/beverages',
+				sprite: 'beverage',
 			},
 			{
 				label: '食材',
 				href: '/ingredients',
+				sprite: 'ingredient',
 			},
 		],
 	},

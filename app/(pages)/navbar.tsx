@@ -28,13 +28,16 @@ import {faChevronDown} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconLink from '@/components/fontAwesomeIconLink';
 import ThemeSwitcher from '@/components/themeSwitcher';
+import Sprite from '@/components/sprite';
 
 import {siteConfig} from '@/configs';
 import {toggleBoolean} from '@/utils';
 
 const {links, name, navItems, navMenuItems, shortName} = siteConfig;
 
-interface INavbarLinkProps extends Pick<ButtonProps, 'className' | 'fullWidth'>, Pick<LinkProps, 'href'> {
+interface INavbarLinkProps
+	extends Pick<ButtonProps, 'className' | 'startContent' | 'fullWidth'>,
+		Pick<LinkProps, 'href'> {
 	label: ReactNodeWithoutBoolean;
 	isActivated: boolean;
 }
@@ -45,12 +48,14 @@ const NavbarLink = memo(function NavbarLink({
 	href = '#',
 	isActivated = false,
 	label: children,
+	startContent,
 }: Partial<PropsWithChildren<INavbarLinkProps>>) {
 	return (
 		<Button
 			as={Link}
 			fullWidth={fullWidth}
 			size="sm"
+			startContent={startContent}
 			variant={isActivated ? 'faded' : 'light'}
 			href={href}
 			role="link"
@@ -150,7 +155,7 @@ export default memo(function Navbar() {
 								<Dropdown
 									key={dropdownLabel}
 									classNames={{
-										content: 'min-w-20 p-0',
+										content: 'min-w-24 p-0',
 									}}
 								>
 									<NavbarItem>
@@ -167,19 +172,19 @@ export default memo(function Navbar() {
 									</NavbarItem>
 									<DropdownMenu
 										aria-label={`${dropdownLabel}列表`}
-										className="w-20"
 										itemClasses={{
 											base: 'my-px p-0',
 										}}
 									>
-										{dropdownItems.map(({href, label}) => (
+										{dropdownItems.map(({href, label, sprite}) => (
 											<DropdownItem key={href} textValue={label}>
 												<NavbarLink
 													fullWidth
 													isActivated={href === pathname}
 													href={href}
 													label={label}
-													className="justify-start text-sm"
+													startContent={<Sprite target={sprite} size={1.25} />}
+													className="justify-start gap-1 text-sm"
 												/>
 											</DropdownItem>
 										))}

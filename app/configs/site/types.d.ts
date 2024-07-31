@@ -1,6 +1,9 @@
+import type {TSpriteTarget} from '@/utils/sprite/types';
+
 type THref = {
 	label: string;
 	href: string;
+	sprite?: TSpriteTarget;
 };
 
 export interface ISiteConfig {
