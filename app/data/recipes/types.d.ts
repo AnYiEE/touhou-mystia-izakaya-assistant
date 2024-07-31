@@ -55,7 +55,7 @@ export interface IRecipe extends IFoodBase {
 	min: number;
 	from:
 		| Partial<{
-				goodwill: {
+				bond: {
 					name: TCustomerRareNames | '村纱水蜜' | '物部布都' | '铃仙';
 					level: number;
 				};

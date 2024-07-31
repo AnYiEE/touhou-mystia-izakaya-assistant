@@ -59,7 +59,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 50,
 		from: {
-			goodwill: {
+			bond: {
 				name: '伊吹萃香',
 				level: 3,
 			},
@@ -77,7 +77,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 30,
 		from: {
-			goodwill: {
+			bond: {
 				name: '橙',
 				level: 2,
 			},
@@ -110,7 +110,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 18,
 		from: {
-			goodwill: {
+			bond: {
 				name: '莉格露',
 				level: 2,
 			},
@@ -128,7 +128,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 24,
 		from: {
-			goodwill: {
+			bond: {
 				name: '露米娅',
 				level: 2,
 			},
@@ -146,7 +146,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 19,
 		from: {
-			goodwill: {
+			bond: {
 				name: '莉格露',
 				level: 3,
 			},
@@ -194,7 +194,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 26,
 		from: {
-			goodwill: {
+			bond: {
 				name: '橙',
 				level: 3,
 			},
@@ -212,7 +212,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 27,
 		from: {
-			goodwill: {
+			bond: {
 				name: '露米娅',
 				level: 3,
 			},
@@ -258,7 +258,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 34,
 		from: {
-			goodwill: {
+			bond: {
 				name: '橙',
 				level: 4,
 			},
@@ -276,7 +276,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 70,
 		from: {
-			goodwill: {
+			bond: {
 				name: '露米娅',
 				level: 4,
 			},
@@ -294,7 +294,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 78,
 		from: {
-			goodwill: {
+			bond: {
 				name: '莉格露',
 				level: 4,
 			},
@@ -327,7 +327,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 19,
 		from: {
-			goodwill: {
+			bond: {
 				name: '茨木华扇',
 				level: 2,
 			},
@@ -345,7 +345,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 16,
 		from: {
-			goodwill: {
+			bond: {
 				name: '上白泽慧音',
 				level: 2,
 			},
@@ -363,7 +363,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 21,
 		from: {
-			goodwill: {
+			bond: {
 				name: '稗田阿求',
 				level: 2,
 			},
@@ -381,7 +381,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 60,
 		from: {
-			goodwill: {
+			bond: {
 				name: '上白泽慧音',
 				level: 3,
 			},
@@ -399,7 +399,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 56,
 		from: {
-			goodwill: {
+			bond: {
 				name: '稗田阿求',
 				level: 3,
 			},
@@ -417,7 +417,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 20,
 		from: {
-			goodwill: {
+			bond: {
 				name: '茨木华扇',
 				level: 3,
 			},
@@ -448,7 +448,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 50,
 		from: {
-			goodwill: {
+			bond: {
 				name: '稗田阿求',
 				level: 4,
 			},
@@ -466,7 +466,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 30,
 		from: {
-			goodwill: {
+			bond: {
 				name: '博丽灵梦',
 				level: 2,
 			},
@@ -484,7 +484,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 20,
 		from: {
-			goodwill: {
+			bond: {
 				name: '比那名居天子',
 				level: 2,
 			},
@@ -502,7 +502,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 66,
 		from: {
-			goodwill: {
+			bond: {
 				name: '茨木华扇',
 				level: 4,
 			},
@@ -520,7 +520,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 98,
 		from: {
-			goodwill: {
+			bond: {
 				name: '上白泽慧音',
 				level: 4,
 			},
@@ -538,7 +538,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 25,
 		from: {
-			goodwill: {
+			bond: {
 				name: '伊吹萃香',
 				level: 2,
 			},
@@ -556,7 +556,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 40,
 		from: {
-			goodwill: {
+			bond: {
 				name: '博丽灵梦',
 				level: 3,
 			},
@@ -574,7 +574,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 55,
 		from: {
-			goodwill: {
+			bond: {
 				name: '比那名居天子',
 				level: 3,
 			},
@@ -592,7 +592,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 25,
 		from: {
-			goodwill: {
+			bond: {
 				name: '比那名居天子',
 				level: 4,
 			},
@@ -610,7 +610,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 105,
 		from: {
-			goodwill: {
+			bond: {
 				name: '博丽灵梦',
 				level: 4,
 			},
@@ -628,7 +628,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 90,
 		from: {
-			goodwill: {
+			bond: {
 				name: '伊吹萃香',
 				level: 4,
 			},
@@ -676,7 +676,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 55,
 		from: {
-			goodwill: {
+			bond: {
 				name: '琪露诺',
 				level: 2,
 			},
@@ -694,7 +694,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 42,
 		from: {
-			goodwill: {
+			bond: {
 				name: '红美铃',
 				level: 2,
 			},
@@ -712,7 +712,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 35,
 		from: {
-			goodwill: {
+			bond: {
 				name: '帕秋莉',
 				level: 2,
 			},
@@ -730,7 +730,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 65,
 		from: {
-			goodwill: {
+			bond: {
 				name: '红美铃',
 				level: 3,
 			},
@@ -787,7 +787,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 88,
 		from: {
-			goodwill: {
+			bond: {
 				name: '琪露诺',
 				level: 3,
 			},
@@ -818,7 +818,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 70,
 		from: {
-			goodwill: {
+			bond: {
 				name: '帕秋莉',
 				level: 3,
 			},
@@ -836,7 +836,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 30,
 		from: {
-			goodwill: {
+			bond: {
 				name: '因幡帝',
 				level: 2,
 			},
@@ -854,7 +854,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 128,
 		from: {
-			goodwill: {
+			bond: {
 				name: '红美铃',
 				level: 4,
 			},
@@ -872,7 +872,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 80,
 		from: {
-			goodwill: {
+			bond: {
 				name: '因幡帝',
 				level: 4,
 			},
@@ -890,7 +890,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 55,
 		from: {
-			goodwill: {
+			bond: {
 				name: '因幡帝',
 				level: 3,
 			},
@@ -908,7 +908,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 150,
 		from: {
-			goodwill: {
+			bond: {
 				name: '帕秋莉',
 				level: 4,
 			},
@@ -926,7 +926,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 78,
 		from: {
-			goodwill: {
+			bond: {
 				name: '琪露诺',
 				level: 4,
 			},
@@ -970,7 +970,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 32,
 		from: {
-			goodwill: {
+			bond: {
 				name: '藤原妹红',
 				level: 2,
 			},
@@ -988,7 +988,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 40,
 		from: {
-			goodwill: {
+			bond: {
 				name: '蓬莱山辉夜',
 				level: 2,
 			},
@@ -1006,7 +1006,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 66,
 		from: {
-			goodwill: {
+			bond: {
 				name: '蓬莱山辉夜',
 				level: 3,
 			},
@@ -1024,7 +1024,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 68,
 		from: {
-			goodwill: {
+			bond: {
 				name: '藤原妹红',
 				level: 3,
 			},
@@ -1042,7 +1042,7 @@ export const RECIPE_LIST = [
 		level: 5,
 		price: 125,
 		from: {
-			goodwill: {
+			bond: {
 				name: '蓬莱山辉夜',
 				level: 4,
 			},
@@ -1073,7 +1073,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 125,
 		from: {
-			goodwill: {
+			bond: {
 				name: '藤原妹红',
 				level: 4,
 			},
@@ -1201,7 +1201,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 20,
 		from: {
-			goodwill: {
+			bond: {
 				name: '雾雨魔理沙',
 				level: 2,
 			},
@@ -1219,7 +1219,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 28,
 		from: {
-			goodwill: {
+			bond: {
 				name: '矢田寺成美',
 				level: 2,
 			},
@@ -1237,7 +1237,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 62,
 		from: {
-			goodwill: {
+			bond: {
 				name: '雾雨魔理沙',
 				level: 3,
 			},
@@ -1255,7 +1255,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 28,
 		from: {
-			goodwill: {
+			bond: {
 				name: '爱丽丝',
 				level: 2,
 			},
@@ -1273,7 +1273,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 16,
 		from: {
-			goodwill: {
+			bond: {
 				name: '河城荷取',
 				level: 2,
 			},
@@ -1291,7 +1291,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 22,
 		from: {
-			goodwill: {
+			bond: {
 				name: '犬走椛',
 				level: 2,
 			},
@@ -1309,7 +1309,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 24,
 		from: {
-			goodwill: {
+			bond: {
 				name: '东风谷早苗',
 				level: 2,
 			},
@@ -1327,7 +1327,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 112,
 		from: {
-			goodwill: {
+			bond: {
 				name: '雾雨魔理沙',
 				level: 4,
 			},
@@ -1345,7 +1345,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 88,
 		from: {
-			goodwill: {
+			bond: {
 				name: '河城荷取',
 				level: 3,
 			},
@@ -1363,7 +1363,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 40,
 		from: {
-			goodwill: {
+			bond: {
 				name: '犬走椛',
 				level: 3,
 			},
@@ -1381,7 +1381,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 36,
 		from: {
-			goodwill: {
+			bond: {
 				name: '东风谷早苗',
 				level: 3,
 			},
@@ -1399,7 +1399,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 55,
 		from: {
-			goodwill: {
+			bond: {
 				name: '矢田寺成美',
 				level: 3,
 			},
@@ -1417,7 +1417,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 120,
 		from: {
-			goodwill: {
+			bond: {
 				name: '河城荷取',
 				level: 4,
 			},
@@ -1435,7 +1435,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 56,
 		from: {
-			goodwill: {
+			bond: {
 				name: '爱丽丝',
 				level: 3,
 			},
@@ -1453,7 +1453,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 108,
 		from: {
-			goodwill: {
+			bond: {
 				name: '东风谷早苗',
 				level: 4,
 			},
@@ -1471,7 +1471,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 115,
 		from: {
-			goodwill: {
+			bond: {
 				name: '犬走椛',
 				level: 4,
 			},
@@ -1501,7 +1501,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 160,
 		from: {
-			goodwill: {
+			bond: {
 				name: '矢田寺成美',
 				level: 4,
 			},
@@ -1519,7 +1519,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 92,
 		from: {
-			goodwill: {
+			bond: {
 				name: '爱丽丝',
 				level: 4,
 			},
@@ -1537,7 +1537,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 26,
 		from: {
-			goodwill: {
+			bond: {
 				name: '灵乌路空',
 				level: 2,
 			},
@@ -1555,7 +1555,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 26,
 		from: {
-			goodwill: {
+			bond: {
 				name: '火焰猫燐',
 				level: 2,
 			},
@@ -1573,7 +1573,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 32,
 		from: {
-			goodwill: {
+			bond: {
 				name: '古明地觉',
 				level: 2,
 			},
@@ -1591,7 +1591,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 28,
 		from: {
-			goodwill: {
+			bond: {
 				name: '星熊勇仪',
 				level: 2,
 			},
@@ -1609,7 +1609,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 42,
 		from: {
-			goodwill: {
+			bond: {
 				name: '黑谷山女',
 				level: 2,
 			},
@@ -1627,7 +1627,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 25,
 		from: {
-			goodwill: {
+			bond: {
 				name: '水桥帕露西',
 				level: 2,
 			},
@@ -1645,7 +1645,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 44,
 		from: {
-			goodwill: {
+			bond: {
 				name: '火焰猫燐',
 				level: 3,
 			},
@@ -1663,7 +1663,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 62,
 		from: {
-			goodwill: {
+			bond: {
 				name: '灵乌路空',
 				level: 3,
 			},
@@ -1681,7 +1681,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 36,
 		from: {
-			goodwill: {
+			bond: {
 				name: '水桥帕露西',
 				level: 3,
 			},
@@ -1699,7 +1699,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 60,
 		from: {
-			goodwill: {
+			bond: {
 				name: '星熊勇仪',
 				level: 3,
 			},
@@ -1717,7 +1717,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 66,
 		from: {
-			goodwill: {
+			bond: {
 				name: '黑谷山女',
 				level: 3,
 			},
@@ -1735,7 +1735,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 142,
 		from: {
-			goodwill: {
+			bond: {
 				name: '火焰猫燐',
 				level: 4,
 			},
@@ -1753,7 +1753,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 108,
 		from: {
-			goodwill: {
+			bond: {
 				name: '灵乌路空',
 				level: 4,
 			},
@@ -1771,7 +1771,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 92,
 		from: {
-			goodwill: {
+			bond: {
 				name: '水桥帕露西',
 				level: 4,
 			},
@@ -1789,7 +1789,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 42,
 		from: {
-			goodwill: {
+			bond: {
 				name: '古明地觉',
 				level: 3,
 			},
@@ -1807,7 +1807,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 105,
 		from: {
-			goodwill: {
+			bond: {
 				name: '黑谷山女',
 				level: 4,
 			},
@@ -1825,7 +1825,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 206,
 		from: {
-			goodwill: {
+			bond: {
 				name: '星熊勇仪',
 				level: 4,
 			},
@@ -1843,7 +1843,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 73,
 		from: {
-			goodwill: {
+			bond: {
 				name: '古明地觉',
 				level: 4,
 			},
@@ -1861,7 +1861,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 30,
 		from: {
-			goodwill: {
+			bond: {
 				name: '霍青娥',
 				level: 2,
 			},
@@ -1879,7 +1879,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 30,
 		from: {
-			goodwill: {
+			bond: {
 				name: '苏我屠自古',
 				level: 2,
 			},
@@ -1897,7 +1897,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 46,
 		from: {
-			goodwill: {
+			bond: {
 				name: '物部布都',
 				level: 2,
 			},
@@ -1915,7 +1915,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 25,
 		from: {
-			goodwill: {
+			bond: {
 				name: '多多良小伞',
 				level: 2,
 			},
@@ -1933,7 +1933,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 20,
 		from: {
-			goodwill: {
+			bond: {
 				name: '封兽鵺',
 				level: 2,
 			},
@@ -1951,7 +1951,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 26,
 		from: {
-			goodwill: {
+			bond: {
 				name: '村纱水蜜',
 				level: 2,
 			},
@@ -1969,7 +1969,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 63,
 		from: {
-			goodwill: {
+			bond: {
 				name: '苏我屠自古',
 				level: 3,
 			},
@@ -1987,7 +1987,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 56,
 		from: {
-			goodwill: {
+			bond: {
 				name: '封兽鵺',
 				level: 3,
 			},
@@ -2005,7 +2005,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 45,
 		from: {
-			goodwill: {
+			bond: {
 				name: '多多良小伞',
 				level: 3,
 			},
@@ -2023,7 +2023,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 55,
 		from: {
-			goodwill: {
+			bond: {
 				name: '霍青娥',
 				level: 3,
 			},
@@ -2041,7 +2041,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 58,
 		from: {
-			goodwill: {
+			bond: {
 				name: '村纱水蜜',
 				level: 3,
 			},
@@ -2059,7 +2059,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 94,
 		from: {
-			goodwill: {
+			bond: {
 				name: '霍青娥',
 				level: 4,
 			},
@@ -2077,7 +2077,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 72,
 		from: {
-			goodwill: {
+			bond: {
 				name: '苏我屠自古',
 				level: 4,
 			},
@@ -2095,7 +2095,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 72,
 		from: {
-			goodwill: {
+			bond: {
 				name: '物部布都',
 				level: 3,
 			},
@@ -2113,7 +2113,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 132,
 		from: {
-			goodwill: {
+			bond: {
 				name: '封兽鵺',
 				level: 4,
 			},
@@ -2131,7 +2131,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 90,
 		from: {
-			goodwill: {
+			bond: {
 				name: '多多良小伞',
 				level: 4,
 			},
@@ -2149,7 +2149,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 97,
 		from: {
-			goodwill: {
+			bond: {
 				name: '村纱水蜜',
 				level: 4,
 			},
@@ -2167,7 +2167,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 136,
 		from: {
-			goodwill: {
+			bond: {
 				name: '物部布都',
 				level: 4,
 			},
@@ -2185,7 +2185,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 30,
 		from: {
-			goodwill: {
+			bond: {
 				name: '梅蒂欣',
 				level: 2,
 			},
@@ -2203,7 +2203,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 32,
 		from: {
-			goodwill: {
+			bond: {
 				name: '射命丸文',
 				level: 2,
 			},
@@ -2221,7 +2221,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 24,
 		from: {
-			goodwill: {
+			bond: {
 				name: '风见幽香',
 				level: 2,
 			},
@@ -2239,7 +2239,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 26,
 		from: {
-			goodwill: {
+			bond: {
 				name: '鬼人正邪',
 				level: 2,
 			},
@@ -2257,7 +2257,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 28,
 		from: {
-			goodwill: {
+			bond: {
 				name: '少名针妙丸',
 				level: 3,
 			},
@@ -2275,7 +2275,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 112,
 		from: {
-			goodwill: {
+			bond: {
 				name: '射命丸文',
 				level: 3,
 			},
@@ -2293,7 +2293,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 58,
 		from: {
-			goodwill: {
+			bond: {
 				name: '梅蒂欣',
 				level: 3,
 			},
@@ -2311,7 +2311,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 40,
 		from: {
-			goodwill: {
+			bond: {
 				name: '少名针妙丸',
 				level: 2,
 			},
@@ -2329,7 +2329,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 42,
 		from: {
-			goodwill: {
+			bond: {
 				name: '鬼人正邪',
 				level: 3,
 			},
@@ -2347,7 +2347,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 42,
 		from: {
-			goodwill: {
+			bond: {
 				name: '今泉影狼',
 				level: 2,
 			},
@@ -2365,7 +2365,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 78,
 		from: {
-			goodwill: {
+			bond: {
 				name: '风见幽香',
 				level: 3,
 			},
@@ -2383,7 +2383,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 72,
 		from: {
-			goodwill: {
+			bond: {
 				name: '今泉影狼',
 				level: 3,
 			},
@@ -2401,7 +2401,7 @@ export const RECIPE_LIST = [
 		level: 5,
 		price: 185,
 		from: {
-			goodwill: {
+			bond: {
 				name: '射命丸文',
 				level: 4,
 			},
@@ -2419,7 +2419,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 124,
 		from: {
-			goodwill: {
+			bond: {
 				name: '鬼人正邪',
 				level: 4,
 			},
@@ -2437,7 +2437,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 115,
 		from: {
-			goodwill: {
+			bond: {
 				name: '少名针妙丸',
 				level: 4,
 			},
@@ -2455,7 +2455,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 133,
 		from: {
-			goodwill: {
+			bond: {
 				name: '风见幽香',
 				level: 4,
 			},
@@ -2473,7 +2473,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 87,
 		from: {
-			goodwill: {
+			bond: {
 				name: '梅蒂欣',
 				level: 4,
 			},
@@ -2491,7 +2491,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 99,
 		from: {
-			goodwill: {
+			bond: {
 				name: '今泉影狼',
 				level: 4,
 			},
@@ -2509,7 +2509,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 45,
 		from: {
-			goodwill: {
+			bond: {
 				name: '魅魔',
 				level: 2,
 			},
@@ -2527,7 +2527,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 36,
 		from: {
-			goodwill: {
+			bond: {
 				name: '露易兹',
 				level: 2,
 			},
@@ -2545,7 +2545,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 45,
 		from: {
-			goodwill: {
+			bond: {
 				name: '爱莲',
 				level: 2,
 			},
@@ -2563,7 +2563,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 60,
 		from: {
-			goodwill: {
+			bond: {
 				name: '绵月丰姬',
 				level: 2,
 			},
@@ -2581,7 +2581,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 80,
 		from: {
-			goodwill: {
+			bond: {
 				name: '绵月依姬',
 				level: 2,
 			},
@@ -2599,7 +2599,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 35,
 		from: {
-			goodwill: {
+			bond: {
 				name: '铃仙',
 				level: 2,
 			},
@@ -2617,7 +2617,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 124,
 		from: {
-			goodwill: {
+			bond: {
 				name: '绵月依姬',
 				level: 3,
 			},
@@ -2635,7 +2635,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 60,
 		from: {
-			goodwill: {
+			bond: {
 				name: '铃仙',
 				level: 3,
 			},
@@ -2653,7 +2653,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 128,
 		from: {
-			goodwill: {
+			bond: {
 				name: '绵月丰姬',
 				level: 3,
 			},
@@ -2671,7 +2671,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 60,
 		from: {
-			goodwill: {
+			bond: {
 				name: '魅魔',
 				level: 3,
 			},
@@ -2689,7 +2689,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 75,
 		from: {
-			goodwill: {
+			bond: {
 				name: '爱莲',
 				level: 3,
 			},
@@ -2707,7 +2707,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 128,
 		from: {
-			goodwill: {
+			bond: {
 				name: '露易兹',
 				level: 3,
 			},
@@ -2725,7 +2725,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 135,
 		from: {
-			goodwill: {
+			bond: {
 				name: '铃仙',
 				level: 4,
 			},
@@ -2743,7 +2743,7 @@ export const RECIPE_LIST = [
 		level: 5,
 		price: 199,
 		from: {
-			goodwill: {
+			bond: {
 				name: '绵月丰姬',
 				level: 4,
 			},
@@ -2761,7 +2761,7 @@ export const RECIPE_LIST = [
 		level: 5,
 		price: 198,
 		from: {
-			goodwill: {
+			bond: {
 				name: '绵月依姬',
 				level: 4,
 			},
@@ -2779,7 +2779,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 188,
 		from: {
-			goodwill: {
+			bond: {
 				name: '魅魔',
 				level: 4,
 			},
@@ -2797,7 +2797,7 @@ export const RECIPE_LIST = [
 		level: 4,
 		price: 120,
 		from: {
-			goodwill: {
+			bond: {
 				name: '爱莲',
 				level: 4,
 			},
@@ -2815,7 +2815,7 @@ export const RECIPE_LIST = [
 		level: 5,
 		price: 188,
 		from: {
-			goodwill: {
+			bond: {
 				name: '露易兹',
 				level: 4,
 			},

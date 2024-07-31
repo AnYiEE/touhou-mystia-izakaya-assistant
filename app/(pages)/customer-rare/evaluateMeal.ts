@@ -111,7 +111,7 @@ function checkRecipeFrom({
 
 	const {from} = currentRecipe;
 
-	if (isObjectLike(from) && 'goodwill' in from && from.goodwill.name === currentCustomerName) {
+	if (isObjectLike(from) && 'bond' in from && from.bond.name === currentCustomerName) {
 		return Math.max(mealScore, 2);
 	}
 
