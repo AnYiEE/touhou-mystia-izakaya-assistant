@@ -49,7 +49,7 @@ export class Sprite<
 
 		const {spriteHeight, spriteWidth, _config} = this;
 		const {height: sheetHeight, width: sheetWidth} = _config;
-		const backgroundSize: `${string}rem ${string}rem` = `${pxToRem(sheetWidth * (displayWidth / spriteWidth))}rem ${pxToRem(sheetHeight * (displayHeight / spriteHeight))}rem`;
+		const backgroundSize: `${number}rem ${number}rem` = `${pxToRem(sheetWidth * (displayWidth / spriteWidth))}rem ${pxToRem(sheetHeight * (displayHeight / spriteHeight))}rem`;
 		const {x, y} = this.getPosByIndex(index);
 
 		return {

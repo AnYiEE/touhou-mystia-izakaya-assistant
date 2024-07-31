@@ -1,6 +1,6 @@
 import {isNil} from 'lodash';
 
-type TPxString = `${string}px`;
+type TPxString = `${number}px`;
 type TResult<T> = T extends TPxString ? number : T;
 
 export function pxToRem<T extends number | TPxString | null | undefined>(px: T, rootFontSize = 16): TResult<T> {

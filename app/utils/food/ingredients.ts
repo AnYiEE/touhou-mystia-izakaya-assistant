@@ -1,6 +1,7 @@
 import {Food} from './base';
 import {type TIngredients} from '@/data';
-import type {TIngredientTag, TRecipeTag} from '@/data/types';
+import type {TIngredientTag} from '@/data/types';
+import {type IPopularData} from '@/stores';
 
 export class Ingredient extends Food<TIngredients> {
 	constructor(data: TIngredients) {
@@ -9,13 +10,7 @@ export class Ingredient extends Food<TIngredients> {
 		this._data = data;
 	}
 
-	public calculateTagsWithPopular(
-		ingredientTags: TIngredientTag[],
-		popular: {
-			isNegative: boolean;
-			tag: TIngredientTag | TRecipeTag | null;
-		}
-	) {
+	public calculateTagsWithPopular(ingredientTags: TIngredientTag[], popular: IPopularData) {
 		const ingredientTagsWithPopular = [...ingredientTags] as (TIngredientTag | '流行厌恶' | '流行喜爱')[];
 		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popular;
 

@@ -2,17 +2,15 @@ import {intersection} from 'lodash';
 
 import type {TCustomerRating, TRecipe} from './types';
 import {type TBeverageNames} from '@/data';
-import type {TIngredientTag, TRecipeTag} from '@/data/types';
+import type {TRecipeTag} from '@/data/types';
+import {type IPopularData, type TPopularTag} from '@/stores';
 
 interface IParameters {
 	currentBeverageName: TBeverageNames | null;
-	currentCustomerPopularData: {
-		isNegative: boolean;
-		tag: TIngredientTag | TRecipeTag | null;
-	};
+	currentCustomerPopularData: IPopularData;
 	currentCustomerPositiveTags: TRecipeTag[];
 	currentExtraIngredientsLength: number;
-	currentExtraTags: Array<TIngredientTag | TRecipeTag>;
+	currentExtraTags: TPopularTag[];
 	currentRecipe: TRecipe | null;
 }
 
@@ -43,7 +41,7 @@ export function evaluateMeal({
 
 	let extraScore = 0;
 
-	let currentCustomerPopularTag: TIngredientTag | TRecipeTag | null = null;
+	let currentCustomerPopularTag: IPopularData['tag'] = null;
 	const {isNegative: popularIsNegative, tag: popularTag} = currentCustomerPopularData;
 	if (popularIsNegative && currentCustomerPositiveTags.includes('流行厌恶')) {
 		currentCustomerPopularTag = popularTag;

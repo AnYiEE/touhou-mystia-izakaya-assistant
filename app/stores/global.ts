@@ -7,12 +7,18 @@ import type {TIngredientTag, TRecipeTag} from '@/data/types';
 import {ingredientInstance as instance_ingredient, recipeInstance as instance_recipe} from '@/methods/food';
 import {pinyinSort, union} from '@/utils';
 
+export type TPopularTag = TIngredientTag | TRecipeTag;
+export interface IPopularData {
+	isNegative: boolean;
+	tag: TPopularTag | null;
+}
+
 const ingredientTags = instance_ingredient.getValuesByProp(instance_ingredient.data, 'tags');
 const recipePositiveTags = instance_recipe.getValuesByProp(instance_recipe.data, 'positiveTags');
 const popularValidTags = union(ingredientTags, recipePositiveTags)
 	.map((value) => ({value}))
 	.sort(pinyinSort) as {
-	value: TIngredientTag | TRecipeTag;
+	value: TPopularTag;
 }[];
 
 const storeVersion = {
@@ -27,8 +33,8 @@ const state = {
 		dirver: [] as string[],
 		popular: {
 			isNegative: false,
-			tag: null as TIngredientTag | TRecipeTag | null,
-		},
+			tag: null,
+		} as IPopularData,
 	},
 };
 

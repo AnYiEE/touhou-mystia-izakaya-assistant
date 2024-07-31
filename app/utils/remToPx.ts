@@ -1,6 +1,6 @@
 import {isNil} from 'lodash';
 
-type TRemString = `${string}rem`;
+type TRemString = `${number}rem`;
 type TResult<T> = T extends TRemString ? number : T;
 
 export function remToPx<T extends number | TRemString | null | undefined>(rem: T, rootFontSize = 16): TResult<T> {

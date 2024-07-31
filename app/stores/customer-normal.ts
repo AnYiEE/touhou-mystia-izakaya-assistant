@@ -10,13 +10,14 @@ import type {TCustomerRating} from '@/(pages)/customer-normal/types';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import {type TBeverageNames, type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
-import type {TIngredientTag, TRecipeTag} from '@/data/types';
+import type {TRecipeTag} from '@/data/types';
 import {customerNormalInstance as instance_customer} from '@/methods/customer';
 import {
 	beverageInstance as instance_beverage,
 	ingredientInstance as instance_ingredient,
 	recipeInstance as instance_recipe,
 } from '@/methods/food';
+import {type IPopularData} from '@/stores';
 import {getAllItemNames} from '@/stores/utils';
 import {numberSort, pinyinSort} from '@/utils';
 
@@ -93,10 +94,7 @@ const state = {
 		meals: {} as {
 			[key in TCustomerNames]?: {
 				index: number;
-				popular: {
-					isNegative: boolean;
-					tag: TIngredientTag | TRecipeTag | null;
-				};
+				popular: IPopularData;
 				rating: TCustomerRating;
 				beverage: TBeverageNames;
 				recipe: TRecipeNames;
@@ -124,8 +122,8 @@ const state = {
 
 			popular: {
 				isNegative: false,
-				tag: null as TIngredientTag | TRecipeTag | null,
-			},
+				tag: null,
+			} as IPopularData,
 			rating: null as TCustomerRating | null,
 		},
 		ingredient: {

@@ -26,8 +26,7 @@ import SideSearchIconButton from '@/components/sideSearchIconButton';
 import {evaluateMeal} from './evaluateMeal';
 import type {ICustomerTabStyleMap, IIngredientsTabStyleMap, TRecipe} from './types';
 import {type TIngredientNames} from '@/data';
-import type {TIngredientTag, TRecipeTag} from '@/data/types';
-import {useCustomerNormalStore, useGlobalStore} from '@/stores';
+import {type TPopularTag, useCustomerNormalStore, useGlobalStore} from '@/stores';
 
 const customerTabStyleMap = {
 	collapse: {
@@ -103,7 +102,7 @@ export default memo(function CustomerNormal() {
 			currentExtraIngredients = currentRecipeData.extraIngredients;
 		}
 
-		const currentExtraTags: Array<TIngredientTag | TRecipeTag> = [];
+		const currentExtraTags: TPopularTag[] = [];
 		currentExtraIngredients.forEach((ingredient) => {
 			currentExtraTags.push(...instance_ingredient.getPropsByName(ingredient).tags);
 		});
