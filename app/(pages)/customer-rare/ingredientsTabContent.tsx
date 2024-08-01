@@ -144,6 +144,12 @@ export default memo(
 							) {
 								scoreChange -= 1;
 							}
+							if (
+								(customerPositiveTags as TRecipeTag[]).includes('大份') &&
+								currentRecipe.ingredients.length + extraIngredients.length === 4
+							) {
+								scoreChange += 1;
+							}
 							return (
 								<div
 									key={index}
