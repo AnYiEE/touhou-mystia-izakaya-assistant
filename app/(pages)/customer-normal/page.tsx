@@ -1,6 +1,6 @@
 'use client';
 
-import {memo, useEffect, useMemo} from 'react';
+import {memo, useCallback, useEffect, useMemo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
 import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
@@ -23,7 +23,10 @@ import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterI
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
-import type {ICustomerTabStyleMap, IIngredientsTabStyleMap} from './types';
+import {evaluateMeal} from './evaluateMeal';
+import type {ICustomerTabStyleMap, IIngredientsTabStyleMap, TRecipe} from './types';
+import {type TIngredientNames} from '@/data';
+import type {TIngredientTag, TRecipeTag} from '@/data/types';
 import {useCustomerNormalStore, useGlobalStore} from '@/stores';
 
 const customerTabStyleMap = {
@@ -82,6 +85,59 @@ export default memo(function CustomerNormal() {
 	const currentRecipe = customerStore.shared.recipe.data.use();
 
 	const instance_customer = customerStore.instances.customer.get();
+	const instance_ingredient = customerStore.instances.ingredient.get();
+	const instance_recipe = customerStore.instances.recipe.get();
+
+	const evaluateMealHelper = useCallback(() => {
+		if (!currentCustomerName) {
+			return;
+		}
+
+		const currentBeverageName = customerStore.shared.beverage.name.get();
+		const currentCustomerPopularData = customerStore.shared.customer.popular.get();
+		const {positiveTags: currentCustomerPositiveTags} = instance_customer.getPropsByName(currentCustomerName);
+
+		let currentExtraIngredients: TIngredientNames[] = [];
+		const currentRecipeData = customerStore.shared.recipe.data.get();
+		if (currentRecipeData) {
+			currentExtraIngredients = currentRecipeData.extraIngredients;
+		}
+
+		const currentExtraTags: Array<TIngredientTag | TRecipeTag> = [];
+		currentExtraIngredients.forEach((ingredient) => {
+			currentExtraTags.push(...instance_ingredient.getPropsByName(ingredient).tags);
+		});
+
+		let recipe: TRecipe | null = null;
+		if (currentRecipeData) {
+			recipe = instance_recipe.getPropsByName(currentRecipeData.name);
+		}
+
+		const rating = evaluateMeal({
+			currentBeverageName,
+			currentCustomerPopularData,
+			currentCustomerPositiveTags,
+			currentExtraIngredientsLength: currentExtraIngredients.length,
+			currentExtraTags,
+			currentRecipe: recipe,
+		});
+
+		customerStore.shared.customer.rating.set(rating);
+	}, [
+		currentCustomerName,
+		customerStore.shared.beverage.name,
+		customerStore.shared.customer.popular,
+		customerStore.shared.customer.rating,
+		customerStore.shared.recipe.data,
+		instance_customer,
+		instance_ingredient,
+		instance_recipe,
+	]);
+
+	customerStore.shared.customer.popular.isNegative.onChange(evaluateMealHelper);
+	customerStore.shared.customer.popular.tag.onChange(evaluateMealHelper);
+	customerStore.shared.beverage.name.onChange(evaluateMealHelper);
+	customerStore.shared.recipe.tagsWithPopular.onChange(evaluateMealHelper);
 
 	const allCustomerNames = customerStore.names.use();
 	const allCustomerDlcs = customerStore.customer.dlcs.get();
@@ -172,8 +228,6 @@ export default memo(function CustomerNormal() {
 	);
 
 	const isCustomerTabFilterVisible = customerStore.shared.customer.filterVisibility.use();
-
-	const instance_ingredient = customerStore.instances.ingredient.get();
 
 	const allIngredientDlcs = customerStore.ingredient.dlcs.get();
 	const allIngredientLevels = customerStore.ingredient.levels.get();

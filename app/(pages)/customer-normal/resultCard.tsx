@@ -148,13 +148,15 @@ export default memo(
 		const currentBeverageName = store.shared.beverage.name.use();
 		const currentRecipe = store.shared.recipe.data.use();
 		const currentCustomerPopular = store.shared.customer.popular.use();
+		const currentRating = store.shared.customer.rating.use();
 		const savedMeal = store.persistence.meals.use();
 
 		const instance_recipe = store.instances.recipe.get();
 
 		const saveButtonTooltipTimer = useRef<NodeJS.Timeout>();
 		const [isShowSaveButtonTooltip, setIsShowSaveButtonTooltip] = useState(false);
-		const isSaveButtonDisabled = !currentCustomerName || !currentBeverageName || !currentRecipe;
+		const isSaveButtonDisabled =
+			!currentCustomerName || !currentBeverageName || !currentRecipe || currentRating === null;
 
 		const hideTooltip = useCallback(() => {
 			setIsShowSaveButtonTooltip(false);
@@ -195,6 +197,7 @@ export default memo(
 				beverage: currentBeverageName,
 				extraIngredients,
 				popular: currentCustomerPopular,
+				rating: currentRating,
 				recipe: currentRecipeName,
 			} as const;
 
@@ -217,6 +220,7 @@ export default memo(
 			currentBeverageName,
 			currentCustomerName,
 			currentCustomerPopular,
+			currentRating,
 			currentRecipe,
 			isSaveButtonDisabled,
 			isTouchOnlyDevice,
@@ -236,7 +240,7 @@ export default memo(
 			}
 			return (
 				<Placeholder className="pb-8 pt-16 md:pt-8 xl:p-0" ref={ref}>
-					选择一种料理或酒水以继续
+					选择点单料理和酒水以继续
 				</Placeholder>
 			);
 		}
@@ -286,6 +290,7 @@ export default memo(
 								onMouseEnter={handleSaveButtonMouseEnter}
 								onMouseLeave={handleSaveButtonMouseLeave}
 								onPress={handleSaveButtonPress}
+								aria-label={`保存套餐，当前${currentRating ? `评级为${currentRating}` : '未评级'}`}
 								className={twJoin(
 									isSaveButtonDisabled &&
 										'cursor-default opacity-disabled data-[hover]:opacity-disabled',

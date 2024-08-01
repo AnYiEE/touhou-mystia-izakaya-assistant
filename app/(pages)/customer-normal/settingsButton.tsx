@@ -3,6 +3,7 @@ import {memo, useCallback} from 'react';
 import {
 	Accordion,
 	AccordionItem,
+	Avatar,
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
@@ -16,6 +17,7 @@ import {faGear} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 
+import {customerRatingColorMap} from './constants';
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
 
 export default memo(function SettingsButton() {
@@ -113,7 +115,27 @@ export default memo(function SettingsButton() {
 									</li>
 									<li>双击顾客卡片中的标签可以将该标签添加至表格筛选列表或从中移除。</li>
 									<li>“保存套餐”按钮仅会在选择了料理和酒水时被启用。</li>
+									<li>评级时，默认您已选择了正确的料理和酒水。</li>
 								</ol>
+							</div>
+						</AccordionItem>
+						<AccordionItem key="rating" aria-label="评级图例" title="评级图例">
+							<div className="flex flex-col gap-2 text-justify text-xs">
+								{(['普通', '满意'] as const).map((rating) => (
+									<div key={rating} className="mb-1 flex items-center gap-3 px-1">
+										<Avatar
+											isBordered
+											showFallback
+											color={customerRatingColorMap[rating]}
+											fallback={<div></div>}
+											radius="sm"
+											classNames={{
+												base: 'h-4 w-px ring-offset-0',
+											}}
+										/>
+										{rating}
+									</div>
+								))}
 							</div>
 						</AccordionItem>
 					</Accordion>

@@ -20,6 +20,7 @@ import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Tags from '@/components/tags';
 import Sprite from '@/components/sprite';
 
+import {customerRatingColorMap} from './constants';
 import {CUSTOMER_NORMAL_TAG_STYLE} from '@/constants';
 import {type TTags} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
@@ -37,6 +38,7 @@ export default memo(
 		const selectedCustomerBeverageTags = customerStore.shared.customer.beverageTags.use();
 		const selectedCustomerPositiveTags = customerStore.shared.customer.positiveTags.use();
 		const currentCustomerPopular = customerStore.shared.customer.popular.use();
+		const currentRating = customerStore.shared.customer.rating.use();
 
 		const currentBeverageName = customerStore.shared.beverage.name.use();
 		const currentRecipe = customerStore.shared.recipe.data.use();
@@ -138,21 +140,43 @@ export default memo(
 			}, 0);
 		}
 
+		const avatarRatingColor = currentRating ? customerRatingColorMap[currentRating] : undefined;
+		const avatarRatingContent =
+			currentRating ?? `请选择${currentBeverageName ? '' : '酒水、'}${currentRecipe ? '' : '料理'}以评级`;
+
 		const getTagTooltip = (selectedTags: Selection, tag: string) =>
 			`双击：将此标签${(selectedTags as SelectionSet).has(tag) ? '从筛选列表中移除' : '加入至筛选列表中'}`;
 
 		return (
 			<Card fullWidth shadow="sm" ref={ref}>
 				<div className="flex flex-col gap-3 p-4 md:flex-row">
-					<div className="flex flex-col items-center justify-center gap-2 text-center">
-						<Avatar
-							radius="sm"
-							icon={<Sprite target="customer_normal" name={currentCustomerName} size={6} />}
-							classNames={{
-								base: 'h-20 w-20 lg:h-24 lg:w-24',
-								icon: 'inline-table lg:inline-block',
-							}}
-						/>
+					<div className="flex flex-col items-center gap-3">
+						<Popover showArrow color={avatarRatingColor} offset={11}>
+							<Tooltip showArrow color={avatarRatingColor} content={avatarRatingContent}>
+								<div className="cursor-pointer">
+									<PopoverTrigger>
+										<Avatar
+											isBordered={Boolean(currentRating)}
+											color={avatarRatingColor}
+											radius="sm"
+											icon={
+												<Sprite target="customer_normal" name={currentCustomerName} size={6} />
+											}
+											role="button"
+											tabIndex={0}
+											classNames={{
+												base: twJoin(
+													'h-20 w-20 focus:opacity-hover focus:ring-2 focus:ring-focus lg:h-24 lg:w-24',
+													currentRating && 'ring-4'
+												),
+												icon: 'inline-table lg:inline-block',
+											}}
+										/>
+									</PopoverTrigger>
+								</div>
+							</Tooltip>
+							<PopoverContent>{avatarRatingContent}</PopoverContent>
+						</Popover>
 						<div className="min-w-24 gap-2 lg:min-w-28">
 							<p className="flex justify-between whitespace-nowrap text-xs font-medium text-default-500">
 								<span>DLC{currentCustomerDlc}</span>
@@ -195,7 +219,7 @@ export default memo(
 											role="button"
 											tabIndex={0}
 											className={twJoin(
-												'cursor-pointer select-none p-1 hover:opacity-80',
+												'cursor-pointer select-none py-0.5 hover:opacity-80',
 												!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50'
 											)}
 										/>
@@ -211,7 +235,7 @@ export default memo(
 										tag={tag}
 										tagStyle={CUSTOMER_NORMAL_TAG_STYLE.negative}
 										className={twJoin(
-											'cursor-not-allowed p-1',
+											'cursor-not-allowed py-0.5',
 											!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50'
 										)}
 									/>
@@ -242,7 +266,7 @@ export default memo(
 											role="button"
 											tabIndex={0}
 											className={twJoin(
-												'cursor-pointer select-none p-1 hover:opacity-80',
+												'cursor-pointer select-none py-0.5 hover:opacity-80',
 												!beverageTags.includes(tag) && 'opacity-50'
 											)}
 										/>

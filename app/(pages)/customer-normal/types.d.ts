@@ -3,6 +3,12 @@ import {type SortDescriptor} from '@nextui-org/react';
 import {type TabVisibilityState} from './constants';
 import type {TBeverageInstance, TRecipeInstance} from '@/methods/food/types';
 
+export type TCustomerRating = '普通' | '满意';
+
+export interface ICustomerRatingMap {
+	[key in TCustomerRating]: AvatarProps['color'];
+}
+
 export interface ICustomerTabStyle {
 	ariaLabel: string;
 	buttonNode: ReactNodeWithoutBoolean;

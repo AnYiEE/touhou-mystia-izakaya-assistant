@@ -67,6 +67,7 @@ export default memo(function ChangeLog() {
 			</Ul>
 			<H2>v0.6</H2>
 			<Ul>
+				<li>新增：普客套餐评级功能。</li>
 				<li>新增：部分稀客的喜爱料理标签可选择补充显示对应点单描述中的关键词以供参考。</li>
 			</Ul>
 		</>

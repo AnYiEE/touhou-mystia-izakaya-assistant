@@ -147,7 +147,7 @@ const state = {
 			},
 			popular: {
 				isNegative: false,
-				tag: null as TRecipeTag | null,
+				tag: null as TIngredientTag | TRecipeTag | null,
 			},
 			rating: null as TCustomerRating | null,
 		},

@@ -6,6 +6,7 @@ import {type Selection} from '@nextui-org/react';
 import {TabVisibilityState, beverageTableColumns, recipeTableColumns} from '@/(pages)/customer-normal/constants';
 import {type TTableSortDescriptor as TBeverageTableSortDescriptor} from '@/(pages)/customer-normal/beverageTabContent';
 import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)/customer-normal/recipeTabContent';
+import type {TCustomerRating} from '@/(pages)/customer-normal/types';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import {type TBeverageNames, type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
@@ -24,6 +25,7 @@ const storeVersion = {
 	popular: 1,
 	popularFull: 2, // eslint-disable-next-line sort-keys
 	ingredientLevel: 3,
+	rating: 4,
 } as const;
 
 const state = {
@@ -95,6 +97,7 @@ const state = {
 					isNegative: boolean;
 					tag: TIngredientTag | TRecipeTag | null;
 				};
+				rating: TCustomerRating;
 				beverage: TBeverageNames;
 				recipe: TRecipeNames;
 				extraIngredients: TIngredientNames[];
@@ -121,8 +124,9 @@ const state = {
 
 			popular: {
 				isNegative: false,
-				tag: null as TRecipeTag | null,
+				tag: null as TIngredientTag | TRecipeTag | null,
 			},
+			rating: null as TCustomerRating | null,
 		},
 		ingredient: {
 			filterVisibility: false,
@@ -150,7 +154,7 @@ const customerNormalStore = store(state, {
 	persist: {
 		enabled: true,
 		name: 'page-customer_normal-storage',
-		version: storeVersion.ingredientLevel,
+		version: storeVersion.rating,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -178,6 +182,14 @@ const customerNormalStore = store(state, {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				const {filters} = oldState.persistence.ingredient;
 				filters.levels = [];
+			}
+			if (version < storeVersion.rating) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+				for (const meals of Object.values(oldState.persistence.meals) as any) {
+					for (const meal of meals) {
+						meal.rating = '普通';
+					}
+				}
 			}
 			return persistedState as typeof state;
 		},
@@ -230,6 +242,7 @@ const customerNormalStore = store(state, {
 		refreshCustomerSelectedItems() {
 			currentStore.shared.customer.beverageTags.set(new Set());
 			currentStore.shared.customer.positiveTags.set(new Set());
+			currentStore.shared.customer.rating.set(null);
 			currentStore.shared.recipe.data.set(null);
 			currentStore.shared.recipe.tagsWithPopular.set([]);
 			currentStore.shared.recipe.page.set(1);

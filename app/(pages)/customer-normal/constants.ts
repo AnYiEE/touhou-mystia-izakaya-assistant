@@ -1,5 +1,11 @@
 import {type TTableColumns as TBeverageTableColumns} from './beverageTabContent';
 import {type TTableColumns as TRecipeTableColumns} from './recipeTabContent';
+import type {ICustomerRatingMap} from './types';
+
+export const customerRatingColorMap = {
+	普通: 'success',
+	满意: 'warning',
+} as const satisfies ICustomerRatingMap;
 
 export enum TabVisibilityState {
 	collapse = 'collapse',
