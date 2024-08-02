@@ -1,8 +1,6 @@
 import {type HTMLAttributes, forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
-import {useIsTouchOnlyDevice} from '@/hooks';
-
 import {Button, Card, Tooltip} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-icons';
@@ -141,7 +139,6 @@ interface IResultCardProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
-		const isTouchOnlyDevice = useIsTouchOnlyDevice();
 		const store = useCustomerRareStore();
 
 		const currentCustomerName = store.shared.customer.data.use()?.name;
@@ -179,23 +176,9 @@ export default memo(
 			}, 3000);
 		}, [hideTooltip]);
 
-		const handleSaveButtonMouseEnter = useCallback(() => {
-			if (isSaveButtonDisabled && !isTouchOnlyDevice) {
-				setIsShowSaveButtonTooltip(true);
-			}
-		}, [isTouchOnlyDevice, isSaveButtonDisabled]);
-
-		const handleSaveButtonMouseLeave = useCallback(() => {
-			if (!isTouchOnlyDevice) {
-				setIsShowSaveButtonTooltip(false);
-			}
-		}, [isTouchOnlyDevice]);
-
 		const handleSaveButtonPress = useCallback(() => {
 			if (isSaveButtonDisabled) {
-				if (isTouchOnlyDevice) {
-					showTooltip();
-				}
+				showTooltip();
 				return;
 			}
 
@@ -240,7 +223,6 @@ export default memo(
 			instance_beverage,
 			instance_recipe,
 			isSaveButtonDisabled,
-			isTouchOnlyDevice,
 			showTooltip,
 			store.persistence.meals,
 		]);
@@ -325,15 +307,9 @@ export default memo(
 								disableAnimation={isSaveButtonDisabled}
 								size="sm"
 								variant="flat"
-								onMouseEnter={handleSaveButtonMouseEnter}
-								onMouseLeave={handleSaveButtonMouseLeave}
 								onPress={handleSaveButtonPress}
 								aria-label={`保存套餐，当前${currentRating ? `评级为${currentRating}` : '未评级'}`}
-								className={twJoin(
-									isSaveButtonDisabled &&
-										'cursor-default opacity-disabled data-[hover]:opacity-disabled',
-									'md:w-auto'
-								)}
+								className={twJoin(isSaveButtonDisabled && 'opacity-disabled', 'md:w-auto')}
 							>
 								保存套餐
 							</Button>

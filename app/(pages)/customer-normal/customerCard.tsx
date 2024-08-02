@@ -145,7 +145,7 @@ export default memo(
 			currentRating ?? `请选择${currentBeverageName ? '' : '酒水、'}${currentRecipe ? '' : '料理'}以评级`;
 
 		const getTagTooltip = (selectedTags: Selection, tag: string) =>
-			`双击：将此标签${(selectedTags as SelectionSet).has(tag) ? '从表格标签筛选列表中移除' : '加入至表格标签筛选列表中'}`;
+			`双击：将此标签${(selectedTags as SelectionSet).has(tag) ? '从筛选列表中移除' : '加入至筛选列表中'}`;
 
 		return (
 			<Card fullWidth shadow="sm" ref={ref}>

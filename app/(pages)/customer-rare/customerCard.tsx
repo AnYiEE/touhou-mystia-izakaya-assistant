@@ -2,7 +2,6 @@ import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
 import {useLongPress} from 'use-long-press';
-import {useIsTouchOnlyDevice} from '@/hooks';
 
 import {
 	Avatar,
@@ -34,8 +33,6 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_props, ref) {
-		const isTouchOnlyDevice = useIsTouchOnlyDevice();
-
 		const customerStore = useCustomerRareStore();
 		const globalStore = useGlobalStore();
 
@@ -272,10 +269,7 @@ export default memo(
 											}
 											tagStyle={customerTagStyleMap[currentCustomerTarget].positive}
 											onContextMenu={(event) => {
-												if (!isTouchOnlyDevice) {
-													event.preventDefault();
-													handleRecipePositiveTagSelected(tag);
-												}
+												event.preventDefault();
 											}}
 											onDoubleClick={() => {
 												customerStore.shared.tab.set('recipe');
@@ -289,6 +283,11 @@ export default memo(
 											}}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
+													handleRecipePositiveTagSelected(tag);
+												}
+											}}
+											onMouseDown={(event) => {
+												if (event.button === 2) {
 													handleRecipePositiveTagSelected(tag);
 												}
 											}}
@@ -336,10 +335,7 @@ export default memo(
 											tag={tag}
 											tagStyle={customerTagStyleMap[currentCustomerTarget].beverage}
 											onContextMenu={(event) => {
-												if (!isTouchOnlyDevice) {
-													event.preventDefault();
-													handleBeverageTagSelected(tag);
-												}
+												event.preventDefault();
 											}}
 											onDoubleClick={() => {
 												customerStore.shared.tab.set('beverage');
@@ -353,6 +349,11 @@ export default memo(
 											}}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
+													handleBeverageTagSelected(tag);
+												}
+											}}
+											onMouseDown={(event) => {
+												if (event.button === 2) {
 													handleBeverageTagSelected(tag);
 												}
 											}}
