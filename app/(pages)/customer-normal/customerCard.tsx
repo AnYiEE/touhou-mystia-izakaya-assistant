@@ -61,7 +61,7 @@ export default memo(
 			[currentBeverageName, currentRecipe, selectedCustomerBeverageTags, selectedCustomerPositiveTags]
 		);
 
-		const handleBeverageTagSelected = useCallback(
+		const handleBeverageTagFiltered = useCallback(
 			(pressedTag: TTags) => {
 				customerStore.shared.tab.set('beverage');
 				customerStore.shared.customer.beverageTags.set((prev) => {
@@ -75,7 +75,7 @@ export default memo(
 			[customerStore.shared.customer.beverageTags, customerStore.shared.tab]
 		);
 
-		const handleRecipePositiveTagSelected = useCallback(
+		const handleRecipePositiveTagFiltered = useCallback(
 			(pressedTag: TTags) => {
 				customerStore.shared.tab.set('recipe');
 				customerStore.shared.customer.positiveTags.set((prev) => {
@@ -145,7 +145,7 @@ export default memo(
 			currentRating ?? `请选择${currentBeverageName ? '' : '酒水、'}${currentRecipe ? '' : '料理'}以评级`;
 
 		const getTagTooltip = (selectedTags: Selection, tag: string) =>
-			`双击：将此标签${(selectedTags as SelectionSet).has(tag) ? '从筛选列表中移除' : '加入至筛选列表中'}`;
+			`双击/中键单击：将此标签${(selectedTags as SelectionSet).has(tag) ? '从筛选列表中移除' : '加入至筛选列表中'}`;
 
 		return (
 			<Card fullWidth shadow="sm" ref={ref}>
@@ -210,11 +210,17 @@ export default memo(
 											tag={tag}
 											tagStyle={CUSTOMER_NORMAL_TAG_STYLE.positive}
 											onDoubleClick={() => {
-												handleRecipePositiveTagSelected(tag);
+												handleRecipePositiveTagFiltered(tag);
 											}}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
-													handleRecipePositiveTagSelected(tag);
+													handleRecipePositiveTagFiltered(tag);
+												}
+											}}
+											onMouseDown={(event) => {
+												if (event.button === 1) {
+													event.preventDefault();
+													handleRecipePositiveTagFiltered(tag);
 												}
 											}}
 											aria-label={`${tag}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
@@ -259,11 +265,17 @@ export default memo(
 											tag={tag}
 											tagStyle={CUSTOMER_NORMAL_TAG_STYLE.beverage}
 											onDoubleClick={() => {
-												handleBeverageTagSelected(tag);
+												handleBeverageTagFiltered(tag);
 											}}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
-													handleBeverageTagSelected(tag);
+													handleBeverageTagFiltered(tag);
+												}
+											}}
+											onMouseDown={(event) => {
+												if (event.button === 1) {
+													event.preventDefault();
+													handleBeverageTagFiltered(tag);
 												}
 											}}
 											aria-label={`${tag}${beverageTags.includes(tag) ? '/已满足' : ''}`}

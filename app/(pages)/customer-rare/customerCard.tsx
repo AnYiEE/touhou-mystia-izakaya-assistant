@@ -73,7 +73,21 @@ export default memo(
 			]
 		);
 
-		const handleBeverageTagSelected = useCallback(
+		const handleBeverageTagFiltered = useCallback(
+			(pressedTag: TTags) => {
+				customerStore.shared.tab.set('beverage');
+				customerStore.shared.customer.beverageTags.set((prev) => {
+					if (prev.has(pressedTag)) {
+						prev.delete(pressedTag);
+					} else {
+						prev.add(pressedTag);
+					}
+				});
+			},
+			[customerStore.shared.customer.beverageTags, customerStore.shared.tab]
+		);
+
+		const handleBeverageTagOrdered = useCallback(
 			(pressedTag: TTags) => {
 				const tag = pressedTag as TBeverageTag;
 				customerStore.shared.customer.order.beverageTag.set((prev) => {
@@ -89,7 +103,21 @@ export default memo(
 			[customerStore.shared.customer.order.beverageTag]
 		);
 
-		const handleRecipePositiveTagSelected = useCallback(
+		const handleRecipePositiveTagFiltered = useCallback(
+			(pressedTag: TTags) => {
+				customerStore.shared.tab.set('recipe');
+				customerStore.shared.customer.positiveTags.set((prev) => {
+					if (prev.has(pressedTag)) {
+						prev.delete(pressedTag);
+					} else {
+						prev.add(pressedTag);
+					}
+				});
+			},
+			[customerStore.shared.customer.positiveTags, customerStore.shared.tab]
+		);
+
+		const handleRecipePositiveTagOrdered = useCallback(
 			(pressedTag: TTags) => {
 				const tag = pressedTag as TRecipeTag;
 				customerStore.shared.customer.order.recipeTag.set((prev) => {
@@ -107,12 +135,12 @@ export default memo(
 
 		const bindBeverageTagLongPress = useLongPress((_longPressReactEvents, context) => {
 			const {context: tag} = context as {context: TBeverageTag};
-			handleBeverageTagSelected(tag);
+			handleBeverageTagOrdered(tag);
 		});
 
 		const bindRecipePositiveTagLongPress = useLongPress((_longPressReactEvents, context) => {
 			const {context: tag} = context as {context: TRecipeTag};
-			handleRecipePositiveTagSelected(tag);
+			handleRecipePositiveTagOrdered(tag);
 		});
 
 		if (!currentCustomer) {
@@ -180,8 +208,8 @@ export default memo(
 		const getTagTooltip = (selectedTags: Selection, tag: string) => (
 			<div>
 				<p>
-					双击：将此标签
-					{(selectedTags as SelectionSet).has(tag) ? '从表格标签筛选列表中移除' : '加入至表格标签筛选列表中'}
+					双击/中键单击：将此标签
+					{(selectedTags as SelectionSet).has(tag) ? '从筛选列表中移除' : '加入至筛选列表中'}
 				</p>
 				<p>长按/右键单击：{currentCustomerOrder.beverageTag === tag ? '不再' : ''}将此标签视为顾客点单需求</p>
 			</div>
@@ -272,23 +300,20 @@ export default memo(
 												event.preventDefault();
 											}}
 											onDoubleClick={() => {
-												customerStore.shared.tab.set('recipe');
-												customerStore.shared.customer.positiveTags.set((prev) => {
-													if (prev.has(tag)) {
-														prev.delete(tag);
-													} else {
-														prev.add(tag);
-													}
-												});
+												handleRecipePositiveTagFiltered(tag);
 											}}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
-													handleRecipePositiveTagSelected(tag);
+													handleRecipePositiveTagOrdered(tag);
 												}
 											}}
 											onMouseDown={(event) => {
+												if (event.button === 1) {
+													event.preventDefault();
+													handleRecipePositiveTagFiltered(tag);
+												}
 												if (event.button === 2) {
-													handleRecipePositiveTagSelected(tag);
+													handleRecipePositiveTagOrdered(tag);
 												}
 											}}
 											aria-label={`${tag}${currentCustomerOrder.recipeTag === tag ? '/已选定' : ''}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
@@ -338,23 +363,20 @@ export default memo(
 												event.preventDefault();
 											}}
 											onDoubleClick={() => {
-												customerStore.shared.tab.set('beverage');
-												customerStore.shared.customer.beverageTags.set((prev) => {
-													if (prev.has(tag)) {
-														prev.delete(tag);
-													} else {
-														prev.add(tag);
-													}
-												});
+												handleBeverageTagFiltered(tag);
 											}}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
-													handleBeverageTagSelected(tag);
+													handleBeverageTagOrdered(tag);
 												}
 											}}
 											onMouseDown={(event) => {
+												if (event.button === 1) {
+													event.preventDefault();
+													handleBeverageTagFiltered(tag);
+												}
 												if (event.button === 2) {
-													handleBeverageTagSelected(tag);
+													handleBeverageTagOrdered(tag);
 												}
 											}}
 											aria-label={`${tag}${currentCustomerOrder.beverageTag === tag ? '/已选定' : ''}${beverageTags.includes(tag) ? '/已满足' : ''}`}

@@ -88,7 +88,7 @@ export default memo(function CustomerRareTutorial() {
 					element: 'div>:last-child>div+[style*="color"]',
 					popover: {
 						title: '筛选酒水标签', // eslint-disable-next-line sort-keys
-						description: '双击标签，以该标签为目标筛选酒水。',
+						description: '双击或中键单击标签，以该标签为目标筛选酒水。',
 					},
 				},
 				{
