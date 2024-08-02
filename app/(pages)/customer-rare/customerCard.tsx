@@ -2,6 +2,7 @@ import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
 import {useLongPress} from 'use-long-press';
+import {useIsTouchOnlyDevice} from '@/hooks';
 
 import {
 	Avatar,
@@ -33,6 +34,8 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_props, ref) {
+		const isTouchOnlyDevice = useIsTouchOnlyDevice();
+
 		const customerStore = useCustomerRareStore();
 		const globalStore = useGlobalStore();
 
@@ -181,9 +184,9 @@ export default memo(
 			<div>
 				<p>
 					双击：将此标签
-					{(selectedTags as SelectionSet).has(tag) ? '从筛选列表中移除' : '加入至筛选列表中'}
+					{(selectedTags as SelectionSet).has(tag) ? '从表格标签筛选列表中移除' : '加入至表格标签筛选列表中'}
 				</p>
-				<p>长按：{currentCustomerOrder.beverageTag === tag ? '不再' : ''}将此标签视为顾客点单需求</p>
+				<p>长按/右键单击：{currentCustomerOrder.beverageTag === tag ? '不再' : ''}将此标签视为顾客点单需求</p>
 			</div>
 		);
 
@@ -268,13 +271,19 @@ export default memo(
 													: tag
 											}
 											tagStyle={customerTagStyleMap[currentCustomerTarget].positive}
-											handleDoubleClick={(clickedTag) => {
+											onContextMenu={(event) => {
+												if (!isTouchOnlyDevice) {
+													event.preventDefault();
+													handleRecipePositiveTagSelected(tag);
+												}
+											}}
+											onDoubleClick={() => {
 												customerStore.shared.tab.set('recipe');
 												customerStore.shared.customer.positiveTags.set((prev) => {
-													if (prev.has(clickedTag)) {
-														prev.delete(clickedTag);
+													if (prev.has(tag)) {
+														prev.delete(tag);
 													} else {
-														prev.add(clickedTag);
+														prev.add(tag);
 													}
 												});
 											}}
@@ -326,13 +335,19 @@ export default memo(
 										<Tags.Tag
 											tag={tag}
 											tagStyle={customerTagStyleMap[currentCustomerTarget].beverage}
-											handleDoubleClick={(clickedTag) => {
+											onContextMenu={(event) => {
+												if (!isTouchOnlyDevice) {
+													event.preventDefault();
+													handleBeverageTagSelected(tag);
+												}
+											}}
+											onDoubleClick={() => {
 												customerStore.shared.tab.set('beverage');
 												customerStore.shared.customer.beverageTags.set((prev) => {
-													if (prev.has(clickedTag)) {
-														prev.delete(clickedTag);
+													if (prev.has(tag)) {
+														prev.delete(tag);
 													} else {
-														prev.add(clickedTag);
+														prev.add(tag);
 													}
 												});
 											}}

@@ -81,7 +81,7 @@ export default memo(function CustomerRareTutorial() {
 					element: 'div>:last-child>div+[style*="color"]',
 					popover: {
 						title: '选择酒水标签', // eslint-disable-next-line sort-keys
-						description: '长按标签，选中“可加冰”标签。此次教程中，假设莉格露点单“可加冰”的酒水。',
+						description: '长按或右键单击标签，选中“可加冰”标签。此次教程中，假设莉格露点单“可加冰”的酒水。',
 					},
 				},
 				{

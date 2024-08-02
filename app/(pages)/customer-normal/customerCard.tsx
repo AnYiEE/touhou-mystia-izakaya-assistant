@@ -145,7 +145,7 @@ export default memo(
 			currentRating ?? `请选择${currentBeverageName ? '' : '酒水、'}${currentRecipe ? '' : '料理'}以评级`;
 
 		const getTagTooltip = (selectedTags: Selection, tag: string) =>
-			`双击：将此标签${(selectedTags as SelectionSet).has(tag) ? '从筛选列表中移除' : '加入至筛选列表中'}`;
+			`双击：将此标签${(selectedTags as SelectionSet).has(tag) ? '从表格标签筛选列表中移除' : '加入至表格标签筛选列表中'}`;
 
 		return (
 			<Card fullWidth shadow="sm" ref={ref}>
@@ -209,7 +209,9 @@ export default memo(
 										<Tags.Tag
 											tag={tag}
 											tagStyle={CUSTOMER_NORMAL_TAG_STYLE.positive}
-											handleDoubleClick={handleRecipePositiveTagSelected}
+											onDoubleClick={() => {
+												handleRecipePositiveTagSelected(tag);
+											}}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
 													handleRecipePositiveTagSelected(tag);
@@ -256,7 +258,9 @@ export default memo(
 										<Tags.Tag
 											tag={tag}
 											tagStyle={CUSTOMER_NORMAL_TAG_STYLE.beverage}
-											handleDoubleClick={handleBeverageTagSelected}
+											onDoubleClick={() => {
+												handleBeverageTagSelected(tag);
+											}}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
 													handleBeverageTagSelected(tag);
