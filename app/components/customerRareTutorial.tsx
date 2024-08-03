@@ -182,9 +182,13 @@ export default memo(function CustomerRareTutorial() {
 	const isInRecipeTab = useRef(false);
 
 	useEffect(() => {
+		if (!driverRef.current.isActive()) {
+			return;
+		}
+
 		if (currentCustomerName && !isCustomerSelected.current) {
 			isCustomerSelected.current = true;
-			driverRef.current.moveNext();
+			driverRef.current.moveTo(2);
 		}
 
 		if (currentBeverageName && !isBeverageSelected.current) {
