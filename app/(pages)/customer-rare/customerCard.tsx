@@ -76,6 +76,8 @@ export default memo(
 		const handleBeverageTagFiltered = useCallback(
 			(pressedTag: TTags) => {
 				customerStore.shared.tab.set('beverage');
+				customerStore.shared.customer.filterVisibility.set(false);
+				customerStore.shared.ingredient.filterVisibility.set(false);
 				customerStore.shared.customer.beverageTags.set((prev) => {
 					if (prev.has(pressedTag)) {
 						prev.delete(pressedTag);
@@ -84,7 +86,12 @@ export default memo(
 					}
 				});
 			},
-			[customerStore.shared.customer.beverageTags, customerStore.shared.tab]
+			[
+				customerStore.shared.customer.beverageTags,
+				customerStore.shared.customer.filterVisibility,
+				customerStore.shared.ingredient.filterVisibility,
+				customerStore.shared.tab,
+			]
 		);
 
 		const handleBeverageTagOrdered = useCallback(
@@ -106,6 +113,8 @@ export default memo(
 		const handleRecipePositiveTagFiltered = useCallback(
 			(pressedTag: TTags) => {
 				customerStore.shared.tab.set('recipe');
+				customerStore.shared.customer.filterVisibility.set(false);
+				customerStore.shared.ingredient.filterVisibility.set(false);
 				customerStore.shared.customer.positiveTags.set((prev) => {
 					if (prev.has(pressedTag)) {
 						prev.delete(pressedTag);
@@ -114,7 +123,12 @@ export default memo(
 					}
 				});
 			},
-			[customerStore.shared.customer.positiveTags, customerStore.shared.tab]
+			[
+				customerStore.shared.customer.filterVisibility,
+				customerStore.shared.customer.positiveTags,
+				customerStore.shared.ingredient.filterVisibility,
+				customerStore.shared.tab,
+			]
 		);
 
 		const handleRecipePositiveTagOrdered = useCallback(

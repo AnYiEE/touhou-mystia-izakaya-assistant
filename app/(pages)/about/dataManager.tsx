@@ -173,6 +173,8 @@ export default memo(function DataManager() {
 								onPress={() => {
 									customerStore.shared.customer.data.set(null);
 									customerStore.shared.tab.set('customer');
+									customerStore.shared.customer.filterVisibility.set(true);
+									customerStore.shared.ingredient.filterVisibility.set(false);
 									globalStore.persistence.set((prev) => {
 										const dirver = prev.dirver.filter(
 											(item) => item !== customerRareTutorialStoreKey
