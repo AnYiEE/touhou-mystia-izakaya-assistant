@@ -146,7 +146,7 @@ export default memo(function DataManager() {
 											}
 										})}
 									>
-										重置现有稀客套餐数据（数据出错时可使用）
+										重置已保存的稀客套餐数据
 									</Button>
 								</PopoverTrigger>
 								<PopoverContent className="p-0">

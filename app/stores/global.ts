@@ -24,12 +24,14 @@ const popularValidTags = union(ingredientTags, recipePositiveTags)
 const storeVersion = {
 	initial: 0, // eslint-disable-next-line sort-keys
 	dirver: 1,
+	tagsTooltip: 2,
 } as const;
 
 const state = {
 	popularTags: popularValidTags,
 
 	persistence: {
+		customerCardTagsTooltip: true,
 		dirver: [] as string[],
 		popular: {
 			isNegative: false,
@@ -42,13 +44,16 @@ const globalStore = store(state, {
 	persist: {
 		enabled: true,
 		name: 'global-storage',
-		version: storeVersion.dirver,
+		version: storeVersion.tagsTooltip,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
 			const oldState = persistedState as any;
 			if (version < storeVersion.dirver) {
 				oldState.persistence.dirver = [];
+			}
+			if (version < storeVersion.tagsTooltip) {
+				oldState.persistence.customerCardTagsTooltip = true;
 			}
 			return persistedState as typeof state;
 		},

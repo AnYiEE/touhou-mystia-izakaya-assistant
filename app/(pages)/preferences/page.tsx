@@ -5,8 +5,10 @@ import {memo, useCallback} from 'react';
 import {Select, SelectItem, type Selection, Switch} from '@nextui-org/react';
 
 import DataManager from './dataManager';
+import SwitchItem from './switchItem';
 import H1 from '@/components/h1';
 import H2 from '@/components/h2';
+import H3 from '@/components/h3';
 
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
 
@@ -14,11 +16,12 @@ export default memo(function Preferences() {
 	const customerStore = useCustomerRareStore();
 	const globalStore = useGlobalStore();
 
+	const isShowTagDescription = customerStore.persistence.customer.showTagDescription.use();
+
 	const popularTags = globalStore.popularTags.get();
 	const isNegativePopularTag = globalStore.persistence.popular.isNegative.use();
 	const selectedPopularTag = globalStore.selectedPopularTag.use();
-
-	const isShowTagDescription = customerStore.persistence.customer.showTagDescription.use();
+	const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
 
 	const onIsNegativePopularTagChange = useCallback(
 		(value: boolean) => {
@@ -38,10 +41,18 @@ export default memo(function Preferences() {
 
 	return (
 		<div className="leading-6">
-			<H1 isFirst subTitle="以下的更改会即时生效">
+			<H1 isFirst subTitle="以下的所有更改都会即时生效">
 				设置
 			</H1>
-			<H2 className="mt-0">流行标签</H2>
+			<H2 className="mt-0">全局设置</H2>
+			<SwitchItem
+				isSelected={isShowTagsTooltip}
+				onValueChange={globalStore.persistence.customerCardTagsTooltip.set}
+				aria-label={`${isShowTagsTooltip ? '隐藏' : '显示'}标签浮动提示`}
+			>
+				顾客卡片中标签的浮动提示
+			</SwitchItem>
+			<H3>流行标签</H3>
 			<div className="space-y-2">
 				<div className="flex items-center">
 					<span className="font-medium">类别：</span>
@@ -76,23 +87,13 @@ export default memo(function Preferences() {
 				</div>
 			</div>
 			<H2>稀客页面</H2>
-			<div className="flex items-center">
-				<span className="font-medium">显示料理标签描述</span>
-				<Switch
-					endContent={<span>关</span>}
-					startContent={<span>开</span>}
-					isSelected={isShowTagDescription}
-					size="sm"
-					onValueChange={customerStore.persistence.customer.showTagDescription.set}
-					aria-label={`${isShowTagDescription ? '隐藏' : '显示'}料理标签描述`}
-					className="ml-2"
-					classNames={{
-						endContent: 'leading-none',
-						startContent: 'leading-none',
-						wrapper: 'bg-default-300 dark:bg-default-200',
-					}}
-				/>
-			</div>
+			<SwitchItem
+				isSelected={isShowTagDescription}
+				onValueChange={customerStore.persistence.customer.showTagDescription.set}
+				aria-label={`${isShowTagDescription ? '隐藏' : '显示'}料理标签描述`}
+			>
+				稀客卡片中料理标签的描述
+			</SwitchItem>
 			<DataManager />
 		</div>
 	);

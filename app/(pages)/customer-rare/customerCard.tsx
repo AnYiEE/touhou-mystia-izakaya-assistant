@@ -48,6 +48,7 @@ export default memo(
 		const currentRecipe = customerStore.shared.recipe.data.use();
 
 		const currentGlobalPopular = globalStore.persistence.popular.use();
+		const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
 
 		const instance_beverage = customerStore.instances.beverage.get();
 		const instance_ingredient = customerStore.instances.ingredient.get();
@@ -296,7 +297,9 @@ export default memo(
 									<Tooltip
 										key={tag}
 										showArrow
+										closeDelay={0}
 										content={getTagTooltip(selectedCustomerPositiveTags, tag)}
+										isDisabled={!isShowTagsTooltip}
 									>
 										<Tags.Tag
 											tag={
@@ -368,7 +371,9 @@ export default memo(
 									<Tooltip
 										key={tag}
 										showArrow
+										closeDelay={0}
 										content={getTagTooltip(selectedCustomerBeverageTags, tag)}
+										isDisabled={!isShowTagsTooltip}
 									>
 										<Tags.Tag
 											tag={tag}
