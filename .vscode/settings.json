@@ -1,28 +1,10 @@
 {
-	"diffEditor.codeLens": true,
-	"diffEditor.experimental.showMoves": true,
-	"diffEditor.ignoreTrimWhitespace": false,
-	"diffEditor.maxComputationTime": 0,
-	"editor.bracketPairColorization.independentColorPoolPerBracketType": true,
-	"editor.cursorBlinking": "smooth",
-	"editor.cursorSmoothCaretAnimation": "on",
-	"editor.fontLigatures": true,
 	"editor.formatOnSave": true,
-	"editor.guides.bracketPairs": "active",
 	"editor.insertSpaces": false,
-	"editor.linkedEditing": true,
-	"editor.quickSuggestions": {
-		"strings": "on"
-	},
-	"editor.renderWhitespace": "all",
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
-	"editor.stickyScroll.enabled": true,
 	"files.associations": {
 		"*.css": "css"
 	},
-	"git.autoStash": true,
-	"git.allowForcePush": true,
-	"terminal.integrated.scrollback": 10000,
 	"eslint.enable": true,
 	"eslint.format.enable": true,
 	"prettier.enable": true,
@@ -59,21 +41,12 @@
 	"[jsonc]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
-	"[yml]": {
-		"editor.defaultFormatter": "redhat.vscode-yaml"
-	},
 	"[yaml]": {
 		"editor.defaultFormatter": "redhat.vscode-yaml"
 	},
-	"html.autoClosingTags": true,
-	"javascript.autoClosingTags": true,
-	"typescript.autoClosingTags": true,
-	"javascript.suggest.autoImports": true,
-	"typescript.suggest.autoImports": true,
-	"javascript.suggest.completeFunctionCalls": true,
-	"typescript.suggest.completeFunctionCalls": true,
-	"javascript.updateImportsOnFileMove.enabled": "always",
-	"typescript.updateImportsOnFileMove.enabled": "always",
+	"[yml]": {
+		"editor.defaultFormatter": "redhat.vscode-yaml"
+	},
 	"css.format.spaceAroundSelectorSeparator": true,
 	"css.lint.unknownAtRules": "ignore",
 	"css.lint.validProperties": ["composes"],
@@ -81,7 +54,6 @@
 		"buttonsEnabled": false
 	},
 	"errorLens.enableOnDiffView": true,
-	"githubPullRequests.upstreamRemote": "never",
 	"stylelint.packageManager": "pnpm",
 	"tailwindCSS.classAttributes": ["className", "classNames", "itemClasses", "tw"],
 	"explorer.fileNesting.enabled": true,
