@@ -1,7 +1,6 @@
 import {memo, useEffect, useMemo, useRef} from 'react';
-import {driver} from 'driver.js';
-
 import {usePathname} from 'next/navigation';
+import {driver} from 'driver.js';
 
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
 import {getPageTitle} from '@/utils';

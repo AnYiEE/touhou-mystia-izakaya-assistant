@@ -1,9 +1,8 @@
 'use client';
 
 import {type KeyboardEvent, memo, useCallback, useEffect, useMemo, useReducer, useState} from 'react';
-import {debounce, isObjectLike} from 'lodash';
-
 import {useRouter} from 'next/navigation';
+import {debounce, isObjectLike} from 'lodash';
 
 import {useThrottle} from '@/hooks';
 
@@ -15,7 +14,6 @@ import {
 	customerRareTutorialResetLabel,
 	customerRareTutorialStoreKey,
 } from '@/components/customerRareTutorial';
-
 import H1 from '@/components/h1';
 
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
