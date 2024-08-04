@@ -50,8 +50,6 @@ export const metadata: Metadata = {
 	other: {
 		// cSpell:ignore codeva
 		'baidu-site-verification': 'codeva-aSffMaEHAj',
-		// cSpell:ignore adsense
-		'google-adsense-account': 'ca-pub-2792237991611480',
 	},
 };
 
