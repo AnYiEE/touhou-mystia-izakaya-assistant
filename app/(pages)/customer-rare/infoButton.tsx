@@ -47,6 +47,13 @@ export default memo(function InfoButton() {
 									<li>双击或中键单击顾客卡片中的标签可以将该标签添加至表格筛选列表或从中移除。</li>
 									<li>“保存套餐”按钮仅会在选择了料理和酒水，且选定了顾客的点单需求标签时被启用。</li>
 								</ol>
+								<p className="mb-1 mt-2 font-semibold">交互时</p>
+								<ol className="list-inside list-disc">
+									<li>
+										{/* cSpell:ignore haixian */}
+										所有的搜索框都支持模糊搜索，如使用“海鲜”、“haixian”或“hx”均可搜索到“海鲜味噌汤”。
+									</li>
+								</ol>
 							</div>
 						</AccordionItem>
 						<AccordionItem key="rating" aria-label="评级图例" title="评级图例">

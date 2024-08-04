@@ -45,6 +45,13 @@ export default memo(function InfoButton() {
 									<li>“保存套餐”按钮仅会在选择了料理和酒水时被启用。</li>
 									<li>评级时，默认您已选择了正确的料理和酒水。</li>
 								</ol>
+								<p className="mb-1 mt-2 font-semibold">交互时</p>
+								<ol className="list-inside list-disc">
+									<li>
+										{/* cSpell:ignore haixian */}
+										所有的搜索框都支持模糊搜索，如使用“海鲜”、“haixian”或“hx”均可搜索到“海鲜味噌汤”。
+									</li>
+								</ol>
 							</div>
 						</AccordionItem>
 						<AccordionItem key="rating" aria-label="评级图例" title="评级图例">
