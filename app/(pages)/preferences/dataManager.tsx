@@ -16,7 +16,7 @@ import {
 	customerRareTutorialStoreKey,
 } from '@/components/customerRareTutorial';
 
-import H1 from './h1';
+import H1 from '@/components/h1';
 
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
 import {checkA11yConfirmKey, toggleBoolean} from '@/utils';

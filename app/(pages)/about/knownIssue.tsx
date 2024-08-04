@@ -2,8 +2,8 @@ import {memo} from 'react';
 
 import {Link} from '@nextui-org/react';
 
-import H1 from './h1';
-import Ul from './ul';
+import H1 from '@/components/h1';
+import Ul from '@/components/ul';
 
 export default memo(function KnownIssue() {
 	return (

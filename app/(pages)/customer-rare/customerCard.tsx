@@ -15,7 +15,7 @@ import {
 } from '@nextui-org/react';
 import {faArrowsRotate} from '@fortawesome/free-solid-svg-icons';
 
-import SettingsButton from './settingsButton';
+import InfoButton from './infoButton';
 import TagGroup from './tagGroup';
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
@@ -423,7 +423,7 @@ export default memo(
 							/>
 						</Tooltip>
 					)}
-					<SettingsButton />
+					<InfoButton />
 				</div>
 			</Card>
 		);

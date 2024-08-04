@@ -37,6 +37,10 @@ const navItems = [
 		],
 	},
 	{
+		label: '设置',
+		href: '/preferences',
+	},
+	{
 		label: '关于',
 		href: '/about',
 	},

@@ -2,9 +2,9 @@ import {memo} from 'react';
 
 import {Link} from '@nextui-org/react';
 
-import H1 from './h1';
-import H2 from './h2';
-import Ul from './ul';
+import H1 from '@/components/h1';
+import H2 from '@/components/h2';
+import Ul from '@/components/ul';
 
 import {siteConfig} from '@/configs';
 
@@ -69,6 +69,10 @@ export default memo(function ChangeLog() {
 			<Ul>
 				<li>新增：普客套餐评级功能。</li>
 				<li>新增：部分稀客的喜爱料理标签可选择补充显示对应点单描述中的关键词以供参考。</li>
+			</Ul>
+			<H2>v0.7</H2>
+			<Ul>
+				<li>新增：设置页面。</li>
 			</Ul>
 		</>
 	);

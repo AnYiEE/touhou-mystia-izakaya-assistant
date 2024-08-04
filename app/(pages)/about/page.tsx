@@ -3,9 +3,8 @@ import {memo} from 'react';
 import {Link} from '@nextui-org/react';
 
 import ChangeLog from './changeLog';
-import DataManager from './dataManager';
-import H1 from './h1';
 import KnownIssue from './knownIssue';
+import H1 from '@/components/h1';
 
 import {siteConfig} from '@/configs';
 
@@ -84,7 +83,6 @@ export default memo(function About() {
 			</div>
 			<ChangeLog />
 			<KnownIssue />
-			<DataManager />
 		</div>
 	);
 });
