@@ -74,7 +74,7 @@ export const CUSTOMER_RARE_LIST = [
 	{
 		name: '博丽灵梦',
 		dlc: 0,
-		places: ['妖怪兽道', '人间之里', '博丽神社', '妖怪之山', '魔法森林'],
+		places: ['博丽神社', '妖怪兽道', '人间之里', '妖怪之山', '魔法森林'],
 		price: '150-300',
 		positiveTags: ['高级', '饱腹', '甜', '不可思议', '实惠', '流行喜爱'],
 		negativeTags: ['下酒', '昂贵', '流行厌恶'],
@@ -152,7 +152,7 @@ export const CUSTOMER_RARE_LIST = [
 	{
 		name: '藤原妹红',
 		dlc: 0,
-		places: ['妖怪兽道', '迷途竹林'],
+		places: ['迷途竹林', '妖怪兽道'],
 		price: '300-600',
 		positiveTags: ['灼热', '果味', '烧烤', '燃起来了', '辣'],
 		negativeTags: ['高级', '不可思议', '昂贵'],
@@ -244,13 +244,13 @@ export const CUSTOMER_RARE_LIST = [
 		name: '雾雨魔理沙',
 		dlc: 1,
 		places: [
+			'魔法森林',
 			'妖怪兽道',
 			'人间之里',
 			'博丽神社',
 			'红魔馆',
 			'迷途竹林',
 			'妖怪之山',
-			'魔法森林',
 			'旧地狱',
 			'地灵殿',
 			'命莲寺',
@@ -284,7 +284,7 @@ export const CUSTOMER_RARE_LIST = [
 	{
 		name: '黑谷山女',
 		dlc: 2,
-		places: ['妖怪兽道', '红魔馆', '妖怪之山', '魔法森林', '旧地狱'],
+		places: ['旧地狱', '妖怪兽道', '红魔馆', '妖怪之山', '魔法森林'],
 		price: '250-400',
 		positiveTags: ['鲜', '甜', '生', '适合拍照', '猎奇', '流行喜爱'],
 		negativeTags: ['重油', '咸', '灼热'],
@@ -311,7 +311,7 @@ export const CUSTOMER_RARE_LIST = [
 	{
 		name: '星熊勇仪',
 		dlc: 2,
-		places: ['博丽神社', '妖怪之山', '旧地狱', '地灵殿'],
+		places: ['旧地狱', '博丽神社', '妖怪之山', '地灵殿'],
 		price: '600-1000',
 		positiveTags: ['传说', '下酒', '和风', '招牌', '力量涌现', '燃起来了', '大份', '流行喜爱'],
 		negativeTags: ['素', '猎奇', '小巧'],
@@ -324,7 +324,7 @@ export const CUSTOMER_RARE_LIST = [
 	{
 		name: '火焰猫燐',
 		dlc: 2,
-		places: ['人间之里', '博丽神社', '妖怪之山', '旧地狱', '地灵殿', '命莲寺', '神灵庙'],
+		places: ['地灵殿', '人间之里', '博丽神社', '妖怪之山', '旧地狱', '命莲寺', '神灵庙'],
 		price: '500-700',
 		positiveTags: ['水产', '海味', '鲜', '甜', '猎奇', '梦幻', '流行喜爱'],
 		negativeTags: ['生', '灼热'],
@@ -336,7 +336,7 @@ export const CUSTOMER_RARE_LIST = [
 	{
 		name: '灵乌路空',
 		dlc: 2,
-		places: ['妖怪之山', '地灵殿'],
+		places: ['地灵殿', '妖怪之山'],
 		price: '500-800',
 		positiveTags: ['肉', '重油', '咸', '灼热', '力量涌现', '辣'],
 		negativeTags: ['清淡', '菌类'],
@@ -346,7 +346,7 @@ export const CUSTOMER_RARE_LIST = [
 	{
 		name: '古明地觉',
 		dlc: 2,
-		places: ['人间之里', '博丽神社', '红魔馆', '迷途竹林', '魔法森林', '地灵殿'],
+		places: ['地灵殿', '人间之里', '博丽神社', '红魔馆', '迷途竹林', '魔法森林'],
 		price: '500-600',
 		positiveTags: ['家常', '甜', '力量涌现', '小巧', '梦幻', '特产'],
 		negativeTags: ['肉', '山珍', '灼热', '猎奇', '大份'],
@@ -474,7 +474,7 @@ export const CUSTOMER_RARE_LIST = [
 	{
 		name: '今泉影狼',
 		dlc: 4,
-		places: ['迷途竹林', '辉针城'],
+		places: ['辉针城', '迷途竹林'],
 		price: '300-600',
 		positiveTags: ['肉', '家常', '山珍', '和风', '适合拍照', '凉爽', '流行喜爱'],
 		negativeTags: ['灼热'],
@@ -489,6 +489,7 @@ export const CUSTOMER_RARE_LIST = [
 		name: '射命丸文',
 		dlc: 4,
 		places: [
+			'太阳花田',
 			'妖怪兽道',
 			'人间之里',
 			'博丽神社',
@@ -501,7 +502,6 @@ export const CUSTOMER_RARE_LIST = [
 			'命莲寺',
 			'神灵庙',
 			'辉针城',
-			'太阳花田',
 		],
 		price: '500-600',
 		positiveTags: ['肉', '家常', '下酒', '和风', '招牌', '适合拍照', '流行喜爱'],
@@ -560,6 +560,7 @@ export const CUSTOMER_RARE_LIST = [
 		name: '露易兹',
 		dlc: 5,
 		places: [
+			'魔界',
 			'妖怪兽道',
 			'人间之里',
 			'博丽神社',
@@ -573,7 +574,6 @@ export const CUSTOMER_RARE_LIST = [
 			'神灵庙',
 			'辉针城',
 			'太阳花田',
-			'魔界',
 		],
 		price: '800-1000',
 		positiveTags: ['水产', '西式', '甜', '适合拍照', '小巧', '特产', '流行喜爱'],
@@ -646,7 +646,7 @@ export const CUSTOMER_RARE_LIST = [
 	{
 		name: '森近霖之助',
 		dlc: 0,
-		places: ['人间之里', '太阳花田'],
+		places: ['人间之里', '魔法森林', '太阳花田'],
 		price: '250-400',
 		positiveTags: ['家常', '饱腹', '鲜', '流行喜爱'],
 		negativeTags: ['重油', '下酒', '猎奇', '流行厌恶'],
@@ -721,11 +721,11 @@ export const CUSTOMER_RARE_LIST = [
 		name: '饕餮尤魔',
 		dlc: 1,
 		places: [
+			'妖怪之山',
 			'妖怪兽道',
 			'博丽神社',
 			'红魔馆',
 			'迷途竹林',
-			'妖怪之山',
 			'魔法森林',
 			'旧地狱',
 			'地灵殿',
@@ -749,6 +749,7 @@ export const CUSTOMER_RARE_LIST = [
 		name: '古明地恋',
 		dlc: 2,
 		places: [
+			'地灵殿',
 			'妖怪兽道',
 			'人间之里',
 			'博丽神社',
@@ -757,7 +758,6 @@ export const CUSTOMER_RARE_LIST = [
 			'妖怪之山',
 			'魔法森林',
 			'旧地狱',
-			'地灵殿',
 			'命莲寺',
 			'神灵庙',
 			'辉针城',
