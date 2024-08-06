@@ -2,12 +2,14 @@
 
 import {type KeyboardEvent, memo, useCallback, useEffect, useMemo, useReducer, useState} from 'react';
 import {useRouter} from 'next/navigation';
+import {useProgress} from 'react-transition-progress';
 import {debounce, isObjectLike} from 'lodash';
 
 import {useThrottle} from '@/hooks';
 
 import {Button, Popover, PopoverContent, PopoverTrigger, Snippet, Tab, Tabs, Textarea} from '@nextui-org/react';
 
+import {showProgress} from '@/(pages)/navbar';
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import {
 	customerRareTutorialPathname,
@@ -20,6 +22,8 @@ import {useCustomerRareStore, useGlobalStore} from '@/stores';
 import {checkA11yConfirmKey, toggleBoolean} from '@/utils';
 
 export default memo(function DataManager() {
+	const startProgress = useProgress();
+
 	const [value, setValue] = useState('');
 	const throttledValue = useThrottle(value);
 
@@ -169,6 +173,7 @@ export default memo(function DataManager() {
 								color="primary"
 								variant="flat"
 								onPress={() => {
+									showProgress(startProgress);
 									customerStore.shared.customer.data.set(null);
 									customerStore.shared.tab.set('customer');
 									customerStore.shared.customer.filterVisibility.set(true);

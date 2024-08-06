@@ -1,7 +1,8 @@
 'use client';
 
-import {type JSX, type PropsWithChildren, memo, useCallback, useReducer} from 'react';
+import {type JSX, type PropsWithChildren, memo, startTransition, useCallback, useReducer} from 'react';
 import {usePathname} from 'next/navigation';
+import {useProgress} from 'react-transition-progress';
 import {twMerge} from 'tailwind-merge';
 
 import {
@@ -35,6 +36,15 @@ import {toggleBoolean} from '@/utils';
 
 const {links, name, navItems, navMenuItems, shortName} = siteConfig;
 
+export function showProgress(startProgress: () => void) {
+	startTransition(async () => {
+		startProgress();
+		await new Promise((resolve) => {
+			setTimeout(resolve, 300);
+		});
+	});
+}
+
 interface INavbarLinkProps
 	extends Pick<ButtonProps, 'className' | 'startContent' | 'fullWidth'>,
 		Pick<LinkProps, 'href'> {
@@ -50,6 +60,8 @@ const NavbarLink = memo(function NavbarLink({
 	label: children,
 	startContent,
 }: Partial<PropsWithChildren<INavbarLinkProps>>) {
+	const startProgress = useProgress();
+
 	return (
 		<Button
 			as={Link}
@@ -58,6 +70,9 @@ const NavbarLink = memo(function NavbarLink({
 			startContent={startContent}
 			variant={isActivated ? 'faded' : 'light'}
 			href={href}
+			onPress={() => {
+				showProgress(startProgress);
+			}}
 			role="link"
 			className={twMerge('text-base', className)}
 		>
@@ -107,14 +122,15 @@ const GitHubLink = memo(function GitHubLink({showTooltip}: Partial<IGitHubLinkPr
 
 export default memo(function Navbar() {
 	const pathname = usePathname();
-	const [isMenuOpened, setMenuOpened] = useReducer(toggleBoolean, false);
+	const startProgress = useProgress();
+	const [isMenuOpened, toggleMenuOpened] = useReducer(toggleBoolean, false);
 
 	return (
 		<NextUINavbar
 			maxWidth="xl"
 			position="sticky"
 			isMenuOpen={isMenuOpened}
-			onMenuOpenChange={setMenuOpened}
+			onMenuOpenChange={toggleMenuOpened}
 			classNames={{
 				base: 'pt-titlebar',
 			}}
@@ -124,6 +140,9 @@ export default memo(function Navbar() {
 					<Link
 						color="foreground"
 						href="/"
+						onPress={() => {
+							showProgress(startProgress);
+						}}
 						aria-label="首页"
 						className="flex select-none items-center justify-start gap-1"
 					>
@@ -220,7 +239,10 @@ export default memo(function Navbar() {
 								<Link
 									color={isActivated ? 'primary' : 'foreground'}
 									size="lg"
-									onPress={setMenuOpened}
+									onPress={() => {
+										showProgress(startProgress);
+										toggleMenuOpened();
+									}}
 									href={href}
 								>
 									{label}
