@@ -35,6 +35,7 @@ export class Sprite<
 		};
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 	public getPosByName<T extends string = TName>(name: T) {
 		const index: number = this.findIndexByName(name);
 
@@ -60,6 +61,7 @@ export class Sprite<
 		};
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 	public getBackgroundPropsByName<T extends string = TName>(
 		name: T,
 		{displayHeight = this.spriteHeight, displayWidth = this.spriteWidth} = {}

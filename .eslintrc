@@ -15,7 +15,7 @@
 	"parser": "@typescript-eslint/parser",
 	"parserOptions": {
 		"ecmaVersion": "latest",
-		"project": true
+		"projectService": true
 	},
 	"overrides": [
 		{
@@ -142,6 +142,12 @@
 				"allow": ["arrowFunctions"]
 			}
 		],
+		"@typescript-eslint/no-empty-object-type": [
+			"error",
+			{
+				"allowInterfaces": "always"
+			}
+		],
 		"@typescript-eslint/no-floating-promises": [
 			"warn",
 			{
@@ -150,6 +156,7 @@
 		],
 		"@typescript-eslint/no-loop-func": "error",
 		"@typescript-eslint/no-shadow": "error",
+		"@typescript-eslint/no-unnecessary-template-expression": "error",
 		"@typescript-eslint/no-unsafe-argument": "warn",
 		"@typescript-eslint/no-unsafe-assignment": "warn",
 		"@typescript-eslint/no-unsafe-call": "warn",
@@ -181,6 +188,7 @@
 				}
 			}
 		],
+		"@typescript-eslint/prefer-find": "error",
 		"@typescript-eslint/restrict-template-expressions": [
 			"error",
 			{
@@ -213,6 +221,7 @@
 				"onlyIfContainsSeparator": true
 			}
 		],
+		"unicorn/prefer-array-find": "off",
 		"unicorn/prefer-set-has": "off",
 		"unicorn/prefer-ternary": "off",
 		"unicorn/prevent-abbreviations": "off",

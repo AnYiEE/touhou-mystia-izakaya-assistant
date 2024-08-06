@@ -43,12 +43,13 @@ export class Item<
 		return this.dataPinyinSorted;
 	}
 
-	protected checkIndexRange<T>(index: number, _data?: T): asserts _data {
+	protected checkIndexRange(index: number, _data?: unknown): asserts _data {
 		if (index < 0 || index >= this._data.length) {
 			throw new Error(`[Item]: index \`${index}\` out of range`);
 		}
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 	public findIndexByName<T extends string = TName>(name: T) {
 		if (Item.nameIndexCache.has(name)) {
 			return Item.nameIndexCache.get(name);
@@ -98,13 +99,16 @@ export class Item<
 		return item;
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 	public getPropsByName<T extends string = TName>(name: T): TItemWithPinyin;
 	public getPropsByName<
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 		T extends string = TName,
 		U extends keyof TItemWithPinyin = keyof TItemWithPinyin,
 		S extends Exclude<U, 'name'> = Exclude<U, 'name'>,
 	>(name: T, prop: S): TItemWithPinyin[S];
 	public getPropsByName<
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 		T extends string = TName,
 		U extends keyof TItemWithPinyin = keyof TItemWithPinyin,
 		S extends Exclude<U, 'name'> = Exclude<U, 'name'>,

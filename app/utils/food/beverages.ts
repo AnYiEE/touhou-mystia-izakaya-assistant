@@ -57,7 +57,7 @@ export class Beverage<
 		return tags;
 	}
 
-	public getCustomerSuitability<T extends TName, U extends string>(name: T, customerTags: U[]) {
+	public getCustomerSuitability<T extends string>(name: TName, customerTags: T[]) {
 		const beverage = this.getPropsByName(name);
 
 		const {tags} = beverage;
