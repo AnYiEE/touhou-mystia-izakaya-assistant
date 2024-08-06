@@ -54,7 +54,7 @@ export default memo(function About() {
 						title={links.github.label}
 						className="indent-0"
 					>
-						Github
+						GitHub
 					</Link>
 					反馈任何问题、提出建议或发起合并请求。
 				</p>

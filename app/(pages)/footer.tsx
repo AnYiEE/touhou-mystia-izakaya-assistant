@@ -57,7 +57,7 @@ export default memo(function Footer() {
 				{sha ? (
 					<>
 						{vercelEnv ?? nodeEnv}-
-						<FooterLink content="在Github上查看此提交" href={`${links.github.href}/commit/${sha}`}>
+						<FooterLink content="在GitHub上查看此提交" href={`${links.github.href}/commit/${sha}`}>
 							{sha}
 						</FooterLink>
 					</>

@@ -66,11 +66,11 @@ const NavbarLink = memo(function NavbarLink({
 	);
 });
 
-interface IGithubLinkProps {
+interface IGitHubLinkProps {
 	showTooltip: boolean;
 }
 
-const GithubLink = memo(function GithubLink({showTooltip}: Partial<IGithubLinkProps>) {
+const GitHubLink = memo(function GitHubLink({showTooltip}: Partial<IGitHubLinkProps>) {
 	const IconLink = useCallback(
 		({className}: {className?: string}) => (
 			<FontAwesomeIconLink
@@ -199,7 +199,7 @@ export default memo(function Navbar() {
 
 			<NavbarContent justify="end" className="hidden basis-full md:flex md:basis-1/5">
 				<NavbarItem className="flex gap-2">
-					<GithubLink showTooltip />
+					<GitHubLink showTooltip />
 				</NavbarItem>
 				<ThemeSwitcher />
 			</NavbarContent>
@@ -229,7 +229,7 @@ export default memo(function Navbar() {
 						);
 					})}
 					<NavbarMenuItem>
-						<GithubLink />
+						<GitHubLink />
 					</NavbarMenuItem>
 				</div>
 			</NavbarMenu>

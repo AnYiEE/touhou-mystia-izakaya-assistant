@@ -23,7 +23,7 @@ export default memo(function ChangeLog() {
 							href={`${links.github.href}/commits`}
 							title={`${links.github.label}提交记录`}
 						>
-							Github
+							GitHub
 						</Link>
 						可以查看完整的提交记录。
 					</>
