@@ -28,7 +28,6 @@ import type {ICustomerTabStyleMap, IIngredientsTabStyleMap, TRecipe} from './typ
 import {type TIngredientNames} from '@/data';
 import type {TBeverageTag} from '@/data/types';
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
-import {pinyinSort} from '@/utils';
 
 const customerTabStyleMap = {
 	collapse: {
@@ -165,7 +164,6 @@ export default memo(function CustomerRare() {
 	const rareNames = customerStore.rareNames.use();
 	const specialNames = customerStore.specialNames.use();
 	const allCustomerNames = useMemo(() => [...rareNames, ...specialNames], [rareNames, specialNames]);
-	const allCustomerNamesSorted = useMemo(() => allCustomerNames.toSorted(pinyinSort), [allCustomerNames]);
 	const allCustomerDlcs = customerStore.customer.dlcs.get();
 	const allCustomerPlaces = customerStore.customer.places.get();
 
@@ -269,13 +267,13 @@ export default memo(function CustomerRare() {
 					setSelectedKeys: customerStore.persistence.customer.filters.noPlaces.set,
 				},
 				{
-					items: allCustomerNamesSorted,
+					items: allCustomerNames,
 					label: '额外包含',
 					selectedKeys: customerFilterIncludes,
 					setSelectedKeys: customerStore.persistence.customer.filters.includes.set,
 				},
 				{
-					items: allCustomerNamesSorted,
+					items: allCustomerNames,
 					label: '额外排除',
 					selectedKeys: customerFilterExcludes,
 					setSelectedKeys: customerStore.persistence.customer.filters.excludes.set,
@@ -283,7 +281,7 @@ export default memo(function CustomerRare() {
 			] as const satisfies TSelectConfig,
 		[
 			allCustomerDlcs,
-			allCustomerNamesSorted,
+			allCustomerNames,
 			allCustomerPlaces,
 			customerFilterDlcs,
 			customerFilterExcludes,

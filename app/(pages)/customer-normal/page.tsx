@@ -27,7 +27,6 @@ import {evaluateMeal} from './evaluateMeal';
 import type {ICustomerTabStyleMap, IIngredientsTabStyleMap, TRecipe} from './types';
 import {type TIngredientNames} from '@/data';
 import {type TPopularTag, useCustomerNormalStore, useGlobalStore} from '@/stores';
-import {pinyinSort} from '@/utils';
 
 const customerTabStyleMap = {
 	collapse: {
@@ -140,7 +139,6 @@ export default memo(function CustomerNormal() {
 	customerStore.shared.recipe.tagsWithPopular.onChange(evaluateMealHelper);
 
 	const allCustomerNames = customerStore.names.use();
-	const allCustomerNamesSorted = useMemo(() => allCustomerNames.toSorted(pinyinSort), [allCustomerNames]);
 	const allCustomerDlcs = customerStore.customer.dlcs.get();
 	const allCustomerPlaces = customerStore.customer.places.get();
 
@@ -227,13 +225,13 @@ export default memo(function CustomerNormal() {
 					setSelectedKeys: customerStore.persistence.customer.filters.noPlaces.set,
 				},
 				{
-					items: allCustomerNamesSorted,
+					items: allCustomerNames,
 					label: '额外包含',
 					selectedKeys: customerFilterIncludes,
 					setSelectedKeys: customerStore.persistence.customer.filters.includes.set,
 				},
 				{
-					items: allCustomerNamesSorted,
+					items: allCustomerNames,
 					label: '额外排除',
 					selectedKeys: customerFilterExcludes,
 					setSelectedKeys: customerStore.persistence.customer.filters.excludes.set,
@@ -241,7 +239,7 @@ export default memo(function CustomerNormal() {
 			] as const satisfies TSelectConfig,
 		[
 			allCustomerDlcs,
-			allCustomerNamesSorted,
+			allCustomerNames,
 			allCustomerPlaces,
 			customerFilterDlcs,
 			customerFilterExcludes,
