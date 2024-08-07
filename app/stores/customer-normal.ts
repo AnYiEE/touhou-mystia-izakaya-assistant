@@ -26,7 +26,8 @@ const storeVersion = {
 	popular: 1,
 	popularFull: 2, // eslint-disable-next-line sort-keys
 	ingredientLevel: 3,
-	rating: 4,
+	rating: 4, // eslint-disable-next-line sort-keys
+	extraCustomer: 5,
 } as const;
 
 const state = {
@@ -67,8 +68,10 @@ const state = {
 		customer: {
 			filters: {
 				dlcs: [] as string[],
-				noPlaces: [] as string[],
-				places: [] as string[],
+				places: [] as string[], // eslint-disable-next-line sort-keys
+				noPlaces: [] as string[], // eslint-disable-next-line sort-keys
+				includes: [] as string[], // eslint-disable-next-line sort-keys
+				excludes: [] as string[],
 			},
 			pinyinSortState: PinyinSortState.NONE,
 			searchValue: '',
@@ -152,7 +155,7 @@ const customerNormalStore = store(state, {
 	persist: {
 		enabled: true,
 		name: 'page-customer_normal-storage',
-		version: storeVersion.rating,
+		version: storeVersion.extraCustomer,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -188,6 +191,12 @@ const customerNormalStore = store(state, {
 						meal.rating = '普通';
 					}
 				}
+			}
+			if (version < storeVersion.extraCustomer) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				const {filters} = oldState.persistence.customer;
+				filters.includes = [];
+				filters.excludes = [];
 			}
 			return persistedState as typeof state;
 		},
