@@ -27,6 +27,7 @@ import {evaluateMeal} from './evaluateMeal';
 import type {ICustomerTabStyleMap, IIngredientsTabStyleMap, TRecipe} from './types';
 import {type TIngredientNames} from '@/data';
 import {type TPopularTag, useCustomerNormalStore, useGlobalStore} from '@/stores';
+import {pinyinSort} from '@/utils';
 
 const customerTabStyleMap = {
 	collapse: {
@@ -139,6 +140,7 @@ export default memo(function CustomerNormal() {
 	customerStore.shared.recipe.tagsWithPopular.onChange(evaluateMealHelper);
 
 	const allCustomerNames = customerStore.names.use();
+	const allCustomerNamesSorted = useMemo(() => allCustomerNames.toSorted(pinyinSort), [allCustomerNames]);
 	const allCustomerDlcs = customerStore.customer.dlcs.get();
 	const allCustomerPlaces = customerStore.customer.places.get();
 
@@ -152,10 +154,21 @@ export default memo(function CustomerNormal() {
 	const customerFilterDlcs = customerStore.persistence.customer.filters.dlcs.use();
 	const customerFilterPlaces = customerStore.persistence.customer.filters.places.use();
 	const customerFilterNoPlaces = customerStore.persistence.customer.filters.noPlaces.use();
+	const customerFilterIncludes = customerStore.persistence.customer.filters.includes.use();
+	const customerFilterExcludes = customerStore.persistence.customer.filters.excludes.use();
 
 	const customerFilteredData = useMemo(
 		() =>
-			customerSearchResult.filter(({dlc, places}) => {
+			customerSearchResult.filter(({name, dlc, places}) => {
+				if (customerFilterIncludes.length > 0) {
+					const result = customerFilterIncludes.includes(name);
+					if (result) {
+						return true;
+					}
+				}
+
+				const isNameExcludesMatched =
+					customerFilterExcludes.length > 0 ? !customerFilterExcludes.includes(name) : true;
 				const isDlcMatched = customerFilterDlcs.length > 0 ? customerFilterDlcs.includes(dlc.toString()) : true;
 				const isPlaceMatched =
 					customerFilterPlaces.length > 0
@@ -166,9 +179,16 @@ export default memo(function CustomerNormal() {
 						? !customerFilterNoPlaces.some((place) => (places as string[]).includes(place))
 						: true;
 
-				return isDlcMatched && isPlaceMatched && isNoPlaceMatched;
+				return isNameExcludesMatched && isDlcMatched && isPlaceMatched && isNoPlaceMatched;
 			}),
-		[customerFilterDlcs, customerFilterNoPlaces, customerFilterPlaces, customerSearchResult]
+		[
+			customerFilterDlcs,
+			customerFilterExcludes,
+			customerFilterIncludes,
+			customerFilterNoPlaces,
+			customerFilterPlaces,
+			customerSearchResult,
+		]
 	);
 
 	const customerSortedData = useSortedData(instance_customer, customerFilteredData, customerPinyinSortState);
@@ -206,14 +226,31 @@ export default memo(function CustomerNormal() {
 					selectedKeys: customerFilterNoPlaces,
 					setSelectedKeys: customerStore.persistence.customer.filters.noPlaces.set,
 				},
+				{
+					items: allCustomerNamesSorted,
+					label: '额外包含',
+					selectedKeys: customerFilterIncludes,
+					setSelectedKeys: customerStore.persistence.customer.filters.includes.set,
+				},
+				{
+					items: allCustomerNamesSorted,
+					label: '额外排除',
+					selectedKeys: customerFilterExcludes,
+					setSelectedKeys: customerStore.persistence.customer.filters.excludes.set,
+				},
 			] as const satisfies TSelectConfig,
 		[
 			allCustomerDlcs,
+			allCustomerNamesSorted,
 			allCustomerPlaces,
 			customerFilterDlcs,
+			customerFilterExcludes,
+			customerFilterIncludes,
 			customerFilterNoPlaces,
 			customerFilterPlaces,
 			customerStore.persistence.customer.filters.dlcs.set,
+			customerStore.persistence.customer.filters.excludes.set,
+			customerStore.persistence.customer.filters.includes.set,
 			customerStore.persistence.customer.filters.noPlaces.set,
 			customerStore.persistence.customer.filters.places.set,
 		]

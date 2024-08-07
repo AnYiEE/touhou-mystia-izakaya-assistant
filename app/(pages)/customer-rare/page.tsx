@@ -28,6 +28,7 @@ import type {ICustomerTabStyleMap, IIngredientsTabStyleMap, TRecipe} from './typ
 import {type TIngredientNames} from '@/data';
 import type {TBeverageTag} from '@/data/types';
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
+import {pinyinSort} from '@/utils';
 
 const customerTabStyleMap = {
 	collapse: {
@@ -164,6 +165,7 @@ export default memo(function CustomerRare() {
 	const rareNames = customerStore.rareNames.use();
 	const specialNames = customerStore.specialNames.use();
 	const allCustomerNames = useMemo(() => [...rareNames, ...specialNames], [rareNames, specialNames]);
+	const allCustomerNamesSorted = useMemo(() => allCustomerNames.toSorted(pinyinSort), [allCustomerNames]);
 	const allCustomerDlcs = customerStore.customer.dlcs.get();
 	const allCustomerPlaces = customerStore.customer.places.get();
 
@@ -179,10 +181,21 @@ export default memo(function CustomerRare() {
 	const customerFilterDlcs = customerStore.persistence.customer.filters.dlcs.use();
 	const customerFilterPlaces = customerStore.persistence.customer.filters.places.use();
 	const customerFilterNoPlaces = customerStore.persistence.customer.filters.noPlaces.use();
+	const customerFilterIncludes = customerStore.persistence.customer.filters.includes.use();
+	const customerFilterExcludes = customerStore.persistence.customer.filters.excludes.use();
 
 	const customerFilter = useCallback(
 		function customerFilter<T extends TSearchResult>(target: T) {
-			return target.filter(({dlc, places}) => {
+			return target.filter(({name, dlc, places}) => {
+				if (customerFilterIncludes.length > 0) {
+					const result = customerFilterIncludes.includes(name);
+					if (result) {
+						return true;
+					}
+				}
+
+				const isNameExcludesMatched =
+					customerFilterExcludes.length > 0 ? !customerFilterExcludes.includes(name) : true;
 				const isDlcMatched = customerFilterDlcs.length > 0 ? customerFilterDlcs.includes(dlc.toString()) : true;
 				const isPlaceMatched =
 					customerFilterPlaces.length > 0
@@ -193,10 +206,16 @@ export default memo(function CustomerRare() {
 						? !customerFilterNoPlaces.some((place) => (places as string[]).includes(place))
 						: true;
 
-				return isDlcMatched && isPlaceMatched && isNoPlaceMatched;
+				return isNameExcludesMatched && isDlcMatched && isPlaceMatched && isNoPlaceMatched;
 			}) as T;
 		},
-		[customerFilterDlcs, customerFilterPlaces, customerFilterNoPlaces]
+		[
+			customerFilterDlcs,
+			customerFilterExcludes,
+			customerFilterIncludes,
+			customerFilterNoPlaces,
+			customerFilterPlaces,
+		]
 	);
 
 	const rareFilteredData = useMemo(() => customerFilter(rareSearchResult), [customerFilter, rareSearchResult]);
@@ -249,14 +268,31 @@ export default memo(function CustomerRare() {
 					selectedKeys: customerFilterNoPlaces,
 					setSelectedKeys: customerStore.persistence.customer.filters.noPlaces.set,
 				},
+				{
+					items: allCustomerNamesSorted,
+					label: '额外包含',
+					selectedKeys: customerFilterIncludes,
+					setSelectedKeys: customerStore.persistence.customer.filters.includes.set,
+				},
+				{
+					items: allCustomerNamesSorted,
+					label: '额外排除',
+					selectedKeys: customerFilterExcludes,
+					setSelectedKeys: customerStore.persistence.customer.filters.excludes.set,
+				},
 			] as const satisfies TSelectConfig,
 		[
 			allCustomerDlcs,
+			allCustomerNamesSorted,
 			allCustomerPlaces,
 			customerFilterDlcs,
+			customerFilterExcludes,
+			customerFilterIncludes,
 			customerFilterNoPlaces,
 			customerFilterPlaces,
 			customerStore.persistence.customer.filters.dlcs.set,
+			customerStore.persistence.customer.filters.excludes.set,
+			customerStore.persistence.customer.filters.includes.set,
 			customerStore.persistence.customer.filters.noPlaces.set,
 			customerStore.persistence.customer.filters.places.set,
 		]
