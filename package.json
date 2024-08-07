@@ -84,7 +84,7 @@
 		"pinyin-pro": "^3.24.2",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
-		"react-transition-progress": "^0.0.4",
+		"react-transition-progress": "github:AnYiEE/react-transition-progress",
 		"reset-css": "^5.0.2",
 		"rxjs": "^7.8.1",
 		"tailwind-merge": "^2.4.0",
