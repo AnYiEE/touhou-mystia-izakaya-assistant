@@ -49,14 +49,16 @@ export default memo(
 									<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
 										{(() => {
 											const content = (
-												<span className="whitespace-nowrap">
-													{rating}
+												<span className="whitespace-nowrap [&>span]:after:mx-1 [&>span]:after:content-['•'] last:[&>span]:after:hidden">
+													<span>{rating}</span>
 													{popular.tag &&
 														customerTags.has(popular.tag) &&
 														rating !== '普通' && (
 															<>
-																•{popular.isNegative ? '流行厌恶' : '流行喜爱'}•
-																{popular.tag}
+																<span>
+																	{popular.isNegative ? '流行厌恶' : '流行喜爱'}
+																</span>
+																<span>{popular.tag}</span>
 															</>
 														)}
 												</span>
