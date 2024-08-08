@@ -1,3 +1,5 @@
+// @ts-check
+
 import {relative} from 'node:path';
 
 /**

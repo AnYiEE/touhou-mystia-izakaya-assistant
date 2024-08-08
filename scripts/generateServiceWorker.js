@@ -1,6 +1,6 @@
 // @ts-check
 /// <reference lib="ESNext" />
-/* eslint-disable @typescript-eslint/no-var-requires, unicorn/prefer-module */
+/* eslint-disable @typescript-eslint/no-require-imports, unicorn/prefer-module */
 'use strict';
 
 const {execSync} = require('node:child_process');

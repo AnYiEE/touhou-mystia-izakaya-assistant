@@ -1,5 +1,5 @@
 // @ts-check
-/* eslint-disable @typescript-eslint/no-var-requires, unicorn/prefer-module */
+/* eslint-disable @typescript-eslint/no-require-imports, unicorn/prefer-module */
 /**
  * @file Transform all JavaScript operators and syntaxes, **not methods**.
  */

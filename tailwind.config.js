@@ -1,5 +1,5 @@
 // @ts-check
-/* eslint-disable sort-keys, @typescript-eslint/no-var-requires, unicorn/prefer-module */
+/* eslint-disable sort-keys, @typescript-eslint/no-require-imports, unicorn/prefer-module */
 'use strict';
 
 const {nextui} = require('@nextui-org/react');
