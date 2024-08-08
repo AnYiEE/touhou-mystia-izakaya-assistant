@@ -38,12 +38,10 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 								<IngredientsStoreProvider>
 									<RecipesStoreProvider>
 										<ProgressBarProvider>
-											<>
-												{children}
-												<ProgressBar className="fixed top-0 z-50 h-0.5 rounded-2xl bg-default-300 dark:bg-primary" />
-												<CompatibleBrowser />
-												<CustomerRareTutorial />
-											</>
+											{children}
+											<ProgressBar className="fixed top-0 z-50 h-1 rounded-2xl bg-default-300 dark:h-0.5 dark:bg-primary lg:h-0.5" />
+											<CompatibleBrowser />
+											<CustomerRareTutorial />
 										</ProgressBarProvider>
 									</RecipesStoreProvider>
 								</IngredientsStoreProvider>
