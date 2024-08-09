@@ -1,9 +1,8 @@
-import {forwardRef, memo, useCallback} from 'react';
+import {forwardRef, memo} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {Avatar, Button, ScrollShadow} from '@nextui-org/react';
 
-import {TrackCategory, trackEvent} from '@/components/analytics';
 import Sprite from '@/components/sprite';
 
 import type {ICurrentCustomer, ICustomerTabStyle} from './types';
@@ -25,14 +24,6 @@ export default memo(
 
 		const currentCustomer = store.shared.customer.data.use();
 
-		const handleSelect = useCallback(
-			(customer: ICurrentCustomer) => {
-				store.shared.customer.data.set(customer);
-				trackEvent(TrackCategory.Select, 'Customer', customer.name);
-			},
-			[store.shared.customer.data]
-		);
-
 		return (
 			<>
 				<ScrollShadow
@@ -49,11 +40,11 @@ export default memo(
 								<div
 									key={name}
 									onClick={() => {
-										handleSelect({name, target} as ICurrentCustomer);
+										store.onCustomerSelectedChange({name, target} as ICurrentCustomer);
 									}}
 									onKeyDown={(event) => {
 										if (checkA11yConfirmKey(event)) {
-											handleSelect({name, target} as ICurrentCustomer);
+											store.onCustomerSelectedChange({name, target} as ICurrentCustomer);
 										}
 									}}
 									title={`选择${name}`}

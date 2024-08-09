@@ -1,3 +1,4 @@
+import {type Key} from 'react';
 import {createStoreContext, store} from '@davstack/store';
 import {createJSONStorage} from 'zustand/middleware';
 
@@ -5,8 +6,10 @@ import {type Selection} from '@nextui-org/react';
 
 import {TabVisibilityState, beverageTableColumns, recipeTableColumns} from '@/(pages)/customer-rare/constants';
 import {type TTableSortDescriptor as TBeverageTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
+import {evaluateMeal} from '@/(pages)/customer-rare/evaluateMeal';
 import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
-import type {ICurrentCustomer, TCustomerRating} from '@/(pages)/customer-rare/types';
+import type {ICurrentCustomer, TCustomerRating, TRecipe} from '@/(pages)/customer-rare/types';
+import {TrackCategory, trackEvent} from '@/components/analytics';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import {type TBeverageNames, type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
@@ -19,7 +22,7 @@ import {
 } from '@/methods/food';
 import {type IPopularData} from '@/stores';
 import {getAllItemNames} from '@/stores/utils';
-import {numberSort, pinyinSort, union} from '@/utils';
+import {numberSort, pinyinSort, removeLastElement, union} from '@/utils';
 
 const rareDlcs = instance_rare.getValuesByProp(instance_rare.data, 'dlc').sort(numberSort);
 const rarePlaces = instance_rare.getValuesByProp(instance_rare.data, 'places').sort(pinyinSort);
@@ -298,6 +301,204 @@ const customerRareStore = store(state, {
 		},
 	}))
 	.actions((currentStore) => ({
+		onCustomerFilterBeverageTag(tag: TBeverageTag) {
+			currentStore.shared.tab.set('beverage');
+			currentStore.shared.beverage.page.set(1);
+			currentStore.shared.customer.filterVisibility.set(false);
+			currentStore.shared.ingredient.filterVisibility.set(false);
+			currentStore.shared.customer.beverageTags.set((prev) => {
+				if (prev.has(tag)) {
+					prev.delete(tag);
+				} else {
+					prev.add(tag);
+				}
+			});
+		},
+		onCustomerFilterRecipeTag(tag: TRecipeTag) {
+			currentStore.shared.tab.set('recipe');
+			currentStore.shared.recipe.page.set(1);
+			currentStore.shared.customer.filterVisibility.set(false);
+			currentStore.shared.ingredient.filterVisibility.set(false);
+			currentStore.shared.customer.positiveTags.set((prev) => {
+				if (prev.has(tag)) {
+					prev.delete(tag);
+				} else {
+					prev.add(tag);
+				}
+			});
+		},
+		onCustomerOrderBeverageTag(tag: TBeverageTag) {
+			currentStore.shared.customer.order.beverageTag.set((prev) => {
+				if (prev === tag) {
+					trackEvent(TrackCategory.Unselect, 'Customer Tag', tag);
+					return null;
+				}
+				trackEvent(TrackCategory.Select, 'Customer Tag', tag);
+				return tag;
+			});
+		},
+		onCustomerOrderRecipeTag(tag: TRecipeTag) {
+			currentStore.shared.customer.order.recipeTag.set((prev) => {
+				if (prev === tag) {
+					trackEvent(TrackCategory.Unselect, 'Customer Tag', tag);
+					return null;
+				}
+				trackEvent(TrackCategory.Select, 'Customer Tag', tag);
+				return tag;
+			});
+		},
+		onCustomerSelectedChange(customer: ICurrentCustomer) {
+			currentStore.shared.customer.data.set(customer);
+			trackEvent(TrackCategory.Select, 'Customer', customer.name);
+		},
+
+		clearBeverageTableSearchValue() {
+			currentStore.shared.beverage.searchValue.set('');
+			currentStore.shared.beverage.page.set(1);
+		},
+		onBeverageTableRowsPerPageChange(rows: Selection) {
+			currentStore.beverageTableRows.set(rows);
+			currentStore.shared.beverage.page.set(1);
+		},
+		onBeverageTableSearchValueChange(value: Key | null) {
+			if (value) {
+				currentStore.shared.beverage.searchValue.set(value as string);
+				currentStore.shared.beverage.page.set(1);
+			} else {
+				currentStore.shared.beverage.searchValue.set('');
+			}
+		},
+		onBeverageTableSelectedDlcsChange(dlcs: Selection) {
+			currentStore.shared.beverage.dlcs.set(dlcs as SelectionSet);
+			currentStore.shared.beverage.page.set(1);
+		},
+		onBeverageTableSelectedTagsChange(tags: Selection) {
+			currentStore.shared.customer.beverageTags.set(tags as SelectionSet);
+			currentStore.shared.beverage.page.set(1);
+		},
+
+		clearRecipeTableSearchValue() {
+			currentStore.shared.recipe.searchValue.set('');
+			currentStore.shared.recipe.page.set(1);
+		},
+		onRecipeTableRowsPerPageChange(rows: Selection) {
+			currentStore.recipeTableRows.set(rows);
+			currentStore.shared.recipe.page.set(1);
+		},
+		onRecipeTableSearchValueChange(value: Key | null) {
+			if (value) {
+				currentStore.shared.recipe.searchValue.set(value as string);
+				currentStore.shared.recipe.page.set(1);
+			} else {
+				currentStore.shared.recipe.searchValue.set('');
+			}
+		},
+		onRecipeTableSelectedCookersChange(cookers: Selection) {
+			currentStore.shared.recipe.cookers.set(cookers as SelectionSet);
+			currentStore.shared.recipe.page.set(1);
+		},
+		onRecipeTableSelectedDlcsChange(dlcs: Selection) {
+			currentStore.shared.recipe.dlcs.set(dlcs as SelectionSet);
+			currentStore.shared.recipe.page.set(1);
+		},
+		onRecipeTableSelectedPositiveTagsChange(tags: Selection) {
+			currentStore.shared.customer.positiveTags.set(tags as SelectionSet);
+			currentStore.shared.recipe.page.set(1);
+		},
+
+		evaluateMealResult() {
+			const customer = currentStore.shared.customer.data.get();
+			if (!customer) {
+				return;
+			}
+			const {name: customerName, target: customerTarget} = customer;
+			const instance_customer = (
+				customerTarget === 'customer_rare' ? instance_rare : instance_special
+			) as typeof instance_rare;
+			const {
+				beverageTags: customerBeverageTags,
+				negativeTags: customerNegativeTags,
+				positiveTags: customerPositiveTags,
+			} = instance_customer.getPropsByName(customerName);
+			const order = currentStore.shared.customer.order.get();
+			const hasMystiaCooker = currentStore.shared.customer.hasMystiaCooker.get();
+			let beverageTags: TBeverageTag[] = [];
+			const beverageName = currentStore.shared.beverage.name.get();
+			if (beverageName) {
+				const beverage = instance_beverage.getPropsByName(beverageName);
+				beverageTags = beverage.tags;
+			}
+			let recipe: TRecipe | null = null;
+			const ingredients: TIngredientNames[] = [];
+			const recipeData = currentStore.shared.recipe.data.get();
+			if (recipeData) {
+				const {extraIngredients, name: recipeName} = recipeData;
+				recipe = instance_recipe.getPropsByName(recipeName);
+				ingredients.push(...recipe.ingredients, ...extraIngredients);
+			}
+			const recipeTagsWithPopular = currentStore.shared.recipe.tagsWithPopular.get();
+			const rating = evaluateMeal({
+				currentBeverageTags: beverageTags,
+				currentCustomerBeverageTags: customerBeverageTags,
+				currentCustomerName: customerName,
+				currentCustomerNegativeTags: customerNegativeTags,
+				currentCustomerOrder: order,
+				currentCustomerPositiveTags: customerPositiveTags,
+				currentIngredients: ingredients,
+				currentRecipe: recipe,
+				currentRecipeTagsWithPopular: recipeTagsWithPopular,
+				hasMystiaCooker,
+			});
+			currentStore.shared.customer.rating.set(rating);
+		},
+		removeMealIngredient(ingredient: TIngredientNames) {
+			currentStore.shared.recipe.data.set((prev) => {
+				if (prev) {
+					prev.extraIngredients = removeLastElement(prev.extraIngredients, ingredient);
+				}
+			});
+			trackEvent(TrackCategory.Unselect, 'Ingredient', ingredient);
+		},
+		saveMealResult() {
+			const customerName = currentStore.shared.customer.data.get()?.name;
+			const beverageName = currentStore.shared.beverage.name.get();
+			const recipe = currentStore.shared.recipe.data.get();
+			const rating = currentStore.shared.customer.rating.get();
+			if (!customerName || !beverageName || !recipe || !rating) {
+				return;
+			}
+			const {extraIngredients, name: recipeName} = recipe;
+			const hasMystiaCooker = currentStore.shared.customer.hasMystiaCooker.get();
+			const order = currentStore.shared.customer.order.get();
+			const popular = currentStore.shared.customer.popular.get();
+			const saveObject = {
+				beverage: beverageName,
+				extraIngredients,
+				hasMystiaCooker,
+				order,
+				popular,
+				price:
+					instance_beverage.getPropsByName(beverageName).price +
+					instance_recipe.getPropsByName(recipeName).price,
+				rating,
+				recipe: recipeName,
+			} as const;
+			currentStore.persistence.meals.set((prev) => {
+				if (customerName in prev) {
+					const lastItem = prev[customerName]?.at(-1);
+					const index = lastItem ? lastItem.index + 1 : 0;
+					prev[customerName]?.push({...saveObject, index});
+				} else {
+					prev[customerName] = [{...saveObject, index: 0}];
+				}
+			});
+			trackEvent(
+				TrackCategory.Click,
+				'Save Button',
+				`${recipeName} - ${beverageName}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
+			);
+		},
+
 		refreshAllSelectedItems() {
 			currentStore.shared.recipe.cookers.set(new Set());
 			currentStore.shared.recipe.dlcs.set(new Set());

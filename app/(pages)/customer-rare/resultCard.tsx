@@ -6,12 +6,10 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-icons';
 
 import Placeholder from './placeholder';
-import {TrackCategory, trackEvent} from '@/components/analytics';
 import Sprite from '@/components/sprite';
 
-import {type TIngredientNames} from '@/data';
 import {useCustomerRareStore} from '@/stores';
-import {checkA11yConfirmKey, removeLastElement} from '@/utils';
+import {checkA11yConfirmKey} from '@/utils';
 
 interface IPlusProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'className'> {
 	size?: number;
@@ -83,18 +81,6 @@ const IngredientList = memo(function IngredientsList() {
 		[currentRecipe?.extraIngredients, originalIngredients]
 	);
 
-	const handleDelete = useCallback(
-		(ingredient: TIngredientNames) => {
-			store.shared.recipe.data.set((prev) => {
-				if (prev) {
-					prev.extraIngredients = removeLastElement(prev.extraIngredients, ingredient);
-				}
-			});
-			trackEvent(TrackCategory.Unselect, 'Ingredient', ingredient);
-		},
-		[store.shared.recipe.data]
-	);
-
 	return (
 		<div className="flex items-center gap-x-3">
 			{filledIngredients.map((ingredient, index) =>
@@ -104,7 +90,7 @@ const IngredientList = memo(function IngredientsList() {
 							key={index}
 							onKeyDown={(event) => {
 								if (checkA11yConfirmKey(event)) {
-									handleDelete(ingredient);
+									store.removeMealIngredient(ingredient);
 								}
 							}}
 							tabIndex={0}
@@ -113,7 +99,7 @@ const IngredientList = memo(function IngredientsList() {
 						>
 							<span
 								onClick={() => {
-									handleDelete(ingredient);
+									store.removeMealIngredient(ingredient);
 								}}
 								role="button"
 								tabIndex={1}
@@ -146,11 +132,9 @@ export default memo(
 		const currentRecipe = store.shared.recipe.data.use();
 		const hasMystiaCooker = store.shared.customer.hasMystiaCooker.use();
 		const currentOrder = store.shared.customer.order.use();
-		const currentCustomerPopular = store.shared.customer.popular.use();
 		const currentRating = store.shared.customer.rating.use();
 		const savedMeal = store.persistence.meals.use();
 
-		const instance_beverage = store.instances.beverage.get();
 		const instance_recipe = store.instances.recipe.get();
 
 		const saveButtonTooltipTimer = useRef<NodeJS.Timeout>();
@@ -179,53 +163,10 @@ export default memo(
 		const handleSaveButtonPress = useCallback(() => {
 			if (isSaveButtonDisabled) {
 				showTooltip();
-				return;
+			} else {
+				store.saveMealResult();
 			}
-
-			const {extraIngredients, name: currentRecipeName} = currentRecipe;
-
-			const saveObject = {
-				beverage: currentBeverageName,
-				extraIngredients,
-				hasMystiaCooker,
-				order: currentOrder,
-				popular: currentCustomerPopular,
-				price:
-					instance_beverage.getPropsByName(currentBeverageName).price +
-					instance_recipe.getPropsByName(currentRecipeName).price,
-				rating: currentRating,
-				recipe: currentRecipeName,
-			} as const;
-
-			store.persistence.meals.set((prev) => {
-				if (currentCustomerName in prev) {
-					const lastItem = prev[currentCustomerName]?.at(-1);
-					const index = lastItem ? lastItem.index + 1 : 0;
-					prev[currentCustomerName]?.push({...saveObject, index});
-				} else {
-					prev[currentCustomerName] = [{...saveObject, index: 0}];
-				}
-			});
-
-			trackEvent(
-				TrackCategory.Click,
-				'Save Button',
-				`${currentRecipeName} - ${currentBeverageName}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
-			);
-		}, [
-			currentBeverageName,
-			currentCustomerName,
-			currentCustomerPopular,
-			currentOrder,
-			currentRating,
-			currentRecipe,
-			hasMystiaCooker,
-			instance_beverage,
-			instance_recipe,
-			isSaveButtonDisabled,
-			showTooltip,
-			store.persistence.meals,
-		]);
+		}, [isSaveButtonDisabled, showTooltip, store]);
 
 		useEffect(() => {
 			if (isShowSaveButtonTooltip && !isSaveButtonDisabled) {

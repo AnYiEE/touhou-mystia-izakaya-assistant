@@ -11,7 +11,7 @@ import {type TIngredientNames} from '@/data';
 import type {TRecipeTag} from '@/data/types';
 import type {TIngredientInstance} from '@/methods/food/types';
 import {useCustomerNormalStore, useGlobalStore} from '@/stores';
-import {intersection} from '@/utils';
+import {checkA11yConfirmKey, intersection} from '@/utils';
 
 interface IProps {
 	ingredientsTabStyle: IIngredientsTabStyle;
@@ -148,6 +148,11 @@ export default memo(
 									key={index}
 									onClick={() => {
 										handleSelect(name);
+									}}
+									onKeyDown={(event) => {
+										if (checkA11yConfirmKey(event)) {
+											handleSelect(name);
+										}
 									}}
 									role="button"
 									tabIndex={0}

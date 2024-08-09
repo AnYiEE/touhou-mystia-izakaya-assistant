@@ -18,3 +18,5 @@ export default memo(
 		);
 	})
 );
+
+export type {IProps as IFontAwesomeIconLinkProps};

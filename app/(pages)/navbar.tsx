@@ -1,6 +1,6 @@
 'use client';
 
-import {type JSX, type PropsWithChildren, memo, startTransition, useCallback, useReducer} from 'react';
+import {type JSX, type PropsWithChildren, memo, startTransition, useReducer} from 'react';
 import {usePathname} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
 import {twMerge} from 'tailwind-merge';
@@ -27,7 +27,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faGithub} from '@fortawesome/free-brands-svg-icons';
 import {faChevronDown} from '@fortawesome/free-solid-svg-icons';
 
-import FontAwesomeIconLink from '@/components/fontAwesomeIconLink';
+import FontAwesomeIconLink, {type IFontAwesomeIconLinkProps} from '@/components/fontAwesomeIconLink';
 import ThemeSwitcher from '@/components/themeSwitcher';
 import Sprite from '@/components/sprite';
 
@@ -81,30 +81,31 @@ const NavbarLink = memo(function NavbarLink({
 	);
 });
 
+interface IGitHubIconLinkProps extends Pick<IFontAwesomeIconLinkProps, 'className'> {}
+
+const GitHubIconLink = memo(function IconLink({className}: IGitHubIconLinkProps) {
+	return (
+		<FontAwesomeIconLink
+			isExternal
+			icon={faGithub}
+			size="lg"
+			href={links.github.href}
+			aria-label={links.github.label}
+			className={className}
+		/>
+	);
+});
+
 interface IGitHubLinkProps {
 	showTooltip: boolean;
 }
 
 const GitHubLink = memo(function GitHubLink({showTooltip}: Partial<IGitHubLinkProps>) {
-	const IconLink = useCallback(
-		({className}: {className?: string}) => (
-			<FontAwesomeIconLink
-				isExternal
-				icon={faGithub}
-				size="lg"
-				href={links.github.href}
-				aria-label={links.github.label}
-				className={className}
-			/>
-		),
-		[]
-	);
-
 	if (showTooltip) {
 		return (
 			<Tooltip showArrow content={links.github.label}>
 				<span className="flex">
-					<IconLink />
+					<GitHubIconLink />
 				</span>
 			</Tooltip>
 		);
@@ -112,7 +113,7 @@ const GitHubLink = memo(function GitHubLink({showTooltip}: Partial<IGitHubLinkPr
 
 	return (
 		<span className="flex gap-1">
-			<IconLink className="text-foreground" />
+			<GitHubIconLink className="text-foreground" />
 			<Link isExternal color="foreground" href={links.github.href}>
 				{links.github.label}
 			</Link>

@@ -23,10 +23,7 @@ import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterI
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
-import {evaluateMeal} from './evaluateMeal';
-import type {ICustomerTabStyleMap, IIngredientsTabStyleMap, TRecipe} from './types';
-import {type TIngredientNames} from '@/data';
-import type {TBeverageTag} from '@/data/types';
+import type {ICustomerTabStyleMap, IIngredientsTabStyleMap} from './types';
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
 
 const customerTabStyleMap = {
@@ -73,6 +70,13 @@ export default memo(function CustomerRare() {
 		customerStore.refreshCustomerSelectedItems();
 		customerStore.refreshAllSelectedItems();
 	});
+	customerStore.shared.customer.hasMystiaCooker.onChange(customerStore.evaluateMealResult);
+	customerStore.shared.customer.order.beverageTag.onChange(customerStore.evaluateMealResult);
+	customerStore.shared.customer.order.recipeTag.onChange(customerStore.evaluateMealResult);
+	customerStore.shared.customer.popular.isNegative.onChange(customerStore.evaluateMealResult);
+	customerStore.shared.customer.popular.tag.onChange(customerStore.evaluateMealResult);
+	customerStore.shared.beverage.name.onChange(customerStore.evaluateMealResult);
+	customerStore.shared.recipe.tagsWithPopular.onChange(customerStore.evaluateMealResult);
 
 	globalStore.persistence.popular.isNegative.onChange((isNegative) => {
 		customerStore.shared.customer.popular.isNegative.set(isNegative);
@@ -86,80 +90,6 @@ export default memo(function CustomerRare() {
 
 	const instance_rare = customerStore.instances.customer_rare.get();
 	const instance_special = customerStore.instances.customer_special.get();
-	const instance_beverage = customerStore.instances.beverage.get();
-	const instance_recipe = customerStore.instances.recipe.get();
-
-	const evaluateMealHelper = useCallback(() => {
-		if (!currentCustomer) {
-			return;
-		}
-
-		const {name: currentCustomerName, target: currentCustomerTarget} = currentCustomer;
-		const instance_customer = (
-			currentCustomerTarget === 'customer_rare' ? instance_rare : instance_special
-		) as typeof instance_rare;
-
-		const {
-			beverageTags: currentCustomerBeverageTags,
-			negativeTags: currentCustomerNegativeTags,
-			positiveTags: currentCustomerPositiveTags,
-		} = instance_customer.getPropsByName(currentCustomerName);
-		const currentCustomerOrder = customerStore.shared.customer.order.get();
-		const hasMystiaCooker = customerStore.shared.customer.hasMystiaCooker.get();
-
-		let currentBeverageTags: TBeverageTag[] = [];
-		const currentBeverageName = customerStore.shared.beverage.name.get();
-		if (currentBeverageName) {
-			const beverage = instance_beverage.getPropsByName(currentBeverageName);
-			currentBeverageTags = beverage.tags;
-		}
-
-		let recipe: TRecipe | null = null;
-		const currentIngredients: TIngredientNames[] = [];
-		const currentRecipeData = customerStore.shared.recipe.data.get();
-		if (currentRecipeData) {
-			const {extraIngredients, name: currentRecipeName} = currentRecipeData;
-			recipe = instance_recipe.getPropsByName(currentRecipeName);
-			currentIngredients.push(...recipe.ingredients, ...extraIngredients);
-		}
-
-		const currentRecipeTagsWithPopular = customerStore.shared.recipe.tagsWithPopular.get();
-
-		const rating = evaluateMeal({
-			currentBeverageTags,
-			currentCustomerBeverageTags,
-			currentCustomerName,
-			currentCustomerNegativeTags,
-			currentCustomerOrder,
-			currentCustomerPositiveTags,
-			currentIngredients,
-			currentRecipe: recipe,
-			currentRecipeTagsWithPopular,
-			hasMystiaCooker,
-		});
-
-		customerStore.shared.customer.rating.set(rating);
-	}, [
-		currentCustomer,
-		customerStore.shared.beverage.name,
-		customerStore.shared.customer.hasMystiaCooker,
-		customerStore.shared.customer.order,
-		customerStore.shared.customer.rating,
-		customerStore.shared.recipe.data,
-		customerStore.shared.recipe.tagsWithPopular,
-		instance_beverage,
-		instance_rare,
-		instance_recipe,
-		instance_special,
-	]);
-
-	customerStore.shared.customer.hasMystiaCooker.onChange(evaluateMealHelper);
-	customerStore.shared.customer.order.beverageTag.onChange(evaluateMealHelper);
-	customerStore.shared.customer.order.recipeTag.onChange(evaluateMealHelper);
-	customerStore.shared.customer.popular.isNegative.onChange(evaluateMealHelper);
-	customerStore.shared.customer.popular.tag.onChange(evaluateMealHelper);
-	customerStore.shared.beverage.name.onChange(evaluateMealHelper);
-	customerStore.shared.recipe.tagsWithPopular.onChange(evaluateMealHelper);
 
 	const rareNames = customerStore.rareNames.use();
 	const specialNames = customerStore.specialNames.use();

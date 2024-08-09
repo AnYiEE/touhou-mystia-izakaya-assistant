@@ -1,4 +1,4 @@
-import {forwardRef, memo, useCallback, useMemo} from 'react';
+import {forwardRef, memo, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
 import {useLongPress} from 'use-long-press';
@@ -24,7 +24,6 @@ import Tags from '@/components/tags';
 import Sprite from '@/components/sprite';
 
 import {customerRatingColorMap, customerTagStyleMap} from './constants';
-import {type TTags} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
 import {checkA11yConfirmKey, intersection, pinyinSort} from '@/utils';
@@ -74,88 +73,14 @@ export default memo(
 			]
 		);
 
-		const handleBeverageTagFiltered = useCallback(
-			(pressedTag: TTags) => {
-				customerStore.shared.tab.set('beverage');
-				customerStore.shared.customer.filterVisibility.set(false);
-				customerStore.shared.ingredient.filterVisibility.set(false);
-				customerStore.shared.customer.beverageTags.set((prev) => {
-					if (prev.has(pressedTag)) {
-						prev.delete(pressedTag);
-					} else {
-						prev.add(pressedTag);
-					}
-				});
-			},
-			[
-				customerStore.shared.customer.beverageTags,
-				customerStore.shared.customer.filterVisibility,
-				customerStore.shared.ingredient.filterVisibility,
-				customerStore.shared.tab,
-			]
-		);
-
-		const handleBeverageTagOrdered = useCallback(
-			(pressedTag: TTags) => {
-				const tag = pressedTag as TBeverageTag;
-				customerStore.shared.customer.order.beverageTag.set((prev) => {
-					if (prev === tag) {
-						trackEvent(TrackCategory.Unselect, 'Customer Tag', tag);
-						return null;
-					}
-
-					trackEvent(TrackCategory.Select, 'Customer Tag', tag);
-					return tag;
-				});
-			},
-			[customerStore.shared.customer.order.beverageTag]
-		);
-
-		const handleRecipePositiveTagFiltered = useCallback(
-			(pressedTag: TTags) => {
-				customerStore.shared.tab.set('recipe');
-				customerStore.shared.customer.filterVisibility.set(false);
-				customerStore.shared.ingredient.filterVisibility.set(false);
-				customerStore.shared.customer.positiveTags.set((prev) => {
-					if (prev.has(pressedTag)) {
-						prev.delete(pressedTag);
-					} else {
-						prev.add(pressedTag);
-					}
-				});
-			},
-			[
-				customerStore.shared.customer.filterVisibility,
-				customerStore.shared.customer.positiveTags,
-				customerStore.shared.ingredient.filterVisibility,
-				customerStore.shared.tab,
-			]
-		);
-
-		const handleRecipePositiveTagOrdered = useCallback(
-			(pressedTag: TTags) => {
-				const tag = pressedTag as TRecipeTag;
-				customerStore.shared.customer.order.recipeTag.set((prev) => {
-					if (prev === tag) {
-						trackEvent(TrackCategory.Unselect, 'Customer Tag', tag);
-						return null;
-					}
-
-					trackEvent(TrackCategory.Select, 'Customer Tag', tag);
-					return tag;
-				});
-			},
-			[customerStore.shared.customer.order.recipeTag]
-		);
-
 		const bindBeverageTagLongPress = useLongPress((_longPressReactEvents, context) => {
 			const {context: tag} = context as {context: TBeverageTag};
-			handleBeverageTagOrdered(tag);
+			customerStore.onCustomerOrderBeverageTag(tag);
 		});
 
 		const bindRecipePositiveTagLongPress = useLongPress((_longPressReactEvents, context) => {
 			const {context: tag} = context as {context: TRecipeTag};
-			handleRecipePositiveTagOrdered(tag);
+			customerStore.onCustomerOrderRecipeTag(tag);
 		});
 
 		if (!currentCustomer) {
@@ -317,20 +242,20 @@ export default memo(
 												event.preventDefault();
 											}}
 											onDoubleClick={() => {
-												handleRecipePositiveTagFiltered(tag);
+												customerStore.onCustomerFilterRecipeTag(tag);
 											}}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
-													handleRecipePositiveTagOrdered(tag);
+													customerStore.onCustomerOrderRecipeTag(tag);
 												}
 											}}
 											onMouseDown={(event) => {
 												if (event.button === 1) {
 													event.preventDefault();
-													handleRecipePositiveTagFiltered(tag);
+													customerStore.onCustomerFilterRecipeTag(tag);
 												}
 												if (event.button === 2) {
-													handleRecipePositiveTagOrdered(tag);
+													customerStore.onCustomerOrderRecipeTag(tag);
 												}
 											}}
 											aria-label={`${tag}${currentCustomerOrder.recipeTag === tag ? '/已选定' : ''}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
@@ -382,20 +307,20 @@ export default memo(
 												event.preventDefault();
 											}}
 											onDoubleClick={() => {
-												handleBeverageTagFiltered(tag);
+												customerStore.onCustomerFilterBeverageTag(tag);
 											}}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
-													handleBeverageTagOrdered(tag);
+													customerStore.onCustomerOrderBeverageTag(tag);
 												}
 											}}
 											onMouseDown={(event) => {
 												if (event.button === 1) {
 													event.preventDefault();
-													handleBeverageTagFiltered(tag);
+													customerStore.onCustomerFilterBeverageTag(tag);
 												}
 												if (event.button === 2) {
-													handleBeverageTagOrdered(tag);
+													customerStore.onCustomerOrderBeverageTag(tag);
 												}
 											}}
 											aria-label={`${tag}${currentCustomerOrder.beverageTag === tag ? '/已选定' : ''}${beverageTags.includes(tag) ? '/已满足' : ''}`}

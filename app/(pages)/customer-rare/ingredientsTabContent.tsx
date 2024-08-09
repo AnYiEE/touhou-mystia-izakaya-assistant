@@ -76,14 +76,14 @@ export default memo(
 			return null;
 		}
 
-		const {target, name: customerName} = currentCustomer;
+		const {target, name: currentCustomerName} = currentCustomer;
 
 		const instance_customer = (
 			target === 'customer_rare' ? instance_rare : instance_special
 		) as typeof instance_rare;
 
 		const {negativeTags: customerNegativeTags, positiveTags: customerPositiveTags} =
-			instance_customer.getPropsByName(customerName);
+			instance_customer.getPropsByName(currentCustomerName);
 
 		return (
 			<>

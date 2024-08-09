@@ -1,4 +1,4 @@
-import {type Key, forwardRef, memo, useCallback, useMemo} from 'react';
+import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
 import {cloneDeep} from 'lodash';
 
@@ -16,7 +16,6 @@ import {
 	PopoverTrigger,
 	Select,
 	SelectItem,
-	type Selection,
 	Table,
 	TableBody,
 	TableCell,
@@ -352,55 +351,6 @@ export default memo(
 			]
 		);
 
-		const onSelectedDlcsChange = useCallback(
-			(value: Selection) => {
-				customerStore.shared.recipe.dlcs.set(value as SelectionSet);
-				customerStore.shared.recipe.page.set(1);
-			},
-			[customerStore.shared.recipe.dlcs, customerStore.shared.recipe.page]
-		);
-
-		const onSelectedCookersChange = useCallback(
-			(value: Selection) => {
-				customerStore.shared.recipe.cookers.set(value as SelectionSet);
-				customerStore.shared.recipe.page.set(1);
-			},
-			[customerStore.shared.recipe.cookers, customerStore.shared.recipe.page]
-		);
-
-		const onSelectedPositiveTagsChange = useCallback(
-			(value: Selection) => {
-				customerStore.shared.customer.positiveTags.set(value as SelectionSet);
-				customerStore.shared.recipe.page.set(1);
-			},
-			[customerStore.shared.customer.positiveTags, customerStore.shared.recipe.page]
-		);
-
-		const onSearchValueChange = useCallback(
-			(value: Key | null) => {
-				if (value) {
-					customerStore.shared.recipe.searchValue.set(value as string);
-					customerStore.shared.recipe.page.set(1);
-				} else {
-					customerStore.shared.recipe.searchValue.set('');
-				}
-			},
-			[customerStore.shared.recipe.page, customerStore.shared.recipe.searchValue]
-		);
-
-		const onSearchValueClear = useCallback(() => {
-			customerStore.shared.recipe.searchValue.set('');
-			customerStore.shared.recipe.page.set(1);
-		}, [customerStore.shared.recipe.page, customerStore.shared.recipe.searchValue]);
-
-		const onTableRowsPerPageChange = useCallback(
-			(value: Selection) => {
-				customerStore.recipeTableRows.set(value);
-				customerStore.shared.recipe.page.set(1);
-			},
-			[customerStore.recipeTableRows, customerStore.shared.recipe.page]
-		);
-
 		const tableToolbar = useMemo(
 			() => (
 				<div className="flex flex-col gap-2">
@@ -416,9 +366,9 @@ export default memo(
 									<FontAwesomeIcon icon={faMagnifyingGlass} className="pointer-events-none" />
 								}
 								variant="flat"
-								onClear={onSearchValueClear}
-								onInputChange={onSearchValueChange}
-								onSelectionChange={onSearchValueChange}
+								onClear={customerStore.clearRecipeTableSearchValue}
+								onInputChange={customerStore.onRecipeTableSearchValueChange}
+								onSelectionChange={customerStore.onRecipeTableSearchValueChange}
 								aria-label="选择或输入料理名称"
 								title="选择或输入料理名称"
 							>
@@ -433,7 +383,7 @@ export default memo(
 								size="sm"
 								startContent={<FontAwesomeIcon icon={faTags} />}
 								variant="flat"
-								onSelectionChange={onSelectedPositiveTagsChange}
+								onSelectionChange={customerStore.onRecipeTableSelectedPositiveTagsChange}
 								aria-label="选择目标料理所包含的标签"
 								title="选择目标料理所包含的标签"
 							>
@@ -458,7 +408,7 @@ export default memo(
 									selectedKeys={selectedCookers}
 									selectionMode="multiple"
 									variant="flat"
-									onSelectionChange={onSelectedCookersChange}
+									onSelectionChange={customerStore.onRecipeTableSelectedCookersChange}
 									aria-label="选择目标料理所使用的厨具"
 								>
 									{({value}) => (
@@ -488,7 +438,7 @@ export default memo(
 									selectedKeys={selectedDlcs}
 									selectionMode="multiple"
 									variant="flat"
-									onSelectionChange={onSelectedDlcsChange}
+									onSelectionChange={customerStore.onRecipeTableSelectedDlcsChange}
 									aria-label="选择特定DLC中的料理"
 								>
 									{({value}) => (
@@ -536,7 +486,7 @@ export default memo(
 								selectedKeys={tableRowsPerPage}
 								size="sm"
 								variant="flat"
-								onSelectionChange={onTableRowsPerPageChange}
+								onSelectionChange={customerStore.onRecipeTableRowsPerPageChange}
 								aria-label="选择表格每页最大行数"
 								title="选择表格每页最大行数"
 								classNames={{
@@ -561,14 +511,14 @@ export default memo(
 				allRecipeDlcs,
 				allRecipeNames,
 				allRecipeTags,
+				customerStore.clearRecipeTableSearchValue,
+				customerStore.onRecipeTableRowsPerPageChange,
+				customerStore.onRecipeTableSearchValueChange,
+				customerStore.onRecipeTableSelectedCookersChange,
+				customerStore.onRecipeTableSelectedDlcsChange,
+				customerStore.onRecipeTableSelectedPositiveTagsChange,
 				customerStore.recipeTableColumns.set,
 				filteredData.length,
-				onSearchValueChange,
-				onSearchValueClear,
-				onSelectedCookersChange,
-				onSelectedDlcsChange,
-				onSelectedPositiveTagsChange,
-				onTableRowsPerPageChange,
 				searchValue,
 				selectedCookers,
 				selectedCustomerPositiveTags,

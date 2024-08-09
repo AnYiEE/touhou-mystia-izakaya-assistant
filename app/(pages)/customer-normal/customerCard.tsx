@@ -1,4 +1,4 @@
-import {forwardRef, memo, useCallback, useMemo} from 'react';
+import {forwardRef, memo, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
 import {
@@ -13,7 +13,7 @@ import {
 } from '@nextui-org/react';
 import {faArrowsRotate} from '@fortawesome/free-solid-svg-icons';
 
-import InfoButton from './InfoButton';
+import InfoButton from './infoButton';
 import TagGroup from './tagGroup';
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
@@ -22,7 +22,6 @@ import Sprite from '@/components/sprite';
 
 import {customerRatingColorMap} from './constants';
 import {CUSTOMER_NORMAL_TAG_STYLE} from '@/constants';
-import {type TTags} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {useCustomerNormalStore, useGlobalStore} from '@/stores';
 import {checkA11yConfirmKey, intersection, pinyinSort} from '@/utils';
@@ -60,48 +59,6 @@ export default memo(
 						selectedCustomerPositiveTags.size > 0
 				),
 			[currentBeverageName, currentRecipe, selectedCustomerBeverageTags, selectedCustomerPositiveTags]
-		);
-
-		const handleBeverageTagFiltered = useCallback(
-			(pressedTag: TTags) => {
-				customerStore.shared.tab.set('beverage');
-				customerStore.shared.customer.filterVisibility.set(false);
-				customerStore.shared.ingredient.filterVisibility.set(false);
-				customerStore.shared.customer.beverageTags.set((prev) => {
-					if (prev.has(pressedTag)) {
-						prev.delete(pressedTag);
-					} else {
-						prev.add(pressedTag);
-					}
-				});
-			},
-			[
-				customerStore.shared.customer.beverageTags,
-				customerStore.shared.customer.filterVisibility,
-				customerStore.shared.ingredient.filterVisibility,
-				customerStore.shared.tab,
-			]
-		);
-
-		const handleRecipePositiveTagFiltered = useCallback(
-			(pressedTag: TTags) => {
-				customerStore.shared.tab.set('recipe');
-				customerStore.shared.customer.filterVisibility.set(false);
-				customerStore.shared.ingredient.filterVisibility.set(false);
-				customerStore.shared.customer.positiveTags.set((prev) => {
-					if (prev.has(pressedTag)) {
-						prev.delete(pressedTag);
-					} else {
-						prev.add(pressedTag);
-					}
-				});
-			},
-			[
-				customerStore.shared.customer.filterVisibility,
-				customerStore.shared.customer.positiveTags,
-				customerStore.shared.ingredient.filterVisibility,
-				customerStore.shared.tab,
-			]
 		);
 
 		if (!currentCustomerName) {
@@ -227,17 +184,17 @@ export default memo(
 											tag={tag}
 											tagStyle={CUSTOMER_NORMAL_TAG_STYLE.positive}
 											onDoubleClick={() => {
-												handleRecipePositiveTagFiltered(tag);
+												customerStore.onCustomerFilterRecipeTag(tag);
 											}}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
-													handleRecipePositiveTagFiltered(tag);
+													customerStore.onCustomerFilterRecipeTag(tag);
 												}
 											}}
 											onMouseDown={(event) => {
 												if (event.button === 1) {
 													event.preventDefault();
-													handleRecipePositiveTagFiltered(tag);
+													customerStore.onCustomerFilterRecipeTag(tag);
 												}
 											}}
 											aria-label={`${tag}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
@@ -284,17 +241,17 @@ export default memo(
 											tag={tag}
 											tagStyle={CUSTOMER_NORMAL_TAG_STYLE.beverage}
 											onDoubleClick={() => {
-												handleBeverageTagFiltered(tag);
+												customerStore.onCustomerFilterBeverageTag(tag);
 											}}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
-													handleBeverageTagFiltered(tag);
+													customerStore.onCustomerFilterBeverageTag(tag);
 												}
 											}}
 											onMouseDown={(event) => {
 												if (event.button === 1) {
 													event.preventDefault();
-													handleBeverageTagFiltered(tag);
+													customerStore.onCustomerFilterBeverageTag(tag);
 												}
 											}}
 											aria-label={`${tag}${beverageTags.includes(tag) ? '/已满足' : ''}`}

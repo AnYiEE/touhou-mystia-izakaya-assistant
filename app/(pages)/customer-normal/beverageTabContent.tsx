@@ -1,4 +1,4 @@
-import {type Key, forwardRef, memo, useCallback, useMemo} from 'react';
+import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
 import {cloneDeep} from 'lodash';
 
@@ -16,7 +16,6 @@ import {
 	PopoverTrigger,
 	Select,
 	SelectItem,
-	type Selection,
 	Table,
 	TableBody,
 	TableCell,
@@ -266,47 +265,6 @@ export default memo(
 			]
 		);
 
-		const onSelectedBeverageTagsChange = useCallback(
-			(value: Selection) => {
-				customerStore.shared.customer.beverageTags.set(value as SelectionSet);
-				customerStore.shared.beverage.page.set(1);
-			},
-			[customerStore.shared.beverage.page, customerStore.shared.customer.beverageTags]
-		);
-
-		const onSelectedDlcsChange = useCallback(
-			(value: Selection) => {
-				customerStore.shared.beverage.dlcs.set(value as SelectionSet);
-				customerStore.shared.beverage.page.set(1);
-			},
-			[customerStore.shared.beverage.dlcs, customerStore.shared.beverage.page]
-		);
-
-		const onSearchValueChange = useCallback(
-			(value: Key | null) => {
-				if (value) {
-					customerStore.shared.beverage.searchValue.set(value as string);
-					customerStore.shared.beverage.page.set(1);
-				} else {
-					customerStore.shared.beverage.searchValue.set('');
-				}
-			},
-			[customerStore.shared.beverage.page, customerStore.shared.beverage.searchValue]
-		);
-
-		const onSearchValueClear = useCallback(() => {
-			customerStore.shared.beverage.searchValue.set('');
-			customerStore.shared.beverage.page.set(1);
-		}, [customerStore.shared.beverage.page, customerStore.shared.beverage.searchValue]);
-
-		const onTableRowsPerPageChange = useCallback(
-			(value: Selection) => {
-				customerStore.beverageTableRows.set(value);
-				customerStore.shared.beverage.page.set(1);
-			},
-			[customerStore.beverageTableRows, customerStore.shared.beverage.page]
-		);
-
 		const tableToolbar = useMemo(
 			() => (
 				<div className="flex flex-col gap-2">
@@ -322,9 +280,9 @@ export default memo(
 									<FontAwesomeIcon icon={faMagnifyingGlass} className="pointer-events-none" />
 								}
 								variant="flat"
-								onClear={onSearchValueClear}
-								onInputChange={onSearchValueChange}
-								onSelectionChange={onSearchValueChange}
+								onClear={customerStore.clearBeverageTableSearchValue}
+								onInputChange={customerStore.onBeverageTableSearchValueChange}
+								onSelectionChange={customerStore.onBeverageTableSearchValueChange}
 								aria-label="选择或输入酒水名称"
 								title="选择或输入酒水名称"
 							>
@@ -339,7 +297,7 @@ export default memo(
 								size="sm"
 								startContent={<FontAwesomeIcon icon={faTags} />}
 								variant="flat"
-								onSelectionChange={onSelectedBeverageTagsChange}
+								onSelectionChange={customerStore.onBeverageTableSelectedTagsChange}
 								aria-label="选择目标酒水所包含的标签"
 								title="选择目标酒水所包含的标签"
 							>
@@ -364,7 +322,7 @@ export default memo(
 									selectedKeys={selectedDlcs}
 									selectionMode="multiple"
 									variant="flat"
-									onSelectionChange={onSelectedDlcsChange}
+									onSelectionChange={customerStore.onBeverageTableSelectedDlcsChange}
 									aria-label="选择特定DLC中的酒水"
 								>
 									{({value}) => (
@@ -412,7 +370,7 @@ export default memo(
 								selectedKeys={tableRowsPerPage}
 								size="sm"
 								variant="flat"
-								onSelectionChange={onTableRowsPerPageChange}
+								onSelectionChange={customerStore.onBeverageTableRowsPerPageChange}
 								aria-label="选择表格每页最大行数"
 								title="选择表格每页最大行数"
 								classNames={{
@@ -437,12 +395,12 @@ export default memo(
 				allBeverageNames,
 				allBeverageTags,
 				customerStore.beverageTableColumns.set,
+				customerStore.clearBeverageTableSearchValue,
+				customerStore.onBeverageTableRowsPerPageChange,
+				customerStore.onBeverageTableSearchValueChange,
+				customerStore.onBeverageTableSelectedDlcsChange,
+				customerStore.onBeverageTableSelectedTagsChange,
 				filteredData.length,
-				onSearchValueChange,
-				onSearchValueClear,
-				onSelectedBeverageTagsChange,
-				onSelectedDlcsChange,
-				onTableRowsPerPageChange,
 				searchValue,
 				selectedCustomerBeverageTags,
 				selectedDlcs,
