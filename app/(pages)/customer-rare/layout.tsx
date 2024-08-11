@@ -7,10 +7,17 @@ export const metadata: Metadata = {
 	title: getPageTitle('/customer-rare'),
 };
 
-export default function CustomerRareLayout({
+export default function CustomerLayout({
 	children,
+	preferences,
 }: Readonly<{
 	children: ReactNode;
+	preferences: ReactNode;
 }>) {
-	return children;
+	return (
+		<>
+			{children}
+			{preferences}
+		</>
+	);
 }

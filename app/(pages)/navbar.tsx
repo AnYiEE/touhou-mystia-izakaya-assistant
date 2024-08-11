@@ -1,6 +1,6 @@
 'use client';
 
-import {type JSX, type PropsWithChildren, memo, startTransition, useReducer} from 'react';
+import {type JSX, type PropsWithChildren, memo, startTransition, useMemo, useReducer} from 'react';
 import {usePathname} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
 import {twMerge} from 'tailwind-merge';
@@ -126,6 +126,11 @@ export default memo(function Navbar() {
 	const startProgress = useProgress();
 	const [isMenuOpened, toggleMenuOpened] = useReducer(toggleBoolean, false);
 
+	const shouldShowPreferences = useMemo(
+		() => pathname.startsWith('/customer') || pathname === '/preferences',
+		[pathname]
+	);
+
 	return (
 		<NextUINavbar
 			maxWidth="xl"
@@ -163,7 +168,7 @@ export default memo(function Navbar() {
 						if ('href' in navItem) {
 							const {href, label} = navItem;
 							const isActivated = href === pathname;
-							return (
+							return href === '/preferences' && !shouldShowPreferences ? null : (
 								<NavbarItem key={href} isActive={isActivated}>
 									<NavbarLink isActivated={isActivated} href={href} label={label} />
 								</NavbarItem>
@@ -235,7 +240,7 @@ export default memo(function Navbar() {
 				<div className="mx-4 mt-2 flex flex-col gap-2">
 					{navMenuItems.map(({href, label}) => {
 						const isActivated = href === pathname;
-						return (
+						return href === '/preferences' && !shouldShowPreferences ? null : (
 							<NavbarMenuItem key={href} isActive={isActivated}>
 								<Link
 									color={isActivated ? 'primary' : 'foreground'}

@@ -21,7 +21,11 @@ import H1 from '@/components/h1';
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
 import {checkA11yConfirmKey, toggleBoolean} from '@/utils';
 
-export default memo(function DataManager() {
+interface IProps {
+	onModalClose?: (() => void) | undefined;
+}
+
+export default memo<IProps>(function DataManager({onModalClose}) {
 	const startProgress = useProgress();
 
 	const [value, setValue] = useState('');
@@ -184,7 +188,11 @@ export default memo(function DataManager() {
 										);
 										prev.dirver = dirver;
 									});
-									router.push(customerRareTutorialPathname);
+									if (onModalClose) {
+										onModalClose();
+									} else {
+										router.push(customerRareTutorialPathname);
+									}
 									trackEvent(TrackCategory.Click, 'Reset Button', 'Customer Rare Tutorial');
 								}}
 							>
