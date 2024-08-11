@@ -13,10 +13,10 @@ import H3 from '@/components/h3';
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
 
 interface IProps {
-	onModalClose?: () => void;
+	onModalClose: (() => void) | undefined;
 }
 
-export default memo<IProps>(function Content({onModalClose}) {
+export default memo<Partial<IProps>>(function Content({onModalClose}) {
 	const customerStore = useCustomerRareStore();
 	const globalStore = useGlobalStore();
 

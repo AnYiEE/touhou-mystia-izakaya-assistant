@@ -18,7 +18,7 @@ interface IProps {
 	data: TBeverageInstance['data'];
 }
 
-export default memo(function Content({data}: IProps) {
+export default memo<IProps>(function Content({data}) {
 	const openedPopoverParam = 'select';
 	const [openedPopover] = useOpenedFoodPopover(openedPopoverParam);
 

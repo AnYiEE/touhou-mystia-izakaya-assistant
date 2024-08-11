@@ -52,14 +52,14 @@ interface INavbarLinkProps
 	isActivated: boolean;
 }
 
-const NavbarLink = memo(function NavbarLink({
+const NavbarLink = memo<Partial<PropsWithChildren<INavbarLinkProps>>>(function NavbarLink({
 	className,
 	fullWidth,
 	href = '#',
 	isActivated = false,
 	label: children,
 	startContent,
-}: Partial<PropsWithChildren<INavbarLinkProps>>) {
+}) {
 	const startProgress = useProgress();
 
 	return (
@@ -83,7 +83,7 @@ const NavbarLink = memo(function NavbarLink({
 
 interface IGitHubIconLinkProps extends Pick<IFontAwesomeIconLinkProps, 'className'> {}
 
-const GitHubIconLink = memo(function IconLink({className}: IGitHubIconLinkProps) {
+const GitHubIconLink = memo<IGitHubIconLinkProps>(function IconLink({className}) {
 	return (
 		<FontAwesomeIconLink
 			isExternal
@@ -100,7 +100,7 @@ interface IGitHubLinkProps {
 	showTooltip: boolean;
 }
 
-const GitHubLink = memo(function GitHubLink({showTooltip}: Partial<IGitHubLinkProps>) {
+const GitHubLink = memo<Partial<IGitHubLinkProps>>(function GitHubLink({showTooltip}) {
 	if (showTooltip) {
 		return (
 			<Tooltip showArrow content={links.github.label}>

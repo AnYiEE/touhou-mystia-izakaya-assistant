@@ -22,10 +22,10 @@ import {useCustomerRareStore, useGlobalStore} from '@/stores';
 import {checkA11yConfirmKey, toggleBoolean} from '@/utils';
 
 interface IProps {
-	onModalClose?: (() => void) | undefined;
+	onModalClose: (() => void) | undefined;
 }
 
-export default memo<IProps>(function DataManager({onModalClose}) {
+export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 	const startProgress = useProgress();
 
 	const [value, setValue] = useState('');

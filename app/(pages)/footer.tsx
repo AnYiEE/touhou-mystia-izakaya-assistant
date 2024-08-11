@@ -17,13 +17,13 @@ interface IFooterLinkProps extends Pick<LinkProps, 'href' | 'isExternal' | 'show
 	content: string;
 }
 
-const FooterLink = memo(function FooterLink({
+const FooterLink = memo<PropsWithChildren<IFooterLinkProps>>(function FooterLink({
 	href = '#',
 	content,
 	isExternal = true,
 	showAnchorIcon = false,
 	children,
-}: PropsWithChildren<IFooterLinkProps>) {
+}) {
 	return (
 		<Tooltip showArrow content={content}>
 			<Link

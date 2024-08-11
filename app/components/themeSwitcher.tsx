@@ -36,7 +36,7 @@ interface IProps {
 	isMenu: boolean;
 }
 
-export default memo(function ThemeSwitcher({isMenu}: Partial<IProps>) {
+export default memo<Partial<IProps>>(function ThemeSwitcher({isMenu}) {
 	const isMounted = useMounted();
 	const pathname = usePathname();
 	const {theme, setTheme} = useTheme();

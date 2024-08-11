@@ -4,14 +4,14 @@ import {twMerge} from 'tailwind-merge';
 type TClassName = HTMLAttributes<HTMLHeadingElement>['className'];
 
 interface IProps {
-	className?: TClassName;
-	isFirst?: boolean;
-	subTitle?: ReactNodeWithoutBoolean;
-	subTitleClassName?: TClassName;
+	className: TClassName;
+	isFirst: boolean;
+	subTitle: ReactNodeWithoutBoolean;
+	subTitleClassName: TClassName;
 }
 
 export default memo(
-	forwardRef<HTMLHeadingElement | null, PropsWithChildren<IProps>>(function H1(
+	forwardRef<HTMLHeadingElement | null, PropsWithChildren<Partial<IProps>>>(function H1(
 		{className, isFirst, subTitle, subTitleClassName, children},
 		ref
 	) {
