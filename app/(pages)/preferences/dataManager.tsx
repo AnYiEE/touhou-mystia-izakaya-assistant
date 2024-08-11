@@ -178,6 +178,11 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								variant="flat"
 								onPress={() => {
 									showProgress(startProgress);
+									customerStore.persistence.customer.filters.set((prev) => {
+										Object.keys(prev).forEach((key) => {
+											prev[key as keyof typeof prev] = [];
+										});
+									});
 									customerStore.shared.customer.data.set(null);
 									customerStore.shared.tab.set('customer');
 									customerStore.shared.customer.filterVisibility.set(true);
