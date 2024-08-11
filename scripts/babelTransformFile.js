@@ -7,7 +7,7 @@ const {globSync} = require('glob');
 const {transformFile} = require('@babel/core');
 const {writeFileSync} = require('node:fs');
 
-globSync('out/**/*.js').forEach((filePath) => {
+globSync(['out/**/*.js', 'public/**/*.js']).forEach((filePath) => {
 	transformFile(
 		filePath,
 		{

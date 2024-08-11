@@ -5,8 +5,9 @@
 	"private": true,
 	"scripts": {
 		"dev": "next dev",
-		"build": "node scripts/generateServiceWorker.js && next build && node scripts/babelTransformFile.js",
-		"start": "pnpx serve out",
+		"build": "node scripts/generateServiceWorker.js && node scripts/babelTransformFile.js && next build",
+		"start": "next start",
+		"serve": "pnpx serve out",
 		"lint": "next lint",
 		"format": "prettier --cache --write .",
 		"stylelint": "stylelint --allow-empty-input --cache app/**/*.scss",

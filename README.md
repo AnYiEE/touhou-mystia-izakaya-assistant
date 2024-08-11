@@ -18,12 +18,17 @@
 ```bash
 # 安装依赖
 pnpm i
+
 # 开发服务器
 pnpm dev
-# 静态构建
+
+# 构建
 pnpm build
-# 静态服务器
+
+# 动态服务器
 pnpm start
+# 静态服务器
+pnpm serve
 ```
 
 ### 开发笔记
