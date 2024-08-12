@@ -1,6 +1,16 @@
 'use client';
 
-import {type KeyboardEvent, memo, useCallback, useEffect, useMemo, useReducer, useState} from 'react';
+import {
+	type ChangeEvent,
+	type KeyboardEvent,
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useReducer,
+	useRef,
+	useState,
+} from 'react';
 import {useRouter} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
 import {debounce, isObjectLike} from 'lodash';
@@ -21,6 +31,25 @@ import H1 from '@/components/h1';
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
 import {checkA11yConfirmKey, toggleBoolean} from '@/utils';
 
+const JSON_TYPE = 'application/json';
+
+function download(fileName: string, jsonString: string) {
+	const blob = new Blob([jsonString], {
+		type: JSON_TYPE,
+	});
+	const url = URL.createObjectURL(blob);
+
+	const element = document.createElement('a');
+	element.classList.add('hidden');
+	element.download = `${fileName}.json`;
+	element.href = url;
+	document.body.append(element);
+	element.click();
+
+	element.remove();
+	URL.revokeObjectURL(url);
+}
+
 interface IProps {
 	onModalClose: (() => void) | undefined;
 }
@@ -31,6 +60,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 	const [importValue, setImportValue] = useState('');
 	const throttledImportValue = useThrottle(importValue);
 	const [importData, setImportData] = useState<object | null>(null);
+	const importInputRef = useRef<HTMLInputElement | null>(null);
 
 	const [isSaveButtonDisabled, setIsSaveButtonDisabled] = useState(true);
 	const [isSaveButtonError, setIsSaveButtonError] = useState(false);
@@ -70,6 +100,10 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 		}
 	}, [throttledImportValue]);
 
+	const handleDownloadButtonPress = useCallback(() => {
+		download(`customer_rare_data-${Object.keys(mealData).length}-${Date.now()}`, jsonString);
+	}, [jsonString, mealData]);
+
 	const handleImportData = useCallback(() => {
 		toggleSavePopoverOpened();
 		if (importData) {
@@ -83,6 +117,30 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 		customerStore.persistence.meals.set({});
 		trackEvent(TrackCategory.Click, 'Reset Button', 'Customer Rare Data');
 	}, [customerStore.persistence.meals]);
+
+	const handleImportButtonPress = useCallback(() => {
+		importInputRef.current?.click();
+	}, []);
+
+	const handleImportInputChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+		const {target} = event;
+		if (!target.files) {
+			return;
+		}
+		const {
+			files: [file],
+		} = target;
+		if (!file) {
+			return;
+		}
+		const blob = new Blob([file], {
+			type: JSON_TYPE,
+		});
+		void blob.text().then((text) => {
+			setImportValue(text);
+			target.value = '';
+		});
+	}, []);
 
 	return (
 		<>
@@ -98,22 +156,27 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 					aria-label="数据管理选项卡"
 				>
 					<Tab key="backup" title="备份">
-						<Snippet
-							hideSymbol
-							tooltipProps={{
-								content: '点击复制当前的稀客套餐数据',
-								delay: 0,
-								offset: -5,
-								showArrow: true,
-							}}
-							variant="flat"
-							classNames={{
-								base: 'min-w-min',
-								pre: 'max-h-[13.25rem] overflow-auto whitespace-pre-wrap',
-							}}
-						>
-							{jsonString}
-						</Snippet>
+						<div className="flex w-full flex-col gap-2 md:w-1/2">
+							<Snippet
+								hideSymbol
+								tooltipProps={{
+									content: '点击复制当前的稀客套餐数据',
+									delay: 0,
+									offset: -5,
+									showArrow: true,
+								}}
+								variant="flat"
+								classNames={{
+									base: 'min-w-min',
+									pre: 'max-h-[13.25rem] basis-full overflow-auto whitespace-pre-wrap',
+								}}
+							>
+								{jsonString}
+							</Snippet>
+							<Button fullWidth color="primary" variant="flat" onPress={handleDownloadButtonPress}>
+								下载
+							</Button>
+						</div>
 					</Tab>
 					<Tab key="restore" title="还原">
 						<div className="flex w-full flex-col gap-2 lg:w-1/2">
@@ -122,6 +185,16 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 								value={importValue}
 								onValueChange={setImportValue}
 							/>
+							<input
+								accept={JSON_TYPE}
+								type="file"
+								onChange={handleImportInputChange}
+								className="hidden"
+								ref={importInputRef}
+							/>
+							<Button fullWidth color="primary" variant="flat" onPress={handleImportButtonPress}>
+								上传
+							</Button>
 							<Popover showArrow isOpen={isSavePopoverOpened}>
 								<PopoverTrigger>
 									<Button
