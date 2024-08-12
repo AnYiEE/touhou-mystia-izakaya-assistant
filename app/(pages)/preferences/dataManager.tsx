@@ -28,10 +28,12 @@ interface IProps {
 export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 	const startProgress = useProgress();
 
-	const [value, setValue] = useState('');
-	const throttledValue = useThrottle(value);
+	const [importValue, setImportValue] = useState('');
+	const throttledImportValue = useThrottle(importValue);
 
 	const [isSaveButtonDisabled, setIsSaveButtonDisabled] = useState(true);
+	const [isSaveButtonError, setIsSaveButtonError] = useState(false);
+	const [isSaveButtonLoading, setIsSaveButtonLoading] = useState(false);
 	const [isSavePopoverOpened, toggleSavePopoverOpened] = useReducer(toggleBoolean, false);
 	const [isResetPopoverOpened, toggleResetPopoverOpened] = useReducer(toggleBoolean, false);
 
@@ -44,22 +46,34 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 
 	useEffect(() => {
 		try {
-			const json = JSON.parse(throttledValue) as unknown;
+			if (!throttledImportValue) {
+				setIsSaveButtonError(false);
+			}
+			setIsSaveButtonLoading(true);
+			const json = JSON.parse(throttledImportValue) as unknown;
 			if (Array.isArray(json) || !isObjectLike(json)) {
 				throw new TypeError('not an object');
 			}
 			setIsSaveButtonDisabled(false);
+			setIsSaveButtonError(false);
+			setIsSaveButtonLoading(false);
 		} catch {
 			setIsSaveButtonDisabled(true);
+			if (throttledImportValue) {
+				setIsSaveButtonError(true);
+			}
+			setIsSaveButtonLoading(false);
 		}
-	}, [throttledValue]);
+	}, [throttledImportValue]);
 
 	const handleImportData = useCallback(() => {
 		toggleSavePopoverOpened();
+		setIsSaveButtonLoading(true);
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-		customerStore.persistence.meals.set(JSON.parse(throttledValue));
+		customerStore.persistence.meals.set(JSON.parse(throttledImportValue));
+		setIsSaveButtonLoading(false);
 		trackEvent(TrackCategory.Click, 'Import Button', 'Customer Rare Data');
-	}, [customerStore.persistence.meals, throttledValue]);
+	}, [customerStore.persistence.meals, throttledImportValue]);
 
 	const handleResetData = useCallback(() => {
 		toggleResetPopoverOpened();
@@ -76,7 +90,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 					destroyInactiveTabPanel={false}
 					variant="underlined"
 					onSelectionChange={() => {
-						setValue('');
+						setImportValue('');
 					}}
 					aria-label="数据管理选项卡"
 				>
@@ -100,13 +114,18 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 					</Tab>
 					<Tab key="restore" title="还原">
 						<div className="flex w-full flex-col gap-2 lg:w-1/2">
-							<Textarea placeholder="输入稀客套餐数据" value={value} onValueChange={setValue} />
+							<Textarea
+								placeholder="输入稀客套餐数据"
+								value={importValue}
+								onValueChange={setImportValue}
+							/>
 							<Popover showArrow isOpen={isSavePopoverOpened}>
 								<PopoverTrigger>
 									<Button
 										fullWidth
-										color="primary"
+										color={isSaveButtonError ? 'danger' : 'primary'}
 										isDisabled={isSaveButtonDisabled}
+										isLoading={isSaveButtonLoading}
 										variant="flat"
 										onClick={toggleSavePopoverOpened}
 										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
