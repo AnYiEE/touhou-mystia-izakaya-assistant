@@ -30,6 +30,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 
 	const [importValue, setImportValue] = useState('');
 	const throttledImportValue = useThrottle(importValue);
+	const [importData, setImportData] = useState<object | null>(null);
 
 	const [isSaveButtonDisabled, setIsSaveButtonDisabled] = useState(true);
 	const [isSaveButtonError, setIsSaveButtonError] = useState(false);
@@ -45,8 +46,10 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 	const jsonString = useMemo(() => JSON.stringify(mealData, null, '\t'), [mealData]);
 
 	useEffect(() => {
+		const hasValue = Boolean(throttledImportValue);
 		try {
-			if (!throttledImportValue) {
+			setImportData(null);
+			if (!hasValue) {
 				setIsSaveButtonError(false);
 			}
 			setIsSaveButtonLoading(true);
@@ -54,12 +57,13 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 			if (Array.isArray(json) || !isObjectLike(json)) {
 				throw new TypeError('not an object');
 			}
+			setImportData(json);
 			setIsSaveButtonDisabled(false);
 			setIsSaveButtonError(false);
 			setIsSaveButtonLoading(false);
 		} catch {
 			setIsSaveButtonDisabled(true);
-			if (throttledImportValue) {
+			if (hasValue) {
 				setIsSaveButtonError(true);
 			}
 			setIsSaveButtonLoading(false);
@@ -68,12 +72,11 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 
 	const handleImportData = useCallback(() => {
 		toggleSavePopoverOpened();
-		setIsSaveButtonLoading(true);
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-		customerStore.persistence.meals.set(JSON.parse(throttledImportValue));
-		setIsSaveButtonLoading(false);
+		if (importData) {
+			customerStore.persistence.meals.set(importData);
+		}
 		trackEvent(TrackCategory.Click, 'Import Button', 'Customer Rare Data');
-	}, [customerStore.persistence.meals, throttledImportValue]);
+	}, [customerStore.persistence.meals, importData]);
 
 	const handleResetData = useCallback(() => {
 		toggleResetPopoverOpened();
