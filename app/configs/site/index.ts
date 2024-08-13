@@ -77,13 +77,41 @@ export const siteConfig = {
 			label: '支付宝收款链接',
 			href: 'https://qr.alipay.com/tsx14703h641lnxffc1gz9c',
 		},
+		donateQRCode: {
+			label: '支付宝收款码',
+			href: '/assets/Alipay.png',
+		},
 		github: {
 			label: '本项目代码仓库',
 			href: PACKAGE.repository.url,
 		},
+		gnuLicense: {
+			label: 'The GNU General Public License v3.0',
+			href: 'https://www.gnu.org/licenses/gpl-3.0-standalone.html',
+		},
+		index: {
+			label: '首页',
+			href: '/',
+		},
+		qqGroup: {
+			label: '点击加入QQ群',
+			href: 'https://qm.qq.com/q/Zham0MdxyA',
+		},
+		qqGroupQRCode: {
+			label: 'QQ群二维码',
+			href: '/assets/QQ.png',
+		},
 		steam: {
 			label: "Steam上的东方夜雀食堂 - Touhou Mystia's Izakaya",
 			href: 'https://store.steampowered.com/app/1584090/__Touhou_Mystias_Izakaya',
+		},
+		xiaohongshuGroup: {
+			label: '点击加入小红书群',
+			href: 'https://www.xiaohongshu.com/sns/invitation/group-chat?groupId=136956731996869234&token=xMbzu2IneK_mgPAGyJxxpYKyeP-zm1PsHZlLjIcS1uXycTLrNNVeaQoPbTJuXF0pBaAYFTQ8Hyxe-LSJYB8CeXyPAXwCu4olCxjAUAPWW00',
+		},
+		xiaohongshuGroupQRCode: {
+			label: '小红书群二维码',
+			href: '/assets/Xiaohongshu.png',
 		},
 	},
 	nodeEnv: process.env.NODE_ENV,

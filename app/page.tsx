@@ -1,4 +1,4 @@
-import {memo} from 'react';
+import {memo, useCallback} from 'react';
 
 import {Button, Divider, Link, Tooltip} from '@nextui-org/react';
 import {faQq} from '@fortawesome/free-brands-svg-icons';
@@ -10,9 +10,20 @@ import Xiaohongshu from '@/components/xiaohongshu';
 
 import {siteConfig} from '@/configs';
 
-const {shortName} = siteConfig;
+const {links, shortName} = siteConfig;
 
 export default memo(function Home() {
+	const QRCodeDescription = useCallback(
+		() => (
+			<>
+				分享经验、交流心得
+				<br />
+				提出建议、反馈问题
+			</>
+		),
+		[]
+	);
+
 	return (
 		<div className="flex h-full flex-col items-center justify-center gap-4 md:flex-row md:gap-8">
 			<div className="flex flex-col items-center">
@@ -36,10 +47,8 @@ export default memo(function Home() {
 					<Tooltip
 						showArrow
 						content={
-							<QRCode alt="QQ加群二维码" src="/assets/QQ.png">
-								分享经验、交流心得
-								<br />
-								提出建议、反馈问题
+							<QRCode alt={links.qqGroupQRCode.label} src={links.qqGroupQRCode.href}>
+								<QRCodeDescription />
 							</QRCode>
 						}
 						classNames={{
@@ -49,18 +58,16 @@ export default memo(function Home() {
 						<FontAwesomeIconLink
 							isExternal
 							icon={faQq}
-							href="https://qm.qq.com/q/Zham0MdxyA"
-							title="点击加入QQ群"
+							href={links.qqGroup.href}
+							title={links.qqGroup.label}
 							className="text-xl text-qq-blue"
 						/>
 					</Tooltip>
 					<Tooltip
 						showArrow
 						content={
-							<QRCode alt="小红书加群二维码" src="/assets/Xiaohongshu.png">
-								分享经验、交流心得
-								<br />
-								提出建议、反馈问题
+							<QRCode alt={links.xiaohongshuGroupQRCode.label} src={links.xiaohongshuGroupQRCode.href}>
+								<QRCodeDescription />
 							</QRCode>
 						}
 						classNames={{
@@ -71,9 +78,9 @@ export default memo(function Home() {
 							as={Link}
 							isExternal
 							isIconOnly
-							href="https://www.xiaohongshu.com/sns/invitation/group-chat?groupId=136956731996869234&token=xMbzu2IneK_mgPAGyJxxpYKyeP-zm1PsHZlLjIcS1uXycTLrNNVeaQoPbTJuXF0pBaAYFTQ8Hyxe-LSJYB8CeXyPAXwCu4olCxjAUAPWW00"
+							href={links.xiaohongshuGroup.href}
 							role="link"
-							title="点击加入小红书群"
+							title={links.xiaohongshuGroup.label}
 							className="h-5"
 						>
 							<Xiaohongshu />

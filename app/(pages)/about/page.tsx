@@ -41,8 +41,8 @@ export default memo(function About() {
 					<Link
 						isExternal
 						showAnchorIcon
-						href="https://www.gnu.org/licenses/gpl-3.0-standalone.html"
-						title="The GNU General Public License v3.0"
+						href={links.gnuLicense.href}
+						title={links.gnuLicense.label}
 						className="indent-0"
 					>
 						见此
@@ -70,8 +70,8 @@ export default memo(function About() {
 					<Tooltip
 						showArrow
 						content={
-							<QRCode alt="支付宝收款码" src="/assets/Alipay.png">
-								支付宝收款码
+							<QRCode alt={links.donateQRCode.label} src={links.donateQRCode.href}>
+								{links.donateQRCode.label}
 							</QRCode>
 						}
 						classNames={{

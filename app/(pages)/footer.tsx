@@ -89,8 +89,8 @@ export default memo(function Footer() {
 				<Tooltip
 					showArrow
 					content={
-						<QRCode alt="支付宝收款码" src="/assets/Alipay.png" className="h-20">
-							支付宝收款码
+						<QRCode alt={links.donateQRCode.label} src={links.donateQRCode.href} className="h-20">
+							{links.donateQRCode.label}
 						</QRCode>
 					}
 					classNames={{

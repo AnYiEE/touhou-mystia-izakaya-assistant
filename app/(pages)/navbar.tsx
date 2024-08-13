@@ -134,7 +134,6 @@ export default memo(function Navbar() {
 	return (
 		<NextUINavbar
 			maxWidth="xl"
-			position="sticky"
 			isMenuOpen={isMenuOpened}
 			onMenuOpenChange={toggleMenuOpened}
 			classNames={{
@@ -145,11 +144,11 @@ export default memo(function Navbar() {
 				<NavbarBrand as="li" className="max-w-fit">
 					<Link
 						color="foreground"
-						href="/"
+						href={links.index.href}
 						onPress={() => {
 							showProgress(startProgress);
 						}}
-						aria-label="首页"
+						aria-label={links.index.label}
 						className="flex select-none items-center justify-start gap-1"
 					>
 						<span
