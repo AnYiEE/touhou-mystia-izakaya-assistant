@@ -2,7 +2,7 @@
 
 import {useRouter} from 'next/navigation';
 
-import {Modal, ModalBody, ModalContent} from '@nextui-org/react';
+import {Modal, ModalBody, ModalContent, ScrollShadow} from '@nextui-org/react';
 
 import Content from '@/(pages)/preferences/content';
 
@@ -20,7 +20,9 @@ export default function PreferencesModal() {
 			<ModalContent className="py-3">
 				{(onClose) => (
 					<ModalBody>
-						<Content onModalClose={onClose} />
+						<ScrollShadow hideScrollBar size={16} visibility="bottom">
+							<Content onModalClose={onClose} />
+						</ScrollShadow>
 					</ModalBody>
 				)}
 			</ModalContent>
