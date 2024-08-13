@@ -74,8 +74,8 @@ export const siteConfig = {
 	}, []),
 	links: {
 		donate: {
-			label: '支付宝收款码',
-			href: 'https://static.sukiu.net/assets/alipay.jpg',
+			label: '支付宝收款链接',
+			href: 'https://qr.alipay.com/tsx14703h641lnxffc1gz9c',
 		},
 		github: {
 			label: '本项目代码仓库',

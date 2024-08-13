@@ -1,6 +1,6 @@
 import {memo} from 'react';
 
-import {Link} from '@nextui-org/react';
+import {Image, Link, Tooltip} from '@nextui-org/react';
 
 import ChangeLog from './changeLog';
 import KnownIssue from './knownIssue';
@@ -66,15 +66,34 @@ export default memo(function About() {
 				</p>
 				<p>
 					如果{shortName}对您的游玩过程有所帮助，您可以考虑
-					<Link
-						isExternal
-						showAnchorIcon
-						href={links.donate.href}
-						title={links.donate.label}
-						className="indent-0"
+					<Tooltip
+						showArrow
+						content={
+							<div className="flex select-none flex-col items-center">
+								<Image
+									isBlurred
+									alt="支付宝收款码"
+									draggable={false}
+									src="/assets/Alipay.png"
+									className="h-32 dark:invert"
+								/>
+								<p className="text-xs">支付宝收款码</p>
+							</div>
+						}
+						classNames={{
+							content: 'px-1',
+						}}
 					>
-						向我捐赠
-					</Link>
+						<Link
+							isExternal
+							showAnchorIcon
+							href={links.donate.href}
+							title={links.donate.label}
+							className="indent-0"
+						>
+							向我捐赠
+						</Link>
+					</Tooltip>
 					。但请您注意，这仅是捐赠，无论捐赠与否都不会影响您使用{shortName}的体验。{shortName}
 					始终在不断更改和改进，可能随时增加或删除功能，也可能暂停或彻底停止服务。无论您捐赠与否，{shortName}
 					都不为具体功能、可靠性、可用性或满足您需要的能力作任何承诺。某些司法管辖区域会规定特定保证，例如适销性、特定目的适用性及不侵权的默示保证。在法律允许的范围内，
