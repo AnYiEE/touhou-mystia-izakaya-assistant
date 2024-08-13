@@ -44,7 +44,7 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 	);
 
 	return (
-		<div className="leading-6">
+		<div>
 			<H1 isFirst subTitle="以下的所有更改都会即时生效">
 				设置
 			</H1>

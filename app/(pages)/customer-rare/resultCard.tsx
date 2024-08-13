@@ -21,7 +21,7 @@ export const Plus = memo(
 
 		return (
 			<span
-				className={twMerge('mx-1 text-center', className)}
+				className={twMerge('mx-1 text-center leading-none', className)}
 				style={{
 					fontSize: remString,
 					width: remString,
@@ -46,7 +46,7 @@ const UnknownItem = memo(
 			<span
 				role="img"
 				title={title}
-				className={twMerge('outline-3 inline-block text-center outline-double', className)}
+				className={twMerge('outline-3 inline-block text-center leading-none outline-double', className)}
 				style={{
 					fontSize: remString,
 					width: remString,

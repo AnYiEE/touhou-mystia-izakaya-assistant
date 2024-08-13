@@ -29,8 +29,8 @@ const Tag: FC<ITagProps> = memo(
 				className={twMerge('max-w-1/5 flex items-center rounded border-1 border-solid px-1', className)}
 				style={{
 					backgroundColor: tagStyle.backgroundColor ?? 'inherit',
-					borderColor: tagStyle.borderColor ?? 'inherit',
-					color: tagStyle.color ?? 'inherit',
+					borderColor: tagStyle.borderColor ?? 'currentcolor',
+					color: tagStyle.color ?? 'currentcolor',
 				}}
 				onDoubleClick={(event) => {
 					handleDoubleClick?.(tagName, event);

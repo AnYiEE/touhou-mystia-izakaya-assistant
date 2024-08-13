@@ -262,7 +262,7 @@ export default memo(
 											role="button"
 											tabIndex={0}
 											className={twJoin(
-												'cursor-pointer select-none py-0.5 hover:opacity-80',
+												'cursor-pointer select-none py-0.5 leading-none hover:opacity-80',
 												!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50',
 												currentCustomerOrder.recipeTag === tag && 'ring-2 ring-current'
 											)}
@@ -280,7 +280,7 @@ export default memo(
 										tag={tag}
 										tagStyle={customerTagStyleMap[currentCustomerTarget].negative}
 										className={twJoin(
-											'cursor-not-allowed py-0.5',
+											'cursor-not-allowed py-0.5 leading-none',
 											!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50'
 										)}
 									/>
@@ -327,7 +327,7 @@ export default memo(
 											role="button"
 											tabIndex={0}
 											className={twJoin(
-												'cursor-pointer select-none py-0.5 hover:opacity-80',
+												'cursor-pointer select-none py-0.5 leading-none hover:opacity-80',
 												!beverageTags.includes(tag) && 'opacity-50',
 												currentCustomerOrder.beverageTag === tag && 'ring-2 ring-current'
 											)}

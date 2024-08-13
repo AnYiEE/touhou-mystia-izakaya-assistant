@@ -13,7 +13,6 @@ import Providers from '@/providers';
 
 import {siteConfig} from '@/configs';
 
-import 'reset-css';
 import 'driver.js/dist/driver.css';
 import './globals.scss';
 

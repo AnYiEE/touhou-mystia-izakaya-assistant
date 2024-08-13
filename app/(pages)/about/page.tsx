@@ -13,7 +13,7 @@ const {description, name, shortName, links} = siteConfig;
 
 export default memo(function About() {
 	return (
-		<div className="leading-6">
+		<div>
 			<H1 isFirst>项目介绍</H1>
 			<div className="space-y-2 break-all text-justify indent-8">
 				<p>{description}</p>

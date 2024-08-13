@@ -64,9 +64,6 @@ importers:
       react-transition-progress:
         specifier: github:AnYiEE/react-transition-progress
         version: https://codeload.github.com/AnYiEE/react-transition-progress/tar.gz/f7bc20343e9f782ec1bd21b74e4d3ad9959e986a(framer-motion@11.3.24(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@14.2.5(@babel/core@7.25.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.77.8))(react@18.3.1)
-      reset-css:
-        specifier: ^5.0.2
-        version: 5.0.2
       rxjs:
         specifier: ^7.8.1
         version: 7.8.1
@@ -4508,9 +4505,6 @@ packages:
 
   reserved-words@0.1.2:
     resolution: {integrity: sha512-0S5SrIUJ9LfpbVl4Yzij6VipUdafHrOTzvmfazSw/jeZrZtQK303OPZW+obtkaw7jQlTQppy0UvZWm9872PbRw==}
-
-  reset-css@5.0.2:
-    resolution: {integrity: sha512-YtgUGSq5z5W0NPSjsBW7ys7rtWa8P8AiE7S6Fg3d1TQCPpAodgYyLuZYlU0AOsLtprk/fC9ormHN/0pAavVIDw==}
 
   resolve-from@4.0.0:
     resolution: {integrity: sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==}
@@ -10681,8 +10675,6 @@ snapshots:
   require-from-string@2.0.2: {}
 
   reserved-words@0.1.2: {}
-
-  reset-css@5.0.2: {}
 
   resolve-from@4.0.0: {}
 

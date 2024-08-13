@@ -44,7 +44,7 @@ export default memo(
 				<PopoverContent className="w-64">
 					<Autocomplete
 						allowsCustomValue
-						variant="faded"
+						variant="flat"
 						defaultInputValue={searchValue}
 						defaultItems={searchItems}
 						label={label}

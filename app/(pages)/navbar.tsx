@@ -68,7 +68,7 @@ const NavbarLink = memo<Partial<PropsWithChildren<INavbarLinkProps>>>(function N
 			fullWidth={fullWidth}
 			size="sm"
 			startContent={startContent}
-			variant={isActivated ? 'faded' : 'light'}
+			variant={isActivated ? 'flat' : 'light'}
 			href={href}
 			onPress={() => {
 				showProgress(startProgress);
@@ -187,8 +187,8 @@ export default memo(function Navbar() {
 											<Button
 												endContent={<FontAwesomeIcon icon={faChevronDown} size="sm" />}
 												size="sm"
-												variant={isDropdownActivated ? 'faded' : 'light'}
-												className="border-none text-base"
+												variant={isDropdownActivated ? 'flat' : 'light'}
+												className="text-base"
 											>
 												{dropdownLabel}
 											</Button>
