@@ -1,10 +1,11 @@
 import {memo} from 'react';
 
-import {Button, Divider, Image, Link, Tooltip} from '@nextui-org/react';
+import {Button, Divider, Link, Tooltip} from '@nextui-org/react';
 import {faQq} from '@fortawesome/free-brands-svg-icons';
 
 import Loading from '@/loading';
 import FontAwesomeIconLink from '@/components/fontAwesomeIconLink';
+import QRCode from '@/components/qrCode';
 import Xiaohongshu from '@/components/xiaohongshu';
 
 import {siteConfig} from '@/configs';
@@ -35,20 +36,11 @@ export default memo(function Home() {
 					<Tooltip
 						showArrow
 						content={
-							<div className="flex select-none flex-col items-center">
-								<Image
-									isBlurred
-									alt="QQ加群二维码"
-									draggable={false}
-									src="/assets/QQ.png"
-									className="h-32 dark:invert"
-								/>
-								<p className="text-xs">
-									分享经验、交流心得
-									<br />
-									提出建议、反馈问题
-								</p>
-							</div>
+							<QRCode alt="QQ加群二维码" src="/assets/QQ.png">
+								分享经验、交流心得
+								<br />
+								提出建议、反馈问题
+							</QRCode>
 						}
 						classNames={{
 							content: 'px-1',
@@ -65,20 +57,11 @@ export default memo(function Home() {
 					<Tooltip
 						showArrow
 						content={
-							<div className="flex select-none flex-col items-center">
-								<Image
-									isBlurred
-									alt="小红书加群二维码"
-									draggable={false}
-									src="/assets/Xiaohongshu.png"
-									className="h-32 dark:invert"
-								/>
-								<p className="text-xs">
-									分享经验、交流心得
-									<br />
-									提出建议、反馈问题
-								</p>
-							</div>
+							<QRCode alt="小红书加群二维码" src="/assets/Xiaohongshu.png">
+								分享经验、交流心得
+								<br />
+								提出建议、反馈问题
+							</QRCode>
 						}
 						classNames={{
 							content: 'px-1',

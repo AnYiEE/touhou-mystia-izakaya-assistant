@@ -1,10 +1,11 @@
 import {memo} from 'react';
 
-import {Image, Link, Tooltip} from '@nextui-org/react';
+import {Link, Tooltip} from '@nextui-org/react';
 
 import ChangeLog from './changeLog';
 import KnownIssue from './knownIssue';
 import H1 from '@/components/h1';
+import QRCode from '@/components/qrCode';
 
 import {siteConfig} from '@/configs';
 
@@ -69,16 +70,9 @@ export default memo(function About() {
 					<Tooltip
 						showArrow
 						content={
-							<div className="flex select-none flex-col items-center">
-								<Image
-									isBlurred
-									alt="支付宝收款码"
-									draggable={false}
-									src="/assets/Alipay.png"
-									className="h-32 dark:invert"
-								/>
-								<p className="text-xs">支付宝收款码</p>
-							</div>
+							<QRCode alt="支付宝收款码" src="/assets/Alipay.png">
+								支付宝收款码
+							</QRCode>
 						}
 						classNames={{
 							content: 'px-1',
