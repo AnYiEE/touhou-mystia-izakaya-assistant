@@ -39,7 +39,7 @@ import type {ITableColumn, ITableSortDescriptor, TBeverageWithSuitability, TBeve
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
 import {numberSort, pinyinSort, processPinyin} from '@/utils';
 
-type TTableColumnKey = 'beverage' | 'price' | 'suitability' | 'action';
+export type TTableColumnKey = 'beverage' | 'price' | 'suitability' | 'action';
 export type TTableColumns = ITableColumn<TTableColumnKey>[];
 
 type TTableSortKey = Exclude<TTableColumnKey, 'action'>;

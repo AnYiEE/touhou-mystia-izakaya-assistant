@@ -38,7 +38,7 @@ interface IUnknownItemProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'class
 	size?: number;
 }
 
-const UnknownItem = memo(
+export const UnknownItem = memo(
 	forwardRef<HTMLSpanElement | null, IUnknownItemProps>(function UnknownItem({className, title, size = 2}, ref) {
 		const remString = `${size}rem`;
 

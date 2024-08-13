@@ -6,20 +6,17 @@ import {Badge, Button, ScrollShadow} from '@nextui-org/react';
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import Sprite from '@/components/sprite';
 
-import type {IIngredientsTabStyle} from './types';
+import {type IIngredientsTabContentProps} from '@/(pages)/customer-rare/ingredientsTabContent';
 import {type TIngredientNames} from '@/data';
 import type {TRecipeTag} from '@/data/types';
-import type {TIngredientInstance} from '@/methods/food/types';
 import {useCustomerNormalStore, useGlobalStore} from '@/stores';
 import {checkA11yConfirmKey, intersection} from '@/utils';
 
-interface IProps {
-	ingredientsTabStyle: IIngredientsTabStyle;
-	sortedData: TIngredientInstance['data'];
-}
-
 export default memo(
-	forwardRef<HTMLDivElement | null, IProps>(function IngredientsTabContent({ingredientsTabStyle, sortedData}, ref) {
+	forwardRef<HTMLDivElement | null, IIngredientsTabContentProps>(function IngredientsTabContent(
+		{ingredientsTabStyle, sortedData},
+		ref
+	) {
 		const customerStore = useCustomerNormalStore();
 		const globalStore = useGlobalStore();
 

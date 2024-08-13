@@ -34,17 +34,14 @@ import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 
+import {type TTableColumnKey, type TTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
 import {recipeTableColumns as tableColumns} from './constants';
-import type {ITableColumn, ITableSortDescriptor, TRecipeWithSuitability, TRecipesWithSuitability} from './types';
+import type {TRecipeWithSuitability, TRecipesWithSuitability} from './types';
 import {CUSTOMER_NORMAL_TAG_STYLE} from '@/constants';
 import {useCustomerNormalStore, useGlobalStore} from '@/stores';
 import {numberSort, pinyinSort, processPinyin} from '@/utils';
 
-type TTableColumnKey = 'recipe' | 'cooker' | 'ingredient' | 'price' | 'suitability' | 'time' | 'action';
-export type TTableColumns = ITableColumn<TTableColumnKey>[];
-
-type TTableSortKey = Exclude<TTableColumnKey, 'cooker' | 'ingredient' | 'action'>;
-export type TTableSortDescriptor = ITableSortDescriptor<TTableSortKey>;
+export type {TTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
 
 interface IProps {}
 

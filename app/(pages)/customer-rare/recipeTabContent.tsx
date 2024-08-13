@@ -39,7 +39,7 @@ import type {ITableColumn, ITableSortDescriptor, TRecipeWithSuitability, TRecipe
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
 import {numberSort, pinyinSort, processPinyin} from '@/utils';
 
-type TTableColumnKey = 'recipe' | 'cooker' | 'ingredient' | 'price' | 'suitability' | 'time' | 'action';
+export type TTableColumnKey = 'recipe' | 'cooker' | 'ingredient' | 'price' | 'suitability' | 'time' | 'action';
 export type TTableColumns = ITableColumn<TTableColumnKey>[];
 
 type TTableSortKey = Exclude<TTableColumnKey, 'cooker' | 'ingredient' | 'action'>;

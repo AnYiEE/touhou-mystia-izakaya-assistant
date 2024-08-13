@@ -1,7 +1,40 @@
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faChevronDown, faChevronUp} from '@fortawesome/free-solid-svg-icons';
+
 import {type TTableColumns as TBeverageTableColumns} from './beverageTabContent';
 import {type TTableColumns as TRecipeTableColumns} from './recipeTabContent';
-import type {ICustomerRatingMap} from './types';
+import type {ICustomerRatingMap, ICustomerTabStyleMap, IIngredientsTabStyleMap} from './types';
 import {CUSTOMER_RARE_TAG_STYLE, CUSTOMER_SPECIAL_TAG_STYLE} from '@/constants';
+
+export const customerTabStyleMap = {
+	collapse: {
+		ariaLabel: '展开',
+		buttonNode: <FontAwesomeIcon icon={faChevronDown} size="sm" />,
+		contentClassName: 'h-[calc(50vh-9.25rem)] min-h-[20vw]',
+		sideButtonGroupClassName: 'hidden xl:block',
+	},
+	expand: {
+		ariaLabel: '收起',
+		buttonNode: <FontAwesomeIcon icon={faChevronUp} size="sm" />,
+		contentClassName: 'h-[50vmax]',
+		sideButtonGroupClassName: '',
+	},
+} as const satisfies ICustomerTabStyleMap;
+
+export const ingredientTabStyleMap = {
+	collapse: {
+		ariaLabel: '展开',
+		buttonNode: <FontAwesomeIcon icon={faChevronDown} size="sm" />,
+		contentClassName: 'h-[calc(50vh-9.25rem)] min-h-[20vw]',
+		sideButtonGroupClassName: 'hidden xl:block',
+	},
+	expand: {
+		ariaLabel: '收起',
+		buttonNode: <FontAwesomeIcon icon={faChevronUp} size="sm" />,
+		contentClassName: 'h-[50vmax]',
+		sideButtonGroupClassName: '',
+	},
+} as const satisfies IIngredientsTabStyleMap;
 
 export const customerTagStyleMap = {
 	customer_rare: CUSTOMER_RARE_TAG_STYLE,

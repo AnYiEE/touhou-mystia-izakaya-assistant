@@ -218,3 +218,5 @@ export default memo(
 		);
 	})
 );
+
+export type {IProps as IIngredientsTabContentProps};

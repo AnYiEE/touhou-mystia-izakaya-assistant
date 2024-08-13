@@ -6,8 +6,6 @@ import {twMerge} from 'tailwind-merge';
 import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
 
 import {Tab, Tabs} from '@nextui-org/react';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faChevronDown, faChevronUp} from '@fortawesome/free-solid-svg-icons';
 
 import BeverageTabContent from './beverageTabContent';
 import CustomerCard from './customerCard';
@@ -23,38 +21,8 @@ import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterI
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
-import type {ICustomerTabStyleMap, IIngredientsTabStyleMap} from './types';
+import {customerTabStyleMap, ingredientTabStyleMap} from './constants';
 import {useCustomerRareStore, useGlobalStore} from '@/stores';
-
-const customerTabStyleMap = {
-	collapse: {
-		ariaLabel: '展开',
-		buttonNode: <FontAwesomeIcon icon={faChevronDown} size="sm" />,
-		contentClassName: 'h-[calc(50vh-9.25rem)] min-h-[20vw]',
-		sideButtonGroupClassName: 'hidden xl:block',
-	},
-	expand: {
-		ariaLabel: '收起',
-		buttonNode: <FontAwesomeIcon icon={faChevronUp} size="sm" />,
-		contentClassName: 'h-[50vmax]',
-		sideButtonGroupClassName: '',
-	},
-} as const satisfies ICustomerTabStyleMap;
-
-const ingredientTabStyleMap = {
-	collapse: {
-		ariaLabel: '展开',
-		buttonNode: <FontAwesomeIcon icon={faChevronDown} size="sm" />,
-		contentClassName: 'h-[calc(50vh-9.25rem)] min-h-[20vw]',
-		sideButtonGroupClassName: 'hidden xl:block',
-	},
-	expand: {
-		ariaLabel: '收起',
-		buttonNode: <FontAwesomeIcon icon={faChevronUp} size="sm" />,
-		contentClassName: 'h-[50vmax]',
-		sideButtonGroupClassName: '',
-	},
-} as const satisfies IIngredientsTabStyleMap;
 
 export default memo(function CustomerRare() {
 	const customerStore = useCustomerRareStore();

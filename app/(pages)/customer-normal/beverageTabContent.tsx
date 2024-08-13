@@ -34,17 +34,14 @@ import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 
+import {type TTableColumnKey, type TTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
 import {beverageTableColumns as tableColumns} from './constants';
-import type {ITableColumn, ITableSortDescriptor, TBeverageWithSuitability, TBeveragesWithSuitability} from './types';
+import type {TBeverageWithSuitability, TBeveragesWithSuitability} from './types';
 import {CUSTOMER_NORMAL_TAG_STYLE} from '@/constants';
 import {useCustomerNormalStore, useGlobalStore} from '@/stores';
 import {numberSort, pinyinSort, processPinyin} from '@/utils';
 
-type TTableColumnKey = 'beverage' | 'price' | 'suitability' | 'action';
-export type TTableColumns = ITableColumn<TTableColumnKey>[];
-
-type TTableSortKey = Exclude<TTableColumnKey, 'action'>;
-export type TTableSortDescriptor = ITableSortDescriptor<TTableSortKey>;
+export type {TTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
 
 interface IProps {}
 

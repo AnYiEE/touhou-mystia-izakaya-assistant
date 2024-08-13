@@ -1,63 +1,18 @@
-import {type HTMLAttributes, forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {twJoin, twMerge} from 'tailwind-merge';
+import {forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {twJoin} from 'tailwind-merge';
 
 import {Button, Card, Tooltip} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-icons';
+import {faCircleXmark} from '@fortawesome/free-solid-svg-icons';
 
+import {Plus, UnknownItem} from '@/(pages)/customer-rare/resultCard';
 import Placeholder from './placeholder';
 import Sprite from '@/components/sprite';
 
 import {useCustomerNormalStore} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
-interface IPlusProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'className'> {
-	size?: number;
-}
-
-export const Plus = memo(
-	forwardRef<HTMLSpanElement | null, IPlusProps>(function Plus({className, size = 1}, ref) {
-		const remString = `${size}rem`;
-
-		return (
-			<span
-				className={twMerge('mx-1 text-center leading-none', className)}
-				style={{
-					fontSize: remString,
-					width: remString,
-				}}
-				ref={ref}
-			>
-				<FontAwesomeIcon icon={faPlus} />
-			</span>
-		);
-	})
-);
-
-interface IUnknownItemProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'className' | 'title'> {
-	size?: number;
-}
-
-const UnknownItem = memo(
-	forwardRef<HTMLSpanElement | null, IUnknownItemProps>(function UnknownItem({className, title, size = 2}, ref) {
-		const remString = `${size}rem`;
-
-		return (
-			<span
-				role="img"
-				title={title}
-				className={twMerge('outline-3 inline-block text-center leading-none outline-double', className)}
-				style={{
-					fontSize: remString,
-					width: remString,
-				}}
-				ref={ref}
-			>
-				<FontAwesomeIcon icon={faQuestion} className="rotate-12" />
-			</span>
-		);
-	})
-);
+export {Plus} from '@/(pages)/customer-rare/resultCard';
 
 const IngredientList = memo(function IngredientsList() {
 	const store = useCustomerNormalStore();
