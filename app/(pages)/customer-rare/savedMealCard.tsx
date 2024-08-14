@@ -13,7 +13,7 @@ import Tags from '@/components/tags';
 import {customerRatingColorMap} from './constants';
 import {BEVERAGE_TAG_STYLE, RECIPE_TAG_STYLE} from '@/constants';
 import {type TCustomerNames, type TTags} from '@/data';
-import {useCustomerRareStore} from '@/stores';
+import {useCustomerRareStore, useGlobalStore} from '@/stores';
 
 const customerTagsCache = new Map<TCustomerNames, Set<TTags>>();
 
@@ -21,12 +21,15 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(_props, ref) {
-		const store = useCustomerRareStore();
+		const customerStore = useCustomerRareStore();
+		const globalStore = useGlobalStore();
 
-		const currentCustomer = store.shared.customer.data.use();
-		const savedMeal = store.persistence.meals.use();
+		const currentCustomer = customerStore.shared.customer.data.use();
+		const savedMeal = customerStore.persistence.meals.use();
 
-		const instance_recipe = store.instances.recipe.get();
+		const currentGlobalPopular = globalStore.persistence.popular.use();
+
+		const instance_recipe = customerStore.instances.recipe.get();
 
 		if (!currentCustomer) {
 			return null;
@@ -42,8 +45,8 @@ export default memo(
 		if (customerTagsCache.has(currentCustomerName)) {
 			customerTags = customerTagsCache.get(currentCustomerName);
 		} else {
-			const instance_rare = store.instances.customer_rare.get();
-			const instance_special = store.instances.customer_special.get();
+			const instance_rare = customerStore.instances.customer_rare.get();
+			const instance_special = customerStore.instances.customer_special.get();
 			const instance_customer = (
 				currentCustomerTarget === 'customer_rare' ? instance_rare : instance_special
 			) as typeof instance_rare;
@@ -78,13 +81,34 @@ export default memo(
 								<div className="flex flex-col items-center gap-4 md:flex-row xl:gap-3">
 									<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap xl:gap-2">
 										{(() => {
+											const isPopularTagMatched =
+												popular.tag !== null &&
+												(customerTags.has(popular.tag) ||
+													(popular.isNegative && customerTags.has('流行厌恶')) ||
+													(!popular.isNegative && customerTags.has('流行喜爱')));
+											const isPopularTagOutdated =
+												isPopularTagMatched &&
+												(popular.isNegative !== currentGlobalPopular.isNegative ||
+													popular.tag !== currentGlobalPopular.tag);
 											const content = (
 												<span className="whitespace-nowrap [&>span]:after:mx-1 [&>span]:after:content-['•'] last:[&>span]:after:hidden">
 													<span>{rating}</span>
-													{popular.tag && customerTags.has(popular.tag) && (
+													{isPopularTagMatched && (
 														<>
-															<span>{popular.isNegative ? '流行厌恶' : '流行喜爱'}</span>
-															<span>{popular.tag}</span>
+															<span
+																className={twJoin(
+																	isPopularTagOutdated && 'opacity-40 dark:opacity-60'
+																)}
+															>
+																{popular.isNegative ? '流行厌恶' : '流行喜爱'}
+															</span>
+															<span
+																className={twJoin(
+																	isPopularTagOutdated && 'opacity-40 dark:opacity-60'
+																)}
+															>
+																{popular.tag}
+															</span>
 														</>
 													)}
 												</span>
@@ -143,7 +167,11 @@ export default memo(
 																	radius="sm"
 																	role="banner"
 																	classNames={{
-																		base: 'h-5 w-44 ring-offset-0',
+																		base: twJoin(
+																			'h-5 w-44 ring-offset-0',
+																			isPopularTagOutdated &&
+																				'opacity-60 dark:opacity-40'
+																		),
 																	}}
 																/>
 															</PopoverTrigger>
@@ -269,7 +297,7 @@ export default memo(
 											size="sm"
 											variant="flat"
 											onPress={() => {
-												store.persistence.meals[currentCustomerName]?.set(
+												customerStore.persistence.meals[currentCustomerName]?.set(
 													savedCustomerMeal.filter((meal) => meal.index !== mealIndex)
 												);
 												trackEvent(
@@ -288,12 +316,10 @@ export default memo(
 											size="sm"
 											variant="flat"
 											onPress={() => {
-												store.shared.customer.hasMystiaCooker.set(hasMystiaCooker);
-												store.shared.customer.order.set(order);
-												store.shared.customer.popular.set(popular);
-												store.shared.customer.rating.set(rating);
-												store.shared.beverage.name.set(beverage);
-												store.shared.recipe.data.set({
+												customerStore.shared.customer.hasMystiaCooker.set(hasMystiaCooker);
+												customerStore.shared.customer.order.set(order);
+												customerStore.shared.beverage.name.set(beverage);
+												customerStore.shared.recipe.data.set({
 													extraIngredients,
 													name: recipe,
 												});
