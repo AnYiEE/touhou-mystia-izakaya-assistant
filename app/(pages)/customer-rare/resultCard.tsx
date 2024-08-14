@@ -200,12 +200,10 @@ export default memo(
 											target="cooker"
 											name={instance_recipe.getPropsByName(currentRecipe.name, 'cooker')}
 											size={2}
-											onClick={() => {
-												store.shared.customer.hasMystiaCooker.set((prev) => !prev);
-											}}
+											onClick={store.toggleMystiaCooker}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
-													store.shared.customer.hasMystiaCooker.set((prev) => !prev);
+													store.toggleMystiaCooker();
 												}
 											}}
 											role="button"

@@ -34,7 +34,6 @@ export default memo(function CustomerRare() {
 	}, []);
 
 	customerStore.shared.customer.data.onChange(() => {
-		customerStore.shared.customer.popular.set(globalStore.persistence.popular.get());
 		customerStore.refreshCustomerSelectedItems();
 		customerStore.refreshAllSelectedItems();
 	});
@@ -286,11 +285,7 @@ export default memo(function CustomerRare() {
 					fullWidth
 					size="sm"
 					selectedKey={selectedTabKey}
-					onSelectionChange={(key) => {
-						customerStore.shared.tab.set(key);
-						customerStore.shared.customer.filterVisibility.set(key === 'customer');
-						customerStore.shared.ingredient.filterVisibility.set(key === 'ingredient');
-					}}
+					onSelectionChange={customerStore.onTabSelectionChange}
 				>
 					<Tab key="customer" title="稀客" className="relative">
 						<CustomerTabContent customerTabStyle={customerTabStyle} sortedData={customerSortedData} />

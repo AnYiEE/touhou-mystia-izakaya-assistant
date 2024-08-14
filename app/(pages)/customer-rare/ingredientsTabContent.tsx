@@ -1,16 +1,14 @@
-import {forwardRef, memo, useCallback, useMemo} from 'react';
+import {forwardRef, memo, useMemo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
 import {Badge, Button, ScrollShadow} from '@nextui-org/react';
 
-import {TrackCategory, trackEvent} from '@/components/analytics';
 import Sprite from '@/components/sprite';
 
 import type {IIngredientsTabStyle} from './types';
-import {type TIngredientNames} from '@/data';
 import type {TRecipeTag} from '@/data/types';
 import type {TIngredientInstance} from '@/methods/food/types';
-import {useCustomerRareStore, useGlobalStore} from '@/stores';
+import {useCustomerRareStore} from '@/stores';
 import {checkA11yConfirmKey, intersection} from '@/utils';
 
 interface IProps {
@@ -20,19 +18,16 @@ interface IProps {
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function IngredientsTabContent({ingredientsTabStyle, sortedData}, ref) {
-		const customerStore = useCustomerRareStore();
-		const globalStore = useGlobalStore();
+		const store = useCustomerRareStore();
 
-		const currentCustomer = customerStore.shared.customer.data.use();
-		const currentCustomerPopular = customerStore.shared.customer.popular.use();
-		const currentRecipeData = customerStore.shared.recipe.data.use();
+		const currentCustomer = store.shared.customer.data.use();
+		const currentCustomerPopular = store.shared.customer.popular.use();
+		const currentRecipeData = store.shared.recipe.data.use();
 
-		const currentGlobalPopular = globalStore.persistence.popular.use();
-
-		const instance_rare = customerStore.instances.customer_rare.get();
-		const instance_special = customerStore.instances.customer_special.get();
-		const instance_ingredient = customerStore.instances.ingredient.get();
-		const instance_recipe = customerStore.instances.recipe.get();
+		const instance_rare = store.instances.customer_rare.get();
+		const instance_special = store.instances.customer_special.get();
+		const instance_ingredient = store.instances.ingredient.get();
+		const instance_recipe = store.instances.recipe.get();
 
 		const currentRecipe = useMemo(
 			() => (currentRecipeData ? instance_recipe.getPropsByName(currentRecipeData.name) : null),
@@ -52,24 +47,6 @@ export default memo(
 		sortedData = useMemo(
 			() => sortedData.filter(({name}) => !darkIngredients.has(name)),
 			[darkIngredients, sortedData]
-		);
-
-		const handleSelect = useCallback(
-			(ingredient: TIngredientNames) => {
-				customerStore.shared.customer.popular.set(currentGlobalPopular);
-				customerStore.shared.recipe.data.set((prev) => {
-					if (prev && currentRecipe && currentRecipe.ingredients.length + prev.extraIngredients.length < 5) {
-						prev.extraIngredients.push(ingredient);
-					}
-				});
-				trackEvent(TrackCategory.Select, 'Ingredient', ingredient);
-			},
-			[
-				currentGlobalPopular,
-				currentRecipe,
-				customerStore.shared.customer.popular,
-				customerStore.shared.recipe.data,
-			]
 		);
 
 		if (!currentCustomer || !currentRecipeData) {
@@ -172,11 +149,11 @@ export default memo(
 								<div
 									key={index}
 									onClick={() => {
-										handleSelect(name);
+										store.onIngredientSelectedChange(name);
 									}}
 									onKeyDown={(event) => {
 										if (checkA11yConfirmKey(event)) {
-											handleSelect(name);
+											store.onIngredientSelectedChange(name);
 										}
 									}}
 									role="button"
@@ -225,7 +202,7 @@ export default memo(
 						isIconOnly
 						size="sm"
 						variant="flat"
-						onPress={customerStore.toggleIngredientTabVisibilityState}
+						onPress={store.toggleIngredientTabVisibilityState}
 						aria-label={ingredientsTabStyle.ariaLabel}
 						className="h-4 w-4/5 text-default-500"
 					>

@@ -28,7 +28,6 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faChevronDown, faMagnifyingGlass, faPlus, faTags} from '@fortawesome/free-solid-svg-icons';
 
 import TagGroup from './tagGroup';
-import {TrackCategory, trackEvent} from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
@@ -38,7 +37,7 @@ import {type TTableColumnKey, type TTableSortDescriptor} from '@/(pages)/custome
 import {beverageTableColumns as tableColumns} from './constants';
 import type {TBeverageWithSuitability, TBeveragesWithSuitability} from './types';
 import {CUSTOMER_NORMAL_TAG_STYLE} from '@/constants';
-import {useCustomerNormalStore, useGlobalStore} from '@/stores';
+import {useCustomerNormalStore} from '@/stores';
 import {numberSort, pinyinSort, processPinyin} from '@/utils';
 
 export type {TTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
@@ -47,33 +46,30 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLTableElement | null, IProps>(function BeverageTabContent(_props, ref) {
-		const customerStore = useCustomerNormalStore();
-		const globalStore = useGlobalStore();
+		const store = useCustomerNormalStore();
 
-		const currentCustomerName = customerStore.shared.customer.name.use();
-		const selectedCustomerBeverageTags = customerStore.shared.customer.beverageTags.use();
+		const currentCustomerName = store.shared.customer.name.use();
+		const selectedCustomerBeverageTags = store.shared.customer.beverageTags.use();
 
-		const currentBeverageName = customerStore.shared.beverage.name.use();
-		const selectedDlcs = customerStore.shared.beverage.dlcs.use();
+		const currentBeverageName = store.shared.beverage.name.use();
+		const selectedDlcs = store.shared.beverage.dlcs.use();
 
-		const currentGlobalPopular = globalStore.persistence.popular.use();
+		const instance_beverage = store.instances.beverage.get();
+		const instance_customer = store.instances.customer.get();
 
-		const instance_beverage = customerStore.instances.beverage.get();
-		const instance_customer = customerStore.instances.customer.get();
+		const allBeverageNames = store.beverage.names.get();
+		const allBeverageDlcs = store.beverage.dlcs.get();
+		const allBeverageTags = store.beverage.tags.get();
 
-		const allBeverageNames = customerStore.beverage.names.get();
-		const allBeverageDlcs = customerStore.beverage.dlcs.get();
-		const allBeverageTags = customerStore.beverage.tags.get();
-
-		const searchValue = customerStore.shared.beverage.searchValue.use();
+		const searchValue = store.shared.beverage.searchValue.use();
 		const hasNameFilter = Boolean(searchValue);
 
-		const tableCurrentPage = customerStore.shared.beverage.page.use();
-		const tableRowsPerPage = customerStore.recipeTableRows.use();
-		const tableRowsPerPageNumber = customerStore.persistence.beverage.table.rows.use();
-		const tableSelectableRows = customerStore.shared.beverage.selectableRows.get();
-		const tableSortDescriptor = customerStore.shared.beverage.sortDescriptor.use();
-		const tableVisibleColumns = customerStore.beverageTableColumns.use();
+		const tableCurrentPage = store.shared.beverage.page.use();
+		const tableRowsPerPage = store.recipeTableRows.use();
+		const tableRowsPerPageNumber = store.persistence.beverage.table.rows.use();
+		const tableSelectableRows = store.shared.beverage.selectableRows.get();
+		const tableSortDescriptor = store.shared.beverage.sortDescriptor.use();
+		const tableVisibleColumns = store.beverageTableColumns.use();
 
 		const filteredData = useMemo(() => {
 			let clonedData = cloneDeep(instance_beverage.data) as TBeveragesWithSuitability;
@@ -241,9 +237,7 @@ export default memo(
 										size="sm"
 										variant="light"
 										onPress={() => {
-											customerStore.shared.customer.popular.set(currentGlobalPopular);
-											customerStore.shared.beverage.name.set(name);
-											trackEvent(TrackCategory.Select, 'Beverage', name);
+											store.onBeverageTableAction(name);
 										}}
 										aria-label="选择此项"
 									>
@@ -254,12 +248,7 @@ export default memo(
 						);
 				}
 			},
-			[
-				currentCustomerName,
-				currentGlobalPopular,
-				customerStore.shared.beverage.name,
-				customerStore.shared.customer.popular,
-			]
+			[currentCustomerName, store]
 		);
 
 		const tableToolbar = useMemo(
@@ -277,9 +266,9 @@ export default memo(
 									<FontAwesomeIcon icon={faMagnifyingGlass} className="pointer-events-none" />
 								}
 								variant="flat"
-								onClear={customerStore.clearBeverageTableSearchValue}
-								onInputChange={customerStore.onBeverageTableSearchValueChange}
-								onSelectionChange={customerStore.onBeverageTableSearchValueChange}
+								onClear={store.clearBeverageTableSearchValue}
+								onInputChange={store.onBeverageTableSearchValueChange}
+								onSelectionChange={store.onBeverageTableSearchValueChange}
 								aria-label="选择或输入酒水名称"
 								title="选择或输入酒水名称"
 							>
@@ -294,7 +283,7 @@ export default memo(
 								size="sm"
 								startContent={<FontAwesomeIcon icon={faTags} />}
 								variant="flat"
-								onSelectionChange={customerStore.onBeverageTableSelectedTagsChange}
+								onSelectionChange={store.onBeverageTableSelectedTagsChange}
 								aria-label="选择目标酒水所包含的标签"
 								title="选择目标酒水所包含的标签"
 							>
@@ -319,7 +308,7 @@ export default memo(
 									selectedKeys={selectedDlcs}
 									selectionMode="multiple"
 									variant="flat"
-									onSelectionChange={customerStore.onBeverageTableSelectedDlcsChange}
+									onSelectionChange={store.onBeverageTableSelectedDlcsChange}
 									aria-label="选择特定DLC中的酒水"
 								>
 									{({value}) => (
@@ -347,7 +336,7 @@ export default memo(
 									selectedKeys={tableVisibleColumns}
 									selectionMode="multiple"
 									variant="flat"
-									onSelectionChange={customerStore.beverageTableColumns.set}
+									onSelectionChange={store.beverageTableColumns.set}
 									aria-label="选择表格所显示的列"
 								>
 									{tableColumns.map(({label: name, key}) => (
@@ -367,7 +356,7 @@ export default memo(
 								selectedKeys={tableRowsPerPage}
 								size="sm"
 								variant="flat"
-								onSelectionChange={customerStore.onBeverageTableRowsPerPageChange}
+								onSelectionChange={store.onBeverageTableRowsPerPageChange}
 								aria-label="选择表格每页最大行数"
 								title="选择表格每页最大行数"
 								classNames={{
@@ -391,16 +380,16 @@ export default memo(
 				allBeverageDlcs,
 				allBeverageNames,
 				allBeverageTags,
-				customerStore.beverageTableColumns.set,
-				customerStore.clearBeverageTableSearchValue,
-				customerStore.onBeverageTableRowsPerPageChange,
-				customerStore.onBeverageTableSearchValueChange,
-				customerStore.onBeverageTableSelectedDlcsChange,
-				customerStore.onBeverageTableSelectedTagsChange,
 				filteredData.length,
 				searchValue,
 				selectedCustomerBeverageTags,
 				selectedDlcs,
+				store.beverageTableColumns.set,
+				store.clearBeverageTableSearchValue,
+				store.onBeverageTableRowsPerPageChange,
+				store.onBeverageTableSearchValueChange,
+				store.onBeverageTableSelectedDlcsChange,
+				store.onBeverageTableSelectedTagsChange,
 				tableRowsPerPage,
 				tableSelectableRows,
 				tableVisibleColumns,
@@ -418,11 +407,11 @@ export default memo(
 						size="sm"
 						page={tableCurrentPage}
 						total={tableTotalPages}
-						onChange={customerStore.shared.beverage.page.set}
+						onChange={store.onBeverageTablePageChange}
 					/>
 				</div>
 			),
-			[customerStore.shared.beverage.page.set, tableCurrentPage, tableTotalPages]
+			[store.onBeverageTablePageChange, tableCurrentPage, tableTotalPages]
 		);
 
 		return (
@@ -436,7 +425,7 @@ export default memo(
 				topContent={tableToolbar}
 				topContentPlacement="outside"
 				onSortChange={(config) => {
-					customerStore.shared.beverage.sortDescriptor.set(config as TTableSortDescriptor);
+					store.onBeverageTableSortChange(config as TTableSortDescriptor);
 				}}
 				aria-label="酒水选择表格"
 				classNames={{

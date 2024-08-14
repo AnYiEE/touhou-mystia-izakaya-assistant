@@ -356,6 +356,13 @@ const customerRareStore = store(state, {
 			currentStore.shared.beverage.searchValue.set('');
 			currentStore.shared.beverage.page.set(1);
 		},
+		onBeverageTableAction(beverage: TBeverageNames) {
+			currentStore.shared.beverage.name.set(beverage);
+			trackEvent(TrackCategory.Select, 'Beverage', beverage);
+		},
+		onBeverageTablePageChange(page: number) {
+			currentStore.shared.beverage.page.set(page);
+		},
 		onBeverageTableRowsPerPageChange(rows: Selection) {
 			currentStore.beverageTableRows.set(rows);
 			currentStore.shared.beverage.page.set(1);
@@ -376,10 +383,40 @@ const customerRareStore = store(state, {
 			currentStore.shared.customer.beverageTags.set(tags as SelectionSet);
 			currentStore.shared.beverage.page.set(1);
 		},
+		onBeverageTableSortChange(config: TBeverageTableSortDescriptor) {
+			currentStore.shared.beverage.sortDescriptor.set(config);
+		},
+
+		onIngredientSelectedChange(ingredient: TIngredientNames) {
+			const recipeData = currentStore.shared.recipe.data.get();
+			let recipe: TRecipe | null = null;
+			if (recipeData) {
+				recipe = instance_recipe.getPropsByName(recipeData.name);
+			}
+			if (!recipe) {
+				return;
+			}
+			currentStore.shared.recipe.data.set((prev) => {
+				if (prev && recipe.ingredients.length + prev.extraIngredients.length < 5) {
+					prev.extraIngredients.push(ingredient);
+				}
+			});
+			trackEvent(TrackCategory.Select, 'Ingredient', ingredient);
+		},
 
 		clearRecipeTableSearchValue() {
 			currentStore.shared.recipe.searchValue.set('');
 			currentStore.shared.recipe.page.set(1);
+		},
+		onRecipeTableAction(recipe: TRecipeNames) {
+			currentStore.shared.recipe.data.set({
+				extraIngredients: [],
+				name: recipe,
+			});
+			trackEvent(TrackCategory.Select, 'Recipe', recipe);
+		},
+		onRecipeTablePageChange(page: number) {
+			currentStore.shared.recipe.page.set(page);
 		},
 		onRecipeTableRowsPerPageChange(rows: Selection) {
 			currentStore.recipeTableRows.set(rows);
@@ -404,6 +441,15 @@ const customerRareStore = store(state, {
 		onRecipeTableSelectedPositiveTagsChange(tags: Selection) {
 			currentStore.shared.customer.positiveTags.set(tags as SelectionSet);
 			currentStore.shared.recipe.page.set(1);
+		},
+		onRecipeTableSortChange(config: TRecipeTableSortDescriptor) {
+			currentStore.shared.recipe.sortDescriptor.set(config);
+		},
+
+		onTabSelectionChange(tab: Key) {
+			currentStore.shared.tab.set(tab as string);
+			currentStore.shared.customer.filterVisibility.set(tab === 'customer');
+			currentStore.shared.ingredient.filterVisibility.set(tab === 'ingredient');
 		},
 
 		evaluateMealResult() {
@@ -544,6 +590,9 @@ const customerRareStore = store(state, {
 					? TabVisibilityState.collapse
 					: TabVisibilityState.expand
 			);
+		},
+		toggleMystiaCooker() {
+			currentStore.shared.customer.hasMystiaCooker.set((prev) => !prev);
 		},
 	}));
 

@@ -28,7 +28,6 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faChevronDown, faMagnifyingGlass, faPlus, faTags} from '@fortawesome/free-solid-svg-icons';
 
 import TagGroup from './tagGroup';
-import {TrackCategory, trackEvent} from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
@@ -38,7 +37,7 @@ import {type TTableColumnKey, type TTableSortDescriptor} from '@/(pages)/custome
 import {recipeTableColumns as tableColumns} from './constants';
 import type {TRecipeWithSuitability, TRecipesWithSuitability} from './types';
 import {CUSTOMER_NORMAL_TAG_STYLE} from '@/constants';
-import {useCustomerNormalStore, useGlobalStore} from '@/stores';
+import {useCustomerNormalStore} from '@/stores';
 import {numberSort, pinyinSort, processPinyin} from '@/utils';
 
 export type {TTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
@@ -47,36 +46,33 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLTableElement | null, IProps>(function RecipeTabContent(_props, ref) {
-		const customerStore = useCustomerNormalStore();
-		const globalStore = useGlobalStore();
+		const store = useCustomerNormalStore();
 
-		const currentCustomerName = customerStore.shared.customer.name.use();
-		const currentCustomerPopular = customerStore.shared.customer.popular.use();
-		const selectedCustomerPositiveTags = customerStore.shared.customer.positiveTags.use();
+		const currentCustomerName = store.shared.customer.name.use();
+		const currentCustomerPopular = store.shared.customer.popular.use();
+		const selectedCustomerPositiveTags = store.shared.customer.positiveTags.use();
 
-		const currentRecipe = customerStore.shared.recipe.data.use();
-		const selectedDlcs = customerStore.shared.recipe.dlcs.use();
-		const selectedCookers = customerStore.shared.recipe.cookers.use();
+		const currentRecipe = store.shared.recipe.data.use();
+		const selectedDlcs = store.shared.recipe.dlcs.use();
+		const selectedCookers = store.shared.recipe.cookers.use();
 
-		const currentGlobalPopular = globalStore.persistence.popular.use();
+		const instance_customer = store.instances.customer.get();
+		const instance_recipe = store.instances.recipe.get();
 
-		const instance_customer = customerStore.instances.customer.get();
-		const instance_recipe = customerStore.instances.recipe.get();
+		const allRecipeDlcs = store.recipe.dlcs.get();
+		const allRecipeNames = store.recipe.names.get();
+		const allRecipeTags = store.recipe.positiveTags.get();
+		const allCookers = store.recipe.cookers.get();
 
-		const allRecipeDlcs = customerStore.recipe.dlcs.get();
-		const allRecipeNames = customerStore.recipe.names.get();
-		const allRecipeTags = customerStore.recipe.positiveTags.get();
-		const allCookers = customerStore.recipe.cookers.get();
-
-		const searchValue = customerStore.shared.recipe.searchValue.use();
+		const searchValue = store.shared.recipe.searchValue.use();
 		const hasNameFilter = Boolean(searchValue);
 
-		const tableCurrentPage = customerStore.shared.recipe.page.use();
-		const tableRowsPerPage = customerStore.recipeTableRows.use();
-		const tableRowsPerPageNumber = customerStore.persistence.recipe.table.rows.use();
-		const tableSelectableRows = customerStore.shared.recipe.selectableRows.get();
-		const tableSortDescriptor = customerStore.shared.recipe.sortDescriptor.use();
-		const tableVisibleColumns = customerStore.recipeTableColumns.use();
+		const tableCurrentPage = store.shared.recipe.page.use();
+		const tableRowsPerPage = store.recipeTableRows.use();
+		const tableRowsPerPageNumber = store.persistence.recipe.table.rows.use();
+		const tableSelectableRows = store.shared.recipe.selectableRows.get();
+		const tableSortDescriptor = store.shared.recipe.sortDescriptor.use();
+		const tableVisibleColumns = store.recipeTableColumns.use();
 
 		const filteredData = useMemo(() => {
 			let clonedData = cloneDeep(instance_recipe.data) as TRecipesWithSuitability;
@@ -322,12 +318,7 @@ export default memo(
 										size="sm"
 										variant="light"
 										onPress={() => {
-											customerStore.shared.customer.popular.set(currentGlobalPopular);
-											customerStore.shared.recipe.data.set({
-												extraIngredients: [],
-												name,
-											});
-											trackEvent(TrackCategory.Select, 'Recipe', name);
+											store.onRecipeTableAction(name);
 										}}
 										aria-label="选择此项"
 									>
@@ -338,14 +329,7 @@ export default memo(
 						);
 				}
 			},
-			[
-				currentCustomerName,
-				instance_recipe,
-				currentCustomerPopular,
-				customerStore.shared.customer.popular,
-				customerStore.shared.recipe.data,
-				currentGlobalPopular,
-			]
+			[currentCustomerName, currentCustomerPopular, instance_recipe, store]
 		);
 
 		const tableToolbar = useMemo(
@@ -363,9 +347,9 @@ export default memo(
 									<FontAwesomeIcon icon={faMagnifyingGlass} className="pointer-events-none" />
 								}
 								variant="flat"
-								onClear={customerStore.clearRecipeTableSearchValue}
-								onInputChange={customerStore.onRecipeTableSearchValueChange}
-								onSelectionChange={customerStore.onRecipeTableSearchValueChange}
+								onClear={store.clearRecipeTableSearchValue}
+								onInputChange={store.onRecipeTableSearchValueChange}
+								onSelectionChange={store.onRecipeTableSearchValueChange}
 								aria-label="选择或输入料理名称"
 								title="选择或输入料理名称"
 							>
@@ -380,7 +364,7 @@ export default memo(
 								size="sm"
 								startContent={<FontAwesomeIcon icon={faTags} />}
 								variant="flat"
-								onSelectionChange={customerStore.onRecipeTableSelectedPositiveTagsChange}
+								onSelectionChange={store.onRecipeTableSelectedPositiveTagsChange}
 								aria-label="选择目标料理所包含的标签"
 								title="选择目标料理所包含的标签"
 							>
@@ -405,7 +389,7 @@ export default memo(
 									selectedKeys={selectedCookers}
 									selectionMode="multiple"
 									variant="flat"
-									onSelectionChange={customerStore.onRecipeTableSelectedCookersChange}
+									onSelectionChange={store.onRecipeTableSelectedCookersChange}
 									aria-label="选择目标料理所使用的厨具"
 								>
 									{({value}) => (
@@ -435,7 +419,7 @@ export default memo(
 									selectedKeys={selectedDlcs}
 									selectionMode="multiple"
 									variant="flat"
-									onSelectionChange={customerStore.onRecipeTableSelectedDlcsChange}
+									onSelectionChange={store.onRecipeTableSelectedDlcsChange}
 									aria-label="选择特定DLC中的料理"
 								>
 									{({value}) => (
@@ -463,7 +447,7 @@ export default memo(
 									selectedKeys={tableVisibleColumns}
 									selectionMode="multiple"
 									variant="flat"
-									onSelectionChange={customerStore.recipeTableColumns.set}
+									onSelectionChange={store.recipeTableColumns.set}
 									aria-label="选择表格所显示的列"
 								>
 									{tableColumns.map(({label: name, key}) => (
@@ -483,7 +467,7 @@ export default memo(
 								selectedKeys={tableRowsPerPage}
 								size="sm"
 								variant="flat"
-								onSelectionChange={customerStore.onRecipeTableRowsPerPageChange}
+								onSelectionChange={store.onRecipeTableRowsPerPageChange}
 								aria-label="选择表格每页最大行数"
 								title="选择表格每页最大行数"
 								classNames={{
@@ -508,18 +492,18 @@ export default memo(
 				allRecipeDlcs,
 				allRecipeNames,
 				allRecipeTags,
-				customerStore.clearRecipeTableSearchValue,
-				customerStore.onRecipeTableRowsPerPageChange,
-				customerStore.onRecipeTableSearchValueChange,
-				customerStore.onRecipeTableSelectedCookersChange,
-				customerStore.onRecipeTableSelectedDlcsChange,
-				customerStore.onRecipeTableSelectedPositiveTagsChange,
-				customerStore.recipeTableColumns.set,
 				filteredData.length,
 				searchValue,
 				selectedCookers,
 				selectedCustomerPositiveTags,
 				selectedDlcs,
+				store.clearRecipeTableSearchValue,
+				store.onRecipeTableRowsPerPageChange,
+				store.onRecipeTableSearchValueChange,
+				store.onRecipeTableSelectedCookersChange,
+				store.onRecipeTableSelectedDlcsChange,
+				store.onRecipeTableSelectedPositiveTagsChange,
+				store.recipeTableColumns.set,
 				tableRowsPerPage,
 				tableSelectableRows,
 				tableVisibleColumns,
@@ -537,11 +521,11 @@ export default memo(
 						size="sm"
 						page={tableCurrentPage}
 						total={tableTotalPages}
-						onChange={customerStore.shared.recipe.page.set}
+						onChange={store.onRecipeTablePageChange}
 					/>
 				</div>
 			),
-			[customerStore.shared.recipe.page.set, tableCurrentPage, tableTotalPages]
+			[store.onRecipeTablePageChange, tableCurrentPage, tableTotalPages]
 		);
 
 		return (
@@ -555,7 +539,7 @@ export default memo(
 				topContent={tableToolbar}
 				topContentPlacement="outside"
 				onSortChange={(config) => {
-					customerStore.shared.recipe.sortDescriptor.set(config as TTableSortDescriptor);
+					store.onRecipeTableSortChange(config as TTableSortDescriptor);
 				}}
 				aria-label="料理选择表格"
 				classNames={{

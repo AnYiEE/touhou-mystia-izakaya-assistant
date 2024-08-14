@@ -42,7 +42,6 @@ export default memo(
 		const currentBeverageName = customerStore.shared.beverage.name.use();
 		const currentRecipe = customerStore.shared.recipe.data.use();
 
-		const currentGlobalPopular = globalStore.persistence.popular.use();
 		const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
 
 		const instance_beverage = customerStore.instances.beverage.get();
@@ -273,7 +272,6 @@ export default memo(
 								icon={faArrowsRotate}
 								variant="light"
 								onPress={() => {
-									customerStore.shared.customer.popular.set(currentGlobalPopular);
 									customerStore.refreshCustomerSelectedItems();
 									trackEvent(TrackCategory.Click, 'Reset Button', currentCustomerName);
 								}}
