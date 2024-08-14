@@ -73,6 +73,7 @@ export default memo(function ChangeLog() {
 			<H2>v0.7</H2>
 			<Ul>
 				<li>新增：设置页面。</li>
+				<li>修复：顾客套餐评级逻辑。</li>
 			</Ul>
 		</>
 	);

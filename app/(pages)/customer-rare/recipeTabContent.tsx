@@ -115,8 +115,8 @@ export default memo(
 					positiveTags: matchedPositiveTags,
 				} = instance_recipe.getCustomerSuitability(
 					recipeTagsWithPopular,
-					customerPositiveTags,
-					customerNegativeTags
+					customerNegativeTags,
+					customerPositiveTags
 				);
 
 				return {

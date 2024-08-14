@@ -50,7 +50,9 @@ export function evaluateMeal({
 	}
 
 	if (currentCustomerPopularTag) {
-		extraScore += Number(currentExtraTags.includes(currentCustomerPopularTag));
+		extraScore +=
+			Number(currentRecipe.positiveTags.includes(currentCustomerPopularTag)) +
+			Number(currentExtraTags.includes(currentCustomerPopularTag));
 	}
 
 	const originalIngredientsLength = currentRecipe.ingredients.length;

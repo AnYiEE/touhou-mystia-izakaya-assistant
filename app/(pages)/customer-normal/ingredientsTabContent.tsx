@@ -125,21 +125,39 @@ export default memo(
 							let scoreChange = instance_recipe.getIngredientScoreChange(
 								before,
 								after,
-								customerPositiveTags,
-								customerNegativeTags
+								customerNegativeTags,
+								customerPositiveTags
 							);
-							if (
-								(customerNegativeTags as TRecipeTag[]).includes('大份') &&
-								currentRecipe.ingredients.length + extraIngredients.length === 4
-							) {
-								scoreChange -= 1;
-							}
-							if (
-								(customerPositiveTags as TRecipeTag[]).includes('大份') &&
-								currentRecipe.ingredients.length + extraIngredients.length === 4
-							) {
-								scoreChange += 1;
-							}
+							const isLargePartitionTagNext =
+								currentRecipe.ingredients.length + extraIngredients.length === 4;
+							scoreChange -= Number(
+								isLargePartitionTagNext && (customerNegativeTags as TRecipeTag[]).includes('大份')
+							);
+							scoreChange += Number(
+								isLargePartitionTagNext && (customerPositiveTags as TRecipeTag[]).includes('大份')
+							);
+							const shouldCalculateLargePartitionTag =
+								isLargePartitionTagNext && currentCustomerPopular.tag === '大份';
+							scoreChange -= Number(
+								shouldCalculateLargePartitionTag &&
+									(customerNegativeTags as TRecipeTag[]).includes('流行厌恶') &&
+									currentCustomerPopular.isNegative
+							);
+							scoreChange -= Number(
+								shouldCalculateLargePartitionTag &&
+									(customerNegativeTags as TRecipeTag[]).includes('流行喜爱') &&
+									!currentCustomerPopular.isNegative
+							);
+							scoreChange += Number(
+								shouldCalculateLargePartitionTag &&
+									(customerPositiveTags as TRecipeTag[]).includes('流行厌恶') &&
+									currentCustomerPopular.isNegative
+							);
+							scoreChange += Number(
+								shouldCalculateLargePartitionTag &&
+									(customerPositiveTags as TRecipeTag[]).includes('流行喜爱') &&
+									!currentCustomerPopular.isNegative
+							);
 							return (
 								<div
 									key={index}

@@ -70,11 +70,11 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 
 	public getCustomerSuitability(
 		recipeTags: TRecipeTag[],
-		customerPositiveTags: TRecipeTag[],
-		customerNegativeTags: TRecipeTag[]
+		customerNegativeTags: TRecipeTag[],
+		customerPositiveTags: TRecipeTag[]
 	) {
-		const {commonTags: positiveTags, count: positiveCount} = this.getCommonTags(recipeTags, customerPositiveTags);
 		const {commonTags: negativeTags, count: negativeCount} = this.getCommonTags(recipeTags, customerNegativeTags);
+		const {commonTags: positiveTags, count: positiveCount} = this.getCommonTags(recipeTags, customerPositiveTags);
 
 		return {
 			negativeTags,
@@ -85,18 +85,14 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 
 	private calculateScore(
 		recipePositiveTags: TRecipeTag[],
-		customerPositiveTags: TRecipeTag[],
-		customerNegativeTags: TRecipeTag[]
+		customerNegativeTags: TRecipeTag[],
+		customerPositiveTags: TRecipeTag[]
 	) {
 		let score = 0;
 
 		recipePositiveTags.forEach((tag) => {
-			if (customerPositiveTags.includes(tag)) {
-				score += 1;
-			}
-			if (customerNegativeTags.includes(tag)) {
-				score -= 1;
-			}
+			score -= Number(customerNegativeTags.includes(tag));
+			score += Number(customerPositiveTags.includes(tag));
 		});
 
 		return score;
@@ -105,11 +101,11 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 	public getIngredientScoreChange(
 		oldRecipePositiveTags: TRecipeTag[],
 		newRecipePositiveTags: TRecipeTag[],
-		customerPositiveTags: TRecipeTag[],
-		customerNegativeTags: TRecipeTag[]
+		customerNegativeTags: TRecipeTag[],
+		customerPositiveTags: TRecipeTag[]
 	) {
-		const originalScore = this.calculateScore(oldRecipePositiveTags, customerPositiveTags, customerNegativeTags);
-		const newScore = this.calculateScore(newRecipePositiveTags, customerPositiveTags, customerNegativeTags);
+		const originalScore = this.calculateScore(oldRecipePositiveTags, customerNegativeTags, customerPositiveTags);
+		const newScore = this.calculateScore(newRecipePositiveTags, customerNegativeTags, customerPositiveTags);
 
 		return newScore - originalScore;
 	}
