@@ -1,7 +1,7 @@
 'use client';
 
 import {memo, useCallback, useEffect, useMemo} from 'react';
-import {twMerge} from 'tailwind-merge';
+import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
 
@@ -263,7 +263,12 @@ export default memo(function CustomerRare() {
 	}
 
 	return (
-		<div className="grid h-full grid-cols-1 justify-items-center gap-4 md:flex md:flex-col-reverse md:justify-end xl:grid xl:grid-cols-2">
+		<div
+			className={twJoin(
+				'grid h-full grid-cols-1 justify-items-center gap-4 xl:grid xl:grid-cols-2',
+				currentCustomerData && 'md:flex md:flex-col-reverse md:justify-end'
+			)}
+		>
 			<div className="w-full">
 				<Tabs
 					fullWidth
@@ -289,7 +294,7 @@ export default memo(function CustomerRare() {
 				</Tabs>
 			</div>
 
-			<div className="flex w-full flex-col gap-4 xl:min-h-[calc(100vh-6.75rem)]">
+			<div className="flex w-full basis-full flex-col gap-4 xl:min-h-[calc(100vh-6.75rem)]">
 				{currentCustomerData ? (
 					<>
 						<CustomerCard />
@@ -298,7 +303,14 @@ export default memo(function CustomerRare() {
 					</>
 				) : (
 					<Placeholder className="pb-24 pt-16 md:pb-8 md:pt-0 xl:pb-[6.25rem] xl:pt-0">
-						选择角色以继续
+						<div className="inline-grid space-y-1">
+							<span
+								role="img"
+								aria-hidden
+								className="inline-block h-loading w-loading bg-loading xl:inline-block"
+							/>
+							<p>选择顾客以继续</p>
+						</div>
 					</Placeholder>
 				)}
 			</div>
