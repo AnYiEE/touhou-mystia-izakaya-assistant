@@ -10,16 +10,13 @@ import H1 from '@/components/h1';
 import H2 from '@/components/h2';
 import H3 from '@/components/h3';
 
-import {useCustomerRareStore, useGlobalStore} from '@/stores';
+import {customerRareStore as customerStore, globalStore} from '@/stores';
 
 interface IProps {
 	onModalClose: (() => void) | undefined;
 }
 
 export default memo<Partial<IProps>>(function Content({onModalClose}) {
-	const customerStore = useCustomerRareStore();
-	const globalStore = useGlobalStore();
-
 	const isShowTagDescription = customerStore.persistence.customer.showTagDescription.use();
 
 	const popularTags = globalStore.popularTags.get();
@@ -27,21 +24,15 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 	const selectedPopularTag = globalStore.selectedPopularTag.use();
 	const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
 
-	const onIsNegativePopularTagChange = useCallback(
-		(value: boolean) => {
-			globalStore.persistence.popular.isNegative.set(value);
-			customerStore.shared.recipe.page.set(1);
-		},
-		[customerStore.shared.recipe.page, globalStore.persistence.popular.isNegative]
-	);
+	const onIsNegativePopularTagChange = useCallback((value: boolean) => {
+		globalStore.persistence.popular.isNegative.set(value);
+		customerStore.shared.recipe.page.set(1);
+	}, []);
 
-	const onSelectedPopularTagChange = useCallback(
-		(value: Selection) => {
-			globalStore.selectedPopularTag.set(value);
-			customerStore.shared.recipe.page.set(1);
-		},
-		[customerStore.shared.recipe.page, globalStore.selectedPopularTag]
-	);
+	const onSelectedPopularTagChange = useCallback((value: Selection) => {
+		globalStore.selectedPopularTag.set(value);
+		customerStore.shared.recipe.page.set(1);
+	}, []);
 
 	return (
 		<div>

@@ -28,7 +28,7 @@ import {
 } from '@/components/customerRareTutorial';
 import H1 from '@/components/h1';
 
-import {useCustomerRareStore, useGlobalStore} from '@/stores';
+import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, toggleBoolean} from '@/utils';
 
 const JSON_TYPE = 'application/json';
@@ -55,6 +55,7 @@ interface IProps {
 }
 
 export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
+	const router = useRouter();
 	const startProgress = useProgress();
 
 	const [importValue, setImportValue] = useState('');
@@ -67,10 +68,6 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 	const [isSaveButtonLoading, setIsSaveButtonLoading] = useState(false);
 	const [isSavePopoverOpened, toggleSavePopoverOpened] = useReducer(toggleBoolean, false);
 	const [isResetPopoverOpened, toggleResetPopoverOpened] = useReducer(toggleBoolean, false);
-
-	const customerStore = useCustomerRareStore();
-	const globalStore = useGlobalStore();
-	const router = useRouter();
 
 	const mealData = customerStore.persistence.meals.use();
 	const jsonString = useMemo(() => JSON.stringify(mealData, null, '\t'), [mealData]);
@@ -110,13 +107,13 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 			customerStore.persistence.meals.set(importData);
 		}
 		trackEvent(TrackCategory.Click, 'Import Button', 'Customer Rare Data');
-	}, [customerStore.persistence.meals, importData]);
+	}, [importData]);
 
 	const handleResetData = useCallback(() => {
 		toggleResetPopoverOpened();
 		customerStore.persistence.meals.set({});
 		trackEvent(TrackCategory.Click, 'Reset Button', 'Customer Rare Data');
-	}, [customerStore.persistence.meals]);
+	}, []);
 
 	const handleImportButtonPress = useCallback(() => {
 		importInputRef.current?.click();

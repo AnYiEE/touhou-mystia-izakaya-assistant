@@ -8,7 +8,7 @@ import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-ico
 import Placeholder from './placeholder';
 import Sprite from '@/components/sprite';
 
-import {useCustomerRareStore} from '@/stores';
+import {customerRareStore as store} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
 interface IPlusProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'className'> {
@@ -60,8 +60,6 @@ export const UnknownItem = memo(
 );
 
 const IngredientList = memo(function IngredientsList() {
-	const store = useCustomerRareStore();
-
 	const currentRecipe = store.shared.recipe.data.use();
 
 	const instance_recipe = store.instances.recipe.get();
@@ -125,8 +123,6 @@ interface IResultCardProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
-		const store = useCustomerRareStore();
-
 		const currentCustomerName = store.shared.customer.data.use()?.name;
 		const currentBeverageName = store.shared.beverage.name.use();
 		const currentRecipe = store.shared.recipe.data.use();
@@ -166,7 +162,7 @@ export default memo(
 			} else {
 				store.saveMealResult();
 			}
-		}, [isSaveButtonDisabled, showTooltip, store]);
+		}, [isSaveButtonDisabled, showTooltip]);
 
 		useEffect(() => {
 			if (isShowSaveButtonTooltip && !isSaveButtonDisabled) {

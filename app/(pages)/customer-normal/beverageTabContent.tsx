@@ -37,7 +37,7 @@ import {type TTableColumnKey, type TTableSortDescriptor} from '@/(pages)/custome
 import {beverageTableColumns as tableColumns} from './constants';
 import type {TBeverageWithSuitability, TBeveragesWithSuitability} from './types';
 import {CUSTOMER_NORMAL_TAG_STYLE} from '@/constants';
-import {useCustomerNormalStore} from '@/stores';
+import {customerNormalStore as store} from '@/stores';
 import {numberSort, pinyinSort, processPinyin} from '@/utils';
 
 export type {TTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
@@ -46,8 +46,6 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLTableElement | null, IProps>(function BeverageTabContent(_props, ref) {
-		const store = useCustomerNormalStore();
-
 		const currentCustomerName = store.shared.customer.name.use();
 		const selectedCustomerBeverageTags = store.shared.customer.beverageTags.use();
 
@@ -248,7 +246,7 @@ export default memo(
 						);
 				}
 			},
-			[currentCustomerName, store]
+			[currentCustomerName]
 		);
 
 		const tableToolbar = useMemo(
@@ -384,12 +382,6 @@ export default memo(
 				searchValue,
 				selectedCustomerBeverageTags,
 				selectedDlcs,
-				store.beverageTableColumns.set,
-				store.clearBeverageTableSearchValue,
-				store.onBeverageTableRowsPerPageChange,
-				store.onBeverageTableSearchValueChange,
-				store.onBeverageTableSelectedDlcsChange,
-				store.onBeverageTableSelectedTagsChange,
 				tableRowsPerPage,
 				tableSelectableRows,
 				tableVisibleColumns,
@@ -411,7 +403,7 @@ export default memo(
 					/>
 				</div>
 			),
-			[store.onBeverageTablePageChange, tableCurrentPage, tableTotalPages]
+			[tableCurrentPage, tableTotalPages]
 		);
 
 		return (

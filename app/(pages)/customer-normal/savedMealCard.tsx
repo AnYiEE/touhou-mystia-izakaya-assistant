@@ -9,7 +9,7 @@ import Sprite from '@/components/sprite';
 
 import {customerRatingColorMap} from './constants';
 import {type TCustomerNames, type TTags} from '@/data';
-import {useCustomerNormalStore, useGlobalStore} from '@/stores';
+import {customerNormalStore as customerStore, globalStore} from '@/stores';
 
 const customerTagsCache = new Map<TCustomerNames, Set<TTags>>();
 
@@ -17,9 +17,6 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(_props, ref) {
-		const customerStore = useCustomerNormalStore();
-		const globalStore = useGlobalStore();
-
 		const currentCustomerName = customerStore.shared.customer.name.use();
 		const savedMeal = customerStore.persistence.meals.use();
 

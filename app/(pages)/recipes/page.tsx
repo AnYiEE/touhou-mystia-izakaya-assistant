@@ -11,11 +11,9 @@ import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterI
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
-import {useRecipesStore} from '@/stores';
+import {recipesStore as store} from '@/stores';
 
 export default memo(function Recipes() {
-	const store = useRecipesStore();
-
 	const instance = store.instance.get();
 
 	const allNames = store.names.use();
@@ -187,15 +185,6 @@ export default memo(function Recipes() {
 			filterNoNegativeTags,
 			filterNoPositiveTags,
 			filterPositiveTags,
-			store.persistence.filters.cookers.set,
-			store.persistence.filters.dlcs.set,
-			store.persistence.filters.ingredients.set,
-			store.persistence.filters.levels.set,
-			store.persistence.filters.negativeTags.set,
-			store.persistence.filters.noIngredients.set,
-			store.persistence.filters.noNegativeTags.set,
-			store.persistence.filters.noPositiveTags.set,
-			store.persistence.filters.positiveTags.set,
 		]
 	);
 

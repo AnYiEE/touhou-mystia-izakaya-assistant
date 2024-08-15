@@ -25,16 +25,13 @@ import Sprite from '@/components/sprite';
 
 import {customerRatingColorMap, customerTagStyleMap} from './constants';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
-import {useCustomerRareStore, useGlobalStore} from '@/stores';
+import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, intersection, pinyinSort} from '@/utils';
 
 interface IProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_props, ref) {
-		const customerStore = useCustomerRareStore();
-		const globalStore = useGlobalStore();
-
 		const currentCustomer = customerStore.shared.customer.data.use();
 		const selectedCustomerBeverageTags = customerStore.shared.customer.beverageTags.use();
 		const selectedCustomerPositiveTags = customerStore.shared.customer.positiveTags.use();

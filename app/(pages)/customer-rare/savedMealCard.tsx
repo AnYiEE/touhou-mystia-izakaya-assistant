@@ -13,7 +13,7 @@ import Tags from '@/components/tags';
 import {customerRatingColorMap} from './constants';
 import {BEVERAGE_TAG_STYLE, RECIPE_TAG_STYLE} from '@/constants';
 import {type TCustomerNames, type TTags} from '@/data';
-import {useCustomerRareStore, useGlobalStore} from '@/stores';
+import {customerRareStore as customerStore, globalStore} from '@/stores';
 
 const customerTagsCache = new Map<TCustomerNames, Set<TTags>>();
 
@@ -21,9 +21,6 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(_props, ref) {
-		const customerStore = useCustomerRareStore();
-		const globalStore = useGlobalStore();
-
 		const currentCustomer = customerStore.shared.customer.data.use();
 		const savedMeal = customerStore.persistence.meals.use();
 

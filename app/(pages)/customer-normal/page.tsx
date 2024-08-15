@@ -22,15 +22,11 @@ import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterI
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
-import {useCustomerNormalStore, useGlobalStore} from '@/stores';
+import {customerNormalStore as customerStore, globalStore} from '@/stores';
 
 export default memo(function CustomerNormal() {
-	const customerStore = useCustomerNormalStore();
-	const globalStore = useGlobalStore();
-
 	useEffect(() => {
 		customerStore.shared.customer.popular.set(globalStore.persistence.popular.get());
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	customerStore.shared.customer.name.onChange(() => {
@@ -163,11 +159,6 @@ export default memo(function CustomerNormal() {
 			customerFilterIncludes,
 			customerFilterNoPlaces,
 			customerFilterPlaces,
-			customerStore.persistence.customer.filters.dlcs.set,
-			customerStore.persistence.customer.filters.excludes.set,
-			customerStore.persistence.customer.filters.includes.set,
-			customerStore.persistence.customer.filters.noPlaces.set,
-			customerStore.persistence.customer.filters.places.set,
 		]
 	);
 
@@ -228,14 +219,7 @@ export default memo(function CustomerNormal() {
 					setSelectedKeys: customerStore.persistence.ingredient.filters.levels.set,
 				},
 			] as const satisfies TSelectConfig,
-		[
-			allIngredientDlcs,
-			ingredientsFilterDlcs,
-			customerStore.persistence.ingredient.filters.dlcs.set,
-			customerStore.persistence.ingredient.filters.levels.set,
-			allIngredientLevels,
-			ingredientsFilterLevels,
-		]
+		[allIngredientDlcs, allIngredientLevels, ingredientsFilterDlcs, ingredientsFilterLevels]
 	);
 
 	const ingredientTabVisibilityState = customerStore.persistence.ingredient.tabVisibility.use();

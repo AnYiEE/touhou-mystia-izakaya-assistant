@@ -8,7 +8,7 @@ import Sprite from '@/components/sprite';
 import type {IIngredientsTabStyle} from './types';
 import type {TRecipeTag} from '@/data/types';
 import type {TIngredientInstance} from '@/methods/food/types';
-import {useCustomerRareStore} from '@/stores';
+import {customerRareStore as store} from '@/stores';
 import {checkA11yConfirmKey, intersection} from '@/utils';
 
 interface IProps {
@@ -18,8 +18,6 @@ interface IProps {
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function IngredientsTabContent({ingredientsTabStyle, sortedData}, ref) {
-		const store = useCustomerRareStore();
-
 		const currentCustomer = store.shared.customer.data.use();
 		const currentCustomerPopular = store.shared.customer.popular.use();
 		const currentRecipeData = store.shared.recipe.data.use();

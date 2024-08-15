@@ -2,7 +2,7 @@ import {memo, useEffect, useMemo, useRef} from 'react';
 import {usePathname} from 'next/navigation';
 import {driver} from 'driver.js';
 
-import {useCustomerRareStore, useGlobalStore} from '@/stores';
+import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {getPageTitle} from '@/utils';
 
 const key = 'customer_rare_tutorial';
@@ -10,8 +10,6 @@ const pathname = '/customer-rare';
 const resetLabel = '重新进入稀客套餐搭配教程';
 
 export default memo(function CustomerRareTutorial() {
-	const customerStore = useCustomerRareStore();
-	const globalStore = useGlobalStore();
 	const currentPathname = usePathname();
 
 	const currentCustomerName = customerStore.shared.customer.data.use()?.name;

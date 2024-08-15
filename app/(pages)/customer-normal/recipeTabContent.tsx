@@ -37,7 +37,7 @@ import {type TTableColumnKey, type TTableSortDescriptor} from '@/(pages)/custome
 import {recipeTableColumns as tableColumns} from './constants';
 import type {TRecipeWithSuitability, TRecipesWithSuitability} from './types';
 import {CUSTOMER_NORMAL_TAG_STYLE} from '@/constants';
-import {useCustomerNormalStore} from '@/stores';
+import {customerNormalStore as store} from '@/stores';
 import {numberSort, pinyinSort, processPinyin} from '@/utils';
 
 export type {TTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
@@ -46,8 +46,6 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLTableElement | null, IProps>(function RecipeTabContent(_props, ref) {
-		const store = useCustomerNormalStore();
-
 		const currentCustomerName = store.shared.customer.name.use();
 		const currentCustomerPopular = store.shared.customer.popular.use();
 		const selectedCustomerPositiveTags = store.shared.customer.positiveTags.use();
@@ -329,7 +327,7 @@ export default memo(
 						);
 				}
 			},
-			[currentCustomerName, currentCustomerPopular, instance_recipe, store]
+			[currentCustomerName, currentCustomerPopular, instance_recipe]
 		);
 
 		const tableToolbar = useMemo(
@@ -497,13 +495,6 @@ export default memo(
 				selectedCookers,
 				selectedCustomerPositiveTags,
 				selectedDlcs,
-				store.clearRecipeTableSearchValue,
-				store.onRecipeTableRowsPerPageChange,
-				store.onRecipeTableSearchValueChange,
-				store.onRecipeTableSelectedCookersChange,
-				store.onRecipeTableSelectedDlcsChange,
-				store.onRecipeTableSelectedPositiveTagsChange,
-				store.recipeTableColumns.set,
 				tableRowsPerPage,
 				tableSelectableRows,
 				tableVisibleColumns,
@@ -525,7 +516,7 @@ export default memo(
 					/>
 				</div>
 			),
-			[store.onRecipeTablePageChange, tableCurrentPage, tableTotalPages]
+			[tableCurrentPage, tableTotalPages]
 		);
 
 		return (

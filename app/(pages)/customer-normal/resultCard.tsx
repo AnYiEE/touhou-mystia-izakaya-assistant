@@ -9,14 +9,12 @@ import {Plus, UnknownItem} from '@/(pages)/customer-rare/resultCard';
 import Placeholder from './placeholder';
 import Sprite from '@/components/sprite';
 
-import {useCustomerNormalStore} from '@/stores';
+import {customerNormalStore as store} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
 export {Plus} from '@/(pages)/customer-rare/resultCard';
 
 const IngredientList = memo(function IngredientsList() {
-	const store = useCustomerNormalStore();
-
 	const currentRecipe = store.shared.recipe.data.use();
 
 	const instance_recipe = store.instances.recipe.get();
@@ -80,8 +78,6 @@ interface IResultCardProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
-		const store = useCustomerNormalStore();
-
 		const currentCustomerName = store.shared.customer.name.use();
 		const currentBeverageName = store.shared.beverage.name.use();
 		const currentRecipe = store.shared.recipe.data.use();
@@ -114,7 +110,7 @@ export default memo(
 			} else {
 				store.saveMealResult();
 			}
-		}, [isSaveButtonDisabled, showTooltip, store]);
+		}, [isSaveButtonDisabled, showTooltip]);
 
 		useEffect(() => {
 			if (isShowSaveButtonTooltip && !isSaveButtonDisabled) {

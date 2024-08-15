@@ -1,4 +1,4 @@
-import {createStoreContext, store} from '@davstack/store';
+import {store} from '@davstack/store';
 import {createJSONStorage} from 'zustand/middleware';
 
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
@@ -31,7 +31,7 @@ const state = {
 	},
 };
 
-const ingredientsStore = store(state, {
+export const ingredientsStore = store(state, {
 	persist: {
 		enabled: true,
 		name: 'page-ingredients-storage',
@@ -56,5 +56,3 @@ const ingredientsStore = store(state, {
 }).computed((currentStore) => ({
 	names: () => getAllItemNames(instance, currentStore.persistence.pinyinSortState.use()),
 }));
-
-export const {Provider: IngredientsStoreProvider, useStore: useIngredientsStore} = createStoreContext(ingredientsStore);

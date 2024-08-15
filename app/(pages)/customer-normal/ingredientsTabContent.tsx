@@ -7,7 +7,7 @@ import Sprite from '@/components/sprite';
 
 import {type IIngredientsTabContentProps} from '@/(pages)/customer-rare/ingredientsTabContent';
 import type {TRecipeTag} from '@/data/types';
-import {useCustomerNormalStore} from '@/stores';
+import {customerNormalStore as store} from '@/stores';
 import {checkA11yConfirmKey, intersection} from '@/utils';
 
 export default memo(
@@ -15,8 +15,6 @@ export default memo(
 		{ingredientsTabStyle, sortedData},
 		ref
 	) {
-		const store = useCustomerNormalStore();
-
 		const currentCustomerName = store.shared.customer.name.use();
 		const currentCustomerPopular = store.shared.customer.popular.use();
 		const currentRecipeData = store.shared.recipe.data.use();

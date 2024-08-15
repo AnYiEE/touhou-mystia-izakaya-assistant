@@ -11,11 +11,9 @@ import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterI
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
-import {useBeveragesStore} from '@/stores';
+import {beveragesStore as store} from '@/stores';
 
 export default memo(function Beverages() {
-	const store = useBeveragesStore();
-
 	const instance = store.instance.get();
 
 	const allNames = store.names.use();
@@ -88,19 +86,7 @@ export default memo(function Beverages() {
 					setSelectedKeys: store.persistence.filters.levels.set,
 				},
 			] as const satisfies TSelectConfig,
-		[
-			allDlcs,
-			allLevels,
-			allTags,
-			filterDlcs,
-			filterLevels,
-			filterNoTags,
-			filterTags,
-			store.persistence.filters.dlcs.set,
-			store.persistence.filters.levels.set,
-			store.persistence.filters.noTags.set,
-			store.persistence.filters.tags.set,
-		]
+		[allDlcs, allLevels, allTags, filterDlcs, filterLevels, filterNoTags, filterTags]
 	);
 
 	const isMounted = useMounted();

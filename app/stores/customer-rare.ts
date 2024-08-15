@@ -1,5 +1,5 @@
 import {type Key} from 'react';
-import {createStoreContext, store} from '@davstack/store';
+import {store} from '@davstack/store';
 import {createJSONStorage} from 'zustand/middleware';
 
 import {type Selection} from '@nextui-org/react';
@@ -177,7 +177,7 @@ const state = {
 	},
 };
 
-const customerRareStore = store(state, {
+export const customerRareStore = store(state, {
 	persist: {
 		enabled: true,
 		name: 'page-customer_rare-storage',
@@ -595,6 +595,3 @@ const customerRareStore = store(state, {
 			currentStore.shared.customer.hasMystiaCooker.set((prev) => !prev);
 		},
 	}));
-
-export const {Provider: CustomerRareStoreProvider, useStore: useCustomerRareStore} =
-	createStoreContext(customerRareStore);

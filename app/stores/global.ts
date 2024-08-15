@@ -1,4 +1,4 @@
-import {createStoreContext, store} from '@davstack/store';
+import {store} from '@davstack/store';
 import {createJSONStorage} from 'zustand/middleware';
 
 import {type Selection} from '@nextui-org/react';
@@ -40,7 +40,7 @@ const state = {
 	},
 };
 
-const globalStore = store(state, {
+export const globalStore = store(state, {
 	persist: {
 		enabled: true,
 		name: 'global-storage',
@@ -75,5 +75,3 @@ const globalStore = store(state, {
 		},
 	},
 }));
-
-export const {Provider: GlobalStoreProvider, useStore: useGlobalStore} = createStoreContext(globalStore);

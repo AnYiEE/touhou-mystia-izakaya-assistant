@@ -11,15 +11,6 @@ import {ProgressBar, ProgressBarProvider} from 'react-transition-progress';
 import CompatibleBrowser from '@/components/compatibleBrowser';
 import CustomerRareTutorial from '@/components/customerRareTutorial';
 
-import {
-	BeveragesStoreProvider,
-	CustomerNormalStoreProvider,
-	CustomerRareStoreProvider,
-	GlobalStoreProvider,
-	IngredientsStoreProvider,
-	RecipesStoreProvider,
-} from '@/stores';
-
 interface IProps {
 	locale: string;
 	themeProps?: PropsWithChildren<Omit<ThemeProviderProps, 'children'>>;
@@ -31,24 +22,12 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 	return (
 		<NextUIProvider locale={locale} navigate={router.push}>
 			<NextThemesProvider {...themeProps}>
-				<GlobalStoreProvider>
-					<CustomerNormalStoreProvider>
-						<CustomerRareStoreProvider>
-							<BeveragesStoreProvider>
-								<IngredientsStoreProvider>
-									<RecipesStoreProvider>
-										<ProgressBarProvider>
-											{children}
-											<ProgressBar className="fixed top-0 z-50 h-1 rounded-2xl bg-default-300 dark:h-0.5 dark:bg-primary lg:h-0.5" />
-											<CompatibleBrowser />
-											<CustomerRareTutorial />
-										</ProgressBarProvider>
-									</RecipesStoreProvider>
-								</IngredientsStoreProvider>
-							</BeveragesStoreProvider>
-						</CustomerRareStoreProvider>
-					</CustomerNormalStoreProvider>
-				</GlobalStoreProvider>
+				<ProgressBarProvider>
+					{children}
+					<ProgressBar className="fixed top-0 z-50 h-1 rounded-2xl bg-default-300 dark:h-0.5 dark:bg-primary lg:h-0.5" />
+					<CompatibleBrowser />
+					<CustomerRareTutorial />
+				</ProgressBarProvider>
 			</NextThemesProvider>
 		</NextUIProvider>
 	);

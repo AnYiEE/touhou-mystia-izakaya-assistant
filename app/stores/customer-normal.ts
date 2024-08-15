@@ -1,5 +1,5 @@
 import {type Key} from 'react';
-import {createStoreContext, store} from '@davstack/store';
+import {store} from '@davstack/store';
 import {createJSONStorage} from 'zustand/middleware';
 
 import {type Selection} from '@nextui-org/react';
@@ -156,7 +156,7 @@ const state = {
 	},
 };
 
-const customerNormalStore = store(state, {
+export const customerNormalStore = store(state, {
 	persist: {
 		enabled: true,
 		name: 'page-customer_normal-storage',
@@ -487,6 +487,3 @@ const customerNormalStore = store(state, {
 			);
 		},
 	}));
-
-export const {Provider: CustomerNormalStoreProvider, useStore: useCustomerNormalStore} =
-	createStoreContext(customerNormalStore);

@@ -7,7 +7,7 @@ import Sprite from '@/components/sprite';
 
 import type {ICurrentCustomer, ICustomerTabStyle} from './types';
 import type {TCustomerRareInstances, TCustomerSpecialInstances} from '@/methods/customer/types';
-import {useCustomerRareStore} from '@/stores';
+import {customerRareStore as store} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
 interface IProps {
@@ -20,8 +20,6 @@ interface IProps {
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function CustomerTabContent({customerTabStyle, sortedData}, ref) {
-		const store = useCustomerRareStore();
-
 		const currentCustomer = store.shared.customer.data.use();
 
 		return (
