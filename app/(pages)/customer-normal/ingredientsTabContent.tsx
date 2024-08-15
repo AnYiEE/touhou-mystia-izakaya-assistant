@@ -68,9 +68,9 @@ export default memo(
 							const {extraIngredients} = currentRecipeData;
 							if (currentRecipe.ingredients.length + extraIngredients.length >= 5) {
 								return (
-									<div key={index} className="flex flex-col items-center">
+									<div key={index} className="grid">
 										<Sprite target="ingredient" name={name} size={3} />
-										<span className="whitespace-nowrap text-xs">{name}</span>
+										<span className="whitespace-nowrap text-center text-xs">{name}</span>
 									</div>
 								);
 							}
@@ -148,7 +148,7 @@ export default memo(
 									tabIndex={0}
 									aria-label={`加入${name}，匹配度${scoreChange}`}
 									title={`加入${name}`}
-									className="flex cursor-pointer flex-col items-center transition hover:scale-105"
+									className="grid cursor-pointer transition hover:scale-105"
 								>
 									<Badge
 										color={scoreChange > 0 ? 'success' : scoreChange < 0 ? 'danger' : 'default'}
@@ -160,7 +160,7 @@ export default memo(
 									>
 										<Sprite target="ingredient" name={name} size={3} title={`加入${name}`} />
 									</Badge>
-									<span className="whitespace-nowrap text-xs">{name}</span>
+									<span className="whitespace-nowrap text-center text-xs">{name}</span>
 								</div>
 							);
 						})}
@@ -176,9 +176,9 @@ export default memo(
 							</div>
 							<div className="m-2 grid grid-cols-fill-12 justify-around gap-4">
 								{[...darkIngredients].map((name, index) => (
-									<div key={index} className="flex cursor-not-allowed flex-col items-center">
+									<div key={index} className="grid cursor-not-allowed">
 										<Sprite target="ingredient" name={name} size={3} />
-										<span className="whitespace-nowrap text-xs">{name}</span>
+										<span className="whitespace-nowrap text-center text-xs">{name}</span>
 									</div>
 								))}
 							</div>

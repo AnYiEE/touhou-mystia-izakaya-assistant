@@ -8,7 +8,7 @@ export default memo(
 		return (
 			<div className="absolute" ref={ref}>
 				<div className={twMerge('fixed bottom-6 right-6 z-20 w-min md:bottom-[calc(50%-4.5rem)]', className)}>
-					<div className="flex flex-col gap-3">{children}</div>
+					<div className="space-y-3">{children}</div>
 				</div>
 			</div>
 		);

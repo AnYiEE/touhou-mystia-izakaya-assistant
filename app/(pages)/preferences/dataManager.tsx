@@ -167,7 +167,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 	return (
 		<>
 			<H1 subTitle="备份/还原/重置稀客套餐数据">数据管理</H1>
-			<div className="-mt-2 flex flex-col">
+			<div className="-mt-2">
 				<Tabs
 					defaultSelectedKey="reset"
 					destroyInactiveTabPanel={false}
@@ -178,9 +178,10 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 					aria-label="数据管理选项卡"
 				>
 					<Tab key="backup" title="备份">
-						<div className="flex w-full flex-col gap-2 md:w-1/2">
+						<div className="w-full space-y-2 md:w-1/2">
 							<Snippet
 								hideSymbol
+								fullWidth
 								tooltipProps={{
 									content: '点击复制当前的稀客套餐数据',
 									delay: 0,
@@ -189,8 +190,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 								}}
 								variant="flat"
 								classNames={{
-									base: 'min-w-min',
-									pre: 'max-h-[13.25rem] basis-full overflow-auto whitespace-pre-wrap',
+									pre: 'max-h-[13.25rem] overflow-auto whitespace-pre-wrap',
 								}}
 							>
 								{currentMealDataString}
@@ -215,7 +215,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 						</div>
 					</Tab>
 					<Tab key="restore" title="还原">
-						<div className="flex w-full flex-col gap-2 lg:w-1/2">
+						<div className="w-full space-y-2 lg:w-1/2">
 							<Textarea
 								placeholder="输入稀客套餐数据"
 								value={importValue}
@@ -270,10 +270,11 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 						</div>
 					</Tab>
 					<Tab key="reset" title="重置">
-						<div className="flex w-full flex-col gap-2 md:w-1/2 lg:w-1/3">
+						<div className="w-full space-y-2 md:w-1/2 lg:w-1/3">
 							<Popover showArrow isOpen={isResetPopoverOpened}>
 								<PopoverTrigger>
 									<Button
+										fullWidth
 										color="danger"
 										variant="flat"
 										onClick={toggleResetPopoverOpened}
@@ -305,6 +306,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 								</PopoverContent>
 							</Popover>
 							<Button
+								fullWidth
 								color="primary"
 								variant="flat"
 								onPress={() => {

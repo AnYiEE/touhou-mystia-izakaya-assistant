@@ -61,7 +61,7 @@ export default memo(
 					/>
 				</PopoverTrigger>
 				<PopoverContent className="w-64">
-					<div className="flex w-full flex-col gap-1">
+					<div className="w-full space-y-1">
 						{selectConfig.map(
 							({label, items, selectedKeys, selectionMode, setSelectedKeys, spriteTarget}, index) => (
 								<Select
@@ -90,11 +90,12 @@ export default memo(
 						)}
 						{hasFilter && (
 							<Button
+								fullWidth
 								color="danger"
 								size="sm"
 								variant="flat"
 								onPress={handleResetFilters}
-								className="mt-1"
+								className="!mt-2"
 							>
 								重置当前筛选
 							</Button>

@@ -12,7 +12,7 @@ interface IProps {
 export default memo(
 	forwardRef<HTMLDivElement | null, PropsWithChildren<IProps>>(function QRCode({alt, src, className, children}, ref) {
 		return (
-			<div className="flex select-none flex-col items-center" ref={ref}>
+			<div ref={ref}>
 				<Image
 					isBlurred
 					alt={alt}
@@ -20,7 +20,7 @@ export default memo(
 					src={src}
 					className={twMerge('h-32 dark:invert', className)}
 				/>
-				{children !== undefined && <p className="text-xs">{children}</p>}
+				{children !== undefined && <p className="text-center text-xs">{children}</p>}
 			</div>
 		);
 	})

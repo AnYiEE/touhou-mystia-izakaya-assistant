@@ -43,15 +43,15 @@ export default class ErrorBoundary extends Component<IProps, IStates> {
 	public override render() {
 		if (this.state.hasError) {
 			return (
-				<div className="m-4 flex flex-col gap-3">
+				<div className="m-4 space-y-3">
 					<h1 className="text-2xl font-bold">出错啦！以下是错误信息：</h1>
 					<p className="text-lg">{this.state.error?.toString()}</p>
-					<pre className="flex flex-col gap-2 whitespace-pre-wrap break-all font-mono">
+					<pre className="space-y-2 whitespace-pre-wrap break-all font-mono">
 						<code>{this.state.error?.stack}</code>
 						<code>{this.state.info?.componentStack}</code>
 					</pre>
 					<button
-						className="cursor-pointer bg-content1 p-2 hover:bg-content2"
+						className="mx-auto block cursor-pointer rounded-md bg-content1 p-2 hover:bg-content2"
 						onClick={this.handleClick.bind(this)}
 					>
 						点此重试（将清空已保存的数据）

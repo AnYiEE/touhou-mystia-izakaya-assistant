@@ -58,7 +58,7 @@ export default memo(
 
 		return (
 			<Card fullWidth shadow="sm" ref={ref}>
-				<div className="flex flex-col gap-3 p-4 xl:gap-2 xl:px-2 xl:py-3">
+				<div className="space-y-3 p-4 xl:space-y-2 xl:px-2 xl:py-3">
 					{savedCustomerMeal.map(
 						(
 							{
@@ -75,8 +75,8 @@ export default memo(
 							loopIndex
 						) => (
 							<Fragment key={loopIndex}>
-								<div className="flex flex-col items-center gap-4 md:flex-row xl:gap-3">
-									<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap xl:gap-2">
+								<div className="flex flex-col items-center gap-4 md:flex-row md:gap-3 lg:gap-4 xl:gap-3">
+									<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap md:gap-2 lg:gap-3 xl:gap-2">
 										{(() => {
 											const isPopularTagMatched =
 												popular.tag !== null &&
@@ -131,7 +131,7 @@ export default memo(
 																	showFallback
 																	color={customerRatingColor}
 																	fallback={
-																		<TagGroup className="h-4 flex-nowrap whitespace-nowrap">
+																		<TagGroup className="h-4 flex-nowrap items-center whitespace-nowrap">
 																			{price !== 0 && (
 																				<Tags.Tag
 																					tag={
@@ -140,14 +140,14 @@ export default memo(
 																						) as never
 																					}
 																					tagStyle={{}}
-																					className="leading-none"
+																					className="p-0.5 leading-none"
 																				/>
 																			)}
 																			{order.recipeTag && (
 																				<Tags.Tag
 																					tag={order.recipeTag}
 																					tagStyle={RECIPE_TAG_STYLE.positive}
-																					className="leading-none"
+																					className="p-0.5 leading-none"
 																				/>
 																			)}
 																			{order.beverageTag && (
@@ -156,7 +156,7 @@ export default memo(
 																					tagStyle={
 																						BEVERAGE_TAG_STYLE.positive
 																					}
-																					className="leading-none"
+																					className="p-0.5 leading-none"
 																				/>
 																			)}
 																		</TagGroup>
@@ -216,7 +216,7 @@ export default memo(
 												</Tooltip>
 												<PopoverContent>{recipe}</PopoverContent>
 											</Popover>
-											<Plus size={0.75} className="mx-2 xl:m-0" />
+											<Plus size={0.75} className="mx-2 md:mx-0 lg:mx-2 xl:mx-0" />
 											<Popover showArrow offset={8}>
 												<Tooltip showArrow content={beverage} offset={4}>
 													<span className="flex cursor-pointer">
@@ -228,7 +228,7 @@ export default memo(
 												<PopoverContent>{beverage}</PopoverContent>
 											</Popover>
 										</div>
-										<Plus size={0.75} className="xl:m-0" />
+										<Plus size={0.75} className="md:mx-0 lg:mx-1 xl:mx-0" />
 										{(() => {
 											const originalIngredients = instance_recipe.getPropsByName(
 												recipe,
@@ -243,7 +243,7 @@ export default memo(
 												lestExtraIngredientsLength
 											);
 											return (
-												<div className="flex items-center gap-x-3 xl:gap-1">
+												<div className="flex items-center gap-x-3 md:gap-x-1 lg:gap-x-3 xl:gap-x-1">
 													{originalIngredients.map((name, index) => (
 														<Popover key={index} showArrow offset={8}>
 															<Tooltip showArrow content={name} offset={4}>
@@ -261,7 +261,7 @@ export default memo(
 														</Popover>
 													))}
 													{lestExtraIngredients.length > 0 && (
-														<div className="flex items-center gap-x-3 rounded outline outline-2 outline-offset-1 outline-divider xl:gap-1">
+														<div className="flex items-center gap-x-3 rounded outline outline-2 outline-offset-1 outline-divider md:gap-x-1 lg:gap-x-3 xl:gap-x-1">
 															{lestExtraIngredients.map((name, index) => {
 																const content = `额外食材：${name}`;
 																return (

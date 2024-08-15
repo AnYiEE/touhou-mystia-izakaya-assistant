@@ -222,10 +222,12 @@ export default memo(function Navbar() {
 			</NavbarContent>
 
 			<NavbarContent justify="end" className="hidden basis-full md:flex md:basis-1/5">
-				<NavbarItem className="flex gap-2">
+				<NavbarItem>
 					<GitHubLink showTooltip />
 				</NavbarItem>
-				<ThemeSwitcher />
+				<NavbarItem>
+					<ThemeSwitcher />
+				</NavbarItem>
 			</NavbarContent>
 
 			<NavbarContent justify="end" className="basis-1 pl-4 md:hidden">
@@ -236,7 +238,7 @@ export default memo(function Navbar() {
 			</NavbarContent>
 
 			<NavbarMenu>
-				<div className="mx-4 mt-2 flex flex-col gap-2">
+				<div className="mx-4 mt-2 space-y-2">
 					{navMenuItems.map(({href, label}) => {
 						const isActivated = href === pathname;
 						return href === '/preferences' && !shouldShowPreferences ? null : (

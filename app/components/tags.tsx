@@ -5,10 +5,10 @@ import type {TTagStyle} from '@/constants/types';
 import {type TTags} from '@/data';
 
 interface IHandleDoubleClick {
-	handleDoubleClick?: ((tag: TTags, event: MouseEvent<HTMLDivElement>) => void) | undefined;
+	handleDoubleClick?: ((tag: TTags, event: MouseEvent<HTMLSpanElement>) => void) | undefined;
 }
 
-interface ITagProps extends ITagPropsBase, IHandleDoubleClick, HTMLAttributes<HTMLDivElement> {}
+interface ITagProps extends ITagPropsBase, IHandleDoubleClick, HTMLAttributes<HTMLSpanElement> {}
 
 interface ITagPropsBase {
 	tag: TTags | [TTags, string];
@@ -16,7 +16,7 @@ interface ITagPropsBase {
 }
 
 const Tag: FC<ITagProps> = memo(
-	forwardRef<HTMLDivElement | null, ITagProps>(function Tag(
+	forwardRef<HTMLSpanElement | null, ITagProps>(function Tag(
 		{tag, tagStyle = {}, handleDoubleClick, className, ...props},
 		ref
 	) {
@@ -25,8 +25,8 @@ const Tag: FC<ITagProps> = memo(
 		const tagName = isArray ? tag[0] : tag;
 
 		return (
-			<div
-				className={twMerge('max-w-1/5 flex items-center rounded border-1 border-solid px-1', className)}
+			<span
+				className={twMerge('inline-block h-max w-max rounded border px-1', className)}
 				style={{
 					backgroundColor: tagStyle.backgroundColor ?? 'inherit',
 					borderColor: tagStyle.borderColor ?? 'currentcolor',
@@ -40,7 +40,7 @@ const Tag: FC<ITagProps> = memo(
 			>
 				{tagName}
 				{tagDescription}
-			</div>
+			</span>
 		);
 	})
 );
@@ -50,7 +50,7 @@ interface ITagsPropsBase {
 	tagStyle?: Partial<TTagStyle> | undefined;
 }
 
-interface ITagsProps extends ITagsPropsBase, IHandleDoubleClick, Pick<HTMLAttributes<HTMLDivElement>, 'className'> {}
+interface ITagsProps extends ITagsPropsBase, IHandleDoubleClick, Pick<HTMLAttributes<HTMLSpanElement>, 'className'> {}
 
 const TagsComponent: FC<ITagsProps> = memo(function Tags({tags, tagStyle = {}, handleDoubleClick, className}) {
 	return (

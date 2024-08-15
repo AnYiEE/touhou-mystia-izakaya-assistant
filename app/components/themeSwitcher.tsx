@@ -76,6 +76,7 @@ export default memo<Partial<IProps>>(function ThemeSwitcher({isMenu}) {
 			<Spinner
 				color="default"
 				classNames={{
+					base: 'flex',
 					wrapper: 'h-4 w-4',
 				}}
 			/>

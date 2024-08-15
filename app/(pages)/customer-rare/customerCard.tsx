@@ -188,7 +188,7 @@ export default memo(
 							</Tooltip>
 							<PopoverContent>{avatarRatingContent}</PopoverContent>
 						</Popover>
-						<div className="flex flex-col whitespace-nowrap text-xs font-medium text-default-500">
+						<div className="whitespace-nowrap text-xs font-medium text-default-500">
 							<p className="flex justify-between">
 								<span>DLC{currentCustomerDlc}</span>
 								<Popover showArrow offset={0}>
@@ -258,7 +258,7 @@ export default memo(
 											role="button"
 											tabIndex={0}
 											className={twJoin(
-												'cursor-pointer select-none py-0.5 leading-none hover:opacity-80',
+												'cursor-pointer select-none p-1 leading-none hover:opacity-80',
 												!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50',
 												currentCustomerOrder.recipeTag === tag && 'ring-2 ring-current'
 											)}
@@ -276,7 +276,7 @@ export default memo(
 										tag={tag}
 										tagStyle={customerTagStyleMap[currentCustomerTarget].negative}
 										className={twJoin(
-											'cursor-not-allowed py-0.5 leading-none',
+											'cursor-not-allowed select-none p-1 leading-none',
 											!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50'
 										)}
 									/>
@@ -323,7 +323,7 @@ export default memo(
 											role="button"
 											tabIndex={0}
 											className={twJoin(
-												'cursor-pointer select-none py-0.5 leading-none hover:opacity-80',
+												'cursor-pointer select-none p-1 leading-none hover:opacity-80',
 												!beverageTags.includes(tag) && 'opacity-50',
 												currentCustomerOrder.beverageTag === tag && 'ring-2 ring-current'
 											)}

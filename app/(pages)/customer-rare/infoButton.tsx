@@ -9,7 +9,7 @@ export default memo(function InfoButton() {
 	return (
 		<InfoButtonBase>
 			<AccordionItem key="help" aria-label="特别说明" title="特别说明">
-				<div className="flex flex-col text-justify text-xs">
+				<div className="text-justify text-xs">
 					<p className="mb-1 font-semibold">选单时</p>
 					<ol className="list-inside list-disc">
 						<li>

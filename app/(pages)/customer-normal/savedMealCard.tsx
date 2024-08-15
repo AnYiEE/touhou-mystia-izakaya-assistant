@@ -42,7 +42,7 @@ export default memo(
 
 		return (
 			<Card fullWidth shadow="sm" ref={ref}>
-				<div className="flex flex-col gap-3 p-4">
+				<div className="space-y-3 p-4 xl:space-y-2">
 					{savedCustomerMeal.map(
 						({index: mealIndex, popular, rating, beverage, recipe, extraIngredients}, loopIndex) => (
 							<Fragment key={loopIndex}>
@@ -178,7 +178,7 @@ export default memo(
 												lestExtraIngredientsLength
 											);
 											return (
-												<div className="flex items-center gap-x-3 xl:gap-1">
+												<div className="flex items-center gap-x-3">
 													{originalIngredients.map((name, index) => (
 														<Popover key={index} showArrow offset={8}>
 															<Tooltip showArrow content={name} offset={4}>
@@ -196,7 +196,7 @@ export default memo(
 														</Popover>
 													))}
 													{lestExtraIngredients.length > 0 && (
-														<div className="flex items-center gap-x-3 rounded outline outline-2 outline-offset-1 outline-divider xl:gap-1">
+														<div className="flex items-center gap-x-3 rounded outline outline-2 outline-offset-1 outline-divider">
 															{lestExtraIngredients.map((name, index) => {
 																const content = `额外食材：${name}`;
 																return (

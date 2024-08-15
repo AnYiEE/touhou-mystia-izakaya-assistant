@@ -100,21 +100,19 @@ const ShareButton: FC<IShareButtonProps> = memo(
 					</div>
 				</Tooltip>
 				<PopoverContent>
-					<div className="flex flex-col">
-						<span className="mr-4 cursor-default select-none self-end text-xs text-default-500 dark:text-default-400">
-							点击以复制到当前选中项的链接↓
-						</span>
-						<Snippet
-							disableTooltip
-							size="sm"
-							symbol={<FontAwesomeIcon icon={faLink} className="mr-1 !align-middle text-default-500" />}
-							classNames={{
-								pre: 'flex max-w-[60vw] items-center whitespace-normal break-all',
-							}}
-						>
-							{generateUrl}
-						</Snippet>
-					</div>
+					<p className="mr-4 cursor-default select-none self-end text-right text-xs text-default-500 dark:text-default-400">
+						点击以复制到当前选中项的链接↓
+					</p>
+					<Snippet
+						disableTooltip
+						size="sm"
+						symbol={<FontAwesomeIcon icon={faLink} className="mr-1 !align-middle text-default-500" />}
+						classNames={{
+							pre: 'flex max-w-[60vw] items-center whitespace-normal break-all',
+						}}
+					>
+						{generateUrl}
+					</Snippet>
 				</PopoverContent>
 			</Popover>
 		);
@@ -157,7 +155,7 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 		}, [tags]);
 
 		return (
-			<div className="flex max-w-64 flex-col gap-2 p-2 text-xs text-default-500" ref={ref}>
+			<div className="max-w-64 space-y-2 p-2 text-xs text-default-500" ref={ref}>
 				<div className="flex items-center gap-2 text-sm text-foreground">
 					<Sprite target={target} name={name} size={2} />
 					<p className="font-bold">
@@ -192,12 +190,12 @@ const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = m
 					</div>
 				)}
 				{mergedTags && (
-					<div className="flex flex-wrap items-end gap-x-2 gap-y-1 whitespace-nowrap">
+					<div className="flex flex-wrap gap-x-2 gap-y-1">
 						<TagsComponent tags={mergedTags.positive} tagStyle={tagColors?.positive} />
 						<TagsComponent tags={mergedTags.negative} tagStyle={tagColors?.negative} />
 					</div>
 				)}
-				{children !== undefined && <div className="flex flex-col gap-1">{children}</div>}
+				{children !== undefined && <div className="space-y-1">{children}</div>}
 			</div>
 		);
 	})
