@@ -100,7 +100,8 @@ module.exports = {
 	theme: {
 		extend: {
 			backgroundImage: {
-				loading: 'url("/assets/loading.png")',
+				cursor: 'url("/assets/cursor.png")',
+				loading: 'url("/assets/loading.gif")',
 				logo: 'url("/assets/icon.png")',
 			},
 			backgroundSize: {
@@ -116,16 +117,18 @@ module.exports = {
 				'fill-20': 'repeat(auto-fill,5rem)',
 			},
 			height: {
-				loading: '37px',
-				'loading-1.8x': '66px',
+				cursor: '37px',
+				'cursor-1.8x': '66px',
+				loading: '120px',
 			},
 			maxWidth: {
 				'p-95': '95%',
 			},
 			width: {
 				'p-99': '99%',
-				loading: '27px',
-				'loading-1.8x': '48px',
+				cursor: '27px',
+				'cursor-1.8x': '48px',
+				loading: '120px',
 			},
 			padding: {
 				titlebar: 'env(titlebar-area-height,0rem)',

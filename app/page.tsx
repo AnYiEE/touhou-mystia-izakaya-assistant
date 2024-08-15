@@ -3,7 +3,6 @@ import {memo, useCallback} from 'react';
 import {Button, Divider, Link, Tooltip} from '@nextui-org/react';
 import {faQq} from '@fortawesome/free-brands-svg-icons';
 
-import Loading from '@/loading';
 import FontAwesomeIconLink from '@/components/fontAwesomeIconLink';
 import QRCode from '@/components/qrCode';
 import Xiaohongshu from '@/components/xiaohongshu';
@@ -27,7 +26,14 @@ export default memo(function Home() {
 	return (
 		<div className="flex h-full flex-col items-center justify-center gap-4 md:flex-row md:gap-8">
 			<div className="flex flex-col items-center">
-				<Loading content={`欢迎使用${shortName}`} className="h-max w-max" />
+				<div className="flex select-none flex-col items-center">
+					<span
+						role="img"
+						title={`欢迎使用${shortName}`}
+						className="inline-block h-cursor-1.8x w-cursor-1.8x bg-cursor bg-y-auto bg-no-repeat motion-safe:animate-bounce"
+					/>
+					<p className="text-sm tracking-widest">欢迎使用{shortName}</p>
+				</div>
 				<p className="hidden select-none flex-wrap items-center text-xs text-foreground-500 md:flex">
 					点击顶部的按钮以使用各项功能
 				</p>
