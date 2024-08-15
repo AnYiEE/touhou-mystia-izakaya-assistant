@@ -50,7 +50,7 @@ export default memo(
 		const currentCustomerPopular = store.shared.customer.popular.use();
 		const selectedCustomerPositiveTags = store.shared.customer.positiveTags.use();
 
-		const currentRecipe = store.shared.recipe.data.use();
+		const currentRecipeData = store.shared.recipe.data.use();
 		const selectedDlcs = store.shared.recipe.dlcs.use();
 		const selectedCookers = store.shared.recipe.cookers.use();
 
@@ -201,7 +201,7 @@ export default memo(
 			[filteredData.length, tableRowsPerPageNumber]
 		);
 
-		const tableSelectedKeys = new Set([currentRecipe?.name ?? '']);
+		const tableSelectedKeys = new Set([currentRecipeData?.name ?? '']);
 
 		const renderTableCell = useCallback(
 			(data: TRecipeWithSuitability, columnKey: TTableColumnKey) => {

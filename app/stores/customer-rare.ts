@@ -347,18 +347,18 @@ export const customerRareStore = store(state, {
 				return tag;
 			});
 		},
-		onCustomerSelectedChange(customer: ICurrentCustomer) {
-			currentStore.shared.customer.data.set(customer);
-			trackEvent(TrackCategory.Select, 'Customer', customer.name);
+		onCustomerSelectedChange(customerData: ICurrentCustomer) {
+			currentStore.shared.customer.data.set(customerData);
+			trackEvent(TrackCategory.Select, 'Customer', customerData.name);
 		},
 
 		clearBeverageTableSearchValue() {
 			currentStore.shared.beverage.searchValue.set('');
 			currentStore.shared.beverage.page.set(1);
 		},
-		onBeverageTableAction(beverage: TBeverageNames) {
-			currentStore.shared.beverage.name.set(beverage);
-			trackEvent(TrackCategory.Select, 'Beverage', beverage);
+		onBeverageTableAction(beverageName: TBeverageNames) {
+			currentStore.shared.beverage.name.set(beverageName);
+			trackEvent(TrackCategory.Select, 'Beverage', beverageName);
 		},
 		onBeverageTablePageChange(page: number) {
 			currentStore.shared.beverage.page.set(page);
@@ -387,7 +387,7 @@ export const customerRareStore = store(state, {
 			currentStore.shared.beverage.sortDescriptor.set(config);
 		},
 
-		onIngredientSelectedChange(ingredient: TIngredientNames) {
+		onIngredientSelectedChange(ingredientName: TIngredientNames) {
 			const recipeData = currentStore.shared.recipe.data.get();
 			let recipe: TRecipe | null = null;
 			if (recipeData) {
@@ -398,22 +398,22 @@ export const customerRareStore = store(state, {
 			}
 			currentStore.shared.recipe.data.set((prev) => {
 				if (prev && recipe.ingredients.length + prev.extraIngredients.length < 5) {
-					prev.extraIngredients.push(ingredient);
+					prev.extraIngredients.push(ingredientName);
 				}
 			});
-			trackEvent(TrackCategory.Select, 'Ingredient', ingredient);
+			trackEvent(TrackCategory.Select, 'Ingredient', ingredientName);
 		},
 
 		clearRecipeTableSearchValue() {
 			currentStore.shared.recipe.searchValue.set('');
 			currentStore.shared.recipe.page.set(1);
 		},
-		onRecipeTableAction(recipe: TRecipeNames) {
+		onRecipeTableAction(recipeName: TRecipeNames) {
 			currentStore.shared.recipe.data.set({
 				extraIngredients: [],
-				name: recipe,
+				name: recipeName,
 			});
-			trackEvent(TrackCategory.Select, 'Recipe', recipe);
+			trackEvent(TrackCategory.Select, 'Recipe', recipeName);
 		},
 		onRecipeTablePageChange(page: number) {
 			currentStore.shared.recipe.page.set(page);
@@ -453,11 +453,11 @@ export const customerRareStore = store(state, {
 		},
 
 		evaluateMealResult() {
-			const customer = currentStore.shared.customer.data.get();
-			if (!customer) {
+			const customerData = currentStore.shared.customer.data.get();
+			if (!customerData) {
 				return;
 			}
-			const {name: customerName, target: customerTarget} = customer;
+			const {name: customerName, target: customerTarget} = customerData;
 			const instance_customer = (
 				customerTarget === 'customer_rare' ? instance_rare : instance_special
 			) as typeof instance_rare;
@@ -497,23 +497,23 @@ export const customerRareStore = store(state, {
 			});
 			currentStore.shared.customer.rating.set(rating);
 		},
-		removeMealIngredient(ingredient: TIngredientNames) {
+		removeMealIngredient(ingredientName: TIngredientNames) {
 			currentStore.shared.recipe.data.set((prev) => {
 				if (prev) {
-					prev.extraIngredients = removeLastElement(prev.extraIngredients, ingredient);
+					prev.extraIngredients = removeLastElement(prev.extraIngredients, ingredientName);
 				}
 			});
-			trackEvent(TrackCategory.Unselect, 'Ingredient', ingredient);
+			trackEvent(TrackCategory.Unselect, 'Ingredient', ingredientName);
 		},
 		saveMealResult() {
 			const customerName = currentStore.shared.customer.data.get()?.name;
 			const beverageName = currentStore.shared.beverage.name.get();
-			const recipe = currentStore.shared.recipe.data.get();
+			const recipeData = currentStore.shared.recipe.data.get();
 			const rating = currentStore.shared.customer.rating.get();
-			if (!customerName || !beverageName || !recipe || !rating) {
+			if (!customerName || !beverageName || !recipeData || !rating) {
 				return;
 			}
-			const {extraIngredients, name: recipeName} = recipe;
+			const {extraIngredients, name: recipeName} = recipeData;
 			const hasMystiaCooker = currentStore.shared.customer.hasMystiaCooker.get();
 			const order = currentStore.shared.customer.order.get();
 			const popular = currentStore.shared.customer.popular.get();

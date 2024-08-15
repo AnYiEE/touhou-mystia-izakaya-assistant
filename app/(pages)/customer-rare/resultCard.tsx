@@ -60,23 +60,23 @@ export const UnknownItem = memo(
 );
 
 const IngredientList = memo(function IngredientsList() {
-	const currentRecipe = store.shared.recipe.data.use();
+	const currentRecipeData = store.shared.recipe.data.use();
 
 	const instance_recipe = store.instances.recipe.get();
 
 	const originalIngredients = useMemo(
-		() => (currentRecipe ? instance_recipe.getPropsByName(currentRecipe.name, 'ingredients') : []),
-		[currentRecipe, instance_recipe]
+		() => (currentRecipeData ? instance_recipe.getPropsByName(currentRecipeData.name, 'ingredients') : []),
+		[currentRecipeData, instance_recipe]
 	);
 
 	const filledIngredients = useMemo(
 		() =>
 			[
 				...originalIngredients,
-				...(currentRecipe?.extraIngredients ?? []),
+				...(currentRecipeData?.extraIngredients ?? []),
 				...new Array<null>(5).fill(null),
 			].slice(0, 5),
-		[currentRecipe?.extraIngredients, originalIngredients]
+		[currentRecipeData?.extraIngredients, originalIngredients]
 	);
 
 	return (
@@ -125,11 +125,11 @@ export default memo(
 	forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
 		const currentCustomerName = store.shared.customer.data.use()?.name;
 		const currentBeverageName = store.shared.beverage.name.use();
-		const currentRecipe = store.shared.recipe.data.use();
+		const currentRecipeData = store.shared.recipe.data.use();
 		const hasMystiaCooker = store.shared.customer.hasMystiaCooker.use();
 		const currentOrder = store.shared.customer.order.use();
 		const currentRating = store.shared.customer.rating.use();
-		const savedMeal = store.persistence.meals.use();
+		const currentSavedMeals = store.persistence.meals.use();
 
 		const instance_recipe = store.instances.recipe.get();
 
@@ -138,7 +138,7 @@ export default memo(
 		const isSaveButtonDisabled =
 			!currentCustomerName ||
 			!currentBeverageName ||
-			!currentRecipe ||
+			!currentRecipeData ||
 			!currentOrder.beverageTag ||
 			!(currentOrder.recipeTag || hasMystiaCooker) ||
 			currentRating === null;
@@ -170,8 +170,8 @@ export default memo(
 			}
 		}, [hideTooltip, isSaveButtonDisabled, isShowSaveButtonTooltip]);
 
-		if (!currentBeverageName && !currentRecipe) {
-			if (currentCustomerName && savedMeal[currentCustomerName]?.length) {
+		if (!currentBeverageName && !currentRecipeData) {
+			if (currentCustomerName && currentSavedMeals[currentCustomerName]?.length) {
 				return null;
 			}
 			return (
@@ -186,7 +186,7 @@ export default memo(
 				<div className="flex flex-col items-center gap-4 p-4 md:flex-row">
 					<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
 						<div className="flex items-center gap-2">
-							{currentRecipe ? (
+							{currentRecipeData ? (
 								<>
 									<Tooltip
 										showArrow
@@ -194,7 +194,7 @@ export default memo(
 									>
 										<Sprite
 											target="cooker"
-											name={instance_recipe.getPropsByName(currentRecipe.name, 'cooker')}
+											name={instance_recipe.getPropsByName(currentRecipeData.name, 'cooker')}
 											size={2}
 											onClick={store.toggleMystiaCooker}
 											onKeyDown={(event) => {
@@ -212,7 +212,7 @@ export default memo(
 											)}
 										/>
 									</Tooltip>
-									<Sprite target="recipe" name={currentRecipe.name} size={2.5} />
+									<Sprite target="recipe" name={currentRecipeData.name} size={2.5} />
 								</>
 							) : (
 								<>
@@ -232,7 +232,7 @@ export default memo(
 					</div>
 					<Tooltip
 						showArrow
-						content={`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipe ? '' : '料理、'}顾客点单需求`}
+						content={`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipeData ? '' : '料理、'}顾客点单需求`}
 						isOpen={isShowSaveButtonTooltip}
 					>
 						<span>

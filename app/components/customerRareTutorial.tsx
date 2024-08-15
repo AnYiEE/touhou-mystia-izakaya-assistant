@@ -19,9 +19,9 @@ export default memo(function CustomerRareTutorial() {
 	const currentFilteredBeverageTags = customerStore.shared.customer.beverageTags.use();
 	const currentOrderedBeverageTag = customerStore.shared.customer.order.use().beverageTag;
 
-	const currentRecipe = customerStore.shared.recipe.data.use();
-	const currentRecipeName = currentRecipe?.name;
-	const currentExtraIngredients = currentRecipe?.extraIngredients;
+	const currentRecipeData = customerStore.shared.recipe.data.use();
+	const currentRecipeName = currentRecipeData?.name;
+	const currentExtraIngredients = currentRecipeData?.extraIngredients;
 	const hasMystiaCooker = customerStore.shared.customer.hasMystiaCooker.use();
 
 	const selectedTabKey = customerStore.shared.tab.use();

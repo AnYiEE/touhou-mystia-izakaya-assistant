@@ -18,7 +18,7 @@ interface IProps {
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function IngredientsTabContent({ingredientsTabStyle, sortedData}, ref) {
-		const currentCustomer = store.shared.customer.data.use();
+		const currentCustomerData = store.shared.customer.data.use();
 		const currentCustomerPopular = store.shared.customer.popular.use();
 		const currentRecipeData = store.shared.recipe.data.use();
 
@@ -47,11 +47,11 @@ export default memo(
 			[darkIngredients, sortedData]
 		);
 
-		if (!currentCustomer || !currentRecipeData) {
+		if (!currentCustomerData || !currentRecipeData) {
 			return null;
 		}
 
-		const {target, name: currentCustomerName} = currentCustomer;
+		const {target, name: currentCustomerName} = currentCustomerData;
 
 		const instance_customer = (
 			target === 'customer_rare' ? instance_rare : instance_special

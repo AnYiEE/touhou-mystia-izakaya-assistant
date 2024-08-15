@@ -48,8 +48,8 @@ export default memo(function CustomerRare() {
 		customerStore.shared.customer.popular.tag.set(popular);
 	});
 
-	const currentCustomer = customerStore.shared.customer.data.use();
-	const currentRecipe = customerStore.shared.recipe.data.use();
+	const currentCustomerData = customerStore.shared.customer.data.use();
+	const currentRecipeData = customerStore.shared.recipe.data.use();
 
 	const instance_rare = customerStore.instances.customer_rare.get();
 	const instance_special = customerStore.instances.customer_special.get();
@@ -274,13 +274,13 @@ export default memo(function CustomerRare() {
 					<Tab key="customer" title="稀客" className="relative">
 						<CustomerTabContent customerTabStyle={customerTabStyle} sortedData={customerSortedData} />
 					</Tab>
-					<Tab isDisabled={!currentCustomer} key="recipe" title="料理">
+					<Tab isDisabled={!currentCustomerData} key="recipe" title="料理">
 						<RecipeTabContent />
 					</Tab>
-					<Tab isDisabled={!currentCustomer} key="beverage" title="酒水">
+					<Tab isDisabled={!currentCustomerData} key="beverage" title="酒水">
 						<BeverageTabContent />
 					</Tab>
-					<Tab isDisabled={!(currentCustomer && currentRecipe)} key="ingredient" title="食材">
+					<Tab isDisabled={!(currentCustomerData && currentRecipeData)} key="ingredient" title="食材">
 						<IngredientsTabContent
 							ingredientsTabStyle={ingredientTabStyle}
 							sortedData={ingredientsSortedData}
@@ -290,7 +290,7 @@ export default memo(function CustomerRare() {
 			</div>
 
 			<div className="flex w-full flex-col gap-4 xl:min-h-[calc(100vh-6.75rem)]">
-				{currentCustomer ? (
+				{currentCustomerData ? (
 					<>
 						<CustomerCard />
 						<ResultCard />

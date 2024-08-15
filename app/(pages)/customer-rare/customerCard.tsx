@@ -32,7 +32,7 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_props, ref) {
-		const currentCustomer = customerStore.shared.customer.data.use();
+		const currentCustomerData = customerStore.shared.customer.data.use();
 		const selectedCustomerBeverageTags = customerStore.shared.customer.beverageTags.use();
 		const selectedCustomerPositiveTags = customerStore.shared.customer.positiveTags.use();
 		const currentCustomerOrder = customerStore.shared.customer.order.use();
@@ -41,7 +41,7 @@ export default memo(
 		const isShowTagDescription = customerStore.persistence.customer.showTagDescription.use();
 
 		const currentBeverageName = customerStore.shared.beverage.name.use();
-		const currentRecipe = customerStore.shared.recipe.data.use();
+		const currentRecipeData = customerStore.shared.recipe.data.use();
 
 		const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
 
@@ -55,7 +55,7 @@ export default memo(
 					currentCustomerOrder.beverageTag ||
 						currentCustomerOrder.recipeTag ||
 						currentBeverageName ||
-						currentRecipe ||
+						currentRecipeData ||
 						selectedCustomerBeverageTags.size > 0 ||
 						selectedCustomerPositiveTags.size > 0
 				),
@@ -63,7 +63,7 @@ export default memo(
 				currentBeverageName,
 				currentCustomerOrder.beverageTag,
 				currentCustomerOrder.recipeTag,
-				currentRecipe,
+				currentRecipeData,
 				selectedCustomerBeverageTags,
 				selectedCustomerPositiveTags,
 			]
@@ -79,11 +79,11 @@ export default memo(
 			customerStore.onCustomerOrderRecipeTag(tag);
 		});
 
-		if (!currentCustomer) {
+		if (!currentCustomerData) {
 			return null;
 		}
 
-		const {name: currentCustomerName, target: currentCustomerTarget} = currentCustomer;
+		const {name: currentCustomerName, target: currentCustomerTarget} = currentCustomerData;
 
 		const instance_customer = customerStore.instances[currentCustomerTarget as 'customer_rare'].get();
 
@@ -111,8 +111,8 @@ export default memo(
 		}
 
 		const currentRecipeTagsWithPopular: TRecipeTag[] = [];
-		if (currentRecipe) {
-			const {extraIngredients, name: currentRecipeName} = currentRecipe;
+		if (currentRecipeData) {
+			const {extraIngredients, name: currentRecipeName} = currentRecipeData;
 
 			const recipe = instance_recipe.getPropsByName(currentRecipeName);
 			const {ingredients: originalIngredients, positiveTags: originalTags} = recipe;
@@ -139,7 +139,7 @@ export default memo(
 		const avatarRatingColor = currentRating ? customerRatingColorMap[currentRating] : undefined;
 		const avatarRatingContent =
 			currentRating ??
-			`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipe ? '' : '料理、'}顾客点单需求以评级`;
+			`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipeData ? '' : '料理、'}顾客点单需求以评级`;
 
 		const getTagTooltip = (selectedTags: Selection, tag: string) => (
 			<div>

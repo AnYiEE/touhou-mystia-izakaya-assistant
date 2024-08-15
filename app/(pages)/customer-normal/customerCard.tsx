@@ -37,7 +37,7 @@ export default memo(
 		const currentRating = customerStore.shared.customer.rating.use();
 
 		const currentBeverageName = customerStore.shared.beverage.name.use();
-		const currentRecipe = customerStore.shared.recipe.data.use();
+		const currentRecipeData = customerStore.shared.recipe.data.use();
 
 		const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
 
@@ -50,11 +50,11 @@ export default memo(
 			() =>
 				Boolean(
 					currentBeverageName ||
-						currentRecipe ||
+						currentRecipeData ||
 						selectedCustomerBeverageTags.size > 0 ||
 						selectedCustomerPositiveTags.size > 0
 				),
-			[currentBeverageName, currentRecipe, selectedCustomerBeverageTags, selectedCustomerPositiveTags]
+			[currentBeverageName, currentRecipeData, selectedCustomerBeverageTags, selectedCustomerPositiveTags]
 		);
 
 		if (!currentCustomerName) {
@@ -83,8 +83,8 @@ export default memo(
 		}
 
 		const currentRecipeTagsWithPopular: TRecipeTag[] = [];
-		if (currentRecipe) {
-			const {extraIngredients, name: currentRecipeName} = currentRecipe;
+		if (currentRecipeData) {
+			const {extraIngredients, name: currentRecipeName} = currentRecipeData;
 
 			const recipe = instance_recipe.getPropsByName(currentRecipeName);
 			const {ingredients: originalIngredients, positiveTags: originalTags} = recipe;
@@ -110,7 +110,7 @@ export default memo(
 
 		const avatarRatingColor = currentRating ? customerRatingColorMap[currentRating] : undefined;
 		const avatarRatingContent =
-			currentRating ?? `请选择${currentBeverageName ? '' : '酒水、'}${currentRecipe ? '' : '料理'}以评级`;
+			currentRating ?? `请选择${currentBeverageName ? '' : '酒水、'}${currentRecipeData ? '' : '料理'}以评级`;
 
 		const getTagTooltip = (selectedTags: Selection, tag: string) =>
 			`双击/中键单击：将此标签${(selectedTags as SelectionSet).has(tag) ? '从筛选列表中移除' : '加入至筛选列表中'}`;

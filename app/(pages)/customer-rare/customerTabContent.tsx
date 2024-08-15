@@ -20,7 +20,7 @@ interface IProps {
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function CustomerTabContent({customerTabStyle, sortedData}, ref) {
-		const currentCustomer = store.shared.customer.data.use();
+		const currentCustomerData = store.shared.customer.data.use();
 
 		return (
 			<>
@@ -64,7 +64,7 @@ export default memo(
 										classNames={{
 											base: twJoin(
 												'h-16 w-16 ring-default hover:ring-warning lg:h-20 lg:w-20',
-												name === currentCustomer?.name && 'ring-primary'
+												name === currentCustomerData?.name && 'ring-primary'
 											),
 											icon: 'inline-table transition hover:scale-125 lg:inline-block',
 										}}

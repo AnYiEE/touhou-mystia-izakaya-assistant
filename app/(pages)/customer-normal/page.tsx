@@ -46,7 +46,7 @@ export default memo(function CustomerNormal() {
 	});
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
-	const currentRecipe = customerStore.shared.recipe.data.use();
+	const currentRecipeData = customerStore.shared.recipe.data.use();
 
 	const instance_customer = customerStore.instances.customer.get();
 	const instance_ingredient = customerStore.instances.ingredient.get();
@@ -256,7 +256,7 @@ export default memo(function CustomerNormal() {
 					<Tab isDisabled={!currentCustomerName} key="beverage" title="酒水">
 						<BeverageTabContent />
 					</Tab>
-					<Tab isDisabled={!(currentCustomerName && currentRecipe)} key="ingredient" title="食材">
+					<Tab isDisabled={!(currentCustomerName && currentRecipeData)} key="ingredient" title="食材">
 						<IngredientsTabContent
 							ingredientsTabStyle={ingredientTabStyle}
 							sortedData={ingredientsSortedData}

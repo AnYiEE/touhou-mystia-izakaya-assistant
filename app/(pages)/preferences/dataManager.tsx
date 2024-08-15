@@ -69,8 +69,8 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 	const [isSavePopoverOpened, toggleSavePopoverOpened] = useReducer(toggleBoolean, false);
 	const [isResetPopoverOpened, toggleResetPopoverOpened] = useReducer(toggleBoolean, false);
 
-	const mealData = customerStore.persistence.meals.use();
-	const jsonString = useMemo(() => JSON.stringify(mealData, null, '\t'), [mealData]);
+	const currentMealData = customerStore.persistence.meals.use();
+	const currentMealDataString = useMemo(() => JSON.stringify(currentMealData, null, '\t'), [currentMealData]);
 
 	useEffect(() => {
 		const hasValue = Boolean(throttledImportValue);
@@ -98,8 +98,8 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 	}, [throttledImportValue]);
 
 	const handleDownloadButtonPress = useCallback(() => {
-		download(`customer_rare_data-${Object.keys(mealData).length}-${Date.now()}`, jsonString);
-	}, [jsonString, mealData]);
+		download(`customer_rare_data-${Object.keys(currentMealData).length}-${Date.now()}`, currentMealDataString);
+	}, [currentMealData, currentMealDataString]);
 
 	const handleImportData = useCallback(() => {
 		toggleSavePopoverOpened();
@@ -168,7 +168,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 									pre: 'max-h-[13.25rem] basis-full overflow-auto whitespace-pre-wrap',
 								}}
 							>
-								{jsonString}
+								{currentMealDataString}
 							</Snippet>
 							<Button fullWidth color="primary" variant="flat" onPress={handleDownloadButtonPress}>
 								下载

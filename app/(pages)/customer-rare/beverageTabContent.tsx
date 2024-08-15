@@ -48,7 +48,7 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLTableElement | null, IProps>(function BeverageTabContent(_props, ref) {
-		const currentCustomer = store.shared.customer.data.use();
+		const currentCustomerData = store.shared.customer.data.use();
 		const selectedCustomerBeverageTags = store.shared.customer.beverageTags.use();
 
 		const currentBeverageName = store.shared.beverage.name.use();
@@ -75,7 +75,7 @@ export default memo(
 		const filteredData = useMemo(() => {
 			let clonedData = cloneDeep(instance_beverage.data) as TBeveragesWithSuitability;
 
-			if (!currentCustomer) {
+			if (!currentCustomerData) {
 				return clonedData.map((item) => ({
 					...item,
 					matchedTags: [] as string[],
@@ -83,7 +83,7 @@ export default memo(
 				}));
 			}
 
-			const {target, name: currentCustomerName} = currentCustomer;
+			const {target, name: currentCustomerName} = currentCustomerData;
 
 			const instance_customer = (
 				target === 'customer_rare' ? instance_rare : instance_special
@@ -127,7 +127,7 @@ export default memo(
 				return isNameMatched && isDlcMatched && isTagsMatched;
 			});
 		}, [
-			currentCustomer,
+			currentCustomerData,
 			hasNameFilter,
 			instance_beverage,
 			instance_rare,
@@ -182,11 +182,11 @@ export default memo(
 			(data: TBeverageWithSuitability, columnKey: TTableColumnKey) => {
 				const {name, price, suitability, matchedTags, tags: beverageTags} = data;
 
-				if (!currentCustomer) {
+				if (!currentCustomerData) {
 					return null;
 				}
 
-				const {beverage: beverageTagStyle} = customerTagStyleMap[currentCustomer.target];
+				const {beverage: beverageTagStyle} = customerTagStyleMap[currentCustomerData.target];
 
 				const tags = (
 					<TagGroup>
@@ -256,7 +256,7 @@ export default memo(
 						);
 				}
 			},
-			[currentCustomer]
+			[currentCustomerData]
 		);
 
 		const tableToolbar = useMemo(

@@ -18,14 +18,14 @@ interface IProps {}
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(_props, ref) {
 		const currentCustomerName = customerStore.shared.customer.name.use();
-		const savedMeal = customerStore.persistence.meals.use();
+		const currentSavedMeals = customerStore.persistence.meals.use();
 
 		const currentGlobalPopular = globalStore.persistence.popular.use();
 
 		const instance_customer = customerStore.instances.customer.get();
 		const instance_recipe = customerStore.instances.recipe.get();
 
-		if (!currentCustomerName || !savedMeal[currentCustomerName]?.length) {
+		if (!currentCustomerName || !currentSavedMeals[currentCustomerName]?.length) {
 			return null;
 		}
 
@@ -38,7 +38,7 @@ export default memo(
 			customerTags = new Set([...customerNegativeTags, ...customerPositiveTags]);
 		}
 
-		const savedCustomerMeal = savedMeal[currentCustomerName];
+		const savedCustomerMeal = currentSavedMeals[currentCustomerName];
 
 		return (
 			<Card fullWidth shadow="sm" ref={ref}>

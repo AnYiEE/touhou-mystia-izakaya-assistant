@@ -48,11 +48,11 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLTableElement | null, IProps>(function RecipeTabContent(_props, ref) {
-		const currentCustomer = store.shared.customer.data.use();
+		const currentCustomerData = store.shared.customer.data.use();
 		const currentCustomerPopular = store.shared.customer.popular.use();
 		const selectedCustomerPositiveTags = store.shared.customer.positiveTags.use();
 
-		const currentRecipe = store.shared.recipe.data.use();
+		const currentRecipeData = store.shared.recipe.data.use();
 		const selectedDlcs = store.shared.recipe.dlcs.use();
 		const selectedCookers = store.shared.recipe.cookers.use();
 
@@ -78,7 +78,7 @@ export default memo(
 		const filteredData = useMemo(() => {
 			let clonedData = cloneDeep(instance_recipe.data) as TRecipesWithSuitability;
 
-			if (!currentCustomer) {
+			if (!currentCustomerData) {
 				return clonedData.map((item) => ({
 					...item,
 					matchedNegativeTags: [] as string[],
@@ -87,7 +87,7 @@ export default memo(
 				}));
 			}
 
-			const {target, name: currentCustomerName} = currentCustomer;
+			const {target, name: currentCustomerName} = currentCustomerData;
 
 			const instance_customer = (
 				target === 'customer_rare' ? instance_rare : instance_special
@@ -156,7 +156,7 @@ export default memo(
 				return isNameMatched && isDlcMatched && isCookerMatched && isPositiveTagsMatched;
 			});
 		}, [
-			currentCustomer,
+			currentCustomerData,
 			currentCustomerPopular,
 			hasNameFilter,
 			instance_rare,
@@ -211,7 +211,7 @@ export default memo(
 			[filteredData.length, tableRowsPerPageNumber]
 		);
 
-		const tableSelectedKeys = new Set([currentRecipe?.name ?? '']);
+		const tableSelectedKeys = new Set([currentRecipeData?.name ?? '']);
 
 		const renderTableCell = useCallback(
 			(data: TRecipeWithSuitability, columnKey: TTableColumnKey) => {
@@ -228,7 +228,7 @@ export default memo(
 					matchedPositiveTags,
 				} = data;
 
-				if (!currentCustomer) {
+				if (!currentCustomerData) {
 					return null;
 				}
 
@@ -238,7 +238,7 @@ export default memo(
 					currentCustomerPopular
 				);
 				const {positive: positiveTagStyle, negative: negativeTagStyle} =
-					customerTagStyleMap[currentCustomer.target];
+					customerTagStyleMap[currentCustomerData.target];
 
 				const tags = (
 					<TagGroup>
@@ -338,7 +338,7 @@ export default memo(
 						);
 				}
 			},
-			[currentCustomer, currentCustomerPopular, instance_recipe]
+			[currentCustomerData, currentCustomerPopular, instance_recipe]
 		);
 
 		const tableToolbar = useMemo(
