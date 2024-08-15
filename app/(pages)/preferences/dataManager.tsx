@@ -33,6 +33,11 @@ import {checkA11yConfirmKey, toggleBoolean} from '@/utils';
 
 const JSON_TYPE = 'application/json';
 
+enum DownloadButtonLabel {
+	Download = '下載',
+	Downloading = '已尝试唤起下载',
+}
+
 function download(fileName: string, jsonString: string) {
 	const blob = new Blob([jsonString], {
 		type: JSON_TYPE,
@@ -72,34 +77,26 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 	const currentMealData = customerStore.persistence.meals.use();
 	const currentMealDataString = useMemo(() => JSON.stringify(currentMealData, null, '\t'), [currentMealData]);
 
-	useEffect(() => {
-		const hasValue = Boolean(throttledImportValue);
-		try {
-			setImportData(null);
-			if (!hasValue) {
-				setIsSaveButtonError(false);
-			}
-			setIsSaveButtonLoading(true);
-			const json = JSON.parse(throttledImportValue) as unknown;
-			if (Array.isArray(json) || !isObjectLike(json)) {
-				throw new TypeError('not an object');
-			}
-			setImportData(json);
-			setIsSaveButtonDisabled(false);
-			setIsSaveButtonError(false);
-			setIsSaveButtonLoading(false);
-		} catch {
-			setIsSaveButtonDisabled(true);
-			if (hasValue) {
-				setIsSaveButtonError(true);
-			}
-			setIsSaveButtonLoading(false);
-		}
-	}, [throttledImportValue]);
+	const [downloadButtonLabel, setDownloadButtonLabel] = useState(DownloadButtonLabel.Download);
+	const downloadButtonLabelTimer = useRef<NodeJS.Timeout>();
+
+	const hideDownloadingLabel = useCallback(() => {
+		setDownloadButtonLabel(DownloadButtonLabel.Download);
+		clearTimeout(downloadButtonLabelTimer.current);
+	}, []);
+
+	const showDownloadingLabel = useCallback(() => {
+		setDownloadButtonLabel(DownloadButtonLabel.Downloading);
+		clearTimeout(downloadButtonLabelTimer.current);
+		downloadButtonLabelTimer.current = setTimeout(() => {
+			hideDownloadingLabel();
+		}, 3000);
+	}, [hideDownloadingLabel]);
 
 	const handleDownloadButtonPress = useCallback(() => {
+		showDownloadingLabel();
 		download(`customer_rare_data-${Object.keys(currentMealData).length}-${Date.now()}`, currentMealDataString);
-	}, [currentMealData, currentMealDataString]);
+	}, [currentMealData, currentMealDataString, showDownloadingLabel]);
 
 	const handleImportData = useCallback(() => {
 		toggleSavePopoverOpened();
@@ -139,6 +136,31 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 		});
 	}, []);
 
+	useEffect(() => {
+		const hasValue = Boolean(throttledImportValue);
+		try {
+			setImportData(null);
+			if (!hasValue) {
+				setIsSaveButtonError(false);
+			}
+			setIsSaveButtonLoading(true);
+			const json = JSON.parse(throttledImportValue) as unknown;
+			if (Array.isArray(json) || !isObjectLike(json)) {
+				throw new TypeError('not an object');
+			}
+			setImportData(json);
+			setIsSaveButtonDisabled(false);
+			setIsSaveButtonError(false);
+			setIsSaveButtonLoading(false);
+		} catch {
+			setIsSaveButtonDisabled(true);
+			if (hasValue) {
+				setIsSaveButtonError(true);
+			}
+			setIsSaveButtonLoading(false);
+		}
+	}, [throttledImportValue]);
+
 	return (
 		<>
 			<H1 subTitle="备份/还原/重置稀客套餐数据">数据管理</H1>
@@ -171,7 +193,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 								{currentMealDataString}
 							</Snippet>
 							<Button fullWidth color="primary" variant="flat" onPress={handleDownloadButtonPress}>
-								下载
+								{downloadButtonLabel}
 							</Button>
 						</div>
 					</Tab>
