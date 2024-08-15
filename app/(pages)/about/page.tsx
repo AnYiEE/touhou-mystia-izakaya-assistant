@@ -9,16 +9,18 @@ import QRCode from '@/components/qrCode';
 
 import {siteConfig} from '@/configs';
 
-const {description, name, shortName, links} = siteConfig;
+const {name, shortName, links} = siteConfig;
 
 export default memo(function About() {
 	return (
 		<div>
 			<H1 isFirst>项目介绍</H1>
 			<div className="space-y-2 break-all text-justify indent-8">
-				<p>{description}</p>
 				<p>
-					使用{name}（以下简称“{shortName}”）并不意味您拥有
+					{name}（以下简称“{shortName}”）是为游戏《东方夜雀食堂》所打造的工具，旨在为玩家的游玩过程提供帮助。
+				</p>
+				<p>
+					使用{shortName}并不意味您拥有
 					{shortName}
 					或其内所涉及的公司名称、商标、产品等的任何知识产权和所有权。除非您获得相关内容所有者的明确许可或法律许可，否则您不得非法使用
 					{shortName}中的任何内容。请勿删除、隐藏或更改
