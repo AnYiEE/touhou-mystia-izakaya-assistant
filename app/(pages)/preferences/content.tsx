@@ -57,8 +57,8 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 						size="sm"
 						onValueChange={onIsNegativePopularTagChange}
 						aria-label={`设置为流行${isNegativePopularTag ? '喜爱' : '厌恶'}`}
-						className="ml-2"
 						classNames={{
+							base: 'ml-2',
 							wrapper: 'bg-primary',
 						}}
 					/>

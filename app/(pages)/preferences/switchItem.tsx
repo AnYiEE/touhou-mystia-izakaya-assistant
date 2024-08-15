@@ -14,7 +14,7 @@ export default memo(
 		ref
 	) {
 		return (
-			<div className="flex items-center">
+			<div className="flex items-center gap-2">
 				<span className="font-medium">{children}</span>
 				<Switch
 					endContent={<span>关</span>}
@@ -22,7 +22,6 @@ export default memo(
 					isSelected={isSelected}
 					size="sm"
 					onValueChange={onValueChange}
-					className="ml-2"
 					classNames={{
 						endContent: 'leading-none',
 						startContent: 'leading-none',
