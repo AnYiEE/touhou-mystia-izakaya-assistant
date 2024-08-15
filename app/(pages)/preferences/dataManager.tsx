@@ -17,7 +17,17 @@ import {debounce, isObjectLike} from 'lodash';
 
 import {useThrottle} from '@/hooks';
 
-import {Button, Popover, PopoverContent, PopoverTrigger, Snippet, Tab, Tabs, Textarea} from '@nextui-org/react';
+import {
+	Button,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	Snippet,
+	Tab,
+	Tabs,
+	Textarea,
+	Tooltip,
+} from '@nextui-org/react';
 
 import {showProgress} from '@/(pages)/navbar';
 import {TrackCategory, trackEvent} from '@/components/analytics';
@@ -34,8 +44,9 @@ import {checkA11yConfirmKey, toggleBoolean} from '@/utils';
 const JSON_TYPE = 'application/json';
 
 enum DownloadButtonLabel {
-	Download = '下載',
-	Downloading = '已尝试唤起下载',
+	Download = '下载',
+	Downloading = '尝试唤起下载器...',
+	DownloadingTip = '如无响应，请检查浏览器权限、设置和浏览器扩展程序。',
 }
 
 function download(fileName: string, jsonString: string) {
@@ -68,6 +79,9 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 	const [importData, setImportData] = useState<object | null>(null);
 	const importInputRef = useRef<HTMLInputElement | null>(null);
 
+	const [isDownloadButtonDisabled, setIsDownloadButtonDisabled] = useState(false);
+	const [downloadButtonLabel, setDownloadButtonLabel] = useState(DownloadButtonLabel.Download);
+
 	const [isSaveButtonDisabled, setIsSaveButtonDisabled] = useState(true);
 	const [isSaveButtonError, setIsSaveButtonError] = useState(false);
 	const [isSaveButtonLoading, setIsSaveButtonLoading] = useState(false);
@@ -77,26 +91,15 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 	const currentMealData = customerStore.persistence.meals.use();
 	const currentMealDataString = useMemo(() => JSON.stringify(currentMealData, null, '\t'), [currentMealData]);
 
-	const [downloadButtonLabel, setDownloadButtonLabel] = useState(DownloadButtonLabel.Download);
-	const downloadButtonLabelTimer = useRef<NodeJS.Timeout>();
-
-	const hideDownloadingLabel = useCallback(() => {
-		setDownloadButtonLabel(DownloadButtonLabel.Download);
-		clearTimeout(downloadButtonLabelTimer.current);
-	}, []);
-
-	const showDownloadingLabel = useCallback(() => {
-		setDownloadButtonLabel(DownloadButtonLabel.Downloading);
-		clearTimeout(downloadButtonLabelTimer.current);
-		downloadButtonLabelTimer.current = setTimeout(() => {
-			hideDownloadingLabel();
-		}, 3000);
-	}, [hideDownloadingLabel]);
-
 	const handleDownloadButtonPress = useCallback(() => {
-		showDownloadingLabel();
+		setIsDownloadButtonDisabled(true);
+		setDownloadButtonLabel(DownloadButtonLabel.Downloading);
+		setTimeout(() => {
+			setIsDownloadButtonDisabled(false);
+			setDownloadButtonLabel(DownloadButtonLabel.Download);
+		}, 5000);
 		download(`customer_rare_data-${Object.keys(currentMealData).length}-${Date.now()}`, currentMealDataString);
-	}, [currentMealData, currentMealDataString, showDownloadingLabel]);
+	}, [currentMealData, currentMealDataString]);
 
 	const handleImportData = useCallback(() => {
 		toggleSavePopoverOpened();
@@ -192,9 +195,23 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 							>
 								{currentMealDataString}
 							</Snippet>
-							<Button fullWidth color="primary" variant="flat" onPress={handleDownloadButtonPress}>
-								{downloadButtonLabel}
-							</Button>
+							<Tooltip
+								isOpen
+								showArrow
+								color="success"
+								content={DownloadButtonLabel.DownloadingTip}
+								isDisabled={!isDownloadButtonDisabled}
+							>
+								<Button
+									fullWidth
+									color={isDownloadButtonDisabled ? 'success' : 'primary'}
+									isDisabled={isDownloadButtonDisabled}
+									variant="flat"
+									onPress={handleDownloadButtonPress}
+								>
+									{downloadButtonLabel}
+								</Button>
+							</Tooltip>
 						</div>
 					</Tab>
 					<Tab key="restore" title="还原">
