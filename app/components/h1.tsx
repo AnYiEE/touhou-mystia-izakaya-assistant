@@ -1,17 +1,14 @@
 import {type HTMLAttributes, type PropsWithChildren, forwardRef, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
-type TClassName = HTMLAttributes<HTMLHeadingElement>['className'];
-
-interface IProps {
-	className: TClassName;
-	isFirst: boolean;
-	subTitle: ReactNodeWithoutBoolean;
-	subTitleClassName: TClassName;
+interface IProps extends Pick<HTMLAttributes<HTMLHeadingElement>, 'className'> {
+	isFirst?: boolean;
+	subTitle?: ReactNodeWithoutBoolean;
+	subTitleClassName?: HTMLAttributes<HTMLSpanElement>['className'];
 }
 
 export default memo(
-	forwardRef<HTMLHeadingElement | null, PropsWithChildren<Partial<IProps>>>(function H1(
+	forwardRef<HTMLHeadingElement | null, PropsWithChildren<IProps>>(function H1(
 		{className, isFirst, subTitle, subTitleClassName, children},
 		ref
 	) {
