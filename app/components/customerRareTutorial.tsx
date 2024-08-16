@@ -75,14 +75,14 @@ export default memo(function CustomerRareTutorial() {
 					},
 				},
 				{
-					element: 'div>:last-child>div+[style*="color"]',
+					element: 'div>:last-child>span+[style*="color"]',
 					popover: {
 						title: '选择酒水标签', // eslint-disable-next-line sort-keys
 						description: '长按或右键单击标签，选中“可加冰”标签。此次教程中，假设莉格露点单“可加冰”的酒水。',
 					},
 				},
 				{
-					element: 'div>:last-child>div+[style*="color"]',
+					element: 'div>:last-child>span+[style*="color"]',
 					popover: {
 						title: '筛选酒水标签', // eslint-disable-next-line sort-keys
 						description: '双击或中键单击标签，以该标签为目标筛选酒水。',
@@ -118,7 +118,7 @@ export default memo(function CustomerRareTutorial() {
 					},
 				},
 				{
-					element: '[title="烤架"]',
+					element: '[role="button"][title="烤架"]',
 					popover: {
 						title: '标记为使用夜雀系列厨具制作', // eslint-disable-next-line sort-keys
 						description:
@@ -147,10 +147,11 @@ export default memo(function CustomerRareTutorial() {
 					},
 				},
 				{
-					element: '[aria-label="全局设置和更多信息"]',
+					element: '[aria-label="更多信息"]',
 					popover: {
-						title: '全局设置和更多信息', // eslint-disable-next-line sort-keys
-						description: '在此处查看更多信息，设置游戏中现时的流行喜爱或流行厌恶标签。',
+						title: '更多信息', // eslint-disable-next-line sort-keys
+						description:
+							'在此处可以查看更多信息。点击导航栏中的“设置”按钮可以调整更多偏好项，如：设置游戏中现时的流行喜爱或流行厌恶标签。',
 						onPopoverRender(popover) {
 							const completeButton = document.createElement('button');
 							completeButton.textContent = '完成';
