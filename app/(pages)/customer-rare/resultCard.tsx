@@ -188,30 +188,38 @@ export default memo(
 						<div className="flex items-center gap-2">
 							{currentRecipeData ? (
 								<>
-									<Tooltip
-										showArrow
-										content={`单击：将此点单标记为使用${hasMystiaCooker ? '非' : ''}夜雀系列厨具制作`}
-									>
-										<Sprite
-											target="cooker"
-											name={instance_recipe.getPropsByName(currentRecipeData.name, 'cooker')}
-											size={2}
-											onClick={store.toggleMystiaCooker}
-											onKeyDown={(event) => {
-												if (checkA11yConfirmKey(event)) {
-													store.toggleMystiaCooker();
-												}
-											}}
-											role="button"
-											tabIndex={0}
-											aria-label={`单击：将此点单标记为使用${hasMystiaCooker ? '非' : ''}夜雀系列厨具制作`}
-											className={twJoin(
-												'cursor-pointer',
-												hasMystiaCooker &&
-													'rounded-full ring-2 ring-warning-400 ring-offset-1 dark:ring-warning-200'
-											)}
-										/>
-									</Tooltip>
+									{(() => {
+										const originalCooker = instance_recipe.getPropsByName(
+											currentRecipeData.name,
+											'cooker'
+										);
+										const cooker = hasMystiaCooker ? `夜雀${originalCooker}` : originalCooker;
+										const label = `单击：将此点单标记为使用${hasMystiaCooker ? '非' : ''}夜雀${originalCooker}制作`;
+										return (
+											<Tooltip showArrow content={label}>
+												<Sprite
+													target="cooker"
+													name={originalCooker}
+													size={2}
+													onClick={store.toggleMystiaCooker}
+													onKeyDown={(event) => {
+														if (checkA11yConfirmKey(event)) {
+															store.toggleMystiaCooker();
+														}
+													}}
+													role="button"
+													tabIndex={0}
+													aria-label={label}
+													title={cooker}
+													className={twJoin(
+														'cursor-pointer',
+														hasMystiaCooker &&
+															'rounded-full ring-2 ring-warning-400 ring-offset-1 dark:ring-warning-200'
+													)}
+												/>
+											</Tooltip>
+										);
+									})()}
 									<Sprite target="recipe" name={currentRecipeData.name} size={2.5} />
 								</>
 							) : (
