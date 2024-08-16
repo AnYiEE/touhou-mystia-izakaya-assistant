@@ -47,7 +47,9 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 			>
 				顾客卡片中标签的浮动提示
 			</SwitchItem>
-			<H3>流行标签</H3>
+			<H3 subTitle="正确设置游戏中现时流行的标签可以使套餐评级更为准确" subTitleClassName="hidden md:block">
+				流行标签
+			</H3>
 			<div className="space-y-2">
 				<div className="flex items-center">
 					<span className="font-medium">类别：</span>
