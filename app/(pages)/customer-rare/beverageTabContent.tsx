@@ -286,14 +286,13 @@ export default memo(
 								items={allBeverageTags}
 								defaultSelectedKeys={selectedCustomerBeverageTags}
 								selectedKeys={selectedCustomerBeverageTags}
-								selectionMode="multiple"
 								placeholder="标签"
 								size="sm"
 								startContent={<FontAwesomeIcon icon={faTags} />}
 								variant="flat"
 								onSelectionChange={store.onBeverageTableSelectedTagsChange}
-								aria-label="选择目标酒水所包含的标签"
-								title="选择目标酒水所包含的标签"
+								aria-label="选择顾客所点单的酒水标签"
+								title="选择顾客所点单的酒水标签"
 							>
 								{({value}) => <SelectItem key={value}>{value}</SelectItem>}
 							</Select>

@@ -368,14 +368,13 @@ export default memo(
 								items={allRecipeTags}
 								defaultSelectedKeys={selectedCustomerPositiveTags}
 								selectedKeys={selectedCustomerPositiveTags}
-								selectionMode="multiple"
 								placeholder="标签"
 								size="sm"
 								startContent={<FontAwesomeIcon icon={faTags} />}
 								variant="flat"
 								onSelectionChange={store.onRecipeTableSelectedPositiveTagsChange}
-								aria-label="选择目标料理所包含的标签"
-								title="选择目标料理所包含的标签"
+								aria-label="选择顾客所点单的料理标签"
+								title="选择顾客所点单的料理标签"
 							>
 								{({value}) => <SelectItem key={value}>{value}</SelectItem>}
 							</Select>

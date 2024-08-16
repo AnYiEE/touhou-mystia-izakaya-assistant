@@ -21,7 +21,7 @@ import {
 	recipeInstance as instance_recipe,
 } from '@/methods/food';
 import {type IPopularData} from '@/stores';
-import {getAllItemNames} from '@/stores/utils';
+import {getAllItemNames, keepLastTag} from '@/stores/utils';
 import {numberSort, pinyinSort, removeLastElement, union} from '@/utils';
 
 const rareDlcs = instance_rare.getValuesByProp(instance_rare.data, 'dlc').sort(numberSort);
@@ -307,11 +307,7 @@ export const customerRareStore = store(state, {
 			currentStore.shared.customer.filterVisibility.set(false);
 			currentStore.shared.ingredient.filterVisibility.set(false);
 			currentStore.shared.customer.beverageTags.set((prev) => {
-				if (prev.has(tag)) {
-					prev.delete(tag);
-				} else {
-					prev.add(tag);
-				}
+				keepLastTag(prev, tag);
 			});
 		},
 		onCustomerFilterRecipeTag(tag: TRecipeTag) {
@@ -320,11 +316,7 @@ export const customerRareStore = store(state, {
 			currentStore.shared.customer.filterVisibility.set(false);
 			currentStore.shared.ingredient.filterVisibility.set(false);
 			currentStore.shared.customer.positiveTags.set((prev) => {
-				if (prev.has(tag)) {
-					prev.delete(tag);
-				} else {
-					prev.add(tag);
-				}
+				keepLastTag(prev, tag);
 			});
 		},
 		onCustomerOrderBeverageTag(tag: TBeverageTag) {

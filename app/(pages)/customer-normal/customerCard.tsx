@@ -112,8 +112,13 @@ export default memo(
 		const avatarRatingContent =
 			currentRating ?? `请选择${currentBeverageName ? '' : '酒水、'}${currentRecipeData ? '' : '料理'}以评级`;
 
-		const getTagTooltip = (selectedTags: Selection, tag: string) =>
-			`双击/中键单击：将此标签${(selectedTags as SelectionSet).has(tag) ? '从筛选列表中移除' : '加入至筛选列表中'}`;
+		const getTagTooltip = (type: 'beverageTag' | 'recipeTag', selectedTags: Selection, tag: string) => {
+			const isTagExisted = (selectedTags as SelectionSet).has(tag);
+			const tagType = type === 'beverageTag' ? '酒水' : '料理';
+			return `双击/中键单击：${
+				isTagExisted ? `移除正筛选${tagType}表格的${tagType}标签` : `以此标签作为目标筛选${tagType}表格`
+			}`;
+		};
 
 		return (
 			<Card fullWidth shadow="sm" ref={ref}>
@@ -173,7 +178,7 @@ export default memo(
 										key={tag}
 										showArrow
 										closeDelay={0}
-										content={getTagTooltip(selectedCustomerPositiveTags, tag)}
+										content={getTagTooltip('recipeTag', selectedCustomerPositiveTags, tag)}
 										isDisabled={!isShowTagsTooltip}
 									>
 										<Tags.Tag
@@ -230,7 +235,7 @@ export default memo(
 										key={tag}
 										showArrow
 										closeDelay={0}
-										content={getTagTooltip(selectedCustomerBeverageTags, tag)}
+										content={getTagTooltip('beverageTag', selectedCustomerBeverageTags, tag)}
 										isDisabled={!isShowTagsTooltip}
 									>
 										<Tags.Tag

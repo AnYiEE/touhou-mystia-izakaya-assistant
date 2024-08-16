@@ -21,7 +21,7 @@ import {
 	recipeInstance as instance_recipe,
 } from '@/methods/food';
 import {type IPopularData, type TPopularTag} from '@/stores';
-import {getAllItemNames} from '@/stores/utils';
+import {getAllItemNames, keepLastTag} from '@/stores/utils';
 import {numberSort, pinyinSort, removeLastElement} from '@/utils';
 
 const storeVersion = {
@@ -248,11 +248,7 @@ export const customerNormalStore = store(state, {
 			currentStore.shared.customer.filterVisibility.set(false);
 			currentStore.shared.ingredient.filterVisibility.set(false);
 			currentStore.shared.customer.beverageTags.set((prev) => {
-				if (prev.has(tag)) {
-					prev.delete(tag);
-				} else {
-					prev.add(tag);
-				}
+				keepLastTag(prev, tag);
 			});
 		},
 		onCustomerFilterRecipeTag(tag: TRecipeTag) {
@@ -261,11 +257,7 @@ export const customerNormalStore = store(state, {
 			currentStore.shared.customer.filterVisibility.set(false);
 			currentStore.shared.ingredient.filterVisibility.set(false);
 			currentStore.shared.customer.positiveTags.set((prev) => {
-				if (prev.has(tag)) {
-					prev.delete(tag);
-				} else {
-					prev.add(tag);
-				}
+				keepLastTag(prev, tag);
 			});
 		},
 		onCustomerSelectedChange(customerName: TCustomerNames) {

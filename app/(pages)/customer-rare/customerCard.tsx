@@ -141,15 +141,25 @@ export default memo(
 			currentRating ??
 			`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipeData ? '' : '料理、'}顾客点单需求以评级`;
 
-		const getTagTooltip = (selectedTags: Selection, tag: string) => (
-			<div>
-				<p>
-					双击/中键单击：将此标签
-					{(selectedTags as SelectionSet).has(tag) ? '从筛选列表中移除' : '加入至筛选列表中'}
-				</p>
-				<p>长按/右键单击：{currentCustomerOrder.beverageTag === tag ? '不再' : ''}将此标签视为顾客点单需求</p>
-			</div>
-		);
+		const getTagTooltip = (type: keyof typeof currentCustomerOrder, selectedTags: Selection, tag: string) => {
+			const isCurrentTag = currentCustomerOrder[type] === tag;
+			const isTagExisted = (selectedTags as SelectionSet).has(tag);
+			const tagType = type === 'beverageTag' ? '酒水' : '料理';
+			return (
+				<div>
+					<p>
+						双击/中键单击：
+						{isTagExisted
+							? `移除正筛选${tagType}表格的${tagType}标签`
+							: `以此标签作为目标筛选${tagType}表格`}
+					</p>
+					<p>
+						长按/右键单击：{isCurrentTag ? '不再' : ''}将此{isCurrentTag ? '' : tagType}
+						标签视为顾客点单需求
+					</p>
+				</div>
+			);
+		};
 
 		return (
 			<Card fullWidth shadow="sm" ref={ref}>
@@ -219,7 +229,7 @@ export default memo(
 										key={tag}
 										showArrow
 										closeDelay={0}
-										content={getTagTooltip(selectedCustomerPositiveTags, tag)}
+										content={getTagTooltip('recipeTag', selectedCustomerPositiveTags, tag)}
 										isDisabled={!isShowTagsTooltip}
 									>
 										<Tags.Tag
@@ -293,7 +303,7 @@ export default memo(
 										key={tag}
 										showArrow
 										closeDelay={0}
-										content={getTagTooltip(selectedCustomerBeverageTags, tag)}
+										content={getTagTooltip('beverageTag', selectedCustomerBeverageTags, tag)}
 										isDisabled={!isShowTagsTooltip}
 									>
 										<Tags.Tag
