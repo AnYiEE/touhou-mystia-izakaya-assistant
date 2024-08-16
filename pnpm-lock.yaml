@@ -73,9 +73,6 @@ importers:
       ua-parser-js:
         specifier: ^1.0.38
         version: 1.0.38
-      use-long-press:
-        specifier: ^3.2.0
-        version: 3.2.0(react@18.3.1)
       zustand:
         specifier: ^4.5.5
         version: 4.5.5(@types/react@18.3.3)(immer@10.1.1)(react@18.3.1)
@@ -4952,11 +4949,6 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
-
-  use-long-press@3.2.0:
-    resolution: {integrity: sha512-uq5o2qFR1VRjHn8Of7Fl344/AGvgk7C5Mcb4aSb1ZRVp6PkgdXJJLdRrlSTJQVkkQcDuqFbFc3mDX4COg7mRTA==}
-    peerDependencies:
-      react: '>=16.8.0'
 
   use-sidecar@1.1.2:
     resolution: {integrity: sha512-epTbsLuzZ7lPClpz2TyryBfztm7m+28DlEv2ZCQ3MDr5ssiwyOwGH/e5F9CkfWjJ1t4clvI58yF822/GUkjjhw==}
@@ -11200,10 +11192,6 @@ snapshots:
       use-isomorphic-layout-effect: 1.1.2(@types/react@18.3.3)(react@18.3.1)
     optionalDependencies:
       '@types/react': 18.3.3
-
-  use-long-press@3.2.0(react@18.3.1):
-    dependencies:
-      react: 18.3.1
 
   use-sidecar@1.1.2(@types/react@18.3.3)(react@18.3.1):
     dependencies:

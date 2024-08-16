@@ -1,18 +1,7 @@
-import {forwardRef, memo, useMemo} from 'react';
+import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
-import {useLongPress} from 'use-long-press';
-
-import {
-	Avatar,
-	Card,
-	Divider,
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-	type Selection,
-	Tooltip,
-} from '@nextui-org/react';
+import {Avatar, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
 import {faArrowsRotate} from '@fortawesome/free-solid-svg-icons';
 
 import InfoButton from './infoButton';
@@ -69,15 +58,15 @@ export default memo(
 			]
 		);
 
-		const bindBeverageTagLongPress = useLongPress((_longPressReactEvents, context) => {
-			const {context: tag} = context as {context: TBeverageTag};
+		const handleBeverageTagClick = useCallback((tag: TBeverageTag) => {
+			customerStore.onCustomerFilterBeverageTag(tag);
 			customerStore.onCustomerOrderBeverageTag(tag);
-		});
+		}, []);
 
-		const bindRecipePositiveTagLongPress = useLongPress((_longPressReactEvents, context) => {
-			const {context: tag} = context as {context: TRecipeTag};
+		const handleRecipeTagClick = useCallback((tag: TRecipeTag) => {
+			customerStore.onCustomerFilterRecipeTag(tag);
 			customerStore.onCustomerOrderRecipeTag(tag);
-		});
+		}, []);
 
 		if (!currentCustomerData) {
 			return null;
@@ -141,24 +130,10 @@ export default memo(
 			currentRating ??
 			`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipeData ? '' : '料理、'}顾客点单需求以评级`;
 
-		const getTagTooltip = (type: keyof typeof currentCustomerOrder, selectedTags: Selection, tag: string) => {
+		const getTagTooltip = (type: keyof typeof currentCustomerOrder, tag: string) => {
 			const isCurrentTag = currentCustomerOrder[type] === tag;
-			const isTagExisted = (selectedTags as SelectionSet).has(tag);
 			const tagType = type === 'beverageTag' ? '酒水' : '料理';
-			return (
-				<div>
-					<p>
-						双击/中键单击：
-						{isTagExisted
-							? `移除正筛选${tagType}表格的${tagType}标签`
-							: `以此标签作为目标筛选${tagType}表格`}
-					</p>
-					<p>
-						长按/右键单击：{isCurrentTag ? '不再' : ''}将此{isCurrentTag ? '' : tagType}
-						标签视为顾客点单需求
-					</p>
-				</div>
-			);
+			return `点击：${isCurrentTag ? '不再' : ''}将此标签视为顾客点单需求并${isCurrentTag ? `取消筛选${tagType}表格` : `以此标签筛选${tagType}表格`}`;
 		};
 
 		return (
@@ -229,7 +204,7 @@ export default memo(
 										key={tag}
 										showArrow
 										closeDelay={0}
-										content={getTagTooltip('recipeTag', selectedCustomerPositiveTags, tag)}
+										content={getTagTooltip('recipeTag', tag)}
 										isDisabled={!isShowTagsTooltip}
 									>
 										<Tags.Tag
@@ -244,35 +219,22 @@ export default memo(
 													: tag
 											}
 											tagStyle={customerTagStyleMap[currentCustomerTarget].positive}
-											onContextMenu={(event) => {
-												event.preventDefault();
-											}}
-											onDoubleClick={() => {
-												customerStore.onCustomerFilterRecipeTag(tag);
+											onClick={() => {
+												handleRecipeTagClick(tag);
 											}}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
-													customerStore.onCustomerOrderRecipeTag(tag);
-												}
-											}}
-											onMouseDown={(event) => {
-												if (event.button === 1) {
-													event.preventDefault();
-													customerStore.onCustomerFilterRecipeTag(tag);
-												}
-												if (event.button === 2) {
-													customerStore.onCustomerOrderRecipeTag(tag);
+													handleRecipeTagClick(tag);
 												}
 											}}
 											aria-label={`${tag}${currentCustomerOrder.recipeTag === tag ? '/已选定' : ''}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
 											role="button"
 											tabIndex={0}
 											className={twJoin(
-												'cursor-pointer select-none p-1 leading-none hover:opacity-80',
+												'cursor-pointer p-1 leading-none hover:opacity-80',
 												!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50',
 												currentCustomerOrder.recipeTag === tag && 'ring-2 ring-current'
 											)}
-											{...bindRecipePositiveTagLongPress(tag)}
 										/>
 									</Tooltip>
 								))}
@@ -286,7 +248,7 @@ export default memo(
 										tag={tag}
 										tagStyle={customerTagStyleMap[currentCustomerTarget].negative}
 										className={twJoin(
-											'cursor-not-allowed select-none p-1 leading-none',
+											'cursor-not-allowed p-1 leading-none',
 											!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50'
 										)}
 									/>
@@ -303,41 +265,28 @@ export default memo(
 										key={tag}
 										showArrow
 										closeDelay={0}
-										content={getTagTooltip('beverageTag', selectedCustomerBeverageTags, tag)}
+										content={getTagTooltip('beverageTag', tag)}
 										isDisabled={!isShowTagsTooltip}
 									>
 										<Tags.Tag
 											tag={tag}
 											tagStyle={customerTagStyleMap[currentCustomerTarget].beverage}
-											onContextMenu={(event) => {
-												event.preventDefault();
-											}}
-											onDoubleClick={() => {
-												customerStore.onCustomerFilterBeverageTag(tag);
+											onClick={() => {
+												handleBeverageTagClick(tag);
 											}}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
-													customerStore.onCustomerOrderBeverageTag(tag);
-												}
-											}}
-											onMouseDown={(event) => {
-												if (event.button === 1) {
-													event.preventDefault();
-													customerStore.onCustomerFilterBeverageTag(tag);
-												}
-												if (event.button === 2) {
-													customerStore.onCustomerOrderBeverageTag(tag);
+													handleBeverageTagClick(tag);
 												}
 											}}
 											aria-label={`${tag}${currentCustomerOrder.beverageTag === tag ? '/已选定' : ''}${beverageTags.includes(tag) ? '/已满足' : ''}`}
 											role="button"
 											tabIndex={0}
 											className={twJoin(
-												'cursor-pointer select-none p-1 leading-none hover:opacity-80',
+												'cursor-pointer p-1 leading-none hover:opacity-80',
 												!beverageTags.includes(tag) && 'opacity-50',
 												currentCustomerOrder.beverageTag === tag && 'ring-2 ring-current'
 											)}
-											{...bindBeverageTagLongPress(tag)}
 										/>
 									</Tooltip>
 								))}

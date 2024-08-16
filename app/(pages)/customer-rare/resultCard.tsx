@@ -194,7 +194,7 @@ export default memo(
 											'cooker'
 										);
 										const cooker = hasMystiaCooker ? `夜雀${originalCooker}` : originalCooker;
-										const label = `单击：将此点单标记为使用${hasMystiaCooker ? '非' : ''}夜雀${originalCooker}制作`;
+										const label = `点击：将此点单标记为使用${hasMystiaCooker ? '非' : ''}夜雀${originalCooker}制作`;
 										return (
 											<Tooltip showArrow content={label}>
 												<Sprite

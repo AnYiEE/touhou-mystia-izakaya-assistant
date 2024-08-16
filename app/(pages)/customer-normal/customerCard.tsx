@@ -115,9 +115,7 @@ export default memo(
 		const getTagTooltip = (type: 'beverageTag' | 'recipeTag', selectedTags: Selection, tag: string) => {
 			const isTagExisted = (selectedTags as SelectionSet).has(tag);
 			const tagType = type === 'beverageTag' ? '酒水' : '料理';
-			return `双击/中键单击：${
-				isTagExisted ? `移除正筛选${tagType}表格的${tagType}标签` : `以此标签作为目标筛选${tagType}表格`
-			}`;
+			return `点击：${isTagExisted ? `取消筛选${tagType}表格` : `以此标签筛选${tagType}表格`}`;
 		};
 
 		return (
@@ -184,7 +182,7 @@ export default memo(
 										<Tags.Tag
 											tag={tag}
 											tagStyle={CUSTOMER_NORMAL_TAG_STYLE.positive}
-											onDoubleClick={() => {
+											onClick={() => {
 												customerStore.onCustomerFilterRecipeTag(tag);
 											}}
 											onKeyDown={(event) => {
@@ -192,17 +190,11 @@ export default memo(
 													customerStore.onCustomerFilterRecipeTag(tag);
 												}
 											}}
-											onMouseDown={(event) => {
-												if (event.button === 1) {
-													event.preventDefault();
-													customerStore.onCustomerFilterRecipeTag(tag);
-												}
-											}}
 											aria-label={`${tag}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
 											role="button"
 											tabIndex={0}
 											className={twJoin(
-												'cursor-pointer select-none p-1 leading-none hover:opacity-80',
+												'cursor-pointer p-1 leading-none hover:opacity-80',
 												!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50'
 											)}
 										/>
@@ -218,7 +210,7 @@ export default memo(
 										tag={tag}
 										tagStyle={CUSTOMER_NORMAL_TAG_STYLE.negative}
 										className={twJoin(
-											'cursor-not-allowed select-none p-1 leading-none',
+											'cursor-not-allowed p-1 leading-none',
 											!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50'
 										)}
 									/>
@@ -241,7 +233,7 @@ export default memo(
 										<Tags.Tag
 											tag={tag}
 											tagStyle={CUSTOMER_NORMAL_TAG_STYLE.beverage}
-											onDoubleClick={() => {
+											onClick={() => {
 												customerStore.onCustomerFilterBeverageTag(tag);
 											}}
 											onKeyDown={(event) => {
@@ -249,17 +241,11 @@ export default memo(
 													customerStore.onCustomerFilterBeverageTag(tag);
 												}
 											}}
-											onMouseDown={(event) => {
-												if (event.button === 1) {
-													event.preventDefault();
-													customerStore.onCustomerFilterBeverageTag(tag);
-												}
-											}}
 											aria-label={`${tag}${beverageTags.includes(tag) ? '/已满足' : ''}`}
 											role="button"
 											tabIndex={0}
 											className={twJoin(
-												'cursor-pointer select-none p-1 leading-none hover:opacity-80',
+												'cursor-pointer p-1 leading-none hover:opacity-80',
 												!beverageTags.includes(tag) && 'opacity-50'
 											)}
 										/>

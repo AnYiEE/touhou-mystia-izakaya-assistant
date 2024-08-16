@@ -1,14 +1,10 @@
-import {type FC, type HTMLAttributes, type MouseEvent, forwardRef, memo} from 'react';
+import {type FC, type HTMLAttributes, forwardRef, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
 import type {TTagStyle} from '@/constants/types';
 import {type TTags} from '@/data';
 
-interface IHandleDoubleClick {
-	handleDoubleClick?: ((tag: TTags, event: MouseEvent<HTMLSpanElement>) => void) | undefined;
-}
-
-interface ITagProps extends ITagPropsBase, IHandleDoubleClick, HTMLAttributes<HTMLSpanElement> {}
+interface ITagProps extends ITagPropsBase, HTMLAttributes<HTMLSpanElement> {}
 
 interface ITagPropsBase {
 	tag: TTags | [TTags, string];
@@ -16,10 +12,7 @@ interface ITagPropsBase {
 }
 
 const Tag: FC<ITagProps> = memo(
-	forwardRef<HTMLSpanElement | null, ITagProps>(function Tag(
-		{tag, tagStyle = {}, handleDoubleClick, className, ...props},
-		ref
-	) {
+	forwardRef<HTMLSpanElement | null, ITagProps>(function Tag({tag, tagStyle = {}, className, ...props}, ref) {
 		const isArray = Array.isArray(tag);
 		const tagDescription = isArray ? `（${tag[1]}）` : '';
 		const tagName = isArray ? tag[0] : tag;
@@ -31,9 +24,6 @@ const Tag: FC<ITagProps> = memo(
 					backgroundColor: tagStyle.backgroundColor ?? 'inherit',
 					borderColor: tagStyle.borderColor ?? 'currentcolor',
 					color: tagStyle.color ?? 'currentcolor',
-				}}
-				onDoubleClick={(event) => {
-					handleDoubleClick?.(tagName, event);
 				}}
 				{...props}
 				ref={ref}
@@ -50,22 +40,14 @@ interface ITagsPropsBase {
 	tagStyle?: Partial<TTagStyle> | undefined;
 }
 
-interface ITagsProps extends ITagsPropsBase, IHandleDoubleClick, Pick<HTMLAttributes<HTMLSpanElement>, 'className'> {}
+interface ITagsProps extends ITagsPropsBase, Pick<HTMLAttributes<HTMLSpanElement>, 'className'> {}
 
-const TagsComponent: FC<ITagsProps> = memo(function Tags({tags, tagStyle = {}, handleDoubleClick, className}) {
+const TagsComponent: FC<ITagsProps> = memo(function Tags({tags, tagStyle = {}, className}) {
 	return (
 		<>
 			{tags &&
 				tags.length > 0 &&
-				tags.map((tag) => (
-					<Tag
-						key={tag}
-						tag={tag}
-						tagStyle={tagStyle}
-						handleDoubleClick={handleDoubleClick}
-						className={className}
-					/>
-				))}
+				tags.map((tag) => <Tag key={tag} tag={tag} tagStyle={tagStyle} className={className} />)}
 		</>
 	);
 });

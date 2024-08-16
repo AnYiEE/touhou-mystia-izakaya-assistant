@@ -13,10 +13,10 @@ export default memo(function InfoButton() {
 				<div className="text-justify text-xs">
 					<p className="mb-1 font-semibold">选单时</p>
 					<ol className="list-inside list-disc">
+						<li>点击顾客卡片中的标签可以将该标签添加至表格筛选列表或从中移除。</li>
 						<li>
-							单击套餐卡片中的厨具可以为当前套餐标记是否使用“夜雀”系列厨具，厨具类别是套餐评级时的参考维度之一。
+							点击套餐卡片中的厨具可以为当前套餐标记是否使用“夜雀”系列厨具，厨具类别是套餐评级时的参考维度之一。
 						</li>
-						<li>双击或中键单击顾客卡片中的标签可以将该标签添加至表格筛选列表或从中移除。</li>
 						<li>“保存套餐”按钮仅会在选择了料理和酒水时被启用。</li>
 						<li>评级时，默认您已选择了正确的料理和酒水。</li>
 					</ol>
