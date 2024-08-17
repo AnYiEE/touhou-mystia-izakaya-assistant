@@ -5,7 +5,15 @@ export function checkA11yConfirmKey(event: ReactKeyboardEvent | ReactMouseEvent 
 
 	if (type === 'click' || type === 'keydown') {
 		if (type === 'keydown') {
-			return (event as KeyboardEvent).key === 'Enter' || (event as KeyboardEvent).key === ' ';
+			const {key} = event as KeyboardEvent;
+			const isEnter = key === 'Enter';
+			const isSpace = key === ' ';
+
+			if (isSpace) {
+				event.preventDefault();
+			}
+
+			return isEnter || isSpace;
 		}
 
 		return true;
