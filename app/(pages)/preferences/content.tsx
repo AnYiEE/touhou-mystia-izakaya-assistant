@@ -17,6 +17,7 @@ interface IProps {
 }
 
 export default memo<Partial<IProps>>(function Content({onModalClose}) {
+	const isOrderLinkedFilter = customerStore.persistence.customer.orderLinkedFilter.use();
 	const isShowTagDescription = customerStore.persistence.customer.showTagDescription.use();
 
 	const popularTags = globalStore.popularTags.get();
@@ -84,13 +85,23 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 				</div>
 			</div>
 			<H2>稀客页面</H2>
-			<SwitchItem
-				isSelected={isShowTagDescription}
-				onValueChange={customerStore.persistence.customer.showTagDescription.set}
-				aria-label={`${isShowTagDescription ? '隐藏' : '显示'}料理标签描述`}
-			>
-				稀客卡片中料理标签的描述
-			</SwitchItem>
+			<H3>稀客卡片</H3>
+			<div className="space-y-2">
+				<SwitchItem
+					isSelected={isOrderLinkedFilter}
+					onValueChange={customerStore.persistence.customer.orderLinkedFilter.set}
+					aria-label={`选择点单需求标签的同时${isOrderLinkedFilter ? '不' : ''}筛选表格`}
+				>
+					选择点单需求的同时筛选表格
+				</SwitchItem>
+				<SwitchItem
+					isSelected={isShowTagDescription}
+					onValueChange={customerStore.persistence.customer.showTagDescription.set}
+					aria-label={`${isShowTagDescription ? '隐藏' : '显示'}料理标签描述`}
+				>
+					显示料理标签所对应的关键词
+				</SwitchItem>
+			</div>
 			<DataManager onModalClose={onModalClose} />
 		</div>
 	);

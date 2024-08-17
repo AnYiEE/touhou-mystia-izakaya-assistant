@@ -27,6 +27,7 @@ export default memo(
 		const currentCustomerOrder = customerStore.shared.customer.order.use();
 		const currentCustomerPopular = customerStore.shared.customer.popular.use();
 		const currentRating = customerStore.shared.customer.rating.use();
+		const isOrderLinkedFilter = customerStore.persistence.customer.orderLinkedFilter.use();
 		const isShowTagDescription = customerStore.persistence.customer.showTagDescription.use();
 
 		const currentBeverageName = customerStore.shared.beverage.name.use();
@@ -58,15 +59,25 @@ export default memo(
 			]
 		);
 
-		const handleBeverageTagClick = useCallback((tag: TBeverageTag) => {
-			customerStore.onCustomerFilterBeverageTag(tag);
-			customerStore.onCustomerOrderBeverageTag(tag);
-		}, []);
+		const handleBeverageTagClick = useCallback(
+			(tag: TBeverageTag) => {
+				if (isOrderLinkedFilter) {
+					customerStore.onCustomerFilterBeverageTag(tag);
+				}
+				customerStore.onCustomerOrderBeverageTag(tag);
+			},
+			[isOrderLinkedFilter]
+		);
 
-		const handleRecipeTagClick = useCallback((tag: TRecipeTag) => {
-			customerStore.onCustomerFilterRecipeTag(tag);
-			customerStore.onCustomerOrderRecipeTag(tag);
-		}, []);
+		const handleRecipeTagClick = useCallback(
+			(tag: TRecipeTag) => {
+				if (isOrderLinkedFilter) {
+					customerStore.onCustomerFilterRecipeTag(tag);
+				}
+				customerStore.onCustomerOrderRecipeTag(tag);
+			},
+			[isOrderLinkedFilter]
+		);
 
 		if (!currentCustomerData) {
 			return null;
@@ -133,7 +144,7 @@ export default memo(
 		const getTagTooltip = (type: keyof typeof currentCustomerOrder, tag: string) => {
 			const isCurrentTag = currentCustomerOrder[type] === tag;
 			const tagType = type === 'beverageTag' ? '酒水' : '料理';
-			return `点击：${isCurrentTag ? '不再' : ''}将此标签视为顾客点单需求并${isCurrentTag ? `取消筛选${tagType}表格` : `以此标签筛选${tagType}表格`}`;
+			return `点击：${isCurrentTag ? '不再' : ''}将此标签视为顾客点单需求${isOrderLinkedFilter ? `并${isCurrentTag ? `取消筛选${tagType}表格` : `以此标签筛选${tagType}表格`}` : ''}`;
 		};
 
 		return (

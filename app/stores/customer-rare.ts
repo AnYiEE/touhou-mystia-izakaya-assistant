@@ -39,6 +39,7 @@ const storeVersion = {
 	ingredientLevel: 6,
 	tagDescription: 7, // eslint-disable-next-line sort-keys
 	extraCustomer: 8,
+	linkedFilter: 9,
 } as const;
 
 const state = {
@@ -89,8 +90,10 @@ const state = {
 			},
 			pinyinSortState: PinyinSortState.NONE,
 			searchValue: '',
-			showTagDescription: true,
 			tabVisibility: TabVisibilityState.collapse,
+
+			orderLinkedFilter: true,
+			showTagDescription: true,
 		},
 		ingredient: {
 			filters: {
@@ -181,7 +184,7 @@ export const customerRareStore = store(state, {
 	persist: {
 		enabled: true,
 		name: 'page-customer_rare-storage',
-		version: storeVersion.extraCustomer,
+		version: storeVersion.linkedFilter,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -260,6 +263,11 @@ export const customerRareStore = store(state, {
 				const {filters} = oldState.persistence.customer;
 				filters.includes = [];
 				filters.excludes = [];
+			}
+			if (version < storeVersion.linkedFilter) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				const {customer} = oldState.persistence;
+				customer.orderLinkedFilter = true;
 			}
 			return persistedState as typeof state;
 		},
