@@ -133,6 +133,9 @@ module.exports = {
 			padding: {
 				titlebar: 'env(titlebar-area-height,0rem)',
 			},
+			zIndex: {
+				60: '60',
+			},
 		}, // cSpell:disable
 		fontFamily: {
 			mono: [
