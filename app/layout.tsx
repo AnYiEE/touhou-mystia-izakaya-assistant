@@ -130,8 +130,7 @@ export default function RootLayout({
 		metaDark.content = colorDark;
 		metaLight.content = colorLight;
 	}
-	document.head.append(metaDark);
-	document.head.append(metaLight);
+	document.head.append(metaDark, metaLight);
 })();`,
 					}}
 				/>

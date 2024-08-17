@@ -57,13 +57,11 @@ export default memo(function CustomerRareTutorial() {
 						onPopoverRender(popover) {
 							const skipButton = document.createElement('button');
 							skipButton.textContent = '跳过';
-							popover.footerButtons.append(skipButton);
 							skipButton.addEventListener('click', driverRef.current.destroy);
-
 							const nextButton = document.createElement('button');
 							nextButton.textContent = '下一步 →';
-							popover.footerButtons.append(nextButton);
 							nextButton.addEventListener('click', driverRef.current.moveNext);
+							popover.footerButtons.append(skipButton, nextButton);
 						},
 					},
 				},
@@ -148,8 +146,8 @@ export default memo(function CustomerRareTutorial() {
 						onPopoverRender(popover) {
 							const completeButton = document.createElement('button');
 							completeButton.textContent = '完成';
-							popover.footerButtons.append(completeButton);
 							completeButton.addEventListener('click', driverRef.current.destroy);
+							popover.footerButtons.append(completeButton);
 						},
 					},
 				},
