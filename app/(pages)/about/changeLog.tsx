@@ -75,6 +75,10 @@ export default memo(function ChangeLog() {
 				<li>新增：设置页面。</li>
 				<li>修复：顾客套餐评级逻辑。</li>
 			</Ul>
+			<H2>v0.8</H2>
+			<Ul>
+				<li>新增：稀客羁绊奖励数据及其展示界面。</li>
+			</Ul>
 		</>
 	);
 });

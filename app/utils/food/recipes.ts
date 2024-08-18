@@ -1,7 +1,8 @@
-import {cloneDeep} from 'lodash';
+import {cloneDeep, isObjectLike, sortBy} from 'lodash';
 
 import {Food} from './base';
-import {type TIngredientNames, type TRecipes} from '@/data';
+import {type ICurrentCustomer} from '@/(pages)/customer-rare/types';
+import {type TIngredientNames, type TRecipeNames, type TRecipes} from '@/data';
 import type {TIngredientTag, TRecipeTag} from '@/data/types';
 import {type IPopularData} from '@/stores';
 
@@ -9,6 +10,11 @@ type TRecipe = TRecipes[number];
 type TProcessPositiveTags<T extends TRecipe> = Omit<T, 'positiveTags'> & {
 	positiveTags: TRecipeTag[];
 };
+
+type TBondRecipes = {
+	level: number;
+	name: TRecipeNames;
+}[];
 
 export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 	private static tagCoverMap = {
@@ -18,6 +24,8 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 		重油: '清淡',
 		饱腹: '下酒',
 	} as const;
+
+	private static bondRecipesCache: Map<ICurrentCustomer['name'], TBondRecipes> = new Map();
 
 	constructor(data: TProcessPositiveTags<TRecipes[number]>[]) {
 		const clonedData = cloneDeep(data);
@@ -108,5 +116,29 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 		const newScore = this.calculateScore(newRecipePositiveTags, customerNegativeTags, customerPositiveTags);
 
 		return newScore - originalScore;
+	}
+
+	public getBondRecipes(customerData: ICurrentCustomer) {
+		if (Recipe.bondRecipesCache.has(customerData.name)) {
+			return Recipe.bondRecipesCache.get(customerData.name);
+		}
+
+		let bondRecipes: TBondRecipes = [];
+
+		this._data.forEach((recipe) => {
+			const {from} = recipe;
+			if (isObjectLike(from) && 'bond' in from && from.bond.name === customerData.name) {
+				bondRecipes.push({
+					level: from.bond.level,
+					name: recipe.name,
+				});
+			}
+		});
+
+		bondRecipes = sortBy(bondRecipes, 'level');
+
+		Recipe.bondRecipesCache.set(customerData.name, bondRecipes);
+
+		return bondRecipes;
 	}
 }

@@ -1,13 +1,106 @@
-import {memo} from 'react';
+import {type ReactElement, memo} from 'react';
 
-import {AccordionItem, Avatar} from '@nextui-org/react';
+import {AccordionItem, Avatar, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
 
 import {customerRatingColorMap} from './constants';
 import InfoButtonBase from './infoButtonBase';
+import Sprite from '@/components/sprite';
+
+import type {TReward} from '@/data/customer_rare/types';
+import {customerRareStore as store} from '@/stores';
+
+interface ILevelLabelProps {
+	level: number;
+}
+
+const LevelLabel = memo<ILevelLabelProps>(function LevelLabel({level}) {
+	return <span className="font-medium">Lv.{level}：</span>;
+});
 
 export default memo(function InfoButton() {
+	const currentCustomerData = store.shared.customer.data.use();
+
+	const instance_recipe = store.instances.recipe.get();
+
+	if (!currentCustomerData) {
+		return null;
+	}
+
+	const {name: currentCustomerName, target: currentCustomerTarget} = currentCustomerData;
+
+	const instance_customer = store.instances[currentCustomerTarget as 'customer_rare'].get();
+
+	const {bondRewards: currentCustomerBondRewards, places: currentCustomerPlaces} =
+		instance_customer.getPropsByName(currentCustomerName);
+
+	const [currentCustomerMainPlace] = currentCustomerPlaces;
+
+	const bondRecipesData = instance_recipe.getBondRecipes(currentCustomerData);
+	const {length: bondRecipesDataLength} = bondRecipesData;
+	const {length: currentCustomerBondRewardsLength} = currentCustomerBondRewards;
+
+	const getDescription = (type: TReward['type'], description: TReward['description']) => {
+		switch (type) {
+			case '厨具': {
+				const descriptionSplitArray = (description as string).split('：');
+				return `${descriptionSplitArray.shift()}效果：${descriptionSplitArray.join('：')}`;
+			}
+			case '伙伴':
+				return `解锁条件：${currentCustomerMainPlace}地区全部角色羁绊满级`;
+			default:
+				return `${type}效果：${description}`;
+		}
+	};
+
 	return (
 		<InfoButtonBase>
+			{bondRecipesDataLength > 0 || currentCustomerBondRewardsLength > 0 ? (
+				<AccordionItem key="bond" aria-label={`${currentCustomerName}羁绊奖励`} title="羁绊奖励">
+					<div className="flex flex-col gap-2 text-justify text-xs">
+						<div className="space-y-1">
+							{bondRecipesData.map(({name, level}, index) => (
+								<p key={index} className="flex items-center">
+									<LevelLabel level={level} />
+									<Sprite target="recipe" name={name} size={1.25} className="mr-0.5" />
+									{name}
+									{index < bondRecipesDataLength - 1 && <br />}
+								</p>
+							))}
+							{currentCustomerBondRewards.map(({description, reward, type}, index) => (
+								<p key={index} className="leading-5">
+									<LevelLabel level={5} />
+									{description === null ? (
+										`${type}【${reward}】`
+									) : (
+										<>
+											{type}【
+											<Popover showArrow offset={7}>
+												<Tooltip
+													showArrow
+													content={getDescription(type, description)}
+													offset={4}
+												>
+													<span className="cursor-pointer">
+														<PopoverTrigger>
+															<span role="button" tabIndex={0}>
+																{reward}
+															</span>
+														</PopoverTrigger>
+													</span>
+												</Tooltip>
+												<PopoverContent>{getDescription(type, description)}</PopoverContent>
+											</Popover>
+											】
+										</>
+									)}
+								</p>
+							))}
+						</div>
+					</div>
+				</AccordionItem>
+			) : (
+				(null as unknown as ReactElement)
+			)}
 			<AccordionItem key="help" aria-label="特别说明" title="特别说明">
 				<div className="text-justify text-xs">
 					<p className="mb-1 font-semibold">选单时</p>
