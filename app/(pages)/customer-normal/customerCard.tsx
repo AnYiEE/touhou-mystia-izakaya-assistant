@@ -151,8 +151,8 @@ export default memo(
 						<div className="min-w-24 gap-2 lg:min-w-28">
 							<p className="flex justify-between whitespace-nowrap text-xs font-medium text-default-500">
 								<span>DLC{currentCustomerDlc}</span>
-								<Popover showArrow offset={0}>
-									<Tooltip showArrow content={placeContent} offset={-1.5}>
+								<Popover showArrow offset={6.5}>
+									<Tooltip showArrow content={placeContent} offset={4}>
 										<span className="cursor-pointer">
 											<PopoverTrigger>
 												<span role="button" tabIndex={0}>
