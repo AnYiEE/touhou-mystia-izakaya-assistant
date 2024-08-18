@@ -82,7 +82,11 @@ export default memo(function InfoButton() {
 												>
 													<span className="cursor-pointer">
 														<PopoverTrigger>
-															<span role="button" tabIndex={0}>
+															<span
+																role="button"
+																tabIndex={0}
+																className="underline decoration-dotted underline-offset-2"
+															>
 																{reward}
 															</span>
 														</PopoverTrigger>

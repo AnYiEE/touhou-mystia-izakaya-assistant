@@ -71,8 +71,11 @@ export default memo(
 
 		const clonedCurrentCustomerPlaces = [...currentCustomerPlaces];
 		const currentCustomerMainPlace = clonedCurrentCustomerPlaces.shift();
+
+		const {length: clonedCurrentCustomerPlacesLength} = clonedCurrentCustomerPlaces;
+
 		const placeContent =
-			clonedCurrentCustomerPlaces.length > 0
+			clonedCurrentCustomerPlacesLength > 0
 				? `其他出没地点：${clonedCurrentCustomerPlaces.join('、')}`
 				: '暂未收录其他出没地点';
 
@@ -155,7 +158,14 @@ export default memo(
 									<Tooltip showArrow content={placeContent} offset={4}>
 										<span className="cursor-pointer">
 											<PopoverTrigger>
-												<span role="button" tabIndex={0}>
+												<span
+													role="button"
+													tabIndex={0}
+													className={twJoin(
+														clonedCurrentCustomerPlacesLength > 0 &&
+															'underline decoration-dotted underline-offset-2'
+													)}
+												>
 													{currentCustomerMainPlace}
 												</span>
 											</PopoverTrigger>
