@@ -371,7 +371,7 @@ export const CUSTOMER_RARE_LIST = [
 		},
 	},
 	{
-		name: '村莎水蜜',
+		name: '村纱水蜜',
 		dlc: 3,
 		places: ['命莲寺'],
 		price: '400-600',
@@ -399,7 +399,7 @@ export const CUSTOMER_RARE_LIST = [
 		},
 	},
 	{
-		name: '物布部都',
+		name: '物部布都',
 		dlc: 3,
 		places: ['神灵庙'],
 		price: '600-900',

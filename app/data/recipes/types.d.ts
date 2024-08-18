@@ -56,7 +56,7 @@ export interface IRecipe extends IFoodBase {
 	from:
 		| Partial<{
 				bond: {
-					name: TCustomerRareNames | '村纱水蜜' | '物部布都' | '铃仙';
+					name: TCustomerRareNames;
 					level: number;
 				};
 				/** @description 初始拥有的菜品 */
