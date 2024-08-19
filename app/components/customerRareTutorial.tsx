@@ -13,20 +13,18 @@ export default memo(function CustomerRareTutorial() {
 	const currentPathname = usePathname();
 
 	const currentCustomerName = customerStore.shared.customer.data.use()?.name;
+	const currentCustomerOrder = customerStore.shared.customer.order.use();
+	const {beverageTag: currentOrderedBeverageTag, recipeTag: currentOrderedRecipeTag} = currentCustomerOrder;
 
 	const currentBeverageName = customerStore.shared.beverage.name.use();
 	const currentBeverageTableDirection = customerStore.shared.beverage.sortDescriptor.direction?.use();
-	const currentFilteredBeverageTags = customerStore.shared.customer.beverageTags.use();
-	const currentOrderedBeverageTag = customerStore.shared.customer.order.use().beverageTag;
 
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 	const currentRecipeName = currentRecipeData?.name;
 	const currentExtraIngredients = currentRecipeData?.extraIngredients;
-	const hasMystiaCooker = customerStore.shared.customer.hasMystiaCooker.use();
 
 	const selectedTabKey = customerStore.shared.tab.use();
 	const isIngredientTabSelected = selectedTabKey === 'ingredient';
-	const isRecipeTabSelected = selectedTabKey === 'recipe';
 
 	const dirverState = globalStore.persistence.dirver.get();
 	const isCompleted = useMemo(() => dirverState.includes(key), [dirverState]);
@@ -73,7 +71,7 @@ export default memo(function CustomerRareTutorial() {
 					},
 				},
 				{
-					element: 'div>:last-child>span+[style*="color"]',
+					element: '[aria-label="可加冰"]',
 					popover: {
 						title: '选择酒水标签', // eslint-disable-next-line sort-keys
 						description: '点击标签，选中“可加冰”标签。此次教程中，假设莉格露点单“可加冰”的酒水。',
@@ -94,26 +92,18 @@ export default memo(function CustomerRareTutorial() {
 					},
 				},
 				{
-					element: '[data-key="recipe"]',
+					element: '[aria-label="猎奇"]',
 					popover: {
-						title: '选择料理', // eslint-disable-next-line sort-keys
-						description:
-							'如果使用夜雀系列厨具，则可直接挑选目标料理。否则，应类比选择酒水的流程，以稀客点单作为选择基准。此次教程中，假设使用夜雀系列厨具制作料理。',
+						title: '选择料理标签', // eslint-disable-next-line sort-keys
+						description: '点击标签，选中“猎奇”标签。此次教程中，假设莉格露点单“猎奇”的料理。',
 					},
 				},
 				{
-					element: 'tbody>tr[data-key="能量串"]>:last-child button',
+					element: 'tbody>tr[data-key="香炸蝉蜕"]>:last-child button',
 					popover: {
 						title: '选择目标料理', // eslint-disable-next-line sort-keys
-						description: '点击加号，选择能量串。选择料理时，料理售价尽量不要超过目标稀客剩余的最大持有金。',
-					},
-				},
-				{
-					element: '[role="button"][title="烤架"]',
-					popover: {
-						title: '标记为使用夜雀系列厨具制作', // eslint-disable-next-line sort-keys
 						description:
-							'点击图标，将当前套餐标记为使用夜雀系列厨具制作。根据实际情况选择即可，此次教程中，假设使用夜雀系列厨具制作料理。',
+							'点击加号，选择香炸蝉蜕。选择料理时，料理售价尽量不要超过目标稀客剩余的最大持有金。',
 					},
 				},
 				{
@@ -146,7 +136,12 @@ export default memo(function CustomerRareTutorial() {
 						onPopoverRender(popover) {
 							const completeButton = document.createElement('button');
 							completeButton.textContent = '完成';
-							completeButton.addEventListener('click', driverRef.current.destroy);
+							completeButton.addEventListener('click', () => {
+								customerStore.persistence.customer.orderLinkedFilter.set(
+									customerStore.shared.customer.orderLinkedFilter.get()
+								);
+								driverRef.current.destroy();
+							});
 							popover.footerButtons.append(completeButton);
 						},
 					},
@@ -159,16 +154,14 @@ export default memo(function CustomerRareTutorial() {
 
 	const isBeverageSelected = useRef(false);
 	const isBeverageTableSorted = useRef(false);
-	const hasFilteredBeverageTags = useRef(false);
 	const hasOrderedBeverageTag = useRef(false);
 
 	const isRecipeSelected = useRef(false);
 	const hasExtraEgg = useRef(false);
 	const hasExtraHoney = useRef(false);
-	const isCookerSelected = useRef(false);
+	const hasOrderedRecipeTag = useRef(false);
 
 	const isInIngredientTab = useRef(false);
-	const isInRecipeTab = useRef(false);
 
 	useEffect(() => {
 		if (!driverRef.current.isActive()) {
@@ -186,10 +179,6 @@ export default memo(function CustomerRareTutorial() {
 		}
 		if (currentBeverageTableDirection === 'descending' && !isBeverageTableSorted.current) {
 			isBeverageTableSorted.current = true;
-			driverRef.current.moveNext();
-		}
-		if (currentFilteredBeverageTags.size > 0 && !hasFilteredBeverageTags.current) {
-			hasFilteredBeverageTags.current = true;
 			driverRef.current.moveNext();
 		}
 		if (currentOrderedBeverageTag && !hasOrderedBeverageTag.current) {
@@ -211,8 +200,8 @@ export default memo(function CustomerRareTutorial() {
 				driverRef.current.moveNext();
 			}
 		}
-		if (hasMystiaCooker && !isCookerSelected.current) {
-			isCookerSelected.current = true;
+		if (currentOrderedRecipeTag && !hasOrderedRecipeTag.current) {
+			hasOrderedRecipeTag.current = true;
 			driverRef.current.moveNext();
 		}
 
@@ -220,21 +209,15 @@ export default memo(function CustomerRareTutorial() {
 			isInIngredientTab.current = true;
 			driverRef.current.moveNext();
 		}
-		if (isRecipeTabSelected && !isInRecipeTab.current) {
-			isInRecipeTab.current = true;
-			driverRef.current.moveNext();
-		}
 	}, [
 		currentBeverageName,
 		currentBeverageTableDirection,
 		currentCustomerName,
 		currentExtraIngredients,
-		currentFilteredBeverageTags,
 		currentOrderedBeverageTag,
+		currentOrderedRecipeTag,
 		currentRecipeName,
-		hasMystiaCooker,
 		isIngredientTabSelected,
-		isRecipeTabSelected,
 	]);
 
 	useEffect(() => {

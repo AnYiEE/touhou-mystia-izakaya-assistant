@@ -316,6 +316,10 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 											prev[key as keyof typeof prev] = [];
 										});
 									});
+									customerStore.shared.customer.orderLinkedFilter.set(
+										customerStore.persistence.customer.orderLinkedFilter.get()
+									);
+									customerStore.persistence.customer.orderLinkedFilter.set(true);
 									customerStore.shared.customer.data.set(null);
 									customerStore.shared.tab.set('customer');
 									customerStore.shared.customer.filterVisibility.set(true);

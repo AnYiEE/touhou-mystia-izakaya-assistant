@@ -158,6 +158,8 @@ const state = {
 				tag: null,
 			} as IPopularData,
 			rating: null as TCustomerRating | null,
+
+			orderLinkedFilter: true,
 		},
 		ingredient: {
 			filterVisibility: false,
