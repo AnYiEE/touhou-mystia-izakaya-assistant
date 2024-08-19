@@ -315,7 +315,7 @@ export default memo(
 						)}
 					</div>
 					{hasSelected && (
-						<Tooltip showArrow content="重置当前选定项" offset={0} placement="left">
+						<Tooltip showArrow content="重置当前选定项" offset={4}>
 							<FontAwesomeIconButton
 								icon={faArrowsRotate}
 								variant="light"

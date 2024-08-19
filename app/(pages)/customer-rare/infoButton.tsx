@@ -1,6 +1,6 @@
 import {type ReactElement, memo} from 'react';
 
-import {AccordionItem, Avatar, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
+import {AccordionItem, Avatar, Popover, PopoverContent, PopoverTrigger, ScrollShadow, Tooltip} from '@nextui-org/react';
 
 import {customerRatingColorMap} from './constants';
 import InfoButtonBase from './infoButtonBase';
@@ -106,7 +106,7 @@ export default memo(function InfoButton() {
 				(null as unknown as ReactElement)
 			)}
 			<AccordionItem key="help" aria-label="特别说明" title="特别说明">
-				<div className="text-justify text-xs">
+				<ScrollShadow hideScrollBar className="max-h-60 text-justify text-xs">
 					<p className="mb-1 font-semibold">选单时</p>
 					<ol className="list-inside list-disc">
 						<li>
@@ -129,7 +129,7 @@ export default memo(function InfoButton() {
 							所有的搜索框都支持模糊搜索，如使用“海鲜”、“haixian”或“hx”均可搜索到“海鲜味噌汤”。
 						</li>
 					</ol>
-				</div>
+				</ScrollShadow>
 			</AccordionItem>
 			<AccordionItem key="rating" aria-label="评级图例" title="评级图例">
 				<div className="flex flex-col gap-2 text-justify text-xs">
