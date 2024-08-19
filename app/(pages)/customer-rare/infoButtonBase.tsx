@@ -5,9 +5,9 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 
-interface IProps extends Pick<AccordionProps, 'children'> {}
+interface IProps extends Pick<AccordionProps, 'children' | 'defaultExpandedKeys'> {}
 
-export default memo<IProps>(function InfoButtonBase({children}) {
+export default memo<IProps>(function InfoButtonBase({defaultExpandedKeys, children}) {
 	return (
 		<Popover showArrow offset={0} placement="left">
 			<Tooltip showArrow content="更多信息" offset={-4} placement="left">
@@ -27,6 +27,7 @@ export default memo<IProps>(function InfoButtonBase({children}) {
 					<Accordion
 						isCompact
 						keepContentMounted
+						defaultExpandedKeys={defaultExpandedKeys ?? []}
 						className="m-0 p-0"
 						itemClasses={{
 							base: 'mb-1 mt-3 text-base font-bold',

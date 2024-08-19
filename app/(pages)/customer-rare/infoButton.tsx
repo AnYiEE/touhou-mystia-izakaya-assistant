@@ -53,7 +53,7 @@ export default memo(function InfoButton() {
 	};
 
 	return (
-		<InfoButtonBase>
+		<InfoButtonBase defaultExpandedKeys={['bond']}>
 			{bondRecipesDataLength > 0 || currentCustomerBondRewardsLength > 0 ? (
 				<AccordionItem key="bond" aria-label={`${currentCustomerName}羁绊奖励`} title="羁绊奖励">
 					<div className="flex flex-col gap-2 text-justify text-xs">
