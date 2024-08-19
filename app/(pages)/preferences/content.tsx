@@ -2,7 +2,7 @@
 
 import {memo, useCallback} from 'react';
 
-import {Select, SelectItem, type Selection, Switch} from '@nextui-org/react';
+import {ScrollShadow, Select, SelectItem, type Selection, Switch} from '@nextui-org/react';
 
 import DataManager from './dataManager';
 import SwitchItem from './switchItem';
@@ -48,7 +48,10 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 			>
 				顾客卡片中标签的浮动提示
 			</SwitchItem>
-			<H3 subTitle="正确设置游戏中现时流行的标签可以使套餐评级更为准确" subTitleClassName="hidden md:block">
+			<H3
+				subTitle={<ScrollShadow hideScrollBar>正确设置游戏中现时流行的标签可以使套餐评级更为准确</ScrollShadow>}
+				subTitleClassName="whitespace-nowrap"
+			>
 				流行标签
 			</H3>
 			<div className="space-y-2">
