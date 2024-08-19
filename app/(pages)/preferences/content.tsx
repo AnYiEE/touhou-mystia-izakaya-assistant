@@ -2,7 +2,7 @@
 
 import {memo, useCallback} from 'react';
 
-import {ScrollShadow, Select, SelectItem, type Selection, Switch} from '@nextui-org/react';
+import {Button, ScrollShadow, Select, SelectItem, type Selection, Switch} from '@nextui-org/react';
 
 import DataManager from './dataManager';
 import SwitchItem from './switchItem';
@@ -25,15 +25,30 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 	const selectedPopularTag = globalStore.selectedPopularTag.use();
 	const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
 
-	const onIsNegativePopularTagChange = useCallback((value: boolean) => {
-		globalStore.persistence.popular.isNegative.set(value);
+	const resetRecipeTablePage = useCallback(() => {
 		customerStore.shared.recipe.page.set(1);
 	}, []);
 
-	const onSelectedPopularTagChange = useCallback((value: Selection) => {
-		globalStore.selectedPopularTag.set(value);
-		customerStore.shared.recipe.page.set(1);
-	}, []);
+	const onIsNegativePopularTagChange = useCallback(
+		(value: boolean) => {
+			globalStore.persistence.popular.isNegative.set(value);
+			resetRecipeTablePage();
+		},
+		[resetRecipeTablePage]
+	);
+
+	const onSelectedPopularTagChange = useCallback(
+		(value: Selection) => {
+			globalStore.selectedPopularTag.set(value);
+			resetRecipeTablePage();
+		},
+		[resetRecipeTablePage]
+	);
+
+	const onClearPopularTagButtonPress = useCallback(() => {
+		globalStore.selectedPopularTag.set(new Set());
+		resetRecipeTablePage();
+	}, [resetRecipeTablePage]);
 
 	return (
 		<div>
@@ -70,21 +85,32 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 					/>
 					流行厌恶
 				</div>
-				<div className="flex items-center">
-					<span className="font-medium">标签：</span>
-					<Select
-						items={popularTags}
-						defaultSelectedKeys={selectedPopularTag}
-						selectedKeys={selectedPopularTag}
+				<div className="flex flex-wrap items-center gap-2">
+					<div className="flex items-center">
+						<span className="font-medium">标签：</span>
+						<Select
+							items={popularTags}
+							defaultSelectedKeys={selectedPopularTag}
+							selectedKeys={selectedPopularTag}
+							size="sm"
+							variant="flat"
+							onSelectionChange={onSelectedPopularTagChange}
+							aria-label="选择游戏中现时流行的标签"
+							title="选择游戏中现时流行的标签"
+							className="w-28"
+						>
+							{({value}) => <SelectItem key={value}>{value}</SelectItem>}
+						</Select>
+					</div>
+					<Button
+						color="primary"
+						isDisabled={selectedPopularTag.has(null as never)}
 						size="sm"
 						variant="flat"
-						onSelectionChange={onSelectedPopularTagChange}
-						aria-label="选择游戏中现时流行的标签"
-						title="选择游戏中现时流行的标签"
-						className="w-28"
+						onPress={onClearPopularTagButtonPress}
 					>
-						{({value}) => <SelectItem key={value}>{value}</SelectItem>}
-					</Select>
+						清除选择
+					</Button>
 				</div>
 			</div>
 			<H2>稀客页面</H2>
