@@ -318,7 +318,7 @@ export default memo(function CustomerRare() {
 			<SideButtonGroup
 				className={twMerge(
 					'md:!bottom-6 xl:!bottom-[calc(50%-3.75rem-env(titlebar-area-height,0rem)/2)] xl:left-6',
-					customerTabStyle.sideButtonGroupClassName,
+					customerTabStyle.classNames.sideButtonGroup,
 					!isCustomerTabFilterVisible && '!hidden'
 				)}
 			>
@@ -330,7 +330,7 @@ export default memo(function CustomerRare() {
 			<SideButtonGroup
 				className={twMerge(
 					'md:!bottom-6 xl:!bottom-[calc(50%-2.25rem-env(titlebar-area-height,0rem)/2)] xl:left-6',
-					ingredientTabStyle.sideButtonGroupClassName,
+					ingredientTabStyle.classNames.sideButtonGroup,
 					!isIngredientTabFilterVisible && '!hidden'
 				)}
 			>

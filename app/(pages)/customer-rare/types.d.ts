@@ -20,8 +20,10 @@ export interface ICustomerRatingMap {
 export interface ICustomerTabStyle {
 	ariaLabel: string;
 	buttonNode: ReactNodeWithoutBoolean;
-	contentClassName: string;
-	sideButtonGroupClassName: string;
+	classNames: {
+		content: string;
+		sideButtonGroup: string;
+	};
 }
 
 export interface ICustomerTabStyleMap {
@@ -31,8 +33,10 @@ export interface ICustomerTabStyleMap {
 export interface IIngredientsTabStyle {
 	ariaLabel: string;
 	buttonNode: ReactNodeWithoutBoolean;
-	contentClassName: string;
-	sideButtonGroupClassName: string;
+	classNames: {
+		content: string;
+		sideButtonGroup: string;
+	};
 }
 
 export interface IIngredientsTabStyleMap {

@@ -56,7 +56,7 @@ export default memo(
 					hideScrollBar
 					className={twMerge(
 						'transition-height xl:h-[calc(100vh-9.75rem-env(titlebar-area-height,0rem))]',
-						ingredientsTabStyle.contentClassName
+						ingredientsTabStyle.classNames.content
 					)}
 					ref={ref}
 				>

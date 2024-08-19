@@ -65,7 +65,9 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 			</SwitchItem>
 			<H3
 				subTitle={<ScrollShadow hideScrollBar>正确设置游戏中现时流行的标签可以使套餐评级更为准确</ScrollShadow>}
-				subTitleClassName="whitespace-nowrap"
+				classNames={{
+					subTitle: 'whitespace-nowrap',
+				}}
 			>
 				流行标签
 			</H3>
