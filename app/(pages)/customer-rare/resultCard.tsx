@@ -139,7 +139,7 @@ export default memo(
 			!currentCustomerName ||
 			!currentBeverageName ||
 			!currentRecipeData ||
-			!currentOrder.beverageTag ||
+			!(currentOrder.beverageTag || hasMystiaCooker) ||
 			!(currentOrder.recipeTag || hasMystiaCooker) ||
 			currentRating === null;
 

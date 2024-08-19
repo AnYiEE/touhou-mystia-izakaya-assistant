@@ -32,13 +32,15 @@ function calculateMaxScore({
 >) {
 	const {beverageTag: customerOrderBeverageTag, recipeTag: customerOrderRecipeTag} = currentCustomerOrder;
 
-	if (!customerOrderBeverageTag && !customerOrderRecipeTag) {
+	if (!hasMystiaCooker && !customerOrderBeverageTag && !customerOrderRecipeTag) {
 		return 0;
 	}
 
-	const beverageMaxScore = customerOrderBeverageTag
-		? Number(currentBeverageTags.includes(customerOrderBeverageTag))
-		: 0;
+	const beverageMaxScore = hasMystiaCooker
+		? 1
+		: customerOrderBeverageTag
+			? Number(currentBeverageTags.includes(customerOrderBeverageTag))
+			: 0;
 	const recipeMaxScore = hasMystiaCooker
 		? 1
 		: customerOrderRecipeTag
@@ -155,7 +157,7 @@ export function evaluateMeal({
 
 	const {beverageTag: customerOrderBeverageTag, recipeTag: customerOrderRecipeTag} = currentCustomerOrder;
 
-	if (!customerOrderBeverageTag) {
+	if (!hasMystiaCooker && !customerOrderBeverageTag) {
 		return null;
 	}
 	if (!hasMystiaCooker && !customerOrderRecipeTag) {
@@ -163,9 +165,18 @@ export function evaluateMeal({
 	}
 
 	const matchedBeverageTags = intersection(currentBeverageTags, currentCustomerBeverageTags);
-	const matchedBeverageTagsWithOrderedBeverage = without(matchedBeverageTags, customerOrderBeverageTag);
-	const orderedBeverageScore = matchedBeverageTags.includes(customerOrderBeverageTag) ? 1 : 0;
-	const matchedBeverageScore = matchedBeverageTagsWithOrderedBeverage.length;
+	const matchedBeverageTagsWithoutOrderedBeverage = without(
+		matchedBeverageTags,
+		hasMystiaCooker ? matchedBeverageTags[0] : customerOrderBeverageTag
+	);
+	const orderedBeverageScore =
+		matchedBeverageTags.length > 0
+			? Number(
+					hasMystiaCooker ||
+						(customerOrderBeverageTag ? matchedBeverageTags.includes(customerOrderBeverageTag) : 0)
+				)
+			: 0;
+	const matchedBeverageScore = matchedBeverageTagsWithoutOrderedBeverage.length;
 	const beverageScore = orderedBeverageScore + matchedBeverageScore;
 
 	const matchedRecipeNegativeTags = intersection(currentRecipeTagsWithPopular, currentCustomerNegativeTags);

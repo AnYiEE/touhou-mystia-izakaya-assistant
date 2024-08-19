@@ -40,6 +40,7 @@ const storeVersion = {
 	tagDescription: 7, // eslint-disable-next-line sort-keys
 	extraCustomer: 8,
 	linkedFilter: 9,
+	mystiaCooker: 10,
 } as const;
 
 const state = {
@@ -184,7 +185,7 @@ export const customerRareStore = store(state, {
 	persist: {
 		enabled: true,
 		name: 'page-customer_rare-storage',
-		version: storeVersion.linkedFilter,
+		version: storeVersion.mystiaCooker,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -268,6 +269,17 @@ export const customerRareStore = store(state, {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				const {customer} = oldState.persistence;
 				customer.orderLinkedFilter = true;
+			}
+			if (version < storeVersion.mystiaCooker) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+				for (const meals of Object.values(oldState.persistence.meals) as any) {
+					for (const meal of meals) {
+						if (meal.hasMystiaCooker) {
+							meal.order.beverageTag = null;
+							meal.order.recipeTag = null;
+						}
+					}
+				}
 			}
 			return persistedState as typeof state;
 		},
@@ -521,7 +533,12 @@ export const customerRareStore = store(state, {
 				beverage: beverageName,
 				extraIngredients,
 				hasMystiaCooker,
-				order,
+				order: hasMystiaCooker
+					? {
+							beverageTag: null,
+							recipeTag: null,
+						}
+					: order,
 				popular,
 				price:
 					instance_beverage.getPropsByName(beverageName).price +
