@@ -1,5 +1,5 @@
 import {forwardRef, memo, useCallback, useMemo} from 'react';
-import {twJoin} from 'tailwind-merge';
+import {twJoin, twMerge} from 'tailwind-merge';
 
 import {Avatar, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
 import {faArrowsRotate} from '@fortawesome/free-solid-svg-icons';
@@ -27,6 +27,7 @@ export default memo(
 		const currentCustomerOrder = customerStore.shared.customer.order.use();
 		const currentCustomerPopular = customerStore.shared.customer.popular.use();
 		const currentRating = customerStore.shared.customer.rating.use();
+		const hasMystiaCooker = customerStore.shared.customer.hasMystiaCooker.use();
 		const isOrderLinkedFilter = customerStore.persistence.customer.orderLinkedFilter.use();
 		const isShowTagDescription = customerStore.persistence.customer.showTagDescription.use();
 
@@ -64,9 +65,11 @@ export default memo(
 				if (isOrderLinkedFilter) {
 					customerStore.onCustomerFilterBeverageTag(tag);
 				}
-				customerStore.onCustomerOrderBeverageTag(tag);
+				if (!hasMystiaCooker) {
+					customerStore.onCustomerOrderBeverageTag(tag);
+				}
 			},
-			[isOrderLinkedFilter]
+			[hasMystiaCooker, isOrderLinkedFilter]
 		);
 
 		const handleRecipeTagClick = useCallback(
@@ -74,9 +77,11 @@ export default memo(
 				if (isOrderLinkedFilter) {
 					customerStore.onCustomerFilterRecipeTag(tag);
 				}
-				customerStore.onCustomerOrderRecipeTag(tag);
+				if (!hasMystiaCooker) {
+					customerStore.onCustomerOrderRecipeTag(tag);
+				}
 			},
-			[isOrderLinkedFilter]
+			[hasMystiaCooker, isOrderLinkedFilter]
 		);
 
 		if (!currentCustomerData) {
@@ -147,7 +152,18 @@ export default memo(
 		const getTagTooltip = (type: keyof typeof currentCustomerOrder, tag: string) => {
 			const isCurrentTag = currentCustomerOrder[type] === tag;
 			const tagType = type === 'beverageTag' ? '酒水' : '料理';
-			return `点击：${isCurrentTag ? '不再' : ''}将此标签视为顾客点单需求${isOrderLinkedFilter ? `并${isCurrentTag ? `取消筛选${tagType}表格` : `以此标签筛选${tagType}表格`}` : ''}`;
+			const cookerTip = '已使用夜雀厨具无视顾客点单需求';
+			const orderTip = hasMystiaCooker
+				? isOrderLinkedFilter
+					? ''
+					: cookerTip
+				: `点击：${isCurrentTag ? '不再' : ''}将此标签视为顾客点单需求`;
+			const filterTip = isOrderLinkedFilter
+				? `${hasMystiaCooker ? '点击：' : '并'}${
+						isCurrentTag ? `取消筛选${tagType}表格` : `以此标签筛选${tagType}表格`
+					}${hasMystiaCooker ? `（${cookerTip}）` : ''}`
+				: '';
+			return `${orderTip}${filterTip}`;
 		};
 
 		return (
@@ -251,10 +267,11 @@ export default memo(
 											aria-label={`${tag}${currentCustomerOrder.recipeTag === tag ? '/已选定' : ''}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
 											role="button"
 											tabIndex={0}
-											className={twJoin(
+											className={twMerge(
 												'cursor-pointer p-1 leading-none hover:opacity-80',
 												!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50',
-												currentCustomerOrder.recipeTag === tag && 'ring-2 ring-current'
+												currentCustomerOrder.recipeTag === tag && 'ring-2 ring-current',
+												hasMystiaCooker && !isOrderLinkedFilter && 'cursor-not-allowed'
 											)}
 										/>
 									</Tooltip>
@@ -303,10 +320,11 @@ export default memo(
 											aria-label={`${tag}${currentCustomerOrder.beverageTag === tag ? '/已选定' : ''}${beverageTags.includes(tag) ? '/已满足' : ''}`}
 											role="button"
 											tabIndex={0}
-											className={twJoin(
+											className={twMerge(
 												'cursor-pointer p-1 leading-none hover:opacity-80',
 												!beverageTags.includes(tag) && 'opacity-50',
-												currentCustomerOrder.beverageTag === tag && 'ring-2 ring-current'
+												currentCustomerOrder.beverageTag === tag && 'ring-2 ring-current',
+												hasMystiaCooker && !isOrderLinkedFilter && 'cursor-not-allowed'
 											)}
 										/>
 									</Tooltip>
