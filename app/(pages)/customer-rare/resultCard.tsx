@@ -124,12 +124,12 @@ interface IResultCardProps {}
 export default memo(
 	forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
 		const currentCustomerName = store.shared.customer.data.use()?.name;
+		const currentCustomerOrder = store.shared.customer.order.use();
 		const currentBeverageName = store.shared.beverage.name.use();
 		const currentRecipeData = store.shared.recipe.data.use();
-		const hasMystiaCooker = store.shared.customer.hasMystiaCooker.use();
-		const currentOrder = store.shared.customer.order.use();
 		const currentRating = store.shared.customer.rating.use();
 		const currentSavedMeals = store.persistence.meals.use();
+		const hasMystiaCooker = store.shared.customer.hasMystiaCooker.use();
 
 		const instance_recipe = store.instances.recipe.get();
 
@@ -139,8 +139,8 @@ export default memo(
 			!currentCustomerName ||
 			!currentBeverageName ||
 			!currentRecipeData ||
-			!(currentOrder.beverageTag || hasMystiaCooker) ||
-			!(currentOrder.recipeTag || hasMystiaCooker) ||
+			!(currentCustomerOrder.beverageTag || hasMystiaCooker) ||
+			!(currentCustomerOrder.recipeTag || hasMystiaCooker) ||
 			currentRating === null;
 
 		const hideTooltip = useCallback(() => {
