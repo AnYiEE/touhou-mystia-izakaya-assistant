@@ -465,17 +465,13 @@ export const customerNormalStore = store(state, {
 			}
 		},
 		toggleCustomerTabVisibilityState() {
-			currentStore.persistence.customer.tabVisibility.set(
-				currentStore.persistence.customer.tabVisibility.get() === TabVisibilityState.expand
-					? TabVisibilityState.collapse
-					: TabVisibilityState.expand
+			currentStore.persistence.customer.tabVisibility.set((prev) =>
+				prev === TabVisibilityState.expand ? TabVisibilityState.collapse : TabVisibilityState.expand
 			);
 		},
 		toggleIngredientTabVisibilityState() {
-			currentStore.persistence.ingredient.tabVisibility.set(
-				currentStore.persistence.ingredient.tabVisibility.get() === TabVisibilityState.expand
-					? TabVisibilityState.collapse
-					: TabVisibilityState.expand
+			currentStore.persistence.ingredient.tabVisibility.set((prev) =>
+				prev === TabVisibilityState.expand ? TabVisibilityState.collapse : TabVisibilityState.expand
 			);
 		},
 	}));
