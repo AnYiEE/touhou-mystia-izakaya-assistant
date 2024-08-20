@@ -143,14 +143,14 @@ export default memo(
 																					className="p-0.5 leading-none"
 																				/>
 																			)}
-																			{order.recipeTag && (
+																			{order.recipeTag && !hasMystiaCooker && (
 																				<Tags.Tag
 																					tag={order.recipeTag}
 																					tagStyle={RECIPE_TAG_STYLE.positive}
 																					className="p-0.5 leading-none"
 																				/>
 																			)}
-																			{order.beverageTag && (
+																			{order.beverageTag && !hasMystiaCooker && (
 																				<Tags.Tag
 																					tag={order.beverageTag}
 																					tagStyle={
