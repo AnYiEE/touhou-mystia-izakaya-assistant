@@ -182,23 +182,14 @@ export default memo(
 											{(() => {
 												const originalCooker = instance_recipe.getPropsByName(recipe, 'cooker');
 												const cooker = hasMystiaCooker
-													? `夜雀${originalCooker}`
+													? (`夜雀${originalCooker}` as const)
 													: originalCooker;
 												return (
 													<Popover showArrow offset={11}>
 														<Tooltip showArrow content={cooker}>
 															<span className="flex cursor-pointer">
 																<PopoverTrigger>
-																	<Sprite
-																		target="cooker"
-																		name={originalCooker}
-																		size={1.5}
-																		title=""
-																		className={twJoin(
-																			hasMystiaCooker &&
-																				'rounded-full ring-2 ring-warning-400 ring-offset-1 dark:ring-warning-200'
-																		)}
-																	/>
+																	<Sprite target="cooker" name={cooker} size={1.5} />
 																</PopoverTrigger>
 															</span>
 														</Tooltip>
