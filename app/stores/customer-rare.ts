@@ -611,6 +611,8 @@ export const customerRareStore = store(state, {
 			);
 		},
 		toggleMystiaCooker() {
-			currentStore.shared.customer.hasMystiaCooker.set((prev) => !prev);
+			const hasMystiaCooker = currentStore.shared.customer.hasMystiaCooker.get();
+			currentStore.shared.customer.hasMystiaCooker.set(!hasMystiaCooker);
+			trackEvent(hasMystiaCooker ? TrackCategory.Unselect : TrackCategory.Select, 'MystiaCooker');
 		},
 	}));

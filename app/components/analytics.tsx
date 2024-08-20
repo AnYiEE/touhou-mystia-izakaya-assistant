@@ -25,23 +25,26 @@ export enum TrackCategory {
 }
 
 type TAction = 'Import' | 'Remove' | 'Reset' | 'Save' | 'Select';
+type TActionButton = `${TAction} Button`;
 type TFood = 'Beverage' | 'Ingredient' | 'Recipe';
+type TFoodCard = `${TFood} Card`;
+type TItem = 'Customer' | 'Customer Tag' | 'MystiaCooker';
 
 export function trackEvent(
 	category: TrackCategory.Click,
-	action: `${TAction} Button` | `${TFood} Card`,
+	action: TActionButton | TFoodCard,
 	name?: string,
 	value?: number | string
 ): void;
 export function trackEvent(
 	category: TrackCategory.Select | TrackCategory.Unselect,
-	action: 'Customer' | 'Customer Tag' | TFood,
+	action: TFood | TItem,
 	name?: string,
 	value?: number | string
 ): void;
 export function trackEvent(
 	category: keyof typeof TrackCategory,
-	action: `${TAction} Button` | `${TFood} Card` | 'Customer' | 'Customer Tag' | TFood,
+	action: TActionButton | TFoodCard | TFood | TItem,
 	name?: string,
 	value?: number | string
 ) {
