@@ -20,12 +20,14 @@ function push(...args: unknown[][]) {
 
 export enum TrackCategory {
 	Click = 'Click',
+	Error = 'Error',
 	Select = 'Select',
 	Unselect = 'Unselect',
 }
 
 type TAction = 'Import' | 'Remove' | 'Reset' | 'Save' | 'Select';
 type TActionButton = `${TAction} Button`;
+type TError = 'Global' | 'Sync';
 type TFood = 'Beverage' | 'Ingredient' | 'Recipe';
 type TFoodCard = `${TFood} Card`;
 type TItem = 'Customer' | 'Customer Tag' | 'MystiaCooker';
@@ -36,6 +38,7 @@ export function trackEvent(
 	name?: string,
 	value?: number | string
 ): void;
+export function trackEvent(category: TrackCategory.Error, action: TError, name: string, value?: number | string): void;
 export function trackEvent(
 	category: TrackCategory.Select | TrackCategory.Unselect,
 	action: TFood | TItem,
@@ -44,7 +47,7 @@ export function trackEvent(
 ): void;
 export function trackEvent(
 	category: keyof typeof TrackCategory,
-	action: TActionButton | TFoodCard | TFood | TItem,
+	action: TAction | TActionButton | TError | TFood | TFoodCard | TItem,
 	name?: string,
 	value?: number | string
 ) {

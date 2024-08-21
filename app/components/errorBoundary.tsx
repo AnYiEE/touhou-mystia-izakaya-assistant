@@ -2,6 +2,8 @@
 
 import {Component, type ErrorInfo, type PropsWithChildren} from 'react';
 
+import {TrackCategory, trackEvent} from '@/components/analytics';
+
 interface IStates {
 	error: Error | null;
 	info: ErrorInfo | null;
@@ -32,12 +34,13 @@ export default class ErrorBoundary extends Component<IProps, IStates> {
 		};
 	}
 
-	public override componentDidCatch(_error: Error, info: ErrorInfo) {
+	public override componentDidCatch(error: Error, info: ErrorInfo) {
 		if (!this.state.hasError) {
 			this.setState({
 				info,
 			});
 		}
+		trackEvent(TrackCategory.Error, 'Global', error.message);
 	}
 
 	public override render() {

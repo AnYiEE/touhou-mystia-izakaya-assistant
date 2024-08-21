@@ -18,6 +18,7 @@ import RecipeTabContent from './recipeTabContent';
 import ResultCard from './resultCard';
 import SavedMealCard from './savedMealCard';
 import Loading from '@/loading';
+import {TrackCategory, trackEvent} from '@/components/analytics';
 import SideButtonGroup from '@/components/sideButtonGroup';
 import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
@@ -52,6 +53,9 @@ export default memo(function CustomerNormal() {
 					}
 				} catch (error) {
 					console.error(error);
+					if (error instanceof Error) {
+						trackEvent(TrackCategory.Error, 'Sync', error.message);
+					}
 				}
 			},
 			1000,
