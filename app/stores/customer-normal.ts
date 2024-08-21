@@ -12,6 +12,7 @@ import type {TCustomerRating, TRecipe} from '@/(pages)/customer-normal/types';
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
+import type {IPersistenceState} from './types';
 import {type TBeverageNames, type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {customerNormalInstance as instance_customer} from '@/methods/customer';
@@ -156,10 +157,14 @@ const state = {
 	},
 };
 
+export type TCustomerNormalPersistenceState = IPersistenceState<(typeof state)['persistence']>;
+
+export const customerNormalStoreKey = 'page-customer_normal-storage';
+
 export const customerNormalStore = store(state, {
 	persist: {
 		enabled: true,
-		name: 'page-customer_normal-storage',
+		name: customerNormalStoreKey,
 		version: storeVersion.extraCustomer,
 
 		migrate(persistedState, version) {

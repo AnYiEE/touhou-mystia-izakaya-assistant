@@ -3,6 +3,7 @@ import {createJSONStorage} from 'zustand/middleware';
 
 import {type Selection} from '@nextui-org/react';
 
+import type {IPersistenceState} from './types';
 import type {TIngredientTag, TRecipeTag} from '@/data/types';
 import {ingredientInstance as instance_ingredient, recipeInstance as instance_recipe} from '@/methods/food';
 import {pinyinSort, union} from '@/utils';
@@ -40,10 +41,14 @@ const state = {
 	},
 };
 
+export type TGlobalPersistenceState = IPersistenceState<(typeof state)['persistence']>;
+
+export const globalStoreKey = 'global-storage';
+
 export const globalStore = store(state, {
 	persist: {
 		enabled: true,
-		name: 'global-storage',
+		name: globalStoreKey,
 		version: storeVersion.tagsTooltip,
 
 		migrate(persistedState, version) {

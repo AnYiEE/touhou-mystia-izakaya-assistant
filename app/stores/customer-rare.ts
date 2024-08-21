@@ -12,6 +12,7 @@ import type {ICurrentCustomer, TCustomerRating, TRecipe} from '@/(pages)/custome
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
+import type {IPersistenceState} from './types';
 import {type TBeverageNames, type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {customerRareInstance as instance_rare, customerSpecialInstance as instance_special} from '@/methods/customer';
@@ -183,10 +184,14 @@ const state = {
 	},
 };
 
+export type TCustomerRarePersistenceState = IPersistenceState<(typeof state)['persistence']>;
+
+export const customerRareStoreKey = 'page-customer_rare-storage';
+
 export const customerRareStore = store(state, {
 	persist: {
 		enabled: true,
-		name: 'page-customer_rare-storage',
+		name: customerRareStoreKey,
 		version: storeVersion.mystiaCooker,
 
 		migrate(persistedState, version) {

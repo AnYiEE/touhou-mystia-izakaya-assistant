@@ -2,6 +2,7 @@
 
 import {memo, useEffect, useMemo} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
+import {debounce} from 'lodash';
 
 import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
 
@@ -22,11 +23,48 @@ import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterI
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
-import {customerNormalStore as customerStore, globalStore} from '@/stores';
+import {
+	type TCustomerNormalPersistenceState,
+	type TGlobalPersistenceState,
+	customerNormalStoreKey,
+	customerNormalStore as customerStore,
+	globalStore,
+	globalStoreKey,
+} from '@/stores';
 
 export default memo(function CustomerNormal() {
 	useEffect(() => {
 		customerStore.shared.customer.popular.set(globalStore.persistence.popular.get());
+
+		const updateStore = debounce(
+			(event: StorageEvent) => {
+				const {key, newValue} = event;
+				if (!newValue) {
+					return;
+				}
+				try {
+					if (key === customerNormalStoreKey) {
+						const state = JSON.parse(newValue) as TCustomerNormalPersistenceState;
+						customerStore.persistence.assign(state.state.persistence);
+					} else if (key === globalStoreKey) {
+						const state = JSON.parse(newValue) as TGlobalPersistenceState;
+						globalStore.persistence.assign(state.state.persistence);
+					}
+				} catch (error) {
+					console.error(error);
+				}
+			},
+			1000,
+			{
+				leading: true,
+			}
+		);
+
+		window.addEventListener('storage', updateStore);
+
+		return () => {
+			window.removeEventListener('storage', updateStore);
+		};
 	}, []);
 
 	customerStore.shared.customer.name.onChange(() => {
