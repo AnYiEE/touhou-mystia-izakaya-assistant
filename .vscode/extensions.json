@@ -2,7 +2,6 @@
 	"recommendations": [
 		"andrewleedham.vscode-css-modules",
 		"bradlc.vscode-tailwindcss",
-		"cschlosser.doxdocgen",
 		"dbaeumer.vscode-eslint",
 		"EditorConfig.EditorConfig",
 		"esbenp.prettier-vscode",
@@ -10,8 +9,6 @@
 		"streetsidesoftware.code-spell-checker",
 		"stylelint.vscode-stylelint",
 		"syler.sass-indented",
-		"usernamehw.errorlens",
-		"webben.browserslist",
-		"yoavbls.pretty-ts-errors"
+		"webben.browserslist"
 	]
 }

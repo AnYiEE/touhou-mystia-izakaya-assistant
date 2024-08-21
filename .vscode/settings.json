@@ -50,10 +50,6 @@
 	"css.format.spaceAroundSelectorSeparator": true,
 	"css.lint.unknownAtRules": "ignore",
 	"css.lint.validProperties": ["composes"],
-	"errorLens.editorHoverPartsEnabled": {
-		"buttonsEnabled": false
-	},
-	"errorLens.enableOnDiffView": true,
 	"stylelint.packageManager": "pnpm",
 	"tailwindCSS.classAttributes": ["className", "classNames", "itemClasses", "tw"],
 	"explorer.fileNesting.enabled": true,
