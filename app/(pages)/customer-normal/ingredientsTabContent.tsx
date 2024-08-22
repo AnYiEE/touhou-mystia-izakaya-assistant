@@ -148,7 +148,7 @@ export default memo(
 									tabIndex={0}
 									aria-label={`加入${name}，匹配度${scoreChange}`}
 									title={`加入${name}`}
-									className="grid cursor-pointer transition hover:scale-105"
+									className="grid cursor-pointer transition hover:scale-105 hover:drop-shadow-md"
 								>
 									<Badge
 										color={scoreChange > 0 ? 'success' : scoreChange < 0 ? 'danger' : 'default'}
