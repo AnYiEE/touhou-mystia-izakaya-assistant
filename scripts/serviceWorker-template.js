@@ -11,6 +11,12 @@ const networkErrorResponse = new Response('A network error occurred, but no cach
 	status: 418,
 });
 
+function delay(/** @type {number} */ ms) {
+	return new Promise((resolve) => {
+		setTimeout(resolve, ms);
+	});
+}
+
 async function deleteCache(/** @type {string} */ key) {
 	await caches.delete(key);
 }
@@ -40,6 +46,18 @@ async function fetchAndCache(/** @type {Request} */ request) {
 	return response;
 }
 
+async function fetchWithRetry(/** @type {Request} */ request, /** @type {number} */ retries) {
+	try {
+		return await fetchAndCache(request);
+	} catch (error) {
+		if (retries > 1) {
+			await delay(1000);
+			return fetchWithRetry(request, retries - 1);
+		}
+		throw error;
+	}
+}
+
 async function cacheFirst(/** @type {Request} */ request) {
 	const responseFromCache = await caches.match(request);
 	if (responseFromCache) {
@@ -47,7 +65,7 @@ async function cacheFirst(/** @type {Request} */ request) {
 	}
 
 	try {
-		return await fetchAndCache(request);
+		return await fetchWithRetry(request, 3);
 	} catch {
 		return networkErrorResponse.clone();
 	}
@@ -55,7 +73,7 @@ async function cacheFirst(/** @type {Request} */ request) {
 
 async function networkFirst(/** @type {Request} */ request) {
 	try {
-		return await fetchAndCache(request);
+		return await fetchWithRetry(request, 3);
 	} catch {
 		const responseFromCache = await caches.match(request);
 		if (responseFromCache) {
@@ -79,14 +97,16 @@ self.addEventListener('fetch', (/** @type {FetchEvent} */ event) => {
 	}
 
 	const urlObject = new URL(event.request.url, location.origin);
-	if (urlObject.host !== location.host || urlObject.protocol !== 'https:') {
+	const {host, pathname, protocol} = urlObject;
+
+	if (host !== location.host || protocol !== 'https:') {
 		return;
 	}
-	if (urlObject.pathname.startsWith('/_vercel')) {
+	if (pathname.startsWith('/_vercel')) {
 		return;
 	}
 
-	if (urlObject.pathname.includes('.')) {
+	if (pathname.includes('.')) {
 		event.respondWith(cacheFirst(event.request));
 	} else {
 		event.respondWith(networkFirst(event.request));
