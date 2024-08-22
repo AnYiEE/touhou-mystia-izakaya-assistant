@@ -1,3 +1,5 @@
+// @ts-check
+
 import {env} from 'node:process';
 
 /** @type {import('next').NextConfig} */
