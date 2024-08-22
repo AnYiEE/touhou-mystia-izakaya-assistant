@@ -1,6 +1,5 @@
 import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
-import {cloneDeep} from 'lodash';
 
 import {
 	Autocomplete,
@@ -70,10 +69,10 @@ export default memo(
 		const tableVisibleColumns = store.beverageTableColumns.use();
 
 		const filteredData = useMemo(() => {
-			let clonedData = cloneDeep(instance_beverage.data) as TBeveragesWithSuitability;
+			const data = instance_beverage.data as TBeveragesWithSuitability;
 
 			if (!currentCustomerName) {
-				return clonedData.map((item) => ({
+				return data.map((item) => ({
 					...item,
 					matchedTags: [] as string[],
 					suitability: 0,
@@ -82,7 +81,7 @@ export default memo(
 
 			const {beverageTags} = instance_customer.getPropsByName(currentCustomerName);
 
-			clonedData = clonedData.map((item) => {
+			const dataWithRealSuitability = data.map((item) => {
 				const {suitability, tags: matchedTags} = instance_beverage.getCustomerSuitability(
 					item.name,
 					beverageTags
@@ -96,12 +95,12 @@ export default memo(
 			});
 
 			if (!hasNameFilter && selectedDlcs.size === 0 && selectedCustomerBeverageTags.size === 0) {
-				return clonedData;
+				return dataWithRealSuitability;
 			}
 
 			const searchValueLowerCase = searchValue.toLowerCase();
 
-			return clonedData.filter(({name, pinyin, dlc, tags}) => {
+			return dataWithRealSuitability.filter(({name, pinyin, dlc, tags}) => {
 				const {pinyinFirstLetters, pinyinWithoutTone} = processPinyin(pinyin);
 
 				const isNameMatched = hasNameFilter
@@ -133,15 +132,15 @@ export default memo(
 
 			switch (column) {
 				case 'beverage':
-					return cloneDeep(filteredData).sort(({name: a}, {name: b}) =>
+					return [...filteredData].sort(({name: a}, {name: b}) =>
 						isAscending ? pinyinSort(a, b) : pinyinSort(b, a)
 					);
 				case 'price':
-					return cloneDeep(filteredData).sort(({price: a}, {price: b}) =>
+					return [...filteredData].sort(({price: a}, {price: b}) =>
 						isAscending ? numberSort(a, b) : numberSort(b, a)
 					);
 				case 'suitability':
-					return cloneDeep(filteredData).sort(({suitability: a}, {suitability: b}) =>
+					return [...filteredData].sort(({suitability: a}, {suitability: b}) =>
 						isAscending ? numberSort(a, b) : numberSort(b, a)
 					);
 				default:

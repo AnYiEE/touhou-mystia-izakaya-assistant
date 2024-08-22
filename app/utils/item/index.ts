@@ -19,7 +19,7 @@ export class Item<
 
 	public constructor(data: TTarget) {
 		this._data = cloneDeep(data);
-		this._dataWithPinyin = cloneDeep(data).map((item) => ({
+		this._dataWithPinyin = this._data.map((item) => ({
 			...item,
 			pinyin: pinyinPro(item.name, {
 				toneType: 'num',
@@ -145,6 +145,6 @@ export class Item<
 	}
 
 	public sortByPinyin(data: TItemWithPinyin[]) {
-		return cloneDeep(data).sort(({pinyin: a}, {pinyin: b}) => pinyinSort(a, b));
+		return [...data].sort(({pinyin: a}, {pinyin: b}) => pinyinSort(a, b));
 	}
 }

@@ -1,6 +1,5 @@
 import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
-import {cloneDeep} from 'lodash';
 
 import {
 	Autocomplete,
@@ -73,10 +72,10 @@ export default memo(
 		const tableVisibleColumns = store.recipeTableColumns.use();
 
 		const filteredData = useMemo(() => {
-			let clonedData = cloneDeep(instance_recipe.data) as TRecipesWithSuitability;
+			const data = instance_recipe.data as TRecipesWithSuitability;
 
 			if (!currentCustomerName) {
-				return clonedData.map((item) => ({
+				return data.map((item) => ({
 					...item,
 					matchedNegativeTags: [] as string[],
 					matchedPositiveTags: [] as string[],
@@ -87,7 +86,7 @@ export default memo(
 			const {negativeTags: customerNegativeTags, positiveTags: customerPositiveTags} =
 				instance_customer.getPropsByName(currentCustomerName);
 
-			clonedData = clonedData.map((item) => {
+			const dataWithRealSuitability = data.map((item) => {
 				const composedRecipeTags = instance_recipe.composeTags(item.ingredients, [], item.positiveTags, []);
 				const recipeTagsWithPopular = instance_recipe.calculateTagsWithPopular(
 					composedRecipeTags,
@@ -118,12 +117,12 @@ export default memo(
 				selectedCookers.size === 0 &&
 				selectedCustomerPositiveTags.size === 0
 			) {
-				return clonedData;
+				return dataWithRealSuitability;
 			}
 
 			const searchValueLowerCase = searchValue.toLowerCase();
 
-			return clonedData.filter(({name, pinyin, dlc, cooker, positiveTags}) => {
+			return dataWithRealSuitability.filter(({name, pinyin, dlc, cooker, positiveTags}) => {
 				const {pinyinFirstLetters, pinyinWithoutTone} = processPinyin(pinyin);
 				const recipeTagsWithPopular = instance_recipe.calculateTagsWithPopular(
 					positiveTags,
@@ -164,19 +163,19 @@ export default memo(
 
 			switch (column) {
 				case 'recipe':
-					return cloneDeep(filteredData).sort(({name: a}, {name: b}) =>
+					return [...filteredData].sort(({name: a}, {name: b}) =>
 						isAscending ? pinyinSort(a, b) : pinyinSort(b, a)
 					);
 				case 'price':
-					return cloneDeep(filteredData).sort(({price: a}, {price: b}) =>
+					return [...filteredData].sort(({price: a}, {price: b}) =>
 						isAscending ? numberSort(a, b) : numberSort(b, a)
 					);
 				case 'suitability':
-					return cloneDeep(filteredData).sort(({suitability: a}, {suitability: b}) =>
+					return [...filteredData].sort(({suitability: a}, {suitability: b}) =>
 						isAscending ? numberSort(a, b) : numberSort(b, a)
 					);
 				case 'time':
-					return cloneDeep(filteredData).sort(({min: a}, {min: b}) =>
+					return [...filteredData].sort(({min: a}, {min: b}) =>
 						isAscending ? numberSort(a, b) : numberSort(b, a)
 					);
 				default:
