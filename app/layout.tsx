@@ -46,9 +46,15 @@ export const metadata: Metadata = {
 		card: 'summary',
 	},
 
+	verification: {
+		other: {
+			// cSpell:ignore codeva
+			'baidu-site-verification': 'codeva-aSffMaEHAj',
+		},
+	},
+
 	other: {
-		// cSpell:ignore codeva
-		'baidu-site-verification': 'codeva-aSffMaEHAj',
+		'mobile-web-app-capable': 'yes',
 	},
 };
 
