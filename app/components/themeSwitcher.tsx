@@ -60,6 +60,12 @@ export default memo<Partial<IProps>>(function ThemeSwitcher({isMenu}) {
 	);
 
 	useEffect(() => {
+		if (theme && !selectedTheme.has(theme)) {
+			setSelectedTheme(new Set([theme]));
+		}
+	}, [selectedTheme, theme]);
+
+	useEffect(() => {
 		document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((metaTag) => {
 			if (theme === Theme.system) {
 				metaTag.content = metaTag.getAttribute('default-content') as string;

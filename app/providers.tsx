@@ -2,11 +2,11 @@
 
 import {type PropsWithChildren, useEffect} from 'react';
 import {useRouter} from 'next/navigation';
+import {ThemeProvider as NextThemesProvider, useTheme} from 'next-themes';
+import type {ThemeProviderProps} from 'next-themes/dist/types';
 import {debounce} from 'lodash';
 
 import {NextUIProvider} from '@nextui-org/react';
-import {ThemeProvider as NextThemesProvider} from 'next-themes';
-import type {ThemeProviderProps} from 'next-themes/dist/types';
 import {ProgressBar, ProgressBarProvider} from 'react-transition-progress';
 
 import {TrackCategory, trackEvent} from './components/analytics';
@@ -32,6 +32,7 @@ interface IProps {
 
 export default function Providers({children, locale, themeProps}: PropsWithChildren<IProps>) {
 	const router = useRouter();
+	const {theme, setTheme} = useTheme();
 
 	useEffect(() => {
 		const globalPopular = globalStore.persistence.popular.get();
@@ -46,6 +47,11 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 				}
 				try {
 					switch (key) {
+						case 'theme':
+							if (theme !== newValue) {
+								setTheme(newValue);
+							}
+							break;
 						case customerNormalStoreKey: {
 							const state = (JSON.parse(newValue) as TCustomerNormalPersistenceState).state.persistence;
 							const {meals} = state;
@@ -94,7 +100,7 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 		return () => {
 			window.removeEventListener('storage', updateStore);
 		};
-	}, []);
+	}, [setTheme, theme]);
 
 	return (
 		<NextUIProvider locale={locale} navigate={router.push}>
