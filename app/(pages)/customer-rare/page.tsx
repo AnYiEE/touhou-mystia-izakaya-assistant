@@ -1,8 +1,7 @@
 'use client';
 
-import {memo, useCallback, useEffect, useMemo} from 'react';
+import {memo, useCallback, useMemo} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
-import {debounce} from 'lodash';
 
 import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
 
@@ -17,60 +16,15 @@ import RecipeTabContent from './recipeTabContent';
 import ResultCard from './resultCard';
 import SavedMealCard from './savedMealCard';
 import Loading from '@/loading';
-import {TrackCategory, trackEvent} from '@/components/analytics';
 import SideButtonGroup from '@/components/sideButtonGroup';
 import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import {customerTabStyleMap, ingredientTabStyleMap} from './constants';
-import {
-	type TCustomerRarePersistenceState,
-	type TGlobalPersistenceState,
-	customerRareStoreKey,
-	customerRareStore as customerStore,
-	globalStore,
-	globalStoreKey,
-} from '@/stores';
+import {customerRareStore as customerStore, globalStore} from '@/stores';
 
 export default memo(function CustomerRare() {
-	useEffect(() => {
-		customerStore.shared.customer.popular.set(globalStore.persistence.popular.get());
-
-		const updateStore = debounce(
-			(event: StorageEvent) => {
-				const {key, newValue} = event;
-				if (!newValue) {
-					return;
-				}
-				try {
-					if (key === customerRareStoreKey) {
-						const state = JSON.parse(newValue) as TCustomerRarePersistenceState;
-						customerStore.persistence.assign(state.state.persistence);
-					} else if (key === globalStoreKey) {
-						const state = JSON.parse(newValue) as TGlobalPersistenceState;
-						globalStore.persistence.assign(state.state.persistence);
-					}
-				} catch (error) {
-					console.error(error);
-					if (error instanceof Error) {
-						trackEvent(TrackCategory.Error, 'Sync', error.message);
-					}
-				}
-			},
-			1000,
-			{
-				leading: true,
-			}
-		);
-
-		window.addEventListener('storage', updateStore);
-
-		return () => {
-			window.removeEventListener('storage', updateStore);
-		};
-	}, []);
-
 	customerStore.shared.customer.data.onChange(() => {
 		customerStore.refreshCustomerSelectedItems();
 		customerStore.refreshAllSelectedItems();
