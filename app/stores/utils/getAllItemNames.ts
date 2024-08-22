@@ -15,7 +15,7 @@ export function getAllItemNames<T extends TTargetInstance>(instance: T, pinyinSo
 			return (instance as Item<any>).getValuesByProp(instance.dataPinyinSorted, 'name', true) as TNameObject<T>;
 		case PinyinSortState.ZA: // eslint-disable-next-line @typescript-eslint/no-explicit-any
 			return (instance as Item<any>).getValuesByProp(
-				instance.dataPinyinSorted.toReversed(),
+				[...instance.dataPinyinSorted].reverse(),
 				'name',
 				true
 			) as TNameObject<T>;
