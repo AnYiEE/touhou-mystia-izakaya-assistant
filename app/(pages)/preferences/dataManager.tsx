@@ -190,7 +190,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 								}}
 								variant="flat"
 								classNames={{
-									pre: 'max-h-[13.25rem] overflow-auto whitespace-pre-wrap',
+									pre: 'max-h-[13.25rem] w-full overflow-auto whitespace-pre-wrap',
 								}}
 							>
 								{currentMealDataString}
