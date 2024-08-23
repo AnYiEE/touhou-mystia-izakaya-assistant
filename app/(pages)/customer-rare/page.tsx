@@ -29,15 +29,7 @@ export default memo(function CustomerRare() {
 		customerStore.refreshCustomerSelectedItems();
 		customerStore.refreshAllSelectedItems();
 	});
-	customerStore.shared.customer.hasMystiaCooker.onChange((prev) => {
-		customerStore.evaluateMealResult();
-		if (prev) {
-			customerStore.shared.customer.order.set({
-				beverageTag: null,
-				recipeTag: null,
-			});
-		}
-	});
+	customerStore.shared.customer.hasMystiaCooker.onChange(customerStore.evaluateMealResult);
 	customerStore.shared.customer.order.beverageTag.onChange(customerStore.evaluateMealResult);
 	customerStore.shared.customer.order.recipeTag.onChange(customerStore.evaluateMealResult);
 	customerStore.shared.customer.popular.isNegative.onChange(customerStore.evaluateMealResult);

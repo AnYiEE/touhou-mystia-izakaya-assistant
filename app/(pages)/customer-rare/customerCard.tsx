@@ -270,7 +270,9 @@ export default memo(
 											className={twMerge(
 												'cursor-pointer p-1 leading-none hover:opacity-80',
 												!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50',
-												currentCustomerOrder.recipeTag === tag && 'ring-2 ring-current',
+												currentCustomerOrder.recipeTag === tag &&
+													!hasMystiaCooker &&
+													'ring-2 ring-current',
 												hasMystiaCooker && !isOrderLinkedFilter && 'cursor-not-allowed'
 											)}
 										/>
@@ -323,7 +325,9 @@ export default memo(
 											className={twMerge(
 												'cursor-pointer p-1 leading-none hover:opacity-80',
 												!beverageTags.includes(tag) && 'opacity-50',
-												currentCustomerOrder.beverageTag === tag && 'ring-2 ring-current',
+												currentCustomerOrder.beverageTag === tag &&
+													!hasMystiaCooker &&
+													'ring-2 ring-current',
 												hasMystiaCooker && !isOrderLinkedFilter && 'cursor-not-allowed'
 											)}
 										/>
