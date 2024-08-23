@@ -328,22 +328,28 @@ export const customerRareStore = store(state, {
 		},
 	}))
 	.actions((currentStore) => ({
-		onCustomerFilterBeverageTag(tag: TBeverageTag) {
+		onCustomerFilterBeverageTag(tag: TBeverageTag, hasMystiaCooker: boolean) {
 			currentStore.shared.tab.set('beverage');
 			currentStore.shared.beverage.page.set(1);
 			currentStore.shared.customer.filterVisibility.set(false);
 			currentStore.shared.ingredient.filterVisibility.set(false);
 			currentStore.shared.customer.beverageTags.set((prev) => {
-				keepLastTag(prev, tag);
+				keepLastTag(prev, tag, {
+					hasMystiaCooker,
+					orderTag: currentStore.shared.customer.order.beverageTag.get(),
+				});
 			});
 		},
-		onCustomerFilterRecipeTag(tag: TRecipeTag) {
+		onCustomerFilterRecipeTag(tag: TRecipeTag, hasMystiaCooker: boolean) {
 			currentStore.shared.tab.set('recipe');
 			currentStore.shared.recipe.page.set(1);
 			currentStore.shared.customer.filterVisibility.set(false);
 			currentStore.shared.ingredient.filterVisibility.set(false);
 			currentStore.shared.customer.positiveTags.set((prev) => {
-				keepLastTag(prev, tag);
+				keepLastTag(prev, tag, {
+					hasMystiaCooker,
+					orderTag: currentStore.shared.customer.order.recipeTag.get(),
+				});
 			});
 		},
 		onCustomerOrderBeverageTag(tag: TBeverageTag) {

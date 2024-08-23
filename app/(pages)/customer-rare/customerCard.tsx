@@ -62,11 +62,11 @@ export default memo(
 
 		const handleBeverageTagClick = useCallback(
 			(tag: TBeverageTag) => {
-				if (isOrderLinkedFilter) {
-					customerStore.onCustomerFilterBeverageTag(tag);
-				}
 				if (!hasMystiaCooker) {
 					customerStore.onCustomerOrderBeverageTag(tag);
+				}
+				if (isOrderLinkedFilter) {
+					customerStore.onCustomerFilterBeverageTag(tag, hasMystiaCooker);
 				}
 			},
 			[hasMystiaCooker, isOrderLinkedFilter]
@@ -74,11 +74,11 @@ export default memo(
 
 		const handleRecipeTagClick = useCallback(
 			(tag: TRecipeTag) => {
-				if (isOrderLinkedFilter) {
-					customerStore.onCustomerFilterRecipeTag(tag);
-				}
 				if (!hasMystiaCooker) {
 					customerStore.onCustomerOrderRecipeTag(tag);
+				}
+				if (isOrderLinkedFilter) {
+					customerStore.onCustomerFilterRecipeTag(tag, hasMystiaCooker);
 				}
 			},
 			[hasMystiaCooker, isOrderLinkedFilter]
