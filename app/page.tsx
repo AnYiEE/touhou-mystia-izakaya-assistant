@@ -1,4 +1,4 @@
-import {memo, useCallback} from 'react';
+import {memo} from 'react';
 
 import {Button, Divider, Link, Tooltip} from '@nextui-org/react';
 import {faQq} from '@fortawesome/free-brands-svg-icons';
@@ -12,15 +12,12 @@ import {siteConfig} from '@/configs';
 const {links, shortName} = siteConfig;
 
 export default memo(function Home() {
-	const QRCodeDescription = useCallback(
-		() => (
-			<>
-				分享经验、交流心得
-				<br />
-				提出建议、反馈问题
-			</>
-		),
-		[]
+	const qrCodeDescription = (
+		<>
+			分享经验、交流心得
+			<br />
+			提出建议、反馈问题
+		</>
 	);
 
 	return (
@@ -52,7 +49,7 @@ export default memo(function Home() {
 						showArrow
 						content={
 							<QRCode alt={links.qqGroupQRCode.label} src={links.qqGroupQRCode.href}>
-								<QRCodeDescription />
+								{qrCodeDescription}
 							</QRCode>
 						}
 						classNames={{
@@ -71,7 +68,7 @@ export default memo(function Home() {
 						showArrow
 						content={
 							<QRCode alt={links.xiaohongshuGroupQRCode.label} src={links.xiaohongshuGroupQRCode.href}>
-								<QRCodeDescription />
+								{qrCodeDescription}
 							</QRCode>
 						}
 						classNames={{
