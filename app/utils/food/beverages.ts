@@ -5,6 +5,7 @@ import {type TBeverageNames, type TBeverages} from '@/data';
 import type {TBeverageTag} from '@/data/types';
 
 export class Beverage extends Food<TBeverages> {
+	/** @description Flag to check if the tags are consistent with the original data. */
 	private static isTagsChecked: boolean;
 
 	constructor(data: TBeverages) {
@@ -13,6 +14,9 @@ export class Beverage extends Food<TBeverages> {
 		this._data = data;
 	}
 
+	/**
+	 * @description Tags sorted in the suggested order. Used for selecting beverage tags.
+	 */
 	public get sortedTags() {
 		const tags = [
 			'无酒精',
@@ -54,6 +58,10 @@ export class Beverage extends Food<TBeverages> {
 		return tags;
 	}
 
+	/**
+	 * @description Get the suitability of a beverage for a customer based on their tags.
+	 * @returns An object containing the suitability of the beverage and the tags that are common to both the beverage and the customer.
+	 */
 	public getCustomerSuitability<T extends string>(name: TBeverageNames, customerTags: T[]) {
 		const beverage = this.getPropsByName(name);
 

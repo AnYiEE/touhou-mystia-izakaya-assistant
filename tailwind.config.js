@@ -90,7 +90,7 @@ module.exports = {
 	darkMode: 'class',
 	safelist: isProduction
 		? [
-				// For compatible with Safari <= 14
+				// For compatible with browsers that do not support the `gap` property.
 				{
 					pattern: /space-(x|y)/u,
 					variants: ['md', 'xl'],

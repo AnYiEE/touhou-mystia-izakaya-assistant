@@ -107,8 +107,10 @@ self.addEventListener('fetch', (/** @type {FetchEvent} */ event) => {
 	}
 
 	if (pathname.includes('.')) {
+		// Cache all static assets (file has extension).
 		event.respondWith(cacheFirst(event.request));
 	} else {
+		// Cache all routes (file has no extension).
 		event.respondWith(networkFirst(event.request));
 	}
 });

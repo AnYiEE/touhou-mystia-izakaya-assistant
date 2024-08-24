@@ -5,20 +5,20 @@ import {execSync} from 'node:child_process';
 
 import {SpeedInsights} from '@vercel/speed-insights/next';
 
-import Navbar from '@/(pages)/navbar';
 import Footer from '@/(pages)/footer';
+import Navbar from '@/(pages)/navbar';
 import Analytics from '@/components/analytics';
 import ErrorBoundary from '@/components/errorBoundary';
 import Providers from '@/providers';
 
+import {config as fontawesomeConfig} from '@fortawesome/fontawesome-svg-core';
 import {siteConfig} from '@/configs';
 
-import 'driver.js/dist/driver.css';
 import './globals.scss';
-
-import {config as fontawesomeConfig} from '@fortawesome/fontawesome-svg-core';
+import 'driver.js/dist/driver.css';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 
+/** @see {@link https://docs.fontawesome.com/web/use-with/react/use-with#getting-font-awesome-css-to-work} */
 fontawesomeConfig.autoAddCss = false;
 
 const {author, description, keywords, locale, name, shortName, isHosted, isVercel, nodeEnv} = siteConfig;
@@ -109,6 +109,10 @@ export default function RootLayout({
 				/>
 				<script
 					dangerouslySetInnerHTML={{
+						/**
+						 * @description Add `theme-color` meta tag.
+						 * @see /app/components/themeSwitcher.tsx
+						 */
 						__html: `(() => {
 	const colorDark = '#000';
 	const colorLight = '#fef7e4';
@@ -140,7 +144,10 @@ export default function RootLayout({
 })();`,
 					}}
 				/>
-				{isProduction && <Script async src={`/registerServiceWorker.js?v=${sha}`} />}
+				{
+					// Register service worker. The `sha` is the commit SHA of the current commit, used to bypass browser caching.
+					isProduction && <Script async src={`/registerServiceWorker.js?v=${sha}`} />
+				}
 				<Script
 					async
 					src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/smoothscroll/1.4.10/SmoothScroll.min.js"

@@ -35,10 +35,12 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 	const {theme, setTheme} = useTheme();
 
 	useEffect(() => {
+		// Initialize current popular tag based on the persistence data.
 		const globalPopular = globalStore.persistence.popular.get();
 		customerNormalStore.shared.customer.popular.set(globalPopular);
 		customerRareStore.shared.customer.popular.set(globalPopular);
 
+		// Synchronize state across multiple tabs as needed.
 		const updateStore = debounce(
 			(event: StorageEvent) => {
 				const {key, newValue} = event;

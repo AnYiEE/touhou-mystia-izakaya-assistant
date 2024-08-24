@@ -44,6 +44,9 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 		this._data = clonedData;
 	}
 
+	/**
+	 * @description Calculate the tags based on the original tags and the popular tag data.
+	 */
 	public calculateTagsWithPopular(recipeTags: TRecipeTag[], popular: IPopularData) {
 		const recipeTagsWithPopular = [...recipeTags];
 		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popular;
@@ -55,6 +58,9 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 		return recipeTagsWithPopular;
 	}
 
+	/**
+	 * @description Compose recipe tags based on all ingredient count, original recipe tags and the extra ingredient tags.
+	 */
 	public composeTags(
 		originalIngredients: TIngredientNames[],
 		extraIngredients: TIngredientNames[],
@@ -76,6 +82,10 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 		return [...resultTags];
 	}
 
+	/**
+	 * @description Get the suitability of a recipe for a customer based on their tags.
+	 * @returns An object containing the suitability of the recipe and the tags that are common to both the recipe and the customer.
+	 */
 	public getCustomerSuitability(
 		recipeTags: TRecipeTag[],
 		customerNegativeTags: TRecipeTag[],
@@ -106,6 +116,9 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 		return score;
 	}
 
+	/**
+	 * @description Calculate the suitability score change when adding or removing an extra ingredient from a recipe.
+	 */
 	public getIngredientScoreChange(
 		oldRecipePositiveTags: TRecipeTag[],
 		newRecipePositiveTags: TRecipeTag[],
@@ -118,6 +131,9 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 		return newScore - originalScore;
 	}
 
+	/**
+	 * @description Get the recipes for a customer based on their bond level.
+	 */
 	public getBondRecipes(customerData: ICurrentCustomer) {
 		if (Recipe.bondRecipesCache.has(customerData.name)) {
 			return Recipe.bondRecipesCache.get(customerData.name);

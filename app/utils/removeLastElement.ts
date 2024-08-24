@@ -1,3 +1,6 @@
+/**
+ * @example removeLastElement([1, 2, 3, 4, 2], 2) -> [1, 2, 3, 4]
+ */
 export function removeLastElement<T>(array: T[], elementToRemove: T, elementToInsert?: T): T[] {
 	const copiedArray = [...array];
 
