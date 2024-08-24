@@ -1,13 +1,10 @@
 import {isEqual} from 'lodash';
 
 import {Food} from './base';
-import {type TBeverages} from '@/data';
+import {type TBeverageNames, type TBeverages} from '@/data';
 import type {TBeverageTag} from '@/data/types';
 
-export class Beverage<
-	TItem extends TBeverages[number] = TBeverages[number],
-	TName extends TItem['name'] = TItem['name'],
-> extends Food<TBeverages> {
+export class Beverage extends Food<TBeverages> {
 	private static isTagsChecked: boolean;
 
 	constructor(data: TBeverages) {
@@ -57,7 +54,7 @@ export class Beverage<
 		return tags;
 	}
 
-	public getCustomerSuitability<T extends string>(name: TName, customerTags: T[]) {
+	public getCustomerSuitability<T extends string>(name: TBeverageNames, customerTags: T[]) {
 		const beverage = this.getPropsByName(name);
 
 		const {tags} = beverage;
