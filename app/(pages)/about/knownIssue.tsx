@@ -12,14 +12,24 @@ export default memo(function KnownIssue() {
 			<Ul>
 				<li>
 					表格无法排序多个列：见
-					<Link isExternal showAnchorIcon href="https://github.com/nextui-org/nextui/issues/2282">
+					<Link
+						isExternal
+						showAnchorIcon
+						href="https://github.com/nextui-org/nextui/issues/2282"
+						referrerPolicy="no-referrer"
+					>
 						issue#2282
 					</Link>
 					。
 				</li>
 				<li>
 					表格点击排序后默认升序：NextUI的
-					<Link isExternal showAnchorIcon href="https://nextui.org/docs/components/table#api">
+					<Link
+						isExternal
+						showAnchorIcon
+						href="https://nextui.org/docs/components/table#api"
+						referrerPolicy="no-referrer"
+					>
 						Table组件
 					</Link>
 					尚未提供相关设置项。

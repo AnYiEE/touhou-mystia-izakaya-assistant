@@ -32,6 +32,7 @@ const FooterLink = memo<PropsWithChildren<IFooterLinkProps>>(function FooterLink
 			isExternal={isExternal}
 			showAnchorIcon={showAnchorIcon}
 			href={href}
+			referrerPolicy="same-origin"
 			aria-label={content ?? title ?? (children as string)}
 			title={title}
 			className="text-xs opacity-60 dark:text-warning-400 dark:opacity-40 dark:hover:opacity-60"
