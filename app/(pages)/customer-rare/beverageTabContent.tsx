@@ -275,7 +275,6 @@ export default memo(
 								variant="flat"
 								onClear={store.clearBeverageTableSearchValue}
 								onInputChange={store.onBeverageTableSearchValueChange}
-								onSelectionChange={store.onBeverageTableSearchValueChange}
 								aria-label="选择或输入酒水名称"
 								title="选择或输入酒水名称"
 							>

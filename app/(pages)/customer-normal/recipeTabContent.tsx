@@ -346,7 +346,6 @@ export default memo(
 								variant="flat"
 								onClear={store.clearRecipeTableSearchValue}
 								onInputChange={store.onRecipeTableSearchValueChange}
-								onSelectionChange={store.onRecipeTableSearchValueChange}
 								aria-label="选择或输入料理名称"
 								title="选择或输入料理名称"
 							>

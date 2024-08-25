@@ -49,9 +49,6 @@ export default memo(
 						defaultItems={searchItems}
 						label={label}
 						onInputChange={setSearchValue}
-						onSelectionChange={(key) => {
-							setSearchValue(key as string);
-						}}
 					>
 						{({value}) => <AutocompleteItem key={value}>{value}</AutocompleteItem>}
 					</Autocomplete>
