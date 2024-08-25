@@ -1,4 +1,5 @@
 import {type Dispatch, forwardRef, memo, useCallback, useMemo} from 'react';
+import {twMerge} from 'tailwind-merge';
 
 import {
 	Button,
@@ -33,7 +34,7 @@ interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color
 }
 
 export default memo(
-	forwardRef<HTMLDivElement | null, IProps>(function SideFilterIconButton({selectConfig, ...props}, ref) {
+	forwardRef<HTMLDivElement | null, IProps>(function SideFilterIconButton({selectConfig, className, ...props}, ref) {
 		const hasFilter = useMemo(() => selectConfig.some(({selectedKeys}) => selectedKeys.length > 0), [selectConfig]);
 
 		const handleSelectionChange = useCallback(
@@ -57,6 +58,7 @@ export default memo(
 						icon={faFilter}
 						variant="shadow"
 						aria-label="筛选"
+						className={twMerge('text-white', className)}
 						{...props}
 					/>
 				</PopoverTrigger>

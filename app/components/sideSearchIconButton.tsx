@@ -1,4 +1,5 @@
 import {type Dispatch, type SetStateAction, forwardRef, memo} from 'react';
+import {twMerge} from 'tailwind-merge';
 
 import {
 	Autocomplete,
@@ -27,7 +28,7 @@ interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function SideSearchIconButton(
-		{searchConfig: {label, searchItems, searchValue, setSearchValue}, ...props},
+		{searchConfig: {label, searchItems, searchValue, setSearchValue}, className, ...props},
 		ref
 	) {
 		return (
@@ -38,6 +39,7 @@ export default memo(
 						icon={faMagnifyingGlass}
 						variant="shadow"
 						aria-label="搜索"
+						className={twMerge('text-white', className)}
 						{...props}
 					/>
 				</PopoverTrigger>

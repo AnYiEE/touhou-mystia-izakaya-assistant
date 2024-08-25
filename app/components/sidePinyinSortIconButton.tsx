@@ -1,4 +1,5 @@
 import {type Dispatch, type SetStateAction, forwardRef, memo} from 'react';
+import {twMerge} from 'tailwind-merge';
 
 import {faArrowDownAZ, faArrowUpAZ} from '@fortawesome/free-solid-svg-icons';
 
@@ -34,7 +35,7 @@ function getNextPinyinSortState(currentState: PinyinSortState) {
 
 export default memo(
 	forwardRef<HTMLButtonElement | null, IProps>(function SidePinyinSortIconButton(
-		{pinyinSortConfig: {pinyinSortState, setPinyinSortState}, ...props},
+		{pinyinSortConfig: {pinyinSortState, setPinyinSortState}, className, ...props},
 		ref
 	) {
 		return (
@@ -46,6 +47,7 @@ export default memo(
 					setPinyinSortState(getNextPinyinSortState(pinyinSortState));
 				}}
 				aria-label="拼音排序"
+				className={twMerge('text-white', className)}
 				{...props}
 				ref={ref}
 			/>
