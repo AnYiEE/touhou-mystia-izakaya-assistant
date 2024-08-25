@@ -11,4 +11,5 @@ export type {
 	TRecipe,
 	TRecipeWithSuitability,
 	TRecipesWithSuitability,
+	TTab,
 } from '@/(pages)/customer-rare/types';

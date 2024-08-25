@@ -74,3 +74,5 @@ type TRecipes = TRecipeInstance['data'];
 export type TRecipe = TRecipes[number];
 export type TRecipeWithSuitability = TRecipe & TRecipeSuitability;
 export type TRecipesWithSuitability = TRecipeWithSuitability[];
+
+export type TTab = 'beverage' | 'customer' | 'ingredient' | 'recipe';

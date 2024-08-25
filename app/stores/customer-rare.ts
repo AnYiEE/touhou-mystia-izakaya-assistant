@@ -8,7 +8,7 @@ import {TabVisibilityState, beverageTableColumns, recipeTableColumns} from '@/(p
 import {type TTableSortDescriptor as TBeverageTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
 import {evaluateMeal} from '@/(pages)/customer-rare/evaluateMeal';
 import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
-import type {ICurrentCustomer, TCustomerRating, TRecipe} from '@/(pages)/customer-rare/types';
+import type {ICurrentCustomer, TCustomerRating, TRecipe, TTab} from '@/(pages)/customer-rare/types';
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
@@ -180,7 +180,7 @@ const state = {
 			selectableRows: [5, 7, 10, 15, 20].map((value) => ({value})),
 			sortDescriptor: {} as TRecipeTableSortDescriptor,
 		},
-		tab: 'customer' as string | number,
+		tab: 'customer' as TTab,
 	},
 };
 
@@ -472,7 +472,7 @@ export const customerRareStore = store(state, {
 		},
 
 		onTabSelectionChange(tab: Key) {
-			currentStore.shared.tab.set(tab as string);
+			currentStore.shared.tab.set(tab as TTab);
 			currentStore.shared.customer.filterVisibility.set(tab === 'customer');
 			currentStore.shared.ingredient.filterVisibility.set(tab === 'ingredient');
 		},
