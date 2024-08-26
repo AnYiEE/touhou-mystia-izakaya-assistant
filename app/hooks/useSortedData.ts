@@ -2,9 +2,16 @@ import {useMemo} from 'react';
 
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
-import type {TCustomerInstances, TFoodInstances} from '@/methods/types';
+import {
+	type Beverage,
+	type CustomerNormal,
+	type CustomerRare,
+	type CustomerSpecial,
+	type Ingredient,
+	type Recipe,
+} from '@/utils';
 
-type TTargetInstance = TCustomerInstances | TFoodInstances;
+type TTargetInstance = Beverage | CustomerNormal | CustomerRare | CustomerSpecial | Ingredient | Recipe;
 type TData<T extends TTargetInstance> = T['data'];
 
 export function useSortedData<T extends TTargetInstance>(

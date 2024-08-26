@@ -1,17 +1,31 @@
 import {isEqual} from 'lodash';
 
 import {Food} from './base';
-import {type TBeverageNames, type TBeverages} from '@/data';
+import {BEVERAGE_LIST, type TBeverageNames, type TBeverages} from '@/data';
 import type {TBeverageTag} from '@/data/types';
 
 export class Beverage extends Food<TBeverages> {
-	/** @description Flag to check if the tags are consistent with the original data. */
-	private static isTagsChecked: boolean;
+	private static _instance: Beverage | undefined;
 
-	constructor(data: TBeverages) {
+	/** @description Flag to check if the tags are consistent with the original data. */
+	private static _isTagsChecked: boolean;
+
+	private constructor(data: TBeverages) {
 		super(data);
 
 		this._data = data;
+	}
+
+	public static getInstance() {
+		if (Beverage._instance) {
+			return Beverage._instance;
+		}
+
+		const instance = new Beverage(BEVERAGE_LIST);
+
+		Beverage._instance = instance;
+
+		return instance;
 	}
 
 	/**
@@ -42,7 +56,7 @@ export class Beverage extends Food<TBeverages> {
 			'提神',
 		] as const satisfies TBeverageTag[];
 
-		if (Beverage.isTagsChecked) {
+		if (Beverage._isTagsChecked) {
 			return tags;
 		}
 
@@ -53,7 +67,7 @@ export class Beverage extends Food<TBeverages> {
 			);
 		}
 
-		Beverage.isTagsChecked = true;
+		Beverage._isTagsChecked = true;
 
 		return tags;
 	}

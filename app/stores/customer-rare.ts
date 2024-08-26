@@ -15,15 +15,25 @@ import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 import type {IPersistenceState} from './types';
 import {type TBeverageNames, type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
-import {customerRareInstance as instance_rare, customerSpecialInstance as instance_special} from '@/methods/customer';
-import {
-	beverageInstance as instance_beverage,
-	ingredientInstance as instance_ingredient,
-	recipeInstance as instance_recipe,
-} from '@/methods/food';
 import {type IPopularData} from '@/stores';
 import {getAllItemNames, keepLastTag} from '@/stores/utils';
-import {numberSort, pinyinSort, removeLastElement, union} from '@/utils';
+import {
+	Beverage,
+	CustomerRare,
+	CustomerSpecial,
+	Ingredient,
+	Recipe,
+	numberSort,
+	pinyinSort,
+	removeLastElement,
+	union,
+} from '@/utils';
+
+const instance_beverage = Beverage.getInstance();
+const instance_ingredient = Ingredient.getInstance();
+const instance_recipe = Recipe.getInstance();
+const instance_rare = CustomerRare.getInstance();
+const instance_special = CustomerSpecial.getInstance();
 
 const rareDlcs = instance_rare.getValuesByProp(instance_rare.data, 'dlc').sort(numberSort);
 const rarePlaces = instance_rare.getValuesByProp(instance_rare.data, 'places').sort(pinyinSort);

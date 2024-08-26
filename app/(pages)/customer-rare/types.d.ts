@@ -2,7 +2,7 @@ import {type AvatarProps, type SortDescriptor} from '@nextui-org/react';
 
 import {type TabVisibilityState} from './constants';
 import {type TCustomerNames} from '@/data';
-import type {TBeverageInstance, TRecipeInstance} from '@/methods/food/types';
+import {type Beverage, type Recipe} from '@/utils';
 
 export type TCustomerTarget = 'customer_rare' | 'customer_special';
 
@@ -59,7 +59,7 @@ type TBeverageSuitability = {
 	suitability: number;
 };
 
-type TBeverages = TBeverageInstance['data'];
+type TBeverages = Beverage['data'];
 type TBeverage = TBeverages[number];
 export type TBeverageWithSuitability = TBeverage & TBeverageSuitability;
 export type TBeveragesWithSuitability = TBeverageWithSuitability[];
@@ -70,7 +70,7 @@ type TRecipeSuitability = {
 	suitability: number;
 };
 
-type TRecipes = TRecipeInstance['data'];
+type TRecipes = Recipe['data'];
 export type TRecipe = TRecipes[number];
 export type TRecipeWithSuitability = TRecipe & TRecipeSuitability;
 export type TRecipesWithSuitability = TRecipeWithSuitability[];

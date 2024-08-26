@@ -2,7 +2,7 @@ import {cloneDeep, isObjectLike, sortBy} from 'lodash';
 
 import {Food} from './base';
 import {type ICurrentCustomer} from '@/(pages)/customer-rare/types';
-import {type TIngredientNames, type TRecipeNames, type TRecipes} from '@/data';
+import {RECIPE_LIST, type TIngredientNames, type TRecipeNames, type TRecipes} from '@/data';
 import type {TIngredientTag, TRecipeTag} from '@/data/types';
 import {type IPopularData} from '@/stores';
 
@@ -16,8 +16,10 @@ type TBondRecipes = {
 	name: TRecipeNames;
 }[];
 
-export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
-	private static tagCoverMap = {
+export class Recipe extends Food<TRecipes> {
+	private static _instance: Recipe | undefined;
+
+	private static _tagCoverMap = {
 		大份: '小巧',
 		灼热: '凉爽',
 		肉: '素',
@@ -25,12 +27,12 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 		饱腹: '下酒',
 	} as const;
 
-	private static bondRecipesCache: Map<ICurrentCustomer['name'], TBondRecipes> = new Map();
+	private static _bondRecipesCache: Map<ICurrentCustomer['name'], TBondRecipes> = new Map();
 
-	constructor(data: TProcessPositiveTags<TRecipes[number]>[]) {
+	private constructor(data: TRecipes) {
 		const clonedData = cloneDeep(data);
 
-		clonedData.forEach((recipe) => {
+		(clonedData as TProcessPositiveTags<TRecipes[number]>[]).forEach((recipe) => {
 			const {positiveTags, price} = recipe;
 			if (price > 60) {
 				positiveTags.push('昂贵');
@@ -42,6 +44,18 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 		super(clonedData);
 
 		this._data = clonedData;
+	}
+
+	public static getInstance() {
+		if (Recipe._instance) {
+			return Recipe._instance;
+		}
+
+		const instance = new Recipe(RECIPE_LIST);
+
+		Recipe._instance = instance;
+
+		return instance;
 	}
 
 	/**
@@ -73,7 +87,7 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 			resultTags.add('大份');
 		}
 
-		Object.entries(Recipe.tagCoverMap)
+		Object.entries(Recipe._tagCoverMap)
 			.filter(([targetTag]) => resultTags.has(targetTag as TRecipeTag))
 			.forEach(([, coveredTag]) => {
 				resultTags.delete(coveredTag);
@@ -135,8 +149,8 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 	 * @description Get the recipes for a customer based on their bond level.
 	 */
 	public getBondRecipes(customerData: ICurrentCustomer) {
-		if (Recipe.bondRecipesCache.has(customerData.name)) {
-			return Recipe.bondRecipesCache.get(customerData.name);
+		if (Recipe._bondRecipesCache.has(customerData.name)) {
+			return Recipe._bondRecipesCache.get(customerData.name);
 		}
 
 		let bondRecipes: TBondRecipes = [];
@@ -153,7 +167,7 @@ export class Recipe extends Food<TProcessPositiveTags<TRecipes[number]>[]> {
 
 		bondRecipes = sortBy(bondRecipes, 'level');
 
-		Recipe.bondRecipesCache.set(customerData.name, bondRecipes);
+		Recipe._bondRecipesCache.set(customerData.name, bondRecipes);
 
 		return bondRecipes;
 	}

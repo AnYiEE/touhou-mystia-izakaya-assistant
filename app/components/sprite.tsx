@@ -4,9 +4,7 @@ import {twMerge} from 'tailwind-merge';
 import {checkCompatibility} from '@/components/compatibleBrowser';
 
 import {type TItemNames} from '@/data';
-import {spriteInstances} from '@/methods';
-import type {TSpriteInstances} from '@/methods/types';
-import {remToPx} from '@/utils';
+import {Sprite as SpriteClass, remToPx} from '@/utils';
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
 import styles from './sprite.module.scss';
@@ -33,7 +31,7 @@ export default memo(
 			setIsSupportedWebp(checkCompatibility()['webp']);
 		}, []);
 
-		const instance: TSpriteInstances = useMemo(() => spriteInstances[target], [target]);
+		const instance = useMemo(() => SpriteClass.getInstance(target), [target]);
 
 		const {calculatedIndex, calculatedName} = useMemo(() => {
 			let _calculatedIndex = index;

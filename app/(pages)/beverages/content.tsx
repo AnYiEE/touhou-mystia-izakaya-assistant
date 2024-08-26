@@ -12,10 +12,10 @@ import Sprite from '@/components/sprite';
 
 import {BEVERAGE_TAG_STYLE} from '@/constants';
 import {type IBeverage} from '@/data';
-import type {TBeverageInstance} from '@/methods/food/types';
+import {type Beverage} from '@/utils';
 
 interface IProps {
-	data: TBeverageInstance['data'];
+	data: Beverage['data'];
 }
 
 export default memo<IProps>(function Content({data}) {

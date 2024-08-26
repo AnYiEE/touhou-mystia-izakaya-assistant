@@ -1,9 +1,16 @@
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
-import type {TCustomerInstances, TFoodInstances} from '@/methods/types';
+import {
+	type Beverage,
+	type CustomerNormal,
+	type CustomerRare,
+	type CustomerSpecial,
+	type Ingredient,
+	type Recipe,
+} from '@/utils';
 import {type Item} from '@/utils/item';
 
-type TTargetInstance = TCustomerInstances | TFoodInstances;
+type TTargetInstance = Beverage | CustomerNormal | CustomerRare | CustomerSpecial | Ingredient | Recipe;
 type TNames<T extends TTargetInstance> = T['data'][number]['name'];
 type TNameObject<T extends TTargetInstance> = {
 	value: TNames<T>;

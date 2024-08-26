@@ -51,7 +51,7 @@ export function evaluateMeal({
 
 	if (currentCustomerPopularTag) {
 		extraScore +=
-			Number(currentRecipe.positiveTags.includes(currentCustomerPopularTag)) +
+			Number((currentRecipe.positiveTags as string[]).includes(currentCustomerPopularTag)) +
 			Number(currentExtraTags.includes(currentCustomerPopularTag));
 	}
 

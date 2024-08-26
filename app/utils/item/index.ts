@@ -13,11 +13,11 @@ export class Item<
 	protected _data: TTarget;
 	protected _dataWithPinyin: TItemWithPinyin[];
 
-	protected pinyinSortedCache?: TItemWithPinyin[];
+	protected pinyinSortedCache: TItemWithPinyin[] | undefined;
 	protected static indexNameCache: Map<number, string> = new Map();
 	protected static nameIndexCache: Map<string, number> = new Map();
 
-	public constructor(data: TTarget) {
+	protected constructor(data: TTarget) {
 		this._data = cloneDeep(data);
 		this._dataWithPinyin = this._data.map((item) => ({
 			...item,

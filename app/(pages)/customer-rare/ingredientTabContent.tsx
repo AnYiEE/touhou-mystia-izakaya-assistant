@@ -7,13 +7,12 @@ import Sprite from '@/components/sprite';
 
 import type {IIngredientsTabStyle} from './types';
 import type {TRecipeTag} from '@/data/types';
-import type {TIngredientInstance} from '@/methods/food/types';
 import {customerRareStore as store} from '@/stores';
-import {checkA11yConfirmKey, intersection} from '@/utils';
+import {type Ingredient, checkA11yConfirmKey, intersection} from '@/utils';
 
 interface IProps {
 	ingredientTabStyle: IIngredientsTabStyle;
-	sortedData: TIngredientInstance['data'];
+	sortedData: Ingredient['data'];
 }
 
 export default memo(

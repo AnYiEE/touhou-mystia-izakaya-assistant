@@ -6,13 +6,12 @@ import {Avatar, Button, ScrollShadow} from '@nextui-org/react';
 import Sprite from '@/components/sprite';
 
 import type {ICustomerTabStyle} from './types';
-import type {TCustomerNormalInstances} from '@/methods/customer/types';
 import {customerNormalStore as store} from '@/stores';
-import {checkA11yConfirmKey} from '@/utils';
+import {type CustomerNormal, checkA11yConfirmKey} from '@/utils';
 
 interface IProps {
 	customerTabStyle: ICustomerTabStyle;
-	sortedData: TCustomerNormalInstances['data'];
+	sortedData: CustomerNormal['data'];
 }
 
 export default memo(

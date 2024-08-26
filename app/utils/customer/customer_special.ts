@@ -1,10 +1,24 @@
 import {Customer} from './base';
-import {type TCustomerSpecials} from '@/data';
+import {CUSTOMER_SPECIAL_LIST, type TCustomerSpecials} from '@/data';
 
 export class CustomerSpecial extends Customer<TCustomerSpecials> {
-	constructor(data: TCustomerSpecials) {
+	private static _instance: CustomerSpecial | undefined;
+
+	private constructor(data: TCustomerSpecials) {
 		super(data);
 
 		this._data = data;
+	}
+
+	public static getInstance() {
+		if (CustomerSpecial._instance) {
+			return CustomerSpecial._instance;
+		}
+
+		const instance = new CustomerSpecial(CUSTOMER_SPECIAL_LIST);
+
+		CustomerSpecial._instance = instance;
+
+		return instance;
 	}
 }

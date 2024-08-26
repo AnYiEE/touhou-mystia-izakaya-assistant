@@ -6,15 +6,14 @@ import {Avatar, Button, ScrollShadow} from '@nextui-org/react';
 import Sprite from '@/components/sprite';
 
 import type {ICurrentCustomer, ICustomerTabStyle} from './types';
-import type {TCustomerRareInstances, TCustomerSpecialInstances} from '@/methods/customer/types';
 import {customerRareStore as store} from '@/stores';
-import {checkA11yConfirmKey} from '@/utils';
+import {type CustomerRare, type CustomerSpecial, checkA11yConfirmKey} from '@/utils';
 
 interface IProps {
 	customerTabStyle: ICustomerTabStyle;
 	sortedData: {
-		customer_rare: TCustomerRareInstances['data'];
-		customer_special: TCustomerSpecialInstances['data'];
+		customer_rare: CustomerRare['data'];
+		customer_special: CustomerSpecial['data'];
 	};
 }
 

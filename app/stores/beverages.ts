@@ -3,9 +3,10 @@ import {createJSONStorage} from 'zustand/middleware';
 
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
-import {beverageInstance as instance} from '@/methods/food';
 import {getAllItemNames} from '@/stores/utils';
-import {numberSort} from '@/utils';
+import {Beverage, numberSort} from '@/utils';
+
+const instance = Beverage.getInstance();
 
 const storeVersion = {
 	initial: 0,

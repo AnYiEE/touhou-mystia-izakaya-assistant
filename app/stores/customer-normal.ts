@@ -15,15 +15,14 @@ import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 import type {IPersistenceState} from './types';
 import {type TBeverageNames, type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
-import {customerNormalInstance as instance_customer} from '@/methods/customer';
-import {
-	beverageInstance as instance_beverage,
-	ingredientInstance as instance_ingredient,
-	recipeInstance as instance_recipe,
-} from '@/methods/food';
 import {type IPopularData, type TPopularTag} from '@/stores';
 import {getAllItemNames, keepLastTag} from '@/stores/utils';
-import {numberSort, pinyinSort, removeLastElement} from '@/utils';
+import {Beverage, CustomerNormal, Ingredient, Recipe, numberSort, pinyinSort, removeLastElement} from '@/utils';
+
+const instance_beverage = Beverage.getInstance();
+const instance_customer = CustomerNormal.getInstance();
+const instance_ingredient = Ingredient.getInstance();
+const instance_recipe = Recipe.getInstance();
 
 const storeVersion = {
 	initial: 0,

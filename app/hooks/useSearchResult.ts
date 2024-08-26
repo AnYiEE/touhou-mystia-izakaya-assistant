@@ -1,9 +1,16 @@
 import {useMemo} from 'react';
 
-import type {TCustomerInstances, TFoodInstances} from '@/methods/types';
-import {processPinyin} from '@/utils';
+import {
+	type Beverage,
+	type CustomerNormal,
+	type CustomerRare,
+	type CustomerSpecial,
+	type Ingredient,
+	type Recipe,
+	processPinyin,
+} from '@/utils';
 
-type TTargetInstance = TCustomerInstances | TFoodInstances;
+type TTargetInstance = Beverage | CustomerNormal | CustomerRare | CustomerSpecial | Ingredient | Recipe;
 type TData<T extends TTargetInstance> = T['data'];
 
 export function useSearchResult<T extends TTargetInstance>(instance: T, searchValue: string) {

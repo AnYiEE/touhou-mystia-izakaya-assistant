@@ -1,13 +1,27 @@
 import {Food} from './base';
-import {type TIngredients} from '@/data';
+import {INGREDIENT_LIST, type TIngredients} from '@/data';
 import type {TIngredientTag} from '@/data/types';
 import {type IPopularData} from '@/stores';
 
 export class Ingredient extends Food<TIngredients> {
-	constructor(data: TIngredients) {
+	private static _instance: Ingredient | undefined;
+
+	private constructor(data: TIngredients) {
 		super(data);
 
 		this._data = data;
+	}
+
+	public static getInstance() {
+		if (Ingredient._instance) {
+			return Ingredient._instance;
+		}
+
+		const instance = new Ingredient(INGREDIENT_LIST);
+
+		Ingredient._instance = instance;
+
+		return instance;
 	}
 
 	/**

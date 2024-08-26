@@ -3,9 +3,10 @@ import {createJSONStorage} from 'zustand/middleware';
 
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
-import {recipeInstance as instance} from '@/methods/food';
 import {getAllItemNames} from '@/stores/utils';
-import {numberSort, pinyinSort} from '@/utils';
+import {Recipe, numberSort, pinyinSort} from '@/utils';
+
+const instance = Recipe.getInstance();
 
 const storeVersion = {
 	initial: 0,

@@ -3,7 +3,7 @@ import {intersection} from '@/utils';
 import {Item} from '@/utils/item';
 
 export class Food<TTarget extends IFood[]> extends Item<TTarget> {
-	public constructor(data: TTarget) {
+	protected constructor(data: TTarget) {
 		super(data);
 
 		this._data = data;

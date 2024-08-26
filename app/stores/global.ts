@@ -5,14 +5,16 @@ import {type Selection} from '@nextui-org/react';
 
 import type {IPersistenceState} from './types';
 import type {TIngredientTag, TRecipeTag} from '@/data/types';
-import {ingredientInstance as instance_ingredient, recipeInstance as instance_recipe} from '@/methods/food';
-import {pinyinSort, union} from '@/utils';
+import {Ingredient, Recipe, pinyinSort, union} from '@/utils';
 
 export type TPopularTag = TIngredientTag | TRecipeTag;
 export interface IPopularData {
 	isNegative: boolean;
 	tag: TPopularTag | null;
 }
+
+const instance_ingredient = Ingredient.getInstance();
+const instance_recipe = Recipe.getInstance();
 
 const ingredientTags = instance_ingredient.getValuesByProp(instance_ingredient.data, 'tags');
 const recipePositiveTags = instance_recipe.getValuesByProp(instance_recipe.data, 'positiveTags');
