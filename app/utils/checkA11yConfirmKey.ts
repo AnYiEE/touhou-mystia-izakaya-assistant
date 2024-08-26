@@ -1,4 +1,4 @@
-import {type KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent} from 'react';
+import {type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent} from 'react';
 
 /**
  * @returns The pressed key is Enter or Space.
