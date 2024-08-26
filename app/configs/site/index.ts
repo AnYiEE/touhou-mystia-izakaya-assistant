@@ -46,8 +46,10 @@ const navItems = [
 	},
 ] as const satisfies ISiteConfig['navItems'];
 
+const {hostname: domain} = new URL(PACKAGE.homepage);
+
 export const siteConfig = {
-	domain: new URL(PACKAGE.homepage).hostname,
+	domain,
 	name: '东方夜雀食堂小助手',
 	shortName: '夜雀助手',
 	author: {
@@ -73,6 +75,10 @@ export const siteConfig = {
 		return acc;
 	}, []),
 	links: {
+		backup: {
+			label: '备用线路',
+			href: `https://hk.${domain}`,
+		},
 		donate: {
 			label: '支付宝收款链接',
 			href: 'https://qr.alipay.com/tsx14703h641lnxffc1gz9c',
