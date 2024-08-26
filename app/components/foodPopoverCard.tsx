@@ -19,8 +19,8 @@ import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Sprite, {type ISpriteProps} from '@/components/sprite';
 import TagsComponent from '@/components/tags';
 
-import type {ITagStyle} from '@/constants/types';
 import {type IIngredient, type TCookerNames, type TFoodNames, type TIngredientNames, type TTags} from '@/data';
+import type {ITagStyle} from '@/data/types';
 import {checkA11yConfirmKey, uniq} from '@/utils';
 
 interface ICloseButtonProps {

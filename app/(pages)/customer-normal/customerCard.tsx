@@ -21,7 +21,7 @@ import Tags from '@/components/tags';
 import Sprite from '@/components/sprite';
 
 import {customerRatingColorMap} from './constants';
-import {CUSTOMER_NORMAL_TAG_STYLE} from '@/constants';
+import {CUSTOMER_NORMAL_TAG_STYLE} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, intersection, pinyinSort} from '@/utils';

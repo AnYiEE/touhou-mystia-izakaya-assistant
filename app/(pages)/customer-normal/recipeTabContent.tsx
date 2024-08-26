@@ -35,7 +35,7 @@ import Tags from '@/components/tags';
 import {type TTableColumnKey, type TTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
 import {recipeTableColumns as tableColumns} from './constants';
 import type {TRecipeWithSuitability, TRecipesWithSuitability} from './types';
-import {CUSTOMER_NORMAL_TAG_STYLE} from '@/constants';
+import {CUSTOMER_NORMAL_TAG_STYLE} from '@/data';
 import {customerNormalStore as store} from '@/stores';
 import {numberSort, pinyinSort, processPinyin} from '@/utils';
 

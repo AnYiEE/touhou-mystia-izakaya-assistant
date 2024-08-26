@@ -11,8 +11,7 @@ import FoodPopoverCard from '@/components/foodPopoverCard';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 
-import {RECIPE_TAG_STYLE} from '@/constants';
-import {type IRecipe} from '@/data';
+import {type IRecipe, RECIPE_TAG_STYLE} from '@/data';
 import {type Recipe} from '@/utils';
 
 interface IProps {

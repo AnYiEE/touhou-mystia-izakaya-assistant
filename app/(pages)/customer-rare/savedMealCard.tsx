@@ -11,8 +11,7 @@ import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 
 import {customerRatingColorMap} from './constants';
-import {BEVERAGE_TAG_STYLE, RECIPE_TAG_STYLE} from '@/constants';
-import {type TCustomerNames, type TTags} from '@/data';
+import {BEVERAGE_TAG_STYLE, RECIPE_TAG_STYLE, type TCustomerNames, type TTags} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 
 const customerTagsCache = new Map<TCustomerNames, Set<TTags>>();

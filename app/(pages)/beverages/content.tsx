@@ -10,8 +10,7 @@ import FoodPopoverCard from '@/components/foodPopoverCard';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 
-import {BEVERAGE_TAG_STYLE} from '@/constants';
-import {type IBeverage} from '@/data';
+import {BEVERAGE_TAG_STYLE, type IBeverage} from '@/data';
 import {type Beverage} from '@/utils';
 
 interface IProps {

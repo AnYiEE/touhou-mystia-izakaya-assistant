@@ -1,8 +1,8 @@
 import {type FC, type HTMLAttributes, forwardRef, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
-import type {TTagStyle} from '@/constants/types';
 import {type TTags} from '@/data';
+import type {TTagStyle} from '@/data/types';
 
 interface ITagProps extends ITagPropsBase, HTMLAttributes<HTMLSpanElement> {}
 
