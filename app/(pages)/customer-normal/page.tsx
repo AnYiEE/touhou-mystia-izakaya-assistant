@@ -244,6 +244,7 @@ export default memo(function CustomerNormal() {
 			<div className="w-full">
 				<Tabs
 					fullWidth
+					destroyInactiveTabPanel={false}
 					size="sm"
 					selectedKey={selectedTabKey}
 					onSelectionChange={customerStore.onTabSelectionChange}

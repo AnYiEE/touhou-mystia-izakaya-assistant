@@ -268,6 +268,7 @@ export default memo(function CustomerRare() {
 			<div className="w-full">
 				<Tabs
 					fullWidth
+					destroyInactiveTabPanel={false}
 					size="sm"
 					selectedKey={selectedTabKey}
 					onSelectionChange={customerStore.onTabSelectionChange}
