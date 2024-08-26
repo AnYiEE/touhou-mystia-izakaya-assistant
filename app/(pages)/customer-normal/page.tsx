@@ -11,7 +11,7 @@ import {customerTabStyleMap, ingredientTabStyleMap} from '@/(pages)/customer-rar
 import BeverageTabContent from './beverageTabContent';
 import CustomerCard from './customerCard';
 import CustomerTabContent from './customerTabContent';
-import IngredientsTabContent from './ingredientsTabContent';
+import IngredientTabContent from './ingredientTabContent';
 import Placeholder from './placeholder';
 import RecipeTabContent from './recipeTabContent';
 import ResultCard from './resultCard';
@@ -258,8 +258,8 @@ export default memo(function CustomerNormal() {
 						<BeverageTabContent />
 					</Tab>
 					<Tab isDisabled={!(currentCustomerName && currentRecipeData)} key="ingredient" title="食材">
-						<IngredientsTabContent
-							ingredientsTabStyle={ingredientTabStyle}
+						<IngredientTabContent
+							ingredientTabStyle={ingredientTabStyle}
 							sortedData={ingredientsSortedData}
 						/>
 					</Tab>

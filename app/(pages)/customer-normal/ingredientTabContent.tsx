@@ -5,25 +5,21 @@ import {Badge, Button, ScrollShadow} from '@nextui-org/react';
 
 import Sprite from '@/components/sprite';
 
-import type {IIngredientsTabStyle} from './types';
+import {type IIngredientTabContentProps} from '@/(pages)/customer-rare/ingredientTabContent';
 import type {TRecipeTag} from '@/data/types';
-import type {TIngredientInstance} from '@/methods/food/types';
-import {customerRareStore as store} from '@/stores';
+import {customerNormalStore as store} from '@/stores';
 import {checkA11yConfirmKey, intersection} from '@/utils';
 
-interface IProps {
-	ingredientsTabStyle: IIngredientsTabStyle;
-	sortedData: TIngredientInstance['data'];
-}
-
 export default memo(
-	forwardRef<HTMLDivElement | null, IProps>(function IngredientsTabContent({ingredientsTabStyle, sortedData}, ref) {
-		const currentCustomerData = store.shared.customer.data.use();
+	forwardRef<HTMLDivElement | null, IIngredientTabContentProps>(function IngredientsTabContent(
+		{ingredientTabStyle, sortedData},
+		ref
+	) {
+		const currentCustomerName = store.shared.customer.name.use();
 		const currentCustomerPopular = store.shared.customer.popular.use();
 		const currentRecipeData = store.shared.recipe.data.use();
 
-		const instance_rare = store.instances.customer_rare.get();
-		const instance_special = store.instances.customer_special.get();
+		const instance_customer = store.instances.customer.get();
 		const instance_ingredient = store.instances.ingredient.get();
 		const instance_recipe = store.instances.recipe.get();
 
@@ -47,15 +43,9 @@ export default memo(
 			[darkIngredients, sortedData]
 		);
 
-		if (!currentCustomerData || !currentRecipeData) {
+		if (!currentCustomerName || !currentRecipeData) {
 			return null;
 		}
-
-		const {target, name: currentCustomerName} = currentCustomerData;
-
-		const instance_customer = (
-			target === 'customer_rare' ? instance_rare : instance_special
-		) as typeof instance_rare;
 
 		const {negativeTags: customerNegativeTags, positiveTags: customerPositiveTags} =
 			instance_customer.getPropsByName(currentCustomerName);
@@ -66,7 +56,7 @@ export default memo(
 					hideScrollBar
 					className={twMerge(
 						'transition-height xl:h-[calc(100vh-9.75rem-env(titlebar-area-height,0rem))]',
-						ingredientsTabStyle.classNames.content
+						ingredientTabStyle.classNames.content
 					)}
 					ref={ref}
 				>
@@ -201,15 +191,13 @@ export default memo(
 						size="sm"
 						variant="flat"
 						onPress={store.toggleIngredientTabVisibilityState}
-						aria-label={ingredientsTabStyle.ariaLabel}
+						aria-label={ingredientTabStyle.ariaLabel}
 						className="h-4 w-4/5 text-default-500"
 					>
-						{ingredientsTabStyle.buttonNode}
+						{ingredientTabStyle.buttonNode}
 					</Button>
 				</div>
 			</>
 		);
 	})
 );
-
-export type {IProps as IIngredientsTabContentProps};

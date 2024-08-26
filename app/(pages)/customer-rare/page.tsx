@@ -10,7 +10,7 @@ import {Tab, Tabs} from '@nextui-org/react';
 import BeverageTabContent from './beverageTabContent';
 import CustomerCard from './customerCard';
 import CustomerTabContent from './customerTabContent';
-import IngredientsTabContent from './ingredientsTabContent';
+import IngredientTabContent from './ingredientTabContent';
 import Placeholder from './placeholder';
 import RecipeTabContent from './recipeTabContent';
 import ResultCard from './resultCard';
@@ -282,8 +282,8 @@ export default memo(function CustomerRare() {
 						<BeverageTabContent />
 					</Tab>
 					<Tab isDisabled={!(currentCustomerData && currentRecipeData)} key="ingredient" title="食材">
-						<IngredientsTabContent
-							ingredientsTabStyle={ingredientTabStyle}
+						<IngredientTabContent
+							ingredientTabStyle={ingredientTabStyle}
 							sortedData={ingredientsSortedData}
 						/>
 					</Tab>
