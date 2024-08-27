@@ -19,12 +19,16 @@ export default class ErrorBoundary extends Component<IProps, IStates> {
 		this.state = {error: null, hasError: false, info: null};
 	}
 
-	private handleClick() {
-		try {
-			localStorage.clear();
-		} finally {
-			location.reload();
+	private handleClick(clear?: boolean) {
+		if (clear) {
+			try {
+				localStorage.clear();
+			} catch (error) {
+				console.error(error);
+				alert(error);
+			}
 		}
+		location.reload();
 	}
 
 	static getDerivedStateFromError(error: Error) {
@@ -55,13 +59,17 @@ export default class ErrorBoundary extends Component<IProps, IStates> {
 					</pre>
 					<button
 						className="mx-auto block w-1/2 cursor-pointer rounded-md bg-content1 p-2 hover:bg-content2"
-						onClick={location.reload}
+						onClick={() => {
+							this.handleClick();
+						}}
 					>
 						点此重试（仅刷新页面）
 					</button>
 					<button
 						className="mx-auto block w-1/2 cursor-pointer rounded-md bg-content1 p-2 hover:bg-content2"
-						onClick={this.handleClick.bind(this)}
+						onClick={() => {
+							this.handleClick(true);
+						}}
 					>
 						点此重试（将清空已保存的数据）
 					</button>
