@@ -1,11 +1,6 @@
-import type {TReward} from '@/data/customer_rare/types';
-import type {ICustomerBase} from '@/data/types';
+import type {ICustomerRare} from '@/data/customer_rare/types';
 
-export interface ICustomerSpecial extends ICustomerBase {
-	bondRewards: TReward[];
-	positiveTagMapping: Partial<Record<TRecipeTag, string>>;
-	price: `${number}-${number}`;
-}
+export interface ICustomerSpecial extends ICustomerRare {}
 
 export type TCustomerSpecials = typeof import('./data').CUSTOMER_SPECIAL_LIST;
 
