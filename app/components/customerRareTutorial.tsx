@@ -78,14 +78,14 @@ export default memo(function CustomerRareTutorial() {
 					},
 				},
 				{
-					element: '[data-key="price"]',
+					element: '[role="tabpanel"] [data-key="price"]',
 					popover: {
 						title: '按价格排序', // eslint-disable-next-line sort-keys
 						description: '点击两次，按价格升序排序酒水。',
 					},
 				},
 				{
-					element: 'tbody>tr[data-key="水獭祭"]>:last-child button',
+					element: '[role="tabpanel"] tbody>tr[data-key="水獭祭"]>:last-child button',
 					popover: {
 						title: '选择目标酒水', // eslint-disable-next-line sort-keys
 						description: '点击加号，选择水獭祭。选择酒水时，酒水售价尽量不要超过目标稀客最大持有金。',
@@ -99,7 +99,7 @@ export default memo(function CustomerRareTutorial() {
 					},
 				},
 				{
-					element: 'tbody>tr[data-key="香炸蝉蜕"]>:last-child button',
+					element: '[role="tabpanel"] tbody>tr[data-key="香炸蝉蜕"]>:last-child button',
 					popover: {
 						title: '选择目标料理', // eslint-disable-next-line sort-keys
 						description:
