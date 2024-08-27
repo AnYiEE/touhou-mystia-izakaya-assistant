@@ -10,8 +10,8 @@ export default memo(function InfoButton() {
 	return (
 		<InfoButtonBase>
 			<AccordionItem key="help" aria-label="特别说明" title="特别说明">
-				<ScrollShadow hideScrollBar className="max-h-60 text-justify text-xs">
-					<p className="mb-1 font-semibold">选单时</p>
+				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-justify text-xs">
+					<p className="mb-1 text-sm font-semibold">选单时</p>
 					<ol className="list-inside list-disc">
 						<li>点击顾客卡片中的标签可以将该标签添加至表格筛选列表或从中移除。</li>
 						<li>
@@ -20,7 +20,7 @@ export default memo(function InfoButton() {
 						<li>“保存套餐”按钮仅会在选择了料理和酒水时被启用。</li>
 						<li>评级时，默认您已选择了正确的料理和酒水。</li>
 					</ol>
-					<p className="mb-1 mt-2 font-semibold">交互时</p>
+					<p className="mb-1 mt-2 text-sm font-semibold">交互时</p>
 					<ol className="list-inside list-disc">
 						<li>
 							<span className="hidden md:inline">点击顶部的“设置”按钮</span>

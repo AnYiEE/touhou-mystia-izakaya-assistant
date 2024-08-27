@@ -106,8 +106,8 @@ export default memo(function InfoButton() {
 				(null as unknown as ReactElement)
 			)}
 			<AccordionItem key="help" aria-label="特别说明" title="特别说明">
-				<ScrollShadow hideScrollBar className="max-h-60 text-justify text-xs">
-					<p className="mb-1 font-semibold">选单时</p>
+				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-justify text-xs">
+					<p className="mb-1 text-sm font-semibold">选单时</p>
 					<ol className="list-inside list-disc">
 						<li>
 							点击顾客卡片中的标签可以将该标签视为顾客的点单需求，点单需求的满足程度是套餐评级时的参考维度之一。
@@ -117,7 +117,7 @@ export default memo(function InfoButton() {
 						</li>
 						<li>“保存套餐”按钮仅会在选择了料理和酒水，且选定了顾客的点单需求标签时被启用。</li>
 					</ol>
-					<p className="mb-1 mt-2 font-semibold">交互时</p>
+					<p className="mb-1 mt-2 text-sm font-semibold">交互时</p>
 					<ol className="list-inside list-disc">
 						<li>
 							<span className="hidden md:inline">点击顶部的“设置”按钮</span>
