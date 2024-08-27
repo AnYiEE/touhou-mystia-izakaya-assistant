@@ -175,7 +175,7 @@ export const CUSTOMER_RARE_LIST = [
 			{
 				type: '摆件',
 				reward: '强运桃子',
-				description: '客人对料理的评价若至少为普通, 则有15%的概率提高评价至完美',
+				description: '客人对料理的评价若至少为普通，则有15%的概率提高评价至完美',
 			},
 		],
 		positiveTagMapping: {
@@ -196,7 +196,7 @@ export const CUSTOMER_RARE_LIST = [
 			{
 				type: '摆件',
 				reward: '胖滚君',
-				description: '店内所有的客人每15秒会进行1-20的打赏',
+				description: '店内所有的客人每15秒会进行1~20的打赏',
 			},
 		],
 		positiveTagMapping: {
@@ -450,7 +450,7 @@ export const CUSTOMER_RARE_LIST = [
 			{
 				type: '摆件',
 				reward: '地藏人偶',
-				description: '成美给的礼物, 可以放置在家门口, 每天参拜会得到很棒的贡品',
+				description: '成美给的礼物，可以放置在家门口，每天参拜会得到很棒的贡品',
 			},
 		],
 		positiveTagMapping: {
@@ -572,7 +572,7 @@ export const CUSTOMER_RARE_LIST = [
 			{
 				type: '摆件',
 				reward: '觉之眼',
-				description: '是觉妖怪读心眼的复制品, 装饰在店里的话, 可以看到每个客人的预算额度',
+				description: '可以看到每个客人的预算额度',
 			},
 			{
 				type: '伙伴',
@@ -666,7 +666,7 @@ export const CUSTOMER_RARE_LIST = [
 				type: '厨具',
 				reward: '紫薇天火',
 				description:
-					'烤架：减少15%料理时间，有30%概率不消耗食材，含“肉”标签的料理瞬间完成（仅米斯蒂娅使用才有此效果）',
+					'烤架：减少15%料理时间，瞬间完成带有“肉”标签的料理，30%返还料理食材，（只有米斯蒂娅使用才有此效果）',
 			},
 		],
 		positiveTagMapping: {
@@ -784,7 +784,7 @@ export const CUSTOMER_RARE_LIST = [
 			{
 				type: '摆件',
 				reward: '超级钓鱼竿',
-				description: null,
+				description: '可以进行精细高级操作的钓鱼竿，除了能够钓鱼，还能够寻找到宝箱！',
 			},
 		],
 		positiveTagMapping: {
@@ -820,7 +820,7 @@ export const CUSTOMER_RARE_LIST = [
 				type: '厨具',
 				reward: '冯风渡御',
 				description:
-					'蒸锅：减少20%料理时间。不加料则减少70%料理时间，否则增加30%续单率，料理含有“流行喜爱”标签则同时触发（仅米斯蒂娅使用才有此效果）',
+					'蒸锅：减少20%料理时间。不加料则减少70%料理时间，否则增加30%续单率。若料理含有“流行喜爱”标签则同时触发所有效果（只有米斯蒂娅使用才有此效果）',
 			},
 		],
 		positiveTagMapping: {

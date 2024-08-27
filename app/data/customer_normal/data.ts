@@ -294,6 +294,8 @@ export const CUSTOMER_NORMAL_LIST = [
 			'烧烤',
 			'辣',
 			'燃起来了',
+			'酸',
+			'毒',
 			'流行喜爱',
 			'流行厌恶',
 		],
