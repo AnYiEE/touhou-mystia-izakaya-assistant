@@ -1,4 +1,5 @@
 import {type ReactElement, memo} from 'react';
+import {twJoin} from 'tailwind-merge';
 
 import {AccordionItem, Avatar, Popover, PopoverContent, PopoverTrigger, ScrollShadow, Tooltip} from '@nextui-org/react';
 
@@ -30,8 +31,11 @@ export default memo(function InfoButton() {
 
 	const instance_customer = store.instances[currentCustomerTarget as 'customer_rare'].get();
 
-	const {bondRewards: currentCustomerBondRewards, places: currentCustomerPlaces} =
-		instance_customer.getPropsByName(currentCustomerName);
+	const {
+		bondRewards: currentCustomerBondRewards,
+		spellCards: currentCustomerSpellCards,
+		places: currentCustomerPlaces,
+	} = instance_customer.getPropsByName(currentCustomerName);
 
 	const [currentCustomerMainPlace] = currentCustomerPlaces;
 
@@ -52,9 +56,14 @@ export default memo(function InfoButton() {
 		}
 	};
 
+	const hasBondRewards = bondRecipesDataLength > 0 || currentCustomerBondRewardsLength > 0;
+	const hasSpellCards = Object.keys(currentCustomerSpellCards).length > 0;
+	const hasNegativeSpellCards = hasSpellCards && (currentCustomerSpellCards.negative as unknown[]).length > 0;
+	const hasPositiveSpellCards = hasSpellCards && (currentCustomerSpellCards.positive as unknown[]).length > 0;
+
 	return (
 		<InfoButtonBase defaultExpandedKeys={['bond']}>
-			{bondRecipesDataLength > 0 || currentCustomerBondRewardsLength > 0 ? (
+			{hasBondRewards ? (
 				<AccordionItem key="bond" aria-label={`${currentCustomerName}羁绊奖励`} title="羁绊奖励">
 					<div className="flex flex-col gap-2 text-justify text-xs">
 						<div className="space-y-1">
@@ -101,6 +110,42 @@ export default memo(function InfoButton() {
 							))}
 						</div>
 					</div>
+				</AccordionItem>
+			) : (
+				(null as unknown as ReactElement)
+			)}
+			{hasSpellCards ? (
+				<AccordionItem key="card" aria-label={`${currentCustomerName}符卡效果`} title="符卡效果">
+					<ScrollShadow hideScrollBar size={16} className="max-h-48 text-justify text-xs">
+						{hasPositiveSpellCards && (
+							<>
+								<p className="mb-1 text-sm font-semibold">奖励符卡</p>
+								{currentCustomerSpellCards.positive.map(({name, description}, index) => (
+									<div key={index} className="mb-0.5">
+										<p className="font-medium">{name}</p>
+										<div className="ml-3 mt-0.5 text-xs">
+											<p>{description}</p>
+										</div>
+									</div>
+								))}
+							</>
+						)}
+						{hasNegativeSpellCards && (
+							<>
+								<p className={twJoin('mb-1 text-sm font-semibold', hasPositiveSpellCards && 'mt-2')}>
+									惩罚符卡
+								</p>
+								{currentCustomerSpellCards.negative.map(({name, description}, index) => (
+									<div key={index} className="mb-0.5">
+										<p className="font-medium">{name}</p>
+										<div className="ml-3 mt-0.5 text-xs">
+											<p>{description}</p>
+										</div>
+									</div>
+								))}
+							</>
+						)}
+					</ScrollShadow>
 				</AccordionItem>
 			) : (
 				(null as unknown as ReactElement)

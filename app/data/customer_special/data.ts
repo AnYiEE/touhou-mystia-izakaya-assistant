@@ -11,6 +11,7 @@ export const CUSTOMER_SPECIAL_LIST = [
 		negativeTags: ['生', '灼热', '猎奇', '流行厌恶'],
 		beverageTags: ['无酒精', '水果', '甘', '苦'],
 		bondRewards: [],
+		spellCards: {},
 		positiveTagMapping: {},
 	},
 	{
@@ -34,6 +35,7 @@ export const CUSTOMER_SPECIAL_LIST = [
 		negativeTags: ['灼热', '猎奇', '流行厌恶'],
 		beverageTags: ['可加冰', '水果', '甘', '辛'],
 		bondRewards: [],
+		spellCards: {},
 		positiveTagMapping: {},
 	},
 ] as const satisfies ICustomerSpecial[];

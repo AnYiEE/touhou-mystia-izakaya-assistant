@@ -78,8 +78,20 @@ export type TReward =
 			description: true | null;
 	  };
 
+interface ISpellCard {
+	name: string;
+	description: string;
+	/** @todo {type: string} */
+}
+
+interface ISpellCards {
+	negative: ISpellCard[];
+	positive: ISpellCard[];
+}
+
 export interface ICustomerRare extends ICustomerBase {
 	bondRewards: TReward[];
+	spellCards: Partial<ISpellCards>;
 	positiveTagMapping: Partial<Record<TRecipeTag, string>>;
 	price: `${number}-${number}`;
 }

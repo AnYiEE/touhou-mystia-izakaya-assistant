@@ -81,6 +81,10 @@ export default memo(function ChangeLog() {
 				<li>新增：稀客羁绊奖励数据及其展示界面。</li>
 				<li>修复：顾客套餐评级逻辑。</li>
 			</Ul>
+			<H2>v0.9</H2>
+			<Ul>
+				<li>新增：稀客符卡效果数据及其展示界面。</li>
+			</Ul>
 		</>
 	);
 });
