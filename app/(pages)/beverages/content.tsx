@@ -1,6 +1,6 @@
 import {Fragment, memo, useRef} from 'react';
 
-import {useOpenedFoodPopover} from '@/hooks';
+import {openedPopoverParam, useOpenedFoodPopover} from '@/hooks/useOpenedFoodPopover';
 
 import {Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
 
@@ -15,13 +15,12 @@ import {type Beverage} from '@/utils';
 
 interface IProps {
 	data: Beverage['data'];
+	isInNewWindow: boolean;
 }
 
-export default memo<IProps>(function Content({data}) {
+export default memo<IProps>(function Content({data, isInNewWindow}) {
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
-
-	const openedPopoverParam = 'select';
-	const [openedPopover] = useOpenedFoodPopover(openedPopoverParam, popoverCardRef);
+	const [openedPopover] = useOpenedFoodPopover(popoverCardRef);
 
 	return (
 		<>
@@ -45,7 +44,7 @@ export default memo<IProps>(function Content({data}) {
 						/>
 					</PopoverTrigger>
 					<PopoverContent>
-						<FoodPopoverCard.CloseButton param={openedPopoverParam} />
+						<FoodPopoverCard.CloseButton isInNewWindow={isInNewWindow} param={openedPopoverParam} />
 						<FoodPopoverCard.ShareButton name={name} param={openedPopoverParam} />
 						<FoodPopoverCard
 							target="beverage"

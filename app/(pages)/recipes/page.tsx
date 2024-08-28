@@ -1,8 +1,18 @@
 'use client';
 
 import {memo, useMemo} from 'react';
+import {twJoin} from 'tailwind-merge';
 
-import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
+import {
+	useMounted,
+	useParams,
+	usePinyinSortConfig,
+	useSearchConfig,
+	useSearchResult,
+	useSortedData,
+	useThrottle,
+} from '@/hooks';
+import {inNewWindowParam} from '@/hooks/useViewInNewWindow';
 
 import Content from '@/(pages)/recipes/content';
 import Loading from '@/loading';
@@ -14,6 +24,10 @@ import SideSearchIconButton from '@/components/sideSearchIconButton';
 import {recipesStore as store} from '@/stores';
 
 export default memo(function Recipes() {
+	const [params] = useParams();
+
+	const isInNewWindow = useMemo(() => params.has(inNewWindowParam), [params]);
+
 	const instance = store.instance.get();
 
 	const allNames = store.names.use();
@@ -195,13 +209,13 @@ export default memo(function Recipes() {
 
 	return (
 		<div className="grid grid-cols-2 justify-items-center gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
-			<SideButtonGroup>
+			<SideButtonGroup className={twJoin(isInNewWindow && 'hidden')}>
 				<SideSearchIconButton searchConfig={searchConfig} />
 				<SidePinyinSortIconButton pinyinSortConfig={pinyinSortConfig} />
 				<SideFilterIconButton selectConfig={selectConfig} />
 			</SideButtonGroup>
 
-			<Content data={sortedData} />
+			<Content data={isInNewWindow ? instance.data : sortedData} isInNewWindow={isInNewWindow} />
 		</div>
 	);
 });

@@ -1,6 +1,8 @@
 import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
+import {useViewInNewWindow} from '@/hooks';
+
 import {
 	Autocomplete,
 	AutocompleteItem,
@@ -35,7 +37,7 @@ import Tags from '@/components/tags';
 import {customerTagStyleMap, beverageTableColumns as tableColumns} from './constants';
 import type {ITableColumn, ITableSortDescriptor, TBeverageWithSuitability, TBeveragesWithSuitability} from './types';
 import {customerRareStore as store} from '@/stores';
-import {numberSort, pinyinSort, processPinyin} from '@/utils';
+import {checkA11yConfirmKey, numberSort, pinyinSort, processPinyin} from '@/utils';
 
 export type TTableColumnKey = 'beverage' | 'price' | 'suitability' | 'action';
 export type TTableColumns = ITableColumn<TTableColumnKey>[];
@@ -47,6 +49,8 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLTableElement | null, IProps>(function BeverageTabContent(_props, ref) {
+		const openWindow = useViewInNewWindow();
+
 		const currentCustomerData = store.shared.customer.data.use();
 		const selectedCustomerBeverageTags = store.shared.customer.beverageTags.use();
 
@@ -201,10 +205,29 @@ export default memo(
 				);
 
 				switch (columnKey) {
-					case 'beverage':
+					case 'beverage': {
+						const label = '点击：在新窗口中查看此酒水的详情';
 						return (
 							<div className="flex items-center gap-2">
-								<Sprite target="beverage" name={name} size={2} />
+								<Tooltip showArrow content={label} placement="right">
+									<Sprite
+										target="beverage"
+										name={name}
+										size={2}
+										onClick={() => {
+											openWindow('beverages', name);
+										}}
+										onKeyDown={(event) => {
+											if (checkA11yConfirmKey(event)) {
+												openWindow('beverages', name);
+											}
+										}}
+										aria-label={label}
+										role="button"
+										tabIndex={0}
+										className="cursor-pointer"
+									/>
+								</Tooltip>
 								<div className="inline-flex flex-1 items-center whitespace-nowrap">
 									<span className="text-small font-medium">{name}</span>
 									<span className="-ml-2">
@@ -227,6 +250,7 @@ export default memo(
 								</div>
 							</div>
 						);
+					}
 					case 'price':
 						return (
 							<div className="flex">
@@ -255,7 +279,7 @@ export default memo(
 						);
 				}
 			},
-			[currentCustomerData]
+			[currentCustomerData, openWindow]
 		);
 
 		const tableToolbar = useMemo(

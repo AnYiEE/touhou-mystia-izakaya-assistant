@@ -2,7 +2,9 @@ import {type RefObject, useCallback, useEffect, useState} from 'react';
 
 import {useParams} from '@/hooks';
 
-export function useOpenedFoodPopover(openedPopoverParam: string, popoverCardRef: RefObject<HTMLElement | null>) {
+export const openedPopoverParam = 'select';
+
+export function useOpenedFoodPopover(popoverCardRef: RefObject<HTMLElement | null>) {
 	const [params, replace] = useParams();
 	const [openedPopover, _setOpenedPopover] = useState('');
 
@@ -22,7 +24,7 @@ export function useOpenedFoodPopover(openedPopoverParam: string, popoverCardRef:
 				popoverCardRef.current?.scrollIntoView();
 			}
 		}
-	}, [openedPopover, openedPopoverParam, params, popoverCardRef]);
+	}, [openedPopover, params, popoverCardRef]);
 
 	const setOpenedPopover = useCallback(
 		(name: typeof openedPopover) => {
@@ -37,7 +39,7 @@ export function useOpenedFoodPopover(openedPopoverParam: string, popoverCardRef:
 
 			replace(newParams);
 		},
-		[openedPopoverParam, params, replace]
+		[params, replace]
 	);
 
 	return [openedPopover, setOpenedPopover] as const;

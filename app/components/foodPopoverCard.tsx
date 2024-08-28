@@ -9,6 +9,7 @@ import {
 } from 'react';
 
 import {useParams} from '@/hooks';
+import {type TOpenWindow} from '@/hooks/useViewInNewWindow';
 
 import {Popover, PopoverContent, PopoverTrigger, Snippet, Tooltip, usePopoverContext} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -23,11 +24,15 @@ import type {ITagStyle} from '@/data/types';
 import {checkA11yConfirmKey, uniq} from '@/utils';
 
 interface ICloseButtonProps {
+	isInNewWindow?: boolean;
 	param?: string;
 }
 
 const CloseButton = memo(
-	forwardRef<HTMLButtonElement | null, ICloseButtonProps>(function FoodPopoverCardCloseButton({param}, ref) {
+	forwardRef<HTMLButtonElement | null, ICloseButtonProps>(function FoodPopoverCardCloseButton(
+		{isInNewWindow, param},
+		ref
+	) {
 		const [params, replace] = useParams();
 		const {getBackdropProps} = usePopoverContext();
 
@@ -39,6 +44,10 @@ const CloseButton = memo(
 
 				getBackdropProps().onClick?.(event as MouseEvent<HTMLButtonElement>);
 
+				if (isInNewWindow) {
+					window.close();
+				}
+
 				if (param && params.has(param)) {
 					const newParams = new URLSearchParams(params);
 
@@ -46,10 +55,10 @@ const CloseButton = memo(
 					replace(newParams);
 				}
 			},
-			[getBackdropProps, param, params, replace]
+			[getBackdropProps, isInNewWindow, param, params, replace]
 		);
 
-		const label = '关闭弹出框';
+		const label = useMemo(() => `关闭${isInNewWindow ? '窗口' : '弹出框'}`, [isInNewWindow]);
 
 		return (
 			<Tooltip showArrow content={label} offset={-5} placement="left">
@@ -132,11 +141,12 @@ interface IFoodPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 		[key in keyof ITagStyle]: TTags[];
 	};
 	tagColors?: ITagStyle;
+	openWindow?: TOpenWindow;
 }
 
 const FoodPopoverCardComponent = memo(
 	forwardRef<HTMLDivElement | null, PropsWithChildren<IFoodPopoverCardProps>>(function FoodPopoverCard(
-		{target, name, description, dlc, cooker, ingredients, ingredientType, tags, tagColors, children},
+		{target, name, description, dlc, cooker, ingredients, ingredientType, tags, tagColors, openWindow, children},
 		ref
 	) {
 		const mergedTags = useMemo((): Omit<NonNullable<typeof tags>, 'beverage'> | undefined => {
@@ -153,6 +163,8 @@ const FoodPopoverCardComponent = memo(
 			};
 		}, [tags]);
 
+		const label = '点击：在新窗口中查看此食材的详情';
+
 		return (
 			<div className="max-w-64 space-y-2 p-2 text-xs text-default-500" ref={ref}>
 				<div className="flex items-center gap-2 text-sm text-foreground">
@@ -168,8 +180,24 @@ const FoodPopoverCardComponent = memo(
 							<Sprite target="cooker" name={cooker} size={1.5} className="mr-4" />
 						</Tooltip>
 						{ingredients.map((ingredient, index) => (
-							<Tooltip key={index} showArrow content={ingredient}>
-								<Sprite target="ingredient" name={ingredient} size={1.5} />
+							<Tooltip key={index} showArrow content={label}>
+								<Sprite
+									target="ingredient"
+									name={ingredient}
+									size={1.5}
+									onClick={() => {
+										openWindow?.('ingredients', ingredient);
+									}}
+									onKeyDown={(event) => {
+										if (checkA11yConfirmKey(event)) {
+											openWindow?.('ingredients', ingredient);
+										}
+									}}
+									aria-label={label}
+									role="button"
+									tabIndex={0}
+									className="cursor-pointer"
+								/>
 							</Tooltip>
 						))}
 					</div>

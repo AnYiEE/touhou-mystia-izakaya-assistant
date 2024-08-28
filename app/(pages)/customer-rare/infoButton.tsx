@@ -1,6 +1,8 @@
 import {type ReactElement, memo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
+import {useViewInNewWindow} from '@/hooks';
+
 import {AccordionItem, Avatar, Popover, PopoverContent, PopoverTrigger, ScrollShadow, Tooltip} from '@nextui-org/react';
 
 import {customerRatingColorMap} from './constants';
@@ -9,6 +11,7 @@ import Sprite from '@/components/sprite';
 
 import type {TReward} from '@/data/customer_rare/types';
 import {customerRareStore as store} from '@/stores';
+import {checkA11yConfirmKey} from '@/utils';
 
 interface ILevelLabelProps {
 	level: number;
@@ -19,6 +22,8 @@ const LevelLabel = memo<ILevelLabelProps>(function LevelLabel({level}) {
 });
 
 export default memo(function InfoButton() {
+	const openWindow = useViewInNewWindow();
+
 	const currentCustomerData = store.shared.customer.data.use();
 
 	const instance_recipe = store.instances.recipe.get();
@@ -61,6 +66,8 @@ export default memo(function InfoButton() {
 	const hasNegativeSpellCards = hasSpellCards && (currentCustomerSpellCards.negative as unknown[]).length > 0;
 	const hasPositiveSpellCards = hasSpellCards && (currentCustomerSpellCards.positive as unknown[]).length > 0;
 
+	const label = '点击：在新窗口中查看此料理的详情';
+
 	return (
 		<InfoButtonBase defaultExpandedKeys={['bond']}>
 			{hasBondRewards ? (
@@ -70,7 +77,25 @@ export default memo(function InfoButton() {
 							{bondRecipesData.map(({name, level}, index) => (
 								<p key={index} className="flex items-center">
 									<LevelLabel level={level} />
-									<Sprite target="recipe" name={name} size={1.25} className="mr-0.5" />
+									<Tooltip showArrow content={label} placement="left">
+										<Sprite
+											target="recipe"
+											name={name}
+											size={1.25}
+											onClick={() => {
+												openWindow('recipes', name);
+											}}
+											onKeyDown={(event) => {
+												if (checkA11yConfirmKey(event)) {
+													openWindow('recipes', name);
+												}
+											}}
+											aria-label={label}
+											role="button"
+											tabIndex={0}
+											className="mr-0.5 cursor-pointer"
+										/>
+									</Tooltip>
 									{name}
 									{index < bondRecipesDataLength - 1 && <br />}
 								</p>

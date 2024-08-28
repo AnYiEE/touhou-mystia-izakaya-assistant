@@ -1,6 +1,8 @@
 import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
+import {useViewInNewWindow} from '@/hooks';
+
 import {
 	Autocomplete,
 	AutocompleteItem,
@@ -37,7 +39,7 @@ import {recipeTableColumns as tableColumns} from './constants';
 import type {TRecipeWithSuitability, TRecipesWithSuitability} from './types';
 import {CUSTOMER_NORMAL_TAG_STYLE} from '@/data';
 import {customerNormalStore as store} from '@/stores';
-import {numberSort, pinyinSort, processPinyin} from '@/utils';
+import {checkA11yConfirmKey, numberSort, pinyinSort, processPinyin} from '@/utils';
 
 export type {TTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
 
@@ -45,6 +47,8 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLTableElement | null, IProps>(function RecipeTabContent(_props, ref) {
+		const openWindow = useViewInNewWindow();
+
 		const currentCustomerName = store.shared.customer.name.use();
 		const currentCustomerPopular = store.shared.customer.popular.use();
 		const selectedCustomerPositiveTags = store.shared.customer.positiveTags.use();
@@ -250,10 +254,29 @@ export default memo(
 				);
 
 				switch (columnKey) {
-					case 'recipe':
+					case 'recipe': {
+						const recipeLabel = '点击：在新窗口中查看此料理的详情';
 						return (
 							<div className="flex items-center">
-								<Sprite target="recipe" name={name} size={2} className="mr-2" />
+								<Tooltip showArrow content={recipeLabel} placement="right">
+									<Sprite
+										target="recipe"
+										name={name}
+										size={2}
+										onClick={() => {
+											openWindow('recipes', name);
+										}}
+										onKeyDown={(event) => {
+											if (checkA11yConfirmKey(event)) {
+												openWindow('recipes', name);
+											}
+										}}
+										aria-label={recipeLabel}
+										role="button"
+										tabIndex={0}
+										className="mr-2 cursor-pointer"
+									/>
+								</Tooltip>
 								<div className="inline-flex flex-1 items-center whitespace-nowrap">
 									<span className="text-small font-medium">{name}</span>
 									<span className="-ml-2">
@@ -276,20 +299,41 @@ export default memo(
 								</div>
 							</div>
 						);
+					}
 					case 'cooker':
 						return (
 							<div className="flex">
 								<Sprite target="cooker" name={cooker} size={2} />
 							</div>
 						);
-					case 'ingredient':
+					case 'ingredient': {
+						const ingredientLabel = '点击：在新窗口中查看此食材的详情';
 						return (
 							<div className="flex flex-nowrap">
 								{ingredients.map((ingredient, index) => (
-									<Sprite key={index} target="ingredient" name={ingredient} size={2} />
+									<Tooltip key={index} showArrow content={ingredientLabel}>
+										<Sprite
+											target="ingredient"
+											name={ingredient}
+											size={2}
+											onClick={() => {
+												openWindow('ingredients', ingredient);
+											}}
+											onKeyDown={(event) => {
+												if (checkA11yConfirmKey(event)) {
+													openWindow('ingredients', ingredient);
+												}
+											}}
+											aria-label={ingredientLabel}
+											role="button"
+											tabIndex={0}
+											className="cursor-pointer"
+										/>
+									</Tooltip>
 								))}
 							</div>
 						);
+					}
 					case 'price':
 						return (
 							<div className="flex">
@@ -326,7 +370,7 @@ export default memo(
 						);
 				}
 			},
-			[currentCustomerName, currentCustomerPopular, instance_recipe]
+			[currentCustomerName, currentCustomerPopular, instance_recipe, openWindow]
 		);
 
 		const tableToolbar = useMemo(

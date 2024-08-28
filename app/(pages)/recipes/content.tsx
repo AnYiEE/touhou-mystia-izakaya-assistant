@@ -1,7 +1,8 @@
 import {Fragment, memo, useRef} from 'react';
 import {isObjectLike} from 'lodash';
 
-import {useOpenedFoodPopover} from '@/hooks';
+import {useViewInNewWindow} from '@/hooks';
+import {openedPopoverParam, useOpenedFoodPopover} from '@/hooks/useOpenedFoodPopover';
 
 import {Popover, PopoverContent, PopoverTrigger} from '@nextui-org/react';
 
@@ -16,13 +17,13 @@ import {type Recipe} from '@/utils';
 
 interface IProps {
 	data: Recipe['data'];
+	isInNewWindow: boolean;
 }
 
-export default memo<IProps>(function Content({data}) {
+export default memo<IProps>(function Content({data, isInNewWindow}) {
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
-
-	const openedPopoverParam = 'select';
-	const [openedPopover] = useOpenedFoodPopover(openedPopoverParam, popoverCardRef);
+	const [openedPopover] = useOpenedFoodPopover(popoverCardRef);
+	const openWindow = useViewInNewWindow();
 
 	return (
 		<>
@@ -50,7 +51,7 @@ export default memo<IProps>(function Content({data}) {
 							/>
 						</PopoverTrigger>
 						<PopoverContent>
-							<FoodPopoverCard.CloseButton param={openedPopoverParam} />
+							<FoodPopoverCard.CloseButton isInNewWindow={isInNewWindow} param={openedPopoverParam} />
 							<FoodPopoverCard.ShareButton name={name} param={openedPopoverParam} />
 							<FoodPopoverCard
 								target="recipe"
@@ -61,6 +62,7 @@ export default memo<IProps>(function Content({data}) {
 								ingredients={ingredients}
 								tags={{negative: negativeTags, positive: positiveTags}}
 								tagColors={RECIPE_TAG_STYLE}
+								openWindow={openWindow}
 								ref={popoverCardRef}
 							>
 								<p>

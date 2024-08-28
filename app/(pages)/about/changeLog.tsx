@@ -84,6 +84,7 @@ export default memo(function ChangeLog() {
 			<H2>v0.9</H2>
 			<Ul>
 				<li>新增：稀客符卡效果数据及其展示界面。</li>
+				<li>新增：部分场景下支持临时唤起新窗口查看料理、酒水或食材详情。</li>
 			</Ul>
 		</>
 	);
