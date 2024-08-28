@@ -43,18 +43,20 @@ export const UnknownItem = memo(
 		const remString = `${size}rem`;
 
 		return (
-			<span
-				role="img"
-				title={title}
-				className={twMerge('outline-3 inline-block text-center leading-none outline-double', className)}
-				style={{
-					fontSize: remString,
-					width: remString,
-				}}
-				ref={ref}
-			>
-				<FontAwesomeIcon icon={faQuestion} className="rotate-12" />
-			</span>
+			<Tooltip showArrow content={title}>
+				<span
+					role="img"
+					title={title}
+					className={twMerge('outline-3 inline-block text-center leading-none outline-double', className)}
+					style={{
+						fontSize: remString,
+						width: remString,
+					}}
+					ref={ref}
+				>
+					<FontAwesomeIcon icon={faQuestion} className="rotate-12" />
+				</span>
+			</Tooltip>
 		);
 	})
 );
@@ -84,32 +86,35 @@ const IngredientList = memo(function IngredientsList() {
 			{filledIngredients.map((ingredient, index) =>
 				ingredient ? (
 					index >= originalIngredients.length ? (
-						<span
-							key={index}
-							onKeyDown={(event) => {
-								if (checkA11yConfirmKey(event)) {
-									store.removeMealIngredient(ingredient);
-								}
-							}}
-							tabIndex={0}
-							aria-label={`删除${ingredient}`}
-							className="flex items-center"
-						>
+						<Tooltip key={index} showArrow content={`点击：删除${ingredient}`} offset={4}>
 							<span
-								onClick={() => {
-									store.removeMealIngredient(ingredient);
+								onKeyDown={(event) => {
+									if (checkA11yConfirmKey(event)) {
+										store.removeMealIngredient(ingredient);
+									}
 								}}
-								role="button"
-								tabIndex={1}
-								title={`删除${ingredient}`}
-								className="absolute flex h-10 w-10 cursor-pointer items-center justify-center bg-foreground bg-opacity-50 text-background opacity-0 transition-opacity hover:opacity-100"
+								tabIndex={0}
+								aria-label={`点击：删除${ingredient}`}
+								className="flex items-center"
 							>
-								<FontAwesomeIcon icon={faCircleXmark} size="1x" />
+								<span
+									onClick={() => {
+										store.removeMealIngredient(ingredient);
+									}}
+									role="button"
+									tabIndex={1}
+									title={ingredient}
+									className="absolute flex h-10 w-10 cursor-pointer items-center justify-center bg-foreground bg-opacity-50 text-background opacity-0 transition-opacity hover:opacity-100"
+								>
+									<FontAwesomeIcon icon={faCircleXmark} size="1x" />
+								</span>
+								<Sprite target="ingredient" name={ingredient} size={2.5} />
 							</span>
-							<Sprite target="ingredient" name={ingredient} size={2.5} />
-						</span>
+						</Tooltip>
 					) : (
-						<Sprite key={index} target="ingredient" name={ingredient} size={2.5} />
+						<Tooltip key={index} showArrow content={ingredient} offset={4}>
+							<Sprite target="ingredient" name={ingredient} size={2.5} />
+						</Tooltip>
 					)
 				) : (
 					<UnknownItem key={index} title="空食材" />
@@ -217,7 +222,9 @@ export default memo(
 											</Tooltip>
 										);
 									})()}
-									<Sprite target="recipe" name={currentRecipeData.name} size={2.5} />
+									<Tooltip showArrow content={currentRecipeData.name} offset={4}>
+										<Sprite target="recipe" name={currentRecipeData.name} size={2.5} />
+									</Tooltip>
 								</>
 							) : (
 								<>
@@ -227,7 +234,9 @@ export default memo(
 							)}
 							<Plus />
 							{currentBeverageName ? (
-								<Sprite target="beverage" name={currentBeverageName} size={2.5} />
+								<Tooltip showArrow content={currentBeverageName} offset={4}>
+									<Sprite target="beverage" name={currentBeverageName} size={2.5} />
+								</Tooltip>
 							) : (
 								<UnknownItem title="请选择酒水" />
 							)}
