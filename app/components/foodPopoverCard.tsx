@@ -164,9 +164,13 @@ const FoodPopoverCardComponent = memo(
 				</div>
 				{cooker && ingredients && (
 					<div className="flex flex-wrap gap-x-2 gap-y-1">
-						<Sprite target="cooker" name={cooker} size={1.5} className="mr-4" />
-						{ingredients.map((item) => (
-							<Sprite key={item} target="ingredient" name={item} size={1.5} />
+						<Tooltip showArrow content={cooker}>
+							<Sprite target="cooker" name={cooker} size={1.5} className="mr-4" />
+						</Tooltip>
+						{ingredients.map((ingredient, index) => (
+							<Tooltip key={index} showArrow content={ingredient}>
+								<Sprite target="ingredient" name={ingredient} size={1.5} />
+							</Tooltip>
 						))}
 					</div>
 				)}
