@@ -1,4 +1,5 @@
 import {type PropsWithChildren, memo} from 'react';
+import {twJoin} from 'tailwind-merge';
 import {execSync} from 'node:child_process';
 
 import {Link, type LinkProps, Tooltip} from '@nextui-org/react';
@@ -35,7 +36,10 @@ const FooterLink = memo<PropsWithChildren<IFooterLinkProps>>(function FooterLink
 			referrerPolicy="same-origin"
 			aria-label={content ?? title ?? (children as string)}
 			title={title}
-			className="text-xs opacity-60 dark:text-warning-400 dark:opacity-40 dark:hover:opacity-60"
+			className={twJoin(
+				'text-xs text-primary-300 dark:text-warning-200',
+				!showAnchorIcon && 'underline decoration-dotted underline-offset-2'
+			)}
 		>
 			{children}
 		</Link>
@@ -69,9 +73,9 @@ export default memo(function Footer() {
 				</FooterLinkWithTooltip>
 				所有
 			</p>
-			<p className="[&>*]:after:mx-1 [&>*]:after:content-['|'] last:[&>*]:after:hidden">
+			<p className="[&>*]:after:mx-1 [&>*]:after:text-default-300 [&>*]:after:content-['|'] last:[&>*]:after:hidden">
 				<span>
-					当前版本：v{version}-
+					v{version}-
 					{sha ? (
 						<>
 							{vercelEnv ?? nodeEnv}-
