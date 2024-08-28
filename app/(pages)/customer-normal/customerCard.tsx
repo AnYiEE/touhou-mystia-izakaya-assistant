@@ -163,7 +163,7 @@ export default memo(
 													tabIndex={0}
 													className={twJoin(
 														clonedCurrentCustomerPlacesLength > 0 &&
-															'underline decoration-dotted underline-offset-2'
+															'underline-dotted-offset2'
 													)}
 												>
 													{currentCustomerMainPlace}

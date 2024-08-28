@@ -38,7 +38,7 @@ const FooterLink = memo<PropsWithChildren<IFooterLinkProps>>(function FooterLink
 			title={title}
 			className={twJoin(
 				'text-xs text-primary-300 dark:text-warning-200',
-				!showAnchorIcon && 'underline decoration-dotted underline-offset-2'
+				!showAnchorIcon && 'underline-dotted-offset2'
 			)}
 		>
 			{children}

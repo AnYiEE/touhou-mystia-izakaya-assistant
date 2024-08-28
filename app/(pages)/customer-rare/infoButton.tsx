@@ -94,7 +94,7 @@ export default memo(function InfoButton() {
 															<span
 																role="button"
 																tabIndex={0}
-																className="underline decoration-dotted underline-offset-2"
+																className="underline-dotted-offset2"
 															>
 																{reward}
 															</span>

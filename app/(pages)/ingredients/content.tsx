@@ -67,7 +67,7 @@ export default memo<IProps>(function Content({data}) {
 													item[1] ? (
 														<Popover showArrow offset={6.5}>
 															<Tooltip showArrow content={probability} offset={4}>
-																<span className="cursor-pointer underline decoration-dotted underline-offset-2">
+																<span className="underline-dotted-offset2 cursor-pointer">
 																	<PopoverTrigger>
 																		<span tabIndex={0}>{item[0]}</span>
 																	</PopoverTrigger>

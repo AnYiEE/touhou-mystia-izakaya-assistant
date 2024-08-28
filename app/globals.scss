@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+.underline-dotted-offset2 {
+	@apply underline decoration-dotted underline-offset-2;
+}
+
 ::-webkit-scrollbar {
 	@apply h-2 w-2;
 }
