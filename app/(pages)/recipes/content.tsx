@@ -1,4 +1,4 @@
-import {Fragment, memo} from 'react';
+import {Fragment, memo, useRef} from 'react';
 import {isObjectLike} from 'lodash';
 
 import {useOpenedFoodPopover} from '@/hooks';
@@ -19,8 +19,10 @@ interface IProps {
 }
 
 export default memo<IProps>(function Content({data}) {
+	const popoverCardRef = useRef<HTMLDivElement | null>(null);
+
 	const openedPopoverParam = 'select';
-	const [openedPopover] = useOpenedFoodPopover(openedPopoverParam);
+	const [openedPopover] = useOpenedFoodPopover(openedPopoverParam, popoverCardRef);
 
 	return (
 		<>
@@ -59,6 +61,7 @@ export default memo<IProps>(function Content({data}) {
 								ingredients={ingredients}
 								tags={{negative: negativeTags, positive: positiveTags}}
 								tagColors={RECIPE_TAG_STYLE}
+								ref={popoverCardRef}
 							>
 								<p>
 									<span className="font-semibold">菜谱来源：</span>

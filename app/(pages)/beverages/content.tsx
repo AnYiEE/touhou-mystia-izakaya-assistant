@@ -1,4 +1,4 @@
-import {Fragment, memo} from 'react';
+import {Fragment, memo, useRef} from 'react';
 
 import {useOpenedFoodPopover} from '@/hooks';
 
@@ -18,8 +18,10 @@ interface IProps {
 }
 
 export default memo<IProps>(function Content({data}) {
+	const popoverCardRef = useRef<HTMLDivElement | null>(null);
+
 	const openedPopoverParam = 'select';
-	const [openedPopover] = useOpenedFoodPopover(openedPopoverParam);
+	const [openedPopover] = useOpenedFoodPopover(openedPopoverParam, popoverCardRef);
 
 	return (
 		<>
@@ -52,6 +54,7 @@ export default memo<IProps>(function Content({data}) {
 							dlc={dlc}
 							tags={{beverage: tags}}
 							tagColors={BEVERAGE_TAG_STYLE}
+							ref={popoverCardRef}
 						>
 							{Object.entries(from as IBeverage['from']).map(([method, target], fromIndex) => {
 								const probability = `概率${method === 'buy' ? '出售' : '掉落'}`;

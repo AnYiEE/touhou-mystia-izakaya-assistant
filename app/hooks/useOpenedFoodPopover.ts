@@ -1,14 +1,28 @@
-import {useCallback, useEffect, useState} from 'react';
+import {type RefObject, useCallback, useEffect, useState} from 'react';
 
 import {useParams} from '@/hooks';
 
-export function useOpenedFoodPopover(openedPopoverParam: string) {
+export function useOpenedFoodPopover(openedPopoverParam: string, popoverCardRef: RefObject<HTMLElement | null>) {
 	const [params, replace] = useParams();
 	const [openedPopover, _setOpenedPopover] = useState('');
 
 	useEffect(() => {
-		_setOpenedPopover(params.get(openedPopoverParam) ?? '');
-	}, [openedPopoverParam, params]);
+		const param = params.get(openedPopoverParam);
+
+		_setOpenedPopover(param ?? '');
+
+		if (openedPopover && param) {
+			// Some browsers don't support scrollIntoViewOptions
+			try {
+				popoverCardRef.current?.scrollIntoView({
+					behavior: 'smooth',
+					block: 'center',
+				});
+			} catch {
+				popoverCardRef.current?.scrollIntoView();
+			}
+		}
+	}, [openedPopover, openedPopoverParam, params, popoverCardRef]);
 
 	const setOpenedPopover = useCallback(
 		(name: typeof openedPopover) => {
