@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+	--safe-h-dvh: 100vh;
+	--safe-h-dvh-half: 50vh;
+}
+
+@supports (height: 100dvh) {
+	:root {
+		--safe-h-dvh: 100dvh;
+		--safe-h-dvh-half: 50dvh;
+	}
+}
+
 .underline-dotted-offset2 {
 	@apply underline decoration-dotted underline-offset-2;
 }

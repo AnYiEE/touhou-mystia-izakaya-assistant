@@ -531,7 +531,7 @@ export default memo(
 				}}
 				aria-label="料理选择表格"
 				classNames={{
-					wrapper: 'max-h-[calc(100vh-17.5rem)]',
+					wrapper: 'max-h-[calc(var(--safe-h-dvh)-17.5rem)]',
 				}}
 				ref={ref}
 			>

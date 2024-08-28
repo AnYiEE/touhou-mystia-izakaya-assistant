@@ -119,7 +119,11 @@ module.exports = {
 			height: {
 				cursor: '37px',
 				'cursor-1.8x': '66px',
+				'dvh-safe': 'var(--safe-h-dvh)',
 				loading: '120px',
+			},
+			minHeight: {
+				'dvh-safe': 'var(--safe-h-dvh)',
 			},
 			maxWidth: {
 				'p-95': '95%',

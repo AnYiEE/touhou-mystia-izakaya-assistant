@@ -11,7 +11,7 @@ export const customerTabStyleMap = {
 		ariaLabel: '展开',
 		buttonNode: <FontAwesomeIcon icon={faChevronDown} size="sm" />,
 		classNames: {
-			content: 'h-[calc(50vh-9.25rem)] min-h-[20vw]',
+			content: 'h-[calc(var(--safe-h-dvh-half)-9.25rem)] min-h-[20vw]',
 			sideButtonGroup: 'hidden xl:block',
 		},
 	},
@@ -30,7 +30,7 @@ export const ingredientTabStyleMap = {
 		ariaLabel: '展开',
 		buttonNode: <FontAwesomeIcon icon={faChevronDown} size="sm" />,
 		classNames: {
-			content: 'h-[calc(50vh-9.25rem)] min-h-[20vw]',
+			content: 'h-[calc(var(--safe-h-dvh-half)-9.25rem)] min-h-[20vw]',
 			sideButtonGroup: 'hidden xl:block',
 		},
 	},

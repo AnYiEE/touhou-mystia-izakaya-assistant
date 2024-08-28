@@ -153,10 +153,10 @@ export default function RootLayout({
 					src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/smoothscroll/1.4.10/SmoothScroll.min.js"
 				/>
 			</head>
-			<body className="min-h-screen bg-background font-sans font-normal text-default-900 antialiased">
+			<body className="min-h-dvh-safe bg-background font-sans font-normal text-default-900 antialiased">
 				<ErrorBoundary>
 					<Providers locale={locale} themeProps={{attribute: 'class'}}>
-						<div className="relative flex h-screen flex-col">
+						<div className="relative flex h-dvh-safe flex-col">
 							<Navbar />
 							<main className="container mx-auto max-w-7xl flex-grow px-6 py-8">{children}</main>
 							<Footer />
