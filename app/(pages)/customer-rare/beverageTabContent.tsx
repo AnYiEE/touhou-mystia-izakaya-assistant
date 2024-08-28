@@ -342,7 +342,7 @@ export default memo(
 								>
 									{({value}) => (
 										<DropdownItem key={value} textValue={value.toString()}>
-											{value}
+											{value === 0 ? '游戏本体' : value}
 										</DropdownItem>
 									)}
 								</DropdownMenu>

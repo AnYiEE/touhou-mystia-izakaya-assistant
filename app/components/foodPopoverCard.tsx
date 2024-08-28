@@ -163,14 +163,19 @@ const FoodPopoverCardComponent = memo(
 			};
 		}, [tags]);
 
-		const label = '点击：在新窗口中查看此食材的详情';
+		const dlcLabel = dlc === 0 ? '游戏本体' : '';
+		const itemLabel = '点击：在新窗口中查看此食材的详情';
 
 		return (
 			<div className="max-w-64 space-y-2 p-2 text-xs text-default-500" ref={ref}>
 				<div className="flex items-center gap-2 text-sm text-foreground">
 					<Sprite target={target} name={name} size={2} />
 					<p className="font-bold">
-						{dlc !== undefined && `【DLC${dlc}】`}
+						{dlc !== undefined && (
+							<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel}>
+								<span title={dlcLabel}>【DLC{dlc}】</span>
+							</Tooltip>
+						)}
 						{name}
 					</p>
 				</div>
@@ -180,7 +185,7 @@ const FoodPopoverCardComponent = memo(
 							<Sprite target="cooker" name={cooker} size={1.5} className="mr-4" />
 						</Tooltip>
 						{ingredients.map((ingredient, index) => (
-							<Tooltip key={index} showArrow content={label}>
+							<Tooltip key={index} showArrow content={itemLabel}>
 								<Sprite
 									target="ingredient"
 									name={ingredient}
@@ -193,7 +198,7 @@ const FoodPopoverCardComponent = memo(
 											openWindow?.('ingredients', ingredient);
 										}
 									}}
-									aria-label={label}
+									aria-label={itemLabel}
 									role="button"
 									tabIndex={0}
 									className="cursor-pointer"

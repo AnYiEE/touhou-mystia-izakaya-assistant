@@ -69,6 +69,8 @@ export default memo(
 			positiveTags: currentCustomerPositiveTags,
 		} = instance_customer.getPropsByName(currentCustomerName);
 
+		const dlcLabel = currentCustomerDlc === 0 ? '游戏本体' : '';
+
 		const clonedCurrentCustomerPlaces = [...currentCustomerPlaces];
 		const currentCustomerMainPlace = clonedCurrentCustomerPlaces.shift();
 
@@ -153,7 +155,9 @@ export default memo(
 						</Popover>
 						<div className="min-w-24 gap-2 lg:min-w-28">
 							<p className="flex justify-between whitespace-nowrap text-xs font-medium text-default-500">
-								<span>DLC{currentCustomerDlc}</span>
+								<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={4}>
+									<span title={dlcLabel}>DLC{currentCustomerDlc}</span>
+								</Tooltip>
 								<Popover showArrow offset={6.5}>
 									<Tooltip showArrow content={placeContent} offset={4}>
 										<span className="cursor-pointer">
