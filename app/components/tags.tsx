@@ -1,4 +1,4 @@
-import {type FC, type HTMLAttributes, forwardRef, memo} from 'react';
+import {type HTMLAttributes, forwardRef, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
 import {type TTags} from '@/data';
@@ -11,7 +11,7 @@ interface ITagPropsBase {
 	tagStyle?: Partial<TTagStyle>;
 }
 
-const Tag: FC<ITagProps> = memo(
+const Tag = memo(
 	forwardRef<HTMLSpanElement | null, ITagProps>(function Tag({tag, tagStyle = {}, className, ...props}, ref) {
 		const isArray = Array.isArray(tag);
 		const tagDescription = isArray ? `（${tag[1]}）` : '';
@@ -42,7 +42,7 @@ interface ITagsPropsBase {
 
 interface ITagsProps extends ITagsPropsBase, Pick<HTMLAttributes<HTMLSpanElement>, 'className'> {}
 
-const TagsComponent: FC<ITagsProps> = memo(function Tags({tags, tagStyle = {}, className}) {
+const TagsComponent = memo<ITagsProps>(function Tags({tags, tagStyle = {}, className}) {
 	return (
 		<>
 			{tags &&

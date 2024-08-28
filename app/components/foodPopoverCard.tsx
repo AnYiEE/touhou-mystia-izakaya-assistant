@@ -1,5 +1,4 @@
 import {
-	type FC,
 	type KeyboardEvent,
 	type MouseEvent,
 	type PropsWithChildren,
@@ -27,7 +26,7 @@ interface ICloseButtonProps {
 	param?: string;
 }
 
-const CloseButton: FC<ICloseButtonProps> = memo(
+const CloseButton = memo(
 	forwardRef<HTMLButtonElement | null, ICloseButtonProps>(function FoodPopoverCardCloseButton({param}, ref) {
 		const [params, replace] = useParams();
 		const {getBackdropProps} = usePopoverContext();
@@ -73,7 +72,7 @@ interface IShareButtonProps {
 	param: string;
 }
 
-const ShareButton: FC<IShareButtonProps> = memo(
+const ShareButton = memo(
 	forwardRef<HTMLDivElement | null, IShareButtonProps>(function FoodPopoverCardShareButton({name, param}, ref) {
 		const [params] = useParams();
 
@@ -135,7 +134,7 @@ interface IFoodPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 	tagColors?: ITagStyle;
 }
 
-const FoodPopoverCardComponent: FC<PropsWithChildren<IFoodPopoverCardProps>> = memo(
+const FoodPopoverCardComponent = memo(
 	forwardRef<HTMLDivElement | null, PropsWithChildren<IFoodPopoverCardProps>>(function FoodPopoverCard(
 		{target, name, description, dlc, cooker, ingredients, ingredientType, tags, tagColors, children},
 		ref
