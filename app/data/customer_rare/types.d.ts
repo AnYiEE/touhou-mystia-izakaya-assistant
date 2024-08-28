@@ -80,7 +80,7 @@ export type TReward =
 
 interface ISpellCard {
 	name: string;
-	description: string;
+	description: `${string}。`;
 	/** @todo {type: string} */
 }
 
