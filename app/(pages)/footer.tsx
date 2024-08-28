@@ -1,5 +1,4 @@
 import {type PropsWithChildren, memo} from 'react';
-import {twJoin} from 'tailwind-merge';
 import {execSync} from 'node:child_process';
 
 import {Link, type LinkProps, Tooltip} from '@nextui-org/react';
@@ -16,7 +15,7 @@ const sha = (
 	(isProduction ? execSync('git rev-parse --short HEAD').toString('utf8') : null)
 )?.trim();
 
-interface IFooterLinkProps extends Pick<LinkProps, 'href' | 'isExternal' | 'showAnchorIcon' | 'title'> {
+interface IFooterLinkProps extends Pick<LinkProps, 'href' | 'isExternal' | 'title'> {
 	content?: string;
 }
 
@@ -24,22 +23,18 @@ const FooterLink = memo<PropsWithChildren<IFooterLinkProps>>(function FooterLink
 	href = '#',
 	content,
 	isExternal = true,
-	showAnchorIcon = false,
 	title,
 	children,
 }) {
 	return (
 		<Link
 			isExternal={isExternal}
-			showAnchorIcon={showAnchorIcon}
+			showAnchorIcon={isExternal}
 			href={href}
 			referrerPolicy="same-origin"
 			aria-label={content ?? title ?? (children as string)}
 			title={title}
-			className={twJoin(
-				'text-xs text-primary-300 dark:text-warning-200',
-				!showAnchorIcon && 'underline-dotted-offset2'
-			)}
+			className="text-xs text-primary-300 dark:text-warning-200"
 		>
 			{children}
 		</Link>
@@ -64,11 +59,9 @@ export default memo(function Footer() {
 	return (
 		<footer className="mx-auto max-w-p-95 pb-3 text-center text-xs text-default-300 dark:text-default-400 md:max-w-full">
 			<p>
-				<FooterLinkWithTooltip isExternal content={links.github.label} href={links.github.href}>
-					{shortName}
-				</FooterLinkWithTooltip>
+				{shortName}
 				内所涉及的公司名称、商标、产品等均为其各自所有者的资产，仅供识别。游戏素材版权均归
-				<FooterLinkWithTooltip isExternal showAnchorIcon content={links.steam.label} href={links.steam.href}>
+				<FooterLinkWithTooltip content={links.steam.label} href={links.steam.href}>
 					原作者
 				</FooterLinkWithTooltip>
 				所有
@@ -80,7 +73,6 @@ export default memo(function Footer() {
 						<>
 							{vercelEnv ?? nodeEnv}-
 							<FooterLinkWithTooltip
-								isExternal
 								content="在GitHub上查看此提交"
 								href={`${links.github.href}/commit/${sha}`}
 							>
@@ -92,7 +84,6 @@ export default memo(function Footer() {
 					)}
 				</span>
 				<FooterLinkWithTooltip
-					isExternal
 					content="如果主站访问或加载速度过慢，请尝试访问此镜像服务器"
 					href={links.backup.href}
 				>
@@ -109,7 +100,7 @@ export default memo(function Footer() {
 						content: 'px-1',
 					}}
 				>
-					<FooterLink isExternal showAnchorIcon href={links.donate.href} title={links.donate.label}>
+					<FooterLink href={links.donate.href} title={links.donate.label}>
 						支持{shortName}
 					</FooterLink>
 				</Tooltip>
