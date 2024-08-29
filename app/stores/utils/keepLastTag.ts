@@ -1,3 +1,5 @@
+import {isNil} from 'lodash';
+
 import {type TTags} from '@/data';
 
 export function keepLastTag(
@@ -12,7 +14,7 @@ export function keepLastTag(
 	} = {}
 ) {
 	const hasFilteredTags = tagSet.size > 0;
-	const hasOrderTag = orderTag !== null && orderTag !== undefined;
+	const hasOrderTag = !isNil(orderTag);
 	const isTagExisted = tagSet.has(tag);
 
 	if (hasMystiaCooker === false && ((isTagExisted && hasOrderTag) || !hasOrderTag)) {
