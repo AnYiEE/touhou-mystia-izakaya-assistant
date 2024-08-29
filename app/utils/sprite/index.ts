@@ -1,3 +1,5 @@
+import {type CSSProperties} from 'react';
+
 import type {ISpriteConfig, TSpriteData, TSpriteTarget} from './types';
 import {
 	BEVERAGE_LIST,
@@ -95,7 +97,7 @@ export class Sprite<
 	public getBackgroundPropsByIndex(
 		index: number,
 		{displayHeight = this.spriteHeight, displayWidth = this.spriteWidth} = {}
-	): React.CSSProperties {
+	): CSSProperties {
 		this.checkIndexRange(index);
 
 		const {spriteHeight, spriteWidth, _config} = this;
@@ -115,7 +117,7 @@ export class Sprite<
 	public getBackgroundPropsByName<T extends string = TName>(
 		name: T,
 		{displayHeight = this.spriteHeight, displayWidth = this.spriteWidth} = {}
-	): React.CSSProperties {
+	): CSSProperties {
 		const index: number = this.findIndexByName(name);
 
 		return this.getBackgroundPropsByIndex(index, {
