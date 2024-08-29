@@ -17,7 +17,8 @@ export default memo(function About() {
 			<H1 isFirst>项目介绍</H1>
 			<div className="space-y-2 break-all text-justify indent-8">
 				<p>
-					{name}（以下简称“{shortName}”）是为游戏《东方夜雀食堂》所打造的工具，旨在为玩家的游玩过程提供帮助。
+					{name}（以下简称“{shortName}
+					”）是为游戏《东方夜雀食堂》所打造的辅助工具，提供顾客图鉴（包括羁绊奖励和符卡效果查询）、搭配稀客和普客的料理套餐，以及料理（菜谱）、酒水和食材查询等功能，旨在为玩家的游玩过程提供帮助。
 				</p>
 				<p>
 					使用{shortName}并不意味您拥有
@@ -65,9 +66,7 @@ export default memo(function About() {
 					反馈任何问题、提出建议或发起合并请求。
 				</p>
 				<p>
-					{shortName}
-					中的数据主要来自于游戏官方QQ群中的“《东方夜雀食堂》大词典（缩印本）第四版·第1次修订.xlsx”、“夜雀食堂菜肴、酒水、普客、steam成就词典（截至DLC4）
-					.xls”等几份文件。由于数据核对程度、游戏版本迭代等各方面因素，{shortName}
+					由于数据核对程度、游戏版本迭代等各方面因素，{shortName}
 					所提供的信息可能与现时游戏中的信息存在差异，敬请知悉，并以游戏中的信息为准。
 				</p>
 				<p>
