@@ -5,7 +5,7 @@ import {type Selection} from '@nextui-org/react';
 
 import type {IPersistenceState} from './types';
 import type {TIngredientTag, TRecipeTag} from '@/data/types';
-import {Ingredient, Recipe, pinyinSort, union} from '@/utils';
+import {Ingredient, Recipe, pinyinSort, toValueObject, union} from '@/utils';
 
 export type TPopularTag = TIngredientTag | TRecipeTag;
 export interface IPopularData {
@@ -18,9 +18,7 @@ const instance_recipe = Recipe.getInstance();
 
 const ingredientTags = instance_ingredient.getValuesByProp(instance_ingredient.data, 'tags');
 const recipePositiveTags = instance_recipe.getValuesByProp(instance_recipe.data, 'positiveTags');
-const popularValidTags = union(ingredientTags, recipePositiveTags)
-	.map((value) => ({value}))
-	.sort(pinyinSort) as {
+const popularValidTags = union(ingredientTags, recipePositiveTags).map(toValueObject).sort(pinyinSort) as {
 	value: TPopularTag;
 }[];
 

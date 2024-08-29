@@ -8,7 +8,7 @@ import Sprite from '@/components/sprite';
 import {type IIngredientTabContentProps} from '@/(pages)/customer-rare/ingredientTabContent';
 import type {TRecipeTag} from '@/data/types';
 import {customerNormalStore as store} from '@/stores';
-import {checkA11yConfirmKey, intersection} from '@/utils';
+import {checkA11yConfirmKey, intersection, toValueWithKey} from '@/utils';
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IIngredientTabContentProps>(function IngredientsTabContent(
@@ -33,7 +33,7 @@ export default memo(
 				new Set(
 					sortedData
 						.filter(({tags}) => intersection(tags, currentRecipe?.negativeTags ?? []).length > 0)
-						.map(({name}) => name)
+						.map(toValueWithKey('name'))
 				),
 			[currentRecipe?.negativeTags, sortedData]
 		);

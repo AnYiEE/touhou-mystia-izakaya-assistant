@@ -2,7 +2,7 @@ import {cloneDeep} from 'lodash';
 import {pinyin as pinyinPro} from 'pinyin-pro';
 
 import type {IItem, TItemWithPinyin as _TItemWithPinyin} from './types';
-import {pinyinSort, uniq} from '@/utils';
+import {pinyinSort, toValueObject, uniq} from '@/utils';
 
 export class Item<
 	TTarget extends IItem[],
@@ -138,7 +138,7 @@ export class Item<
 		const values = uniq(data.map((item) => props.map((key) => item[key])).flat(Infinity));
 
 		if (wrap) {
-			return values.map((value) => ({value}));
+			return values.map(toValueObject);
 		}
 
 		return values;

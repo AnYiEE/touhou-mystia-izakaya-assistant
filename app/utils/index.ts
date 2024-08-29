@@ -3,6 +3,7 @@ export * from './food';
 export * from './sprite';
 
 export * from './checkA11yConfirmKey';
+export * from './covertValueObject';
 export * from './domReady';
 export * from './getPageTitle';
 export * from './intersection';

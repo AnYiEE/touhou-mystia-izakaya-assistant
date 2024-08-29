@@ -15,7 +15,7 @@ import Sprite from '@/components/sprite';
 import {customerRatingColorMap, customerTagStyleMap} from './constants';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {checkA11yConfirmKey, intersection, pinyinSort} from '@/utils';
+import {checkA11yConfirmKey, intersection, pinyinSort, toValue} from '@/utils';
 
 interface IProps {}
 
@@ -302,7 +302,7 @@ export default memo(
 						{currentCustomerBeverageTags.length > 0 && (
 							<TagGroup>
 								{intersection(
-									customerStore.beverage.tags.get().map(({value}) => value),
+									customerStore.beverage.tags.get().map(toValue),
 									currentCustomerBeverageTags
 								).map((tag) => (
 									<Tooltip

@@ -17,7 +17,17 @@ import {type TBeverageNames, type TCustomerNames, type TIngredientNames, type TR
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {type IPopularData, type TPopularTag} from '@/stores';
 import {getAllItemNames, keepLastTag} from '@/stores/utils';
-import {Beverage, CustomerNormal, Ingredient, Recipe, numberSort, pinyinSort, removeLastElement} from '@/utils';
+import {
+	Beverage,
+	CustomerNormal,
+	Ingredient,
+	Recipe,
+	numberSort,
+	pinyinSort,
+	removeLastElement,
+	toValueObject,
+	toValueWithKey,
+} from '@/utils';
 
 const instance_beverage = Beverage.getInstance();
 const instance_customer = CustomerNormal.getInstance();
@@ -44,7 +54,7 @@ const state = {
 	beverage: {
 		dlcs: instance_beverage.getValuesByProp(instance_beverage.data, 'dlc', true).sort(numberSort),
 		names: instance_beverage.getValuesByProp(instance_beverage.data, 'name', true).sort(pinyinSort),
-		tags: instance_beverage.sortedTags.map((value) => ({value})),
+		tags: instance_beverage.sortedTags.map(toValueObject),
 	},
 	customer: {
 		dlcs: instance_customer.getValuesByProp(instance_customer.data, 'dlc', true).sort(numberSort),
@@ -59,7 +69,7 @@ const state = {
 		dlcs: instance_recipe.getValuesByProp(instance_recipe.data, 'dlc', true).sort(numberSort),
 		names: instance_recipe.getValuesByProp(instance_recipe.data, 'name', true).sort(pinyinSort),
 		positiveTags: [...instance_recipe.getValuesByProp(instance_recipe.data, 'positiveTags'), '流行喜爱', '流行厌恶']
-			.map((value) => ({value}))
+			.map(toValueObject)
 			.sort(pinyinSort) as {value: TRecipeTag}[],
 	},
 
@@ -67,7 +77,7 @@ const state = {
 		beverage: {
 			table: {
 				rows: 7,
-				visibleColumns: beverageTableColumns.map(({key}) => key),
+				visibleColumns: beverageTableColumns.map(toValueWithKey('key')),
 			},
 		},
 		customer: {
@@ -95,7 +105,7 @@ const state = {
 				rows: 7,
 				visibleColumns: recipeTableColumns
 					.filter(({key}) => !['cooker', 'time'].includes(key))
-					.map(({key}) => key),
+					.map(toValueWithKey('key')),
 			},
 		},
 
@@ -117,7 +127,7 @@ const state = {
 			dlcs: new Set() as SelectionSet,
 			page: 1,
 			searchValue: '',
-			selectableRows: [5, 7, 10, 15, 20].map((value) => ({value})),
+			selectableRows: [5, 7, 10, 15, 20].map(toValueObject),
 			sortDescriptor: {} as TBeverageTableSortDescriptor,
 		},
 		customer: {
@@ -149,7 +159,7 @@ const state = {
 
 			page: 1,
 			searchValue: '',
-			selectableRows: [5, 7, 10, 15, 20].map((value) => ({value})),
+			selectableRows: [5, 7, 10, 15, 20].map(toValueObject),
 			sortDescriptor: {} as TRecipeTableSortDescriptor,
 		},
 		tab: 'customer' as TTab,

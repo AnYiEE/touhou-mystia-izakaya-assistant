@@ -8,7 +8,7 @@ import Sprite from '@/components/sprite';
 import type {IIngredientsTabStyle} from './types';
 import type {TRecipeTag} from '@/data/types';
 import {customerRareStore as store} from '@/stores';
-import {type Ingredient, checkA11yConfirmKey, intersection} from '@/utils';
+import {type Ingredient, checkA11yConfirmKey, intersection, toValueWithKey} from '@/utils';
 
 interface IProps {
 	ingredientTabStyle: IIngredientsTabStyle;
@@ -36,7 +36,7 @@ export default memo(
 				new Set(
 					sortedData
 						.filter(({tags}) => intersection(tags, currentRecipe?.negativeTags ?? []).length > 0)
-						.map(({name}) => name)
+						.map(toValueWithKey('name'))
 				),
 			[currentRecipe?.negativeTags, sortedData]
 		);
