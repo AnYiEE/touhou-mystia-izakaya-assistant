@@ -11,8 +11,26 @@ interface IValueObject {
 
 type TTarget = TValue | IValueObject;
 
+const pinyinCache = new Map<string, string[]>();
+
 function checkValueObject(value: TTarget): value is IValueObject {
 	return isObjectLike(value) && 'value' in value;
+}
+
+function getPinyinArray(value: string) {
+	if (pinyinCache.has(value)) {
+		return pinyinCache.get(value);
+	}
+
+	const pinyin = pinyinPro(value, {
+		toneType: 'num',
+		type: 'array',
+		v: true,
+	});
+
+	pinyinCache.set(value, pinyin);
+
+	return pinyin;
 }
 
 function getTone(pinyin: string) {
@@ -23,44 +41,38 @@ function removeTone(pinyin: string) {
 	return pinyin.replace(/\d/u, '');
 }
 
-const pinyinCache = new Map<string, string[]>();
+function throwError(...args: unknown[]): never {
+	throw new TypeError(`[utils/pinyinSort]: invalid parameter: ${args.join('; ')}`);
+}
 
-export function pinyinSort(a: TTarget, b: TTarget) {
-	a = checkValueObject(a) ? a.value : a;
-	b = checkValueObject(b) ? b.value : b;
+export function pinyinSort<T extends TTarget>(a: T, b: T) {
+	let arrayA: string[], arrayB: string[];
 
-	if (typeof a === 'string') {
-		if (pinyinCache.has(a)) {
-			a = pinyinCache.get(a);
+	if (Array.isArray(a) && Array.isArray(b)) {
+		arrayA = a;
+		arrayB = b;
+	} else if (typeof a === 'string' && typeof b === 'string') {
+		arrayA = getPinyinArray(a);
+		arrayB = getPinyinArray(b);
+	} else if (checkValueObject(a) && checkValueObject(b)) {
+		if (Array.isArray(a.value) && Array.isArray(b.value)) {
+			arrayA = a.value;
+			arrayB = b.value;
+		} else if (typeof a.value === 'string' && typeof b.value === 'string') {
+			arrayA = getPinyinArray(a.value);
+			arrayB = getPinyinArray(b.value);
 		} else {
-			const pinyinA = pinyinPro(a, {
-				toneType: 'num',
-				type: 'array',
-				v: true,
-			});
-			pinyinCache.set(a, pinyinA);
-			a = pinyinA;
+			throwError(a, b);
 		}
-	}
-	if (typeof b === 'string') {
-		if (pinyinCache.has(b)) {
-			b = pinyinCache.get(b);
-		} else {
-			const pinyinB = pinyinPro(b, {
-				toneType: 'num',
-				type: 'array',
-				v: true,
-			});
-			pinyinCache.set(b, pinyinB);
-			b = pinyinB;
-		}
+	} else {
+		throwError(a, b);
 	}
 
-	const length = Math.min(a.length, b.length);
+	const minLength = Math.min(arrayA.length, arrayB.length);
 
-	for (let i = 0; i < length; i++) {
-		const itemA = a[i] as string;
-		const itemB = b[i] as string;
+	for (let i = 0; i < minLength; i++) {
+		const itemA = arrayA[i] as string;
+		const itemB = arrayB[i] as string;
 
 		const pinyinA = removeTone(itemA);
 		const pinyinB = removeTone(itemB);
@@ -78,5 +90,5 @@ export function pinyinSort(a: TTarget, b: TTarget) {
 		}
 	}
 
-	return numberSort(a.length, b.length);
+	return numberSort(arrayA.length, arrayB.length);
 }
