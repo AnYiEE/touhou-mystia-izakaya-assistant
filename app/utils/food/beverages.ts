@@ -63,7 +63,7 @@ export class Beverage extends Food<TBeverages> {
 		const isTagsEqual = isEqual([...tags].sort(), this.getValuesByProp(this.data, 'tags').sort());
 		if (!isTagsEqual) {
 			throw new Error(
-				'[components/Beverages]: the given tags is inconsistent with the tags in the original data'
+				'[utils/food/Beverages]: the given tags is inconsistent with the tags in the original data'
 			);
 		}
 

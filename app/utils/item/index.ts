@@ -45,7 +45,7 @@ export class Item<
 
 	protected checkIndexRange(index: number, _data?: unknown): asserts _data {
 		if (index < 0 || index >= this._data.length) {
-			throw new Error(`[Item]: index \`${index}\` out of range`);
+			throw new Error(`[utils/Item]: index \`${index}\` out of range`);
 		}
 	}
 
@@ -57,7 +57,7 @@ export class Item<
 
 		const index = this._data.findIndex(({name: target}) => target === name);
 		if (index === -1) {
-			throw new Error(`[Item]: name \`${name}\` not found`);
+			throw new Error(`[utils/Item]: name \`${name}\` not found`);
 		}
 
 		Item.nameIndexCache.set(name, index);
