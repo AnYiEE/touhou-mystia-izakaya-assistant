@@ -22,8 +22,8 @@ export default memo(function Home() {
 
 	return (
 		<div className="flex h-full flex-col items-center justify-center gap-4 md:flex-row md:gap-8">
-			<div>
-				<div className="select-none text-center">
+			<div className="select-none text-center">
+				<div>
 					<span
 						role="img"
 						title={`欢迎使用${shortName}`}
@@ -31,8 +31,8 @@ export default memo(function Home() {
 					/>
 					<p className="text-sm tracking-widest">欢迎使用{shortName}</p>
 				</div>
-				<p className="hidden select-none text-xs text-foreground-500 md:block">点击顶部的按钮以使用各项功能</p>
-				<p className="flex select-none flex-wrap items-center text-xs text-foreground-500 md:hidden">
+				<p className="hidden text-xs text-foreground-500 md:block">点击顶部的按钮以使用各项功能</p>
+				<p className="flex flex-wrap items-center text-xs text-foreground-500 md:hidden">
 					点击右上角的
 					<span className="mx-1 block h-4 rounded bg-default-100" role="img" aria-label="菜单按钮">
 						<span className="flex h-full flex-col justify-center p-1 before:h-px before:w-4 before:-translate-y-1 before:bg-current after:h-px after:w-4 after:translate-y-1 after:bg-current"></span>
