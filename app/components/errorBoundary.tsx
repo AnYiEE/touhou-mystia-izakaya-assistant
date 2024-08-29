@@ -16,10 +16,14 @@ export default class ErrorBoundary extends Component<IProps, IStates> {
 	public constructor(props: IProps) {
 		super(props);
 
-		this.state = {error: null, hasError: false, info: null};
+		this.state = {
+			error: null,
+			hasError: false,
+			info: null,
+		};
 	}
 
-	private handleClick(clear?: boolean) {
+	private handleClick(clear: boolean) {
 		if (clear) {
 			try {
 				localStorage.clear();
@@ -38,13 +42,13 @@ export default class ErrorBoundary extends Component<IProps, IStates> {
 		};
 	}
 
-	public override componentDidCatch(error: Error, info: ErrorInfo) {
+	public override componentDidCatch({message}: Error, info: ErrorInfo) {
 		if (!this.state.hasError) {
 			this.setState({
 				info,
 			});
 		}
-		trackEvent(TrackCategory.Error, 'Global', error.message);
+		trackEvent(TrackCategory.Error, 'Global', message);
 	}
 
 	public override render() {
@@ -59,17 +63,13 @@ export default class ErrorBoundary extends Component<IProps, IStates> {
 					</pre>
 					<button
 						className="mx-auto block w-1/2 cursor-pointer rounded-md bg-content1 p-2 hover:bg-content2"
-						onClick={() => {
-							this.handleClick();
-						}}
+						onClick={this.handleClick.bind(this, false)}
 					>
 						点此重试（仅刷新页面）
 					</button>
 					<button
 						className="mx-auto block w-1/2 cursor-pointer rounded-md bg-content1 p-2 hover:bg-content2"
-						onClick={() => {
-							this.handleClick(true);
-						}}
+						onClick={this.handleClick.bind(this, true)}
 					>
 						点此重试（将清空已保存的数据）
 					</button>
