@@ -200,7 +200,11 @@ export const customerNormalStore = store(state, {
 			}
 			if (version < storeVersion.ingredientLevel) {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const {filters} = oldState.persistence.ingredient;
+				const {
+					persistence: {
+						ingredient: {filters},
+					},
+				} = oldState;
 				filters.levels = [];
 			}
 			if (version < storeVersion.rating) {
@@ -213,7 +217,11 @@ export const customerNormalStore = store(state, {
 			}
 			if (version < storeVersion.extraCustomer) {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const {filters} = oldState.persistence.customer;
+				const {
+					persistence: {
+						customer: {filters},
+					},
+				} = oldState;
 				filters.includes = [];
 				filters.excludes = [];
 			}
