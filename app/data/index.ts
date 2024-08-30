@@ -11,7 +11,7 @@ export type {TCookers, TCookerNames, ICooker} from './cookers/types';
 export type {TCustomerNormals, TCustomerNormalNames, ICustomerNormal} from './customer_normal/types';
 export type {TCustomerRares, TCustomerRareNames, ICustomerRare} from './customer_rare/types';
 export type {TCustomerSpecials, TCustomerSpecialNames, ICustomerSpecial} from './customer_special/types';
-export type {TIngredients, TIngredientNames, IIngredient} from './ingredients/types';
+export type {TIngredients, TIngredientNames, TIngredientTypes, IIngredient} from './ingredients/types';
 export type {TRecipes, TRecipeNames, IRecipe} from './recipes/types';
 
 export type TCustomer =

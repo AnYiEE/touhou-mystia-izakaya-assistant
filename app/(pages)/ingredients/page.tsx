@@ -34,6 +34,7 @@ export default memo(function Ingredients() {
 	const allDlcs = store.dlcs.get();
 	const allLevels = store.levels.get();
 	const allTags = store.tags.get();
+	const allTypes = store.types.get();
 
 	const pinyinSortState = store.persistence.pinyinSortState.use();
 	const searchValue = store.persistence.searchValue.use();
@@ -45,20 +46,26 @@ export default memo(function Ingredients() {
 	const filterLevels = store.persistence.filters.levels.use();
 	const filterTags = store.persistence.filters.tags.use();
 	const filterNoTags = store.persistence.filters.noTags.use();
+	const filterTypes = store.persistence.filters.types.use();
+	const filterNoTypes = store.persistence.filters.noTypes.use();
 
 	const filteredData = useMemo(
 		() =>
-			searchResult.filter(({dlc, level, tags}) => {
+			searchResult.filter(({dlc, level, tags, type}) => {
 				const isDlcMatched = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
 				const isLevelMatched = filterLevels.length > 0 ? filterLevels.includes(level.toString()) : true;
 				const isTagMatched =
 					filterTags.length > 0 ? filterTags.every((tag) => (tags as string[]).includes(tag)) : true;
 				const isNoTagMatched =
 					filterNoTags.length > 0 ? !filterNoTags.some((tag) => (tags as string[]).includes(tag)) : true;
+				const isTypeMatched = filterTypes.length > 0 ? filterTypes.includes(type) : true;
+				const isNoTypeMatched = filterNoTypes.length > 0 ? !filterNoTypes.includes(type) : true;
 
-				return isDlcMatched && isLevelMatched && isTagMatched && isNoTagMatched;
+				return (
+					isDlcMatched && isLevelMatched && isTagMatched && isNoTagMatched && isTypeMatched && isNoTypeMatched
+				);
 			}),
-		[filterDlcs, filterLevels, filterNoTags, filterTags, searchResult]
+		[filterDlcs, filterLevels, filterNoTags, filterNoTypes, filterTags, filterTypes, searchResult]
 	);
 
 	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
@@ -94,13 +101,36 @@ export default memo(function Ingredients() {
 					setSelectedKeys: store.persistence.filters.noTags.set,
 				},
 				{
+					items: allTypes,
+					label: '食材种类（包含）',
+					selectedKeys: filterTypes,
+					setSelectedKeys: store.persistence.filters.types.set,
+				},
+				{
+					items: allTypes,
+					label: '食材种类（排除）',
+					selectedKeys: filterNoTypes,
+					setSelectedKeys: store.persistence.filters.noTypes.set,
+				},
+				{
 					items: allLevels,
 					label: '等级',
 					selectedKeys: filterLevels,
 					setSelectedKeys: store.persistence.filters.levels.set,
 				},
 			] as const satisfies TSelectConfig,
-		[allDlcs, allLevels, allTags, filterDlcs, filterLevels, filterNoTags, filterTags]
+		[
+			allDlcs,
+			allLevels,
+			allTags,
+			allTypes,
+			filterDlcs,
+			filterLevels,
+			filterNoTags,
+			filterNoTypes,
+			filterTags,
+			filterTypes,
+		]
 	);
 
 	const isMounted = useMounted();

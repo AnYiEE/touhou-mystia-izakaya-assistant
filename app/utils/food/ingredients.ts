@@ -1,10 +1,15 @@
+import {isEqual} from 'lodash';
+
 import {Food} from './base';
-import {INGREDIENT_LIST, type TIngredients} from '@/data';
+import {INGREDIENT_LIST, type TIngredientTypes, type TIngredients} from '@/data';
 import type {TIngredientTag} from '@/data/types';
 import {type IPopularData} from '@/stores';
 
 export class Ingredient extends Food<TIngredients> {
 	private static _instance: Ingredient | undefined;
+
+	/** @description Flag to check if the types are consistent with the original data. */
+	private static _isTypesChecked: boolean;
 
 	private constructor(data: TIngredients) {
 		super(data);
@@ -22,6 +27,28 @@ export class Ingredient extends Food<TIngredients> {
 		Ingredient._instance = instance;
 
 		return instance;
+	}
+
+	/**
+	 * @description Types sorted in the suggested order. Used for selecting ingredient types.
+	 */
+	public get sortedTypes() {
+		const types = ['海鲜', '肉类', '蔬菜', '其他'] as const satisfies TIngredientTypes[];
+
+		if (Ingredient._isTypesChecked) {
+			return types;
+		}
+
+		const isTagsEqual = isEqual([...types].sort(), this.getValuesByProp(this.data, 'type').sort());
+		if (!isTagsEqual) {
+			throw new Error(
+				'[utils/food/Ingredient]: the given types is inconsistent with the types in the original data'
+			);
+		}
+
+		Ingredient._isTypesChecked = true;
+
+		return types;
 	}
 
 	/**

@@ -4,13 +4,14 @@ import {createJSONStorage} from 'zustand/middleware';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import {getAllItemNames} from '@/stores/utils';
-import {Ingredient, numberSort, pinyinSort} from '@/utils';
+import {Ingredient, numberSort, pinyinSort, toValueObject} from '@/utils';
 
 const instance = Ingredient.getInstance();
 
 const storeVersion = {
 	initial: 0,
-	popular: 1,
+	popular: 1, // eslint-disable-next-line sort-keys
+	filterTypes: 2,
 } as const;
 
 const state = {
@@ -19,6 +20,7 @@ const state = {
 	dlcs: instance.getValuesByProp(instance.data, 'dlc', true).sort(numberSort),
 	levels: instance.getValuesByProp(instance.data, 'level', true).sort(numberSort),
 	tags: instance.getValuesByProp(instance.data, 'tags', true).sort(pinyinSort),
+	types: instance.sortedTypes.map(toValueObject),
 
 	persistence: {
 		filters: {
@@ -26,6 +28,8 @@ const state = {
 			levels: [] as string[],
 			noTags: [] as string[],
 			tags: [] as string[],
+			types: [] as string[], // eslint-disable-next-line sort-keys
+			noTypes: [] as string[],
 		},
 		pinyinSortState: PinyinSortState.NONE,
 		searchValue: '',
@@ -36,7 +40,7 @@ export const ingredientsStore = store(state, {
 	persist: {
 		enabled: true,
 		name: 'page-ingredients-storage',
-		version: storeVersion.popular,
+		version: storeVersion.filterTypes,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -45,6 +49,14 @@ export const ingredientsStore = store(state, {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				oldState.persistence = oldState.page;
 				delete oldState.page;
+			}
+			if (version < storeVersion.filterTypes) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				const {
+					persistence: {filters},
+				} = oldState;
+				filters.types = [];
+				filters.noTypes = [];
 			}
 			return persistedState as typeof state;
 		},
