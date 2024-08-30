@@ -261,11 +261,11 @@ export default memo(function CustomerRare() {
 	return (
 		<div
 			className={twJoin(
-				'grid h-full grid-cols-1 justify-items-center gap-4 xl:grid xl:grid-cols-2',
-				currentCustomerData && 'md:flex md:flex-col-reverse md:justify-end'
+				'flex flex-col gap-4 overflow-auto scrollbar-hide xl:flex-row',
+				currentCustomerData && 'md:flex-col-reverse'
 			)}
 		>
-			<div className="w-full">
+			<div className="xl:basis-1/2">
 				<Tabs
 					fullWidth
 					destroyInactiveTabPanel={false}
@@ -273,7 +273,7 @@ export default memo(function CustomerRare() {
 					selectedKey={selectedTabKey}
 					onSelectionChange={customerStore.onTabSelectionChange}
 				>
-					<Tab key="customer" title="稀客" className="relative">
+					<Tab key="customer" title="稀客" className="relative flex flex-col">
 						<CustomerTabContent customerTabStyle={customerTabStyle} sortedData={customerSortedData} />
 					</Tab>
 					<Tab isDisabled={!currentCustomerData} key="recipe" title="料理">
@@ -291,7 +291,7 @@ export default memo(function CustomerRare() {
 				</Tabs>
 			</div>
 
-			<div className="flex w-full basis-full flex-col gap-4 xl:min-h-[calc(var(--safe-h-dvh)-6.75rem)]">
+			<div className="flex flex-grow flex-col gap-4">
 				{currentCustomerData ? (
 					<>
 						<CustomerCard />
@@ -299,7 +299,7 @@ export default memo(function CustomerRare() {
 						<SavedMealCard />
 					</>
 				) : (
-					<Placeholder className="pb-24 pt-16 md:pb-8 md:pt-0 xl:pb-[6.25rem] xl:pt-0">
+					<Placeholder className="pt-4 xl:pb-[calc(7.25rem+env(titlebar-area-height,0rem))] xl:pt-0">
 						<div className="inline-grid space-y-1">
 							<span
 								role="img"
@@ -314,7 +314,7 @@ export default memo(function CustomerRare() {
 
 			<SideButtonGroup
 				className={twMerge(
-					'md:!bottom-6 xl:!bottom-[calc(50%-3.75rem-env(titlebar-area-height,0rem)/2)] xl:left-6',
+					'md:top-[unset] md:translate-y-0 xl:left-6 xl:top-1/2 xl:-translate-y-1/2',
 					customerTabStyle.classNames.sideButtonGroup,
 					!isCustomerTabFilterVisible && '!hidden'
 				)}
@@ -326,7 +326,7 @@ export default memo(function CustomerRare() {
 
 			<SideButtonGroup
 				className={twMerge(
-					'md:!bottom-6 xl:!bottom-[calc(50%-2.25rem-env(titlebar-area-height,0rem)/2)] xl:left-6',
+					'md:top-[unset] md:translate-y-0 xl:left-6 xl:top-1/2 xl:-translate-y-1/2',
 					ingredientTabStyle.classNames.sideButtonGroup,
 					!isIngredientTabFilterVisible && '!hidden'
 				)}

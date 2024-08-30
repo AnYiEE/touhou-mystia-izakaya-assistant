@@ -7,7 +7,12 @@ export default memo(
 	forwardRef<HTMLDivElement | null, PropsWithChildren<IProps>>(function SideButtonGroup({className, children}, ref) {
 		return (
 			<div className="absolute" ref={ref}>
-				<div className={twMerge('fixed bottom-6 right-6 z-20 w-min md:bottom-[calc(50%-4.5rem)]', className)}>
+				<div
+					className={twMerge(
+						'fixed bottom-6 right-6 z-20 h-min w-min md:top-1/2 md:-translate-y-1/2',
+						className
+					)}
+				>
 					<div className="space-y-3 opacity-80">{children}</div>
 				</div>
 			</div>

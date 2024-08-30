@@ -133,6 +133,8 @@ export default memo(function Navbar() {
 
 	return (
 		<NextUINavbar
+			isBordered
+			shouldHideOnScroll
 			maxWidth="xl"
 			isMenuOpen={isMenuOpened}
 			onMenuOpenChange={toggleMenuOpened}
@@ -140,8 +142,8 @@ export default memo(function Navbar() {
 				base: 'pt-titlebar',
 			}}
 		>
-			<NavbarContent justify="start" className="basis-full md:basis-1/5">
-				<NavbarBrand as="li" className="max-w-fit">
+			<NavbarContent as="div" justify="start" className="basis-full md:basis-1/5">
+				<NavbarBrand className="max-w-fit">
 					<Link
 						color="foreground"
 						href={links.index.href}
@@ -230,37 +232,35 @@ export default memo(function Navbar() {
 				</NavbarItem>
 			</NavbarContent>
 
-			<NavbarContent justify="end" className="basis-1 pl-4 md:hidden">
+			<NavbarContent as="div" justify="end" className="basis-1 pl-4 md:hidden">
 				<ThemeSwitcher isMenu />
 				<Tooltip showArrow content={isMenuOpened ? '收起菜单' : '打开菜单'} placement="left">
 					<NavbarMenuToggle aria-label={isMenuOpened ? '收起菜单' : '打开菜单'} />
 				</Tooltip>
 			</NavbarContent>
 
-			<NavbarMenu>
-				<div className="mx-4 mt-2 space-y-2">
-					{navMenuItems.map(({href, label}) => {
-						const isActivated = href === pathname;
-						return href === '/preferences' && !shouldShowPreferences ? null : (
-							<NavbarMenuItem key={href} isActive={isActivated}>
-								<Link
-									color={isActivated ? 'primary' : 'foreground'}
-									size="lg"
-									onPress={() => {
-										showProgress(startProgress);
-										toggleMenuOpened();
-									}}
-									href={href}
-								>
-									{label}
-								</Link>
-							</NavbarMenuItem>
-						);
-					})}
-					<NavbarMenuItem>
-						<GitHubLink />
-					</NavbarMenuItem>
-				</div>
+			<NavbarMenu className="mx-4 mt-2">
+				{navMenuItems.map(({href, label}) => {
+					const isActivated = href === pathname;
+					return href === '/preferences' && !shouldShowPreferences ? null : (
+						<NavbarMenuItem key={href} isActive={isActivated}>
+							<Link
+								color={isActivated ? 'primary' : 'foreground'}
+								size="lg"
+								onPress={() => {
+									showProgress(startProgress);
+									toggleMenuOpened();
+								}}
+								href={href}
+							>
+								{label}
+							</Link>
+						</NavbarMenuItem>
+					);
+				})}
+				<NavbarMenuItem>
+					<GitHubLink />
+				</NavbarMenuItem>
 			</NavbarMenu>
 		</NextUINavbar>
 	);

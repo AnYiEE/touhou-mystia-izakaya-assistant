@@ -11,7 +11,7 @@ export const customerTabStyleMap = {
 		ariaLabel: '展开',
 		buttonNode: <FontAwesomeIcon icon={faChevronDown} size="sm" />,
 		classNames: {
-			content: 'h-[calc(var(--safe-h-dvh-half)-9.25rem)] min-h-[20vw]',
+			content: 'max-h-[calc(var(--safe-h-dvh-half)-9.25rem)] min-h-20',
 			sideButtonGroup: 'hidden xl:block',
 		},
 	},
@@ -19,7 +19,7 @@ export const customerTabStyleMap = {
 		ariaLabel: '收起',
 		buttonNode: <FontAwesomeIcon icon={faChevronUp} size="sm" />,
 		classNames: {
-			content: 'h-[50vmax]',
+			content: 'max-h-[50vmax]',
 			sideButtonGroup: '',
 		},
 	},
@@ -30,7 +30,7 @@ export const ingredientTabStyleMap = {
 		ariaLabel: '展开',
 		buttonNode: <FontAwesomeIcon icon={faChevronDown} size="sm" />,
 		classNames: {
-			content: 'h-[calc(var(--safe-h-dvh-half)-9.25rem)] min-h-[20vw]',
+			content: 'max-h-[calc(var(--safe-h-dvh-half)-9.25rem)] min-h-20',
 			sideButtonGroup: 'hidden xl:block',
 		},
 	},
@@ -38,7 +38,7 @@ export const ingredientTabStyleMap = {
 		ariaLabel: '收起',
 		buttonNode: <FontAwesomeIcon icon={faChevronUp} size="sm" />,
 		classNames: {
-			content: 'h-[50vmax]',
+			content: 'max-h-[50vmax]',
 			sideButtonGroup: '',
 		},
 	},

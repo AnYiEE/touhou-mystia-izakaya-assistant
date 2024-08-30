@@ -21,7 +21,7 @@ export default memo(function Home() {
 	);
 
 	return (
-		<div className="flex h-full flex-col items-center justify-center gap-4 md:flex-row md:gap-8">
+		<div className="flex flex-col items-center justify-center gap-4 md:flex-row md:gap-8">
 			<div className="select-none text-center">
 				<div>
 					<span

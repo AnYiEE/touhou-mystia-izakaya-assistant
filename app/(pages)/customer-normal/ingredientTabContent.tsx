@@ -55,7 +55,7 @@ export default memo(
 				<ScrollShadow
 					hideScrollBar
 					className={twMerge(
-						'transition-height xl:h-[calc(var(--safe-h-dvh)-9.75rem-env(titlebar-area-height,0rem))]',
+						'transition-all xl:max-h-[calc(var(--safe-h-dvh)-9.75rem-env(titlebar-area-height,0rem))]',
 						ingredientTabStyle.classNames.content
 					)}
 					ref={ref}
@@ -185,7 +185,7 @@ export default memo(
 						</>
 					)}
 				</ScrollShadow>
-				<div className="absolute flex w-[86%] justify-center md:w-[93%] xl:hidden">
+				<div className="flex justify-center xl:hidden">
 					<Button
 						isIconOnly
 						size="sm"
