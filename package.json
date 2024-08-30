@@ -97,7 +97,7 @@
 		"@commitlint/config-conventional": "^19.4.1",
 		"@types/lodash": "^4.17.7",
 		"@types/node": "^22.5.1",
-		"@types/react": "^18.3.4",
+		"@types/react": "^18.3.5",
 		"@types/react-dom": "^18.3.0",
 		"@types/serviceworker": "^0.0.94",
 		"@types/ua-parser-js": "^0.7.39",
