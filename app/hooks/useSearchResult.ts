@@ -1,4 +1,4 @@
-import {useMemo} from 'react';
+import {useCallback} from 'react';
 
 import {
 	type Beverage,
@@ -13,8 +13,8 @@ import {
 type TTargetInstance = Beverage | CustomerNormal | CustomerRare | CustomerSpecial | Ingredient | Recipe;
 type TData<T extends TTargetInstance> = T['data'];
 
-export function useSearchResult<T extends TTargetInstance>(instance: T, searchValue: string) {
-	const searchResult = useMemo(() => {
+export function useSearchResult<T extends TTargetInstance>(instance: T, searchValue: string, isInNewWindow?: boolean) {
+	const getSearchResult = useCallback(() => {
 		if (searchValue) {
 			const searchValueLowerCase = searchValue.toLowerCase();
 
@@ -32,5 +32,9 @@ export function useSearchResult<T extends TTargetInstance>(instance: T, searchVa
 		return instance.data;
 	}, [instance.data, searchValue]);
 
-	return searchResult as TData<T>;
+	if (isInNewWindow) {
+		return instance.data as TData<T>;
+	}
+
+	return getSearchResult() as TData<T>;
 }

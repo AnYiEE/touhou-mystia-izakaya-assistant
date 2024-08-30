@@ -1,7 +1,6 @@
 'use client';
 
-import {memo, useMemo} from 'react';
-import {twJoin} from 'tailwind-merge';
+import {memo, useCallback, useMemo} from 'react';
 
 import {
 	useMounted,
@@ -39,14 +38,14 @@ export default memo(function Beverages() {
 	const searchValue = store.persistence.searchValue.use();
 
 	const throttledSearchValue = useThrottle(searchValue);
-	const searchResult = useSearchResult(instance, throttledSearchValue);
+	const searchResult = useSearchResult(instance, throttledSearchValue, isInNewWindow);
 
 	const filterDlcs = store.persistence.filters.dlcs.use();
 	const filterLevels = store.persistence.filters.levels.use();
 	const filterTags = store.persistence.filters.tags.use();
 	const filterNoTags = store.persistence.filters.noTags.use();
 
-	const filteredData = useMemo(
+	const filterData = useCallback(
 		() =>
 			searchResult.filter(({dlc, level, tags}) => {
 				const isDlcMatched = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
@@ -61,7 +60,7 @@ export default memo(function Beverages() {
 		[filterDlcs, filterLevels, filterNoTags, filterTags, searchResult]
 	);
 
-	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
+	const sortedData = useSortedData(instance, filterData(), pinyinSortState, isInNewWindow);
 
 	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, store.persistence.pinyinSortState.set);
 
@@ -110,13 +109,15 @@ export default memo(function Beverages() {
 
 	return (
 		<div className="grid grid-cols-2 justify-items-center gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
-			<SideButtonGroup className={twJoin(isInNewWindow && 'hidden')}>
-				<SideSearchIconButton searchConfig={searchConfig} />
-				<SidePinyinSortIconButton pinyinSortConfig={pinyinSortConfig} />
-				<SideFilterIconButton selectConfig={selectConfig} />
-			</SideButtonGroup>
+			{!isInNewWindow && (
+				<SideButtonGroup>
+					<SideSearchIconButton searchConfig={searchConfig} />
+					<SidePinyinSortIconButton pinyinSortConfig={pinyinSortConfig} />
+					<SideFilterIconButton selectConfig={selectConfig} />
+				</SideButtonGroup>
+			)}
 
-			<Content data={isInNewWindow ? instance.data : sortedData} isInNewWindow={isInNewWindow} />
+			<Content data={sortedData} isInNewWindow={isInNewWindow} />
 		</div>
 	);
 });

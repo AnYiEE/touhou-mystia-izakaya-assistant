@@ -6,12 +6,12 @@ export const openedPopoverParam = 'select';
 
 export function useOpenedFoodPopover(popoverCardRef: RefObject<HTMLElement | null>) {
 	const [params, replace] = useParams();
-	const [openedPopover, _setOpenedPopover] = useState('');
+	const [openedPopover, _setOpenedPopover] = useState<string | null>(null);
 
 	useEffect(() => {
 		const param = params.get(openedPopoverParam);
 
-		_setOpenedPopover(param ?? '');
+		_setOpenedPopover(param);
 
 		if (openedPopover && param) {
 			// Some browsers don't support scrollIntoViewOptions

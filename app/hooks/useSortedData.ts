@@ -1,4 +1,4 @@
-import {useMemo} from 'react';
+import {useCallback} from 'react';
 
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
@@ -17,9 +17,10 @@ type TData<T extends TTargetInstance> = T['data'];
 export function useSortedData<T extends TTargetInstance>(
 	instance: T,
 	filteredData: TData<T>,
-	pinyinSortState: PinyinSortState
+	pinyinSortState: PinyinSortState,
+	isInNewWindow?: boolean
 ) {
-	const sortedData = useMemo(() => {
+	const sortData = useCallback(() => {
 		switch (pinyinSortState) {
 			case PinyinSortState.AZ:
 				return instance.sortByPinyin(filteredData as never);
@@ -30,5 +31,9 @@ export function useSortedData<T extends TTargetInstance>(
 		}
 	}, [instance, filteredData, pinyinSortState]);
 
-	return sortedData as TData<T>;
+	if (isInNewWindow) {
+		return filteredData;
+	}
+
+	return sortData() as TData<T>;
 }
