@@ -1,8 +1,17 @@
 import {cloneDeep} from 'lodash';
-import {pinyin as pinyinPro} from 'pinyin-pro';
+import {customPinyin, pinyin as pinyinPro} from 'pinyin-pro';
 
 import type {IItem, TItemWithPinyin as _TItemWithPinyin} from './types';
 import {pinyinSort, toValueObject, uniq} from '@/utils';
+
+customPinyin(
+	{
+		冴月麟: 'hù yuè lín',
+	},
+	{
+		multiple: 'replace',
+	}
+);
 
 export class Item<
 	TTarget extends IItem[],
