@@ -52,7 +52,7 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 
 	return (
 		<div>
-			<H1 isFirst subTitle="以下的所有更改都会即时生效">
+			<H1 isFirst subTitle="以下所有的更改都会即时生效">
 				设置
 			</H1>
 			<H2 className="mt-0">全局设置</H2>

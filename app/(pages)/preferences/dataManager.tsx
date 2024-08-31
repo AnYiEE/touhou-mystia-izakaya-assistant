@@ -46,7 +46,7 @@ const JSON_TYPE = 'application/json';
 enum DownloadButtonLabel {
 	Download = '下载',
 	Downloading = '尝试唤起下载器...',
-	DownloadingTip = '如无响应，请检查浏览器权限、设置和浏览器扩展程序。',
+	DownloadingTip = '如无响应，请检查浏览器权限、设置和浏览器扩展程序',
 }
 
 function download(fileName: string, jsonString: string) {
@@ -185,7 +185,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 								tooltipProps={{
 									content: '点击复制当前的稀客套餐数据',
 									delay: 0,
-									offset: -5,
+									offset: 0,
 									showArrow: true,
 								}}
 								variant="flat"
@@ -249,9 +249,11 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 										保存
 									</Button>
 								</PopoverTrigger>
-								<PopoverContent className="p-0">
+								<PopoverContent className="space-y-1 p-1">
 									<Button
-										color="primary"
+										fullWidth
+										color="danger"
+										size="sm"
 										variant="ghost"
 										onClick={handleImportData}
 										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
@@ -264,6 +266,20 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 										})}
 									>
 										确认保存
+									</Button>
+									<Button
+										fullWidth
+										color="primary"
+										size="sm"
+										variant="ghost"
+										onClick={toggleSavePopoverOpened}
+										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
+											if (event.key === 'Escape' || checkA11yConfirmKey(event)) {
+												toggleSavePopoverOpened();
+											}
+										})}
+									>
+										取消保存
 									</Button>
 								</PopoverContent>
 							</Popover>
@@ -287,9 +303,11 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 										重置已保存的稀客套餐数据
 									</Button>
 								</PopoverTrigger>
-								<PopoverContent className="p-0">
+								<PopoverContent className="space-y-1 p-1">
 									<Button
+										fullWidth
 										color="danger"
+										size="sm"
 										variant="ghost"
 										onClick={handleResetData}
 										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
@@ -302,6 +320,20 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 										})}
 									>
 										确认重置
+									</Button>
+									<Button
+										fullWidth
+										color="primary"
+										size="sm"
+										variant="ghost"
+										onClick={toggleResetPopoverOpened}
+										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
+											if (event.key === 'Escape' || checkA11yConfirmKey(event)) {
+												toggleResetPopoverOpened();
+											}
+										})}
+									>
+										取消重置
 									</Button>
 								</PopoverContent>
 							</Popover>
