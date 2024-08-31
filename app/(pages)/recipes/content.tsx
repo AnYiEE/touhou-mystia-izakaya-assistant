@@ -61,7 +61,7 @@ export default memo<IProps>(function Content({data, isInNewWindow}) {
 						ref={popoverCardRef}
 					>
 						<p>
-							<span className="font-semibold">菜谱来源：</span>
+							<span className="font-semibold">食谱来源：</span>
 							{typeof from === 'string'
 								? from
 								: Object.entries(from as Exclude<IRecipe['from'], string>).map(
