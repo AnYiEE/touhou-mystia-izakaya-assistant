@@ -2,7 +2,7 @@ import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {Avatar, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
-import {faArrowsRotate} from '@fortawesome/free-solid-svg-icons';
+import {faArrowsRotate, faXmark} from '@fortawesome/free-solid-svg-icons';
 
 import InfoButton from './infoButton';
 import TagGroup from './tagGroup';
@@ -354,6 +354,17 @@ export default memo(
 									trackEvent(TrackCategory.Click, 'Reset Button', currentCustomerName);
 								}}
 								aria-label="重置当前选定项"
+								className="absolute -right-0.5 top-1 h-4 w-4 text-default-400 hover:opacity-80 data-[hover]:bg-transparent"
+							/>
+						</Tooltip>
+					)}
+					{!hasSelected && (
+						<Tooltip showArrow content="取消选择当前顾客" offset={4}>
+							<FontAwesomeIconButton
+								icon={faXmark}
+								variant="light"
+								onPress={customerStore.refreshCustomer}
+								aria-label="取消选择当前顾客"
 								className="absolute -right-0.5 top-1 h-4 w-4 text-default-400 hover:opacity-80 data-[hover]:bg-transparent"
 							/>
 						</Tooltip>

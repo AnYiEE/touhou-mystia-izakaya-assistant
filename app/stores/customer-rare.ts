@@ -608,6 +608,10 @@ export const customerRareStore = store(state, {
 			currentStore.shared.beverage.searchValue.set('');
 			currentStore.shared.beverage.sortDescriptor.set({});
 		},
+		refreshCustomer() {
+			currentStore.shared.customer.data.set(null);
+			currentStore.shared.tab.set('customer');
+		},
 		refreshCustomerSelectedItems() {
 			currentStore.shared.customer.beverageTags.set(new Set());
 			currentStore.shared.customer.positiveTags.set(new Set());
