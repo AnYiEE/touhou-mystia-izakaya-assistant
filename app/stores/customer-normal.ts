@@ -40,7 +40,8 @@ const storeVersion = {
 	popularFull: 2, // eslint-disable-next-line sort-keys
 	ingredientLevel: 3,
 	rating: 4, // eslint-disable-next-line sort-keys
-	extraCustomer: 5,
+	extraCustomer: 5, // eslint-disable-next-line sort-keys
+	dynamicMeal: 6,
 } as const;
 
 const state = {
@@ -112,8 +113,6 @@ const state = {
 		meals: {} as {
 			[key in TCustomerNames]?: {
 				index: number;
-				popular: IPopularData;
-				rating: TCustomerRating;
 				beverage: TBeverageNames;
 				recipe: TRecipeNames;
 				extraIngredients: TIngredientNames[];
@@ -174,7 +173,7 @@ export const customerNormalStore = store(state, {
 	persist: {
 		enabled: true,
 		name: customerNormalStoreKey,
-		version: storeVersion.extraCustomer,
+		version: storeVersion.dynamicMeal,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -224,6 +223,15 @@ export const customerNormalStore = store(state, {
 				} = oldState;
 				filters.includes = [];
 				filters.excludes = [];
+			}
+			if (version < storeVersion.dynamicMeal) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+				for (const meals of Object.values(oldState.persistence.meals) as any) {
+					for (const meal of meals) {
+						delete meal.popular;
+						delete meal.rating;
+					}
+				}
 			}
 			return persistedState as typeof state;
 		},
@@ -418,6 +426,35 @@ export const customerNormalStore = store(state, {
 			});
 			currentStore.shared.customer.rating.set(rating);
 		},
+		evaluateSavedMealResult({
+			beverageName,
+			extraIngredients,
+			popular,
+			recipeName,
+		}: {
+			beverageName: TBeverageNames;
+			extraIngredients: TIngredientNames[];
+			popular: IPopularData;
+			recipeName: TRecipeNames;
+		}) {
+			const customerName = currentStore.shared.customer.name.get();
+			if (!customerName) {
+				throw new ReferenceError('[stores/customer-normal/evaluateSavedMealResult]: `customerName` is null');
+			}
+			const extraTags: TPopularTag[] = [];
+			extraIngredients.forEach((ingredient) => {
+				extraTags.push(...instance_ingredient.getPropsByName(ingredient).tags);
+			});
+			const rating = evaluateMeal({
+				currentBeverageName: beverageName,
+				currentCustomerPopularData: popular,
+				currentCustomerPositiveTags: instance_customer.getPropsByName(customerName).positiveTags,
+				currentExtraIngredientsLength: extraIngredients.length,
+				currentExtraTags: extraTags,
+				currentRecipe: instance_recipe.getPropsByName(recipeName),
+			});
+			return rating as TCustomerRating;
+		},
 		removeMealIngredient(ingredientName: TIngredientNames) {
 			currentStore.shared.recipe.data.set((prev) => {
 				if (prev) {
@@ -430,17 +467,13 @@ export const customerNormalStore = store(state, {
 			const customerName = currentStore.shared.customer.name.get();
 			const beverageName = currentStore.shared.beverage.name.get();
 			const recipeData = currentStore.shared.recipe.data.get();
-			const rating = currentStore.shared.customer.rating.get();
-			if (!customerName || !beverageName || !recipeData || !rating) {
+			if (!customerName || !beverageName || !recipeData) {
 				return;
 			}
 			const {extraIngredients, name: recipeName} = recipeData;
-			const popular = currentStore.shared.customer.popular.get();
 			const saveObject = {
 				beverage: beverageName,
 				extraIngredients,
-				popular,
-				rating,
 				recipe: recipeName,
 			} as const;
 			currentStore.persistence.meals.set((prev) => {

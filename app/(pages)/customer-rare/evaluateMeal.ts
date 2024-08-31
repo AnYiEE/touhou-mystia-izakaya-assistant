@@ -3,6 +3,7 @@ import {isObjectLike} from 'lodash';
 import type {TCustomerRating, TRecipe} from './types';
 import {type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
+import {type ICustomerOrder} from '@/stores';
 import {intersection, without} from '@/utils';
 
 interface IParameters {
@@ -10,10 +11,7 @@ interface IParameters {
 	currentCustomerBeverageTags: TBeverageTag[];
 	currentCustomerName: TCustomerNames;
 	currentCustomerNegativeTags: TRecipeTag[];
-	currentCustomerOrder: {
-		beverageTag: TBeverageTag | null;
-		recipeTag: TRecipeTag | null;
-	};
+	currentCustomerOrder: ICustomerOrder;
 	currentCustomerPositiveTags: TRecipeTag[];
 	currentIngredients: TIngredientNames[];
 	currentRecipe: TRecipe | null;

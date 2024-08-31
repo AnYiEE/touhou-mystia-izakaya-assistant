@@ -1,5 +1,4 @@
 import {Fragment, forwardRef, memo} from 'react';
-import {twJoin} from 'tailwind-merge';
 
 import {Avatar, Button, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
 
@@ -11,46 +10,27 @@ import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 
 import {customerRatingColorMap} from './constants';
-import {BEVERAGE_TAG_STYLE, RECIPE_TAG_STYLE, type TCustomerNames, type TTags} from '@/data';
-import {customerRareStore as customerStore, globalStore} from '@/stores';
-
-const customerTagsCache = new Map<TCustomerNames, Set<TTags>>();
+import {BEVERAGE_TAG_STYLE, RECIPE_TAG_STYLE} from '@/data';
+import {customerRareStore as store} from '@/stores';
 
 interface IProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(_props, ref) {
-		const currentCustomerData = customerStore.shared.customer.data.use();
-		const currentSavedMeals = customerStore.persistence.meals.use();
+		const currentCustomerData = store.shared.customer.data.use();
+		const currentCustomerPopular = store.shared.customer.popular.use();
+		const currentSavedMeals = store.persistence.meals.use();
 
-		const currentGlobalPopular = globalStore.persistence.popular.use();
-
-		const instance_recipe = customerStore.instances.recipe.get();
+		const instance_recipe = store.instances.recipe.get();
 
 		if (!currentCustomerData) {
 			return null;
 		}
 
-		const {name: currentCustomerName, target: currentCustomerTarget} = currentCustomerData;
+		const {name: currentCustomerName} = currentCustomerData;
 
 		if (!currentSavedMeals[currentCustomerName]?.length) {
 			return null;
-		}
-
-		let customerTags: Set<TTags>;
-		if (customerTagsCache.has(currentCustomerName)) {
-			customerTags = customerTagsCache.get(currentCustomerName);
-		} else {
-			const instance_rare = customerStore.instances.customer_rare.get();
-			const instance_special = customerStore.instances.customer_special.get();
-			const instance_customer = (
-				currentCustomerTarget === 'customer_rare' ? instance_rare : instance_special
-			) as typeof instance_rare;
-
-			const {negativeTags: customerNegativeTags, positiveTags: customerPositiveTags} =
-				instance_customer.getPropsByName(currentCustomerName);
-
-			customerTags = new Set([...customerNegativeTags, ...customerPositiveTags]);
 		}
 
 		const savedCustomerMeal = currentSavedMeals[currentCustomerName];
@@ -59,56 +39,19 @@ export default memo(
 			<Card fullWidth shadow="sm" ref={ref}>
 				<div className="space-y-3 p-4 xl:space-y-2 xl:px-2 xl:py-3">
 					{savedCustomerMeal.map(
-						(
-							{
-								index: mealIndex,
-								hasMystiaCooker,
-								order,
-								popular,
-								rating,
-								beverage,
-								recipe,
-								extraIngredients,
-								price,
-							},
-							loopIndex
-						) => (
+						({index: mealIndex, hasMystiaCooker, order, beverage, recipe, extraIngredients}, loopIndex) => (
 							<Fragment key={loopIndex}>
 								<div className="flex flex-col items-center gap-4 md:flex-row md:gap-3 lg:gap-4 xl:gap-3">
 									<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap md:gap-2 lg:gap-3 xl:gap-2">
 										{(() => {
-											const isPopularTagMatched =
-												popular.tag !== null &&
-												(customerTags.has(popular.tag) ||
-													(popular.isNegative && customerTags.has('流行厌恶')) ||
-													(!popular.isNegative && customerTags.has('流行喜爱')));
-											const isPopularTagOutdated =
-												isPopularTagMatched &&
-												(popular.isNegative !== currentGlobalPopular.isNegative ||
-													popular.tag !== currentGlobalPopular.tag);
-											const content = (
-												<span className="whitespace-nowrap [&>span]:after:mx-1 [&>span]:after:content-['•'] last:[&>span]:after:hidden">
-													<span>{rating}</span>
-													{isPopularTagMatched && (
-														<>
-															<span
-																className={twJoin(
-																	isPopularTagOutdated && 'opacity-40 dark:opacity-60'
-																)}
-															>
-																{popular.isNegative ? '流行厌恶' : '流行喜爱'}
-															</span>
-															<span
-																className={twJoin(
-																	isPopularTagOutdated && 'opacity-40 dark:opacity-60'
-																)}
-															>
-																{popular.tag}
-															</span>
-														</>
-													)}
-												</span>
-											);
+											const {price, rating} = store.evaluateSavedMealResult({
+												beverageName: beverage,
+												extraIngredients,
+												hasMystiaCooker,
+												order,
+												popular: currentCustomerPopular,
+												recipeName: recipe,
+											});
 											const customerRatingColor = customerRatingColorMap[rating];
 											return (
 												<Popover
@@ -120,7 +63,7 @@ export default memo(
 													<Tooltip
 														showArrow
 														color={customerRatingColor}
-														content={content}
+														content={rating}
 														placement="left"
 													>
 														<span className="cursor-pointer">
@@ -163,17 +106,13 @@ export default memo(
 																	radius="sm"
 																	role="banner"
 																	classNames={{
-																		base: twJoin(
-																			'h-5 w-44 ring-offset-0',
-																			isPopularTagOutdated &&
-																				'opacity-60 dark:opacity-40'
-																		),
+																		base: 'h-5 w-44 ring-offset-0',
 																	}}
 																/>
 															</PopoverTrigger>
 														</span>
 													</Tooltip>
-													<PopoverContent>{content}</PopoverContent>
+													<PopoverContent>{rating}</PopoverContent>
 												</Popover>
 											);
 										})()}
@@ -284,7 +223,7 @@ export default memo(
 											size="sm"
 											variant="flat"
 											onPress={() => {
-												customerStore.persistence.meals[currentCustomerName]?.set(
+												store.persistence.meals[currentCustomerName]?.set(
 													savedCustomerMeal.filter((meal) => meal.index !== mealIndex)
 												);
 												trackEvent(
@@ -303,10 +242,10 @@ export default memo(
 											size="sm"
 											variant="flat"
 											onPress={() => {
-												customerStore.shared.customer.hasMystiaCooker.set(hasMystiaCooker);
-												customerStore.shared.customer.order.set(order);
-												customerStore.shared.beverage.name.set(beverage);
-												customerStore.shared.recipe.data.set({
+												store.shared.customer.hasMystiaCooker.set(hasMystiaCooker);
+												store.shared.customer.order.set(order);
+												store.shared.beverage.name.set(beverage);
+												store.shared.recipe.data.set({
 													extraIngredients,
 													name: recipe,
 												});

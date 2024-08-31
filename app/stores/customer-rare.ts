@@ -31,6 +31,11 @@ import {
 	union,
 } from '@/utils';
 
+export interface ICustomerOrder {
+	beverageTag: TBeverageTag | null;
+	recipeTag: TRecipeTag | null;
+}
+
 const instance_beverage = Beverage.getInstance();
 const instance_ingredient = Ingredient.getInstance();
 const instance_recipe = Recipe.getInstance();
@@ -53,7 +58,8 @@ const storeVersion = {
 	tagDescription: 7, // eslint-disable-next-line sort-keys
 	extraCustomer: 8,
 	linkedFilter: 9,
-	mystiaCooker: 10,
+	mystiaCooker: 10, // eslint-disable-next-line sort-keys
+	dynamicMeal: 11,
 } as const;
 
 const state = {
@@ -130,16 +136,10 @@ const state = {
 			[key in TCustomerNames]?: {
 				index: number;
 				hasMystiaCooker: boolean;
-				order: {
-					beverageTag: TBeverageTag | null;
-					recipeTag: TRecipeTag | null;
-				};
-				popular: IPopularData;
-				rating: TCustomerRating;
+				order: ICustomerOrder;
 				beverage: TBeverageNames;
 				recipe: TRecipeNames;
 				extraIngredients: TIngredientNames[];
-				price: number;
 			}[];
 		},
 	},
@@ -163,9 +163,9 @@ const state = {
 
 			hasMystiaCooker: false,
 			order: {
-				beverageTag: null as TBeverageTag | null,
-				recipeTag: null as TRecipeTag | null,
-			},
+				beverageTag: null,
+				recipeTag: null,
+			} as ICustomerOrder,
 			popular: {
 				isNegative: false,
 				tag: null,
@@ -204,7 +204,7 @@ export const customerRareStore = store(state, {
 	persist: {
 		enabled: true,
 		name: customerRareStoreKey,
-		version: storeVersion.mystiaCooker,
+		version: storeVersion.dynamicMeal,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -309,6 +309,16 @@ export const customerRareStore = store(state, {
 							meal.order.beverageTag = null;
 							meal.order.recipeTag = null;
 						}
+					}
+				}
+			}
+			if (version < storeVersion.dynamicMeal) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+				for (const meals of Object.values(oldState.persistence.meals) as any) {
+					for (const meal of meals) {
+						delete meal.popular;
+						delete meal.price;
+						delete meal.rating;
 					}
 				}
 			}
@@ -546,6 +556,64 @@ export const customerRareStore = store(state, {
 			});
 			currentStore.shared.customer.rating.set(rating);
 		},
+		evaluateSavedMealResult({
+			beverageName,
+			extraIngredients,
+			hasMystiaCooker,
+			order,
+			popular,
+			recipeName,
+		}: {
+			beverageName: TBeverageNames;
+			extraIngredients: TIngredientNames[];
+			hasMystiaCooker: boolean;
+			order: ICustomerOrder;
+			popular: IPopularData;
+			recipeName: TRecipeNames;
+		}) {
+			const customerData = currentStore.shared.customer.data.get();
+			if (!customerData) {
+				throw new ReferenceError('[stores/customer-rare/evaluateSavedMealResult]: `customerData` is null');
+			}
+			const {name: customerName, target: customerTarget} = customerData;
+			const instance_customer = (
+				customerTarget === 'customer_rare' ? instance_rare : instance_special
+			) as typeof instance_rare;
+			const {
+				beverageTags: customerBeverageTags,
+				negativeTags: customerNegativeTags,
+				positiveTags: customerPositiveTags,
+			} = instance_customer.getPropsByName(customerName);
+			const beverage = instance_beverage.getPropsByName(beverageName);
+			const {tags: beverageTags, price: beveragePrice} = beverage;
+			const recipe = instance_recipe.getPropsByName(recipeName);
+			const {ingredients: originalIngredients, positiveTags: originalTags, price: recipePrice} = recipe;
+			const extraTags = extraIngredients.flatMap((extraIngredient) =>
+				instance_ingredient.getPropsByName(extraIngredient, 'tags')
+			);
+			const composedRecipeTags = instance_recipe.composeTags(
+				originalIngredients,
+				extraIngredients,
+				originalTags,
+				extraTags
+			);
+			const rating = evaluateMeal({
+				currentBeverageTags: beverageTags,
+				currentCustomerBeverageTags: customerBeverageTags,
+				currentCustomerName: customerName,
+				currentCustomerNegativeTags: customerNegativeTags,
+				currentCustomerOrder: order,
+				currentCustomerPositiveTags: customerPositiveTags,
+				currentIngredients: [...originalIngredients, ...extraIngredients],
+				currentRecipe: recipe,
+				currentRecipeTagsWithPopular: instance_recipe.calculateTagsWithPopular(composedRecipeTags, popular),
+				hasMystiaCooker,
+			});
+			return {
+				price: beveragePrice + recipePrice,
+				rating: rating as TCustomerRating,
+			};
+		},
 		removeMealIngredient(ingredientName: TIngredientNames) {
 			currentStore.shared.recipe.data.set((prev) => {
 				if (prev) {
@@ -558,14 +626,12 @@ export const customerRareStore = store(state, {
 			const customerName = currentStore.shared.customer.data.get()?.name;
 			const beverageName = currentStore.shared.beverage.name.get();
 			const recipeData = currentStore.shared.recipe.data.get();
-			const rating = currentStore.shared.customer.rating.get();
-			if (!customerName || !beverageName || !recipeData || !rating) {
+			if (!customerName || !beverageName || !recipeData) {
 				return;
 			}
 			const {extraIngredients, name: recipeName} = recipeData;
 			const hasMystiaCooker = currentStore.shared.customer.hasMystiaCooker.get();
 			const order = currentStore.shared.customer.order.get();
-			const popular = currentStore.shared.customer.popular.get();
 			const saveObject = {
 				beverage: beverageName,
 				extraIngredients,
@@ -576,11 +642,6 @@ export const customerRareStore = store(state, {
 							recipeTag: null,
 						}
 					: order,
-				popular,
-				price:
-					instance_beverage.getPropsByName(beverageName).price +
-					instance_recipe.getPropsByName(recipeName).price,
-				rating,
 				recipe: recipeName,
 			} as const;
 			currentStore.persistence.meals.set((prev) => {
