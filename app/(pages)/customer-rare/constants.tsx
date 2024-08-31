@@ -1,5 +1,5 @@
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faChevronDown, faChevronUp} from '@fortawesome/free-solid-svg-icons';
+import {faCaretDown, faCaretUp} from '@fortawesome/free-solid-svg-icons';
 
 import {type TTableColumns as TBeverageTableColumns} from './beverageTabContent';
 import {type TTableColumns as TRecipeTableColumns} from './recipeTabContent';
@@ -9,7 +9,7 @@ import {CUSTOMER_RARE_TAG_STYLE, CUSTOMER_SPECIAL_TAG_STYLE} from '@/data';
 export const customerTabStyleMap = {
 	collapse: {
 		ariaLabel: '展开',
-		buttonNode: <FontAwesomeIcon icon={faChevronDown} size="sm" />,
+		buttonNode: <FontAwesomeIcon icon={faCaretDown} size="xl" className="-mt-0.5" />,
 		classNames: {
 			content: 'max-h-[calc(var(--safe-h-dvh-half)-9.25rem)] min-h-20',
 			sideButtonGroup: 'hidden xl:block',
@@ -17,7 +17,7 @@ export const customerTabStyleMap = {
 	},
 	expand: {
 		ariaLabel: '收起',
-		buttonNode: <FontAwesomeIcon icon={faChevronUp} size="sm" />,
+		buttonNode: <FontAwesomeIcon icon={faCaretUp} size="xl" className="mt-0.5" />,
 		classNames: {
 			content: 'max-h-[50vmax]',
 			sideButtonGroup: '',
@@ -28,7 +28,7 @@ export const customerTabStyleMap = {
 export const ingredientTabStyleMap = {
 	collapse: {
 		ariaLabel: '展开',
-		buttonNode: <FontAwesomeIcon icon={faChevronDown} size="sm" />,
+		buttonNode: <FontAwesomeIcon icon={faCaretDown} size="xl" className="-mt-0.5" />,
 		classNames: {
 			content: 'max-h-[calc(var(--safe-h-dvh-half)-9.25rem)] min-h-20',
 			sideButtonGroup: 'hidden xl:block',
@@ -36,7 +36,7 @@ export const ingredientTabStyleMap = {
 	},
 	expand: {
 		ariaLabel: '收起',
-		buttonNode: <FontAwesomeIcon icon={faChevronUp} size="sm" />,
+		buttonNode: <FontAwesomeIcon icon={faCaretUp} size="xl" className="mt-0.5" />,
 		classNames: {
 			content: 'max-h-[50vmax]',
 			sideButtonGroup: '',

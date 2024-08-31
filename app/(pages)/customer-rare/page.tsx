@@ -291,7 +291,7 @@ export default memo(function CustomerRare() {
 				</Tabs>
 			</div>
 
-			<div className="flex flex-grow flex-col gap-4">
+			<div className="flex flex-grow flex-col gap-4 xl:basis-1/2">
 				{currentCustomerData ? (
 					<>
 						<CustomerCard />

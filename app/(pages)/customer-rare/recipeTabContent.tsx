@@ -269,7 +269,7 @@ export default memo(
 						const recipeLabel = '点击：在新窗口中查看此料理的详情';
 						return (
 							<div className="flex items-center">
-								<Tooltip showArrow content={recipeLabel} placement="right">
+								<Tooltip showArrow content={recipeLabel} placement="right" size="sm">
 									<Sprite
 										target="recipe"
 										name={name}
@@ -291,8 +291,8 @@ export default memo(
 								<div className="inline-flex flex-1 items-center whitespace-nowrap">
 									<span className="text-small font-medium">{name}</span>
 									<span className="-ml-2">
-										<Popover showArrow>
-											<Tooltip showArrow content={tags} offset={-2} placement="right">
+										<Popover showArrow offset={10} size="sm">
+											<Tooltip showArrow content={tags} offset={-2} placement="right" size="sm">
 												<span>
 													<PopoverTrigger>
 														<FontAwesomeIconButton
@@ -322,7 +322,7 @@ export default memo(
 						return (
 							<div className="flex flex-nowrap">
 								{ingredients.map((ingredient, index) => (
-									<Tooltip key={index} showArrow content={ingredientLabel}>
+									<Tooltip key={index} showArrow content={ingredientLabel} size="sm">
 										<Sprite
 											target="ingredient"
 											name={ingredient}
@@ -364,7 +364,7 @@ export default memo(
 					case 'action':
 						return (
 							<div className="flex justify-center">
-								<Tooltip showArrow content="选择此项" placement="left">
+								<Tooltip showArrow content="选择此项" placement="left" size="sm">
 									<Button
 										isIconOnly
 										size="sm"

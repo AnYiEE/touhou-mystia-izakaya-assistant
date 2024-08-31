@@ -65,8 +65,13 @@ export default memo<IProps>(function Content({data, isInNewWindow}) {
 											<Fragment key={index}>
 												{Array.isArray(item) ? (
 													item[1] ? (
-														<Popover showArrow offset={6.5}>
-															<Tooltip showArrow content={probability} offset={4}>
+														<Popover showArrow offset={6} size="sm">
+															<Tooltip
+																showArrow
+																content={probability}
+																offset={3}
+																size="sm"
+															>
 																<span className="underline-dotted-offset2 cursor-pointer">
 																	<PopoverTrigger>
 																		<span tabIndex={0}>{item[0]}</span>

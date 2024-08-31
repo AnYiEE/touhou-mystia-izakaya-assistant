@@ -267,7 +267,7 @@ export default memo(function CustomerNormal() {
 				</Tabs>
 			</div>
 
-			<div className="flex flex-grow flex-col gap-4">
+			<div className="flex flex-grow flex-col gap-4 xl:basis-1/2">
 				{currentCustomerName ? (
 					<>
 						<CustomerCard />

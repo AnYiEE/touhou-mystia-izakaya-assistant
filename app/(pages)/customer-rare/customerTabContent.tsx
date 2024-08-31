@@ -45,7 +45,7 @@ export default memo(
 										}
 									}}
 									title={`选择${name}`}
-									className="flex cursor-pointer flex-col items-center gap-1"
+									className="group flex cursor-pointer flex-col items-center gap-1"
 								>
 									<Avatar
 										isBordered
@@ -62,13 +62,13 @@ export default memo(
 										role="button"
 										classNames={{
 											base: twJoin(
-												'h-16 w-16 ring-default hover:ring-warning lg:h-20 lg:w-20',
+												'h-16 w-16 ring-default group-hover:ring-warning lg:h-20 lg:w-20',
 												name === currentCustomerData?.name && 'ring-primary'
 											),
-											icon: 'inline-table transition hover:scale-125 lg:inline-block',
+											icon: 'inline-table transition group-hover:scale-125 lg:inline-block',
 										}}
 									/>
-									<span className="whitespace-nowrap text-xs">{name}</span>
+									<span className="whitespace-nowrap text-xs group-hover:opacity-80">{name}</span>
 								</div>
 							))
 						)}

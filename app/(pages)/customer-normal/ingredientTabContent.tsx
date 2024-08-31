@@ -1,7 +1,7 @@
 import {forwardRef, memo, useMemo} from 'react';
-import {twMerge} from 'tailwind-merge';
+import {twJoin, twMerge} from 'tailwind-merge';
 
-import {Badge, Button, ScrollShadow} from '@nextui-org/react';
+import {Badge, Button, ScrollShadow, Tooltip} from '@nextui-org/react';
 
 import Sprite from '@/components/sprite';
 
@@ -68,7 +68,10 @@ export default memo(
 							const {extraIngredients} = currentRecipeData;
 							if (currentRecipe.ingredients.length + extraIngredients.length >= 5) {
 								return (
-									<div key={index} className="grid">
+									<div
+										key={index}
+										className="flex cursor-not-allowed flex-col items-center opacity-40 brightness-50 dark:opacity-80"
+									>
 										<Sprite target="ingredient" name={name} size={3} />
 										<span className="whitespace-nowrap text-center text-xs">{name}</span>
 									</div>
@@ -133,35 +136,66 @@ export default memo(
 									(customerPositiveTags as TRecipeTag[]).includes('流行喜爱') &&
 									!currentCustomerPopular.isNegative
 							);
+							const isDown = scoreChange < 0;
+							const isUp = scoreChange > 0;
+							const isNoChange = scoreChange === 0;
+							const color = isUp ? 'success' : isDown ? 'danger' : 'default';
+							const score = isUp ? `+${scoreChange}` : `${scoreChange}`;
+							const label = `加入${name}${isNoChange ? '' : `，匹配度${score}`}`;
 							return (
-								<div
+								<Tooltip
 									key={index}
-									onClick={() => {
-										store.onIngredientSelectedChange(name);
-									}}
-									onKeyDown={(event) => {
-										if (checkA11yConfirmKey(event)) {
-											store.onIngredientSelectedChange(name);
-										}
-									}}
-									role="button"
-									tabIndex={0}
-									aria-label={`加入${name}，匹配度${scoreChange}`}
-									title={`加入${name}`}
-									className="grid cursor-pointer transition hover:scale-105 hover:drop-shadow-md"
+									showArrow
+									closeDelay={0}
+									color={color}
+									content={label}
+									offset={scoreChange > 1 ? 10 : 7}
+									size="sm"
 								>
-									<Badge
-										color={scoreChange > 0 ? 'success' : scoreChange < 0 ? 'danger' : 'default'}
-										content={
-											scoreChange > 0 ? `+${scoreChange}` : scoreChange < 0 ? scoreChange : ''
-										}
-										isDot={scoreChange === 0}
-										size="sm"
+									<div
+										onClick={() => {
+											store.onIngredientSelectedChange(name);
+										}}
+										onKeyDown={(event) => {
+											if (checkA11yConfirmKey(event)) {
+												store.onIngredientSelectedChange(name);
+											}
+										}}
+										role="button"
+										tabIndex={0}
+										aria-label={label}
+										className={twJoin(
+											'group flex cursor-pointer flex-col items-center transition',
+											isNoChange &&
+												'opacity-40 brightness-50 hover:opacity-100 hover:brightness-100 dark:opacity-80 dark:hover:opacity-100'
+										)}
 									>
-										<Sprite target="ingredient" name={name} size={3} title={`加入${name}`} />
-									</Badge>
-									<span className="whitespace-nowrap text-center text-xs">{name}</span>
-								</div>
+										<Badge
+											color={color}
+											content={isNoChange ? '' : score}
+											isInvisible={isNoChange}
+											size="sm"
+											classNames={{
+												badge: twJoin(
+													'font-mono',
+													scoreChange > 1 && 'scale-125 font-medium',
+													scoreChange > 2 && 'brightness-125'
+												),
+												base: 'group-hover:drop-shadow-md',
+											}}
+										>
+											<Sprite
+												target="ingredient"
+												name={name}
+												size={3}
+												className="transition group-hover:scale-105"
+											/>
+										</Badge>
+										<span className="whitespace-nowrap text-center text-xs group-hover:font-bold">
+											{name}
+										</span>
+									</div>
+								</Tooltip>
 							);
 						})}
 					</div>
@@ -176,7 +210,7 @@ export default memo(
 							</div>
 							<div className="m-2 grid grid-cols-fill-12 justify-around gap-4">
 								{[...darkIngredients].map((name, index) => (
-									<div key={index} className="grid cursor-not-allowed">
+									<div key={index} className="flex cursor-not-allowed flex-col items-center">
 										<Sprite target="ingredient" name={name} size={3} />
 										<span className="whitespace-nowrap text-center text-xs">{name}</span>
 									</div>

@@ -199,7 +199,7 @@ export default memo(
 						const label = '点击：在新窗口中查看此酒水的详情';
 						return (
 							<div className="flex items-center gap-2">
-								<Tooltip showArrow content={label} placement="right">
+								<Tooltip showArrow content={label} placement="right" size="sm">
 									<Sprite
 										target="beverage"
 										name={name}
@@ -221,8 +221,8 @@ export default memo(
 								<div className="inline-flex flex-1 items-center whitespace-nowrap">
 									<span className="text-small font-medium">{name}</span>
 									<span className="-ml-2">
-										<Popover showArrow>
-											<Tooltip showArrow content={tags} offset={-2} placement="right">
+										<Popover showArrow offset={10} size="sm">
+											<Tooltip showArrow content={tags} offset={-2} placement="right" size="sm">
 												<span>
 													<PopoverTrigger>
 														<FontAwesomeIconButton
@@ -252,7 +252,7 @@ export default memo(
 					case 'action':
 						return (
 							<div className="flex justify-center">
-								<Tooltip showArrow content="选择此项" placement="left">
+								<Tooltip showArrow content="选择此项" placement="left" size="sm">
 									<Button
 										isIconOnly
 										size="sm"

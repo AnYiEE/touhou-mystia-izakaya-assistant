@@ -77,7 +77,7 @@ export default memo(function InfoButton() {
 							{bondRecipesData.map(({name, level}, index) => (
 								<p key={index} className="flex items-center">
 									<LevelLabel level={level} />
-									<Tooltip showArrow content={label} placement="left">
+									<Tooltip showArrow content={label} placement="left" size="sm">
 										<Sprite
 											target="recipe"
 											name={name}
@@ -108,11 +108,12 @@ export default memo(function InfoButton() {
 									) : (
 										<>
 											{type}【
-											<Popover showArrow offset={7}>
+											<Popover showArrow offset={6} size="sm">
 												<Tooltip
 													showArrow
 													content={getDescription(type, description)}
-													offset={4}
+													offset={3}
+													size="sm"
 												>
 													<span className="cursor-pointer">
 														<PopoverTrigger>

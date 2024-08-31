@@ -48,7 +48,7 @@ interface IFooterLinkWithTooltipProps extends IFooterLinkProps {
 const FooterLinkWithTooltip = memo<PropsWithChildren<IFooterLinkWithTooltipProps>>(
 	function FooterLinkWithTooltip(props) {
 		return (
-			<Tooltip showArrow content={props.content}>
+			<Tooltip showArrow content={props.content} size="sm">
 				<FooterLink {...props} />
 			</Tooltip>
 		);

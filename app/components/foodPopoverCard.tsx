@@ -61,14 +61,14 @@ const CloseButton = memo(
 		const label = useMemo(() => `关闭${isInNewWindow ? '窗口' : '弹出框'}`, [isInNewWindow]);
 
 		return (
-			<Tooltip showArrow content={label} offset={-5} placement="left">
+			<Tooltip showArrow content={label} offset={-5} placement="left" size="sm">
 				<FontAwesomeIconButton
 					icon={faXmark}
 					variant="light"
 					onClick={handleClose}
 					onKeyDown={handleClose}
 					aria-label={label}
-					className="absolute -right-1 top-1 h-4 text-default-300 data-[hover]:bg-transparent data-[hover]:text-default-400"
+					className="absolute -right-1 top-1 h-4 text-default-400 data-[hover]:bg-transparent data-[hover]:text-default-500"
 					ref={ref}
 				/>
 			</Tooltip>
@@ -95,14 +95,14 @@ const ShareButton = memo(
 
 		return (
 			<Popover showArrow ref={ref}>
-				<Tooltip showArrow content="分享当前选中项的链接" offset={-2} placement="left">
+				<Tooltip showArrow content="分享当前选中项的链接" offset={-2} placement="left" size="sm">
 					<div className="absolute -right-1 bottom-0">
 						<PopoverTrigger>
 							<FontAwesomeIconButton
 								icon={faShare}
 								variant="light"
 								aria-label="分享当前选中项"
-								className="h-4 text-default-300 data-[hover]:bg-transparent data-[hover]:text-default-400"
+								className="h-4 text-default-400 data-[hover]:bg-transparent data-[hover]:text-default-500"
 							/>
 						</PopoverTrigger>
 					</div>
@@ -164,7 +164,6 @@ const FoodPopoverCardComponent = memo(
 		}, [tags]);
 
 		const dlcLabel = dlc === 0 ? '游戏本体' : '';
-		const itemLabel = '点击：在新窗口中查看此食材的详情';
 
 		return (
 			<div className="max-w-64 space-y-2 p-2 text-xs text-default-500" ref={ref}>
@@ -172,7 +171,7 @@ const FoodPopoverCardComponent = memo(
 					<Sprite target={target} name={name} size={2} />
 					<p className="font-bold">
 						{dlc !== undefined && (
-							<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel}>
+							<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} size="sm">
 								<span title={dlcLabel}>【DLC{dlc}】</span>
 							</Tooltip>
 						)}
@@ -181,30 +180,33 @@ const FoodPopoverCardComponent = memo(
 				</div>
 				{cooker && ingredients && (
 					<div className="flex flex-wrap gap-x-2 gap-y-1">
-						<Tooltip showArrow content={cooker}>
+						<Tooltip showArrow content={cooker} size="sm">
 							<Sprite target="cooker" name={cooker} size={1.5} className="mr-4" />
 						</Tooltip>
-						{ingredients.map((ingredient, index) => (
-							<Tooltip key={index} showArrow content={itemLabel}>
-								<Sprite
-									target="ingredient"
-									name={ingredient}
-									size={1.5}
-									onClick={() => {
-										openWindow?.('ingredients', ingredient);
-									}}
-									onKeyDown={(event) => {
-										if (checkA11yConfirmKey(event)) {
+						{ingredients.map((ingredient, index) => {
+							const ingredientLabel = `点击：在新窗口中查看食材【${ingredient}】的详情`;
+							return (
+								<Tooltip key={index} showArrow content={ingredientLabel} size="sm">
+									<Sprite
+										target="ingredient"
+										name={ingredient}
+										size={1.5}
+										onClick={() => {
 											openWindow?.('ingredients', ingredient);
-										}
-									}}
-									aria-label={itemLabel}
-									role="button"
-									tabIndex={0}
-									className="cursor-pointer"
-								/>
-							</Tooltip>
-						))}
+										}}
+										onKeyDown={(event) => {
+											if (checkA11yConfirmKey(event)) {
+												openWindow?.('ingredients', ingredient);
+											}
+										}}
+										aria-label={ingredientLabel}
+										role="button"
+										tabIndex={0}
+										className="cursor-pointer"
+									/>
+								</Tooltip>
+							);
+						})}
 					</div>
 				)}
 				{description !== undefined && (

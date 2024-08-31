@@ -11,7 +11,7 @@ export default memo<IProps>(function InfoButtonBase({defaultExpandedKeys, childr
 	return (
 		<Popover offset={0} placement="left-end">
 			<Tooltip showArrow content="更多信息" offset={2}>
-				<span className="absolute -right-1 bottom-0">
+				<span className="absolute -right-0.5 bottom-0">
 					<PopoverTrigger>
 						<FontAwesomeIconButton
 							icon={faInfoCircle}

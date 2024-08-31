@@ -172,7 +172,7 @@ export default memo(
 			<Card fullWidth shadow="sm" ref={ref}>
 				<div className="flex flex-col gap-3 p-4 md:flex-row">
 					<div className="flex flex-col justify-evenly gap-2">
-						<Popover showArrow color={avatarRatingColor} offset={11}>
+						<Popover showArrow color={avatarRatingColor} offset={12}>
 							<Tooltip showArrow color={avatarRatingColor} content={avatarRatingContent}>
 								<div className="cursor-pointer">
 									<PopoverTrigger>
@@ -244,9 +244,11 @@ export default memo(
 									<Tooltip
 										key={tag}
 										showArrow
-										closeDelay={0}
 										content={getTagTooltip('recipeTag', tag)}
+										closeDelay={0}
+										delay={500}
 										isDisabled={!isShowTagsTooltip}
+										size="sm"
 									>
 										<Tags.Tag
 											tag={
@@ -308,9 +310,11 @@ export default memo(
 									<Tooltip
 										key={tag}
 										showArrow
-										closeDelay={0}
 										content={getTagTooltip('beverageTag', tag)}
+										closeDelay={0}
+										delay={500}
 										isDisabled={!isShowTagsTooltip}
+										size="sm"
 									>
 										<Tags.Tag
 											tag={tag}
