@@ -74,9 +74,7 @@ export const globalStore = store(state, {
 		read: () => new Set([currentStore.persistence.popular.tag.use()]) as SelectionSet,
 		write: (tags: Selection) => {
 			const tag = [...tags][0] as typeof state.persistence.popular.tag;
-			currentStore.persistence.popular.assign({
-				tag: tag || null,
-			});
+			currentStore.persistence.popular.tag.set(tag || null);
 		},
 	},
 }));
