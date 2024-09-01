@@ -536,6 +536,8 @@ export const customerNormalStore = store(state, {
 		refreshCustomer() {
 			currentStore.shared.customer.name.set(null);
 			currentStore.shared.tab.set('customer');
+			currentStore.shared.customer.filterVisibility.set(true);
+			currentStore.shared.ingredient.filterVisibility.set(false);
 		},
 		refreshCustomerSelectedItems() {
 			currentStore.shared.customer.beverageTags.set(new Set());
