@@ -81,7 +81,7 @@ export default memo(function CustomerRareTutorial() {
 					element: '[role="tabpanel"] [data-key="price"]',
 					popover: {
 						title: '按价格排序', // eslint-disable-next-line sort-keys
-						description: '点击两次，按价格升序排序酒水。',
+						description: '点击以按价格升序排序酒水。',
 					},
 				},
 				{

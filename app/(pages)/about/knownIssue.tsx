@@ -22,18 +22,6 @@ export default memo(function KnownIssue() {
 					</Link>
 					。
 				</li>
-				<li>
-					表格点击排序后默认升序：NextUI的
-					<Link
-						isExternal
-						showAnchorIcon
-						href="https://nextui.org/docs/components/table#api"
-						referrerPolicy="no-referrer"
-					>
-						Table组件
-					</Link>
-					尚未提供相关设置项。
-				</li>
 			</Ul>
 		</>
 	);

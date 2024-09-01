@@ -16,7 +16,7 @@ import type {IPersistenceState} from './types';
 import {type TBeverageNames, type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {type IPopularData, type TPopularTag} from '@/stores';
-import {getAllItemNames, keepLastTag} from '@/stores/utils';
+import {getAllItemNames, keepLastTag, reverseDirection} from '@/stores/utils';
 import {
 	Beverage,
 	CustomerNormal,
@@ -327,7 +327,23 @@ export const customerNormalStore = store(state, {
 			currentStore.shared.beverage.page.set(1);
 		},
 		onBeverageTableSortChange(config: TBeverageTableSortDescriptor) {
-			currentStore.shared.beverage.sortDescriptor.set(config);
+			const sortConfig = config as Required<TBeverageTableSortDescriptor>;
+			const {column, direction} = sortConfig;
+			const {lastColumn} = currentStore.shared.beverage.sortDescriptor.get();
+			if (!lastColumn || column !== lastColumn) {
+				currentStore.shared.beverage.sortDescriptor.assign({
+					column,
+					lastColumn: column,
+				});
+			}
+			// Reverse direction `ascending` to `descending` when first time
+			let reversedDirection = direction;
+			if ((column === 'price' || column === 'suitability') && column !== lastColumn) {
+				reversedDirection = reverseDirection(direction);
+			}
+			currentStore.shared.beverage.sortDescriptor.assign({
+				direction: reversedDirection,
+			});
 		},
 
 		onIngredientSelectedChange(ingredientName: TIngredientNames) {
@@ -386,7 +402,23 @@ export const customerNormalStore = store(state, {
 			currentStore.shared.recipe.page.set(1);
 		},
 		onRecipeTableSortChange(config: TRecipeTableSortDescriptor) {
-			currentStore.shared.recipe.sortDescriptor.set(config);
+			const sortConfig = config as Required<TRecipeTableSortDescriptor>;
+			const {column, direction} = sortConfig;
+			const {lastColumn} = currentStore.shared.recipe.sortDescriptor.get();
+			if (!lastColumn || column !== lastColumn) {
+				currentStore.shared.recipe.sortDescriptor.assign({
+					column,
+					lastColumn: column,
+				});
+			}
+			// Reverse direction `ascending` to `descending` when first time
+			let reversedDirection = direction;
+			if ((column === 'price' || column === 'suitability') && column !== lastColumn) {
+				reversedDirection = reverseDirection(direction);
+			}
+			currentStore.shared.recipe.sortDescriptor.assign({
+				direction: reversedDirection,
+			});
 		},
 
 		onTabSelectionChange(tab: Key) {

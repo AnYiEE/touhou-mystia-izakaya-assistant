@@ -52,6 +52,7 @@ export interface ITableColumn<T extends string> {
 export interface ITableSortDescriptor<T extends string> extends SortDescriptor {
 	column?: T;
 	direction?: NonNullable<SortDescriptor['direction']>;
+	lastColumn?: T;
 }
 
 type TBeverageSuitability = {
