@@ -237,11 +237,11 @@ export default memo(function CustomerNormal() {
 	return (
 		<div
 			className={twJoin(
-				'flex flex-col gap-4 overflow-auto scrollbar-hide xl:flex-row',
+				'flex flex-col gap-4 overflow-auto scrollbar-hide xl:grid xl:grid-cols-2 xl:justify-items-center',
 				currentCustomerName && 'md:flex-col-reverse'
 			)}
 		>
-			<div className="xl:basis-1/2">
+			<div className="xl:w-full">
 				<Tabs
 					fullWidth
 					destroyInactiveTabPanel={false}
@@ -267,7 +267,7 @@ export default memo(function CustomerNormal() {
 				</Tabs>
 			</div>
 
-			<div className="flex flex-grow flex-col gap-4 xl:basis-1/2">
+			<div className="flex flex-grow flex-col gap-4 xl:w-full">
 				{currentCustomerName ? (
 					<>
 						<CustomerCard />

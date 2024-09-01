@@ -210,7 +210,7 @@ export default memo(
 								<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={4}>
 									<span title={dlcLabel}>DLC{currentCustomerDlc}</span>
 								</Tooltip>
-								<Popover showArrow offset={6.5}>
+								<Popover showArrow offset={6}>
 									<Tooltip showArrow content={placeContent} offset={4}>
 										<span className="cursor-pointer">
 											<PopoverTrigger>
@@ -274,7 +274,7 @@ export default memo(
 											role="button"
 											tabIndex={0}
 											className={twMerge(
-												'cursor-pointer p-1 leading-none hover:opacity-80',
+												'cursor-pointer p-1 leading-none transition-opacity hover:opacity-hover',
 												!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50',
 												currentCustomerOrder.recipeTag === tag &&
 													!hasMystiaCooker &&
@@ -331,7 +331,7 @@ export default memo(
 											role="button"
 											tabIndex={0}
 											className={twMerge(
-												'cursor-pointer p-1 leading-none hover:opacity-80',
+												'cursor-pointer p-1 leading-none transition-opacity hover:opacity-hover',
 												!beverageTags.includes(tag) && 'opacity-50',
 												currentCustomerOrder.beverageTag === tag &&
 													!hasMystiaCooker &&
@@ -354,7 +354,7 @@ export default memo(
 									trackEvent(TrackCategory.Click, 'Reset Button', currentCustomerName);
 								}}
 								aria-label="重置当前选定项"
-								className="absolute -right-0.5 top-1 h-4 w-4 text-default-400 hover:opacity-80 data-[hover]:bg-transparent"
+								className="absolute -right-0.5 top-1 h-4 w-4 text-default-400 transition-opacity hover:opacity-hover data-[hover]:bg-transparent"
 							/>
 						</Tooltip>
 					)}
@@ -365,7 +365,7 @@ export default memo(
 								variant="light"
 								onPress={customerStore.refreshCustomer}
 								aria-label="取消选择当前顾客"
-								className="absolute -right-0.5 top-1 h-4 w-4 text-default-400 hover:opacity-80 data-[hover]:bg-transparent"
+								className="absolute -right-0.5 top-1 h-4 w-4 text-default-400 transition-opacity hover:opacity-hover data-[hover]:bg-transparent"
 							/>
 						</Tooltip>
 					)}

@@ -126,7 +126,7 @@ export default memo(
 				return null;
 			}
 			return (
-				<Placeholder className="pb-8 pt-12 md:pt-8" ref={ref}>
+				<Placeholder className="pb-8 pt-12 md:pt-8 xl:pt-4" ref={ref}>
 					选择点单料理和酒水以继续
 				</Placeholder>
 			);
@@ -180,7 +180,7 @@ export default memo(
 								variant="flat"
 								onPress={handleSaveButtonPress}
 								aria-label={`保存套餐，当前${currentRating ? `评级为${currentRating}` : '未评级'}`}
-								className={twJoin(isSaveButtonDisabled && 'opacity-disabled', 'md:w-auto')}
+								className={twJoin('md:w-auto', isSaveButtonDisabled && 'opacity-disabled')}
 							>
 								保存套餐
 							</Button>

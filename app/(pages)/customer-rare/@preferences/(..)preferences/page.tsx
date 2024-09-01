@@ -10,13 +10,7 @@ export default function PreferencesModal() {
 	const router = useRouter();
 
 	return (
-		<Modal
-			defaultOpen
-			scrollBehavior="inside"
-			size="3xl"
-			onClose={router.back}
-			className="bg-background dark:bg-content1"
-		>
+		<Modal defaultOpen scrollBehavior="inside" size="3xl" onClose={router.back} className="bg-blend-mystia">
 			<ModalContent className="py-3">
 				{(onClose) => (
 					<ModalBody>

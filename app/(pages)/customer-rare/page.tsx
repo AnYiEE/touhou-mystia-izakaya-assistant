@@ -261,11 +261,11 @@ export default memo(function CustomerRare() {
 	return (
 		<div
 			className={twJoin(
-				'flex flex-col gap-4 overflow-auto scrollbar-hide xl:flex-row',
+				'flex flex-col gap-4 overflow-auto scrollbar-hide xl:grid xl:grid-cols-2 xl:justify-items-center',
 				currentCustomerData && 'md:flex-col-reverse'
 			)}
 		>
-			<div className="xl:basis-1/2">
+			<div className="xl:w-full">
 				<Tabs
 					fullWidth
 					destroyInactiveTabPanel={false}
@@ -291,7 +291,7 @@ export default memo(function CustomerRare() {
 				</Tabs>
 			</div>
 
-			<div className="flex flex-grow flex-col gap-4 xl:basis-1/2">
+			<div className="flex flex-grow flex-col gap-4 xl:w-full">
 				{currentCustomerData ? (
 					<>
 						<CustomerCard />

@@ -153,7 +153,7 @@ export default function RootLayout({
 					src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/smoothscroll/1.4.10/SmoothScroll.min.js"
 				/>
 			</head>
-			<body className="antialiased">
+			<body className="bg-blend-mystia antialiased">
 				<ErrorBoundary>
 					<Providers locale={locale} themeProps={{attribute: 'class'}}>
 						<div className="flex min-h-dvh-safe flex-col">

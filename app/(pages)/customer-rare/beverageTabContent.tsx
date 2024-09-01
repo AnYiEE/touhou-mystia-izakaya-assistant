@@ -423,9 +423,6 @@ export default memo(
 			() => (
 				<div className="flex justify-center">
 					<Pagination
-						isCompact
-						loop
-						showControls
 						showShadow
 						size="sm"
 						page={tableCurrentPage}
@@ -452,7 +449,7 @@ export default memo(
 				}}
 				aria-label="酒水选择表格"
 				classNames={{
-					wrapper: 'max-h-[calc(var(--safe-h-dvh)-17.5rem)]',
+					wrapper: 'xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)]',
 				}}
 				ref={ref}
 			>

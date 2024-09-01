@@ -103,6 +103,7 @@ module.exports = {
 				cursor: 'url("/assets/cursor.png")',
 				loading: 'url("/assets/loading.gif")',
 				logo: 'url("/assets/icon.png")',
+				mystia: 'url("/assets/mystia.png")',
 			},
 			backgroundSize: {
 				'y-auto': 'auto 100%',

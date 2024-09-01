@@ -182,7 +182,7 @@ export default memo(
 				return null;
 			}
 			return (
-				<Placeholder className="pb-8 pt-12 md:pt-8" ref={ref}>
+				<Placeholder className="pb-8 pt-12 md:pt-8 xl:pt-4" ref={ref}>
 					选择一种料理或酒水以继续
 				</Placeholder>
 			);

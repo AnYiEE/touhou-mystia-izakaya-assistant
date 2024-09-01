@@ -1,5 +1,5 @@
 import {forwardRef, memo} from 'react';
-import {twJoin, twMerge} from 'tailwind-merge';
+import {twMerge} from 'tailwind-merge';
 
 import {Avatar, Button, ScrollShadow} from '@nextui-org/react';
 
@@ -61,14 +61,16 @@ export default memo(
 										}
 										role="button"
 										classNames={{
-											base: twJoin(
+											base: twMerge(
 												'h-16 w-16 ring-default group-hover:ring-warning lg:h-20 lg:w-20',
 												name === currentCustomerData?.name && 'ring-primary'
 											),
 											icon: 'inline-table transition group-hover:scale-125 lg:inline-block',
 										}}
 									/>
-									<span className="whitespace-nowrap text-xs group-hover:opacity-80">{name}</span>
+									<span className="whitespace-nowrap text-xs transition-opacity group-hover:opacity-hover">
+										{name}
+									</span>
 								</div>
 							))
 						)}

@@ -1,5 +1,5 @@
 import {forwardRef, memo} from 'react';
-import {twJoin, twMerge} from 'tailwind-merge';
+import {twMerge} from 'tailwind-merge';
 
 import {Avatar, Button, ScrollShadow} from '@nextui-org/react';
 
@@ -52,11 +52,11 @@ export default memo(
 									}
 									role="button"
 									classNames={{
-										base: twJoin(
+										base: twMerge(
 											'h-20 w-20 scale-90 ring-default hover:ring-warning lg:scale-100',
 											name === currentCustomerName && 'ring-primary'
 										),
-										icon: 'inline-table scale-110 transition-opacity hover:opacity-80 lg:inline-block',
+										icon: 'block scale-110 transition-opacity hover:opacity-hover',
 									}}
 								/>
 							</div>
