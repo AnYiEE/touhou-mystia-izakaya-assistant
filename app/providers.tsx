@@ -4,6 +4,7 @@ import {type PropsWithChildren, useEffect} from 'react';
 import {useRouter} from 'next/navigation';
 import {ThemeProvider as NextThemesProvider, useTheme} from 'next-themes';
 import type {ThemeProviderProps} from 'next-themes/dist/types';
+import {compareVersions} from 'compare-versions';
 import {debounce} from 'lodash';
 
 import {NextUIProvider} from '@nextui-org/react';
@@ -13,6 +14,7 @@ import {TrackCategory, trackEvent} from './components/analytics';
 import CompatibleBrowser from '@/components/compatibleBrowser';
 import CustomerRareTutorial from '@/components/customerRareTutorial';
 
+import {siteConfig} from '@/configs';
 import {
 	TCustomerNormalPersistenceState,
 	TCustomerRarePersistenceState,
@@ -23,7 +25,9 @@ import {
 	customerRareStoreKey,
 	globalStore,
 	globalStoreKey,
-} from './stores';
+} from '@/stores';
+
+const {version} = siteConfig;
 
 interface IProps {
 	locale: string;
@@ -35,6 +39,14 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 	const {theme, setTheme} = useTheme();
 
 	useEffect(() => {
+		// If the saved version is not set or outdated, initialize it with the current version.
+		// When an outdated version is detected, the current tab will update the saved version in local storage.
+		// Other tabs will monitor changes in the saved version and reload the page as needed. See below.
+		const savedVersion = globalStore.persistence.version.get();
+		if (savedVersion === null || compareVersions(version, savedVersion) === 1) {
+			globalStore.persistence.version.set(version);
+		}
+
 		// Initialize current popular tag based on the persistence data.
 		const globalPopular = globalStore.persistence.popular.get();
 		customerNormalStore.shared.customer.popular.set(globalPopular);
@@ -73,11 +85,17 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 							}
 							break;
 						}
-						case globalStoreKey:
-							globalStore.persistence.assign(
-								(JSON.parse(newValue) as TGlobalPersistenceState).state.persistence
-							);
+						case globalStoreKey: {
+							const state = (JSON.parse(newValue) as TGlobalPersistenceState).state.persistence;
+							// Reload page if current tab version is lower than the version of the new tab.
+							if (state.version && compareVersions(state.version, version) === 1) {
+								trackEvent(TrackCategory.Error, 'Global', 'Outdated version detected in multiple tabs');
+								location.reload();
+								return;
+							}
+							globalStore.persistence.assign(state);
 							break;
+						}
 					}
 				} catch (error) {
 					console.error(error);

@@ -26,6 +26,7 @@ const storeVersion = {
 	initial: 0, // eslint-disable-next-line sort-keys
 	dirver: 1,
 	tagsTooltip: 2,
+	version: 3,
 } as const;
 
 const state = {
@@ -38,6 +39,7 @@ const state = {
 			isNegative: false,
 			tag: null,
 		} as IPopularData,
+		version: null as string | null,
 	},
 };
 
@@ -49,7 +51,7 @@ export const globalStore = store(state, {
 	persist: {
 		enabled: true,
 		name: globalStoreKey,
-		version: storeVersion.tagsTooltip,
+		version: storeVersion.version,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -59,6 +61,9 @@ export const globalStore = store(state, {
 			}
 			if (version < storeVersion.tagsTooltip) {
 				oldState.persistence.customerCardTagsTooltip = true;
+			}
+			if (version < storeVersion.version) {
+				oldState.persistence.version = null;
 			}
 			return persistedState as typeof state;
 		},
