@@ -6,6 +6,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-icons';
 
 import Placeholder from './placeholder';
+import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 
 import {customerRareStore as store} from '@/stores';
@@ -136,6 +137,7 @@ export default memo(
 		const currentSavedMeals = store.persistence.meals.use();
 		const hasMystiaCooker = store.shared.customer.hasMystiaCooker.use();
 
+		const instance_beverage = store.instances.beverage.get();
 		const instance_recipe = store.instances.recipe.get();
 
 		const saveButtonTooltipTimer = useRef<NodeJS.Timeout>();
@@ -258,9 +260,22 @@ export default memo(
 								variant="flat"
 								onPress={handleSaveButtonPress}
 								aria-label={`保存套餐，当前${currentRating ? `评级为${currentRating}` : '未评级'}`}
-								className={twJoin(isSaveButtonDisabled && 'opacity-disabled', 'md:w-auto')}
+								className={twJoin(
+									'flex-col gap-0 text-xs leading-none md:w-auto',
+									isSaveButtonDisabled && 'opacity-disabled'
+								)}
 							>
-								保存套餐
+								<span>保存套餐</span>
+								<span>
+									<Price>
+										{(currentBeverageName
+											? instance_beverage.getPropsByName(currentBeverageName).price
+											: 0) +
+											(currentRecipeData?.name
+												? instance_recipe.getPropsByName(currentRecipeData.name).price
+												: 0)}
+									</Price>
+								</span>
 							</Button>
 						</span>
 					</Tooltip>
