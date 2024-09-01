@@ -49,11 +49,6 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 				}
 				try {
 					switch (key) {
-						case 'theme':
-							if (theme !== newValue) {
-								setTheme(newValue);
-							}
-							break;
 						case customerNormalStoreKey: {
 							const state = (JSON.parse(newValue) as TCustomerNormalPersistenceState).state.persistence;
 							const {meals} = state;
@@ -89,6 +84,7 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 					if (error instanceof Error) {
 						trackEvent(TrackCategory.Error, 'Sync', String(key), error.message);
 					}
+					throw error;
 				}
 			},
 			1000,
@@ -101,6 +97,31 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 
 		return () => {
 			window.removeEventListener('storage', updateStore);
+		};
+	}, []);
+
+	useEffect(() => {
+		// Synchronize theme across multiple tabs as needed.
+		const updateTheme = debounce(
+			(event: StorageEvent) => {
+				const {key, newValue} = event;
+				if (key !== 'theme' || !newValue) {
+					return;
+				}
+				if (theme !== newValue) {
+					setTheme(newValue);
+				}
+			},
+			1000,
+			{
+				leading: true,
+			}
+		);
+
+		window.addEventListener('storage', updateTheme);
+
+		return () => {
+			window.removeEventListener('storage', updateTheme);
 		};
 	}, [setTheme, theme]);
 
