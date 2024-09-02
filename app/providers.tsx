@@ -39,6 +39,10 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 	const {theme, setTheme} = useTheme();
 
 	useEffect(() => {
+		globalStore.persistence.backgroundImage.onChange((isEnabled) => {
+			document.body.classList.toggle('bg-blend-mystia', isEnabled);
+		});
+
 		// If the saved version is not set or outdated, initialize it with the current version.
 		// When an outdated version is detected, the current tab will update the saved version in local storage.
 		// Other tabs will monitor changes in the saved version and reload the page as needed. See below.

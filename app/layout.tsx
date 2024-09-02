@@ -73,7 +73,7 @@ export default function RootLayout({
 	children: ReactNode;
 }>) {
 	return (
-		<html lang={locale} suppressHydrationWarning className="light:izakaya">
+		<html suppressHydrationWarning lang={locale} className="light:izakaya">
 			<head>
 				<script
 					dangerouslySetInnerHTML={{
@@ -153,7 +153,23 @@ export default function RootLayout({
 					src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/smoothscroll/1.4.10/SmoothScroll.min.js"
 				/>
 			</head>
-			<body className="bg-blend-mystia antialiased">
+			<body suppressHydrationWarning className="antialiased">
+				<script
+					dangerouslySetInnerHTML={{
+						__html: `(() => {
+	let enable;
+	try {
+		const globalStorage = localStorage.getItem('global-storage');
+		if (globalStorage) {
+			enable = JSON.parse(globalStorage).state.persistence.backgroundImage;
+		}
+	} catch (e) {}
+	if (enable !== false) {
+		document.body.classList.add('bg-blend-mystia');
+	}
+})();`,
+					}}
+				/>
 				<ErrorBoundary>
 					<Providers locale={locale} themeProps={{attribute: 'class'}}>
 						<div className="flex min-h-dvh-safe flex-col">

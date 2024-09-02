@@ -23,6 +23,7 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 	const popularTags = globalStore.popularTags.get();
 	const isNegativePopularTag = globalStore.persistence.popular.isNegative.use();
 	const selectedPopularTag = globalStore.selectedPopularTag.use();
+	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 	const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
 
 	const resetRecipeTablePage = useCallback(() => {
@@ -56,13 +57,22 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 				设置
 			</H1>
 			<H2 className="mt-0">全局设置</H2>
-			<SwitchItem
-				isSelected={isShowTagsTooltip}
-				onValueChange={globalStore.persistence.customerCardTagsTooltip.set}
-				aria-label={`${isShowTagsTooltip ? '隐藏' : '显示'}标签浮动提示`}
-			>
-				顾客卡片中标签的浮动提示
-			</SwitchItem>
+			<div className="space-y-2">
+				<SwitchItem
+					isSelected={isShowBackgroundImage}
+					onValueChange={globalStore.persistence.backgroundImage.set}
+					aria-label={`${isShowBackgroundImage ? '隐藏' : '显示'}全局背景图片`}
+				>
+					全局背景图片
+				</SwitchItem>
+				<SwitchItem
+					isSelected={isShowTagsTooltip}
+					onValueChange={globalStore.persistence.customerCardTagsTooltip.set}
+					aria-label={`${isShowTagsTooltip ? '隐藏' : '显示'}标签浮动提示`}
+				>
+					顾客卡片中标签的浮动提示
+				</SwitchItem>
+			</div>
 			<H3
 				subTitle={<ScrollShadow hideScrollBar>正确设置游戏中现时流行的标签可以使套餐评级更为准确</ScrollShadow>}
 				classNames={{
