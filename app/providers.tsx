@@ -57,63 +57,53 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 		customerRareStore.shared.customer.popular.set(globalPopular);
 
 		// Synchronize state across multiple tabs as needed.
-		const updateStore = debounce(
-			(event: StorageEvent) => {
-				const {key, newValue} = event;
-				if (!newValue) {
-					return;
-				}
-				try {
-					switch (key) {
-						case customerNormalStoreKey: {
-							const state = (JSON.parse(newValue) as TCustomerNormalPersistenceState).state.persistence;
-							const {meals} = state;
-							if (meals) {
-								customerNormalStore.persistence.meals.assign(meals);
-							}
-							break;
-						}
-						case customerRareStoreKey: {
-							const state = (JSON.parse(newValue) as TCustomerRarePersistenceState).state.persistence;
-							const {customer, meals} = state;
-							if (customer) {
-								customerRareStore.persistence.customer.orderLinkedFilter.set(
-									customer.orderLinkedFilter
-								);
-								customerRareStore.persistence.customer.showTagDescription.set(
-									customer.showTagDescription
-								);
-							}
-							if (meals) {
-								customerRareStore.persistence.meals.assign(meals);
-							}
-							break;
-						}
-						case globalStoreKey: {
-							const state = (JSON.parse(newValue) as TGlobalPersistenceState).state.persistence;
-							// Reload page if current tab version is lower than the version of the new tab.
-							if (state.version && compareVersions(state.version, version) === 1) {
-								trackEvent(TrackCategory.Error, 'Global', 'Outdated version detected in multiple tabs');
-								location.reload();
-								return;
-							}
-							globalStore.persistence.assign(state);
-							break;
-						}
-					}
-				} catch (error) {
-					console.error(error);
-					if (error instanceof Error) {
-						trackEvent(TrackCategory.Error, 'Sync', String(key), error.message);
-					}
-					throw error;
-				}
-			},
-			1000,
-			{
-				leading: true,
+		const updateStore = debounce((event: StorageEvent) => {
+			const {key, newValue} = event;
+			if (!newValue) {
+				return;
 			}
-		);
+			try {
+				switch (key) {
+					case customerNormalStoreKey: {
+						const state = (JSON.parse(newValue) as TCustomerNormalPersistenceState).state.persistence;
+						const {meals} = state;
+						if (meals) {
+							customerNormalStore.persistence.meals.assign(meals);
+						}
+						break;
+					}
+					case customerRareStoreKey: {
+						const state = (JSON.parse(newValue) as TCustomerRarePersistenceState).state.persistence;
+						const {customer, meals} = state;
+						if (customer) {
+							customerRareStore.persistence.customer.orderLinkedFilter.set(customer.orderLinkedFilter);
+							customerRareStore.persistence.customer.showTagDescription.set(customer.showTagDescription);
+						}
+						if (meals) {
+							customerRareStore.persistence.meals.assign(meals);
+						}
+						break;
+					}
+					case globalStoreKey: {
+						const state = (JSON.parse(newValue) as TGlobalPersistenceState).state.persistence;
+						// Reload page if current tab version is lower than the version of the new tab.
+						if (state.version && compareVersions(state.version, version) === 1) {
+							trackEvent(TrackCategory.Error, 'Global', 'Outdated version detected in multiple tabs');
+							location.reload();
+							return;
+						}
+						globalStore.persistence.assign(state);
+						break;
+					}
+				}
+			} catch (error) {
+				console.error(error);
+				if (error instanceof Error) {
+					trackEvent(TrackCategory.Error, 'Sync', String(key), error.message);
+				}
+				throw error;
+			}
+		}, 1000);
 
 		window.addEventListener('storage', updateStore);
 
@@ -124,21 +114,15 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 
 	useEffect(() => {
 		// Synchronize theme across multiple tabs as needed.
-		const updateTheme = debounce(
-			(event: StorageEvent) => {
-				const {key, newValue} = event;
-				if (key !== 'theme' || !newValue) {
-					return;
-				}
-				if (theme !== newValue) {
-					setTheme(newValue);
-				}
-			},
-			1000,
-			{
-				leading: true,
+		const updateTheme = debounce((event: StorageEvent) => {
+			const {key, newValue} = event;
+			if (key !== 'theme' || !newValue) {
+				return;
 			}
-		);
+			if (theme !== newValue) {
+				setTheme(newValue);
+			}
+		}, 1000);
 
 		window.addEventListener('storage', updateTheme);
 
