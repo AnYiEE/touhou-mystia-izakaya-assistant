@@ -348,8 +348,8 @@ export default memo(
 									</Button>
 								</DropdownTrigger>
 								<DropdownMenu
-									closeOnSelect={false}
 									disallowEmptySelection
+									closeOnSelect={false}
 									defaultSelectedKeys={tableVisibleColumns}
 									disabledKeys={['action', 'beverage'] satisfies TTableColumnKey[]}
 									selectedKeys={tableVisibleColumns}
@@ -370,6 +370,7 @@ export default memo(
 						<label className="flex items-center gap-2">
 							<span className="cursor-auto whitespace-nowrap">表格行数</span>
 							<Select
+								disallowEmptySelection
 								items={tableSelectableRows}
 								defaultSelectedKeys={tableRowsPerPage}
 								selectedKeys={tableRowsPerPage}
