@@ -60,6 +60,7 @@ const storeVersion = {
 	linkedFilter: 9,
 	mystiaCooker: 10, // eslint-disable-next-line sort-keys
 	dynamicMeal: 11,
+	tachie: 12,
 } as const;
 
 const state = {
@@ -113,6 +114,7 @@ const state = {
 			tabVisibility: TabVisibilityState.collapse,
 
 			orderLinkedFilter: true,
+			showTachie: true,
 			showTagDescription: true,
 		},
 		ingredient: {
@@ -204,7 +206,7 @@ export const customerRareStore = store(state, {
 	persist: {
 		enabled: true,
 		name: customerRareStoreKey,
-		version: storeVersion.dynamicMeal,
+		version: storeVersion.tachie,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -321,6 +323,13 @@ export const customerRareStore = store(state, {
 						delete meal.rating;
 					}
 				}
+			}
+			if (version < storeVersion.tachie) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				const {
+					persistence: {customer},
+				} = oldState;
+				customer.showTachie = true;
 			}
 			return persistedState as typeof state;
 		},

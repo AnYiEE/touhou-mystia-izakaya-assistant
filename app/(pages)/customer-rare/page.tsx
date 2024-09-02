@@ -3,9 +3,10 @@
 import {memo, useCallback, useMemo} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
+import useBreakpoint from 'use-breakpoint';
 import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
 
-import {Tab, Tabs} from '@nextui-org/react';
+import {Image, Tab, Tabs} from '@nextui-org/react';
 
 import BeverageTabContent from './beverageTabContent';
 import CustomerCard from './customerCard';
@@ -23,6 +24,7 @@ import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import {customerTabStyleMap, ingredientTabStyleMap} from './constants';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
+import {processPinyin} from '@/utils';
 
 export default memo(function CustomerRare() {
 	customerStore.shared.customer.data.onChange(() => {
@@ -43,6 +45,9 @@ export default memo(function CustomerRare() {
 	globalStore.persistence.popular.tag.onChange((popular) => {
 		customerStore.shared.customer.popular.tag.set(popular);
 	});
+
+	const {breakpoint} = useBreakpoint({noTachie: -1, tachie: 1420}, 'noTachie');
+	const isShowTachie = customerStore.persistence.customer.showTachie.use();
 
 	const currentCustomerData = customerStore.shared.customer.data.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
@@ -334,6 +339,30 @@ export default memo(function CustomerRare() {
 				<SidePinyinSortIconButton pinyinSortConfig={ingredientsPinyinSortConfig} />
 				<SideFilterIconButton selectConfig={ingredientsSelectConfig} />
 			</SideButtonGroup>
+
+			{isShowTachie && breakpoint === 'tachie' && currentCustomerData !== null && (
+				<Image
+					aria-hidden
+					removeWrapper
+					draggable={false}
+					alt=""
+					src={`/assets/tachies/${currentCustomerData.target}/${processPinyin(
+						(
+							(currentCustomerData.target === 'customer_rare'
+								? instance_rare
+								: instance_special) as typeof instance_rare
+						).getPropsByName(currentCustomerData.name).pinyin
+					).pinyinWithoutTone.join('')}.png`}
+					width={80}
+					onMouseDown={({currentTarget}) => {
+						currentTarget.classList.add('cursor-grabbing');
+					}}
+					onMouseUp={({currentTarget}) => {
+						currentTarget.classList.remove('cursor-grabbing');
+					}}
+					className="fixed bottom-0 right-0 origin-bottom-right cursor-grab pr-2 transition-transform hover:scale-150"
+				/>
+			)}
 		</div>
 	);
 });

@@ -18,6 +18,7 @@ interface IProps {
 
 export default memo<Partial<IProps>>(function Content({onModalClose}) {
 	const isOrderLinkedFilter = customerStore.persistence.customer.orderLinkedFilter.use();
+	const isShowTachie = customerStore.persistence.customer.showTachie.use();
 	const isShowTagDescription = customerStore.persistence.customer.showTagDescription.use();
 
 	const popularTags = globalStore.popularTags.get();
@@ -126,6 +127,13 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 				</div>
 			</div>
 			<H2>稀客页面</H2>
+			<SwitchItem
+				isSelected={isShowTachie}
+				onValueChange={customerStore.persistence.customer.showTachie.set}
+				aria-label={`${isShowTagDescription ? '隐藏' : '显示'}稀客立绘`}
+			>
+				于右下角显示立绘（宽屏可见）
+			</SwitchItem>
 			<H3>稀客卡片</H3>
 			<div className="space-y-2">
 				<SwitchItem
