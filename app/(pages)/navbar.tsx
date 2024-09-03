@@ -199,7 +199,7 @@ export default memo(function Navbar() {
 									<DropdownMenu
 										aria-label={`${dropdownLabel}列表`}
 										itemClasses={{
-											base: 'my-px p-0',
+											base: 'my-px p-0 data-[hover=true]:bg-default/40',
 										}}
 									>
 										{dropdownItems.map(({href, label, sprite}) => (
@@ -210,7 +210,7 @@ export default memo(function Navbar() {
 													href={href}
 													label={label}
 													startContent={<Sprite target={sprite} size={1.25} />}
-													className="justify-start gap-1 text-sm"
+													className="justify-start gap-1 text-sm data-[hover=true]:bg-transparent"
 												/>
 											</DropdownItem>
 										))}
@@ -239,7 +239,7 @@ export default memo(function Navbar() {
 				</Tooltip>
 			</NavbarContent>
 
-			<NavbarMenu className="mx-4 mt-2">
+			<NavbarMenu className="px-10 pt-4">
 				{navMenuItems.map(({href, label}) => {
 					const isActivated = href === pathname;
 					return href === '/preferences' && !shouldShowPreferences ? null : (

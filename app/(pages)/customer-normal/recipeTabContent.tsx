@@ -38,7 +38,7 @@ import {type TTableColumnKey, type TTableSortDescriptor} from '@/(pages)/custome
 import {recipeTableColumns as tableColumns} from './constants';
 import type {TRecipeWithSuitability, TRecipesWithSuitability} from './types';
 import {CUSTOMER_NORMAL_TAG_STYLE} from '@/data';
-import {customerNormalStore as store} from '@/stores';
+import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, numberSort, pinyinSort, processPinyin} from '@/utils';
 
 export type {TTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
@@ -49,31 +49,33 @@ export default memo(
 	forwardRef<HTMLTableElement | null, IProps>(function RecipeTabContent(_props, ref) {
 		const openWindow = useViewInNewWindow();
 
-		const currentCustomerName = store.shared.customer.name.use();
-		const currentCustomerPopular = store.shared.customer.popular.use();
-		const selectedCustomerPositiveTags = store.shared.customer.positiveTags.use();
+		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 
-		const currentRecipeData = store.shared.recipe.data.use();
-		const selectedDlcs = store.shared.recipe.dlcs.use();
-		const selectedCookers = store.shared.recipe.cookers.use();
+		const currentCustomerName = customerStore.shared.customer.name.use();
+		const currentCustomerPopular = customerStore.shared.customer.popular.use();
+		const selectedCustomerPositiveTags = customerStore.shared.customer.positiveTags.use();
 
-		const instance_customer = store.instances.customer.get();
-		const instance_recipe = store.instances.recipe.get();
+		const currentRecipeData = customerStore.shared.recipe.data.use();
+		const selectedDlcs = customerStore.shared.recipe.dlcs.use();
+		const selectedCookers = customerStore.shared.recipe.cookers.use();
 
-		const allRecipeDlcs = store.recipe.dlcs.get();
-		const allRecipeNames = store.recipe.names.get();
-		const allRecipeTags = store.recipe.positiveTags.get();
-		const allCookers = store.recipe.cookers.get();
+		const instance_customer = customerStore.instances.customer.get();
+		const instance_recipe = customerStore.instances.recipe.get();
 
-		const searchValue = store.shared.recipe.searchValue.use();
+		const allRecipeDlcs = customerStore.recipe.dlcs.get();
+		const allRecipeNames = customerStore.recipe.names.get();
+		const allRecipeTags = customerStore.recipe.positiveTags.get();
+		const allCookers = customerStore.recipe.cookers.get();
+
+		const searchValue = customerStore.shared.recipe.searchValue.use();
 		const hasNameFilter = Boolean(searchValue);
 
-		const tableCurrentPage = store.shared.recipe.page.use();
-		const tableRowsPerPage = store.recipeTableRows.use();
-		const tableRowsPerPageNumber = store.persistence.recipe.table.rows.use();
-		const tableSelectableRows = store.shared.recipe.selectableRows.get();
-		const tableSortDescriptor = store.shared.recipe.sortDescriptor.use();
-		const tableVisibleColumns = store.recipeTableColumns.use();
+		const tableCurrentPage = customerStore.shared.recipe.page.use();
+		const tableRowsPerPage = customerStore.recipeTableRows.use();
+		const tableRowsPerPageNumber = customerStore.persistence.recipe.table.rows.use();
+		const tableSelectableRows = customerStore.shared.recipe.selectableRows.get();
+		const tableSortDescriptor = customerStore.shared.recipe.sortDescriptor.use();
+		const tableVisibleColumns = customerStore.recipeTableColumns.use();
 
 		const filteredData = useMemo(() => {
 			const data = instance_recipe.data as TRecipesWithSuitability;
@@ -234,22 +236,30 @@ export default memo(
 
 				const tags = (
 					<TagGroup>
-						{recipeTagsWithPopular.sort(pinyinSort).map((tag) => (
-							<Tags.Tag
-								key={tag}
-								tag={tag}
-								tagStyle={
-									matchedPositiveTags.includes(tag)
-										? positiveTagStyle
-										: matchedNegativeTags.includes(tag)
-											? negativeTagStyle
-											: {}
-								}
-								className={twJoin(
-									![...matchedPositiveTags, ...matchedNegativeTags].includes(tag) && 'opacity-50'
-								)}
-							/>
-						))}
+						{recipeTagsWithPopular.sort(pinyinSort).map((tag) => {
+							const isNegativeTagMatched = matchedNegativeTags.includes(tag);
+							const isPositiveTagMatched = matchedPositiveTags.includes(tag);
+							const isTagMatched = isNegativeTagMatched || isPositiveTagMatched;
+							const tagStyle = isNegativeTagMatched
+								? negativeTagStyle
+								: isPositiveTagMatched
+									? positiveTagStyle
+									: {};
+							const tagType = isNegativeTagMatched
+								? 'negative'
+								: isPositiveTagMatched
+									? 'positive'
+									: null;
+							return (
+								<Tags.Tag
+									key={tag}
+									tag={tag}
+									tagStyle={tagStyle}
+									tagType={tagType}
+									className={twJoin(!isTagMatched && 'opacity-50')}
+								/>
+							);
+						})}
 					</TagGroup>
 				);
 
@@ -288,7 +298,7 @@ export default memo(
 															icon={faTags}
 															variant="light"
 															aria-label="料理标签"
-															className="inline h-4 w-4 scale-75 text-default-400 data-[hover]:bg-transparent"
+															className="inline h-4 w-4 scale-75 text-default-300 data-[hover=true]:bg-transparent dark:text-default-400"
 														/>
 													</PopoverTrigger>
 												</span>
@@ -303,7 +313,9 @@ export default memo(
 					case 'cooker':
 						return (
 							<div className="flex">
-								<Sprite target="cooker" name={cooker} size={2} />
+								<Tooltip showArrow content={cooker} placement="right" size="sm">
+									<Sprite target="cooker" name={cooker} size={1.5} />
+								</Tooltip>
 							</div>
 						);
 					case 'ingredient': {
@@ -341,7 +353,11 @@ export default memo(
 							</div>
 						);
 					case 'suitability':
-						return <div className="flex">{suitability}</div>;
+						return (
+							<div className="flex">
+								<Price showSymbol={false}>{suitability}</Price>
+							</div>
+						);
 					case 'time':
 						return (
 							<div className="flex">
@@ -359,7 +375,7 @@ export default memo(
 										size="sm"
 										variant="light"
 										onPress={() => {
-											store.onRecipeTableAction(name);
+											customerStore.onRecipeTableAction(name);
 										}}
 										aria-label="选择此项"
 									>
@@ -388,10 +404,16 @@ export default memo(
 									<FontAwesomeIcon icon={faMagnifyingGlass} className="pointer-events-none" />
 								}
 								variant="flat"
-								onClear={store.clearRecipeTableSearchValue}
-								onInputChange={store.onRecipeTableSearchValueChange}
+								onClear={customerStore.clearRecipeTableSearchValue}
+								onInputChange={customerStore.onRecipeTableSearchValueChange}
 								aria-label="选择或输入料理名称"
 								title="选择或输入料理名称"
+								classNames={{
+									base: twJoin(
+										"[&>*_[data-slot='input-wrapper']]:!bg-default/40 [&>*_[data-slot='input-wrapper']]:hover:opacity-hover",
+										isShowBackgroundImage && 'backdrop-blur'
+									),
+								}}
 							>
 								{({value}) => <AutocompleteItem key={value}>{value}</AutocompleteItem>}
 							</Autocomplete>
@@ -403,9 +425,15 @@ export default memo(
 								size="sm"
 								startContent={<FontAwesomeIcon icon={faTags} />}
 								variant="flat"
-								onSelectionChange={store.onRecipeTableSelectedPositiveTagsChange}
+								onSelectionChange={customerStore.onRecipeTableSelectedPositiveTagsChange}
 								aria-label="选择顾客所点单的料理标签"
 								title="选择顾客所点单的料理标签"
+								classNames={{
+									trigger: twJoin(
+										'bg-default/40 data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover',
+										isShowBackgroundImage && 'backdrop-blur'
+									),
+								}}
 							>
 								{({value}) => <SelectItem key={value}>{value}</SelectItem>}
 							</Select>
@@ -417,6 +445,7 @@ export default memo(
 										endContent={<FontAwesomeIcon icon={faChevronDown} />}
 										size="sm"
 										variant="flat"
+										className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
 									>
 										厨具
 									</Button>
@@ -428,7 +457,7 @@ export default memo(
 									selectedKeys={selectedCookers}
 									selectionMode="multiple"
 									variant="flat"
-									onSelectionChange={store.onRecipeTableSelectedCookersChange}
+									onSelectionChange={customerStore.onRecipeTableSelectedCookersChange}
 									aria-label="选择目标料理所使用的厨具"
 								>
 									{({value}) => (
@@ -447,6 +476,7 @@ export default memo(
 										endContent={<FontAwesomeIcon icon={faChevronDown} />}
 										size="sm"
 										variant="flat"
+										className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
 									>
 										DLC
 									</Button>
@@ -458,7 +488,7 @@ export default memo(
 									selectedKeys={selectedDlcs}
 									selectionMode="multiple"
 									variant="flat"
-									onSelectionChange={store.onRecipeTableSelectedDlcsChange}
+									onSelectionChange={customerStore.onRecipeTableSelectedDlcsChange}
 									aria-label="选择特定DLC中的料理"
 								>
 									{({value}) => (
@@ -474,6 +504,7 @@ export default memo(
 										endContent={<FontAwesomeIcon icon={faChevronDown} />}
 										size="sm"
 										variant="flat"
+										className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
 									>
 										条目
 									</Button>
@@ -486,7 +517,7 @@ export default memo(
 									selectedKeys={tableVisibleColumns}
 									selectionMode="multiple"
 									variant="flat"
-									onSelectionChange={store.recipeTableColumns.set}
+									onSelectionChange={customerStore.recipeTableColumns.set}
 									aria-label="选择表格所显示的列"
 								>
 									{tableColumns.map(({label: name, key}) => (
@@ -507,13 +538,16 @@ export default memo(
 								selectedKeys={tableRowsPerPage}
 								size="sm"
 								variant="flat"
-								onSelectionChange={store.onRecipeTableRowsPerPageChange}
+								onSelectionChange={customerStore.onRecipeTableRowsPerPageChange}
 								aria-label="选择表格每页最大行数"
 								title="选择表格每页最大行数"
 								classNames={{
 									base: 'min-w-16',
 									popoverContent: 'min-w-20',
-									trigger: 'h-6 min-h-6',
+									trigger: twJoin(
+										'h-6 min-h-6 bg-default/40 data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover',
+										isShowBackgroundImage && 'backdrop-blur'
+									),
 									value: '!text-default-400',
 								}}
 							>
@@ -533,6 +567,7 @@ export default memo(
 				allRecipeNames,
 				allRecipeTags,
 				filteredData.length,
+				isShowBackgroundImage,
 				searchValue,
 				selectedCookers,
 				selectedCustomerPositiveTags,
@@ -551,11 +586,14 @@ export default memo(
 						size="sm"
 						page={tableCurrentPage}
 						total={tableTotalPages}
-						onChange={store.onRecipeTablePageChange}
+						onChange={customerStore.onRecipeTablePageChange}
+						classNames={{
+							item: twJoin('bg-default-100/70', isShowBackgroundImage && 'backdrop-blur'),
+						}}
 					/>
 				</div>
 			),
-			[tableCurrentPage, tableTotalPages]
+			[isShowBackgroundImage, tableCurrentPage, tableTotalPages]
 		);
 
 		return (
@@ -569,11 +607,15 @@ export default memo(
 				topContent={tableToolbar}
 				topContentPlacement="outside"
 				onSortChange={(config) => {
-					store.onRecipeTableSortChange(config as TTableSortDescriptor);
+					customerStore.onRecipeTableSortChange(config as TTableSortDescriptor);
 				}}
 				aria-label="料理选择表格"
 				classNames={{
-					wrapper: 'xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)]',
+					th: twJoin(isShowBackgroundImage && 'bg-default-100/40'),
+					wrapper: twJoin(
+						'xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)]',
+						isShowBackgroundImage && 'bg-content1/40 backdrop-blur'
+					),
 				}}
 				ref={ref}
 			>

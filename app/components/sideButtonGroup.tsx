@@ -13,7 +13,7 @@ export default memo(
 						className
 					)}
 				>
-					<div className="space-y-3 opacity-80">{children}</div>
+					<div className="space-y-3">{children}</div>
 				</div>
 			</div>
 		);

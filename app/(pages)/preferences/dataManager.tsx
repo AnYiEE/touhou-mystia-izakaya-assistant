@@ -14,6 +14,7 @@ import {
 import {useRouter} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
 import {debounce, isObjectLike} from 'lodash';
+import {twJoin} from 'tailwind-merge';
 
 import {useThrottle} from '@/hooks';
 
@@ -90,6 +91,8 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 
 	const currentMealData = customerStore.persistence.meals.use();
 	const currentMealDataString = useMemo(() => JSON.stringify(currentMealData, null, '\t'), [currentMealData]);
+
+	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 
 	const handleDownloadButtonPress = useCallback(() => {
 		setIsDownloadButtonDisabled(true);
@@ -190,6 +193,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 								}}
 								variant="flat"
 								classNames={{
+									base: twJoin(isShowBackgroundImage && 'bg-default-100/40 backdrop-blur'),
 									pre: 'max-h-[13.25rem] w-full overflow-auto whitespace-pre-wrap',
 								}}
 							>
@@ -208,6 +212,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 									isDisabled={isDownloadButtonDisabled}
 									variant="flat"
 									onPress={handleDownloadButtonPress}
+									className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
 								>
 									{downloadButtonLabel}
 								</Button>
@@ -220,6 +225,12 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 								placeholder="输入稀客套餐数据"
 								value={importValue}
 								onValueChange={setImportValue}
+								classNames={{
+									inputWrapper: twJoin(
+										isShowBackgroundImage &&
+											'bg-default-100/40 backdrop-blur data-[hover=true]:bg-default-200/40 group-data-[focus=true]:bg-default-100/70'
+									),
+								}}
 							/>
 							<input
 								accept={JSON_TYPE}
@@ -228,7 +239,13 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 								className="hidden"
 								ref={importInputRef}
 							/>
-							<Button fullWidth color="primary" variant="flat" onPress={handleImportButtonPress}>
+							<Button
+								fullWidth
+								color="primary"
+								variant="flat"
+								onPress={handleImportButtonPress}
+								className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
+							>
 								上传
 							</Button>
 							<Popover showArrow isOpen={isSavePopoverOpened}>
@@ -245,6 +262,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 												toggleSavePopoverOpened();
 											}
 										})}
+										className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
 									>
 										保存
 									</Button>
@@ -299,6 +317,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 												toggleResetPopoverOpened();
 											}
 										})}
+										className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
 									>
 										重置已保存的稀客套餐数据
 									</Button>
@@ -369,6 +388,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 									}
 									trackEvent(TrackCategory.Click, 'Reset Button', 'Customer Rare Tutorial');
 								}}
+								className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
 							>
 								{customerRareTutorialResetLabel}
 							</Button>

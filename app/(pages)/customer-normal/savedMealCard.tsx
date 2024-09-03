@@ -1,4 +1,5 @@
 import {Fragment, forwardRef, memo} from 'react';
+import {twJoin} from 'tailwind-merge';
 
 import {Avatar, Button, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
 
@@ -7,17 +8,19 @@ import {TrackCategory, trackEvent} from '@/components/analytics';
 import Sprite from '@/components/sprite';
 
 import {customerRatingColorMap} from './constants';
-import {customerNormalStore as store} from '@/stores';
+import {customerNormalStore as customerStore, globalStore} from '@/stores';
 
 interface IProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(_props, ref) {
-		const currentCustomerName = store.shared.customer.name.use();
-		const currentCustomerPopular = store.shared.customer.popular.use();
-		const currentSavedMeals = store.persistence.meals.use();
+		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 
-		const instance_recipe = store.instances.recipe.get();
+		const currentCustomerName = customerStore.shared.customer.name.use();
+		const currentCustomerPopular = customerStore.shared.customer.popular.use();
+		const currentSavedMeals = customerStore.persistence.meals.use();
+
+		const instance_recipe = customerStore.instances.recipe.get();
 
 		if (!currentCustomerName || !currentSavedMeals[currentCustomerName]?.length) {
 			return null;
@@ -26,14 +29,21 @@ export default memo(
 		const savedCustomerMeal = currentSavedMeals[currentCustomerName];
 
 		return (
-			<Card fullWidth shadow="sm" ref={ref}>
+			<Card
+				fullWidth
+				shadow="sm"
+				classNames={{
+					base: twJoin(isShowBackgroundImage && 'bg-content1/40 backdrop-blur'),
+				}}
+				ref={ref}
+			>
 				<div className="space-y-3 p-4 xl:space-y-2">
 					{savedCustomerMeal.map(({index: mealIndex, beverage, recipe, extraIngredients}, loopIndex) => (
 						<Fragment key={loopIndex}>
 							<div className="flex flex-col items-center gap-4 md:flex-row">
 								<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
 									{(() => {
-										const rating = store.evaluateSavedMealResult({
+										const rating = customerStore.evaluateSavedMealResult({
 											beverageName: beverage,
 											extraIngredients,
 											popular: currentCustomerPopular,
@@ -170,7 +180,7 @@ export default memo(
 										size="sm"
 										variant="flat"
 										onPress={() => {
-											store.persistence.meals[currentCustomerName]?.set(
+											customerStore.persistence.meals[currentCustomerName]?.set(
 												savedCustomerMeal.filter((meal) => meal.index !== mealIndex)
 											);
 											trackEvent(
@@ -189,8 +199,8 @@ export default memo(
 										size="sm"
 										variant="flat"
 										onPress={() => {
-											store.shared.beverage.name.set(beverage);
-											store.shared.recipe.data.set({
+											customerStore.shared.beverage.name.set(beverage);
+											customerStore.shared.recipe.data.set({
 												extraIngredients,
 												name: recipe,
 											});

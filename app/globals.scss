@@ -23,15 +23,15 @@
 }
 
 ::-webkit-scrollbar {
-	@apply h-2 w-2;
+	@apply h-1.5 w-2;
 }
 
 ::-webkit-scrollbar-thumb:horizontal {
-	@apply rounded-2xl bg-default-300;
+	@apply rounded-2xl bg-default;
 }
 
 ::-webkit-scrollbar-thumb:vertical {
-	@apply rounded-2xl bg-default-300;
+	@apply rounded-2xl bg-default;
 }
 
 ::-webkit-scrollbar-track-piece {

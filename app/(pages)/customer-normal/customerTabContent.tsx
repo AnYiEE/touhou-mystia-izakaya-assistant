@@ -1,12 +1,12 @@
 import {forwardRef, memo} from 'react';
-import {twMerge} from 'tailwind-merge';
+import {twJoin, twMerge} from 'tailwind-merge';
 
 import {Avatar, Button, ScrollShadow} from '@nextui-org/react';
 
 import Sprite from '@/components/sprite';
 
 import type {ICustomerTabStyle} from './types';
-import {customerNormalStore as store} from '@/stores';
+import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {type CustomerNormal, checkA11yConfirmKey} from '@/utils';
 
 interface IProps {
@@ -16,7 +16,9 @@ interface IProps {
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function CustomerTabContent({customerTabStyle, sortedData}, ref) {
-		const currentCustomerName = store.shared.customer.name.use();
+		const currentCustomerName = customerStore.shared.customer.name.use();
+
+		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 
 		return (
 			<>
@@ -33,11 +35,11 @@ export default memo(
 							<div
 								key={name}
 								onClick={() => {
-									store.onCustomerSelectedChange(name);
+									customerStore.onCustomerSelectedChange(name);
 								}}
 								onKeyDown={(event) => {
 									if (checkA11yConfirmKey(event)) {
-										store.onCustomerSelectedChange(name);
+										customerStore.onCustomerSelectedChange(name);
 									}
 								}}
 								title={`选择${name}`}
@@ -68,9 +70,9 @@ export default memo(
 						isIconOnly
 						size="sm"
 						variant="flat"
-						onPress={store.toggleCustomerTabVisibilityState}
+						onPress={customerStore.toggleCustomerTabVisibilityState}
 						aria-label={customerTabStyle.ariaLabel}
-						className="h-4 w-4/5 text-default-500"
+						className={twJoin('h-4 w-4/5 text-default-300', isShowBackgroundImage && 'backdrop-blur')}
 					>
 						{customerTabStyle.buttonNode}
 					</Button>

@@ -7,7 +7,7 @@ import Sprite from '@/components/sprite';
 
 import {type IIngredientTabContentProps} from '@/(pages)/customer-rare/ingredientTabContent';
 import type {TRecipeTag} from '@/data/types';
-import {customerNormalStore as store} from '@/stores';
+import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, intersection, toValueWithKey} from '@/utils';
 
 export default memo(
@@ -15,13 +15,15 @@ export default memo(
 		{ingredientTabStyle, sortedData},
 		ref
 	) {
-		const currentCustomerName = store.shared.customer.name.use();
-		const currentCustomerPopular = store.shared.customer.popular.use();
-		const currentRecipeData = store.shared.recipe.data.use();
+		const currentCustomerName = customerStore.shared.customer.name.use();
+		const currentCustomerPopular = customerStore.shared.customer.popular.use();
+		const currentRecipeData = customerStore.shared.recipe.data.use();
 
-		const instance_customer = store.instances.customer.get();
-		const instance_ingredient = store.instances.ingredient.get();
-		const instance_recipe = store.instances.recipe.get();
+		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+
+		const instance_customer = customerStore.instances.customer.get();
+		const instance_ingredient = customerStore.instances.ingredient.get();
+		const instance_recipe = customerStore.instances.recipe.get();
 
 		const currentRecipe = useMemo(
 			() => (currentRecipeData ? instance_recipe.getPropsByName(currentRecipeData.name) : null),
@@ -154,11 +156,11 @@ export default memo(
 								>
 									<div
 										onClick={() => {
-											store.onIngredientSelectedChange(name);
+											customerStore.onIngredientSelectedChange(name);
 										}}
 										onKeyDown={(event) => {
 											if (checkA11yConfirmKey(event)) {
-												store.onIngredientSelectedChange(name);
+												customerStore.onIngredientSelectedChange(name);
 											}
 										}}
 										role="button"
@@ -224,9 +226,9 @@ export default memo(
 						isIconOnly
 						size="sm"
 						variant="flat"
-						onPress={store.toggleIngredientTabVisibilityState}
+						onPress={customerStore.toggleIngredientTabVisibilityState}
 						aria-label={ingredientTabStyle.ariaLabel}
-						className="h-4 w-4/5 text-default-500"
+						className={twJoin('h-4 w-4/5 text-default-300', isShowBackgroundImage && 'backdrop-blur')}
 					>
 						{ingredientTabStyle.buttonNode}
 					</Button>

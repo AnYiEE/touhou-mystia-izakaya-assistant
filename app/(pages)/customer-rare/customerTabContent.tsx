@@ -1,12 +1,12 @@
 import {forwardRef, memo} from 'react';
-import {twMerge} from 'tailwind-merge';
+import {twJoin, twMerge} from 'tailwind-merge';
 
 import {Avatar, Button, ScrollShadow} from '@nextui-org/react';
 
 import Sprite from '@/components/sprite';
 
 import type {ICurrentCustomer, ICustomerTabStyle} from './types';
-import {customerRareStore as store} from '@/stores';
+import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {type CustomerRare, type CustomerSpecial, checkA11yConfirmKey} from '@/utils';
 
 interface IProps {
@@ -19,7 +19,9 @@ interface IProps {
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function CustomerTabContent({customerTabStyle, sortedData}, ref) {
-		const currentCustomerData = store.shared.customer.data.use();
+		const currentCustomerData = customerStore.shared.customer.data.use();
+
+		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 
 		return (
 			<>
@@ -37,11 +39,11 @@ export default memo(
 								<div
 									key={name}
 									onClick={() => {
-										store.onCustomerSelectedChange({name, target} as ICurrentCustomer);
+										customerStore.onCustomerSelectedChange({name, target} as ICurrentCustomer);
 									}}
 									onKeyDown={(event) => {
 										if (checkA11yConfirmKey(event)) {
-											store.onCustomerSelectedChange({name, target} as ICurrentCustomer);
+											customerStore.onCustomerSelectedChange({name, target} as ICurrentCustomer);
 										}
 									}}
 									title={`选择${name}`}
@@ -81,9 +83,9 @@ export default memo(
 						isIconOnly
 						size="sm"
 						variant="flat"
-						onPress={store.toggleCustomerTabVisibilityState}
+						onPress={customerStore.toggleCustomerTabVisibilityState}
 						aria-label={customerTabStyle.ariaLabel}
-						className="h-4 w-4/5 text-default-500"
+						className={twJoin('h-4 w-4/5 text-default-300', isShowBackgroundImage && 'backdrop-blur')}
 					>
 						{customerTabStyle.buttonNode}
 					</Button>

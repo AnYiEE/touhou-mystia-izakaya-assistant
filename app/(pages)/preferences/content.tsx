@@ -11,6 +11,7 @@ import H2 from '@/components/h2';
 import H3 from '@/components/h3';
 
 import {customerRareStore as customerStore, globalStore} from '@/stores';
+import {twJoin} from 'tailwind-merge';
 
 interface IProps {
 	onModalClose: (() => void) | undefined;
@@ -110,7 +111,15 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 							onSelectionChange={onSelectedPopularTagChange}
 							aria-label="选择游戏中现时流行的标签"
 							title="选择游戏中现时流行的标签"
-							className="w-28"
+							classNames={{
+								base: 'w-28',
+								trigger: twJoin(
+									'data-[hover=true]:opacity-hover',
+									onModalClose
+										? 'bg-default-50 data-[hover=true]:bg-default-50'
+										: 'bg-default/40 backdrop-blur data-[hover=true]:bg-default/40'
+								),
+							}}
 						>
 							{({value}) => <SelectItem key={value}>{value}</SelectItem>}
 						</Select>
@@ -121,6 +130,7 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 						size="sm"
 						variant="flat"
 						onPress={onClearPopularTagButtonPress}
+						className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
 					>
 						清除选择
 					</Button>

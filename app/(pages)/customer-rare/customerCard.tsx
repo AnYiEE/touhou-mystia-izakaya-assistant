@@ -34,6 +34,7 @@ export default memo(
 		const currentBeverageName = customerStore.shared.beverage.name.use();
 		const currentRecipeData = customerStore.shared.recipe.data.use();
 
+		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 		const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
 
 		const instance_beverage = customerStore.instances.beverage.get();
@@ -169,7 +170,14 @@ export default memo(
 		};
 
 		return (
-			<Card fullWidth shadow="sm" ref={ref}>
+			<Card
+				fullWidth
+				shadow="sm"
+				classNames={{
+					base: twJoin(isShowBackgroundImage && 'bg-content1/40 backdrop-blur'),
+				}}
+				ref={ref}
+			>
 				<div className="flex flex-col gap-3 p-4 md:flex-row">
 					<div className="flex flex-col justify-evenly gap-2">
 						<Popover showArrow color={avatarRatingColor} offset={12}>
@@ -196,16 +204,14 @@ export default memo(
 													icon: 'inline-table lg:inline-block',
 												}}
 											/>
-											<span className="text-md text-center font-semibold">
-												{currentCustomerName}
-											</span>
+											<span className="text-md text-center font-bold">{currentCustomerName}</span>
 										</div>
 									</PopoverTrigger>
 								</div>
 							</Tooltip>
 							<PopoverContent>{avatarRatingContent}</PopoverContent>
 						</Popover>
-						<div className="whitespace-nowrap text-xs font-medium text-default-500">
+						<div className="whitespace-nowrap text-xs font-medium text-default-400 dark:text-default-500">
 							<p className="flex justify-between">
 								<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={4}>
 									<span title={dlcLabel}>DLC{currentCustomerDlc}</span>
@@ -262,6 +268,7 @@ export default memo(
 													: tag
 											}
 											tagStyle={customerTagStyleMap[currentCustomerTarget].positive}
+											tagType="positive"
 											onClick={() => {
 												handleRecipeTagClick(tag);
 											}}
@@ -293,6 +300,7 @@ export default memo(
 										key={tag}
 										tag={tag}
 										tagStyle={customerTagStyleMap[currentCustomerTarget].negative}
+										tagType="negative"
 										className={twJoin(
 											'cursor-not-allowed p-1 leading-none',
 											!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50'
@@ -319,6 +327,7 @@ export default memo(
 										<Tags.Tag
 											tag={tag}
 											tagStyle={customerTagStyleMap[currentCustomerTarget].beverage}
+											tagType="positive"
 											onClick={() => {
 												handleBeverageTagClick(tag);
 											}}
@@ -354,7 +363,7 @@ export default memo(
 									trackEvent(TrackCategory.Click, 'Reset Button', currentCustomerName);
 								}}
 								aria-label="重置当前选定项"
-								className="absolute -right-0.5 top-1 h-4 w-4 text-default-400 transition-opacity hover:opacity-hover data-[hover]:bg-transparent"
+								className="absolute -right-0.5 top-1 h-4 w-4 text-default-200 transition-opacity hover:opacity-hover data-[hover=true]:bg-transparent dark:text-default-300"
 							/>
 						</Tooltip>
 					)}
@@ -365,7 +374,7 @@ export default memo(
 								variant="light"
 								onPress={customerStore.refreshCustomer}
 								aria-label="取消选择当前顾客"
-								className="absolute -right-0.5 top-1 h-4 w-4 text-default-400 transition-opacity hover:opacity-hover data-[hover]:bg-transparent"
+								className="absolute -right-0.5 top-1 h-4 w-4 text-default-200 transition-opacity hover:opacity-hover data-[hover=true]:bg-transparent dark:text-default-300"
 							/>
 						</Tooltip>
 					)}

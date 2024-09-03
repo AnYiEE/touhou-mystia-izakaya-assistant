@@ -7,7 +7,10 @@ export default memo(
 	forwardRef<HTMLDivElement | null, PropsWithChildren<IProps>>(function Placeholder({className, children}, ref) {
 		return (
 			<div
-				className={twMerge('my-auto select-none text-center font-semibold text-default-300', className)}
+				className={twMerge(
+					'my-auto select-none text-center font-semibold text-default-200 dark:text-default-300',
+					className
+				)}
 				ref={ref}
 			>
 				{children}

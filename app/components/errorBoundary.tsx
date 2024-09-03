@@ -54,7 +54,7 @@ export default class ErrorBoundary extends Component<IProps, IStates> {
 	public override render() {
 		if (this.state.hasError) {
 			return (
-				<div className="m-4 space-y-3">
+				<div className="space-y-3 p-4">
 					<h1 className="text-2xl font-bold">出错啦！以下是错误信息：</h1>
 					<p className="text-lg">{this.state.error?.toString()}</p>
 					<pre className="space-y-2 whitespace-pre-wrap break-all font-mono">

@@ -16,6 +16,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faLink, faShare, faXmark} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
+import Price from '@/components/price';
 import Sprite, {type ISpriteProps} from '@/components/sprite';
 import TagsComponent from '@/components/tags';
 
@@ -68,7 +69,7 @@ const CloseButton = memo(
 					onClick={handleClose}
 					onKeyDown={handleClose}
 					aria-label={label}
-					className="absolute -right-1 top-1 h-4 text-default-400 data-[hover]:bg-transparent data-[hover]:text-default-500"
+					className="absolute -right-1 top-1 h-4 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:text-default-300"
 					ref={ref}
 				/>
 			</Tooltip>
@@ -102,19 +103,19 @@ const ShareButton = memo(
 								icon={faShare}
 								variant="light"
 								aria-label="分享当前选中项"
-								className="h-4 text-default-400 data-[hover]:bg-transparent data-[hover]:text-default-500"
+								className="h-4 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:text-default-300"
 							/>
 						</PopoverTrigger>
 					</div>
 				</Tooltip>
 				<PopoverContent>
-					<p className="mr-4 cursor-default select-none self-end text-right text-xs text-default-500 dark:text-default-400">
+					<p className="mr-4 cursor-default select-none self-end text-right text-xs text-default-400">
 						点击以复制到当前选中项的链接↓
 					</p>
 					<Snippet
 						disableTooltip
 						size="sm"
-						symbol={<FontAwesomeIcon icon={faLink} className="mr-1 !align-middle text-default-500" />}
+						symbol={<FontAwesomeIcon icon={faLink} className="mr-1 !align-middle text-default-400" />}
 						classNames={{
 							pre: 'flex max-w-[60vw] items-center whitespace-normal break-all',
 						}}
@@ -166,8 +167,8 @@ const FoodPopoverCardComponent = memo(
 		const dlcLabel = dlc === 0 ? '游戏本体' : '';
 
 		return (
-			<div className="max-w-64 space-y-2 p-2 text-xs text-default-500" ref={ref}>
-				<div className="flex items-center gap-2 text-sm text-foreground">
+			<div className="max-w-64 space-y-2 p-2 text-xs text-default-400 dark:text-default-500" ref={ref}>
+				<div className="flex items-center gap-2 text-sm text-default-700">
 					<Sprite target={target} name={name} size={2} />
 					<p className="font-bold">
 						{dlc !== undefined && (
@@ -213,11 +214,11 @@ const FoodPopoverCardComponent = memo(
 					<div className="flex gap-4">
 						<p>
 							<span className="font-semibold">售价：</span>
-							{description.price}
+							<Price showSymbol={false}>{description.price}</Price>
 						</p>
 						<p>
 							<span className="font-semibold">等级：</span>
-							{description.level}
+							<Price showSymbol={false}>{description.level}</Price>
 						</p>
 						{ingredientType !== undefined && (
 							<p>
@@ -229,8 +230,8 @@ const FoodPopoverCardComponent = memo(
 				)}
 				{mergedTags && (
 					<div className="flex flex-wrap gap-x-2 gap-y-1">
-						<TagsComponent tags={mergedTags.positive} tagStyle={tagColors?.positive} />
-						<TagsComponent tags={mergedTags.negative} tagStyle={tagColors?.negative} />
+						<TagsComponent tags={mergedTags.positive} tagStyle={tagColors?.positive} tagType="positive" />
+						<TagsComponent tags={mergedTags.negative} tagStyle={tagColors?.negative} tagType="negative" />
 					</div>
 				)}
 				{children !== undefined && <div className="space-y-1">{children}</div>}

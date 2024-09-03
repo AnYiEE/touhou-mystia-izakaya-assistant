@@ -4,6 +4,16 @@
 
 const {nextui} = require('@nextui-org/react');
 
+function createShiftedObject(/** @type {Record<number, string>} */ object) {
+	// eslint-disable-next-line compat/compat
+	return Object.fromEntries(
+		Object.keys(object).map((key, index) => {
+			const newValue = Object.values(object)[index + 1];
+			return [key, newValue ?? '#0a0600'];
+		})
+	);
+}
+
 const isProduction = process.env.NODE_ENV === 'production';
 
 const black = {
@@ -31,6 +41,8 @@ const brown = {
 	800: '#392812',
 	900: '#180f00',
 };
+const brownContent1 = createShiftedObject(brown);
+const brownContent2 = createShiftedObject(brownContent1);
 
 const green = {
 	50: '#edf8e6',
@@ -227,20 +239,20 @@ module.exports = {
 							DEFAULT: pink[600],
 						},
 						content1: {
-							...brown,
-							DEFAULT: brown[200],
+							...brownContent1,
+							DEFAULT: brownContent1[50],
 						},
 						content2: {
-							...brown,
-							DEFAULT: brown[100],
+							...brownContent2,
+							DEFAULT: brownContent2[50],
 						},
 						default: {
-							...brown,
-							DEFAULT: brown[400],
+							...brownContent1,
+							DEFAULT: brownContent1[200],
 						},
 						primary: {
-							...brown,
-							DEFAULT: brown[600],
+							...brownContent2,
+							DEFAULT: brownContent2[400],
 						},
 						secondary: {
 							...purple,

@@ -17,7 +17,7 @@ export default memo<IProps>(function InfoButtonBase({defaultExpandedKeys, childr
 							icon={faInfoCircle}
 							variant="light"
 							aria-label="更多信息"
-							className="-bottom-0.5 h-4 w-4 text-default-400 transition-opacity hover:opacity-hover data-[hover]:bg-transparent"
+							className="-bottom-0.5 h-4 w-4 text-default-200 transition-opacity hover:opacity-hover data-[hover=true]:bg-transparent dark:text-default-300"
 						/>
 					</PopoverTrigger>
 				</span>

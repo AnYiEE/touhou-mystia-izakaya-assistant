@@ -26,7 +26,7 @@ export default memo(
 					<div className="m-1 flex rounded-xl shadow-[inset_0_0_2px] shadow-foreground-400">{image}</div>
 					<div className="space-y-1 text-left">
 						<p className="text-small font-medium text-default-700">{name}</p>
-						<p className="text-xs text-default-500">{description}</p>
+						<p className="text-xs text-default-400 dark:text-default-500">{description}</p>
 					</div>
 				</div>
 			</Card>

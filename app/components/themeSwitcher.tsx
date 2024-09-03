@@ -79,13 +79,15 @@ export default memo<Partial<IProps>>(function ThemeSwitcher({isMenu}) {
 
 	if (!isMounted) {
 		return (
-			<Spinner
-				color="default"
-				classNames={{
-					base: 'flex',
-					wrapper: 'h-4 w-4',
-				}}
-			/>
+			<div className="flex h-5 w-5 items-center justify-center">
+				<Spinner
+					color="default"
+					classNames={{
+						base: 'flex',
+						wrapper: 'h-4 w-4',
+					}}
+				/>
+			</div>
 		);
 	}
 
@@ -93,7 +95,7 @@ export default memo<Partial<IProps>>(function ThemeSwitcher({isMenu}) {
 		<Dropdown
 			showArrow
 			classNames={{
-				content: 'min-w-28',
+				content: 'min-w-28 p-0',
 			}}
 		>
 			<Tooltip showArrow content="切换主题">
@@ -110,7 +112,7 @@ export default memo<Partial<IProps>>(function ThemeSwitcher({isMenu}) {
 							aria-label="切换主题"
 							className={twJoin(
 								'h-min w-min min-w-min bg-transparent text-medium',
-								isMenu ? '!text-foreground' : '!text-default-500'
+								isMenu ? 'text-foreground' : 'text-default-400 dark:text-default-500'
 							)}
 						/>
 					</DropdownTrigger>
@@ -124,6 +126,9 @@ export default memo<Partial<IProps>>(function ThemeSwitcher({isMenu}) {
 				onSelectionChange={onSelectedThemeChange}
 				aria-label="可选主题列表"
 				className="w-28"
+				itemClasses={{
+					base: 'my-px data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40',
+				}}
 			>
 				<DropdownItem key={Theme.dark}>{ThemeLabel.dark}</DropdownItem>
 				<DropdownItem key={Theme.light}>{ThemeLabel.light}</DropdownItem>

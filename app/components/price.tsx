@@ -1,12 +1,14 @@
 import {type PropsWithChildren, memo} from 'react';
 
-interface IProps {}
+interface IProps {
+	showSymbol?: boolean;
+}
 
-export default memo<PropsWithChildren<IProps>>(function Price({children}) {
+export default memo<PropsWithChildren<IProps>>(function Price({showSymbol = true, children}) {
 	return (
-		<>
-			<span className="mr-0.5">¥</span>
-			{children}
-		</>
+		<span>
+			{showSymbol && <span className="mr-0.5">¥</span>}
+			<span className="font-mono leading-none">{children}</span>
+		</span>
 	);
 });

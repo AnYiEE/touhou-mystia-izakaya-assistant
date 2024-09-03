@@ -39,6 +39,7 @@ export default memo(
 		const currentBeverageName = customerStore.shared.beverage.name.use();
 		const currentRecipeData = customerStore.shared.recipe.data.use();
 
+		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 		const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
 
 		const instance_beverage = customerStore.instances.beverage.get();
@@ -124,7 +125,14 @@ export default memo(
 		};
 
 		return (
-			<Card fullWidth shadow="sm" ref={ref}>
+			<Card
+				fullWidth
+				shadow="sm"
+				classNames={{
+					base: twJoin(isShowBackgroundImage && 'bg-content1/40 backdrop-blur'),
+				}}
+				ref={ref}
+			>
 				<div className="flex flex-col gap-3 p-4 md:flex-row">
 					<div className="flex flex-col items-center gap-3">
 						<Popover showArrow color={avatarRatingColor} offset={12}>
@@ -156,7 +164,7 @@ export default memo(
 							<PopoverContent>{avatarRatingContent}</PopoverContent>
 						</Popover>
 						<div className="min-w-24 gap-2 lg:min-w-28">
-							<p className="flex justify-between whitespace-nowrap text-xs font-medium text-default-500">
+							<p className="flex justify-between whitespace-nowrap text-xs font-medium text-default-400 dark:text-default-500">
 								<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={4}>
 									<span title={dlcLabel}>DLC{currentCustomerDlc}</span>
 								</Tooltip>
@@ -200,6 +208,7 @@ export default memo(
 										<Tags.Tag
 											tag={tag}
 											tagStyle={CUSTOMER_NORMAL_TAG_STYLE.positive}
+											tagType="positive"
 											onClick={() => {
 												customerStore.onCustomerFilterRecipeTag(tag);
 											}}
@@ -227,6 +236,7 @@ export default memo(
 										key={tag}
 										tag={tag}
 										tagStyle={CUSTOMER_NORMAL_TAG_STYLE.negative}
+										tagType="negative"
 										className={twJoin(
 											'cursor-not-allowed p-1 leading-none',
 											!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50'
@@ -253,6 +263,7 @@ export default memo(
 										<Tags.Tag
 											tag={tag}
 											tagStyle={CUSTOMER_NORMAL_TAG_STYLE.beverage}
+											tagType="positive"
 											onClick={() => {
 												customerStore.onCustomerFilterBeverageTag(tag);
 											}}
@@ -284,7 +295,7 @@ export default memo(
 									trackEvent(TrackCategory.Click, 'Reset Button', currentCustomerName);
 								}}
 								aria-label="重置当前选定项"
-								className="absolute -right-0.5 top-1 h-4 w-4 text-default-400 transition-opacity hover:opacity-hover data-[hover]:bg-transparent"
+								className="absolute -right-0.5 top-1 h-4 w-4 text-default-200 transition-opacity hover:opacity-hover data-[hover=true]:bg-transparent dark:text-default-300"
 							/>
 						</Tooltip>
 					)}
@@ -295,7 +306,7 @@ export default memo(
 								variant="light"
 								onPress={customerStore.refreshCustomer}
 								aria-label="取消选择当前顾客"
-								className="absolute -right-0.5 top-1 h-4 w-4 text-default-400 transition-opacity hover:opacity-hover data-[hover]:bg-transparent"
+								className="absolute -right-0.5 top-1 h-4 w-4 text-default-200 transition-opacity hover:opacity-hover data-[hover=true]:bg-transparent dark:text-default-300"
 							/>
 						</Tooltip>
 					)}

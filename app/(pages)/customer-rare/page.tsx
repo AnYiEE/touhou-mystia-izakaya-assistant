@@ -45,6 +45,8 @@ export default memo(function CustomerRare() {
 		customerStore.shared.customer.popular.tag.set(popular);
 	});
 
+	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+
 	const {breakpoint} = useBreakpoint({noTachie: -1, tachie: 1420}, 'noTachie');
 	const isShowTachie = customerStore.persistence.customer.showTachie.use();
 
@@ -276,6 +278,9 @@ export default memo(function CustomerRare() {
 					size="sm"
 					selectedKey={selectedTabKey}
 					onSelectionChange={customerStore.onTabSelectionChange}
+					classNames={{
+						tabList: twJoin('bg-default/40', isShowBackgroundImage && 'backdrop-blur'),
+					}}
 				>
 					<Tab key="customer" title="稀客" className="relative flex flex-col">
 						<CustomerTabContent customerTabStyle={customerTabStyle} sortedData={customerSortedData} />
@@ -295,7 +300,7 @@ export default memo(function CustomerRare() {
 				</Tabs>
 			</div>
 
-			<div className="flex flex-grow flex-col gap-4 xl:w-full">
+			<div className={twJoin('flex flex-grow flex-col gap-4 xl:w-full', currentCustomerData && 'xl:mb-4')}>
 				{currentCustomerData ? (
 					<>
 						<CustomerCard />

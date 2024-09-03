@@ -9,15 +9,15 @@ import {Plus, UnknownItem} from '@/(pages)/customer-rare/resultCard';
 import Placeholder from './placeholder';
 import Sprite from '@/components/sprite';
 
-import {customerNormalStore as store} from '@/stores';
+import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
 export {Plus} from '@/(pages)/customer-rare/resultCard';
 
 const IngredientList = memo(function IngredientsList() {
-	const currentRecipeData = store.shared.recipe.data.use();
+	const currentRecipeData = customerStore.shared.recipe.data.use();
 
-	const instance_recipe = store.instances.recipe.get();
+	const instance_recipe = customerStore.instances.recipe.get();
 
 	const originalIngredients = useMemo(
 		() => (currentRecipeData ? instance_recipe.getPropsByName(currentRecipeData.name, 'ingredients') : []),
@@ -43,7 +43,7 @@ const IngredientList = memo(function IngredientsList() {
 							<span
 								onKeyDown={(event) => {
 									if (checkA11yConfirmKey(event)) {
-										store.removeMealIngredient(ingredient);
+										customerStore.removeMealIngredient(ingredient);
 									}
 								}}
 								tabIndex={0}
@@ -52,7 +52,7 @@ const IngredientList = memo(function IngredientsList() {
 							>
 								<span
 									onClick={() => {
-										store.removeMealIngredient(ingredient);
+										customerStore.removeMealIngredient(ingredient);
 									}}
 									role="button"
 									tabIndex={1}
@@ -81,13 +81,15 @@ interface IResultCardProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
-		const currentCustomerName = store.shared.customer.name.use();
-		const currentBeverageName = store.shared.beverage.name.use();
-		const currentRecipeData = store.shared.recipe.data.use();
-		const currentRating = store.shared.customer.rating.use();
-		const currentSavedMeals = store.persistence.meals.use();
+		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 
-		const instance_recipe = store.instances.recipe.get();
+		const currentCustomerName = customerStore.shared.customer.name.use();
+		const currentBeverageName = customerStore.shared.beverage.name.use();
+		const currentRecipeData = customerStore.shared.recipe.data.use();
+		const currentRating = customerStore.shared.customer.rating.use();
+		const currentSavedMeals = customerStore.persistence.meals.use();
+
+		const instance_recipe = customerStore.instances.recipe.get();
 
 		const saveButtonTooltipTimer = useRef<NodeJS.Timeout>();
 		const [isShowSaveButtonTooltip, setIsShowSaveButtonTooltip] = useState(false);
@@ -111,7 +113,7 @@ export default memo(
 			if (isSaveButtonDisabled) {
 				showTooltip();
 			} else {
-				store.saveMealResult();
+				customerStore.saveMealResult();
 			}
 		}, [isSaveButtonDisabled, showTooltip]);
 
@@ -133,7 +135,14 @@ export default memo(
 		}
 
 		return (
-			<Card fullWidth shadow="sm" ref={ref}>
+			<Card
+				fullWidth
+				shadow="sm"
+				classNames={{
+					base: twJoin(isShowBackgroundImage && 'bg-content1/40 backdrop-blur'),
+				}}
+				ref={ref}
+			>
 				<div className="flex flex-col items-center gap-4 p-4 md:flex-row">
 					<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
 						<div className="flex items-center gap-2">
