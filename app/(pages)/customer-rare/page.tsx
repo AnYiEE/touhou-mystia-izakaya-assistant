@@ -24,7 +24,6 @@ import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import {customerTabStyleMap, ingredientTabStyleMap} from './constants';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {processPinyin} from '@/utils';
 
 export default memo(function CustomerRare() {
 	customerStore.shared.customer.data.onChange(() => {
@@ -346,13 +345,10 @@ export default memo(function CustomerRare() {
 					removeWrapper
 					draggable={false}
 					alt=""
-					src={`/assets/tachies/${currentCustomerData.target}/${processPinyin(
-						(
-							(currentCustomerData.target === 'customer_rare'
-								? instance_rare
-								: instance_special) as typeof instance_rare
-						).getPropsByName(currentCustomerData.name).pinyin
-					).pinyinWithoutTone.join('')}.png`}
+					src={(currentCustomerData.target === 'customer_rare'
+						? instance_rare
+						: instance_special
+					).getTachiePath(currentCustomerData)}
 					width={80}
 					onMouseDown={({currentTarget}) => {
 						currentTarget.classList.add('cursor-grabbing');
