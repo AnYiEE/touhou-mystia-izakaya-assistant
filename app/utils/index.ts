@@ -8,6 +8,7 @@ export * from './domReady';
 export * from './getPageTitle';
 export * from './intersection';
 export * from './numberSort';
+export * from './pinyinPro';
 export * from './pinyinSort';
 export * from './processPinyin';
 export * from './pxToRem';

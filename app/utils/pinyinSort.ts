@@ -1,7 +1,6 @@
-import {pinyin as pinyinPro} from 'pinyin-pro';
 import {isObjectLike} from 'lodash';
 
-import {numberSort} from '@/utils';
+import {numberSort, pinyinPro} from '@/utils';
 
 type TValue = string | string[];
 
