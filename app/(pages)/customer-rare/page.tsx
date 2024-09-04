@@ -344,24 +344,18 @@ export default memo(function CustomerRare() {
 				<SideFilterIconButton selectConfig={ingredientsSelectConfig} />
 			</SideButtonGroup>
 
-			{isShowTachie && breakpoint === 'tachie' && currentCustomerData !== null && (
+			{isShowTachie && breakpoint === 'tachie' && (
 				<Image
 					aria-hidden
 					removeWrapper
 					draggable={false}
 					alt=""
-					src={(currentCustomerData.target === 'customer_rare'
-						? instance_rare
-						: instance_special
-					).getTachiePath(currentCustomerData)}
-					width={80}
-					onMouseDown={({currentTarget}) => {
-						currentTarget.classList.add('cursor-grabbing');
-					}}
-					onMouseUp={({currentTarget}) => {
-						currentTarget.classList.remove('cursor-grabbing');
-					}}
-					className="fixed bottom-0 right-0 origin-bottom-right cursor-grab pr-2 transition-transform hover:scale-150"
+					src={(currentCustomerData?.target === 'customer_special'
+						? instance_special
+						: instance_rare
+					).getTachiePath('customer', currentCustomerData)}
+					width={currentCustomerData?.target === 'customer_special' ? 60 : 120}
+					className="pointer-events-none fixed bottom-0 right-0 pr-2"
 				/>
 			)}
 		</div>

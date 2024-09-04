@@ -5,4 +5,11 @@ export const customerRatingColorMap = {
 	满意: 'warning',
 } as const satisfies ICustomerRatingMap;
 
-export {TabVisibilityState, beverageTableColumns, recipeTableColumns} from '@/(pages)/customer-rare/constants';
+export {
+	TabVisibilityState,
+	beverageTableColumns,
+	customerTabStyleMap,
+	ingredientTabStyleMap,
+	recipeTableColumns,
+	tachieBreakPoint,
+} from '@/(pages)/customer-rare/constants';

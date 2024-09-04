@@ -3,7 +3,16 @@ import {twJoin} from 'tailwind-merge';
 
 import {useViewInNewWindow} from '@/hooks';
 
-import {AccordionItem, Avatar, Popover, PopoverContent, PopoverTrigger, ScrollShadow, Tooltip} from '@nextui-org/react';
+import {
+	AccordionItem,
+	Avatar,
+	Image,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	ScrollShadow,
+	Tooltip,
+} from '@nextui-org/react';
 
 import {customerRatingColorMap} from './constants';
 import InfoButtonBase from './infoButtonBase';
@@ -26,6 +35,7 @@ export default memo(function InfoButton() {
 
 	const currentCustomerData = store.shared.customer.data.use();
 
+	const instance_rare = store.instances.customer_rare.get();
 	const instance_recipe = store.instances.recipe.get();
 
 	if (!currentCustomerData) {
@@ -48,14 +58,43 @@ export default memo(function InfoButton() {
 	const {length: bondRecipesDataLength} = bondRecipesData;
 	const {length: currentCustomerBondRewardsLength} = currentCustomerBondRewards;
 
-	const getDescription = (type: TReward['type'], description: TReward['description']) => {
+	const getDescription = ({description, reward, type}: TReward) => {
 		switch (type) {
 			case '厨具': {
 				const descriptionSplitArray = (description as string).split('：');
 				return `${descriptionSplitArray.shift()}效果：${descriptionSplitArray.join('：')}`;
 			}
+			case '服装':
+				return (
+					<Image
+						removeWrapper
+						draggable={false}
+						src={instance_rare.getTachiePath(
+							'clothes',
+							reward,
+							reward === '黑色套装' || reward === '星尘披风套装'
+						)}
+						width={120}
+						alt={reward}
+						title={reward}
+						className="my-1"
+					/>
+				);
 			case '伙伴':
-				return `解锁条件：${currentCustomerMainPlace}地区全部角色羁绊满级`;
+				return (
+					<div className="flex flex-col items-center">
+						<Image
+							removeWrapper
+							draggable={false}
+							src={instance_rare.getTachiePath('partners', reward)}
+							width={100}
+							alt={`${reward}立绘`}
+							title={reward}
+							className="my-1"
+						/>
+						<p>解锁条件：{currentCustomerMainPlace}地区全部角色羁绊满级</p>
+					</div>
+				);
 			default:
 				return `${type}效果：${description}`;
 		}
@@ -100,38 +139,51 @@ export default memo(function InfoButton() {
 									{index < bondRecipesDataLength - 1 && <br />}
 								</p>
 							))}
-							{currentCustomerBondRewards.map(({description, reward, type}, index) => (
+							{currentCustomerBondRewards.map((bondReward, index) => (
 								<p key={index} className="leading-5">
 									<LevelLabel level={5} />
-									{description === null ? (
-										`${type}【${reward}】`
-									) : (
-										<>
-											{type}【
-											<Popover showArrow offset={6} size="sm">
-												<Tooltip
-													showArrow
-													content={getDescription(type, description)}
-													offset={3}
-													size="sm"
-												>
-													<span className="cursor-pointer">
-														<PopoverTrigger>
-															<span
-																role="button"
-																tabIndex={0}
-																className="underline-dotted-offset2"
+									{bondReward.type === '采集'
+										? `${bondReward.type}【${bondReward.reward}】`
+										: (() => {
+												const hasTachie =
+													bondReward.type === '服装' || bondReward.type === '伙伴';
+												const placement = hasTachie ? 'left' : 'top';
+												return (
+													<>
+														{bondReward.type}【
+														<Popover
+															showArrow
+															offset={hasTachie ? 15 : 6}
+															size="sm"
+															placement={placement}
+														>
+															<Tooltip
+																showArrow
+																content={getDescription(bondReward)}
+																offset={hasTachie ? 12 : 3}
+																placement={placement}
+																size="sm"
 															>
-																{reward}
-															</span>
-														</PopoverTrigger>
-													</span>
-												</Tooltip>
-												<PopoverContent>{getDescription(type, description)}</PopoverContent>
-											</Popover>
-											】
-										</>
-									)}
+																<span className="cursor-pointer">
+																	<PopoverTrigger>
+																		<span
+																			role="button"
+																			tabIndex={0}
+																			className="underline-dotted-offset2"
+																		>
+																			{bondReward.reward}
+																		</span>
+																	</PopoverTrigger>
+																</span>
+															</Tooltip>
+															<PopoverContent>
+																{getDescription(bondReward)}
+															</PopoverContent>
+														</Popover>
+														】
+													</>
+												);
+											})()}
 								</p>
 							))}
 						</div>

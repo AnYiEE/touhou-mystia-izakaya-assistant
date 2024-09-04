@@ -3,11 +3,11 @@
 import {memo, useMemo} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
+import useBreakpoint from 'use-breakpoint';
 import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
 
-import {Tab, Tabs} from '@nextui-org/react';
+import {Image, Tab, Tabs} from '@nextui-org/react';
 
-import {customerTabStyleMap, ingredientTabStyleMap} from '@/(pages)/customer-rare/constants';
 import BeverageTabContent from './beverageTabContent';
 import CustomerCard from './customerCard';
 import CustomerTabContent from './customerTabContent';
@@ -22,6 +22,7 @@ import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterI
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
+import {customerTabStyleMap, ingredientTabStyleMap, tachieBreakPoint} from './constants';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
 
 export default memo(function CustomerNormal() {
@@ -41,7 +42,10 @@ export default memo(function CustomerNormal() {
 		customerStore.shared.customer.popular.tag.set(popular);
 	});
 
+	const {breakpoint} = useBreakpoint(tachieBreakPoint, 'noTachie');
+
 	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+	const isShowTachie = globalStore.persistence.tachie.use();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
@@ -315,6 +319,19 @@ export default memo(function CustomerNormal() {
 				<SidePinyinSortIconButton pinyinSortConfig={ingredientsPinyinSortConfig} />
 				<SideFilterIconButton selectConfig={ingredientsSelectConfig} />
 			</SideButtonGroup>
+
+			{isShowTachie && breakpoint === 'tachie' && (
+				<Image
+					aria-hidden
+					removeWrapper
+					draggable={false}
+					alt=""
+					// cSpell:ignore quejiuwugongzuozhuang
+					src="/assets/tachies/clothes/quejiuwugongzuozhuang.png"
+					width={120}
+					className="pointer-events-none fixed bottom-0 right-0 pr-2"
+				/>
+			)}
 		</div>
 	);
 });
