@@ -1,3 +1,5 @@
+import {type Config} from 'use-breakpoint';
+
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCaretDown, faCaretUp} from '@fortawesome/free-solid-svg-icons';
 
@@ -78,3 +80,8 @@ export const recipeTableColumns = [
 	{key: 'time', label: '烹饪时间', sortable: true},
 	{key: 'action', label: '操作', sortable: false},
 ] as const satisfies TRecipeTableColumns;
+
+export const tachieBreakPoint = {
+	noTachie: -1,
+	tachie: 1420,
+} as const satisfies Config;

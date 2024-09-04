@@ -19,13 +19,13 @@ interface IProps {
 
 export default memo<Partial<IProps>>(function Content({onModalClose}) {
 	const isOrderLinkedFilter = customerStore.persistence.customer.orderLinkedFilter.use();
-	const isShowTachie = customerStore.persistence.customer.showTachie.use();
 	const isShowTagDescription = customerStore.persistence.customer.showTagDescription.use();
 
 	const popularTags = globalStore.popularTags.get();
 	const isNegativePopularTag = globalStore.persistence.popular.isNegative.use();
 	const selectedPopularTag = globalStore.selectedPopularTag.use();
 	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+	const isShowTachie = globalStore.persistence.tachie.use();
 	const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
 
 	const resetRecipeTablePage = useCallback(() => {
@@ -66,6 +66,13 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 					aria-label={`${isShowBackgroundImage ? '隐藏' : '显示'}全局背景图片`}
 				>
 					全局背景图片
+				</SwitchItem>
+				<SwitchItem
+					isSelected={isShowTachie}
+					onValueChange={globalStore.persistence.tachie.set}
+					aria-label={`${isShowTagDescription ? '隐藏' : '显示'}顾客页面立绘`}
+				>
+					顾客页面右下角的立绘（宽屏可见）
 				</SwitchItem>
 				<SwitchItem
 					isSelected={isShowTagsTooltip}
@@ -137,13 +144,6 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 				</div>
 			</div>
 			<H2>稀客页面</H2>
-			<SwitchItem
-				isSelected={isShowTachie}
-				onValueChange={customerStore.persistence.customer.showTachie.set}
-				aria-label={`${isShowTagDescription ? '隐藏' : '显示'}稀客立绘`}
-			>
-				于右下角显示立绘（宽屏可见）
-			</SwitchItem>
 			<H3>稀客卡片</H3>
 			<div className="space-y-2">
 				<SwitchItem

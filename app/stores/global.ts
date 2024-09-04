@@ -28,6 +28,7 @@ const storeVersion = {
 	tagsTooltip: 2,
 	version: 3, // eslint-disable-next-line sort-keys
 	backgroundImage: 4,
+	tachie: 5,
 } as const;
 
 const state = {
@@ -41,6 +42,7 @@ const state = {
 			isNegative: false,
 			tag: null,
 		} as IPopularData,
+		tachie: true,
 		version: null as string | null,
 	},
 };
@@ -53,7 +55,7 @@ export const globalStore = store(state, {
 	persist: {
 		enabled: true,
 		name: globalStoreKey,
-		version: storeVersion.backgroundImage,
+		version: storeVersion.tachie,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -69,6 +71,9 @@ export const globalStore = store(state, {
 			}
 			if (version < storeVersion.backgroundImage) {
 				oldState.persistence.backgroundImage = true;
+			}
+			if (version < storeVersion.tachie) {
+				oldState.persistence.tachie = true;
 			}
 			return persistedState as typeof state;
 		},

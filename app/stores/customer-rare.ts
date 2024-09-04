@@ -60,7 +60,8 @@ const storeVersion = {
 	linkedFilter: 9,
 	mystiaCooker: 10, // eslint-disable-next-line sort-keys
 	dynamicMeal: 11,
-	tachie: 12,
+	tachie: 12, // eslint-disable-next-line sort-keys
+	moveTachie: 13,
 } as const;
 
 const state = {
@@ -114,7 +115,6 @@ const state = {
 			tabVisibility: TabVisibilityState.collapse,
 
 			orderLinkedFilter: true,
-			showTachie: true,
 			showTagDescription: true,
 		},
 		ingredient: {
@@ -206,7 +206,7 @@ export const customerRareStore = store(state, {
 	persist: {
 		enabled: true,
 		name: customerRareStoreKey,
-		version: storeVersion.tachie,
+		version: storeVersion.moveTachie,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -330,6 +330,13 @@ export const customerRareStore = store(state, {
 					persistence: {customer},
 				} = oldState;
 				customer.showTachie = true;
+			}
+			if (version < storeVersion.moveTachie) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				const {
+					persistence: {customer},
+				} = oldState;
+				delete customer.showTachie;
 			}
 			return persistedState as typeof state;
 		},

@@ -22,7 +22,7 @@ import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterI
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
-import {customerTabStyleMap, ingredientTabStyleMap} from './constants';
+import {customerTabStyleMap, ingredientTabStyleMap, tachieBreakPoint} from './constants';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 
 export default memo(function CustomerRare() {
@@ -45,10 +45,10 @@ export default memo(function CustomerRare() {
 		customerStore.shared.customer.popular.tag.set(popular);
 	});
 
-	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+	const {breakpoint} = useBreakpoint(tachieBreakPoint, 'noTachie');
 
-	const {breakpoint} = useBreakpoint({noTachie: -1, tachie: 1420}, 'noTachie');
-	const isShowTachie = customerStore.persistence.customer.showTachie.use();
+	const isShowTachie = globalStore.persistence.tachie.use();
+	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 
 	const currentCustomerData = customerStore.shared.customer.data.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
