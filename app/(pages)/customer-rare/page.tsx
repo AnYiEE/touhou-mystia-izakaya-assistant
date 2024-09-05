@@ -355,7 +355,7 @@ export default memo(function CustomerRare() {
 						: instance_rare
 					).getTachiePath('customer', currentCustomerData)}
 					width={currentCustomerData?.target === 'customer_special' ? 60 : 120}
-					className="pointer-events-none fixed bottom-0 right-0 pr-2"
+					className="pointer-events-none fixed bottom-0 right-0 select-none pr-2"
 				/>
 			)}
 		</div>

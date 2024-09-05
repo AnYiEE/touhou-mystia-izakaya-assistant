@@ -77,7 +77,7 @@ export default memo(function InfoButton() {
 						width={120}
 						alt={reward}
 						title={reward}
-						className="my-1"
+						className="my-1 select-none"
 					/>
 				);
 			case '伙伴':
@@ -90,7 +90,7 @@ export default memo(function InfoButton() {
 							width={100}
 							alt={`${reward}立绘`}
 							title={reward}
-							className="my-1"
+							className="my-1 select-none"
 						/>
 						<p>解锁条件：{currentCustomerMainPlace}地区全部角色羁绊满级</p>
 					</div>
@@ -117,10 +117,7 @@ export default memo(function InfoButton() {
 								<p key={index} className="flex items-center">
 									<LevelLabel level={level} />
 									<Tooltip showArrow content={label} placement="left" size="sm">
-										<Sprite
-											target="recipe"
-											name={name}
-											size={1.25}
+										<span
 											onClick={() => {
 												openWindow('recipes', name);
 											}}
@@ -132,10 +129,12 @@ export default memo(function InfoButton() {
 											aria-label={label}
 											role="button"
 											tabIndex={0}
-											className="mr-0.5 cursor-pointer"
-										/>
+											className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
+										>
+											<Sprite target="recipe" name={name} size={1.25} className="mr-0.5" />
+											{name}
+										</span>
 									</Tooltip>
-									{name}
 									{index < bondRecipesDataLength - 1 && <br />}
 								</p>
 							))}
@@ -164,7 +163,7 @@ export default memo(function InfoButton() {
 																placement={placement}
 																size="sm"
 															>
-																<span className="cursor-pointer">
+																<span className="inline-flex cursor-pointer">
 																	<PopoverTrigger>
 																		<span
 																			role="button"

@@ -238,10 +238,10 @@ export default memo(
 								</Tooltip>
 								<div className="inline-flex flex-1 items-center whitespace-nowrap">
 									<span className="text-small font-medium">{name}</span>
-									<span className="-ml-2">
+									<span className="-ml-1.5">
 										<Popover showArrow offset={10} size="sm">
 											<Tooltip showArrow content={tags} offset={-2} placement="right" size="sm">
-												<span>
+												<span className="inline-flex">
 													<PopoverTrigger>
 														<FontAwesomeIconButton
 															icon={faTags}
@@ -271,10 +271,11 @@ export default memo(
 								<Price showSymbol={false}>{suitability}</Price>
 							</div>
 						);
-					case 'action':
+					case 'action': {
+						const label = '点击：选择此项';
 						return (
 							<div className="flex justify-center">
-								<Tooltip showArrow content="选择此项" placement="left" size="sm">
+								<Tooltip showArrow content={label} placement="left" size="sm">
 									<Button
 										isIconOnly
 										size="sm"
@@ -282,13 +283,14 @@ export default memo(
 										onPress={() => {
 											customerStore.onBeverageTableAction(name);
 										}}
-										aria-label="选择此项"
+										aria-label={label}
 									>
 										<FontAwesomeIcon icon={faPlus} />
 									</Button>
 								</Tooltip>
 							</div>
 						);
+					}
 				}
 			},
 			[currentCustomerData, openWindow]
@@ -485,7 +487,7 @@ export default memo(
 				classNames={{
 					th: twJoin(isShowBackgroundImage && 'bg-default-100/40'),
 					wrapper: twJoin(
-						'xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)]',
+						'xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)] xl:p-2',
 						isShowBackgroundImage && 'bg-content1/40 backdrop-blur'
 					),
 				}}

@@ -10,8 +10,8 @@ interface IProps extends Pick<AccordionProps, 'children' | 'defaultExpandedKeys'
 export default memo<IProps>(function InfoButtonBase({defaultExpandedKeys, children}) {
 	return (
 		<Popover offset={0} placement="left-end">
-			<Tooltip showArrow content="更多信息" offset={2}>
-				<span className="absolute -right-0.5 bottom-0">
+			<Tooltip showArrow content="更多信息" offset={4}>
+				<span className="absolute -right-0.5 bottom-1.5 flex">
 					<PopoverTrigger>
 						<FontAwesomeIconButton
 							icon={faInfoCircle}

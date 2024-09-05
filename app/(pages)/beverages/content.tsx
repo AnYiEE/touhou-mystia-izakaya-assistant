@@ -72,7 +72,7 @@ export default memo<IProps>(function Content({data, isInNewWindow}) {
 																offset={3}
 																size="sm"
 															>
-																<span className="underline-dotted-offset2 cursor-pointer">
+																<span className="underline-dotted-offset2 inline-flex cursor-pointer">
 																	<PopoverTrigger>
 																		<span tabIndex={0}>{item[0]}</span>
 																	</PopoverTrigger>

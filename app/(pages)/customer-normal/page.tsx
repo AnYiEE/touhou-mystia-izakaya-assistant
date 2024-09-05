@@ -329,7 +329,7 @@ export default memo(function CustomerNormal() {
 					// cSpell:ignore quejiuwugongzuozhuang
 					src="/assets/tachies/clothes/quejiuwugongzuozhuang.png"
 					width={120}
-					className="pointer-events-none fixed bottom-0 right-0 pr-2"
+					className="pointer-events-none fixed bottom-0 right-0 select-none pr-2"
 				/>
 			)}
 		</div>

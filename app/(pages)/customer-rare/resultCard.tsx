@@ -87,31 +87,36 @@ const IngredientList = memo(function IngredientsList() {
 			{filledIngredients.map((ingredient, index) =>
 				ingredient ? (
 					index >= originalIngredients.length ? (
-						<Tooltip key={index} showArrow content={`点击：删除${ingredient}`} offset={4}>
-							<span
-								onKeyDown={(event) => {
-									if (checkA11yConfirmKey(event)) {
-										customerStore.removeMealIngredient(ingredient);
-									}
-								}}
-								tabIndex={0}
-								aria-label={`点击：删除${ingredient}`}
-								className="flex items-center"
-							>
-								<span
-									onClick={() => {
-										customerStore.removeMealIngredient(ingredient);
-									}}
-									role="button"
-									tabIndex={1}
-									title={ingredient}
-									className="absolute flex h-10 w-10 cursor-pointer items-center justify-center bg-foreground bg-opacity-50 text-background opacity-0 transition-opacity hover:opacity-100"
-								>
-									<FontAwesomeIcon icon={faCircleXmark} size="1x" />
-								</span>
-								<Sprite target="ingredient" name={ingredient} size={2.5} />
-							</span>
-						</Tooltip>
+						(() => {
+							const label = `点击：删除额外食材【${ingredient}】`;
+							return (
+								<Tooltip key={index} showArrow content={label} offset={4}>
+									<span
+										onKeyDown={(event) => {
+											if (checkA11yConfirmKey(event)) {
+												customerStore.removeMealIngredient(ingredient);
+											}
+										}}
+										tabIndex={0}
+										aria-label={label}
+										className="flex items-center"
+									>
+										<span
+											onClick={() => {
+												customerStore.removeMealIngredient(ingredient);
+											}}
+											role="button"
+											tabIndex={1}
+											title={ingredient}
+											className="absolute flex h-10 w-10 cursor-pointer items-center justify-center bg-foreground bg-opacity-50 text-background opacity-0 transition-opacity hover:opacity-100"
+										>
+											<FontAwesomeIcon icon={faCircleXmark} size="1x" />
+										</span>
+										<Sprite target="ingredient" name={ingredient} size={2.5} />
+									</span>
+								</Tooltip>
+							);
+						})()
 					) : (
 						<Tooltip key={index} showArrow content={ingredient} offset={4}>
 							<Sprite target="ingredient" name={ingredient} size={2.5} />
@@ -260,33 +265,30 @@ export default memo(
 						content={`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipeData ? '' : '料理、'}顾客点单需求`}
 						isOpen={isShowSaveButtonTooltip}
 					>
-						<span>
-							<Button
-								fullWidth
-								color="primary"
-								disableAnimation={isSaveButtonDisabled}
-								size="sm"
-								variant="flat"
-								onPress={handleSaveButtonPress}
-								aria-label={`保存套餐，当前${currentRating ? `评级为${currentRating}` : '未评级'}`}
-								className={twJoin(
-									'flex-col gap-0 text-xs leading-none md:w-auto',
-									isSaveButtonDisabled && 'opacity-disabled'
-								)}
-							>
-								<span>保存套餐</span>
-								<span>
-									<Price>
-										{(currentBeverageName
-											? instance_beverage.getPropsByName(currentBeverageName).price
-											: 0) +
-											(currentRecipeData?.name
-												? instance_recipe.getPropsByName(currentRecipeData.name).price
-												: 0)}
-									</Price>
-								</span>
-							</Button>
-						</span>
+						<Button
+							color="primary"
+							disableAnimation={isSaveButtonDisabled}
+							size="sm"
+							variant="flat"
+							onPress={handleSaveButtonPress}
+							aria-label={`保存套餐，当前${currentRating ? `评级为${currentRating}` : '未评级'}`}
+							className={twJoin(
+								'flex-col gap-0 text-xs leading-none md:w-auto',
+								isSaveButtonDisabled && 'opacity-disabled'
+							)}
+						>
+							<span>保存套餐</span>
+							<span>
+								<Price>
+									{(currentBeverageName
+										? instance_beverage.getPropsByName(currentBeverageName).price
+										: 0) +
+										(currentRecipeData?.name
+											? instance_recipe.getPropsByName(currentRecipeData.name).price
+											: 0)}
+								</Price>
+							</span>
+						</Button>
 					</Tooltip>
 				</div>
 			</Card>

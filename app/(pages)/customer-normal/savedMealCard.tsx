@@ -176,7 +176,6 @@ export default memo(
 								<div className="flex w-full justify-center gap-2 md:w-auto">
 									<Button
 										color="danger"
-										fullWidth
 										size="sm"
 										variant="flat"
 										onPress={() => {
@@ -195,7 +194,6 @@ export default memo(
 									</Button>
 									<Button
 										color="primary"
-										fullWidth
 										size="sm"
 										variant="flat"
 										onPress={() => {
