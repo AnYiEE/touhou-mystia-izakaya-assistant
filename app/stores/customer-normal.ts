@@ -274,7 +274,8 @@ export const customerNormalStore = store(state, {
 	},
 })
 	.computed((currentStore) => ({
-		names: () => getAllItemNames(instance_customer, currentStore.persistence.customer.pinyinSortState.use()),
+		customerNames: () =>
+			getAllItemNames(instance_customer, currentStore.persistence.customer.pinyinSortState.use()),
 
 		beverageTableColumns: {
 			read: () => new Set(currentStore.persistence.beverage.table.visibleColumns.use()) as SelectionSet,

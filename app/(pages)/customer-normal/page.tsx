@@ -53,7 +53,7 @@ export default memo(function CustomerNormal() {
 	const instance_customer = customerStore.instances.customer.get();
 	const instance_ingredient = customerStore.instances.ingredient.get();
 
-	const allCustomerNames = customerStore.names.use();
+	const allCustomerNames = customerStore.customerNames.use();
 	const allCustomerDlcs = customerStore.customer.dlcs.get();
 	const allCustomerPlaces = customerStore.customer.places.get();
 
