@@ -43,6 +43,7 @@ const storeVersion = {
 	extraCustomer: 5, // eslint-disable-next-line sort-keys
 	dynamicMeal: 6,
 	showCooker: 7,
+	tableRows: 8,
 } as const;
 
 const state = {
@@ -78,7 +79,7 @@ const state = {
 	persistence: {
 		beverage: {
 			table: {
-				rows: 7,
+				rows: 8,
 				visibleColumns: beverageTableColumns.map(toValueWithKey('key')),
 			},
 		},
@@ -104,7 +105,7 @@ const state = {
 		},
 		recipe: {
 			table: {
-				rows: 7,
+				rows: 8,
 				visibleColumns: recipeTableColumns.filter(({key}) => key !== 'time').map(toValueWithKey('key')),
 			},
 		},
@@ -125,7 +126,7 @@ const state = {
 			dlcs: new Set() as SelectionSet,
 			page: 1,
 			searchValue: '',
-			selectableRows: [5, 7, 10, 15, 20].map(toValueObject),
+			selectableRows: [5, 8, 10, 15, 20].map(toValueObject),
 			sortDescriptor: {} as TBeverageTableSortDescriptor,
 		},
 		customer: {
@@ -157,7 +158,7 @@ const state = {
 
 			page: 1,
 			searchValue: '',
-			selectableRows: [5, 7, 10, 15, 20].map(toValueObject),
+			selectableRows: [5, 8, 10, 15, 20].map(toValueObject),
 			sortDescriptor: {} as TRecipeTableSortDescriptor,
 		},
 		tab: 'customer' as TTab,
@@ -172,7 +173,7 @@ export const customerNormalStore = store(state, {
 	persist: {
 		enabled: true,
 		name: customerNormalStoreKey,
-		version: storeVersion.showCooker,
+		version: storeVersion.tableRows,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -245,6 +246,21 @@ export const customerNormalStore = store(state, {
 				if (!visibleColumns.includes('cooker')) {
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 					visibleColumns.push('cooker');
+				}
+			}
+			if (version < storeVersion.tableRows) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				const {
+					persistence: {
+						beverage: {table: beverageTable},
+						recipe: {table: recipeTable},
+					},
+				} = oldState;
+				if (beverageTable.rows === 7) {
+					beverageTable.rows = 8;
+				}
+				if (recipeTable.rows === 7) {
+					recipeTable.rows = 8;
 				}
 			}
 			return persistedState as typeof state;
