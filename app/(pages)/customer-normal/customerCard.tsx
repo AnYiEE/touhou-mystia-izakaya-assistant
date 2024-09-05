@@ -169,9 +169,9 @@ export default memo(
 			>
 				<div className="flex flex-col gap-3 p-4 md:flex-row">
 					<div className="flex flex-col items-center gap-3">
-						<Popover showArrow color={avatarRatingColor} offset={12}>
+						<Popover showArrow color={avatarRatingColor} offset={10}>
 							<Tooltip showArrow color={avatarRatingColor} content={avatarRatingContent}>
-								<div className="cursor-pointer">
+								<div className="flex cursor-pointer self-center">
 									<PopoverTrigger>
 										<Avatar
 											isBordered={Boolean(currentRating)}

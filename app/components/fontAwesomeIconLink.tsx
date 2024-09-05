@@ -12,12 +12,7 @@ export default memo(
 		ref
 	) {
 		return (
-			<Link
-				className={twMerge('text-default-400 dark:text-default-500', className)}
-				referrerPolicy="same-origin"
-				{...props}
-				ref={ref}
-			>
+			<Link className={twMerge('text-default-400', className)} referrerPolicy="same-origin" {...props} ref={ref}>
 				<FontAwesomeIcon icon={icon} size={size} />
 			</Link>
 		);

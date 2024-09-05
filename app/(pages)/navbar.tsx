@@ -105,7 +105,7 @@ const GitHubLink = memo<Partial<IGitHubLinkProps>>(function GitHubLink({showTool
 		return (
 			<Tooltip showArrow content={links.github.label}>
 				<span className="flex">
-					<GitHubIconLink />
+					<GitHubIconLink className="dark:text-default-500" />
 				</span>
 			</Tooltip>
 		);

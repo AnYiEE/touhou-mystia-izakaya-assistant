@@ -203,7 +203,7 @@ export default memo(
 					<div className="flex flex-col justify-evenly gap-2">
 						<Popover showArrow color={avatarRatingColor} offset={12}>
 							<Tooltip showArrow color={avatarRatingColor} content={avatarRatingContent}>
-								<div className="cursor-pointer">
+								<div className="flex cursor-pointer self-center">
 									<PopoverTrigger>
 										<div role="button" tabIndex={0} className="flex flex-col items-center gap-2">
 											<Avatar
