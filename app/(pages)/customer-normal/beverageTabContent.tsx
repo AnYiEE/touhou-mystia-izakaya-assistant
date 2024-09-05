@@ -445,19 +445,21 @@ export default memo(
 		const tablePagination = useMemo(
 			() => (
 				<div className="flex justify-center">
-					<Pagination
-						showShadow
-						size="sm"
-						page={tableCurrentPage}
-						total={tableTotalPages}
-						onChange={customerStore.onBeverageTablePageChange}
-						classNames={{
-							item: twJoin('bg-default-100/70', isShowBackgroundImage && 'backdrop-blur'),
-						}}
-					/>
+					{tableCurrentPageItems.length > 0 && (
+						<Pagination
+							showShadow
+							size="sm"
+							page={tableCurrentPage}
+							total={tableTotalPages}
+							onChange={customerStore.onBeverageTablePageChange}
+							classNames={{
+								item: twJoin('bg-default-100/70', isShowBackgroundImage && 'backdrop-blur'),
+							}}
+						/>
+					)}
 				</div>
 			),
-			[isShowBackgroundImage, tableCurrentPage, tableTotalPages]
+			[isShowBackgroundImage, tableCurrentPage, tableCurrentPageItems.length, tableTotalPages]
 		);
 
 		return (
