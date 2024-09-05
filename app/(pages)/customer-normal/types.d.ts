@@ -1,4 +1,4 @@
-export type TCustomerRating = '普通' | '满意';
+export type TCustomerRating = '极度不满' | '普通' | '满意';
 
 export interface ICustomerRatingMap {
 	[key in TCustomerRating]: AvatarProps['color'];

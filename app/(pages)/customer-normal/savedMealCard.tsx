@@ -45,6 +45,7 @@ export default memo(
 									{(() => {
 										const rating = customerStore.evaluateSavedMealResult({
 											beverageName: beverage,
+											customerName: currentCustomerName,
 											extraIngredients,
 											popular: currentCustomerPopular,
 											recipeName: recipe,

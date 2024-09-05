@@ -1,12 +1,13 @@
 import {intersection} from 'lodash';
 
 import type {TCustomerRating, TRecipe} from './types';
-import {type TBeverageNames} from '@/data';
+import {type TBeverageNames, type TCustomerNormalNames} from '@/data';
 import type {TRecipeTag} from '@/data/types';
 import {type IPopularData, type TPopularTag} from '@/stores';
 
 interface IParameters {
 	currentBeverageName: TBeverageNames | null;
+	currentCustomerName: TCustomerNormalNames;
 	currentCustomerPopularData: IPopularData;
 	currentCustomerPositiveTags: TRecipeTag[];
 	currentExtraIngredientsLength: number;
@@ -14,9 +15,30 @@ interface IParameters {
 	currentRecipe: TRecipe | null;
 }
 
+function checkEasterEgg({
+	currentCustomerName,
+	currentRecipe,
+	mealScore,
+}: {
+	currentCustomerName: TCustomerNormalNames;
+	currentRecipe: TRecipe;
+	mealScore: number;
+}) {
+	const {name: currentRecipeName} = currentRecipe;
+
+	switch (currentCustomerName) {
+		case '月人':
+			if (currentRecipeName === '蜜桃红烧肉') {
+				return 0;
+			}
+	}
+
+	return mealScore;
+}
+
 function getRatingKey(mealScore: number): TCustomerRating | null {
-	if (mealScore <= 1) {
-		return null;
+	if (mealScore <= 0) {
+		return '极度不满';
 	}
 
 	switch (mealScore) {
@@ -29,6 +51,7 @@ function getRatingKey(mealScore: number): TCustomerRating | null {
 
 export function evaluateMeal({
 	currentBeverageName,
+	currentCustomerName,
 	currentCustomerPopularData,
 	currentCustomerPositiveTags,
 	currentExtraIngredientsLength,
@@ -68,5 +91,9 @@ export function evaluateMeal({
 
 	extraScore += intersection(currentExtraTags, currentCustomerPositiveTags).length;
 
-	return getRatingKey(2 + extraScore);
+	let mealScore = 2 + extraScore;
+
+	mealScore = checkEasterEgg({currentCustomerName, currentRecipe, mealScore});
+
+	return getRatingKey(mealScore);
 }

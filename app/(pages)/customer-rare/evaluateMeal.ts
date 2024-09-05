@@ -89,7 +89,6 @@ function checkEasterEgg({
 			break;
 		case '绵月丰姬':
 		case '绵月依姬':
-		case '月人':
 			if (currentRecipeName === '蜜桃红烧肉') {
 				return 0;
 			}

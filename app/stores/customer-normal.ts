@@ -480,6 +480,7 @@ export const customerNormalStore = store(state, {
 			}
 			const rating = evaluateMeal({
 				currentBeverageName: beverageName,
+				currentCustomerName: customerName,
 				currentCustomerPopularData: customerPopularData,
 				currentCustomerPositiveTags: customerPositiveTags,
 				currentExtraIngredientsLength: extraIngredients.length,
@@ -495,6 +496,7 @@ export const customerNormalStore = store(state, {
 			recipeName,
 		}: {
 			beverageName: TBeverageNames;
+			customerName: TCustomerNames;
 			extraIngredients: TIngredientNames[];
 			popular: IPopularData;
 			recipeName: TRecipeNames;
@@ -509,6 +511,7 @@ export const customerNormalStore = store(state, {
 			});
 			const rating = evaluateMeal({
 				currentBeverageName: beverageName,
+				currentCustomerName: customerName,
 				currentCustomerPopularData: popular,
 				currentCustomerPositiveTags: instance_customer.getPropsByName(customerName).positiveTags,
 				currentExtraIngredientsLength: extraIngredients.length,
