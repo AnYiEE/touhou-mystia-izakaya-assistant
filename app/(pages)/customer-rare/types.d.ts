@@ -1,13 +1,13 @@
 import {type AvatarProps, type SortDescriptor} from '@nextui-org/react';
 
 import {type TabVisibilityState} from './constants';
-import {type TCustomerNames} from '@/data';
+import {type TCustomerRareNames, type TCustomerSpecialNames} from '@/data';
 import {type Beverage, type Recipe} from '@/utils';
 
 export type TCustomerTarget = 'customer_rare' | 'customer_special';
 
 export interface ICurrentCustomer {
-	name: TCustomerNames;
+	name: TCustomerRareNames | TCustomerSpecialNames;
 	target: TCustomerTarget;
 }
 

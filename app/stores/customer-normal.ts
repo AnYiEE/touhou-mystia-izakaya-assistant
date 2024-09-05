@@ -13,7 +13,7 @@ import {TrackCategory, trackEvent} from '@/components/analytics';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import type {IPersistenceState} from './types';
-import {type TBeverageNames, type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
+import {type TBeverageNames, type TCustomerNormalNames, type TIngredientNames, type TRecipeNames} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {type IPopularData, type TPopularTag} from '@/stores';
 import {getAllItemNames, keepLastTag, reverseDirection} from '@/stores/utils';
@@ -111,7 +111,7 @@ const state = {
 		},
 
 		meals: {} as {
-			[key in TCustomerNames]?: {
+			[key in TCustomerNormalNames]?: {
 				index: number;
 				beverage: TBeverageNames;
 				recipe: TRecipeNames;
@@ -130,7 +130,7 @@ const state = {
 			sortDescriptor: {} as TBeverageTableSortDescriptor,
 		},
 		customer: {
-			name: null as TCustomerNames | null,
+			name: null as TCustomerNormalNames | null,
 
 			beverageTags: new Set() as SelectionSet,
 			positiveTags: new Set() as SelectionSet,
@@ -321,7 +321,7 @@ export const customerNormalStore = store(state, {
 				keepLastTag(prev, tag);
 			});
 		},
-		onCustomerSelectedChange(customerName: TCustomerNames) {
+		onCustomerSelectedChange(customerName: TCustomerNormalNames) {
 			currentStore.shared.customer.name.set(customerName);
 			trackEvent(TrackCategory.Select, 'Customer', customerName);
 		},
@@ -497,7 +497,7 @@ export const customerNormalStore = store(state, {
 			recipeName,
 		}: {
 			beverageName: TBeverageNames;
-			customerName: TCustomerNames;
+			customerName: TCustomerNormalNames;
 			extraIngredients: TIngredientNames[];
 			popular: IPopularData;
 			recipeName: TRecipeNames;

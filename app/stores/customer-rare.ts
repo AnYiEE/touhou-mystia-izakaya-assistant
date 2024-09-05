@@ -13,7 +13,13 @@ import {TrackCategory, trackEvent} from '@/components/analytics';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import type {IPersistenceState} from './types';
-import {type TBeverageNames, type TCustomerNames, type TIngredientNames, type TRecipeNames} from '@/data';
+import {
+	type TBeverageNames,
+	type TCustomerRareNames,
+	type TCustomerSpecialNames,
+	type TIngredientNames,
+	type TRecipeNames,
+} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {type IPopularData} from '@/stores';
 import {getAllItemNames, keepLastTag, reverseDirection} from '@/stores/utils';
@@ -135,7 +141,7 @@ const state = {
 		},
 
 		meals: {} as {
-			[key in TCustomerNames]?: {
+			[key in TCustomerRareNames | TCustomerSpecialNames]?: {
 				index: number;
 				hasMystiaCooker: boolean;
 				order: ICustomerOrder;
