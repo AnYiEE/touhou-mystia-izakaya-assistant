@@ -1,5 +1,6 @@
 'use client';
 
+import {useCallback} from 'react';
 import {useRouter} from 'next/navigation';
 
 import {Modal, ModalBody, ModalContent, ScrollShadow} from '@nextui-org/react';
@@ -12,12 +13,19 @@ export default function PreferencesModal() {
 
 	const isShowBackgroundImage = store.persistence.backgroundImage.use();
 
+	const handleClose = useCallback(() => {
+		// Delay closing to allow time for exit animation.
+		setTimeout(() => {
+			router.back();
+		}, 300);
+	}, [router]);
+
 	return (
 		<Modal
 			defaultOpen
 			scrollBehavior="inside"
 			size="3xl"
-			onClose={router.back}
+			onClose={handleClose}
 			className={isShowBackgroundImage ? 'bg-blend-mystia' : 'bg-background dark:bg-content1'}
 		>
 			<ModalContent className="py-3">
