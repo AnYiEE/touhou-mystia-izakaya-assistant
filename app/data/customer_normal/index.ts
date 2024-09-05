@@ -7,8 +7,8 @@ export const CUSTOMER_NORMAL_SPRITE_CONFIG = {
 	col: 10,
 	row: 5,
 
-	height: 600,
-	width: 890,
+	height: 885,
+	width: 1330,
 } as const satisfies ISpriteConfig;
 
 export const CUSTOMER_NORMAL_TAG_STYLE = {

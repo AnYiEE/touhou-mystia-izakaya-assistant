@@ -155,7 +155,7 @@ export default memo(
 														? 'ring-4 ring-offset-0'
 														: 'ring-2 ring-focus dark:ring-0'
 												),
-												icon: 'block scale-110',
+												icon: 'block scale-[113%]',
 											}}
 										/>
 									</PopoverTrigger>
