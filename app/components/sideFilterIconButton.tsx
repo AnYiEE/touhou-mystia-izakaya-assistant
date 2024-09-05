@@ -10,6 +10,7 @@ import {
 	SelectItem,
 	type SelectProps,
 	type Selection,
+	Tooltip,
 } from '@nextui-org/react';
 import {faFilter} from '@fortawesome/free-solid-svg-icons';
 
@@ -50,18 +51,24 @@ export default memo(
 			});
 		}, [selectConfig]);
 
+		const content = `筛选（${hasFilter ? '已' : '未'}激活）`;
+
 		return (
 			<Popover showArrow backdrop="opaque" placement="left" shouldCloseOnInteractOutside={() => true} ref={ref}>
-				<PopoverTrigger>
-					<FontAwesomeIconButton
-						color={hasFilter ? 'warning' : 'primary'}
-						icon={faFilter}
-						variant="shadow"
-						aria-label="筛选"
-						className={twMerge('text-white', className)}
-						{...props}
-					/>
-				</PopoverTrigger>
+				<Tooltip showArrow content={content} placement="left">
+					<span className="flex">
+						<PopoverTrigger>
+							<FontAwesomeIconButton
+								color={hasFilter ? 'warning' : 'primary'}
+								icon={faFilter}
+								variant="shadow"
+								aria-label={content}
+								className={twMerge('text-white', className)}
+								{...props}
+							/>
+						</PopoverTrigger>
+					</span>
+				</Tooltip>
 				<PopoverContent className="w-64">
 					<div className="w-full space-y-1">
 						{selectConfig.map(

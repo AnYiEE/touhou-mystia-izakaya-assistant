@@ -1,6 +1,7 @@
 import {type Dispatch, type SetStateAction, forwardRef, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
+import {Tooltip} from '@nextui-org/react';
 import {faArrowDownAZ, faArrowUpAZ} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
@@ -38,19 +39,29 @@ export default memo(
 		{pinyinSortConfig: {pinyinSortState, setPinyinSortState}, className, ...props},
 		ref
 	) {
+		const label = `拼音排序（${
+			pinyinSortState === PinyinSortState.NONE
+				? '未激活'
+				: pinyinSortState === PinyinSortState.AZ
+					? '已激活：升序'
+					: '已激活：降序'
+		}）`;
+
 		return (
-			<FontAwesomeIconButton
-				color={pinyinSortState === PinyinSortState.NONE ? 'primary' : 'warning'}
-				icon={pinyinSortState === PinyinSortState.ZA ? faArrowUpAZ : faArrowDownAZ}
-				variant="shadow"
-				onPress={() => {
-					setPinyinSortState(getNextPinyinSortState(pinyinSortState));
-				}}
-				aria-label="拼音排序"
-				className={twMerge('text-white', className)}
-				{...props}
-				ref={ref}
-			/>
+			<Tooltip showArrow content={label} placement="left">
+				<FontAwesomeIconButton
+					color={pinyinSortState === PinyinSortState.NONE ? 'primary' : 'warning'}
+					icon={pinyinSortState === PinyinSortState.ZA ? faArrowUpAZ : faArrowDownAZ}
+					variant="shadow"
+					onPress={() => {
+						setPinyinSortState(getNextPinyinSortState(pinyinSortState));
+					}}
+					aria-label={label}
+					className={twMerge('text-white', className)}
+					{...props}
+					ref={ref}
+				/>
+			</Tooltip>
 		);
 	})
 );

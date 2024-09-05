@@ -8,6 +8,7 @@ import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
+	Tooltip,
 } from '@nextui-org/react';
 import {faMagnifyingGlass} from '@fortawesome/free-solid-svg-icons';
 
@@ -31,18 +32,24 @@ export default memo(
 		{searchConfig: {label, searchItems, searchValue, setSearchValue}, className, ...props},
 		ref
 	) {
+		const content = `搜索（${searchValue ? '已' : '未'}激活）`;
+
 		return (
 			<Popover showArrow backdrop="opaque" placement="left" shouldCloseOnInteractOutside={() => true} ref={ref}>
-				<PopoverTrigger>
-					<FontAwesomeIconButton
-						color={searchValue ? 'warning' : 'primary'}
-						icon={faMagnifyingGlass}
-						variant="shadow"
-						aria-label="搜索"
-						className={twMerge('text-white', className)}
-						{...props}
-					/>
-				</PopoverTrigger>
+				<Tooltip showArrow content={content} placement="left">
+					<span className="flex">
+						<PopoverTrigger>
+							<FontAwesomeIconButton
+								color={searchValue ? 'warning' : 'primary'}
+								icon={faMagnifyingGlass}
+								variant="shadow"
+								aria-label={content}
+								className={twMerge('text-white', className)}
+								{...props}
+							/>
+						</PopoverTrigger>
+					</span>
+				</Tooltip>
 				<PopoverContent className="w-64">
 					<Autocomplete
 						allowsCustomValue
