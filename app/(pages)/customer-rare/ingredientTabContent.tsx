@@ -152,7 +152,7 @@ export default memo(
 							const isNoChange = scoreChange === 0;
 							const color = isUp ? 'success' : isDown ? 'danger' : 'default';
 							const score = isUp ? `+${scoreChange}` : `${scoreChange}`;
-							const label = `加入${name}${isNoChange ? '' : `，匹配度${score}`}`;
+							const label = `点击：加入额外食材【${name}】${isNoChange ? '' : `，匹配度${score}`}`;
 							return (
 								<Tooltip
 									key={index}

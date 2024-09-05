@@ -186,7 +186,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 								hideSymbol
 								fullWidth
 								tooltipProps={{
-									content: '点击复制当前的稀客套餐数据',
+									content: '点击以复制当前的稀客套餐数据',
 									delay: 0,
 									offset: 0,
 									showArrow: true,

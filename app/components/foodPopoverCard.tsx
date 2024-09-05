@@ -59,7 +59,7 @@ const CloseButton = memo(
 			[getBackdropProps, isInNewWindow, param, params, replace]
 		);
 
-		const label = useMemo(() => `关闭${isInNewWindow ? '窗口' : '弹出框'}`, [isInNewWindow]);
+		const label = `点击：关闭${isInNewWindow ? '窗口' : '弹出框'}`;
 
 		return (
 			<Tooltip showArrow content={label} offset={-5} placement="left" size="sm">
@@ -94,15 +94,17 @@ const ShareButton = memo(
 			return `${window.location.origin}${window.location.pathname}?${newParams.toString()}`;
 		}, [name, param, params]);
 
+		const label = '点击：分享当前选中项的链接';
+
 		return (
 			<Popover showArrow ref={ref}>
-				<Tooltip showArrow content="分享当前选中项的链接" offset={-2} placement="left" size="sm">
-					<div className="absolute -right-1 bottom-0">
+				<Tooltip showArrow content={label} offset={-2} placement="left" size="sm">
+					<div className="absolute -right-1 bottom-1 flex">
 						<PopoverTrigger>
 							<FontAwesomeIconButton
 								icon={faShare}
 								variant="light"
-								aria-label="分享当前选中项"
+								aria-label={label}
 								className="h-4 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:text-default-300"
 							/>
 						</PopoverTrigger>

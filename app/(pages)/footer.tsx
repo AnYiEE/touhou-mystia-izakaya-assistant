@@ -84,7 +84,7 @@ export default memo(function Footer() {
 					)}
 				</span>
 				<FooterLinkWithTooltip
-					content="如果主站访问或加载速度过慢，请尝试访问此镜像服务器"
+					content="如果主站访问或加载速度过慢，可以尝试访问此镜像服务器"
 					href={links.backup.href}
 				>
 					{links.backup.label}
