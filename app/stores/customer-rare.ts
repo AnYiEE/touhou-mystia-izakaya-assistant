@@ -62,6 +62,7 @@ const storeVersion = {
 	dynamicMeal: 11,
 	tachie: 12, // eslint-disable-next-line sort-keys
 	moveTachie: 13,
+	showCooker: 14,
 } as const;
 
 const state = {
@@ -128,9 +129,7 @@ const state = {
 		recipe: {
 			table: {
 				rows: 7,
-				visibleColumns: recipeTableColumns
-					.filter(({key}) => !['cooker', 'time'].includes(key))
-					.map(toValueWithKey('key')),
+				visibleColumns: recipeTableColumns.filter(({key}) => key !== 'time').map(toValueWithKey('key')),
 			},
 		},
 
@@ -206,7 +205,7 @@ export const customerRareStore = store(state, {
 	persist: {
 		enabled: true,
 		name: customerRareStoreKey,
-		version: storeVersion.moveTachie,
+		version: storeVersion.showCooker,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -337,6 +336,21 @@ export const customerRareStore = store(state, {
 					persistence: {customer},
 				} = oldState;
 				delete customer.showTachie;
+			}
+			if (version < storeVersion.showCooker) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				const {
+					persistence: {
+						recipe: {
+							table: {visibleColumns},
+						},
+					},
+				} = oldState;
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+				if (!visibleColumns.includes('cooker')) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+					visibleColumns.push('cooker');
+				}
 			}
 			return persistedState as typeof state;
 		},

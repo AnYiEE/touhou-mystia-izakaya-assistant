@@ -324,39 +324,40 @@ export default memo(
 					case 'cooker':
 						return (
 							<div className="flex">
-								<Tooltip showArrow content={cooker} placement="right" size="sm">
+								<Tooltip showArrow content={cooker} placement="left" size="sm">
 									<Sprite target="cooker" name={cooker} size={1.5} />
 								</Tooltip>
 							</div>
 						);
-					case 'ingredient': {
-						const ingredientLabel = '点击：在新窗口中查看此食材的详情';
+					case 'ingredient':
 						return (
 							<div className="flex flex-nowrap">
-								{ingredients.map((ingredient, index) => (
-									<Tooltip key={index} showArrow content={ingredientLabel} size="sm">
-										<Sprite
-											target="ingredient"
-											name={ingredient}
-											size={2}
-											onClick={() => {
-												openWindow('ingredients', ingredient);
-											}}
-											onKeyDown={(event) => {
-												if (checkA11yConfirmKey(event)) {
+								{ingredients.map((ingredient, index) => {
+									const ingredientLabel = `点击：在新窗口中查看食材【${ingredient}】的详情`;
+									return (
+										<Tooltip key={index} showArrow content={ingredientLabel} size="sm">
+											<Sprite
+												target="ingredient"
+												name={ingredient}
+												size={1.5}
+												onClick={() => {
 													openWindow('ingredients', ingredient);
-												}
-											}}
-											aria-label={ingredientLabel}
-											role="button"
-											tabIndex={0}
-											className="cursor-pointer"
-										/>
-									</Tooltip>
-								))}
+												}}
+												onKeyDown={(event) => {
+													if (checkA11yConfirmKey(event)) {
+														openWindow('ingredients', ingredient);
+													}
+												}}
+												aria-label={ingredientLabel}
+												role="button"
+												tabIndex={0}
+												className="cursor-pointer"
+											/>
+										</Tooltip>
+									);
+								})}
 							</div>
 						);
-					}
 					case 'price':
 						return (
 							<div className="flex">
