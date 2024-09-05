@@ -1,7 +1,7 @@
 import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
-import {useViewInNewWindow} from '@/hooks';
+import {useVibrate, useViewInNewWindow} from '@/hooks';
 
 import {
 	Autocomplete,
@@ -48,6 +48,7 @@ interface IProps {}
 export default memo(
 	forwardRef<HTMLTableElement | null, IProps>(function RecipeTabContent(_props, ref) {
 		const openWindow = useViewInNewWindow();
+		const vibrate = useVibrate();
 
 		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 
@@ -377,6 +378,7 @@ export default memo(
 										size="sm"
 										variant="light"
 										onPress={() => {
+											vibrate();
 											customerStore.onRecipeTableAction(name);
 										}}
 										aria-label={label}
@@ -389,7 +391,7 @@ export default memo(
 					}
 				}
 			},
-			[currentCustomerName, currentCustomerPopular, instance_recipe, openWindow]
+			[currentCustomerName, currentCustomerPopular, instance_recipe, openWindow, vibrate]
 		);
 
 		const tableToolbar = useMemo(
@@ -612,6 +614,7 @@ export default memo(
 				topContent={tableToolbar}
 				topContentPlacement="outside"
 				onSortChange={(config) => {
+					vibrate();
 					customerStore.onRecipeTableSortChange(config as TTableSortDescriptor);
 				}}
 				aria-label="料理选择表格"

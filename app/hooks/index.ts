@@ -7,4 +7,5 @@ export * from './usePinyinSortConfig';
 export * from './useSearchConfig';
 export * from './useSearchResult';
 export * from './useSortedData';
+export * from './useVibrate';
 export {useViewInNewWindow} from './useViewInNewWindow';

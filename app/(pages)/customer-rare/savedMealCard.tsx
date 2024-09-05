@@ -1,6 +1,8 @@
 import {Fragment, forwardRef, memo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
+import {useVibrate} from '@/hooks';
+
 import {Avatar, Button, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
 
 import {Plus} from './resultCard';
@@ -18,6 +20,8 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(_props, ref) {
+		const vibrate = useVibrate();
+
 		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 
 		const currentCustomerData = customerStore.shared.customer.data.use();
@@ -232,6 +236,7 @@ export default memo(
 											size="sm"
 											variant="flat"
 											onPress={() => {
+												vibrate();
 												customerStore.persistence.meals[currentCustomerName]?.set(
 													savedCustomerMeal.filter((meal) => meal.index !== mealIndex)
 												);
@@ -250,6 +255,7 @@ export default memo(
 											size="sm"
 											variant="flat"
 											onPress={() => {
+												vibrate();
 												customerStore.shared.customer.hasMystiaCooker.set(hasMystiaCooker);
 												customerStore.shared.customer.order.set(order);
 												customerStore.shared.beverage.name.set(beverage);

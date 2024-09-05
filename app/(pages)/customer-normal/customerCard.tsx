@@ -1,5 +1,7 @@
-import {forwardRef, memo, useMemo} from 'react';
+import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
+
+import {useVibrate} from '@/hooks';
 
 import {
 	Avatar,
@@ -21,7 +23,7 @@ import Tags from '@/components/tags';
 import Sprite from '@/components/sprite';
 
 import {customerRatingColorMap} from './constants';
-import {CUSTOMER_NORMAL_TAG_STYLE} from '@/data';
+import {CUSTOMER_NORMAL_TAG_STYLE, type TCustomerNormalNames} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, intersection, pinyinSort, toValue} from '@/utils';
@@ -30,6 +32,8 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_props, ref) {
+		const vibrate = useVibrate();
+
 		const currentCustomerName = customerStore.shared.customer.name.use();
 		const selectedCustomerBeverageTags = customerStore.shared.customer.beverageTags.use();
 		const selectedCustomerPositiveTags = customerStore.shared.customer.positiveTags.use();
@@ -56,6 +60,36 @@ export default memo(
 						selectedCustomerPositiveTags.size > 0
 				),
 			[currentBeverageName, currentRecipeData, selectedCustomerBeverageTags, selectedCustomerPositiveTags]
+		);
+
+		const handleBeverageTagClick = useCallback(
+			(tag: TBeverageTag) => {
+				vibrate();
+				customerStore.onCustomerFilterBeverageTag(tag);
+			},
+			[vibrate]
+		);
+
+		const handleRecipeTagClick = useCallback(
+			(tag: TRecipeTag) => {
+				vibrate();
+				customerStore.onCustomerFilterRecipeTag(tag);
+			},
+			[vibrate]
+		);
+
+		const handleRefreshCustomer = useCallback(() => {
+			vibrate();
+			customerStore.refreshCustomer();
+		}, [vibrate]);
+
+		const handleRefreshSelectedItems = useCallback(
+			(customerName: TCustomerNormalNames) => {
+				vibrate();
+				customerStore.refreshCustomerSelectedItems();
+				trackEvent(TrackCategory.Click, 'Reset Button', customerName);
+			},
+			[vibrate]
 		);
 
 		if (!currentCustomerName) {
@@ -210,11 +244,11 @@ export default memo(
 											tagStyle={CUSTOMER_NORMAL_TAG_STYLE.positive}
 											tagType="positive"
 											onClick={() => {
-												customerStore.onCustomerFilterRecipeTag(tag);
+												handleRecipeTagClick(tag);
 											}}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
-													customerStore.onCustomerFilterRecipeTag(tag);
+													handleRecipeTagClick(tag);
 												}
 											}}
 											aria-label={`${tag}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
@@ -265,11 +299,11 @@ export default memo(
 											tagStyle={CUSTOMER_NORMAL_TAG_STYLE.beverage}
 											tagType="positive"
 											onClick={() => {
-												customerStore.onCustomerFilterBeverageTag(tag);
+												handleBeverageTagClick(tag);
 											}}
 											onKeyDown={(event) => {
 												if (checkA11yConfirmKey(event)) {
-													customerStore.onCustomerFilterBeverageTag(tag);
+													handleBeverageTagClick(tag);
 												}
 											}}
 											aria-label={`${tag}${beverageTags.includes(tag) ? '/已满足' : ''}`}
@@ -291,8 +325,7 @@ export default memo(
 								icon={faArrowsRotate}
 								variant="light"
 								onPress={() => {
-									customerStore.refreshCustomerSelectedItems();
-									trackEvent(TrackCategory.Click, 'Reset Button', currentCustomerName);
+									handleRefreshSelectedItems(currentCustomerName);
 								}}
 								aria-label="重置当前选定项"
 								className="absolute -right-0.5 top-1 h-4 w-4 text-default-200 transition-opacity hover:opacity-hover data-[hover=true]:bg-transparent dark:text-default-300"
@@ -304,7 +337,7 @@ export default memo(
 							<FontAwesomeIconButton
 								icon={faXmark}
 								variant="light"
-								onPress={customerStore.refreshCustomer}
+								onPress={handleRefreshCustomer}
 								aria-label="取消选择当前顾客"
 								className="absolute -right-0.5 top-1 h-4 w-4 text-default-200 transition-opacity hover:opacity-hover data-[hover=true]:bg-transparent dark:text-default-300"
 							/>

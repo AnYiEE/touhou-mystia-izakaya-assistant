@@ -1,5 +1,7 @@
-import {forwardRef, memo} from 'react';
+import {forwardRef, memo, useCallback} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
+
+import {useVibrate} from '@/hooks';
 
 import {Avatar, Button, ScrollShadow} from '@nextui-org/react';
 
@@ -16,9 +18,16 @@ interface IProps {
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function CustomerTabContent({customerTabStyle, sortedData}, ref) {
+		const vibrate = useVibrate();
+
 		const currentCustomerName = customerStore.shared.customer.name.use();
 
 		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+
+		const handleButtonPress = useCallback(() => {
+			vibrate();
+			customerStore.toggleCustomerTabVisibilityState();
+		}, [vibrate]);
 
 		return (
 			<>
@@ -35,6 +44,7 @@ export default memo(
 							<div
 								key={name}
 								onClick={() => {
+									vibrate();
 									customerStore.onCustomerSelectedChange(name);
 								}}
 								onKeyDown={(event) => {
@@ -70,7 +80,7 @@ export default memo(
 						isIconOnly
 						size="sm"
 						variant="flat"
-						onPress={customerStore.toggleCustomerTabVisibilityState}
+						onPress={handleButtonPress}
 						aria-label={customerTabStyle.ariaLabel}
 						className={twJoin('h-4 w-4/5 text-default-300', isShowBackgroundImage && 'backdrop-blur')}
 					>

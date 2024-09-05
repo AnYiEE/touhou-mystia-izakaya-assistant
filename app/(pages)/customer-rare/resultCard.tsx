@@ -1,6 +1,8 @@
 import {type HTMLAttributes, forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
+import {useVibrate} from '@/hooks';
+
 import {Button, Card, Tooltip} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-icons';
@@ -9,6 +11,7 @@ import Placeholder from './placeholder';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 
+import {type TIngredientNames} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
@@ -63,6 +66,8 @@ export const UnknownItem = memo(
 );
 
 const IngredientList = memo(function IngredientsList() {
+	const vibrate = useVibrate();
+
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 
 	const instance_recipe = customerStore.instances.recipe.get();
@@ -82,6 +87,14 @@ const IngredientList = memo(function IngredientsList() {
 		[currentRecipeData?.extraIngredients, originalIngredients]
 	);
 
+	const handleRemoveButtonPress = useCallback(
+		(ingredient: TIngredientNames) => {
+			vibrate();
+			customerStore.removeMealIngredient(ingredient);
+		},
+		[vibrate]
+	);
+
 	return (
 		<div className="flex items-center gap-x-3">
 			{filledIngredients.map((ingredient, index) =>
@@ -94,7 +107,7 @@ const IngredientList = memo(function IngredientsList() {
 									<span
 										onKeyDown={(event) => {
 											if (checkA11yConfirmKey(event)) {
-												customerStore.removeMealIngredient(ingredient);
+												handleRemoveButtonPress(ingredient);
 											}
 										}}
 										tabIndex={0}
@@ -103,7 +116,7 @@ const IngredientList = memo(function IngredientsList() {
 									>
 										<span
 											onClick={() => {
-												customerStore.removeMealIngredient(ingredient);
+												handleRemoveButtonPress(ingredient);
 											}}
 											role="button"
 											tabIndex={1}
@@ -134,6 +147,8 @@ interface IResultCardProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
+		const vibrate = useVibrate();
+
 		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 
 		const currentCustomerName = customerStore.shared.customer.data.use()?.name;
@@ -170,13 +185,19 @@ export default memo(
 			}, 3000);
 		}, [hideTooltip]);
 
+		const handleCookerClick = useCallback(() => {
+			vibrate();
+			customerStore.toggleMystiaCooker();
+		}, [vibrate]);
+
 		const handleSaveButtonPress = useCallback(() => {
 			if (isSaveButtonDisabled) {
 				showTooltip();
 			} else {
+				vibrate();
 				customerStore.saveMealResult();
 			}
-		}, [isSaveButtonDisabled, showTooltip]);
+		}, [isSaveButtonDisabled, showTooltip, vibrate]);
 
 		useEffect(() => {
 			if (isShowSaveButtonTooltip && !isSaveButtonDisabled) {
@@ -224,10 +245,10 @@ export default memo(
 													target="cooker"
 													name={cooker}
 													size={2}
-													onClick={customerStore.toggleMystiaCooker}
+													onClick={handleCookerClick}
 													onKeyDown={(event) => {
 														if (checkA11yConfirmKey(event)) {
-															customerStore.toggleMystiaCooker();
+															handleCookerClick();
 														}
 													}}
 													role="button"

@@ -1,11 +1,14 @@
-import {forwardRef, memo, useMemo} from 'react';
+import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
+
+import {useVibrate} from '@/hooks';
 
 import {Badge, Button, ScrollShadow, Tooltip} from '@nextui-org/react';
 
 import Sprite from '@/components/sprite';
 
 import {type IIngredientTabContentProps} from '@/(pages)/customer-rare/ingredientTabContent';
+import {type TIngredientNames} from '@/data';
 import type {TRecipeTag} from '@/data/types';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, intersection, toValueWithKey} from '@/utils';
@@ -15,6 +18,8 @@ export default memo(
 		{ingredientTabStyle, sortedData},
 		ref
 	) {
+		const vibrate = useVibrate();
+
 		const currentCustomerName = customerStore.shared.customer.name.use();
 		const currentCustomerPopular = customerStore.shared.customer.popular.use();
 		const currentRecipeData = customerStore.shared.recipe.data.use();
@@ -43,6 +48,14 @@ export default memo(
 		sortedData = useMemo(
 			() => sortedData.filter(({name}) => !darkIngredients.has(name)),
 			[darkIngredients, sortedData]
+		);
+
+		const handleSelect = useCallback(
+			(ingredient: TIngredientNames) => {
+				vibrate();
+				customerStore.onIngredientSelectedChange(ingredient);
+			},
+			[vibrate]
 		);
 
 		if (!currentCustomerName || !currentRecipeData) {
@@ -156,11 +169,11 @@ export default memo(
 								>
 									<div
 										onClick={() => {
-											customerStore.onIngredientSelectedChange(name);
+											handleSelect(name);
 										}}
 										onKeyDown={(event) => {
 											if (checkA11yConfirmKey(event)) {
-												customerStore.onIngredientSelectedChange(name);
+												handleSelect(name);
 											}
 										}}
 										role="button"

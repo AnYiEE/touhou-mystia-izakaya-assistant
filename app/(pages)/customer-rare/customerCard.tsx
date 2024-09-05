@@ -1,6 +1,8 @@
 import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
+import {useVibrate} from '@/hooks';
+
 import {Avatar, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
 import {faArrowsRotate, faXmark} from '@fortawesome/free-solid-svg-icons';
 
@@ -13,6 +15,7 @@ import Tags from '@/components/tags';
 import Sprite from '@/components/sprite';
 
 import {customerRatingColorMap, customerTagStyleMap} from './constants';
+import type {ICurrentCustomer} from './types';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, intersection, pinyinSort, toValue} from '@/utils';
@@ -21,6 +24,8 @@ interface IProps {}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_props, ref) {
+		const vibrate = useVibrate();
+
 		const currentCustomerData = customerStore.shared.customer.data.use();
 		const selectedCustomerBeverageTags = customerStore.shared.customer.beverageTags.use();
 		const selectedCustomerPositiveTags = customerStore.shared.customer.positiveTags.use();
@@ -63,6 +68,7 @@ export default memo(
 
 		const handleBeverageTagClick = useCallback(
 			(tag: TBeverageTag) => {
+				vibrate();
 				if (!hasMystiaCooker) {
 					customerStore.onCustomerOrderBeverageTag(tag);
 				}
@@ -70,11 +76,12 @@ export default memo(
 					customerStore.onCustomerFilterBeverageTag(tag, hasMystiaCooker);
 				}
 			},
-			[hasMystiaCooker, isOrderLinkedFilter]
+			[hasMystiaCooker, isOrderLinkedFilter, vibrate]
 		);
 
 		const handleRecipeTagClick = useCallback(
 			(tag: TRecipeTag) => {
+				vibrate();
 				if (!hasMystiaCooker) {
 					customerStore.onCustomerOrderRecipeTag(tag);
 				}
@@ -82,7 +89,21 @@ export default memo(
 					customerStore.onCustomerFilterRecipeTag(tag, hasMystiaCooker);
 				}
 			},
-			[hasMystiaCooker, isOrderLinkedFilter]
+			[hasMystiaCooker, isOrderLinkedFilter, vibrate]
+		);
+
+		const handleRefreshCustomer = useCallback(() => {
+			vibrate();
+			customerStore.refreshCustomer();
+		}, [vibrate]);
+
+		const handleRefreshSelectedItems = useCallback(
+			(customerName: ICurrentCustomer['name']) => {
+				vibrate();
+				customerStore.refreshCustomerSelectedItems();
+				trackEvent(TrackCategory.Click, 'Reset Button', customerName);
+			},
+			[vibrate]
 		);
 
 		if (!currentCustomerData) {
@@ -359,8 +380,7 @@ export default memo(
 								icon={faArrowsRotate}
 								variant="light"
 								onPress={() => {
-									customerStore.refreshCustomerSelectedItems();
-									trackEvent(TrackCategory.Click, 'Reset Button', currentCustomerName);
+									handleRefreshSelectedItems(currentCustomerName);
 								}}
 								aria-label="重置当前选定项"
 								className="absolute -right-0.5 top-1 h-4 w-4 text-default-200 transition-opacity hover:opacity-hover data-[hover=true]:bg-transparent dark:text-default-300"
@@ -372,7 +392,7 @@ export default memo(
 							<FontAwesomeIconButton
 								icon={faXmark}
 								variant="light"
-								onPress={customerStore.refreshCustomer}
+								onPress={handleRefreshCustomer}
 								aria-label="取消选择当前顾客"
 								className="absolute -right-0.5 top-1 h-4 w-4 text-default-200 transition-opacity hover:opacity-hover data-[hover=true]:bg-transparent dark:text-default-300"
 							/>

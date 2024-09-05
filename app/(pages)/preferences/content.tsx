@@ -24,9 +24,11 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 	const popularTags = globalStore.popularTags.get();
 	const isNegativePopularTag = globalStore.persistence.popular.isNegative.use();
 	const selectedPopularTag = globalStore.selectedPopularTag.use();
+
 	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 	const isShowTachie = globalStore.persistence.tachie.use();
 	const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
+	const isVibrateEnabled = globalStore.persistence.vibrate.use();
 
 	const resetRecipeTablePage = useCallback(() => {
 		customerStore.shared.recipe.page.set(1);
@@ -59,29 +61,6 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 				设置
 			</H1>
 			<H2 className="mt-0">全局设置</H2>
-			<div className="space-y-2">
-				<SwitchItem
-					isSelected={isShowBackgroundImage}
-					onValueChange={globalStore.persistence.backgroundImage.set}
-					aria-label={`${isShowBackgroundImage ? '隐藏' : '显示'}全局背景图片`}
-				>
-					全局背景图片
-				</SwitchItem>
-				<SwitchItem
-					isSelected={isShowTachie}
-					onValueChange={globalStore.persistence.tachie.set}
-					aria-label={`${isShowTagDescription ? '隐藏' : '显示'}顾客页面立绘`}
-				>
-					顾客页面右下角的立绘（宽屏可见）
-				</SwitchItem>
-				<SwitchItem
-					isSelected={isShowTagsTooltip}
-					onValueChange={globalStore.persistence.customerCardTagsTooltip.set}
-					aria-label={`${isShowTagsTooltip ? '隐藏' : '显示'}标签浮动提示`}
-				>
-					顾客卡片中标签的浮动提示
-				</SwitchItem>
-			</div>
 			<H3
 				subTitle={<ScrollShadow hideScrollBar>正确设置游戏中现时流行的标签可以使套餐评级更为准确</ScrollShadow>}
 				classNames={{
@@ -142,6 +121,40 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 						清除选择
 					</Button>
 				</div>
+			</div>
+			<H3>外观</H3>
+			<div className="space-y-2">
+				<SwitchItem
+					isSelected={isShowBackgroundImage}
+					onValueChange={globalStore.persistence.backgroundImage.set}
+					aria-label={`${isShowBackgroundImage ? '隐藏' : '显示'}全局背景图片及磨砂效果`}
+				>
+					全局背景图片及磨砂效果
+				</SwitchItem>
+				<SwitchItem
+					isSelected={isShowTachie}
+					onValueChange={globalStore.persistence.tachie.set}
+					aria-label={`${isShowTagDescription ? '隐藏' : '显示'}顾客页面立绘`}
+				>
+					顾客页面右下角的立绘（宽屏可见）
+				</SwitchItem>
+			</div>
+			<H3>体验</H3>
+			<div className="space-y-2">
+				<SwitchItem
+					isSelected={isVibrateEnabled}
+					onValueChange={globalStore.persistence.vibrate.set}
+					aria-label={`${isVibrateEnabled ? '关闭' : '开启'}操作震动反馈`}
+				>
+					部分操作的震动反馈（需设备支持）
+				</SwitchItem>
+				<SwitchItem
+					isSelected={isShowTagsTooltip}
+					onValueChange={globalStore.persistence.customerCardTagsTooltip.set}
+					aria-label={`${isShowTagsTooltip ? '隐藏' : '显示'}标签浮动提示`}
+				>
+					顾客卡片中标签的浮动提示（鼠标悬停可见）
+				</SwitchItem>
 			</div>
 			<H2>稀客页面</H2>
 			<H3>稀客卡片</H3>
