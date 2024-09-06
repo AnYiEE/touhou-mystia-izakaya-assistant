@@ -41,6 +41,7 @@ type TPartner =
 	| '哆来咪'
 	| '高丽野阿吽'
 	| '宫古芳香'
+	| '魂魄妖梦'
 	| '键山雏'
 	| '拉尔瓦'
 	| '铃仙'
@@ -75,7 +76,7 @@ export type TReward =
 	| {
 			type: '伙伴';
 			reward: TPartner;
-			description: true | null;
+			description: true | string | null;
 	  };
 
 interface ISpellCard {

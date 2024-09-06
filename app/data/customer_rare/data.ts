@@ -195,7 +195,7 @@ export const CUSTOMER_RARE_LIST = [
 			{
 				type: '伙伴',
 				reward: '本居小铃',
-				description: true,
+				description: '完成地区【人间之里】主线任务',
 			},
 		],
 		spellCards: {
@@ -231,7 +231,7 @@ export const CUSTOMER_RARE_LIST = [
 			{
 				type: '伙伴',
 				reward: '高丽野阿吽',
-				description: true,
+				description: '解锁地区【红魔馆】后，和博丽灵梦对话',
 			},
 		],
 		spellCards: {
@@ -408,7 +408,7 @@ export const CUSTOMER_RARE_LIST = [
 			{
 				type: '伙伴',
 				reward: '十六夜咲夜',
-				description: true,
+				description: '完成蕾米莉亚的试炼',
 			},
 		],
 		spellCards: {
@@ -514,7 +514,7 @@ export const CUSTOMER_RARE_LIST = [
 			{
 				type: '伙伴',
 				reward: '铃仙',
-				description: true,
+				description: '3月16日“竹林对决”任务后自动获得',
 			},
 		],
 		spellCards: {
@@ -1767,7 +1767,13 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '清淡', '鲜', '力量涌现'],
 		negativeTags: ['重油', '咸', '猎奇'],
 		beverageTags: ['无酒精', '可加热', '水果'],
-		bondRewards: [],
+		bondRewards: [
+			{
+				type: '伙伴',
+				reward: '魂魄妖梦',
+				description: '完成主线剧情后，和地区【白玉楼】的魂魄妖梦对话，并完成第二场试炼',
+			},
+		],
 		spellCards: {
 			positive: [
 				{

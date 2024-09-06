@@ -23,11 +23,16 @@ import {customerRareStore as store} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
 interface ILevelLabelProps {
-	level: number;
+	level: number | string;
 }
 
 const LevelLabel = memo<ILevelLabelProps>(function LevelLabel({level}) {
-	return <span className="font-medium">Lv.{level}：</span>;
+	return (
+		<span className="font-medium">
+			{typeof level === 'number' ? 'Lv.' : ''}
+			{level}：
+		</span>
+	);
 });
 
 export default memo(function InfoButton() {
@@ -92,7 +97,10 @@ export default memo(function InfoButton() {
 							title={reward}
 							className="my-1 select-none"
 						/>
-						<p>解锁条件：{currentCustomerMainPlace}地区全部角色羁绊满级</p>
+						<p>
+							解锁条件：
+							{description === true ? `地区【${currentCustomerMainPlace}】全部稀客羁绊满级` : description}
+						</p>
 					</div>
 				);
 			default:
@@ -140,7 +148,11 @@ export default memo(function InfoButton() {
 							))}
 							{currentCustomerBondRewards.map((bondReward, index) => (
 								<p key={index} className="leading-5">
-									<LevelLabel level={5} />
+									<LevelLabel
+										level={
+											bondReward.type === '伙伴' && bondReward.description !== true ? '其他' : 5
+										}
+									/>
 									{bondReward.type === '采集'
 										? `${bondReward.type}【${bondReward.reward}】`
 										: (() => {
