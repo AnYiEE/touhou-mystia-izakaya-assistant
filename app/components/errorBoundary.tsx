@@ -4,6 +4,10 @@ import {Component, type ErrorInfo, type PropsWithChildren} from 'react';
 
 import {TrackCategory, trackEvent} from '@/components/analytics';
 
+import {siteConfig} from '@/configs';
+
+const {links} = siteConfig;
+
 interface IStates {
 	error: Error | null;
 	info: ErrorInfo | null;
@@ -73,6 +77,18 @@ export default class ErrorBoundary extends Component<IProps, IStates> {
 					>
 						点此重试（将清空已保存的数据）
 					</button>
+					<p className="text-center text-sm">
+						请完整复制或截图上方的错误信息，
+						<a
+							href={links.qqGroup.href}
+							referrerPolicy="no-referrer"
+							target="_blank"
+							className="text-primary hover:underline hover:underline-offset-2"
+						>
+							{links.qqGroup.label}
+						</a>
+						以反馈问题。
+					</p>
 				</div>
 			);
 		}
