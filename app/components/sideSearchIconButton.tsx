@@ -14,6 +14,8 @@ import {faMagnifyingGlass} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
 
+import {globalStore as store} from '@/stores';
+
 export interface ISearchConfig {
 	label: AutocompleteProps['label'];
 	searchItems: {
@@ -32,10 +34,18 @@ export default memo(
 		{searchConfig: {label, searchItems, searchValue, setSearchValue}, className, ...props},
 		ref
 	) {
+		const isShowBackgroundImage = store.persistence.backgroundImage.use();
+
 		const content = `搜索（${searchValue ? '已' : '未'}激活）`;
 
 		return (
-			<Popover showArrow backdrop="opaque" placement="left" shouldCloseOnInteractOutside={() => true} ref={ref}>
+			<Popover
+				showArrow
+				backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
+				placement="left"
+				shouldCloseOnInteractOutside={() => true}
+				ref={ref}
+			>
 				<Tooltip showArrow content={content} placement="left">
 					<span className="flex">
 						<PopoverTrigger>

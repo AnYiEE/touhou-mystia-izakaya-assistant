@@ -11,6 +11,7 @@ import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 
 import {BEVERAGE_TAG_STYLE, type IBeverage} from '@/data';
+import {globalStore as store} from '@/stores';
 import {type Beverage} from '@/utils';
 
 interface IProps {
@@ -22,11 +23,13 @@ export default memo<IProps>(function Content({data, isInNewWindow}) {
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
 	const [openedPopover] = useOpenedFoodPopover(popoverCardRef);
 
+	const isShowBackgroundImage = store.persistence.backgroundImage.use();
+
 	return data.map(({dlc, from, name, level, price, tags}, dataIndex) => (
 		<Popover
 			key={dataIndex}
 			showArrow
-			backdrop="opaque"
+			backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
 			isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}
 		>
 			<PopoverTrigger>

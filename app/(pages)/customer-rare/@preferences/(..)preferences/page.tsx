@@ -6,6 +6,7 @@ import {useRouter} from 'next/navigation';
 import {Modal, ModalBody, ModalContent, ScrollShadow} from '@nextui-org/react';
 
 import Content from '@/(pages)/preferences/content';
+
 import {globalStore as store} from '@/stores';
 
 export default function PreferencesModal() {
@@ -23,6 +24,7 @@ export default function PreferencesModal() {
 	return (
 		<Modal
 			defaultOpen
+			backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
 			scrollBehavior="inside"
 			size="3xl"
 			onClose={handleClose}

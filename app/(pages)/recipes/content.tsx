@@ -13,6 +13,7 @@ import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 
 import {type IRecipe, RECIPE_TAG_STYLE} from '@/data';
+import {globalStore as store} from '@/stores';
 import {type Recipe} from '@/utils';
 
 interface IProps {
@@ -25,12 +26,14 @@ export default memo<IProps>(function Content({data, isInNewWindow}) {
 	const [openedPopover] = useOpenedFoodPopover(popoverCardRef);
 	const openWindow = useViewInNewWindow();
 
+	const isShowBackgroundImage = store.persistence.backgroundImage.use();
+
 	return data.map(
 		({dlc, from, name, level, price, cooker, ingredients, negativeTags, positiveTags, max, min}, dataIndex) => (
 			<Popover
 				key={dataIndex}
 				showArrow
-				backdrop="opaque"
+				backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
 				isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}
 			>
 				<PopoverTrigger>

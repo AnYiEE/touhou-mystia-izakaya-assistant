@@ -17,6 +17,7 @@ import {faFilter} from '@fortawesome/free-solid-svg-icons';
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
 import Sprite from '@/components/sprite';
 
+import {globalStore as store} from '@/stores';
 import {pinyinSort} from '@/utils';
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
@@ -36,6 +37,8 @@ interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function SideFilterIconButton({selectConfig, className, ...props}, ref) {
+		const isShowBackgroundImage = store.persistence.backgroundImage.use();
+
 		const hasFilter = useMemo(() => selectConfig.some(({selectedKeys}) => selectedKeys.length > 0), [selectConfig]);
 
 		const handleSelectionChange = useCallback(
@@ -54,7 +57,13 @@ export default memo(
 		const content = `筛选（${hasFilter ? '已' : '未'}激活）`;
 
 		return (
-			<Popover showArrow backdrop="opaque" placement="left" shouldCloseOnInteractOutside={() => true} ref={ref}>
+			<Popover
+				showArrow
+				backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
+				placement="left"
+				shouldCloseOnInteractOutside={() => true}
+				ref={ref}
+			>
 				<Tooltip showArrow content={content} placement="left">
 					<span className="flex">
 						<PopoverTrigger>

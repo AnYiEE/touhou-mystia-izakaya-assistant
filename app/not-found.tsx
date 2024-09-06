@@ -5,14 +5,14 @@ import {type Metadata} from 'next';
 import {twJoin} from 'tailwind-merge';
 
 import {Button, Divider, Link} from '@nextui-org/react';
-import {globalStore} from '@/stores';
+import {globalStore as store} from '@/stores';
 
 export const metadata: Metadata = {
 	title: 'Oops!',
 };
 
 export default memo(function NotFound() {
-	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+	const isShowBackgroundImage = store.persistence.backgroundImage.use();
 
 	return (
 		<div className="flex h-full items-center justify-center gap-4">

@@ -127,9 +127,9 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 				<SwitchItem
 					isSelected={isShowBackgroundImage}
 					onValueChange={globalStore.persistence.backgroundImage.set}
-					aria-label={`${isShowBackgroundImage ? '隐藏' : '显示'}全局背景图片及磨砂效果`}
+					aria-label={`${isShowBackgroundImage ? '关闭' : '开启'}全局背景图片和磨砂效果`}
 				>
-					全局背景图片及磨砂效果
+					全局背景图片和磨砂效果
 				</SwitchItem>
 				<SwitchItem
 					isSelected={isShowTachie}

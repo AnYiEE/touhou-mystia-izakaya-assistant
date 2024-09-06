@@ -32,6 +32,7 @@ import ThemeSwitcher from '@/components/themeSwitcher';
 import Sprite from '@/components/sprite';
 
 import {siteConfig} from '@/configs';
+import {globalStore as store} from '@/stores';
 import {toggleBoolean} from '@/utils';
 
 const {links, name, navItems, navMenuItems, shortName} = siteConfig;
@@ -126,6 +127,8 @@ export default memo(function Navbar() {
 	const startProgress = useProgress();
 	const [isMenuOpened, toggleMenuOpened] = useReducer(toggleBoolean, false);
 
+	const isShowBackgroundImage = store.persistence.backgroundImage.use();
+
 	const shouldShowPreferences = useMemo(
 		() => pathname.startsWith('/customer') || pathname === '/preferences',
 		[pathname]
@@ -135,6 +138,7 @@ export default memo(function Navbar() {
 		<NextUINavbar
 			isBordered
 			shouldHideOnScroll
+			isBlurred={isShowBackgroundImage}
 			maxWidth="xl"
 			isMenuOpen={isMenuOpened}
 			onMenuOpenChange={toggleMenuOpened}

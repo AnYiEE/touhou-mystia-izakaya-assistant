@@ -1,8 +1,9 @@
-import {globalStore} from '@/stores';
 import {useCallback} from 'react';
 
+import {globalStore as store} from '@/stores';
+
 export function useVibrate(pattern = 10) {
-	const isVibrateEnabled = globalStore.persistence.vibrate.use();
+	const isVibrateEnabled = store.persistence.vibrate.use();
 
 	const vibrate = useCallback(() => {
 		if (!isVibrateEnabled) {
