@@ -5,7 +5,9 @@ import {
 	forwardRef,
 	memo,
 	useCallback,
+	useEffect,
 	useMemo,
+	useState,
 } from 'react';
 
 import {useParams} from '@/hooks';
@@ -20,9 +22,12 @@ import Price from '@/components/price';
 import Sprite, {type ISpriteProps} from '@/components/sprite';
 import TagsComponent from '@/components/tags';
 
+import {siteConfig} from '@/configs';
 import {type IIngredient, type TCookerNames, type TFoodNames, type TIngredientNames, type TTags} from '@/data';
 import type {ITagStyle} from '@/data/types';
 import {checkA11yConfirmKey, uniq} from '@/utils';
+
+const {name: siteName} = siteConfig;
 
 interface ICloseButtonProps {
 	isInNewWindow?: boolean;
@@ -85,8 +90,10 @@ interface IShareButtonProps {
 const ShareButton = memo(
 	forwardRef<HTMLDivElement | null, IShareButtonProps>(function FoodPopoverCardShareButton({name, param}, ref) {
 		const [params] = useParams();
+		const [isCanShare, setIsCanShare] = useState(false);
+		const [shareObject, setShareObject] = useState<ShareData>({});
 
-		const generateUrl = useMemo(() => {
+		const generatedUrl = useMemo(() => {
 			const newParams = new URLSearchParams(params);
 
 			newParams.set(param, name);
@@ -94,20 +101,52 @@ const ShareButton = memo(
 			return `${window.location.origin}${window.location.pathname}?${newParams.toString()}`;
 		}, [name, param, params]);
 
+		useEffect(() => {
+			const text = `在${siteName}上查看【${name}】的详情`;
+			const currentShareObject = {
+				text,
+				title: text,
+				url: generatedUrl,
+			};
+
+			setShareObject(currentShareObject);
+
+			try {
+				// For checking if the browser supports the share API.
+				setIsCanShare(navigator.canShare(currentShareObject));
+			} catch {
+				/* empty */
+			}
+		}, [generatedUrl, name]);
+
 		const label = '点击：分享当前选中项的链接';
 
-		return (
+		const shareButton = useMemo(
+			() => (
+				<FontAwesomeIconButton
+					icon={faShare}
+					variant="light"
+					onPress={() => {
+						if (isCanShare) {
+							navigator.share(shareObject).catch(() => {});
+						}
+					}}
+					aria-label={label}
+					className="h-4 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:text-default-300"
+				/>
+			),
+			[isCanShare, shareObject]
+		);
+
+		return isCanShare ? (
+			<Tooltip showArrow content={label} offset={-2} placement="left" size="sm">
+				<div className="absolute -right-1 bottom-1 flex">{shareButton}</div>
+			</Tooltip>
+		) : (
 			<Popover showArrow ref={ref}>
 				<Tooltip showArrow content={label} offset={-2} placement="left" size="sm">
 					<div className="absolute -right-1 bottom-1 flex">
-						<PopoverTrigger>
-							<FontAwesomeIconButton
-								icon={faShare}
-								variant="light"
-								aria-label={label}
-								className="h-4 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:text-default-300"
-							/>
-						</PopoverTrigger>
+						<PopoverTrigger>{shareButton}</PopoverTrigger>
 					</div>
 				</Tooltip>
 				<PopoverContent>
@@ -122,7 +161,7 @@ const ShareButton = memo(
 							pre: 'flex max-w-[60vw] items-center whitespace-normal break-all',
 						}}
 					>
-						{generateUrl}
+						{generatedUrl}
 					</Snippet>
 				</PopoverContent>
 			</Popover>
