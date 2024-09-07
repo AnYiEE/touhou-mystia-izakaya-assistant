@@ -49,13 +49,16 @@ export class Item<
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-	public findIndexByName<T extends string = TName>(name: T) {
+	public findIndexByName<T extends string = TName>(name: T, ignoreException = false) {
 		if (Item.nameIndexCache.has(name)) {
 			return Item.nameIndexCache.get(name);
 		}
 
 		const index = this._data.findIndex(({name: target}) => target === name);
 		if (index === -1) {
+			if (ignoreException) {
+				return -1;
+			}
 			throw new Error(`[utils/Item]: name \`${name}\` not found`);
 		}
 
