@@ -68,8 +68,8 @@ function checkEasterEgg({
 			}
 			break;
 		case '河城荷取':
-			if (currentIngredients.includes('黄瓜') && mealScore < 3) {
-				return 3;
+			if (currentIngredients.includes('黄瓜')) {
+				return Math.max(mealScore, 3);
 			}
 			break;
 		case '蕾米莉亚':
