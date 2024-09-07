@@ -12,9 +12,9 @@ export class Item<
 	protected _data: TTarget;
 	protected _dataWithPinyin: TItemWithPinyin[];
 
-	protected pinyinSortedCache: TItemWithPinyin[] | undefined;
-	protected static indexNameCache: Map<number, string> = new Map();
-	protected static nameIndexCache: Map<string, number> = new Map();
+	protected _pinyinSortedCache: TItemWithPinyin[] | null;
+	protected _indexNameCache: Map<number, string>;
+	protected _nameIndexCache: Map<string, number>;
 
 	protected constructor(data: TTarget) {
 		this._data = cloneDeep(data);
@@ -26,6 +26,10 @@ export class Item<
 				v: true,
 			}),
 		})) as TItemWithPinyin[];
+
+		this._pinyinSortedCache = null;
+		this._indexNameCache = new Map();
+		this._nameIndexCache = new Map();
 	}
 
 	public get data() {
@@ -33,11 +37,11 @@ export class Item<
 	}
 
 	public get dataPinyinSorted(): TItemWithPinyin[] {
-		if (this.pinyinSortedCache) {
-			return this.pinyinSortedCache;
+		if (this._pinyinSortedCache) {
+			return this._pinyinSortedCache;
 		}
 
-		this.pinyinSortedCache = this.sortByPinyin(this.data);
+		this._pinyinSortedCache = this.sortByPinyin(this.data);
 
 		return this.dataPinyinSorted;
 	}
@@ -50,8 +54,8 @@ export class Item<
 
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 	public findIndexByName<T extends string = TName>(name: T, ignoreException = false) {
-		if (Item.nameIndexCache.has(name)) {
-			return Item.nameIndexCache.get(name);
+		if (this._nameIndexCache.has(name)) {
+			return this._nameIndexCache.get(name);
 		}
 
 		const index = this._data.findIndex(({name: target}) => target === name);
@@ -62,7 +66,7 @@ export class Item<
 			throw new Error(`[utils/Item]: name \`${name}\` not found`);
 		}
 
-		Item.nameIndexCache.set(name, index);
+		this._nameIndexCache.set(name, index);
 
 		return index;
 	}
@@ -71,12 +75,12 @@ export class Item<
 		const item = this._data[index];
 		this.checkIndexRange(index, item);
 
-		if (Item.indexNameCache.has(index)) {
-			return Item.indexNameCache.get(index) as TName;
+		if (this._indexNameCache.has(index)) {
+			return this._indexNameCache.get(index) as TName;
 		}
 
 		const {name} = item;
-		Item.indexNameCache.set(index, name);
+		this._indexNameCache.set(index, name);
 
 		return name as TName;
 	}
