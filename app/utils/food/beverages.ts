@@ -10,12 +10,6 @@ export class Beverage extends Food<TBeverages> {
 	/** @description Flag to check if the tags are consistent with the original data. */
 	private static _isTagsChecked: boolean;
 
-	private constructor(data: TBeverages) {
-		super(data);
-
-		this._data = data;
-	}
-
 	public static getInstance() {
 		if (Beverage._instance) {
 			return Beverage._instance;

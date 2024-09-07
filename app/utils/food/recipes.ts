@@ -27,7 +27,7 @@ export class Recipe extends Food<TRecipes> {
 		饱腹: '下酒',
 	} as const;
 
-	private static _bondRecipesCache: Map<ICurrentCustomer['name'], TBondRecipes> = new Map();
+	private static _bondRecipesCache = new Map<ICurrentCustomer['name'], TBondRecipes>();
 
 	private constructor(data: TRecipes) {
 		const clonedData = cloneDeep(data);
@@ -42,8 +42,6 @@ export class Recipe extends Food<TRecipes> {
 		});
 
 		super(clonedData);
-
-		this._data = clonedData;
 	}
 
 	public static getInstance() {

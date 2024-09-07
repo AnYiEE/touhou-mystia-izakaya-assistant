@@ -8,12 +8,6 @@ export class Customer<Target extends ICustomer[]> extends Item<Target> {
 	private static tachiePathCache = new Map<string, string>();
 	private static tachiePinyinCache = new Map<string, string>();
 
-	protected constructor(data: Target) {
-		super(data);
-
-		this._data = data;
-	}
-
 	public getTachiePath(type: 'customer', data: ICurrentCustomer | null): string;
 	public getTachiePath(type: 'clothes' | 'partners', data: string, isGif?: boolean): string;
 	public getTachiePath(

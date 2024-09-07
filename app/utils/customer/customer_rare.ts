@@ -4,12 +4,6 @@ import {CUSTOMER_RARE_LIST, type TCustomerRares} from '@/data';
 export class CustomerRare extends Customer<TCustomerRares> {
 	private static _instance: CustomerRare | undefined;
 
-	private constructor(data: TCustomerRares) {
-		super(data);
-
-		this._data = data;
-	}
-
 	public static getInstance() {
 		if (CustomerRare._instance) {
 			return CustomerRare._instance;

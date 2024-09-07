@@ -11,12 +11,6 @@ export class Ingredient extends Food<TIngredients> {
 	/** @description Flag to check if the types are consistent with the original data. */
 	private static _isTypesChecked: boolean;
 
-	private constructor(data: TIngredients) {
-		super(data);
-
-		this._data = data;
-	}
-
 	public static getInstance() {
 		if (Ingredient._instance) {
 			return Ingredient._instance;

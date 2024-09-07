@@ -56,7 +56,6 @@ export class Sprite<
 		super(data);
 
 		this._config = config;
-		this._data = data;
 
 		const {col, row, height, width} = config;
 
