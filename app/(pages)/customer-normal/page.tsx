@@ -130,13 +130,13 @@ export default memo(function CustomerNormal() {
 				},
 				{
 					items: allCustomerPlaces,
-					label: '出没地点（包含）',
+					label: '出没地区（包含）',
 					selectedKeys: customerFilterPlaces,
 					setSelectedKeys: customerStore.persistence.customer.filters.places.set,
 				},
 				{
 					items: allCustomerPlaces,
-					label: '出没地点（排除）',
+					label: '出没地区（排除）',
 					selectedKeys: customerFilterNoPlaces,
 					setSelectedKeys: customerStore.persistence.customer.filters.noPlaces.set,
 				},

@@ -9,6 +9,7 @@ import {
 	useMemo,
 	useState,
 } from 'react';
+import {twJoin} from 'tailwind-merge';
 
 import {useParams} from '@/hooks';
 import {type TOpenWindow} from '@/hooks/useViewInNewWindow';
@@ -213,9 +214,27 @@ const FoodPopoverCardComponent = memo(
 					<Sprite target={target} name={name} size={2} />
 					<p className="font-bold">
 						{dlc !== undefined && (
-							<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} size="sm">
-								<span title={dlcLabel}>【DLC{dlc}】</span>
-							</Tooltip>
+							<Popover showArrow isTriggerDisabled={!dlcLabel} offset={5} size="sm">
+								<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={2} size="sm">
+									<span className={twJoin(!dlcLabel && 'cursor-text')}>
+										<PopoverTrigger>
+											<span
+												role={dlcLabel ? 'button' : 'none'}
+												tabIndex={dlcLabel ? 0 : -1}
+												title={dlcLabel}
+												className="opacity-100"
+											>
+												【
+												<span className={twJoin(dlcLabel && 'underline-dotted-offset2')}>
+													DLC{dlc}
+												</span>
+												】
+											</span>
+										</PopoverTrigger>
+									</span>
+								</Tooltip>
+								<PopoverContent>{dlcLabel}</PopoverContent>
+							</Popover>
 						)}
 						{name}
 					</p>

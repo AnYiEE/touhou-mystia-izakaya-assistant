@@ -46,7 +46,7 @@ const JSON_TYPE = 'application/json';
 
 enum DownloadButtonLabel {
 	Download = '下载',
-	Downloading = '尝试唤起下载器...',
+	Downloading = '尝试唤起下载器',
 	DownloadingTip = '如无响应，请检查浏览器权限、设置和浏览器扩展程序',
 }
 
@@ -210,6 +210,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 									fullWidth
 									color={isDownloadButtonDisabled ? 'success' : 'primary'}
 									isDisabled={isDownloadButtonDisabled}
+									isLoading={isDownloadButtonDisabled}
 									variant="flat"
 									onPress={handleDownloadButtonPress}
 									className={twJoin(isShowBackgroundImage && 'backdrop-blur')}

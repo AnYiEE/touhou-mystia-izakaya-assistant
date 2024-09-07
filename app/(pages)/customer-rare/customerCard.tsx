@@ -133,8 +133,8 @@ export default memo(
 
 		const placeContent =
 			clonedCurrentCustomerPlacesLength > 0
-				? `其他出没地点：${clonedCurrentCustomerPlaces.join('、')}`
-				: '暂未收录其他出没地点';
+				? `其他出没地区：${clonedCurrentCustomerPlaces.join('、')}`
+				: '暂未收录其他出没地区';
 
 		let beverageTags: TBeverageTag[] = [];
 		if (currentBeverageName) {
@@ -171,12 +171,12 @@ export default memo(
 		const avatarRatingColor = currentRating ? customerRatingColorMap[currentRating] : undefined;
 		const avatarRatingContent =
 			currentRating ??
-			`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipeData ? '' : '料理、'}顾客点单需求以评级`;
+			`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipeData ? '' : '料理、'}顾客点单需求或标记为使用“夜雀”系列厨具以评级`;
 
 		const getTagTooltip = (type: keyof typeof currentCustomerOrder, tag: string) => {
 			const isCurrentTag = currentCustomerOrder[type] === tag;
 			const tagType = type === 'beverageTag' ? '酒水' : '料理';
-			const cookerTip = '已使用夜雀厨具无视顾客点单需求';
+			const cookerTip = '已使用“夜雀”系列厨具无视顾客点单需求';
 			const orderTip = hasMystiaCooker
 				? isOrderLinkedFilter
 					? ''
@@ -234,9 +234,26 @@ export default memo(
 						</Popover>
 						<div className="whitespace-nowrap text-xs font-medium text-default-400 dark:text-default-500">
 							<p className="flex justify-between">
-								<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={4}>
-									<span title={dlcLabel}>DLC{currentCustomerDlc}</span>
-								</Tooltip>
+								<Popover showArrow isTriggerDisabled={!dlcLabel} offset={6}>
+									<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={4}>
+										<span className={twJoin(!dlcLabel && 'cursor-text')}>
+											<PopoverTrigger>
+												<span
+													role={dlcLabel ? 'button' : 'none'}
+													tabIndex={dlcLabel ? 0 : -1}
+													title={dlcLabel}
+													className={twJoin(
+														'opacity-100',
+														dlcLabel && 'underline-dotted-offset2'
+													)}
+												>
+													DLC{currentCustomerDlc}
+												</span>
+											</PopoverTrigger>
+										</span>
+									</Tooltip>
+									<PopoverContent>{dlcLabel}</PopoverContent>
+								</Popover>
 								<Popover showArrow offset={6}>
 									<Tooltip showArrow content={placeContent} offset={4}>
 										<span className="cursor-pointer">

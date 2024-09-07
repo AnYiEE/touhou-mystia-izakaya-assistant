@@ -113,8 +113,8 @@ export default memo(
 
 		const placeContent =
 			clonedCurrentCustomerPlacesLength > 0
-				? `其他出没地点：${clonedCurrentCustomerPlaces.join('、')}`
-				: '暂未收录其他出没地点';
+				? `其他出没地区：${clonedCurrentCustomerPlaces.join('、')}`
+				: '暂未收录其他出没地区';
 
 		let beverageTags: TBeverageTag[] = [];
 		if (currentBeverageName) {
@@ -199,9 +199,26 @@ export default memo(
 						</Popover>
 						<div className="min-w-24 gap-2 lg:min-w-28">
 							<p className="flex justify-between whitespace-nowrap text-xs font-medium text-default-400 dark:text-default-500">
-								<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={4}>
-									<span title={dlcLabel}>DLC{currentCustomerDlc}</span>
-								</Tooltip>
+								<Popover showArrow isTriggerDisabled={!dlcLabel} offset={6}>
+									<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={4}>
+										<span className={twJoin(!dlcLabel && 'cursor-text')}>
+											<PopoverTrigger>
+												<span
+													role={dlcLabel ? 'button' : 'none'}
+													tabIndex={dlcLabel ? 0 : -1}
+													title={dlcLabel}
+													className={twJoin(
+														'opacity-100',
+														dlcLabel && 'underline-dotted-offset2'
+													)}
+												>
+													DLC{currentCustomerDlc}
+												</span>
+											</PopoverTrigger>
+										</span>
+									</Tooltip>
+									<PopoverContent>{dlcLabel}</PopoverContent>
+								</Popover>
 								<Popover showArrow offset={6}>
 									<Tooltip showArrow content={placeContent} offset={4}>
 										<span className="cursor-pointer">

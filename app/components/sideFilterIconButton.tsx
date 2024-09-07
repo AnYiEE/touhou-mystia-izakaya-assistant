@@ -127,7 +127,9 @@ export default memo(
 												</span>
 											</SelectItem>
 										) : (
-											<SelectItem key={value}>{value.toString()}</SelectItem>
+											<SelectItem key={value}>
+												{label === 'DLC' && value === 0 ? '游戏本体' : value.toString()}
+											</SelectItem>
 										)
 									}
 								</Select>

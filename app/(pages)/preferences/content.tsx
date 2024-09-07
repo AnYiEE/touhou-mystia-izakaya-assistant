@@ -146,7 +146,7 @@ export default memo<Partial<IProps>>(function Content({onModalClose}) {
 					onValueChange={globalStore.persistence.vibrate.set}
 					aria-label={`${isVibrateEnabled ? '关闭' : '开启'}操作震动反馈`}
 				>
-					部分操作的震动反馈（需设备支持）
+					部分操作的震动反馈（需设备和浏览器支持）
 				</SwitchItem>
 				<SwitchItem
 					isSelected={isShowTagsTooltip}

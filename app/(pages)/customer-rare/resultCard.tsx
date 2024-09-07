@@ -238,7 +238,7 @@ export default memo(
 										const cooker = hasMystiaCooker
 											? (`夜雀${originalCooker}` as const)
 											: originalCooker;
-										const label = `点击：将此点单标记为使用${hasMystiaCooker ? '非' : ''}夜雀${originalCooker}制作`;
+										const label = `点击：将此点单标记为使用${hasMystiaCooker ? '非' : ''}【夜雀${originalCooker}】制作`;
 										return (
 											<Tooltip showArrow content={label}>
 												<Sprite
@@ -283,7 +283,7 @@ export default memo(
 					</div>
 					<Tooltip
 						showArrow
-						content={`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipeData ? '' : '料理、'}顾客点单需求`}
+						content={`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipeData ? '' : '料理、'}顾客点单需求或标记为使用“夜雀”系列厨具以保存`}
 						isOpen={isShowSaveButtonTooltip}
 					>
 						<Button

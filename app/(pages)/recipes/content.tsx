@@ -4,7 +4,7 @@ import {isObjectLike} from 'lodash';
 import {useViewInNewWindow} from '@/hooks';
 import {openedPopoverParam, useOpenedFoodPopover} from '@/hooks/useOpenedFoodPopover';
 
-import {Popover, PopoverContent, PopoverTrigger} from '@nextui-org/react';
+import {Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
 
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import FoodCard from '@/components/foodCard';
@@ -73,10 +73,10 @@ export default memo<IProps>(function Content({data, isInNewWindow}) {
 												{method === 'self'
 													? '初始拥有'
 													: method === 'levelup'
-														? '升级'
+														? '游戏等级提升'
 														: isObjectLike(target) && (
 																<>
-																	<span className="pr-1">{target.name}</span>
+																	<span className="pr-1">【{target.name}】羁绊</span>
 																	Lv.{target.level - 1}
 																	<span className="px-0.5">➞</span>Lv.
 																	{target.level}
@@ -87,7 +87,18 @@ export default memo<IProps>(function Content({data, isInNewWindow}) {
 									)}
 						</p>
 						<p>
-							<span className="font-semibold">烹饪时间：</span>
+							<Popover showArrow offset={6} size="sm">
+								<Tooltip showArrow content="随游戏等级提升而降低" offset={3} size="sm">
+									<span className="inline-flex cursor-pointer">
+										<PopoverTrigger>
+											<span tabIndex={0} className="font-semibold">
+												<span className="underline-dotted-offset2">烹饪时间</span>：
+											</span>
+										</PopoverTrigger>
+									</span>
+								</Tooltip>
+								<PopoverContent>随游戏等级提升而降低</PopoverContent>
+							</Popover>
 							{max}秒<span className="px-0.5">➞</span>
 							{min}秒
 						</p>
