@@ -1,5 +1,5 @@
 import {type Dispatch, type SetStateAction, forwardRef, memo} from 'react';
-import {twMerge} from 'tailwind-merge';
+import {twJoin, twMerge} from 'tailwind-merge';
 
 import {
 	Autocomplete,
@@ -13,8 +13,10 @@ import {
 import {faMagnifyingGlass} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
+import Sprite from '@/components/sprite';
 
-import {globalStore as store} from '@/stores';
+import {customerRareStore as customerStore, globalStore} from '@/stores';
+import type {TSpriteTarget} from '@/utils/sprite/types';
 
 export interface ISearchConfig {
 	label: AutocompleteProps['label'];
@@ -23,6 +25,7 @@ export interface ISearchConfig {
 	}[];
 	searchValue: string;
 	setSearchValue: Dispatch<SetStateAction<ISearchConfig['searchValue']>>;
+	spriteTarget?: TSpriteTarget;
 }
 
 interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'> {
@@ -31,10 +34,12 @@ interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function SideSearchIconButton(
-		{searchConfig: {label, searchItems, searchValue, setSearchValue}, className, ...props},
+		{searchConfig: {label, searchItems, searchValue, setSearchValue, spriteTarget}, className, ...props},
 		ref
 	) {
-		const isShowBackgroundImage = store.persistence.backgroundImage.use();
+		const instance_special = customerStore.instances.customer_special.get();
+
+		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 
 		const content = `搜索（${searchValue ? '已' : '未'}激活）`;
 
@@ -69,7 +74,38 @@ export default memo(
 						label={label}
 						onInputChange={setSearchValue}
 					>
-						{({value}) => <AutocompleteItem key={value}>{value}</AutocompleteItem>}
+						{({value}) =>
+							spriteTarget ? (
+								<AutocompleteItem
+									key={value}
+									textValue={value}
+									classNames={{
+										base: '[&>span]:inline-flex',
+									}}
+								>
+									<span className="inline-flex items-center">
+										{spriteTarget.startsWith('customer') ? (
+											<Sprite
+												target={
+													spriteTarget === 'customer_rare' &&
+													instance_special.findIndexByName(value, true) !== -1
+														? 'customer_special'
+														: spriteTarget
+												}
+												name={value as never}
+												size={1.5}
+												className={twJoin(spriteTarget !== 'customer_normal' && 'rounded-full')}
+											/>
+										) : (
+											<Sprite target={spriteTarget} name={value as never} size={1} />
+										)}
+										<span className="ml-1">{value}</span>
+									</span>
+								</AutocompleteItem>
+							) : (
+								<AutocompleteItem key={value}>{value}</AutocompleteItem>
+							)
+						}
 					</Autocomplete>
 				</PopoverContent>
 			</Popover>

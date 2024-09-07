@@ -138,6 +138,7 @@ export default memo(function CustomerRare() {
 		searchItems: allCustomerNames,
 		searchValue: customerSearchValue,
 		setSearchValue: customerStore.persistence.customer.searchValue.set,
+		spriteTarget: 'customer_rare',
 	});
 
 	const customerSelectConfig = useMemo(
@@ -166,12 +167,14 @@ export default memo(function CustomerRare() {
 					label: '额外包含',
 					selectedKeys: customerFilterIncludes,
 					setSelectedKeys: customerStore.persistence.customer.filters.includes.set,
+					spriteTarget: 'customer_rare',
 				},
 				{
 					items: allCustomerNames,
 					label: '额外排除',
 					selectedKeys: customerFilterExcludes,
 					setSelectedKeys: customerStore.persistence.customer.filters.excludes.set,
+					spriteTarget: 'customer_rare',
 				},
 			] as const satisfies TSelectConfig,
 		[

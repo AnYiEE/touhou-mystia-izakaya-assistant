@@ -324,7 +324,20 @@ export default memo(
 									),
 								}}
 							>
-								{({value}) => <AutocompleteItem key={value}>{value}</AutocompleteItem>}
+								{({value}) => (
+									<AutocompleteItem
+										key={value}
+										textValue={value}
+										classNames={{
+											base: '[&>span+span]:hidden [&>span]:inline-flex',
+										}}
+									>
+										<span className="inline-flex items-center">
+											<Sprite target="beverage" name={value} size={1} />
+											<span className="ml-1">{value}</span>
+										</span>
+									</AutocompleteItem>
+								)}
 							</Autocomplete>
 							<Select
 								items={allBeverageTags}

@@ -119,6 +119,7 @@ export default memo(function Recipes() {
 		searchItems: allNames,
 		searchValue,
 		setSearchValue: store.persistence.searchValue.set,
+		spriteTarget: 'recipe',
 	});
 
 	const selectConfig = useMemo(

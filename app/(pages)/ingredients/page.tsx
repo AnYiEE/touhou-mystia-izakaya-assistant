@@ -76,6 +76,7 @@ export default memo(function Ingredients() {
 		searchItems: allNames,
 		searchValue,
 		setSearchValue: store.persistence.searchValue.set,
+		spriteTarget: 'ingredient',
 	});
 
 	const selectConfig = useMemo(
