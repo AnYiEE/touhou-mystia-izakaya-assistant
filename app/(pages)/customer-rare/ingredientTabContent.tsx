@@ -7,6 +7,7 @@ import {Badge, Button, ScrollShadow, Tooltip} from '@nextui-org/react';
 
 import Sprite from '@/components/sprite';
 
+import {checkIngredientEasterEgg} from './evaluateMeal';
 import type {IIngredientsTabStyle} from './types';
 import {type TIngredientNames} from '@/data';
 import type {TRecipeTag} from '@/data/types';
@@ -160,12 +161,22 @@ export default memo(
 									(customerPositiveTags as TRecipeTag[]).includes('流行喜爱') &&
 									!currentCustomerPopular.isNegative
 							);
+							const allIngredients = [...currentRecipe.ingredients, ...extraIngredients];
+							const {ingredient: easterEggIngredient, score: easterEggScore} = checkIngredientEasterEgg({
+								currentCustomerName,
+								currentIngredients: [...allIngredients, name],
+							});
+							if (name === easterEggIngredient && !allIngredients.includes(easterEggIngredient)) {
+								scoreChange = easterEggScore === 0 ? -Infinity : Infinity;
+							}
 							const isDown = scoreChange < 0;
 							const isUp = scoreChange > 0;
 							const isNoChange = scoreChange === 0;
+							const isHighest = scoreChange === Infinity;
+							const isLowest = scoreChange === -Infinity;
 							const color = isUp ? 'success' : isDown ? 'danger' : 'default';
 							const score = isUp ? `+${scoreChange}` : `${scoreChange}`;
-							const label = `点击：加入额外食材【${name}】${isNoChange ? '' : `，匹配度${score}`}`;
+							const label = `点击：加入额外食材【${name}】${isNoChange ? '' : `，${isHighest ? '最低评级受限' : isLowest ? '最高评级受限' : `匹配度${score}`}`}`;
 							return (
 								<Tooltip
 									key={index}
@@ -196,7 +207,7 @@ export default memo(
 									>
 										<Badge
 											color={color}
-											content={isNoChange ? '' : score}
+											content={isHighest ? '++' : isLowest ? '--' : isNoChange ? '' : score}
 											isInvisible={isNoChange}
 											size="sm"
 											classNames={{

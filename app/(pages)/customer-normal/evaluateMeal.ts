@@ -1,7 +1,7 @@
 import {intersection} from 'lodash';
 
 import type {TCustomerRating, TRecipe} from './types';
-import {type TBeverageNames, type TCustomerNormalNames} from '@/data';
+import {type TBeverageNames, type TCustomerNormalNames, type TRecipeNames} from '@/data';
 import type {TRecipeTag} from '@/data/types';
 import {type IPopularData, type TPopularTag} from '@/stores';
 
@@ -15,25 +15,35 @@ interface IParameters {
 	currentRecipe: TRecipe | null;
 }
 
-function checkEasterEgg({
+export function checkEasterEgg({
 	currentCustomerName,
 	currentRecipe,
-	mealScore,
-}: {
-	currentCustomerName: TCustomerNormalNames;
+	mealScore = 0,
+}: Pick<IParameters, 'currentCustomerName'> & {
 	currentRecipe: TRecipe;
-	mealScore: number;
-}) {
+	mealScore?: number;
+}): {
+	recipe: TRecipeNames | null;
+	score: number;
+} {
 	const {name: currentRecipeName} = currentRecipe;
 
 	switch (currentCustomerName) {
-		case '月人':
-			if (currentRecipeName === '蜜桃红烧肉') {
-				return 0;
+		case '月人': {
+			const recipe = '蜜桃红烧肉';
+			if (currentRecipeName === recipe) {
+				return {
+					recipe,
+					score: 0,
+				};
 			}
+		}
 	}
 
-	return mealScore;
+	return {
+		recipe: null,
+		score: mealScore,
+	};
 }
 
 function getRatingKey(mealScore: number): TCustomerRating | null {
@@ -93,7 +103,7 @@ export function evaluateMeal({
 
 	let mealScore = 2 + extraScore;
 
-	mealScore = checkEasterEgg({currentCustomerName, currentRecipe, mealScore});
+	mealScore = checkEasterEgg({currentCustomerName, currentRecipe, mealScore}).score;
 
 	return getRatingKey(mealScore);
 }

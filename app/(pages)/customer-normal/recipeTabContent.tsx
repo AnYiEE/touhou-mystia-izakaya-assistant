@@ -36,6 +36,7 @@ import Tags from '@/components/tags';
 
 import {type TTableColumnKey, type TTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
 import {recipeTableColumns as tableColumns} from './constants';
+import {checkEasterEgg} from './evaluateMeal';
 import type {TRecipeWithSuitability, TRecipesWithSuitability} from './types';
 import {CUSTOMER_NORMAL_TAG_STYLE} from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
@@ -99,6 +100,20 @@ export default memo(
 					composedRecipeTags,
 					currentCustomerPopular
 				);
+
+				const {recipe: easterEggRecipe, score: easterEggScore} = checkEasterEgg({
+					currentCustomerName,
+					currentRecipe: item,
+				});
+
+				if (item.name === easterEggRecipe) {
+					return {
+						...item,
+						matchedNegativeTags: [],
+						matchedPositiveTags: [],
+						suitability: easterEggScore > 0 ? Infinity : -Infinity,
+					};
+				}
 
 				const {
 					suitability,
@@ -357,7 +372,11 @@ export default memo(
 					case 'suitability':
 						return (
 							<div className="flex">
-								<Price showSymbol={false}>{suitability}</Price>
+								{suitability === Infinity || suitability === -Infinity ? (
+									'固定评级'
+								) : (
+									<Price showSymbol={false}>{suitability}</Price>
+								)}
 							</div>
 						);
 					case 'time':

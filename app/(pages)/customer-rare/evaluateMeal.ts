@@ -52,6 +52,105 @@ function calculateMaxScore({
 	return 1 + 1 + beverageMaxScore + recipeMaxScore;
 }
 
+export function checkIngredientEasterEgg({
+	currentCustomerName,
+	currentIngredients,
+	mealScore = 0,
+}: Pick<IParameters, 'currentCustomerName' | 'currentIngredients'> & {
+	mealScore?: number;
+}): {
+	ingredient: TIngredientNames | null;
+	score: number;
+} {
+	switch (currentCustomerName) {
+		case '河城荷取': {
+			const ingredient = '黄瓜';
+			if (currentIngredients.includes(ingredient)) {
+				return {
+					ingredient,
+					score: Math.max(mealScore, 3),
+				};
+			}
+			break;
+		}
+		case '犬走椛': {
+			const ingredient = '可可豆';
+			if (currentIngredients.includes(ingredient)) {
+				return {
+					ingredient,
+					score: Math.min(mealScore, 1),
+				};
+			}
+			break;
+		}
+	}
+
+	return {
+		ingredient: null,
+		score: mealScore,
+	};
+}
+
+export function checkRecipeEasterEgg({
+	currentCustomerName,
+	currentRecipeName,
+	mealScore = 0,
+}: Pick<IParameters, 'currentCustomerName'> & {
+	currentRecipeName: TRecipeNames;
+	mealScore?: number;
+}): {
+	recipe: TRecipeNames | null;
+	score: number;
+} {
+	switch (currentCustomerName) {
+		case '古明地恋': {
+			const recipe = '无意识妖怪慕斯';
+			if (currentRecipeName === recipe) {
+				return {
+					recipe,
+					score: 0,
+				};
+			}
+			break;
+		}
+		case '蕾米莉亚': {
+			const recipe = '猩红恶魔蛋糕';
+			if (currentRecipeName === recipe) {
+				return {
+					recipe,
+					score: 4,
+				};
+			}
+			break;
+		}
+		case '饕餮尤魔': {
+			const recipe = '油豆腐';
+			if (currentRecipeName === recipe) {
+				return {
+					recipe,
+					score: 3,
+				};
+			}
+			break;
+		}
+		case '绵月丰姬':
+		case '绵月依姬': {
+			const recipe = '蜜桃红烧肉';
+			if (currentRecipeName === recipe) {
+				return {
+					recipe,
+					score: 0,
+				};
+			}
+		}
+	}
+
+	return {
+		recipe: null,
+		score: mealScore,
+	};
+}
+
 function checkEasterEgg({
 	currentCustomerName,
 	currentIngredients,
@@ -62,36 +161,23 @@ function checkEasterEgg({
 	mealScore: number;
 }) {
 	switch (currentCustomerName) {
-		case '古明地恋':
-			if (currentRecipeName === '无意识妖怪慕斯') {
-				return 0;
-			}
-			break;
 		case '河城荷取':
-			if (currentIngredients.includes('黄瓜')) {
-				return Math.max(mealScore, 3);
-			}
-			break;
-		case '蕾米莉亚':
-			if (currentRecipeName === '猩红恶魔蛋糕') {
-				return 4;
-			}
-			break;
 		case '犬走椛':
-			if (currentIngredients.includes('可可豆')) {
-				return Math.min(mealScore, 1);
-			}
-			break;
+			return checkIngredientEasterEgg({
+				currentCustomerName,
+				currentIngredients,
+				mealScore,
+			}).score;
+		case '古明地恋':
+		case '蕾米莉亚':
 		case '饕餮尤魔':
-			if (currentRecipeName === '油豆腐') {
-				return 3;
-			}
-			break;
 		case '绵月丰姬':
 		case '绵月依姬':
-			if (currentRecipeName === '蜜桃红烧肉') {
-				return 0;
-			}
+			return checkRecipeEasterEgg({
+				currentCustomerName,
+				currentRecipeName,
+				mealScore,
+			}).score;
 	}
 
 	return mealScore;

@@ -35,6 +35,7 @@ import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 
 import {customerTagStyleMap, recipeTableColumns as tableColumns} from './constants';
+import {checkRecipeEasterEgg} from './evaluateMeal';
 import type {ITableColumn, ITableSortDescriptor, TRecipeWithSuitability, TRecipesWithSuitability} from './types';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, numberSort, pinyinSort, processPinyin} from '@/utils';
@@ -108,6 +109,20 @@ export default memo(
 					composedRecipeTags,
 					currentCustomerPopular
 				);
+
+				const {recipe: easterEggRecipe, score: easterEggScore} = checkRecipeEasterEgg({
+					currentCustomerName,
+					currentRecipeName: item.name,
+				});
+
+				if (item.name === easterEggRecipe) {
+					return {
+						...item,
+						matchedNegativeTags: [],
+						matchedPositiveTags: [],
+						suitability: easterEggScore > 0 ? Infinity : -Infinity,
+					};
+				}
 
 				const {
 					suitability,
@@ -368,7 +383,11 @@ export default memo(
 					case 'suitability':
 						return (
 							<div className="flex">
-								<Price showSymbol={false}>{suitability}</Price>
+								{suitability === Infinity || suitability === -Infinity ? (
+									'固定评级'
+								) : (
+									<Price showSymbol={false}>{suitability}</Price>
+								)}
 							</div>
 						);
 					case 'time':
