@@ -32,7 +32,9 @@ export default memo(function CustomerRare() {
 	});
 	customerStore.shared.recipe.data.onChange((data) => {
 		if (data) {
-			customerStore.shared.customer.isDarkMatter.set(customerStore.instances.recipe.get().checkDarkMatter(data));
+			customerStore.shared.customer.isDarkMatter.set(
+				customerStore.instances.recipe.get().checkDarkMatter(data).isDarkMatter
+			);
 		}
 	});
 

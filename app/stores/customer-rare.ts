@@ -683,19 +683,16 @@ export const customerRareStore = store(state, {
 			const {tags: beverageTags, price: beveragePrice} = beverage;
 			const recipe = instance_recipe.getPropsByName(recipeName);
 			const {ingredients, negativeTags, positiveTags, price: recipePrice} = recipe;
-			const extraTags = extraIngredients.flatMap((extraIngredient) =>
-				instance_ingredient.getPropsByName(extraIngredient, 'tags')
-			);
+			const {extraTags, isDarkMatter} = instance_recipe.checkDarkMatter({
+				extraIngredients,
+				negativeTags,
+			});
 			const composedRecipeTags = instance_recipe.composeTags(
 				ingredients,
 				extraIngredients,
 				positiveTags,
 				extraTags
 			);
-			const isDarkMatter = instance_recipe.checkDarkMatter({
-				extraIngredients,
-				negativeTags,
-			});
 			const rating = evaluateMeal({
 				currentBeverageTags: beverageTags,
 				currentCustomerBeverageTags: customerBeverageTags,

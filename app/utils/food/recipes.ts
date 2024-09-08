@@ -73,6 +73,10 @@ export class Recipe extends Food<TRecipes> {
 		return recipeTagsWithPopular;
 	}
 
+	/**
+	 * @description Check if a recipe contains a dark ingredient.
+	 * @returns An object containing tags of all extra ingredients and whether the recipe contains a dark ingredient.
+	 */
 	public checkDarkMatter(
 		recipeData:
 			| IRecipeData
@@ -93,7 +97,10 @@ export class Recipe extends Food<TRecipes> {
 			Ingredient.getInstance().getPropsByName(extraIngredient, 'tags')
 		);
 
-		return intersection(extraTags, negativeTags).length > 0;
+		return {
+			extraTags,
+			isDarkMatter: intersection(extraTags, negativeTags).length > 0,
+		};
 	}
 
 	/**
