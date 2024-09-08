@@ -1,6 +1,8 @@
 import {type Dispatch, forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
+import {useVibrate} from '@/hooks';
+
 import {
 	Button,
 	Popover,
@@ -37,6 +39,8 @@ interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function SideFilterIconButton({selectConfig, className, ...props}, ref) {
+		const vibrate = useVibrate();
+
 		const instance_special = customerStore.instances.customer_special.get();
 
 		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
@@ -51,10 +55,11 @@ export default memo(
 		);
 
 		const handleResetFilters = useCallback(() => {
+			vibrate();
 			selectConfig.forEach(({setSelectedKeys}) => {
 				setSelectedKeys([]);
 			});
-		}, [selectConfig]);
+		}, [selectConfig, vibrate]);
 
 		const content = `筛选（${hasFilter ? '已' : '未'}激活）`;
 

@@ -1,5 +1,7 @@
-import {type Dispatch, type SetStateAction, forwardRef, memo} from 'react';
+import {type Dispatch, type SetStateAction, forwardRef, memo, useCallback} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
+
+import {useVibrate} from '@/hooks';
 
 import {
 	Autocomplete,
@@ -37,9 +39,21 @@ export default memo(
 		{searchConfig: {label, searchItems, searchValue, setSearchValue, spriteTarget}, className, ...props},
 		ref
 	) {
+		const vibrate = useVibrate();
+
 		const instance_special = customerStore.instances.customer_special.get();
 
 		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+
+		const handleInputChange = useCallback(
+			(value: string) => {
+				if (!value) {
+					vibrate();
+				}
+				setSearchValue(value);
+			},
+			[setSearchValue, vibrate]
+		);
 
 		const content = `搜索（${searchValue ? '已' : '未'}激活）`;
 
@@ -72,7 +86,7 @@ export default memo(
 						defaultInputValue={searchValue}
 						defaultItems={searchItems}
 						label={label}
-						onInputChange={setSearchValue}
+						onInputChange={handleInputChange}
 					>
 						{({value}) =>
 							spriteTarget ? (

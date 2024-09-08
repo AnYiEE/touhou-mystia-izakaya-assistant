@@ -1,5 +1,7 @@
-import {type Dispatch, type SetStateAction, forwardRef, memo} from 'react';
+import {type Dispatch, type SetStateAction, forwardRef, memo, useCallback} from 'react';
 import {twMerge} from 'tailwind-merge';
+
+import {useVibrate} from '@/hooks';
 
 import {Tooltip} from '@nextui-org/react';
 import {faArrowDownAZ, faArrowUpAZ} from '@fortawesome/free-solid-svg-icons';
@@ -39,6 +41,13 @@ export default memo(
 		{pinyinSortConfig: {pinyinSortState, setPinyinSortState}, className, ...props},
 		ref
 	) {
+		const vibrate = useVibrate();
+
+		const handlePress = useCallback(() => {
+			vibrate();
+			setPinyinSortState(getNextPinyinSortState(pinyinSortState));
+		}, [pinyinSortState, setPinyinSortState, vibrate]);
+
 		const label = `拼音排序（${
 			pinyinSortState === PinyinSortState.NONE
 				? '未激活'
@@ -53,9 +62,7 @@ export default memo(
 					color={pinyinSortState === PinyinSortState.NONE ? 'primary' : 'warning'}
 					icon={pinyinSortState === PinyinSortState.ZA ? faArrowUpAZ : faArrowDownAZ}
 					variant="shadow"
-					onPress={() => {
-						setPinyinSortState(getNextPinyinSortState(pinyinSortState));
-					}}
+					onPress={handlePress}
 					aria-label={label}
 					className={twMerge('text-white', className)}
 					{...props}
