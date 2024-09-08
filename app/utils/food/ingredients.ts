@@ -1,9 +1,8 @@
-import {isEqual} from 'lodash';
-
 import {Food} from './base';
 import {INGREDIENT_LIST, type TIngredientTypes, type TIngredients} from '@/data';
 import type {TIngredientTag} from '@/data/types';
 import {type IPopularData} from '@/stores';
+import {isArrayEqual} from '@/utils/isArrayEqual';
 
 export class Ingredient extends Food<TIngredients> {
 	private static _instance: Ingredient | undefined;
@@ -33,7 +32,7 @@ export class Ingredient extends Food<TIngredients> {
 			return types;
 		}
 
-		const isTagsEqual = isEqual([...types].sort(), this.getValuesByProp(this.data, 'type').sort());
+		const isTagsEqual = isArrayEqual(types, this.getValuesByProp(this.data, 'type'));
 		if (!isTagsEqual) {
 			throw new Error(
 				'[utils/food/Ingredient]: the given types is inconsistent with the types in the original data'

@@ -7,6 +7,7 @@ export * from './covertValueObject';
 export * from './domReady';
 export * from './getPageTitle';
 export * from './intersection';
+export * from './isArrayEqual';
 export * from './numberSort';
 export * from './pinyinPro';
 export * from './pinyinSort';
