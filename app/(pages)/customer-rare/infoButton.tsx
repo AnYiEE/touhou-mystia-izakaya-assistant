@@ -116,7 +116,7 @@ export default memo(function InfoButton() {
 	const label = '点击：在新窗口中查看此料理的详情';
 
 	return (
-		<InfoButtonBase defaultExpandedKeys={['bond']}>
+		<InfoButtonBase defaultExpandedKeys={[hasBondRewards ? 'bond' : 'card']}>
 			{hasBondRewards ? (
 				<AccordionItem key="bond" aria-label={`${currentCustomerName}羁绊奖励`} title="羁绊奖励">
 					<div className="flex flex-col gap-2 text-justify text-xs">
