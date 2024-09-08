@@ -276,7 +276,7 @@ export default memo(
 								</Popover>
 							</p>
 							<p className="text-justify">
-								持有金：<Price>{currentCustomerPrice}</Price>
+								可能持有：<Price>{currentCustomerPrice}</Price>
 							</p>
 						</div>
 					</div>

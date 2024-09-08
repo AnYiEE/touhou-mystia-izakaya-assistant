@@ -29,7 +29,7 @@ export const BEVERAGE_LIST = [
 		level: 1,
 		price: 12,
 		from: {
-			buy: ['【妖怪兽道】商人'],
+			buy: ['【妖怪兽道】杂货商人'],
 		},
 	},
 	{
@@ -39,7 +39,7 @@ export const BEVERAGE_LIST = [
 		level: 1,
 		price: 12,
 		from: {
-			buy: ['【妖怪兽道】商人'],
+			buy: ['【妖怪兽道】杂货商人'],
 		},
 	},
 	{
@@ -49,7 +49,7 @@ export const BEVERAGE_LIST = [
 		level: 1,
 		price: 18,
 		from: {
-			buy: ['【妖怪兽道】商人', '【人间之里】酒屋'],
+			buy: ['【妖怪兽道】杂货商人', '【人间之里】酒商'],
 		},
 	},
 	{
@@ -76,7 +76,7 @@ export const BEVERAGE_LIST = [
 		level: 2,
 		price: 32,
 		from: {
-			buy: ['【人间之里】酒屋'],
+			buy: ['【人间之里】酒商'],
 		},
 	},
 	{
@@ -86,7 +86,7 @@ export const BEVERAGE_LIST = [
 		level: 2,
 		price: 30,
 		from: {
-			buy: ['【人间之里】铃瑚屋'],
+			buy: ['【人间之里】铃瑚'],
 		},
 	},
 	{
@@ -96,7 +96,7 @@ export const BEVERAGE_LIST = [
 		level: 1,
 		price: 18,
 		from: {
-			buy: ['【人间之里】酒屋'],
+			buy: ['【人间之里】酒商'],
 		},
 	},
 	{
@@ -106,7 +106,7 @@ export const BEVERAGE_LIST = [
 		level: 2,
 		price: 34,
 		from: {
-			buy: ['【人间之里】酒屋'],
+			buy: ['【人间之里】酒商'],
 		},
 	},
 	{
@@ -128,7 +128,7 @@ export const BEVERAGE_LIST = [
 		level: 4,
 		price: 440,
 		from: {
-			buy: ['【迷途竹林】妖怪兔'],
+			buy: ['【迷途竹林】美食妖怪兔'],
 			collect: [
 				['【辉针城】东侧酒窖', true],
 				['【月之都】月虹池', true],
@@ -160,7 +160,7 @@ export const BEVERAGE_LIST = [
 		from: {
 			buy: [
 				['【人间之里】香霖堂', true],
-				'【迷途竹林】妖怪兔',
+				'【迷途竹林】美食妖怪兔',
 				'【旧地狱】鬼商',
 				'【神灵庙】道士',
 				'【太阳花田】太阳花精',
@@ -174,7 +174,7 @@ export const BEVERAGE_LIST = [
 		level: 3,
 		price: 180,
 		from: {
-			buy: ['【红魔馆】妖精女仆', '【辉针城】不良少年'],
+			buy: ['【红魔馆】匿名妖精女仆', '【辉针城】不良少年'],
 			collect: ['【地灵殿】西南侧酒水架', '【辉针城】东侧酒窖', ['【月之都】月虹池', true]],
 			task: ['阿求小姐的色纸'],
 		},
@@ -186,7 +186,7 @@ export const BEVERAGE_LIST = [
 		level: 2,
 		price: 50,
 		from: {
-			buy: [['【博丽神社】河童', true]],
+			buy: [['【博丽神社】河童商人', true]],
 			collect: ['【地灵殿】西南侧酒水架'],
 			task: ['阿求小姐的色纸'],
 		},
@@ -208,7 +208,7 @@ export const BEVERAGE_LIST = [
 		level: 3,
 		price: 100,
 		from: {
-			buy: ['【红魔馆】妖精女仆'],
+			buy: ['【红魔馆】匿名妖精女仆'],
 			collect: [
 				'【地灵殿】西南侧酒水架',
 				['【辉针城】东侧酒窖', true],
@@ -240,7 +240,7 @@ export const BEVERAGE_LIST = [
 		level: 2,
 		price: 70,
 		from: {
-			buy: ['【博丽神社】河童', '【旧地狱】鬼商'],
+			buy: ['【博丽神社】河童商人', '【旧地狱】鬼商'],
 		},
 	},
 	{
@@ -250,7 +250,7 @@ export const BEVERAGE_LIST = [
 		level: 2,
 		price: 45,
 		from: {
-			buy: ['【博丽神社】河童', '【神灵庙】道士'],
+			buy: ['【博丽神社】河童商人', '【神灵庙】道士'],
 		},
 	},
 	{
@@ -260,7 +260,7 @@ export const BEVERAGE_LIST = [
 		level: 2,
 		price: 16,
 		from: {
-			buy: ['【人间之里】清兰屋'],
+			buy: ['【人间之里】清兰'],
 		},
 	},
 	{
@@ -270,7 +270,7 @@ export const BEVERAGE_LIST = [
 		level: 2,
 		price: 24,
 		from: {
-			buy: ['【人间之里】清兰屋'],
+			buy: ['【人间之里】清兰'],
 		},
 	},
 	{
@@ -330,7 +330,7 @@ export const BEVERAGE_LIST = [
 		level: 2,
 		price: 45,
 		from: {
-			collect: ['【迷途竹林】西侧泉水处', ['【地灵殿】西北侧游乐场', true]],
+			collect: ['【迷途竹林】西侧泉水', ['【地灵殿】西北侧游乐场', true]],
 		},
 	},
 	{
@@ -380,7 +380,7 @@ export const BEVERAGE_LIST = [
 		level: 3,
 		price: 210,
 		from: {
-			buy: ['【妖怪之山】河童'],
+			buy: ['【妖怪之山】河童商人'],
 		},
 	},
 	{

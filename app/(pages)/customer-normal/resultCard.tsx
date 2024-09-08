@@ -150,7 +150,7 @@ export default memo(
 			}
 			return (
 				<Placeholder className="pb-8 pt-12 md:pt-8 xl:pt-4" ref={ref}>
-					选择点单料理和酒水以继续
+					选择点单料理或酒水以继续
 				</Placeholder>
 			);
 		}

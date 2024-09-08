@@ -150,7 +150,8 @@ export default memo(
 
 		const avatarRatingColor = currentRating ? customerRatingColorMap[currentRating] : undefined;
 		const avatarRatingContent =
-			currentRating ?? `请选择${currentBeverageName ? '' : '酒水、'}${currentRecipeData ? '' : '料理'}以评级`;
+			currentRating ??
+			`请选择${currentBeverageName ? '' : '点单酒水'}${(currentBeverageName ?? currentRecipeData) ? '' : '、'}${currentRecipeData ? '' : '点单料理'}以评级`;
 
 		const getTagTooltip = (type: 'beverageTag' | 'recipeTag', selectedTags: Selection, tag: string) => {
 			const isTagExisted = (selectedTags as SelectionSet).has(tag);

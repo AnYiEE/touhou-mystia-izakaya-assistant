@@ -154,7 +154,7 @@ export default memo(
 												{lestExtraIngredients.length > 0 && (
 													<div className="flex items-center gap-x-3 rounded outline outline-2 outline-offset-1 outline-divider">
 														{lestExtraIngredients.map((name, index) => {
-															const content = `额外食材：${name}`;
+															const content = `额外食材【${name}】`;
 															return (
 																<Popover key={index} showArrow offset={8}>
 																	<Tooltip showArrow content={content} offset={4}>

@@ -156,6 +156,10 @@ export default function RootLayout({
 			<body suppressHydrationWarning className="antialiased">
 				<script
 					dangerouslySetInnerHTML={{
+						/**
+						 * @description Add `bg-blend-mystia` class to body if the `globalStorage.backgroundImage` setting is enabled.
+						 * @see /app/providers.tsx
+						 */
 						__html: `(() => {
 	let enable;
 	try {

@@ -116,7 +116,7 @@ export default memo(function CustomerRareTutorial() {
 				{
 					element: '[aria-label="点击：加入额外食材【鸡蛋】，匹配度+1"]',
 					popover: {
-						title: '加入额外食材：鸡蛋', // eslint-disable-next-line sort-keys
+						title: '加入额外食材【鸡蛋】', // eslint-disable-next-line sort-keys
 						description:
 							'点击图标，加入额外食材【鸡蛋】。加入后套餐评级应为“满意”，继续添加额外食材以提高评级。',
 					},
@@ -124,7 +124,7 @@ export default memo(function CustomerRareTutorial() {
 				{
 					element: '[aria-label="点击：加入额外食材【蜂蜜】，匹配度+1"]',
 					popover: {
-						title: '加入额外食材：蜂蜜', // eslint-disable-next-line sort-keys
+						title: '加入额外食材【蜂蜜】', // eslint-disable-next-line sort-keys
 						description: '点击图标，加入额外食材【蜂蜜】。加入后套餐评级应为“完美”。',
 					},
 				},

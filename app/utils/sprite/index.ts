@@ -88,7 +88,7 @@ export class Sprite<
 
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 	public getPosByName<T extends string = TName>(name: T) {
-		const index: number = this.findIndexByName(name);
+		const index = this.findIndexByName(name);
 
 		return this.getPosByIndex(index);
 	}
@@ -101,11 +101,13 @@ export class Sprite<
 
 		const {spriteHeight, spriteWidth, _config} = this;
 		const {height: sheetHeight, width: sheetWidth} = _config;
-		const backgroundSize: `${number}rem ${number}rem` = `${pxToRem(sheetWidth * (displayWidth / spriteWidth))}rem ${pxToRem(sheetHeight * (displayHeight / spriteHeight))}rem`;
+
 		const {x, y} = this.getPosByIndex(index);
+		const backgroundPosition = `-${pxToRem(x * (displayWidth / spriteWidth))}rem -${pxToRem(y * (displayHeight / spriteHeight))}rem`;
+		const backgroundSize = `${pxToRem(sheetWidth * (displayWidth / spriteWidth))}rem ${pxToRem(sheetHeight * (displayHeight / spriteHeight))}rem`;
 
 		return {
-			backgroundPosition: `-${pxToRem(x * (displayWidth / spriteWidth))}rem -${pxToRem(y * (displayHeight / spriteHeight))}rem`,
+			backgroundPosition,
 			backgroundSize,
 			height: `${pxToRem(displayHeight)}rem`,
 			width: `${pxToRem(displayWidth)}rem`,

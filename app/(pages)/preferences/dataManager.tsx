@@ -223,7 +223,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 					<Tab key="restore" title="还原">
 						<div className="w-full space-y-2 lg:w-1/2">
 							<Textarea
-								placeholder="输入稀客套餐数据"
+								placeholder="上传或输入稀客套餐数据"
 								value={importValue}
 								onValueChange={setImportValue}
 								classNames={{

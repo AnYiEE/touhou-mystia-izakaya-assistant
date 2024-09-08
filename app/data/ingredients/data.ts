@@ -10,7 +10,7 @@ export const INGREDIENT_LIST = [
 		level: 1,
 		price: 3,
 		from: {
-			buy: ['【妖怪兽道】商人', '【人间之里】农户'],
+			buy: ['【妖怪兽道】杂货商人', '【人间之里】农户'],
 			collect: ['非【迷途竹林】河流'],
 		},
 	},
@@ -22,7 +22,7 @@ export const INGREDIENT_LIST = [
 		level: 2,
 		price: 8,
 		from: {
-			buy: ['【红魔馆】地精', '【地灵殿】地狱鸦'],
+			buy: ['【红魔馆】地精商人', '【地灵殿】地狱鸦'],
 		},
 	},
 	{
@@ -33,7 +33,7 @@ export const INGREDIENT_LIST = [
 		level: 2,
 		price: 10,
 		from: {
-			buy: ['【红魔馆】地精', '【魔法森林】上海人形'],
+			buy: ['【红魔馆】地精商人', '【魔法森林】上海人形'],
 		},
 	},
 	{
@@ -44,7 +44,7 @@ export const INGREDIENT_LIST = [
 		level: 1,
 		price: 10,
 		from: {
-			buy: ['【妖怪兽道】商人', '【人间之里】农户'],
+			buy: ['【妖怪兽道】杂货商人', '【人间之里】农户'],
 			collect: [['【妖怪之山】捕兽夹', true]],
 		},
 	},
@@ -56,7 +56,7 @@ export const INGREDIENT_LIST = [
 		level: 1,
 		price: 8,
 		from: {
-			buy: ['【妖怪兽道】商人', '【人间之里】农户', ['【人间之里】香霖堂', true], '【地灵殿】地狱鸦'],
+			buy: ['【妖怪兽道】杂货商人', '【人间之里】农户', ['【人间之里】香霖堂', true], '【地灵殿】地狱鸦'],
 		},
 	},
 	{
@@ -68,7 +68,7 @@ export const INGREDIENT_LIST = [
 		price: 4,
 		from: {
 			buy: [
-				'【妖怪兽道】商人',
+				'【妖怪兽道】杂货商人',
 				'【人间之里】农户',
 				['【人间之里】香霖堂', true],
 				'【魔法森林】上海人形',
@@ -134,7 +134,7 @@ export const INGREDIENT_LIST = [
 		level: 2,
 		price: 15,
 		from: {
-			buy: ['【妖怪兽道】商人', '【人间之里】农户', '【魔法森林】上海人形', '【旧地狱】鬼商'],
+			buy: ['【妖怪兽道】杂货商人', '【人间之里】农户', '【魔法森林】上海人形', '【旧地狱】鬼商'],
 		},
 	},
 	{
@@ -145,7 +145,7 @@ export const INGREDIENT_LIST = [
 		level: 2,
 		price: 12,
 		from: {
-			buy: ['【妖怪兽道】商人', '【人间之里】农户'],
+			buy: ['【妖怪兽道】杂货商人', '【人间之里】农户'],
 			collect: ['【人间之里】农田'],
 		},
 	},
@@ -176,7 +176,7 @@ export const INGREDIENT_LIST = [
 		level: 3,
 		price: 15,
 		from: {
-			buy: [['【人间之里】香霖堂', true], '【迷途竹林】妖怪兔', '【魔法森林】上海人形'],
+			buy: [['【人间之里】香霖堂', true], '【迷途竹林】美食妖怪兔', '【魔法森林】上海人形'],
 		},
 	},
 	{
@@ -187,8 +187,8 @@ export const INGREDIENT_LIST = [
 		level: 5,
 		price: 70,
 		from: {
-			buy: [['【迷途竹林】妖怪兔', true], '【地灵殿】地狱鸦'],
-			collect: ['【妖怪兽道】南侧亭子月光草（需借道迷途竹林）'],
+			buy: [['【迷途竹林】美食妖怪兔', true], '【地灵殿】地狱鸦'],
+			collect: ['【妖怪兽道】南侧亭子（需借道迷途竹林）'],
 			task: ['阿求小姐的色纸'],
 		},
 	},
@@ -200,7 +200,7 @@ export const INGREDIENT_LIST = [
 		level: 2,
 		price: 16,
 		from: {
-			buy: ['【妖怪兽道】商人', '【人间之里】农户', '【旧地狱】鬼商'],
+			buy: ['【妖怪兽道】杂货商人', '【人间之里】农户', '【旧地狱】鬼商'],
 			collect: [
 				'【妖怪兽道】花丛',
 				'【人间之里】农田',
@@ -218,7 +218,7 @@ export const INGREDIENT_LIST = [
 		level: 2,
 		price: 10,
 		from: {
-			buy: ['【妖怪兽道】商人', '【人间之里】农户'],
+			buy: ['【妖怪兽道】杂货商人', '【人间之里】农户'],
 			collect: ['【妖怪兽道】花丛', '【博丽神社】花丛', '【妖怪之山】花丛'],
 		},
 	},
@@ -248,7 +248,13 @@ export const INGREDIENT_LIST = [
 		level: 1,
 		price: 2,
 		from: {
-			buy: [['【妖怪兽道】商人', true], '【人间之里】农户', '【旧地狱】鬼商', '【命莲寺】娜兹玲', '【魔界】小丑'],
+			buy: [
+				['【妖怪兽道】杂货商人', true],
+				'【人间之里】农户',
+				'【旧地狱】鬼商',
+				'【命莲寺】娜兹玲',
+				'【魔界】小丑',
+			],
 			collect: [['【妖怪兽道】花丛', true], '【魔界】辣椒丛'],
 		},
 	},
@@ -260,7 +266,7 @@ export const INGREDIENT_LIST = [
 		level: 3,
 		price: 40,
 		from: {
-			buy: [['【妖怪兽道】商人', true], ['【人间之里】香霖堂', true], '【旧地狱】鬼商', '【月之都】月兔'],
+			buy: [['【妖怪兽道】杂货商人', true], ['【人间之里】香霖堂', true], '【旧地狱】鬼商', '【月之都】月兔'],
 			collect: ['【迷途竹林】竹笋堆', '【辉针城】竹笋堆', ['【辉针城】竹子', true]],
 		},
 	},
@@ -346,7 +352,7 @@ export const INGREDIENT_LIST = [
 		level: 5,
 		price: 34,
 		from: {
-			buy: [['【博丽神社】妖精女仆', true], '【红魔馆】地精', '【迷途竹林】妖怪兔'],
+			buy: [['【博丽神社】妖精女仆', true], '【红魔馆】地精商人', '【迷途竹林】美食妖怪兔'],
 			collect: [
 				['【红魔馆】河流', true],
 				'【迷途竹林】水涡',
@@ -365,7 +371,7 @@ export const INGREDIENT_LIST = [
 		level: 2,
 		price: 14,
 		from: {
-			buy: ['【妖怪兽道】商人', '【人间之里】农户', '【魔法森林】上海人形'],
+			buy: ['【妖怪兽道】杂货商人', '【人间之里】农户', '【魔法森林】上海人形'],
 			collect: ['【人间之里】农田'],
 		},
 	},
@@ -377,7 +383,7 @@ export const INGREDIENT_LIST = [
 		level: 3,
 		price: 24,
 		from: {
-			buy: [['【妖怪兽道】商人', true], '【旧地狱】鬼商', '【神灵庙】道士'],
+			buy: [['【妖怪兽道】杂货商人', true], '【旧地狱】鬼商', '【神灵庙】道士'],
 			collect: ['【神灵庙】水涡', '【辉针城】水涡', ['【辉针城】碗之后', true], ['非【妖怪兽道】河流', true]],
 		},
 	},
@@ -408,7 +414,7 @@ export const INGREDIENT_LIST = [
 		level: 5,
 		price: 40,
 		from: {
-			buy: ['【博丽神社】妖精女仆', '【红魔馆】地精', '【迷途竹林】妖怪兔', '【神灵庙】道士'],
+			buy: ['【博丽神社】妖精女仆', '【红魔馆】地精商人', '【迷途竹林】美食妖怪兔', '【神灵庙】道士'],
 			collect: ['【旧地狱】捕兽夹'],
 			task: ['阿求小姐的色纸'],
 		},
@@ -458,7 +464,7 @@ export const INGREDIENT_LIST = [
 		level: 5,
 		price: 42,
 		from: {
-			buy: [['【博丽神社】妖精女仆', true], '【红魔馆】地精', '【迷途竹林】妖怪兔', '【神灵庙】道士'],
+			buy: [['【博丽神社】妖精女仆', true], '【红魔馆】地精商人', '【迷途竹林】美食妖怪兔', '【神灵庙】道士'],
 			collect: [['【红魔馆】河流', true], '【地灵殿】水池'],
 			task: ['阿求小姐的色纸'],
 		},
@@ -488,7 +494,7 @@ export const INGREDIENT_LIST = [
 		level: 2,
 		price: 20,
 		from: {
-			buy: ['【迷途竹林】妖怪兔', '【神灵庙】道士'],
+			buy: ['【迷途竹林】美食妖怪兔', '【神灵庙】道士'],
 			collect: [['【妖怪兽道】捕兽夹', true]],
 		},
 	},
@@ -513,7 +519,7 @@ export const INGREDIENT_LIST = [
 		price: 7,
 		from: {
 			buy: [
-				['【妖怪之山】河童', true],
+				['【妖怪之山】河童商人', true],
 				['【太阳花田】太阳花精', true],
 			],
 			collect: ['【妖怪之山】黄瓜堆'],
@@ -527,7 +533,7 @@ export const INGREDIENT_LIST = [
 		level: 1,
 		price: 3,
 		from: {
-			buy: [['【妖怪之山】河童', true], '【命莲寺】娜兹玲'],
+			buy: [['【妖怪之山】河童商人', true], '【命莲寺】娜兹玲'],
 			collect: ['【妖怪之山】黑盐'],
 		},
 	},
@@ -550,7 +556,7 @@ export const INGREDIENT_LIST = [
 		level: 2,
 		price: 12,
 		from: {
-			buy: [['【妖怪之山】河童', true]],
+			buy: [['【妖怪之山】河童商人', true]],
 			collect: [['【辉针城】碗之后', true]],
 		},
 	},
@@ -578,7 +584,7 @@ export const INGREDIENT_LIST = [
 		price: 10,
 		from: {
 			buy: [
-				['【妖怪之山】河童', true],
+				['【妖怪之山】河童商人', true],
 				['【辉针城】不良少年', true],
 			],
 			collect: ['【妖怪之山】西北瀑布', ['【辉针城】碗之后', true]],
@@ -593,7 +599,7 @@ export const INGREDIENT_LIST = [
 		price: 18,
 		from: {
 			buy: [
-				['【妖怪之山】河童', true],
+				['【妖怪之山】河童商人', true],
 				['【辉针城】不良少年', true],
 			],
 			collect: ['【辉针城】碗之后'],
@@ -667,7 +673,7 @@ export const INGREDIENT_LIST = [
 		level: 3,
 		price: 22,
 		from: {
-			collect: ['【命莲寺】东北并蒂莲堆', '【神灵庙】东侧并蒂莲堆'],
+			collect: ['【命莲寺】东北并蒂莲', '【神灵庙】东侧并蒂莲'],
 		},
 	},
 	{
@@ -678,7 +684,7 @@ export const INGREDIENT_LIST = [
 		level: 3,
 		price: 36,
 		from: {
-			collect: ['【旧地狱】桥头并蒂莲堆', '【命莲寺】东北并蒂莲堆', '【神灵庙】桥头并蒂莲堆'],
+			collect: ['【旧地狱】桥头并蒂莲', '【命莲寺】东北并蒂莲', '【神灵庙】桥头并蒂莲'],
 		},
 	},
 	{
