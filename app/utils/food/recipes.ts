@@ -1,4 +1,4 @@
-import {cloneDeep, intersection, isObjectLike, sortBy} from 'lodash';
+import {cloneDeep, isObjectLike, sortBy} from 'lodash';
 
 import {Food} from './base';
 import {Ingredient} from './ingredients';
@@ -6,6 +6,7 @@ import {type ICurrentCustomer} from '@/(pages)/customer-rare/types';
 import {RECIPE_LIST, type TIngredientNames, type TRecipeNames, type TRecipes} from '@/data';
 import type {TIngredientTag, TRecipeTag} from '@/data/types';
 import {type IPopularData, type IRecipeData} from '@/stores';
+import {intersection} from '@/utils';
 
 type TRecipe = TRecipes[number];
 type TProcessPositiveTags<T extends TRecipe> = Omit<T, 'positiveTags'> & {

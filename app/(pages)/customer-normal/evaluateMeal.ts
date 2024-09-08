@@ -1,9 +1,8 @@
-import {intersection} from 'lodash';
-
 import type {TCustomerRating, TRecipe} from './types';
 import {type TBeverageNames, type TCustomerNormalNames, type TRecipeNames} from '@/data';
 import type {TRecipeTag} from '@/data/types';
 import {type IPopularData, type TPopularTag} from '@/stores';
+import {intersection} from '@/utils';
 
 interface IParameters {
 	currentBeverageName: TBeverageNames | null;
