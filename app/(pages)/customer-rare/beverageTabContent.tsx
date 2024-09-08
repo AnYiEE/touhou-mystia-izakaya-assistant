@@ -238,7 +238,7 @@ export default memo(
 									/>
 								</Tooltip>
 								<div className="inline-flex flex-1 items-center whitespace-nowrap">
-									<span className="text-small font-medium">{name}</span>
+									<span className="text-sm font-medium">{name}</span>
 									<span className="-ml-1.5">
 										<Popover showArrow offset={10} size="sm">
 											<Tooltip showArrow content={tags} offset={-2} placement="right" size="sm">
@@ -418,7 +418,7 @@ export default memo(
 							</Dropdown>
 						</div>
 					</div>
-					<div className="flex items-center justify-between text-small text-default-400">
+					<div className="flex items-center justify-between text-sm text-default-400">
 						<span>总计{filteredData.length}种酒水</span>
 						<label className="flex items-center gap-2">
 							<span className="cursor-auto whitespace-nowrap">表格行数</span>

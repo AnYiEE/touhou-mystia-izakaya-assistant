@@ -22,12 +22,12 @@ export default memo(function Home() {
 
 	return (
 		<div className="flex flex-col items-center justify-center gap-4 md:flex-row md:gap-8">
-			<div className="select-none text-center">
+			<div className="text-center">
 				<div>
 					<span
 						role="img"
 						title={`欢迎使用${shortName}`}
-						className="inline-block h-cursor-1.8x w-cursor-1.8x bg-cursor bg-y-auto bg-no-repeat motion-safe:animate-bounce"
+						className="inline-block h-cursor-1.8x w-cursor-1.8x select-none bg-cursor bg-y-auto bg-no-repeat motion-safe:animate-bounce"
 					/>
 					<p className="text-sm tracking-widest">欢迎使用{shortName}</p>
 				</div>

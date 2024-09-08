@@ -178,26 +178,7 @@ export default memo(
 										);
 									})()}
 								</div>
-								<div className="flex w-full justify-center gap-2 md:w-auto">
-									<Button
-										color="danger"
-										size="sm"
-										variant="flat"
-										onPress={() => {
-											vibrate();
-											customerStore.persistence.meals[currentCustomerName]?.set(
-												savedCustomerMeal.filter((meal) => meal.index !== mealIndex)
-											);
-											trackEvent(
-												TrackCategory.Click,
-												'Remove Button',
-												`${recipe} - ${beverage}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
-											);
-										}}
-										className="md:w-auto"
-									>
-										删除
-									</Button>
+								<div className="flex w-full flex-row-reverse justify-center gap-2 md:w-auto">
 									<Button
 										color="primary"
 										size="sm"
@@ -218,6 +199,25 @@ export default memo(
 										className="md:w-auto"
 									>
 										选择
+									</Button>
+									<Button
+										color="danger"
+										size="sm"
+										variant="flat"
+										onPress={() => {
+											vibrate();
+											customerStore.persistence.meals[currentCustomerName]?.set(
+												savedCustomerMeal.filter((meal) => meal.index !== mealIndex)
+											);
+											trackEvent(
+												TrackCategory.Click,
+												'Remove Button',
+												`${recipe} - ${beverage}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
+											);
+										}}
+										className="md:w-auto"
+									>
+										删除
 									</Button>
 								</div>
 							</div>
