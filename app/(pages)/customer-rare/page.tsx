@@ -30,6 +30,12 @@ export default memo(function CustomerRare() {
 		customerStore.refreshCustomerSelectedItems();
 		customerStore.refreshAllSelectedItems();
 	});
+	customerStore.shared.recipe.data.onChange((data) => {
+		if (data) {
+			customerStore.shared.customer.isDarkMatter.set(customerStore.instances.recipe.get().checkDarkMatter(data));
+		}
+	});
+
 	customerStore.shared.customer.hasMystiaCooker.onChange(customerStore.evaluateMealResult);
 	customerStore.shared.customer.order.beverageTag.onChange(customerStore.evaluateMealResult);
 	customerStore.shared.customer.order.recipeTag.onChange(customerStore.evaluateMealResult);

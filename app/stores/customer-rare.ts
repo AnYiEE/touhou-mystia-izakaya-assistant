@@ -42,6 +42,11 @@ export interface ICustomerOrder {
 	recipeTag: TRecipeTag | null;
 }
 
+export interface IRecipeData {
+	name: TRecipeNames;
+	extraIngredients: TIngredientNames[];
+}
+
 const instance_beverage = Beverage.getInstance();
 const instance_ingredient = Ingredient.getInstance();
 const instance_recipe = Recipe.getInstance();
@@ -98,7 +103,13 @@ const state = {
 		cookers: instance_recipe.getValuesByProp(instance_recipe.data, 'cooker', true).sort(pinyinSort),
 		dlcs: instance_recipe.getValuesByProp(instance_recipe.data, 'dlc', true).sort(numberSort),
 		names: instance_recipe.getValuesByProp(instance_recipe.data, 'name', true).sort(pinyinSort),
-		positiveTags: [...instance_recipe.getValuesByProp(instance_recipe.data, 'positiveTags'), '流行喜爱', '流行厌恶']
+		positiveTags: [
+			...instance_recipe
+				.getValuesByProp(instance_recipe.data, 'positiveTags')
+				.filter((tag) => tag !== '黑暗物质'),
+			'流行喜爱',
+			'流行厌恶',
+		]
 			.map(toValueObject)
 			.sort(pinyinSort) as {value: TRecipeTag}[],
 	},
@@ -170,6 +181,7 @@ const state = {
 			filterVisibility: true,
 
 			hasMystiaCooker: false,
+			isDarkMatter: null as boolean | null,
 			order: {
 				beverageTag: null,
 				recipeTag: null,
@@ -186,10 +198,7 @@ const state = {
 			filterVisibility: false,
 		},
 		recipe: {
-			data: null as {
-				name: TRecipeNames;
-				extraIngredients: TIngredientNames[];
-			} | null,
+			data: null as IRecipeData | null,
 
 			cookers: new Set() as SelectionSet,
 			dlcs: new Set() as SelectionSet,
@@ -611,6 +620,7 @@ export const customerRareStore = store(state, {
 			} = instance_customer.getPropsByName(customerName);
 			const order = currentStore.shared.customer.order.get();
 			const hasMystiaCooker = currentStore.shared.customer.hasMystiaCooker.get();
+			const isDarkMatter = Boolean(currentStore.shared.customer.isDarkMatter.get());
 			let beverageTags: TBeverageTag[] = [];
 			const beverageName = currentStore.shared.beverage.name.get();
 			if (beverageName) {
@@ -637,6 +647,7 @@ export const customerRareStore = store(state, {
 				currentRecipe: recipe,
 				currentRecipeTagsWithPopular: recipeTagsWithPopular,
 				hasMystiaCooker,
+				isDarkMatter,
 			});
 			currentStore.shared.customer.rating.set(rating);
 		},
@@ -671,16 +682,20 @@ export const customerRareStore = store(state, {
 			const beverage = instance_beverage.getPropsByName(beverageName);
 			const {tags: beverageTags, price: beveragePrice} = beverage;
 			const recipe = instance_recipe.getPropsByName(recipeName);
-			const {ingredients: originalIngredients, positiveTags: originalTags, price: recipePrice} = recipe;
+			const {ingredients, negativeTags, positiveTags, price: recipePrice} = recipe;
 			const extraTags = extraIngredients.flatMap((extraIngredient) =>
 				instance_ingredient.getPropsByName(extraIngredient, 'tags')
 			);
 			const composedRecipeTags = instance_recipe.composeTags(
-				originalIngredients,
+				ingredients,
 				extraIngredients,
-				originalTags,
+				positiveTags,
 				extraTags
 			);
+			const isDarkMatter = instance_recipe.checkDarkMatter({
+				extraIngredients,
+				negativeTags,
+			});
 			const rating = evaluateMeal({
 				currentBeverageTags: beverageTags,
 				currentCustomerBeverageTags: customerBeverageTags,
@@ -688,12 +703,14 @@ export const customerRareStore = store(state, {
 				currentCustomerNegativeTags: customerNegativeTags,
 				currentCustomerOrder: order,
 				currentCustomerPositiveTags: customerPositiveTags,
-				currentIngredients: [...originalIngredients, ...extraIngredients],
+				currentIngredients: [...ingredients, ...extraIngredients],
 				currentRecipe: recipe,
 				currentRecipeTagsWithPopular: instance_recipe.calculateTagsWithPopular(composedRecipeTags, popular),
 				hasMystiaCooker,
+				isDarkMatter,
 			});
 			return {
+				isDarkMatter,
 				price: beveragePrice + recipePrice,
 				rating: rating as TCustomerRating,
 			};
@@ -763,6 +780,7 @@ export const customerRareStore = store(state, {
 			currentStore.shared.customer.beverageTags.set(new Set());
 			currentStore.shared.customer.positiveTags.set(new Set());
 			currentStore.shared.customer.hasMystiaCooker.set(false);
+			currentStore.shared.customer.isDarkMatter.set(null);
 			currentStore.shared.customer.order.set({
 				beverageTag: null,
 				recipeTag: null,

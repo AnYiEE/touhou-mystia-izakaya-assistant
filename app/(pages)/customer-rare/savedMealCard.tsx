@@ -58,119 +58,136 @@ export default memo(
 								<div className="flex flex-col items-center gap-4 md:flex-row md:gap-3 lg:gap-4 xl:gap-3">
 									<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap md:gap-2 lg:gap-3 xl:gap-2">
 										{(() => {
-											const {price, rating} = customerStore.evaluateSavedMealResult({
-												beverageName: beverage,
-												extraIngredients,
-												hasMystiaCooker,
-												order,
-												popular: currentCustomerPopular,
-												recipeName: recipe,
-											});
+											const {isDarkMatter, price, rating} = customerStore.evaluateSavedMealResult(
+												{
+													beverageName: beverage,
+													extraIngredients,
+													hasMystiaCooker,
+													order,
+													popular: currentCustomerPopular,
+													recipeName: recipe,
+												}
+											);
+											const originalCooker = instance_recipe.getPropsByName(recipe, 'cooker');
+											const cooker = hasMystiaCooker
+												? (`夜雀${originalCooker}` as const)
+												: originalCooker;
+											const recipeName = isDarkMatter ? '黑暗物质' : recipe;
 											const customerRatingColor = customerRatingColorMap[rating];
 											return (
-												<Popover
-													showArrow
-													color={customerRatingColor}
-													offset={13}
-													placement="left"
-												>
-													<Tooltip
+												<>
+													<Popover
 														showArrow
 														color={customerRatingColor}
-														content={rating}
+														offset={13}
 														placement="left"
 													>
-														<span className="cursor-pointer">
-															<PopoverTrigger>
-																<Avatar
-																	isBordered
-																	showFallback
-																	color={customerRatingColor}
-																	fallback={
-																		<TagGroup className="h-4 flex-nowrap items-center whitespace-nowrap">
-																			{price !== 0 && (
-																				<Tags.Tag
-																					tag={
-																						(
-																							<Price>{price}</Price>
-																						) as never
-																					}
-																					tagStyle={{}}
-																					className="p-0.5 leading-none"
-																				/>
-																			)}
-																			{order.recipeTag && !hasMystiaCooker && (
-																				<Tags.Tag
-																					tag={order.recipeTag}
-																					tagStyle={RECIPE_TAG_STYLE.positive}
-																					className="p-0.5 leading-none"
-																				/>
-																			)}
-																			{order.beverageTag && !hasMystiaCooker && (
-																				<Tags.Tag
-																					tag={order.beverageTag}
-																					tagStyle={
-																						BEVERAGE_TAG_STYLE.positive
-																					}
-																					className="p-0.5 leading-none"
-																				/>
-																			)}
-																		</TagGroup>
-																	}
-																	radius="sm"
-																	role="banner"
-																	classNames={{
-																		base: 'h-5 w-44 ring-offset-0',
-																	}}
-																/>
-															</PopoverTrigger>
-														</span>
-													</Tooltip>
-													<PopoverContent>{rating}</PopoverContent>
-												</Popover>
-											);
-										})()}
-										<div className="flex items-center gap-2">
-											{(() => {
-												const originalCooker = instance_recipe.getPropsByName(recipe, 'cooker');
-												const cooker = hasMystiaCooker
-													? (`夜雀${originalCooker}` as const)
-													: originalCooker;
-												return (
-													<Popover showArrow offset={11}>
-														<Tooltip showArrow content={cooker}>
-															<span className="flex cursor-pointer">
+														<Tooltip
+															showArrow
+															color={customerRatingColor}
+															content={rating}
+															placement="left"
+														>
+															<span className="cursor-pointer">
 																<PopoverTrigger>
-																	<Sprite target="cooker" name={cooker} size={1.5} />
+																	<Avatar
+																		isBordered
+																		showFallback
+																		color={customerRatingColor}
+																		fallback={
+																			<TagGroup className="h-4 flex-nowrap items-center whitespace-nowrap">
+																				{price !== 0 && (
+																					<Tags.Tag
+																						tag={
+																							(
+																								<Price>{price}</Price>
+																							) as never
+																						}
+																						tagStyle={{}}
+																						className="p-0.5 leading-none"
+																					/>
+																				)}
+																				{order.recipeTag &&
+																					!hasMystiaCooker && (
+																						<Tags.Tag
+																							tag={order.recipeTag}
+																							tagStyle={
+																								RECIPE_TAG_STYLE.positive
+																							}
+																							className="p-0.5 leading-none"
+																						/>
+																					)}
+																				{order.beverageTag &&
+																					!hasMystiaCooker && (
+																						<Tags.Tag
+																							tag={order.beverageTag}
+																							tagStyle={
+																								BEVERAGE_TAG_STYLE.positive
+																							}
+																							className="p-0.5 leading-none"
+																						/>
+																					)}
+																			</TagGroup>
+																		}
+																		radius="sm"
+																		role="banner"
+																		classNames={{
+																			base: 'h-5 w-44 ring-offset-0',
+																		}}
+																	/>
 																</PopoverTrigger>
 															</span>
 														</Tooltip>
-														<PopoverContent>{cooker}</PopoverContent>
+														<PopoverContent>{rating}</PopoverContent>
 													</Popover>
-												);
-											})()}
-											<Popover showArrow offset={8}>
-												<Tooltip showArrow content={recipe} offset={4}>
-													<span className="flex cursor-pointer">
-														<PopoverTrigger>
-															<Sprite target="recipe" name={recipe} size={2} />
-														</PopoverTrigger>
-													</span>
-												</Tooltip>
-												<PopoverContent>{recipe}</PopoverContent>
-											</Popover>
-											<Plus size={0.75} className="mx-2 md:mx-0 lg:mx-2 xl:mx-0" />
-											<Popover showArrow offset={8}>
-												<Tooltip showArrow content={beverage} offset={4}>
-													<span className="flex cursor-pointer">
-														<PopoverTrigger>
-															<Sprite target="beverage" name={beverage} size={2} />
-														</PopoverTrigger>
-													</span>
-												</Tooltip>
-												<PopoverContent>{beverage}</PopoverContent>
-											</Popover>
-										</div>
+													<div className="flex items-center gap-2">
+														<Popover showArrow offset={11}>
+															<Tooltip showArrow content={cooker}>
+																<span className="flex cursor-pointer">
+																	<PopoverTrigger>
+																		<Sprite
+																			target="cooker"
+																			name={cooker}
+																			size={1.5}
+																		/>
+																	</PopoverTrigger>
+																</span>
+															</Tooltip>
+															<PopoverContent>{cooker}</PopoverContent>
+														</Popover>
+														<Popover showArrow offset={8}>
+															<Tooltip showArrow content={recipeName} offset={4}>
+																<span className="flex cursor-pointer">
+																	<PopoverTrigger>
+																		<Sprite
+																			target="recipe"
+																			name={recipeName}
+																			size={2}
+																		/>
+																	</PopoverTrigger>
+																</span>
+															</Tooltip>
+															<PopoverContent>{recipeName}</PopoverContent>
+														</Popover>
+														<Plus size={0.75} className="mx-2 md:mx-0 lg:mx-2 xl:mx-0" />
+														<Popover showArrow offset={8}>
+															<Tooltip showArrow content={beverage} offset={4}>
+																<span className="flex cursor-pointer">
+																	<PopoverTrigger>
+																		<Sprite
+																			target="beverage"
+																			name={beverage}
+																			size={2}
+																		/>
+																	</PopoverTrigger>
+																</span>
+															</Tooltip>
+															<PopoverContent>{beverage}</PopoverContent>
+														</Popover>
+													</div>
+												</>
+											);
+										})()}
 										<Plus size={0.75} className="md:mx-0 lg:mx-1 xl:mx-0" />
 										{(() => {
 											const originalIngredients = instance_recipe.getPropsByName(

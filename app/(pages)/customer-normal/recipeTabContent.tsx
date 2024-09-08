@@ -80,7 +80,7 @@ export default memo(
 		const tableVisibleColumns = customerStore.recipeTableColumns.use();
 
 		const filteredData = useMemo(() => {
-			const data = instance_recipe.data as TRecipesWithSuitability;
+			const data = instance_recipe.data.filter(({name}) => name !== '黑暗物质') as TRecipesWithSuitability;
 
 			if (!currentCustomerName) {
 				return data.map((item) => ({

@@ -56,7 +56,7 @@ export default memo<IProps>(function Content({data, isInNewWindow}) {
 						name={name}
 						description={{level, price}}
 						dlc={dlc}
-						cooker={cooker}
+						cooker={name === '黑暗物质' ? null : cooker}
 						ingredients={ingredients}
 						tags={{negative: negativeTags, positive: positiveTags}}
 						tagColors={RECIPE_TAG_STYLE}
@@ -86,22 +86,24 @@ export default memo<IProps>(function Content({data, isInNewWindow}) {
 										)
 									)}
 						</p>
-						<p>
-							<Popover showArrow offset={6} size="sm">
-								<Tooltip showArrow content="随游戏等级提升而降低" offset={3} size="sm">
-									<span className="inline-flex cursor-pointer">
-										<PopoverTrigger>
-											<span tabIndex={0} className="font-semibold">
-												<span className="underline-dotted-offset2">烹饪时间</span>：
-											</span>
-										</PopoverTrigger>
-									</span>
-								</Tooltip>
-								<PopoverContent>随游戏等级提升而降低</PopoverContent>
-							</Popover>
-							{max}秒<span className="px-0.5">➞</span>
-							{min}秒
-						</p>
+						{max !== 0 && (
+							<p>
+								<Popover showArrow offset={6} size="sm">
+									<Tooltip showArrow content="随游戏等级提升而降低" offset={3} size="sm">
+										<span className="inline-flex cursor-pointer">
+											<PopoverTrigger>
+												<span tabIndex={0} className="font-semibold">
+													<span className="underline-dotted-offset2">烹饪时间</span>：
+												</span>
+											</PopoverTrigger>
+										</span>
+									</Tooltip>
+									<PopoverContent>随游戏等级提升而降低</PopoverContent>
+								</Popover>
+								{max}秒<span className="px-0.5">➞</span>
+								{min}秒
+							</p>
+						)}
 					</FoodPopoverCard>
 				</PopoverContent>
 			</Popover>

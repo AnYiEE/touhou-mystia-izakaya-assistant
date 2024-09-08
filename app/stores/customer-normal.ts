@@ -71,7 +71,13 @@ const state = {
 		cookers: instance_recipe.getValuesByProp(instance_recipe.data, 'cooker', true).sort(pinyinSort),
 		dlcs: instance_recipe.getValuesByProp(instance_recipe.data, 'dlc', true).sort(numberSort),
 		names: instance_recipe.getValuesByProp(instance_recipe.data, 'name', true).sort(pinyinSort),
-		positiveTags: [...instance_recipe.getValuesByProp(instance_recipe.data, 'positiveTags'), '流行喜爱', '流行厌恶']
+		positiveTags: [
+			...instance_recipe
+				.getValuesByProp(instance_recipe.data, 'positiveTags')
+				.filter((tag) => tag !== '黑暗物质'),
+			'流行喜爱',
+			'流行厌恶',
+		]
 			.map(toValueObject)
 			.sort(pinyinSort) as {value: TRecipeTag}[],
 	},

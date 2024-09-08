@@ -2834,4 +2834,17 @@ export const RECIPE_LIST = [
 		price: 20,
 		from: '【游戏补偿】“阿吽异变”',
 	},
+	{
+		name: '黑暗物质',
+		ingredients: [],
+		positiveTags: ['黑暗物质'],
+		negativeTags: [],
+		cooker: '煮锅',
+		min: 0,
+		max: 0,
+		dlc: 0,
+		level: 1,
+		price: 1,
+		from: '料理制作失败、【立空汐】惩罚符卡、【帕秋莉】惩罚符卡',
+	},
 ] as const satisfies IRecipe[];

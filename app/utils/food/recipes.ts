@@ -1,10 +1,11 @@
-import {cloneDeep, isObjectLike, sortBy} from 'lodash';
+import {cloneDeep, intersection, isObjectLike, sortBy} from 'lodash';
 
 import {Food} from './base';
+import {Ingredient} from './ingredients';
 import {type ICurrentCustomer} from '@/(pages)/customer-rare/types';
 import {RECIPE_LIST, type TIngredientNames, type TRecipeNames, type TRecipes} from '@/data';
 import type {TIngredientTag, TRecipeTag} from '@/data/types';
-import {type IPopularData} from '@/stores';
+import {type IPopularData, type IRecipeData} from '@/stores';
 
 type TRecipe = TRecipes[number];
 type TProcessPositiveTags<T extends TRecipe> = Omit<T, 'positiveTags'> & {
@@ -33,8 +34,10 @@ export class Recipe extends Food<TRecipes> {
 		const clonedData = cloneDeep(data);
 
 		(clonedData as TProcessPositiveTags<TRecipes[number]>[]).forEach((recipe) => {
-			const {positiveTags, price} = recipe;
-			if (price > 60) {
+			const {name, positiveTags, price} = recipe;
+			if (name === '黑暗物质') {
+				/* empty */
+			} else if (price > 60) {
 				positiveTags.push('昂贵');
 			} else if (price < 20) {
 				positiveTags.push('实惠');
@@ -68,6 +71,29 @@ export class Recipe extends Food<TRecipes> {
 		}
 
 		return recipeTagsWithPopular;
+	}
+
+	public checkDarkMatter(
+		recipeData:
+			| IRecipeData
+			| {
+					extraIngredients: TIngredientNames[];
+					negativeTags: TRecipeTag[];
+			  }
+	) {
+		let negativeTags: TRecipeTag[];
+
+		if ('name' in recipeData) {
+			negativeTags = this.getPropsByName(recipeData.name).negativeTags;
+		} else {
+			negativeTags = recipeData.negativeTags;
+		}
+
+		const extraTags = recipeData.extraIngredients.flatMap((extraIngredient) =>
+			Ingredient.getInstance().getPropsByName(extraIngredient, 'tags')
+		);
+
+		return intersection(extraTags, negativeTags).length > 0;
 	}
 
 	/**

@@ -7,7 +7,7 @@ import type {IPersistenceState} from './types';
 import type {TIngredientTag, TRecipeTag} from '@/data/types';
 import {Ingredient, Recipe, pinyinSort, toValueObject, union} from '@/utils';
 
-export type TPopularTag = TIngredientTag | TRecipeTag;
+export type TPopularTag = TIngredientTag | Exclude<TRecipeTag, '黑暗物质'>;
 export interface IPopularData {
 	isNegative: boolean;
 	tag: TPopularTag | null;
@@ -18,9 +18,11 @@ const instance_recipe = Recipe.getInstance();
 
 const ingredientTags = instance_ingredient.getValuesByProp(instance_ingredient.data, 'tags');
 const recipePositiveTags = instance_recipe.getValuesByProp(instance_recipe.data, 'positiveTags');
-const popularValidTags = union(ingredientTags, recipePositiveTags).map(toValueObject).sort(pinyinSort) as {
-	value: TPopularTag;
-}[];
+const popularValidTags = (
+	union(ingredientTags, recipePositiveTags).filter((tag) => tag !== '黑暗物质') as TPopularTag[]
+)
+	.map(toValueObject)
+	.sort(pinyinSort);
 
 const storeVersion = {
 	initial: 0, // eslint-disable-next-line sort-keys

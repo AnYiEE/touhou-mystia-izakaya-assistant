@@ -26,6 +26,7 @@ export default memo(
 		const currentCustomerData = customerStore.shared.customer.data.use();
 		const currentCustomerPopular = customerStore.shared.customer.popular.use();
 		const currentRecipeData = customerStore.shared.recipe.data.use();
+		const isDarkMatter = customerStore.shared.customer.isDarkMatter.use();
 
 		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 
@@ -47,11 +48,6 @@ export default memo(
 						.map(toValueWithKey('name'))
 				),
 			[currentRecipe?.negativeTags, sortedData]
-		);
-
-		sortedData = useMemo(
-			() => sortedData.filter(({name}) => !darkIngredients.has(name)),
-			[darkIngredients, sortedData]
 		);
 
 		const handleSelect = useCallback(
@@ -169,6 +165,13 @@ export default memo(
 							if (name === easterEggIngredient && !allIngredients.includes(easterEggIngredient)) {
 								scoreChange = easterEggScore === 0 ? -Infinity : Infinity;
 							}
+							const isDarkIngredient = darkIngredients.has(name);
+							if (isDarkIngredient) {
+								scoreChange = -Infinity;
+							}
+							if (isDarkMatter) {
+								scoreChange = 0;
+							}
 							const isDown = scoreChange < 0;
 							const isUp = scoreChange > 0;
 							const isNoChange = scoreChange === 0;
@@ -176,7 +179,7 @@ export default memo(
 							const isLowest = scoreChange === -Infinity;
 							const color = isUp ? 'success' : isDown ? 'danger' : 'default';
 							const score = isUp ? `+${scoreChange}` : `${scoreChange}`;
-							const label = `点击：加入额外食材【${name}】${isNoChange ? '' : `，${isHighest ? '最低评级受限' : isLowest ? '最高评级受限' : `匹配度${score}`}`}`;
+							const label = `点击：加入额外食材【${name}】${isNoChange ? '' : `，${isDarkIngredient ? '制作【黑暗物质】' : isHighest ? '最低评级受限' : isLowest ? '最高评级受限' : `匹配度${score}`}`}`;
 							return (
 								<Tooltip
 									key={index}
@@ -207,7 +210,17 @@ export default memo(
 									>
 										<Badge
 											color={color}
-											content={isHighest ? '++' : isLowest ? '--' : isNoChange ? '' : score}
+											content={
+												isDarkIngredient
+													? '!!'
+													: isHighest
+														? '++'
+														: isLowest
+															? '--'
+															: isNoChange
+																? ''
+																: score
+											}
 											isInvisible={isNoChange}
 											size="sm"
 											classNames={{
@@ -234,25 +247,6 @@ export default memo(
 							);
 						})}
 					</div>
-					{darkIngredients.size > 0 && (
-						<>
-							<div className="my-4 flex items-center">
-								<div className="h-px w-full bg-foreground-300"></div>
-								<div className="select-none whitespace-nowrap text-sm font-light text-foreground-500">
-									制作黑暗料理？
-								</div>
-								<div className="h-px w-full bg-foreground-300"></div>
-							</div>
-							<div className="m-2 grid grid-cols-fill-12 justify-around gap-4">
-								{[...darkIngredients].map((name, index) => (
-									<div key={index} className="flex cursor-not-allowed flex-col items-center">
-										<Sprite target="ingredient" name={name} size={3} />
-										<span className="whitespace-nowrap text-center text-xs">{name}</span>
-									</div>
-								))}
-							</div>
-						</>
-					)}
 				</ScrollShadow>
 				<div className="flex justify-center xl:hidden">
 					<Button

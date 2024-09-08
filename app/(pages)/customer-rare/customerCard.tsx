@@ -33,6 +33,7 @@ export default memo(
 		const currentCustomerPopular = customerStore.shared.customer.popular.use();
 		const currentRating = customerStore.shared.customer.rating.use();
 		const hasMystiaCooker = customerStore.shared.customer.hasMystiaCooker.use();
+		const isDarkMatter = customerStore.shared.customer.isDarkMatter.use();
 		const isOrderLinkedFilter = customerStore.persistence.customer.orderLinkedFilter.use();
 		const isShowTagDescription = customerStore.persistence.customer.showTagDescription.use();
 
@@ -320,7 +321,8 @@ export default memo(
 											tabIndex={0}
 											className={twMerge(
 												'cursor-pointer p-1 leading-none transition-opacity hover:opacity-hover',
-												!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50',
+												(isDarkMatter || !currentRecipeTagsWithPopular.includes(tag)) &&
+													'opacity-50',
 												currentCustomerOrder.recipeTag === tag &&
 													!hasMystiaCooker &&
 													'ring-2 ring-current',
@@ -341,7 +343,8 @@ export default memo(
 										tagType="negative"
 										className={twJoin(
 											'cursor-not-allowed p-1 leading-none',
-											!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50'
+											(isDarkMatter || !currentRecipeTagsWithPopular.includes(tag)) &&
+												'opacity-50'
 										)}
 									/>
 								))}

@@ -177,7 +177,7 @@ interface IFoodPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 		price: number | string;
 	};
 	dlc?: number | string;
-	cooker?: TCookerNames;
+	cooker?: TCookerNames | null;
 	ingredients?: TIngredientNames[];
 	ingredientType?: IIngredient['type'];
 	tags?: {
@@ -272,10 +272,12 @@ const FoodPopoverCardComponent = memo(
 				)}
 				{description !== undefined && (
 					<div className="flex gap-4">
-						<p>
-							<span className="font-semibold">售价：</span>
-							<Price showSymbol={false}>{description.price}</Price>
-						</p>
+						{description.price !== -1 && (
+							<p>
+								<span className="font-semibold">售价：</span>
+								<Price showSymbol={false}>{description.price}</Price>
+							</p>
+						)}
 						<p>
 							<span className="font-semibold">等级：</span>
 							<Price showSymbol={false}>{description.level}</Price>

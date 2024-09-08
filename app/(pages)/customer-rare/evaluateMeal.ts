@@ -17,6 +17,7 @@ interface IParameters {
 	currentRecipe: TRecipe | null;
 	currentRecipeTagsWithPopular: TRecipeTag[];
 	hasMystiaCooker: boolean;
+	isDarkMatter: boolean;
 }
 
 function calculateMaxScore({
@@ -24,21 +25,23 @@ function calculateMaxScore({
 	currentCustomerOrder,
 	currentRecipeTagsWithPopular,
 	hasMystiaCooker,
+	isDarkMatter,
 }: Pick<
 	IParameters,
-	'currentBeverageTags' | 'currentCustomerOrder' | 'currentRecipeTagsWithPopular' | 'hasMystiaCooker'
+	'currentBeverageTags' | 'currentCustomerOrder' | 'currentRecipeTagsWithPopular' | 'hasMystiaCooker' | 'isDarkMatter'
 >) {
 	const {beverageTag: customerOrderBeverageTag, recipeTag: customerOrderRecipeTag} = currentCustomerOrder;
 
-	if (!hasMystiaCooker && !customerOrderBeverageTag && !customerOrderRecipeTag) {
+	if (!hasMystiaCooker && !isDarkMatter && !customerOrderBeverageTag && !customerOrderRecipeTag) {
 		return 0;
 	}
 
-	const beverageMaxScore = hasMystiaCooker
-		? 1
-		: customerOrderBeverageTag
-			? Number(currentBeverageTags.includes(customerOrderBeverageTag))
-			: 0;
+	const beverageMaxScore =
+		hasMystiaCooker || isDarkMatter
+			? 1
+			: customerOrderBeverageTag
+				? Number(currentBeverageTags.includes(customerOrderBeverageTag))
+				: 0;
 	const recipeMaxScore = hasMystiaCooker
 		? 1
 		: customerOrderRecipeTag
@@ -123,6 +126,16 @@ export function checkRecipeEasterEgg({
 			}
 			break;
 		}
+		case '梅蒂欣': {
+			const recipe = '黑暗物质';
+			if (currentRecipeName === recipe) {
+				return {
+					recipe,
+					score: 3,
+				};
+			}
+			break;
+		}
 		case '饕餮尤魔': {
 			const recipe = '油豆腐';
 			if (currentRecipeName === recipe) {
@@ -170,6 +183,7 @@ function checkEasterEgg({
 			}).score;
 		case '古明地恋':
 		case '蕾米莉亚':
+		case '梅蒂欣':
 		case '饕餮尤魔':
 		case '绵月丰姬':
 		case '绵月依姬':
@@ -233,6 +247,7 @@ export function evaluateMeal({
 	currentRecipe,
 	currentRecipeTagsWithPopular,
 	hasMystiaCooker,
+	isDarkMatter,
 }: IParameters) {
 	if (currentBeverageTags.length === 0 || !currentRecipe) {
 		return null;
@@ -262,6 +277,11 @@ export function evaluateMeal({
 	const matchedBeverageScore = matchedBeverageTagsWithoutOrderedBeverage.length;
 	const beverageScore = orderedBeverageScore + matchedBeverageScore;
 
+	if (isDarkMatter) {
+		currentRecipeTagsWithPopular = [];
+		hasMystiaCooker = false;
+	}
+
 	const matchedRecipeNegativeTags = intersection(currentRecipeTagsWithPopular, currentCustomerNegativeTags);
 	const matchedRecipePositiveTags = intersection(currentRecipeTagsWithPopular, currentCustomerPositiveTags);
 	const matchedRecipePositiveTagsWithoutOrderedRecipe = without(
@@ -277,7 +297,7 @@ export function evaluateMeal({
 			: 0;
 	const matchedRecipeNegativeScore = matchedRecipeNegativeTags.length;
 	const matchedRecipePositiveScore = matchedRecipePositiveTagsWithoutOrderedRecipe.length;
-	const recipeScore = orderedRecipeScore + matchedRecipePositiveScore - matchedRecipeNegativeScore;
+	const recipeScore = isDarkMatter ? 0 : orderedRecipeScore + matchedRecipePositiveScore - matchedRecipeNegativeScore;
 
 	let mealScore = Math.min(
 		beverageScore + recipeScore,
@@ -286,11 +306,17 @@ export function evaluateMeal({
 			currentCustomerOrder,
 			currentRecipeTagsWithPopular,
 			hasMystiaCooker,
+			isDarkMatter,
 		})
 	);
 
 	const {name: currentRecipeName} = currentRecipe;
-	mealScore = checkEasterEgg({currentCustomerName, currentIngredients, currentRecipeName, mealScore});
+	mealScore = checkEasterEgg({
+		currentCustomerName,
+		currentIngredients,
+		currentRecipeName: isDarkMatter ? '黑暗物质' : currentRecipeName,
+		mealScore,
+	});
 	mealScore = checkRecipeFrom({currentCustomerName, currentRecipe, mealScore});
 
 	return getRatingKey(mealScore);

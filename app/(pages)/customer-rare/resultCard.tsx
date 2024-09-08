@@ -158,6 +158,7 @@ export default memo(
 		const currentRating = customerStore.shared.customer.rating.use();
 		const currentSavedMeals = customerStore.persistence.meals.use();
 		const hasMystiaCooker = customerStore.shared.customer.hasMystiaCooker.use();
+		const isDarkMatter = customerStore.shared.customer.isDarkMatter.use();
 
 		const instance_beverage = customerStore.instances.beverage.get();
 		const instance_recipe = customerStore.instances.recipe.get();
@@ -229,17 +230,18 @@ export default memo(
 					<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
 						<div className="flex items-center gap-2">
 							{currentRecipeData ? (
-								<>
-									{(() => {
-										const originalCooker = instance_recipe.getPropsByName(
-											currentRecipeData.name,
-											'cooker'
-										);
-										const cooker = hasMystiaCooker
-											? (`夜雀${originalCooker}` as const)
-											: originalCooker;
-										const label = `点击：将此点单标记为使用${hasMystiaCooker ? '非' : ''}【夜雀${originalCooker}】制作`;
-										return (
+								(() => {
+									const originalCooker = instance_recipe.getPropsByName(
+										currentRecipeData.name,
+										'cooker'
+									);
+									const cooker = hasMystiaCooker
+										? (`夜雀${originalCooker}` as const)
+										: originalCooker;
+									const recipeName = isDarkMatter ? '黑暗物质' : currentRecipeData.name;
+									const label = `点击：将此点单标记为使用${hasMystiaCooker ? '非' : ''}【夜雀${originalCooker}】制作`;
+									return (
+										<>
 											<Tooltip showArrow content={label}>
 												<Sprite
 													target="cooker"
@@ -257,12 +259,12 @@ export default memo(
 													className="cursor-pointer"
 												/>
 											</Tooltip>
-										);
-									})()}
-									<Tooltip showArrow content={currentRecipeData.name} offset={4}>
-										<Sprite target="recipe" name={currentRecipeData.name} size={2.5} />
-									</Tooltip>
-								</>
+											<Tooltip showArrow content={recipeName} offset={4}>
+												<Sprite target="recipe" name={recipeName} size={2.5} />
+											</Tooltip>
+										</>
+									);
+								})()
 							) : (
 								<>
 									<UnknownItem title="请选择料理" size={1.5} />
