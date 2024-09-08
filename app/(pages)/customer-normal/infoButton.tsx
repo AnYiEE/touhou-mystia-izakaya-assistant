@@ -18,7 +18,7 @@ export default memo(function InfoButton() {
 							点击套餐卡片中的厨具可以为当前套餐标记是否使用“夜雀”系列厨具，厨具类别是套餐评级时的参考维度之一。
 						</li>
 						<li>“保存套餐”按钮仅会在选择了料理和酒水时被启用。</li>
-						<li>评级时，默认您已选择了正确的料理和酒水。</li>
+						<li>评级时，默认您正确选择了该普客所点单的料理和酒水。</li>
 					</ol>
 					<p className="mb-1 mt-2 text-sm font-semibold">交互时</p>
 					<ol className="list-inside list-disc">
