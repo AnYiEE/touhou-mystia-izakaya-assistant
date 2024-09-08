@@ -270,7 +270,12 @@ export default memo(function CustomerNormal() {
 					<Tab isDisabled={!currentCustomerName} key="beverage" title="酒水">
 						<BeverageTabContent />
 					</Tab>
-					<Tab isDisabled={!(currentCustomerName && currentRecipeData)} key="ingredient" title="食材">
+					<Tab
+						isDisabled={!(currentCustomerName && currentRecipeData)}
+						key="ingredient"
+						title="食材"
+						className="px-0"
+					>
 						<IngredientTabContent
 							ingredientTabStyle={ingredientTabStyle}
 							sortedData={ingredientsSortedData}
