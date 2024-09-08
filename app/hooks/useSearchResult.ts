@@ -1,4 +1,4 @@
-import {useCallback} from 'react';
+import {useCallback, useMemo} from 'react';
 
 import {
 	type Beverage,
@@ -32,9 +32,10 @@ export function useSearchResult<T extends TTargetInstance>(instance: T, searchVa
 		return instance.data;
 	}, [instance.data, searchValue]);
 
-	if (isInNewWindow) {
-		return instance.data as TData<T>;
-	}
+	const searchResult = useMemo(
+		() => (isInNewWindow ? instance.data : getSearchResult()),
+		[getSearchResult, instance.data, isInNewWindow]
+	);
 
-	return getSearchResult() as TData<T>;
+	return searchResult as TData<T>;
 }

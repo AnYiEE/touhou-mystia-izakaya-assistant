@@ -1,4 +1,4 @@
-import {useCallback} from 'react';
+import {useCallback, useMemo} from 'react';
 
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
@@ -31,9 +31,10 @@ export function useSortedData<T extends TTargetInstance>(
 		}
 	}, [instance, filteredData, pinyinSortState]);
 
-	if (isInNewWindow) {
-		return filteredData;
-	}
+	const sortedData = useMemo(
+		() => (isInNewWindow ? filteredData : sortData()),
+		[filteredData, isInNewWindow, sortData]
+	);
 
-	return sortData() as TData<T>;
+	return sortedData as TData<T>;
 }
