@@ -14,10 +14,10 @@ import {
 	Tooltip,
 } from '@nextui-org/react';
 
-import {customerRatingColorMap} from './constants';
 import InfoButtonBase from './infoButtonBase';
 import Sprite from '@/components/sprite';
 
+import {customerRatingColorMap} from './constants';
 import type {TReward} from '@/data/customer_rare/types';
 import {customerRareStore as store} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
@@ -66,7 +66,7 @@ export default memo(function InfoButton() {
 	const getDescription = ({description, reward, type}: TReward) => {
 		switch (type) {
 			case '厨具': {
-				const descriptionSplitArray = (description as string).split('：');
+				const descriptionSplitArray = description.split('：');
 				return `${descriptionSplitArray.shift()}效果：${descriptionSplitArray.join('：')}`;
 			}
 			case '服装':

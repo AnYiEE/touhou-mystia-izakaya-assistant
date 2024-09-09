@@ -56,8 +56,8 @@ export default memo(function CustomerRare() {
 
 	const {breakpoint} = useBreakpoint(tachieBreakPoint, 'noTachie');
 
-	const isShowTachie = globalStore.persistence.tachie.use();
 	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+	const isShowTachie = globalStore.persistence.tachie.use();
 
 	const currentCustomerData = customerStore.shared.customer.data.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
@@ -212,52 +212,48 @@ export default memo(function CustomerRare() {
 	const allIngredientDlcs = customerStore.ingredient.dlcs.get();
 	const allIngredientLevels = customerStore.ingredient.levels.get();
 
-	const ingredientsPinyinSortState = customerStore.persistence.ingredient.pinyinSortState.use();
+	const ingredientPinyinSortState = customerStore.persistence.ingredient.pinyinSortState.use();
 
-	const ingredientsFilterDlcs = customerStore.persistence.ingredient.filters.dlcs.use();
-	const ingredientsFilterLevels = customerStore.persistence.ingredient.filters.levels.use();
+	const ingredientFilterDlcs = customerStore.persistence.ingredient.filters.dlcs.use();
+	const ingredientFilterLevels = customerStore.persistence.ingredient.filters.levels.use();
 
-	const ingredientsFilteredData = useMemo(
+	const ingredientFilteredData = useMemo(
 		() =>
 			instance_ingredient.data.filter(({dlc, level}) => {
 				const isDlcMatched =
-					ingredientsFilterDlcs.length > 0 ? ingredientsFilterDlcs.includes(dlc.toString()) : true;
+					ingredientFilterDlcs.length > 0 ? ingredientFilterDlcs.includes(dlc.toString()) : true;
 				const isLevelMatched =
-					ingredientsFilterLevels.length > 0 ? ingredientsFilterLevels.includes(level.toString()) : true;
+					ingredientFilterLevels.length > 0 ? ingredientFilterLevels.includes(level.toString()) : true;
 
 				return isDlcMatched && isLevelMatched;
 			}),
-		[ingredientsFilterDlcs, ingredientsFilterLevels, instance_ingredient.data]
+		[ingredientFilterDlcs, ingredientFilterLevels, instance_ingredient.data]
 	);
 
-	const ingredientsSortedData = useSortedData(
-		instance_ingredient,
-		ingredientsFilteredData,
-		ingredientsPinyinSortState
-	);
+	const ingredientSortedData = useSortedData(instance_ingredient, ingredientFilteredData, ingredientPinyinSortState);
 
-	const ingredientsPinyinSortConfig = usePinyinSortConfig(
-		ingredientsPinyinSortState,
+	const ingredientPinyinSortConfig = usePinyinSortConfig(
+		ingredientPinyinSortState,
 		customerStore.persistence.ingredient.pinyinSortState.set
 	);
 
-	const ingredientsSelectConfig = useMemo(
+	const ingredientSelectConfig = useMemo(
 		() =>
 			[
 				{
 					items: allIngredientDlcs,
 					label: 'DLC',
-					selectedKeys: ingredientsFilterDlcs,
+					selectedKeys: ingredientFilterDlcs,
 					setSelectedKeys: customerStore.persistence.ingredient.filters.dlcs.set,
 				},
 				{
 					items: allIngredientLevels,
 					label: '等级',
-					selectedKeys: ingredientsFilterLevels,
+					selectedKeys: ingredientFilterLevels,
 					setSelectedKeys: customerStore.persistence.ingredient.filters.levels.set,
 				},
 			] as const satisfies TSelectConfig,
-		[allIngredientDlcs, allIngredientLevels, ingredientsFilterDlcs, ingredientsFilterLevels]
+		[allIngredientDlcs, allIngredientLevels, ingredientFilterDlcs, ingredientFilterLevels]
 	);
 
 	const ingredientTabVisibilityState = customerStore.persistence.ingredient.tabVisibility.use();
@@ -311,7 +307,7 @@ export default memo(function CustomerRare() {
 					>
 						<IngredientTabContent
 							ingredientTabStyle={ingredientTabStyle}
-							sortedData={ingredientsSortedData}
+							sortedData={ingredientSortedData}
 						/>
 					</Tab>
 				</Tabs>
@@ -357,8 +353,8 @@ export default memo(function CustomerRare() {
 					!isIngredientTabFilterVisible && '!hidden'
 				)}
 			>
-				<SidePinyinSortIconButton pinyinSortConfig={ingredientsPinyinSortConfig} />
-				<SideFilterIconButton selectConfig={ingredientsSelectConfig} />
+				<SidePinyinSortIconButton pinyinSortConfig={ingredientPinyinSortConfig} />
+				<SideFilterIconButton selectConfig={ingredientSelectConfig} />
 			</SideButtonGroup>
 
 			{isShowTachie && breakpoint === 'tachie' && (

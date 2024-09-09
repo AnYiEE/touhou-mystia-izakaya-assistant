@@ -202,7 +202,7 @@ function checkRecipeFrom({
 }: Pick<IParameters, 'currentCustomerName' | 'currentRecipe'> & {
 	mealScore: number;
 }) {
-	if (currentRecipe === null) {
+	if (!currentRecipe) {
 		return mealScore;
 	}
 
@@ -236,8 +236,8 @@ function getRatingKey(mealScore: number): TCustomerRating | null {
 
 export function evaluateMeal({
 	currentBeverageTags,
-	currentCustomerName,
 	currentCustomerBeverageTags,
+	currentCustomerName,
 	currentCustomerNegativeTags,
 	currentCustomerOrder,
 	currentCustomerPositiveTags,

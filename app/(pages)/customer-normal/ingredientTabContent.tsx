@@ -5,9 +5,9 @@ import {useVibrate} from '@/hooks';
 
 import {Badge, Button, ScrollShadow, Tooltip} from '@nextui-org/react';
 
+import {type IIngredientTabContentProps} from '@/(pages)/customer-rare/ingredientTabContent';
 import Sprite from '@/components/sprite';
 
-import {type IIngredientTabContentProps} from '@/(pages)/customer-rare/ingredientTabContent';
 import {type TIngredientNames} from '@/data';
 import type {TRecipeTag} from '@/data/types';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
