@@ -684,11 +684,14 @@ export const customerRareStore = store(state, {
 			const beverage = instance_beverage.getPropsByName(beverageName);
 			const {tags: beverageTags, price: beveragePrice} = beverage;
 			const recipe = instance_recipe.getPropsByName(recipeName);
-			const {ingredients, negativeTags, positiveTags, price: recipePrice} = recipe;
+			const {ingredients, negativeTags, positiveTags, price: originalRecipePrice} = recipe;
 			const {extraTags, isDarkMatter} = instance_recipe.checkDarkMatter({
 				extraIngredients,
 				negativeTags,
 			});
+			const recipePrice = isDarkMatter
+				? instance_recipe.getPropsByName('黑暗物质', 'price')
+				: originalRecipePrice;
 			const composedRecipeTags = instance_recipe.composeTags(
 				ingredients,
 				extraIngredients,
@@ -731,17 +734,19 @@ export const customerRareStore = store(state, {
 			}
 			const {extraIngredients, name: recipeName} = recipeData;
 			const hasMystiaCooker = currentStore.shared.customer.hasMystiaCooker.get();
+			const isDarkMatter = currentStore.shared.customer.isDarkMatter.get();
 			const order = currentStore.shared.customer.order.get();
 			const saveObject = {
 				beverage: beverageName,
 				extraIngredients,
 				hasMystiaCooker,
-				order: hasMystiaCooker
-					? {
-							beverageTag: null,
-							recipeTag: null,
-						}
-					: order,
+				order:
+					hasMystiaCooker && !isDarkMatter
+						? {
+								beverageTag: null,
+								recipeTag: null,
+							}
+						: order,
 				recipe: recipeName,
 			} as const;
 			currentStore.persistence.meals.set((prev) => {

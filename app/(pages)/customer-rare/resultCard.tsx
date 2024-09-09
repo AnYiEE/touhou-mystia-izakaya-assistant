@@ -20,7 +20,7 @@ interface IPlusProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'className'> 
 }
 
 export const Plus = memo(
-	forwardRef<HTMLSpanElement | null, IPlusProps>(function Plus({className, size = 1}, ref) {
+	forwardRef<HTMLSpanElement | null, IPlusProps>(function Plus({size = 1, className}, ref) {
 		const remString = `${size}rem`;
 
 		return (
@@ -43,7 +43,7 @@ interface IUnknownItemProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'class
 }
 
 export const UnknownItem = memo(
-	forwardRef<HTMLSpanElement | null, IUnknownItemProps>(function UnknownItem({className, title, size = 2}, ref) {
+	forwardRef<HTMLSpanElement | null, IUnknownItemProps>(function UnknownItem({title, size = 2, className}, ref) {
 		const remString = `${size}rem`;
 
 		return (
@@ -187,9 +187,12 @@ export default memo(
 		}, [hideTooltip]);
 
 		const handleCookerClick = useCallback(() => {
+			if (isDarkMatter) {
+				return;
+			}
 			vibrate();
 			customerStore.toggleMystiaCooker();
-		}, [vibrate]);
+		}, [isDarkMatter, vibrate]);
 
 		const handleSaveButtonPress = useCallback(() => {
 			if (isSaveButtonDisabled) {
@@ -231,15 +234,18 @@ export default memo(
 						<div className="flex items-center gap-2">
 							{currentRecipeData ? (
 								(() => {
+									const isisDarkMatterOrNormalMeal = isDarkMatter || !hasMystiaCooker;
 									const originalCooker = instance_recipe.getPropsByName(
 										currentRecipeData.name,
 										'cooker'
 									);
-									const cooker = hasMystiaCooker
-										? (`夜雀${originalCooker}` as const)
-										: originalCooker;
+									const cooker = isisDarkMatterOrNormalMeal
+										? originalCooker
+										: (`夜雀${originalCooker}` as const);
 									const recipeName = isDarkMatter ? '黑暗物质' : currentRecipeData.name;
-									const label = `点击：将此点单标记为使用${hasMystiaCooker ? '非' : ''}【夜雀${originalCooker}】制作`;
+									const label = isDarkMatter
+										? originalCooker
+										: `点击：将此点单标记为使用${hasMystiaCooker ? '非' : ''}【夜雀${originalCooker}】制作`;
 									return (
 										<>
 											<Tooltip showArrow content={label}>
@@ -253,10 +259,10 @@ export default memo(
 															handleCookerClick();
 														}
 													}}
-													role="button"
-													tabIndex={0}
+													role={isDarkMatter ? undefined : 'button'}
+													tabIndex={isDarkMatter ? undefined : 0}
 													aria-label={label}
-													className="cursor-pointer"
+													className={twJoin(!isDarkMatter && 'cursor-pointer')}
 												/>
 											</Tooltip>
 											<Tooltip showArrow content={recipeName} offset={4}>
@@ -285,7 +291,7 @@ export default memo(
 					</div>
 					<Tooltip
 						showArrow
-						content={`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipeData ? '' : '料理、'}顾客点单需求或标记为使用“夜雀”系列厨具以保存`}
+						content={`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipeData ? '' : '料理、'}顾客点单需求${isDarkMatter ? '' : '或标记为使用“夜雀”系列厨具'}以保存`}
 						isOpen={isShowSaveButtonTooltip}
 					>
 						<Button
@@ -307,7 +313,10 @@ export default memo(
 										? instance_beverage.getPropsByName(currentBeverageName).price
 										: 0) +
 										(currentRecipeData?.name
-											? instance_recipe.getPropsByName(currentRecipeData.name).price
+											? instance_recipe.getPropsByName(
+													isDarkMatter ? '黑暗物质' : currentRecipeData.name,
+													'price'
+												)
 											: 0)}
 								</Price>
 							</span>

@@ -30,27 +30,28 @@ export default memo(function CustomerRare() {
 		customerStore.refreshCustomerSelectedItems();
 		customerStore.refreshAllSelectedItems();
 	});
+
 	customerStore.shared.recipe.data.onChange((data) => {
 		if (data) {
-			customerStore.shared.customer.isDarkMatter.set(
-				customerStore.instances.recipe.get().checkDarkMatter(data).isDarkMatter
-			);
+			if (data.extraIngredients.length > 0) {
+				customerStore.shared.customer.isDarkMatter.set(
+					customerStore.instances.recipe.get().checkDarkMatter(data).isDarkMatter
+				);
+			} else {
+				customerStore.shared.customer.isDarkMatter.set(false);
+			}
 		}
 	});
 
 	customerStore.shared.customer.hasMystiaCooker.onChange(customerStore.evaluateMealResult);
-	customerStore.shared.customer.order.beverageTag.onChange(customerStore.evaluateMealResult);
-	customerStore.shared.customer.order.recipeTag.onChange(customerStore.evaluateMealResult);
-	customerStore.shared.customer.popular.isNegative.onChange(customerStore.evaluateMealResult);
-	customerStore.shared.customer.popular.tag.onChange(customerStore.evaluateMealResult);
+	customerStore.shared.customer.isDarkMatter.onChange(customerStore.evaluateMealResult);
+	customerStore.shared.customer.order.onChange(customerStore.evaluateMealResult);
+	customerStore.shared.customer.popular.onChange(customerStore.evaluateMealResult);
 	customerStore.shared.beverage.name.onChange(customerStore.evaluateMealResult);
 	customerStore.shared.recipe.tagsWithPopular.onChange(customerStore.evaluateMealResult);
 
-	globalStore.persistence.popular.isNegative.onChange((isNegative) => {
-		customerStore.shared.customer.popular.isNegative.set(isNegative);
-	});
-	globalStore.persistence.popular.tag.onChange((popular) => {
-		customerStore.shared.customer.popular.tag.set(popular);
+	globalStore.persistence.popular.onChange((popularData) => {
+		customerStore.shared.customer.popular.assign(popularData);
 	});
 
 	const {breakpoint} = useBreakpoint(tachieBreakPoint, 'noTachie');

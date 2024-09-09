@@ -324,9 +324,12 @@ export default memo(
 												(isDarkMatter || !currentRecipeTagsWithPopular.includes(tag)) &&
 													'opacity-50',
 												currentCustomerOrder.recipeTag === tag &&
-													!hasMystiaCooker &&
+													((hasMystiaCooker && isDarkMatter) || !hasMystiaCooker) &&
 													'ring-2 ring-current',
-												hasMystiaCooker && !isOrderLinkedFilter && 'cursor-not-allowed'
+												hasMystiaCooker &&
+													!isDarkMatter &&
+													!isOrderLinkedFilter &&
+													'cursor-not-allowed'
 											)}
 										/>
 									</Tooltip>
@@ -384,9 +387,12 @@ export default memo(
 												'cursor-pointer p-1 leading-none transition-opacity hover:opacity-hover',
 												!beverageTags.includes(tag) && 'opacity-50',
 												currentCustomerOrder.beverageTag === tag &&
-													!hasMystiaCooker &&
+													((hasMystiaCooker && isDarkMatter) || !hasMystiaCooker) &&
 													'ring-2 ring-current',
-												hasMystiaCooker && !isOrderLinkedFilter && 'cursor-not-allowed'
+												hasMystiaCooker &&
+													!isDarkMatter &&
+													!isOrderLinkedFilter &&
+													'cursor-not-allowed'
 											)}
 										/>
 									</Tooltip>

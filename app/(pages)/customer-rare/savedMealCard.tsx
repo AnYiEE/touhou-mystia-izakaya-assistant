@@ -68,10 +68,11 @@ export default memo(
 													recipeName: recipe,
 												}
 											);
+											const isisDarkMatterOrNormalMeal = isDarkMatter || !hasMystiaCooker;
 											const originalCooker = instance_recipe.getPropsByName(recipe, 'cooker');
-											const cooker = hasMystiaCooker
-												? (`夜雀${originalCooker}` as const)
-												: originalCooker;
+											const cooker = isisDarkMatterOrNormalMeal
+												? originalCooker
+												: (`夜雀${originalCooker}` as const);
 											const recipeName = isDarkMatter ? '黑暗物质' : recipe;
 											const customerRatingColor = customerRatingColorMap[rating];
 											return (
@@ -108,7 +109,7 @@ export default memo(
 																					/>
 																				)}
 																				{order.recipeTag &&
-																					!hasMystiaCooker && (
+																					isisDarkMatterOrNormalMeal && (
 																						<Tags.Tag
 																							tag={order.recipeTag}
 																							tagStyle={
@@ -118,7 +119,7 @@ export default memo(
 																						/>
 																					)}
 																				{order.beverageTag &&
-																					!hasMystiaCooker && (
+																					isisDarkMatterOrNormalMeal && (
 																						<Tags.Tag
 																							tag={order.beverageTag}
 																							tagStyle={
