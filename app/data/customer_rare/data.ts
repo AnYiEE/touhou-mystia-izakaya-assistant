@@ -284,6 +284,8 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
+			肉: '大口吃肉',
+			下酒: '佐酒小菜',
 			小巧: '分身多个',
 		},
 	},
