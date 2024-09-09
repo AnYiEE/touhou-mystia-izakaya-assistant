@@ -219,8 +219,8 @@ const FoodPopoverCardComponent = memo(
 									<span className={twJoin(!dlcLabel && 'cursor-text')}>
 										<PopoverTrigger>
 											<span
-												role={dlcLabel ? 'button' : 'none'}
-												tabIndex={dlcLabel ? 0 : -1}
+												role={dlcLabel ? 'button' : undefined}
+												tabIndex={dlcLabel ? 0 : undefined}
 												title={dlcLabel}
 												className="opacity-100"
 											>
