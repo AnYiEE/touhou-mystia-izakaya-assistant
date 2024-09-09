@@ -1,4 +1,4 @@
-import {forwardRef, memo, useCallback, useMemo} from 'react';
+import {forwardRef, memo, useCallback} from 'react';
 import {twJoin} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -51,15 +51,11 @@ export default memo(
 		const instance_ingredient = customerStore.instances.ingredient.get();
 		const instance_recipe = customerStore.instances.recipe.get();
 
-		const hasSelected = useMemo(
-			() =>
-				Boolean(
-					currentBeverageName ||
-						currentRecipeData ||
-						selectedCustomerBeverageTags.size > 0 ||
-						selectedCustomerPositiveTags.size > 0
-				),
-			[currentBeverageName, currentRecipeData, selectedCustomerBeverageTags, selectedCustomerPositiveTags]
+		const hasSelected = Boolean(
+			currentBeverageName ||
+				currentRecipeData ||
+				selectedCustomerBeverageTags.size > 0 ||
+				selectedCustomerPositiveTags.size > 0
 		);
 
 		const handleBeverageTagClick = useCallback(
@@ -116,10 +112,9 @@ export default memo(
 				? `其他出没地区：${clonedCurrentCustomerPlaces.join('、')}`
 				: '暂未收录其他出没地区';
 
-		let beverageTags: TBeverageTag[] = [];
+		const beverageTags: TBeverageTag[] = [];
 		if (currentBeverageName) {
-			const beverage = instance_beverage.getPropsByName(currentBeverageName);
-			beverageTags = beverage.tags;
+			beverageTags.push(...instance_beverage.getPropsByName(currentBeverageName, 'tags'));
 		}
 
 		const currentRecipeTagsWithPopular: TRecipeTag[] = [];
@@ -154,8 +149,9 @@ export default memo(
 			`请选择${currentBeverageName ? '' : '点单酒水'}${(currentBeverageName ?? currentRecipeData) ? '' : '、'}${currentRecipeData ? '' : '点单料理'}以评级`;
 
 		const getTagTooltip = (type: 'beverageTag' | 'recipeTag', selectedTags: Selection, tag: string) => {
-			const isTagExisted = (selectedTags as SelectionSet).has(tag);
 			const tagType = type === 'beverageTag' ? '酒水' : '料理';
+			const isTagExisted = (selectedTags as SelectionSet).has(tag);
+
 			return `点击：${isTagExisted ? `取消筛选${tagType}表格` : `以此标签筛选${tagType}表格`}`;
 		};
 
@@ -205,8 +201,8 @@ export default memo(
 										<span className={twJoin(!dlcLabel && 'cursor-text')}>
 											<PopoverTrigger>
 												<span
-													role={dlcLabel ? 'button' : 'none'}
-													tabIndex={dlcLabel ? 0 : -1}
+													role={dlcLabel ? 'button' : undefined}
+													tabIndex={dlcLabel ? 0 : undefined}
 													title={dlcLabel}
 													className={twJoin(
 														'opacity-100',
@@ -337,7 +333,7 @@ export default memo(
 							</TagGroup>
 						)}
 					</div>
-					{hasSelected && (
+					{hasSelected ? (
 						<Tooltip showArrow content="重置当前选定项" offset={4}>
 							<FontAwesomeIconButton
 								icon={faArrowsRotate}
@@ -349,8 +345,7 @@ export default memo(
 								className="absolute -right-0.5 top-1 h-4 w-4 text-default-200 transition-opacity hover:opacity-hover data-[hover=true]:bg-transparent dark:text-default-300"
 							/>
 						</Tooltip>
-					)}
-					{!hasSelected && (
+					) : (
 						<Tooltip showArrow content="取消选择当前顾客" offset={4}>
 							<FontAwesomeIconButton
 								icon={faXmark}
