@@ -64,10 +64,10 @@ export default memo(function CustomerRareTutorial() {
 					},
 				},
 				{
-					element: '[title="选择莉格露"]',
+					element: '[title="点击：选择【莉格露】"]',
 					popover: {
 						title: '选择稀客', // eslint-disable-next-line sort-keys
-						description: '点击头像，选择莉格露作为目标稀客。',
+						description: '点击头像，选择“莉格露”作为目标稀客。',
 					},
 				},
 				{
