@@ -70,9 +70,7 @@ export default memo(
 		const handleBeverageTagClick = useCallback(
 			(tag: TBeverageTag) => {
 				vibrate();
-				if (!hasMystiaCooker) {
-					customerStore.onCustomerOrderBeverageTag(tag);
-				}
+				customerStore.onCustomerOrderBeverageTag(tag);
 				if (isOrderLinkedFilter) {
 					customerStore.onCustomerFilterBeverageTag(tag, hasMystiaCooker);
 				}
@@ -83,9 +81,7 @@ export default memo(
 		const handleRecipeTagClick = useCallback(
 			(tag: TRecipeTag) => {
 				vibrate();
-				if (!hasMystiaCooker) {
-					customerStore.onCustomerOrderRecipeTag(tag);
-				}
+				customerStore.onCustomerOrderRecipeTag(tag);
 				if (isOrderLinkedFilter) {
 					customerStore.onCustomerFilterRecipeTag(tag, hasMystiaCooker);
 				}
@@ -172,22 +168,25 @@ export default memo(
 		const avatarRatingColor = currentRating ? customerRatingColorMap[currentRating] : undefined;
 		const avatarRatingContent =
 			currentRating ??
-			`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipeData ? '' : '料理、'}顾客点单需求或标记为使用“夜雀”系列厨具以评级`;
+			`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipeData ? '' : '料理、'}顾客点单需求${isDarkMatter ? '' : '或标记为使用“夜雀”系列厨具'}以评级`;
 
 		const getTagTooltip = (type: keyof typeof currentCustomerOrder, tag: string) => {
-			const isCurrentTag = currentCustomerOrder[type] === tag;
 			const tagType = type === 'beverageTag' ? '酒水' : '料理';
+			const isCurrentTag = currentCustomerOrder[type] === tag;
+			const isNormalMeal = hasMystiaCooker && !isDarkMatter;
+
 			const cookerTip = '已使用“夜雀”系列厨具无视顾客点单需求';
-			const orderTip = hasMystiaCooker
+			const orderTip = isNormalMeal
 				? isOrderLinkedFilter
 					? ''
 					: cookerTip
 				: `点击：${isCurrentTag ? '不再' : ''}将此标签视为顾客点单需求`;
 			const filterTip = isOrderLinkedFilter
-				? `${hasMystiaCooker ? '点击：' : '并'}${
+				? `${isNormalMeal ? '点击：' : '并'}${
 						isCurrentTag ? `取消筛选${tagType}表格` : `以此标签筛选${tagType}表格`
-					}${hasMystiaCooker ? `（${cookerTip}）` : ''}`
+					}${isNormalMeal ? `（${cookerTip}）` : ''}`
 				: '';
+
 			return `${orderTip}${filterTip}`;
 		};
 
