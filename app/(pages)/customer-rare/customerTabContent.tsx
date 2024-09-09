@@ -56,7 +56,7 @@ export default memo(
 											customerStore.onCustomerSelectedChange({name, target} as ICurrentCustomer);
 										}
 									}}
-									title={`选择${name}`}
+									title={`点击：选择【${name}】`}
 									className="group flex cursor-pointer flex-col items-center gap-1"
 								>
 									<Avatar
@@ -68,7 +68,7 @@ export default memo(
 												target={target as ICurrentCustomer['target']}
 												name={name}
 												size={5}
-												title={`选择${name}`}
+												title={`点击：选择【${name}】`}
 											/>
 										}
 										role="button"
