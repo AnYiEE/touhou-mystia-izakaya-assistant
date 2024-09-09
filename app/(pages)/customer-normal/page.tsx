@@ -31,15 +31,12 @@ export default memo(function CustomerNormal() {
 		customerStore.refreshAllSelectedItems();
 	});
 	customerStore.shared.customer.popular.isNegative.onChange(customerStore.evaluateMealResult);
-	customerStore.shared.customer.popular.tag.onChange(customerStore.evaluateMealResult);
+	customerStore.shared.customer.popular.onChange(customerStore.evaluateMealResult);
 	customerStore.shared.beverage.name.onChange(customerStore.evaluateMealResult);
 	customerStore.shared.recipe.tagsWithPopular.onChange(customerStore.evaluateMealResult);
 
-	globalStore.persistence.popular.isNegative.onChange((isNegative) => {
-		customerStore.shared.customer.popular.isNegative.set(isNegative);
-	});
-	globalStore.persistence.popular.tag.onChange((popular) => {
-		customerStore.shared.customer.popular.tag.set(popular);
+	globalStore.persistence.popular.onChange((popularData) => {
+		customerStore.shared.customer.popular.assign(popularData);
 	});
 
 	const {breakpoint} = useBreakpoint(tachieBreakPoint, 'noTachie');
@@ -51,7 +48,6 @@ export default memo(function CustomerNormal() {
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 
 	const instance_customer = customerStore.instances.customer.get();
-	const instance_ingredient = customerStore.instances.ingredient.get();
 
 	const allCustomerNames = customerStore.customerNames.use();
 	const allCustomerDlcs = customerStore.customer.dlcs.get();
@@ -176,55 +172,53 @@ export default memo(function CustomerNormal() {
 
 	const isCustomerTabFilterVisible = customerStore.shared.customer.filterVisibility.use();
 
+	const instance_ingredient = customerStore.instances.ingredient.get();
+
 	const allIngredientDlcs = customerStore.ingredient.dlcs.get();
 	const allIngredientLevels = customerStore.ingredient.levels.get();
 
-	const ingredientsPinyinSortState = customerStore.persistence.ingredient.pinyinSortState.use();
+	const ingredientPinyinSortState = customerStore.persistence.ingredient.pinyinSortState.use();
 
-	const ingredientsFilterDlcs = customerStore.persistence.ingredient.filters.dlcs.use();
-	const ingredientsFilterLevels = customerStore.persistence.ingredient.filters.levels.use();
+	const ingredientFilterDlcs = customerStore.persistence.ingredient.filters.dlcs.use();
+	const ingredientFilterLevels = customerStore.persistence.ingredient.filters.levels.use();
 
-	const ingredientsFilteredData = useMemo(
+	const ingredientFilteredData = useMemo(
 		() =>
 			instance_ingredient.data.filter(({dlc, level}) => {
 				const isDlcMatched =
-					ingredientsFilterDlcs.length > 0 ? ingredientsFilterDlcs.includes(dlc.toString()) : true;
+					ingredientFilterDlcs.length > 0 ? ingredientFilterDlcs.includes(dlc.toString()) : true;
 				const isLevelMatched =
-					ingredientsFilterLevels.length > 0 ? ingredientsFilterLevels.includes(level.toString()) : true;
+					ingredientFilterLevels.length > 0 ? ingredientFilterLevels.includes(level.toString()) : true;
 
 				return isDlcMatched && isLevelMatched;
 			}),
-		[ingredientsFilterDlcs, ingredientsFilterLevels, instance_ingredient.data]
+		[ingredientFilterDlcs, ingredientFilterLevels, instance_ingredient.data]
 	);
 
-	const ingredientsSortedData = useSortedData(
-		instance_ingredient,
-		ingredientsFilteredData,
-		ingredientsPinyinSortState
-	);
+	const ingredientSortedData = useSortedData(instance_ingredient, ingredientFilteredData, ingredientPinyinSortState);
 
-	const ingredientsPinyinSortConfig = usePinyinSortConfig(
-		ingredientsPinyinSortState,
+	const ingredientPinyinSortConfig = usePinyinSortConfig(
+		ingredientPinyinSortState,
 		customerStore.persistence.ingredient.pinyinSortState.set
 	);
 
-	const ingredientsSelectConfig = useMemo(
+	const ingredientSelectConfig = useMemo(
 		() =>
 			[
 				{
 					items: allIngredientDlcs,
 					label: 'DLC',
-					selectedKeys: ingredientsFilterDlcs,
+					selectedKeys: ingredientFilterDlcs,
 					setSelectedKeys: customerStore.persistence.ingredient.filters.dlcs.set,
 				},
 				{
 					items: allIngredientLevels,
 					label: '等级',
-					selectedKeys: ingredientsFilterLevels,
+					selectedKeys: ingredientFilterLevels,
 					setSelectedKeys: customerStore.persistence.ingredient.filters.levels.set,
 				},
 			] as const satisfies TSelectConfig,
-		[allIngredientDlcs, allIngredientLevels, ingredientsFilterDlcs, ingredientsFilterLevels]
+		[allIngredientDlcs, allIngredientLevels, ingredientFilterDlcs, ingredientFilterLevels]
 	);
 
 	const ingredientTabVisibilityState = customerStore.persistence.ingredient.tabVisibility.use();
@@ -278,7 +272,7 @@ export default memo(function CustomerNormal() {
 					>
 						<IngredientTabContent
 							ingredientTabStyle={ingredientTabStyle}
-							sortedData={ingredientsSortedData}
+							sortedData={ingredientSortedData}
 						/>
 					</Tab>
 				</Tabs>
@@ -324,8 +318,8 @@ export default memo(function CustomerNormal() {
 					!isIngredientTabFilterVisible && '!hidden'
 				)}
 			>
-				<SidePinyinSortIconButton pinyinSortConfig={ingredientsPinyinSortConfig} />
-				<SideFilterIconButton selectConfig={ingredientsSelectConfig} />
+				<SidePinyinSortIconButton pinyinSortConfig={ingredientPinyinSortConfig} />
+				<SideFilterIconButton selectConfig={ingredientSelectConfig} />
 			</SideButtonGroup>
 
 			{isShowTachie && breakpoint === 'tachie' && (

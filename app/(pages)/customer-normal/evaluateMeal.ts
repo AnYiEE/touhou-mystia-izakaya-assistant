@@ -45,17 +45,14 @@ export function checkEasterEgg({
 	};
 }
 
-function getRatingKey(mealScore: number): TCustomerRating | null {
+function getRatingKey(mealScore: number): TCustomerRating {
 	if (mealScore <= 0) {
 		return '极度不满';
+	} else if (mealScore <= 2) {
+		return '普通';
 	}
 
-	switch (mealScore) {
-		case 2:
-			return '普通';
-		default:
-			return '满意';
-	}
+	return '满意';
 }
 
 export function evaluateMeal({
@@ -87,7 +84,7 @@ export function evaluateMeal({
 			Number(currentExtraTags.includes(currentCustomerPopularTag));
 	}
 
-	const originalIngredientsLength = currentRecipe.ingredients.length;
+	const {length: originalIngredientsLength} = currentRecipe.ingredients;
 	const totalIngredientsLength = originalIngredientsLength + currentExtraIngredientsLength;
 
 	if (
