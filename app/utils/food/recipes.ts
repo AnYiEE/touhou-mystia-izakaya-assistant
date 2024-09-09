@@ -89,7 +89,7 @@ export class Recipe extends Food<TRecipes> {
 		let negativeTags: TRecipeTag[];
 
 		if ('name' in recipeData) {
-			negativeTags = this.getPropsByName(recipeData.name).negativeTags;
+			negativeTags = this.getPropsByName(recipeData.name, 'negativeTags');
 		} else {
 			negativeTags = recipeData.negativeTags;
 		}

@@ -479,7 +479,7 @@ export const customerNormalStore = store(state, {
 			}
 			const extraTags: TPopularTag[] = [];
 			extraIngredients.forEach((ingredient) => {
-				extraTags.push(...instance_ingredient.getPropsByName(ingredient).tags);
+				extraTags.push(...instance_ingredient.getPropsByName(ingredient, 'tags'));
 			});
 			let recipe: TRecipe | null = null;
 			if (recipeData) {
@@ -514,13 +514,13 @@ export const customerNormalStore = store(state, {
 			}
 			const extraTags: TPopularTag[] = [];
 			extraIngredients.forEach((ingredient) => {
-				extraTags.push(...instance_ingredient.getPropsByName(ingredient).tags);
+				extraTags.push(...instance_ingredient.getPropsByName(ingredient, 'tags'));
 			});
 			const rating = evaluateMeal({
 				currentBeverageName: beverageName,
 				currentCustomerName: customerName,
 				currentCustomerPopularData: popular,
-				currentCustomerPositiveTags: instance_customer.getPropsByName(customerName).positiveTags,
+				currentCustomerPositiveTags: instance_customer.getPropsByName(customerName, 'positiveTags'),
 				currentExtraIngredientsLength: extraIngredients.length,
 				currentExtraTags: extraTags,
 				currentRecipe: instance_recipe.getPropsByName(recipeName),

@@ -45,7 +45,7 @@ export class Customer<Target extends ICustomer[]> extends Item<Target> {
 		if (Customer.tachiePathCache.has(name)) {
 			path = Customer.tachiePathCache.get(name);
 		} else {
-			path = `${basePath}/${target}/${processPinyin(this.getPropsByName(name).pinyin).pinyinWithoutTone.join(
+			path = `${basePath}/${target}/${processPinyin(this.getPropsByName(name, 'pinyin')).pinyinWithoutTone.join(
 				''
 			)}.png`;
 			Customer.tachiePathCache.set(name, path);

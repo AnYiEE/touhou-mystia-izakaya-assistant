@@ -310,7 +310,7 @@ export default memo(
 							<span>
 								<Price>
 									{(currentBeverageName
-										? instance_beverage.getPropsByName(currentBeverageName).price
+										? instance_beverage.getPropsByName(currentBeverageName, 'price')
 										: 0) +
 										(currentRecipeData?.name
 											? instance_recipe.getPropsByName(
