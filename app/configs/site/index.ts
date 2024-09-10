@@ -113,7 +113,7 @@ export const siteConfig = {
 		},
 		xiaohongshuGroup: {
 			label: '点击加入小红书群',
-			href: 'https://www.xiaohongshu.com/sns/invitation/group-chat?groupId=136956731996869234&token=xMbzu2IneK_mgPAGyJxxpYKyeP-zm1PsHZlLjIcS1uXycTLrNNVeaQoPbTJuXF0pBaAYFTQ8Hyxe-LSJYB8CeXyPAXwCu4olCxjAUAPWW00',
+			href: 'https://www.xiaohongshu.com/sns/invitation/group-chat?groupId=136956731996869234&token=xMbzu2IneK_mgPAGyJxxpYKyeP-zm1PsHZlLjIcS1uXycTLrNNVeaQoPbTJuXF0pi6veU6bmJRZUH3Rw_nM1plJMqJG8zT7neRRX8GngqXE',
 		},
 		xiaohongshuGroupQRCode: {
 			label: '小红书群二维码',
