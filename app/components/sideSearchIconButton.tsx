@@ -59,7 +59,6 @@ export default memo(
 
 		return (
 			<Popover
-				showArrow
 				// backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
 				placement="left"
 				shouldCloseOnInteractOutside={() => true}

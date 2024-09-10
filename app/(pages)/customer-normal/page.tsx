@@ -278,7 +278,7 @@ export default memo(function CustomerNormal() {
 				</Tabs>
 			</div>
 
-			<div className={twJoin('flex flex-grow flex-col gap-4 xl:w-full', currentCustomerName && 'xl:mb-4')}>
+			<div className="flex flex-grow flex-col gap-4 xl:w-full">
 				{currentCustomerName ? (
 					<>
 						<CustomerCard />
@@ -286,13 +286,9 @@ export default memo(function CustomerNormal() {
 						<SavedMealCard />
 					</>
 				) : (
-					<Placeholder className="pt-4 xl:pb-[calc(7.25rem+env(titlebar-area-height,0rem))] xl:pt-0">
+					<Placeholder className="pt-4 xl:pt-0">
 						<div className="inline-grid space-y-1">
-							<span
-								role="img"
-								aria-hidden
-								className="inline-block h-loading w-loading bg-loading xl:inline-block"
-							/>
+							<span role="img" aria-hidden className="inline-block h-loading w-loading bg-loading" />
 							<p>选择顾客以继续</p>
 						</div>
 					</Placeholder>
@@ -301,7 +297,7 @@ export default memo(function CustomerNormal() {
 
 			<SideButtonGroup
 				className={twMerge(
-					'md:top-[unset] md:translate-y-0 xl:left-6 xl:top-1/2 xl:-translate-y-1/2',
+					'xl:left-6',
 					customerTabStyle.classNames.sideButtonGroup,
 					!isCustomerTabFilterVisible && '!hidden'
 				)}
@@ -313,7 +309,7 @@ export default memo(function CustomerNormal() {
 
 			<SideButtonGroup
 				className={twMerge(
-					'md:top-[unset] md:translate-y-0 xl:left-6 xl:top-1/2 xl:-translate-y-1/2',
+					'xl:left-6',
 					ingredientTabStyle.classNames.sideButtonGroup,
 					!isIngredientTabFilterVisible && '!hidden'
 				)}
