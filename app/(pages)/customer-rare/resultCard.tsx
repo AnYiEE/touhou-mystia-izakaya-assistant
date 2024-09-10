@@ -209,6 +209,26 @@ export default memo(
 			}
 		}, [hideTooltip, isSaveButtonDisabled, isShowSaveButtonTooltip]);
 
+		const saveButtonTooltip = useMemo(() => {
+			const target = [];
+			if (!currentBeverageName) {
+				target.push('酒水');
+			}
+			if (!currentRecipeData) {
+				target.push('料理');
+			}
+			if (!hasMystiaCooker) {
+				target.push('顾客点单需求');
+			}
+
+			let content = target.join('、');
+			if (!isDarkMatter && !hasMystiaCooker) {
+				content += '或标记为使用“夜雀”系列厨具';
+			}
+
+			return `请选择${content}以保存`;
+		}, [currentBeverageName, currentRecipeData, hasMystiaCooker, isDarkMatter]);
+
 		if (!currentBeverageName && !currentRecipeData) {
 			if (currentCustomerName && currentSavedMeals[currentCustomerName]?.length) {
 				return null;
@@ -289,11 +309,7 @@ export default memo(
 						<Plus />
 						<IngredientList />
 					</div>
-					<Tooltip
-						showArrow
-						content={`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipeData ? '' : '料理、'}顾客点单需求${isDarkMatter ? '' : '或标记为使用“夜雀”系列厨具'}以保存`}
-						isOpen={isShowSaveButtonTooltip}
-					>
+					<Tooltip showArrow content={saveButtonTooltip} isOpen={isShowSaveButtonTooltip}>
 						<Button
 							color="primary"
 							disableAnimation={isSaveButtonDisabled}

@@ -1,4 +1,4 @@
-import {forwardRef, memo, useCallback} from 'react';
+import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -88,6 +88,72 @@ export default memo(
 			[vibrate]
 		);
 
+		const beverageTags = useMemo(() => {
+			const _beverageTags: TBeverageTag[] = [];
+
+			if (currentBeverageName) {
+				_beverageTags.push(...instance_beverage.getPropsByName(currentBeverageName, 'tags'));
+			}
+
+			return _beverageTags;
+		}, [currentBeverageName, instance_beverage]);
+
+		const currentRecipeTagsWithPopular = useMemo(() => {
+			const _currentRecipeTagsWithPopular: TRecipeTag[] = [];
+
+			if (currentRecipeData) {
+				const {extraIngredients, name: currentRecipeName} = currentRecipeData;
+
+				const recipe = instance_recipe.getPropsByName(currentRecipeName);
+				const {ingredients: originalIngredients, positiveTags: originalTags} = recipe;
+
+				const extraTags = extraIngredients.flatMap((extraIngredient) =>
+					instance_ingredient.getPropsByName(extraIngredient, 'tags')
+				);
+
+				const composedRecipeTags = instance_recipe.composeTags(
+					originalIngredients,
+					extraIngredients,
+					originalTags,
+					extraTags
+				);
+
+				_currentRecipeTagsWithPopular.push(
+					...instance_recipe.calculateTagsWithPopular(composedRecipeTags, currentCustomerPopular)
+				);
+
+				setTimeout(() => {
+					customerStore.shared.recipe.tagsWithPopular.set(_currentRecipeTagsWithPopular);
+				}, 0);
+			}
+
+			return _currentRecipeTagsWithPopular;
+		}, [currentCustomerPopular, currentRecipeData, instance_ingredient, instance_recipe]);
+
+		const avatarRatingColor = currentRating ? customerRatingColorMap[currentRating] : undefined;
+		const avatarRatingContent = useMemo(() => {
+			if (currentRating) {
+				return currentRating;
+			}
+
+			const target = [];
+			if (!currentBeverageName) {
+				target.push('酒水');
+			}
+			if (!currentRecipeData) {
+				target.push('料理');
+			}
+
+			return `请选择点单${target.join('、')}以评级`;
+		}, [currentBeverageName, currentRating, currentRecipeData]);
+
+		const getTagTooltip = useCallback((type: 'beverageTag' | 'recipeTag', selectedTags: Selection, tag: string) => {
+			const tagType = type === 'beverageTag' ? '酒水' : '料理';
+			const isTagExisted = (selectedTags as SelectionSet).has(tag);
+
+			return `点击：${isTagExisted ? `取消筛选${tagType}表格` : `以此标签筛选${tagType}表格`}`;
+		}, []);
+
 		if (!currentCustomerName) {
 			return null;
 		}
@@ -111,49 +177,6 @@ export default memo(
 			clonedCurrentCustomerPlacesLength > 0
 				? `其他出没地区：${clonedCurrentCustomerPlaces.join('、')}`
 				: '暂未收录其他出没地区';
-
-		const beverageTags: TBeverageTag[] = [];
-		if (currentBeverageName) {
-			beverageTags.push(...instance_beverage.getPropsByName(currentBeverageName, 'tags'));
-		}
-
-		const currentRecipeTagsWithPopular: TRecipeTag[] = [];
-		if (currentRecipeData) {
-			const {extraIngredients, name: currentRecipeName} = currentRecipeData;
-
-			const recipe = instance_recipe.getPropsByName(currentRecipeName);
-			const {ingredients: originalIngredients, positiveTags: originalTags} = recipe;
-
-			const extraTags = extraIngredients.flatMap((extraIngredient) =>
-				instance_ingredient.getPropsByName(extraIngredient, 'tags')
-			);
-
-			const composedRecipeTags = instance_recipe.composeTags(
-				originalIngredients,
-				extraIngredients,
-				originalTags,
-				extraTags
-			);
-
-			currentRecipeTagsWithPopular.push(
-				...instance_recipe.calculateTagsWithPopular(composedRecipeTags, currentCustomerPopular)
-			);
-			setTimeout(() => {
-				customerStore.shared.recipe.tagsWithPopular.set(currentRecipeTagsWithPopular);
-			}, 0);
-		}
-
-		const avatarRatingColor = currentRating ? customerRatingColorMap[currentRating] : undefined;
-		const avatarRatingContent =
-			currentRating ??
-			`请选择${currentBeverageName ? '' : '点单酒水'}${(currentBeverageName ?? currentRecipeData) ? '' : '、'}${currentRecipeData ? '' : '点单料理'}以评级`;
-
-		const getTagTooltip = (type: 'beverageTag' | 'recipeTag', selectedTags: Selection, tag: string) => {
-			const tagType = type === 'beverageTag' ? '酒水' : '料理';
-			const isTagExisted = (selectedTags as SelectionSet).has(tag);
-
-			return `点击：${isTagExisted ? `取消筛选${tagType}表格` : `以此标签筛选${tagType}表格`}`;
-		};
 
 		return (
 			<Card

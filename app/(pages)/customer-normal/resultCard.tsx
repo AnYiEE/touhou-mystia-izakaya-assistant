@@ -198,7 +198,7 @@ export default memo(
 					</div>
 					<Tooltip
 						showArrow
-						content={`请选择${currentBeverageName ? '' : '酒水'}${currentRecipeData ? '' : '料理'}`}
+						content={`请选择点单${currentBeverageName ? '' : '酒水'}${currentRecipeData ? '' : '料理'}以保存`}
 						isOpen={isShowSaveButtonTooltip}
 					>
 						<Button

@@ -1,4 +1,4 @@
-import {forwardRef, memo, useCallback} from 'react';
+import {forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -92,6 +92,96 @@ export default memo(
 			[vibrate]
 		);
 
+		const beverageTags = useMemo(() => {
+			const _beverageTags: TBeverageTag[] = [];
+
+			if (currentBeverageName) {
+				_beverageTags.push(...instance_beverage.getPropsByName(currentBeverageName, 'tags'));
+			}
+
+			return _beverageTags;
+		}, [currentBeverageName, instance_beverage]);
+
+		const currentRecipeTagsWithPopular = useMemo(() => {
+			const _currentRecipeTagsWithPopular: TRecipeTag[] = [];
+
+			if (currentRecipeData) {
+				const {extraIngredients, name: currentRecipeName} = currentRecipeData;
+
+				const recipe = instance_recipe.getPropsByName(currentRecipeName);
+				const {ingredients: originalIngredients, positiveTags: originalTags} = recipe;
+
+				const extraTags = extraIngredients.flatMap((extraIngredient) =>
+					instance_ingredient.getPropsByName(extraIngredient, 'tags')
+				);
+
+				const composedRecipeTags = instance_recipe.composeTags(
+					originalIngredients,
+					extraIngredients,
+					originalTags,
+					extraTags
+				);
+
+				_currentRecipeTagsWithPopular.push(
+					...instance_recipe.calculateTagsWithPopular(composedRecipeTags, currentCustomerPopular)
+				);
+
+				setTimeout(() => {
+					customerStore.shared.recipe.tagsWithPopular.set(_currentRecipeTagsWithPopular);
+				}, 0);
+			}
+
+			return _currentRecipeTagsWithPopular;
+		}, [currentCustomerPopular, currentRecipeData, instance_ingredient, instance_recipe]);
+
+		const avatarRatingColor = currentRating ? customerRatingColorMap[currentRating] : undefined;
+		const avatarRatingContent = useMemo(() => {
+			if (currentRating) {
+				return currentRating;
+			}
+
+			const target = [];
+			if (!currentBeverageName) {
+				target.push('酒水');
+			}
+			if (!currentRecipeData) {
+				target.push('料理');
+			}
+			if (!hasMystiaCooker) {
+				target.push('顾客点单需求');
+			}
+
+			let content = target.join('、');
+			if (!isDarkMatter && !hasMystiaCooker) {
+				content += '或标记为使用“夜雀”系列厨具';
+			}
+
+			return `请选择${content}以评级`;
+		}, [currentBeverageName, currentRating, currentRecipeData, hasMystiaCooker, isDarkMatter]);
+
+		const getTagTooltip = useCallback(
+			(type: keyof typeof currentCustomerOrder, tag: string) => {
+				const tagType = type === 'beverageTag' ? '酒水' : '料理';
+				const isCurrentTag = currentCustomerOrder[type] === tag;
+				const isNormalMeal = hasMystiaCooker && !isDarkMatter;
+
+				const cookerTip = '已使用“夜雀”系列厨具无视顾客点单需求';
+				const orderTip = isNormalMeal
+					? isOrderLinkedFilter
+						? ''
+						: cookerTip
+					: `点击：${isCurrentTag ? '不再' : ''}将此标签视为顾客点单需求`;
+				const filterTip = isOrderLinkedFilter
+					? `${isNormalMeal ? '点击：' : '并'}${
+							isCurrentTag ? `取消筛选${tagType}表格` : `以此标签筛选${tagType}表格`
+						}${isNormalMeal ? `（${cookerTip}）` : ''}`
+					: '';
+
+				return `${orderTip}${filterTip}`;
+			},
+			[currentCustomerOrder, hasMystiaCooker, isDarkMatter, isOrderLinkedFilter]
+		);
+
 		if (!currentCustomerData) {
 			return null;
 		}
@@ -121,62 +211,6 @@ export default memo(
 			clonedCurrentCustomerPlacesLength > 0
 				? `其他出没地区：${clonedCurrentCustomerPlaces.join('、')}`
 				: '暂未收录其他出没地区';
-
-		const beverageTags: TBeverageTag[] = [];
-		if (currentBeverageName) {
-			beverageTags.push(...instance_beverage.getPropsByName(currentBeverageName, 'tags'));
-		}
-
-		const currentRecipeTagsWithPopular: TRecipeTag[] = [];
-		if (currentRecipeData) {
-			const {extraIngredients, name: currentRecipeName} = currentRecipeData;
-
-			const recipe = instance_recipe.getPropsByName(currentRecipeName);
-			const {ingredients: originalIngredients, positiveTags: originalTags} = recipe;
-
-			const extraTags = extraIngredients.flatMap((extraIngredient) =>
-				instance_ingredient.getPropsByName(extraIngredient, 'tags')
-			);
-
-			const composedRecipeTags = instance_recipe.composeTags(
-				originalIngredients,
-				extraIngredients,
-				originalTags,
-				extraTags
-			);
-
-			currentRecipeTagsWithPopular.push(
-				...instance_recipe.calculateTagsWithPopular(composedRecipeTags, currentCustomerPopular)
-			);
-			setTimeout(() => {
-				customerStore.shared.recipe.tagsWithPopular.set(currentRecipeTagsWithPopular);
-			}, 0);
-		}
-
-		const avatarRatingColor = currentRating ? customerRatingColorMap[currentRating] : undefined;
-		const avatarRatingContent =
-			currentRating ??
-			`请选择${currentBeverageName ? '' : '酒水、'}${currentRecipeData ? '' : '料理、'}顾客点单需求${isDarkMatter ? '' : '或标记为使用“夜雀”系列厨具'}以评级`;
-
-		const getTagTooltip = (type: keyof typeof currentCustomerOrder, tag: string) => {
-			const tagType = type === 'beverageTag' ? '酒水' : '料理';
-			const isCurrentTag = currentCustomerOrder[type] === tag;
-			const isNormalMeal = hasMystiaCooker && !isDarkMatter;
-
-			const cookerTip = '已使用“夜雀”系列厨具无视顾客点单需求';
-			const orderTip = isNormalMeal
-				? isOrderLinkedFilter
-					? ''
-					: cookerTip
-				: `点击：${isCurrentTag ? '不再' : ''}将此标签视为顾客点单需求`;
-			const filterTip = isOrderLinkedFilter
-				? `${isNormalMeal ? '点击：' : '并'}${
-						isCurrentTag ? `取消筛选${tagType}表格` : `以此标签筛选${tagType}表格`
-					}${isNormalMeal ? `（${cookerTip}）` : ''}`
-				: '';
-
-			return `${orderTip}${filterTip}`;
-		};
 
 		return (
 			<Card
