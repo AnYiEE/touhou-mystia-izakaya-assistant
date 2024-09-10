@@ -65,7 +65,6 @@ export default memo(
 
 		return (
 			<Popover
-				showArrow
 				// backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
 				placement="left"
 				shouldCloseOnInteractOutside={() => true}
@@ -140,18 +139,16 @@ export default memo(
 								</Select>
 							)
 						)}
-						{hasFilter && (
-							<Button
-								fullWidth
-								color="danger"
-								size="sm"
-								variant="flat"
-								onPress={handleResetFilters}
-								className="!mt-2"
-							>
-								重置当前筛选
-							</Button>
-						)}
+						<Button
+							fullWidth
+							color="danger"
+							isDisabled={!hasFilter}
+							size="sm"
+							variant="flat"
+							onPress={handleResetFilters}
+						>
+							重置当前筛选
+						</Button>
 					</div>
 				</PopoverContent>
 			</Popover>
