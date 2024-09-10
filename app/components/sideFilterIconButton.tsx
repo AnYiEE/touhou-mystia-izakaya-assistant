@@ -19,7 +19,7 @@ import {faFilter} from '@fortawesome/free-solid-svg-icons';
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
 import Sprite from '@/components/sprite';
 
-import {customerRareStore as customerStore, globalStore} from '@/stores';
+import {customerRareStore as customerStore /* , globalStore */} from '@/stores';
 import {pinyinSort} from '@/utils';
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
@@ -43,7 +43,7 @@ export default memo(
 
 		const instance_special = customerStore.instances.customer_special.get();
 
-		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+		// const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 
 		const hasFilter = useMemo(() => selectConfig.some(({selectedKeys}) => selectedKeys.length > 0), [selectConfig]);
 
@@ -66,7 +66,7 @@ export default memo(
 		return (
 			<Popover
 				showArrow
-				backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
+				// backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
 				placement="left"
 				shouldCloseOnInteractOutside={() => true}
 				ref={ref}
