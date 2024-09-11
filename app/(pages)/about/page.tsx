@@ -73,13 +73,9 @@ export default memo(function About() {
 					如果{shortName}对您的游玩过程有所帮助，您可以考虑
 					<Tooltip
 						showArrow
-						content={
-							<QRCode alt={links.donateQRCode.label} src={links.donateQRCode.href}>
-								{links.donateQRCode.label}
-							</QRCode>
-						}
+						content={<QRCode text={links.donate.href}>{links.donate.label}</QRCode>}
 						classNames={{
-							content: 'px-1',
+							content: 'p-0 pb-1',
 						}}
 					>
 						<Link

@@ -47,13 +47,9 @@ export default memo(function Home() {
 				<div className="flex gap-2 md:gap-4">
 					<Tooltip
 						showArrow
-						content={
-							<QRCode alt={links.qqGroupQRCode.label} src={links.qqGroupQRCode.href}>
-								{qrCodeDescription}
-							</QRCode>
-						}
+						content={<QRCode text={links.qqGroup.href}>{qrCodeDescription}</QRCode>}
 						classNames={{
-							content: 'px-1',
+							content: 'p-0 pb-1',
 						}}
 					>
 						<FontAwesomeIconLink
@@ -66,13 +62,9 @@ export default memo(function Home() {
 					</Tooltip>
 					<Tooltip
 						showArrow
-						content={
-							<QRCode alt={links.xiaohongshuGroupQRCode.label} src={links.xiaohongshuGroupQRCode.href}>
-								{qrCodeDescription}
-							</QRCode>
-						}
+						content={<QRCode text={links.xiaohongshuGroup.href}>{qrCodeDescription}</QRCode>}
 						classNames={{
-							content: 'px-1',
+							content: 'p-0 pb-1',
 						}}
 					>
 						<Button

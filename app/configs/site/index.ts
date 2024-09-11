@@ -47,6 +47,9 @@ const navItems = [
 ] as const satisfies ISiteConfig['navItems'];
 
 const {hostname: domain} = new URL(PACKAGE.homepage);
+const backupUrl = `https://hk.${domain}`;
+
+const getShortUrl = (key: string) => `https://url.${domain}/${key}`;
 
 export const siteConfig = {
 	domain,
@@ -77,15 +80,11 @@ export const siteConfig = {
 	links: {
 		backup: {
 			label: '备用线路',
-			href: `https://hk.${domain}`,
+			href: backupUrl,
 		},
 		donate: {
 			label: '支付宝收款链接',
-			href: 'https://qr.alipay.com/tsx14703h641lnxffc1gz9c',
-		},
-		donateQRCode: {
-			label: '支付宝收款码',
-			href: '/assets/Alipay.png',
+			href: getShortUrl('HI9lxP'),
 		},
 		github: {
 			label: '本项目代码仓库',
@@ -101,11 +100,7 @@ export const siteConfig = {
 		},
 		qqGroup: {
 			label: '点击加入QQ群',
-			href: 'https://qm.qq.com/q/Zham0MdxyA',
-		},
-		qqGroupQRCode: {
-			label: 'QQ群二维码',
-			href: '/assets/QQ.png',
+			href: getShortUrl('l40oUu'),
 		},
 		steam: {
 			label: "Steam上的东方夜雀食堂 - Touhou Mystia's Izakaya",
@@ -113,11 +108,7 @@ export const siteConfig = {
 		},
 		xiaohongshuGroup: {
 			label: '点击加入小红书群',
-			href: 'https://www.xiaohongshu.com/sns/invitation/group-chat?groupId=136956731996869234&token=xMbzu2IneK_mgPAGyJxxpYKyeP-zm1PsHZlLjIcS1uXycTLrNNVeaQoPbTJuXF0pi6veU6bmJRZUH3Rw_nM1plJMqJG8zT7neRRX8GngqXE',
-		},
-		xiaohongshuGroupQRCode: {
-			label: '小红书群二维码',
-			href: '/assets/Xiaohongshu.png',
+			href: getShortUrl('Y9YVAt'),
 		},
 	},
 	nodeEnv: process.env.NODE_ENV,

@@ -92,8 +92,8 @@ export default memo(function Footer() {
 				<Tooltip
 					showArrow
 					content={
-						<QRCode alt={links.donateQRCode.label} src={links.donateQRCode.href} className="h-20">
-							{links.donateQRCode.label}
+						<QRCode text={links.donate.href} className="w-24">
+							{links.donate.label}
 						</QRCode>
 					}
 					classNames={{
