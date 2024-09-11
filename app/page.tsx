@@ -72,7 +72,7 @@ export default memo(function Home() {
 							isExternal
 							isIconOnly
 							href={links.xiaohongshuGroup.href}
-							referrerPolicy="no-referrer"
+							referrerPolicy="same-origin"
 							role="link"
 							title={links.xiaohongshuGroup.label}
 							className="h-5"

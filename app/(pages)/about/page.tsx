@@ -32,7 +32,7 @@ export default memo(function About() {
 						isExternal
 						showAnchorIcon
 						href={links.steam.href}
-						referrerPolicy="no-referrer"
+						referrerPolicy="same-origin"
 						title={links.steam.label}
 						className="indent-0"
 					>
@@ -46,7 +46,7 @@ export default memo(function About() {
 						isExternal
 						showAnchorIcon
 						href={links.gnuLicense.href}
-						referrerPolicy="no-referrer"
+						referrerPolicy="same-origin"
 						title={links.gnuLicense.label}
 						className="indent-0"
 					>
@@ -57,7 +57,7 @@ export default memo(function About() {
 						isExternal
 						showAnchorIcon
 						href={links.github.href}
-						referrerPolicy="no-referrer"
+						referrerPolicy="same-origin"
 						title={links.github.label}
 						className="indent-0"
 					>
@@ -82,7 +82,7 @@ export default memo(function About() {
 							isExternal
 							showAnchorIcon
 							href={links.donate.href}
-							referrerPolicy="no-referrer"
+							referrerPolicy="same-origin"
 							title={links.donate.label}
 							className="indent-0"
 						>

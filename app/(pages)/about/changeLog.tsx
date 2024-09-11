@@ -21,7 +21,7 @@ export default memo(function ChangeLog() {
 							isExternal
 							showAnchorIcon
 							href={`${links.github.href}/commits`}
-							referrerPolicy="no-referrer"
+							referrerPolicy="same-origin"
 							title={`${links.github.label}提交记录`}
 						>
 							GitHub

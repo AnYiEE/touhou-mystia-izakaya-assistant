@@ -16,7 +16,7 @@ export default memo(function KnownIssue() {
 						isExternal
 						showAnchorIcon
 						href="https://github.com/nextui-org/nextui/issues/2282"
-						referrerPolicy="no-referrer"
+						referrerPolicy="same-origin"
 					>
 						issue#2282
 					</Link>

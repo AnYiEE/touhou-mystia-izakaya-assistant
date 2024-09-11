@@ -115,7 +115,7 @@ const GitHubLink = memo<Partial<IGitHubLinkProps>>(function GitHubLink({showTool
 	return (
 		<span className="flex gap-1">
 			<GitHubIconLink className="text-foreground" />
-			<Link isExternal color="foreground" href={links.github.href} referrerPolicy="no-referrer">
+			<Link isExternal color="foreground" href={links.github.href} referrerPolicy="same-origin">
 				{links.github.label}
 			</Link>
 		</span>

@@ -81,7 +81,7 @@ export default class ErrorBoundary extends Component<IProps, IStates> {
 						请完整复制或截图上方的错误信息，
 						<a
 							href={links.qqGroup.href}
-							referrerPolicy="no-referrer"
+							referrerPolicy="same-origin"
 							target="_blank"
 							className="text-primary hover:underline hover:underline-offset-2"
 						>
