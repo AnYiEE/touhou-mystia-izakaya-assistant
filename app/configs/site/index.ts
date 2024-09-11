@@ -47,7 +47,6 @@ const navItems = [
 ] as const satisfies ISiteConfig['navItems'];
 
 const {hostname: domain} = new URL(PACKAGE.homepage);
-const backupUrl = `https://hk.${domain}`;
 
 const getShortUrl = (key: string) => `https://url.${domain}/${key}`;
 
@@ -80,7 +79,7 @@ export const siteConfig = {
 	links: {
 		backup: {
 			label: '备用线路',
-			href: backupUrl,
+			href: getShortUrl('tiXDNm'),
 		},
 		donate: {
 			label: '支付宝收款链接',
