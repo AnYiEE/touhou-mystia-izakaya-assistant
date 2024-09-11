@@ -10,7 +10,7 @@ import {setScriptUrlTag} from '@/utils';
 
 const {domain} = siteConfig;
 
-const trackerBaseUrl = 'https://track.izakaya.cc';
+const trackerBaseUrl = `https://track.${domain}`;
 const siteId = 11;
 
 function push(...args: unknown[][]) {
