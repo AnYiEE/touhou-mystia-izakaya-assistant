@@ -96,8 +96,8 @@
 	"devDependencies": {
 		"@babel/core": "^7.25.2",
 		"@babel/preset-env": "^7.25.4",
-		"@commitlint/cli": "^19.4.1",
-		"@commitlint/config-conventional": "^19.4.1",
+		"@commitlint/cli": "^19.5.0",
+		"@commitlint/config-conventional": "^19.5.0",
 		"@types/lodash": "^4.17.7",
 		"@types/node": "^22.5.4",
 		"@types/react": "^18.3.5",
