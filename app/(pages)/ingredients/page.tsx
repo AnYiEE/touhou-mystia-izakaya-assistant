@@ -150,7 +150,7 @@ export default memo(function Ingredients() {
 				</SideButtonGroup>
 			)}
 
-			<Content data={sortedData} isInNewWindow={isInNewWindow} />
+			<Content data={sortedData} />
 		</div>
 	);
 });

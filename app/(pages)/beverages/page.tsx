@@ -120,7 +120,7 @@ export default memo(function Beverages() {
 				</SideButtonGroup>
 			)}
 
-			<Content data={sortedData} isInNewWindow={isInNewWindow} />
+			<Content data={sortedData} />
 		</div>
 	);
 });

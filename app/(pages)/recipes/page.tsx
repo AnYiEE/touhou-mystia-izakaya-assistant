@@ -219,7 +219,7 @@ export default memo(function Recipes() {
 				</SideButtonGroup>
 			)}
 
-			<Content data={sortedData} isInNewWindow={isInNewWindow} />
+			<Content data={sortedData} />
 		</div>
 	);
 });

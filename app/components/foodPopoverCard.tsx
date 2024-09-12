@@ -12,7 +12,8 @@ import {
 import {twJoin} from 'tailwind-merge';
 
 import {useParams} from '@/hooks';
-import {type TOpenWindow} from '@/hooks/useViewInNewWindow';
+import {openedPopoverParam} from '@/hooks/useOpenedFoodPopover';
+import {inNewWindowParam, useViewInNewWindow} from '@/hooks/useViewInNewWindow';
 
 import {Popover, PopoverContent, PopoverTrigger, Snippet, Tooltip, usePopoverContext} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -30,18 +31,14 @@ import {checkA11yConfirmKey, uniq} from '@/utils';
 
 const {name: siteName} = siteConfig;
 
-interface ICloseButtonProps {
-	isInNewWindow?: boolean;
-	param?: string;
-}
+interface ICloseButtonProps {}
 
 const CloseButton = memo(
-	forwardRef<HTMLButtonElement | null, ICloseButtonProps>(function FoodPopoverCardCloseButton(
-		{isInNewWindow, param},
-		ref
-	) {
+	forwardRef<HTMLButtonElement | null, ICloseButtonProps>(function FoodPopoverCardCloseButton(_props, ref) {
 		const [params, replace] = useParams();
 		const {getBackdropProps} = usePopoverContext();
+
+		const isInNewWindow = useMemo(() => params.has(inNewWindowParam), [params]);
 
 		const handleClose = useCallback(
 			(event: KeyboardEvent<HTMLButtonElement> | MouseEvent<HTMLButtonElement>) => {
@@ -55,14 +52,14 @@ const CloseButton = memo(
 					window.close();
 				}
 
-				if (param && params.has(param)) {
+				if (params.has(openedPopoverParam)) {
 					const newParams = new URLSearchParams(params);
 
-					newParams.delete(param);
+					newParams.delete(openedPopoverParam);
 					replace(newParams);
 				}
 			},
-			[getBackdropProps, isInNewWindow, param, params, replace]
+			[getBackdropProps, isInNewWindow, params, replace]
 		);
 
 		const label = `点击：关闭${isInNewWindow ? '窗口' : '弹出框'}`;
@@ -85,11 +82,10 @@ const CloseButton = memo(
 
 interface IShareButtonProps {
 	name: string;
-	param: string;
 }
 
 const ShareButton = memo(
-	forwardRef<HTMLDivElement | null, IShareButtonProps>(function FoodPopoverCardShareButton({name, param}, ref) {
+	forwardRef<HTMLDivElement | null, IShareButtonProps>(function FoodPopoverCardShareButton({name}, ref) {
 		const [params] = useParams();
 		const [isCanShare, setIsCanShare] = useState(false);
 		const [shareObject, setShareObject] = useState<ShareData>({});
@@ -97,10 +93,10 @@ const ShareButton = memo(
 		const generatedUrl = useMemo(() => {
 			const newParams = new URLSearchParams(params);
 
-			newParams.set(param, name);
+			newParams.set(openedPopoverParam, name);
 
 			return `${window.location.origin}${window.location.pathname}?${newParams.toString()}`;
-		}, [name, param, params]);
+		}, [name, params]);
 
 		useEffect(() => {
 			const text = `在${siteName}上查看【${name}】的详情`;
@@ -184,14 +180,15 @@ interface IFoodPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 		[key in keyof ITagStyle]: TTags[];
 	};
 	tagColors?: ITagStyle;
-	openWindow?: TOpenWindow;
 }
 
 const FoodPopoverCardComponent = memo(
 	forwardRef<HTMLDivElement | null, PropsWithChildren<IFoodPopoverCardProps>>(function FoodPopoverCard(
-		{target, name, description, dlc, cooker, ingredients, ingredientType, tags, tagColors, openWindow, children},
+		{target, name, description, dlc, cooker, ingredients, ingredientType, tags, tagColors, children},
 		ref
 	) {
+		const openWindow = useViewInNewWindow();
+
 		const mergedTags = useMemo((): Omit<NonNullable<typeof tags>, 'beverage'> | undefined => {
 			if (!tags) {
 				return tags;
@@ -253,11 +250,11 @@ const FoodPopoverCardComponent = memo(
 										name={ingredient}
 										size={1.5}
 										onClick={() => {
-											openWindow?.('ingredients', ingredient);
+											openWindow('ingredients', ingredient);
 										}}
 										onKeyDown={(event) => {
 											if (checkA11yConfirmKey(event)) {
-												openWindow?.('ingredients', ingredient);
+												openWindow('ingredients', ingredient);
 											}
 										}}
 										aria-label={ingredientLabel}
