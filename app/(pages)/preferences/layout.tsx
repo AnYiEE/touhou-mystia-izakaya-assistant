@@ -5,6 +5,10 @@ import {getPageTitle} from '@/utils';
 
 export const metadata: Metadata = {
 	title: getPageTitle('/preferences'),
+
+	robots: {
+		index: false,
+	},
 };
 
 export default function PreferencesLayout({
