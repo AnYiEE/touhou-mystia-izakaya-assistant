@@ -1,4 +1,4 @@
-export function isArrayEqual<T>(arrayA: T[], arrayB: T[]) {
+export function isArrayEqual<T>(arrayA: ReadonlyArray<T>, arrayB: ReadonlyArray<T>) {
 	if (arrayA.length !== arrayB.length) {
 		return false;
 	}

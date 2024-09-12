@@ -67,7 +67,7 @@ export class Beverage extends Food<TBeverages> {
 	 * @description Get the suitability of a beverage for a customer based on their tags.
 	 * @returns An object containing the suitability of the beverage and the tags that are common to both the beverage and the customer.
 	 */
-	public getCustomerSuitability<T extends string>(name: TBeverageNames, customerTags: T[]) {
+	public getCustomerSuitability<T extends string>(name: TBeverageNames, customerTags: ReadonlyArray<T>) {
 		const beverage = this.getPropsByName(name);
 
 		const {tags} = beverage;

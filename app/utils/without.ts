@@ -1,4 +1,4 @@
-export function without<T>(array: T[], ...values: T[]) {
+export function without<T>(array: ReadonlyArray<T>, ...values: T[]) {
 	if (array.length === 0) {
 		return [];
 	}

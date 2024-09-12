@@ -119,7 +119,7 @@ export class Sprite<
 		name: T,
 		{displayHeight = this.spriteHeight, displayWidth = this.spriteWidth} = {}
 	): CSSProperties {
-		const index: number = this.findIndexByName(name);
+		const index = this.findIndexByName(name);
 
 		return this.getBackgroundPropsByIndex(index, {
 			displayHeight,

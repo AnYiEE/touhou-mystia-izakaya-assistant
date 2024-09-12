@@ -4,7 +4,7 @@ import {type Observable, filter, first, fromEvent, merge, of} from 'rxjs';
  * @returns Observable that emits true when the DOM is ready.
  */
 export function domReady() {
-	const condition: DocumentReadyState[] = ['complete', 'interactive'];
+	const condition: ReadonlyArray<DocumentReadyState> = ['complete', 'interactive'];
 
 	const checkReady = () => condition.includes(document.readyState);
 

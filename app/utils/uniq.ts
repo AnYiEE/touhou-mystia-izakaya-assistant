@@ -1,4 +1,4 @@
-export function uniq<T>(array: T[]) {
+export function uniq<T>(array: ReadonlyArray<T>) {
 	if (array.length === 0) {
 		return [];
 	}

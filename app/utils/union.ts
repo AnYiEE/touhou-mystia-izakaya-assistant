@@ -1,6 +1,6 @@
 import {uniq} from '@/utils';
 
-export function union<T>(...arrays: T[][]) {
+export function union<T>(...arrays: ReadonlyArray<T>[]) {
 	if (arrays.length === 0) {
 		return [];
 	}

@@ -110,7 +110,7 @@ export default memo(function CustomerRare() {
 						: true;
 
 				return isNameExcludesMatched && isDlcMatched && isPlaceMatched && isNoPlaceMatched;
-			}) as T;
+			}) as unknown as T;
 		},
 		[
 			customerFilterDlcs,

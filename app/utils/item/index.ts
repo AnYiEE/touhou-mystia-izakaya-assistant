@@ -10,9 +10,9 @@ export class Item<
 	TName extends TItemWithPinyin['name'] = TItemWithPinyin['name'],
 > {
 	protected _data: TTarget;
-	protected _dataWithPinyin: TItemWithPinyin[];
+	protected _dataWithPinyin: ReadonlyArray<TItemWithPinyin>;
 
-	protected _pinyinSortedCache: TItemWithPinyin[] | null;
+	protected _pinyinSortedCache: ReadonlyArray<TItemWithPinyin> | null;
 	protected _indexNameCache: Map<number, string>;
 	protected _nameIndexCache: Map<string, number>;
 
@@ -36,7 +36,7 @@ export class Item<
 		return this._dataWithPinyin;
 	}
 
-	public get dataPinyinSorted(): TItemWithPinyin[] {
+	public get dataPinyinSorted(): ReadonlyArray<TItemWithPinyin> {
 		if (this._pinyinSortedCache) {
 			return this._pinyinSortedCache;
 		}
@@ -142,16 +142,20 @@ export class Item<
 	}
 
 	public getValuesByProp<T extends keyof TItemWithPinyin>(
-		data: TItemWithPinyin[],
+		data: ReadonlyArray<TItemWithPinyin>,
 		prop: T | T[],
 		wrap: true
 	): {value: FlatArray<TItemWithPinyin[T], number>}[];
 	public getValuesByProp<T extends keyof TItemWithPinyin>(
-		data: TItemWithPinyin[],
+		data: ReadonlyArray<TItemWithPinyin>,
 		prop: T | T[],
 		wrap?: boolean
 	): FlatArray<TItemWithPinyin[T], number>[];
-	public getValuesByProp<T extends keyof TItemWithPinyin>(data: TItemWithPinyin[], prop: T | T[], wrap?: boolean) {
+	public getValuesByProp<T extends keyof TItemWithPinyin>(
+		data: ReadonlyArray<TItemWithPinyin>,
+		prop: T | T[],
+		wrap?: boolean
+	) {
 		const props = [prop].flat(Infinity) as T[];
 		const values = uniq(data.map((item) => props.map((key) => item[key])).flat(Infinity));
 
@@ -162,7 +166,7 @@ export class Item<
 		return values;
 	}
 
-	public sortByPinyin(data: TItemWithPinyin[]) {
+	public sortByPinyin(data: ReadonlyArray<TItemWithPinyin>) {
 		return [...data].sort(({pinyin: a}, {pinyin: b}) => pinyinSort(a, b));
 	}
 }
