@@ -25,7 +25,7 @@ export default memo(function Home() {
 			<div className="text-center">
 				<div>
 					<span
-						role="img"
+						aria-hidden
 						title={`欢迎使用${shortName}`}
 						className="inline-block h-cursor-1.8x w-cursor-1.8x select-none bg-cursor bg-y-auto bg-no-repeat motion-safe:animate-bounce"
 					/>
@@ -73,7 +73,6 @@ export default memo(function Home() {
 							isIconOnly
 							href={links.xiaohongshuGroup.href}
 							referrerPolicy="same-origin"
-							role="link"
 							title={links.xiaohongshuGroup.label}
 							className="h-5"
 						>

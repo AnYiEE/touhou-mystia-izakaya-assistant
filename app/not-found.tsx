@@ -25,7 +25,6 @@ export default memo(function NotFound() {
 				size="sm"
 				variant="flat"
 				href="/"
-				role="link"
 				className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
 			>
 				返回首页

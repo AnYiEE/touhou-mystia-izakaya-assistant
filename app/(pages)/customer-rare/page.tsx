@@ -320,7 +320,7 @@ export default memo(function CustomerRare() {
 				) : (
 					<Placeholder className="pt-4 xl:pt-0">
 						<div className="inline-grid space-y-1">
-							<span role="img" aria-hidden className="inline-block h-loading w-loading bg-loading" />
+							<span aria-hidden className="inline-block h-loading w-loading bg-loading" />
 							<p>选择顾客以继续</p>
 						</div>
 					</Placeholder>

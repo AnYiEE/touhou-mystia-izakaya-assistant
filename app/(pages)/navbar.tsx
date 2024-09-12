@@ -74,7 +74,6 @@ const NavbarLink = memo<Partial<PropsWithChildren<INavbarLinkProps>>>(function N
 			onPress={() => {
 				showProgress(startProgress);
 			}}
-			role="link"
 			className={twMerge('text-base', className)}
 		>
 			{children}
@@ -155,7 +154,7 @@ export default memo(function Navbar() {
 						className="flex select-none items-center justify-start gap-1"
 					>
 						<span
-							role="img"
+							aria-hidden
 							title={shortName}
 							className="h-10 w-10 rounded-full bg-logo bg-cover bg-no-repeat"
 						/>
