@@ -11,6 +11,7 @@ import {
 	useSortedData,
 	useThrottle,
 } from '@/hooks';
+import {openedPopoverParam} from '@/hooks/useOpenedFoodPopover';
 import {inNewWindowParam} from '@/hooks/useViewInNewWindow';
 
 import Content from '@/(pages)/beverages/content';
@@ -26,6 +27,7 @@ export default memo(function Beverages() {
 	const [params] = useParams();
 
 	const isInNewWindow = useMemo(() => params.has(inNewWindowParam), [params]);
+	const isSpecified = useMemo(() => params.has(openedPopoverParam), [params]);
 
 	const instance = store.instance.get();
 
@@ -110,7 +112,7 @@ export default memo(function Beverages() {
 
 	return (
 		<div className="grid h-min grid-cols-2 justify-items-center gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
-			{!isInNewWindow && (
+			{!isSpecified && (
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />
 					<SidePinyinSortIconButton pinyinSortConfig={pinyinSortConfig} />
