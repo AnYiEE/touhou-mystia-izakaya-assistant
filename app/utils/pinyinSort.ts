@@ -33,7 +33,9 @@ function getPinyinArray(value: string) {
 }
 
 function getTone(pinyin: string) {
-	return Number.parseInt(pinyin.match(/\d/u)?.[0] ?? '0');
+	const match = pinyin.match(/\d/u);
+
+	return match ? Number.parseInt(match[0]) : 0;
 }
 
 function removeTone(pinyin: string) {

@@ -6,20 +6,20 @@ import {type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseE
 export function checkA11yConfirmKey(event: ReactKeyboardEvent | ReactMouseEvent | KeyboardEvent | MouseEvent) {
 	const {type} = event;
 
-	if (type === 'click' || type === 'keydown') {
-		if (type === 'keydown') {
-			const {key} = event as KeyboardEvent;
-			const isEnter = key === 'Enter';
-			const isSpace = key === ' ';
+	if (type === 'click') {
+		return true;
+	}
 
-			if (isSpace) {
-				event.preventDefault();
-			}
+	if (type === 'keydown') {
+		const {key} = event as KeyboardEvent;
+		const isEnter = key === 'Enter';
+		const isSpace = key === ' ';
 
-			return isEnter || isSpace;
+		if (isSpace) {
+			event.preventDefault();
 		}
 
-		return true;
+		return isEnter || isSpace;
 	}
 
 	return false;

@@ -11,14 +11,7 @@ function getPageTitle(target: THref) {
 		return pageTitleCache.get(target);
 	}
 
-	const pageTitle = siteConfig.navMenuItems
-		.map(({label, href}) => {
-			if (href === target) {
-				return label;
-			}
-			return '';
-		})
-		.join('');
+	const pageTitle = siteConfig.navMenuItems.find(({href}) => href === target)?.label ?? '';
 
 	pageTitleCache.set(target, pageTitle);
 

@@ -1,8 +1,20 @@
-export function processPinyin(pinyin: string[]) {
-	const pinyinWithoutTone = pinyin
-		.map((string) => string.replace(/\d/u, '').toLowerCase())
-		.filter((string) => /\w/u.test(string));
-	const pinyinFirstLetters = pinyinWithoutTone.map((string) => string.charAt(0)).join('');
+export function processPinyin(pinyin: ReadonlyArray<string>) {
+	const {pinyinFirstLetters, pinyinWithoutTone} = pinyin.reduce<{
+		pinyinFirstLetters: string;
+		pinyinWithoutTone: string[];
+	}>(
+		(acc, string) => {
+			const cleanedString = string.replace(/\d/u, '').toLowerCase();
+
+			if (/\w/u.test(cleanedString)) {
+				acc.pinyinFirstLetters += cleanedString.charAt(0);
+				acc.pinyinWithoutTone.push(cleanedString);
+			}
+
+			return acc;
+		},
+		{pinyinFirstLetters: '', pinyinWithoutTone: []}
+	);
 
 	return {
 		pinyinFirstLetters,
