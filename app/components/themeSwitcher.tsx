@@ -30,6 +30,8 @@ enum ThemeLabel {
 	dark = '深色主题',
 	light = '浅色主题',
 	system = '跟随系统',
+	list = '可选主题列表',
+	switcher = '切换主题',
 }
 
 interface IProps {
@@ -82,6 +84,7 @@ export default memo<Partial<IProps>>(function ThemeSwitcher({isMenu}) {
 			<div className="flex h-5 w-5 items-center justify-center">
 				<Spinner
 					color="default"
+					title={ThemeLabel.switcher}
 					classNames={{
 						base: 'flex',
 						wrapper: 'h-4 w-4',
@@ -98,7 +101,7 @@ export default memo<Partial<IProps>>(function ThemeSwitcher({isMenu}) {
 				content: 'min-w-28 p-0',
 			}}
 		>
-			<Tooltip showArrow content="切换主题">
+			<Tooltip showArrow content={ThemeLabel.switcher}>
 				<span className="flex">
 					<DropdownTrigger>
 						<FontAwesomeIconButton
@@ -109,7 +112,7 @@ export default memo<Partial<IProps>>(function ThemeSwitcher({isMenu}) {
 										? faMoon
 										: faCircleHalfStroke
 							}
-							aria-label="切换主题"
+							aria-label={ThemeLabel.switcher}
 							className={twJoin(
 								'h-min w-min min-w-min bg-transparent text-medium',
 								isMenu ? 'text-foreground' : 'text-default-400 dark:text-default-500'
@@ -124,7 +127,7 @@ export default memo<Partial<IProps>>(function ThemeSwitcher({isMenu}) {
 				selectedKeys={selectedTheme}
 				selectionMode="single"
 				onSelectionChange={onSelectedThemeChange}
-				aria-label="可选主题列表"
+				aria-label={ThemeLabel.list}
 				className="w-28"
 				itemClasses={{
 					base: 'my-px data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40',

@@ -6,7 +6,7 @@ import {Recipe, getPageTitle} from '@/utils';
 
 const {description, keywords} = siteConfig;
 
-const recipes = Array.from({length: 10}, (_, index) => Recipe.getInstance().getPropsByIndex(index).name);
+const recipes = Recipe.getInstance().getNames(10);
 const title = getPageTitle('/recipes');
 
 export const metadata: Metadata = {

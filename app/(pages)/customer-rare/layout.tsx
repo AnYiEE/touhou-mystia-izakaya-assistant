@@ -6,7 +6,7 @@ import {CustomerRare, getPageTitle} from '@/utils';
 
 const {description, keywords} = siteConfig;
 
-const customers = Array.from({length: 10}, (_, index) => CustomerRare.getInstance().getPropsByIndex(index).name);
+const customers = CustomerRare.getInstance().getNames(10);
 const title = getPageTitle('/customer-rare');
 
 export const metadata: Metadata = {

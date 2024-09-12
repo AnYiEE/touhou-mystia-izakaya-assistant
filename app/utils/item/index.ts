@@ -85,6 +85,18 @@ export class Item<
 		return name as TName;
 	}
 
+	public getNames(length?: number) {
+		if (length === 0) {
+			return [];
+		}
+
+		if (length !== undefined) {
+			this.checkIndexRange(length - 1);
+		}
+
+		return Array.from({length: length ?? this._data.length}, (_, index) => this.findNameByIndex(index));
+	}
+
 	public getPropsByIndex(index: number): TItemWithPinyin;
 	public getPropsByIndex<T extends keyof TItemWithPinyin>(index: number, prop: T): TItemWithPinyin[T];
 	public getPropsByIndex<T extends keyof TItemWithPinyin>(index: number, ...props: T[]): TItemWithPinyin[T][];

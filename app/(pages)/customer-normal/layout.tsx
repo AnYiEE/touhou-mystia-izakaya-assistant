@@ -5,7 +5,7 @@ import {CustomerNormal, getPageTitle} from '@/utils';
 
 const {description, keywords} = siteConfig;
 
-const customers = Array.from({length: 10}, (_, index) => CustomerNormal.getInstance().getPropsByIndex(index).name);
+const customers = CustomerNormal.getInstance().getNames(10);
 const title = getPageTitle('/customer-normal');
 
 export const metadata: Metadata = {

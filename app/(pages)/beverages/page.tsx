@@ -16,6 +16,7 @@ import {inNewWindowParam} from '@/hooks/useViewInNewWindow';
 
 import Content from '@/(pages)/beverages/content';
 import Loading from '@/loading';
+import FakeNameContent from '@/components/fakeNameContent';
 import SideButtonGroup from '@/components/sideButtonGroup';
 import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
@@ -107,7 +108,12 @@ export default memo(function Beverages() {
 
 	const isMounted = useMounted();
 	if (!isMounted) {
-		return <Loading />;
+		return (
+			<>
+				<Loading />
+				<FakeNameContent instance={instance} />
+			</>
+		);
 	}
 
 	return (

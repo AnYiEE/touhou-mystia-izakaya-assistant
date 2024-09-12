@@ -17,6 +17,7 @@ import RecipeTabContent from './recipeTabContent';
 import ResultCard from './resultCard';
 import SavedMealCard from './savedMealCard';
 import Loading from '@/loading';
+import FakeNameContent from '@/components/fakeNameContent';
 import SideButtonGroup from '@/components/sideButtonGroup';
 import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
@@ -228,7 +229,12 @@ export default memo(function CustomerNormal() {
 
 	const isMounted = useMounted();
 	if (!isMounted) {
-		return <Loading />;
+		return (
+			<>
+				<Loading />
+				<FakeNameContent instance={instance_customer} />
+			</>
+		);
 	}
 
 	return (
