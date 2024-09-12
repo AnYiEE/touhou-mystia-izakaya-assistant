@@ -59,11 +59,35 @@ export default memo<IProps>(function Content({data, isInNewWindow}) {
 				>
 					{Object.entries(from as IIngredient['from']).map(([method, target], fromIndex) => {
 						const probability = `概率${method === 'buy' ? '出售' : '掉落'}`;
-						const way = method === 'buy' ? '购买' : method === 'task' ? '任务' : '采集';
+						const way =
+							method === 'buy'
+								? '购买'
+								: method === 'fishing'
+									? '钓鱼'
+									: method === 'task'
+										? '任务'
+										: '采集';
 
 						return (
 							<p key={fromIndex}>
-								<span className="font-semibold">{way}：</span>
+								{way === '钓鱼' ? (
+									<span>
+										<Popover showArrow offset={6} size="sm">
+											<Tooltip showArrow content={probability} offset={3} size="sm">
+												<span className="inline-flex cursor-pointer">
+													<PopoverTrigger>
+														<span tabIndex={0} className="font-semibold">
+															<span className="underline-dotted-offset2">{way}</span>：
+														</span>
+													</PopoverTrigger>
+												</span>
+											</Tooltip>
+											<PopoverContent>{probability}</PopoverContent>
+										</Popover>
+									</span>
+								) : (
+									<span className="font-semibold">{way}：</span>
+								)}
 								{target.map((item, index) => (
 									<Fragment key={index}>
 										{Array.isArray(item) ? (

@@ -12,6 +12,7 @@ export const INGREDIENT_LIST = [
 		from: {
 			buy: ['【妖怪兽道】杂货商人', '【人间之里】农户'],
 			collect: ['非【迷途竹林】河流'],
+			fishing: ['人间之里', '博丽神社'],
 		},
 	},
 	{
@@ -238,6 +239,7 @@ export const INGREDIENT_LIST = [
 				'【辉针城】水涡',
 				['【辉针城】碗之后', true],
 			],
+			fishing: ['妖怪兽道', '人间之里', '魔法森林', '神灵庙', '辉针城'],
 		},
 	},
 	{
@@ -279,6 +281,7 @@ export const INGREDIENT_LIST = [
 		price: 30,
 		from: {
 			collect: ['【命莲寺】东北莲花池', '【神灵庙】水涡', ['非【妖怪兽道】河流', true]],
+			fishing: ['妖怪兽道', '迷途竹林', '辉针城', '太阳花田'],
 		},
 	},
 	{
@@ -315,6 +318,7 @@ export const INGREDIENT_LIST = [
 		from: {
 			buy: ['【旧地狱】鬼商'],
 			collect: [['【妖怪兽道】河流', true], '【妖怪之山】中心瀑布', ['【辉针城】碗之后', true]],
+			fishing: ['妖怪兽道', '人间之里', '红魔馆', '迷途竹林', '魔法森林'],
 		},
 	},
 	{
@@ -360,6 +364,7 @@ export const INGREDIENT_LIST = [
 				['【辉针城】水涡', true],
 				['【辉针城】碗之后', true],
 			],
+			fishing: ['红魔馆', '迷途竹林', '旧地狱', '命莲寺', '神灵庙', '太阳花田'],
 			task: ['阿求小姐的色纸'],
 		},
 	},
@@ -385,6 +390,18 @@ export const INGREDIENT_LIST = [
 		from: {
 			buy: [['【妖怪兽道】杂货商人', true], '【旧地狱】鬼商', '【神灵庙】道士'],
 			collect: ['【神灵庙】水涡', '【辉针城】水涡', ['【辉针城】碗之后', true], ['非【妖怪兽道】河流', true]],
+			fishing: [
+				'妖怪兽道',
+				'人间之里',
+				'红魔馆',
+				'迷途竹林',
+				'旧地狱',
+				'地灵殿',
+				'命莲寺',
+				'神灵庙',
+				'辉针城',
+				'太阳花田',
+			],
 		},
 	},
 	{
@@ -466,6 +483,7 @@ export const INGREDIENT_LIST = [
 		from: {
 			buy: [['【博丽神社】妖精女仆', true], '【红魔馆】地精商人', '【迷途竹林】美食妖怪兔', '【神灵庙】道士'],
 			collect: [['【红魔馆】河流', true], '【地灵殿】水池'],
+			fishing: ['人间之里', '红魔馆', '妖怪之山', '魔法森林', '地灵殿'],
 			task: ['阿求小姐的色纸'],
 		},
 	},
@@ -508,6 +526,7 @@ export const INGREDIENT_LIST = [
 		from: {
 			buy: ['【神灵庙】道士'],
 			collect: ['【神灵庙】水涡', ['【辉针城】碗之后', true], ['非【妖怪兽道】河流', true]],
+			fishing: ['迷途竹林', '妖怪之山', '旧地狱', '地灵殿', '命莲寺', '太阳花田'],
 		},
 	},
 	{
@@ -558,6 +577,7 @@ export const INGREDIENT_LIST = [
 		from: {
 			buy: [['【妖怪之山】河童商人', true]],
 			collect: [['【辉针城】碗之后', true]],
+			fishing: ['妖怪之山'],
 		},
 	},
 	{
@@ -588,6 +608,7 @@ export const INGREDIENT_LIST = [
 				['【辉针城】不良少年', true],
 			],
 			collect: ['【妖怪之山】西北瀑布', ['【辉针城】碗之后', true]],
+			fishing: ['妖怪之山'],
 		},
 	},
 	{

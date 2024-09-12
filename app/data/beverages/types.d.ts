@@ -26,7 +26,7 @@ type TTag =
 type TFromBase = IFoodBase['from'];
 
 interface IFrom extends TFromBase {
-	/** @description 初始拥有的饮品 */
+	/** @description Initial beverages. */
 	self: boolean;
 }
 

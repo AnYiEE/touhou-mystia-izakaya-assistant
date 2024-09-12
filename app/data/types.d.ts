@@ -164,10 +164,11 @@ export interface ICustomerBase extends IItemBase {
 }
 
 interface IFoodFrom {
-	/** @description 如果是数组，则第一个元素为出售角色，第二个元素代表是否为必然出售 */
+	/** @description If it is an array, the first element represents the businessman selling the item, and the second element represents whether it is a mandatory sale. */
 	buy: Array<TBusinessman | [TBusinessman, boolean]>;
-	/** @description 如果是数组，则第一个元素为采集地点，第二个元素代表是否为概率获得 */
+	/** @description If it is an array, the first element represents the collection location, and the second element represents whether it is a probability acquisition. */
 	collect: Array<TCollectionLocation | [TCollectionLocation, boolean]>;
+	fishing: TPlace[];
 	task: TTask[];
 }
 

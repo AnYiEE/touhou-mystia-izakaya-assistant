@@ -60,9 +60,9 @@ export interface IRecipe extends IFoodBase {
 					name: TCustomerRareNames;
 					level: number;
 				};
-				/** @description 初始拥有的菜品 */
+				/** @description Initial recipes. */
 				self: true;
-				/** @description 升级拥有的菜品 */
+				/** @description Recipes by levelup. */
 				levelup: true;
 		  }>
 		| string;
