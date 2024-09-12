@@ -10,8 +10,9 @@ export function toValueObject<T>(value: T) {
 	return {value};
 }
 
-export function toValueObjectWithKey(key: string) {
-	return <T>(value: T) => ({
-		[key]: value,
-	});
+export function toValueObjectWithKey<K extends string>(key: K) {
+	return <T>(value: T) =>
+		({
+			[key]: value,
+		}) as Record<K, T>;
 }
