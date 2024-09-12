@@ -34,8 +34,8 @@ export default memo<IProps>(function Content({data, isInNewWindow}) {
 		>
 			<PopoverTrigger>
 				<FoodCard
-					isHoverable
-					isPressable
+					isHoverable={openedPopover ? openedPopover === name : true}
+					isPressable={openedPopover ? openedPopover === name : true}
 					name={name}
 					description={<Price>{price}</Price>}
 					image={<Sprite target="ingredient" name={name} size={3} />}
