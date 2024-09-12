@@ -1,4 +1,4 @@
-import {type ReactElement, memo} from 'react';
+import {Fragment, type ReactElement, memo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
 import {useViewInNewWindow} from '@/hooks';
@@ -6,6 +6,7 @@ import {useViewInNewWindow} from '@/hooks';
 import {
 	AccordionItem,
 	Avatar,
+	Divider,
 	Image,
 	Popover,
 	PopoverContent,
@@ -104,8 +105,22 @@ export default memo(function InfoButton() {
 					</div>
 				);
 			default:
-				return `${type}效果：${description}`;
+				return `${type}效果：${typeof description === 'string' ? description.replace(/^\{\{\d+\}\}/u, '') : description}`;
 		}
+	};
+
+	const getLevelLabel = ({description, type}: TReward) => {
+		if (type === '伙伴' && description !== true) {
+			return '其他';
+		}
+
+		let level = 5;
+
+		if (typeof description === 'string') {
+			level = Number.parseInt(description.match(/^\{\{(\d+)\}\}/u)?.[1] ?? '5');
+		}
+
+		return level;
 	};
 
 	const hasBondRewards = bondRecipesDataLength > 0 || currentCustomerBondRewardsLength > 0;
@@ -147,55 +162,54 @@ export default memo(function InfoButton() {
 								</p>
 							))}
 							{currentCustomerBondRewards.map((bondReward, index) => (
-								<p key={index} className="leading-5">
-									<LevelLabel
-										level={
-											bondReward.type === '伙伴' && bondReward.description !== true ? '其他' : 5
-										}
-									/>
-									{bondReward.type === '采集'
-										? `${bondReward.type}【${bondReward.reward}】`
-										: (() => {
-												const hasTachie =
-													bondReward.type === '服装' || bondReward.type === '伙伴';
-												const placement = hasTachie ? 'left' : 'top';
-												return (
-													<>
-														{bondReward.type}【
-														<Popover
-															showArrow
-															offset={hasTachie ? 15 : 6}
-															size="sm"
-															placement={placement}
-														>
-															<Tooltip
+								<Fragment key={index}>
+									{index === 0 && currentCustomerBondRewardsLength > 1 && <Divider />}
+									<p className="leading-5">
+										<LevelLabel level={getLevelLabel(bondReward)} />
+										{bondReward.type === '采集'
+											? `${bondReward.type}【${bondReward.reward}】`
+											: (() => {
+													const hasTachie =
+														bondReward.type === '服装' || bondReward.type === '伙伴';
+													const placement = hasTachie ? 'left' : 'top';
+													return (
+														<>
+															{bondReward.type}【
+															<Popover
 																showArrow
-																content={getDescription(bondReward)}
-																offset={hasTachie ? 12 : 3}
-																placement={placement}
+																offset={hasTachie ? 15 : 7}
 																size="sm"
+																placement={placement}
 															>
-																<span className="inline-flex cursor-pointer">
-																	<PopoverTrigger>
-																		<span
-																			role="button"
-																			tabIndex={0}
-																			className="underline-dotted-offset2"
-																		>
-																			{bondReward.reward}
-																		</span>
-																	</PopoverTrigger>
-																</span>
-															</Tooltip>
-															<PopoverContent>
-																{getDescription(bondReward)}
-															</PopoverContent>
-														</Popover>
-														】
-													</>
-												);
-											})()}
-								</p>
+																<Tooltip
+																	showArrow
+																	content={getDescription(bondReward)}
+																	offset={hasTachie ? 12 : 3}
+																	placement={placement}
+																	size="sm"
+																>
+																	<span className="inline-flex cursor-pointer">
+																		<PopoverTrigger>
+																			<span
+																				role="button"
+																				tabIndex={0}
+																				className="underline-dotted-offset2"
+																			>
+																				{bondReward.reward}
+																			</span>
+																		</PopoverTrigger>
+																	</span>
+																</Tooltip>
+																<PopoverContent>
+																	{getDescription(bondReward)}
+																</PopoverContent>
+															</Popover>
+															】
+														</>
+													);
+												})()}
+									</p>
+								</Fragment>
 							))}
 						</div>
 					</div>
