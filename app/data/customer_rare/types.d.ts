@@ -24,6 +24,7 @@ type TOrnament =
 	| '超级钓鱼竿'
 	| '仇返人形'
 	| '地藏人偶'
+	| '钓鱼竿'
 	| '杜门谢客'
 	| '飞碟老虎机'
 	| '富贵牡丹'
@@ -56,6 +57,7 @@ export type TReward =
 	| {
 			type: '摆件';
 			reward: TOrnament;
+			/** @description If `{{number}}` is used as a prefix,it is considered that the level of the bond has been specified, with a default value of 5. */
 			description: string | null;
 	  }
 	| {

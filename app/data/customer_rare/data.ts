@@ -1303,6 +1303,11 @@ export const CUSTOMER_RARE_LIST = [
 		bondRewards: [
 			{
 				type: '摆件',
+				reward: '钓鱼竿',
+				description: '{{1}}普通的钓鱼竿，只能进行一些简单的钓鱼工作',
+			},
+			{
+				type: '摆件',
 				reward: '超级钓鱼竿',
 				description: '可以进行精细高级操作的钓鱼竿，除了能够钓鱼，还能够寻找到宝箱！',
 			},
