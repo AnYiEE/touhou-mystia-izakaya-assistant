@@ -165,10 +165,7 @@ export default memo(function CustomerNormal() {
 
 	const customerTabVisibilityState = customerStore.persistence.customer.tabVisibility.use();
 
-	const customerTabStyle = useMemo(
-		() => customerTabStyleMap[customerTabVisibilityState],
-		[customerTabVisibilityState]
-	);
+	const customerTabStyle = customerTabStyleMap[customerTabVisibilityState];
 
 	const isCustomerTabFilterVisible = customerStore.shared.customer.filterVisibility.use();
 
@@ -223,10 +220,7 @@ export default memo(function CustomerNormal() {
 
 	const ingredientTabVisibilityState = customerStore.persistence.ingredient.tabVisibility.use();
 
-	const ingredientTabStyle = useMemo(
-		() => ingredientTabStyleMap[ingredientTabVisibilityState],
-		[ingredientTabVisibilityState]
-	);
+	const ingredientTabStyle = ingredientTabStyleMap[ingredientTabVisibilityState];
 
 	const isIngredientTabFilterVisible = customerStore.shared.ingredient.filterVisibility.use();
 

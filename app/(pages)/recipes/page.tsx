@@ -26,8 +26,8 @@ import {recipesStore as store} from '@/stores';
 export default memo(function Recipes() {
 	const [params] = useParams();
 
-	const isInNewWindow = useMemo(() => params.has(inNewWindowParam), [params]);
-	const isSpecified = useMemo(() => params.has(openedPopoverParam), [params]);
+	const isInNewWindow = params.has(inNewWindowParam);
+	const isSpecified = params.has(openedPopoverParam);
 
 	const instance = store.instance.get();
 

@@ -31,7 +31,7 @@ export default memo(
 			setIsSupportedWebp(checkCompatibility()['webp']);
 		}, []);
 
-		const instance = useMemo(() => SpriteClass.getInstance(target), [target]);
+		const instance = SpriteClass.getInstance(target);
 
 		const {calculatedIndex, calculatedName} = useMemo(() => {
 			let _calculatedIndex = index;

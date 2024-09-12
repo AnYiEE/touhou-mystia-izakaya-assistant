@@ -38,7 +38,7 @@ const CloseButton = memo(
 		const [params, replace] = useParams();
 		const {getBackdropProps} = usePopoverContext();
 
-		const isInNewWindow = useMemo(() => params.has(inNewWindowParam), [params]);
+		const isInNewWindow = params.has(inNewWindowParam);
 
 		const handleClose = useCallback(
 			(event: KeyboardEvent<HTMLButtonElement> | MouseEvent<HTMLButtonElement>) => {

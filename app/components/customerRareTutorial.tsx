@@ -1,4 +1,4 @@
-import {memo, useEffect, useMemo, useRef} from 'react';
+import {memo, useEffect, useRef} from 'react';
 import {usePathname} from 'next/navigation';
 import {driver} from 'driver.js';
 
@@ -27,7 +27,7 @@ export default memo(function CustomerRareTutorial() {
 	const isIngredientTabSelected = selectedTabKey === 'ingredient';
 
 	const dirverState = globalStore.persistence.dirver.get();
-	const isCompleted = useMemo(() => dirverState.includes(key), [dirverState]);
+	const isCompleted = dirverState.includes(key);
 
 	const isTargetPage = currentPathname === pathname;
 

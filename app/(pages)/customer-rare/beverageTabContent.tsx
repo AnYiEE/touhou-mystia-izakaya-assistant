@@ -177,10 +177,7 @@ export default memo(
 			[tableVisibleColumns]
 		);
 
-		const tableTotalPages = useMemo(
-			() => Math.ceil(filteredData.length / tableRowsPerPageNumber),
-			[filteredData.length, tableRowsPerPageNumber]
-		);
+		const tableTotalPages = Math.ceil(filteredData.length / tableRowsPerPageNumber);
 
 		const tableSelectedKeys = new Set([currentBeverageName ?? '']);
 

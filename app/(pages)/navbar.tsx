@@ -1,6 +1,6 @@
 'use client';
 
-import {type JSX, type PropsWithChildren, memo, startTransition, useMemo, useReducer} from 'react';
+import {type JSX, type PropsWithChildren, memo, startTransition, useReducer} from 'react';
 import {usePathname} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
 import {twMerge} from 'tailwind-merge';
@@ -129,10 +129,7 @@ export default memo(function Navbar() {
 
 	const isShowBackgroundImage = store.persistence.backgroundImage.use();
 
-	const shouldShowPreferences = useMemo(
-		() => pathname.startsWith('/customer') || pathname === '/preferences',
-		[pathname]
-	);
+	const shouldShowPreferences = pathname.startsWith('/customer') || pathname === '/preferences';
 
 	return (
 		<NextUINavbar
