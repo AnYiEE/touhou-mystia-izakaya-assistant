@@ -67,35 +67,35 @@ export default function CustomerRareTutorial() {
 					element: '[title="点击：选择【莉格露】"]',
 					popover: {
 						title: '选择稀客', // eslint-disable-next-line sort-keys
-						description: '点击头像，选择“莉格露”作为目标稀客。',
+						description: '点击头像，选择【莉格露】作为目标稀客。',
 					},
 				},
 				{
 					element: '[aria-label="可加冰"]',
 					popover: {
 						title: '选择酒水标签', // eslint-disable-next-line sort-keys
-						description: '点击标签，选中“可加冰”标签。此次教程中，假设莉格露点单“可加冰”的酒水。',
+						description: '点击标签，选中“可加冰”标签。此次教程中，假设莉格露的酒水点单需求为“可加冰”。',
 					},
 				},
 				{
 					element: '[role="tabpanel"] [data-key="price"]',
 					popover: {
-						title: '按价格排序', // eslint-disable-next-line sort-keys
-						description: '点击以按价格升序排序酒水。',
+						title: '按售价排序', // eslint-disable-next-line sort-keys
+						description: '点击以按售价升序排序酒水。',
 					},
 				},
 				{
 					element: '[role="tabpanel"] tbody>tr[data-key="水獭祭"]>:last-child button',
 					popover: {
 						title: '选择目标酒水', // eslint-disable-next-line sort-keys
-						description: '点击加号，选择水獭祭。选择酒水时，酒水售价尽量不要超过目标稀客最大持有金。',
+						description: '点击加号，选择【水獭祭】。选择酒水时，酒水售价尽量不要超过目标稀客的最大持有金。',
 					},
 				},
 				{
 					element: '[aria-label="猎奇"]',
 					popover: {
 						title: '选择料理标签', // eslint-disable-next-line sort-keys
-						description: '点击标签，选中“猎奇”标签。此次教程中，假设莉格露点单“猎奇”的料理。',
+						description: '点击标签，选中“猎奇”标签。此次教程中，假设莉格露的料理点单需求为“猎奇”。',
 					},
 				},
 				{
@@ -103,14 +103,14 @@ export default function CustomerRareTutorial() {
 					popover: {
 						title: '选择目标料理', // eslint-disable-next-line sort-keys
 						description:
-							'点击加号，选择香炸蝉蜕。选择料理时，料理售价尽量不要超过目标稀客剩余的最大持有金。',
+							'点击加号，选择【香炸蝉蜕】。选择料理时，料理售价尽量不要超过目标稀客剩余的最大持有金。',
 					},
 				},
 				{
 					element: '[data-key="ingredient"]',
 					popover: {
 						title: '选择额外食材', // eslint-disable-next-line sort-keys
-						description: '当前套餐评级为“普通”，添加额外食材以提高评级。',
+						description: '当前套餐评级为绿评“普通”，添加额外食材以提高评级。',
 					},
 				},
 				{
@@ -118,14 +118,14 @@ export default function CustomerRareTutorial() {
 					popover: {
 						title: '加入额外食材【鸡蛋】', // eslint-disable-next-line sort-keys
 						description:
-							'点击图标，加入额外食材【鸡蛋】。加入后套餐评级应为“满意”，继续添加额外食材以提高评级。',
+							'点击图标，加入额外食材【鸡蛋】。加入后套餐评级应为橙评“满意”，继续添加额外食材以提高评级。',
 					},
 				},
 				{
 					element: '[aria-label="点击：加入额外食材【蜂蜜】，匹配度+1"]',
 					popover: {
 						title: '加入额外食材【蜂蜜】', // eslint-disable-next-line sort-keys
-						description: '点击图标，加入额外食材【蜂蜜】。加入后套餐评级应为“完美”。',
+						description: '点击图标，加入额外食材【蜂蜜】。加入后套餐评级应为粉评“完美”。',
 					},
 				},
 				{
@@ -133,7 +133,7 @@ export default function CustomerRareTutorial() {
 					popover: {
 						title: '更多信息', // eslint-disable-next-line sort-keys
 						description:
-							'在此处可以查看更多信息。点击导航栏中的“设置”按钮可以调整更多偏好项，如：设置游戏中现时的流行喜爱或流行厌恶标签。',
+							'在此处可以查看更多信息，如：稀客的羁绊奖励和符卡效果。点击导航栏中的“设置”按钮可以调整更多偏好项，如：设置游戏中现时的流行喜爱或流行厌恶标签。',
 						onPopoverRender(popover) {
 							const completeButton = document.createElement('button');
 							completeButton.textContent = '完成';
