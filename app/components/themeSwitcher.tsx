@@ -1,6 +1,6 @@
 'use client';
 
-import {memo, useCallback, useEffect, useState} from 'react';
+import {memo, useCallback, useEffect, useMemo, useState} from 'react';
 import {usePathname} from 'next/navigation';
 import {useTheme} from 'next-themes';
 import {twJoin} from 'tailwind-merge';
@@ -47,15 +47,9 @@ export default memo<Partial<IProps>>(function ThemeSwitcher({isMenu}) {
 	const onSelectedThemeChange = useCallback(
 		(value: Selection) => {
 			const newValue = value as SelectionSet;
+			const currentSelectedTheme = newValue.values().next().value as Theme;
 
-			if (newValue.has(Theme.dark)) {
-				setTheme(Theme.dark);
-			} else if (newValue.has(Theme.light)) {
-				setTheme(Theme.light);
-			} else if (newValue.has(Theme.system)) {
-				setTheme(Theme.system);
-			}
-
+			setTheme(currentSelectedTheme);
 			setSelectedTheme(newValue);
 		},
 		[setTheme]
@@ -78,6 +72,16 @@ export default memo<Partial<IProps>>(function ThemeSwitcher({isMenu}) {
 			}
 		});
 	}, [pathname, theme]);
+
+	const themeIcon = useMemo(() => {
+		if (selectedTheme.has(Theme.light)) {
+			return faSun;
+		}
+		if (selectedTheme.has(Theme.dark)) {
+			return faMoon;
+		}
+		return faCircleHalfStroke;
+	}, [selectedTheme]);
 
 	if (!isMounted) {
 		return (
@@ -105,13 +109,7 @@ export default memo<Partial<IProps>>(function ThemeSwitcher({isMenu}) {
 				<span className="flex">
 					<DropdownTrigger>
 						<FontAwesomeIconButton
-							icon={
-								selectedTheme.has(Theme.light)
-									? faSun
-									: selectedTheme.has(Theme.dark)
-										? faMoon
-										: faCircleHalfStroke
-							}
+							icon={themeIcon}
 							aria-label={ThemeLabel.switcher}
 							className={twJoin(
 								'h-min w-min min-w-min bg-transparent text-medium',
