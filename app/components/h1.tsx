@@ -25,7 +25,7 @@ export default memo(
 				>
 					{children}
 				</h1>
-				{subTitle && (
+				{subTitle !== undefined && (
 					<span className={twMerge('-mt-4 mb-4 block text-foreground-500', classNames?.subTitle)}>
 						{subTitle}
 					</span>
