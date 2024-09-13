@@ -1,6 +1,6 @@
 'use client';
 
-import {memo, useCallback, useMemo} from 'react';
+import {useCallback, useMemo} from 'react';
 
 import {
 	useMounted,
@@ -25,7 +25,7 @@ import SideSearchIconButton from '@/components/sideSearchIconButton';
 import {ingredientsStore as store} from '@/stores';
 import {checkArrayContainsOf, checkArraySubsetOf} from '@/utils';
 
-export default memo(function Ingredients() {
+export default function Ingredients() {
 	const [params] = useParams();
 
 	const isInNewWindow = params.has(inNewWindowParam);
@@ -158,4 +158,4 @@ export default memo(function Ingredients() {
 			<Content data={sortedData} />
 		</div>
 	);
-});
+}

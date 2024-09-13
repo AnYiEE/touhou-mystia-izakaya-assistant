@@ -36,7 +36,7 @@ const LevelLabel = memo<ILevelLabelProps>(function LevelLabel({level}) {
 	);
 });
 
-export default memo(function InfoButton() {
+export default function InfoButton() {
 	const openWindow = useViewInNewWindow();
 
 	const currentCustomerData = store.shared.customer.data.use();
@@ -300,4 +300,4 @@ export default memo(function InfoButton() {
 			</AccordionItem>
 		</InfoButtonBase>
 	);
-});
+}

@@ -1,5 +1,3 @@
-import {memo} from 'react';
-
 import {Link, Tooltip} from '@nextui-org/react';
 
 import ChangeLog from './changeLog';
@@ -11,7 +9,7 @@ import {siteConfig} from '@/configs';
 
 const {name, shortName, links} = siteConfig;
 
-export default memo(function About() {
+export default function About() {
 	return (
 		<div>
 			<H1 isFirst>项目介绍</H1>
@@ -99,4 +97,4 @@ export default memo(function About() {
 			<KnownIssue />
 		</div>
 	);
-});
+}

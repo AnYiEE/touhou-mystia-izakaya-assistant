@@ -33,8 +33,8 @@ const {name: siteName} = siteConfig;
 
 interface ICloseButtonProps {}
 
-const CloseButton = memo(
-	forwardRef<HTMLButtonElement | null, ICloseButtonProps>(function FoodPopoverCardCloseButton(_props, ref) {
+const CloseButton = forwardRef<HTMLButtonElement | null, ICloseButtonProps>(
+	function FoodPopoverCardCloseButton(_props, ref) {
 		const [params, replace] = useParams();
 		const {getBackdropProps} = usePopoverContext();
 
@@ -77,7 +77,7 @@ const CloseButton = memo(
 				/>
 			</Tooltip>
 		);
-	})
+	}
 );
 
 interface IShareButtonProps {

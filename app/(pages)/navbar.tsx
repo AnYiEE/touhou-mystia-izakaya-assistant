@@ -121,7 +121,7 @@ const GitHubLink = memo<Partial<IGitHubLinkProps>>(function GitHubLink({showTool
 	);
 });
 
-export default memo(function Navbar() {
+export default function Navbar() {
 	const pathname = usePathname();
 	const startProgress = useProgress();
 	const [isMenuOpened, toggleMenuOpened] = useReducer(toggleBoolean, false);
@@ -264,4 +264,4 @@ export default memo(function Navbar() {
 			</NavbarMenu>
 		</NextUINavbar>
 	);
-});
+}

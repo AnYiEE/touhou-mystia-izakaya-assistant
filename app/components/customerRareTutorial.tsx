@@ -1,4 +1,4 @@
-import {memo, useEffect, useRef} from 'react';
+import {useEffect, useRef} from 'react';
 import {usePathname} from 'next/navigation';
 import {driver} from 'driver.js';
 
@@ -9,7 +9,7 @@ const key = 'customer_rare_tutorial';
 const pathname = '/customer-rare';
 const resetLabel = '重新进入稀客套餐搭配教程';
 
-export default memo(function CustomerRareTutorial() {
+export default function CustomerRareTutorial() {
 	const currentPathname = usePathname();
 
 	const currentCustomerName = customerStore.shared.customer.data.use()?.name;
@@ -231,7 +231,7 @@ export default memo(function CustomerRareTutorial() {
 	}, [isCompleted, isTargetPage]);
 
 	return null;
-});
+}
 
 export {
 	pathname as customerRareTutorialPathname,

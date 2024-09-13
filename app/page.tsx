@@ -1,5 +1,3 @@
-import {memo} from 'react';
-
 import {Button, Divider, Link, Tooltip} from '@nextui-org/react';
 import {faQq} from '@fortawesome/free-brands-svg-icons';
 
@@ -11,7 +9,7 @@ import {siteConfig} from '@/configs';
 
 const {links, shortName} = siteConfig;
 
-export default memo(function Home() {
+export default function Home() {
 	const qrCodeDescription = (
 		<>
 			分享经验、交流心得
@@ -83,4 +81,4 @@ export default memo(function Home() {
 			</div>
 		</div>
 	);
-});
+}

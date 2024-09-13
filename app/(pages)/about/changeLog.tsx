@@ -1,5 +1,5 @@
 /* eslint-disable sort-keys */
-import {Fragment, memo} from 'react';
+import {Fragment} from 'react';
 
 import {Link} from '@nextui-org/react';
 
@@ -81,7 +81,7 @@ const changelog = [
 	changes: `${string}：${string}。`[];
 }[];
 
-export default memo(function ChangeLog() {
+export default function ChangeLog() {
 	return (
 		<>
 			<H1
@@ -115,4 +115,4 @@ export default memo(function ChangeLog() {
 			))}
 		</>
 	);
-});
+}

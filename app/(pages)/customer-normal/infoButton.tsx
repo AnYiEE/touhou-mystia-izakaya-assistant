@@ -1,12 +1,10 @@
-import {memo} from 'react';
-
 import {AccordionItem, Avatar, ScrollShadow} from '@nextui-org/react';
 
 import InfoButtonBase from '@/(pages)/customer-rare/infoButtonBase';
 
 import {customerRatingColorMap} from './constants';
 
-export default memo(function InfoButton() {
+export default function InfoButton() {
 	return (
 		<InfoButtonBase>
 			<AccordionItem key="help" aria-label="特别说明" title="特别说明">
@@ -55,4 +53,4 @@ export default memo(function InfoButton() {
 			</AccordionItem>
 		</InfoButtonBase>
 	);
-});
+}

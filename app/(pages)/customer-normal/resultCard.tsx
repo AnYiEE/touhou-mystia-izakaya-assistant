@@ -1,4 +1,4 @@
-import {forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {forwardRef, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {twJoin} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -17,7 +17,7 @@ import {checkA11yConfirmKey} from '@/utils';
 
 export {Plus} from '@/(pages)/customer-rare/resultCard';
 
-const IngredientList = memo(function IngredientsList() {
+function IngredientsList() {
 	const vibrate = useVibrate();
 
 	const currentRecipeData = customerStore.shared.recipe.data.use();
@@ -93,128 +93,126 @@ const IngredientList = memo(function IngredientsList() {
 			)}
 		</div>
 	);
-});
+}
 
 interface IResultCardProps {}
 
-export default memo(
-	forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
-		const vibrate = useVibrate();
+export default forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
+	const vibrate = useVibrate();
 
-		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 
-		const currentCustomerName = customerStore.shared.customer.name.use();
-		const currentBeverageName = customerStore.shared.beverage.name.use();
-		const currentRecipeData = customerStore.shared.recipe.data.use();
-		const currentRating = customerStore.shared.customer.rating.use();
-		const currentSavedMeals = customerStore.persistence.meals.use();
+	const currentCustomerName = customerStore.shared.customer.name.use();
+	const currentBeverageName = customerStore.shared.beverage.name.use();
+	const currentRecipeData = customerStore.shared.recipe.data.use();
+	const currentRating = customerStore.shared.customer.rating.use();
+	const currentSavedMeals = customerStore.persistence.meals.use();
 
-		const instance_recipe = customerStore.instances.recipe.get();
+	const instance_recipe = customerStore.instances.recipe.get();
 
-		const saveButtonTooltipTimer = useRef<NodeJS.Timeout>();
-		const [isShowSaveButtonTooltip, setIsShowSaveButtonTooltip] = useState(false);
-		const isSaveButtonDisabled =
-			!currentCustomerName || !currentBeverageName || !currentRecipeData || currentRating === null;
+	const saveButtonTooltipTimer = useRef<NodeJS.Timeout>();
+	const [isShowSaveButtonTooltip, setIsShowSaveButtonTooltip] = useState(false);
+	const isSaveButtonDisabled =
+		!currentCustomerName || !currentBeverageName || !currentRecipeData || currentRating === null;
 
-		const hideTooltip = useCallback(() => {
-			setIsShowSaveButtonTooltip(false);
-			clearTimeout(saveButtonTooltipTimer.current);
-		}, []);
+	const hideTooltip = useCallback(() => {
+		setIsShowSaveButtonTooltip(false);
+		clearTimeout(saveButtonTooltipTimer.current);
+	}, []);
 
-		const showTooltip = useCallback(() => {
-			setIsShowSaveButtonTooltip(true);
-			clearTimeout(saveButtonTooltipTimer.current);
-			saveButtonTooltipTimer.current = setTimeout(() => {
-				hideTooltip();
-			}, 3000);
-		}, [hideTooltip]);
+	const showTooltip = useCallback(() => {
+		setIsShowSaveButtonTooltip(true);
+		clearTimeout(saveButtonTooltipTimer.current);
+		saveButtonTooltipTimer.current = setTimeout(() => {
+			hideTooltip();
+		}, 3000);
+	}, [hideTooltip]);
 
-		const handleSaveButtonPress = useCallback(() => {
-			if (isSaveButtonDisabled) {
-				showTooltip();
-			} else {
-				vibrate();
-				customerStore.saveMealResult();
-			}
-		}, [isSaveButtonDisabled, showTooltip, vibrate]);
-
-		useEffect(() => {
-			if (isShowSaveButtonTooltip && !isSaveButtonDisabled) {
-				hideTooltip();
-			}
-		}, [hideTooltip, isSaveButtonDisabled, isShowSaveButtonTooltip]);
-
-		if (!currentBeverageName && !currentRecipeData) {
-			if (currentCustomerName && currentSavedMeals[currentCustomerName]?.length) {
-				return null;
-			}
-			return (
-				<Placeholder className="pb-8 pt-12 leading-none md:pt-8 xl:pb-4 xl:pt-0" ref={ref}>
-					选择点单料理或酒水以继续
-				</Placeholder>
-			);
+	const handleSaveButtonPress = useCallback(() => {
+		if (isSaveButtonDisabled) {
+			showTooltip();
+		} else {
+			vibrate();
+			customerStore.saveMealResult();
 		}
+	}, [isSaveButtonDisabled, showTooltip, vibrate]);
 
+	useEffect(() => {
+		if (isShowSaveButtonTooltip && !isSaveButtonDisabled) {
+			hideTooltip();
+		}
+	}, [hideTooltip, isSaveButtonDisabled, isShowSaveButtonTooltip]);
+
+	if (!currentBeverageName && !currentRecipeData) {
+		if (currentCustomerName && currentSavedMeals[currentCustomerName]?.length) {
+			return null;
+		}
 		return (
-			<Card
-				fullWidth
-				shadow="sm"
-				classNames={{
-					base: twJoin(isShowBackgroundImage && 'bg-content1/40 backdrop-blur'),
-				}}
-				ref={ref}
-			>
-				<div className="flex flex-col items-center gap-4 p-4 md:flex-row">
-					<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
-						<div className="flex items-center gap-2">
-							{currentRecipeData ? (
-								<>
-									<Sprite
-										target="cooker"
-										name={instance_recipe.getPropsByName(currentRecipeData.name, 'cooker')}
-										size={2}
-									/>
-									<Tooltip showArrow content={currentRecipeData.name} offset={4}>
-										<Sprite target="recipe" name={currentRecipeData.name} size={2.5} />
-									</Tooltip>
-								</>
-							) : (
-								<>
-									<UnknownItem title="请选择料理" size={1.5} />
-									<UnknownItem title="请选择料理" />
-								</>
-							)}
-							<Plus />
-							{currentBeverageName ? (
-								<Tooltip showArrow content={currentBeverageName} offset={4}>
-									<Sprite target="beverage" name={currentBeverageName} size={2.5} />
-								</Tooltip>
-							) : (
-								<UnknownItem title="请选择酒水" />
-							)}
-						</div>
-						<Plus />
-						<IngredientList />
-					</div>
-					<Tooltip
-						showArrow
-						content={`请选择点单${currentBeverageName ? '' : '酒水'}${currentRecipeData ? '' : '料理'}以保存`}
-						isOpen={isShowSaveButtonTooltip}
-					>
-						<Button
-							color="primary"
-							disableAnimation={isSaveButtonDisabled}
-							size="sm"
-							variant="flat"
-							onPress={handleSaveButtonPress}
-							aria-label={`保存套餐，当前${currentRating ? `评级为${currentRating}` : '未评级'}`}
-							className={twJoin('md:w-auto', isSaveButtonDisabled && 'opacity-disabled')}
-						>
-							保存套餐
-						</Button>
-					</Tooltip>
-				</div>
-			</Card>
+			<Placeholder className="pb-8 pt-12 leading-none md:pt-8 xl:pb-4 xl:pt-0" ref={ref}>
+				选择点单料理或酒水以继续
+			</Placeholder>
 		);
-	})
-);
+	}
+
+	return (
+		<Card
+			fullWidth
+			shadow="sm"
+			classNames={{
+				base: twJoin(isShowBackgroundImage && 'bg-content1/40 backdrop-blur'),
+			}}
+			ref={ref}
+		>
+			<div className="flex flex-col items-center gap-4 p-4 md:flex-row">
+				<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
+					<div className="flex items-center gap-2">
+						{currentRecipeData ? (
+							<>
+								<Sprite
+									target="cooker"
+									name={instance_recipe.getPropsByName(currentRecipeData.name, 'cooker')}
+									size={2}
+								/>
+								<Tooltip showArrow content={currentRecipeData.name} offset={4}>
+									<Sprite target="recipe" name={currentRecipeData.name} size={2.5} />
+								</Tooltip>
+							</>
+						) : (
+							<>
+								<UnknownItem title="请选择料理" size={1.5} />
+								<UnknownItem title="请选择料理" />
+							</>
+						)}
+						<Plus />
+						{currentBeverageName ? (
+							<Tooltip showArrow content={currentBeverageName} offset={4}>
+								<Sprite target="beverage" name={currentBeverageName} size={2.5} />
+							</Tooltip>
+						) : (
+							<UnknownItem title="请选择酒水" />
+						)}
+					</div>
+					<Plus />
+					<IngredientsList />
+				</div>
+				<Tooltip
+					showArrow
+					content={`请选择点单${currentBeverageName ? '' : '酒水'}${currentRecipeData ? '' : '料理'}以保存`}
+					isOpen={isShowSaveButtonTooltip}
+				>
+					<Button
+						color="primary"
+						disableAnimation={isSaveButtonDisabled}
+						size="sm"
+						variant="flat"
+						onPress={handleSaveButtonPress}
+						aria-label={`保存套餐，当前${currentRating ? `评级为${currentRating}` : '未评级'}`}
+						className={twJoin('md:w-auto', isSaveButtonDisabled && 'opacity-disabled')}
+					>
+						保存套餐
+					</Button>
+				</Tooltip>
+			</div>
+		</Card>
+	);
+});

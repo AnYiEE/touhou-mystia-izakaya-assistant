@@ -1,6 +1,6 @@
 'use client';
 
-import {memo, useMemo} from 'react';
+import {useMemo} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import useBreakpoint from 'use-breakpoint';
@@ -27,7 +27,7 @@ import {customerTabStyleMap, ingredientTabStyleMap, tachieBreakPoint} from './co
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {checkArrayContainsOf} from '@/utils';
 
-export default memo(function CustomerNormal() {
+export default function CustomerNormal() {
 	customerStore.shared.customer.name.onChange(() => {
 		customerStore.refreshCustomerSelectedItems();
 		customerStore.refreshAllSelectedItems();
@@ -329,4 +329,4 @@ export default memo(function CustomerNormal() {
 			)}
 		</div>
 	);
-});
+}

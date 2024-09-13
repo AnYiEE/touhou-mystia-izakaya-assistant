@@ -1,6 +1,5 @@
 'use client';
 
-import {memo} from 'react';
 import {type Metadata} from 'next';
 import {twJoin} from 'tailwind-merge';
 
@@ -11,7 +10,7 @@ export const metadata: Metadata = {
 	title: 'Oops!',
 };
 
-export default memo(function NotFound() {
+export default function NotFound() {
 	const isShowBackgroundImage = store.persistence.backgroundImage.use();
 
 	return (
@@ -31,4 +30,4 @@ export default memo(function NotFound() {
 			</Button>
 		</div>
 	);
-});
+}

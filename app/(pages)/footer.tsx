@@ -55,7 +55,7 @@ const FooterLinkWithTooltip = memo<PropsWithChildren<IFooterLinkWithTooltipProps
 	}
 );
 
-export default memo(function Footer() {
+export default function Footer() {
 	return (
 		<footer className="mx-auto max-w-p-95 pb-3 text-center text-xs text-default-300 dark:text-default-400 md:max-w-full">
 			<p>
@@ -107,4 +107,4 @@ export default memo(function Footer() {
 			</p>
 		</footer>
 	);
-});
+}

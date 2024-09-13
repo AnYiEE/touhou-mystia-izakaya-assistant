@@ -1,6 +1,4 @@
-import {memo} from 'react';
-
-export default memo(function Loading() {
+export default function Loading() {
 	const content = '少女料理中';
 
 	return (
@@ -12,4 +10,4 @@ export default memo(function Loading() {
 			</p>
 		</div>
 	);
-});
+}

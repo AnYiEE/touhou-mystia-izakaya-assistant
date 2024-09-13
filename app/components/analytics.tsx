@@ -1,6 +1,6 @@
 'use client';
 
-import {memo, useEffect, useRef} from 'react';
+import {useEffect, useRef} from 'react';
 import {usePathname} from 'next/navigation';
 import {of} from 'rxjs';
 import {catchError} from 'rxjs/operators';
@@ -62,7 +62,7 @@ function trackPageView() {
 	push(['setCustomUrl', location.href], ['setDocumentTitle', document.title], ['trackPageView']);
 }
 
-export default memo(function Analytics() {
+export default function Analytics() {
 	const pathname = usePathname();
 	const isLoaded = useRef(true);
 
@@ -110,4 +110,4 @@ export default memo(function Analytics() {
 	}, [pathname]);
 
 	return null;
-});
+}

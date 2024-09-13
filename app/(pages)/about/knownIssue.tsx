@@ -1,11 +1,9 @@
-import {memo} from 'react';
-
 import {Link} from '@nextui-org/react';
 
 import H1 from '@/components/h1';
 import Ul from '@/components/ul';
 
-export default memo(function KnownIssue() {
+export default function KnownIssue() {
 	return (
 		<>
 			<H1>已知问题</H1>
@@ -25,4 +23,4 @@ export default memo(function KnownIssue() {
 			</Ul>
 		</>
 	);
-});
+}

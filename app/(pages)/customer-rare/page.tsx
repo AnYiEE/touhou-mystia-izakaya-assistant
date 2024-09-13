@@ -1,6 +1,6 @@
 'use client';
 
-import {memo, useCallback, useMemo} from 'react';
+import {useCallback, useMemo} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import useBreakpoint from 'use-breakpoint';
@@ -27,7 +27,7 @@ import {customerTabStyleMap, ingredientTabStyleMap, tachieBreakPoint} from './co
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkArrayContainsOf} from '@/utils';
 
-export default memo(function CustomerRare() {
+export default function CustomerRare() {
 	customerStore.shared.customer.data.onChange(() => {
 		customerStore.refreshCustomerSelectedItems();
 		customerStore.refreshAllSelectedItems();
@@ -366,4 +366,4 @@ export default memo(function CustomerRare() {
 			)}
 		</div>
 	);
-});
+}
