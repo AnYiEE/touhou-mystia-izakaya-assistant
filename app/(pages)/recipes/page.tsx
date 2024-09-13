@@ -23,6 +23,7 @@ import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import {recipesStore as store} from '@/stores';
+import {checkArrayContainsOf, checkArraySubsetOf} from '@/utils';
 
 export default memo(function Recipes() {
 	const [params] = useParams();
@@ -63,29 +64,17 @@ export default memo(function Recipes() {
 				const isLevelMatched = filterLevels.length > 0 ? filterLevels.includes(level.toString()) : true;
 				const isCookerMatched = filterCookers.length > 0 ? filterCookers.includes(cooker) : true;
 				const isIngredientMatched =
-					filterIngredients.length > 0
-						? filterIngredients.every((ingredient) => (ingredients as string[]).includes(ingredient))
-						: true;
+					filterIngredients.length > 0 ? checkArraySubsetOf(filterIngredients, ingredients) : true;
 				const isNoIngredientMatched =
-					filterNoIngredients.length > 0
-						? !filterNoIngredients.some((ingredient) => (ingredients as string[]).includes(ingredient))
-						: true;
+					filterNoIngredients.length > 0 ? !checkArrayContainsOf(filterNoIngredients, ingredients) : true;
 				const isNegativeTagMatched =
-					filterNegativeTags.length > 0
-						? filterNegativeTags.every((tag) => (negativeTags as string[]).includes(tag))
-						: true;
+					filterNegativeTags.length > 0 ? checkArraySubsetOf(filterNegativeTags, negativeTags) : true;
 				const isNoNegativeTagMatched =
-					filterNoNegativeTags.length > 0
-						? !filterNoNegativeTags.some((tag) => (negativeTags as string[]).includes(tag))
-						: true;
+					filterNoNegativeTags.length > 0 ? !checkArrayContainsOf(filterNegativeTags, negativeTags) : true;
 				const isPositiveTagMatched =
-					filterPositiveTags.length > 0
-						? filterPositiveTags.every((tag) => (positiveTags as string[]).includes(tag))
-						: true;
+					filterPositiveTags.length > 0 ? checkArraySubsetOf(filterPositiveTags, positiveTags) : true;
 				const isNoPositiveTagMatched =
-					filterNoPositiveTags.length > 0
-						? !filterNoPositiveTags.some((tag) => (positiveTags as string[]).includes(tag))
-						: true;
+					filterNoPositiveTags.length > 0 ? !checkArrayContainsOf(filterPositiveTags, positiveTags) : true;
 
 				return (
 					isDlcMatched &&

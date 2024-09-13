@@ -23,6 +23,7 @@ import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import {ingredientsStore as store} from '@/stores';
+import {checkArrayContainsOf, checkArraySubsetOf} from '@/utils';
 
 export default memo(function Ingredients() {
 	const [params] = useParams();
@@ -56,10 +57,8 @@ export default memo(function Ingredients() {
 			searchResult.filter(({dlc, level, tags, type}) => {
 				const isDlcMatched = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
 				const isLevelMatched = filterLevels.length > 0 ? filterLevels.includes(level.toString()) : true;
-				const isTagMatched =
-					filterTags.length > 0 ? filterTags.every((tag) => (tags as string[]).includes(tag)) : true;
-				const isNoTagMatched =
-					filterNoTags.length > 0 ? !filterNoTags.some((tag) => (tags as string[]).includes(tag)) : true;
+				const isTagMatched = filterTags.length > 0 ? checkArraySubsetOf(filterTags, tags) : true;
+				const isNoTagMatched = filterNoTags.length > 0 ? !checkArrayContainsOf(filterNoTags, tags) : true;
 				const isTypeMatched = filterTypes.length > 0 ? filterTypes.includes(type) : true;
 				const isNoTypeMatched = filterNoTypes.length > 0 ? !filterNoTypes.includes(type) : true;
 

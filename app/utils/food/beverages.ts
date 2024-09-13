@@ -1,7 +1,7 @@
 import {Food} from './base';
 import {BEVERAGE_LIST, type TBeverageNames, type TBeverages} from '@/data';
 import type {TBeverageTag} from '@/data/types';
-import {isArrayEqual} from '@/utils/isArrayEqual';
+import {checkArrayEqualOf} from '@/utils';
 
 export class Beverage extends Food<TBeverages> {
 	private static _instance: Beverage | undefined;
@@ -53,7 +53,7 @@ export class Beverage extends Food<TBeverages> {
 			return tags;
 		}
 
-		const isTagsEqual = isArrayEqual(tags, this.getValuesByProp(this.data, 'tags'));
+		const isTagsEqual = checkArrayEqualOf(tags, this.getValuesByProp(this.data, 'tags'));
 		if (!isTagsEqual) {
 			throw new Error('[utils/food/Beverage]: the given tags is inconsistent with the tags in the original data');
 		}

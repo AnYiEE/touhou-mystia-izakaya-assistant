@@ -38,7 +38,7 @@ import {customerTagStyleMap, recipeTableColumns as tableColumns} from './constan
 import {checkRecipeEasterEgg} from './evaluateMeal';
 import type {ITableColumn, ITableSortDescriptor, TRecipeWithSuitability, TRecipesWithSuitability} from './types';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {checkA11yConfirmKey, numberSort, pinyinSort, processPinyin} from '@/utils';
+import {checkA11yConfirmKey, checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils';
 
 export type TTableColumnKey = 'recipe' | 'cooker' | 'ingredient' | 'price' | 'suitability' | 'time' | 'action';
 export type TTableColumns = ITableColumn<TTableColumnKey>[];
@@ -169,9 +169,7 @@ export default memo(
 				const isCookerMatched = selectedCookers.size > 0 ? selectedCookers.has(cooker) : true;
 				const isPositiveTagsMatched =
 					selectedCustomerPositiveTags.size > 0
-						? [...selectedCustomerPositiveTags].every((tag) =>
-								(recipeTagsWithPopular as string[]).includes(tag as string)
-							)
+						? checkArraySubsetOf([...selectedCustomerPositiveTags], recipeTagsWithPopular)
 						: true;
 
 				return isNameMatched && isDlcMatched && isCookerMatched && isPositiveTagsMatched;

@@ -40,7 +40,7 @@ import {checkEasterEgg} from './evaluateMeal';
 import type {TRecipeWithSuitability, TRecipesWithSuitability} from './types';
 import {CUSTOMER_NORMAL_TAG_STYLE} from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
-import {checkA11yConfirmKey, numberSort, pinyinSort, processPinyin} from '@/utils';
+import {checkA11yConfirmKey, checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils';
 
 export type {TTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
 
@@ -160,9 +160,7 @@ export default memo(
 				const isCookerMatched = selectedCookers.size > 0 ? selectedCookers.has(cooker) : true;
 				const isPositiveTagsMatched =
 					selectedCustomerPositiveTags.size > 0
-						? [...selectedCustomerPositiveTags].every((tag) =>
-								(recipeTagsWithPopular as string[]).includes(tag as string)
-							)
+						? checkArraySubsetOf([...selectedCustomerPositiveTags], recipeTagsWithPopular)
 						: true;
 
 				return isNameMatched && isDlcMatched && isCookerMatched && isPositiveTagsMatched;

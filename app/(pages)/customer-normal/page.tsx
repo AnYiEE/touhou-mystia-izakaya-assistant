@@ -25,6 +25,7 @@ import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import {customerTabStyleMap, ingredientTabStyleMap, tachieBreakPoint} from './constants';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
+import {checkArrayContainsOf} from '@/utils';
 
 export default memo(function CustomerNormal() {
 	customerStore.shared.customer.name.onChange(() => {
@@ -81,13 +82,9 @@ export default memo(function CustomerNormal() {
 					customerFilterExcludes.length > 0 ? !customerFilterExcludes.includes(name) : true;
 				const isDlcMatched = customerFilterDlcs.length > 0 ? customerFilterDlcs.includes(dlc.toString()) : true;
 				const isPlaceMatched =
-					customerFilterPlaces.length > 0
-						? customerFilterPlaces.some((place) => (places as string[]).includes(place))
-						: true;
+					customerFilterPlaces.length > 0 ? checkArrayContainsOf(customerFilterPlaces, places) : true;
 				const isNoPlaceMatched =
-					customerFilterNoPlaces.length > 0
-						? !customerFilterNoPlaces.some((place) => (places as string[]).includes(place))
-						: true;
+					customerFilterNoPlaces.length > 0 ? !checkArrayContainsOf(customerFilterNoPlaces, places) : true;
 
 				return isNameExcludesMatched && isDlcMatched && isPlaceMatched && isNoPlaceMatched;
 			}),

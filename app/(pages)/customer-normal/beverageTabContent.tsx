@@ -39,7 +39,7 @@ import {beverageTableColumns as tableColumns} from './constants';
 import type {TBeverageWithSuitability, TBeveragesWithSuitability} from './types';
 import {CUSTOMER_NORMAL_TAG_STYLE} from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
-import {checkA11yConfirmKey, numberSort, pinyinSort, processPinyin} from '@/utils';
+import {checkA11yConfirmKey, checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils';
 
 export type {TTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
 
@@ -118,7 +118,7 @@ export default memo(
 				const isDlcMatched = selectedDlcs.size > 0 ? selectedDlcs.has(dlc.toString()) : true;
 				const isTagsMatched =
 					selectedCustomerBeverageTags.size > 0
-						? [...selectedCustomerBeverageTags].every((tag) => (tags as string[]).includes(tag as string))
+						? checkArraySubsetOf([...selectedCustomerBeverageTags], tags)
 						: true;
 
 				return isNameMatched && isDlcMatched && isTagsMatched;

@@ -37,7 +37,7 @@ import Tags from '@/components/tags';
 import {customerTagStyleMap, beverageTableColumns as tableColumns} from './constants';
 import type {ITableColumn, ITableSortDescriptor, TBeverageWithSuitability, TBeveragesWithSuitability} from './types';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {checkA11yConfirmKey, numberSort, pinyinSort, processPinyin} from '@/utils';
+import {checkA11yConfirmKey, checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils';
 
 export type TTableColumnKey = 'beverage' | 'price' | 'suitability' | 'action';
 export type TTableColumns = ITableColumn<TTableColumnKey>[];
@@ -127,7 +127,7 @@ export default memo(
 				const isDlcMatched = selectedDlcs.size > 0 ? selectedDlcs.has(dlc.toString()) : true;
 				const isTagsMatched =
 					selectedCustomerBeverageTags.size > 0
-						? [...selectedCustomerBeverageTags].every((tag) => (tags as string[]).includes(tag as string))
+						? checkArraySubsetOf([...selectedCustomerBeverageTags], tags)
 						: true;
 
 				return isNameMatched && isDlcMatched && isTagsMatched;
