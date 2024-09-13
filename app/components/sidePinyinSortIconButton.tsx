@@ -23,17 +23,8 @@ interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color
 	pinyinSortConfig: IPinyinSortConfig;
 }
 
-function getNextPinyinSortState(currentState: PinyinSortState) {
-	switch (currentState) {
-		case PinyinSortState.NONE:
-			return PinyinSortState.AZ;
-		case PinyinSortState.AZ:
-			return PinyinSortState.ZA;
-		case PinyinSortState.ZA:
-			return PinyinSortState.NONE;
-		default:
-			return PinyinSortState.NONE;
-	}
+function getNextPinyinSortState(currentState: PinyinSortState): PinyinSortState {
+	return (currentState + 1) % 3;
 }
 
 export default memo(
