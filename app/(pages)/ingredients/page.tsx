@@ -69,7 +69,9 @@ export default function Ingredients() {
 		[filterDlcs, filterLevels, filterNoTags, filterNoTypes, filterTags, filterTypes, searchResult]
 	);
 
-	const sortedData = useSortedData(instance, filterData(), pinyinSortState, isInNewWindow);
+	const filteredData = useMemo(() => filterData(), [filterData]);
+
+	const sortedData = useSortedData(instance, filteredData, pinyinSortState, isInNewWindow);
 
 	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, store.persistence.pinyinSortState.set);
 
