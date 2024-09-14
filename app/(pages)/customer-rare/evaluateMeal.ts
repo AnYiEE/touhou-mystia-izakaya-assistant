@@ -1,6 +1,4 @@
-import {isObjectLike} from 'lodash';
-
-import type {TCustomerRating, TRecipe} from './types';
+import type {TCustomerRating} from './types';
 import {type TCustomerRareNames, type TCustomerSpecialNames, type TIngredientNames, type TRecipeNames} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {type ICustomerOrder} from '@/stores';
@@ -14,7 +12,7 @@ interface IParameters {
 	currentCustomerOrder: ICustomerOrder;
 	currentCustomerPositiveTags: TRecipeTag[];
 	currentIngredients: TIngredientNames[];
-	currentRecipe: TRecipe | null;
+	currentRecipeName: TRecipeNames | null;
 	currentRecipeTagsWithPopular: TRecipeTag[];
 	hasMystiaCooker: boolean;
 	isDarkMatter: boolean;
@@ -96,8 +94,7 @@ export function checkRecipeEasterEgg({
 	currentCustomerName,
 	currentRecipeName,
 	mealScore = 0,
-}: Pick<IParameters, 'currentCustomerName'> & {
-	currentRecipeName: TRecipeNames;
+}: Pick<IParameters, 'currentCustomerName' | 'currentRecipeName'> & {
 	mealScore?: number;
 }): {
 	recipe: TRecipeNames | null;
@@ -167,8 +164,7 @@ function checkEasterEgg({
 	currentIngredients,
 	currentRecipeName,
 	mealScore,
-}: Pick<IParameters, 'currentCustomerName' | 'currentIngredients'> & {
-	currentRecipeName: TRecipeNames;
+}: Pick<IParameters, 'currentCustomerName' | 'currentRecipeName' | 'currentIngredients'> & {
 	mealScore: number;
 }) {
 	switch (currentCustomerName) {
@@ -190,26 +186,6 @@ function checkEasterEgg({
 				currentRecipeName,
 				mealScore,
 			}).score;
-	}
-
-	return mealScore;
-}
-
-function checkRecipeFrom({
-	currentCustomerName,
-	currentRecipe,
-	mealScore,
-}: Pick<IParameters, 'currentCustomerName' | 'currentRecipe'> & {
-	mealScore: number;
-}) {
-	if (!currentRecipe) {
-		return mealScore;
-	}
-
-	const {from} = currentRecipe;
-
-	if (isObjectLike(from) && 'bond' in from && from.bond.name === currentCustomerName) {
-		return Math.max(mealScore, 2);
 	}
 
 	return mealScore;
@@ -242,16 +218,15 @@ export function evaluateMeal({
 	currentCustomerOrder,
 	currentCustomerPositiveTags,
 	currentIngredients,
-	currentRecipe,
+	currentRecipeName,
 	currentRecipeTagsWithPopular,
 	hasMystiaCooker,
 	isDarkMatter,
 }: IParameters) {
-	if (currentBeverageTags.length === 0 || !currentRecipe) {
+	if (currentBeverageTags.length === 0 || !currentRecipeName) {
 		return null;
 	}
 
-	let {name: currentRecipeName} = currentRecipe;
 	let currentRecipeScore: number | null = null;
 
 	if (isDarkMatter) {
@@ -322,7 +297,6 @@ export function evaluateMeal({
 		currentRecipeName,
 		mealScore,
 	});
-	mealScore = checkRecipeFrom({currentCustomerName, currentRecipe, mealScore});
 
 	return getRatingKey(mealScore);
 }

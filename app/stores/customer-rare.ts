@@ -629,13 +629,12 @@ export const customerRareStore = store(state, {
 				const beverage = instance_beverage.getPropsByName(beverageName);
 				beverageTags = beverage.tags;
 			}
-			let recipe: TRecipe | null = null;
-			const ingredients: TIngredientNames[] = [];
 			const recipeData = currentStore.shared.recipe.data.get();
+			const recipeName = recipeData?.name ?? null;
+			const ingredients: TIngredientNames[] = [];
 			if (recipeData) {
-				const {extraIngredients, name: recipeName} = recipeData;
-				recipe = instance_recipe.getPropsByName(recipeName);
-				ingredients.push(...recipe.ingredients, ...extraIngredients);
+				const recipe = instance_recipe.getPropsByName(recipeData.name);
+				ingredients.push(...recipe.ingredients, ...recipeData.extraIngredients);
 			}
 			const recipeTagsWithPopular = currentStore.shared.recipe.tagsWithPopular.get();
 			const rating = evaluateMeal({
@@ -646,7 +645,7 @@ export const customerRareStore = store(state, {
 				currentCustomerOrder: order,
 				currentCustomerPositiveTags: customerPositiveTags,
 				currentIngredients: ingredients,
-				currentRecipe: recipe,
+				currentRecipeName: recipeName,
 				currentRecipeTagsWithPopular: recipeTagsWithPopular,
 				hasMystiaCooker,
 				isDarkMatter,
@@ -706,7 +705,7 @@ export const customerRareStore = store(state, {
 				currentCustomerOrder: order,
 				currentCustomerPositiveTags: customerPositiveTags,
 				currentIngredients: [...ingredients, ...extraIngredients],
-				currentRecipe: recipe,
+				currentRecipeName: recipeName,
 				currentRecipeTagsWithPopular: instance_recipe.calculateTagsWithPopular(composedRecipeTags, popular),
 				hasMystiaCooker,
 				isDarkMatter,
