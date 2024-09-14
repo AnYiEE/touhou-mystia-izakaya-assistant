@@ -56,8 +56,10 @@ export default memo(
 
 		const handleResetFilters = useCallback(() => {
 			vibrate();
-			selectConfig.forEach(({setSelectedKeys}) => {
-				setSelectedKeys([]);
+			selectConfig.forEach(({selectedKeys, setSelectedKeys}) => {
+				if (selectedKeys.length > 0) {
+					setSelectedKeys([]);
+				}
 			});
 		}, [selectConfig, vibrate]);
 
