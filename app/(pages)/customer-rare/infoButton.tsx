@@ -258,6 +258,9 @@ export default function InfoButton() {
 					<p className="mb-1 text-sm font-semibold">选单时</p>
 					<ol className="list-inside list-disc">
 						<li>
+							顾客卡片中的标签和最终的评级只适合一般情景。在任务或剧情中可能临时存在其他标签；如果有提供改判效果的符卡生效，此时的评级不一定准确。
+						</li>
+						<li>
 							点击顾客卡片中的标签可以将该标签视为顾客的点单需求，点单需求的满足程度是套餐评级时的参考维度之一。
 						</li>
 						<li>
