@@ -70,11 +70,14 @@ const state = {
 	recipe: {
 		cookers: instance_recipe.getValuesByProp(instance_recipe.data, 'cooker', true).sort(pinyinSort),
 		dlcs: instance_recipe.getValuesByProp(instance_recipe.data, 'dlc', true).sort(numberSort),
-		names: instance_recipe.getValuesByProp(instance_recipe.data, 'name', true).sort(pinyinSort),
+		names: instance_recipe
+			.getValuesByProp(instance_recipe.data, 'name', true)
+			.filter(({value}) => !instance_recipe.blockedRecipes.has(value))
+			.sort(pinyinSort),
 		positiveTags: [
 			...instance_recipe
 				.getValuesByProp(instance_recipe.data, 'positiveTags')
-				.filter((tag) => tag !== '黑暗物质'),
+				.filter((tag) => !instance_recipe.blockedTags.has(tag)),
 			'流行喜爱',
 			'流行厌恶',
 		]

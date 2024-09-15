@@ -60,6 +60,10 @@ export class Recipe extends Food<TRecipes> {
 		return instance;
 	}
 
+	public blockedRecipes: Set<TRecipeNames> = new Set(['黑暗物质']);
+
+	public blockedTags: Set<TRecipeTag> = new Set(['黑暗物质']);
+
 	/**
 	 * @description Calculate the tags based on the original tags and the popular tag data.
 	 */

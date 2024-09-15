@@ -82,7 +82,9 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 	const tableVisibleColumns = customerStore.recipeTableColumns.use();
 
 	const filteredData = useMemo(() => {
-		const data = instance_recipe.data.filter(({name}) => name !== '黑暗物质') as TRecipesWithSuitability;
+		const data = instance_recipe.data.filter(
+			({name}) => !instance_recipe.blockedRecipes.has(name)
+		) as TRecipesWithSuitability;
 
 		if (!currentCustomerData) {
 			return data.map((item) => ({

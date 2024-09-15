@@ -19,7 +19,9 @@ const instance_recipe = Recipe.getInstance();
 const ingredientTags = instance_ingredient.getValuesByProp(instance_ingredient.data, 'tags');
 const recipePositiveTags = instance_recipe.getValuesByProp(instance_recipe.data, 'positiveTags');
 const popularValidTags = (
-	union(ingredientTags, recipePositiveTags).filter((tag) => tag !== '黑暗物质') as TPopularTag[]
+	union(ingredientTags, recipePositiveTags).filter(
+		(tag) => !instance_recipe.blockedTags.has(tag as TRecipeTag)
+	) as TPopularTag[]
 )
 	.map(toValueObject)
 	.sort(pinyinSort);
