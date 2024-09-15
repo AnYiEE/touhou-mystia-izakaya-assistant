@@ -11,7 +11,9 @@ export default function InfoButton() {
 				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-justify text-xs">
 					<p className="mb-1 text-sm font-semibold">选单时</p>
 					<ol className="list-inside list-disc">
-						<li>最终的评级只适合一般情景，如果有提供改判效果的符卡生效，此时的评级不一定准确。</li>
+						<li>
+							最终的套餐评级只适合一般情景，如果有提供改判效果的符卡生效，此时的套餐评级可能会不够准确。
+						</li>
 						<li>点击顾客卡片中的标签可以将该标签添加至表格筛选列表或从中移除。</li>
 						<li>
 							点击套餐卡片中的厨具可以为当前套餐标记是否使用“夜雀”系列厨具，厨具类别是套餐评级时的参考维度之一。

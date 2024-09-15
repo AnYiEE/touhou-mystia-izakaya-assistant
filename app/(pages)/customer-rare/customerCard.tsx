@@ -146,7 +146,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 		if (!currentRecipeData) {
 			target.push('料理');
 		}
-		if (!hasMystiaCooker) {
+		if ((isDarkMatter && hasMystiaCooker) || !hasMystiaCooker) {
 			target.push('顾客点单需求');
 		}
 
