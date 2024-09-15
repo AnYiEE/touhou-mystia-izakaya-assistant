@@ -4,21 +4,11 @@ import {useSkipProcessFoodData} from '@/hooks';
 
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
-import {
-	type Beverage,
-	type CustomerNormal,
-	type CustomerRare,
-	type CustomerSpecial,
-	type Ingredient,
-	type Recipe,
-} from '@/utils';
+import type {TItemData, TItemInstance} from '@/utils/types';
 
-type TTargetInstance = Beverage | CustomerNormal | CustomerRare | CustomerSpecial | Ingredient | Recipe;
-type TData<T extends TTargetInstance> = T['data'];
-
-export function useSortedData<T extends TTargetInstance>(
+export function useSortedData<T extends TItemInstance>(
 	instance: T,
-	filteredData: TData<T>,
+	filteredData: TItemData<T>,
 	pinyinSortState: PinyinSortState
 ) {
 	const shouldSkipProcessData = useSkipProcessFoodData();
@@ -39,5 +29,5 @@ export function useSortedData<T extends TTargetInstance>(
 		[filteredData, shouldSkipProcessData, sortData]
 	);
 
-	return sortedData as TData<T>;
+	return sortedData as TItemData<T>;
 }

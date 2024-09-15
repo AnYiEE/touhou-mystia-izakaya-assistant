@@ -1,18 +1,9 @@
 import {memo} from 'react';
 
-import {
-	type Beverage,
-	type CustomerNormal,
-	type CustomerRare,
-	type CustomerSpecial,
-	type Ingredient,
-	type Recipe,
-} from '@/utils';
-
-type TTargetInstance = Beverage | CustomerNormal | CustomerRare | CustomerSpecial | Ingredient | Recipe;
+import type {TItemInstance} from '@/utils/types';
 
 interface IProps {
-	instance: TTargetInstance;
+	instance: TItemInstance;
 }
 
 /**

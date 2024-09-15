@@ -2,20 +2,10 @@ import {useCallback, useMemo} from 'react';
 
 import {useSkipProcessFoodData} from '@/hooks';
 
-import {
-	type Beverage,
-	type CustomerNormal,
-	type CustomerRare,
-	type CustomerSpecial,
-	type Ingredient,
-	type Recipe,
-	processPinyin,
-} from '@/utils';
+import {processPinyin} from '@/utils';
+import type {TItemData, TItemInstance} from '@/utils/types';
 
-type TTargetInstance = Beverage | CustomerNormal | CustomerRare | CustomerSpecial | Ingredient | Recipe;
-type TData<T extends TTargetInstance> = T['data'];
-
-export function useSearchResult<T extends TTargetInstance>(instance: T, searchValue: string) {
+export function useSearchResult<T extends TItemInstance>(instance: T, searchValue: string) {
 	const shouldSkipProcessData = useSkipProcessFoodData();
 
 	const getSearchResult = useCallback(() => {
@@ -41,5 +31,5 @@ export function useSearchResult<T extends TTargetInstance>(instance: T, searchVa
 		[getSearchResult, instance.data, shouldSkipProcessData]
 	);
 
-	return searchResult as TData<T>;
+	return searchResult as TItemData<T>;
 }
