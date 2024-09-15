@@ -3,16 +3,15 @@
 import {useCallback, useMemo} from 'react';
 
 import {
+	useFilteredData,
 	useMounted,
-	useParams,
 	usePinyinSortConfig,
 	useSearchConfig,
 	useSearchResult,
+	useSkipProcessFoodData,
 	useSortedData,
 	useThrottle,
 } from '@/hooks';
-import {openedPopoverParam} from '@/hooks/useOpenedFoodPopover';
-import {inNewWindowParam} from '@/hooks/useViewInNewWindow';
 
 import Content from '@/(pages)/recipes/content';
 import Loading from '@/loading';
@@ -26,10 +25,7 @@ import {recipesStore as store} from '@/stores';
 import {checkArrayContainsOf, checkArraySubsetOf} from '@/utils';
 
 export default function Recipes() {
-	const [params] = useParams();
-
-	const isInNewWindow = params.has(inNewWindowParam);
-	const isSpecified = params.has(openedPopoverParam);
+	const shouldSkipProcessData = useSkipProcessFoodData();
 
 	const instance = store.instance.get();
 
@@ -45,7 +41,7 @@ export default function Recipes() {
 	const searchValue = store.persistence.searchValue.use();
 
 	const throttledSearchValue = useThrottle(searchValue);
-	const searchResult = useSearchResult(instance, throttledSearchValue, isInNewWindow);
+	const searchResult = useSearchResult(instance, throttledSearchValue);
 
 	const filterDlcs = store.persistence.filters.dlcs.use();
 	const filterLevels = store.persistence.filters.levels.use();
@@ -102,9 +98,9 @@ export default function Recipes() {
 		]
 	);
 
-	const filteredData = useMemo(() => filterData(), [filterData]);
+	const filteredData = useFilteredData(instance, filterData);
 
-	const sortedData = useSortedData(instance, filteredData, pinyinSortState, isInNewWindow);
+	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
 
 	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, store.persistence.pinyinSortState.set);
 
@@ -208,7 +204,7 @@ export default function Recipes() {
 
 	return (
 		<div className="grid h-min grid-cols-2 justify-items-center gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
-			{!isSpecified && (
+			{!shouldSkipProcessData && (
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />
 					<SidePinyinSortIconButton pinyinSortConfig={pinyinSortConfig} />

@@ -1,5 +1,7 @@
 import {useCallback, useMemo} from 'react';
 
+import {useSkipProcessFoodData} from '@/hooks';
+
 import {
 	type Beverage,
 	type CustomerNormal,
@@ -13,7 +15,9 @@ import {
 type TTargetInstance = Beverage | CustomerNormal | CustomerRare | CustomerSpecial | Ingredient | Recipe;
 type TData<T extends TTargetInstance> = T['data'];
 
-export function useSearchResult<T extends TTargetInstance>(instance: T, searchValue: string, isInNewWindow?: boolean) {
+export function useSearchResult<T extends TTargetInstance>(instance: T, searchValue: string) {
+	const shouldSkipProcessData = useSkipProcessFoodData();
+
 	const getSearchResult = useCallback(() => {
 		if (searchValue) {
 			const searchValueLowerCase = searchValue.toLowerCase();
@@ -33,8 +37,8 @@ export function useSearchResult<T extends TTargetInstance>(instance: T, searchVa
 	}, [instance.data, searchValue]);
 
 	const searchResult = useMemo(
-		() => (isInNewWindow ? instance.data : getSearchResult()),
-		[getSearchResult, instance.data, isInNewWindow]
+		() => (shouldSkipProcessData ? instance.data : getSearchResult()),
+		[getSearchResult, instance.data, shouldSkipProcessData]
 	);
 
 	return searchResult as TData<T>;

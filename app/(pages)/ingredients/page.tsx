@@ -3,16 +3,15 @@
 import {useCallback, useMemo} from 'react';
 
 import {
+	useFilteredData,
 	useMounted,
-	useParams,
 	usePinyinSortConfig,
 	useSearchConfig,
 	useSearchResult,
+	useSkipProcessFoodData,
 	useSortedData,
 	useThrottle,
 } from '@/hooks';
-import {openedPopoverParam} from '@/hooks/useOpenedFoodPopover';
-import {inNewWindowParam} from '@/hooks/useViewInNewWindow';
 
 import Content from '@/(pages)/ingredients/content';
 import Loading from '@/loading';
@@ -26,10 +25,7 @@ import {ingredientsStore as store} from '@/stores';
 import {checkArrayContainsOf, checkArraySubsetOf} from '@/utils';
 
 export default function Ingredients() {
-	const [params] = useParams();
-
-	const isInNewWindow = params.has(inNewWindowParam);
-	const isSpecified = params.has(openedPopoverParam);
+	const shouldSkipProcessData = useSkipProcessFoodData();
 
 	const instance = store.instance.get();
 
@@ -43,7 +39,7 @@ export default function Ingredients() {
 	const searchValue = store.persistence.searchValue.use();
 
 	const throttledSearchValue = useThrottle(searchValue);
-	const searchResult = useSearchResult(instance, throttledSearchValue, isInNewWindow);
+	const searchResult = useSearchResult(instance, throttledSearchValue);
 
 	const filterDlcs = store.persistence.filters.dlcs.use();
 	const filterLevels = store.persistence.filters.levels.use();
@@ -69,9 +65,9 @@ export default function Ingredients() {
 		[filterDlcs, filterLevels, filterNoTags, filterNoTypes, filterTags, filterTypes, searchResult]
 	);
 
-	const filteredData = useMemo(() => filterData(), [filterData]);
+	const filteredData = useFilteredData(instance, filterData);
 
-	const sortedData = useSortedData(instance, filteredData, pinyinSortState, isInNewWindow);
+	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
 
 	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, store.persistence.pinyinSortState.set);
 
@@ -149,7 +145,7 @@ export default function Ingredients() {
 
 	return (
 		<div className="grid h-min grid-cols-2 justify-items-center gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
-			{!isSpecified && (
+			{!shouldSkipProcessData && (
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />
 					<SidePinyinSortIconButton pinyinSortConfig={pinyinSortConfig} />

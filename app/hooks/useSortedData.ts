@@ -1,5 +1,7 @@
 import {useCallback, useMemo} from 'react';
 
+import {useSkipProcessFoodData} from '@/hooks';
+
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import {
@@ -17,9 +19,10 @@ type TData<T extends TTargetInstance> = T['data'];
 export function useSortedData<T extends TTargetInstance>(
 	instance: T,
 	filteredData: TData<T>,
-	pinyinSortState: PinyinSortState,
-	isInNewWindow?: boolean
+	pinyinSortState: PinyinSortState
 ) {
+	const shouldSkipProcessData = useSkipProcessFoodData();
+
 	const sortData = useCallback(() => {
 		switch (pinyinSortState) {
 			case PinyinSortState.AZ:
@@ -32,8 +35,8 @@ export function useSortedData<T extends TTargetInstance>(
 	}, [instance, filteredData, pinyinSortState]);
 
 	const sortedData = useMemo(
-		() => (isInNewWindow ? filteredData : sortData()),
-		[filteredData, isInNewWindow, sortData]
+		() => (shouldSkipProcessData ? filteredData : sortData()),
+		[filteredData, shouldSkipProcessData, sortData]
 	);
 
 	return sortedData as TData<T>;
