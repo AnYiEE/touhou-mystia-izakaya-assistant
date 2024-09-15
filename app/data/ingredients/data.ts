@@ -811,4 +811,37 @@ export const INGREDIENT_LIST = [
 			buy: [['【魔界】小丑', true]],
 		},
 	},
+	{
+		name: '铃仙',
+		type: '其他',
+		tags: ['招牌', '适合拍照', '不可思议', '特产'],
+		dlc: 0,
+		level: 10,
+		price: 530000,
+		from: {
+			buy: [['【因幡帝】“强买强卖”商店', true]],
+		},
+	},
+	{
+		name: '噗噗哟果',
+		type: '其他',
+		tags: ['天罚'],
+		dlc: 5,
+		level: 5,
+		price: 10,
+		from: {
+			task: ['最终收网行动'],
+		},
+	},
+	{
+		name: '强效辣椒素',
+		type: '其他',
+		tags: ['天罚'],
+		dlc: 5,
+		level: 5,
+		price: 0,
+		from: {
+			task: ['月都试炼'],
+		},
+	},
 ] as const satisfies IIngredient[];

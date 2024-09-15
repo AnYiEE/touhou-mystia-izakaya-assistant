@@ -1,6 +1,8 @@
 import {isNil} from 'lodash';
 
-import {type TTags} from '@/data';
+import type {TBeverageTag, TRecipeTag} from '@/data/types';
+
+type TTags = TBeverageTag | TRecipeTag;
 
 export function keepLastTag(
 	tagSet: SelectionSet,

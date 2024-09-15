@@ -35,6 +35,11 @@ export default memo(
 		const instance_ingredient = customerStore.instances.ingredient.get();
 		const instance_recipe = customerStore.instances.recipe.get();
 
+		const data = useMemo(
+			() => sortedData.filter(({name}) => !instance_ingredient.blockedIngredients.has(name)),
+			[instance_ingredient.blockedIngredients, sortedData]
+		);
+
 		const currentRecipe = useMemo(
 			() => (currentRecipeData ? instance_recipe.getPropsByName(currentRecipeData.name) : null),
 			[currentRecipeData, instance_recipe]
@@ -43,11 +48,11 @@ export default memo(
 		const darkIngredients = useMemo(
 			() =>
 				new Set(
-					sortedData
+					data
 						.filter(({tags}) => intersection(tags, currentRecipe?.negativeTags ?? []).length > 0)
 						.map(toValueWithKey('name'))
 				),
-			[currentRecipe?.negativeTags, sortedData]
+			[currentRecipe?.negativeTags, data]
 		);
 
 		const handleSelect = useCallback(
@@ -82,7 +87,7 @@ export default memo(
 					ref={ref}
 				>
 					<div className="m-2 grid grid-cols-fill-12 justify-around gap-4">
-						{sortedData.map(({name, tags}, index) => {
+						{data.map(({name, tags}, index) => {
 							if (!currentRecipe) {
 								return null;
 							}

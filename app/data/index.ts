@@ -37,4 +37,4 @@ export type TFoodNames =
 	| import('./recipes/types').TRecipeNames;
 
 export type TItemNames = TCustomerNames | TFoodNames | import('./cookers/types').TCookerNames;
-export type TTags = import('./types').TBeverageTag | import('./types').TRecipeTag;
+export type TTags = import('./types').TBeverageTag | import('./types').TIngredientTag | import('./types').TRecipeTag;

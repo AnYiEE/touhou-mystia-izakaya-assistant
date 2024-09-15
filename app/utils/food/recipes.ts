@@ -129,7 +129,7 @@ export class Recipe extends Food<TRecipes> {
 				resultTags.delete(coveredTag);
 			});
 
-		return [...resultTags];
+		return [...resultTags] as TRecipeTag[];
 	}
 
 	/**

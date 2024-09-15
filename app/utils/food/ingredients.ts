@@ -1,6 +1,6 @@
 import {Food} from './base';
-import {INGREDIENT_LIST, type TIngredientTypes, type TIngredients} from '@/data';
-import type {TIngredientTag} from '@/data/types';
+import {INGREDIENT_LIST, type TIngredientNames, type TIngredientTypes, type TIngredients} from '@/data';
+import type {TIngredientTag, TLevel} from '@/data/types';
 import {type IPopularData} from '@/stores';
 import {checkArrayEqualOf} from '@/utils';
 
@@ -21,6 +21,12 @@ export class Ingredient extends Food<TIngredients> {
 
 		return instance;
 	}
+
+	public blockedLevels: Set<TLevel> = new Set([10]);
+
+	public blockedIngredients: Set<TIngredientNames> = new Set(['铃仙', '噗噗哟果', '强效辣椒素']);
+
+	public blockedTags: Set<TIngredientTag> = new Set(['特产', '天罚']);
 
 	/**
 	 * @description Types sorted in the suggested order. Used for selecting ingredient types.

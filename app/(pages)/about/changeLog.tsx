@@ -76,6 +76,10 @@ const changelog = [
 			'修复：顾客套餐评级逻辑。',
 		],
 	},
+	{
+		version: 'v1.0',
+		changes: ['新增：食材“铃仙”、“噗噗哟果”和“强效辣椒素”。'],
+	},
 ] as const satisfies {
 	version: `v${string}`;
 	changes: `${string}：${string}。`[];

@@ -65,7 +65,10 @@ const state = {
 	},
 	ingredient: {
 		dlcs: instance_ingredient.getValuesByProp(instance_ingredient.data, 'dlc', true).sort(numberSort),
-		levels: instance_ingredient.getValuesByProp(instance_ingredient.data, 'level', true).sort(numberSort),
+		levels: instance_ingredient
+			.getValuesByProp(instance_ingredient.data, 'level', true)
+			.filter(({value}) => !instance_ingredient.blockedLevels.has(value))
+			.sort(numberSort),
 	},
 	recipe: {
 		cookers: instance_recipe.getValuesByProp(instance_recipe.data, 'cooker', true).sort(pinyinSort),
@@ -482,7 +485,7 @@ export const customerNormalStore = store(state, {
 			}
 			const extraTags: TPopularTag[] = [];
 			extraIngredients.forEach((ingredient) => {
-				extraTags.push(...instance_ingredient.getPropsByName(ingredient, 'tags'));
+				extraTags.push(...(instance_ingredient.getPropsByName(ingredient, 'tags') as TPopularTag[]));
 			});
 			let recipe: TRecipe | null = null;
 			if (recipeData) {
@@ -517,7 +520,7 @@ export const customerNormalStore = store(state, {
 			}
 			const extraTags: TPopularTag[] = [];
 			extraIngredients.forEach((ingredient) => {
-				extraTags.push(...instance_ingredient.getPropsByName(ingredient, 'tags'));
+				extraTags.push(...(instance_ingredient.getPropsByName(ingredient, 'tags') as TPopularTag[]));
 			});
 			const rating = evaluateMeal({
 				currentBeverageName: beverageName,

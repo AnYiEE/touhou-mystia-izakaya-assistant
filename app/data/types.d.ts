@@ -5,7 +5,7 @@ import type {IRecipe, TTagNeedCalculate} from './recipes/types';
 /** @description The meaning of "DLC 0" here refers to the base game. */
 type TDlc = 0 | 1 | 2 | 3 | 4 | 5;
 
-type TLevel = 1 | 2 | 3 | 4 | 5;
+type TLevel = 1 | 2 | 3 | 4 | 5 | 10;
 
 type TBusinessman =
 	| '【博丽神社】河童商人'
@@ -31,6 +31,7 @@ type TBusinessman =
 	| '【妖怪兽道】蹦蹦跳跳的三妖精'
 	| '【妖怪兽道】杂货商人'
 	| '【妖怪之山】河童商人'
+	| '【因幡帝】“强买强卖”商店'
 	| '【月之都】月兔';
 
 type TCollectionLocation =
@@ -149,7 +150,7 @@ type TPlace =
 	| '妖怪之山'
 	| '月之都';
 
-type TTask = '阿求小姐的色纸' | '女仆长的采购委托';
+type TTask = '阿求小姐的色纸' | '女仆长的采购委托' | '月都试炼' | '最终收网行动';
 
 export interface IItemBase {
 	name: string;
