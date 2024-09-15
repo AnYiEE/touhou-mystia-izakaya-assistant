@@ -138,7 +138,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(
 													</Tooltip>
 													<PopoverContent>{rating}</PopoverContent>
 												</Popover>
-												<div className="flex items-center gap-2">
+												<div className="flex items-center gap-2 xl:gap-1">
 													<Popover showArrow offset={11}>
 														<Tooltip showArrow content={cooker}>
 															<span className="flex cursor-pointer">

@@ -69,7 +69,6 @@ export default memo(
 			<Popover
 				// backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
 				placement="left"
-				shouldCloseOnInteractOutside={() => true}
 				ref={ref}
 			>
 				<Tooltip showArrow content={content} placement="left">
@@ -98,6 +97,9 @@ export default memo(
 									selectionMode={selectionMode ?? 'multiple'}
 									label={label}
 									onSelectionChange={handleSelectionChange(setSelectedKeys)}
+									classNames={{
+										trigger: 'data-[hover=true]:bg-default-200',
+									}}
 								>
 									{({value}) =>
 										spriteTarget ? (

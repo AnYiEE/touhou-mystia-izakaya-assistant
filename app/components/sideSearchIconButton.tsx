@@ -61,7 +61,6 @@ export default memo(
 			<Popover
 				// backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
 				placement="left"
-				shouldCloseOnInteractOutside={() => true}
 				ref={ref}
 			>
 				<Tooltip showArrow content={content} placement="left">

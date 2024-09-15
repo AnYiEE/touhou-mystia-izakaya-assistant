@@ -276,7 +276,7 @@ export default function CustomerRare() {
 				currentCustomerData && 'md:flex-col-reverse'
 			)}
 		>
-			<div className="xl:w-full">
+			<div className="px-2 xl:w-full xl:px-0 xl:pt-2">
 				<Tabs
 					fullWidth
 					destroyInactiveTabPanel={false}
@@ -310,7 +310,7 @@ export default function CustomerRare() {
 				</Tabs>
 			</div>
 
-			<div className="flex flex-grow flex-col gap-4 xl:w-full">
+			<div className="flex flex-grow flex-col gap-4 p-2 pt-0 md:pb-0 md:pt-2 xl:w-full xl:pb-2">
 				{currentCustomerData ? (
 					<>
 						<CustomerCard />

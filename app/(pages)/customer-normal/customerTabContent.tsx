@@ -34,7 +34,7 @@ export default memo(
 				<ScrollShadow
 					hideScrollBar
 					className={twMerge(
-						'transition-all xl:max-h-[calc(var(--safe-h-dvh)-9.75rem-env(titlebar-area-height,0rem))]',
+						'transition-all xl:max-h-[calc(var(--safe-h-dvh)-10.25rem-env(titlebar-area-height,0rem))]',
 						customerTabStyle.classNames.content
 					)}
 					ref={ref}

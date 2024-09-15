@@ -460,7 +460,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 
 	const tablePagination = useMemo(
 		() => (
-			<div className="flex justify-center">
+			<div className="flex justify-center pt-2">
 				{tableCurrentPageItems.length > 0 && (
 					<Pagination
 						showShadow
@@ -494,7 +494,8 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 			}}
 			aria-label="酒水选择表格"
 			classNames={{
-				th: twJoin(isShowBackgroundImage && 'bg-default-100/40'),
+				base: 'gap-2',
+				th: twJoin(isShowBackgroundImage && 'bg-default-100/70 backdrop-blur-sm'),
 				wrapper: twJoin(
 					'xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)] xl:p-2',
 					isShowBackgroundImage && 'bg-content1/40 backdrop-blur'

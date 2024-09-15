@@ -249,7 +249,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 							>
 								上传
 							</Button>
-							<Popover showArrow isOpen={isSavePopoverOpened}>
+							<Popover showArrow shouldBlockScroll isOpen={isSavePopoverOpened}>
 								<PopoverTrigger>
 									<Button
 										fullWidth
@@ -283,6 +283,8 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 												handleImportData();
 											}
 										})}
+										/** @todo Remove this line after upgrade to `@nextui-org/react` to v2.5.0 */
+										className="!text-danger data-[hover=true]:!text-danger-foreground"
 									>
 										确认保存
 									</Button>
@@ -306,7 +308,7 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 					</Tab>
 					<Tab key="reset" title="重置">
 						<div className="w-full space-y-2 md:w-1/2 lg:w-1/3">
-							<Popover showArrow isOpen={isResetPopoverOpened}>
+							<Popover showArrow shouldBlockScroll isOpen={isResetPopoverOpened}>
 								<PopoverTrigger>
 									<Button
 										fullWidth
@@ -338,6 +340,8 @@ export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
 												handleResetData();
 											}
 										})}
+										/** @todo Remove this line after upgrade to `@nextui-org/react` to v2.5.0 */
+										className="!text-danger data-[hover=true]:!text-danger-foreground"
 									>
 										确认重置
 									</Button>
