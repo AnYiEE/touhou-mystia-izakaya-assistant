@@ -1,10 +1,18 @@
 'use client';
 
-import {useMemo} from 'react';
+import {type Key, useCallback, useMemo} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import useBreakpoint from 'use-breakpoint';
-import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
+import {
+	useMounted,
+	usePinyinSortConfig,
+	useSearchConfig,
+	useSearchResult,
+	useSortedData,
+	useThrottle,
+	useVibrate,
+} from '@/hooks';
 
 import {Image, Tab, Tabs} from '@nextui-org/react';
 
@@ -28,6 +36,8 @@ import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {checkArrayContainsOf} from '@/utils';
 
 export default function CustomerNormal() {
+	const vibrate = useVibrate();
+
 	customerStore.shared.customer.name.onChange(() => {
 		customerStore.refreshCustomerSelectedItems();
 		customerStore.refreshAllSelectedItems();
@@ -224,6 +234,14 @@ export default function CustomerNormal() {
 
 	const selectedTabKey = customerStore.shared.tab.use();
 
+	const onTabSelectionChange = useCallback(
+		(key: Key) => {
+			vibrate();
+			customerStore.onTabSelectionChange(key);
+		},
+		[vibrate]
+	);
+
 	const isMounted = useMounted();
 	if (!isMounted) {
 		return (
@@ -247,7 +265,7 @@ export default function CustomerNormal() {
 					destroyInactiveTabPanel={false}
 					size="sm"
 					selectedKey={selectedTabKey}
-					onSelectionChange={customerStore.onTabSelectionChange}
+					onSelectionChange={onTabSelectionChange}
 					classNames={{
 						tabList: twJoin('grid grid-cols-4 bg-default/40', isShowBackgroundImage && 'backdrop-blur'),
 					}}

@@ -55,12 +55,22 @@ export default memo(
 			[setSearchValue, vibrate]
 		);
 
+		const handleOpenChange = useCallback(
+			(isOpen: boolean) => {
+				if (isOpen) {
+					vibrate();
+				}
+			},
+			[vibrate]
+		);
+
 		const content = `搜索（${searchValue ? '已' : '未'}激活）`;
 
 		return (
 			<Popover
 				// backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
 				placement="left"
+				onOpenChange={handleOpenChange}
 				ref={ref}
 			>
 				<Tooltip showArrow content={content} placement="left">

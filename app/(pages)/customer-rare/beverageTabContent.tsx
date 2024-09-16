@@ -468,7 +468,10 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 						size="sm"
 						page={tableCurrentPage}
 						total={tableTotalPages}
-						onChange={customerStore.onBeverageTablePageChange}
+						onChange={(page) => {
+							vibrate();
+							customerStore.onBeverageTablePageChange(page);
+						}}
 						classNames={{
 							item: twJoin('bg-default-100/70', isShowBackgroundImage && 'backdrop-blur'),
 						}}
@@ -476,7 +479,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 				)}
 			</div>
 		),
-		[isShowBackgroundImage, tableCurrentPage, tableCurrentPageItems.length, tableTotalPages]
+		[isShowBackgroundImage, tableCurrentPage, tableCurrentPageItems.length, tableTotalPages, vibrate]
 	);
 
 	return (

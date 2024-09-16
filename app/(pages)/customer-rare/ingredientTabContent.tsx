@@ -55,6 +55,11 @@ export default memo(
 			[currentRecipe?.negativeTags, data]
 		);
 
+		const handleButtonPress = useCallback(() => {
+			vibrate();
+			customerStore.toggleIngredientTabVisibilityState();
+		}, [vibrate]);
+
 		const handleSelect = useCallback(
 			(ingredient: TIngredientNames) => {
 				vibrate();
@@ -258,7 +263,7 @@ export default memo(
 						isIconOnly
 						size="sm"
 						variant="flat"
-						onPress={customerStore.toggleIngredientTabVisibilityState}
+						onPress={handleButtonPress}
 						aria-label={ingredientTabStyle.ariaLabel}
 						className={twJoin('h-4 w-4/5 text-default-300', isShowBackgroundImage && 'backdrop-blur')}
 					>

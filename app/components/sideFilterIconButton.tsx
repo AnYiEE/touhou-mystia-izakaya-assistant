@@ -47,6 +47,15 @@ export default memo(
 
 		const hasFilter = useMemo(() => selectConfig.some(({selectedKeys}) => selectedKeys.length > 0), [selectConfig]);
 
+		const handleOpenChange = useCallback(
+			(isOpen: boolean) => {
+				if (isOpen) {
+					vibrate();
+				}
+			},
+			[vibrate]
+		);
+
 		const handleSelectionChange = useCallback(
 			(setSelectedKeys: ISelectConfigItem['setSelectedKeys']) => (key: Selection) => {
 				setSelectedKeys([...(key as Set<string>)].sort(pinyinSort));
@@ -69,6 +78,7 @@ export default memo(
 			<Popover
 				// backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
 				placement="left"
+				onOpenChange={handleOpenChange}
 				ref={ref}
 			>
 				<Tooltip showArrow content={content} placement="left">
