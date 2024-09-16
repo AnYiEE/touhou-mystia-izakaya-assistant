@@ -467,6 +467,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 							aria-label="选择顾客所点单的料理标签"
 							title="选择顾客所点单的料理标签"
 							classNames={{
+								base: 'w-2/3 md:w-full',
 								trigger: twJoin(
 									'bg-default/40 data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover',
 									isShowBackgroundImage && 'backdrop-blur'

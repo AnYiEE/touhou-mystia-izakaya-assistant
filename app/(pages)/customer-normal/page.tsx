@@ -249,7 +249,7 @@ export default function CustomerNormal() {
 					selectedKey={selectedTabKey}
 					onSelectionChange={customerStore.onTabSelectionChange}
 					classNames={{
-						tabList: twJoin('bg-default/40', isShowBackgroundImage && 'backdrop-blur'),
+						tabList: twJoin('grid grid-cols-4 bg-default/40', isShowBackgroundImage && 'backdrop-blur'),
 					}}
 				>
 					<Tab key="customer" title="普客" className="relative flex flex-col">
