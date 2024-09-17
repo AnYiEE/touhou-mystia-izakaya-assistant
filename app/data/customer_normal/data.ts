@@ -5,7 +5,7 @@ export const CUSTOMER_NORMAL_LIST = [
 	{
 		name: '妖怪兔',
 		dlc: 0,
-		places: ['妖怪兽道', '红魔馆', '迷途竹林', '妖怪之山', '魔法森林', '地灵殿'],
+		places: ['妖怪兽道', '红魔馆', '迷途竹林', '魔法森林', '妖怪之山', '地灵殿'],
 		positiveTags: ['家常', '咸', '鲜', '甜', '招牌', '凉爽', '力量涌现', '果味', '流行喜爱'],
 		negativeTags: [],
 		beverageTags: ['无酒精'],
@@ -13,7 +13,7 @@ export const CUSTOMER_NORMAL_LIST = [
 	{
 		name: '妖怪猫',
 		dlc: 0,
-		places: ['妖怪兽道', '博丽神社', '红魔馆', '迷途竹林', '妖怪之山', '魔法森林', '地灵殿'],
+		places: ['妖怪兽道', '博丽神社', '红魔馆', '迷途竹林', '魔法森林', '妖怪之山', '地灵殿'],
 		positiveTags: ['肉', '海味', '中华', '招牌', '凉爽', '流行喜爱'],
 		negativeTags: [],
 		beverageTags: ['可加冰', '啤酒', '苦'],
@@ -21,7 +21,7 @@ export const CUSTOMER_NORMAL_LIST = [
 	{
 		name: '妖怪狸',
 		dlc: 0,
-		places: ['妖怪兽道', '博丽神社', '红魔馆', '迷途竹林', '妖怪之山', '魔法森林', '命莲寺'],
+		places: ['妖怪兽道', '博丽神社', '红魔馆', '迷途竹林', '魔法森林', '妖怪之山', '命莲寺'],
 		positiveTags: ['肉', '重油', '饱腹', '山珍', '咸', '招牌', '流行喜爱'],
 		negativeTags: [],
 		beverageTags: ['甘', '辛'],
@@ -93,7 +93,7 @@ export const CUSTOMER_NORMAL_LIST = [
 	{
 		name: '河童',
 		dlc: 0,
-		places: ['博丽神社', '红魔馆', '妖怪之山', '魔法森林'],
+		places: ['博丽神社', '红魔馆', '魔法森林', '妖怪之山'],
 		positiveTags: ['高级', '海味', '招牌', '灼热', '猎奇', '小巧', '大份', '流行喜爱'],
 		negativeTags: [],
 		beverageTags: ['甘'],
