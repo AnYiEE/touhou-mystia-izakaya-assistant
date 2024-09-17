@@ -38,8 +38,8 @@ export class Ingredient extends Food<TIngredients> {
 			return types;
 		}
 
-		const isTagsEqual = checkArrayEqualOf(types, this.getValuesByProp(this.data, 'type'));
-		if (!isTagsEqual) {
+		const isTypesEqual = checkArrayEqualOf(types, this.getValuesByProp(this.data, 'type'));
+		if (!isTypesEqual) {
 			throw new Error(
 				'[utils/food/Ingredient]: the given types is inconsistent with the types in the original data'
 			);

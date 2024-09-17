@@ -1,4 +1,3 @@
-import {type TCookerNames} from '@/data';
 import type {ICustomerBase, TPlace, TRecipeTag} from '@/data/types';
 
 type TClothing =
@@ -17,8 +16,6 @@ type TClothing =
 	| '仙女服'
 	| '星尘披风套装'
 	| '中华风校服';
-
-type TCooker = '冯风渡御' | '紫薇天火';
 
 type TOrnament =
 	| '超级钓鱼竿'
@@ -67,8 +64,10 @@ export type TReward =
 	  }
 	| {
 			type: '厨具';
-			reward: TCooker;
-			description: `${TCookerNames}：${string}`;
+			/** @description To get `reward`, use the instance of cooker. */
+			reward: null;
+			/** @description To get `description`, use the instance of cooker. */
+			description: null;
 	  }
 	| {
 			type: '服装';

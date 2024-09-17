@@ -1,18 +1,19 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 
-import {openedPopoverParam} from '@/hooks/useOpenedFoodPopover';
+import {openedPopoverParam} from '@/hooks/useOpenedItemPopover';
 
-import {type TFoodNames} from '@/data';
+import {type TCookerNames, type TFoodNames} from '@/data';
 
-type TWindowPath = 'beverages' | 'ingredients' | 'recipes';
+type TItemPaths = 'beverages' | 'cookers' | 'ingredients' | 'recipes';
+type TItemNames = TCookerNames | TFoodNames;
 
-export type TOpenWindow = (path: TWindowPath, name: TFoodNames) => void;
+export type TOpenWindow = (path: TItemPaths, name: TItemNames) => void;
 
 export const inNewWindowParam = 'preview';
 
 export function useViewInNewWindow() {
-	const [windowItemNames, setWindowItemNames] = useState<[TFoodNames] | null>(null);
-	const [windowItemPath, setWindowItemPath] = useState<[TWindowPath] | null>(null);
+	const [windowItemNames, setWindowItemNames] = useState<[TItemNames] | null>(null);
+	const [windowItemPath, setWindowItemPath] = useState<[TItemPaths] | null>(null);
 	const windowObjectRef = useRef<Window | null>(null);
 
 	useEffect(() => {

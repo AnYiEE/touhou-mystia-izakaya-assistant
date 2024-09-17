@@ -1,6 +1,6 @@
 import {useCallback, useMemo} from 'react';
 
-import {useSkipProcessFoodData} from '@/hooks';
+import {useSkipProcessItemData} from '@/hooks';
 
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
@@ -11,7 +11,7 @@ export function useSortedData<T extends TItemInstance>(
 	filteredData: TItemData<T>,
 	pinyinSortState: PinyinSortState
 ) {
-	const shouldSkipProcessData = useSkipProcessFoodData();
+	const shouldSkipProcessData = useSkipProcessItemData();
 
 	const sortData = useCallback(() => {
 		switch (pinyinSortState) {

@@ -25,6 +25,7 @@ import {type IPopularData} from '@/stores';
 import {getAllItemNames, keepLastTag, reverseDirection} from '@/stores/utils';
 import {
 	Beverage,
+	Cooker,
 	CustomerRare,
 	CustomerSpecial,
 	Ingredient,
@@ -48,6 +49,7 @@ export interface IRecipeData {
 }
 
 const instance_beverage = Beverage.getInstance();
+const instance_cooker = Cooker.getInstance();
 const instance_ingredient = Ingredient.getInstance();
 const instance_recipe = Recipe.getInstance();
 const instance_rare = CustomerRare.getInstance();
@@ -80,6 +82,7 @@ const storeVersion = {
 const state = {
 	instances: {
 		beverage: instance_beverage,
+		cooker: instance_cooker,
 		customer_rare: instance_rare,
 		customer_special: instance_special,
 		ingredient: instance_ingredient,

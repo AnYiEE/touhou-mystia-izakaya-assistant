@@ -8,7 +8,7 @@ import {
 	usePinyinSortConfig,
 	useSearchConfig,
 	useSearchResult,
-	useSkipProcessFoodData,
+	useSkipProcessItemData,
 	useSortedData,
 	useThrottle,
 } from '@/hooks';
@@ -25,7 +25,7 @@ import {recipesStore as store} from '@/stores';
 import {checkArrayContainsOf, checkArraySubsetOf} from '@/utils';
 
 export default function Recipes() {
-	const shouldSkipProcessData = useSkipProcessFoodData();
+	const shouldSkipProcessData = useSkipProcessItemData();
 
 	const instance = store.instance.get();
 

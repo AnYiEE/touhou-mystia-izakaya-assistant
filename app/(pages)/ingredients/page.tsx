@@ -8,7 +8,7 @@ import {
 	usePinyinSortConfig,
 	useSearchConfig,
 	useSearchResult,
-	useSkipProcessFoodData,
+	useSkipProcessItemData,
 	useSortedData,
 	useThrottle,
 } from '@/hooks';
@@ -25,7 +25,7 @@ import {ingredientsStore as store} from '@/stores';
 import {checkArrayContainsOf, checkArraySubsetOf} from '@/utils';
 
 export default function Ingredients() {
-	const shouldSkipProcessData = useSkipProcessFoodData();
+	const shouldSkipProcessData = useSkipProcessItemData();
 
 	const instance = store.instance.get();
 
@@ -102,13 +102,13 @@ export default function Ingredients() {
 				},
 				{
 					items: allTypes,
-					label: '食材种类（包含）',
+					label: '食材类别（包含）',
 					selectedKeys: filterTypes,
 					setSelectedKeys: store.persistence.filters.types.set,
 				},
 				{
 					items: allTypes,
-					label: '食材种类（排除）',
+					label: '食材类别（排除）',
 					selectedKeys: filterNoTypes,
 					setSelectedKeys: store.persistence.filters.noTypes.set,
 				},

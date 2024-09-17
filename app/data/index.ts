@@ -7,7 +7,7 @@ export * from './ingredients';
 export * from './recipes';
 
 export type {TBeverages, TBeverageNames, IBeverage} from './beverages/types';
-export type {TCookers, TCookerNames, ICooker} from './cookers/types';
+export type {TCookers, TCookerCategories, TCookerNames, TCookerTypes, ICooker} from './cookers/types';
 export type {TCustomerNormals, TCustomerNormalNames, ICustomerNormal} from './customer_normal/types';
 export type {TCustomerRares, TCustomerRareNames, ICustomerRare} from './customer_rare/types';
 export type {TCustomerSpecials, TCustomerSpecialNames, ICustomerSpecial} from './customer_special/types';

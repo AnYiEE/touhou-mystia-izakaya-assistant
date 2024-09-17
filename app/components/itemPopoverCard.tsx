@@ -12,7 +12,7 @@ import {
 import {twJoin} from 'tailwind-merge';
 
 import {useParams} from '@/hooks';
-import {openedPopoverParam} from '@/hooks/useOpenedFoodPopover';
+import {openedPopoverParam} from '@/hooks/useOpenedItemPopover';
 import {inNewWindowParam, useViewInNewWindow} from '@/hooks/useViewInNewWindow';
 
 import {Popover, PopoverContent, PopoverTrigger, Snippet, Tooltip, usePopoverContext} from '@nextui-org/react';
@@ -25,7 +25,14 @@ import Sprite, {type ISpriteProps} from '@/components/sprite';
 import TagsComponent from '@/components/tags';
 
 import {siteConfig} from '@/configs';
-import {type IIngredient, type TCookerNames, type TFoodNames, type TIngredientNames, type TTags} from '@/data';
+import {
+	type ICooker,
+	type IIngredient,
+	type TCookerNames,
+	type TIngredientNames,
+	type TItemNames,
+	type TTags,
+} from '@/data';
 import type {ITagStyle} from '@/data/types';
 import {checkA11yConfirmKey, uniq} from '@/utils';
 
@@ -34,7 +41,7 @@ const {name: siteName} = siteConfig;
 interface ICloseButtonProps {}
 
 const CloseButton = forwardRef<HTMLButtonElement | null, ICloseButtonProps>(
-	function FoodPopoverCardCloseButton(_props, ref) {
+	function ItemPopoverCardCloseButton(_props, ref) {
 		const [params, replace] = useParams();
 		const {getBackdropProps} = usePopoverContext();
 
@@ -81,11 +88,11 @@ const CloseButton = forwardRef<HTMLButtonElement | null, ICloseButtonProps>(
 );
 
 interface IShareButtonProps {
-	name: string;
+	name: TItemNames;
 }
 
 const ShareButton = memo(
-	forwardRef<HTMLDivElement | null, IShareButtonProps>(function FoodPopoverCardShareButton({name}, ref) {
+	forwardRef<HTMLDivElement | null, IShareButtonProps>(function ItemPopoverCardShareButton({name}, ref) {
 		const [params] = useParams();
 		const [isCanShare, setIsCanShare] = useState(false);
 		const [shareObject, setShareObject] = useState<ShareData>({});
@@ -166,25 +173,27 @@ const ShareButton = memo(
 	})
 );
 
-interface IFoodPopoverCardProps extends Pick<ISpriteProps, 'target'> {
-	name: TFoodNames;
-	description?: {
-		level: number | string;
-		price: number | string;
-	};
-	dlc?: number | string;
+interface IItemPopoverCardProps extends Pick<ISpriteProps, 'target'> {
+	name: TItemNames;
+	displayName?: ReactNodeWithoutBoolean;
+	description?: Partial<{
+		level: number;
+		price: number;
+		type: ICooker['type'] | IIngredient['type'];
+	}>;
+	dlc?: number;
+	/** @description If `null`, it means that the recipe has no cooker (such as dark matter). */
 	cooker?: TCookerNames | null;
 	ingredients?: TIngredientNames[];
-	ingredientType?: IIngredient['type'];
 	tags?: {
 		[key in keyof ITagStyle]: TTags[];
 	};
 	tagColors?: ITagStyle;
 }
 
-const FoodPopoverCardComponent = memo(
-	forwardRef<HTMLDivElement | null, PropsWithChildren<IFoodPopoverCardProps>>(function FoodPopoverCard(
-		{target, name, description, dlc, cooker, ingredients, ingredientType, tags, tagColors, children},
+const ItemPopoverCardComponent = memo(
+	forwardRef<HTMLDivElement | null, PropsWithChildren<IItemPopoverCardProps>>(function ItemPopoverCard(
+		{target, name, displayName, description, dlc, cooker, ingredients, tags, tagColors, children},
 		ref
 	) {
 		const openWindow = useViewInNewWindow();
@@ -233,7 +242,7 @@ const FoodPopoverCardComponent = memo(
 								<PopoverContent>{dlcLabel}</PopoverContent>
 							</Popover>
 						)}
-						{name}
+						{displayName === undefined ? name : displayName}
 					</p>
 				</div>
 				{cooker && ingredients && (
@@ -269,20 +278,22 @@ const FoodPopoverCardComponent = memo(
 				)}
 				{description !== undefined && (
 					<div className="flex gap-4">
-						{description.price !== -1 && (
+						{description.price !== undefined && (
 							<p>
 								<span className="font-semibold">售价：</span>
 								<Price showSymbol={false}>{description.price}</Price>
 							</p>
 						)}
-						<p>
-							<span className="font-semibold">等级：</span>
-							<Price showSymbol={false}>{description.level}</Price>
-						</p>
-						{ingredientType !== undefined && (
+						{description.level !== undefined && (
 							<p>
-								<span className="font-semibold">种类：</span>
-								{ingredientType}
+								<span className="font-semibold">等级：</span>
+								<Price showSymbol={false}>{description.level}</Price>
+							</p>
+						)}
+						{description.type !== undefined && (
+							<p>
+								<span className="font-semibold">类别：</span>
+								{[description.type].flat().join('、')}
 							</p>
 						)}
 					</div>
@@ -299,12 +310,12 @@ const FoodPopoverCardComponent = memo(
 	})
 );
 
-const FoodPopoverCard = FoodPopoverCardComponent as typeof FoodPopoverCardComponent & {
+const ItemPopoverCard = ItemPopoverCardComponent as typeof ItemPopoverCardComponent & {
 	CloseButton: typeof CloseButton;
 	ShareButton: typeof ShareButton;
 };
 
-FoodPopoverCard.CloseButton = CloseButton;
-FoodPopoverCard.ShareButton = ShareButton;
+ItemPopoverCard.CloseButton = CloseButton;
+ItemPopoverCard.ShareButton = ShareButton;
 
-export default FoodPopoverCard;
+export default ItemPopoverCard;

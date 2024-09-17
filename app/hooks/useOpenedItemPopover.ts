@@ -4,7 +4,7 @@ import {useParams} from '@/hooks';
 
 export const openedPopoverParam = 'select';
 
-export function useOpenedFoodPopover(popoverCardRef: RefObject<HTMLElement | null>) {
+export function useOpenedItemPopover(popoverCardRef: RefObject<HTMLElement | null>) {
 	const [params, replace] = useParams();
 	const [openedPopover, _setOpenedPopover] = useState<string | null>(null);
 

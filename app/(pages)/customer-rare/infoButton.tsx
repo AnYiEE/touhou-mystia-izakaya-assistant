@@ -41,6 +41,7 @@ export default function InfoButton() {
 
 	const currentCustomerData = store.shared.customer.data.use();
 
+	const instance_cooker = store.instances.cooker.get();
 	const instance_rare = store.instances.customer_rare.get();
 	const instance_recipe = store.instances.recipe.get();
 
@@ -66,10 +67,6 @@ export default function InfoButton() {
 
 	const getDescription = ({description, reward, type}: TReward) => {
 		switch (type) {
-			case '厨具': {
-				const descriptionSplitArray = description.split('：');
-				return `${descriptionSplitArray.shift()}效果：${descriptionSplitArray.join('：')}`;
-			}
 			case '服装':
 				return (
 					<Image
@@ -128,7 +125,7 @@ export default function InfoButton() {
 	const hasNegativeSpellCards = hasSpellCards && (currentCustomerSpellCards.negative as unknown[]).length > 0;
 	const hasPositiveSpellCards = hasSpellCards && (currentCustomerSpellCards.positive as unknown[]).length > 0;
 
-	const label = '点击：在新窗口中查看此料理的详情';
+	const getLabel = (type: '料理' | TReward['type']) => `点击：在新窗口中查看此${type}的详情`;
 
 	return (
 		<InfoButtonBase defaultExpandedKeys={[hasBondRewards ? 'bond' : 'card']}>
@@ -137,9 +134,9 @@ export default function InfoButton() {
 					<div className="flex flex-col gap-2 text-justify text-xs">
 						<div className="space-y-1">
 							{bondRecipesData.map(({name, level}, index) => (
-								<p key={index} className="flex items-center">
+								<p key={index} className="inline-flex items-center">
 									<LevelLabel level={level} />
-									<Tooltip showArrow content={label} placement="left" size="sm">
+									<Tooltip showArrow content={getLabel('料理')} placement="left" size="sm">
 										<span
 											onClick={() => {
 												openWindow('recipes', name);
@@ -149,7 +146,7 @@ export default function InfoButton() {
 													openWindow('recipes', name);
 												}
 											}}
-											aria-label={label}
+											aria-label={getLabel('料理')}
 											role="button"
 											tabIndex={0}
 											className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
@@ -164,17 +161,51 @@ export default function InfoButton() {
 							{currentCustomerBondRewards.map((bondReward, index) => (
 								<Fragment key={index}>
 									{index === 0 && currentCustomerBondRewardsLength > 1 && <Divider />}
-									<p className="leading-5">
+									<p className="inline-flex items-center leading-5">
 										<LevelLabel level={getLevelLabel(bondReward)} />
 										{bondReward.type === '采集'
 											? `${bondReward.type}【${bondReward.reward}】`
 											: (() => {
-													const hasTachie =
-														bondReward.type === '服装' || bondReward.type === '伙伴';
-													const placement = hasTachie ? 'left' : 'top';
-													return (
+													const {reward, type} = bondReward;
+													const isCooker = type === '厨具';
+													const cookerName = isCooker
+														? instance_cooker.getBondCooker(currentCustomerData)
+														: null;
+													const hasTachie = type === '服装' || type === '伙伴';
+													const placement = isCooker || hasTachie ? 'left' : 'top';
+													return isCooker && cookerName !== null ? (
+														<Tooltip
+															showArrow
+															content={getLabel(type)}
+															placement={placement}
+															size="sm"
+														>
+															<span
+																onClick={() => {
+																	openWindow('cookers', cookerName);
+																}}
+																onKeyDown={(event) => {
+																	if (checkA11yConfirmKey(event)) {
+																		openWindow('cookers', cookerName);
+																	}
+																}}
+																aria-label={getLabel(type)}
+																role="button"
+																tabIndex={0}
+																className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
+															>
+																<Sprite
+																	target="cooker"
+																	name={cookerName}
+																	size={1.25}
+																	className="mr-0.5"
+																/>
+																{cookerName}
+															</span>
+														</Tooltip>
+													) : (
 														<>
-															{bondReward.type}【
+															{type}【
 															<Popover
 																showArrow
 																offset={hasTachie ? 15 : 7}
@@ -195,7 +226,7 @@ export default function InfoButton() {
 																				tabIndex={0}
 																				className="underline-dotted-offset2"
 																			>
-																				{bondReward.reward}
+																				{reward}
 																			</span>
 																		</PopoverTrigger>
 																	</span>

@@ -1,12 +1,12 @@
 import {Fragment, memo, useRef} from 'react';
 
-import {useOpenedFoodPopover} from '@/hooks';
+import {useOpenedItemPopover} from '@/hooks';
 
 import {Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
 
 import {TrackCategory, trackEvent} from '@/components/analytics';
-import FoodCard from '@/components/foodCard';
-import FoodPopoverCard from '@/components/foodPopoverCard';
+import ItemCard from '@/components/itemCard';
+import ItemPopoverCard from '@/components/itemPopoverCard';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 
@@ -20,7 +20,7 @@ interface IProps {
 
 export default memo<IProps>(function Content({data}) {
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
-	const [openedPopover] = useOpenedFoodPopover(popoverCardRef);
+	const [openedPopover] = useOpenedItemPopover(popoverCardRef);
 
 	// const isShowBackgroundImage = store.persistence.backgroundImage.use();
 
@@ -32,7 +32,7 @@ export default memo<IProps>(function Content({data}) {
 			isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}
 		>
 			<PopoverTrigger>
-				<FoodCard
+				<ItemCard
 					isHoverable={openedPopover ? openedPopover === name : true}
 					isPressable={openedPopover ? openedPopover === name : true}
 					name={name}
@@ -44,14 +44,13 @@ export default memo<IProps>(function Content({data}) {
 				/>
 			</PopoverTrigger>
 			<PopoverContent>
-				<FoodPopoverCard.CloseButton />
-				<FoodPopoverCard.ShareButton name={name} />
-				<FoodPopoverCard
+				<ItemPopoverCard.CloseButton />
+				<ItemPopoverCard.ShareButton name={name} />
+				<ItemPopoverCard
 					target="ingredient"
 					name={name}
-					description={{level, price}}
+					description={{level, price, type}}
 					dlc={dlc}
-					ingredientType={type}
 					tags={{positive: tags}}
 					tagColors={INGREDIENT_TAG_STYLE}
 					ref={popoverCardRef}
@@ -113,7 +112,7 @@ export default memo<IProps>(function Content({data}) {
 							</p>
 						);
 					})}
-				</FoodPopoverCard>
+				</ItemPopoverCard>
 			</PopoverContent>
 		</Popover>
 	));

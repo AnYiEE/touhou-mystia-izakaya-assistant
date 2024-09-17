@@ -1,12 +1,12 @@
 import {useCallback, useMemo} from 'react';
 
-import {useSkipProcessFoodData} from '@/hooks';
+import {useSkipProcessItemData} from '@/hooks';
 
 import {processPinyin} from '@/utils';
 import type {TItemData, TItemInstance} from '@/utils/types';
 
 export function useSearchResult<T extends TItemInstance>(instance: T, searchValue: string) {
-	const shouldSkipProcessData = useSkipProcessFoodData();
+	const shouldSkipProcessData = useSkipProcessItemData();
 
 	const getSearchResult = useCallback(() => {
 		if (searchValue) {

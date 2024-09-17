@@ -1,8 +1,9 @@
 import {cloneDeep, isObjectLike, sortBy} from 'lodash';
 
+import {type ICurrentCustomer} from '@/(pages)/customer-rare/types';
+
 import {Food} from './base';
 import {Ingredient} from './ingredients';
-import {type ICurrentCustomer} from '@/(pages)/customer-rare/types';
 import {RECIPE_LIST, type TIngredientNames, type TRecipeNames, type TRecipes} from '@/data';
 import type {TIngredientTag, TRecipeTag} from '@/data/types';
 import {type IPopularData, type IRecipeData} from '@/stores';
@@ -191,12 +192,11 @@ export class Recipe extends Food<TRecipes> {
 
 		let bondRecipes: TBondRecipes = [];
 
-		this._data.forEach((recipe) => {
-			const {from} = recipe;
+		this._data.forEach(({from, name}) => {
 			if (isObjectLike(from) && 'bond' in from && from.bond.name === customerData.name) {
 				bondRecipes.push({
 					level: from.bond.level,
-					name: recipe.name,
+					name,
 				});
 			}
 		});

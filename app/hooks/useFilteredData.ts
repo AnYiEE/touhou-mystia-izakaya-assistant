@@ -1,11 +1,11 @@
 import {useMemo} from 'react';
 
-import {useSkipProcessFoodData} from '@/hooks';
+import {useSkipProcessItemData} from '@/hooks';
 
 import type {TItemData, TItemInstance} from '@/utils/types';
 
 export function useFilteredData<T extends TItemInstance>(instance: T, filterData: () => TItemData<T>) {
-	const shouldSkipProcessData = useSkipProcessFoodData();
+	const shouldSkipProcessData = useSkipProcessItemData();
 
 	const filteredData = useMemo(
 		() => (shouldSkipProcessData ? instance.data : filterData()),

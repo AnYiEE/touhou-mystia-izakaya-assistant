@@ -80,6 +80,10 @@ const changelog = [
 		version: 'v1.0',
 		changes: ['新增：食材“铃仙”、“噗噗哟果”和“强效辣椒素”。'],
 	},
+	{
+		version: 'v1.1',
+		changes: ['新增：厨具页面。'],
+	},
 ] as const satisfies {
 	version: `v${string}`;
 	changes: `${string}：${string}。`[];

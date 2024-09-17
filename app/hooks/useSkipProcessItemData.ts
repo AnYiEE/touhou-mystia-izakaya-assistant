@@ -1,8 +1,8 @@
 import {useParams} from '@/hooks';
-import {openedPopoverParam} from '@/hooks/useOpenedFoodPopover';
+import {openedPopoverParam} from '@/hooks/useOpenedItemPopover';
 import {inNewWindowParam} from '@/hooks/useViewInNewWindow';
 
-export function useSkipProcessFoodData() {
+export function useSkipProcessItemData() {
 	const [params] = useParams();
 
 	const isInNewWindow = params.has(inNewWindowParam);

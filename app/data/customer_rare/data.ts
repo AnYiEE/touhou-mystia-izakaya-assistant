@@ -1109,9 +1109,8 @@ export const CUSTOMER_RARE_LIST = [
 		bondRewards: [
 			{
 				type: '厨具',
-				reward: '紫薇天火',
-				description:
-					'烤架：减少15%料理时间，瞬间完成带有“肉”标签的料理，30%返还料理食材（只有米斯蒂娅使用才有此效果）',
+				reward: null,
+				description: null,
 			},
 		],
 		spellCards: {
@@ -1359,9 +1358,8 @@ export const CUSTOMER_RARE_LIST = [
 		bondRewards: [
 			{
 				type: '厨具',
-				reward: '冯风渡御',
-				description:
-					'蒸锅：减少20%料理时间。不加料则减少70%料理时间，否则增加30%续单率。若料理含有“流行喜爱”标签则同时触发所有效果（只有米斯蒂娅使用才有此效果）',
+				reward: null,
+				description: null,
 			},
 		],
 		spellCards: {

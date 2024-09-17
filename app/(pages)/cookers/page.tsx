@@ -13,7 +13,7 @@ import {
 	useThrottle,
 } from '@/hooks';
 
-import Content from '@/(pages)/beverages/content';
+import Content from '@/(pages)/cookers/content';
 import Loading from '@/loading';
 import FakeNameContent from '@/components/fakeNameContent';
 import SideButtonGroup from '@/components/sideButtonGroup';
@@ -21,18 +21,18 @@ import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterI
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
-import {beveragesStore as store} from '@/stores';
-import {checkArrayContainsOf, checkArraySubsetOf} from '@/utils';
+import {cookersStore as store} from '@/stores';
+import {checkArrayContainsOf} from '@/utils';
 
-export default function Beverages() {
+export default function Cookers() {
 	const shouldSkipProcessData = useSkipProcessItemData();
 
 	const instance = store.instance.get();
 
 	const allNames = store.names.use();
+	const allCategories = store.categories.get();
 	const allDlcs = store.dlcs.get();
-	const allLevels = store.levels.get();
-	const allTags = store.tags.get();
+	const allTypes = store.types.get();
 
 	const pinyinSortState = store.persistence.pinyinSortState.use();
 	const searchValue = store.persistence.searchValue.use();
@@ -41,21 +41,26 @@ export default function Beverages() {
 	const searchResult = useSearchResult(instance, throttledSearchValue);
 
 	const filterDlcs = store.persistence.filters.dlcs.use();
-	const filterLevels = store.persistence.filters.levels.use();
-	const filterTags = store.persistence.filters.tags.use();
-	const filterNoTags = store.persistence.filters.noTags.use();
+	const filterCategories = store.persistence.filters.categories.use();
+	const filterNoCategories = store.persistence.filters.noCategories.use();
+	const filterTypes = store.persistence.filters.types.use();
+	const filterNoTypes = store.persistence.filters.noTypes.use();
 
 	const filterData = useCallback(
 		() =>
-			searchResult.filter(({dlc, level, tags}) => {
-				const isDlcMatched = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
-				const isLevelMatched = filterLevels.length > 0 ? filterLevels.includes(level.toString()) : true;
-				const isTagMatched = filterTags.length > 0 ? checkArraySubsetOf(filterTags, tags) : true;
-				const isNoTagMatched = filterNoTags.length > 0 ? !checkArrayContainsOf(filterNoTags, tags) : true;
+			searchResult.filter(({category, dlc, type}) => {
+				const types = [type].flat();
 
-				return isDlcMatched && isLevelMatched && isTagMatched && isNoTagMatched;
+				const isDlcMatched = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
+				const isCategoryMatched = filterCategories.length > 0 ? filterCategories.includes(category) : true;
+				const isNoCategoryMatched =
+					filterNoCategories.length > 0 ? !filterNoCategories.includes(category) : true;
+				const isTypeMatched = filterTypes.length > 0 ? checkArrayContainsOf(filterTypes, types) : true;
+				const isNoTypeMatched = filterNoTypes.length > 0 ? !checkArrayContainsOf(filterNoTypes, types) : true;
+
+				return isDlcMatched && isCategoryMatched && isNoCategoryMatched && isTypeMatched && isNoTypeMatched;
 			}),
-		[filterDlcs, filterLevels, filterNoTags, filterTags, searchResult]
+		[filterCategories, filterDlcs, filterNoCategories, filterNoTypes, filterTypes, searchResult]
 	);
 
 	const filteredData = useFilteredData(instance, filterData);
@@ -65,11 +70,11 @@ export default function Beverages() {
 	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, store.persistence.pinyinSortState.set);
 
 	const searchConfig = useSearchConfig({
-		label: '选择或输入酒水名称',
+		label: '选择或输入厨具名称',
 		searchItems: allNames,
 		searchValue,
 		setSearchValue: store.persistence.searchValue.set,
-		spriteTarget: 'beverage',
+		spriteTarget: 'cooker',
 	});
 
 	const selectConfig = useMemo(
@@ -82,25 +87,31 @@ export default function Beverages() {
 					setSelectedKeys: store.persistence.filters.dlcs.set,
 				},
 				{
-					items: allTags,
-					label: '酒水标签（包含）',
-					selectedKeys: filterTags,
-					setSelectedKeys: store.persistence.filters.tags.set,
+					items: allCategories,
+					label: '厨具系列（包含）',
+					selectedKeys: filterCategories,
+					setSelectedKeys: store.persistence.filters.categories.set,
 				},
 				{
-					items: allTags,
-					label: '酒水标签（排除）',
-					selectedKeys: filterNoTags,
-					setSelectedKeys: store.persistence.filters.noTags.set,
+					items: allCategories,
+					label: '厨具系列（排除）',
+					selectedKeys: filterNoCategories,
+					setSelectedKeys: store.persistence.filters.noCategories.set,
 				},
 				{
-					items: allLevels,
-					label: '等级',
-					selectedKeys: filterLevels,
-					setSelectedKeys: store.persistence.filters.levels.set,
+					items: allTypes,
+					label: '厨具类别（包含）',
+					selectedKeys: filterTypes,
+					setSelectedKeys: store.persistence.filters.types.set,
+				},
+				{
+					items: allTypes,
+					label: '厨具类别（排除）',
+					selectedKeys: filterNoTypes,
+					setSelectedKeys: store.persistence.filters.noTypes.set,
 				},
 			] as const satisfies TSelectConfig,
-		[allDlcs, allLevels, allTags, filterDlcs, filterLevels, filterNoTags, filterTags]
+		[allCategories, allDlcs, allTypes, filterCategories, filterDlcs, filterNoCategories, filterNoTypes, filterTypes]
 	);
 
 	const isMounted = useMounted();

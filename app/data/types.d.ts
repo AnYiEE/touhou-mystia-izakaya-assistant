@@ -7,7 +7,7 @@ type TDlc = 0 | 1 | 2 | 3 | 4 | 5;
 
 type TLevel = 1 | 2 | 3 | 4 | 5 | 10;
 
-type TBusinessman =
+export type TBusinessman =
 	| '【博丽神社】河童商人'
 	| '【博丽神社】妖精女仆'
 	| '【地灵殿】地狱鸦'
@@ -32,7 +32,8 @@ type TBusinessman =
 	| '【妖怪兽道】杂货商人'
 	| '【妖怪之山】河童商人'
 	| '【因幡帝】“强买强卖”商店'
-	| '【月之都】月兔';
+	| '【月之都】月兔'
+	| '【魔界】蓬松松爱莲♡魔法店';
 
 type TCollectionLocation =
 	| '【博丽神社】参道西侧银杏树'
@@ -154,10 +155,10 @@ type TTask = '阿求小姐的色纸' | '女仆长的采购委托' | '月都试�
 
 export interface IItemBase {
 	name: string;
+	dlc: TDlc;
 }
 
 export interface ICustomerBase extends IItemBase {
-	dlc: TDlc;
 	places: TPlace[];
 	positiveTags: TRecipeTag[];
 	negativeTags: TRecipeTag[];
@@ -174,7 +175,6 @@ interface IFoodFrom {
 }
 
 export interface IFoodBase extends IItemBase {
-	dlc: TDlc;
 	level: TLevel;
 	price: number;
 	from: Partial<IFoodFrom>;

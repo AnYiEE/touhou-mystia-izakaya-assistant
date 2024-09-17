@@ -1,3 +1,4 @@
+export * from './item/cooker';
 export * from './customer';
 export * from './food';
 export * from './sprite';

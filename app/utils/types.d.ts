@@ -1,5 +1,6 @@
 import {
 	type Beverage,
+	type Cooker,
 	type CustomerNormal,
 	type CustomerRare,
 	type CustomerSpecial,
@@ -7,5 +8,5 @@ import {
 	type Recipe,
 } from '@/utils';
 
-export type TItemInstance = Beverage | CustomerNormal | CustomerRare | CustomerSpecial | Ingredient | Recipe;
+export type TItemInstance = Beverage | Cooker | CustomerNormal | CustomerRare | CustomerSpecial | Ingredient | Recipe;
 export type TItemData<T extends TItemInstance> = T['data'];

@@ -34,6 +34,11 @@ const navItems = [
 				href: '/ingredients',
 				sprite: 'ingredient',
 			},
+			{
+				label: '厨具',
+				href: '/cookers',
+				sprite: 'cooker',
+			},
 		],
 	},
 	{

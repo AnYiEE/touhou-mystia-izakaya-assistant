@@ -1,11 +1,11 @@
 import type {ISpriteConfig} from '@/utils/sprite/types';
 
 export const COOKER_SPRITE_CONFIG = {
-	col: 5,
-	row: 2,
+	col: 10,
+	row: 5,
 
-	height: 52,
-	width: 130,
+	height: 520,
+	width: 1040,
 } as const satisfies ISpriteConfig;
 
 export * from './data';
