@@ -39,6 +39,11 @@ const navItems = [
 				href: '/cookers',
 				sprite: 'cooker',
 			},
+			{
+				label: '摆件',
+				href: '/ornaments',
+				sprite: 'ornament',
+			},
 		],
 	},
 	{

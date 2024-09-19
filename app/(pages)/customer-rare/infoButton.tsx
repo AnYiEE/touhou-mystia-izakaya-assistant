@@ -19,7 +19,7 @@ import InfoButtonBase from './infoButtonBase';
 import Sprite from '@/components/sprite';
 
 import {customerRatingColorMap} from './constants';
-import type {TReward} from '@/data/customer_rare/types';
+import type {TReward, TRewardType} from '@/data/customer_rare/types';
 import {customerRareStore as store} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
@@ -42,6 +42,7 @@ export default function InfoButton() {
 	const currentCustomerData = store.shared.customer.data.use();
 
 	const instance_cooker = store.instances.cooker.get();
+	const instance_ornament = store.instances.ornament.get();
 	const instance_rare = store.instances.customer_rare.get();
 	const instance_recipe = store.instances.recipe.get();
 
@@ -61,8 +62,14 @@ export default function InfoButton() {
 
 	const [currentCustomerMainPlace] = currentCustomerPlaces;
 
+	const bondCooker = instance_cooker.getBondCooker(currentCustomerData);
+
+	const bondOrnamentsData = instance_ornament.getBondOrnaments(currentCustomerData);
+	const {length: bondOrnamentsDataLength} = bondOrnamentsData;
+
 	const bondRecipesData = instance_recipe.getBondRecipes(currentCustomerData);
 	const {length: bondRecipesDataLength} = bondRecipesData;
+
 	const {length: currentCustomerBondRewardsLength} = currentCustomerBondRewards;
 
 	const getDescription = ({description, reward, type}: TReward) => {
@@ -102,7 +109,7 @@ export default function InfoButton() {
 					</div>
 				);
 			default:
-				return `${type}效果：${typeof description === 'string' ? description.replace(/^\{\{\d+\}\}/u, '') : description}`;
+				return null;
 		}
 	};
 
@@ -111,21 +118,19 @@ export default function InfoButton() {
 			return '其他';
 		}
 
-		let level = 5;
-
-		if (typeof description === 'string') {
-			level = Number.parseInt(description.match(/^\{\{(\d+)\}\}/u)?.[1] ?? '5');
-		}
-
-		return level;
+		return 5;
 	};
 
-	const hasBondRewards = bondRecipesDataLength > 0 || currentCustomerBondRewardsLength > 0;
+	const hasBondRewards =
+		bondCooker !== null ||
+		bondRecipesDataLength > 0 ||
+		bondOrnamentsDataLength > 0 ||
+		currentCustomerBondRewardsLength > 0;
 	const hasSpellCards = Object.keys(currentCustomerSpellCards).length > 0;
 	const hasNegativeSpellCards = hasSpellCards && (currentCustomerSpellCards.negative as unknown[]).length > 0;
 	const hasPositiveSpellCards = hasSpellCards && (currentCustomerSpellCards.positive as unknown[]).length > 0;
 
-	const getLabel = (type: '料理' | TReward['type']) => `点击：在新窗口中查看此${type}的详情`;
+	const getLabel = (type: TRewardType) => `点击：在新窗口中查看此${type}的详情`;
 
 	return (
 		<InfoButtonBase defaultExpandedKeys={[hasBondRewards ? 'bond' : 'card']}>
@@ -158,87 +163,104 @@ export default function InfoButton() {
 									{index < bondRecipesDataLength - 1 && <br />}
 								</p>
 							))}
+							{bondCooker !== null && (
+								<>
+									{bondRecipesDataLength > 1 && <Divider />}
+									<p className="inline-flex items-center">
+										<LevelLabel level={5} />
+										<Tooltip showArrow content={getLabel('厨具')} placement="left" size="sm">
+											<span
+												onClick={() => {
+													openWindow('cookers', bondCooker);
+												}}
+												onKeyDown={(event) => {
+													if (checkA11yConfirmKey(event)) {
+														openWindow('cookers', bondCooker);
+													}
+												}}
+												aria-label={getLabel('厨具')}
+												role="button"
+												tabIndex={0}
+												className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
+											>
+												<Sprite
+													target="cooker"
+													name={bondCooker}
+													size={1.25}
+													className="mr-0.5"
+												/>
+												{bondCooker}
+											</span>
+										</Tooltip>
+									</p>
+								</>
+							)}
+							{bondOrnamentsData.map(({name, level}, index) => (
+								<Fragment key={index}>
+									{index === 0 && bondCooker === null && bondRecipesDataLength > 1 && <Divider />}
+									<p className="inline-flex items-center">
+										<LevelLabel level={level} />
+										<Tooltip showArrow content={getLabel('摆件')} placement="left" size="sm">
+											<span
+												onClick={() => {
+													openWindow('ornaments', name);
+												}}
+												onKeyDown={(event) => {
+													if (checkA11yConfirmKey(event)) {
+														openWindow('ornaments', name);
+													}
+												}}
+												aria-label={getLabel('摆件')}
+												role="button"
+												tabIndex={0}
+												className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
+											>
+												<Sprite target="ornament" name={name} size={1.25} className="mr-0.5" />
+												{name}
+											</span>
+										</Tooltip>
+										{index < bondOrnamentsDataLength - 1 && <br />}
+									</p>
+								</Fragment>
+							))}
 							{currentCustomerBondRewards.map((bondReward, index) => (
 								<Fragment key={index}>
-									{index === 0 && currentCustomerBondRewardsLength > 1 && <Divider />}
+									{index === 0 &&
+										bondCooker === null &&
+										bondOrnamentsDataLength === 0 &&
+										bondRecipesDataLength > 1 && <Divider />}
 									<p className="inline-flex items-center leading-5">
 										<LevelLabel level={getLevelLabel(bondReward)} />
-										{bondReward.type === '采集'
-											? `${bondReward.type}【${bondReward.reward}】`
-											: (() => {
-													const {reward, type} = bondReward;
-													const isCooker = type === '厨具';
-													const cookerName = isCooker
-														? instance_cooker.getBondCooker(currentCustomerData)
-														: null;
-													const hasTachie = type === '服装' || type === '伙伴';
-													const placement = isCooker || hasTachie ? 'left' : 'top';
-													return isCooker && cookerName !== null ? (
-														<Tooltip
-															showArrow
-															content={getLabel(type)}
-															placement={placement}
-															size="sm"
-														>
-															<span
-																onClick={() => {
-																	openWindow('cookers', cookerName);
-																}}
-																onKeyDown={(event) => {
-																	if (checkA11yConfirmKey(event)) {
-																		openWindow('cookers', cookerName);
-																	}
-																}}
-																aria-label={getLabel(type)}
-																role="button"
-																tabIndex={0}
-																className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
-															>
-																<Sprite
-																	target="cooker"
-																	name={cookerName}
-																	size={1.25}
-																	className="mr-0.5"
-																/>
-																{cookerName}
-															</span>
-														</Tooltip>
-													) : (
-														<>
-															{type}【
-															<Popover
-																showArrow
-																offset={hasTachie ? 15 : 7}
-																size="sm"
-																placement={placement}
-															>
-																<Tooltip
-																	showArrow
-																	content={getDescription(bondReward)}
-																	offset={hasTachie ? 12 : 3}
-																	placement={placement}
-																	size="sm"
+										{bondReward.type === '采集' ? (
+											`${bondReward.type}【${bondReward.reward}】`
+										) : (
+											<>
+												{bondReward.type}【
+												<Popover showArrow offset={15} size="sm" placement="left">
+													<Tooltip
+														showArrow
+														content={getDescription(bondReward)}
+														offset={12}
+														placement="left"
+														size="sm"
+													>
+														<span className="inline-flex cursor-pointer">
+															<PopoverTrigger>
+																<span
+																	role="button"
+																	tabIndex={0}
+																	className="underline-dotted-offset2"
 																>
-																	<span className="inline-flex cursor-pointer">
-																		<PopoverTrigger>
-																			<span
-																				role="button"
-																				tabIndex={0}
-																				className="underline-dotted-offset2"
-																			>
-																				{reward}
-																			</span>
-																		</PopoverTrigger>
-																	</span>
-																</Tooltip>
-																<PopoverContent>
-																	{getDescription(bondReward)}
-																</PopoverContent>
-															</Popover>
-															】
-														</>
-													);
-												})()}
+																	{bondReward.reward}
+																</span>
+															</PopoverTrigger>
+														</span>
+													</Tooltip>
+													<PopoverContent>{getDescription(bondReward)}</PopoverContent>
+												</Popover>
+												】
+											</>
+										)}
 									</p>
 								</Fragment>
 							))}

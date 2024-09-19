@@ -75,13 +75,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '水产', '重油', '甜', '烧烤', '流行喜爱'],
 		negativeTags: ['素', '灼热', '猎奇', '流行厌恶'],
 		beverageTags: ['水果', '辛'],
-		bondRewards: [
-			{
-				type: '摆件',
-				reward: '招财猫',
-				description: '使店内的小费率额外增加15%',
-			},
-		],
+		bondRewards: [],
 		spellCards: {
 			positive: [
 				{
@@ -188,11 +182,6 @@ export const CUSTOMER_RARE_LIST = [
 		beverageTags: ['中酒精', '直饮', '古典'],
 		bondRewards: [
 			{
-				type: '摆件',
-				reward: '富贵牡丹',
-				description: '顾客对料理的评价若至少为普通，则心情额外增加15',
-			},
-			{
 				type: '伙伴',
 				reward: '本居小铃',
 				description: '完成地区【人间之里】主线任务',
@@ -297,13 +286,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['素', '传说', '清淡', '甜', '适合拍照', '果味', '昂贵', '流行厌恶'],
 		negativeTags: ['肉', '家常', '重油', '流行喜爱'],
 		beverageTags: ['高酒精', '鸡尾酒'],
-		bondRewards: [
-			{
-				type: '摆件',
-				reward: '强运桃子',
-				description: '顾客对料理的评价若至少为普通，则有15%的概率提高评价至完美',
-			},
-		],
+		bondRewards: [],
 		spellCards: {
 			positive: [
 				{
@@ -332,13 +315,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '饱腹', '中华', '力量涌现', '流行喜爱'],
 		negativeTags: ['西式', '猎奇', '果味', '流行厌恶'],
 		beverageTags: ['可加热', '古典', '提神'],
-		bondRewards: [
-			{
-				type: '摆件',
-				reward: '胖滚君',
-				description: '店内所有顾客每15秒会进行1-20的打赏',
-			},
-		],
+		bondRewards: [],
 		spellCards: {
 			positive: [
 				{
@@ -509,11 +486,6 @@ export const CUSTOMER_RARE_LIST = [
 		beverageTags: ['无酒精', '水果', '甘'],
 		bondRewards: [
 			{
-				type: '摆件',
-				reward: '幸运的素兔？',
-				description: '制作料理时有15%的概率不会减少食材',
-			},
-			{
 				type: '伙伴',
 				reward: '铃仙',
 				description: '完成3月16日“竹林对决”任务后自动获得',
@@ -547,11 +519,6 @@ export const CUSTOMER_RARE_LIST = [
 		negativeTags: ['素', '山珍', '文化底蕴'],
 		beverageTags: ['中酒精', '高酒精', '清酒', '直饮'],
 		bondRewards: [
-			{
-				type: '摆件',
-				reward: '河童重工电话机',
-				description: '幻想乡流行起来的远程通话装置！使用它不用到达朋友的面前也可以通话啦！',
-			},
 			{
 				type: '伙伴',
 				reward: '键山雏',
@@ -743,13 +710,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['清淡', '山珍', '和风', '文化底蕴', '特产'],
 		negativeTags: ['重油', '饱腹'],
 		beverageTags: ['低酒精', '中酒精', '可加冰', '直饮', '古典'],
-		bondRewards: [
-			{
-				type: '摆件',
-				reward: '地藏人偶',
-				description: '成美给的礼物，可以放置在家门口，每天参拜会得到很棒的贡品',
-			},
-		],
+		bondRewards: [],
 		spellCards: {
 			positive: [
 				{
@@ -816,13 +777,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '咸', '鲜', '果味', '辣', '酸', '流行厌恶'],
 		negativeTags: ['甜'],
 		beverageTags: ['无酒精', '可加热', '直饮', '辛', '苦'],
-		bondRewards: [
-			{
-				type: '摆件',
-				reward: '仇返人形',
-				description: '可以抵挡一次中断Combo的失误',
-			},
-		],
+		bondRewards: [],
 		spellCards: {
 			positive: [
 				{
@@ -955,11 +910,6 @@ export const CUSTOMER_RARE_LIST = [
 		beverageTags: ['无酒精', '苦', '气泡', '提神'],
 		bondRewards: [
 			{
-				type: '摆件',
-				reward: '觉之眼',
-				description: '可以看到每个顾客的预算额度',
-			},
-			{
 				type: '伙伴',
 				reward: '小野冢小町',
 				description: true,
@@ -1070,13 +1020,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '鲜', '生', '招牌', '适合拍照', '猎奇', '不可思议', '特产', '流行厌恶'],
 		negativeTags: ['西式', '酸', '流行喜爱'],
 		beverageTags: ['可加热', '烧酒', '直饮', '古典'],
-		bondRewards: [
-			{
-				type: '摆件',
-				reward: '飞碟老虎机',
-				description: '有几率获得意外奖励',
-			},
-		],
+		bondRewards: [],
 		spellCards: {
 			positive: [
 				{
@@ -1106,13 +1050,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '传说', '清淡', '山珍', '和风', '燃起来了', '流行喜爱'],
 		negativeTags: ['西式', '生', '流行厌恶'],
 		beverageTags: ['中酒精', '可加热', '直饮', '气泡'],
-		bondRewards: [
-			{
-				type: '厨具',
-				reward: null,
-				description: null,
-			},
-		],
+		bondRewards: [],
 		spellCards: {
 			positive: [
 				{
@@ -1299,18 +1237,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '家常', '山珍', '和风', '适合拍照', '凉爽', '流行喜爱'],
 		negativeTags: ['灼热'],
 		beverageTags: ['中酒精', '可加冰', '清酒', '直饮'],
-		bondRewards: [
-			{
-				type: '摆件',
-				reward: '钓鱼竿',
-				description: '{{1}}普通的钓鱼竿，只能进行一些简单的钓鱼工作',
-			},
-			{
-				type: '摆件',
-				reward: '超级钓鱼竿',
-				description: '可以进行精细高级操作的钓鱼竿，除了能够钓鱼，还能够寻找到宝箱！',
-			},
-		],
+		bondRewards: [],
 		spellCards: {
 			positive: [
 				{
@@ -1355,13 +1282,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '家常', '下酒', '和风', '招牌', '适合拍照', '流行喜爱'],
 		negativeTags: ['西式', '流行厌恶'],
 		beverageTags: ['高酒精', '可加冰', '烧酒', '提神'],
-		bondRewards: [
-			{
-				type: '厨具',
-				reward: null,
-				description: null,
-			},
-		],
+		bondRewards: [],
 		spellCards: {
 			positive: [
 				{
@@ -1473,11 +1394,6 @@ export const CUSTOMER_RARE_LIST = [
 		negativeTags: ['高级', '清淡'],
 		beverageTags: ['高酒精', '可加冰', '烧酒', '西洋酒', '辛'],
 		bondRewards: [
-			{
-				type: '摆件',
-				reward: '杜门谢客',
-				description: '能够屏蔽稀有顾客来店（包括邀请顾客）',
-			},
 			{
 				type: '伙伴',
 				reward: '萨拉',
@@ -1637,13 +1553,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['素', '高级', '和风', '甜', '凉爽', '文化底蕴', '果味', '流行喜爱'],
 		negativeTags: ['山珍', '咸', '力量涌现'],
 		beverageTags: ['高酒精', '可加冰', '清酒', '水果', '古典'],
-		bondRewards: [
-			{
-				type: '摆件',
-				reward: '门无杂宾',
-				description: '能够屏蔽普通顾客来店（包括符卡效果）',
-			},
-		],
+		bondRewards: [],
 		spellCards: {
 			positive: [
 				{

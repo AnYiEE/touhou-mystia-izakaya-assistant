@@ -84,6 +84,10 @@ const changelog = [
 		version: 'v1.1',
 		changes: ['新增：厨具页面。'],
 	},
+	{
+		version: 'v1.2',
+		changes: ['新增：摆件页面。'],
+	},
 ] as const satisfies {
 	version: `v${string}`;
 	changes: `${string}：${string}。`[];

@@ -2,7 +2,7 @@ import {isObjectLike} from 'lodash';
 
 import {type ICurrentCustomer} from '@/(pages)/customer-rare/types';
 
-import {COOKER_LIST, TCookerCategories, type TCookerNames, type TCookers} from '@/data';
+import {COOKER_LIST, type TCookerCategories, type TCookerNames, type TCookers} from '@/data';
 import {checkArrayEqualOf} from '@/utils';
 import {Item} from '@/utils/item';
 

@@ -17,22 +17,6 @@ type TClothing =
 	| '星尘披风套装'
 	| '中华风校服';
 
-type TOrnament =
-	| '超级钓鱼竿'
-	| '仇返人形'
-	| '地藏人偶'
-	| '钓鱼竿'
-	| '杜门谢客'
-	| '飞碟老虎机'
-	| '富贵牡丹'
-	| '河童重工电话机'
-	| '觉之眼'
-	| '门无杂宾'
-	| '胖滚君'
-	| '强运桃子'
-	| '幸运的素兔？'
-	| '招财猫';
-
 type TPartner =
 	| '本居小铃'
 	| '赤蛮奇'
@@ -50,24 +34,13 @@ type TPartner =
 	| '小野冢小町'
 	| '云居一轮';
 
+export type TRewardType = '摆件' | '采集' | '厨具' | '服装' | '伙伴' | '料理';
+
 export type TReward =
-	| {
-			type: '摆件';
-			reward: TOrnament;
-			/** @description If `{{number}}` is used as a prefix,it is considered that the level of the bond has been specified, with a default value of 5. */
-			description: string | null;
-	  }
 	| {
 			type: '采集';
 			reward: TPlace;
 			description: string | null;
-	  }
-	| {
-			type: '厨具';
-			/** @description To get `reward`, use the instance of cooker. */
-			reward: null;
-			/** @description To get `description`, use the instance of cooker. */
-			description: null;
 	  }
 	| {
 			type: '服装';

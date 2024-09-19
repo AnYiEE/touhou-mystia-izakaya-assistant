@@ -9,4 +9,5 @@ export * from './cookers';
 export * from './customer-normal';
 export * from './customer-rare';
 export * from './ingredients';
+export * from './ornaments';
 export * from './recipes';

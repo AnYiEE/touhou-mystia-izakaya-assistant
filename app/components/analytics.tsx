@@ -28,7 +28,7 @@ export enum TrackCategory {
 type TAction = 'Import' | 'Remove' | 'Reset' | 'Save' | 'Select';
 type TActionButton = `${TAction} Button`;
 type TError = 'Global' | 'Sync';
-type TItem = 'Beverage' | 'Cooker' | 'Ingredient' | 'Recipe';
+type TItem = 'Beverage' | 'Cooker' | 'Ingredient' | 'Ornament' | 'Recipe';
 type TItemCard = `${TItem} Card`;
 type TItemAlone = 'Customer' | 'Customer Tag' | 'MystiaCooker';
 

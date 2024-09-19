@@ -1,4 +1,5 @@
 export * from './item/cooker';
+export * from './item/ornament';
 export * from './customer';
 export * from './food';
 export * from './sprite';

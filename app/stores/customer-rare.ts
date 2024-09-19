@@ -29,6 +29,7 @@ import {
 	CustomerRare,
 	CustomerSpecial,
 	Ingredient,
+	Ornament,
 	Recipe,
 	numberSort,
 	pinyinSort,
@@ -51,6 +52,7 @@ export interface IRecipeData {
 const instance_beverage = Beverage.getInstance();
 const instance_cooker = Cooker.getInstance();
 const instance_ingredient = Ingredient.getInstance();
+const instance_ornament = Ornament.getInstance();
 const instance_recipe = Recipe.getInstance();
 const instance_rare = CustomerRare.getInstance();
 const instance_special = CustomerSpecial.getInstance();
@@ -86,6 +88,7 @@ const state = {
 		customer_rare: instance_rare,
 		customer_special: instance_special,
 		ingredient: instance_ingredient,
+		ornament: instance_ornament,
 		recipe: instance_recipe,
 	},
 
