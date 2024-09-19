@@ -19,6 +19,7 @@ import {type IPopularData, type TPopularTag} from '@/stores';
 import {getAllItemNames, keepLastTag, reverseDirection} from '@/stores/utils';
 import {
 	Beverage,
+	Clothes,
 	CustomerNormal,
 	Ingredient,
 	Recipe,
@@ -30,6 +31,7 @@ import {
 } from '@/utils';
 
 const instance_beverage = Beverage.getInstance();
+const instance_clothes = Clothes.getInstance();
 const instance_customer = CustomerNormal.getInstance();
 const instance_ingredient = Ingredient.getInstance();
 const instance_recipe = Recipe.getInstance();
@@ -49,6 +51,7 @@ const storeVersion = {
 const state = {
 	instances: {
 		beverage: instance_beverage,
+		clothes: instance_clothes,
 		customer: instance_customer,
 		ingredient: instance_ingredient,
 		recipe: instance_recipe,

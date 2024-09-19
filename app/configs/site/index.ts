@@ -44,6 +44,11 @@ const navItems = [
 				href: '/ornaments',
 				sprite: 'ornament',
 			},
+			{
+				label: '衣服',
+				href: '/clothes',
+				sprite: 'clothes',
+			},
 		],
 	},
 	{

@@ -41,13 +41,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '饱腹', '生', '招牌', '猎奇', '流行喜爱'],
 		negativeTags: ['下酒', '昂贵', '流行厌恶'],
 		beverageTags: ['苦', '气泡'],
-		bondRewards: [
-			{
-				type: '服装',
-				reward: '黑色套装',
-				description: null,
-			},
-		],
+		bondRewards: [],
 		spellCards: {
 			positive: [
 				{
@@ -103,13 +97,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['素', '家常', '清淡', '和风', '中华', '文化底蕴', '流行喜爱'],
 		negativeTags: ['重油', '咸', '大份', '流行厌恶'],
 		beverageTags: ['烧酒', '清酒', '利口酒'],
-		bondRewards: [
-			{
-				type: '服装',
-				reward: '中华风校服',
-				description: null,
-			},
-		],
+		bondRewards: [],
 		spellCards: {
 			positive: [
 				{
@@ -212,11 +200,6 @@ export const CUSTOMER_RARE_LIST = [
 		negativeTags: ['下酒', '昂贵', '流行厌恶'],
 		beverageTags: ['无酒精', '低酒精', '可加热'],
 		bondRewards: [
-			{
-				type: '服装',
-				reward: '褪色的巫女服',
-				description: null,
-			},
 			{
 				type: '伙伴',
 				reward: '高丽野阿吽',
@@ -380,11 +363,6 @@ export const CUSTOMER_RARE_LIST = [
 		beverageTags: ['鸡尾酒', '利口酒', '气泡'],
 		bondRewards: [
 			{
-				type: '服装',
-				reward: '睡衣',
-				description: null,
-			},
-			{
 				type: '伙伴',
 				reward: '十六夜咲夜',
 				description: '完成蕾米莉亚的试炼',
@@ -450,13 +428,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['传说', '和风', '文化底蕴', '不可思议', '流行喜爱'],
 		negativeTags: ['招牌', '猎奇', '大份', '流行厌恶'],
 		beverageTags: ['清酒', '古典', '现代'],
-		bondRewards: [
-			{
-				type: '服装',
-				reward: '访问着和服',
-				description: null,
-			},
-		],
+		bondRewards: [],
 		spellCards: {
 			positive: [
 				{
@@ -587,13 +559,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '和风', '甜', '适合拍照', '梦幻', '流行喜爱'],
 		negativeTags: ['重油', '生', '灼热', '猎奇', '流行厌恶'],
 		beverageTags: ['无酒精', '低酒精', '清酒', '直饮', '水果', '甘', '苦', '气泡', '现代'],
-		bondRewards: [
-			{
-				type: '服装',
-				reward: '冬季水手服',
-				description: null,
-			},
-		],
+		bondRewards: [],
 		spellCards: {
 			positive: [
 				{
@@ -675,13 +641,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['传说', '重油', '和风', '灼热', '菌类', '流行喜爱'],
 		negativeTags: ['猎奇', '流行厌恶'],
 		beverageTags: ['低酒精', '可加冰'],
-		bondRewards: [
-			{
-				type: '服装',
-				reward: '魔女服',
-				description: null,
-			},
-		],
+		bondRewards: [],
 		spellCards: {
 			positive: [
 				{
@@ -806,13 +766,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['传说', '下酒', '和风', '招牌', '力量涌现', '燃起来了', '大份', '流行喜爱'],
 		negativeTags: ['素', '猎奇', '小巧'],
 		beverageTags: ['高酒精', '清酒', '啤酒', '古典'],
-		bondRewards: [
-			{
-				type: '服装',
-				reward: '花魁浴衣',
-				description: null,
-			},
-		],
+		bondRewards: [],
 		spellCards: {
 			positive: [
 				{
@@ -876,13 +830,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '重油', '咸', '灼热', '力量涌现', '辣'],
 		negativeTags: ['清淡', '菌类'],
 		beverageTags: ['中酒精', '可加热', '鸡尾酒'],
-		bondRewards: [
-			{
-				type: '服装',
-				reward: '星尘披风套装',
-				description: null,
-			},
-		],
+		bondRewards: [],
 		spellCards: {
 			positive: [
 				{
@@ -982,13 +930,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '高级', '饱腹', '咸', '鲜', '力量涌现', '特产'],
 		negativeTags: ['素', '猎奇', '小巧', '酸'],
 		beverageTags: ['高酒精', '可加冰', '西洋酒', '辛'],
-		bondRewards: [
-			{
-				type: '服装',
-				reward: '海盗服',
-				description: null,
-			},
-		],
+		bondRewards: [],
 		spellCards: {
 			positive: [
 				{
@@ -1080,11 +1022,6 @@ export const CUSTOMER_RARE_LIST = [
 		negativeTags: ['重油', '饱腹'],
 		beverageTags: ['低酒精', '清酒', '水果', '现代'],
 		bondRewards: [
-			{
-				type: '服装',
-				reward: '仙女服',
-				description: null,
-			},
 			{
 				type: '伙伴',
 				reward: '宫古芳香',
@@ -1197,11 +1134,6 @@ export const CUSTOMER_RARE_LIST = [
 		beverageTags: ['中酒精', '烧酒', '直饮', '辛'],
 		bondRewards: [
 			{
-				type: '服装',
-				reward: '番长服',
-				description: null,
-			},
-			{
 				type: '伙伴',
 				reward: '赤蛮奇',
 				description: true,
@@ -1312,11 +1244,6 @@ export const CUSTOMER_RARE_LIST = [
 		negativeTags: ['饱腹', '和风', '咸', '灼热'],
 		beverageTags: ['鸡尾酒', '西洋酒', '利口酒', '现代'],
 		bondRewards: [
-			{
-				type: '服装',
-				reward: '花的报恩',
-				description: null,
-			},
 			{
 				type: '伙伴',
 				reward: '拉尔瓦',
@@ -1444,13 +1371,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['水产', '西式', '甜', '适合拍照', '小巧', '特产', '流行喜爱'],
 		negativeTags: ['重油', '饱腹'],
 		beverageTags: ['中酒精', '可加冰', '鸡尾酒', '啤酒', '现代'],
-		bondRewards: [
-			{
-				type: '服装',
-				reward: '海滩度假装',
-				description: null,
-			},
-		],
+		bondRewards: [],
 		spellCards: {
 			positive: [
 				{
@@ -1586,11 +1507,6 @@ export const CUSTOMER_RARE_LIST = [
 		negativeTags: ['山珍', '菌类'],
 		beverageTags: ['可加热', '烧酒', '直饮', '辛', '提神'],
 		bondRewards: [
-			{
-				type: '服装',
-				reward: '军乐队礼服',
-				description: null,
-			},
 			{
 				type: '伙伴',
 				reward: '哆来咪',

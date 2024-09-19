@@ -4,6 +4,8 @@ import type {ISpriteConfig, TSpriteData, TSpriteTarget} from './types';
 import {
 	BEVERAGE_LIST,
 	BEVERAGE_SPRITE_CONFIG,
+	CLOTHES_LIST,
+	CLOTHES_SPRITE_CONFIG,
 	COOKER_LIST,
 	COOKER_SPRITE_CONFIG,
 	CUSTOMER_NORMAL_LIST,
@@ -24,6 +26,7 @@ import {Item} from '@/utils/item';
 
 const SPRITE_CONFIG_MAP = {
 	beverage: BEVERAGE_SPRITE_CONFIG,
+	clothes: CLOTHES_SPRITE_CONFIG,
 	cooker: COOKER_SPRITE_CONFIG,
 	customer_normal: CUSTOMER_NORMAL_SPRITE_CONFIG,
 	customer_rare: CUSTOMER_RARE_SPRITE_CONFIG,
@@ -35,6 +38,7 @@ const SPRITE_CONFIG_MAP = {
 
 const SPRITE_DATA_MAP = {
 	beverage: BEVERAGE_LIST,
+	clothes: CLOTHES_LIST,
 	cooker: COOKER_LIST,
 	customer_normal: CUSTOMER_NORMAL_LIST,
 	customer_rare: CUSTOMER_RARE_LIST,

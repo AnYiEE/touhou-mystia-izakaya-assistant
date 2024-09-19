@@ -3,7 +3,7 @@ import type {IIngredient} from './ingredients/types';
 import type {IRecipe, TTagNeedCalculate} from './recipes/types';
 
 /** @description The meaning of "DLC 0" here refers to the base game. */
-type TDlc = 0 | 1 | 2 | 3 | 4 | 5;
+type TDlc = 0 | 1 | 2 | 2.5 | 3 | 4 | 5;
 
 type TLevel = 1 | 2 | 3 | 4 | 5 | 10;
 

@@ -3,7 +3,7 @@
 import {type JSX, type PropsWithChildren, memo, startTransition, useReducer} from 'react';
 import {usePathname} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
-import {twMerge} from 'tailwind-merge';
+import {twJoin, twMerge} from 'tailwind-merge';
 
 import {
 	Button,
@@ -252,6 +252,9 @@ export default function Navbar() {
 									toggleMenuOpened();
 								}}
 								href={href}
+								className={twJoin(
+									(isActivated || href === '/preferences') && 'underline underline-offset-4'
+								)}
 							>
 								{label}
 							</Link>

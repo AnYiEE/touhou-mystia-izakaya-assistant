@@ -14,7 +14,7 @@ import {
 	useVibrate,
 } from '@/hooks';
 
-import {Image, Tab, Tabs} from '@nextui-org/react';
+import {Tab, Tabs} from '@nextui-org/react';
 
 import BeverageTabContent from './beverageTabContent';
 import CustomerCard from './customerCard';
@@ -30,6 +30,7 @@ import SideButtonGroup from '@/components/sideButtonGroup';
 import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
+import Tachie from '@/components/tachie';
 
 import {customerTabStyleMap, ingredientTabStyleMap, tachieBreakPoint} from './constants';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
@@ -369,17 +370,14 @@ export default function CustomerRare() {
 			</SideButtonGroup>
 
 			{isShowTachie && breakpoint === 'tachie' && (
-				<Image
+				<Tachie
 					aria-hidden
-					removeWrapper
-					draggable={false}
-					alt=""
 					src={(currentCustomerData?.target === 'customer_special'
 						? instance_special
 						: instance_rare
 					).getTachiePath('customer', currentCustomerData)}
 					width={currentCustomerData?.target === 'customer_special' ? 60 : 120}
-					className="pointer-events-none fixed bottom-0 right-0 select-none pr-2"
+					className="pointer-events-none fixed bottom-0 right-0 pr-2"
 				/>
 			)}
 		</div>

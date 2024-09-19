@@ -2,10 +2,10 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 
 import {openedPopoverParam} from '@/hooks/useOpenedItemPopover';
 
-import {type TCookerNames, type TFoodNames, type TOrnamentNames} from '@/data';
+import {type TClothesNames, type TCookerNames, type TFoodNames, type TOrnamentNames} from '@/data';
 
-type TItemPaths = 'beverages' | 'cookers' | 'ingredients' | 'ornaments' | 'recipes';
-type TItemNames = TCookerNames | TFoodNames | TOrnamentNames;
+type TItemPaths = 'beverages' | 'clothes' | 'cookers' | 'ingredients' | 'ornaments' | 'recipes';
+type TItemNames = TClothesNames | TCookerNames | TFoodNames | TOrnamentNames;
 
 export type TOpenWindow = (path: TItemPaths, name: TItemNames) => void;
 
@@ -28,7 +28,7 @@ export function useViewInNewWindow() {
 			[openedPopoverParam]: windowItemNames[0], // eslint-disable-next-line sort-keys
 			[inNewWindowParam]: '1',
 		}).toString()}`;
-		const height = 480;
+		const height = 640;
 		const width = 384;
 
 		const newWindowObject = window.open(

@@ -14,7 +14,7 @@ import {
 	useVibrate,
 } from '@/hooks';
 
-import {Image, Tab, Tabs} from '@nextui-org/react';
+import {Tab, Tabs} from '@nextui-org/react';
 
 import BeverageTabContent from './beverageTabContent';
 import CustomerCard from './customerCard';
@@ -30,6 +30,7 @@ import SideButtonGroup from '@/components/sideButtonGroup';
 import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
+import Tachie from '@/components/tachie';
 
 import {customerTabStyleMap, ingredientTabStyleMap, tachieBreakPoint} from './constants';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
@@ -242,6 +243,8 @@ export default function CustomerNormal() {
 		[vibrate]
 	);
 
+	const instance_clothes = customerStore.instances.clothes.get();
+
 	const isMounted = useMounted();
 	if (!isMounted) {
 		return (
@@ -334,15 +337,11 @@ export default function CustomerNormal() {
 			</SideButtonGroup>
 
 			{isShowTachie && breakpoint === 'tachie' && (
-				<Image
+				<Tachie
 					aria-hidden
-					removeWrapper
-					draggable={false}
-					alt=""
-					// cSpell:ignore quejiuwugongzuozhuang
-					src="/assets/tachies/clothes/quejiuwugongzuozhuang.png"
+					src={instance_clothes.getTachiePath('雀酒屋工作装')}
 					width={120}
-					className="pointer-events-none fixed bottom-0 right-0 select-none pr-2"
+					className="pointer-events-none fixed bottom-0 right-0 pr-2"
 				/>
 			)}
 		</div>

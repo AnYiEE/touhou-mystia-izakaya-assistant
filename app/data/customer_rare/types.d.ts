@@ -1,22 +1,5 @@
 import type {ICustomerBase, TPlace, TRecipeTag} from '@/data/types';
 
-type TClothing =
-	| '冬季水手服'
-	| '番长服'
-	| '访问着和服'
-	| '海盗服'
-	| '海滩度假装'
-	| '黑色套装'
-	| '花的报恩'
-	| '花魁浴衣'
-	| '军乐队礼服'
-	| '魔女服'
-	| '睡衣'
-	| '褪色的巫女服'
-	| '仙女服'
-	| '星尘披风套装'
-	| '中华风校服';
-
 type TPartner =
 	| '本居小铃'
 	| '赤蛮奇'
@@ -34,8 +17,6 @@ type TPartner =
 	| '小野冢小町'
 	| '云居一轮';
 
-export type TRewardType = '摆件' | '采集' | '厨具' | '服装' | '伙伴' | '料理';
-
 export type TReward =
 	| {
 			type: '采集';
@@ -43,15 +24,12 @@ export type TReward =
 			description: string | null;
 	  }
 	| {
-			type: '服装';
-			reward: TClothing;
-			description: string | null;
-	  }
-	| {
 			type: '伙伴';
 			reward: TPartner;
 			description: true | string | null;
 	  };
+
+export type TRewardType = '摆件' | '厨具' | '料理' | '衣服' | TReward['type'];
 
 interface ISpellCard {
 	name: string;

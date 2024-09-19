@@ -7,7 +7,6 @@ import {
 	AccordionItem,
 	Avatar,
 	Divider,
-	Image,
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
@@ -17,6 +16,7 @@ import {
 
 import InfoButtonBase from './infoButtonBase';
 import Sprite from '@/components/sprite';
+import Tachie from '@/components/tachie';
 
 import {customerRatingColorMap} from './constants';
 import type {TReward, TRewardType} from '@/data/customer_rare/types';
@@ -41,14 +41,15 @@ export default function InfoButton() {
 
 	const currentCustomerData = store.shared.customer.data.use();
 
+	if (!currentCustomerData) {
+		return null;
+	}
+
+	const instance_clothes = store.instances.clothes.get();
 	const instance_cooker = store.instances.cooker.get();
 	const instance_ornament = store.instances.ornament.get();
 	const instance_rare = store.instances.customer_rare.get();
 	const instance_recipe = store.instances.recipe.get();
-
-	if (!currentCustomerData) {
-		return null;
-	}
 
 	const {name: currentCustomerName, target: currentCustomerTarget} = currentCustomerData;
 
@@ -62,6 +63,7 @@ export default function InfoButton() {
 
 	const [currentCustomerMainPlace] = currentCustomerPlaces;
 
+	const bondClothes = instance_clothes.getBondClothes(currentCustomerData);
 	const bondCooker = instance_cooker.getBondCooker(currentCustomerData);
 
 	const bondOrnamentsData = instance_ornament.getBondOrnaments(currentCustomerData);
@@ -74,33 +76,14 @@ export default function InfoButton() {
 
 	const getDescription = ({description, reward, type}: TReward) => {
 		switch (type) {
-			case '服装':
-				return (
-					<Image
-						removeWrapper
-						draggable={false}
-						src={instance_rare.getTachiePath(
-							'clothes',
-							reward,
-							reward === '黑色套装' || reward === '星尘披风套装'
-						)}
-						width={120}
-						alt={reward}
-						title={reward}
-						className="my-1 select-none"
-					/>
-				);
 			case '伙伴':
 				return (
 					<div className="flex flex-col items-center">
-						<Image
-							removeWrapper
-							draggable={false}
+						<Tachie
+							alt={reward}
 							src={instance_rare.getTachiePath('partners', reward)}
 							width={100}
-							alt={`${reward}立绘`}
-							title={reward}
-							className="my-1 select-none"
+							className="my-1"
 						/>
 						<p>
 							解锁条件：
@@ -122,6 +105,7 @@ export default function InfoButton() {
 	};
 
 	const hasBondRewards =
+		bondClothes !== null ||
 		bondCooker !== null ||
 		bondRecipesDataLength > 0 ||
 		bondOrnamentsDataLength > 0 ||
@@ -139,7 +123,7 @@ export default function InfoButton() {
 					<div className="flex flex-col gap-2 text-justify text-xs">
 						<div className="space-y-1">
 							{bondRecipesData.map(({name, level}, index) => (
-								<p key={index} className="inline-flex items-center">
+								<p key={index} className="flex items-center">
 									<LevelLabel level={level} />
 									<Tooltip showArrow content={getLabel('料理')} placement="left" size="sm">
 										<span
@@ -166,7 +150,7 @@ export default function InfoButton() {
 							{bondCooker !== null && (
 								<>
 									{bondRecipesDataLength > 1 && <Divider />}
-									<p className="inline-flex items-center">
+									<p className="flex items-center">
 										<LevelLabel level={5} />
 										<Tooltip showArrow content={getLabel('厨具')} placement="left" size="sm">
 											<span
@@ -195,10 +179,45 @@ export default function InfoButton() {
 									</p>
 								</>
 							)}
+							{bondClothes !== null && (
+								<>
+									{bondCooker === null && bondRecipesDataLength > 1 && <Divider />}
+									<p className="flex items-center">
+										<LevelLabel level={5} />
+										<Tooltip showArrow content={getLabel('衣服')} placement="left" size="sm">
+											<span
+												onClick={() => {
+													openWindow('clothes', bondClothes);
+												}}
+												onKeyDown={(event) => {
+													if (checkA11yConfirmKey(event)) {
+														openWindow('clothes', bondClothes);
+													}
+												}}
+												aria-label={getLabel('衣服')}
+												role="button"
+												tabIndex={0}
+												className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
+											>
+												<Sprite
+													target="clothes"
+													name={bondClothes}
+													size={1.25}
+													className="mr-0.5"
+												/>
+												{bondClothes}
+											</span>
+										</Tooltip>
+									</p>
+								</>
+							)}
 							{bondOrnamentsData.map(({name, level}, index) => (
 								<Fragment key={index}>
-									{index === 0 && bondCooker === null && bondRecipesDataLength > 1 && <Divider />}
-									<p className="inline-flex items-center">
+									{index === 0 &&
+										bondClothes === null &&
+										bondCooker === null &&
+										bondRecipesDataLength > 1 && <Divider />}
+									<p className="flex items-center">
 										<LevelLabel level={level} />
 										<Tooltip showArrow content={getLabel('摆件')} placement="left" size="sm">
 											<span
@@ -226,10 +245,11 @@ export default function InfoButton() {
 							{currentCustomerBondRewards.map((bondReward, index) => (
 								<Fragment key={index}>
 									{index === 0 &&
+										bondClothes === null &&
 										bondCooker === null &&
 										bondOrnamentsDataLength === 0 &&
 										bondRecipesDataLength > 1 && <Divider />}
-									<p className="inline-flex items-center leading-5">
+									<p className="flex items-center leading-5">
 										<LevelLabel level={getLevelLabel(bondReward)} />
 										{bondReward.type === '采集' ? (
 											`${bondReward.type}【${bondReward.reward}】`

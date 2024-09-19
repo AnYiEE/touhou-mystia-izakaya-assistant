@@ -1,54 +1,51 @@
 import type {ICurrentCustomer} from '@/(pages)/customer-rare/types';
 
 import type {ICustomer} from './types';
+import {Clothes, pinyinPro, processPinyin} from '@/utils';
 import {Item} from '@/utils/item';
-import {pinyinPro, processPinyin} from '@/utils';
 
 export class Customer<Target extends ICustomer[]> extends Item<Target> {
-	private static tachiePathCache = new Map<string, string>();
-	private static tachiePinyinCache = new Map<string, string>();
+	private static _tachiePathCache = new Map<string, string>();
+	private static _tachiePinyinCache = new Map<string, string>();
 
 	public getTachiePath(type: 'customer', data: ICurrentCustomer | null): string;
-	public getTachiePath(type: 'clothes' | 'partners', data: string, isGif?: boolean): string;
-	public getTachiePath(
-		type: 'customer' | 'clothes' | 'partners',
-		data: string | ICurrentCustomer | null,
-		isGif?: boolean
-	) {
+	public getTachiePath(type: 'partners', data: string): string;
+	public getTachiePath(type: 'customer' | 'partners', data: string | ICurrentCustomer | null) {
+		if (!data) {
+			return Clothes.getInstance().getTachiePath('夜雀服');
+		}
+
 		const basePath = '/assets/tachies';
 
-		// The `type` is clothes or partners.
+		// The `type` is partners.
 		if (typeof data === 'string') {
 			let pinyin: string;
-			if (Customer.tachiePinyinCache.has(data)) {
-				pinyin = Customer.tachiePinyinCache.get(data);
+
+			if (Customer._tachiePinyinCache.has(data)) {
+				pinyin = Customer._tachiePinyinCache.get(data);
 			} else {
 				pinyin = pinyinPro(data, {
 					toneType: 'none',
 					type: 'array',
 					v: true,
 				}).join('');
-				Customer.tachiePinyinCache.set(data, pinyin);
+				Customer._tachiePinyinCache.set(data, pinyin);
 			}
 
-			return `${basePath}/${type}/${pinyin}.${isGif ? 'gif' : 'png'}`;
+			return `${basePath}/${type}/${pinyin}.png`;
 		}
 
-		if (!data) {
-			// cSpell:ignore yequefu
-			return `${basePath}/clothes/yequefu.png`;
-		}
-
+		// The `type` is customer.
+		let path: string;
 		const {target, name} = data;
 
-		let path: string;
-		if (Customer.tachiePathCache.has(name)) {
-			path = Customer.tachiePathCache.get(name);
+		if (Customer._tachiePathCache.has(name)) {
+			path = Customer._tachiePathCache.get(name);
 		} else {
 			path = `${basePath}/${target}/${processPinyin(this.getPropsByName(name, 'pinyin')).pinyinWithoutTone.join(
 				''
 			)}.png`;
-			Customer.tachiePathCache.set(name, path);
+			Customer._tachiePathCache.set(name, path);
 		}
 
 		return path;
