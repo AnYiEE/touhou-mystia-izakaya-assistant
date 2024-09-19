@@ -105,7 +105,7 @@ module.exports = {
 				// For compatible with browsers that do not support the `gap` property.
 				{
 					pattern: /space-(x|y)/u,
-					variants: ['md', 'xl'],
+					variants: ['md', 'lg', 'xl'],
 				},
 			]
 		: undefined,

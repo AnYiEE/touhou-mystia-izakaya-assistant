@@ -9,6 +9,7 @@ type TFeature = 'flexGap' | 'webp';
 type TCompatibility = Record<TFeature, boolean>;
 
 let compatibilityCache: TCompatibility | undefined;
+
 export function checkCompatibility() {
 	if (compatibilityCache) {
 		return compatibilityCache;
@@ -24,9 +25,9 @@ export function checkCompatibility() {
 		os: {name: _osName, version: _osVersion},
 	} = UAParser();
 	const browserName = _browserName?.toLowerCase();
-	const browserVersion = _browserVersion && Number.parseInt(_browserVersion, 10);
+	const browserVersion = _browserVersion && Number.parseInt(_browserVersion);
 	const osName = _osName?.toLowerCase();
-	const osVersion = _osVersion && Number.parseInt(_osVersion, 10);
+	const osVersion = _osVersion && Number.parseInt(_osVersion);
 
 	const isChromium =
 		browserName?.includes('chromium') || browserName?.includes('chrome') || browserName?.includes('edge');
@@ -65,25 +66,28 @@ function getReplacementClass(element: Element, gapClass: string) {
 		const isFlexCol = classList.contains('flex-col');
 		const isFlexRow = classList.contains('flex-row');
 		const isMdFlexRow = classList.contains('md:flex-row');
+		const isLgFlexRow = classList.contains('lg:flex-row');
 		const isXlFlexRow = classList.contains('xl:flex-row');
 		const isMdFlexCol = classList.contains('md:flex-col');
+		const isLgFlexCol = classList.contains('lg:flex-col');
 		const isXlFlexCol = classList.contains('xl:flex-col');
 
 		const isMdSpecific = classList.contains(`md:${gapClass}`);
+		const isLgSpecific = classList.contains(`lg:${gapClass}`);
 		const isXlSpecific = classList.contains(`xl:${gapClass}`);
-		const isSpecific = isMdSpecific || isXlSpecific;
+		const isSpecific = isMdSpecific || isLgSpecific || isXlSpecific;
 		const hasPrefix = gapClass.includes(':');
 
-		const prefixRegExp = /((?:md|xl):)?gap-(\S+)/u;
+		const prefixRegExp = /((?:md|lg|xl):)?gap-(\S+)/u;
 
-		if (isFlexCol && !isMdFlexRow && !isXlFlexRow) {
+		if (isFlexCol && !isMdFlexRow && !isLgFlexRow && !isXlFlexRow) {
 			return gapClass.replace('gap-', 'space-y-');
 		}
-		if (isFlexRow && !isMdFlexCol && !isXlFlexCol) {
+		if (isFlexRow && !isMdFlexCol && !isLgFlexCol && !isXlFlexCol) {
 			return gapClass.replace('gap-', 'space-x-');
 		}
-		if (isFlexCol && (isMdFlexRow || isXlFlexRow)) {
-			const prefix = isMdFlexRow ? 'md' : 'xl';
+		if (isFlexCol && (isMdFlexRow || isLgFlexRow || isXlFlexRow)) {
+			const prefix = isMdFlexRow ? 'md' : isLgFlexRow ? 'lg' : 'xl';
 			return gapClass.replace(
 				prefixRegExp,
 				!hasPrefix && !isSpecific
@@ -93,8 +97,8 @@ function getReplacementClass(element: Element, gapClass: string) {
 						: 'space-y-$2'
 			);
 		}
-		if (isFlexRow && (isMdFlexCol || isXlFlexCol)) {
-			const prefix = isMdFlexCol ? 'md' : 'xl';
+		if (isFlexRow && (isMdFlexCol || isLgFlexCol || isXlFlexCol)) {
+			const prefix = isMdFlexCol ? 'md' : isLgFlexCol ? 'lg' : 'xl';
 			return gapClass.replace(
 				prefixRegExp,
 				!hasPrefix && !isSpecific
@@ -116,6 +120,7 @@ function replaceGapClasses(element: Element) {
 		element.classList.length === 0 ||
 		(!element.classList.contains('flex') &&
 			!element.classList.contains('md:flex') &&
+			!element.classList.contains('lg:flex') &&
 			!element.classList.contains('xl:flex'))
 	) {
 		return;
