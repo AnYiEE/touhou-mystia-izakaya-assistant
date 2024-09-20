@@ -17,7 +17,7 @@ type TPartner =
 	| '小野冢小町'
 	| '云居一轮';
 
-export type TReward =
+type TReward =
 	| {
 			type: '采集';
 			reward: TPlace;

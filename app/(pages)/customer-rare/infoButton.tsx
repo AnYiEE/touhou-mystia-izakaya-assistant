@@ -1,6 +1,7 @@
 import {Fragment, type ReactElement, memo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
+import useBreakpoint from 'use-breakpoint';
 import {useViewInNewWindow} from '@/hooks';
 
 import {
@@ -19,7 +20,7 @@ import Sprite from '@/components/sprite';
 import Tachie from '@/components/tachie';
 
 import {customerRatingColorMap} from './constants';
-import type {TReward, TRewardType} from '@/data/customer_rare/types';
+import type {TRewardType} from '@/data/customer_rare/types';
 import {customerRareStore as store} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
@@ -38,6 +39,13 @@ const LevelLabel = memo<ILevelLabelProps>(function LevelLabel({level}) {
 
 export default function InfoButton() {
 	const openWindow = useViewInNewWindow();
+	const {breakpoint} = useBreakpoint(
+		{
+			left: 426,
+			top: -1,
+		},
+		'top'
+	);
 
 	const currentCustomerData = store.shared.customer.data.use();
 
@@ -73,36 +81,6 @@ export default function InfoButton() {
 	const {length: bondRecipesDataLength} = bondRecipesData;
 
 	const {length: currentCustomerBondRewardsLength} = currentCustomerBondRewards;
-
-	const getDescription = ({description, reward, type}: TReward) => {
-		switch (type) {
-			case '伙伴':
-				return (
-					<div className="flex flex-col items-center">
-						<Tachie
-							alt={reward}
-							src={instance_rare.getTachiePath('partners', reward)}
-							width={100}
-							className="my-1"
-						/>
-						<p>
-							解锁条件：
-							{description === true ? `地区【${currentCustomerMainPlace}】全部稀客羁绊满级` : description}
-						</p>
-					</div>
-				);
-			default:
-				return null;
-		}
-	};
-
-	const getLevelLabel = ({description, type}: TReward) => {
-		if (type === '伙伴' && description !== true) {
-			return '其他';
-		}
-
-		return 5;
-	};
 
 	const hasBondRewards =
 		bondClothes !== null ||
@@ -242,7 +220,7 @@ export default function InfoButton() {
 									</p>
 								</Fragment>
 							))}
-							{currentCustomerBondRewards.map((bondReward, index) => (
+							{currentCustomerBondRewards.map(({description, reward, type}, index) => (
 								<Fragment key={index}>
 									{index === 0 &&
 										bondClothes === null &&
@@ -250,37 +228,60 @@ export default function InfoButton() {
 										bondOrnamentsDataLength === 0 &&
 										bondRecipesDataLength > 1 && <Divider />}
 									<p className="flex items-center leading-5">
-										<LevelLabel level={getLevelLabel(bondReward)} />
-										{bondReward.type === '采集' ? (
-											`${bondReward.type}【${bondReward.reward}】`
-										) : (
-											<>
-												{bondReward.type}【
-												<Popover showArrow offset={15} size="sm" placement="left">
-													<Tooltip
-														showArrow
-														content={getDescription(bondReward)}
-														offset={12}
-														placement="left"
-														size="sm"
-													>
-														<span className="inline-flex cursor-pointer">
-															<PopoverTrigger>
-																<span
-																	role="button"
-																	tabIndex={0}
-																	className="underline-dotted-offset2"
+										<LevelLabel level={type === '伙伴' && description !== true ? '其他' : 5} />
+										{type === '采集'
+											? `${type}【${reward}】`
+											: (() => {
+													const content = (
+														<div className="flex flex-col items-center">
+															<Tachie
+																alt={reward}
+																src={instance_rare.getTachiePath('partners', reward)}
+																width={120}
+																className="my-1"
+															/>
+															<p>
+																解锁条件：
+																{description === true
+																	? `地区【${currentCustomerMainPlace}】全部稀客羁绊满级`
+																	: description}
+															</p>
+														</div>
+													);
+													return (
+														<>
+															{type}【
+															<Popover
+																showArrow
+																offset={breakpoint === 'left' ? 15 : 6}
+																size="sm"
+																placement={breakpoint}
+															>
+																<Tooltip
+																	showArrow
+																	content={content}
+																	offset={breakpoint === 'left' ? 12 : 3}
+																	placement={breakpoint}
+																	size="sm"
 																>
-																	{bondReward.reward}
-																</span>
-															</PopoverTrigger>
-														</span>
-													</Tooltip>
-													<PopoverContent>{getDescription(bondReward)}</PopoverContent>
-												</Popover>
-												】
-											</>
-										)}
+																	<span className="inline-flex cursor-pointer">
+																		<PopoverTrigger>
+																			<span
+																				role="button"
+																				tabIndex={0}
+																				className="underline-dotted-offset2"
+																			>
+																				{reward}
+																			</span>
+																		</PopoverTrigger>
+																	</span>
+																</Tooltip>
+																<PopoverContent>{content}</PopoverContent>
+															</Popover>
+															】
+														</>
+													);
+												})()}
 									</p>
 								</Fragment>
 							))}
