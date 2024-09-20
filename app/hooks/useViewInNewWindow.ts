@@ -24,7 +24,7 @@ export function useViewInNewWindow() {
 		windowObjectRef.current?.close();
 		windowObjectRef.current = null;
 
-		const pathname = `/${windowItemPath[0]}/?${new URLSearchParams({
+		const pathname = `/${windowItemPath[0]}?${new URLSearchParams({
 			[openedPopoverParam]: windowItemNames[0], // eslint-disable-next-line sort-keys
 			[inNewWindowParam]: '1',
 		}).toString()}`;
