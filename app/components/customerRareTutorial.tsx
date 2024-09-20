@@ -11,6 +11,7 @@ const resetLabel = '重新进入稀客套餐搭配教程';
 
 export default function CustomerRareTutorial() {
 	const currentPathname = usePathname();
+	const isTargetPage = currentPathname === pathname;
 
 	const currentCustomerName = customerStore.shared.customer.data.use()?.name;
 	const currentCustomerOrder = customerStore.shared.customer.order.use();
@@ -26,10 +27,9 @@ export default function CustomerRareTutorial() {
 	const selectedTabKey = customerStore.shared.tab.use();
 	const isIngredientTabSelected = selectedTabKey === 'ingredient';
 
+	// Only obtain the state when first entering the page. Subsequent changes are triggered only by `isTargetPage`，so use `.get()`.
 	const dirverState = globalStore.persistence.dirver.get();
 	const isCompleted = dirverState.includes(key);
-
-	const isTargetPage = currentPathname === pathname;
 
 	const driverRef = useRef(
 		driver({
@@ -138,6 +138,7 @@ export default function CustomerRareTutorial() {
 							const completeButton = document.createElement('button');
 							completeButton.textContent = '完成';
 							completeButton.addEventListener('click', () => {
+								// Restore user preferences.
 								customerStore.persistence.customer.orderLinkedFilter.set(
 									customerStore.shared.customer.orderLinkedFilter.get()
 								);
@@ -191,7 +192,7 @@ export default function CustomerRareTutorial() {
 			isRecipeSelected.current = true;
 			driverRef.current.moveNext();
 		}
-		if (currentExtraIngredients) {
+		if (currentExtraIngredients && currentExtraIngredients.length > 0) {
 			if (currentExtraIngredients.includes('鸡蛋') && !hasExtraEgg.current) {
 				hasExtraEgg.current = true;
 				driverRef.current.moveNext();

@@ -63,15 +63,14 @@ function trackPageView() {
 }
 
 export default function Analytics() {
-	const pathname = usePathname();
-	const isLoaded = useRef(true);
-
 	useEffect(() => {
+		// The tracker has been initialized, skip.
 		if (window._paq) {
 			trackPageView();
 			return;
 		}
 
+		// Initialize tracker.
 		push(
 			['enableHeartBeatTimer'],
 			['enableLinkTracking'],
@@ -100,7 +99,12 @@ export default function Analytics() {
 		return subscription.unsubscribe.bind(subscription);
 	}, []);
 
+	// It has already been tracked once when entering the page for the first time.
+	const isLoaded = useRef(true);
+	const pathname = usePathname();
+
 	useEffect(() => {
+		// Avoid tracking repeatedly when first entering the page, only track when the next pathname changes (route change by Next.js).
 		if (isLoaded.current) {
 			isLoaded.current = false;
 			return;

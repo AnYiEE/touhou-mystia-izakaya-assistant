@@ -1,5 +1,6 @@
 // @ts-check
 /* eslint-disable @typescript-eslint/no-require-imports, unicorn/prefer-module */
+'use strict';
 /**
  * @file Transform all JavaScript operators and syntaxes, **not methods**.
  */

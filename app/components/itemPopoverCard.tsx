@@ -174,6 +174,7 @@ const ShareButton = memo(
 );
 
 interface IItemPopoverCardProps extends Pick<ISpriteProps, 'target'> {
+	// Basic info.
 	name: TItemNames;
 	displayName?: ReactNodeWithoutBoolean;
 	description?: Partial<{
@@ -182,9 +183,11 @@ interface IItemPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 		type: ICooker['type'] | IIngredient['type'];
 	}>;
 	dlc?: number;
+	// For recipes.
 	/** @description If `null`, it means that the recipe has no cooker (such as dark matter). */
 	cooker?: TCookerNames | null;
 	ingredients?: TIngredientNames[];
+	// For tags.
 	tags?: {
 		[key in keyof ITagStyle]: TTags[];
 	};
