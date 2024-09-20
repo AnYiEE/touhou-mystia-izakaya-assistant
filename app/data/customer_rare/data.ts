@@ -1787,7 +1787,7 @@ export const CUSTOMER_RARE_LIST = [
 			'太阳花田',
 			'辉针城',
 		],
-		price: '500-600',
+		price: '800-1200',
 		positiveTags: ['咸', '甜', '生', '猎奇', '不可思议', '梦幻'],
 		negativeTags: [],
 		beverageTags: ['高酒精', '烧酒', '苦', '气泡'],
