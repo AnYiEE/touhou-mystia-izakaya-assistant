@@ -27,8 +27,8 @@ export default class ErrorBoundary extends Component<IProps, IStates> {
 		};
 	}
 
-	private handleClick(clear: boolean) {
-		if (clear) {
+	private handleClick(shouldClear: boolean) {
+		if (shouldClear) {
 			try {
 				localStorage.clear();
 			} catch (error) {

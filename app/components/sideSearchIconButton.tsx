@@ -36,7 +36,7 @@ interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function SideSearchIconButton(
-		{searchConfig: {label, searchItems, searchValue, setSearchValue, spriteTarget}, className, ...props},
+		{className, searchConfig: {label, searchItems, searchValue, setSearchValue, spriteTarget}, ...props},
 		ref
 	) {
 		const vibrate = useVibrate();

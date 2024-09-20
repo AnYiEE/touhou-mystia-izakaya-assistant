@@ -49,32 +49,27 @@ export function showProgress(startProgress: () => void) {
 interface INavbarLinkProps
 	extends Pick<ButtonProps, 'className' | 'startContent' | 'fullWidth'>,
 		Pick<LinkProps, 'href'> {
-	label: ReactNodeWithoutBoolean;
 	isActivated: boolean;
 }
 
-const NavbarLink = memo<Partial<PropsWithChildren<INavbarLinkProps>>>(function NavbarLink({
+const NavbarLink = memo<PropsWithChildren<INavbarLinkProps>>(function NavbarLink({
 	className,
-	fullWidth,
-	href = '#',
-	isActivated = false,
-	label: children,
-	startContent,
+	isActivated,
+	children,
+	...props
 }) {
 	const startProgress = useProgress();
 
 	return (
 		<Button
 			as={Link}
-			fullWidth={fullWidth}
 			size="sm"
-			startContent={startContent}
 			variant={isActivated ? 'flat' : 'light'}
-			href={href}
 			onPress={() => {
 				showProgress(startProgress);
 			}}
 			className={twMerge('text-base', className)}
+			{...props}
 		>
 			{children}
 		</Button>
@@ -97,10 +92,10 @@ const GitHubIconLink = memo<IGitHubIconLinkProps>(function IconLink({className})
 });
 
 interface IGitHubLinkProps {
-	showTooltip: boolean;
+	showTooltip?: boolean;
 }
 
-const GitHubLink = memo<Partial<IGitHubLinkProps>>(function GitHubLink({showTooltip}) {
+const GitHubLink = memo<IGitHubLinkProps>(function GitHubLink({showTooltip}) {
 	if (showTooltip) {
 		return (
 			<Tooltip showArrow content={links.github.label}>
@@ -171,7 +166,9 @@ export default function Navbar() {
 							const isActivated = href === pathname;
 							return href === '/preferences' && !shouldShowPreferences ? null : (
 								<NavbarItem key={href} isActive={isActivated}>
-									<NavbarLink isActivated={isActivated} href={href} label={label} />
+									<NavbarLink isActivated={isActivated} href={href}>
+										{label}
+									</NavbarLink>
 								</NavbarItem>
 							);
 						}
@@ -208,10 +205,11 @@ export default function Navbar() {
 													fullWidth
 													isActivated={href === pathname}
 													href={href}
-													label={label}
 													startContent={<Sprite target={sprite} size={1.25} />}
 													className="justify-start gap-1 text-sm data-[hover=true]:bg-transparent"
-												/>
+												>
+													{label}
+												</NavbarLink>
 											</DropdownItem>
 										))}
 									</DropdownMenu>

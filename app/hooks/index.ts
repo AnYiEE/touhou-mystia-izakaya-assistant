@@ -1,6 +1,7 @@
 export * from './useMounted';
 export * from './useParams';
 export * from './useThrottle';
+export * from './useVibrate';
 
 export * from './useFilteredData';
 export {useOpenedItemPopover} from './useOpenedItemPopover';
@@ -9,5 +10,4 @@ export * from './useSearchConfig';
 export * from './useSearchResult';
 export * from './useSkipProcessItemData';
 export * from './useSortedData';
-export * from './useVibrate';
 export {useViewInNewWindow} from './useViewInNewWindow';

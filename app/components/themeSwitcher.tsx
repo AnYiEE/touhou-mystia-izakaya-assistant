@@ -35,10 +35,10 @@ enum ThemeLabel {
 }
 
 interface IProps {
-	isMenu: boolean;
+	isMenu?: boolean;
 }
 
-export default memo<Partial<IProps>>(function ThemeSwitcher({isMenu}) {
+export default memo<IProps>(function ThemeSwitcher({isMenu}) {
 	const isMounted = useMounted();
 	const pathname = usePathname();
 	const {theme, setTheme} = useTheme();

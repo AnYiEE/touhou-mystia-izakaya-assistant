@@ -20,7 +20,7 @@ interface IPlusProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'className'> 
 }
 
 export const Plus = memo(
-	forwardRef<HTMLSpanElement | null, IPlusProps>(function Plus({size = 1, className}, ref) {
+	forwardRef<HTMLSpanElement | null, IPlusProps>(function Plus({className, size = 1}, ref) {
 		const remString = `${size}rem`;
 
 		return (
@@ -43,7 +43,7 @@ interface IUnknownItemProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'class
 }
 
 export const UnknownItem = memo(
-	forwardRef<HTMLSpanElement | null, IUnknownItemProps>(function UnknownItem({title, size = 2, className}, ref) {
+	forwardRef<HTMLSpanElement | null, IUnknownItemProps>(function UnknownItem({className, size = 2, title}, ref) {
 		const remString = `${size}rem`;
 
 		return (

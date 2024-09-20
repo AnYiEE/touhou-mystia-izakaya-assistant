@@ -68,10 +68,10 @@ function download(fileName: string, jsonString: string) {
 }
 
 interface IProps {
-	onModalClose: (() => void) | undefined;
+	onModalClose?: (() => void) | undefined;
 }
 
-export default memo<Partial<IProps>>(function DataManager({onModalClose}) {
+export default memo<IProps>(function DataManager({onModalClose}) {
 	const router = useRouter();
 	const startProgress = useProgress();
 

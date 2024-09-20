@@ -6,7 +6,7 @@ import {Image, type ImageProps} from '@nextui-org/react';
 interface IProps extends Pick<ImageProps, 'alt' | 'aria-hidden' | 'className' | 'src' | 'width'> {}
 
 export default memo(
-	forwardRef<HTMLImageElement | null, IProps>(function Tachie({alt, src, width, className, ...props}, ref) {
+	forwardRef<HTMLImageElement | null, IProps>(function Tachie({alt, className, src, width, ...props}, ref) {
 		return (
 			<Image
 				removeWrapper

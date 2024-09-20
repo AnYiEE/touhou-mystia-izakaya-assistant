@@ -38,7 +38,7 @@ interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color
 }
 
 export default memo(
-	forwardRef<HTMLDivElement | null, IProps>(function SideFilterIconButton({selectConfig, className, ...props}, ref) {
+	forwardRef<HTMLDivElement | null, IProps>(function SideFilterIconButton({className, selectConfig, ...props}, ref) {
 		const vibrate = useVibrate();
 
 		const instance_special = customerStore.instances.customer_special.get();
@@ -98,7 +98,7 @@ export default memo(
 				<PopoverContent className="w-64">
 					<div className="w-full space-y-1">
 						{selectConfig.map(
-							({label, items, selectedKeys, selectionMode, setSelectedKeys, spriteTarget}, index) => (
+							({items, label, selectedKeys, selectionMode, setSelectedKeys, spriteTarget}, index) => (
 								<Select
 									key={`${label as string}${index}`}
 									size="sm"

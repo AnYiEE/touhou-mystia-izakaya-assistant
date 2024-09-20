@@ -11,7 +11,7 @@ interface IProps extends Omit<IQRCode, 'logo'>, Pick<HTMLAttributes<HTMLDivEleme
 
 export default memo(
 	forwardRef<HTMLDivElement | null, PropsWithChildren<IProps>>(function QRCode(
-		{options, text, className, children},
+		{className, options, text, children},
 		ref
 	) {
 		const {SVG} = useQRCode();

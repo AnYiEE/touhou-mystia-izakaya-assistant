@@ -14,10 +14,10 @@ import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {twJoin} from 'tailwind-merge';
 
 interface IProps {
-	onModalClose: (() => void) | undefined;
+	onModalClose?: (() => void) | undefined;
 }
 
-export default memo<Partial<IProps>>(function Content({onModalClose}) {
+export default memo<IProps>(function Content({onModalClose}) {
 	const isOrderLinkedFilter = customerStore.persistence.customer.orderLinkedFilter.use();
 	const isShowTagDescription = customerStore.persistence.customer.showTagDescription.use();
 

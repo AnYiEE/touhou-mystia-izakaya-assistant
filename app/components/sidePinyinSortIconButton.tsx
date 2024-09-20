@@ -29,7 +29,7 @@ function getNextPinyinSortState(currentState: PinyinSortState): PinyinSortState 
 
 export default memo(
 	forwardRef<HTMLButtonElement | null, IProps>(function SidePinyinSortIconButton(
-		{pinyinSortConfig: {pinyinSortState, setPinyinSortState}, className, ...props},
+		{className, pinyinSortConfig: {pinyinSortState, setPinyinSortState}, ...props},
 		ref
 	) {
 		const vibrate = useVibrate();

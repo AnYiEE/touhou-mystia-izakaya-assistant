@@ -15,7 +15,7 @@ interface ITagProps extends ITagPropsBase, HTMLAttributes<HTMLSpanElement> {
 
 const Tag = memo(
 	forwardRef<HTMLSpanElement | null, ITagProps>(function Tag(
-		{tag, tagStyle = {}, tagType, className, ...props},
+		{className, tag, tagStyle = {}, tagType, ...props},
 		ref
 	) {
 		const isArray = Array.isArray(tag);
@@ -54,7 +54,7 @@ interface ITagsPropsBase extends ITagPropsBase {
 
 interface ITagsProps extends ITagsPropsBase, Pick<HTMLAttributes<HTMLSpanElement>, 'className'> {}
 
-const TagsComponent = memo<ITagsProps>(function Tags({tags, tagStyle = {}, tagType, className}) {
+const TagsComponent = memo<ITagsProps>(function Tags({className, tags, tagStyle = {}, tagType}) {
 	return tags && tags.length > 0
 		? tags.map((tag) => <Tag key={tag} tag={tag} tagStyle={tagStyle} tagType={tagType} className={className} />)
 		: null;

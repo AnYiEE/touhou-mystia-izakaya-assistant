@@ -8,11 +8,16 @@ interface IProps extends Omit<LinkProps, 'referrerPolicy' | 'size'>, Pick<FontAw
 
 export default memo(
 	forwardRef<HTMLAnchorElement | null, IProps>(function FontAwesomeIconLink(
-		{icon, size = '1x', className, ...props},
+		{className, icon, size = '1x', ...linkProps},
 		ref
 	) {
 		return (
-			<Link className={twMerge('text-default-400', className)} referrerPolicy="same-origin" {...props} ref={ref}>
+			<Link
+				className={twMerge('text-default-400', className)}
+				referrerPolicy="same-origin"
+				{...linkProps}
+				ref={ref}
+			>
 				<FontAwesomeIcon icon={icon} size={size} />
 			</Link>
 		);

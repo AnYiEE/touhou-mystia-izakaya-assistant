@@ -7,11 +7,11 @@ interface IProps extends Omit<ButtonProps, 'isIconOnly'>, Pick<FontAwesomeIconPr
 
 export default memo(
 	forwardRef<HTMLButtonElement | null, IProps>(function FontAwesomeIconButton(
-		{icon, radius = 'full', size = 'sm', ...props},
+		{icon, radius = 'full', size = 'sm', ...buttonProps},
 		ref
 	) {
 		return (
-			<Button isIconOnly radius={radius} size={size} {...props} ref={ref}>
+			<Button isIconOnly radius={radius} size={size} {...buttonProps} ref={ref}>
 				<FontAwesomeIcon icon={icon} size="lg" />
 			</Button>
 		);

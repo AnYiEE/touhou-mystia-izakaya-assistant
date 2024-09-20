@@ -63,7 +63,7 @@ const navItems = [
 
 const {hostname: domain} = new URL(PACKAGE.homepage);
 
-const getShortUrl = (key: string) => `https://url.${domain}/${key}`;
+const getShortUrl = <T extends string>(key: T) => `https://url.${domain}/${key}` as const;
 
 export const siteConfig = {
 	domain,

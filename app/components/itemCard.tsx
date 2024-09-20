@@ -2,7 +2,7 @@ import {forwardRef, memo} from 'react';
 
 import {Card, type CardProps} from '@nextui-org/react';
 
-interface IProps extends Omit<CardProps, 'className'> {
+interface IProps extends Omit<CardProps, 'className' | 'classNames'> {
 	name: ReactNodeWithoutBoolean;
 	description?: ReactNodeWithoutBoolean;
 	image: ReactNodeWithoutBoolean;
