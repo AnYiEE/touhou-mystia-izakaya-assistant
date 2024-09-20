@@ -10,6 +10,7 @@ import {
 	useState,
 } from 'react';
 import {twJoin} from 'tailwind-merge';
+import {isNil} from 'lodash';
 
 import {useParams} from '@/hooks';
 import {openedPopoverParam} from '@/hooks/useOpenedItemPopover';
@@ -102,7 +103,7 @@ const ShareButton = memo(
 
 			newParams.set(openedPopoverParam, name);
 
-			return `${window.location.origin}${window.location.pathname}?${newParams.toString()}`;
+			return `${location.origin}${location.pathname}?${newParams.toString()}`;
 		}, [name, params]);
 
 		useEffect(() => {
@@ -248,7 +249,7 @@ const ItemPopoverCardComponent = memo(
 						{displayName === undefined ? name : displayName}
 					</p>
 				</div>
-				{cooker && ingredients && (
+				{!isNil(cooker) && ingredients !== undefined && (
 					<div className="flex flex-wrap gap-x-2 gap-y-1">
 						<Tooltip showArrow content={cooker} size="sm">
 							<Sprite target="cooker" name={cooker} size={1.5} className="mr-4" />
@@ -301,7 +302,7 @@ const ItemPopoverCardComponent = memo(
 						)}
 					</div>
 				)}
-				{mergedTags && (
+				{mergedTags !== undefined && (
 					<div className="flex flex-wrap gap-x-2 gap-y-1">
 						<TagsComponent tags={mergedTags.positive} tagStyle={tagColors?.positive} tagType="positive" />
 						<TagsComponent tags={mergedTags.negative} tagStyle={tagColors?.negative} tagType="negative" />
