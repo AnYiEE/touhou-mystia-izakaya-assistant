@@ -49,7 +49,7 @@ export default memo(
 				calculatedIndex: _calculatedIndex,
 				calculatedName: _calculatedName,
 			};
-		}, [index, name, instance]);
+		}, [index, instance, name]);
 
 		const {calculatedHeight, calculatedWidth, calculatedSize} = useMemo(() => {
 			let _calculatedHeight = height ?? instance.spriteHeight;
@@ -70,7 +70,7 @@ export default memo(
 
 				calculatedSize: remToPx(_calculateSize),
 			};
-		}, [height, width, size, instance]);
+		}, [height, instance.spriteHeight, instance.spriteWidth, size, width]);
 
 		const calculatedStyle = useMemo(
 			() =>
@@ -78,7 +78,7 @@ export default memo(
 					displayHeight: calculatedSize ?? calculatedHeight,
 					displayWidth: calculatedSize ?? calculatedWidth,
 				}),
-			[calculatedIndex, calculatedSize, calculatedHeight, calculatedWidth, instance]
+			[calculatedHeight, calculatedIndex, calculatedSize, calculatedWidth, instance]
 		);
 
 		const finalTitle = title ?? calculatedName;
