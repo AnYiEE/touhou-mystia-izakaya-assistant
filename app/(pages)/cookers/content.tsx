@@ -77,10 +77,12 @@ export default memo<IProps>(function Content({data}) {
 							: Object.entries(from).map((fromObject, index) => {
 									type TFrom = Exclude<ICooker['from'], string>;
 									const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
+									const isBond = method === 'bond';
+									const isBuy = method === 'buy';
 									const isSelf = method === 'self';
 									return (
 										<Fragment key={index}>
-											{method === 'bond' ? (
+											{isBond ? (
 												<>
 													<span className="pr-1">【{target}】羁绊</span>
 													Lv.4
@@ -88,7 +90,7 @@ export default memo<IProps>(function Content({data}) {
 												</>
 											) : (
 												<>
-													{method === 'buy' && target}
+													{isBuy && target}
 													{isSelf && 'buy' in from && '、'}
 													{isSelf && '初始拥有'}
 												</>

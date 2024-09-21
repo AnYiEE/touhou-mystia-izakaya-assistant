@@ -55,20 +55,17 @@ export default memo<IProps>(function Content({data}) {
 					tagColors={INGREDIENT_TAG_STYLE}
 					ref={popoverCardRef}
 				>
-					{Object.entries(from as IIngredient['from']).map(([method, target], fromIndex) => {
-						const probability = `概率${method === 'buy' ? '出售' : '掉落'}`;
-						const way =
-							method === 'buy'
-								? '购买'
-								: method === 'fishing'
-									? '钓鱼'
-									: method === 'task'
-										? '任务'
-										: '采集';
-
+					{Object.entries(from).map((fromObject, fromIndex) => {
+						type TFrom = Exclude<IIngredient['from'], string>;
+						const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
+						const isBuy = method === 'buy';
+						const isFishing = method === 'fishing';
+						const isTask = method === 'task';
+						const probability = `概率${isBuy ? '出售' : '掉落'}`;
+						const way = isBuy ? '购买' : isFishing ? '钓鱼' : isTask ? '任务' : '采集';
 						return (
 							<p key={fromIndex}>
-								{way === '钓鱼' ? (
+								{isFishing ? (
 									<span>
 										<Popover showArrow offset={6} size="sm">
 											<Tooltip showArrow content={probability} offset={3} size="sm">
@@ -86,7 +83,7 @@ export default memo<IProps>(function Content({data}) {
 								) : (
 									<span className="font-semibold">{way}：</span>
 								)}
-								{target.map((item, index) => (
+								{target?.map((item, index) => (
 									<Fragment key={index}>
 										{Array.isArray(item) ? (
 											item[1] ? (

@@ -58,8 +58,10 @@ export default memo<IProps>(function Content({data}) {
 					{Object.entries(from).map((fromObject, fromIndex) => {
 						type TFrom = Exclude<IBeverage['from'], string>;
 						const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
-						const probability = `概率${method === 'buy' ? '出售' : '掉落'}`;
-						const way = method === 'buy' ? '购买' : method === 'task' ? '任务' : '采集';
+						const isBuy = method === 'buy';
+						const isTask = method === 'task';
+						const probability = `概率${isBuy ? '出售' : '掉落'}`;
+						const way = isBuy ? '购买' : isTask ? '任务' : '采集';
 						return (
 							<p key={fromIndex}>
 								<span className="font-semibold">{way}：</span>

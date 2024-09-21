@@ -66,12 +66,14 @@ export default memo<IProps>(function Content({data}) {
 								: Object.entries(from).map((fromObject, index) => {
 										type TFrom = Exclude<IRecipe['from'], string>;
 										const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
+										const isLevelUp = method === 'levelup';
+										const isSelf = method === 'self';
 										return (
 											<Fragment key={index}>
-												{method === 'self'
-													? '初始拥有'
-													: method === 'levelup'
-														? '游戏等级提升'
+												{isLevelUp
+													? '游戏等级提升'
+													: isSelf
+														? '初始拥有'
 														: isObjectLike(target) && (
 																<>
 																	<span className="pr-1">【{target.name}】羁绊</span>

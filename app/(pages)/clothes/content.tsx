@@ -24,7 +24,7 @@ interface IProps {
 export default memo<IProps>(function Content({data}) {
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
 	const [openedPopover] = useOpenedItemPopover(popoverCardRef);
-	const {breakpoint} = useBreakpoint(
+	const {breakpoint: placement} = useBreakpoint(
 		{
 			'right-start': 426,
 			top: -1,
@@ -75,12 +75,14 @@ export default memo<IProps>(function Content({data}) {
 							: Object.entries(from).map((fromObject, index) => {
 									type TFrom = Exclude<IClothes['from'], string>;
 									const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
+									const isBuy = method === 'buy';
+									const isSelf = method === 'self';
 									return (
 										<Fragment key={index}>
-											{method === 'self' ? (
-												'初始拥有'
-											) : method === 'buy' ? (
+											{isBuy ? (
 												target
+											) : isSelf ? (
+												'初始拥有'
 											) : (
 												<>
 													<span className="pr-1">【{target}】羁绊</span>
@@ -101,7 +103,7 @@ export default memo<IProps>(function Content({data}) {
 						{(() => {
 							const tachie = <Tachie alt={name} src={instance_clothes.getTachiePath(name)} width={240} />;
 							return (
-								<Popover placement={breakpoint} showArrow={breakpoint === 'top'}>
+								<Popover placement={placement} showArrow={placement === 'top'}>
 									<PopoverTrigger>
 										<span role="button" tabIndex={0} className="underline-dotted-offset2">
 											查看立绘
