@@ -28,6 +28,7 @@ import {
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faChevronDown, faMagnifyingGlass, faPlus, faTags} from '@fortawesome/free-solid-svg-icons';
 
+import Placeholder from './placeholder';
 import TagGroup from './tagGroup';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Price from '@/components/price';
@@ -672,7 +673,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 					</TableColumn>
 				)}
 			</TableHeader>
-			<TableBody emptyContent="数据为空" items={tableCurrentPageItems}>
+			<TableBody emptyContent={<Placeholder>数据为空</Placeholder>} items={tableCurrentPageItems}>
 				{(item) => (
 					<TableRow key={item.name}>
 						{(columnKey) => <TableCell>{renderTableCell(item, columnKey as TTableColumnKey)}</TableCell>}
