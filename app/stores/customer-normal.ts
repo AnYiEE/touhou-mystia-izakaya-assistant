@@ -13,7 +13,14 @@ import {TrackCategory, trackEvent} from '@/components/analytics';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import type {IPersistenceState} from './types';
-import {type TBeverageNames, type TCustomerNormalNames, type TIngredientNames, type TRecipeNames} from '@/data';
+import {
+	TAG_POPULAR_NEGATIVE,
+	TAG_POPULAR_POSITIVE,
+	type TBeverageNames,
+	type TCustomerNormalNames,
+	type TIngredientNames,
+	type TRecipeNames,
+} from '@/data';
 import type {TBeverageTag, TIngredientTag, TRecipeTag} from '@/data/types';
 import {type IPopularData, type TPopularTag} from '@/stores';
 import {getAllItemNames, keepLastTag, reverseDirection} from '@/stores/utils';
@@ -78,8 +85,8 @@ const state = {
 				...instance_ingredient
 					.getValuesByProp(instance_ingredient.data, 'tags')
 					.filter((tag) => !instance_ingredient.blockedTags.has(tag)),
-				'流行喜爱',
-				'流行厌恶',
+				TAG_POPULAR_POSITIVE,
+				TAG_POPULAR_NEGATIVE,
 			] as TIngredientTag[]
 		)
 			.map(toValueObject)
@@ -96,8 +103,8 @@ const state = {
 			...instance_recipe
 				.getValuesByProp(instance_recipe.data, 'positiveTags')
 				.filter((tag) => !instance_recipe.blockedTags.has(tag)),
-			'流行喜爱',
-			'流行厌恶',
+			TAG_POPULAR_POSITIVE,
+			TAG_POPULAR_NEGATIVE,
 		]
 			.map(toValueObject)
 			.sort(pinyinSort) as {value: TRecipeTag}[],

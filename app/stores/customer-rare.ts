@@ -14,6 +14,9 @@ import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import type {IPersistenceState} from './types';
 import {
+	DARK_MATTER_PRICE,
+	TAG_POPULAR_NEGATIVE,
+	TAG_POPULAR_POSITIVE,
 	type TBeverageNames,
 	type TCustomerRareNames,
 	type TCustomerSpecialNames,
@@ -116,8 +119,8 @@ const state = {
 				...instance_ingredient
 					.getValuesByProp(instance_ingredient.data, 'tags')
 					.filter((tag) => !instance_ingredient.blockedTags.has(tag)),
-				'流行喜爱',
-				'流行厌恶',
+				TAG_POPULAR_POSITIVE,
+				TAG_POPULAR_NEGATIVE,
 			] as TIngredientTag[]
 		)
 			.map(toValueObject)
@@ -135,8 +138,8 @@ const state = {
 				...instance_recipe
 					.getValuesByProp(instance_recipe.data, 'positiveTags')
 					.filter((tag) => !instance_recipe.blockedTags.has(tag)),
-				'流行喜爱',
-				'流行厌恶',
+				TAG_POPULAR_POSITIVE,
+				TAG_POPULAR_NEGATIVE,
 			] as TRecipeTag[]
 		)
 			.map(toValueObject)
@@ -727,9 +730,7 @@ export const customerRareStore = store(state, {
 				extraIngredients,
 				negativeTags,
 			});
-			const recipePrice = isDarkMatter
-				? instance_recipe.getPropsByName('黑暗物质', 'price')
-				: originalRecipePrice;
+			const recipePrice = isDarkMatter ? DARK_MATTER_PRICE : originalRecipePrice;
 			const composedRecipeTags = instance_recipe.composeTags(
 				ingredients,
 				extraIngredients,

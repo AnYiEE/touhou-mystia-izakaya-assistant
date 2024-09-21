@@ -1,5 +1,6 @@
 /* eslint-disable sort-keys */
 import type {IRecipe} from './types';
+import {DARK_MATTER_NAME, DARK_MATTER_PRICE, DARK_MATTER_TAG, TAG_LARGE_PARTITION} from '@/data/constant';
 
 export const RECIPE_LIST = [
 	{
@@ -1462,7 +1463,7 @@ export const RECIPE_LIST = [
 	{
 		name: '全肉盛宴',
 		ingredients: ['鹿肉', '野猪肉', '黑毛猪肉', '和牛'],
-		positiveTags: ['肉', '高级', '下酒', '山珍', '咸', '适合拍照', '灼热', '大份'],
+		positiveTags: ['肉', '高级', '下酒', '山珍', '咸', '适合拍照', '灼热', TAG_LARGE_PARTITION],
 		negativeTags: [],
 		cooker: '烤架',
 		min: 8.4,
@@ -1726,7 +1727,19 @@ export const RECIPE_LIST = [
 	{
 		name: '鱼跃龙门',
 		ingredients: ['极上金枪鱼', '鹿肉', '松露', '蜂蜜', '月光草'],
-		positiveTags: ['肉', '水产', '高级', '海味', '中华', '鲜', '甜', '文化底蕴', '菌类', '梦幻', '大份'],
+		positiveTags: [
+			'肉',
+			'水产',
+			'高级',
+			'海味',
+			'中华',
+			'鲜',
+			'甜',
+			'文化底蕴',
+			'菌类',
+			'梦幻',
+			TAG_LARGE_PARTITION,
+		],
 		negativeTags: [],
 		cooker: '蒸锅',
 		min: 7.2,
@@ -1762,7 +1775,7 @@ export const RECIPE_LIST = [
 	{
 		name: '绝叫关东煮',
 		ingredients: ['牛肉', '豆腐', '萝卜', '辣椒', '辣椒'],
-		positiveTags: ['肉', '高级', '饱腹', '鲜', '灼热', '力量涌现', '特产', '辣', '大份'],
+		positiveTags: ['肉', '高级', '饱腹', '鲜', '灼热', '力量涌现', '特产', '辣', TAG_LARGE_PARTITION],
 		negativeTags: [],
 		cooker: '煮锅',
 		min: 7.2,
@@ -2032,7 +2045,7 @@ export const RECIPE_LIST = [
 	{
 		name: '海盗熏肉',
 		ingredients: ['牛肉', '蜂蜜', '辣椒', '黑盐'],
-		positiveTags: ['肉', '传说', '力量涌现', '特产', '大份'],
+		positiveTags: ['肉', '传说', '力量涌现', '特产', TAG_LARGE_PARTITION],
 		negativeTags: ['酸'],
 		cooker: '烤架',
 		min: 5.4,
@@ -2835,16 +2848,16 @@ export const RECIPE_LIST = [
 		from: '【游戏补偿】“阿吽异变”',
 	},
 	{
-		name: '黑暗物质',
+		name: DARK_MATTER_NAME,
 		ingredients: [],
-		positiveTags: ['黑暗物质'],
+		positiveTags: [DARK_MATTER_TAG],
 		negativeTags: [],
 		cooker: '煮锅',
 		min: 0,
 		max: 0,
 		dlc: 0,
 		level: 1,
-		price: 1,
+		price: DARK_MATTER_PRICE,
 		from: '料理制作失败、【立空汐】惩罚符卡、【帕秋莉】惩罚符卡',
 	},
 ] as const satisfies IRecipe[];

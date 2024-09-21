@@ -3,6 +3,7 @@ import {driver} from 'driver.js';
 
 import {usePathname} from 'next/navigation';
 
+import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {getPageTitle} from '@/utils';
 
@@ -133,8 +134,7 @@ export default function CustomerRareTutorial() {
 					element: '[aria-label="更多信息"]',
 					popover: {
 						title: '更多信息', // eslint-disable-next-line sort-keys
-						description:
-							'在此处可以查看更多信息，如：稀客的羁绊奖励和符卡效果。点击导航栏中的“设置”按钮可以调整更多偏好项，如：设置游戏中现时的流行喜爱或流行厌恶标签。',
+						description: `在此处可以查看更多信息，如：稀客的羁绊奖励和符卡效果。点击导航栏中的“设置”按钮可以调整更多偏好项，如：设置游戏中现时的${TAG_POPULAR_POSITIVE}或${TAG_POPULAR_NEGATIVE}标签。`,
 						onPopoverRender(popover) {
 							const completeButton = document.createElement('button');
 							completeButton.textContent = '完成';

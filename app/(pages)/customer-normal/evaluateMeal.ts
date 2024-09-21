@@ -1,5 +1,12 @@
 import type {TCustomerRating, TRecipe} from './types';
-import {type TBeverageNames, type TCustomerNormalNames, type TRecipeNames} from '@/data';
+import {
+	TAG_LARGE_PARTITION,
+	TAG_POPULAR_NEGATIVE,
+	TAG_POPULAR_POSITIVE,
+	type TBeverageNames,
+	type TCustomerNormalNames,
+	type TRecipeNames,
+} from '@/data';
 import type {TRecipeTag} from '@/data/types';
 import {type IPopularData, type TPopularTag} from '@/stores';
 import {intersection} from '@/utils';
@@ -72,9 +79,9 @@ export function evaluateMeal({
 
 	let currentCustomerPopularTag: IPopularData['tag'] = null;
 	const {isNegative: popularIsNegative, tag: popularTag} = currentCustomerPopularData;
-	if (popularIsNegative && currentCustomerPositiveTags.includes('流行厌恶')) {
+	if (popularIsNegative && currentCustomerPositiveTags.includes(TAG_POPULAR_NEGATIVE)) {
 		currentCustomerPopularTag = popularTag;
-	} else if (!popularIsNegative && currentCustomerPositiveTags.includes('流行喜爱')) {
+	} else if (!popularIsNegative && currentCustomerPositiveTags.includes(TAG_POPULAR_POSITIVE)) {
 		currentCustomerPopularTag = popularTag;
 	}
 
@@ -88,7 +95,8 @@ export function evaluateMeal({
 	const totalIngredientsLength = originalIngredientsLength + currentExtraIngredientsLength;
 
 	if (
-		(currentCustomerPopularTag === '大份' || currentCustomerPositiveTags.includes('大份')) &&
+		(currentCustomerPopularTag === TAG_LARGE_PARTITION ||
+			currentCustomerPositiveTags.includes(TAG_LARGE_PARTITION)) &&
 		originalIngredientsLength !== 5 &&
 		totalIngredientsLength === 5
 	) {

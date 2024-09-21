@@ -13,7 +13,7 @@ import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 
 import {customerRatingColorMap} from './constants';
-import {BEVERAGE_TAG_STYLE, RECIPE_TAG_STYLE} from '@/data';
+import {BEVERAGE_TAG_STYLE, DARK_MATTER_NAME, RECIPE_TAG_STYLE} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 
 interface IProps {}
@@ -70,7 +70,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(
 										const cooker = isisDarkMatterOrNormalMeal
 											? originalCooker
 											: (`夜雀${originalCooker}` as const);
-										const recipeName = isDarkMatter ? '黑暗物质' : recipe;
+										const recipeName = isDarkMatter ? DARK_MATTER_NAME : recipe;
 										const customerRatingColor = customerRatingColorMap[rating];
 										return (
 											<>

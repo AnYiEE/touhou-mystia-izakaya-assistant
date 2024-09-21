@@ -1,3 +1,5 @@
+export * from './constant';
+
 export * from './beverages';
 export * from './clothes';
 export * from './cookers';

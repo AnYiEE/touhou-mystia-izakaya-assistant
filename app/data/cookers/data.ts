@@ -1,5 +1,6 @@
 /* eslint-disable sort-keys */
 import type {ICooker} from './types';
+import {DARK_MATTER_NAME, TAG_POPULAR_POSITIVE} from '@/data/constant';
 
 export const COOKER_LIST = [
 	{
@@ -227,7 +228,7 @@ export const COOKER_LIST = [
 		type: '煮锅',
 		category: '核能',
 		dlc: 0,
-		effect: ['减少50%料理时间。有40%的概率制作出“黑暗物质”，但如果完美歌唱会使此概率降低至5%。', true],
+		effect: [`减少50%料理时间。有40%的概率制作出“${DARK_MATTER_NAME}”，但如果完美歌唱会使此概率降低至5%。`, true],
 		from: {
 			buy: '【人间之里】香霖堂',
 		},
@@ -237,7 +238,7 @@ export const COOKER_LIST = [
 		type: '烤架',
 		category: '核能',
 		dlc: 0,
-		effect: ['减少50%料理时间。有40%的概率制作出“黑暗物质”，但如果完美歌唱会使此概率降低至5%。', true],
+		effect: [`减少50%料理时间。有40%的概率制作出“${DARK_MATTER_NAME}”，但如果完美歌唱会使此概率降低至5%。`, true],
 		from: {
 			buy: '【人间之里】香霖堂',
 		},
@@ -247,7 +248,7 @@ export const COOKER_LIST = [
 		type: '油锅',
 		category: '核能',
 		dlc: 0,
-		effect: ['减少50%料理时间。有40%的概率制作出“黑暗物质”，但如果完美歌唱会使此概率降低至5%。', true],
+		effect: [`减少50%料理时间。有40%的概率制作出“${DARK_MATTER_NAME}”，但如果完美歌唱会使此概率降低至5%。`, true],
 		from: {
 			buy: '【人间之里】香霖堂',
 		},
@@ -257,7 +258,7 @@ export const COOKER_LIST = [
 		type: '蒸锅',
 		category: '核能',
 		dlc: 0,
-		effect: ['减少50%料理时间。有40%的概率制作出“黑暗物质”，但如果完美歌唱会使此概率降低至5%。', true],
+		effect: [`减少50%料理时间。有40%的概率制作出“${DARK_MATTER_NAME}”，但如果完美歌唱会使此概率降低至5%。`, true],
 		from: {
 			buy: '【人间之里】香霖堂',
 		},
@@ -267,7 +268,7 @@ export const COOKER_LIST = [
 		type: '料理台',
 		category: '核能',
 		dlc: 0,
-		effect: ['减少50%料理时间。有40%的概率制作出“黑暗物质”，但如果完美歌唱会使此概率降低至5%。', true],
+		effect: [`减少50%料理时间。有40%的概率制作出“${DARK_MATTER_NAME}”，但如果完美歌唱会使此概率降低至5%。`, true],
 		from: {
 			buy: '【人间之里】香霖堂',
 		},
@@ -410,7 +411,7 @@ export const COOKER_LIST = [
 		category: 'DLC',
 		dlc: 4,
 		effect: [
-			'减少20%料理时间；烹饪时若没有添加任何额外食材则减少70%料理时间，否则增加30%续单率。若料理带有“流行喜爱”标签则二者同时触发。',
+			`减少20%料理时间；烹饪时若没有添加任何额外食材则减少70%料理时间，否则增加30%续单率。若料理带有“${TAG_POPULAR_POSITIVE}”标签则二者同时触发。`,
 			true,
 		],
 		from: {

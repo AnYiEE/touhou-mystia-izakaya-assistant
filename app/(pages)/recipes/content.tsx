@@ -11,7 +11,7 @@ import ItemPopoverCard from '@/components/itemPopoverCard';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 
-import {type IRecipe, RECIPE_TAG_STYLE} from '@/data';
+import {DARK_MATTER_NAME, type IRecipe, RECIPE_TAG_STYLE} from '@/data';
 // import {globalStore as store} from '@/stores';
 import {type Recipe} from '@/utils';
 
@@ -53,7 +53,7 @@ export default memo<IProps>(function Content({data}) {
 						name={name}
 						description={{level, price}}
 						dlc={dlc}
-						cooker={name === '黑暗物质' ? null : cooker}
+						cooker={name === DARK_MATTER_NAME ? null : cooker}
 						ingredients={ingredients}
 						tags={{negative: negativeTags, positive: positiveTags}}
 						tagColors={RECIPE_TAG_STYLE}

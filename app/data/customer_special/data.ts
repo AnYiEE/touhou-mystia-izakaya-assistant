@@ -1,5 +1,6 @@
 /* eslint-disable sort-keys */
 import type {ICustomerSpecial} from './types';
+import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data/constant';
 
 export const CUSTOMER_SPECIAL_LIST = [
 	{
@@ -7,8 +8,8 @@ export const CUSTOMER_SPECIAL_LIST = [
 		dlc: 0,
 		places: ['妖怪兽道', '人间之里', '博丽神社', '红魔馆', '迷途竹林', '妖怪之山'],
 		price: '300-400',
-		positiveTags: ['家常', '甜', '凉爽', '菌类', '小巧', '梦幻', '流行喜爱'],
-		negativeTags: ['生', '灼热', '猎奇', '流行厌恶'],
+		positiveTags: ['家常', '甜', '凉爽', '菌类', '小巧', '梦幻', TAG_POPULAR_POSITIVE],
+		negativeTags: ['生', '灼热', '猎奇', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['无酒精', '水果', '甘', '苦'],
 		bondRewards: [],
 		spellCards: {},
@@ -31,8 +32,8 @@ export const CUSTOMER_SPECIAL_LIST = [
 			'辉针城',
 		],
 		price: '1200-1600',
-		positiveTags: ['肉', '水产', '甜', '梦幻', '流行喜爱'],
-		negativeTags: ['灼热', '猎奇', '流行厌恶'],
+		positiveTags: ['肉', '水产', '甜', '梦幻', TAG_POPULAR_POSITIVE],
+		negativeTags: ['灼热', '猎奇', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['可加冰', '水果', '甘', '辛'],
 		bondRewards: [],
 		spellCards: {},

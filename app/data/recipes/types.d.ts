@@ -1,21 +1,20 @@
+import {type DARK_MATTER_TAG, type TAG_ECONOMICAL, type TAG_EXPENSIVE, type TAG_LARGE_PARTITION} from '@/data/constant';
+import type {TCookerNames} from '@/data/cookers/types';
+import type {TCustomerRareNames} from '@/data/customer_rare/types';
+import type {TIngredientNames} from '@/data/ingredients/types';
 import type {IFoodBase} from '@/data/types';
-import type {TCookerNames} from '../cookers/types';
-import type {TCustomerRareNames} from '../customer_rare/types';
-import type {TIngredientNames} from '../ingredients/types';
 
-export type TTagNeedCalculate = '昂贵' | '实惠';
+export type TTagNeedCalculate = typeof TAG_ECONOMICAL | typeof TAG_EXPENSIVE;
 
 type TTag =
 	| '饱腹'
 	| '不可思议'
 	| '传说'
-	| '大份'
 	| '毒'
 	| '高级'
 	| '果味'
 	| '海味'
 	| '和风'
-	| '黑暗物质'
 	| '家常'
 	| '菌类'
 	| '辣'
@@ -45,7 +44,9 @@ type TTag =
 	| '招牌'
 	| '中华'
 	| '重油'
-	| '灼热';
+	| '灼热'
+	| typeof TAG_LARGE_PARTITION
+	| typeof DARK_MATTER_TAG;
 
 export interface IRecipe extends IFoodBase {
 	ingredients: TIngredientNames[];

@@ -4,10 +4,11 @@ import {createJSONStorage} from 'zustand/middleware';
 import {type Selection} from '@nextui-org/react';
 
 import type {IPersistenceState} from './types';
+import {type DARK_MATTER_TAG} from '@/data';
 import type {TIngredientTag, TRecipeTag} from '@/data/types';
 import {Ingredient, Recipe, pinyinSort, toValueObject, union} from '@/utils';
 
-export type TPopularTag = Exclude<TIngredientTag, '特产' | '天罚'> | Exclude<TRecipeTag, '黑暗物质'>;
+export type TPopularTag = Exclude<TIngredientTag, '特产' | '天罚'> | Exclude<TRecipeTag, typeof DARK_MATTER_TAG>;
 export interface IPopularData {
 	isNegative: boolean;
 	tag: TPopularTag | null;

@@ -1,5 +1,12 @@
 import {Food} from './base';
-import {INGREDIENT_LIST, type TIngredientNames, type TIngredientTypes, type TIngredients} from '@/data';
+import {
+	INGREDIENT_LIST,
+	TAG_POPULAR_NEGATIVE,
+	TAG_POPULAR_POSITIVE,
+	type TIngredientNames,
+	type TIngredientTypes,
+	type TIngredients,
+} from '@/data';
 import type {TIngredientTag, TLevel} from '@/data/types';
 import {type IPopularData} from '@/stores';
 import {checkArrayEqualOf} from '@/utils';
@@ -58,7 +65,7 @@ export class Ingredient extends Food<TIngredients> {
 		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popular;
 
 		if (currentPopularTag && ingredientTags.includes(currentPopularTag as TIngredientTag)) {
-			ingredientTagsWithPopular.push(isNegativePopularTag ? '流行厌恶' : '流行喜爱');
+			ingredientTagsWithPopular.push(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
 		}
 
 		return ingredientTagsWithPopular;

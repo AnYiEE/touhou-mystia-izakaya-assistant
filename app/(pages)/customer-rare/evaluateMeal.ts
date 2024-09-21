@@ -1,5 +1,12 @@
 import type {TCustomerRating} from './types';
-import {type TCustomerRareNames, type TCustomerSpecialNames, type TIngredientNames, type TRecipeNames} from '@/data';
+import {
+	DARK_MATTER_NAME,
+	DARK_MATTER_TAG,
+	type TCustomerRareNames,
+	type TCustomerSpecialNames,
+	type TIngredientNames,
+	type TRecipeNames,
+} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {type ICustomerOrder} from '@/stores';
 import {intersection, without} from '@/utils';
@@ -122,7 +129,7 @@ export function checkRecipeEasterEgg({
 			break;
 		}
 		case '梅蒂欣': {
-			const recipe = '黑暗物质';
+			const recipe = DARK_MATTER_NAME;
 			if (currentRecipeName === recipe) {
 				return {
 					recipe,
@@ -230,9 +237,9 @@ export function evaluateMeal({
 	let currentRecipeScore: number | null = null;
 
 	if (isDarkMatter) {
-		currentRecipeName = '黑暗物质';
+		currentRecipeName = DARK_MATTER_NAME;
 		currentRecipeScore = 0;
-		currentRecipeTagsWithPopular = ['黑暗物质'];
+		currentRecipeTagsWithPopular = [DARK_MATTER_TAG];
 		hasMystiaCooker = false;
 	}
 

@@ -12,7 +12,7 @@ import Placeholder from './placeholder';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 
-import {type TIngredientNames} from '@/data';
+import {DARK_MATTER_NAME, type TIngredientNames} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
@@ -261,12 +261,12 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 					<div className="flex items-center gap-2">
 						{currentRecipeData ? (
 							(() => {
-								const isisDarkMatterOrNormalMeal = isDarkMatter || !hasMystiaCooker;
+								const isDarkMatterOrNormalMeal = isDarkMatter || !hasMystiaCooker;
 								const originalCooker = instance_recipe.getPropsByName(currentRecipeData.name, 'cooker');
-								const cooker = isisDarkMatterOrNormalMeal
+								const cooker = isDarkMatterOrNormalMeal
 									? originalCooker
 									: (`夜雀${originalCooker}` as const);
-								const recipeName = isDarkMatter ? '黑暗物质' : currentRecipeData.name;
+								const recipeName = isDarkMatter ? DARK_MATTER_NAME : currentRecipeData.name;
 								const label = isDarkMatter
 									? originalCooker
 									: `点击：将此点单标记为使用${hasMystiaCooker ? '非' : ''}【夜雀${originalCooker}】制作`;
@@ -334,7 +334,7 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 									: 0) +
 									(currentRecipeData?.name
 										? instance_recipe.getPropsByName(
-												isDarkMatter ? '黑暗物质' : currentRecipeData.name,
+												isDarkMatter ? DARK_MATTER_NAME : currentRecipeData.name,
 												'price'
 											)
 										: 0)}

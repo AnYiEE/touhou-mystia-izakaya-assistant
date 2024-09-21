@@ -8,6 +8,7 @@ import H2 from '@/components/h2';
 import Ul from '@/components/ul';
 
 import {siteConfig} from '@/configs';
+import {DARK_MATTER_NAME, TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data';
 
 const {links} = siteConfig;
 
@@ -33,7 +34,7 @@ const changelog = [
 	{
 		version: 'v0.4',
 		changes: [
-			'新增：搭配稀客套餐时，支持设置流行喜爱和流行厌恶标签。',
+			`新增：搭配稀客套餐时，支持设置“${TAG_POPULAR_POSITIVE}”和“${TAG_POPULAR_NEGATIVE}”标签。`,
 			'新增：作为渐进式网络应用程序安装后，提供常用功能的快捷方式。',
 			'改善：无障碍（键盘导航）支持。',
 			'修复：稀客套餐评级逻辑。',
@@ -67,7 +68,7 @@ const changelog = [
 	{
 		version: 'v0.9',
 		changes: [
-			'新增：稀客套餐评级支持“黑暗物质”。',
+			`新增：稀客套餐评级支持“${DARK_MATTER_NAME}”。`,
 			'新增：稀客符卡效果数据及其展示界面。',
 			'新增：稀客、米斯蒂娅的角色和衣服立绘。',
 			'新增：部分场景下支持临时唤起新窗口查看料理、酒水或食材详情。',

@@ -1,5 +1,13 @@
 /* eslint-disable sort-keys */
 import type {ICustomerRare} from './types';
+import {
+	DARK_MATTER_NAME,
+	TAG_ECONOMICAL,
+	TAG_EXPENSIVE,
+	TAG_LARGE_PARTITION,
+	TAG_POPULAR_NEGATIVE,
+	TAG_POPULAR_POSITIVE,
+} from '@/data/constant';
 
 export const CUSTOMER_RARE_LIST = [
 	{
@@ -38,8 +46,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 0,
 		places: ['妖怪兽道', '魔法森林'],
 		price: '150-350',
-		positiveTags: ['肉', '饱腹', '生', '招牌', '猎奇', '流行喜爱'],
-		negativeTags: ['下酒', '昂贵', '流行厌恶'],
+		positiveTags: ['肉', '饱腹', '生', '招牌', '猎奇', TAG_POPULAR_POSITIVE],
+		negativeTags: ['下酒', TAG_EXPENSIVE, TAG_POPULAR_NEGATIVE],
 		beverageTags: ['苦', '气泡'],
 		bondRewards: [],
 		spellCards: {
@@ -66,8 +74,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 0,
 		places: ['妖怪兽道'],
 		price: '400-600',
-		positiveTags: ['肉', '水产', '重油', '甜', '烧烤', '流行喜爱'],
-		negativeTags: ['素', '灼热', '猎奇', '流行厌恶'],
+		positiveTags: ['肉', '水产', '重油', '甜', '烧烤', TAG_POPULAR_POSITIVE],
+		negativeTags: ['素', '灼热', '猎奇', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['水果', '辛'],
 		bondRewards: [],
 		spellCards: {
@@ -94,8 +102,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 0,
 		places: ['人间之里', '魔法森林', '命莲寺'],
 		price: '400-800',
-		positiveTags: ['素', '家常', '清淡', '和风', '中华', '文化底蕴', '流行喜爱'],
-		negativeTags: ['重油', '咸', '大份', '流行厌恶'],
+		positiveTags: ['素', '家常', '清淡', '和风', '中华', '文化底蕴', TAG_POPULAR_POSITIVE],
+		negativeTags: ['重油', '咸', TAG_LARGE_PARTITION, TAG_POPULAR_NEGATIVE],
 		beverageTags: ['烧酒', '清酒', '利口酒'],
 		bondRewards: [],
 		spellCards: {
@@ -131,8 +139,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 0,
 		places: ['人间之里', '命莲寺'],
 		price: '500-800',
-		positiveTags: ['高级', '清淡', '和风', '甜', '文化底蕴', '汤羹', '流行喜爱'],
-		negativeTags: ['重油', '咸', '灼热', '流行厌恶'],
+		positiveTags: ['高级', '清淡', '和风', '甜', '文化底蕴', '汤羹', TAG_POPULAR_POSITIVE],
+		negativeTags: ['重油', '咸', '灼热', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['可加热', '清酒'],
 		bondRewards: [
 			{
@@ -166,7 +174,7 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['人间之里', '旧地狱', '神灵庙'],
 		price: '400-600',
 		positiveTags: ['家常', '下酒', '和风', '文化底蕴'],
-		negativeTags: ['生', '辣', '实惠'],
+		negativeTags: ['生', '辣', TAG_ECONOMICAL],
 		beverageTags: ['中酒精', '直饮', '古典'],
 		bondRewards: [
 			{
@@ -196,8 +204,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 0,
 		places: ['博丽神社', '妖怪兽道', '人间之里', '魔法森林', '妖怪之山'],
 		price: '150-300',
-		positiveTags: ['高级', '饱腹', '甜', '不可思议', '实惠', '流行喜爱'],
-		negativeTags: ['下酒', '昂贵', '流行厌恶'],
+		positiveTags: ['高级', '饱腹', '甜', '不可思议', TAG_ECONOMICAL, TAG_POPULAR_POSITIVE],
+		negativeTags: ['下酒', TAG_EXPENSIVE, TAG_POPULAR_NEGATIVE],
 		beverageTags: ['无酒精', '低酒精', '可加热'],
 		bondRewards: [
 			{
@@ -223,7 +231,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			高级: '便宜高级料理',
 			不可思议: '符合我的称号',
-			实惠: '贵的买不起',
+			[TAG_ECONOMICAL]: '贵的买不起',
 		},
 	},
 	{
@@ -231,8 +239,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 0,
 		places: ['博丽神社', '妖怪之山', '辉针城'],
 		price: '600-800',
-		positiveTags: ['肉', '下酒', '和风', '力量涌现', '小巧', '流行喜爱'],
-		negativeTags: ['重油', '流行厌恶'],
+		positiveTags: ['肉', '下酒', '和风', '力量涌现', '小巧', TAG_POPULAR_POSITIVE],
+		negativeTags: ['重油', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['高酒精', '直饮'],
 		bondRewards: [
 			{
@@ -266,8 +274,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 0,
 		places: ['博丽神社', '妖怪之山', '旧地狱', '神灵庙', '太阳花田'],
 		price: '2000-3000',
-		positiveTags: ['素', '传说', '清淡', '甜', '适合拍照', '果味', '昂贵', '流行厌恶'],
-		negativeTags: ['肉', '家常', '重油', '流行喜爱'],
+		positiveTags: ['素', '传说', '清淡', '甜', '适合拍照', '果味', TAG_EXPENSIVE, TAG_POPULAR_NEGATIVE],
+		negativeTags: ['肉', '家常', '重油', TAG_POPULAR_POSITIVE],
 		beverageTags: ['高酒精', '鸡尾酒'],
 		bondRewards: [],
 		spellCards: {
@@ -287,7 +295,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			清淡: '重油下等',
 			适合拍照: '卖相要好',
-			昂贵: '我不缺钱',
+			[TAG_EXPENSIVE]: '我不缺钱',
 		},
 	},
 	{
@@ -295,8 +303,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 0,
 		places: ['红魔馆'],
 		price: '200-400',
-		positiveTags: ['肉', '饱腹', '中华', '力量涌现', '流行喜爱'],
-		negativeTags: ['西式', '猎奇', '果味', '流行厌恶'],
+		positiveTags: ['肉', '饱腹', '中华', '力量涌现', TAG_POPULAR_POSITIVE],
+		negativeTags: ['西式', '猎奇', '果味', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['可加热', '古典', '提神'],
 		bondRewards: [],
 		spellCards: {
@@ -323,8 +331,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 0,
 		places: ['红魔馆', '妖怪之山'],
 		price: '100-200',
-		positiveTags: ['甜', '适合拍照', '凉爽', '猎奇', '流行厌恶'],
-		negativeTags: ['下酒', '文化底蕴', '昂贵', '流行喜爱'],
+		positiveTags: ['甜', '适合拍照', '凉爽', '猎奇', TAG_POPULAR_NEGATIVE],
+		negativeTags: ['下酒', '文化底蕴', TAG_EXPENSIVE, TAG_POPULAR_POSITIVE],
 		beverageTags: ['可加冰', '水果', '甘'],
 		bondRewards: [
 			{
@@ -378,7 +386,7 @@ export const CUSTOMER_RARE_LIST = [
 			negative: [
 				{
 					name: '金水符「水银之毒」',
-					description: '接下来制作的料理，有50%概率会变成黑暗料理，持续30秒。',
+					description: `接下来制作的料理，有50%概率会变成${DARK_MATTER_NAME}，持续30秒。`,
 				},
 			],
 		},
@@ -393,7 +401,7 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['迷途竹林', '妖怪兽道'],
 		price: '300-600',
 		positiveTags: ['灼热', '果味', '烧烤', '燃起来了', '辣'],
-		negativeTags: ['高级', '不可思议', '昂贵'],
+		negativeTags: ['高级', '不可思议', TAG_EXPENSIVE],
 		beverageTags: ['烧酒', '辛', '苦'],
 		bondRewards: [
 			{
@@ -425,8 +433,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 0,
 		places: ['迷途竹林', '辉针城'],
 		price: '1000-1500',
-		positiveTags: ['传说', '和风', '文化底蕴', '不可思议', '流行喜爱'],
-		negativeTags: ['招牌', '猎奇', '大份', '流行厌恶'],
+		positiveTags: ['传说', '和风', '文化底蕴', '不可思议', TAG_POPULAR_POSITIVE],
+		negativeTags: ['招牌', '猎奇', TAG_LARGE_PARTITION, TAG_POPULAR_NEGATIVE],
 		beverageTags: ['清酒', '古典', '现代'],
 		bondRewards: [],
 		spellCards: {
@@ -453,8 +461,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 0,
 		places: ['迷途竹林'],
 		price: '200-400',
-		positiveTags: ['传说', '甜', '凉爽', '小巧', '梦幻', '流行喜爱'],
-		negativeTags: ['重油', '山珍', '猎奇', '流行厌恶'],
+		positiveTags: ['传说', '甜', '凉爽', '小巧', '梦幻', TAG_POPULAR_POSITIVE],
+		negativeTags: ['重油', '山珍', '猎奇', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['无酒精', '水果', '甘'],
 		bondRewards: [
 			{
@@ -521,7 +529,7 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 1,
 		places: ['妖怪之山'],
 		price: '300-400',
-		positiveTags: ['肉', '重油', '下酒', '山珍', '大份'],
+		positiveTags: ['肉', '重油', '下酒', '山珍', TAG_LARGE_PARTITION],
 		negativeTags: ['素', '清淡', '猎奇'],
 		beverageTags: ['中酒精', '高酒精', '直饮'],
 		bondRewards: [
@@ -548,7 +556,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			肉: '身为狼',
 			重油: '不健康',
-			大份: '多吃点',
+			[TAG_LARGE_PARTITION]: '多吃点',
 		},
 	},
 	{
@@ -556,8 +564,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 1,
 		places: ['魔法森林', '妖怪之山', '命莲寺', '神灵庙'],
 		price: '400-600',
-		positiveTags: ['家常', '和风', '甜', '适合拍照', '梦幻', '流行喜爱'],
-		negativeTags: ['重油', '生', '灼热', '猎奇', '流行厌恶'],
+		positiveTags: ['家常', '和风', '甜', '适合拍照', '梦幻', TAG_POPULAR_POSITIVE],
+		negativeTags: ['重油', '生', '灼热', '猎奇', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['无酒精', '低酒精', '清酒', '直饮', '水果', '甘', '苦', '气泡', '现代'],
 		bondRewards: [],
 		spellCards: {
@@ -638,8 +646,8 @@ export const CUSTOMER_RARE_LIST = [
 			'辉针城',
 		],
 		price: '3000-5000',
-		positiveTags: ['传说', '重油', '和风', '灼热', '菌类', '流行喜爱'],
-		negativeTags: ['猎奇', '流行厌恶'],
+		positiveTags: ['传说', '重油', '和风', '灼热', '菌类', TAG_POPULAR_POSITIVE],
+		negativeTags: ['猎奇', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['低酒精', '可加冰'],
 		bondRewards: [],
 		spellCards: {
@@ -695,7 +703,7 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 2,
 		places: ['旧地狱', '妖怪兽道', '红魔馆', '魔法森林', '妖怪之山'],
 		price: '250-400',
-		positiveTags: ['鲜', '甜', '生', '适合拍照', '猎奇', '流行喜爱'],
+		positiveTags: ['鲜', '甜', '生', '适合拍照', '猎奇', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '咸', '灼热'],
 		beverageTags: ['低酒精', '中酒精', '啤酒', '甘'],
 		bondRewards: [
@@ -734,7 +742,7 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 2,
 		places: ['旧地狱'],
 		price: '300-400',
-		positiveTags: ['肉', '咸', '鲜', '果味', '辣', '酸', '流行厌恶'],
+		positiveTags: ['肉', '咸', '鲜', '果味', '辣', '酸', TAG_POPULAR_NEGATIVE],
 		negativeTags: ['甜'],
 		beverageTags: ['无酒精', '可加热', '直饮', '辛', '苦'],
 		bondRewards: [],
@@ -763,7 +771,16 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 2,
 		places: ['旧地狱', '博丽神社', '妖怪之山', '地灵殿'],
 		price: '600-1000',
-		positiveTags: ['传说', '下酒', '和风', '招牌', '力量涌现', '燃起来了', '大份', '流行喜爱'],
+		positiveTags: [
+			'传说',
+			'下酒',
+			'和风',
+			'招牌',
+			'力量涌现',
+			'燃起来了',
+			TAG_LARGE_PARTITION,
+			TAG_POPULAR_POSITIVE,
+		],
 		negativeTags: ['素', '猎奇', '小巧'],
 		beverageTags: ['高酒精', '清酒', '啤酒', '古典'],
 		bondRewards: [],
@@ -785,7 +802,7 @@ export const CUSTOMER_RARE_LIST = [
 		},
 		positiveTagMapping: {
 			燃起来了: '热血沸腾起来',
-			大份: '饱餐一顿',
+			[TAG_LARGE_PARTITION]: '饱餐一顿',
 		},
 	},
 	{
@@ -793,7 +810,7 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 2,
 		places: ['地灵殿', '人间之里', '博丽神社', '妖怪之山', '旧地狱', '命莲寺', '神灵庙'],
 		price: '500-700',
-		positiveTags: ['水产', '海味', '鲜', '甜', '猎奇', '梦幻', '流行喜爱'],
+		positiveTags: ['水产', '海味', '鲜', '甜', '猎奇', '梦幻', TAG_POPULAR_POSITIVE],
 		negativeTags: ['生', '灼热'],
 		beverageTags: ['低酒精', '清酒', '水果'],
 		bondRewards: [
@@ -854,7 +871,7 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['地灵殿', '人间之里', '博丽神社', '红魔馆', '迷途竹林', '魔法森林'],
 		price: '500-600',
 		positiveTags: ['家常', '甜', '力量涌现', '小巧', '梦幻', '特产'],
-		negativeTags: ['肉', '山珍', '灼热', '猎奇', '大份'],
+		negativeTags: ['肉', '山珍', '灼热', '猎奇', TAG_LARGE_PARTITION],
 		beverageTags: ['无酒精', '苦', '气泡', '提神'],
 		bondRewards: [
 			{
@@ -887,7 +904,7 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 3,
 		places: ['命莲寺', '辉针城'],
 		price: '150-300',
-		positiveTags: ['家常', '饱腹', '甜', '适合拍照', '力量涌现', '猎奇', '不可思议', '流行喜爱'],
+		positiveTags: ['家常', '饱腹', '甜', '适合拍照', '力量涌现', '猎奇', '不可思议', TAG_POPULAR_POSITIVE],
 		negativeTags: ['灼热', '汤羹', '辣'],
 		beverageTags: ['中酒精', '可加冰', '水果', '古典'],
 		bondRewards: [
@@ -959,8 +976,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 3,
 		places: ['命莲寺', '辉针城'],
 		price: '300-500',
-		positiveTags: ['肉', '鲜', '生', '招牌', '适合拍照', '猎奇', '不可思议', '特产', '流行厌恶'],
-		negativeTags: ['西式', '酸', '流行喜爱'],
+		positiveTags: ['肉', '鲜', '生', '招牌', '适合拍照', '猎奇', '不可思议', '特产', TAG_POPULAR_NEGATIVE],
+		negativeTags: ['西式', '酸', TAG_POPULAR_POSITIVE],
 		beverageTags: ['可加热', '烧酒', '直饮', '古典'],
 		bondRewards: [],
 		spellCards: {
@@ -989,8 +1006,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 3,
 		places: ['神灵庙'],
 		price: '600-900',
-		positiveTags: ['高级', '传说', '清淡', '山珍', '和风', '燃起来了', '流行喜爱'],
-		negativeTags: ['西式', '生', '流行厌恶'],
+		positiveTags: ['高级', '传说', '清淡', '山珍', '和风', '燃起来了', TAG_POPULAR_POSITIVE],
+		negativeTags: ['西式', '生', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['中酒精', '可加热', '直饮', '气泡'],
 		bondRewards: [],
 		spellCards: {
@@ -1018,7 +1035,7 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 3,
 		places: ['神灵庙'],
 		price: '400-900',
-		positiveTags: ['素', '传说', '中华', '甜', '不可思议', '小巧', '特产', '流行喜爱'],
+		positiveTags: ['素', '传说', '中华', '甜', '不可思议', '小巧', '特产', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '饱腹'],
 		beverageTags: ['低酒精', '清酒', '水果', '现代'],
 		bondRewards: [
@@ -1092,8 +1109,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 4,
 		places: ['辉针城'],
 		price: '600-1200',
-		positiveTags: ['传说', '和风', '甜', '适合拍照', '文化底蕴', '小巧', '燃起来了', '流行喜爱'],
-		negativeTags: ['西式', '大份'],
+		positiveTags: ['传说', '和风', '甜', '适合拍照', '文化底蕴', '小巧', '燃起来了', TAG_POPULAR_POSITIVE],
+		negativeTags: ['西式', TAG_LARGE_PARTITION],
 		beverageTags: ['低酒精', '可加热', '气泡', '古典'],
 		bondRewards: [
 			{
@@ -1129,8 +1146,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 4,
 		places: ['辉针城'],
 		price: '300-600',
-		positiveTags: ['重油', '下酒', '灼热', '力量涌现', '猎奇', '不可思议', '燃起来了', '流行厌恶'],
-		negativeTags: ['高级', '流行喜爱'],
+		positiveTags: ['重油', '下酒', '灼热', '力量涌现', '猎奇', '不可思议', '燃起来了', TAG_POPULAR_NEGATIVE],
+		negativeTags: ['高级', TAG_POPULAR_POSITIVE],
 		beverageTags: ['中酒精', '烧酒', '直饮', '辛'],
 		bondRewards: [
 			{
@@ -1166,7 +1183,7 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 4,
 		places: ['辉针城', '迷途竹林'],
 		price: '300-600',
-		positiveTags: ['肉', '家常', '山珍', '和风', '适合拍照', '凉爽', '流行喜爱'],
+		positiveTags: ['肉', '家常', '山珍', '和风', '适合拍照', '凉爽', TAG_POPULAR_POSITIVE],
 		negativeTags: ['灼热'],
 		beverageTags: ['中酒精', '可加冰', '清酒', '直饮'],
 		bondRewards: [],
@@ -1211,16 +1228,15 @@ export const CUSTOMER_RARE_LIST = [
 			'辉针城',
 		],
 		price: '500-600',
-		positiveTags: ['肉', '家常', '下酒', '和风', '招牌', '适合拍照', '流行喜爱'],
-		negativeTags: ['西式', '流行厌恶'],
+		positiveTags: ['肉', '家常', '下酒', '和风', '招牌', '适合拍照', TAG_POPULAR_POSITIVE],
+		negativeTags: ['西式', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['高酒精', '可加冰', '烧酒', '提神'],
 		bondRewards: [],
 		spellCards: {
 			positive: [
 				{
 					name: '「八衢潮流风靡幻想」',
-					description:
-						'明天开始店铺变为“明星店”，三天后恢复正常。“明星店”：提高10%顾客预算和5%客流量，“招牌”标签成为流行标签。若店铺已是“明星店”或当晚已宣传，则此符卡转化为“「食堂风起厨神无双」”。“「食堂风起厨神无双」”：成品带有“招牌”标签的今日菜单上的料理将成为明星料理。制作明星料理时若料理时间小于5秒则瞬间完成；在舆论的裹挟下，追捧“流行喜爱”标签的顾客食用明星料理后额外提高30%续单率，返还当单酒水消耗的预算，并100%增加一次续单上限（增加续单上限效果每桌顾客只触发一次），持续30秒。',
+					description: `明天开始店铺变为“明星店”，三天后恢复正常。“明星店”：提高10%顾客预算和5%客流量，“招牌”标签成为流行标签。若店铺已是“明星店”或当晚已宣传，则此符卡转化为“「食堂风起厨神无双」”。“「食堂风起厨神无双」”：成品带有“招牌”标签的今日菜单上的料理将成为明星料理。制作明星料理时若料理时间小于5秒则瞬间完成；在舆论的裹挟下，追捧“${TAG_POPULAR_POSITIVE}”标签的顾客食用明星料理后额外提高30%续单率，返还当单酒水消耗的预算，并100%增加一次续单上限（增加续单上限效果每桌顾客只触发一次），持续30秒。`,
 				},
 			],
 			negative: [
@@ -1240,7 +1256,7 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 4,
 		places: ['太阳花田'],
 		price: '1200-1800',
-		positiveTags: ['高级', '传说', '清淡', '西式', '不可思议', '梦幻', '特产', '流行喜爱'],
+		positiveTags: ['高级', '传说', '清淡', '西式', '不可思议', '梦幻', '特产', TAG_POPULAR_POSITIVE],
 		negativeTags: ['饱腹', '和风', '咸', '灼热'],
 		beverageTags: ['鸡尾酒', '西洋酒', '利口酒', '现代'],
 		bondRewards: [
@@ -1368,7 +1384,7 @@ export const CUSTOMER_RARE_LIST = [
 			'辉针城',
 		],
 		price: '800-1000',
-		positiveTags: ['水产', '西式', '甜', '适合拍照', '小巧', '特产', '流行喜爱'],
+		positiveTags: ['水产', '西式', '甜', '适合拍照', '小巧', '特产', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '饱腹'],
 		beverageTags: ['中酒精', '可加冰', '鸡尾酒', '啤酒', '现代'],
 		bondRewards: [],
@@ -1398,7 +1414,7 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 5,
 		places: ['魔界'],
 		price: '300-500',
-		positiveTags: ['家常', '饱腹', '西式', '甜', '凉爽', '梦幻', '流行喜爱'],
+		positiveTags: ['家常', '饱腹', '西式', '甜', '凉爽', '梦幻', TAG_POPULAR_POSITIVE],
 		negativeTags: ['水产', '重油', '生'],
 		beverageTags: ['低酒精', '可加热', '啤酒', '甘', '古典'],
 		bondRewards: [
@@ -1433,7 +1449,7 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['月之都'],
 		price: '200-350',
 		positiveTags: ['家常', '山珍', '海味', '中华', '甜', '小巧', '特产'],
-		negativeTags: ['不可思议', '昂贵'],
+		negativeTags: ['不可思议', TAG_EXPENSIVE],
 		beverageTags: ['高酒精', '可加热', '烧酒', '啤酒', '苦'],
 		bondRewards: [
 			{
@@ -1471,7 +1487,7 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 5,
 		places: ['月之都'],
 		price: '1200-1500',
-		positiveTags: ['素', '高级', '和风', '甜', '凉爽', '文化底蕴', '果味', '流行喜爱'],
+		positiveTags: ['素', '高级', '和风', '甜', '凉爽', '文化底蕴', '果味', TAG_POPULAR_POSITIVE],
 		negativeTags: ['山珍', '咸', '力量涌现'],
 		beverageTags: ['高酒精', '可加冰', '清酒', '水果', '古典'],
 		bondRewards: [],
@@ -1540,8 +1556,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 0,
 		places: ['人间之里', '魔法森林', '太阳花田'],
 		price: '250-400',
-		positiveTags: ['家常', '饱腹', '鲜', '流行喜爱'],
-		negativeTags: ['重油', '下酒', '猎奇', '流行厌恶'],
+		positiveTags: ['家常', '饱腹', '鲜', TAG_POPULAR_POSITIVE],
+		negativeTags: ['重油', '下酒', '猎奇', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['烧酒', '啤酒'],
 		bondRewards: [],
 		spellCards: {
@@ -1567,8 +1583,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 4,
 		places: ['博丽神社', '红魔馆'],
 		price: '4950-5000',
-		positiveTags: ['高级', '传说', '西式', '甜', '生', '流行喜爱'],
-		negativeTags: ['咸', '辣', '酸', '实惠'],
+		positiveTags: ['高级', '传说', '西式', '甜', '生', TAG_POPULAR_POSITIVE],
+		negativeTags: ['咸', '辣', '酸', TAG_ECONOMICAL],
 		beverageTags: ['高酒精', '西洋酒', '水果', '甘', '古典'],
 		bondRewards: [],
 		spellCards: {
@@ -1626,7 +1642,7 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 0,
 		places: ['博丽神社', '红魔馆', '迷途竹林', '神灵庙'],
 		price: '1500-2000',
-		positiveTags: ['肉', '水产', '高级', '传说', '饱腹', '和风', '中华', '大份'],
+		positiveTags: ['肉', '水产', '高级', '传说', '饱腹', '和风', '中华', TAG_LARGE_PARTITION],
 		negativeTags: ['素', '清淡', '小巧'],
 		beverageTags: ['高酒精', '可加冰', '鸡尾酒'],
 		bondRewards: [],
@@ -1652,8 +1668,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 0,
 		places: ['妖怪兽道', '人间之里', '博丽神社', '红魔馆', '迷途竹林'],
 		price: '400-600',
-		positiveTags: ['水产', '家常', '中华', '辣', '流行喜爱'],
-		negativeTags: ['重油', '下酒', '生', '流行厌恶'],
+		positiveTags: ['水产', '家常', '中华', '辣', TAG_POPULAR_POSITIVE],
+		negativeTags: ['重油', '下酒', '生', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['无酒精', '甘', '气泡'],
 		bondRewards: [],
 		spellCards: {
@@ -1679,8 +1695,8 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 0,
 		places: ['妖怪兽道', '博丽神社', '红魔馆', '迷途竹林', '妖怪之山'],
 		price: '500-800',
-		positiveTags: ['肉', '下酒', '山珍', '和风', '力量涌现', '昂贵', '流行厌恶'],
-		negativeTags: ['素', '清淡', '流行喜爱'],
+		positiveTags: ['肉', '下酒', '山珍', '和风', '力量涌现', TAG_EXPENSIVE, TAG_POPULAR_NEGATIVE],
+		negativeTags: ['素', '清淡', TAG_POPULAR_POSITIVE],
 		beverageTags: ['高酒精', '可加冰', '可加热'],
 		bondRewards: [],
 		spellCards: {
@@ -1694,7 +1710,7 @@ export const CUSTOMER_RARE_LIST = [
 			negative: [
 				{
 					name: '拷问「頞部陀」',
-					description: '制作含有“清淡”或“素”标签的料理，最终只能做出黑暗料理，持续120秒。',
+					description: `制作含有“清淡”或“素”标签的料理，最终只能做出${DARK_MATTER_NAME}，持续120秒。`,
 				},
 			],
 		},
@@ -1743,7 +1759,7 @@ export const CUSTOMER_RARE_LIST = [
 			'辉针城',
 		],
 		price: '9999-9999',
-		positiveTags: ['肉', '高级', '传说', '饱腹', '鲜', '生', '力量涌现', '不可思议', '大份'],
+		positiveTags: ['肉', '高级', '传说', '饱腹', '鲜', '生', '力量涌现', '不可思议', TAG_LARGE_PARTITION],
 		negativeTags: [],
 		beverageTags: ['高酒精', '烧酒', '直饮', '辛'],
 		bondRewards: [],
@@ -1766,7 +1782,7 @@ export const CUSTOMER_RARE_LIST = [
 			饱腹: '无限胃袋',
 			鲜: '不要馊掉了',
 			生: '血淋淋',
-			大份: '指缝都塞不满',
+			[TAG_LARGE_PARTITION]: '指缝都塞不满',
 		},
 	},
 	{
@@ -1816,7 +1832,7 @@ export const CUSTOMER_RARE_LIST = [
 		dlc: 3,
 		places: ['妖怪兽道', '人间之里', '博丽神社', '命莲寺', '神灵庙'],
 		price: '1000-1200',
-		positiveTags: ['肉', '水产', '家常', '传说', '下酒', '和风', '果味', '流行喜爱'],
+		positiveTags: ['肉', '水产', '家常', '传说', '下酒', '和风', '果味', TAG_POPULAR_POSITIVE],
 		negativeTags: ['灼热', '辣'],
 		beverageTags: ['高酒精', '可加热', '烧酒', '古典'],
 		bondRewards: [],

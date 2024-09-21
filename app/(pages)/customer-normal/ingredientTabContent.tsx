@@ -9,7 +9,13 @@ import Placeholder from './placeholder';
 import {type IIngredientTabContentProps} from '@/(pages)/customer-rare/ingredientTabContent';
 import Sprite from '@/components/sprite';
 
-import {type TIngredientNames} from '@/data';
+import {
+	DARK_MATTER_NAME,
+	TAG_LARGE_PARTITION,
+	TAG_POPULAR_NEGATIVE,
+	TAG_POPULAR_POSITIVE,
+	type TIngredientNames,
+} from '@/data';
 import type {TRecipeTag} from '@/data/types';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, intersection, toValueWithKey} from '@/utils';
@@ -134,31 +140,33 @@ export default memo(
 							const isLargePartitionTagNext =
 								currentRecipe.ingredients.length + extraIngredients.length === 4;
 							scoreChange -= Number(
-								isLargePartitionTagNext && (customerNegativeTags as TRecipeTag[]).includes('大份')
+								isLargePartitionTagNext &&
+									(customerNegativeTags as TRecipeTag[]).includes(TAG_LARGE_PARTITION)
 							);
 							scoreChange += Number(
-								isLargePartitionTagNext && (customerPositiveTags as TRecipeTag[]).includes('大份')
+								isLargePartitionTagNext &&
+									(customerPositiveTags as TRecipeTag[]).includes(TAG_LARGE_PARTITION)
 							);
 							const shouldCalculateLargePartitionTag =
-								isLargePartitionTagNext && currentCustomerPopular.tag === '大份';
+								isLargePartitionTagNext && currentCustomerPopular.tag === TAG_LARGE_PARTITION;
 							scoreChange -= Number(
 								shouldCalculateLargePartitionTag &&
-									(customerNegativeTags as TRecipeTag[]).includes('流行厌恶') &&
+									(customerNegativeTags as TRecipeTag[]).includes(TAG_POPULAR_NEGATIVE) &&
 									currentCustomerPopular.isNegative
 							);
 							scoreChange -= Number(
 								shouldCalculateLargePartitionTag &&
-									(customerNegativeTags as TRecipeTag[]).includes('流行喜爱') &&
+									(customerNegativeTags as TRecipeTag[]).includes(TAG_POPULAR_POSITIVE) &&
 									!currentCustomerPopular.isNegative
 							);
 							scoreChange += Number(
 								shouldCalculateLargePartitionTag &&
-									(customerPositiveTags as TRecipeTag[]).includes('流行厌恶') &&
+									(customerPositiveTags as TRecipeTag[]).includes(TAG_POPULAR_NEGATIVE) &&
 									currentCustomerPopular.isNegative
 							);
 							scoreChange += Number(
 								shouldCalculateLargePartitionTag &&
-									(customerPositiveTags as TRecipeTag[]).includes('流行喜爱') &&
+									(customerPositiveTags as TRecipeTag[]).includes(TAG_POPULAR_POSITIVE) &&
 									!currentCustomerPopular.isNegative
 							);
 							const isDown = scoreChange < 0;
@@ -229,7 +237,7 @@ export default memo(
 							<div className="my-4 flex items-center">
 								<div className="h-px w-full bg-foreground-300"></div>
 								<div className="select-none whitespace-nowrap text-sm font-light text-foreground-500">
-									制作黑暗料理？
+									制作{DARK_MATTER_NAME}？
 								</div>
 								<div className="h-px w-full bg-foreground-300"></div>
 							</div>

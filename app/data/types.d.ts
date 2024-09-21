@@ -1,6 +1,7 @@
-import type {IBeverage} from './beverages/types';
-import type {IIngredient} from './ingredients/types';
-import type {IRecipe, TTagNeedCalculate} from './recipes/types';
+import type {IBeverage} from '@/data/beverages/types';
+import {type TAG_POPULAR_NEGATIVE, type TAG_POPULAR_POSITIVE} from '@/data/constant';
+import type {IIngredient} from '@/data/ingredients/types';
+import type {IRecipe, TTagNeedCalculate} from '@/data/recipes/types';
 
 /** @description The meaning of "DLC 0" here refers to the base game. */
 type TDlc = 0 | 1 | 2 | 2.5 | 3 | 4 | 5;
@@ -163,14 +164,15 @@ type TCollectionLocation =
 	| '非【迷途竹林】河流'
 	| '非【妖怪兽道】河流';
 
+type TPopularTags = typeof TAG_POPULAR_NEGATIVE | typeof TAG_POPULAR_POSITIVE;
+
 export type TBeverageTag = IBeverage['tags'][number];
 export type TRecipeTag =
 	| IRecipe['positiveTags'][number] // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
 	| IRecipe['negativeTags'][number]
 	| TTagNeedCalculate
-	| '流行喜爱'
-	| '流行厌恶';
-export type TIngredientTag = IIngredient['tags'][number] | '流行喜爱' | '流行厌恶';
+	| TPopularTags;
+export type TIngredientTag = IIngredient['tags'][number] | TPopularTags;
 
 type TPlace =
 	| '博丽神社'

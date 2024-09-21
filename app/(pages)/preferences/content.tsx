@@ -11,6 +11,7 @@ import H1 from '@/components/h1';
 import H2 from '@/components/h2';
 import H3 from '@/components/h3';
 
+import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 
 interface IProps extends IDataManagerProps {}
@@ -70,18 +71,18 @@ export default memo<IProps>(function Content({onModalClose}) {
 			<div className="space-y-2">
 				<div className="flex items-center">
 					<span className="font-medium">类别：</span>
-					流行喜爱
+					{TAG_POPULAR_NEGATIVE}
 					<Switch
 						isSelected={isNegativePopularTag}
 						size="sm"
 						onValueChange={onIsNegativePopularTagChange}
-						aria-label={`设置为流行${isNegativePopularTag ? '喜爱' : '厌恶'}`}
+						aria-label={`设置为${isNegativePopularTag ? TAG_POPULAR_POSITIVE : TAG_POPULAR_NEGATIVE}`}
 						classNames={{
 							base: 'ml-2',
 							wrapper: 'bg-primary',
 						}}
 					/>
-					流行厌恶
+					{TAG_POPULAR_NEGATIVE}
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
 					<div className="flex items-center">

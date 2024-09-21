@@ -4,7 +4,19 @@ import {type ICurrentCustomer} from '@/(pages)/customer-rare/types';
 
 import {Food} from './base';
 import {Ingredient} from './ingredients';
-import {RECIPE_LIST, type TIngredientNames, type TRecipeNames, type TRecipes} from '@/data';
+import {
+	DARK_MATTER_NAME,
+	DARK_MATTER_TAG,
+	RECIPE_LIST,
+	TAG_ECONOMICAL,
+	TAG_EXPENSIVE,
+	TAG_LARGE_PARTITION,
+	TAG_POPULAR_NEGATIVE,
+	TAG_POPULAR_POSITIVE,
+	type TIngredientNames,
+	type TRecipeNames,
+	type TRecipes,
+} from '@/data';
 import type {TIngredientTag, TRecipeTag} from '@/data/types';
 import {type IPopularData, type IRecipeData} from '@/stores';
 import {intersection} from '@/utils';
@@ -23,7 +35,7 @@ export class Recipe extends Food<TRecipes> {
 	private static _instance: Recipe | undefined;
 
 	private static _tagCoverMap = {
-		大份: '小巧',
+		[TAG_LARGE_PARTITION]: '小巧',
 		灼热: '凉爽',
 		肉: '素',
 		重油: '清淡',
@@ -37,11 +49,11 @@ export class Recipe extends Food<TRecipes> {
 
 		(clonedData as TProcessPositiveTags<TRecipes[number]>[]).forEach((recipe) => {
 			const {name, positiveTags, price} = recipe;
-			if (name !== '黑暗物质') {
+			if (name !== DARK_MATTER_NAME) {
 				if (price > 60) {
-					positiveTags.push('昂贵');
+					positiveTags.push(TAG_EXPENSIVE);
 				} else if (price < 20) {
-					positiveTags.push('实惠');
+					positiveTags.push(TAG_ECONOMICAL);
 				}
 			}
 		});
@@ -61,9 +73,9 @@ export class Recipe extends Food<TRecipes> {
 		return instance;
 	}
 
-	public blockedRecipes: Set<TRecipeNames> = new Set(['黑暗物质']);
+	public blockedRecipes: Set<TRecipeNames> = new Set([DARK_MATTER_NAME]);
 
-	public blockedTags: Set<TRecipeTag> = new Set(['黑暗物质']);
+	public blockedTags: Set<TRecipeTag> = new Set([DARK_MATTER_TAG]);
 
 	/**
 	 * @description Calculate the tags based on the original tags and the popular tag data.
@@ -73,7 +85,7 @@ export class Recipe extends Food<TRecipes> {
 		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popular;
 
 		if (currentPopularTag && recipeTags.includes(currentPopularTag as TRecipeTag)) {
-			recipeTagsWithPopular.push(isNegativePopularTag ? '流行厌恶' : '流行喜爱');
+			recipeTagsWithPopular.push(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
 		}
 
 		return recipeTagsWithPopular;
@@ -121,7 +133,7 @@ export class Recipe extends Food<TRecipes> {
 		const resultTags = new Set([...originalRecipePositiveTags, ...extraIngredientTags]);
 
 		if (originalIngredients.length + extraIngredients.length >= 5) {
-			resultTags.add('大份');
+			resultTags.add(TAG_LARGE_PARTITION);
 		}
 
 		Object.entries(Recipe._tagCoverMap)

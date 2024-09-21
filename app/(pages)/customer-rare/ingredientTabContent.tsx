@@ -10,7 +10,13 @@ import Sprite from '@/components/sprite';
 
 import {checkIngredientEasterEgg} from './evaluateMeal';
 import type {IIngredientsTabStyle} from './types';
-import {type TIngredientNames} from '@/data';
+import {
+	DARK_MATTER_NAME,
+	TAG_LARGE_PARTITION,
+	TAG_POPULAR_NEGATIVE,
+	TAG_POPULAR_POSITIVE,
+	type TIngredientNames,
+} from '@/data';
 import type {TRecipeTag} from '@/data/types';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {type Ingredient, checkA11yConfirmKey, intersection, toValueWithKey} from '@/utils';
@@ -140,31 +146,33 @@ export default memo(
 							const isLargePartitionTagNext =
 								currentRecipe.ingredients.length + extraIngredients.length === 4;
 							scoreChange -= Number(
-								isLargePartitionTagNext && (customerNegativeTags as TRecipeTag[]).includes('大份')
+								isLargePartitionTagNext &&
+									(customerNegativeTags as TRecipeTag[]).includes(TAG_LARGE_PARTITION)
 							);
 							scoreChange += Number(
-								isLargePartitionTagNext && (customerPositiveTags as TRecipeTag[]).includes('大份')
+								isLargePartitionTagNext &&
+									(customerPositiveTags as TRecipeTag[]).includes(TAG_LARGE_PARTITION)
 							);
 							const shouldCalculateLargePartitionTag =
-								isLargePartitionTagNext && currentCustomerPopular.tag === '大份';
+								isLargePartitionTagNext && currentCustomerPopular.tag === TAG_LARGE_PARTITION;
 							scoreChange -= Number(
 								shouldCalculateLargePartitionTag &&
-									(customerNegativeTags as TRecipeTag[]).includes('流行厌恶') &&
+									(customerNegativeTags as TRecipeTag[]).includes(TAG_POPULAR_NEGATIVE) &&
 									currentCustomerPopular.isNegative
 							);
 							scoreChange -= Number(
 								shouldCalculateLargePartitionTag &&
-									(customerNegativeTags as TRecipeTag[]).includes('流行喜爱') &&
+									(customerNegativeTags as TRecipeTag[]).includes(TAG_POPULAR_POSITIVE) &&
 									!currentCustomerPopular.isNegative
 							);
 							scoreChange += Number(
 								shouldCalculateLargePartitionTag &&
-									(customerPositiveTags as TRecipeTag[]).includes('流行厌恶') &&
+									(customerPositiveTags as TRecipeTag[]).includes(TAG_POPULAR_NEGATIVE) &&
 									currentCustomerPopular.isNegative
 							);
 							scoreChange += Number(
 								shouldCalculateLargePartitionTag &&
-									(customerPositiveTags as TRecipeTag[]).includes('流行喜爱') &&
+									(customerPositiveTags as TRecipeTag[]).includes(TAG_POPULAR_POSITIVE) &&
 									!currentCustomerPopular.isNegative
 							);
 							const allIngredients = [...currentRecipe.ingredients, ...extraIngredients];
@@ -189,7 +197,7 @@ export default memo(
 							const isLowest = scoreChange === -Infinity;
 							const color = isUp ? 'success' : isDown ? 'danger' : 'default';
 							const score = isUp ? `+${scoreChange}` : `${scoreChange}`;
-							const label = `点击：加入额外食材【${name}】${isNoChange ? '' : `，${isDarkIngredient ? '制作【黑暗物质】' : isHighest ? '最低评级受限' : isLowest ? '最高评级受限' : `匹配度${score}`}`}`;
+							const label = `点击：加入额外食材【${name}】${isNoChange ? '' : `，${isDarkIngredient ? `制作【${DARK_MATTER_NAME}】` : isHighest ? '最低评级受限' : isLowest ? '最高评级受限' : `匹配度${score}`}`}`;
 							return (
 								<Tooltip
 									key={index}
