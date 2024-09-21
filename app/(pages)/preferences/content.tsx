@@ -99,7 +99,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 								base: 'w-28',
 								trigger: twJoin(
 									'data-[hover=true]:opacity-hover',
-									onModalClose
+									onModalClose || !isShowBackgroundImage
 										? 'bg-default-50 data-[hover=true]:bg-default-50'
 										: 'bg-default/40 backdrop-blur data-[hover=true]:bg-default/40'
 								),
