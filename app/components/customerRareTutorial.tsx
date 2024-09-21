@@ -1,6 +1,7 @@
 import {useEffect, useRef} from 'react';
-import {usePathname} from 'next/navigation';
 import {driver} from 'driver.js';
+
+import {usePathname} from 'next/navigation';
 
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {getPageTitle} from '@/utils';

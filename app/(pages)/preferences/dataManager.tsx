@@ -11,11 +11,11 @@ import {
 	useRef,
 	useState,
 } from 'react';
-import {useRouter} from 'next/navigation';
-import {useProgress} from 'react-transition-progress';
 import {debounce, isObjectLike} from 'lodash';
 import {twJoin} from 'tailwind-merge';
 
+import {useRouter} from 'next/navigation';
+import {useProgress} from 'react-transition-progress';
 import {useThrottle} from '@/hooks';
 
 import {
@@ -404,3 +404,5 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 		</>
 	);
 });
+
+export type {IProps as IDataManagerProps};

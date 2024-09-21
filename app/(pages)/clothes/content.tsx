@@ -1,6 +1,6 @@
 import {Fragment, memo, useRef} from 'react';
-import {twJoin} from 'tailwind-merge';
 import {isObjectLike} from 'lodash';
+import {twJoin} from 'tailwind-merge';
 
 import useBreakpoint from 'use-breakpoint';
 import {useOpenedItemPopover} from '@/hooks';

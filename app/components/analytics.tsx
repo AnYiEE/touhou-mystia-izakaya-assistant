@@ -1,9 +1,10 @@
 'use client';
 
 import {useEffect, useRef} from 'react';
-import {usePathname} from 'next/navigation';
 import {of} from 'rxjs';
 import {catchError} from 'rxjs/operators';
+
+import {usePathname} from 'next/navigation';
 
 import {siteConfig} from '@/configs';
 import {setScriptUrlTag} from '@/utils';

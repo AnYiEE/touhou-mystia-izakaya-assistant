@@ -9,8 +9,8 @@ import {
 	useMemo,
 	useState,
 } from 'react';
-import {twJoin} from 'tailwind-merge';
 import {isNil} from 'lodash';
+import {twJoin} from 'tailwind-merge';
 
 import {useParams} from '@/hooks';
 import {openedPopoverParam} from '@/hooks/useOpenedItemPopover';

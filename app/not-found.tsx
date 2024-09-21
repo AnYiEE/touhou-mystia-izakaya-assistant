@@ -4,6 +4,7 @@ import {type Metadata} from 'next';
 import {twJoin} from 'tailwind-merge';
 
 import {Button, Divider, Link} from '@nextui-org/react';
+
 import {globalStore as store} from '@/stores';
 
 export const metadata: Metadata = {

@@ -1,9 +1,10 @@
 'use client';
 
 import {type JSX, type PropsWithChildren, memo, startTransition, useReducer} from 'react';
+import {twJoin, twMerge} from 'tailwind-merge';
+
 import {usePathname} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
-import {twJoin, twMerge} from 'tailwind-merge';
 
 import {
 	Button,

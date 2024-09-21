@@ -1,21 +1,19 @@
 'use client';
 
 import {memo, useCallback} from 'react';
+import {twJoin} from 'tailwind-merge';
 
 import {Button, ScrollShadow, Select, SelectItem, type Selection, Switch} from '@nextui-org/react';
 
-import DataManager from './dataManager';
+import DataManager, {type IDataManagerProps} from './dataManager';
 import SwitchItem from './switchItem';
 import H1 from '@/components/h1';
 import H2 from '@/components/h2';
 import H3 from '@/components/h3';
 
 import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {twJoin} from 'tailwind-merge';
 
-interface IProps {
-	onModalClose?: (() => void) | undefined;
-}
+interface IProps extends IDataManagerProps {}
 
 export default memo<IProps>(function Content({onModalClose}) {
 	const isOrderLinkedFilter = customerStore.persistence.customer.orderLinkedFilter.use();

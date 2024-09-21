@@ -1,10 +1,10 @@
 'use client';
 
 import {memo, useCallback, useEffect, useMemo, useState} from 'react';
-import {usePathname} from 'next/navigation';
-import {useTheme} from 'next-themes';
 import {twJoin} from 'tailwind-merge';
 
+import {usePathname} from 'next/navigation';
+import {useTheme} from 'next-themes';
 import {useMounted} from '@/hooks';
 
 import {
