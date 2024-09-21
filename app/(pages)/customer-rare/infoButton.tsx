@@ -39,7 +39,7 @@ const LevelLabel = memo<ILevelLabelProps>(function LevelLabel({level}) {
 
 export default function InfoButton() {
 	const openWindow = useViewInNewWindow();
-	const {breakpoint} = useBreakpoint(
+	const {breakpoint: placement} = useBreakpoint(
 		{
 			left: 426,
 			top: -1,
@@ -253,15 +253,15 @@ export default function InfoButton() {
 															{type}【
 															<Popover
 																showArrow
-																offset={breakpoint === 'left' ? 15 : 6}
+																offset={placement === 'left' ? 15 : 6}
 																size="sm"
-																placement={breakpoint}
+																placement={placement}
 															>
 																<Tooltip
 																	showArrow
 																	content={content}
-																	offset={breakpoint === 'left' ? 12 : 3}
-																	placement={breakpoint}
+																	offset={placement === 'left' ? 12 : 3}
+																	placement={placement}
 																	size="sm"
 																>
 																	<span className="inline-flex cursor-pointer">

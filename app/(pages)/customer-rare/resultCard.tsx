@@ -1,6 +1,7 @@
 import {type HTMLAttributes, forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
+import useBreakpoint from 'use-breakpoint';
 import {useVibrate} from '@/hooks';
 
 import {Button, Card, Tooltip} from '@nextui-org/react';
@@ -146,6 +147,13 @@ function IngredientsList() {
 interface IResultCardProps {}
 
 export default forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
+	const {breakpoint: placement} = useBreakpoint(
+		{
+			left: 426,
+			top: -1,
+		},
+		'top'
+	);
 	const vibrate = useVibrate();
 
 	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
@@ -305,7 +313,7 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 					<Plus />
 					<IngredientsList />
 				</div>
-				<Tooltip showArrow content={saveButtonTooltip} isOpen={isShowSaveButtonTooltip}>
+				<Tooltip showArrow content={saveButtonTooltip} isOpen={isShowSaveButtonTooltip} placement={placement}>
 					<Button
 						color="primary"
 						disableAnimation={isSaveButtonDisabled}
