@@ -54,7 +54,7 @@ export class Ingredient extends Food<TIngredients> {
 	 * @description Calculate the tags based on the original tags and the popular tag data.
 	 */
 	public calculateTagsWithPopular(ingredientTags: ReadonlyArray<TIngredientTag>, popular: IPopularData) {
-		const ingredientTagsWithPopular = [...ingredientTags] as (TIngredientTag | '流行厌恶' | '流行喜爱')[];
+		const ingredientTagsWithPopular = [...ingredientTags] as TIngredientTag[];
 		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popular;
 
 		if (currentPopularTag && ingredientTags.includes(currentPopularTag as TIngredientTag)) {

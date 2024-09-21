@@ -116,7 +116,7 @@ export class Recipe extends Food<TRecipes> {
 		originalIngredients: ReadonlyArray<TIngredientNames>,
 		extraIngredients: ReadonlyArray<TIngredientNames>,
 		originalRecipePositiveTags: ReadonlyArray<TRecipeTag>,
-		extraIngredientTags: ReadonlyArray<TIngredientTag | '流行厌恶' | '流行喜爱'>
+		extraIngredientTags: ReadonlyArray<TIngredientTag>
 	) {
 		const resultTags = new Set([...originalRecipePositiveTags, ...extraIngredientTags]);
 

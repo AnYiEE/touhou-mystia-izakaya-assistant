@@ -34,11 +34,9 @@ import Tachie from '@/components/tachie';
 
 import {customerTabStyleMap, ingredientTabStyleMap, tachieBreakPoint} from './constants';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
-import {checkArrayContainsOf} from '@/utils';
+import {checkArrayContainsOf, checkArraySubsetOf} from '@/utils';
 
 export default function CustomerNormal() {
-	const vibrate = useVibrate();
-
 	customerStore.shared.customer.name.onChange(() => {
 		customerStore.refreshCustomerSelectedItems();
 		customerStore.refreshAllSelectedItems();
@@ -53,6 +51,7 @@ export default function CustomerNormal() {
 	});
 
 	const {breakpoint} = useBreakpoint(tachieBreakPoint, 'noTachie');
+	const vibrate = useVibrate();
 
 	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 	const isShowTachie = globalStore.persistence.tachie.use();
@@ -178,27 +177,53 @@ export default function CustomerNormal() {
 
 	const isCustomerTabFilterVisible = customerStore.shared.customer.filterVisibility.use();
 
+	const currentCustomerPopular = customerStore.shared.customer.popular.use();
+
 	const instance_ingredient = customerStore.instances.ingredient.get();
 
 	const allIngredientDlcs = customerStore.ingredient.dlcs.get();
 	const allIngredientLevels = customerStore.ingredient.levels.get();
+	const allIngredientTags = customerStore.ingredient.tags.get();
 
 	const ingredientPinyinSortState = customerStore.persistence.ingredient.pinyinSortState.use();
 
 	const ingredientFilterDlcs = customerStore.persistence.ingredient.filters.dlcs.use();
+	const ingredientFilterTags = customerStore.persistence.ingredient.filters.tags.use();
+	const ingredientFilterNoTags = customerStore.persistence.ingredient.filters.noTags.use();
 	const ingredientFilterLevels = customerStore.persistence.ingredient.filters.levels.use();
 
 	const ingredientFilteredData = useMemo(
 		() =>
-			instance_ingredient.data.filter(({dlc, level}) => {
+			instance_ingredient.data.filter(({dlc, level, name, tags}) => {
+				const tagsWithPopular = instance_ingredient.calculateTagsWithPopular(tags, currentCustomerPopular);
+
 				const isDlcMatched =
 					ingredientFilterDlcs.length > 0 ? ingredientFilterDlcs.includes(dlc.toString()) : true;
+				const isTagMatched =
+					ingredientFilterTags.length > 0 ? checkArraySubsetOf(ingredientFilterTags, tagsWithPopular) : true;
+				const isNoTagMatched =
+					ingredientFilterNoTags.length > 0
+						? !checkArrayContainsOf(ingredientFilterNoTags, tagsWithPopular)
+						: true;
 				const isLevelMatched =
 					ingredientFilterLevels.length > 0 ? ingredientFilterLevels.includes(level.toString()) : true;
 
-				return isDlcMatched && isLevelMatched;
+				return (
+					isDlcMatched &&
+					isTagMatched &&
+					isNoTagMatched &&
+					isLevelMatched &&
+					!instance_ingredient.blockedIngredients.has(name)
+				);
 			}),
-		[ingredientFilterDlcs, ingredientFilterLevels, instance_ingredient.data]
+		[
+			currentCustomerPopular,
+			ingredientFilterDlcs,
+			ingredientFilterLevels,
+			ingredientFilterNoTags,
+			ingredientFilterTags,
+			instance_ingredient,
+		]
 	);
 
 	const ingredientSortedData = useSortedData(instance_ingredient, ingredientFilteredData, ingredientPinyinSortState);
@@ -218,13 +243,33 @@ export default function CustomerNormal() {
 					setSelectedKeys: customerStore.persistence.ingredient.filters.dlcs.set,
 				},
 				{
+					items: allIngredientTags,
+					label: '食材标签（包含）',
+					selectedKeys: ingredientFilterTags,
+					setSelectedKeys: customerStore.persistence.ingredient.filters.tags.set,
+				},
+				{
+					items: allIngredientTags,
+					label: '食材标签（排除）',
+					selectedKeys: ingredientFilterNoTags,
+					setSelectedKeys: customerStore.persistence.ingredient.filters.noTags.set,
+				},
+				{
 					items: allIngredientLevels,
 					label: '等级',
 					selectedKeys: ingredientFilterLevels,
 					setSelectedKeys: customerStore.persistence.ingredient.filters.levels.set,
 				},
 			] as const satisfies TSelectConfig,
-		[allIngredientDlcs, allIngredientLevels, ingredientFilterDlcs, ingredientFilterLevels]
+		[
+			allIngredientDlcs,
+			allIngredientLevels,
+			allIngredientTags,
+			ingredientFilterDlcs,
+			ingredientFilterLevels,
+			ingredientFilterNoTags,
+			ingredientFilterTags,
+		]
 	);
 
 	const ingredientTabVisibilityState = customerStore.persistence.ingredient.tabVisibility.use();
@@ -329,7 +374,8 @@ export default function CustomerNormal() {
 				className={twMerge(
 					'xl:left-6',
 					ingredientTabStyle.classNames.sideButtonGroup,
-					!isIngredientTabFilterVisible && '!hidden'
+					!isIngredientTabFilterVisible && '!hidden',
+					selectedTabKey === 'ingredient' && ingredientFilteredData.length === 0 && '!block'
 				)}
 			>
 				<SidePinyinSortIconButton pinyinSortConfig={ingredientPinyinSortConfig} />

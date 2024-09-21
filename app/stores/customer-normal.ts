@@ -14,7 +14,7 @@ import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import type {IPersistenceState} from './types';
 import {type TBeverageNames, type TCustomerNormalNames, type TIngredientNames, type TRecipeNames} from '@/data';
-import type {TBeverageTag, TRecipeTag} from '@/data/types';
+import type {TBeverageTag, TIngredientTag, TRecipeTag} from '@/data/types';
 import {type IPopularData, type TPopularTag} from '@/stores';
 import {getAllItemNames, keepLastTag, reverseDirection} from '@/stores/utils';
 import {
@@ -45,7 +45,8 @@ const storeVersion = {
 	extraCustomer: 5, // eslint-disable-next-line sort-keys
 	dynamicMeal: 6,
 	showCooker: 7,
-	tableRows: 8,
+	tableRows: 8, // eslint-disable-next-line sort-keys
+	ingredientTag: 9,
 } as const;
 
 const state = {
@@ -72,6 +73,17 @@ const state = {
 			.getValuesByProp(instance_ingredient.data, 'level', true)
 			.filter(({value}) => !instance_ingredient.blockedLevels.has(value))
 			.sort(numberSort),
+		tags: (
+			[
+				...instance_ingredient
+					.getValuesByProp(instance_ingredient.data, 'tags')
+					.filter((tag) => !instance_ingredient.blockedTags.has(tag)),
+				'流行喜爱',
+				'流行厌恶',
+			] as TIngredientTag[]
+		)
+			.map(toValueObject)
+			.sort(pinyinSort),
 	},
 	recipe: {
 		cookers: instance_recipe.getValuesByProp(instance_recipe.data, 'cooker', true).sort(pinyinSort),
@@ -113,6 +125,8 @@ const state = {
 		ingredient: {
 			filters: {
 				dlcs: [] as string[],
+				tags: [] as string[], // eslint-disable-next-line sort-keys
+				noTags: [] as string[], // eslint-disable-next-line sort-keys
 				levels: [] as string[],
 			},
 			pinyinSortState: PinyinSortState.NONE,
@@ -188,7 +202,7 @@ export const customerNormalStore = store(state, {
 	persist: {
 		enabled: true,
 		name: customerNormalStoreKey,
-		version: storeVersion.tableRows,
+		version: storeVersion.ingredientTag,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -277,6 +291,16 @@ export const customerNormalStore = store(state, {
 				if (recipeTable.rows === 7) {
 					recipeTable.rows = 8;
 				}
+			}
+			if (version < storeVersion.ingredientTag) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				const {
+					persistence: {
+						ingredient: {filters},
+					},
+				} = oldState;
+				filters.tags = [];
+				filters.noTags = [];
 			}
 			return persistedState as typeof state;
 		},

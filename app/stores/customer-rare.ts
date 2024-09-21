@@ -20,7 +20,7 @@ import {
 	type TIngredientNames,
 	type TRecipeNames,
 } from '@/data';
-import type {TBeverageTag, TRecipeTag} from '@/data/types';
+import type {TBeverageTag, TIngredientTag, TRecipeTag} from '@/data/types';
 import {type IPopularData} from '@/stores';
 import {getAllItemNames, keepLastTag, reverseDirection} from '@/stores/utils';
 import {
@@ -80,7 +80,8 @@ const storeVersion = {
 	tachie: 12, // eslint-disable-next-line sort-keys
 	moveTachie: 13,
 	showCooker: 14,
-	tableRows: 15,
+	tableRows: 15, // eslint-disable-next-line sort-keys
+	ingredientTag: 16,
 } as const;
 
 const state = {
@@ -110,6 +111,17 @@ const state = {
 			.getValuesByProp(instance_ingredient.data, 'level', true)
 			.filter(({value}) => !instance_ingredient.blockedLevels.has(value))
 			.sort(numberSort),
+		tags: (
+			[
+				...instance_ingredient
+					.getValuesByProp(instance_ingredient.data, 'tags')
+					.filter((tag) => !instance_ingredient.blockedTags.has(tag)),
+				'流行喜爱',
+				'流行厌恶',
+			] as TIngredientTag[]
+		)
+			.map(toValueObject)
+			.sort(pinyinSort),
 	},
 	recipe: {
 		cookers: instance_recipe.getValuesByProp(instance_recipe.data, 'cooker', true).sort(pinyinSort),
@@ -156,6 +168,8 @@ const state = {
 		ingredient: {
 			filters: {
 				dlcs: [] as string[],
+				tags: [] as string[], // eslint-disable-next-line sort-keys
+				noTags: [] as string[], // eslint-disable-next-line sort-keys
 				levels: [] as string[],
 			},
 			pinyinSortState: PinyinSortState.NONE,
@@ -238,7 +252,7 @@ export const customerRareStore = store(state, {
 	persist: {
 		enabled: true,
 		name: customerRareStoreKey,
-		version: storeVersion.tableRows,
+		version: storeVersion.ingredientTag,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -399,6 +413,16 @@ export const customerRareStore = store(state, {
 				if (recipeTable.rows === 7) {
 					recipeTable.rows = 8;
 				}
+			}
+			if (version < storeVersion.ingredientTag) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				const {
+					persistence: {
+						ingredient: {filters},
+					},
+				} = oldState;
+				filters.tags = [];
+				filters.noTags = [];
 			}
 			return persistedState as typeof state;
 		},

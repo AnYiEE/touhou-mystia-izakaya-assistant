@@ -379,6 +379,11 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 									customerStore.shared.customer.data.set(null);
 									customerStore.shared.tab.set('customer');
 									customerStore.shared.customer.filterVisibility.set(true);
+									customerStore.persistence.ingredient.filters.set((prev) => {
+										Object.keys(prev).forEach((key) => {
+											prev[key as keyof typeof prev] = [];
+										});
+									});
 									customerStore.shared.ingredient.filterVisibility.set(false);
 									globalStore.persistence.set((prev) => {
 										const dirver = prev.dirver.filter(

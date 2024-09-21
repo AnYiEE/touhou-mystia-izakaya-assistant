@@ -5,6 +5,7 @@ import {useVibrate} from '@/hooks';
 
 import {Badge, Button, ScrollShadow, Tooltip} from '@nextui-org/react';
 
+import Placeholder from './placeholder';
 import Sprite from '@/components/sprite';
 
 import {checkIngredientEasterEgg} from './evaluateMeal';
@@ -35,11 +36,6 @@ export default memo(
 		const instance_ingredient = customerStore.instances.ingredient.get();
 		const instance_recipe = customerStore.instances.recipe.get();
 
-		const data = useMemo(
-			() => sortedData.filter(({name}) => !instance_ingredient.blockedIngredients.has(name)),
-			[instance_ingredient.blockedIngredients, sortedData]
-		);
-
 		const currentRecipe = useMemo(
 			() => (currentRecipeData ? instance_recipe.getPropsByName(currentRecipeData.name) : null),
 			[currentRecipeData, instance_recipe]
@@ -48,11 +44,11 @@ export default memo(
 		const darkIngredients = useMemo(
 			() =>
 				new Set(
-					data
+					sortedData
 						.filter(({tags}) => intersection(tags, currentRecipe?.negativeTags ?? []).length > 0)
 						.map(toValueWithKey('name'))
 				),
-			[currentRecipe?.negativeTags, data]
+			[currentRecipe?.negativeTags, sortedData]
 		);
 
 		const handleButtonPress = useCallback(() => {
@@ -70,6 +66,10 @@ export default memo(
 
 		if (!currentCustomerData || !currentRecipeData) {
 			return null;
+		}
+
+		if (sortedData.length === 0) {
+			return <Placeholder className="pt-4 md:min-h-40 md:pt-0">数据为空</Placeholder>;
 		}
 
 		const {target, name: currentCustomerName} = currentCustomerData;
@@ -92,7 +92,7 @@ export default memo(
 					ref={ref}
 				>
 					<div className="m-2 grid grid-cols-fill-12 justify-around gap-4">
-						{data.map(({name, tags}, index) => {
+						{sortedData.map(({name, tags}, index) => {
 							if (!currentRecipe) {
 								return null;
 							}

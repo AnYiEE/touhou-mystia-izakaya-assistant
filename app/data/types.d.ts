@@ -170,7 +170,7 @@ export type TRecipeTag =
 	| TTagNeedCalculate
 	| '流行喜爱'
 	| '流行厌恶';
-export type TIngredientTag = IIngredient['tags'][number];
+export type TIngredientTag = IIngredient['tags'][number] | '流行喜爱' | '流行厌恶';
 
 type TPlace =
 	| '博丽神社'
