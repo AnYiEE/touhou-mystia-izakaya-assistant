@@ -82,11 +82,15 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 	const tableSortDescriptor = customerStore.shared.recipe.sortDescriptor.use();
 	const tableVisibleColumns = customerStore.recipeTableColumns.use();
 
-	const filteredData = useMemo(() => {
-		const data = instance_recipe.data.filter(
-			({name}) => !instance_recipe.blockedRecipes.has(name)
-		) as TRecipesWithSuitability;
+	const data = useMemo(
+		() =>
+			instance_recipe.data.filter(
+				({name}) => !instance_recipe.blockedRecipes.has(name)
+			) as TRecipesWithSuitability,
+		[instance_recipe.blockedRecipes, instance_recipe.data]
+	);
 
+	const filteredData = useMemo(() => {
 		if (!currentCustomerData) {
 			return data.map((item) => ({
 				...item,
@@ -179,6 +183,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 	}, [
 		currentCustomerData,
 		currentCustomerPopular,
+		data,
 		hasNameFilter,
 		instance_rare,
 		instance_recipe,
@@ -232,7 +237,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 	const tableSelectedKeys = new Set([currentRecipeData?.name ?? '']);
 
 	const renderTableCell = useCallback(
-		(data: TRecipeWithSuitability, columnKey: TTableColumnKey) => {
+		(recipeData: TRecipeWithSuitability, columnKey: TTableColumnKey) => {
 			const {
 				name,
 				cooker,
@@ -244,7 +249,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 				min,
 				matchedNegativeTags,
 				matchedPositiveTags,
-			} = data;
+			} = recipeData;
 
 			if (!currentCustomerData) {
 				return null;
