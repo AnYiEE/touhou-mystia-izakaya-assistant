@@ -3,10 +3,12 @@ import type {IItemBase} from '@/data/types';
 
 export interface IOrnament extends IItemBase {
 	effect: `${string}。`;
-	from: {
-		name: TCustomerRareNames;
-		level: number;
-	};
+	from:
+		| string
+		| {
+				name: TCustomerRareNames;
+				level: number;
+		  };
 }
 
 export type TOrnaments = typeof import('./data').ORNAMENT_LIST;

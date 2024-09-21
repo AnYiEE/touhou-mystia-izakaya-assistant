@@ -44,12 +44,18 @@ export default memo<IProps>(function Content({data}) {
 				<ItemPopoverCard.CloseButton />
 				<ItemPopoverCard.ShareButton name={name} />
 				<ItemPopoverCard target="ornament" name={name} dlc={dlc} ref={popoverCardRef}>
-					<p className="-mt-1">
+					<p className="-mt-1 text-justify">
 						<span className="font-semibold">来源：</span>
-						<span className="pr-1">【{from.name}】羁绊</span>
-						Lv.{from.level - 1}
-						<span className="px-0.5">➞</span>Lv.
-						{from.level}
+						{typeof from === 'string' ? (
+							from
+						) : (
+							<>
+								<span className="pr-1">【{from.name}】羁绊</span>
+								Lv.{from.level - 1}
+								<span className="px-0.5">➞</span>Lv.
+								{from.level}
+							</>
+						)}
 					</p>
 					<p className="text-justify">
 						<span className="font-semibold">效果：</span>

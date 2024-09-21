@@ -1,4 +1,4 @@
-import {sortBy} from 'lodash';
+import {isObjectLike, sortBy} from 'lodash';
 
 import {type ICurrentCustomer} from '@/(pages)/customer-rare/types';
 
@@ -38,7 +38,7 @@ export class Ornament extends Item<TOrnaments> {
 		let bondOrnaments: TBondOrnaments = [];
 
 		this._data.forEach(({from, name}) => {
-			if (from.name === customerData.name) {
+			if (isObjectLike(from) && from.name === customerData.name) {
 				bondOrnaments.push({
 					level: from.level,
 					name,

@@ -128,4 +128,10 @@ export const ORNAMENT_LIST = [
 			level: 5,
 		},
 	},
+	{
+		name: '造物者之盒',
+		dlc: 5,
+		effect: '可以以秒为单位，编辑夜晚顾客前来的次序和时间点。',
+		from: '地区【月之都】和【魔界】全部稀客羁绊满级，并完成【DLC5】全部剧情后，和【神绮】对话领取。',
+	},
 ] as const satisfies IOrnament[];
