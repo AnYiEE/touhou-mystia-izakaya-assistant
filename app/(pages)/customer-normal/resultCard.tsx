@@ -3,13 +3,14 @@ import {twJoin} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
 
-import {Button, Card, Tooltip} from '@nextui-org/react';
+import {Button, Card} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark} from '@fortawesome/free-solid-svg-icons';
 
 import {Plus, UnknownItem} from '@/(pages)/customer-rare/resultCard';
 import Placeholder from './placeholder';
 import Sprite from '@/components/sprite';
+import Tooltip from '@/components/tooltip';
 
 import {type TIngredientNames} from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';

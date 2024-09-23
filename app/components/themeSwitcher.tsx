@@ -1,5 +1,3 @@
-'use client';
-
 import {memo, useCallback, useEffect, useMemo, useState} from 'react';
 import {twJoin} from 'tailwind-merge';
 
@@ -7,18 +5,14 @@ import {usePathname} from 'next/navigation';
 import {useTheme} from 'next-themes';
 import {useMounted} from '@/hooks';
 
-import {
-	Dropdown,
-	DropdownItem,
-	DropdownMenu,
-	DropdownTrigger,
-	type Selection,
-	Spinner,
-	Tooltip,
-} from '@nextui-org/react';
+import {DropdownItem, DropdownMenu, DropdownTrigger, type Selection, Spinner} from '@nextui-org/react';
 import {faCircleHalfStroke, faMoon, faSun} from '@fortawesome/free-solid-svg-icons';
 
-import FontAwesomeIconButton from './fontAwesomeIconButton';
+import Dropdown from '@/components/dropdown';
+import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
+import Tooltip from '@/components/tooltip';
+
+import {globalStore as store} from '@/stores';
 
 enum Theme {
 	dark = 'dark',
@@ -43,6 +37,8 @@ export default memo<IProps>(function ThemeSwitcher({isMenu}) {
 	const pathname = usePathname();
 	const {theme, setTheme} = useTheme();
 	const [selectedTheme, setSelectedTheme] = useState(new Set([theme]) as SelectionSet);
+
+	const isShowBackgroundImage = store.persistence.backgroundImage.use();
 
 	const onSelectedThemeChange = useCallback(
 		(value: Selection) => {
@@ -102,7 +98,7 @@ export default memo<IProps>(function ThemeSwitcher({isMenu}) {
 		<Dropdown
 			showArrow
 			classNames={{
-				content: 'min-w-28 p-0',
+				content: twJoin('min-w-28 p-0', isShowBackgroundImage && 'bg-background/70 backdrop-saturate-150'),
 			}}
 		>
 			<Tooltip showArrow content={ThemeLabel.switcher}>

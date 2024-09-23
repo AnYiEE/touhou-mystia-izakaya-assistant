@@ -3,10 +3,11 @@ import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
 
-import {Badge, Button, ScrollShadow, Tooltip} from '@nextui-org/react';
+import {Badge, Button, ScrollShadow} from '@nextui-org/react';
 
 import Placeholder from './placeholder';
 import Sprite from '@/components/sprite';
+import Tooltip from '@/components/tooltip';
 
 import {checkIngredientEasterEgg} from './evaluateMeal';
 import type {IIngredientsTabStyle} from './types';

@@ -3,16 +3,18 @@ import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
 
-import {Avatar, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
+import {Avatar, Card, Divider, PopoverContent, PopoverTrigger} from '@nextui-org/react';
 import {faArrowsRotate, faXmark} from '@fortawesome/free-solid-svg-icons';
 
 import InfoButton from './infoButton';
 import TagGroup from './tagGroup';
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
+import Popover from '@/components/popover';
 import Price from '@/components/price';
-import Tags from '@/components/tags';
 import Sprite from '@/components/sprite';
+import Tags from '@/components/tags';
+import Tooltip from '@/components/tooltip';
 
 import {customerRatingColorMap, customerTagStyleMap} from './constants';
 import type {ICurrentCustomer} from './types';

@@ -9,7 +9,6 @@ import {useProgress} from 'react-transition-progress';
 import {
 	Button,
 	type ButtonProps,
-	Dropdown,
 	DropdownItem,
 	DropdownMenu,
 	DropdownTrigger,
@@ -22,15 +21,16 @@ import {
 	NavbarMenuItem,
 	NavbarMenuToggle,
 	Navbar as NextUINavbar,
-	Tooltip,
 } from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faGithub} from '@fortawesome/free-brands-svg-icons';
 import {faChevronDown} from '@fortawesome/free-solid-svg-icons';
 
+import Dropdown from '@/components/dropdown';
 import FontAwesomeIconLink, {type IFontAwesomeIconLinkProps} from '@/components/fontAwesomeIconLink';
 import ThemeSwitcher from '@/components/themeSwitcher';
 import Sprite from '@/components/sprite';
+import Tooltip from '@/components/tooltip';
 
 import {siteConfig} from '@/configs';
 import {globalStore as store} from '@/stores';
@@ -179,7 +179,10 @@ export default function Navbar() {
 								<Dropdown
 									key={dropdownLabel}
 									classNames={{
-										content: 'min-w-24 p-0',
+										content: twJoin(
+											'min-w-24 p-0',
+											isShowBackgroundImage && 'bg-background/70 backdrop-saturate-150'
+										),
 									}}
 								>
 									<NavbarItem>

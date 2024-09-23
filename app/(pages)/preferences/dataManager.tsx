@@ -1,5 +1,3 @@
-'use client';
-
 import {
 	type ChangeEvent,
 	type KeyboardEvent,
@@ -18,17 +16,7 @@ import {useRouter} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
 import {useThrottle} from '@/hooks';
 
-import {
-	Button,
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-	Snippet,
-	Tab,
-	Tabs,
-	Textarea,
-	Tooltip,
-} from '@nextui-org/react';
+import {Button, PopoverContent, PopoverTrigger, Snippet, Tab, Tabs, Textarea} from '@nextui-org/react';
 
 import {showProgress} from '@/(pages)/navbar';
 import {TrackCategory, trackEvent} from '@/components/analytics';
@@ -38,6 +26,8 @@ import {
 	customerRareTutorialStoreKey,
 } from '@/components/customerRareTutorial';
 import H1 from '@/components/h1';
+import Popover from '@/components/popover';
+import Tooltip from '@/components/tooltip';
 
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, toggleBoolean} from '@/utils';
@@ -189,7 +179,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 									content: '点击以复制当前的稀客套餐数据',
 									delay: 0,
 									offset: 0,
-									showArrow: true,
+									showArrow: !isShowBackgroundImage,
 								}}
 								variant="flat"
 								classNames={{
@@ -249,7 +239,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 							>
 								上传
 							</Button>
-							<Popover showArrow shouldBlockScroll isOpen={isSavePopoverOpened}>
+							<Popover shouldBlockScroll showArrow isOpen={isSavePopoverOpened}>
 								<PopoverTrigger>
 									<Button
 										fullWidth
@@ -308,7 +298,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 					</Tab>
 					<Tab key="reset" title="重置">
 						<div className="w-full space-y-2 md:w-1/2 lg:w-1/3">
-							<Popover showArrow shouldBlockScroll isOpen={isResetPopoverOpened}>
+							<Popover shouldBlockScroll showArrow isOpen={isResetPopoverOpened}>
 								<PopoverTrigger>
 									<Button
 										fullWidth

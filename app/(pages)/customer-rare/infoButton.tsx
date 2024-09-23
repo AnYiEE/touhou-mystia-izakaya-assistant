@@ -4,24 +4,17 @@ import {twJoin} from 'tailwind-merge';
 import useBreakpoint from 'use-breakpoint';
 import {useViewInNewWindow} from '@/hooks';
 
-import {
-	AccordionItem,
-	Avatar,
-	Divider,
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-	ScrollShadow,
-	Tooltip,
-} from '@nextui-org/react';
+import {AccordionItem, Avatar, Divider, PopoverContent, PopoverTrigger, ScrollShadow} from '@nextui-org/react';
 
 import InfoButtonBase from './infoButtonBase';
+import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
 import Tachie from '@/components/tachie';
+import Tooltip from '@/components/tooltip';
 
 import {customerRatingColorMap} from './constants';
 import type {TRewardType} from '@/data/customer_rare/types';
-import {customerRareStore as store} from '@/stores';
+import {customerRareStore as customerStore} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
 interface ILevelLabelProps {
@@ -47,21 +40,21 @@ export default function InfoButton() {
 		'top'
 	);
 
-	const currentCustomerData = store.shared.customer.data.use();
+	const currentCustomerData = customerStore.shared.customer.data.use();
 
 	if (!currentCustomerData) {
 		return null;
 	}
 
-	const instance_clothes = store.instances.clothes.get();
-	const instance_cooker = store.instances.cooker.get();
-	const instance_ornament = store.instances.ornament.get();
-	const instance_rare = store.instances.customer_rare.get();
-	const instance_recipe = store.instances.recipe.get();
+	const instance_clothes = customerStore.instances.clothes.get();
+	const instance_cooker = customerStore.instances.cooker.get();
+	const instance_ornament = customerStore.instances.ornament.get();
+	const instance_rare = customerStore.instances.customer_rare.get();
+	const instance_recipe = customerStore.instances.recipe.get();
 
 	const {name: currentCustomerName, target: currentCustomerTarget} = currentCustomerData;
 
-	const instance_customer = store.instances[currentCustomerTarget as 'customer_rare'].get();
+	const instance_customer = customerStore.instances[currentCustomerTarget as 'customer_rare'].get();
 
 	const {
 		bondRewards: currentCustomerBondRewards,

@@ -2,13 +2,15 @@ import {Fragment, memo, useRef} from 'react';
 
 import {useOpenedItemPopover} from '@/hooks';
 
-import {Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
+import {PopoverContent, PopoverTrigger} from '@nextui-org/react';
 
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
 import ItemPopoverCard from '@/components/itemPopoverCard';
+import Popover from '@/components/popover';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
+import Tooltip from '@/components/tooltip';
 
 import {type IIngredient, INGREDIENT_TAG_STYLE} from '@/data';
 // import {globalStore as store} from '@/stores';
@@ -31,7 +33,7 @@ export default memo<IProps>(function Content({data}) {
 			// backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
 			isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}
 		>
-			<PopoverTrigger>
+			<ItemPopoverCard.Trigger>
 				<ItemCard
 					isHoverable={openedPopover ? openedPopover === name : true}
 					isPressable={openedPopover ? openedPopover === name : true}
@@ -42,7 +44,7 @@ export default memo<IProps>(function Content({data}) {
 						trackEvent(TrackCategory.Click, 'Ingredient Card', name);
 					}}
 				/>
-			</PopoverTrigger>
+			</ItemPopoverCard.Trigger>
 			<PopoverContent>
 				<ItemPopoverCard.CloseButton />
 				<ItemPopoverCard.ShareButton name={name} />

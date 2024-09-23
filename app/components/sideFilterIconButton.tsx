@@ -5,21 +5,21 @@ import {useVibrate} from '@/hooks';
 
 import {
 	Button,
-	Popover,
 	PopoverContent,
 	PopoverTrigger,
 	Select,
 	SelectItem,
 	type SelectProps,
 	type Selection,
-	Tooltip,
 } from '@nextui-org/react';
 import {faFilter} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
+import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
+import Tooltip from '@/components/tooltip';
 
-import {customerRareStore as customerStore /* , globalStore */} from '@/stores';
+import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {pinyinSort} from '@/utils';
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
@@ -43,7 +43,7 @@ export default memo(
 
 		const instance_special = customerStore.instances.customer_special.get();
 
-		// const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 
 		const hasFilter = useMemo(() => selectConfig.some(({selectedKeys}) => selectedKeys.length > 0), [selectConfig]);
 
@@ -107,8 +107,26 @@ export default memo(
 									selectionMode={selectionMode ?? 'multiple'}
 									label={label}
 									onSelectionChange={handleSelectionChange(setSelectedKeys)}
+									popoverProps={{
+										motionProps: isShowBackgroundImage
+											? {
+													initial: {},
+												}
+											: {},
+									}}
 									classNames={{
-										trigger: 'data-[hover=true]:bg-default-200',
+										listboxWrapper: twJoin(
+											isShowBackgroundImage &&
+												'focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40'
+										),
+										popoverContent: twJoin(
+											isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'
+										),
+										trigger: twJoin(
+											isShowBackgroundImage
+												? 'bg-default-100/70 data-[hover=true]:bg-default-200/70'
+												: 'data-[hover=true]:bg-default-200'
+										),
 									}}
 								>
 									{({value}) =>

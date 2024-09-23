@@ -1,9 +1,10 @@
-import {Link, Tooltip} from '@nextui-org/react';
+import {Link} from '@nextui-org/react';
 
 import ChangeLog from './changeLog';
 import KnownIssue from './knownIssue';
 import H1 from '@/components/h1';
 import QRCode from '@/components/qrCode';
+import Tooltip from '@/components/tooltip';
 
 import {siteConfig} from '@/configs';
 

@@ -4,13 +4,14 @@ import {twJoin, twMerge} from 'tailwind-merge';
 import useBreakpoint from 'use-breakpoint';
 import {useVibrate} from '@/hooks';
 
-import {Button, Card, Tooltip} from '@nextui-org/react';
+import {Button, Card} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-icons';
 
 import Placeholder from './placeholder';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
+import Tooltip from '@/components/tooltip';
 
 import {DARK_MATTER_NAME, type TIngredientNames} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';

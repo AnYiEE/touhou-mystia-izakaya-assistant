@@ -41,7 +41,7 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 
 	useEffect(() => {
 		globalStore.persistence.backgroundImage.onChange((isEnabled) => {
-			document.body.classList.toggle('bg-blend-mystia', isEnabled);
+			document.body.classList.toggle('bg-blend-mystia-pseudo', isEnabled);
 		});
 
 		// If the saved version is not set or outdated, initialize it with the current version.

@@ -3,10 +3,10 @@ import {twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
 
-import {Tooltip} from '@nextui-org/react';
 import {faArrowDownAZ, faArrowUpAZ} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
+import Tooltip from '@/components/tooltip';
 
 export enum PinyinSortState {
 	NONE = 0,

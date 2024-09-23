@@ -3,14 +3,16 @@ import {twJoin} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
 
-import {Avatar, Button, Card, Divider, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
+import {Avatar, Button, Card, Divider, PopoverContent, PopoverTrigger} from '@nextui-org/react';
 
 import {Plus} from './resultCard';
 import TagGroup from './tagGroup';
+import Popover from '@/components/popover';
 import Price from '@/components/price';
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
+import Tooltip from '@/components/tooltip';
 
 import {customerRatingColorMap} from './constants';
 import {BEVERAGE_TAG_STYLE, DARK_MATTER_NAME, RECIPE_TAG_STYLE} from '@/data';

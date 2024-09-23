@@ -1,4 +1,5 @@
 import {
+	type HTMLAttributes,
 	type KeyboardEvent,
 	type MouseEvent,
 	type PropsWithChildren,
@@ -10,20 +11,22 @@ import {
 	useState,
 } from 'react';
 import {isNil} from 'lodash';
-import {twJoin} from 'tailwind-merge';
+import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useParams} from '@/hooks';
 import {openedPopoverParam} from '@/hooks/useOpenedItemPopover';
 import {inNewWindowParam, useViewInNewWindow} from '@/hooks/useViewInNewWindow';
 
-import {Popover, PopoverContent, PopoverTrigger, Snippet, Tooltip, usePopoverContext} from '@nextui-org/react';
+import {PopoverContent, PopoverTrigger, type PopoverTriggerProps, Snippet, usePopoverContext} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faLink, faShare, faXmark} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
+import Popover from '@/components/popover';
 import Price from '@/components/price';
 import Sprite, {type ISpriteProps} from '@/components/sprite';
 import TagsComponent from '@/components/tags';
+import Tooltip from '@/components/tooltip';
 
 import {siteConfig} from '@/configs';
 import {
@@ -35,6 +38,7 @@ import {
 	type TTags,
 } from '@/data';
 import type {ITagStyle} from '@/data/types';
+import {globalStore as store} from '@/stores';
 import {checkA11yConfirmKey, uniq} from '@/utils';
 
 const {name: siteName} = siteConfig;
@@ -174,6 +178,23 @@ const ShareButton = memo(
 	})
 );
 
+interface ITriggerProps extends PopoverTriggerProps, HTMLAttributes<HTMLButtonElement> {}
+
+const Trigger = memo<ITriggerProps>(function ItemPopoverCardITrigger({className, ...props}) {
+	const isShowBackgroundImage = store.persistence.backgroundImage.use();
+
+	return (
+		<PopoverTrigger
+			className={twMerge(
+				isShowBackgroundImage &&
+					'aria-expanded:bg-background/40 aria-expanded:opacity-100 aria-expanded:backdrop-blur dark:aria-expanded:bg-content1/40',
+				className
+			)}
+			{...props}
+		/>
+	);
+});
+
 interface IItemPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 	// Basic info.
 	name: TItemNames;
@@ -257,7 +278,7 @@ const ItemPopoverCardComponent = memo(
 						{ingredients.map((ingredient, index) => {
 							const ingredientLabel = `点击：在新窗口中查看食材【${ingredient}】的详情`;
 							return (
-								<Tooltip key={index} showArrow content={ingredientLabel} size="sm">
+								<Tooltip showArrow key={index} content={ingredientLabel} size="sm">
 									<Sprite
 										target="ingredient"
 										name={ingredient}
@@ -317,9 +338,11 @@ const ItemPopoverCardComponent = memo(
 const ItemPopoverCard = ItemPopoverCardComponent as typeof ItemPopoverCardComponent & {
 	CloseButton: typeof CloseButton;
 	ShareButton: typeof ShareButton;
+	Trigger: typeof Trigger;
 };
 
 ItemPopoverCard.CloseButton = CloseButton;
 ItemPopoverCard.ShareButton = ShareButton;
+ItemPopoverCard.Trigger = Trigger;
 
 export default ItemPopoverCard;

@@ -1,11 +1,12 @@
 import {type PropsWithChildren, memo} from 'react';
 import {execSync} from 'node:child_process';
 
-import {Link, type LinkProps, Tooltip} from '@nextui-org/react';
+import {Link, type LinkProps, Tooltip, type TooltipProps} from '@nextui-org/react';
 
 import QRCode from '@/components/qrCode';
 
 import {siteConfig} from '@/configs';
+import {twMerge} from 'tailwind-merge';
 
 const {links, shortName, version, nodeEnv, vercelEnv} = siteConfig;
 
@@ -16,7 +17,7 @@ const sha = (
 )?.trim();
 
 interface IFooterLinkProps extends Pick<LinkProps, 'href' | 'isExternal' | 'title'> {
-	content?: string;
+	content?: ReactNodeWithoutBoolean;
 }
 
 const FooterLink = memo<PropsWithChildren<IFooterLinkProps>>(function FooterLink({
@@ -32,7 +33,7 @@ const FooterLink = memo<PropsWithChildren<IFooterLinkProps>>(function FooterLink
 			showAnchorIcon={isExternal}
 			href={href}
 			referrerPolicy="same-origin"
-			aria-label={content ?? title ?? (children as string)}
+			aria-label={typeof content === 'string' ? content : (title ?? (children as string))}
 			title={title}
 			className="text-xs text-primary-300 dark:text-warning-200"
 		>
@@ -41,19 +42,30 @@ const FooterLink = memo<PropsWithChildren<IFooterLinkProps>>(function FooterLink
 	);
 });
 
-interface IFooterLinkWithTooltipProps extends IFooterLinkProps {
-	content: string;
+interface IFooterLinkWithTooltipProps extends IFooterLinkProps, Pick<TooltipProps, 'classNames'> {
+	content: ReactNodeWithoutBoolean;
 }
 
-const FooterLinkWithTooltip = memo<PropsWithChildren<IFooterLinkWithTooltipProps>>(
-	function FooterLinkWithTooltip(props) {
-		return (
-			<Tooltip showArrow content={props.content} size="sm">
-				<FooterLink {...props} />
-			</Tooltip>
-		);
-	}
-);
+const FooterLinkWithTooltip = memo<PropsWithChildren<IFooterLinkWithTooltipProps>>(function FooterLinkWithTooltip({
+	classNames,
+	...props
+}) {
+	return (
+		<Tooltip
+			content={props.content}
+			size="sm"
+			motionProps={{
+				initial: {},
+			}}
+			classNames={{
+				...classNames,
+				content: twMerge('bg-content1/40 backdrop-blur-lg dark:bg-content1/70', classNames?.content),
+			}}
+		>
+			<FooterLink {...props} />
+		</Tooltip>
+	);
+});
 
 export default function Footer() {
 	return (
@@ -89,21 +101,20 @@ export default function Footer() {
 				>
 					{links.backup.label}
 				</FooterLinkWithTooltip>
-				<Tooltip
-					showArrow
+				<FooterLinkWithTooltip
 					content={
 						<QRCode text={links.donate.href} className="w-24">
 							{links.donate.label}
 						</QRCode>
 					}
+					href={links.donate.href}
+					title={links.donate.label}
 					classNames={{
 						content: 'px-1',
 					}}
 				>
-					<FooterLink href={links.donate.href} title={links.donate.label}>
-						支持{shortName}
-					</FooterLink>
-				</Tooltip>
+					支持{shortName}
+				</FooterLinkWithTooltip>
 			</p>
 		</footer>
 	);

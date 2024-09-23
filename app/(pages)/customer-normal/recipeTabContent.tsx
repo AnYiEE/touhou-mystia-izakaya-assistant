@@ -7,12 +7,10 @@ import {
 	Autocomplete,
 	AutocompleteItem,
 	Button,
-	Dropdown,
 	DropdownItem,
 	DropdownMenu,
 	DropdownTrigger,
 	Pagination,
-	Popover,
 	PopoverContent,
 	PopoverTrigger,
 	Select,
@@ -23,17 +21,19 @@ import {
 	TableColumn,
 	TableHeader,
 	TableRow,
-	Tooltip,
 } from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faChevronDown, faMagnifyingGlass, faPlus, faTags} from '@fortawesome/free-solid-svg-icons';
 
 import Placeholder from './placeholder';
 import TagGroup from './tagGroup';
+import Dropdown from '@/components/dropdown';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
+import Popover from '@/components/popover';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
+import Tooltip from '@/components/tooltip';
 
 import {type TTableColumnKey, type TTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
 import {recipeTableColumns as tableColumns} from './constants';
@@ -428,11 +428,20 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 							onInputChange={customerStore.onRecipeTableSearchValueChange}
 							aria-label="选择或输入料理名称"
 							title="选择或输入料理名称"
+							popoverProps={{
+								motionProps: isShowBackgroundImage
+									? {
+											initial: {},
+										}
+									: {},
+							}}
 							classNames={{
 								base: twJoin(
-									"[&>*_[data-slot='input-wrapper']]:!bg-default/40 [&>*_[data-slot='input-wrapper']]:hover:opacity-hover",
+									'data-[slot="input-wrapper"]:[&_div]:!bg-default/40 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:opacity-hover',
 									isShowBackgroundImage && 'backdrop-blur'
 								),
+								listboxWrapper: 'data-[hover=true]:[&_li]:!bg-default-200/40',
+								popoverContent: twJoin(isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'),
 							}}
 						>
 							{({value}) => (
@@ -461,8 +470,18 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 							onSelectionChange={customerStore.onRecipeTableSelectedPositiveTagsChange}
 							aria-label="选择顾客所点单的料理标签"
 							title="选择顾客所点单的料理标签"
+							popoverProps={{
+								motionProps: isShowBackgroundImage
+									? {
+											initial: {},
+										}
+									: {},
+							}}
 							classNames={{
 								base: 'w-2/3 md:w-full',
+								listboxWrapper:
+									'focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40',
+								popoverContent: twJoin(isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'),
 								trigger: twJoin(
 									'bg-default/40 data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover',
 									isShowBackgroundImage && 'backdrop-blur'
@@ -575,9 +594,23 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 							onSelectionChange={customerStore.onRecipeTableRowsPerPageChange}
 							aria-label="选择表格每页最大行数"
 							title="选择表格每页最大行数"
+							popoverProps={{
+								motionProps: isShowBackgroundImage
+									? {
+											initial: {},
+										}
+									: {},
+							}}
 							classNames={{
 								base: 'min-w-16',
-								popoverContent: 'min-w-20',
+								listboxWrapper: twJoin(
+									isShowBackgroundImage &&
+										'focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40'
+								),
+								popoverContent: twJoin(
+									'min-w-20',
+									isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'
+								),
 								trigger: twJoin(
 									'h-6 min-h-6 bg-default/40 data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover',
 									isShowBackgroundImage && 'backdrop-blur'

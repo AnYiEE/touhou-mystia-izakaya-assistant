@@ -157,7 +157,7 @@ export default function RootLayout({
 				<script
 					dangerouslySetInnerHTML={{
 						/**
-						 * @description Add `bg-blend-mystia` class to body if the `globalStorage.backgroundImage` setting is enabled.
+						 * @description Add `bg-blend-mystia-pseudo` class to body if the `globalStorage.backgroundImage` setting is enabled.
 						 * @see /app/providers.tsx
 						 */
 						__html: `(() => {
@@ -169,7 +169,7 @@ export default function RootLayout({
 		}
 	} catch (e) {}
 	if (enable !== false) {
-		document.body.classList.add('bg-blend-mystia');
+		document.body.classList.add('bg-blend-mystia-pseudo');
 	}
 })();`,
 					}}

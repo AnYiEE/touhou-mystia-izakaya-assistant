@@ -18,6 +18,11 @@
 	@apply bg-background bg-mystia bg-cover bg-center bg-no-repeat bg-blend-overlay dark:bg-background/90;
 }
 
+.bg-blend-mystia-pseudo {
+	// Due to the poor performance of `background-attachment: fixed`, use pseudo-elements to achieve a similar fixed background effect.
+	@apply before:fixed before:-z-10 before:h-full before:w-full before:bg-background before:bg-mystia before:bg-cover before:bg-center before:bg-no-repeat before:bg-blend-overlay before:content-[''] dark:before:bg-background/90;
+}
+
 .underline-dotted-offset2 {
 	@apply underline decoration-dotted underline-offset-2;
 }

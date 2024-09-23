@@ -2,10 +2,12 @@ import {memo, useCallback} from 'react';
 
 import {useVibrate} from '@/hooks';
 
-import {Accordion, type AccordionProps, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@nextui-org/react';
+import {Accordion, type AccordionProps, PopoverContent, PopoverTrigger} from '@nextui-org/react';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
+import Popover from '@/components/popover';
+import Tooltip from '@/components/tooltip';
 
 interface IProps extends Pick<AccordionProps, 'children' | 'defaultExpandedKeys'> {}
 

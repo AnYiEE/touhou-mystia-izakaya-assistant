@@ -5,11 +5,12 @@ import {twJoin} from 'tailwind-merge';
 import useBreakpoint from 'use-breakpoint';
 import {useOpenedItemPopover} from '@/hooks';
 
-import {Popover, PopoverContent, PopoverTrigger} from '@nextui-org/react';
+import {PopoverContent, PopoverTrigger} from '@nextui-org/react';
 
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
 import ItemPopoverCard from '@/components/itemPopoverCard';
+import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
 import Tachie from '@/components/tachie';
 
@@ -43,7 +44,7 @@ export default memo<IProps>(function Content({data}) {
 			// backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
 			isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}
 		>
-			<PopoverTrigger>
+			<ItemPopoverCard.Trigger>
 				<ItemCard
 					isHoverable={openedPopover ? openedPopover === name : true}
 					isPressable={openedPopover ? openedPopover === name : true}
@@ -63,7 +64,7 @@ export default memo<IProps>(function Content({data}) {
 						trackEvent(TrackCategory.Click, 'Clothes Card', name);
 					}}
 				/>
-			</PopoverTrigger>
+			</ItemPopoverCard.Trigger>
 			<PopoverContent>
 				<ItemPopoverCard.CloseButton />
 				<ItemPopoverCard.ShareButton name={name} />

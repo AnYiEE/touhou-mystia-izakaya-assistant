@@ -36,7 +36,7 @@ export default function CustomerRareTutorial() {
 	const driverRef = useRef(
 		driver({
 			allowClose: false,
-			popoverClass: '!bg-background-50 dark:!bg-foreground-50 !text-foreground',
+			popoverClass: '!bg-background dark:!bg-content1 !text-foreground',
 			progressText: '第{{current}}步，共{{total}}步',
 			showButtons: ['close'],
 			showProgress: true,

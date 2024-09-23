@@ -96,13 +96,25 @@ export default memo<IProps>(function Content({onModalClose}) {
 							onSelectionChange={onSelectedPopularTagChange}
 							aria-label="选择游戏中现时流行的标签"
 							title="选择游戏中现时流行的标签"
+							popoverProps={{
+								motionProps: isShowBackgroundImage
+									? {
+											initial: {},
+										}
+									: {},
+							}}
 							classNames={{
 								base: 'w-28',
+								listboxWrapper: twJoin(
+									isShowBackgroundImage &&
+										'focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40'
+								),
+								popoverContent: twJoin(isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'),
 								trigger: twJoin(
-									'data-[hover=true]:opacity-hover',
+									'transition-background',
 									onModalClose || !isShowBackgroundImage
-										? 'bg-default-50 data-[hover=true]:bg-default-50'
-										: 'bg-default/40 backdrop-blur data-[hover=true]:bg-default/40'
+										? 'bg-default-50 data-[hover=true]:bg-default-100'
+										: 'bg-default-100/40 backdrop-blur data-[hover=true]:bg-default-200/40'
 								),
 							}}
 						>

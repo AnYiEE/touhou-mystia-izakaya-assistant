@@ -1,8 +1,9 @@
-import {Button, Divider, Link, Tooltip} from '@nextui-org/react';
+import {Button, Divider, Link} from '@nextui-org/react';
 import {faQq} from '@fortawesome/free-brands-svg-icons';
 
 import FontAwesomeIconLink from '@/components/fontAwesomeIconLink';
 import QRCode from '@/components/qrCode';
+import Tooltip from '@/components/tooltip';
 import Xiaohongshu from '@/components/xiaohongshu';
 
 import {siteConfig} from '@/configs';

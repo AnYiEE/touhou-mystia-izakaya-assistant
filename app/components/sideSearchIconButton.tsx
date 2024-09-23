@@ -7,17 +7,17 @@ import {
 	Autocomplete,
 	AutocompleteItem,
 	type AutocompleteProps,
-	Popover,
 	PopoverContent,
 	PopoverTrigger,
-	Tooltip,
 } from '@nextui-org/react';
 import {faMagnifyingGlass} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
+import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
+import Tooltip from '@/components/tooltip';
 
-import {customerRareStore as customerStore /* , globalStore */} from '@/stores';
+import {customerRareStore as customerStore, globalStore} from '@/stores';
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
 export interface ISearchConfig {
@@ -43,7 +43,7 @@ export default memo(
 
 		const instance_special = customerStore.instances.customer_special.get();
 
-		// const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 
 		const handleInputChange = useCallback(
 			(value: string) => {
@@ -95,6 +95,23 @@ export default memo(
 						defaultItems={searchItems}
 						label={label}
 						onInputChange={handleInputChange}
+						popoverProps={{
+							motionProps: isShowBackgroundImage
+								? {
+										initial: {},
+									}
+								: {},
+						}}
+						classNames={{
+							base: twJoin(
+								isShowBackgroundImage &&
+									'data-[slot="input-wrapper"]:[&_div]:!bg-default-100/70 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:!bg-default-200/70'
+							),
+							listboxWrapper: twJoin(
+								isShowBackgroundImage && 'data-[hover=true]:[&_li]:!bg-default-200/40'
+							),
+							popoverContent: twJoin(isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'),
+						}}
 					>
 						{({value}) =>
 							spriteTarget ? (

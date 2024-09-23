@@ -1,6 +1,9 @@
 import {forwardRef, memo} from 'react';
+import {twJoin} from 'tailwind-merge';
 
 import {Card, type CardProps} from '@nextui-org/react';
+
+import {globalStore as store} from '@/stores';
 
 interface IProps extends Omit<CardProps, 'className' | 'classNames'> {
 	name: ReactNodeWithoutBoolean;
@@ -10,12 +13,18 @@ interface IProps extends Omit<CardProps, 'className' | 'classNames'> {
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function ItemCard({name, description, image, ...cardProps}, ref) {
+		const isShowBackgroundImage = store.persistence.backgroundImage.use();
+
 		return (
 			<Card
 				fullWidth
 				shadow="sm"
 				classNames={{
-					base: 'justify-center',
+					base: twJoin(
+						'justify-center',
+						isShowBackgroundImage &&
+							'bg-background data-[hover=true]:bg-content1 dark:bg-content1 dark:data-[hover=true]:bg-content2'
+					),
 				}}
 				{...cardProps}
 				ref={ref}
