@@ -12,7 +12,7 @@ import {
 import {debounce, isObjectLike} from 'lodash';
 import {twJoin} from 'tailwind-merge';
 
-import {useRouter} from 'next/navigation';
+import {usePathname, useRouter} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
 import {useThrottle} from '@/hooks';
 
@@ -62,6 +62,7 @@ interface IProps {
 }
 
 export default memo<IProps>(function DataManager({onModalClose}) {
+	const pathname = usePathname();
 	const router = useRouter();
 	const startProgress = useProgress();
 
@@ -383,6 +384,12 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 									});
 									if (onModalClose) {
 										onModalClose();
+										// Wait for the modal to close and restore the pathname (the animate will take 300ms).
+										setTimeout(() => {
+											if (pathname !== customerRareTutorialPathname) {
+												router.push(customerRareTutorialPathname);
+											}
+										}, 500);
 									} else {
 										router.push(customerRareTutorialPathname);
 									}
