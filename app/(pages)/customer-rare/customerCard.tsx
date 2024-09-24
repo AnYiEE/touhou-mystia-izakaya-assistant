@@ -48,14 +48,13 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 	const instance_ingredient = customerStore.instances.ingredient.get();
 	const instance_recipe = customerStore.instances.recipe.get();
 
-	const hasSelected = Boolean(
-		currentCustomerOrder.beverageTag ||
-			currentCustomerOrder.recipeTag ||
-			currentBeverageName ||
-			currentRecipeData ||
-			selectedCustomerBeverageTags.size > 0 ||
-			selectedCustomerPositiveTags.size > 0
-	);
+	const hasSelected =
+		currentCustomerOrder.beverageTag !== null ||
+		currentCustomerOrder.recipeTag !== null ||
+		currentBeverageName !== null ||
+		currentRecipeData !== null ||
+		selectedCustomerBeverageTags.size > 0 ||
+		selectedCustomerPositiveTags.size > 0;
 
 	const handleBeverageTagClick = useCallback(
 		(tag: TBeverageTag) => {
@@ -142,10 +141,10 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 		}
 
 		const target = [];
-		if (!currentBeverageName) {
+		if (currentBeverageName === null) {
 			target.push('酒水');
 		}
-		if (!currentRecipeData) {
+		if (currentRecipeData === null) {
 			target.push('料理');
 		}
 		if ((isDarkMatter && hasMystiaCooker) || !hasMystiaCooker) {
@@ -183,7 +182,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 		[currentCustomerOrder, hasMystiaCooker, isDarkMatter, isOrderLinkedFilter]
 	);
 
-	if (!currentCustomerData) {
+	if (currentCustomerData === null) {
 		return null;
 	}
 

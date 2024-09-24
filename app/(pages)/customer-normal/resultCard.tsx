@@ -112,7 +112,7 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 
 	const saveButtonTooltipTimer = useRef<NodeJS.Timeout>();
 	const [isShowSaveButtonTooltip, setIsShowSaveButtonTooltip] = useState(false);
-	const isSaveButtonDisabled = !currentCustomerName || !currentRecipeData || !currentRating;
+	const isSaveButtonDisabled = currentCustomerName === null || currentRecipeData === null || currentRating === null;
 
 	const hideTooltip = useCallback(() => {
 		setIsShowSaveButtonTooltip(false);
@@ -142,7 +142,7 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 		}
 	}, [hideTooltip, isSaveButtonDisabled, isShowSaveButtonTooltip]);
 
-	if (!currentRecipeData) {
+	if (currentRecipeData === null) {
 		if (currentCustomerName && currentSavedMeals[currentCustomerName]?.length) {
 			return null;
 		}

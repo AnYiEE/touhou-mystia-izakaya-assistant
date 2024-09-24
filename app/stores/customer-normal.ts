@@ -342,7 +342,7 @@ export const customerNormalStore = store(state, {
 			if (recipeData) {
 				recipe = instance_recipe.getPropsByName(recipeData.name);
 			}
-			if (!recipe) {
+			if (recipe === null) {
 				return;
 			}
 			currentStore.shared.recipe.data.set((prev) => {
@@ -395,7 +395,7 @@ export const customerNormalStore = store(state, {
 			const sortConfig = config as Required<TRecipeTableSortDescriptor>;
 			const {column, direction} = sortConfig;
 			const {lastColumn} = currentStore.shared.recipe.sortDescriptor.get();
-			if (!lastColumn || column !== lastColumn) {
+			if (lastColumn === undefined || column !== lastColumn) {
 				currentStore.shared.recipe.sortDescriptor.assign({
 					column,
 					lastColumn: column,
@@ -419,7 +419,7 @@ export const customerNormalStore = store(state, {
 
 		evaluateMealResult() {
 			const customerName = currentStore.shared.customer.name.get();
-			if (!customerName) {
+			if (customerName === null) {
 				return;
 			}
 			const {positiveTags: customerPositiveTags} = instance_customer.getPropsByName(customerName);
@@ -458,7 +458,7 @@ export const customerNormalStore = store(state, {
 			recipeName: TRecipeNames;
 		}) {
 			const customerName = currentStore.shared.customer.name.get();
-			if (!customerName) {
+			if (customerName === null) {
 				throw new ReferenceError('[stores/customer-normal/evaluateSavedMealResult]: `customerName` is null');
 			}
 			const extraTags: TPopularTag[] = [];
@@ -486,7 +486,7 @@ export const customerNormalStore = store(state, {
 		saveMealResult() {
 			const customerName = currentStore.shared.customer.name.get();
 			const recipeData = currentStore.shared.recipe.data.get();
-			if (!customerName || !recipeData) {
+			if (customerName === null || recipeData === null) {
 				return;
 			}
 			const {extraIngredients, name: recipeName} = recipeData;

@@ -17,7 +17,7 @@ export function useViewInNewWindow() {
 	const windowObjectRef = useRef<Window | null>(null);
 
 	useEffect(() => {
-		if (!windowItemNames || !windowItemPath) {
+		if (windowItemNames === null || windowItemPath === null) {
 			return;
 		}
 

@@ -36,7 +36,7 @@ function calculateMaxScore({
 >) {
 	const {beverageTag: customerOrderBeverageTag, recipeTag: customerOrderRecipeTag} = currentCustomerOrder;
 
-	if (!hasMystiaCooker && !customerOrderBeverageTag && !customerOrderRecipeTag) {
+	if (customerOrderBeverageTag === null && customerOrderRecipeTag === null && !hasMystiaCooker) {
 		return 0;
 	}
 
@@ -230,7 +230,7 @@ export function evaluateMeal({
 	hasMystiaCooker,
 	isDarkMatter,
 }: IParameters) {
-	if (currentBeverageTags.length === 0 || !currentRecipeName) {
+	if (currentBeverageTags.length === 0 || currentRecipeName === null) {
 		return null;
 	}
 
@@ -245,10 +245,10 @@ export function evaluateMeal({
 
 	const {beverageTag: customerOrderBeverageTag, recipeTag: customerOrderRecipeTag} = currentCustomerOrder;
 
-	if (!hasMystiaCooker && !customerOrderBeverageTag) {
+	if (customerOrderBeverageTag === null && !hasMystiaCooker) {
 		return null;
 	}
-	if (!hasMystiaCooker && !customerOrderRecipeTag) {
+	if (customerOrderRecipeTag === null && !hasMystiaCooker) {
 		return null;
 	}
 

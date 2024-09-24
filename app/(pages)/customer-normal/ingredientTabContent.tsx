@@ -71,7 +71,7 @@ export default memo(
 			[vibrate]
 		);
 
-		if (!currentCustomerName || !currentRecipeData) {
+		if (currentCustomerName === null || currentRecipeData === null) {
 			return null;
 		}
 
@@ -94,7 +94,7 @@ export default memo(
 				>
 					<div className="m-2 grid grid-cols-fill-12 justify-around gap-4">
 						{data.map(({name, tags}, index) => {
-							if (!currentRecipe) {
+							if (currentRecipe === null) {
 								return null;
 							}
 							const {extraIngredients} = currentRecipeData;

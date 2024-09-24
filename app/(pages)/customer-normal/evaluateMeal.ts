@@ -68,7 +68,7 @@ export function evaluateMeal({
 	currentExtraTags,
 	currentRecipe,
 }: IParameters) {
-	if (!currentRecipe) {
+	if (currentRecipe === null) {
 		return null;
 	}
 

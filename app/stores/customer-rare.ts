@@ -551,7 +551,7 @@ export const customerRareStore = store(state, {
 			const sortConfig = config as Required<TBeverageTableSortDescriptor>;
 			const {column, direction} = sortConfig;
 			const {lastColumn} = currentStore.shared.beverage.sortDescriptor.get();
-			if (!lastColumn || column !== lastColumn) {
+			if (lastColumn === undefined || column !== lastColumn) {
 				currentStore.shared.beverage.sortDescriptor.assign({
 					column,
 					lastColumn: column,
@@ -573,7 +573,7 @@ export const customerRareStore = store(state, {
 			if (recipeData) {
 				recipe = instance_recipe.getPropsByName(recipeData.name);
 			}
-			if (!recipe) {
+			if (recipe === null) {
 				return;
 			}
 			currentStore.shared.recipe.data.set((prev) => {
@@ -626,7 +626,7 @@ export const customerRareStore = store(state, {
 			const sortConfig = config as Required<TRecipeTableSortDescriptor>;
 			const {column, direction} = sortConfig;
 			const {lastColumn} = currentStore.shared.recipe.sortDescriptor.get();
-			if (!lastColumn || column !== lastColumn) {
+			if (lastColumn === undefined || column !== lastColumn) {
 				currentStore.shared.recipe.sortDescriptor.assign({
 					column,
 					lastColumn: column,
@@ -650,7 +650,7 @@ export const customerRareStore = store(state, {
 
 		evaluateMealResult() {
 			const customerData = currentStore.shared.customer.data.get();
-			if (!customerData) {
+			if (customerData === null) {
 				return;
 			}
 			const {name: customerName, target: customerTarget} = customerData;
@@ -710,7 +710,7 @@ export const customerRareStore = store(state, {
 			recipeName: TRecipeNames;
 		}) {
 			const customerData = currentStore.shared.customer.data.get();
-			if (!customerData) {
+			if (customerData === null) {
 				throw new ReferenceError('[stores/customer-rare/evaluateSavedMealResult]: `customerData` is null');
 			}
 			const {name: customerName, target: customerTarget} = customerData;
@@ -768,7 +768,7 @@ export const customerRareStore = store(state, {
 			const customerName = currentStore.shared.customer.data.get()?.name;
 			const beverageName = currentStore.shared.beverage.name.get();
 			const recipeData = currentStore.shared.recipe.data.get();
-			if (!customerName || !beverageName || !recipeData) {
+			if (customerName === undefined || beverageName === null || recipeData === null) {
 				return;
 			}
 			const {extraIngredients, name: recipeName} = recipeData;

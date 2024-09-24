@@ -81,7 +81,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 	const filteredData = useMemo(() => {
 		const data = instance_beverage.data as TBeveragesWithSuitability;
 
-		if (!currentCustomerData) {
+		if (currentCustomerData === null) {
 			return data.map((item) => ({
 				...item,
 				matchedTags: [] as string[],
@@ -107,7 +107,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 			};
 		});
 
-		if (!hasNameFilter && selectedDlcs.size === 0 && selectedCustomerBeverageTags.size === 0) {
+		if (selectedCustomerBeverageTags.size === 0 && selectedDlcs.size === 0 && !hasNameFilter) {
 			return dataWithRealSuitability;
 		}
 
@@ -182,7 +182,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 		(data: TBeverageWithSuitability, columnKey: TTableColumnKey) => {
 			const {name, price, suitability, matchedTags, tags: beverageTags} = data;
 
-			if (!currentCustomerData) {
+			if (currentCustomerData === null) {
 				return null;
 			}
 

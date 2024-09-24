@@ -60,7 +60,7 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 		// Synchronize state across multiple tabs as needed.
 		const updateStore = debounce((event: StorageEvent) => {
 			const {key, newValue} = event;
-			if (!newValue) {
+			if (newValue === null) {
 				return;
 			}
 			try {
@@ -117,7 +117,7 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 		// Synchronize theme across multiple tabs as needed.
 		const updateTheme = debounce((event: StorageEvent) => {
 			const {key, newValue} = event;
-			if (key !== 'theme' || !newValue) {
+			if (newValue === null || key !== 'theme') {
 				return;
 			}
 			if (theme !== newValue) {

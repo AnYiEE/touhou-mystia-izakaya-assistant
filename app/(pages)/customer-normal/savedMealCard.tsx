@@ -27,7 +27,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(
 
 	const instance_recipe = customerStore.instances.recipe.get();
 
-	if (!currentCustomerName || !currentSavedMeals[currentCustomerName]?.length) {
+	if (currentCustomerName === null || !currentSavedMeals[currentCustomerName]?.length) {
 		return null;
 	}
 

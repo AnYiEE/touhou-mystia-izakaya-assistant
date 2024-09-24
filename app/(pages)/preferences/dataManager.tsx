@@ -135,13 +135,13 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 
 	const handleImportInputChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
 		const {target} = event;
-		if (!target.files) {
+		if (target.files === null) {
 			return;
 		}
 		const {
 			files: [file],
 		} = target;
-		if (!file) {
+		if (file === undefined) {
 			return;
 		}
 		const blob = new Blob([file], {

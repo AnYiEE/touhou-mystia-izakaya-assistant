@@ -91,7 +91,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 	);
 
 	const filteredData = useMemo(() => {
-		if (!currentCustomerData) {
+		if (currentCustomerData === null) {
 			return data.map((item) => ({
 				...item,
 				matchedNegativeTags: [] as string[],
@@ -149,10 +149,10 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 		});
 
 		if (
-			!hasNameFilter &&
-			selectedDlcs.size === 0 &&
 			selectedCookers.size === 0 &&
-			selectedCustomerPositiveTags.size === 0
+			selectedCustomerPositiveTags.size === 0 &&
+			selectedDlcs.size === 0 &&
+			!hasNameFilter
 		) {
 			return dataWithRealSuitability;
 		}
@@ -251,7 +251,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 				matchedPositiveTags,
 			} = recipeData;
 
-			if (!currentCustomerData) {
+			if (currentCustomerData === null) {
 				return null;
 			}
 

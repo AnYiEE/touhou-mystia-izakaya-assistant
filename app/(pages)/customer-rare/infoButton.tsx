@@ -42,7 +42,7 @@ export default function InfoButton() {
 
 	const currentCustomerData = customerStore.shared.customer.data.use();
 
-	if (!currentCustomerData) {
+	if (currentCustomerData === null) {
 		return null;
 	}
 

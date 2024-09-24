@@ -25,7 +25,9 @@ export default memo<IProps>(function Popover({classNames, color, offset, showArr
 			classNames={{
 				...classNames,
 				content: twMerge(
-					isShowBackgroundImage && !color && 'bg-content1/40 backdrop-blur-lg dark:bg-content1/70',
+					isShowBackgroundImage &&
+						color === undefined &&
+						'bg-content1/40 backdrop-blur-lg dark:bg-content1/70',
 					classNames?.content
 				),
 			}}

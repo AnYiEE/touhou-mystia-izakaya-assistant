@@ -26,7 +26,9 @@ export default memo<IProps>(function Tooltip({classNames, color, showArrow, ...p
 			classNames={{
 				...classNames,
 				content: twMerge(
-					isShowBackgroundImage && !color && 'bg-content1/40 backdrop-blur-lg dark:bg-content1/70',
+					isShowBackgroundImage &&
+						color === undefined &&
+						'bg-content1/40 backdrop-blur-lg dark:bg-content1/70',
 					classNames?.content
 				),
 			}}

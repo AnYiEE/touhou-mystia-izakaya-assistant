@@ -174,11 +174,11 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 	const saveButtonTooltipTimer = useRef<NodeJS.Timeout>();
 	const [isShowSaveButtonTooltip, setIsShowSaveButtonTooltip] = useState(false);
 	const isSaveButtonDisabled =
-		!currentCustomerName ||
-		!currentBeverageName ||
-		!currentRecipeData ||
-		!(currentCustomerOrder.beverageTag || hasMystiaCooker) ||
-		!(currentCustomerOrder.recipeTag || hasMystiaCooker) ||
+		currentCustomerName === undefined ||
+		(currentCustomerOrder.beverageTag === null && !hasMystiaCooker) ||
+		(currentCustomerOrder.recipeTag === null && !hasMystiaCooker) ||
+		currentBeverageName === null ||
+		currentRecipeData === null ||
 		currentRating === null;
 
 	const hideTooltip = useCallback(() => {
@@ -219,10 +219,10 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 
 	const saveButtonTooltip = useMemo(() => {
 		const target = [];
-		if (!currentBeverageName) {
+		if (currentBeverageName === null) {
 			target.push('酒水');
 		}
-		if (!currentRecipeData) {
+		if (currentRecipeData === null) {
 			target.push('料理');
 		}
 		if ((isDarkMatter && hasMystiaCooker) || !hasMystiaCooker) {
@@ -237,7 +237,7 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 		return `请选择${content}以保存`;
 	}, [currentBeverageName, currentRecipeData, hasMystiaCooker, isDarkMatter]);
 
-	if (!currentBeverageName && !currentRecipeData) {
+	if (currentBeverageName === null && currentRecipeData === null) {
 		if (currentCustomerName && currentSavedMeals[currentCustomerName]?.length) {
 			return null;
 		}

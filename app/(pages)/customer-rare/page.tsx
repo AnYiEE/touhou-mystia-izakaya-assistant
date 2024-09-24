@@ -354,14 +354,14 @@ export default function CustomerRare() {
 					<Tab key="customer" title="稀客" className="relative flex flex-col">
 						<CustomerTabContent customerTabStyle={customerTabStyle} sortedData={customerSortedData} />
 					</Tab>
-					<Tab isDisabled={!currentCustomerData} key="recipe" title="料理">
+					<Tab isDisabled={currentCustomerData === null} key="recipe" title="料理">
 						<RecipeTabContent />
 					</Tab>
-					<Tab isDisabled={!currentCustomerData} key="beverage" title="酒水">
+					<Tab isDisabled={currentCustomerData === null} key="beverage" title="酒水">
 						<BeverageTabContent />
 					</Tab>
 					<Tab
-						isDisabled={!(currentCustomerData && currentRecipeData)}
+						isDisabled={currentCustomerData === null || currentRecipeData === null}
 						key="ingredient"
 						title="食材"
 						className="px-0"

@@ -11,7 +11,7 @@ export class Customer<Target extends ICustomer[]> extends Item<Target> {
 	public getTachiePath(type: 'customer', data: ICurrentCustomer | null): string;
 	public getTachiePath(type: 'partners', data: string): string;
 	public getTachiePath(type: 'customer' | 'partners', data: string | ICurrentCustomer | null) {
-		if (!data) {
+		if (data === null) {
 			return Clothes.getInstance().getTachiePath('夜雀服');
 		}
 

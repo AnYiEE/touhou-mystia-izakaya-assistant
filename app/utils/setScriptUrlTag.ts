@@ -2,11 +2,6 @@ import {Observable} from 'rxjs';
 
 export function setScriptUrlTag(url: string, method?: 'async' | 'defer', crossOrigin?: boolean) {
 	return new Observable<boolean>((subscriber) => {
-		if (!url) {
-			subscriber.error(false);
-			return;
-		}
-
 		const scriptElement = document.createElement('script');
 		scriptElement.src = url;
 

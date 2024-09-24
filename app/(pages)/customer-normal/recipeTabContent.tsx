@@ -88,7 +88,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 	);
 
 	const filteredData = useMemo(() => {
-		if (!currentCustomerName) {
+		if (currentCustomerName === null) {
 			return data.map((item) => ({
 				...item,
 				matchedNegativeTags: [] as string[],
@@ -241,7 +241,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 				matchedPositiveTags,
 			} = recipeData;
 
-			if (!currentCustomerName) {
+			if (currentCustomerName === null) {
 				return null;
 			}
 

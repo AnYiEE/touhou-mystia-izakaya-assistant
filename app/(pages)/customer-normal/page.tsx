@@ -319,11 +319,11 @@ export default function CustomerNormal() {
 					<Tab key="customer" title="普客" className="relative flex flex-col">
 						<CustomerTabContent customerTabStyle={customerTabStyle} sortedData={customerSortedData} />
 					</Tab>
-					<Tab isDisabled={!currentCustomerName} key="recipe" title="料理">
+					<Tab isDisabled={currentCustomerName === null} key="recipe" title="料理">
 						<RecipeTabContent />
 					</Tab>
 					<Tab
-						isDisabled={!(currentCustomerName && currentRecipeData)}
+						isDisabled={currentCustomerName === null || currentRecipeData === null}
 						key="ingredient"
 						title="食材"
 						className="px-0"

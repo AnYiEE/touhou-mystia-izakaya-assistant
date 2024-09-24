@@ -40,7 +40,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 	const instance_ingredient = customerStore.instances.ingredient.get();
 	const instance_recipe = customerStore.instances.recipe.get();
 
-	const hasSelected = Boolean(currentRecipeData || selectedCustomerPositiveTags.size > 0);
+	const hasSelected = currentRecipeData !== null || selectedCustomerPositiveTags.size > 0;
 
 	const handleRecipeTagClick = useCallback(
 		(tag: TRecipeTag) => {
@@ -99,7 +99,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 	const avatarRatingColor = currentRating ? customerRatingColorMap[currentRating] : undefined;
 	const avatarRatingContent = currentRating ?? '请选择点单料理以评级';
 
-	if (!currentCustomerName) {
+	if (currentCustomerName === null) {
 		return null;
 	}
 
