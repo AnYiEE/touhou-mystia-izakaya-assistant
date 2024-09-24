@@ -87,7 +87,7 @@ const changelog = [
 	},
 	{
 		version: 'v1.2',
-		changes: ['新增：摆件和衣服页面。'],
+		changes: ['新增：摆件和衣服页面。', '新增：支持同时导出稀客和普客的套餐搭配数据。'],
 	},
 ] as const satisfies {
 	version: `v${string}`;

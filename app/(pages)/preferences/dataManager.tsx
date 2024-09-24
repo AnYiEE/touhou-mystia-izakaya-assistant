@@ -29,7 +29,7 @@ import H1 from '@/components/h1';
 import Popover from '@/components/popover';
 import Tooltip from '@/components/tooltip';
 
-import {customerRareStore as customerStore, globalStore} from '@/stores';
+import {customerNormalStore, customerRareStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, toggleBoolean} from '@/utils';
 
 const JSON_TYPE = 'application/json';
@@ -66,9 +66,25 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 	const router = useRouter();
 	const startProgress = useProgress();
 
+	const currentNormalMealData = customerNormalStore.persistence.meals.use();
+	const currentRareMealData = customerRareStore.persistence.meals.use();
+
+	const currentMealData = useMemo(
+		() => ({
+			customer_normal: currentNormalMealData,
+			customer_rare: currentRareMealData,
+		}),
+		[currentNormalMealData, currentRareMealData]
+	);
+
+	// For compatibility with older versions
+	type TMealData = typeof currentMealData | typeof currentRareMealData;
+
+	const currentMealDataString = useMemo(() => JSON.stringify(currentMealData, null, '\t'), [currentMealData]);
+
 	const [importValue, setImportValue] = useState('');
 	const throttledImportValue = useThrottle(importValue);
-	const [importData, setImportData] = useState<object | null>(null);
+	const [importData, setImportData] = useState<TMealData | null>(null);
 	const importInputRef = useRef<HTMLInputElement | null>(null);
 
 	const [isDownloadButtonDisabled, setIsDownloadButtonDisabled] = useState(false);
@@ -79,9 +95,6 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 	const [isSaveButtonLoading, setIsSaveButtonLoading] = useState(false);
 	const [isSavePopoverOpened, toggleSavePopoverOpened] = useReducer(toggleBoolean, false);
 	const [isResetPopoverOpened, toggleResetPopoverOpened] = useReducer(toggleBoolean, false);
-
-	const currentMealData = customerStore.persistence.meals.use();
-	const currentMealDataString = useMemo(() => JSON.stringify(currentMealData, null, '\t'), [currentMealData]);
 
 	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 
@@ -98,15 +111,22 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 	const handleImportData = useCallback(() => {
 		toggleSavePopoverOpened();
 		if (importData) {
-			customerStore.persistence.meals.set(importData);
+			if ('customer_normal' in importData) {
+				customerNormalStore.persistence.meals.set(importData.customer_normal);
+				customerRareStore.persistence.meals.set(importData.customer_rare);
+				trackEvent(TrackCategory.Click, 'Import Button', 'Customer Data');
+			} else {
+				customerRareStore.persistence.meals.set(importData);
+				trackEvent(TrackCategory.Click, 'Import Button', 'Customer Rare Data');
+			}
 		}
-		trackEvent(TrackCategory.Click, 'Import Button', 'Customer Rare Data');
 	}, [importData]);
 
 	const handleResetData = useCallback(() => {
 		toggleResetPopoverOpened();
-		customerStore.persistence.meals.set({});
-		trackEvent(TrackCategory.Click, 'Reset Button', 'Customer Rare Data');
+		customerNormalStore.persistence.meals.set({});
+		customerRareStore.persistence.meals.set({});
+		trackEvent(TrackCategory.Click, 'Reset Button', 'Customer Data');
 	}, []);
 
 	const handleImportButtonPress = useCallback(() => {
@@ -160,7 +180,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 
 	return (
 		<>
-			<H1 subTitle="备份/还原/重置稀客套餐数据">数据管理</H1>
+			<H1 subTitle="备份/还原/重置顾客套餐数据">数据管理</H1>
 			<div className="-mt-2">
 				<Tabs
 					defaultSelectedKey="reset"
@@ -177,7 +197,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								hideSymbol
 								fullWidth
 								tooltipProps={{
-									content: '点击以复制当前的稀客套餐数据',
+									content: '点击以复制当前的顾客套餐数据',
 									delay: 0,
 									offset: 0,
 									showArrow: !isShowBackgroundImage,
@@ -214,7 +234,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 					<Tab key="restore" title="还原">
 						<div className="w-full space-y-2 lg:w-1/2">
 							<Textarea
-								placeholder="上传或输入稀客套餐数据"
+								placeholder="上传或输入顾客套餐数据"
 								value={importValue}
 								onValueChange={setImportValue}
 								classNames={{
@@ -313,7 +333,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 										})}
 										className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
 									>
-										重置已保存的稀客套餐数据
+										重置已保存的顾客套餐数据
 									</Button>
 								</PopoverTrigger>
 								<PopoverContent className="space-y-1 p-1">
@@ -358,24 +378,24 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								variant="flat"
 								onPress={() => {
 									showProgress(startProgress);
-									customerStore.persistence.customer.filters.set((prev) => {
+									customerRareStore.persistence.customer.filters.set((prev) => {
 										Object.keys(prev).forEach((key) => {
 											prev[key as keyof typeof prev] = [];
 										});
 									});
-									customerStore.shared.customer.orderLinkedFilter.set(
-										customerStore.persistence.customer.orderLinkedFilter.get()
+									customerRareStore.shared.customer.orderLinkedFilter.set(
+										customerRareStore.persistence.customer.orderLinkedFilter.get()
 									);
-									customerStore.persistence.customer.orderLinkedFilter.set(true);
-									customerStore.shared.customer.data.set(null);
-									customerStore.shared.tab.set('customer');
-									customerStore.shared.customer.filterVisibility.set(true);
-									customerStore.persistence.ingredient.filters.set((prev) => {
+									customerRareStore.persistence.customer.orderLinkedFilter.set(true);
+									customerRareStore.shared.customer.data.set(null);
+									customerRareStore.shared.tab.set('customer');
+									customerRareStore.shared.customer.filterVisibility.set(true);
+									customerRareStore.persistence.ingredient.filters.set((prev) => {
 										Object.keys(prev).forEach((key) => {
 											prev[key as keyof typeof prev] = [];
 										});
 									});
-									customerStore.shared.ingredient.filterVisibility.set(false);
+									customerRareStore.shared.ingredient.filterVisibility.set(false);
 									globalStore.persistence.set((prev) => {
 										const dirver = prev.dirver.filter(
 											(item) => item !== customerRareTutorialStoreKey
