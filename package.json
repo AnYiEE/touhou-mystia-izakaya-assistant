@@ -83,7 +83,7 @@
 		"next": "^14.2.13",
 		"next-qrcode": "^2.5.1",
 		"next-themes": "^0.3.0",
-		"pinyin-pro": "^3.24.2",
+		"pinyin-pro": "^3.25.0",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"react-transition-progress": "github:AnYiEE/react-transition-progress",
@@ -98,14 +98,14 @@
 		"@babel/preset-env": "^7.25.4",
 		"@commitlint/cli": "^19.5.0",
 		"@commitlint/config-conventional": "^19.5.0",
-		"@types/lodash": "^4.17.7",
-		"@types/node": "^22.5.5",
-		"@types/react": "^18.3.8",
+		"@types/lodash": "^4.17.9",
+		"@types/node": "^22.6.1",
+		"@types/react": "^18.3.9",
 		"@types/react-dom": "^18.3.0",
 		"@types/serviceworker": "^0.0.95",
 		"@types/ua-parser-js": "^0.7.39",
-		"@typescript-eslint/eslint-plugin": "^8.6.0",
-		"@typescript-eslint/parser": "^8.6.0",
+		"@typescript-eslint/eslint-plugin": "^8.7.0",
+		"@typescript-eslint/parser": "^8.7.0",
 		"eslint": "^8.57.1",
 		"eslint-config-next": "^14.2.13",
 		"eslint-config-prettier": "^9.1.0",
@@ -118,7 +118,7 @@
 		"postcss": "^8.4.47",
 		"postcss-preset-env": "^10.0.5",
 		"prettier": "^3.3.3",
-		"prettier-plugin-tailwindcss": "^0.6.6",
+		"prettier-plugin-tailwindcss": "^0.6.8",
 		"sass": "^1.79.3",
 		"stylelint": "^16.9.0",
 		"stylelint-config-css-modules": "^4.4.0",
@@ -130,7 +130,7 @@
 	},
 	"pnpm": {
 		"patchedDependencies": {
-			"@types/lodash@4.17.7": "patches/@types__lodash@4.17.7.patch"
+			"@types/lodash@4.17.9": "patches/@types__lodash@4.17.9.patch"
 		}
 	}
 }
