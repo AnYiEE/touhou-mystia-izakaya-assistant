@@ -14,7 +14,7 @@ export const ORNAMENT_LIST = [
 	{
 		name: '富贵牡丹',
 		dlc: 0,
-		effect: '顾客对料理的评价若至少为普通，则心情额外增加15。',
+		effect: '如果顾客对料理的评价至少为普通，则心情额外增加15。',
 		from: {
 			name: '茨木华扇',
 			level: 5,
@@ -23,7 +23,7 @@ export const ORNAMENT_LIST = [
 	{
 		name: '强运桃子',
 		dlc: 0,
-		effect: '顾客对料理的评价若至少为普通，则有15%的概率提高评价至完美。',
+		effect: '如果顾客对料理的评价至少为普通，则有15%的概率提高评价至完美。',
 		from: {
 			name: '比那名居天子',
 			level: 5,
