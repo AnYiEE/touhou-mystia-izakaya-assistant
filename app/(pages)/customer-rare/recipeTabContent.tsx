@@ -448,10 +448,11 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 							}}
 							classNames={{
 								base: twJoin(
-									'data-[slot="input-wrapper"]:[&_div]:!bg-default/40 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:opacity-hover',
+									'data-[slot="input-wrapper"]:[&_div]:!bg-default/40 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:opacity-hover data-[slot="input-wrapper"]:[&_div]:transition-opacity',
 									isShowBackgroundImage && 'backdrop-blur'
 								),
-								listboxWrapper: 'data-[hover=true]:[&_li]:!bg-default-200/40',
+								listboxWrapper:
+									'[&_li]:transition-background data-[hover=true]:[&_li]:!bg-default-200/40',
 								popoverContent: twJoin(isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'),
 							}}
 						>
@@ -491,10 +492,10 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 							classNames={{
 								base: 'w-2/3 md:w-full',
 								listboxWrapper:
-									'focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40',
+									'[&_li]:transition-background focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40',
 								popoverContent: twJoin(isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'),
 								trigger: twJoin(
-									'bg-default/40 data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover',
+									'bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover',
 									isShowBackgroundImage && 'backdrop-blur'
 								),
 							}}
@@ -615,6 +616,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 							classNames={{
 								base: 'min-w-16',
 								listboxWrapper: twJoin(
+									'[&_li]:transition-background',
 									isShowBackgroundImage &&
 										'focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40'
 								),
@@ -623,7 +625,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 									isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'
 								),
 								trigger: twJoin(
-									'h-6 min-h-6 bg-default/40 data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover',
+									'h-6 min-h-6 bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover',
 									isShowBackgroundImage && 'backdrop-blur'
 								),
 								value: '!text-default-400',

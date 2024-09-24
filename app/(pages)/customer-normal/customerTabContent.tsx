@@ -70,7 +70,7 @@ export default memo(
 									role="button"
 									classNames={{
 										base: twMerge(
-											'h-20 w-20 scale-90 ring-default hover:ring-warning lg:scale-100',
+											'h-20 w-20 scale-90 ring-default transition-shadow hover:ring-warning lg:scale-100',
 											name === currentCustomerName && 'ring-primary'
 										),
 										icon: 'block scale-[113%] transition-opacity hover:opacity-hover',

@@ -104,10 +104,12 @@ export default memo(
 						}}
 						classNames={{
 							base: twJoin(
+								'[&_div]:transition-background',
 								isShowBackgroundImage &&
 									'data-[slot="input-wrapper"]:[&_div]:!bg-default-100/70 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:!bg-default-200/70'
 							),
 							listboxWrapper: twJoin(
+								'[&_li]:transition-background',
 								isShowBackgroundImage && 'data-[hover=true]:[&_li]:!bg-default-200/40'
 							),
 							popoverContent: twJoin(isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'),

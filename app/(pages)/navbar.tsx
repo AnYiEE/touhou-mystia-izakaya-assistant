@@ -202,7 +202,7 @@ export default function Navbar() {
 									<DropdownMenu
 										aria-label={`${dropdownLabel}列表`}
 										itemClasses={{
-											base: 'my-px p-0 data-[hover=true]:bg-default/40',
+											base: 'my-px p-0 transition-background data-[hover=true]:bg-default/40',
 										}}
 									>
 										{dropdownItems.map(({href, label, sprite}) => (

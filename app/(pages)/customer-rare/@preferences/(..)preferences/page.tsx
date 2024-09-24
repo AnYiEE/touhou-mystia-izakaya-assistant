@@ -1,6 +1,8 @@
 'use client';
 
 import {useCallback} from 'react';
+import {twJoin} from 'tailwind-merge';
+
 import {useRouter} from 'next/navigation';
 
 import {Modal, ModalBody, ModalContent, ScrollShadow} from '@nextui-org/react';
@@ -28,7 +30,13 @@ export default function PreferencesModal() {
 			scrollBehavior="inside"
 			size="3xl"
 			onClose={handleClose}
-			className={isShowBackgroundImage ? 'bg-blend-mystia' : 'bg-background dark:bg-content1'}
+			classNames={{
+				base: isShowBackgroundImage ? 'bg-blend-mystia' : 'bg-background dark:bg-content1',
+				closeButton: twJoin(
+					'transition-background',
+					isShowBackgroundImage && 'hover:bg-content1 dark:hover:bg-content2'
+				),
+			}}
 		>
 			<ModalContent className="py-3">
 				{(onClose) => (

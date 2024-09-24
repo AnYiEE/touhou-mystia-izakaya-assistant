@@ -106,6 +106,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 							classNames={{
 								base: 'w-28',
 								listboxWrapper: twJoin(
+									'[&_li]:transition-background',
 									isShowBackgroundImage &&
 										'focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40'
 								),

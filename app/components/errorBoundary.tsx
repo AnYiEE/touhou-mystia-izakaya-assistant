@@ -66,13 +66,13 @@ export default class ErrorBoundary extends Component<IProps, IStates> {
 						<code>{this.state.info?.componentStack}</code>
 					</pre>
 					<button
-						className="mx-auto block w-1/2 cursor-pointer rounded-md bg-content1 p-2 hover:bg-content2"
+						className="mx-auto block w-1/2 cursor-pointer rounded-md bg-content1 p-2 transition-background hover:bg-content2"
 						onClick={this.handleClick.bind(this, false)}
 					>
 						点此重试（仅刷新页面）
 					</button>
 					<button
-						className="mx-auto block w-1/2 cursor-pointer rounded-md bg-content1 p-2 hover:bg-content2"
+						className="mx-auto block w-1/2 cursor-pointer rounded-md bg-content1 p-2 transition-background hover:bg-content2"
 						onClick={this.handleClick.bind(this, true)}
 					>
 						点此重试（将清空已保存的数据）

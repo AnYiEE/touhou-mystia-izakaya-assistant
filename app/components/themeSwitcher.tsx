@@ -125,7 +125,7 @@ export default memo<IProps>(function ThemeSwitcher({isMenu}) {
 				aria-label={ThemeLabel.list}
 				className="w-28"
 				itemClasses={{
-					base: 'my-px data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40',
+					base: 'my-px transition-background data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40',
 				}}
 			>
 				<DropdownItem key={Theme.dark}>{ThemeLabel.dark}</DropdownItem>

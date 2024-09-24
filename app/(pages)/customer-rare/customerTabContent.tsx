@@ -74,7 +74,7 @@ export default memo(
 										role="button"
 										classNames={{
 											base: twMerge(
-												'h-16 w-16 ring-default group-hover:ring-warning lg:h-20 lg:w-20',
+												'h-16 w-16 ring-default transition-shadow group-hover:ring-warning lg:h-20 lg:w-20',
 												name === currentCustomerData?.name && 'ring-primary'
 											),
 											icon: 'inline-table transition group-hover:scale-125 lg:inline-block',

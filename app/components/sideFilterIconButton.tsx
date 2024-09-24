@@ -116,6 +116,7 @@ export default memo(
 									}}
 									classNames={{
 										listboxWrapper: twJoin(
+											'[&_li]:transition-background',
 											isShowBackgroundImage &&
 												'focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40'
 										),
@@ -123,6 +124,7 @@ export default memo(
 											isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'
 										),
 										trigger: twJoin(
+											'transition-background',
 											isShowBackgroundImage
 												? 'bg-default-100/70 data-[hover=true]:bg-default-200/70'
 												: 'data-[hover=true]:bg-default-200'
