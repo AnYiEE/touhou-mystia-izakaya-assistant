@@ -32,7 +32,7 @@ import ThemeSwitcher from '@/components/themeSwitcher';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
-import {siteConfig} from '@/configs';
+import {type TSitePath, siteConfig} from '@/configs';
 import {globalStore as store} from '@/stores';
 import {toggleBoolean} from '@/utils';
 
@@ -118,13 +118,15 @@ const GitHubLink = memo<IGitHubLinkProps>(function GitHubLink({showTooltip}) {
 });
 
 export default function Navbar() {
-	const pathname = usePathname();
+	const pathname = usePathname() as TSitePath;
 	const startProgress = useProgress();
 	const [isMenuOpened, toggleMenuOpened] = useReducer(toggleBoolean, false);
 
 	const isShowBackgroundImage = store.persistence.backgroundImage.use();
 
-	const shouldShowPreferences = pathname.startsWith('/customer') || pathname === '/preferences';
+	// Support parallel routing pages.
+	const shouldShowPreferences =
+		pathname === '/customer-normal' || pathname === '/customer-rare' || pathname === '/preferences';
 
 	return (
 		<NextUINavbar

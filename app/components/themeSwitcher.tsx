@@ -12,6 +12,7 @@ import Dropdown from '@/components/dropdown';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Tooltip from '@/components/tooltip';
 
+import {type TSitePath} from '@/configs';
 import {globalStore as store} from '@/stores';
 
 enum Theme {
@@ -34,7 +35,7 @@ interface IProps {
 
 export default memo<IProps>(function ThemeSwitcher({isMenu}) {
 	const isMounted = useMounted();
-	const pathname = usePathname();
+	const pathname = usePathname() as TSitePath;
 	const {theme, setTheme} = useTheme();
 	const [selectedTheme, setSelectedTheme] = useState(new Set([theme]) as SelectionSet);
 

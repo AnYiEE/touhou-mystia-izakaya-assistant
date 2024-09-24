@@ -130,3 +130,5 @@ export const siteConfig = {
 	isHosted: Boolean(process.env.HOSTED),
 	isVercel: Boolean(process.env.VERCEL),
 } as const satisfies ISiteConfig;
+
+export type {TSitePath} from './types';

@@ -1,15 +1,18 @@
 import {useCallback, useMemo} from 'react';
+
 import {usePathname, useRouter, useSearchParams} from 'next/navigation';
+
+import {type TSitePath} from '@/configs';
 
 export function useParams() {
 	const router = useRouter();
-	const pathname = usePathname();
+	const pathname = usePathname() as TSitePath;
 	const searchParams = useSearchParams();
 
 	const params = useMemo(() => new URLSearchParams(searchParams), [searchParams]);
 	const replace = useCallback(
 		(newParams: typeof params) => {
-			router.replace(`${pathname}?${newParams.toString()}`);
+			router.replace(`${pathname as string}?${newParams.toString()}`);
 		},
 		[pathname, router]
 	);

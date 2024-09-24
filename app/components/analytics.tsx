@@ -6,7 +6,7 @@ import {catchError} from 'rxjs/operators';
 
 import {usePathname} from 'next/navigation';
 
-import {siteConfig} from '@/configs';
+import {type TSitePath, siteConfig} from '@/configs';
 import {setScriptUrlTag} from '@/utils';
 
 const {domain} = siteConfig;
@@ -102,7 +102,7 @@ export default function Analytics() {
 
 	// It has already been tracked once when entering the page for the first time.
 	const isLoaded = useRef(true);
-	const pathname = usePathname();
+	const pathname = usePathname() as TSitePath;
 
 	useEffect(() => {
 		// Avoid tracking repeatedly when first entering the page, only track when the next pathname changes (route change by Next.js).

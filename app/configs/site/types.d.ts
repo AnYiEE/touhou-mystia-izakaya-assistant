@@ -29,3 +29,6 @@ export interface ISiteConfig {
 }
 
 export type TSiteConfig = typeof import('./index').siteConfig;
+
+type ExtractNestedHref<T> = T extends {href: infer U} ? U : {[K in keyof T]: ExtractNestedHref<T[K]>}[keyof T];
+export type TSitePath = ExtractNestedHref<TSiteConfig['navItems'][number]>;

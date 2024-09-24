@@ -3,6 +3,7 @@ import {driver} from 'driver.js';
 
 import {usePathname} from 'next/navigation';
 
+import {type TSitePath} from '@/configs';
 import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {getPageTitle} from '@/utils';
@@ -12,7 +13,7 @@ const pathname = '/customer-rare';
 const resetLabel = '重新进入稀客套餐搭配教程';
 
 export default function CustomerRareTutorial() {
-	const currentPathname = usePathname();
+	const currentPathname = usePathname() as TSitePath;
 	const isTargetPage = currentPathname === pathname;
 
 	const currentCustomerName = customerStore.shared.customer.data.use()?.name;

@@ -29,6 +29,7 @@ import H1 from '@/components/h1';
 import Popover from '@/components/popover';
 import Tooltip from '@/components/tooltip';
 
+import {type TSitePath} from '@/configs';
 import {customerNormalStore, customerRareStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, toggleBoolean} from '@/utils';
 
@@ -62,7 +63,7 @@ interface IProps {
 }
 
 export default memo<IProps>(function DataManager({onModalClose}) {
-	const pathname = usePathname();
+	const pathname = usePathname() as TSitePath;
 	const router = useRouter();
 	const startProgress = useProgress();
 
