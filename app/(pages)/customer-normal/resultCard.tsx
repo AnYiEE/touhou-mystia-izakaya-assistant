@@ -104,7 +104,6 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
-	const currentBeverageName = customerStore.shared.beverage.name.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 	const currentRating = customerStore.shared.customer.rating.use();
 	const currentSavedMeals = customerStore.persistence.meals.use();
@@ -113,8 +112,7 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 
 	const saveButtonTooltipTimer = useRef<NodeJS.Timeout>();
 	const [isShowSaveButtonTooltip, setIsShowSaveButtonTooltip] = useState(false);
-	const isSaveButtonDisabled =
-		!currentCustomerName || !currentBeverageName || !currentRecipeData || currentRating === null;
+	const isSaveButtonDisabled = !currentCustomerName || !currentRecipeData || !currentRating;
 
 	const hideTooltip = useCallback(() => {
 		setIsShowSaveButtonTooltip(false);
@@ -144,13 +142,13 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 		}
 	}, [hideTooltip, isSaveButtonDisabled, isShowSaveButtonTooltip]);
 
-	if (!currentBeverageName && !currentRecipeData) {
+	if (!currentRecipeData) {
 		if (currentCustomerName && currentSavedMeals[currentCustomerName]?.length) {
 			return null;
 		}
 		return (
 			<Placeholder className="pb-8 pt-12 leading-none md:pt-8 xl:pb-4 xl:pt-0" ref={ref}>
-				选择点单料理或酒水以继续
+				选择点单料理以继续
 			</Placeholder>
 		);
 	}
@@ -167,40 +165,19 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 			<div className="flex flex-col items-center gap-4 p-4 md:flex-row">
 				<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
 					<div className="flex items-center gap-2">
-						{currentRecipeData ? (
-							<>
-								<Sprite
-									target="cooker"
-									name={instance_recipe.getPropsByName(currentRecipeData.name, 'cooker')}
-									size={2}
-								/>
-								<Tooltip showArrow content={currentRecipeData.name} offset={4}>
-									<Sprite target="recipe" name={currentRecipeData.name} size={2.5} />
-								</Tooltip>
-							</>
-						) : (
-							<>
-								<UnknownItem title="请选择料理" size={1.5} />
-								<UnknownItem title="请选择料理" />
-							</>
-						)}
-						<Plus />
-						{currentBeverageName ? (
-							<Tooltip showArrow content={currentBeverageName} offset={4}>
-								<Sprite target="beverage" name={currentBeverageName} size={2.5} />
-							</Tooltip>
-						) : (
-							<UnknownItem title="请选择酒水" />
-						)}
+						<Sprite
+							target="cooker"
+							name={instance_recipe.getPropsByName(currentRecipeData.name, 'cooker')}
+							size={2}
+						/>
+						<Tooltip showArrow content={currentRecipeData.name} offset={4}>
+							<Sprite target="recipe" name={currentRecipeData.name} size={2.5} />
+						</Tooltip>
 					</div>
 					<Plus />
 					<IngredientsList />
 				</div>
-				<Tooltip
-					showArrow
-					content={`请选择点单${currentBeverageName ? '' : '酒水'}${currentRecipeData ? '' : '料理'}以保存`}
-					isOpen={isShowSaveButtonTooltip}
-				>
+				<Tooltip showArrow content="请选择点单料理以保存" isOpen={isShowSaveButtonTooltip}>
 					<Button
 						color="primary"
 						disableAnimation={isSaveButtonDisabled}

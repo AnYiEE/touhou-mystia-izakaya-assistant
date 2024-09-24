@@ -3,7 +3,6 @@ import {
 	TAG_LARGE_PARTITION,
 	TAG_POPULAR_NEGATIVE,
 	TAG_POPULAR_POSITIVE,
-	type TBeverageNames,
 	type TCustomerNormalNames,
 	type TRecipeNames,
 } from '@/data';
@@ -12,7 +11,6 @@ import {type IPopularData, type TPopularTag} from '@/stores';
 import {intersection} from '@/utils';
 
 interface IParameters {
-	currentBeverageName: TBeverageNames | null;
 	currentCustomerName: TCustomerNormalNames;
 	currentCustomerPopularData: IPopularData;
 	currentCustomerPositiveTags: TRecipeTag[];
@@ -63,7 +61,6 @@ function getRatingKey(mealScore: number): TCustomerRating {
 }
 
 export function evaluateMeal({
-	currentBeverageName,
 	currentCustomerName,
 	currentCustomerPopularData,
 	currentCustomerPositiveTags,
@@ -71,7 +68,7 @@ export function evaluateMeal({
 	currentExtraTags,
 	currentRecipe,
 }: IParameters) {
-	if (!currentBeverageName || !currentRecipe) {
+	if (!currentRecipe) {
 		return null;
 	}
 

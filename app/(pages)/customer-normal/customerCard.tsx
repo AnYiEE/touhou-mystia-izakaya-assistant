@@ -3,7 +3,7 @@ import {twJoin} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
 
-import {Avatar, Card, Divider, PopoverContent, PopoverTrigger, type Selection} from '@nextui-org/react';
+import {Avatar, Card, Divider, PopoverContent, PopoverTrigger} from '@nextui-org/react';
 import {faArrowsRotate, faXmark} from '@fortawesome/free-solid-svg-icons';
 
 import InfoButton from './infoButton';
@@ -17,9 +17,9 @@ import Tooltip from '@/components/tooltip';
 
 import {customerRatingColorMap} from './constants';
 import {CUSTOMER_NORMAL_TAG_STYLE, type TCustomerNormalNames} from '@/data';
-import type {TBeverageTag, TRecipeTag} from '@/data/types';
+import type {TRecipeTag} from '@/data/types';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
-import {checkA11yConfirmKey, intersection, pinyinSort, toValue} from '@/utils';
+import {checkA11yConfirmKey, pinyinSort} from '@/utils';
 
 interface IProps {}
 
@@ -27,36 +27,20 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 	const vibrate = useVibrate();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
-	const selectedCustomerBeverageTags = customerStore.shared.customer.beverageTags.use();
 	const selectedCustomerPositiveTags = customerStore.shared.customer.positiveTags.use();
 	const currentCustomerPopular = customerStore.shared.customer.popular.use();
 	const currentRating = customerStore.shared.customer.rating.use();
 
-	const currentBeverageName = customerStore.shared.beverage.name.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 
 	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 	const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
 
-	const instance_beverage = customerStore.instances.beverage.get();
 	const instance_customer = customerStore.instances.customer.get();
 	const instance_ingredient = customerStore.instances.ingredient.get();
 	const instance_recipe = customerStore.instances.recipe.get();
 
-	const hasSelected = Boolean(
-		currentBeverageName ||
-			currentRecipeData ||
-			selectedCustomerBeverageTags.size > 0 ||
-			selectedCustomerPositiveTags.size > 0
-	);
-
-	const handleBeverageTagClick = useCallback(
-		(tag: TBeverageTag) => {
-			vibrate();
-			customerStore.onCustomerFilterBeverageTag(tag);
-		},
-		[vibrate]
-	);
+	const hasSelected = Boolean(currentRecipeData || selectedCustomerPositiveTags.size > 0);
 
 	const handleRecipeTagClick = useCallback(
 		(tag: TRecipeTag) => {
@@ -79,16 +63,6 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 		},
 		[vibrate]
 	);
-
-	const beverageTags = useMemo(() => {
-		const _beverageTags: TBeverageTag[] = [];
-
-		if (currentBeverageName) {
-			_beverageTags.push(...instance_beverage.getPropsByName(currentBeverageName, 'tags'));
-		}
-
-		return _beverageTags;
-	}, [currentBeverageName, instance_beverage]);
 
 	const currentRecipeTagsWithPopular = useMemo(() => {
 		const _currentRecipeTagsWithPopular: TRecipeTag[] = [];
@@ -123,28 +97,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 	}, [currentCustomerPopular, currentRecipeData, instance_ingredient, instance_recipe]);
 
 	const avatarRatingColor = currentRating ? customerRatingColorMap[currentRating] : undefined;
-	const avatarRatingContent = useMemo(() => {
-		if (currentRating) {
-			return currentRating;
-		}
-
-		const target = [];
-		if (!currentBeverageName) {
-			target.push('酒水');
-		}
-		if (!currentRecipeData) {
-			target.push('料理');
-		}
-
-		return `请选择点单${target.join('、')}以评级`;
-	}, [currentBeverageName, currentRating, currentRecipeData]);
-
-	const getTagTooltip = useCallback((type: 'beverageTag' | 'recipeTag', selectedTags: Selection, tag: string) => {
-		const tagType = type === 'beverageTag' ? '酒水' : '料理';
-		const isTagExisted = (selectedTags as SelectionSet).has(tag);
-
-		return `点击：${isTagExisted ? `取消筛选${tagType}表格` : `以此标签筛选${tagType}表格`}`;
-	}, []);
+	const avatarRatingContent = currentRating ?? '请选择点单料理以评级';
 
 	if (!currentCustomerName) {
 		return null;
@@ -257,7 +210,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 								<Tooltip
 									key={tag}
 									showArrow
-									content={getTagTooltip('recipeTag', selectedCustomerPositiveTags, tag)}
+									content={`点击：${selectedCustomerPositiveTags.has(tag) ? `取消` : `以此标签`}筛选料理表格`}
 									closeDelay={0}
 									delay={500}
 									isDisabled={!isShowTagsTooltip}
@@ -305,40 +258,14 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 					)}
 					{currentCustomerBeverageTags.length > 0 && (
 						<TagGroup>
-							{intersection(
-								customerStore.beverage.tags.get().map(toValue),
-								currentCustomerBeverageTags
-							).map((tag) => (
-								<Tooltip
+							{currentCustomerBeverageTags.map((tag) => (
+								<Tags.Tag
 									key={tag}
-									showArrow
-									content={getTagTooltip('beverageTag', selectedCustomerBeverageTags, tag)}
-									closeDelay={0}
-									delay={500}
-									isDisabled={!isShowTagsTooltip}
-									size="sm"
-								>
-									<Tags.Tag
-										tag={tag}
-										tagStyle={CUSTOMER_NORMAL_TAG_STYLE.beverage}
-										tagType="positive"
-										onClick={() => {
-											handleBeverageTagClick(tag);
-										}}
-										onKeyDown={(event) => {
-											if (checkA11yConfirmKey(event)) {
-												handleBeverageTagClick(tag);
-											}
-										}}
-										aria-label={`${tag}${beverageTags.includes(tag) ? '/已满足' : ''}`}
-										role="button"
-										tabIndex={0}
-										className={twJoin(
-											'cursor-pointer p-1 leading-none transition-opacity hover:opacity-hover',
-											!beverageTags.includes(tag) && 'opacity-50'
-										)}
-									/>
-								</Tooltip>
+									tag={tag}
+									tagStyle={CUSTOMER_NORMAL_TAG_STYLE.beverage}
+									tagType="positive"
+									className="cursor-not-allowed p-1 leading-none"
+								/>
 							))}
 						</TagGroup>
 					)}
