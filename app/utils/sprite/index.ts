@@ -71,9 +71,9 @@ export class Sprite<
 		this.spriteWidth = width / col;
 	}
 
-	public static getInstance<T extends TSpriteTarget>(target: T) {
+	public static getInstance(target: TSpriteTarget) {
 		if (Sprite._instances.has(target)) {
-			Sprite._instances.get(target);
+			return Sprite._instances.get(target);
 		}
 
 		const instance = new Sprite(SPRITE_DATA_MAP[target], SPRITE_CONFIG_MAP[target]);
