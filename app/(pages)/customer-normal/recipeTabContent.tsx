@@ -254,7 +254,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 
 			const tags = (
 				<TagGroup>
-					{recipeTagsWithPopular.sort(pinyinSort).map((tag) => {
+					{recipeTagsWithPopular.sort(pinyinSort).map((tag, index) => {
 						const isNegativeTagMatched = matchedNegativeTags.includes(tag);
 						const isPositiveTagMatched = matchedPositiveTags.includes(tag);
 						const isTagMatched = isNegativeTagMatched || isPositiveTagMatched;
@@ -266,7 +266,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 						const tagType = isNegativeTagMatched ? 'negative' : isPositiveTagMatched ? 'positive' : null;
 						return (
 							<Tags.Tag
-								key={tag}
+								key={index}
 								tag={tag}
 								tagStyle={tagStyle}
 								tagType={tagType}

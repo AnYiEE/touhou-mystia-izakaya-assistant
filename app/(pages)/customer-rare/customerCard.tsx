@@ -302,9 +302,9 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 				<div className="flex w-full flex-col justify-evenly gap-3 whitespace-nowrap">
 					{currentCustomerPositiveTags.length > 0 && (
 						<TagGroup>
-							{[...currentCustomerPositiveTags].sort(pinyinSort).map((tag) => (
+							{[...currentCustomerPositiveTags].sort(pinyinSort).map((tag, index) => (
 								<Tooltip
-									key={tag}
+									key={index}
 									showArrow
 									content={getTagTooltip('recipeTag', tag)}
 									closeDelay={0}
@@ -355,9 +355,9 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 					)}
 					{currentCustomerNegativeTags.length > 0 && (
 						<TagGroup>
-							{[...currentCustomerNegativeTags].sort(pinyinSort).map((tag) => (
+							{[...currentCustomerNegativeTags].sort(pinyinSort).map((tag, index) => (
 								<Tags.Tag
-									key={tag}
+									key={index}
 									tag={tag}
 									tagStyle={customerTagStyleMap[currentCustomerTarget].negative}
 									tagType="negative"
@@ -374,9 +374,9 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 							{intersection(
 								customerStore.beverage.tags.get().map(toValue),
 								currentCustomerBeverageTags
-							).map((tag) => (
+							).map((tag, index) => (
 								<Tooltip
-									key={tag}
+									key={index}
 									showArrow
 									content={getTagTooltip('beverageTag', tag)}
 									closeDelay={0}

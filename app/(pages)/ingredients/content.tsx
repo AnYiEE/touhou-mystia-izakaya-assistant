@@ -85,8 +85,8 @@ export default memo<IProps>(function Content({data}) {
 								) : (
 									<span className="font-semibold">{way}：</span>
 								)}
-								{target?.map((item, index) => (
-									<Fragment key={index}>
+								{target?.map((item, targetIndex) => (
+									<Fragment key={targetIndex}>
 										{Array.isArray(item) ? (
 											item[1] ? (
 												<Popover showArrow offset={6} size="sm">
@@ -105,7 +105,7 @@ export default memo<IProps>(function Content({data}) {
 										) : (
 											item
 										)}
-										{index < target.length - 1 && '、'}
+										{targetIndex < target.length - 1 && '、'}
 									</Fragment>
 								))}
 							</p>

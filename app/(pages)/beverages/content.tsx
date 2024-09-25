@@ -68,8 +68,8 @@ export default memo<IProps>(function Content({data}) {
 							<p key={fromIndex}>
 								<span className="font-semibold">{way}：</span>
 								{Array.isArray(target)
-									? target.map((item, index) => (
-											<Fragment key={index}>
+									? target.map((item, targetIndex) => (
+											<Fragment key={targetIndex}>
 												{Array.isArray(item) ? (
 													item[1] ? (
 														<Popover showArrow offset={6} size="sm">
@@ -93,7 +93,7 @@ export default memo<IProps>(function Content({data}) {
 												) : (
 													item
 												)}
-												{index < target.length - 1 && '、'}
+												{targetIndex < target.length - 1 && '、'}
 											</Fragment>
 										))
 									: '初始拥有'}

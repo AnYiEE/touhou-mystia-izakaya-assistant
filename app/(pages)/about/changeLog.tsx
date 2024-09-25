@@ -116,9 +116,9 @@ export default function ChangeLog() {
 			>
 				更新日志
 			</H1>
-			{changelog.map(({changes, version}, index) => (
-				<Fragment key={index}>
-					<H2 isFirst={index === 0}>{version}</H2>
+			{changelog.map(({changes, version}, versionIndex) => (
+				<Fragment key={versionIndex}>
+					<H2 isFirst={versionIndex === 0}>{version}</H2>
 					<Ul>
 						{changes.map((change, changeIndex) => (
 							<li key={changeIndex}>{change}</li>

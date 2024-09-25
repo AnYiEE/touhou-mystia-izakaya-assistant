@@ -44,9 +44,9 @@ export default memo(
 				>
 					<div className="m-2 grid grid-cols-fill-16 justify-around gap-4 lg:grid-cols-fill-20">
 						{Object.entries(sortedData).map(([target, data]) =>
-							data.map(({name}) => (
+							data.map(({name}, index) => (
 								<div
-									key={name}
+									key={index}
 									onClick={() => {
 										vibrate();
 										customerStore.onCustomerSelectedChange({name, target} as ICurrentCustomer);

@@ -100,7 +100,7 @@ export default memo(
 						{selectConfig.map(
 							({items, label, selectedKeys, selectionMode, setSelectedKeys, spriteTarget}, index) => (
 								<Select
-									key={`${label as string}${index}`}
+									key={index}
 									size="sm"
 									items={items}
 									selectedKeys={selectedKeys}

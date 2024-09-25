@@ -73,13 +73,13 @@ export default memo<IProps>(function Content({data}) {
 						<span className="font-semibold">来源：</span>
 						{typeof from === 'string'
 							? from
-							: Object.entries(from).map((fromObject, index) => {
+							: Object.entries(from).map((fromObject, fromIndex) => {
 									type TFrom = Exclude<IClothes['from'], string>;
 									const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
 									const isBuy = method === 'buy';
 									const isSelf = method === 'self';
 									return (
-										<Fragment key={index}>
+										<Fragment key={fromIndex}>
 											{isBuy ? (
 												target
 											) : isSelf ? (

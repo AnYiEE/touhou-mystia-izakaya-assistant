@@ -163,66 +163,69 @@ export default function Navbar() {
 					</Link>
 				</NavbarBrand>
 				<ul className="hidden justify-start gap-4 pl-2 md:flex">
-					{navItems.map((navItem) => {
+					{navItems.map((navItem, navItemIndex) => {
 						if ('href' in navItem) {
 							const {href, label} = navItem;
 							const isActivated = href === pathname;
 							return href === '/preferences' && !shouldShowPreferences ? null : (
-								<NavbarItem key={href} isActive={isActivated}>
+								<NavbarItem key={navItemIndex} isActive={isActivated}>
 									<NavbarLink isActivated={isActivated} href={href}>
 										{label}
 									</NavbarLink>
 								</NavbarItem>
 							);
 						}
-						return Object.entries(navItem).reduce<JSX.Element[]>((acc, [dropdownLabel, dropdownItems]) => {
-							const isDropdownActivated = dropdownItems.some(({href}) => href === pathname);
-							const dropdownElement = (
-								<Dropdown
-									key={dropdownLabel}
-									classNames={{
-										content: twJoin(
-											'min-w-24 p-0',
-											isShowBackgroundImage && 'bg-background/70 backdrop-saturate-150'
-										),
-									}}
-								>
-									<NavbarItem>
-										<DropdownTrigger>
-											<Button
-												endContent={<FontAwesomeIcon icon={faChevronDown} size="sm" />}
-												size="sm"
-												variant={isDropdownActivated ? 'flat' : 'light'}
-												className="text-base"
-											>
-												{dropdownLabel}
-											</Button>
-										</DropdownTrigger>
-									</NavbarItem>
-									<DropdownMenu
-										aria-label={`${dropdownLabel}列表`}
-										itemClasses={{
-											base: 'my-px p-0 transition-background data-[hover=true]:bg-default/40',
+						return Object.entries(navItem).reduce<JSX.Element[]>(
+							(acc, [dropdownLabel, dropdownItems], dropdownIndex) => {
+								const isDropdownActivated = dropdownItems.some(({href}) => href === pathname);
+								const dropdownElement = (
+									<Dropdown
+										key={dropdownIndex}
+										classNames={{
+											content: twJoin(
+												'min-w-24 p-0',
+												isShowBackgroundImage && 'bg-background/70 backdrop-saturate-150'
+											),
 										}}
 									>
-										{dropdownItems.map(({href, label, sprite}) => (
-											<DropdownItem key={href} textValue={label}>
-												<NavbarLink
-													fullWidth
-													isActivated={href === pathname}
-													href={href}
-													startContent={<Sprite target={sprite} size={1.25} />}
-													className="justify-start gap-1 text-sm data-[hover=true]:bg-transparent"
+										<NavbarItem>
+											<DropdownTrigger>
+												<Button
+													endContent={<FontAwesomeIcon icon={faChevronDown} size="sm" />}
+													size="sm"
+													variant={isDropdownActivated ? 'flat' : 'light'}
+													className="text-base"
 												>
-													{label}
-												</NavbarLink>
-											</DropdownItem>
-										))}
-									</DropdownMenu>
-								</Dropdown>
-							);
-							return [...acc, dropdownElement];
-						}, []);
+													{dropdownLabel}
+												</Button>
+											</DropdownTrigger>
+										</NavbarItem>
+										<DropdownMenu
+											aria-label={`${dropdownLabel}列表`}
+											itemClasses={{
+												base: 'my-px p-0 transition-background data-[hover=true]:bg-default/40',
+											}}
+										>
+											{dropdownItems.map(({href, label, sprite}, dropdownItemIndex) => (
+												<DropdownItem key={dropdownItemIndex} textValue={label}>
+													<NavbarLink
+														fullWidth
+														isActivated={href === pathname}
+														href={href}
+														startContent={<Sprite target={sprite} size={1.25} />}
+														className="justify-start gap-1 text-sm data-[hover=true]:bg-transparent"
+													>
+														{label}
+													</NavbarLink>
+												</DropdownItem>
+											))}
+										</DropdownMenu>
+									</Dropdown>
+								);
+								return [...acc, dropdownElement];
+							},
+							[]
+						);
 					})}
 				</ul>
 			</NavbarContent>
@@ -244,10 +247,10 @@ export default function Navbar() {
 			</NavbarContent>
 
 			<NavbarMenu className="px-10 pt-4">
-				{navMenuItems.map(({href, label}) => {
+				{navMenuItems.map(({href, label}, index) => {
 					const isActivated = href === pathname;
 					return href === '/preferences' && !shouldShowPreferences ? null : (
-						<NavbarMenuItem key={href} isActive={isActivated}>
+						<NavbarMenuItem key={index} isActive={isActivated}>
 							<Link
 								color={isActivated ? 'primary' : 'foreground'}
 								size="lg"

@@ -65,13 +65,13 @@ export default memo<IProps>(function Content({data}) {
 							<span className="font-semibold">食谱来源：</span>
 							{typeof from === 'string'
 								? from
-								: Object.entries(from).map((fromObject, index) => {
+								: Object.entries(from).map((fromObject, fromIndex) => {
 										type TFrom = Exclude<IRecipe['from'], string>;
 										const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
 										const isLevelUp = method === 'levelup';
 										const isSelf = method === 'self';
 										return (
-											<Fragment key={index}>
+											<Fragment key={fromIndex}>
 												{isLevelUp
 													? '游戏等级提升'
 													: isSelf

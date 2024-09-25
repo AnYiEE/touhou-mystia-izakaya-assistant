@@ -206,9 +206,9 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 				<div className="flex w-full flex-col justify-evenly gap-3 whitespace-nowrap">
 					{currentCustomerPositiveTags.length > 0 && (
 						<TagGroup>
-							{[...currentCustomerPositiveTags].sort(pinyinSort).map((tag) => (
+							{[...currentCustomerPositiveTags].sort(pinyinSort).map((tag, index) => (
 								<Tooltip
-									key={tag}
+									key={index}
 									showArrow
 									content={`点击：${selectedCustomerPositiveTags.has(tag) ? `取消` : `以此标签`}筛选料理表格`}
 									closeDelay={0}
@@ -242,9 +242,9 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 					)}
 					{(currentCustomerNegativeTags as string[]).length > 0 && (
 						<TagGroup>
-							{[...currentCustomerNegativeTags].sort(pinyinSort).map((tag) => (
+							{[...currentCustomerNegativeTags].sort(pinyinSort).map((tag, index) => (
 								<Tags.Tag
-									key={tag}
+									key={index}
 									tag={tag}
 									tagStyle={CUSTOMER_NORMAL_TAG_STYLE.negative}
 									tagType="negative"
@@ -258,9 +258,9 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 					)}
 					{currentCustomerBeverageTags.length > 0 && (
 						<TagGroup>
-							{currentCustomerBeverageTags.map((tag) => (
+							{currentCustomerBeverageTags.map((tag, index) => (
 								<Tags.Tag
-									key={tag}
+									key={index}
 									tag={tag}
 									tagStyle={CUSTOMER_NORMAL_TAG_STYLE.beverage}
 									tagType="positive"

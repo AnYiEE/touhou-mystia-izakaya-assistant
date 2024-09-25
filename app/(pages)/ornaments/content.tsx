@@ -23,9 +23,9 @@ export default memo<IProps>(function Content({data}) {
 
 	// const isShowBackgroundImage = store.persistence.backgroundImage.use();
 
-	return data.map(({dlc, effect, from, name}, dataIndex) => (
+	return data.map(({dlc, effect, from, name}, index) => (
 		<Popover
-			key={dataIndex}
+			key={index}
 			showArrow
 			// backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
 			isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}

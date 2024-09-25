@@ -37,8 +37,8 @@ export default function InfoButton() {
 			</AccordionItem>
 			<AccordionItem key="rating" aria-label="评级图例" title="评级图例">
 				<div className="flex flex-col gap-2 text-justify text-xs">
-					{(['普通', '满意'] as const).map((rating) => (
-						<div key={rating} className="mb-1 flex items-center gap-3 px-1">
+					{(['普通', '满意'] as const).map((rating, index) => (
+						<div key={index} className="mb-1 flex items-center gap-3 px-1">
 							<Avatar
 								isBordered
 								showFallback
