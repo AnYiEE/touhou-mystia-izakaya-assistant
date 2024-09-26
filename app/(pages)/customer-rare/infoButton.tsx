@@ -85,10 +85,26 @@ export default function InfoButton() {
 	const hasNegativeSpellCards = hasSpellCards && (currentCustomerSpellCards.negative as unknown[]).length > 0;
 	const hasPositiveSpellCards = hasSpellCards && (currentCustomerSpellCards.positive as unknown[]).length > 0;
 
+	const getDefaultExpandedKeys = () => {
+		const defaultExpandedKeys = [];
+
+		if (hasBondRewards) {
+			defaultExpandedKeys.push('bond');
+		}
+		if (hasSpellCards) {
+			defaultExpandedKeys.push('card');
+		}
+		if (defaultExpandedKeys.length === 0) {
+			defaultExpandedKeys.push('help');
+		}
+
+		return defaultExpandedKeys;
+	};
+
 	const getLabel = (type: TRewardType) => `点击：在新窗口中查看此${type}的详情`;
 
 	return (
-		<InfoButtonBase defaultExpandedKeys={[hasBondRewards ? 'bond' : 'card']}>
+		<InfoButtonBase defaultExpandedKeys={getDefaultExpandedKeys()}>
 			{hasBondRewards ? (
 				<AccordionItem key="bond" aria-label={`${currentCustomerName}羁绊奖励`} title="羁绊奖励">
 					<div className="flex flex-col gap-2 text-justify text-xs">
@@ -286,7 +302,7 @@ export default function InfoButton() {
 			)}
 			{hasSpellCards ? (
 				<AccordionItem key="card" aria-label={`${currentCustomerName}符卡效果`} title="符卡效果">
-					<ScrollShadow hideScrollBar size={16} className="max-h-48 text-justify text-xs">
+					<ScrollShadow hideScrollBar size={16} className="max-h-32 text-justify text-xs md:max-h-48">
 						{hasPositiveSpellCards && (
 							<>
 								<p className="mb-1 text-sm font-semibold">奖励符卡</p>

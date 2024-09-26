@@ -6,7 +6,7 @@ import {customerRatingColorMap} from './constants';
 
 export default function InfoButton() {
 	return (
-		<InfoButtonBase>
+		<InfoButtonBase defaultExpandedKeys={['help']}>
 			<AccordionItem key="help" aria-label="特别说明" title="特别说明">
 				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-justify text-xs">
 					<p className="mb-1 text-sm font-semibold">选单时</p>
