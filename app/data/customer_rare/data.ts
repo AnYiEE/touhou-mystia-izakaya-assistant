@@ -468,7 +468,7 @@ export const CUSTOMER_RARE_LIST = [
 			{
 				type: '伙伴',
 				reward: '铃仙',
-				description: '完成3月16日“竹林对决”任务后自动获得',
+				description: '完成地区【迷途竹林】主线任务后自动获得',
 			},
 		],
 		spellCards: {

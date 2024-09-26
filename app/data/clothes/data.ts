@@ -77,7 +77,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: '持有100枚青蛙硬币时自动获得',
+		from: '持有100枚“银色的青蛙硬币”时自动获得',
 	},
 	{
 		name: '万圣节特典晚装',

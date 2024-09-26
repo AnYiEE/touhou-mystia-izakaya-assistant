@@ -805,7 +805,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 35,
-		from: '【人间之里】香霖堂兑换（银色的青蛙硬币×5）',
+		from: '【人间之里】香霖堂',
 	},
 	{
 		name: '意式烩饭',
@@ -1145,7 +1145,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 35,
-		from: '【人间之里】香霖堂兑换（银色的青蛙硬币×5）',
+		from: '【人间之里】香霖堂',
 	},
 	{
 		name: '猩红恶魔蛋糕',
