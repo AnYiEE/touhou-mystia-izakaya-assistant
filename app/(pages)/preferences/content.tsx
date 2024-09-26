@@ -71,7 +71,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 			<div className="space-y-2">
 				<div className="flex items-center">
 					<span className="font-medium">类别：</span>
-					{TAG_POPULAR_NEGATIVE}
+					{TAG_POPULAR_POSITIVE}
 					<Switch
 						isSelected={isNegativePopularTag}
 						size="sm"

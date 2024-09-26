@@ -76,8 +76,8 @@ const state = {
 				...instance_ingredient
 					.getValuesByProp(instance_ingredient.data, 'tags')
 					.filter((tag) => !instance_ingredient.blockedTags.has(tag)),
-				TAG_POPULAR_POSITIVE,
 				TAG_POPULAR_NEGATIVE,
+				TAG_POPULAR_POSITIVE,
 			] as TIngredientTag[]
 		)
 			.map(toValueObject)
