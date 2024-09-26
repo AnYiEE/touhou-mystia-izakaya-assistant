@@ -26,6 +26,8 @@ import {
 	customerRareStoreKey,
 	globalStore,
 	globalStoreKey,
+	ingredientsStore,
+	recipesStore,
 } from '@/stores';
 
 const {version} = siteConfig;
@@ -56,6 +58,8 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 		const globalPopular = globalStore.persistence.popular.get();
 		customerNormalStore.shared.customer.popular.set(globalPopular);
 		customerRareStore.shared.customer.popular.set(globalPopular);
+		ingredientsStore.shared.popular.set(globalPopular);
+		recipesStore.shared.popular.set(globalPopular);
 
 		// Synchronize state across multiple tabs as needed.
 		const updateStore = debounce((event: StorageEvent) => {

@@ -3,8 +3,11 @@ import {createJSONStorage} from 'zustand/middleware';
 
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
+import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data';
+import type {TRecipeTag} from '@/data/types';
+import {type IPopularData} from '@/stores';
 import {getAllItemNames} from '@/stores/utils';
-import {Recipe, numberSort, pinyinSort} from '@/utils';
+import {Recipe, numberSort, pinyinSort, toValueObject} from '@/utils';
 
 const instance = Recipe.getInstance();
 
@@ -23,7 +26,15 @@ const state = {
 	cookers: instance.getValuesByProp(instance.data, 'cooker', true).sort(pinyinSort),
 	ingredients: instance.getValuesByProp(instance.data, 'ingredients', true).sort(pinyinSort),
 	negativeTags: instance.getValuesByProp(instance.data, 'negativeTags', true).sort(pinyinSort),
-	positiveTags: instance.getValuesByProp(instance.data, 'positiveTags', true).sort(pinyinSort),
+	positiveTags: (
+		[
+			...instance.getValuesByProp(instance.data, 'positiveTags'),
+			TAG_POPULAR_POSITIVE,
+			TAG_POPULAR_NEGATIVE,
+		] as TRecipeTag[]
+	)
+		.map(toValueObject)
+		.sort(pinyinSort),
 
 	persistence: {
 		filters: {
@@ -39,6 +50,12 @@ const state = {
 		},
 		pinyinSortState: PinyinSortState.NONE,
 		searchValue: '',
+	},
+	shared: {
+		popular: {
+			isNegative: false,
+			tag: null,
+		} as IPopularData,
 	},
 };
 

@@ -3,6 +3,9 @@ import {createJSONStorage} from 'zustand/middleware';
 
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
+import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data';
+import type {TIngredientTag} from '@/data/types';
+import {type IPopularData} from '@/stores';
 import {getAllItemNames} from '@/stores/utils';
 import {Ingredient, numberSort, pinyinSort, toValueObject} from '@/utils';
 
@@ -19,7 +22,15 @@ const state = {
 
 	dlcs: instance.getValuesByProp(instance.data, 'dlc', true).sort(numberSort),
 	levels: instance.getValuesByProp(instance.data, 'level', true).sort(numberSort),
-	tags: instance.getValuesByProp(instance.data, 'tags', true).sort(pinyinSort),
+	tags: (
+		[
+			...instance.getValuesByProp(instance.data, 'tags'),
+			TAG_POPULAR_POSITIVE,
+			TAG_POPULAR_NEGATIVE,
+		] as TIngredientTag[]
+	)
+		.map(toValueObject)
+		.sort(pinyinSort),
 	types: instance.sortedTypes.map(toValueObject),
 
 	persistence: {
@@ -33,6 +44,12 @@ const state = {
 		},
 		pinyinSortState: PinyinSortState.NONE,
 		searchValue: '',
+	},
+	shared: {
+		popular: {
+			isNegative: false,
+			tag: null,
+		} as IPopularData,
 	},
 };
 

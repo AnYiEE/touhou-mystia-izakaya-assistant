@@ -8,7 +8,7 @@ import H2 from '@/components/h2';
 import Ul from '@/components/ul';
 
 import {siteConfig} from '@/configs';
-import {DARK_MATTER_NAME, TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data';
+import {DARK_MATTER_NAME, TAG_LARGE_PARTITION, TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data';
 
 const {links} = siteConfig;
 
@@ -34,7 +34,7 @@ const changelog = [
 	{
 		version: 'v0.4',
 		changes: [
-			`新增：搭配稀客套餐时，支持设置“${TAG_POPULAR_POSITIVE}”和“${TAG_POPULAR_NEGATIVE}”标签。`,
+			`新增：支持设置全局的“${TAG_POPULAR_POSITIVE}”或“${TAG_POPULAR_NEGATIVE}”标签。`,
 			'新增：作为渐进式网络应用程序安装后，提供常用功能的快捷方式。',
 			'改善：无障碍（键盘导航）支持。',
 			'修复：稀客套餐评级逻辑。',
@@ -87,7 +87,12 @@ const changelog = [
 	},
 	{
 		version: 'v1.2',
-		changes: ['新增：摆件和衣服页面。', '新增：支持同时导出稀客和普客的套餐搭配数据。'],
+		changes: [
+			'新增：摆件和衣服页面。',
+			'新增：支持同时导出稀客和普客的套餐搭配数据。',
+			`新增：料理和食材页面中的料理和食材标签将依照已设置的“${TAG_POPULAR_POSITIVE}”或“${TAG_POPULAR_NEGATIVE}”标签而动态调整。`,
+			`修复：料理页面的部分料理未显示“${TAG_LARGE_PARTITION}”标签。`,
+		],
 	},
 ] as const satisfies {
 	version: `v${string}`;
