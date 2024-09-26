@@ -244,7 +244,9 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 												icon: 'inline-table lg:inline-block',
 											}}
 										/>
-										<span className="text-md text-center font-bold">{currentCustomerName}</span>
+										<span className="text-md whitespace-nowrap text-center font-bold">
+											{currentCustomerName}
+										</span>
 									</div>
 								</PopoverTrigger>
 							</div>

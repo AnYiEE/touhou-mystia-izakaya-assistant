@@ -133,7 +133,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 			ref={ref}
 		>
 			<div className="flex flex-col gap-3 p-4 md:flex-row">
-				<div className="flex flex-col items-center gap-3">
+				<div className="flex flex-col items-center justify-center gap-3">
 					<Popover showArrow color={avatarRatingColor} offset={10}>
 						<Tooltip showArrow color={avatarRatingColor} content={avatarRatingContent}>
 							<div className="flex cursor-pointer self-center">
