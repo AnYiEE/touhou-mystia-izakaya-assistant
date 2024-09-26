@@ -72,18 +72,25 @@ export default memo<IProps>(function Content({data}) {
 										const isSelf = method === 'self';
 										return (
 											<Fragment key={fromIndex}>
-												{isLevelUp
-													? '游戏等级提升'
-													: isSelf
-														? '初始拥有'
-														: isObjectLike(target) && (
-																<>
-																	<span className="pr-1">【{target.name}】羁绊</span>
-																	Lv.{target.level - 1}
-																	<span className="px-0.5">➞</span>Lv.
-																	{target.level}
-																</>
-															)}
+												{isSelf ? (
+													'初始拥有'
+												) : isLevelUp ? (
+													<>
+														<span className="pr-1">游戏等级</span>
+														Lv.{(target as number) - 1}
+														<span className="px-0.5">➞</span>Lv.
+														{target}
+													</>
+												) : (
+													isObjectLike(target) && (
+														<>
+															<span className="pr-1">【{target.name}】羁绊</span>
+															Lv.{target.level - 1}
+															<span className="px-0.5">➞</span>Lv.
+															{target.level}
+														</>
+													)
+												)}
 											</Fragment>
 										);
 									})}

@@ -96,7 +96,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 6,
 		from: {
-			levelup: true,
+			levelup: 2,
 		},
 	},
 	{
@@ -165,7 +165,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 20,
 		from: {
-			levelup: true,
+			levelup: 8,
 		},
 	},
 	{
@@ -180,7 +180,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 22,
 		from: {
-			levelup: true,
+			levelup: 4,
 		},
 	},
 	{
@@ -231,7 +231,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 22,
 		from: {
-			levelup: true,
+			levelup: 11,
 		},
 	},
 	{
@@ -313,7 +313,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 60,
 		from: {
-			levelup: true,
+			levelup: 14,
 		},
 	},
 	{
@@ -647,7 +647,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 58,
 		from: {
-			levelup: true,
+			levelup: 21,
 		},
 	},
 	{
@@ -662,7 +662,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 22,
 		from: {
-			levelup: true,
+			levelup: 27,
 		},
 	},
 	{
@@ -1131,7 +1131,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 8,
 		from: {
-			levelup: true,
+			levelup: 18,
 		},
 	},
 	{
@@ -1172,7 +1172,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 20,
 		from: {
-			levelup: true,
+			levelup: 24,
 		},
 	},
 	{
@@ -1187,7 +1187,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 25,
 		from: {
-			levelup: true,
+			levelup: 33,
 		},
 	},
 	{

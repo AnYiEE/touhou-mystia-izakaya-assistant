@@ -61,10 +61,10 @@ export interface IRecipe extends IFoodBase {
 					name: TCustomerRareNames;
 					level: number;
 				};
+				/** @description Recipes by levelup. */
+				levelup: number;
 				/** @description Initial recipes. */
 				self: true;
-				/** @description Recipes by levelup. */
-				levelup: true;
 		  }>
 		| string;
 }
