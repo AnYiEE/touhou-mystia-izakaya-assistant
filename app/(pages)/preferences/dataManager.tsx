@@ -97,7 +97,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 	const [isSavePopoverOpened, toggleSavePopoverOpened] = useReducer(toggleBoolean, false);
 	const [isResetPopoverOpened, toggleResetPopoverOpened] = useReducer(toggleBoolean, false);
 
-	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
 	const handleDownloadButtonPress = useCallback(() => {
 		setIsDownloadButtonDisabled(true);
@@ -201,11 +201,11 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 									content: '点击以复制当前的顾客套餐数据',
 									delay: 0,
 									offset: 0,
-									showArrow: !isShowBackgroundImage,
+									showArrow: !isHighAppearance,
 								}}
 								variant="flat"
 								classNames={{
-									base: twJoin(isShowBackgroundImage && 'bg-default-100/40 backdrop-blur'),
+									base: twJoin(isHighAppearance && 'bg-default-100/40 backdrop-blur'),
 									pre: 'max-h-[13.25rem] w-full overflow-auto whitespace-pre-wrap',
 								}}
 							>
@@ -225,7 +225,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 									isLoading={isDownloadButtonDisabled}
 									variant="flat"
 									onPress={handleDownloadButtonPress}
-									className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
+									className={twJoin(isHighAppearance && 'backdrop-blur')}
 								>
 									{downloadButtonLabel}
 								</Button>
@@ -241,7 +241,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								classNames={{
 									inputWrapper: twJoin(
 										'transition-background',
-										isShowBackgroundImage &&
+										isHighAppearance &&
 											'bg-default-100/40 backdrop-blur data-[hover=true]:bg-default-200/40 group-data-[focus=true]:bg-default-100/70'
 									),
 								}}
@@ -258,7 +258,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								color="primary"
 								variant="flat"
 								onPress={handleImportButtonPress}
-								className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
+								className={twJoin(isHighAppearance && 'backdrop-blur')}
 							>
 								上传
 							</Button>
@@ -276,7 +276,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 												toggleSavePopoverOpened();
 											}
 										})}
-										className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
+										className={twJoin(isHighAppearance && 'backdrop-blur')}
 									>
 										保存
 									</Button>
@@ -333,7 +333,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 												toggleResetPopoverOpened();
 											}
 										})}
-										className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
+										className={twJoin(isHighAppearance && 'backdrop-blur')}
 									>
 										重置已保存的顾客套餐数据
 									</Button>
@@ -417,7 +417,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 									}
 									trackEvent(TrackCategory.Click, 'Reset Button', 'Customer Rare Tutorial');
 								}}
-								className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
+								className={twJoin(isHighAppearance && 'backdrop-blur')}
 							>
 								{customerRareTutorialResetLabel}
 							</Button>

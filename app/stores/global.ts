@@ -36,23 +36,25 @@ const storeVersion = {
 	version: 3, // eslint-disable-next-line sort-keys
 	backgroundImage: 4,
 	tachie: 5,
-	vibrate: 6,
+	vibrate: 6, // eslint-disable-next-line sort-keys
+	renameBg: 7,
 } as const;
 
 const state = {
 	popularTags: popularValidTags,
 
 	persistence: {
-		backgroundImage: true,
 		customerCardTagsTooltip: true,
-		tachie: true,
-		vibrate: true,
 
 		dirver: [] as string[],
 		popular: {
 			isNegative: false,
 			tag: null,
 		} as IPopularData,
+
+		highAppearance: true,
+		tachie: true,
+		vibrate: true,
 
 		version: null as string | null,
 	},
@@ -66,7 +68,7 @@ export const globalStore = store(state, {
 	persist: {
 		enabled: true,
 		name: globalStoreKey,
-		version: storeVersion.vibrate,
+		version: storeVersion.renameBg,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -88,6 +90,13 @@ export const globalStore = store(state, {
 			}
 			if (version < storeVersion.vibrate) {
 				oldState.persistence.vibrate = true;
+			}
+			if (version < storeVersion.renameBg) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				const {persistence} = oldState;
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				persistence.highAppearance = persistence.backgroundImage;
+				delete persistence.backgroundImage;
 			}
 			return persistedState as typeof state;
 		},

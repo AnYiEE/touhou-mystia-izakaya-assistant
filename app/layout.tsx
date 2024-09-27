@@ -157,7 +157,7 @@ export default function RootLayout({
 				<script
 					dangerouslySetInnerHTML={{
 						/**
-						 * @description Add `bg-blend-mystia-pseudo` class to body if the `globalStorage.backgroundImage` setting is enabled.
+						 * @description Add `bg-blend-mystia-pseudo` class to body if the `globalStorage.highAppearance` setting is enabled.
 						 * @see /app/providers.tsx
 						 */
 						__html: `(() => {
@@ -165,7 +165,7 @@ export default function RootLayout({
 	try {
 		const globalStorage = localStorage.getItem('global-storage');
 		if (globalStorage) {
-			enable = JSON.parse(globalStorage).state.persistence.backgroundImage;
+			enable = JSON.parse(globalStorage).state.persistence.highAppearance;
 		}
 	} catch (e) {}
 	if (enable !== false) {

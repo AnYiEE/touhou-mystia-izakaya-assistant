@@ -41,7 +41,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 	const currentBeverageName = customerStore.shared.beverage.name.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 
-	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+	const isHighAppearance = globalStore.persistence.highAppearance.use();
 	const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
 
 	const instance_beverage = customerStore.instances.beverage.get();
@@ -217,7 +217,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 			fullWidth
 			shadow="sm"
 			classNames={{
-				base: twJoin(isShowBackgroundImage && 'bg-content1/40 backdrop-blur'),
+				base: twJoin(isHighAppearance && 'bg-content1/40 backdrop-blur'),
 			}}
 			ref={ref}
 		>

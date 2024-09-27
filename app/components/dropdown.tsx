@@ -8,13 +8,13 @@ import {globalStore as store} from '@/stores';
 interface IProps extends DropdownProps {}
 
 export default memo<IProps>(function Dropdown({classNames, showArrow, ...props}) {
-	const isShowBackgroundImage = store.persistence.backgroundImage.use();
+	const isHighAppearance = store.persistence.highAppearance.use();
 
 	return (
 		<NextUIDropdown
-			showArrow={isShowBackgroundImage ? false : Boolean(showArrow)}
+			showArrow={isHighAppearance ? false : Boolean(showArrow)}
 			motionProps={
-				isShowBackgroundImage
+				isHighAppearance
 					? {
 							initial: {},
 						}
@@ -23,7 +23,7 @@ export default memo<IProps>(function Dropdown({classNames, showArrow, ...props})
 			classNames={{
 				...classNames,
 				content: twMerge(
-					isShowBackgroundImage && 'bg-content1/40 backdrop-blur-lg dark:bg-content1/70',
+					isHighAppearance && 'bg-content1/40 backdrop-blur-lg dark:bg-content1/70',
 					classNames?.content
 				),
 			}}

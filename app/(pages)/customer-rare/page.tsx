@@ -64,7 +64,7 @@ export default function CustomerRare() {
 	const {breakpoint} = useBreakpoint(tachieBreakPoint, 'noTachie');
 	const vibrate = useVibrate();
 
-	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+	const isHighAppearance = globalStore.persistence.highAppearance.use();
 	const isShowTachie = globalStore.persistence.tachie.use();
 
 	const currentCustomerData = customerStore.shared.customer.data.use();
@@ -344,7 +344,7 @@ export default function CustomerRare() {
 					selectedKey={selectedTabKey}
 					onSelectionChange={onTabSelectionChange}
 					classNames={{
-						tabList: twJoin('grid grid-cols-4 bg-default/40', isShowBackgroundImage && 'backdrop-blur'),
+						tabList: twJoin('grid grid-cols-4 bg-default/40', isHighAppearance && 'backdrop-blur'),
 					}}
 				>
 					<Tab key="customer" title="稀客" className="relative flex flex-col">

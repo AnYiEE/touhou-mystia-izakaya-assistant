@@ -10,14 +10,14 @@ import {globalStore as store} from '@/stores';
 interface IProps extends TooltipProps {}
 
 export default memo<IProps>(function Tooltip({classNames, color, showArrow, ...props}) {
-	const isShowBackgroundImage = store.persistence.backgroundImage.use();
+	const isHighAppearance = store.persistence.highAppearance.use();
 
 	return (
 		<NextUITooltip
 			color={color}
-			showArrow={isShowBackgroundImage ? false : Boolean(showArrow)}
+			showArrow={isHighAppearance ? false : Boolean(showArrow)}
 			motionProps={
-				isShowBackgroundImage
+				isHighAppearance
 					? {
 							initial: {},
 						}
@@ -26,9 +26,7 @@ export default memo<IProps>(function Tooltip({classNames, color, showArrow, ...p
 			classNames={{
 				...classNames,
 				content: twMerge(
-					isShowBackgroundImage &&
-						color === undefined &&
-						'bg-content1/40 backdrop-blur-lg dark:bg-content1/70',
+					isHighAppearance && color === undefined && 'bg-content1/40 backdrop-blur-lg dark:bg-content1/70',
 					classNames?.content
 				),
 			}}

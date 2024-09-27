@@ -33,7 +33,7 @@ export default memo<IProps>(function Content({data}) {
 		'top'
 	);
 
-	// const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+	// const isHighAppearance = globalStore.persistence.highAppearance.use();
 
 	const instance_clothes = clothesStore.instance.get();
 
@@ -41,7 +41,7 @@ export default memo<IProps>(function Content({data}) {
 		<Popover
 			key={dataIndex}
 			showArrow
-			// backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
+			// backdrop={isHighAppearance ? 'blur' : 'opaque'}
 			isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}
 		>
 			<ItemPopoverCard.Trigger>

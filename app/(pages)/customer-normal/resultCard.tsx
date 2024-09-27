@@ -101,7 +101,7 @@ interface IResultCardProps {}
 export default forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
 	const vibrate = useVibrate();
 
-	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
 	const currentBeverageName = customerStore.shared.beverage.name.use();
@@ -159,7 +159,7 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 			fullWidth
 			shadow="sm"
 			classNames={{
-				base: twJoin(isShowBackgroundImage && 'bg-content1/40 backdrop-blur'),
+				base: twJoin(isHighAppearance && 'bg-content1/40 backdrop-blur'),
 			}}
 			ref={ref}
 		>

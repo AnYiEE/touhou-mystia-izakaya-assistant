@@ -157,7 +157,7 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 	);
 	const vibrate = useVibrate();
 
-	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
 	const currentCustomerName = customerStore.shared.customer.data.use()?.name;
 	const currentCustomerOrder = customerStore.shared.customer.order.use();
@@ -253,7 +253,7 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 			fullWidth
 			shadow="sm"
 			classNames={{
-				base: twJoin(isShowBackgroundImage && 'bg-content1/40 backdrop-blur'),
+				base: twJoin(isHighAppearance && 'bg-content1/40 backdrop-blur'),
 			}}
 			ref={ref}
 		>

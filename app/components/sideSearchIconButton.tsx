@@ -41,9 +41,9 @@ export default memo(
 	) {
 		const vibrate = useVibrate();
 
-		const instance_special = customerStore.instances.customer_special.get();
+		const isHighAppearance = globalStore.persistence.highAppearance.use();
 
-		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+		const instance_special = customerStore.instances.customer_special.get();
 
 		const handleInputChange = useCallback(
 			(value: string) => {
@@ -68,7 +68,7 @@ export default memo(
 
 		return (
 			<Popover
-				// backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
+				// backdrop={isHighAppearance ? 'blur' : 'opaque'}
 				placement="left"
 				onOpenChange={handleOpenChange}
 				ref={ref}
@@ -96,7 +96,7 @@ export default memo(
 						label={label}
 						onInputChange={handleInputChange}
 						popoverProps={{
-							motionProps: isShowBackgroundImage
+							motionProps: isHighAppearance
 								? {
 										initial: {},
 									}
@@ -105,14 +105,14 @@ export default memo(
 						classNames={{
 							base: twJoin(
 								'[&_div]:transition-background',
-								isShowBackgroundImage &&
+								isHighAppearance &&
 									'data-[slot="input-wrapper"]:[&_div]:!bg-default-100/70 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:!bg-default-200/70'
 							),
 							listboxWrapper: twJoin(
 								'[&_li]:transition-background',
-								isShowBackgroundImage && 'data-[hover=true]:[&_li]:!bg-default-200/40'
+								isHighAppearance && 'data-[hover=true]:[&_li]:!bg-default-200/40'
 							),
-							popoverContent: twJoin(isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'),
+							popoverContent: twJoin(isHighAppearance && 'bg-content1/70 backdrop-blur-lg'),
 						}}
 					>
 						{({value}) =>

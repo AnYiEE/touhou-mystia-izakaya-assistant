@@ -8,15 +8,15 @@ import {globalStore as store} from '@/stores';
 interface IProps extends PopoverProps {}
 
 export default memo<IProps>(function Popover({classNames, color, offset, showArrow, ...props}) {
-	const isShowBackgroundImage = store.persistence.backgroundImage.use();
+	const isHighAppearance = store.persistence.highAppearance.use();
 
 	return (
 		<NextUIPopover
 			color={color}
-			offset={isShowBackgroundImage && typeof offset === 'number' ? offset - 2 : (offset as number)}
-			showArrow={isShowBackgroundImage ? false : Boolean(showArrow)}
+			offset={isHighAppearance && typeof offset === 'number' ? offset - 2 : (offset as number)}
+			showArrow={isHighAppearance ? false : Boolean(showArrow)}
 			motionProps={
-				isShowBackgroundImage
+				isHighAppearance
 					? {
 							initial: {},
 						}
@@ -25,9 +25,7 @@ export default memo<IProps>(function Popover({classNames, color, offset, showArr
 			classNames={{
 				...classNames,
 				content: twMerge(
-					isShowBackgroundImage &&
-						color === undefined &&
-						'bg-content1/40 backdrop-blur-lg dark:bg-content1/70',
+					isHighAppearance && color === undefined && 'bg-content1/40 backdrop-blur-lg dark:bg-content1/70',
 					classNames?.content
 				),
 			}}

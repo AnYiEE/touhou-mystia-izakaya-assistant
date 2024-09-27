@@ -24,7 +24,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 	const isNegativePopularTag = globalStore.persistence.popular.isNegative.use();
 	const selectedPopularTag = globalStore.selectedPopularTag.use();
 
-	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+	const isHighAppearance = globalStore.persistence.highAppearance.use();
 	const isShowTachie = globalStore.persistence.tachie.use();
 	const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
 	const isVibrateEnabled = globalStore.persistence.vibrate.use();
@@ -98,7 +98,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 							aria-label="选择游戏中现时流行的标签"
 							title="选择游戏中现时流行的标签"
 							popoverProps={{
-								motionProps: isShowBackgroundImage
+								motionProps: isHighAppearance
 									? {
 											initial: {},
 										}
@@ -108,13 +108,13 @@ export default memo<IProps>(function Content({onModalClose}) {
 								base: 'w-28',
 								listboxWrapper: twJoin(
 									'[&_li]:transition-background',
-									isShowBackgroundImage &&
+									isHighAppearance &&
 										'focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40'
 								),
-								popoverContent: twJoin(isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'),
+								popoverContent: twJoin(isHighAppearance && 'bg-content1/70 backdrop-blur-lg'),
 								trigger: twJoin(
 									'transition-background',
-									onModalClose || !isShowBackgroundImage
+									onModalClose || !isHighAppearance
 										? 'bg-default-50 data-[hover=true]:bg-default-100'
 										: 'bg-default-100/40 backdrop-blur data-[hover=true]:bg-default-200/40'
 								),
@@ -129,7 +129,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 						size="sm"
 						variant="flat"
 						onPress={onClearPopularTagButtonPress}
-						className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
+						className={twJoin(isHighAppearance && 'backdrop-blur')}
 					>
 						清除选择
 					</Button>
@@ -138,9 +138,9 @@ export default memo<IProps>(function Content({onModalClose}) {
 			<H3>外观</H3>
 			<div className="space-y-2">
 				<SwitchItem
-					isSelected={isShowBackgroundImage}
-					onValueChange={globalStore.persistence.backgroundImage.set}
-					aria-label={`${isShowBackgroundImage ? '关闭' : '开启'}全局背景图片和磨砂效果`}
+					isSelected={isHighAppearance}
+					onValueChange={globalStore.persistence.highAppearance.set}
+					aria-label={`${isHighAppearance ? '关闭' : '开启'}全局背景图片和磨砂效果`}
 				>
 					全局背景图片和磨砂效果
 				</SwitchItem>

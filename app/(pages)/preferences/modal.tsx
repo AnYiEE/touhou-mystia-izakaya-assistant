@@ -18,7 +18,7 @@ export function PreferencesModalDefault() {
 export default function PreferencesModal() {
 	const router = useRouter();
 
-	const isShowBackgroundImage = store.persistence.backgroundImage.use();
+	const isHighAppearance = store.persistence.highAppearance.use();
 
 	const handleClose = useCallback(() => {
 		// Delay closing to allow time for exit animation.
@@ -30,15 +30,15 @@ export default function PreferencesModal() {
 	return (
 		<Modal
 			defaultOpen
-			backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
+			backdrop={isHighAppearance ? 'blur' : 'opaque'}
 			scrollBehavior="inside"
 			size="3xl"
 			onClose={handleClose}
 			classNames={{
-				base: isShowBackgroundImage ? 'bg-blend-mystia' : 'bg-background dark:bg-content1',
+				base: isHighAppearance ? 'bg-blend-mystia' : 'bg-background dark:bg-content1',
 				closeButton: twJoin(
 					'transition-background',
-					isShowBackgroundImage && 'hover:bg-content1 dark:hover:bg-content2'
+					isHighAppearance && 'hover:bg-content1 dark:hover:bg-content2'
 				),
 			}}
 		>

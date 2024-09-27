@@ -52,7 +52,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 	const openWindow = useViewInNewWindow();
 	const vibrate = useVibrate();
 
-	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
 	const currentCustomerData = customerStore.shared.customer.data.use();
 	const selectedCustomerBeverageTags = customerStore.shared.customer.beverageTags.use();
@@ -310,7 +310,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 							aria-label="选择或输入酒水名称"
 							title="选择或输入酒水名称"
 							popoverProps={{
-								motionProps: isShowBackgroundImage
+								motionProps: isHighAppearance
 									? {
 											initial: {},
 										}
@@ -319,11 +319,11 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 							classNames={{
 								base: twJoin(
 									'data-[slot="input-wrapper"]:[&_div]:!bg-default/40 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:opacity-hover data-[slot="input-wrapper"]:[&_div]:transition-opacity',
-									isShowBackgroundImage && 'backdrop-blur'
+									isHighAppearance && 'backdrop-blur'
 								),
 								listboxWrapper:
 									'[&_li]:transition-background data-[hover=true]:[&_li]:!bg-default-200/40',
-								popoverContent: twJoin(isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'),
+								popoverContent: twJoin(isHighAppearance && 'bg-content1/70 backdrop-blur-lg'),
 							}}
 						>
 							{({value}) => (
@@ -353,7 +353,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 							aria-label="选择顾客所点单的酒水标签"
 							title="选择顾客所点单的酒水标签"
 							popoverProps={{
-								motionProps: isShowBackgroundImage
+								motionProps: isHighAppearance
 									? {
 											initial: {},
 										}
@@ -363,10 +363,10 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 								base: 'w-2/3 md:w-full',
 								listboxWrapper:
 									'[&_li]:transition-background focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40',
-								popoverContent: twJoin(isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'),
+								popoverContent: twJoin(isHighAppearance && 'bg-content1/70 backdrop-blur-lg'),
 								trigger: twJoin(
 									'bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover',
-									isShowBackgroundImage && 'backdrop-blur'
+									isHighAppearance && 'backdrop-blur'
 								),
 							}}
 						>
@@ -380,7 +380,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 									endContent={<FontAwesomeIcon icon={faChevronDown} />}
 									size="sm"
 									variant="flat"
-									className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
+									className={twJoin(isHighAppearance && 'backdrop-blur')}
 								>
 									DLC
 								</Button>
@@ -408,7 +408,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 									endContent={<FontAwesomeIcon icon={faChevronDown} />}
 									size="sm"
 									variant="flat"
-									className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
+									className={twJoin(isHighAppearance && 'backdrop-blur')}
 								>
 									条目
 								</Button>
@@ -446,7 +446,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 							aria-label="选择表格每页最大行数"
 							title="选择表格每页最大行数"
 							popoverProps={{
-								motionProps: isShowBackgroundImage
+								motionProps: isHighAppearance
 									? {
 											initial: {},
 										}
@@ -456,16 +456,16 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 								base: 'min-w-16',
 								listboxWrapper: twJoin(
 									'[&_li]:transition-background',
-									isShowBackgroundImage &&
+									isHighAppearance &&
 										'focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40'
 								),
 								popoverContent: twJoin(
 									'min-w-20',
-									isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'
+									isHighAppearance && 'bg-content1/70 backdrop-blur-lg'
 								),
 								trigger: twJoin(
 									'h-6 min-h-6 bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover',
-									isShowBackgroundImage && 'backdrop-blur'
+									isHighAppearance && 'backdrop-blur'
 								),
 								value: '!text-default-400',
 							}}
@@ -485,7 +485,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 			allBeverageNames,
 			allBeverageTags,
 			filteredData.length,
-			isShowBackgroundImage,
+			isHighAppearance,
 			searchValue,
 			selectedCustomerBeverageTags,
 			selectedDlcs,
@@ -509,13 +509,13 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 							customerStore.onBeverageTablePageChange(page);
 						}}
 						classNames={{
-							item: twJoin('bg-default-100/70', isShowBackgroundImage && 'backdrop-blur'),
+							item: twJoin('bg-default-100/70', isHighAppearance && 'backdrop-blur'),
 						}}
 					/>
 				)}
 			</div>
 		),
-		[isShowBackgroundImage, tableCurrentPage, tableCurrentPageItems.length, tableTotalPages, vibrate]
+		[isHighAppearance, tableCurrentPage, tableCurrentPageItems.length, tableTotalPages, vibrate]
 	);
 
 	return (
@@ -535,10 +535,10 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 			aria-label="酒水选择表格"
 			classNames={{
 				base: 'gap-2',
-				th: twJoin(isShowBackgroundImage && 'bg-default-100/70 backdrop-blur-sm'),
+				th: twJoin(isHighAppearance && 'bg-default-100/70 backdrop-blur-sm'),
 				wrapper: twJoin(
 					'xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)] xl:p-2',
-					isShowBackgroundImage && 'bg-content1/40 backdrop-blur'
+					isHighAppearance && 'bg-content1/40 backdrop-blur'
 				),
 			}}
 			ref={ref}

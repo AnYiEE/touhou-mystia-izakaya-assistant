@@ -41,13 +41,13 @@ export default memo<IProps>(function Content({data}) {
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
 	const [openedPopover] = useOpenedItemPopover(popoverCardRef);
 
-	// const isShowBackgroundImage = store.persistence.backgroundImage.use();
+	// const isHighAppearance = store.persistence.highAppearance.use();
 
 	return data.map(({category, dlc, effect, from, name, type}, dataIndex) => (
 		<Popover
 			showArrow
 			key={dataIndex}
-			// backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
+			// backdrop={isHighAppearance ? 'blur' : 'opaque'}
 			isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}
 		>
 			<ItemPopoverCard.Trigger>

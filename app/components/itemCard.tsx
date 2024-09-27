@@ -13,7 +13,7 @@ interface IProps extends Omit<CardProps, 'className' | 'classNames'> {
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function ItemCard({name, description, image, ...cardProps}, ref) {
-		const isShowBackgroundImage = store.persistence.backgroundImage.use();
+		const isHighAppearance = store.persistence.highAppearance.use();
 
 		return (
 			<Card
@@ -22,7 +22,7 @@ export default memo(
 				classNames={{
 					base: twJoin(
 						'justify-center',
-						isShowBackgroundImage &&
+						isHighAppearance &&
 							'bg-background data-[hover=true]:bg-content1 dark:bg-content1 dark:data-[hover=true]:bg-content2'
 					),
 				}}

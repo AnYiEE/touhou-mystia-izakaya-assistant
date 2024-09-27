@@ -122,7 +122,7 @@ export default function Navbar() {
 	const startProgress = useProgress();
 	const [isMenuOpened, toggleMenuOpened] = useReducer(toggleBoolean, false);
 
-	const isShowBackgroundImage = store.persistence.backgroundImage.use();
+	const isHighAppearance = store.persistence.highAppearance.use();
 
 	// Support parallel routing pages.
 	const shouldShowPreferences = pathname !== '/' && pathname !== '/about';
@@ -131,7 +131,7 @@ export default function Navbar() {
 		<NextUINavbar
 			isBordered
 			shouldHideOnScroll
-			isBlurred={isShowBackgroundImage}
+			isBlurred={isHighAppearance}
 			maxWidth="xl"
 			isMenuOpen={isMenuOpened}
 			onMenuOpenChange={toggleMenuOpened}
@@ -183,7 +183,7 @@ export default function Navbar() {
 										classNames={{
 											content: twJoin(
 												'min-w-24 p-0',
-												isShowBackgroundImage && 'bg-background/70 backdrop-saturate-150'
+												isHighAppearance && 'bg-background/70 backdrop-saturate-150'
 											),
 										}}
 									>

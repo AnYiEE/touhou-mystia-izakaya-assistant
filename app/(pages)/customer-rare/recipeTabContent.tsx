@@ -53,7 +53,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 	const openWindow = useViewInNewWindow();
 	const vibrate = useVibrate();
 
-	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
 	const currentCustomerData = customerStore.shared.customer.data.use();
 	const currentCustomerPopular = customerStore.shared.customer.popular.use();
@@ -440,7 +440,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 							aria-label="选择或输入料理名称"
 							title="选择或输入料理名称"
 							popoverProps={{
-								motionProps: isShowBackgroundImage
+								motionProps: isHighAppearance
 									? {
 											initial: {},
 										}
@@ -449,11 +449,11 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 							classNames={{
 								base: twJoin(
 									'data-[slot="input-wrapper"]:[&_div]:!bg-default/40 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:opacity-hover data-[slot="input-wrapper"]:[&_div]:transition-opacity',
-									isShowBackgroundImage && 'backdrop-blur'
+									isHighAppearance && 'backdrop-blur'
 								),
 								listboxWrapper:
 									'[&_li]:transition-background data-[hover=true]:[&_li]:!bg-default-200/40',
-								popoverContent: twJoin(isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'),
+								popoverContent: twJoin(isHighAppearance && 'bg-content1/70 backdrop-blur-lg'),
 							}}
 						>
 							{({value}) => (
@@ -483,7 +483,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 							aria-label="选择顾客所点单的料理标签"
 							title="选择顾客所点单的料理标签"
 							popoverProps={{
-								motionProps: isShowBackgroundImage
+								motionProps: isHighAppearance
 									? {
 											initial: {},
 										}
@@ -493,10 +493,10 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 								base: 'w-2/3 md:w-full',
 								listboxWrapper:
 									'[&_li]:transition-background focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40',
-								popoverContent: twJoin(isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'),
+								popoverContent: twJoin(isHighAppearance && 'bg-content1/70 backdrop-blur-lg'),
 								trigger: twJoin(
 									'bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover',
-									isShowBackgroundImage && 'backdrop-blur'
+									isHighAppearance && 'backdrop-blur'
 								),
 							}}
 						>
@@ -510,7 +510,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 									endContent={<FontAwesomeIcon icon={faChevronDown} />}
 									size="sm"
 									variant="flat"
-									className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
+									className={twJoin(isHighAppearance && 'backdrop-blur')}
 								>
 									厨具
 								</Button>
@@ -541,7 +541,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 									endContent={<FontAwesomeIcon icon={faChevronDown} />}
 									size="sm"
 									variant="flat"
-									className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
+									className={twJoin(isHighAppearance && 'backdrop-blur')}
 								>
 									DLC
 								</Button>
@@ -569,7 +569,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 									endContent={<FontAwesomeIcon icon={faChevronDown} />}
 									size="sm"
 									variant="flat"
-									className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
+									className={twJoin(isHighAppearance && 'backdrop-blur')}
 								>
 									条目
 								</Button>
@@ -607,7 +607,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 							aria-label="选择表格每页最大行数"
 							title="选择表格每页最大行数"
 							popoverProps={{
-								motionProps: isShowBackgroundImage
+								motionProps: isHighAppearance
 									? {
 											initial: {},
 										}
@@ -617,16 +617,16 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 								base: 'min-w-16',
 								listboxWrapper: twJoin(
 									'[&_li]:transition-background',
-									isShowBackgroundImage &&
+									isHighAppearance &&
 										'focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40'
 								),
 								popoverContent: twJoin(
 									'min-w-20',
-									isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'
+									isHighAppearance && 'bg-content1/70 backdrop-blur-lg'
 								),
 								trigger: twJoin(
 									'h-6 min-h-6 bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover',
-									isShowBackgroundImage && 'backdrop-blur'
+									isHighAppearance && 'backdrop-blur'
 								),
 								value: '!text-default-400',
 							}}
@@ -647,7 +647,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 			allRecipeNames,
 			allRecipeTags,
 			filteredData.length,
-			isShowBackgroundImage,
+			isHighAppearance,
 			searchValue,
 			selectedCookers,
 			selectedCustomerPositiveTags,
@@ -672,13 +672,13 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 							customerStore.onRecipeTablePageChange(page);
 						}}
 						classNames={{
-							item: twJoin('bg-default-100/70', isShowBackgroundImage && 'backdrop-blur'),
+							item: twJoin('bg-default-100/70', isHighAppearance && 'backdrop-blur'),
 						}}
 					/>
 				)}
 			</div>
 		),
-		[isShowBackgroundImage, tableCurrentPage, tableCurrentPageItems.length, tableTotalPages, vibrate]
+		[isHighAppearance, tableCurrentPage, tableCurrentPageItems.length, tableTotalPages, vibrate]
 	);
 
 	return (
@@ -698,10 +698,10 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 			aria-label="料理选择表格"
 			classNames={{
 				base: 'gap-2',
-				th: twJoin(isShowBackgroundImage && 'bg-default-100/70 backdrop-blur-sm'),
+				th: twJoin(isHighAppearance && 'bg-default-100/70 backdrop-blur-sm'),
 				wrapper: twJoin(
 					'xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)] xl:p-2',
-					isShowBackgroundImage && 'bg-content1/40 backdrop-blur'
+					isHighAppearance && 'bg-content1/40 backdrop-blur'
 				),
 			}}
 			ref={ref}

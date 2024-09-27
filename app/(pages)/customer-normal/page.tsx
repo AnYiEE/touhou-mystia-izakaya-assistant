@@ -48,7 +48,7 @@ export default function CustomerNormal() {
 	const {breakpoint} = useBreakpoint(tachieBreakPoint, 'noTachie');
 	const vibrate = useVibrate();
 
-	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+	const isHighAppearance = globalStore.persistence.highAppearance.use();
 	const isShowTachie = globalStore.persistence.tachie.use();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
@@ -310,7 +310,7 @@ export default function CustomerNormal() {
 					selectedKey={selectedTabKey}
 					onSelectionChange={onTabSelectionChange}
 					classNames={{
-						tabList: twJoin('grid grid-cols-4 bg-default/40', isShowBackgroundImage && 'backdrop-blur'),
+						tabList: twJoin('grid grid-cols-4 bg-default/40', isHighAppearance && 'backdrop-blur'),
 					}}
 				>
 					<Tab key="customer" title="普客" className="relative flex flex-col">

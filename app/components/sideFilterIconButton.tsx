@@ -41,9 +41,9 @@ export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function SideFilterIconButton({className, selectConfig, ...props}, ref) {
 		const vibrate = useVibrate();
 
-		const instance_special = customerStore.instances.customer_special.get();
+		const isHighAppearance = globalStore.persistence.highAppearance.use();
 
-		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+		const instance_special = customerStore.instances.customer_special.get();
 
 		const hasFilter = useMemo(() => selectConfig.some(({selectedKeys}) => selectedKeys.length > 0), [selectConfig]);
 
@@ -76,7 +76,7 @@ export default memo(
 
 		return (
 			<Popover
-				// backdrop={isShowBackgroundImage ? 'blur' : 'opaque'}
+				// backdrop={isHighAppearance ? 'blur' : 'opaque'}
 				placement="left"
 				onOpenChange={handleOpenChange}
 				ref={ref}
@@ -108,7 +108,7 @@ export default memo(
 									label={label}
 									onSelectionChange={handleSelectionChange(setSelectedKeys)}
 									popoverProps={{
-										motionProps: isShowBackgroundImage
+										motionProps: isHighAppearance
 											? {
 													initial: {},
 												}
@@ -117,15 +117,13 @@ export default memo(
 									classNames={{
 										listboxWrapper: twJoin(
 											'[&_li]:transition-background',
-											isShowBackgroundImage &&
+											isHighAppearance &&
 												'focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40'
 										),
-										popoverContent: twJoin(
-											isShowBackgroundImage && 'bg-content1/70 backdrop-blur-lg'
-										),
+										popoverContent: twJoin(isHighAppearance && 'bg-content1/70 backdrop-blur-lg'),
 										trigger: twJoin(
 											'transition-background',
-											isShowBackgroundImage
+											isHighAppearance
 												? 'bg-default-100/70 data-[hover=true]:bg-default-200/70'
 												: 'data-[hover=true]:bg-default-200'
 										),

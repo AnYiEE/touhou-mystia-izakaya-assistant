@@ -38,7 +38,7 @@ interface IProps {
 }
 
 export default function Providers({children, locale, themeProps}: PropsWithChildren<IProps>) {
-	globalStore.persistence.backgroundImage.onChange((isEnabled) => {
+	globalStore.persistence.highAppearance.onChange((isEnabled) => {
 		document.body.classList.toggle('bg-blend-mystia-pseudo', isEnabled);
 	});
 

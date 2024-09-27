@@ -23,7 +23,7 @@ interface IProps {}
 export default forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(_props, ref) {
 	const vibrate = useVibrate();
 
-	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
 	const currentCustomerData = customerStore.shared.customer.data.use();
 	const currentCustomerPopular = customerStore.shared.customer.popular.use();
@@ -48,7 +48,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(
 			fullWidth
 			shadow="sm"
 			classNames={{
-				base: twJoin(isShowBackgroundImage && 'bg-content1/40 backdrop-blur'),
+				base: twJoin(isHighAppearance && 'bg-content1/40 backdrop-blur'),
 			}}
 			ref={ref}
 		>

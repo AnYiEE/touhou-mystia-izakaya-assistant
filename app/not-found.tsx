@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default function NotFound() {
-	const isShowBackgroundImage = store.persistence.backgroundImage.use();
+	const isHighAppearance = store.persistence.highAppearance.use();
 
 	return (
 		<div className="flex h-full items-center justify-center gap-4">
@@ -25,7 +25,7 @@ export default function NotFound() {
 				size="sm"
 				variant="flat"
 				href="/"
-				className={twJoin(isShowBackgroundImage && 'backdrop-blur')}
+				className={twJoin(isHighAppearance && 'backdrop-blur')}
 			>
 				返回首页
 			</Button>

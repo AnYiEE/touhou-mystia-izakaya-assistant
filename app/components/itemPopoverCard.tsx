@@ -181,12 +181,12 @@ const ShareButton = memo(
 interface ITriggerProps extends PopoverTriggerProps, HTMLAttributes<HTMLButtonElement> {}
 
 const Trigger = memo<ITriggerProps>(function ItemPopoverCardITrigger({className, ...props}) {
-	const isShowBackgroundImage = store.persistence.backgroundImage.use();
+	const isHighAppearance = store.persistence.highAppearance.use();
 
 	return (
 		<PopoverTrigger
 			className={twMerge(
-				isShowBackgroundImage &&
+				isHighAppearance &&
 					'aria-expanded:bg-background/40 aria-expanded:opacity-100 aria-expanded:backdrop-blur dark:aria-expanded:bg-content1/40',
 				className
 			)}

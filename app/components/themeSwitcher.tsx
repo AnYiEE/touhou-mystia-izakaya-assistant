@@ -39,7 +39,7 @@ export default memo<IProps>(function ThemeSwitcher({isMenu}) {
 	const {theme, setTheme} = useTheme();
 	const [selectedTheme, setSelectedTheme] = useState(new Set([theme]) as SelectionSet);
 
-	const isShowBackgroundImage = store.persistence.backgroundImage.use();
+	const isHighAppearance = store.persistence.highAppearance.use();
 
 	const onSelectedThemeChange = useCallback(
 		(value: Selection) => {
@@ -99,7 +99,7 @@ export default memo<IProps>(function ThemeSwitcher({isMenu}) {
 		<Dropdown
 			showArrow
 			classNames={{
-				content: twJoin('min-w-28 p-0', isShowBackgroundImage && 'bg-background/70 backdrop-saturate-150'),
+				content: twJoin('min-w-28 p-0', isHighAppearance && 'bg-background/70 backdrop-saturate-150'),
 			}}
 		>
 			<Tooltip showArrow content={ThemeLabel.switcher}>

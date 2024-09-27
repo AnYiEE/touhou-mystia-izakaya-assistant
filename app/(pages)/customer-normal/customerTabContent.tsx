@@ -22,7 +22,7 @@ export default memo(
 
 		const currentCustomerName = customerStore.shared.customer.name.use();
 
-		const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
+		const isHighAppearance = globalStore.persistence.highAppearance.use();
 
 		const handleButtonPress = useCallback(() => {
 			vibrate();
@@ -87,7 +87,7 @@ export default memo(
 						variant="flat"
 						onPress={handleButtonPress}
 						aria-label={customerTabStyle.ariaLabel}
-						className={twJoin('h-4 w-4/5 text-default-300', isShowBackgroundImage && 'backdrop-blur')}
+						className={twJoin('h-4 w-4/5 text-default-300', isHighAppearance && 'backdrop-blur')}
 					>
 						{customerTabStyle.buttonNode}
 					</Button>
