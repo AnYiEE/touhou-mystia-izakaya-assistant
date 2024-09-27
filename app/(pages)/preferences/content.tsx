@@ -50,6 +50,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 	);
 
 	const onClearPopularTagButtonPress = useCallback(() => {
+		globalStore.persistence.popular.isNegative.set(false);
 		globalStore.selectedPopularTag.set(new Set());
 		resetRecipeTablePage();
 	}, [resetRecipeTablePage]);
