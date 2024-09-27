@@ -5,7 +5,7 @@ import {useVibrate} from '@/hooks';
 
 import {Badge, Button, ScrollShadow} from '@nextui-org/react';
 
-import Placeholder from './placeholder';
+import Placeholder from '@/components/placeholder';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 

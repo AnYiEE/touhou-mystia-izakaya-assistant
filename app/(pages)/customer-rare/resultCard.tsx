@@ -8,7 +8,7 @@ import {Button, Card} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-icons';
 
-import Placeholder from './placeholder';
+import Placeholder from '@/components/placeholder';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';

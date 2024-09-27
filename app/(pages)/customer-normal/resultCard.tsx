@@ -8,7 +8,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark} from '@fortawesome/free-solid-svg-icons';
 
 import {Plus, UnknownItem} from '@/(pages)/customer-rare/resultCard';
-import Placeholder from './placeholder';
+import Placeholder from '@/components/placeholder';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 

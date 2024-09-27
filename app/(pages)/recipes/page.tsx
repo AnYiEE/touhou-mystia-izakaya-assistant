@@ -1,6 +1,7 @@
 'use client';
 
 import {useCallback, useMemo} from 'react';
+import {twJoin} from 'tailwind-merge';
 
 import {
 	useFilteredData,
@@ -16,6 +17,7 @@ import {
 import Content from '@/(pages)/recipes/content';
 import Loading from '@/loading';
 import FakeNameContent from '@/components/fakeNameContent';
+import Placeholder from '@/components/placeholder';
 import SideButtonGroup from '@/components/sideButtonGroup';
 import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
@@ -220,8 +222,16 @@ export default function Recipes() {
 		);
 	}
 
+	const isEmpty = sortedData.length === 0;
+
 	return (
-		<div className="grid h-min grid-cols-2 justify-items-center gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
+		<div
+			className={twJoin(
+				isEmpty
+					? 'flex justify-center'
+					: 'grid h-min grid-cols-2 justify-items-center gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7'
+			)}
+		>
 			{!shouldSkipProcessData && (
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />
@@ -230,7 +240,7 @@ export default function Recipes() {
 				</SideButtonGroup>
 			)}
 
-			<Content data={sortedData} />
+			{isEmpty ? <Placeholder>数据为空</Placeholder> : <Content data={sortedData} />}
 		</div>
 	);
 }

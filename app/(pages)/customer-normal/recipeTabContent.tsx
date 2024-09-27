@@ -25,10 +25,10 @@ import {
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faChevronDown, faMagnifyingGlass, faPlus, faTags} from '@fortawesome/free-solid-svg-icons';
 
-import Placeholder from './placeholder';
 import TagGroup from './tagGroup';
 import Dropdown from '@/components/dropdown';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
+import Placeholder from '@/components/placeholder';
 import Popover from '@/components/popover';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
