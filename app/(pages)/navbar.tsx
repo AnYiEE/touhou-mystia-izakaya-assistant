@@ -125,8 +125,7 @@ export default function Navbar() {
 	const isShowBackgroundImage = store.persistence.backgroundImage.use();
 
 	// Support parallel routing pages.
-	const shouldShowPreferences =
-		pathname === '/customer-normal' || pathname === '/customer-rare' || pathname === '/preferences';
+	const shouldShowPreferences = pathname !== '/' && pathname !== '/about';
 
 	return (
 		<NextUINavbar

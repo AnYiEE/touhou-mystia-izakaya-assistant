@@ -1,4 +1,3 @@
-import {type ReactNode} from 'react';
 import {type Metadata} from 'next';
 
 import {siteConfig} from '@/configs';
@@ -16,17 +15,4 @@ export const metadata: Metadata = {
 	keywords: [...keywords.slice(0, 18), ...customers],
 };
 
-export default function CustomerLayout({
-	children,
-	preferences,
-}: Readonly<{
-	children: ReactNode;
-	preferences: ReactNode;
-}>) {
-	return (
-		<>
-			{children}
-			{preferences}
-		</>
-	);
-}
+export {WithPreference as default} from '@/(pages)/layouts';

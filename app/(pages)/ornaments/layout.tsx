@@ -1,4 +1,3 @@
-import {type ReactNode} from 'react';
 import {type Metadata} from 'next';
 
 import {siteConfig} from '@/configs';
@@ -16,10 +15,4 @@ export const metadata: Metadata = {
 	keywords: [...keywords.slice(0, 18), ...ornaments],
 };
 
-export default function OrnamentsLayout({
-	children,
-}: Readonly<{
-	children: ReactNode;
-}>) {
-	return children;
-}
+export {WithPreference as default} from '@/(pages)/layouts';
