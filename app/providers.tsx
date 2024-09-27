@@ -38,14 +38,18 @@ interface IProps {
 }
 
 export default function Providers({children, locale, themeProps}: PropsWithChildren<IProps>) {
-	const router = useRouter();
-	const {theme, setTheme} = useTheme();
+	globalStore.persistence.backgroundImage.onChange((isEnabled) => {
+		document.body.classList.toggle('bg-blend-mystia-pseudo', isEnabled);
+	});
+
+	// Initialize current popular tag based on the persistence data.
+	const globalPopular = globalStore.persistence.popular.use();
+	customerNormalStore.shared.customer.popular.assign(globalPopular);
+	customerRareStore.shared.customer.popular.assign(globalPopular);
+	ingredientsStore.shared.popular.assign(globalPopular);
+	recipesStore.shared.popular.assign(globalPopular);
 
 	useEffect(() => {
-		globalStore.persistence.backgroundImage.onChange((isEnabled) => {
-			document.body.classList.toggle('bg-blend-mystia-pseudo', isEnabled);
-		});
-
 		// If the saved version is not set or outdated, initialize it with the current version.
 		// When an outdated version is detected, the current tab will update the saved version in local storage.
 		// Other tabs will monitor changes in the saved version and reload the page as needed. See below.
@@ -53,13 +57,6 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 		if (savedVersion === null || compareVersions(version, savedVersion) === 1) {
 			globalStore.persistence.version.set(version);
 		}
-
-		// Initialize current popular tag based on the persistence data.
-		const globalPopular = globalStore.persistence.popular.get();
-		customerNormalStore.shared.customer.popular.set(globalPopular);
-		customerRareStore.shared.customer.popular.set(globalPopular);
-		ingredientsStore.shared.popular.set(globalPopular);
-		recipesStore.shared.popular.set(globalPopular);
 
 		// Synchronize state across multiple tabs as needed.
 		const updateStore = debounce((event: StorageEvent) => {
@@ -117,6 +114,8 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 		};
 	}, []);
 
+	const {theme, setTheme} = useTheme();
+
 	useEffect(() => {
 		// Synchronize theme across multiple tabs as needed.
 		const updateTheme = debounce((event: StorageEvent) => {
@@ -135,6 +134,8 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 			window.removeEventListener('storage', updateTheme);
 		};
 	}, [setTheme, theme]);
+
+	const router = useRouter();
 
 	return (
 		<NextUIProvider locale={locale} navigate={router.push}>

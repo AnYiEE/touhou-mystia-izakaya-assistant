@@ -23,43 +23,39 @@ import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterI
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
-import {globalStore, recipesStore} from '@/stores';
+import {recipesStore as store} from '@/stores';
 import {checkArrayContainsOf, checkArraySubsetOf} from '@/utils';
 
 export default function Recipes() {
-	globalStore.persistence.popular.onChange((popularData) => {
-		recipesStore.shared.popular.assign(popularData);
-	});
-
 	const shouldSkipProcessData = useSkipProcessItemData();
 
-	const currentPopular = recipesStore.shared.popular.use();
+	const currentPopular = store.shared.popular.use();
 
-	const instance = recipesStore.instance.get();
+	const instance = store.instance.get();
 
-	const allNames = recipesStore.names.use();
-	const allDlcs = recipesStore.dlcs.get();
-	const allLevels = recipesStore.levels.get();
-	const allCookers = recipesStore.cookers.get();
-	const allIngredients = recipesStore.ingredients.get();
-	const allNegativeTags = recipesStore.negativeTags.get();
-	const allPositiveTags = recipesStore.positiveTags.get();
+	const allNames = store.names.use();
+	const allDlcs = store.dlcs.get();
+	const allLevels = store.levels.get();
+	const allCookers = store.cookers.get();
+	const allIngredients = store.ingredients.get();
+	const allNegativeTags = store.negativeTags.get();
+	const allPositiveTags = store.positiveTags.get();
 
-	const pinyinSortState = recipesStore.persistence.pinyinSortState.use();
-	const searchValue = recipesStore.persistence.searchValue.use();
+	const pinyinSortState = store.persistence.pinyinSortState.use();
+	const searchValue = store.persistence.searchValue.use();
 
 	const throttledSearchValue = useThrottle(searchValue);
 	const searchResult = useSearchResult(instance, throttledSearchValue);
 
-	const filterDlcs = recipesStore.persistence.filters.dlcs.use();
-	const filterLevels = recipesStore.persistence.filters.levels.use();
-	const filterCookers = recipesStore.persistence.filters.cookers.use();
-	const filterIngredients = recipesStore.persistence.filters.ingredients.use();
-	const filterNoIngredients = recipesStore.persistence.filters.noIngredients.use();
-	const filterNegativeTags = recipesStore.persistence.filters.negativeTags.use();
-	const filterNoNegativeTags = recipesStore.persistence.filters.noNegativeTags.use();
-	const filterPositiveTags = recipesStore.persistence.filters.positiveTags.use();
-	const filterNoPositiveTags = recipesStore.persistence.filters.noPositiveTags.use();
+	const filterDlcs = store.persistence.filters.dlcs.use();
+	const filterLevels = store.persistence.filters.levels.use();
+	const filterCookers = store.persistence.filters.cookers.use();
+	const filterIngredients = store.persistence.filters.ingredients.use();
+	const filterNoIngredients = store.persistence.filters.noIngredients.use();
+	const filterNegativeTags = store.persistence.filters.negativeTags.use();
+	const filterNoNegativeTags = store.persistence.filters.noNegativeTags.use();
+	const filterPositiveTags = store.persistence.filters.positiveTags.use();
+	const filterNoPositiveTags = store.persistence.filters.noPositiveTags.use();
 
 	const dataWithPopular = useMemo(
 		() =>
@@ -122,13 +118,13 @@ export default function Recipes() {
 
 	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
 
-	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, recipesStore.persistence.pinyinSortState.set);
+	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, store.persistence.pinyinSortState.set);
 
 	const searchConfig = useSearchConfig({
 		label: '选择或输入料理名称',
 		searchItems: allNames,
 		searchValue,
-		setSearchValue: recipesStore.persistence.searchValue.set,
+		setSearchValue: store.persistence.searchValue.set,
 		spriteTarget: 'recipe',
 	});
 
@@ -139,58 +135,58 @@ export default function Recipes() {
 					items: allDlcs,
 					label: 'DLC',
 					selectedKeys: filterDlcs,
-					setSelectedKeys: recipesStore.persistence.filters.dlcs.set,
+					setSelectedKeys: store.persistence.filters.dlcs.set,
 				},
 				{
 					items: allPositiveTags,
 					label: '正特性（包含）',
 					selectedKeys: filterPositiveTags,
-					setSelectedKeys: recipesStore.persistence.filters.positiveTags.set,
+					setSelectedKeys: store.persistence.filters.positiveTags.set,
 				},
 				{
 					items: allPositiveTags,
 					label: '正特性（排除）',
 					selectedKeys: filterNoPositiveTags,
-					setSelectedKeys: recipesStore.persistence.filters.noPositiveTags.set,
+					setSelectedKeys: store.persistence.filters.noPositiveTags.set,
 				},
 				{
 					items: allNegativeTags,
 					label: '反特性（包含）',
 					selectedKeys: filterNegativeTags,
-					setSelectedKeys: recipesStore.persistence.filters.negativeTags.set,
+					setSelectedKeys: store.persistence.filters.negativeTags.set,
 				},
 				{
 					items: allNegativeTags,
 					label: '反特性（排除）',
 					selectedKeys: filterNoNegativeTags,
-					setSelectedKeys: recipesStore.persistence.filters.noNegativeTags.set,
+					setSelectedKeys: store.persistence.filters.noNegativeTags.set,
 				},
 				{
 					items: allIngredients,
 					label: '食材（包含）',
 					selectedKeys: filterIngredients,
-					setSelectedKeys: recipesStore.persistence.filters.ingredients.set,
+					setSelectedKeys: store.persistence.filters.ingredients.set,
 					spriteTarget: 'ingredient',
 				},
 				{
 					items: allIngredients,
 					label: '食材（排除）',
 					selectedKeys: filterNoIngredients,
-					setSelectedKeys: recipesStore.persistence.filters.noIngredients.set,
+					setSelectedKeys: store.persistence.filters.noIngredients.set,
 					spriteTarget: 'ingredient',
 				},
 				{
 					items: allCookers,
 					label: '厨具',
 					selectedKeys: filterCookers,
-					setSelectedKeys: recipesStore.persistence.filters.cookers.set,
+					setSelectedKeys: store.persistence.filters.cookers.set,
 					spriteTarget: 'cooker',
 				},
 				{
 					items: allLevels,
 					label: '等级',
 					selectedKeys: filterLevels,
-					setSelectedKeys: recipesStore.persistence.filters.levels.set,
+					setSelectedKeys: store.persistence.filters.levels.set,
 				},
 			] as const satisfies TSelectConfig,
 		[

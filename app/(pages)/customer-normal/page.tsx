@@ -45,10 +45,6 @@ export default function CustomerNormal() {
 	customerStore.shared.customer.popular.onChange(customerStore.evaluateMealResult);
 	customerStore.shared.recipe.tagsWithPopular.onChange(customerStore.evaluateMealResult);
 
-	globalStore.persistence.popular.onChange((popularData) => {
-		customerStore.shared.customer.popular.assign(popularData);
-	});
-
 	const {breakpoint} = useBreakpoint(tachieBreakPoint, 'noTachie');
 	const vibrate = useVibrate();
 

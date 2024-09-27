@@ -23,38 +23,34 @@ import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterI
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
-import {globalStore, ingredientsStore} from '@/stores';
+import {ingredientsStore as store} from '@/stores';
 import {checkArrayContainsOf, checkArraySubsetOf} from '@/utils';
 
 export default function Ingredients() {
-	globalStore.persistence.popular.onChange((popularData) => {
-		ingredientsStore.shared.popular.assign(popularData);
-	});
-
 	const shouldSkipProcessData = useSkipProcessItemData();
 
-	const currentPopular = ingredientsStore.shared.popular.use();
+	const currentPopular = store.shared.popular.use();
 
-	const instance = ingredientsStore.instance.get();
+	const instance = store.instance.get();
 
-	const allNames = ingredientsStore.names.use();
-	const allDlcs = ingredientsStore.dlcs.get();
-	const allLevels = ingredientsStore.levels.get();
-	const allTags = ingredientsStore.tags.get();
-	const allTypes = ingredientsStore.types.get();
+	const allNames = store.names.use();
+	const allDlcs = store.dlcs.get();
+	const allLevels = store.levels.get();
+	const allTags = store.tags.get();
+	const allTypes = store.types.get();
 
-	const pinyinSortState = ingredientsStore.persistence.pinyinSortState.use();
-	const searchValue = ingredientsStore.persistence.searchValue.use();
+	const pinyinSortState = store.persistence.pinyinSortState.use();
+	const searchValue = store.persistence.searchValue.use();
 
 	const throttledSearchValue = useThrottle(searchValue);
 	const searchResult = useSearchResult(instance, throttledSearchValue);
 
-	const filterDlcs = ingredientsStore.persistence.filters.dlcs.use();
-	const filterLevels = ingredientsStore.persistence.filters.levels.use();
-	const filterTags = ingredientsStore.persistence.filters.tags.use();
-	const filterNoTags = ingredientsStore.persistence.filters.noTags.use();
-	const filterTypes = ingredientsStore.persistence.filters.types.use();
-	const filterNoTypes = ingredientsStore.persistence.filters.noTypes.use();
+	const filterDlcs = store.persistence.filters.dlcs.use();
+	const filterLevels = store.persistence.filters.levels.use();
+	const filterTags = store.persistence.filters.tags.use();
+	const filterNoTags = store.persistence.filters.noTags.use();
+	const filterTypes = store.persistence.filters.types.use();
+	const filterNoTypes = store.persistence.filters.noTypes.use();
 
 	const dataWithPopular = useMemo(
 		() =>
@@ -86,13 +82,13 @@ export default function Ingredients() {
 
 	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
 
-	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, ingredientsStore.persistence.pinyinSortState.set);
+	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, store.persistence.pinyinSortState.set);
 
 	const searchConfig = useSearchConfig({
 		label: '选择或输入食材名称',
 		searchItems: allNames,
 		searchValue,
-		setSearchValue: ingredientsStore.persistence.searchValue.set,
+		setSearchValue: store.persistence.searchValue.set,
 		spriteTarget: 'ingredient',
 	});
 
@@ -103,37 +99,37 @@ export default function Ingredients() {
 					items: allDlcs,
 					label: 'DLC',
 					selectedKeys: filterDlcs,
-					setSelectedKeys: ingredientsStore.persistence.filters.dlcs.set,
+					setSelectedKeys: store.persistence.filters.dlcs.set,
 				},
 				{
 					items: allTags,
 					label: '食材标签（包含）',
 					selectedKeys: filterTags,
-					setSelectedKeys: ingredientsStore.persistence.filters.tags.set,
+					setSelectedKeys: store.persistence.filters.tags.set,
 				},
 				{
 					items: allTags,
 					label: '食材标签（排除）',
 					selectedKeys: filterNoTags,
-					setSelectedKeys: ingredientsStore.persistence.filters.noTags.set,
+					setSelectedKeys: store.persistence.filters.noTags.set,
 				},
 				{
 					items: allTypes,
 					label: '食材类别（包含）',
 					selectedKeys: filterTypes,
-					setSelectedKeys: ingredientsStore.persistence.filters.types.set,
+					setSelectedKeys: store.persistence.filters.types.set,
 				},
 				{
 					items: allTypes,
 					label: '食材类别（排除）',
 					selectedKeys: filterNoTypes,
-					setSelectedKeys: ingredientsStore.persistence.filters.noTypes.set,
+					setSelectedKeys: store.persistence.filters.noTypes.set,
 				},
 				{
 					items: allLevels,
 					label: '等级',
 					selectedKeys: filterLevels,
-					setSelectedKeys: ingredientsStore.persistence.filters.levels.set,
+					setSelectedKeys: store.persistence.filters.levels.set,
 				},
 			] as const satisfies TSelectConfig,
 		[
