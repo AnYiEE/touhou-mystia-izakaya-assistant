@@ -20,7 +20,7 @@ import {customerRatingColorMap, customerTagStyleMap} from './constants';
 import type {ICurrentCustomer} from './types';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {checkA11yConfirmKey, intersection, pinyinSort, toValue} from '@/utils';
+import {checkA11yConfirmKey, pinyinSort} from '@/utils';
 
 interface IProps {}
 
@@ -373,10 +373,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 					)}
 					{currentCustomerBeverageTags.length > 0 && (
 						<TagGroup>
-							{intersection(
-								customerStore.beverage.tags.get().map(toValue),
-								currentCustomerBeverageTags
-							).map((tag, index) => (
+							{currentCustomerBeverageTags.map((tag, index) => (
 								<Tooltip
 									key={index}
 									showArrow

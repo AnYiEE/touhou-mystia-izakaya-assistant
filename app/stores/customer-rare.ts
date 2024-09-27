@@ -138,8 +138,8 @@ const state = {
 				...instance_recipe
 					.getValuesByProp(instance_recipe.data, 'positiveTags')
 					.filter((tag) => !instance_recipe.blockedTags.has(tag)),
-				TAG_POPULAR_POSITIVE,
 				TAG_POPULAR_NEGATIVE,
+				TAG_POPULAR_POSITIVE,
 			] as TRecipeTag[]
 		)
 			.map(toValueObject)

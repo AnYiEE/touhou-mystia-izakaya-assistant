@@ -8,6 +8,7 @@ export const customerRatingColorMap = {
 
 export {
 	TabVisibilityState,
+	beverageTableColumns,
 	customerTabStyleMap,
 	ingredientTabStyleMap,
 	recipeTableColumns,

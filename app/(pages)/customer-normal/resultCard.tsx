@@ -104,6 +104,7 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 	const isShowBackgroundImage = globalStore.persistence.backgroundImage.use();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
+	const currentBeverageName = customerStore.shared.beverage.name.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 	const currentRating = customerStore.shared.customer.rating.use();
 	const currentSavedMeals = customerStore.persistence.meals.use();
@@ -142,7 +143,7 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 		}
 	}, [hideTooltip, isSaveButtonDisabled, isShowSaveButtonTooltip]);
 
-	if (currentRecipeData === null) {
+	if (currentBeverageName === null && currentRecipeData === null) {
 		if (currentCustomerName && currentSavedMeals[currentCustomerName]?.length) {
 			return null;
 		}
@@ -165,14 +166,31 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 			<div className="flex flex-col items-center gap-4 p-4 md:flex-row">
 				<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
 					<div className="flex items-center gap-2">
-						<Sprite
-							target="cooker"
-							name={instance_recipe.getPropsByName(currentRecipeData.name, 'cooker')}
-							size={2}
-						/>
-						<Tooltip showArrow content={currentRecipeData.name} offset={4}>
-							<Sprite target="recipe" name={currentRecipeData.name} size={2.5} />
-						</Tooltip>
+						{currentRecipeData ? (
+							<>
+								<Sprite
+									target="cooker"
+									name={instance_recipe.getPropsByName(currentRecipeData.name, 'cooker')}
+									size={2}
+								/>
+								<Tooltip showArrow content={currentRecipeData.name} offset={4}>
+									<Sprite target="recipe" name={currentRecipeData.name} size={2.5} />
+								</Tooltip>
+							</>
+						) : (
+							<>
+								<UnknownItem title="请选择料理" size={1.5} />
+								<UnknownItem title="请选择料理" />
+							</>
+						)}
+						<Plus />
+						{currentBeverageName ? (
+							<Tooltip showArrow content={currentBeverageName} offset={4}>
+								<Sprite target="beverage" name={currentBeverageName} size={2.5} />
+							</Tooltip>
+						) : (
+							<UnknownItem title="可选择酒水" />
+						)}
 					</div>
 					<Plus />
 					<IngredientsList />

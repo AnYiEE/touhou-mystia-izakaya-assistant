@@ -16,6 +16,7 @@ import {
 
 import {Tab, Tabs} from '@nextui-org/react';
 
+import BeverageTabContent from './beverageTabContent';
 import CustomerCard from './customerCard';
 import CustomerTabContent from './customerTabContent';
 import IngredientTabContent from './ingredientTabContent';
@@ -313,7 +314,7 @@ export default function CustomerNormal() {
 					selectedKey={selectedTabKey}
 					onSelectionChange={onTabSelectionChange}
 					classNames={{
-						tabList: twJoin('grid grid-cols-3 bg-default/40', isShowBackgroundImage && 'backdrop-blur'),
+						tabList: twJoin('grid grid-cols-4 bg-default/40', isShowBackgroundImage && 'backdrop-blur'),
 					}}
 				>
 					<Tab key="customer" title="普客" className="relative flex flex-col">
@@ -321,6 +322,9 @@ export default function CustomerNormal() {
 					</Tab>
 					<Tab isDisabled={currentCustomerName === null} key="recipe" title="料理">
 						<RecipeTabContent />
+					</Tab>
+					<Tab isDisabled={!currentCustomerName} key="beverage" title="酒水">
+						<BeverageTabContent />
 					</Tab>
 					<Tab
 						isDisabled={currentCustomerName === null || currentRecipeData === null}

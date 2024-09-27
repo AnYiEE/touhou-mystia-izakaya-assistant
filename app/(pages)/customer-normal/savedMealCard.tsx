@@ -43,7 +43,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(
 			ref={ref}
 		>
 			<div className="space-y-3 p-4 xl:space-y-2">
-				{savedCustomerMeal.map(({index: mealIndex, recipe, extraIngredients}, loopIndex) => (
+				{savedCustomerMeal.map(({index: mealIndex, beverage, recipe, extraIngredients}, loopIndex) => (
 					<Fragment key={loopIndex}>
 						<div className="flex flex-col items-center gap-4 md:flex-row">
 							<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
@@ -109,6 +109,21 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(
 										</Tooltip>
 										<PopoverContent>{recipe}</PopoverContent>
 									</Popover>
+									{beverage !== null && (
+										<>
+											<Plus size={0.75} />
+											<Popover showArrow offset={8}>
+												<Tooltip showArrow content={beverage} offset={4}>
+													<span className="flex cursor-pointer">
+														<PopoverTrigger>
+															<Sprite target="beverage" name={beverage} size={2} />
+														</PopoverTrigger>
+													</span>
+												</Tooltip>
+												<PopoverContent>{beverage}</PopoverContent>
+											</Popover>
+										</>
+									)}
 								</div>
 								<Plus size={0.75} />
 								{(() => {
@@ -163,6 +178,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(
 									variant="flat"
 									onPress={() => {
 										vibrate();
+										customerStore.shared.beverage.name.set(beverage);
 										customerStore.shared.recipe.data.set({
 											extraIngredients,
 											name: recipe,
@@ -170,7 +186,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(
 										trackEvent(
 											TrackCategory.Click,
 											'Select Button',
-											`${recipe}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
+											`${recipe}${beverage === null ? '' : ` - ${beverage}`}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
 										);
 									}}
 									className="md:w-auto"
@@ -189,7 +205,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(
 										trackEvent(
 											TrackCategory.Click,
 											'Remove Button',
-											`${recipe}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
+											`${recipe}${beverage === null ? '' : ` - ${beverage}`}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
 										);
 									}}
 									className="md:w-auto"

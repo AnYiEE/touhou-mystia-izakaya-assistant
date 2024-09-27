@@ -4,7 +4,8 @@ import {createJSONStorage} from 'zustand/middleware';
 
 import {type Selection} from '@nextui-org/react';
 
-import {TabVisibilityState, recipeTableColumns} from '@/(pages)/customer-normal/constants';
+import {TabVisibilityState, beverageTableColumns, recipeTableColumns} from '@/(pages)/customer-normal/constants';
+import {type TTableSortDescriptor as TBeverageTableSortDescriptor} from '@/(pages)/customer-normal/beverageTabContent';
 import {evaluateMeal} from '@/(pages)/customer-normal/evaluateMeal';
 import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)/customer-normal/recipeTabContent';
 import type {TCustomerRating, TRecipe, TTab} from '@/(pages)/customer-normal/types';
@@ -15,14 +16,16 @@ import type {IPersistenceState} from './types';
 import {
 	TAG_POPULAR_NEGATIVE,
 	TAG_POPULAR_POSITIVE,
+	type TBeverageNames,
 	type TCustomerNormalNames,
 	type TIngredientNames,
 	type TRecipeNames,
 } from '@/data';
-import type {TIngredientTag, TRecipeTag} from '@/data/types';
-import {type IPopularData, type TPopularTag} from '@/stores';
+import type {TBeverageTag, TIngredientTag, TRecipeTag} from '@/data/types';
+import {type IPopularData, type IRecipeData, type TPopularTag} from '@/stores';
 import {getAllItemNames, keepLastTag, reverseDirection} from '@/stores/utils';
 import {
+	Beverage,
 	Clothes,
 	CustomerNormal,
 	Ingredient,
@@ -34,6 +37,7 @@ import {
 	toValueWithKey,
 } from '@/utils';
 
+const instance_beverage = Beverage.getInstance();
 const instance_clothes = Clothes.getInstance();
 const instance_customer = CustomerNormal.getInstance();
 const instance_ingredient = Ingredient.getInstance();
@@ -50,17 +54,24 @@ const storeVersion = {
 	showCooker: 7,
 	tableRows: 8, // eslint-disable-next-line sort-keys
 	ingredientTag: 9,
-	removeBeverage: 10,
+	removeBeverage: 10, // eslint-disable-next-line sort-keys
+	addBackBeverage: 11,
 } as const;
 
 const state = {
 	instances: {
+		beverage: instance_beverage,
 		clothes: instance_clothes,
 		customer: instance_customer,
 		ingredient: instance_ingredient,
 		recipe: instance_recipe,
 	},
 
+	beverage: {
+		dlcs: instance_beverage.getValuesByProp(instance_beverage.data, 'dlc', true).sort(numberSort),
+		names: instance_beverage.getValuesByProp(instance_beverage.data, 'name', true).sort(pinyinSort),
+		tags: instance_beverage.sortedTags.map(toValueObject),
+	},
 	customer: {
 		dlcs: instance_customer.getValuesByProp(instance_customer.data, 'dlc', true).sort(numberSort),
 		places: instance_customer.getValuesByProp(instance_customer.data, 'places', true).sort(pinyinSort),
@@ -90,18 +101,26 @@ const state = {
 			.getValuesByProp(instance_recipe.data, 'name', true)
 			.filter(({value}) => !instance_recipe.blockedRecipes.has(value))
 			.sort(pinyinSort),
-		positiveTags: [
-			...instance_recipe
-				.getValuesByProp(instance_recipe.data, 'positiveTags')
-				.filter((tag) => !instance_recipe.blockedTags.has(tag)),
-			TAG_POPULAR_POSITIVE,
-			TAG_POPULAR_NEGATIVE,
-		]
+		positiveTags: (
+			[
+				...instance_recipe
+					.getValuesByProp(instance_recipe.data, 'positiveTags')
+					.filter((tag) => !instance_recipe.blockedTags.has(tag)),
+				TAG_POPULAR_NEGATIVE,
+				TAG_POPULAR_POSITIVE,
+			] as TRecipeTag[]
+		)
 			.map(toValueObject)
-			.sort(pinyinSort) as {value: TRecipeTag}[],
+			.sort(pinyinSort),
 	},
 
 	persistence: {
+		beverage: {
+			table: {
+				rows: 8,
+				visibleColumns: beverageTableColumns.map(toValueWithKey('key')),
+			},
+		},
 		customer: {
 			filters: {
 				dlcs: [] as string[],
@@ -134,15 +153,26 @@ const state = {
 		meals: {} as {
 			[key in TCustomerNormalNames]?: {
 				index: number;
+				beverage: TBeverageNames | null;
 				recipe: TRecipeNames;
 				extraIngredients: TIngredientNames[];
 			}[];
 		},
 	},
 	shared: {
+		beverage: {
+			name: null as TBeverageNames | null,
+
+			dlcs: new Set() as SelectionSet,
+			page: 1,
+			searchValue: '',
+			selectableRows: [5, 8, 10, 15, 20].map(toValueObject),
+			sortDescriptor: {} as TBeverageTableSortDescriptor,
+		},
 		customer: {
 			name: null as TCustomerNormalNames | null,
 
+			beverageTags: new Set() as SelectionSet,
 			positiveTags: new Set() as SelectionSet,
 
 			filterVisibility: true,
@@ -157,10 +187,7 @@ const state = {
 			filterVisibility: false,
 		},
 		recipe: {
-			data: null as {
-				name: TRecipeNames;
-				extraIngredients: TIngredientNames[];
-			} | null,
+			data: null as IRecipeData | null,
 
 			cookers: new Set() as SelectionSet,
 			dlcs: new Set() as SelectionSet,
@@ -183,7 +210,7 @@ export const customerNormalStore = store(state, {
 	persist: {
 		enabled: true,
 		name: customerNormalStoreKey,
-		version: storeVersion.removeBeverage,
+		version: storeVersion.addBackBeverage,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -294,6 +321,22 @@ export const customerNormalStore = store(state, {
 					}
 				}
 			}
+			if (version < storeVersion.addBackBeverage) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				const {persistence} = oldState;
+				persistence.beverage = {
+					table: {
+						rows: 8,
+						visibleColumns: ['action', 'beverage', 'price', 'suitability'],
+					},
+				};
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+				for (const meals of Object.values(persistence.meals) as any) {
+					for (const meal of meals) {
+						meal.beverage = null;
+					}
+				}
+			}
 			return persistedState as typeof state;
 		},
 		partialize(currentStore) {
@@ -308,6 +351,18 @@ export const customerNormalStore = store(state, {
 		customerNames: () =>
 			getAllItemNames(instance_customer, currentStore.persistence.customer.pinyinSortState.use()),
 
+		beverageTableColumns: {
+			read: () => new Set(currentStore.persistence.beverage.table.visibleColumns.use()) as SelectionSet,
+			write: (columns: Selection) => {
+				currentStore.persistence.beverage.table.visibleColumns.set([...columns] as never);
+			},
+		},
+		beverageTableRows: {
+			read: () => new Set([currentStore.persistence.beverage.table.rows.use().toString()]) as SelectionSet,
+			write: (rows: Selection) => {
+				currentStore.persistence.beverage.table.rows.set(Number.parseInt([...rows][0] as string));
+			},
+		},
 		recipeTableColumns: {
 			read: () => new Set(currentStore.persistence.recipe.table.visibleColumns.use()) as SelectionSet,
 			write: (columns: Selection) => {
@@ -322,6 +377,15 @@ export const customerNormalStore = store(state, {
 		},
 	}))
 	.actions((currentStore) => ({
+		onCustomerFilterBeverageTag(tag: TBeverageTag) {
+			currentStore.shared.tab.set('beverage');
+			currentStore.shared.beverage.page.set(1);
+			currentStore.shared.customer.filterVisibility.set(false);
+			currentStore.shared.ingredient.filterVisibility.set(false);
+			currentStore.shared.customer.beverageTags.set((prev) => {
+				keepLastTag(prev, tag);
+			});
+		},
 		onCustomerFilterRecipeTag(tag: TRecipeTag) {
 			currentStore.shared.tab.set('recipe');
 			currentStore.shared.recipe.page.set(1);
@@ -334,6 +398,57 @@ export const customerNormalStore = store(state, {
 		onCustomerSelectedChange(customerName: TCustomerNormalNames) {
 			currentStore.shared.customer.name.set(customerName);
 			trackEvent(TrackCategory.Select, 'Customer', customerName);
+		},
+
+		clearBeverageTableSearchValue() {
+			currentStore.shared.beverage.searchValue.set('');
+			currentStore.shared.beverage.page.set(1);
+		},
+		onBeverageTableAction(beverageName: TBeverageNames) {
+			currentStore.shared.beverage.name.set(beverageName);
+			trackEvent(TrackCategory.Select, 'Beverage', beverageName);
+		},
+		onBeverageTablePageChange(page: number) {
+			currentStore.shared.beverage.page.set(page);
+		},
+		onBeverageTableRowsPerPageChange(rows: Selection) {
+			currentStore.beverageTableRows.set(rows);
+			currentStore.shared.beverage.page.set(1);
+		},
+		onBeverageTableSearchValueChange(value: Key | null) {
+			if (value) {
+				currentStore.shared.beverage.searchValue.set(value as string);
+				currentStore.shared.beverage.page.set(1);
+			} else {
+				currentStore.shared.beverage.searchValue.set('');
+			}
+		},
+		onBeverageTableSelectedDlcsChange(dlcs: Selection) {
+			currentStore.shared.beverage.dlcs.set(dlcs as SelectionSet);
+			currentStore.shared.beverage.page.set(1);
+		},
+		onBeverageTableSelectedTagsChange(tags: Selection) {
+			currentStore.shared.customer.beverageTags.set(tags as SelectionSet);
+			currentStore.shared.beverage.page.set(1);
+		},
+		onBeverageTableSortChange(config: TBeverageTableSortDescriptor) {
+			const sortConfig = config as Required<TBeverageTableSortDescriptor>;
+			const {column, direction} = sortConfig;
+			const {lastColumn} = currentStore.shared.beverage.sortDescriptor.get();
+			if (lastColumn === undefined || column !== lastColumn) {
+				currentStore.shared.beverage.sortDescriptor.assign({
+					column,
+					lastColumn: column,
+				});
+			}
+			// Reverse direction `ascending` to `descending` when first time
+			let reversedDirection = direction;
+			if ((column === 'price' || column === 'suitability') && column !== lastColumn) {
+				reversedDirection = reverseDirection(direction);
+			}
+			currentStore.shared.beverage.sortDescriptor.assign({
+				direction: reversedDirection,
+			});
 		},
 
 		onIngredientSelectedChange(ingredientName: TIngredientNames) {
@@ -485,15 +600,13 @@ export const customerNormalStore = store(state, {
 		},
 		saveMealResult() {
 			const customerName = currentStore.shared.customer.name.get();
+			const beverageName = currentStore.shared.beverage.name.get();
 			const recipeData = currentStore.shared.recipe.data.get();
 			if (customerName === null || recipeData === null) {
 				return;
 			}
 			const {extraIngredients, name: recipeName} = recipeData;
-			const saveObject = {
-				extraIngredients,
-				recipe: recipeName,
-			} as const;
+			const saveObject = {beverage: beverageName, extraIngredients, recipe: recipeName} as const;
 			currentStore.persistence.meals.set((prev) => {
 				if (customerName in prev) {
 					const lastItem = prev[customerName]?.at(-1);
@@ -506,7 +619,7 @@ export const customerNormalStore = store(state, {
 			trackEvent(
 				TrackCategory.Click,
 				'Save Button',
-				`${recipeName}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
+				`${recipeName}${beverageName === null ? '' : ` - ${beverageName}`}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
 			);
 		},
 
@@ -515,6 +628,9 @@ export const customerNormalStore = store(state, {
 			currentStore.shared.recipe.dlcs.set(new Set());
 			currentStore.shared.recipe.searchValue.set('');
 			currentStore.shared.recipe.sortDescriptor.set({});
+			currentStore.shared.beverage.dlcs.set(new Set());
+			currentStore.shared.beverage.searchValue.set('');
+			currentStore.shared.beverage.sortDescriptor.set({});
 		},
 		refreshCustomer() {
 			currentStore.shared.customer.name.set(null);
@@ -523,11 +639,14 @@ export const customerNormalStore = store(state, {
 			currentStore.shared.ingredient.filterVisibility.set(false);
 		},
 		refreshCustomerSelectedItems() {
+			currentStore.shared.customer.beverageTags.set(new Set());
 			currentStore.shared.customer.positiveTags.set(new Set());
 			currentStore.shared.customer.rating.set(null);
 			currentStore.shared.recipe.data.set(null);
 			currentStore.shared.recipe.tagsWithPopular.set([]);
 			currentStore.shared.recipe.page.set(1);
+			currentStore.shared.beverage.name.set(null);
+			currentStore.shared.beverage.page.set(1);
 			currentStore.shared.ingredient.filterVisibility.set(false);
 			if (currentStore.shared.tab.get() === 'ingredient') {
 				if (currentStore.shared.customer.name.get()) {
