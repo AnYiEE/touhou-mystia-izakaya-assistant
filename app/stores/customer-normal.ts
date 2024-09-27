@@ -432,6 +432,7 @@ export const customerNormalStore = store(state, {
 			currentStore.shared.beverage.page.set(1);
 		},
 		onBeverageTableSortChange(config: TBeverageTableSortDescriptor) {
+			currentStore.shared.beverage.page.set(1);
 			const sortConfig = config as Required<TBeverageTableSortDescriptor>;
 			const {column, direction} = sortConfig;
 			const {lastColumn} = currentStore.shared.beverage.sortDescriptor.get();
@@ -507,6 +508,7 @@ export const customerNormalStore = store(state, {
 			currentStore.shared.recipe.page.set(1);
 		},
 		onRecipeTableSortChange(config: TRecipeTableSortDescriptor) {
+			currentStore.shared.recipe.page.set(1);
 			const sortConfig = config as Required<TRecipeTableSortDescriptor>;
 			const {column, direction} = sortConfig;
 			const {lastColumn} = currentStore.shared.recipe.sortDescriptor.get();
