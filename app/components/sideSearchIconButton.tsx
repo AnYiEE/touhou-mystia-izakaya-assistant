@@ -68,7 +68,8 @@ export default memo(
 
 		return (
 			<Popover
-				// backdrop={isHighAppearance ? 'blur' : 'opaque'}
+				/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/3736} is fixed. */
+				// backdrop="opaque"
 				placement="left"
 				onOpenChange={handleOpenChange}
 				ref={ref}
