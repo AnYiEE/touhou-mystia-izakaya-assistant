@@ -106,7 +106,10 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 			setIsDownloadButtonDisabled(false);
 			setDownloadButtonLabel(DownloadButtonLabel.Download);
 		}, 5000);
-		download(`customer_rare_data-${Object.keys(currentMealData).length}-${Date.now()}`, currentMealDataString);
+		download(
+			`customer_data-${Object.keys(currentMealData.customer_normal).length}_${Object.keys(currentMealData.customer_rare).length}-${Date.now()}`,
+			currentMealDataString
+		);
 	}, [currentMealData, currentMealDataString]);
 
 	const handleImportData = useCallback(() => {
