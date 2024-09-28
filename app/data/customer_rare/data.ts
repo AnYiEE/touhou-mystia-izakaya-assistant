@@ -98,6 +98,40 @@ export const CUSTOMER_RARE_LIST = [
 		},
 	},
 	{
+		name: '稗田阿求',
+		dlc: 0,
+		places: ['人间之里', '命莲寺'],
+		price: '500-800',
+		positiveTags: ['高级', '清淡', '和风', '甜', '文化底蕴', '汤羹', TAG_POPULAR_POSITIVE],
+		negativeTags: ['重油', '咸', '灼热', TAG_POPULAR_NEGATIVE],
+		beverageTags: ['可加热', '清酒'],
+		bondRewards: [
+			{
+				type: '采集',
+				reward: '人间之里',
+				description: null,
+			},
+		],
+		spellCards: {
+			positive: [
+				{
+					name: '撰书「这也全部是妖精干的吗」',
+					description: '获得一张签名色纸。',
+				},
+			],
+			negative: [
+				{
+					name: '口授「黑心店家的黑心历史」',
+					description: '店内气氛掉落到冰点，顾客也会降低心情。',
+				},
+			],
+		},
+		positiveTagMapping: {
+			甜: '甜食不健康',
+			高级: '稗田家主',
+		},
+	},
+	{
 		name: '上白泽慧音',
 		dlc: 0,
 		places: ['人间之里', '魔法森林', '命莲寺'],
@@ -133,40 +167,6 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {},
-	},
-	{
-		name: '稗田阿求',
-		dlc: 0,
-		places: ['人间之里', '命莲寺'],
-		price: '500-800',
-		positiveTags: ['高级', '清淡', '和风', '甜', '文化底蕴', '汤羹', TAG_POPULAR_POSITIVE],
-		negativeTags: ['重油', '咸', '灼热', TAG_POPULAR_NEGATIVE],
-		beverageTags: ['可加热', '清酒'],
-		bondRewards: [
-			{
-				type: '采集',
-				reward: '人间之里',
-				description: null,
-			},
-		],
-		spellCards: {
-			positive: [
-				{
-					name: '撰书「这也全部是妖精干的吗」',
-					description: '获得一张签名色纸。',
-				},
-			],
-			negative: [
-				{
-					name: '口授「黑心店家的黑心历史」',
-					description: '店内气氛掉落到冰点，顾客也会降低心情。',
-				},
-			],
-		},
-		positiveTagMapping: {
-			甜: '甜食不健康',
-			高级: '稗田家主',
-		},
 	},
 	{
 		name: '茨木华扇',
@@ -296,6 +296,49 @@ export const CUSTOMER_RARE_LIST = [
 			清淡: '重油下等',
 			适合拍照: '卖相要好',
 			[TAG_EXPENSIVE]: '我不缺钱',
+		},
+	},
+	{
+		name: '雾雨魔理沙',
+		dlc: 1,
+		places: [
+			'魔法森林',
+			'妖怪兽道',
+			'人间之里',
+			'博丽神社',
+			'红魔馆',
+			'迷途竹林',
+			'妖怪之山',
+			'旧地狱',
+			'地灵殿',
+			'命莲寺',
+			'神灵庙',
+			'太阳花田',
+			'辉针城',
+		],
+		price: '3000-5000',
+		positiveTags: ['传说', '重油', '和风', '灼热', '菌类', TAG_POPULAR_POSITIVE],
+		negativeTags: ['猎奇', TAG_POPULAR_NEGATIVE],
+		beverageTags: ['低酒精', '可加冰'],
+		bondRewards: [],
+		spellCards: {
+			positive: [
+				{
+					name: '流星「超级英仙座」',
+					description: '随机获得三种菌类食材，偶然会出现高级货。',
+				},
+			],
+			negative: [
+				{
+					name: '魔符「拿来吧你」',
+					description: '随机偷走两样东西，可能是食材、料理或酒水。',
+				},
+			],
+		},
+		positiveTagMapping: {
+			传说: '古老价值',
+			重油: '麻辣烫/不要清淡',
+			灼热: '八卦炉/发光发热',
 		},
 	},
 	{
@@ -628,49 +671,6 @@ export const CUSTOMER_RARE_LIST = [
 		},
 	},
 	{
-		name: '雾雨魔理沙',
-		dlc: 1,
-		places: [
-			'魔法森林',
-			'妖怪兽道',
-			'人间之里',
-			'博丽神社',
-			'红魔馆',
-			'迷途竹林',
-			'妖怪之山',
-			'旧地狱',
-			'地灵殿',
-			'命莲寺',
-			'神灵庙',
-			'太阳花田',
-			'辉针城',
-		],
-		price: '3000-5000',
-		positiveTags: ['传说', '重油', '和风', '灼热', '菌类', TAG_POPULAR_POSITIVE],
-		negativeTags: ['猎奇', TAG_POPULAR_NEGATIVE],
-		beverageTags: ['低酒精', '可加冰'],
-		bondRewards: [],
-		spellCards: {
-			positive: [
-				{
-					name: '流星「超级英仙座」',
-					description: '随机获得三种菌类食材，偶然会出现高级货。',
-				},
-			],
-			negative: [
-				{
-					name: '魔符「拿来吧你」',
-					description: '随机偷走两样东西，可能是食材、料理或酒水。',
-				},
-			],
-		},
-		positiveTagMapping: {
-			传说: '古老价值',
-			重油: '麻辣烫/不要清淡',
-			灼热: '八卦炉/发光发热',
-		},
-	},
-	{
 		name: '矢田寺成美',
 		dlc: 1,
 		places: ['魔法森林', '命莲寺'],
@@ -806,6 +806,40 @@ export const CUSTOMER_RARE_LIST = [
 		},
 	},
 	{
+		name: '古明地觉',
+		dlc: 2,
+		places: ['地灵殿', '人间之里', '博丽神社', '红魔馆', '迷途竹林', '魔法森林'],
+		price: '500-600',
+		positiveTags: ['家常', '甜', '力量涌现', '小巧', '梦幻', '特产'],
+		negativeTags: ['肉', '山珍', '灼热', '猎奇', TAG_LARGE_PARTITION],
+		beverageTags: ['无酒精', '苦', '气泡', '提神'],
+		bondRewards: [
+			{
+				type: '伙伴',
+				reward: '小野冢小町',
+				description: true,
+			},
+		],
+		spellCards: {
+			positive: [
+				{
+					name: '想起「高兴的事情」',
+					description: '随机发动一名已解锁的稀稀有顾客（不包括自己）的奖励符卡。',
+				},
+			],
+			negative: [
+				{
+					name: '想起「不高兴的事情」',
+					description: '随机发动一名已解锁的稀有顾客（不包括自己）的惩罚符卡。',
+				},
+			],
+		},
+		positiveTagMapping: {
+			小巧: '吃太饱不利于思考',
+			特产: '缩短他乡与故乡的距离',
+		},
+	},
+	{
 		name: '火焰猫燐',
 		dlc: 2,
 		places: ['地灵殿', '人间之里', '博丽神社', '妖怪之山', '旧地狱', '命莲寺', '神灵庙'],
@@ -864,40 +898,6 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {},
-	},
-	{
-		name: '古明地觉',
-		dlc: 2,
-		places: ['地灵殿', '人间之里', '博丽神社', '红魔馆', '迷途竹林', '魔法森林'],
-		price: '500-600',
-		positiveTags: ['家常', '甜', '力量涌现', '小巧', '梦幻', '特产'],
-		negativeTags: ['肉', '山珍', '灼热', '猎奇', TAG_LARGE_PARTITION],
-		beverageTags: ['无酒精', '苦', '气泡', '提神'],
-		bondRewards: [
-			{
-				type: '伙伴',
-				reward: '小野冢小町',
-				description: true,
-			},
-		],
-		spellCards: {
-			positive: [
-				{
-					name: '想起「高兴的事情」',
-					description: '随机发动一名已解锁的稀稀有顾客（不包括自己）的奖励符卡。',
-				},
-			],
-			negative: [
-				{
-					name: '想起「不高兴的事情」',
-					description: '随机发动一名已解锁的稀有顾客（不包括自己）的惩罚符卡。',
-				},
-			],
-		},
-		positiveTagMapping: {
-			小巧: '吃太饱不利于思考',
-			特产: '缩短他乡与故乡的距离',
-		},
 	},
 	{
 		name: '多多良小伞',
@@ -1105,6 +1105,125 @@ export const CUSTOMER_RARE_LIST = [
 		},
 	},
 	{
+		name: '射命丸文',
+		dlc: 4,
+		places: [
+			'太阳花田',
+			'妖怪兽道',
+			'人间之里',
+			'博丽神社',
+			'红魔馆',
+			'迷途竹林',
+			'魔法森林',
+			'妖怪之山',
+			'旧地狱',
+			'地灵殿',
+			'命莲寺',
+			'神灵庙',
+			'辉针城',
+		],
+		price: '500-600',
+		positiveTags: ['肉', '家常', '下酒', '和风', '招牌', '适合拍照', TAG_POPULAR_POSITIVE],
+		negativeTags: ['西式', TAG_POPULAR_NEGATIVE],
+		beverageTags: ['高酒精', '可加冰', '烧酒', '提神'],
+		bondRewards: [],
+		spellCards: {
+			positive: [
+				{
+					name: '「八衢潮流风靡幻想」',
+					description: `明天开始店铺变为“明星店”，三天后恢复正常。“明星店”：提高10%顾客预算和5%客流量，“招牌”标签成为流行标签。如果店铺已是“明星店”或当晚已宣传，则此符卡转化为“「食堂风起厨神无双」”。“「食堂风起厨神无双」”：成品带有“招牌”标签的今日菜单上的料理将成为明星料理。制作明星料理时，如果料理时间小于5秒，则瞬间完成；在舆论的裹挟下，追捧“${TAG_POPULAR_POSITIVE}”标签的顾客食用明星料理后额外提高30%续单率，返还当单酒水消耗的预算，并必定增加一次续单上限（增加续单上限效果每桌顾客只触发一次），持续30秒。`,
+				},
+			],
+			negative: [
+				{
+					name: '「笔枪纸弹禁制之道」',
+					description:
+						'无法进行投掷上菜，持续30秒。同时在报纸上对黑心店铺进行抨击，使“明星店”加成明天起消失。',
+				},
+			],
+		},
+		positiveTagMapping: {
+			适合拍照: '入我相机',
+		},
+	},
+	{
+		name: '梅蒂欣',
+		dlc: 4,
+		places: ['太阳花田'],
+		price: '200-400',
+		positiveTags: ['甜', '招牌', '适合拍照', '凉爽', '菌类', '小巧', '梦幻', '毒'],
+		negativeTags: ['文化底蕴'],
+		beverageTags: ['无酒精', '水果', '甘', '苦'],
+		bondRewards: [
+			{
+				type: '采集',
+				reward: '太阳花田',
+				description: null,
+			},
+		],
+		spellCards: {
+			positive: [
+				{
+					name: '分解「剧毒中和」',
+					description:
+						'移除“铃兰「凋零花园」”状态；梅蒂欣操纵料理中可能存在的有害元素，使料理时的标签不再产生冲突，持续30秒，并获得带有“中酒精”标签的酒水一瓶。。',
+				},
+			],
+			negative: [
+				{
+					name: '铃兰「凋零花园」',
+					description:
+						'移除“分解「剧毒中和」”状态；制作料理时铃铃会额外为料理追加特殊的“忧郁之毒”标签，食用带有该标签的食物的顾客不会续单，持续30秒。',
+				},
+			],
+		},
+		positiveTagMapping: {
+			甜: '毒的基础是甜',
+			凉爽: '不能受热',
+			菌类: '森林里疯长的',
+			梦幻: '故意中毒',
+		},
+	},
+	{
+		name: '风见幽香',
+		dlc: 4,
+		places: ['太阳花田'],
+		price: '1200-1800',
+		positiveTags: ['高级', '传说', '清淡', '西式', '不可思议', '梦幻', '特产', TAG_POPULAR_POSITIVE],
+		negativeTags: ['饱腹', '和风', '咸', '灼热'],
+		beverageTags: ['鸡尾酒', '西洋酒', '利口酒', '现代'],
+		bondRewards: [
+			{
+				type: '伙伴',
+				reward: '拉尔瓦',
+				description: true,
+			},
+		],
+		spellCards: {
+			positive: [
+				{
+					name: '「花鸟风月群芳沐」',
+					description:
+						'在场上种下一朵鲜花并利用能力使其生长，满心情时额外种下一朵，每朵生长的鲜花每24秒生产25小费。除幽香以外的稀有顾客释放奖励符卡时，随机一朵生长的鲜花将吸收符卡之力而盛放，吸引当地出没的稀有顾客造访食堂，被鲜花吸引来的稀有顾客会摘走这朵鲜花。鲜花盛放期间顾客用餐结束后额外提高15心情，15秒后鲜花凋谢，获得一层“「落英缀裳」”。“「落英缀裳」”：可以抵挡一次中断Combo的失误。',
+				},
+			],
+			negative: [
+				{
+					name: '「决斗Spark!!!」',
+					description:
+						'用微笑的表情走到自己所在座位那一排的最上方，然后一发魔炮将这排桌子轰飞，当夜不可修复，并吓跑所有在这些位置用餐的顾客。',
+				},
+			],
+		},
+		positiveTagMapping: {
+			传说: '流传至今的过去',
+			清淡: '不要油手碰花',
+			西式: '绅士风度',
+			不可思议: '冬紫罗兰',
+			梦幻: '蓝色满天星',
+		},
+	},
+	{
 		name: '少名针妙丸',
 		dlc: 4,
 		places: ['辉针城'],
@@ -1207,240 +1326,6 @@ export const CUSTOMER_RARE_LIST = [
 			肉: '人家是狼',
 			和风: '本州狼',
 			凉爽: '从胃里降温',
-		},
-	},
-	{
-		name: '射命丸文',
-		dlc: 4,
-		places: [
-			'太阳花田',
-			'妖怪兽道',
-			'人间之里',
-			'博丽神社',
-			'红魔馆',
-			'迷途竹林',
-			'魔法森林',
-			'妖怪之山',
-			'旧地狱',
-			'地灵殿',
-			'命莲寺',
-			'神灵庙',
-			'辉针城',
-		],
-		price: '500-600',
-		positiveTags: ['肉', '家常', '下酒', '和风', '招牌', '适合拍照', TAG_POPULAR_POSITIVE],
-		negativeTags: ['西式', TAG_POPULAR_NEGATIVE],
-		beverageTags: ['高酒精', '可加冰', '烧酒', '提神'],
-		bondRewards: [],
-		spellCards: {
-			positive: [
-				{
-					name: '「八衢潮流风靡幻想」',
-					description: `明天开始店铺变为“明星店”，三天后恢复正常。“明星店”：提高10%顾客预算和5%客流量，“招牌”标签成为流行标签。如果店铺已是“明星店”或当晚已宣传，则此符卡转化为“「食堂风起厨神无双」”。“「食堂风起厨神无双」”：成品带有“招牌”标签的今日菜单上的料理将成为明星料理。制作明星料理时，如果料理时间小于5秒，则瞬间完成；在舆论的裹挟下，追捧“${TAG_POPULAR_POSITIVE}”标签的顾客食用明星料理后额外提高30%续单率，返还当单酒水消耗的预算，并必定增加一次续单上限（增加续单上限效果每桌顾客只触发一次），持续30秒。`,
-				},
-			],
-			negative: [
-				{
-					name: '「笔枪纸弹禁制之道」',
-					description:
-						'无法进行投掷上菜，持续30秒。同时在报纸上对黑心店铺进行抨击，使“明星店”加成明天起消失。',
-				},
-			],
-		},
-		positiveTagMapping: {
-			适合拍照: '入我相机',
-		},
-	},
-	{
-		name: '风见幽香',
-		dlc: 4,
-		places: ['太阳花田'],
-		price: '1200-1800',
-		positiveTags: ['高级', '传说', '清淡', '西式', '不可思议', '梦幻', '特产', TAG_POPULAR_POSITIVE],
-		negativeTags: ['饱腹', '和风', '咸', '灼热'],
-		beverageTags: ['鸡尾酒', '西洋酒', '利口酒', '现代'],
-		bondRewards: [
-			{
-				type: '伙伴',
-				reward: '拉尔瓦',
-				description: true,
-			},
-		],
-		spellCards: {
-			positive: [
-				{
-					name: '「花鸟风月群芳沐」',
-					description:
-						'在场上种下一朵鲜花并利用能力使其生长，满心情时额外种下一朵，每朵生长的鲜花每24秒生产25小费。除幽香以外的稀有顾客释放奖励符卡时，随机一朵生长的鲜花将吸收符卡之力而盛放，吸引当地出没的稀有顾客造访食堂，被鲜花吸引来的稀有顾客会摘走这朵鲜花。鲜花盛放期间顾客用餐结束后额外提高15心情，15秒后鲜花凋谢，获得一层“「落英缀裳」”。“「落英缀裳」”：可以抵挡一次中断Combo的失误。',
-				},
-			],
-			negative: [
-				{
-					name: '「决斗Spark!!!」',
-					description:
-						'用微笑的表情走到自己所在座位那一排的最上方，然后一发魔炮将这排桌子轰飞，当夜不可修复，并吓跑所有在这些位置用餐的顾客。',
-				},
-			],
-		},
-		positiveTagMapping: {
-			传说: '流传至今的过去',
-			清淡: '不要油手碰花',
-			西式: '绅士风度',
-			不可思议: '冬紫罗兰',
-			梦幻: '蓝色满天星',
-		},
-	},
-	{
-		name: '梅蒂欣',
-		dlc: 4,
-		places: ['太阳花田'],
-		price: '200-400',
-		positiveTags: ['甜', '招牌', '适合拍照', '凉爽', '菌类', '小巧', '梦幻', '毒'],
-		negativeTags: ['文化底蕴'],
-		beverageTags: ['无酒精', '水果', '甘', '苦'],
-		bondRewards: [
-			{
-				type: '采集',
-				reward: '太阳花田',
-				description: null,
-			},
-		],
-		spellCards: {
-			positive: [
-				{
-					name: '分解「剧毒中和」',
-					description:
-						'移除“铃兰「凋零花园」”状态；梅蒂欣操纵料理中可能存在的有害元素，使料理时的标签不再产生冲突，持续30秒，并获得带有“中酒精”标签的酒水一瓶。。',
-				},
-			],
-			negative: [
-				{
-					name: '铃兰「凋零花园」',
-					description:
-						'移除“分解「剧毒中和」”状态；制作料理时铃铃会额外为料理追加特殊的“忧郁之毒”标签，食用带有该标签的食物的顾客不会续单，持续30秒。',
-				},
-			],
-		},
-		positiveTagMapping: {
-			甜: '毒的基础是甜',
-			凉爽: '不能受热',
-			菌类: '森林里疯长的',
-			梦幻: '故意中毒',
-		},
-	},
-	{
-		name: '魅魔',
-		dlc: 5,
-		places: ['魔界'],
-		price: '2000-3000',
-		positiveTags: ['水产', '山珍', '鲜', '生', '力量涌现', '猎奇', '菌类'],
-		negativeTags: ['高级', '清淡'],
-		beverageTags: ['高酒精', '可加冰', '烧酒', '西洋酒', '辛'],
-		bondRewards: [
-			{
-				type: '伙伴',
-				reward: '萨拉',
-				description: true,
-			},
-		],
-		spellCards: {
-			positive: [
-				{
-					name: '「幽冥的轮回」',
-					description:
-						'如果场上不存在“幽玄封魔阵”则生成法阵，如果存在则为法阵填充2点能量。“幽玄封魔阵”：除魅魔以外的稀有顾客释放任意符卡时填充1点能量。能量达到7点时，消耗全部能量引发“梦符「时空一粟」”。“梦符「时空一粟」”：场上所有就座的顾客的剩余预算回复到上限，制作料理不消耗食材且瞬间完成，顾客必定给出最高评价，持续20秒。',
-				},
-			],
-			negative: [
-				{
-					name: '「渎神的代价」',
-					description: '受到“恶灵缠怨”：无法获得夜雀之歌类Buff，且无法触发特殊厨具效果，持续30秒。',
-				},
-			],
-		},
-		positiveTagMapping: {
-			鲜: '陈腐东西不能入口',
-			生: '最原始的味道',
-			力量涌现: '激活身体和思维',
-		},
-	},
-	{
-		name: '露易兹',
-		dlc: 5,
-		places: [
-			'魔界',
-			'妖怪兽道',
-			'人间之里',
-			'博丽神社',
-			'红魔馆',
-			'迷途竹林',
-			'魔法森林',
-			'妖怪之山',
-			'旧地狱',
-			'地灵殿',
-			'命莲寺',
-			'神灵庙',
-			'太阳花田',
-			'辉针城',
-		],
-		price: '800-1000',
-		positiveTags: ['水产', '西式', '甜', '适合拍照', '小巧', '特产', TAG_POPULAR_POSITIVE],
-		negativeTags: ['重油', '饱腹'],
-		beverageTags: ['中酒精', '可加冰', '鸡尾酒', '啤酒', '现代'],
-		bondRewards: [],
-		spellCards: {
-			positive: [
-				{
-					name: '「传奇的格列佛」',
-					description:
-						'露易兹召唤一架魔法相机停留在店内，如果稀有顾客本尊离开时未吃饱且预算未耗尽，则相机拍下该稀有顾客并转换为一份“旅者博客”。当日结束后“旅者博客”解放（如果拍摄时当日已结束，则立即解放），投影出其拍摄的顾客形象再次光临食堂，以此方式形成的稀稀有顾客的影像可以使用符卡，喜好和原先无异，但预算为其离开时的预算，续单上限为其离开时剩余的可点单数。',
-				},
-			],
-			negative: [
-				{
-					name: '「遗落的水晶鞋」',
-					description: '当晚营业结束后，再经过60秒，将会强制驱逐店铺内的顾客并关店。',
-				},
-			],
-		},
-		positiveTagMapping: {
-			适合拍照: '适合发博客',
-			小巧: '晚上不宜太饱',
-			特产: '旅行的乐趣',
-		},
-	},
-	{
-		name: '爱莲',
-		dlc: 5,
-		places: ['魔界'],
-		price: '300-500',
-		positiveTags: ['家常', '饱腹', '西式', '甜', '凉爽', '梦幻', TAG_POPULAR_POSITIVE],
-		negativeTags: ['水产', '重油', '生'],
-		beverageTags: ['低酒精', '可加热', '啤酒', '甘', '古典'],
-		bondRewards: [
-			{
-				type: '采集',
-				reward: '魔界',
-				description: null,
-			},
-		],
-		spellCards: {
-			positive: [
-				{
-					name: '「恋爱的糖果屋」',
-					description:
-						'当完成场上顾客的订单且至少获得普通评价后，在座位附近掉落一枚“蓬松松糖果”以供拾取，持续30秒。',
-				},
-			],
-			negative: [
-				{
-					name: '「呜撒的猫咪」',
-					description: '伙伴移动速度下降30%，工作速度下降50%，持续30秒。',
-				},
-			],
-		},
-		positiveTagMapping: {
-			凉爽: '毕竟是猫舌头',
 		},
 	},
 	{
@@ -1549,6 +1434,121 @@ export const CUSTOMER_RARE_LIST = [
 			传说: '令后人传诵的功绩',
 			灼热: '不要让血冷下来',
 			小巧: '锻炼不宜多吃',
+		},
+	},
+	{
+		name: '爱莲',
+		dlc: 5,
+		places: ['魔界'],
+		price: '300-500',
+		positiveTags: ['家常', '饱腹', '西式', '甜', '凉爽', '梦幻', TAG_POPULAR_POSITIVE],
+		negativeTags: ['水产', '重油', '生'],
+		beverageTags: ['低酒精', '可加热', '啤酒', '甘', '古典'],
+		bondRewards: [
+			{
+				type: '采集',
+				reward: '魔界',
+				description: null,
+			},
+		],
+		spellCards: {
+			positive: [
+				{
+					name: '「恋爱的糖果屋」',
+					description:
+						'当完成场上顾客的订单且至少获得普通评价后，在座位附近掉落一枚“蓬松松糖果”以供拾取，持续30秒。',
+				},
+			],
+			negative: [
+				{
+					name: '「呜撒的猫咪」',
+					description: '伙伴移动速度下降30%，工作速度下降50%，持续30秒。',
+				},
+			],
+		},
+		positiveTagMapping: {
+			凉爽: '毕竟是猫舌头',
+		},
+	},
+	{
+		name: '魅魔',
+		dlc: 5,
+		places: ['魔界'],
+		price: '2000-3000',
+		positiveTags: ['水产', '山珍', '鲜', '生', '力量涌现', '猎奇', '菌类'],
+		negativeTags: ['高级', '清淡'],
+		beverageTags: ['高酒精', '可加冰', '烧酒', '西洋酒', '辛'],
+		bondRewards: [
+			{
+				type: '伙伴',
+				reward: '萨拉',
+				description: true,
+			},
+		],
+		spellCards: {
+			positive: [
+				{
+					name: '「幽冥的轮回」',
+					description:
+						'如果场上不存在“幽玄封魔阵”则生成法阵，如果存在则为法阵填充2点能量。“幽玄封魔阵”：除魅魔以外的稀有顾客释放任意符卡时填充1点能量。能量达到7点时，消耗全部能量引发“梦符「时空一粟」”。“梦符「时空一粟」”：场上所有就座的顾客的剩余预算回复到上限，制作料理不消耗食材且瞬间完成，顾客必定给出最高评价，持续20秒。',
+				},
+			],
+			negative: [
+				{
+					name: '「渎神的代价」',
+					description: '受到“恶灵缠怨”：无法获得夜雀之歌类Buff，且无法触发特殊厨具效果，持续30秒。',
+				},
+			],
+		},
+		positiveTagMapping: {
+			鲜: '陈腐东西不能入口',
+			生: '最原始的味道',
+			力量涌现: '激活身体和思维',
+		},
+	},
+	{
+		name: '露易兹',
+		dlc: 5,
+		places: [
+			'魔界',
+			'妖怪兽道',
+			'人间之里',
+			'博丽神社',
+			'红魔馆',
+			'迷途竹林',
+			'魔法森林',
+			'妖怪之山',
+			'旧地狱',
+			'地灵殿',
+			'命莲寺',
+			'神灵庙',
+			'太阳花田',
+			'辉针城',
+		],
+		price: '800-1000',
+		positiveTags: ['水产', '西式', '甜', '适合拍照', '小巧', '特产', TAG_POPULAR_POSITIVE],
+		negativeTags: ['重油', '饱腹'],
+		beverageTags: ['中酒精', '可加冰', '鸡尾酒', '啤酒', '现代'],
+		bondRewards: [],
+		spellCards: {
+			positive: [
+				{
+					name: '「传奇的格列佛」',
+					description:
+						'露易兹召唤一架魔法相机停留在店内，如果稀有顾客本尊离开时未吃饱且预算未耗尽，则相机拍下该稀有顾客并转换为一份“旅者博客”。当日结束后“旅者博客”解放（如果拍摄时当日已结束，则立即解放），投影出其拍摄的顾客形象再次光临食堂，以此方式形成的稀稀有顾客的影像可以使用符卡，喜好和原先无异，但预算为其离开时的预算，续单上限为其离开时剩余的可点单数。',
+				},
+			],
+			negative: [
+				{
+					name: '「遗落的水晶鞋」',
+					description: '当晚营业结束后，再经过60秒，将会强制驱逐店铺内的顾客并关店。',
+				},
+			],
+		},
+		positiveTagMapping: {
+			适合拍照: '适合发博客',
+			小巧: '晚上不宜太饱',
+			特产: '旅行的乐趣',
 		},
 	},
 	{
