@@ -436,7 +436,7 @@ export const COOKER_LIST = [
 		type: ['煮锅', '油锅', '蒸锅'],
 		category: 'DLC',
 		dlc: 5,
-		effect: ['减少33%料理时间。可以同时作为煮锅、油锅和蒸锅使用。', true],
+		effect: '减少33%料理时间。可以同时作为煮锅、油锅和蒸锅使用。',
 		from: {
 			buy: '【魔界】蓬松松爱莲♡魔法店',
 		},
