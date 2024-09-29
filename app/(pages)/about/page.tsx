@@ -8,7 +8,7 @@ import Tooltip from '@/components/tooltip';
 
 import {siteConfig} from '@/configs';
 
-const {name, shortName, links} = siteConfig;
+const {links, name, shortName} = siteConfig;
 
 export default function About() {
 	return (

@@ -36,7 +36,7 @@ import {type TSitePath, siteConfig} from '@/configs';
 import {globalStore as store} from '@/stores';
 import {toggleBoolean} from '@/utils';
 
-const {links, name, navItems, navMenuItems, shortName} = siteConfig;
+const {navItems, navMenuItems, links, name, shortName} = siteConfig;
 
 export function showProgress(startProgress: () => void) {
 	startTransition(async () => {

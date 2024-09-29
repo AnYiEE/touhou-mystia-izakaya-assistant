@@ -127,6 +127,7 @@ export const siteConfig = {
 	},
 	nodeEnv: process.env.NODE_ENV,
 	vercelEnv: process.env.VERCEL_ENV,
+	isHideBackupLink: Boolean(process.env.HIDE_BACKUP_LINK),
 	isHosted: Boolean(process.env.HOSTED),
 	isVercel: Boolean(process.env.VERCEL),
 } as const satisfies ISiteConfig;
