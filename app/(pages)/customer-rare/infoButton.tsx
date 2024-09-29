@@ -379,7 +379,11 @@ export default function InfoButton() {
 									base: 'h-4 w-px ring-offset-0',
 								}}
 							/>
-							{rating}
+							{rating === '极度不满'
+								? `${rating}（释放惩罚符卡）`
+								: rating === '完美'
+									? `${rating}（释放奖励符卡）`
+									: rating}
 						</div>
 					))}
 				</div>
