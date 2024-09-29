@@ -3,7 +3,7 @@ import {twJoin} from 'tailwind-merge';
 
 import {usePathname} from 'next/navigation';
 import {useTheme} from 'next-themes';
-import {useMounted} from '@/hooks';
+import {useMounted, useVibrate} from '@/hooks';
 
 import {DropdownItem, DropdownMenu, DropdownTrigger, type Selection, Spinner} from '@nextui-org/react';
 import {faCircleHalfStroke, faMoon, faSun} from '@fortawesome/free-solid-svg-icons';
@@ -38,8 +38,18 @@ export default memo<IProps>(function ThemeSwitcher({isMenu}) {
 	const pathname = usePathname() as TSitePath;
 	const {theme, setTheme} = useTheme();
 	const [selectedTheme, setSelectedTheme] = useState(new Set([theme]) as SelectionSet);
+	const vibrate = useVibrate();
 
 	const isHighAppearance = store.persistence.highAppearance.use();
+
+	const handleOpenChange = useCallback(
+		(isOpen: boolean) => {
+			if (isOpen) {
+				vibrate();
+			}
+		},
+		[vibrate]
+	);
 
 	const onSelectedThemeChange = useCallback(
 		(value: Selection) => {
@@ -98,6 +108,7 @@ export default memo<IProps>(function ThemeSwitcher({isMenu}) {
 	return (
 		<Dropdown
 			showArrow
+			onOpenChange={handleOpenChange}
 			classNames={{
 				content: twJoin('min-w-28 p-0', isHighAppearance && 'bg-background/70 backdrop-saturate-150'),
 			}}

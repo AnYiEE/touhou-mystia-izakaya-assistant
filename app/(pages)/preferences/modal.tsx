@@ -4,6 +4,7 @@ import {useCallback} from 'react';
 import {twJoin} from 'tailwind-merge';
 
 import {useRouter} from 'next/navigation';
+import {useVibrate} from '@/hooks';
 
 import {Modal, ModalBody, ModalContent, ScrollShadow} from '@nextui-org/react';
 
@@ -17,15 +18,17 @@ export function PreferencesModalDefault() {
 
 export default function PreferencesModal() {
 	const router = useRouter();
+	const vibrate = useVibrate();
 
 	const isHighAppearance = store.persistence.highAppearance.use();
 
 	const handleClose = useCallback(() => {
+		vibrate();
 		// Delay closing to allow time for exit animation.
 		setTimeout(() => {
 			router.back();
 		}, 300);
-	}, [router]);
+	}, [router, vibrate]);
 
 	return (
 		<Modal

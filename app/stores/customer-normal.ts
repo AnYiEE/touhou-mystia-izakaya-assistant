@@ -400,10 +400,6 @@ export const customerNormalStore = store(state, {
 			trackEvent(TrackCategory.Select, 'Customer', customerName);
 		},
 
-		clearBeverageTableSearchValue() {
-			currentStore.shared.beverage.searchValue.set('');
-			currentStore.shared.beverage.page.set(1);
-		},
 		onBeverageTableAction(beverageName: TBeverageNames) {
 			currentStore.shared.beverage.name.set(beverageName);
 			trackEvent(TrackCategory.Select, 'Beverage', beverageName);
@@ -415,13 +411,9 @@ export const customerNormalStore = store(state, {
 			currentStore.beverageTableRows.set(rows);
 			currentStore.shared.beverage.page.set(1);
 		},
-		onBeverageTableSearchValueChange(value: Key | null) {
-			if (value) {
-				currentStore.shared.beverage.searchValue.set(value as string);
-				currentStore.shared.beverage.page.set(1);
-			} else {
-				currentStore.shared.beverage.searchValue.set('');
-			}
+		onBeverageTableSearchValueChange(value: string) {
+			currentStore.shared.beverage.searchValue.set(value);
+			currentStore.shared.beverage.page.set(1);
 		},
 		onBeverageTableSelectedDlcsChange(dlcs: Selection) {
 			currentStore.shared.beverage.dlcs.set(dlcs as SelectionSet);
@@ -469,10 +461,6 @@ export const customerNormalStore = store(state, {
 			trackEvent(TrackCategory.Select, 'Ingredient', ingredientName);
 		},
 
-		clearRecipeTableSearchValue() {
-			currentStore.shared.recipe.searchValue.set('');
-			currentStore.shared.recipe.page.set(1);
-		},
 		onRecipeTableAction(recipeName: TRecipeNames) {
 			currentStore.shared.recipe.data.set({
 				extraIngredients: [],
@@ -487,13 +475,9 @@ export const customerNormalStore = store(state, {
 			currentStore.recipeTableRows.set(rows);
 			currentStore.shared.recipe.page.set(1);
 		},
-		onRecipeTableSearchValueChange(value: Key | null) {
-			if (value) {
-				currentStore.shared.recipe.searchValue.set(value as string);
-				currentStore.shared.recipe.page.set(1);
-			} else {
-				currentStore.shared.recipe.searchValue.set('');
-			}
+		onRecipeTableSearchValueChange(value: string) {
+			currentStore.shared.recipe.searchValue.set(value);
+			currentStore.shared.recipe.page.set(1);
 		},
 		onRecipeTableSelectedCookersChange(cookers: Selection) {
 			currentStore.shared.recipe.cookers.set(cookers as SelectionSet);

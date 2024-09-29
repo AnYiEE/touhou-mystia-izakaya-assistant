@@ -3,6 +3,8 @@
 import {memo, useCallback} from 'react';
 import {twJoin} from 'tailwind-merge';
 
+import {useVibrate} from '@/hooks';
+
 import {Button, ScrollShadow, Select, SelectItem, type Selection, Switch} from '@nextui-org/react';
 
 import DataManager, {type IDataManagerProps} from './dataManager';
@@ -17,6 +19,8 @@ import {customerRareStore as customerStore, globalStore} from '@/stores';
 interface IProps extends IDataManagerProps {}
 
 export default memo<IProps>(function Content({onModalClose}) {
+	const vibrate = useVibrate();
+
 	const isOrderLinkedFilter = customerStore.persistence.customer.orderLinkedFilter.use();
 	const isShowTagDescription = customerStore.persistence.customer.showTagDescription.use();
 
@@ -50,10 +54,11 @@ export default memo<IProps>(function Content({onModalClose}) {
 	);
 
 	const onClearPopularTagButtonPress = useCallback(() => {
+		vibrate();
 		globalStore.persistence.popular.isNegative.set(false);
 		globalStore.selectedPopularTag.set(new Set());
 		resetRecipeTablePage();
-	}, [resetRecipeTablePage]);
+	}, [resetRecipeTablePage, vibrate]);
 
 	return (
 		<div>

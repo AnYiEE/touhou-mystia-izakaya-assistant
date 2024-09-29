@@ -1,10 +1,11 @@
 'use client';
 
-import {type JSX, type PropsWithChildren, memo, startTransition, useReducer} from 'react';
+import {type JSX, type PropsWithChildren, memo, startTransition, useCallback, useReducer} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {usePathname} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
+import {useVibrate} from '@/hooks';
 
 import {
 	Button,
@@ -60,6 +61,7 @@ const NavbarLink = memo<PropsWithChildren<INavbarLinkProps>>(function NavbarLink
 	...props
 }) {
 	const startProgress = useProgress();
+	const vibrate = useVibrate();
 
 	return (
 		<Button
@@ -67,6 +69,7 @@ const NavbarLink = memo<PropsWithChildren<INavbarLinkProps>>(function NavbarLink
 			size="sm"
 			variant={isActivated ? 'flat' : 'light'}
 			onPress={() => {
+				vibrate();
 				showProgress(startProgress);
 			}}
 			className={twMerge('text-base', className)}
@@ -121,8 +124,18 @@ export default function Navbar() {
 	const pathname = usePathname() as TSitePath;
 	const startProgress = useProgress();
 	const [isMenuOpened, toggleMenuOpened] = useReducer(toggleBoolean, false);
+	const vibrate = useVibrate();
 
 	const isHighAppearance = store.persistence.highAppearance.use();
+
+	const handleDropdownOpenChange = useCallback(
+		(isOpen: boolean) => {
+			if (isOpen) {
+				vibrate();
+			}
+		},
+		[vibrate]
+	);
 
 	// Support parallel routing pages.
 	const shouldShowPreferences = pathname !== '/' && pathname !== '/about';
@@ -145,6 +158,7 @@ export default function Navbar() {
 						color="foreground"
 						href={links.index.href}
 						onPress={() => {
+							vibrate();
 							showProgress(startProgress);
 						}}
 						aria-label={links.index.label}
@@ -180,6 +194,7 @@ export default function Navbar() {
 								const dropdownElement = (
 									<Dropdown
 										key={dropdownIndex}
+										onOpenChange={handleDropdownOpenChange}
 										classNames={{
 											content: twJoin(
 												'min-w-24 p-0',
@@ -241,7 +256,11 @@ export default function Navbar() {
 			<NavbarContent as="div" justify="end" className="basis-1 pl-4 md:hidden">
 				<ThemeSwitcher isMenu />
 				<Tooltip showArrow content={isMenuOpened ? '收起菜单' : '打开菜单'} placement="left">
-					<NavbarMenuToggle aria-label={isMenuOpened ? '收起菜单' : '打开菜单'} />
+					<NavbarMenuToggle
+						onChange={vibrate}
+						srOnlyText="打开或收起菜单"
+						aria-label={isMenuOpened ? '收起菜单' : '打开菜单'}
+					/>
 				</Tooltip>
 			</NavbarContent>
 
@@ -254,6 +273,7 @@ export default function Navbar() {
 								color={isActivated ? 'primary' : 'foreground'}
 								size="lg"
 								onPress={() => {
+									vibrate();
 									showProgress(startProgress);
 									toggleMenuOpened();
 								}}

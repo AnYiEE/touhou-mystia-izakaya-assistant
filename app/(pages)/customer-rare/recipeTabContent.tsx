@@ -435,8 +435,12 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 							size="sm"
 							startContent={<FontAwesomeIcon icon={faMagnifyingGlass} className="pointer-events-none" />}
 							variant="flat"
-							onClear={customerStore.clearRecipeTableSearchValue}
-							onInputChange={customerStore.onRecipeTableSearchValueChange}
+							onInputChange={(value) => {
+								if (!value) {
+									vibrate();
+								}
+								customerStore.onRecipeTableSearchValueChange(value);
+							}}
 							aria-label="选择或输入料理名称"
 							title="选择或输入料理名称"
 							popoverProps={{
@@ -655,6 +659,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 			tableRowsPerPage,
 			tableSelectableRows,
 			tableVisibleColumns,
+			vibrate,
 		]
 	);
 

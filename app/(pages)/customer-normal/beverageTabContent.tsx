@@ -295,8 +295,12 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 							size="sm"
 							startContent={<FontAwesomeIcon icon={faMagnifyingGlass} className="pointer-events-none" />}
 							variant="flat"
-							onClear={customerStore.clearBeverageTableSearchValue}
-							onInputChange={customerStore.onBeverageTableSearchValueChange}
+							onInputChange={(value) => {
+								if (!value) {
+									vibrate();
+								}
+								customerStore.onBeverageTableSearchValueChange(value);
+							}}
 							aria-label="选择或输入酒水名称"
 							title="选择或输入酒水名称"
 							popoverProps={{
@@ -482,6 +486,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 			tableRowsPerPage,
 			tableSelectableRows,
 			tableVisibleColumns,
+			vibrate,
 		]
 	);
 
