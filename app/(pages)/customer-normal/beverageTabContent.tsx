@@ -448,11 +448,8 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 							}}
 							classNames={{
 								base: 'min-w-16',
-								listboxWrapper: twJoin(
-									'[&_li]:transition-background',
-									isHighAppearance &&
-										'focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40'
-								),
+								listboxWrapper:
+									'[&_li]:transition-background focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40',
 								popoverContent: twJoin(
 									'min-w-20',
 									isHighAppearance && 'bg-content1/70 backdrop-blur-lg'

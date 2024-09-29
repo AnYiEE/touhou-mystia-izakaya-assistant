@@ -120,7 +120,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 								trigger: twJoin(
 									'transition-background',
 									onModalClose || !isHighAppearance
-										? 'bg-default-50 data-[hover=true]:bg-default-100'
+										? 'bg-default-50 data-[hover=true]:bg-default-100 dark:bg-default-100 dark:data-[hover=true]:bg-default-200'
 										: 'bg-default-100/40 backdrop-blur data-[hover=true]:bg-default-200/40'
 								),
 							}}
