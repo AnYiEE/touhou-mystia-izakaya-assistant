@@ -42,12 +42,13 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 		document.body.classList.toggle('bg-blend-mystia-pseudo', isEnabled);
 	});
 
-	// Initialize current popular tag based on the persistence data.
-	const globalPopular = globalStore.persistence.popular.use();
-	customerNormalStore.shared.customer.popular.assign(globalPopular);
-	customerRareStore.shared.customer.popular.assign(globalPopular);
-	ingredientsStore.shared.popular.assign(globalPopular);
-	recipesStore.shared.popular.assign(globalPopular);
+	// Update the current popular tag when there is a change in the persisted popular tag data.
+	globalStore.persistence.popular.onChange((popular) => {
+		customerNormalStore.shared.customer.popular.assign(popular);
+		customerRareStore.shared.customer.popular.assign(popular);
+		ingredientsStore.shared.popular.assign(popular);
+		recipesStore.shared.popular.assign(popular);
+	});
 
 	useEffect(() => {
 		// If the saved version is not set or outdated, initialize it with the current version.
@@ -57,6 +58,13 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 		if (savedVersion === null || compareVersions(version, savedVersion) === 1) {
 			globalStore.persistence.version.set(version);
 		}
+
+		// Initialize popular tag based on the persistence data.
+		const globalPopular = globalStore.persistence.popular.get();
+		customerNormalStore.shared.customer.popular.set(globalPopular);
+		customerRareStore.shared.customer.popular.set(globalPopular);
+		ingredientsStore.shared.popular.set(globalPopular);
+		recipesStore.shared.popular.set(globalPopular);
 
 		// Synchronize state across multiple tabs as needed.
 		const updateStore = debounce((event: StorageEvent) => {
