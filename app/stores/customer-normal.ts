@@ -523,7 +523,7 @@ export const customerNormalStore = store(state, {
 			if (customerName === null) {
 				return;
 			}
-			const {positiveTags: customerPositiveTags} = instance_customer.getPropsByName(customerName);
+			const customerPositiveTags = instance_customer.getPropsByName(customerName, 'positiveTags');
 			const customerPopularData = currentStore.shared.customer.popular.get();
 			let extraIngredients: TIngredientNames[] = [];
 			const recipeData = currentStore.shared.recipe.data.get();

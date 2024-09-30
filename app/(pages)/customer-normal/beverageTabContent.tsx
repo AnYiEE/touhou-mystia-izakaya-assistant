@@ -86,7 +86,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 			}));
 		}
 
-		const {beverageTags} = instance_customer.getPropsByName(currentCustomerName);
+		const beverageTags = instance_customer.getPropsByName(currentCustomerName, 'beverageTags');
 
 		const dataWithRealSuitability = data.map((item) => {
 			const {suitability, tags: matchedTags} = instance_beverage.getCustomerSuitability(item.name, beverageTags);

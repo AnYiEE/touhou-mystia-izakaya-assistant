@@ -1,4 +1,5 @@
 import {forwardRef, memo, useCallback, useMemo} from 'react';
+import {curry, curryRight} from 'lodash';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -19,7 +20,7 @@ import {
 } from '@/data';
 import type {TRecipeTag} from '@/data/types';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
-import {checkA11yConfirmKey, intersection, toValueWithKey} from '@/utils';
+import {type Recipe, checkA11yConfirmKey, intersection, toValueWithKey} from '@/utils';
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IIngredientTabContentProps>(function IngredientsTabContent(
@@ -82,6 +83,32 @@ export default memo(
 		const {negativeTags: customerNegativeTags, positiveTags: customerPositiveTags} =
 			instance_customer.getPropsByName(currentCustomerName);
 
+		const {extraIngredients: currentRecipeExtraIngredients} = currentRecipeData;
+
+		// Checked `currentRecipe` is not null above.
+		const _nonNullableRecipe = currentRecipe as Recipe['data'][number];
+
+		const {ingredients: currentRecipeIngredients, positiveTags: currentRecipePositiveTags} = _nonNullableRecipe;
+
+		const isFullFilled = currentRecipeIngredients.length + currentRecipeExtraIngredients.length >= 5;
+		const isLargePartitionTagNext = currentRecipeIngredients.length + currentRecipeExtraIngredients.length === 4;
+
+		const composeTags = curry(instance_recipe.composeTags)(
+			currentRecipeIngredients,
+			currentRecipeExtraIngredients,
+			currentRecipePositiveTags
+		);
+		const calculateTagsWithPopular = curryRight(instance_ingredient.calculateTagsWithPopular)(
+			currentCustomerPopular
+		);
+
+		const currentRecipeExtraIngredientsTags = currentRecipeExtraIngredients.flatMap((extraIngredient) =>
+			instance_ingredient.getPropsByName(extraIngredient, 'tags')
+		);
+		const currentRecipeExtraIngredientsTagsWithPopular = calculateTagsWithPopular(
+			currentRecipeExtraIngredientsTags
+		);
+
 		return (
 			<>
 				<ScrollShadow
@@ -94,11 +121,7 @@ export default memo(
 				>
 					<div className="m-2 grid grid-cols-fill-12 justify-around gap-4">
 						{data.map(({name, tags}, index) => {
-							if (currentRecipe === null) {
-								return null;
-							}
-							const {extraIngredients} = currentRecipeData;
-							if (currentRecipe.ingredients.length + extraIngredients.length >= 5) {
+							if (isFullFilled) {
 								return (
 									<div
 										key={index}
@@ -109,37 +132,24 @@ export default memo(
 									</div>
 								);
 							}
-							const extraTags = extraIngredients.flatMap((extraIngredient) =>
-								instance_ingredient.getPropsByName(extraIngredient, 'tags')
-							);
-							const extraTagsWithPopular = instance_ingredient.calculateTagsWithPopular(
-								extraTags,
-								currentCustomerPopular
-							);
-							const before = instance_recipe.composeTags(
-								currentRecipe.ingredients,
-								extraIngredients,
-								currentRecipe.positiveTags,
-								extraTagsWithPopular
-							);
-							const tagsWithPopular = instance_ingredient.calculateTagsWithPopular(
-								tags,
-								currentCustomerPopular
-							);
-							const after = instance_recipe.composeTags(
-								currentRecipe.ingredients,
-								extraIngredients,
-								currentRecipe.positiveTags,
-								[...extraTagsWithPopular, ...tagsWithPopular]
-							);
+
+							const tagsWithPopular = calculateTagsWithPopular(tags);
+							const allTagsWithPopular = [
+								...currentRecipeExtraIngredientsTagsWithPopular,
+								...tagsWithPopular,
+							];
+
+							const before = composeTags(currentRecipeExtraIngredientsTagsWithPopular);
+							const after = composeTags(allTagsWithPopular);
+
 							let scoreChange = instance_recipe.getIngredientScoreChange(
 								before,
 								after,
 								customerNegativeTags,
 								customerPositiveTags
 							);
-							const isLargePartitionTagNext =
-								currentRecipe.ingredients.length + extraIngredients.length === 4;
+
+							// The customer like or dislike the large partition tag.
 							scoreChange -= Number(
 								isLargePartitionTagNext &&
 									(customerNegativeTags as TRecipeTag[]).includes(TAG_LARGE_PARTITION)
@@ -148,8 +158,12 @@ export default memo(
 								isLargePartitionTagNext &&
 									(customerPositiveTags as TRecipeTag[]).includes(TAG_LARGE_PARTITION)
 							);
+
+							// The current popular tag is the large partition tag.
 							const shouldCalculateLargePartitionTag =
 								isLargePartitionTagNext && currentCustomerPopular.tag === TAG_LARGE_PARTITION;
+
+							// The customer like or dislike the popular tag.
 							scoreChange -= Number(
 								shouldCalculateLargePartitionTag &&
 									(customerNegativeTags as TRecipeTag[]).includes(TAG_POPULAR_NEGATIVE) &&
@@ -170,19 +184,24 @@ export default memo(
 									(customerPositiveTags as TRecipeTag[]).includes(TAG_POPULAR_POSITIVE) &&
 									!currentCustomerPopular.isNegative
 							);
+
 							const isDown = scoreChange < 0;
 							const isUp = scoreChange > 0;
 							const isNoChange = scoreChange === 0;
+
 							const color = isUp ? 'success' : isDown ? 'danger' : 'default';
 							const score = isUp ? `+${scoreChange}` : `${scoreChange}`;
-							const label = `点击：加入额外食材【${name}】${isNoChange ? '' : `，匹配度${score}`}`;
+
+							const badgeContent = isNoChange ? '' : score;
+							const tooltipContent = `点击：加入额外食材【${name}】${isNoChange ? '' : `，匹配度${score}`}`;
+
 							return (
 								<Tooltip
 									key={index}
 									showArrow
 									closeDelay={0}
 									color={color}
-									content={label}
+									content={tooltipContent}
 									offset={scoreChange > 1 ? 10 : 7}
 									size="sm"
 								>
@@ -197,7 +216,7 @@ export default memo(
 										}}
 										role="button"
 										tabIndex={0}
-										aria-label={label}
+										aria-label={tooltipContent}
 										className={twJoin(
 											'group flex cursor-pointer flex-col items-center transition',
 											isNoChange &&
@@ -206,7 +225,7 @@ export default memo(
 									>
 										<Badge
 											color={color}
-											content={isNoChange ? '' : score}
+											content={badgeContent}
 											isInvisible={isNoChange}
 											size="sm"
 											classNames={{

@@ -1,4 +1,5 @@
 import {forwardRef, useCallback, useMemo} from 'react';
+import {curryRight} from 'lodash';
 import {twJoin} from 'tailwind-merge';
 
 import {useVibrate, useViewInNewWindow} from '@/hooks';
@@ -82,6 +83,11 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 	const tableSortDescriptor = customerStore.shared.recipe.sortDescriptor.use();
 	const tableVisibleColumns = customerStore.recipeTableColumns.use();
 
+	const calculateTagsWithPopular = useMemo(
+		() => curryRight(instance_recipe.calculateTagsWithPopular)(currentCustomerPopular),
+		[currentCustomerPopular, instance_recipe.calculateTagsWithPopular]
+	);
+
 	const data = useMemo(
 		() =>
 			instance_recipe.data.filter(
@@ -111,10 +117,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 
 		const dataWithRealSuitability = data.map((item) => {
 			const composedRecipeTags = instance_recipe.composeTags(item.ingredients, [], item.positiveTags, []);
-			const recipeTagsWithPopular = instance_recipe.calculateTagsWithPopular(
-				composedRecipeTags,
-				currentCustomerPopular
-			);
+			const recipeTagsWithPopular = calculateTagsWithPopular(composedRecipeTags);
 
 			const {recipe: easterEggRecipe, score: easterEggScore} = checkRecipeEasterEgg({
 				currentCustomerName,
@@ -161,10 +164,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 
 		return dataWithRealSuitability.filter(({name, pinyin, dlc, cooker, positiveTags}) => {
 			const {pinyinFirstLetters, pinyinWithoutTone} = processPinyin(pinyin);
-			const recipeTagsWithPopular = instance_recipe.calculateTagsWithPopular(
-				positiveTags,
-				currentCustomerPopular
-			);
+			const recipeTagsWithPopular = calculateTagsWithPopular(positiveTags);
 
 			const isNameMatched = hasNameFilter
 				? name.toLowerCase().includes(searchValueLowerCase) ||
@@ -181,8 +181,8 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 			return isNameMatched && isDlcMatched && isCookerMatched && isPositiveTagsMatched;
 		});
 	}, [
+		calculateTagsWithPopular,
 		currentCustomerData,
-		currentCustomerPopular,
 		data,
 		hasNameFilter,
 		instance_rare,
@@ -256,10 +256,8 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 			}
 
 			const composedRecipeTags = instance_recipe.composeTags(ingredients, [], positiveTags, []);
-			const recipeTagsWithPopular = instance_recipe.calculateTagsWithPopular(
-				composedRecipeTags,
-				currentCustomerPopular
-			);
+			const recipeTagsWithPopular = calculateTagsWithPopular(composedRecipeTags);
+
 			const {positive: positiveTagStyle, negative: negativeTagStyle} =
 				customerTagStyleMap[currentCustomerData.target];
 
@@ -419,7 +417,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 				}
 			}
 		},
-		[currentCustomerData, currentCustomerPopular, instance_recipe, openWindow, vibrate]
+		[calculateTagsWithPopular, currentCustomerData, instance_recipe, openWindow, vibrate]
 	);
 
 	const tableToolbar = useMemo(

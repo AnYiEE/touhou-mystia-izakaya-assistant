@@ -95,7 +95,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 			target === 'customer_rare' ? instance_rare : instance_special
 		) as typeof instance_rare;
 
-		const {beverageTags} = instance_customer.getPropsByName(currentCustomerName);
+		const beverageTags = instance_customer.getPropsByName(currentCustomerName, 'beverageTags');
 
 		const dataWithRealSuitability = data.map((item) => {
 			const {suitability, tags: matchedTags} = instance_beverage.getCustomerSuitability(item.name, beverageTags);

@@ -68,10 +68,9 @@ export class Beverage extends Food<TBeverages> {
 	 * @returns An object containing the suitability of the beverage and the tags that are common to both the beverage and the customer.
 	 */
 	public getCustomerSuitability<T extends string>(name: TBeverageNames, customerTags: ReadonlyArray<T>) {
-		const beverage = this.getPropsByName(name);
+		const beverageTags = this.getPropsByName(name, 'tags');
 
-		const {tags} = beverage;
-		const {commonTags, count} = this.getCommonTags(tags, customerTags);
+		const {commonTags, count} = this.getCommonTags(beverageTags, customerTags);
 
 		return {
 			suitability: count,

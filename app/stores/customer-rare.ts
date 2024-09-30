@@ -654,15 +654,16 @@ export const customerRareStore = store(state, {
 			let beverageTags: TBeverageTag[] = [];
 			const beverageName = currentStore.shared.beverage.name.get();
 			if (beverageName) {
-				const beverage = instance_beverage.getPropsByName(beverageName);
-				beverageTags = beverage.tags;
+				beverageTags = instance_beverage.getPropsByName(beverageName, 'tags');
 			}
 			const recipeData = currentStore.shared.recipe.data.get();
 			const recipeName = recipeData?.name ?? null;
 			const ingredients: TIngredientNames[] = [];
 			if (recipeData) {
-				const recipe = instance_recipe.getPropsByName(recipeData.name);
-				ingredients.push(...recipe.ingredients, ...recipeData.extraIngredients);
+				ingredients.push(
+					...instance_recipe.getPropsByName(recipeData.name, 'ingredients'),
+					...recipeData.extraIngredients
+				);
 			}
 			const recipeTagsWithPopular = currentStore.shared.recipe.tagsWithPopular.get();
 			const rating = evaluateMeal({

@@ -13,7 +13,7 @@ import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
-import {DARK_MATTER_NAME, type TIngredientNames} from '@/data';
+import {DARK_MATTER_NAME, DARK_MATTER_PRICE, type TIngredientNames} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
@@ -334,10 +334,9 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 									? instance_beverage.getPropsByName(currentBeverageName, 'price')
 									: 0) +
 									(currentRecipeData?.name
-										? instance_recipe.getPropsByName(
-												isDarkMatter ? DARK_MATTER_NAME : currentRecipeData.name,
-												'price'
-											)
+										? isDarkMatter
+											? DARK_MATTER_PRICE
+											: instance_recipe.getPropsByName(currentRecipeData.name, 'price')
 										: 0)}
 							</Price>
 						</span>
