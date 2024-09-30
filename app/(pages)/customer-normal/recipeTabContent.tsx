@@ -1,5 +1,5 @@
 import {forwardRef, useCallback, useMemo} from 'react';
-import {curryRight} from 'lodash';
+import {curry, curryRight} from 'lodash';
 import {twJoin} from 'tailwind-merge';
 
 import {useVibrate, useViewInNewWindow} from '@/hooks';
@@ -80,6 +80,18 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 	const tableSortDescriptor = customerStore.shared.recipe.sortDescriptor.use();
 	const tableVisibleColumns = customerStore.recipeTableColumns.use();
 
+	const composeTagsWithPopular = useMemo(
+		() =>
+			curry(instance_recipe.composeTagsWithPopular)(
+				curry.placeholder,
+				[],
+				curry.placeholder,
+				[],
+				currentCustomerPopular
+			),
+		[currentCustomerPopular, instance_recipe.composeTagsWithPopular]
+	);
+
 	const calculateTagsWithPopular = useMemo(
 		() => curryRight(instance_recipe.calculateTagsWithPopular)(currentCustomerPopular),
 		[currentCustomerPopular, instance_recipe.calculateTagsWithPopular]
@@ -107,7 +119,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 			instance_customer.getPropsByName(currentCustomerName);
 
 		const dataWithRealSuitability = data.map((item) => {
-			const composedRecipeTags = instance_recipe.composeTags(item.ingredients, [], item.positiveTags, []);
+			const composedRecipeTags = composeTagsWithPopular(item.ingredients, item.positiveTags);
 			const recipeTagsWithPopular = calculateTagsWithPopular(composedRecipeTags);
 
 			const {recipe: easterEggRecipe, score: easterEggScore} = checkEasterEgg({
@@ -173,6 +185,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 		});
 	}, [
 		calculateTagsWithPopular,
+		composeTagsWithPopular,
 		currentCustomerName,
 		data,
 		hasNameFilter,
@@ -245,7 +258,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 				return null;
 			}
 
-			const composedRecipeTags = instance_recipe.composeTags(ingredients, [], positiveTags, []);
+			const composedRecipeTags = composeTagsWithPopular(ingredients, positiveTags);
 			const recipeTagsWithPopular = calculateTagsWithPopular(composedRecipeTags);
 
 			const {positive: positiveTagStyle, negative: negativeTagStyle} = CUSTOMER_NORMAL_TAG_STYLE;
@@ -406,7 +419,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 				}
 			}
 		},
-		[calculateTagsWithPopular, currentCustomerName, instance_recipe, openWindow, vibrate]
+		[calculateTagsWithPopular, composeTagsWithPopular, currentCustomerName, openWindow, vibrate]
 	);
 
 	const tableToolbar = useMemo(

@@ -115,11 +115,12 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 				instance_ingredient.getPropsByName(extraIngredient, 'tags')
 			);
 
-			const composedRecipeTags = instance_recipe.composeTags(
+			const composedRecipeTags = instance_recipe.composeTagsWithPopular(
 				originalIngredients,
 				extraIngredients,
 				originalTags,
-				extraTags
+				extraTags,
+				currentCustomerPopular
 			);
 
 			_currentRecipeTagsWithPopular.push(

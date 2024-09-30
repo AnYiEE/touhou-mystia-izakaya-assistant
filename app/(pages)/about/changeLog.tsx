@@ -92,6 +92,7 @@ const changelog = [
 			'新增：支持同时导出稀客和普客的套餐搭配数据。',
 			`新增：料理和食材页面中的料理和食材标签将依照已设置的“${TAG_POPULAR_POSITIVE}”或“${TAG_POPULAR_NEGATIVE}”标签而动态调整。`,
 			`修复：料理页面的部分料理未显示“${TAG_LARGE_PARTITION}”标签。`,
+			'修复：额外食材评分逻辑。',
 		],
 	},
 ] as const satisfies {

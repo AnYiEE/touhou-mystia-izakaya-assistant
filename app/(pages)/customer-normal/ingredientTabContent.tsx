@@ -20,7 +20,7 @@ import {
 } from '@/data';
 import type {TRecipeTag} from '@/data/types';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
-import {type Recipe, checkA11yConfirmKey, intersection, toValueWithKey} from '@/utils';
+import {type Recipe, checkA11yConfirmKey, intersection, toValueWithKey, uniq} from '@/utils';
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IIngredientTabContentProps>(function IngredientsTabContent(
@@ -92,15 +92,24 @@ export default memo(
 
 		const isFullFilled = currentRecipeIngredients.length + currentRecipeExtraIngredients.length >= 5;
 		const isLargePartitionTagNext = currentRecipeIngredients.length + currentRecipeExtraIngredients.length === 4;
+		const shouldCalculateLargePartitionTag =
+			isLargePartitionTagNext && currentCustomerPopular.tag === TAG_LARGE_PARTITION;
 
-		const composeTags = curry(instance_recipe.composeTags)(
+		const composeTagsWithPopular = curry(instance_recipe.composeTagsWithPopular)(
 			currentRecipeIngredients,
 			currentRecipeExtraIngredients,
-			currentRecipePositiveTags
+			currentRecipePositiveTags,
+			curry.placeholder,
+			currentCustomerPopular
 		);
 		const calculateTagsWithPopular = curryRight(instance_ingredient.calculateTagsWithPopular)(
 			currentCustomerPopular
 		);
+
+		const currentRecipeIngredientsTags = currentRecipeIngredients.flatMap((ingredient) =>
+			instance_ingredient.getPropsByName(ingredient, 'tags')
+		);
+		const currentRecipeIngredientsTagsWithPopular = calculateTagsWithPopular(currentRecipeIngredientsTags);
 
 		const currentRecipeExtraIngredientsTags = currentRecipeExtraIngredients.flatMap((extraIngredient) =>
 			instance_ingredient.getPropsByName(extraIngredient, 'tags')
@@ -108,6 +117,11 @@ export default memo(
 		const currentRecipeExtraIngredientsTagsWithPopular = calculateTagsWithPopular(
 			currentRecipeExtraIngredientsTags
 		);
+
+		const currentRecipeAllIngredientsTags = uniq([
+			...currentRecipeIngredientsTagsWithPopular,
+			...currentRecipeExtraIngredientsTagsWithPopular,
+		]);
 
 		return (
 			<>
@@ -134,13 +148,10 @@ export default memo(
 							}
 
 							const tagsWithPopular = calculateTagsWithPopular(tags);
-							const allTagsWithPopular = [
-								...currentRecipeExtraIngredientsTagsWithPopular,
-								...tagsWithPopular,
-							];
+							const allTagsWithPopular = uniq([...currentRecipeAllIngredientsTags, ...tagsWithPopular]);
 
-							const before = composeTags(currentRecipeExtraIngredientsTagsWithPopular);
-							const after = composeTags(allTagsWithPopular);
+							const before = composeTagsWithPopular(currentRecipeExtraIngredientsTagsWithPopular);
+							const after = composeTagsWithPopular(allTagsWithPopular);
 
 							let scoreChange = instance_recipe.getIngredientScoreChange(
 								before,
@@ -159,11 +170,7 @@ export default memo(
 									(customerPositiveTags as TRecipeTag[]).includes(TAG_LARGE_PARTITION)
 							);
 
-							// The current popular tag is the large partition tag.
-							const shouldCalculateLargePartitionTag =
-								isLargePartitionTagNext && currentCustomerPopular.tag === TAG_LARGE_PARTITION;
-
-							// The customer like or dislike the popular tag.
+							// The current popular tag is the large partition tag and the customer has popular tags.
 							scoreChange -= Number(
 								shouldCalculateLargePartitionTag &&
 									(customerNegativeTags as TRecipeTag[]).includes(TAG_POPULAR_NEGATIVE) &&

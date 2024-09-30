@@ -62,7 +62,7 @@ export default function Recipes() {
 			searchResult.map((data) => ({
 				...data,
 				positiveTags: instance.calculateTagsWithPopular(
-					instance.composeTags(data.ingredients, [], data.positiveTags, []),
+					instance.composeTagsWithPopular(data.ingredients, [], data.positiveTags, [], null),
 					currentPopular
 				),
 			})) as unknown as typeof searchResult,

@@ -41,6 +41,7 @@ import {
 	toValueObject,
 	toValueWithKey,
 	union,
+	uniq,
 } from '@/utils';
 
 export interface ICustomerOrder {
@@ -718,11 +719,12 @@ export const customerRareStore = store(state, {
 				negativeTags,
 			});
 			const recipePrice = isDarkMatter ? DARK_MATTER_PRICE : originalRecipePrice;
-			const composedRecipeTags = instance_recipe.composeTags(
+			const composedRecipeTags = instance_recipe.composeTagsWithPopular(
 				ingredients,
 				extraIngredients,
 				positiveTags,
-				extraTags
+				extraTags,
+				popular
 			);
 			const rating = evaluateMeal({
 				currentBeverageTags: beverageTags,
@@ -731,7 +733,7 @@ export const customerRareStore = store(state, {
 				currentCustomerNegativeTags: customerNegativeTags,
 				currentCustomerOrder: order,
 				currentCustomerPositiveTags: customerPositiveTags,
-				currentIngredients: [...ingredients, ...extraIngredients],
+				currentIngredients: uniq([...ingredients, ...extraIngredients]),
 				currentRecipeName: recipeName,
 				currentRecipeTagsWithPopular: instance_recipe.calculateTagsWithPopular(composedRecipeTags, popular),
 				hasMystiaCooker,

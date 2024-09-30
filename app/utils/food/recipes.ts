@@ -84,7 +84,7 @@ export class Recipe extends Food<TRecipes> {
 		const recipeTagsWithPopular = [...recipeTags];
 		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popular;
 
-		if (currentPopularTag && recipeTags.includes(currentPopularTag as TRecipeTag)) {
+		if (currentPopularTag !== null && recipeTags.includes(currentPopularTag as TRecipeTag)) {
 			recipeTagsWithPopular.push(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
 		}
 
@@ -122,25 +122,33 @@ export class Recipe extends Food<TRecipes> {
 	}
 
 	/**
-	 * @description Compose recipe tags based on all ingredient count, original recipe tags and the extra ingredient tags.
+	 * @description Compose recipe tags based on all ingredient count, original recipe tags, the extra ingredient tags and the popular tag data.
 	 */
-	public composeTags(
+	public composeTagsWithPopular(
 		originalIngredients: ReadonlyArray<TIngredientNames>,
 		extraIngredients: ReadonlyArray<TIngredientNames>,
 		originalRecipePositiveTags: ReadonlyArray<TRecipeTag>,
-		extraIngredientTags: ReadonlyArray<TIngredientTag>
+		extraIngredientTags: ReadonlyArray<TIngredientTag>,
+		popular: IPopularData | null
 	) {
 		const resultTags = new Set([...originalRecipePositiveTags, ...extraIngredientTags]);
+		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popular ?? {};
 
 		if (originalIngredients.length + extraIngredients.length >= 5) {
 			resultTags.add(TAG_LARGE_PARTITION);
+			if (currentPopularTag === TAG_LARGE_PARTITION) {
+				resultTags.add(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
+			}
 		}
 
-		Object.entries(Recipe._tagCoverMap)
-			.filter(([targetTag]) => resultTags.has(targetTag as TRecipeTag))
-			.forEach(([, coveredTag]) => {
+		Object.entries(Recipe._tagCoverMap).forEach(([targetTag, coveredTag]) => {
+			if (resultTags.has(targetTag as TRecipeTag)) {
 				resultTags.delete(coveredTag);
-			});
+				if (currentPopularTag === coveredTag) {
+					resultTags.delete(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
+				}
+			}
+		});
 
 		return [...resultTags] as TRecipeTag[];
 	}
