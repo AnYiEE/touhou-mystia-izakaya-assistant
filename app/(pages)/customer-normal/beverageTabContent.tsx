@@ -78,7 +78,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 	const filteredData = useMemo(() => {
 		const data = instance_beverage.data as TBeveragesWithSuitability;
 
-		if (!currentCustomerName) {
+		if (currentCustomerName === null) {
 			return data.map((item) => ({
 				...item,
 				matchedTags: [] as string[],

@@ -37,7 +37,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(
 
 	const {name: currentCustomerName} = currentCustomerData;
 
-	if (!currentSavedMeals[currentCustomerName]?.length) {
+	if (currentSavedMeals[currentCustomerName] === undefined || currentSavedMeals[currentCustomerName].length === 0) {
 		return null;
 	}
 
