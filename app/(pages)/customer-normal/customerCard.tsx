@@ -16,7 +16,7 @@ import Tags from '@/components/tags';
 import Tooltip from '@/components/tooltip';
 
 import {customerRatingColorMap} from './constants';
-import {CUSTOMER_NORMAL_TAG_STYLE, type TCustomerNormalNames} from '@/data';
+import {CUSTOMER_NORMAL_TAG_STYLE, LABEL_DLC_0, type TCustomerNormalNames} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, pinyinSort} from '@/utils';
@@ -144,7 +144,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 		positiveTags: currentCustomerPositiveTags,
 	} = instance_customer.getPropsByName(currentCustomerName);
 
-	const dlcLabel = currentCustomerDlc === 0 ? '游戏本体' : '';
+	const dlcLabel = currentCustomerDlc === 0 ? LABEL_DLC_0 : '';
 
 	const clonedCurrentCustomerPlaces = [...currentCustomerPlaces];
 	const currentCustomerMainPlace = clonedCurrentCustomerPlaces.shift();

@@ -32,6 +32,7 @@ import {siteConfig} from '@/configs';
 import {
 	type ICooker,
 	type IIngredient,
+	LABEL_DLC_0,
 	type TCookerNames,
 	type TIngredientNames,
 	type TItemNames,
@@ -237,7 +238,7 @@ const ItemPopoverCardComponent = memo(
 			};
 		}, [tags]);
 
-		const dlcLabel = dlc === 0 ? '游戏本体' : '';
+		const dlcLabel = dlc === 0 ? LABEL_DLC_0 : '';
 
 		return (
 			<div className="max-w-64 space-y-2 p-2 text-xs text-default-400 dark:text-default-500" ref={ref}>

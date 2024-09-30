@@ -39,6 +39,7 @@ import Tooltip from '@/components/tooltip';
 import {customerTagStyleMap, recipeTableColumns as tableColumns} from './constants';
 import {checkRecipeEasterEgg} from './evaluateMeal';
 import type {ITableColumn, ITableSortDescriptor, TRecipeWithSuitability, TRecipesWithSuitability} from './types';
+import {LABEL_DLC_0} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils';
 
@@ -573,7 +574,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 							>
 								{({value}) => (
 									<DropdownItem key={value} textValue={value.toString()}>
-										{value === 0 ? '游戏本体' : value}
+										{value || LABEL_DLC_0}
 									</DropdownItem>
 								)}
 							</DropdownMenu>

@@ -40,7 +40,7 @@ import {type TTableColumnKey, type TTableSortDescriptor} from '@/(pages)/custome
 import {recipeTableColumns as tableColumns} from './constants';
 import {checkEasterEgg} from './evaluateMeal';
 import type {TRecipeWithSuitability, TRecipesWithSuitability} from './types';
-import {CUSTOMER_NORMAL_TAG_STYLE} from '@/data';
+import {CUSTOMER_NORMAL_TAG_STYLE, LABEL_DLC_0} from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils';
 
@@ -562,7 +562,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 							>
 								{({value}) => (
 									<DropdownItem key={value} textValue={value.toString()}>
-										{value === 0 ? '游戏本体' : value}
+										{value || LABEL_DLC_0}
 									</DropdownItem>
 								)}
 							</DropdownMenu>

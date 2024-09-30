@@ -19,6 +19,7 @@ import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
+import {LABEL_DLC_0} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {pinyinSort} from '@/utils';
 import type {TSpriteTarget} from '@/utils/sprite/types';
@@ -165,7 +166,7 @@ export default memo(
 											</SelectItem>
 										) : (
 											<SelectItem key={value}>
-												{label === 'DLC' && value === 0 ? '游戏本体' : value.toString()}
+												{label === 'DLC' && value === 0 ? LABEL_DLC_0 : value.toString()}
 											</SelectItem>
 										)
 									}
