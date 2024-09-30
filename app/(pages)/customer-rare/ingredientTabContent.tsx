@@ -21,7 +21,7 @@ import {
 } from '@/data';
 import type {TRecipeTag} from '@/data/types';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {type Ingredient, type Recipe, checkA11yConfirmKey, intersection, toValueWithKey, uniq} from '@/utils';
+import {type Ingredient, type Recipe, checkA11yConfirmKey, intersection, toValueWithKey, union} from '@/utils';
 
 interface IProps {
 	ingredientTabStyle: IIngredientsTabStyle;
@@ -95,10 +95,7 @@ export default memo(
 		const _nonNullableRecipe = currentRecipe as Recipe['data'][number];
 
 		const {ingredients: currentRecipeIngredients, positiveTags: currentRecipePositiveTags} = _nonNullableRecipe;
-		const currentRecipeIngredientsAllIngredients = uniq([
-			...currentRecipeIngredients,
-			...currentRecipeExtraIngredients,
-		]);
+		const currentRecipeIngredientsAllIngredients = union(currentRecipeIngredients, currentRecipeExtraIngredients);
 
 		const isFullFilled = currentRecipeIngredients.length + currentRecipeExtraIngredients.length >= 5;
 		const isLargePartitionTagNext = currentRecipeIngredients.length + currentRecipeExtraIngredients.length === 4;
@@ -128,10 +125,10 @@ export default memo(
 			currentRecipeExtraIngredientsTags
 		);
 
-		const currentRecipeAllIngredientsTags = uniq([
-			...currentRecipeIngredientsTagsWithPopular,
-			...currentRecipeExtraIngredientsTagsWithPopular,
-		]);
+		const currentRecipeAllIngredientsTags = union(
+			currentRecipeIngredientsTagsWithPopular,
+			currentRecipeExtraIngredientsTagsWithPopular
+		);
 
 		return (
 			<>
@@ -158,7 +155,7 @@ export default memo(
 							}
 
 							const tagsWithPopular = calculateTagsWithPopular(tags);
-							const allTagsWithPopular = uniq([...currentRecipeAllIngredientsTags, ...tagsWithPopular]);
+							const allTagsWithPopular = union(currentRecipeAllIngredientsTags, tagsWithPopular);
 
 							const before = composeTagsWithPopular(currentRecipeAllIngredientsTags);
 							const after = composeTagsWithPopular(allTagsWithPopular);
@@ -205,7 +202,7 @@ export default memo(
 							// The customer has a ingredient-based easter agg.
 							const {ingredient: easterEggIngredient, score: easterEggScore} = checkIngredientEasterEgg({
 								currentCustomerName,
-								currentIngredients: uniq([...currentRecipeIngredientsAllIngredients, name]),
+								currentIngredients: union([...currentRecipeIngredientsAllIngredients, name]),
 							});
 							if (
 								name === easterEggIngredient &&

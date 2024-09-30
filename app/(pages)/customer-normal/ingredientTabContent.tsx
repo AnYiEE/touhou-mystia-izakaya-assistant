@@ -20,7 +20,7 @@ import {
 } from '@/data';
 import type {TRecipeTag} from '@/data/types';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
-import {type Recipe, checkA11yConfirmKey, intersection, toValueWithKey, uniq} from '@/utils';
+import {type Recipe, checkA11yConfirmKey, intersection, toValueWithKey, union} from '@/utils';
 
 export default memo(
 	forwardRef<HTMLDivElement | null, IIngredientTabContentProps>(function IngredientsTabContent(
@@ -118,10 +118,10 @@ export default memo(
 			currentRecipeExtraIngredientsTags
 		);
 
-		const currentRecipeAllIngredientsTags = uniq([
-			...currentRecipeIngredientsTagsWithPopular,
-			...currentRecipeExtraIngredientsTagsWithPopular,
-		]);
+		const currentRecipeAllIngredientsTags = union(
+			currentRecipeIngredientsTagsWithPopular,
+			currentRecipeExtraIngredientsTagsWithPopular
+		);
 
 		return (
 			<>
@@ -148,7 +148,7 @@ export default memo(
 							}
 
 							const tagsWithPopular = calculateTagsWithPopular(tags);
-							const allTagsWithPopular = uniq([...currentRecipeAllIngredientsTags, ...tagsWithPopular]);
+							const allTagsWithPopular = union(currentRecipeAllIngredientsTags, tagsWithPopular);
 
 							const before = composeTagsWithPopular(currentRecipeExtraIngredientsTagsWithPopular);
 							const after = composeTagsWithPopular(allTagsWithPopular);

@@ -1,5 +1,3 @@
-import {uniq} from '@/utils';
-
 export function union<T>(...arrays: ReadonlyArray<T>[]) {
 	if (arrays.length === 0) {
 		return [];
@@ -10,5 +8,5 @@ export function union<T>(...arrays: ReadonlyArray<T>[]) {
 		return [];
 	}
 
-	return uniq(flattedArrays);
+	return [...new Set(flattedArrays)];
 }

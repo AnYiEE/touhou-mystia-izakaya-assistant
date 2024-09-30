@@ -41,7 +41,6 @@ import {
 	toValueObject,
 	toValueWithKey,
 	union,
-	uniq,
 } from '@/utils';
 
 export interface ICustomerOrder {
@@ -733,7 +732,7 @@ export const customerRareStore = store(state, {
 				currentCustomerNegativeTags: customerNegativeTags,
 				currentCustomerOrder: order,
 				currentCustomerPositiveTags: customerPositiveTags,
-				currentIngredients: uniq([...ingredients, ...extraIngredients]),
+				currentIngredients: union(ingredients, extraIngredients),
 				currentRecipeName: recipeName,
 				currentRecipeTagsWithPopular: instance_recipe.calculateTagsWithPopular(composedRecipeTags, popular),
 				hasMystiaCooker,

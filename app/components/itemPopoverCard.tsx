@@ -39,7 +39,7 @@ import {
 } from '@/data';
 import type {ITagStyle} from '@/data/types';
 import {globalStore as store} from '@/stores';
-import {checkA11yConfirmKey, uniq} from '@/utils';
+import {checkA11yConfirmKey, union} from '@/utils';
 
 const {name: siteName} = siteConfig;
 
@@ -228,7 +228,7 @@ const ItemPopoverCardComponent = memo(
 				return tags;
 			}
 
-			const mergedTagValues = uniq([...(tags.beverage ?? []), ...(tags.positive ?? [])]);
+			const mergedTagValues = union(tags.beverage ?? [], tags.positive ?? []);
 			const {beverage: _beverage, ...rest} = tags;
 
 			return {

@@ -1,7 +1,7 @@
 import {cloneDeep} from 'lodash';
 
 import type {IItem, TItemWithPinyin as _TItemWithPinyin} from './types';
-import {pinyinPro, pinyinSort, toValueObject, uniq} from '@/utils';
+import {pinyinPro, pinyinSort, toValueObject, union} from '@/utils';
 
 export class Item<
 	TTarget extends IItem[],
@@ -157,7 +157,7 @@ export class Item<
 		wrap?: boolean
 	) {
 		const props = [prop].flat(Infinity) as T[];
-		const values = uniq(data.map((item) => props.map((key) => item[key])).flat(Infinity));
+		const values = union(data.map((item) => props.map((key) => item[key])).flat(Infinity));
 
 		if (wrap) {
 			return values.map(toValueObject);

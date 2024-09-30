@@ -21,5 +21,4 @@ export * from './removeLastElement';
 export * from './setScriptUrlTag';
 export * from './toggleBoolean';
 export * from './union';
-export * from './uniq';
 export * from './without';
