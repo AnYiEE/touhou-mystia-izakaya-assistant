@@ -108,6 +108,10 @@ export const siteConfig = {
 			label: 'The GNU General Public License v3.0',
 			href: 'https://www.gnu.org/licenses/gpl-3.0-standalone.html',
 		},
+		icpFiling: {
+			label: process.env.ICP_FILING ?? '',
+			href: 'https://beian.miit.gov.cn/',
+		},
 		index: {
 			label: '首页',
 			href: '/',
@@ -128,6 +132,7 @@ export const siteConfig = {
 	nodeEnv: process.env.NODE_ENV,
 	vercelEnv: process.env.VERCEL_ENV,
 	isHosted: Boolean(process.env.HOSTED),
+	isIcpFiling: Boolean(process.env.ICP_FILING),
 	isVercel: Boolean(process.env.VERCEL),
 } as const satisfies ISiteConfig;
 

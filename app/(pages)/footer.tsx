@@ -8,7 +8,7 @@ import QRCode from '@/components/qrCode';
 import {siteConfig} from '@/configs';
 import {twMerge} from 'tailwind-merge';
 
-const {links, shortName, version, isVercel, nodeEnv, vercelEnv} = siteConfig;
+const {links, shortName, version, isIcpFiling, isVercel, nodeEnv, vercelEnv} = siteConfig;
 
 const isProduction = nodeEnv === 'production';
 const sha = (
@@ -53,6 +53,7 @@ const FooterLinkWithTooltip = memo<PropsWithChildren<IFooterLinkWithTooltipProps
 	return (
 		<Tooltip
 			content={props.content}
+			isDisabled={!props.content}
 			size="sm"
 			motionProps={{
 				initial: {},
@@ -95,6 +96,13 @@ export default function Footer() {
 						<>{isProduction ? '' : nodeEnv}</>
 					)}
 				</span>
+				{isIcpFiling && (
+					<span>
+						<FooterLinkWithTooltip content={null} href={links.icpFiling.href}>
+							{links.icpFiling.label}
+						</FooterLinkWithTooltip>
+					</span>
+				)}
 				{isVercel && (
 					<FooterLinkWithTooltip
 						content="如果访问或加载速度过慢，可尝试访问此国内线路"

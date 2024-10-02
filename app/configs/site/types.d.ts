@@ -25,6 +25,7 @@ export interface ISiteConfig {
 	nodeEnv: NodeJS.ProcessEnv['NODE_ENV'];
 	vercelEnv: NodeJS.ProcessEnv['NODE_ENV'] | undefined;
 	isHosted: boolean;
+	isIcpFiling: boolean;
 	isVercel: boolean;
 }
 
