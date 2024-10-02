@@ -56,7 +56,7 @@
 	"explorer.fileNesting.expand": false,
 	"explorer.fileNesting.patterns": {
 		"next.config.mjs": "*.config.cjs, *.config.js, *.config.mjs, *.config.ts, next-env.d.ts",
-		"package.json": ".*cache, .*ignore, .*rc, .editorConfig, .env*, .git*, .lintstagedrc.mjs, pnpm-lock.yaml, tsconfig.json, LICENSE",
+		"package.json": ".*cache, .*ignore, .*rc, .editorConfig, .env*, .git*, .lintstagedrc.mjs, pnpm-lock.yaml, tsconfig.json, vercel.json, LICENSE",
 		"readme*": "*.md"
 	},
 	"typescript.enablePromptUseWorkspaceTsdk": true,
@@ -76,12 +76,14 @@
 		"Izakaya",
 		"Mystia",
 		"nextui",
+		"nosniff",
 		"partialize",
 		"pnpx",
 		"preinstall",
 		"Pressable",
 		"proto",
 		"qrcode",
+		"sameorigin",
 		"serviceworker",
 		"stylelint",
 		"tachie",
