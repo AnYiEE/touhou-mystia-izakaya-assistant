@@ -92,8 +92,8 @@ export const siteConfig = {
 		return acc;
 	}, []),
 	links: {
-		backup: {
-			label: '备用线路',
+		china: {
+			label: '国内线路',
 			href: getShortUrl('tiXDNm'),
 		},
 		donate: {
@@ -127,7 +127,6 @@ export const siteConfig = {
 	},
 	nodeEnv: process.env.NODE_ENV,
 	vercelEnv: process.env.VERCEL_ENV,
-	isHideBackupLink: Boolean(process.env.HIDE_BACKUP_LINK),
 	isHosted: Boolean(process.env.HOSTED),
 	isVercel: Boolean(process.env.VERCEL),
 } as const satisfies ISiteConfig;

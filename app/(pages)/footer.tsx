@@ -8,7 +8,7 @@ import QRCode from '@/components/qrCode';
 import {siteConfig} from '@/configs';
 import {twMerge} from 'tailwind-merge';
 
-const {links, shortName, version, isHideBackupLink, nodeEnv, vercelEnv} = siteConfig;
+const {links, shortName, version, isVercel, nodeEnv, vercelEnv} = siteConfig;
 
 const isProduction = nodeEnv === 'production';
 const sha = (
@@ -95,12 +95,12 @@ export default function Footer() {
 						<>{isProduction ? '' : nodeEnv}</>
 					)}
 				</span>
-				{!isHideBackupLink && (
+				{isVercel && (
 					<FooterLinkWithTooltip
-						content="如果主站访问或加载速度过慢，可以尝试访问此镜像服务器"
-						href={links.backup.href}
+						content="如果访问或加载速度过慢，可尝试访问此国内线路"
+						href={links.china.href}
 					>
-						{links.backup.label}
+						{links.china.label}
 					</FooterLinkWithTooltip>
 				)}
 				<FooterLinkWithTooltip

@@ -24,7 +24,6 @@ export interface ISiteConfig {
 	links: Record<string, THref>;
 	nodeEnv: NodeJS.ProcessEnv['NODE_ENV'];
 	vercelEnv: NodeJS.ProcessEnv['NODE_ENV'] | undefined;
-	isHideBackupLink: boolean;
 	isHosted: boolean;
 	isVercel: boolean;
 }
