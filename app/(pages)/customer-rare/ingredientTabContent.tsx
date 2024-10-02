@@ -95,7 +95,7 @@ export default memo(
 		const _nonNullableRecipe = currentRecipe as Recipe['data'][number];
 
 		const {ingredients: currentRecipeIngredients, positiveTags: currentRecipePositiveTags} = _nonNullableRecipe;
-		const currentRecipeIngredientsAllIngredients = union(currentRecipeIngredients, currentRecipeExtraIngredients);
+		const currentRecipeAllIngredients = union(currentRecipeIngredients, currentRecipeExtraIngredients);
 
 		const isFullFilled = currentRecipeIngredients.length + currentRecipeExtraIngredients.length >= 5;
 		const isLargePartitionTagNext = currentRecipeIngredients.length + currentRecipeExtraIngredients.length === 4;
@@ -202,11 +202,11 @@ export default memo(
 							// The customer has a ingredient-based easter agg.
 							const {ingredient: easterEggIngredient, score: easterEggScore} = checkIngredientEasterEgg({
 								currentCustomerName,
-								currentIngredients: union([...currentRecipeIngredientsAllIngredients, name]),
+								currentIngredients: union([...currentRecipeAllIngredients, name]),
 							});
 							if (
 								name === easterEggIngredient &&
-								!currentRecipeIngredientsAllIngredients.includes(easterEggIngredient)
+								!currentRecipeAllIngredients.includes(easterEggIngredient)
 							) {
 								// The initial score of the Easter egg is 0.
 								// If it remains 0 after calculation, it means that the highest rating is restricted;

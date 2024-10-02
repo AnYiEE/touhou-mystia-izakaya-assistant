@@ -191,7 +191,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 
 			const tags = (
 				<TagGroup>
-					{[...beverageTags].sort(pinyinSort).map((tag, index) => {
+					{beverageTags.map((tag, index) => {
 						const isTagMatched = matchedTags.includes(tag);
 						const tagStyle = isTagMatched ? beverageTagStyle : {};
 						const tagType = isTagMatched ? 'positive' : null;
