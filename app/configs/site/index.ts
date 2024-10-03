@@ -61,7 +61,7 @@ const navItems = [
 	},
 ] as const satisfies ISiteConfig['navItems'];
 
-const {hostname: domain} = new URL(PACKAGE.homepage);
+const {hostname: domain} = new URL(process.env.DOMAIN ?? PACKAGE.homepage);
 
 const getShortUrl = <T extends string>(key: T) => `https://url.${domain}/${key}` as const;
 
@@ -132,9 +132,10 @@ export const siteConfig = {
 	nodeEnv: process.env.NODE_ENV,
 	vercelEnv: process.env.VERCEL_ENV,
 	vercelSha: process.env.VERCEL_GIT_COMMIT_SHA,
-	isHosted: Boolean(process.env.HOSTED),
+	isAnalytics: Boolean(process.env.ANALYTICS),
 	isIcpFiling: Boolean(process.env.ICP_FILING),
 	isProduction: process.env.NODE_ENV === 'production',
+	isSelfHosted: Boolean(process.env.SELF_HOSTED),
 	isVercel: Boolean(process.env.VERCEL),
 } as const satisfies ISiteConfig;
 

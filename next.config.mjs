@@ -6,12 +6,12 @@ import {getSha} from './scripts/utils.js';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-	compress: !env.HOSTED,
+	compress: !env.SELF_HOSTED,
 	generateBuildId: () => getSha(),
 	reactStrictMode: true,
 };
 
-if (!env.HOSTED && !env.VERCEL) {
+if (!env.SELF_HOSTED && !env.VERCEL) {
 	nextConfig.output = 'export';
 }
 

@@ -1,8 +1,11 @@
 declare global {
 	namespace NodeJS {
 		interface ProcessEnv {
-			HOSTED?: string;
+			DOMAIN?: string;
 			ICP_FILING?: string;
+
+			ANALYTICS?: string;
+			SELF_HOSTED?: string;
 			VERCEL?: string;
 			VERCEL_ENV?: NodeJS.ProcessEnv['NODE_ENV'];
 			VERCEL_GIT_COMMIT_SHA?: string;

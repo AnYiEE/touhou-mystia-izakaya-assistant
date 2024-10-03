@@ -21,7 +21,7 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 /** @see {@link https://docs.fontawesome.com/web/use-with/react/use-with#getting-font-awesome-css-to-work} */
 fontawesomeConfig.autoAddCss = false;
 
-const {author, description, keywords, locale, name, shortName, isHosted, isProduction, isVercel, vercelSha} =
+const {author, description, keywords, locale, name, shortName, isAnalytics, isProduction, isVercel, vercelSha} =
 	siteConfig;
 
 export const metadata: Metadata = {
@@ -180,13 +180,8 @@ export default function RootLayout({
 							<Footer />
 						</div>
 					</Providers>
-					{isProduction && isHosted && !isVercel && <Analytics />}
-					{isProduction && isVercel && (
-						<>
-							<Analytics />
-							<SpeedInsights />
-						</>
-					)}
+					{isProduction && isAnalytics && <Analytics />}
+					{isProduction && isVercel && <SpeedInsights />}
 				</ErrorBoundary>
 			</body>
 		</html>
