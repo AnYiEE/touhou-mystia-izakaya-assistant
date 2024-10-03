@@ -1,4 +1,4 @@
-import {type HTMLAttributes, forwardRef, memo, useEffect, useMemo, useState} from 'react';
+import {type CSSProperties, type HTMLAttributes, forwardRef, memo, useEffect, useMemo, useState} from 'react';
 import {twMerge} from 'tailwind-merge';
 
 import {checkCompatibility} from '@/components/compatibleBrowser';
@@ -7,7 +7,13 @@ import {type TItemNames} from '@/data';
 import {Sprite as SpriteClass, remToPx} from '@/utils';
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
-import styles from './sprite.module.scss';
+const getSpriteStyle = (target: TSpriteTarget, isSupportedWebp?: boolean): CSSProperties => {
+	const basePath = '/assets/sprites';
+
+	return {
+		backgroundImage: `url('${basePath}/${target}.${isSupportedWebp ? 'webp' : 'png'}')`,
+	};
+};
 
 interface ISpriteBase {
 	target: TSpriteTarget;
@@ -73,12 +79,14 @@ export default memo(
 		}, [height, instance.spriteHeight, instance.spriteWidth, size, width]);
 
 		const calculatedStyle = useMemo(
-			() =>
-				instance.getBackgroundPropsByIndex(calculatedIndex, {
+			() => ({
+				...getSpriteStyle(target, isSupportedWebp),
+				...instance.getBackgroundPropsByIndex(calculatedIndex, {
 					displayHeight: calculatedSize ?? calculatedHeight,
 					displayWidth: calculatedSize ?? calculatedWidth,
 				}),
-			[calculatedHeight, calculatedIndex, calculatedSize, calculatedWidth, instance]
+			}),
+			[calculatedHeight, calculatedIndex, calculatedSize, calculatedWidth, instance, isSupportedWebp, target]
 		);
 
 		const finalTitle = title ?? calculatedName;
@@ -87,11 +95,7 @@ export default memo(
 			<span
 				role="img"
 				title={finalTitle}
-				className={twMerge(
-					'inline-block',
-					styles[isSupportedWebp ? target : (`png-${target}` as const)],
-					className
-				)}
+				className={twMerge('inline-block', className)}
 				style={{...calculatedStyle, ...style}}
 				{...props}
 				ref={ref}

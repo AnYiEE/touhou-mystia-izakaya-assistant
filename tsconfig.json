@@ -35,12 +35,6 @@
 		"plugins": [
 			{
 				"name": "next"
-			},
-			{
-				"name": "typescript-plugin-css-modules",
-				"options": {
-					"goToDefinition": true
-				}
 			}
 		],
 
