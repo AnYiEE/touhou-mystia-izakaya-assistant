@@ -21,7 +21,8 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 /** @see {@link https://docs.fontawesome.com/web/use-with/react/use-with#getting-font-awesome-css-to-work} */
 fontawesomeConfig.autoAddCss = false;
 
-const {author, description, keywords, locale, name, shortName, isHosted, isVercel, nodeEnv} = siteConfig;
+const {author, description, keywords, locale, name, shortName, isHosted, isProduction, isVercel, vercelSha} =
+	siteConfig;
 
 export const metadata: Metadata = {
 	title: {
@@ -62,10 +63,7 @@ export const viewport: Viewport = {
 	viewportFit: 'cover',
 };
 
-const isProduction = nodeEnv === 'production';
-const sha = (
-	process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? execSync('git rev-parse --short HEAD').toString('utf8')
-).trim();
+const sha = (vercelSha?.slice(0, 7) ?? execSync('git rev-parse --short HEAD').toString('utf8')).trim();
 
 export default function RootLayout({
 	children,

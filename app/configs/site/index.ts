@@ -131,8 +131,10 @@ export const siteConfig = {
 	},
 	nodeEnv: process.env.NODE_ENV,
 	vercelEnv: process.env.VERCEL_ENV,
+	vercelSha: process.env.VERCEL_GIT_COMMIT_SHA,
 	isHosted: Boolean(process.env.HOSTED),
 	isIcpFiling: Boolean(process.env.ICP_FILING),
+	isProduction: process.env.NODE_ENV === 'production',
 	isVercel: Boolean(process.env.VERCEL),
 } as const satisfies ISiteConfig;
 

@@ -4,6 +4,8 @@
 
 const {nextui} = require('@nextui-org/react');
 
+const {isProduction} = require('./scripts/utils');
+
 function createShiftedObject(/** @type {Record<number, string>} */ object) {
 	// eslint-disable-next-line compat/compat
 	return Object.fromEntries(
@@ -13,8 +15,6 @@ function createShiftedObject(/** @type {Record<number, string>} */ object) {
 		})
 	);
 }
-
-const isProduction = process.env.NODE_ENV === 'production';
 
 const black = {
 	50: '#f3f3ec',

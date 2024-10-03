@@ -8,12 +8,10 @@ import QRCode from '@/components/qrCode';
 import {siteConfig} from '@/configs';
 import {twMerge} from 'tailwind-merge';
 
-const {links, shortName, version, isIcpFiling, isVercel, nodeEnv, vercelEnv} = siteConfig;
+const {links, shortName, version, isIcpFiling, isProduction, isVercel, nodeEnv, vercelEnv, vercelSha} = siteConfig;
 
-const isProduction = nodeEnv === 'production';
 const sha = (
-	process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ??
-	(isProduction ? execSync('git rev-parse --short HEAD').toString('utf8') : null)
+	vercelSha?.slice(0, 7) ?? (isProduction ? execSync('git rev-parse --short HEAD').toString('utf8') : null)
 )?.trim();
 
 interface IFooterLinkProps extends Pick<LinkProps, 'href' | 'isExternal' | 'title'> {

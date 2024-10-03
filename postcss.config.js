@@ -1,8 +1,8 @@
 // @ts-check
-/* eslint-disable sort-keys, unicorn/prefer-module */
+/* eslint-disable sort-keys, @typescript-eslint/no-require-imports, unicorn/prefer-module */
 'use strict';
 
-const isProduction = process.env.NODE_ENV === 'production';
+const {isProduction} = require('./scripts/utils');
 
 module.exports = {
 	plugins: {

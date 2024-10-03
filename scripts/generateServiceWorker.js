@@ -3,13 +3,11 @@
 /* eslint-disable @typescript-eslint/no-require-imports, unicorn/prefer-module */
 'use strict';
 
-const {execSync} = require('node:child_process');
 const {readFileSync, writeFileSync} = require('node:fs');
 const {resolve} = require('node:path');
 
-const sha = (
-	process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? execSync('git rev-parse --short HEAD').toString('utf8')
-).trim();
+const {getSha} = require('./utils');
+const sha = getSha();
 
 const registerTemplate = readFileSync(resolve(__dirname, 'registerServiceWorker-template.js'), 'utf8');
 const swTemplate = readFileSync(resolve(__dirname, 'serviceWorker-template.js'), 'utf8');

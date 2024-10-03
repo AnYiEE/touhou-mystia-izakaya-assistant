@@ -24,8 +24,10 @@ export interface ISiteConfig {
 	links: Record<string, THref>;
 	nodeEnv: NodeJS.ProcessEnv['NODE_ENV'];
 	vercelEnv: NodeJS.ProcessEnv['NODE_ENV'] | undefined;
+	vercelSha: NodeJS.ProcessEnv['VERCEL_GIT_COMMIT_SHA'] | undefined;
 	isHosted: boolean;
 	isIcpFiling: boolean;
+	isProduction: boolean;
 	isVercel: boolean;
 }
 
