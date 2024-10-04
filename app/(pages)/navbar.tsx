@@ -287,7 +287,7 @@ export default function Navbar() {
 							<Link
 								color={isActivated ? 'primary' : 'foreground'}
 								size="lg"
-								onPress={handlePress}
+								onClick={handlePress}
 								href={href}
 								className={twJoin(
 									(isActivated || href === '/preferences') && 'underline underline-offset-4'
