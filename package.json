@@ -87,7 +87,7 @@
 		"react-dom": "^18.3.1",
 		"react-transition-progress": "github:AnYiEE/react-transition-progress",
 		"rxjs": "^7.8.1",
-		"tailwind-merge": "^2.5.2",
+		"tailwind-merge": "^2.5.3",
 		"ua-parser-js": "^1.0.39",
 		"use-breakpoint": "^4.0.1",
 		"zustand": "^4.5.5"
@@ -98,7 +98,7 @@
 		"@commitlint/cli": "^19.5.0",
 		"@commitlint/config-conventional": "^19.5.0",
 		"@types/babel__core": "^7.20.5",
-		"@types/lodash": "^4.17.9",
+		"@types/lodash": "^4.17.10",
 		"@types/node": "^22.7.4",
 		"@types/react": "^18.3.11",
 		"@types/react-dom": "^18.3.0",
@@ -128,7 +128,7 @@
 	},
 	"pnpm": {
 		"patchedDependencies": {
-			"@types/lodash@4.17.9": "patches/@types__lodash@4.17.9.patch"
+			"@types/lodash@4.17.10": "patches/@types__lodash@4.17.10.patch"
 		}
 	}
 }
