@@ -3,7 +3,7 @@
 import {type JSX, type PropsWithChildren, memo, startTransition, useCallback, useReducer} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
-import {usePathname} from 'next/navigation';
+import {usePathname, useRouter} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
 import {useVibrate} from '@/hooks';
 
@@ -35,7 +35,7 @@ import Tooltip from '@/components/tooltip';
 
 import {type TSitePath, siteConfig} from '@/configs';
 import {globalStore as store} from '@/stores';
-import {toggleBoolean} from '@/utils';
+import {checkA11yConfirmKey, toggleBoolean} from '@/utils';
 
 const {navItems, navMenuItems, links, name, shortName} = siteConfig;
 
@@ -122,6 +122,7 @@ const GitHubLink = memo<IGitHubLinkProps>(function GitHubLink({showTooltip}) {
 
 export default function Navbar() {
 	const pathname = usePathname() as TSitePath;
+	const router = useRouter();
 	const startProgress = useProgress();
 	const [isMenuOpened, toggleMenuOpened] = useReducer(toggleBoolean, false);
 	const vibrate = useVibrate();
@@ -221,7 +222,17 @@ export default function Navbar() {
 											}}
 										>
 											{dropdownItems.map(({href, label, sprite}, dropdownItemIndex) => (
-												<DropdownItem key={dropdownItemIndex} textValue={label}>
+												<DropdownItem
+													key={dropdownItemIndex}
+													textValue={label}
+													onKeyDown={(event) => {
+														if (checkA11yConfirmKey(event)) {
+															vibrate();
+															showProgress(startProgress);
+															router.push(href);
+														}
+													}}
+												>
 													<NavbarLink
 														fullWidth
 														isActivated={href === pathname}
