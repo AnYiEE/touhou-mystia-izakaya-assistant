@@ -1,6 +1,6 @@
 'use client';
 
-import {type JSX, type PropsWithChildren, memo, startTransition, useCallback, useReducer} from 'react';
+import {type JSX, type PropsWithChildren, memo, startTransition, useCallback, useState} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {usePathname, useRouter} from 'next/navigation';
@@ -35,7 +35,7 @@ import Tooltip from '@/components/tooltip';
 
 import {type TSitePath, siteConfig} from '@/configs';
 import {globalStore as store} from '@/stores';
-import {checkA11yConfirmKey, toggleBoolean} from '@/utils';
+import {checkA11yConfirmKey} from '@/utils';
 
 const {navItems, navMenuItems, links, name, shortName} = siteConfig;
 
@@ -63,15 +63,17 @@ const NavbarLink = memo<PropsWithChildren<INavbarLinkProps>>(function NavbarLink
 	const startProgress = useProgress();
 	const vibrate = useVibrate();
 
+	const handlePress = useCallback(() => {
+		vibrate();
+		showProgress(startProgress);
+	}, [startProgress, vibrate]);
+
 	return (
 		<Button
 			as={Link}
 			size="sm"
 			variant={isActivated ? 'flat' : 'light'}
-			onPress={() => {
-				vibrate();
-				showProgress(startProgress);
-			}}
+			onPress={handlePress}
 			className={twMerge('text-base', className)}
 			{...props}
 		>
@@ -124,7 +126,7 @@ export default function Navbar() {
 	const pathname = usePathname() as TSitePath;
 	const router = useRouter();
 	const startProgress = useProgress();
-	const [isMenuOpened, toggleMenuOpened] = useReducer(toggleBoolean, false);
+	const [isMenuOpened, setIsMenuOpened] = useState(false);
 	const vibrate = useVibrate();
 
 	const isHighAppearance = store.persistence.highAppearance.use();
@@ -138,6 +140,12 @@ export default function Navbar() {
 		[vibrate]
 	);
 
+	const handlePress = useCallback(() => {
+		vibrate();
+		showProgress(startProgress);
+		setIsMenuOpened(false);
+	}, [startProgress, vibrate]);
+
 	// Support parallel routing pages.
 	const shouldShowPreferences = pathname !== '/' && pathname !== '/about';
 
@@ -148,7 +156,7 @@ export default function Navbar() {
 			isBlurred={isHighAppearance}
 			maxWidth="xl"
 			isMenuOpen={isMenuOpened}
-			onMenuOpenChange={toggleMenuOpened}
+			onMenuOpenChange={setIsMenuOpened}
 			classNames={{
 				base: 'pt-titlebar',
 			}}
@@ -158,10 +166,7 @@ export default function Navbar() {
 					<Link
 						color="foreground"
 						href={links.index.href}
-						onPress={() => {
-							vibrate();
-							showProgress(startProgress);
-						}}
+						onPress={handlePress}
 						aria-label={links.index.label}
 						className="flex select-none items-center justify-start gap-1"
 					>
@@ -227,8 +232,7 @@ export default function Navbar() {
 													textValue={label}
 													onKeyDown={(event) => {
 														if (checkA11yConfirmKey(event)) {
-															vibrate();
-															showProgress(startProgress);
+															handlePress();
 															router.push(href);
 														}
 													}}
@@ -283,11 +287,7 @@ export default function Navbar() {
 							<Link
 								color={isActivated ? 'primary' : 'foreground'}
 								size="lg"
-								onPress={() => {
-									vibrate();
-									showProgress(startProgress);
-									toggleMenuOpened();
-								}}
+								onPress={handlePress}
 								href={href}
 								className={twJoin(
 									(isActivated || href === '/preferences') && 'underline underline-offset-4'
