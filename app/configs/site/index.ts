@@ -129,6 +129,7 @@ export const siteConfig = {
 			href: getShortUrl('Y9YVAt'),
 		},
 	},
+	cdnUrl: process.env.CDN_URL ?? '',
 	nodeEnv: process.env.NODE_ENV,
 	vercelEnv: process.env.VERCEL_ENV,
 	vercelSha: process.env.VERCEL_GIT_COMMIT_SHA,

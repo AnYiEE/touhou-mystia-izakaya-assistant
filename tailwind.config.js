@@ -4,7 +4,7 @@
 
 const {nextui} = require('@nextui-org/react');
 
-const {isProduction} = require('./scripts/utils');
+const {CDN_URL, IS_PRODUCTION} = require('./scripts/utils');
 
 function createShiftedObject(/** @type {Record<number, string>} */ object) {
 	// eslint-disable-next-line compat/compat
@@ -100,7 +100,7 @@ const purple = {
 module.exports = {
 	content: ['./app/**/*.tsx', './node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}'],
 	darkMode: 'class',
-	safelist: isProduction
+	safelist: IS_PRODUCTION
 		? [
 				// For compatible with browsers that do not support the `gap` property.
 				{
@@ -112,10 +112,10 @@ module.exports = {
 	theme: {
 		extend: {
 			backgroundImage: {
-				cursor: 'url("/assets/cursor.png")',
-				loading: 'url("/assets/loading.gif")',
-				logo: 'url("/assets/icon.png")',
-				mystia: 'url("/assets/mystia.png")',
+				cursor: `url("${CDN_URL}/assets/cursor.png")`,
+				loading: `url("${CDN_URL}/assets/loading.gif")`,
+				logo: `url("${CDN_URL}/assets/icon.png")`,
+				mystia: `url("${CDN_URL}/assets/mystia.png")`,
 			},
 			backgroundSize: {
 				'y-auto': 'auto 100%',

@@ -21,7 +21,7 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 /** @see {@link https://docs.fontawesome.com/web/use-with/react/use-with#getting-font-awesome-css-to-work} */
 fontawesomeConfig.autoAddCss = false;
 
-const {author, description, keywords, locale, name, shortName, isAnalytics, isProduction, isVercel, vercelSha} =
+const {author, description, keywords, locale, name, shortName, cdnUrl, isAnalytics, isProduction, isVercel, vercelSha} =
 	siteConfig;
 
 export const metadata: Metadata = {
@@ -39,8 +39,8 @@ export const metadata: Metadata = {
 
 	authors: author,
 	icons: {
-		apple: '/icons/apple-touch-icon.png',
-		icon: '/favicon.ico',
+		apple: `${cdnUrl}/icons/apple-touch-icon.png`,
+		icon: `${cdnUrl}/favicon.ico`,
 	},
 
 	twitter: {

@@ -2,6 +2,8 @@ declare global {
 	namespace NodeJS {
 		interface ProcessEnv {
 			DOMAIN?: string;
+
+			CDN_URL?: string;
 			ICP_FILING?: string;
 
 			ANALYTICS?: string;

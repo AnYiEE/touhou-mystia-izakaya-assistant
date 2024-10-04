@@ -22,6 +22,7 @@ export interface ISiteConfig {
 	navItems: Array<THref | Record<string, THref[]>>;
 	navMenuItems: THref[];
 	links: Record<string, THref>;
+	cdnUrl: NonNullable<NodeJS.ProcessEnv['CDN_URL']>;
 	nodeEnv: NodeJS.ProcessEnv['NODE_ENV'];
 	vercelEnv: NodeJS.ProcessEnv['NODE_ENV'] | undefined;
 	vercelSha: NodeJS.ProcessEnv['VERCEL_GIT_COMMIT_SHA'] | undefined;

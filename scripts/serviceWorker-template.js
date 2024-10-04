@@ -99,7 +99,8 @@ self.addEventListener('fetch', (/** @type {FetchEvent} */ event) => {
 	const urlObject = new URL(event.request.url, location.origin);
 	const {host, pathname, protocol} = urlObject;
 
-	if (host !== location.host || protocol !== 'https:') {
+	const isSelfHost = host.endsWith(location.host);
+	if ((isSelfHost && host.startsWith('track')) || !isSelfHost || protocol !== 'https:') {
 		return;
 	}
 	if (pathname.startsWith('/_vercel')) {

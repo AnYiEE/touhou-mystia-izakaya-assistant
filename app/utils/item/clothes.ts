@@ -2,9 +2,12 @@ import {isObjectLike} from 'lodash';
 
 import {type ICurrentCustomer} from '@/(pages)/customer-rare/types';
 
+import {siteConfig} from '@/configs';
 import {CLOTHES_LIST, type TClothes, type TClothesNames} from '@/data';
 import {processPinyin} from '@/utils';
 import {Item} from '@/utils/item';
+
+const {cdnUrl} = siteConfig;
 
 export class Clothes extends Item<TClothes> {
 	private static _instance: Clothes | undefined;
@@ -49,7 +52,7 @@ export class Clothes extends Item<TClothes> {
 	 * @description Get the tachie image path for a clothes.
 	 */
 	public getTachiePath(name: TClothesNames) {
-		const basePath = '/assets/tachies/clothes';
+		const basePath = `${cdnUrl}/assets/tachies/clothes`;
 
 		let path: string;
 

@@ -1,8 +1,11 @@
 import type {ICurrentCustomer} from '@/(pages)/customer-rare/types';
 
 import type {ICustomer} from './types';
+import {siteConfig} from '@/configs';
 import {Clothes, pinyinPro, processPinyin} from '@/utils';
 import {Item} from '@/utils/item';
+
+const {cdnUrl} = siteConfig;
 
 export class Customer<Target extends ICustomer[]> extends Item<Target> {
 	private static _tachiePathCache = new Map<string, string>();
@@ -15,7 +18,7 @@ export class Customer<Target extends ICustomer[]> extends Item<Target> {
 			return Clothes.getInstance().getTachiePath('夜雀服');
 		}
 
-		const basePath = '/assets/tachies';
+		const basePath = `${cdnUrl}/assets/tachies`;
 
 		// The `type` is partners.
 		if (typeof data === 'string') {

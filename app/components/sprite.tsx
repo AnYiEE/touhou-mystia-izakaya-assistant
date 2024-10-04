@@ -3,12 +3,15 @@ import {twMerge} from 'tailwind-merge';
 
 import {checkCompatibility} from '@/components/compatibleBrowser';
 
+import {siteConfig} from '@/configs';
 import {type TItemNames} from '@/data';
 import {Sprite as SpriteClass, remToPx} from '@/utils';
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
+const {cdnUrl} = siteConfig;
+
 const getSpriteStyle = (target: TSpriteTarget, isSupportedWebp?: boolean): CSSProperties => {
-	const basePath = '/assets/sprites';
+	const basePath = `${cdnUrl}/assets/sprites`;
 
 	return {
 		backgroundImage: `url('${basePath}/${target}.${isSupportedWebp ? 'webp' : 'png'}')`,
