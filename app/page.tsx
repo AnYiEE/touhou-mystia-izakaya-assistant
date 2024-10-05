@@ -34,9 +34,9 @@ export default function Home() {
 				<p className="flex flex-wrap items-center text-xs text-foreground-500 md:hidden">
 					点击右上角的
 					<span
-						className="mx-1 block h-4 rounded bg-default-50 dark:bg-default-100"
-						role="img"
 						aria-label="菜单按钮图例"
+						role="img"
+						className="mx-1 block h-4 rounded bg-default-50 dark:bg-default-100"
 					>
 						<span className="flex h-full flex-col justify-center p-1 before:h-px before:w-4 before:-translate-y-1 before:bg-current after:h-px after:w-4 after:translate-y-1 after:bg-current"></span>
 					</span>
@@ -76,6 +76,7 @@ export default function Home() {
 							isIconOnly
 							href={links.xiaohongshuGroup.href}
 							referrerPolicy="same-origin"
+							role="link"
 							title={links.xiaohongshuGroup.label}
 							className="h-5"
 						>

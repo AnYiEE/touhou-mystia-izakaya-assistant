@@ -113,15 +113,16 @@ export default memo<IProps>(function ThemeSwitcher({isMenu}) {
 				content: twJoin('min-w-28 p-0', isHighAppearance && 'bg-background/70 backdrop-saturate-150'),
 			}}
 		>
-			<Tooltip showArrow content={ThemeLabel.switcher}>
-				<span className="flex">
+			<Tooltip showArrow content={ThemeLabel.switcher} placement={isMenu ? 'left' : 'bottom'}>
+				<span className={twJoin('flex', isMenu && 'h-full')}>
 					<DropdownTrigger>
 						<FontAwesomeIconButton
+							disableAnimation={isMenu}
 							icon={themeIcon}
 							aria-label={ThemeLabel.switcher}
 							className={twJoin(
 								'h-min w-min min-w-min bg-transparent text-medium',
-								isMenu ? 'text-foreground' : 'text-default-400 dark:text-default-500'
+								isMenu ? 'h-full text-foreground' : 'text-default-400 dark:text-default-500'
 							)}
 						/>
 					</DropdownTrigger>

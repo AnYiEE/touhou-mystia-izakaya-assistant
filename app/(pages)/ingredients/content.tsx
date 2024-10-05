@@ -1,12 +1,14 @@
 import {Fragment, memo, useRef} from 'react';
+import {twJoin} from 'tailwind-merge';
 
 import {useOpenedItemPopover} from '@/hooks';
 
-import {PopoverContent, PopoverTrigger} from '@nextui-org/react';
+import {PopoverContent, PopoverTrigger, ScrollShadow} from '@nextui-org/react';
 
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
 import ItemPopoverCard from '@/components/itemPopoverCard';
+import Ol from '@/components/ol';
 import Popover from '@/components/popover';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
@@ -57,60 +59,68 @@ export default memo<IProps>(function Content({data}) {
 					tagColors={INGREDIENT_TAG_STYLE}
 					ref={popoverCardRef}
 				>
-					{Object.entries(from).map((fromObject, fromIndex) => {
-						type TFrom = Exclude<IIngredient['from'], string>;
-						const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
-						const isBuy = method === 'buy';
-						const isFishing = method === 'fishing';
-						const isTask = method === 'task';
-						const probability = `概率${isBuy ? '出售' : '掉落'}`;
-						const way = isBuy ? '购买' : isFishing ? '钓鱼' : isTask ? '任务' : '采集';
-						return (
-							<p key={fromIndex}>
-								{isFishing ? (
-									<span>
-										<Popover showArrow offset={6} size="sm">
-											<Tooltip showArrow content={probability} offset={3} size="sm">
-												<span className="inline-flex cursor-pointer">
-													<PopoverTrigger>
-														<span tabIndex={0} className="font-semibold">
-															<span className="underline-dotted-offset2">{way}</span>：
-														</span>
-													</PopoverTrigger>
-												</span>
-											</Tooltip>
-											<PopoverContent>{probability}</PopoverContent>
-										</Popover>
-									</span>
-								) : (
-									<span className="font-semibold">{way}：</span>
-								)}
-								{target?.map((item, targetIndex) => (
-									<Fragment key={targetIndex}>
-										{Array.isArray(item) ? (
-											item[1] ? (
-												<Popover showArrow offset={6} size="sm">
-													<Tooltip showArrow content={probability} offset={3} size="sm">
-														<span className="underline-dotted-offset2 inline-flex cursor-pointer">
-															<PopoverTrigger>
-																<span tabIndex={0}>{item[0]}</span>
-															</PopoverTrigger>
-														</span>
-													</Tooltip>
-													<PopoverContent>{probability}</PopoverContent>
-												</Popover>
-											) : (
-												item[0]
-											)
+					<ScrollShadow hideScrollBar size={16} className="max-h-[50vh]">
+						{Object.entries(from).map((fromObject, fromIndex) => {
+							type TFrom = Exclude<IIngredient['from'], string>;
+							const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
+							const isBuy = method === 'buy';
+							const isFishing = method === 'fishing';
+							const isTask = method === 'task';
+							const probability = `概率${isBuy ? '出售' : '掉落'}`;
+							const way = isBuy ? '购买' : isFishing ? '钓鱼' : isTask ? '任务' : '采集';
+							return (
+								<Fragment key={fromIndex}>
+									<p className={twJoin('font-semibold', fromIndex !== 0 && 'mt-1')}>
+										{isFishing ? (
+											<Popover showArrow offset={6} size="sm">
+												<Tooltip showArrow content={probability} offset={3} size="sm">
+													<span className="inline-flex cursor-pointer">
+														<PopoverTrigger>
+															<span tabIndex={0} className="underline-dotted-offset2">
+																{way}
+															</span>
+														</PopoverTrigger>
+													</span>
+												</Tooltip>
+												<PopoverContent>{probability}</PopoverContent>
+											</Popover>
 										) : (
-											item
+											way
 										)}
-										{targetIndex < target.length - 1 && '、'}
-									</Fragment>
-								))}
-							</p>
-						);
-					})}
+									</p>
+									<Ol className="ml-3">
+										{target?.map((item, targetIndex) => (
+											<Ol.Li key={targetIndex}>
+												{Array.isArray(item) ? (
+													item[1] ? (
+														<Popover showArrow offset={6} size="sm">
+															<Tooltip
+																showArrow
+																content={probability}
+																offset={3}
+																size="sm"
+															>
+																<span className="underline-dotted-offset2 cursor-pointer">
+																	<PopoverTrigger>
+																		<span tabIndex={0}>{item[0]}</span>
+																	</PopoverTrigger>
+																</span>
+															</Tooltip>
+															<PopoverContent>{probability}</PopoverContent>
+														</Popover>
+													) : (
+														item[0]
+													)
+												) : (
+													item
+												)}
+											</Ol.Li>
+										))}
+									</Ol>
+								</Fragment>
+							);
+						})}
+					</ScrollShadow>
 				</ItemPopoverCard>
 			</PopoverContent>
 		</Popover>

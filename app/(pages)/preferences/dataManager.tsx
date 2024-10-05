@@ -290,15 +290,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 										color="danger"
 										size="sm"
 										variant="ghost"
-										onClick={handleImportData}
-										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
-											if (event.key === 'Escape') {
-												toggleSavePopoverOpened();
-											}
-											if (checkA11yConfirmKey(event)) {
-												handleImportData();
-											}
-										})}
+										onPress={handleImportData}
 										/** @todo Remove this line after upgrade to `@nextui-org/react` to v2.5.0 */
 										className="!text-danger data-[hover=true]:!text-danger-foreground"
 									>
@@ -309,12 +301,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 										color="primary"
 										size="sm"
 										variant="ghost"
-										onClick={toggleSavePopoverOpened}
-										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
-											if (event.key === 'Escape' || checkA11yConfirmKey(event)) {
-												toggleSavePopoverOpened();
-											}
-										})}
+										onPress={toggleSavePopoverOpened}
 									>
 										取消保存
 									</Button>
@@ -347,15 +334,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 										color="danger"
 										size="sm"
 										variant="ghost"
-										onClick={handleResetData}
-										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
-											if (event.key === 'Escape') {
-												toggleResetPopoverOpened();
-											}
-											if (checkA11yConfirmKey(event)) {
-												handleResetData();
-											}
-										})}
+										onPress={handleResetData}
 										/** @todo Remove this line after upgrade to `@nextui-org/react` to v2.5.0 */
 										className="!text-danger data-[hover=true]:!text-danger-foreground"
 									>
@@ -366,12 +345,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 										color="primary"
 										size="sm"
 										variant="ghost"
-										onClick={toggleResetPopoverOpened}
-										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
-											if (event.key === 'Escape' || checkA11yConfirmKey(event)) {
-												toggleResetPopoverOpened();
-											}
-										})}
+										onPress={toggleResetPopoverOpened}
 									>
 										取消重置
 									</Button>

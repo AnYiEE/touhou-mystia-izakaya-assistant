@@ -85,7 +85,7 @@ const CloseButton = forwardRef<HTMLButtonElement | null, ICloseButtonProps>(
 					onClick={handleClose}
 					onKeyDown={handleClose}
 					aria-label={label}
-					className="absolute -right-1 top-1 h-4 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:text-default-300"
+					className="absolute -right-1 top-1 h-4 text-default-200 transition-opacity data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover"
 					ref={ref}
 				/>
 			</Tooltip>
@@ -142,7 +142,7 @@ const ShareButton = memo(
 						}
 					}}
 					aria-label={label}
-					className="h-4 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:text-default-300"
+					className="h-4 text-default-200 transition-opacity data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover"
 				/>
 			),
 			[isCanShare, shareObject]

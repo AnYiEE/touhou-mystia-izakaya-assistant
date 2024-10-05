@@ -1,6 +1,7 @@
 import {AccordionItem, Avatar, ScrollShadow} from '@nextui-org/react';
 
 import InfoButtonBase from '@/(pages)/customer-rare/infoButtonBase';
+import Ol from '@/components/ol';
 
 import {customerRatingColorMap} from './constants';
 
@@ -10,7 +11,7 @@ export default function InfoButton() {
 			<AccordionItem key="help" aria-label="特别说明" title="特别说明">
 				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-justify text-xs">
 					<p className="mb-1 text-sm font-semibold">选单时</p>
-					<ol className="list-inside list-disc">
+					<Ol>
 						<li>
 							最终的套餐评级只适合一般情景，如果有提供改判效果的符卡生效，此时的套餐评级可能会不够准确。
 						</li>
@@ -20,9 +21,9 @@ export default function InfoButton() {
 						</li>
 						<li>“保存套餐”按钮仅会在选择了料理和酒水时被启用。</li>
 						<li>评级时，默认您正确选择了该普客所点单的料理和酒水。</li>
-					</ol>
+					</Ol>
 					<p className="mb-1 mt-2 text-sm font-semibold">交互时</p>
-					<ol className="list-inside list-disc">
+					<Ol>
 						<li>
 							<span className="hidden md:inline">点击顶部的“设置”按钮</span>
 							<span className="md:hidden">点击右上角的按钮打开菜单。再点击“设置”按钮</span>
@@ -32,7 +33,7 @@ export default function InfoButton() {
 							{/* cSpell:ignore haixian */}
 							所有的搜索框都支持模糊搜索，如使用“海鲜”、“haixian”或“hx”均可搜索到“海鲜味噌汤”。
 						</li>
-					</ol>
+					</Ol>
 				</ScrollShadow>
 			</AccordionItem>
 			<AccordionItem key="rating" aria-label="评级图例" title="评级图例">

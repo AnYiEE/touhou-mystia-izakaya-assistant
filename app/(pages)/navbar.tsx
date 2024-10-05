@@ -82,9 +82,9 @@ const NavbarLink = memo<PropsWithChildren<INavbarLinkProps>>(function NavbarLink
 	);
 });
 
-interface IGitHubIconLinkProps extends Pick<IFontAwesomeIconLinkProps, 'className'> {}
+interface IGitHubIconLinkProps extends Pick<IFontAwesomeIconLinkProps, 'className' | 'tabIndex'> {}
 
-const GitHubIconLink = memo<IGitHubIconLinkProps>(function IconLink({className}) {
+const GitHubIconLink = memo<IGitHubIconLinkProps>(function IconLink({className, tabIndex}) {
 	return (
 		<FontAwesomeIconLink
 			isExternal
@@ -92,6 +92,8 @@ const GitHubIconLink = memo<IGitHubIconLinkProps>(function IconLink({className})
 			size="lg"
 			href={links.github.href}
 			aria-label={links.github.label}
+			aria-hidden={tabIndex === -1}
+			tabIndex={tabIndex}
 			className={className}
 		/>
 	);
@@ -114,8 +116,8 @@ const GitHubLink = memo<IGitHubLinkProps>(function GitHubLink({showTooltip}) {
 
 	return (
 		<span className="flex gap-1">
-			<GitHubIconLink className="text-foreground" />
-			<Link isExternal color="foreground" href={links.github.href} referrerPolicy="same-origin">
+			<GitHubIconLink tabIndex={-1} className="text-foreground" />
+			<Link isExternal color="foreground" href={links.github.href} referrerPolicy="same-origin" role="button">
 				{links.github.label}
 			</Link>
 		</span>
@@ -152,7 +154,6 @@ export default function Navbar() {
 	return (
 		<NextUINavbar
 			isBordered
-			shouldHideOnScroll
 			isBlurred={isHighAppearance}
 			maxWidth="xl"
 			isMenuOpen={isMenuOpened}
@@ -168,6 +169,7 @@ export default function Navbar() {
 						href={links.index.href}
 						onPress={handlePress}
 						aria-label={links.index.label}
+						role="button"
 						className="flex select-none items-center justify-start gap-1"
 					>
 						<span
@@ -289,6 +291,7 @@ export default function Navbar() {
 								size="lg"
 								onClick={handlePress}
 								href={href}
+								role="button"
 								className={twJoin(
 									(isActivated || href === '/preferences') && 'underline underline-offset-4'
 								)}

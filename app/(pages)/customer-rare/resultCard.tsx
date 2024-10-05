@@ -49,7 +49,7 @@ export const UnknownItem = memo(
 		const remString = `${size}rem`;
 
 		return (
-			<Tooltip showArrow content={title}>
+			<Tooltip showArrow content={title} offset={7 + -8 * (size - 2)}>
 				<span
 					role="img"
 					title={title}

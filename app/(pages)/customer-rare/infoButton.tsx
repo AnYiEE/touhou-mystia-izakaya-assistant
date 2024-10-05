@@ -7,6 +7,7 @@ import {useViewInNewWindow} from '@/hooks';
 import {AccordionItem, Avatar, Divider, PopoverContent, PopoverTrigger, ScrollShadow} from '@nextui-org/react';
 
 import InfoButtonBase from './infoButtonBase';
+import Ol from '@/components/ol';
 import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
 import Tachie from '@/components/tachie';
@@ -339,7 +340,7 @@ export default function InfoButton() {
 			<AccordionItem key="help" aria-label="特别说明" title="特别说明">
 				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-justify text-xs">
 					<p className="mb-1 text-sm font-semibold">选单时</p>
-					<ol className="list-inside list-disc">
+					<Ol>
 						<li>
 							顾客卡片中的标签和最终的套餐评级只适合一般情景。在任务中的顾客可能临时存在其他的偏好标签；如果有提供改判效果的符卡生效，此时的套餐评级也可能会不够准确。
 						</li>
@@ -350,9 +351,9 @@ export default function InfoButton() {
 							点击套餐卡片中的厨具可以为当前套餐标记是否使用“夜雀”系列厨具，厨具类别是套餐评级时的参考维度之一。
 						</li>
 						<li>“保存套餐”按钮仅会在选择了料理和酒水，且选定了顾客的点单需求标签时被启用。</li>
-					</ol>
+					</Ol>
 					<p className="mb-1 mt-2 text-sm font-semibold">交互时</p>
-					<ol className="list-inside list-disc">
+					<Ol>
 						<li>
 							<span className="hidden md:inline">点击顶部的“设置”按钮</span>
 							<span className="md:hidden">点击右上角的按钮打开菜单。再点击“设置”按钮</span>
@@ -362,7 +363,7 @@ export default function InfoButton() {
 							{/* cSpell:ignore haixian */}
 							所有的搜索框都支持模糊搜索，如使用“海鲜”、“haixian”或“hx”均可搜索到“海鲜味噌汤”。
 						</li>
-					</ol>
+					</Ol>
 				</ScrollShadow>
 			</AccordionItem>
 			<AccordionItem key="rating" aria-label="评级图例" title="评级图例">

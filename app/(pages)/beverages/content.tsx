@@ -1,12 +1,14 @@
 import {Fragment, memo, useRef} from 'react';
+import {twJoin} from 'tailwind-merge';
 
 import {useOpenedItemPopover} from '@/hooks';
 
-import {PopoverContent, PopoverTrigger} from '@nextui-org/react';
+import {PopoverContent, PopoverTrigger, ScrollShadow} from '@nextui-org/react';
 
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
 import ItemPopoverCard from '@/components/itemPopoverCard';
+import Ol from '@/components/ol';
 import Popover from '@/components/popover';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
@@ -57,49 +59,54 @@ export default memo<IProps>(function Content({data}) {
 					tagColors={BEVERAGE_TAG_STYLE}
 					ref={popoverCardRef}
 				>
-					{Object.entries(from).map((fromObject, fromIndex) => {
-						type TFrom = Exclude<IBeverage['from'], string>;
-						const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
-						const isBuy = method === 'buy';
-						const isTask = method === 'task';
-						const probability = `概率${isBuy ? '出售' : '掉落'}`;
-						const way = isBuy ? '购买' : isTask ? '任务' : '采集';
-						return (
-							<p key={fromIndex}>
-								<span className="font-semibold">{way}：</span>
-								{Array.isArray(target)
-									? target.map((item, targetIndex) => (
-											<Fragment key={targetIndex}>
-												{Array.isArray(item) ? (
-													item[1] ? (
-														<Popover showArrow offset={6} size="sm">
-															<Tooltip
-																showArrow
-																content={probability}
-																offset={3}
-																size="sm"
-															>
-																<span className="underline-dotted-offset2 inline-flex cursor-pointer">
-																	<PopoverTrigger>
-																		<span tabIndex={0}>{item[0]}</span>
-																	</PopoverTrigger>
-																</span>
-															</Tooltip>
-															<PopoverContent>{probability}</PopoverContent>
-														</Popover>
+					<ScrollShadow hideScrollBar size={16} className="max-h-[50vh]">
+						{Object.entries(from).map((fromObject, fromIndex) => {
+							type TFrom = Exclude<IBeverage['from'], string>;
+							const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
+							const isBuy = method === 'buy';
+							const isTask = method === 'task';
+							const probability = `概率${isBuy ? '出售' : '掉落'}`;
+							const way = isBuy ? '购买' : isTask ? '任务' : '采集';
+							return (
+								<Fragment key={fromIndex}>
+									<p className={twJoin('font-semibold', fromIndex !== 0 && 'mt-1')}>{way}</p>
+									<Ol className="ml-3">
+										{Array.isArray(target) ? (
+											target.map((item, targetIndex) => (
+												<Ol.Li key={targetIndex}>
+													{Array.isArray(item) ? (
+														item[1] ? (
+															<Popover showArrow offset={6} size="sm">
+																<Tooltip
+																	showArrow
+																	content={probability}
+																	offset={3}
+																	size="sm"
+																>
+																	<span className="underline-dotted-offset2 cursor-pointer">
+																		<PopoverTrigger>
+																			<span tabIndex={0}>{item[0]}</span>
+																		</PopoverTrigger>
+																	</span>
+																</Tooltip>
+																<PopoverContent>{probability}</PopoverContent>
+															</Popover>
+														) : (
+															item[0]
+														)
 													) : (
-														item[0]
-													)
-												) : (
-													item
-												)}
-												{targetIndex < target.length - 1 && '、'}
-											</Fragment>
-										))
-									: '初始拥有'}
-							</p>
-						);
-					})}
+														item
+													)}
+												</Ol.Li>
+											))
+										) : (
+											<Ol.Li>初始拥有</Ol.Li>
+										)}
+									</Ol>
+								</Fragment>
+							);
+						})}
+					</ScrollShadow>
 				</ItemPopoverCard>
 			</PopoverContent>
 		</Popover>

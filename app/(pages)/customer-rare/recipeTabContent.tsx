@@ -335,7 +335,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 														icon={faTags}
 														variant="light"
 														aria-label="料理标签"
-														className="inline h-4 w-4 scale-75 text-default-300 data-[hover=true]:bg-transparent dark:text-default-400"
+														className="inline h-4 w-4 scale-75 text-default-300 transition-opacity data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover dark:text-default-400"
 													/>
 												</PopoverTrigger>
 											</span>
