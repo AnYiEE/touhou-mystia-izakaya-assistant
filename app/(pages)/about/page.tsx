@@ -8,7 +8,7 @@ import Tooltip from '@/components/tooltip';
 
 import {siteConfig} from '@/configs';
 
-const {links, name, shortName} = siteConfig;
+const {links, name, enName, shortName} = siteConfig;
 
 export default function About() {
 	return (
@@ -16,7 +16,7 @@ export default function About() {
 			<H1 isFirst>项目介绍</H1>
 			<div className="space-y-2 break-all text-justify indent-8">
 				<p>
-					{name}（以下简称“{shortName}
+					{name}（英语：{enName}）（以下简称“{shortName}
 					”）是为游戏《东方夜雀食堂》所打造的辅助工具，提供顾客图鉴（包括羁绊奖励和符卡效果查询）、搭配稀客和普客的料理套餐，以及料理（食谱）、酒水、食材、厨具、摆件和衣服查询等功能，旨在为玩家的游玩过程提供帮助。
 				</p>
 				<p>

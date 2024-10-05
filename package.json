@@ -64,7 +64,8 @@
 		"夜雀食堂食谱",
 		"东方夜雀食堂食谱",
 		"夜雀食堂",
-		"东方夜雀食堂"
+		"东方夜雀食堂",
+		"Touhou Mystia's Izakaya"
 	],
 	"dependencies": {
 		"@davstack/store": "^1.4.6",

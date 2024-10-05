@@ -2,7 +2,7 @@
 
 ## 项目介绍
 
-[东方夜雀食堂小助手](https://izakaya.cc)（简称：夜雀助手）是为游戏《[东方夜雀食堂](https://store.steampowered.com/app/1584090/__Touhou_Mystias_Izakaya)》所打造的工具，提供顾客图鉴（包括羁绊奖励和符卡效果查询）、搭配稀客和普客的料理套餐，以及料理（食谱）、酒水、食材、厨具、摆件和衣服查询等功能，旨在为玩家的游玩过程提供帮助。
+[东方夜雀食堂小助手](https://izakaya.cc)（英语：Touhou Mystia's Izakaya Assistant；简称：夜雀助手）是为游戏《[东方夜雀食堂](https://store.steampowered.com/app/1584090/__Touhou_Mystias_Izakaya)》所打造的工具，提供顾客图鉴（包括羁绊奖励和符卡效果查询）、搭配稀客和普客的料理套餐，以及料理（食谱）、酒水、食材、厨具、摆件和衣服查询等功能，旨在为玩家的游玩过程提供帮助。
 
 ### 更新日志
 

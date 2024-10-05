@@ -9,6 +9,7 @@ export type TNavMenuItem<T extends string = string> = {
 export interface ISiteConfig {
 	domain: string;
 	name: string;
+	enName: string;
 	shortName: string;
 	author: {
 		name: string;

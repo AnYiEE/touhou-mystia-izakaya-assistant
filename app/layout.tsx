@@ -21,13 +21,25 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 /** @see {@link https://docs.fontawesome.com/web/use-with/react/use-with#getting-font-awesome-css-to-work} */
 fontawesomeConfig.autoAddCss = false;
 
-const {author, description, keywords, locale, name, shortName, cdnUrl, isAnalytics, isProduction, isVercel, vercelSha} =
-	siteConfig;
+const {
+	author,
+	description,
+	keywords,
+	locale,
+	name,
+	enName,
+	shortName,
+	cdnUrl,
+	isAnalytics,
+	isProduction,
+	isVercel,
+	vercelSha,
+} = siteConfig;
 
 export const metadata: Metadata = {
 	title: {
-		default: name,
-		template: `%s - ${name}`,
+		default: `${name} - ${enName}`,
+		template: `%s | ${name} - ${enName}`,
 	},
 
 	description,

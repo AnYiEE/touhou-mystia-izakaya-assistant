@@ -66,6 +66,7 @@ const getShortUrl = <T extends string>(key: T) => `https://url.${domain}/${key}`
 export const siteConfig = {
 	domain,
 	name: '东方夜雀食堂小助手',
+	enName: "Touhou Mystia's Izakaya Assistant",
 	shortName: '夜雀助手',
 	author: {
 		name: PACKAGE.author.name,
