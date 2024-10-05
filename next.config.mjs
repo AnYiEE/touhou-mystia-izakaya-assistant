@@ -5,6 +5,8 @@ import {env} from 'node:process';
 
 import {CDN_URL, IS_PRODUCTION, getSha} from './scripts/utils.js';
 
+const skipLint = IS_PRODUCTION && Boolean(env.SKIP_LINT);
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
 	env: {
@@ -40,6 +42,13 @@ const nextConfig = {
 		return headers;
 	},
 	reactStrictMode: true,
+
+	eslint: {
+		ignoreDuringBuilds: skipLint,
+	},
+	typescript: {
+		ignoreBuildErrors: skipLint,
+	},
 };
 
 if (!env.SELF_HOSTED && !env.VERCEL) {

@@ -8,6 +8,7 @@ declare global {
 
 			ANALYTICS?: string;
 			SELF_HOSTED?: string;
+			SKIP_LINT?: string;
 			VERCEL?: string;
 			VERCEL_ENV?: NodeJS.ProcessEnv['NODE_ENV'];
 			VERCEL_GIT_COMMIT_SHA?: string;
