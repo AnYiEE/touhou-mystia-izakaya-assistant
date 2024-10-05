@@ -1,8 +1,8 @@
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
-type THref = {
+export type TNavMenuItem<T extends string = string> = {
 	label: string;
-	href: string;
+	href: T;
 	sprite?: TSpriteTarget;
 };
 
@@ -19,9 +19,9 @@ export interface ISiteConfig {
 	/** @see {@link https://nextui.org/docs/api-references/nextui-provider} */
 	locale: string;
 	version: string;
-	navItems: Array<THref | Record<string, THref[]>>;
-	navMenuItems: THref[];
-	links: Record<string, THref>;
+	navItems: Array<TNavMenuItem | Record<string, TNavMenuItem[]>>;
+	navMenuItems: TNavMenuItem[];
+	links: Record<string, TNavMenuItem>;
 	cdnUrl: NonNullable<NodeJS.ProcessEnv['CDN_URL']>;
 	nodeEnv: NodeJS.ProcessEnv['NODE_ENV'];
 	vercelEnv: NodeJS.ProcessEnv['NODE_ENV'] | undefined;
@@ -36,4 +36,4 @@ export interface ISiteConfig {
 export type TSiteConfig = typeof import('./index').siteConfig;
 
 type ExtractNestedHref<T> = T extends {href: infer U} ? U : {[K in keyof T]: ExtractNestedHref<T[K]>}[keyof T];
-export type TSitePath = ExtractNestedHref<TSiteConfig['navItems'][number]>;
+export type TSitePath = ExtractStringTypes<ExtractNestedHref<TSiteConfig['navItems'][number]>>;

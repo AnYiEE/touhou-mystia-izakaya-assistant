@@ -1,8 +1,6 @@
 /* eslint-disable sort-keys */
 import PACKAGE from '@/../package.json';
-import type {ISiteConfig} from './types';
-
-type TNavMenuItems = ISiteConfig['navMenuItems'];
+import type {ISiteConfig, TNavMenuItem} from './types';
 
 const navItems = [
 	{
@@ -78,16 +76,16 @@ export const siteConfig = {
 	locale: 'zh-CN',
 	version: PACKAGE.version,
 	navItems,
-	navMenuItems: navItems.reduce<TNavMenuItems>((acc, navItem) => {
+	navMenuItems: navItems.reduce<TNavMenuItem[]>((acc, navItem) => {
 		let hasNestedArray = false as boolean;
 		Object.keys(navItem).forEach((key) => {
 			if (Array.isArray(navItem[key as never])) {
 				hasNestedArray = true;
-				acc.push(...(navItem[key as never] as TNavMenuItems));
+				acc.push(...(navItem[key as never] as TNavMenuItem[]));
 			}
 		});
 		if (!hasNestedArray) {
-			acc.push(navItem as TNavMenuItems[number]);
+			acc.push(navItem as TNavMenuItem);
 		}
 		return acc;
 	}, []),
