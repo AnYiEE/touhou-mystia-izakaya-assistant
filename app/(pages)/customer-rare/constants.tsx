@@ -21,7 +21,7 @@ export const customerTabStyleMap = {
 		ariaLabel: '收起',
 		buttonNode: <FontAwesomeIcon icon={faCaretUp} size="xl" className="mt-0.5" />,
 		classNames: {
-			content: 'max-h-[50vmax]',
+			content: 'max-h-vmax-half',
 			sideButtonGroup: '',
 		},
 	},
@@ -40,7 +40,7 @@ export const ingredientTabStyleMap = {
 		ariaLabel: '收起',
 		buttonNode: <FontAwesomeIcon icon={faCaretUp} size="xl" className="mt-0.5" />,
 		classNames: {
-			content: 'max-h-[50vmax]',
+			content: 'max-h-vmax-half',
 			sideButtonGroup: '',
 		},
 	},

@@ -136,11 +136,16 @@ module.exports = {
 				'cursor-1.8x': '66px',
 				loading: '120px',
 			},
+			maxHeight: {
+				'screen-half': '50vh',
+				'vmax-half': '50vmax',
+			},
 			minHeight: {
 				'dvh-safe': 'var(--safe-h-dvh)',
 			},
 			maxWidth: {
 				'p-95': '95%',
+				'screen-p-60': '60vw',
 			},
 			width: {
 				cursor: '27px',

@@ -168,7 +168,7 @@ const ShareButton = memo(
 						size="sm"
 						symbol={<FontAwesomeIcon icon={faLink} className="mr-1 !align-middle text-default-400" />}
 						classNames={{
-							pre: 'flex max-w-[60vw] items-center whitespace-normal break-all',
+							pre: 'flex max-w-screen-p-60 items-center whitespace-normal break-all',
 						}}
 					>
 						{generatedUrl}

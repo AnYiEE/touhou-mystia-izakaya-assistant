@@ -59,7 +59,7 @@ export default memo<IProps>(function Content({data}) {
 					tagColors={BEVERAGE_TAG_STYLE}
 					ref={popoverCardRef}
 				>
-					<ScrollShadow hideScrollBar size={16} className="max-h-[50vh]">
+					<ScrollShadow hideScrollBar size={16} className="max-h-screen-half">
 						{Object.entries(from).map((fromObject, fromIndex) => {
 							type TFrom = Exclude<IBeverage['from'], string>;
 							const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
