@@ -4,6 +4,7 @@
 /**
  * @file Transform all JavaScript operators and syntaxes, **not methods**.
  */
+
 const {globSync} = require('glob');
 const {isNil} = require('lodash');
 const {transformFile} = require('@babel/core');

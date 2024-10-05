@@ -12,8 +12,10 @@ const sha = getSha();
 const registerTemplate = readFileSync(resolve(__dirname, 'registerServiceWorker-template.js'), 'utf8');
 const swTemplate = readFileSync(resolve(__dirname, 'serviceWorker-template.js'), 'utf8');
 
-const registerResult = registerTemplate.replaceAll('{{version}}', sha);
-const swResult = swTemplate.replaceAll('{{version}}', sha);
+const slot = '{{version}}';
+const registerResult = registerTemplate.replaceAll(slot, sha);
+const swResult = swTemplate.replaceAll(slot, sha);
 
-writeFileSync(resolve(__dirname, '../public', 'registerServiceWorker.js'), registerResult, 'utf8');
-writeFileSync(resolve(__dirname, '../public', 'serviceWorker.js'), swResult, 'utf8');
+const publicPath = resolve(__dirname, '../public');
+writeFileSync(resolve(publicPath, 'registerServiceWorker.js'), registerResult, 'utf8');
+writeFileSync(resolve(publicPath, 'serviceWorker.js'), swResult, 'utf8');

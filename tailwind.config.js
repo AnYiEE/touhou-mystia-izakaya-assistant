@@ -1,13 +1,15 @@
 // @ts-check
-/* eslint-disable sort-keys, @typescript-eslint/no-require-imports, unicorn/prefer-module */
+/* eslint-disable sort-keys, @typescript-eslint/no-require-imports, compat/compat, unicorn/prefer-module */
 'use strict';
 
 const {nextui} = require('@nextui-org/react');
 
 const {CDN_URL, IS_PRODUCTION} = require('./scripts/utils');
 
-function createShiftedObject(/** @type {Record<number, string>} */ object) {
-	// eslint-disable-next-line compat/compat
+/**
+ * @param {Record<number, string>} object
+ */
+function createShiftedObject(object) {
 	return Object.fromEntries(
 		Object.keys(object).map((key, index) => {
 			const newValue = Object.values(object)[index + 1];
