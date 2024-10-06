@@ -1300,7 +1300,7 @@ export const CUSTOMER_RARE_LIST = [
 	{
 		name: '今泉影狼',
 		dlc: 4,
-		places: ['辉针城', '迷途竹林'],
+		places: ['迷途竹林', '辉针城'],
 		price: '300-600',
 		positiveTags: ['肉', '家常', '山珍', '和风', '适合拍照', '凉爽', TAG_POPULAR_POSITIVE],
 		negativeTags: ['灼热'],
