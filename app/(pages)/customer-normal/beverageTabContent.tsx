@@ -69,7 +69,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 	const hasNameFilter = Boolean(searchValue);
 
 	const tableCurrentPage = customerStore.shared.beverage.page.use();
-	const tableRowsPerPage = customerStore.recipeTableRows.use();
+	const tableRowsPerPage = customerStore.beverageTableRows.use();
 	const tableRowsPerPageNumber = customerStore.persistence.beverage.table.rows.use();
 	const tableSelectableRows = customerStore.shared.beverage.selectableRows.get();
 	const tableSortDescriptor = customerStore.shared.beverage.sortDescriptor.use();
