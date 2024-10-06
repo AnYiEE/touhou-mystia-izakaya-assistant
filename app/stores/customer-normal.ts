@@ -30,6 +30,7 @@ import {
 	CustomerNormal,
 	Ingredient,
 	Recipe,
+	generateRangeArray,
 	numberSort,
 	pinyinSort,
 	removeLastElement,
@@ -166,7 +167,7 @@ const state = {
 			dlcs: new Set() as SelectionSet,
 			page: 1,
 			searchValue: '',
-			selectableRows: [5, 8, 10, 15, 20].map(toValueObject),
+			selectableRows: generateRangeArray(5, 20).map(toValueObject),
 			sortDescriptor: {} as TBeverageTableSortDescriptor,
 		},
 		customer: {
@@ -195,7 +196,7 @@ const state = {
 
 			page: 1,
 			searchValue: '',
-			selectableRows: [5, 8, 10, 15, 20].map(toValueObject),
+			selectableRows: generateRangeArray(5, 20).map(toValueObject),
 			sortDescriptor: {} as TRecipeTableSortDescriptor,
 		},
 		tab: 'customer' as TTab,

@@ -9,6 +9,7 @@ export * from './checkA11yConfirmKey';
 export * from './checkArray';
 export * from './covertValueObject';
 export * from './domReady';
+export * from './generateRangeArray';
 export * from './getPageTitle';
 export * from './intersection';
 export * from './numberSort';
