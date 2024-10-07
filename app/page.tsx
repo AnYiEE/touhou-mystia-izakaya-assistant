@@ -1,3 +1,7 @@
+'use client';
+
+import {twJoin} from 'tailwind-merge';
+
 import {Button, Divider, Link} from '@nextui-org/react';
 import {faQq} from '@fortawesome/free-brands-svg-icons';
 
@@ -7,10 +11,13 @@ import Tooltip from '@/components/tooltip';
 import Xiaohongshu from '@/components/xiaohongshu';
 
 import {siteConfig} from '@/configs';
+import {globalStore as store} from '@/stores';
 
 const {links, shortName} = siteConfig;
 
 export default function Home() {
+	const isHighAppearance = store.persistence.highAppearance.use();
+
 	const qrCodeDescription = (
 		<>
 			分享经验、交流心得
@@ -20,7 +27,13 @@ export default function Home() {
 	);
 
 	return (
-		<div className="flex flex-col items-center justify-center gap-4 md:flex-row md:gap-8">
+		<div
+			className={twJoin(
+				'flex flex-col items-center justify-center gap-4 md:flex-row md:gap-8',
+				isHighAppearance &&
+					'm-auto h-max w-max rounded-lg p-12 shadow backdrop-blur backdrop-saturate-150 md:p-8'
+			)}
+		>
 			<div className="text-center">
 				<div>
 					<span
