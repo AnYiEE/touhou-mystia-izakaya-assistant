@@ -243,7 +243,12 @@ const ItemPopoverCardComponent = memo(
 		return (
 			<div className="max-w-64 space-y-2 p-2 text-xs text-default-400 dark:text-default-500" ref={ref}>
 				<div className="flex items-center gap-2 text-sm text-default-700">
-					<Sprite target={target} name={name} size={2} />
+					<Sprite
+						target={target}
+						name={name}
+						size={2}
+						className={twJoin(target === 'partner' && 'rounded-full')}
+					/>
 					<p className="font-bold">
 						{dlc !== undefined && (
 							<Popover showArrow isTriggerDisabled={!dlcLabel} offset={5} size="sm">

@@ -1,16 +1,13 @@
 import {Fragment, type ReactElement, memo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
-import useBreakpoint from 'use-breakpoint';
 import {useViewInNewWindow} from '@/hooks';
 
-import {AccordionItem, Avatar, Divider, PopoverContent, PopoverTrigger, ScrollShadow} from '@nextui-org/react';
+import {AccordionItem, Avatar, Divider, ScrollShadow} from '@nextui-org/react';
 
 import InfoButtonBase from './infoButtonBase';
 import Ol from '@/components/ol';
-import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
-import Tachie from '@/components/tachie';
 import Tooltip from '@/components/tooltip';
 
 import {customerRatingColorMap} from './constants';
@@ -33,13 +30,6 @@ const LevelLabel = memo<ILevelLabelProps>(function LevelLabel({level}) {
 
 export default function InfoButton() {
 	const openWindow = useViewInNewWindow();
-	const {breakpoint: placement} = useBreakpoint(
-		{
-			left: 426,
-			top: -1,
-		},
-		'top'
-	);
 
 	const currentCustomerData = customerStore.shared.customer.data.use();
 
@@ -50,7 +40,7 @@ export default function InfoButton() {
 	const instance_clothes = customerStore.instances.clothes.get();
 	const instance_cooker = customerStore.instances.cooker.get();
 	const instance_ornament = customerStore.instances.ornament.get();
-	const instance_rare = customerStore.instances.customer_rare.get();
+	const instance_partner = customerStore.instances.partner.get();
 	const instance_recipe = customerStore.instances.recipe.get();
 
 	const {name: currentCustomerName, target: currentCustomerTarget} = currentCustomerData;
@@ -58,7 +48,7 @@ export default function InfoButton() {
 	const instance_customer = customerStore.instances[currentCustomerTarget as 'customer_rare'].get();
 
 	const {
-		bondRewards: currentCustomerBondRewards,
+		collection: currentCustomerCollection,
 		spellCards: currentCustomerSpellCards,
 		places: currentCustomerPlaces,
 	} = instance_customer.getPropsByName(currentCustomerName);
@@ -67,6 +57,7 @@ export default function InfoButton() {
 
 	const bondClothes = instance_clothes.getBondClothes(currentCustomerData);
 	const bondCooker = instance_cooker.getBondCooker(currentCustomerData);
+	const bondPartner = instance_partner.getBondPartner(currentCustomerData);
 
 	const bondOrnamentsData = instance_ornament.getBondOrnaments(currentCustomerData);
 	const {length: bondOrnamentsDataLength} = bondOrnamentsData;
@@ -74,14 +65,13 @@ export default function InfoButton() {
 	const bondRecipesData = instance_recipe.getBondRecipes(currentCustomerData);
 	const {length: bondRecipesDataLength} = bondRecipesData;
 
-	const {length: currentCustomerBondRewardsLength} = currentCustomerBondRewards;
-
 	const hasBondRewards =
+		currentCustomerCollection ||
 		bondClothes !== null ||
 		bondCooker !== null ||
+		bondPartner !== null ||
 		bondRecipesDataLength > 0 ||
-		bondOrnamentsDataLength > 0 ||
-		currentCustomerBondRewardsLength > 0;
+		bondOrnamentsDataLength > 0;
 	const hasSpellCards = Object.keys(currentCustomerSpellCards).length > 0;
 	const hasNegativeSpellCards = hasSpellCards && (currentCustomerSpellCards.negative as unknown[]).length > 0;
 	const hasPositiveSpellCards = hasSpellCards && (currentCustomerSpellCards.positive as unknown[]).length > 0;
@@ -230,71 +220,54 @@ export default function InfoButton() {
 									</p>
 								</Fragment>
 							))}
-							{currentCustomerBondRewards.map(({description, reward, type}, index) => (
-								<Fragment key={index}>
-									{index === 0 &&
-										bondClothes === null &&
+							{currentCustomerCollection && (
+								<>
+									{bondClothes === null &&
 										bondCooker === null &&
 										bondOrnamentsDataLength === 0 &&
 										bondRecipesDataLength > 1 && <Divider />}
 									<p className="flex items-center leading-5">
-										<LevelLabel level={type === '伙伴' && description !== true ? '其他' : 5} />
-										{type === '采集'
-											? `${type}【${reward}】`
-											: (() => {
-													const content = (
-														<div className="flex flex-col items-center">
-															<Tachie
-																alt={reward}
-																src={instance_rare.getTachiePath('partners', reward)}
-																width={120}
-																className="my-1"
-															/>
-															<p>
-																解锁条件：
-																{description === true
-																	? `地区【${currentCustomerMainPlace}】全部稀客羁绊满级`
-																	: description}
-															</p>
-														</div>
-													);
-													return (
-														<>
-															{type}【
-															<Popover
-																showArrow
-																offset={placement === 'left' ? 15 : 6}
-																size="sm"
-																placement={placement}
-															>
-																<Tooltip
-																	showArrow
-																	content={content}
-																	offset={placement === 'left' ? 12 : 3}
-																	placement={placement}
-																	size="sm"
-																>
-																	<span className="inline-flex cursor-pointer">
-																		<PopoverTrigger>
-																			<span
-																				role="button"
-																				tabIndex={0}
-																				className="underline-dotted-offset2"
-																			>
-																				{reward}
-																			</span>
-																		</PopoverTrigger>
-																	</span>
-																</Tooltip>
-																<PopoverContent>{content}</PopoverContent>
-															</Popover>
-															】
-														</>
-													);
-												})()}
+										<LevelLabel level={5} />
+										采集【{currentCustomerMainPlace}】
 									</p>
-								</Fragment>
-							))}
+								</>
+							)}
+							{bondPartner !== null && (
+								<>
+									{bondClothes === null &&
+										bondCooker === null &&
+										bondOrnamentsDataLength === 0 &&
+										bondRecipesDataLength > 1 &&
+										!currentCustomerCollection && <Divider />}
+									<p className="flex items-center">
+										<LevelLabel level="伙伴" />
+										<Tooltip showArrow content={getLabel('伙伴')} placement="left" size="sm">
+											<span
+												onClick={() => {
+													openWindow('partners', bondPartner);
+												}}
+												onKeyDown={(event) => {
+													if (checkA11yConfirmKey(event)) {
+														openWindow('partners', bondPartner);
+													}
+												}}
+												aria-label={getLabel('伙伴')}
+												role="button"
+												tabIndex={0}
+												className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
+											>
+												<Sprite
+													target="partner"
+													name={bondPartner}
+													size={1.25}
+													className="mr-0.5 rounded-full"
+												/>
+												{bondPartner}
+											</span>
+										</Tooltip>
+									</p>
+								</>
+							)}
 						</div>
 					</div>
 				</AccordionItem>

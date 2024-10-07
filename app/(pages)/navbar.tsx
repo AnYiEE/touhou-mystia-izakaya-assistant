@@ -243,7 +243,15 @@ export default function Navbar() {
 														fullWidth
 														isActivated={href === pathname}
 														href={href}
-														startContent={<Sprite target={sprite} size={1.25} />}
+														startContent={
+															<Sprite
+																target={sprite}
+																size={1.25}
+																className={twJoin(
+																	href === '/partners' && 'rounded-full'
+																)}
+															/>
+														}
 														className="justify-start gap-1 text-sm data-[hover=true]:bg-transparent"
 													>
 														{label}

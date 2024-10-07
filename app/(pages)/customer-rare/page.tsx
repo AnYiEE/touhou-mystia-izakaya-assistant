@@ -419,7 +419,7 @@ export default function CustomerRare() {
 					src={(currentCustomerData?.target === 'customer_special'
 						? instance_special
 						: instance_rare
-					).getTachiePath('customer', currentCustomerData)}
+					).getTachiePath(currentCustomerData)}
 					width={currentCustomerData?.target === 'customer_special' ? 60 : 120}
 					className="pointer-events-none fixed bottom-0 right-0 pr-2"
 				/>

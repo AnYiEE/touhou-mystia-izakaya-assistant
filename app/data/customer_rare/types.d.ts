@@ -1,35 +1,6 @@
-import type {ICustomerBase, TPlace, TRecipeTag} from '@/data/types';
+import type {ICustomerBase, TRecipeTag} from '@/data/types';
 
-type TPartner =
-	| '本居小铃'
-	| '赤蛮奇'
-	| '哆来咪'
-	| '高丽野阿吽'
-	| '宫古芳香'
-	| '魂魄妖梦'
-	| '键山雏'
-	| '拉尔瓦'
-	| '铃仙'
-	| '梦子'
-	| '萨拉'
-	| '十六夜咲夜'
-	| '琪斯美'
-	| '小野冢小町'
-	| '云居一轮';
-
-type TReward =
-	| {
-			type: '采集';
-			reward: TPlace;
-			description: string | null;
-	  }
-	| {
-			type: '伙伴';
-			reward: TPartner;
-			description: true | string | null;
-	  };
-
-export type TRewardType = '摆件' | '厨具' | '料理' | '衣服' | TReward['type'];
+export type TRewardType = '摆件' | '采集' | '厨具' | '伙伴' | '料理' | '衣服';
 
 interface ISpellCard {
 	name: string;
@@ -43,7 +14,7 @@ interface ISpellCards {
 }
 
 export interface ICustomerRare extends ICustomerBase {
-	bondRewards: TReward[];
+	collection: boolean;
 	spellCards: Partial<ISpellCards>;
 	positiveTagMapping: Partial<Record<TRecipeTag, string>>;
 	price: `${number}-${number}`;

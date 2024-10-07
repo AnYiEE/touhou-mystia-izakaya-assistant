@@ -18,6 +18,8 @@ import {
 	INGREDIENT_SPRITE_CONFIG,
 	ORNAMENT_LIST,
 	ORNAMENT_SPRITE_CONFIG,
+	PARTNER_LIST,
+	PARTNER_SPRITE_CONFIG,
 	RECIPE_LIST,
 	RECIPE_SPRITE_CONFIG,
 } from '@/data';
@@ -33,6 +35,7 @@ const SPRITE_CONFIG_MAP = {
 	customer_special: CUSTOMER_SPECIAL_SPRITE_CONFIG,
 	ingredient: INGREDIENT_SPRITE_CONFIG,
 	ornament: ORNAMENT_SPRITE_CONFIG,
+	partner: PARTNER_SPRITE_CONFIG,
 	recipe: RECIPE_SPRITE_CONFIG,
 } as const satisfies Record<TSpriteTarget, ISpriteConfig>;
 
@@ -45,6 +48,7 @@ const SPRITE_DATA_MAP = {
 	customer_special: CUSTOMER_SPECIAL_LIST,
 	ingredient: INGREDIENT_LIST,
 	ornament: ORNAMENT_LIST,
+	partner: PARTNER_LIST,
 	recipe: RECIPE_LIST,
 } as const satisfies Record<TSpriteTarget, TSpriteData<TSpriteTarget>>;
 

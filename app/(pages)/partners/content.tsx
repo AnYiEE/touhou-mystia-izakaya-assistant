@@ -1,6 +1,4 @@
 import {Fragment, memo, useRef} from 'react';
-import {isObjectLike} from 'lodash';
-import {twJoin} from 'tailwind-merge';
 
 import useBreakpoint from 'use-breakpoint';
 import {useOpenedItemPopover} from '@/hooks';
@@ -14,12 +12,12 @@ import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
 import Tachie from '@/components/tachie';
 
-import {type IClothes} from '@/data';
-import {clothesStore /* , globalStore */} from '@/stores';
-import {type Clothes} from '@/utils';
+import {type IPartner} from '@/data';
+import {partnersStore /* , globalStore */} from '@/stores';
+import {type Partner} from '@/utils';
 
 interface IProps {
-	data: Clothes['data'];
+	data: Partner['data'];
 }
 
 export default memo<IProps>(function Content({data}) {
@@ -35,9 +33,9 @@ export default memo<IProps>(function Content({data}) {
 
 	// const isHighAppearance = globalStore.persistence.highAppearance.use();
 
-	const instance = clothesStore.instance.get();
+	const instance = partnersStore.instance.get();
 
-	return data.map(({dlc, from, izakaya, name}, dataIndex) => (
+	return data.map(({dlc, effect, from, name, pay, speed}, dataIndex) => (
 		<Popover
 			key={dataIndex}
 			showArrow
@@ -49,56 +47,54 @@ export default memo<IProps>(function Content({data}) {
 					isHoverable={openedPopover ? openedPopover === name : true}
 					isPressable={openedPopover ? openedPopover === name : true}
 					name={name}
-					image={
-						<Sprite
-							target="clothes"
-							name={name}
-							size={3}
-							className={twJoin(
-								isObjectLike(from) && 'self' in from && 'scale-90',
-								name === '夜雀服' && '-translate-x-0.5 scale-85'
-							)}
-						/>
-					}
+					image={<Sprite target="partner" name={name} size={3} className="scale-90 rounded-xl" />}
 					onPress={() => {
-						trackEvent(TrackCategory.Click, 'Clothes Card', name);
+						trackEvent(TrackCategory.Click, 'Partner Card', name);
 					}}
 				/>
 			</ItemPopoverCard.Trigger>
 			<PopoverContent>
 				<ItemPopoverCard.CloseButton />
 				<ItemPopoverCard.ShareButton name={name} />
-				<ItemPopoverCard target="clothes" name={name} dlc={dlc} ref={popoverCardRef}>
+				<ItemPopoverCard target="partner" name={name} dlc={dlc} ref={popoverCardRef}>
 					<p className="-mt-1">
 						<span className="font-semibold">来源：</span>
 						{typeof from === 'string'
 							? from
 							: Object.entries(from).map((fromObject, fromIndex) => {
-									type TFrom = Exclude<IClothes['from'], string>;
+									type TFrom = Exclude<IPartner['from'], string>;
 									const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
-									const isBuy = method === 'buy';
+									const isPlace = method === 'place';
 									const isSelf = method === 'self';
 									return (
 										<Fragment key={fromIndex}>
-											{isBuy ? (
-												target
-											) : isSelf ? (
-												'初始拥有'
-											) : (
-												<>
-													<span className="pr-1">【{target}】羁绊</span>
-													Lv.4
-													<span className="px-0.5">➞</span>Lv. 5
-												</>
-											)}
+											{isPlace
+												? `地区【${target}】全部稀客羁绊满级`
+												: isSelf
+													? '初始拥有'
+													: `完成地区【${target}】主线任务`}
 										</Fragment>
 									);
 								})}
 					</p>
-					<p className="text-justify">
-						<span className="font-semibold">可选更改店铺装潢：</span>
-						{izakaya ? '是' : '否'}
+					<p>
+						<span className="font-semibold">支付当天营收的：</span>
+						{pay}%
 					</p>
+					<p>
+						<span className="font-semibold">移动速度：</span>
+						{speed.moving}
+					</p>
+					<p>
+						<span className="font-semibold">工作速度：</span>
+						{speed.working}
+					</p>
+					{effect !== null && (
+						<p className="text-justify">
+							<span className="font-semibold">效果：</span>
+							{effect}
+						</p>
+					)}
 					<p className="text-justify">
 						<span className="font-semibold">立绘：</span>
 						{(() => {

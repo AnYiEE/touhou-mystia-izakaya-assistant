@@ -2,10 +2,10 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 
 import {openedPopoverParam} from '@/hooks/useOpenedItemPopover';
 
-import {type TClothesNames, type TCookerNames, type TFoodNames, type TOrnamentNames} from '@/data';
+import {type TClothesNames, type TCookerNames, type TFoodNames, type TOrnamentNames, type TPartnerNames} from '@/data';
 
-type TItemPaths = 'beverages' | 'clothes' | 'cookers' | 'ingredients' | 'ornaments' | 'recipes';
-type TItemNames = TClothesNames | TCookerNames | TFoodNames | TOrnamentNames;
+type TItemPaths = 'beverages' | 'clothes' | 'cookers' | 'ingredients' | 'ornaments' | 'partners' | 'recipes';
+type TItemNames = TClothesNames | TCookerNames | TFoodNames | TOrnamentNames | TPartnerNames;
 
 export type TOpenWindow = (path: TItemPaths, name: TItemNames) => void;
 

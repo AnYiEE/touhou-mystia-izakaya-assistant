@@ -34,6 +34,7 @@ import {
 	CustomerSpecial,
 	Ingredient,
 	Ornament,
+	Partner,
 	Recipe,
 	generateRangeArray,
 	numberSort,
@@ -59,6 +60,7 @@ const instance_clothes = Clothes.getInstance();
 const instance_cooker = Cooker.getInstance();
 const instance_ingredient = Ingredient.getInstance();
 const instance_ornament = Ornament.getInstance();
+const instance_partner = Partner.getInstance();
 const instance_recipe = Recipe.getInstance();
 const instance_rare = CustomerRare.getInstance();
 const instance_special = CustomerSpecial.getInstance();
@@ -97,6 +99,7 @@ const state = {
 		customer_special: instance_special,
 		ingredient: instance_ingredient,
 		ornament: instance_ornament,
+		partner: instance_partner,
 		recipe: instance_recipe,
 	},
 

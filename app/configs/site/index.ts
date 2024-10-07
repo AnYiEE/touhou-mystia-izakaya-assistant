@@ -47,6 +47,11 @@ const navItems = [
 				href: '/clothes',
 				sprite: 'clothes',
 			},
+			{
+				label: '伙伴',
+				href: '/partners',
+				sprite: 'partner',
+			},
 		],
 	},
 	{

@@ -7,6 +7,7 @@ import {
 	type CustomerSpecial,
 	type Ingredient,
 	type Ornament,
+	type Partner,
 	type Recipe,
 } from '@/utils';
 
@@ -19,6 +20,7 @@ export type TItemInstance =
 	| CustomerSpecial
 	| Ingredient
 	| Ornament
+	| Partner
 	| Recipe;
 
 export type TItemData<T extends TItemInstance> = T['data'];

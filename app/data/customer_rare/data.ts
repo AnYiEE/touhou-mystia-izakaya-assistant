@@ -18,13 +18,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '甜', '生', '猎奇'],
 		negativeTags: ['素', '清淡', '凉爽'],
 		beverageTags: ['低酒精', '可加冰'],
-		bondRewards: [
-			{
-				type: '采集',
-				reward: '妖怪兽道',
-				description: null,
-			},
-		],
+		collection: true,
 		spellCards: {
 			positive: [
 				{
@@ -49,7 +43,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '饱腹', '生', '招牌', '猎奇', TAG_POPULAR_POSITIVE],
 		negativeTags: ['下酒', TAG_EXPENSIVE, TAG_POPULAR_NEGATIVE],
 		beverageTags: ['苦', '气泡'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -77,7 +71,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '水产', '重油', '甜', '烧烤', TAG_POPULAR_POSITIVE],
 		negativeTags: ['素', '灼热', '猎奇', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['水果', '辛'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -105,13 +99,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '清淡', '和风', '甜', '文化底蕴', '汤羹', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '咸', '灼热', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['可加热', '清酒'],
-		bondRewards: [
-			{
-				type: '采集',
-				reward: '人间之里',
-				description: null,
-			},
-		],
+		collection: true,
 		spellCards: {
 			positive: [
 				{
@@ -139,7 +127,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['素', '家常', '清淡', '和风', '中华', '文化底蕴', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '咸', TAG_LARGE_PARTITION, TAG_POPULAR_NEGATIVE],
 		beverageTags: ['烧酒', '清酒', '利口酒'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -176,13 +164,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '下酒', '和风', '文化底蕴'],
 		negativeTags: ['生', '辣', TAG_ECONOMICAL],
 		beverageTags: ['中酒精', '直饮', '古典'],
-		bondRewards: [
-			{
-				type: '伙伴',
-				reward: '本居小铃',
-				description: '完成地区【人间之里】主线任务',
-			},
-		],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -207,13 +189,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '饱腹', '甜', '不可思议', TAG_ECONOMICAL, TAG_POPULAR_POSITIVE],
 		negativeTags: ['下酒', TAG_EXPENSIVE, TAG_POPULAR_NEGATIVE],
 		beverageTags: ['无酒精', '低酒精', '可加热'],
-		bondRewards: [
-			{
-				type: '伙伴',
-				reward: '高丽野阿吽',
-				description: '解锁地区【红魔馆】后，和博丽灵梦对话',
-			},
-		],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -242,13 +218,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '下酒', '和风', '力量涌现', '小巧', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['高酒精', '直饮'],
-		bondRewards: [
-			{
-				type: '采集',
-				reward: '博丽神社',
-				description: null,
-			},
-		],
+		collection: true,
 		spellCards: {
 			positive: [
 				{
@@ -277,7 +247,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['素', '传说', '清淡', '甜', '适合拍照', '果味', TAG_EXPENSIVE, TAG_POPULAR_NEGATIVE],
 		negativeTags: ['肉', '家常', '重油', TAG_POPULAR_POSITIVE],
 		beverageTags: ['高酒精', '鸡尾酒'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -320,7 +290,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['传说', '重油', '和风', '灼热', '菌类', TAG_POPULAR_POSITIVE],
 		negativeTags: ['猎奇', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['低酒精', '可加冰'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -349,7 +319,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '饱腹', '中华', '力量涌现', TAG_POPULAR_POSITIVE],
 		negativeTags: ['西式', '猎奇', '果味', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['可加热', '古典', '提神'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -377,13 +347,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['甜', '适合拍照', '凉爽', '猎奇', TAG_POPULAR_NEGATIVE],
 		negativeTags: ['下酒', '文化底蕴', TAG_EXPENSIVE, TAG_POPULAR_POSITIVE],
 		beverageTags: ['可加冰', '水果', '甘'],
-		bondRewards: [
-			{
-				type: '采集',
-				reward: '红魔馆',
-				description: null,
-			},
-		],
+		collection: true,
 		spellCards: {
 			positive: [
 				{
@@ -412,13 +376,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '西式', '甜', '适合拍照', '梦幻'],
 		negativeTags: ['咸', '生', '灼热', '猎奇'],
 		beverageTags: ['鸡尾酒', '利口酒', '气泡'],
-		bondRewards: [
-			{
-				type: '伙伴',
-				reward: '十六夜咲夜',
-				description: '完成蕾米莉亚的试炼',
-			},
-		],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -446,13 +404,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['灼热', '果味', '烧烤', '燃起来了', '辣'],
 		negativeTags: ['高级', '不可思议', TAG_EXPENSIVE],
 		beverageTags: ['烧酒', '辛', '苦'],
-		bondRewards: [
-			{
-				type: '采集',
-				reward: '迷途竹林',
-				description: null,
-			},
-		],
+		collection: true,
 		spellCards: {
 			positive: [
 				{
@@ -479,7 +431,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['传说', '和风', '文化底蕴', '不可思议', TAG_POPULAR_POSITIVE],
 		negativeTags: ['招牌', '猎奇', TAG_LARGE_PARTITION, TAG_POPULAR_NEGATIVE],
 		beverageTags: ['清酒', '古典', '现代'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -507,13 +459,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['传说', '甜', '凉爽', '小巧', '梦幻', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '山珍', '猎奇', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['无酒精', '水果', '甘'],
-		bondRewards: [
-			{
-				type: '伙伴',
-				reward: '铃仙',
-				description: '完成地区【迷途竹林】主线任务后自动获得',
-			},
-		],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -541,13 +487,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['水产', '高级', '下酒', '咸', '招牌', '猎奇'],
 		negativeTags: ['素', '山珍', '文化底蕴'],
 		beverageTags: ['中酒精', '高酒精', '清酒', '直饮'],
-		bondRewards: [
-			{
-				type: '伙伴',
-				reward: '键山雏',
-				description: true,
-			},
-		],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -575,13 +515,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '重油', '下酒', '山珍', TAG_LARGE_PARTITION],
 		negativeTags: ['素', '清淡', '猎奇'],
 		beverageTags: ['中酒精', '高酒精', '直饮'],
-		bondRewards: [
-			{
-				type: '采集',
-				reward: '妖怪之山',
-				description: null,
-			},
-		],
+		collection: true,
 		spellCards: {
 			positive: [
 				{
@@ -610,7 +544,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '和风', '甜', '适合拍照', '梦幻', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '生', '灼热', '猎奇', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['无酒精', '低酒精', '清酒', '直饮', '水果', '甘', '苦', '气泡', '现代'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -640,18 +574,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '高级', '西式', '甜', '文化底蕴'],
 		negativeTags: ['肉', '重油', '饱腹', '猎奇'],
 		beverageTags: ['低酒精', '西洋酒', '现代'],
-		bondRewards: [
-			{
-				type: '采集',
-				reward: '魔法森林',
-				description: null,
-			},
-			{
-				type: '伙伴',
-				reward: '梦子',
-				description: true,
-			},
-		],
+		collection: true,
 		spellCards: {
 			positive: [
 				{
@@ -678,7 +601,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['清淡', '山珍', '和风', '文化底蕴', '特产'],
 		negativeTags: ['重油', '饱腹'],
 		beverageTags: ['低酒精', '中酒精', '可加冰', '直饮', '古典'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -706,18 +629,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['鲜', '甜', '生', '适合拍照', '猎奇', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '咸', '灼热'],
 		beverageTags: ['低酒精', '中酒精', '啤酒', '甘'],
-		bondRewards: [
-			{
-				type: '采集',
-				reward: '旧地狱',
-				description: null,
-			},
-			{
-				type: '伙伴',
-				reward: '琪斯美',
-				description: true,
-			},
-		],
+		collection: true,
 		spellCards: {
 			positive: [
 				{
@@ -745,7 +657,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '咸', '鲜', '果味', '辣', '酸', TAG_POPULAR_NEGATIVE],
 		negativeTags: ['甜'],
 		beverageTags: ['无酒精', '可加热', '直饮', '辛', '苦'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -783,7 +695,7 @@ export const CUSTOMER_RARE_LIST = [
 		],
 		negativeTags: ['素', '猎奇', '小巧'],
 		beverageTags: ['高酒精', '清酒', '啤酒', '古典'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -813,13 +725,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '甜', '力量涌现', '小巧', '梦幻', '特产'],
 		negativeTags: ['肉', '山珍', '灼热', '猎奇', TAG_LARGE_PARTITION],
 		beverageTags: ['无酒精', '苦', '气泡', '提神'],
-		bondRewards: [
-			{
-				type: '伙伴',
-				reward: '小野冢小町',
-				description: true,
-			},
-		],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -847,13 +753,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['水产', '海味', '鲜', '甜', '猎奇', '梦幻', TAG_POPULAR_POSITIVE],
 		negativeTags: ['生', '灼热'],
 		beverageTags: ['低酒精', '清酒', '水果'],
-		bondRewards: [
-			{
-				type: '采集',
-				reward: '地灵殿',
-				description: null,
-			},
-		],
+		collection: true,
 		spellCards: {
 			positive: [
 				{
@@ -881,7 +781,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '重油', '咸', '灼热', '力量涌现', '辣'],
 		negativeTags: ['清淡', '菌类'],
 		beverageTags: ['中酒精', '可加热', '鸡尾酒'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -907,18 +807,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '饱腹', '甜', '适合拍照', '力量涌现', '猎奇', '不可思议', TAG_POPULAR_POSITIVE],
 		negativeTags: ['灼热', '汤羹', '辣'],
 		beverageTags: ['中酒精', '可加冰', '水果', '古典'],
-		bondRewards: [
-			{
-				type: '采集',
-				reward: '命莲寺',
-				description: null,
-			},
-			{
-				type: '伙伴',
-				reward: '云居一轮',
-				description: true,
-			},
-		],
+		collection: true,
 		spellCards: {
 			positive: [
 				{
@@ -947,7 +836,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '高级', '饱腹', '咸', '鲜', '力量涌现', '特产'],
 		negativeTags: ['素', '猎奇', '小巧', '酸'],
 		beverageTags: ['高酒精', '可加冰', '西洋酒', '辛'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -979,7 +868,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '鲜', '生', '招牌', '适合拍照', '猎奇', '不可思议', '特产', TAG_POPULAR_NEGATIVE],
 		negativeTags: ['西式', '酸', TAG_POPULAR_POSITIVE],
 		beverageTags: ['可加热', '烧酒', '直饮', '古典'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1009,7 +898,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '传说', '清淡', '山珍', '和风', '燃起来了', TAG_POPULAR_POSITIVE],
 		negativeTags: ['西式', '生', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['中酒精', '可加热', '直饮', '气泡'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1038,13 +927,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['素', '传说', '中华', '甜', '不可思议', '小巧', '特产', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '饱腹'],
 		beverageTags: ['低酒精', '清酒', '水果', '现代'],
-		bondRewards: [
-			{
-				type: '伙伴',
-				reward: '宫古芳香',
-				description: true,
-			},
-		],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1075,13 +958,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '重油', '饱腹', '和风', '招牌', '力量涌现', '烧烤'],
 		negativeTags: ['甜', '凉爽'],
 		beverageTags: ['高酒精', '烧酒', '啤酒', '苦'],
-		bondRewards: [
-			{
-				type: '采集',
-				reward: '神灵庙',
-				description: null,
-			},
-		],
+		collection: true,
 		spellCards: {
 			positive: [
 				{
@@ -1126,7 +1003,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '家常', '下酒', '和风', '招牌', '适合拍照', TAG_POPULAR_POSITIVE],
 		negativeTags: ['西式', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['高酒精', '可加冰', '烧酒', '提神'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1154,13 +1031,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['甜', '招牌', '适合拍照', '凉爽', '菌类', '小巧', '梦幻', '毒'],
 		negativeTags: ['文化底蕴'],
 		beverageTags: ['无酒精', '水果', '甘', '苦'],
-		bondRewards: [
-			{
-				type: '采集',
-				reward: '太阳花田',
-				description: null,
-			},
-		],
+		collection: true,
 		spellCards: {
 			positive: [
 				{
@@ -1192,13 +1063,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '传说', '清淡', '西式', '不可思议', '梦幻', '特产', TAG_POPULAR_POSITIVE],
 		negativeTags: ['饱腹', '和风', '咸', '灼热'],
 		beverageTags: ['鸡尾酒', '西洋酒', '利口酒', '现代'],
-		bondRewards: [
-			{
-				type: '伙伴',
-				reward: '拉尔瓦',
-				description: true,
-			},
-		],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1231,19 +1096,13 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['传说', '和风', '甜', '适合拍照', '文化底蕴', '小巧', '燃起来了', TAG_POPULAR_POSITIVE],
 		negativeTags: ['西式', TAG_LARGE_PARTITION],
 		beverageTags: ['低酒精', '可加热', '气泡', '古典'],
-		bondRewards: [
-			{
-				type: '采集',
-				reward: '辉针城',
-				description: null,
-			},
-		],
+		collection: true,
 		spellCards: {
 			positive: [
 				{
 					name: '宝槌「通货膨胀危机」',
 					description:
-						'使用万宝槌敲击收银台，叠加一层“万宝槌之力”。万宝槌充盈的魔力将在营业结束时使营业额膨胀，第一层“万宝槌之力”使收入提高7%，之后每层使收入提高2%。',
+						'使用万宝槌敲击收银台，叠加一层“万宝槌之力”。万宝槌充盈的魔力将在营业结束时使营业额膨胀，第一层“万宝槌之力”使收入提高7%，之后每层使收入提高2%。同时，充盈的万宝槌之力使伙伴【赤蛮奇】分裂出的辘轳首产生暴走，移动速度提高200%。',
 				},
 			],
 			negative: [
@@ -1268,13 +1127,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['重油', '下酒', '灼热', '力量涌现', '猎奇', '不可思议', '燃起来了', TAG_POPULAR_NEGATIVE],
 		negativeTags: ['高级', TAG_POPULAR_POSITIVE],
 		beverageTags: ['中酒精', '烧酒', '直饮', '辛'],
-		bondRewards: [
-			{
-				type: '伙伴',
-				reward: '赤蛮奇',
-				description: true,
-			},
-		],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1305,7 +1158,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '家常', '山珍', '和风', '适合拍照', '凉爽', TAG_POPULAR_POSITIVE],
 		negativeTags: ['灼热'],
 		beverageTags: ['中酒精', '可加冰', '清酒', '直饮'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1336,13 +1189,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '山珍', '海味', '中华', '甜', '小巧', '特产'],
 		negativeTags: ['不可思议', TAG_EXPENSIVE],
 		beverageTags: ['高酒精', '可加热', '烧酒', '啤酒', '苦'],
-		bondRewards: [
-			{
-				type: '采集',
-				reward: '月之都',
-				description: null,
-			},
-		],
+		collection: true,
 		spellCards: {
 			positive: [
 				{
@@ -1375,7 +1222,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['素', '高级', '和风', '甜', '凉爽', '文化底蕴', '果味', TAG_POPULAR_POSITIVE],
 		negativeTags: ['山珍', '咸', '力量涌现'],
 		beverageTags: ['高酒精', '可加冰', '清酒', '水果', '古典'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1407,13 +1254,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '传说', '清淡', '中华', '灼热', '力量涌现', '文化底蕴', '小巧'],
 		negativeTags: ['山珍', '菌类'],
 		beverageTags: ['可加热', '烧酒', '直饮', '辛', '提神'],
-		bondRewards: [
-			{
-				type: '伙伴',
-				reward: '哆来咪',
-				description: true,
-			},
-		],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1444,13 +1285,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '饱腹', '西式', '甜', '凉爽', '梦幻', TAG_POPULAR_POSITIVE],
 		negativeTags: ['水产', '重油', '生'],
 		beverageTags: ['低酒精', '可加热', '啤酒', '甘', '古典'],
-		bondRewards: [
-			{
-				type: '采集',
-				reward: '魔界',
-				description: null,
-			},
-		],
+		collection: true,
 		spellCards: {
 			positive: [
 				{
@@ -1478,13 +1313,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['水产', '山珍', '鲜', '生', '力量涌现', '猎奇', '菌类'],
 		negativeTags: ['高级', '清淡'],
 		beverageTags: ['高酒精', '可加冰', '烧酒', '西洋酒', '辛'],
-		bondRewards: [
-			{
-				type: '伙伴',
-				reward: '萨拉',
-				description: true,
-			},
-		],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1529,7 +1358,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['水产', '西式', '甜', '适合拍照', '小巧', '特产', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '饱腹'],
 		beverageTags: ['中酒精', '可加冰', '鸡尾酒', '啤酒', '现代'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1559,7 +1388,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '饱腹', '鲜', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '下酒', '猎奇', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['烧酒', '啤酒'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1586,7 +1415,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '传说', '西式', '甜', '生', TAG_POPULAR_POSITIVE],
 		negativeTags: ['咸', '辣', '酸', TAG_ECONOMICAL],
 		beverageTags: ['高酒精', '西洋酒', '水果', '甘', '古典'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1614,13 +1443,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '清淡', '鲜', '力量涌现'],
 		negativeTags: ['重油', '咸', '猎奇'],
 		beverageTags: ['无酒精', '可加热', '水果'],
-		bondRewards: [
-			{
-				type: '伙伴',
-				reward: '魂魄妖梦',
-				description: '完成主线剧情后，和地区【白玉楼】的魂魄妖梦对话，并完成第二场试炼',
-			},
-		],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1645,7 +1468,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '水产', '高级', '传说', '饱腹', '和风', '中华', TAG_LARGE_PARTITION],
 		negativeTags: ['素', '清淡', '小巧'],
 		beverageTags: ['高酒精', '可加冰', '鸡尾酒'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1671,7 +1494,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['水产', '家常', '中华', '辣', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '下酒', '生', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['无酒精', '甘', '气泡'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1697,7 +1520,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '下酒', '山珍', '和风', '力量涌现', TAG_EXPENSIVE, TAG_POPULAR_NEGATIVE],
 		negativeTags: ['素', '清淡', TAG_POPULAR_POSITIVE],
 		beverageTags: ['高酒精', '可加冰', '可加热'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1723,7 +1546,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['传说', '下酒', '西式', '中华', '文化底蕴', '特产'],
 		negativeTags: ['水产', '重油', '饱腹'],
 		beverageTags: ['中酒精', '可加冰', '鸡尾酒', '西洋酒'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1761,7 +1584,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '高级', '传说', '饱腹', '鲜', '生', '力量涌现', '不可思议', TAG_LARGE_PARTITION],
 		negativeTags: [],
 		beverageTags: ['高酒精', '烧酒', '直饮', '辛'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1806,7 +1629,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['咸', '甜', '生', '猎奇', '不可思议', '梦幻'],
 		negativeTags: [],
 		beverageTags: ['高酒精', '烧酒', '苦', '气泡'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1834,7 +1657,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '水产', '家常', '传说', '下酒', '和风', '果味', TAG_POPULAR_POSITIVE],
 		negativeTags: ['灼热', '辣'],
 		beverageTags: ['高酒精', '可加热', '烧酒', '古典'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
@@ -1878,7 +1701,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '高级', '传说', '适合拍照', '凉爽', '猎奇', '汤羹'],
 		negativeTags: ['饱腹', '菌类'],
 		beverageTags: ['中酒精', '高酒精', '烧酒', '古典'],
-		bondRewards: [],
+		collection: false,
 		spellCards: {
 			positive: [
 				{
