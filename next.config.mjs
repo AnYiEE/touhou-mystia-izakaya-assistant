@@ -3,7 +3,7 @@
 
 import {env} from 'node:process';
 
-import {CDN_URL, IS_PRODUCTION, getSha} from './scripts/utils.js';
+import {CDN_URL, IS_PRODUCTION, getSha} from './scripts/utils.mjs';
 
 const skipLint = IS_PRODUCTION && Boolean(env.SKIP_LINT);
 

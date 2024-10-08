@@ -1,15 +1,17 @@
 // @ts-check
-/* eslint-disable sort-keys, @typescript-eslint/no-require-imports, compat/compat, unicorn/prefer-module */
-'use strict';
+/* eslint-disable sort-keys, compat/compat */
 
-const {nextui} = require('@nextui-org/react');
+import {nextui} from '@nextui-org/react';
 
-const {CDN_URL, IS_PRODUCTION} = require('./scripts/utils');
+import {CDN_URL, IS_PRODUCTION} from './scripts/utils.mjs';
 
 /**
- * @param {Record<number, string>} object
+ * @typedef {Required<Exclude<import('@nextui-org/react').ColorScale, string>>} ColorScale
+ * @param {Partial<ColorScale>} object
+ * @returns {ColorScale}
  */
 function createShiftedObject(object) {
+	// @ts-expect-error TS2740 Type inference error.
 	return Object.fromEntries(
 		Object.keys(object).map((key, index) => {
 			const newValue = Object.values(object)[index + 1];
@@ -99,7 +101,7 @@ const purple = {
 };
 
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+const config = {
 	content: ['./app/**/*.tsx', './node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}'],
 	darkMode: 'class',
 	safelist: IS_PRODUCTION
@@ -110,7 +112,7 @@ module.exports = {
 					variants: ['md', 'lg', 'xl'],
 				},
 			]
-		: undefined,
+		: [],
 	theme: {
 		extend: {
 			backgroundImage: {
@@ -283,3 +285,5 @@ module.exports = {
 		}),
 	],
 };
+
+export default config;

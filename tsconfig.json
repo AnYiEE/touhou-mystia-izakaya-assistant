@@ -50,11 +50,11 @@
 	},
 	"exclude": ["node_modules"],
 	"include": [
-		"next.config.mjs",
-		"next-env.d.ts",
+		"**/*.mjs",
 		"**/*.ts",
 		"**/*.tsx",
 		".next/types/**/*.ts",
-		"./node_modules/@types/serviceworker"
+		"next-env.d.ts",
+		"node_modules/@types/serviceworker"
 	]
 }
