@@ -8,6 +8,7 @@ const config = {
 	plugins: IS_PRODUCTION
 		? {
 				tailwindcss: {},
+				'postcss-flexbugs-fixes': {},
 				'postcss-preset-env': {},
 			}
 		: {
