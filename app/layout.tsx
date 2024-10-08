@@ -158,10 +158,7 @@ export default function RootLayout({
 					// Register service worker. The `sha` is the commit SHA of the current commit, used to bypass browser caching.
 					isProduction && <Script async src={`/registerServiceWorker.js?v=${sha}`} />
 				}
-				<Script
-					async
-					src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/smoothscroll/1.4.10/SmoothScroll.min.js"
-				/>
+				<Script async src={`${cdnUrl}/SmoothScroll.min.js`} />
 			</head>
 			<body suppressHydrationWarning className="antialiased">
 				<script
