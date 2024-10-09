@@ -224,9 +224,9 @@ const ItemPopoverCardComponent = memo(
 	) {
 		const openWindow = useViewInNewWindow();
 
-		const mergedTags = useMemo((): Omit<NonNullable<typeof tags>, 'beverage'> | undefined => {
+		const mergedTags = useMemo((): Omit<NonNullable<typeof tags>, 'beverage'> | null => {
 			if (tags === undefined) {
-				return tags;
+				return null;
 			}
 
 			const mergedTagValues = union(tags.beverage ?? [], tags.positive ?? []);
@@ -237,6 +237,11 @@ const ItemPopoverCardComponent = memo(
 				positive: mergedTagValues,
 			};
 		}, [tags]);
+
+		const hasTag = Boolean(
+			(mergedTags?.positive && mergedTags.positive.length > 0) ||
+				(mergedTags?.negative && mergedTags.negative.length > 0)
+		);
 
 		const dlcLabel = dlc === 0 ? LABEL_DLC_0 : '';
 
@@ -329,13 +334,15 @@ const ItemPopoverCardComponent = memo(
 						)}
 					</div>
 				)}
-				{mergedTags !== undefined && (
+				{hasTag && (
 					<div className="flex flex-wrap gap-x-2 gap-y-1">
-						<TagsComponent tags={mergedTags.positive} tagStyle={tagColors?.positive} tagType="positive" />
-						<TagsComponent tags={mergedTags.negative} tagStyle={tagColors?.negative} tagType="negative" />
+						<TagsComponent tags={mergedTags?.positive} tagStyle={tagColors?.positive} tagType="positive" />
+						<TagsComponent tags={mergedTags?.negative} tagStyle={tagColors?.negative} tagType="negative" />
 					</div>
 				)}
-				{children !== undefined && <div className="space-y-1">{children}</div>}
+				{children !== undefined && (
+					<div className={twJoin('space-y-1', mergedTags !== null && !hasTag && '!mt-1')}>{children}</div>
+				)}
 			</div>
 		);
 	})
