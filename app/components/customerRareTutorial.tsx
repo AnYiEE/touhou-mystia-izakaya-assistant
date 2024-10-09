@@ -34,6 +34,8 @@ export default function CustomerRareTutorial() {
 	const dirverState = globalStore.persistence.dirver.get();
 	const isCompleted = dirverState.includes(key);
 
+	const EGG_POSITION = '[aria-label="点击：加入额外食材【鸡蛋】，匹配度+1"]';
+
 	const driverRef = useRef(
 		driver({
 			allowClose: false,
@@ -117,7 +119,7 @@ export default function CustomerRareTutorial() {
 					},
 				},
 				{
-					element: '[aria-label="点击：加入额外食材【鸡蛋】，匹配度+1"]',
+					element: EGG_POSITION,
 					popover: {
 						title: '加入额外食材【鸡蛋】', // eslint-disable-next-line sort-keys
 						description:
@@ -211,7 +213,25 @@ export default function CustomerRareTutorial() {
 
 		if (isIngredientTabSelected && !isInIngredientTab.current) {
 			isInIngredientTab.current = true;
-			driverRef.current.moveNext();
+			// The `xl` breakpoint is 1280px.
+			if (window.innerWidth >= 1280) {
+				driverRef.current.moveNext();
+			} else {
+				const element = document.querySelector(EGG_POSITION);
+				// Some browsers don't support scrollIntoViewOptions
+				try {
+					element?.scrollIntoView({
+						behavior: 'smooth',
+						block: 'start',
+					});
+				} catch {
+					element?.scrollIntoView(true);
+				}
+				// Delay focusing to allow time for scroll animation.
+				setTimeout(() => {
+					driverRef.current.moveNext();
+				}, 1000);
+			}
 		}
 	}, [
 		currentBeverageName,
