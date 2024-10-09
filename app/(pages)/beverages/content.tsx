@@ -64,12 +64,35 @@ export default memo<IProps>(function Content({data}) {
 							type TFrom = Exclude<IBeverage['from'], string>;
 							const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
 							const isBuy = method === 'buy';
+							const isFishingAdvanced = method === 'fishingAdvanced';
 							const isTask = method === 'task';
 							const probability = `概率${isBuy ? '出售' : '掉落'}`;
-							const way = isBuy ? '购买' : isTask ? '任务' : '采集';
+							const way = isBuy ? '购买' : isFishingAdvanced ? '高级钓鱼' : isTask ? '任务' : '采集';
 							return (
 								<Fragment key={fromIndex}>
-									<p className={twJoin('font-semibold', fromIndex !== 0 && 'mt-1')}>{way}</p>
+									<p className={twJoin('font-semibold', fromIndex !== 0 && 'mt-1')}>
+										{isFishingAdvanced ? (
+											<Popover showArrow offset={6} size="sm">
+												<Tooltip
+													showArrow
+													content={`${probability}，使用摆件【超级钓鱼竿】`}
+													offset={3}
+													size="sm"
+												>
+													<span className="inline-flex cursor-pointer">
+														<PopoverTrigger>
+															<span tabIndex={0} className="underline-dotted-offset2">
+																{way}
+															</span>
+														</PopoverTrigger>
+													</span>
+												</Tooltip>
+												<PopoverContent>{probability}，使用摆件【超级钓鱼竿】</PopoverContent>
+											</Popover>
+										) : (
+											way
+										)}
+									</p>
 									<Ol className="ml-3">
 										{Array.isArray(target) ? (
 											target.map((item, targetIndex) => (

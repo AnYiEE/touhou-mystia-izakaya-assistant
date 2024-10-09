@@ -212,6 +212,7 @@ interface IFoodFrom {
 	/** @description If it is an array, the first element represents the collection location, and the second element represents whether it is a probability acquisition. */
 	collect: Array<TCollectionLocation | [TCollectionLocation, boolean]>;
 	fishing: TPlace[];
+	fishingAdvanced: TPlace[];
 	task: TTask[];
 }
 

@@ -70,6 +70,7 @@ export const INGREDIENT_LIST = [
 		from: {
 			buy: ['【妖怪兽道】杂货商人', '【人间之里】农户'],
 			collect: ['【人间之里】农田'],
+			fishingAdvanced: ['博丽神社'],
 		},
 	},
 	{
@@ -292,6 +293,7 @@ export const INGREDIENT_LIST = [
 				'【太阳花田】蘑菇堆',
 				'【魔界】蘑菇堆',
 			],
+			fishingAdvanced: ['魔法森林'],
 		},
 	},
 	{
@@ -355,6 +357,7 @@ export const INGREDIENT_LIST = [
 		from: {
 			buy: [['【妖怪兽道】杂货商人', true], ['【人间之里】香霖堂', true], '【旧地狱】鬼商'],
 			collect: ['【迷途竹林】竹笋堆', ['【迷途竹林】竹子', true], '【辉针城】竹笋堆', ['【辉针城】竹子', true]],
+			fishingAdvanced: ['命莲寺'],
 		},
 	},
 	{
@@ -447,6 +450,7 @@ export const INGREDIENT_LIST = [
 				'【地灵殿】游乐场',
 				'【命莲寺】花丛（西南侧）',
 			],
+			fishingAdvanced: ['旧地狱', '太阳花田', '魔界'],
 			task: ['阿求小姐的色纸'],
 		},
 	},
@@ -476,6 +480,7 @@ export const INGREDIENT_LIST = [
 				['【迷途竹林】蘑菇堆', true],
 				['【地灵殿】喷泉（西侧）', true],
 			],
+			fishingAdvanced: ['红魔馆', '魔法森林'],
 			task: ['阿求小姐的色纸'],
 		},
 	},
@@ -501,6 +506,7 @@ export const INGREDIENT_LIST = [
 		from: {
 			buy: [['【人间之里】香霖堂', true], '【月之都】月兔'],
 			collect: ['【博丽神社】桃树', '【魔法森林】桃子', '【太阳花田】桃树', '【月之都】桃树'],
+			fishingAdvanced: ['地灵殿', '神灵庙'],
 		},
 	},
 	{
@@ -530,6 +536,7 @@ export const INGREDIENT_LIST = [
 				'【太阳花田】月光草',
 				'【辉针城】月光草',
 			],
+			fishingAdvanced: ['红魔馆', '地灵殿'],
 			task: ['阿求小姐的色纸'],
 		},
 	},
@@ -563,6 +570,7 @@ export const INGREDIENT_LIST = [
 		from: {
 			buy: ['【博丽神社】妖精女仆', '【红魔馆】地精商人', '【迷途竹林】美食妖怪兔', '【神灵庙】道士'],
 			collect: ['【旧地狱】捕兽夹（中部）'],
+			fishingAdvanced: ['月之都'],
 			task: ['阿求小姐的色纸'],
 		},
 	},
@@ -590,6 +598,7 @@ export const INGREDIENT_LIST = [
 		from: {
 			buy: [['【人间之里】香霖堂', true]],
 			collect: ['【红魔馆】冰块堆', '【神灵庙】冰块堆'],
+			fishingAdvanced: ['红魔馆', '魔界'],
 		},
 	},
 	{
@@ -605,6 +614,7 @@ export const INGREDIENT_LIST = [
 				['【地灵殿】地狱鸦', true],
 			],
 			collect: ['【红魔馆】葡萄架', '【太阳花田】葡萄架'],
+			fishingAdvanced: ['命莲寺'],
 		},
 	},
 	{
@@ -639,6 +649,7 @@ export const INGREDIENT_LIST = [
 				'【神灵庙】拱桥（下方）',
 				'【月之都】月虹池（右下）',
 			],
+			fishingAdvanced: ['命莲寺', '神灵庙'],
 		},
 	},
 	{
@@ -667,6 +678,7 @@ export const INGREDIENT_LIST = [
 				['【辉针城】不良少年', true],
 			],
 			collect: ['【辉针城】碗之后'],
+			fishingAdvanced: ['妖怪之山'],
 		},
 	},
 	{
@@ -698,6 +710,7 @@ export const INGREDIENT_LIST = [
 				['【太阳花田】太阳花精', true],
 			],
 			collect: ['【妖怪之山】黄瓜堆'],
+			fishingAdvanced: ['妖怪之山'],
 		},
 	},
 	{
@@ -745,6 +758,7 @@ export const INGREDIENT_LIST = [
 		from: {
 			buy: ['【地灵殿】地狱鸦'],
 			collect: ['【旧地狱】柠檬树'],
+			fishingAdvanced: ['旧地狱'],
 		},
 	},
 	{
@@ -821,6 +835,7 @@ export const INGREDIENT_LIST = [
 		from: {
 			buy: ['【辉针城】不良少年'],
 			collect: [['【辉针城】红豆树', true]],
+			fishingAdvanced: ['辉针城'],
 		},
 	},
 	{
@@ -844,6 +859,7 @@ export const INGREDIENT_LIST = [
 		price: 45,
 		from: {
 			collect: ['【太阳花田】花丛（西侧）', '【太阳花田】花丛（中部）', '【魔界】东南侧花丛'],
+			fishingAdvanced: ['太阳花田'],
 		},
 	},
 	{

@@ -20,6 +20,7 @@ export const BEVERAGE_LIST = [
 		price: 50,
 		from: {
 			collect: ['【妖怪兽道】东南侧雀酒', '【太阳花田】树桩'],
+			fishingAdvanced: ['妖怪兽道', '妖怪之山'],
 		},
 	},
 	{
@@ -30,6 +31,7 @@ export const BEVERAGE_LIST = [
 		price: 12,
 		from: {
 			buy: ['【妖怪兽道】杂货商人'],
+			fishingAdvanced: ['妖怪兽道'],
 		},
 	},
 	{
@@ -40,6 +42,7 @@ export const BEVERAGE_LIST = [
 		price: 12,
 		from: {
 			buy: ['【妖怪兽道】杂货商人'],
+			fishingAdvanced: ['妖怪兽道'],
 		},
 	},
 	{
@@ -50,6 +53,7 @@ export const BEVERAGE_LIST = [
 		price: 18,
 		from: {
 			buy: ['【妖怪兽道】杂货商人', '【人间之里】酒商'],
+			fishingAdvanced: ['妖怪兽道'],
 		},
 	},
 	{
@@ -66,6 +70,7 @@ export const BEVERAGE_LIST = [
 				['【辉针城】酒窖', true],
 				['【月之都】月虹池（右上）', true],
 			],
+			fishingAdvanced: ['妖怪兽道', '辉针城'],
 			task: ['阿求小姐的色纸'],
 		},
 	},
@@ -77,6 +82,7 @@ export const BEVERAGE_LIST = [
 		price: 32,
 		from: {
 			buy: ['【人间之里】酒商'],
+			fishingAdvanced: ['迷途竹林', '辉针城'],
 		},
 	},
 	{
@@ -97,6 +103,7 @@ export const BEVERAGE_LIST = [
 		price: 34,
 		from: {
 			buy: ['【人间之里】酒商'],
+			fishingAdvanced: ['人间之里'],
 		},
 	},
 	{
@@ -128,6 +135,7 @@ export const BEVERAGE_LIST = [
 		from: {
 			buy: ['【人间之里】铃瑚'],
 			collect: [['【地灵殿】游乐场', true]],
+			fishingAdvanced: ['魔法森林'],
 		},
 	},
 	{
@@ -144,6 +152,7 @@ export const BEVERAGE_LIST = [
 				'【神灵庙】道士',
 				'【太阳花田】太阳花精',
 			],
+			fishingAdvanced: ['人间之里', '迷途竹林', '魔法森林', '辉针城'],
 		},
 	},
 	{
@@ -160,6 +169,7 @@ export const BEVERAGE_LIST = [
 				['【辉针城】酒窖', true],
 				['【月之都】月虹池（右上）', true],
 			],
+			fishingAdvanced: ['魔法森林', '魔界'],
 		},
 	},
 	{
@@ -170,6 +180,7 @@ export const BEVERAGE_LIST = [
 		price: 45,
 		from: {
 			buy: ['【博丽神社】河童商人', '【神灵庙】道士'],
+			fishingAdvanced: ['旧地狱', '命莲寺'],
 		},
 	},
 	{
@@ -186,6 +197,7 @@ export const BEVERAGE_LIST = [
 				['【月之都】月虹池（右上）', true],
 				['【魔界】魅魔房顶', true],
 			],
+			fishingAdvanced: ['神灵庙'],
 			task: ['阿求小姐的色纸', '女仆长的采购委托'],
 		},
 	},
@@ -201,6 +213,7 @@ export const BEVERAGE_LIST = [
 				['【辉针城】酒窖', true],
 				['【月之都】月虹池（右上）', true],
 			],
+			fishingAdvanced: ['命莲寺', '魔界'],
 			task: ['阿求小姐的色纸', '女仆长的采购委托'],
 		},
 	},
@@ -216,6 +229,7 @@ export const BEVERAGE_LIST = [
 				['【辉针城】酒窖', true],
 				['【月之都】月虹池（右上）', true],
 			],
+			fishingAdvanced: ['地灵殿'],
 			task: ['阿求小姐的色纸', '女仆长的采购委托'],
 		},
 	},
@@ -242,6 +256,7 @@ export const BEVERAGE_LIST = [
 				['【辉针城】酒窖', true],
 				['【月之都】月虹池（右上）', true],
 			],
+			fishingAdvanced: ['神灵庙', '辉针城'],
 			task: ['阿求小姐的色纸'],
 		},
 	},
@@ -253,6 +268,7 @@ export const BEVERAGE_LIST = [
 		price: 70,
 		from: {
 			buy: ['【博丽神社】河童商人', '【旧地狱】鬼商'],
+			fishingAdvanced: ['妖怪之山', '辉针城'],
 		},
 	},
 	{
@@ -273,6 +289,7 @@ export const BEVERAGE_LIST = [
 		price: 25,
 		from: {
 			buy: ['【红魔馆】小恶魔'],
+			fishingAdvanced: ['红魔馆'],
 		},
 	},
 	{
@@ -289,6 +306,7 @@ export const BEVERAGE_LIST = [
 				['【辉针城】酒窖', true],
 				['【月之都】月虹池（右上）', true],
 			],
+			fishingAdvanced: ['旧地狱'],
 		},
 	},
 	{
@@ -299,6 +317,7 @@ export const BEVERAGE_LIST = [
 		price: 75,
 		from: {
 			buy: ['【红魔馆】小恶魔', '【辉针城】不良少年'],
+			fishingAdvanced: ['红魔馆'],
 		},
 	},
 	{
@@ -319,6 +338,7 @@ export const BEVERAGE_LIST = [
 		price: 45,
 		from: {
 			collect: ['【迷途竹林】西侧泉水', ['【地灵殿】游乐场', true]],
+			fishingAdvanced: ['迷途竹林', '妖怪之山', '月之都'],
 		},
 	},
 	{
@@ -329,6 +349,7 @@ export const BEVERAGE_LIST = [
 		price: 35,
 		from: {
 			buy: ['【红魔馆】小恶魔'],
+			fishingAdvanced: ['地灵殿'],
 		},
 	},
 	{
@@ -391,6 +412,7 @@ export const BEVERAGE_LIST = [
 		price: 80,
 		from: {
 			collect: ['【魔法森林】中部树根', '【魔界】西北侧'],
+			fishingAdvanced: ['太阳花田'],
 		},
 	},
 	{
@@ -402,6 +424,7 @@ export const BEVERAGE_LIST = [
 		from: {
 			buy: ['【旧地狱】鬼商'],
 			collect: [['【魔界】魅魔房顶', true]],
+			fishingAdvanced: ['旧地狱'],
 		},
 	},
 	{
@@ -422,6 +445,7 @@ export const BEVERAGE_LIST = [
 		price: 35,
 		from: {
 			buy: ['【地灵殿】地狱鸦'],
+			fishingAdvanced: ['地灵殿'],
 		},
 	},
 	{
@@ -432,6 +456,7 @@ export const BEVERAGE_LIST = [
 		price: 180,
 		from: {
 			buy: ['【神灵庙】道士'],
+			fishingAdvanced: ['神灵庙'],
 		},
 	},
 	{
@@ -464,6 +489,7 @@ export const BEVERAGE_LIST = [
 		from: {
 			buy: ['【太阳花田】太阳花精'],
 			collect: ['【辉针城】酒窖', '【月之都】月虹池（右上）'],
+			fishingAdvanced: ['太阳花田'],
 		},
 	},
 	{
@@ -474,6 +500,7 @@ export const BEVERAGE_LIST = [
 		price: 42,
 		from: {
 			buy: ['【月之都】月兔'],
+			fishingAdvanced: ['月之都'],
 		},
 	},
 	{
@@ -495,6 +522,7 @@ export const BEVERAGE_LIST = [
 		from: {
 			buy: ['【魔界】蓬松松爱莲♡魔法店', '【魔界】小丑'],
 			collect: ['【魔界】魅魔房顶'],
+			fishingAdvanced: ['魔界'],
 		},
 	},
 	{
@@ -505,6 +533,7 @@ export const BEVERAGE_LIST = [
 		price: 300,
 		from: {
 			buy: ['【月之都】月兔'],
+			fishingAdvanced: ['月之都'],
 		},
 	},
 	{

@@ -25,7 +25,7 @@ type TTag =
 
 type TFromBase = IFoodBase['from'];
 
-interface IFrom extends TFromBase {
+interface IFrom extends Omit<TFromBase, 'fishing'> {
 	/** @description Initial beverages. */
 	self: boolean;
 }

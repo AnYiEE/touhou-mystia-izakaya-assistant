@@ -65,15 +65,29 @@ export default memo<IProps>(function Content({data}) {
 							const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
 							const isBuy = method === 'buy';
 							const isFishing = method === 'fishing';
+							const isFishingAdvanced = method === 'fishingAdvanced';
 							const isTask = method === 'task';
 							const probability = `概率${isBuy ? '出售' : '掉落'}`;
-							const way = isBuy ? '购买' : isFishing ? '钓鱼' : isTask ? '任务' : '采集';
+							const way = isBuy
+								? '购买'
+								: isFishing
+									? '钓鱼'
+									: isFishingAdvanced
+										? '高级钓鱼'
+										: isTask
+											? '任务'
+											: '采集';
 							return (
 								<Fragment key={fromIndex}>
 									<p className={twJoin('font-semibold', fromIndex !== 0 && 'mt-1')}>
-										{isFishing ? (
+										{isFishing || isFishingAdvanced ? (
 											<Popover showArrow offset={6} size="sm">
-												<Tooltip showArrow content={probability} offset={3} size="sm">
+												<Tooltip
+													showArrow
+													content={`${probability}，使用摆件【${isFishing ? '' : '超级'}钓鱼竿】`}
+													offset={3}
+													size="sm"
+												>
 													<span className="inline-flex cursor-pointer">
 														<PopoverTrigger>
 															<span tabIndex={0} className="underline-dotted-offset2">
@@ -82,7 +96,9 @@ export default memo<IProps>(function Content({data}) {
 														</PopoverTrigger>
 													</span>
 												</Tooltip>
-												<PopoverContent>{probability}</PopoverContent>
+												<PopoverContent>
+													{probability}，使用摆件【{isFishing ? '' : '超级'}钓鱼竿】
+												</PopoverContent>
 											</Popover>
 										) : (
 											way
