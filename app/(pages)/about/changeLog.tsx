@@ -97,7 +97,7 @@ const changelog = [
 	},
 	{
 		version: 'v1.3',
-		changes: ['新增：伙伴页面。'],
+		changes: ['新增：伙伴页面。', '修复：额外食材评分逻辑。'],
 	},
 ] as const satisfies {
 	version: `v${string}`;
