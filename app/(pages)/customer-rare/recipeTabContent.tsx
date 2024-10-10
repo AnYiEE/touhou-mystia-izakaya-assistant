@@ -441,8 +441,8 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 					<div className="flex flex-1 items-end gap-3">
 						<Autocomplete
 							allowsCustomValue
-							defaultInputValue={searchValue}
 							defaultItems={allRecipeNames}
+							inputValue={searchValue}
 							placeholder="名称"
 							size="sm"
 							startContent={<FontAwesomeIcon icon={faMagnifyingGlass} className="pointer-events-none" />}
@@ -489,7 +489,6 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 						</Autocomplete>
 						<Select
 							items={allRecipeTags}
-							defaultSelectedKeys={selectedCustomerPositiveTags}
 							selectedKeys={selectedCustomerPositiveTags}
 							placeholder="标签"
 							size="sm"
@@ -534,7 +533,6 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 							<DropdownMenu
 								closeOnSelect={false}
 								items={allCookers}
-								defaultSelectedKeys={selectedCookers}
 								selectedKeys={selectedCookers}
 								selectionMode="multiple"
 								variant="flat"
@@ -565,7 +563,6 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 							<DropdownMenu
 								closeOnSelect={false}
 								items={allRecipeDlcs}
-								defaultSelectedKeys={selectedDlcs}
 								selectedKeys={selectedDlcs}
 								selectionMode="multiple"
 								variant="flat"
@@ -593,7 +590,6 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 							<DropdownMenu
 								disallowEmptySelection
 								closeOnSelect={false}
-								defaultSelectedKeys={tableVisibleColumns}
 								disabledKeys={['action', 'recipe'] satisfies TTableColumnKey[]}
 								selectedKeys={tableVisibleColumns}
 								selectionMode="multiple"
@@ -615,7 +611,6 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 						<Select
 							disallowEmptySelection
 							items={tableSelectableRows}
-							defaultSelectedKeys={tableRowsPerPage}
 							selectedKeys={tableRowsPerPage}
 							size="sm"
 							variant="flat"

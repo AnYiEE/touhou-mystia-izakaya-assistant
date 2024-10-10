@@ -130,7 +130,6 @@ export default memo<IProps>(function ThemeSwitcher({isMenu}) {
 			</Tooltip>
 			<DropdownMenu
 				disallowEmptySelection
-				defaultSelectedKeys={selectedTheme}
 				selectedKeys={selectedTheme}
 				selectionMode="single"
 				onSelectionChange={onSelectedThemeChange}

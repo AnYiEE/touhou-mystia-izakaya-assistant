@@ -95,7 +95,6 @@ export default memo<IProps>(function Content({onModalClose}) {
 						<span className="font-medium">标签：</span>
 						<Select
 							items={popularTags}
-							defaultSelectedKeys={selectedPopularTag}
 							selectedKeys={selectedPopularTag}
 							size="sm"
 							variant="flat"

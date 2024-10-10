@@ -300,8 +300,8 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 					<div className="flex flex-1 items-end gap-3">
 						<Autocomplete
 							allowsCustomValue
-							defaultInputValue={searchValue}
 							defaultItems={allBeverageNames}
+							inputValue={searchValue}
 							placeholder="名称"
 							size="sm"
 							startContent={<FontAwesomeIcon icon={faMagnifyingGlass} className="pointer-events-none" />}
@@ -348,7 +348,6 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 						</Autocomplete>
 						<Select
 							items={allBeverageTags}
-							defaultSelectedKeys={selectedCustomerBeverageTags}
 							selectedKeys={selectedCustomerBeverageTags}
 							placeholder="标签"
 							size="sm"
@@ -393,7 +392,6 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 							<DropdownMenu
 								closeOnSelect={false}
 								items={allBeverageDlcs}
-								defaultSelectedKeys={selectedDlcs}
 								selectedKeys={selectedDlcs}
 								selectionMode="multiple"
 								variant="flat"
@@ -421,7 +419,6 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 							<DropdownMenu
 								disallowEmptySelection
 								closeOnSelect={false}
-								defaultSelectedKeys={tableVisibleColumns}
 								disabledKeys={['action', 'beverage'] satisfies TTableColumnKey[]}
 								selectedKeys={tableVisibleColumns}
 								selectionMode="multiple"
@@ -443,7 +440,6 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 						<Select
 							disallowEmptySelection
 							items={tableSelectableRows}
-							defaultSelectedKeys={tableRowsPerPage}
 							selectedKeys={tableRowsPerPage}
 							size="sm"
 							variant="flat"

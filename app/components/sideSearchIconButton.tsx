@@ -92,8 +92,8 @@ export default memo(
 					<Autocomplete
 						allowsCustomValue
 						variant="flat"
-						defaultInputValue={searchValue}
 						defaultItems={searchItems}
+						inputValue={searchValue}
 						label={label}
 						onInputChange={handleInputChange}
 						popoverProps={{
