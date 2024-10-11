@@ -3,6 +3,7 @@ import type {IIngredient} from './types';
 
 export const INGREDIENT_LIST = [
 	{
+		id: 10,
 		name: '海苔',
 		type: '蔬菜',
 		tags: ['素', '鲜'],
@@ -23,6 +24,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 12,
 		name: '八目鳗',
 		type: '海鲜',
 		tags: ['水产', '鲜', '招牌'],
@@ -50,6 +52,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 2,
 		name: '牛肉',
 		type: '肉类',
 		tags: ['肉'],
@@ -61,6 +64,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 7,
 		name: '洋葱',
 		type: '蔬菜',
 		tags: ['素', '鲜'],
@@ -74,6 +78,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 8,
 		name: '南瓜',
 		type: '蔬菜',
 		tags: ['素', '饱腹'],
@@ -86,6 +91,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 5,
 		name: '豆腐',
 		type: '蔬菜',
 		tags: ['素', '家常', '清淡'],
@@ -97,6 +103,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 9,
 		name: '萝卜',
 		type: '蔬菜',
 		tags: ['素', '下酒'],
@@ -116,6 +123,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 11,
 		name: '鳟鱼',
 		type: '海鲜',
 		tags: ['水产', '鲜'],
@@ -149,6 +157,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 1,
 		name: '猪肉',
 		type: '肉类',
 		tags: ['肉'],
@@ -161,6 +170,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 27,
 		name: '露水',
 		type: '其他',
 		tags: ['清淡'],
@@ -181,6 +191,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 24,
 		name: '蜂蜜',
 		type: '其他',
 		tags: ['甜'],
@@ -202,6 +213,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 25,
 		name: '蝉蜕',
 		type: '其他',
 		tags: ['猎奇'],
@@ -221,6 +233,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 4,
 		name: '野猪肉',
 		type: '肉类',
 		tags: ['肉'],
@@ -233,6 +246,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 3,
 		name: '鹿肉',
 		type: '肉类',
 		tags: ['肉'],
@@ -248,6 +262,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 15,
 		name: '黑毛猪肉',
 		type: '肉类',
 		tags: ['肉', '传说', '山珍'],
@@ -260,6 +275,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 6,
 		name: '土豆',
 		type: '蔬菜',
 		tags: ['素', '家常'],
@@ -272,6 +288,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 17,
 		name: '蘑菇',
 		type: '蔬菜',
 		tags: ['素', '鲜', '菌类'],
@@ -297,6 +314,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 35,
 		name: '辣椒',
 		type: '其他',
 		tags: ['辣'],
@@ -309,6 +327,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 13,
 		name: '三文鱼',
 		type: '海鲜',
 		tags: ['水产', '高级', '鲜'],
@@ -348,6 +367,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 28,
 		name: '竹笋',
 		type: '蔬菜',
 		tags: ['素', '清淡'],
@@ -361,6 +381,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 30,
 		name: '面粉',
 		type: '其他',
 		tags: ['饱腹'],
@@ -372,6 +393,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 23,
 		name: '虾',
 		type: '海鲜',
 		tags: ['水产', '鲜'],
@@ -395,6 +417,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 14,
 		name: '金枪鱼',
 		type: '海鲜',
 		tags: ['水产', '高级', '鲜'],
@@ -418,6 +441,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 22,
 		name: '白果',
 		type: '其他',
 		tags: ['适合拍照'],
@@ -437,6 +461,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 26,
 		name: '幻昙华',
 		type: '其他',
 		tags: ['高级', '传说', '不可思议', '梦幻'],
@@ -455,6 +480,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 32,
 		name: '糯米',
 		type: '其他',
 		tags: [],
@@ -466,6 +492,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 18,
 		name: '松露',
 		type: '蔬菜',
 		tags: ['素', '高级', '传说', '山珍', '鲜', '菌类'],
@@ -485,6 +512,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 31,
 		name: '竹子',
 		type: '其他',
 		tags: ['适合拍照'],
@@ -497,6 +525,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 21,
 		name: '桃子',
 		type: '其他',
 		tags: ['甜', '果味'],
@@ -510,6 +539,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 29,
 		name: '黄油',
 		type: '其他',
 		tags: ['重油'],
@@ -521,6 +551,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 33,
 		name: '月光草',
 		type: '其他',
 		tags: ['清淡', '文化底蕴', '不可思议', '梦幻'],
@@ -541,6 +572,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 19,
 		name: '极上金枪鱼',
 		type: '海鲜',
 		tags: ['水产', '高级', '传说', '海味', '鲜'],
@@ -561,6 +593,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 16,
 		name: '和牛',
 		type: '肉类',
 		tags: ['肉', '高级', '传说'],
@@ -575,6 +608,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 20,
 		name: '河豚',
 		type: '海鲜',
 		tags: ['水产', '海味', '鲜'],
@@ -589,6 +623,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 34,
 		name: '冰块',
 		type: '其他',
 		tags: ['凉爽'],
@@ -602,6 +637,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 36,
 		name: '葡萄',
 		type: '其他',
 		tags: ['甜', '果味'],
@@ -618,6 +654,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 0,
 		name: '鸡蛋',
 		type: '其他',
 		tags: ['生'],
@@ -636,6 +673,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 2000,
 		name: '并蒂莲',
 		type: '其他',
 		tags: ['高级', '传说', '清淡', '文化底蕴', '梦幻'],
@@ -653,6 +691,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 1001,
 		name: '章鱼',
 		type: '海鲜',
 		tags: ['水产', '海味', '鲜'],
@@ -666,6 +705,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 1002,
 		name: '海胆',
 		type: '海鲜',
 		tags: ['水产', '高级', '传说', '海味', '鲜'],
@@ -682,6 +722,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 1005,
 		name: '螃蟹',
 		type: '海鲜',
 		tags: ['水产', '高级', '鲜'],
@@ -698,6 +739,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 1000,
 		name: '黄瓜',
 		type: '蔬菜',
 		tags: ['素', '家常', '清淡'],
@@ -714,6 +756,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 1003,
 		name: '黑盐',
 		type: '其他',
 		tags: ['咸'],
@@ -726,6 +769,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 1004,
 		name: '奶油',
 		type: '其他',
 		tags: ['家常', '西式', '甜'],
@@ -737,6 +781,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 2002,
 		name: '芝士',
 		type: '其他',
 		tags: ['高级', '咸', '鲜'],
@@ -749,6 +794,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 2001,
 		name: '柠檬',
 		type: '其他',
 		tags: ['果味', '酸'],
@@ -762,6 +808,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 3001,
 		name: '地瓜',
 		type: '其他',
 		tags: ['饱腹'],
@@ -774,6 +821,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 3000,
 		name: '莲子',
 		type: '其他',
 		tags: ['清淡', '招牌', '文化底蕴'],
@@ -790,6 +838,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 3003,
 		name: '板栗',
 		type: '蔬菜',
 		tags: ['素', '家常'],
@@ -802,6 +851,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 3002,
 		name: '松子',
 		type: '其他',
 		tags: ['高级', '清淡', '招牌'],
@@ -814,6 +864,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 4001,
 		name: '红豆',
 		type: '其他',
 		tags: ['家常'],
@@ -826,6 +877,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 4000,
 		name: '梅子',
 		type: '其他',
 		tags: ['咸', '小巧'],
@@ -839,6 +891,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 4003,
 		name: '香椿',
 		type: '蔬菜',
 		tags: ['素', '毒'],
@@ -851,6 +904,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 4002,
 		name: '鲜花',
 		type: '其他',
 		tags: ['适合拍照', '梦幻'],
@@ -863,6 +917,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 4004,
 		name: '西红柿',
 		type: '蔬菜',
 		tags: ['素'],
@@ -874,6 +929,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 5001,
 		name: '西兰花',
 		type: '蔬菜',
 		tags: ['素', '家常'],
@@ -887,6 +943,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 5000,
 		name: '可可豆',
 		type: '其他',
 		tags: ['甜', '不可思议'],
@@ -900,6 +957,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 5003,
 		name: '薜茘',
 		type: '其他',
 		tags: ['凉爽', '梦幻'],
@@ -912,6 +970,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: 5004,
 		name: '银耳',
 		type: '其他',
 		tags: ['清淡', '菌类'],
@@ -925,6 +984,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: -1,
 		name: '强效辣椒素',
 		type: '其他',
 		tags: ['天罚'],
@@ -936,6 +996,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: -1,
 		name: '噗噗哟果',
 		type: '其他',
 		tags: ['天罚'],
@@ -947,6 +1008,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
+		id: -1,
 		name: '铃仙',
 		type: '其他',
 		tags: ['招牌', '适合拍照', '不可思议', '特产'],

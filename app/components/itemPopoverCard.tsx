@@ -201,6 +201,7 @@ interface IItemPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 	name: TItemNames;
 	displayName?: ReactNodeWithoutBoolean;
 	description?: Partial<{
+		id: number;
 		level: number;
 		price: number;
 		type: ICooker['type'] | IIngredient['type'];
@@ -243,10 +244,18 @@ const ItemPopoverCardComponent = memo(
 				(mergedTags?.negative && mergedTags.negative.length > 0)
 		);
 
+		const isValidId = description !== undefined && description.id !== undefined && description.id !== -1;
+
 		const dlcLabel = dlc === 0 ? LABEL_DLC_0 : '';
 
 		return (
-			<div className="max-w-64 space-y-2 p-2 text-xs text-default-400 dark:text-default-500" ref={ref}>
+			<div
+				className={twJoin(
+					'space-y-2 p-2 text-xs text-default-400 dark:text-default-500',
+					isValidId ? 'max-w-72' : 'max-w-64'
+				)}
+				ref={ref}
+			>
 				<div className="flex items-center gap-2 text-sm text-default-700">
 					<Sprite
 						target={target}
@@ -330,6 +339,12 @@ const ItemPopoverCardComponent = memo(
 							<p>
 								<span className="font-semibold">类别：</span>
 								{[description.type].flat().join('、')}
+							</p>
+						)}
+						{isValidId && (
+							<p>
+								<span className="font-semibold">ID：</span>
+								<Price showSymbol={false}>{description.id}</Price>
 							</p>
 						)}
 					</div>

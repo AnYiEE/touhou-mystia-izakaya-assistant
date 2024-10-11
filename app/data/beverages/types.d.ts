@@ -31,6 +31,7 @@ interface IFrom extends Omit<TFromBase, 'fishing'> {
 }
 
 export interface IBeverage extends IFoodBase {
+	id: number;
 	tags: TTag[];
 	from: Partial<IFrom>;
 }
