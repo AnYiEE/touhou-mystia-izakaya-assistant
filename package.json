@@ -92,8 +92,8 @@
 		"use-breakpoint": "^4.0.1"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.25.7",
-		"@babel/preset-env": "^7.25.7",
+		"@babel/core": "^7.25.8",
+		"@babel/preset-env": "^7.25.8",
 		"@commitlint/cli": "^19.5.0",
 		"@commitlint/config-conventional": "^19.5.0",
 		"@types/babel__core": "^7.20.5",
@@ -115,10 +115,10 @@
 		"only-allow": "^1.2.1",
 		"postcss": "^8.4.47",
 		"postcss-flexbugs-fixes": "^5.0.2",
-		"postcss-preset-env": "^10.0.6",
+		"postcss-preset-env": "^10.0.7",
 		"prettier": "^3.3.3",
 		"prettier-plugin-tailwindcss": "^0.6.8",
-		"sass": "^1.79.4",
+		"sass": "^1.79.5",
 		"stylelint": "^16.9.0",
 		"stylelint-config-standard-scss": "^13.1.0",
 		"stylelint-scss": "^6.7.0",
