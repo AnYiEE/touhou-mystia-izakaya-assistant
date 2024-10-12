@@ -22,7 +22,10 @@ const nextConfig = {
 		VERCEL_GIT_COMMIT_SHA: env.VERCEL_GIT_COMMIT_SHA,
 	},
 
+	// Hand over to Nginx and other web servers for reverse proxy and compression.
 	compress: !env.SELF_HOSTED,
+
+	// To generate a consistent build ID to use for CDN caching.
 	generateBuildId: getSha,
 
 	assetPrefix: env.VERCEL ? '' : CDN_URL,

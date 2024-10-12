@@ -4,6 +4,9 @@
 
 const VERSION = 'offline/{{version}}';
 
+const CDN_URL = '{{cdnUrl}}';
+const IS_USE_CDN = Boolean(CDN_URL);
+
 const networkErrorResponse = new Response('A network error occurred, but no cached resources were found.', {
 	headers: {
 		'Content-Type': 'text/plain',
@@ -39,7 +42,16 @@ async function putInCache(
 }
 
 async function fetchAndCache(/** @type {Request} */ request) {
-	const response = await fetch(request);
+	const response = IS_USE_CDN
+		? await fetch(request, {
+				// When caching cross-origin resources, the mode must be set to `cors`,
+				// so that the cached resources have the correct size (i.e., non-opaque responses).
+				// At the same time, the `Access-Control-Allow-Credentials` and the `Access-Control-Allow-Origin` headers should be set for the CDN server.
+				// The value of `Access-Control-Allow-Credentials` needs to be set to `true`,
+				// the value of `Access-Control-Allow-Origin` needs to be set to a specific domain name and cannot be a wildcard.
+				mode: 'cors',
+			})
+		: await fetch(request);
 
 	void putInCache(request, response.clone(), VERSION);
 
@@ -99,8 +111,11 @@ self.addEventListener('fetch', (/** @type {FetchEvent} */ event) => {
 	const urlObject = new URL(event.request.url, location.origin);
 	const {host, pathname, protocol} = urlObject;
 
-	const isSelfHost = host.endsWith(location.host);
-	if ((isSelfHost && host.startsWith('track')) || !isSelfHost || protocol !== 'https:') {
+	const isAnalyticsServer = host.startsWith('track.');
+	const isCdnServer = new URL(CDN_URL, location.origin);
+	const isSelfHost = host === location.host;
+
+	if (isAnalyticsServer || !(isCdnServer || isSelfHost) || protocol !== 'https:') {
 		return;
 	}
 	if (pathname.startsWith('/_vercel')) {
