@@ -1,4 +1,4 @@
-import {useEffect, useRef} from 'react';
+import {useCallback, useEffect, useRef} from 'react';
 import {driver} from 'driver.js';
 
 import {usePathname} from 'next/navigation';
@@ -35,6 +35,7 @@ export default function CustomerRareTutorial() {
 	const isCompleted = dirverState.includes(key);
 
 	const EGG_POSITION = '[aria-label="点击：加入额外食材【鸡蛋】，匹配度+1"]';
+	const HONEY_POSITION = '[aria-label="点击：加入额外食材【蜂蜜】，匹配度+1"]';
 
 	const driverRef = useRef(
 		driver({
@@ -127,7 +128,7 @@ export default function CustomerRareTutorial() {
 					},
 				},
 				{
-					element: '[aria-label="点击：加入额外食材【蜂蜜】，匹配度+1"]',
+					element: HONEY_POSITION,
 					popover: {
 						title: '加入额外食材【蜂蜜】', // eslint-disable-next-line sort-keys
 						description: '点击图标，加入额外食材【蜂蜜】。加入后套餐评级应为粉评“完美”。',
@@ -169,6 +170,29 @@ export default function CustomerRareTutorial() {
 
 	const isInIngredientTab = useRef(false);
 
+	const moveNext = useCallback((selectors: string) => {
+		// The `xl` breakpoint is 1280px.
+		if (globalThis.innerWidth >= 1280) {
+			driverRef.current.moveNext();
+		} else {
+			const element = document.querySelector(selectors);
+			// Some browsers don't support scrollIntoViewOptions
+			try {
+				element?.scrollIntoView({
+					behavior: 'smooth',
+					block: 'start',
+				});
+			} catch {
+				element?.scrollIntoView(true);
+			}
+			// Delay focusing to allow time for scroll animation.
+			setTimeout(() => {
+				document.querySelector('main')?.scrollIntoView(true);
+				driverRef.current.moveNext();
+			}, 1000);
+		}
+	}, []);
+
 	useEffect(() => {
 		if (!driverRef.current.isActive()) {
 			return;
@@ -199,7 +223,7 @@ export default function CustomerRareTutorial() {
 		if (currentExtraIngredients && currentExtraIngredients.length > 0) {
 			if (currentExtraIngredients.includes('鸡蛋') && !hasExtraEgg.current) {
 				hasExtraEgg.current = true;
-				driverRef.current.moveNext();
+				moveNext(HONEY_POSITION);
 			}
 			if (currentExtraIngredients.includes('蜂蜜') && !hasExtraHoney.current) {
 				hasExtraHoney.current = true;
@@ -213,25 +237,7 @@ export default function CustomerRareTutorial() {
 
 		if (isIngredientTabSelected && !isInIngredientTab.current) {
 			isInIngredientTab.current = true;
-			// The `xl` breakpoint is 1280px.
-			if (globalThis.innerWidth >= 1280) {
-				driverRef.current.moveNext();
-			} else {
-				const element = document.querySelector(EGG_POSITION);
-				// Some browsers don't support scrollIntoViewOptions
-				try {
-					element?.scrollIntoView({
-						behavior: 'smooth',
-						block: 'start',
-					});
-				} catch {
-					element?.scrollIntoView(true);
-				}
-				// Delay focusing to allow time for scroll animation.
-				setTimeout(() => {
-					driverRef.current.moveNext();
-				}, 1000);
-			}
+			moveNext(EGG_POSITION);
 		}
 	}, [
 		currentBeverageName,
@@ -242,6 +248,7 @@ export default function CustomerRareTutorial() {
 		currentOrderedRecipeTag,
 		currentRecipeName,
 		isIngredientTabSelected,
+		moveNext,
 	]);
 
 	useEffect(() => {
