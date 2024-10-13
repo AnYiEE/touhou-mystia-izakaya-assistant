@@ -6,7 +6,9 @@ import {resolve} from 'node:path';
 
 import {getSha} from './utils.mjs';
 
-const /** @type {Partial<NodeJS.ProcessEnv> & dotenv.DotenvPopulateInput} */ env = {};
+/** @type {Partial<NodeJS.ProcessEnv> & dotenv.DotenvPopulateInput} */
+const env = {};
+
 dotenv.config({
 	path: ['.env.local', '.env'],
 	processEnv: env,

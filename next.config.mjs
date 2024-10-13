@@ -7,20 +7,27 @@ import {CDN_URL, IS_PRODUCTION, getSha} from './scripts/utils.mjs';
 
 const skipLint = IS_PRODUCTION && Boolean(env.SKIP_LINT);
 
+/** @type {(keyof NodeJS.ProcessEnv)[]} */
+const envKeys = [
+	'ANALYTICS',
+	'CDN_URL',
+	'DOMAIN',
+	'ICP_FILING',
+	'SELF_HOSTED',
+	'VERCEL',
+	'VERCEL_ENV',
+	'VERCEL_GIT_COMMIT_SHA',
+];
+
+/** @type {Partial<NodeJS.ProcessEnv>} */
+const emptyEnvObject = {};
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-	env: {
-		DOMAIN: env.DOMAIN,
-
-		CDN_URL: env.CDN_URL,
-		ICP_FILING: env.ICP_FILING,
-
-		ANALYTICS: env.ANALYTICS,
-		SELF_HOSTED: env.SELF_HOSTED,
-		VERCEL: env.VERCEL,
-		VERCEL_ENV: env.VERCEL_ENV,
-		VERCEL_GIT_COMMIT_SHA: env.VERCEL_GIT_COMMIT_SHA,
-	},
+	env: envKeys.reduce((acc, key) => {
+		acc[key] = env[key];
+		return acc;
+	}, emptyEnvObject),
 
 	// Hand over to Nginx and other web servers for reverse proxy and compression.
 	compress: !env.SELF_HOSTED,
