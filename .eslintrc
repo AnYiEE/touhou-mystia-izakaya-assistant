@@ -107,6 +107,13 @@
 		"prefer-rest-params": "error",
 		"prefer-spread": "error",
 		"prefer-template": "error",
+		"quotes": [
+			"error",
+			"single",
+			{
+				"avoidEscape": true
+			}
+		],
 		"require-unicode-regexp": "error",
 		"sort-imports": [
 			"error",

@@ -1,5 +1,5 @@
 // @ts-check
-/* eslint-disable unicorn/prefer-module */
+/* eslint-disable unicorn/prefer-global-this, unicorn/prefer-module */
 'use strict';
 
 const VERSION = 'offline/{{version}}';

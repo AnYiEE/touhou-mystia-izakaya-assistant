@@ -3,7 +3,7 @@
 'use strict';
 
 (async function registerServiceWorker() {
-	if (!('serviceWorker' in navigator) || !('caches' in self)) {
+	if (!('serviceWorker' in navigator) || !('caches' in globalThis)) {
 		return;
 	}
 

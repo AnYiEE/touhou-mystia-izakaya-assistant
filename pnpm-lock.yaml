@@ -111,8 +111,8 @@ importers:
         specifier: ^18.3.1
         version: 18.3.1
       '@types/serviceworker':
-        specifier: ^0.0.96
-        version: 0.0.96
+        specifier: ^0.0.98
+        version: 0.0.98
       '@types/ua-parser-js':
         specifier: ^0.7.39
         version: 0.7.39
@@ -141,8 +141,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(eslint@8.57.1)
       eslint-plugin-unicorn:
-        specifier: ^55.0.0
-        version: 55.0.0(eslint@8.57.1)
+        specifier: ^56.0.0
+        version: 56.0.0(eslint@8.57.1)
       husky:
         specifier: ^9.1.6
         version: 9.1.6
@@ -2362,8 +2362,8 @@ packages:
   '@types/react@18.3.11':
     resolution: {integrity: sha512-r6QZ069rFTjrEYgFdOck1gK7FLVsgJE7tTz0pQBczlBNUhBNk0MQH4UbnFSwjpQLMkLzgqvBBa+qGpLje16eTQ==}
 
-  '@types/serviceworker@0.0.96':
-    resolution: {integrity: sha512-AthVWRCY0KS863vJzBo5TDQh43BMii6DYKO9qMXbCPTmL1IBgMBVhrBHKXD9g/RkI1h2YVZT1TVDRKrVuAFc9g==}
+  '@types/serviceworker@0.0.98':
+    resolution: {integrity: sha512-gBhVGoikiXK+nlKbXORt42mHKRpW+wA6QE0GXRT0zlXMmKw1Gcfih3gWAzobBpdBZfDbdLVTa7+TZIXGRLHLNw==}
 
   '@types/ua-parser-js@0.7.39':
     resolution: {integrity: sha512-P/oDfpofrdtF5xw433SPALpdSchtJmY7nsJItf8h3KXqOslkbySh8zq4dSWXH2oTjRvJ5PczVEoCZPow6GicLg==}
@@ -3071,8 +3071,8 @@ packages:
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7
 
-  eslint-plugin-unicorn@55.0.0:
-    resolution: {integrity: sha512-n3AKiVpY2/uDcGrS3+QsYDkjPfaOrNrsfQxU9nt5nitd9KuvVXrfAvgCO9DYPSfap+Gqjw9EOrXIsBp5tlHZjA==}
+  eslint-plugin-unicorn@56.0.0:
+    resolution: {integrity: sha512-aXpddVz/PQMmd69uxO98PA4iidiVNvA0xOtbpUoz1WhBd4RxOQQYqN618v68drY0hmy5uU2jy1bheKEVWBjlPw==}
     engines: {node: '>=18.18'}
     peerDependencies:
       eslint: '>=8.56.0'
@@ -8210,7 +8210,7 @@ snapshots:
       '@types/prop-types': 15.7.13
       csstype: 3.1.3
 
-  '@types/serviceworker@0.0.96': {}
+  '@types/serviceworker@0.0.98': {}
 
   '@types/ua-parser-js@0.7.39': {}
 
@@ -9075,7 +9075,7 @@ snapshots:
       string.prototype.matchall: 4.0.11
       string.prototype.repeat: 1.0.0
 
-  eslint-plugin-unicorn@55.0.0(eslint@8.57.1):
+  eslint-plugin-unicorn@56.0.0(eslint@8.57.1):
     dependencies:
       '@babel/helper-validator-identifier': 7.25.7
       '@eslint-community/eslint-utils': 4.4.0(eslint@8.57.1)

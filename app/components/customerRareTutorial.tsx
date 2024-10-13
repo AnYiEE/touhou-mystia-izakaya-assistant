@@ -214,7 +214,7 @@ export default function CustomerRareTutorial() {
 		if (isIngredientTabSelected && !isInIngredientTab.current) {
 			isInIngredientTab.current = true;
 			// The `xl` breakpoint is 1280px.
-			if (window.innerWidth >= 1280) {
+			if (globalThis.innerWidth >= 1280) {
 				driverRef.current.moveNext();
 			} else {
 				const element = document.querySelector(EGG_POSITION);

@@ -31,10 +31,11 @@ export function useViewInNewWindow() {
 		const height = 640;
 		const width = 384;
 
-		const newWindowObject = window.open(
+		const {height: screenHeight, width: screenWidth} = screen;
+		const newWindowObject = globalThis.open(
 			pathname,
 			'_blank',
-			`left=${window.screen.width - width},top=${window.screen.height - height},height=${height},width=${width}`
+			`left=${screenWidth - width},top=${screenHeight - height},height=${height},width=${width}`
 		);
 
 		windowObjectRef.current = newWindowObject;

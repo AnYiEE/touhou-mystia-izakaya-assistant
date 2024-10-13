@@ -15,9 +15,8 @@ declare global {
 		}
 	}
 
-	interface Window {
-		_paq?: unknown[];
-	}
+	// eslint-disable-next-line no-var, vars-on-top
+	var _paq: unknown[] | undefined;
 }
 
 export {};

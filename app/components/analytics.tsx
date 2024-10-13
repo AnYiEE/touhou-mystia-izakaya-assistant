@@ -15,8 +15,8 @@ const trackerBaseUrl = `https://track.${domain}`;
 const siteId = 11;
 
 function push(...args: unknown[][]) {
-	window._paq ??= [];
-	window._paq.push(...args);
+	globalThis._paq ??= [];
+	globalThis._paq.push(...args);
 }
 
 export enum TrackCategory {
@@ -66,7 +66,7 @@ function trackPageView() {
 export default function Analytics() {
 	useEffect(() => {
 		// The tracker has been initialized, skip.
-		if (window._paq) {
+		if (globalThis._paq) {
 			trackPageView();
 			return;
 		}

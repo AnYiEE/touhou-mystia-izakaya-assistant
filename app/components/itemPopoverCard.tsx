@@ -62,7 +62,7 @@ const CloseButton = forwardRef<HTMLButtonElement | null, ICloseButtonProps>(
 				getBackdropProps().onClick?.(event as MouseEvent<HTMLButtonElement>);
 
 				if (isInNewWindow) {
-					window.close();
+					globalThis.close();
 				}
 
 				if (params.has(openedPopoverParam)) {

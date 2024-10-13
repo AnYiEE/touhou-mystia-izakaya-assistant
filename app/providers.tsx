@@ -115,10 +115,10 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 			}
 		}, 1000);
 
-		window.addEventListener('storage', updateStore);
+		globalThis.addEventListener('storage', updateStore);
 
 		return () => {
-			window.removeEventListener('storage', updateStore);
+			globalThis.removeEventListener('storage', updateStore);
 		};
 	}, []);
 
@@ -136,10 +136,10 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 			}
 		}, 1000);
 
-		window.addEventListener('storage', updateTheme);
+		globalThis.addEventListener('storage', updateTheme);
 
 		return () => {
-			window.removeEventListener('storage', updateTheme);
+			globalThis.removeEventListener('storage', updateTheme);
 		};
 	}, [setTheme, theme]);
 
