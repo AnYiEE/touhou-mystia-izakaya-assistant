@@ -3,7 +3,9 @@
 import {type Metadata} from 'next';
 import {twJoin} from 'tailwind-merge';
 
-import {Button, Divider, Link} from '@nextui-org/react';
+import {Button, Divider} from '@nextui-org/react';
+
+import Link from '@/components/link';
 
 import {globalStore as store} from '@/stores';
 

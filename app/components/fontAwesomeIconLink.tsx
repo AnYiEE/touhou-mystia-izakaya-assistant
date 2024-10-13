@@ -1,10 +1,11 @@
 import {forwardRef, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
-import {Link, type LinkProps} from '@nextui-org/react';
 import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
 
-interface IProps extends Omit<LinkProps, 'referrerPolicy' | 'size'>, Pick<FontAwesomeIconProps, 'icon' | 'size'> {}
+import Link, {type ILinkProps} from '@/components/link';
+
+interface IProps extends Omit<ILinkProps, 'size'>, Pick<FontAwesomeIconProps, 'icon' | 'size'> {}
 
 export default memo(
 	forwardRef<HTMLAnchorElement | null, IProps>(function FontAwesomeIconLink(
@@ -12,12 +13,7 @@ export default memo(
 		ref
 	) {
 		return (
-			<Link
-				className={twMerge('text-default-400', className)}
-				referrerPolicy="same-origin"
-				{...linkProps}
-				ref={ref}
-			>
+			<Link className={twMerge('text-default-400', className)} {...linkProps} ref={ref}>
 				<FontAwesomeIcon icon={icon} size={size} />
 			</Link>
 		);

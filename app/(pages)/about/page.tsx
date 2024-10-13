@@ -1,8 +1,7 @@
-import {Link} from '@nextui-org/react';
-
 import ChangeLog from './changeLog';
 import KnownIssue from './knownIssue';
 import H1 from '@/components/h1';
+import Link from '@/components/link';
 import QRCode from '@/components/qrCode';
 import Tooltip from '@/components/tooltip';
 
@@ -31,7 +30,6 @@ export default function About() {
 						isExternal
 						showAnchorIcon
 						href={links.steam.href}
-						referrerPolicy="same-origin"
 						title={links.steam.label}
 						className="indent-0"
 					>
@@ -45,7 +43,6 @@ export default function About() {
 						isExternal
 						showAnchorIcon
 						href={links.gnuLicense.href}
-						referrerPolicy="same-origin"
 						title={links.gnuLicense.label}
 						className="indent-0"
 					>
@@ -56,7 +53,6 @@ export default function About() {
 						isExternal
 						showAnchorIcon
 						href={links.github.href}
-						referrerPolicy="same-origin"
 						title={links.github.label}
 						className="indent-0"
 					>
@@ -81,7 +77,6 @@ export default function About() {
 							isExternal
 							showAnchorIcon
 							href={links.donate.href}
-							referrerPolicy="same-origin"
 							title={links.donate.label}
 							className="indent-0"
 						>

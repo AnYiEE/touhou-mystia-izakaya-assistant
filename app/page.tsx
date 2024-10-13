@@ -2,10 +2,11 @@
 
 import {twJoin} from 'tailwind-merge';
 
-import {Button, Divider, Link} from '@nextui-org/react';
+import {Button, Divider} from '@nextui-org/react';
 import {faQq} from '@fortawesome/free-brands-svg-icons';
 
 import FontAwesomeIconLink from '@/components/fontAwesomeIconLink';
+import Link from '@/components/link';
 import QRCode from '@/components/qrCode';
 import Tooltip from '@/components/tooltip';
 import Xiaohongshu from '@/components/xiaohongshu';
@@ -88,7 +89,6 @@ export default function Home() {
 							isExternal
 							isIconOnly
 							href={links.xiaohongshuGroup.href}
-							referrerPolicy="same-origin"
 							role="link"
 							title={links.xiaohongshuGroup.label}
 							className="h-5"

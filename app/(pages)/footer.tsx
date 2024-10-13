@@ -1,8 +1,9 @@
 import {type PropsWithChildren, memo} from 'react';
 import {execSync} from 'node:child_process';
 
-import {Link, type LinkProps, Tooltip, type TooltipProps} from '@nextui-org/react';
+import {Tooltip, type TooltipProps} from '@nextui-org/react';
 
+import Link, {type ILinkProps} from '@/components/link';
 import QRCode from '@/components/qrCode';
 
 import {siteConfig} from '@/configs';
@@ -14,7 +15,7 @@ const sha = (
 	vercelSha?.slice(0, 7) ?? (isProduction ? execSync('git rev-parse --short HEAD').toString('utf8') : null)
 )?.trim();
 
-interface IFooterLinkProps extends Pick<LinkProps, 'href' | 'isExternal' | 'title'> {
+interface IFooterLinkProps extends Pick<ILinkProps, 'href' | 'isExternal' | 'title'> {
 	content?: ReactNodeWithoutBoolean;
 }
 
@@ -30,7 +31,6 @@ const FooterLink = memo<PropsWithChildren<IFooterLinkProps>>(function FooterLink
 			isExternal={isExternal}
 			showAnchorIcon={isExternal}
 			href={href}
-			referrerPolicy="same-origin"
 			aria-label={typeof content === 'string' ? content : (title ?? (children as string))}
 			title={title}
 			className="text-xs text-primary-300 dark:text-warning-200"

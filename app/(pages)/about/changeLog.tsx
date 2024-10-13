@@ -1,10 +1,9 @@
 /* eslint-disable sort-keys */
 import {Fragment} from 'react';
 
-import {Link} from '@nextui-org/react';
-
 import H1 from '@/components/h1';
 import H2 from '@/components/h2';
+import Link from '@/components/link';
 import Ul from '@/components/ul';
 
 import {siteConfig} from '@/configs';
@@ -115,7 +114,6 @@ export default function ChangeLog() {
 							isExternal
 							showAnchorIcon
 							href={`${links.github.href}/commits`}
-							referrerPolicy="same-origin"
 							title={`${links.github.label}提交记录`}
 						>
 							GitHub

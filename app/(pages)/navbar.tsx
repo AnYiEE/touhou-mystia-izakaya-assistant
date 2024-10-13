@@ -13,8 +13,6 @@ import {
 	DropdownItem,
 	DropdownMenu,
 	DropdownTrigger,
-	Link,
-	type LinkProps,
 	NavbarBrand,
 	NavbarContent,
 	NavbarItem,
@@ -29,6 +27,7 @@ import {faChevronDown} from '@fortawesome/free-solid-svg-icons';
 
 import Dropdown from '@/components/dropdown';
 import FontAwesomeIconLink, {type IFontAwesomeIconLinkProps} from '@/components/fontAwesomeIconLink';
+import Link, {type ILinkProps} from '@/components/link';
 import ThemeSwitcher from '@/components/themeSwitcher';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
@@ -50,7 +49,7 @@ export function showProgress(startProgress: () => void) {
 
 interface INavbarLinkProps
 	extends Pick<ButtonProps, 'className' | 'startContent' | 'fullWidth'>,
-		Pick<LinkProps, 'href'> {
+		Pick<ILinkProps, 'href'> {
 	isActivated: boolean;
 }
 
@@ -117,7 +116,7 @@ const GitHubLink = memo<IGitHubLinkProps>(function GitHubLink({showTooltip}) {
 	return (
 		<span className="flex gap-1">
 			<GitHubIconLink tabIndex={-1} className="text-foreground" />
-			<Link isExternal color="foreground" href={links.github.href} referrerPolicy="same-origin" role="button">
+			<Link isExternal color="foreground" href={links.github.href} role="button">
 				{links.github.label}
 			</Link>
 		</span>
