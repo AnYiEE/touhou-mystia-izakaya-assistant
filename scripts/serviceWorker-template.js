@@ -42,16 +42,15 @@ async function putInCache(
 }
 
 async function fetchAndCache(/** @type {Request} */ request) {
-	const response = IS_USE_CDN
-		? await fetch(request, {
-				// When caching cross-origin resources, the mode must be set to `cors`,
-				// so that the cached resources have the correct size (i.e., non-opaque responses).
-				// At the same time, the `Access-Control-Allow-Credentials` and the `Access-Control-Allow-Origin` headers should be set for the CDN server.
-				// The value of `Access-Control-Allow-Credentials` needs to be set to `true`,
-				// the value of `Access-Control-Allow-Origin` needs to be set to a specific domain name and cannot be a wildcard.
-				mode: 'cors',
-			})
-		: await fetch(request);
+	const response = await fetch(request, {
+		cache: 'no-cache',
+		// When caching cross-origin resources, the mode must be set to `cors`,
+		// so that the cached resources have the correct size (i.e., non-opaque responses).
+		// At the same time, the `Access-Control-Allow-Credentials` and the `Access-Control-Allow-Origin` headers should be set for the CDN server.
+		// The value of `Access-Control-Allow-Credentials` needs to be set to `true`,
+		// the value of `Access-Control-Allow-Origin` needs to be set to a specific domain name and cannot be a wildcard.
+		mode: IS_USE_CDN ? 'cors' : undefined,
+	});
 
 	void putInCache(request, response.clone(), VERSION);
 
