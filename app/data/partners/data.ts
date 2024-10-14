@@ -35,7 +35,7 @@ export const PARTNER_LIST = [
 		name: '高丽野阿吽',
 		dlc: 0,
 		belong: '博丽灵梦',
-		effect: null,
+		effect: '可以免疫【苏我屠自古】惩罚符卡的击晕效果。',
 		from: '解锁地区【红魔馆】后，和博丽灵梦对话',
 		pay: 5,
 		speed: {
@@ -85,7 +85,7 @@ export const PARTNER_LIST = [
 		name: '键山雏',
 		dlc: 1,
 		belong: '河城荷取',
-		effect: `瞬间完成料理，但有15%的概率制作出${DARK_MATTER_NAME}。`,
+		effect: `瞬间完成料理，但有15%的概率制作出${DARK_MATTER_NAME}。可以将【苏我屠自古】惩罚符卡的击晕效果转移至其他伙伴。`,
 		from: {
 			place: '妖怪之山',
 		},
@@ -127,7 +127,7 @@ export const PARTNER_LIST = [
 		name: '小野冢小町',
 		dlc: 2,
 		belong: '古明地觉',
-		effect: '【八重雾中渡】工作时会摸鱼，但顾客试图落座时会被立即拉到桌子旁。',
+		effect: '【八重雾中渡】工作时会摸鱼，但顾客试图落座时会被立即拉到桌子旁。到【星熊勇仪】处泡温泉后，可使当晚工作时不会再摸鱼。',
 		from: {
 			place: '地灵殿',
 		},

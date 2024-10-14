@@ -32,7 +32,7 @@ export const ORNAMENT_LIST = [
 	{
 		name: '胖滚君',
 		dlc: 0,
-		effect: '店内所有顾客每15秒会进行1-20的打赏。',
+		effect: '店内所有顾客每15秒会进行1-20円的打赏。',
 		from: {
 			name: '红美铃',
 			level: 5,
@@ -50,7 +50,7 @@ export const ORNAMENT_LIST = [
 	{
 		name: '地藏人偶',
 		dlc: 1,
-		effect: '成美给的礼物，可以放置在家门口，每天参拜会得到很棒的贡品。',
+		effect: '成美给的礼物，可以放置在家门口，每天参拜会得到很棒的贡品（两种酒水和两份食材）。',
 		from: {
 			name: '矢田寺成美',
 			level: 5,
@@ -86,7 +86,7 @@ export const ORNAMENT_LIST = [
 	{
 		name: '飞碟老虎机',
 		dlc: 3,
-		effect: '有几率获得意外奖励。',
+		effect: '有几率获得意外奖励。抽奖结果：“红红红”➞海鲜类和肉类食材共十份；“绿绿绿”➞蔬菜类食材共十份；“蓝蓝蓝”➞四或五种酒水；“红绿蓝”➞前述奖励随机共十份，必然有四种三级或以上等级的酒水。',
 		from: {
 			name: '封兽鵺',
 			level: 5,
