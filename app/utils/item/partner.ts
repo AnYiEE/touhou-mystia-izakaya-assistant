@@ -36,7 +36,7 @@ export class Partner extends Item<TPartners> {
 		let bondPartner: TPartnerNames | null = null;
 
 		this._data.forEach(({belong, name}) => {
-			if (belong === customerData.name) {
+			if ((belong as ICurrentCustomer['name'][] | null)?.includes(customerData.name)) {
 				bondPartner = name;
 			}
 		});

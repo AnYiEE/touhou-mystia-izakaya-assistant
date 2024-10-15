@@ -4,7 +4,7 @@ import type {IItemBase, TPlace} from '@/data/types';
 type TSpeed = '快' | '慢' | '中等';
 
 export interface IPartner extends IItemBase {
-	belong: TCustomerRareNames | null;
+	belong: TCustomerRareNames[] | null;
 	effect: `${string}。` | null;
 	from:
 		| string
