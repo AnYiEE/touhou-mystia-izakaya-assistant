@@ -64,9 +64,9 @@ const navItems = [
 	},
 ] as const satisfies ISiteConfig['navItems'];
 
-const {hostname: domain} = new URL(process.env.DOMAIN ?? PACKAGE.homepage);
+const {hostname: domain} = new URL(process.env.BASE_URL ?? PACKAGE.homepage);
 
-const getShortUrl = <T extends string>(key: T) => `https://url.${domain}/${key}` as const;
+const getShortUrl = <T extends string>(key: T) => `${process.env.SHORT_LINK_URL ?? '/#'}/${key}` as const;
 
 export const siteConfig = {
 	domain,
@@ -134,11 +134,14 @@ export const siteConfig = {
 		},
 	},
 	cdnUrl: process.env.CDN_URL ?? '',
+	analyticsApiUrl: process.env.ANALYTICS_API_URL ?? '',
+	analyticsScriptUrl: process.env.ANALYTICS_SCRIPT_URL ?? '',
+	analyticsSiteId: process.env.ANALYTICS_SITE_ID ?? '',
+	isAnalytics: Boolean(process.env.ANALYTICS_SITE_ID),
+	isIcpFiling: Boolean(process.env.ICP_FILING),
 	nodeEnv: process.env.NODE_ENV,
 	vercelEnv: process.env.VERCEL_ENV,
 	vercelSha: process.env.VERCEL_GIT_COMMIT_SHA,
-	isAnalytics: Boolean(process.env.ANALYTICS),
-	isIcpFiling: Boolean(process.env.ICP_FILING),
 	isProduction: process.env.NODE_ENV === 'production',
 	isSelfHosted: Boolean(process.env.SELF_HOSTED),
 	isVercel: Boolean(process.env.VERCEL),

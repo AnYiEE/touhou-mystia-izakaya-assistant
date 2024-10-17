@@ -9,11 +9,14 @@ const skipLint = IS_PRODUCTION && Boolean(env.SKIP_LINT);
 
 /** @type {(keyof NodeJS.ProcessEnv)[]} */
 const envKeys = [
-	'ANALYTICS',
+	'ANALYTICS_API_URL',
+	'ANALYTICS_SCRIPT_URL',
+	'ANALYTICS_SITE_ID',
+	'BASE_URL',
 	'CDN_URL',
-	'DOMAIN',
 	'ICP_FILING',
 	'SELF_HOSTED',
+	'SHORT_LINK_URL',
 	'VERCEL',
 	'VERCEL_ENV',
 	'VERCEL_GIT_COMMIT_SHA',

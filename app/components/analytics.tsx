@@ -9,10 +9,7 @@ import {usePathname} from 'next/navigation';
 import {type TSitePath, siteConfig} from '@/configs';
 import {setScriptUrlTag} from '@/utils';
 
-const {domain} = siteConfig;
-
-const trackerBaseUrl = `https://track.${domain}`;
-const siteId = 11;
+const {domain, analyticsApiUrl, analyticsScriptUrl, analyticsSiteId} = siteConfig;
 
 function push(...args: unknown[][]) {
 	globalThis._paq ??= [];
@@ -78,12 +75,12 @@ export default function Analytics() {
 			['setCookieDomain', `*.${domain}`],
 			['setDomains', [`*.${domain}`]],
 			['setRequestMethod', 'GET'],
-			['setTrackerUrl', `${trackerBaseUrl}/api.php`],
+			['setTrackerUrl', analyticsApiUrl],
 			['setSecureCookie', true],
-			['setSiteId', siteId.toString()]
+			['setSiteId', analyticsSiteId]
 		);
 
-		const subscription = setScriptUrlTag(`${trackerBaseUrl}/api.js`, 'async', true)
+		const subscription = setScriptUrlTag(analyticsScriptUrl, 'async', true)
 			.pipe(
 				catchError((error) => {
 					console.info('Analytics load failed.', error);
