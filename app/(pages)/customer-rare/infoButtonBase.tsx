@@ -5,6 +5,7 @@ import {useVibrate} from '@/hooks';
 import {Accordion, type AccordionProps, PopoverContent, PopoverTrigger} from '@nextui-org/react';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
+import {TrackCategory, trackEvent} from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Popover from '@/components/popover';
 import Tooltip from '@/components/tooltip';
@@ -31,6 +32,9 @@ export default memo<IProps>(function InfoButtonBase({defaultExpandedKeys, childr
 						<FontAwesomeIconButton
 							icon={faInfoCircle}
 							variant="light"
+							onPress={() => {
+								trackEvent(TrackCategory.Click, 'Info Button');
+							}}
 							aria-label="更多信息"
 							className="-bottom-0.5 h-4 w-4 text-default-200 transition-opacity hover:opacity-hover data-[hover=true]:bg-transparent dark:text-default-300"
 						/>
