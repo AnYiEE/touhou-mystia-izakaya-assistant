@@ -219,6 +219,6 @@ export const CLOTHES_LIST = [
 		dlc: 2.5,
 		gif: false,
 		izakaya: false,
-		from: '【人间之里】香霖堂处兑换或完成“爱乐者的挑战赛”任务后自动获得',
+		from: '地区【人间之里】香霖堂处购买或完成“爱乐者的挑战赛”任务后自动获得',
 	},
 ] as const satisfies IClothes[];

@@ -143,7 +143,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 1,
 		price: 18,
-		from: '【妖怪兽道】支线任务',
+		from: '地区【妖怪兽道】支线任务',
 	},
 	{
 		name: '炸八目鳗',
@@ -363,7 +363,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 14,
-		from: '【人间之里】支线任务',
+		from: '地区【人间之里】支线任务',
 	},
 	{
 		name: '豆腐味噌',
@@ -466,7 +466,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 1,
 		price: 15,
-		from: '【博丽神社】支线任务',
+		from: '地区【博丽神社】支线任务',
 	},
 	{
 		name: '温暖饭团',
@@ -740,7 +740,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 60,
-		from: '【红魔馆】主线任务',
+		from: '地区【红魔馆】主线任务',
 	},
 	{
 		name: '刺身拼盘',
@@ -807,7 +807,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 70,
-		from: '【红魔馆】支线任务',
+		from: '地区【红魔馆】支线任务',
 	},
 	{
 		name: '华光玉煎包',
@@ -922,7 +922,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 40,
-		from: '【迷途竹林】支线任务',
+		from: '地区【迷途竹林】支线任务',
 	},
 	{
 		name: '汤圆',
@@ -961,7 +961,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 4,
 		price: 65,
-		from: '【迷途竹林】主线任务（藤原妹红）',
+		from: '地区【迷途竹林】主线任务（藤原妹红）',
 	},
 	{
 		name: '不死鸟',
@@ -974,7 +974,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 4,
 		price: 65,
-		from: '【迷途竹林】主线任务（蓬莱山辉夜）',
+		from: '地区【迷途竹林】主线任务（蓬莱山辉夜）',
 	},
 	{
 		name: '麻薯',
