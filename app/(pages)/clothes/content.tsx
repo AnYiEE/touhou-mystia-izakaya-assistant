@@ -92,7 +92,16 @@ export default memo<IProps>(function Content({data}) {
 													'初始拥有'
 												) : isBond ? (
 													<>
-														<span className="pr-1">【{target}】羁绊</span>
+														<span className="pr-1">
+															【
+															<Sprite
+																target="customer_rare"
+																name={target}
+																size={1.25}
+																className="mx-0.5 rounded-full align-text-bottom leading-none"
+															/>
+															{target}】羁绊
+														</span>
 														Lv.4
 														<span className="px-0.5">➞</span>Lv.5
 													</>
