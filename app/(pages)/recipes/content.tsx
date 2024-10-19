@@ -1,7 +1,7 @@
 import {Fragment, memo, useRef} from 'react';
 import {isObjectLike} from 'lodash';
 
-import {useOpenedItemPopover} from '@/hooks';
+import {useOpenedItemPopover, useViewInNewWindow} from '@/hooks';
 
 import {PopoverContent, PopoverTrigger} from '@nextui-org/react';
 
@@ -15,7 +15,7 @@ import Tooltip from '@/components/tooltip';
 
 import {DARK_MATTER_NAME, type IRecipe, RECIPE_TAG_STYLE} from '@/data';
 // import {globalStore as store} from '@/stores';
-import {type Recipe} from '@/utils';
+import {type Recipe, checkA11yConfirmKey} from '@/utils';
 
 interface IProps {
 	data: Recipe['data'];
@@ -24,6 +24,7 @@ interface IProps {
 export default memo<IProps>(function Content({data}) {
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
 	const [openedPopover] = useOpenedItemPopover(popoverCardRef);
+	const openWindow = useViewInNewWindow();
 
 	// const isHighAppearance = store.persistence.highAppearance.use();
 
@@ -68,26 +69,58 @@ export default memo<IProps>(function Content({data}) {
 								: Object.entries(from).map((fromObject, fromIndex) => {
 										type TFrom = Exclude<IRecipe['from'], string>;
 										const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
-										const isLevelUp = method === 'levelup';
+										const isBond = method === 'bond' && isObjectLike(target) && 'level' in target;
+										const isBuy = method === 'buy' && isObjectLike(target) && 'price' in target;
+										const isLevelUp = method === 'levelup' && typeof target === 'number';
 										const isSelf = method === 'self';
 										return (
 											<Fragment key={fromIndex}>
 												{isSelf ? (
 													'初始拥有'
-												) : isLevelUp ? (
+												) : isBond ? (
 													<>
-														<span className="pr-1">游戏等级</span>
-														Lv.{(target as number) - 1}
+														<span className="pr-1">【{target.name}】羁绊</span>
+														Lv.{target.level - 1}
 														<span className="px-0.5">➞</span>Lv.
-														{target}
+														{target.level}
+													</>
+												) : isBuy ? (
+													<>
+														{target.name}（
+														<Price showSymbol={false}>{target.price.amount}×</Price>
+														<Tooltip
+															showArrow
+															content="点击：在新窗口中查看此货币的详情"
+															offset={6}
+															size="sm"
+														>
+															<Sprite
+																target="currency"
+																name={target.price.currency}
+																size={1.25}
+																onClick={() => {
+																	openWindow('currencies', target.price.currency);
+																}}
+																onKeyDown={(event) => {
+																	if (checkA11yConfirmKey(event)) {
+																		openWindow('currencies', target.price.currency);
+																	}
+																}}
+																aria-label="点击：在新窗口中查看此货币的详情"
+																role="button"
+																tabIndex={0}
+																className="cursor-pointer align-text-bottom leading-none"
+															/>
+														</Tooltip>
+														）
 													</>
 												) : (
-													isObjectLike(target) && (
+													isLevelUp && (
 														<>
-															<span className="pr-1">【{target.name}】羁绊</span>
-															Lv.{target.level - 1}
+															<span className="pr-1">游戏等级</span>
+															Lv.{target - 1}
 															<span className="px-0.5">➞</span>Lv.
-															{target.level}
+															{target}
 														</>
 													)
 												)}

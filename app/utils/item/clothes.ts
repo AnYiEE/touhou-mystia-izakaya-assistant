@@ -38,9 +38,11 @@ export class Clothes extends Item<TClothes> {
 		let bondClothes: TClothesNames | null = null;
 
 		this._data.forEach(({from, name}) => {
-			if (isObjectLike(from) && 'bond' in from && from.bond === customerData.name) {
-				bondClothes = name;
-			}
+			from.forEach((item) => {
+				if (isObjectLike(item) && 'bond' in item && item.bond === customerData.name) {
+					bondClothes = name;
+				}
+			});
 		});
 
 		Clothes._bondClothesCache.set(customerData.name, bondClothes);

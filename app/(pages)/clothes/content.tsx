@@ -3,7 +3,7 @@ import {isObjectLike} from 'lodash';
 import {twJoin} from 'tailwind-merge';
 
 import useBreakpoint from 'use-breakpoint';
-import {useOpenedItemPopover} from '@/hooks';
+import {useOpenedItemPopover, useViewInNewWindow} from '@/hooks';
 
 import {PopoverContent, PopoverTrigger} from '@nextui-org/react';
 
@@ -11,12 +11,14 @@ import {TrackCategory, trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
 import ItemPopoverCard from '@/components/itemPopoverCard';
 import Popover from '@/components/popover';
+import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tachie from '@/components/tachie';
+import Tooltip from '@/components/tooltip';
 
 import {type IClothes} from '@/data';
 import {clothesStore /* , globalStore */} from '@/stores';
-import {type Clothes} from '@/utils';
+import {type Clothes, checkA11yConfirmKey} from '@/utils';
 
 interface IProps {
 	data: Clothes['data'];
@@ -32,6 +34,7 @@ export default memo<IProps>(function Content({data}) {
 		},
 		'top'
 	);
+	const openWindow = useViewInNewWindow();
 
 	// const isHighAppearance = globalStore.persistence.highAppearance.use();
 
@@ -71,29 +74,70 @@ export default memo<IProps>(function Content({data}) {
 				<ItemPopoverCard target="clothes" name={name} dlc={dlc} ref={popoverCardRef}>
 					<p className="-mt-1">
 						<span className="font-semibold">来源：</span>
-						{typeof from === 'string'
-							? from
-							: Object.entries(from).map((fromObject, fromIndex) => {
-									type TFrom = Exclude<IClothes['from'], string>;
-									const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
-									const isBuy = method === 'buy';
-									const isSelf = method === 'self';
-									return (
-										<Fragment key={fromIndex}>
-											{isBuy ? (
-												target
-											) : isSelf ? (
-												'初始拥有'
-											) : (
-												<>
-													<span className="pr-1">【{target}】羁绊</span>
-													Lv.4
-													<span className="px-0.5">➞</span>Lv. 5
-												</>
-											)}
-										</Fragment>
-									);
-								})}
+						{from.map((item, fromIndex) => (
+							<Fragment key={fromIndex}>
+								{fromIndex > 0 && '、'}
+								{typeof item === 'string' ? (
+									<>{item}</>
+								) : (
+									Object.entries(item).map((itemObject, itemIndex) => {
+										type TFrom = Exclude<IClothes['from'][number], string>;
+										const [method, target] = itemObject as [keyof TFrom, TFrom[keyof TFrom]];
+										const isBond = method === 'bond' && typeof target === 'string';
+										const isBuy = method === 'buy' && isObjectLike(target) && 'price' in target;
+										const isSelf = method === 'self';
+										return (
+											<Fragment key={`${fromIndex}-${itemIndex}`}>
+												{isSelf ? (
+													'初始拥有'
+												) : isBond ? (
+													<>
+														<span className="pr-1">【{target}】羁绊</span>
+														Lv.4
+														<span className="px-0.5">➞</span>Lv.5
+													</>
+												) : (
+													isBuy && (
+														<>
+															{target.name}（
+															<Price showSymbol={false}>{target.price.amount}×</Price>
+															<Tooltip
+																showArrow
+																content="点击：在新窗口中查看此货币的详情"
+																offset={6}
+																size="sm"
+															>
+																<Sprite
+																	target="currency"
+																	name={target.price.currency}
+																	size={1.25}
+																	onClick={() => {
+																		openWindow('currencies', target.price.currency);
+																	}}
+																	onKeyDown={(event) => {
+																		if (checkA11yConfirmKey(event)) {
+																			openWindow(
+																				'currencies',
+																				target.price.currency
+																			);
+																		}
+																	}}
+																	aria-label="点击：在新窗口中查看此货币的详情"
+																	role="button"
+																	tabIndex={0}
+																	className="cursor-pointer align-text-bottom leading-none"
+																/>
+															</Tooltip>
+															）
+														</>
+													)
+												)}
+											</Fragment>
+										);
+									})
+								)}
+							</Fragment>
+						))}
 					</p>
 					<p className="text-justify">
 						<span className="font-semibold">可选更改店铺装潢：</span>

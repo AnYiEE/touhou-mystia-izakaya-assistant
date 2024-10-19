@@ -90,11 +90,11 @@ export class Item<
 			return [];
 		}
 
-		if (length !== undefined) {
-			this.checkIndexRange(length - 1);
+		if (length === undefined || length > this._data.length) {
+			length = this._data.length;
 		}
 
-		return Array.from({length: length ?? this._data.length}, (_, index) => this.findNameByIndex(index));
+		return Array.from({length}, (_, index) => this.findNameByIndex(index));
 	}
 
 	public getPropsByIndex(index: number): TItemWithPinyin;

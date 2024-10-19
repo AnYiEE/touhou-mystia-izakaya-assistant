@@ -1,4 +1,4 @@
-import {type TCustomerRareNames} from '@/data';
+import {type TCurrencyNames, type TCustomerRareNames} from '@/data';
 import type {IItemBase, TBusinessman} from '@/data/types';
 
 type TCategory = 'DLC' | '超' | '初始' | '核能' | '极' | '可疑' | '夜雀' | '月见';
@@ -10,14 +10,24 @@ export interface ICooker extends IItemBase {
 	category: TCategory;
 	/** @description If it is an array, the first element represents the effect, and the second element represents whether it is a mystia only effect. */
 	effect: `${string}。` | [`${string}。`, boolean] | null;
-	from:
+	from: Array<
 		| Partial<{
 				bond: TCustomerRareNames;
-				buy: TBusinessman;
+				buy: {
+					name: TBusinessman;
+					price: Array<
+						| {
+								currency: TCurrencyNames;
+								amount: number;
+						  }
+						| number
+					> | null;
+				};
 				/** @description Initial cookers. */
 				self: true;
 		  }>
-		| string;
+		| string
+	>;
 }
 
 export type TCookers = typeof import('./data').COOKER_LIST;

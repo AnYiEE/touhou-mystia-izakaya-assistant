@@ -1,4 +1,4 @@
-import {type TCustomerRareNames} from '@/data';
+import {type TCurrencyNames, type TCustomerRareNames} from '@/data';
 import type {IItemBase, TBusinessman} from '@/data/types';
 
 export interface IClothes extends IItemBase {
@@ -6,14 +6,21 @@ export interface IClothes extends IItemBase {
 	gif: boolean;
 	/** @description Whether the clothes will change the izakaya skin. */
 	izakaya: boolean;
-	from:
+	from: Array<
 		| Partial<{
 				bond: TCustomerRareNames;
-				buy: TBusinessman;
+				buy: {
+					name: TBusinessman;
+					price: {
+						currency: TCurrencyNames;
+						amount: number;
+					};
+				};
 				/** @description Initial clothes. */
 				self: true;
 		  }>
-		| string;
+		| string
+	>;
 }
 
 export type TClothes = typeof import('./data').CLOTHES_LIST;

@@ -1,8 +1,14 @@
-import {type DARK_MATTER_TAG, type TAG_ECONOMICAL, type TAG_EXPENSIVE, type TAG_LARGE_PARTITION} from '@/data/constant';
-import type {TCookerNames} from '@/data/cookers/types';
-import type {TCustomerRareNames} from '@/data/customer_rare/types';
-import type {TIngredientNames} from '@/data/ingredients/types';
-import type {IFoodBase} from '@/data/types';
+import {
+	type DARK_MATTER_TAG,
+	type TAG_ECONOMICAL,
+	type TAG_EXPENSIVE,
+	type TAG_LARGE_PARTITION,
+	type TCookerNames,
+	type TCurrencyNames,
+	type TCustomerRareNames,
+	type TIngredientNames,
+} from '@/data';
+import type {IFoodBase, TBusinessman} from '@/data/types';
 
 export type TTagNeedCalculate = typeof TAG_ECONOMICAL | typeof TAG_EXPENSIVE;
 
@@ -60,6 +66,13 @@ export interface IRecipe extends IFoodBase {
 				bond: {
 					name: TCustomerRareNames;
 					level: number;
+				};
+				buy: {
+					name: TBusinessman;
+					price: {
+						currency: TCurrencyNames;
+						amount: number;
+					};
 				};
 				/** @description Recipes by levelup. */
 				levelup: number;

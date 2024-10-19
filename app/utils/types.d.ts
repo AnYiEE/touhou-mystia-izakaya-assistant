@@ -2,6 +2,7 @@ import {
 	type Beverage,
 	type Clothes,
 	type Cooker,
+	type Currency,
 	type CustomerNormal,
 	type CustomerRare,
 	type CustomerSpecial,
@@ -15,6 +16,7 @@ export type TItemInstance =
 	| Beverage
 	| Clothes
 	| Cooker
+	| Currency
 	| CustomerNormal
 	| CustomerRare
 	| CustomerSpecial

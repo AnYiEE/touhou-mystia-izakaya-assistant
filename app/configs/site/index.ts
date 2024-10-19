@@ -52,6 +52,11 @@ const navItems = [
 				href: '/partners',
 				sprite: 'partner',
 			},
+			{
+				label: '货币',
+				href: '/currencies',
+				sprite: 'currency',
+			},
 		],
 	},
 	{

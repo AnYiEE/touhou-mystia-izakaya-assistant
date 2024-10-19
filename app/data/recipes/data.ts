@@ -935,7 +935,15 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 35,
-		from: '【人间之里】香霖堂',
+		from: {
+			buy: {
+				name: '【人间之里】香霖堂',
+				price: {
+					currency: '银色的青蛙硬币',
+					amount: 5,
+				},
+			},
+		},
 	},
 	{
 		name: '水饺',
@@ -948,7 +956,15 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 35,
-		from: '【人间之里】香霖堂',
+		from: {
+			buy: {
+				name: '【人间之里】香霖堂',
+				price: {
+					currency: '银色的青蛙硬币',
+					amount: 5,
+				},
+			},
+		},
 	},
 	{
 		name: '竹取姬',
