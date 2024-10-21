@@ -404,7 +404,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 					return (
 						<div className="flex">
 							{min}
-							<span className="px-0.5">-</span>
+							<span className="mx-0.5">-</span>
 							{max}秒
 						</div>
 					);

@@ -27,6 +27,7 @@ interface IProps {
 export default memo<IProps>(function Content({data}) {
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
 	const [openedPopover] = useOpenedItemPopover(popoverCardRef);
+	const openWindow = useViewInNewWindow();
 	const {breakpoint: placement} = useBreakpoint(
 		{
 			'right-start': 426,
@@ -34,7 +35,6 @@ export default memo<IProps>(function Content({data}) {
 		},
 		'top'
 	);
-	const openWindow = useViewInNewWindow();
 
 	// const isHighAppearance = globalStore.persistence.highAppearance.use();
 
@@ -58,8 +58,15 @@ export default memo<IProps>(function Content({data}) {
 							name={name}
 							size={3}
 							className={twJoin(
-								isObjectLike(from) && 'self' in from && 'scale-90',
-								name === '夜雀服' && '-translate-x-0.5 scale-85'
+								name === '夜雀服' && '-translate-x-0.5 scale-85',
+								name === '雀酒屋工作装' && 'scale-90',
+								(name === '中华风校服' ||
+									name === '锦绣中国娃娃' ||
+									name === '圣诞节特典晚装' ||
+									name === '魔女服' ||
+									name === '仙女服') &&
+									'translate-x-px',
+								(name === '魔女服' || name === '冬季水手服') && 'translate-y-px'
 							)}
 						/>
 					}
@@ -72,87 +79,92 @@ export default memo<IProps>(function Content({data}) {
 				<ItemPopoverCard.CloseButton />
 				<ItemPopoverCard.ShareButton name={name} />
 				<ItemPopoverCard target="clothes" name={name} dlc={dlc} ref={popoverCardRef}>
-					<p className="-mt-1">
+					<p className="-mt-1 break-all">
 						<span className="font-semibold">来源：</span>
 						{from.map((item, fromIndex) => (
 							<Fragment key={fromIndex}>
 								{fromIndex > 0 && '、'}
-								{typeof item === 'string' ? (
-									<>{item}</>
-								) : (
-									Object.entries(item).map((itemObject, itemIndex) => {
-										type TFrom = Exclude<IClothes['from'][number], string>;
-										const [method, target] = itemObject as [keyof TFrom, TFrom[keyof TFrom]];
-										const isBond = method === 'bond' && typeof target === 'string';
-										const isBuy = method === 'buy' && isObjectLike(target) && 'price' in target;
-										const isSelf = method === 'self';
-										return (
-											<Fragment key={`${fromIndex}-${itemIndex}`}>
-												{isSelf ? (
-													'初始拥有'
-												) : isBond ? (
-													<>
-														<span className="pr-1">
-															【
-															<Sprite
-																target="customer_rare"
-																name={target}
-																size={1.25}
-																className="mx-0.5 rounded-full align-text-bottom leading-none"
-															/>
-															{target}】羁绊
-														</span>
-														Lv.4
-														<span className="px-0.5">➞</span>Lv.5
-													</>
-												) : (
-													isBuy && (
+								{typeof item === 'string'
+									? item
+									: Object.entries(item).map((itemObject, itemIndex) => {
+											type TFrom = Exclude<IClothes['from'][number], string>;
+											const [method, target] = itemObject as [keyof TFrom, TFrom[keyof TFrom]];
+											const isBond = method === 'bond' && typeof target === 'string';
+											const isBuy = method === 'buy' && isObjectLike(target) && 'price' in target;
+											const isSelf = method === 'self';
+											return (
+												<Fragment key={`${fromIndex}-${itemIndex}`}>
+													{isSelf ? (
+														'初始拥有'
+													) : isBond ? (
 														<>
-															{target.name}（
-															<Price showSymbol={false}>{target.price.amount}×</Price>
-															<Tooltip
-																showArrow
-																content="点击：在新窗口中查看此货币的详情"
-																offset={6}
-																size="sm"
-															>
+															<span className="mr-1 inline-flex items-center">
+																【
 																<Sprite
-																	target="currency"
-																	name={target.price.currency}
+																	target="customer_rare"
+																	name={target}
 																	size={1.25}
-																	onClick={() => {
-																		openWindow('currencies', target.price.currency);
-																	}}
-																	onKeyDown={(event) => {
-																		if (checkA11yConfirmKey(event)) {
-																			openWindow(
-																				'currencies',
-																				target.price.currency
-																			);
-																		}
-																	}}
-																	aria-label="点击：在新窗口中查看此货币的详情"
-																	role="button"
-																	tabIndex={0}
-																	className="cursor-pointer align-text-bottom leading-none"
+																	className="mx-0.5 rounded-full"
 																/>
-															</Tooltip>
-															）
+																{target}】羁绊
+															</span>
+															Lv.4
+															<span className="mx-0.5">➞</span>Lv.5
 														</>
-													)
-												)}
-											</Fragment>
-										);
-									})
-								)}
+													) : (
+														isBuy && (
+															<>
+																{target.name}（
+																<span className="inline-flex items-center">
+																	<Price showSymbol={false}>
+																		{target.price.amount}×
+																	</Price>
+																	<Tooltip
+																		showArrow
+																		content="点击：在新窗口中查看此货币的详情"
+																		offset={6}
+																		size="sm"
+																	>
+																		<Sprite
+																			target="currency"
+																			name={target.price.currency}
+																			size={1.25}
+																			onClick={() => {
+																				openWindow(
+																					'currencies',
+																					target.price.currency
+																				);
+																			}}
+																			onKeyDown={(event) => {
+																				if (checkA11yConfirmKey(event)) {
+																					openWindow(
+																						'currencies',
+																						target.price.currency
+																					);
+																				}
+																			}}
+																			aria-label="点击：在新窗口中查看此货币的详情"
+																			role="button"
+																			tabIndex={0}
+																			className="cursor-pointer"
+																		/>
+																	</Tooltip>
+																</span>
+																）
+															</>
+														)
+													)}
+												</Fragment>
+											);
+										})}
 							</Fragment>
 						))}
 					</p>
-					<p className="text-justify">
+					<p>
 						<span className="font-semibold">可选更改店铺装潢：</span>
 						{izakaya ? '是' : '否'}
 					</p>
-					<p className="text-justify">
+					<p>
 						<span className="font-semibold">立绘：</span>
 						{(() => {
 							const tachie = <Tachie alt={name} src={instance.getTachiePath(name)} width={240} />;

@@ -23,6 +23,7 @@ export default memo<IProps>(function Dropdown({classNames, showArrow, ...props})
 			classNames={{
 				...classNames,
 				content: twMerge(
+					'min-w-min',
 					isHighAppearance && 'bg-content1/40 backdrop-blur-lg dark:bg-content1/70',
 					classNames?.content
 				),

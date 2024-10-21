@@ -1,5 +1,6 @@
 import {Fragment, type PropsWithChildren, memo, useRef} from 'react';
 import {isObjectLike} from 'lodash';
+import {twJoin} from 'tailwind-merge';
 
 import {useOpenedItemPopover, useViewInNewWindow} from '@/hooks';
 
@@ -58,7 +59,14 @@ export default memo<IProps>(function Content({data}) {
 					isHoverable={openedPopover ? openedPopover === name : true}
 					isPressable={openedPopover ? openedPopover === name : true}
 					name={<Name category={category}>{name}</Name>}
-					image={<Sprite target="cooker" name={name} size={3} />}
+					image={
+						<Sprite
+							target="cooker"
+							name={name}
+							size={3}
+							className={twJoin(name.includes('油锅') && 'translate-y-px')}
+						/>
+					}
 					onPress={() => {
 						trackEvent(TrackCategory.Click, 'Cooker Card', name);
 					}}
@@ -80,103 +88,103 @@ export default memo<IProps>(function Content({data}) {
 						{from.map((item, fromIndex) => (
 							<Fragment key={fromIndex}>
 								{fromIndex > 0 && '、'}
-								{typeof item === 'string' ? (
-									<>{item}</>
-								) : (
-									Object.entries(item).map((itemObject, itemIndex) => {
-										type TFrom = Exclude<ICooker['from'][number], string>;
-										const [method, target] = itemObject as [keyof TFrom, TFrom[keyof TFrom]];
-										const isBond = method === 'bond' && typeof target === 'string';
-										const isBuy = method === 'buy' && isObjectLike(target);
-										const isSelf = method === 'self';
-										return (
-											<Fragment key={`${fromIndex}-${itemIndex}`}>
-												{isSelf ? (
-													'初始拥有'
-												) : isBond ? (
-													<>
-														<span className="pr-1">
-															【
-															<Sprite
-																target="customer_rare"
-																name={target}
-																size={1.25}
-																className="mx-0.5 rounded-full align-text-bottom leading-none"
-															/>
-															{target}】羁绊
-														</span>
-														Lv.4
-														<span className="px-0.5">➞</span>Lv.5
-													</>
-												) : (
-													isBuy && (
+								{typeof item === 'string'
+									? item
+									: Object.entries(item).map((itemObject, itemIndex) => {
+											type TFrom = Exclude<ICooker['from'][number], string>;
+											const [method, target] = itemObject as [keyof TFrom, TFrom[keyof TFrom]];
+											const isBond = method === 'bond' && typeof target === 'string';
+											const isBuy = method === 'buy' && isObjectLike(target);
+											const isSelf = method === 'self';
+											return (
+												<Fragment key={`${fromIndex}-${itemIndex}`}>
+													{isSelf ? (
+														'初始拥有'
+													) : isBond ? (
 														<>
-															{target.name}
-															{target.price !== null && (
-																<>
-																	（
-																	{target.price.map((priceItem, priceIndex) => (
-																		<Fragment
-																			key={`${fromIndex}-${itemIndex}-${priceIndex}`}
-																		>
-																			{priceIndex > 0 && (
-																				<span className="mx-1">+</span>
-																			)}
-																			{typeof priceItem === 'number' ? (
-																				<Price>{priceItem}</Price>
-																			) : (
-																				<>
-																					<Price showSymbol={false}>
-																						{priceItem.amount}×
-																					</Price>
-																					<Tooltip
-																						showArrow
-																						content="点击：在新窗口中查看此货币的详情"
-																						offset={6}
-																						size="sm"
-																					>
-																						<Sprite
-																							target="currency"
-																							name={priceItem.currency}
-																							size={1.25}
-																							onClick={() => {
-																								openWindow(
-																									'currencies',
+															<span className="mr-1 inline-flex items-center">
+																【
+																<Sprite
+																	target="customer_rare"
+																	name={target}
+																	size={1.25}
+																	className="mx-0.5 rounded-full"
+																/>
+																{target}】羁绊
+															</span>
+															Lv.4
+															<span className="mx-0.5">➞</span>Lv.5
+														</>
+													) : (
+														isBuy && (
+															<>
+																{target.name}
+																{target.price !== null && (
+																	<>
+																		（
+																		{target.price.map((priceItem, priceIndex) => (
+																			<Fragment
+																				key={`${fromIndex}-${itemIndex}-${priceIndex}`}
+																			>
+																				{priceIndex > 0 && (
+																					<span className="mx-1">+</span>
+																				)}
+																				{typeof priceItem === 'number' ? (
+																					<Price>{priceItem}</Price>
+																				) : (
+																					<span className="inline-flex items-center">
+																						<Price showSymbol={false}>
+																							{priceItem.amount}×
+																						</Price>
+																						<Tooltip
+																							showArrow
+																							content="点击：在新窗口中查看此货币的详情"
+																							offset={6}
+																							size="sm"
+																						>
+																							<Sprite
+																								target="currency"
+																								name={
 																									priceItem.currency
-																								);
-																							}}
-																							onKeyDown={(event) => {
-																								if (
-																									checkA11yConfirmKey(
-																										event
-																									)
-																								) {
+																								}
+																								size={1.25}
+																								onClick={() => {
 																									openWindow(
 																										'currencies',
 																										priceItem.currency
 																									);
-																								}
-																							}}
-																							aria-label="点击：在新窗口中查看此货币的详情"
-																							role="button"
-																							tabIndex={0}
-																							className="cursor-pointer align-text-bottom leading-none"
-																						/>
-																					</Tooltip>
-																				</>
-																			)}
-																		</Fragment>
-																	))}
-																	）
-																</>
-															)}
-														</>
-													)
-												)}
-											</Fragment>
-										);
-									})
-								)}
+																								}}
+																								onKeyDown={(event) => {
+																									if (
+																										checkA11yConfirmKey(
+																											event
+																										)
+																									) {
+																										openWindow(
+																											'currencies',
+																											priceItem.currency
+																										);
+																									}
+																								}}
+																								aria-label="点击：在新窗口中查看此货币的详情"
+																								role="button"
+																								tabIndex={0}
+																								className="cursor-pointer"
+																							/>
+																						</Tooltip>
+																					</span>
+																				)}
+																			</Fragment>
+																		))}
+																		）
+																	</>
+																)}
+															</>
+														)
+													)}
+												</Fragment>
+											);
+										})}
 							</Fragment>
 						))}
 					</p>

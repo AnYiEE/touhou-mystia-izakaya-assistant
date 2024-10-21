@@ -110,7 +110,10 @@ export default memo<IProps>(function ThemeSwitcher({isMenu}) {
 			showArrow
 			onOpenChange={handleOpenChange}
 			classNames={{
-				content: twJoin('min-w-28 p-0', isHighAppearance && 'bg-background/70 backdrop-saturate-150'),
+				content: twJoin(
+					'p-0 [&>[data-slot="base"]]:w-max',
+					isHighAppearance && 'bg-background/70 backdrop-saturate-150'
+				),
 			}}
 		>
 			<Tooltip showArrow content={ThemeLabel.switcher} placement={isMenu ? 'left' : 'bottom'}>

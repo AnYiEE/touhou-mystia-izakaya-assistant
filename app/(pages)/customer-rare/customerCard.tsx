@@ -296,7 +296,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 								<PopoverContent>{placeContent}</PopoverContent>
 							</Popover>
 						</p>
-						<p className="text-justify">
+						<p>
 							可能持有：<Price>{currentCustomerPrice}</Price>
 						</p>
 					</div>

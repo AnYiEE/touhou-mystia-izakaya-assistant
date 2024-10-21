@@ -62,7 +62,7 @@ export default memo<IProps>(function Content({data}) {
 						tagColors={RECIPE_TAG_STYLE}
 						ref={popoverCardRef}
 					>
-						<p>
+						<p className="break-all">
 							<span className="font-semibold">食谱来源：</span>
 							{typeof from === 'string'
 								? from
@@ -79,56 +79,61 @@ export default memo<IProps>(function Content({data}) {
 													'初始拥有'
 												) : isBond ? (
 													<>
-														<span className="pr-1">
+														<span className="mr-1 inline-flex items-center">
 															【
 															<Sprite
 																target="customer_rare"
 																name={target.name}
 																size={1.25}
-																className="mx-0.5 rounded-full align-text-bottom leading-none"
+																className="mx-0.5 rounded-full"
 															/>
 															{target.name}】羁绊
 														</span>
 														Lv.{target.level - 1}
-														<span className="px-0.5">➞</span>Lv.
+														<span className="mx-0.5">➞</span>Lv.
 														{target.level}
 													</>
 												) : isBuy ? (
 													<>
 														{target.name}（
-														<Price showSymbol={false}>{target.price.amount}×</Price>
-														<Tooltip
-															showArrow
-															content="点击：在新窗口中查看此货币的详情"
-															offset={6}
-															size="sm"
-														>
-															<Sprite
-																target="currency"
-																name={target.price.currency}
-																size={1.25}
-																onClick={() => {
-																	openWindow('currencies', target.price.currency);
-																}}
-																onKeyDown={(event) => {
-																	if (checkA11yConfirmKey(event)) {
+														<span className="inline-flex items-center">
+															<Price showSymbol={false}>{target.price.amount}×</Price>
+															<Tooltip
+																showArrow
+																content="点击：在新窗口中查看此货币的详情"
+																offset={6}
+																size="sm"
+															>
+																<Sprite
+																	target="currency"
+																	name={target.price.currency}
+																	size={1.25}
+																	onClick={() => {
 																		openWindow('currencies', target.price.currency);
-																	}
-																}}
-																aria-label="点击：在新窗口中查看此货币的详情"
-																role="button"
-																tabIndex={0}
-																className="cursor-pointer align-text-bottom leading-none"
-															/>
-														</Tooltip>
+																	}}
+																	onKeyDown={(event) => {
+																		if (checkA11yConfirmKey(event)) {
+																			openWindow(
+																				'currencies',
+																				target.price.currency
+																			);
+																		}
+																	}}
+																	aria-label="点击：在新窗口中查看此货币的详情"
+																	role="button"
+																	tabIndex={0}
+																	className="cursor-pointer"
+																/>
+															</Tooltip>
+														</span>
 														）
 													</>
 												) : (
 													isLevelUp && (
 														<>
-															<span className="pr-1">游戏等级</span>
+															<span className="mr-1">游戏等级</span>
 															Lv.{target - 1}
-															<span className="px-0.5">➞</span>Lv.
+															<span className="mx-0.5">➞</span>Lv.
 															{target}
 														</>
 													)
@@ -151,7 +156,7 @@ export default memo<IProps>(function Content({data}) {
 									</Tooltip>
 									<PopoverContent>随游戏等级提升而降低</PopoverContent>
 								</Popover>
-								{max}秒<span className="px-0.5">➞</span>
+								{max}秒<span className="mx-0.5">➞</span>
 								{min}秒
 							</p>
 						)}

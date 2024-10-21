@@ -45,24 +45,24 @@ export default memo<IProps>(function Content({data}) {
 				<ItemPopoverCard.CloseButton />
 				<ItemPopoverCard.ShareButton name={name} />
 				<ItemPopoverCard target="ornament" name={name} dlc={dlc} ref={popoverCardRef}>
-					<p className="-mt-1 text-justify">
+					<p className="-mt-1 break-all text-justify">
 						<span className="font-semibold">来源：</span>
 						{typeof from === 'string' ? (
 							from
 						) : (
 							<>
-								<span className="pr-1">
+								<span className="mr-1 inline-flex items-center">
 									【
 									<Sprite
 										target="customer_rare"
 										name={from.name}
 										size={1.25}
-										className="mx-0.5 rounded-full align-text-bottom leading-none"
+										className="mx-0.5 rounded-full"
 									/>
 									{from.name}】羁绊
 								</span>
 								Lv.{from.level - 1}
-								<span className="px-0.5">➞</span>Lv.
+								<span className="mx-0.5">➞</span>Lv.
 								{from.level}
 							</>
 						)}

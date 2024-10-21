@@ -204,7 +204,7 @@ export default function Navbar() {
 										onOpenChange={handleDropdownOpenChange}
 										classNames={{
 											content: twJoin(
-												'min-w-24 p-0',
+												'p-0',
 												isHighAppearance && 'bg-background/70 backdrop-saturate-150'
 											),
 										}}

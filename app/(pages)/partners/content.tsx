@@ -95,7 +95,7 @@ export default memo<IProps>(function Content({data}) {
 							{effect}
 						</p>
 					)}
-					<p className="text-justify">
+					<p>
 						<span className="font-semibold">立绘：</span>
 						{(() => {
 							const tachie = <Tachie alt={name} src={instance.getTachiePath(name)} width={240} />;

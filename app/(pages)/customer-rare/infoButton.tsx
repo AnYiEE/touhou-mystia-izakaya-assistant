@@ -98,7 +98,7 @@ export default function InfoButton() {
 		<InfoButtonBase defaultExpandedKeys={getDefaultExpandedKeys()}>
 			{hasBondRewards ? (
 				<AccordionItem key="bond" aria-label={`${currentCustomerName}羁绊奖励`} title="羁绊奖励">
-					<div className="flex flex-col gap-2 text-justify text-xs">
+					<div className="flex flex-col gap-2 text-xs">
 						<div className="space-y-1">
 							{bondRecipesData.map(({name, level}, index) => (
 								<p key={index} className="flex items-center">
@@ -340,7 +340,7 @@ export default function InfoButton() {
 				</ScrollShadow>
 			</AccordionItem>
 			<AccordionItem key="rating" aria-label="评级图例" title="评级图例">
-				<div className="flex flex-col gap-2 text-justify text-xs">
+				<div className="flex flex-col gap-2 text-xs">
 					{(['极度不满', '不满', '普通', '满意', '完美'] as const).map((rating, index) => (
 						<div key={index} className="mb-1 flex items-center gap-3 px-1">
 							<Avatar
