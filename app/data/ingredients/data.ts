@@ -984,7 +984,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
-		id: -1,
+		id: 5005,
 		name: '强效辣椒素',
 		type: '其他',
 		tags: ['天罚'],
@@ -996,7 +996,7 @@ export const INGREDIENT_LIST = [
 		},
 	},
 	{
-		id: -1,
+		id: 5002,
 		name: '噗噗哟果',
 		type: '其他',
 		tags: ['天罚'],

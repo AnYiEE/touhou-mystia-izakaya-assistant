@@ -244,7 +244,7 @@ const ItemPopoverCardComponent = memo(
 				(mergedTags?.negative && mergedTags.negative.length > 0)
 		);
 
-		const isValidId = description !== undefined && description.id !== undefined && description.id !== -1;
+		const isValidId = description !== undefined && description.id !== undefined;
 
 		const dlcLabel = dlc === 0 ? LABEL_DLC_0 : '';
 
@@ -252,7 +252,7 @@ const ItemPopoverCardComponent = memo(
 			<div
 				className={twJoin(
 					'space-y-2 p-2 text-xs text-default-400 dark:text-default-500',
-					isValidId ? 'max-w-72' : 'max-w-64'
+					isValidId ? 'max-w-80' : 'max-w-64'
 				)}
 				ref={ref}
 			>
