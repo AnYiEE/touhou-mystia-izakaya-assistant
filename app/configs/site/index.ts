@@ -134,8 +134,12 @@ export const siteConfig = {
 			href: 'https://store.steampowered.com/app/1584090/__Touhou_Mystias_Izakaya',
 		},
 		xiaohongshuGroup: {
-			label: '点击加入小红书群',
+			label: '扫码加入小红书群',
 			href: getShortUrl('Y9YVAt'),
+		},
+		wxGroup: {
+			label: '扫码加入微信群',
+			href: getShortUrl('3hGM9A'),
 		},
 	},
 	cdnUrl: process.env.CDN_URL ?? '',

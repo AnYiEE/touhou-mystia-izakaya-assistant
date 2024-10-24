@@ -3,7 +3,7 @@
 import {twJoin} from 'tailwind-merge';
 
 import {Button, Divider} from '@nextui-org/react';
-import {faQq} from '@fortawesome/free-brands-svg-icons';
+import {faQq, faWeixin} from '@fortawesome/free-brands-svg-icons';
 
 import FontAwesomeIconLink from '@/components/fontAwesomeIconLink';
 import Link from '@/components/link';
@@ -75,6 +75,21 @@ export default function Home() {
 							href={links.qqGroup.href}
 							title={links.qqGroup.label}
 							className="text-xl text-qq-blue"
+						/>
+					</Tooltip>
+					<Tooltip
+						showArrow
+						content={<QRCode text={links.wxGroup.href}>{qrCodeDescription}</QRCode>}
+						classNames={{
+							content: 'p-0 pb-1',
+						}}
+					>
+						<FontAwesomeIconLink
+							isExternal
+							icon={faWeixin}
+							href={links.wxGroup.href}
+							title={links.wxGroup.label}
+							className="text-xl text-wx-green"
 						/>
 					</Tooltip>
 					<Tooltip

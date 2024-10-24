@@ -125,8 +125,9 @@ const config = {
 				'y-auto': 'auto 100%',
 			},
 			colors: {
-				'qq-blue': '#1479D7',
+				'qq-blue': '#1479d7',
 				xiaohongshu: '#ff2741',
+				'wx-green': '#07c160',
 			},
 			gridTemplateColumns: {
 				'fill-12': 'repeat(auto-fill,3rem)',
