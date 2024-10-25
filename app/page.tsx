@@ -56,6 +56,17 @@ export default function Home() {
 					</span>
 					以使用各项功能
 				</p>
+				<p className="text-xs">
+					<Link
+						isExternal
+						showAnchorIcon
+						href={links.appQA.href}
+						title={links.appQA.label}
+						className="text-xs text-foreground-500"
+					>
+						{links.appQA.label}
+					</Link>
+				</p>
 			</div>
 			<Divider className="w-12 md:hidden" />
 			<Divider orientation="vertical" className="hidden h-12 md:block" />

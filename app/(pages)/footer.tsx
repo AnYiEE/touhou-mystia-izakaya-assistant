@@ -1,4 +1,5 @@
 import {type PropsWithChildren, memo} from 'react';
+import {twMerge} from 'tailwind-merge';
 import {execSync} from 'node:child_process';
 
 import {Tooltip, type TooltipProps} from '@nextui-org/react';
@@ -7,7 +8,6 @@ import Link, {type ILinkProps} from '@/components/link';
 import QRCode from '@/components/qrCode';
 
 import {siteConfig} from '@/configs';
-import {twMerge} from 'tailwind-merge';
 
 const {links, shortName, version, isIcpFiling, isProduction, isVercel, nodeEnv, vercelEnv, vercelSha} = siteConfig;
 

@@ -101,6 +101,10 @@ export const siteConfig = {
 		return acc;
 	}, []),
 	links: {
+		appQA: {
+			label: 'APP相关常见问题和说明',
+			href: getShortUrl('wb21Sv'),
+		},
 		china: {
 			label: '国内线路',
 			href: getShortUrl('tiXDNm'),
