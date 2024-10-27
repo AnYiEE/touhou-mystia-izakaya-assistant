@@ -1,12 +1,15 @@
 'use client';
 
+import {useCallback, useMemo, useState} from 'react';
 import {twJoin} from 'tailwind-merge';
 
-import {Button, Divider} from '@nextui-org/react';
+import {Button, Divider, PopoverContent, PopoverTrigger, Spinner} from '@nextui-org/react';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faQq, faWeixin} from '@fortawesome/free-brands-svg-icons';
 
 import FontAwesomeIconLink from '@/components/fontAwesomeIconLink';
 import Link from '@/components/link';
+import Popover from './components/popover';
 import QRCode from '@/components/qrCode';
 import Tooltip from '@/components/tooltip';
 import Xiaohongshu from '@/components/xiaohongshu';
@@ -17,15 +20,73 @@ import {globalStore as store} from '@/stores';
 const {links, shortName} = siteConfig;
 
 export default function Home() {
+	const [wxGroupUrl, setWxGroupUrl] = useState<string>();
+
 	const isHighAppearance = store.persistence.highAppearance.use();
 
-	const qrCodeDescription = (
-		<>
-			分享经验、交流心得
-			<br />
-			提出建议、反馈问题
-		</>
+	const qrCodeDescription = useMemo(
+		() => (
+			<>
+				分享经验、交流心得
+				<br />
+				提出建议、反馈问题
+			</>
+		),
+		[]
 	);
+
+	const getWxGroupUrl = useCallback(() => {
+		if (wxGroupUrl) {
+			return;
+		}
+		void fetch(links.wxGroup.href, {
+			cache: 'no-cache',
+		})
+			.then(
+				(response) =>
+					response.json() as Promise<{
+						url: string;
+					}>
+			)
+			.then(({url}) => {
+				setWxGroupUrl(url);
+			})
+			.catch();
+	}, [wxGroupUrl]);
+
+	const wxGroupQrCode = useMemo(() => {
+		if (!wxGroupUrl) {
+			return (
+				<div className="flex h-40 w-32 flex-col items-center justify-between px-1">
+					<div className="mt-1 flex h-full w-full items-center justify-center bg-background p-1">
+						<Spinner
+							color="default"
+							title="加载中"
+							classNames={{
+								base: 'flex',
+							}}
+						/>
+					</div>
+					<p className="mt-1 text-center text-xs">{qrCodeDescription}</p>
+				</div>
+			);
+		}
+		return (
+			<QRCode
+				options={{
+					color: {
+						light: '#fef7e4',
+					},
+					width: 512,
+				}}
+				text={wxGroupUrl}
+				type="image"
+				className="p-1"
+			>
+				{qrCodeDescription}
+			</QRCode>
+		);
+	}, [qrCodeDescription, wxGroupUrl]);
 
 	return (
 		<div
@@ -72,7 +133,7 @@ export default function Home() {
 			<Divider orientation="vertical" className="hidden h-12 md:block" />
 			<div className="flex flex-wrap items-end text-sm leading-none">
 				<p className="md:hidden">官方群：</p>
-				<div className="flex gap-2 md:gap-4">
+				<div className="flex items-center gap-2 md:gap-4">
 					<Tooltip
 						showArrow
 						content={<QRCode text={links.qqGroup.href}>{qrCodeDescription}</QRCode>}
@@ -88,21 +149,38 @@ export default function Home() {
 							className="text-xl text-qq-blue"
 						/>
 					</Tooltip>
-					<Tooltip
+					<Popover
 						showArrow
-						content={<QRCode text={links.wxGroup.href}>{qrCodeDescription}</QRCode>}
+						offset={9}
+						onOpenChange={getWxGroupUrl}
 						classNames={{
 							content: 'p-0 pb-1',
 						}}
 					>
-						<FontAwesomeIconLink
-							isExternal
-							icon={faWeixin}
-							href={links.wxGroup.href}
-							title={links.wxGroup.label}
-							className="text-xl text-wx-green"
-						/>
-					</Tooltip>
+						<Tooltip
+							showArrow
+							content={wxGroupQrCode}
+							onOpenChange={getWxGroupUrl}
+							classNames={{
+								content: 'p-0 pb-1',
+							}}
+						>
+							<span className="flex">
+								<PopoverTrigger>
+									<Button
+										isIconOnly
+										radius="none"
+										variant="light"
+										title={links.wxGroup.label}
+										className="h-min w-min min-w-min text-xl text-wx-green transition-opacity data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover"
+									>
+										<FontAwesomeIcon icon={faWeixin} size="1x" />
+									</Button>
+								</PopoverTrigger>
+							</span>
+						</Tooltip>
+						<PopoverContent>{wxGroupQrCode}</PopoverContent>
+					</Popover>
 					<Tooltip
 						showArrow
 						content={<QRCode text={links.xiaohongshuGroup.href}>{qrCodeDescription}</QRCode>}

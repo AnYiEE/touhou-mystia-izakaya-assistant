@@ -71,7 +71,8 @@ const navItems = [
 
 const {hostname: domain} = new URL(process.env.BASE_URL ?? PACKAGE.homepage);
 
-const getShortUrl = <T extends string>(key: T) => `${process.env.SHORT_LINK_URL ?? '/#'}/${key}` as const;
+const getShortUrl = <T extends string>(key: T, isJson?: boolean) =>
+	`${process.env.SHORT_LINK_URL ?? '/#'}/${key}${isJson ? '.json' : ''}` as const;
 
 export const siteConfig = {
 	domain,
@@ -143,7 +144,7 @@ export const siteConfig = {
 		},
 		wxGroup: {
 			label: '扫码加入微信群',
-			href: getShortUrl('3hGM9A'),
+			href: getShortUrl('3hGM9A', true),
 		},
 	},
 	cdnUrl: process.env.CDN_URL ?? '',

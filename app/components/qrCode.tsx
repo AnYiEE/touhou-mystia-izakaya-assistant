@@ -7,23 +7,29 @@ import {useQRCode} from 'next-qrcode';
 
 import {type IQRCode} from 'next-qrcode/dist/useQRCode';
 
-interface IProps extends Omit<IQRCode, 'logo'>, Pick<HTMLAttributes<HTMLDivElement>, 'className'> {}
+interface IProps extends Omit<IQRCode, 'logo'>, Pick<HTMLAttributes<HTMLDivElement>, 'className'> {
+	type?: 'image' | 'svg';
+}
 
 export default memo(
 	forwardRef<HTMLDivElement | null, PropsWithChildren<IProps>>(function QRCode(
-		{className, options, text, children},
+		{className, options, text, type = 'svg', children},
 		ref
 	) {
-		const {SVG} = useQRCode();
+		const {Image, SVG} = useQRCode();
+
+		const isImage = type === 'image';
+
+		const Component = isImage ? Image : SVG;
 
 		return (
 			<div ref={ref} className="flex flex-col items-center">
 				<div aria-hidden className={twMerge('w-32 dark:invert', className)}>
-					<SVG
+					<Component
 						options={{
 							color: {
-								dark: '#000000ff',
-								light: '#ffffff00',
+								dark: isImage ? '' : '#000000ff',
+								light: isImage ? '' : '#ffffff00',
 								...options?.color,
 							},
 							errorCorrectionLevel: 'L',

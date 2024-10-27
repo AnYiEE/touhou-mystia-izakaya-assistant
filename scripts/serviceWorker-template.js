@@ -4,7 +4,17 @@
 
 const VERSION = 'offline/{{version}}';
 
+const ANALYTICS_API_URL = '{{analyticsApiUrl}}';
+const ANALYTICS_SCRIPT_URL = '{{analyticsScriptUrl}}';
 const CDN_URL = '{{cdnUrl}}';
+const FAKE_URL = 'https://url.internal';
+const SHORT_LINK_URL = '{{shortLinkUrl}}';
+
+const ANALYTICS_API_HOST = new URL(ANALYTICS_API_URL, FAKE_URL).host;
+const ANALYTICS_SCRIPT_HOST = new URL(ANALYTICS_SCRIPT_URL, FAKE_URL).host;
+const CDN_HOST = new URL(CDN_URL, FAKE_URL).host;
+const SHORT_LINK_HOST = new URL(SHORT_LINK_URL, FAKE_URL).host;
+
 const IS_USE_CDN = Boolean(CDN_URL);
 
 const networkErrorResponse = new Response('A network error occurred, but no cached resources were found.', {
@@ -107,14 +117,15 @@ self.addEventListener('fetch', (/** @type {FetchEvent} */ event) => {
 		return;
 	}
 
-	const urlObject = new URL(event.request.url, location.origin);
+	const urlObject = new URL(event.request.url, FAKE_URL);
 	const {host, pathname, protocol} = urlObject;
 
-	const isAnalyticsServer = host.startsWith('track.');
-	const isCdnServer = new URL(CDN_URL, location.origin);
+	const isAnalyticsServer = host === ANALYTICS_API_HOST || host === ANALYTICS_SCRIPT_HOST;
+	const isCdnServer = host === CDN_HOST;
 	const isSelfHost = host === location.host;
+	const isShortUrlServer = host === SHORT_LINK_HOST;
 
-	if (isAnalyticsServer || !(isCdnServer || isSelfHost) || protocol !== 'https:') {
+	if (isAnalyticsServer || isShortUrlServer || !(isCdnServer || isSelfHost) || protocol !== 'https:') {
 		return;
 	}
 	if (pathname.startsWith('/_vercel')) {
