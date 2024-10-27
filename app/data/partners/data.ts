@@ -99,7 +99,7 @@ export const PARTNER_LIST = [
 		name: '梦子',
 		dlc: 1,
 		belong: ['雾雨魔理沙', '爱丽丝', '矢田寺成美'],
-		effect: '使用飞刀投掷上菜。',
+		effect: '使用飞刀投掷上菜（包括酒水）。',
 		from: {
 			place: '魔法森林',
 		},
