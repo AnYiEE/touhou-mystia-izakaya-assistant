@@ -19,19 +19,11 @@ const sha = getSha();
 const registerTemplate = readFileSync(resolve(import.meta.dirname, 'registerServiceWorker-template.js'), 'utf8');
 const swTemplate = readFileSync(resolve(import.meta.dirname, 'serviceWorker-template.js'), 'utf8');
 
-const analyticsApiUrlSlot = '{{analyticsApiUrl}}';
-const analyticsScriptUrlSlot = '{{analyticsScriptUrl}}';
 const cdnUrlSlot = '{{cdnUrl}}';
-const shortLinkUrlSlot = '{{shortLinkUrl}}';
 const versionSlot = '{{version}}';
 
 const registerResult = registerTemplate.replaceAll(versionSlot, sha);
-const swResult = swTemplate
-	.replaceAll(analyticsApiUrlSlot, env.ANALYTICS_API_URL ?? '')
-	.replaceAll(analyticsScriptUrlSlot, env.ANALYTICS_SCRIPT_URL ?? '')
-	.replaceAll(cdnUrlSlot, env.CDN_URL ?? '')
-	.replaceAll(shortLinkUrlSlot, env.SHORT_LINK_URL ?? '')
-	.replaceAll(versionSlot, sha);
+const swResult = swTemplate.replaceAll(cdnUrlSlot, env.CDN_URL ?? '').replaceAll(versionSlot, sha);
 
 const publicPath = resolve(import.meta.dirname, '../public');
 writeFileSync(resolve(publicPath, 'registerServiceWorker.js'), registerResult, 'utf8');
