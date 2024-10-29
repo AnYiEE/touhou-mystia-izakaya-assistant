@@ -79,7 +79,7 @@ export default memo<IProps>(function Content({data}) {
 				<ItemPopoverCard.CloseButton />
 				<ItemPopoverCard.ShareButton name={name} />
 				<ItemPopoverCard target="clothes" name={name} dlc={dlc} ref={popoverCardRef}>
-					<p className="-mt-1 break-all">
+					<p className="-mt-1 break-all text-justify">
 						<span className="font-semibold">来源：</span>
 						{from.map((item, fromIndex) => (
 							<Fragment key={fromIndex}>
@@ -121,7 +121,7 @@ export default memo<IProps>(function Content({data}) {
 																	</Price>
 																	<Tooltip
 																		showArrow
-																		content="点击：在新窗口中查看此货币的详情"
+																		content={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
 																		offset={6}
 																		size="sm"
 																	>
@@ -143,7 +143,7 @@ export default memo<IProps>(function Content({data}) {
 																					);
 																				}
 																			}}
-																			aria-label="点击：在新窗口中查看此货币的详情"
+																			aria-label={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
 																			role="button"
 																			tabIndex={0}
 																			className="cursor-pointer"

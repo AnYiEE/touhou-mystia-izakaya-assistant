@@ -199,7 +199,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 
 			switch (columnKey) {
 				case 'beverage': {
-					const label = '点击：在新窗口中查看此酒水的详情';
+					const label = `点击：在新窗口中查看酒水【${name}】的详情`;
 					return (
 						<div className="flex items-center gap-2">
 							<Tooltip showArrow content={label} placement="right" size="sm">

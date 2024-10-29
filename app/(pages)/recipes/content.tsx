@@ -62,7 +62,7 @@ export default memo<IProps>(function Content({data}) {
 						tagColors={RECIPE_TAG_STYLE}
 						ref={popoverCardRef}
 					>
-						<p className="break-all">
+						<p className="break-all text-justify">
 							<span className="font-semibold">食谱来源：</span>
 							{typeof from === 'string'
 								? from
@@ -100,7 +100,7 @@ export default memo<IProps>(function Content({data}) {
 															<Price showSymbol={false}>{target.price.amount}×</Price>
 															<Tooltip
 																showArrow
-																content="点击：在新窗口中查看此货币的详情"
+																content={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
 																offset={6}
 																size="sm"
 															>
@@ -119,7 +119,7 @@ export default memo<IProps>(function Content({data}) {
 																			);
 																		}
 																	}}
-																	aria-label="点击：在新窗口中查看此货币的详情"
+																	aria-label={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
 																	role="button"
 																	tabIndex={0}
 																	className="cursor-pointer"

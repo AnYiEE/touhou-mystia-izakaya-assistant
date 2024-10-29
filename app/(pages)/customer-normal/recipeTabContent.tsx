@@ -290,10 +290,10 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 
 			switch (columnKey) {
 				case 'recipe': {
-					const recipeLabel = '点击：在新窗口中查看此料理的详情';
+					const label = `点击：在新窗口中查看料理【${name}】的详情`;
 					return (
 						<div className="flex items-center">
-							<Tooltip showArrow content={recipeLabel} placement="right" size="sm">
+							<Tooltip showArrow content={label} placement="right" size="sm">
 								<Sprite
 									target="recipe"
 									name={name}
@@ -306,7 +306,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 											openWindow('recipes', name);
 										}
 									}}
-									aria-label={recipeLabel}
+									aria-label={label}
 									role="button"
 									tabIndex={0}
 									className="mr-2 cursor-pointer"
