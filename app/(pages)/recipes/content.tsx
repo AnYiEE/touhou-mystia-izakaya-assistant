@@ -71,7 +71,7 @@ export default memo<IProps>(function Content({data}) {
 										const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
 										const isBond = method === 'bond' && isObjectLike(target) && 'level' in target;
 										const isBuy = method === 'buy' && isObjectLike(target) && 'price' in target;
-										const isLevelUp = method === 'levelup' && typeof target === 'number';
+										const isLevelUp = method === 'levelup' && Array.isArray(target);
 										const isSelf = method === 'self';
 										return (
 											<Fragment key={fromIndex}>
@@ -132,9 +132,14 @@ export default memo<IProps>(function Content({data}) {
 													isLevelUp && (
 														<>
 															<span className="mr-1">游戏等级</span>
-															Lv.{target - 1}
+															Lv.{target[0] - 1}
 															<span className="mx-0.5">➞</span>Lv.
-															{target}
+															{target[0]}
+															{target[1] !== null && (
+																<span className="ml-0.5">
+																	且已解锁地区【{target[1]}】
+																</span>
+															)}
 														</>
 													)
 												)}

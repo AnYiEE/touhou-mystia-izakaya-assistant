@@ -48,7 +48,7 @@ export const PARTNER_LIST = [
 		dlc: 0,
 		belong: ['红美铃', '琪露诺', '帕秋莉'],
 		effect: null,
-		from: '完成蕾米莉亚的试炼',
+		from: '解锁地区【红魔馆】后，完成蕾米莉亚的试炼',
 		pay: 10,
 		speed: {
 			moving: '瞬间移动',
@@ -74,7 +74,7 @@ export const PARTNER_LIST = [
 		dlc: 0,
 		belong: ['魂魄妖梦'],
 		effect: '料理台的料理瞬间完成。',
-		from: '完成主线剧情后，和地区【白玉楼】的魂魄妖梦对话，并完成第二场试炼',
+		from: '完成主线剧情后，和地区【白玉楼】的魂魄妖梦对话，选择“重修「第二次试炼」”',
 		pay: 10,
 		speed: {
 			moving: '快',

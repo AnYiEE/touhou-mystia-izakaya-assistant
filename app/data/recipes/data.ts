@@ -60,7 +60,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 6,
 		from: {
-			levelup: 2,
+			levelup: [2, null],
 		},
 	},
 	{
@@ -75,7 +75,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 22,
 		from: {
-			levelup: 4,
+			levelup: [4, null],
 		},
 	},
 	{
@@ -175,7 +175,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 20,
 		from: {
-			levelup: 8,
+			levelup: [8, null],
 		},
 	},
 	{
@@ -208,7 +208,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 22,
 		from: {
-			levelup: 11,
+			levelup: [11, null],
 		},
 	},
 	{
@@ -241,7 +241,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 60,
 		from: {
-			levelup: 14,
+			levelup: [14, null],
 		},
 	},
 	{
@@ -642,7 +642,7 @@ export const RECIPE_LIST = [
 		level: 1,
 		price: 8,
 		from: {
-			levelup: 18,
+			levelup: [18, '红魔馆'],
 		},
 	},
 	{
@@ -657,7 +657,7 @@ export const RECIPE_LIST = [
 		level: 3,
 		price: 58,
 		from: {
-			levelup: 21,
+			levelup: [21, '红魔馆'],
 		},
 	},
 	{
@@ -672,7 +672,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 22,
 		from: {
-			levelup: 27,
+			levelup: [27, '红魔馆'],
 		},
 	},
 	{
@@ -875,7 +875,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 20,
 		from: {
-			levelup: 24,
+			levelup: [24, '迷途竹林'],
 		},
 	},
 	{
@@ -890,7 +890,7 @@ export const RECIPE_LIST = [
 		level: 2,
 		price: 25,
 		from: {
-			levelup: 33,
+			levelup: [33, '迷途竹林'],
 		},
 	},
 	{
@@ -1111,7 +1111,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 75,
-		from: '【妖怪兽道】萌澄果',
+		from: '【妖怪兽道“MC幻想乡”联动】萌澄果（PC）、【妖怪兽道】杂货商人（Switch）',
 	},
 	{
 		name: '毛玉熔岩豆腐',
@@ -1124,7 +1124,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 85,
-		from: '【妖怪兽道】萌澄果',
+		from: '【妖怪兽道“MC幻想乡”联动】萌澄果（PC）、【妖怪兽道】杂货商人（Switch）',
 	},
 	{
 		name: '猩红恶魔蛋糕',
@@ -1137,7 +1137,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 60,
-		from: '【妖怪兽道】蹦蹦跳跳的三妖精',
+		from: '【妖怪兽道“三妖精的蹦蹦跳跳讨伐大作战”联动】蹦蹦跳跳的三妖精（PC）、【人间之里】香霖堂（Switch）',
 	},
 	{
 		name: '无意识妖怪慕斯',
@@ -1150,7 +1150,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 60,
-		from: '【妖怪兽道】蹦蹦跳跳的三妖精',
+		from: '【妖怪兽道“三妖精的蹦蹦跳跳讨伐大作战”联动】蹦蹦跳跳的三妖精（PC）、【人间之里】香霖堂（Switch）',
 	},
 	{
 		name: '蓬莱玉枝',
