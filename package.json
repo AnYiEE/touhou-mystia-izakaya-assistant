@@ -98,14 +98,14 @@
 		"@commitlint/cli": "^19.5.0",
 		"@commitlint/config-conventional": "^19.5.0",
 		"@types/babel__core": "^7.20.5",
-		"@types/lodash": "^4.17.12",
-		"@types/node": "^22.8.2",
+		"@types/lodash": "^4.17.13",
+		"@types/node": "^22.8.4",
 		"@types/react": "^18.3.12",
 		"@types/react-dom": "^18.3.1",
 		"@types/serviceworker": "^0.0.101",
 		"@types/ua-parser-js": "^0.7.39",
-		"@typescript-eslint/eslint-plugin": "^8.12.1",
-		"@typescript-eslint/parser": "^8.12.1",
+		"@typescript-eslint/eslint-plugin": "^8.12.2",
+		"@typescript-eslint/parser": "^8.12.2",
 		"dotenv": "^16.4.5",
 		"eslint": "^8.57.1",
 		"eslint-config-next": "^14.2.15",
@@ -120,7 +120,7 @@
 		"postcss-preset-env": "^10.0.8",
 		"prettier": "^3.3.3",
 		"prettier-plugin-tailwindcss": "^0.6.8",
-		"sass": "^1.80.4",
+		"sass": "^1.80.5",
 		"stylelint": "^16.10.0",
 		"stylelint-config-standard-scss": "^13.1.0",
 		"stylelint-scss": "^6.8.1",
@@ -132,7 +132,7 @@
 			"@react-aria/interactions@^3.22.3": "3.22.2"
 		},
 		"patchedDependencies": {
-			"@types/lodash@4.17.12": "patches/@types__lodash@4.17.12.patch"
+			"@types/lodash@4.17.13": "patches/@types__lodash@4.17.13.patch"
 		}
 	}
 }
