@@ -1,15 +1,15 @@
 import {type TCurrencyNames, type TCustomerRareNames} from '@/data';
-import type {IItemBase, TBusinessman} from '@/data/types';
+import type {IItemBase, TBusinessman, TDescription} from '@/data/types';
 
 type TCategory = 'DLC' | '超' | '初始' | '核能' | '极' | '可疑' | '夜雀' | '月见';
 
-type TType = '烤架' | '料理台' | '油锅' | '蒸锅' | '煮锅';
+type TType = '烧烤架' | '料理台' | '油锅' | '蒸锅' | '煮锅';
 
 export interface ICooker extends IItemBase {
 	type: TType | TType[];
 	category: TCategory;
 	/** @description If it is an array, the first element represents the effect, and the second element represents whether it is a mystia only effect. */
-	effect: `${string}。` | [`${string}。`, boolean] | null;
+	effect: TDescription | [TDescription, boolean] | null;
 	from: Array<
 		| Partial<{
 				bond: TCustomerRareNames;

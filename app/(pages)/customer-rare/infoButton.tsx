@@ -12,7 +12,7 @@ import Tooltip from '@/components/tooltip';
 
 import {customerRatingColorMap} from './constants';
 import type {TRewardType} from '@/data/customer_rare/types';
-import {customerRareStore as customerStore} from '@/stores';
+import {customerRareStore as store} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
 interface ILevelLabelProps {
@@ -31,24 +31,26 @@ const LevelLabel = memo<ILevelLabelProps>(function LevelLabel({level}) {
 export default function InfoButton() {
 	const openWindow = useViewInNewWindow();
 
-	const currentCustomerData = customerStore.shared.customer.data.use();
+	const currentCustomerData = store.shared.customer.data.use();
 
 	if (currentCustomerData === null) {
 		return null;
 	}
 
-	const instance_clothes = customerStore.instances.clothes.get();
-	const instance_cooker = customerStore.instances.cooker.get();
-	const instance_ornament = customerStore.instances.ornament.get();
-	const instance_partner = customerStore.instances.partner.get();
-	const instance_recipe = customerStore.instances.recipe.get();
+	const instance_clothes = store.instances.clothes.get();
+	const instance_cooker = store.instances.cooker.get();
+	const instance_ornament = store.instances.ornament.get();
+	const instance_partner = store.instances.partner.get();
+	const instance_recipe = store.instances.recipe.get();
 
 	const {name: currentCustomerName, target: currentCustomerTarget} = currentCustomerData;
 
-	const instance_customer = customerStore.instances[currentCustomerTarget as 'customer_rare'].get();
+	const instance_customer = store.instances[currentCustomerTarget as 'customer_rare'].get();
 
 	const {
 		collection: currentCustomerCollection,
+		description: currentCustomerDescription,
+		id: currentCustomerId,
 		spellCards: currentCustomerSpellCards,
 		places: currentCustomerPlaces,
 	} = instance_customer.getPropsByName(currentCustomerName);
@@ -86,7 +88,7 @@ export default function InfoButton() {
 			defaultExpandedKeys.push('card');
 		}
 		if (defaultExpandedKeys.length === 0) {
-			defaultExpandedKeys.push('help');
+			defaultExpandedKeys.push('description');
 		}
 
 		return defaultExpandedKeys;
@@ -96,6 +98,19 @@ export default function InfoButton() {
 
 	return (
 		<InfoButtonBase defaultExpandedKeys={getDefaultExpandedKeys()}>
+			<AccordionItem key="description" aria-label="稀客介绍" title="稀客介绍">
+				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-xs">
+					<p className="mb-1 text-sm">
+						<span className="font-semibold">ID：</span>
+						{currentCustomerId}
+					</p>
+					<Ol>
+						<li>{currentCustomerDescription[0]}</li>
+						{currentCustomerDescription[1] !== null && <li>{currentCustomerDescription[1]}</li>}
+						{currentCustomerDescription[2] !== null && <li>{currentCustomerDescription[2]}</li>}
+					</Ol>
+				</ScrollShadow>
+			</AccordionItem>
 			{hasBondRewards ? (
 				<AccordionItem key="bond" aria-label={`${currentCustomerName}羁绊奖励`} title="羁绊奖励">
 					<div className="flex flex-col gap-2 text-xs">
@@ -276,7 +291,11 @@ export default function InfoButton() {
 			)}
 			{hasSpellCards ? (
 				<AccordionItem key="card" aria-label={`${currentCustomerName}符卡效果`} title="符卡效果">
-					<ScrollShadow hideScrollBar size={16} className="max-h-32 text-justify text-xs md:max-h-48">
+					<ScrollShadow
+						hideScrollBar
+						size={16}
+						className="max-h-32 break-all text-justify text-xs md:max-h-48"
+					>
 						{hasPositiveSpellCards && (
 							<>
 								<p className="mb-1 text-sm font-semibold">奖励符卡</p>
@@ -311,7 +330,7 @@ export default function InfoButton() {
 				(null as unknown as ReactElement)
 			)}
 			<AccordionItem key="help" aria-label="特别说明" title="特别说明">
-				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-justify text-xs">
+				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-xs">
 					<p className="mb-1 text-sm font-semibold">选单时</p>
 					<Ol>
 						<li>

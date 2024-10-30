@@ -1,11 +1,11 @@
 import {type TCustomerRareNames} from '@/data';
-import type {IItemBase, TPlace} from '@/data/types';
+import type {IItemBase, TDescription, TPlace} from '@/data/types';
 
 type TSpeed = '快' | '慢' | '中等';
 
 export interface IPartner extends IItemBase {
 	belong: TCustomerRareNames[] | null;
-	effect: `${string}。` | null;
+	effect: TDescription | null;
 	from:
 		| string
 		| Partial<{

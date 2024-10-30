@@ -23,7 +23,7 @@ export default memo<IProps>(function Content({data}) {
 
 	// const isHighAppearance = store.persistence.highAppearance.use();
 
-	return data.map(({dlc, effect, from, name}, index) => (
+	return data.map(({description, dlc, effect, from, id, name}, index) => (
 		<Popover
 			key={index}
 			showArrow
@@ -44,8 +44,15 @@ export default memo<IProps>(function Content({data}) {
 			<PopoverContent>
 				<ItemPopoverCard.CloseButton />
 				<ItemPopoverCard.ShareButton name={name} />
-				<ItemPopoverCard target="ornament" name={name} dlc={dlc} ref={popoverCardRef}>
-					<p className="-mt-1 break-all text-justify">
+				<ItemPopoverCard
+					target="ornament"
+					id={id}
+					name={name}
+					description={{description}}
+					dlc={dlc}
+					ref={popoverCardRef}
+				>
+					<p className="break-all text-justify">
 						<span className="font-semibold">来源：</span>
 						{typeof from === 'string' ? (
 							from
@@ -67,7 +74,7 @@ export default memo<IProps>(function Content({data}) {
 							</>
 						)}
 					</p>
-					<p className="text-justify">
+					<p className="break-all text-justify">
 						<span className="font-semibold">效果：</span>
 						{effect}
 					</p>

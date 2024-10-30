@@ -5,6 +5,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 10,
 		name: '海苔',
+		description: '不知道从哪里流入的外来食材，较为常见。',
 		type: '蔬菜',
 		tags: ['素', '鲜'],
 		dlc: 0,
@@ -26,6 +27,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 12,
 		name: '八目鳗',
+		description: '一种洄游性海鱼，但却在幻想乡的河流湖泊随处可见。',
 		type: '海鲜',
 		tags: ['水产', '鲜', '招牌'],
 		dlc: 0,
@@ -54,6 +56,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 2,
 		name: '牛肉',
+		description: '人里圈养的肉牛肉，较为常见。',
 		type: '肉类',
 		tags: ['肉'],
 		dlc: 0,
@@ -66,6 +69,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 7,
 		name: '洋葱',
+		description: '人里农田产的洋葱，较为常见。',
 		type: '蔬菜',
 		tags: ['素', '鲜'],
 		dlc: 0,
@@ -80,6 +84,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 8,
 		name: '南瓜',
+		description: '人里农田产的南瓜，较为常见。',
 		type: '蔬菜',
 		tags: ['素', '饱腹'],
 		dlc: 0,
@@ -93,6 +98,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 5,
 		name: '豆腐',
+		description: '人里有卖的豆腐，较为常见。',
 		type: '蔬菜',
 		tags: ['素', '家常', '清淡'],
 		dlc: 0,
@@ -105,6 +111,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 9,
 		name: '萝卜',
+		description: '人里农田产的萝卜，较为常见。',
 		type: '蔬菜',
 		tags: ['素', '下酒'],
 		dlc: 0,
@@ -125,6 +132,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 11,
 		name: '鳟鱼',
+		description: '栖息于淡水中的冷水鱼，较为常见。',
 		type: '海鲜',
 		tags: ['水产', '鲜'],
 		dlc: 0,
@@ -159,6 +167,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 1,
 		name: '猪肉',
+		description: '人里圈养的家猪肉，较为常见。',
 		type: '肉类',
 		tags: ['肉'],
 		dlc: 0,
@@ -172,6 +181,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 27,
 		name: '露水',
+		description: '清晨采回来的露水，有点儿珍贵。',
 		type: '其他',
 		tags: ['清淡'],
 		dlc: 0,
@@ -193,6 +203,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 24,
 		name: '蜂蜜',
+		description: '能从树上蜂巢采到的野生蜂蜜，较为常见。',
 		type: '其他',
 		tags: ['甜'],
 		dlc: 0,
@@ -215,6 +226,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 25,
 		name: '蝉蜕',
+		description: '在树干上常常可以采集的昆虫外壳，较为常见。',
 		type: '其他',
 		tags: ['猎奇'],
 		dlc: 0,
@@ -235,6 +247,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 4,
 		name: '野猪肉',
+		description: '猎人们在山间猎回来的野猪肉，充满野性。',
 		type: '肉类',
 		tags: ['肉'],
 		dlc: 0,
@@ -248,6 +261,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 3,
 		name: '鹿肉',
+		description: '猎人们在山间猎回来的鹿肉，有点儿珍贵。',
 		type: '肉类',
 		tags: ['肉'],
 		dlc: 0,
@@ -264,6 +278,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 15,
 		name: '黑毛猪肉',
+		description: '在高海拔深山中圈养的黑毛猪肉，非常高级。',
 		type: '肉类',
 		tags: ['肉', '传说', '山珍'],
 		dlc: 0,
@@ -277,6 +292,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 6,
 		name: '土豆',
+		description: '随处可见的那种普通土豆。',
 		type: '蔬菜',
 		tags: ['素', '家常'],
 		dlc: 0,
@@ -290,6 +306,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 17,
 		name: '蘑菇',
+		description: '从魔法森林采回来的品相良好的蘑菇，无法人工种植，非常珍贵。',
 		type: '蔬菜',
 		tags: ['素', '鲜', '菌类'],
 		dlc: 0,
@@ -316,6 +333,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 35,
 		name: '辣椒',
+		description: '用于增加辣味的食材，评价非常两极。',
 		type: '其他',
 		tags: ['辣'],
 		dlc: 0,
@@ -329,6 +347,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 13,
 		name: '三文鱼',
+		description: '一种高度洄游海鱼，但在幻想乡的河流湖泊可见。有点儿珍贵。',
 		type: '海鲜',
 		tags: ['水产', '高级', '鲜'],
 		dlc: 0,
@@ -369,6 +388,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 28,
 		name: '竹笋',
+		description: '从野外采回来的竹笋，较为常见。',
 		type: '蔬菜',
 		tags: ['素', '清淡'],
 		dlc: 0,
@@ -383,6 +403,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 30,
 		name: '面粉',
+		description: '有多种用途，较为常见。',
 		type: '其他',
 		tags: ['饱腹'],
 		dlc: 0,
@@ -395,6 +416,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 23,
 		name: '虾',
+		description: '分布在雾之湖和玄武泽的淡水虾，较为常见。',
 		type: '海鲜',
 		tags: ['水产', '鲜'],
 		dlc: 0,
@@ -419,6 +441,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 14,
 		name: '金枪鱼',
+		description: '一种大洋性洄游海鱼，但在幻想乡的河流湖泊可见。有点儿珍贵。',
 		type: '海鲜',
 		tags: ['水产', '高级', '鲜'],
 		dlc: 0,
@@ -443,6 +466,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 22,
 		name: '白果',
+		description: '白果树的果实，较为常见。',
 		type: '其他',
 		tags: ['适合拍照'],
 		dlc: 0,
@@ -463,6 +487,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 26,
 		name: '幻昙华',
+		description: '生长在沼泽中的奇迹之花，非常珍贵。',
 		type: '其他',
 		tags: ['高级', '传说', '不可思议', '梦幻'],
 		dlc: 0,
@@ -482,6 +507,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 32,
 		name: '糯米',
+		description: '很有粘性的米。制作出来的料理或绵软适口，或鲜嫩弹牙。',
 		type: '其他',
 		tags: [],
 		dlc: 0,
@@ -494,6 +520,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 18,
 		name: '松露',
+		description: '从魔法森林采回来的品相良好的松露，无法人工种植，非常珍贵。',
 		type: '蔬菜',
 		tags: ['素', '高级', '传说', '山珍', '鲜', '菌类'],
 		dlc: 0,
@@ -514,6 +541,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 31,
 		name: '竹子',
+		description: '鲜翠欲滴的迷途竹林鲜切竹子，散发着清冽的竹香。',
 		type: '其他',
 		tags: ['适合拍照'],
 		dlc: 0,
@@ -527,6 +555,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 21,
 		name: '桃子',
+		description: '桃子树的果实，较为常见。',
 		type: '其他',
 		tags: ['甜', '果味'],
 		dlc: 0,
@@ -541,6 +570,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 29,
 		name: '黄油',
+		description: '西餐常用的食材，可以轻松地给食物增加难以抗拒的香味。',
 		type: '其他',
 		tags: ['重油'],
 		dlc: 0,
@@ -553,6 +583,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 33,
 		name: '月光草',
+		description: '永远亭的特产，由满月之夜的月光凝聚，非常珍贵。',
 		type: '其他',
 		tags: ['清淡', '文化底蕴', '不可思议', '梦幻'],
 		dlc: 0,
@@ -574,6 +605,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 19,
 		name: '极上金枪鱼',
+		description: '金枪鱼中的顶级品种，非常珍贵。',
 		type: '海鲜',
 		tags: ['水产', '高级', '传说', '海味', '鲜'],
 		dlc: 0,
@@ -595,6 +627,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 16,
 		name: '和牛',
+		description: '传闻是超优质的肉牛品种，又称雪花肉，非常高级。',
 		type: '肉类',
 		tags: ['肉', '高级', '传说'],
 		dlc: 0,
@@ -610,6 +643,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 20,
 		name: '河豚',
+		description: '高级水产品，但体内含毒素，需小心处理。',
 		type: '海鲜',
 		tags: ['水产', '海味', '鲜'],
 		dlc: 0,
@@ -625,6 +659,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 34,
 		name: '冰块',
+		description: '水的固体形态，帮助食材保温，晶莹剔透。',
 		type: '其他',
 		tags: ['凉爽'],
 		dlc: 0,
@@ -639,6 +674,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 36,
 		name: '葡萄',
+		description: '在红魔馆种植的用于酿酒的葡萄。',
 		type: '其他',
 		tags: ['甜', '果味'],
 		dlc: 0,
@@ -656,6 +692,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 0,
 		name: '鸡蛋',
+		description: '人里供应的鸡蛋，较为常见。',
 		type: '其他',
 		tags: ['生'],
 		dlc: 0,
@@ -675,6 +712,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 2000,
 		name: '并蒂莲',
+		description: '根茎生长在桥的附近，花朵成熟后会破水而出，淡红色并有淡香味。高级食材，也是地底人的节日装饰。',
 		type: '其他',
 		tags: ['高级', '传说', '清淡', '文化底蕴', '梦幻'],
 		dlc: 2,
@@ -693,6 +731,8 @@ export const INGREDIENT_LIST = [
 	{
 		id: 1001,
 		name: '章鱼',
+		description:
+			'鲜嫩可爱的海洋生物，但幻想乡没有海…它的脚是宝贝，有压倒性的肉质感，而且只要用最简单的火烤，就能享受弹牙的美味！',
 		type: '海鲜',
 		tags: ['水产', '海味', '鲜'],
 		dlc: 1,
@@ -707,6 +747,8 @@ export const INGREDIENT_LIST = [
 	{
 		id: 1002,
 		name: '海胆',
+		description:
+			'据说在外界被称作传说级的食材，只要一小颗就能让人感受到整个海洋的美味，会是真的吗？样子长得倒是挺奇怪的。',
 		type: '海鲜',
 		tags: ['水产', '高级', '传说', '海味', '鲜'],
 		dlc: 1,
@@ -724,6 +766,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 1005,
 		name: '螃蟹',
+		description: '以为有了盔甲就可以横行霸道的八脚笨蛋，只需最简单的清蒸就能成为究极美味！不过要小心它的钳子。',
 		type: '海鲜',
 		tags: ['水产', '高级', '鲜'],
 		dlc: 1,
@@ -741,6 +784,8 @@ export const INGREDIENT_LIST = [
 	{
 		id: 1000,
 		name: '黄瓜',
+		description:
+			'河童的嗜好物。虽然用来做菜和普通蔬菜没有区别，但却能让河童无比上瘾。究竟是其中的什么成分在起作用。',
 		type: '蔬菜',
 		tags: ['素', '家常', '清淡'],
 		dlc: 1,
@@ -758,6 +803,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 1003,
 		name: '黑盐',
+		description: '火山能量，累积上千万年；只为净化，你灵魂的尘埃…广告词这样写着，其实就是普通的火山岩盐。',
 		type: '其他',
 		tags: ['咸'],
 		dlc: 1,
@@ -771,6 +817,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 1004,
 		name: '奶油',
+		description: '用非常特殊的方法处理的奶制品，无论什么时候都能秒杀甜食嗜好者的味蕾！',
 		type: '其他',
 		tags: ['家常', '西式', '甜'],
 		dlc: 1,
@@ -783,6 +830,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 2002,
 		name: '芝士',
+		description: '浓郁的奶油熟成后的珍贵食材，取一片加热融化就能让料理变得奶香浓郁，美味十足。',
 		type: '其他',
 		tags: ['高级', '咸', '鲜'],
 		dlc: 2,
@@ -796,6 +844,8 @@ export const INGREDIENT_LIST = [
 	{
 		id: 2001,
 		name: '柠檬',
+		description:
+			'仅在桥附近特别的树上产出的奇怪果实，据说没有人能够无表情板着脸吃完一整颗，有着强大的“酸”味，只能取其果汁来调味。',
 		type: '其他',
 		tags: ['果味', '酸'],
 		dlc: 2,
@@ -810,6 +860,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 3001,
 		name: '地瓜',
+		description: '世上最实在的食材！不仅香甜软糯，而且能强效地应对饥饿，在冬天还有暖手的效果。',
 		type: '其他',
 		tags: ['饱腹'],
 		dlc: 3,
@@ -823,6 +874,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 3000,
 		name: '莲子',
+		description: '非常古老的水生植物——莲的种子。莲子的芯很苦，千万得处理好，别混到料理给客人吃了。',
 		type: '其他',
 		tags: ['清淡', '招牌', '文化底蕴'],
 		dlc: 3,
@@ -840,6 +892,8 @@ export const INGREDIENT_LIST = [
 	{
 		id: 3003,
 		name: '板栗',
+		description:
+			'相传道教创始人修炼时，由于不爱荤腥，便栽了许多板栗树，以栗代饭。栗子种仁肥厚，营养丰富，不仅受到许多道教人士的推崇，也经常被农民用来代替粮食。',
 		type: '蔬菜',
 		tags: ['素', '家常'],
 		dlc: 3,
@@ -853,6 +907,8 @@ export const INGREDIENT_LIST = [
 	{
 		id: 3002,
 		name: '松子',
+		description:
+			'红松树的种子。据说在外界已经被列为濒危物种，但在幻想乡仍然很常见。传说松子有延年益寿的功能，是古代道士辟谷时的常备之物。',
 		type: '其他',
 		tags: ['高级', '清淡', '招牌'],
 		dlc: 3,
@@ -866,6 +922,8 @@ export const INGREDIENT_LIST = [
 	{
 		id: 4001,
 		name: '红豆',
+		description:
+			'又称赤豆，是适应能力较强的草本植物，食用能够起到增强自身免疫力和抗病能力的效果。古代人觉得中风得病都是疫鬼作祟，所以有“赤豆打鬼”的传说。',
 		type: '其他',
 		tags: ['家常'],
 		dlc: 4,
@@ -879,6 +937,8 @@ export const INGREDIENT_LIST = [
 	{
 		id: 4000,
 		name: '梅子',
+		description:
+			'果梅树结的果实，可以盐渍或干制。做成梅干后有种咸中带酸的特殊口感，能够大大激起食欲，且品尝后唇齿留甘，让人回味无穷。',
 		type: '其他',
 		tags: ['咸', '小巧'],
 		dlc: 4,
@@ -893,6 +953,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 4003,
 		name: '香椿',
+		description: '一种常见的野菜。具有一定的毒性，不建议过量食用，并且食用前须焯水烹饪。',
 		type: '蔬菜',
 		tags: ['素', '毒'],
 		dlc: 4,
@@ -906,6 +967,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 4002,
 		name: '鲜花',
+		description: '一朵朵绚丽烂漫的鲜花扎成的花束。花儿们以生命为代价也要完成的事，必须要对此付出敬意！',
 		type: '其他',
 		tags: ['适合拍照', '梦幻'],
 		dlc: 4,
@@ -919,6 +981,8 @@ export const INGREDIENT_LIST = [
 	{
 		id: 4004,
 		name: '西红柿',
+		description:
+			'颜色鲜艳的浆果，曾经还因为太鲜艳被视为“狐狸的果实”，觉得它具有剧毒，所以只用来观赏。在发现可以食用以后就开始大面积种植了。',
 		type: '蔬菜',
 		tags: ['素'],
 		dlc: 4,
@@ -931,6 +995,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 5001,
 		name: '西兰花',
+		description: '魔界土壤培育出来的西蓝花。因为光照不足植株徒长，花球颜色和地上也略微有些不同。',
 		type: '蔬菜',
 		tags: ['素', '家常'],
 		dlc: 5,
@@ -945,6 +1010,8 @@ export const INGREDIENT_LIST = [
 	{
 		id: 5000,
 		name: '可可豆',
+		description:
+			'可可树的果实。据说在不同地区有不同的风味，有的会带点儿果香，有的带有烟熏的风味。可以磨成粉食用，是制作巧克力的基本原料。',
 		type: '其他',
 		tags: ['甜', '不可思议'],
 		dlc: 5,
@@ -959,6 +1026,8 @@ export const INGREDIENT_LIST = [
 	{
 		id: 5003,
 		name: '薜茘',
+		description:
+			'一种药食两用植物。将薜荔籽浸泡后搓汁，冷藏后会凝固成晶莹剔透的胶状物，可以用来制作果冻和凉粉等，是消暑神品。',
 		type: '其他',
 		tags: ['凉爽', '梦幻'],
 		dlc: 5,
@@ -972,6 +1041,8 @@ export const INGREDIENT_LIST = [
 	{
 		id: 5004,
 		name: '银耳',
+		description:
+			'一种像花儿一样美丽的菌类。据说历代皇家贵族把银耳看作延年益寿之品，但在月都似乎很常见。这种看起来一尘不染的洁白，和月都的感觉很相衬。',
 		type: '其他',
 		tags: ['清淡', '菌类'],
 		dlc: 5,
@@ -986,6 +1057,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 5005,
 		name: '强效辣椒素',
+		description: '使用了月之科技制作的极·辣品，能让食用者留下恐怖的回忆。是不是真的用辣椒做的就说不清了。',
 		type: '其他',
 		tags: ['天罚'],
 		dlc: 5,
@@ -998,6 +1070,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 5002,
 		name: '噗噗哟果',
+		description: '魔界里到处可见的怪异果子。似乎会根据食用者的类型产生不同的食用效果，十分奇特。',
 		type: '其他',
 		tags: ['天罚'],
 		dlc: 5,
@@ -1010,6 +1083,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: -1,
 		name: '铃仙',
+		description: '我是谁？？？我在哪？？？我为什么会在这里？？？',
 		type: '其他',
 		tags: ['招牌', '适合拍照', '不可思议', '特产'],
 		dlc: 0,

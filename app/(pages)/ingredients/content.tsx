@@ -28,7 +28,7 @@ export default memo<IProps>(function Content({data}) {
 
 	// const isHighAppearance = store.persistence.highAppearance.use();
 
-	return data.map(({dlc, from, id, name, level, price, tags, type}, dataIndex) => (
+	return data.map(({description, dlc, from, id, name, level, price, tags, type}, dataIndex) => (
 		<Popover
 			key={dataIndex}
 			showArrow
@@ -52,8 +52,9 @@ export default memo<IProps>(function Content({data}) {
 				<ItemPopoverCard.ShareButton name={name} />
 				<ItemPopoverCard
 					target="ingredient"
+					id={id}
 					name={name}
-					description={{id, level, price, type}}
+					description={{description, level, price, type}}
 					dlc={dlc}
 					tags={{positive: tags}}
 					tagColors={INGREDIENT_TAG_STYLE}

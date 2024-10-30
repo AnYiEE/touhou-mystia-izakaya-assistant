@@ -198,14 +198,15 @@ const Trigger = memo<ITriggerProps>(function ItemPopoverCardITrigger({className,
 
 interface IItemPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 	// Basic info.
+	id: number;
 	name: TItemNames;
 	displayName?: ReactNodeWithoutBoolean;
-	description?: Partial<{
-		id: number;
-		level: number;
-		price: number;
-		type: ICooker['type'] | IIngredient['type'];
-	}>;
+	description: {
+		description: string;
+		level?: number;
+		price?: number;
+		type?: ICooker['type'] | IIngredient['type'];
+	};
 	dlc?: number;
 	// For recipes.
 	/** @description If `null`, it means that the recipe has no cooker (such as dark matter). */
@@ -220,7 +221,7 @@ interface IItemPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 
 const ItemPopoverCardComponent = memo(
 	forwardRef<HTMLDivElement | null, PropsWithChildren<IItemPopoverCardProps>>(function ItemPopoverCard(
-		{target, name, displayName, description, dlc, cooker, ingredients, tags, tagColors, children},
+		{target, id, name, displayName, description, dlc, cooker, ingredients, tags, tagColors, children},
 		ref
 	) {
 		const openWindow = useViewInNewWindow();
@@ -244,18 +245,10 @@ const ItemPopoverCardComponent = memo(
 				(mergedTags?.negative && mergedTags.negative.length > 0)
 		);
 
-		const isValidId = description !== undefined && description.id !== undefined;
-
 		const dlcLabel = dlc === 0 ? LABEL_DLC_0 : '';
 
 		return (
-			<div
-				className={twJoin(
-					'space-y-2 p-2 text-xs text-default-400 dark:text-default-500',
-					isValidId ? 'max-w-80' : 'max-w-64'
-				)}
-				ref={ref}
-			>
+			<div className="max-w-80 space-y-2 p-2 text-xs text-default-400 dark:text-default-500" ref={ref}>
 				<div className="flex items-center gap-2 text-sm text-default-700">
 					<Sprite
 						target={target}
@@ -321,43 +314,41 @@ const ItemPopoverCardComponent = memo(
 						})}
 					</div>
 				)}
-				{description !== undefined && (
-					<div className="flex gap-4">
-						{description.price !== undefined && (
-							<p>
-								<span className="font-semibold">售价：</span>
-								<Price showSymbol={false}>{description.price}</Price>
-							</p>
-						)}
-						{description.level !== undefined && (
-							<p>
-								<span className="font-semibold">等级：</span>
-								<Price showSymbol={false}>{description.level}</Price>
-							</p>
-						)}
-						{description.type !== undefined && (
-							<p>
-								<span className="font-semibold">类别：</span>
-								{[description.type].flat().join('、')}
-							</p>
-						)}
-						{isValidId && (
-							<p>
-								<span className="font-semibold">ID：</span>
-								<Price showSymbol={false}>{description.id}</Price>
-							</p>
-						)}
-					</div>
-				)}
+				<div className="flex gap-4">
+					{description.price !== undefined && (
+						<p>
+							<span className="font-semibold">售价：</span>
+							<Price showSymbol={false}>{description.price}</Price>
+						</p>
+					)}
+					{description.level !== undefined && (
+						<p>
+							<span className="font-semibold">等级：</span>
+							<Price showSymbol={false}>{description.level}</Price>
+						</p>
+					)}
+					{description.type !== undefined && (
+						<p>
+							<span className="font-semibold">类别：</span>
+							{[description.type].flat().join('、')}
+						</p>
+					)}
+					<p>
+						<span className="font-semibold">ID：</span>
+						<Price showSymbol={false}>{id}</Price>
+					</p>
+				</div>
 				{hasTag && (
 					<div className="flex flex-wrap gap-x-2 gap-y-1">
 						<TagsComponent tags={mergedTags?.positive} tagStyle={tagColors?.positive} tagType="positive" />
 						<TagsComponent tags={mergedTags?.negative} tagStyle={tagColors?.negative} tagType="negative" />
 					</div>
 				)}
-				{children !== undefined && (
-					<div className={twJoin('space-y-1', mergedTags !== null && !hasTag && '!mt-1')}>{children}</div>
-				)}
+				<p className={twJoin('break-all text-justify', mergedTags === null && '!mt-1')}>
+					<span className="font-semibold">简介：</span>
+					{description.description}
+				</p>
+				{children !== undefined && <div className="!mt-1 space-y-1">{children}</div>}
 			</div>
 		);
 	})

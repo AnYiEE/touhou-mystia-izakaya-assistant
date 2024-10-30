@@ -4,12 +4,35 @@ import InfoButtonBase from '@/(pages)/customer-rare/infoButtonBase';
 import Ol from '@/components/ol';
 
 import {customerRatingColorMap} from './constants';
+import {customerNormalStore as store} from '@/stores';
 
 export default function InfoButton() {
+	const currentCustomerName = store.shared.customer.name.use();
+
+	if (currentCustomerName === null) {
+		return null;
+	}
+
+	const instance_customer = store.instances.customer.get();
+
+	const {description: currentCustomerDescription, id: currentCustomerId} =
+		instance_customer.getPropsByName(currentCustomerName);
+
 	return (
-		<InfoButtonBase defaultExpandedKeys={['help']}>
+		<InfoButtonBase defaultExpandedKeys={['description']}>
+			<AccordionItem key="description" aria-label="普客介绍" title="普客介绍">
+				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-xs">
+					<p className="mb-1 text-sm">
+						<span className="font-semibold">ID：</span>
+						{currentCustomerId}
+					</p>
+					<Ol>
+						<li>{currentCustomerDescription}</li>
+					</Ol>
+				</ScrollShadow>
+			</AccordionItem>
 			<AccordionItem key="help" aria-label="特别说明" title="特别说明">
-				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-justify text-xs">
+				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-xs">
 					<p className="mb-1 text-sm font-semibold">选单时</p>
 					<Ol>
 						<li>

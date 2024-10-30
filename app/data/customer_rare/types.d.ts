@@ -1,10 +1,10 @@
-import type {ICustomerBase, TRecipeTag} from '@/data/types';
+import type {ICustomerBase, TDescription, TRecipeTag} from '@/data/types';
 
 export type TRewardType = '摆件' | '采集' | '厨具' | '伙伴' | '料理' | '衣服';
 
 interface ISpellCard {
 	name: string;
-	description: `${string}。`;
+	description: TDescription;
 	/** @todo {type: string} */
 }
 

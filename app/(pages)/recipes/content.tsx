@@ -29,7 +29,10 @@ export default memo<IProps>(function Content({data}) {
 	// const isHighAppearance = store.persistence.highAppearance.use();
 
 	return data.map(
-		({dlc, from, name, level, price, cooker, ingredients, negativeTags, positiveTags, max, min}, dataIndex) => (
+		(
+			{dlc, from, id, name, description, level, price, cooker, ingredients, negativeTags, positiveTags, max, min},
+			dataIndex
+		) => (
 			<Popover
 				key={dataIndex}
 				showArrow
@@ -53,8 +56,9 @@ export default memo<IProps>(function Content({data}) {
 					<ItemPopoverCard.ShareButton name={name} />
 					<ItemPopoverCard
 						target="recipe"
+						id={id}
 						name={name}
-						description={{level, price}}
+						description={{description, level, price}}
 						dlc={dlc}
 						cooker={name === DARK_MATTER_NAME ? null : cooker}
 						ingredients={ingredients}

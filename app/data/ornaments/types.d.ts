@@ -2,7 +2,7 @@ import {type TCustomerRareNames} from '@/data';
 import type {IItemBase} from '@/data/types';
 
 export interface IOrnament extends IItemBase {
-	effect: `${string}。`;
+	effect: TDescription;
 	from:
 		| string
 		| {

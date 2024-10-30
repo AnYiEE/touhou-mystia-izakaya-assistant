@@ -40,7 +40,7 @@ export default memo<IProps>(function Content({data}) {
 
 	const instance = clothesStore.instance.get();
 
-	return data.map(({dlc, from, izakaya, name}, dataIndex) => (
+	return data.map(({description, dlc, from, id, izakaya, name}, dataIndex) => (
 		<Popover
 			key={dataIndex}
 			showArrow
@@ -78,8 +78,15 @@ export default memo<IProps>(function Content({data}) {
 			<PopoverContent>
 				<ItemPopoverCard.CloseButton />
 				<ItemPopoverCard.ShareButton name={name} />
-				<ItemPopoverCard target="clothes" name={name} dlc={dlc} ref={popoverCardRef}>
-					<p className="-mt-1 break-all text-justify">
+				<ItemPopoverCard
+					target="clothes"
+					id={id}
+					name={name}
+					description={{description}}
+					dlc={dlc}
+					ref={popoverCardRef}
+				>
+					<p className="break-all text-justify">
 						<span className="font-semibold">来源：</span>
 						{from.map((item, fromIndex) => (
 							<Fragment key={fromIndex}>

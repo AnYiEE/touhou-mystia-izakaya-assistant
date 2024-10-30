@@ -37,7 +37,6 @@ type TTag =
 type TType = '肉类' | '海鲜' | '蔬菜' | '其他';
 
 export interface IIngredient extends IFoodBase {
-	id: number;
 	type: TType;
 	tags: TTag[];
 }

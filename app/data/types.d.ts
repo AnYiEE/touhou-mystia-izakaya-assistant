@@ -194,8 +194,12 @@ type TPlace =
 
 type TTask = '阿求小姐的色纸' | '女仆长的采购委托' | '月都试炼' | '最终收网行动';
 
+export type TDescription = `${string}。` | `${string}？` | `${string}！`;
+
 export interface IItemBase {
+	id: number;
 	name: string;
+	description: TDescription | [TDescription, TDescription | null, TDescription | null];
 	dlc: TDlc;
 }
 
