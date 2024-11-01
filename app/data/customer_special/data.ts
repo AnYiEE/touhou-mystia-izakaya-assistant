@@ -24,6 +24,8 @@ export const CUSTOMER_SPECIAL_LIST = [
 			'神灵庙',
 			'太阳花田',
 			'辉针城',
+			'月之都',
+			'魔界',
 		],
 		price: '1200-1600',
 		positiveTags: ['肉', '水产', '甜', '梦幻', TAG_POPULAR_POSITIVE],
