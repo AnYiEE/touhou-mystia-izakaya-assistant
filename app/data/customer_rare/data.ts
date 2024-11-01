@@ -242,7 +242,7 @@ export const CUSTOMER_RARE_LIST = [
 			negative: [
 				{
 					name: '"灵符「梦想封印」',
-					description: '封印你菜单上的三个料理，在接下来的30秒内无法被制作。',
+					description: '使当日菜单上的三个料理无法被制作，持续30秒。',
 				},
 			],
 		},
@@ -271,13 +271,13 @@ export const CUSTOMER_RARE_LIST = [
 			positive: [
 				{
 					name: '酒吞奥义「鬼进酒」',
-					description: '赠送一种酒水给你，偶尔会出现超高级货。',
+					description: '赠送一种酒水，偶尔会出现超高级货。',
 				},
 			],
 			negative: [
 				{
 					name: '「百万鬼夜行」',
-					description: '从你的酒柜里偷走三瓶最高级的酒。',
+					description: '从酒柜里偷走三瓶最高级的酒。',
 				},
 			],
 		},
@@ -361,7 +361,7 @@ export const CUSTOMER_RARE_LIST = [
 			negative: [
 				{
 					name: '魔符「拿来吧你」',
-					description: '随机偷走两样东西，可能是食材、料理或酒水。',
+					description: '随机偷走两样东西，可能是料理、食材或酒水。且在偷完东西后，不付钱直接走人。',
 				},
 			],
 		},
@@ -397,7 +397,8 @@ export const CUSTOMER_RARE_LIST = [
 				{
 					// cSpell:ignore pOnda
 					name: '「NOver say no to pOnda」',
-					description: '将店内的顾客统统驱赶。',
+					description:
+						'随机摧毁一张桌子，并降低10点店内气氛。如果此桌子上有客人则会被驱赶，且无法再次接待客人，持续90秒。',
 				},
 			],
 		},
@@ -568,7 +569,7 @@ export const CUSTOMER_RARE_LIST = [
 				{
 					name: '想起「那年的素兔的恐怖」',
 					description:
-						'再一次激活强买强卖功能，如果不买，将发动另一张符卡“恶作剧「Combo消失术」”。“恶作剧「Combo消失术」”：中断你的Combo，且在30秒内无法再获得Combo。',
+						'再一次激活强买强卖功能，如果不买，将发动另一张符卡“恶作剧「Combo消失术」”。“恶作剧「Combo消失术」”：中断Combo，且在30秒内无法再获得Combo。',
 				},
 			],
 		},
@@ -853,7 +854,7 @@ export const CUSTOMER_RARE_LIST = [
 				{
 					name: '四天王奥义「三步必杀」',
 					description:
-						'生成三重警戒圈，限制你的移动，持续60秒；移动速度下降50%，直到离开范围；进入范围将被立即击晕30秒。',
+						'生成三重警戒圈，限制角色移动，持续60秒；移动速度下降50%，直到离开范围；进入范围将被立即击晕30秒。',
 				},
 			],
 		},
