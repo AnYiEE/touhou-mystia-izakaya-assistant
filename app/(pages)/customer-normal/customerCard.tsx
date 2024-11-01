@@ -201,10 +201,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 												role={dlcLabel ? 'button' : undefined}
 												tabIndex={dlcLabel ? 0 : undefined}
 												title={dlcLabel}
-												className={twJoin(
-													'opacity-100',
-													dlcLabel && 'underline-dotted-offset2'
-												)}
+												className={twJoin('opacity-100', dlcLabel && 'underline-dotted-linear')}
 											>
 												DLC{currentCustomerDlc}
 											</span>
@@ -221,7 +218,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 												role="button"
 												tabIndex={0}
 												className={twJoin(
-													clonedCurrentCustomerPlacesLength > 0 && 'underline-dotted-offset2'
+													clonedCurrentCustomerPlacesLength > 0 && 'underline-dotted-linear'
 												)}
 											>
 												{currentCustomerMainPlace}

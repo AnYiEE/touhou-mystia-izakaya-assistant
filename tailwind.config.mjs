@@ -140,7 +140,7 @@ const config = {
 				loading: '120px',
 			},
 			maxHeight: {
-				'screen-half': '50vh',
+				'dvh-safe-half': 'var(--safe-h-dvh-half)',
 				'vmax-half': '50vmax',
 			},
 			minHeight: {

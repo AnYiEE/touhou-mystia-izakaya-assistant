@@ -269,7 +269,7 @@ const ItemPopoverCardComponent = memo(
 												className="opacity-100"
 											>
 												【
-												<span className={twJoin(dlcLabel && 'underline-dotted-offset2')}>
+												<span className={twJoin(dlcLabel && 'underline-dotted-linear')}>
 													DLC{dlc}
 												</span>
 												】

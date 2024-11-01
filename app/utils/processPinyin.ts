@@ -13,7 +13,10 @@ export function processPinyin(pinyin: ReadonlyArray<string>) {
 
 			return acc;
 		},
-		{pinyinFirstLetters: '', pinyinWithoutTone: []}
+		{
+			pinyinFirstLetters: '',
+			pinyinWithoutTone: [],
+		}
 	);
 
 	return {
