@@ -8,7 +8,7 @@ type TDlc = 0 | 1 | 2 | 2.5 | 3 | 4 | 5;
 
 type TLevel = 1 | 2 | 3 | 4 | 5 | 10;
 
-export type TBusinessman =
+export type TMerchant =
 	| '【博丽神社】河童商人'
 	| '【博丽神社】妖精女仆'
 	| '【地灵殿】地狱鸦'
@@ -212,7 +212,7 @@ export interface ICustomerBase extends IItemBase {
 
 interface IFoodFrom {
 	/** @description If it is an array, the first element represents the businessman selling the item, and the second element represents whether it is a mandatory sale. */
-	buy: Array<TBusinessman | [TBusinessman, boolean]>;
+	buy: Array<TMerchant | [TMerchant, boolean]>;
 	/** @description If it is an array, the first element represents the collection location, and the second element represents whether it is a probability acquisition. */
 	collect: Array<TCollectionLocation | [TCollectionLocation, boolean]>;
 	fishing: TPlace[];

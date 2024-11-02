@@ -1,5 +1,5 @@
 import {type TCurrencyNames, type TCustomerRareNames} from '@/data';
-import type {IItemBase, TBusinessman} from '@/data/types';
+import type {IItemBase, TMerchant} from '@/data/types';
 
 export interface IClothes extends IItemBase {
 	/** @description Whether the tachie image of the clothes is a gif. */
@@ -10,7 +10,7 @@ export interface IClothes extends IItemBase {
 		| Partial<{
 				bond: TCustomerRareNames;
 				buy: {
-					name: TBusinessman;
+					name: TMerchant;
 					price: {
 						currency: TCurrencyNames;
 						amount: number;

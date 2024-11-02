@@ -1,5 +1,5 @@
 import {type TCurrencyNames, type TCustomerRareNames} from '@/data';
-import type {IItemBase, TBusinessman, TDescription} from '@/data/types';
+import type {IItemBase, TDescription, TMerchant} from '@/data/types';
 
 type TCategory = 'DLC' | '超' | '初始' | '核能' | '极' | '可疑' | '夜雀' | '月见';
 
@@ -14,7 +14,7 @@ export interface ICooker extends IItemBase {
 		| Partial<{
 				bond: TCustomerRareNames;
 				buy: {
-					name: TBusinessman;
+					name: TMerchant;
 					price: Array<
 						| {
 								currency: TCurrencyNames;

@@ -189,7 +189,7 @@ export const INGREDIENT_LIST = [
 		level: 1,
 		price: 10,
 		from: {
-			buy: ['【神灵庙】道士', ['【太阳花田】太阳花精', true]],
+			buy: ['【神灵庙】道士', '【太阳花田】太阳花精'],
 			collect: [
 				'【妖怪兽道】露水点（南侧亭子）',
 				'【妖怪兽道】露水点（小屋前方）',

@@ -8,7 +8,7 @@ import {
 	type TCustomerRareNames,
 	type TIngredientNames,
 } from '@/data';
-import type {IFoodBase, TBusinessman, TPlace} from '@/data/types';
+import type {IFoodBase, TMerchant, TPlace} from '@/data/types';
 
 export type TTagNeedCalculate = typeof TAG_ECONOMICAL | typeof TAG_EXPENSIVE;
 
@@ -68,7 +68,7 @@ export interface IRecipe extends IFoodBase {
 					level: number;
 				};
 				buy: {
-					name: TBusinessman;
+					name: TMerchant;
 					price: {
 						currency: TCurrencyNames;
 						amount: number;
