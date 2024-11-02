@@ -129,34 +129,27 @@ const ShareButton = memo(
 			}
 		}, [generatedUrl, name]);
 
+		const handlePress = useCallback(() => {
+			if (isCanShare) {
+				navigator.share(shareObject).catch(() => {});
+			}
+		}, [isCanShare, shareObject]);
+
 		const label = '点击：分享当前选中项的链接';
 
-		const shareButton = useMemo(
-			() => (
-				<FontAwesomeIconButton
-					icon={faShare}
-					variant="light"
-					onPress={() => {
-						if (isCanShare) {
-							navigator.share(shareObject).catch(() => {});
-						}
-					}}
-					aria-label={label}
-					className="h-4 text-default-200 transition-opacity data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover"
-				/>
-			),
-			[isCanShare, shareObject]
-		);
-
-		return isCanShare ? (
-			<Tooltip showArrow content={label} offset={-2} placement="left" size="sm">
-				<div className="absolute -right-1 bottom-1 flex">{shareButton}</div>
-			</Tooltip>
-		) : (
+		return (
 			<Popover showArrow ref={ref}>
 				<Tooltip showArrow content={label} offset={-2} placement="left" size="sm">
 					<div className="absolute -right-1 bottom-1 flex">
-						<PopoverTrigger>{shareButton}</PopoverTrigger>
+						<PopoverTrigger>
+							<FontAwesomeIconButton
+								icon={faShare}
+								variant="light"
+								onPress={handlePress}
+								aria-label={label}
+								className="h-4 text-default-200 transition-opacity data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover"
+							/>
+						</PopoverTrigger>
 					</div>
 				</Tooltip>
 				<PopoverContent>

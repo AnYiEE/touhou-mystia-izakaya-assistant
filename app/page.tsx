@@ -51,7 +51,7 @@ export default function Home() {
 			.then(({url}) => {
 				setWxGroupUrl(url);
 			})
-			.catch();
+			.catch(() => {});
 	}, [wxGroupUrl]);
 
 	const wxGroupQrCode = useMemo(() => {
