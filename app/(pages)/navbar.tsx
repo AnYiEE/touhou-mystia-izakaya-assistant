@@ -105,7 +105,7 @@ interface IGitHubLinkProps {
 const GitHubLink = memo<IGitHubLinkProps>(function GitHubLink({showTooltip}) {
 	if (showTooltip) {
 		return (
-			<Tooltip showArrow content={links.github.label}>
+			<Tooltip showArrow content={links.github.label} placement="bottom">
 				<span className="flex">
 					<GitHubIconLink className="dark:text-default-500" />
 				</span>
