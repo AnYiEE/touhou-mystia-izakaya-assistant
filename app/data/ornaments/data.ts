@@ -81,17 +81,6 @@ export const ORNAMENT_LIST = [
 		},
 	},
 	{
-		id: 2004,
-		name: '仇返人形',
-		description: '虽然看起来可怕又不幸，但其实意外的能够保护拥有者，会替拥有者抵挡不幸。',
-		dlc: 2,
-		effect: '可以抵挡一次中断Combo的失误。',
-		from: {
-			name: '水桥帕露西',
-			level: 5,
-		},
-	},
-	{
 		id: 2003,
 		name: '觉之眼',
 		description: '是觉妖怪读心眼的复制品。',
@@ -99,6 +88,17 @@ export const ORNAMENT_LIST = [
 		effect: '可以看到每个顾客的预算额度。',
 		from: {
 			name: '古明地觉',
+			level: 5,
+		},
+	},
+	{
+		id: 2004,
+		name: '仇返人形',
+		description: '虽然看起来可怕又不幸，但其实意外的能够保护拥有者，会替拥有者抵挡不幸。',
+		dlc: 2,
+		effect: '可以抵挡一次中断Combo的失误。',
+		from: {
+			name: '水桥帕露西',
 			level: 5,
 		},
 	},
@@ -136,17 +136,6 @@ export const ORNAMENT_LIST = [
 		},
 	},
 	{
-		id: 5013,
-		name: '杜门谢客',
-		description: '神奇的道具。',
-		dlc: 5,
-		effect: '能够屏蔽稀有顾客来店（包括邀请顾客）。',
-		from: {
-			name: '魅魔',
-			level: 5,
-		},
-	},
-	{
 		id: 5012,
 		name: '门无杂宾',
 		description: '神奇的道具。',
@@ -154,6 +143,17 @@ export const ORNAMENT_LIST = [
 		effect: '能够屏蔽普通顾客来店（包括符卡效果）。',
 		from: {
 			name: '绵月丰姬',
+			level: 5,
+		},
+	},
+	{
+		id: 5013,
+		name: '杜门谢客',
+		description: '神奇的道具。',
+		dlc: 5,
+		effect: '能够屏蔽稀有顾客来店（包括邀请顾客）。',
+		from: {
+			name: '魅魔',
 			level: 5,
 		},
 	},

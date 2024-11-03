@@ -95,15 +95,6 @@ export const CLOTHES_LIST = [
 		],
 	},
 	{
-		id: 56,
-		name: '偶像服',
-		description: '为了演唱会特意赶制的“鸟兽伎乐”乐队演出服。',
-		dlc: 0,
-		gif: false,
-		izakaya: false,
-		from: ['首次举办演唱会时自动获得'],
-	},
-	{
 		id: 31,
 		name: '水手服',
 		description: '从位于博丽神社的守矢分社中离奇获得的服饰，似乎在外界很流行。',
@@ -130,6 +121,15 @@ export const CLOTHES_LIST = [
 				},
 			},
 		],
+	},
+	{
+		id: 56,
+		name: '偶像服',
+		description: '为了演唱会特意赶制的“鸟兽伎乐”乐队演出服。',
+		dlc: 0,
+		gif: false,
+		izakaya: false,
+		from: ['首次举办演唱会时自动获得'],
 	},
 	{
 		id: 57,
@@ -212,20 +212,6 @@ export const CLOTHES_LIST = [
 		],
 	},
 	{
-		id: 1002,
-		name: '魔女服',
-		description:
-			'魔理沙小姐用业余的时间设计出来的衣服，因为她最近有了点儿钱，设计的方面就张扬了很多。她说如果下次异变的时候，就穿这个出去让灵梦羡慕羡慕。',
-		dlc: 1,
-		gif: false,
-		izakaya: false,
-		from: [
-			{
-				bond: '雾雨魔理沙',
-			},
-		],
-	},
-	{
 		id: 1001,
 		name: '冬季水手服',
 		description:
@@ -236,6 +222,20 @@ export const CLOTHES_LIST = [
 		from: [
 			{
 				bond: '东风谷早苗',
+			},
+		],
+	},
+	{
+		id: 1002,
+		name: '魔女服',
+		description:
+			'魔理沙小姐用业余的时间设计出来的衣服，因为她最近有了点儿钱，设计的方面就张扬了很多。她说如果下次异变的时候，就穿这个出去让灵梦羡慕羡慕。',
+		dlc: 1,
+		gif: false,
+		izakaya: false,
+		from: [
+			{
+				bond: '雾雨魔理沙',
 			},
 		],
 	},
@@ -265,6 +265,26 @@ export const CLOTHES_LIST = [
 			{
 				bond: '灵乌路空',
 			},
+		],
+	},
+	{
+		id: 2500,
+		name: '朋克演出服',
+		description: '充满朋克灵魂的演出装束！是“鸟兽伎乐”乐队的起点，真希望有机会可以继续尽情地咆哮和歌唱啊！',
+		dlc: 2.5,
+		gif: false,
+		izakaya: false,
+		from: [
+			{
+				buy: {
+					name: '【人间之里】香霖堂',
+					price: {
+						currency: '银色的青蛙硬币',
+						amount: 10,
+					},
+				},
+			},
+			'完成“爱乐者的挑战赛”任务后自动获得',
 		],
 	},
 	{
@@ -345,26 +365,6 @@ export const CLOTHES_LIST = [
 			{
 				bond: '露易兹',
 			},
-		],
-	},
-	{
-		id: 2500,
-		name: '朋克演出服',
-		description: '充满朋克灵魂的演出装束！是“鸟兽伎乐”乐队的起点，真希望有机会可以继续尽情地咆哮和歌唱啊！',
-		dlc: 2.5,
-		gif: false,
-		izakaya: false,
-		from: [
-			{
-				buy: {
-					name: '【人间之里】香霖堂',
-					price: {
-						currency: '银色的青蛙硬币',
-						amount: 10,
-					},
-				},
-			},
-			'完成“爱乐者的挑战赛”任务后自动获得',
 		],
 	},
 ] as const satisfies IClothes[];

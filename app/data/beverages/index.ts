@@ -5,8 +5,8 @@ export const BEVERAGE_SPRITE_CONFIG = {
 	col: 10,
 	row: 5,
 
-	height: 420,
-	width: 840,
+	height: 520,
+	width: 1040,
 } as const satisfies ISpriteConfig;
 
 export const BEVERAGE_TAG_STYLE = {
