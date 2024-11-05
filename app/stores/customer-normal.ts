@@ -596,9 +596,8 @@ export const customerNormalStore = store(state, {
 			const saveObject = {beverage: beverageName, extraIngredients, recipe: recipeName} as const;
 			currentStore.persistence.meals.set((prev) => {
 				if (customerName in prev) {
-					const lastItem = prev[customerName]?.at(-1);
-					const index = lastItem ? lastItem.index + 1 : 0;
-					prev[customerName]?.push({...saveObject, index});
+					const indexes = prev[customerName]?.map(({index}) => index) ?? [];
+					prev[customerName]?.push({...saveObject, index: Math.max(...indexes, 0) + 1});
 				} else {
 					prev[customerName] = [{...saveObject, index: 0}];
 				}

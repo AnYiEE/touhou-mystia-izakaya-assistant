@@ -96,7 +96,11 @@ const changelog = [
 	},
 	{
 		version: 'v1.3',
-		changes: ['新增：伙伴和货币页面。', '修复：额外食材评分逻辑。'],
+		changes: [
+			'新增：伙伴和货币页面。',
+			'新增：支持调整已保存的套餐搭配数据中的套餐顺序。',
+			'修复：额外食材评分逻辑。',
+		],
 	},
 ] as const satisfies {
 	version: `v${string}`;

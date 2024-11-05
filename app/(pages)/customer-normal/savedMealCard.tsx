@@ -1,9 +1,11 @@
 import {Fragment, forwardRef} from 'react';
-import {twJoin} from 'tailwind-merge';
+import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
 
 import {Avatar, Button, Card, Divider, PopoverContent, PopoverTrigger} from '@nextui-org/react';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faArrowDown, faArrowUp} from '@fortawesome/free-solid-svg-icons';
 
 import {Plus} from './resultCard';
 import Popover from '@/components/popover';
@@ -32,6 +34,37 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(
 	}
 
 	const savedCustomerMeal = currentSavedMeals[currentCustomerName];
+
+	const moveMeal = (mealIndex: number, direction: 'down' | 'up') => {
+		vibrate();
+
+		const newSavedCustomerMeal = [...savedCustomerMeal];
+		const currentIndex = newSavedCustomerMeal.findIndex(({index}) => index === mealIndex);
+		type Meal = (typeof newSavedCustomerMeal)[number];
+
+		switch (direction) {
+			case 'down':
+				if (currentIndex >= newSavedCustomerMeal.length - 1) {
+					return;
+				}
+				[newSavedCustomerMeal[currentIndex], newSavedCustomerMeal[currentIndex + 1]] = [
+					newSavedCustomerMeal[currentIndex + 1] as Meal,
+					newSavedCustomerMeal[currentIndex] as Meal,
+				];
+				break;
+			case 'up':
+				if (currentIndex <= 0) {
+					return;
+				}
+				[newSavedCustomerMeal[currentIndex], newSavedCustomerMeal[currentIndex - 1]] = [
+					newSavedCustomerMeal[currentIndex - 1] as Meal,
+					newSavedCustomerMeal[currentIndex] as Meal,
+				];
+				break;
+		}
+
+		customerStore.persistence.meals[currentCustomerName]?.set(newSavedCustomerMeal);
+	};
 
 	return (
 		<Card
@@ -171,7 +204,51 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(
 									);
 								})()}
 							</div>
-							<div className="flex w-full flex-row-reverse justify-center gap-2 md:w-auto">
+							<div className="flex w-full flex-row-reverse items-center justify-center gap-2 md:w-auto">
+								<div
+									aria-hidden
+									className={twJoin(
+										'absolute right-2 flex flex-col gap-3 text-xs text-primary/20 dark:text-default-100 md:right-1 md:gap-5 xl:gap-4',
+										savedCustomerMeal.length <= 1 && 'hidden'
+									)}
+								>
+									<Tooltip
+										showArrow
+										content={loopIndex === 0 ? '已是首项' : '上移此项'}
+										placement="left"
+										size="sm"
+									>
+										<FontAwesomeIcon
+											icon={faArrowUp}
+											size="1x"
+											onClick={() => {
+												moveMeal(mealIndex, 'up');
+											}}
+											className={twMerge(
+												'cursor-pointer hover:text-primary/40 dark:hover:text-default-200',
+												loopIndex === 0 && 'cursor-not-allowed'
+											)}
+										/>
+									</Tooltip>
+									<Tooltip
+										showArrow
+										content={loopIndex === savedCustomerMeal.length - 1 ? '已是末项' : '下移此项'}
+										placement="left"
+										size="sm"
+									>
+										<FontAwesomeIcon
+											icon={faArrowDown}
+											size="1x"
+											onClick={() => {
+												moveMeal(mealIndex, 'down');
+											}}
+											className={twMerge(
+												'cursor-pointer hover:text-primary/40 dark:hover:text-default-200',
+												loopIndex === savedCustomerMeal.length - 1 && 'cursor-not-allowed'
+											)}
+										/>
+									</Tooltip>
+								</div>
 								<Button
 									color="primary"
 									size="sm"
