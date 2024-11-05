@@ -247,7 +247,10 @@ const ItemPopoverCardComponent = memo(
 						target={target}
 						name={name}
 						size={2}
-						className={twJoin(target === 'partner' && 'rounded-full')}
+						className={twJoin(
+							'transition-transform hover:scale-150',
+							target === 'partner' && 'rounded-full'
+						)}
 					/>
 					<p className="font-bold">
 						{dlc !== undefined && (

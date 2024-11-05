@@ -138,16 +138,6 @@ export function checkRecipeEasterEgg({
 			}
 			break;
 		}
-		case '饕餮尤魔': {
-			const recipe = '油豆腐';
-			if (currentRecipeName === recipe) {
-				return {
-					recipe,
-					score: 3,
-				};
-			}
-			break;
-		}
 		case '绵月丰姬':
 		case '绵月依姬': {
 			const recipe = '蜜桃红烧肉';
@@ -155,6 +145,16 @@ export function checkRecipeEasterEgg({
 				return {
 					recipe,
 					score: 0,
+				};
+			}
+			break;
+		}
+		case '饕餮尤魔': {
+			const recipe = '油豆腐';
+			if (currentRecipeName === recipe) {
+				return {
+					recipe,
+					score: 3,
 				};
 			}
 		}
