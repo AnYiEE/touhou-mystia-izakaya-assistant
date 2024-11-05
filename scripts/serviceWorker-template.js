@@ -119,9 +119,6 @@ self.addEventListener('fetch', (/** @type {FetchEvent} */ event) => {
 	if (!(isCdnServer || isSelfHost) || protocol !== 'https:') {
 		return;
 	}
-	if (pathname.startsWith('/_vercel')) {
-		return;
-	}
 
 	if (pathname.includes('.')) {
 		// Cache all static assets (file has extension).

@@ -5,8 +5,7 @@ import {compareVersions} from 'compare-versions';
 import {debounce} from 'lodash';
 
 import {useRouter} from 'next/navigation';
-import {ThemeProvider as NextThemesProvider, useTheme} from 'next-themes';
-import type {ThemeProviderProps} from 'next-themes/dist/types';
+import {ThemeProvider as NextThemesProvider, type ThemeProviderProps, useTheme} from 'next-themes';
 
 import {NextUIProvider} from '@nextui-org/react';
 import {ProgressBar, ProgressBarProvider} from 'react-transition-progress';
@@ -34,7 +33,7 @@ const {version} = siteConfig;
 
 interface IProps {
 	locale: string;
-	themeProps?: PropsWithChildren<Omit<ThemeProviderProps, 'children'>>;
+	themeProps?: ThemeProviderProps;
 }
 
 export default function Providers({children, locale, themeProps}: PropsWithChildren<IProps>) {

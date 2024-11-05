@@ -3,8 +3,6 @@ import {type Metadata, type Viewport} from 'next';
 import Script from 'next/script';
 import {execSync} from 'node:child_process';
 
-import {SpeedInsights} from '@vercel/speed-insights/next';
-
 import Footer from '@/(pages)/footer';
 import Navbar from '@/(pages)/navbar';
 import Analytics from '@/components/analytics';
@@ -21,20 +19,8 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 /** @see {@link https://docs.fontawesome.com/web/use-with/react/use-with#getting-font-awesome-css-to-work} */
 fontawesomeConfig.autoAddCss = false;
 
-const {
-	author,
-	description,
-	keywords,
-	locale,
-	name,
-	enName,
-	shortName,
-	cdnUrl,
-	isAnalytics,
-	isProduction,
-	isVercel,
-	vercelSha,
-} = siteConfig;
+const {author, description, keywords, locale, name, enName, shortName, cdnUrl, isAnalytics, isProduction, vercelSha} =
+	siteConfig;
 
 export const metadata: Metadata = {
 	title: {
@@ -190,7 +176,6 @@ export default function RootLayout({
 						</div>
 					</Providers>
 					{isProduction && isAnalytics && <Analytics />}
-					{isProduction && isVercel && <SpeedInsights />}
 				</ErrorBoundary>
 			</body>
 		</html>

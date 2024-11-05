@@ -103,7 +103,7 @@ const purple = {
 /** @type {import('tailwindcss').Config} */
 const config = {
 	content: ['./app/**/*.tsx', './node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}'],
-	darkMode: 'class',
+	darkMode: 'selector',
 	safelist: IS_PRODUCTION
 		? [
 				// For compatible with browsers that do not support the `gap` property.
