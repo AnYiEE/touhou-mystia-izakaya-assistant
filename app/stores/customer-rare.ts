@@ -783,7 +783,8 @@ export const customerRareStore = store(state, {
 			currentStore.persistence.meals.set((prev) => {
 				if (customerName in prev) {
 					const indexes = prev[customerName]?.map(({index}) => index) ?? [];
-					prev[customerName]?.push({...saveObject, index: Math.max(...indexes, 0) + 1});
+					const index = indexes.length > 0 ? Math.max(...indexes, 0) + 1 : 0;
+					prev[customerName]?.push({...saveObject, index});
 				} else {
 					prev[customerName] = [{...saveObject, index: 0}];
 				}
