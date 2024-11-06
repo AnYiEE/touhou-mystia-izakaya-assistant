@@ -17,12 +17,12 @@ export interface ICooker extends IItemBase {
 				buy: {
 					name: TMerchant;
 					price: Array<
+						| number
 						| {
 								currency: TCurrencyNames;
 								amount: number;
 						  }
-						| number
-					> | null;
+					>;
 				};
 				/** @description Initial cookers. */
 				self: true;

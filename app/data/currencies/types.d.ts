@@ -1,11 +1,19 @@
-import type {IItemBase, TPlace} from '@/data/types';
+import type {IItemBase, TMerchant, TPlace} from '@/data/types';
 
 export interface ICurrency extends IItemBase {
-	from:
+	from: Array<
 		| string
-		| {
+		| Partial<{
+				buy: {
+					name: TMerchant;
+					price: {
+						currency: string; // TCurrencyNames
+						amount: number;
+					};
+				};
 				task: TPlace;
-		  };
+		  }>
+	>;
 }
 
 export type TCurrencies = typeof import('./data').CURRENCY_LIST;

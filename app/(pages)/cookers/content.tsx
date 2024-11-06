@@ -120,67 +120,60 @@ export default memo<IProps>(function Content({data}) {
 													) : (
 														isBuy && (
 															<>
-																{target.name}
-																{target.price !== null && (
-																	<>
-																		（
-																		{target.price.map((priceItem, priceIndex) => (
-																			<Fragment
-																				key={`${fromIndex}-${itemIndex}-${priceIndex}`}
-																			>
-																				{priceIndex > 0 && (
-																					<span className="mx-1">+</span>
-																				)}
-																				{typeof priceItem === 'number' ? (
-																					<Price>{priceItem}</Price>
-																				) : (
-																					<span className="inline-flex items-center">
-																						<Price showSymbol={false}>
-																							{priceItem.amount}×
-																						</Price>
-																						<Tooltip
-																							showArrow
-																							content={`点击：在新窗口中查看货币【${priceItem.currency}】的详情`}
-																							offset={6}
-																							size="sm"
-																						>
-																							<Sprite
-																								target="currency"
-																								name={
+																{target.name}（
+																{target.price.map((priceItem, priceIndex) => (
+																	<Fragment
+																		key={`${fromIndex}-${itemIndex}-${priceIndex}`}
+																	>
+																		{priceIndex > 0 && (
+																			<span className="mx-1">+</span>
+																		)}
+																		{typeof priceItem === 'number' ? (
+																			<Price>{priceItem}</Price>
+																		) : (
+																			<span className="inline-flex items-center">
+																				<Price showSymbol={false}>
+																					{priceItem.amount}×
+																				</Price>
+																				<Tooltip
+																					showArrow
+																					content={`点击：在新窗口中查看货币【${priceItem.currency}】的详情`}
+																					offset={6}
+																					size="sm"
+																				>
+																					<Sprite
+																						target="currency"
+																						name={priceItem.currency}
+																						size={1.25}
+																						onClick={() => {
+																							openWindow(
+																								'currencies',
+																								priceItem.currency
+																							);
+																						}}
+																						onKeyDown={(event) => {
+																							if (
+																								checkA11yConfirmKey(
+																									event
+																								)
+																							) {
+																								openWindow(
+																									'currencies',
 																									priceItem.currency
-																								}
-																								size={1.25}
-																								onClick={() => {
-																									openWindow(
-																										'currencies',
-																										priceItem.currency
-																									);
-																								}}
-																								onKeyDown={(event) => {
-																									if (
-																										checkA11yConfirmKey(
-																											event
-																										)
-																									) {
-																										openWindow(
-																											'currencies',
-																											priceItem.currency
-																										);
-																									}
-																								}}
-																								aria-label={`点击：在新窗口中查看货币【${priceItem.currency}】的详情`}
-																								role="button"
-																								tabIndex={0}
-																								className="cursor-pointer"
-																							/>
-																						</Tooltip>
-																					</span>
-																				)}
-																			</Fragment>
-																		))}
-																		）
-																	</>
-																)}
+																								);
+																							}
+																						}}
+																						aria-label={`点击：在新窗口中查看货币【${priceItem.currency}】的详情`}
+																						role="button"
+																						tabIndex={0}
+																						className="cursor-pointer"
+																					/>
+																				</Tooltip>
+																			</span>
+																		)}
+																	</Fragment>
+																))}
+																）
 															</>
 														)
 													)}

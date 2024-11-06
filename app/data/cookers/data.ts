@@ -835,7 +835,13 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【魔界】蓬松松爱莲♡魔法店',
-					price: null,
+					price: [
+						{
+							currency: '蓬松松糖果',
+							amount: 160,
+						},
+						40000,
+					],
 				},
 			},
 		],
@@ -852,7 +858,13 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【魔界】蓬松松爱莲♡魔法店',
-					price: null,
+					price: [
+						{
+							currency: '蓬松松糖果',
+							amount: 33,
+						},
+						33333,
+					],
 				},
 			},
 		],
