@@ -273,7 +273,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(
 									<div
 										aria-hidden
 										className={twJoin(
-											'absolute right-2 flex flex-col gap-3 text-xs text-primary/20 dark:text-default-100 md:left-2 md:right-[unset] md:gap-6 xl:gap-9',
+											'absolute right-2 flex flex-col gap-3 text-xs text-primary/20 md:left-2 md:right-[unset] md:gap-6 xl:gap-9 dark:text-default-100',
 											savedCustomerMeal.length <= 1 && 'hidden'
 										)}
 									>
@@ -289,9 +289,10 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(
 												onClick={() => {
 													moveMeal(mealIndex, 'up');
 												}}
+												role="button"
 												className={twMerge(
 													'cursor-pointer hover:text-primary/40 dark:hover:text-default-200',
-													loopIndex === 0 && 'cursor-not-allowed'
+													loopIndex === 0 && 'cursor-not-allowed hover:text-primary/20'
 												)}
 											/>
 										</Tooltip>
@@ -309,9 +310,11 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(
 												onClick={() => {
 													moveMeal(mealIndex, 'down');
 												}}
+												role="button"
 												className={twMerge(
 													'cursor-pointer hover:text-primary/40 dark:hover:text-default-200',
-													loopIndex === savedCustomerMeal.length - 1 && 'cursor-not-allowed'
+													loopIndex === savedCustomerMeal.length - 1 &&
+														'cursor-not-allowed hover:text-primary/20'
 												)}
 											/>
 										</Tooltip>

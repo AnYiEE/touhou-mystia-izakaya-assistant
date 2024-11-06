@@ -380,6 +380,7 @@ export default function CustomerNormal() {
 			{isShowTachie && breakpoint === 'tachie' && (
 				<Tachie
 					aria-hidden
+					alt="雀酒屋工作装"
 					src={instance_clothes.getTachiePath('雀酒屋工作装')}
 					width={120}
 					className="pointer-events-none fixed bottom-0 right-0 pr-2"

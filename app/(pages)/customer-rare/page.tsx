@@ -416,6 +416,7 @@ export default function CustomerRare() {
 			{isShowTachie && breakpoint === 'tachie' && (
 				<Tachie
 					aria-hidden
+					alt={currentCustomerData?.name ?? '夜雀服'}
 					src={(currentCustomerData?.target === 'customer_special'
 						? instance_special
 						: instance_rare
