@@ -32,6 +32,7 @@ export default memo<IProps>(function Content({data}) {
 		<Popover
 			key={dataIndex}
 			showArrow
+			/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/3736} is fixed. */
 			// backdrop={isHighAppearance ? 'blur' : 'opaque'}
 			isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}
 		>
@@ -69,17 +70,13 @@ export default memo<IProps>(function Content({data}) {
 							const isTask = method === 'task';
 							const probability = `概率${isBuy ? '出售' : '掉落'}`;
 							const way = isBuy ? '购买' : isFishingAdvanced ? '高级钓鱼' : isTask ? '任务' : '采集';
+							const label = `${probability}，使用摆件【超级钓鱼竿】`;
 							return (
 								<Fragment key={fromIndex}>
 									<p className={twJoin('font-semibold', fromIndex !== 0 && 'mt-1')}>
 										{isFishingAdvanced ? (
 											<Popover showArrow offset={6} size="sm">
-												<Tooltip
-													showArrow
-													content={`${probability}，使用摆件【超级钓鱼竿】`}
-													offset={3}
-													size="sm"
-												>
+												<Tooltip showArrow content={label} offset={3} size="sm">
 													<span className="inline-flex cursor-pointer">
 														<PopoverTrigger>
 															<span tabIndex={0} className="underline-dotted-offset2">
@@ -88,7 +85,7 @@ export default memo<IProps>(function Content({data}) {
 														</PopoverTrigger>
 													</span>
 												</Tooltip>
-												<PopoverContent>{probability}，使用摆件【超级钓鱼竿】</PopoverContent>
+												<PopoverContent>{label}</PopoverContent>
 											</Popover>
 										) : (
 											way

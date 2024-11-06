@@ -49,8 +49,9 @@ export default memo<IProps>(function Content({data}) {
 
 	return data.map(({category, description, dlc, effect, from, id, name, type}, dataIndex) => (
 		<Popover
-			showArrow
 			key={dataIndex}
+			showArrow
+			/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/3736} is fixed. */
 			// backdrop={isHighAppearance ? 'blur' : 'opaque'}
 			isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}
 		>
