@@ -7,6 +7,7 @@ export interface IClothes extends IItemBase {
 	/** @description Whether the clothes will change the izakaya skin. */
 	izakaya: boolean;
 	from: Array<
+		| string
 		| Partial<{
 				bond: TCustomerRareNames;
 				buy: {
@@ -19,7 +20,6 @@ export interface IClothes extends IItemBase {
 				/** @description Initial clothes. */
 				self: true;
 		  }>
-		| string
 	>;
 }
 

@@ -62,6 +62,7 @@ export interface IRecipe extends IFoodBase {
 	max: number;
 	min: number;
 	from:
+		| string
 		| Partial<{
 				bond: {
 					name: TCustomerRareNames;
@@ -78,8 +79,7 @@ export interface IRecipe extends IFoodBase {
 				levelup: [number, TPlace | null];
 				/** @description Initial recipes. */
 				self: true;
-		  }>
-		| string;
+		  }>;
 }
 
 export type TRecipes = typeof import('./data').RECIPE_LIST;

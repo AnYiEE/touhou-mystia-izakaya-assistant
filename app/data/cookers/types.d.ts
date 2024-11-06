@@ -11,6 +11,7 @@ export interface ICooker extends IItemBase {
 	/** @description If it is an array, the first element represents the effect, and the second element represents whether it is a mystia only effect. */
 	effect: TDescription | [TDescription, boolean] | null;
 	from: Array<
+		| string
 		| Partial<{
 				bond: TCustomerRareNames;
 				buy: {
@@ -26,7 +27,6 @@ export interface ICooker extends IItemBase {
 				/** @description Initial cookers. */
 				self: true;
 		  }>
-		| string
 	>;
 }
 

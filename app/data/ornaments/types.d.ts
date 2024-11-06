@@ -1,10 +1,10 @@
 import {type TCustomerRareNames} from '@/data';
-import type {IItemBase} from '@/data/types';
+import type {IItemBase, TDescription} from '@/data/types';
 
 export interface IOrnament extends IItemBase {
 	effect: TDescription;
 	from:
-		| string
+		| TDescription
 		| {
 				name: TCustomerRareNames;
 				level: number;

@@ -1267,8 +1267,8 @@ export const RECIPE_LIST = [
 	{
 		id: 66,
 		name: '月饼',
-		description: '诶？！这是什么？你为什么会获得这个？嗯…祝你玩得愉快。',
-		ingredients: ['蜂蜜', '面粉', '糯米', '月光草'],
+		description: '诶？！这是什么？你为什么会获得这个？嗯…祝你玩得愉快。（注：此料理所对应的食谱ID为42）。',
+		ingredients: ['月光草', '蜂蜜', '糯米', '面粉'],
 		positiveTags: ['饱腹', '中华', '甜', '文化底蕴', '不可思议', '小巧'],
 		negativeTags: [],
 		cooker: '蒸锅',

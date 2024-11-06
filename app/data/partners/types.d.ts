@@ -7,7 +7,7 @@ export interface IPartner extends IItemBase {
 	belong: TCustomerRareNames[] | null;
 	effect: TDescription | null;
 	from:
-		| string
+		| TDescription
 		| Partial<{
 				/** @description Partners by maximize all rare customers bond level in the place. */
 				place: TPlace;
