@@ -79,17 +79,13 @@ export default memo<IProps>(function Content({data}) {
 										: isTask
 											? '任务'
 											: '采集';
+							const label = `${probability}，使用摆件【${isFishing ? '普通的' : '超级'}钓鱼竿】`;
 							return (
 								<Fragment key={fromIndex}>
 									<p className={twJoin('font-semibold', fromIndex !== 0 && 'mt-1')}>
 										{isFishing || isFishingAdvanced ? (
 											<Popover showArrow offset={6} size="sm">
-												<Tooltip
-													showArrow
-													content={`${probability}，使用摆件【${isFishing ? '' : '超级'}钓鱼竿】`}
-													offset={3}
-													size="sm"
-												>
+												<Tooltip showArrow content={label} offset={3} size="sm">
 													<span className="inline-flex cursor-pointer">
 														<PopoverTrigger>
 															<span tabIndex={0} className="underline-dotted-offset2">
@@ -98,9 +94,7 @@ export default memo<IProps>(function Content({data}) {
 														</PopoverTrigger>
 													</span>
 												</Tooltip>
-												<PopoverContent>
-													{probability}，使用摆件【{isFishing ? '' : '超级'}钓鱼竿】
-												</PopoverContent>
+												<PopoverContent>{label}</PopoverContent>
 											</Popover>
 										) : (
 											way

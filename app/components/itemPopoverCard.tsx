@@ -330,7 +330,7 @@ const ItemPopoverCardComponent = memo(
 						</p>
 					)}
 					<p>
-						<span className="font-semibold">ID：</span>
+						<span className="font-semibold">{target === 'recipe' ? '料理（非食谱）' : ''}ID：</span>
 						<Price showSymbol={false}>{id}</Price>
 					</p>
 				</div>
