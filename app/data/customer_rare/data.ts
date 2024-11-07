@@ -39,7 +39,9 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {},
+		positiveTagMapping: {
+			生: '生肉总比熟肉好吃',
+		},
 	},
 	{
 		id: 1,
@@ -71,7 +73,6 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			生: '新鲜',
 			招牌: '拿手好菜',
 		},
 	},
@@ -105,8 +106,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			水产: '猫吃鱼',
-			烧烤: '肉串起来',
+			烧烤: '把肉串起来',
 		},
 	},
 	{
@@ -139,8 +139,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			甜: '甜食不健康',
-			高级: '稗田家主',
+			高级: '作为稗田家主',
 		},
 	},
 	{
@@ -184,7 +183,9 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {},
+		positiveTagMapping: {
+			文化底蕴: '历史和文化相辅相成',
+		},
 	},
 	{
 		id: 5,
@@ -247,8 +248,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			高级: '便宜高级料理',
-			不可思议: '符合我的称号',
+			不可思议: '配得上我的称号',
 			[TAG_ECONOMICAL]: '贵的买不起',
 		},
 	},
@@ -283,8 +283,8 @@ export const CUSTOMER_RARE_LIST = [
 		},
 		positiveTagMapping: {
 			肉: '大口吃肉',
-			下酒: '佐酒小菜',
-			小巧: '分身多个',
+			下酒: '佐酒的小菜',
+			小巧: '分散很多个小的自己',
 		},
 	},
 	{
@@ -317,8 +317,9 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			清淡: '重油下等',
-			适合拍照: '卖相要好',
+			素: '荤腥的东西',
+			清淡: '口味重的东西',
+			适合拍照: '卖相不好的低贱品',
 			[TAG_EXPENSIVE]: '我不缺钱',
 		},
 	},
@@ -368,9 +369,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			传说: '古老价值',
-			重油: '麻辣烫/不要清淡',
-			灼热: '八卦炉/发光发热',
+			传说: '古老的东西',
 		},
 	},
 	{
@@ -405,11 +404,11 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			中华: '家乡的味道',
+			中华: '祖国的味道',
 		},
 	},
 	{
-		id: 16,
+		id: 28,
 		name: '琪露诺',
 		description: [
 			'自称最强的、长着冰之羽翼的妖精，那样的翅膀也能飞起来真是神奇啊。当然神奇的还有她的脑回路，老是做一些和大家相反的选择，总之别太深究她说的话就好了。',
@@ -440,7 +439,7 @@ export const CUSTOMER_RARE_LIST = [
 		},
 		positiveTagMapping: {
 			适合拍照: '丑拒',
-			猎奇: '真正的勇士',
+			凉爽: '要吃冰的',
 		},
 	},
 	{
@@ -473,8 +472,8 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			西式: '文化差异',
-			适合拍照: '卖相好',
+			西式: '文化的差异',
+			适合拍照: '品相好看',
 		},
 	},
 	{
@@ -507,7 +506,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			燃起来了: '不灭火焰',
+			燃起来了: '复仇之火永扑不尽',
 		},
 	},
 	{
@@ -540,8 +539,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			和风: '大和抚子',
-			文化底蕴: '地上历史',
+			文化底蕴: '不可磨灭的过去',
 		},
 	},
 	{
@@ -576,6 +574,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
+			凉爽: '降温工作',
 			小巧: '三分饱',
 		},
 	},
@@ -609,8 +608,9 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			高级: '上最好的',
-			猎奇: '无法理解的口味',
+			高级: '最上品的菜',
+			招牌: '口碑最好的菜',
+			猎奇: '河童的口味',
 		},
 	},
 	{
@@ -643,9 +643,8 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			肉: '身为狼',
-			重油: '不健康',
-			[TAG_LARGE_PARTITION]: '多吃点',
+			重油: '不健康的饮食',
+			[TAG_LARGE_PARTITION]: '不多吃点',
 		},
 	},
 	{
@@ -678,10 +677,8 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			家常: '二神所在之地',
-			和风: '大和民族',
+			和风: '大和风情',
 			适合拍照: '手机',
-			梦幻: '女孩子',
 		},
 	},
 	{
@@ -747,8 +744,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			和风: '曾经土地唯一',
-			特产: '想尝美食但懒',
+			特产: '不同地方的美食',
 		},
 	},
 	{
@@ -814,11 +810,7 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {
-			咸: '眼泪的味道',
-			辣: '愤怒的味道',
-			酸: '妒意的味道',
-		},
+		positiveTagMapping: {},
 	},
 	{
 		id: 2002,
@@ -861,7 +853,6 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			燃起来了: '热血沸腾起来',
 			[TAG_LARGE_PARTITION]: '饱餐一顿',
 		},
 	},
@@ -930,7 +921,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			海味: '地底海底相连',
+			海味: '地底海底相通',
 		},
 	},
 	{
@@ -963,7 +954,11 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {},
+		positiveTagMapping: {
+			重油: '火焰的燃烧',
+			灼热: '比火焰炽热',
+			辣: '火辣辣的感觉',
+		},
 	},
 	{
 		id: 3000,
@@ -1032,9 +1027,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			高级: '混到船长地位',
-			饱腹: '连船舵都转不动',
-			鲜: '保质期一小时',
+			鲜: '食物的保质期',
 			特产: '食物的相逢',
 		},
 	},
@@ -1070,8 +1063,8 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			鲜: '腐肉吃得够多了',
-			适合拍照: '对我拍个不停',
+			鲜: '腐肉',
+			适合拍照: '拍个不停',
 		},
 	},
 	{
@@ -1106,7 +1099,6 @@ export const CUSTOMER_RARE_LIST = [
 		},
 		positiveTagMapping: {
 			和风: '吾之时代',
-			燃起来了: '内心燃烧',
 		},
 	},
 	{
@@ -1142,8 +1134,8 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			素: '满嘴荤腥',
 			中华: '我的家乡',
-			小巧: '宵夜宜少',
-			特产: '各地美食',
+			小巧: '宵夜的份量',
+			特产: '吃遍各地美食',
 		},
 	},
 	{
@@ -1176,8 +1168,6 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			家常: '孤独守护千年',
-			重油: '成为亡灵之后都能吃',
 			饱腹: '就用肚子来装',
 			和风: '过去吃过的',
 			烧烤: '被雷劈过一样',
@@ -1230,6 +1220,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
+			下酒: '有酒无菜',
 			适合拍照: '入我相机',
 		},
 	},
@@ -1265,10 +1256,11 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			甜: '毒的基础是甜',
+			甜: '毒最基础的味道',
 			凉爽: '不能受热',
 			菌类: '森林里疯长的',
-			梦幻: '故意中毒',
+			梦幻: '追求奇妙的体验',
+			毒: '最上乘的调味品',
 		},
 	},
 	{
@@ -1344,7 +1336,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			灼热: '滋滋冒气',
 			不可思议: '不可能实现',
-			燃起来了: '弱者颠覆强者',
+			燃起来了: '颠覆强者',
 		},
 	},
 	{
@@ -1379,9 +1371,9 @@ export const CUSTOMER_RARE_LIST = [
 		},
 		positiveTagMapping: {
 			传说: '充满勇气的故事',
-			和风: '小人的祖先',
-			适合拍照: '和别人分享',
-			小巧: '看我的样子',
+			和风: '名神的后裔',
+			适合拍照: '跟别人分享',
+			小巧: '我的食量',
 		},
 	},
 	{
@@ -1417,7 +1409,7 @@ export const CUSTOMER_RARE_LIST = [
 		},
 		positiveTagMapping: {
 			肉: '人家是狼',
-			和风: '本州狼',
+			和风: '本州风格',
 			凉爽: '从胃里降温',
 		},
 	},
@@ -1453,8 +1445,8 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			山珍: '月都如果有山',
-			海味: '静海不那么死气沉沉',
+			山珍: '月之都如果有山',
+			海味: '不那么死气沉沉',
 			中华: '月兔也是仙子',
 			小巧: '兔子的胃很小',
 			特产: '无法抵达的地方',
@@ -1492,7 +1484,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			素: '吃草助消化',
+			素: '吃草帮助消化',
 			和风: '喜欢上和歌了',
 			凉爽: '好热',
 			文化底蕴: '料理里的故事',
@@ -1531,8 +1523,8 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			高级: '月之民不食糟糠',
 			传说: '令后人传诵的功绩',
-			灼热: '不要让血冷下来',
-			小巧: '锻炼不宜多吃',
+			灼热: '不要让血液冷下来',
+			小巧: '锻炼不宜吃太多',
 		},
 	},
 	{
@@ -1600,7 +1592,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			鲜: '陈腐东西不能入口',
+			鲜: '陈腐的东西不能入口',
 			生: '最原始的味道',
 			力量涌现: '激活身体和思维',
 		},
@@ -1684,7 +1676,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			鲜: '嘴很刁',
+			饱腹: '不能吃不饱',
 		},
 	},
 	{
@@ -1975,10 +1967,10 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			饱腹: '无限胃袋',
-			鲜: '不要馊掉了',
-			生: '血淋淋',
-			[TAG_LARGE_PARTITION]: '指缝都塞不满',
+			饱腹: '无限的胃袋',
+			鲜: '馊掉的东西',
+			生: '血淋淋的食物',
+			[TAG_LARGE_PARTITION]: '指头缝都塞不满',
 		},
 	},
 	{
@@ -2028,7 +2020,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {
-			不可思议: '永远猜不到我想要什么',
+			不可思议: '永远猜不到我想要的是什么',
 		},
 	},
 	{
