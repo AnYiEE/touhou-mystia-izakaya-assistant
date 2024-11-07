@@ -20,7 +20,7 @@ import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
 import {LABEL_DLC_0} from '@/data';
-import {customerRareStore as customerStore, globalStore} from '@/stores';
+import {globalStore as store} from '@/stores';
 import {pinyinSort} from '@/utils';
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
@@ -42,9 +42,7 @@ export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function SideFilterIconButton({className, selectConfig, ...props}, ref) {
 		const vibrate = useVibrate();
 
-		const isHighAppearance = globalStore.persistence.highAppearance.use();
-
-		const instance_special = customerStore.instances.customer_special.get();
+		const isHighAppearance = store.persistence.highAppearance.use();
 
 		const hasFilter = useMemo(() => selectConfig.some(({selectedKeys}) => selectedKeys.length > 0), [selectConfig]);
 
@@ -143,15 +141,7 @@ export default memo(
 												<span className="inline-flex items-center">
 													{spriteTarget.startsWith('customer') ? (
 														<Sprite
-															target={
-																spriteTarget === 'customer_rare' &&
-																instance_special.findIndexByName(
-																	value as string,
-																	true
-																) !== -1
-																	? 'customer_special'
-																	: spriteTarget
-															}
+															target={spriteTarget}
 															name={value as never}
 															size={1.5}
 															className={twJoin(

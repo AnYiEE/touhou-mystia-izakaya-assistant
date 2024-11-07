@@ -1,8 +1,6 @@
 import {isObjectLike, sortBy} from 'lodash';
 
-import {type ICurrentCustomer} from '@/(pages)/customer-rare/types';
-
-import {ORNAMENT_LIST, type TOrnamentNames, type TOrnaments} from '@/data';
+import {ORNAMENT_LIST, type TCustomerRareNames, type TOrnamentNames, type TOrnaments} from '@/data';
 import {Item} from '@/utils/item';
 
 type TBondOrnaments = {
@@ -13,7 +11,7 @@ type TBondOrnaments = {
 export class Ornament extends Item<TOrnaments> {
 	private static _instance: Ornament | undefined;
 
-	private static _bondOrnamentsCache = new Map<ICurrentCustomer['name'], TBondOrnaments>();
+	private static _bondOrnamentsCache = new Map<TCustomerRareNames, TBondOrnaments>();
 
 	public static getInstance() {
 		if (Ornament._instance) {
@@ -30,15 +28,15 @@ export class Ornament extends Item<TOrnaments> {
 	/**
 	 * @description Get the ornaments for a customer based on their bond level.
 	 */
-	public getBondOrnaments(customerData: ICurrentCustomer) {
-		if (Ornament._bondOrnamentsCache.has(customerData.name)) {
-			return Ornament._bondOrnamentsCache.get(customerData.name);
+	public getBondOrnaments(customerName: TCustomerRareNames) {
+		if (Ornament._bondOrnamentsCache.has(customerName)) {
+			return Ornament._bondOrnamentsCache.get(customerName);
 		}
 
 		let bondOrnaments: TBondOrnaments = [];
 
 		this._data.forEach(({from, name}) => {
-			if (isObjectLike(from) && from.name === customerData.name) {
+			if (isObjectLike(from) && from.name === customerName) {
 				bondOrnaments.push({
 					level: from.level,
 					name,
@@ -48,7 +46,7 @@ export class Ornament extends Item<TOrnaments> {
 
 		bondOrnaments = sortBy(bondOrnaments, 'level');
 
-		Ornament._bondOrnamentsCache.set(customerData.name, bondOrnaments);
+		Ornament._bondOrnamentsCache.set(customerName, bondOrnaments);
 
 		return bondOrnaments;
 	}

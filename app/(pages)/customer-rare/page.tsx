@@ -37,7 +37,7 @@ import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkArrayContainsOf, checkArraySubsetOf} from '@/utils';
 
 export default function CustomerRare() {
-	customerStore.shared.customer.data.onChange(() => {
+	customerStore.shared.customer.name.onChange(() => {
 		customerStore.refreshCustomerSelectedItems();
 		customerStore.refreshAllSelectedItems();
 	});
@@ -67,15 +67,12 @@ export default function CustomerRare() {
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 	const isShowTachie = globalStore.persistence.tachie.use();
 
-	const currentCustomerData = customerStore.shared.customer.data.use();
+	const currentCustomerName = customerStore.shared.customer.name.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 
-	const instance_rare = customerStore.instances.customer_rare.get();
-	const instance_special = customerStore.instances.customer_special.get();
+	const instance_customer = customerStore.instances.customer.get();
 
-	const rareNames = customerStore.rareNames.use();
-	const specialNames = customerStore.specialNames.use();
-	const allCustomerNames = useMemo(() => [...rareNames, ...specialNames], [rareNames, specialNames]);
+	const allCustomerNames = customerStore.customerNames.use();
 	const allCustomerDlcs = customerStore.customer.dlcs.get();
 	const allCustomerPlaces = customerStore.customer.places.get();
 
@@ -84,9 +81,7 @@ export default function CustomerRare() {
 	const customerSearchValue = customerStore.persistence.customer.searchValue.use();
 	const throttledCustomerSearchValue = useThrottle(customerSearchValue);
 
-	const rareSearchResult = useSearchResult(instance_rare, throttledCustomerSearchValue);
-	const specialSearchResult = useSearchResult(instance_special, throttledCustomerSearchValue);
-	type TSearchResult = typeof rareSearchResult | typeof specialSearchResult;
+	const customerSearchResult = useSearchResult(instance_customer, throttledCustomerSearchValue);
 
 	const customerFilterDlcs = customerStore.persistence.customer.filters.dlcs.use();
 	const customerFilterPlaces = customerStore.persistence.customer.filters.places.use();
@@ -94,9 +89,9 @@ export default function CustomerRare() {
 	const customerFilterIncludes = customerStore.persistence.customer.filters.includes.use();
 	const customerFilterExcludes = customerStore.persistence.customer.filters.excludes.use();
 
-	const customerFilter = useCallback(
-		function customerFilter<T extends TSearchResult>(target: T) {
-			return target.filter(({name, dlc, places}) => {
+	const customerFilteredData = useMemo(
+		() =>
+			customerSearchResult.filter(({name, dlc, places}) => {
 				if (customerFilterIncludes.length > 0) {
 					const result = customerFilterIncludes.includes(name);
 					if (result) {
@@ -113,33 +108,18 @@ export default function CustomerRare() {
 					customerFilterNoPlaces.length > 0 ? !checkArrayContainsOf(customerFilterNoPlaces, places) : true;
 
 				return isNameExcludesMatched && isDlcMatched && isPlaceMatched && isNoPlaceMatched;
-			}) as unknown as T;
-		},
+			}),
 		[
 			customerFilterDlcs,
 			customerFilterExcludes,
 			customerFilterIncludes,
 			customerFilterNoPlaces,
 			customerFilterPlaces,
+			customerSearchResult,
 		]
 	);
 
-	const rareFilteredData = useMemo(() => customerFilter(rareSearchResult), [customerFilter, rareSearchResult]);
-	const specialFilteredData = useMemo(
-		() => customerFilter(specialSearchResult),
-		[customerFilter, specialSearchResult]
-	);
-
-	const rareSortedData = useSortedData(instance_rare, rareFilteredData, customerPinyinSortState);
-	const specialSortedData = useSortedData(instance_special, specialFilteredData, customerPinyinSortState);
-	const customerSortedData = useMemo(
-		() =>
-			({
-				customer_rare: rareSortedData,
-				customer_special: specialSortedData,
-			}) as const,
-		[rareSortedData, specialSortedData]
-	);
+	const customerSortedData = useSortedData(instance_customer, customerFilteredData, customerPinyinSortState);
 
 	const customerPinyinSortConfig = usePinyinSortConfig(
 		customerPinyinSortState,
@@ -326,7 +306,7 @@ export default function CustomerRare() {
 		return (
 			<>
 				<Loading />
-				<FakeNameContent instance={instance_rare} />
+				<FakeNameContent instance={instance_customer} />
 			</>
 		);
 	}
@@ -335,7 +315,7 @@ export default function CustomerRare() {
 		<div
 			className={twJoin(
 				'flex flex-col gap-4 overflow-auto scrollbar-hide xl:grid xl:grid-cols-2 xl:justify-items-center',
-				currentCustomerData && 'md:flex-col-reverse'
+				currentCustomerName && 'md:flex-col-reverse'
 			)}
 		>
 			<div className="px-2 xl:w-full xl:px-0 xl:pt-2">
@@ -352,14 +332,14 @@ export default function CustomerRare() {
 					<Tab key="customer" title="稀客" className="relative flex flex-col">
 						<CustomerTabContent customerTabStyle={customerTabStyle} sortedData={customerSortedData} />
 					</Tab>
-					<Tab isDisabled={currentCustomerData === null} key="recipe" title="料理">
+					<Tab isDisabled={currentCustomerName === null} key="recipe" title="料理">
 						<RecipeTabContent />
 					</Tab>
-					<Tab isDisabled={currentCustomerData === null} key="beverage" title="酒水">
+					<Tab isDisabled={currentCustomerName === null} key="beverage" title="酒水">
 						<BeverageTabContent />
 					</Tab>
 					<Tab
-						isDisabled={currentCustomerData === null || currentRecipeData === null}
+						isDisabled={currentCustomerName === null || currentRecipeData === null}
 						key="ingredient"
 						title="食材"
 						className="px-0"
@@ -373,7 +353,7 @@ export default function CustomerRare() {
 			</div>
 
 			<div className="flex flex-grow flex-col gap-4 p-2 pt-0 md:pb-0 md:pt-2 xl:w-full xl:pb-2">
-				{currentCustomerData ? (
+				{currentCustomerName ? (
 					<>
 						<CustomerCard />
 						<ResultCard />
@@ -416,12 +396,9 @@ export default function CustomerRare() {
 			{isShowTachie && breakpoint === 'tachie' && (
 				<Tachie
 					aria-hidden
-					alt={currentCustomerData?.name ?? '夜雀服'}
-					src={(currentCustomerData?.target === 'customer_special'
-						? instance_special
-						: instance_rare
-					).getTachiePath(currentCustomerData)}
-					width={currentCustomerData?.target === 'customer_special' ? 60 : 120}
+					alt={currentCustomerName ?? '夜雀服'}
+					src={instance_customer.getTachiePath(currentCustomerName)}
+					width={currentCustomerName === '蹦蹦跳跳的三妖精' || currentCustomerName === '萌澄果' ? 60 : 120}
 					className="pointer-events-none fixed bottom-0 right-0 pr-2"
 				/>
 			)}

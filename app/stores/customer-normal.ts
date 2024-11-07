@@ -636,10 +636,10 @@ export const customerNormalStore = store(state, {
 			currentStore.shared.beverage.page.set(1);
 			currentStore.shared.ingredient.filterVisibility.set(false);
 			if (currentStore.shared.tab.get() === 'ingredient') {
-				if (currentStore.shared.customer.name.get()) {
-					currentStore.shared.tab.set('recipe');
-				} else {
+				if (currentStore.shared.customer.name.get() === null) {
 					currentStore.shared.tab.set('customer');
+				} else {
+					currentStore.shared.tab.set('recipe');
 				}
 			}
 		},

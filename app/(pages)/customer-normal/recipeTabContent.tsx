@@ -155,10 +155,10 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 		});
 
 		if (
-			!hasNameFilter &&
-			selectedDlcs.size === 0 &&
 			selectedCookers.size === 0 &&
-			selectedCustomerPositiveTags.size === 0
+			selectedCustomerPositiveTags.size === 0 &&
+			selectedDlcs.size === 0 &&
+			!hasNameFilter
 		) {
 			return dataWithRealSuitability;
 		}

@@ -1,9 +1,7 @@
 import {isObjectLike} from 'lodash';
 
-import {type ICurrentCustomer} from '@/(pages)/customer-rare/types';
-
 import {siteConfig} from '@/configs';
-import {CLOTHES_LIST, type TClothes, type TClothesNames} from '@/data';
+import {CLOTHES_LIST, type TClothes, type TClothesNames, type TCustomerRareNames} from '@/data';
 import {processPinyin} from '@/utils';
 import {Item} from '@/utils/item';
 
@@ -12,7 +10,7 @@ const {cdnUrl} = siteConfig;
 export class Clothes extends Item<TClothes> {
 	private static _instance: Clothes | undefined;
 
-	private static _bondClothesCache = new Map<ICurrentCustomer['name'], TClothesNames | null>();
+	private static _bondClothesCache = new Map<TCustomerRareNames, TClothesNames | null>();
 	private static _tachiePathCache = new Map<TClothesNames, string>();
 
 	public static getInstance() {
@@ -30,22 +28,22 @@ export class Clothes extends Item<TClothes> {
 	/**
 	 * @description Get the clothes for a customer based on their bond level.
 	 */
-	public getBondClothes(customerData: ICurrentCustomer) {
-		if (Clothes._bondClothesCache.has(customerData.name)) {
-			return Clothes._bondClothesCache.get(customerData.name);
+	public getBondClothes(customerName: TCustomerRareNames) {
+		if (Clothes._bondClothesCache.has(customerName)) {
+			return Clothes._bondClothesCache.get(customerName);
 		}
 
 		let bondClothes: TClothesNames | null = null;
 
 		this._data.forEach(({from, name}) => {
 			from.forEach((item) => {
-				if (isObjectLike(item) && 'bond' in item && item.bond === customerData.name) {
+				if (isObjectLike(item) && 'bond' in item && item.bond === customerName) {
 					bondClothes = name;
 				}
 			});
 		});
 
-		Clothes._bondClothesCache.set(customerData.name, bondClothes);
+		Clothes._bondClothesCache.set(customerName, bondClothes);
 
 		return bondClothes;
 	}

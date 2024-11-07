@@ -11,8 +11,6 @@ import {
 	type TCustomerNormals,
 	type TCustomerRareNames,
 	type TCustomerRares,
-	type TCustomerSpecialNames,
-	type TCustomerSpecials,
 	type TIngredientNames,
 	type TIngredients,
 	type TOrnamentNames,
@@ -30,7 +28,6 @@ export type TSpriteTarget =
 	| 'currency'
 	| 'customer_normal'
 	| 'customer_rare'
-	| 'customer_special'
 	| 'ingredient'
 	| 'ornament'
 	| 'partner'
@@ -48,28 +45,25 @@ export type TSpriteData<T extends TSpriteTarget = string> = T extends 'beverage'
 					? TCustomerNormals
 					: T extends 'customer_rare'
 						? TCustomerRares
-						: T extends 'customer_special'
-							? TCustomerSpecials
-							: T extends 'ingredient'
-								? TIngredients
-								: T extends 'ornament'
-									? TOrnaments
-									: T extends 'partner'
-										? TPartners
-										: T extends 'recipe'
-											? TRecipes
-											:
-													| TBeverages
-													| TClothes
-													| TCookers
-													| TCurrencies
-													| TCustomerNormals
-													| TCustomerRares
-													| TCustomerSpecials
-													| TIngredients
-													| TOrnaments
-													| TPartners
-													| TRecipes;
+						: T extends 'ingredient'
+							? TIngredients
+							: T extends 'ornament'
+								? TOrnaments
+								: T extends 'partner'
+									? TPartners
+									: T extends 'recipe'
+										? TRecipes
+										:
+												| TBeverages
+												| TClothes
+												| TCookers
+												| TCurrencies
+												| TCustomerNormals
+												| TCustomerRares
+												| TIngredients
+												| TOrnaments
+												| TPartners
+												| TRecipes;
 
 export type TSpriteNames<T extends TSpriteTarget = string> = T extends 'beverage'
 	? TBeverageNames
@@ -83,28 +77,25 @@ export type TSpriteNames<T extends TSpriteTarget = string> = T extends 'beverage
 					? TCustomerNormalNames
 					: T extends 'customer_rare'
 						? TCustomerRareNames
-						: T extends 'customer_special'
-							? TCustomerSpecialNames
-							: T extends 'ingredient'
-								? TIngredientNames
-								: T extends 'ornament'
-									? TOrnamentNames
-									: T extends 'partner'
-										? TPartnerNames
-										: T extends 'recipe'
-											? TRecipeNames
-											:
-													| TBeverageNames
-													| TClothesNames
-													| TCookerNames
-													| TCurrencyNames
-													| TCustomerNormalNames
-													| TCustomerRareNames
-													| TCustomerSpecialNames
-													| TIngredientNames
-													| TOrnamentNames
-													| TPartnerNames
-													| TRecipeNames;
+						: T extends 'ingredient'
+							? TIngredientNames
+							: T extends 'ornament'
+								? TOrnamentNames
+								: T extends 'partner'
+									? TPartnerNames
+									: T extends 'recipe'
+										? TRecipeNames
+										:
+												| TBeverageNames
+												| TClothesNames
+												| TCookerNames
+												| TCurrencyNames
+												| TCustomerNormalNames
+												| TCustomerRareNames
+												| TIngredientNames
+												| TOrnamentNames
+												| TPartnerNames
+												| TRecipeNames;
 
 export interface ISpriteConfig {
 	col: number;

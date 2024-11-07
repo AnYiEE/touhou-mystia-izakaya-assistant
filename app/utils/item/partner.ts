@@ -1,7 +1,5 @@
-import {type ICurrentCustomer} from '@/(pages)/customer-rare/types';
-
 import {siteConfig} from '@/configs';
-import {PARTNER_LIST, type TPartnerNames, type TPartners} from '@/data';
+import {PARTNER_LIST, type TCustomerRareNames, type TPartnerNames, type TPartners} from '@/data';
 import {processPinyin} from '@/utils';
 import {Item} from '@/utils/item';
 
@@ -10,7 +8,7 @@ const {cdnUrl} = siteConfig;
 export class Partner extends Item<TPartners> {
 	private static _instance: Partner | undefined;
 
-	private static _bondPartnerCache = new Map<ICurrentCustomer['name'], TPartnerNames | null>();
+	private static _bondPartnerCache = new Map<TCustomerRareNames, TPartnerNames | null>();
 	private static _tachiePathCache = new Map<TPartnerNames, string>();
 
 	public static getInstance() {
@@ -28,20 +26,20 @@ export class Partner extends Item<TPartners> {
 	/**
 	 * @description Get the partner for a customer based on their bond level.
 	 */
-	public getBondPartner(customerData: ICurrentCustomer) {
-		if (Partner._bondPartnerCache.has(customerData.name)) {
-			return Partner._bondPartnerCache.get(customerData.name);
+	public getBondPartner(customerName: TCustomerRareNames) {
+		if (Partner._bondPartnerCache.has(customerName)) {
+			return Partner._bondPartnerCache.get(customerName);
 		}
 
 		let bondPartner: TPartnerNames | null = null;
 
 		this._data.forEach(({belong, name}) => {
-			if ((belong as ICurrentCustomer['name'][] | null)?.includes(customerData.name)) {
+			if ((belong as TCustomerRareNames[] | null)?.includes(customerName)) {
 				bondPartner = name;
 			}
 		});
 
-		Partner._bondPartnerCache.set(customerData.name, bondPartner);
+		Partner._bondPartnerCache.set(customerName, bondPartner);
 
 		return bondPartner;
 	}

@@ -5,7 +5,6 @@ import {
 	type Currency,
 	type CustomerNormal,
 	type CustomerRare,
-	type CustomerSpecial,
 	type Ingredient,
 	type Ornament,
 	type Partner,
@@ -19,7 +18,6 @@ export type TItemInstance =
 	| Currency
 	| CustomerNormal
 	| CustomerRare
-	| CustomerSpecial
 	| Ingredient
 	| Ornament
 	| Partner

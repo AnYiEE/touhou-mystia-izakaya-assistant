@@ -6,7 +6,6 @@ export * from './cookers';
 export * from './currencies';
 export * from './customer_normal';
 export * from './customer_rare';
-export * from './customer_special';
 export * from './ingredients';
 export * from './ornaments';
 export * from './partners';
@@ -18,7 +17,6 @@ export type {TCookers, TCookerCategories, TCookerNames, TCookerTypes, ICooker} f
 export type {TCurrencies, TCurrencyNames, ICurrency} from './currencies/types';
 export type {TCustomerNormals, TCustomerNormalNames, ICustomerNormal} from './customer_normal/types';
 export type {TCustomerRares, TCustomerRareNames, ICustomerRare} from './customer_rare/types';
-export type {TCustomerSpecials, TCustomerSpecialNames, ICustomerSpecial} from './customer_special/types';
 export type {TIngredients, TIngredientNames, TIngredientTypes, IIngredient} from './ingredients/types';
 export type {TOrnaments, TOrnamentNames, IOrnament} from './ornaments/types';
 export type {TPartners, TPartnerNames, IPartner} from './partners/types';
@@ -26,8 +24,7 @@ export type {TRecipes, TRecipeNames, IRecipe} from './recipes/types';
 
 export type TCustomer =
 	| import('./customer_normal/types').TCustomerNormals
-	| import('./customer_rare/types').TCustomerRares
-	| import('./customer_special/types').TCustomerSpecials;
+	| import('./customer_rare/types').TCustomerRares;
 
 export type TFood =
 	| import('./beverages/types').TBeverages
@@ -45,8 +42,7 @@ export type TItems =
 
 export type TCustomerNames =
 	| import('./customer_normal/types').TCustomerNormalNames
-	| import('./customer_rare/types').TCustomerRareNames
-	| import('./customer_special/types').TCustomerSpecialNames;
+	| import('./customer_rare/types').TCustomerRareNames;
 
 export type TFoodNames =
 	| import('./beverages/types').TBeverageNames

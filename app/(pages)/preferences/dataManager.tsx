@@ -366,7 +366,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 										customerRareStore.persistence.customer.orderLinkedFilter.get()
 									);
 									customerRareStore.persistence.customer.orderLinkedFilter.set(true);
-									customerRareStore.shared.customer.data.set(null);
+									customerRareStore.shared.customer.name.set(null);
 									customerRareStore.shared.tab.set('customer');
 									customerRareStore.shared.customer.filterVisibility.set(true);
 									customerRareStore.persistence.ingredient.filters.set((prev) => {

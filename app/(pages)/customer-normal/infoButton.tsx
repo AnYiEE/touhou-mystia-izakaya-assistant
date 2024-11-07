@@ -9,11 +9,11 @@ import {customerNormalStore as store} from '@/stores';
 export default function InfoButton() {
 	const currentCustomerName = store.shared.customer.name.use();
 
+	const instance_customer = store.instances.customer.get();
+
 	if (currentCustomerName === null) {
 		return null;
 	}
-
-	const instance_customer = store.instances.customer.get();
 
 	const {description: currentCustomerDescription, id: currentCustomerId} =
 		instance_customer.getPropsByName(currentCustomerName);

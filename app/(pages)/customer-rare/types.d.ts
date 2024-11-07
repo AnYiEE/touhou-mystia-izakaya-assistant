@@ -1,15 +1,7 @@
 import {type AvatarProps, type SortDescriptor} from '@nextui-org/react';
 
 import {type TabVisibilityState} from './constants';
-import {type TCustomerRareNames, type TCustomerSpecialNames} from '@/data';
 import {type Beverage, type Recipe} from '@/utils';
-
-export type TCustomerTarget = 'customer_rare' | 'customer_special';
-
-export interface ICurrentCustomer {
-	name: TCustomerRareNames | TCustomerSpecialNames;
-	target: TCustomerTarget;
-}
 
 export type TCustomerRating = '极度不满' | '不满' | '普通' | '满意' | '完美';
 

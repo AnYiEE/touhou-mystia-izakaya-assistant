@@ -6,7 +6,6 @@ import {faCaretDown, faCaretUp} from '@fortawesome/free-solid-svg-icons';
 import {type TTableColumns as TBeverageTableColumns} from './beverageTabContent';
 import {type TTableColumns as TRecipeTableColumns} from './recipeTabContent';
 import type {ICustomerRatingMap, ICustomerTabStyleMap, IIngredientsTabStyleMap} from './types';
-import {CUSTOMER_RARE_TAG_STYLE, CUSTOMER_SPECIAL_TAG_STYLE} from '@/data';
 
 export const customerTabStyleMap = {
 	collapse: {
@@ -45,11 +44,6 @@ export const ingredientTabStyleMap = {
 		},
 	},
 } as const satisfies IIngredientsTabStyleMap;
-
-export const customerTagStyleMap = {
-	customer_rare: CUSTOMER_RARE_TAG_STYLE,
-	customer_special: CUSTOMER_SPECIAL_TAG_STYLE,
-} as const;
 
 export const customerRatingColorMap = {
 	不满: 'secondary',

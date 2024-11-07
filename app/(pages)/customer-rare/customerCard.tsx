@@ -16,9 +16,8 @@ import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 import Tooltip from '@/components/tooltip';
 
-import {customerRatingColorMap, customerTagStyleMap} from './constants';
-import type {ICurrentCustomer} from './types';
-import {LABEL_DLC_0} from '@/data';
+import {customerRatingColorMap} from './constants';
+import {CUSTOMER_RARE_TAG_STYLE, LABEL_DLC_0, type TCustomerRareNames} from '@/data';
 import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, pinyinSort} from '@/utils';
@@ -28,7 +27,7 @@ interface IProps {}
 export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_props, ref) {
 	const vibrate = useVibrate();
 
-	const currentCustomerData = customerStore.shared.customer.data.use();
+	const currentCustomerName = customerStore.shared.customer.name.use();
 	const selectedCustomerBeverageTags = customerStore.shared.customer.beverageTags.use();
 	const selectedCustomerPositiveTags = customerStore.shared.customer.positiveTags.use();
 	const currentCustomerOrder = customerStore.shared.customer.order.use();
@@ -46,6 +45,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 	const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
 
 	const instance_beverage = customerStore.instances.beverage.get();
+	const instance_customer = customerStore.instances.customer.get();
 	const instance_ingredient = customerStore.instances.ingredient.get();
 	const instance_recipe = customerStore.instances.recipe.get();
 
@@ -85,7 +85,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 	}, [vibrate]);
 
 	const handleRefreshSelectedItems = useCallback(
-		(customerName: ICurrentCustomer['name']) => {
+		(customerName: TCustomerRareNames) => {
 			vibrate();
 			customerStore.refreshCustomerSelectedItems();
 			trackEvent(TrackCategory.Click, 'Reset Button', customerName);
@@ -184,13 +184,9 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 		[currentCustomerOrder, hasMystiaCooker, isDarkMatter, isOrderLinkedFilter]
 	);
 
-	if (currentCustomerData === null) {
+	if (currentCustomerName === null) {
 		return null;
 	}
-
-	const {name: currentCustomerName, target: currentCustomerTarget} = currentCustomerData;
-
-	const instance_customer = customerStore.instances[currentCustomerTarget as 'customer_rare'].get();
 
 	const {
 		dlc: currentCustomerDlc,
@@ -234,13 +230,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 											isBordered={Boolean(currentRating)}
 											color={avatarRatingColor}
 											radius="full"
-											icon={
-												<Sprite
-													target={currentCustomerTarget}
-													name={currentCustomerName}
-													size={4}
-												/>
-											}
+											icon={<Sprite target="customer_rare" name={currentCustomerName} size={4} />}
 											classNames={{
 												base: twJoin('h-12 w-12 lg:h-16 lg:w-16', currentRating && 'ring-4'),
 												icon: 'inline-table lg:inline-block',
@@ -324,7 +314,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 													]
 												: tag
 										}
-										tagStyle={customerTagStyleMap[currentCustomerTarget].positive}
+										tagStyle={CUSTOMER_RARE_TAG_STYLE.positive}
 										tagType="positive"
 										onClick={() => {
 											handleRecipeTagClick(tag);
@@ -360,7 +350,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 								<Tags.Tag
 									key={index}
 									tag={tag}
-									tagStyle={customerTagStyleMap[currentCustomerTarget].negative}
+									tagStyle={CUSTOMER_RARE_TAG_STYLE.negative}
 									tagType="negative"
 									className={twJoin(
 										'cursor-not-allowed p-1 leading-none',
@@ -384,7 +374,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 								>
 									<Tags.Tag
 										tag={tag}
-										tagStyle={customerTagStyleMap[currentCustomerTarget].beverage}
+										tagStyle={CUSTOMER_RARE_TAG_STYLE.beverage}
 										tagType="positive"
 										onClick={() => {
 											handleBeverageTagClick(tag);

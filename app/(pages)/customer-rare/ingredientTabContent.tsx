@@ -32,15 +32,14 @@ export default memo(
 	forwardRef<HTMLDivElement | null, IProps>(function IngredientTabContent({ingredientTabStyle, sortedData}, ref) {
 		const vibrate = useVibrate();
 
-		const currentCustomerData = customerStore.shared.customer.data.use();
+		const currentCustomerName = customerStore.shared.customer.name.use();
 		const currentCustomerPopular = customerStore.shared.customer.popular.use();
 		const currentRecipeData = customerStore.shared.recipe.data.use();
 		const isDarkMatter = customerStore.shared.customer.isDarkMatter.use();
 
 		const isHighAppearance = globalStore.persistence.highAppearance.use();
 
-		const instance_rare = customerStore.instances.customer_rare.get();
-		const instance_special = customerStore.instances.customer_special.get();
+		const instance_customer = customerStore.instances.customer.get();
 		const instance_ingredient = customerStore.instances.ingredient.get();
 		const instance_recipe = customerStore.instances.recipe.get();
 
@@ -72,19 +71,13 @@ export default memo(
 			[vibrate]
 		);
 
-		if (currentCustomerData === null || currentRecipeData === null) {
+		if (currentCustomerName === null || currentRecipeData === null) {
 			return null;
 		}
 
 		if (sortedData.length === 0) {
 			return <Placeholder className="pt-4 md:min-h-40 md:pt-0">数据为空</Placeholder>;
 		}
-
-		const {target, name: currentCustomerName} = currentCustomerData;
-
-		const instance_customer = (
-			target === 'customer_rare' ? instance_rare : instance_special
-		) as typeof instance_rare;
 
 		const {negativeTags: customerNegativeTags, positiveTags: customerPositiveTags} =
 			instance_customer.getPropsByName(currentCustomerName);

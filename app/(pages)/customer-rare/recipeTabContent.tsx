@@ -36,10 +36,10 @@ import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 import Tooltip from '@/components/tooltip';
 
-import {customerTagStyleMap, recipeTableColumns as tableColumns} from './constants';
+import {recipeTableColumns as tableColumns} from './constants';
 import {checkRecipeEasterEgg} from './evaluateMeal';
 import type {ITableColumn, ITableSortDescriptor, TRecipeWithSuitability, TRecipesWithSuitability} from './types';
-import {LABEL_DLC_0} from '@/data';
+import {CUSTOMER_RARE_TAG_STYLE, LABEL_DLC_0} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils';
 
@@ -57,7 +57,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
-	const currentCustomerData = customerStore.shared.customer.data.use();
+	const currentCustomerName = customerStore.shared.customer.name.use();
 	const currentCustomerPopular = customerStore.shared.customer.popular.use();
 	const selectedCustomerPositiveTags = customerStore.shared.customer.positiveTags.use();
 
@@ -65,8 +65,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 	const selectedDlcs = customerStore.shared.recipe.dlcs.use();
 	const selectedCookers = customerStore.shared.recipe.cookers.use();
 
-	const instance_rare = customerStore.instances.customer_rare.get();
-	const instance_special = customerStore.instances.customer_special.get();
+	const instance_customer = customerStore.instances.customer.get();
 	const instance_recipe = customerStore.instances.recipe.get();
 
 	const allRecipeDlcs = customerStore.recipe.dlcs.get();
@@ -110,7 +109,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 	);
 
 	const filteredData = useMemo(() => {
-		if (currentCustomerData === null) {
+		if (currentCustomerName === null) {
 			return data.map((item) => ({
 				...item,
 				matchedNegativeTags: [] as string[],
@@ -118,12 +117,6 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 				suitability: 0,
 			}));
 		}
-
-		const {target, name: currentCustomerName} = currentCustomerData;
-
-		const instance_customer = (
-			target === 'customer_rare' ? instance_rare : instance_special
-		) as typeof instance_rare;
 
 		const {negativeTags: customerNegativeTags, positiveTags: customerPositiveTags} =
 			instance_customer.getPropsByName(currentCustomerName);
@@ -196,12 +189,11 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 	}, [
 		calculateTagsWithPopular,
 		composeTagsWithPopular,
-		currentCustomerData,
+		currentCustomerName,
 		data,
 		hasNameFilter,
-		instance_rare,
+		instance_customer,
 		instance_recipe,
-		instance_special,
 		searchValue,
 		selectedCookers,
 		selectedCustomerPositiveTags,
@@ -265,15 +257,14 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 				matchedPositiveTags,
 			} = recipeData;
 
-			if (currentCustomerData === null) {
+			if (currentCustomerName === null) {
 				return null;
 			}
 
 			const composedRecipeTags = composeTagsWithPopular(ingredients, positiveTags);
 			const recipeTagsWithPopular = calculateTagsWithPopular(composedRecipeTags);
 
-			const {positive: positiveTagStyle, negative: negativeTagStyle} =
-				customerTagStyleMap[currentCustomerData.target];
+			const {positive: positiveTagStyle, negative: negativeTagStyle} = CUSTOMER_RARE_TAG_STYLE;
 
 			const tags = (
 				<TagGroup>
@@ -431,7 +422,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 				}
 			}
 		},
-		[calculateTagsWithPopular, composeTagsWithPopular, currentCustomerData, openWindow, vibrate]
+		[calculateTagsWithPopular, composeTagsWithPopular, currentCustomerName, openWindow, vibrate]
 	);
 
 	const tableToolbar = useMemo(

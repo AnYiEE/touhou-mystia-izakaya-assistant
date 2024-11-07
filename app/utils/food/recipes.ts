@@ -1,7 +1,5 @@
 import {cloneDeep, isObjectLike, sortBy} from 'lodash';
 
-import {type ICurrentCustomer} from '@/(pages)/customer-rare/types';
-
 import {Food} from './base';
 import {Ingredient} from './ingredients';
 import {
@@ -13,6 +11,7 @@ import {
 	TAG_LARGE_PARTITION,
 	TAG_POPULAR_NEGATIVE,
 	TAG_POPULAR_POSITIVE,
+	type TCustomerRareNames,
 	type TIngredientNames,
 	type TRecipeNames,
 	type TRecipes,
@@ -42,7 +41,7 @@ export class Recipe extends Food<TRecipes> {
 		饱腹: '下酒',
 	} as const;
 
-	private static _bondRecipesCache = new Map<ICurrentCustomer['name'], TBondRecipes>();
+	private static _bondRecipesCache = new Map<TCustomerRareNames, TBondRecipes>();
 
 	private constructor(data: TRecipes) {
 		const clonedData = cloneDeep(data);
@@ -205,15 +204,15 @@ export class Recipe extends Food<TRecipes> {
 	/**
 	 * @description Get the recipes for a customer based on their bond level.
 	 */
-	public getBondRecipes(customerData: ICurrentCustomer) {
-		if (Recipe._bondRecipesCache.has(customerData.name)) {
-			return Recipe._bondRecipesCache.get(customerData.name);
+	public getBondRecipes(customerName: TCustomerRareNames) {
+		if (Recipe._bondRecipesCache.has(customerName)) {
+			return Recipe._bondRecipesCache.get(customerName);
 		}
 
 		let bondRecipes: TBondRecipes = [];
 
 		this._data.forEach(({from, name}) => {
-			if (isObjectLike(from) && 'bond' in from && from.bond.name === customerData.name) {
+			if (isObjectLike(from) && 'bond' in from && from.bond.name === customerName) {
 				bondRecipes.push({
 					level: from.bond.level,
 					name,
@@ -223,7 +222,7 @@ export class Recipe extends Food<TRecipes> {
 
 		bondRecipes = sortBy(bondRecipes, 'level');
 
-		Recipe._bondRecipesCache.set(customerData.name, bondRecipes);
+		Recipe._bondRecipesCache.set(customerName, bondRecipes);
 
 		return bondRecipes;
 	}

@@ -159,7 +159,7 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
-	const currentCustomerName = customerStore.shared.customer.data.use()?.name;
+	const currentCustomerName = customerStore.shared.customer.name.use();
 	const currentCustomerOrder = customerStore.shared.customer.order.use();
 	const currentBeverageName = customerStore.shared.beverage.name.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
@@ -174,7 +174,7 @@ export default forwardRef<HTMLDivElement | null, IResultCardProps>(function Resu
 	const saveButtonTooltipTimer = useRef<NodeJS.Timeout>();
 	const [isShowSaveButtonTooltip, setIsShowSaveButtonTooltip] = useState(false);
 	const isSaveButtonDisabled =
-		currentCustomerName === undefined ||
+		currentCustomerName === null ||
 		(currentCustomerOrder.beverageTag === null && !hasMystiaCooker) ||
 		(currentCustomerOrder.recipeTag === null && !hasMystiaCooker) ||
 		currentBeverageName === null ||

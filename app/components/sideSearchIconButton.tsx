@@ -17,7 +17,7 @@ import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
-import {customerRareStore as customerStore, globalStore} from '@/stores';
+import {globalStore as store} from '@/stores';
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
 export interface ISearchConfig {
@@ -41,9 +41,7 @@ export default memo(
 	) {
 		const vibrate = useVibrate();
 
-		const isHighAppearance = globalStore.persistence.highAppearance.use();
-
-		const instance_special = customerStore.instances.customer_special.get();
+		const isHighAppearance = store.persistence.highAppearance.use();
 
 		const handleInputChange = useCallback(
 			(value: string) => {
@@ -128,12 +126,7 @@ export default memo(
 									<span className="inline-flex items-center">
 										{spriteTarget.startsWith('customer') ? (
 											<Sprite
-												target={
-													spriteTarget === 'customer_rare' &&
-													instance_special.findIndexByName(value, true) !== -1
-														? 'customer_special'
-														: spriteTarget
-												}
+												target={spriteTarget}
 												name={value as never}
 												size={1.5}
 												className={twJoin(spriteTarget !== 'customer_normal' && 'rounded-full')}

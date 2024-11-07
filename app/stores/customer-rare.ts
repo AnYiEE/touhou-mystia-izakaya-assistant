@@ -8,7 +8,7 @@ import {TabVisibilityState, beverageTableColumns, recipeTableColumns} from '@/(p
 import {type TTableSortDescriptor as TBeverageTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
 import {evaluateMeal} from '@/(pages)/customer-rare/evaluateMeal';
 import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
-import type {ICurrentCustomer, TCustomerRating, TRecipe, TTab} from '@/(pages)/customer-rare/types';
+import type {TCustomerRating, TRecipe, TTab} from '@/(pages)/customer-rare/types';
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
@@ -19,7 +19,6 @@ import {
 	TAG_POPULAR_POSITIVE,
 	type TBeverageNames,
 	type TCustomerRareNames,
-	type TCustomerSpecialNames,
 	type TIngredientNames,
 	type TRecipeNames,
 } from '@/data';
@@ -31,7 +30,6 @@ import {
 	Clothes,
 	Cooker,
 	CustomerRare,
-	CustomerSpecial,
 	Ingredient,
 	Ornament,
 	Partner,
@@ -58,17 +56,11 @@ export interface IRecipeData {
 const instance_beverage = Beverage.getInstance();
 const instance_clothes = Clothes.getInstance();
 const instance_cooker = Cooker.getInstance();
+const instance_customer = CustomerRare.getInstance();
 const instance_ingredient = Ingredient.getInstance();
 const instance_ornament = Ornament.getInstance();
 const instance_partner = Partner.getInstance();
 const instance_recipe = Recipe.getInstance();
-const instance_rare = CustomerRare.getInstance();
-const instance_special = CustomerSpecial.getInstance();
-
-const rareDlcs = instance_rare.getValuesByProp(instance_rare.data, 'dlc').sort(numberSort);
-const rarePlaces = instance_rare.getValuesByProp(instance_rare.data, 'places').sort(pinyinSort);
-const specialDlcs = instance_special.getValuesByProp(instance_special.data, 'dlc').sort(numberSort);
-const specialPlaces = instance_special.getValuesByProp(instance_special.data, 'places').sort(pinyinSort);
 
 const storeVersion = {
 	initial: 0,
@@ -95,8 +87,7 @@ const state = {
 		beverage: instance_beverage,
 		clothes: instance_clothes,
 		cooker: instance_cooker,
-		customer_rare: instance_rare,
-		customer_special: instance_special,
+		customer: instance_customer,
 		ingredient: instance_ingredient,
 		ornament: instance_ornament,
 		partner: instance_partner,
@@ -109,8 +100,8 @@ const state = {
 		tags: instance_beverage.sortedTags.map(toValueObject),
 	},
 	customer: {
-		dlcs: union(rareDlcs, specialDlcs).map(toValueObject),
-		places: union(rarePlaces, specialPlaces).map(toValueObject),
+		dlcs: instance_customer.getValuesByProp(instance_customer.data, 'dlc', true).sort(numberSort),
+		places: instance_customer.getValuesByProp(instance_customer.data, 'places', true).sort(pinyinSort),
 	},
 	ingredient: {
 		dlcs: instance_ingredient.getValuesByProp(instance_ingredient.data, 'dlc', true).sort(numberSort),
@@ -190,7 +181,7 @@ const state = {
 		},
 
 		meals: {} as {
-			[key in TCustomerRareNames | TCustomerSpecialNames]?: {
+			[key in TCustomerRareNames]?: {
 				index: number;
 				hasMystiaCooker: boolean;
 				order: ICustomerOrder;
@@ -211,7 +202,7 @@ const state = {
 			sortDescriptor: {} as TBeverageTableSortDescriptor,
 		},
 		customer: {
-			data: null as ICurrentCustomer | null,
+			name: null as TCustomerRareNames | null,
 
 			beverageTags: new Set() as SelectionSet,
 			positiveTags: new Set() as SelectionSet,
@@ -442,8 +433,8 @@ export const customerRareStore = store(state, {
 	},
 })
 	.computed((currentStore) => ({
-		rareNames: () => getAllItemNames(instance_rare, currentStore.persistence.customer.pinyinSortState.use()),
-		specialNames: () => getAllItemNames(instance_special, currentStore.persistence.customer.pinyinSortState.use()),
+		customerNames: () =>
+			getAllItemNames(instance_customer, currentStore.persistence.customer.pinyinSortState.use()),
 
 		beverageTableColumns: {
 			read: () => new Set(currentStore.persistence.beverage.table.visibleColumns.use()) as SelectionSet,
@@ -515,9 +506,9 @@ export const customerRareStore = store(state, {
 				return tag;
 			});
 		},
-		onCustomerSelectedChange(customerData: ICurrentCustomer) {
-			currentStore.shared.customer.data.set(customerData);
-			trackEvent(TrackCategory.Select, 'Customer', customerData.name);
+		onCustomerSelectedChange(customerName: TCustomerRareNames) {
+			currentStore.shared.customer.name.set(customerName);
+			trackEvent(TrackCategory.Select, 'Customer', customerName);
 		},
 
 		onBeverageTableAction(beverageName: TBeverageNames) {
@@ -639,14 +630,10 @@ export const customerRareStore = store(state, {
 		},
 
 		evaluateMealResult() {
-			const customerData = currentStore.shared.customer.data.get();
-			if (customerData === null) {
+			const customerName = currentStore.shared.customer.name.get();
+			if (customerName === null) {
 				return;
 			}
-			const {name: customerName, target: customerTarget} = customerData;
-			const instance_customer = (
-				customerTarget === 'customer_rare' ? instance_rare : instance_special
-			) as typeof instance_rare;
 			const {
 				beverageTags: customerBeverageTags,
 				negativeTags: customerNegativeTags,
@@ -700,14 +687,10 @@ export const customerRareStore = store(state, {
 			popular: IPopularData;
 			recipeName: TRecipeNames;
 		}) {
-			const customerData = currentStore.shared.customer.data.get();
-			if (customerData === null) {
-				throw new ReferenceError('[stores/customer-rare/evaluateSavedMealResult]: `customerData` is null');
+			const customerName = currentStore.shared.customer.name.get();
+			if (customerName === null) {
+				throw new ReferenceError('[stores/customer-rare/evaluateSavedMealResult]: `customerName` is null');
 			}
-			const {name: customerName, target: customerTarget} = customerData;
-			const instance_customer = (
-				customerTarget === 'customer_rare' ? instance_rare : instance_special
-			) as typeof instance_rare;
 			const {
 				beverageTags: customerBeverageTags,
 				negativeTags: customerNegativeTags,
@@ -757,10 +740,10 @@ export const customerRareStore = store(state, {
 			trackEvent(TrackCategory.Unselect, 'Ingredient', ingredientName);
 		},
 		saveMealResult() {
-			const customerName = currentStore.shared.customer.data.get()?.name;
+			const customerName = currentStore.shared.customer.name.get();
 			const beverageName = currentStore.shared.beverage.name.get();
 			const recipeData = currentStore.shared.recipe.data.get();
-			if (customerName === undefined || beverageName === null || recipeData === null) {
+			if (customerName === null || beverageName === null || recipeData === null) {
 				return;
 			}
 			const {extraIngredients, name: recipeName} = recipeData;
@@ -806,7 +789,7 @@ export const customerRareStore = store(state, {
 			currentStore.shared.beverage.sortDescriptor.set({});
 		},
 		refreshCustomer() {
-			currentStore.shared.customer.data.set(null);
+			currentStore.shared.customer.name.set(null);
 			currentStore.shared.tab.set('customer');
 			currentStore.shared.customer.filterVisibility.set(true);
 			currentStore.shared.ingredient.filterVisibility.set(false);
@@ -828,10 +811,10 @@ export const customerRareStore = store(state, {
 			currentStore.shared.beverage.page.set(1);
 			currentStore.shared.ingredient.filterVisibility.set(false);
 			if (currentStore.shared.tab.get() === 'ingredient') {
-				if (currentStore.shared.customer.data.get()) {
-					currentStore.shared.tab.set('recipe');
-				} else {
+				if (currentStore.shared.customer.name.get() === null) {
 					currentStore.shared.tab.set('customer');
+				} else {
+					currentStore.shared.tab.set('recipe');
 				}
 			}
 		},

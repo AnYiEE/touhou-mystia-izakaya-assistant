@@ -1,8 +1,6 @@
 import {isObjectLike} from 'lodash';
 
-import {type ICurrentCustomer} from '@/(pages)/customer-rare/types';
-
-import {COOKER_LIST, type TCookerCategories, type TCookerNames, type TCookers} from '@/data';
+import {COOKER_LIST, type TCookerCategories, type TCookerNames, type TCookers, type TCustomerRareNames} from '@/data';
 import {checkArrayEqualOf} from '@/utils';
 import {Item} from '@/utils/item';
 
@@ -12,7 +10,7 @@ export class Cooker extends Item<TCookers> {
 	/** @description Flag to check if the categories are consistent with the original data. */
 	private static _isCategoriesChecked: boolean;
 
-	private static _bondCookerCache = new Map<ICurrentCustomer['name'], TCookerNames | null>();
+	private static _bondCookerCache = new Map<TCustomerRareNames, TCookerNames | null>();
 
 	public static getInstance() {
 		if (Cooker._instance) {
@@ -60,22 +58,22 @@ export class Cooker extends Item<TCookers> {
 	/**
 	 * @description Get the cooker for a customer based on their bond level.
 	 */
-	public getBondCooker(customerData: ICurrentCustomer) {
-		if (Cooker._bondCookerCache.has(customerData.name)) {
-			return Cooker._bondCookerCache.get(customerData.name);
+	public getBondCooker(customerName: TCustomerRareNames) {
+		if (Cooker._bondCookerCache.has(customerName)) {
+			return Cooker._bondCookerCache.get(customerName);
 		}
 
 		let bondCooker: TCookerNames | null = null;
 
 		this._data.forEach(({from, name}) => {
 			from.forEach((item) => {
-				if (isObjectLike(item) && 'bond' in item && item.bond === customerData.name) {
+				if (isObjectLike(item) && 'bond' in item && item.bond === customerName) {
 					bondCooker = name;
 				}
 			});
 		});
 
-		Cooker._bondCookerCache.set(customerData.name, bondCooker);
+		Cooker._bondCookerCache.set(customerName, bondCooker);
 
 		return bondCooker;
 	}

@@ -3,7 +3,6 @@ import {
 	DARK_MATTER_NAME,
 	DARK_MATTER_TAG,
 	type TCustomerRareNames,
-	type TCustomerSpecialNames,
 	type TIngredientNames,
 	type TRecipeNames,
 } from '@/data';
@@ -14,7 +13,7 @@ import {intersection, without} from '@/utils';
 interface IParameters {
 	currentBeverageTags: TBeverageTag[];
 	currentCustomerBeverageTags: TBeverageTag[];
-	currentCustomerName: TCustomerRareNames | TCustomerSpecialNames;
+	currentCustomerName: TCustomerRareNames;
 	currentCustomerNegativeTags: TRecipeTag[];
 	currentCustomerOrder: ICustomerOrder;
 	currentCustomerPositiveTags: TRecipeTag[];

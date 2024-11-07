@@ -35,9 +35,9 @@ import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 import Tooltip from '@/components/tooltip';
 
-import {customerTagStyleMap, beverageTableColumns as tableColumns} from './constants';
+import {beverageTableColumns as tableColumns} from './constants';
 import type {ITableColumn, ITableSortDescriptor, TBeverageWithSuitability, TBeveragesWithSuitability} from './types';
-import {LABEL_DLC_0} from '@/data';
+import {CUSTOMER_RARE_TAG_STYLE, LABEL_DLC_0} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils';
 
@@ -55,15 +55,14 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
-	const currentCustomerData = customerStore.shared.customer.data.use();
+	const currentCustomerName = customerStore.shared.customer.name.use();
 	const selectedCustomerBeverageTags = customerStore.shared.customer.beverageTags.use();
 
 	const currentBeverageName = customerStore.shared.beverage.name.use();
 	const selectedDlcs = customerStore.shared.beverage.dlcs.use();
 
-	const instance_rare = customerStore.instances.customer_rare.get();
-	const instance_special = customerStore.instances.customer_special.get();
 	const instance_beverage = customerStore.instances.beverage.get();
+	const instance_customer = customerStore.instances.customer.get();
 
 	const allBeverageNames = customerStore.beverage.names.get();
 	const allBeverageDlcs = customerStore.beverage.dlcs.get();
@@ -82,19 +81,13 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 	const filteredData = useMemo(() => {
 		const data = instance_beverage.data as TBeveragesWithSuitability;
 
-		if (currentCustomerData === null) {
+		if (currentCustomerName === null) {
 			return data.map((item) => ({
 				...item,
 				matchedTags: [] as string[],
 				suitability: 0,
 			}));
 		}
-
-		const {target, name: currentCustomerName} = currentCustomerData;
-
-		const instance_customer = (
-			target === 'customer_rare' ? instance_rare : instance_special
-		) as typeof instance_rare;
 
 		const beverageTags = instance_customer.getPropsByName(currentCustomerName, 'beverageTags');
 
@@ -131,11 +124,10 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 			return isNameMatched && isDlcMatched && isTagsMatched;
 		});
 	}, [
-		currentCustomerData,
+		currentCustomerName,
 		hasNameFilter,
 		instance_beverage,
-		instance_rare,
-		instance_special,
+		instance_customer,
 		searchValue,
 		selectedCustomerBeverageTags,
 		selectedDlcs,
@@ -183,11 +175,11 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 		(data: TBeverageWithSuitability, columnKey: TTableColumnKey) => {
 			const {name, price, suitability, matchedTags, tags: beverageTags} = data;
 
-			if (currentCustomerData === null) {
+			if (currentCustomerName === null) {
 				return null;
 			}
 
-			const {beverage: beverageTagStyle} = customerTagStyleMap[currentCustomerData.target];
+			const {beverage: beverageTagStyle} = CUSTOMER_RARE_TAG_STYLE;
 
 			const tags = (
 				<TagGroup>
@@ -290,7 +282,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 				}
 			}
 		},
-		[currentCustomerData, openWindow, vibrate]
+		[currentCustomerName, openWindow, vibrate]
 	);
 
 	const tableToolbar = useMemo(

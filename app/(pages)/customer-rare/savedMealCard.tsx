@@ -27,17 +27,15 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
-	const currentCustomerData = customerStore.shared.customer.data.use();
+	const currentCustomerName = customerStore.shared.customer.name.use();
 	const currentCustomerPopular = customerStore.shared.customer.popular.use();
 	const currentSavedMeals = customerStore.persistence.meals.use();
 
 	const instance_recipe = customerStore.instances.recipe.get();
 
-	if (currentCustomerData === null) {
+	if (currentCustomerName === null) {
 		return null;
 	}
-
-	const {name: currentCustomerName} = currentCustomerData;
 
 	if (currentSavedMeals[currentCustomerName] === undefined || currentSavedMeals[currentCustomerName].length === 0) {
 		return null;

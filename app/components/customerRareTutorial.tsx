@@ -16,7 +16,7 @@ export default function CustomerRareTutorial() {
 	const currentPathname = usePathname() as TSitePath;
 	const isTargetPage = currentPathname === pathname;
 
-	const currentCustomerName = customerStore.shared.customer.data.use()?.name;
+	const currentCustomerName = customerStore.shared.customer.name.use();
 	const currentCustomerOrder = customerStore.shared.customer.order.use();
 	const {beverageTag: currentOrderedBeverageTag, recipeTag: currentOrderedRecipeTag} = currentCustomerOrder;
 

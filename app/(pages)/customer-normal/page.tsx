@@ -321,7 +321,7 @@ export default function CustomerNormal() {
 					<Tab isDisabled={currentCustomerName === null} key="recipe" title="料理">
 						<RecipeTabContent />
 					</Tab>
-					<Tab isDisabled={!currentCustomerName} key="beverage" title="酒水">
+					<Tab isDisabled={currentCustomerName === null} key="beverage" title="酒水">
 						<BeverageTabContent />
 					</Tab>
 					<Tab

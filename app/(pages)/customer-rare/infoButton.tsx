@@ -31,21 +31,18 @@ const LevelLabel = memo<ILevelLabelProps>(function LevelLabel({level}) {
 export default function InfoButton() {
 	const openWindow = useViewInNewWindow();
 
-	const currentCustomerData = store.shared.customer.data.use();
-
-	if (currentCustomerData === null) {
-		return null;
-	}
+	const currentCustomerName = store.shared.customer.name.use();
 
 	const instance_clothes = store.instances.clothes.get();
 	const instance_cooker = store.instances.cooker.get();
+	const instance_customer = store.instances.customer.get();
 	const instance_ornament = store.instances.ornament.get();
 	const instance_partner = store.instances.partner.get();
 	const instance_recipe = store.instances.recipe.get();
 
-	const {name: currentCustomerName, target: currentCustomerTarget} = currentCustomerData;
-
-	const instance_customer = store.instances[currentCustomerTarget as 'customer_rare'].get();
+	if (currentCustomerName === null) {
+		return null;
+	}
 
 	const {
 		collection: currentCustomerCollection,
@@ -57,14 +54,14 @@ export default function InfoButton() {
 
 	const [currentCustomerMainPlace] = currentCustomerPlaces;
 
-	const bondClothes = instance_clothes.getBondClothes(currentCustomerData);
-	const bondCooker = instance_cooker.getBondCooker(currentCustomerData);
-	const bondPartner = instance_partner.getBondPartner(currentCustomerData);
+	const bondClothes = instance_clothes.getBondClothes(currentCustomerName);
+	const bondCooker = instance_cooker.getBondCooker(currentCustomerName);
+	const bondPartner = instance_partner.getBondPartner(currentCustomerName);
 
-	const bondOrnamentsData = instance_ornament.getBondOrnaments(currentCustomerData);
+	const bondOrnamentsData = instance_ornament.getBondOrnaments(currentCustomerName);
 	const {length: bondOrnamentsDataLength} = bondOrnamentsData;
 
-	const bondRecipesData = instance_recipe.getBondRecipes(currentCustomerData);
+	const bondRecipesData = instance_recipe.getBondRecipes(currentCustomerName);
 	const {length: bondRecipesDataLength} = bondRecipesData;
 
 	const hasBondRewards =
@@ -75,8 +72,14 @@ export default function InfoButton() {
 		bondRecipesDataLength > 0 ||
 		bondOrnamentsDataLength > 0;
 	const hasSpellCards = Object.keys(currentCustomerSpellCards).length > 0;
-	const hasNegativeSpellCards = hasSpellCards && (currentCustomerSpellCards.negative as unknown[]).length > 0;
-	const hasPositiveSpellCards = hasSpellCards && (currentCustomerSpellCards.positive as unknown[]).length > 0;
+	const hasNegativeSpellCards =
+		hasSpellCards &&
+		'negative' in currentCustomerSpellCards &&
+		(currentCustomerSpellCards.negative as unknown[]).length > 0;
+	const hasPositiveSpellCards =
+		hasSpellCards &&
+		'positive' in currentCustomerSpellCards &&
+		(currentCustomerSpellCards.positive as unknown[]).length > 0;
 
 	const getDefaultExpandedKeys = () => {
 		const defaultExpandedKeys = [];
