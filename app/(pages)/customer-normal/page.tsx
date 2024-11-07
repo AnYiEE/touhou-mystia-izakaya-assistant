@@ -277,10 +277,12 @@ export default function CustomerNormal() {
 
 	const onTabSelectionChange = useCallback(
 		(key: Key) => {
-			vibrate();
+			if (key !== selectedTabKey) {
+				vibrate();
+			}
 			customerStore.onTabSelectionChange(key);
 		},
-		[vibrate]
+		[selectedTabKey, vibrate]
 	);
 
 	const instance_clothes = customerStore.instances.clothes.get();
