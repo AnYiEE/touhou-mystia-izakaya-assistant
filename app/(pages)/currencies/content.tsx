@@ -16,9 +16,10 @@ import Tooltip from '@/components/tooltip';
 import {type ICurrency} from '@/data';
 // import {globalStore as store} from '@/stores';
 import {type Currency, checkA11yConfirmKey} from '@/utils';
+import type {TItemData} from '@/utils/types';
 
 interface IProps {
-	data: Currency['data'];
+	data: TItemData<Currency>;
 }
 
 export default memo<IProps>(function Content({data}) {

@@ -24,3 +24,4 @@ export type TItemInstance =
 	| Recipe;
 
 export type TItemData<T extends TItemInstance> = T['data'];
+export type TItemDataItem<T extends TItemInstance> = TItemData<T>[number];

@@ -10,10 +10,11 @@ import Sprite from '@/components/sprite';
 import type {ICustomerTabStyle} from './types';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {type CustomerRare, checkA11yConfirmKey} from '@/utils';
+import type {TItemData} from '@/utils/types';
 
 interface IProps {
 	customerTabStyle: ICustomerTabStyle;
-	sortedData: CustomerRare['data'];
+	sortedData: TItemData<CustomerRare>;
 }
 
 export default memo(

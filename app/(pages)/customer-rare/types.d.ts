@@ -2,6 +2,7 @@ import {type AvatarProps, type SortDescriptor} from '@nextui-org/react';
 
 import {type TabVisibilityState} from './constants';
 import {type Beverage, type Recipe} from '@/utils';
+import type {TItemDataItem} from '@/utils/types';
 
 export type TCustomerRating = '极度不满' | '不满' | '普通' | '满意' | '完美';
 
@@ -52,8 +53,7 @@ type TBeverageSuitability = {
 	suitability: number;
 };
 
-type TBeverages = Beverage['data'];
-type TBeverage = TBeverages[number];
+type TBeverage = TItemDataItem<Beverage>;
 export type TBeverageWithSuitability = TBeverage & TBeverageSuitability;
 export type TBeveragesWithSuitability = TBeverageWithSuitability[];
 
@@ -63,8 +63,7 @@ type TRecipeSuitability = {
 	suitability: number;
 };
 
-type TRecipes = Recipe['data'];
-export type TRecipe = TRecipes[number];
+export type TRecipe = TItemDataItem<Recipe>;
 export type TRecipeWithSuitability = TRecipe & TRecipeSuitability;
 export type TRecipesWithSuitability = TRecipeWithSuitability[];
 

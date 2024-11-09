@@ -17,6 +17,7 @@ import Tooltip from '@/components/tooltip';
 import {type ICooker, type TCookerCategories} from '@/data';
 // import {globalStore as store} from '@/stores';
 import {type Cooker, checkA11yConfirmKey} from '@/utils';
+import type {TItemData} from '@/utils/types';
 
 interface INameProps {
 	category: TCookerCategories;
@@ -37,7 +38,7 @@ const Name = memo<PropsWithChildren<INameProps>>(function Name({category, childr
 });
 
 interface IProps {
-	data: Cooker['data'];
+	data: TItemData<Cooker>;
 }
 
 export default memo<IProps>(function Content({data}) {

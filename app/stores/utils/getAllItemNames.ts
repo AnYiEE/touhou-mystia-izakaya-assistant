@@ -1,9 +1,9 @@
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import {type Item} from '@/utils/item';
-import type {TItemInstance} from '@/utils/types';
+import type {TItemDataItem, TItemInstance} from '@/utils/types';
 
-type TNames<T extends TItemInstance> = T['data'][number]['name'];
+type TNames<T extends TItemInstance> = TItemDataItem<T>['name'];
 type TNameObject<T extends TItemInstance> = {
 	value: TNames<T>;
 }[];

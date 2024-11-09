@@ -12,9 +12,10 @@ import Sprite from '@/components/sprite';
 
 // import {globalStore as store} from '@/stores';
 import {type Ornament} from '@/utils';
+import type {TItemData} from '@/utils/types';
 
 interface IProps {
-	data: Ornament['data'];
+	data: TItemData<Ornament>;
 }
 
 export default memo<IProps>(function Content({data}) {

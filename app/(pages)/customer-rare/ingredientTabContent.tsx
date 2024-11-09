@@ -22,10 +22,11 @@ import {
 import type {TIngredientTag, TRecipeTag} from '@/data/types';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {type Ingredient, type Recipe, checkA11yConfirmKey, intersection, toValueWithKey, union} from '@/utils';
+import type {TItemData, TItemDataItem} from '@/utils/types';
 
 interface IProps {
 	ingredientTabStyle: IIngredientsTabStyle;
-	sortedData: Ingredient['data'];
+	sortedData: TItemData<Ingredient>;
 }
 
 export default memo(
@@ -85,7 +86,7 @@ export default memo(
 		const {extraIngredients: currentRecipeExtraIngredients} = currentRecipeData;
 
 		// Checked `currentRecipe` is not null above.
-		const _nonNullableRecipe = currentRecipe as Recipe['data'][number];
+		const _nonNullableRecipe = currentRecipe as TItemDataItem<Recipe>;
 
 		const {ingredients: currentRecipeIngredients, positiveTags: currentRecipePositiveTags} = _nonNullableRecipe;
 		const currentRecipeAllIngredients = union(currentRecipeIngredients, currentRecipeExtraIngredients);

@@ -17,9 +17,10 @@ import Tooltip from '@/components/tooltip';
 import {BEVERAGE_TAG_STYLE, type IBeverage} from '@/data';
 // import {globalStore as store} from '@/stores';
 import {type Beverage} from '@/utils';
+import type {TItemData} from '@/utils/types';
 
 interface IProps {
-	data: Beverage['data'];
+	data: TItemData<Beverage>;
 }
 
 export default memo<IProps>(function Content({data}) {

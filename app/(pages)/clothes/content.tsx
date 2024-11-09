@@ -19,9 +19,10 @@ import Tooltip from '@/components/tooltip';
 import {type IClothes} from '@/data';
 import {clothesStore /* , globalStore */} from '@/stores';
 import {type Clothes, checkA11yConfirmKey} from '@/utils';
+import type {TItemData} from '@/utils/types';
 
 interface IProps {
-	data: Clothes['data'];
+	data: TItemData<Clothes>;
 }
 
 export default memo<IProps>(function Content({data}) {

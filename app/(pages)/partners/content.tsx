@@ -15,9 +15,10 @@ import Tachie from '@/components/tachie';
 import {type IPartner} from '@/data';
 import {partnersStore /* , globalStore */} from '@/stores';
 import {type Partner} from '@/utils';
+import type {TItemData} from '@/utils/types';
 
 interface IProps {
-	data: Partner['data'];
+	data: TItemData<Partner>;
 }
 
 export default memo<IProps>(function Content({data}) {

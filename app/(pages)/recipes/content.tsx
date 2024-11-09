@@ -16,9 +16,10 @@ import Tooltip from '@/components/tooltip';
 import {DARK_MATTER_NAME, type IRecipe, RECIPE_TAG_STYLE} from '@/data';
 // import {globalStore as store} from '@/stores';
 import {type Recipe, checkA11yConfirmKey} from '@/utils';
+import type {TItemData} from '@/utils/types';
 
 interface IProps {
-	data: Recipe['data'];
+	data: TItemData<Recipe>;
 }
 
 export default memo<IProps>(function Content({data}) {
