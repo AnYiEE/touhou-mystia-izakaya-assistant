@@ -72,12 +72,12 @@ export class Item<
 	}
 
 	public findNameByIndex(index: number): TName {
-		const item = this._data[index];
-		this.checkIndexRange(index, item);
-
 		if (this._indexNameCache.has(index)) {
 			return this._indexNameCache.get(index) as TName;
 		}
+
+		const item = this._data[index];
+		this.checkIndexRange(index, item);
 
 		const {name} = item;
 		this._indexNameCache.set(index, name);
