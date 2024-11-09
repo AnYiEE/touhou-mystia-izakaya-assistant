@@ -1,15 +1,19 @@
 import {type Observable, filter, first, fromEvent, merge, of} from 'rxjs';
 
+const READY_STATE: DocumentReadyState[] = ['complete', 'interactive'];
+
+const readyStateSet = new Set<DocumentReadyState>(READY_STATE);
+
+function checkDomReady() {
+	return readyStateSet.has(document.readyState);
+}
+
 /**
  * @returns Observable that emits true when the DOM is ready.
  */
 export function domReady() {
-	const condition: ReadonlyArray<DocumentReadyState> = ['complete', 'interactive'];
-
-	const checkReady = () => condition.includes(document.readyState);
-
 	return merge(
-		of(checkReady()).pipe(filter(Boolean)),
-		fromEvent(document, 'readystatechange').pipe(filter(checkReady))
+		of(checkDomReady()).pipe(filter(Boolean)),
+		fromEvent(document, 'readystatechange').pipe(filter(checkDomReady))
 	).pipe(first()) as Observable<true>;
 }
