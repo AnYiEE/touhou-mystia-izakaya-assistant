@@ -156,6 +156,7 @@ export function checkRecipeEasterEgg({
 					score: 3,
 				};
 			}
+			break;
 		}
 	}
 

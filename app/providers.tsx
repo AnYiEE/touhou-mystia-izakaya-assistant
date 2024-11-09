@@ -33,7 +33,7 @@ const {version} = siteConfig;
 
 interface IProps {
 	locale: string;
-	themeProps?: ThemeProviderProps;
+	themeProps: ThemeProviderProps;
 }
 
 export default function Providers({children, locale, themeProps}: PropsWithChildren<IProps>) {

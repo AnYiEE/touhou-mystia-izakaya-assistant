@@ -8,34 +8,6 @@ type TDlc = 0 | 1 | 2 | 2.5 | 3 | 4 | 5;
 
 type TLevel = 1 | 2 | 3 | 4 | 5 | 10;
 
-export type TMerchant =
-	| '【博丽神社】河童商人'
-	| '【博丽神社】妖精女仆'
-	| '【地灵殿】地狱鸦'
-	| '【红魔馆】地精商人'
-	| '【红魔馆】小恶魔'
-	| '【红魔馆】匿名妖精女仆'
-	| '【辉针城】不良少年'
-	| '【旧地狱】鬼商'
-	| '【迷途竹林】美食妖怪兔'
-	| '【命莲寺】娜兹玲'
-	| '【魔法森林】上海人形'
-	| '【魔界】小丑'
-	| '【人间之里】酒商'
-	| '【人间之里】铃瑚'
-	| '【人间之里】农户'
-	| '【人间之里】清兰'
-	| '【人间之里】香霖堂'
-	| '【神灵庙】道士'
-	| '【太阳花田】太阳花精'
-	| '【妖怪兽道】萌澄果'
-	| '【妖怪兽道】蹦蹦跳跳的三妖精'
-	| '【妖怪兽道】杂货商人'
-	| '【妖怪之山】河童商人'
-	| '【因幡帝】“强买强卖”商店'
-	| '【月之都】月兔'
-	| '【魔界】蓬松松爱莲♡魔法店';
-
 type TCollectionLocation =
 	| '【博丽神社】花丛'
 	| '【博丽神社】蘑菇堆'
@@ -165,15 +137,33 @@ type TCollectionLocation =
 	| '非【迷途竹林】河流'
 	| '非【妖怪兽道】河流';
 
-type TPopularTags = typeof TAG_POPULAR_NEGATIVE | typeof TAG_POPULAR_POSITIVE;
-
-export type TBeverageTag = IBeverage['tags'][number];
-export type TRecipeTag =
-	| IRecipe['positiveTags'][number] // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
-	| IRecipe['negativeTags'][number]
-	| TTagNeedCalculate
-	| TPopularTags;
-export type TIngredientTag = IIngredient['tags'][number] | TPopularTags;
+export type TMerchant =
+	| '【博丽神社】河童商人'
+	| '【博丽神社】妖精女仆'
+	| '【地灵殿】地狱鸦'
+	| '【红魔馆】地精商人'
+	| '【红魔馆】小恶魔'
+	| '【红魔馆】匿名妖精女仆'
+	| '【辉针城】不良少年'
+	| '【旧地狱】鬼商'
+	| '【迷途竹林】美食妖怪兔'
+	| '【命莲寺】娜兹玲'
+	| '【魔法森林】上海人形'
+	| '【魔界】小丑'
+	| '【人间之里】酒商'
+	| '【人间之里】铃瑚'
+	| '【人间之里】农户'
+	| '【人间之里】清兰'
+	| '【人间之里】香霖堂'
+	| '【神灵庙】道士'
+	| '【太阳花田】太阳花精'
+	| '【妖怪兽道】萌澄果'
+	| '【妖怪兽道】蹦蹦跳跳的三妖精'
+	| '【妖怪兽道】杂货商人'
+	| '【妖怪之山】河童商人'
+	| '【因幡帝】“强买强卖”商店'
+	| '【月之都】月兔'
+	| '【魔界】蓬松松爱莲♡魔法店';
 
 type TPlace =
 	| '博丽神社'
@@ -193,6 +183,16 @@ type TPlace =
 	| '月之都';
 
 type TTask = '阿求小姐的色纸' | '女仆长的采购委托' | '月都试炼' | '最终收网行动';
+
+type TPopularTags = typeof TAG_POPULAR_NEGATIVE | typeof TAG_POPULAR_POSITIVE;
+
+export type TBeverageTag = IBeverage['tags'][number];
+export type TIngredientTag = IIngredient['tags'][number] | TPopularTags;
+export type TRecipeTag =
+	| IRecipe['positiveTags'][number] // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
+	| IRecipe['negativeTags'][number]
+	| TTagNeedCalculate
+	| TPopularTags;
 
 export type TDescription = `${string}。` | `${string}？` | `${string}！`;
 

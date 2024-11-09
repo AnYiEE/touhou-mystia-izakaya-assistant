@@ -1,13 +1,13 @@
 declare global {
 	namespace NodeJS {
 		interface ProcessEnv {
-			BASE_URL?: string;
-			CDN_URL?: string;
-			SHORT_LINK_URL?: string;
-
 			ANALYTICS_API_URL?: string;
 			ANALYTICS_SCRIPT_URL?: string;
 			ANALYTICS_SITE_ID?: string;
+
+			BASE_URL?: string;
+			CDN_URL?: string;
+			SHORT_LINK_URL?: string;
 
 			ICP_FILING?: string;
 
