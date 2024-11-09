@@ -558,7 +558,7 @@ export const customerRareStore = store(state, {
 		onIngredientSelectedChange(ingredientName: TIngredientNames) {
 			const recipeData = currentStore.shared.recipe.data.get();
 			let recipe: TRecipe | null = null;
-			if (recipeData) {
+			if (recipeData !== null) {
 				recipe = instance_recipe.getPropsByName(recipeData.name);
 			}
 			if (recipe === null) {
@@ -644,13 +644,13 @@ export const customerRareStore = store(state, {
 			const isDarkMatter = Boolean(currentStore.shared.customer.isDarkMatter.get());
 			let beverageTags: TBeverageTag[] = [];
 			const beverageName = currentStore.shared.beverage.name.get();
-			if (beverageName) {
+			if (beverageName !== null) {
 				beverageTags = instance_beverage.getPropsByName(beverageName, 'tags');
 			}
 			const recipeData = currentStore.shared.recipe.data.get();
 			const recipeName = recipeData?.name ?? null;
 			const ingredients: TIngredientNames[] = [];
-			if (recipeData) {
+			if (recipeData !== null) {
 				ingredients.push(
 					...instance_recipe.getPropsByName(recipeData.name, 'ingredients'),
 					...recipeData.extraIngredients
@@ -733,7 +733,7 @@ export const customerRareStore = store(state, {
 		},
 		removeMealIngredient(ingredientName: TIngredientNames) {
 			currentStore.shared.recipe.data.set((prev) => {
-				if (prev) {
+				if (prev !== null) {
 					prev.extraIngredients = removeLastElement(prev.extraIngredients, ingredientName);
 				}
 			});

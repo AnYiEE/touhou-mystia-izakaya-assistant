@@ -12,7 +12,7 @@ export class Partner extends Item<TPartners> {
 	private static _tachiePathCache = new Map<TPartnerNames, string>();
 
 	public static getInstance() {
-		if (Partner._instance) {
+		if (Partner._instance !== undefined) {
 			return Partner._instance;
 		}
 

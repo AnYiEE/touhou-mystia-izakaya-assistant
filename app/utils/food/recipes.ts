@@ -61,7 +61,7 @@ export class Recipe extends Food<TRecipes> {
 	}
 
 	public static getInstance() {
-		if (Recipe._instance) {
+		if (Recipe._instance !== undefined) {
 			return Recipe._instance;
 		}
 

@@ -11,7 +11,7 @@ type TCompatibility = Record<TFeature, boolean>;
 let compatibilityCache: TCompatibility | undefined;
 
 export function checkCompatibility() {
-	if (compatibilityCache) {
+	if (compatibilityCache !== undefined) {
 		return compatibilityCache;
 	}
 

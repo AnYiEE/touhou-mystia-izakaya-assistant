@@ -82,7 +82,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 	const beverageTags = useMemo(() => {
 		const _beverageTags: TBeverageTag[] = [];
 
-		if (currentBeverageName) {
+		if (currentBeverageName !== null) {
 			_beverageTags.push(...instance_beverage.getPropsByName(currentBeverageName, 'tags'));
 		}
 
@@ -92,7 +92,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 	const currentRecipeTagsWithPopular = useMemo(() => {
 		const _currentRecipeTagsWithPopular: TRecipeTag[] = [];
 
-		if (currentRecipeData) {
+		if (currentRecipeData !== null) {
 			const {extraIngredients, name: currentRecipeName} = currentRecipeData;
 
 			const recipe = instance_recipe.getPropsByName(currentRecipeName);

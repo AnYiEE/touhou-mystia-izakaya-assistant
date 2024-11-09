@@ -14,7 +14,7 @@ export class Clothes extends Item<TClothes> {
 	private static _tachiePathCache = new Map<TClothesNames, string>();
 
 	public static getInstance() {
-		if (Clothes._instance) {
+		if (Clothes._instance !== undefined) {
 			return Clothes._instance;
 		}
 

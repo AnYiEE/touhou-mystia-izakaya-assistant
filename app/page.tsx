@@ -36,7 +36,7 @@ export default function Home() {
 	);
 
 	const getWxGroupUrl = useCallback(() => {
-		if (wxGroupUrl) {
+		if (wxGroupUrl !== undefined) {
 			return;
 		}
 		void fetch(links.wxGroup.href, {
@@ -55,7 +55,7 @@ export default function Home() {
 	}, [wxGroupUrl]);
 
 	const wxGroupQrCode = useMemo(() => {
-		if (!wxGroupUrl) {
+		if (wxGroupUrl === undefined) {
 			return (
 				<div className="flex h-40 w-32 flex-col items-center justify-between px-1">
 					<div className="mt-1 flex h-full w-full items-center justify-center bg-background p-1">

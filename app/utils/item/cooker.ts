@@ -13,7 +13,7 @@ export class Cooker extends Item<TCookers> {
 	private static _bondCookerCache = new Map<TCustomerRareNames, TCookerNames | null>();
 
 	public static getInstance() {
-		if (Cooker._instance) {
+		if (Cooker._instance !== undefined) {
 			return Cooker._instance;
 		}
 

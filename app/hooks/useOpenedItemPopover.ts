@@ -31,10 +31,10 @@ export function useOpenedItemPopover(popoverCardRef: RefObject<HTMLElement | nul
 			_setOpenedPopover(name);
 
 			const newParams = new URLSearchParams(params);
-			if (name) {
-				newParams.set(openedPopoverParam, name);
-			} else {
+			if (name === null) {
 				newParams.delete(openedPopoverParam);
+			} else {
+				newParams.set(openedPopoverParam, name);
 			}
 
 			replace(newParams);

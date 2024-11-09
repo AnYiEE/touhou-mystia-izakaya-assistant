@@ -157,7 +157,7 @@ export default function RootLayout({
 	let enable;
 	try {
 		const globalStorage = localStorage.getItem('global-storage');
-		if (globalStorage) {
+		if (globalStorage !== null) {
 			enable = JSON.parse(globalStorage).state.persistence.highAppearance;
 		}
 	} catch (e) {}

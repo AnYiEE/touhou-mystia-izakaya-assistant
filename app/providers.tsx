@@ -76,7 +76,7 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 					case customerNormalStoreKey: {
 						const state = (JSON.parse(newValue) as TCustomerNormalPersistenceState).state.persistence;
 						const {meals} = state;
-						if (meals) {
+						if (meals !== undefined) {
 							customerNormalStore.persistence.meals.assign(meals);
 						}
 						break;
@@ -84,11 +84,11 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 					case customerRareStoreKey: {
 						const state = (JSON.parse(newValue) as TCustomerRarePersistenceState).state.persistence;
 						const {customer, meals} = state;
-						if (customer) {
+						if (customer !== undefined) {
 							customerRareStore.persistence.customer.orderLinkedFilter.set(customer.orderLinkedFilter);
 							customerRareStore.persistence.customer.showTagDescription.set(customer.showTagDescription);
 						}
-						if (meals) {
+						if (meals !== undefined) {
 							customerRareStore.persistence.meals.assign(meals);
 						}
 						break;

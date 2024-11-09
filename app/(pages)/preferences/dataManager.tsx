@@ -114,7 +114,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 
 	const handleImportData = useCallback(() => {
 		toggleSavePopoverOpened();
-		if (importData) {
+		if (importData !== null) {
 			if ('customer_normal' in importData) {
 				customerNormalStore.persistence.meals.set(importData.customer_normal);
 				customerRareStore.persistence.meals.set(importData.customer_rare);
@@ -381,7 +381,9 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 										);
 										prev.dirver = dirver;
 									});
-									if (onModalClose) {
+									if (onModalClose === undefined) {
+										router.push(customerRareTutorialPathname);
+									} else {
 										onModalClose();
 										// Wait for the modal to close and restore the pathname (the animate will take 300ms).
 										setTimeout(() => {
@@ -389,8 +391,6 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 												router.push(customerRareTutorialPathname);
 											}
 										}, 500);
-									} else {
-										router.push(customerRareTutorialPathname);
 									}
 									trackEvent(TrackCategory.Click, 'Reset Button', 'Customer Rare Tutorial');
 								}}

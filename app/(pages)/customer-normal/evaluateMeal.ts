@@ -82,7 +82,7 @@ export function evaluateMeal({
 		currentCustomerPopularTag = popularTag;
 	}
 
-	if (currentCustomerPopularTag) {
+	if (currentCustomerPopularTag !== null) {
 		extraScore +=
 			Number((currentRecipe.positiveTags as string[]).includes(currentCustomerPopularTag)) +
 			Number(currentExtraTags.includes(currentCustomerPopularTag));

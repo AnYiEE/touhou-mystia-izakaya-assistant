@@ -96,7 +96,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 	const beverageTags = useMemo(() => {
 		const _beverageTags: TBeverageTag[] = [];
 
-		if (currentBeverageName) {
+		if (currentBeverageName !== null) {
 			_beverageTags.push(...instance_beverage.getPropsByName(currentBeverageName, 'tags'));
 		}
 
@@ -106,7 +106,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 	const currentRecipeTagsWithPopular = useMemo(() => {
 		const _currentRecipeTagsWithPopular: TRecipeTag[] = [];
 
-		if (currentRecipeData) {
+		if (currentRecipeData !== null) {
 			const {extraIngredients, name: currentRecipeName} = currentRecipeData;
 
 			const recipe = instance_recipe.getPropsByName(currentRecipeName);
@@ -138,7 +138,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 
 	const avatarRatingColor = currentRating ? customerRatingColorMap[currentRating] : undefined;
 	const avatarRatingContent = useMemo(() => {
-		if (currentRating) {
+		if (currentRating !== null) {
 			return currentRating;
 		}
 

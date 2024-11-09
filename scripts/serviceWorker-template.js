@@ -74,7 +74,7 @@ async function fetchWithRetry(/** @type {Request} */ request, /** @type {number}
 
 async function cacheFirst(/** @type {Request} */ request) {
 	const responseFromCache = await caches.match(request);
-	if (responseFromCache) {
+	if (responseFromCache !== undefined) {
 		return responseFromCache;
 	}
 
@@ -90,7 +90,7 @@ async function networkFirst(/** @type {Request} */ request) {
 		return await fetchWithRetry(request, 3);
 	} catch {
 		const responseFromCache = await caches.match(request);
-		if (responseFromCache) {
+		if (responseFromCache !== undefined) {
 			return responseFromCache;
 		}
 		return networkErrorResponse.clone();

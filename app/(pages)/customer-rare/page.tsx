@@ -43,7 +43,7 @@ export default function CustomerRare() {
 	});
 
 	customerStore.shared.recipe.data.onChange((data) => {
-		if (data) {
+		if (data !== null) {
 			if (data.extraIngredients.length > 0) {
 				customerStore.shared.customer.isDarkMatter.set(
 					customerStore.instances.recipe.get().checkDarkMatter(data).isDarkMatter

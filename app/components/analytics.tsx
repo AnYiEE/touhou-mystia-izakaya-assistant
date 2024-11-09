@@ -63,7 +63,7 @@ function trackPageView() {
 export default function Analytics() {
 	useEffect(() => {
 		// The tracker has been initialized, skip.
-		if (globalThis._paq) {
+		if (globalThis._paq !== undefined) {
 			trackPageView();
 			return;
 		}

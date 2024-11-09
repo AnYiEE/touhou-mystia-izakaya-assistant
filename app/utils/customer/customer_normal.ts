@@ -5,7 +5,7 @@ export class CustomerNormal extends Customer<TCustomerNormals> {
 	private static _instance: CustomerNormal | undefined;
 
 	public static getInstance() {
-		if (CustomerNormal._instance) {
+		if (CustomerNormal._instance !== undefined) {
 			return CustomerNormal._instance;
 		}
 

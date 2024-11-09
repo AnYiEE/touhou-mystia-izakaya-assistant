@@ -48,10 +48,10 @@ export default memo(
 
 			if (_calculatedIndex !== undefined) {
 				_calculatedName = instance.findNameByIndex(_calculatedIndex);
-			} else if (_calculatedName) {
-				_calculatedIndex = instance.findIndexByName(_calculatedName);
-			} else {
+			} else if (_calculatedName === undefined) {
 				_calculatedIndex = 0;
+			} else {
+				_calculatedIndex = instance.findIndexByName(_calculatedName);
 			}
 
 			return {

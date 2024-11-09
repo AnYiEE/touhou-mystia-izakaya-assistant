@@ -11,7 +11,7 @@ export class CustomerRare extends Customer<TCustomerRares> {
 	private static _tachiePathCache = new Map<TCustomerRareNames, string>();
 
 	public static getInstance() {
-		if (CustomerRare._instance) {
+		if (CustomerRare._instance !== undefined) {
 			return CustomerRare._instance;
 		}
 

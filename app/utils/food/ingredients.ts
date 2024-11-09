@@ -18,7 +18,7 @@ export class Ingredient extends Food<TIngredients> {
 	private static _isTypesChecked: boolean;
 
 	public static getInstance() {
-		if (Ingredient._instance) {
+		if (Ingredient._instance !== undefined) {
 			return Ingredient._instance;
 		}
 

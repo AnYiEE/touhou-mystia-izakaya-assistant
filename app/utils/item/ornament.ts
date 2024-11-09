@@ -14,7 +14,7 @@ export class Ornament extends Item<TOrnaments> {
 	private static _bondOrnamentsCache = new Map<TCustomerRareNames, TBondOrnaments>();
 
 	public static getInstance() {
-		if (Ornament._instance) {
+		if (Ornament._instance !== undefined) {
 			return Ornament._instance;
 		}
 

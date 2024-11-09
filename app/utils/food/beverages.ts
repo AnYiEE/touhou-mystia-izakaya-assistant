@@ -10,7 +10,7 @@ export class Beverage extends Food<TBeverages> {
 	private static _isTagsChecked: boolean;
 
 	public static getInstance() {
-		if (Beverage._instance) {
+		if (Beverage._instance !== undefined) {
 			return Beverage._instance;
 		}
 

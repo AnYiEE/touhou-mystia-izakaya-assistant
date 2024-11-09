@@ -5,7 +5,7 @@ export class Currency extends Item<TCurrencies> {
 	private static _instance: Currency | undefined;
 
 	public static getInstance() {
-		if (Currency._instance) {
+		if (Currency._instance !== undefined) {
 			return Currency._instance;
 		}
 
