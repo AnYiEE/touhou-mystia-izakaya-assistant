@@ -28,7 +28,7 @@ export default memo<IProps>(function Content({data}) {
 
 	// const isHighAppearance = store.persistence.highAppearance.use();
 
-	return data.map(({description, dlc, from, id, name, level, price, tags, type}, dataIndex) => (
+	return data.map(({description, dlc, from, id, level, name, price, tags, type}, dataIndex) => (
 		<Popover
 			key={dataIndex}
 			showArrow

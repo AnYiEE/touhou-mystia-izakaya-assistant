@@ -214,7 +214,7 @@ interface IItemPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 
 const ItemPopoverCardComponent = memo(
 	forwardRef<HTMLDivElement | null, PropsWithChildren<IItemPopoverCardProps>>(function ItemPopoverCard(
-		{target, id, name, displayName, description, dlc, cooker, ingredients, tags, tagColors, children},
+		{children, cooker, description, displayName, dlc, id, ingredients, name, tagColors, tags, target},
 		ref
 	) {
 		const openWindow = useViewInNewWindow();

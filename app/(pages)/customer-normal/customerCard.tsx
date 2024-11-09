@@ -137,10 +137,10 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 	}
 
 	const {
-		dlc: currentCustomerDlc,
-		places: currentCustomerPlaces,
 		beverageTags: currentCustomerBeverageTags,
+		dlc: currentCustomerDlc,
 		negativeTags: currentCustomerNegativeTags,
+		places: currentCustomerPlaces,
 		positiveTags: currentCustomerPositiveTags,
 	} = instance_customer.getPropsByName(currentCustomerName);
 

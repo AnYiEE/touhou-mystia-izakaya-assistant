@@ -85,7 +85,7 @@ export default forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(
 		>
 			<div className="space-y-3 p-4 xl:space-y-2 xl:px-2 xl:py-3">
 				{savedCustomerMeal.map(
-					({index: mealIndex, hasMystiaCooker, order, beverage, recipe, extraIngredients}, loopIndex) => (
+					({beverage, extraIngredients, hasMystiaCooker, index: mealIndex, order, recipe}, loopIndex) => (
 						<Fragment key={loopIndex}>
 							<div className="flex flex-col items-center gap-4 md:flex-row md:gap-3 lg:gap-4 xl:gap-3">
 								<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap md:gap-2 lg:gap-3 xl:gap-2">

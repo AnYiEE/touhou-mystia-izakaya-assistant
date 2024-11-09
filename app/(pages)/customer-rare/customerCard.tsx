@@ -189,13 +189,13 @@ export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_
 	}
 
 	const {
-		dlc: currentCustomerDlc,
-		places: currentCustomerPlaces,
-		price: currentCustomerPrice,
 		beverageTags: currentCustomerBeverageTags,
+		dlc: currentCustomerDlc,
 		negativeTags: currentCustomerNegativeTags,
-		positiveTags: currentCustomerPositiveTags,
+		places: currentCustomerPlaces,
 		positiveTagMapping: currentCustomerPositiveTagMapping,
+		positiveTags: currentCustomerPositiveTags,
+		price: currentCustomerPrice,
 	} = instance_customer.getPropsByName(currentCustomerName);
 
 	const dlcLabel = currentCustomerDlc === 0 ? LABEL_DLC_0 : '';

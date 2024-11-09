@@ -9,7 +9,7 @@ import QRCode from '@/components/qrCode';
 
 import {siteConfig} from '@/configs';
 
-const {links, shortName, version, isIcpFiling, isProduction, isVercel, nodeEnv, vercelEnv, vercelSha} = siteConfig;
+const {isIcpFiling, isProduction, isVercel, links, nodeEnv, shortName, vercelEnv, vercelSha, version} = siteConfig;
 
 const sha = (
 	vercelSha?.slice(0, 7) ?? (isProduction ? execSync('git rev-parse --short HEAD').toString('utf8') : null)
@@ -20,11 +20,11 @@ interface IFooterLinkProps extends Pick<ILinkProps, 'href' | 'isExternal' | 'tit
 }
 
 const FooterLink = memo<PropsWithChildren<IFooterLinkProps>>(function FooterLink({
-	href = '#',
+	children,
 	content,
+	href = '#',
 	isExternal = true,
 	title,
-	children,
 }) {
 	return (
 		<Link

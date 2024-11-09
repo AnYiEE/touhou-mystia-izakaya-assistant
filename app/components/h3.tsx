@@ -14,7 +14,7 @@ interface IProps extends THeadingClassName {
 
 export default memo(
 	forwardRef<HTMLHeadingElement | null, PropsWithChildren<IProps>>(function H3(
-		{className, classNames, isFirst, subTitle, children},
+		{children, className, classNames, isFirst, subTitle},
 		ref
 	) {
 		return (

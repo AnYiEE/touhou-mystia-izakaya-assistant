@@ -30,7 +30,7 @@ export default memo<IProps>(function Content({data}) {
 
 	return data.map(
 		(
-			{dlc, from, id, name, description, level, price, cooker, ingredients, negativeTags, positiveTags, max, min},
+			{cooker, description, dlc, from, id, ingredients, level, max, min, name, negativeTags, positiveTags, price},
 			dataIndex
 		) => (
 			<Popover

@@ -1,6 +1,6 @@
 {
 	"root": true,
-	"plugins": ["@typescript-eslint", "unicorn", "compat"],
+	"plugins": ["@typescript-eslint", "sort-destructure-keys", "unicorn", "compat"],
 	"extends": [
 		"eslint:recommended",
 		"plugin:@typescript-eslint/strict-type-checked",
@@ -204,6 +204,12 @@
 		],
 		"@typescript-eslint/unbound-method": "off",
 
+		"eslint-comments/disable-enable-pair": "off",
+		"eslint-comments/no-unlimited-disable": "off",
+		"eslint-comments/no-unused-disable": "warn",
+
+		"sort-destructure-keys/sort-destructure-keys": "error",
+
 		"unicorn/consistent-destructuring": "error",
 		"unicorn/custom-error-definition": "error",
 		"unicorn/no-unused-properties": "error",
@@ -234,10 +240,6 @@
 		"unicorn/prevent-abbreviations": "off",
 		"unicorn/require-post-message-target-origin": "off",
 		"unicorn/switch-case-braces": ["error", "avoid"],
-
-		"eslint-comments/disable-enable-pair": "off",
-		"eslint-comments/no-unlimited-disable": "off",
-		"eslint-comments/no-unused-disable": "warn",
 
 		"compat/compat": ["error", "chrome 64, edge 79, firefox 67, opera 51, safari 12"]
 	}

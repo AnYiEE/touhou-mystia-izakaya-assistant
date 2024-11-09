@@ -121,7 +121,7 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 		};
 	}, []);
 
-	const {theme, setTheme} = useTheme();
+	const {setTheme, theme} = useTheme();
 
 	useEffect(() => {
 		// Synchronize theme across multiple tabs as needed.

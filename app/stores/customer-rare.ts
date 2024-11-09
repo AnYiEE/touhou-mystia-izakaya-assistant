@@ -697,7 +697,7 @@ export const customerRareStore = store(state, {
 				positiveTags: customerPositiveTags,
 			} = instance_customer.getPropsByName(customerName);
 			const beverage = instance_beverage.getPropsByName(beverageName);
-			const {tags: beverageTags, price: beveragePrice} = beverage;
+			const {price: beveragePrice, tags: beverageTags} = beverage;
 			const recipe = instance_recipe.getPropsByName(recipeName);
 			const {ingredients, negativeTags, positiveTags, price: originalRecipePrice} = recipe;
 			const {extraTags, isDarkMatter} = instance_recipe.checkDarkMatter({

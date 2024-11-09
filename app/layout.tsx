@@ -19,7 +19,7 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 /** @see {@link https://docs.fontawesome.com/web/use-with/react/use-with#getting-font-awesome-css-to-work} */
 fontawesomeConfig.autoAddCss = false;
 
-const {author, description, keywords, locale, name, enName, shortName, cdnUrl, isAnalytics, isProduction, vercelSha} =
+const {author, cdnUrl, description, enName, isAnalytics, isProduction, keywords, locale, name, shortName, vercelSha} =
 	siteConfig;
 
 export const metadata: Metadata = {

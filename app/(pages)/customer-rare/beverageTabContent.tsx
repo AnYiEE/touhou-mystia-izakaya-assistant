@@ -107,7 +107,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 
 		const searchValueLowerCase = searchValue.toLowerCase();
 
-		return dataWithRealSuitability.filter(({name, pinyin, dlc, tags}) => {
+		return dataWithRealSuitability.filter(({dlc, name, pinyin, tags}) => {
 			const {pinyinFirstLetters, pinyinWithoutTone} = processPinyin(pinyin);
 
 			const isNameMatched = hasNameFilter
@@ -173,7 +173,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 
 	const renderTableCell = useCallback(
 		(data: TBeverageWithSuitability, columnKey: TTableColumnKey) => {
-			const {name, price, suitability, matchedTags, tags: beverageTags} = data;
+			const {matchedTags, name, price, suitability, tags: beverageTags} = data;
 
 			if (currentCustomerName === null) {
 				return null;
@@ -418,7 +418,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabC
 								onSelectionChange={customerStore.beverageTableColumns.set}
 								aria-label="选择表格所显示的列"
 							>
-								{tableColumns.map(({label: name, key}) => (
+								{tableColumns.map(({key, label: name}) => (
 									<DropdownItem key={key}>{name}</DropdownItem>
 								))}
 							</DropdownMenu>

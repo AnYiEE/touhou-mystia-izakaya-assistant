@@ -48,8 +48,8 @@ export default function InfoButton() {
 		collection: currentCustomerCollection,
 		description: currentCustomerDescription,
 		id: currentCustomerId,
-		spellCards: currentCustomerSpellCards,
 		places: currentCustomerPlaces,
+		spellCards: currentCustomerSpellCards,
 	} = instance_customer.getPropsByName(currentCustomerName);
 
 	const [currentCustomerMainPlace] = currentCustomerPlaces;
@@ -118,7 +118,7 @@ export default function InfoButton() {
 				<AccordionItem key="bond" aria-label={`${currentCustomerName}羁绊奖励`} title="羁绊奖励">
 					<div className="flex flex-col gap-2 text-xs">
 						<div className="space-y-1">
-							{bondRecipesData.map(({name, level}, index) => (
+							{bondRecipesData.map(({level, name}, index) => (
 								<p key={index} className="flex items-center">
 									<LevelLabel level={level} />
 									<Tooltip showArrow content={getLabel('料理')} placement="left" size="sm">
@@ -207,7 +207,7 @@ export default function InfoButton() {
 									</p>
 								</>
 							)}
-							{bondOrnamentsData.map(({name, level}, index) => (
+							{bondOrnamentsData.map(({level, name}, index) => (
 								<Fragment key={index}>
 									{index === 0 &&
 										bondClothes === null &&
@@ -302,7 +302,7 @@ export default function InfoButton() {
 						{hasPositiveSpellCards && (
 							<>
 								<p className="mb-1 text-sm font-semibold">奖励符卡</p>
-								{currentCustomerSpellCards.positive.map(({name, description}, index) => (
+								{currentCustomerSpellCards.positive.map(({description, name}, index) => (
 									<div key={index} className="mb-0.5">
 										<p className="font-medium">{name}</p>
 										<div className="ml-3 mt-0.5 text-xs">
@@ -317,7 +317,7 @@ export default function InfoButton() {
 								<p className={twJoin('mb-1 text-sm font-semibold', hasPositiveSpellCards && 'mt-2')}>
 									惩罚符卡
 								</p>
-								{currentCustomerSpellCards.negative.map(({name, description}, index) => (
+								{currentCustomerSpellCards.negative.map(({description, name}, index) => (
 									<div key={index} className="mb-0.5">
 										<p className="font-medium">{name}</p>
 										<div className="ml-3 mt-0.5 text-xs">

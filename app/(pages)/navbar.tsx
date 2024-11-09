@@ -36,7 +36,7 @@ import {type TSitePath, siteConfig} from '@/configs';
 import {globalStore as store} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
-const {navItems, navMenuItems, links, name, shortName} = siteConfig;
+const {links, name, navItems, navMenuItems, shortName} = siteConfig;
 
 export function showProgress(startProgress: () => void) {
 	startTransition(async () => {
@@ -54,9 +54,9 @@ interface INavbarLinkProps
 }
 
 const NavbarLink = memo<PropsWithChildren<INavbarLinkProps>>(function NavbarLink({
+	children,
 	className,
 	isActivated,
-	children,
 	...props
 }) {
 	const startProgress = useProgress();

@@ -12,7 +12,7 @@ interface IProps extends Omit<CardProps, 'className' | 'classNames'> {
 }
 
 export default memo(
-	forwardRef<HTMLDivElement | null, IProps>(function ItemCard({name, description, image, ...cardProps}, ref) {
+	forwardRef<HTMLDivElement | null, IProps>(function ItemCard({description, image, name, ...cardProps}, ref) {
 		const isHighAppearance = store.persistence.highAppearance.use();
 
 		return (

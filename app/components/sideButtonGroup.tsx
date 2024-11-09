@@ -4,7 +4,7 @@ import {twMerge} from 'tailwind-merge';
 interface IProps extends Pick<HTMLAttributes<HTMLDivElement>, 'className'> {}
 
 export default memo(
-	forwardRef<HTMLDivElement | null, PropsWithChildren<IProps>>(function SideButtonGroup({className, children}, ref) {
+	forwardRef<HTMLDivElement | null, PropsWithChildren<IProps>>(function SideButtonGroup({children, className}, ref) {
 		return (
 			<div className="absolute" ref={ref}>
 				<div className={twMerge('fixed bottom-6 right-6 z-20 h-min w-min', className)}>

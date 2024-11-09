@@ -71,7 +71,7 @@ export default function Recipes() {
 
 	const filterData = useCallback(
 		() =>
-			dataWithPopular.filter(({dlc, level, cooker, ingredients, negativeTags, positiveTags}) => {
+			dataWithPopular.filter(({cooker, dlc, ingredients, level, negativeTags, positiveTags}) => {
 				const isDlcMatched = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
 				const isLevelMatched = filterLevels.length > 0 ? filterLevels.includes(level.toString()) : true;
 				const isCookerMatched = filterCookers.length > 0 ? filterCookers.includes(cooker) : true;

@@ -9,7 +9,7 @@ import {usePathname} from 'next/navigation';
 import {type TSitePath, siteConfig} from '@/configs';
 import {setScriptUrlTag} from '@/utils';
 
-const {domain, analyticsApiUrl, analyticsScriptUrl, analyticsSiteId} = siteConfig;
+const {analyticsApiUrl, analyticsScriptUrl, analyticsSiteId, domain} = siteConfig;
 
 function push(...args: unknown[][]) {
 	globalThis._paq ??= [];

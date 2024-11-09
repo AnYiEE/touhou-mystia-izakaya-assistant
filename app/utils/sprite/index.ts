@@ -69,7 +69,7 @@ export class Sprite<
 
 		this._config = config;
 
-		const {col, row, height, width} = config;
+		const {col, height, row, width} = config;
 
 		this.spriteHeight = height / row;
 		this.spriteWidth = width / col;
@@ -111,7 +111,7 @@ export class Sprite<
 	): CSSProperties {
 		this.checkIndexRange(index);
 
-		const {spriteHeight, spriteWidth, _config} = this;
+		const {_config, spriteHeight, spriteWidth} = this;
 		const {height: sheetHeight, width: sheetWidth} = _config;
 
 		const {x, y} = this.getPosByIndex(index);

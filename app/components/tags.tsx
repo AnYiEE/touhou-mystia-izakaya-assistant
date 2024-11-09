@@ -54,7 +54,7 @@ interface ITagsPropsBase extends ITagPropsBase {
 
 interface ITagsProps extends ITagsPropsBase, Pick<HTMLAttributes<HTMLSpanElement>, 'className'> {}
 
-const TagsComponent = memo<ITagsProps>(function Tags({className, tags, tagStyle = {}, tagType}) {
+const TagsComponent = memo<ITagsProps>(function Tags({className, tagStyle = {}, tagType, tags}) {
 	return tags && tags.length > 0
 		? tags.map((tag, index) => (
 				<Tag key={index} tag={tag} tagStyle={tagStyle} tagType={tagType} className={className} />

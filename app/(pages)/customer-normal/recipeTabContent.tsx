@@ -137,9 +137,9 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 			}
 
 			const {
-				suitability,
 				negativeTags: matchedNegativeTags,
 				positiveTags: matchedPositiveTags,
+				suitability,
 			} = instance_recipe.getCustomerSuitability(
 				recipeTagsWithPopular,
 				customerNegativeTags,
@@ -165,7 +165,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 
 		const searchValueLowerCase = searchValue.toLowerCase();
 
-		return dataWithRealSuitability.filter(({name, pinyin, dlc, cooker, positiveTags}) => {
+		return dataWithRealSuitability.filter(({cooker, dlc, name, pinyin, positiveTags}) => {
 			const {pinyinFirstLetters, pinyinWithoutTone} = processPinyin(pinyin);
 			const recipeTagsWithPopular = calculateTagsWithPopular(positiveTags);
 
@@ -242,16 +242,16 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 	const renderTableCell = useCallback(
 		(recipeData: TRecipeWithSuitability, columnKey: TTableColumnKey) => {
 			const {
-				name,
 				cooker,
 				ingredients,
+				matchedNegativeTags,
+				matchedPositiveTags,
+				max,
+				min,
+				name,
 				positiveTags,
 				price,
 				suitability,
-				max,
-				min,
-				matchedNegativeTags,
-				matchedPositiveTags,
 			} = recipeData;
 
 			if (currentCustomerName === null) {
@@ -261,7 +261,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 			const composedRecipeTags = composeTagsWithPopular(ingredients, positiveTags);
 			const recipeTagsWithPopular = calculateTagsWithPopular(composedRecipeTags);
 
-			const {positive: positiveTagStyle, negative: negativeTagStyle} = CUSTOMER_NORMAL_TAG_STYLE;
+			const {negative: negativeTagStyle, positive: positiveTagStyle} = CUSTOMER_NORMAL_TAG_STYLE;
 
 			const tags = (
 				<TagGroup>
@@ -585,7 +585,7 @@ export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabCon
 								onSelectionChange={customerStore.recipeTableColumns.set}
 								aria-label="选择表格所显示的列"
 							>
-								{tableColumns.map(({label: name, key}) => (
+								{tableColumns.map(({key, label: name}) => (
 									<DropdownItem key={key}>{name}</DropdownItem>
 								))}
 							</DropdownMenu>

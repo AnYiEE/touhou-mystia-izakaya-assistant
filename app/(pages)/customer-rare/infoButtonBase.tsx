@@ -12,7 +12,7 @@ import Tooltip from '@/components/tooltip';
 
 interface IProps extends Pick<AccordionProps, 'children' | 'defaultExpandedKeys'> {}
 
-export default memo<IProps>(function InfoButtonBase({defaultExpandedKeys, children}) {
+export default memo<IProps>(function InfoButtonBase({children, defaultExpandedKeys}) {
 	const vibrate = useVibrate();
 
 	const handleOpenChange = useCallback(

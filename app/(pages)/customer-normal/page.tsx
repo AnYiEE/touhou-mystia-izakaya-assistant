@@ -75,7 +75,7 @@ export default function CustomerNormal() {
 
 	const customerFilteredData = useMemo(
 		() =>
-			customerSearchResult.filter(({name, dlc, places}) => {
+			customerSearchResult.filter(({dlc, name, places}) => {
 				if (customerFilterIncludes.length > 0) {
 					const result = customerFilterIncludes.includes(name);
 					if (result) {

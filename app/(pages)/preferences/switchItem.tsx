@@ -10,7 +10,7 @@ interface IProps {
 
 export default memo(
 	forwardRef<HTMLInputElement | null, PropsWithChildren<IProps>>(function SwitchItem(
-		{isSelected, onValueChange, children, ...props},
+		{children, isSelected, onValueChange, ...props},
 		ref
 	) {
 		return (

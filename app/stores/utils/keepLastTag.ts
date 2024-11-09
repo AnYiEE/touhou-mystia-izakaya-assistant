@@ -8,11 +8,11 @@ export function keepLastTag(
 	tagSet: SelectionSet,
 	tag: TTags,
 	{
-		orderTag,
 		hasMystiaCooker,
+		orderTag,
 	}: {
-		orderTag?: TTags | null;
 		hasMystiaCooker?: boolean;
+		orderTag?: TTags | null;
 	} = {}
 ) {
 	const hasFilteredTags = tagSet.size > 0;

@@ -4,7 +4,7 @@ interface IProps {
 	showSymbol?: boolean;
 }
 
-export default memo<PropsWithChildren<IProps>>(function Price({showSymbol = true, children}) {
+export default memo<PropsWithChildren<IProps>>(function Price({children, showSymbol = true}) {
 	const Component = showSymbol ? 'span' : Fragment;
 
 	return (

@@ -31,7 +31,7 @@ interface IProps extends ISpriteBase, HTMLAttributes<HTMLSpanElement> {}
 
 export default memo(
 	forwardRef<HTMLSpanElement | null, IProps>(function Sprite(
-		{target, index, name, size, height, width, className, style, title, ...props},
+		{className, height, index, name, size, style, target, title, width, ...props},
 		ref
 	) {
 		const [isSupportedWebp, setIsSupportedWebp] = useState(true);
@@ -60,7 +60,7 @@ export default memo(
 			};
 		}, [index, instance, name]);
 
-		const {calculatedHeight, calculatedWidth, calculatedSize} = useMemo(() => {
+		const {calculatedHeight, calculatedSize, calculatedWidth} = useMemo(() => {
 			let _calculatedHeight = height ?? instance.spriteHeight;
 			let _calculateWidth = width ?? instance.spriteWidth;
 			let _calculateSize = size;

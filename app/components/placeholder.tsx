@@ -4,7 +4,7 @@ import {twMerge} from 'tailwind-merge';
 interface IProps extends Pick<HTMLAttributes<HTMLDivElement>, 'className'> {}
 
 export default memo(
-	forwardRef<HTMLDivElement | null, PropsWithChildren<IProps>>(function Placeholder({className, children}, ref) {
+	forwardRef<HTMLDivElement | null, PropsWithChildren<IProps>>(function Placeholder({children, className}, ref) {
 		return (
 			<div
 				className={twMerge(

@@ -36,7 +36,7 @@ interface IProps {
 export default memo<IProps>(function ThemeSwitcher({isMenu}) {
 	const isMounted = useMounted();
 	const pathname = usePathname() as TSitePath;
-	const {theme, setTheme} = useTheme();
+	const {setTheme, theme} = useTheme();
 	const [selectedTheme, setSelectedTheme] = useState(new Set([theme]) as SelectionSet);
 	const vibrate = useVibrate();
 
