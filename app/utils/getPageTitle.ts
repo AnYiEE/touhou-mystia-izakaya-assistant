@@ -7,7 +7,10 @@ export function getPageTitle(target: TSitePath) {
 		return pageTitleCache.get(target);
 	}
 
-	const pageTitle = siteConfig.navMenuItems.find(({href}) => href === target)?.label ?? '';
+	const pageTitle = siteConfig.navMenuItems.find(({href}) => href === target)?.label;
+	if (pageTitle === undefined) {
+		throw new Error(`[utils/getPageTitle]: page title not found for target page: ${target}`);
+	}
 
 	pageTitleCache.set(target, pageTitle);
 
