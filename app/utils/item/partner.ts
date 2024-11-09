@@ -33,10 +33,12 @@ export class Partner extends Item<TPartners> {
 
 		let bondPartner: TPartnerNames | null = null;
 
-		this._data.forEach(({belong, name}) => {
+		this._data.some(({belong, name}) => {
 			if ((belong as TCustomerRareNames[] | null)?.includes(customerName)) {
 				bondPartner = name;
+				return true;
 			}
+			return false;
 		});
 
 		Partner._bondPartnerCache.set(customerName, bondPartner);

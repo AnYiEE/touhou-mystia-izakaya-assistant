@@ -65,13 +65,15 @@ export class Cooker extends Item<TCookers> {
 
 		let bondCooker: TCookerNames | null = null;
 
-		this._data.forEach(({from, name}) => {
-			from.forEach((item) => {
+		this._data.some(({from, name}) =>
+			from.some((item) => {
 				if (isObjectLike(item) && 'bond' in item && item.bond === customerName) {
 					bondCooker = name;
+					return true;
 				}
-			});
-		});
+				return false;
+			})
+		);
 
 		Cooker._bondCookerCache.set(customerName, bondCooker);
 
