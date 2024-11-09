@@ -24,7 +24,7 @@ import {
 } from '@/data';
 import type {TBeverageTag, TIngredientTag, TRecipeTag} from '@/data/types';
 import {type IPopularData} from '@/stores';
-import {getAllItemNames, keepLastTag, reverseDirection} from '@/stores/utils';
+import {getAllItemNames, keepLastTag, reverseDirection, reverseVisibilityState} from '@/stores/utils';
 import {
 	Beverage,
 	Clothes,
@@ -819,14 +819,10 @@ export const customerRareStore = store(state, {
 			}
 		},
 		toggleCustomerTabVisibilityState() {
-			currentStore.persistence.customer.tabVisibility.set((prev) =>
-				prev === TabVisibilityState.expand ? TabVisibilityState.collapse : TabVisibilityState.expand
-			);
+			currentStore.persistence.customer.tabVisibility.set(reverseVisibilityState);
 		},
 		toggleIngredientTabVisibilityState() {
-			currentStore.persistence.ingredient.tabVisibility.set((prev) =>
-				prev === TabVisibilityState.expand ? TabVisibilityState.collapse : TabVisibilityState.expand
-			);
+			currentStore.persistence.ingredient.tabVisibility.set(reverseVisibilityState);
 		},
 		toggleMystiaCooker() {
 			const hasMystiaCooker = currentStore.shared.customer.hasMystiaCooker.get();
