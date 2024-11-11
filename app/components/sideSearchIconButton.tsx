@@ -1,4 +1,4 @@
-import {type Dispatch, type ElementRef, type SetStateAction, forwardRef, memo, useCallback} from 'react';
+import {type Dispatch, type SetStateAction, memo, useCallback} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -34,116 +34,114 @@ interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color
 	searchConfig: ISearchConfig;
 }
 
-export default memo(
-	forwardRef<ElementRef<typeof Popover>, IProps>(function SideSearchIconButton(
-		{className, searchConfig: {label, searchItems, searchValue, setSearchValue, spriteTarget}, ...props},
-		ref
-	) {
-		const vibrate = useVibrate();
+export default memo<IProps>(function SideSearchIconButton({
+	className,
+	searchConfig: {label, searchItems, searchValue, setSearchValue, spriteTarget},
+	...props
+}) {
+	const vibrate = useVibrate();
 
-		const isHighAppearance = store.persistence.highAppearance.use();
+	const isHighAppearance = store.persistence.highAppearance.use();
 
-		const handleInputChange = useCallback(
-			(value: string) => {
-				if (!value) {
-					vibrate();
-				}
-				setSearchValue(value);
-			},
-			[setSearchValue, vibrate]
-		);
+	const handleInputChange = useCallback(
+		(value: string) => {
+			if (!value) {
+				vibrate();
+			}
+			setSearchValue(value);
+		},
+		[setSearchValue, vibrate]
+	);
 
-		const handleOpenChange = useCallback(
-			(isOpen: boolean) => {
-				if (isOpen) {
-					vibrate();
-				}
-			},
-			[vibrate]
-		);
+	const handleOpenChange = useCallback(
+		(isOpen: boolean) => {
+			if (isOpen) {
+				vibrate();
+			}
+		},
+		[vibrate]
+	);
 
-		const content = `搜索（${searchValue ? '已' : '未'}激活）`;
+	const content = `搜索（${searchValue ? '已' : '未'}激活）`;
 
-		return (
-			<Popover
-				/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/3736} is fixed. */
-				// backdrop="opaque"
-				placement="left"
-				onOpenChange={handleOpenChange}
-				ref={ref}
-			>
-				<Tooltip showArrow content={content} placement="left">
-					<span className="flex">
-						<PopoverTrigger>
-							<FontAwesomeIconButton
-								color={searchValue ? 'warning' : 'primary'}
-								icon={faMagnifyingGlass}
-								variant="shadow"
-								aria-label={content}
-								className={twMerge('text-white', className)}
-								{...props}
-							/>
-						</PopoverTrigger>
-					</span>
-				</Tooltip>
-				<PopoverContent className="w-64">
-					<Autocomplete
-						allowsCustomValue
-						variant="flat"
-						defaultItems={searchItems}
-						inputValue={searchValue}
-						label={label}
-						onInputChange={handleInputChange}
-						popoverProps={{
-							motionProps: isHighAppearance
-								? {
-										initial: {},
-									}
-								: {},
-						}}
-						classNames={{
-							base: twJoin(
-								'[&_div]:transition-background',
-								isHighAppearance &&
-									'data-[slot="input-wrapper"]:[&_div]:!bg-default-100/70 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:!bg-default-200/70'
-							),
-							listboxWrapper: twJoin(
-								'[&_li]:transition-background',
-								isHighAppearance && 'data-[hover=true]:[&_li]:!bg-default-200/40'
-							),
-							popoverContent: twJoin(isHighAppearance && 'bg-content1/70 backdrop-blur-lg'),
-						}}
-					>
-						{({value}) =>
-							spriteTarget ? (
-								<AutocompleteItem
-									key={value}
-									textValue={value}
-									classNames={{
-										base: '[&>span]:inline-flex',
-									}}
-								>
-									<span className="inline-flex items-center">
-										{spriteTarget.startsWith('customer') ? (
-											<Sprite
-												target={spriteTarget}
-												name={value as never}
-												size={1.5}
-												className={twJoin(spriteTarget !== 'customer_normal' && 'rounded-full')}
-											/>
-										) : (
-											<Sprite target={spriteTarget} name={value as never} size={1} />
-										)}
-										<span className="ml-1">{value}</span>
-									</span>
-								</AutocompleteItem>
-							) : (
-								<AutocompleteItem key={value}>{value}</AutocompleteItem>
-							)
-						}
-					</Autocomplete>
-				</PopoverContent>
-			</Popover>
-		);
-	})
-);
+	return (
+		<Popover
+			/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/3736} is fixed. */
+			// backdrop="opaque"
+			placement="left"
+			onOpenChange={handleOpenChange}
+		>
+			<Tooltip showArrow content={content} placement="left">
+				<span className="flex">
+					<PopoverTrigger>
+						<FontAwesomeIconButton
+							color={searchValue ? 'warning' : 'primary'}
+							icon={faMagnifyingGlass}
+							variant="shadow"
+							aria-label={content}
+							className={twMerge('text-white', className)}
+							{...props}
+						/>
+					</PopoverTrigger>
+				</span>
+			</Tooltip>
+			<PopoverContent className="w-64">
+				<Autocomplete
+					allowsCustomValue
+					variant="flat"
+					defaultItems={searchItems}
+					inputValue={searchValue}
+					label={label}
+					onInputChange={handleInputChange}
+					popoverProps={{
+						motionProps: isHighAppearance
+							? {
+									initial: {},
+								}
+							: {},
+					}}
+					classNames={{
+						base: twJoin(
+							'[&_div]:transition-background',
+							isHighAppearance &&
+								'data-[slot="input-wrapper"]:[&_div]:!bg-default-100/70 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:!bg-default-200/70'
+						),
+						listboxWrapper: twJoin(
+							'[&_li]:transition-background',
+							isHighAppearance && 'data-[hover=true]:[&_li]:!bg-default-200/40'
+						),
+						popoverContent: twJoin(isHighAppearance && 'bg-content1/70 backdrop-blur-lg'),
+					}}
+				>
+					{({value}) =>
+						spriteTarget ? (
+							<AutocompleteItem
+								key={value}
+								textValue={value}
+								classNames={{
+									base: '[&>span]:inline-flex',
+								}}
+							>
+								<span className="inline-flex items-center">
+									{spriteTarget.startsWith('customer') ? (
+										<Sprite
+											target={spriteTarget}
+											name={value as never}
+											size={1.5}
+											className={twJoin(spriteTarget !== 'customer_normal' && 'rounded-full')}
+										/>
+									) : (
+										<Sprite target={spriteTarget} name={value as never} size={1} />
+									)}
+									<span className="ml-1">{value}</span>
+								</span>
+							</AutocompleteItem>
+						) : (
+							<AutocompleteItem key={value}>{value}</AutocompleteItem>
+						)
+					}
+				</Autocomplete>
+			</PopoverContent>
+		</Popover>
+	);
+});

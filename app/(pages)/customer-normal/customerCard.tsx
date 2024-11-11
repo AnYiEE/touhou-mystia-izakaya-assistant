@@ -1,4 +1,4 @@
-import {type ElementRef, forwardRef, useCallback, useMemo} from 'react';
+import {useCallback, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -21,9 +21,7 @@ import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, pinyinSort} from '@/utils';
 
-interface IProps {}
-
-export default forwardRef<ElementRef<typeof Card>, IProps>(function CustomerCard(_props, ref) {
+export default function CustomerCard() {
 	const vibrate = useVibrate();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
@@ -163,7 +161,6 @@ export default forwardRef<ElementRef<typeof Card>, IProps>(function CustomerCard
 			classNames={{
 				base: twJoin(isHighAppearance && 'bg-content1/40 backdrop-blur'),
 			}}
-			ref={ref}
 		>
 			<div className="flex flex-col gap-3 p-4 md:flex-row">
 				<div className="flex flex-col items-center justify-center gap-3">
@@ -350,4 +347,4 @@ export default forwardRef<ElementRef<typeof Card>, IProps>(function CustomerCard
 			</div>
 		</Card>
 	);
-});
+}

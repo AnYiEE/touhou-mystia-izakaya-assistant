@@ -1,4 +1,4 @@
-import {type ElementRef, Fragment, forwardRef} from 'react';
+import {Fragment} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -20,9 +20,7 @@ import {customerRatingColorMap} from './constants';
 import {BEVERAGE_TAG_STYLE, DARK_MATTER_NAME, RECIPE_TAG_STYLE} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 
-interface IProps {}
-
-export default forwardRef<ElementRef<typeof Card>, IProps>(function SavedMealCard(_props, ref) {
+export default function SavedMealCard() {
 	const vibrate = useVibrate();
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
@@ -81,7 +79,6 @@ export default forwardRef<ElementRef<typeof Card>, IProps>(function SavedMealCar
 			classNames={{
 				base: twJoin(isHighAppearance && 'bg-content1/40 backdrop-blur'),
 			}}
-			ref={ref}
 		>
 			<div className="space-y-3 p-4 xl:space-y-2 xl:px-2 xl:py-3">
 				{savedCustomerMeal.map(
@@ -98,9 +95,9 @@ export default forwardRef<ElementRef<typeof Card>, IProps>(function SavedMealCar
 											popular: currentCustomerPopular,
 											recipeName: recipe,
 										});
-										const isisDarkMatterOrNormalMeal = isDarkMatter || !hasMystiaCooker;
+										const isDarkMatterOrNormalMeal = isDarkMatter || !hasMystiaCooker;
 										const originalCooker = instance_recipe.getPropsByName(recipe, 'cooker');
-										const cooker = isisDarkMatterOrNormalMeal
+										const cooker = isDarkMatterOrNormalMeal
 											? originalCooker
 											: (`夜雀${originalCooker}` as const);
 										const recipeName = isDarkMatter ? DARK_MATTER_NAME : recipe;
@@ -139,7 +136,7 @@ export default forwardRef<ElementRef<typeof Card>, IProps>(function SavedMealCar
 																				/>
 																			)}
 																			{order.recipeTag &&
-																				isisDarkMatterOrNormalMeal && (
+																				isDarkMatterOrNormalMeal && (
 																					<Tags.Tag
 																						tag={order.recipeTag}
 																						tagStyle={
@@ -149,7 +146,7 @@ export default forwardRef<ElementRef<typeof Card>, IProps>(function SavedMealCar
 																					/>
 																				)}
 																			{order.beverageTag &&
-																				isisDarkMatterOrNormalMeal && (
+																				isDarkMatterOrNormalMeal && (
 																					<Tags.Tag
 																						tag={order.beverageTag}
 																						tagStyle={
@@ -368,4 +365,4 @@ export default forwardRef<ElementRef<typeof Card>, IProps>(function SavedMealCar
 			</div>
 		</Card>
 	);
-});
+}

@@ -1,4 +1,4 @@
-import {type Dispatch, type ElementRef, type SetStateAction, forwardRef, memo, useCallback} from 'react';
+import {type Dispatch, type SetStateAction, memo, useCallback} from 'react';
 import {twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -27,39 +27,37 @@ function getNextPinyinSortState(currentState: PinyinSortState): PinyinSortState 
 	return (currentState + 1) % 3;
 }
 
-export default memo(
-	forwardRef<ElementRef<typeof FontAwesomeIconButton>, IProps>(function SidePinyinSortIconButton(
-		{className, pinyinSortConfig: {pinyinSortState, setPinyinSortState}, ...props},
-		ref
-	) {
-		const vibrate = useVibrate();
+export default memo<IProps>(function SidePinyinSortIconButton({
+	className,
+	pinyinSortConfig: {pinyinSortState, setPinyinSortState},
+	...props
+}) {
+	const vibrate = useVibrate();
 
-		const handlePress = useCallback(() => {
-			vibrate();
-			setPinyinSortState(getNextPinyinSortState(pinyinSortState));
-		}, [pinyinSortState, setPinyinSortState, vibrate]);
+	const handlePress = useCallback(() => {
+		vibrate();
+		setPinyinSortState(getNextPinyinSortState(pinyinSortState));
+	}, [pinyinSortState, setPinyinSortState, vibrate]);
 
-		const label = `拼音排序（${
-			pinyinSortState === PinyinSortState.NONE
-				? '未激活'
-				: pinyinSortState === PinyinSortState.AZ
-					? '已激活：升序'
-					: '已激活：降序'
-		}）`;
+	const label = `拼音排序（${
+		pinyinSortState === PinyinSortState.NONE
+			? '未激活'
+			: pinyinSortState === PinyinSortState.AZ
+				? '已激活：升序'
+				: '已激活：降序'
+	}）`;
 
-		return (
-			<Tooltip showArrow content={label} placement="left">
-				<FontAwesomeIconButton
-					color={pinyinSortState === PinyinSortState.NONE ? 'primary' : 'warning'}
-					icon={pinyinSortState === PinyinSortState.ZA ? faArrowUpAZ : faArrowDownAZ}
-					variant="shadow"
-					onPress={handlePress}
-					aria-label={label}
-					className={twMerge('text-white', className)}
-					{...props}
-					ref={ref}
-				/>
-			</Tooltip>
-		);
-	})
-);
+	return (
+		<Tooltip showArrow content={label} placement="left">
+			<FontAwesomeIconButton
+				color={pinyinSortState === PinyinSortState.NONE ? 'primary' : 'warning'}
+				icon={pinyinSortState === PinyinSortState.ZA ? faArrowUpAZ : faArrowDownAZ}
+				variant="shadow"
+				onPress={handlePress}
+				aria-label={label}
+				className={twMerge('text-white', className)}
+				{...props}
+			/>
+		</Tooltip>
+	);
+});

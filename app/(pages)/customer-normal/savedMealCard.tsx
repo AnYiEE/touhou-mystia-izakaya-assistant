@@ -1,4 +1,4 @@
-import {type ElementRef, Fragment, forwardRef} from 'react';
+import {Fragment} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -16,9 +16,7 @@ import Tooltip from '@/components/tooltip';
 import {customerRatingColorMap} from './constants';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
 
-interface IProps {}
-
-export default forwardRef<ElementRef<typeof Card>, IProps>(function SavedMealCard(_props, ref) {
+export default function SavedMealCard() {
 	const vibrate = useVibrate();
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
@@ -77,7 +75,6 @@ export default forwardRef<ElementRef<typeof Card>, IProps>(function SavedMealCar
 			classNames={{
 				base: twJoin(isHighAppearance && 'bg-content1/40 backdrop-blur'),
 			}}
-			ref={ref}
 		>
 			<div className="space-y-3 p-4 xl:space-y-2">
 				{savedCustomerMeal.map(({beverage, extraIngredients, index: mealIndex, recipe}, loopIndex) => (
@@ -304,4 +301,4 @@ export default forwardRef<ElementRef<typeof Card>, IProps>(function SavedMealCar
 			</div>
 		</Card>
 	);
-});
+}

@@ -1,4 +1,4 @@
-import {type ElementRef, forwardRef, useCallback, useMemo} from 'react';
+import {useCallback, useMemo} from 'react';
 import {curry, curryRight} from 'lodash';
 import {twJoin} from 'tailwind-merge';
 
@@ -46,9 +46,7 @@ import {checkA11yConfirmKey, checkArraySubsetOf, numberSort, pinyinSort, process
 
 export type {TTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
 
-interface IProps {}
-
-export default forwardRef<ElementRef<typeof Table>, IProps>(function RecipeTabContent(_props, ref) {
+export default function RecipeTabContent() {
 	const openWindow = useViewInNewWindow();
 	const vibrate = useVibrate();
 
@@ -701,7 +699,6 @@ export default forwardRef<ElementRef<typeof Table>, IProps>(function RecipeTabCo
 					isHighAppearance && 'bg-content1/40 backdrop-blur'
 				),
 			}}
-			ref={ref}
 		>
 			<TableHeader columns={tableHeaderColumns}>
 				{({key, label, sortable}) => (
@@ -719,4 +716,4 @@ export default forwardRef<ElementRef<typeof Table>, IProps>(function RecipeTabCo
 			</TableBody>
 		</Table>
 	);
-});
+}

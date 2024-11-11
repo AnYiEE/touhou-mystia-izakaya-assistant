@@ -1,4 +1,4 @@
-import {type ElementRef, forwardRef, useCallback, useMemo} from 'react';
+import {useCallback, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
 import {useVibrate, useViewInNewWindow} from '@/hooks';
@@ -47,9 +47,7 @@ export type TTableColumns = ITableColumn<TTableColumnKey>[];
 type TTableSortKey = Exclude<TTableColumnKey, 'action'>;
 export type TTableSortDescriptor = ITableSortDescriptor<TTableSortKey>;
 
-interface IProps {}
-
-export default forwardRef<ElementRef<typeof Table>, IProps>(function BeverageTabContent(_props, ref) {
+export default function BeverageTabContent() {
 	const openWindow = useViewInNewWindow();
 	const vibrate = useVibrate();
 
@@ -532,7 +530,6 @@ export default forwardRef<ElementRef<typeof Table>, IProps>(function BeverageTab
 					isHighAppearance && 'bg-content1/40 backdrop-blur'
 				),
 			}}
-			ref={ref}
 		>
 			<TableHeader columns={tableHeaderColumns}>
 				{({key, label, sortable}) => (
@@ -550,4 +547,4 @@ export default forwardRef<ElementRef<typeof Table>, IProps>(function BeverageTab
 			</TableBody>
 		</Table>
 	);
-});
+}

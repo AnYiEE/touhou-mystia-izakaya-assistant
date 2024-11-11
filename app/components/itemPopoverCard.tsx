@@ -1,5 +1,6 @@
 import {
 	type ElementRef,
+	type FC,
 	type HTMLAttributes,
 	type KeyboardEvent,
 	type MouseEvent,
@@ -47,135 +48,129 @@ const {name: siteName} = siteConfig;
 
 interface ICloseButtonProps {}
 
-const CloseButton = forwardRef<ElementRef<typeof FontAwesomeIconButton>, ICloseButtonProps>(
-	function ItemPopoverCardCloseButton(_props, ref) {
-		const [params, replace] = useParams();
-		const {getBackdropProps} = usePopoverContext();
+const CloseButton: FC<ICloseButtonProps> = () => {
+	const [params, replace] = useParams();
+	const {getBackdropProps} = usePopoverContext();
 
-		const isInNewWindow = params.has(inNewWindowParam);
+	const isInNewWindow = params.has(inNewWindowParam);
 
-		const handleClose = useCallback(
-			(event: KeyboardEvent<HTMLButtonElement> | MouseEvent<HTMLButtonElement>) => {
-				if (!checkA11yConfirmKey(event)) {
-					return;
-				}
+	const handleClose = useCallback(
+		(event: KeyboardEvent<HTMLButtonElement> | MouseEvent<HTMLButtonElement>) => {
+			if (!checkA11yConfirmKey(event)) {
+				return;
+			}
 
-				getBackdropProps().onClick?.(event as MouseEvent<HTMLButtonElement>);
+			getBackdropProps().onClick?.(event as MouseEvent<HTMLButtonElement>);
 
-				if (isInNewWindow) {
-					globalThis.close();
-				}
+			if (isInNewWindow) {
+				globalThis.close();
+			}
 
-				if (params.has(openedPopoverParam)) {
-					const newParams = new URLSearchParams(params);
+			if (params.has(openedPopoverParam)) {
+				const newParams = new URLSearchParams(params);
 
-					newParams.delete(openedPopoverParam);
-					replace(newParams);
-				}
-			},
-			[getBackdropProps, isInNewWindow, params, replace]
-		);
+				newParams.delete(openedPopoverParam);
+				replace(newParams);
+			}
+		},
+		[getBackdropProps, isInNewWindow, params, replace]
+	);
 
-		const label = `点击：关闭${isInNewWindow ? '窗口' : '弹出框'}`;
+	const label = `点击：关闭${isInNewWindow ? '窗口' : '弹出框'}`;
 
-		return (
-			<Tooltip showArrow content={label} offset={-5} placement="left" size="sm">
-				<FontAwesomeIconButton
-					icon={faXmark}
-					variant="light"
-					onClick={handleClose}
-					onKeyDown={handleClose}
-					aria-label={label}
-					className="absolute -right-1 top-1 h-4 text-default-200 transition-opacity data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover"
-					ref={ref}
-				/>
-			</Tooltip>
-		);
-	}
-);
-
+	return (
+		<Tooltip showArrow content={label} offset={-5} placement="left" size="sm">
+			<FontAwesomeIconButton
+				icon={faXmark}
+				variant="light"
+				onClick={handleClose}
+				onKeyDown={handleClose}
+				aria-label={label}
+				className="absolute -right-1 top-1 h-4 text-default-200 transition-opacity data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover"
+			/>
+		</Tooltip>
+	);
+};
 interface IShareButtonProps {
 	name: TItemNames;
 }
 
-const ShareButton = memo(
-	forwardRef<ElementRef<typeof Popover>, IShareButtonProps>(function ItemPopoverCardShareButton({name}, ref) {
-		const [params] = useParams();
-		const [isCanShare, setIsCanShare] = useState(false);
-		const [shareObject, setShareObject] = useState<ShareData>({});
+const ShareButton = memo<IShareButtonProps>(function ShareButton({name}) {
+	const [params] = useParams();
+	const [isCanShare, setIsCanShare] = useState(false);
+	const [shareObject, setShareObject] = useState<ShareData>({});
 
-		const generatedUrl = useMemo(() => {
-			const newParams = new URLSearchParams(params);
+	const generatedUrl = useMemo(() => {
+		const newParams = new URLSearchParams(params);
 
-			newParams.set(openedPopoverParam, name);
+		newParams.set(openedPopoverParam, name);
 
-			return `${location.origin}${location.pathname}?${newParams.toString()}`;
-		}, [name, params]);
+		return `${location.origin}${location.pathname}?${newParams.toString()}`;
+	}, [name, params]);
 
-		useEffect(() => {
-			const text = `在${siteName}上查看【${name}】的详情`;
-			const currentShareObject = {
-				text,
-				title: text,
-				url: generatedUrl,
-			};
+	useEffect(() => {
+		const text = `在${siteName}上查看【${name}】的详情`;
+		const currentShareObject = {
+			text,
+			title: text,
+			url: generatedUrl,
+		};
 
-			setShareObject(currentShareObject);
+		setShareObject(currentShareObject);
 
-			try {
-				// For checking if the browser supports the share API.
-				setIsCanShare(navigator.canShare(currentShareObject));
-			} catch {
-				/* empty */
-			}
-		}, [generatedUrl, name]);
+		try {
+			// For checking if the browser supports the share API.
+			setIsCanShare(navigator.canShare(currentShareObject));
+		} catch {
+			/* empty */
+		}
+	}, [generatedUrl, name]);
 
-		const handlePress = useCallback(() => {
-			if (isCanShare) {
-				navigator.share(shareObject).catch(() => {});
-			}
-		}, [isCanShare, shareObject]);
+	const handlePress = useCallback(() => {
+		if (isCanShare) {
+			navigator.share(shareObject).catch(() => {});
+		}
+	}, [isCanShare, shareObject]);
 
-		const label = '点击：分享当前选中项的链接';
+	const label = '点击：分享当前选中项的链接';
 
-		return (
-			<Popover showArrow ref={ref}>
-				<Tooltip showArrow content={label} offset={-2} placement="left" size="sm">
-					<div className="absolute -right-1 bottom-1 flex">
-						<PopoverTrigger>
-							<FontAwesomeIconButton
-								icon={faShare}
-								variant="light"
-								onPress={handlePress}
-								aria-label={label}
-								className="h-4 text-default-200 transition-opacity data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover"
-							/>
-						</PopoverTrigger>
-					</div>
-				</Tooltip>
-				<PopoverContent>
-					<p className="mr-4 cursor-default select-none self-end text-right text-xs text-default-400">
-						点击以复制到当前选中项的链接↓
-					</p>
-					<Snippet
-						disableTooltip
-						size="sm"
-						symbol={<FontAwesomeIcon icon={faLink} className="mr-1 !align-middle text-default-400" />}
-						classNames={{
-							pre: 'flex max-w-screen-p-60 items-center whitespace-normal break-all',
-						}}
-					>
-						{generatedUrl}
-					</Snippet>
-				</PopoverContent>
-			</Popover>
-		);
-	})
-);
+	return (
+		<Popover showArrow>
+			<Tooltip showArrow content={label} offset={-2} placement="left" size="sm">
+				<div className="absolute -right-1 bottom-1 flex">
+					<PopoverTrigger>
+						<FontAwesomeIconButton
+							icon={faShare}
+							variant="light"
+							onPress={handlePress}
+							aria-label={label}
+							className="h-4 text-default-200 transition-opacity data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover"
+						/>
+					</PopoverTrigger>
+				</div>
+			</Tooltip>
+			<PopoverContent>
+				<p className="mr-4 cursor-default select-none self-end text-right text-xs text-default-400">
+					点击以复制到当前选中项的链接↓
+				</p>
+				<Snippet
+					disableTooltip
+					size="sm"
+					symbol={<FontAwesomeIcon icon={faLink} className="mr-1 !align-middle text-default-400" />}
+					classNames={{
+						pre: 'flex max-w-screen-p-60 items-center whitespace-normal break-all',
+					}}
+				>
+					{generatedUrl}
+				</Snippet>
+			</PopoverContent>
+		</Popover>
+	);
+});
 
 interface ITriggerProps extends PopoverTriggerProps, HTMLAttributes<HTMLButtonElement> {}
 
-const Trigger = memo<ITriggerProps>(function ItemPopoverCardITrigger({className, ...props}) {
+const Trigger = memo<ITriggerProps>(function Trigger({className, ...props}) {
 	const isHighAppearance = store.persistence.highAppearance.use();
 
 	return (

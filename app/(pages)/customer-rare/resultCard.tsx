@@ -1,14 +1,4 @@
-import {
-	type ElementRef,
-	type HTMLAttributes,
-	forwardRef,
-	memo,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from 'react';
+import {type HTMLAttributes, memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import useBreakpoint from 'use-breakpoint';
@@ -31,51 +21,45 @@ interface IPlusProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'className'> 
 	size?: number;
 }
 
-export const Plus = memo(
-	forwardRef<ElementRef<'span'>, IPlusProps>(function Plus({className, size = 1}, ref) {
-		const remString = `${size}rem`;
+export const Plus = memo<IPlusProps>(function Plus({className, size = 1}) {
+	const remString = `${size}rem`;
 
-		return (
-			<span
-				className={twMerge('mx-1 text-center leading-none', className)}
-				style={{
-					fontSize: remString,
-					width: remString,
-				}}
-				ref={ref}
-			>
-				<FontAwesomeIcon icon={faPlus} />
-			</span>
-		);
-	})
-);
+	return (
+		<span
+			className={twMerge('mx-1 text-center leading-none', className)}
+			style={{
+				fontSize: remString,
+				width: remString,
+			}}
+		>
+			<FontAwesomeIcon icon={faPlus} />
+		</span>
+	);
+});
 
 interface IUnknownItemProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'className' | 'title'> {
 	size?: number;
 }
 
-export const UnknownItem = memo(
-	forwardRef<ElementRef<'span'>, IUnknownItemProps>(function UnknownItem({className, size = 2, title}, ref) {
-		const remString = `${size}rem`;
+export const UnknownItem = memo<IUnknownItemProps>(function UnknownItem({className, size = 2, title}) {
+	const remString = `${size}rem`;
 
-		return (
-			<Tooltip showArrow content={title} offset={7 + -8 * (size - 2)}>
-				<span
-					role="img"
-					title={title}
-					className={twMerge('outline-3 inline-block text-center leading-none outline-double', className)}
-					style={{
-						fontSize: remString,
-						width: remString,
-					}}
-					ref={ref}
-				>
-					<FontAwesomeIcon icon={faQuestion} className="rotate-12" />
-				</span>
-			</Tooltip>
-		);
-	})
-);
+	return (
+		<Tooltip showArrow content={title} offset={7 + -8 * (size - 2)}>
+			<span
+				role="img"
+				title={title}
+				className={twMerge('outline-3 inline-block text-center leading-none outline-double', className)}
+				style={{
+					fontSize: remString,
+					width: remString,
+				}}
+			>
+				<FontAwesomeIcon icon={faQuestion} className="rotate-12" />
+			</span>
+		</Tooltip>
+	);
+});
 
 function IngredientsList() {
 	const vibrate = useVibrate();
@@ -155,9 +139,7 @@ function IngredientsList() {
 	);
 }
 
-interface IResultCardProps {}
-
-export default forwardRef<ElementRef<typeof Card>, IResultCardProps>(function ResultCard(_props, ref) {
+export default function ResultCard() {
 	const {breakpoint: placement} = useBreakpoint(
 		{
 			left: 426,
@@ -252,7 +234,7 @@ export default forwardRef<ElementRef<typeof Card>, IResultCardProps>(function Re
 			return null;
 		}
 		return (
-			<Placeholder className="pb-8 pt-12 leading-none md:pt-8 xl:pb-4 xl:pt-0" ref={ref}>
+			<Placeholder className="pb-8 pt-12 leading-none md:pt-8 xl:pb-4 xl:pt-0">
 				选择一种料理或酒水以继续
 			</Placeholder>
 		);
@@ -265,7 +247,6 @@ export default forwardRef<ElementRef<typeof Card>, IResultCardProps>(function Re
 			classNames={{
 				base: twJoin(isHighAppearance && 'bg-content1/40 backdrop-blur'),
 			}}
-			ref={ref}
 		>
 			<div className="flex flex-col items-center gap-4 p-4 md:flex-row">
 				<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
@@ -355,4 +336,4 @@ export default forwardRef<ElementRef<typeof Card>, IResultCardProps>(function Re
 			</div>
 		</Card>
 	);
-});
+}

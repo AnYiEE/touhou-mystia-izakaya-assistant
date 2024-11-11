@@ -1,4 +1,4 @@
-import {type ElementRef, forwardRef, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {twJoin} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -96,9 +96,7 @@ function IngredientsList() {
 	);
 }
 
-interface IResultCardProps {}
-
-export default forwardRef<ElementRef<typeof Card>, IResultCardProps>(function ResultCard(_props, ref) {
+export default function ResultCard() {
 	const vibrate = useVibrate();
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
@@ -148,9 +146,7 @@ export default forwardRef<ElementRef<typeof Card>, IResultCardProps>(function Re
 			return null;
 		}
 		return (
-			<Placeholder className="pb-8 pt-12 leading-none md:pt-8 xl:pb-4 xl:pt-0" ref={ref}>
-				选择点单料理以继续
-			</Placeholder>
+			<Placeholder className="pb-8 pt-12 leading-none md:pt-8 xl:pb-4 xl:pt-0">选择点单料理以继续</Placeholder>
 		);
 	}
 
@@ -161,7 +157,6 @@ export default forwardRef<ElementRef<typeof Card>, IResultCardProps>(function Re
 			classNames={{
 				base: twJoin(isHighAppearance && 'bg-content1/40 backdrop-blur'),
 			}}
-			ref={ref}
 		>
 			<div className="flex flex-col items-center gap-4 p-4 md:flex-row">
 				<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
@@ -211,4 +206,4 @@ export default forwardRef<ElementRef<typeof Card>, IResultCardProps>(function Re
 			</div>
 		</Card>
 	);
-});
+}

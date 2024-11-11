@@ -1,4 +1,4 @@
-import {type ElementRef, type PropsWithChildren, forwardRef, memo} from 'react';
+import {type PropsWithChildren, memo} from 'react';
 
 import {Switch, type SwitchProps} from '@nextui-org/react';
 
@@ -8,29 +8,23 @@ interface IProps {
 	onValueChange: NonNullable<SwitchProps['onValueChange']>;
 }
 
-export default memo(
-	forwardRef<ElementRef<typeof Switch>, PropsWithChildren<IProps>>(function SwitchItem(
-		{children, isSelected, onValueChange, ...props},
-		ref
-	) {
-		return (
-			<div className="flex items-center gap-2">
-				<span className="font-medium">{children}</span>
-				<Switch
-					endContent={<span>关</span>}
-					startContent={<span>开</span>}
-					isSelected={isSelected}
-					size="sm"
-					onValueChange={onValueChange}
-					classNames={{
-						endContent: 'leading-none',
-						startContent: 'leading-none',
-						wrapper: 'bg-default-300 dark:bg-default-200',
-					}}
-					{...props}
-					ref={ref}
-				/>
-			</div>
-		);
-	})
-);
+export default memo<PropsWithChildren<IProps>>(function SwitchItem({children, isSelected, onValueChange, ...props}) {
+	return (
+		<div className="flex items-center gap-2">
+			<span className="font-medium">{children}</span>
+			<Switch
+				endContent={<span>关</span>}
+				startContent={<span>开</span>}
+				isSelected={isSelected}
+				size="sm"
+				onValueChange={onValueChange}
+				classNames={{
+					endContent: 'leading-none',
+					startContent: 'leading-none',
+					wrapper: 'bg-default-300 dark:bg-default-200',
+				}}
+				{...props}
+			/>
+		</div>
+	);
+});
