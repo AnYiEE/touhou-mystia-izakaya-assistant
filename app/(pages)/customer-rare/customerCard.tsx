@@ -1,4 +1,4 @@
-import {forwardRef, useCallback, useMemo} from 'react';
+import {type ElementRef, forwardRef, useCallback, useMemo} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -24,7 +24,7 @@ import {checkA11yConfirmKey, pinyinSort} from '@/utils';
 
 interface IProps {}
 
-export default forwardRef<HTMLDivElement | null, IProps>(function CustomerCard(_props, ref) {
+export default forwardRef<ElementRef<typeof Card>, IProps>(function CustomerCard(_props, ref) {
 	const vibrate = useVibrate();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();

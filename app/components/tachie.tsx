@@ -1,4 +1,4 @@
-import {forwardRef, memo} from 'react';
+import {type ElementRef, forwardRef, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
 import {Image, type ImageProps} from '@nextui-org/react';
@@ -6,7 +6,7 @@ import {Image, type ImageProps} from '@nextui-org/react';
 interface IProps extends Pick<ImageProps, 'alt' | 'aria-hidden' | 'className' | 'src' | 'width'> {}
 
 export default memo(
-	forwardRef<HTMLImageElement | null, IProps>(function Tachie({alt, className, src, width, ...props}, ref) {
+	forwardRef<ElementRef<typeof Image>, IProps>(function Tachie({alt, className, src, width, ...props}, ref) {
 		return (
 			<Image
 				removeWrapper

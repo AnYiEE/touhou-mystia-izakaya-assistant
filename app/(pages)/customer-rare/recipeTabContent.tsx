@@ -1,4 +1,4 @@
-import {forwardRef, useCallback, useMemo} from 'react';
+import {type ElementRef, forwardRef, useCallback, useMemo} from 'react';
 import {curry, curryRight} from 'lodash';
 import {twJoin} from 'tailwind-merge';
 
@@ -51,7 +51,7 @@ export type TTableSortDescriptor = ITableSortDescriptor<TTableSortKey>;
 
 interface IProps {}
 
-export default forwardRef<HTMLTableElement | null, IProps>(function RecipeTabContent(_props, ref) {
+export default forwardRef<ElementRef<typeof Table>, IProps>(function RecipeTabContent(_props, ref) {
 	const openWindow = useViewInNewWindow();
 	const vibrate = useVibrate();
 

@@ -1,10 +1,10 @@
-import {type HTMLAttributes, type PropsWithChildren, forwardRef, memo} from 'react';
+import {type ElementRef, type HTMLAttributes, type PropsWithChildren, forwardRef, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
 interface ILiProps extends Pick<HTMLAttributes<HTMLLIElement>, 'className'> {}
 
 const Li = memo(
-	forwardRef<HTMLLIElement | null, PropsWithChildren<ILiProps>>(function Li({children, className}, ref) {
+	forwardRef<ElementRef<'li'>, PropsWithChildren<ILiProps>>(function Li({children, className}, ref) {
 		return (
 			<li ref={ref}>
 				<span className={twMerge('relative -left-2', className)}>{children}</span>
@@ -16,7 +16,7 @@ const Li = memo(
 interface IOlProps extends Pick<HTMLAttributes<HTMLOListElement>, 'className'> {}
 
 const OlComponent = memo(
-	forwardRef<HTMLOListElement | null, PropsWithChildren<IOlProps>>(function Ol({children, className}, ref) {
+	forwardRef<ElementRef<'ol'>, PropsWithChildren<IOlProps>>(function Ol({children, className}, ref) {
 		return (
 			<ol className={twMerge('list-inside list-disc break-all text-justify', className)} ref={ref}>
 				{children}

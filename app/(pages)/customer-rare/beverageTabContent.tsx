@@ -1,4 +1,4 @@
-import {forwardRef, useCallback, useMemo} from 'react';
+import {type ElementRef, forwardRef, useCallback, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
 import {useVibrate, useViewInNewWindow} from '@/hooks';
@@ -49,7 +49,7 @@ export type TTableSortDescriptor = ITableSortDescriptor<TTableSortKey>;
 
 interface IProps {}
 
-export default forwardRef<HTMLTableElement | null, IProps>(function BeverageTabContent(_props, ref) {
+export default forwardRef<ElementRef<typeof Table>, IProps>(function BeverageTabContent(_props, ref) {
 	const openWindow = useViewInNewWindow();
 	const vibrate = useVibrate();
 

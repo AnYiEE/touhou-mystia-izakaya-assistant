@@ -1,4 +1,4 @@
-import {type HTMLAttributes, type PropsWithChildren, forwardRef, memo} from 'react';
+import {type ElementRef, type HTMLAttributes, type PropsWithChildren, forwardRef, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
 type THeadingClassName = Pick<HTMLAttributes<HTMLHeadingElement>, 'className'>;
@@ -13,7 +13,7 @@ interface IProps extends THeadingClassName {
 }
 
 export default memo(
-	forwardRef<HTMLHeadingElement | null, PropsWithChildren<IProps>>(function H3(
+	forwardRef<ElementRef<'h3'>, PropsWithChildren<IProps>>(function H3(
 		{children, className, classNames, isFirst, subTitle},
 		ref
 	) {

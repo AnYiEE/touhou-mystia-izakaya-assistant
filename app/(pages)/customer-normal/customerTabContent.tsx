@@ -1,4 +1,4 @@
-import {forwardRef, memo, useCallback} from 'react';
+import {type ElementRef, forwardRef, memo, useCallback} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -18,7 +18,10 @@ interface IProps {
 }
 
 export default memo(
-	forwardRef<HTMLDivElement | null, IProps>(function CustomerTabContent({customerTabStyle, sortedData}, ref) {
+	forwardRef<ElementRef<typeof ScrollShadow>, IProps>(function CustomerTabContent(
+		{customerTabStyle, sortedData},
+		ref
+	) {
 		const vibrate = useVibrate();
 
 		const currentCustomerName = customerStore.shared.customer.name.use();

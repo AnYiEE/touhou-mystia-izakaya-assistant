@@ -1,4 +1,4 @@
-import {forwardRef, memo, useCallback, useMemo} from 'react';
+import {type ElementRef, forwardRef, memo, useCallback, useMemo} from 'react';
 import {curry, curryRight} from 'lodash';
 import {twJoin, twMerge} from 'tailwind-merge';
 
@@ -30,7 +30,10 @@ interface IProps {
 }
 
 export default memo(
-	forwardRef<HTMLDivElement | null, IProps>(function IngredientTabContent({ingredientTabStyle, sortedData}, ref) {
+	forwardRef<ElementRef<typeof ScrollShadow>, IProps>(function IngredientTabContent(
+		{ingredientTabStyle, sortedData},
+		ref
+	) {
 		const vibrate = useVibrate();
 
 		const currentCustomerName = customerStore.shared.customer.name.use();

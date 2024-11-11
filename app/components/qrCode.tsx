@@ -1,6 +1,6 @@
 'use client';
 
-import {type HTMLAttributes, type PropsWithChildren, forwardRef, memo} from 'react';
+import {type ElementRef, type HTMLAttributes, type PropsWithChildren, forwardRef, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
 import {useQRCode} from 'next-qrcode';
@@ -12,7 +12,7 @@ interface IProps extends Omit<IQRCode, 'logo'>, Pick<HTMLAttributes<HTMLDivEleme
 }
 
 export default memo(
-	forwardRef<HTMLDivElement | null, PropsWithChildren<IProps>>(function QRCode(
+	forwardRef<ElementRef<'div'>, PropsWithChildren<IProps>>(function QRCode(
 		{children, className, options, text, type = 'svg'},
 		ref
 	) {

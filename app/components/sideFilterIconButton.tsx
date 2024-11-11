@@ -1,4 +1,4 @@
-import {type Dispatch, forwardRef, memo, useCallback, useMemo} from 'react';
+import {type Dispatch, type ElementRef, forwardRef, memo, useCallback, useMemo} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -39,7 +39,10 @@ interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color
 }
 
 export default memo(
-	forwardRef<HTMLDivElement | null, IProps>(function SideFilterIconButton({className, selectConfig, ...props}, ref) {
+	forwardRef<ElementRef<typeof Popover>, IProps>(function SideFilterIconButton(
+		{className, selectConfig, ...props},
+		ref
+	) {
 		const vibrate = useVibrate();
 
 		const isHighAppearance = store.persistence.highAppearance.use();

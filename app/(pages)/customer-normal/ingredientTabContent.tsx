@@ -1,4 +1,4 @@
-import {forwardRef, memo, useCallback, useMemo} from 'react';
+import {type ElementRef, forwardRef, memo, useCallback, useMemo} from 'react';
 import {curry, curryRight} from 'lodash';
 import {twJoin, twMerge} from 'tailwind-merge';
 
@@ -24,7 +24,7 @@ import {type Recipe, checkA11yConfirmKey, intersection, toValueWithKey, union} f
 import type {TItemDataItem} from '@/utils/types';
 
 export default memo(
-	forwardRef<HTMLDivElement | null, IIngredientTabContentProps>(function IngredientsTabContent(
+	forwardRef<ElementRef<typeof ScrollShadow>, IIngredientTabContentProps>(function IngredientsTabContent(
 		{ingredientTabStyle, sortedData},
 		ref
 	) {

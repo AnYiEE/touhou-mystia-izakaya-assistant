@@ -1,4 +1,5 @@
 import {
+	type ElementRef,
 	type HTMLAttributes,
 	type KeyboardEvent,
 	type MouseEvent,
@@ -46,7 +47,7 @@ const {name: siteName} = siteConfig;
 
 interface ICloseButtonProps {}
 
-const CloseButton = forwardRef<HTMLButtonElement | null, ICloseButtonProps>(
+const CloseButton = forwardRef<ElementRef<typeof FontAwesomeIconButton>, ICloseButtonProps>(
 	function ItemPopoverCardCloseButton(_props, ref) {
 		const [params, replace] = useParams();
 		const {getBackdropProps} = usePopoverContext();
@@ -98,7 +99,7 @@ interface IShareButtonProps {
 }
 
 const ShareButton = memo(
-	forwardRef<HTMLDivElement | null, IShareButtonProps>(function ItemPopoverCardShareButton({name}, ref) {
+	forwardRef<ElementRef<typeof Popover>, IShareButtonProps>(function ItemPopoverCardShareButton({name}, ref) {
 		const [params] = useParams();
 		const [isCanShare, setIsCanShare] = useState(false);
 		const [shareObject, setShareObject] = useState<ShareData>({});
@@ -213,7 +214,7 @@ interface IItemPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 }
 
 const ItemPopoverCardComponent = memo(
-	forwardRef<HTMLDivElement | null, PropsWithChildren<IItemPopoverCardProps>>(function ItemPopoverCard(
+	forwardRef<ElementRef<'div'>, PropsWithChildren<IItemPopoverCardProps>>(function ItemPopoverCard(
 		{children, cooker, description, displayName, dlc, id, ingredients, name, tagColors, tags, target},
 		ref
 	) {

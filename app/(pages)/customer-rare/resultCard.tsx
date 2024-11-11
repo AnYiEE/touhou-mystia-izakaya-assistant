@@ -1,4 +1,14 @@
-import {type HTMLAttributes, forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {
+	type ElementRef,
+	type HTMLAttributes,
+	forwardRef,
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import useBreakpoint from 'use-breakpoint';
@@ -22,7 +32,7 @@ interface IPlusProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'className'> 
 }
 
 export const Plus = memo(
-	forwardRef<HTMLSpanElement | null, IPlusProps>(function Plus({className, size = 1}, ref) {
+	forwardRef<ElementRef<'span'>, IPlusProps>(function Plus({className, size = 1}, ref) {
 		const remString = `${size}rem`;
 
 		return (
@@ -45,7 +55,7 @@ interface IUnknownItemProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'class
 }
 
 export const UnknownItem = memo(
-	forwardRef<HTMLSpanElement | null, IUnknownItemProps>(function UnknownItem({className, size = 2, title}, ref) {
+	forwardRef<ElementRef<'span'>, IUnknownItemProps>(function UnknownItem({className, size = 2, title}, ref) {
 		const remString = `${size}rem`;
 
 		return (
@@ -147,7 +157,7 @@ function IngredientsList() {
 
 interface IResultCardProps {}
 
-export default forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
+export default forwardRef<ElementRef<typeof Card>, IResultCardProps>(function ResultCard(_props, ref) {
 	const {breakpoint: placement} = useBreakpoint(
 		{
 			left: 426,

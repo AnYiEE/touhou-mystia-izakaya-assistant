@@ -1,4 +1,4 @@
-import {type Dispatch, type SetStateAction, forwardRef, memo, useCallback} from 'react';
+import {type Dispatch, type ElementRef, type SetStateAction, forwardRef, memo, useCallback} from 'react';
 import {twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -28,7 +28,7 @@ function getNextPinyinSortState(currentState: PinyinSortState): PinyinSortState 
 }
 
 export default memo(
-	forwardRef<HTMLButtonElement | null, IProps>(function SidePinyinSortIconButton(
+	forwardRef<ElementRef<typeof FontAwesomeIconButton>, IProps>(function SidePinyinSortIconButton(
 		{className, pinyinSortConfig: {pinyinSortState, setPinyinSortState}, ...props},
 		ref
 	) {

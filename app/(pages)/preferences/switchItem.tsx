@@ -1,4 +1,4 @@
-import {type PropsWithChildren, forwardRef, memo} from 'react';
+import {type ElementRef, type PropsWithChildren, forwardRef, memo} from 'react';
 
 import {Switch, type SwitchProps} from '@nextui-org/react';
 
@@ -9,7 +9,7 @@ interface IProps {
 }
 
 export default memo(
-	forwardRef<HTMLInputElement | null, PropsWithChildren<IProps>>(function SwitchItem(
+	forwardRef<ElementRef<typeof Switch>, PropsWithChildren<IProps>>(function SwitchItem(
 		{children, isSelected, onValueChange, ...props},
 		ref
 	) {

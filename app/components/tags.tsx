@@ -1,4 +1,4 @@
-import {type HTMLAttributes, forwardRef, memo} from 'react';
+import {type ElementRef, type HTMLAttributes, forwardRef, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
 import {type TTags} from '@/data';
@@ -14,10 +14,7 @@ interface ITagProps extends ITagPropsBase, HTMLAttributes<HTMLSpanElement> {
 }
 
 const Tag = memo(
-	forwardRef<HTMLSpanElement | null, ITagProps>(function Tag(
-		{className, tag, tagStyle = {}, tagType, ...props},
-		ref
-	) {
+	forwardRef<ElementRef<'span'>, ITagProps>(function Tag({className, tag, tagStyle = {}, tagType, ...props}, ref) {
 		const isArray = Array.isArray(tag);
 		const tagDescription = isArray ? `（${tag[1]}）` : '';
 		const tagName = isArray ? tag[0] : tag;

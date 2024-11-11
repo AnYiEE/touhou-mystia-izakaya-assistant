@@ -1,4 +1,4 @@
-import {forwardRef, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {type ElementRef, forwardRef, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {twJoin} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -98,7 +98,7 @@ function IngredientsList() {
 
 interface IResultCardProps {}
 
-export default forwardRef<HTMLDivElement | null, IResultCardProps>(function ResultCard(_props, ref) {
+export default forwardRef<ElementRef<typeof Card>, IResultCardProps>(function ResultCard(_props, ref) {
 	const vibrate = useVibrate();
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();

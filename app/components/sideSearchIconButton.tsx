@@ -1,4 +1,4 @@
-import {type Dispatch, type SetStateAction, forwardRef, memo, useCallback} from 'react';
+import {type Dispatch, type ElementRef, type SetStateAction, forwardRef, memo, useCallback} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -35,7 +35,7 @@ interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color
 }
 
 export default memo(
-	forwardRef<HTMLDivElement | null, IProps>(function SideSearchIconButton(
+	forwardRef<ElementRef<typeof Popover>, IProps>(function SideSearchIconButton(
 		{className, searchConfig: {label, searchItems, searchValue, setSearchValue, spriteTarget}, ...props},
 		ref
 	) {

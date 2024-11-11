@@ -1,4 +1,4 @@
-import {forwardRef, memo} from 'react';
+import {type ElementRef, forwardRef, memo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
 import {Card, type CardProps} from '@nextui-org/react';
@@ -12,7 +12,7 @@ interface IProps extends Omit<CardProps, 'className' | 'classNames'> {
 }
 
 export default memo(
-	forwardRef<HTMLDivElement | null, IProps>(function ItemCard({description, image, name, ...cardProps}, ref) {
+	forwardRef<ElementRef<typeof Card>, IProps>(function ItemCard({description, image, name, ...cardProps}, ref) {
 		const isHighAppearance = store.persistence.highAppearance.use();
 
 		return (

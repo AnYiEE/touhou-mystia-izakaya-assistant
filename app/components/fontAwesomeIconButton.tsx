@@ -1,4 +1,4 @@
-import {forwardRef, memo} from 'react';
+import {type ElementRef, forwardRef, memo} from 'react';
 
 import {Button, type ButtonProps} from '@nextui-org/react';
 import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
@@ -6,12 +6,12 @@ import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fon
 interface IProps extends Omit<ButtonProps, 'isIconOnly'>, Pick<FontAwesomeIconProps, 'icon'> {}
 
 export default memo(
-	forwardRef<HTMLButtonElement | null, IProps>(function FontAwesomeIconButton(
-		{icon, radius = 'full', size = 'sm', ...buttonProps},
+	forwardRef<ElementRef<typeof Button>, IProps>(function FontAwesomeIconButton(
+		{icon, radius = 'full', size = 'sm', ...props},
 		ref
 	) {
 		return (
-			<Button isIconOnly radius={radius} size={size} {...buttonProps} ref={ref}>
+			<Button isIconOnly radius={radius} size={size} {...props} ref={ref}>
 				<FontAwesomeIcon icon={icon} size="lg" />
 			</Button>
 		);

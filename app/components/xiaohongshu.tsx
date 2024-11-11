@@ -1,10 +1,10 @@
-import {type SVGAttributes, forwardRef, memo} from 'react';
+import {type ElementRef, type SVGAttributes, forwardRef, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
 interface IProps extends Pick<SVGAttributes<SVGSVGElement>, 'className'> {}
 
 export default memo(
-	forwardRef<SVGSVGElement | null, IProps>(function Xiaohongshu({className}, ref) {
+	forwardRef<ElementRef<'svg'>, IProps>(function Xiaohongshu({className}, ref) {
 		return (
 			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" height="256px" width="256px" ref={ref}>
 				<path

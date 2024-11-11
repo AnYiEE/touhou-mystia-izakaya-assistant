@@ -1,4 +1,4 @@
-import {Fragment, forwardRef} from 'react';
+import {type ElementRef, Fragment, forwardRef} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -22,7 +22,7 @@ import {customerRareStore as customerStore, globalStore} from '@/stores';
 
 interface IProps {}
 
-export default forwardRef<HTMLDivElement | null, IProps>(function SavedMealCard(_props, ref) {
+export default forwardRef<ElementRef<typeof Card>, IProps>(function SavedMealCard(_props, ref) {
 	const vibrate = useVibrate();
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
