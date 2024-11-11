@@ -116,7 +116,7 @@
 		"eslint-plugin-unicorn": "^56.0.0",
 		"husky": "^9.1.6",
 		"only-allow": "^1.2.1",
-		"postcss": "^8.4.47",
+		"postcss": "^8.4.48",
 		"postcss-flexbugs-fixes": "^5.0.2",
 		"postcss-preset-env": "^10.0.9",
 		"prettier": "^3.3.3",
