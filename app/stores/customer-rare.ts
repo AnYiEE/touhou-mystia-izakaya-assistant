@@ -24,7 +24,7 @@ import {
 } from '@/data';
 import type {TBeverageTag, TIngredientTag, TRecipeTag} from '@/data/types';
 import {type IPopularData} from '@/stores';
-import {getAllItemNames, keepLastTag, reverseDirection, reverseVisibilityState} from '@/stores/utils';
+import {type TNameObject, getNames, keepLastTag, reverseDirection, reverseVisibilityState} from '@/stores/utils';
 import {
 	Beverage,
 	Clothes,
@@ -246,6 +246,8 @@ export type TCustomerRarePersistenceState = IPersistenceState<(typeof state)['pe
 
 export const customerRareStoreKey = 'page-customer_rare-storage';
 
+const namesCache = new Map<PinyinSortState, TNameObject<CustomerRare>>();
+
 export const customerRareStore = store(state, {
 	persist: {
 		enabled: true,
@@ -434,7 +436,7 @@ export const customerRareStore = store(state, {
 })
 	.computed((currentStore) => ({
 		customerNames: () =>
-			getAllItemNames(instance_customer, currentStore.persistence.customer.pinyinSortState.use()),
+			getNames(namesCache, instance_customer, currentStore.persistence.customer.pinyinSortState.use()),
 
 		beverageTableColumns: {
 			read: () => new Set(currentStore.persistence.beverage.table.visibleColumns.use()) as SelectionSet,

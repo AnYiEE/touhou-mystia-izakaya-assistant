@@ -3,7 +3,7 @@ import {createJSONStorage} from 'zustand/middleware';
 
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
-import {getAllItemNames} from '@/stores/utils';
+import {type TNameObject, getNames} from '@/stores/utils';
 import {Beverage, numberSort, toValueObject} from '@/utils';
 
 const instance = Beverage.getInstance();
@@ -32,6 +32,8 @@ const state = {
 	},
 };
 
+const namesCache = new Map<PinyinSortState, TNameObject<Beverage>>();
+
 export const beveragesStore = store(state, {
 	persist: {
 		enabled: true,
@@ -55,5 +57,5 @@ export const beveragesStore = store(state, {
 		storage: createJSONStorage(() => localStorage),
 	},
 }).computed((currentStore) => ({
-	names: () => getAllItemNames(instance, currentStore.persistence.pinyinSortState.use()),
+	names: () => getNames(namesCache, instance, currentStore.persistence.pinyinSortState.use()),
 }));
