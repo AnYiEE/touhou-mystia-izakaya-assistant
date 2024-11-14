@@ -209,6 +209,8 @@ export const customerNormalStoreKey = 'page-customer_normal-storage';
 
 const namesCache = new Map<PinyinSortState, TNameObject<CustomerNormal>>();
 
+const savedMealRatingCache = new Map<string, TCustomerRating>();
+
 export const customerNormalStore = store(state, {
 	persist: {
 		enabled: true,
@@ -551,16 +553,17 @@ export const customerNormalStore = store(state, {
 			});
 			currentStore.shared.customer.rating.set(rating);
 		},
-		evaluateSavedMealResult({
-			extraIngredients,
-			popular,
-			recipeName,
-		}: {
+		evaluateSavedMealResult(data: {
 			customerName: TCustomerNormalNames;
 			extraIngredients: TIngredientNames[];
 			popular: IPopularData;
 			recipeName: TRecipeNames;
 		}) {
+			const stringifiedData = JSON.stringify(data);
+			if (savedMealRatingCache.has(stringifiedData)) {
+				return savedMealRatingCache.get(stringifiedData);
+			}
+			const {extraIngredients, popular, recipeName} = data;
 			const customerName = currentStore.shared.customer.name.get();
 			if (customerName === null) {
 				throw new ReferenceError('[stores/customer-normal/evaluateSavedMealResult]: `customerName` is null');
@@ -576,8 +579,9 @@ export const customerNormalStore = store(state, {
 				currentExtraIngredientsLength: extraIngredients.length,
 				currentExtraTags: extraTags,
 				currentRecipe: instance_recipe.getPropsByName(recipeName),
-			});
-			return rating as TCustomerRating;
+			}) as TCustomerRating;
+			savedMealRatingCache.set(stringifiedData, rating);
+			return rating;
 		},
 		removeMealIngredient(ingredientName: TIngredientNames) {
 			currentStore.shared.recipe.data.set((prev) => {

@@ -248,6 +248,13 @@ export const customerRareStoreKey = 'page-customer_rare-storage';
 
 const namesCache = new Map<PinyinSortState, TNameObject<CustomerRare>>();
 
+type TSavedMealRatingResult = {
+	isDarkMatter: boolean;
+	price: number;
+	rating: TCustomerRating;
+};
+const savedMealRatingCache = new Map<string, TSavedMealRatingResult>();
+
 export const customerRareStore = store(state, {
 	persist: {
 		enabled: true,
@@ -674,14 +681,7 @@ export const customerRareStore = store(state, {
 			});
 			currentStore.shared.customer.rating.set(rating);
 		},
-		evaluateSavedMealResult({
-			beverageName,
-			extraIngredients,
-			hasMystiaCooker,
-			order,
-			popular,
-			recipeName,
-		}: {
+		evaluateSavedMealResult(data: {
 			beverageName: TBeverageNames;
 			extraIngredients: TIngredientNames[];
 			hasMystiaCooker: boolean;
@@ -689,6 +689,11 @@ export const customerRareStore = store(state, {
 			popular: IPopularData;
 			recipeName: TRecipeNames;
 		}) {
+			const stringifiedData = JSON.stringify(data);
+			if (savedMealRatingCache.has(stringifiedData)) {
+				return savedMealRatingCache.get(stringifiedData);
+			}
+			const {beverageName, extraIngredients, hasMystiaCooker, order, popular, recipeName} = data;
 			const customerName = currentStore.shared.customer.name.get();
 			if (customerName === null) {
 				throw new ReferenceError('[stores/customer-rare/evaluateSavedMealResult]: `customerName` is null');
@@ -727,11 +732,13 @@ export const customerRareStore = store(state, {
 				hasMystiaCooker,
 				isDarkMatter,
 			});
-			return {
+			const result = {
 				isDarkMatter,
 				price: beveragePrice + recipePrice,
-				rating: rating as TCustomerRating,
-			};
+				rating,
+			} as TSavedMealRatingResult;
+			savedMealRatingCache.set(stringifiedData, result);
+			return result;
 		},
 		removeMealIngredient(ingredientName: TIngredientNames) {
 			currentStore.shared.recipe.data.set((prev) => {
