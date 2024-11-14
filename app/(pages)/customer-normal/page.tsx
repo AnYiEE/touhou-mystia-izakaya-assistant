@@ -37,14 +37,6 @@ import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {checkArrayContainsOf, checkArraySubsetOf} from '@/utils';
 
 export default function CustomerNormal() {
-	customerStore.shared.customer.name.onChange(() => {
-		customerStore.refreshCustomerSelectedItems();
-		customerStore.refreshAllSelectedItems();
-	});
-	customerStore.shared.customer.popular.isNegative.onChange(customerStore.evaluateMealResult);
-	customerStore.shared.customer.popular.onChange(customerStore.evaluateMealResult);
-	customerStore.shared.recipe.tagsWithPopular.onChange(customerStore.evaluateMealResult);
-
 	const {breakpoint} = useBreakpoint(tachieBreakPoint, 'noTachie');
 	const vibrate = useVibrate();
 

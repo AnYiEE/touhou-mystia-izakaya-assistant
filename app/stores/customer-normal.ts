@@ -656,3 +656,12 @@ export const customerNormalStore = store(state, {
 			currentStore.persistence.ingredient.tabVisibility.set(reverseVisibilityState);
 		},
 	}));
+
+customerNormalStore.shared.customer.name.onChange(() => {
+	customerNormalStore.refreshCustomerSelectedItems();
+	customerNormalStore.refreshAllSelectedItems();
+});
+
+customerNormalStore.shared.customer.popular.isNegative.onChange(customerNormalStore.evaluateMealResult);
+customerNormalStore.shared.customer.popular.onChange(customerNormalStore.evaluateMealResult);
+customerNormalStore.shared.recipe.tagsWithPopular.onChange(customerNormalStore.evaluateMealResult);

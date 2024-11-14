@@ -839,3 +839,27 @@ export const customerRareStore = store(state, {
 			trackEvent(hasMystiaCooker ? TrackCategory.Unselect : TrackCategory.Select, 'MystiaCooker');
 		},
 	}));
+
+customerRareStore.shared.customer.name.onChange(() => {
+	customerRareStore.refreshCustomerSelectedItems();
+	customerRareStore.refreshAllSelectedItems();
+});
+
+customerRareStore.shared.recipe.data.onChange((data) => {
+	if (data !== null) {
+		if (data.extraIngredients.length > 0) {
+			customerRareStore.shared.customer.isDarkMatter.set(
+				customerRareStore.instances.recipe.get().checkDarkMatter(data).isDarkMatter
+			);
+		} else {
+			customerRareStore.shared.customer.isDarkMatter.set(false);
+		}
+	}
+});
+
+customerRareStore.shared.customer.hasMystiaCooker.onChange(customerRareStore.evaluateMealResult);
+customerRareStore.shared.customer.isDarkMatter.onChange(customerRareStore.evaluateMealResult);
+customerRareStore.shared.customer.order.onChange(customerRareStore.evaluateMealResult);
+customerRareStore.shared.customer.popular.onChange(customerRareStore.evaluateMealResult);
+customerRareStore.shared.beverage.name.onChange(customerRareStore.evaluateMealResult);
+customerRareStore.shared.recipe.tagsWithPopular.onChange(customerRareStore.evaluateMealResult);

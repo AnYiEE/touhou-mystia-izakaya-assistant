@@ -37,30 +37,6 @@ import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkArrayContainsOf, checkArraySubsetOf} from '@/utils';
 
 export default function CustomerRare() {
-	customerStore.shared.customer.name.onChange(() => {
-		customerStore.refreshCustomerSelectedItems();
-		customerStore.refreshAllSelectedItems();
-	});
-
-	customerStore.shared.recipe.data.onChange((data) => {
-		if (data !== null) {
-			if (data.extraIngredients.length > 0) {
-				customerStore.shared.customer.isDarkMatter.set(
-					customerStore.instances.recipe.get().checkDarkMatter(data).isDarkMatter
-				);
-			} else {
-				customerStore.shared.customer.isDarkMatter.set(false);
-			}
-		}
-	});
-
-	customerStore.shared.customer.hasMystiaCooker.onChange(customerStore.evaluateMealResult);
-	customerStore.shared.customer.isDarkMatter.onChange(customerStore.evaluateMealResult);
-	customerStore.shared.customer.order.onChange(customerStore.evaluateMealResult);
-	customerStore.shared.customer.popular.onChange(customerStore.evaluateMealResult);
-	customerStore.shared.beverage.name.onChange(customerStore.evaluateMealResult);
-	customerStore.shared.recipe.tagsWithPopular.onChange(customerStore.evaluateMealResult);
-
 	const {breakpoint} = useBreakpoint(tachieBreakPoint, 'noTachie');
 	const vibrate = useVibrate();
 

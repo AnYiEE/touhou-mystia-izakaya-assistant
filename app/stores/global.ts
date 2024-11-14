@@ -6,6 +6,7 @@ import {type Selection} from '@nextui-org/react';
 import type {IPersistenceState} from './types';
 import {type DARK_MATTER_TAG} from '@/data';
 import type {TIngredientTag, TRecipeTag} from '@/data/types';
+import {customerNormalStore, customerRareStore, ingredientsStore, recipesStore} from '@/stores';
 import {Ingredient, Recipe, pinyinSort, toValueObject, union} from '@/utils';
 
 export type TPopularTag = Exclude<TIngredientTag, '特产' | '天罚'> | Exclude<TRecipeTag, typeof DARK_MATTER_TAG>;
@@ -116,3 +117,15 @@ export const globalStore = store(state, {
 		},
 	},
 }));
+
+globalStore.persistence.highAppearance.onChange((isEnabled) => {
+	document.body.classList.toggle('bg-blend-mystia-pseudo', isEnabled);
+});
+
+// Update the current popular tag when there is a change in the persisted popular tag data.
+globalStore.persistence.popular.onChange((popular) => {
+	customerNormalStore.shared.customer.popular.assign(popular);
+	customerRareStore.shared.customer.popular.assign(popular);
+	ingredientsStore.shared.popular.assign(popular);
+	recipesStore.shared.popular.assign(popular);
+});

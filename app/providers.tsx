@@ -16,9 +16,9 @@ import CustomerRareTutorial from '@/components/customerRareTutorial';
 
 import {siteConfig} from '@/configs';
 import {
-	TCustomerNormalPersistenceState,
-	TCustomerRarePersistenceState,
-	TGlobalPersistenceState,
+	type TCustomerNormalPersistenceState,
+	type TCustomerRarePersistenceState,
+	type TGlobalPersistenceState,
 	customerNormalStore,
 	customerNormalStoreKey,
 	customerRareStore,
@@ -37,18 +37,6 @@ interface IProps {
 }
 
 export default function Providers({children, locale, themeProps}: PropsWithChildren<IProps>) {
-	globalStore.persistence.highAppearance.onChange((isEnabled) => {
-		document.body.classList.toggle('bg-blend-mystia-pseudo', isEnabled);
-	});
-
-	// Update the current popular tag when there is a change in the persisted popular tag data.
-	globalStore.persistence.popular.onChange((popular) => {
-		customerNormalStore.shared.customer.popular.assign(popular);
-		customerRareStore.shared.customer.popular.assign(popular);
-		ingredientsStore.shared.popular.assign(popular);
-		recipesStore.shared.popular.assign(popular);
-	});
-
 	useEffect(() => {
 		// If the saved version is not set or outdated, initialize it with the current version.
 		// When an outdated version is detected, the current tab will update the saved version in local storage.
