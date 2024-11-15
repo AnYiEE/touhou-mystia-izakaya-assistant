@@ -1,5 +1,6 @@
 export * from './useMounted';
 export * from './useParams';
+export * from './usePathname';
 export * from './useThrottle';
 export * from './useVibrate';
 

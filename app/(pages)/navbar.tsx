@@ -3,9 +3,9 @@
 import {type JSX, type PropsWithChildren, memo, startTransition, useCallback, useState} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
-import {usePathname, useRouter} from 'next/navigation';
+import {useRouter} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
-import {useVibrate} from '@/hooks';
+import {usePathname, useVibrate} from '@/hooks';
 
 import {
 	Button,
@@ -32,7 +32,7 @@ import ThemeSwitcher from '@/components/themeSwitcher';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
-import {type TSitePath, siteConfig} from '@/configs';
+import {siteConfig} from '@/configs';
 import {globalStore as store} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
@@ -124,7 +124,7 @@ const GitHubLink = memo<IGitHubLinkProps>(function GitHubLink({showTooltip}) {
 });
 
 export default function Navbar() {
-	const pathname = usePathname() as TSitePath;
+	const pathname = usePathname();
 	const router = useRouter();
 	const startProgress = useProgress();
 	const [isMenuOpened, setIsMenuOpened] = useState(false);

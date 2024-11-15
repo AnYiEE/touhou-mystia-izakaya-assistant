@@ -1,12 +1,11 @@
 import {useCallback, useMemo} from 'react';
 
-import {usePathname, useRouter, useSearchParams} from 'next/navigation';
-
-import {type TSitePath} from '@/configs';
+import {useRouter, useSearchParams} from 'next/navigation';
+import {usePathname} from '@/hooks';
 
 export function useParams() {
 	const router = useRouter();
-	const pathname = usePathname() as TSitePath;
+	const pathname = usePathname();
 	const searchParams = useSearchParams();
 
 	const params = useMemo(() => new URLSearchParams(searchParams), [searchParams]);

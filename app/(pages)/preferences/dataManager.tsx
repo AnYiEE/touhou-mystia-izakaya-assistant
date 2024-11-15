@@ -12,9 +12,9 @@ import {
 import {debounce, isObjectLike} from 'lodash';
 import {twJoin} from 'tailwind-merge';
 
-import {usePathname, useRouter} from 'next/navigation';
+import {useRouter} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
-import {useThrottle} from '@/hooks';
+import {usePathname, useThrottle} from '@/hooks';
 
 import {Button, PopoverContent, PopoverTrigger, Snippet, Tab, Tabs, Textarea} from '@nextui-org/react';
 
@@ -29,7 +29,6 @@ import H1 from '@/components/h1';
 import Popover from '@/components/popover';
 import Tooltip from '@/components/tooltip';
 
-import {type TSitePath} from '@/configs';
 import {customerNormalStore, customerRareStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, toggleBoolean} from '@/utils';
 
@@ -63,7 +62,7 @@ interface IProps {
 }
 
 export default memo<IProps>(function DataManager({onModalClose}) {
-	const pathname = usePathname() as TSitePath;
+	const pathname = usePathname();
 	const router = useRouter();
 	const startProgress = useProgress();
 

@@ -1,9 +1,8 @@
 import {memo, useCallback, useEffect, useMemo, useState} from 'react';
 import {twJoin} from 'tailwind-merge';
 
-import {usePathname} from 'next/navigation';
 import {useTheme} from 'next-themes';
-import {useMounted, useVibrate} from '@/hooks';
+import {useMounted, usePathname, useVibrate} from '@/hooks';
 
 import {DropdownItem, DropdownMenu, DropdownTrigger, type Selection, Spinner} from '@nextui-org/react';
 import {faCircleHalfStroke, faMoon, faSun} from '@fortawesome/free-solid-svg-icons';
@@ -12,7 +11,6 @@ import Dropdown from '@/components/dropdown';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Tooltip from '@/components/tooltip';
 
-import {type TSitePath} from '@/configs';
 import {globalStore as store} from '@/stores';
 
 enum Theme {
@@ -35,7 +33,7 @@ interface IProps {
 
 export default memo<IProps>(function ThemeSwitcher({isMenu}) {
 	const isMounted = useMounted();
-	const pathname = usePathname() as TSitePath;
+	const pathname = usePathname();
 	const {setTheme, theme} = useTheme();
 	const [selectedTheme, setSelectedTheme] = useState(new Set([theme]) as SelectionSet);
 	const vibrate = useVibrate();
