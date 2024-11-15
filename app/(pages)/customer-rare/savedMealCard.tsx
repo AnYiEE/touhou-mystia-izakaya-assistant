@@ -107,7 +107,7 @@ export default function SavedMealCard() {
 												<Popover
 													showArrow
 													color={customerRatingColor}
-													offset={13}
+													offset={12}
 													placement="left"
 												>
 													<Tooltip
@@ -170,7 +170,7 @@ export default function SavedMealCard() {
 												</Popover>
 												<div className="flex items-center gap-2 xl:gap-1">
 													<Popover showArrow offset={11}>
-														<Tooltip showArrow content={cooker}>
+														<Tooltip showArrow content={cooker} offset={8}>
 															<span className="flex cursor-pointer">
 																<PopoverTrigger>
 																	<Sprite target="cooker" name={cooker} size={1.5} />
@@ -179,7 +179,7 @@ export default function SavedMealCard() {
 														</Tooltip>
 														<PopoverContent>{cooker}</PopoverContent>
 													</Popover>
-													<Popover showArrow offset={8}>
+													<Popover showArrow offset={7}>
 														<Tooltip showArrow content={recipeName} offset={4}>
 															<span className="flex cursor-pointer">
 																<PopoverTrigger>
@@ -194,7 +194,7 @@ export default function SavedMealCard() {
 														<PopoverContent>{recipeName}</PopoverContent>
 													</Popover>
 													<Plus size={0.75} className="mx-2 md:mx-0 lg:mx-2 xl:mx-0" />
-													<Popover showArrow offset={8}>
+													<Popover showArrow offset={7}>
 														<Tooltip showArrow content={beverage} offset={4}>
 															<span className="flex cursor-pointer">
 																<PopoverTrigger>
@@ -226,7 +226,7 @@ export default function SavedMealCard() {
 										return (
 											<div className="flex items-center gap-x-3 md:gap-x-1 lg:gap-x-3 xl:gap-x-1">
 												{originalIngredients.map((name, index) => (
-													<Popover key={index} showArrow offset={8}>
+													<Popover key={index} showArrow offset={7}>
 														<Tooltip showArrow content={name} offset={4}>
 															<span className="flex cursor-pointer">
 																<PopoverTrigger>
@@ -242,7 +242,7 @@ export default function SavedMealCard() {
 														{lestExtraIngredients.map((name, index) => {
 															const content = `额外食材【${name}】`;
 															return (
-																<Popover key={index} showArrow offset={8}>
+																<Popover key={index} showArrow offset={7}>
 																	<Tooltip showArrow content={content} offset={4}>
 																		<span className="flex cursor-pointer">
 																			<PopoverTrigger>

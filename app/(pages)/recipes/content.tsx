@@ -155,7 +155,7 @@ export default memo<IProps>(function Content({data}) {
 						</p>
 						{max !== 0 && (
 							<p>
-								<Popover showArrow offset={6} size="sm">
+								<Popover showArrow offset={5} size="sm">
 									<Tooltip showArrow content="随游戏等级提升而降低" offset={3} size="sm">
 										<span className="inline-flex cursor-pointer">
 											<PopoverTrigger>

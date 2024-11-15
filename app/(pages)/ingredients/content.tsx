@@ -85,7 +85,7 @@ export default memo<IProps>(function Content({data}) {
 								<Fragment key={fromIndex}>
 									<p className={twJoin('font-semibold', fromIndex !== 0 && 'mt-1')}>
 										{isFishing || isFishingAdvanced ? (
-											<Popover showArrow offset={6} size="sm">
+											<Popover showArrow offset={5} size="sm">
 												<Tooltip showArrow content={label} offset={3} size="sm">
 													<span className="inline-flex cursor-pointer">
 														<PopoverTrigger>
@@ -106,7 +106,7 @@ export default memo<IProps>(function Content({data}) {
 											<Ol.Li key={targetIndex}>
 												{Array.isArray(item) ? (
 													item[1] ? (
-														<Popover showArrow offset={6} size="sm">
+														<Popover showArrow offset={5} size="sm">
 															<Tooltip
 																showArrow
 																content={probability}

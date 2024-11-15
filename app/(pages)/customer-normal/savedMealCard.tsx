@@ -122,7 +122,7 @@ export default function SavedMealCard() {
 										const cooker = instance_recipe.getPropsByName(recipe, 'cooker');
 										return (
 											<Popover showArrow offset={11}>
-												<Tooltip showArrow content={cooker}>
+												<Tooltip showArrow content={cooker} offset={8}>
 													<span className="flex cursor-pointer">
 														<PopoverTrigger>
 															<Sprite target="cooker" name={cooker} size={1.5} title="" />
@@ -133,7 +133,7 @@ export default function SavedMealCard() {
 											</Popover>
 										);
 									})()}
-									<Popover showArrow offset={8}>
+									<Popover showArrow offset={7}>
 										<Tooltip showArrow content={recipe} offset={4}>
 											<span className="flex cursor-pointer">
 												<PopoverTrigger>
@@ -146,7 +146,7 @@ export default function SavedMealCard() {
 									{beverage !== null && (
 										<>
 											<Plus size={0.75} />
-											<Popover showArrow offset={8}>
+											<Popover showArrow offset={7}>
 												<Tooltip showArrow content={beverage} offset={4}>
 													<span className="flex cursor-pointer">
 														<PopoverTrigger>
@@ -167,7 +167,7 @@ export default function SavedMealCard() {
 									return (
 										<div className="flex items-center gap-x-3">
 											{originalIngredients.map((name, index) => (
-												<Popover key={index} showArrow offset={8}>
+												<Popover key={index} showArrow offset={7}>
 													<Tooltip showArrow content={name} offset={4}>
 														<span className="flex cursor-pointer">
 															<PopoverTrigger>
@@ -183,7 +183,7 @@ export default function SavedMealCard() {
 													{lestExtraIngredients.map((name, index) => {
 														const content = `额外食材【${name}】`;
 														return (
-															<Popover key={index} showArrow offset={8}>
+															<Popover key={index} showArrow offset={7}>
 																<Tooltip showArrow content={content} offset={4}>
 																	<span className="flex cursor-pointer">
 																		<PopoverTrigger>

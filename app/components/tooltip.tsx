@@ -9,12 +9,14 @@ import {globalStore as store} from '@/stores';
 
 interface IProps extends TooltipProps {}
 
-export default memo<IProps>(function Tooltip({classNames, color, showArrow, ...props}) {
+export default memo<IProps>(function Tooltip({classNames, color, radius, showArrow, ...props}) {
 	const isHighAppearance = store.persistence.highAppearance.use();
 
 	return (
 		<NextUITooltip
 			color={color}
+			// The same radius as `Popover`.
+			radius={radius ?? 'lg'}
 			showArrow={isHighAppearance ? false : Boolean(showArrow)}
 			motionProps={
 				isHighAppearance

@@ -189,7 +189,7 @@ export default memo<IProps>(function Content({data}) {
 							<span className="font-semibold">效果：</span>
 							{Array.isArray(effect) ? (
 								(effect[1] as boolean) ? (
-									<Popover showArrow offset={6} size="sm">
+									<Popover showArrow offset={5} size="sm">
 										<Tooltip showArrow content="只有米斯蒂娅使用才有此效果" offset={3} size="sm">
 											<span className="underline-dotted-offset2 cursor-pointer">
 												<PopoverTrigger>

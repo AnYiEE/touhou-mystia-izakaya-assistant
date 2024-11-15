@@ -164,7 +164,7 @@ export default function CustomerCard() {
 		>
 			<div className="flex flex-col gap-3 p-4 md:flex-row">
 				<div className="flex flex-col items-center justify-center gap-3">
-					<Popover showArrow color={avatarRatingColor} offset={10}>
+					<Popover showArrow color={avatarRatingColor} offset={9}>
 						<Tooltip showArrow color={avatarRatingColor} content={avatarRatingContent}>
 							<div className="flex cursor-pointer self-center">
 								<PopoverTrigger>
@@ -190,8 +190,8 @@ export default function CustomerCard() {
 					</Popover>
 					<div className="min-w-24 gap-2 lg:min-w-28">
 						<p className="flex justify-between whitespace-nowrap text-xs font-medium text-default-400 dark:text-default-500">
-							<Popover showArrow isTriggerDisabled={!dlcLabel} offset={6}>
-								<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={4}>
+							<Popover showArrow isTriggerDisabled={!dlcLabel} offset={4}>
+								<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={0}>
 									<span className={twJoin(!dlcLabel && 'cursor-text')}>
 										<PopoverTrigger>
 											<span
@@ -208,7 +208,7 @@ export default function CustomerCard() {
 								<PopoverContent>{dlcLabel}</PopoverContent>
 							</Popover>
 							<Popover showArrow offset={6}>
-								<Tooltip showArrow content={placeContent} offset={4}>
+								<Tooltip showArrow content={placeContent} offset={2}>
 									<span className="cursor-pointer">
 										<PopoverTrigger>
 											<span

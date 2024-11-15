@@ -250,7 +250,7 @@ const ItemPopoverCardComponent = memo(
 					/>
 					<p className="font-bold">
 						{dlc !== undefined && (
-							<Popover showArrow isTriggerDisabled={!dlcLabel} offset={5} size="sm">
+							<Popover showArrow isTriggerDisabled={!dlcLabel} offset={4} size="sm">
 								<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={2} size="sm">
 									<span className={twJoin(!dlcLabel && 'cursor-text')}>
 										<PopoverTrigger>

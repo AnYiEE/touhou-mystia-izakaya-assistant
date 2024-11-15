@@ -151,7 +151,7 @@ export default function Home() {
 					</Tooltip>
 					<Popover
 						showArrow
-						offset={9}
+						offset={11}
 						onOpenChange={getWxGroupUrl}
 						classNames={{
 							content: 'p-0 pb-1',
