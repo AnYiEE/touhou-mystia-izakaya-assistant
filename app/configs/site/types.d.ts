@@ -1,9 +1,13 @@
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
-export type TNavMenuItem<T extends string = string> = {
+type TLink<T extends string = string> = {
 	label: string;
 	href: T;
-	sprite?: TSpriteTarget;
+};
+
+export type TNavMenuItem<T extends string = string> = TLink<T> & {
+	sprite: TSpriteTarget | null;
+	spriteIndex: number | null;
 };
 
 export interface ISiteConfig {
@@ -20,9 +24,9 @@ export interface ISiteConfig {
 	/** @see {@link https://nextui.org/docs/api-references/nextui-provider} */
 	locale: string;
 	version: string;
-	navItems: Array<TNavMenuItem | Record<string, TNavMenuItem[]>>;
-	navMenuItems: TNavMenuItem[];
-	links: Record<string, TNavMenuItem>;
+	navItems: Array<TLink | Record<string, TNavMenuItem[]>>;
+	navMenuItems: TLink[];
+	links: Record<string, TLink>;
 	cdnUrl: string;
 	analyticsApiUrl: string;
 	analyticsScriptUrl: string;

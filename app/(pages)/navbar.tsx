@@ -227,36 +227,39 @@ export default function Navbar() {
 												base: 'my-px p-0 transition-background focus:bg-default/40 data-[hover=true]:bg-default/40',
 											}}
 										>
-											{dropdownItems.map(({href, label, sprite}, dropdownItemIndex) => (
-												<DropdownItem
-													key={dropdownItemIndex}
-													textValue={label}
-													onKeyDown={(event) => {
-														if (checkA11yConfirmKey(event)) {
-															handlePress();
-															router.push(href);
-														}
-													}}
-												>
-													<NavbarLink
-														fullWidth
-														isActivated={href === pathname}
-														href={href}
-														startContent={
-															<Sprite
-																target={sprite}
-																size={1.25}
-																className={twJoin(
-																	href === '/partners' && 'rounded-full'
-																)}
-															/>
-														}
-														className="justify-start gap-1 text-sm data-[hover=true]:bg-transparent"
+											{dropdownItems.map(
+												({href, label, sprite, spriteIndex}, dropdownItemIndex) => (
+													<DropdownItem
+														key={dropdownItemIndex}
+														textValue={label}
+														onKeyDown={(event) => {
+															if (checkA11yConfirmKey(event)) {
+																handlePress();
+																router.push(href);
+															}
+														}}
 													>
-														{label}
-													</NavbarLink>
-												</DropdownItem>
-											))}
+														<NavbarLink
+															fullWidth
+															isActivated={href === pathname}
+															href={href}
+															startContent={
+																<Sprite
+																	target={sprite}
+																	index={spriteIndex}
+																	size={1.25}
+																	className={twJoin(
+																		href === '/partners' && 'rounded-full'
+																	)}
+																/>
+															}
+															className="justify-start gap-1 text-sm data-[hover=true]:bg-transparent"
+														>
+															{label}
+														</NavbarLink>
+													</DropdownItem>
+												)
+											)}
 										</DropdownMenu>
 									</Dropdown>
 								);
