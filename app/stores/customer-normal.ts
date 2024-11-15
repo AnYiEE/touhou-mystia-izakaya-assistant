@@ -23,7 +23,7 @@ import {
 } from '@/data';
 import type {TBeverageTag, TIngredientTag, TRecipeTag} from '@/data/types';
 import {type IPopularData, type IRecipeData, type TPopularTag} from '@/stores';
-import {type TNameObject, getNames, keepLastTag, reverseDirection, reverseVisibilityState} from '@/stores/utils';
+import {createNamesCache, keepLastTag, reverseDirection, reverseVisibilityState} from '@/stores/utils';
 import {
 	Beverage,
 	Clothes,
@@ -207,7 +207,7 @@ export type TCustomerNormalPersistenceState = IPersistenceState<(typeof state)['
 
 export const customerNormalStoreKey = 'page-customer_normal-storage';
 
-const namesCache = new Map<PinyinSortState, TNameObject<CustomerNormal>>();
+const getNames = createNamesCache(instance_customer);
 
 const savedMealRatingCache = new Map<string, TCustomerRating>();
 
@@ -353,8 +353,7 @@ export const customerNormalStore = store(state, {
 	},
 })
 	.computed((currentStore) => ({
-		customerNames: () =>
-			getNames(namesCache, instance_customer, currentStore.persistence.customer.pinyinSortState.use()),
+		customerNames: () => getNames(currentStore.persistence.customer.pinyinSortState.use()),
 
 		beverageTableColumns: {
 			read: () => new Set(currentStore.persistence.beverage.table.visibleColumns.use()) as SelectionSet,

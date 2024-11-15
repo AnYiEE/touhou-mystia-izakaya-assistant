@@ -6,7 +6,7 @@ import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data';
 import type {TIngredientTag} from '@/data/types';
 import {type IPopularData} from '@/stores';
-import {type TNameObject, getNames} from '@/stores/utils';
+import {createNamesCache} from '@/stores/utils';
 import {Ingredient, numberSort, pinyinSort, toValueObject} from '@/utils';
 
 const instance = Ingredient.getInstance();
@@ -17,7 +17,7 @@ const storeVersion = {
 	filterTypes: 2,
 } as const;
 
-const namesCache = new Map<PinyinSortState, TNameObject<Ingredient>>();
+const getNames = createNamesCache(instance);
 
 const state = {
 	instance,
@@ -86,5 +86,5 @@ export const ingredientsStore = store(state, {
 		storage: createJSONStorage(() => localStorage),
 	},
 }).computed((currentStore) => ({
-	names: () => getNames(namesCache, instance, currentStore.persistence.pinyinSortState.use()),
+	names: () => getNames(currentStore.persistence.pinyinSortState.use()),
 }));

@@ -4,8 +4,7 @@ import {type Item} from '@/utils/item';
 import type {TItemDataItem, TItemInstance} from '@/utils/types';
 
 type TNames<T extends TItemInstance> = TItemDataItem<T>['name'];
-
-export type TNameObject<T extends TItemInstance> = {
+type TNameObject<T extends TItemInstance> = {
 	value: TNames<T>;
 }[];
 
@@ -24,17 +23,17 @@ function getAllItemNames<T extends TItemInstance>(instance: T, pinyinSortState: 
 	}
 }
 
-export function getNames<T extends TItemInstance>(
-	cache: Map<PinyinSortState, TNameObject<T>>,
-	instance: T,
-	pinyinSortState: PinyinSortState
-) {
-	if (cache.has(pinyinSortState)) {
-		cache.get(pinyinSortState);
-	}
+export function createNamesCache<T extends TItemInstance>(instance: T) {
+	const cache = new Map<PinyinSortState, TNameObject<T>>();
 
-	const names = getAllItemNames(instance, pinyinSortState);
-	cache.set(pinyinSortState, names);
+	return function getNames(pinyinSortState: PinyinSortState) {
+		if (cache.has(pinyinSortState)) {
+			cache.get(pinyinSortState);
+		}
 
-	return names;
+		const names = getAllItemNames(instance, pinyinSortState);
+		cache.set(pinyinSortState, names);
+
+		return names;
+	};
 }

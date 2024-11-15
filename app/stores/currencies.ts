@@ -3,7 +3,7 @@ import {createJSONStorage} from 'zustand/middleware';
 
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
-import {type TNameObject, getNames} from '@/stores/utils';
+import {createNamesCache} from '@/stores/utils';
 import {Currency} from '@/utils';
 
 const instance = Currency.getInstance();
@@ -21,7 +21,7 @@ const state = {
 	},
 };
 
-const namesCache = new Map<PinyinSortState, TNameObject<Currency>>();
+const getNames = createNamesCache(instance);
 
 export const currenciesStore = store(state, {
 	persist: {
@@ -36,5 +36,5 @@ export const currenciesStore = store(state, {
 		storage: createJSONStorage(() => localStorage),
 	},
 }).computed((currentStore) => ({
-	names: () => getNames(namesCache, instance, currentStore.persistence.pinyinSortState.use()),
+	names: () => getNames(currentStore.persistence.pinyinSortState.use()),
 }));
