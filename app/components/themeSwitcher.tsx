@@ -40,15 +40,6 @@ export default memo<IProps>(function ThemeSwitcher({isMenu}) {
 
 	const isHighAppearance = store.persistence.highAppearance.use();
 
-	const handleOpenChange = useCallback(
-		(isOpen: boolean) => {
-			if (isOpen) {
-				vibrate();
-			}
-		},
-		[vibrate]
-	);
-
 	const onSelectedThemeChange = useCallback(
 		(value: Selection) => {
 			const newValue = value as SelectionSet;
@@ -106,7 +97,7 @@ export default memo<IProps>(function ThemeSwitcher({isMenu}) {
 	return (
 		<Dropdown
 			showArrow
-			onOpenChange={handleOpenChange}
+			onOpenChange={vibrate}
 			classNames={{
 				content: twJoin(
 					'p-0 [&>[data-slot="base"]]:w-max',

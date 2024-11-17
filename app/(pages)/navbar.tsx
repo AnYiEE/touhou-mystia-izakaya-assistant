@@ -132,15 +132,6 @@ export default function Navbar() {
 
 	const isHighAppearance = store.persistence.highAppearance.use();
 
-	const handleDropdownOpenChange = useCallback(
-		(isOpen: boolean) => {
-			if (isOpen) {
-				vibrate();
-			}
-		},
-		[vibrate]
-	);
-
 	const handlePress = useCallback(() => {
 		vibrate();
 		showProgress(startProgress);
@@ -201,7 +192,7 @@ export default function Navbar() {
 								const dropdownElement = (
 									<Dropdown
 										key={dropdownIndex}
-										onOpenChange={handleDropdownOpenChange}
+										onOpenChange={vibrate}
 										classNames={{
 											content: twJoin(
 												'p-0',

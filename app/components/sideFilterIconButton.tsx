@@ -45,15 +45,6 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 
 	const hasFilter = useMemo(() => selectConfig.some(({selectedKeys}) => selectedKeys.length > 0), [selectConfig]);
 
-	const handleOpenChange = useCallback(
-		(isOpen: boolean) => {
-			if (isOpen) {
-				vibrate();
-			}
-		},
-		[vibrate]
-	);
-
 	const handleSelectionChange = useCallback(
 		(setSelectedKeys: ISelectConfigItem['setSelectedKeys']) => (key: Selection) => {
 			setSelectedKeys([...(key as Set<string>)].sort(pinyinSort));
@@ -77,7 +68,7 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 			/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/3736} is fixed. */
 			// backdrop="opaque"
 			placement="left"
-			onOpenChange={handleOpenChange}
+			onOpenChange={vibrate}
 		>
 			<Tooltip showArrow content={content} placement="left">
 				<span className="flex">

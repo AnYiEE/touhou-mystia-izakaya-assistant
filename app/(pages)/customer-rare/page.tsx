@@ -269,9 +269,7 @@ export default function CustomerRare() {
 
 	const onTabSelectionChange = useCallback(
 		(key: Key) => {
-			if (key !== selectedTabKey) {
-				vibrate();
-			}
+			vibrate(key !== selectedTabKey);
 			customerStore.onTabSelectionChange(key);
 		},
 		[selectedTabKey, vibrate]

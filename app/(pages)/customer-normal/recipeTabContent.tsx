@@ -434,9 +434,7 @@ export default function RecipeTabContent() {
 							startContent={<FontAwesomeIcon icon={faMagnifyingGlass} className="pointer-events-none" />}
 							variant="flat"
 							onInputChange={(value) => {
-								if (!value) {
-									vibrate();
-								}
+								vibrate(!value);
 								customerStore.onRecipeTableSearchValueChange(value);
 							}}
 							aria-label="选择或输入料理名称"

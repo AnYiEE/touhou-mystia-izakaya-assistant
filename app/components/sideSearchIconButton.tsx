@@ -45,21 +45,10 @@ export default memo<IProps>(function SideSearchIconButton({
 
 	const handleInputChange = useCallback(
 		(value: string) => {
-			if (!value) {
-				vibrate();
-			}
+			vibrate(!value);
 			setSearchValue(value);
 		},
 		[setSearchValue, vibrate]
-	);
-
-	const handleOpenChange = useCallback(
-		(isOpen: boolean) => {
-			if (isOpen) {
-				vibrate();
-			}
-		},
-		[vibrate]
 	);
 
 	const content = `搜索（${searchValue ? '已' : '未'}激活）`;
@@ -69,7 +58,7 @@ export default memo<IProps>(function SideSearchIconButton({
 			/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/3736} is fixed. */
 			// backdrop="opaque"
 			placement="left"
-			onOpenChange={handleOpenChange}
+			onOpenChange={vibrate}
 		>
 			<Tooltip showArrow content={content} placement="left">
 				<span className="flex">

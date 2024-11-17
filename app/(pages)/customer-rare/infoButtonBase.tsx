@@ -1,4 +1,4 @@
-import {memo, useCallback} from 'react';
+import {memo} from 'react';
 
 import {useVibrate} from '@/hooks';
 
@@ -15,17 +15,8 @@ interface IProps extends Pick<AccordionProps, 'children' | 'defaultExpandedKeys'
 export default memo<IProps>(function InfoButtonBase({children, defaultExpandedKeys}) {
 	const vibrate = useVibrate();
 
-	const handleOpenChange = useCallback(
-		(isOpen: boolean) => {
-			if (isOpen) {
-				vibrate();
-			}
-		},
-		[vibrate]
-	);
-
 	return (
-		<Popover offset={0} placement="left-end" onOpenChange={handleOpenChange}>
+		<Popover offset={0} placement="left-end" onOpenChange={vibrate}>
 			<Tooltip showArrow content="更多信息" offset={4}>
 				<span className="absolute -right-0.5 bottom-1.5 flex">
 					<PopoverTrigger>

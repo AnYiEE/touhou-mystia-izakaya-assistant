@@ -297,9 +297,7 @@ export default function BeverageTabContent() {
 							startContent={<FontAwesomeIcon icon={faMagnifyingGlass} className="pointer-events-none" />}
 							variant="flat"
 							onInputChange={(value) => {
-								if (!value) {
-									vibrate();
-								}
+								vibrate(!value);
 								customerStore.onBeverageTableSearchValueChange(value);
 							}}
 							aria-label="选择或输入酒水名称"
