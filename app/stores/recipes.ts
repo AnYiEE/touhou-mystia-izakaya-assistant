@@ -29,8 +29,8 @@ const state = {
 	positiveTags: (
 		[
 			...instance.getValuesByProp(instance.data, 'positiveTags'),
-			TAG_POPULAR_POSITIVE,
 			TAG_POPULAR_NEGATIVE,
+			TAG_POPULAR_POSITIVE,
 		] as TRecipeTag[]
 	)
 		.map(toValueObject)

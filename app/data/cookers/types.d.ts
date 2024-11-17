@@ -1,9 +1,9 @@
 import {type TCurrencyNames, type TCustomerRareNames} from '@/data';
 import type {IItemBase, TDescription, TMerchant} from '@/data/types';
 
-type TCategory = 'DLC' | '超' | '初始' | '核能' | '极' | '可疑' | '夜雀' | '月见';
+type TCategory = 'DLC' | '初始' | '夜雀' | '超' | '极' | '核能' | '可疑' | '月见';
 
-type TType = '烧烤架' | '料理台' | '油锅' | '蒸锅' | '煮锅';
+type TType = '煮锅' | '烧烤架' | '油锅' | '蒸锅' | '料理台';
 
 export interface ICooker extends IItemBase {
 	type: TType | TType[];

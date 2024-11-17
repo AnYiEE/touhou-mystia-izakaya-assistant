@@ -37,7 +37,7 @@ export class Item<
 	}
 
 	public get dataPinyinSorted(): ReadonlyArray<TItemWithPinyin> {
-		if (this._pinyinSortedCache) {
+		if (this._pinyinSortedCache !== null) {
 			return this._pinyinSortedCache;
 		}
 
