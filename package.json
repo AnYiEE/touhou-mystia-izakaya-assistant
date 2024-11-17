@@ -102,7 +102,7 @@
 		"@types/node": "^22.9.0",
 		"@types/react": "^18.3.12",
 		"@types/react-dom": "^18.3.1",
-		"@types/serviceworker": "^0.0.102",
+		"@types/serviceworker": "^0.0.103",
 		"@types/ua-parser-js": "^0.7.39",
 		"@typescript-eslint/eslint-plugin": "^8.14.0",
 		"@typescript-eslint/parser": "^8.14.0",
