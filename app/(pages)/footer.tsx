@@ -71,7 +71,7 @@ export default function Footer() {
 		<footer className="mx-auto max-w-p-95 pb-3 text-center text-xs text-default-300 md:max-w-full dark:text-default-400">
 			<p>
 				{shortName}
-				内所涉及的公司名称、商标、产品等均为其各自所有者的资产，仅供识别。游戏素材版权均归
+				内所涉及的名称、商标、产品等均为其各自所有者的资产，仅供识别。游戏素材版权均归
 				<FooterLinkWithTooltip content={links.steam.label} href={links.steam.href}>
 					原作者
 				</FooterLinkWithTooltip>
@@ -112,7 +112,7 @@ export default function Footer() {
 				<FooterLinkWithTooltip
 					content={
 						<QRCode text={links.donate.href} className="w-24">
-							{links.donate.label}
+							{links.donate.label.replace('链接', '码')}
 						</QRCode>
 					}
 					href={links.donate.href}
