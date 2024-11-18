@@ -17,6 +17,7 @@ export * from './intersection';
 export * from './numberSort';
 export * from './pinyinPro';
 export * from './pinyinSort';
+export * from './processJsonFile';
 export * from './processPinyin';
 export * from './pxToRem';
 export * from './remToPx';

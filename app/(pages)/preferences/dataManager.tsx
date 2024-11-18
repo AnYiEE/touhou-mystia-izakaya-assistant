@@ -30,31 +30,12 @@ import Popover from '@/components/popover';
 import Tooltip from '@/components/tooltip';
 
 import {customerNormalStore, customerRareStore, globalStore} from '@/stores';
-import {checkA11yConfirmKey, toggleBoolean} from '@/utils';
-
-const JSON_TYPE = 'application/json';
+import {FILE_TYPE_JSON, checkA11yConfirmKey, downloadJson, parseJsonFromInput, toggleBoolean} from '@/utils';
 
 enum DownloadButtonLabel {
 	Download = '下载',
 	Downloading = '尝试唤起下载器',
 	DownloadingTip = '如无响应，请检查浏览器权限、设置和浏览器扩展程序',
-}
-
-function download(fileName: string, jsonString: string) {
-	const blob = new Blob([jsonString], {
-		type: JSON_TYPE,
-	});
-	const url = URL.createObjectURL(blob);
-
-	const element = document.createElement('a');
-	element.classList.add('hidden');
-	element.download = `${fileName}.json`;
-	element.href = url;
-	document.body.append(element);
-	element.click();
-
-	element.remove();
-	URL.revokeObjectURL(url);
 }
 
 interface IProps {
@@ -105,7 +86,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 			setIsDownloadButtonDisabled(false);
 			setDownloadButtonLabel(DownloadButtonLabel.Download);
 		}, 5000);
-		download(
+		downloadJson(
 			`customer_data-${Object.keys(currentMealData.customer_normal).length}_${Object.keys(currentMealData.customer_rare).length}-${Date.now()}`,
 			currentMealDataString
 		);
@@ -138,19 +119,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 
 	const handleImportInputChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
 		const {target} = event;
-		if (target.files === null) {
-			return;
-		}
-		const {
-			files: [file],
-		} = target;
-		if (file === undefined) {
-			return;
-		}
-		const blob = new Blob([file], {
-			type: JSON_TYPE,
-		});
-		void blob.text().then((text) => {
+		parseJsonFromInput(target, (text) => {
 			setImportValue(text);
 			target.value = '';
 		});
@@ -249,7 +218,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								}}
 							/>
 							<input
-								accept={JSON_TYPE}
+								accept={FILE_TYPE_JSON}
 								type="file"
 								onChange={handleImportInputChange}
 								className="hidden"
