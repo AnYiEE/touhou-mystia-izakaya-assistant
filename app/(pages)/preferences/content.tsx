@@ -9,9 +9,7 @@ import {Button, ScrollShadow, Select, SelectItem, type Selection, Switch} from '
 
 import DataManager, {type IDataManagerProps} from './dataManager';
 import SwitchItem from './switchItem';
-import H1 from '@/components/h1';
-import H2 from '@/components/h2';
-import H3 from '@/components/h3';
+import Heading from '@/components/heading';
 
 import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
@@ -62,18 +60,21 @@ export default memo<IProps>(function Content({onModalClose}) {
 
 	return (
 		<div>
-			<H1 isFirst subTitle="以下所有的更改都会即时生效">
+			<Heading isFirst subTitle="以下所有的更改都会即时生效">
 				设置
-			</H1>
-			<H2 className="mt-0">全局设置</H2>
-			<H3
+			</Heading>
+			<Heading as="h2" className="mt-0">
+				全局设置
+			</Heading>
+			<Heading
+				as="h3"
 				subTitle={<ScrollShadow hideScrollBar>正确设置游戏中现时流行的标签可以使套餐评级更为准确</ScrollShadow>}
 				classNames={{
 					subTitle: 'whitespace-nowrap',
 				}}
 			>
 				流行标签
-			</H3>
+			</Heading>
 			<div className="space-y-2">
 				<div className="flex items-center">
 					<span className="font-medium">类别：</span>
@@ -139,7 +140,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 					</Button>
 				</div>
 			</div>
-			<H3>外观</H3>
+			<Heading as="h3">外观</Heading>
 			<div className="space-y-2">
 				<SwitchItem
 					isSelected={isHighAppearance}
@@ -156,7 +157,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 					顾客页面右下角的立绘（宽屏可见）
 				</SwitchItem>
 			</div>
-			<H3>体验</H3>
+			<Heading as="h3">体验</Heading>
 			<div className="space-y-2">
 				<SwitchItem
 					isSelected={isVibrateEnabled}
@@ -173,8 +174,8 @@ export default memo<IProps>(function Content({onModalClose}) {
 					顾客卡片中标签的浮动提示（鼠标悬停可见）
 				</SwitchItem>
 			</div>
-			<H2>稀客页面</H2>
-			<H3>稀客卡片</H3>
+			<Heading as="h2">稀客页面</Heading>
+			<Heading as="h3">稀客卡片</Heading>
 			<div className="space-y-2">
 				<SwitchItem
 					isSelected={isOrderLinkedFilter}

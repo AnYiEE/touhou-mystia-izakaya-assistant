@@ -1,11 +1,11 @@
-import H1 from '@/components/h1';
+import Heading from '@/components/heading';
 import Link from '@/components/link';
 import Ul from '@/components/ul';
 
 export default function KnownIssue() {
 	return (
 		<>
-			<H1>已知问题</H1>
+			<Heading>已知问题</Heading>
 			<Ul>
 				<li>
 					表格无法排序多个列：见

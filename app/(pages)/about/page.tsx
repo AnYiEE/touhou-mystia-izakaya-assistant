@@ -1,6 +1,6 @@
 import ChangeLog from './changeLog';
 import KnownIssue from './knownIssue';
-import H1 from '@/components/h1';
+import Heading from '@/components/heading';
 import Link from '@/components/link';
 import QRCode from '@/components/qrCode';
 import Tooltip from '@/components/tooltip';
@@ -12,7 +12,7 @@ const {enName, links, name, shortName} = siteConfig;
 export default function About() {
 	return (
 		<div>
-			<H1 isFirst>项目介绍</H1>
+			<Heading isFirst>项目介绍</Heading>
 			<div className="space-y-2 break-all text-justify indent-8">
 				<p>
 					{name}（英语：{enName}）（以下简称“{shortName}

@@ -25,7 +25,7 @@ import {
 	customerRareTutorialResetLabel,
 	customerRareTutorialStoreKey,
 } from '@/components/customerRareTutorial';
-import H1 from '@/components/h1';
+import Heading from '@/components/heading';
 import Popover from '@/components/popover';
 import Tooltip from '@/components/tooltip';
 
@@ -183,7 +183,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 
 	return (
 		<>
-			<H1 subTitle="备份/还原/重置顾客套餐数据">数据管理</H1>
+			<Heading subTitle="备份/还原/重置顾客套餐数据">数据管理</Heading>
 			<div className="-mt-2">
 				<Tabs
 					defaultSelectedKey="reset"

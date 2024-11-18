@@ -1,8 +1,7 @@
 /* eslint-disable sort-keys */
 import {Fragment} from 'react';
 
-import H1 from '@/components/h1';
-import H2 from '@/components/h2';
+import Heading from '@/components/heading';
 import Link from '@/components/link';
 import Ul from '@/components/ul';
 
@@ -111,7 +110,7 @@ const changelog = [
 export default function ChangeLog() {
 	return (
 		<>
-			<H1
+			<Heading
 				subTitle={
 					<>
 						以下为更新摘要，前往
@@ -128,10 +127,12 @@ export default function ChangeLog() {
 				}
 			>
 				更新日志
-			</H1>
+			</Heading>
 			{changelog.map(({changes, version}, versionIndex) => (
 				<Fragment key={versionIndex}>
-					<H2 isFirst={versionIndex === 0}>{version}</H2>
+					<Heading as="h2" isFirst={versionIndex === 0}>
+						{version}
+					</Heading>
 					<Ul>
 						{changes.map((change, changeIndex) => (
 							<li key={changeIndex}>{change}</li>
