@@ -20,11 +20,7 @@ export class Item<
 		this._data = cloneDeep(data);
 		this._dataWithPinyin = this._data.map((item) => ({
 			...item,
-			pinyin: pinyinPro(item.name, {
-				toneType: 'num',
-				type: 'array',
-				v: true,
-			}),
+			pinyin: pinyinPro(item.name),
 		})) as TItemWithPinyin[];
 
 		this._pinyinSortedCache = null;

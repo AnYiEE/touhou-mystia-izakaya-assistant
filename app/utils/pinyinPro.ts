@@ -1,5 +1,5 @@
 /* eslint-disable sort-keys */
-import {customPinyin} from 'pinyin-pro';
+import {customPinyin, pinyin} from 'pinyin-pro';
 
 customPinyin(
 	{
@@ -15,4 +15,10 @@ customPinyin(
 	}
 );
 
-export {pinyin as pinyinPro} from 'pinyin-pro';
+export function pinyinPro(word: string) {
+	return pinyin(word, {
+		toneType: 'num',
+		type: 'array',
+		v: true,
+	});
+}

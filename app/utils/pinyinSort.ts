@@ -21,11 +21,7 @@ function getPinyinArray(value: string) {
 		return pinyinCache.get(value);
 	}
 
-	const pinyin = pinyinPro(value, {
-		toneType: 'num',
-		type: 'array',
-		v: true,
-	});
+	const pinyin = pinyinPro(value);
 
 	pinyinCache.set(value, pinyin);
 
