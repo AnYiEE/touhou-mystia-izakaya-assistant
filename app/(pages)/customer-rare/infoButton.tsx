@@ -102,16 +102,27 @@ export default function InfoButton() {
 	return (
 		<InfoButtonBase defaultExpandedKeys={getDefaultExpandedKeys()}>
 			<AccordionItem key="description" aria-label="稀客介绍" title="稀客介绍">
-				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-xs">
+				<ScrollShadow hideScrollBar size={16} className="max-h-48 break-all text-justify text-xs">
 					<p className="mb-1 text-sm">
 						<span className="font-semibold">ID：</span>
 						{currentCustomerId}
 					</p>
-					<Ol>
-						<li>{currentCustomerDescription[0]}</li>
-						{currentCustomerDescription[1] !== null && <li>{currentCustomerDescription[1]}</li>}
-						{currentCustomerDescription[2] !== null && <li>{currentCustomerDescription[2]}</li>}
-					</Ol>
+					<p>
+						<span className="font-semibold">Lv.1：</span>
+						{currentCustomerDescription[0]}
+					</p>
+					{currentCustomerDescription[1] !== null && (
+						<p>
+							<span className="font-semibold">Lv.3：</span>
+							{currentCustomerDescription[1]}
+						</p>
+					)}
+					{currentCustomerDescription[2] !== null && (
+						<p>
+							<span className="font-semibold">Lv.5：</span>
+							{currentCustomerDescription[2]}
+						</p>
+					)}
 				</ScrollShadow>
 			</AccordionItem>
 			{hasBondRewards ? (

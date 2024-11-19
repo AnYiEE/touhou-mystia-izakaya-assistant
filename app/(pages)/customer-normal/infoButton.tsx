@@ -21,14 +21,12 @@ export default function InfoButton() {
 	return (
 		<InfoButtonBase defaultExpandedKeys={['description']}>
 			<AccordionItem key="description" aria-label="普客介绍" title="普客介绍">
-				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-xs">
+				<ScrollShadow hideScrollBar size={16} className="max-h-48 break-all text-justify text-xs">
 					<p className="mb-1 text-sm">
 						<span className="font-semibold">ID：</span>
 						{currentCustomerId}
 					</p>
-					<Ol>
-						<li>{currentCustomerDescription}</li>
-					</Ol>
+					<p>{currentCustomerDescription}</p>
 				</ScrollShadow>
 			</AccordionItem>
 			<AccordionItem key="help" aria-label="特别说明" title="特别说明">
