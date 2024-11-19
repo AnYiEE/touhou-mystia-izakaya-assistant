@@ -55,6 +55,8 @@ type TTag =
 	| '毒';
 
 export interface IRecipe extends IFoodBase {
+	/** @description If the value is `-1`, it means there is no corresponding recipe. */
+	recipeId: number;
 	ingredients: TIngredientNames[];
 	positiveTags: TTag[];
 	negativeTags: TTag[];

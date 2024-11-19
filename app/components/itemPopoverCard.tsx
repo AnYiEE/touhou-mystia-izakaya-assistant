@@ -188,6 +188,7 @@ const Trigger = memo<ITriggerProps>(function Trigger({className, ...props}) {
 interface IItemPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 	// Basic info.
 	id: number;
+	recipeId?: number;
 	name: TItemNames;
 	displayName?: ReactNodeWithoutBoolean;
 	description: {
@@ -210,7 +211,7 @@ interface IItemPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 
 const ItemPopoverCardComponent = memo(
 	forwardRef<ElementRef<'div'>, PropsWithChildren<IItemPopoverCardProps>>(function ItemPopoverCard(
-		{children, cooker, description, displayName, dlc, id, ingredients, name, tagColors, tags, target},
+		{children, cooker, description, displayName, dlc, id, ingredients, name, recipeId, tagColors, tags, target},
 		ref
 	) {
 		const openWindow = useViewInNewWindow();
@@ -326,9 +327,15 @@ const ItemPopoverCardComponent = memo(
 						</p>
 					)}
 					<p>
-						<span className="font-semibold">{target === 'recipe' ? '料理（非食谱）' : ''}ID：</span>
+						<span className="font-semibold">{target === 'recipe' ? '料理' : ''}ID：</span>
 						<Price showSymbol={false}>{id}</Price>
 					</p>
+					{recipeId !== undefined && recipeId !== -1 && (
+						<p>
+							<span className="font-semibold">食谱ID：</span>
+							<Price showSymbol={false}>{recipeId}</Price>
+						</p>
+					)}
 				</div>
 				{hasTag && (
 					<div className="flex flex-wrap gap-x-2 gap-y-1">

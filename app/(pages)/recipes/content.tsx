@@ -31,7 +31,22 @@ export default memo<IProps>(function Content({data}) {
 
 	return data.map(
 		(
-			{cooker, description, dlc, from, id, ingredients, level, max, min, name, negativeTags, positiveTags, price},
+			{
+				cooker,
+				description,
+				dlc,
+				from,
+				id,
+				ingredients,
+				level,
+				max,
+				min,
+				name,
+				negativeTags,
+				positiveTags,
+				price,
+				recipeId,
+			},
 			dataIndex
 		) => (
 			<Popover
@@ -59,6 +74,7 @@ export default memo<IProps>(function Content({data}) {
 					<ItemPopoverCard
 						target="recipe"
 						id={id}
+						recipeId={recipeId}
 						name={name}
 						description={{description, level, price}}
 						dlc={dlc}
