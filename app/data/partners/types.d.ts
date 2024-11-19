@@ -1,26 +1,27 @@
-import {type TCustomerRareName, type TPlace, type TSpeed} from '@/data';
+import {type TCustomerRareId, type TPlaceId, type TSpeedId} from '@/data';
 import type {IItemBase, TDescription} from '@/data/types';
 
 export interface IPartner extends IItemBase {
-	belong: TCustomerRareName[] | null;
+	belong: TCustomerRareId[] | null;
 	effect: TDescription | null;
 	from:
 		| TDescription
 		| Partial<{
 				/** @description Partners by maximize all rare customers bond level in the place. */
-				place: TPlace;
+				place: TPlaceId;
 				/** @description Initial partners. */
 				self: true;
 				/** @description Partners by complete the main quests in the place. */
-				task: TPlace;
+				task: TPlaceId;
 		  }>;
 	pay: number;
 	speed: {
-		moving: TSpeed;
-		working: Exclude<TSpeed, '瞬间移动'>;
+		moving: TSpeedId;
+		working: Exclude<TSpeedId, -1>;
 	};
 }
 
 export type TPartners = typeof import('./data').PARTNER_LIST;
 
+export type TPartnerId = TPartners[number]['id'];
 export type TPartnerName = TPartners[number]['name'];

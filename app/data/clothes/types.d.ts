@@ -1,4 +1,4 @@
-import {type TCurrencyName, type TCustomerRareName} from '@/data';
+import {type TCurrencyId, type TCustomerRareId} from '@/data';
 import type {IItemBase, TMerchant} from '@/data/types';
 
 export interface IClothes extends IItemBase {
@@ -9,11 +9,11 @@ export interface IClothes extends IItemBase {
 	from: Array<
 		| string
 		| Partial<{
-				bond: TCustomerRareName;
+				bond: TCustomerRareId;
 				buy: {
 					name: TMerchant;
 					price: {
-						currency: TCurrencyName;
+						currency: TCurrencyId;
 						amount: number;
 					};
 				};
@@ -25,4 +25,5 @@ export interface IClothes extends IItemBase {
 
 export type TClothes = typeof import('./data').CLOTHES_LIST;
 
+export type TClothesId = TClothes[number]['id'];
 export type TClothesName = TClothes[number]['name'];
