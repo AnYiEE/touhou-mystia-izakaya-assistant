@@ -71,9 +71,9 @@
 	],
 	"dependencies": {
 		"@davstack/store": "^1.4.6",
-		"@fortawesome/fontawesome-svg-core": "^6.6.0",
-		"@fortawesome/free-brands-svg-icons": "^6.6.0",
-		"@fortawesome/free-solid-svg-icons": "^6.6.0",
+		"@fortawesome/fontawesome-svg-core": "^6.7.0",
+		"@fortawesome/free-brands-svg-icons": "^6.7.0",
+		"@fortawesome/free-solid-svg-icons": "^6.7.0",
 		"@fortawesome/react-fontawesome": "^0.2.2",
 		"@nextui-org/react": "^2.4.8",
 		"compare-versions": "^6.1.1",
@@ -90,7 +90,7 @@
 		"rxjs": "^7.8.1",
 		"tailwind-merge": "^2.5.4",
 		"ua-parser-js": "^2.0.0",
-		"use-breakpoint": "^4.0.2"
+		"use-breakpoint": "^4.0.5"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.26.0",
@@ -104,8 +104,8 @@
 		"@types/react-dom": "^18.3.1",
 		"@types/serviceworker": "^0.0.103",
 		"@types/ua-parser-js": "^0.7.39",
-		"@typescript-eslint/eslint-plugin": "^8.14.0",
-		"@typescript-eslint/parser": "^8.14.0",
+		"@typescript-eslint/eslint-plugin": "^8.15.0",
+		"@typescript-eslint/parser": "^8.15.0",
 		"dotenv": "^16.4.5",
 		"eslint": "^8.57.1",
 		"eslint-config-next": "^14.2.18",
@@ -114,7 +114,7 @@
 		"eslint-plugin-eslint-comments": "^3.2.0",
 		"eslint-plugin-sort-destructure-keys": "^2.0.0",
 		"eslint-plugin-unicorn": "^56.0.0",
-		"husky": "^9.1.6",
+		"husky": "^9.1.7",
 		"only-allow": "^1.2.1",
 		"postcss": "^8.4.49",
 		"postcss-flexbugs-fixes": "^5.0.2",
