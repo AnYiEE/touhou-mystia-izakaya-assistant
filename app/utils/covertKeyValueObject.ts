@@ -1,3 +1,5 @@
+import type {IItemBase} from '@/data/types';
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function toValueWithKey<K extends keyof any>(key: K) {
 	return <U extends Record<K, unknown>>(valueObject: U) => valueObject[key];
@@ -17,4 +19,12 @@ export function toValueObjectWithKey<K extends keyof any>(key: K) {
 
 export function toValueObject<V>(value: V) {
 	return toValueObjectWithKey('value')(value);
+}
+
+export function toKeyValueObjectWithData(data: IItemBase) {
+	return <V>(value: V) =>
+		({
+			key: data.id,
+			value,
+		}) as IKeyValueObject<V>;
 }
