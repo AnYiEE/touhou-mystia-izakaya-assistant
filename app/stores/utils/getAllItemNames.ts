@@ -3,9 +3,9 @@ import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 import {type Item} from '@/utils/item';
 import type {TItemDataItem, TItemInstance} from '@/utils/types';
 
-type TNames<T extends TItemInstance> = TItemDataItem<T>['name'];
+type TName<T extends TItemInstance> = TItemDataItem<T>['name'];
 type TNameObject<T extends TItemInstance> = {
-	value: TNames<T>;
+	value: TName<T>;
 }[];
 
 function getAllItemNames<T extends TItemInstance>(instance: T, pinyinSortState: PinyinSortState) {

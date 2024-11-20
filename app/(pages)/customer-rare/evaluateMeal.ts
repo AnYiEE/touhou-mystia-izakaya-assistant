@@ -2,23 +2,24 @@ import type {TCustomerRating} from './types';
 import {
 	DARK_MATTER_NAME,
 	DARK_MATTER_TAG,
-	type TCustomerRareNames,
-	type TIngredientNames,
-	type TRecipeNames,
+	type TBeverageTag,
+	type TCustomerRareName,
+	type TIngredientName,
+	type TRecipeName,
+	type TRecipeTag,
 } from '@/data';
-import type {TBeverageTag, TRecipeTag} from '@/data/types';
 import {type ICustomerOrder} from '@/stores';
 import {intersection, without} from '@/utils';
 
 interface IParameters {
 	currentBeverageTags: TBeverageTag[];
 	currentCustomerBeverageTags: TBeverageTag[];
-	currentCustomerName: TCustomerRareNames;
+	currentCustomerName: TCustomerRareName;
 	currentCustomerNegativeTags: TRecipeTag[];
 	currentCustomerOrder: ICustomerOrder;
 	currentCustomerPositiveTags: TRecipeTag[];
-	currentIngredients: TIngredientNames[];
-	currentRecipeName: TRecipeNames | null;
+	currentIngredients: TIngredientName[];
+	currentRecipeName: TRecipeName | null;
 	currentRecipeTagsWithPopular: TRecipeTag[];
 	hasMystiaCooker: boolean;
 	isDarkMatter: boolean;
@@ -64,7 +65,7 @@ export function checkIngredientEasterEgg({
 }: Pick<IParameters, 'currentCustomerName' | 'currentIngredients'> & {
 	mealScore?: number;
 }): {
-	ingredient: TIngredientNames | null;
+	ingredient: TIngredientName | null;
 	score: number;
 } {
 	switch (currentCustomerName) {
@@ -103,7 +104,7 @@ export function checkRecipeEasterEgg({
 }: Pick<IParameters, 'currentCustomerName' | 'currentRecipeName'> & {
 	mealScore?: number;
 }): {
-	recipe: TRecipeNames | null;
+	recipe: TRecipeName | null;
 	score: number;
 } {
 	switch (currentCustomerName) {

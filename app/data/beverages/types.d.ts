@@ -37,4 +37,4 @@ export interface IBeverage extends IFoodBase {
 
 export type TBeverages = typeof import('./data').BEVERAGE_LIST;
 
-export type TBeverageNames = TBeverages[number]['name'];
+export type TBeverageName = TBeverages[number]['name'];

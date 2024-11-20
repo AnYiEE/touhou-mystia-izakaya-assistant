@@ -3,11 +3,12 @@ import {
 	INGREDIENT_LIST,
 	TAG_POPULAR_NEGATIVE,
 	TAG_POPULAR_POSITIVE,
-	type TIngredientNames,
-	type TIngredientTypes,
+	type TIngredientName,
+	type TIngredientTag,
+	type TIngredientType,
 	type TIngredients,
+	type TLevel,
 } from '@/data';
-import type {TIngredientTag, TLevel} from '@/data/types';
 import {type IPopularData} from '@/stores';
 import {checkArrayEqualOf} from '@/utils';
 
@@ -31,7 +32,7 @@ export class Ingredient extends Food<TIngredients> {
 
 	public blockedLevels: Set<TLevel> = new Set([10]);
 
-	public blockedIngredients: Set<TIngredientNames> = new Set(['铃仙', '噗噗哟果', '强效辣椒素']);
+	public blockedIngredients: Set<TIngredientName> = new Set(['铃仙', '噗噗哟果', '强效辣椒素']);
 
 	public blockedTags: Set<TIngredientTag> = new Set(['特产', '天罚']);
 
@@ -39,7 +40,7 @@ export class Ingredient extends Food<TIngredients> {
 	 * @description Types sorted in the suggested order. Used for selecting ingredient types.
 	 */
 	public get sortedTypes() {
-		const types = ['海鲜', '肉类', '蔬菜', '其他'] as const satisfies TIngredientTypes[];
+		const types = ['海鲜', '肉类', '蔬菜', '其他'] as const satisfies TIngredientType[];
 
 		if (Ingredient._isTypesChecked) {
 			return types;

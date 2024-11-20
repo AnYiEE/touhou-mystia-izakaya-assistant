@@ -64,7 +64,7 @@ export class Item<
 		return index;
 	}
 
-	public findNameByIndex(index: number): TName {
+	public findNameByIndex(index: number) {
 		if (this._indexNameCache.has(index)) {
 			return this._indexNameCache.get(index) as TName;
 		}
@@ -91,6 +91,7 @@ export class Item<
 	}
 
 	public getPropsByIndex(index: number): TItemWithPinyin;
+	public getPropsByIndex(index: number, prop: 'name'): TName;
 	public getPropsByIndex<T extends keyof TItemWithPinyin>(index: number, prop: T): TItemWithPinyin[T];
 	public getPropsByIndex<T extends keyof TItemWithPinyin>(index: number, ...props: T[]): TItemWithPinyin[T][];
 	public getPropsByIndex<T extends keyof TItemWithPinyin>(
@@ -112,6 +113,8 @@ export class Item<
 
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 	public getPropsByName<T extends string = TName>(name: T): TItemWithPinyin;
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+	public getPropsByName<T extends string = TName>(name: T, prop: 'name'): TName;
 	public getPropsByName<
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 		T extends string = TName,

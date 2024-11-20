@@ -1,18 +1,18 @@
 import {isNil} from 'lodash';
 
-import type {TBeverageTag, TRecipeTag} from '@/data/types';
+import {type TBeverageTag, type TRecipeTag} from '@/data';
 
-type TTags = TBeverageTag | TRecipeTag;
+type TTag = TBeverageTag | TRecipeTag;
 
 export function keepLastTag(
 	tagSet: SelectionSet,
-	tag: TTags,
+	tag: TTag,
 	{
 		hasMystiaCooker,
 		orderTag,
 	}: {
 		hasMystiaCooker?: boolean;
-		orderTag?: TTags | null;
+		orderTag?: TTag | null;
 	} = {}
 ) {
 	const hasFilteredTags = tagSet.size > 0;

@@ -64,11 +64,11 @@ export default memo<IProps>(function Content({data}) {
 									【
 									<Sprite
 										target="customer_rare"
-										name={from.name}
+										name={from.bond}
 										size={1.25}
 										className="mx-0.5 rounded-full"
 									/>
-									{from.name}】羁绊
+									{from.bond}】羁绊
 								</span>
 								Lv.{from.level - 1}
 								<span className="mx-0.5">➞</span>Lv.

@@ -1,4 +1,5 @@
-import type {IItemBase, TMerchant, TPlace} from '@/data/types';
+import {type TPlace} from '@/data';
+import type {IItemBase, TMerchant} from '@/data/types';
 
 export interface ICurrency extends IItemBase {
 	from: Array<
@@ -7,7 +8,7 @@ export interface ICurrency extends IItemBase {
 				buy: {
 					name: TMerchant;
 					price: {
-						currency: string; // TCurrencyNames
+						currency: string; // TCurrencyName
 						amount: number;
 					};
 				};
@@ -18,4 +19,4 @@ export interface ICurrency extends IItemBase {
 
 export type TCurrencies = typeof import('./data').CURRENCY_LIST;
 
-export type TCurrencyNames = TCurrencies[number]['name'];
+export type TCurrencyName = TCurrencies[number]['name'];

@@ -35,10 +35,10 @@ import {
 	type ICooker,
 	type IIngredient,
 	LABEL_DLC_0,
-	type TCookerNames,
-	type TIngredientNames,
-	type TItemNames,
-	type TTags,
+	type TCookerName,
+	type TIngredientName,
+	type TItemName,
+	type TTag,
 } from '@/data';
 import type {ITagStyle} from '@/data/types';
 import {globalStore as store} from '@/stores';
@@ -92,7 +92,7 @@ const CloseButton: FC<ICloseButtonProps> = () => {
 	);
 };
 interface IShareButtonProps {
-	name: TItemNames;
+	name: TItemName;
 }
 
 const ShareButton = memo<IShareButtonProps>(function ShareButton({name}) {
@@ -189,7 +189,7 @@ interface IItemPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 	// Basic info.
 	id: number;
 	recipeId?: number;
-	name: TItemNames;
+	name: TItemName;
 	displayName?: ReactNodeWithoutBoolean;
 	description: {
 		description: string;
@@ -200,11 +200,11 @@ interface IItemPopoverCardProps extends Pick<ISpriteProps, 'target'> {
 	dlc?: number;
 	// For recipes.
 	/** @description If `null`, it means that the recipe has no cooker (such as dark matter). */
-	cooker?: TCookerNames | null;
-	ingredients?: TIngredientNames[];
+	cooker?: TCookerName | null;
+	ingredients?: TIngredientName[];
 	// For tags.
 	tags?: {
-		[key in keyof ITagStyle]: TTags[];
+		[key in keyof ITagStyle]: TTag[];
 	};
 	tagColors?: ITagStyle;
 }

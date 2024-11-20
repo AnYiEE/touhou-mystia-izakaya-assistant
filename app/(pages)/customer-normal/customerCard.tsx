@@ -16,8 +16,13 @@ import Tags from '@/components/tags';
 import Tooltip from '@/components/tooltip';
 
 import {customerRatingColorMap} from './constants';
-import {CUSTOMER_NORMAL_TAG_STYLE, LABEL_DLC_0, type TCustomerNormalNames} from '@/data';
-import type {TBeverageTag, TRecipeTag} from '@/data/types';
+import {
+	CUSTOMER_NORMAL_TAG_STYLE,
+	LABEL_DLC_0,
+	type TBeverageTag,
+	type TCustomerNormalName,
+	type TRecipeTag,
+} from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, pinyinSort} from '@/utils';
 
@@ -69,7 +74,7 @@ export default function CustomerCard() {
 	}, [vibrate]);
 
 	const handleRefreshSelectedItems = useCallback(
-		(customerName: TCustomerNormalNames) => {
+		(customerName: TCustomerNormalName) => {
 			vibrate();
 			customerStore.refreshCustomerSelectedItems();
 			trackEvent(TrackCategory.Click, 'Reset Button', customerName);

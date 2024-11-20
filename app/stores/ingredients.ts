@@ -3,8 +3,7 @@ import {createJSONStorage} from 'zustand/middleware';
 
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
-import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data';
-import type {TIngredientTag} from '@/data/types';
+import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE, type TIngredientTag} from '@/data';
 import {type IPopularData} from '@/stores';
 import {createNamesCache} from '@/stores/utils';
 import {Ingredient, numberSort, pinyinSort, toValueObject} from '@/utils';

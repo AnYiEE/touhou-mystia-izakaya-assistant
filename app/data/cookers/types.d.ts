@@ -1,4 +1,4 @@
-import {type TCurrencyNames, type TCustomerRareNames} from '@/data';
+import {type TCurrencyName, type TCustomerRareName} from '@/data';
 import type {IItemBase, TDescription, TMerchant} from '@/data/types';
 
 type TCategory = 'DLC' | '初始' | '夜雀' | '超' | '极' | '核能' | '可疑' | '月见';
@@ -13,13 +13,13 @@ export interface ICooker extends IItemBase {
 	from: Array<
 		| string
 		| Partial<{
-				bond: TCustomerRareNames;
+				bond: TCustomerRareName;
 				buy: {
 					name: TMerchant;
 					price: Array<
 						| number
 						| {
-								currency: TCurrencyNames;
+								currency: TCurrencyName;
 								amount: number;
 						  }
 					>;
@@ -32,6 +32,6 @@ export interface ICooker extends IItemBase {
 
 export type TCookers = typeof import('./data').COOKER_LIST;
 
-export type TCookerNames = TCookers[number]['name'];
-export type TCookerCategories = TCookers[number]['category'];
-export type TCookerTypes = FlatArray<TCookers[number]['type'], 1>;
+export type TCookerName = TCookers[number]['name'];
+export type TCookerCategory = TCookers[number]['category'];
+export type TCookerType = FlatArray<TCookers[number]['type'], 1>;

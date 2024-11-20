@@ -1,6 +1,6 @@
 import {Customer} from './base';
 import {siteConfig} from '@/configs';
-import {CUSTOMER_RARE_LIST, type TCustomerRareNames, type TCustomerRares} from '@/data';
+import {CUSTOMER_RARE_LIST, type TCustomerRareName, type TCustomerRares} from '@/data';
 import {Clothes, processPinyin} from '@/utils';
 
 const {cdnUrl} = siteConfig;
@@ -8,7 +8,7 @@ const {cdnUrl} = siteConfig;
 export class CustomerRare extends Customer<TCustomerRares> {
 	private static _instance: CustomerRare | undefined;
 
-	private static _tachiePathCache = new Map<TCustomerRareNames, string>();
+	private static _tachiePathCache = new Map<TCustomerRareName, string>();
 
 	public static getInstance() {
 		if (CustomerRare._instance !== undefined) {
@@ -22,7 +22,7 @@ export class CustomerRare extends Customer<TCustomerRares> {
 		return instance;
 	}
 
-	public getTachiePath(customerName: TCustomerRareNames | null) {
+	public getTachiePath(customerName: TCustomerRareName | null) {
 		if (customerName === null) {
 			return Clothes.getInstance().getTachiePath('夜雀服');
 		}

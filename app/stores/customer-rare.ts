@@ -17,12 +17,14 @@ import {
 	DARK_MATTER_PRICE,
 	TAG_POPULAR_NEGATIVE,
 	TAG_POPULAR_POSITIVE,
-	type TBeverageNames,
-	type TCustomerRareNames,
-	type TIngredientNames,
-	type TRecipeNames,
+	type TBeverageName,
+	type TBeverageTag,
+	type TCustomerRareName,
+	type TIngredientName,
+	type TIngredientTag,
+	type TRecipeName,
+	type TRecipeTag,
 } from '@/data';
-import type {TBeverageTag, TIngredientTag, TRecipeTag} from '@/data/types';
 import {type IPopularData} from '@/stores';
 import {createNamesCache, keepLastTag, reverseDirection, reverseVisibilityState} from '@/stores/utils';
 import {
@@ -49,8 +51,8 @@ export interface ICustomerOrder {
 }
 
 export interface IRecipeData {
-	name: TRecipeNames;
-	extraIngredients: TIngredientNames[];
+	name: TRecipeName;
+	extraIngredients: TIngredientName[];
 }
 
 const instance_beverage = Beverage.getInstance();
@@ -181,19 +183,19 @@ const state = {
 		},
 
 		meals: {} as {
-			[key in TCustomerRareNames]?: {
+			[key in TCustomerRareName]?: {
 				index: number;
 				hasMystiaCooker: boolean;
 				order: ICustomerOrder;
-				beverage: TBeverageNames;
-				recipe: TRecipeNames;
-				extraIngredients: TIngredientNames[];
+				beverage: TBeverageName;
+				recipe: TRecipeName;
+				extraIngredients: TIngredientName[];
 			}[];
 		},
 	},
 	shared: {
 		beverage: {
-			name: null as TBeverageNames | null,
+			name: null as TBeverageName | null,
 
 			dlcs: new Set() as SelectionSet,
 			page: 1,
@@ -202,7 +204,7 @@ const state = {
 			sortDescriptor: {} as TBeverageTableSortDescriptor,
 		},
 		customer: {
-			name: null as TCustomerRareNames | null,
+			name: null as TCustomerRareName | null,
 
 			beverageTags: new Set() as SelectionSet,
 			positiveTags: new Set() as SelectionSet,
@@ -514,12 +516,12 @@ export const customerRareStore = store(state, {
 				return tag;
 			});
 		},
-		onCustomerSelectedChange(customerName: TCustomerRareNames) {
+		onCustomerSelectedChange(customerName: TCustomerRareName) {
 			currentStore.shared.customer.name.set(customerName);
 			trackEvent(TrackCategory.Select, 'Customer', customerName);
 		},
 
-		onBeverageTableAction(beverageName: TBeverageNames) {
+		onBeverageTableAction(beverageName: TBeverageName) {
 			currentStore.shared.beverage.name.set(beverageName);
 			trackEvent(TrackCategory.Select, 'Beverage', beverageName);
 		},
@@ -563,7 +565,7 @@ export const customerRareStore = store(state, {
 			});
 		},
 
-		onIngredientSelectedChange(ingredientName: TIngredientNames) {
+		onIngredientSelectedChange(ingredientName: TIngredientName) {
 			const recipeData = currentStore.shared.recipe.data.get();
 			let recipe: TRecipe | null = null;
 			if (recipeData !== null) {
@@ -580,7 +582,7 @@ export const customerRareStore = store(state, {
 			trackEvent(TrackCategory.Select, 'Ingredient', ingredientName);
 		},
 
-		onRecipeTableAction(recipeName: TRecipeNames) {
+		onRecipeTableAction(recipeName: TRecipeName) {
 			currentStore.shared.recipe.data.set({
 				extraIngredients: [],
 				name: recipeName,
@@ -657,7 +659,7 @@ export const customerRareStore = store(state, {
 			}
 			const recipeData = currentStore.shared.recipe.data.get();
 			const recipeName = recipeData?.name ?? null;
-			const ingredients: TIngredientNames[] = [];
+			const ingredients: TIngredientName[] = [];
 			if (recipeData !== null) {
 				ingredients.push(
 					...instance_recipe.getPropsByName(recipeData.name, 'ingredients'),
@@ -681,12 +683,12 @@ export const customerRareStore = store(state, {
 			currentStore.shared.customer.rating.set(rating);
 		},
 		evaluateSavedMealResult(data: {
-			beverageName: TBeverageNames;
-			extraIngredients: TIngredientNames[];
+			beverageName: TBeverageName;
+			extraIngredients: TIngredientName[];
 			hasMystiaCooker: boolean;
 			order: ICustomerOrder;
 			popular: IPopularData;
-			recipeName: TRecipeNames;
+			recipeName: TRecipeName;
 		}) {
 			const stringifiedData = JSON.stringify(data);
 			if (savedMealRatingCache.has(stringifiedData)) {
@@ -739,7 +741,7 @@ export const customerRareStore = store(state, {
 			savedMealRatingCache.set(stringifiedData, result);
 			return result;
 		},
-		removeMealIngredient(ingredientName: TIngredientNames) {
+		removeMealIngredient(ingredientName: TIngredientName) {
 			currentStore.shared.recipe.data.set((prev) => {
 				if (prev !== null) {
 					prev.extraIngredients = removeLastElement(prev.extraIngredients, ingredientName);

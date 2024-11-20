@@ -1,18 +1,20 @@
-export function toValueWithKey<T extends string>(key: T) {
-	return <U extends Record<T, unknown>>(valueObject: U) => valueObject[key];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function toValueWithKey<K extends keyof any>(key: K) {
+	return <U extends Record<K, unknown>>(valueObject: U) => valueObject[key];
 }
 
 export function toValue<T extends {value: unknown}>(valueObject: T) {
 	return toValueWithKey('value')(valueObject);
 }
 
-export function toValueObjectWithKey<K extends string>(key: K) {
-	return <T>(value: T) =>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function toValueObjectWithKey<K extends keyof any>(key: K) {
+	return <V>(value: V) =>
 		({
 			[key]: value,
-		}) as Record<K, T>;
+		}) as Record<K, V>;
 }
 
-export function toValueObject<T>(value: T) {
+export function toValueObject<V>(value: V) {
 	return toValueObjectWithKey('value')(value);
 }

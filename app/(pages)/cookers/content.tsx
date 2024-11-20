@@ -14,13 +14,13 @@ import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
-import {type ICooker, type TCookerCategories} from '@/data';
+import {type ICooker, type TCookerCategory} from '@/data';
 // import {globalStore as store} from '@/stores';
 import {type Cooker, checkA11yConfirmKey} from '@/utils';
 import type {TItemData} from '@/utils/types';
 
 interface INameProps {
-	category: TCookerCategories;
+	category: TCookerCategory;
 }
 
 const Name = memo<PropsWithChildren<INameProps>>(function Name({category, children}) {

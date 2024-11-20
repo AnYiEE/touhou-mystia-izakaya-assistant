@@ -1,4 +1,5 @@
-import type {ICustomerBase, TDescription, TRecipeTag} from '@/data/types';
+import {type TRecipeTag} from '@/data';
+import type {ICustomerBase, TDescription} from '@/data/types';
 
 export type TRewardType = '摆件' | '采集' | '厨具' | '伙伴' | '料理' | '衣服';
 
@@ -22,4 +23,4 @@ export interface ICustomerRare extends ICustomerBase {
 
 export type TCustomerRares = typeof import('./data').CUSTOMER_RARE_LIST;
 
-export type TCustomerRareNames = TCustomerRares[number]['name'];
+export type TCustomerRareName = TCustomerRares[number]['name'];

@@ -3,15 +3,15 @@ import {
 	TAG_LARGE_PARTITION,
 	TAG_POPULAR_NEGATIVE,
 	TAG_POPULAR_POSITIVE,
-	type TCustomerNormalNames,
-	type TRecipeNames,
+	type TCustomerNormalName,
+	type TRecipeName,
+	type TRecipeTag,
 } from '@/data';
-import type {TRecipeTag} from '@/data/types';
 import {type IPopularData, type TPopularTag} from '@/stores';
 import {intersection} from '@/utils';
 
 interface IParameters {
-	currentCustomerName: TCustomerNormalNames;
+	currentCustomerName: TCustomerNormalName;
 	currentCustomerPopularData: IPopularData;
 	currentCustomerPositiveTags: TRecipeTag[];
 	currentExtraIngredientsLength: number;
@@ -27,7 +27,7 @@ export function checkEasterEgg({
 	currentRecipe: TRecipe;
 	mealScore?: number;
 }): {
-	recipe: TRecipeNames | null;
+	recipe: TRecipeName | null;
 	score: number;
 } {
 	const {name: currentRecipeName} = currentRecipe;

@@ -13,7 +13,7 @@ import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
-import {DARK_MATTER_NAME, DARK_MATTER_PRICE, type TIngredientNames} from '@/data';
+import {DARK_MATTER_NAME, DARK_MATTER_PRICE, type TIngredientName} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
@@ -84,7 +84,7 @@ function IngredientsList() {
 	);
 
 	const handleRemoveButtonPress = useCallback(
-		(ingredient: TIngredientNames) => {
+		(ingredient: TIngredientName) => {
 			vibrate();
 			customerStore.removeMealIngredient(ingredient);
 		},

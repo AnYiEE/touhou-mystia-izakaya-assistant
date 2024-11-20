@@ -12,7 +12,7 @@ import Placeholder from '@/components/placeholder';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
-import {type TIngredientNames} from '@/data';
+import {type TIngredientName} from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
@@ -41,7 +41,7 @@ function IngredientsList() {
 	);
 
 	const handleRemoveButtonPress = useCallback(
-		(ingredient: TIngredientNames) => {
+		(ingredient: TIngredientName) => {
 			vibrate();
 			customerStore.removeMealIngredient(ingredient);
 		},

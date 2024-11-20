@@ -1,10 +1,8 @@
-import {type TCustomerRareNames} from '@/data';
-import type {IItemBase, TDescription, TPlace} from '@/data/types';
-
-type TSpeed = '快' | '慢' | '中等';
+import {type TCustomerRareName, type TPlace, type TSpeed} from '@/data';
+import type {IItemBase, TDescription} from '@/data/types';
 
 export interface IPartner extends IItemBase {
-	belong: TCustomerRareNames[] | null;
+	belong: TCustomerRareName[] | null;
 	effect: TDescription | null;
 	from:
 		| TDescription
@@ -18,11 +16,11 @@ export interface IPartner extends IItemBase {
 		  }>;
 	pay: number;
 	speed: {
-		moving: TSpeed | '瞬间移动';
-		working: TSpeed;
+		moving: TSpeed;
+		working: Exclude<TSpeed, '瞬间移动'>;
 	};
 }
 
 export type TPartners = typeof import('./data').PARTNER_LIST;
 
-export type TPartnerNames = TPartners[number]['name'];
+export type TPartnerName = TPartners[number]['name'];

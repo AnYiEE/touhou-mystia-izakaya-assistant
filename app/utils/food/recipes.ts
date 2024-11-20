@@ -11,12 +11,13 @@ import {
 	TAG_LARGE_PARTITION,
 	TAG_POPULAR_NEGATIVE,
 	TAG_POPULAR_POSITIVE,
-	type TCustomerRareNames,
-	type TIngredientNames,
-	type TRecipeNames,
+	type TCustomerRareName,
+	type TIngredientName,
+	type TIngredientTag,
+	type TRecipeName,
+	type TRecipeTag,
 	type TRecipes,
 } from '@/data';
-import type {TIngredientTag, TRecipeTag} from '@/data/types';
 import {type IPopularData, type IRecipeData} from '@/stores';
 import {intersection} from '@/utils';
 
@@ -27,7 +28,7 @@ type TProcessPositiveTags<T extends TRecipe> = Omit<T, 'positiveTags'> & {
 
 type TBondRecipes = {
 	level: number;
-	name: TRecipeNames;
+	name: TRecipeName;
 }[];
 
 export class Recipe extends Food<TRecipes> {
@@ -41,7 +42,7 @@ export class Recipe extends Food<TRecipes> {
 		饱腹: '下酒',
 	} as const;
 
-	private static _bondRecipesCache = new Map<TCustomerRareNames, TBondRecipes>();
+	private static _bondRecipesCache = new Map<TCustomerRareName, TBondRecipes>();
 
 	private constructor(data: TRecipes) {
 		const clonedData = cloneDeep(data);
@@ -72,7 +73,7 @@ export class Recipe extends Food<TRecipes> {
 		return instance;
 	}
 
-	public blockedRecipes: Set<TRecipeNames> = new Set([DARK_MATTER_NAME]);
+	public blockedRecipes: Set<TRecipeName> = new Set([DARK_MATTER_NAME]);
 
 	public blockedTags: Set<TRecipeTag> = new Set([DARK_MATTER_TAG]);
 
@@ -98,7 +99,7 @@ export class Recipe extends Food<TRecipes> {
 		recipeData:
 			| IRecipeData
 			| {
-					extraIngredients: ReadonlyArray<TIngredientNames>;
+					extraIngredients: ReadonlyArray<TIngredientName>;
 					negativeTags: ReadonlyArray<TRecipeTag>;
 			  }
 	) {
@@ -124,8 +125,8 @@ export class Recipe extends Food<TRecipes> {
 	 * @description Compose recipe tags based on all ingredient count, original recipe tags, the extra ingredient tags and the popular tag data.
 	 */
 	public composeTagsWithPopular(
-		originalIngredients: ReadonlyArray<TIngredientNames>,
-		extraIngredients: ReadonlyArray<TIngredientNames>,
+		originalIngredients: ReadonlyArray<TIngredientName>,
+		extraIngredients: ReadonlyArray<TIngredientName>,
 		originalRecipePositiveTags: ReadonlyArray<TRecipeTag>,
 		extraIngredientTags: ReadonlyArray<TIngredientTag>,
 		popular: IPopularData | null
@@ -204,7 +205,7 @@ export class Recipe extends Food<TRecipes> {
 	/**
 	 * @description Get the recipes for a customer based on their bond level.
 	 */
-	public getBondRecipes(customerName: TCustomerRareNames) {
+	public getBondRecipes(customerName: TCustomerRareName) {
 		if (Recipe._bondRecipesCache.has(customerName)) {
 			return Recipe._bondRecipesCache.get(customerName);
 		}

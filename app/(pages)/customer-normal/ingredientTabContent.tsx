@@ -16,9 +16,10 @@ import {
 	TAG_LARGE_PARTITION,
 	TAG_POPULAR_NEGATIVE,
 	TAG_POPULAR_POSITIVE,
-	type TIngredientNames,
+	type TIngredientName,
+	type TIngredientTag,
+	type TRecipeTag,
 } from '@/data';
-import type {TIngredientTag, TRecipeTag} from '@/data/types';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {type Recipe, checkA11yConfirmKey, intersection, toValueWithKey, union} from '@/utils';
 import type {TItemDataItem} from '@/utils/types';
@@ -62,7 +63,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 	}, [vibrate]);
 
 	const handleSelect = useCallback(
-		(ingredient: TIngredientNames) => {
+		(ingredient: TIngredientName) => {
 			vibrate();
 			customerStore.onIngredientSelectedChange(ingredient);
 		},

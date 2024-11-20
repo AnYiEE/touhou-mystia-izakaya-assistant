@@ -1,5 +1,5 @@
 import {siteConfig} from '@/configs';
-import {PARTNER_LIST, type TCustomerRareNames, type TPartnerNames, type TPartners} from '@/data';
+import {PARTNER_LIST, type TCustomerRareName, type TPartnerName, type TPartners} from '@/data';
 import {processPinyin} from '@/utils';
 import {Item} from '@/utils/item';
 
@@ -8,8 +8,8 @@ const {cdnUrl} = siteConfig;
 export class Partner extends Item<TPartners> {
 	private static _instance: Partner | undefined;
 
-	private static _bondPartnerCache = new Map<TCustomerRareNames, TPartnerNames | null>();
-	private static _tachiePathCache = new Map<TPartnerNames, string>();
+	private static _bondPartnerCache = new Map<TCustomerRareName, TPartnerName | null>();
+	private static _tachiePathCache = new Map<TPartnerName, string>();
 
 	public static getInstance() {
 		if (Partner._instance !== undefined) {
@@ -26,15 +26,15 @@ export class Partner extends Item<TPartners> {
 	/**
 	 * @description Get the partner for a customer based on their bond level.
 	 */
-	public getBondPartner(customerName: TCustomerRareNames) {
+	public getBondPartner(customerName: TCustomerRareName) {
 		if (Partner._bondPartnerCache.has(customerName)) {
 			return Partner._bondPartnerCache.get(customerName);
 		}
 
-		let bondPartner: TPartnerNames | null = null;
+		let bondPartner: TPartnerName | null = null;
 
 		this._data.some(({belong, name}) => {
-			if ((belong as TCustomerRareNames[] | null)?.includes(customerName)) {
+			if ((belong as TCustomerRareName[] | null)?.includes(customerName)) {
 				bondPartner = name;
 				return true;
 			}
@@ -49,7 +49,7 @@ export class Partner extends Item<TPartners> {
 	/**
 	 * @description Get the tachie image path for a partner.
 	 */
-	public getTachiePath(name: TPartnerNames) {
+	public getTachiePath(name: TPartnerName) {
 		const basePath = `${cdnUrl}/assets/tachies/partners`;
 
 		let path: string;

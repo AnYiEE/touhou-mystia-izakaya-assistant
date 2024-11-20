@@ -1,7 +1,7 @@
 import {isObjectLike} from 'lodash';
 
 import {siteConfig} from '@/configs';
-import {CLOTHES_LIST, type TClothes, type TClothesNames, type TCustomerRareNames} from '@/data';
+import {CLOTHES_LIST, type TClothes, type TClothesName, type TCustomerRareName} from '@/data';
 import {processPinyin} from '@/utils';
 import {Item} from '@/utils/item';
 
@@ -10,8 +10,8 @@ const {cdnUrl} = siteConfig;
 export class Clothes extends Item<TClothes> {
 	private static _instance: Clothes | undefined;
 
-	private static _bondClothesCache = new Map<TCustomerRareNames, TClothesNames | null>();
-	private static _tachiePathCache = new Map<TClothesNames, string>();
+	private static _bondClothesCache = new Map<TCustomerRareName, TClothesName | null>();
+	private static _tachiePathCache = new Map<TClothesName, string>();
 
 	public static getInstance() {
 		if (Clothes._instance !== undefined) {
@@ -28,12 +28,12 @@ export class Clothes extends Item<TClothes> {
 	/**
 	 * @description Get the clothes for a customer based on their bond level.
 	 */
-	public getBondClothes(customerName: TCustomerRareNames) {
+	public getBondClothes(customerName: TCustomerRareName) {
 		if (Clothes._bondClothesCache.has(customerName)) {
 			return Clothes._bondClothesCache.get(customerName);
 		}
 
-		let bondClothes: TClothesNames | null = null;
+		let bondClothes: TClothesName | null = null;
 
 		this._data.some(({from, name}) =>
 			from.some((item) => {
@@ -53,7 +53,7 @@ export class Clothes extends Item<TClothes> {
 	/**
 	 * @description Get the tachie image path for a clothes.
 	 */
-	public getTachiePath(name: TClothesNames) {
+	public getTachiePath(name: TClothesName) {
 		const basePath = `${cdnUrl}/assets/tachies/clothes`;
 
 		let path: string;

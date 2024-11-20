@@ -1,6 +1,5 @@
 import {Food} from './base';
-import {BEVERAGE_LIST, type TBeverageNames, type TBeverages} from '@/data';
-import type {TBeverageTag} from '@/data/types';
+import {BEVERAGE_LIST, type TBeverageName, type TBeverageTag, type TBeverages} from '@/data';
 import {checkArrayEqualOf} from '@/utils';
 
 export class Beverage extends Food<TBeverages> {
@@ -67,7 +66,7 @@ export class Beverage extends Food<TBeverages> {
 	 * @description Get the suitability of a beverage for a customer based on their tags.
 	 * @returns An object containing the suitability of the beverage and the tags that are common to both the beverage and the customer.
 	 */
-	public getCustomerSuitability<T extends string>(name: TBeverageNames, customerTags: ReadonlyArray<T>) {
+	public getCustomerSuitability<T extends string>(name: TBeverageName, customerTags: ReadonlyArray<T>) {
 		const beverageTags = this.getPropsByName(name, 'tags');
 
 		const {commonTags, count} = this.getCommonTags(beverageTags, customerTags);

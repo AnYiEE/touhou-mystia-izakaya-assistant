@@ -3,12 +3,13 @@ import {
 	type TAG_ECONOMICAL,
 	type TAG_EXPENSIVE,
 	type TAG_LARGE_PARTITION,
-	type TCookerNames,
-	type TCurrencyNames,
-	type TCustomerRareNames,
-	type TIngredientNames,
+	type TCookerName,
+	type TCurrencyName,
+	type TCustomerRareName,
+	type TIngredientName,
+	type TPlace,
 } from '@/data';
-import type {IFoodBase, TMerchant, TPlace} from '@/data/types';
+import type {IFoodBase, TMerchant} from '@/data/types';
 
 export type TTagNeedCalculate = typeof TAG_EXPENSIVE | typeof TAG_ECONOMICAL;
 
@@ -57,23 +58,23 @@ type TTag =
 export interface IRecipe extends IFoodBase {
 	/** @description If the value is `-1`, it means there is no corresponding recipe. */
 	recipeId: number;
-	ingredients: TIngredientNames[];
+	ingredients: TIngredientName[];
 	positiveTags: TTag[];
 	negativeTags: TTag[];
-	cooker: TCookerNames;
+	cooker: TCookerName;
 	max: number;
 	min: number;
 	from:
 		| string
 		| Partial<{
 				bond: {
-					name: TCustomerRareNames;
+					name: TCustomerRareName;
 					level: number;
 				};
 				buy: {
 					name: TMerchant;
 					price: {
-						currency: TCurrencyNames;
+						currency: TCurrencyName;
 						amount: number;
 					};
 				};
@@ -86,4 +87,4 @@ export interface IRecipe extends IFoodBase {
 
 export type TRecipes = typeof import('./data').RECIPE_LIST;
 
-export type TRecipeNames = TRecipes[number]['name'];
+export type TRecipeName = TRecipes[number]['name'];

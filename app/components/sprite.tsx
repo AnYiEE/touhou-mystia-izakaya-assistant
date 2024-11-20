@@ -13,7 +13,7 @@ import {twMerge} from 'tailwind-merge';
 import {checkCompatibility} from '@/components/compatibleBrowser';
 
 import {siteConfig} from '@/configs';
-import {type TItemNames} from '@/data';
+import {type TItemName} from '@/data';
 import {Sprite as SpriteClass, remToPx} from '@/utils';
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
@@ -30,7 +30,7 @@ const getSpriteStyle = (target: TSpriteTarget, isSupportedWebp?: boolean): CSSPr
 interface ISpriteBase {
 	target: TSpriteTarget;
 	index?: number;
-	name?: TItemNames;
+	name?: TItemName;
 	size?: number;
 	height?: number;
 	width?: number;

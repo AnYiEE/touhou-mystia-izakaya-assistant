@@ -1,23 +1,23 @@
 import {
-	type TBeverageNames,
+	type TBeverageName,
 	type TBeverages,
 	type TClothes,
-	type TClothesNames,
-	type TCookerNames,
+	type TClothesName,
+	type TCookerName,
 	type TCookers,
 	type TCurrencies,
-	type TCurrencyNames,
-	type TCustomerNormalNames,
+	type TCurrencyName,
+	type TCustomerNormalName,
 	type TCustomerNormals,
-	type TCustomerRareNames,
+	type TCustomerRareName,
 	type TCustomerRares,
-	type TIngredientNames,
+	type TIngredientName,
 	type TIngredients,
-	type TOrnamentNames,
+	type TOrnamentName,
 	type TOrnaments,
-	type TPartnerNames,
+	type TPartnerName,
 	type TPartners,
-	type TRecipeNames,
+	type TRecipeName,
 	type TRecipes,
 } from '@/data';
 
@@ -65,37 +65,37 @@ export type TSpriteData<T extends TSpriteTarget = string> = T extends 'beverage'
 												| TPartners
 												| TRecipes;
 
-export type TSpriteNames<T extends TSpriteTarget = string> = T extends 'beverage'
-	? TBeverageNames
+export type TSpriteName<T extends TSpriteTarget = string> = T extends 'beverage'
+	? TBeverageName
 	: T extends 'clothes'
-		? TClothesNames
+		? TClothesName
 		: T extends 'cooker'
-			? TCookerNames
+			? TCookerName
 			: T extends 'currency'
-				? TCurrencyNames
+				? TCurrencyName
 				: T extends 'customer_normal'
-					? TCustomerNormalNames
+					? TCustomerNormalName
 					: T extends 'customer_rare'
-						? TCustomerRareNames
+						? TCustomerRareName
 						: T extends 'ingredient'
-							? TIngredientNames
+							? TIngredientName
 							: T extends 'ornament'
-								? TOrnamentNames
+								? TOrnamentName
 								: T extends 'partner'
-									? TPartnerNames
+									? TPartnerName
 									: T extends 'recipe'
-										? TRecipeNames
+										? TRecipeName
 										:
-												| TBeverageNames
-												| TClothesNames
-												| TCookerNames
-												| TCurrencyNames
-												| TCustomerNormalNames
-												| TCustomerRareNames
-												| TIngredientNames
-												| TOrnamentNames
-												| TPartnerNames
-												| TRecipeNames;
+												| TBeverageName
+												| TClothesName
+												| TCookerName
+												| TCurrencyName
+												| TCustomerNormalName
+												| TCustomerRareName
+												| TIngredientName
+												| TOrnamentName
+												| TPartnerName
+												| TRecipeName;
 
 export interface ISpriteConfig {
 	col: number;

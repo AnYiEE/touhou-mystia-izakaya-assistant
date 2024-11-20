@@ -1,4 +1,4 @@
-import {type TCustomerRareNames} from '@/data';
+import {type TCustomerRareName} from '@/data';
 import type {IItemBase, TDescription} from '@/data/types';
 
 export interface IOrnament extends IItemBase {
@@ -6,11 +6,11 @@ export interface IOrnament extends IItemBase {
 	from:
 		| TDescription
 		| {
-				name: TCustomerRareNames;
+				bond: TCustomerRareName;
 				level: number;
 		  };
 }
 
 export type TOrnaments = typeof import('./data').ORNAMENT_LIST;
 
-export type TOrnamentNames = TOrnaments[number]['name'];
+export type TOrnamentName = TOrnaments[number]['name'];

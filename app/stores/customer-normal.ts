@@ -16,12 +16,14 @@ import type {IPersistenceState} from './types';
 import {
 	TAG_POPULAR_NEGATIVE,
 	TAG_POPULAR_POSITIVE,
-	type TBeverageNames,
-	type TCustomerNormalNames,
-	type TIngredientNames,
-	type TRecipeNames,
+	type TBeverageName,
+	type TBeverageTag,
+	type TCustomerNormalName,
+	type TIngredientName,
+	type TIngredientTag,
+	type TRecipeName,
+	type TRecipeTag,
 } from '@/data';
-import type {TBeverageTag, TIngredientTag, TRecipeTag} from '@/data/types';
 import {type IPopularData, type IRecipeData, type TPopularTag} from '@/stores';
 import {createNamesCache, keepLastTag, reverseDirection, reverseVisibilityState} from '@/stores/utils';
 import {
@@ -152,17 +154,17 @@ const state = {
 		},
 
 		meals: {} as {
-			[key in TCustomerNormalNames]?: {
+			[key in TCustomerNormalName]?: {
 				index: number;
-				beverage: TBeverageNames | null;
-				recipe: TRecipeNames;
-				extraIngredients: TIngredientNames[];
+				beverage: TBeverageName | null;
+				recipe: TRecipeName;
+				extraIngredients: TIngredientName[];
 			}[];
 		},
 	},
 	shared: {
 		beverage: {
-			name: null as TBeverageNames | null,
+			name: null as TBeverageName | null,
 
 			dlcs: new Set() as SelectionSet,
 			page: 1,
@@ -171,7 +173,7 @@ const state = {
 			sortDescriptor: {} as TBeverageTableSortDescriptor,
 		},
 		customer: {
-			name: null as TCustomerNormalNames | null,
+			name: null as TCustomerNormalName | null,
 
 			beverageTags: new Set() as SelectionSet,
 			positiveTags: new Set() as SelectionSet,
@@ -399,12 +401,12 @@ export const customerNormalStore = store(state, {
 				keepLastTag(prev, tag);
 			});
 		},
-		onCustomerSelectedChange(customerName: TCustomerNormalNames) {
+		onCustomerSelectedChange(customerName: TCustomerNormalName) {
 			currentStore.shared.customer.name.set(customerName);
 			trackEvent(TrackCategory.Select, 'Customer', customerName);
 		},
 
-		onBeverageTableAction(beverageName: TBeverageNames) {
+		onBeverageTableAction(beverageName: TBeverageName) {
 			currentStore.shared.beverage.name.set(beverageName);
 			trackEvent(TrackCategory.Select, 'Beverage', beverageName);
 		},
@@ -448,7 +450,7 @@ export const customerNormalStore = store(state, {
 			});
 		},
 
-		onIngredientSelectedChange(ingredientName: TIngredientNames) {
+		onIngredientSelectedChange(ingredientName: TIngredientName) {
 			const recipeData = currentStore.shared.recipe.data.get();
 			let recipe: TRecipe | null = null;
 			if (recipeData !== null) {
@@ -465,7 +467,7 @@ export const customerNormalStore = store(state, {
 			trackEvent(TrackCategory.Select, 'Ingredient', ingredientName);
 		},
 
-		onRecipeTableAction(recipeName: TRecipeNames) {
+		onRecipeTableAction(recipeName: TRecipeName) {
 			currentStore.shared.recipe.data.set({
 				extraIngredients: [],
 				name: recipeName,
@@ -529,7 +531,7 @@ export const customerNormalStore = store(state, {
 			}
 			const customerPositiveTags = instance_customer.getPropsByName(customerName, 'positiveTags');
 			const customerPopularData = currentStore.shared.customer.popular.get();
-			let extraIngredients: TIngredientNames[] = [];
+			let extraIngredients: TIngredientName[] = [];
 			const recipeData = currentStore.shared.recipe.data.get();
 			if (recipeData !== null) {
 				extraIngredients = recipeData.extraIngredients;
@@ -553,10 +555,10 @@ export const customerNormalStore = store(state, {
 			currentStore.shared.customer.rating.set(rating);
 		},
 		evaluateSavedMealResult(data: {
-			customerName: TCustomerNormalNames;
-			extraIngredients: TIngredientNames[];
+			customerName: TCustomerNormalName;
+			extraIngredients: TIngredientName[];
 			popular: IPopularData;
-			recipeName: TRecipeNames;
+			recipeName: TRecipeName;
 		}) {
 			const stringifiedData = JSON.stringify(data);
 			if (savedMealRatingCache.has(stringifiedData)) {
@@ -582,7 +584,7 @@ export const customerNormalStore = store(state, {
 			savedMealRatingCache.set(stringifiedData, rating);
 			return rating;
 		},
-		removeMealIngredient(ingredientName: TIngredientNames) {
+		removeMealIngredient(ingredientName: TIngredientName) {
 			currentStore.shared.recipe.data.set((prev) => {
 				if (prev !== null) {
 					prev.extraIngredients = removeLastElement(prev.extraIngredients, ingredientName);

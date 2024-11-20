@@ -4,8 +4,7 @@ import {createJSONStorage} from 'zustand/middleware';
 import {type Selection} from '@nextui-org/react';
 
 import type {IPersistenceState} from './types';
-import {type DARK_MATTER_TAG} from '@/data';
-import type {TIngredientTag, TRecipeTag} from '@/data/types';
+import {type DARK_MATTER_TAG, type TIngredientTag, type TRecipeTag} from '@/data';
 import {customerNormalStore, customerRareStore, ingredientsStore, recipesStore} from '@/stores';
 import {Ingredient, Recipe, pinyinSort, toValueObject, union} from '@/utils';
 

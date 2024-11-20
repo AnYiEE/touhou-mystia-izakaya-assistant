@@ -3,15 +3,15 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import {openedPopoverParam} from '@/hooks/useOpenedItemPopover';
 
 import {
-	type TClothesNames,
-	type TCookerNames,
-	type TCurrencyNames,
-	type TFoodNames,
-	type TOrnamentNames,
-	type TPartnerNames,
+	type TClothesName,
+	type TCookerName,
+	type TCurrencyName,
+	type TFoodName,
+	type TOrnamentName,
+	type TPartnerName,
 } from '@/data';
 
-type TItemPaths =
+type TItemPath =
 	| 'beverages'
 	| 'clothes'
 	| 'cookers'
@@ -21,19 +21,19 @@ type TItemPaths =
 	| 'partners'
 	| 'recipes';
 
-type TItemNames = TClothesNames | TCookerNames | TCurrencyNames | TFoodNames | TOrnamentNames | TPartnerNames;
+type TItemName = TClothesName | TCookerName | TCurrencyName | TFoodName | TOrnamentName | TPartnerName;
 
-export type TOpenWindow = (path: TItemPaths, name: TItemNames) => void;
+export type TOpenWindow = (path: TItemPath, name: TItemName) => void;
 
 export const inNewWindowParam = 'preview';
 
 export function useViewInNewWindow() {
-	const [windowItemNames, setWindowItemNames] = useState<[TItemNames] | null>(null);
-	const [windowItemPath, setWindowItemPath] = useState<[TItemPaths] | null>(null);
+	const [windowItemName, setWindowItemName] = useState<[TItemName] | null>(null);
+	const [windowItemPath, setWindowItemPath] = useState<[TItemPath] | null>(null);
 	const windowObjectRef = useRef<Window | null>(null);
 
 	useEffect(() => {
-		if (windowItemNames === null || windowItemPath === null) {
+		if (windowItemName === null || windowItemPath === null) {
 			return;
 		}
 
@@ -41,7 +41,7 @@ export function useViewInNewWindow() {
 		windowObjectRef.current = null;
 
 		const pathname = `/${windowItemPath[0]}?${new URLSearchParams({
-			[openedPopoverParam]: windowItemNames[0], // eslint-disable-next-line sort-keys
+			[openedPopoverParam]: windowItemName[0], // eslint-disable-next-line sort-keys
 			[inNewWindowParam]: '1',
 		}).toString()}`;
 		const height = 640;
@@ -55,10 +55,10 @@ export function useViewInNewWindow() {
 		);
 
 		windowObjectRef.current = newWindowObject;
-	}, [windowItemNames, windowItemPath]);
+	}, [windowItemName, windowItemPath]);
 
 	const openWindow = useCallback<TOpenWindow>((path, name) => {
-		setWindowItemNames([name]);
+		setWindowItemName([name]);
 		setWindowItemPath([path]);
 	}, []);
 

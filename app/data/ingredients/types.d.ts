@@ -43,5 +43,5 @@ export interface IIngredient extends IFoodBase {
 
 export type TIngredients = typeof import('./data').INGREDIENT_LIST;
 
-export type TIngredientNames = TIngredients[number]['name'];
-export type TIngredientTypes = TIngredients[number]['type'];
+export type TIngredientName = TIngredients[number]['name'];
+export type TIngredientType = TIngredients[number]['type'];

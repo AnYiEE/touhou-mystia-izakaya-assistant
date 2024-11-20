@@ -165,6 +165,18 @@ export type TMerchant =
 	| '【月之都】月兔'
 	| '【魔界】蓬松松爱莲♡魔法店';
 
+type TTask = '阿求小姐的色纸' | '女仆长的采购委托' | '月都试炼' | '最终收网行动';
+
+type TPopularTags = typeof TAG_POPULAR_NEGATIVE | typeof TAG_POPULAR_POSITIVE;
+
+type TBeverageTag = IBeverage['tags'][number];
+type TIngredientTag = IIngredient['tags'][number] | TPopularTags;
+type TRecipeTag =
+	| IRecipe['positiveTags'][number] // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
+	| IRecipe['negativeTags'][number]
+	| TTagNeedCalculate
+	| TPopularTags;
+
 type TPlace =
 	| '妖怪兽道'
 	| '人间之里'
@@ -182,17 +194,7 @@ type TPlace =
 	| '月之都'
 	| '魔界';
 
-type TTask = '阿求小姐的色纸' | '女仆长的采购委托' | '月都试炼' | '最终收网行动';
-
-type TPopularTags = typeof TAG_POPULAR_NEGATIVE | typeof TAG_POPULAR_POSITIVE;
-
-export type TBeverageTag = IBeverage['tags'][number];
-export type TIngredientTag = IIngredient['tags'][number] | TPopularTags;
-export type TRecipeTag =
-	| IRecipe['positiveTags'][number] // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
-	| IRecipe['negativeTags'][number]
-	| TTagNeedCalculate
-	| TPopularTags;
+type TSpeed = '慢' | '中等' | '快' | '瞬间移动';
 
 export type TDescription = `${string}。` | `${string}？` | `${string}！`;
 
