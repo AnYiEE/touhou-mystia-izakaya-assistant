@@ -1,5 +1,5 @@
 import {siteConfig} from '@/configs';
-import {PARTNER_LIST, type TCustomerRareName, type TPartnerName, type TPartners} from '@/data';
+import {PARTNER_LIST, type TCustomerRareId, type TPartnerId, type TPartners} from '@/data';
 import {processPinyin} from '@/utils';
 import {Item} from '@/utils/item';
 
@@ -8,8 +8,8 @@ const {cdnUrl} = siteConfig;
 export class Partner extends Item<TPartners> {
 	private static _instance: Partner | undefined;
 
-	private static _bondPartnerCache = new Map<TCustomerRareName, TPartnerName | null>();
-	private static _tachiePathCache = new Map<TPartnerName, string>();
+	private static _bondPartnerCache = new Map<TCustomerRareId, TPartnerId | null>();
+	private static _tachiePathCache = new Map<TPartnerId, string>();
 
 	public static getInstance() {
 		if (Partner._instance !== undefined) {
@@ -26,22 +26,22 @@ export class Partner extends Item<TPartners> {
 	/**
 	 * @description Get the partner for a customer based on their bond level.
 	 */
-	public getBondPartner(customerName: TCustomerRareName) {
-		if (Partner._bondPartnerCache.has(customerName)) {
-			return Partner._bondPartnerCache.get(customerName);
+	public getBondPartner(customerId: TCustomerRareId) {
+		if (Partner._bondPartnerCache.has(customerId)) {
+			return Partner._bondPartnerCache.get(customerId);
 		}
 
-		let bondPartner: TPartnerName | null = null;
+		let bondPartner: TPartnerId | null = null;
 
-		this._data.some(({belong, name}) => {
-			if ((belong as TCustomerRareName[] | null)?.includes(customerName)) {
-				bondPartner = name;
+		this._data.some(({belong, id}) => {
+			if ((belong as TCustomerRareId[] | null)?.includes(customerId)) {
+				bondPartner = id;
 				return true;
 			}
 			return false;
 		});
 
-		Partner._bondPartnerCache.set(customerName, bondPartner);
+		Partner._bondPartnerCache.set(customerId, bondPartner);
 
 		return bondPartner;
 	}
@@ -49,17 +49,17 @@ export class Partner extends Item<TPartners> {
 	/**
 	 * @description Get the tachie image path for a partner.
 	 */
-	public getTachiePath(name: TPartnerName) {
+	public getTachiePath(id: TPartnerId) {
 		const basePath = `${cdnUrl}/assets/tachies/partners`;
 
 		let path: string;
 
-		if (Partner._tachiePathCache.has(name)) {
-			path = Partner._tachiePathCache.get(name);
+		if (Partner._tachiePathCache.has(id)) {
+			path = Partner._tachiePathCache.get(id);
 		} else {
-			const pinyin = this.getPropsByName(name, 'pinyin');
+			const pinyin = this.getPropsById(id, 'pinyin');
 			path = `${basePath}/${processPinyin(pinyin).pinyinWithoutTone.join('')}.png`;
-			Partner._tachiePathCache.set(name, path);
+			Partner._tachiePathCache.set(id, path);
 		}
 
 		return path;
