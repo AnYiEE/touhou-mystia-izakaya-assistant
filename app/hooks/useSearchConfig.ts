@@ -4,11 +4,7 @@ import {type ISearchConfig} from '@/components/sideSearchIconButton';
 
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
-interface IValueObject {
-	value: string;
-}
-
-interface IUseSearchConfig<T extends IValueObject[]> {
+interface IUseSearchConfig<T extends IKeyValueObject[]> {
 	label: string;
 	searchItems: T;
 	searchValue: string;
@@ -16,7 +12,7 @@ interface IUseSearchConfig<T extends IValueObject[]> {
 	spriteTarget?: TSpriteTarget;
 }
 
-export function useSearchConfig<T extends IValueObject[]>({
+export function useSearchConfig<T extends IKeyValueObject[]>({
 	label,
 	searchItems,
 	searchValue,
