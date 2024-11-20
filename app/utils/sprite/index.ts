@@ -55,7 +55,7 @@ const SPRITE_DATA_MAP = {
 export class Sprite<
 	TTarget extends TSpriteTarget,
 	TData extends TSpriteData<TTarget> = TSpriteData<TTarget>,
-	TName extends TData[number]['name'] = TData[number]['name'],
+	TId extends TData[number]['id'] = TData[number]['id'],
 > extends Item<TData> {
 	private static _instances = new Map<TSpriteTarget, Sprite<TSpriteTarget>>();
 
@@ -87,6 +87,13 @@ export class Sprite<
 		return instance;
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+	public getPosById<T extends number = TId>(id: T) {
+		const index = this.findIndexById(id);
+
+		return this.getPosByIndex(index);
+	}
+
 	public getPosByIndex(index: number) {
 		this.checkIndexRange(index);
 
@@ -99,10 +106,16 @@ export class Sprite<
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-	public getPosByName<T extends string = TName>(name: T) {
-		const index = this.findIndexByName(name);
+	public getBackgroundPropsByName<T extends number = TId>(
+		id: T,
+		{displayHeight = this.spriteHeight, displayWidth = this.spriteWidth} = {}
+	): CSSProperties {
+		const index = this.findIndexById(id);
 
-		return this.getPosByIndex(index);
+		return this.getBackgroundPropsByIndex(index, {
+			displayHeight,
+			displayWidth,
+		});
 	}
 
 	public getBackgroundPropsByIndex(
@@ -124,18 +137,5 @@ export class Sprite<
 			height: `${pxToRem(displayHeight)}rem`,
 			width: `${pxToRem(displayWidth)}rem`,
 		};
-	}
-
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-	public getBackgroundPropsByName<T extends string = TName>(
-		name: T,
-		{displayHeight = this.spriteHeight, displayWidth = this.spriteWidth} = {}
-	): CSSProperties {
-		const index = this.findIndexByName(name);
-
-		return this.getBackgroundPropsByIndex(index, {
-			displayHeight,
-			displayWidth,
-		});
 	}
 }
