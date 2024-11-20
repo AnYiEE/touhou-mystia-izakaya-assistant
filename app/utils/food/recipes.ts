@@ -4,19 +4,12 @@ import {Food} from './base';
 import {Ingredient} from './ingredients';
 import {
 	DARK_MATTER_NAME,
-	DARK_MATTER_TAG,
 	RECIPE_LIST,
-	TAG_ECONOMICAL,
-	TAG_EXPENSIVE,
-	TAG_LARGE_PARTITION,
-	TAG_POPULAR_NEGATIVE,
-	TAG_POPULAR_POSITIVE,
-	TAG_SIGNATURE,
-	type TCustomerRareName,
-	type TIngredientName,
-	type TIngredientTag,
-	type TRecipeName,
-	type TRecipeTag,
+	type TCustomerRareId,
+	type TIngredientId,
+	type TIngredientTagId,
+	type TRecipeId,
+	type TRecipeTagId,
 	type TRecipes,
 } from '@/data';
 import {type IPopularData, type IRecipeData} from '@/stores';
@@ -24,26 +17,26 @@ import {intersection} from '@/utils';
 
 type TRecipe = TRecipes[number];
 type TProcessPositiveTags<T extends TRecipe> = Omit<T, 'positiveTags'> & {
-	positiveTags: TRecipeTag[];
+	positiveTags: TRecipeTagId[];
 };
 
 type TBondRecipes = {
+	id: TRecipeId;
 	level: number;
-	name: TRecipeName;
 }[];
 
 export class Recipe extends Food<TRecipes> {
 	private static _instance: Recipe | undefined;
 
 	private static _tagCoverMap = {
-		[TAG_LARGE_PARTITION]: '小巧',
-		灼热: '凉爽',
-		肉: '素',
-		重油: '清淡',
-		饱腹: '下酒',
-	} as const satisfies Partial<Record<TRecipeTag, TRecipeTag>>;
+		[-1]: 28,
+		0: 2,
+		6: 7,
+		9: 8,
+		22: 21,
+	} as const satisfies Partial<Record<TRecipeTagId, TRecipeTagId>>;
 
-	private static _bondRecipesCache = new Map<TCustomerRareName, TBondRecipes>();
+	private static _bondRecipesCache = new Map<TCustomerRareId, TBondRecipes>();
 
 	private constructor(data: TRecipes) {
 		const clonedData = cloneDeep(data);
@@ -52,9 +45,9 @@ export class Recipe extends Food<TRecipes> {
 			const {name, positiveTags, price} = recipe;
 			if (name !== DARK_MATTER_NAME) {
 				if (price > 60) {
-					positiveTags.push(TAG_EXPENSIVE);
+					positiveTags.push(-3);
 				} else if (price < 20) {
-					positiveTags.push(TAG_ECONOMICAL);
+					positiveTags.push(-2);
 				}
 			}
 		});
@@ -74,27 +67,27 @@ export class Recipe extends Food<TRecipes> {
 		return instance;
 	}
 
-	public blockedRecipes: Set<TRecipeName> = new Set([DARK_MATTER_NAME]);
+	public blockedRecipes: Set<TRecipeId> = new Set([-1]);
 
-	public blockedTags: Set<TRecipeTag> = new Set([DARK_MATTER_TAG]);
+	public blockedTags: Set<TRecipeTagId> = new Set([-4]);
 
 	/**
 	 * @description Calculate the tags based on the original tags, the popular tag data and the famous shop state.
 	 */
 	public calculateTagsWithPopular(
-		recipeTags: ReadonlyArray<TRecipeTag>,
+		recipeTags: ReadonlyArray<TRecipeTagId>,
 		popular: IPopularData,
 		isFamousShop: boolean
 	) {
 		const recipeTagsWithPopular = new Set(recipeTags);
 		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popular;
 
-		if (isFamousShop && recipeTags.includes(TAG_SIGNATURE)) {
-			recipeTagsWithPopular.add(TAG_POPULAR_POSITIVE);
+		if (isFamousShop && recipeTags.includes(19)) {
+			recipeTagsWithPopular.add(-20);
 		}
 
-		if (currentPopularTag !== null && recipeTags.includes(currentPopularTag as TRecipeTag)) {
-			recipeTagsWithPopular.add(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
+		if (currentPopularTag !== null && recipeTags.includes(currentPopularTag)) {
+			recipeTagsWithPopular.add(isNegativePopularTag ? -21 : -20);
 		}
 
 		return [...recipeTagsWithPopular];
@@ -108,20 +101,20 @@ export class Recipe extends Food<TRecipes> {
 		recipeData:
 			| IRecipeData
 			| {
-					extraIngredients: ReadonlyArray<TIngredientName>;
-					negativeTags: ReadonlyArray<TRecipeTag>;
+					extraIngredients: ReadonlyArray<TIngredientId>;
+					negativeTags: ReadonlyArray<TRecipeTagId>;
 			  }
 	) {
-		let negativeTags: ReadonlyArray<TRecipeTag>;
+		let negativeTags: ReadonlyArray<TRecipeTagId>;
 
-		if ('name' in recipeData) {
-			negativeTags = this.getPropsByName(recipeData.name, 'negativeTags');
+		if ('id' in recipeData) {
+			negativeTags = this.getPropsById(recipeData.id, 'negativeTags');
 		} else {
 			negativeTags = recipeData.negativeTags;
 		}
 
 		const extraTags = recipeData.extraIngredients.flatMap((extraIngredient) =>
-			Ingredient.getInstance().getPropsByName(extraIngredient, 'tags')
+			Ingredient.getInstance().getPropsById(extraIngredient, 'tags')
 		);
 
 		return {
@@ -134,32 +127,32 @@ export class Recipe extends Food<TRecipes> {
 	 * @description Compose recipe tags based on all ingredient count, original recipe tags, the extra ingredient tags and the popular tag data.
 	 */
 	public composeTagsWithPopular(
-		originalIngredients: ReadonlyArray<TIngredientName>,
-		extraIngredients: ReadonlyArray<TIngredientName>,
-		originalRecipePositiveTags: ReadonlyArray<TRecipeTag>,
-		extraIngredientTags: ReadonlyArray<TIngredientTag>,
+		originalIngredients: ReadonlyArray<TIngredientId>,
+		extraIngredients: ReadonlyArray<TIngredientId>,
+		originalRecipePositiveTags: ReadonlyArray<TRecipeTagId>,
+		extraIngredientTags: ReadonlyArray<TIngredientTagId>,
 		popular: IPopularData | null
 	) {
 		const resultTags = new Set([...originalRecipePositiveTags, ...extraIngredientTags]);
 		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popular ?? {};
 
 		if (originalIngredients.length + extraIngredients.length >= 5) {
-			resultTags.add(TAG_LARGE_PARTITION);
-			if (currentPopularTag === TAG_LARGE_PARTITION) {
-				resultTags.add(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
+			resultTags.add(-1);
+			if (currentPopularTag === -1) {
+				resultTags.add(isNegativePopularTag ? -21 : -20);
 			}
 		}
 
 		Object.entries(Recipe._tagCoverMap).forEach(([targetTag, coveredTag]) => {
-			if (resultTags.has(targetTag as TRecipeTag)) {
+			if (resultTags.has(Number(targetTag) as TRecipeTagId)) {
 				resultTags.delete(coveredTag);
 				if (currentPopularTag === coveredTag) {
-					resultTags.delete(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
+					resultTags.delete(isNegativePopularTag ? -21 : -20);
 				}
 			}
 		});
 
-		return [...resultTags] as TRecipeTag[];
+		return [...resultTags] as TRecipeTagId[];
 	}
 
 	/**
@@ -167,9 +160,9 @@ export class Recipe extends Food<TRecipes> {
 	 * @returns An object containing the suitability of the recipe and the tags that are common to both the recipe and the customer.
 	 */
 	public getCustomerSuitability(
-		recipeTags: ReadonlyArray<TRecipeTag>,
-		customerNegativeTags: ReadonlyArray<TRecipeTag>,
-		customerPositiveTags: ReadonlyArray<TRecipeTag>
+		recipeTags: ReadonlyArray<TRecipeTagId>,
+		customerNegativeTags: ReadonlyArray<TRecipeTagId>,
+		customerPositiveTags: ReadonlyArray<TRecipeTagId>
 	) {
 		const {commonTags: negativeTags, count: negativeCount} = this.getCommonTags(recipeTags, customerNegativeTags);
 		const {commonTags: positiveTags, count: positiveCount} = this.getCommonTags(recipeTags, customerPositiveTags);
@@ -182,9 +175,9 @@ export class Recipe extends Food<TRecipes> {
 	}
 
 	private calculateScore(
-		recipePositiveTags: ReadonlyArray<TRecipeTag>,
-		customerNegativeTags: ReadonlyArray<TRecipeTag>,
-		customerPositiveTags: ReadonlyArray<TRecipeTag>
+		recipePositiveTags: ReadonlyArray<TRecipeTagId>,
+		customerNegativeTags: ReadonlyArray<TRecipeTagId>,
+		customerPositiveTags: ReadonlyArray<TRecipeTagId>
 	) {
 		let score = 0;
 
@@ -200,10 +193,10 @@ export class Recipe extends Food<TRecipes> {
 	 * @description Calculate the suitability score change when adding or removing an extra ingredient from a recipe.
 	 */
 	public getIngredientScoreChange(
-		oldRecipePositiveTags: ReadonlyArray<TRecipeTag>,
-		newRecipePositiveTags: ReadonlyArray<TRecipeTag>,
-		customerNegativeTags: ReadonlyArray<TRecipeTag>,
-		customerPositiveTags: ReadonlyArray<TRecipeTag>
+		oldRecipePositiveTags: ReadonlyArray<TRecipeTagId>,
+		newRecipePositiveTags: ReadonlyArray<TRecipeTagId>,
+		customerNegativeTags: ReadonlyArray<TRecipeTagId>,
+		customerPositiveTags: ReadonlyArray<TRecipeTagId>
 	) {
 		const originalScore = this.calculateScore(oldRecipePositiveTags, customerNegativeTags, customerPositiveTags);
 		const newScore = this.calculateScore(newRecipePositiveTags, customerNegativeTags, customerPositiveTags);
@@ -214,25 +207,25 @@ export class Recipe extends Food<TRecipes> {
 	/**
 	 * @description Get the recipes for a customer based on their bond level.
 	 */
-	public getBondRecipes(customerName: TCustomerRareName) {
-		if (Recipe._bondRecipesCache.has(customerName)) {
-			return Recipe._bondRecipesCache.get(customerName);
+	public getBondRecipes(customerId: TCustomerRareId) {
+		if (Recipe._bondRecipesCache.has(customerId)) {
+			return Recipe._bondRecipesCache.get(customerId);
 		}
 
 		let bondRecipes: TBondRecipes = [];
 
-		this._data.forEach(({from, name}) => {
-			if (isObjectLike(from) && 'bond' in from && from.bond.name === customerName) {
+		this._data.forEach(({from, id}) => {
+			if (isObjectLike(from) && 'bond' in from && from.bond.id === customerId) {
 				bondRecipes.push({
+					id,
 					level: from.bond.level,
-					name,
 				});
 			}
 		});
 
 		bondRecipes = sortBy(bondRecipes, 'level');
 
-		Recipe._bondRecipesCache.set(customerName, bondRecipes);
+		Recipe._bondRecipesCache.set(customerId, bondRecipes);
 
 		return bondRecipes;
 	}
