@@ -3,12 +3,12 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import {openedPopoverParam} from '@/hooks/useOpenedItemPopover';
 
 import {
-	type TClothesName,
-	type TCookerName,
-	type TCurrencyName,
-	type TFoodName,
-	type TOrnamentName,
-	type TPartnerName,
+	type TClothesId,
+	type TCookerId,
+	type TCurrencyId,
+	type TFoodId,
+	type TOrnamentId,
+	type TPartnerId,
 } from '@/data';
 
 type TItemPath =
@@ -21,19 +21,19 @@ type TItemPath =
 	| 'partners'
 	| 'recipes';
 
-type TItemName = TClothesName | TCookerName | TCurrencyName | TFoodName | TOrnamentName | TPartnerName;
+type TItemId = TClothesId | TCookerId | TCurrencyId | TFoodId | TOrnamentId | TPartnerId;
 
-export type TOpenWindow = (path: TItemPath, name: TItemName) => void;
+export type TOpenWindow = (path: TItemPath, id: TItemId) => void;
 
 export const inNewWindowParam = 'preview';
 
 export function useViewInNewWindow() {
-	const [windowItemName, setWindowItemName] = useState<[TItemName] | null>(null);
+	const [windowItemId, setWindowItemId] = useState<[TItemId] | null>(null);
 	const [windowItemPath, setWindowItemPath] = useState<[TItemPath] | null>(null);
 	const windowObjectRef = useRef<Window | null>(null);
 
 	useEffect(() => {
-		if (windowItemName === null || windowItemPath === null) {
+		if (windowItemId === null || windowItemPath === null) {
 			return;
 		}
 
@@ -41,7 +41,7 @@ export function useViewInNewWindow() {
 		windowObjectRef.current = null;
 
 		const pathname = `/${windowItemPath[0]}?${new URLSearchParams({
-			[openedPopoverParam]: windowItemName[0], // eslint-disable-next-line sort-keys
+			[openedPopoverParam]: windowItemId[0].toString(), // eslint-disable-next-line sort-keys
 			[inNewWindowParam]: '1',
 		}).toString()}`;
 		const height = 640;
@@ -55,10 +55,10 @@ export function useViewInNewWindow() {
 		);
 
 		windowObjectRef.current = newWindowObject;
-	}, [windowItemName, windowItemPath]);
+	}, [windowItemId, windowItemPath]);
 
 	const openWindow = useCallback<TOpenWindow>((path, name) => {
-		setWindowItemName([name]);
+		setWindowItemId([name]);
 		setWindowItemPath([path]);
 	}, []);
 
