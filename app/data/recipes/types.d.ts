@@ -9,6 +9,7 @@ import {
 	type TIngredientName,
 	type TPlace,
 } from '@/data';
+import {type TAG_SIGNATURE} from '@/data/constant';
 import type {IFoodBase, TMerchant} from '@/data/types';
 
 export type TTagNeedCalculate = typeof TAG_EXPENSIVE | typeof TAG_ECONOMICAL;
@@ -35,7 +36,7 @@ type TTag =
 	| '鲜'
 	| '甜'
 	| '生'
-	| '招牌'
+	| typeof TAG_SIGNATURE
 	| '适合拍照'
 	| '凉爽'
 	| '灼热'

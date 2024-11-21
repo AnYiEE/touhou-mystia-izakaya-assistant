@@ -1,3 +1,4 @@
+import {type TAG_SIGNATURE} from '@/data/constant';
 import type {IFoodBase} from '@/data/types';
 
 type TTag =
@@ -18,7 +19,7 @@ type TTag =
 	| '鲜'
 	| '甜'
 	| '生'
-	| '招牌'
+	| typeof TAG_SIGNATURE
 	| '适合拍照'
 	| '凉爽'
 	| '猎奇'

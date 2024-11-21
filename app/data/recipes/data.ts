@@ -1,6 +1,12 @@
 /* eslint-disable sort-keys */
 import type {IRecipe} from './types';
-import {DARK_MATTER_NAME, DARK_MATTER_PRICE, DARK_MATTER_TAG, TAG_LARGE_PARTITION} from '@/data/constant';
+import {
+	DARK_MATTER_NAME,
+	DARK_MATTER_PRICE,
+	DARK_MATTER_TAG,
+	TAG_LARGE_PARTITION,
+	TAG_SIGNATURE,
+} from '@/data/constant';
 
 export const RECIPE_LIST = [
 	{
@@ -92,7 +98,7 @@ export const RECIPE_LIST = [
 		description:
 			'本店招牌。为了打破红灯笼店就是烤鸟肉店的成见，特意选择了对夜盲症有奇效的八目鳗，据说在过去还被视作珍宝。',
 		ingredients: ['八目鳗'],
-		positiveTags: ['水产', '招牌', '烧烤'],
+		positiveTags: ['水产', TAG_SIGNATURE, '烧烤'],
 		negativeTags: ['肉', '素'],
 		cooker: '烧烤架',
 		min: 4.2,
@@ -264,7 +270,7 @@ export const RECIPE_LIST = [
 		name: '红烧鳗鱼',
 		description: '本店招牌。将鳗鱼用特殊酱料进行烧制后肉汁四溢，光闻着香味便让人垂涎不已。',
 		ingredients: ['洋葱', '八目鳗'],
-		positiveTags: ['水产', '素', '重油', '鲜', '招牌'],
+		positiveTags: ['水产', '素', '重油', '鲜', TAG_SIGNATURE],
 		negativeTags: [],
 		cooker: '油锅',
 		min: 4.8,
@@ -363,7 +369,7 @@ export const RECIPE_LIST = [
 		name: '炸八目鳗',
 		description: '本店招牌。长相怪异的八目鳗在喜欢尝鲜的幻想乡曾一度成为话题，油炸后爽滑酥嫩，深受大众喜爱。',
 		ingredients: ['八目鳗'],
-		positiveTags: ['水产', '重油', '招牌'],
+		positiveTags: ['水产', '重油', TAG_SIGNATURE],
 		negativeTags: ['凉爽'],
 		cooker: '油锅',
 		min: 4.2,
@@ -1553,7 +1559,7 @@ export const RECIPE_LIST = [
 		description:
 			'奶油焗的螃蟹在没开盖之前就已经香气四溢，然而这香气只是前戏。撕开蟹钳，弹出白嫩饱满的肉质，此时再细细地吸入汤汁，螃蟹固有的鲜味才彻底的融合和释放。',
 		ingredients: ['奶油', '螃蟹'],
-		positiveTags: ['高级', '下酒', '海味', '鲜', '招牌', '适合拍照'],
+		positiveTags: ['高级', '下酒', '海味', '鲜', TAG_SIGNATURE, '适合拍照'],
 		negativeTags: [],
 		cooker: '油锅',
 		min: 7.2,
@@ -1597,7 +1603,7 @@ export const RECIPE_LIST = [
 		description:
 			'听说是外界流行的街边小吃，使用面糊和各种食材混合后在铁板上烧制而成，脆香而丰富，因其百变和平价的特性被所有人喜爱。',
 		ingredients: ['面粉', '鸡蛋', '萝卜'],
-		positiveTags: ['和风', '招牌', '适合拍照', '小巧'],
+		positiveTags: ['和风', TAG_SIGNATURE, '适合拍照', '小巧'],
 		negativeTags: [],
 		cooker: '油锅',
 		min: 3.6,
@@ -1619,7 +1625,7 @@ export const RECIPE_LIST = [
 		description:
 			'听说也是外界流行的街边小吃，在特制的面糊中裹上引发奇迹的章鱼脚，糯脆的外衣之下Q弹的章鱼脚产生让人幸福的感觉。',
 		ingredients: ['面粉', '海苔', '章鱼'],
-		positiveTags: ['水产', '饱腹', '招牌', '适合拍照', '小巧'],
+		positiveTags: ['水产', '饱腹', TAG_SIGNATURE, '适合拍照', '小巧'],
 		negativeTags: [],
 		cooker: '油锅',
 		min: 4.8,
@@ -1952,7 +1958,7 @@ export const RECIPE_LIST = [
 		name: '仰望天花板派',
 		description: '在水果派里探出一个鱼头，仿佛看着地底的天花板，充满了和地狱相衬的绝望气息。',
 		ingredients: ['鳟鱼', '面粉', '桃子'],
-		positiveTags: ['下酒', '海味', '招牌', '适合拍照', '猎奇', '特产'],
+		positiveTags: ['下酒', '海味', TAG_SIGNATURE, '适合拍照', '猎奇', '特产'],
 		negativeTags: ['肉'],
 		cooker: '蒸锅',
 		min: 5.4,
@@ -1973,7 +1979,7 @@ export const RECIPE_LIST = [
 		name: '兜甲蒸糕',
 		description: '无论是地上还是地下，兜角甲虫都是力量和无敌的象征！这是憧憬它的力量而诞生的盔甲料理！',
 		ingredients: ['面粉', '黑毛猪肉', '蜂蜜', '蝉蜕'],
-		positiveTags: ['高级', '饱腹', '鲜', '生', '招牌', '适合拍照', '力量涌现', '猎奇', '特产'],
+		positiveTags: ['高级', '饱腹', '鲜', '生', TAG_SIGNATURE, '适合拍照', '力量涌现', '猎奇', '特产'],
 		negativeTags: [],
 		cooker: '蒸锅',
 		min: 7.2,
@@ -1994,7 +2000,7 @@ export const RECIPE_LIST = [
 		name: '狮子头',
 		description: '爱酒之人无不喜欢的基础下酒菜！气派又野性的狮子头配上烈性的酒，是鬼族起床的早餐！',
 		ingredients: ['牛肉'],
-		positiveTags: ['肉', '下酒', '鲜', '招牌', '特产'],
+		positiveTags: ['肉', '下酒', '鲜', TAG_SIGNATURE, '特产'],
 		negativeTags: ['水产', '饱腹'],
 		cooker: '煮锅',
 		min: 4.2,
@@ -2036,7 +2042,19 @@ export const RECIPE_LIST = [
 		name: '大江户船祭',
 		description: '用华丽的祭典船造型，摆满上好的鱼刺身，周围散发着保鲜而制作的冰雾，是真真正正的宴会的焦点！',
 		ingredients: ['三文鱼', '金枪鱼', '极上金枪鱼', '鳟鱼', '冰块'],
-		positiveTags: ['水产', '高级', '传说', '下酒', '海味', '和风', '鲜', '生', '招牌', '适合拍照', '文化底蕴'],
+		positiveTags: [
+			'水产',
+			'高级',
+			'传说',
+			'下酒',
+			'海味',
+			'和风',
+			'鲜',
+			'生',
+			TAG_SIGNATURE,
+			'适合拍照',
+			'文化底蕴',
+		],
 		negativeTags: [],
 		cooker: '料理台',
 		min: 14.4,
@@ -2101,7 +2119,7 @@ export const RECIPE_LIST = [
 		description:
 			'究极加料、一颗就调动起身上包括多巴胺和肾上腺激素等多种兴奋元素疯狂舞动的禁忌甜食。妖怪食用后可以疯狂舞蹈一整夜，但是兴奋过后会不由地感到“我燃尽了”。',
 		ingredients: ['葡萄', '蜂蜜', '柠檬', '柠檬'],
-		positiveTags: ['甜', '招牌', '凉爽', '力量涌现', '小巧', '梦幻', '果味', '酸'],
+		positiveTags: ['甜', TAG_SIGNATURE, '凉爽', '力量涌现', '小巧', '梦幻', '果味', '酸'],
 		negativeTags: ['重油', '咸'],
 		cooker: '蒸锅',
 		min: 4.8,
@@ -2439,7 +2457,7 @@ export const RECIPE_LIST = [
 		description:
 			'以南瓜做的船，承载着如梦似幻的食材，在莲子铺成的河上驶入幻想。据说每每享用完这道料理，都会有如梦方醒的感觉。至于究竟是何种梦境，便是因人而异了。',
 		ingredients: ['南瓜', '莲子', '金枪鱼', '并蒂莲', '月光草'],
-		positiveTags: ['高级', '鲜', '生', '招牌', '适合拍照', '凉爽', '不可思议', '梦幻', '特产'],
+		positiveTags: ['高级', '鲜', '生', TAG_SIGNATURE, '适合拍照', '凉爽', '不可思议', '梦幻', '特产'],
 		negativeTags: ['猎奇'],
 		cooker: '料理台',
 		min: 7.8,
@@ -2613,7 +2631,7 @@ export const RECIPE_LIST = [
 		description:
 			'荤素搭配均匀，味道也很好的常见佳肴。用两种不同口感的菇类，包裹着精挑细选的嫩肉，给味蕾带来层次感十足的享受。',
 		ingredients: ['猪肉', '蘑菇', '松露'],
-		positiveTags: ['肉', '家常', '重油', '下酒', '招牌', '灼热', '菌类'],
+		positiveTags: ['肉', '家常', '重油', '下酒', TAG_SIGNATURE, '灼热', '菌类'],
 		negativeTags: ['凉爽'],
 		cooker: '油锅',
 		min: 5.4,
@@ -2635,7 +2653,7 @@ export const RECIPE_LIST = [
 		description:
 			'谁说炸物就必须得是鸟类呢？地上跑的、土里长的、水里游的都可以裹上面粉放到油锅里炸一炸，出锅皆是香味四溢、酥脆爽口。最后以梦幻的月光草为缀，巧妙地中和了炸物拼盘的油腻。',
 		ingredients: ['黑毛猪肉', '松露', '八目鳗', '月光草'],
-		positiveTags: ['肉', '家常', '重油', '下酒', '和风', '招牌', '力量涌现', '菌类'],
+		positiveTags: ['肉', '家常', '重油', '下酒', '和风', TAG_SIGNATURE, '力量涌现', '菌类'],
 		negativeTags: [],
 		cooker: '油锅',
 		min: 4.2,
@@ -2830,7 +2848,7 @@ export const RECIPE_LIST = [
 		description:
 			'将各种鲜嫩的食材放入多节竹筒蒸熟，寓意节节高升。而春竹翠绿娇艳的样子，既给客人带来视觉味觉上的新意，还蕴含着迎春的美好寓意。',
 		ingredients: ['黄瓜', '鸡蛋', '萝卜', '鹿肉', '月光草'],
-		positiveTags: ['高级', '山珍', '招牌', '适合拍照', '文化底蕴'],
+		positiveTags: ['高级', '山珍', TAG_SIGNATURE, '适合拍照', '文化底蕴'],
 		negativeTags: ['猎奇', '菌类'],
 		cooker: '蒸锅',
 		min: 8.4,
@@ -2896,7 +2914,7 @@ export const RECIPE_LIST = [
 		description:
 			'对火候要求极其苛刻的一道菜，需聚息凝神地将肉品烤至完美的三分熟。暗红的色调以及极具破坏性的龙卷风形状，带来了山海欲来的压迫感。一口下去，有种仿佛征服了天下的快感。',
 		ingredients: ['洋葱', '野猪肉', '牛肉', '松露', '西红柿'],
-		positiveTags: ['肉', '重油', '饱腹', '生', '招牌', '适合拍照', '力量涌现'],
+		positiveTags: ['肉', '重油', '饱腹', '生', TAG_SIGNATURE, '适合拍照', '力量涌现'],
 		negativeTags: ['清淡', '凉爽'],
 		cooker: '烧烤架',
 		min: 10.8,
@@ -2983,7 +3001,7 @@ export const RECIPE_LIST = [
 		description:
 			'用有“毒”的野菜——香椿制成的煎饼。初尝有种苦苦涩涩的味道，嚼下去后口齿留甘。牢记！给普通客人食用须先将香椿用开水焯过一遍！',
 		ingredients: ['香椿', '鸡蛋'],
-		positiveTags: ['招牌', '特产'],
+		positiveTags: [TAG_SIGNATURE, '特产'],
 		negativeTags: [],
 		cooker: '油锅',
 		min: 3.6,
@@ -3005,7 +3023,7 @@ export const RECIPE_LIST = [
 		description:
 			'用各种“毒食材”混合炖煮的杂炊。通过细致而精巧的食材处理手段，能够不同程度地保留食材中的“毒性”，让不同需求的客人均能体验到他们想要的刺激。',
 		ingredients: ['河豚', '梅子', '八目鳗', '白果'],
-		positiveTags: ['水产', '招牌', '猎奇', '毒'],
+		positiveTags: ['水产', TAG_SIGNATURE, '猎奇', '毒'],
 		negativeTags: [],
 		cooker: '煮锅',
 		min: 4.8,
@@ -3048,7 +3066,7 @@ export const RECIPE_LIST = [
 		name: '鳗鱼嫩蛋丼',
 		description: '厚切的鳗鱼块抹上特调酱汁，再覆盖一层软嫩的生蛋，在食用前将其搅拌得金灿灿的样子，吃下去超级满足！',
 		ingredients: ['八目鳗', '鸡蛋'],
-		positiveTags: ['水产', '生', '招牌'],
+		positiveTags: ['水产', '生', TAG_SIGNATURE],
 		negativeTags: [],
 		cooker: '油锅',
 		min: 3,
