@@ -3,6 +3,7 @@ import {
 	TAG_LARGE_PARTITION,
 	TAG_POPULAR_NEGATIVE,
 	TAG_POPULAR_POSITIVE,
+	TAG_SIGNATURE,
 	type TCustomerNormalName,
 	type TRecipeName,
 	type TRecipeTag,
@@ -17,6 +18,7 @@ interface IParameters {
 	currentExtraIngredientsLength: number;
 	currentExtraTags: TPopularTag[];
 	currentRecipe: TRecipe | null;
+	isFamousShop: boolean;
 }
 
 export function checkEasterEgg({
@@ -67,12 +69,21 @@ export function evaluateMeal({
 	currentExtraIngredientsLength,
 	currentExtraTags,
 	currentRecipe,
+	isFamousShop,
 }: IParameters) {
 	if (currentRecipe === null) {
 		return null;
 	}
 
 	let extraScore = 0;
+
+	if (
+		isFamousShop &&
+		currentCustomerPositiveTags.includes(TAG_POPULAR_POSITIVE) &&
+		((currentRecipe.positiveTags as string[]).includes(TAG_SIGNATURE) || currentExtraTags.includes(TAG_SIGNATURE))
+	) {
+		extraScore += 1;
+	}
 
 	let currentCustomerPopularTag: IPopularData['tag'] = null;
 	const {isNegative: popularIsNegative, tag: popularTag} = currentCustomerPopularData;

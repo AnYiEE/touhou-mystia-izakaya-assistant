@@ -102,6 +102,10 @@ const changelog = [
 			'修复：额外食材评分逻辑。',
 		],
 	},
+	{
+		version: 'v1.4',
+		changes: ['新增：支持设置全局的“明星店”效果。'],
+	},
 ] as const satisfies {
 	version: `v${string}`;
 	changes: `${string}：${string}。`[];

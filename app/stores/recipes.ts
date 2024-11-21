@@ -51,6 +51,7 @@ const state = {
 		searchValue: '',
 	},
 	shared: {
+		famousShop: false,
 		popular: {
 			isNegative: false,
 			tag: null,

@@ -37,6 +37,7 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 	const currentCustomerPopular = customerStore.shared.customer.popular.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 	const isDarkMatter = customerStore.shared.customer.isDarkMatter.use();
+	const isFamousShop = customerStore.shared.customer.famousShop.use();
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
@@ -97,9 +98,13 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 		isLargePartitionTagNext && currentCustomerPopular.tag === TAG_LARGE_PARTITION;
 
 	const calculateIngredientTagsWithPopular = curryRight(instance_ingredient.calculateTagsWithPopular)(
-		currentCustomerPopular
+		currentCustomerPopular,
+		isFamousShop
 	);
-	const calculateRecipeTagsWithPopular = curryRight(instance_recipe.calculateTagsWithPopular)(currentCustomerPopular);
+	const calculateRecipeTagsWithPopular = curryRight(instance_recipe.calculateTagsWithPopular)(
+		currentCustomerPopular,
+		isFamousShop
+	);
 	const composeRecipeTagsWithPopular = curry(instance_recipe.composeTagsWithPopular)(
 		currentRecipeIngredients,
 		currentRecipeExtraIngredients,

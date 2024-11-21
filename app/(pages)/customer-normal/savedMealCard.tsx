@@ -24,6 +24,7 @@ export default function SavedMealCard() {
 	const currentCustomerName = customerStore.shared.customer.name.use();
 	const currentCustomerPopular = customerStore.shared.customer.popular.use();
 	const currentSavedMeals = customerStore.persistence.meals.use();
+	const isFamousShop = customerStore.shared.customer.famousShop.use();
 
 	const instance_recipe = customerStore.instances.recipe.get();
 
@@ -85,6 +86,7 @@ export default function SavedMealCard() {
 									const rating = customerStore.evaluateSavedMealResult({
 										customerName: currentCustomerName,
 										extraIngredients,
+										isFamousShop,
 										popular: currentCustomerPopular,
 										recipeName: recipe,
 									});

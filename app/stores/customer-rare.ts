@@ -211,6 +211,7 @@ const state = {
 
 			filterVisibility: true,
 
+			famousShop: false,
 			hasMystiaCooker: false,
 			isDarkMatter: null as boolean | null,
 			order: {
@@ -684,8 +685,10 @@ export const customerRareStore = store(state, {
 		},
 		evaluateSavedMealResult(data: {
 			beverageName: TBeverageName;
+			customerName: TCustomerRareName;
 			extraIngredients: TIngredientName[];
 			hasMystiaCooker: boolean;
+			isFamousShop: boolean;
 			order: ICustomerOrder;
 			popular: IPopularData;
 			recipeName: TRecipeName;
@@ -694,11 +697,7 @@ export const customerRareStore = store(state, {
 			if (savedMealRatingCache.has(stringifiedData)) {
 				return savedMealRatingCache.get(stringifiedData);
 			}
-			const {beverageName, extraIngredients, hasMystiaCooker, order, popular, recipeName} = data;
-			const customerName = currentStore.shared.customer.name.get();
-			if (customerName === null) {
-				throw new ReferenceError('[stores/customer-rare/evaluateSavedMealResult]: `customerName` is null');
-			}
+			const {beverageName, customerName, extraIngredients, hasMystiaCooker, order, popular, recipeName} = data;
 			const {
 				beverageTags: customerBeverageTags,
 				negativeTags: customerNegativeTags,
@@ -713,12 +712,18 @@ export const customerRareStore = store(state, {
 				negativeTags,
 			});
 			const recipePrice = isDarkMatter ? DARK_MATTER_PRICE : originalRecipePrice;
+			const isFamousShop = currentStore.shared.customer.famousShop.get();
 			const composedRecipeTags = instance_recipe.composeTagsWithPopular(
 				ingredients,
 				extraIngredients,
 				positiveTags,
 				extraTags,
 				popular
+			);
+			const recipeTagsWithPopular = instance_recipe.calculateTagsWithPopular(
+				composedRecipeTags,
+				popular,
+				isFamousShop
 			);
 			const rating = evaluateMeal({
 				currentBeverageTags: beverageTags,
@@ -729,7 +734,7 @@ export const customerRareStore = store(state, {
 				currentCustomerPositiveTags: customerPositiveTags,
 				currentIngredients: union(ingredients, extraIngredients),
 				currentRecipeName: recipeName,
-				currentRecipeTagsWithPopular: instance_recipe.calculateTagsWithPopular(composedRecipeTags, popular),
+				currentRecipeTagsWithPopular: recipeTagsWithPopular,
 				hasMystiaCooker,
 				isDarkMatter,
 			});
@@ -858,6 +863,7 @@ customerRareStore.shared.recipe.data.onChange((data) => {
 	}
 });
 
+customerRareStore.shared.customer.famousShop.onChange(customerRareStore.evaluateMealResult);
 customerRareStore.shared.customer.hasMystiaCooker.onChange(customerRareStore.evaluateMealResult);
 customerRareStore.shared.customer.isDarkMatter.onChange(customerRareStore.evaluateMealResult);
 customerRareStore.shared.customer.order.onChange(customerRareStore.evaluateMealResult);

@@ -34,6 +34,7 @@ export default function CustomerCard() {
 	const selectedCustomerPositiveTags = customerStore.shared.customer.positiveTags.use();
 	const currentCustomerPopular = customerStore.shared.customer.popular.use();
 	const currentRating = customerStore.shared.customer.rating.use();
+	const isFamousShop = customerStore.shared.customer.famousShop.use();
 
 	const currentBeverageName = customerStore.shared.beverage.name.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
@@ -114,7 +115,7 @@ export default function CustomerCard() {
 			);
 
 			_currentRecipeTagsWithPopular.push(
-				...instance_recipe.calculateTagsWithPopular(composedRecipeTags, currentCustomerPopular)
+				...instance_recipe.calculateTagsWithPopular(composedRecipeTags, currentCustomerPopular, isFamousShop)
 			);
 
 			setTimeout(() => {
@@ -123,7 +124,7 @@ export default function CustomerCard() {
 		}
 
 		return _currentRecipeTagsWithPopular;
-	}, [currentCustomerPopular, currentRecipeData, instance_ingredient, instance_recipe]);
+	}, [currentCustomerPopular, currentRecipeData, instance_ingredient, instance_recipe, isFamousShop]);
 
 	const avatarRatingColor = currentRating ? customerRatingColorMap[currentRating] : undefined;
 	const avatarRatingContent = currentRating ?? '请选择点单料理以评级';

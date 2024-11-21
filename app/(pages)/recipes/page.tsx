@@ -30,6 +30,7 @@ export default function Recipes() {
 	const shouldSkipProcessData = useSkipProcessItemData();
 
 	const currentPopular = store.shared.popular.use();
+	const isFamousShop = store.shared.famousShop.use();
 
 	const instance = store.instance.get();
 
@@ -63,10 +64,11 @@ export default function Recipes() {
 				...data,
 				positiveTags: instance.calculateTagsWithPopular(
 					instance.composeTagsWithPopular(data.ingredients, [], data.positiveTags, [], null),
-					currentPopular
+					currentPopular,
+					isFamousShop
 				),
 			})) as unknown as typeof searchResult,
-		[currentPopular, instance, searchResult]
+		[currentPopular, instance, isFamousShop, searchResult]
 	);
 
 	const filterData = useCallback(

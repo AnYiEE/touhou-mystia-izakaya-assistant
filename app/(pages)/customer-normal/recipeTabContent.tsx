@@ -55,6 +55,7 @@ export default function RecipeTabContent() {
 	const currentCustomerName = customerStore.shared.customer.name.use();
 	const currentCustomerPopular = customerStore.shared.customer.popular.use();
 	const selectedCustomerPositiveTags = customerStore.shared.customer.positiveTags.use();
+	const isFamousShop = customerStore.shared.customer.famousShop.use();
 
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 	const selectedDlcs = customerStore.shared.recipe.dlcs.use();
@@ -91,8 +92,8 @@ export default function RecipeTabContent() {
 	);
 
 	const calculateTagsWithPopular = useMemo(
-		() => curryRight(instance_recipe.calculateTagsWithPopular)(currentCustomerPopular),
-		[currentCustomerPopular, instance_recipe.calculateTagsWithPopular]
+		() => curryRight(instance_recipe.calculateTagsWithPopular)(currentCustomerPopular, isFamousShop),
+		[currentCustomerPopular, instance_recipe.calculateTagsWithPopular, isFamousShop]
 	);
 
 	const data = useMemo(

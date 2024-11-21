@@ -10,6 +10,7 @@ import {Button, ScrollShadow, Select, SelectItem, type Selection, Switch} from '
 import DataManager, {type IDataManagerProps} from './dataManager';
 import SwitchItem from './switchItem';
 import Heading from '@/components/heading';
+import Sprite from '@/components/sprite';
 
 import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
@@ -22,6 +23,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 	const isOrderLinkedFilter = customerStore.persistence.customer.orderLinkedFilter.use();
 	const isShowTagDescription = customerStore.persistence.customer.showTagDescription.use();
 
+	const isFamousShop = globalStore.persistence.famousShop.use();
 	const popularTags = globalStore.popularTags.get();
 	const isNegativePopularTag = globalStore.persistence.popular.isNegative.use();
 	const selectedPopularTag = globalStore.selectedPopularTag.use();
@@ -34,6 +36,14 @@ export default memo<IProps>(function Content({onModalClose}) {
 	const resetRecipeTablePage = useCallback(() => {
 		customerStore.shared.recipe.page.set(1);
 	}, []);
+
+	const onIsFamousShopChange = useCallback(
+		(value: boolean) => {
+			globalStore.persistence.famousShop.set(value);
+			resetRecipeTablePage();
+		},
+		[resetRecipeTablePage]
+	);
 
 	const onIsNegativePopularTagChange = useCallback(
 		(value: boolean) => {
@@ -139,6 +149,19 @@ export default memo<IProps>(function Content({onModalClose}) {
 						清除选择
 					</Button>
 				</div>
+				<SwitchItem
+					isSelected={isFamousShop}
+					onValueChange={onIsFamousShopChange}
+					aria-label={`${isFamousShop ? '关闭' : '开启'}“明星店”效果`}
+					className="!mt-4"
+				>
+					“明星店”效果
+					<span className="inline-flex items-center text-xs text-foreground-500">
+						【
+						<Sprite target="customer_rare" name="射命丸文" size={1} className="mx-0.5 rounded-full" />
+						射命丸文】奖励符卡
+					</span>
+				</SwitchItem>
 			</div>
 			<Heading as="h3">外观</Heading>
 			<div className="space-y-2">
@@ -154,7 +177,8 @@ export default memo<IProps>(function Content({onModalClose}) {
 					onValueChange={globalStore.persistence.tachie.set}
 					aria-label={`${isShowTagDescription ? '隐藏' : '显示'}顾客页面立绘`}
 				>
-					顾客页面右下角的立绘（宽屏可见）
+					顾客页面右下角的立绘
+					<span className="text-xs text-foreground-500">（宽屏可见）</span>
 				</SwitchItem>
 			</div>
 			<Heading as="h3">体验</Heading>
@@ -164,14 +188,14 @@ export default memo<IProps>(function Content({onModalClose}) {
 					onValueChange={globalStore.persistence.vibrate.set}
 					aria-label={`${isVibrateEnabled ? '关闭' : '开启'}操作震动反馈`}
 				>
-					部分操作的震动反馈（需设备和浏览器支持）
+					部分操作的震动反馈<span className="text-xs text-foreground-500">（需设备和浏览器支持）</span>
 				</SwitchItem>
 				<SwitchItem
 					isSelected={isShowTagsTooltip}
 					onValueChange={globalStore.persistence.customerCardTagsTooltip.set}
 					aria-label={`${isShowTagsTooltip ? '隐藏' : '显示'}标签浮动提示`}
 				>
-					顾客卡片中标签的浮动提示（鼠标悬停可见）
+					顾客卡片中标签的浮动提示<span className="text-xs text-foreground-500">（鼠标悬停可见）</span>
 				</SwitchItem>
 			</div>
 			<Heading as="h2">稀客页面</Heading>

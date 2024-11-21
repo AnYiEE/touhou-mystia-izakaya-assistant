@@ -165,6 +165,7 @@ export default function CustomerNormal() {
 	const isCustomerTabFilterVisible = customerStore.shared.customer.filterVisibility.use();
 
 	const currentCustomerPopular = customerStore.shared.customer.popular.use();
+	const isFamousShop = customerStore.shared.customer.famousShop.use();
 
 	const instance_ingredient = customerStore.instances.ingredient.get();
 
@@ -182,7 +183,11 @@ export default function CustomerNormal() {
 	const ingredientFilteredData = useMemo(
 		() =>
 			instance_ingredient.data.filter(({dlc, level, name, tags}) => {
-				const tagsWithPopular = instance_ingredient.calculateTagsWithPopular(tags, currentCustomerPopular);
+				const tagsWithPopular = instance_ingredient.calculateTagsWithPopular(
+					tags,
+					currentCustomerPopular,
+					isFamousShop
+				);
 
 				const isDlcMatched =
 					ingredientFilterDlcs.length > 0 ? ingredientFilterDlcs.includes(dlc.toString()) : true;
@@ -210,6 +215,7 @@ export default function CustomerNormal() {
 			ingredientFilterNoTags,
 			ingredientFilterTags,
 			instance_ingredient,
+			isFamousShop,
 		]
 	);
 

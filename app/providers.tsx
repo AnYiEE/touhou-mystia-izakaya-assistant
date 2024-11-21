@@ -46,6 +46,13 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 			globalStore.persistence.version.set(version);
 		}
 
+		// Initialize famous shop state based on the persistence state.
+		const globalFamousShop = globalStore.persistence.famousShop.get();
+		customerNormalStore.shared.customer.famousShop.set(globalFamousShop);
+		customerRareStore.shared.customer.famousShop.set(globalFamousShop);
+		ingredientsStore.shared.famousShop.set(globalFamousShop);
+		recipesStore.shared.famousShop.set(globalFamousShop);
+
 		// Initialize popular tag based on the persistence data.
 		const globalPopular = globalStore.persistence.popular.get();
 		customerNormalStore.shared.customer.popular.set(globalPopular);

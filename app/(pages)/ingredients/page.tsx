@@ -30,6 +30,7 @@ export default function Ingredients() {
 	const shouldSkipProcessData = useSkipProcessItemData();
 
 	const currentPopular = store.shared.popular.use();
+	const isFamousShop = store.shared.famousShop.use();
 
 	const instance = store.instance.get();
 
@@ -56,9 +57,9 @@ export default function Ingredients() {
 		() =>
 			searchResult.map((data) => ({
 				...data,
-				tags: instance.calculateTagsWithPopular(data.tags, currentPopular),
+				tags: instance.calculateTagsWithPopular(data.tags, currentPopular, isFamousShop),
 			})) as unknown as typeof searchResult,
-		[currentPopular, instance, searchResult]
+		[currentPopular, instance, isFamousShop, searchResult]
 	);
 
 	const filterData = useCallback(

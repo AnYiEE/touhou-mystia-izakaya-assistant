@@ -37,7 +37,8 @@ const storeVersion = {
 	backgroundImage: 4,
 	tachie: 5,
 	vibrate: 6, // eslint-disable-next-line sort-keys
-	renameBg: 7,
+	renameBg: 7, // eslint-disable-next-line sort-keys
+	famousShop: 8,
 } as const;
 
 const state = {
@@ -47,6 +48,7 @@ const state = {
 		customerCardTagsTooltip: true,
 
 		dirver: [] as string[],
+		famousShop: false,
 		popular: {
 			isNegative: false,
 			tag: null,
@@ -98,6 +100,9 @@ export const globalStore = store(state, {
 				persistence.highAppearance = persistence.backgroundImage;
 				delete persistence.backgroundImage;
 			}
+			if (version < storeVersion.famousShop) {
+				oldState.persistence.famousShop = false;
+			}
 			return persistedState as typeof state;
 		},
 		partialize(currentStore) {
@@ -119,6 +124,14 @@ export const globalStore = store(state, {
 
 globalStore.persistence.highAppearance.onChange((isEnabled) => {
 	document.body.classList.toggle('bg-blend-mystia-pseudo', isEnabled);
+});
+
+// Update the current famous shop state when there is a change in the persisted state.
+globalStore.persistence.famousShop.onChange((famousShop) => {
+	customerNormalStore.shared.customer.famousShop.set(famousShop);
+	customerRareStore.shared.customer.famousShop.set(famousShop);
+	ingredientsStore.shared.famousShop.set(famousShop);
+	recipesStore.shared.famousShop.set(famousShop);
 });
 
 // Update the current popular tag when there is a change in the persisted popular tag data.

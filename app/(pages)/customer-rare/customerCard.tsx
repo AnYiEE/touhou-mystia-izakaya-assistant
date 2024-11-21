@@ -32,6 +32,7 @@ export default function CustomerCard() {
 	const currentRating = customerStore.shared.customer.rating.use();
 	const hasMystiaCooker = customerStore.shared.customer.hasMystiaCooker.use();
 	const isDarkMatter = customerStore.shared.customer.isDarkMatter.use();
+	const isFamousShop = customerStore.shared.customer.famousShop.use();
 	const isOrderLinkedFilter = customerStore.persistence.customer.orderLinkedFilter.use();
 	const isShowTagDescription = customerStore.persistence.customer.showTagDescription.use();
 
@@ -122,7 +123,7 @@ export default function CustomerCard() {
 			);
 
 			_currentRecipeTagsWithPopular.push(
-				...instance_recipe.calculateTagsWithPopular(composedRecipeTags, currentCustomerPopular)
+				...instance_recipe.calculateTagsWithPopular(composedRecipeTags, currentCustomerPopular, isFamousShop)
 			);
 
 			setTimeout(() => {
@@ -131,7 +132,7 @@ export default function CustomerCard() {
 		}
 
 		return _currentRecipeTagsWithPopular;
-	}, [currentCustomerPopular, currentRecipeData, instance_ingredient, instance_recipe]);
+	}, [currentCustomerPopular, currentRecipeData, instance_ingredient, instance_recipe, isFamousShop]);
 
 	const avatarRatingColor = currentRating ? customerRatingColorMap[currentRating] : undefined;
 	const avatarRatingContent = useMemo(() => {

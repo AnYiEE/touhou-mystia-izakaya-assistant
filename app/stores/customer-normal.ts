@@ -180,6 +180,7 @@ const state = {
 
 			filterVisibility: true,
 
+			famousShop: false,
 			popular: {
 				isNegative: false,
 				tag: null,
@@ -544,6 +545,7 @@ export const customerNormalStore = store(state, {
 			if (recipeData !== null) {
 				recipe = instance_recipe.getPropsByName(recipeData.name);
 			}
+			const isFamousShop = currentStore.shared.customer.famousShop.get();
 			const rating = evaluateMeal({
 				currentCustomerName: customerName,
 				currentCustomerPopularData: customerPopularData,
@@ -551,12 +553,14 @@ export const customerNormalStore = store(state, {
 				currentExtraIngredientsLength: extraIngredients.length,
 				currentExtraTags: extraTags,
 				currentRecipe: recipe,
+				isFamousShop,
 			});
 			currentStore.shared.customer.rating.set(rating);
 		},
 		evaluateSavedMealResult(data: {
 			customerName: TCustomerNormalName;
 			extraIngredients: TIngredientName[];
+			isFamousShop: boolean;
 			popular: IPopularData;
 			recipeName: TRecipeName;
 		}) {
@@ -564,11 +568,7 @@ export const customerNormalStore = store(state, {
 			if (savedMealRatingCache.has(stringifiedData)) {
 				return savedMealRatingCache.get(stringifiedData);
 			}
-			const {extraIngredients, popular, recipeName} = data;
-			const customerName = currentStore.shared.customer.name.get();
-			if (customerName === null) {
-				throw new ReferenceError('[stores/customer-normal/evaluateSavedMealResult]: `customerName` is null');
-			}
+			const {customerName, extraIngredients, isFamousShop, popular, recipeName} = data;
 			const extraTags: TPopularTag[] = [];
 			extraIngredients.forEach((ingredient) => {
 				extraTags.push(...(instance_ingredient.getPropsByName(ingredient, 'tags') as TPopularTag[]));
@@ -580,6 +580,7 @@ export const customerNormalStore = store(state, {
 				currentExtraIngredientsLength: extraIngredients.length,
 				currentExtraTags: extraTags,
 				currentRecipe: instance_recipe.getPropsByName(recipeName),
+				isFamousShop,
 			}) as TCustomerRating;
 			savedMealRatingCache.set(stringifiedData, rating);
 			return rating;
@@ -663,6 +664,6 @@ customerNormalStore.shared.customer.name.onChange(() => {
 	customerNormalStore.refreshAllSelectedItems();
 });
 
-customerNormalStore.shared.customer.popular.isNegative.onChange(customerNormalStore.evaluateMealResult);
+customerNormalStore.shared.customer.famousShop.onChange(customerNormalStore.evaluateMealResult);
 customerNormalStore.shared.customer.popular.onChange(customerNormalStore.evaluateMealResult);
 customerNormalStore.shared.recipe.tagsWithPopular.onChange(customerNormalStore.evaluateMealResult);

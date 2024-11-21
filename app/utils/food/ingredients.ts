@@ -3,6 +3,7 @@ import {
 	INGREDIENT_LIST,
 	TAG_POPULAR_NEGATIVE,
 	TAG_POPULAR_POSITIVE,
+	TAG_SIGNATURE,
 	type TIngredientName,
 	type TIngredientTag,
 	type TIngredientType,
@@ -59,16 +60,24 @@ export class Ingredient extends Food<TIngredients> {
 	}
 
 	/**
-	 * @description Calculate the tags based on the original tags and the popular tag data.
+	 * @description Calculate the tags based on the original tags, the popular tag data and the famous shop state.
 	 */
-	public calculateTagsWithPopular(ingredientTags: ReadonlyArray<TIngredientTag>, popular: IPopularData) {
-		const ingredientTagsWithPopular = [...ingredientTags];
+	public calculateTagsWithPopular(
+		ingredientTags: ReadonlyArray<TIngredientTag>,
+		popular: IPopularData,
+		isFamousShop: boolean
+	) {
+		const ingredientTagsWithPopular = new Set(ingredientTags);
 		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popular;
 
-		if (currentPopularTag && ingredientTags.includes(currentPopularTag as TIngredientTag)) {
-			ingredientTagsWithPopular.push(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
+		if (isFamousShop && ingredientTags.includes(TAG_SIGNATURE)) {
+			ingredientTagsWithPopular.add(TAG_POPULAR_POSITIVE);
 		}
 
-		return ingredientTagsWithPopular;
+		if (currentPopularTag && ingredientTags.includes(currentPopularTag as TIngredientTag)) {
+			ingredientTagsWithPopular.add(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
+		}
+
+		return [...ingredientTagsWithPopular];
 	}
 }

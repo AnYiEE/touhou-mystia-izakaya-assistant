@@ -28,6 +28,7 @@ export default function SavedMealCard() {
 	const currentCustomerName = customerStore.shared.customer.name.use();
 	const currentCustomerPopular = customerStore.shared.customer.popular.use();
 	const currentSavedMeals = customerStore.persistence.meals.use();
+	const isFamousShop = customerStore.shared.customer.famousShop.use();
 
 	const instance_recipe = customerStore.instances.recipe.get();
 
@@ -89,8 +90,10 @@ export default function SavedMealCard() {
 									{(() => {
 										const {isDarkMatter, price, rating} = customerStore.evaluateSavedMealResult({
 											beverageName: beverage,
+											customerName: currentCustomerName,
 											extraIngredients,
 											hasMystiaCooker,
+											isFamousShop,
 											order,
 											popular: currentCustomerPopular,
 											recipeName: recipe,

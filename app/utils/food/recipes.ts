@@ -11,6 +11,7 @@ import {
 	TAG_LARGE_PARTITION,
 	TAG_POPULAR_NEGATIVE,
 	TAG_POPULAR_POSITIVE,
+	TAG_SIGNATURE,
 	type TCustomerRareName,
 	type TIngredientName,
 	type TIngredientTag,
@@ -40,7 +41,7 @@ export class Recipe extends Food<TRecipes> {
 		肉: '素',
 		重油: '清淡',
 		饱腹: '下酒',
-	} as const;
+	} as const satisfies Partial<Record<TRecipeTag, TRecipeTag>>;
 
 	private static _bondRecipesCache = new Map<TCustomerRareName, TBondRecipes>();
 
@@ -78,17 +79,25 @@ export class Recipe extends Food<TRecipes> {
 	public blockedTags: Set<TRecipeTag> = new Set([DARK_MATTER_TAG]);
 
 	/**
-	 * @description Calculate the tags based on the original tags and the popular tag data.
+	 * @description Calculate the tags based on the original tags, the popular tag data and the famous shop state.
 	 */
-	public calculateTagsWithPopular(recipeTags: ReadonlyArray<TRecipeTag>, popular: IPopularData) {
-		const recipeTagsWithPopular = [...recipeTags];
+	public calculateTagsWithPopular(
+		recipeTags: ReadonlyArray<TRecipeTag>,
+		popular: IPopularData,
+		isFamousShop: boolean
+	) {
+		const recipeTagsWithPopular = new Set(recipeTags);
 		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popular;
 
-		if (currentPopularTag !== null && recipeTags.includes(currentPopularTag as TRecipeTag)) {
-			recipeTagsWithPopular.push(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
+		if (isFamousShop && recipeTags.includes(TAG_SIGNATURE)) {
+			recipeTagsWithPopular.add(TAG_POPULAR_POSITIVE);
 		}
 
-		return recipeTagsWithPopular;
+		if (currentPopularTag !== null && recipeTags.includes(currentPopularTag as TRecipeTag)) {
+			recipeTagsWithPopular.add(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
+		}
+
+		return [...recipeTagsWithPopular];
 	}
 
 	/**
