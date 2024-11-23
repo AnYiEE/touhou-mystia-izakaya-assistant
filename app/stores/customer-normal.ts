@@ -622,10 +622,10 @@ export const customerNormalStore = store(state, {
 			currentStore.shared.recipe.cookers.set(new Set());
 			currentStore.shared.recipe.dlcs.set(new Set());
 			currentStore.shared.recipe.searchValue.set('');
-			currentStore.shared.recipe.sortDescriptor.set({});
+			currentStore.shared.recipe.sortDescriptor.set({} as TRecipeTableSortDescriptor);
 			currentStore.shared.beverage.dlcs.set(new Set());
 			currentStore.shared.beverage.searchValue.set('');
-			currentStore.shared.beverage.sortDescriptor.set({});
+			currentStore.shared.beverage.sortDescriptor.set({} as TBeverageTableSortDescriptor);
 		},
 		refreshCustomer() {
 			currentStore.shared.customer.name.set(null);

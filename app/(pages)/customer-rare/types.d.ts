@@ -44,7 +44,7 @@ export interface ITableColumn<T extends string> {
 
 export interface ITableSortDescriptor<T extends string> extends SortDescriptor {
 	column?: T;
-	direction?: NonNullable<SortDescriptor['direction']>;
+	direction?: SortDescriptor['direction'];
 	lastColumn?: T;
 }
 

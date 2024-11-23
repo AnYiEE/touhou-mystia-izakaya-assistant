@@ -16,6 +16,7 @@ import {
 	PopoverTrigger,
 	Select,
 	SelectItem,
+	type SortDescriptor,
 	Table,
 	TableBody,
 	TableCell,
@@ -682,7 +683,7 @@ export default function RecipeTabContent() {
 			bottomContentPlacement="outside"
 			selectedKeys={tableSelectedKeys}
 			selectionMode="single"
-			sortDescriptor={tableSortDescriptor}
+			sortDescriptor={tableSortDescriptor as SortDescriptor}
 			topContent={tableToolbar}
 			topContentPlacement="outside"
 			onSortChange={(config) => {
