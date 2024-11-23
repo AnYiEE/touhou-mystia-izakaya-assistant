@@ -116,7 +116,6 @@ const config = {
 	theme: {
 		extend: {
 			backgroundImage: {
-				cursor: `url("${CDN_URL}/assets/cursor.png")`,
 				loading: `url("${CDN_URL}/assets/loading.gif")`,
 				logo: `url("${CDN_URL}/assets/icon.png")`,
 				mystia: `url("${CDN_URL}/assets/mystia.png")`,
@@ -135,9 +134,8 @@ const config = {
 				'fill-20': 'repeat(auto-fill,5rem)',
 			},
 			height: {
-				cursor: '37px',
-				'cursor-1.8x': '66px',
 				loading: '120px',
+				'main-content': 'calc(var(--safe-h-dvh) - 8rem)',
 			},
 			maxHeight: {
 				'dvh-safe-half': 'var(--safe-h-dvh-half)',
@@ -151,8 +149,6 @@ const config = {
 				'screen-p-60': '60vw',
 			},
 			width: {
-				cursor: '27px',
-				'cursor-1.8x': '48px',
 				loading: '120px',
 			},
 			padding: {
