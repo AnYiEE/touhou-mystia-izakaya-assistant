@@ -170,8 +170,8 @@ export default function CustomerCard() {
 		>
 			<div className="flex flex-col gap-3 p-4 md:flex-row">
 				<div className="flex flex-col items-center justify-center gap-3">
-					<Popover showArrow color={avatarRatingColor} offset={9}>
-						<Tooltip showArrow color={avatarRatingColor} content={avatarRatingContent}>
+					<Popover showArrow color={avatarRatingColor} offset={7}>
+						<Tooltip showArrow color={avatarRatingColor} content={avatarRatingContent} offset={5}>
 							<div className="flex cursor-pointer self-center">
 								<PopoverTrigger>
 									<Avatar
@@ -265,8 +265,8 @@ export default function CustomerCard() {
 										role="button"
 										tabIndex={0}
 										className={twJoin(
-											'cursor-pointer p-1 leading-none transition-opacity hover:opacity-hover',
-											!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50'
+											'cursor-pointer p-1 font-semibold leading-none transition-opacity hover:opacity-hover',
+											!currentRecipeTagsWithPopular.includes(tag) && 'font-normal opacity-50'
 										)}
 									/>
 								</Tooltip>
@@ -282,8 +282,8 @@ export default function CustomerCard() {
 									tagStyle={CUSTOMER_NORMAL_TAG_STYLE.negative}
 									tagType="negative"
 									className={twJoin(
-										'cursor-not-allowed p-1 leading-none',
-										!currentRecipeTagsWithPopular.includes(tag) && 'opacity-50'
+										'cursor-not-allowed p-1 font-semibold leading-none',
+										!currentRecipeTagsWithPopular.includes(tag) && 'font-normal opacity-50'
 									)}
 								/>
 							))}
@@ -317,8 +317,8 @@ export default function CustomerCard() {
 										role="button"
 										tabIndex={0}
 										className={twJoin(
-											'cursor-pointer p-1 leading-none transition-opacity hover:opacity-hover',
-											!beverageTags.includes(tag) && 'opacity-50'
+											'cursor-pointer p-1 font-semibold leading-none transition-opacity hover:opacity-hover',
+											!beverageTags.includes(tag) && 'font-normal opacity-50'
 										)}
 									/>
 								</Tooltip>

@@ -5,7 +5,7 @@ import {twJoin} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
 
-import {Button, ScrollShadow, Select, SelectItem, type Selection, Switch} from '@nextui-org/react';
+import {Button, Select, SelectItem, type Selection, Switch} from '@nextui-org/react';
 
 import DataManager, {type IDataManagerProps} from './dataManager';
 import SwitchItem from './switchItem';
@@ -76,13 +76,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 			<Heading as="h2" className="mt-0">
 				全局设置
 			</Heading>
-			<Heading
-				as="h3"
-				subTitle={<ScrollShadow hideScrollBar>正确设置游戏中现时流行的标签可以使套餐评级更为准确</ScrollShadow>}
-				classNames={{
-					subTitle: 'whitespace-nowrap',
-				}}
-			>
+			<Heading as="h3" subTitle="正确设置游戏中现时流行的标签可以使套餐评级更为准确">
 				流行标签
 			</Heading>
 			<div className="space-y-2">
@@ -156,9 +150,14 @@ export default memo<IProps>(function Content({onModalClose}) {
 					className="!mt-4"
 				>
 					“明星店”效果
-					<span className="inline-flex items-center text-xs text-foreground-500">
+					<span className="-ml-1 text-xs text-foreground-500">
 						【
-						<Sprite target="customer_rare" name="射命丸文" size={1} className="mx-0.5 rounded-full" />
+						<Sprite
+							target="customer_rare"
+							name="射命丸文"
+							size={1}
+							className="mx-0.5 rounded-full align-text-top"
+						/>
 						射命丸文】奖励符卡
 					</span>
 				</SwitchItem>
@@ -178,7 +177,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 					aria-label={`${isShowTagDescription ? '隐藏' : '显示'}顾客页面立绘`}
 				>
 					顾客页面右下角的立绘
-					<span className="text-xs text-foreground-500">（宽屏可见）</span>
+					<span className="-ml-1 text-xs text-foreground-500">（宽屏可见）</span>
 				</SwitchItem>
 			</div>
 			<Heading as="h3">体验</Heading>
@@ -188,14 +187,14 @@ export default memo<IProps>(function Content({onModalClose}) {
 					onValueChange={globalStore.persistence.vibrate.set}
 					aria-label={`${isVibrateEnabled ? '关闭' : '开启'}操作震动反馈`}
 				>
-					部分操作的震动反馈<span className="text-xs text-foreground-500">（需设备和浏览器支持）</span>
+					部分操作的震动反馈<span className="-ml-1 text-xs text-foreground-500">（需设备和浏览器支持）</span>
 				</SwitchItem>
 				<SwitchItem
 					isSelected={isShowTagsTooltip}
 					onValueChange={globalStore.persistence.customerCardTagsTooltip.set}
 					aria-label={`${isShowTagsTooltip ? '隐藏' : '显示'}标签浮动提示`}
 				>
-					顾客卡片中标签的浮动提示<span className="text-xs text-foreground-500">（鼠标悬停可见）</span>
+					顾客卡片中标签的浮动提示<span className="-ml-1 text-xs text-foreground-500">（鼠标悬停可见）</span>
 				</SwitchItem>
 			</div>
 			<Heading as="h2">稀客页面</Heading>

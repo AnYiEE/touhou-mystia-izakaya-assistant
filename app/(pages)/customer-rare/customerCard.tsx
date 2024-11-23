@@ -325,9 +325,9 @@ export default function CustomerCard() {
 										role="button"
 										tabIndex={0}
 										className={twMerge(
-											'cursor-pointer p-1 leading-none transition-opacity hover:opacity-hover',
+											'cursor-pointer p-1 font-semibold leading-none transition-opacity hover:opacity-hover',
 											(isDarkMatter || !currentRecipeTagsWithPopular.includes(tag)) &&
-												'opacity-50',
+												'font-normal opacity-50',
 											currentCustomerOrder.recipeTag === tag &&
 												((hasMystiaCooker && isDarkMatter) || !hasMystiaCooker) &&
 												'ring-2 ring-current',
@@ -350,8 +350,9 @@ export default function CustomerCard() {
 									tagStyle={CUSTOMER_RARE_TAG_STYLE.negative}
 									tagType="negative"
 									className={twJoin(
-										'cursor-not-allowed p-1 leading-none',
-										(isDarkMatter || !currentRecipeTagsWithPopular.includes(tag)) && 'opacity-50'
+										'cursor-not-allowed p-1 font-semibold leading-none',
+										(isDarkMatter || !currentRecipeTagsWithPopular.includes(tag)) &&
+											'font-normal opacity-50'
 									)}
 								/>
 							))}
@@ -385,8 +386,8 @@ export default function CustomerCard() {
 										role="button"
 										tabIndex={0}
 										className={twMerge(
-											'cursor-pointer p-1 leading-none transition-opacity hover:opacity-hover',
-											!beverageTags.includes(tag) && 'opacity-50',
+											'cursor-pointer p-1 font-semibold leading-none transition-opacity hover:opacity-hover',
+											!beverageTags.includes(tag) && 'font-normal opacity-50',
 											currentCustomerOrder.beverageTag === tag &&
 												((hasMystiaCooker && isDarkMatter) || !hasMystiaCooker) &&
 												'ring-2 ring-current',

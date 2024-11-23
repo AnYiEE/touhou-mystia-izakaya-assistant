@@ -16,7 +16,7 @@ interface ITagProps extends ITagPropsBase, HTMLAttributes<HTMLSpanElement> {
 const Tag = memo(
 	forwardRef<ElementRef<'span'>, ITagProps>(function Tag({className, tag, tagStyle = {}, tagType, ...props}, ref) {
 		const isArray = Array.isArray(tag);
-		const tagDescription = isArray ? `（${tag[1]}）` : '';
+		const tagDescription = isArray ? `（${tag[1]}）` : null;
 		const tagName = isArray ? tag[0] : tag;
 
 		return (
@@ -24,9 +24,9 @@ const Tag = memo(
 				className={twMerge(
 					'inline-block h-max w-max rounded border px-1',
 					tagType === 'negative'
-						? 'after:ml-0.5 after:content-["✘"]'
+						? 'after:ml-0.5 after:font-normal after:content-["✘"]'
 						: tagType === 'positive'
-							? 'before:mr-1 before:content-["⦁"]'
+							? 'before:mr-1 before:font-normal before:content-["⦁"]'
 							: '',
 					className
 				)}
@@ -39,7 +39,9 @@ const Tag = memo(
 				ref={ref}
 			>
 				{tagName}
-				{tagDescription}
+				{tagDescription !== null && (
+					<span className="-mx-1 select-none text-xs font-normal leading-none">{tagDescription}</span>
+				)}
 			</span>
 		);
 	})
