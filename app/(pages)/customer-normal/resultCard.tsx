@@ -145,9 +145,7 @@ export default function ResultCard() {
 		if (currentCustomerName && currentSavedMeals[currentCustomerName]?.length) {
 			return null;
 		}
-		return (
-			<Placeholder className="pb-8 pt-12 leading-none md:pt-8 xl:pb-4 xl:pt-0">选择点单料理以继续</Placeholder>
-		);
+		return <Placeholder className="pb-8 pt-12 md:pt-8 xl:pb-4 xl:pt-0">选择点单料理以继续</Placeholder>;
 	}
 
 	return (

@@ -341,10 +341,8 @@ export default function CustomerRare() {
 					</>
 				) : (
 					<Placeholder className="pt-4 xl:pt-0">
-						<div className="inline-grid space-y-1">
-							<span aria-hidden className="inline-block h-loading w-loading bg-loading" />
-							<p>选择顾客以继续</p>
-						</div>
+						<span aria-hidden className="block h-loading w-loading bg-loading" />
+						<p>选择顾客以继续</p>
 					</Placeholder>
 				)}
 			</div>
@@ -373,10 +371,10 @@ export default function CustomerRare() {
 				<SideFilterIconButton selectConfig={ingredientSelectConfig} />
 			</SideButtonGroup>
 
-			{isShowTachie && breakpoint === 'tachie' && (
+			{isShowTachie && breakpoint === 'tachie' && currentCustomerName !== null && (
 				<Tachie
 					aria-hidden
-					alt={currentCustomerName ?? '夜雀服'}
+					alt={currentCustomerName}
 					src={instance_customer.getTachiePath(currentCustomerName)}
 					width={currentCustomerName === '蹦蹦跳跳的三妖精' || currentCustomerName === '萌澄果' ? 60 : 120}
 					className="pointer-events-none fixed bottom-0 right-0 pr-2"

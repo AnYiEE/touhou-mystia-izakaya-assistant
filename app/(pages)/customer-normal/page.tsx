@@ -343,10 +343,8 @@ export default function CustomerNormal() {
 					</>
 				) : (
 					<Placeholder className="pt-4 xl:pt-0">
-						<div className="inline-grid space-y-1">
-							<span aria-hidden className="inline-block h-loading w-loading bg-loading" />
-							<p>选择顾客以继续</p>
-						</div>
+						<span aria-hidden className="block h-loading w-loading bg-loading" />
+						<p>选择顾客以继续</p>
 					</Placeholder>
 				)}
 			</div>
@@ -375,7 +373,7 @@ export default function CustomerNormal() {
 				<SideFilterIconButton selectConfig={ingredientSelectConfig} />
 			</SideButtonGroup>
 
-			{isShowTachie && breakpoint === 'tachie' && (
+			{isShowTachie && breakpoint === 'tachie' && currentCustomerName !== null && (
 				<Tachie
 					aria-hidden
 					alt="雀酒屋工作装"
