@@ -1,10 +1,17 @@
 import {memo, useCallback, useEffect, useMemo, useState} from 'react';
-import {twJoin} from 'tailwind-merge';
+import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useTheme} from 'next-themes';
 import {useMounted, usePathname, useVibrate} from '@/hooks';
 
-import {DropdownItem, DropdownMenu, DropdownTrigger, type Selection, Spinner} from '@nextui-org/react';
+import {
+	DropdownItem,
+	DropdownMenu,
+	type DropdownProps,
+	DropdownTrigger,
+	type Selection,
+	Spinner,
+} from '@nextui-org/react';
 import {faCircleHalfStroke, faMoon, faSun} from '@fortawesome/free-solid-svg-icons';
 
 import Dropdown from '@/components/dropdown';
@@ -27,11 +34,11 @@ enum ThemeLabel {
 	switcher = '切换主题',
 }
 
-interface IProps {
+interface IProps extends Pick<DropdownProps, 'className'> {
 	isMenu?: boolean;
 }
 
-export default memo<IProps>(function ThemeSwitcher({isMenu}) {
+export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 	const isMounted = useMounted();
 	const pathname = usePathname();
 	const {setTheme, theme} = useTheme();
@@ -106,15 +113,16 @@ export default memo<IProps>(function ThemeSwitcher({isMenu}) {
 			}}
 		>
 			<Tooltip showArrow content={ThemeLabel.switcher} placement={isMenu ? 'left' : 'bottom'}>
-				<span className={twJoin('flex', isMenu && 'h-full')}>
+				<span className="flex">
 					<DropdownTrigger>
 						<FontAwesomeIconButton
 							disableAnimation={isMenu}
 							icon={themeIcon}
 							aria-label={ThemeLabel.switcher}
-							className={twJoin(
-								'h-min w-min min-w-min bg-transparent text-medium',
-								isMenu ? 'h-full text-foreground' : 'text-default-400 dark:text-default-500'
+							className={twMerge(
+								'h-min w-min min-w-min bg-transparent !text-medium',
+								isMenu ? 'h-full text-foreground' : 'text-default-400 dark:text-default-500',
+								className
 							)}
 						/>
 					</DropdownTrigger>

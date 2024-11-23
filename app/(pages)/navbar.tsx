@@ -272,7 +272,10 @@ export default function Navbar() {
 			</NavbarContent>
 
 			<NavbarContent as="div" justify="end" className="basis-1 pl-4 md:hidden">
-				<ThemeSwitcher isMenu />
+				<ThemeSwitcher
+					isMenu
+					className={twJoin('transition-opacity', !isMenuOpened && 'pointer-events-none opacity-0')}
+				/>
 				<Tooltip showArrow content={isMenuOpened ? '收起菜单' : '打开菜单'} placement="left">
 					<NavbarMenuToggle
 						onChange={vibrate}
