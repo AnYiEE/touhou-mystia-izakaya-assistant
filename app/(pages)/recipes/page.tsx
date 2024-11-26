@@ -225,9 +225,10 @@ export default function Recipes() {
 	return (
 		<div
 			className={twJoin(
+				'min-h-main-content',
 				isEmpty
 					? 'flex justify-center'
-					: 'grid h-min grid-cols-2 justify-items-center gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7'
+					: 'grid h-min grid-cols-2 content-start justify-items-center gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7'
 			)}
 		>
 			{!shouldSkipProcessData && (

@@ -233,7 +233,7 @@ export default function ResultCard() {
 		if (currentCustomerName && currentSavedMeals[currentCustomerName]?.length) {
 			return null;
 		}
-		return <Placeholder className="pb-8 pt-12 md:pt-8 xl:pb-4 xl:pt-0">选择一种料理或酒水以继续</Placeholder>;
+		return <Placeholder className="pb-6 pt-12 md:py-8 xl:pb-2 xl:pt-0">选择一种料理或酒水以继续</Placeholder>;
 	}
 
 	return (

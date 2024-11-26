@@ -86,7 +86,7 @@ export default function Home() {
 	}, [qrCodeDescription, wxGroupUrl]);
 
 	return (
-		<div className="grid h-main-content grid-cols-1 lg:grid-cols-2 xl:pt-8">
+		<div className="grid min-h-main-content grid-cols-1 lg:grid-cols-2 xl:pt-8">
 			<div className="flex items-center justify-center">
 				<div className="flex flex-col gap-6">
 					<div className="-mt-4 mb-8 whitespace-nowrap">

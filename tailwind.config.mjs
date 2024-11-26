@@ -135,7 +135,6 @@ const config = {
 			},
 			height: {
 				loading: '120px',
-				'main-content': 'calc(var(--safe-h-dvh) - 8rem)',
 			},
 			maxHeight: {
 				'dvh-safe-half': 'var(--safe-h-dvh-half)',
@@ -143,6 +142,8 @@ const config = {
 			},
 			minHeight: {
 				'dvh-safe': 'var(--safe-h-dvh)',
+				'main-content': 'calc(var(--safe-h-dvh) - 8rem)',
+				'main-content-pb-0': 'calc(var(--safe-h-dvh) - 6rem)',
 			},
 			maxWidth: {
 				'p-95': '95%',

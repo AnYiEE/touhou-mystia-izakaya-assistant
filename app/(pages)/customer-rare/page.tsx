@@ -294,8 +294,8 @@ export default function CustomerRare() {
 	return (
 		<div
 			className={twJoin(
-				'flex flex-col gap-4 overflow-auto scrollbar-hide xl:grid xl:grid-cols-2 xl:justify-items-center',
-				currentCustomerName && 'md:flex-col-reverse'
+				'flex min-h-main-content-pb-0 flex-col gap-4 overflow-auto scrollbar-hide xl:grid xl:grid-cols-2 xl:justify-items-center',
+				currentCustomerName !== null && 'md:flex-col-reverse md:justify-end'
 			)}
 		>
 			<div className="px-2 xl:w-full xl:px-0 xl:pt-2">
@@ -332,7 +332,12 @@ export default function CustomerRare() {
 				</Tabs>
 			</div>
 
-			<div className="flex flex-grow flex-col gap-4 p-2 pt-0 md:pb-0 md:pt-2 xl:w-full xl:pb-2">
+			<div
+				className={twJoin(
+					'flex flex-col gap-4 p-2 pt-0 md:pb-0 md:pt-2 xl:w-full xl:pb-2',
+					currentCustomerName === null && 'flex-grow'
+				)}
+			>
 				{currentCustomerName ? (
 					<>
 						<CustomerCard />
@@ -340,7 +345,7 @@ export default function CustomerRare() {
 						<SavedMealCard />
 					</>
 				) : (
-					<Placeholder className="pt-4 xl:pt-0">
+					<Placeholder className="pb-5 md:pb-9 xl:pb-0">
 						<span aria-hidden className="block h-loading w-loading bg-loading" />
 						<p>选择顾客以继续</p>
 					</Placeholder>
