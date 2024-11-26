@@ -10,8 +10,8 @@
 
 ### 相关视频
 
--   [【东方夜雀食堂】用小助手来辅助你搭配料理吧！](https://www.bilibili.com/video/BV1SphBe8EZM/)
--   [【东方夜雀食堂】小助手使用教程+游戏中演示](https://www.bilibili.com/video/BV12bbWeGELA/)
+- [【东方夜雀食堂】用小助手来辅助你搭配料理吧！](https://www.bilibili.com/video/BV1SphBe8EZM/)
+- [【东方夜雀食堂】小助手使用教程+游戏中演示](https://www.bilibili.com/video/BV12bbWeGELA/)
 
 ## 许可证
 
