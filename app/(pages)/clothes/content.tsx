@@ -175,19 +175,16 @@ export default memo<IProps>(function Content({data}) {
 					</p>
 					<p>
 						<span className="font-semibold">立绘：</span>
-						{(() => {
-							const tachie = <Tachie alt={name} src={instance.getTachiePath(name)} width={240} />;
-							return (
-								<Popover placement={placement} showArrow={placement === 'top'}>
-									<PopoverTrigger>
-										<span role="button" tabIndex={0} className="underline-dotted-offset2">
-											查看立绘
-										</span>
-									</PopoverTrigger>
-									<PopoverContent>{tachie}</PopoverContent>
-								</Popover>
-							);
-						})()}
+						<Popover placement={placement} showArrow={placement === 'top'}>
+							<PopoverTrigger>
+								<span role="button" tabIndex={0} className="underline-dotted-offset2">
+									查看立绘
+								</span>
+							</PopoverTrigger>
+							<PopoverContent>
+								<Tachie alt={name} src={instance.getTachiePath(name)} width={240} />
+							</PopoverContent>
+						</Popover>
 					</p>
 				</ItemPopoverCard>
 			</PopoverContent>

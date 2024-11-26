@@ -1,13 +1,16 @@
 import {Fragment, type ReactElement, memo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
+import useBreakpoint from 'use-breakpoint';
 import {useViewInNewWindow} from '@/hooks';
 
-import {AccordionItem, Avatar, Divider, ScrollShadow} from '@nextui-org/react';
+import {AccordionItem, Avatar, Divider, PopoverContent, PopoverTrigger, ScrollShadow} from '@nextui-org/react';
 
 import InfoButtonBase from './infoButtonBase';
 import Ol from '@/components/ol';
+import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
+import Tachie from '@/components/tachie';
 import Tooltip from '@/components/tooltip';
 
 import {customerRatingColorMap} from './constants';
@@ -30,6 +33,13 @@ const LevelLabel = memo<ILevelLabelProps>(function LevelLabel({level}) {
 
 export default function InfoButton() {
 	const openWindow = useViewInNewWindow();
+	const {breakpoint: placement} = useBreakpoint(
+		{
+			bottom: -1,
+			'left-start': 426,
+		},
+		'bottom'
+	);
 
 	const currentCustomerName = store.shared.customer.name.use();
 
@@ -106,6 +116,23 @@ export default function InfoButton() {
 					<p className="mb-1 text-sm">
 						<span className="font-semibold">ID：</span>
 						{currentCustomerId}
+					</p>
+					<p className="mb-1">
+						<span className="font-semibold">立绘：</span>
+						<Popover placement={placement} showArrow={placement === 'bottom'}>
+							<PopoverTrigger>
+								<span role="button" tabIndex={0} className="underline-dotted-offset2">
+									查看立绘
+								</span>
+							</PopoverTrigger>
+							<PopoverContent>
+								<Tachie
+									alt={currentCustomerName}
+									src={instance_customer.getTachiePath(currentCustomerName)}
+									width={240}
+								/>
+							</PopoverContent>
+						</Popover>
 					</p>
 					<p>
 						<span className="font-semibold">Lv.1：</span>
