@@ -119,7 +119,7 @@
 		"postcss": "^8.4.49",
 		"postcss-flexbugs-fixes": "^5.0.2",
 		"postcss-preset-env": "^10.1.1",
-		"prettier": "^3.4.0",
+		"prettier": "^3.4.1",
 		"prettier-plugin-tailwindcss": "^0.6.9",
 		"sass": "^1.81.0",
 		"stylelint": "^16.10.0",
