@@ -34,6 +34,7 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 	const vibrate = useVibrate();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
+	const currentCustomerOrderRecipeTag = customerStore.shared.customer.order.use().recipeTag;
 	const currentCustomerPopular = customerStore.shared.customer.popular.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 	const isDarkMatter = customerStore.shared.customer.isDarkMatter.use();
@@ -219,8 +220,9 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 						const isNoChange = scoreChange === 0;
 						const isHLowestRestricted = scoreChange === Infinity;
 						const isHightestRestricted = scoreChange === -Infinity;
+						const isOrderTag = tagsWithPopular.includes(currentCustomerOrderRecipeTag as TIngredientTag);
 
-						const color = isUp ? 'success' : isDown ? 'danger' : 'default';
+						const color = isOrderTag ? 'secondary' : isUp ? 'success' : isDown ? 'danger' : 'default';
 						const score = isUp ? `+${scoreChange}` : `${scoreChange}`;
 
 						const badgeContent = isDarkIngredient
@@ -232,7 +234,7 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 									: isNoChange
 										? ''
 										: score;
-						const tooltipContent = `点击：加入额外食材【${name}】${isNoChange ? '' : `，${isDarkIngredient ? `制作【${DARK_MATTER_NAME}】` : isHLowestRestricted ? '最低评级受限' : isHightestRestricted ? '最高评级受限' : `匹配度${score}`}`}`;
+						const tooltipContent = `点击：加入额外食材【${name}】${isNoChange ? '' : `，${isDarkIngredient ? `制作【${DARK_MATTER_NAME}】` : isHLowestRestricted ? '最低评级受限' : isHightestRestricted ? '最高评级受限' : `匹配度${score}${isOrderTag ? '（点单需求）' : ''}`}`}`;
 
 						return (
 							<Tooltip
