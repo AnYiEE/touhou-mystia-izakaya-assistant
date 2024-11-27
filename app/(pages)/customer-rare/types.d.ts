@@ -46,6 +46,7 @@ export interface ITableSortDescriptor<T extends string> extends SortDescriptor {
 	column?: T;
 	direction?: SortDescriptor['direction'];
 	lastColumn?: T;
+	time?: number;
 }
 
 type TBeverageSuitability = {

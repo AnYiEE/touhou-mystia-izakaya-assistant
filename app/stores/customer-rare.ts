@@ -549,12 +549,20 @@ export const customerRareStore = store(state, {
 			currentStore.shared.beverage.page.set(1);
 			const sortConfig = config as Required<TBeverageTableSortDescriptor>;
 			const {column, direction} = sortConfig;
-			const {lastColumn} = currentStore.shared.beverage.sortDescriptor.get();
+			const {lastColumn, time} = currentStore.shared.beverage.sortDescriptor.get();
 			if (lastColumn === undefined || column !== lastColumn) {
 				currentStore.shared.beverage.sortDescriptor.assign({
 					column,
 					lastColumn: column,
 				});
+			}
+			// Switch between ascending, descending and no sort.
+			currentStore.shared.beverage.sortDescriptor.assign({
+				time: time === undefined ? 1 : time + 1,
+			});
+			if (time !== undefined && time % 2 === 0) {
+				currentStore.shared.beverage.sortDescriptor.set({});
+				return;
 			}
 			// Reverse direction `ascending` to `descending` when first time
 			let reversedDirection = direction;
@@ -617,12 +625,20 @@ export const customerRareStore = store(state, {
 			currentStore.shared.recipe.page.set(1);
 			const sortConfig = config as Required<TRecipeTableSortDescriptor>;
 			const {column, direction} = sortConfig;
-			const {lastColumn} = currentStore.shared.recipe.sortDescriptor.get();
+			const {lastColumn, time} = currentStore.shared.recipe.sortDescriptor.get();
 			if (lastColumn === undefined || column !== lastColumn) {
 				currentStore.shared.recipe.sortDescriptor.assign({
 					column,
 					lastColumn: column,
 				});
+			}
+			// Switch between ascending, descending and no sort.
+			currentStore.shared.recipe.sortDescriptor.assign({
+				time: time === undefined ? 1 : time + 1,
+			});
+			if (time !== undefined && time % 2 === 0) {
+				currentStore.shared.recipe.sortDescriptor.set({});
+				return;
 			}
 			// Reverse direction `ascending` to `descending` when first time
 			let reversedDirection = direction;
