@@ -3,12 +3,13 @@ import {twJoin} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
 
-import {Avatar, Card, Divider, PopoverContent, PopoverTrigger, type Selection} from '@nextui-org/react';
+import {Card, Divider, PopoverContent, PopoverTrigger, type Selection} from '@nextui-org/react';
 import {faArrowsRotate, faXmark} from '@fortawesome/free-solid-svg-icons';
 
 import InfoButton from './infoButton';
 import TagGroup from './tagGroup';
 import {TrackCategory, trackEvent} from '@/components/analytics';
+import Avatar from '@/components/avatar';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
@@ -46,6 +47,8 @@ export default function CustomerCard() {
 	const instance_customer = customerStore.instances.customer.get();
 	const instance_ingredient = customerStore.instances.ingredient.get();
 	const instance_recipe = customerStore.instances.recipe.get();
+
+	const hasRating = currentRating !== null;
 
 	const hasSelected =
 		currentBeverageName !== null ||
@@ -126,8 +129,10 @@ export default function CustomerCard() {
 		return _currentRecipeTagsWithPopular;
 	}, [currentCustomerPopular, currentRecipeData, instance_ingredient, instance_recipe, isFamousShop]);
 
-	const avatarRatingColor = currentRating ? customerRatingColorMap[currentRating] : undefined;
 	const avatarRatingContent = currentRating ?? '请选择点单料理以评级';
+
+	const avatarRatingColor = hasRating ? (`${customerRatingColorMap[currentRating]}-border` as const) : undefined;
+	const tooltipRatingColor = hasRating ? customerRatingColorMap[currentRating] : undefined;
 
 	const getTagTooltip = useCallback((type: 'beverageTag' | 'recipeTag', selectedTags: Selection, tag: string) => {
 		const tagType = type === 'beverageTag' ? '酒水' : '料理';
@@ -170,12 +175,12 @@ export default function CustomerCard() {
 		>
 			<div className="flex flex-col gap-3 p-4 md:flex-row">
 				<div className="flex flex-col items-center justify-center gap-3">
-					<Popover showArrow color={avatarRatingColor} offset={7}>
-						<Tooltip showArrow color={avatarRatingColor} content={avatarRatingContent} offset={5}>
+					<Popover showArrow color={tooltipRatingColor} offset={10}>
+						<Tooltip showArrow color={tooltipRatingColor} content={avatarRatingContent} offset={8}>
 							<div className="flex cursor-pointer self-center">
 								<PopoverTrigger>
 									<Avatar
-										isBordered={Boolean(currentRating)}
+										isBordered={hasRating}
 										color={avatarRatingColor}
 										radius="sm"
 										icon={<Sprite target="customer_normal" name={currentCustomerName} size={6} />}
@@ -184,7 +189,7 @@ export default function CustomerCard() {
 										classNames={{
 											base: twJoin(
 												'h-24 w-24 transition focus:opacity-hover focus:ring-4 focus:ring-focus',
-												currentRating ? 'ring-4 ring-offset-0' : 'ring-2 ring-focus dark:ring-0'
+												hasRating ? 'ring-4 ring-offset-0' : 'ring-2 ring-focus dark:ring-0'
 											),
 											icon: 'block scale-[113%]',
 										}}

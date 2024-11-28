@@ -1,14 +1,12 @@
-import {type AvatarProps, type SortDescriptor} from '@nextui-org/react';
+import {type SortDescriptor} from '@nextui-org/react';
 
 import {type TabVisibilityState} from './constants';
 import {type Beverage, type Recipe} from '@/utils';
 import type {TItemDataItem} from '@/utils/types';
 
 export type TCustomerRating = '极度不满' | '不满' | '普通' | '满意' | '完美';
-
-export interface ICustomerRatingMap {
-	[key in TCustomerRating]: AvatarProps['color'];
-}
+export type TCustomerRatingColor = 'exbad' | 'bad' | 'norm' | 'good' | 'exgood';
+export type TCustomerRatingMap = Record<TCustomerRating, TCustomerRatingColor>;
 
 export interface ICustomerTabStyle {
 	ariaLabel: string;

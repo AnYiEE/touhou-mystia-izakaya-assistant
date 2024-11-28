@@ -3,12 +3,13 @@ import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
 
-import {Avatar, Card, Divider, PopoverContent, PopoverTrigger} from '@nextui-org/react';
+import {Card, Divider, PopoverContent, PopoverTrigger} from '@nextui-org/react';
 import {faArrowsRotate, faXmark} from '@fortawesome/free-solid-svg-icons';
 
 import InfoButton from './infoButton';
 import TagGroup from './tagGroup';
 import {TrackCategory, trackEvent} from '@/components/analytics';
+import Avatar from '@/components/avatar';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Popover from '@/components/popover';
 import Price from '@/components/price';
@@ -46,6 +47,8 @@ export default function CustomerCard() {
 	const instance_customer = customerStore.instances.customer.get();
 	const instance_ingredient = customerStore.instances.ingredient.get();
 	const instance_recipe = customerStore.instances.recipe.get();
+
+	const hasRating = currentRating !== null;
 
 	const hasSelected =
 		currentCustomerOrder.beverageTag !== null ||
@@ -134,9 +137,8 @@ export default function CustomerCard() {
 		return _currentRecipeTagsWithPopular;
 	}, [currentCustomerPopular, currentRecipeData, instance_ingredient, instance_recipe, isFamousShop]);
 
-	const avatarRatingColor = currentRating ? customerRatingColorMap[currentRating] : undefined;
 	const avatarRatingContent = useMemo(() => {
-		if (currentRating !== null) {
+		if (hasRating) {
 			return currentRating;
 		}
 
@@ -157,7 +159,10 @@ export default function CustomerCard() {
 		}
 
 		return `请选择${content}以评级`;
-	}, [currentBeverageName, currentRating, currentRecipeData, hasMystiaCooker, isDarkMatter]);
+	}, [currentBeverageName, currentRating, currentRecipeData, hasMystiaCooker, hasRating, isDarkMatter]);
+
+	const avatarRatingColor = hasRating ? (`${customerRatingColorMap[currentRating]}-border` as const) : undefined;
+	const tooltipRatingColor = hasRating ? customerRatingColorMap[currentRating] : undefined;
 
 	const getTagTooltip = useCallback(
 		(type: keyof typeof currentCustomerOrder, tag: string) => {
@@ -218,18 +223,23 @@ export default function CustomerCard() {
 		>
 			<div className="flex flex-col gap-3 p-4 md:flex-row">
 				<div className="flex flex-col justify-evenly gap-2">
-					<Popover showArrow color={avatarRatingColor} offset={11}>
-						<Tooltip showArrow color={avatarRatingColor} content={avatarRatingContent}>
+					<Popover showArrow color={tooltipRatingColor} offset={hasRating ? 13 : 9}>
+						<Tooltip
+							showArrow
+							color={tooltipRatingColor}
+							content={avatarRatingContent}
+							offset={hasRating ? 9 : 5}
+						>
 							<div className="flex cursor-pointer self-center">
 								<PopoverTrigger>
 									<div role="button" tabIndex={0} className="flex flex-col items-center gap-2">
 										<Avatar
-											isBordered={Boolean(currentRating)}
+											isBordered={hasRating}
 											color={avatarRatingColor}
 											radius="full"
 											icon={<Sprite target="customer_rare" name={currentCustomerName} size={4} />}
 											classNames={{
-												base: twJoin('h-12 w-12 lg:h-16 lg:w-16', currentRating && 'ring-4'),
+												base: twJoin('h-12 w-12 lg:h-16 lg:w-16', hasRating && 'ring-4'),
 												icon: 'inline-table lg:inline-block',
 											}}
 										/>

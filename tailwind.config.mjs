@@ -100,6 +100,19 @@ const purple = {
 	900: '#1c001d',
 };
 
+const ratingColorMap = {
+	bad: '#4a4459',
+	'bad-border': '#b67596',
+	exbad: '#1d0229',
+	'exbad-border': '#4d043c',
+	exgood: '#fe8081',
+	'exgood-border': '#d70404',
+	good: '#ff7c47',
+	'good-border': '#ffae75',
+	norm: '#7b8a5e',
+	'norm-border': '#f7ae34',
+};
+
 /** @type {import('tailwindcss').Config} */
 const config = {
 	content: ['./app/**/*.tsx', './node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}'],
@@ -124,6 +137,7 @@ const config = {
 				'y-auto': 'auto 100%',
 			},
 			colors: {
+				...ratingColorMap,
 				'qq-blue': '#1479d7',
 				xiaohongshu: '#ff2741',
 				'wx-green': '#07c160',
@@ -140,20 +154,20 @@ const config = {
 				'dvh-safe-half': 'var(--safe-h-dvh-half)',
 				'vmax-half': '50vmax',
 			},
+			maxWidth: {
+				'p-95': '95%',
+				'screen-p-60': '60vw',
+			},
 			minHeight: {
 				'dvh-safe': 'var(--safe-h-dvh)',
 				'main-content': 'calc(var(--safe-h-dvh) - 8rem)',
 				'main-content-pb-0': 'calc(var(--safe-h-dvh) - 6rem)',
 			},
-			maxWidth: {
-				'p-95': '95%',
-				'screen-p-60': '60vw',
+			padding: {
+				titlebar: 'env(titlebar-area-height,0rem)',
 			},
 			width: {
 				loading: '120px',
-			},
-			padding: {
-				titlebar: 'env(titlebar-area-height,0rem)',
 			},
 			zIndex: {
 				60: '60',

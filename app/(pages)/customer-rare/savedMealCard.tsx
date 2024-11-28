@@ -3,15 +3,16 @@ import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
 
-import {Avatar, Button, Card, Divider, PopoverContent, PopoverTrigger} from '@nextui-org/react';
+import {Button, Card, Divider, PopoverContent, PopoverTrigger} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faArrowDown, faArrowUp} from '@fortawesome/free-solid-svg-icons';
 
 import {Plus} from './resultCard';
 import TagGroup from './tagGroup';
+import {TrackCategory, trackEvent} from '@/components/analytics';
+import Avatar from '@/components/avatar';
 import Popover from '@/components/popover';
 import Price from '@/components/price';
-import {TrackCategory, trackEvent} from '@/components/analytics';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 import Tooltip from '@/components/tooltip';
@@ -135,7 +136,7 @@ export default function SavedMealCard() {
 																						) as never
 																					}
 																					tagStyle={{}}
-																					className="p-0.5 leading-none"
+																					className="p-0.5"
 																				/>
 																			)}
 																			{order.recipeTag &&
@@ -145,7 +146,7 @@ export default function SavedMealCard() {
 																						tagStyle={
 																							RECIPE_TAG_STYLE.positive
 																						}
-																						className="p-0.5 leading-none"
+																						className="p-0.5"
 																					/>
 																				)}
 																			{order.beverageTag &&
@@ -155,7 +156,7 @@ export default function SavedMealCard() {
 																						tagStyle={
 																							BEVERAGE_TAG_STYLE.positive
 																						}
-																						className="p-0.5 leading-none"
+																						className="p-0.5"
 																					/>
 																				)}
 																		</TagGroup>

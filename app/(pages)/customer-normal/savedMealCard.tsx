@@ -3,13 +3,14 @@ import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
 
-import {Avatar, Button, Card, Divider, PopoverContent, PopoverTrigger} from '@nextui-org/react';
+import {Button, Card, Divider, PopoverContent, PopoverTrigger} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faArrowDown, faArrowUp} from '@fortawesome/free-solid-svg-icons';
 
 import {Plus} from './resultCard';
-import Popover from '@/components/popover';
 import {TrackCategory, trackEvent} from '@/components/analytics';
+import Avatar from '@/components/avatar';
+import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 

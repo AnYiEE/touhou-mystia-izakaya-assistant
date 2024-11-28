@@ -1,19 +1,31 @@
 'use client';
 
-import {memo} from 'react';
+import {type ComponentProps, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
-import {Tooltip as NextUITooltip, type TooltipProps} from '@nextui-org/react';
+import {Tooltip as NextUITooltip, extendVariants} from '@nextui-org/react';
+
+import {type TRatingStyleMap, generateRatingColor} from '@/components/avatar';
 
 import {globalStore as store} from '@/stores';
 
-interface IProps extends TooltipProps {}
+export const ratingStyleMap = {
+	bad: 'ring-bad-border bg-bad',
+	exbad: 'ring-exbad-border bg-exbad',
+	exgood: 'ring-exgood-border bg-exgood',
+	good: 'ring-good-border bg-good',
+	norm: 'ring-norm-border bg-norm',
+} as const satisfies TRatingStyleMap;
+
+const CustomNextUITooltip = extendVariants(NextUITooltip, generateRatingColor('content', ratingStyleMap));
+
+interface IProps extends ComponentProps<typeof CustomNextUITooltip> {}
 
 export default memo<IProps>(function Tooltip({classNames, color, radius, showArrow, ...props}) {
 	const isHighAppearance = store.persistence.highAppearance.use();
 
 	return (
-		<NextUITooltip
+		<CustomNextUITooltip
 			color={color}
 			// The same radius as `Popover`.
 			radius={radius ?? 'lg'}

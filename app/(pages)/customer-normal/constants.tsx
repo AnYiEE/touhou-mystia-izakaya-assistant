@@ -1,10 +1,10 @@
-import type {ICustomerRatingMap} from './types';
+import type {TCustomerRatingMap} from './types';
 
 export const customerRatingColorMap = {
-	普通: 'success',
-	极度不满: 'default',
-	满意: 'warning',
-} as const satisfies ICustomerRatingMap;
+	普通: 'norm',
+	极度不满: 'exbad',
+	满意: 'good',
+} as const satisfies TCustomerRatingMap;
 
 export {
 	TabVisibilityState,

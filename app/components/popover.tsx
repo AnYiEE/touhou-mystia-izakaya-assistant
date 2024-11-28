@@ -1,17 +1,22 @@
-import {memo} from 'react';
+import {type ComponentProps, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
-import {Popover as NextUIPopover, type PopoverProps} from '@nextui-org/react';
+import {Popover as NextUIPopover, extendVariants} from '@nextui-org/react';
+
+import {generateRatingColor} from '@/components/avatar';
+import {ratingStyleMap} from '@/components/tooltip';
 
 import {globalStore as store} from '@/stores';
 
-interface IProps extends PopoverProps {}
+const CustomNextUIPopover = extendVariants(NextUIPopover, generateRatingColor('content', ratingStyleMap));
+
+interface IProps extends ComponentProps<typeof CustomNextUIPopover> {}
 
 export default memo<IProps>(function Popover({classNames, color, offset, showArrow, ...props}) {
 	const isHighAppearance = store.persistence.highAppearance.use();
 
 	return (
-		<NextUIPopover
+		<CustomNextUIPopover
 			color={color}
 			offset={isHighAppearance && typeof offset === 'number' ? offset - 2 : (offset as number)}
 			showArrow={isHighAppearance ? false : Boolean(showArrow)}

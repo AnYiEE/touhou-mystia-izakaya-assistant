@@ -5,7 +5,7 @@ import {faCaretDown, faCaretUp} from '@fortawesome/free-solid-svg-icons';
 
 import {type TTableColumns as TBeverageTableColumns} from './beverageTabContent';
 import {type TTableColumns as TRecipeTableColumns} from './recipeTabContent';
-import type {ICustomerRatingMap, ICustomerTabStyleMap, IIngredientsTabStyleMap} from './types';
+import type {ICustomerTabStyleMap, IIngredientsTabStyleMap, TCustomerRatingMap} from './types';
 
 export const customerTabStyleMap = {
 	collapse: {
@@ -46,12 +46,12 @@ export const ingredientTabStyleMap = {
 } as const satisfies IIngredientsTabStyleMap;
 
 export const customerRatingColorMap = {
-	不满: 'secondary',
-	完美: 'danger',
-	普通: 'success',
-	极度不满: 'default',
-	满意: 'warning',
-} as const satisfies ICustomerRatingMap;
+	不满: 'bad',
+	完美: 'exgood',
+	普通: 'norm',
+	极度不满: 'exbad',
+	满意: 'good',
+} as const satisfies TCustomerRatingMap;
 
 export enum TabVisibilityState {
 	collapse = 'collapse',

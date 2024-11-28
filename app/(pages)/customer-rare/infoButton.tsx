@@ -4,9 +4,10 @@ import {twJoin} from 'tailwind-merge';
 import useBreakpoint from 'use-breakpoint';
 import {useViewInNewWindow} from '@/hooks';
 
-import {AccordionItem, Avatar, Divider, PopoverContent, PopoverTrigger, ScrollShadow} from '@nextui-org/react';
+import {AccordionItem, Divider, PopoverContent, PopoverTrigger, ScrollShadow} from '@nextui-org/react';
 
 import InfoButtonBase from './infoButtonBase';
+import Avatar from '@/components/avatar';
 import Ol from '@/components/ol';
 import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
@@ -14,6 +15,7 @@ import Tachie from '@/components/tachie';
 import Tooltip from '@/components/tooltip';
 
 import {customerRatingColorMap} from './constants';
+import type {TCustomerRating} from './types';
 import type {TRewardType} from '@/data/customer_rare/types';
 import {customerRareStore as store} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
@@ -401,7 +403,7 @@ export default function InfoButton() {
 			</AccordionItem>
 			<AccordionItem key="rating" aria-label="评级图例" title="评级图例">
 				<div className="flex flex-col gap-2 text-xs">
-					{(['极度不满', '不满', '普通', '满意', '完美'] as const).map((rating, index) => (
+					{(['极度不满', '不满', '普通', '满意', '完美'] as TCustomerRating[]).map((rating, index) => (
 						<div key={index} className="mb-1 flex items-center gap-3 px-1">
 							<Avatar
 								isBordered
@@ -410,7 +412,7 @@ export default function InfoButton() {
 								fallback={<div></div>}
 								radius="sm"
 								classNames={{
-									base: 'h-4 w-px ring-offset-0',
+									base: 'h-4 w-1 ring-offset-0',
 								}}
 							/>
 							{rating === '极度不满'
