@@ -220,7 +220,10 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 						const isNoChange = scoreChange === 0;
 						const isHLowestRestricted = scoreChange === Infinity;
 						const isHightestRestricted = scoreChange === -Infinity;
-						const isOrderTag = tagsWithPopular.includes(currentCustomerOrderRecipeTag as TIngredientTag);
+						const isOrderTag =
+							currentCustomerOrderRecipeTag !== null &&
+							tagsWithPopular.includes(currentCustomerOrderRecipeTag as TIngredientTag) &&
+							!before.includes(currentCustomerOrderRecipeTag);
 
 						const color = isOrderTag ? 'secondary' : isUp ? 'success' : isDown ? 'danger' : 'default';
 						const score = isUp ? `+${scoreChange}` : `${scoreChange}`;
