@@ -186,7 +186,7 @@ export default function CustomerRareTutorial() {
 			}
 			// Delay focusing to allow time for scroll animation.
 			setTimeout(() => {
-				document.querySelector('main')?.scrollIntoView(true);
+				document.querySelector('main').scrollIntoView(true);
 				driverRef.current.moveNext();
 			}, 1000);
 		}

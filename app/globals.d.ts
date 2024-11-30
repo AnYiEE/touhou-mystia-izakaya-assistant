@@ -8,6 +8,14 @@ interface Map<K, V> {
 	has<P extends K>(key: P): this is {get(key: P): V} & this;
 }
 
+interface ParentNode {
+	/**
+	 * @description To avoid type errors, specify that the return value of the following selector is always non-null.
+	 * @returns {HTMLElement} The element that matches the specified selector.
+	 */
+	querySelector(selectors: 'main' | '#modal-portal-container'): HTMLElement;
+}
+
 type ExtractStringTypes<T> = T extends string ? T : never;
 type ReactNodeWithoutBoolean = Exclude<React.ReactNode, boolean>;
 type SelectionSet = Exclude<import('@nextui-org/react').Selection, 'all'>;

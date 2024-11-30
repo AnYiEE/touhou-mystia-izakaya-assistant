@@ -34,6 +34,7 @@ export default function PreferencesModal() {
 		<Modal
 			defaultOpen
 			backdrop={isHighAppearance ? 'blur' : 'opaque'}
+			portalContainer={document.querySelector('#modal-portal-container')}
 			scrollBehavior="inside"
 			size="3xl"
 			onClose={handleClose}
