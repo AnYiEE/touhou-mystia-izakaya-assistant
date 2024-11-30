@@ -15,4 +15,4 @@
 
 ## 许可证
 
-[GPL-3.0-or-later](https://github.com/AnYiEE/touhou-mystia-izakaya-assistant/blob/master/LICENSE)，详细法律说明[见此](https://izakaya.cc/about)。
+[AGPL-3.0-only](https://github.com/AnYiEE/touhou-mystia-izakaya-assistant/blob/master/LICENSE)，详细法律说明[见此](https://izakaya.cc/about)。

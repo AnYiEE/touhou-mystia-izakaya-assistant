@@ -51,7 +51,7 @@ export default function LegalStatement() {
 					所有。
 				</p>
 				<p>
-					{shortName}的源代码基于GNU General Public License v3.0协议或其更新版本开源，协议
+					{shortName}的源代码基于{links.gnuLicense.label}协议开源，协议
 					<Link
 						isExternal
 						showAnchorIcon

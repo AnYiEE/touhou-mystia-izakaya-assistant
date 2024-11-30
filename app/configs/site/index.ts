@@ -127,8 +127,8 @@ export const siteConfig = {
 			href: PACKAGE.repository.url,
 		},
 		gnuLicense: {
-			label: 'The GNU General Public License v3.0',
-			href: 'https://www.gnu.org/licenses/gpl-3.0-standalone.html',
+			label: 'GNU Affero General Public License v3.0',
+			href: 'https://www.gnu.org/licenses/agpl-3.0-standalone.html',
 		},
 		icpFiling: {
 			label: process.env.ICP_FILING ?? '',

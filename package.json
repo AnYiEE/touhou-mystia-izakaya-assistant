@@ -25,7 +25,7 @@
 	"contributors": [
 		"Other contributors <https://github.com/AnYiEE/touhou-mystia-izakaya-assistant/graphs/contributors>"
 	],
-	"license": "GPL-3.0-or-later",
+	"license": "AGPL-3.0-only",
 	"homepage": "https://izakaya.cc",
 	"repository": {
 		"type": "git",
