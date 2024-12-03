@@ -20,7 +20,7 @@ export default function CustomerRareTutorial() {
 	const {beverageTag: currentOrderedBeverageTag, recipeTag: currentOrderedRecipeTag} = currentCustomerOrder;
 
 	const currentBeverageName = customerStore.shared.beverage.name.use();
-	const currentBeverageTableDirection = customerStore.shared.beverage.sortDescriptor.direction?.use();
+	const currentBeverageTableDirection = customerStore.persistence.beverage.table.sortDescriptor.direction?.use();
 
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 	const currentRecipeName = currentRecipeData?.name;
