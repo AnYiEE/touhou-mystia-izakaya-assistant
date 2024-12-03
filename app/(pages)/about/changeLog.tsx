@@ -104,7 +104,7 @@ const changelog = [
 	},
 	{
 		version: 'v1.4',
-		changes: ['新增：支持设置全局的“明星店”效果。', '新增：支持查看稀客的角色立绘。'],
+		changes: ['新增：支持设置全局的“明星店”效果。', '新增：支持查看稀客的角色立绘。', '修复：顾客套餐评级逻辑。'],
 	},
 ] as const satisfies {
 	version: `v${string}`;

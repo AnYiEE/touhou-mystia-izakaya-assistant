@@ -58,6 +58,38 @@ function calculateMaxScore({
 	return 1 + 1 + beverageMaxScore + recipeMaxScore;
 }
 
+function calculateMinScore({
+	currentBeverageTags,
+	currentCustomerOrder,
+	currentRecipeTagsWithPopular,
+	hasMystiaCooker,
+	mealScore,
+}: Pick<
+	IParameters,
+	'currentBeverageTags' | 'currentCustomerOrder' | 'currentRecipeTagsWithPopular' | 'hasMystiaCooker'
+> & {
+	mealScore: number;
+}) {
+	if (hasMystiaCooker) {
+		return mealScore;
+	}
+
+	const {beverageTag: customerOrderBeverageTag, recipeTag: customerOrderRecipeTag} = currentCustomerOrder;
+
+	if (customerOrderBeverageTag === null || customerOrderRecipeTag === null) {
+		return mealScore;
+	}
+
+	if (
+		currentBeverageTags.includes(customerOrderBeverageTag) &&
+		currentRecipeTagsWithPopular.includes(customerOrderRecipeTag)
+	) {
+		return Math.max(mealScore, 2);
+	}
+
+	return mealScore;
+}
+
 export function checkIngredientEasterEgg({
 	currentCustomerName,
 	currentIngredients,
@@ -298,6 +330,14 @@ export function evaluateMeal({
 			hasMystiaCooker,
 		})
 	);
+
+	mealScore = calculateMinScore({
+		currentBeverageTags,
+		currentCustomerOrder,
+		currentRecipeTagsWithPopular,
+		hasMystiaCooker,
+		mealScore,
+	});
 
 	mealScore = checkEasterEgg({
 		currentCustomerName,
