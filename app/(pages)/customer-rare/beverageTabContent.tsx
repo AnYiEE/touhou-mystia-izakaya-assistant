@@ -58,7 +58,7 @@ export default function BeverageTabContent() {
 	const selectedCustomerBeverageTags = customerStore.shared.customer.beverageTags.use();
 
 	const currentBeverageName = customerStore.shared.beverage.name.use();
-	const selectedDlcs = customerStore.shared.beverage.dlcs.use();
+	const selectedDlcs = customerStore.beverageTableDlcs.use();
 
 	const instance_beverage = customerStore.instances.beverage.get();
 	const instance_customer = customerStore.instances.customer.get();
@@ -74,7 +74,7 @@ export default function BeverageTabContent() {
 	const tableRowsPerPage = customerStore.beverageTableRows.use();
 	const tableRowsPerPageNumber = customerStore.persistence.beverage.table.rows.use();
 	const tableSelectableRows = customerStore.shared.beverage.selectableRows.get();
-	const tableSortDescriptor = customerStore.shared.beverage.sortDescriptor.use();
+	const tableSortDescriptor = customerStore.persistence.beverage.table.sortDescriptor.use();
 	const tableVisibleColumns = customerStore.beverageTableColumns.use();
 
 	const filteredData = useMemo(() => {
@@ -373,7 +373,10 @@ export default function BeverageTabContent() {
 									endContent={<FontAwesomeIcon icon={faChevronDown} />}
 									size="sm"
 									variant="flat"
-									className={twJoin(isHighAppearance && 'backdrop-blur')}
+									className={twJoin(
+										isHighAppearance && 'backdrop-blur',
+										selectedDlcs.size > 0 && 'ring-2 ring-default'
+									)}
 								>
 									DLC
 								</Button>

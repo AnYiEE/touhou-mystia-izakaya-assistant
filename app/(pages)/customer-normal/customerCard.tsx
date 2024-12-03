@@ -74,7 +74,7 @@ export default function CustomerCard() {
 
 	const handleRefreshCustomer = useCallback(() => {
 		vibrate();
-		customerStore.refreshCustomer();
+		customerStore.shared.customer.name.set(null);
 	}, [vibrate]);
 
 	const handleRefreshSelectedItems = useCallback(

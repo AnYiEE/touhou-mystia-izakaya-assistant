@@ -82,6 +82,7 @@ const storeVersion = {
 	showCooker: 14,
 	tableRows: 15, // eslint-disable-next-line sort-keys
 	ingredientTag: 16,
+	tablePersist: 17,
 } as const;
 
 const state = {
@@ -146,7 +147,9 @@ const state = {
 	persistence: {
 		beverage: {
 			table: {
+				dlcs: [] as string[],
 				rows: 8,
+				sortDescriptor: {} as TBeverageTableSortDescriptor,
 				visibleColumns: beverageTableColumns.map(toValueWithKey('key')),
 			},
 		},
@@ -177,7 +180,10 @@ const state = {
 		},
 		recipe: {
 			table: {
+				cookers: [] as string[],
+				dlcs: [] as string[],
 				rows: 8,
+				sortDescriptor: {} as TRecipeTableSortDescriptor,
 				visibleColumns: recipeTableColumns.filter(({key}) => key !== 'time').map(toValueWithKey('key')),
 			},
 		},
@@ -197,11 +203,9 @@ const state = {
 		beverage: {
 			name: null as TBeverageName | null,
 
-			dlcs: new Set() as SelectionSet,
 			page: 1,
 			searchValue: '',
 			selectableRows: generateRangeArray(5, 20).map(toValueObject),
-			sortDescriptor: {} as TBeverageTableSortDescriptor,
 		},
 		customer: {
 			name: null as TCustomerRareName | null,
@@ -232,14 +236,11 @@ const state = {
 		recipe: {
 			data: null as IRecipeData | null,
 
-			cookers: new Set() as SelectionSet,
-			dlcs: new Set() as SelectionSet,
 			tagsWithPopular: [] as TRecipeTag[],
 
 			page: 1,
 			searchValue: '',
 			selectableRows: generateRangeArray(5, 20).map(toValueObject),
-			sortDescriptor: {} as TRecipeTableSortDescriptor,
 		},
 		tab: 'customer' as TTab,
 	},
@@ -262,7 +263,7 @@ export const customerRareStore = store(state, {
 	persist: {
 		enabled: true,
 		name: customerRareStoreKey,
-		version: storeVersion.ingredientTag,
+		version: storeVersion.tablePersist,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -434,6 +435,20 @@ export const customerRareStore = store(state, {
 				filters.tags = [];
 				filters.noTags = [];
 			}
+			if (version < storeVersion.tablePersist) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				const {
+					persistence: {
+						beverage: {table: beverageTable},
+						recipe: {table: recipeTable},
+					},
+				} = oldState;
+				beverageTable.dlcs = [];
+				beverageTable.sortDescriptor = {};
+				recipeTable.cookers = [];
+				recipeTable.dlcs = [];
+				recipeTable.sortDescriptor = {};
+			}
 			return persistedState as typeof state;
 		},
 		partialize(currentStore) {
@@ -453,6 +468,12 @@ export const customerRareStore = store(state, {
 				currentStore.persistence.beverage.table.visibleColumns.set([...columns] as never);
 			},
 		},
+		beverageTableDlcs: {
+			read: () => new Set(currentStore.persistence.beverage.table.dlcs.use()) as SelectionSet,
+			write: (dlcs: Selection) => {
+				currentStore.persistence.beverage.table.dlcs.set([...dlcs] as never);
+			},
+		},
 		beverageTableRows: {
 			read: () => new Set([currentStore.persistence.beverage.table.rows.use().toString()]) as SelectionSet,
 			write: (rows: Selection) => {
@@ -463,6 +484,18 @@ export const customerRareStore = store(state, {
 			read: () => new Set(currentStore.persistence.recipe.table.visibleColumns.use()) as SelectionSet,
 			write: (columns: Selection) => {
 				currentStore.persistence.recipe.table.visibleColumns.set([...columns] as never);
+			},
+		},
+		recipeTableCookers: {
+			read: () => new Set(currentStore.persistence.recipe.table.cookers.use()) as SelectionSet,
+			write: (cookers: Selection) => {
+				currentStore.persistence.recipe.table.cookers.set([...cookers] as never);
+			},
+		},
+		recipeTableDlcs: {
+			read: () => new Set(currentStore.persistence.recipe.table.dlcs.use()) as SelectionSet,
+			write: (dlcs: Selection) => {
+				currentStore.persistence.recipe.table.dlcs.set([...dlcs] as never);
 			},
 		},
 		recipeTableRows: {
@@ -538,7 +571,7 @@ export const customerRareStore = store(state, {
 			currentStore.shared.beverage.page.set(1);
 		},
 		onBeverageTableSelectedDlcsChange(dlcs: Selection) {
-			currentStore.shared.beverage.dlcs.set(dlcs as SelectionSet);
+			currentStore.beverageTableDlcs.set(dlcs);
 			currentStore.shared.beverage.page.set(1);
 		},
 		onBeverageTableSelectedTagsChange(tags: Selection) {
@@ -549,25 +582,25 @@ export const customerRareStore = store(state, {
 			currentStore.shared.beverage.page.set(1);
 			const sortConfig = config as Required<TBeverageTableSortDescriptor>;
 			const {column, direction} = sortConfig;
-			const {lastColumn, time} = currentStore.shared.beverage.sortDescriptor.get();
+			const {lastColumn, time} = currentStore.persistence.beverage.table.sortDescriptor.get();
 			if (lastColumn === undefined || column !== lastColumn) {
-				currentStore.shared.beverage.sortDescriptor.assign({
+				currentStore.persistence.beverage.table.sortDescriptor.assign({
 					column,
 					lastColumn: column,
 				});
 			}
 			// Switch between ascending, descending and no sort.
-			currentStore.shared.beverage.sortDescriptor.assign({
+			currentStore.persistence.beverage.table.sortDescriptor.assign({
 				time: time === undefined ? 1 : time + 1,
 			});
 			if (time !== undefined) {
 				if (column === lastColumn) {
 					if (time % 2 === 0) {
-						currentStore.shared.beverage.sortDescriptor.set({});
+						currentStore.persistence.beverage.table.sortDescriptor.set({});
 						return;
 					}
 				} else {
-					currentStore.shared.beverage.sortDescriptor.assign({
+					currentStore.persistence.beverage.table.sortDescriptor.assign({
 						time: 1,
 					});
 				}
@@ -577,7 +610,7 @@ export const customerRareStore = store(state, {
 			if ((column === 'price' || column === 'suitability') && column !== lastColumn) {
 				reversedDirection = reverseDirection(direction);
 			}
-			currentStore.shared.beverage.sortDescriptor.assign({
+			currentStore.persistence.beverage.table.sortDescriptor.assign({
 				direction: reversedDirection,
 			});
 		},
@@ -618,11 +651,11 @@ export const customerRareStore = store(state, {
 			currentStore.shared.recipe.page.set(1);
 		},
 		onRecipeTableSelectedCookersChange(cookers: Selection) {
-			currentStore.shared.recipe.cookers.set(cookers as SelectionSet);
+			currentStore.recipeTableCookers.set(cookers);
 			currentStore.shared.recipe.page.set(1);
 		},
 		onRecipeTableSelectedDlcsChange(dlcs: Selection) {
-			currentStore.shared.recipe.dlcs.set(dlcs as SelectionSet);
+			currentStore.recipeTableDlcs.set(dlcs);
 			currentStore.shared.recipe.page.set(1);
 		},
 		onRecipeTableSelectedPositiveTagsChange(tags: Selection) {
@@ -633,25 +666,25 @@ export const customerRareStore = store(state, {
 			currentStore.shared.recipe.page.set(1);
 			const sortConfig = config as Required<TRecipeTableSortDescriptor>;
 			const {column, direction} = sortConfig;
-			const {lastColumn, time} = currentStore.shared.recipe.sortDescriptor.get();
+			const {lastColumn, time} = currentStore.persistence.recipe.table.sortDescriptor.get();
 			if (lastColumn === undefined || column !== lastColumn) {
-				currentStore.shared.recipe.sortDescriptor.assign({
+				currentStore.persistence.recipe.table.sortDescriptor.assign({
 					column,
 					lastColumn: column,
 				});
 			}
 			// Switch between ascending, descending and no sort.
-			currentStore.shared.recipe.sortDescriptor.assign({
+			currentStore.persistence.recipe.table.sortDescriptor.assign({
 				time: time === undefined ? 1 : time + 1,
 			});
 			if (time !== undefined) {
 				if (column === lastColumn) {
 					if (time % 2 === 0) {
-						currentStore.shared.recipe.sortDescriptor.set({});
+						currentStore.persistence.recipe.table.sortDescriptor.set({});
 						return;
 					}
 				} else {
-					currentStore.shared.recipe.sortDescriptor.assign({
+					currentStore.persistence.recipe.table.sortDescriptor.assign({
 						time: 1,
 					});
 				}
@@ -661,7 +694,7 @@ export const customerRareStore = store(state, {
 			if ((column === 'price' || column === 'suitability') && column !== lastColumn) {
 				reversedDirection = reverseDirection(direction);
 			}
-			currentStore.shared.recipe.sortDescriptor.assign({
+			currentStore.persistence.recipe.table.sortDescriptor.assign({
 				direction: reversedDirection,
 			});
 		},
@@ -826,19 +859,12 @@ export const customerRareStore = store(state, {
 			);
 		},
 
-		refreshAllSelectedItems() {
-			currentStore.shared.recipe.cookers.set(new Set());
-			currentStore.shared.recipe.dlcs.set(new Set());
-			currentStore.shared.recipe.searchValue.set('');
-			currentStore.shared.recipe.sortDescriptor.set({});
-			currentStore.shared.beverage.dlcs.set(new Set());
-			currentStore.shared.beverage.searchValue.set('');
-			currentStore.shared.beverage.sortDescriptor.set({});
-		},
-		refreshCustomer() {
-			currentStore.shared.customer.name.set(null);
+		refreshCustomer(name: TCustomerRareName | null) {
+			currentStore.shared.customer.name.set(name);
 			currentStore.shared.tab.set('customer');
 			currentStore.shared.customer.filterVisibility.set(true);
+			currentStore.shared.recipe.searchValue.set('');
+			currentStore.shared.beverage.searchValue.set('');
 			currentStore.shared.ingredient.filterVisibility.set(false);
 		},
 		refreshCustomerSelectedItems() {
@@ -878,9 +904,9 @@ export const customerRareStore = store(state, {
 		},
 	}));
 
-customerRareStore.shared.customer.name.onChange(() => {
+customerRareStore.shared.customer.name.onChange((name) => {
+	customerRareStore.refreshCustomer(name);
 	customerRareStore.refreshCustomerSelectedItems();
-	customerRareStore.refreshAllSelectedItems();
 });
 
 customerRareStore.shared.recipe.data.onChange((data) => {

@@ -62,8 +62,8 @@ export default function RecipeTabContent() {
 	const isFamousShop = customerStore.shared.customer.famousShop.use();
 
 	const currentRecipeData = customerStore.shared.recipe.data.use();
-	const selectedDlcs = customerStore.shared.recipe.dlcs.use();
-	const selectedCookers = customerStore.shared.recipe.cookers.use();
+	const selectedCookers = customerStore.recipeTableCookers.use();
+	const selectedDlcs = customerStore.recipeTableDlcs.use();
 
 	const instance_customer = customerStore.instances.customer.get();
 	const instance_recipe = customerStore.instances.recipe.get();
@@ -80,7 +80,7 @@ export default function RecipeTabContent() {
 	const tableRowsPerPage = customerStore.recipeTableRows.use();
 	const tableRowsPerPageNumber = customerStore.persistence.recipe.table.rows.use();
 	const tableSelectableRows = customerStore.shared.recipe.selectableRows.get();
-	const tableSortDescriptor = customerStore.shared.recipe.sortDescriptor.use();
+	const tableSortDescriptor = customerStore.persistence.recipe.table.sortDescriptor.use();
 	const tableVisibleColumns = customerStore.recipeTableColumns.use();
 
 	const composeTagsWithPopular = useMemo(
@@ -514,7 +514,10 @@ export default function RecipeTabContent() {
 									endContent={<FontAwesomeIcon icon={faChevronDown} />}
 									size="sm"
 									variant="flat"
-									className={twJoin(isHighAppearance && 'backdrop-blur')}
+									className={twJoin(
+										isHighAppearance && 'backdrop-blur',
+										selectedCookers.size > 0 && 'ring-2 ring-default'
+									)}
 								>
 									厨具
 								</Button>
@@ -544,7 +547,10 @@ export default function RecipeTabContent() {
 									endContent={<FontAwesomeIcon icon={faChevronDown} />}
 									size="sm"
 									variant="flat"
-									className={twJoin(isHighAppearance && 'backdrop-blur')}
+									className={twJoin(
+										isHighAppearance && 'backdrop-blur',
+										selectedDlcs.size > 0 && 'ring-2 ring-default'
+									)}
 								>
 									DLC
 								</Button>
