@@ -223,6 +223,7 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 						const isOrderTag =
 							currentCustomerOrderRecipeTag !== null &&
 							tagsWithPopular.includes(currentCustomerOrderRecipeTag as TIngredientTag) &&
+							after.includes(currentCustomerOrderRecipeTag) &&
 							!before.includes(currentCustomerOrderRecipeTag);
 
 						const color = isOrderTag ? 'secondary' : isUp ? 'success' : isDown ? 'danger' : 'default';
