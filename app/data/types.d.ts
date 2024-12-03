@@ -11,6 +11,7 @@ type TLevel = 1 | 2 | 3 | 4 | 5 | 10;
 type TCollectionLocation =
 	| '【博丽神社】花丛'
 	| '【博丽神社】蘑菇堆'
+	| '【博丽神社】水涡'
 	| '【博丽神社】桃树'
 	| '【博丽神社】西侧守矢分社（祈愿）'
 	| '【博丽神社】银杏树（参道西侧）'
@@ -32,7 +33,8 @@ type TCollectionLocation =
 	| '【红魔馆】水涡（河流左侧）'
 	| '【辉针城】红豆树'
 	| '【辉针城】酒窖'
-	| '【辉针城】水涡'
+	| '【辉针城】水涡（上方）'
+	| '【辉针城】水涡（下方）'
 	| '【辉针城】碗之后'
 	| '【辉针城】月光草'
 	| '【辉针城】竹笋堆'
@@ -67,6 +69,7 @@ type TCollectionLocation =
 	| '【魔界】蜂巢'
 	| '【魔界】河流'
 	| '【魔界】辣椒丛'
+	| '【魔界】露水点'
 	| '【魔界】魅魔房顶'
 	| '【魔界】蘑菇堆'
 	| '【魔界】西北侧'
@@ -213,10 +216,14 @@ export interface ICustomerBase extends IItemBase {
 }
 
 interface IFoodFrom {
-	/** @description If it is an array, the first element represents the businessman selling the item, and the second element represents whether it is a mandatory sale. */
-	buy: Array<TMerchant | [TMerchant, boolean]>;
-	/** @description If it is an array, the first element represents the collection location, and the second element represents whether it is a probability acquisition. */
-	collect: Array<TCollectionLocation | [TCollectionLocation, boolean]>;
+	/** @description If it is an array, the first element represents the merchant selling the item, and the second element represents the probability of sale. */
+	buy: Array<TMerchant | [TMerchant, boolean | number]>;
+	/** @description If it is an array, the first element represents the collection location, and the second element represents the probability of acquisition. If there are two additional elements, they represent the time points for the appearance and disappearance of the collection location. */
+	collect: Array<
+		| TCollectionLocation
+		| [TCollectionLocation, boolean | number]
+		| [TCollectionLocation, boolean | number, number, number]
+	>;
 	fishing: TPlace[];
 	fishingAdvanced: TPlace[];
 	task: TTask[];
