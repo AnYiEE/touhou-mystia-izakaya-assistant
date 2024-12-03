@@ -560,9 +560,17 @@ export const customerRareStore = store(state, {
 			currentStore.shared.beverage.sortDescriptor.assign({
 				time: time === undefined ? 1 : time + 1,
 			});
-			if (time !== undefined && time % 2 === 0) {
-				currentStore.shared.beverage.sortDescriptor.set({});
-				return;
+			if (time !== undefined) {
+				if (column === lastColumn) {
+					if (time % 2 === 0) {
+						currentStore.shared.beverage.sortDescriptor.set({});
+						return;
+					}
+				} else {
+					currentStore.shared.beverage.sortDescriptor.assign({
+						time: 1,
+					});
+				}
 			}
 			// Reverse direction `ascending` to `descending` when first time
 			let reversedDirection = direction;
@@ -636,9 +644,17 @@ export const customerRareStore = store(state, {
 			currentStore.shared.recipe.sortDescriptor.assign({
 				time: time === undefined ? 1 : time + 1,
 			});
-			if (time !== undefined && time % 2 === 0) {
-				currentStore.shared.recipe.sortDescriptor.set({});
-				return;
+			if (time !== undefined) {
+				if (column === lastColumn) {
+					if (time % 2 === 0) {
+						currentStore.shared.recipe.sortDescriptor.set({});
+						return;
+					}
+				} else {
+					currentStore.shared.recipe.sortDescriptor.assign({
+						time: 1,
+					});
+				}
 			}
 			// Reverse direction `ascending` to `descending` when first time
 			let reversedDirection = direction;
