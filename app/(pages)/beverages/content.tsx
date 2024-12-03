@@ -96,29 +96,52 @@ export default memo<IProps>(function Content({data}) {
 										{Array.isArray(target) ? (
 											target.map((item, targetIndex) => (
 												<Ol.Li key={targetIndex}>
-													{Array.isArray(item) ? (
-														item[1] ? (
-															<Popover showArrow offset={5} size="sm">
-																<Tooltip
-																	showArrow
-																	content={probability}
-																	offset={3}
-																	size="sm"
-																>
-																	<span className="underline-dotted-offset2 cursor-pointer">
-																		<PopoverTrigger>
-																			<span tabIndex={0}>{item[0]}</span>
-																		</PopoverTrigger>
-																	</span>
-																</Tooltip>
-																<PopoverContent>{probability}</PopoverContent>
-															</Popover>
-														) : (
-															item[0]
-														)
-													) : (
-														item
-													)}
+													{Array.isArray(item)
+														? (() => {
+																const itemProbability =
+																	typeof item[1] === 'number'
+																		? `${item[1]}%${probability}`
+																		: item[1]
+																			? probability
+																			: null;
+																const itemTime =
+																	item.length === 4 ? (
+																		<>
+																			{itemProbability === null ? '' : '，'}
+																			采集点出现时间：
+																			{item[2]}
+																			<span className="mx-0.5">-</span>
+																			{item[3]}点
+																		</>
+																	) : null;
+																const content =
+																	itemProbability || itemTime ? (
+																		<p>
+																			{itemProbability}
+																			{itemTime}
+																		</p>
+																	) : null;
+																return content === null ? (
+																	item[0]
+																) : (
+																	<Popover showArrow offset={5} size="sm">
+																		<Tooltip
+																			showArrow
+																			content={content}
+																			offset={3}
+																			size="sm"
+																		>
+																			<span className="underline-dotted-offset2 cursor-pointer">
+																				<PopoverTrigger>
+																					<span tabIndex={0}>{item[0]}</span>
+																				</PopoverTrigger>
+																			</span>
+																		</Tooltip>
+																		<PopoverContent>{content}</PopoverContent>
+																	</Popover>
+																);
+															})()
+														: item}
 												</Ol.Li>
 											))
 										) : (
