@@ -116,9 +116,7 @@ export default memo<IProps>(function Content({data}) {
 																{target}】羁绊
 															</span>
 															Lv.4
-															<span className="mx-0.5">
-																➞
-															</span>Lv.5
+															<span className="mx-0.5">➞</span>Lv.5
 														</>
 													) : (
 														isBuy && (
