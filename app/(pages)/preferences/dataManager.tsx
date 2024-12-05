@@ -330,19 +330,17 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 											prev[key as keyof typeof prev] = [];
 										});
 									});
-									customerRareStore.shared.customer.orderLinkedFilter.set(
-										customerRareStore.persistence.customer.orderLinkedFilter.get()
-									);
 									customerRareStore.persistence.customer.orderLinkedFilter.set(true);
-									customerRareStore.shared.customer.name.set(null);
-									customerRareStore.shared.tab.set('customer');
-									customerRareStore.shared.customer.filterVisibility.set(true);
+									customerRareStore.persistence.recipe.table.cookers.set([]);
+									customerRareStore.persistence.recipe.table.dlcs.set([]);
+									customerRareStore.persistence.recipe.table.sortDescriptor.set({});
+									customerRareStore.persistence.beverage.table.dlcs.set([]);
+									customerRareStore.persistence.beverage.table.sortDescriptor.set({});
 									customerRareStore.persistence.ingredient.filters.set((prev) => {
 										Object.keys(prev).forEach((key) => {
 											prev[key as keyof typeof prev] = [];
 										});
 									});
-									customerRareStore.shared.ingredient.filterVisibility.set(false);
 									globalStore.persistence.set((prev) => {
 										const dirver = prev.dirver.filter(
 											(item) => item !== customerRareTutorialStoreKey
@@ -356,7 +354,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 										// Wait for the modal to close and restore the pathname (the animate will take 300ms).
 										setTimeout(() => {
 											if (pathname !== customerRareTutorialPathname) {
-												router.push(customerRareTutorialPathname);
+												location.href = customerRareTutorialPathname;
 											}
 										}, 500);
 									}

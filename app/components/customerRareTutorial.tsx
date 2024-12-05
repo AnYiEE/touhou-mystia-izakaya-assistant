@@ -141,13 +141,7 @@ export default function CustomerRareTutorial() {
 						onPopoverRender(popover) {
 							const completeButton = document.createElement('button');
 							completeButton.textContent = '完成';
-							completeButton.addEventListener('click', () => {
-								// Restore user preferences.
-								customerStore.persistence.customer.orderLinkedFilter.set(
-									customerStore.shared.customer.orderLinkedFilter.get()
-								);
-								driverRef.current.destroy();
-							});
+							completeButton.addEventListener('click', driverRef.current.destroy);
 							popover.footerButtons.append(completeButton);
 						},
 					},
@@ -252,7 +246,9 @@ export default function CustomerRareTutorial() {
 
 	useEffect(() => {
 		if (isTargetPage && !isCompleted && !driverRef.current.isActive()) {
-			driverRef.current.drive();
+			setTimeout(() => {
+				driverRef.current.drive();
+			}, 1000);
 		}
 		if (!isTargetPage) {
 			driverRef.current.destroy();

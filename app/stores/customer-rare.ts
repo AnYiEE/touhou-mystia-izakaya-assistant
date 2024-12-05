@@ -228,8 +228,6 @@ const state = {
 				tag: null,
 			} as IPopularData,
 			rating: null as TRatingKey | null,
-
-			orderLinkedFilter: true,
 		},
 		ingredient: {
 			filterVisibility: false,
