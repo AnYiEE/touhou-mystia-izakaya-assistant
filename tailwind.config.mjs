@@ -100,6 +100,7 @@ const purple = {
 	900: '#1c001d',
 };
 
+/** @type {import('@/components/avatar').TRatingStyleMap} */
 const ratingColorMap = {
 	bad: '#4a4459',
 	'bad-border': '#b67596',
@@ -156,6 +157,7 @@ const config = {
 			},
 			maxWidth: {
 				'p-95': '95%',
+				'screen-p-30': '30vw',
 				'screen-p-60': '60vw',
 			},
 			minHeight: {

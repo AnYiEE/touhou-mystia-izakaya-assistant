@@ -1,5 +1,4 @@
-import {BEVERAGE_TAG_STYLE} from '@/data/beverages';
-import {RECIPE_TAG_STYLE} from '@/data/recipes';
+import {CUSTOMER_RARE_TAG_STYLE} from '@/data/customer_rare';
 import type {ITagStyle} from '@/data/types';
 import type {ISpriteConfig} from '@/utils/sprite/types';
 
@@ -12,8 +11,7 @@ export const CUSTOMER_NORMAL_SPRITE_CONFIG = {
 } as const satisfies ISpriteConfig;
 
 export const CUSTOMER_NORMAL_TAG_STYLE = {
-	...RECIPE_TAG_STYLE,
-	beverage: BEVERAGE_TAG_STYLE.positive,
+	...CUSTOMER_RARE_TAG_STYLE,
 } as const satisfies ITagStyle;
 
 export * from './data';

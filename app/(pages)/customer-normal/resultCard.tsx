@@ -12,7 +12,7 @@ import Placeholder from '@/components/placeholder';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
-import {type TIngredientName} from '@/data';
+import {CUSTOMER_RATING_MAP, type TIngredientName} from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
@@ -195,7 +195,7 @@ export default function ResultCard() {
 						size="sm"
 						variant="flat"
 						onPress={handleSaveButtonPress}
-						aria-label={`保存套餐，当前${currentRating ? `评级为${currentRating}` : '未评级'}`}
+						aria-label={`保存套餐，当前${currentRating === null ? '未评级' : `评级为${CUSTOMER_RATING_MAP[currentRating]}`}`}
 						className={twJoin('md:w-auto', isSaveButtonDisabled && 'opacity-disabled')}
 					>
 						保存套餐

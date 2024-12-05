@@ -8,7 +8,7 @@ import {TabVisibilityState, beverageTableColumns, recipeTableColumns} from '@/(p
 import {type TTableSortDescriptor as TBeverageTableSortDescriptor} from '@/(pages)/customer-normal/beverageTabContent';
 import {evaluateMeal} from '@/(pages)/customer-normal/evaluateMeal';
 import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)/customer-normal/recipeTabContent';
-import type {TCustomerRating, TRecipe, TTab} from '@/(pages)/customer-normal/types';
+import type {TRecipe, TTab} from '@/(pages)/customer-normal/types';
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
@@ -21,6 +21,7 @@ import {
 	type TCustomerNormalName,
 	type TIngredientName,
 	type TIngredientTag,
+	type TRatingKey,
 	type TRecipeName,
 	type TRecipeTag,
 } from '@/data';
@@ -189,7 +190,7 @@ const state = {
 				isNegative: false,
 				tag: null,
 			} as IPopularData,
-			rating: null as TCustomerRating | null,
+			rating: null as TRatingKey | null,
 		},
 		ingredient: {
 			filterVisibility: false,
@@ -213,7 +214,7 @@ export const customerNormalStoreKey = 'page-customer_normal-storage';
 
 const getNames = createNamesCache(instance_customer);
 
-const savedMealRatingCache = new Map<string, TCustomerRating>();
+const savedMealRatingCache = new Map<string, TRatingKey>();
 
 export const customerNormalStore = store(state, {
 	persist: {
@@ -256,7 +257,7 @@ export const customerNormalStore = store(state, {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
 				for (const meals of Object.values(oldState.persistence.meals) as any) {
 					for (const meal of meals) {
-						meal.rating = '普通';
+						meal.rating = 'norm';
 					}
 				}
 			}
@@ -646,7 +647,7 @@ export const customerNormalStore = store(state, {
 				currentExtraTags: extraTags,
 				currentRecipe: instance_recipe.getPropsByName(recipeName),
 				isFamousShop,
-			}) as TCustomerRating;
+			}) as TRatingKey;
 			savedMealRatingCache.set(stringifiedData, rating);
 			return rating;
 		},

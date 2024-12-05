@@ -8,7 +8,7 @@ import {TabVisibilityState, beverageTableColumns, recipeTableColumns} from '@/(p
 import {type TTableSortDescriptor as TBeverageTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
 import {evaluateMeal} from '@/(pages)/customer-rare/evaluateMeal';
 import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
-import type {TCustomerRating, TRecipe, TTab} from '@/(pages)/customer-rare/types';
+import type {TRecipe, TTab} from '@/(pages)/customer-rare/types';
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
@@ -22,6 +22,7 @@ import {
 	type TCustomerRareName,
 	type TIngredientName,
 	type TIngredientTag,
+	type TRatingKey,
 	type TRecipeName,
 	type TRecipeTag,
 } from '@/data';
@@ -226,7 +227,7 @@ const state = {
 				isNegative: false,
 				tag: null,
 			} as IPopularData,
-			rating: null as TCustomerRating | null,
+			rating: null as TRatingKey | null,
 
 			orderLinkedFilter: true,
 		},
@@ -255,7 +256,7 @@ const getNames = createNamesCache(instance_customer);
 type TSavedMealRatingResult = {
 	isDarkMatter: boolean;
 	price: number;
-	rating: TCustomerRating;
+	rating: TRatingKey;
 };
 const savedMealRatingCache = new Map<string, TSavedMealRatingResult>();
 
@@ -272,7 +273,7 @@ export const customerRareStore = store(state, {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
 				for (const meals of Object.values(oldState.page.selected) as any) {
 					for (const meal of meals) {
-						meal.rating = '完美';
+						meal.rating = 'exgood';
 					}
 				}
 			}

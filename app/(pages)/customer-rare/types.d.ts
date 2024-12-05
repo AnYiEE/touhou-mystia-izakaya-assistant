@@ -4,10 +4,6 @@ import {type TabVisibilityState} from './constants';
 import {type Beverage, type Recipe} from '@/utils';
 import type {TItemDataItem} from '@/utils/types';
 
-export type TCustomerRating = '极度不满' | '不满' | '普通' | '满意' | '完美';
-export type TCustomerRatingColor = 'exbad' | 'bad' | 'norm' | 'good' | 'exgood';
-export type TCustomerRatingMap = Record<TCustomerRating, TCustomerRatingColor>;
-
 export interface ICustomerTabStyle {
 	ariaLabel: string;
 	buttonNode: ReactNodeWithoutBoolean;

@@ -8,6 +8,25 @@ type TDlc = 0 | 1 | 2 | 2.5 | 3 | 4 | 5;
 
 type TLevel = 1 | 2 | 3 | 4 | 5 | 10;
 
+type TEvaluationKey =
+	| 'exbad'
+	| 'bad'
+	| 'norm'
+	| 'good'
+	| 'exgood'
+	| 'lackmoneynormal'
+	| 'lackmoneyangry'
+	| 'repell'
+	| 'seenRepell';
+type TEvaluation = '极度不满' | '不满' | '普通' | '满意' | '完美' | '小额超支' | '大额超支' | '被驱赶' | '评价驱赶行为';
+type TRatingKey = Exclude<TEvaluationKey, 'lackmoneynormal' | 'lackmoneyangry' | 'repell' | 'seenRepell'>;
+type TRating = Exclude<TEvaluation, '小额超支' | '大额超支' | '被驱赶' | '评价驱赶行为'>;
+
+type TEvaluationMap = Record<TEvaluationKey, TEvaluation>;
+type TEvaluationKeyMap = Record<TEvaluation, TEvaluationKey>;
+type TRatingMap = Record<TRatingKey, TRating>;
+type TRatingKeyMap = Record<TRating, TRatingKey>;
+
 type TCollectionLocation =
 	| '【博丽神社】花丛'
 	| '【博丽神社】蘑菇堆'
@@ -197,6 +216,8 @@ type TPlace =
 	| '月之都'
 	| '魔界';
 
+type TRewardType = '摆件' | '采集' | '厨具' | '伙伴' | '料理' | '衣服';
+
 type TSpeed = '慢' | '中等' | '快' | '瞬间移动';
 
 export type TDescription = `${string}。` | `${string}？` | `${string}！`;
@@ -209,6 +230,7 @@ export interface IItemBase {
 }
 
 export interface ICustomerBase extends IItemBase {
+	chat: TDescription[];
 	places: TPlace[];
 	positiveTags: TRecipeTag[];
 	negativeTags: TRecipeTag[];

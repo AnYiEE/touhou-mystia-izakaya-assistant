@@ -16,9 +16,9 @@ import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 import Tooltip from '@/components/tooltip';
 
-import {customerRatingColorMap} from './constants';
 import {
 	CUSTOMER_NORMAL_TAG_STYLE,
+	CUSTOMER_RATING_MAP,
 	LABEL_DLC_0,
 	type TBeverageTag,
 	type TCustomerNormalName,
@@ -129,10 +129,10 @@ export default function CustomerCard() {
 		return _currentRecipeTagsWithPopular;
 	}, [currentCustomerPopular, currentRecipeData, instance_ingredient, instance_recipe, isFamousShop]);
 
-	const avatarRatingContent = currentRating ?? '请选择点单料理以评级';
+	const avatarRatingContent = currentRating === null ? '请选择点单料理以评级' : CUSTOMER_RATING_MAP[currentRating];
 
-	const avatarRatingColor = hasRating ? (`${customerRatingColorMap[currentRating]}-border` as const) : undefined;
-	const tooltipRatingColor = hasRating ? customerRatingColorMap[currentRating] : undefined;
+	const avatarRatingColor = hasRating ? (`${currentRating}-border` as const) : undefined;
+	const tooltipRatingColor = hasRating ? currentRating : undefined;
 
 	const getTagTooltip = useCallback((type: 'beverageTag' | 'recipeTag', selectedTags: Selection, tag: string) => {
 		const tagType = type === 'beverageTag' ? '酒水' : '料理';

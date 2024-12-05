@@ -1,10 +1,10 @@
-import type {TCustomerRating} from './types';
 import {
 	DARK_MATTER_NAME,
 	DARK_MATTER_TAG,
 	type TBeverageTag,
 	type TCustomerRareName,
 	type TIngredientName,
+	type TRatingKey,
 	type TRecipeName,
 	type TRecipeTag,
 } from '@/data';
@@ -231,20 +231,20 @@ function checkEasterEgg({
 	return mealScore;
 }
 
-function getRatingKey(mealScore: number): TCustomerRating | null {
+function getRatingKey(mealScore: number): TRatingKey | null {
 	if (mealScore <= 0) {
-		return '极度不满';
+		return 'exbad';
 	}
 
 	switch (mealScore) {
 		case 1:
-			return '不满';
+			return 'bad';
 		case 2:
-			return '普通';
+			return 'norm';
 		case 3:
-			return '满意';
+			return 'good';
 		case 4:
-			return '完美';
+			return 'exgood';
 	}
 
 	return null;

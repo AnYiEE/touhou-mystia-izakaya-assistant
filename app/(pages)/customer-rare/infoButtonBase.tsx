@@ -33,7 +33,7 @@ export default memo<IProps>(function InfoButtonBase({children, defaultExpandedKe
 				</span>
 			</Tooltip>
 			<PopoverContent>
-				<div className="max-w-44">
+				<div className="min-w-44 max-w-screen-p-30 xl:max-w-72">
 					<Accordion
 						isCompact
 						keepContentMounted

@@ -14,7 +14,7 @@ import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
-import {customerRatingColorMap} from './constants';
+import {CUSTOMER_RATING_MAP} from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
 
 export default function SavedMealCard() {
@@ -84,28 +84,23 @@ export default function SavedMealCard() {
 						<div className="flex flex-col items-center gap-4 md:flex-row">
 							<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
 								{(() => {
-									const rating = customerStore.evaluateSavedMealResult({
+									const ratingKey = customerStore.evaluateSavedMealResult({
 										customerName: currentCustomerName,
 										extraIngredients,
 										isFamousShop,
 										popular: currentCustomerPopular,
 										recipeName: recipe,
 									});
-									const customerRatingColor = customerRatingColorMap[rating];
+									const rating = CUSTOMER_RATING_MAP[ratingKey];
 									return (
-										<Popover showArrow color={customerRatingColor} offset={10} placement="left">
-											<Tooltip
-												showArrow
-												color={customerRatingColor}
-												content={rating}
-												placement="left"
-											>
+										<Popover showArrow color={ratingKey} offset={10} placement="left">
+											<Tooltip showArrow color={ratingKey} content={rating} placement="left">
 												<span className="cursor-pointer">
 													<PopoverTrigger>
 														<Avatar
 															isBordered
 															showFallback
-															color={customerRatingColor}
+															color={ratingKey}
 															fallback={<div></div>}
 															radius="sm"
 															role="banner"

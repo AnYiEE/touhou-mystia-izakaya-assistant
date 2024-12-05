@@ -14,9 +14,7 @@ import Sprite from '@/components/sprite';
 import Tachie from '@/components/tachie';
 import Tooltip from '@/components/tooltip';
 
-import {customerRatingColorMap} from './constants';
-import type {TCustomerRating} from './types';
-import type {TRewardType} from '@/data/customer_rare/types';
+import {CUSTOMER_EVALUATION_KEY_MAP, CUSTOMER_RATING_MAP, type TRatingKey, type TRewardType} from '@/data';
 import {customerRareStore as store} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
@@ -57,8 +55,10 @@ export default function InfoButton() {
 	}
 
 	const {
+		chat: currentCustomerChat,
 		collection: currentCustomerCollection,
 		description: currentCustomerDescription,
+		evaluation: currentCustomerEvaluation,
 		id: currentCustomerId,
 		places: currentCustomerPlaces,
 		spellCards: currentCustomerSpellCards,
@@ -372,6 +372,63 @@ export default function InfoButton() {
 			) : (
 				(null as unknown as ReactElement)
 			)}
+			{currentCustomerChat.length > 0 ? (
+				<AccordionItem key="chat" aria-label="闲聊对话" title="闲聊对话">
+					<ScrollShadow hideScrollBar size={16} className="max-h-48 break-all text-justify text-xs">
+						<Ol>
+							{currentCustomerChat.map((chat, index) => (
+								<li key={index}>{chat}</li>
+							))}
+						</Ol>
+					</ScrollShadow>
+				</AccordionItem>
+			) : (
+				(null as unknown as ReactElement)
+			)}
+			<AccordionItem key="rating" aria-label="评价对话" title="评价对话">
+				<ScrollShadow
+					hideScrollBar
+					size={16}
+					className="flex max-h-48 flex-col gap-1 break-all pt-0.5 text-justify text-xs"
+				>
+					{Object.entries(CUSTOMER_EVALUATION_KEY_MAP).map(([evaluation, evaluationKey], index) => {
+						const customerEvaluation = currentCustomerEvaluation[evaluationKey];
+						if (evaluationKey in CUSTOMER_RATING_MAP) {
+							return (
+								<div key={index}>
+									<div className="mb-1 flex items-center gap-3 px-1">
+										<Avatar
+											isBordered
+											showFallback
+											color={evaluationKey as TRatingKey}
+											fallback={<div></div>}
+											radius="sm"
+											classNames={{
+												base: 'h-4 w-1 ring-offset-0',
+											}}
+										/>
+										<p className="font-semibold">
+											{evaluation}
+											{evaluation === '极度不满' ? (
+												<span className="font-normal">（释放惩罚符卡）</span>
+											) : evaluation === '完美' ? (
+												<span className="font-normal">（释放奖励符卡）</span>
+											) : null}
+										</p>
+									</div>
+									{customerEvaluation !== null && <p className="ml-5">{customerEvaluation}</p>}
+								</div>
+							);
+						}
+						return customerEvaluation === null ? null : (
+							<p key={index}>
+								<span className="font-semibold">{evaluation}：</span>
+								{customerEvaluation}
+							</p>
+						);
+					})}
+				</ScrollShadow>
+			</AccordionItem>
 			<AccordionItem key="help" aria-label="特别说明" title="特别说明">
 				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-xs">
 					<p className="mb-1 text-sm font-semibold">选单时</p>
@@ -400,29 +457,6 @@ export default function InfoButton() {
 						</li>
 					</Ol>
 				</ScrollShadow>
-			</AccordionItem>
-			<AccordionItem key="rating" aria-label="评级图例" title="评级图例">
-				<div className="flex flex-col gap-2 text-xs">
-					{(['极度不满', '不满', '普通', '满意', '完美'] as TCustomerRating[]).map((rating, index) => (
-						<div key={index} className="mb-1 flex items-center gap-3 px-1">
-							<Avatar
-								isBordered
-								showFallback
-								color={customerRatingColorMap[rating]}
-								fallback={<div></div>}
-								radius="sm"
-								classNames={{
-									base: 'h-4 w-1 ring-offset-0',
-								}}
-							/>
-							{rating === '极度不满'
-								? `${rating}（释放惩罚符卡）`
-								: rating === '完美'
-									? `${rating}（释放奖励符卡）`
-									: rating}
-						</div>
-					))}
-				</div>
 			</AccordionItem>
 		</InfoButtonBase>
 	);

@@ -1,7 +1,5 @@
 import {type TRecipeTag} from '@/data';
-import type {ICustomerBase, TDescription} from '@/data/types';
-
-export type TRewardType = '摆件' | '采集' | '厨具' | '伙伴' | '料理' | '衣服';
+import type {ICustomerBase, TDescription, TEvaluationKey} from '@/data/types';
 
 interface ISpellCard {
 	name: string;
@@ -16,6 +14,7 @@ interface ISpellCards {
 
 export interface ICustomerRare extends ICustomerBase {
 	collection: boolean;
+	evaluation: Record<TEvaluationKey, TDescription | null>;
 	spellCards: Partial<ISpellCards>;
 	positiveTagMapping: Partial<Record<TRecipeTag, string>>;
 	price: `${number}-${number}`;

@@ -17,8 +17,7 @@ import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 import Tooltip from '@/components/tooltip';
 
-import {customerRatingColorMap} from './constants';
-import {BEVERAGE_TAG_STYLE, DARK_MATTER_NAME, RECIPE_TAG_STYLE} from '@/data';
+import {BEVERAGE_TAG_STYLE, CUSTOMER_RATING_MAP, DARK_MATTER_NAME, RECIPE_TAG_STYLE} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 
 export default function SavedMealCard() {
@@ -89,7 +88,11 @@ export default function SavedMealCard() {
 							<div className="flex flex-col items-center gap-4 md:flex-row md:gap-3 lg:gap-4 xl:gap-3">
 								<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap md:gap-2 lg:gap-3 xl:gap-2">
 									{(() => {
-										const {isDarkMatter, price, rating} = customerStore.evaluateSavedMealResult({
+										const {
+											isDarkMatter,
+											price,
+											rating: ratingKey,
+										} = customerStore.evaluateSavedMealResult({
 											beverageName: beverage,
 											customerName: currentCustomerName,
 											extraIngredients,
@@ -105,18 +108,13 @@ export default function SavedMealCard() {
 											? originalCooker
 											: (`夜雀${originalCooker}` as const);
 										const recipeName = isDarkMatter ? DARK_MATTER_NAME : recipe;
-										const customerRatingColor = customerRatingColorMap[rating];
+										const rating = CUSTOMER_RATING_MAP[ratingKey];
 										return (
 											<>
-												<Popover
-													showArrow
-													color={customerRatingColor}
-													offset={12}
-													placement="left"
-												>
+												<Popover showArrow color={ratingKey} offset={12} placement="left">
 													<Tooltip
 														showArrow
-														color={customerRatingColor}
+														color={ratingKey}
 														content={rating}
 														placement="left"
 													>
@@ -125,7 +123,7 @@ export default function SavedMealCard() {
 																<Avatar
 																	isBordered
 																	showFallback
-																	color={customerRatingColor}
+																	color={ratingKey}
 																	fallback={
 																		<TagGroup className="h-4 flex-nowrap items-center whitespace-nowrap">
 																			{price !== 0 && (

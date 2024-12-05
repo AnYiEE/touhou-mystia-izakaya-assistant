@@ -25,7 +25,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '甜', '生', '猎奇'],
 		negativeTags: ['素', '清淡', '凉爽'],
 		beverageTags: ['低酒精', '可加冰'],
-		collection: true,
+		chat: [
+			'我作为邻居来捧场了哦老板娘！',
+			'别这么看着我！我来到店里并不会影响店铺的卫生啦！',
+			'你家附近的虫子？和我没关系啦！',
+			'为了虫族的复兴！现在我们推出“昆虫的通知”，为什么要让我闭嘴！',
+			'夜晚的萤火虫不是很美好吗？驻足多看一会吧。',
+		],
+		evaluation: {
+			exbad: '居然这么对我，就让你看看虫子的厉害！',
+			bad: '哦！谢谢。',
+			norm: '哇，不错嘛！',
+			good: '看来你很懂虫族的品味！',
+			exgood: '居然吃到这么合我心意的菜…一定要有所回报才行！',
+			lackmoneyangry: '连莉格露大人的钱都想抢，你胆子挺大！',
+			lackmoneynormal: '算我欠你的人情啦~下次放心来找我帮忙吧！',
+			repell: '居然敢赶萤火虫大人？！',
+			seenRepell: '哎，真没劲。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -43,6 +60,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			生: '生肉总比熟肉好吃',
 		},
+		collection: true,
 	},
 	{
 		id: 1,
@@ -58,7 +76,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '饱腹', '生', TAG_SIGNATURE, '猎奇', TAG_POPULAR_POSITIVE],
 		negativeTags: ['下酒', TAG_EXPENSIVE, TAG_POPULAR_NEGATIVE],
 		beverageTags: ['苦', '气泡'],
-		collection: false,
+		chat: [
+			'“黑夜给了我们黑色的眼睛”，不就是为了让人寻找黑暗嘛。',
+			'你看我像不像圣人被钉在十字架上？',
+			'你这里太亮了，我的眼睛有点不舒服。',
+			'最近有些人喊我三小姐，你知道这是为什么吗？',
+			'为了来你这里就餐，我连身边的黑暗都减弱了。',
+		],
+		evaluation: {
+			exbad: '这就是所谓的黑暗料理吗？',
+			bad: '是，这样吗？',
+			norm: '挺好吃的哦。',
+			good: '很好吃哦！',
+			exgood: '在你的料理下，感觉肉都会发光了！',
+			lackmoneyangry: '你的价格就像人类采用了十进制！',
+			lackmoneynormal: '就带了这么多啦。',
+			repell: '为什么不让我吃啦？',
+			seenRepell: '你也会像那样赶我走吗？',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -76,6 +111,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			招牌: '拿手好菜',
 		},
+		collection: false,
 	},
 	{
 		id: 2,
@@ -91,7 +127,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '水产', '重油', '甜', '烧烤', TAG_POPULAR_POSITIVE],
 		negativeTags: ['素', '灼热', '猎奇', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['水果', '辛'],
-		collection: false,
+		chat: [
+			'我才不是嘴馋，我只是来监督你的。',
+			'你要好好工作，一定要按时把债务完成！',
+			'别以为给我做点好吃的就可以放宽贷款哦。',
+			'下次要不要把我家的猫咪们也带过来呢？',
+			'吃不下的食物可以打包吗？我想带给我家猫咪吃。',
+		],
+		evaluation: {
+			exbad: '这种东西连野猫都不吃！',
+			bad: '也就这种程度吧。',
+			norm: '还、还不错！',
+			good: '看在这么好吃的份上，就夸你一下吧！',
+			exgood: '好、好好粗！不是！好好吃！！',
+			lackmoneyangry: '看来给你的贷款利息确实是太高了。',
+			lackmoneynormal: '没、没带够，下次贷款考虑给你优惠点！',
+			repell: '走就走！我才不稀罕！',
+			seenRepell: '不要放过每一个客人，给我好好赚钱还债啊！',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -109,6 +162,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			烧烤: '把肉串起来',
 		},
+		collection: false,
 	},
 	{
 		id: 3,
@@ -124,7 +178,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '清淡', '和风', '甜', '文化底蕴', '汤羹', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '咸', '灼热', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['可加热', '清酒'],
-		collection: true,
+		chat: [
+			'没想到，我居然有朝一日能够踏进妖怪的餐馆里。',
+			'我能来的次数不多，所以我很珍惜这样的机会。',
+			'在这种地方，可以得到许多有趣的情报。',
+			'作为稗田家第九代家主，我的责任重大。',
+			'如今，幻想乡缘起到底是为了什么而继续写下去呢。',
+		],
+		evaluation: {
+			exbad: '实在是让人难以恭维。',
+			bad: '多谢招待。',
+			norm: '多谢款待。',
+			good: '能够尝此美味，今天真是不枉此行。',
+			exgood: '即便是轮回多世，我也从未吃过如此美味的料理！',
+			lackmoneyangry: '黑心商家，一定要记下来！',
+			lackmoneynormal: '我的佣人没有随行，身上带的钱不够，请见谅。',
+			repell: '我一定会把你写到《幻想乡缘起》里！',
+			seenRepell: '我还以为你会和别的妖怪不一样。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -142,6 +213,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			高级: '作为稗田家主',
 		},
+		collection: true,
 	},
 	{
 		id: 4,
@@ -157,7 +229,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['素', '家常', '清淡', '和风', '中华', '文化底蕴', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '咸', TAG_LARGE_PARTITION, TAG_POPULAR_NEGATIVE],
 		beverageTags: ['烧酒', '清酒', '利口酒'],
-		collection: false,
+		chat: [
+			'食物的历史也是非常久远的。',
+			'总觉得，满月时的记忆似乎不太完整。',
+			'单纯的事件是不能称为历史的，只有将其记载下来，方为历史。',
+			'最近孩子们对课程似乎有点意兴阑珊，是不是应该再增加些课程呢？',
+			'有时候，料理中承载的不止酸甜苦辣，还有思念。',
+		],
+		evaluation: {
+			exbad: '食之无味，即便弃之也不可惜。',
+			bad: '勤加练习的话一定可以做得更好。',
+			norm: '味道不错，相信你不会止步于此。',
+			good: '很美味，看来你下了不少功夫。',
+			exgood: '太美味了！这是沉淀了历史的技术才能做出来的佳肴！',
+			lackmoneyangry: '这个定价恐怕不太适合幻想乡的居民。',
+			lackmoneynormal: '抱歉，下次我会注意点的。',
+			repell: '如果你是我的学生，我就上头槌了！',
+			seenRepell: '这种行为实在太没有教养了。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -187,6 +276,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			文化底蕴: '历史和文化相辅相成',
 		},
+		collection: false,
 	},
 	{
 		id: 5,
@@ -202,7 +292,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '下酒', '和风', '文化底蕴'],
 		negativeTags: ['生', '辣', TAG_ECONOMICAL],
 		beverageTags: ['中酒精', '直饮', '古典'],
-		collection: false,
+		chat: [
+			'仙人也不是只吃“霞”的。',
+			'最近村子似乎成立了动物保护协会，真是一个不错的组织。',
+			'我已经离开太久了，如今的幻想乡变了太多，我需要好好适应。',
+			'唉，一个个家伙都是要人操心的。',
+			'最近巫女的评价还好吗？我会督促她继续努力的。',
+		],
+		evaluation: {
+			exbad: '难以下咽！',
+			bad: '还得再多修炼修炼才行。',
+			norm: '还不错！但不能就此自满哦。',
+			good: '味道极佳，值得称赞！',
+			exgood: '此绝味，竟叫无欲之仙沉沦！',
+			lackmoneyangry: '这种违背常识的定价透露着丑恶的欲望。',
+			lackmoneynormal: '不小心超过预算了…要不，免费让你去我那儿修炼作为补偿吧。',
+			repell: '不知腐鼠成滋味，猜意鹓雏竟未休。',
+			seenRepell: '骅骝拳跼不能食，蹇驴得志鸣春风！',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -218,6 +325,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {},
+		collection: false,
 	},
 	{
 		id: 7,
@@ -233,7 +341,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '饱腹', '甜', '不可思议', TAG_ECONOMICAL, TAG_POPULAR_POSITIVE],
 		negativeTags: ['下酒', TAG_EXPENSIVE, TAG_POPULAR_NEGATIVE],
 		beverageTags: ['无酒精', '低酒精', '可加热'],
-		collection: false,
+		chat: [
+			'明明是妖怪开的店，为什么人比神社都多？！',
+			'既然是面向人类经营，卫生方面可要给我好好注意。',
+			'今天没有闹事的吧？发生什么要及时告诉我。',
+			'看着妖怪和人类共食，身为巫女感觉还是挺微妙的。',
+			'这种好像挺赚钱啊，我要不要也开一家店呢？',
+		],
+		evaluation: {
+			exbad: '给我吃这种东西是想被退治吗？！',
+			bad: '也没比我做的好多少嘛。',
+			norm: '做得不错嘛。',
+			good: '好吃！不枉我特意攒钱来吃！',
+			exgood: '这一顿，就算花光所有钱也是值得的！',
+			lackmoneyangry: '敢诓我的钱？我看你是想被退治了！！！',
+			lackmoneynormal: '你以前参加我家的宴会也没给钱，总得给我打个折吧。',
+			repell: '可恶，我没退治你，你居然敢赶我走？！',
+			seenRepell: '要是之后被投诉了我可不管。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -252,6 +377,7 @@ export const CUSTOMER_RARE_LIST = [
 			不可思议: '配得上我的称号',
 			[TAG_ECONOMICAL]: '贵的买不起',
 		},
+		collection: false,
 	},
 	{
 		id: 8,
@@ -267,7 +393,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '下酒', '和风', '力量涌现', '小巧', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['高酒精', '直饮'],
-		collection: true,
+		chat: [
+			'最近宴会次数减少了啊，看来有什么在悄悄地发生着吧？',
+			'你的事我很清楚哦，因为一直看着呢。',
+			'解嘲破惑有常言，酒不醉人人自醉。',
+			'喝酒就是要在这种热闹的地方才有味道嘛。',
+			'差不多该觉察到心中的压力了吧。',
+		],
+		evaluation: {
+			exbad: '佐上这样的菜肴，真是糟蹋了我的酒！',
+			bad: '就着酒的话，勉强也可以吃两口。',
+			norm: '不错的下酒菜！',
+			good: '美酒佳肴，不醉不休！',
+			exgood: '没想到，这世上居然有比酒更让我垂涎的料理！',
+			lackmoneyangry: '失望的宴会。',
+			lackmoneynormal: '钱不够了。下次请你喝酒吧！',
+			repell: '是鬼离开了太久，让你忘了我的恐怖吗？',
+			seenRepell: '居然在宴席上驱赶客人，真是无趣。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -287,6 +430,7 @@ export const CUSTOMER_RARE_LIST = [
 			下酒: '佐酒的小菜',
 			小巧: '分散很多个小的自己',
 		},
+		collection: true,
 	},
 	{
 		id: 9,
@@ -302,7 +446,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['素', '传说', '清淡', '甜', '适合拍照', '果味', TAG_EXPENSIVE, TAG_POPULAR_NEGATIVE],
 		negativeTags: ['肉', '家常', '重油', TAG_POPULAR_POSITIVE],
 		beverageTags: ['高酒精', '鸡尾酒'],
-		collection: false,
+		chat: [
+			'虽然在我看来是个破落的小店，但在地上也算是不错了吧。',
+			'天界那群老顽固，一点儿都不懂变通！',
+			'地上虽然比不上天界的富饶，不过勉强还是能呆一阵子的。',
+			'有本天人来光顾的店，那些愚民们一定会争先恐后地过来吧。',
+			'地上稀奇古怪的东西真不少，虽然不入流，倒也挺有趣的。',
+		],
+		evaluation: {
+			exbad: '咸若啮檗吞针！',
+			bad: '哼，就地上人而言，差不多也就这种程度吧。',
+			norm: '区区地上人，做得还挺像样的。',
+			good: '此等美味，就算放在天界也毫不逊色。',
+			exgood: '甚合吾心！没想到这种贫瘠之地竟能烹饪出此等佳肴！',
+			lackmoneyangry: '哼，吾来汝店，本即无上荣光。',
+			lackmoneynormal: '哼，这一顿也就值这么多！',
+			repell: '蚍蜉撼大树，可笑不自量！',
+			seenRepell: '斗筲之人，何足算也。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -323,6 +484,7 @@ export const CUSTOMER_RARE_LIST = [
 			适合拍照: '卖相不好的低贱品',
 			[TAG_EXPENSIVE]: '我不缺钱',
 		},
+		collection: false,
 	},
 	{
 		id: 10,
@@ -354,7 +516,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['传说', '重油', '和风', '灼热', '菌类', TAG_POPULAR_POSITIVE],
 		negativeTags: ['猎奇', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['低酒精', '可加冰'],
-		collection: false,
+		chat: [
+			'放心吧，我只是喜欢偷…借书，从来不吃霸王餐。',
+			'可恶，今天又输给灵梦那个家伙了呀！',
+			'偶尔像这样吃一顿也不错Da☆Ze！',
+			'这么多人看着，我不会跑单的啦！',
+			'魔法就是光和热，料理其实也差不多吧。',
+		],
+		evaluation: {
+			exbad: '这什么东西啊，还不如生吞蘑菇呢！',
+			bad: '一般般吧。',
+			norm: '味道不错诶，教教我怎么做呗。',
+			good: '这个菜，感觉可以成为宴会的主角！',
+			exgood: '你是偷偷藏了什么魔法吗？居然会有这么好吃的料理！',
+			lackmoneyangry: '我去借点钱再来吃！',
+			lackmoneynormal: '账我已经付啦。你感觉箱子里的钱少了？不关我事哦。',
+			repell: '相信我！我这回真的带钱了！',
+			seenRepell: '这样不太友好啊。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -372,6 +551,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			传说: '古老的东西',
 		},
+		collection: false,
 	},
 	{
 		id: 15,
@@ -387,7 +567,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '饱腹', '中华', '力量涌现', TAG_POPULAR_POSITIVE],
 		negativeTags: ['西式', '猎奇', '果味', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['可加热', '古典', '提神'],
-		collection: false,
+		chat: [
+			'我可没有偷懒哦，虽然确实是偷偷溜出来的。',
+			'咲夜小姐的飞刀就像是长了眼睛一样。',
+			'大小姐什么时候才把那本漫画的下册借回来呢？',
+			'得赶在被女仆长发现前回去。',
+			'饭前饭后都不适宜运动，稍微打个盹就是最合适不过了。',
+		],
+		evaluation: {
+			exbad: '太过分！居然拿这种东西来敷衍我！',
+			bad: '能吃饱就行吧。',
+			norm: '唔…还算好吃吧？',
+			good: '不愧是我冒着被刀子扎的风险也要来吃的菜。',
+			exgood: '能吃到这样的菜，就算脑袋扎满刀子也无憾了！',
+			lackmoneyangry: '区区门卫吃不起你家的菜！',
+			lackmoneynormal: '我的工资只剩这么多了。',
+			repell: '老板娘好无情啊！',
+			seenRepell: '老板娘原来是这样的。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -407,6 +604,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			中华: '祖国的味道',
 		},
+		collection: false,
 	},
 	{
 		id: 28,
@@ -422,7 +620,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['甜', '适合拍照', '凉爽', '猎奇', TAG_POPULAR_NEGATIVE],
 		negativeTags: ['下酒', '文化底蕴', TAG_EXPENSIVE, TAG_POPULAR_POSITIVE],
 		beverageTags: ['可加冰', '水果', '甘'],
-		collection: true,
+		chat: [
+			'本小姐是最强的！',
+			'嘿嘿，我的冰可是连飞鸟都能打落哦！',
+			'能不能别把我当成随处可见的普通妖精？',
+			'泡菜的话，腌之前就吃掉好了。',
+			'中场休息！捉迷藏什么的吃饱再继续玩吧。',
+		],
+		evaluation: {
+			exbad: '像这种东西，就应该和英吉利牛肉一起被冰冻起来！',
+			bad: '别以为这样就能把我打发掉！',
+			norm: '吃饭的时候说话会咬到舌头。',
+			good: '好吃！以后就让你跟着本小姐混吧！',
+			exgood: '好吃得舌头都要融化了！',
+			lackmoneyangry: '咱！没！钱！',
+			lackmoneynormal: '咱们妖精哪来那么多钱。',
+			repell: '居然敢把最强的咱赶走。',
+			seenRepell: '赶人就不好玩了啊。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -442,6 +657,7 @@ export const CUSTOMER_RARE_LIST = [
 			适合拍照: '丑拒',
 			凉爽: '要吃冰的',
 		},
+		collection: true,
 	},
 	{
 		id: 27,
@@ -457,7 +673,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '西式', '甜', '适合拍照', '梦幻'],
 		negativeTags: ['咸', '生', '灼热', '猎奇'],
 		beverageTags: ['鸡尾酒', '利口酒', '气泡'],
-		collection: false,
+		chat: [
+			'生活就是魔法意大利面的结合。',
+			'被念叨得烦了，就姑且出来走走吧。',
+			'我的书并没有乱放，所有的书都在它们自己想呆的位置上。',
+			'魔法的力量，其实就是科学那种东西。',
+			'烹饪和魔法的结合，或许会很有趣呢。',
+		],
+		evaluation: {
+			exbad: '不堪一试！这种水平也敢开店？',
+			bad: '食不言，寝不语。',
+			norm: '要是能读点书，应该能做得更好。',
+			good: '这种沁人心脾的口感到底是怎么做出来的？',
+			exgood: '即便博览群书，也很难有这等厨技造诣啊。',
+			lackmoneyangry: '呵呵！麻雀之食贵于玉，薪贵于桂。',
+			lackmoneynormal: '咳咳，我有点不舒服，先回去了。',
+			repell: '人而无礼，胡不遄死！',
+			seenRepell: '哼，朽木难雕。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -476,6 +709,7 @@ export const CUSTOMER_RARE_LIST = [
 			西式: '文化的差异',
 			适合拍照: '品相好看',
 		},
+		collection: false,
 	},
 	{
 		id: 24,
@@ -491,7 +725,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['灼热', '果味', '烧烤', '燃起来了', '辣'],
 		negativeTags: ['高级', '不可思议', TAG_EXPENSIVE],
 		beverageTags: ['烧酒', '辛', '苦'],
-		collection: true,
+		chat: [
+			'不老不死只意味着，永不得救赎的孤独。',
+			'炭火不够的话，尽管来找我！',
+			'要是拥有了前往月亮的方法，那家伙会返回月亮吗？',
+			'从不尽的火诞生的，是无论多少次都会复活的不死鸟。',
+			'不要随地乱扔烟蒂啊。',
+		],
+		evaluation: {
+			exbad: '又硬又硌牙，想必比你的肝还要难啃！',
+			bad: '还得多下点功夫。',
+			norm: '我觉得你应该能做得更好。',
+			good: '在我的漫长人生中，这样美味的料理也属罕见。',
+			exgood: '活着…真是太美妙了！',
+			lackmoneyangry: '时代的进化还不及你的定价变化之快！',
+			lackmoneynormal: '我过得向来清贫，就只有这么多钱了。',
+			repell: '也罢。我已经习惯了。',
+			seenRepell: '己所不欲，勿施于人。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -509,6 +760,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			燃起来了: '复仇之火永扑不尽',
 		},
+		collection: true,
 	},
 	{
 		id: 25,
@@ -524,7 +776,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['传说', '和风', '文化底蕴', '不可思议', TAG_POPULAR_POSITIVE],
 		negativeTags: [TAG_SIGNATURE, '猎奇', TAG_LARGE_PARTITION, TAG_POPULAR_NEGATIVE],
 		beverageTags: ['清酒', '古典', '现代'],
-		collection: false,
+		chat: [
+			'不劳者不得食，我是不是也该做点什么呢？',
+			'那五个美丽的难题，能不能解决已经无所谓了。',
+			'我不是家里蹲，只是永琳每次都要嘱咐半天所以我才懒得出门。',
+			'幻想乡的雨PH值为6哦，就是几乎不含酸性的意思。',
+			'七色的优昙花很美，七色的料理感觉却很恶心呢。',
+		],
+		evaluation: {
+			exbad: '竟敢呈此等秽物来招待我！',
+			bad: '这样的东西不值得我出门一趟。',
+			norm: '地上的食物一直是不错的。',
+			good: '馔玉炊金，其味无穷。',
+			exgood: '地上有这么美味的食物，谁还会想回到月亮上呢？',
+			lackmoneyangry: '地上都是这般坑蒙拐骗吗？！',
+			lackmoneynormal: '唔，月亮和地上的物价可能不太一样。',
+			repell: '无礼的地上妖怪！',
+			seenRepell: '突然感觉没什么兴致了。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -542,6 +811,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			文化底蕴: '不可磨灭的过去',
 		},
+		collection: false,
 	},
 	{
 		id: 29,
@@ -558,7 +828,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['传说', '甜', '凉爽', '小巧', '梦幻', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '山珍', '猎奇', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['无酒精', '水果', '甘'],
-		collection: false,
+		chat: [
+			'人类光是遇到我，就已经花光所有的运气了。',
+			'没想到鸟脑袋也能把生意做得这么有模有样啊。',
+			'哦哦！还挺热闹的嘛！一直放任着不管，现在就是“回收”的时候！',
+			'你还太嫩了啊。一会儿让我来教教你什么是真正的经营之道吧。',
+			'遇到我就能变得幸运哦！不过呢，只有幸运的人才能遇到我。',
+		],
+		evaluation: {
+			exbad: '让我付钱吃这种东西？给我赔钱还差不多！',
+			bad: '还没兔子们捣的年糕好吃。',
+			norm: '这样就想让我掏钱…算了，也还行吧。',
+			good: '小麻雀做得还真不错啊。也来教教我家的兔子嘛。',
+			exgood: '这味道到底是怎么回事…老板娘！你能发大财！！！',
+			lackmoneyangry: '我可没有点这些菜！你自己上的菜自己买单吧。',
+			lackmoneynormal: '我就只带了这么多，爱要不要吧。',
+			repell: '臭麻雀…给我走着瞧！',
+			seenRepell: '这种无良的店，连敲诈的价值都没有。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -578,6 +865,7 @@ export const CUSTOMER_RARE_LIST = [
 			凉爽: '降温工作',
 			小巧: '三分饱',
 		},
+		collection: false,
 	},
 	{
 		id: 1000,
@@ -593,7 +881,25 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['水产', '高级', '下酒', '咸', TAG_SIGNATURE, '猎奇'],
 		negativeTags: ['素', '山珍', '文化底蕴'],
 		beverageTags: ['中酒精', '高酒精', '清酒', '直饮'],
-		collection: false,
+		chat: [
+			'只有嗅觉敏锐的商人，才能将商业情报作用发挥到极致。',
+			'当你没有决定要成功时，你就已经决定要失败了。',
+			'船在港湾里很安全，但这不是造船的目的。',
+			'潜在顾客不在乎你。他们在乎自己，对与他们无关的东西他们不愿读也不愿听。',
+			'对实业家而言只有一条规则：以尽可能低的成本，做质量最好的产品，付尽可能高的工资。',
+			'是不是也应该让一些河童专门去专研厨艺呢。',
+		],
+		evaluation: {
+			exbad: '这种程度是怎么让食堂风靡幻想乡的？这是广告欺诈吧！',
+			bad: '胡乱加工不是正数的加法，而是负数的加法。',
+			norm: '食品的加工是非常深奥的，你得多储备一些知识才行。',
+			good: '邀请你到山里开店真是明断啊！',
+			exgood: '我享受到的服务已经超过了交易本身，必须要给予答谢！',
+			lackmoneyangry: '这定价与其说是做生意，不如说是抢劫！',
+			lackmoneynormal: '虽然我最近赚了些钱，也经不住这样的高度消费！',
+			repell: '这样做生意是不会长久的。',
+			seenRepell: '老板娘，你还是不明白生意该怎么做。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -613,6 +919,7 @@ export const CUSTOMER_RARE_LIST = [
 			招牌: '口碑最好的菜',
 			猎奇: '河童的口味',
 		},
+		collection: false,
 	},
 	{
 		id: 1001,
@@ -628,7 +935,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '重油', '下酒', '山珍', TAG_LARGE_PARTITION],
 		negativeTags: ['素', '清淡', '猎奇'],
 		beverageTags: ['中酒精', '高酒精', '直饮'],
-		collection: true,
+		chat: [
+			'今天那局棋真是恰逢敌手啊。这样才有意思！',
+			'即使没有入侵者，也万不可掉以轻心。',
+			'都说河童是天才，但无论是剑术还是棋术都是我的手下败将。',
+			'组织规模越大，需要的规则越多。',
+			'那只鸦天狗不知道又在打什么主意。',
+		],
+		evaluation: {
+			exbad: '压榨劳动人员的钱包却只给吃这种东西吗？！',
+			bad: '早知道就只喝酒了。',
+			norm: '就着酒吃也还行吧。',
+			good: '美味的食物能把一天的疲劳全部消除！',
+			exgood: '不愧是风靡幻想乡的食堂，多谢款待！',
+			lackmoneyangry: '这定价严重违反了山中的秩序！',
+			lackmoneynormal: '守卫的工资果然是太低了，连顿饭也差点吃不起。',
+			repell: '我们这种底层天狗就连吃饭也要被瞧不起吗？',
+			seenRepell: '这一点也不利于山中的团结！',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -647,6 +971,7 @@ export const CUSTOMER_RARE_LIST = [
 			重油: '不健康的饮食',
 			[TAG_LARGE_PARTITION]: '不多吃点',
 		},
+		collection: true,
 	},
 	{
 		id: 1005,
@@ -662,7 +987,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '和风', '甜', '适合拍照', '梦幻', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '生', '灼热', '猎奇', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['无酒精', '低酒精', '清酒', '直饮', '水果', '甘', '苦', '气泡', '现代'],
-		collection: false,
+		chat: [
+			'总觉得河童们最近是不是兴奋得有些异常。',
+			'现在的我，应该能被幻想乡的大家记住了吧？',
+			'我要让守矢之名响彻幻想乡！',
+			'那两位大人都是好事却不爱凑热闹的人呢。',
+			'虽说吃宵夜会长胖…不过我今天走了很多地方，应该没问题！',
+		],
+		evaluation: {
+			exbad: '用这种东西招待信徒只会让信仰心下降！',
+			bad: '这种程度的东西是无法凝聚人心的。',
+			norm: '想用这个来收集信仰的话，还需要再精进一些吧。',
+			good: '美味的食物果然可以收集信仰！',
+			exgood: '就连我都忍不住想去信仰你了！',
+			lackmoneyangry: '再怎么非常识，这顿饭也太贵了吧！',
+			lackmoneynormal: '幻想乡的消费水平比外面世界还高啊。',
+			repell: '欸？欸欸欸？！',
+			seenRepell: '这种待客态度是无法凝聚信仰的。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -681,6 +1023,7 @@ export const CUSTOMER_RARE_LIST = [
 			和风: '大和风情',
 			适合拍照: '手机',
 		},
+		collection: false,
 	},
 	{
 		id: 1002,
@@ -696,7 +1039,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '高级', '西式', '甜', '文化底蕴'],
 		negativeTags: ['肉', '重油', '饱腹', '猎奇'],
 		beverageTags: ['低酒精', '西洋酒', '现代'],
-		collection: true,
+		chat: [
+			'偶尔是不是也回去一趟比较好呢。',
+			'最近人偶损耗得有点厉害，等下回去得好好修补一下。',
+			'明天表演什么人偶剧比较好呢。',
+			'这家店开了才知道竟然有这么多魔法使。',
+		],
+		evaluation: {
+			exbad: '明明用魔力就可以不用进食，为什么还要受这个罪！',
+			bad: '还不如人偶做的饭。',
+			norm: '还过得去吧。',
+			good: '就是因为有这种美食，我才一直保持人类的进食习惯。',
+			exgood: '美味得仿佛是只存在于童话世界里的幻想！',
+			lackmoneyangry: '这是什么新型骗局吗？绝对是敲诈吧？！',
+			lackmoneynormal: '最近买材料花了不少钱，没计划好预算。',
+			repell: '我本来也没打算吃。',
+			seenRepell: '吃饭就是图个气氛，气氛不到位食物也会变难吃。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -714,6 +1073,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			高级: '低级趣味',
 		},
+		collection: true,
 	},
 	{
 		id: 1004,
@@ -729,7 +1089,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['清淡', '山珍', '和风', '文化底蕴', '特产'],
 		negativeTags: ['重油', '饱腹'],
 		beverageTags: ['低酒精', '中酒精', '可加冰', '直饮', '古典'],
-		collection: false,
+		chat: [
+			'人间烟火气，最抚凡人心。',
+			'满肚子的食物，人才不会空虚。',
+			'酸甜苦辣都是滋味，每顿饭都值得被用心对待。',
+			'四方食事，不过一碗人间烟火。',
+			'本来无东西，何处有南北。',
+		],
+		evaluation: {
+			exbad: '蹩脚的人和难吃的菜一样，看到就想吐。',
+			bad: '这不会是用臭水沟炒的菜吧？',
+			norm: '这菜适合生存，不适合生活。',
+			good: '难得出一趟门，总算没有白跑一趟！',
+			exgood: '好满足！五蕴皆空不如五脏俱饱。',
+			lackmoneyangry: '跟地藏要钱也太难看了，这一顿就当做是你的布施吧。',
+			lackmoneynormal: '不够的钱等我下次化缘回来再补上吧。',
+			repell: '我不是来化缘的，我带了钱！',
+			seenRepell: '是法平等无有高下。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -747,6 +1124,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			特产: '不同地方的美食',
 		},
+		collection: false,
 	},
 	{
 		id: 2000,
@@ -762,7 +1140,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['鲜', '甜', '生', '适合拍照', '猎奇', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '咸', '灼热'],
 		beverageTags: ['低酒精', '中酒精', '啤酒', '甘'],
-		collection: true,
+		chat: [
+			'被地上厌恶的地底世界，是我们的天堂。',
+			'洞窟虽然是黑暗的，但是我的网很明亮哦。',
+			'最近街道那边好热闹呀，偶尔去玩玩吧。',
+			'只有抵住最黑的暗，才能收获最光的亮。',
+		],
+		evaluation: {
+			exbad: '还不如蛛网里的猎物好吃。',
+			bad: '我不是想打击你，但是味道确实不太好。',
+			norm: '传说中的夜雀食堂应该不止这种程度。',
+			good: '氛围和食物都是满分哦。',
+			exgood: '能在黑暗的洞窟吃到这么美味的食物真是太棒了！',
+			lackmoneyangry: '这家店比黑蜘蛛还要黑！',
+			lackmoneynormal: '我还不太习惯地上的消费水平。',
+			repell: '就算我们什么都没做也会遭到厌恶吗？',
+			seenRepell: '瞧不起被厌恶者就别在这里开店了。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -781,6 +1175,7 @@ export const CUSTOMER_RARE_LIST = [
 			生: '太熟吃不惯',
 			猎奇: '蜘蛛的口味',
 		},
+		collection: true,
 	},
 	{
 		id: 2001,
@@ -796,7 +1191,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '咸', '鲜', '果味', '辣', '酸', TAG_POPULAR_NEGATIVE],
 		negativeTags: ['甜'],
 		beverageTags: ['无酒精', '可加热', '直饮', '辛', '苦'],
-		collection: false,
+		chat: [
+			'你站在桥上看风景，看风景的人在楼上看你。',
+			'所有人看起来都这么幸福，我好嫉妒啊。',
+			'桥从此端通往彼端的连系，被寓意着从现世通往彼世的路途。',
+			'为什么隔壁的菜看起来那么美味，我好嫉妒啊。',
+		],
+		evaluation: {
+			exbad: '这么稀巴烂的厨艺是怎么开店的？',
+			bad: '隔壁桌的菜绝对比我的好吃！',
+			norm: '总觉得别人碗里的更香。',
+			good: '这般治愈人心的美味，真是让人嫉妒啊。',
+			exgood: '美味得让我一时间甚至连嫉妒都忘了。',
+			lackmoneyangry: '我要把这个黑店钉在树上！',
+			lackmoneynormal: '大家的口袋就那么富裕吗？',
+			repell: '居然赶走我而不去赶走别的客人，好嫉妒啊。',
+			seenRepell: '居然赶走别的客人而不来赶走我，好嫉妒啊。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -812,6 +1223,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {},
+		collection: false,
 	},
 	{
 		id: 2002,
@@ -836,7 +1248,23 @@ export const CUSTOMER_RARE_LIST = [
 		],
 		negativeTags: ['素', '猎奇', '小巧'],
 		beverageTags: ['高酒精', '清酒', '啤酒', '古典'],
-		collection: false,
+		chat: [
+			'一个两个都往地上钻，地上真的那么有趣吗？',
+			'酒就是越热闹才越好喝。',
+			'酒杯就不必了，我的酒器是随身携带的。',
+			'真热闹啊，比嗓门的话没有人能比得过鬼。',
+		],
+		evaluation: {
+			exbad: '这样的料理简直是糟蹋我的酒！',
+			bad: '这菜的味道有点配不上我的酒啊。',
+			norm: '有好酒相送，菜随便吃吃就行了。',
+			good: '温泉后的饱餐时光足以治愈人心。',
+			exgood: '好马配好鞍，好酒配好菜！',
+			lackmoneyangry: '敢宰鬼的黑店也是第一次见。',
+			lackmoneynormal: '钻钱眼子可不太好啊。',
+			repell: '胆子真不小啊。',
+			seenRepell: '无趣之举。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -856,6 +1284,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			[TAG_LARGE_PARTITION]: '饱餐一顿',
 		},
+		collection: false,
 	},
 	{
 		id: 2003,
@@ -871,7 +1300,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '甜', '力量涌现', '小巧', '梦幻', '特产'],
 		negativeTags: ['肉', '山珍', '灼热', '猎奇', TAG_LARGE_PARTITION],
 		beverageTags: ['无酒精', '苦', '气泡', '提神'],
-		collection: false,
+		chat: [
+			'距离太远的话，就读不到了。',
+			'赶紧吃完回去工作吧。',
+			'好不容易挤出一些时间，也该犒劳一下自己。',
+			'美食不仅是味觉感受，更是一种精神享受。',
+		],
+		evaluation: {
+			exbad: '这一顿比工作积攒的精神压力更大。',
+			bad: '难得过来一趟，有些失望。',
+			norm: '吃食只是为了支撑自己不会倒下。',
+			good: '阿燐的眼光向来不错。',
+			exgood: '真可谓层层叠叠，色香味齐全啊！',
+			lackmoneyangry: '我很清楚成本是多少。',
+			lackmoneynormal: '抱歉，把零花钱分给宠物后没剩多少了。',
+			repell: '不是说要为我准备健康料理吗？',
+			seenRepell: '一个人的礼貌是一面照出它肖像的镜子。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -890,6 +1335,7 @@ export const CUSTOMER_RARE_LIST = [
 			小巧: '吃太饱不利于思考',
 			特产: '缩短他乡与故乡的距离',
 		},
+		collection: false,
 	},
 	{
 		id: 2004,
@@ -905,7 +1351,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['水产', '海味', '鲜', '甜', '猎奇', '梦幻', TAG_POPULAR_POSITIVE],
 		negativeTags: ['生', '灼热'],
 		beverageTags: ['低酒精', '清酒', '水果'],
-		collection: true,
+		chat: [
+			'以阿空的性格来说，要时时刻刻盯着核熔炉的火力，真是难为她了。',
+			'今天送来的怨灵有点多啊。',
+			'下次叫上觉大人一起来吧。',
+			'觉大人有好好吃饭吗？',
+		],
+		evaluation: {
+			exbad: '还不如吃腐肉呢，呸呸！',
+			bad: '是我看走眼了吗？',
+			norm: '这种程度真的能让觉大人提起食欲吗？',
+			good: '这样的好东西真是吃一次少一次啊！',
+			exgood: '美味到即便是厌食症也会化身饕餮的程度！',
+			lackmoneyangry: '你都强买强卖，就别怪咱吃霸王餐了！',
+			lackmoneynormal: '最近手头有点紧。',
+			repell: '大姐，你太伤咱的心了。',
+			seenRepell: '骄傲自满可是会招来损失的。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -924,6 +1386,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			海味: '地底海底相通',
 		},
+		collection: true,
 	},
 	{
 		id: 2005,
@@ -939,7 +1402,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '重油', '咸', '灼热', '力量涌现', '辣'],
 		negativeTags: ['清淡', '菌类'],
 		beverageTags: ['中酒精', '可加热', '鸡尾酒'],
-		collection: false,
+		chat: [
+			'等待美食出炉的时间是快乐的。',
+			'享受美食的时间是最快乐的。',
+			'天要下雨，菜要下饭。',
+			'脑子里装不下的东西，就用肚子来装。',
+		],
+		evaluation: {
+			exbad: '还不如让我扔到灼热地狱烤一烤。',
+			bad: '火热程度太低了。',
+			norm: '多谢老板娘招待。',
+			good: '这一顿很火热啊！',
+			exgood: '我得到了比灼热地狱还要热烈的感受！',
+			lackmoneyangry: '假装忘记带钱吧…反正我是鸟脑袋嘛。',
+			lackmoneynormal: '鸟脑袋只能装这么多钱啦。',
+			repell: '当心我把你烤了哦！',
+			seenRepell: '干嘛要把人赶走啊。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -960,6 +1439,7 @@ export const CUSTOMER_RARE_LIST = [
 			灼热: '比火焰炽热',
 			辣: '火辣辣的感觉',
 		},
+		collection: false,
 	},
 	{
 		id: 3000,
@@ -975,7 +1455,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '饱腹', '甜', '适合拍照', '力量涌现', '猎奇', '不可思议', TAG_POPULAR_POSITIVE],
 		negativeTags: ['灼热', '汤羹', '辣'],
 		beverageTags: ['中酒精', '可加冰', '水果', '古典'],
-		collection: true,
+		chat: [
+			'我又来了！吓~一跳了吗？',
+			'这里变得更热闹了！好开心啊！',
+			'伺机寻找目标…好！一会儿就吓那个家伙吧！',
+			'今天又没有吓到人。',
+		],
+		evaluation: {
+			exbad: '难吃到吓我一跳。',
+			bad: '无法带来一点惊喜。',
+			norm: '还不错，就是少了点惊喜。',
+			good: '好吃到吓我一跳！',
+			exgood: '惊！好吃到吓人！',
+			lackmoneyangry: '我没有钱哦！吓到了吧？！',
+			lackmoneynormal: '这些钱都是小孩子们给我的。',
+			repell: '哭…我真是太没用了。',
+			seenRepell: '我能理解这种被嫌弃的感觉。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -995,6 +1491,7 @@ export const CUSTOMER_RARE_LIST = [
 			适合拍照: '好看的食物',
 			猎奇: '让人吓一跳',
 		},
+		collection: true,
 	},
 	{
 		id: 3001,
@@ -1010,7 +1507,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '高级', '饱腹', '咸', '鲜', '力量涌现', '特产'],
 		negativeTags: ['素', '猎奇', '小巧', '酸'],
 		beverageTags: ['高酒精', '可加冰', '西洋酒', '辛'],
-		collection: false,
+		chat: [
+			'那个倒霉死神发现自己的船漏水了吗？',
+			'白天大家都那么克制了，晚上大闹一场也可以吧？',
+			'我也很羡慕今朝有酒今朝醉的生活啊。',
+			'吃饱了还得载那个家伙去魔界。',
+		],
+		evaluation: {
+			exbad: '比船上的备用食物还要难吃！',
+			bad: '也就和船上的备用食物差不多。',
+			norm: '我也不是什么挑食的人。',
+			good: '不错哟！我的船正缺一位你这样的厨娘。',
+			exgood: '你做的料理散发着和圣辇船一样的光辉！',
+			lackmoneyangry: '钱太沉了，我的船载不动呐。',
+			lackmoneynormal: '地上的生活成本比海上高多了。',
+			repell: '我一定要把你从船上扔下去！',
+			seenRepell: '真遗憾，我就是冲着热闹来的啊。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1031,6 +1544,7 @@ export const CUSTOMER_RARE_LIST = [
 			鲜: '食物的保质期',
 			特产: '食物的相逢',
 		},
+		collection: false,
 	},
 	{
 		id: 3002,
@@ -1046,7 +1560,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '鲜', '生', TAG_SIGNATURE, '适合拍照', '猎奇', '不可思议', '特产', TAG_POPULAR_NEGATIVE],
 		negativeTags: ['西式', '酸', TAG_POPULAR_POSITIVE],
 		beverageTags: ['可加热', '烧酒', '直饮', '古典'],
-		collection: false,
+		chat: [
+			'你听说过幽灵食堂的都市传说吗？',
+			'最近的人类是不是都缺根筋？',
+			'孤独才是享受美食的最好状态。',
+			'好不容易找到的容身之处，我绝不离开。',
+		],
+		evaluation: {
+			exbad: '这种东西不值得我展露真相。',
+			bad: '马马虎虎吧。',
+			norm: '看来你还没有挖掘出美食的真相。',
+			good: '这就是美食的真相吗？！',
+			exgood: '展露真相就是为了品尝这样的美味！',
+			lackmoneyangry: '平安时代的强盗都没有你猖獗！',
+			lackmoneynormal: '自平安时代攒下来的钱已经快见底了。',
+			repell: '反正我也独来独往惯了。',
+			seenRepell: '我就是为了感受一下热闹才来的。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1067,6 +1597,7 @@ export const CUSTOMER_RARE_LIST = [
 			鲜: '腐肉',
 			适合拍照: '拍个不停',
 		},
+		collection: false,
 	},
 	{
 		id: 3003,
@@ -1082,7 +1613,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '传说', '清淡', '山珍', '和风', '燃起来了', TAG_POPULAR_POSITIVE],
 		negativeTags: ['西式', '生', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['中酒精', '可加热', '直饮', '气泡'],
-		collection: false,
+		chat: [
+			'平淡无奇的锅碗瓢盆里，盛满了人类的一生。',
+			'若能让吾把这个盘子摔了，店里的生意会更上一层楼。',
+			'后厨的火力够吗？需要吾帮忙添一把火吗？',
+			'与火为伴的厨子生活说不定挺适合吾。',
+		],
+		evaluation: {
+			exbad: '火候把握不好的话就让吾来助汝烧一把吧！',
+			bad: '只能算是无功无过吧。',
+			norm: '多谢款待。',
+			good: '口腹之欲都要被勾起来了！',
+			exgood: '国之宴席也莫过于此！',
+			lackmoneyangry: '贵店的物价恐怕连国库都能掏空。',
+			lackmoneynormal: '差点就在众目睽睽下吃霸王餐了！',
+			repell: '小人无节，弃本逐末！',
+			seenRepell: '礼者，人道之极也。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1101,6 +1648,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			和风: '吾之时代',
 		},
+		collection: false,
 	},
 	{
 		id: 3004,
@@ -1116,7 +1664,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['素', '传说', '中华', '甜', '不可思议', '小巧', '特产', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '饱腹'],
 		beverageTags: ['低酒精', '清酒', '水果', '现代'],
-		collection: false,
+		chat: [
+			'小麻雀离烟火气有点太近了呢。',
+			'我可爱的部下们受你关照了哟。',
+			'四方食事，不过一碗人间烟火。',
+			'想吃仙人的妖怪不少，给仙人做饭的还是第一次见呢。',
+		],
+		evaluation: {
+			exbad: '要不是走火入魔怎么可能会来吃这种东西！',
+			bad: '是我看走眼了吗？',
+			norm: '还要再加把劲哦。',
+			good: '美食当前还嚷嚷着辟谷就太不解风情了。',
+			exgood: '努力活着才能吃到这样的美味呢。',
+			lackmoneyangry: '我像是身上有很重铜臭味的人吗？',
+			lackmoneynormal: '小麻雀也挺会宰客的呢。',
+			repell: '你可要想清楚哟。',
+			seenRepell: '是我看走眼了吗？',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1138,6 +1702,7 @@ export const CUSTOMER_RARE_LIST = [
 			小巧: '宵夜的份量',
 			特产: '吃遍各地美食',
 		},
+		collection: false,
 	},
 	{
 		id: 3005,
@@ -1153,7 +1718,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '重油', '饱腹', '和风', TAG_SIGNATURE, '力量涌现', '烧烤'],
 		negativeTags: ['甜', '凉爽'],
 		beverageTags: ['高酒精', '烧酒', '啤酒', '苦'],
-		collection: true,
+		chat: [
+			'三餐正常，四餐满意。',
+			'美食和风景，可以抵抗全世界所有的悲伤和迷惘。',
+			'死了以后就什么都不用担心了。',
+			'遇酒且呵呵，人生能几何！',
+		],
+		evaluation: {
+			exbad: '拿糟糠来糊弄我吗？！',
+			bad: '还不如我自己瞎折腾弄得好吃。',
+			norm: '聊胜于无。',
+			good: '这般美味比仇恨更让人惦记。',
+			exgood: '有此美食作伴就算千年孤独也不在话下！',
+			lackmoneyangry: '什么黑店！太子大人给的家用竟然堪堪支付一顿饭钱？！',
+			lackmoneynormal: '我的钱和我的怨恨都消散得差不多了。',
+			repell: '你就不怕我怨恨你吗？',
+			seenRepell: '麻雀老板的心眼也太小了。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1173,6 +1754,7 @@ export const CUSTOMER_RARE_LIST = [
 			和风: '过去吃过的',
 			烧烤: '被雷劈过一样',
 		},
+		collection: true,
 	},
 	{
 		id: 4000,
@@ -1204,7 +1786,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '家常', '下酒', '和风', TAG_SIGNATURE, '适合拍照', TAG_POPULAR_POSITIVE],
 		negativeTags: ['西式', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['高酒精', '可加冰', '烧酒', '提神'],
-		collection: false,
+		chat: [
+			'今天的素材也不太能用呢。',
+			'想要获得情报就要深入群众。',
+			'劳逸结合才是长久之道哟。',
+			'新闻和做菜一样，加点料更香。',
+		],
+		evaluation: {
+			exbad: '烂到这种程度也足够上头条了！',
+			bad: '喂喂，做成这样没关系吗。',
+			norm: '作为新闻素材的话感觉无波无澜呢。',
+			good: '这个菜有成为爆款的潜力呢。',
+			exgood: '这个菜绝对能成为头条！',
+			lackmoneyangry: '感谢我没有报导这种漫天要价的行为吧！',
+			lackmoneynormal: '自费做了太多报纸，差点连夜宵也吃不起。',
+			repell: '喂喂？！不怕我报导出去吗？',
+			seenRepell: '把客人都赶走我还怎么打探情报？',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1224,6 +1822,7 @@ export const CUSTOMER_RARE_LIST = [
 			下酒: '有酒无菜',
 			适合拍照: '入我相机',
 		},
+		collection: false,
 	},
 	{
 		id: 4001,
@@ -1239,7 +1838,18 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['甜', TAG_SIGNATURE, '适合拍照', '凉爽', '菌类', '小巧', '梦幻', '毒'],
 		negativeTags: ['文化底蕴'],
 		beverageTags: ['无酒精', '水果', '甘', '苦'],
-		collection: true,
+		chat: ['孤独是毒也是药。', '毒取少量即为药。', '饮酒过量可是对身体的毒哟。', '向日葵要是也有毒就好了。'],
+		evaluation: {
+			exbad: '完全无法和铃铃的毒相比！',
+			bad: '铃铃不太喜欢这种味道。',
+			norm: '所谓料理也没有比毒药出彩很多嘛。',
+			good: '我和铃铃一致好评！',
+			exgood: '这是除了毒以外能让我感受到的最大满足！',
+			lackmoneyangry: '铃铃说你们就是黑店！',
+			lackmoneynormal: '我和铃铃好不容易攒下来的钱快见底了。',
+			repell: '我要让这双驱赶我的手烂掉！',
+			seenRepell: '铃铃说她突然没什么兴致了。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1263,6 +1873,7 @@ export const CUSTOMER_RARE_LIST = [
 			梦幻: '追求奇妙的体验',
 			毒: '最上乘的调味品',
 		},
+		collection: true,
 	},
 	{
 		id: 4002,
@@ -1278,7 +1889,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '传说', '清淡', '西式', '不可思议', '梦幻', '特产', TAG_POPULAR_POSITIVE],
 		negativeTags: ['饱腹', '和风', '咸', '灼热'],
 		beverageTags: ['鸡尾酒', '西洋酒', '利口酒', '现代'],
-		collection: false,
+		chat: [
+			'我对无聊的战斗不感兴趣。',
+			'花儿们看起来也很高兴。',
+			'这里从来没有过这样的氛围。',
+			'花间有酒，独酌何碍。',
+		],
+		evaluation: {
+			exbad: '呵！我接受你的挑衅！',
+			bad: '如此相待，最随和的花儿也不会愿盛开。',
+			norm: '这样是无法获得花儿的青睐的。',
+			good: '心情就像缓缓打开的花蕾一样呢。',
+			exgood: '你拥有的是让心花皆绽放的能力！',
+			lackmoneyangry: '我没有留下一记魔炮你就该感恩戴德了。',
+			lackmoneynormal: '漫天要价是无法延续生意的。',
+			repell: null,
+			seenRepell: null,
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1302,6 +1929,7 @@ export const CUSTOMER_RARE_LIST = [
 			不可思议: '冬紫罗兰',
 			梦幻: '蓝色满天星',
 		},
+		collection: false,
 	},
 	{
 		id: 4003,
@@ -1317,7 +1945,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['重油', '下酒', '灼热', '力量涌现', '猎奇', '不可思议', '燃起来了', TAG_POPULAR_NEGATIVE],
 		negativeTags: ['高级', TAG_POPULAR_POSITIVE],
 		beverageTags: ['中酒精', '烧酒', '直饮', '辛'],
-		collection: false,
+		chat: [
+			'温温吞吞永远都无法革命成功。',
+			'弱小的妖怪们，和我一起站起来吧！',
+			'总有一天我会把你收入麾下。',
+			'依恋“家的味道”也太软弱了！',
+		],
+		evaluation: {
+			exbad: '我要颠倒正是这种将糟糠奉为美食的世界！',
+			bad: '软弱的味道。',
+			norm: '“一般”颠倒过来还是“一般”。',
+			good: '力量源源不绝！这就是美食的威力吗？',
+			exgood: '力量满满！此刻的我无论什么都能将其颠倒！',
+			lackmoneyangry: '小费就当做是你孝敬的保护费了！',
+			lackmoneynormal: '靠开食堂来敛财真是绝妙的主意啊。',
+			repell: '你以为这是谁的地盘？！',
+			seenRepell: '弱小妖怪什么时候才可以不被欺压？！',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1339,6 +1983,7 @@ export const CUSTOMER_RARE_LIST = [
 			不可思议: '不可能实现',
 			燃起来了: '颠覆强者',
 		},
+		collection: false,
 	},
 	{
 		id: 4004,
@@ -1354,7 +1999,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['传说', '和风', '甜', '适合拍照', '文化底蕴', '小巧', '燃起来了', TAG_POPULAR_POSITIVE],
 		negativeTags: ['西式', TAG_LARGE_PARTITION],
 		beverageTags: ['低酒精', '可加热', '气泡', '古典'],
-		collection: true,
+		chat: [
+			'来这里就可以听到好故事吗？',
+			'辉针城从来没有这么热闹过。',
+			'她应该也常来这里吧？',
+			'谢谢你给这座寂寞的城带来尘嚣。',
+		],
+		evaluation: {
+			exbad: '这道菜难吃得能侵蚀内心的勇气！',
+			bad: '就算是作为路上的充饥之物都不够格呀。',
+			norm: '勉强能在路上作充饥之物吧。',
+			good: '这道菜给我的体验就像读勇者故事一样！',
+			exgood: '这道菜让我充满了踏上旅程的勇气！',
+			lackmoneyangry: '虽然是贵族，却是破败了的。',
+			lackmoneynormal: '小人族闭关太久，外面的物价已经这么高了吗？',
+			repell: '你竟然驱赶未来的勇者大人？！',
+			seenRepell: '身为勇者，我不能容许这种事发生。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1376,6 +2037,7 @@ export const CUSTOMER_RARE_LIST = [
 			适合拍照: '跟别人分享',
 			小巧: '我的食量',
 		},
+		collection: true,
 	},
 	{
 		id: 4005,
@@ -1391,7 +2053,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '家常', '山珍', '和风', '适合拍照', '凉爽', TAG_POPULAR_POSITIVE],
 		negativeTags: ['灼热'],
 		beverageTags: ['中酒精', '可加冰', '清酒', '直饮'],
-		collection: false,
+		chat: [
+			'太晚睡对皮肤不好。',
+			'节食减肥绝对不是美丽之道。',
+			'大晚上的感觉也好热呀。',
+			'是不是应该把头发也剪一下呢。',
+			'老板娘辛苦了。',
+		],
+		evaluation: {
+			exbad: '这样的料理感受不到任何善意。',
+			bad: '看来老板娘的厨艺也不是很稳定嘛。',
+			norm: '在我心里你应该能做得更好。',
+			good: '我能品尝出料理里的善意哦！',
+			exgood: '老板娘做的菜才是真正的圆满！',
+			lackmoneyangry: '掉下来的毛如果能变成钱就好了。',
+			lackmoneynormal: '宵夜还真是一不小心就会吃过量。',
+			repell: '草根妖怪也是有尊严的！',
+			seenRepell: '为什么不能和平相处呢？',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1413,6 +2092,7 @@ export const CUSTOMER_RARE_LIST = [
 			和风: '本州风格',
 			凉爽: '从胃里降温',
 		},
+		collection: false,
 	},
 	{
 		id: 5000,
@@ -1428,7 +2108,18 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '山珍', '海味', '中华', '甜', '小巧', '特产'],
 		negativeTags: ['不可思议', TAG_EXPENSIVE],
 		beverageTags: ['高酒精', '可加热', '烧酒', '啤酒', '苦'],
-		collection: true,
+		chat: ['今天也好累啊。', '忙碌的一天终于结束了！', '现在是犒赏自己的时间！', '肌肉好酸痛。'],
+		evaluation: {
+			exbad: '真是糟糕的一天。',
+			bad: '今天也是就这样过去了吗。',
+			norm: '谢谢，我恢复力气了。',
+			good: '谢谢老板娘治愈了我这一天的疲惫！',
+			exgood: '这就是我的光！！！',
+			lackmoneyangry: '就算把我卖了我也付不起呀！',
+			lackmoneynormal: '打工的钱快花完了。',
+			repell: '这就是属于我的命运吧。',
+			seenRepell: '这个世道到处都是不公的对待。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1452,6 +2143,7 @@ export const CUSTOMER_RARE_LIST = [
 			小巧: '兔子的胃很小',
 			特产: '无法抵达的地方',
 		},
+		collection: true,
 	},
 	{
 		id: 5001,
@@ -1467,7 +2159,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['素', '高级', '和风', '甜', '凉爽', '文化底蕴', '果味', TAG_POPULAR_POSITIVE],
 		negativeTags: ['山珍', '咸', '力量涌现'],
 		beverageTags: ['高酒精', '可加冰', '清酒', '水果', '古典'],
-		collection: false,
+		chat: [
+			'偶尔也要吃吃桃子以外的呢。',
+			'吃喜欢的东西，过可爱的人生。',
+			'今天的第五顿饭启动！',
+			'吃货最高境界就是眼见为食。',
+		],
+		evaluation: {
+			exbad: '要不是为了不浪费食物。',
+			bad: '还是去吃桃子好了。',
+			norm: '不浪费食物是我的底线。',
+			good: '好吃！还想吃更多更多。',
+			exgood: '好吃到我想在店里住下来了哟！',
+			lackmoneyangry: '我不是已经把桃子留下了吗？',
+			lackmoneynormal: '太计较钱财会失了风度哟。',
+			repell: '小麻雀太坏了。',
+			seenRepell: '不可以欺负人哟，小麻雀。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1490,6 +2198,7 @@ export const CUSTOMER_RARE_LIST = [
 			凉爽: '好热',
 			文化底蕴: '料理里的故事',
 		},
+		collection: false,
 	},
 	{
 		id: 5002,
@@ -1505,7 +2214,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '传说', '清淡', '中华', '灼热', '力量涌现', '文化底蕴', '小巧'],
 		negativeTags: ['山珍', '菌类'],
 		beverageTags: ['可加热', '烧酒', '直饮', '辛', '提神'],
-		collection: false,
+		chat: [
+			'这时候来冥想一下吧。',
+			'等餐时顺便做一下明天的训练计划吧。',
+			'吃完后再做做运动吧。',
+			'没想到有这么多人有吃夜宵的习惯。',
+		],
+		evaluation: {
+			exbad: '0分！',
+			bad: '40分。',
+			norm: '60分。',
+			good: '不错，可以有90分。',
+			exgood: '这个值得满分！',
+			lackmoneyangry: '我不可能放任你在月都胡来！',
+			lackmoneynormal: '这定价…明天来谈一谈吧。',
+			repell: '我可以理解为这是你下的战书吗？',
+			seenRepell: '军队不能出现不公。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1527,6 +2252,7 @@ export const CUSTOMER_RARE_LIST = [
 			灼热: '不要让血液冷下来',
 			小巧: '锻炼不宜吃太多',
 		},
+		collection: false,
 	},
 	{
 		id: 5003,
@@ -1542,7 +2268,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '饱腹', '西式', '甜', '凉爽', '梦幻', TAG_POPULAR_POSITIVE],
 		negativeTags: ['水产', '重油', '生'],
 		beverageTags: ['低酒精', '可加热', '啤酒', '甘', '古典'],
-		collection: true,
+		chat: [
+			'苏格拉底也要多吃点哦。',
+			'魔界也有这样的店真是太好了。',
+			'有没有我能帮得上忙的地方呢？',
+			'耐心等待就好。',
+		],
+		evaluation: {
+			exbad: '工作需要再用心一些。',
+			bad: '唔，辛苦了。',
+			norm: '多谢老板娘款待！',
+			good: '我和苏格拉底都很满意哦！',
+			exgood: '好吃得苏格拉底都变得亮晶晶了！',
+			lackmoneyangry: '对不起，我会更努力地工作赚钱的。',
+			lackmoneynormal: '得更努力工作赚钱才行了。',
+			repell: '不能带苏格拉底进来吗？',
+			seenRepell: '对待客人要一视同仁。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1561,6 +2303,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			凉爽: '毕竟是猫舌头',
 		},
+		collection: true,
 	},
 	{
 		id: 5004,
@@ -1576,7 +2319,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['水产', '山珍', '鲜', '生', '力量涌现', '猎奇', '菌类'],
 		negativeTags: ['高级', '清淡'],
 		beverageTags: ['高酒精', '可加冰', '烧酒', '西洋酒', '辛'],
-		collection: false,
+		chat: [
+			'这组实验数据还需要再验证。',
+			'回过神来已经几天没吃饭了啊。',
+			'稍微吃点再继续实验吧。',
+			'等待的时间继续刚刚的计算吧。',
+		],
+		evaluation: {
+			exbad: '就像在知识宝库上轻浮蹦迪一般让人愤怒。',
+			bad: '就像外行人做内行事一般让人感到焦躁。',
+			norm: '就像胸无点墨的人炫耀自己的知识一般无聊。',
+			good: '就像终于寻得了公式得出理想结果一般令人振奋！',
+			exgood: '就像邂逅了未解之谜一般令人陶醉！',
+			lackmoneyangry: '被小瞧了啊，忘记我的恐怖了吗？',
+			lackmoneynormal: '略为小贵，无伤大雅。',
+			repell: '哦？竟这样对我，考虑清楚后果了吗？',
+			seenRepell: '最有效率的做法啊，脑子转的很快嘛。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1597,6 +2356,7 @@ export const CUSTOMER_RARE_LIST = [
 			生: '最原始的味道',
 			力量涌现: '激活身体和思维',
 		},
+		collection: false,
 	},
 	{
 		id: 5005,
@@ -1625,7 +2385,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['水产', '西式', '甜', '适合拍照', '小巧', '特产', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '饱腹'],
 		beverageTags: ['中酒精', '可加冰', '鸡尾酒', '啤酒', '现代'],
-		collection: false,
+		chat: [
+			'好想去人间界呀。',
+			'其实人间界也有这样的店哦。',
+			'偶尔就这样呆在魔界也挺好的。',
+			'魔界难得有这么热闹的时候呢。',
+		],
+		evaluation: {
+			exbad: '这要是发到博客会被扔烂番茄。',
+			bad: '这种水平就算发到博客也没有人会关注。',
+			norm: '不温不火的水平呢。',
+			good: '美味得我都想发博客了！',
+			exgood: '我一定要在博客上推荐这道料理！',
+			lackmoneyangry: '旅游景点的餐厅都没有你家贵！',
+			lackmoneynormal: '这好像高于一般定价了吧。',
+			repell: '赶客的景点是没有未来的。',
+			seenRepell: '再有名的景点也没有傲慢对待客人的资格。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1646,6 +2422,7 @@ export const CUSTOMER_RARE_LIST = [
 			小巧: '晚上不宜太饱',
 			特产: '旅行的乐趣',
 		},
+		collection: false,
 	},
 	{
 		id: 6,
@@ -1661,7 +2438,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '饱腹', '鲜', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '下酒', '猎奇', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['烧酒', '啤酒'],
-		collection: false,
+		chat: [
+			'说到经营，我可是前辈哦…你那是什么眼神啊！',
+			'不能理解的事情就不要去理它，要不然在幻想乡可活不下去。',
+			'首先应当认真思考，并陈述了自己的想法后再问他人。',
+			'我不是那种会动粗的人，所以才能好好地活这么长时间。',
+			'你这儿还是太简陋了，要不要去我店里选几个道具，算你便宜哦。',
+		],
+		evaluation: {
+			exbad: '就这种水平也敢开店？',
+			bad: '普普通通吧。',
+			norm: '偶尔换换口味也不错呢。',
+			good: '可以啊！居然做得这么好！',
+			exgood: '太好吃了！麻雀难道是料理的天才吗？！',
+			lackmoneyangry: '怎么有人卖东西比我还离谱啊？！',
+			lackmoneynormal: '钱不太够…下次你去我那，我给你打个九九折吧！',
+			repell: '你以后也别想到我的店里来了！',
+			seenRepell: '你有没有一点身为经营者的自觉啊？！',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1679,6 +2473,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			饱腹: '不能吃不饱',
 		},
+		collection: false,
 	},
 	{
 		id: 4008,
@@ -1694,7 +2489,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['高级', '传说', '西式', '甜', '生', TAG_POPULAR_POSITIVE],
 		negativeTags: ['咸', '辣', '酸', TAG_ECONOMICAL],
 		beverageTags: ['高酒精', '西洋酒', '水果', '甘', '古典'],
-		collection: false,
+		chat: [
+			'芙兰那孩子的精力真是用不尽啊。',
+			'一会也带点回去给芙兰尝尝吧。',
+			'这家店的命运说不定已经悄悄地改变了。',
+			'和我们家的女仆比起来还差得远呢。',
+		],
+		evaluation: {
+			exbad: '做出这样的东西，果然应该用神枪刺穿你吧？',
+			bad: '我一开始就没有对你抱有任何期待。',
+			norm: '和我们家的女仆比起来还差得远呢。',
+			good: '这次真的不错呢，总算值得一点期待了。',
+			exgood: '只有这样的美味才能够配得上吸血鬼的尊贵身份！',
+			lackmoneyangry: '咲夜只给我准备了这么多钱！',
+			lackmoneynormal: '我还不习惯自己带钱出门。',
+			repell: '哼，看来我是太纵容你了啊。',
+			seenRepell: '还是回家吃咲夜做的吧。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1713,6 +2524,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			西式: '异国风味',
 		},
+		collection: false,
 	},
 	{
 		id: 11,
@@ -1728,7 +2540,18 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '清淡', '鲜', '力量涌现'],
 		negativeTags: ['重油', '咸', '猎奇'],
 		beverageTags: ['无酒精', '可加热', '水果'],
-		collection: false,
+		chat: ['哼。', '我并不相信你。', '那位大人说，你是…如果是真的，该有多好。'],
+		evaluation: {
+			exbad: '居然准备拿这种东西给那位大人吃？简直就是笑话。',
+			bad: '这种程度，是满足不了那位大人的！',
+			norm: '这种程度，是满足不了那位大人的！',
+			good: '或许…还差一点就。',
+			exgood: '这个味道！说不定…你真的能够拯救幻想乡！',
+			lackmoneyangry: '定价如此之高，根本就无修炼之心！',
+			lackmoneynormal: null,
+			repell: '总会有你无法拒绝的时候。',
+			seenRepell: '不过如此。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1744,6 +2567,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {},
+		collection: false,
 	},
 	{
 		id: 23,
@@ -1759,7 +2583,18 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '水产', '高级', '传说', '饱腹', '和风', '中华', TAG_LARGE_PARTITION],
 		negativeTags: ['素', '清淡', '小巧'],
 		beverageTags: ['高酒精', '可加冰', '鸡尾酒'],
-		collection: false,
+		chat: [],
+		evaluation: {
+			exbad: '饿！好饿！！好饿啊！！！',
+			bad: '饿！好饿！！好饿啊！！！',
+			norm: '无论如何都吃不饱！好痛苦。',
+			good: '还不够！！好饿！！！',
+			exgood: '终于…找到了…能够让我感到满足的食物。',
+			lackmoneyangry: null,
+			lackmoneynormal: null,
+			repell: null,
+			seenRepell: null,
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1776,6 +2611,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {},
+		collection: false,
 	},
 	{
 		id: 30,
@@ -1805,9 +2641,25 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '水产', '甜', '梦幻', TAG_POPULAR_POSITIVE],
 		negativeTags: ['灼热', '猎奇', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['可加冰', '水果', '甘', '辛'],
-		collection: false,
+		chat: [
+			'这个世界会提供什么料理呢？期待期待。',
+			'这个世界的人不像我们那边棱角分明呢。',
+			'这个世界的大家都好可爱，连我都可爱了！',
+		],
+		evaluation: {
+			exbad: '你们就拿这样的东西招待异世界的旅人吗？！',
+			bad: '我远道而来就为了个这？',
+			norm: '挺期待的，但也就那么回事吧。',
+			good: '好吃好吃！不枉我穿越通道来这边一次呀！',
+			exgood: '太好吃了！我要介绍给我们世界的每一个人！',
+			lackmoneyangry: '这边世界流行宰客吗？',
+			lackmoneynormal: '啊，差点预算就被爆破了。',
+			repell: '呜呜，我要找kk投诉你开黑店！',
+			seenRepell: '哇！这个世界的老板娘这么生猛的吗！',
+		},
 		spellCards: {},
 		positiveTagMapping: {},
+		collection: false,
 	},
 	{
 		id: 31,
@@ -1823,9 +2675,28 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '甜', '凉爽', '菌类', '小巧', '梦幻', TAG_POPULAR_POSITIVE],
 		negativeTags: ['生', '灼热', '猎奇', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['无酒精', '水果', '甘', '苦'],
-		collection: false,
+		chat: [
+			'哈哈哈，今天会用什么来招待我们呢！',
+			'我们的画风跟其他人真的不一样啊。',
+			'三个人一起坐…说实话有点挤啊。',
+			'老板娘！快把最上好的东西端出来吧！',
+			'幸好有带一些钱…不过大家要省着点花呀。',
+			'真想偷偷的溜进后厨学两招。',
+		],
+		evaluation: {
+			exbad: '这玩意儿！狗都不吃！',
+			bad: '拿这东西忽悠妖精你的良心不会痛吗？',
+			norm: '也就那么回事吧。',
+			good: '你加什么东西呀？！为什么会这么好吃？！',
+			exgood: '好、好吃！HIGH起来了！',
+			lackmoneyangry: '宰客啦！老板娘宰客啦！',
+			lackmoneynormal: '差一点就要付不起钱被关在瓶子里了。',
+			repell: '哇！这个世界欺负柔弱的妖精！',
+			seenRepell: '什么叫黑心老板娘啊，我们算是见识了！',
+		},
 		spellCards: {},
 		positiveTagMapping: {},
+		collection: false,
 	},
 	{
 		id: 36,
@@ -1841,7 +2712,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['水产', '家常', '中华', '辣', TAG_POPULAR_POSITIVE],
 		negativeTags: ['重油', '下酒', '生', TAG_POPULAR_NEGATIVE],
 		beverageTags: ['无酒精', '甘', '气泡'],
-		collection: false,
+		chat: [
+			'我的麟是麒麟的麟哦！很厉害吧。',
+			'这儿的客人比我们医馆多多了。',
+			'今天又因为扎针的时候下手太重被客人投诉了。',
+			'竹林那边的赤脚医生是从哪里冒出来的？',
+			'我没什么耐心，一会儿上菜可别让我等太久啊！',
+		],
+		evaluation: {
+			exbad: '别以为老娘登场少就好欺负啊！',
+			bad: '这也没比药好吃多少。',
+			norm: '还不错吧。',
+			good: '好、好吃！就连妖怪做饭都比我好吃。',
+			exgood: '积攒了一天的疲劳被治愈了！',
+			lackmoneyangry: '胡扯！别以为你乱开价我会搭理你！',
+			lackmoneynormal: '我就只有这么多钱了。',
+			repell: '赶我走？下次别让我在医馆看到你！',
+			seenRepell: '区别待遇真没意思。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1858,6 +2746,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {},
+		collection: false,
 	},
 	{
 		id: 37,
@@ -1873,7 +2762,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '下酒', '山珍', '和风', '力量涌现', TAG_EXPENSIVE, TAG_POPULAR_NEGATIVE],
 		negativeTags: ['素', '清淡', TAG_POPULAR_POSITIVE],
 		beverageTags: ['高酒精', '可加冰', '可加热'],
-		collection: false,
+		chat: [
+			'生前好好行善积德，才不会在死后受我凌虐。',
+			'善恶到头终有报。',
+			'我残暴？呵呵，皆是那些幽灵罪有应得。',
+			'同情心什么的根本就不需要。',
+			'人类啊，好好珍惜活着的幸福吧。',
+		],
+		evaluation: {
+			exbad: '你想下地狱吗？！',
+			bad: '地上的食物就这种水平吗？',
+			norm: '也就这样吧。',
+			good: '地上的食物果然有意思！',
+			exgood: '我都想破格把你掳到八寒地狱来做饭呢！',
+			lackmoneyangry: '敢敲诈我？有本事就来地狱讨吧！',
+			lackmoneynormal: '凭什么是你来定价？我说了算！',
+			repell: '可恶！你要是将来落在我手上。',
+			seenRepell: '哼，地上也一样是欺善怕恶。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1890,6 +2796,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {},
+		collection: false,
 	},
 	{
 		id: 38,
@@ -1905,7 +2812,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['传说', '下酒', '西式', '中华', '文化底蕴', '特产'],
 		negativeTags: ['水产', '重油', '饱腹'],
 		beverageTags: ['中酒精', '可加冰', '鸡尾酒', '西洋酒'],
-		collection: false,
+		chat: [
+			'地狱的改革，势必会引发一场激烈的斗争。',
+			'今日的执著，会造成明日的后悔。',
+			'一切恶法，本是虚妄。',
+			'在无尽的未来里，有无数种可能。',
+			'那个妖怪贤者…呵呵，原来如此。',
+		],
+		evaluation: {
+			exbad: '痛苦的经验总是最有力的教训。',
+			bad: '不进则退，不得则亡。',
+			norm: '我所看到的…你的水平不应如此。',
+			good: '不错，凭着去时走错路的经验，回来时就顺利了。',
+			exgood: '地上有如此珍馐，让人几欲流连忘返。',
+			lackmoneyangry: '买卖不公者终堕刀锯地狱。',
+			lackmoneynormal: '定价不公也是罪。我只能按规则来付这笔钱。',
+			repell: '即便是幻想乡也无法接受地狱来客吗？',
+			seenRepell: '任何人都不该被时间轻易抹去。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1921,6 +2845,7 @@ export const CUSTOMER_RARE_LIST = [
 			],
 		},
 		positiveTagMapping: {},
+		collection: false,
 	},
 	{
 		id: 1003,
@@ -1951,7 +2876,24 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '高级', '传说', '饱腹', '鲜', '生', '力量涌现', '不可思议', TAG_LARGE_PARTITION],
 		negativeTags: [],
 		beverageTags: ['高酒精', '烧酒', '直饮', '辛'],
-		collection: false,
+		chat: [
+			'小看这人世可是会吃苦头的哦？',
+			'血池的恐惧、悲欢、憎恶、怨恨也很美味呢。',
+			'我的信条是“坐收渔利”。',
+			'刚欲同盟的成员多半都是些各行其是的家伙。',
+			'吃掉这个小麻雀的话，我是不是也能做出这么美味的食物。',
+		],
+		evaluation: {
+			exbad: '血池的恐惧、悲欢、憎恶、怨恨，你也想感受一下吗？！',
+			bad: '我不是为了这种东西跑到地上来的！',
+			norm: '和黑水的味道差不多吧。',
+			good: '一直以来小瞧地上了，这一趟来得值！',
+			exgood: '只有这种舌尖上的享受，才配得上我无限的胃袋！',
+			lackmoneyangry: '连我钱都想讹？先看看你有没有这个本事！',
+			lackmoneynormal: '这家饭店不讲理的程度和畜生界有得一拼。',
+			repell: '真以为我不会对你下手？',
+			seenRepell: '地上和畜生界也没什么不同，无趣。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -1973,6 +2915,7 @@ export const CUSTOMER_RARE_LIST = [
 			生: '血淋淋的食物',
 			[TAG_LARGE_PARTITION]: '指头缝都塞不满',
 		},
+		collection: false,
 	},
 	{
 		id: 2006,
@@ -2004,7 +2947,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['咸', '甜', '生', '猎奇', '不可思议', '梦幻'],
 		negativeTags: [],
 		beverageTags: ['高酒精', '烧酒', '苦', '气泡'],
-		collection: false,
+		chat: [
+			'贪吃不胖，美梦不空。',
+			'只要填饱肚子就不会感到空虚啦！',
+			'怪诞评审好酷。啊呀！那不就是我嘛！',
+			'等啊等，会等来什么呢。',
+		],
+		evaluation: {
+			exbad: '把小麻雀装饰在家里一定很好看。',
+			bad: '明明肚子空空却不想吃呢。',
+			norm: '吃饱啦。',
+			good: '姐姐说肚子吃得鼓鼓的就表示吃饱了！',
+			exgood: '这么棒的老板娘装饰在家里一定很好看！',
+			lackmoneyangry: '为什么吃饭要付钱啊？',
+			lackmoneynormal: '我就随便带了点钱，你都拿去好了。',
+			repell: '怎么啦怎么啦？是没看到我吗？',
+			seenRepell: '恋恋喜欢热闹啦！',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -2023,6 +2982,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			不可思议: '永远猜不到我想要的是什么',
 		},
+		collection: false,
 	},
 	{
 		id: 3009,
@@ -2038,7 +2998,23 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['肉', '水产', '家常', '传说', '下酒', '和风', '果味', TAG_POPULAR_POSITIVE],
 		negativeTags: ['灼热', '辣'],
 		beverageTags: ['高酒精', '可加热', '烧酒', '古典'],
-		collection: false,
+		chat: [
+			'叶子变的钱非常便利哦。',
+			'这种传统与现代交融的风格颇合老朽心意。',
+			'老朽还年轻着呐。',
+			'那边的…嚯嚯嚯，这么拙劣的变身可骗不了老朽。',
+		],
+		evaluation: {
+			exbad: '竟敢戏弄老朽？让你见识什么是真正的恶作剧！',
+			bad: '有点让老朽失望啊。',
+			norm: '只有这种程度吗？',
+			good: '嚯嚯嚯，不愧是老朽寄望的妖兽。',
+			exgood: '这是值得狸猫来报恩的一顿款待呐！',
+			lackmoneyangry: '老朽没有用叶子结账就已经很讲义气了！！！',
+			lackmoneynormal: '叶子老朽倒是有很多，钱就只有这些了。',
+			repell: '现在的妖怪怎么连敬老的美德都忘了。',
+			seenRepell: '还是回去和狸猫们喝酒更有趣。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -2058,6 +3034,7 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			和风: '佐渡老家',
 		},
+		collection: false,
 	},
 	{
 		id: 5012,
@@ -2088,7 +3065,18 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '高级', '传说', '适合拍照', '凉爽', '猎奇', '汤羹'],
 		negativeTags: ['饱腹', '菌类'],
 		beverageTags: ['中酒精', '高酒精', '烧酒', '古典'],
-		collection: false,
+		chat: ['久违地出来吃饭了呢。', '接下来可以睡个长觉了。', '一路走来真是辛苦你了。', '你的努力我都看在眼里。'],
+		evaluation: {
+			exbad: '这种东西连呆在隙间的资格都没有。',
+			bad: '这种东西应该扔到隙间去。',
+			norm: '似乎和我想象的有所出入。',
+			good: '不错，难怪享有盛名。',
+			exgood: '做得好！你值得拥有更多！',
+			lackmoneyangry: '我不能允许幻想乡存在这种漫天要价的行为！',
+			lackmoneynormal: '小麻雀的生意经做得稍微有点过头了哟。',
+			repell: '要到隙间来谈谈吗？',
+			seenRepell: '我期待的幻想乡并非这种模样。',
+		},
 		spellCards: {
 			positive: [
 				{
@@ -2108,5 +3096,6 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTagMapping: {
 			适合拍照: '食之品相',
 		},
+		collection: false,
 	},
 ] as const satisfies ICustomerRare[];

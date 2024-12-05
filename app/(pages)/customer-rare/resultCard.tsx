@@ -13,7 +13,7 @@ import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
-import {DARK_MATTER_NAME, DARK_MATTER_PRICE, type TIngredientName} from '@/data';
+import {CUSTOMER_RATING_MAP, DARK_MATTER_NAME, DARK_MATTER_PRICE, type TIngredientName} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
@@ -308,7 +308,7 @@ export default function ResultCard() {
 						size="sm"
 						variant="flat"
 						onPress={handleSaveButtonPress}
-						aria-label={`保存套餐，当前${currentRating ? `评级为${currentRating}` : '未评级'}`}
+						aria-label={`保存套餐，当前${currentRating === null ? '未评级' : `评级为${CUSTOMER_RATING_MAP[currentRating]}`}`}
 						className={twJoin(
 							'flex-col gap-0 text-xs leading-none md:w-auto',
 							isSaveButtonDisabled && 'opacity-disabled'

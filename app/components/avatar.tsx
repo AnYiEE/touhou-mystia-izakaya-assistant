@@ -2,9 +2,9 @@ import {type ComponentProps, type ElementRef, forwardRef, memo} from 'react';
 
 import {Avatar as NextUIAvatar, extendVariants} from '@nextui-org/react';
 
-import type {TCustomerRatingColor} from '@/(pages)/customer-rare/types';
+import type {TRatingKey} from '@/data';
 
-type TRatingStyleKey = TCustomerRatingColor | `${TCustomerRatingColor}-border`;
+type TRatingStyleKey = TRatingKey | `${TRatingKey}-border`;
 
 export type TRatingStyleMap = Partial<Record<TRatingStyleKey, string>>;
 
@@ -14,7 +14,7 @@ export function generateRatingColor<T extends 'base' | 'content'>(key: T, colorM
 	return {
 		variants: {
 			color: Object.keys(colorMap).reduce<Partial<TColor>>((acc, cur) => {
-				acc[cur as TCustomerRatingColor] = {
+				acc[cur as TRatingKey] = {
 					...(key === 'content'
 						? {
 								base: 'leading-none',
@@ -24,7 +24,7 @@ export function generateRatingColor<T extends 'base' | 'content'>(key: T, colorM
 						'leading-none text-background ring-2 dark:text-foreground',
 						colorMap[cur as TRatingStyleKey],
 					],
-				} as TColor[TCustomerRatingColor];
+				} as TColor[TRatingKey];
 				return acc;
 			}, {}),
 		},

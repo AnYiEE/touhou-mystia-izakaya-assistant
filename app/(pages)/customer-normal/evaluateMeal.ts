@@ -1,10 +1,11 @@
-import type {TCustomerRating, TRecipe} from './types';
+import type {TRecipe} from './types';
 import {
 	TAG_LARGE_PARTITION,
 	TAG_POPULAR_NEGATIVE,
 	TAG_POPULAR_POSITIVE,
 	TAG_SIGNATURE,
 	type TCustomerNormalName,
+	type TRatingKey,
 	type TRecipeName,
 	type TRecipeTag,
 } from '@/data';
@@ -52,14 +53,14 @@ export function checkEasterEgg({
 	};
 }
 
-function getRatingKey(mealScore: number): TCustomerRating {
+function getRatingKey(mealScore: number): TRatingKey {
 	if (mealScore <= 0) {
-		return '极度不满';
+		return 'exbad';
 	} else if (mealScore <= 2) {
-		return '普通';
+		return 'norm';
 	}
 
-	return '满意';
+	return 'good';
 }
 
 export function evaluateMeal({

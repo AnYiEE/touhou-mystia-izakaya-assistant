@@ -1,11 +1,12 @@
+import {type ReactElement} from 'react';
+
 import {AccordionItem, ScrollShadow} from '@nextui-org/react';
 
 import InfoButtonBase from '@/(pages)/customer-rare/infoButtonBase';
 import Avatar from '@/components/avatar';
 import Ol from '@/components/ol';
 
-import {customerRatingColorMap} from './constants';
-import type {TCustomerRating} from './types';
+import {CUSTOMER_RATING_KEY, CUSTOMER_RATING_MAP} from '@/data';
 import {customerNormalStore as store} from '@/stores';
 
 export default function InfoButton() {
@@ -17,11 +18,24 @@ export default function InfoButton() {
 		return null;
 	}
 
-	const {description: currentCustomerDescription, id: currentCustomerId} =
-		instance_customer.getPropsByName(currentCustomerName);
+	const {
+		chat: currentCustomerChat,
+		description: currentCustomerDescription,
+		id: currentCustomerId,
+	} = instance_customer.getPropsByName(currentCustomerName);
+
+	const getDefaultExpandedKeys = () => {
+		const defaultExpandedKeys = ['description'];
+
+		if (currentCustomerChat.length > 0) {
+			defaultExpandedKeys.push('chat');
+		}
+
+		return defaultExpandedKeys;
+	};
 
 	return (
-		<InfoButtonBase defaultExpandedKeys={['description']}>
+		<InfoButtonBase defaultExpandedKeys={getDefaultExpandedKeys()}>
 			<AccordionItem key="description" aria-label="普客介绍" title="普客介绍">
 				<ScrollShadow hideScrollBar size={16} className="max-h-48 break-all text-justify text-xs">
 					<p className="mb-1 text-sm">
@@ -30,6 +44,40 @@ export default function InfoButton() {
 					</p>
 					<p>{currentCustomerDescription}</p>
 				</ScrollShadow>
+			</AccordionItem>
+			{currentCustomerChat.length > 0 ? (
+				<AccordionItem key="chat" aria-label="闲聊对话" title="闲聊对话">
+					<ScrollShadow hideScrollBar size={16} className="max-h-48 break-all text-justify text-xs">
+						<Ol>
+							{currentCustomerChat.map((chat, index) => (
+								<li key={index}>{chat}</li>
+							))}
+						</Ol>
+					</ScrollShadow>
+				</AccordionItem>
+			) : (
+				(null as unknown as ReactElement)
+			)}
+			<AccordionItem key="rating" aria-label="评级图例" title="评级图例">
+				<div className="flex flex-col gap-2 text-xs">
+					{CUSTOMER_RATING_KEY.filter((key) => key === 'exbad' || key === 'norm' || key === 'good').map(
+						(ratingKey, index) => (
+							<div key={index} className="mb-1 flex items-center gap-3 px-1">
+								<Avatar
+									isBordered
+									showFallback
+									color={ratingKey}
+									fallback={<div></div>}
+									radius="sm"
+									classNames={{
+										base: 'h-4 w-1 ring-offset-0',
+									}}
+								/>
+								{CUSTOMER_RATING_MAP[ratingKey]}
+							</div>
+						)
+					)}
+				</div>
 			</AccordionItem>
 			<AccordionItem key="help" aria-label="特别说明" title="特别说明">
 				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-xs">
@@ -58,25 +106,6 @@ export default function InfoButton() {
 						</li>
 					</Ol>
 				</ScrollShadow>
-			</AccordionItem>
-			<AccordionItem key="rating" aria-label="评级图例" title="评级图例">
-				<div className="flex flex-col gap-2 text-xs">
-					{(['极度不满', '普通', '满意'] as TCustomerRating[]).map((rating, index) => (
-						<div key={index} className="mb-1 flex items-center gap-3 px-1">
-							<Avatar
-								isBordered
-								showFallback
-								color={customerRatingColorMap[rating]}
-								fallback={<div></div>}
-								radius="sm"
-								classNames={{
-									base: 'h-4 w-1 ring-offset-0',
-								}}
-							/>
-							{rating}
-						</div>
-					))}
-				</div>
 			</AccordionItem>
 		</InfoButtonBase>
 	);

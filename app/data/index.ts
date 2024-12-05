@@ -63,7 +63,17 @@ export type TIngredientTag = import('./types').TIngredientTag;
 export type TRecipeTag = import('./types').TRecipeTag;
 export type TTag = TBeverageTag | TIngredientTag | TRecipeTag;
 
+export type TEvaluation = import('./types').TEvaluation;
+export type TEvaluationKey = import('./types').TEvaluationKey;
+export type TEvaluationKeyMap = import('./types').TEvaluationKeyMap;
+export type TEvaluationMap = import('./types').TEvaluationMap;
+export type TRating = import('./types').TRating;
+export type TRatingKey = import('./types').TRatingKey;
+export type TRatingKeyMap = import('./types').TRatingKeyMap;
+export type TRatingMap = import('./types').TRatingMap;
+
 export type TDlc = import('./types').TDlc;
 export type TLevel = import('./types').TLevel;
 export type TPlace = import('./types').TPlace;
+export type TRewardType = import('./types').TRewardType;
 export type TSpeed = import('./types').TSpeed;

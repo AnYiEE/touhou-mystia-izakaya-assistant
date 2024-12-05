@@ -17,8 +17,14 @@ import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 import Tooltip from '@/components/tooltip';
 
-import {customerRatingColorMap} from './constants';
-import {CUSTOMER_RARE_TAG_STYLE, LABEL_DLC_0, type TBeverageTag, type TCustomerRareName, type TRecipeTag} from '@/data';
+import {
+	CUSTOMER_RARE_TAG_STYLE,
+	CUSTOMER_RATING_MAP,
+	LABEL_DLC_0,
+	type TBeverageTag,
+	type TCustomerRareName,
+	type TRecipeTag,
+} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, pinyinSort} from '@/utils';
 
@@ -139,7 +145,7 @@ export default function CustomerCard() {
 
 	const avatarRatingContent = useMemo(() => {
 		if (hasRating) {
-			return currentRating;
+			return CUSTOMER_RATING_MAP[currentRating];
 		}
 
 		const target = [];
@@ -161,8 +167,8 @@ export default function CustomerCard() {
 		return `请选择${content}以评级`;
 	}, [currentBeverageName, currentRating, currentRecipeData, hasMystiaCooker, hasRating, isDarkMatter]);
 
-	const avatarRatingColor = hasRating ? (`${customerRatingColorMap[currentRating]}-border` as const) : undefined;
-	const tooltipRatingColor = hasRating ? customerRatingColorMap[currentRating] : undefined;
+	const avatarRatingColor = hasRating ? (`${currentRating}-border` as const) : undefined;
+	const tooltipRatingColor = hasRating ? currentRating : undefined;
 
 	const getTagTooltip = useCallback(
 		(type: keyof typeof currentCustomerOrder, tag: string) => {
