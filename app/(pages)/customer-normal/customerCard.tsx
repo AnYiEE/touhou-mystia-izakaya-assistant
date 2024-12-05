@@ -158,12 +158,11 @@ export default function CustomerCard() {
 	const clonedCurrentCustomerPlaces = [...currentCustomerPlaces];
 	const currentCustomerMainPlace = clonedCurrentCustomerPlaces.shift();
 
-	const {length: clonedCurrentCustomerPlacesLength} = clonedCurrentCustomerPlaces;
+	const hasOtherPlaces = clonedCurrentCustomerPlaces.length > 0;
 
-	const placeContent =
-		clonedCurrentCustomerPlacesLength > 0
-			? `其他出没地区：${clonedCurrentCustomerPlaces.join('、')}`
-			: '暂未收录其他出没地区';
+	const placeContent = hasOtherPlaces
+		? `其他出没地区：${clonedCurrentCustomerPlaces.join('、')}`
+		: '暂未收录其他出没地区';
 
 	return (
 		<Card
@@ -218,16 +217,14 @@ export default function CustomerCard() {
 								</Tooltip>
 								<PopoverContent>{dlcLabel}</PopoverContent>
 							</Popover>
-							<Popover showArrow offset={6}>
+							<Popover showArrow offset={hasOtherPlaces ? 6 : 4}>
 								<Tooltip showArrow content={placeContent} offset={2}>
 									<span className="cursor-pointer">
 										<PopoverTrigger>
 											<span
 												role="button"
 												tabIndex={0}
-												className={twJoin(
-													clonedCurrentCustomerPlacesLength > 0 && 'underline-dotted-linear'
-												)}
+												className={twJoin(hasOtherPlaces && 'underline-dotted-linear')}
 											>
 												{currentCustomerMainPlace}
 											</span>

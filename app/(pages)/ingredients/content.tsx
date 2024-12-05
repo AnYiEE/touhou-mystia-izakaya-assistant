@@ -132,11 +132,11 @@ export default memo<IProps>(function Content({data}) {
 															return content === null ? (
 																item[0]
 															) : (
-																<Popover showArrow offset={5} size="sm">
+																<Popover offset={2} size="sm">
 																	<Tooltip
-																		showArrow
 																		content={content}
-																		offset={3}
+																		closeDelay={0}
+																		offset={0}
 																		size="sm"
 																	>
 																		<span className="underline-dotted-offset2 cursor-pointer">

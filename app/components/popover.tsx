@@ -12,14 +12,20 @@ const CustomNextUIPopover = extendVariants(NextUIPopover, generateRatingColor('c
 
 interface IProps extends ComponentProps<typeof CustomNextUIPopover> {}
 
-export default memo<IProps>(function Popover({classNames, color, offset, showArrow, ...props}) {
+export default memo<IProps>(function Popover({classNames, color, offset, showArrow, size, ...props}) {
 	const isHighAppearance = store.persistence.highAppearance.use();
 
 	return (
 		<CustomNextUIPopover
 			color={color}
-			offset={isHighAppearance && typeof offset === 'number' ? offset - 2 : (offset as number)}
+			// The same offset position as `Tooltip`.
+			offset={
+				typeof offset === 'number'
+					? offset + (isHighAppearance ? -2 : size === 'sm' && !showArrow ? -3 : showArrow ? 1 : -3)
+					: (offset as unknown as number)
+			}
 			showArrow={isHighAppearance ? false : Boolean(showArrow)}
+			size={size}
 			motionProps={
 				isHighAppearance
 					? {
