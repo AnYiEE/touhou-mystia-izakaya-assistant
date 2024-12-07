@@ -192,6 +192,7 @@ export default function Navbar() {
 								const dropdownElement = (
 									<Dropdown
 										key={dropdownIndex}
+										shouldCloseOnScroll
 										onOpenChange={vibrate}
 										classNames={{
 											content: twJoin(

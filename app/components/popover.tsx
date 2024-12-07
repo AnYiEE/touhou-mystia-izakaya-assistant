@@ -12,7 +12,16 @@ const CustomNextUIPopover = extendVariants(NextUIPopover, generateRatingColor('c
 
 interface IProps extends ComponentProps<typeof CustomNextUIPopover> {}
 
-export default memo<IProps>(function Popover({classNames, color, offset, showArrow, size, ...props}) {
+export default memo<IProps>(function Popover({
+	classNames,
+	color,
+	offset,
+	shouldBlockScroll,
+	shouldCloseOnScroll,
+	showArrow,
+	size,
+	...props
+}) {
 	const isHighAppearance = store.persistence.highAppearance.use();
 
 	return (
@@ -24,6 +33,8 @@ export default memo<IProps>(function Popover({classNames, color, offset, showArr
 					? offset + (isHighAppearance ? -2 : size === 'sm' && !showArrow ? -3 : showArrow ? 1 : -3)
 					: (offset as unknown as number)
 			}
+			shouldBlockScroll={Boolean(shouldBlockScroll)}
+			shouldCloseOnScroll={Boolean(shouldCloseOnScroll)}
 			showArrow={isHighAppearance ? false : Boolean(showArrow)}
 			size={size}
 			motionProps={

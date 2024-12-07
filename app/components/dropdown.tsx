@@ -7,11 +7,19 @@ import {globalStore as store} from '@/stores';
 
 interface IProps extends DropdownProps {}
 
-export default memo<IProps>(function Dropdown({classNames, showArrow, ...props}) {
+export default memo<IProps>(function Dropdown({
+	classNames,
+	shouldBlockScroll,
+	shouldCloseOnScroll,
+	showArrow,
+	...props
+}) {
 	const isHighAppearance = store.persistence.highAppearance.use();
 
 	return (
 		<NextUIDropdown
+			shouldBlockScroll={Boolean(shouldBlockScroll)}
+			shouldCloseOnScroll={Boolean(shouldCloseOnScroll)}
 			showArrow={isHighAppearance ? false : Boolean(showArrow)}
 			motionProps={
 				isHighAppearance
