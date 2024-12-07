@@ -3,7 +3,6 @@
 import {
 	type ElementRef,
 	type FC,
-	type HTMLAttributes,
 	type MouseEvent,
 	type PropsWithChildren,
 	forwardRef,
@@ -165,7 +164,7 @@ const ShareButton = memo<IShareButtonProps>(function ShareButton({name}) {
 	);
 });
 
-interface ITriggerProps extends PopoverTriggerProps, HTMLAttributes<HTMLButtonElement> {}
+interface ITriggerProps extends PopoverTriggerProps, HTMLButtonElementAttributes {}
 
 const Trigger = memo<ITriggerProps>(function Trigger({className, ...props}) {
 	const isHighAppearance = store.persistence.highAppearance.use();
