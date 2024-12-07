@@ -90,7 +90,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 						onValueChange={onIsNegativePopularTagChange}
 						aria-label={`设置为${isNegativePopularTag ? TAG_POPULAR_POSITIVE : TAG_POPULAR_NEGATIVE}`}
 						classNames={{
-							base: 'ml-2',
+							base: 'mx-2',
 							wrapper: 'bg-primary',
 						}}
 					/>

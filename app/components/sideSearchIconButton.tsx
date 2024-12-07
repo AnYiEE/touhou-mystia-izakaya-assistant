@@ -93,7 +93,7 @@ export default memo<IProps>(function SideSearchIconButton({
 					}}
 					classNames={{
 						base: twJoin(
-							'[&_div]:transition-background',
+							'[&_div]:transition-background data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:bg-default-200',
 							isHighAppearance &&
 								'data-[slot="input-wrapper"]:[&_div]:!bg-default-100/70 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:!bg-default-200/70'
 						),

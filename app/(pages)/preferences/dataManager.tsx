@@ -216,7 +216,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								onValueChange={setImportValue}
 								classNames={{
 									inputWrapper: twJoin(
-										'transition-background',
+										'transition-background data-[hover=true]:bg-default-200',
 										isHighAppearance &&
 											'bg-default-100/40 backdrop-blur data-[hover=true]:bg-default-200/40 group-data-[focus=true]:bg-default-100/70'
 									),
