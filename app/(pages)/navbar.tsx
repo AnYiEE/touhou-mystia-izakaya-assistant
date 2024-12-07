@@ -39,6 +39,7 @@ import {checkA11yConfirmKey} from '@/utils';
 const {links, name, navItems, navMenuItems, shortName} = siteConfig;
 
 export function showProgress(startProgress: () => void) {
+	// @ts-expect-error Let the animation last at least 300 ms.
 	startTransition(async () => {
 		startProgress();
 		await new Promise((resolve) => {
