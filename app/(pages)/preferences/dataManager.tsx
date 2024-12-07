@@ -1,14 +1,4 @@
-import {
-	type ChangeEvent,
-	type KeyboardEvent,
-	memo,
-	useCallback,
-	useEffect,
-	useMemo,
-	useReducer,
-	useRef,
-	useState,
-} from 'react';
+import {type ChangeEvent, memo, useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {debounce, isObjectLike} from 'lodash';
 import {twJoin} from 'tailwind-merge';
 
@@ -257,11 +247,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 										isLoading={isSaveButtonLoading}
 										variant="flat"
 										onClick={toggleSavePopoverOpened}
-										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
-											if (checkA11yConfirmKey(event)) {
-												toggleSavePopoverOpened();
-											}
-										})}
+										onKeyDown={debounce(checkA11yConfirmKey(toggleSavePopoverOpened))}
 										className={twJoin(isHighAppearance && 'backdrop-blur')}
 									>
 										保存
@@ -299,11 +285,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 										color="danger"
 										variant="flat"
 										onClick={toggleResetPopoverOpened}
-										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
-											if (checkA11yConfirmKey(event)) {
-												toggleResetPopoverOpened();
-											}
-										})}
+										onKeyDown={debounce(checkA11yConfirmKey(toggleResetPopoverOpened))}
 										className={twJoin(isHighAppearance && 'backdrop-blur')}
 									>
 										重置已保存的顾客套餐数据

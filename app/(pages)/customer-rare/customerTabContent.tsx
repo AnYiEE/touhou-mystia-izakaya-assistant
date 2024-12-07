@@ -1,4 +1,5 @@
 import {memo, useCallback} from 'react';
+import {debounce} from 'lodash';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -46,11 +47,9 @@ export default memo<IProps>(function CustomerTabContent({customerTabStyle, sorte
 								vibrate();
 								customerStore.onCustomerSelectedChange(name);
 							}}
-							onKeyDown={(event) => {
-								if (checkA11yConfirmKey(event)) {
-									customerStore.onCustomerSelectedChange(name);
-								}
-							}}
+							onKeyDown={checkA11yConfirmKey(() => {
+								customerStore.onCustomerSelectedChange(name);
+							})}
 							title={`点击：选择【${name}】`}
 							className="group flex cursor-pointer flex-col items-center gap-1"
 						>
@@ -87,7 +86,8 @@ export default memo<IProps>(function CustomerTabContent({customerTabStyle, sorte
 					isIconOnly
 					size="sm"
 					variant="flat"
-					onPress={handleButtonPress}
+					onClick={handleButtonPress}
+					onKeyDown={debounce(checkA11yConfirmKey(handleButtonPress))}
 					aria-label={customerTabStyle.ariaLabel}
 					className={twJoin('h-4 w-4/5 text-default-300', isHighAppearance && 'backdrop-blur')}
 				>

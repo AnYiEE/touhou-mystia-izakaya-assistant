@@ -101,11 +101,9 @@ function IngredientsList() {
 							return (
 								<Tooltip key={index} showArrow content={label} offset={4}>
 									<span
-										onKeyDown={(event) => {
-											if (checkA11yConfirmKey(event)) {
-												handleRemoveButtonPress(ingredient);
-											}
-										}}
+										onKeyDown={checkA11yConfirmKey(() => {
+											handleRemoveButtonPress(ingredient);
+										})}
 										tabIndex={0}
 										aria-label={label}
 										className="flex items-center"
@@ -266,11 +264,7 @@ export default function ResultCard() {
 												name={cooker}
 												size={2}
 												onClick={handleCookerClick}
-												onKeyDown={(event) => {
-													if (checkA11yConfirmKey(event)) {
-														handleCookerClick();
-													}
-												}}
+												onKeyDown={checkA11yConfirmKey(handleCookerClick)}
 												role={isDarkMatter ? undefined : 'button'}
 												tabIndex={isDarkMatter ? undefined : 0}
 												aria-label={label}

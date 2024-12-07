@@ -224,12 +224,10 @@ export default function Navbar() {
 													<DropdownItem
 														key={dropdownItemIndex}
 														textValue={label}
-														onKeyDown={(event) => {
-															if (checkA11yConfirmKey(event)) {
-																handlePress();
-																router.push(href);
-															}
-														}}
+														onKeyDown={checkA11yConfirmKey(() => {
+															handlePress();
+															router.push(href);
+														})}
 													>
 														<NavbarLink
 															fullWidth
