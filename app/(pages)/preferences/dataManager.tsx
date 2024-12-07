@@ -259,8 +259,6 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 										size="sm"
 										variant="ghost"
 										onPress={handleImportData}
-										/** @todo Remove this line after upgrade to `@nextui-org/react` to v2.5.0 */
-										className="!text-danger data-[hover=true]:!text-danger-foreground"
 									>
 										确认保存
 									</Button>
@@ -303,8 +301,6 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 										size="sm"
 										variant="ghost"
 										onPress={handleResetData}
-										/** @todo Remove this line after upgrade to `@nextui-org/react` to v2.5.0 */
-										className="!text-danger data-[hover=true]:!text-danger-foreground"
 									>
 										确认重置
 									</Button>
