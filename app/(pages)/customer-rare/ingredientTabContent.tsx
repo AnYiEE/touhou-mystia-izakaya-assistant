@@ -7,6 +7,7 @@ import {useVibrate} from '@/hooks';
 import {Badge, Button, ScrollShadow} from '@nextui-org/react';
 
 import Placeholder from '@/components/placeholder';
+import PressElement from '@/components/pressElement';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
@@ -250,13 +251,11 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 								offset={scoreChange > 1 ? 10 : 7}
 								size="sm"
 							>
-								<div
-									onClick={() => {
+								<PressElement
+									as="div"
+									onPress={() => {
 										handleSelect(name);
 									}}
-									onKeyDown={checkA11yConfirmKey(() => {
-										handleSelect(name);
-									})}
 									role="button"
 									tabIndex={0}
 									aria-label={tooltipContent}
@@ -290,7 +289,7 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 									<span className="whitespace-nowrap text-center text-xs group-hover:font-bold">
 										{name}
 									</span>
-								</div>
+								</PressElement>
 							</Tooltip>
 						);
 					})}

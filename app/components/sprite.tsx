@@ -4,6 +4,7 @@ import {type CSSProperties, type ElementRef, forwardRef, memo, useEffect, useMem
 import {twMerge} from 'tailwind-merge';
 
 import {checkCompatibility} from '@/components/compatibleBrowser';
+import PressElement, {type IPressProp} from '@/components/pressElement';
 
 import {siteConfig} from '@/configs';
 import {type TItemName} from '@/data';
@@ -29,11 +30,11 @@ interface ISpriteBase {
 	width?: number;
 }
 
-interface IProps extends ISpriteBase, HTMLSpanElementAttributes {}
+interface IProps extends ISpriteBase, HTMLSpanElementAttributes, Partial<IPressProp<HTMLSpanElement>> {}
 
 export default memo(
 	forwardRef<ElementRef<'span'>, IProps>(function Sprite(
-		{className, height, index, name, size, style, target, title, width, ...props},
+		{className, height, index, name, onClick, onKeyDown, onPress, size, style, target, title, width, ...props},
 		ref
 	) {
 		const [isSupportedWebp, setIsSupportedWebp] = useState(true);
@@ -97,7 +98,11 @@ export default memo(
 		const finalTitle = title ?? calculatedName;
 
 		return (
-			<span
+			<PressElement
+				as="span"
+				onClick={onClick}
+				onKeyDown={onKeyDown}
+				onPress={onPress}
 				role="img"
 				title={finalTitle}
 				className={twMerge('inline-block', className)}
