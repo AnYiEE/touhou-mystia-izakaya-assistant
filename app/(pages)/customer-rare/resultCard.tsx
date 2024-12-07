@@ -1,4 +1,4 @@
-import {type HTMLAttributes, memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import useBreakpoint from 'use-breakpoint';
@@ -17,7 +17,7 @@ import {CUSTOMER_RATING_MAP, DARK_MATTER_NAME, DARK_MATTER_PRICE, type TIngredie
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey} from '@/utils';
 
-interface IPlusProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'className'> {
+interface IPlusProps extends Pick<HTMLSpanElementAttributes, 'className'> {
 	size?: number;
 }
 
@@ -37,7 +37,7 @@ export const Plus = memo<IPlusProps>(function Plus({className, size = 1}) {
 	);
 });
 
-interface IUnknownItemProps extends Pick<HTMLAttributes<HTMLSpanElement>, 'className' | 'title'> {
+interface IUnknownItemProps extends Pick<HTMLSpanElementAttributes, 'className' | 'title'> {
 	size?: number;
 }
 

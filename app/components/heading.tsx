@@ -1,13 +1,13 @@
-import {type HTMLAttributes, type PropsWithChildren, memo, useMemo} from 'react';
+import {type PropsWithChildren, memo, useMemo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
-type THeadingClassName = Pick<HTMLAttributes<HTMLHeadingElement>, 'className'>;
+type THeadingClassName = Pick<HTMLHeadingElementAttributes, 'className'>;
 
 interface IProps extends THeadingClassName {
 	as?: 'h1' | 'h2' | 'h3';
 	classNames?: Partial<{
 		title: THeadingClassName['className'];
-		subTitle: HTMLAttributes<HTMLSpanElement>['className'];
+		subTitle: HTMLSpanElementAttributes['className'];
 	}>;
 	isFirst?: boolean;
 	subTitle?: ReactNodeWithoutBoolean;

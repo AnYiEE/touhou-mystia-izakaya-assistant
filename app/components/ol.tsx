@@ -1,7 +1,7 @@
-import {type HTMLAttributes, type PropsWithChildren, memo} from 'react';
+import {type PropsWithChildren, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
-interface ILiProps extends Pick<HTMLAttributes<HTMLLIElement>, 'className'> {}
+interface ILiProps extends Pick<HTMLLIElementAttributes, 'className'> {}
 
 const Li = memo<PropsWithChildren<ILiProps>>(function Li({children, className}) {
 	return (
@@ -11,7 +11,7 @@ const Li = memo<PropsWithChildren<ILiProps>>(function Li({children, className}) 
 	);
 });
 
-interface IOlProps extends Pick<HTMLAttributes<HTMLOListElement>, 'className'> {}
+interface IOlProps extends Pick<HTMLOListElementAttributes, 'className'> {}
 
 const OlComponent = memo<PropsWithChildren<IOlProps>>(function Ol({children, className}) {
 	return <ol className={twMerge('list-inside list-disc break-all text-justify', className)}>{children}</ol>;
