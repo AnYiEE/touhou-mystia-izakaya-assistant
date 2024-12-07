@@ -55,6 +55,7 @@ export default memo<IProps>(function SideSearchIconButton({
 
 	return (
 		<Popover
+			shouldBlockScroll
 			/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/3736} is fixed. */
 			// backdrop="opaque"
 			placement="left"
@@ -89,6 +90,7 @@ export default memo<IProps>(function SideSearchIconButton({
 									initial: {},
 								}
 							: {},
+						shouldCloseOnScroll: false,
 					}}
 					classNames={{
 						base: twJoin(
