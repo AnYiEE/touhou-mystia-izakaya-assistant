@@ -1,5 +1,5 @@
 import {Food} from './base';
-import {BEVERAGE_LIST, type TBeverageName, type TBeverageTag, type TBeverages} from '@/data';
+import {BEVERAGE_LIST, type TBeverageId, type TBeverageTagId, type TBeverages} from '@/data';
 import {checkArrayEqualOf} from '@/utils';
 
 export class Beverage extends Food<TBeverages> {
@@ -25,28 +25,8 @@ export class Beverage extends Food<TBeverages> {
 	 */
 	public get sortedTags() {
 		const tags = [
-			'无酒精',
-			'低酒精',
-			'中酒精',
-			'高酒精',
-			'可加冰',
-			'可加热',
-			'烧酒',
-			'清酒',
-			'鸡尾酒',
-			'西洋酒',
-			'利口酒',
-			'啤酒',
-			'直饮',
-			'水果',
-			'甘',
-			'辛',
-			'苦',
-			'气泡',
-			'古典',
-			'现代',
-			'提神',
-		] as const satisfies TBeverageTag[];
+			-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+		] as const satisfies TBeverageTagId[];
 
 		if (Beverage._isTagsChecked) {
 			return tags;
@@ -66,8 +46,8 @@ export class Beverage extends Food<TBeverages> {
 	 * @description Get the suitability of a beverage for a customer based on their tags.
 	 * @returns An object containing the suitability of the beverage and the tags that are common to both the beverage and the customer.
 	 */
-	public getCustomerSuitability<T extends string>(name: TBeverageName, customerTags: ReadonlyArray<T>) {
-		const beverageTags = this.getPropsByName(name, 'tags');
+	public getCustomerSuitability<T extends number>(id: TBeverageId, customerTags: ReadonlyArray<T>) {
+		const beverageTags = this.getPropsById(id, 'tags');
 
 		const {commonTags, count} = this.getCommonTags(beverageTags, customerTags);
 

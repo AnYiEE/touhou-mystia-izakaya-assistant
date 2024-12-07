@@ -1,6 +1,6 @@
 import {Customer} from './base';
 import {siteConfig} from '@/configs';
-import {CUSTOMER_RARE_LIST, type TCustomerRareName, type TCustomerRares} from '@/data';
+import {CUSTOMER_RARE_LIST, type TCustomerRareId, type TCustomerRares} from '@/data';
 import {Clothes, processPinyin} from '@/utils';
 
 const {cdnUrl} = siteConfig;
@@ -8,7 +8,7 @@ const {cdnUrl} = siteConfig;
 export class CustomerRare extends Customer<TCustomerRares> {
 	private static _instance: CustomerRare | undefined;
 
-	private static _tachiePathCache = new Map<TCustomerRareName, string>();
+	private static _tachiePathCache = new Map<TCustomerRareId, string>();
 
 	public static getInstance() {
 		if (CustomerRare._instance !== undefined) {
@@ -22,20 +22,20 @@ export class CustomerRare extends Customer<TCustomerRares> {
 		return instance;
 	}
 
-	public getTachiePath(customerName: TCustomerRareName | null) {
-		if (customerName === null) {
-			return Clothes.getInstance().getTachiePath('夜雀服');
+	public getTachiePath(customerId: TCustomerRareId | null) {
+		if (customerId === null) {
+			return Clothes.getInstance().getTachiePath(-1);
 		}
 
 		const basePath = `${cdnUrl}/assets/tachies/customer_rare`;
 
 		let path: string;
 
-		if (CustomerRare._tachiePathCache.has(customerName)) {
-			path = CustomerRare._tachiePathCache.get(customerName);
+		if (CustomerRare._tachiePathCache.has(customerId)) {
+			path = CustomerRare._tachiePathCache.get(customerId);
 		} else {
-			path = `${basePath}/${processPinyin(this.getPropsByName(customerName, 'pinyin')).pinyinWithoutTone.join('')}.png`;
-			CustomerRare._tachiePathCache.set(customerName, path);
+			path = `${basePath}/${processPinyin(this.getPropsById(customerId, 'pinyin')).pinyinWithoutTone.join('')}.png`;
+			CustomerRare._tachiePathCache.set(customerId, path);
 		}
 
 		return path;
