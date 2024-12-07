@@ -1,6 +1,8 @@
 import {type ElementRef, forwardRef, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
+import PressElement, {type IPressProp} from '@/components/pressElement';
+
 import {type TTag} from '@/data';
 import type {TTagStyle} from '@/data/types';
 
@@ -9,18 +11,25 @@ interface ITagPropsBase {
 	tagType?: 'negative' | 'positive' | null | undefined;
 }
 
-interface ITagProps extends ITagPropsBase, HTMLSpanElementAttributes {
+interface ITagProps extends ITagPropsBase, HTMLSpanElementAttributes, Partial<IPressProp<HTMLSpanElement>> {
 	tag: TTag | [TTag, string];
 }
 
 const Tag = memo(
-	forwardRef<ElementRef<'span'>, ITagProps>(function Tag({className, tag, tagStyle = {}, tagType, ...props}, ref) {
+	forwardRef<ElementRef<'span'>, ITagProps>(function Tag(
+		{className, onClick, onKeyDown, onPress, tag, tagStyle = {}, tagType, ...props},
+		ref
+	) {
 		const isArray = Array.isArray(tag);
 		const tagDescription = isArray ? `（${tag[1]}）` : null;
 		const tagName = isArray ? tag[0] : tag;
 
 		return (
-			<span
+			<PressElement
+				as="span"
+				onClick={onClick}
+				onKeyDown={onKeyDown}
+				onPress={onPress}
 				className={twMerge(
 					'inline-block h-max w-max rounded border px-1',
 					tagType === 'negative'
@@ -42,7 +51,7 @@ const Tag = memo(
 				{tagDescription !== null && (
 					<span className="-mx-1 select-none text-xs font-normal leading-none">{tagDescription}</span>
 				)}
-			</span>
+			</PressElement>
 		);
 	})
 );

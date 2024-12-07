@@ -16,7 +16,7 @@ import Tooltip from '@/components/tooltip';
 
 import {type ICooker, type TCookerCategory} from '@/data';
 // import {globalStore as store} from '@/stores';
-import {type Cooker, checkA11yConfirmKey} from '@/utils';
+import {type Cooker} from '@/utils';
 import type {TItemData} from '@/utils/types';
 
 interface INameProps {
@@ -146,20 +146,12 @@ export default memo<IProps>(function Content({data}) {
 																						target="currency"
 																						name={priceItem.currency}
 																						size={1.25}
-																						onClick={() => {
+																						onPress={() => {
 																							openWindow(
 																								'currencies',
 																								priceItem.currency
 																							);
 																						}}
-																						onKeyDown={checkA11yConfirmKey(
-																							() => {
-																								openWindow(
-																									'currencies',
-																									priceItem.currency
-																								);
-																							}
-																						)}
 																						aria-label={`点击：在新窗口中查看货币【${priceItem.currency}】的详情`}
 																						role="button"
 																						tabIndex={0}

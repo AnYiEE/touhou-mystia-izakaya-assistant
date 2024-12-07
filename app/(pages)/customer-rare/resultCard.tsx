@@ -263,8 +263,7 @@ export default function ResultCard() {
 												target="cooker"
 												name={cooker}
 												size={2}
-												onClick={handleCookerClick}
-												onKeyDown={checkA11yConfirmKey(handleCookerClick)}
+												onPress={handleCookerClick}
 												role={isDarkMatter ? undefined : 'button'}
 												tabIndex={isDarkMatter ? undefined : 0}
 												aria-label={label}

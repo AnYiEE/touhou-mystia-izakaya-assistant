@@ -41,7 +41,7 @@ import {beverageTableColumns as tableColumns} from './constants';
 import type {TBeverageWithSuitability, TBeveragesWithSuitability} from './types';
 import {CUSTOMER_NORMAL_TAG_STYLE, LABEL_DLC_0} from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
-import {checkA11yConfirmKey, checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils';
+import {checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils';
 
 export type {TTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
 
@@ -206,12 +206,9 @@ export default function BeverageTabContent() {
 									target="beverage"
 									name={name}
 									size={2}
-									onClick={() => {
+									onPress={() => {
 										openWindow('beverages', name);
 									}}
-									onKeyDown={checkA11yConfirmKey(() => {
-										openWindow('beverages', name);
-									})}
 									aria-label={label}
 									role="button"
 									tabIndex={0}
