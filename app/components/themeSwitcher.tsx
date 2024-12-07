@@ -103,6 +103,7 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 
 	return (
 		<Dropdown
+			shouldCloseOnScroll
 			showArrow
 			onOpenChange={vibrate}
 			classNames={{

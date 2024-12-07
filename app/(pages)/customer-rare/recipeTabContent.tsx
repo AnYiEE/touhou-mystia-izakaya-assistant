@@ -451,6 +451,7 @@ export default function RecipeTabContent() {
 											initial: {},
 										}
 									: {},
+								shouldCloseOnScroll: false,
 							}}
 							classNames={{
 								base: twJoin(
@@ -494,6 +495,7 @@ export default function RecipeTabContent() {
 											initial: {},
 										}
 									: {},
+								shouldCloseOnScroll: false,
 							}}
 							classNames={{
 								base: 'w-2/3 md:w-full',
@@ -621,6 +623,7 @@ export default function RecipeTabContent() {
 											initial: {},
 										}
 									: {},
+								shouldCloseOnScroll: false,
 							}}
 							classNames={{
 								base: 'min-w-16',

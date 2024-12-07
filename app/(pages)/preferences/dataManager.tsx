@@ -150,6 +150,20 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 		}
 	}, [throttledImportValue]);
 
+	useEffect(() => {
+		const container = document.querySelector<HTMLDivElement>(
+			'#modal-portal-container [data-orientation="vertical"]'
+		);
+		if (!container) {
+			return;
+		}
+		if (isSavePopoverOpened || isResetPopoverOpened) {
+			container.style.overflowY = 'hidden';
+		} else {
+			container.style.overflowY = 'auto';
+		}
+	}, [isSavePopoverOpened, isResetPopoverOpened]);
+
 	return (
 		<>
 			<Heading subTitle="备份/还原/重置顾客套餐数据">数据管理</Heading>
