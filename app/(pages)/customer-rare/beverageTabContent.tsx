@@ -40,7 +40,7 @@ import {beverageTableColumns as tableColumns} from './constants';
 import type {ITableColumn, ITableSortDescriptor, TBeverageWithSuitability, TBeveragesWithSuitability} from './types';
 import {CUSTOMER_RARE_TAG_STYLE, LABEL_DLC_0} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {checkA11yConfirmKey, checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils';
+import {checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils';
 
 export type TTableColumnKey = 'beverage' | 'price' | 'suitability' | 'action';
 export type TTableColumns = ITableColumn<TTableColumnKey>[];
@@ -209,12 +209,9 @@ export default function BeverageTabContent() {
 									target="beverage"
 									name={name}
 									size={2}
-									onClick={() => {
+									onPress={() => {
 										openWindow('beverages', name);
 									}}
-									onKeyDown={checkA11yConfirmKey(() => {
-										openWindow('beverages', name);
-									})}
 									aria-label={label}
 									role="button"
 									tabIndex={0}

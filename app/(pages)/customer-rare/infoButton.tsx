@@ -10,13 +10,13 @@ import InfoButtonBase from './infoButtonBase';
 import Avatar from '@/components/avatar';
 import Ol from '@/components/ol';
 import Popover from '@/components/popover';
+import PressElement from '@/components/pressElement';
 import Sprite from '@/components/sprite';
 import Tachie from '@/components/tachie';
 import Tooltip from '@/components/tooltip';
 
 import {CUSTOMER_EVALUATION_KEY_MAP, CUSTOMER_RATING_MAP, type TRatingKey, type TRewardType} from '@/data';
 import {customerRareStore as store} from '@/stores';
-import {checkA11yConfirmKey} from '@/utils';
 
 interface ILevelLabelProps {
 	level: number | string;
@@ -162,13 +162,11 @@ export default function InfoButton() {
 								<p key={index} className="flex items-center">
 									<LevelLabel level={level} />
 									<Tooltip showArrow content={getLabel('料理')} placement="left" size="sm">
-										<span
-											onClick={() => {
+										<PressElement
+											as="span"
+											onPress={() => {
 												openWindow('recipes', name);
 											}}
-											onKeyDown={checkA11yConfirmKey(() => {
-												openWindow('recipes', name);
-											})}
 											aria-label={getLabel('料理')}
 											role="button"
 											tabIndex={0}
@@ -176,7 +174,7 @@ export default function InfoButton() {
 										>
 											<Sprite target="recipe" name={name} size={1.25} className="mr-0.5" />
 											{name}
-										</span>
+										</PressElement>
 									</Tooltip>
 									{index < bondRecipesDataLength - 1 && <br />}
 								</p>
@@ -187,13 +185,11 @@ export default function InfoButton() {
 									<p className="flex items-center">
 										<LevelLabel level={5} />
 										<Tooltip showArrow content={getLabel('厨具')} placement="left" size="sm">
-											<span
-												onClick={() => {
+											<PressElement
+												as="span"
+												onPress={() => {
 													openWindow('cookers', bondCooker);
 												}}
-												onKeyDown={checkA11yConfirmKey(() => {
-													openWindow('cookers', bondCooker);
-												})}
 												aria-label={getLabel('厨具')}
 												role="button"
 												tabIndex={0}
@@ -206,7 +202,7 @@ export default function InfoButton() {
 													className="mr-0.5"
 												/>
 												{bondCooker}
-											</span>
+											</PressElement>
 										</Tooltip>
 									</p>
 								</>
@@ -217,13 +213,11 @@ export default function InfoButton() {
 									<p className="flex items-center">
 										<LevelLabel level={5} />
 										<Tooltip showArrow content={getLabel('衣服')} placement="left" size="sm">
-											<span
-												onClick={() => {
+											<PressElement
+												as="span"
+												onPress={() => {
 													openWindow('clothes', bondClothes);
 												}}
-												onKeyDown={checkA11yConfirmKey(() => {
-													openWindow('clothes', bondClothes);
-												})}
 												aria-label={getLabel('衣服')}
 												role="button"
 												tabIndex={0}
@@ -236,7 +230,7 @@ export default function InfoButton() {
 													className="mr-0.5"
 												/>
 												{bondClothes}
-											</span>
+											</PressElement>
 										</Tooltip>
 									</p>
 								</>
@@ -250,13 +244,11 @@ export default function InfoButton() {
 									<p className="flex items-center">
 										<LevelLabel level={level} />
 										<Tooltip showArrow content={getLabel('摆件')} placement="left" size="sm">
-											<span
-												onClick={() => {
+											<PressElement
+												as="span"
+												onPress={() => {
 													openWindow('ornaments', name);
 												}}
-												onKeyDown={checkA11yConfirmKey(() => {
-													openWindow('ornaments', name);
-												})}
 												aria-label={getLabel('摆件')}
 												role="button"
 												tabIndex={0}
@@ -264,7 +256,7 @@ export default function InfoButton() {
 											>
 												<Sprite target="ornament" name={name} size={1.25} className="mr-0.5" />
 												{name}
-											</span>
+											</PressElement>
 										</Tooltip>
 										{index < bondOrnamentsDataLength - 1 && <br />}
 									</p>
@@ -292,13 +284,11 @@ export default function InfoButton() {
 									<p className="flex items-center">
 										<LevelLabel level="伙伴" />
 										<Tooltip showArrow content={getLabel('伙伴')} placement="left" size="sm">
-											<span
-												onClick={() => {
+											<PressElement
+												as="span"
+												onPress={() => {
 													openWindow('partners', bondPartner);
 												}}
-												onKeyDown={checkA11yConfirmKey(() => {
-													openWindow('partners', bondPartner);
-												})}
 												aria-label={getLabel('伙伴')}
 												role="button"
 												tabIndex={0}
@@ -311,7 +301,7 @@ export default function InfoButton() {
 													className="mr-0.5 rounded-full"
 												/>
 												{bondPartner}
-											</span>
+											</PressElement>
 										</Tooltip>
 									</p>
 								</>

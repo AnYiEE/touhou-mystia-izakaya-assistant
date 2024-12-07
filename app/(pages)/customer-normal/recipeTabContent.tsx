@@ -43,7 +43,7 @@ import {checkEasterEgg} from './evaluateMeal';
 import type {TRecipeWithSuitability, TRecipesWithSuitability} from './types';
 import {CUSTOMER_NORMAL_TAG_STYLE, LABEL_DLC_0} from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
-import {checkA11yConfirmKey, checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils';
+import {checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils';
 
 export type {TTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
 
@@ -298,12 +298,9 @@ export default function RecipeTabContent() {
 									target="recipe"
 									name={name}
 									size={2}
-									onClick={() => {
+									onPress={() => {
 										openWindow('recipes', name);
 									}}
-									onKeyDown={checkA11yConfirmKey(() => {
-										openWindow('recipes', name);
-									})}
 									aria-label={label}
 									role="button"
 									tabIndex={0}
@@ -352,12 +349,9 @@ export default function RecipeTabContent() {
 											target="ingredient"
 											name={ingredient}
 											size={1.5}
-											onClick={() => {
+											onPress={() => {
 												openWindow('ingredients', ingredient);
 											}}
-											onKeyDown={checkA11yConfirmKey(() => {
-												openWindow('ingredients', ingredient);
-											})}
 											aria-label={ingredientLabel}
 											role="button"
 											tabIndex={0}
