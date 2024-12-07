@@ -5,7 +5,7 @@ import {compareVersions} from 'compare-versions';
 import {debounce} from 'lodash';
 
 import {useRouter} from 'next/navigation';
-import {ThemeProvider as NextThemesProvider, type ThemeProviderProps, useTheme} from 'next-themes';
+import {ThemeProvider as NextThemesProvider, type ThemeProviderProps} from 'next-themes';
 
 import {NextUIProvider} from '@nextui-org/react';
 import {ProgressBar, ProgressBarProvider} from 'react-transition-progress';
@@ -115,27 +115,6 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 			globalThis.removeEventListener('storage', updateStore);
 		};
 	}, []);
-
-	const {setTheme, theme} = useTheme();
-
-	useEffect(() => {
-		// Synchronize theme across multiple tabs as needed.
-		const updateTheme = debounce((event: StorageEvent) => {
-			const {key, newValue} = event;
-			if (newValue === null || key !== 'theme') {
-				return;
-			}
-			if (theme !== newValue) {
-				setTheme(newValue);
-			}
-		}, 1000);
-
-		globalThis.addEventListener('storage', updateTheme);
-
-		return () => {
-			globalThis.removeEventListener('storage', updateTheme);
-		};
-	}, [setTheme, theme]);
 
 	const router = useRouter();
 
