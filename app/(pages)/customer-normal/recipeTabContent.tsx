@@ -301,11 +301,9 @@ export default function RecipeTabContent() {
 									onClick={() => {
 										openWindow('recipes', name);
 									}}
-									onKeyDown={(event) => {
-										if (checkA11yConfirmKey(event)) {
-											openWindow('recipes', name);
-										}
-									}}
+									onKeyDown={checkA11yConfirmKey(() => {
+										openWindow('recipes', name);
+									})}
 									aria-label={label}
 									role="button"
 									tabIndex={0}
@@ -357,11 +355,9 @@ export default function RecipeTabContent() {
 											onClick={() => {
 												openWindow('ingredients', ingredient);
 											}}
-											onKeyDown={(event) => {
-												if (checkA11yConfirmKey(event)) {
-													openWindow('ingredients', ingredient);
-												}
-											}}
+											onKeyDown={checkA11yConfirmKey(() => {
+												openWindow('ingredients', ingredient);
+											})}
 											aria-label={ingredientLabel}
 											role="button"
 											tabIndex={0}

@@ -58,11 +58,9 @@ function IngredientsList() {
 							return (
 								<Tooltip key={index} showArrow content={label} offset={4}>
 									<span
-										onKeyDown={(event) => {
-											if (checkA11yConfirmKey(event)) {
-												handleRemoveButtonPress(ingredient);
-											}
-										}}
+										onKeyDown={checkA11yConfirmKey(() => {
+											handleRemoveButtonPress(ingredient);
+										})}
 										tabIndex={0}
 										aria-label={label}
 										className="flex items-center"

@@ -152,18 +152,14 @@ export default memo<IProps>(function Content({data}) {
 																								priceItem.currency
 																							);
 																						}}
-																						onKeyDown={(event) => {
-																							if (
-																								checkA11yConfirmKey(
-																									event
-																								)
-																							) {
+																						onKeyDown={checkA11yConfirmKey(
+																							() => {
 																								openWindow(
 																									'currencies',
 																									priceItem.currency
 																								);
 																							}
-																						}}
+																						)}
 																						aria-label={`点击：在新窗口中查看货币【${priceItem.currency}】的详情`}
 																						role="button"
 																						tabIndex={0}
