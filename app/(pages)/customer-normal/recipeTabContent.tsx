@@ -431,6 +431,7 @@ export default function RecipeTabContent() {
 							allowsCustomValue
 							defaultItems={allRecipeNames}
 							inputValue={searchValue}
+							isVirtualized={false}
 							placeholder="名称"
 							size="sm"
 							startContent={<FontAwesomeIcon icon={faMagnifyingGlass} className="pointer-events-none" />}
@@ -474,9 +475,10 @@ export default function RecipeTabContent() {
 							)}
 						</Autocomplete>
 						<Select
+							isVirtualized={false}
 							items={allRecipeTags}
-							selectedKeys={selectedCustomerPositiveTags}
 							placeholder="标签"
+							selectedKeys={selectedCustomerPositiveTags}
 							size="sm"
 							startContent={<FontAwesomeIcon icon={faTags} />}
 							variant="flat"
@@ -602,6 +604,7 @@ export default function RecipeTabContent() {
 						<span className="mr-2 cursor-auto whitespace-nowrap">表格行数</span>
 						<Select
 							disallowEmptySelection
+							isVirtualized={false}
 							items={tableSelectableRows}
 							selectedKeys={tableRowsPerPage}
 							size="sm"
