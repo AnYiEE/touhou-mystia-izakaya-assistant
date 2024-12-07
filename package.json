@@ -75,14 +75,14 @@
 		"@fortawesome/free-brands-svg-icons": "^6.7.1",
 		"@fortawesome/free-solid-svg-icons": "^6.7.1",
 		"@fortawesome/react-fontawesome": "^0.2.2",
-		"@nextui-org/react": "^2.4.8",
+		"@nextui-org/react": "2.6.5",
 		"compare-versions": "^6.1.1",
 		"driver.js": "^1.3.1",
-		"framer-motion": "^11.13.1",
+		"framer-motion": "^11.13.5",
 		"lodash": "^4.17.21",
 		"next": "^14.2.20",
 		"next-qrcode": "^2.5.1",
-		"next-themes": "^0.4.3",
+		"next-themes": "^0.4.4",
 		"pinyin-pro": "^3.26.0",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
@@ -100,12 +100,12 @@
 		"@types/babel__core": "^7.20.5",
 		"@types/lodash": "^4.17.13",
 		"@types/node": "^22.10.1",
-		"@types/react": "^18.3.13",
-		"@types/react-dom": "^18.3.1",
+		"@types/react": "^18.3.16",
+		"@types/react-dom": "^18.3.5",
 		"@types/serviceworker": "^0.0.107",
 		"@types/ua-parser-js": "^0.7.39",
-		"@typescript-eslint/eslint-plugin": "^8.17.0",
-		"@typescript-eslint/parser": "^8.17.0",
+		"@typescript-eslint/eslint-plugin": "^8.18.0",
+		"@typescript-eslint/parser": "^8.18.0",
 		"dotenv": "^16.4.7",
 		"eslint": "^8.57.1",
 		"eslint-config-next": "^14.2.20",
@@ -130,8 +130,7 @@
 	},
 	"pnpm": {
 		"overrides": {
-			"@react-aria/interactions@^3.22.3": "3.22.2",
-			"@react-types/shared@^3.23.0": "^3.26.0"
+			"@react-aria/interactions@^3.22.3": "3.22.2"
 		},
 		"patchedDependencies": {
 			"@types/lodash@4.17.13": "patches/@types__lodash@4.17.13.patch"
