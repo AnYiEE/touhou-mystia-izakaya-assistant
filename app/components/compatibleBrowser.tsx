@@ -74,10 +74,10 @@ function getReplacementClass(element: Element, gapClass: string) {
 		const isLgFlexCol = classList.contains('lg:flex-col');
 		const isXlFlexCol = classList.contains('xl:flex-col');
 
-		const isMdSpecific = classList.contains(`md:${gapClass}`);
-		const isLgSpecific = classList.contains(`lg:${gapClass}`);
-		const isXlSpecific = classList.contains(`xl:${gapClass}`);
-		const isSpecific = isMdSpecific || isLgSpecific || isXlSpecific;
+		const isMdSpecify = classList.contains(`md:${gapClass}`);
+		const isLgSpecify = classList.contains(`lg:${gapClass}`);
+		const isXlSpecify = classList.contains(`xl:${gapClass}`);
+		const isSpecify = isMdSpecify || isLgSpecify || isXlSpecify;
 		const hasPrefix = gapClass.includes(':');
 
 		const prefixRegExp = /((?:md|lg|xl):)?gap-(\S+)/u;
@@ -92,7 +92,7 @@ function getReplacementClass(element: Element, gapClass: string) {
 			const prefix = isMdFlexRow ? 'md' : isLgFlexRow ? 'lg' : 'xl';
 			return gapClass.replace(
 				prefixRegExp,
-				!hasPrefix && !isSpecific
+				!hasPrefix && !isSpecify
 					? `space-y-$2 ${prefix}:space-x-$2 ${prefix}:space-y-0`
 					: hasPrefix
 						? '$1space-x-$2 $1space-y-0'
@@ -103,7 +103,7 @@ function getReplacementClass(element: Element, gapClass: string) {
 			const prefix = isMdFlexCol ? 'md' : isLgFlexCol ? 'lg' : 'xl';
 			return gapClass.replace(
 				prefixRegExp,
-				!hasPrefix && !isSpecific
+				!hasPrefix && !isSpecify
 					? `space-x-$2 ${prefix}:space-y-$2 ${prefix}:space-x-0`
 					: hasPrefix
 						? '$1space-y-$2 $1space-x-0'

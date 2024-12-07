@@ -1,14 +1,14 @@
 import {useParams} from '@/hooks';
-import {openedPopoverParam} from '@/hooks/useOpenedItemPopover';
-import {inNewWindowParam} from '@/hooks/useViewInNewWindow';
+import {PARAM_SPECIFY} from '@/hooks/useOpenedItemPopover';
+import {PARAM_PREVIEW} from '@/hooks/useViewInNewWindow';
 
 export function useSkipProcessItemData() {
 	const [params] = useParams();
 
-	const isInNewWindow = params.has(inNewWindowParam);
-	const isSpecified = params.has(openedPopoverParam);
+	const isPreviewMode = params.has(PARAM_PREVIEW);
+	const isSpecifyMode = params.has(PARAM_SPECIFY);
 
-	const shouldSkipProcessData = isInNewWindow || isSpecified;
+	const shouldSkipProcessData = isPreviewMode || isSpecifyMode;
 
 	return shouldSkipProcessData;
 }
