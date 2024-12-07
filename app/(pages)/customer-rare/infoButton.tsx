@@ -166,11 +166,9 @@ export default function InfoButton() {
 											onClick={() => {
 												openWindow('recipes', name);
 											}}
-											onKeyDown={(event) => {
-												if (checkA11yConfirmKey(event)) {
-													openWindow('recipes', name);
-												}
-											}}
+											onKeyDown={checkA11yConfirmKey(() => {
+												openWindow('recipes', name);
+											})}
 											aria-label={getLabel('料理')}
 											role="button"
 											tabIndex={0}
@@ -193,11 +191,9 @@ export default function InfoButton() {
 												onClick={() => {
 													openWindow('cookers', bondCooker);
 												}}
-												onKeyDown={(event) => {
-													if (checkA11yConfirmKey(event)) {
-														openWindow('cookers', bondCooker);
-													}
-												}}
+												onKeyDown={checkA11yConfirmKey(() => {
+													openWindow('cookers', bondCooker);
+												})}
 												aria-label={getLabel('厨具')}
 												role="button"
 												tabIndex={0}
@@ -225,11 +221,9 @@ export default function InfoButton() {
 												onClick={() => {
 													openWindow('clothes', bondClothes);
 												}}
-												onKeyDown={(event) => {
-													if (checkA11yConfirmKey(event)) {
-														openWindow('clothes', bondClothes);
-													}
-												}}
+												onKeyDown={checkA11yConfirmKey(() => {
+													openWindow('clothes', bondClothes);
+												})}
 												aria-label={getLabel('衣服')}
 												role="button"
 												tabIndex={0}
@@ -260,11 +254,9 @@ export default function InfoButton() {
 												onClick={() => {
 													openWindow('ornaments', name);
 												}}
-												onKeyDown={(event) => {
-													if (checkA11yConfirmKey(event)) {
-														openWindow('ornaments', name);
-													}
-												}}
+												onKeyDown={checkA11yConfirmKey(() => {
+													openWindow('ornaments', name);
+												})}
 												aria-label={getLabel('摆件')}
 												role="button"
 												tabIndex={0}
@@ -304,11 +296,9 @@ export default function InfoButton() {
 												onClick={() => {
 													openWindow('partners', bondPartner);
 												}}
-												onKeyDown={(event) => {
-													if (checkA11yConfirmKey(event)) {
-														openWindow('partners', bondPartner);
-													}
-												}}
+												onKeyDown={checkA11yConfirmKey(() => {
+													openWindow('partners', bondPartner);
+												})}
 												aria-label={getLabel('伙伴')}
 												role="button"
 												tabIndex={0}

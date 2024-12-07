@@ -258,11 +258,9 @@ export default function CustomerCard() {
 										onClick={() => {
 											handleRecipeTagClick(tag);
 										}}
-										onKeyDown={(event) => {
-											if (checkA11yConfirmKey(event)) {
-												handleRecipeTagClick(tag);
-											}
-										}}
+										onKeyDown={checkA11yConfirmKey(() => {
+											handleRecipeTagClick(tag);
+										})}
 										aria-label={`${tag}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
 										role="button"
 										tabIndex={0}
@@ -310,11 +308,9 @@ export default function CustomerCard() {
 										onClick={() => {
 											handleBeverageTagClick(tag);
 										}}
-										onKeyDown={(event) => {
-											if (checkA11yConfirmKey(event)) {
-												handleBeverageTagClick(tag);
-											}
-										}}
+										onKeyDown={checkA11yConfirmKey(() => {
+											handleBeverageTagClick(tag);
+										})}
 										aria-label={`${tag}${beverageTags.includes(tag) ? '/已满足' : ''}`}
 										role="button"
 										tabIndex={0}

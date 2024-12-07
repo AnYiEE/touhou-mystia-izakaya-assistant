@@ -209,11 +209,9 @@ export default function BeverageTabContent() {
 									onClick={() => {
 										openWindow('beverages', name);
 									}}
-									onKeyDown={(event) => {
-										if (checkA11yConfirmKey(event)) {
-											openWindow('beverages', name);
-										}
-									}}
+									onKeyDown={checkA11yConfirmKey(() => {
+										openWindow('beverages', name);
+									})}
 									aria-label={label}
 									role="button"
 									tabIndex={0}
