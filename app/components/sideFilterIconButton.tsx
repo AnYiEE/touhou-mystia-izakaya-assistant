@@ -90,11 +90,12 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 						({items, label, selectedKeys, selectionMode, setSelectedKeys, spriteTarget}, index) => (
 							<Select
 								key={index}
-								size="sm"
+								isVirtualized={false}
 								items={items}
+								label={label}
 								selectedKeys={selectedKeys}
 								selectionMode={selectionMode ?? 'multiple'}
-								label={label}
+								size="sm"
 								onSelectionChange={handleSelectionChange(setSelectedKeys)}
 								popoverProps={{
 									motionProps: isHighAppearance
