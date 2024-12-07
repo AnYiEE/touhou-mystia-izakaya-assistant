@@ -1,15 +1,6 @@
 'use client';
 
-import {
-	type CSSProperties,
-	type ElementRef,
-	type HTMLAttributes,
-	forwardRef,
-	memo,
-	useEffect,
-	useMemo,
-	useState,
-} from 'react';
+import {type CSSProperties, type ElementRef, forwardRef, memo, useEffect, useMemo, useState} from 'react';
 import {twMerge} from 'tailwind-merge';
 
 import {checkCompatibility} from '@/components/compatibleBrowser';
@@ -38,7 +29,7 @@ interface ISpriteBase {
 	width?: number;
 }
 
-interface IProps extends ISpriteBase, HTMLAttributes<HTMLSpanElement> {}
+interface IProps extends ISpriteBase, HTMLSpanElementAttributes {}
 
 export default memo(
 	forwardRef<ElementRef<'span'>, IProps>(function Sprite(

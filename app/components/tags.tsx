@@ -1,4 +1,4 @@
-import {type ElementRef, type HTMLAttributes, forwardRef, memo} from 'react';
+import {type ElementRef, forwardRef, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
 import {type TTag} from '@/data';
@@ -9,7 +9,7 @@ interface ITagPropsBase {
 	tagType?: 'negative' | 'positive' | null | undefined;
 }
 
-interface ITagProps extends ITagPropsBase, HTMLAttributes<HTMLSpanElement> {
+interface ITagProps extends ITagPropsBase, HTMLSpanElementAttributes {
 	tag: TTag | [TTag, string];
 }
 
@@ -51,7 +51,7 @@ interface ITagsPropsBase extends ITagPropsBase {
 	tags: TTag[] | undefined;
 }
 
-interface ITagsProps extends ITagsPropsBase, Pick<HTMLAttributes<HTMLSpanElement>, 'className'> {}
+interface ITagsProps extends ITagsPropsBase, Pick<HTMLSpanElementAttributes, 'className'> {}
 
 const TagsComponent = memo<ITagsProps>(function Tags({className, tagStyle = {}, tagType, tags}) {
 	return tags && tags.length > 0

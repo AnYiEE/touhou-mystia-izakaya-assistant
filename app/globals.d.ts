@@ -19,3 +19,11 @@ interface ParentNode {
 type ExtractStringTypes<T> = T extends string ? T : never;
 type ReactNodeWithoutBoolean = Exclude<React.ReactNode, boolean>;
 type SelectionSet = Exclude<import('@nextui-org/react').Selection, 'all'>;
+
+type HTMLButtonElementAttributes = import('react').HTMLAttributes<HTMLButtonElement>;
+type HTMLDivElementAttributes = import('react').HTMLAttributes<HTMLDivElement>;
+type HTMLSpanElementAttributes = import('react').HTMLAttributes<HTMLSpanElement>;
+type HTMLHeadingElementAttributes = import('react').HTMLAttributes<HTMLHeadingElement>;
+type HTMLLIElementAttributes = import('react').HTMLAttributes<HTMLLIElement>;
+type HTMLOListElementAttributes = import('react').HTMLAttributes<HTMLOListElement>;
+type HTMLUListElementAttributes = import('react').HTMLAttributes<HTMLUListElement>;
