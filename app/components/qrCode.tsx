@@ -1,13 +1,13 @@
 'use client';
 
-import {type HTMLAttributes, type PropsWithChildren, memo} from 'react';
+import {type PropsWithChildren, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
 import {useQRCode} from 'next-qrcode';
 
 import {type IQRCode} from 'next-qrcode/dist/useQRCode';
 
-interface IProps extends Omit<IQRCode, 'logo'>, Pick<HTMLAttributes<HTMLDivElement>, 'className'> {
+interface IProps extends Omit<IQRCode, 'logo'>, Pick<HTMLDivElementAttributes, 'className'> {
 	type?: 'image' | 'svg';
 }
 
