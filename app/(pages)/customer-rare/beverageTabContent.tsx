@@ -293,6 +293,7 @@ export default function BeverageTabContent() {
 							allowsCustomValue
 							defaultItems={allBeverageNames}
 							inputValue={searchValue}
+							isVirtualized={false}
 							placeholder="名称"
 							size="sm"
 							startContent={<FontAwesomeIcon icon={faMagnifyingGlass} className="pointer-events-none" />}
@@ -336,9 +337,10 @@ export default function BeverageTabContent() {
 							)}
 						</Autocomplete>
 						<Select
+							isVirtualized={false}
 							items={allBeverageTags}
-							selectedKeys={selectedCustomerBeverageTags}
 							placeholder="标签"
+							selectedKeys={selectedCustomerBeverageTags}
 							size="sm"
 							startContent={<FontAwesomeIcon icon={faTags} />}
 							variant="flat"
@@ -431,6 +433,7 @@ export default function BeverageTabContent() {
 						<span className="cursor-auto whitespace-nowrap">表格行数</span>
 						<Select
 							disallowEmptySelection
+							isVirtualized={false}
 							items={tableSelectableRows}
 							selectedKeys={tableRowsPerPage}
 							size="sm"

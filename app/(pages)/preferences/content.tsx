@@ -99,6 +99,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 					<div className="flex items-center">
 						<span className="font-medium">标签：</span>
 						<Select
+							isVirtualized={false}
 							items={popularTags}
 							selectedKeys={selectedPopularTag}
 							size="sm"

@@ -77,10 +77,11 @@ export default memo<IProps>(function SideSearchIconButton({
 			<PopoverContent className="w-64">
 				<Autocomplete
 					allowsCustomValue
-					variant="flat"
 					defaultItems={searchItems}
 					inputValue={searchValue}
+					isVirtualized={false}
 					label={label}
+					variant="flat"
 					onInputChange={handleInputChange}
 					popoverProps={{
 						motionProps: isHighAppearance
