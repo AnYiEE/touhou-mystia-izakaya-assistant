@@ -285,12 +285,9 @@ const ItemPopoverCardComponent = memo(
 										target="ingredient"
 										name={ingredient}
 										size={1.5}
-										onClick={() => {
+										onPress={() => {
 											openWindow('ingredients', ingredient);
 										}}
-										onKeyDown={checkA11yConfirmKey(() => {
-											openWindow('ingredients', ingredient);
-										})}
 										aria-label={ingredientLabel}
 										role="button"
 										tabIndex={0}

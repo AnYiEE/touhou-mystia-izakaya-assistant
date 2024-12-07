@@ -15,7 +15,7 @@ import Tooltip from '@/components/tooltip';
 
 import {DARK_MATTER_NAME, type IRecipe, RECIPE_TAG_STYLE} from '@/data';
 // import {globalStore as store} from '@/stores';
-import {type Recipe, checkA11yConfirmKey} from '@/utils';
+import {type Recipe} from '@/utils';
 import type {TItemData} from '@/utils/types';
 
 interface IProps {
@@ -130,12 +130,9 @@ export default memo<IProps>(function Content({data}) {
 																	target="currency"
 																	name={target.price.currency}
 																	size={1.25}
-																	onClick={() => {
+																	onPress={() => {
 																		openWindow('currencies', target.price.currency);
 																	}}
-																	onKeyDown={checkA11yConfirmKey(() => {
-																		openWindow('currencies', target.price.currency);
-																	})}
 																	aria-label={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
 																	role="button"
 																	tabIndex={0}

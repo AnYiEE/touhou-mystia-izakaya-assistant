@@ -6,6 +6,7 @@ import {useVibrate} from '@/hooks';
 
 import {Avatar, Button, ScrollShadow} from '@nextui-org/react';
 
+import PressElement from '@/components/pressElement';
 import Sprite from '@/components/sprite';
 
 import type {ICustomerTabStyle} from './types';
@@ -41,15 +42,13 @@ export default memo<IProps>(function CustomerTabContent({customerTabStyle, sorte
 			>
 				<div className="m-2 grid grid-cols-fill-16 justify-around gap-4 lg:grid-cols-fill-20">
 					{sortedData.map(({name}, index) => (
-						<div
+						<PressElement
 							key={index}
-							onClick={() => {
+							as="div"
+							onPress={() => {
 								vibrate();
 								customerStore.onCustomerSelectedChange(name);
 							}}
-							onKeyDown={checkA11yConfirmKey(() => {
-								customerStore.onCustomerSelectedChange(name);
-							})}
 							title={`点击：选择【${name}】`}
 							className="group flex cursor-pointer flex-col items-center gap-1"
 						>
@@ -77,7 +76,7 @@ export default memo<IProps>(function CustomerTabContent({customerTabStyle, sorte
 							<span className="whitespace-nowrap text-xs transition-opacity group-hover:opacity-hover">
 								{name}
 							</span>
-						</div>
+						</PressElement>
 					))}
 				</div>
 			</ScrollShadow>
