@@ -488,6 +488,7 @@ export default function BeverageTabContent() {
 			<div className="flex justify-center pt-2">
 				{tableCurrentPageItems.length > 0 && (
 					<Pagination
+						showControls
 						showShadow
 						size="sm"
 						page={tableCurrentPage}
