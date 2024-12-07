@@ -1,5 +1,5 @@
 import {memo, useCallback, useMemo} from 'react';
-import {curry, curryRight} from 'lodash';
+import {curry, curryRight, debounce} from 'lodash';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -254,11 +254,9 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 									onClick={() => {
 										handleSelect(name);
 									}}
-									onKeyDown={(event) => {
-										if (checkA11yConfirmKey(event)) {
-											handleSelect(name);
-										}
-									}}
+									onKeyDown={checkA11yConfirmKey(() => {
+										handleSelect(name);
+									})}
 									role="button"
 									tabIndex={0}
 									aria-label={tooltipContent}
@@ -303,7 +301,8 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 					isIconOnly
 					size="sm"
 					variant="flat"
-					onPress={handleButtonPress}
+					onClick={handleButtonPress}
+					onKeyDown={debounce(checkA11yConfirmKey(handleButtonPress))}
 					aria-label={ingredientTabStyle.ariaLabel}
 					className={twJoin('h-4 w-4/5 text-default-300', isHighAppearance && 'backdrop-blur')}
 				>
