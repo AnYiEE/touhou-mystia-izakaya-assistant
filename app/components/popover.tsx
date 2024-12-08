@@ -1,3 +1,5 @@
+'use client';
+
 import {type ComponentProps, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
