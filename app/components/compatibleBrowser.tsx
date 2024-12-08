@@ -1,3 +1,5 @@
+'use client';
+
 import {useEffect} from 'react';
 import {Observable, type Subscription, from, merge} from 'rxjs';
 import {filter, map, mergeMap} from 'rxjs/operators';

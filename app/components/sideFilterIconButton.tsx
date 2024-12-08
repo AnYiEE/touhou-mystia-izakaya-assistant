@@ -1,3 +1,5 @@
+'use client';
+
 import {type Dispatch, memo, useCallback, useMemo} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 

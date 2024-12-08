@@ -1,3 +1,5 @@
+'use client';
+
 import {type ComponentProps, type ElementRef, forwardRef, memo} from 'react';
 
 import {Avatar as NextUIAvatar, extendVariants} from '@nextui-org/react';
