@@ -1,3 +1,5 @@
+'use client';
+
 import {type ElementRef, forwardRef, memo} from 'react';
 
 import {type LinkProps, Link as NextUILink} from '@nextui-org/react';

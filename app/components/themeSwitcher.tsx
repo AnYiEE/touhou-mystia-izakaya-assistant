@@ -1,3 +1,5 @@
+'use client';
+
 import {memo, useCallback, useEffect, useMemo, useState} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
