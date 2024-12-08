@@ -38,17 +38,6 @@ interface IProps {
 
 export default function Providers({children, locale, themeProps}: PropsWithChildren<IProps>) {
 	useEffect(() => {
-		const element = document.createElement('div');
-		element.id = 'modal-portal-container';
-
-		document.querySelector('main').prepend(element);
-
-		return () => {
-			element.remove();
-		};
-	}, []);
-
-	useEffect(() => {
 		// If the saved version is not set or outdated, initialize it with the current version.
 		// When an outdated version is detected, the current tab will update the saved version in local storage.
 		// Other tabs will monitor changes in the saved version and reload the page as needed. See below.
