@@ -1,3 +1,5 @@
+'use client';
+
 import {type ComponentProps, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
@@ -6,13 +8,24 @@ import {Popover as NextUIPopover, extendVariants} from '@nextui-org/react';
 import {generateRatingColor} from '@/components/avatar';
 import {ratingStyleMap} from '@/components/tooltip';
 
+import {getMotionProps} from '@/components/getMotionProps';
+
 import {globalStore as store} from '@/stores';
 
 const CustomNextUIPopover = extendVariants(NextUIPopover, generateRatingColor('content', ratingStyleMap));
 
 interface IProps extends ComponentProps<typeof CustomNextUIPopover> {}
 
-export default memo<IProps>(function Popover({classNames, color, offset, showArrow, size, ...props}) {
+export default memo<IProps>(function Popover({
+	classNames,
+	color,
+	offset,
+	shouldBlockScroll,
+	shouldCloseOnScroll,
+	showArrow,
+	size,
+	...props
+}) {
 	const isHighAppearance = store.persistence.highAppearance.use();
 
 	return (
@@ -24,15 +37,11 @@ export default memo<IProps>(function Popover({classNames, color, offset, showArr
 					? offset + (isHighAppearance ? -2 : size === 'sm' && !showArrow ? -3 : showArrow ? 1 : -3)
 					: (offset as unknown as number)
 			}
+			shouldBlockScroll={Boolean(shouldBlockScroll)}
+			shouldCloseOnScroll={Boolean(shouldCloseOnScroll)}
 			showArrow={isHighAppearance ? false : Boolean(showArrow)}
 			size={size}
-			motionProps={
-				isHighAppearance
-					? {
-							initial: {},
-						}
-					: {}
-			}
+			motionProps={getMotionProps('popover', isHighAppearance)}
 			classNames={{
 				...classNames,
 				content: twMerge(

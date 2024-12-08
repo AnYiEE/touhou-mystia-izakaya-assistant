@@ -36,12 +36,14 @@ import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 import Tooltip from '@/components/tooltip';
 
+import {getMotionProps} from '@/components/getMotionProps';
+
 import {type TTableColumnKey, type TTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
 import {beverageTableColumns as tableColumns} from './constants';
 import type {TBeverageWithSuitability, TBeveragesWithSuitability} from './types';
 import {CUSTOMER_NORMAL_TAG_STYLE, LABEL_DLC_0} from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
-import {checkA11yConfirmKey, checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils';
+import {checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils';
 
 export type {TTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
 
@@ -206,13 +208,8 @@ export default function BeverageTabContent() {
 									target="beverage"
 									name={name}
 									size={2}
-									onClick={() => {
+									onPress={() => {
 										openWindow('beverages', name);
-									}}
-									onKeyDown={(event) => {
-										if (checkA11yConfirmKey(event)) {
-											openWindow('beverages', name);
-										}
 									}}
 									aria-label={label}
 									role="button"
@@ -290,6 +287,7 @@ export default function BeverageTabContent() {
 							allowsCustomValue
 							defaultItems={allBeverageNames}
 							inputValue={searchValue}
+							isVirtualized={false}
 							placeholder="名称"
 							size="sm"
 							startContent={<FontAwesomeIcon icon={faMagnifyingGlass} className="pointer-events-none" />}
@@ -301,11 +299,7 @@ export default function BeverageTabContent() {
 							aria-label="选择或输入酒水名称"
 							title="选择或输入酒水名称"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: getMotionProps('popover', isHighAppearance),
 							}}
 							classNames={{
 								base: twJoin(
@@ -333,9 +327,10 @@ export default function BeverageTabContent() {
 							)}
 						</Autocomplete>
 						<Select
+							isVirtualized={false}
 							items={allBeverageTags}
-							selectedKeys={selectedCustomerBeverageTags}
 							placeholder="标签"
+							selectedKeys={selectedCustomerBeverageTags}
 							size="sm"
 							startContent={<FontAwesomeIcon icon={faTags} />}
 							variant="flat"
@@ -343,11 +338,7 @@ export default function BeverageTabContent() {
 							aria-label="选择顾客所点单的酒水标签"
 							title="选择顾客所点单的酒水标签"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: getMotionProps('popover', isHighAppearance),
 							}}
 							classNames={{
 								base: 'w-2/3 md:w-full',
@@ -428,6 +419,7 @@ export default function BeverageTabContent() {
 						<span className="cursor-auto whitespace-nowrap">表格行数</span>
 						<Select
 							disallowEmptySelection
+							isVirtualized={false}
 							items={tableSelectableRows}
 							selectedKeys={tableRowsPerPage}
 							size="sm"
@@ -436,11 +428,7 @@ export default function BeverageTabContent() {
 							aria-label="选择表格每页最大行数"
 							title="选择表格每页最大行数"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: getMotionProps('popover', isHighAppearance),
 							}}
 							classNames={{
 								base: 'min-w-16',
@@ -488,6 +476,7 @@ export default function BeverageTabContent() {
 			<div className="flex justify-center pt-2">
 				{tableCurrentPageItems.length > 0 && (
 					<Pagination
+						showControls
 						showShadow
 						size="sm"
 						page={tableCurrentPage}

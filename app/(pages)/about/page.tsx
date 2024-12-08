@@ -5,7 +5,7 @@ import LegalStatement from './legalStatement';
 
 export default function About() {
 	return (
-		<div>
+		<div className="min-h-main-content">
 			<Introduction />
 			<LegalStatement />
 			<ChangeLog />

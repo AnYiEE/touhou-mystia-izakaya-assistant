@@ -1,8 +1,8 @@
+'use client';
+
 import {
 	type ElementRef,
 	type FC,
-	type HTMLAttributes,
-	type KeyboardEvent,
 	type MouseEvent,
 	type PropsWithChildren,
 	forwardRef,
@@ -12,7 +12,7 @@ import {
 	useMemo,
 	useState,
 } from 'react';
-import {isNil} from 'lodash';
+import {debounce, isNil} from 'lodash';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useParams} from '@/hooks';
@@ -42,7 +42,7 @@ import {
 } from '@/data';
 import type {ITagStyle} from '@/data/types';
 import {globalStore as store} from '@/stores';
-import {checkA11yConfirmKey, union} from '@/utils';
+import {type TPressEvent, checkA11yConfirmKey, union} from '@/utils';
 
 const {name: siteName} = siteConfig;
 
@@ -55,11 +55,7 @@ const CloseButton: FC<ICloseButtonProps> = () => {
 	const isInNewWindow = params.has(inNewWindowParam);
 
 	const handleClose = useCallback(
-		(event: KeyboardEvent<HTMLButtonElement> | MouseEvent<HTMLButtonElement>) => {
-			if (!checkA11yConfirmKey(event)) {
-				return;
-			}
-
+		(event: TPressEvent) => {
 			getBackdropProps().onClick?.(event as MouseEvent<HTMLButtonElement>);
 
 			if (isInNewWindow) {
@@ -84,7 +80,7 @@ const CloseButton: FC<ICloseButtonProps> = () => {
 				icon={faXmark}
 				variant="light"
 				onClick={handleClose}
-				onKeyDown={handleClose}
+				onKeyDown={debounce(checkA11yConfirmKey(handleClose))}
 				aria-label={label}
 				className="absolute -right-1 top-1 h-4 text-default-200 transition-opacity data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover"
 			/>
@@ -168,7 +164,7 @@ const ShareButton = memo<IShareButtonProps>(function ShareButton({name}) {
 	);
 });
 
-interface ITriggerProps extends PopoverTriggerProps, HTMLAttributes<HTMLButtonElement> {}
+interface ITriggerProps extends PopoverTriggerProps, HTMLButtonElementAttributes {}
 
 const Trigger = memo<ITriggerProps>(function Trigger({className, ...props}) {
 	const isHighAppearance = store.persistence.highAppearance.use();
@@ -289,13 +285,8 @@ const ItemPopoverCardComponent = memo(
 										target="ingredient"
 										name={ingredient}
 										size={1.5}
-										onClick={() => {
+										onPress={() => {
 											openWindow('ingredients', ingredient);
-										}}
-										onKeyDown={(event) => {
-											if (checkA11yConfirmKey(event)) {
-												openWindow('ingredients', ingredient);
-											}
 										}}
 										aria-label={ingredientLabel}
 										role="button"

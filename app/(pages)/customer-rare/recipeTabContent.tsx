@@ -37,12 +37,14 @@ import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 import Tooltip from '@/components/tooltip';
 
+import {getMotionProps} from '@/components/getMotionProps';
+
 import {recipeTableColumns as tableColumns} from './constants';
 import {checkRecipeEasterEgg} from './evaluateMeal';
 import type {ITableColumn, ITableSortDescriptor, TRecipeWithSuitability, TRecipesWithSuitability} from './types';
 import {CUSTOMER_RARE_TAG_STYLE, LABEL_DLC_0} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {checkA11yConfirmKey, checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils';
+import {checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils';
 
 export type TTableColumnKey = 'recipe' | 'cooker' | 'ingredient' | 'price' | 'suitability' | 'time' | 'action';
 export type TTableColumns = ITableColumn<TTableColumnKey>[];
@@ -301,13 +303,8 @@ export default function RecipeTabContent() {
 									target="recipe"
 									name={name}
 									size={2}
-									onClick={() => {
+									onPress={() => {
 										openWindow('recipes', name);
-									}}
-									onKeyDown={(event) => {
-										if (checkA11yConfirmKey(event)) {
-											openWindow('recipes', name);
-										}
 									}}
 									aria-label={label}
 									role="button"
@@ -357,13 +354,8 @@ export default function RecipeTabContent() {
 											target="ingredient"
 											name={ingredient}
 											size={1.5}
-											onClick={() => {
+											onPress={() => {
 												openWindow('ingredients', ingredient);
-											}}
-											onKeyDown={(event) => {
-												if (checkA11yConfirmKey(event)) {
-													openWindow('ingredients', ingredient);
-												}
 											}}
 											aria-label={ingredientLabel}
 											role="button"
@@ -434,6 +426,7 @@ export default function RecipeTabContent() {
 							allowsCustomValue
 							defaultItems={allRecipeNames}
 							inputValue={searchValue}
+							isVirtualized={false}
 							placeholder="名称"
 							size="sm"
 							startContent={<FontAwesomeIcon icon={faMagnifyingGlass} className="pointer-events-none" />}
@@ -445,11 +438,7 @@ export default function RecipeTabContent() {
 							aria-label="选择或输入料理名称"
 							title="选择或输入料理名称"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: getMotionProps('popover', isHighAppearance),
 							}}
 							classNames={{
 								base: twJoin(
@@ -477,9 +466,10 @@ export default function RecipeTabContent() {
 							)}
 						</Autocomplete>
 						<Select
+							isVirtualized={false}
 							items={allRecipeTags}
-							selectedKeys={selectedCustomerPositiveTags}
 							placeholder="标签"
+							selectedKeys={selectedCustomerPositiveTags}
 							size="sm"
 							startContent={<FontAwesomeIcon icon={faTags} />}
 							variant="flat"
@@ -487,11 +477,7 @@ export default function RecipeTabContent() {
 							aria-label="选择顾客所点单的料理标签"
 							title="选择顾客所点单的料理标签"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: getMotionProps('popover', isHighAppearance),
 							}}
 							classNames={{
 								base: 'w-2/3 md:w-full',
@@ -605,6 +591,7 @@ export default function RecipeTabContent() {
 						<span className="mr-2 cursor-auto whitespace-nowrap">表格行数</span>
 						<Select
 							disallowEmptySelection
+							isVirtualized={false}
 							items={tableSelectableRows}
 							selectedKeys={tableRowsPerPage}
 							size="sm"
@@ -613,11 +600,7 @@ export default function RecipeTabContent() {
 							aria-label="选择表格每页最大行数"
 							title="选择表格每页最大行数"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: getMotionProps('popover', isHighAppearance),
 							}}
 							classNames={{
 								base: 'min-w-16',
@@ -667,6 +650,7 @@ export default function RecipeTabContent() {
 			<div className="flex justify-center pt-2">
 				{tableCurrentPageItems.length > 0 && (
 					<Pagination
+						showControls
 						showShadow
 						size="sm"
 						page={tableCurrentPage}

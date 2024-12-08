@@ -39,6 +39,7 @@ import {checkA11yConfirmKey} from '@/utils';
 const {links, name, navItems, navMenuItems, shortName} = siteConfig;
 
 export function showProgress(startProgress: () => void) {
+	// @ts-expect-error Let the animation last at least 300 ms.
 	startTransition(async () => {
 		startProgress();
 		await new Promise((resolve) => {
@@ -223,12 +224,10 @@ export default function Navbar() {
 													<DropdownItem
 														key={dropdownItemIndex}
 														textValue={label}
-														onKeyDown={(event) => {
-															if (checkA11yConfirmKey(event)) {
-																handlePress();
-																router.push(href);
-															}
-														}}
+														onKeyDown={checkA11yConfirmKey(() => {
+															handlePress();
+															router.push(href);
+														})}
 													>
 														<NavbarLink
 															fullWidth

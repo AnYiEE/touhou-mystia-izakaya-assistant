@@ -1,14 +1,4 @@
-import {
-	type ChangeEvent,
-	type KeyboardEvent,
-	memo,
-	useCallback,
-	useEffect,
-	useMemo,
-	useReducer,
-	useRef,
-	useState,
-} from 'react';
+import {type ChangeEvent, memo, useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {debounce, isObjectLike} from 'lodash';
 import {twJoin} from 'tailwind-merge';
 
@@ -206,12 +196,13 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 					<Tab key="restore" title="还原">
 						<div className="w-full space-y-2 lg:w-1/2">
 							<Textarea
+								isClearable
 								placeholder="上传或输入顾客套餐数据"
 								value={importValue}
 								onValueChange={setImportValue}
 								classNames={{
 									inputWrapper: twJoin(
-										'transition-background',
+										'transition-background data-[hover=true]:bg-default-200',
 										isHighAppearance &&
 											'bg-default-100/40 backdrop-blur data-[hover=true]:bg-default-200/40 group-data-[focus=true]:bg-default-100/70'
 									),
@@ -242,11 +233,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 										isLoading={isSaveButtonLoading}
 										variant="flat"
 										onClick={toggleSavePopoverOpened}
-										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
-											if (checkA11yConfirmKey(event)) {
-												toggleSavePopoverOpened();
-											}
-										})}
+										onKeyDown={debounce(checkA11yConfirmKey(toggleSavePopoverOpened))}
 										className={twJoin(isHighAppearance && 'backdrop-blur')}
 									>
 										保存
@@ -259,8 +246,6 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 										size="sm"
 										variant="ghost"
 										onPress={handleImportData}
-										/** @todo Remove this line after upgrade to `@nextui-org/react` to v2.5.0 */
-										className="!text-danger data-[hover=true]:!text-danger-foreground"
 									>
 										确认保存
 									</Button>
@@ -286,11 +271,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 										color="danger"
 										variant="flat"
 										onClick={toggleResetPopoverOpened}
-										onKeyDown={debounce((event: KeyboardEvent<HTMLButtonElement>) => {
-											if (checkA11yConfirmKey(event)) {
-												toggleResetPopoverOpened();
-											}
-										})}
+										onKeyDown={debounce(checkA11yConfirmKey(toggleResetPopoverOpened))}
 										className={twJoin(isHighAppearance && 'backdrop-blur')}
 									>
 										重置已保存的顾客套餐数据
@@ -303,8 +284,6 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 										size="sm"
 										variant="ghost"
 										onPress={handleResetData}
-										/** @todo Remove this line after upgrade to `@nextui-org/react` to v2.5.0 */
-										className="!text-danger data-[hover=true]:!text-danger-foreground"
 									>
 										确认重置
 									</Button>

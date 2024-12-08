@@ -1,3 +1,5 @@
+'use client';
+
 import {type ElementRef, forwardRef, memo} from 'react';
 import {twJoin} from 'tailwind-merge';
 

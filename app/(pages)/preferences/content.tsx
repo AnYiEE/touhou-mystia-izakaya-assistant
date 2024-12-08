@@ -12,6 +12,8 @@ import SwitchItem from './switchItem';
 import Heading from '@/components/heading';
 import Sprite from '@/components/sprite';
 
+import {getMotionProps} from '@/components/getMotionProps';
+
 import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 
@@ -89,7 +91,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 						onValueChange={onIsNegativePopularTagChange}
 						aria-label={`设置为${isNegativePopularTag ? TAG_POPULAR_POSITIVE : TAG_POPULAR_NEGATIVE}`}
 						classNames={{
-							base: 'ml-2',
+							base: 'mx-2',
 							wrapper: 'bg-primary',
 						}}
 					/>
@@ -99,6 +101,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 					<div className="flex items-center">
 						<span className="font-medium">标签：</span>
 						<Select
+							isVirtualized={false}
 							items={popularTags}
 							selectedKeys={selectedPopularTag}
 							size="sm"
@@ -107,11 +110,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 							aria-label="选择游戏中现时流行的标签"
 							title="选择游戏中现时流行的标签"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: getMotionProps('popover', isHighAppearance),
 							}}
 							classNames={{
 								base: 'w-28',

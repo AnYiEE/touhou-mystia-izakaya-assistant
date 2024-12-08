@@ -1,3 +1,5 @@
+'use client';
+
 import {type Dispatch, type SetStateAction, memo, useCallback} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
@@ -16,6 +18,8 @@ import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/compone
 import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
+
+import {getMotionProps} from '@/components/getMotionProps';
 
 import {globalStore as store} from '@/stores';
 import type {TSpriteTarget} from '@/utils/sprite/types';
@@ -55,6 +59,7 @@ export default memo<IProps>(function SideSearchIconButton({
 
 	return (
 		<Popover
+			shouldBlockScroll
 			/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/3736} is fixed. */
 			// backdrop="opaque"
 			placement="left"
@@ -77,21 +82,18 @@ export default memo<IProps>(function SideSearchIconButton({
 			<PopoverContent className="w-64">
 				<Autocomplete
 					allowsCustomValue
-					variant="flat"
 					defaultItems={searchItems}
 					inputValue={searchValue}
+					isVirtualized={false}
 					label={label}
+					variant="flat"
 					onInputChange={handleInputChange}
 					popoverProps={{
-						motionProps: isHighAppearance
-							? {
-									initial: {},
-								}
-							: {},
+						motionProps: getMotionProps('select', isHighAppearance),
 					}}
 					classNames={{
 						base: twJoin(
-							'[&_div]:transition-background',
+							'[&_div]:transition-background data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:bg-default-200',
 							isHighAppearance &&
 								'data-[slot="input-wrapper"]:[&_div]:!bg-default-100/70 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:!bg-default-200/70'
 						),

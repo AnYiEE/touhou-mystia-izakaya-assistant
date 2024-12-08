@@ -7,6 +7,8 @@ import {Tooltip, type TooltipProps} from '@nextui-org/react';
 import Link, {type ILinkProps} from '@/components/link';
 import QRCode from '@/components/qrCode';
 
+import {getMotionProps} from '@/components/getMotionProps';
+
 import {siteConfig} from '@/configs';
 
 const {isIcpFiling, isProduction, isVercel, links, nodeEnv, shortName, vercelEnv, vercelSha, version} = siteConfig;
@@ -53,9 +55,7 @@ const FooterLinkWithTooltip = memo<PropsWithChildren<IFooterLinkWithTooltipProps
 			content={props.content}
 			isDisabled={!props.content}
 			size="sm"
-			motionProps={{
-				initial: {},
-			}}
+			motionProps={getMotionProps('tooltip', true)}
 			classNames={{
 				...classNames,
 				content: twMerge('bg-content1/40 backdrop-blur-lg dark:bg-content1/70', classNames?.content),

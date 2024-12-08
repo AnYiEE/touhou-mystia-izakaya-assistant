@@ -1,3 +1,5 @@
+'use client';
+
 import {type Dispatch, memo, useCallback, useMemo} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
@@ -18,6 +20,8 @@ import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/compone
 import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
+
+import {getMotionProps} from '@/components/getMotionProps';
 
 import {LABEL_DLC_0} from '@/data';
 import {globalStore as store} from '@/stores';
@@ -65,6 +69,7 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 
 	return (
 		<Popover
+			shouldBlockScroll
 			/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/3736} is fixed. */
 			// backdrop="opaque"
 			placement="left"
@@ -90,18 +95,15 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 						({items, label, selectedKeys, selectionMode, setSelectedKeys, spriteTarget}, index) => (
 							<Select
 								key={index}
-								size="sm"
+								isVirtualized={false}
 								items={items}
+								label={label}
 								selectedKeys={selectedKeys}
 								selectionMode={selectionMode ?? 'multiple'}
-								label={label}
+								size="sm"
 								onSelectionChange={handleSelectionChange(setSelectedKeys)}
 								popoverProps={{
-									motionProps: isHighAppearance
-										? {
-												initial: {},
-											}
-										: {},
+									motionProps: getMotionProps('select', isHighAppearance),
 								}}
 								classNames={{
 									listboxWrapper: twJoin(

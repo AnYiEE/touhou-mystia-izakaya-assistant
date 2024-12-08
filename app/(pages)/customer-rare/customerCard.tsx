@@ -26,7 +26,7 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {checkA11yConfirmKey, pinyinSort} from '@/utils';
+import {pinyinSort} from '@/utils';
 
 export default function CustomerCard() {
 	const vibrate = useVibrate();
@@ -326,13 +326,8 @@ export default function CustomerCard() {
 										}
 										tagStyle={CUSTOMER_RARE_TAG_STYLE.positive}
 										tagType="positive"
-										onClick={() => {
+										onPress={() => {
 											handleRecipeTagClick(tag);
-										}}
-										onKeyDown={(event) => {
-											if (checkA11yConfirmKey(event)) {
-												handleRecipeTagClick(tag);
-											}
 										}}
 										aria-label={`${tag}${currentCustomerOrder.recipeTag === tag ? '/已选定' : ''}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
 										role="button"
@@ -387,13 +382,8 @@ export default function CustomerCard() {
 										tag={tag}
 										tagStyle={CUSTOMER_RARE_TAG_STYLE.beverage}
 										tagType="positive"
-										onClick={() => {
+										onPress={() => {
 											handleBeverageTagClick(tag);
-										}}
-										onKeyDown={(event) => {
-											if (checkA11yConfirmKey(event)) {
-												handleBeverageTagClick(tag);
-											}
 										}}
 										aria-label={`${tag}${currentCustomerOrder.beverageTag === tag ? '/已选定' : ''}${beverageTags.includes(tag) ? '/已满足' : ''}`}
 										role="button"

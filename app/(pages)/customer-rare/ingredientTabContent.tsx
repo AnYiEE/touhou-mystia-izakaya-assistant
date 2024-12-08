@@ -1,5 +1,5 @@
 import {memo, useCallback, useMemo} from 'react';
-import {curry, curryRight} from 'lodash';
+import {curry, curryRight, debounce} from 'lodash';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
@@ -7,6 +7,7 @@ import {useVibrate} from '@/hooks';
 import {Badge, Button, ScrollShadow} from '@nextui-org/react';
 
 import Placeholder from '@/components/placeholder';
+import PressElement from '@/components/pressElement';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
@@ -250,14 +251,10 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 								offset={scoreChange > 1 ? 10 : 7}
 								size="sm"
 							>
-								<div
-									onClick={() => {
+								<PressElement
+									as="div"
+									onPress={() => {
 										handleSelect(name);
-									}}
-									onKeyDown={(event) => {
-										if (checkA11yConfirmKey(event)) {
-											handleSelect(name);
-										}
 									}}
 									role="button"
 									tabIndex={0}
@@ -292,7 +289,7 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 									<span className="whitespace-nowrap text-center text-xs group-hover:font-bold">
 										{name}
 									</span>
-								</div>
+								</PressElement>
 							</Tooltip>
 						);
 					})}
@@ -303,7 +300,8 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 					isIconOnly
 					size="sm"
 					variant="flat"
-					onPress={handleButtonPress}
+					onClick={handleButtonPress}
+					onKeyDown={debounce(checkA11yConfirmKey(handleButtonPress))}
 					aria-label={ingredientTabStyle.ariaLabel}
 					className={twJoin('h-4 w-4/5 text-default-300', isHighAppearance && 'backdrop-blur')}
 				>
