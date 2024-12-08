@@ -171,7 +171,10 @@ export default function RootLayout({
 					<Providers locale={locale} themeProps={{attribute: 'class'}}>
 						<div className="flex min-h-dvh-safe flex-col">
 							<Navbar />
-							<main className="container mx-auto grid max-w-7xl flex-grow px-6 py-8">{children}</main>
+							<main className="container mx-auto grid max-w-7xl flex-grow px-6 py-8">
+								<div id="modal-portal-container"></div>
+								{children}
+							</main>
 							<Footer />
 						</div>
 					</Providers>
