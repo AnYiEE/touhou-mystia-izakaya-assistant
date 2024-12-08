@@ -36,6 +36,8 @@ import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 import Tooltip from '@/components/tooltip';
 
+import {getMotionProps} from '@/components/getMotionProps';
+
 import {beverageTableColumns as tableColumns} from './constants';
 import type {ITableColumn, ITableSortDescriptor, TBeverageWithSuitability, TBeveragesWithSuitability} from './types';
 import {CUSTOMER_RARE_TAG_STYLE, LABEL_DLC_0} from '@/data';
@@ -300,11 +302,7 @@ export default function BeverageTabContent() {
 							aria-label="选择或输入酒水名称"
 							title="选择或输入酒水名称"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: getMotionProps('popover', isHighAppearance),
 							}}
 							classNames={{
 								base: twJoin(
@@ -343,11 +341,7 @@ export default function BeverageTabContent() {
 							aria-label="选择顾客所点单的酒水标签"
 							title="选择顾客所点单的酒水标签"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: getMotionProps('popover', isHighAppearance),
 							}}
 							classNames={{
 								base: 'w-2/3 md:w-full',
@@ -437,11 +431,7 @@ export default function BeverageTabContent() {
 							aria-label="选择表格每页最大行数"
 							title="选择表格每页最大行数"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: getMotionProps('popover', isHighAppearance),
 							}}
 							classNames={{
 								base: 'min-w-16',

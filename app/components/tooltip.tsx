@@ -7,6 +7,8 @@ import {Tooltip as NextUITooltip, extendVariants} from '@nextui-org/react';
 
 import {type TRatingStyleMap, generateRatingColor} from '@/components/avatar';
 
+import {getMotionProps} from '@/components/getMotionProps';
+
 import {globalStore as store} from '@/stores';
 
 export const ratingStyleMap = {
@@ -30,13 +32,7 @@ export default memo<IProps>(function Tooltip({classNames, color, radius, showArr
 			// The same radius as `Popover`.
 			radius={radius ?? 'lg'}
 			showArrow={isHighAppearance ? false : Boolean(showArrow)}
-			motionProps={
-				isHighAppearance
-					? {
-							initial: {},
-						}
-					: {}
-			}
+			motionProps={getMotionProps('tooltip', isHighAppearance)}
 			classNames={{
 				...classNames,
 				content: twMerge(

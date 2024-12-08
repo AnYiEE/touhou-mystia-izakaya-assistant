@@ -37,6 +37,8 @@ import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 import Tooltip from '@/components/tooltip';
 
+import {getMotionProps} from '@/components/getMotionProps';
+
 import {type TTableColumnKey, type TTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
 import {recipeTableColumns as tableColumns} from './constants';
 import {checkEasterEgg} from './evaluateMeal';
@@ -433,11 +435,7 @@ export default function RecipeTabContent() {
 							aria-label="选择或输入料理名称"
 							title="选择或输入料理名称"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: getMotionProps('popover', isHighAppearance),
 							}}
 							classNames={{
 								base: twJoin(
@@ -476,11 +474,7 @@ export default function RecipeTabContent() {
 							aria-label="选择顾客所点单的料理标签"
 							title="选择顾客所点单的料理标签"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: getMotionProps('popover', isHighAppearance),
 							}}
 							classNames={{
 								base: 'w-2/3 md:w-full',
@@ -603,11 +597,7 @@ export default function RecipeTabContent() {
 							aria-label="选择表格每页最大行数"
 							title="选择表格每页最大行数"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: getMotionProps('popover', isHighAppearance),
 							}}
 							classNames={{
 								base: 'min-w-16',

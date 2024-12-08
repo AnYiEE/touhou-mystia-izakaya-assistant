@@ -21,6 +21,8 @@ import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
+import {getMotionProps} from '@/components/getMotionProps';
+
 import {LABEL_DLC_0} from '@/data';
 import {globalStore as store} from '@/stores';
 import {pinyinSort} from '@/utils';
@@ -101,11 +103,7 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 								size="sm"
 								onSelectionChange={handleSelectionChange(setSelectedKeys)}
 								popoverProps={{
-									motionProps: isHighAppearance
-										? {
-												initial: {},
-											}
-										: {},
+									motionProps: getMotionProps('select', isHighAppearance),
 								}}
 								classNames={{
 									listboxWrapper: twJoin(

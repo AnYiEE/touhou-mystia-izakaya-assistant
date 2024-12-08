@@ -5,6 +5,8 @@ import {twMerge} from 'tailwind-merge';
 
 import {type DropdownProps, Dropdown as NextUIDropdown} from '@nextui-org/react';
 
+import {getMotionProps} from '@/components/getMotionProps';
+
 import {globalStore as store} from '@/stores';
 
 interface IProps extends DropdownProps {}
@@ -16,13 +18,7 @@ export default memo<IProps>(function Dropdown({classNames, shouldBlockScroll, sh
 		<NextUIDropdown
 			shouldBlockScroll={Boolean(shouldBlockScroll)}
 			showArrow={isHighAppearance ? false : Boolean(showArrow)}
-			motionProps={
-				isHighAppearance
-					? {
-							initial: {},
-						}
-					: {}
-			}
+			motionProps={getMotionProps('popover', isHighAppearance)}
 			classNames={{
 				...classNames,
 				content: twMerge(

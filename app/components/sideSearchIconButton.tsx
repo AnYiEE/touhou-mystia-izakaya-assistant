@@ -19,6 +19,8 @@ import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
+import {getMotionProps} from '@/components/getMotionProps';
+
 import {globalStore as store} from '@/stores';
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
@@ -87,11 +89,7 @@ export default memo<IProps>(function SideSearchIconButton({
 					variant="flat"
 					onInputChange={handleInputChange}
 					popoverProps={{
-						motionProps: isHighAppearance
-							? {
-									initial: {},
-								}
-							: {},
+						motionProps: getMotionProps('select', isHighAppearance),
 					}}
 					classNames={{
 						base: twJoin(

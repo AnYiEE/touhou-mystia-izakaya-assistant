@@ -8,6 +8,8 @@ import {Popover as NextUIPopover, extendVariants} from '@nextui-org/react';
 import {generateRatingColor} from '@/components/avatar';
 import {ratingStyleMap} from '@/components/tooltip';
 
+import {getMotionProps} from '@/components/getMotionProps';
+
 import {globalStore as store} from '@/stores';
 
 const CustomNextUIPopover = extendVariants(NextUIPopover, generateRatingColor('content', ratingStyleMap));
@@ -39,13 +41,7 @@ export default memo<IProps>(function Popover({
 			shouldCloseOnScroll={Boolean(shouldCloseOnScroll)}
 			showArrow={isHighAppearance ? false : Boolean(showArrow)}
 			size={size}
-			motionProps={
-				isHighAppearance
-					? {
-							initial: {},
-						}
-					: {}
-			}
+			motionProps={getMotionProps('popover', isHighAppearance)}
 			classNames={{
 				...classNames,
 				content: twMerge(
