@@ -105,6 +105,10 @@ const changelog = [
 		version: 'v1.4',
 		changes: ['新增：支持设置全局的“明星店”效果。', '修复：顾客套餐评级逻辑。'],
 	},
+	{
+		version: 'v1.5',
+		changes: ['新增：更新数据至游戏版本4.2.0。', '改善：交互体验和视觉效果。'],
+	},
 ] as const satisfies {
 	version: `v${string}`;
 	changes: `${'新增' | '改善' | '修复'}：${string}。`[];
