@@ -3,7 +3,7 @@
 import {memo, useCallback} from 'react';
 import {twJoin} from 'tailwind-merge';
 
-import {useVibrate} from '@/hooks';
+import {useMotionProps, useVibrate} from '@/hooks';
 
 import {Button, Select, SelectItem, type Selection, Switch} from '@nextui-org/react';
 
@@ -18,6 +18,7 @@ import {customerRareStore as customerStore, globalStore} from '@/stores';
 interface IProps extends IDataManagerProps {}
 
 export default memo<IProps>(function Content({onModalClose}) {
+	const popoverMotionProps = useMotionProps('popover');
 	const vibrate = useVibrate();
 
 	const isOrderLinkedFilter = customerStore.persistence.customer.orderLinkedFilter.use();
@@ -108,11 +109,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 							aria-label="选择游戏中现时流行的标签"
 							title="选择游戏中现时流行的标签"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: popoverMotionProps,
 							}}
 							classNames={{
 								base: 'w-28',
