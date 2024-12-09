@@ -2,14 +2,14 @@ import {type RefObject, useCallback, useEffect, useState} from 'react';
 
 import {useParams} from '@/hooks';
 
-export const openedPopoverParam = 'select';
+export const PARAM_SPECIFY = 'select';
 
 export function useOpenedItemPopover(popoverCardRef: RefObject<HTMLElement | null>) {
 	const [params, replace] = useParams();
 	const [openedPopover, _setOpenedPopover] = useState<string | null>(null);
 
 	useEffect(() => {
-		const param = params.get(openedPopoverParam);
+		const param = params.get(PARAM_SPECIFY);
 
 		_setOpenedPopover(param);
 
@@ -32,9 +32,9 @@ export function useOpenedItemPopover(popoverCardRef: RefObject<HTMLElement | nul
 
 			const newParams = new URLSearchParams(params);
 			if (name === null) {
-				newParams.delete(openedPopoverParam);
+				newParams.delete(PARAM_SPECIFY);
 			} else {
-				newParams.set(openedPopoverParam, name);
+				newParams.set(PARAM_SPECIFY, name);
 			}
 
 			replace(newParams);
