@@ -653,7 +653,8 @@ export default function RecipeTabContent() {
 			<div className="flex justify-center pt-2">
 				{tableCurrentPageItems.length > 0 && (
 					<Pagination
-						showControls
+						/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/4275} is fixed. */
+						// showControls
 						showShadow
 						size="sm"
 						page={tableCurrentPage}
