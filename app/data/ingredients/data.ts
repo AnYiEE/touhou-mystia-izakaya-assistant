@@ -728,10 +728,7 @@ export const INGREDIENT_LIST = [
 		level: 1,
 		price: 7,
 		from: {
-			buy: [
-				['【妖怪之山】河童商人', 50],
-				['【太阳花田】太阳花精', 70],
-			],
+			buy: ['【妖怪之山】河童商人', ['【太阳花田】太阳花精', 70]],
 			collect: ['【妖怪之山】黄瓜堆'],
 			fishingAdvanced: ['妖怪之山'],
 		},
@@ -747,7 +744,7 @@ export const INGREDIENT_LIST = [
 		level: 2,
 		price: 12,
 		from: {
-			buy: [['【妖怪之山】河童商人', 50]],
+			buy: ['【妖怪之山】河童商人'],
 			collect: [
 				['【辉针城】碗之后', 30],
 				['【魔界】河流', 50],
