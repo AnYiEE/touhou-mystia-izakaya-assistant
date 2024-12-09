@@ -2,7 +2,7 @@ import {useCallback, useMemo} from 'react';
 import {curry, curryRight} from 'lodash';
 import {twJoin} from 'tailwind-merge';
 
-import {useVibrate, useViewInNewWindow} from '@/hooks';
+import {useMotionProps, useVibrate, useViewInNewWindow} from '@/hooks';
 
 import {
 	Autocomplete,
@@ -48,6 +48,7 @@ import {checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils
 export type {TTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
 
 export default function RecipeTabContent() {
+	const popoverMotionProps = useMotionProps('popover');
 	const openWindow = useViewInNewWindow();
 	const vibrate = useVibrate();
 
@@ -433,11 +434,7 @@ export default function RecipeTabContent() {
 							aria-label="选择或输入料理名称"
 							title="选择或输入料理名称"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: popoverMotionProps,
 								shouldCloseOnScroll: false,
 							}}
 							classNames={{
@@ -477,11 +474,7 @@ export default function RecipeTabContent() {
 							aria-label="选择顾客所点单的料理标签"
 							title="选择顾客所点单的料理标签"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: popoverMotionProps,
 								shouldCloseOnScroll: false,
 							}}
 							classNames={{
@@ -605,11 +598,7 @@ export default function RecipeTabContent() {
 							aria-label="选择表格每页最大行数"
 							title="选择表格每页最大行数"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: popoverMotionProps,
 								shouldCloseOnScroll: false,
 							}}
 							classNames={{
@@ -644,6 +633,7 @@ export default function RecipeTabContent() {
 			allRecipeTags,
 			filteredData.length,
 			isHighAppearance,
+			popoverMotionProps,
 			searchValue,
 			selectedCookers,
 			selectedCustomerPositiveTags,

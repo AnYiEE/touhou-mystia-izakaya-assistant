@@ -3,6 +3,8 @@
 import {type ComponentProps, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
+import {useMotionProps} from '@/hooks';
+
 import {Tooltip as NextUITooltip, extendVariants} from '@nextui-org/react';
 
 import {type TRatingStyleMap, generateRatingColor} from '@/components/avatar';
@@ -22,6 +24,8 @@ const CustomNextUITooltip = extendVariants(NextUITooltip, generateRatingColor('c
 interface IProps extends ComponentProps<typeof CustomNextUITooltip> {}
 
 export default memo<IProps>(function Tooltip({classNames, color, radius, showArrow, ...props}) {
+	const motionProps = useMotionProps('tooltip');
+
 	const isHighAppearance = store.persistence.highAppearance.use();
 
 	return (
@@ -30,13 +34,7 @@ export default memo<IProps>(function Tooltip({classNames, color, radius, showArr
 			// The same radius as `Popover`.
 			radius={radius ?? 'lg'}
 			showArrow={isHighAppearance ? false : Boolean(showArrow)}
-			motionProps={
-				isHighAppearance
-					? {
-							initial: {},
-						}
-					: {}
-			}
+			motionProps={motionProps}
 			classNames={{
 				...classNames,
 				content: twMerge(

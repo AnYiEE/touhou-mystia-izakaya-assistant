@@ -3,7 +3,7 @@
 import {type Dispatch, type SetStateAction, memo, useCallback} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
-import {useVibrate} from '@/hooks';
+import {useMotionProps, useVibrate} from '@/hooks';
 
 import {
 	Autocomplete,
@@ -41,6 +41,7 @@ export default memo<IProps>(function SideSearchIconButton({
 	searchConfig: {label, searchItems, searchValue, setSearchValue, spriteTarget},
 	...props
 }) {
+	const selectMotionProps = useMotionProps('select');
 	const vibrate = useVibrate();
 
 	const isHighAppearance = store.persistence.highAppearance.use();
@@ -87,11 +88,7 @@ export default memo<IProps>(function SideSearchIconButton({
 					variant="flat"
 					onInputChange={handleInputChange}
 					popoverProps={{
-						motionProps: isHighAppearance
-							? {
-									initial: {},
-								}
-							: {},
+						motionProps: selectMotionProps,
 						shouldCloseOnScroll: false,
 					}}
 					classNames={{
