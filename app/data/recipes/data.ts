@@ -1340,8 +1340,9 @@ export const RECIPE_LIST = [
 		id: 66,
 		recipeId: 42,
 		name: '月饼',
-		description: '诶？！这是什么？你为什么会获得这个？嗯…祝你玩得愉快。',
-		ingredients: ['月光草', '蜂蜜', '糯米', '面粉'],
+		description:
+			'原本是内测人员的特殊食谱，三年来一直令全收集强迫症玩家坐卧不宁，这次正式转正，虽然在这个版本下毫不实用。',
+		ingredients: ['月光草', '面粉'],
 		positiveTags: ['饱腹', '中华', '甜', '文化底蕴', '不可思议', '小巧'],
 		negativeTags: [],
 		cooker: '蒸锅',
@@ -1349,8 +1350,16 @@ export const RECIPE_LIST = [
 		max: 10,
 		dlc: 0,
 		level: 5,
-		price: 20,
-		from: '【游戏补偿】“阿吽异变”',
+		price: 35,
+		from: {
+			buy: {
+				name: '【人间之里】香霖堂',
+				price: {
+					currency: '银色的青蛙硬币',
+					amount: 5,
+				},
+			},
+		},
 	},
 	{
 		id: 67,

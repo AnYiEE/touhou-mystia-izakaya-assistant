@@ -548,7 +548,7 @@ export const INGREDIENT_LIST = [
 		price: 70,
 		from: {
 			collect: [
-				['【妖怪兽道】东侧山丘（需借道博丽神社）', false, 17, 18],
+				['【妖怪兽道】东侧山丘（需借道博丽神社）', false, 16, 18],
 				'【地灵殿】喷泉（西侧）',
 				'【地灵殿】游乐场',
 				'【命莲寺】花丛（西南侧）',
@@ -728,10 +728,7 @@ export const INGREDIENT_LIST = [
 		level: 1,
 		price: 7,
 		from: {
-			buy: [
-				['【妖怪之山】河童商人', 50],
-				['【太阳花田】太阳花精', 70],
-			],
+			buy: ['【妖怪之山】河童商人', ['【太阳花田】太阳花精', 70]],
 			collect: ['【妖怪之山】黄瓜堆'],
 			fishingAdvanced: ['妖怪之山'],
 		},
@@ -747,7 +744,7 @@ export const INGREDIENT_LIST = [
 		level: 2,
 		price: 12,
 		from: {
-			buy: [['【妖怪之山】河童商人', 50]],
+			buy: ['【妖怪之山】河童商人'],
 			collect: [
 				['【辉针城】碗之后', 30],
 				['【魔界】河流', 50],
