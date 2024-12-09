@@ -35,8 +35,10 @@ export default function CustomerRareTutorial() {
 	const dirverState = globalStore.persistence.dirver.get();
 	const isCompleted = dirverState.includes(key);
 
+	const BEVERAGE_POSITION = '[role="tabpanel"] tbody>tr[data-key="水獭祭"]>:last-child button';
 	const EGG_POSITION = '[aria-label="点击：加入额外食材【鸡蛋】，匹配度+1"]';
 	const HONEY_POSITION = '[aria-label="点击：加入额外食材【蜂蜜】，匹配度+1"]';
+	const RECIPE_POSITION = '[role="tabpanel"] tbody>tr[data-key="香炸蝉蜕"]>:last-child button';
 
 	const driverRef = useRef(
 		driver({
@@ -92,7 +94,7 @@ export default function CustomerRareTutorial() {
 					},
 				},
 				{
-					element: '[role="tabpanel"] tbody>tr[data-key="水獭祭"]>:last-child button',
+					element: BEVERAGE_POSITION,
 					popover: {
 						title: '选择目标酒水', // eslint-disable-next-line sort-keys
 						description: '点击加号，选择【水獭祭】。选择酒水时，酒水售价尽量不要超过目标稀客的最大持有金。',
@@ -106,7 +108,7 @@ export default function CustomerRareTutorial() {
 					},
 				},
 				{
-					element: '[role="tabpanel"] tbody>tr[data-key="香炸蝉蜕"]>:last-child button',
+					element: RECIPE_POSITION,
 					popover: {
 						title: '选择目标料理', // eslint-disable-next-line sort-keys
 						description:
@@ -165,7 +167,7 @@ export default function CustomerRareTutorial() {
 
 	const isInIngredientTab = useRef(false);
 
-	const moveNext = useCallback((selectors: string) => {
+	const moveNext = useCallback((selectors: string, position?: ScrollLogicalPosition) => {
 		// The `xl` breakpoint is 1280px.
 		if (globalThis.innerWidth >= 1280) {
 			driverRef.current.moveNext();
@@ -175,7 +177,7 @@ export default function CustomerRareTutorial() {
 			try {
 				element?.scrollIntoView({
 					behavior: 'smooth',
-					block: 'start',
+					block: position ?? 'start',
 				});
 			} catch {
 				element?.scrollIntoView(true);
@@ -204,7 +206,7 @@ export default function CustomerRareTutorial() {
 		}
 		if (currentBeverageTableDirection === 'descending' && !isBeverageTableSorted.current) {
 			isBeverageTableSorted.current = true;
-			driverRef.current.moveNext();
+			moveNext(BEVERAGE_POSITION, 'nearest');
 		}
 		if (currentOrderedBeverageTag && !hasOrderedBeverageTag.current) {
 			hasOrderedBeverageTag.current = true;
@@ -227,7 +229,7 @@ export default function CustomerRareTutorial() {
 		}
 		if (currentOrderedRecipeTag && !hasOrderedRecipeTag.current) {
 			hasOrderedRecipeTag.current = true;
-			driverRef.current.moveNext();
+			moveNext(RECIPE_POSITION, 'nearest');
 		}
 
 		if (isIngredientTabSelected && !isInIngredientTab.current) {
