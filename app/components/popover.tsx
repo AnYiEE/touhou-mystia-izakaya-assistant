@@ -3,6 +3,8 @@
 import {type ComponentProps, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
+import {useMotionProps} from '@/hooks';
+
 import {Popover as NextUIPopover, extendVariants} from '@nextui-org/react';
 
 import {generateRatingColor} from '@/components/avatar';
@@ -24,6 +26,8 @@ export default memo<IProps>(function Popover({
 	size,
 	...props
 }) {
+	const motionProps = useMotionProps('popover');
+
 	const isHighAppearance = store.persistence.highAppearance.use();
 
 	return (
@@ -39,13 +43,7 @@ export default memo<IProps>(function Popover({
 			shouldCloseOnScroll={Boolean(shouldCloseOnScroll)}
 			showArrow={isHighAppearance ? false : Boolean(showArrow)}
 			size={size}
-			motionProps={
-				isHighAppearance
-					? {
-							initial: {},
-						}
-					: {}
-			}
+			motionProps={motionProps}
 			classNames={{
 				...classNames,
 				content: twMerge(

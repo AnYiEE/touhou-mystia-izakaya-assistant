@@ -1,7 +1,7 @@
 import {useCallback, useMemo} from 'react';
 import {twJoin} from 'tailwind-merge';
 
-import {useVibrate, useViewInNewWindow} from '@/hooks';
+import {useMotionProps, useVibrate, useViewInNewWindow} from '@/hooks';
 
 import {
 	Autocomplete,
@@ -46,6 +46,7 @@ import {checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utils
 export type {TTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
 
 export default function BeverageTabContent() {
+	const popoverMotionProps = useMotionProps('popover');
 	const openWindow = useViewInNewWindow();
 	const vibrate = useVibrate();
 
@@ -297,11 +298,7 @@ export default function BeverageTabContent() {
 							aria-label="选择或输入酒水名称"
 							title="选择或输入酒水名称"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: popoverMotionProps,
 								shouldCloseOnScroll: false,
 							}}
 							classNames={{
@@ -341,11 +338,7 @@ export default function BeverageTabContent() {
 							aria-label="选择顾客所点单的酒水标签"
 							title="选择顾客所点单的酒水标签"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: popoverMotionProps,
 								shouldCloseOnScroll: false,
 							}}
 							classNames={{
@@ -436,11 +429,7 @@ export default function BeverageTabContent() {
 							aria-label="选择表格每页最大行数"
 							title="选择表格每页最大行数"
 							popoverProps={{
-								motionProps: isHighAppearance
-									? {
-											initial: {},
-										}
-									: {},
+								motionProps: popoverMotionProps,
 								shouldCloseOnScroll: false,
 							}}
 							classNames={{
@@ -474,6 +463,7 @@ export default function BeverageTabContent() {
 			allBeverageTags,
 			filteredData.length,
 			isHighAppearance,
+			popoverMotionProps,
 			searchValue,
 			selectedCustomerBeverageTags,
 			selectedDlcs,

@@ -2,6 +2,8 @@ import {type PropsWithChildren, memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 import {execSync} from 'node:child_process';
 
+import {getMotionProps} from '@/hooks/useMotionProps';
+
 import {Tooltip, type TooltipProps} from '@nextui-org/react';
 
 import Link, {type ILinkProps} from '@/components/link';
@@ -53,9 +55,7 @@ const FooterLinkWithTooltip = memo<PropsWithChildren<IFooterLinkWithTooltipProps
 			content={props.content}
 			isDisabled={!props.content}
 			size="sm"
-			motionProps={{
-				initial: {},
-			}}
+			motionProps={getMotionProps('tooltip')}
 			classNames={{
 				...classNames,
 				content: twMerge('bg-content1/40 backdrop-blur-lg dark:bg-content1/70', classNames?.content),

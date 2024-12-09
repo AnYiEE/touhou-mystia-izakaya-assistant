@@ -3,6 +3,8 @@
 import {memo} from 'react';
 import {twMerge} from 'tailwind-merge';
 
+import {useMotionProps} from '@/hooks';
+
 import {type DropdownProps, Dropdown as NextUIDropdown} from '@nextui-org/react';
 
 import {globalStore as store} from '@/stores';
@@ -16,6 +18,8 @@ export default memo<IProps>(function Dropdown({
 	showArrow,
 	...props
 }) {
+	const motionProps = useMotionProps('popover');
+
 	const isHighAppearance = store.persistence.highAppearance.use();
 
 	return (
@@ -23,13 +27,7 @@ export default memo<IProps>(function Dropdown({
 			shouldBlockScroll={Boolean(shouldBlockScroll)}
 			shouldCloseOnScroll={Boolean(shouldCloseOnScroll)}
 			showArrow={isHighAppearance ? false : Boolean(showArrow)}
-			motionProps={
-				isHighAppearance
-					? {
-							initial: {},
-						}
-					: {}
-			}
+			motionProps={motionProps}
 			classNames={{
 				...classNames,
 				content: twMerge(

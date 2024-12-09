@@ -3,7 +3,7 @@
 import {type Dispatch, memo, useCallback, useMemo} from 'react';
 import {twJoin, twMerge} from 'tailwind-merge';
 
-import {useVibrate} from '@/hooks';
+import {useMotionProps, useVibrate} from '@/hooks';
 
 import {
 	Button,
@@ -41,6 +41,7 @@ interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color
 }
 
 export default memo<IProps>(function SideFilterIconButton({className, selectConfig, ...props}) {
+	const selectMotionProps = useMotionProps('select');
 	const vibrate = useVibrate();
 
 	const isHighAppearance = store.persistence.highAppearance.use();
@@ -101,11 +102,7 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 								size="sm"
 								onSelectionChange={handleSelectionChange(setSelectedKeys)}
 								popoverProps={{
-									motionProps: isHighAppearance
-										? {
-												initial: {},
-											}
-										: {},
+									motionProps: selectMotionProps,
 									shouldCloseOnScroll: false,
 								}}
 								classNames={{
