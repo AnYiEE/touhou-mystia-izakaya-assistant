@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 
-import {openedPopoverParam} from '@/hooks/useOpenedItemPopover';
+import {PARAM_SPECIFY} from '@/hooks/useOpenedItemPopover';
 
 import {
 	type TClothesName,
@@ -25,7 +25,7 @@ type TItemName = TClothesName | TCookerName | TCurrencyName | TFoodName | TOrnam
 
 export type TOpenWindow = (path: TItemPath, name: TItemName) => void;
 
-export const inNewWindowParam = 'preview';
+export const PARAM_PREVIEW = 'preview';
 
 export function useViewInNewWindow() {
 	const [windowItemName, setWindowItemName] = useState<[TItemName] | null>(null);
@@ -41,8 +41,8 @@ export function useViewInNewWindow() {
 		windowObjectRef.current = null;
 
 		const pathname = `/${windowItemPath[0]}?${new URLSearchParams({
-			[openedPopoverParam]: windowItemName[0], // eslint-disable-next-line sort-keys
-			[inNewWindowParam]: '1',
+			[PARAM_SPECIFY]: windowItemName[0], // eslint-disable-next-line sort-keys
+			[PARAM_PREVIEW]: '1',
 		}).toString()}`;
 		const height = 640;
 		const width = 384;

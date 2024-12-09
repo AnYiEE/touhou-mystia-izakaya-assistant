@@ -16,8 +16,8 @@ import {debounce, isNil} from 'lodash';
 import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useParams} from '@/hooks';
-import {openedPopoverParam} from '@/hooks/useOpenedItemPopover';
-import {inNewWindowParam, useViewInNewWindow} from '@/hooks/useViewInNewWindow';
+import {PARAM_SPECIFY} from '@/hooks/useOpenedItemPopover';
+import {PARAM_PREVIEW, useViewInNewWindow} from '@/hooks/useViewInNewWindow';
 
 import {PopoverContent, PopoverTrigger, type PopoverTriggerProps, Snippet, usePopoverContext} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -52,27 +52,27 @@ const CloseButton: FC<ICloseButtonProps> = () => {
 	const [params, replace] = useParams();
 	const {getBackdropProps} = usePopoverContext();
 
-	const isInNewWindow = params.has(inNewWindowParam);
+	const isPreviewMode = params.has(PARAM_PREVIEW);
 
 	const handleClose = useCallback(
 		(event: TPressEvent) => {
 			getBackdropProps().onClick?.(event as MouseEvent<HTMLButtonElement>);
 
-			if (isInNewWindow) {
+			if (isPreviewMode) {
 				globalThis.close();
 			}
 
-			if (params.has(openedPopoverParam)) {
+			if (params.has(PARAM_SPECIFY)) {
 				const newParams = new URLSearchParams(params);
 
-				newParams.delete(openedPopoverParam);
+				newParams.delete(PARAM_SPECIFY);
 				replace(newParams);
 			}
 		},
-		[getBackdropProps, isInNewWindow, params, replace]
+		[getBackdropProps, isPreviewMode, params, replace]
 	);
 
-	const label = `点击：关闭${isInNewWindow ? '窗口' : '弹出框'}`;
+	const label = `点击：关闭${isPreviewMode ? '窗口' : '弹出框'}`;
 
 	return (
 		<Tooltip showArrow content={label} offset={-5} placement="left" size="sm">
@@ -99,7 +99,7 @@ const ShareButton = memo<IShareButtonProps>(function ShareButton({name}) {
 	const generatedUrl = useMemo(() => {
 		const newParams = new URLSearchParams(params);
 
-		newParams.set(openedPopoverParam, name);
+		newParams.set(PARAM_SPECIFY, name);
 
 		return `${location.origin}${location.pathname}?${newParams.toString()}`;
 	}, [name, params]);
