@@ -1,7 +1,7 @@
 import {isObjectLike} from 'lodash';
 
 import {siteConfig} from '@/configs';
-import {CLOTHES_LIST, type TClothes, type TClothesName, type TCustomerRareName} from '@/data';
+import {CLOTHES_LIST, type TClothes, type TClothesId, type TCustomerRareId} from '@/data';
 import {processPinyin} from '@/utils';
 import {Item} from '@/utils/item';
 
@@ -10,8 +10,8 @@ const {cdnUrl} = siteConfig;
 export class Clothes extends Item<TClothes> {
 	private static _instance: Clothes | undefined;
 
-	private static _bondClothesCache = new Map<TCustomerRareName, TClothesName | null>();
-	private static _tachiePathCache = new Map<TClothesName, string>();
+	private static _bondClothesCache = new Map<TCustomerRareId, TClothesId | null>();
+	private static _tachiePathCache = new Map<TClothesId, string>();
 
 	public static getInstance() {
 		if (Clothes._instance !== undefined) {
@@ -28,24 +28,24 @@ export class Clothes extends Item<TClothes> {
 	/**
 	 * @description Get the clothes for a customer based on their bond level.
 	 */
-	public getBondClothes(customerName: TCustomerRareName) {
-		if (Clothes._bondClothesCache.has(customerName)) {
-			return Clothes._bondClothesCache.get(customerName);
+	public getBondClothes(customerId: TCustomerRareId) {
+		if (Clothes._bondClothesCache.has(customerId)) {
+			return Clothes._bondClothesCache.get(customerId);
 		}
 
-		let bondClothes: TClothesName | null = null;
+		let bondClothes: TClothesId | null = null;
 
-		this._data.some(({from, name}) =>
+		this._data.some(({from, id}) =>
 			from.some((item) => {
-				if (isObjectLike(item) && 'bond' in item && item.bond === customerName) {
-					bondClothes = name;
+				if (isObjectLike(item) && 'bond' in item && item.bond === customerId) {
+					bondClothes = id;
 					return true;
 				}
 				return false;
 			})
 		);
 
-		Clothes._bondClothesCache.set(customerName, bondClothes);
+		Clothes._bondClothesCache.set(customerId, bondClothes);
 
 		return bondClothes;
 	}
@@ -53,17 +53,17 @@ export class Clothes extends Item<TClothes> {
 	/**
 	 * @description Get the tachie image path for a clothes.
 	 */
-	public getTachiePath(name: TClothesName) {
+	public getTachiePath(id: TClothesId) {
 		const basePath = `${cdnUrl}/assets/tachies/clothes`;
 
 		let path: string;
 
-		if (Clothes._tachiePathCache.has(name)) {
-			path = Clothes._tachiePathCache.get(name);
+		if (Clothes._tachiePathCache.has(id)) {
+			path = Clothes._tachiePathCache.get(id);
 		} else {
-			const {gif, pinyin} = this.getPropsByName(name);
+			const {gif, pinyin} = this.getPropsById(id);
 			path = `${basePath}/${processPinyin(pinyin).pinyinWithoutTone.join('')}.${gif ? 'gif' : 'png'}`;
-			Clothes._tachiePathCache.set(name, path);
+			Clothes._tachiePathCache.set(id, path);
 		}
 
 		return path;

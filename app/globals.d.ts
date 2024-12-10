@@ -27,3 +27,8 @@ type HTMLHeadingElementAttributes = import('react').HTMLAttributes<HTMLHeadingEl
 type HTMLLIElementAttributes = import('react').HTMLAttributes<HTMLLIElement>;
 type HTMLOListElementAttributes = import('react').HTMLAttributes<HTMLOListElement>;
 type HTMLUListElementAttributes = import('react').HTMLAttributes<HTMLUListElement>;
+
+interface IKeyValueObject<T = string> {
+	key: number;
+	value: T;
+}
