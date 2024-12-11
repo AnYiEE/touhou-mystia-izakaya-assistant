@@ -9,7 +9,7 @@ export * from './sprite';
 
 export * from './checkA11yConfirmKey';
 export * from './checkArray';
-export * from './covertValueObject';
+export * from './covertKeyValueObject';
 export * from './domReady';
 export * from './generateRangeArray';
 export * from './getPageTitle';
