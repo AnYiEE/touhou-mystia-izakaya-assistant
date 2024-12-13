@@ -1340,8 +1340,7 @@ export const RECIPE_LIST = [
 		id: 66,
 		recipeId: 42,
 		name: '月饼',
-		description:
-			'原本是内测人员的特殊食谱，三年来一直令全收集强迫症玩家坐卧不宁，这次正式转正，虽然在这个版本下毫不实用。',
+		description: '原本是内测人员的特殊食谱，三年来一直令全收集强迫症玩家坐卧不宁，这次彻底开放了。',
 		ingredients: ['月光草', '面粉'],
 		positiveTags: ['饱腹', '中华', '甜', '文化底蕴', '不可思议', '小巧'],
 		negativeTags: [],
