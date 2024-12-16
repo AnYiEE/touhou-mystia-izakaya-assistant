@@ -1,6 +1,6 @@
 import {isObjectLike} from 'lodash';
 
-import {COOKER_LIST, type TCookerCategory, type TCookerName, type TCookers, type TCustomerRareName} from '@/data';
+import {COOKER_LIST, type TCookerCategoryId, type TCookerId, type TCookers, type TCustomerRareId} from '@/data';
 import {checkArrayEqualOf} from '@/utils';
 import {Item} from '@/utils/item';
 
@@ -10,7 +10,7 @@ export class Cooker extends Item<TCookers> {
 	/** @description Flag to check if the categories are consistent with the original data. */
 	private static _isCategoriesChecked: boolean;
 
-	private static _bondCookerCache = new Map<TCustomerRareName, TCookerName | null>();
+	private static _bondCookerCache = new Map<TCustomerRareId, TCookerId | null>();
 
 	public static getInstance() {
 		if (Cooker._instance !== undefined) {
@@ -28,16 +28,7 @@ export class Cooker extends Item<TCookers> {
 	 * @description Categories sorted in the suggested order. Used for selecting cooker types.
 	 */
 	public get sortedCategories() {
-		const categories = [
-			'初始',
-			'夜雀',
-			'超',
-			'极',
-			'核能',
-			'可疑',
-			'月见',
-			'DLC',
-		] as const satisfies TCookerCategory[];
+		const categories = [0, 1, 2, 3, 4, 5, 6, -1] as const satisfies TCookerCategoryId[];
 
 		if (Cooker._isCategoriesChecked) {
 			return categories;
@@ -58,24 +49,24 @@ export class Cooker extends Item<TCookers> {
 	/**
 	 * @description Get the cooker for a customer based on their bond level.
 	 */
-	public getBondCooker(customerName: TCustomerRareName) {
-		if (Cooker._bondCookerCache.has(customerName)) {
-			return Cooker._bondCookerCache.get(customerName);
+	public getBondCooker(customerId: TCustomerRareId) {
+		if (Cooker._bondCookerCache.has(customerId)) {
+			return Cooker._bondCookerCache.get(customerId);
 		}
 
-		let bondCooker: TCookerName | null = null;
+		let bondCooker: TCookerId | null = null;
 
-		this._data.some(({from, name}) =>
+		this._data.some(({from, id}) =>
 			from.some((item) => {
-				if (isObjectLike(item) && 'bond' in item && item.bond === customerName) {
-					bondCooker = name;
+				if (isObjectLike(item) && 'bond' in item && item.bond === customerId) {
+					bondCooker = id;
 					return true;
 				}
 				return false;
 			})
 		);
 
-		Cooker._bondCookerCache.set(customerName, bondCooker);
+		Cooker._bondCookerCache.set(customerId, bondCooker);
 
 		return bondCooker;
 	}
