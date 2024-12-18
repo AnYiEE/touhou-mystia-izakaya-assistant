@@ -37,8 +37,8 @@ export default function InfoButton() {
 	return (
 		<InfoButtonBase defaultExpandedKeys={getDefaultExpandedKeys()}>
 			<AccordionItem key="description" aria-label="普客介绍" title="普客介绍">
-				<ScrollShadow hideScrollBar size={16} className="max-h-48 break-all text-justify text-xs">
-					<p className="mb-1 text-sm">
+				<ScrollShadow hideScrollBar size={16} className="max-h-48 break-all text-justify text-tiny">
+					<p className="mb-1 text-small">
 						<span className="font-semibold">ID：</span>
 						{currentCustomerId}
 					</p>
@@ -47,7 +47,7 @@ export default function InfoButton() {
 			</AccordionItem>
 			{currentCustomerChat.length > 0 ? (
 				<AccordionItem key="chat" aria-label="闲聊对话" title="闲聊对话">
-					<ScrollShadow hideScrollBar size={16} className="max-h-48 break-all text-justify text-xs">
+					<ScrollShadow hideScrollBar size={16} className="max-h-48 break-all text-justify text-tiny">
 						<Ol>
 							{currentCustomerChat.map((chat, index) => (
 								<li key={index}>{chat}</li>
@@ -59,7 +59,7 @@ export default function InfoButton() {
 				(null as unknown as ReactElement)
 			)}
 			<AccordionItem key="rating" aria-label="评级图例" title="评级图例">
-				<div className="flex flex-col gap-2 text-xs">
+				<div className="flex flex-col gap-2 text-tiny">
 					{CUSTOMER_RATING_KEY.filter((key) => key === 'exbad' || key === 'norm' || key === 'good').map(
 						(ratingKey, index) => (
 							<div key={index} className="mb-1 flex items-center gap-3 px-1">
@@ -80,8 +80,8 @@ export default function InfoButton() {
 				</div>
 			</AccordionItem>
 			<AccordionItem key="help" aria-label="特别说明" title="特别说明">
-				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-xs">
-					<p className="mb-1 text-sm font-semibold">选单时</p>
+				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-tiny">
+					<p className="mb-1 text-small font-semibold">选单时</p>
 					<Ol>
 						<li>
 							最终的套餐评级只适合一般情景，如果有提供改判效果的符卡生效，此时的套餐评级可能会不够准确。
@@ -93,7 +93,7 @@ export default function InfoButton() {
 						<li>“保存套餐”按钮仅会在选择了料理和酒水时被启用。</li>
 						<li>评级时，默认您正确选择了该普客所点单的料理和酒水。</li>
 					</Ol>
-					<p className="mb-1 mt-2 text-sm font-semibold">交互时</p>
+					<p className="mb-1 mt-2 text-small font-semibold">交互时</p>
 					<Ol>
 						<li>
 							<span className="hidden md:inline">点击顶部的“设置”按钮</span>

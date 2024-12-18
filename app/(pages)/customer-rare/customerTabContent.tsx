@@ -74,7 +74,7 @@ export default memo<IProps>(function CustomerTabContent({customerTabStyle, sorte
 									icon: 'inline-table transition group-hover:scale-125 lg:inline-block',
 								}}
 							/>
-							<span className="whitespace-nowrap text-xs transition-opacity group-hover:opacity-hover">
+							<span className="whitespace-nowrap text-tiny transition-opacity group-hover:opacity-hover">
 								{name}
 							</span>
 						</PressElement>

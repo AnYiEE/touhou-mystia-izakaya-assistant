@@ -37,7 +37,7 @@ export default memo<PropsWithChildren<IProps>>(function QRCode({children, classN
 					text={text}
 				/>
 			</div>
-			{children !== undefined && <p className="text-center text-xs">{children}</p>}
+			{children !== undefined && <p className="text-center text-tiny">{children}</p>}
 		</div>
 	);
 });

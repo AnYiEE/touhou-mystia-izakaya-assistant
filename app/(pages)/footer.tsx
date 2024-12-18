@@ -34,7 +34,7 @@ const FooterLink = memo<PropsWithChildren<IFooterLinkProps>>(function FooterLink
 			href={href}
 			aria-label={typeof content === 'string' ? content : (title ?? (children as string))}
 			title={title}
-			className="text-xs text-primary-300 dark:text-warning-200"
+			className="text-tiny text-primary-300 dark:text-warning-200"
 		>
 			{children}
 		</Link>
@@ -67,7 +67,7 @@ const FooterLinkWithTooltip = memo<PropsWithChildren<IFooterLinkWithTooltipProps
 
 export default function Footer() {
 	return (
-		<footer className="mx-auto max-w-p-95 pb-3 text-center text-xs text-default-300 md:max-w-full dark:text-default-400">
+		<footer className="mx-auto max-w-p-95 pb-3 text-center text-tiny text-default-300 md:max-w-full dark:text-default-400">
 			<p>
 				{shortName}
 				内所涉及的名称、商标、产品等均为其各自所有者的资产，仅供识别。游戏素材版权均归

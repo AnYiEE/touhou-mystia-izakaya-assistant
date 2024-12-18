@@ -64,7 +64,7 @@ export default function Home() {
 							}}
 						/>
 					</div>
-					<p className="mt-1 text-center text-xs">{qrCodeDescription}</p>
+					<p className="mt-1 text-center text-tiny">{qrCodeDescription}</p>
 				</div>
 			);
 		}
@@ -93,7 +93,7 @@ export default function Home() {
 						<p className="text-4xl tracking-wider md:text-5xl">
 							欢迎使用<strong>{shortName}</strong>
 						</p>
-						<p className="hidden text-lg md:inline-block lg:hidden">点击顶部的按钮以使用各项功能</p>
+						<p className="hidden text-large md:inline-block lg:hidden">点击顶部的按钮以使用各项功能</p>
 						<p className="inline-flex items-center md:hidden">
 							点击右上角的
 							<span
@@ -111,7 +111,7 @@ export default function Home() {
 								showAnchorIcon
 								href={links.appQA.href}
 								title={links.appQA.label}
-								className="text-sm text-foreground-500 md:text-base lg:text-lg"
+								className="text-small text-foreground-500 md:text-base lg:text-large"
 							>
 								{links.appQA.label}
 							</Link>

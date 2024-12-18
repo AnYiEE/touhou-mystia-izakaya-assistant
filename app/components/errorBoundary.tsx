@@ -60,24 +60,24 @@ export default class ErrorBoundary extends Component<IProps, IStates> {
 			return (
 				<div className="space-y-3 p-4">
 					<h1 className="text-2xl font-bold">出错啦！以下是错误信息：</h1>
-					<p className="text-lg">{this.state.error?.toString()}</p>
+					<p className="text-large">{this.state.error?.toString()}</p>
 					<pre className="space-y-2 whitespace-pre-wrap break-all font-mono">
 						<code>{this.state.error?.stack}</code>
 						<code>{this.state.info?.componentStack}</code>
 					</pre>
 					<button
-						className="mx-auto block w-1/2 cursor-pointer rounded-md bg-content1 p-2 transition-background hover:bg-content2"
+						className="mx-auto block w-1/2 cursor-pointer rounded-medium bg-content1 p-2 transition-background hover:bg-content2"
 						onClick={this.handleClick.bind(this, false)}
 					>
 						点此重试（仅刷新页面）
 					</button>
 					<button
-						className="mx-auto block w-1/2 cursor-pointer rounded-md bg-content1 p-2 transition-background hover:bg-content2"
+						className="mx-auto block w-1/2 cursor-pointer rounded-medium bg-content1 p-2 transition-background hover:bg-content2"
 						onClick={this.handleClick.bind(this, true)}
 					>
 						点此重试（将清空已保存的数据）
 					</button>
-					<p className="text-center text-sm">
+					<p className="text-center text-small">
 						请完整复制或截图上方的错误信息，
 						<a
 							href={links.qqGroup.href}

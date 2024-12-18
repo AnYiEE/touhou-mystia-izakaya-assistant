@@ -251,7 +251,7 @@ export default function CustomerCard() {
 												icon: 'inline-table lg:inline-block',
 											}}
 										/>
-										<span className="text-md whitespace-nowrap text-center font-bold">
+										<span className="whitespace-nowrap text-center font-bold">
 											{currentCustomerName}
 										</span>
 									</div>
@@ -260,7 +260,7 @@ export default function CustomerCard() {
 						</Tooltip>
 						<PopoverContent>{avatarRatingContent}</PopoverContent>
 					</Popover>
-					<div className="whitespace-nowrap text-xs font-medium text-default-400 dark:text-default-500">
+					<div className="whitespace-nowrap text-tiny font-medium text-default-400 dark:text-default-500">
 						<p className="flex justify-between">
 							<Popover showArrow isTriggerDisabled={!dlcLabel} offset={4}>
 								<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={0}>

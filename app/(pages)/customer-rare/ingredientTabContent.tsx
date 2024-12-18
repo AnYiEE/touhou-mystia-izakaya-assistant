@@ -141,7 +141,7 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 									className="flex cursor-not-allowed flex-col items-center opacity-40 brightness-50 dark:opacity-80"
 								>
 									<Sprite target="ingredient" name={name} size={3} />
-									<span className="whitespace-nowrap text-center text-xs">{name}</span>
+									<span className="whitespace-nowrap text-center text-tiny">{name}</span>
 								</div>
 							);
 						}
@@ -283,7 +283,7 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 											className="transition group-hover:scale-105"
 										/>
 									</Badge>
-									<span className="whitespace-nowrap text-center text-xs group-hover:font-bold">
+									<span className="whitespace-nowrap text-center text-tiny group-hover:font-bold">
 										{name}
 									</span>
 								</PressElement>

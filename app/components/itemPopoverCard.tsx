@@ -152,7 +152,7 @@ const ShareButton = memo<IShareButtonProps>(function ShareButton({name}) {
 				</div>
 			</Tooltip>
 			<PopoverContent>
-				<p className="mr-4 cursor-default select-none self-end text-right text-xs text-default-400">
+				<p className="mr-4 cursor-default select-none self-end text-right text-tiny text-default-400">
 					点击以复制到当前选中项的链接↓
 				</p>
 				<Snippet
@@ -242,8 +242,8 @@ const ItemPopoverCardComponent = memo(
 		const dlcLabel = dlc === 0 ? LABEL_DLC_0 : '';
 
 		return (
-			<div className="max-w-80 space-y-2 p-2 text-xs text-default-400 dark:text-default-500" ref={ref}>
-				<div className="flex items-center gap-2 text-sm text-default-700">
+			<div className="max-w-80 space-y-2 p-2 text-tiny text-default-400 dark:text-default-500" ref={ref}>
+				<div className="flex items-center gap-2 text-small text-default-700">
 					<Sprite
 						target={target}
 						name={name}

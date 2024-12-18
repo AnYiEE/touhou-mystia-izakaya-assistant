@@ -49,7 +49,7 @@ const Tag = memo(
 			>
 				{tagName}
 				{tagDescription !== null && (
-					<span className="-mx-1 select-none text-xs font-normal leading-none">{tagDescription}</span>
+					<span className="-mx-1 select-none text-tiny font-normal leading-none">{tagDescription}</span>
 				)}
 			</PressElement>
 		);

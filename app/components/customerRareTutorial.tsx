@@ -60,7 +60,7 @@ export default function CustomerRareTutorial() {
 				{
 					popover: {
 						title: '稀客套餐搭配教程', // eslint-disable-next-line sort-keys
-						description: `<div class="space-y-2"><p>跟随指引，搭配一次“完美”评级的稀客套餐。</p><p class="text-xs text-foreground-500">注：本教程可随时通过“${getPageTitle('/preferences')}”页面的“${resetLabel}”按钮再次进入。</p></div>`,
+						description: `<div class="space-y-2"><p>跟随指引，搭配一次“完美”评级的稀客套餐。</p><p class="text-tiny text-foreground-500">注：本教程可随时通过“${getPageTitle('/preferences')}”页面的“${resetLabel}”按钮再次进入。</p></div>`,
 						onPopoverRender(popover) {
 							const skipButton = document.createElement('button');
 							skipButton.textContent = '跳过';

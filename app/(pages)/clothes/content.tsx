@@ -67,7 +67,7 @@ export default memo<IProps>(function Content({data}) {
 									name === '圣诞节特典晚装' ||
 									name === '魔女服' ||
 									name === '仙女服',
-								'translate-y-px': name === '冬季水手服' || name === '魔女服',
+								'translate-y-px': name === '冬季水手服' || name === '魔女服' || name === '朋克演出服',
 							})}
 						/>
 					}

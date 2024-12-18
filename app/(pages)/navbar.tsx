@@ -242,7 +242,7 @@ export default function Navbar() {
 																	})}
 																/>
 															}
-															className="justify-start gap-1 text-sm data-[hover=true]:bg-transparent"
+															className="justify-start gap-1 text-small data-[hover=true]:bg-transparent"
 														>
 															{label}
 														</NavbarLink>

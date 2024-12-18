@@ -238,7 +238,7 @@ export default function SavedMealCard() {
 								<div
 									aria-hidden
 									className={cn(
-										'absolute right-2 flex flex-col gap-3 text-xs text-primary/20 md:right-1 md:gap-5 xl:gap-4 dark:text-default-100',
+										'absolute right-2 flex flex-col gap-3 text-tiny text-primary/20 md:right-1 md:gap-5 xl:gap-4 dark:text-default-100',
 										{
 											hidden: savedCustomerMeal.length <= 1,
 										}

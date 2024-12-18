@@ -113,8 +113,8 @@ export default function InfoButton() {
 	return (
 		<InfoButtonBase defaultExpandedKeys={getDefaultExpandedKeys()}>
 			<AccordionItem key="description" aria-label="稀客介绍" title="稀客介绍">
-				<ScrollShadow hideScrollBar size={16} className="max-h-48 break-all text-justify text-xs">
-					<p className="mb-1 text-sm">
+				<ScrollShadow hideScrollBar size={16} className="max-h-48 break-all text-justify text-tiny">
+					<p className="mb-1 text-small">
 						<span className="font-semibold">ID：</span>
 						{currentCustomerId}
 					</p>
@@ -155,7 +155,7 @@ export default function InfoButton() {
 			</AccordionItem>
 			{hasBondRewards ? (
 				<AccordionItem key="bond" aria-label={`${currentCustomerName}羁绊奖励`} title="羁绊奖励">
-					<div className="flex flex-col gap-2 text-xs">
+					<div className="flex flex-col gap-2 text-tiny">
 						<div className="space-y-1">
 							{bondRecipesData.map(({level, name}, index) => (
 								<p key={index} className="flex items-center">
@@ -316,15 +316,15 @@ export default function InfoButton() {
 					<ScrollShadow
 						hideScrollBar
 						size={16}
-						className="max-h-32 break-all text-justify text-xs md:max-h-48"
+						className="max-h-32 break-all text-justify text-tiny md:max-h-48"
 					>
 						{hasPositiveSpellCards && (
 							<>
-								<p className="mb-1 text-sm font-semibold">奖励符卡</p>
+								<p className="mb-1 text-small font-semibold">奖励符卡</p>
 								{currentCustomerSpellCards.positive.map(({description, name}, index) => (
 									<div key={index} className="mb-0.5">
 										<p className="font-medium">{name}</p>
-										<div className="ml-3 mt-0.5 text-xs">
+										<div className="ml-3 mt-0.5 text-tiny">
 											{description.split(LABEL_BR).map((text, line) => (
 												<p
 													key={`${index}-${line}`}
@@ -344,7 +344,7 @@ export default function InfoButton() {
 						{hasNegativeSpellCards && (
 							<>
 								<p
-									className={cn('mb-1 text-sm font-semibold', {
+									className={cn('mb-1 text-small font-semibold', {
 										'mt-2': hasPositiveSpellCards,
 									})}
 								>
@@ -353,7 +353,7 @@ export default function InfoButton() {
 								{currentCustomerSpellCards.negative.map(({description, name}, index) => (
 									<div key={index} className="mb-0.5">
 										<p className="font-medium">{name}</p>
-										<div className="ml-3 mt-0.5 text-xs">
+										<div className="ml-3 mt-0.5 text-tiny">
 											{description.split(LABEL_BR).map((text, line) => (
 												<p
 													key={`${index}-${line}`}
@@ -377,7 +377,7 @@ export default function InfoButton() {
 			)}
 			{currentCustomerChat.length > 0 ? (
 				<AccordionItem key="chat" aria-label="闲聊对话" title="闲聊对话">
-					<ScrollShadow hideScrollBar size={16} className="max-h-48 break-all text-justify text-xs">
+					<ScrollShadow hideScrollBar size={16} className="max-h-48 break-all text-justify text-tiny">
 						<Ol>
 							{currentCustomerChat.map((chat, index) => (
 								<li key={index}>{chat}</li>
@@ -392,7 +392,7 @@ export default function InfoButton() {
 				<ScrollShadow
 					hideScrollBar
 					size={16}
-					className="flex max-h-48 flex-col gap-1 break-all pt-0.5 text-justify text-xs"
+					className="flex max-h-48 flex-col gap-1 break-all pt-0.5 text-justify text-tiny"
 				>
 					{Object.entries(CUSTOMER_EVALUATION_KEY_MAP).map(([evaluation, evaluationKey], index) => {
 						const customerEvaluation = currentCustomerEvaluation[evaluationKey];
@@ -433,8 +433,8 @@ export default function InfoButton() {
 				</ScrollShadow>
 			</AccordionItem>
 			<AccordionItem key="help" aria-label="特别说明" title="特别说明">
-				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-xs">
-					<p className="mb-1 text-sm font-semibold">选单时</p>
+				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-tiny">
+					<p className="mb-1 text-small font-semibold">选单时</p>
 					<Ol>
 						<li>
 							顾客卡片中的标签和最终的套餐评级只适合一般情景。在任务中的顾客可能临时存在其他的偏好标签；如果有提供改判效果的符卡生效，此时的套餐评级也可能会不够准确。
@@ -447,7 +447,7 @@ export default function InfoButton() {
 						</li>
 						<li>“保存套餐”按钮仅会在选择了料理和酒水，且选定了顾客的点单需求标签时被启用。</li>
 					</Ol>
-					<p className="mb-1 mt-2 text-sm font-semibold">交互时</p>
+					<p className="mb-1 mt-2 text-small font-semibold">交互时</p>
 					<Ol>
 						<li>
 							<span className="hidden md:inline">点击顶部的“设置”按钮</span>

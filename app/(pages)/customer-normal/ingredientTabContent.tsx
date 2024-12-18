@@ -137,7 +137,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 									className="flex cursor-not-allowed flex-col items-center opacity-40 brightness-50 dark:opacity-80"
 								>
 									<Sprite target="ingredient" name={name} size={3} />
-									<span className="whitespace-nowrap text-center text-xs">{name}</span>
+									<span className="whitespace-nowrap text-center text-tiny">{name}</span>
 								</div>
 							);
 						}
@@ -240,7 +240,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 											className="transition group-hover:scale-105"
 										/>
 									</Badge>
-									<span className="whitespace-nowrap text-center text-xs group-hover:font-bold">
+									<span className="whitespace-nowrap text-center text-tiny group-hover:font-bold">
 										{name}
 									</span>
 								</PressElement>
@@ -252,7 +252,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 					<>
 						<div className="my-4 flex items-center">
 							<div className="h-px w-full bg-foreground-300"></div>
-							<div className="select-none whitespace-nowrap text-sm font-light text-foreground-500">
+							<div className="select-none whitespace-nowrap text-small font-light text-foreground-500">
 								制作{DARK_MATTER_NAME}？
 							</div>
 							<div className="h-px w-full bg-foreground-300"></div>
@@ -261,7 +261,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 							{[...darkIngredients].map((name, index) => (
 								<div key={index} className="flex cursor-not-allowed flex-col items-center">
 									<Sprite target="ingredient" name={name} size={3} />
-									<span className="whitespace-nowrap text-center text-xs">{name}</span>
+									<span className="whitespace-nowrap text-center text-tiny">{name}</span>
 								</div>
 							))}
 						</div>

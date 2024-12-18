@@ -3,7 +3,7 @@ import {isObjectLike} from 'lodash';
 
 import {useOpenedItemPopover, useViewInNewWindow} from '@/hooks';
 
-import {PopoverContent} from '@nextui-org/react';
+import {PopoverContent, cn} from '@nextui-org/react';
 
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
@@ -42,7 +42,17 @@ export default memo<IProps>(function Content({data}) {
 					isHoverable={openedPopover ? openedPopover === name : true}
 					isPressable={openedPopover ? openedPopover === name : true}
 					name={name}
-					image={<Sprite target="currency" name={name} size={3} />}
+					image={
+						<Sprite
+							target="currency"
+							name={name}
+							size={3}
+							className={cn({
+								'-translate-y-px': name === '红色的宝石' || name === '银色的青蛙硬币',
+								'translate-x-px': name === '破损的符咒' || name === '蓬松松糖果',
+							})}
+						/>
+					}
 					onPress={() => {
 						trackEvent(TrackCategory.Click, 'Currency Card', name);
 					}}
