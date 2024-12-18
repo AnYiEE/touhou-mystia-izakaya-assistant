@@ -1,11 +1,10 @@
 import {Fragment, memo, useRef} from 'react';
 import {isObjectLike} from 'lodash';
-import {twJoin} from 'tailwind-merge';
 
 import useBreakpoint from 'use-breakpoint';
 import {useOpenedItemPopover, useViewInNewWindow} from '@/hooks';
 
-import {PopoverContent, PopoverTrigger} from '@nextui-org/react';
+import {PopoverContent, PopoverTrigger, cn} from '@nextui-org/react';
 
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
@@ -59,17 +58,17 @@ export default memo<IProps>(function Content({data}) {
 							target="clothes"
 							name={name}
 							size={3}
-							className={twJoin(
-								name === '夜雀服' && '-translate-x-0.5 scale-85',
-								name === '雀酒屋工作装' && 'scale-90',
-								(name === '中华风校服' ||
+							className={cn({
+								'-translate-x-0.5 scale-85': name === '夜雀服',
+								'scale-90': name === '雀酒屋工作装',
+								'translate-x-px':
+									name === '中华风校服' ||
 									name === '锦绣中国娃娃' ||
 									name === '圣诞节特典晚装' ||
 									name === '魔女服' ||
-									name === '仙女服') &&
-									'translate-x-px',
-								(name === '魔女服' || name === '冬季水手服') && 'translate-y-px'
-							)}
+									name === '仙女服',
+								'translate-y-px': name === '冬季水手服' || name === '魔女服',
+							})}
 						/>
 					}
 					onPress={() => {

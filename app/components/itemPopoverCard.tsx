@@ -13,13 +13,19 @@ import {
 	useState,
 } from 'react';
 import {debounce, isNil} from 'lodash';
-import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useParams} from '@/hooks';
 import {PARAM_SPECIFY} from '@/hooks/useOpenedItemPopover';
 import {PARAM_PREVIEW, useViewInNewWindow} from '@/hooks/useViewInNewWindow';
 
-import {PopoverContent, PopoverTrigger, type PopoverTriggerProps, Snippet, usePopoverContext} from '@nextui-org/react';
+import {
+	PopoverContent,
+	PopoverTrigger,
+	type PopoverTriggerProps,
+	Snippet,
+	cn,
+	usePopoverContext,
+} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faLink, faShare, faXmark} from '@fortawesome/free-solid-svg-icons';
 
@@ -171,9 +177,11 @@ const Trigger = memo<ITriggerProps>(function Trigger({className, ...props}) {
 
 	return (
 		<PopoverTrigger
-			className={twMerge(
-				isHighAppearance &&
-					'aria-expanded:bg-background/40 aria-expanded:opacity-100 aria-expanded:backdrop-blur dark:aria-expanded:bg-content1/40',
+			className={cn(
+				{
+					'aria-expanded:bg-background/40 aria-expanded:opacity-100 aria-expanded:backdrop-blur dark:aria-expanded:bg-content1/40':
+						isHighAppearance,
+				},
 				className
 			)}
 			{...props}
@@ -240,16 +248,19 @@ const ItemPopoverCardComponent = memo(
 						target={target}
 						name={name}
 						size={2}
-						className={twJoin(
-							'transition-transform hover:scale-150',
-							target === 'partner' && 'rounded-full'
-						)}
+						className={cn('transition-transform hover:scale-150', {
+							'rounded-full': target === 'partner',
+						})}
 					/>
 					<p className="font-bold">
 						{dlc !== undefined && (
 							<Popover showArrow isTriggerDisabled={!dlcLabel} offset={4} size="sm">
 								<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={2} size="sm">
-									<span className={twJoin(!dlcLabel && 'cursor-text')}>
+									<span
+										className={cn({
+											'cursor-text': !dlcLabel,
+										})}
+									>
 										<PopoverTrigger>
 											<span
 												role={dlcLabel ? 'button' : undefined}
@@ -258,7 +269,11 @@ const ItemPopoverCardComponent = memo(
 												className="opacity-100"
 											>
 												【
-												<span className={twJoin(dlcLabel && 'underline-dotted-linear')}>
+												<span
+													className={cn({
+														'underline-dotted-linear': dlcLabel,
+													})}
+												>
 													DLC{dlc}
 												</span>
 												】
@@ -334,7 +349,11 @@ const ItemPopoverCardComponent = memo(
 						<TagsComponent tags={mergedTags?.negative} tagStyle={tagColors?.negative} tagType="negative" />
 					</div>
 				)}
-				<p className={twJoin('break-all text-justify', mergedTags === null && '!mt-1')}>
+				<p
+					className={cn('break-all text-justify', {
+						'!mt-1': mergedTags === null,
+					})}
+				>
 					<span className="font-semibold">简介：</span>
 					{description.description}
 				</p>

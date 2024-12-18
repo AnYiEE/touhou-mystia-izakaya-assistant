@@ -1,11 +1,10 @@
 'use client';
 
 import {memo, useCallback} from 'react';
-import {twJoin} from 'tailwind-merge';
 
 import {useMotionProps, useVibrate} from '@/hooks';
 
-import {Button, Select, SelectItem, type Selection, Switch} from '@nextui-org/react';
+import {Button, Select, SelectItem, type Selection, Switch, cn} from '@nextui-org/react';
 
 import DataManager, {type IDataManagerProps} from './dataManager';
 import SwitchItem from './switchItem';
@@ -113,13 +112,14 @@ export default memo<IProps>(function Content({onModalClose}) {
 							}}
 							classNames={{
 								base: 'w-28',
-								listboxWrapper: twJoin(
-									'[&_li]:transition-background',
-									isHighAppearance &&
-										'focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40'
-								),
-								popoverContent: twJoin(isHighAppearance && 'bg-content1/70 backdrop-blur-lg'),
-								trigger: twJoin(
+								listboxWrapper: cn('[&_li]:transition-background', {
+									'focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40':
+										isHighAppearance,
+								}),
+								popoverContent: cn({
+									'bg-content1/70 backdrop-blur-lg': isHighAppearance,
+								}),
+								trigger: cn(
 									'transition-background',
 									onModalClose || !isHighAppearance
 										? 'bg-default-50 data-[hover=true]:bg-default-100 dark:bg-default-100 dark:data-[hover=true]:bg-default-200'
@@ -136,7 +136,9 @@ export default memo<IProps>(function Content({onModalClose}) {
 						size="sm"
 						variant="flat"
 						onPress={onClearPopularTagButtonPress}
-						className={twJoin(isHighAppearance && 'backdrop-blur')}
+						className={cn({
+							'backdrop-blur': isHighAppearance,
+						})}
 					>
 						清除选择
 					</Button>

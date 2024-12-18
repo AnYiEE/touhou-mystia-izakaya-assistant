@@ -70,9 +70,6 @@ importers:
       rxjs:
         specifier: ^7.8.1
         version: 7.8.1
-      tailwind-merge:
-        specifier: ^2.5.5
-        version: 2.5.5
       ua-parser-js:
         specifier: ^2.0.0
         version: 2.0.0

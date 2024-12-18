@@ -1,9 +1,8 @@
 import {useCallback, useMemo} from 'react';
-import {twJoin} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
 
-import {Card, Divider, PopoverContent, PopoverTrigger, type Selection} from '@nextui-org/react';
+import {Card, Divider, PopoverContent, PopoverTrigger, type Selection, cn} from '@nextui-org/react';
 import {faArrowsRotate, faXmark} from '@fortawesome/free-solid-svg-icons';
 
 import InfoButton from './infoButton';
@@ -169,7 +168,9 @@ export default function CustomerCard() {
 			fullWidth
 			shadow="sm"
 			classNames={{
-				base: twJoin(isHighAppearance && 'bg-content1/40 backdrop-blur'),
+				base: cn({
+					'bg-content1/40 backdrop-blur': isHighAppearance,
+				}),
 			}}
 		>
 			<div className="flex flex-col gap-3 p-4 md:flex-row">
@@ -186,7 +187,7 @@ export default function CustomerCard() {
 										role="button"
 										tabIndex={0}
 										classNames={{
-											base: twJoin(
+											base: cn(
 												'h-24 w-24 transition focus:opacity-hover focus:ring-4 focus:ring-focus',
 												hasRating ? 'ring-4 ring-offset-0' : 'ring-2 ring-focus dark:ring-0'
 											),
@@ -202,13 +203,19 @@ export default function CustomerCard() {
 						<p className="flex justify-between whitespace-nowrap text-xs font-medium text-default-400 dark:text-default-500">
 							<Popover showArrow isTriggerDisabled={!dlcLabel} offset={4}>
 								<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={0}>
-									<span className={twJoin(!dlcLabel && 'cursor-text')}>
+									<span
+										className={cn({
+											'cursor-text': !dlcLabel,
+										})}
+									>
 										<PopoverTrigger>
 											<span
 												role={dlcLabel ? 'button' : undefined}
 												tabIndex={dlcLabel ? 0 : undefined}
 												title={dlcLabel}
-												className={twJoin('opacity-100', dlcLabel && 'underline-dotted-linear')}
+												className={cn('opacity-100', {
+													'underline-dotted-linear': dlcLabel,
+												})}
 											>
 												DLC{currentCustomerDlc}
 											</span>
@@ -224,7 +231,9 @@ export default function CustomerCard() {
 											<span
 												role="button"
 												tabIndex={0}
-												className={twJoin(hasOtherPlaces && 'underline-dotted-linear')}
+												className={cn({
+													'underline-dotted-linear': hasOtherPlaces,
+												})}
 											>
 												{currentCustomerMainPlace}
 											</span>
@@ -261,9 +270,11 @@ export default function CustomerCard() {
 										aria-label={`${tag}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
 										role="button"
 										tabIndex={0}
-										className={twJoin(
+										className={cn(
 											'cursor-pointer p-1 font-semibold leading-none transition-opacity hover:opacity-hover',
-											!currentRecipeTagsWithPopular.includes(tag) && 'font-normal opacity-50'
+											{
+												'font-normal opacity-50': !currentRecipeTagsWithPopular.includes(tag),
+											}
 										)}
 									/>
 								</Tooltip>
@@ -278,10 +289,9 @@ export default function CustomerCard() {
 									tag={tag}
 									tagStyle={CUSTOMER_NORMAL_TAG_STYLE.negative}
 									tagType="negative"
-									className={twJoin(
-										'cursor-not-allowed p-1 font-semibold leading-none',
-										!currentRecipeTagsWithPopular.includes(tag) && 'font-normal opacity-50'
-									)}
+									className={cn('cursor-not-allowed p-1 font-semibold leading-none', {
+										'font-normal opacity-50': !currentRecipeTagsWithPopular.includes(tag),
+									})}
 								/>
 							))}
 						</TagGroup>
@@ -308,9 +318,11 @@ export default function CustomerCard() {
 										aria-label={`${tag}${beverageTags.includes(tag) ? '/已满足' : ''}`}
 										role="button"
 										tabIndex={0}
-										className={twJoin(
+										className={cn(
 											'cursor-pointer p-1 font-semibold leading-none transition-opacity hover:opacity-hover',
-											!beverageTags.includes(tag) && 'font-normal opacity-50'
+											{
+												'font-normal opacity-50': !beverageTags.includes(tag),
+											}
 										)}
 									/>
 								</Tooltip>

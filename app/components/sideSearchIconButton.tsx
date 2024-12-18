@@ -1,7 +1,6 @@
 'use client';
 
 import {type Dispatch, type SetStateAction, memo, useCallback} from 'react';
-import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useMotionProps, useVibrate} from '@/hooks';
 
@@ -11,6 +10,7 @@ import {
 	type AutocompleteProps,
 	PopoverContent,
 	PopoverTrigger,
+	cn,
 } from '@nextui-org/react';
 import {faMagnifyingGlass} from '@fortawesome/free-solid-svg-icons';
 
@@ -72,7 +72,7 @@ export default memo<IProps>(function SideSearchIconButton({
 							icon={faMagnifyingGlass}
 							variant="shadow"
 							aria-label={content}
-							className={twMerge('text-white', className)}
+							className={cn('text-white', className)}
 							{...props}
 						/>
 					</PopoverTrigger>
@@ -92,16 +92,19 @@ export default memo<IProps>(function SideSearchIconButton({
 						shouldCloseOnScroll: false,
 					}}
 					classNames={{
-						base: twJoin(
+						base: cn(
 							'[&_div]:transition-background data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:bg-default-200',
-							isHighAppearance &&
-								'data-[slot="input-wrapper"]:[&_div]:!bg-default-100/70 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:!bg-default-200/70'
+							{
+								'data-[slot="input-wrapper"]:[&_div]:!bg-default-100/70 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:!bg-default-200/70':
+									isHighAppearance,
+							}
 						),
-						listboxWrapper: twJoin(
-							'[&_li]:transition-background',
-							isHighAppearance && 'data-[hover=true]:[&_li]:!bg-default-200/40'
-						),
-						popoverContent: twJoin(isHighAppearance && 'bg-content1/70 backdrop-blur-lg'),
+						listboxWrapper: cn('[&_li]:transition-background', {
+							'data-[hover=true]:[&_li]:!bg-default-200/40': isHighAppearance,
+						}),
+						popoverContent: cn({
+							'bg-content1/70 backdrop-blur-lg': isHighAppearance,
+						}),
 					}}
 				>
 					{({value}) =>
@@ -119,7 +122,9 @@ export default memo<IProps>(function SideSearchIconButton({
 											target={spriteTarget}
 											name={value as never}
 											size={1.5}
-											className={twJoin(spriteTarget !== 'customer_normal' && 'rounded-full')}
+											className={cn({
+												'rounded-full': spriteTarget !== 'customer_normal',
+											})}
 										/>
 									) : (
 										<Sprite target={spriteTarget} name={value as never} size={1} />

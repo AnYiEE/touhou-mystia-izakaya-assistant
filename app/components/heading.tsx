@@ -1,5 +1,6 @@
 import {type PropsWithChildren, memo, useMemo} from 'react';
-import {twMerge} from 'tailwind-merge';
+
+import {cn} from '@nextui-org/react';
 
 type THeadingClassName = Pick<HTMLHeadingElementAttributes, 'className'>;
 
@@ -26,21 +27,21 @@ export default memo<PropsWithChildren<IProps>>(function Heading({
 	const headingClassName = useMemo(() => {
 		switch (Component) {
 			case 'h1':
-				return twMerge('mb-4 text-2xl font-bold', !isFirst && 'mt-8', className, classNames?.title);
+				return cn('mb-4 text-2xl font-bold', !isFirst && 'mt-8', className, classNames?.title);
 			case 'h2':
-				return twMerge('mb-3 text-xl font-semibold', !isFirst && 'mt-6', className, classNames?.title);
+				return cn('mb-3 text-xl font-semibold', !isFirst && 'mt-6', className, classNames?.title);
 			case 'h3':
-				return twMerge('mb-3 text-lg font-medium', !isFirst && 'mt-4', className, classNames?.title);
+				return cn('mb-3 text-lg font-medium', !isFirst && 'mt-4', className, classNames?.title);
 		}
 	}, [Component, className, classNames?.title, isFirst]);
 
 	const subTitleClassName = useMemo(() => {
 		switch (Component) {
 			case 'h1':
-				return twMerge('-mt-4 mb-4 block text-foreground-500', classNames?.subTitle);
+				return cn('-mt-4 mb-4 block text-foreground-500', classNames?.subTitle);
 			case 'h2':
 			case 'h3':
-				return twMerge('-mt-3 mb-3 block text-sm text-foreground-500', classNames?.subTitle);
+				return cn('-mt-3 mb-3 block text-sm text-foreground-500', classNames?.subTitle);
 		}
 	}, [Component, classNames?.subTitle]);
 

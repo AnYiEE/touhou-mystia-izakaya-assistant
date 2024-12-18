@@ -1,12 +1,11 @@
 'use client';
 
 import {useCallback} from 'react';
-import {twJoin} from 'tailwind-merge';
 
 import {useRouter} from 'next/navigation';
 import {useVibrate} from '@/hooks';
 
-import {Modal, ModalBody, ModalContent, ScrollShadow} from '@nextui-org/react';
+import {Modal, ModalBody, ModalContent, ScrollShadow, cn} from '@nextui-org/react';
 
 import Content from './content';
 
@@ -40,10 +39,9 @@ export default function PreferencesModal() {
 			onClose={handleClose}
 			classNames={{
 				base: isHighAppearance ? 'bg-blend-mystia' : 'bg-background dark:bg-content1',
-				closeButton: twJoin(
-					'transition-background',
-					isHighAppearance && 'hover:bg-content1 dark:hover:bg-content2'
-				),
+				closeButton: cn('transition-background', {
+					'hover:bg-content1 dark:hover:bg-content2': isHighAppearance,
+				}),
 			}}
 		>
 			<ModalContent className="py-3">

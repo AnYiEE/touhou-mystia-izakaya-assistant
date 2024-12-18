@@ -1,7 +1,6 @@
 'use client';
 
 import {type JSX, type PropsWithChildren, memo, startTransition, useCallback, useState} from 'react';
-import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useRouter} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
@@ -20,6 +19,7 @@ import {
 	NavbarMenuItem,
 	NavbarMenuToggle,
 	Navbar as NextUINavbar,
+	cn,
 } from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faGithub} from '@fortawesome/free-brands-svg-icons';
@@ -73,7 +73,7 @@ const NavbarLink = memo<PropsWithChildren<INavbarLinkProps>>(function NavbarLink
 			size="sm"
 			variant={isActivated ? 'flat' : 'light'}
 			onPress={handlePress}
-			className={twMerge('text-base', className)}
+			className={cn('text-base', className)}
 			{...props}
 		>
 			{children}
@@ -195,10 +195,9 @@ export default function Navbar() {
 										shouldCloseOnScroll
 										onOpenChange={vibrate}
 										classNames={{
-											content: twJoin(
-												'p-0',
-												isHighAppearance && 'bg-background/70 backdrop-saturate-150'
-											),
+											content: cn('p-0', {
+												'bg-background/70 backdrop-saturate-150': isHighAppearance,
+											}),
 										}}
 									>
 										<NavbarItem>
@@ -238,9 +237,9 @@ export default function Navbar() {
 																	target={sprite}
 																	index={spriteIndex}
 																	size={1.25}
-																	className={twJoin(
-																		href === '/partners' && 'rounded-full'
-																	)}
+																	className={cn({
+																		'rounded-full': href === '/partners',
+																	})}
 																/>
 															}
 															className="justify-start gap-1 text-sm data-[hover=true]:bg-transparent"
@@ -271,7 +270,12 @@ export default function Navbar() {
 			</NavbarContent>
 
 			<NavbarContent as="div" justify="end" className="basis-1 pl-4 md:hidden">
-				<ThemeSwitcher isMenu className={twJoin(!isMenuOpened && 'pointer-events-none h-0 w-0 opacity-0')} />
+				<ThemeSwitcher
+					isMenu
+					className={cn({
+						'pointer-events-none h-0 w-0 opacity-0': !isMenuOpened,
+					})}
+				/>
 				<Tooltip showArrow content={isMenuOpened ? '收起菜单' : '打开菜单'} placement="left">
 					<NavbarMenuToggle
 						onChange={vibrate}
@@ -292,9 +296,9 @@ export default function Navbar() {
 								onClick={handlePress}
 								href={href}
 								role="button"
-								className={twJoin(
-									(isActivated || href === '/preferences') && 'underline underline-offset-4'
-								)}
+								className={cn({
+									'underline underline-offset-4': isActivated || href === '/preferences',
+								})}
 							>
 								{label}
 							</Link>

@@ -1,7 +1,6 @@
 'use client';
 
 import {memo, useCallback, useEffect, useMemo, useState} from 'react';
-import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useTheme} from 'next-themes';
 import {useMounted, usePathname, useVibrate} from '@/hooks';
@@ -13,6 +12,7 @@ import {
 	DropdownTrigger,
 	type Selection,
 	Spinner,
+	cn,
 } from '@nextui-org/react';
 import {faCircleHalfStroke, faMoon, faSun} from '@fortawesome/free-solid-svg-icons';
 
@@ -109,10 +109,9 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 			showArrow
 			onOpenChange={vibrate}
 			classNames={{
-				content: twJoin(
-					'p-0 [&>[data-slot="base"]]:w-max',
-					isHighAppearance && 'bg-background/70 backdrop-saturate-150'
-				),
+				content: cn('p-0 [&>[data-slot="base"]]:w-max', {
+					'bg-background/70 backdrop-saturate-150': isHighAppearance,
+				}),
 			}}
 		>
 			<Tooltip showArrow content={ThemeLabel.switcher} placement={isMenu ? 'left' : 'bottom'}>
@@ -122,7 +121,7 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 							disableAnimation={isMenu}
 							icon={themeIcon}
 							aria-label={ThemeLabel.switcher}
-							className={twMerge(
+							className={cn(
 								'h-min w-min min-w-min bg-transparent !text-medium',
 								isMenu ? 'h-full text-foreground' : 'text-default-400 dark:text-default-500',
 								className

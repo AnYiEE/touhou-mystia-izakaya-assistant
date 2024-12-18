@@ -1,11 +1,10 @@
 'use client';
 
 import {type ComponentProps, memo} from 'react';
-import {twMerge} from 'tailwind-merge';
 
 import {useMotionProps} from '@/hooks';
 
-import {Tooltip as NextUITooltip, extendVariants} from '@nextui-org/react';
+import {Tooltip as NextUITooltip, cn, extendVariants} from '@nextui-org/react';
 
 import {type TRatingStyleMap, generateRatingColor} from '@/components/avatar';
 
@@ -37,8 +36,10 @@ export default memo<IProps>(function Tooltip({classNames, color, radius, showArr
 			motionProps={motionProps}
 			classNames={{
 				...classNames,
-				content: twMerge(
-					isHighAppearance && color === undefined && 'bg-content1/40 backdrop-blur-lg dark:bg-content1/70',
+				content: cn(
+					{
+						'bg-content1/40 backdrop-blur-lg dark:bg-content1/70': isHighAppearance && color === undefined,
+					},
 					classNames?.content
 				),
 			}}

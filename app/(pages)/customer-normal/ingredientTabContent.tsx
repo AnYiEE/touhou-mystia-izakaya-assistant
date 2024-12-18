@@ -1,10 +1,9 @@
 import {memo, useCallback, useMemo} from 'react';
 import {curry, curryRight, debounce} from 'lodash';
-import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
 
-import {Badge, Button, ScrollShadow} from '@nextui-org/react';
+import {Badge, Button, ScrollShadow, cn} from '@nextui-org/react';
 
 import {type IIngredientTabContentProps} from '@/(pages)/customer-rare/ingredientTabContent';
 import Placeholder from '@/components/placeholder';
@@ -124,7 +123,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 		<>
 			<ScrollShadow
 				hideScrollBar
-				className={twMerge(
+				className={cn(
 					'px-2 transition-all xl:max-h-[calc(var(--safe-h-dvh)-10.25rem-env(titlebar-area-height,0rem))]',
 					ingredientTabStyle.classNames.content
 				)}
@@ -216,11 +215,10 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 									role="button"
 									tabIndex={0}
 									aria-label={tooltipContent}
-									className={twJoin(
-										'group flex cursor-pointer flex-col items-center transition',
-										isNoChange &&
-											'opacity-40 brightness-50 hover:opacity-100 hover:brightness-100 dark:opacity-80 dark:hover:opacity-100'
-									)}
+									className={cn('group flex cursor-pointer flex-col items-center transition', {
+										'opacity-40 brightness-50 hover:opacity-100 hover:brightness-100 dark:opacity-80 dark:hover:opacity-100':
+											isNoChange,
+									})}
 								>
 									<Badge
 										color={color}
@@ -228,11 +226,10 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 										isInvisible={isNoChange}
 										size="sm"
 										classNames={{
-											badge: twJoin(
-												'font-mono',
-												scoreChange > 1 && 'scale-125 font-medium',
-												scoreChange > 2 && 'brightness-125'
-											),
+											badge: cn('font-mono', {
+												'brightness-125': scoreChange > 2,
+												'scale-125 font-medium': scoreChange > 1,
+											}),
 											base: 'group-hover:drop-shadow-md',
 										}}
 									>
@@ -279,7 +276,9 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 					onClick={handleButtonPress}
 					onKeyDown={debounce(checkA11yConfirmKey(handleButtonPress))}
 					aria-label={ingredientTabStyle.ariaLabel}
-					className={twJoin('h-4 w-4/5 text-default-300', isHighAppearance && 'backdrop-blur')}
+					className={cn('h-4 w-4/5 text-default-300', {
+						'backdrop-blur': isHighAppearance,
+					})}
 				>
 					{ingredientTabStyle.buttonNode}
 				</Button>

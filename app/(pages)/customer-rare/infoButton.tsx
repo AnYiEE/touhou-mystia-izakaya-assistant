@@ -1,10 +1,9 @@
 import {Fragment, type ReactElement, memo} from 'react';
-import {twJoin} from 'tailwind-merge';
 
 import useBreakpoint from 'use-breakpoint';
 import {useViewInNewWindow} from '@/hooks';
 
-import {AccordionItem, Divider, PopoverContent, PopoverTrigger, ScrollShadow} from '@nextui-org/react';
+import {AccordionItem, Divider, PopoverContent, PopoverTrigger, ScrollShadow, cn} from '@nextui-org/react';
 
 import InfoButtonBase from './infoButtonBase';
 import Avatar from '@/components/avatar';
@@ -334,7 +333,11 @@ export default function InfoButton() {
 						)}
 						{hasNegativeSpellCards && (
 							<>
-								<p className={twJoin('mb-1 text-sm font-semibold', hasPositiveSpellCards && 'mt-2')}>
+								<p
+									className={cn('mb-1 text-sm font-semibold', {
+										'mt-2': hasPositiveSpellCards,
+									})}
+								>
 									惩罚符卡
 								</p>
 								{currentCustomerSpellCards.negative.map(({description, name}, index) => (

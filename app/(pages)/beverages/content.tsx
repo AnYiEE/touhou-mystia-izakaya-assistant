@@ -1,9 +1,8 @@
 import {Fragment, memo, useRef} from 'react';
-import {twJoin} from 'tailwind-merge';
 
 import {useOpenedItemPopover} from '@/hooks';
 
-import {PopoverContent, PopoverTrigger, ScrollShadow} from '@nextui-org/react';
+import {PopoverContent, PopoverTrigger, ScrollShadow, cn} from '@nextui-org/react';
 
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
@@ -74,7 +73,11 @@ export default memo<IProps>(function Content({data}) {
 							const label = `${probability}，使用摆件【超级钓鱼竿】`;
 							return (
 								<Fragment key={fromIndex}>
-									<p className={twJoin('font-semibold', fromIndex !== 0 && 'mt-1')}>
+									<p
+										className={cn('font-semibold', {
+											'mt-1': fromIndex !== 0,
+										})}
+									>
 										{isFishingAdvanced ? (
 											<Popover showArrow offset={5} size="sm">
 												<Tooltip showArrow content={label} offset={3} size="sm">

@@ -1,7 +1,6 @@
 'use client';
 
 import {type Key, useCallback, useMemo} from 'react';
-import {twJoin, twMerge} from 'tailwind-merge';
 
 import useBreakpoint from 'use-breakpoint';
 import {
@@ -14,7 +13,7 @@ import {
 	useVibrate,
 } from '@/hooks';
 
-import {Tab, Tabs} from '@nextui-org/react';
+import {Tab, Tabs, cn} from '@nextui-org/react';
 
 import BeverageTabContent from './beverageTabContent';
 import CustomerCard from './customerCard';
@@ -293,9 +292,11 @@ export default function CustomerRare() {
 
 	return (
 		<div
-			className={twJoin(
+			className={cn(
 				'flex min-h-main-content-pb-0 flex-col gap-4 overflow-auto scrollbar-hide xl:grid xl:grid-cols-2 xl:justify-items-center',
-				currentCustomerName !== null && 'md:flex-col-reverse md:justify-end'
+				{
+					'md:flex-col-reverse md:justify-end': currentCustomerName !== null,
+				}
 			)}
 		>
 			<div className="px-2 xl:w-full xl:px-0 xl:pt-2">
@@ -306,7 +307,9 @@ export default function CustomerRare() {
 					selectedKey={selectedTabKey}
 					onSelectionChange={onTabSelectionChange}
 					classNames={{
-						tabList: twJoin('grid grid-cols-4 bg-default/40', isHighAppearance && 'backdrop-blur'),
+						tabList: cn('grid grid-cols-4 bg-default/40', {
+							'backdrop-blur': isHighAppearance,
+						}),
 					}}
 				>
 					<Tab key="customer" title="稀客" className="relative flex flex-col">
@@ -333,10 +336,9 @@ export default function CustomerRare() {
 			</div>
 
 			<div
-				className={twJoin(
-					'flex flex-col gap-4 p-2 pt-0 md:pb-0 md:pt-2 xl:w-full xl:pb-2',
-					currentCustomerName === null && 'flex-grow'
-				)}
+				className={cn('flex flex-col gap-4 p-2 pt-0 md:pb-0 md:pt-2 xl:w-full xl:pb-2', {
+					'flex-grow': currentCustomerName === null,
+				})}
 			>
 				{currentCustomerName ? (
 					<>
@@ -353,11 +355,9 @@ export default function CustomerRare() {
 			</div>
 
 			<SideButtonGroup
-				className={twMerge(
-					'xl:left-6',
-					customerTabStyle.classNames.sideButtonGroup,
-					!isCustomerTabFilterVisible && '!hidden'
-				)}
+				className={cn('xl:left-6', customerTabStyle.classNames.sideButtonGroup, {
+					'!hidden': !isCustomerTabFilterVisible,
+				})}
 			>
 				<SideSearchIconButton searchConfig={customerSearchConfig} />
 				<SidePinyinSortIconButton pinyinSortConfig={customerPinyinSortConfig} />
@@ -365,12 +365,10 @@ export default function CustomerRare() {
 			</SideButtonGroup>
 
 			<SideButtonGroup
-				className={twMerge(
-					'xl:left-6',
-					ingredientTabStyle.classNames.sideButtonGroup,
-					!isIngredientTabFilterVisible && '!hidden',
-					selectedTabKey === 'ingredient' && ingredientFilteredData.length === 0 && '!block'
-				)}
+				className={cn('xl:left-6', ingredientTabStyle.classNames.sideButtonGroup, {
+					'!block': selectedTabKey === 'ingredient' && ingredientFilteredData.length === 0,
+					'!hidden': !isIngredientTabFilterVisible,
+				})}
 			>
 				<SidePinyinSortIconButton pinyinSortConfig={ingredientPinyinSortConfig} />
 				<SideFilterIconButton selectConfig={ingredientSelectConfig} />

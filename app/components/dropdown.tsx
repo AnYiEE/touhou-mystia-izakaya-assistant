@@ -1,11 +1,10 @@
 'use client';
 
 import {memo} from 'react';
-import {twMerge} from 'tailwind-merge';
 
 import {useMotionProps} from '@/hooks';
 
-import {type DropdownProps, Dropdown as NextUIDropdown} from '@nextui-org/react';
+import {type DropdownProps, Dropdown as NextUIDropdown, cn} from '@nextui-org/react';
 
 import {globalStore as store} from '@/stores';
 
@@ -30,9 +29,11 @@ export default memo<IProps>(function Dropdown({
 			motionProps={motionProps}
 			classNames={{
 				...classNames,
-				content: twMerge(
+				content: cn(
 					'min-w-min',
-					isHighAppearance && 'bg-content1/40 backdrop-blur-lg dark:bg-content1/70',
+					{
+						'bg-content1/40 backdrop-blur-lg dark:bg-content1/70': isHighAppearance,
+					},
 					classNames?.content
 				),
 			}}

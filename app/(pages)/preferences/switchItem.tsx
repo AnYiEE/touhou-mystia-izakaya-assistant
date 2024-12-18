@@ -1,7 +1,6 @@
 import {type PropsWithChildren, memo} from 'react';
-import {twMerge} from 'tailwind-merge';
 
-import {Switch, type SwitchProps} from '@nextui-org/react';
+import {Switch, type SwitchProps, cn} from '@nextui-org/react';
 
 interface IProps {
 	'aria-label': NonNullable<SwitchProps['aria-label']>;
@@ -18,7 +17,7 @@ export default memo<PropsWithChildren<IProps>>(function SwitchItem({
 	...props
 }) {
 	return (
-		<div className={twMerge('flex items-center gap-2', className)}>
+		<div className={cn('flex items-center gap-2', className)}>
 			<span className="font-medium">{children}</span>
 			<Switch
 				endContent={<span>关</span>}

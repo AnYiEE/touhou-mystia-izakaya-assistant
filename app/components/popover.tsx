@@ -1,11 +1,10 @@
 'use client';
 
 import {type ComponentProps, memo} from 'react';
-import {twMerge} from 'tailwind-merge';
 
 import {useMotionProps} from '@/hooks';
 
-import {Popover as NextUIPopover, extendVariants} from '@nextui-org/react';
+import {Popover as NextUIPopover, cn, extendVariants} from '@nextui-org/react';
 
 import {generateRatingColor} from '@/components/avatar';
 import {ratingStyleMap} from '@/components/tooltip';
@@ -46,8 +45,10 @@ export default memo<IProps>(function Popover({
 			motionProps={motionProps}
 			classNames={{
 				...classNames,
-				content: twMerge(
-					isHighAppearance && color === undefined && 'bg-content1/40 backdrop-blur-lg dark:bg-content1/70',
+				content: cn(
+					{
+						'bg-content1/40 backdrop-blur-lg dark:bg-content1/70': isHighAppearance && color === undefined,
+					},
 					classNames?.content
 				),
 			}}

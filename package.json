@@ -88,7 +88,6 @@
 		"react-dom": "^18.3.1",
 		"react-transition-progress": "github:AnYiEE/react-transition-progress",
 		"rxjs": "^7.8.1",
-		"tailwind-merge": "^2.5.5",
 		"ua-parser-js": "^2.0.0",
 		"use-breakpoint": "^4.0.5"
 	},

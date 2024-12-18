@@ -1,7 +1,8 @@
 'use client';
 
 import {type CSSProperties, type ElementRef, forwardRef, memo, useEffect, useMemo, useState} from 'react';
-import {twMerge} from 'tailwind-merge';
+
+import {cn} from '@nextui-org/react';
 
 import {checkCompatibility} from '@/components/compatibleBrowser';
 import PressElement, {type IPressProp} from '@/components/pressElement';
@@ -105,7 +106,7 @@ export default memo(
 				onPress={onPress}
 				role="img"
 				title={finalTitle}
-				className={twMerge('inline-block', className)}
+				className={cn('inline-block', className)}
 				style={{...calculatedStyle, ...style}}
 				{...props}
 				ref={ref}

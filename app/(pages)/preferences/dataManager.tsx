@@ -1,12 +1,11 @@
 import {type ChangeEvent, memo, useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {debounce, isObjectLike} from 'lodash';
-import {twJoin} from 'tailwind-merge';
 
 import {useRouter} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
 import {usePathname, useThrottle} from '@/hooks';
 
-import {Button, PopoverContent, PopoverTrigger, Snippet, Tab, Tabs, Textarea} from '@nextui-org/react';
+import {Button, PopoverContent, PopoverTrigger, Snippet, Tab, Tabs, Textarea, cn} from '@nextui-org/react';
 
 import {showProgress} from '@/(pages)/navbar';
 import {TrackCategory, trackEvent} from '@/components/analytics';
@@ -180,7 +179,9 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								}}
 								variant="flat"
 								classNames={{
-									base: twJoin(isHighAppearance && 'bg-default-100/40 backdrop-blur'),
+									base: cn({
+										'bg-default-100/40 backdrop-blur': isHighAppearance,
+									}),
 									pre: 'max-h-[13.25rem] w-full overflow-auto whitespace-pre-wrap',
 								}}
 							>
@@ -200,7 +201,9 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 									isLoading={isDownloadButtonDisabled}
 									variant="flat"
 									onPress={handleDownloadButtonPress}
-									className={twJoin(isHighAppearance && 'backdrop-blur')}
+									className={cn({
+										'backdrop-blur': isHighAppearance,
+									})}
 								>
 									{downloadButtonLabel}
 								</Button>
@@ -215,11 +218,10 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								value={importValue}
 								onValueChange={setImportValue}
 								classNames={{
-									inputWrapper: twJoin(
-										'transition-background data-[hover=true]:bg-default-200',
-										isHighAppearance &&
-											'bg-default-100/40 backdrop-blur data-[hover=true]:bg-default-200/40 group-data-[focus=true]:bg-default-100/70'
-									),
+									inputWrapper: cn('transition-background data-[hover=true]:bg-default-200', {
+										'bg-default-100/40 backdrop-blur data-[hover=true]:bg-default-200/40 group-data-[focus=true]:bg-default-100/70':
+											isHighAppearance,
+									}),
 								}}
 							/>
 							<input
@@ -234,7 +236,9 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								color="primary"
 								variant="flat"
 								onPress={handleImportButtonPress}
-								className={twJoin(isHighAppearance && 'backdrop-blur')}
+								className={cn({
+									'backdrop-blur': isHighAppearance,
+								})}
 							>
 								上传
 							</Button>
@@ -248,7 +252,9 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 										variant="flat"
 										onClick={toggleSavePopoverOpened}
 										onKeyDown={debounce(checkA11yConfirmKey(toggleSavePopoverOpened))}
-										className={twJoin(isHighAppearance && 'backdrop-blur')}
+										className={cn({
+											'backdrop-blur': isHighAppearance,
+										})}
 									>
 										保存
 									</Button>
@@ -286,7 +292,9 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 										variant="flat"
 										onClick={toggleResetPopoverOpened}
 										onKeyDown={debounce(checkA11yConfirmKey(toggleResetPopoverOpened))}
-										className={twJoin(isHighAppearance && 'backdrop-blur')}
+										className={cn({
+											'backdrop-blur': isHighAppearance,
+										})}
 									>
 										重置已保存的顾客套餐数据
 									</Button>
@@ -353,7 +361,9 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 									}
 									trackEvent(TrackCategory.Click, 'Reset Button', 'Customer Rare Tutorial');
 								}}
-								className={twJoin(isHighAppearance && 'backdrop-blur')}
+								className={cn({
+									'backdrop-blur': isHighAppearance,
+								})}
 							>
 								{customerRareTutorialResetLabel}
 							</Button>

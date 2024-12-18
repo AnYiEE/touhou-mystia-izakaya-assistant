@@ -1,8 +1,8 @@
 'use client';
 
 import {type ElementRef, forwardRef, memo} from 'react';
-import {twMerge} from 'tailwind-merge';
 
+import {cn} from '@nextui-org/react';
 import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
 
 import Link, {type ILinkProps} from '@/components/link';
@@ -15,7 +15,7 @@ export default memo(
 		ref
 	) {
 		return (
-			<Link className={twMerge('text-default-400', className)} {...props} ref={ref}>
+			<Link className={cn('text-default-400', className)} {...props} ref={ref}>
 				<FontAwesomeIcon icon={icon} size={size} />
 			</Link>
 		);

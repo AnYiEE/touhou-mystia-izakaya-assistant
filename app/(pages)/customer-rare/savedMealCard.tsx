@@ -1,9 +1,8 @@
 import {Fragment} from 'react';
-import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
 
-import {Button, Card, Divider, PopoverContent, PopoverTrigger} from '@nextui-org/react';
+import {Button, Card, Divider, PopoverContent, PopoverTrigger, cn} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faArrowDown, faArrowUp} from '@fortawesome/free-solid-svg-icons';
 
@@ -78,7 +77,9 @@ export default function SavedMealCard() {
 			fullWidth
 			shadow="sm"
 			classNames={{
-				base: twJoin(isHighAppearance && 'bg-content1/40 backdrop-blur'),
+				base: cn({
+					'bg-content1/40 backdrop-blur': isHighAppearance,
+				}),
 			}}
 		>
 			<div className="space-y-3 p-4 xl:space-y-2 xl:px-2 xl:py-3">
@@ -269,9 +270,11 @@ export default function SavedMealCard() {
 								<div className="flex w-full flex-row-reverse items-center justify-center gap-2 md:w-auto xl:flex-col">
 									<div
 										aria-hidden
-										className={twJoin(
+										className={cn(
 											'absolute right-2 flex flex-col gap-3 text-xs text-primary/20 md:left-2 md:right-[unset] md:gap-6 xl:gap-9 dark:text-default-100',
-											savedCustomerMeal.length <= 1 && 'hidden'
+											{
+												hidden: savedCustomerMeal.length <= 1,
+											}
 										)}
 									>
 										<Tooltip
@@ -287,9 +290,11 @@ export default function SavedMealCard() {
 													moveMeal(mealIndex, 'up');
 												}}
 												role="button"
-												className={twMerge(
+												className={cn(
 													'cursor-pointer hover:text-primary/40 dark:hover:text-default-200',
-													loopIndex === 0 && 'cursor-not-allowed hover:text-primary/20'
+													{
+														'cursor-not-allowed hover:text-primary/20': loopIndex === 0,
+													}
 												)}
 											/>
 										</Tooltip>
@@ -308,10 +313,12 @@ export default function SavedMealCard() {
 													moveMeal(mealIndex, 'down');
 												}}
 												role="button"
-												className={twMerge(
+												className={cn(
 													'cursor-pointer hover:text-primary/40 dark:hover:text-default-200',
-													loopIndex === savedCustomerMeal.length - 1 &&
-														'cursor-not-allowed hover:text-primary/20'
+													{
+														'cursor-not-allowed hover:text-primary/20':
+															loopIndex === savedCustomerMeal.length - 1,
+													}
 												)}
 											/>
 										</Tooltip>

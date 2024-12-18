@@ -1,5 +1,6 @@
 import {type ElementRef, forwardRef, memo} from 'react';
-import {twMerge} from 'tailwind-merge';
+
+import {cn} from '@nextui-org/react';
 
 import PressElement, {type IPressProp} from '@/components/pressElement';
 
@@ -30,13 +31,12 @@ const Tag = memo(
 				onClick={onClick}
 				onKeyDown={onKeyDown}
 				onPress={onPress}
-				className={twMerge(
+				className={cn(
 					'inline-block h-max w-max rounded border px-1',
-					tagType === 'negative'
-						? 'after:ml-0.5 after:font-normal after:content-["✘"]'
-						: tagType === 'positive'
-							? 'before:mr-1 before:font-normal before:content-["⦁"]'
-							: '',
+					{
+						'after:ml-0.5 after:font-normal after:content-["✘"]': tagType === 'negative',
+						'before:mr-1 before:font-normal before:content-["⦁"]': tagType === 'positive',
+					},
 					className
 				)}
 				style={{

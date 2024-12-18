@@ -1,10 +1,9 @@
 import {memo, useCallback} from 'react';
 import {debounce} from 'lodash';
-import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
 
-import {Avatar, Button, ScrollShadow} from '@nextui-org/react';
+import {Avatar, Button, ScrollShadow, cn} from '@nextui-org/react';
 
 import PressElement from '@/components/pressElement';
 import Sprite from '@/components/sprite';
@@ -35,7 +34,7 @@ export default memo<IProps>(function CustomerTabContent({customerTabStyle, sorte
 		<>
 			<ScrollShadow
 				hideScrollBar
-				className={twMerge(
+				className={cn(
 					'transition-all xl:max-h-[calc(var(--safe-h-dvh)-10.25rem-env(titlebar-area-height,0rem))]',
 					customerTabStyle.classNames.content
 				)}
@@ -66,9 +65,11 @@ export default memo<IProps>(function CustomerTabContent({customerTabStyle, sorte
 								}
 								role="button"
 								classNames={{
-									base: twMerge(
+									base: cn(
 										'h-20 w-20 scale-90 ring-default transition-shadow hover:ring-warning lg:scale-100',
-										name === currentCustomerName && 'ring-primary'
+										{
+											'ring-primary': name === currentCustomerName,
+										}
 									),
 									icon: 'block scale-[113%] transition-opacity hover:opacity-hover',
 								}}
@@ -85,7 +86,9 @@ export default memo<IProps>(function CustomerTabContent({customerTabStyle, sorte
 					onClick={handleButtonPress}
 					onKeyDown={debounce(checkA11yConfirmKey(handleButtonPress))}
 					aria-label={customerTabStyle.ariaLabel}
-					className={twJoin('h-4 w-4/5 text-default-300', isHighAppearance && 'backdrop-blur')}
+					className={cn('h-4 w-4/5 text-default-300', {
+						'backdrop-blur': isHighAppearance,
+					})}
 				>
 					{customerTabStyle.buttonNode}
 				</Button>

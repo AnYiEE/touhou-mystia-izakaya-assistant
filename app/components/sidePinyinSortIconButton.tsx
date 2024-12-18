@@ -1,10 +1,10 @@
 'use client';
 
 import {type Dispatch, type SetStateAction, memo, useCallback} from 'react';
-import {twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
 
+import {cn} from '@nextui-org/react';
 import {faArrowDownAZ, faArrowUpAZ} from '@fortawesome/free-solid-svg-icons';
 
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
@@ -57,7 +57,7 @@ export default memo<IProps>(function SidePinyinSortIconButton({
 				variant="shadow"
 				onPress={handlePress}
 				aria-label={label}
-				className={twMerge('text-white', className)}
+				className={cn('text-white', className)}
 				{...props}
 			/>
 		</Tooltip>

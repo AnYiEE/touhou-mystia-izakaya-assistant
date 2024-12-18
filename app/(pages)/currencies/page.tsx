@@ -1,7 +1,5 @@
 'use client';
 
-import {twJoin} from 'tailwind-merge';
-
 import {
 	useMounted,
 	usePinyinSortConfig,
@@ -11,6 +9,8 @@ import {
 	useSortedData,
 	useThrottle,
 } from '@/hooks';
+
+import {cn} from '@nextui-org/react';
 
 import Content from '@/(pages)/currencies/content';
 import Loading from '@/loading';
@@ -61,7 +61,7 @@ export default function Currencies() {
 
 	return (
 		<div
-			className={twJoin(
+			className={cn(
 				'min-h-main-content',
 				isEmpty
 					? 'flex justify-center'

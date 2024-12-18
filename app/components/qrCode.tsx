@@ -1,9 +1,10 @@
 'use client';
 
 import {type PropsWithChildren, memo} from 'react';
-import {twMerge} from 'tailwind-merge';
 
 import {useQRCode} from 'next-qrcode';
+
+import {cn} from '@nextui-org/react';
 
 import {type IQRCode} from 'next-qrcode/dist/useQRCode';
 
@@ -20,7 +21,7 @@ export default memo<PropsWithChildren<IProps>>(function QRCode({children, classN
 
 	return (
 		<div className="flex flex-col items-center">
-			<div aria-hidden className={twMerge('w-32 dark:invert', className)}>
+			<div aria-hidden className={cn('w-32 dark:invert', className)}>
 				<Component
 					options={{
 						color: {

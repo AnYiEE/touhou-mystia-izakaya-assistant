@@ -1,10 +1,9 @@
 import {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {twJoin, twMerge} from 'tailwind-merge';
 
 import useBreakpoint from 'use-breakpoint';
 import {useVibrate} from '@/hooks';
 
-import {Button, Card} from '@nextui-org/react';
+import {Button, Card, cn} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-icons';
 
@@ -26,7 +25,7 @@ export const Plus = memo<IPlusProps>(function Plus({className, size = 1}) {
 
 	return (
 		<span
-			className={twMerge('mx-1 text-center leading-none', className)}
+			className={cn('mx-1 text-center leading-none', className)}
 			style={{
 				fontSize: remString,
 				width: remString,
@@ -49,7 +48,7 @@ export const UnknownItem = memo<IUnknownItemProps>(function UnknownItem({classNa
 			<span
 				role="img"
 				title={title}
-				className={twMerge('outline-3 inline-block text-center leading-none outline-double', className)}
+				className={cn('outline-3 inline-block text-center leading-none outline-double', className)}
 				style={{
 					fontSize: remString,
 					width: remString,
@@ -239,7 +238,9 @@ export default function ResultCard() {
 			fullWidth
 			shadow="sm"
 			classNames={{
-				base: twJoin(isHighAppearance && 'bg-content1/40 backdrop-blur'),
+				base: cn({
+					'bg-content1/40 backdrop-blur': isHighAppearance,
+				}),
 			}}
 		>
 			<div className="flex flex-col items-center gap-4 p-4 md:flex-row">
@@ -267,7 +268,9 @@ export default function ResultCard() {
 												role={isDarkMatter ? undefined : 'button'}
 												tabIndex={isDarkMatter ? undefined : 0}
 												aria-label={label}
-												className={twJoin(!isDarkMatter && 'cursor-pointer')}
+												className={cn({
+													'cursor-pointer': !isDarkMatter,
+												})}
 											/>
 										</Tooltip>
 										<Tooltip showArrow content={recipeName} offset={4}>
@@ -302,10 +305,9 @@ export default function ResultCard() {
 						variant="flat"
 						onPress={handleSaveButtonPress}
 						aria-label={`保存套餐，当前${currentRating === null ? '未评级' : `评级为${CUSTOMER_RATING_MAP[currentRating]}`}`}
-						className={twJoin(
-							'flex-col gap-0 text-xs leading-none md:w-auto',
-							isSaveButtonDisabled && 'opacity-disabled'
-						)}
+						className={cn('flex-col gap-0 text-xs leading-none md:w-auto', {
+							'opacity-disabled': isSaveButtonDisabled,
+						})}
 					>
 						<span>保存套餐</span>
 						<span>

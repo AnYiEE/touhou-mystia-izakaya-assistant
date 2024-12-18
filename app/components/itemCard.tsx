@@ -1,9 +1,8 @@
 'use client';
 
 import {type ElementRef, forwardRef, memo} from 'react';
-import {twJoin} from 'tailwind-merge';
 
-import {Card, type CardProps} from '@nextui-org/react';
+import {Card, type CardProps, cn} from '@nextui-org/react';
 
 import {globalStore as store} from '@/stores';
 
@@ -22,11 +21,10 @@ export default memo(
 				fullWidth
 				shadow="sm"
 				classNames={{
-					base: twJoin(
-						'justify-center',
-						isHighAppearance &&
-							'bg-background data-[hover=true]:bg-content1 dark:bg-content1 dark:data-[hover=true]:bg-content2'
-					),
+					base: cn('justify-center', {
+						'bg-background data-[hover=true]:bg-content1 dark:bg-content1 dark:data-[hover=true]:bg-content2':
+							isHighAppearance,
+					}),
 				}}
 				{...cardProps}
 				ref={ref}

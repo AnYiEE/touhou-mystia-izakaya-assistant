@@ -1,9 +1,8 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {twJoin} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
 
-import {Button, Card} from '@nextui-org/react';
+import {Button, Card, cn} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark} from '@fortawesome/free-solid-svg-icons';
 
@@ -151,7 +150,9 @@ export default function ResultCard() {
 			fullWidth
 			shadow="sm"
 			classNames={{
-				base: twJoin(isHighAppearance && 'bg-content1/40 backdrop-blur'),
+				base: cn({
+					'bg-content1/40 backdrop-blur': isHighAppearance,
+				}),
 			}}
 		>
 			<div className="flex flex-col items-center gap-4 p-4 md:flex-row">
@@ -194,7 +195,9 @@ export default function ResultCard() {
 						variant="flat"
 						onPress={handleSaveButtonPress}
 						aria-label={`保存套餐，当前${currentRating === null ? '未评级' : `评级为${CUSTOMER_RATING_MAP[currentRating]}`}`}
-						className={twJoin('md:w-auto', isSaveButtonDisabled && 'opacity-disabled')}
+						className={cn('md:w-auto', {
+							'opacity-disabled': isSaveButtonDisabled,
+						})}
 					>
 						保存套餐
 					</Button>

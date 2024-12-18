@@ -1,7 +1,6 @@
 'use client';
 
 import {useCallback, useMemo} from 'react';
-import {twJoin} from 'tailwind-merge';
 
 import {
 	useFilteredData,
@@ -13,6 +12,8 @@ import {
 	useSortedData,
 	useThrottle,
 } from '@/hooks';
+
+import {cn} from '@nextui-org/react';
 
 import Content from '@/(pages)/partners/content';
 import Loading from '@/loading';
@@ -92,7 +93,7 @@ export default function Partners() {
 
 	return (
 		<div
-			className={twJoin(
+			className={cn(
 				'min-h-main-content',
 				isEmpty
 					? 'flex justify-center'

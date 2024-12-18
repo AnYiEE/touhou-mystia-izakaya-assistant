@@ -1,5 +1,4 @@
 import {useCallback, useMemo} from 'react';
-import {twJoin} from 'tailwind-merge';
 
 import {useMotionProps, useVibrate, useViewInNewWindow} from '@/hooks';
 
@@ -22,6 +21,7 @@ import {
 	TableColumn,
 	TableHeader,
 	TableRow,
+	cn,
 } from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faChevronDown, faMagnifyingGlass, faPlus, faTags} from '@fortawesome/free-solid-svg-icons';
@@ -193,7 +193,9 @@ export default function BeverageTabContent() {
 								tag={tag}
 								tagStyle={tagStyle}
 								tagType={tagType}
-								className={twJoin(!isTagMatched && 'opacity-50')}
+								className={cn({
+									'opacity-50': !isTagMatched,
+								})}
 							/>
 						);
 					})}
@@ -305,13 +307,17 @@ export default function BeverageTabContent() {
 								shouldCloseOnScroll: false,
 							}}
 							classNames={{
-								base: twJoin(
+								base: cn(
 									'data-[slot="input-wrapper"]:[&_div]:!bg-default/40 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:opacity-hover data-[slot="input-wrapper"]:[&_div]:transition-opacity',
-									isHighAppearance && 'backdrop-blur'
+									{
+										'backdrop-blur': isHighAppearance,
+									}
 								),
 								listboxWrapper:
 									'[&_li]:transition-background data-[hover=true]:[&_li]:!bg-default-200/40',
-								popoverContent: twJoin(isHighAppearance && 'bg-content1/70 backdrop-blur-lg'),
+								popoverContent: cn({
+									'bg-content1/70 backdrop-blur-lg': isHighAppearance,
+								}),
 							}}
 						>
 							{({value}) => (
@@ -348,10 +354,14 @@ export default function BeverageTabContent() {
 								base: 'w-2/3 md:w-full',
 								listboxWrapper:
 									'[&_li]:transition-background focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40',
-								popoverContent: twJoin(isHighAppearance && 'bg-content1/70 backdrop-blur-lg'),
-								trigger: twJoin(
+								popoverContent: cn({
+									'bg-content1/70 backdrop-blur-lg': isHighAppearance,
+								}),
+								trigger: cn(
 									'bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover',
-									isHighAppearance && 'backdrop-blur'
+									{
+										'backdrop-blur': isHighAppearance,
+									}
 								),
 							}}
 						>
@@ -365,10 +375,10 @@ export default function BeverageTabContent() {
 									endContent={<FontAwesomeIcon icon={faChevronDown} />}
 									size="sm"
 									variant="flat"
-									className={twJoin(
-										isHighAppearance && 'backdrop-blur',
-										selectedDlcs.size > 0 && 'ring-2 ring-default'
-									)}
+									className={cn({
+										'backdrop-blur': isHighAppearance,
+										'ring-2 ring-default': selectedDlcs.size > 0,
+									})}
 								>
 									DLC
 								</Button>
@@ -395,7 +405,9 @@ export default function BeverageTabContent() {
 									endContent={<FontAwesomeIcon icon={faChevronDown} />}
 									size="sm"
 									variant="flat"
-									className={twJoin(isHighAppearance && 'backdrop-blur')}
+									className={cn({
+										'backdrop-blur': isHighAppearance,
+									})}
 								>
 									条目
 								</Button>
@@ -439,13 +451,14 @@ export default function BeverageTabContent() {
 								base: 'min-w-16',
 								listboxWrapper:
 									'[&_li]:transition-background focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40',
-								popoverContent: twJoin(
-									'min-w-20',
-									isHighAppearance && 'bg-content1/70 backdrop-blur-lg'
-								),
-								trigger: twJoin(
+								popoverContent: cn('min-w-20', {
+									'bg-content1/70 backdrop-blur-lg': isHighAppearance,
+								}),
+								trigger: cn(
 									'h-6 min-h-6 bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover',
-									isHighAppearance && 'backdrop-blur'
+									{
+										'backdrop-blur': isHighAppearance,
+									}
 								),
 								value: '!text-default-400',
 							}}
@@ -493,7 +506,9 @@ export default function BeverageTabContent() {
 							customerStore.onBeverageTablePageChange(page);
 						}}
 						classNames={{
-							item: twJoin('bg-default-100/70', isHighAppearance && 'backdrop-blur'),
+							item: cn('bg-default-100/70', {
+								'backdrop-blur': isHighAppearance,
+							}),
 						}}
 					/>
 				)}
@@ -519,11 +534,12 @@ export default function BeverageTabContent() {
 			aria-label="酒水选择表格"
 			classNames={{
 				base: 'gap-2',
-				th: twJoin(isHighAppearance && 'bg-default-100/70 backdrop-blur-sm'),
-				wrapper: twJoin(
-					'xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)] xl:p-2',
-					isHighAppearance && 'bg-content1/40 backdrop-blur'
-				),
+				th: cn({
+					'bg-default-100/70 backdrop-blur-sm': isHighAppearance,
+				}),
+				wrapper: cn('xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)] xl:p-2', {
+					'bg-content1/40 backdrop-blur': isHighAppearance,
+				}),
 			}}
 		>
 			<TableHeader columns={tableHeaderColumns}>

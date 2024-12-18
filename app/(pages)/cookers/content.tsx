@@ -1,10 +1,9 @@
 import {Fragment, type PropsWithChildren, memo, useRef} from 'react';
 import {isObjectLike} from 'lodash';
-import {twJoin} from 'tailwind-merge';
 
 import {useOpenedItemPopover, useViewInNewWindow} from '@/hooks';
 
-import {PopoverContent, PopoverTrigger} from '@nextui-org/react';
+import {PopoverContent, PopoverTrigger, cn} from '@nextui-org/react';
 
 import {TrackCategory, trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
@@ -66,7 +65,9 @@ export default memo<IProps>(function Content({data}) {
 							target="cooker"
 							name={name}
 							size={3}
-							className={twJoin(name.includes('油锅') && 'translate-y-px')}
+							className={cn({
+								'translate-y-px': name.includes('油锅'),
+							})}
 						/>
 					}
 					onPress={() => {

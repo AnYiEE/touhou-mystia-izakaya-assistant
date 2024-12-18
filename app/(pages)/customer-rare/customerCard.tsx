@@ -1,9 +1,8 @@
 import {useCallback, useMemo} from 'react';
-import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useVibrate} from '@/hooks';
 
-import {Card, Divider, PopoverContent, PopoverTrigger} from '@nextui-org/react';
+import {Card, Divider, PopoverContent, PopoverTrigger, cn} from '@nextui-org/react';
 import {faArrowsRotate, faXmark} from '@fortawesome/free-solid-svg-icons';
 
 import InfoButton from './infoButton';
@@ -223,7 +222,9 @@ export default function CustomerCard() {
 			fullWidth
 			shadow="sm"
 			classNames={{
-				base: twJoin(isHighAppearance && 'bg-content1/40 backdrop-blur'),
+				base: cn({
+					'bg-content1/40 backdrop-blur': isHighAppearance,
+				}),
 			}}
 		>
 			<div className="flex flex-col gap-3 p-4 md:flex-row">
@@ -244,7 +245,9 @@ export default function CustomerCard() {
 											radius="full"
 											icon={<Sprite target="customer_rare" name={currentCustomerName} size={4} />}
 											classNames={{
-												base: twJoin('h-12 w-12 lg:h-16 lg:w-16', hasRating && 'ring-4'),
+												base: cn('h-12 w-12 lg:h-16 lg:w-16', {
+													'ring-4': hasRating,
+												}),
 												icon: 'inline-table lg:inline-block',
 											}}
 										/>
@@ -261,13 +264,19 @@ export default function CustomerCard() {
 						<p className="flex justify-between">
 							<Popover showArrow isTriggerDisabled={!dlcLabel} offset={4}>
 								<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={0}>
-									<span className={twJoin(!dlcLabel && 'cursor-text')}>
+									<span
+										className={cn({
+											'cursor-text': !dlcLabel,
+										})}
+									>
 										<PopoverTrigger>
 											<span
 												role={dlcLabel ? 'button' : undefined}
 												tabIndex={dlcLabel ? 0 : undefined}
 												title={dlcLabel}
-												className={twJoin('opacity-100', dlcLabel && 'underline-dotted-linear')}
+												className={cn('opacity-100', {
+													'underline-dotted-linear': dlcLabel,
+												})}
 											>
 												DLC{currentCustomerDlc}
 											</span>
@@ -283,7 +292,9 @@ export default function CustomerCard() {
 											<span
 												role="button"
 												tabIndex={0}
-												className={twJoin(hasOtherPlaces && 'underline-dotted-linear')}
+												className={cn({
+													'underline-dotted-linear': hasOtherPlaces,
+												})}
 											>
 												{currentCustomerMainPlace}
 											</span>
@@ -332,17 +343,17 @@ export default function CustomerCard() {
 										aria-label={`${tag}${currentCustomerOrder.recipeTag === tag ? '/已选定' : ''}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
 										role="button"
 										tabIndex={0}
-										className={twMerge(
+										className={cn(
 											'cursor-pointer p-1 font-semibold leading-none transition-opacity hover:opacity-hover',
-											(isDarkMatter || !currentRecipeTagsWithPopular.includes(tag)) &&
-												'font-normal opacity-50',
-											currentCustomerOrder.recipeTag === tag &&
-												((hasMystiaCooker && isDarkMatter) || !hasMystiaCooker) &&
-												'ring-2 ring-current',
-											hasMystiaCooker &&
-												!isDarkMatter &&
-												!isOrderLinkedFilter &&
-												'cursor-not-allowed'
+											{
+												'cursor-not-allowed':
+													hasMystiaCooker && !isDarkMatter && !isOrderLinkedFilter,
+												'font-normal opacity-50':
+													isDarkMatter || !currentRecipeTagsWithPopular.includes(tag),
+												'ring-2 ring-current':
+													currentCustomerOrder.recipeTag === tag &&
+													((hasMystiaCooker && isDarkMatter) || !hasMystiaCooker),
+											}
 										)}
 									/>
 								</Tooltip>
@@ -357,11 +368,10 @@ export default function CustomerCard() {
 									tag={tag}
 									tagStyle={CUSTOMER_RARE_TAG_STYLE.negative}
 									tagType="negative"
-									className={twJoin(
-										'cursor-not-allowed p-1 font-semibold leading-none',
-										(isDarkMatter || !currentRecipeTagsWithPopular.includes(tag)) &&
-											'font-normal opacity-50'
-									)}
+									className={cn('cursor-not-allowed p-1 font-semibold leading-none', {
+										'font-normal opacity-50':
+											isDarkMatter || !currentRecipeTagsWithPopular.includes(tag),
+									})}
 								/>
 							))}
 						</TagGroup>
@@ -388,7 +398,7 @@ export default function CustomerCard() {
 										aria-label={`${tag}${currentCustomerOrder.beverageTag === tag ? '/已选定' : ''}${beverageTags.includes(tag) ? '/已满足' : ''}`}
 										role="button"
 										tabIndex={0}
-										className={twMerge(
+										className={cn(
 											'cursor-pointer p-1 font-semibold leading-none transition-opacity hover:opacity-hover',
 											!beverageTags.includes(tag) && 'font-normal opacity-50',
 											currentCustomerOrder.beverageTag === tag &&

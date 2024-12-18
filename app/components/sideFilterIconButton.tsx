@@ -1,7 +1,6 @@
 'use client';
 
 import {type Dispatch, memo, useCallback, useMemo} from 'react';
-import {twJoin, twMerge} from 'tailwind-merge';
 
 import {useMotionProps, useVibrate} from '@/hooks';
 
@@ -13,6 +12,7 @@ import {
 	SelectItem,
 	type SelectProps,
 	type Selection,
+	cn,
 } from '@nextui-org/react';
 import {faFilter} from '@fortawesome/free-solid-svg-icons';
 
@@ -82,7 +82,7 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 							icon={faFilter}
 							variant="shadow"
 							aria-label={content}
-							className={twMerge('text-white', className)}
+							className={cn('text-white', className)}
 							{...props}
 						/>
 					</PopoverTrigger>
@@ -106,13 +106,14 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 									shouldCloseOnScroll: false,
 								}}
 								classNames={{
-									listboxWrapper: twJoin(
-										'[&_li]:transition-background',
-										isHighAppearance &&
-											'focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40'
-									),
-									popoverContent: twJoin(isHighAppearance && 'bg-content1/70 backdrop-blur-lg'),
-									trigger: twJoin(
+									listboxWrapper: cn('[&_li]:transition-background', {
+										'focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40':
+											isHighAppearance,
+									}),
+									popoverContent: cn({
+										'bg-content1/70 backdrop-blur-lg': isHighAppearance,
+									}),
+									trigger: cn(
 										'transition-background',
 										isHighAppearance
 											? 'bg-default-100/70 data-[hover=true]:bg-default-200/70'
@@ -135,9 +136,9 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 														target={spriteTarget}
 														name={value as never}
 														size={1.5}
-														className={twJoin(
-															spriteTarget !== 'customer_normal' && 'rounded-full'
-														)}
+														className={cn({
+															'rounded-full': spriteTarget !== 'customer_normal',
+														})}
 													/>
 												) : (
 													<Sprite target={spriteTarget} name={value as never} size={1} />

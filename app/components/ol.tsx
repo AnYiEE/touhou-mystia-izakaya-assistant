@@ -1,12 +1,13 @@
 import {type PropsWithChildren, memo} from 'react';
-import {twMerge} from 'tailwind-merge';
+
+import {cn} from '@nextui-org/react';
 
 interface ILiProps extends Pick<HTMLLIElementAttributes, 'className'> {}
 
 const Li = memo<PropsWithChildren<ILiProps>>(function Li({children, className}) {
 	return (
 		<li>
-			<span className={twMerge('relative -left-2', className)}>{children}</span>
+			<span className={cn('relative -left-2', className)}>{children}</span>
 		</li>
 	);
 });
@@ -14,7 +15,7 @@ const Li = memo<PropsWithChildren<ILiProps>>(function Li({children, className}) 
 interface IOlProps extends Pick<HTMLOListElementAttributes, 'className'> {}
 
 const OlComponent = memo<PropsWithChildren<IOlProps>>(function Ol({children, className}) {
-	return <ol className={twMerge('list-inside list-disc break-all text-justify', className)}>{children}</ol>;
+	return <ol className={cn('list-inside list-disc break-all text-justify', className)}>{children}</ol>;
 });
 
 const Ol = OlComponent as typeof OlComponent & {
