@@ -1,6 +1,6 @@
 import {Fragment} from 'react';
 
-import {useVibrate} from '@/hooks';
+import {useVibrate, useViewInNewWindow} from '@/hooks';
 
 import {Button, Card, Divider, PopoverContent, PopoverTrigger, cn} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -20,6 +20,7 @@ import {BEVERAGE_TAG_STYLE, CUSTOMER_RATING_MAP, DARK_MATTER_NAME, RECIPE_TAG_ST
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 
 export default function SavedMealCard() {
+	const openWindow = useViewInNewWindow();
 	const vibrate = useVibrate();
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
@@ -110,6 +111,9 @@ export default function SavedMealCard() {
 											: (`夜雀${originalCooker}` as const);
 										const recipeName = isDarkMatter ? DARK_MATTER_NAME : recipe;
 										const rating = CUSTOMER_RATING_MAP[ratingKey];
+										const beverageLabel = `点击：在新窗口中查看酒水【${beverage}】的详情`;
+										const cookerLabel = `点击：在新窗口中查看厨具【${cooker}】的详情`;
+										const recipeLabel = `点击：在新窗口中查看料理【${recipeName}】的详情`;
 										return (
 											<>
 												<Popover showArrow color={ratingKey} offset={12} placement="left">
@@ -172,45 +176,49 @@ export default function SavedMealCard() {
 													<PopoverContent>{rating}</PopoverContent>
 												</Popover>
 												<div className="flex items-center gap-2 xl:gap-1">
-													<Popover showArrow offset={11}>
-														<Tooltip showArrow content={cooker} offset={8}>
-															<span className="flex cursor-pointer">
-																<PopoverTrigger>
-																	<Sprite target="cooker" name={cooker} size={1.5} />
-																</PopoverTrigger>
-															</span>
-														</Tooltip>
-														<PopoverContent>{cooker}</PopoverContent>
-													</Popover>
-													<Popover showArrow offset={7}>
-														<Tooltip showArrow content={recipeName} offset={4}>
-															<span className="flex cursor-pointer">
-																<PopoverTrigger>
-																	<Sprite
-																		target="recipe"
-																		name={recipeName}
-																		size={2}
-																	/>
-																</PopoverTrigger>
-															</span>
-														</Tooltip>
-														<PopoverContent>{recipeName}</PopoverContent>
-													</Popover>
+													<Tooltip showArrow content={cookerLabel} offset={8}>
+														<Sprite
+															target="cooker"
+															name={cooker}
+															size={1.5}
+															onPress={() => {
+																openWindow('cookers', cooker);
+															}}
+															aria-label={cookerLabel}
+															role="button"
+															tabIndex={0}
+															className="cursor-pointer"
+														/>
+													</Tooltip>
+													<Tooltip showArrow content={recipeLabel} offset={4}>
+														<Sprite
+															target="recipe"
+															name={recipeName}
+															size={2}
+															onPress={() => {
+																openWindow('recipes', recipeName);
+															}}
+															aria-label={recipeLabel}
+															role="button"
+															tabIndex={0}
+															className="cursor-pointer"
+														/>
+													</Tooltip>
 													<Plus size={0.75} className="mx-2 md:mx-0 lg:mx-2 xl:mx-0" />
-													<Popover showArrow offset={7}>
-														<Tooltip showArrow content={beverage} offset={4}>
-															<span className="flex cursor-pointer">
-																<PopoverTrigger>
-																	<Sprite
-																		target="beverage"
-																		name={beverage}
-																		size={2}
-																	/>
-																</PopoverTrigger>
-															</span>
-														</Tooltip>
-														<PopoverContent>{beverage}</PopoverContent>
-													</Popover>
+													<Tooltip showArrow content={beverageLabel} offset={4}>
+														<Sprite
+															target="beverage"
+															name={beverage}
+															size={2}
+															onPress={() => {
+																openWindow('beverages', beverage);
+															}}
+															aria-label={beverageLabel}
+															role="button"
+															tabIndex={0}
+															className="cursor-pointer"
+														/>
+													</Tooltip>
 												</div>
 											</>
 										);
@@ -228,37 +236,49 @@ export default function SavedMealCard() {
 										);
 										return (
 											<div className="flex items-center gap-x-3 md:gap-x-1 lg:gap-x-3 xl:gap-x-1">
-												{originalIngredients.map((name, index) => (
-													<Popover key={index} showArrow offset={7}>
-														<Tooltip showArrow content={name} offset={4}>
-															<span className="flex cursor-pointer">
-																<PopoverTrigger>
-																	<Sprite target="ingredient" name={name} size={2} />
-																</PopoverTrigger>
-															</span>
+												{originalIngredients.map((name, index) => {
+													const label = `点击：在新窗口中查看食材【${name}】的详情`;
+													return (
+														<Tooltip key={index} showArrow content={label} offset={4}>
+															<Sprite
+																target="ingredient"
+																name={name}
+																size={2}
+																onPress={() => {
+																	openWindow('ingredients', name);
+																}}
+																aria-label={label}
+																role="button"
+																tabIndex={0}
+																className="cursor-pointer"
+															/>
 														</Tooltip>
-														<PopoverContent>{name}</PopoverContent>
-													</Popover>
-												))}
+													);
+												})}
 												{lestExtraIngredients.length > 0 && (
 													<div className="flex items-center gap-x-3 rounded outline outline-2 outline-offset-1 outline-divider md:gap-x-1 lg:gap-x-3 xl:gap-x-1">
 														{lestExtraIngredients.map((name, index) => {
-															const content = `额外食材【${name}】`;
+															const label = `点击：在新窗口中查看额外食材【${name}】的详情`;
 															return (
-																<Popover key={index} showArrow offset={7}>
-																	<Tooltip showArrow content={content} offset={4}>
-																		<span className="flex cursor-pointer">
-																			<PopoverTrigger>
-																				<Sprite
-																					target="ingredient"
-																					name={name}
-																					size={2}
-																				/>
-																			</PopoverTrigger>
-																		</span>
-																	</Tooltip>
-																	<PopoverContent>{content}</PopoverContent>
-																</Popover>
+																<Tooltip
+																	key={index}
+																	showArrow
+																	content={label}
+																	offset={4}
+																>
+																	<Sprite
+																		target="ingredient"
+																		name={name}
+																		size={2}
+																		onPress={() => {
+																			openWindow('ingredients', name);
+																		}}
+																		aria-label={label}
+																		role="button"
+																		tabIndex={0}
+																		className="cursor-pointer"
+																	/>
+																</Tooltip>
 															);
 														})}
 													</div>
