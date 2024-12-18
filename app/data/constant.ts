@@ -11,4 +11,5 @@ export const TAG_POPULAR_NEGATIVE = '流行厌恶';
 export const TAG_POPULAR_POSITIVE = '流行喜爱';
 export const TAG_SIGNATURE = '招牌';
 
+export const LABEL_BR = '{{br}}';
 export const LABEL_DLC_0 = '游戏本体';

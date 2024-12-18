@@ -14,7 +14,7 @@ import Sprite from '@/components/sprite';
 import Tachie from '@/components/tachie';
 import Tooltip from '@/components/tooltip';
 
-import {CUSTOMER_EVALUATION_KEY_MAP, CUSTOMER_RATING_MAP, type TRatingKey, type TRewardType} from '@/data';
+import {CUSTOMER_EVALUATION_KEY_MAP, CUSTOMER_RATING_MAP, LABEL_BR, type TRatingKey, type TRewardType} from '@/data';
 import {customerRareStore as store} from '@/stores';
 
 interface ILevelLabelProps {
@@ -325,7 +325,17 @@ export default function InfoButton() {
 									<div key={index} className="mb-0.5">
 										<p className="font-medium">{name}</p>
 										<div className="ml-3 mt-0.5 text-xs">
-											<p>{description}</p>
+											{description.split(LABEL_BR).map((text, line) => (
+												<p
+													key={`${index}-${line}`}
+													className={cn({
+														'-ml-3 mt-1 font-medium': line > 0 && line % 2 !== 0,
+														'mt-0.5': line > 0 && line % 2 === 0,
+													})}
+												>
+													{text}
+												</p>
+											))}
 										</div>
 									</div>
 								))}
@@ -344,7 +354,17 @@ export default function InfoButton() {
 									<div key={index} className="mb-0.5">
 										<p className="font-medium">{name}</p>
 										<div className="ml-3 mt-0.5 text-xs">
-											<p>{description}</p>
+											{description.split(LABEL_BR).map((text, line) => (
+												<p
+													key={`${index}-${line}`}
+													className={cn({
+														'-ml-3 mt-1 font-medium': line > 0 && line % 2 !== 0,
+														'mt-0.5': line > 0 && line % 2 === 0,
+													})}
+												>
+													{text}
+												</p>
+											))}
 										</div>
 									</div>
 								))}
