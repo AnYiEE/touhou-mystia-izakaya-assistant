@@ -220,7 +220,7 @@ type TRewardType = '摆件' | '采集' | '厨具' | '伙伴' | '料理' | '衣�
 
 type TSpeed = '慢' | '中等' | '快' | '瞬间移动';
 
-export type TDescription = `${string}。` | `${string}？` | `${string}！`;
+export type TDescription = `${string}。` | `${string}？` | `${string}！` | `${string}…`;
 
 export interface IItemBase {
 	id: number;
