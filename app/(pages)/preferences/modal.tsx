@@ -3,7 +3,7 @@
 import {useCallback} from 'react';
 
 import {useRouter} from 'next/navigation';
-import {useVibrate} from '@/hooks';
+import {useMounted, useVibrate} from '@/hooks';
 
 import {Modal, ModalBody, ModalContent, ScrollShadow, cn} from '@nextui-org/react';
 
@@ -16,6 +16,7 @@ export function PreferencesModalDefault() {
 }
 
 export default function PreferencesModal() {
+	const isMounted = useMounted();
 	const router = useRouter();
 	const vibrate = useVibrate();
 
@@ -28,6 +29,10 @@ export default function PreferencesModal() {
 			router.back();
 		}, 300);
 	}, [router, vibrate]);
+
+	if (!isMounted) {
+		return null;
+	}
 
 	return (
 		<Modal
