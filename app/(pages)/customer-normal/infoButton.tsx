@@ -1,10 +1,11 @@
 import {type ReactElement} from 'react';
 
-import {AccordionItem, ScrollShadow} from '@nextui-org/react';
+import {AccordionItem} from '@nextui-org/react';
 
 import InfoButtonBase from '@/(pages)/customer-rare/infoButtonBase';
 import Avatar from '@/components/avatar';
 import Ol from '@/components/ol';
+import Price from '@/components/price';
 
 import {CUSTOMER_RATING_KEY, CUSTOMER_RATING_MAP} from '@/data';
 import {customerNormalStore as store} from '@/stores';
@@ -25,7 +26,7 @@ export default function InfoButton() {
 	} = instance_customer.getPropsByName(currentCustomerName);
 
 	const getDefaultExpandedKeys = () => {
-		const defaultExpandedKeys = ['description'];
+		const defaultExpandedKeys = ['description', 'rating'];
 
 		if (currentCustomerChat.length > 0) {
 			defaultExpandedKeys.push('chat');
@@ -36,53 +37,81 @@ export default function InfoButton() {
 
 	return (
 		<InfoButtonBase defaultExpandedKeys={getDefaultExpandedKeys()}>
-			<AccordionItem key="description" aria-label="普客介绍" title="普客介绍">
-				<ScrollShadow hideScrollBar size={16} className="max-h-48 break-all text-justify text-tiny">
-					<p className="mb-1 text-small">
-						<span className="font-semibold">ID：</span>
-						{currentCustomerId}
+			<AccordionItem
+				key="description"
+				aria-label="普客介绍"
+				title="普客介绍"
+				classNames={{
+					content: 'space-y-1 break-all pt-2 text-justify',
+				}}
+			>
+				<div className="flex items-center gap-4">
+					<p>
+						<span className="font-semibold">名字：</span>
+						{currentCustomerName}
 					</p>
-					<p>{currentCustomerDescription}</p>
-				</ScrollShadow>
+					<p>
+						<span className="font-semibold">ID：</span>
+						<Price showSymbol={false}>{currentCustomerId}</Price>
+					</p>
+				</div>
+				<p className="text-small">{currentCustomerDescription}</p>
 			</AccordionItem>
 			{currentCustomerChat.length > 0 ? (
-				<AccordionItem key="chat" aria-label="闲聊对话" title="闲聊对话">
-					<ScrollShadow hideScrollBar size={16} className="max-h-48 break-all text-justify text-tiny">
-						<Ol>
-							{currentCustomerChat.map((chat, index) => (
-								<li key={index}>{chat}</li>
-							))}
-						</Ol>
-					</ScrollShadow>
+				<AccordionItem
+					key="chat"
+					aria-label="闲聊对话"
+					title="闲聊对话"
+					classNames={{
+						content: 'break-all pt-2 text-justify text-small',
+					}}
+				>
+					<Ol>
+						{currentCustomerChat.map((chat, index) => (
+							<li key={index}>{chat}</li>
+						))}
+					</Ol>
 				</AccordionItem>
 			) : (
 				(null as unknown as ReactElement)
 			)}
-			<AccordionItem key="rating" aria-label="评级图例" title="评级图例">
-				<div className="flex flex-col gap-2 text-tiny">
-					{CUSTOMER_RATING_KEY.filter((key) => key === 'exbad' || key === 'norm' || key === 'good').map(
-						(ratingKey, index) => (
-							<div key={index} className="mb-1 flex items-center gap-3 px-1">
-								<Avatar
-									isBordered
-									showFallback
-									color={ratingKey}
-									fallback={<div></div>}
-									radius="sm"
-									classNames={{
-										base: 'h-4 w-1 ring-offset-0',
-									}}
-								/>
-								{CUSTOMER_RATING_MAP[ratingKey]}
-							</div>
-						)
-					)}
-				</div>
+			<AccordionItem
+				key="rating"
+				aria-label="评级图例"
+				title="评级图例"
+				classNames={{
+					content: 'grid grid-cols-3 content-start break-all pt-2 text-justify text-small',
+				}}
+			>
+				{CUSTOMER_RATING_KEY.filter((key) => key === 'exbad' || key === 'norm' || key === 'good').map(
+					(ratingKey, index) => (
+						<div key={index} className="flex items-center gap-3 px-1">
+							<Avatar
+								isBordered
+								showFallback
+								color={ratingKey}
+								fallback={<div></div>}
+								radius="sm"
+								classNames={{
+									base: 'h-6 w-2 ring-offset-0',
+								}}
+							/>
+							{CUSTOMER_RATING_MAP[ratingKey]}
+						</div>
+					)
+				)}
 			</AccordionItem>
-			<AccordionItem key="help" aria-label="特别说明" title="特别说明">
-				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-tiny">
-					<p className="mb-1 text-small font-semibold">选单时</p>
-					<Ol>
+			<AccordionItem
+				key="help"
+				aria-label="特别说明"
+				title="特别说明"
+				classNames={{
+					content: 'space-y-1 break-all pt-2 text-justify',
+				}}
+			>
+				<div>
+					<p className="font-semibold">选单时</p>
+					<Ol className="text-small">
 						<li>
 							最终的套餐评级只适合一般情景，如果有提供改判效果的符卡生效，此时的套餐评级可能会不够准确。
 						</li>
@@ -93,8 +122,10 @@ export default function InfoButton() {
 						<li>“保存套餐”按钮仅会在选择了料理和酒水时被启用。</li>
 						<li>评级时，默认您正确选择了该普客所点单的料理和酒水。</li>
 					</Ol>
-					<p className="mb-1 mt-2 text-small font-semibold">交互时</p>
-					<Ol>
+				</div>
+				<div>
+					<p className="font-semibold">交互时</p>
+					<Ol className="text-small">
 						<li>
 							<span className="hidden md:inline">点击顶部的“设置”按钮</span>
 							<span className="md:hidden">点击右上角的按钮打开菜单。再点击“设置”按钮</span>
@@ -105,7 +136,7 @@ export default function InfoButton() {
 							所有的搜索框都支持模糊搜索，如使用“海鲜”、“haixian”或“hx”均可搜索到“海鲜味噌汤”。
 						</li>
 					</Ol>
-				</ScrollShadow>
+				</div>
 			</AccordionItem>
 		</InfoButtonBase>
 	);

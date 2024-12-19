@@ -1,15 +1,16 @@
-import {Fragment, type ReactElement, memo} from 'react';
+import {type ReactElement, memo} from 'react';
 
 import useBreakpoint from 'use-breakpoint';
 import {useViewInNewWindow} from '@/hooks';
 
-import {AccordionItem, Divider, PopoverContent, PopoverTrigger, ScrollShadow, cn} from '@nextui-org/react';
+import {AccordionItem, PopoverContent, PopoverTrigger, cn} from '@nextui-org/react';
 
 import InfoButtonBase from './infoButtonBase';
 import Avatar from '@/components/avatar';
 import Ol from '@/components/ol';
 import Popover from '@/components/popover';
 import PressElement from '@/components/pressElement';
+import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tachie from '@/components/tachie';
 import Tooltip from '@/components/tooltip';
@@ -35,7 +36,7 @@ export default function InfoButton() {
 	const {breakpoint: placement} = useBreakpoint(
 		{
 			bottom: -1,
-			'left-start': 426,
+			'right-start': 426,
 		},
 		'bottom'
 	);
@@ -93,16 +94,13 @@ export default function InfoButton() {
 		(currentCustomerSpellCards.positive as unknown[]).length > 0;
 
 	const getDefaultExpandedKeys = () => {
-		const defaultExpandedKeys = [];
+		const defaultExpandedKeys = ['description'];
 
 		if (hasBondRewards) {
 			defaultExpandedKeys.push('bond');
 		}
 		if (hasSpellCards) {
 			defaultExpandedKeys.push('card');
-		}
-		if (defaultExpandedKeys.length === 0) {
-			defaultExpandedKeys.push('description');
 		}
 
 		return defaultExpandedKeys;
@@ -112,14 +110,27 @@ export default function InfoButton() {
 
 	return (
 		<InfoButtonBase defaultExpandedKeys={getDefaultExpandedKeys()}>
-			<AccordionItem key="description" aria-label="稀客介绍" title="稀客介绍">
-				<ScrollShadow hideScrollBar size={16} className="max-h-48 break-all text-justify text-tiny">
-					<p className="mb-1 text-small">
+			<AccordionItem
+				key="description"
+				aria-label="稀客介绍"
+				title="稀客介绍"
+				classNames={{
+					content: 'space-y-1 break-all pt-2 text-justify',
+				}}
+			>
+				<div className="flex items-center gap-4">
+					<p>
 						<span className="font-semibold">ID：</span>
-						{currentCustomerId}
+						<Price showSymbol={false}>{currentCustomerId}</Price>
 					</p>
-					<p className="mb-1">
+					<p className="flex items-center">
 						<span className="font-semibold">立绘：</span>
+						<Sprite
+							target="customer_rare"
+							name={currentCustomerName}
+							size={1.25}
+							className="mr-0.5 rounded-full"
+						/>
 						<Popover placement={placement} showArrow={placement === 'bottom'}>
 							<PopoverTrigger>
 								<span role="button" tabIndex={0} className="underline-dotted-offset2">
@@ -135,6 +146,8 @@ export default function InfoButton() {
 							</PopoverContent>
 						</Popover>
 					</p>
+				</div>
+				<div className="text-small">
 					<p>
 						<span className="font-semibold">Lv.1：</span>
 						{currentCustomerDescription[0]}
@@ -151,275 +164,259 @@ export default function InfoButton() {
 							{currentCustomerDescription[2]}
 						</p>
 					)}
-				</ScrollShadow>
+				</div>
 			</AccordionItem>
 			{hasBondRewards ? (
-				<AccordionItem key="bond" aria-label={`${currentCustomerName}羁绊奖励`} title="羁绊奖励">
-					<div className="flex flex-col gap-2 text-tiny">
-						<div className="space-y-1">
-							{bondRecipesData.map(({level, name}, index) => (
-								<p key={index} className="flex items-center">
-									<LevelLabel level={level} />
-									<Tooltip showArrow content={getLabel('料理')} placement="left" size="sm">
-										<PressElement
-											as="span"
-											onPress={() => {
-												openWindow('recipes', name);
-											}}
-											aria-label={getLabel('料理')}
-											role="button"
-											tabIndex={0}
-											className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
-										>
-											<Sprite target="recipe" name={name} size={1.25} className="mr-0.5" />
-											{name}
-										</PressElement>
-									</Tooltip>
-									{index < bondRecipesDataLength - 1 && <br />}
-								</p>
-							))}
-							{bondCooker !== null && (
-								<>
-									{bondRecipesDataLength > 1 && <Divider />}
-									<p className="flex items-center">
-										<LevelLabel level={5} />
-										<Tooltip showArrow content={getLabel('厨具')} placement="left" size="sm">
-											<PressElement
-												as="span"
-												onPress={() => {
-													openWindow('cookers', bondCooker);
-												}}
-												aria-label={getLabel('厨具')}
-												role="button"
-												tabIndex={0}
-												className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
-											>
-												<Sprite
-													target="cooker"
-													name={bondCooker}
-													size={1.25}
-													className="mr-0.5"
-												/>
-												{bondCooker}
-											</PressElement>
-										</Tooltip>
-									</p>
-								</>
-							)}
-							{bondClothes !== null && (
-								<>
-									{bondCooker === null && bondRecipesDataLength > 1 && <Divider />}
-									<p className="flex items-center">
-										<LevelLabel level={5} />
-										<Tooltip showArrow content={getLabel('衣服')} placement="left" size="sm">
-											<PressElement
-												as="span"
-												onPress={() => {
-													openWindow('clothes', bondClothes);
-												}}
-												aria-label={getLabel('衣服')}
-												role="button"
-												tabIndex={0}
-												className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
-											>
-												<Sprite
-													target="clothes"
-													name={bondClothes}
-													size={1.25}
-													className="mr-0.5"
-												/>
-												{bondClothes}
-											</PressElement>
-										</Tooltip>
-									</p>
-								</>
-							)}
-							{bondOrnamentsData.map(({level, name}, index) => (
-								<Fragment key={index}>
-									{index === 0 &&
-										bondClothes === null &&
-										bondCooker === null &&
-										bondRecipesDataLength > 1 && <Divider />}
-									<p className="flex items-center">
-										<LevelLabel level={level} />
-										<Tooltip showArrow content={getLabel('摆件')} placement="left" size="sm">
-											<PressElement
-												as="span"
-												onPress={() => {
-													openWindow('ornaments', name);
-												}}
-												aria-label={getLabel('摆件')}
-												role="button"
-												tabIndex={0}
-												className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
-											>
-												<Sprite target="ornament" name={name} size={1.25} className="mr-0.5" />
-												{name}
-											</PressElement>
-										</Tooltip>
-										{index < bondOrnamentsDataLength - 1 && <br />}
-									</p>
-								</Fragment>
-							))}
-							{currentCustomerCollection && (
-								<>
-									{bondClothes === null &&
-										bondCooker === null &&
-										bondOrnamentsDataLength === 0 &&
-										bondRecipesDataLength > 1 && <Divider />}
-									<p className="flex items-center leading-5">
-										<LevelLabel level={5} />
-										采集【{currentCustomerMainPlace}】
-									</p>
-								</>
-							)}
-							{bondPartner !== null && (
-								<>
-									{bondClothes === null &&
-										bondCooker === null &&
-										bondOrnamentsDataLength === 0 &&
-										bondRecipesDataLength > 1 &&
-										!currentCustomerCollection && <Divider />}
-									<p className="flex items-center">
-										<LevelLabel level="伙伴" />
-										<Tooltip showArrow content={getLabel('伙伴')} placement="left" size="sm">
-											<PressElement
-												as="span"
-												onPress={() => {
-													openWindow('partners', bondPartner);
-												}}
-												aria-label={getLabel('伙伴')}
-												role="button"
-												tabIndex={0}
-												className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
-											>
-												<Sprite
-													target="partner"
-													name={bondPartner}
-													size={1.25}
-													className="mr-0.5 rounded-full"
-												/>
-												{bondPartner}
-											</PressElement>
-										</Tooltip>
-									</p>
-								</>
-							)}
-						</div>
+				<AccordionItem
+					key="bond"
+					aria-label={`${currentCustomerName}羁绊奖励`}
+					title="羁绊奖励"
+					classNames={{
+						content: 'flex flex-col gap-2 pt-2',
+					}}
+				>
+					<div className="grid grid-cols-2 content-start gap-1">
+						{bondRecipesData.map(({level, name}, index) => (
+							<p key={index} className="flex items-center">
+								<LevelLabel level={level} />
+								<Tooltip showArrow content={getLabel('料理')} placement="right">
+									<PressElement
+										as="span"
+										onPress={() => {
+											openWindow('recipes', name);
+										}}
+										aria-label={getLabel('料理')}
+										role="button"
+										tabIndex={0}
+										className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
+									>
+										<Sprite target="recipe" name={name} size={1.25} className="mr-0.5" />
+										{name}
+									</PressElement>
+								</Tooltip>
+							</p>
+						))}
+						{bondCooker !== null && (
+							<p className="flex items-center">
+								<LevelLabel level={5} />
+								<Tooltip showArrow content={getLabel('厨具')} placement="right">
+									<PressElement
+										as="span"
+										onPress={() => {
+											openWindow('cookers', bondCooker);
+										}}
+										aria-label={getLabel('厨具')}
+										role="button"
+										tabIndex={0}
+										className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
+									>
+										<Sprite target="cooker" name={bondCooker} size={1.25} className="mr-0.5" />
+										{bondCooker}
+									</PressElement>
+								</Tooltip>
+							</p>
+						)}
+						{bondClothes !== null && (
+							<p className="flex items-center">
+								<LevelLabel level={5} />
+								<Tooltip showArrow content={getLabel('衣服')} placement="right">
+									<PressElement
+										as="span"
+										onPress={() => {
+											openWindow('clothes', bondClothes);
+										}}
+										aria-label={getLabel('衣服')}
+										role="button"
+										tabIndex={0}
+										className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
+									>
+										<Sprite target="clothes" name={bondClothes} size={1.25} className="mr-0.5" />
+										{bondClothes}
+									</PressElement>
+								</Tooltip>
+							</p>
+						)}
+						{bondOrnamentsData.map(({level, name}, index) => (
+							<p key={index} className="flex items-center">
+								<LevelLabel level={level} />
+								<Tooltip showArrow content={getLabel('摆件')} placement="right">
+									<PressElement
+										as="span"
+										onPress={() => {
+											openWindow('ornaments', name);
+										}}
+										aria-label={getLabel('摆件')}
+										role="button"
+										tabIndex={0}
+										className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
+									>
+										<Sprite target="ornament" name={name} size={1.25} className="mr-0.5" />
+										{name}
+									</PressElement>
+								</Tooltip>
+							</p>
+						))}
+						{currentCustomerCollection && (
+							<p className="flex items-center leading-5">
+								<LevelLabel level={5} />
+								采集【{currentCustomerMainPlace}】
+							</p>
+						)}
+						{bondPartner !== null && (
+							<p className="flex items-center">
+								<LevelLabel level="伙伴" />
+								<Tooltip showArrow content={getLabel('伙伴')} placement="right">
+									<PressElement
+										as="span"
+										onPress={() => {
+											openWindow('partners', bondPartner);
+										}}
+										aria-label={getLabel('伙伴')}
+										role="button"
+										tabIndex={0}
+										className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
+									>
+										<Sprite
+											target="partner"
+											name={bondPartner}
+											size={1.25}
+											className="mr-0.5 rounded-full"
+										/>
+										{bondPartner}
+									</PressElement>
+								</Tooltip>
+							</p>
+						)}
 					</div>
 				</AccordionItem>
 			) : (
 				(null as unknown as ReactElement)
 			)}
 			{hasSpellCards ? (
-				<AccordionItem key="card" aria-label={`${currentCustomerName}符卡效果`} title="符卡效果">
-					<ScrollShadow
-						hideScrollBar
-						size={16}
-						className="max-h-32 break-all text-justify text-tiny md:max-h-48"
-					>
-						{hasPositiveSpellCards && (
-							<>
-								<p className="mb-1 text-small font-semibold">奖励符卡</p>
+				<AccordionItem
+					key="card"
+					aria-label={`${currentCustomerName}符卡效果`}
+					title="符卡效果"
+					classNames={{
+						content: 'space-y-1 break-all pt-2 text-justify',
+					}}
+				>
+					{hasPositiveSpellCards && (
+						<div className="space-y-1">
+							<p className="text-large font-semibold">奖励符卡</p>
+							<div className="space-y-1.5">
 								{currentCustomerSpellCards.positive.map(({description, name}, index) => (
-									<div key={index} className="mb-0.5">
+									<div key={index} className="space-y-0.5">
 										<p className="font-medium">{name}</p>
-										<div className="ml-3 mt-0.5 text-tiny">
+										<div className="ml-4 text-small">
 											{description.split(LABEL_BR).map((text, line) => (
 												<p key={`${index}-${line}`}>{text}</p>
 											))}
 										</div>
 									</div>
 								))}
-							</>
-						)}
-						{hasNegativeSpellCards && (
-							<>
-								<p
-									className={cn('mb-1 text-small font-semibold', {
-										'mt-2': hasPositiveSpellCards,
-									})}
-								>
-									惩罚符卡
-								</p>
+							</div>
+						</div>
+					)}
+					{hasNegativeSpellCards && (
+						<div
+							className={cn('space-y-1', {
+								'!mt-2': hasPositiveSpellCards,
+							})}
+						>
+							<p className="text-large font-semibold">惩罚符卡</p>
+							<div className="space-y-1.5">
 								{currentCustomerSpellCards.negative.map(({description, name}, index) => (
-									<div key={index} className="mb-0.5">
+									<div key={index} className="space-y-0.5">
 										<p className="font-medium">{name}</p>
-										<div className="ml-3 mt-0.5 text-tiny">
+										<div className="ml-4 text-small">
 											{description.split(LABEL_BR).map((text, line) => (
 												<p key={`${index}-${line}`}>{text}</p>
 											))}
 										</div>
 									</div>
 								))}
-							</>
-						)}
-					</ScrollShadow>
+							</div>
+						</div>
+					)}
 				</AccordionItem>
 			) : (
 				(null as unknown as ReactElement)
 			)}
 			{currentCustomerChat.length > 0 ? (
-				<AccordionItem key="chat" aria-label="闲聊对话" title="闲聊对话">
-					<ScrollShadow hideScrollBar size={16} className="max-h-48 break-all text-justify text-tiny">
-						<Ol>
-							{currentCustomerChat.map((chat, index) => (
-								<li key={index}>{chat}</li>
-							))}
-						</Ol>
-					</ScrollShadow>
+				<AccordionItem
+					key="chat"
+					aria-label="闲聊对话"
+					title="闲聊对话"
+					classNames={{
+						content: 'break-all pt-2 text-justify text-small',
+					}}
+				>
+					<Ol>
+						{currentCustomerChat.map((chat, index) => (
+							<li key={index}>{chat}</li>
+						))}
+					</Ol>
 				</AccordionItem>
 			) : (
 				(null as unknown as ReactElement)
 			)}
-			<AccordionItem key="rating" aria-label="评价对话" title="评价对话">
-				<ScrollShadow
-					hideScrollBar
-					size={16}
-					className="flex max-h-48 flex-col gap-1 break-all pt-0.5 text-justify text-tiny"
-				>
-					{Object.entries(CUSTOMER_EVALUATION_KEY_MAP).map(([evaluation, evaluationKey], index) => {
-						const customerEvaluation = currentCustomerEvaluation[evaluationKey];
-						if (evaluationKey in CUSTOMER_RATING_MAP) {
-							return (
-								<div key={index}>
-									<div className="mb-1 flex items-center gap-3 px-1">
-										<Avatar
-											isBordered
-											showFallback
-											color={evaluationKey as TRatingKey}
-											fallback={<div></div>}
-											radius="sm"
-											classNames={{
-												base: 'h-4 w-1 ring-offset-0',
-											}}
-										/>
-										<p className="font-semibold">
-											{evaluation}
-											{evaluation === '极度不满' ? (
-												<span className="font-normal">（释放惩罚符卡）</span>
-											) : evaluation === '完美' ? (
-												<span className="font-normal">（释放奖励符卡）</span>
-											) : null}
-										</p>
-									</div>
-									{customerEvaluation !== null && <p className="ml-5">{customerEvaluation}</p>}
+			<AccordionItem
+				key="rating"
+				aria-label="评价对话"
+				title="评价对话"
+				classNames={{
+					content: 'space-y-1 break-all pt-2 text-justify text-small',
+				}}
+			>
+				{Object.entries(CUSTOMER_EVALUATION_KEY_MAP).map(([evaluation, evaluationKey], index) => {
+					const customerEvaluation = currentCustomerEvaluation[evaluationKey];
+					if (evaluationKey in CUSTOMER_RATING_MAP) {
+						return (
+							<div key={index} className="flex items-center gap-3 px-1">
+								<Avatar
+									isBordered
+									showFallback
+									color={evaluationKey as TRatingKey}
+									fallback={<div></div>}
+									radius="sm"
+									classNames={{
+										base: 'h-6 w-2 ring-offset-0',
+									}}
+								/>
+								<div>
+									<p className="font-semibold">
+										{evaluation}
+										{evaluation === '极度不满' ? (
+											<span className="font-normal">（释放惩罚符卡）</span>
+										) : evaluation === '完美' ? (
+											<span className="font-normal">（释放奖励符卡）</span>
+										) : null}
+									</p>
+									{customerEvaluation !== null && <p>{customerEvaluation}</p>}
 								</div>
-							);
-						}
-						return customerEvaluation === null ? null : (
-							<p key={index}>
-								<span className="font-semibold">{evaluation}：</span>
-								{customerEvaluation}
-							</p>
+							</div>
 						);
-					})}
-				</ScrollShadow>
+					}
+					return customerEvaluation === null ? null : (
+						<p key={index}>
+							<span className="font-semibold">{evaluation}：</span>
+							{customerEvaluation}
+						</p>
+					);
+				})}
 			</AccordionItem>
-			<AccordionItem key="help" aria-label="特别说明" title="特别说明">
-				<ScrollShadow hideScrollBar size={16} className="max-h-48 text-tiny">
-					<p className="mb-1 text-small font-semibold">选单时</p>
-					<Ol>
+			<AccordionItem
+				key="help"
+				aria-label="特别说明"
+				title="特别说明"
+				classNames={{
+					content: 'space-y-1 break-all pt-2 text-justify',
+				}}
+			>
+				<div>
+					<p className="font-semibold">选单时</p>
+					<Ol className="text-small">
 						<li>
 							顾客卡片中的标签和最终的套餐评级只适合一般情景。在任务中的顾客可能临时存在其他的偏好标签；如果有提供改判效果的符卡生效，此时的套餐评级也可能会不够准确。
 						</li>
@@ -431,8 +428,10 @@ export default function InfoButton() {
 						</li>
 						<li>“保存套餐”按钮仅会在选择了料理和酒水，且选定了顾客的点单需求标签时被启用。</li>
 					</Ol>
-					<p className="mb-1 mt-2 text-small font-semibold">交互时</p>
-					<Ol>
+				</div>
+				<div>
+					<p className="font-semibold">交互时</p>
+					<Ol className="text-small">
 						<li>
 							<span className="hidden md:inline">点击顶部的“设置”按钮</span>
 							<span className="md:hidden">点击右上角的按钮打开菜单。再点击“设置”按钮</span>
@@ -443,7 +442,7 @@ export default function InfoButton() {
 							所有的搜索框都支持模糊搜索，如使用“海鲜”、“haixian”或“hx”均可搜索到“海鲜味噌汤”。
 						</li>
 					</Ol>
-				</ScrollShadow>
+				</div>
 			</AccordionItem>
 		</InfoButtonBase>
 	);
