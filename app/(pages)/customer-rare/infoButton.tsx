@@ -326,15 +326,7 @@ export default function InfoButton() {
 										<p className="font-medium">{name}</p>
 										<div className="ml-3 mt-0.5 text-tiny">
 											{description.split(LABEL_BR).map((text, line) => (
-												<p
-													key={`${index}-${line}`}
-													className={cn({
-														'-ml-3 mt-1 font-medium': line > 0 && line % 2 !== 0,
-														'mt-0.5': line > 0 && line % 2 === 0,
-													})}
-												>
-													{text}
-												</p>
+												<p key={`${index}-${line}`}>{text}</p>
 											))}
 										</div>
 									</div>
@@ -355,15 +347,7 @@ export default function InfoButton() {
 										<p className="font-medium">{name}</p>
 										<div className="ml-3 mt-0.5 text-tiny">
 											{description.split(LABEL_BR).map((text, line) => (
-												<p
-													key={`${index}-${line}`}
-													className={cn({
-														'-ml-3 mt-1 font-medium': line > 0 && line % 2 !== 0,
-														'mt-0.5': line > 0 && line % 2 === 0,
-													})}
-												>
-													{text}
-												</p>
+												<p key={`${index}-${line}`}>{text}</p>
 											))}
 										</div>
 									</div>
