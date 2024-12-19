@@ -608,7 +608,7 @@ export const BEVERAGE_LIST = [
 		level: 3,
 		price: 80,
 		from: {
-			buy: ['【魔界】蓬松松爱莲♡魔法店', '【魔界】小丑'],
+			buy: [['【魔界】蓬松松爱莲♡魔法店', true], '【魔界】小丑'],
 		},
 	},
 	{
@@ -621,7 +621,7 @@ export const BEVERAGE_LIST = [
 		level: 4,
 		price: 210,
 		from: {
-			buy: ['【魔界】蓬松松爱莲♡魔法店', '【魔界】小丑'],
+			buy: [['【魔界】蓬松松爱莲♡魔法店', true], '【魔界】小丑'],
 			collect: ['【魔界】魅魔房顶'],
 			fishingAdvanced: ['魔界'],
 		},
@@ -636,7 +636,7 @@ export const BEVERAGE_LIST = [
 		level: 4,
 		price: 300,
 		from: {
-			buy: ['【月之都】月兔'],
+			buy: ['【月之都】月兔', ['【魔界】蓬松松爱莲♡魔法店', true]],
 			collect: [['【月之都】月虹池（右上）', 10]],
 			fishingAdvanced: ['月之都'],
 		},
@@ -651,7 +651,7 @@ export const BEVERAGE_LIST = [
 		level: 3,
 		price: 42,
 		from: {
-			buy: ['【月之都】月兔'],
+			buy: ['【月之都】月兔', ['【魔界】蓬松松爱莲♡魔法店', true]],
 			fishingAdvanced: ['月之都'],
 		},
 	},
@@ -665,7 +665,7 @@ export const BEVERAGE_LIST = [
 		level: 3,
 		price: 96,
 		from: {
-			buy: ['【月之都】月兔'],
+			buy: ['【月之都】月兔', ['【魔界】蓬松松爱莲♡魔法店', true]],
 		},
 	},
 ] as const satisfies IBeverage[];
