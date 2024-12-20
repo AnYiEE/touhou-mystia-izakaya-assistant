@@ -7,14 +7,15 @@ export class Item<
 	TTarget extends IItem[],
 	TItem extends TTarget[number] = TTarget[number],
 	TItemWithPinyin extends _TItemWithPinyin<TItem> = _TItemWithPinyin<TItem>,
+	TId extends TItem['id'] = TItem['id'],
 	TName extends TItemWithPinyin['name'] = TItemWithPinyin['name'],
 > {
 	protected _data: TTarget;
 	protected _dataWithPinyin: ReadonlyArray<TItemWithPinyin>;
 
 	protected _pinyinSortedCache: ReadonlyArray<TItemWithPinyin> | null;
-	protected _indexNameCache: Map<number, string>;
-	protected _nameIndexCache: Map<string, number>;
+	protected _idIndexCache: Map<number, number>;
+	protected _indexIdCache: Map<number, number>;
 
 	protected constructor(data: TTarget) {
 		this._data = cloneDeep(data);
@@ -24,8 +25,8 @@ export class Item<
 		})) as TItemWithPinyin[];
 
 		this._pinyinSortedCache = null;
-		this._indexNameCache = new Map();
-		this._nameIndexCache = new Map();
+		this._idIndexCache = new Map();
+		this._indexIdCache = new Map();
 	}
 
 	public get data() {
@@ -49,33 +50,33 @@ export class Item<
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-	public findIndexByName<T extends string = TName>(name: T) {
-		if (this._nameIndexCache.has(name)) {
-			return this._nameIndexCache.get(name);
+	public findIndexById<T extends number = TId>(id: T) {
+		if (this._idIndexCache.has(id)) {
+			return this._idIndexCache.get(id);
 		}
 
-		const index = this._data.findIndex(({name: target}) => target === name);
+		const index = this._data.findIndex(({id: target}) => target === id);
 		if (index === -1) {
-			throw new Error(`[utils/Item]: name \`${name}\` not found`);
+			throw new Error(`[utils/Item]: id \`${id}\` not found`);
 		}
 
-		this._nameIndexCache.set(name, index);
+		this._idIndexCache.set(id, index);
 
 		return index;
 	}
 
-	public findNameByIndex(index: number) {
-		if (this._indexNameCache.has(index)) {
-			return this._indexNameCache.get(index) as TName;
+	public findIdByIndex(index: number) {
+		if (this._indexIdCache.has(index)) {
+			return this._indexIdCache.get(index) as TId;
 		}
 
 		const item = this._data[index];
 		this.checkIndexRange(index, item);
 
-		const {name} = item;
-		this._indexNameCache.set(index, name);
+		const {id} = item;
+		this._indexIdCache.set(index, id);
 
-		return name as TName;
+		return id as TId;
 	}
 
 	public getNames(length?: number) {
@@ -87,7 +88,20 @@ export class Item<
 			length = this._data.length;
 		}
 
-		return Array.from({length}, (_, index) => this.findNameByIndex(index));
+		return Array.from({length}, (_, index) => this.getPropsByIndex(index, 'name'));
+	}
+
+	public getPropsById(id: TId): TItemWithPinyin;
+	public getPropsById(id: TId, prop: 'name'): TName;
+	public getPropsById<T extends keyof TItemWithPinyin>(id: TId, prop: T): TItemWithPinyin[T];
+	public getPropsById<T extends keyof TItemWithPinyin>(id: TId, ...props: T[]): TItemWithPinyin[T][];
+	public getPropsById<T extends keyof TItemWithPinyin>(
+		id: TId,
+		...props: T[]
+	): TItemWithPinyin | TItemWithPinyin[T] | TItemWithPinyin[T][] {
+		const index = this.findIndexById(id);
+
+		return this.getPropsByIndex(index, ...props);
 	}
 
 	public getPropsByIndex(index: number): TItemWithPinyin;
@@ -109,32 +123,6 @@ export class Item<
 		}
 
 		return item;
-	}
-
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-	public getPropsByName<T extends string = TName>(name: T): TItemWithPinyin;
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-	public getPropsByName<T extends string = TName>(name: T, prop: 'name'): TName;
-	public getPropsByName<
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-		T extends string = TName,
-		U extends keyof TItemWithPinyin = keyof TItemWithPinyin,
-		S extends Exclude<U, 'name'> = Exclude<U, 'name'>,
-	>(name: T, prop: S): TItemWithPinyin[S];
-	public getPropsByName<
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-		T extends string = TName,
-		U extends keyof TItemWithPinyin = keyof TItemWithPinyin,
-		S extends Exclude<U, 'name'> = Exclude<U, 'name'>,
-	>(name: T, ...props: S[]): TItemWithPinyin[S][];
-	public getPropsByName<
-		T extends string = TName,
-		U extends keyof TItemWithPinyin = keyof TItemWithPinyin,
-		S extends Exclude<U, 'name'> = Exclude<U, 'name'>,
-	>(name: T, ...props: S[]): TItemWithPinyin | TItemWithPinyin[S] | TItemWithPinyin[S][] {
-		const index = this.findIndexByName(name);
-
-		return this.getPropsByIndex<S>(index, ...props);
 	}
 
 	public getValuesByProp<T extends keyof TItemWithPinyin>(
