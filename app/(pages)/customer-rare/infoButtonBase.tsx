@@ -63,6 +63,7 @@ export default memo<IProps>(function InfoButtonBase({children, defaultExpandedKe
 							<Accordion
 								isCompact
 								defaultExpandedKeys={defaultExpandedKeys ?? []}
+								selectionMode="multiple"
 								itemClasses={{
 									base: 'mb-1 mt-3',
 									title: 'text-xl font-bold',
