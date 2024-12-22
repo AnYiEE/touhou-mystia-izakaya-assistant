@@ -195,12 +195,12 @@ export default function CustomerRareTutorial() {
 			return;
 		}
 
-		if (currentCustomerName && !isCustomerSelected.current) {
+		if (currentCustomerName !== null && !isCustomerSelected.current) {
 			isCustomerSelected.current = true;
 			driverRef.current.moveTo(2);
 		}
 
-		if (currentBeverageName && !isBeverageSelected.current) {
+		if (currentBeverageName !== null && !isBeverageSelected.current) {
 			isBeverageSelected.current = true;
 			driverRef.current.moveNext();
 		}
@@ -208,16 +208,16 @@ export default function CustomerRareTutorial() {
 			isBeverageTableSorted.current = true;
 			moveNext(BEVERAGE_POSITION, 'nearest');
 		}
-		if (currentOrderedBeverageTag && !hasOrderedBeverageTag.current) {
+		if (currentOrderedBeverageTag !== null && !hasOrderedBeverageTag.current) {
 			hasOrderedBeverageTag.current = true;
 			driverRef.current.moveNext();
 		}
 
-		if (currentRecipeName && !isRecipeSelected.current) {
+		if (currentRecipeName !== undefined && !isRecipeSelected.current) {
 			isRecipeSelected.current = true;
 			driverRef.current.moveNext();
 		}
-		if (currentExtraIngredients && currentExtraIngredients.length > 0) {
+		if (currentExtraIngredients !== undefined && currentExtraIngredients.length > 0) {
 			if (currentExtraIngredients.includes('鸡蛋') && !hasExtraEgg.current) {
 				hasExtraEgg.current = true;
 				moveNext(HONEY_POSITION);
@@ -227,7 +227,7 @@ export default function CustomerRareTutorial() {
 				driverRef.current.moveNext();
 			}
 		}
-		if (currentOrderedRecipeTag && !hasOrderedRecipeTag.current) {
+		if (currentOrderedRecipeTag !== null && !hasOrderedRecipeTag.current) {
 			hasOrderedRecipeTag.current = true;
 			moveNext(RECIPE_POSITION, 'nearest');
 		}

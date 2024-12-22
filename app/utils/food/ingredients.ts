@@ -74,7 +74,7 @@ export class Ingredient extends Food<TIngredients> {
 			ingredientTagsWithPopular.add(TAG_POPULAR_POSITIVE);
 		}
 
-		if (currentPopularTag && ingredientTags.includes(currentPopularTag as TIngredientTag)) {
+		if (currentPopularTag !== null && ingredientTags.includes(currentPopularTag as TIngredientTag)) {
 			ingredientTagsWithPopular.add(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
 		}
 

@@ -624,7 +624,7 @@ export const customerRareStore = store(state, {
 				return;
 			}
 			currentStore.shared.recipe.data.set((prev) => {
-				if (prev && recipe.ingredients.length + prev.extraIngredients.length < 5) {
+				if (prev !== null && recipe.ingredients.length + prev.extraIngredients.length < 5) {
 					prev.extraIngredients.push(ingredientName);
 				}
 			});

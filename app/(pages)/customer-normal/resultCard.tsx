@@ -139,7 +139,7 @@ export default function ResultCard() {
 	}, [hideTooltip, isSaveButtonDisabled, isShowSaveButtonTooltip]);
 
 	if (currentBeverageName === null && currentRecipeData === null) {
-		if (currentCustomerName && currentSavedMeals[currentCustomerName]?.length) {
+		if (currentCustomerName !== null && currentSavedMeals[currentCustomerName]?.length) {
 			return null;
 		}
 		return <Placeholder className="pb-6 pt-12 md:py-8 xl:pb-2 xl:pt-0">选择点单料理以继续</Placeholder>;

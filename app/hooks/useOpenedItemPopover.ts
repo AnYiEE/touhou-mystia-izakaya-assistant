@@ -13,7 +13,7 @@ export function useOpenedItemPopover(popoverCardRef: RefObject<HTMLElement | nul
 
 		_setOpenedPopover(param);
 
-		if (openedPopover && param) {
+		if (openedPopover !== null && param !== null) {
 			// Some browsers don't support scrollIntoViewOptions
 			try {
 				popoverCardRef.current?.scrollIntoView({

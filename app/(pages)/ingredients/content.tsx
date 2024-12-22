@@ -126,7 +126,7 @@ export default memo<IProps>(function Content({data}) {
 																	</>
 																) : null;
 															const content =
-																itemProbability || itemTime ? (
+																itemProbability !== null || itemTime !== null ? (
 																	<p>
 																		{itemProbability}
 																		{itemTime}

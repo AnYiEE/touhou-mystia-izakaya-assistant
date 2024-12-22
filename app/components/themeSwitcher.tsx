@@ -61,7 +61,7 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 	);
 
 	useEffect(() => {
-		if (theme && !selectedTheme.has(theme)) {
+		if (theme !== undefined && !selectedTheme.has(theme)) {
 			setSelectedTheme(new Set([theme]));
 		}
 	}, [selectedTheme, theme]);

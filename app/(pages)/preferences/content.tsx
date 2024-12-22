@@ -121,7 +121,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 								}),
 								trigger: cn(
 									'transition-background',
-									onModalClose || !isHighAppearance
+									onModalClose !== undefined || !isHighAppearance
 										? 'bg-default-50 data-[hover=true]:bg-default-100 dark:bg-default-100 dark:data-[hover=true]:bg-default-200'
 										: 'bg-default-100/40 backdrop-blur data-[hover=true]:bg-default-200/40'
 								),

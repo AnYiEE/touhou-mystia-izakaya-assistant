@@ -235,8 +235,8 @@ const ItemPopoverCardComponent = memo(
 		}, [tags]);
 
 		const hasTag = Boolean(
-			(mergedTags?.positive && mergedTags.positive.length > 0) ||
-				(mergedTags?.negative && mergedTags.negative.length > 0)
+			(mergedTags?.positive !== undefined && mergedTags.positive.length > 0) ||
+				(mergedTags?.negative !== undefined && mergedTags.negative.length > 0)
 		);
 
 		const dlcLabel = dlc === 0 ? LABEL_DLC_0 : '';

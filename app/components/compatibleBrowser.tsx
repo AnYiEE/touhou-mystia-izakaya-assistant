@@ -26,21 +26,25 @@ export function checkCompatibility() {
 		browser: {name: _browserName, version: _browserVersion},
 		os: {name: _osName, version: _osVersion},
 	} = UAParser();
-	const browserName = _browserName?.toLowerCase();
-	const browserVersion = _browserVersion && Number.parseInt(_browserVersion);
-	const osName = _osName?.toLowerCase();
-	const osVersion = _osVersion && Number.parseInt(_osVersion);
+	const browserName = (_browserName ?? '').toLowerCase();
+	const browserVersion = _browserVersion !== undefined && Number.parseInt(_browserVersion);
+	const osName = (_osName ?? '').toLowerCase();
+	const osVersion = _osVersion !== undefined && Number.parseInt(_osVersion);
 
 	const isChromium =
-		browserName?.includes('chromium') || browserName?.includes('chrome') || browserName?.includes('edge');
-	const isFirefox = browserName?.includes('firefox');
-	const isSafari = browserName?.includes('safari') || osName?.includes('ios');
+		browserName.includes('chromium') || browserName.includes('chrome') || browserName.includes('edge');
+	const isFirefox = browserName.includes('firefox');
+	const isSafari = browserName.includes('safari') || osName.includes('ios');
 
-	const isSupportedFlexGapChromium = browserVersion && browserVersion > 83;
-	const isSupportedFlexGapFirefox = browserVersion && browserVersion > 62;
-	const isSupportedFlexGapSafari = (browserVersion && browserVersion > 14) || (osVersion && osVersion > 14);
-	const isSupportedWebpFirefox = browserVersion && browserVersion > 64;
-	const isSupportedWebpSafari = (browserVersion && browserVersion > 15) || (osVersion && osVersion > 15);
+	const isSupportedFlexGapChromium = typeof browserVersion === 'number' && browserVersion > 83;
+	const isSupportedFlexGapFirefox = typeof browserVersion === 'number' && browserVersion > 62;
+	const isSupportedFlexGapSafari =
+		(typeof browserVersion === 'number' && browserVersion > 14) ||
+		(typeof osVersion === 'number' && osVersion > 14);
+	const isSupportedWebpFirefox = typeof browserVersion === 'number' && browserVersion > 64;
+	const isSupportedWebpSafari =
+		(typeof browserVersion === 'number' && browserVersion > 15) ||
+		(typeof osVersion === 'number' && osVersion > 15);
 
 	if (isChromium) {
 		compatibility.flexGap = Boolean(isSupportedFlexGapChromium);
