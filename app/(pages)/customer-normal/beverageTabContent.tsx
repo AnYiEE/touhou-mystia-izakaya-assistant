@@ -229,7 +229,7 @@ export default function BeverageTabContent() {
 														icon={faTags}
 														variant="light"
 														aria-label="酒水标签"
-														className="inline h-4 w-4 scale-75 text-default-300 transition-opacity data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover dark:text-default-400"
+														className="inline h-4 w-4 scale-75 text-default-300 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover dark:text-default-400"
 													/>
 												</PopoverTrigger>
 											</span>
@@ -305,7 +305,7 @@ export default function BeverageTabContent() {
 							}}
 							classNames={{
 								base: cn(
-									'data-[slot="input-wrapper"]:[&_div]:!bg-default/40 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:opacity-hover data-[slot="input-wrapper"]:[&_div]:transition-opacity',
+									'data-[slot="input-wrapper"]:[&_div]:!bg-default/40 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:opacity-hover data-[slot="input-wrapper"]:[&_div]:transition-opacity data-[slot="input-wrapper"]:[&_div]:!duration-250',
 									{
 										'backdrop-blur': isHighAppearance,
 									}
@@ -355,7 +355,7 @@ export default function BeverageTabContent() {
 									'bg-content1/70 backdrop-blur-lg': isHighAppearance,
 								}),
 								trigger: cn(
-									'bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover',
+									'bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 									{
 										'backdrop-blur': isHighAppearance,
 									}
@@ -452,7 +452,7 @@ export default function BeverageTabContent() {
 									'bg-content1/70 backdrop-blur-lg': isHighAppearance,
 								}),
 								trigger: cn(
-									'h-6 min-h-6 bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover',
+									'h-6 min-h-6 bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 									{
 										'backdrop-blur': isHighAppearance,
 									}

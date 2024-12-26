@@ -92,13 +92,9 @@ export default memo<IProps>(function SideSearchIconButton({
 						shouldCloseOnScroll: false,
 					}}
 					classNames={{
-						base: cn(
-							'[&_div]:transition-background data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:bg-default-200',
-							{
-								'data-[slot="input-wrapper"]:[&_div]:!bg-default-100/70 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:!bg-default-200/70':
-									isHighAppearance,
-							}
-						),
+						base: isHighAppearance
+							? 'data-[slot="input-wrapper"]:[&_div]:!bg-default-100/70 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:!bg-default-200/70'
+							: 'data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:bg-default-200',
 						listboxWrapper: cn('[&_li]:transition-background', {
 							'data-[hover=true]:[&_li]:!bg-default-200/40': isHighAppearance,
 						}),

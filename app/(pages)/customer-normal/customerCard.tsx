@@ -270,7 +270,7 @@ export default function CustomerCard() {
 										}}
 										aria-label={`${tag}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
 										className={cn(
-											'p-1 font-semibold leading-none transition-opacity data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
+											'p-1 font-semibold leading-none !transition-opacity data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 											{
 												'font-normal opacity-50': !currentRecipeTagsWithPopular.includes(tag),
 											}
@@ -317,7 +317,7 @@ export default function CustomerCard() {
 										}}
 										aria-label={`${tag}${beverageTags.includes(tag) ? '/已满足' : ''}`}
 										className={cn(
-											'p-1 font-semibold leading-none transition-opacity data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
+											'p-1 font-semibold leading-none !transition-opacity data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 											{
 												'font-normal opacity-50': !beverageTags.includes(tag),
 											}
@@ -337,7 +337,7 @@ export default function CustomerCard() {
 								handleRefreshSelectedItems(currentCustomerName);
 							}}
 							aria-label="重置当前选定项"
-							className="absolute -right-0.5 top-1 h-4 w-4 text-default-200 transition-opacity hover:opacity-hover data-[hover=true]:bg-transparent dark:text-default-300"
+							className="absolute -right-0.5 top-1 h-4 w-4 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover dark:text-default-300"
 						/>
 					</Tooltip>
 				) : (
@@ -347,7 +347,7 @@ export default function CustomerCard() {
 							variant="light"
 							onPress={handleRefreshCustomer}
 							aria-label="取消选择当前顾客"
-							className="absolute -right-0.5 top-1 h-4 w-4 text-default-200 transition-opacity hover:opacity-hover data-[hover=true]:bg-transparent dark:text-default-300"
+							className="absolute -right-0.5 top-1 h-4 w-4 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover dark:text-default-300"
 						/>
 					</Tooltip>
 				)}

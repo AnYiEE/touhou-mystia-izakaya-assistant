@@ -158,7 +158,7 @@ export default function Home() {
 												radius="none"
 												variant="light"
 												title={links.wxGroup.label}
-												className="h-min w-min min-w-min text-xl text-wx-green transition-opacity data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover"
+												className="h-min w-min min-w-min text-xl text-wx-green data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
 											>
 												<FontAwesomeIcon icon={faWeixin} size="1x" />
 											</Button>

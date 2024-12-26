@@ -88,7 +88,7 @@ const CloseButton: FC<ICloseButtonProps> = () => {
 				onClick={handleClose}
 				onKeyDown={debounce(checkA11yConfirmKey(handleClose))}
 				aria-label={label}
-				className="absolute -right-1 top-1 h-4 text-default-200 transition-opacity data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover"
+				className="absolute -right-1 top-1 h-4 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
 			/>
 		</Tooltip>
 	);
@@ -146,7 +146,7 @@ const ShareButton = memo<IShareButtonProps>(function ShareButton({name}) {
 							variant="light"
 							onPress={handlePress}
 							aria-label={label}
-							className="h-4 text-default-200 transition-opacity data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover"
+							className="h-4 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
 						/>
 					</PopoverTrigger>
 				</div>
