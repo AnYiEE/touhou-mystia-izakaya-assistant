@@ -26,7 +26,7 @@ globSync(['out/**/*.js', 'public/**/*.js']).forEach((filePath) => {
 			targets: ['chrome 64', 'edge 79', 'firefox 67', 'opera 51', 'safari 12'],
 		},
 		(error, result) => {
-			if (!lodash.isNil(error) || result === null || typeof result.code !== 'string') {
+			if (!lodash.isNil(error) || !lodash.isString(result?.code)) {
 				console.error(`Error transforming file: ${filePath}`, error);
 				return;
 			}

@@ -2,28 +2,28 @@ import {type PropsWithChildren, memo, useMemo} from 'react';
 
 import {cn} from '@nextui-org/react';
 
-type THeadingClassName = Pick<HTMLHeadingElementAttributes, 'className'>;
+type THeadingClassName = Pick<HTMLHeadingElementAttributes, 'className'>['className'];
+type TSpanClassName = Pick<HTMLSpanElementAttributes, 'className'>['className'];
 
-interface IProps extends THeadingClassName {
+interface IProps {
 	as?: 'h1' | 'h2' | 'h3';
+	className?: THeadingClassName;
 	classNames?: Partial<{
-		title: THeadingClassName['className'];
-		subTitle: HTMLSpanElementAttributes['className'];
+		title: THeadingClassName;
+		subTitle: TSpanClassName;
 	}>;
 	isFirst?: boolean;
 	subTitle?: ReactNodeWithoutBoolean;
 }
 
 export default memo<PropsWithChildren<IProps>>(function Heading({
-	as,
+	as: Component = 'h1',
 	children,
 	className,
 	classNames,
 	isFirst,
 	subTitle,
 }) {
-	const Component = as ?? 'h1';
-
 	const headingClassName = useMemo(() => {
 		switch (Component) {
 			case 'h1':

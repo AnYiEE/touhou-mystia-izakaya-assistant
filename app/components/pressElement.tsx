@@ -1,6 +1,6 @@
 'use client';
 
-import {type ElementType, type HTMLAttributes, forwardRef, memo, useCallback} from 'react';
+import {type ElementType, type ForwardedRef, type HTMLAttributes, forwardRef, memo, useCallback} from 'react';
 
 import {checkA11yConfirmKey} from '@/utils';
 
@@ -22,11 +22,9 @@ interface IProps<T extends HTMLElement> extends HTMLAttributes<T>, IPressProp<T>
 
 export default memo(
 	forwardRef(function PressElement<T extends HTMLElement>(
-		{as, onClick, onKeyDown, onPress, ...props}: IProps<T>,
-		ref: React.ForwardedRef<T>
+		{as: Component, onClick, onKeyDown, onPress, ...props}: IProps<T>,
+		ref: ForwardedRef<T>
 	) {
-		const Component = as;
-
 		const handleClick = useCallback(
 			(event: HTMLElementPressEvent<T>) => {
 				onClick?.(event);

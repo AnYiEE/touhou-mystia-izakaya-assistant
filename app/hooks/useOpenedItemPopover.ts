@@ -13,15 +13,15 @@ export function useOpenedItemPopover(popoverCardRef: RefObject<HTMLElement | nul
 
 		_setOpenedPopover(param);
 
-		if (openedPopover !== null && param !== null) {
+		if (openedPopover !== null && param !== null && popoverCardRef.current !== null) {
 			// Some browsers don't support scrollIntoViewOptions
 			try {
-				popoverCardRef.current?.scrollIntoView({
+				popoverCardRef.current.scrollIntoView({
 					behavior: 'smooth',
 					block: 'center',
 				});
 			} catch {
-				popoverCardRef.current?.scrollIntoView();
+				popoverCardRef.current.scrollIntoView();
 			}
 		}
 	}, [openedPopover, params, popoverCardRef]);

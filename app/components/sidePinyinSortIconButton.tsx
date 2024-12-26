@@ -11,9 +11,9 @@ import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/compone
 import Tooltip from '@/components/tooltip';
 
 export enum PinyinSortState {
-	NONE = 0,
-	AZ = 1,
-	ZA = 2,
+	NONE,
+	AZ,
+	ZA,
 }
 
 export interface IPinyinSortConfig {

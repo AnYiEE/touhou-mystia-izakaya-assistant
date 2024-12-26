@@ -40,6 +40,7 @@ const nextConfig = {
 
 	assetPrefix: env.VERCEL ? '' : CDN_URL,
 	headers: async () => {
+		/** @type {Awaited<ReturnType<NonNullable<import('next').NextConfig['headers']>>>} */
 		const headers = [];
 		if (IS_PRODUCTION && !env.VERCEL) {
 			headers.push({
