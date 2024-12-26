@@ -261,6 +261,7 @@ export default function CustomerCard() {
 									size="sm"
 								>
 									<Tags.Tag
+										isButton
 										tag={tag}
 										tagStyle={CUSTOMER_NORMAL_TAG_STYLE.positive}
 										tagType="positive"
@@ -268,10 +269,8 @@ export default function CustomerCard() {
 											handleRecipeTagClick(tag);
 										}}
 										aria-label={`${tag}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
-										role="button"
-										tabIndex={0}
 										className={cn(
-											'cursor-pointer p-1 font-semibold leading-none transition-opacity hover:opacity-hover',
+											'p-1 font-semibold leading-none transition-opacity data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 											{
 												'font-normal opacity-50': !currentRecipeTagsWithPopular.includes(tag),
 											}
@@ -309,6 +308,7 @@ export default function CustomerCard() {
 									size="sm"
 								>
 									<Tags.Tag
+										isButton
 										tag={tag}
 										tagStyle={CUSTOMER_NORMAL_TAG_STYLE.beverage}
 										tagType="positive"
@@ -316,10 +316,8 @@ export default function CustomerCard() {
 											handleBeverageTagClick(tag);
 										}}
 										aria-label={`${tag}${beverageTags.includes(tag) ? '/已满足' : ''}`}
-										role="button"
-										tabIndex={0}
 										className={cn(
-											'cursor-pointer p-1 font-semibold leading-none transition-opacity hover:opacity-hover',
+											'p-1 font-semibold leading-none transition-opacity data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 											{
 												'font-normal opacity-50': !beverageTags.includes(tag),
 											}

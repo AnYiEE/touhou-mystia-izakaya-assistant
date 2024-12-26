@@ -6,8 +6,12 @@ import {checkA11yConfirmKey} from '@/utils';
 
 type HTMLElementClickEventHandler<T extends HTMLElement> = HTMLAttributes<T>['onClick'];
 type HTMLElementKeyPressEventHandler<T extends HTMLElement> = HTMLAttributes<T>['onKeyDown'];
-type HTMLElementClickEvent<T extends HTMLElement> = Parameters<NonNullable<HTMLElementClickEventHandler<T>>>[0];
-type HTMLElementKeyDownEvent<T extends HTMLElement> = Parameters<NonNullable<HTMLElementKeyPressEventHandler<T>>>[0];
+
+export type HTMLElementClickEvent<T extends HTMLElement> = Parameters<NonNullable<HTMLElementClickEventHandler<T>>>[0];
+export type HTMLElementKeyDownEvent<T extends HTMLElement> = Parameters<
+	NonNullable<HTMLElementKeyPressEventHandler<T>>
+>[0];
+
 type HTMLElementPressEventHandler<T extends HTMLElement> = HTMLElementClickEventHandler<T> &
 	HTMLElementKeyPressEventHandler<T>;
 type HTMLElementPressEvent<T extends HTMLElement> = HTMLElementClickEvent<T> & HTMLElementKeyDownEvent<T>;
@@ -22,7 +26,7 @@ interface IProps<T extends HTMLElement> extends HTMLAttributes<T>, IPressProp<T>
 
 export default memo(
 	forwardRef(function PressElement<T extends HTMLElement>(
-		{as: Component, onClick, onKeyDown, onPress, ...props}: IProps<T>,
+		{as: Component = 'span', onClick, onKeyDown, onPress, ...props}: IProps<T>,
 		ref: ForwardedRef<T>
 	) {
 		const handleClick = useCallback(

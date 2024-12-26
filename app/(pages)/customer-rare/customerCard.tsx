@@ -325,6 +325,7 @@ export default function CustomerCard() {
 									size="sm"
 								>
 									<Tags.Tag
+										isButton
 										tag={
 											isShowTagDescription && tag in currentCustomerPositiveTagMapping
 												? [
@@ -341,10 +342,8 @@ export default function CustomerCard() {
 											handleRecipeTagClick(tag);
 										}}
 										aria-label={`${tag}${currentCustomerOrder.recipeTag === tag ? '/已选定' : ''}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
-										role="button"
-										tabIndex={0}
 										className={cn(
-											'cursor-pointer p-1 font-semibold leading-none transition-opacity hover:opacity-hover',
+											'p-1 font-semibold leading-none transition-opacity data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 											{
 												'cursor-not-allowed':
 													hasMystiaCooker && !isDarkMatter && !isOrderLinkedFilter,
@@ -389,6 +388,7 @@ export default function CustomerCard() {
 									size="sm"
 								>
 									<Tags.Tag
+										isButton
 										tag={tag}
 										tagStyle={CUSTOMER_RARE_TAG_STYLE.beverage}
 										tagType="positive"
@@ -396,10 +396,8 @@ export default function CustomerCard() {
 											handleBeverageTagClick(tag);
 										}}
 										aria-label={`${tag}${currentCustomerOrder.beverageTag === tag ? '/已选定' : ''}${beverageTags.includes(tag) ? '/已满足' : ''}`}
-										role="button"
-										tabIndex={0}
 										className={cn(
-											'cursor-pointer p-1 font-semibold leading-none transition-opacity hover:opacity-hover',
+											'p-1 font-semibold leading-none transition-opacity data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 											!beverageTags.includes(tag) && 'font-normal opacity-50',
 											currentCustomerOrder.beverageTag === tag &&
 												((hasMystiaCooker && isDarkMatter) || !hasMystiaCooker) &&
