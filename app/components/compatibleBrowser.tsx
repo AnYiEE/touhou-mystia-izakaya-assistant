@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect} from 'react';
-import {Observable, type Subscription, from, merge} from 'rxjs';
+import {Observable, from, merge} from 'rxjs';
 import {filter, map, mergeMap} from 'rxjs/operators';
 import {UAParser} from 'ua-parser-js';
 
@@ -182,12 +182,7 @@ function initFlexGapFix() {
 		map(replaceGapClasses)
 	);
 
-	let subscription: Subscription | undefined;
-	requestAnimationFrame(() => {
-		subscription = merge(observer$, domReady$).subscribe();
-	});
-
-	return subscription;
+	return merge(observer$, domReady$).subscribe();
 }
 
 export default function CompatibleBrowser() {
@@ -198,7 +193,7 @@ export default function CompatibleBrowser() {
 
 		const subscription = initFlexGapFix();
 
-		return subscription?.unsubscribe.bind(subscription);
+		return subscription.unsubscribe.bind(subscription);
 	}, []);
 
 	return null;
