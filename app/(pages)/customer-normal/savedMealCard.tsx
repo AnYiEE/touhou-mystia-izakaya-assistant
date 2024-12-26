@@ -7,7 +7,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faArrowDown, faArrowUp} from '@fortawesome/free-solid-svg-icons';
 
 import {Plus} from './resultCard';
-import {TrackCategory, trackEvent} from '@/components/analytics';
+import {trackEvent} from '@/components/analytics';
 import Avatar from '@/components/avatar';
 import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
@@ -300,7 +300,7 @@ export default function SavedMealCard() {
 											name: recipe,
 										});
 										trackEvent(
-											TrackCategory.Click,
+											trackEvent.category.Click,
 											'Select Button',
 											`${recipe}${beverage === null ? '' : ` - ${beverage}`}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
 										);
@@ -319,7 +319,7 @@ export default function SavedMealCard() {
 											savedCustomerMeal.filter((meal) => meal.index !== mealIndex)
 										);
 										trackEvent(
-											TrackCategory.Click,
+											trackEvent.category.Click,
 											'Remove Button',
 											`${recipe}${beverage === null ? '' : ` - ${beverage}`}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
 										);

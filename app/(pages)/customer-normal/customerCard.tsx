@@ -7,7 +7,7 @@ import {faArrowsRotate, faXmark} from '@fortawesome/free-solid-svg-icons';
 
 import InfoButton from './infoButton';
 import TagGroup from './tagGroup';
-import {TrackCategory, trackEvent} from '@/components/analytics';
+import {trackEvent} from '@/components/analytics';
 import Avatar from '@/components/avatar';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Popover from '@/components/popover';
@@ -80,7 +80,7 @@ export default function CustomerCard() {
 		(customerName: TCustomerNormalName) => {
 			vibrate();
 			customerStore.refreshCustomerSelectedItems();
-			trackEvent(TrackCategory.Click, 'Reset Button', customerName);
+			trackEvent(trackEvent.category.Click, 'Reset Button', customerName);
 		},
 		[vibrate]
 	);

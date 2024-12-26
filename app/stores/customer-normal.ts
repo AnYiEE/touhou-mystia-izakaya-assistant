@@ -9,7 +9,7 @@ import {type TTableSortDescriptor as TBeverageTableSortDescriptor} from '@/(page
 import {evaluateMeal} from '@/(pages)/customer-normal/evaluateMeal';
 import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)/customer-normal/recipeTabContent';
 import type {TRecipe, TTab} from '@/(pages)/customer-normal/types';
-import {TrackCategory, trackEvent} from '@/components/analytics';
+import {trackEvent} from '@/components/analytics';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import type {IPersistenceState} from './types';
@@ -438,12 +438,12 @@ export const customerNormalStore = store(state, {
 		},
 		onCustomerSelectedChange(customerName: TCustomerNormalName) {
 			currentStore.shared.customer.name.set(customerName);
-			trackEvent(TrackCategory.Select, 'Customer', customerName);
+			trackEvent(trackEvent.category.Select, 'Customer', customerName);
 		},
 
 		onBeverageTableAction(beverageName: TBeverageName) {
 			currentStore.shared.beverage.name.set(beverageName);
-			trackEvent(TrackCategory.Select, 'Beverage', beverageName);
+			trackEvent(trackEvent.category.Select, 'Beverage', beverageName);
 		},
 		onBeverageTablePageChange(page: number) {
 			currentStore.shared.beverage.page.set(page);
@@ -515,7 +515,7 @@ export const customerNormalStore = store(state, {
 					prev.extraIngredients.push(ingredientName);
 				}
 			});
-			trackEvent(TrackCategory.Select, 'Ingredient', ingredientName);
+			trackEvent(trackEvent.category.Select, 'Ingredient', ingredientName);
 		},
 
 		onRecipeTableAction(recipeName: TRecipeName) {
@@ -523,7 +523,7 @@ export const customerNormalStore = store(state, {
 				extraIngredients: [],
 				name: recipeName,
 			});
-			trackEvent(TrackCategory.Select, 'Recipe', recipeName);
+			trackEvent(trackEvent.category.Select, 'Recipe', recipeName);
 		},
 		onRecipeTablePageChange(page: number) {
 			currentStore.shared.recipe.page.set(page);
@@ -657,7 +657,7 @@ export const customerNormalStore = store(state, {
 					prev.extraIngredients = removeLastElement(prev.extraIngredients, ingredientName);
 				}
 			});
-			trackEvent(TrackCategory.Unselect, 'Ingredient', ingredientName);
+			trackEvent(trackEvent.category.Unselect, 'Ingredient', ingredientName);
 		},
 		saveMealResult() {
 			const customerName = currentStore.shared.customer.name.get();
@@ -678,7 +678,7 @@ export const customerNormalStore = store(state, {
 				}
 			});
 			trackEvent(
-				TrackCategory.Click,
+				trackEvent.category.Click,
 				'Save Button',
 				`${recipeName}${beverageName === null ? '' : ` - ${beverageName}`}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
 			);

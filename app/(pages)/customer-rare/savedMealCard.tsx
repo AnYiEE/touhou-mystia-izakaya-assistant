@@ -8,7 +8,7 @@ import {faArrowDown, faArrowUp} from '@fortawesome/free-solid-svg-icons';
 
 import {Plus} from './resultCard';
 import TagGroup from './tagGroup';
-import {TrackCategory, trackEvent} from '@/components/analytics';
+import {trackEvent} from '@/components/analytics';
 import Avatar from '@/components/avatar';
 import Popover from '@/components/popover';
 import Price from '@/components/price';
@@ -357,7 +357,7 @@ export default function SavedMealCard() {
 												name: recipe,
 											});
 											trackEvent(
-												TrackCategory.Click,
+												trackEvent.category.Click,
 												'Select Button',
 												`${recipe} - ${beverage}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
 											);
@@ -376,7 +376,7 @@ export default function SavedMealCard() {
 												savedCustomerMeal.filter((meal) => meal.index !== mealIndex)
 											);
 											trackEvent(
-												TrackCategory.Click,
+												trackEvent.category.Click,
 												'Remove Button',
 												`${recipe} - ${beverage}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
 											);

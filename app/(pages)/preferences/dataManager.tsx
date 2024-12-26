@@ -8,7 +8,7 @@ import {usePathname, useThrottle} from '@/hooks';
 import {Button, PopoverContent, PopoverTrigger, Snippet, Tab, Tabs, Textarea, cn} from '@nextui-org/react';
 
 import {showProgress} from '@/(pages)/navbar';
-import {TrackCategory, trackEvent} from '@/components/analytics';
+import {trackEvent} from '@/components/analytics';
 import {
 	customerRareTutorialPathname,
 	customerRareTutorialResetLabel,
@@ -87,10 +87,10 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 			if ('customer_normal' in importData) {
 				customerNormalStore.persistence.meals.set(importData.customer_normal);
 				customerRareStore.persistence.meals.set(importData.customer_rare);
-				trackEvent(TrackCategory.Click, 'Import Button', 'Customer Data');
+				trackEvent(trackEvent.category.Click, 'Import Button', 'Customer Data');
 			} else {
 				customerRareStore.persistence.meals.set(importData);
-				trackEvent(TrackCategory.Click, 'Import Button', 'Customer Rare Data');
+				trackEvent(trackEvent.category.Click, 'Import Button', 'Customer Rare Data');
 			}
 		}
 	}, [importData]);
@@ -99,7 +99,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 		toggleResetPopoverOpened();
 		customerNormalStore.persistence.meals.set({});
 		customerRareStore.persistence.meals.set({});
-		trackEvent(TrackCategory.Click, 'Reset Button', 'Customer Data');
+		trackEvent(trackEvent.category.Click, 'Reset Button', 'Customer Data');
 	}, []);
 
 	const handleImportButtonPress = useCallback(() => {
@@ -359,7 +359,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 											}
 										}, 500);
 									}
-									trackEvent(TrackCategory.Click, 'Reset Button', 'Customer Rare Tutorial');
+									trackEvent(trackEvent.category.Click, 'Reset Button', 'Customer Rare Tutorial');
 								}}
 								className={cn({
 									'backdrop-blur': isHighAppearance,

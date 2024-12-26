@@ -10,7 +10,7 @@ import {ThemeProvider as NextThemesProvider, type ThemeProviderProps} from 'next
 import {NextUIProvider} from '@nextui-org/react';
 import {ProgressBar, ProgressBarProvider} from 'react-transition-progress';
 
-import {TrackCategory, trackEvent} from './components/analytics';
+import {trackEvent} from './components/analytics';
 import CompatibleBrowser from '@/components/compatibleBrowser';
 import CustomerRareTutorial from '@/components/customerRareTutorial';
 
@@ -92,7 +92,11 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 						const state = (JSON.parse(newValue) as TGlobalPersistenceState).state.persistence;
 						// Reload page if current tab version is lower than the version of the new tab.
 						if (state.version && compareVersions(state.version, version) === 1) {
-							trackEvent(TrackCategory.Error, 'Global', 'Outdated version detected in multiple tabs');
+							trackEvent(
+								trackEvent.category.Error,
+								'Global',
+								'Outdated version detected in multiple tabs'
+							);
 							location.reload();
 							return;
 						}
@@ -103,7 +107,7 @@ export default function Providers({children, locale, themeProps}: PropsWithChild
 			} catch (error) {
 				console.error(error);
 				if (error instanceof Error) {
-					trackEvent(TrackCategory.Error, 'Sync', String(key), error.message);
+					trackEvent(trackEvent.category.Error, 'Sync', String(key), error.message);
 				}
 				throw error;
 			}

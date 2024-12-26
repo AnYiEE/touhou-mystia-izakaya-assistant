@@ -2,7 +2,7 @@
 
 import {Component, type ErrorInfo, type PropsWithChildren} from 'react';
 
-import {TrackCategory, trackEvent} from '@/components/analytics';
+import {trackEvent} from '@/components/analytics';
 
 import {siteConfig} from '@/configs';
 
@@ -52,7 +52,7 @@ export default class ErrorBoundary extends Component<IProps, IStates> {
 				info,
 			});
 		}
-		trackEvent(TrackCategory.Error, 'Global', message);
+		trackEvent(trackEvent.category.Error, 'Global', message);
 	}
 
 	public override render() {

@@ -5,7 +5,7 @@ import {useOpenedItemPopover, useViewInNewWindow} from '@/hooks';
 
 import {PopoverContent, PopoverTrigger} from '@nextui-org/react';
 
-import {TrackCategory, trackEvent} from '@/components/analytics';
+import {trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
 import ItemPopoverCard from '@/components/itemPopoverCard';
 import Popover from '@/components/popover';
@@ -64,7 +64,7 @@ export default memo<IProps>(function Content({data}) {
 						description={<Price>{price}</Price>}
 						image={<Sprite target="recipe" name={name} size={3} />}
 						onPress={() => {
-							trackEvent(TrackCategory.Click, 'Recipe Card', name);
+							trackEvent(trackEvent.category.Click, 'Recipe Card', name);
 						}}
 					/>
 				</ItemPopoverCard.Trigger>

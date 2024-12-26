@@ -5,7 +5,7 @@ import {useVibrate} from '@/hooks';
 import {Accordion, type AccordionProps, Modal, ModalBody, ModalContent, ScrollShadow, cn} from '@nextui-org/react';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
-import {TrackCategory, trackEvent} from '@/components/analytics';
+import {trackEvent} from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Tooltip from '@/components/tooltip';
 
@@ -27,7 +27,7 @@ export default memo<IProps>(function InfoButtonBase({children, defaultExpandedKe
 	const handlePress = useCallback(() => {
 		vibrate();
 		setOpened(true);
-		trackEvent(TrackCategory.Click, 'Info Button');
+		trackEvent(trackEvent.category.Click, 'Info Button');
 	}, [vibrate]);
 
 	const buttonLabel = '更多信息';

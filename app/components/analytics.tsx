@@ -16,7 +16,7 @@ function push(...args: unknown[][]) {
 	globalThis._paq.push(...args);
 }
 
-export enum TrackCategory {
+enum TrackCategory {
 	Click = 'Click',
 	Error = 'Error',
 	Select = 'Select',
@@ -30,20 +30,20 @@ type TItem = 'Beverage' | 'Clothes' | 'Cooker' | 'Currency' | 'Ingredient' | 'Or
 type TItemCard = `${TItem} Card`;
 type TItemAlone = 'Customer' | 'Customer Tag' | 'MystiaCooker';
 
-export function trackEvent(
+function trackEventFunction(
 	category: TrackCategory.Click,
 	action: TActionButton | TItemCard,
 	name?: string,
 	value?: number | string
 ): void;
-export function trackEvent(category: TrackCategory.Error, action: TError, name: string, value?: number | string): void;
-export function trackEvent(
+function trackEventFunction(category: TrackCategory.Error, action: TError, name: string, value?: number | string): void;
+function trackEventFunction(
 	category: TrackCategory.Select | TrackCategory.Unselect,
 	action: TItem | TItemAlone,
 	name?: string,
 	value?: number | string
 ): void;
-export function trackEvent(
+function trackEventFunction(
 	category: keyof typeof TrackCategory,
 	action: TAction | TActionButton | TError | TItem | TItemCard | TItemAlone,
 	name?: string,
@@ -55,6 +55,12 @@ export function trackEvent(
 		['trackEvent', category, action, name, value]
 	);
 }
+
+export const trackEvent = trackEventFunction as typeof trackEventFunction & {
+	category: typeof TrackCategory;
+};
+
+trackEvent.category = TrackCategory;
 
 function trackPageView() {
 	push(['setCustomUrl', location.href], ['setDocumentTitle', document.title], ['trackPageView']);

@@ -5,7 +5,7 @@ import {useOpenedItemPopover, useViewInNewWindow} from '@/hooks';
 
 import {PopoverContent, cn} from '@nextui-org/react';
 
-import {TrackCategory, trackEvent} from '@/components/analytics';
+import {trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
 import ItemPopoverCard from '@/components/itemPopoverCard';
 import Popover from '@/components/popover';
@@ -54,7 +54,7 @@ export default memo<IProps>(function Content({data}) {
 						/>
 					}
 					onPress={() => {
-						trackEvent(TrackCategory.Click, 'Currency Card', name);
+						trackEvent(trackEvent.category.Click, 'Currency Card', name);
 					}}
 				/>
 			</ItemPopoverCard.Trigger>

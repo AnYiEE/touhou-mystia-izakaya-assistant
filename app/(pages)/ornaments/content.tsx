@@ -4,7 +4,7 @@ import {useOpenedItemPopover} from '@/hooks';
 
 import {PopoverContent} from '@nextui-org/react';
 
-import {TrackCategory, trackEvent} from '@/components/analytics';
+import {trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
 import ItemPopoverCard from '@/components/itemPopoverCard';
 import Popover from '@/components/popover';
@@ -39,7 +39,7 @@ export default memo<IProps>(function Content({data}) {
 					name={name}
 					image={<Sprite target="ornament" name={name} size={3} />}
 					onPress={() => {
-						trackEvent(TrackCategory.Click, 'Ornament Card', name);
+						trackEvent(trackEvent.category.Click, 'Ornament Card', name);
 					}}
 				/>
 			</ItemPopoverCard.Trigger>

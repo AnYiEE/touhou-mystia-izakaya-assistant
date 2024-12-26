@@ -9,7 +9,7 @@ import {type TTableSortDescriptor as TBeverageTableSortDescriptor} from '@/(page
 import {evaluateMeal} from '@/(pages)/customer-rare/evaluateMeal';
 import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
 import type {TRecipe, TTab} from '@/(pages)/customer-rare/types';
-import {TrackCategory, trackEvent} from '@/components/analytics';
+import {trackEvent} from '@/components/analytics';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import type {IPersistenceState} from './types';
@@ -532,31 +532,31 @@ export const customerRareStore = store(state, {
 		onCustomerOrderBeverageTag(tag: TBeverageTag) {
 			currentStore.shared.customer.order.beverageTag.set((prev) => {
 				if (prev === tag) {
-					trackEvent(TrackCategory.Unselect, 'Customer Tag', tag);
+					trackEvent(trackEvent.category.Unselect, 'Customer Tag', tag);
 					return null;
 				}
-				trackEvent(TrackCategory.Select, 'Customer Tag', tag);
+				trackEvent(trackEvent.category.Select, 'Customer Tag', tag);
 				return tag;
 			});
 		},
 		onCustomerOrderRecipeTag(tag: TRecipeTag) {
 			currentStore.shared.customer.order.recipeTag.set((prev) => {
 				if (prev === tag) {
-					trackEvent(TrackCategory.Unselect, 'Customer Tag', tag);
+					trackEvent(trackEvent.category.Unselect, 'Customer Tag', tag);
 					return null;
 				}
-				trackEvent(TrackCategory.Select, 'Customer Tag', tag);
+				trackEvent(trackEvent.category.Select, 'Customer Tag', tag);
 				return tag;
 			});
 		},
 		onCustomerSelectedChange(customerName: TCustomerRareName) {
 			currentStore.shared.customer.name.set(customerName);
-			trackEvent(TrackCategory.Select, 'Customer', customerName);
+			trackEvent(trackEvent.category.Select, 'Customer', customerName);
 		},
 
 		onBeverageTableAction(beverageName: TBeverageName) {
 			currentStore.shared.beverage.name.set(beverageName);
-			trackEvent(TrackCategory.Select, 'Beverage', beverageName);
+			trackEvent(trackEvent.category.Select, 'Beverage', beverageName);
 		},
 		onBeverageTablePageChange(page: number) {
 			currentStore.shared.beverage.page.set(page);
@@ -628,7 +628,7 @@ export const customerRareStore = store(state, {
 					prev.extraIngredients.push(ingredientName);
 				}
 			});
-			trackEvent(TrackCategory.Select, 'Ingredient', ingredientName);
+			trackEvent(trackEvent.category.Select, 'Ingredient', ingredientName);
 		},
 
 		onRecipeTableAction(recipeName: TRecipeName) {
@@ -636,7 +636,7 @@ export const customerRareStore = store(state, {
 				extraIngredients: [],
 				name: recipeName,
 			});
-			trackEvent(TrackCategory.Select, 'Recipe', recipeName);
+			trackEvent(trackEvent.category.Select, 'Recipe', recipeName);
 		},
 		onRecipeTablePageChange(page: number) {
 			currentStore.shared.recipe.page.set(page);
@@ -816,7 +816,7 @@ export const customerRareStore = store(state, {
 					prev.extraIngredients = removeLastElement(prev.extraIngredients, ingredientName);
 				}
 			});
-			trackEvent(TrackCategory.Unselect, 'Ingredient', ingredientName);
+			trackEvent(trackEvent.category.Unselect, 'Ingredient', ingredientName);
 		},
 		saveMealResult() {
 			const customerName = currentStore.shared.customer.name.get();
@@ -852,7 +852,7 @@ export const customerRareStore = store(state, {
 				}
 			});
 			trackEvent(
-				TrackCategory.Click,
+				trackEvent.category.Click,
 				'Save Button',
 				`${recipeName} - ${beverageName}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
 			);
@@ -899,7 +899,7 @@ export const customerRareStore = store(state, {
 		toggleMystiaCooker() {
 			const hasMystiaCooker = currentStore.shared.customer.hasMystiaCooker.get();
 			currentStore.shared.customer.hasMystiaCooker.set(!hasMystiaCooker);
-			trackEvent(hasMystiaCooker ? TrackCategory.Unselect : TrackCategory.Select, 'MystiaCooker');
+			trackEvent(hasMystiaCooker ? trackEvent.category.Unselect : trackEvent.category.Select, 'MystiaCooker');
 		},
 	}));
 
