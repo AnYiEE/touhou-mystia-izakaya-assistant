@@ -1,9 +1,9 @@
-import {Fragment} from 'react';
+import {Fragment, memo} from 'react';
 
 import {useVibrate, useViewInNewWindow} from '@/hooks';
 
 import {Button, Card, Divider, PopoverContent, PopoverTrigger, cn} from '@nextui-org/react';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
 import {faArrowDown, faArrowUp} from '@fortawesome/free-solid-svg-icons';
 
 import {Plus} from './resultCard';
@@ -18,6 +18,51 @@ import Tooltip from '@/components/tooltip';
 
 import {BEVERAGE_TAG_STYLE, CUSTOMER_RATING_MAP, DARK_MATTER_NAME, RECIPE_TAG_STYLE} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
+
+enum MoveButtonDirection {
+	Down,
+	Up,
+}
+
+export interface IMoveButtonProps extends Pick<FontAwesomeIconProps, 'onClick'> {
+	direction: MoveButtonDirection;
+	isDisabled: boolean;
+}
+
+const MoveButtonComponent = memo<IMoveButtonProps>(function MoveButton({direction, isDisabled, onClick}) {
+	return (
+		<Tooltip
+			showArrow
+			content={
+				direction === MoveButtonDirection.Down
+					? isDisabled
+						? '已是末项'
+						: '下移此项'
+					: isDisabled
+						? '已是首项'
+						: '上移此项'
+			}
+			placement="left"
+			size="sm"
+		>
+			<FontAwesomeIcon
+				icon={direction === MoveButtonDirection.Down ? faArrowDown : faArrowUp}
+				size="1x"
+				onClick={onClick}
+				role="button"
+				className={cn('cursor-pointer hover:text-primary/40 dark:hover:text-default-200', {
+					'cursor-not-allowed hover:text-primary/20': isDisabled,
+				})}
+			/>
+		</Tooltip>
+	);
+});
+
+export const MoveButton = MoveButtonComponent as typeof MoveButtonComponent & {
+	direction: typeof MoveButtonDirection;
+};
+
+MoveButton.direction = MoveButtonDirection;
 
 export default function SavedMealCard() {
 	const openWindow = useViewInNewWindow();
@@ -42,7 +87,7 @@ export default function SavedMealCard() {
 
 	const savedCustomerMeal = currentSavedMeals[currentCustomerName];
 
-	const moveMeal = (mealIndex: number, direction: 'down' | 'up') => {
+	const moveMeal = (mealIndex: number, direction: IMoveButtonProps['direction']) => {
 		vibrate();
 
 		const newSavedCustomerMeal = [...savedCustomerMeal];
@@ -50,7 +95,7 @@ export default function SavedMealCard() {
 		type Meal = (typeof newSavedCustomerMeal)[number];
 
 		switch (direction) {
-			case 'down':
+			case MoveButton.direction.Down:
 				if (currentIndex >= newSavedCustomerMeal.length - 1) {
 					return;
 				}
@@ -59,7 +104,7 @@ export default function SavedMealCard() {
 					newSavedCustomerMeal[currentIndex] as Meal,
 				];
 				break;
-			case 'up':
+			case MoveButton.direction.Up:
 				if (currentIndex <= 0) {
 					return;
 				}
@@ -297,51 +342,20 @@ export default function SavedMealCard() {
 											}
 										)}
 									>
-										<Tooltip
-											showArrow
-											content={loopIndex === 0 ? '已是首项' : '上移此项'}
-											placement="left"
-											size="sm"
-										>
-											<FontAwesomeIcon
-												icon={faArrowUp}
-												size="1x"
-												onClick={() => {
-													moveMeal(mealIndex, 'up');
-												}}
-												role="button"
-												className={cn(
-													'cursor-pointer hover:text-primary/40 dark:hover:text-default-200',
-													{
-														'cursor-not-allowed hover:text-primary/20': loopIndex === 0,
-													}
-												)}
-											/>
-										</Tooltip>
-										<Tooltip
-											showArrow
-											content={
-												loopIndex === savedCustomerMeal.length - 1 ? '已是末项' : '下移此项'
-											}
-											placement="left"
-											size="sm"
-										>
-											<FontAwesomeIcon
-												icon={faArrowDown}
-												size="1x"
-												onClick={() => {
-													moveMeal(mealIndex, 'down');
-												}}
-												role="button"
-												className={cn(
-													'cursor-pointer hover:text-primary/40 dark:hover:text-default-200',
-													{
-														'cursor-not-allowed hover:text-primary/20':
-															loopIndex === savedCustomerMeal.length - 1,
-													}
-												)}
-											/>
-										</Tooltip>
+										<MoveButton
+											direction={MoveButton.direction.Up}
+											isDisabled={loopIndex === 0}
+											onClick={() => {
+												moveMeal(mealIndex, MoveButton.direction.Up);
+											}}
+										/>
+										<MoveButton
+											direction={MoveButton.direction.Down}
+											isDisabled={loopIndex === savedCustomerMeal.length - 1}
+											onClick={() => {
+												moveMeal(mealIndex, MoveButton.direction.Down);
+											}}
+										/>
 									</div>
 									<Button
 										color="primary"
