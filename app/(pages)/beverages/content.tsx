@@ -42,7 +42,18 @@ export default memo<IProps>(function Content({data}) {
 					isPressable={openedPopover ? openedPopover === name : true}
 					name={name}
 					description={<Price>{price}</Price>}
-					image={<Sprite target="beverage" name={name} size={3} />}
+					image={
+						<Sprite
+							target="beverage"
+							name={name}
+							size={3}
+							className={cn({
+								'-translate-x-0.5': name === '教父',
+								'-translate-x-px': name === '玉露茶',
+								'translate-x-px': name === '冬酿' || name === '太空啤酒',
+							})}
+						/>
+					}
 					onPress={() => {
 						trackEvent(trackEvent.category.Click, 'Beverage Card', name);
 					}}

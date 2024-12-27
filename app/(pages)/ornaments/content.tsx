@@ -2,7 +2,7 @@ import {memo, useRef} from 'react';
 
 import {useOpenedItemPopover} from '@/hooks';
 
-import {PopoverContent} from '@nextui-org/react';
+import {PopoverContent, cn} from '@nextui-org/react';
 
 import {trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
@@ -37,7 +37,17 @@ export default memo<IProps>(function Content({data}) {
 					isHoverable={openedPopover ? openedPopover === name : true}
 					isPressable={openedPopover ? openedPopover === name : true}
 					name={name}
-					image={<Sprite target="ornament" name={name} size={3} />}
+					image={
+						<Sprite
+							target="ornament"
+							name={name}
+							size={3}
+							className={cn({
+								'-translate-x-px': name === '强运桃子',
+								'translate-x-px': name === '造物者之盒',
+							})}
+						/>
+					}
 					onPress={() => {
 						trackEvent(trackEvent.category.Click, 'Ornament Card', name);
 					}}
