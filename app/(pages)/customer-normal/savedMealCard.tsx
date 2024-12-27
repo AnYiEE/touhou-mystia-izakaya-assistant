@@ -207,7 +207,7 @@ export default function SavedMealCard() {
 												);
 											})}
 											{lestExtraIngredients.length > 0 && (
-												<div className="flex items-center gap-x-3 rounded outline outline-2 outline-offset-1 outline-divider">
+												<div className="flex items-center gap-x-3 rounded bg-default-100/50 outline outline-2 outline-offset-1 outline-default-100 dark:bg-default-200/50 dark:outline-default-200">
 													{lestExtraIngredients.map((name, index) => {
 														const label = `点击：在新窗口中查看额外食材【${name}】的详情`;
 														return (
