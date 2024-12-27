@@ -131,14 +131,21 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 											}}
 										>
 											<span className="inline-flex items-center">
-												{spriteTarget.startsWith('customer') ? (
+												{spriteTarget === 'customer_normal' ? (
+													<div className="h-6 w-6 overflow-hidden rounded-full">
+														<Sprite
+															target={spriteTarget}
+															name={value as never}
+															size={2.15}
+															className="-translate-x-[0.315rem] -translate-y-px"
+														/>
+													</div>
+												) : spriteTarget === 'customer_rare' ? (
 													<Sprite
 														target={spriteTarget}
 														name={value as never}
 														size={1.5}
-														className={cn({
-															'rounded-full': spriteTarget !== 'customer_normal',
-														})}
+														className="rounded-full"
 													/>
 												) : (
 													<Sprite target={spriteTarget} name={value as never} size={1} />

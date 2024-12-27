@@ -261,7 +261,7 @@ export default function CustomerCard() {
 						<PopoverContent>{avatarRatingContent}</PopoverContent>
 					</Popover>
 					<div className="whitespace-nowrap text-tiny font-medium text-default-400 dark:text-default-500">
-						<p className="flex justify-between">
+						<p className="flex justify-between gap-10">
 							<Popover showArrow isTriggerDisabled={!dlcLabel} offset={4}>
 								<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={0}>
 									<span

@@ -174,33 +174,49 @@ export default function CustomerCard() {
 			}}
 		>
 			<div className="flex flex-col gap-3 p-4 md:flex-row">
-				<div className="flex flex-col items-center justify-center gap-3">
-					<Popover showArrow color={tooltipRatingColor} offset={10}>
-						<Tooltip showArrow color={tooltipRatingColor} content={avatarRatingContent} offset={8}>
+				<div className="flex flex-col justify-evenly gap-2">
+					<Popover showArrow color={tooltipRatingColor} offset={hasRating ? 13 : 9}>
+						<Tooltip
+							showArrow
+							color={tooltipRatingColor}
+							content={avatarRatingContent}
+							offset={hasRating ? 9 : 5}
+						>
 							<div className="flex cursor-pointer self-center">
 								<PopoverTrigger>
-									<Avatar
-										isBordered={hasRating}
-										color={avatarRatingColor}
-										radius="sm"
-										icon={<Sprite target="customer_normal" name={currentCustomerName} size={6} />}
-										role="button"
-										tabIndex={0}
-										classNames={{
-											base: cn(
-												'h-24 w-24 transition focus:opacity-hover focus:ring-4 focus:ring-focus',
-												hasRating ? 'ring-4 ring-offset-0' : 'ring-2 ring-focus dark:ring-0'
-											),
-											icon: 'block scale-[113%]',
-										}}
-									/>
+									<div role="button" tabIndex={0} className="flex flex-col items-center gap-2">
+										<Avatar
+											isBordered={hasRating}
+											color={avatarRatingColor}
+											radius="full"
+											icon={
+												<div className="h-16 w-16 overflow-hidden rounded-full">
+													<Sprite
+														target="customer_normal"
+														name={currentCustomerName}
+														size={5.6}
+														className="-translate-x-3 -translate-y-0.5"
+													/>
+												</div>
+											}
+											classNames={{
+												base: cn('h-12 w-12 lg:h-16 lg:w-16', {
+													'ring-4': hasRating,
+												}),
+												icon: 'inline-table lg:inline-block',
+											}}
+										/>
+										<span className="whitespace-nowrap text-center font-bold">
+											{currentCustomerName}
+										</span>
+									</div>
 								</PopoverTrigger>
 							</div>
 						</Tooltip>
 						<PopoverContent>{avatarRatingContent}</PopoverContent>
 					</Popover>
-					<div className="min-w-24 gap-2 lg:min-w-28">
-						<p className="flex justify-between whitespace-nowrap text-tiny font-medium text-default-400 dark:text-default-500">
+					<div className="whitespace-nowrap text-tiny font-medium text-default-400 dark:text-default-500">
+						<p className="flex justify-between gap-10">
 							<Popover showArrow isTriggerDisabled={!dlcLabel} offset={4}>
 								<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={0}>
 									<span
