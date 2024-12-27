@@ -224,24 +224,44 @@ export default function CustomerCard() {
 								</Tooltip>
 								<PopoverContent>{dlcLabel}</PopoverContent>
 							</Popover>
-							<Popover showArrow offset={hasOtherPlaces ? 6 : 4}>
-								<Tooltip showArrow content={placeContent} offset={2}>
-									<span className="cursor-pointer">
-										<PopoverTrigger>
-											<span
-												role="button"
-												tabIndex={0}
-												className={cn({
-													'underline-dotted-linear': hasOtherPlaces,
-												})}
-											>
-												{currentCustomerMainPlace}
-											</span>
-										</PopoverTrigger>
+							{(() => {
+								const isGoblin = currentCustomerName === '地精';
+								const mainPlace = isGoblin ? '符卡幻化' : currentCustomerMainPlace;
+								const otherPlaces = isGoblin ? (
+									<span className="inline-flex items-center">
+										【
+										<Sprite
+											target="customer_rare"
+											name="爱丽丝"
+											size={1.25}
+											className="mx-0.5 rounded-full"
+										/>
+										爱丽丝】奖励符卡
 									</span>
-								</Tooltip>
-								<PopoverContent>{placeContent}</PopoverContent>
-							</Popover>
+								) : (
+									placeContent
+								);
+								return (
+									<Popover showArrow offset={hasOtherPlaces || isGoblin ? 6 : 4}>
+										<Tooltip showArrow content={otherPlaces} offset={2}>
+											<span className="cursor-pointer">
+												<PopoverTrigger>
+													<span
+														role="button"
+														tabIndex={0}
+														className={cn({
+															'underline-dotted-linear': hasOtherPlaces || isGoblin,
+														})}
+													>
+														{mainPlace}
+													</span>
+												</PopoverTrigger>
+											</span>
+										</Tooltip>
+										<PopoverContent>{otherPlaces}</PopoverContent>
+									</Popover>
+								);
+							})()}
 						</p>
 					</div>
 				</div>
