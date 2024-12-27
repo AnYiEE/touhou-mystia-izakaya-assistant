@@ -7,6 +7,7 @@
 	},
 	"eslint.enable": true,
 	"eslint.format.enable": true,
+	"eslint.useFlatConfig": true,
 	"prettier.enable": true,
 	"[markdown]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -55,9 +56,9 @@
 	"explorer.fileNesting.enabled": true,
 	"explorer.fileNesting.expand": false,
 	"explorer.fileNesting.patterns": {
-		"next.config.mjs": "*.config.cjs, *.config.mjs, *.config.js, *.config.ts, next-env.d.ts",
-		"package.json": ".*cache, .*ignore, .*rc, .editorConfig, .env*, .git*, .lintstagedrc.mjs, pnpm-lock.yaml, tsconfig.json, vercel.json, LICENSE",
-		"readme*": "*.md"
+		"next.config.ts": "*.config.cjs, *.config.mjs, *.config.js, *.config.ts, next-env.d.ts",
+		"package.json": ".*cache, .*ignore, .*rc, .editorConfig, .env*, .git*, pnpm-lock.yaml, tsconfig.json, vercel.json",
+		"readme*": "*.md, LICENSE"
 	},
 	"typescript.enablePromptUseWorkspaceTsdk": true,
 	"typescript.tsdk": "./node_modules/typescript/lib",
@@ -96,6 +97,7 @@
 		"tailwindcss",
 		"titlebar",
 		"touhou",
+		"turbopack",
 		"vercel",
 		"vmax",
 		"webp",

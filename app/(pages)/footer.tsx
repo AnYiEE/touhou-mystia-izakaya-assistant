@@ -60,7 +60,9 @@ const FooterLinkWithTooltip = memo<PropsWithChildren<IFooterLinkWithTooltipProps
 				content: cn('bg-content1/40 backdrop-blur-lg dark:bg-content1/70', classNames?.content),
 			}}
 		>
-			<FooterLink {...props} />
+			<span>
+				<FooterLink {...props} />
+			</span>
 		</Tooltip>
 	);
 });

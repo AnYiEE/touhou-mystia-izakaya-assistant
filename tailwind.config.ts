@@ -1,23 +1,21 @@
-// @ts-check
 /* eslint-disable sort-keys, compat/compat */
 
-import {nextui} from '@nextui-org/react';
+import {type Config} from 'tailwindcss';
+import {type ColorScale as NextUIColorScale, nextui} from '@nextui-org/react';
+
+import {type TRatingStyleMap} from '@/components/avatar';
 
 import {CDN_URL, IS_PRODUCTION} from './scripts/utils.mjs';
 
-/**
- * @typedef {Required<Exclude<import('@nextui-org/react').ColorScale, string>>} ColorScale
- * @param {Partial<ColorScale>} object
- * @returns {ColorScale}
- */
-function createShiftedObject(object) {
-	// @ts-expect-error TS2740 Type inference error.
+type ColorScale = Exclude<NextUIColorScale, string>;
+
+function createShiftedObject(object: ColorScale) {
 	return Object.fromEntries(
 		Object.keys(object).map((key, index) => {
 			const newValue = Object.values(object)[index + 1];
 			return [key, newValue ?? '#0a0600'];
 		})
-	);
+	) as Required<ColorScale>;
 }
 
 const black = {
@@ -31,7 +29,7 @@ const black = {
 	700: '#44423c',
 	800: '#292723',
 	900: '#120c05',
-};
+} as const satisfies ColorScale;
 
 const brown = {
 	50: '#fef7e4',
@@ -44,7 +42,8 @@ const brown = {
 	700: '#5e3f22',
 	800: '#392812',
 	900: '#180f00',
-};
+} as const satisfies ColorScale;
+
 const brownContent1 = createShiftedObject(brown);
 const brownContent2 = createShiftedObject(brownContent1);
 
@@ -59,7 +58,7 @@ const green = {
 	700: '#39532a',
 	800: '#213317',
 	900: '#061300',
-};
+} as const satisfies ColorScale;
 
 const orange = {
 	50: '#ffeee2',
@@ -72,7 +71,7 @@ const orange = {
 	700: '#6a3515',
 	800: '#411f09',
 	900: '#1b0800',
-};
+} as const satisfies ColorScale;
 
 const pink = {
 	50: '#ffe8ec',
@@ -85,7 +84,7 @@ const pink = {
 	700: '#631d25',
 	800: '#3d1015',
 	900: '#1b0305',
-};
+} as const satisfies ColorScale;
 
 const purple = {
 	50: '#ffe3ff',
@@ -98,9 +97,8 @@ const purple = {
 	700: '#7d0080',
 	800: '#4c004e',
 	900: '#1c001d',
-};
+} as const satisfies ColorScale;
 
-/** @type {import('@/components/avatar').TRatingStyleMap} */
 const ratingColorMap = {
 	bad: '#4a4459',
 	'bad-border': '#b67596',
@@ -112,10 +110,9 @@ const ratingColorMap = {
 	'good-border': '#ffae75',
 	norm: '#7b8a5e',
 	'norm-border': '#f7ae34',
-};
+} as const satisfies TRatingStyleMap;
 
-/** @type {import('tailwindcss').Config} */
-const config = {
+const config: Config = {
 	content: ['./app/**/*.tsx', './node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}'],
 	darkMode: 'selector',
 	safelist: IS_PRODUCTION

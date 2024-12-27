@@ -13,8 +13,5 @@ trim_trailing_whitespace = true
 indent_size = 2
 indent_style = space
 
-[*.svg]
-insert_final_newline = false
-
 [public/*.js]
 insert_final_newline = false

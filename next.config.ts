@@ -1,14 +1,13 @@
-// @ts-check
 /* eslint-disable sort-keys, @typescript-eslint/require-await */
 
+import {type NextConfig} from 'next';
 import {env} from 'node:process';
 
 import {CDN_URL, IS_PRODUCTION, getSha} from './scripts/utils.mjs';
 
 const skipLint = IS_PRODUCTION && Boolean(env.SKIP_LINT);
 
-/** @type {(keyof NodeJS.ProcessEnv)[]} */
-const envKeys = [
+const envKeys: (keyof NodeJS.ProcessEnv)[] = [
 	'ANALYTICS_API_URL',
 	'ANALYTICS_SCRIPT_URL',
 	'ANALYTICS_SITE_ID',
@@ -22,11 +21,9 @@ const envKeys = [
 	'VERCEL_GIT_COMMIT_SHA',
 ];
 
-/** @type {Partial<NodeJS.ProcessEnv>} */
-const emptyEnvObject = {};
+const emptyEnvObject: Partial<NodeJS.ProcessEnv> = {};
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig: NextConfig = {
 	env: envKeys.reduce((acc, key) => {
 		acc[key] = env[key];
 		return acc;
@@ -40,8 +37,7 @@ const nextConfig = {
 
 	assetPrefix: env.VERCEL ? '' : CDN_URL,
 	headers: async () => {
-		/** @type {Awaited<ReturnType<NonNullable<import('next').NextConfig['headers']>>>} */
-		const headers = [];
+		const headers: Awaited<ReturnType<NonNullable<NextConfig['headers']>>> = [];
 		if (IS_PRODUCTION && !env.VERCEL) {
 			headers.push({
 				source: '/:all*(.gif|.ico|.png|.webp|.json|.txt|.js)',

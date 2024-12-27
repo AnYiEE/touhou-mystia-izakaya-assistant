@@ -7,7 +7,6 @@
 		"mgmcdermott.vscode-language-babel",
 		"streetsidesoftware.code-spell-checker",
 		"stylelint.vscode-stylelint",
-		"syler.sass-indented",
-		"webben.browserslist"
+		"syler.sass-indented"
 	]
 }
