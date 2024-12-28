@@ -6,7 +6,7 @@ declare module '@eslint-community/eslint-plugin-eslint-comments/configs' {
 }
 
 declare module 'eslint-plugin-sort-destructure-keys' {
-	import {plugin} from 'typescript-eslint';
+	import {type plugin} from 'typescript-eslint';
 
 	const sortDestructureKeys: typeof plugin;
 	export = sortDestructureKeys;
