@@ -8,7 +8,7 @@ import {faArrowsRotate, faXmark} from '@fortawesome/free-solid-svg-icons';
 import InfoButton from './infoButton';
 import TagGroup from './tagGroup';
 import {trackEvent} from '@/components/analytics';
-import Avatar from '@/components/avatar';
+import Avatar, {ratingStyleMap} from '@/components/avatar';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Popover from '@/components/popover';
 import Price from '@/components/price';
@@ -222,9 +222,15 @@ export default function CustomerCard() {
 			fullWidth
 			shadow="sm"
 			classNames={{
-				base: cn({
-					'bg-content1/40 backdrop-blur': isHighAppearance,
-				}),
+				base: cn(
+					'!transition',
+					{
+						'bg-content1/40 backdrop-blur': isHighAppearance,
+						'ring-4 ring-opacity-50': hasRating,
+						'ring-8': currentRating === 'exgood',
+					},
+					avatarRatingColor !== undefined && ratingStyleMap[avatarRatingColor]
+				),
 			}}
 		>
 			<div className="flex flex-col gap-3 p-4 md:flex-row">
@@ -245,7 +251,7 @@ export default function CustomerCard() {
 											radius="full"
 											icon={<Sprite target="customer_rare" name={currentCustomerName} size={4} />}
 											classNames={{
-												base: cn('h-12 w-12 lg:h-16 lg:w-16', {
+												base: cn('h-12 w-12 transition lg:h-16 lg:w-16', {
 													'ring-4': hasRating,
 												}),
 												icon: 'inline-table lg:inline-block',

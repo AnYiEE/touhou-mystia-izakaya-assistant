@@ -33,7 +33,7 @@ export function generateRatingColor<T extends 'base' | 'content'>(key: T, colorM
 	};
 }
 
-const ratingStyleMap = {
+export const ratingStyleMap = {
 	bad: 'ring-bad-border bg-bad',
 	'bad-border': 'ring-bad-border',
 	exbad: 'ring-exbad-border bg-exbad',
