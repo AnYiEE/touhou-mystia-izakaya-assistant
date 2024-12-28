@@ -70,7 +70,7 @@ export const globalStore = store(state, {
 	persist: {
 		enabled: true,
 		name: globalStoreKey,
-		version: storeVersion.renameBg,
+		version: storeVersion.famousShop,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
