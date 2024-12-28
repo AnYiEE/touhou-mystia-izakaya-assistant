@@ -117,7 +117,7 @@ export default function Recipes() {
 		]
 	);
 
-	const filteredData = useFilteredData(instance, filterData);
+	const filteredData = useFilteredData(dataWithPopular, filterData);
 
 	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
 

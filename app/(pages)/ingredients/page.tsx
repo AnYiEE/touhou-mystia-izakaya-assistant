@@ -80,7 +80,7 @@ export default function Ingredients() {
 		[dataWithPopular, filterDlcs, filterLevels, filterNoTags, filterNoTypes, filterTags, filterTypes]
 	);
 
-	const filteredData = useFilteredData(instance, filterData);
+	const filteredData = useFilteredData(dataWithPopular, filterData);
 
 	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
 
