@@ -5,6 +5,8 @@ import type {TNavMenuItem} from '@/configs/site/types';
 
 const {domain, navMenuItems} = siteConfig;
 
+export const dynamic = 'force-static';
+
 export default function sitemap(): MetadataRoute.Sitemap {
 	return (navMenuItems as TNavMenuItem<TSitePath>[])
 		.filter(({href}) => href !== '/preferences')
