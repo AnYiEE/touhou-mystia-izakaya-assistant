@@ -380,7 +380,7 @@ export default function CustomerRare() {
 					alt={currentCustomerName}
 					src={instance_customer.getTachiePath(currentCustomerName)}
 					width={currentCustomerName === '蹦蹦跳跳的三妖精' || currentCustomerName === '萌澄果' ? 60 : 120}
-					className="pointer-events-none fixed bottom-0 right-0 pr-2"
+					className="pointer-events-none fixed bottom-0 right-0 pr-1"
 				/>
 			)}
 		</div>
