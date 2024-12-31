@@ -1,0 +1,19 @@
+/node_modules
+.*cache
+
+# next.js
+/.next/
+/out/
+
+# production
+/public/*serviceworker*.js
+
+# local env files
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts

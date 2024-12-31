@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--safe-h-dvh: 100vh;
+	--safe-h-dvh-half: 50vh;
+}
+
+@supports (height: 100dvh) {
+	:root {
+		--safe-h-dvh: 100dvh;
+		--safe-h-dvh-half: 50dvh;
+	}
+}
+
+.bg-blend-mystia {
+	@apply bg-mystia bg-background bg-cover bg-center bg-no-repeat bg-blend-overlay dark:bg-background/90;
+}
+
+.bg-blend-mystia-pseudo {
+	// Due to the poor performance of `background-attachment: fixed`, use pseudo-elements to achieve a similar fixed background effect.
+	@apply before:bg-mystia before:fixed before:-z-10 before:h-full before:w-full before:bg-background before:bg-cover before:bg-center before:bg-no-repeat before:bg-blend-overlay before:content-[''] dark:before:bg-background/90;
+}
+
+.underline-dotted-offset2 {
+	@apply underline decoration-dotted underline-offset-2;
+}
+
+.underline-dotted-linear {
+	@apply inline-block;
+
+	line-height: 1.05;
+	background: linear-gradient(to right, currentcolor, currentcolor 1px, transparent 1.5px) repeat-x 0 bottom/2.5px
+		1.5px;
+}
+
+::-webkit-scrollbar {
+	@apply h-1.5 w-2;
+}
+
+::-webkit-scrollbar-thumb:horizontal {
+	@apply rounded-2xl bg-default;
+}
+
+::-webkit-scrollbar-thumb:vertical {
+	@apply rounded-2xl bg-default;
+}
+
+::-webkit-scrollbar-track-piece {
+	@apply rounded-2xl bg-default-100;
+}
+
+:not(body) div:has(> .driver-active-element) {
+	@apply p-1;
+}
