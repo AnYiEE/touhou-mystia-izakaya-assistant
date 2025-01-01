@@ -12,9 +12,22 @@ import {siteConfig} from '@/configs';
 
 const {isIcpFiling, isProduction, isVercel, links, nodeEnv, shortName, vercelEnv, vercelSha, version} = siteConfig;
 
-const sha = (
-	vercelSha?.slice(0, 7) ?? (isProduction ? execSync('git rev-parse --short HEAD').toString('utf8') : null)
-)?.trim();
+const sha = (() => {
+	let _sha: string | undefined;
+
+	if (vercelSha) {
+		_sha = vercelSha.slice(0, 7);
+	}
+	if (isProduction) {
+		try {
+			_sha = execSync('git rev-parse --short HEAD').toString('utf8');
+		} catch {
+			/* empty */
+		}
+	}
+
+	return _sha?.trim();
+})();
 
 interface IFooterLinkProps extends Pick<ILinkProps, 'href' | 'isExternal' | 'title'> {
 	content?: ReactNodeWithoutBoolean;

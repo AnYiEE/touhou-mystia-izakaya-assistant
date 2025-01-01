@@ -62,7 +62,21 @@ export const viewport: Viewport = {
 	viewportFit: 'cover',
 };
 
-const sha = (vercelSha?.slice(0, 7) ?? execSync('git rev-parse --short HEAD').toString('utf8')).trim();
+const sha = (() => {
+	let _sha: string;
+
+	if (vercelSha) {
+		_sha = vercelSha.slice(0, 7);
+	}
+
+	try {
+		_sha = execSync('git rev-parse --short HEAD').toString('utf8');
+	} catch {
+		_sha = 'unknown';
+	}
+
+	return _sha.trim();
+})();
 
 export default function RootLayout({
 	children,
