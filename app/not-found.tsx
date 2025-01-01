@@ -1,7 +1,8 @@
 import {type Metadata} from 'next';
 
-import {Button, Divider} from '@nextui-org/react';
+import {Divider} from '@nextui-org/react';
 
+import Button from '@/components/button';
 import Link from '@/components/link';
 
 import {siteConfig} from '@/configs';
@@ -20,11 +21,12 @@ export default function NotFound() {
 			<p className="hidden text-xl md:inline">找不到您所请求的资源</p>
 			<Button
 				as={Link}
+				highAppearance
 				color="primary"
 				size="sm"
 				variant="flat"
 				href={links.index.href}
-				className="backdrop-blur"
+				role="link"
 			>
 				返回{links.index.label}
 			</Button>

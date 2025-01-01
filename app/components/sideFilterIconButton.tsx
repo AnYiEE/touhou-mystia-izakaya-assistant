@@ -5,7 +5,6 @@ import {type Dispatch, memo, useCallback, useMemo} from 'react';
 import {useMotionProps, useVibrate} from '@/hooks';
 
 import {
-	Button,
 	PopoverContent,
 	PopoverTrigger,
 	Select,
@@ -16,6 +15,7 @@ import {
 } from '@nextui-org/react';
 import {faFilter} from '@fortawesome/free-solid-svg-icons';
 
+import Button from '@/components/button';
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
 import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';

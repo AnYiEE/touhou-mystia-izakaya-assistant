@@ -7,7 +7,6 @@ import {useProgress} from 'react-transition-progress';
 import {usePathname, useVibrate} from '@/hooks';
 
 import {
-	Button,
 	type ButtonProps,
 	DropdownItem,
 	DropdownMenu,
@@ -25,6 +24,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faGithub} from '@fortawesome/free-brands-svg-icons';
 import {faChevronDown} from '@fortawesome/free-solid-svg-icons';
 
+import Button from '@/components/button';
 import Dropdown from '@/components/dropdown';
 import FontAwesomeIconLink, {type IFontAwesomeIconLinkProps} from '@/components/fontAwesomeIconLink';
 import Link, {type ILinkProps} from '@/components/link';
@@ -73,6 +73,7 @@ const NavbarLink = memo<PropsWithChildren<INavbarLinkProps>>(function NavbarLink
 			size="sm"
 			variant={isActivated ? 'flat' : 'light'}
 			onPress={handlePress}
+			role="link"
 			className={cn('text-base', className)}
 			{...props}
 		>

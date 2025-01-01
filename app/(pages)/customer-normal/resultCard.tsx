@@ -2,11 +2,12 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import {useVibrate} from '@/hooks';
 
-import {Button, Card, cn} from '@nextui-org/react';
+import {Card, cn} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark} from '@fortawesome/free-solid-svg-icons';
 
 import {Plus, UnknownItem} from '@/(pages)/customer-rare/resultCard';
+import Button from '@/components/button';
 import Placeholder from '@/components/placeholder';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';

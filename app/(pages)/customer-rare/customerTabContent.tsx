@@ -3,13 +3,14 @@ import {debounce} from 'lodash';
 
 import {useVibrate} from '@/hooks';
 
-import {Avatar, Button, ScrollShadow, cn} from '@nextui-org/react';
+import {Avatar, ScrollShadow, cn} from '@nextui-org/react';
 
+import Button from '@/components/button';
 import PressElement from '@/components/pressElement';
 import Sprite from '@/components/sprite';
 
 import type {ICustomerTabStyle} from './types';
-import {customerRareStore as customerStore, globalStore} from '@/stores';
+import {customerRareStore as store} from '@/stores';
 import {type CustomerRare, checkA11yConfirmKey} from '@/utils';
 import type {TItemData} from '@/utils/types';
 
@@ -21,13 +22,11 @@ interface IProps {
 export default memo<IProps>(function CustomerTabContent({customerTabStyle, sortedData}) {
 	const vibrate = useVibrate();
 
-	const currentCustomerName = customerStore.shared.customer.name.use();
-
-	const isHighAppearance = globalStore.persistence.highAppearance.use();
+	const currentCustomerName = store.shared.customer.name.use();
 
 	const handleButtonPress = useCallback(() => {
 		vibrate();
-		customerStore.toggleCustomerTabVisibilityState();
+		store.toggleCustomerTabVisibilityState();
 	}, [vibrate]);
 
 	return (
@@ -46,7 +45,7 @@ export default memo<IProps>(function CustomerTabContent({customerTabStyle, sorte
 							as="div"
 							onPress={() => {
 								vibrate();
-								customerStore.onCustomerSelectedChange(name);
+								store.onCustomerSelectedChange(name);
 							}}
 							title={`点击：选择【${name}】`}
 							className="group flex cursor-pointer flex-col items-center gap-1"
@@ -83,15 +82,14 @@ export default memo<IProps>(function CustomerTabContent({customerTabStyle, sorte
 			</ScrollShadow>
 			<div className="flex justify-center xl:hidden">
 				<Button
+					highAppearance
 					isIconOnly
 					size="sm"
 					variant="flat"
 					onClick={handleButtonPress}
 					onKeyDown={debounce(checkA11yConfirmKey(handleButtonPress))}
 					aria-label={customerTabStyle.ariaLabel}
-					className={cn('h-4 w-4/5 text-default-300', {
-						'backdrop-blur': isHighAppearance,
-					})}
+					className="h-4 w-4/5 text-default-300"
 				>
 					{customerTabStyle.buttonNode}
 				</Button>

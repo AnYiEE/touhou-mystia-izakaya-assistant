@@ -5,7 +5,6 @@ import {useMotionProps, useVibrate, useViewInNewWindow} from '@/hooks';
 import {
 	Autocomplete,
 	AutocompleteItem,
-	Button,
 	DropdownItem,
 	DropdownMenu,
 	DropdownTrigger,
@@ -27,6 +26,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faChevronDown, faMagnifyingGlass, faPlus, faTags} from '@fortawesome/free-solid-svg-icons';
 
 import TagGroup from './tagGroup';
+import Button from '@/components/button';
 import Dropdown from '@/components/dropdown';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Placeholder from '@/components/placeholder';
@@ -372,11 +372,11 @@ export default function BeverageTabContent() {
 						<Dropdown showArrow>
 							<DropdownTrigger>
 								<Button
+									highAppearance
 									endContent={<FontAwesomeIcon icon={faChevronDown} />}
 									size="sm"
 									variant="flat"
 									className={cn({
-										'backdrop-blur': isHighAppearance,
 										'ring-2 ring-default': selectedDlcs.size > 0,
 									})}
 								>
@@ -402,12 +402,10 @@ export default function BeverageTabContent() {
 						<Dropdown showArrow>
 							<DropdownTrigger>
 								<Button
+									highAppearance
 									endContent={<FontAwesomeIcon icon={faChevronDown} />}
 									size="sm"
 									variant="flat"
-									className={cn({
-										'backdrop-blur': isHighAppearance,
-									})}
 								>
 									条目
 								</Button>

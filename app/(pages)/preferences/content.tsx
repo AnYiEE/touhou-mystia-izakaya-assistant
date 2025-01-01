@@ -4,10 +4,11 @@ import {memo, useCallback} from 'react';
 
 import {useMotionProps, useVibrate} from '@/hooks';
 
-import {Button, Select, SelectItem, type Selection, Switch, cn} from '@nextui-org/react';
+import {Select, SelectItem, type Selection, Switch, cn} from '@nextui-org/react';
 
 import DataManager, {type IDataManagerProps} from './dataManager';
 import SwitchItem from './switchItem';
+import Button from '@/components/button';
 import Heading from '@/components/heading';
 import Sprite from '@/components/sprite';
 
@@ -131,14 +132,12 @@ export default memo<IProps>(function Content({onModalClose}) {
 						</Select>
 					</div>
 					<Button
+						highAppearance
 						color="primary"
 						isDisabled={selectedPopularTag.has(null as never)}
 						size="sm"
 						variant="flat"
 						onPress={onClearPopularTagButtonPress}
-						className={cn({
-							'backdrop-blur': isHighAppearance,
-						})}
 					>
 						清除选择
 					</Button>

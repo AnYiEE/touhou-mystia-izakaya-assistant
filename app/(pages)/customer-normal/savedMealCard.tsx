@@ -2,12 +2,13 @@ import {Fragment} from 'react';
 
 import {useVibrate, useViewInNewWindow} from '@/hooks';
 
-import {Button, Card, Divider, PopoverContent, PopoverTrigger, cn} from '@nextui-org/react';
+import {Card, Divider, PopoverContent, PopoverTrigger, cn} from '@nextui-org/react';
 
 import {Plus} from './resultCard';
 import {type IMoveButtonProps, MoveButton} from '@/(pages)/customer-rare/savedMealCard';
 import {trackEvent} from '@/components/analytics';
 import Avatar from '@/components/avatar';
+import Button from '@/components/button';
 import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';

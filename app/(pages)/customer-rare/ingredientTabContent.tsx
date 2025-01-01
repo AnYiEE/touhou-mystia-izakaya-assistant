@@ -3,8 +3,9 @@ import {curry, curryRight, debounce} from 'lodash';
 
 import {useVibrate} from '@/hooks';
 
-import {Badge, Button, ScrollShadow, cn} from '@nextui-org/react';
+import {Badge, ScrollShadow, cn} from '@nextui-org/react';
 
+import Button from '@/components/button';
 import Placeholder from '@/components/placeholder';
 import PressElement from '@/components/pressElement';
 import Sprite from '@/components/sprite';
@@ -21,7 +22,7 @@ import {
 	type TIngredientTag,
 	type TRecipeTag,
 } from '@/data';
-import {customerRareStore as customerStore, globalStore} from '@/stores';
+import {customerRareStore as store} from '@/stores';
 import {type Ingredient, type Recipe, checkA11yConfirmKey, intersection, toValueWithKey, union} from '@/utils';
 import type {TItemData, TItemDataItem} from '@/utils/types';
 
@@ -33,18 +34,16 @@ interface IProps {
 export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, sortedData}) {
 	const vibrate = useVibrate();
 
-	const currentCustomerName = customerStore.shared.customer.name.use();
-	const currentCustomerOrderRecipeTag = customerStore.shared.customer.order.use().recipeTag;
-	const currentCustomerPopular = customerStore.shared.customer.popular.use();
-	const currentRecipeData = customerStore.shared.recipe.data.use();
-	const isDarkMatter = customerStore.shared.customer.isDarkMatter.use();
-	const isFamousShop = customerStore.shared.customer.famousShop.use();
+	const currentCustomerName = store.shared.customer.name.use();
+	const currentCustomerOrderRecipeTag = store.shared.customer.order.use().recipeTag;
+	const currentCustomerPopular = store.shared.customer.popular.use();
+	const currentRecipeData = store.shared.recipe.data.use();
+	const isDarkMatter = store.shared.customer.isDarkMatter.use();
+	const isFamousShop = store.shared.customer.famousShop.use();
 
-	const isHighAppearance = globalStore.persistence.highAppearance.use();
-
-	const instance_customer = customerStore.instances.customer.get();
-	const instance_ingredient = customerStore.instances.ingredient.get();
-	const instance_recipe = customerStore.instances.recipe.get();
+	const instance_customer = store.instances.customer.get();
+	const instance_ingredient = store.instances.ingredient.get();
+	const instance_recipe = store.instances.recipe.get();
 
 	const currentRecipe = useMemo(
 		() => (currentRecipeData ? instance_recipe.getPropsByName(currentRecipeData.name) : null),
@@ -63,13 +62,13 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 
 	const handleButtonPress = useCallback(() => {
 		vibrate();
-		customerStore.toggleIngredientTabVisibilityState();
+		store.toggleIngredientTabVisibilityState();
 	}, [vibrate]);
 
 	const handleSelect = useCallback(
 		(ingredient: TIngredientName) => {
 			vibrate();
-			customerStore.onIngredientSelectedChange(ingredient);
+			store.onIngredientSelectedChange(ingredient);
 		},
 		[vibrate]
 	);
@@ -294,15 +293,14 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 			</ScrollShadow>
 			<div className="flex justify-center xl:hidden">
 				<Button
+					highAppearance
 					isIconOnly
 					size="sm"
 					variant="flat"
 					onClick={handleButtonPress}
 					onKeyDown={debounce(checkA11yConfirmKey(handleButtonPress))}
 					aria-label={ingredientTabStyle.ariaLabel}
-					className={cn('h-4 w-4/5 text-default-300', {
-						'backdrop-blur': isHighAppearance,
-					})}
+					className="h-4 w-4/5 text-default-300"
 				>
 					{ingredientTabStyle.buttonNode}
 				</Button>

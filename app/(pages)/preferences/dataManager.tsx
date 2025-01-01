@@ -5,7 +5,7 @@ import {useRouter} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
 import {usePathname, useThrottle} from '@/hooks';
 
-import {Button, PopoverContent, PopoverTrigger, Snippet, Tab, Tabs, Textarea, cn} from '@nextui-org/react';
+import {PopoverContent, PopoverTrigger, Snippet, Tab, Tabs, Textarea, cn} from '@nextui-org/react';
 
 import {showProgress} from '@/(pages)/navbar';
 import {trackEvent} from '@/components/analytics';
@@ -14,6 +14,7 @@ import {
 	customerRareTutorialResetLabel,
 	customerRareTutorialStoreKey,
 } from '@/components/customerRareTutorial';
+import Button from '@/components/button';
 import Heading from '@/components/heading';
 import Popover from '@/components/popover';
 import Tooltip from '@/components/tooltip';
@@ -196,14 +197,12 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 							>
 								<Button
 									fullWidth
+									highAppearance
 									color={isDownloadButtonDisabled ? 'success' : 'primary'}
 									isDisabled={isDownloadButtonDisabled}
 									isLoading={isDownloadButtonDisabled}
 									variant="flat"
 									onPress={handleDownloadButtonPress}
-									className={cn({
-										'backdrop-blur': isHighAppearance,
-									})}
 								>
 									{downloadButtonLabel}
 								</Button>
@@ -233,12 +232,10 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 							/>
 							<Button
 								fullWidth
+								highAppearance
 								color="primary"
 								variant="flat"
 								onPress={handleImportButtonPress}
-								className={cn({
-									'backdrop-blur': isHighAppearance,
-								})}
 							>
 								上传
 							</Button>
@@ -246,15 +243,13 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								<PopoverTrigger>
 									<Button
 										fullWidth
+										highAppearance
 										color={isSaveButtonError ? 'danger' : 'primary'}
 										isDisabled={isSaveButtonDisabled}
 										isLoading={isSaveButtonLoading}
 										variant="flat"
 										onClick={toggleSavePopoverOpened}
 										onKeyDown={debounce(checkA11yConfirmKey(toggleSavePopoverOpened))}
-										className={cn({
-											'backdrop-blur': isHighAppearance,
-										})}
 									>
 										保存
 									</Button>
@@ -288,13 +283,11 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								<PopoverTrigger>
 									<Button
 										fullWidth
+										highAppearance
 										color="danger"
 										variant="flat"
 										onClick={toggleResetPopoverOpened}
 										onKeyDown={debounce(checkA11yConfirmKey(toggleResetPopoverOpened))}
-										className={cn({
-											'backdrop-blur': isHighAppearance,
-										})}
 									>
 										重置已保存的顾客套餐数据
 									</Button>
@@ -322,6 +315,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 							</Popover>
 							<Button
 								fullWidth
+								highAppearance
 								color="primary"
 								variant="flat"
 								onPress={() => {
@@ -361,9 +355,6 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 									}
 									trackEvent(trackEvent.category.Click, 'Reset Button', 'Customer Rare Tutorial');
 								}}
-								className={cn({
-									'backdrop-blur': isHighAppearance,
-								})}
 							>
 								{customerRareTutorialResetLabel}
 							</Button>

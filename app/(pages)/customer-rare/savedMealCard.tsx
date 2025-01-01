@@ -2,7 +2,7 @@ import {Fragment, memo} from 'react';
 
 import {useVibrate, useViewInNewWindow} from '@/hooks';
 
-import {Button, Card, Divider, PopoverContent, PopoverTrigger, cn} from '@nextui-org/react';
+import {Card, Divider, PopoverContent, PopoverTrigger, cn} from '@nextui-org/react';
 import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
 import {faArrowDown, faArrowUp} from '@fortawesome/free-solid-svg-icons';
 
@@ -10,6 +10,7 @@ import {Plus} from './resultCard';
 import TagGroup from './tagGroup';
 import {trackEvent} from '@/components/analytics';
 import Avatar from '@/components/avatar';
+import Button from '@/components/button';
 import Popover from '@/components/popover';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
