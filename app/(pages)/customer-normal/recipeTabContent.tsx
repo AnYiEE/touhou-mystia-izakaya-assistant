@@ -306,8 +306,7 @@ export default function RecipeTabContent() {
 									}}
 									aria-label={label}
 									role="button"
-									tabIndex={0}
-									className="mr-2 cursor-pointer"
+									className="mr-2"
 								/>
 							</Tooltip>
 							<div className="inline-flex flex-1 items-center whitespace-nowrap">
@@ -357,8 +356,6 @@ export default function RecipeTabContent() {
 											}}
 											aria-label={ingredientLabel}
 											role="button"
-											tabIndex={0}
-											className="cursor-pointer"
 										/>
 									</Tooltip>
 								);

@@ -14,6 +14,7 @@ import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
 import {type ICooker, type TCookerCategory} from '@/data';
+import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
 // import {globalStore as store} from '@/stores';
 import {type Cooker} from '@/utils';
 import type {TItemData} from '@/utils/types';
@@ -155,8 +156,6 @@ export default memo<IProps>(function Content({data}) {
 																						}}
 																						aria-label={`点击：在新窗口中查看货币【${priceItem.currency}】的详情`}
 																						role="button"
-																						tabIndex={0}
-																						className="cursor-pointer"
 																					/>
 																				</Tooltip>
 																			</span>
@@ -182,7 +181,9 @@ export default memo<IProps>(function Content({data}) {
 										<Tooltip showArrow content="只有米斯蒂娅使用才有此效果" offset={3} size="sm">
 											<span className="underline-dotted-offset2 cursor-pointer">
 												<PopoverTrigger>
-													<span tabIndex={0}>{effect[0]}</span>
+													<span tabIndex={0} className={CLASS_FOCUS_VISIBLE_OUTLINE}>
+														{effect[0]}
+													</span>
 												</PopoverTrigger>
 											</span>
 										</Tooltip>

@@ -3,7 +3,7 @@ import {isObjectLike} from 'lodash';
 
 import {useOpenedItemPopover, useViewInNewWindow} from '@/hooks';
 
-import {PopoverContent, PopoverTrigger} from '@nextui-org/react';
+import {PopoverContent, PopoverTrigger, cn} from '@nextui-org/react';
 
 import {trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
@@ -14,6 +14,7 @@ import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
 import {DARK_MATTER_NAME, type IRecipe, RECIPE_TAG_STYLE} from '@/data';
+import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
 // import {globalStore as store} from '@/stores';
 import {type Recipe} from '@/utils';
 import type {TItemData} from '@/utils/types';
@@ -135,8 +136,6 @@ export default memo<IProps>(function Content({data}) {
 																	}}
 																	aria-label={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
 																	role="button"
-																	tabIndex={0}
-																	className="cursor-pointer"
 																/>
 															</Tooltip>
 														</span>
@@ -167,7 +166,10 @@ export default memo<IProps>(function Content({data}) {
 									<Tooltip showArrow content="随游戏等级提升而降低" offset={3} size="sm">
 										<span className="inline-flex cursor-pointer">
 											<PopoverTrigger>
-												<span tabIndex={0} className="font-semibold">
+												<span
+													tabIndex={0}
+													className={cn('font-semibold', CLASS_FOCUS_VISIBLE_OUTLINE)}
+												>
 													<span className="underline-dotted-offset2">烹饪时间</span>：
 												</span>
 											</PopoverTrigger>

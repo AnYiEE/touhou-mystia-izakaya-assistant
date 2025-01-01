@@ -24,6 +24,7 @@ import {
 	type TCustomerRareName,
 	type TRecipeTag,
 } from '@/data';
+import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {pinyinSort} from '@/utils';
 
@@ -244,7 +245,11 @@ export default function CustomerCard() {
 						>
 							<div className="flex cursor-pointer self-center">
 								<PopoverTrigger>
-									<div role="button" tabIndex={0} className="flex flex-col items-center gap-2">
+									<div
+										role="button"
+										tabIndex={0}
+										className={cn('flex flex-col items-center gap-2', CLASS_FOCUS_VISIBLE_OUTLINE)}
+									>
 										<Avatar
 											isBordered={hasRating}
 											color={avatarRatingColor}
@@ -281,6 +286,7 @@ export default function CustomerCard() {
 												tabIndex={dlcLabel ? 0 : undefined}
 												title={dlcLabel}
 												className={cn('opacity-100', {
+													[CLASS_FOCUS_VISIBLE_OUTLINE]: dlcLabel,
 													'underline-dotted-linear': dlcLabel,
 												})}
 											>
@@ -298,7 +304,7 @@ export default function CustomerCard() {
 											<span
 												role="button"
 												tabIndex={0}
-												className={cn({
+												className={cn(CLASS_FOCUS_VISIBLE_OUTLINE, {
 													'underline-dotted-linear': hasOtherPlaces,
 												})}
 											>
@@ -428,7 +434,7 @@ export default function CustomerCard() {
 								handleRefreshSelectedItems(currentCustomerName);
 							}}
 							aria-label="重置当前选定项"
-							className="absolute -right-0.5 top-1 h-4 w-4 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover dark:text-default-300"
+							className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover dark:text-default-300"
 						/>
 					</Tooltip>
 				) : (
@@ -438,7 +444,7 @@ export default function CustomerCard() {
 							variant="light"
 							onPress={handleRefreshCustomer}
 							aria-label="取消选择当前顾客"
-							className="absolute -right-0.5 top-1 h-4 w-4 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover dark:text-default-300"
+							className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover dark:text-default-300"
 						/>
 					</Tooltip>
 				)}

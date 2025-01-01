@@ -107,8 +107,6 @@ export default memo<IProps>(function Content({data}) {
 																		}}
 																		aria-label={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
 																		role="button"
-																		tabIndex={0}
-																		className="cursor-pointer"
 																	/>
 																</Tooltip>
 															</span>

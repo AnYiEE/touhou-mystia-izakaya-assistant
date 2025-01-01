@@ -9,6 +9,7 @@ import PressElement, {type IPressProp} from '@/components/pressElement';
 
 import {siteConfig} from '@/configs';
 import {type TItemName} from '@/data';
+import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
 import {Sprite as SpriteClass, remToPx} from '@/utils';
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
@@ -35,7 +36,23 @@ interface IProps extends ISpriteBase, HTMLSpanElementAttributes, Partial<IPressP
 
 export default memo(
 	forwardRef<ElementRef<'span'>, IProps>(function Sprite(
-		{className, height, index, name, onClick, onKeyDown, onPress, size, style, target, title, width, ...props},
+		{
+			className,
+			height,
+			index,
+			name,
+			onClick,
+			onKeyDown,
+			onPress,
+			role,
+			size,
+			style,
+			tabIndex,
+			target,
+			title,
+			width,
+			...props
+		},
 		ref
 	) {
 		const [isSupportedWebp, setIsSupportedWebp] = useState(true);
@@ -97,6 +114,7 @@ export default memo(
 		);
 
 		const finalTitle = title ?? calculatedName;
+		const isAsButton = role === 'button';
 
 		return (
 			<PressElement
@@ -104,9 +122,17 @@ export default memo(
 				onClick={onClick}
 				onKeyDown={onKeyDown}
 				onPress={onPress}
-				role="img"
+				role={role ?? 'img'}
+				tabIndex={tabIndex ?? (isAsButton ? 0 : undefined)}
 				title={finalTitle}
-				className={cn('inline-block', className)}
+				className={cn(
+					'inline-block',
+					{
+						[CLASS_FOCUS_VISIBLE_OUTLINE]: isAsButton,
+						'cursor-pointer': isAsButton,
+					},
+					className
+				)}
 				style={{...calculatedStyle, ...style}}
 				{...props}
 				ref={ref}

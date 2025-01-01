@@ -94,7 +94,7 @@ const GitHubIconLink = memo<IGitHubIconLinkProps>(function IconLink({className, 
 			aria-label={links.github.label}
 			aria-hidden={tabIndex === -1}
 			tabIndex={tabIndex}
-			className={className}
+			className={cn('rounded-full', className)}
 		/>
 	);
 });
@@ -161,7 +161,7 @@ export default function Navbar() {
 						onPress={handlePress}
 						aria-label={links.index.label}
 						role="button"
-						className="flex select-none items-center justify-start gap-1"
+						className="flex select-none items-center justify-start gap-1 rounded-small"
 					>
 						<span
 							aria-hidden

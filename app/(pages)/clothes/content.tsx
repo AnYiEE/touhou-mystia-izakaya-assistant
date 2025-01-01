@@ -16,6 +16,7 @@ import Tachie from '@/components/tachie';
 import Tooltip from '@/components/tooltip';
 
 import {type IClothes} from '@/data';
+import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
 import {clothesStore /* , globalStore */} from '@/stores';
 import {type Clothes} from '@/utils';
 import type {TItemData} from '@/utils/types';
@@ -145,8 +146,6 @@ export default memo<IProps>(function Content({data}) {
 																			}}
 																			aria-label={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
 																			role="button"
-																			tabIndex={0}
-																			className="cursor-pointer"
 																		/>
 																	</Tooltip>
 																</span>
@@ -168,7 +167,11 @@ export default memo<IProps>(function Content({data}) {
 						<span className="font-semibold">立绘：</span>
 						<Popover placement={placement} showArrow={placement === 'top'}>
 							<PopoverTrigger>
-								<span role="button" tabIndex={0} className="underline-dotted-offset2">
+								<span
+									role="button"
+									tabIndex={0}
+									className={cn('underline-dotted-offset2', CLASS_FOCUS_VISIBLE_OUTLINE)}
+								>
 									查看立绘
 								</span>
 							</PopoverTrigger>

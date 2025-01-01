@@ -7,7 +7,7 @@ import {fontFamily, getExtendConfig, semanticColors} from './app/design/theme';
 import {CDN_URL, IS_PRODUCTION} from './scripts/utils.mjs';
 
 const config: Config = {
-	content: ['./app/**/*.tsx', './node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}'],
+	content: ['./app/**/*.{ts,tsx}', './node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}'],
 	darkMode: 'selector',
 	safelist: IS_PRODUCTION
 		? [

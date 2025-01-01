@@ -14,6 +14,7 @@ import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
 import {BEVERAGE_TAG_STYLE, type IBeverage} from '@/data';
+import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
 // import {globalStore as store} from '@/stores';
 import {type Beverage} from '@/utils';
 import type {TItemData} from '@/utils/types';
@@ -94,7 +95,13 @@ export default memo<IProps>(function Content({data}) {
 												<Tooltip showArrow content={label} offset={3} size="sm">
 													<span className="inline-flex cursor-pointer">
 														<PopoverTrigger>
-															<span tabIndex={0} className="underline-dotted-offset2">
+															<span
+																tabIndex={0}
+																className={cn(
+																	'underline-dotted-offset2',
+																	CLASS_FOCUS_VISIBLE_OUTLINE
+																)}
+															>
 																{way}
 															</span>
 														</PopoverTrigger>
@@ -147,7 +154,14 @@ export default memo<IProps>(function Content({data}) {
 																		>
 																			<span className="underline-dotted-offset2 cursor-pointer">
 																				<PopoverTrigger>
-																					<span tabIndex={0}>{item[0]}</span>
+																					<span
+																						tabIndex={0}
+																						className={
+																							CLASS_FOCUS_VISIBLE_OUTLINE
+																						}
+																					>
+																						{item[0]}
+																					</span>
 																				</PopoverTrigger>
 																			</span>
 																		</Tooltip>

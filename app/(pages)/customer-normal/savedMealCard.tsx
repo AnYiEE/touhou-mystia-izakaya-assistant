@@ -132,8 +132,6 @@ export default function SavedMealCard() {
 													}}
 													aria-label={cookerLabel}
 													role="button"
-													tabIndex={0}
-													className="cursor-pointer"
 												/>
 											</Tooltip>
 										);
@@ -151,8 +149,6 @@ export default function SavedMealCard() {
 													}}
 													aria-label={recipeLabel}
 													role="button"
-													tabIndex={0}
-													className="cursor-pointer"
 												/>
 											</Tooltip>
 										);
@@ -173,8 +169,6 @@ export default function SavedMealCard() {
 															}}
 															aria-label={beverageLabel}
 															role="button"
-															tabIndex={0}
-															className="cursor-pointer"
 														/>
 													</Tooltip>
 												</>
@@ -201,8 +195,6 @@ export default function SavedMealCard() {
 															}}
 															aria-label={label}
 															role="button"
-															tabIndex={0}
-															className="cursor-pointer"
 														/>
 													</Tooltip>
 												);
@@ -222,8 +214,6 @@ export default function SavedMealCard() {
 																	}}
 																	aria-label={label}
 																	role="button"
-																	tabIndex={0}
-																	className="cursor-pointer"
 																/>
 															</Tooltip>
 														);

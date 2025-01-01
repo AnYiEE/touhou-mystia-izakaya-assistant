@@ -40,7 +40,7 @@ export default memo<IProps>(function InfoButtonBase({children, defaultExpandedKe
 					variant="light"
 					onPress={handlePress}
 					aria-label={buttonLabel}
-					className="absolute -right-0.5 bottom-1 h-4 w-4 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover dark:text-default-300"
+					className="absolute bottom-1 right-1 h-4 w-4 min-w-0 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover dark:text-default-300"
 				/>
 			</Tooltip>
 			<Modal

@@ -217,8 +217,6 @@ export default function BeverageTabContent() {
 									}}
 									aria-label={label}
 									role="button"
-									tabIndex={0}
-									className="cursor-pointer"
 								/>
 							</Tooltip>
 							<div className="inline-flex flex-1 items-center whitespace-nowrap">

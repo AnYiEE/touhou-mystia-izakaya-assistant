@@ -65,7 +65,7 @@ export default memo<IProps>(function CustomerTabContent({customerTabStyle, sorte
 								role="button"
 								classNames={{
 									base: cn(
-										'h-16 w-16 ring-default transition-shadow group-hover:ring-warning lg:h-20 lg:w-20',
+										'h-16 w-16 ring-default transition-shadow group-hover:ring-warning lg:h-20 lg:w-20 [&>span]:data-[focus-visible=true]:scale-125',
 										{
 											'ring-primary': name === currentCustomerName,
 										}

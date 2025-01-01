@@ -378,7 +378,7 @@ export default function CustomerCard() {
 								handleRefreshSelectedItems(currentCustomerName);
 							}}
 							aria-label="重置当前选定项"
-							className="absolute -right-0.5 top-1 h-4 w-4 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover dark:text-default-300"
+							className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover dark:text-default-300"
 						/>
 					</Tooltip>
 				) : (
@@ -388,7 +388,7 @@ export default function CustomerCard() {
 							variant="light"
 							onPress={handleRefreshCustomer}
 							aria-label="取消选择当前顾客"
-							className="absolute -right-0.5 top-1 h-4 w-4 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover dark:text-default-300"
+							className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover dark:text-default-300"
 						/>
 					</Tooltip>
 				)}

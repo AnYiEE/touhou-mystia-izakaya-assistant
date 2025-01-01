@@ -10,7 +10,7 @@ export default memo<PropsWithChildren<IProps>>(function Price({children, showSym
 	return (
 		<Component>
 			{showSymbol && <span className="mr-0.5">¥</span>}
-			<span className="font-mono leading-none">{children}</span>
+			<span className="font-mono">{children}</span>
 		</Component>
 	);
 });

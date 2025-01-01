@@ -47,6 +47,7 @@ import {
 	type TTag,
 } from '@/data';
 import type {ITagStyle} from '@/data/types';
+import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
 import {globalStore as store} from '@/stores';
 import {type TPressEvent, checkA11yConfirmKey, union} from '@/utils';
 
@@ -261,7 +262,11 @@ const ItemPopoverCardComponent = memo(
 											'cursor-text': !dlcLabel,
 										})}
 									>
-										<PopoverTrigger>
+										<PopoverTrigger
+											className={cn({
+												[CLASS_FOCUS_VISIBLE_OUTLINE]: dlcLabel,
+											})}
+										>
 											<span
 												role={dlcLabel ? 'button' : undefined}
 												tabIndex={dlcLabel ? 0 : undefined}
@@ -305,8 +310,6 @@ const ItemPopoverCardComponent = memo(
 										}}
 										aria-label={ingredientLabel}
 										role="button"
-										tabIndex={0}
-										className="cursor-pointer"
 									/>
 								</Tooltip>
 							);
