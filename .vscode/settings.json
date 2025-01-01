@@ -56,7 +56,7 @@
 	"explorer.fileNesting.enabled": true,
 	"explorer.fileNesting.expand": false,
 	"explorer.fileNesting.patterns": {
-		"next.config.ts": "*.config.cjs, *.config.mjs, *.config.js, *.config.ts, next-env.d.ts",
+		"next.config.ts": "*.config.cjs, *.config.mjs, *.config.js, *.config.ts, next-env.d.ts, types.d.ts",
 		"package.json": ".*cache, .*ignore, .*rc, .editorConfig, .env*, .git*, pnpm-lock.yaml, tsconfig.json, vercel.json",
 		"readme*": "*.md, LICENSE"
 	},

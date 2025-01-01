@@ -6,8 +6,9 @@ import {useMotionProps} from '@/hooks';
 
 import {Tooltip as NextUITooltip, cn, extendVariants} from '@nextui-org/react';
 
-import {type TRatingStyleMap, generateRatingColor} from '@/components/avatar';
+import {generateRatingColor} from '@/components/avatar';
 
+import {type TRatingStyleMap} from '@/design/theme/styles/rating';
 import {globalStore as store} from '@/stores';
 
 export const ratingStyleMap = {
@@ -16,7 +17,7 @@ export const ratingStyleMap = {
 	exgood: 'ring-exgood-border bg-exgood',
 	good: 'ring-good-border bg-good',
 	norm: 'ring-norm-border bg-norm',
-} as const satisfies TRatingStyleMap;
+} as const satisfies Partial<TRatingStyleMap>;
 
 const CustomNextUITooltip = extendVariants(NextUITooltip, generateRatingColor('content', ratingStyleMap));
 

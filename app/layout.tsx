@@ -8,6 +8,7 @@ import Navbar from '@/(pages)/navbar';
 import Analytics from '@/components/analytics';
 import ErrorBoundary from '@/components/errorBoundary';
 import Providers from '@/providers';
+import {ThemeScript} from '@/design/hooks';
 
 import {config as fontawesomeConfig} from '@fortawesome/fontawesome-svg-core';
 import {siteConfig} from '@/configs';
@@ -103,43 +104,7 @@ export default function RootLayout({
 }`,
 					}}
 				/>
-				<script
-					dangerouslySetInnerHTML={{
-						/**
-						 * @description Add `theme-color` meta tag.
-						 * @see /app/components/themeSwitcher.tsx
-						 */
-						__html: `(() => {
-	const colorDark = '#000';
-	const colorLight = '#fef7e4';
-	const customAttribute = 'default-content';
-	const metaName = 'theme-color';
-	let theme = 'system';
-	try {
-		theme = localStorage.getItem('theme');
-	} catch (e) {}
-	const isDark = theme === 'dark';
-	const isLight = theme === 'light';
-	const metaDark = document.createElement('meta');
-	metaDark.name = metaName;
-	metaDark.media = '(prefers-color-scheme: dark)';
-	metaDark.setAttribute(customAttribute, colorDark);
-	const metaLight = document.createElement('meta');
-	metaLight.name = metaName;
-	metaLight.media = '(prefers-color-scheme: light)';
-	metaLight.setAttribute(customAttribute, colorLight);
-	if (isDark || isLight) {
-		const color = isDark ? colorDark : colorLight;
-		metaDark.content = color;
-		metaLight.content = color;
-	} else {
-		metaDark.content = colorDark;
-		metaLight.content = colorLight;
-	}
-	document.head.append(metaDark, metaLight);
-})();`,
-					}}
-				/>
+				<ThemeScript />
 				{
 					// Register service worker. The `sha` is the commit SHA of the current commit, used to bypass browser caching.
 					isProduction && <Script async src={`/registerServiceWorker.js?v=${sha}`} />
@@ -168,7 +133,7 @@ export default function RootLayout({
 					}}
 				/>
 				<ErrorBoundary>
-					<Providers locale={locale} themeProps={{attribute: 'class'}}>
+					<Providers locale={locale}>
 						<div className="flex min-h-dvh-safe flex-col">
 							<Navbar />
 							<main className="container mx-auto grid max-w-7xl flex-grow px-6 py-8">

@@ -2,8 +2,8 @@
 
 import {memo, useCallback, useEffect, useMemo, useState} from 'react';
 
-import {useTheme} from 'next-themes';
-import {useMounted, usePathname, useVibrate} from '@/hooks';
+import {useTheme} from '@/design/hooks';
+import {useMounted, useVibrate} from '@/hooks';
 
 import {
 	DropdownItem,
@@ -42,8 +42,7 @@ interface IProps extends Pick<DropdownProps, 'className'> {
 
 export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 	const isMounted = useMounted();
-	const pathname = usePathname();
-	const {setTheme, theme} = useTheme();
+	const [theme, setTheme] = useTheme();
 	const [selectedTheme, setSelectedTheme] = useState(new Set([theme]) as SelectionSet);
 	const vibrate = useVibrate();
 
@@ -61,22 +60,10 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 	);
 
 	useEffect(() => {
-		if (theme !== undefined && !selectedTheme.has(theme)) {
+		if (!selectedTheme.has(theme)) {
 			setSelectedTheme(new Set([theme]));
 		}
 	}, [selectedTheme, theme]);
-
-	useEffect(() => {
-		document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((metaTag) => {
-			if (theme === Theme.system) {
-				metaTag.content = metaTag.getAttribute('default-content') as string;
-			} else {
-				requestAnimationFrame(() => {
-					metaTag.content = getComputedStyle(document.body).backgroundColor;
-				});
-			}
-		});
-	}, [pathname, theme]);
 
 	const themeIcon = useMemo(() => {
 		if (selectedTheme.has(Theme.light)) {
