@@ -108,7 +108,6 @@ export function useTheme() {
 		const EVENT_TYPE = 'storage';
 
 		const handleStorage = (event: StorageEvent) => {
-			console.log('event', event);
 			if (event.key !== STORAGE_KEY) {
 				return;
 			}
