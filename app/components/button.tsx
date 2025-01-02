@@ -12,14 +12,21 @@ interface IProps extends ButtonProps {
 
 export default memo(
 	forwardRef<ElementRef<typeof NextUIButton>, IProps>(function Button({className, highAppearance, ...props}, ref) {
-		const enableHighAppearance = store.persistence.highAppearance.use();
+		const isEnabledHighAppearance = store.persistence.highAppearance.use();
 
 		return (
 			<NextUIButton
-				className={cn(enableHighAppearance && highAppearance && 'backdrop-blur', className)}
+				className={cn(
+					{
+						'backdrop-blur': isEnabledHighAppearance && highAppearance,
+					},
+					className
+				)}
 				{...props}
 				ref={ref}
 			/>
 		);
 	})
 );
+
+export type {IProps as IButtonProps};
