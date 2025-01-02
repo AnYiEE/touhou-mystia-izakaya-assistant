@@ -415,15 +415,14 @@ export default function BeverageTabContent() {
 								disallowEmptySelection
 								closeOnSelect={false}
 								disabledKeys={['action', 'beverage'] satisfies TTableColumnKey[]}
+								items={tableColumns}
 								selectedKeys={tableVisibleColumns}
 								selectionMode="multiple"
 								variant="flat"
 								onSelectionChange={customerStore.beverageTableColumns.set}
 								aria-label="选择表格所显示的列"
 							>
-								{tableColumns.map(({key, label: name}) => (
-									<DropdownItem key={key}>{name}</DropdownItem>
-								))}
+								{({key, label}) => <DropdownItem key={key}>{label}</DropdownItem>}
 							</DropdownMenu>
 						</Dropdown>
 					</div>

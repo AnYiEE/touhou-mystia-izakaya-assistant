@@ -214,41 +214,40 @@ export default function Navbar() {
 											</DropdownTrigger>
 										</NavbarItem>
 										<DropdownMenu
+											items={dropdownItems}
 											aria-label={`${dropdownLabel}列表`}
 											itemClasses={{
 												base: 'my-px p-0 transition-background focus:bg-default/40 data-[hover=true]:bg-default/40',
 											}}
 										>
-											{dropdownItems.map(
-												({href, label, sprite, spriteIndex}, dropdownItemIndex) => (
-													<DropdownItem
-														key={dropdownItemIndex}
-														textValue={label}
-														onKeyDown={checkA11yConfirmKey(() => {
-															handlePress();
-															router.push(href);
-														})}
+											{({href, label, sprite, spriteIndex}) => (
+												<DropdownItem
+													key={label}
+													textValue={label}
+													onKeyDown={checkA11yConfirmKey(() => {
+														handlePress();
+														router.push(href);
+													})}
+												>
+													<NavbarLink
+														fullWidth
+														isActivated={href === pathname}
+														href={href}
+														startContent={
+															<Sprite
+																target={sprite}
+																index={spriteIndex}
+																size={1.25}
+																className={cn({
+																	'rounded-full': href === '/partners',
+																})}
+															/>
+														}
+														className="justify-start gap-1 text-small data-[hover=true]:bg-transparent"
 													>
-														<NavbarLink
-															fullWidth
-															isActivated={href === pathname}
-															href={href}
-															startContent={
-																<Sprite
-																	target={sprite}
-																	index={spriteIndex}
-																	size={1.25}
-																	className={cn({
-																		'rounded-full': href === '/partners',
-																	})}
-																/>
-															}
-															className="justify-start gap-1 text-small data-[hover=true]:bg-transparent"
-														>
-															{label}
-														</NavbarLink>
-													</DropdownItem>
-												)
+														{label}
+													</NavbarLink>
+												</DropdownItem>
 											)}
 										</DropdownMenu>
 									</Dropdown>

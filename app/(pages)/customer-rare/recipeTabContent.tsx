@@ -586,15 +586,14 @@ export default function RecipeTabContent() {
 								disallowEmptySelection
 								closeOnSelect={false}
 								disabledKeys={['action', 'recipe'] satisfies TTableColumnKey[]}
+								items={tableColumns}
 								selectedKeys={tableVisibleColumns}
 								selectionMode="multiple"
 								variant="flat"
 								onSelectionChange={customerStore.recipeTableColumns.set}
 								aria-label="选择表格所显示的列"
 							>
-								{tableColumns.map(({key, label: name}) => (
-									<DropdownItem key={key}>{name}</DropdownItem>
-								))}
+								{({key, label}) => <DropdownItem key={key}>{label}</DropdownItem>}
 							</DropdownMenu>
 						</Dropdown>
 					</div>

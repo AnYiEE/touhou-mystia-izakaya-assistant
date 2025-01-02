@@ -2,7 +2,7 @@
 
 import {memo, useCallback, useEffect, useMemo, useState} from 'react';
 
-import {useTheme} from '@/design/hooks';
+import {THEME_MAP, type TTheme, useTheme} from '@/design/hooks';
 import {useMounted, useVibrate} from '@/hooks';
 
 import {
@@ -21,20 +21,15 @@ import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Tooltip from '@/components/tooltip';
 
 import {globalStore as store} from '@/stores';
+import {toValueObject} from '@/utils';
 
-enum Theme {
-	dark = 'dark',
-	light = 'light',
-	system = 'system',
-}
-
-enum ThemeLabel {
-	dark = '深色主题',
-	light = '浅色主题',
-	system = '跟随系统',
-	list = '可选主题列表',
-	switcher = '切换主题',
-}
+const THEME_LABEL_MAP = {
+	dark: '深色主题',
+	light: '浅色主题',
+	list: '可选主题列表',
+	switcher: '切换主题',
+	system: '跟随系统',
+} as const satisfies Record<TTheme, string> & Record<'list' | 'switcher', string>;
 
 interface IProps extends Pick<DropdownProps, 'className'> {
 	isMenu?: boolean;
@@ -51,7 +46,7 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 	const onSelectedThemeChange = useCallback(
 		(value: Selection) => {
 			const newValue = value as SelectionSet;
-			const currentSelectedTheme = newValue.values().next().value as Theme;
+			const currentSelectedTheme = newValue.values().next().value as TTheme;
 
 			setTheme(currentSelectedTheme);
 			setSelectedTheme(newValue);
@@ -66,10 +61,10 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 	}, [selectedTheme, theme]);
 
 	const themeIcon = useMemo(() => {
-		if (selectedTheme.has(Theme.light)) {
+		if (selectedTheme.has(THEME_MAP.LIGHT)) {
 			return faSun;
 		}
-		if (selectedTheme.has(Theme.dark)) {
+		if (selectedTheme.has(THEME_MAP.DARK)) {
 			return faMoon;
 		}
 		return faCircleHalfStroke;
@@ -80,7 +75,7 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 			<div className="flex h-5 w-5 items-center justify-center">
 				<Spinner
 					color="default"
-					title={ThemeLabel.switcher}
+					title={THEME_LABEL_MAP.switcher}
 					classNames={{
 						base: 'flex',
 						wrapper: 'h-4 w-4',
@@ -101,13 +96,13 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 				}),
 			}}
 		>
-			<Tooltip showArrow content={ThemeLabel.switcher} placement={isMenu ? 'left' : 'bottom'}>
+			<Tooltip showArrow content={THEME_LABEL_MAP.switcher} placement={isMenu ? 'left' : 'bottom'}>
 				<span className="flex">
 					<DropdownTrigger>
 						<FontAwesomeIconButton
 							disableAnimation={isMenu}
 							icon={themeIcon}
-							aria-label={ThemeLabel.switcher}
+							aria-label={THEME_LABEL_MAP.switcher}
 							className={cn(
 								'h-min w-min min-w-min bg-transparent !text-medium',
 								isMenu ? 'h-full text-foreground' : 'text-default-400 dark:text-default-500',
@@ -119,18 +114,17 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 			</Tooltip>
 			<DropdownMenu
 				disallowEmptySelection
+				items={Object.values(THEME_MAP).map(toValueObject)}
 				selectedKeys={selectedTheme}
 				selectionMode="single"
 				onSelectionChange={onSelectedThemeChange}
-				aria-label={ThemeLabel.list}
+				aria-label={THEME_LABEL_MAP.list}
 				className="w-28"
 				itemClasses={{
 					base: 'my-px transition-background data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40',
 				}}
 			>
-				<DropdownItem key={Theme.dark}>{ThemeLabel.dark}</DropdownItem>
-				<DropdownItem key={Theme.light}>{ThemeLabel.light}</DropdownItem>
-				<DropdownItem key={Theme.system}>{ThemeLabel.system}</DropdownItem>
+				{({value}) => <DropdownItem key={value}>{THEME_LABEL_MAP[value]}</DropdownItem>}
 			</DropdownMenu>
 		</Dropdown>
 	);
