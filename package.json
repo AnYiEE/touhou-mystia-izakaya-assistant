@@ -133,9 +133,6 @@
 		"typescript-eslint": "^8.19.0"
 	},
 	"pnpm": {
-		"overrides": {
-			"@react-aria/interactions@^3.22.3": "3.22.2"
-		},
 		"patchedDependencies": {
 			"@types/lodash@4.17.13": "patches/@types__lodash@4.17.13.patch"
 		}

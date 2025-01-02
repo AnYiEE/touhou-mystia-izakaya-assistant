@@ -301,6 +301,9 @@ export default function RecipeTabContent() {
 									target="recipe"
 									name={name}
 									size={2}
+									onPointerDown={(event) => {
+										event.stopPropagation();
+									}}
 									onPress={() => {
 										openWindow('recipes', name);
 									}}
@@ -351,6 +354,9 @@ export default function RecipeTabContent() {
 											target="ingredient"
 											name={ingredient}
 											size={1.5}
+											onPointerDown={(event) => {
+												event.stopPropagation();
+											}}
 											onPress={() => {
 												openWindow('ingredients', ingredient);
 											}}

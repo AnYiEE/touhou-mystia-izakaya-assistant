@@ -212,6 +212,9 @@ export default function BeverageTabContent() {
 									target="beverage"
 									name={name}
 									size={2}
+									onPointerDown={(event) => {
+										event.stopPropagation();
+									}}
 									onPress={() => {
 										openWindow('beverages', name);
 									}}
