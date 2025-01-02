@@ -307,6 +307,7 @@ export default function CustomerRare() {
 					selectedKey={selectedTabKey}
 					onSelectionChange={onTabSelectionChange}
 					classNames={{
+						tab: 'transition-opacity',
 						tabList: cn('grid grid-cols-4 bg-default/40', {
 							'backdrop-blur': isHighAppearance,
 						}),

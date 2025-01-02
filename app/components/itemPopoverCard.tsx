@@ -82,14 +82,14 @@ const CloseButton: FC<ICloseButtonProps> = () => {
 	const label = `点击：关闭${isPreviewMode ? '窗口' : '弹出框'}`;
 
 	return (
-		<Tooltip showArrow content={label} offset={-5} placement="left" size="sm">
+		<Tooltip showArrow content={label} offset={3} placement="left" size="sm">
 			<FontAwesomeIconButton
 				icon={faXmark}
 				variant="light"
 				onClick={handleClose}
 				onKeyDown={debounce(checkA11yConfirmKey(handleClose))}
 				aria-label={label}
-				className="absolute -right-1 top-1 h-4 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
+				className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
 			/>
 		</Tooltip>
 	);
@@ -139,15 +139,15 @@ const ShareButton = memo<IShareButtonProps>(function ShareButton({name}) {
 
 	return (
 		<Popover showArrow>
-			<Tooltip showArrow content={label} offset={-2} placement="left" size="sm">
-				<div className="absolute -right-1 bottom-1 flex">
+			<Tooltip showArrow content={label} offset={5} placement="left" size="sm">
+				<div className="absolute bottom-1 right-1 flex">
 					<PopoverTrigger>
 						<FontAwesomeIconButton
 							icon={faShare}
 							variant="light"
 							onPress={handlePress}
 							aria-label={label}
-							className="h-4 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
+							className="h-4 w-4 min-w-0 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
 						/>
 					</PopoverTrigger>
 				</div>

@@ -51,7 +51,7 @@ const MoveButtonComponent = memo<IMoveButtonProps>(function MoveButton({directio
 				size="1x"
 				onClick={onClick}
 				role="button"
-				className={cn('cursor-pointer hover:text-primary/40 dark:hover:text-default-200', {
+				className={cn('cursor-pointer transition-colors hover:text-primary/40 dark:hover:text-default-200', {
 					'cursor-not-allowed hover:text-primary/20': isDisabled,
 				})}
 			/>

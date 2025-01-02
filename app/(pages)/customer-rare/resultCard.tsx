@@ -306,7 +306,7 @@ export default function ResultCard() {
 						variant="flat"
 						onPress={handleSaveButtonPress}
 						aria-label={`保存套餐，当前${currentRating === null ? '未评级' : `评级为${CUSTOMER_RATING_MAP[currentRating]}`}`}
-						className={cn('flex-col gap-0 text-tiny leading-none md:w-auto', {
+						className={cn('flex-col gap-0 text-tiny leading-none !transition-opacity md:w-auto', {
 							'opacity-disabled': isSaveButtonDisabled,
 						})}
 					>

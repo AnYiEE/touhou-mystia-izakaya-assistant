@@ -317,16 +317,16 @@ export default function RecipeTabContent() {
 							</Tooltip>
 							<div className="inline-flex flex-1 items-center whitespace-nowrap">
 								<span className="text-small font-medium">{name}</span>
-								<span className="-ml-1.5">
+								<span className="ml-0.5">
 									<Popover showArrow offset={10} size="sm">
-										<Tooltip showArrow content={tags} offset={-2} placement="right" size="sm">
+										<Tooltip showArrow content={tags} offset={5} placement="right" size="sm">
 											<span className="inline-flex">
 												<PopoverTrigger>
 													<FontAwesomeIconButton
 														icon={faTags}
 														variant="light"
 														aria-label="料理标签"
-														className="inline h-4 w-4 scale-75 text-default-300 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover dark:text-default-400"
+														className="inline h-4 w-4 min-w-0 scale-75 text-default-300 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover dark:text-default-400"
 													/>
 												</PopoverTrigger>
 											</span>
@@ -530,6 +530,9 @@ export default function RecipeTabContent() {
 								variant="flat"
 								onSelectionChange={customerStore.onRecipeTableSelectedCookersChange}
 								aria-label="选择目标料理所使用的厨具"
+								itemClasses={{
+									base: 'transition-background',
+								}}
 							>
 								{({value}) => (
 									<DropdownItem key={value} textValue={value}>
@@ -563,6 +566,9 @@ export default function RecipeTabContent() {
 								variant="flat"
 								onSelectionChange={customerStore.onRecipeTableSelectedDlcsChange}
 								aria-label="选择特定DLC中的料理"
+								itemClasses={{
+									base: 'transition-background',
+								}}
 							>
 								{({value}) => (
 									<DropdownItem key={value} textValue={value.toString()}>
@@ -592,6 +598,9 @@ export default function RecipeTabContent() {
 								variant="flat"
 								onSelectionChange={customerStore.recipeTableColumns.set}
 								aria-label="选择表格所显示的列"
+								itemClasses={{
+									base: 'transition-background',
+								}}
 							>
 								{({key, label}) => <DropdownItem key={key}>{label}</DropdownItem>}
 							</DropdownMenu>
@@ -705,6 +714,7 @@ export default function RecipeTabContent() {
 			aria-label="料理选择表格"
 			classNames={{
 				base: 'gap-2',
+				td: 'before:transition-colors-opacity',
 				th: cn({
 					'bg-default-100/70 backdrop-blur-sm': isHighAppearance,
 				}),

@@ -69,5 +69,5 @@ export const recipeTableColumns = [
 
 export const tachieBreakPoint = {
 	noTachie: -1,
-	tachie: 1420,
+	tachie: 1460,
 } as const satisfies Config;
