@@ -6,6 +6,7 @@ import {Button, PopoverContent, PopoverTrigger, Spinner} from '@nextui-org/react
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faQq, faWeixin} from '@fortawesome/free-brands-svg-icons';
 
+import {trackEvent} from '@/components/analytics';
 import FontAwesomeIconLink from '@/components/fontAwesomeIconLink';
 import Link from '@/components/link';
 import Placeholder from '@/components/placeholder';
@@ -48,7 +49,12 @@ export default function Home() {
 			.then(({url}) => {
 				setWxGroupUrl(url);
 			})
-			.catch(() => {});
+			.catch((error: unknown) => {
+				console.error(error);
+				if (error instanceof Error) {
+					trackEvent(trackEvent.category.Error, 'QRCode', error.name, error.message);
+				}
+			});
 	}, [wxGroupUrl]);
 
 	const wxGroupQrCode = useMemo(() => {

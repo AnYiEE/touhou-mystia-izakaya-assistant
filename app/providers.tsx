@@ -107,6 +107,9 @@ export default function Providers({children, locale}: PropsWithChildren<IProps>)
 				if (error instanceof Error) {
 					trackEvent(trackEvent.category.Error, 'Sync', String(key), error.message);
 				}
+				if (typeof error === 'string') {
+					trackEvent(trackEvent.category.Error, 'Sync', String(key), error);
+				}
 				throw error;
 			}
 		}, 1000);
