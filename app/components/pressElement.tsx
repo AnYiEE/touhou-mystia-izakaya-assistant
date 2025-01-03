@@ -7,8 +7,10 @@ import {checkA11yConfirmKey} from '@/utils';
 type HTMLElementClickEventHandler<T extends HTMLElement> = HTMLAttributes<T>['onClick'];
 type HTMLElementKeyPressEventHandler<T extends HTMLElement> = HTMLAttributes<T>['onKeyDown'];
 
-type HTMLElementClickEvent<T extends HTMLElement> = Parameters<NonNullable<HTMLElementClickEventHandler<T>>>[0];
-type HTMLElementKeyDownEvent<T extends HTMLElement> = Parameters<NonNullable<HTMLElementKeyPressEventHandler<T>>>[0];
+export type HTMLElementClickEvent<T extends HTMLElement> = Parameters<NonNullable<HTMLElementClickEventHandler<T>>>[0];
+export type HTMLElementKeyDownEvent<T extends HTMLElement> = Parameters<
+	NonNullable<HTMLElementKeyPressEventHandler<T>>
+>[0];
 
 type HTMLElementPressEventHandler<T extends HTMLElement> = HTMLElementClickEventHandler<T> &
 	HTMLElementKeyPressEventHandler<T>;

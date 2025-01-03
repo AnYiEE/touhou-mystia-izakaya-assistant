@@ -1,25 +1,31 @@
-import {type ElementRef, type ForwardedRef, forwardRef, memo, useMemo} from 'react';
+import {type ElementRef, type ForwardedRef, forwardRef, memo, useCallback, useMemo} from 'react';
 
 import {cn} from '@nextui-org/react';
 
 import Button, {type IButtonProps} from '@/components/button';
+import {type HTMLElementClickEvent, type HTMLElementKeyDownEvent, type IPressProp} from '@/components/pressElement';
 
 import {type TTag} from '@/data';
 import type {TTagStyle} from '@/data/types';
+import {checkA11yConfirmKey} from '@/utils';
 
 interface ITagPropsBase {
 	tagStyle?: Partial<TTagStyle> | undefined;
 	tagType?: 'negative' | 'positive' | null | undefined;
 }
 
-interface ITagProps extends ITagPropsBase, IButtonProps, Omit<HTMLSpanElementAttributes, keyof IButtonProps> {
+interface ITagProps
+	extends ITagPropsBase,
+		Omit<HTMLSpanElementAttributes, Exclude<keyof IButtonProps, 'onClick' | 'onKeyDown'>>,
+		Omit<IButtonProps, 'onClick' | 'onKeyDown' | 'onPress'>,
+		Partial<IPressProp<HTMLSpanElement>> {
 	isButton?: boolean;
 	tag: TTag | [TTag, string];
 }
 
 const Tag = memo(
 	forwardRef<ElementRef<'span'>, ITagProps>(function Tag(
-		{className, isButton, tag, tagStyle = {}, tagType, ...props},
+		{className, isButton, onClick, onKeyDown, onPress, tag, tagStyle = {}, tagType, ...props},
 		ref
 	) {
 		const isArray = Array.isArray(tag);
@@ -53,11 +59,33 @@ const Tag = memo(
 			[tagDescription, tagName]
 		);
 
+		const handleClick = useCallback(
+			(event: HTMLElementClickEvent<HTMLButtonElement>) => {
+				onClick?.(event);
+				onPress?.(event);
+			},
+			[onClick, onPress]
+		);
+
+		const handleKeyDown = useCallback(
+			(event: HTMLElementKeyDownEvent<HTMLButtonElement>) => {
+				if (onKeyDown !== undefined) {
+					checkA11yConfirmKey(onKeyDown)(event);
+				}
+				if (onPress !== undefined) {
+					checkA11yConfirmKey(onPress)(event);
+				}
+			},
+			[onKeyDown, onPress]
+		);
+
 		return isButton ? (
 			<Button
 				as="span"
 				disableAnimation
 				variant="light"
+				onClick={handleClick}
+				onKeyDown={handleKeyDown}
 				className={cn(
 					'inline-block min-w-max select-auto rounded-none px-0 text-base data-[pressed=true]:scale-100 data-[hover=true]:bg-transparent',
 					baseClassName,
