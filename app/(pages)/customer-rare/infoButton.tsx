@@ -16,6 +16,7 @@ import Tachie from '@/components/tachie';
 import Tooltip from '@/components/tooltip';
 
 import {CUSTOMER_EVALUATION_KEY_MAP, CUSTOMER_RATING_MAP, LABEL_BR, type TRatingKey, type TRewardType} from '@/data';
+import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
 import {customerRareStore as store} from '@/stores';
 
 interface ILevelLabelProps {
@@ -125,15 +126,22 @@ export default function InfoButton() {
 					</p>
 					<p className="flex items-center">
 						<span className="font-semibold">立绘：</span>
-						<Sprite
-							target="customer_rare"
-							name={currentCustomerName}
-							size={1.25}
-							className="mr-0.5 rounded-full"
-						/>
 						<Popover placement={placement} showArrow={placement === 'bottom'}>
 							<PopoverTrigger>
-								<span role="button" tabIndex={0} className="underline-dotted-offset2">
+								<span
+									role="button"
+									tabIndex={0}
+									className={cn(
+										'underline-dotted-offset2 inline-flex cursor-pointer items-center',
+										CLASS_FOCUS_VISIBLE_OUTLINE
+									)}
+								>
+									<Sprite
+										target="customer_rare"
+										name={currentCustomerName}
+										size={1.25}
+										className="mr-0.5 rounded-full"
+									/>
 									查看立绘
 								</span>
 							</PopoverTrigger>
@@ -188,7 +196,10 @@ export default function InfoButton() {
 										aria-label={getLabel('料理')}
 										role="button"
 										tabIndex={0}
-										className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
+										className={cn(
+											'underline-dotted-offset2 inline-flex cursor-pointer items-center',
+											CLASS_FOCUS_VISIBLE_OUTLINE
+										)}
 									>
 										<Sprite target="recipe" name={name} size={1.25} className="mr-0.5" />
 										{name}
@@ -208,7 +219,10 @@ export default function InfoButton() {
 										aria-label={getLabel('厨具')}
 										role="button"
 										tabIndex={0}
-										className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
+										className={cn(
+											'underline-dotted-offset2 inline-flex cursor-pointer items-center',
+											CLASS_FOCUS_VISIBLE_OUTLINE
+										)}
 									>
 										<Sprite target="cooker" name={bondCooker} size={1.25} className="mr-0.5" />
 										{bondCooker}
@@ -228,7 +242,10 @@ export default function InfoButton() {
 										aria-label={getLabel('衣服')}
 										role="button"
 										tabIndex={0}
-										className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
+										className={cn(
+											'underline-dotted-offset2 inline-flex cursor-pointer items-center',
+											CLASS_FOCUS_VISIBLE_OUTLINE
+										)}
 									>
 										<Sprite target="clothes" name={bondClothes} size={1.25} className="mr-0.5" />
 										{bondClothes}
@@ -248,7 +265,10 @@ export default function InfoButton() {
 										aria-label={getLabel('摆件')}
 										role="button"
 										tabIndex={0}
-										className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
+										className={cn(
+											'underline-dotted-offset2 inline-flex cursor-pointer items-center',
+											CLASS_FOCUS_VISIBLE_OUTLINE
+										)}
 									>
 										<Sprite target="ornament" name={name} size={1.25} className="mr-0.5" />
 										{name}
@@ -274,7 +294,10 @@ export default function InfoButton() {
 										aria-label={getLabel('伙伴')}
 										role="button"
 										tabIndex={0}
-										className="underline-dotted-offset2 inline-flex cursor-pointer items-center"
+										className={cn(
+											'underline-dotted-offset2 inline-flex cursor-pointer items-center',
+											CLASS_FOCUS_VISIBLE_OUTLINE
+										)}
 									>
 										<Sprite
 											target="partner"

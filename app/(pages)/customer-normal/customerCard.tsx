@@ -23,6 +23,7 @@ import {
 	type TCustomerNormalName,
 	type TRecipeTag,
 } from '@/data';
+import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {pinyinSort} from '@/utils';
 
@@ -189,7 +190,11 @@ export default function CustomerCard() {
 						>
 							<div className="flex cursor-pointer self-center">
 								<PopoverTrigger>
-									<div role="button" tabIndex={0} className="flex flex-col items-center gap-2">
+									<div
+										role="button"
+										tabIndex={0}
+										className={cn('flex flex-col items-center gap-2', CLASS_FOCUS_VISIBLE_OUTLINE)}
+									>
 										<Avatar
 											isBordered={hasRating}
 											color={avatarRatingColor}
@@ -235,6 +240,7 @@ export default function CustomerCard() {
 												tabIndex={dlcLabel ? 0 : undefined}
 												title={dlcLabel}
 												className={cn('opacity-100', {
+													[CLASS_FOCUS_VISIBLE_OUTLINE]: dlcLabel,
 													'underline-dotted-linear': dlcLabel,
 												})}
 											>
@@ -270,7 +276,7 @@ export default function CustomerCard() {
 													<span
 														role="button"
 														tabIndex={0}
-														className={cn({
+														className={cn(CLASS_FOCUS_VISIBLE_OUTLINE, {
 															'underline-dotted-linear': hasOtherPlaces || isGoblin,
 														})}
 													>
