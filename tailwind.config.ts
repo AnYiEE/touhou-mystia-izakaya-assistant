@@ -1,11 +1,12 @@
 /* eslint-disable sort-keys */
 
 import {type Config} from 'tailwindcss';
+import {withTV} from 'tailwind-variants/transformer';
 
 import {createThemes, fontFamily, getExtendConfig, semanticColors} from './app/design/theme';
 import {CDN_URL, IS_PRODUCTION} from './scripts/utils.mjs';
 
-const config: Config = {
+const config: Config = withTV({
 	content: ['./app/**/*.tsx'],
 	darkMode: 'selector',
 	safelist: IS_PRODUCTION
@@ -22,6 +23,6 @@ const config: Config = {
 		fontFamily,
 	},
 	plugins: [createThemes(semanticColors)],
-};
+});
 
 export default config;
