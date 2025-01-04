@@ -1,0 +1,44 @@
+{
+	"id": "touhou-mystia-izakaya-assistant",
+	"name": "东方夜雀食堂小助手",
+	"short_name": "夜雀助手",
+	"description": "东方夜雀食堂小助手（夜雀助手）是为游戏《东方夜雀食堂》所打造的辅助工具，提供顾客图鉴（包括羁绊奖励和符卡效果查询）、搭配稀客和普客的料理套餐，以及料理（食谱）、酒水、食材、厨具、摆件、衣服和伙伴查询等功能，旨在为玩家的游玩过程提供帮助。",
+	"display": "standalone",
+	"display_override": ["window-controls-overlay", "standalone", "browser"],
+	"start_url": "/",
+	"shortcuts": [
+		{
+			"name": "为稀有顾客搭配料理套餐",
+			"short_name": "搭配稀客套餐",
+			"url": "/customer-rare",
+			"icons": [
+				{
+					"src": "/icons/pwa-icon-192.png",
+					"sizes": "192x192",
+					"type": "image/png"
+				},
+				{
+					"src": "/icons/pwa-icon-512.png",
+					"sizes": "512x512",
+					"type": "image/png"
+				}
+			]
+		}
+	],
+	"icons": [
+		{
+			"src": "/icons/pwa-icon-192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "/icons/pwa-icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		}
+	],
+	"dir": "ltr",
+	"lang": "zh",
+	"background_color": "#fbf8f3",
+	"theme_color": "#fbf8f3"
+}
