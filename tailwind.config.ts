@@ -1,6 +1,7 @@
 /* eslint-disable sort-keys */
 
 import {type Config} from 'tailwindcss';
+import reactAriaComponentsPlugin from 'tailwindcss-react-aria-components';
 import {withTV} from 'tailwind-variants/transformer';
 
 import {createThemes, fontFamily, getExtendConfig, semanticColors} from './app/design/theme';
@@ -22,7 +23,12 @@ const config: Config = withTV({
 		extend: getExtendConfig(CDN_URL),
 		fontFamily,
 	},
-	plugins: [createThemes(semanticColors)],
+	plugins: [
+		createThemes(semanticColors),
+		reactAriaComponentsPlugin({
+			prefix: 'rac',
+		}),
+	],
 });
 
 export default config;
