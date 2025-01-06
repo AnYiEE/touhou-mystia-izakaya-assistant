@@ -10,7 +10,7 @@ import {trackEvent} from '@/components/analytics';
 import FontAwesomeIconLink from '@/components/fontAwesomeIconLink';
 import Link from '@/components/link';
 import Placeholder from '@/components/placeholder';
-import Popover from './components/popover';
+import Popover from '@/components/popover';
 import QRCode from '@/components/qrCode';
 import Tooltip from '@/components/tooltip';
 import Xiaohongshu from '@/components/xiaohongshu';

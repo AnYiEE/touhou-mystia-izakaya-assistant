@@ -1,18 +1,6 @@
-import {
-	type DARK_MATTER_TAG,
-	type TAG_ECONOMICAL,
-	type TAG_EXPENSIVE,
-	type TAG_LARGE_PARTITION,
-	type TCookerName,
-	type TCurrencyName,
-	type TCustomerRareName,
-	type TIngredientName,
-	type TPlace,
-} from '@/data';
-import {type TAG_SIGNATURE} from '@/data/constant';
+import {type TCookerName, type TCurrencyName, type TCustomerRareName, type TIngredientName, type TPlace} from '@/data';
+import {type DARK_MATTER_TAG, type TAG_LARGE_PARTITION, type TAG_SIGNATURE} from '@/data/constant';
 import type {IFoodBase, TMerchant} from '@/data/types';
-
-export type TTagNeedCalculate = typeof TAG_EXPENSIVE | typeof TAG_ECONOMICAL;
 
 type TTag =
 	| typeof DARK_MATTER_TAG

@@ -23,7 +23,7 @@ import Tooltip from '@/components/tooltip';
 
 import {LABEL_DLC_0} from '@/data';
 import {globalStore as store} from '@/stores';
-import {pinyinSort} from '@/utils';
+import {pinyinSort} from '@/utilities';
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
 interface ISelectConfigItem extends Pick<SelectProps, 'label' | 'selectionMode'> {

@@ -33,7 +33,7 @@ import Tachie from '@/components/tachie';
 
 import {customerTabStyleMap, ingredientTabStyleMap, tachieBreakPoint} from './constants';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
-import {checkArrayContainsOf, checkArraySubsetOf} from '@/utils';
+import {checkArrayContainsOf, checkArraySubsetOf} from '@/utilities';
 
 export default function CustomerNormal() {
 	const {breakpoint} = useBreakpoint(tachieBreakPoint, 'noTachie');

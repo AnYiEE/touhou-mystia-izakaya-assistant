@@ -5,7 +5,7 @@ import {Observable, from, merge} from 'rxjs';
 import {filter, map, mergeMap} from 'rxjs/operators';
 import {UAParser} from 'ua-parser-js';
 
-import {domReady} from '@/utils';
+import {checkDomReady} from '@/utilities';
 
 type TFeature = 'flexGap' | 'webp';
 type TCompatibility = Record<TFeature, boolean>;
@@ -177,7 +177,7 @@ function initFlexGapFix() {
 		map(processAllElements)
 	);
 
-	const domReady$ = domReady().pipe(
+	const domReady$ = checkDomReady().pipe(
 		mergeMap(() => from(getChildElements(document.body))),
 		map(replaceGapClasses)
 	);

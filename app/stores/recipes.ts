@@ -4,9 +4,10 @@ import {createJSONStorage} from 'zustand/middleware';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE, type TRecipeTag} from '@/data';
-import {type IPopularData} from '@/stores';
 import {createNamesCache} from '@/stores/utils';
-import {Recipe, numberSort, pinyinSort, toValueObject} from '@/utils';
+import type {IPopularTrend} from '@/types';
+import {numberSort, pinyinSort, toGetValueCollection} from '@/utilities';
+import {Recipe} from '@/utils';
 
 const instance = Recipe.getInstance();
 
@@ -32,7 +33,7 @@ const state = {
 			TAG_POPULAR_POSITIVE,
 		] as TRecipeTag[]
 	)
-		.map(toValueObject)
+		.map(toGetValueCollection)
 		.sort(pinyinSort),
 
 	persistence: {
@@ -55,7 +56,7 @@ const state = {
 		popular: {
 			isNegative: false,
 			tag: null,
-		} as IPopularData,
+		} as IPopularTrend,
 	},
 };
 

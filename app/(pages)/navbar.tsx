@@ -34,7 +34,7 @@ import Tooltip from '@/components/tooltip';
 
 import {siteConfig} from '@/configs';
 import {globalStore as store} from '@/stores';
-import {checkA11yConfirmKey} from '@/utils';
+import {checkA11yConfirmKey} from '@/utilities';
 
 const {links, name, navItems, navMenuItems, shortName} = siteConfig;
 

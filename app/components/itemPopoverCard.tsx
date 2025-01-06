@@ -49,7 +49,7 @@ import {
 import type {ITagStyle} from '@/data/types';
 import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
 import {globalStore as store} from '@/stores';
-import {type TPressEvent, checkA11yConfirmKey, union} from '@/utils';
+import {type TPressEvent, checkA11yConfirmKey, union} from '@/utilities';
 
 const {name: siteName} = siteConfig;
 

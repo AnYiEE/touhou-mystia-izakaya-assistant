@@ -4,7 +4,8 @@ import {createJSONStorage} from 'zustand/middleware';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import {createNamesCache} from '@/stores/utils';
-import {Partner, numberSort} from '@/utils';
+import {numberSort} from '@/utilities';
+import {Partner} from '@/utils';
 
 const instance = Partner.getInstance();
 

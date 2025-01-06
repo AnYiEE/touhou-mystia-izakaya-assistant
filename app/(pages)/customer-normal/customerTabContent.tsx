@@ -11,7 +11,8 @@ import Sprite from '@/components/sprite';
 
 import type {ICustomerTabStyle} from './types';
 import {customerNormalStore as store} from '@/stores';
-import {type CustomerNormal, checkA11yConfirmKey} from '@/utils';
+import {checkA11yConfirmKey} from '@/utilities';
+import {type CustomerNormal} from '@/utils';
 import type {TItemData} from '@/utils/types';
 
 interface IProps {

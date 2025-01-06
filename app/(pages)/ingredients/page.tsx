@@ -25,7 +25,7 @@ import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import {ingredientsStore as store} from '@/stores';
-import {checkArrayContainsOf, checkArraySubsetOf} from '@/utils';
+import {checkArrayContainsOf, checkArraySubsetOf} from '@/utilities';
 
 export default function Ingredients() {
 	const shouldSkipProcessData = useSkipProcessItemData();

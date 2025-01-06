@@ -1,6 +1,7 @@
 import {Food} from './base';
 import {BEVERAGE_LIST, type TBeverageName, type TBeverageTag, type TBeverages} from '@/data';
-import {checkArrayEqualOf} from '@/utils';
+
+import {checkArrayEqualOf} from '@/utilities';
 
 export class Beverage extends Food<TBeverages> {
 	private static _instance: Beverage | undefined;

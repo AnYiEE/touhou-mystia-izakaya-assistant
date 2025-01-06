@@ -2,13 +2,13 @@ import {isObjectLike} from 'lodash';
 
 type TValue = number;
 
-interface IValueObject {
+interface IValueCollection {
 	value: TValue;
 }
 
-type TTarget = TValue | IValueObject;
+type TTarget = TValue | IValueCollection;
 
-function checkValueObject(value: TTarget): value is IValueObject {
+function checkValueCollection(value: TTarget): value is IValueCollection {
 	return isObjectLike(value) && 'value' in value;
 }
 
@@ -19,8 +19,8 @@ export function numberSort<T extends TTarget>(a: T, b: T) {
 		numberA = a;
 		numberB = b;
 	} else if (
-		checkValueObject(a) &&
-		checkValueObject(b) &&
+		checkValueCollection(a) &&
+		checkValueCollection(b) &&
 		typeof a.value === 'number' &&
 		typeof b.value === 'number'
 	) {
@@ -28,7 +28,7 @@ export function numberSort<T extends TTarget>(a: T, b: T) {
 		numberB = b.value;
 	} else {
 		// eslint-disable-next-line @typescript-eslint/no-base-to-string
-		throw new TypeError(`[utils/numberSort]: invalid parameter: ${a.toString()}; ${b.toString()}`);
+		throw new TypeError(`[utilities/sort/numberSort]: invalid parameter: ${a.toString()}; ${b.toString()}`);
 	}
 
 	return numberA - numberB;

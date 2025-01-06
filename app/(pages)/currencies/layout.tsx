@@ -1,7 +1,8 @@
 import {type Metadata} from 'next';
 
 import {siteConfig} from '@/configs';
-import {Currency, getPageTitle} from '@/utils';
+import {getPageTitle} from '@/utilities';
+import {Currency} from '@/utils';
 
 const {description, keywords} = siteConfig;
 

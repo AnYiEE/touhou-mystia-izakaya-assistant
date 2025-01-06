@@ -2,7 +2,7 @@
 
 import {type ElementType, type ForwardedRef, type HTMLAttributes, forwardRef, memo, useCallback} from 'react';
 
-import {checkA11yConfirmKey} from '@/utils';
+import {checkA11yConfirmKey} from '@/utilities';
 
 type HTMLElementClickEventHandler<T extends HTMLElement> = HTMLAttributes<T>['onClick'];
 type HTMLElementKeyPressEventHandler<T extends HTMLElement> = HTMLAttributes<T>['onKeyDown'];

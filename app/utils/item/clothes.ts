@@ -1,9 +1,10 @@
 import {isObjectLike} from 'lodash';
 
-import {siteConfig} from '@/configs';
 import {CLOTHES_LIST, type TClothes, type TClothesName, type TCustomerRareName} from '@/data';
-import {processPinyin} from '@/utils';
 import {Item} from '@/utils/item';
+
+import {siteConfig} from '@/configs';
+import {processPinyin} from '@/utilities';
 
 const {cdnUrl} = siteConfig;
 

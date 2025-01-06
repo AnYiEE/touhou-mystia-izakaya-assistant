@@ -15,7 +15,7 @@ import Tooltip from '@/components/tooltip';
 
 import {CUSTOMER_RATING_MAP, DARK_MATTER_NAME, DARK_MATTER_PRICE, type TIngredientName} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {checkA11yConfirmKey} from '@/utils';
+import {checkA11yConfirmKey} from '@/utilities';
 
 interface IPlusProps extends Pick<HTMLSpanElementAttributes, 'className'> {
 	size?: number;

@@ -1,7 +1,8 @@
 import {type Metadata} from 'next';
 
 import {siteConfig} from '@/configs';
-import {Cooker, getPageTitle} from '@/utils';
+import {getPageTitle} from '@/utilities';
+import {Cooker} from '@/utils';
 
 const {description, keywords} = siteConfig;
 

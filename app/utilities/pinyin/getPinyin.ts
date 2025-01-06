@@ -15,10 +15,20 @@ customPinyin(
 	}
 );
 
-export function pinyinPro(word: string) {
-	return pinyin(word, {
+const pinyinCache = new Map<string, string[]>();
+
+export function getPinyin(word: string) {
+	if (pinyinCache.has(word)) {
+		return pinyinCache.get(word);
+	}
+
+	const result = pinyin(word, {
 		toneType: 'num',
 		type: 'array',
 		v: true,
 	});
+
+	pinyinCache.set(word, result);
+
+	return result;
 }

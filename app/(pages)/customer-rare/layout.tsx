@@ -1,7 +1,8 @@
 import {type Metadata} from 'next';
 
 import {siteConfig} from '@/configs';
-import {CustomerRare, getPageTitle} from '@/utils';
+import {getPageTitle} from '@/utilities';
+import {CustomerRare} from '@/utils';
 
 const {description, keywords} = siteConfig;
 

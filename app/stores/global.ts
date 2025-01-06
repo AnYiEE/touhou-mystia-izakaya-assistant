@@ -4,15 +4,10 @@ import {createJSONStorage} from 'zustand/middleware';
 import {type Selection} from '@nextui-org/react';
 
 import type {IPersistenceState} from './types';
-import {type DARK_MATTER_TAG, type TIngredientTag, type TRecipeTag} from '@/data';
 import {customerNormalStore, customerRareStore, ingredientsStore, recipesStore} from '@/stores';
-import {Ingredient, Recipe, pinyinSort, toValueObject, union} from '@/utils';
-
-export type TPopularTag = Exclude<TIngredientTag, '特产' | '天罚'> | Exclude<TRecipeTag, typeof DARK_MATTER_TAG>;
-export interface IPopularData {
-	isNegative: boolean;
-	tag: TPopularTag | null;
-}
+import type {IPopularTrend, TPopularTag} from '@/types';
+import {pinyinSort, toGetValueCollection, union} from '@/utilities';
+import {Ingredient, Recipe} from '@/utils';
 
 const instance_ingredient = Ingredient.getInstance();
 const instance_recipe = Recipe.getInstance();
@@ -26,7 +21,7 @@ const recipePositiveTags = instance_recipe
 	.filter((tag) => !instance_recipe.blockedTags.has(tag));
 
 const popularValidTags = (union(ingredientTags, recipePositiveTags) as TPopularTag[])
-	.map(toValueObject)
+	.map(toGetValueCollection)
 	.sort(pinyinSort);
 
 const storeVersion = {
@@ -52,7 +47,7 @@ const state = {
 		popular: {
 			isNegative: false,
 			tag: null,
-		} as IPopularData,
+		} as IPopularTrend,
 
 		highAppearance: true,
 		tachie: true,

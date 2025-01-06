@@ -25,21 +25,17 @@ import {
 	type TRecipeName,
 	type TRecipeTag,
 } from '@/data';
-import {type IPopularData, type IRecipeData, type TPopularTag} from '@/stores';
 import {createNamesCache, keepLastTag, reverseDirection, reverseVisibilityState} from '@/stores/utils';
+import type {IMealRecipe, IPopularTrend, TPopularTag} from '@/types';
 import {
-	Beverage,
-	Clothes,
-	CustomerNormal,
-	Ingredient,
-	Recipe,
-	generateRangeArray,
+	generateRange,
 	numberSort,
 	pinyinSort,
 	removeLastElement,
-	toValueObject,
-	toValueWithKey,
-} from '@/utils';
+	toGetItemWithKey,
+	toGetValueCollection,
+} from '@/utilities';
+import {Beverage, Clothes, CustomerNormal, Ingredient, Recipe} from '@/utils';
 
 const instance_beverage = Beverage.getInstance();
 const instance_clothes = Clothes.getInstance();
@@ -75,7 +71,7 @@ const state = {
 	beverage: {
 		dlcs: instance_beverage.getValuesByProp(instance_beverage.data, 'dlc', true).sort(numberSort),
 		names: instance_beverage.getValuesByProp(instance_beverage.data, 'name', true).sort(pinyinSort),
-		tags: instance_beverage.sortedTags.map(toValueObject),
+		tags: instance_beverage.sortedTags.map(toGetValueCollection),
 	},
 	customer: {
 		dlcs: instance_customer.getValuesByProp(instance_customer.data, 'dlc', true).sort(numberSort),
@@ -96,7 +92,7 @@ const state = {
 				TAG_POPULAR_POSITIVE,
 			] as TIngredientTag[]
 		)
-			.map(toValueObject)
+			.map(toGetValueCollection)
 			.sort(pinyinSort),
 	},
 	recipe: {
@@ -115,7 +111,7 @@ const state = {
 				TAG_POPULAR_POSITIVE,
 			] as TRecipeTag[]
 		)
-			.map(toValueObject)
+			.map(toGetValueCollection)
 			.sort(pinyinSort),
 	},
 
@@ -125,7 +121,7 @@ const state = {
 				dlcs: [] as string[],
 				rows: 8,
 				sortDescriptor: {} as TBeverageTableSortDescriptor,
-				visibleColumns: beverageTableColumns.map(toValueWithKey('key')),
+				visibleColumns: beverageTableColumns.map(toGetItemWithKey('key')),
 			},
 		},
 		customer: {
@@ -156,7 +152,7 @@ const state = {
 				dlcs: [] as string[],
 				rows: 8,
 				sortDescriptor: {} as TRecipeTableSortDescriptor,
-				visibleColumns: recipeTableColumns.filter(({key}) => key !== 'time').map(toValueWithKey('key')),
+				visibleColumns: recipeTableColumns.filter(({key}) => key !== 'time').map(toGetItemWithKey('key')),
 			},
 		},
 
@@ -175,7 +171,7 @@ const state = {
 
 			page: 1,
 			searchValue: '',
-			selectableRows: generateRangeArray(5, 20).map(toValueObject),
+			selectableRows: generateRange(5, 20).map(toGetValueCollection),
 		},
 		customer: {
 			name: null as TCustomerNormalName | null,
@@ -189,20 +185,20 @@ const state = {
 			popular: {
 				isNegative: false,
 				tag: null,
-			} as IPopularData,
+			} as IPopularTrend,
 			rating: null as TRatingKey | null,
 		},
 		ingredient: {
 			filterVisibility: false,
 		},
 		recipe: {
-			data: null as IRecipeData | null,
+			data: null as IMealRecipe | null,
 
 			tagsWithPopular: [] as TRecipeTag[],
 
 			page: 1,
 			searchValue: '',
-			selectableRows: generateRangeArray(5, 20).map(toValueObject),
+			selectableRows: generateRange(5, 20).map(toGetValueCollection),
 		},
 		tab: 'customer' as TTab,
 	},
@@ -627,7 +623,7 @@ export const customerNormalStore = store(state, {
 			customerName: TCustomerNormalName;
 			extraIngredients: TIngredientName[];
 			isFamousShop: boolean;
-			popular: IPopularData;
+			popular: IPopularTrend;
 			recipeName: TRecipeName;
 		}) {
 			const stringifiedData = JSON.stringify(data);

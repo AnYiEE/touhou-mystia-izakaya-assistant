@@ -4,7 +4,8 @@ import {createJSONStorage} from 'zustand/middleware';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import {createNamesCache} from '@/stores/utils';
-import {Clothes, numberSort} from '@/utils';
+import {numberSort} from '@/utilities';
+import {Clothes} from '@/utils';
 
 const instance = Clothes.getInstance();
 

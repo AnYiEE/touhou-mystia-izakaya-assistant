@@ -7,7 +7,7 @@ import {catchError} from 'rxjs/operators';
 import {usePathname} from '@/hooks';
 
 import {siteConfig} from '@/configs';
-import {setScriptUrlTag} from '@/utils';
+import {setScriptUrlTag} from '@/utilities';
 
 const {analyticsApiUrl, analyticsScriptUrl, analyticsSiteId, domain} = siteConfig;
 

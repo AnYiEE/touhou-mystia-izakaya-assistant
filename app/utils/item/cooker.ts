@@ -1,8 +1,9 @@
 import {isObjectLike} from 'lodash';
 
 import {COOKER_LIST, type TCookerCategory, type TCookerName, type TCookers, type TCustomerRareName} from '@/data';
-import {checkArrayEqualOf} from '@/utils';
 import {Item} from '@/utils/item';
+
+import {checkArrayEqualOf} from '@/utilities';
 
 export class Cooker extends Item<TCookers> {
 	private static _instance: Cooker | undefined;

@@ -1,31 +1,18 @@
+import {
+	type TAG_ECONOMICAL,
+	type TAG_EXPENSIVE,
+	type TAG_POPULAR_NEGATIVE,
+	type TAG_POPULAR_POSITIVE,
+} from '@/data/constant';
+
 import type {IBeverage} from '@/data/beverages/types';
-import {type TAG_POPULAR_NEGATIVE, type TAG_POPULAR_POSITIVE} from '@/data/constant';
 import type {IIngredient} from '@/data/ingredients/types';
-import type {IRecipe, TTagNeedCalculate} from '@/data/recipes/types';
+import type {IRecipe} from '@/data/recipes/types';
 
 /** @description The meaning of "DLC 0" here refers to the base game. */
 type TDlc = 0 | 1 | 2 | 2.5 | 3 | 4 | 5;
 
 type TLevel = 1 | 2 | 3 | 4 | 5 | 10;
-
-type TEvaluationKey =
-	| 'exbad'
-	| 'bad'
-	| 'norm'
-	| 'good'
-	| 'exgood'
-	| 'lackmoneynormal'
-	| 'lackmoneyangry'
-	| 'repell'
-	| 'seenRepell';
-type TEvaluation = '极度不满' | '不满' | '普通' | '满意' | '完美' | '小额超支' | '大额超支' | '被驱赶' | '评价驱赶行为';
-type TRatingKey = Exclude<TEvaluationKey, 'lackmoneynormal' | 'lackmoneyangry' | 'repell' | 'seenRepell'>;
-type TRating = Exclude<TEvaluation, '小额超支' | '大额超支' | '被驱赶' | '评价驱赶行为'>;
-
-type TEvaluationMap = Record<TEvaluationKey, TEvaluation>;
-type TEvaluationKeyMap = Record<TEvaluation, TEvaluationKey>;
-type TRatingMap = Record<TRatingKey, TRating>;
-type TRatingKeyMap = Record<TRating, TRatingKey>;
 
 type TCollectionLocation =
 	| '【博丽神社】花丛'
@@ -189,6 +176,7 @@ export type TMerchant =
 
 type TTask = '阿求小姐的色纸' | '女仆长的采购委托' | '月都试炼' | '最终收网行动';
 
+type TTagNeedCalculate = typeof TAG_EXPENSIVE | typeof TAG_ECONOMICAL;
 type TPopularTags = typeof TAG_POPULAR_NEGATIVE | typeof TAG_POPULAR_POSITIVE;
 
 type TBeverageTag = IBeverage['tags'][number];

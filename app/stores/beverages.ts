@@ -4,7 +4,8 @@ import {createJSONStorage} from 'zustand/middleware';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import {createNamesCache} from '@/stores/utils';
-import {Beverage, numberSort, toValueObject} from '@/utils';
+import {numberSort, toGetValueCollection} from '@/utilities';
+import {Beverage} from '@/utils';
 
 const instance = Beverage.getInstance();
 
@@ -18,7 +19,7 @@ const state = {
 
 	dlcs: instance.getValuesByProp(instance.data, 'dlc', true).sort(numberSort),
 	levels: instance.getValuesByProp(instance.data, 'level', true).sort(numberSort),
-	tags: instance.sortedTags.map(toValueObject),
+	tags: instance.sortedTags.map(toGetValueCollection),
 
 	persistence: {
 		filters: {

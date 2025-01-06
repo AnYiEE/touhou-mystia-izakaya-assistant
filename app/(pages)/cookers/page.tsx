@@ -25,7 +25,7 @@ import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import {cookersStore as store} from '@/stores';
-import {checkArrayContainsOf} from '@/utils';
+import {checkArrayContainsOf} from '@/utilities';
 
 export default function Cookers() {
 	const shouldSkipProcessData = useSkipProcessItemData();

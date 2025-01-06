@@ -4,7 +4,8 @@ import {createJSONStorage} from 'zustand/middleware';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import {createNamesCache} from '@/stores/utils';
-import {Cooker, numberSort, pinyinSort, toValueObject} from '@/utils';
+import {numberSort, pinyinSort, toGetValueCollection} from '@/utilities';
+import {Cooker} from '@/utils';
 
 const instance = Cooker.getInstance();
 
@@ -15,7 +16,7 @@ const storeVersion = {
 const state = {
 	instance,
 
-	categories: instance.sortedCategories.map(toValueObject),
+	categories: instance.sortedCategories.map(toGetValueCollection),
 	dlcs: instance.getValuesByProp(instance.data, 'dlc', true).sort(numberSort),
 	types: instance.getValuesByProp(instance.data, 'type', true).sort(pinyinSort),
 

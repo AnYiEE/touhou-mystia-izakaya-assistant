@@ -9,12 +9,12 @@ import {
 	type TRecipeName,
 	type TRecipeTag,
 } from '@/data';
-import {type IPopularData, type TPopularTag} from '@/stores';
-import {intersection} from '@/utils';
+import {type IPopularTrend, type TPopularTag} from '@/types';
+import {intersection} from '@/utilities';
 
 interface IParameters {
 	currentCustomerName: TCustomerNormalName;
-	currentCustomerPopularData: IPopularData;
+	currentCustomerPopularData: IPopularTrend;
 	currentCustomerPositiveTags: TRecipeTag[];
 	currentExtraIngredientsLength: number;
 	currentExtraTags: TPopularTag[];
@@ -86,7 +86,7 @@ export function evaluateMeal({
 		extraScore += 1;
 	}
 
-	let currentCustomerPopularTag: IPopularData['tag'] = null;
+	let currentCustomerPopularTag: IPopularTrend['tag'] = null;
 	const {isNegative: popularIsNegative, tag: popularTag} = currentCustomerPopularData;
 	if (popularIsNegative && currentCustomerPositiveTags.includes(TAG_POPULAR_NEGATIVE)) {
 		currentCustomerPopularTag = popularTag;

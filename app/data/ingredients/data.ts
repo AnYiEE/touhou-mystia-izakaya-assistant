@@ -1,6 +1,6 @@
 /* eslint-disable sort-keys */
-import {TAG_SIGNATURE} from '@/data/constant';
 import type {IIngredient} from './types';
+import {TAG_SIGNATURE} from '@/data/constant';
 
 export const INGREDIENT_LIST = [
 	{

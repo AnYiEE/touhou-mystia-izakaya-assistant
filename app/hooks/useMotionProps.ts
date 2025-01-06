@@ -1,6 +1,6 @@
 import {useMemo} from 'react';
 
-import {globalStore} from '@/stores';
+import {globalStore as store} from '@/stores';
 
 const MOTION_DEFAULT = {} as const;
 
@@ -109,7 +109,7 @@ export function getMotionProps<T extends TMotionType>(
 }
 
 export function useMotionProps<T extends TMotionType>(type: T) {
-	const isHighAppearance = globalStore.persistence.highAppearance.use();
+	const isHighAppearance = store.persistence.highAppearance.use();
 
 	const motionProps = useMemo(() => getMotionProps(type, isHighAppearance), [isHighAppearance, type]);
 

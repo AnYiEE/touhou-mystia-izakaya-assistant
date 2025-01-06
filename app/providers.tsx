@@ -9,7 +9,7 @@ import {useRouter} from 'next/navigation';
 import {NextUIProvider} from '@nextui-org/react';
 import {ProgressBar, ProgressBarProvider} from 'react-transition-progress';
 
-import {trackEvent} from './components/analytics';
+import {trackEvent} from '@/components/analytics';
 import CompatibleBrowser from '@/components/compatibleBrowser';
 import CustomerRareTutorial from '@/components/customerRareTutorial';
 

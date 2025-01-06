@@ -1,31 +1,17 @@
 import {isObjectLike} from 'lodash';
 
-import {numberSort, pinyinPro} from '@/utils';
+import {getPinyin, numberSort} from '@/utilities';
 
 type TValue = string | string[];
 
-interface IValueObject {
+interface IValueCollection {
 	value: TValue;
 }
 
-type TTarget = TValue | IValueObject;
+type TTarget = TValue | IValueCollection;
 
-const pinyinCache = new Map<string, string[]>();
-
-function checkValueObject(value: TTarget): value is IValueObject {
+function checkValueCollection(value: TTarget): value is IValueCollection {
 	return isObjectLike(value) && 'value' in value;
-}
-
-function getPinyinArray(value: string) {
-	if (pinyinCache.has(value)) {
-		return pinyinCache.get(value);
-	}
-
-	const pinyin = pinyinPro(value);
-
-	pinyinCache.set(value, pinyin);
-
-	return pinyin;
 }
 
 function getTone(pinyin: string) {
@@ -39,7 +25,7 @@ function removeTone(pinyin: string) {
 }
 
 function throwError(...args: unknown[]): never {
-	throw new TypeError(`[utils/pinyinSort]: invalid parameter: ${args.join('; ')}`);
+	throw new TypeError(`[utilities/sort/pinyinSort]: invalid parameter: ${args.join('; ')}`);
 }
 
 export function pinyinSort<T extends TTarget>(a: T, b: T) {
@@ -49,15 +35,15 @@ export function pinyinSort<T extends TTarget>(a: T, b: T) {
 		arrayA = a;
 		arrayB = b;
 	} else if (typeof a === 'string' && typeof b === 'string') {
-		arrayA = getPinyinArray(a);
-		arrayB = getPinyinArray(b);
-	} else if (checkValueObject(a) && checkValueObject(b)) {
+		arrayA = getPinyin(a);
+		arrayB = getPinyin(b);
+	} else if (checkValueCollection(a) && checkValueCollection(b)) {
 		if (Array.isArray(a.value) && Array.isArray(b.value)) {
 			arrayA = a.value;
 			arrayB = b.value;
 		} else if (typeof a.value === 'string' && typeof b.value === 'string') {
-			arrayA = getPinyinArray(a.value);
-			arrayB = getPinyinArray(b.value);
+			arrayA = getPinyin(a.value);
+			arrayB = getPinyin(b.value);
 		} else {
 			throwError(a, b);
 		}

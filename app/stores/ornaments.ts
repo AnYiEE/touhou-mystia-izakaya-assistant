@@ -4,7 +4,8 @@ import {createJSONStorage} from 'zustand/middleware';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import {createNamesCache} from '@/stores/utils';
-import {Ornament, numberSort} from '@/utils';
+import {numberSort} from '@/utilities';
+import {Ornament} from '@/utils';
 
 const instance = Ornament.getInstance();
 

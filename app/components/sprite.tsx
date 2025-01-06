@@ -10,7 +10,8 @@ import PressElement, {type IPressProp} from '@/components/pressElement';
 import {siteConfig} from '@/configs';
 import {type TItemName} from '@/data';
 import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
-import {Sprite as SpriteClass, remToPx} from '@/utils';
+import {remToPx} from '@/utilities';
+import {Sprite as SpriteClass} from '@/utils';
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
 const {cdnUrl} = siteConfig;

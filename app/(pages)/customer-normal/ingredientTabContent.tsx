@@ -22,7 +22,8 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import {customerNormalStore as store} from '@/stores';
-import {type Recipe, checkA11yConfirmKey, intersection, toValueWithKey, union} from '@/utils';
+import {checkA11yConfirmKey, intersection, toGetItemWithKey, union} from '@/utilities';
+import {type Recipe} from '@/utils';
 import type {TItemDataItem} from '@/utils/types';
 
 export default memo<IIngredientTabContentProps>(function IngredientsTabContent({ingredientTabStyle, sortedData}) {
@@ -47,7 +48,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 			new Set(
 				sortedData
 					.filter(({tags}) => intersection(tags, currentRecipe?.negativeTags ?? []).length > 0)
-					.map(toValueWithKey('name'))
+					.map(toGetItemWithKey('name'))
 			),
 		[currentRecipe?.negativeTags, sortedData]
 	);

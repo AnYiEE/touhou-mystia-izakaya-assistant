@@ -7,7 +7,7 @@ import {type HTMLElementClickEvent, type HTMLElementKeyDownEvent, type IPressPro
 
 import {type TTag} from '@/data';
 import type {TTagStyle} from '@/data/types';
-import {checkA11yConfirmKey} from '@/utils';
+import {checkA11yConfirmKey} from '@/utilities';
 
 interface ITagPropsBase {
 	tagStyle?: Partial<TTagStyle> | undefined;

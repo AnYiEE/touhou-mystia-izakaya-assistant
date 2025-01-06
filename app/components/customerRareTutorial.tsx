@@ -7,7 +7,7 @@ import {usePathname} from '@/hooks';
 
 import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {getPageTitle} from '@/utils';
+import {getPageTitle} from '@/utilities';
 
 const key = 'customer_rare_tutorial';
 const pathname = '/customer-rare';

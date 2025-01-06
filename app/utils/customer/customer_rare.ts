@@ -1,7 +1,9 @@
 import {Customer} from './base';
 import {siteConfig} from '@/configs';
 import {CUSTOMER_RARE_LIST, type TCustomerRareName, type TCustomerRares} from '@/data';
-import {Clothes, processPinyin} from '@/utils';
+import {Clothes} from '@/utils';
+
+import {processPinyin} from '@/utilities';
 
 const {cdnUrl} = siteConfig;
 

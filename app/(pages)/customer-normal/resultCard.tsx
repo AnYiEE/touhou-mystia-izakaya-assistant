@@ -14,7 +14,7 @@ import Tooltip from '@/components/tooltip';
 
 import {CUSTOMER_RATING_MAP, type TIngredientName} from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
-import {checkA11yConfirmKey} from '@/utils';
+import {checkA11yConfirmKey} from '@/utilities';
 
 export {Plus} from '@/(pages)/customer-rare/resultCard';
 

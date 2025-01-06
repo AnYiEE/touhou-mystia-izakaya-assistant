@@ -21,7 +21,7 @@ import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Tooltip from '@/components/tooltip';
 
 import {globalStore as store} from '@/stores';
-import {toValueObject} from '@/utils';
+import {toGetValueCollection} from '@/utilities';
 
 const THEME_LABEL_MAP = {
 	dark: '深色主题',
@@ -114,7 +114,7 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 			</Tooltip>
 			<DropdownMenu
 				disallowEmptySelection
-				items={Object.values(THEME_MAP).map(toValueObject)}
+				items={Object.values(THEME_MAP).map(toGetValueCollection)}
 				selectedKeys={selectedTheme}
 				selectionMode="single"
 				onSelectionChange={onSelectedThemeChange}

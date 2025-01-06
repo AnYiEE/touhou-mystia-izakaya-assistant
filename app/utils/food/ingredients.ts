@@ -10,8 +10,9 @@ import {
 	type TIngredients,
 	type TLevel,
 } from '@/data';
-import {type IPopularData} from '@/stores';
-import {checkArrayEqualOf} from '@/utils';
+
+import {checkArrayEqualOf} from '@/utilities';
+import type {IPopularTrend} from '@/types';
 
 export class Ingredient extends Food<TIngredients> {
 	private static _instance: Ingredient | undefined;
@@ -64,7 +65,7 @@ export class Ingredient extends Food<TIngredients> {
 	 */
 	public calculateTagsWithPopular(
 		ingredientTags: ReadonlyArray<TIngredientTag>,
-		popular: IPopularData,
+		popular: IPopularTrend,
 		isFamousShop: boolean
 	) {
 		const ingredientTagsWithPopular = new Set(ingredientTags);

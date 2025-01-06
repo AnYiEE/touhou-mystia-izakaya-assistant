@@ -1,7 +1,8 @@
-import {siteConfig} from '@/configs';
 import {PARTNER_LIST, type TCustomerRareName, type TPartnerName, type TPartners} from '@/data';
-import {processPinyin} from '@/utils';
 import {Item} from '@/utils/item';
+
+import {siteConfig} from '@/configs';
+import {processPinyin} from '@/utilities';
 
 const {cdnUrl} = siteConfig;
 

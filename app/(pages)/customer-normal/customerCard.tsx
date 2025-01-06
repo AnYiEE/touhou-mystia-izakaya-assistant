@@ -25,7 +25,7 @@ import {
 } from '@/data';
 import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
-import {pinyinSort} from '@/utils';
+import {pinyinSort} from '@/utilities';
 
 export default function CustomerCard() {
 	const vibrate = useVibrate();

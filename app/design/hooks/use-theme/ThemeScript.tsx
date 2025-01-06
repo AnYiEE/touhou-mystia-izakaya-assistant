@@ -30,7 +30,7 @@ const script = (
 	}
 };
 
-export function ThemeScript() {
+export default function ThemeScript() {
 	const scriptArgs = JSON.stringify([MEDIA, STORAGE_KEY, THEME_MAP, COLOR_MAP]).slice(1, -1);
 
 	return (

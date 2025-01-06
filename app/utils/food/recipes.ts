@@ -19,8 +19,9 @@ import {
 	type TRecipeTag,
 	type TRecipes,
 } from '@/data';
-import {type IPopularData, type IRecipeData} from '@/stores';
-import {intersection} from '@/utils';
+
+import {intersection} from '@/utilities';
+import type {IMealRecipe, IPopularTrend} from '@/types';
 
 type TRecipe = TRecipes[number];
 type TProcessPositiveTags<T extends TRecipe> = Omit<T, 'positiveTags'> & {
@@ -83,7 +84,7 @@ export class Recipe extends Food<TRecipes> {
 	 */
 	public calculateTagsWithPopular(
 		recipeTags: ReadonlyArray<TRecipeTag>,
-		popular: IPopularData,
+		popular: IPopularTrend,
 		isFamousShop: boolean
 	) {
 		const recipeTagsWithPopular = new Set(recipeTags);
@@ -106,7 +107,7 @@ export class Recipe extends Food<TRecipes> {
 	 */
 	public checkDarkMatter(
 		recipeData:
-			| IRecipeData
+			| IMealRecipe
 			| {
 					extraIngredients: ReadonlyArray<TIngredientName>;
 					negativeTags: ReadonlyArray<TRecipeTag>;
@@ -138,7 +139,7 @@ export class Recipe extends Food<TRecipes> {
 		extraIngredients: ReadonlyArray<TIngredientName>,
 		originalRecipePositiveTags: ReadonlyArray<TRecipeTag>,
 		extraIngredientTags: ReadonlyArray<TIngredientTag>,
-		popular: IPopularData | null
+		popular: IPopularTrend | null
 	) {
 		const resultTags = new Set([...originalRecipePositiveTags, ...extraIngredientTags]);
 		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popular ?? {};

@@ -1,6 +1,7 @@
 import type {IFood} from './types';
-import {intersection} from '@/utils';
 import {Item} from '@/utils/item';
+
+import {intersection} from '@/utilities';
 
 export class Food<TTarget extends IFood[]> extends Item<TTarget> {
 	/**

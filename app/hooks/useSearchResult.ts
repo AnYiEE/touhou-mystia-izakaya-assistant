@@ -2,7 +2,7 @@ import {useCallback, useMemo} from 'react';
 
 import {useSkipProcessItemData} from '@/hooks';
 
-import {processPinyin} from '@/utils';
+import {processPinyin} from '@/utilities';
 import type {TItemData, TItemInstance} from '@/utils/types';
 
 export function useSearchResult<T extends TItemInstance>(instance: T, searchValue: string) {

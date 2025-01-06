@@ -9,7 +9,7 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import {type ICustomerOrder} from '@/stores';
-import {intersection, without} from '@/utils';
+import {intersection, without} from '@/utilities';
 
 interface IParameters {
 	currentBeverageTags: TBeverageTag[];

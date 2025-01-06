@@ -23,8 +23,9 @@ import {
 	RECIPE_LIST,
 	RECIPE_SPRITE_CONFIG,
 } from '@/data';
-import {pxToRem} from '@/utils';
 import {Item} from '@/utils/item';
+
+import {pxToRem} from '@/utilities';
 
 const SPRITE_CONFIG_MAP = {
 	beverage: BEVERAGE_SPRITE_CONFIG,

@@ -20,7 +20,7 @@ import Popover from '@/components/popover';
 import Tooltip from '@/components/tooltip';
 
 import {customerNormalStore, customerRareStore, globalStore} from '@/stores';
-import {FILE_TYPE_JSON, checkA11yConfirmKey, downloadJson, parseJsonFromInput, toggleBoolean} from '@/utils';
+import {FILE_TYPE_JSON, checkA11yConfirmKey, downloadJson, parseJsonFromInput, toggleBoolean} from '@/utilities';
 
 enum DownloadButtonLabel {
 	Download = '下载',

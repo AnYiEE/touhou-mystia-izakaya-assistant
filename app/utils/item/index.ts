@@ -1,7 +1,8 @@
 import {cloneDeep} from 'lodash';
 
 import type {IItem, TItemWithPinyin as _TItemWithPinyin} from './types';
-import {pinyinPro, pinyinSort, toValueObject, union} from '@/utils';
+
+import {getPinyin, pinyinSort, toGetValueCollection, union} from '@/utilities';
 
 export class Item<
 	TTarget extends IItem[],
@@ -20,7 +21,7 @@ export class Item<
 		this._data = cloneDeep(data);
 		this._dataWithPinyin = this._data.map((item) => ({
 			...item,
-			pinyin: pinyinPro(item.name),
+			pinyin: getPinyin(item.name),
 		})) as TItemWithPinyin[];
 
 		this._pinyinSortedCache = null;
@@ -156,7 +157,7 @@ export class Item<
 		const values = union(data.map((item) => props.map((key) => item[key])).flat(Infinity));
 
 		if (wrap) {
-			return values.map(toValueObject);
+			return values.map(toGetValueCollection);
 		}
 
 		return values;
