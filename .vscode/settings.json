@@ -64,6 +64,7 @@
 	"typescript.enablePromptUseWorkspaceTsdk": true,
 	"typescript.tsdk": "./node_modules/typescript/lib",
 	"cSpell.words": [
+		"clsx",
 		"commitlint",
 		"compat",
 		"davstack",
@@ -97,6 +98,7 @@
 		"tailwindcss",
 		"titlebar",
 		"touhou",
+		"uniqid",
 		"vercel",
 		"vmax",
 		"webp",

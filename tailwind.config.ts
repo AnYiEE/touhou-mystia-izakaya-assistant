@@ -8,7 +8,7 @@ import {createThemes, fontFamily, getExtendConfig, semanticColors} from './app/d
 import {CDN_URL, IS_PRODUCTION} from './scripts/utils.mjs';
 
 const config: Config = withTV({
-	content: ['./app/**/*.tsx'],
+	content: ['./app/**/*.{ts,tsx}'],
 	darkMode: 'selector',
 	safelist: IS_PRODUCTION
 		? [
