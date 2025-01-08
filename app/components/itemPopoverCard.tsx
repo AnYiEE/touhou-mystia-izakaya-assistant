@@ -18,16 +18,11 @@ import {useParams} from '@/hooks';
 import {PARAM_SPECIFY} from '@/hooks/useOpenedItemPopover';
 import {PARAM_PREVIEW, useViewInNewWindow} from '@/hooks/useViewInNewWindow';
 
-import {
-	PopoverContent,
-	PopoverTrigger,
-	type PopoverTriggerProps,
-	Snippet,
-	cn,
-	usePopoverContext,
-} from '@nextui-org/react';
+import {PopoverContent, PopoverTrigger, type PopoverTriggerProps, Snippet, usePopoverContext} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faLink, faShare, faXmark} from '@fortawesome/free-solid-svg-icons';
+
+import {CLASSNAME_FOCUS_VISIBLE_OUTLINE, cn} from '@/design/ui/components';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Popover from '@/components/popover';
@@ -47,7 +42,6 @@ import {
 	type TTag,
 } from '@/data';
 import type {ITagStyle} from '@/data/types';
-import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
 import {globalStore as store} from '@/stores';
 import {type TPressEvent, checkA11yConfirmKey, union} from '@/utilities';
 
@@ -264,7 +258,7 @@ const ItemPopoverCardComponent = memo(
 									>
 										<PopoverTrigger
 											className={cn({
-												[CLASS_FOCUS_VISIBLE_OUTLINE]: dlcLabel,
+												[CLASSNAME_FOCUS_VISIBLE_OUTLINE]: dlcLabel,
 											})}
 										>
 											<span

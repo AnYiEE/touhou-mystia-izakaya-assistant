@@ -2,8 +2,10 @@ import {useCallback, useMemo} from 'react';
 
 import {useVibrate} from '@/hooks';
 
-import {Card, Divider, PopoverContent, PopoverTrigger, cn} from '@nextui-org/react';
+import {Card, Divider, PopoverContent, PopoverTrigger} from '@nextui-org/react';
 import {faArrowsRotate, faXmark} from '@fortawesome/free-solid-svg-icons';
+
+import {CLASSNAME_FOCUS_VISIBLE_OUTLINE, cn} from '@/design/ui/components';
 
 import InfoButton from './infoButton';
 import TagGroup from './tagGroup';
@@ -24,7 +26,6 @@ import {
 	type TCustomerRareName,
 	type TRecipeTag,
 } from '@/data';
-import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {pinyinSort} from '@/utilities';
 
@@ -248,7 +249,10 @@ export default function CustomerCard() {
 									<div
 										role="button"
 										tabIndex={0}
-										className={cn('flex flex-col items-center gap-2', CLASS_FOCUS_VISIBLE_OUTLINE)}
+										className={cn(
+											'flex flex-col items-center gap-2',
+											CLASSNAME_FOCUS_VISIBLE_OUTLINE
+										)}
 									>
 										<Avatar
 											isBordered={hasRating}
@@ -286,7 +290,7 @@ export default function CustomerCard() {
 												tabIndex={dlcLabel ? 0 : undefined}
 												title={dlcLabel}
 												className={cn('opacity-100', {
-													[CLASS_FOCUS_VISIBLE_OUTLINE]: dlcLabel,
+													[CLASSNAME_FOCUS_VISIBLE_OUTLINE]: dlcLabel,
 													'underline-dotted-linear': dlcLabel,
 												})}
 											>
@@ -304,7 +308,7 @@ export default function CustomerCard() {
 											<span
 												role="button"
 												tabIndex={0}
-												className={cn(CLASS_FOCUS_VISIBLE_OUTLINE, {
+												className={cn(CLASSNAME_FOCUS_VISIBLE_OUTLINE, {
 													'underline-dotted-linear': hasOtherPlaces,
 												})}
 											>

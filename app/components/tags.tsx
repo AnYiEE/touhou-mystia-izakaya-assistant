@@ -1,6 +1,6 @@
 import {type ElementRef, type ForwardedRef, forwardRef, memo, useCallback, useMemo} from 'react';
 
-import {cn} from '@nextui-org/react';
+import {cn} from '@/design/ui/components';
 
 import Button, {type IButtonProps} from '@/components/button';
 import {type HTMLElementClickEvent, type HTMLElementKeyDownEvent, type IPressProp} from '@/components/pressElement';

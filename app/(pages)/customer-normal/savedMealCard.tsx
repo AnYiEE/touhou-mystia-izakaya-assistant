@@ -2,7 +2,9 @@ import {Fragment} from 'react';
 
 import {useVibrate, useViewInNewWindow} from '@/hooks';
 
-import {Card, Divider, PopoverContent, PopoverTrigger, cn} from '@nextui-org/react';
+import {Card, Divider, PopoverContent, PopoverTrigger} from '@nextui-org/react';
+
+import {cn} from '@/design/ui/components';
 
 import {Plus} from './resultCard';
 import {type IMoveButtonProps, MoveButton} from '@/(pages)/customer-rare/savedMealCard';

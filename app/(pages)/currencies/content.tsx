@@ -3,7 +3,9 @@ import {isObjectLike} from 'lodash';
 
 import {useOpenedItemPopover, useViewInNewWindow} from '@/hooks';
 
-import {PopoverContent, cn} from '@nextui-org/react';
+import {PopoverContent} from '@nextui-org/react';
+
+import {cn} from '@/design/ui/components';
 
 import {trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';

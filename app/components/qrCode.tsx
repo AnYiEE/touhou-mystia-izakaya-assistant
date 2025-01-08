@@ -4,7 +4,7 @@ import {type PropsWithChildren, memo} from 'react';
 
 import {useQRCode} from 'next-qrcode';
 
-import {cn} from '@nextui-org/react';
+import {cn} from '@/design/ui/components';
 
 import {type IQRCode} from 'next-qrcode/dist/useQRCode';
 

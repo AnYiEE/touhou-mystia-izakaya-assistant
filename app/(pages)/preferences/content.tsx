@@ -4,7 +4,9 @@ import {memo, useCallback} from 'react';
 
 import {useMotionProps, useVibrate} from '@/hooks';
 
-import {Select, SelectItem, type Selection, Switch, cn} from '@nextui-org/react';
+import {Select, SelectItem, type Selection, Switch} from '@nextui-org/react';
+
+import {cn} from '@/design/ui/components';
 
 import DataManager, {type IDataManagerProps} from './dataManager';
 import SwitchItem from './switchItem';

@@ -21,10 +21,11 @@ import {
 	TableColumn,
 	TableHeader,
 	TableRow,
-	cn,
 } from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faChevronDown, faMagnifyingGlass, faPlus, faTags} from '@fortawesome/free-solid-svg-icons';
+
+import {cn} from '@/design/ui/components';
 
 import TagGroup from './tagGroup';
 import Button from '@/components/button';

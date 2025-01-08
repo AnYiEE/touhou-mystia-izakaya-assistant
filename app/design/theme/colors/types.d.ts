@@ -5,5 +5,5 @@ export type TColorScale = Required<Omit<Exclude<ColorScale, string>, 'DEFAULT' |
 type TColor = TColorScale & Exclude<ColorScale, string>;
 type TBaseColors = Record<Exclude<keyof BaseColors, 'content3' | 'content4'>, TColor>;
 
-export type TSemanticBaseColors = Record<keyof Pick<SemanticBaseColors, 'light'>, TBaseColors>;
+export type TSemanticBaseColors = Record<keyof SemanticBaseColors, TBaseColors>;
 export type TThemeColors = Record<keyof Omit<ThemeColors, keyof TBaseColors | 'content3' | 'content4'>, TColor>;

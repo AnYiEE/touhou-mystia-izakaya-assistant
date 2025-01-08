@@ -2,8 +2,10 @@ import {Fragment, memo, useCallback, useState} from 'react';
 
 import {useVibrate} from '@/hooks';
 
-import {Accordion, type AccordionProps, Modal, ModalBody, ModalContent, ScrollShadow, cn} from '@nextui-org/react';
+import {Accordion, type AccordionProps, Modal, ModalBody, ModalContent, ScrollShadow} from '@nextui-org/react';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
+
+import {cn} from '@/design/ui/components';
 
 import {trackEvent} from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';

@@ -2,8 +2,9 @@
 
 import {type ElementRef, forwardRef, memo} from 'react';
 
-import {cn} from '@nextui-org/react';
 import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
+
+import {cn} from '@/design/ui/components';
 
 import Link, {type ILinkProps} from '@/components/link';
 

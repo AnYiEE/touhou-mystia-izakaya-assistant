@@ -3,7 +3,9 @@ import {Fragment, memo, useRef} from 'react';
 import useBreakpoint from 'use-breakpoint';
 import {useOpenedItemPopover} from '@/hooks';
 
-import {PopoverContent, PopoverTrigger, cn} from '@nextui-org/react';
+import {PopoverContent, PopoverTrigger} from '@nextui-org/react';
+
+import {CLASSNAME_FOCUS_VISIBLE_OUTLINE, cn} from '@/design/ui/components';
 
 import {trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
@@ -13,7 +15,6 @@ import Sprite from '@/components/sprite';
 import Tachie from '@/components/tachie';
 
 import {type IPartner} from '@/data';
-import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
 import {partnersStore /* , globalStore */} from '@/stores';
 import {type Partner} from '@/utils';
 import type {TItemData} from '@/utils/types';
@@ -112,7 +113,7 @@ export default memo<IProps>(function Content({data}) {
 								<span
 									role="button"
 									tabIndex={0}
-									className={cn('underline-dotted-offset2', CLASS_FOCUS_VISIBLE_OUTLINE)}
+									className={cn('underline-dotted-offset2', CLASSNAME_FOCUS_VISIBLE_OUTLINE)}
 								>
 									查看立绘
 								</span>

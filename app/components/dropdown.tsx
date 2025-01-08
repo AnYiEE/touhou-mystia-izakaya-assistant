@@ -4,7 +4,9 @@ import {memo} from 'react';
 
 import {useMotionProps} from '@/hooks';
 
-import {type DropdownProps, Dropdown as NextUIDropdown, cn} from '@nextui-org/react';
+import {type DropdownProps, Dropdown as NextUIDropdown} from '@nextui-org/react';
+
+import {cn} from '@/design/ui/components';
 
 import {globalStore as store} from '@/stores';
 

@@ -2,7 +2,9 @@
 
 import {type ElementRef, forwardRef, memo} from 'react';
 
-import {type ButtonProps, Button as NextUIButton, cn} from '@nextui-org/react';
+import {type ButtonProps, Button as NextUIButton} from '@nextui-org/react';
+
+import {cn} from '@/design/ui/components';
 
 import {globalStore as store} from '@/stores';
 

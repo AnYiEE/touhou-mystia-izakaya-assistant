@@ -84,7 +84,7 @@ export default function RootLayout({
 	children: ReactNode;
 }>) {
 	return (
-		<html suppressHydrationWarning lang={locale} className="light:izakaya">
+		<html suppressHydrationWarning lang={locale} className="light:izakaya dark:izakaya-dark">
 			<head>
 				<script
 					dangerouslySetInnerHTML={{

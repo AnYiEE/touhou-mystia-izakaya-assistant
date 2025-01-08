@@ -3,7 +3,9 @@ import {isObjectLike} from 'lodash';
 
 import {useOpenedItemPopover, useViewInNewWindow} from '@/hooks';
 
-import {PopoverContent, PopoverTrigger, cn} from '@nextui-org/react';
+import {PopoverContent, PopoverTrigger} from '@nextui-org/react';
+
+import {CLASSNAME_FOCUS_VISIBLE_OUTLINE, cn} from '@/design/ui/components';
 
 import {trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
@@ -14,7 +16,6 @@ import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
 import {DARK_MATTER_NAME, type IRecipe, RECIPE_TAG_STYLE} from '@/data';
-import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
 // import {globalStore as store} from '@/stores';
 import {type Recipe} from '@/utils';
 import type {TItemData} from '@/utils/types';
@@ -168,7 +169,7 @@ export default memo<IProps>(function Content({data}) {
 											<PopoverTrigger>
 												<span
 													tabIndex={0}
-													className={cn('font-semibold', CLASS_FOCUS_VISIBLE_OUTLINE)}
+													className={cn('font-semibold', CLASSNAME_FOCUS_VISIBLE_OUTLINE)}
 												>
 													<span className="underline-dotted-offset2">烹饪时间</span>：
 												</span>

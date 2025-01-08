@@ -50,7 +50,4 @@ export const getExtendConfig = (cdnUrl: string) =>
 		},
 	}) as const satisfies TThemeExtendConfig;
 
-export const CLASS_FOCUS_VISIBLE_OUTLINE =
-	'focus-visible:z-10 focus-visible:rounded-small focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
-
 export * from './fontFamily';

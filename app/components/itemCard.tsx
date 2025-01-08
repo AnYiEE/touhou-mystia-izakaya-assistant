@@ -2,7 +2,9 @@
 
 import {type ElementRef, forwardRef, memo} from 'react';
 
-import {Card, type CardProps, cn} from '@nextui-org/react';
+import {Card, type CardProps} from '@nextui-org/react';
+
+import {cn} from '@/design/ui/components';
 
 import {globalStore as store} from '@/stores';
 

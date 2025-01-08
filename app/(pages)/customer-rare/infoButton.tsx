@@ -3,7 +3,9 @@ import {type ReactElement, memo} from 'react';
 import useBreakpoint from 'use-breakpoint';
 import {useViewInNewWindow} from '@/hooks';
 
-import {AccordionItem, PopoverContent, PopoverTrigger, cn} from '@nextui-org/react';
+import {AccordionItem, PopoverContent, PopoverTrigger} from '@nextui-org/react';
+
+import {CLASSNAME_FOCUS_VISIBLE_OUTLINE, cn} from '@/design/ui/components';
 
 import InfoButtonBase from './infoButtonBase';
 import Avatar from '@/components/avatar';
@@ -16,7 +18,6 @@ import Tachie from '@/components/tachie';
 import Tooltip from '@/components/tooltip';
 
 import {CUSTOMER_EVALUATION_KEY_MAP, CUSTOMER_RATING_MAP, LABEL_BR, type TRatingKey, type TRewardType} from '@/data';
-import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
 import {customerRareStore as store} from '@/stores';
 
 interface ILevelLabelProps {
@@ -133,7 +134,7 @@ export default function InfoButton() {
 									tabIndex={0}
 									className={cn(
 										'underline-dotted-offset2 inline-flex cursor-pointer items-center',
-										CLASS_FOCUS_VISIBLE_OUTLINE
+										CLASSNAME_FOCUS_VISIBLE_OUTLINE
 									)}
 								>
 									<Sprite
@@ -198,7 +199,7 @@ export default function InfoButton() {
 										tabIndex={0}
 										className={cn(
 											'underline-dotted-offset2 inline-flex cursor-pointer items-center',
-											CLASS_FOCUS_VISIBLE_OUTLINE
+											CLASSNAME_FOCUS_VISIBLE_OUTLINE
 										)}
 									>
 										<Sprite target="recipe" name={name} size={1.25} className="mr-0.5" />
@@ -221,7 +222,7 @@ export default function InfoButton() {
 										tabIndex={0}
 										className={cn(
 											'underline-dotted-offset2 inline-flex cursor-pointer items-center',
-											CLASS_FOCUS_VISIBLE_OUTLINE
+											CLASSNAME_FOCUS_VISIBLE_OUTLINE
 										)}
 									>
 										<Sprite target="cooker" name={bondCooker} size={1.25} className="mr-0.5" />
@@ -244,7 +245,7 @@ export default function InfoButton() {
 										tabIndex={0}
 										className={cn(
 											'underline-dotted-offset2 inline-flex cursor-pointer items-center',
-											CLASS_FOCUS_VISIBLE_OUTLINE
+											CLASSNAME_FOCUS_VISIBLE_OUTLINE
 										)}
 									>
 										<Sprite target="clothes" name={bondClothes} size={1.25} className="mr-0.5" />
@@ -267,7 +268,7 @@ export default function InfoButton() {
 										tabIndex={0}
 										className={cn(
 											'underline-dotted-offset2 inline-flex cursor-pointer items-center',
-											CLASS_FOCUS_VISIBLE_OUTLINE
+											CLASSNAME_FOCUS_VISIBLE_OUTLINE
 										)}
 									>
 										<Sprite target="ornament" name={name} size={1.25} className="mr-0.5" />
@@ -296,7 +297,7 @@ export default function InfoButton() {
 										tabIndex={0}
 										className={cn(
 											'underline-dotted-offset2 inline-flex cursor-pointer items-center',
-											CLASS_FOCUS_VISIBLE_OUTLINE
+											CLASSNAME_FOCUS_VISIBLE_OUTLINE
 										)}
 									>
 										<Sprite

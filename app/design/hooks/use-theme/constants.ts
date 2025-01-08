@@ -1,8 +1,7 @@
 import {semanticColors} from '@/design/theme';
-import {colors} from '@/design/theme/colors/constants';
 
 export const COLOR_MAP = {
-	DARK: colors.constants.BLACK,
+	DARK: semanticColors.dark.background.DEFAULT,
 	LIGHT: semanticColors.light.background.DEFAULT,
 };
 

@@ -4,7 +4,9 @@ import {isObjectLike} from 'lodash';
 import useBreakpoint from 'use-breakpoint';
 import {useOpenedItemPopover, useViewInNewWindow} from '@/hooks';
 
-import {PopoverContent, PopoverTrigger, cn} from '@nextui-org/react';
+import {PopoverContent, PopoverTrigger} from '@nextui-org/react';
+
+import {CLASSNAME_FOCUS_VISIBLE_OUTLINE, cn} from '@/design/ui/components';
 
 import {trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
@@ -16,7 +18,6 @@ import Tachie from '@/components/tachie';
 import Tooltip from '@/components/tooltip';
 
 import {type IClothes} from '@/data';
-import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
 import {clothesStore /* , globalStore */} from '@/stores';
 import {type Clothes} from '@/utils';
 import type {TItemData} from '@/utils/types';
@@ -170,7 +171,7 @@ export default memo<IProps>(function Content({data}) {
 								<span
 									role="button"
 									tabIndex={0}
-									className={cn('underline-dotted-offset2', CLASS_FOCUS_VISIBLE_OUTLINE)}
+									className={cn('underline-dotted-offset2', CLASSNAME_FOCUS_VISIBLE_OUTLINE)}
 								>
 									查看立绘
 								</span>

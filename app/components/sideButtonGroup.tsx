@@ -1,6 +1,6 @@
 import {type PropsWithChildren, memo} from 'react';
 
-import {cn} from '@nextui-org/react';
+import {cn} from '@/design/ui/components';
 
 interface IProps extends Pick<HTMLDivElementAttributes, 'className'> {}
 

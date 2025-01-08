@@ -3,7 +3,9 @@ import {debounce} from 'lodash';
 
 import {useVibrate} from '@/hooks';
 
-import {Avatar, ScrollShadow, cn} from '@nextui-org/react';
+import {Avatar, ScrollShadow} from '@nextui-org/react';
+
+import {cn} from '@/design/ui/components';
 
 import Button from '@/components/button';
 import PressElement from '@/components/pressElement';

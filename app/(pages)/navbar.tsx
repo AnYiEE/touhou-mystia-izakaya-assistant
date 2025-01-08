@@ -18,11 +18,12 @@ import {
 	NavbarMenuItem,
 	NavbarMenuToggle,
 	Navbar as NextUINavbar,
-	cn,
 } from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faGithub} from '@fortawesome/free-brands-svg-icons';
 import {faChevronDown} from '@fortawesome/free-solid-svg-icons';
+
+import {cn} from '@/design/ui/components';
 
 import Button from '@/components/button';
 import Dropdown from '@/components/dropdown';

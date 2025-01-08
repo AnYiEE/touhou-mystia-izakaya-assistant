@@ -3,7 +3,9 @@ import {curry, curryRight, debounce} from 'lodash';
 
 import {useVibrate} from '@/hooks';
 
-import {Badge, ScrollShadow, cn} from '@nextui-org/react';
+import {Badge, ScrollShadow} from '@nextui-org/react';
+
+import {cn} from '@/design/ui/components';
 
 import {type IIngredientTabContentProps} from '@/(pages)/customer-rare/ingredientTabContent';
 import Button from '@/components/button';

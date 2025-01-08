@@ -2,7 +2,9 @@ import {Fragment, memo, useRef} from 'react';
 
 import {useOpenedItemPopover} from '@/hooks';
 
-import {PopoverContent, PopoverTrigger, ScrollShadow, cn} from '@nextui-org/react';
+import {PopoverContent, PopoverTrigger, ScrollShadow} from '@nextui-org/react';
+
+import {CLASSNAME_FOCUS_VISIBLE_OUTLINE, cn} from '@/design/ui/components';
 
 import {trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
@@ -14,7 +16,6 @@ import Sprite from '@/components/sprite';
 import Tooltip from '@/components/tooltip';
 
 import {BEVERAGE_TAG_STYLE, type IBeverage} from '@/data';
-import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
 // import {globalStore as store} from '@/stores';
 import {type Beverage} from '@/utils';
 import type {TItemData} from '@/utils/types';
@@ -99,7 +100,7 @@ export default memo<IProps>(function Content({data}) {
 																tabIndex={0}
 																className={cn(
 																	'underline-dotted-offset2',
-																	CLASS_FOCUS_VISIBLE_OUTLINE
+																	CLASSNAME_FOCUS_VISIBLE_OUTLINE
 																)}
 															>
 																{way}
@@ -157,7 +158,7 @@ export default memo<IProps>(function Content({data}) {
 																					<span
 																						tabIndex={0}
 																						className={
-																							CLASS_FOCUS_VISIBLE_OUTLINE
+																							CLASSNAME_FOCUS_VISIBLE_OUTLINE
 																						}
 																					>
 																						{item[0]}

@@ -4,7 +4,9 @@ import {type ComponentProps, memo} from 'react';
 
 import {useMotionProps} from '@/hooks';
 
-import {Tooltip as NextUITooltip, cn, extendVariants} from '@nextui-org/react';
+import {Tooltip as NextUITooltip, extendVariants} from '@nextui-org/react';
+
+import {cn} from '@/design/ui/components';
 
 import {generateRatingColor} from '@/components/avatar';
 

@@ -2,7 +2,9 @@
 
 import {memo} from 'react';
 
-import {Image, type ImageProps, cn} from '@nextui-org/react';
+import {Image, type ImageProps} from '@nextui-org/react';
+
+import {cn} from '@/design/ui/components';
 
 interface IProps extends Pick<ImageProps, 'alt' | 'aria-hidden' | 'className' | 'src' | 'width'> {}
 

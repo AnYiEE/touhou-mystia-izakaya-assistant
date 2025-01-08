@@ -4,8 +4,9 @@ import {type Dispatch, type SetStateAction, memo, useCallback} from 'react';
 
 import {useVibrate} from '@/hooks';
 
-import {cn} from '@nextui-org/react';
 import {faArrowDownAZ, faArrowUpAZ} from '@fortawesome/free-solid-svg-icons';
+
+import {cn} from '@/design/ui/components';
 
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
 import Tooltip from '@/components/tooltip';

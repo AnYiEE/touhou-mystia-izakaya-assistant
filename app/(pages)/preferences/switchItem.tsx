@@ -1,6 +1,8 @@
 import {type PropsWithChildren, memo} from 'react';
 
-import {Switch, type SwitchProps, cn} from '@nextui-org/react';
+import {Switch, type SwitchProps} from '@nextui-org/react';
+
+import {cn} from '@/design/ui/components';
 
 interface IProps {
 	'aria-label': NonNullable<SwitchProps['aria-label']>;

@@ -4,16 +4,10 @@ import {type Dispatch, memo, useCallback, useMemo} from 'react';
 
 import {useMotionProps, useVibrate} from '@/hooks';
 
-import {
-	PopoverContent,
-	PopoverTrigger,
-	Select,
-	SelectItem,
-	type SelectProps,
-	type Selection,
-	cn,
-} from '@nextui-org/react';
+import {PopoverContent, PopoverTrigger, Select, SelectItem, type SelectProps, type Selection} from '@nextui-org/react';
 import {faFilter} from '@fortawesome/free-solid-svg-icons';
+
+import {cn} from '@/design/ui/components';
 
 import Button from '@/components/button';
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';

@@ -13,7 +13,7 @@ import {
 	useThrottle,
 } from '@/hooks';
 
-import {cn} from '@nextui-org/react';
+import {cn} from '@/design/ui/components';
 
 import Content from '@/(pages)/recipes/content';
 import Loading from '@/loading';

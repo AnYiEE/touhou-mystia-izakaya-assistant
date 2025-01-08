@@ -12,9 +12,10 @@ import {
 	DropdownTrigger,
 	type Selection,
 	Spinner,
-	cn,
 } from '@nextui-org/react';
 import {faCircleHalfStroke, faMoon, faSun} from '@fortawesome/free-solid-svg-icons';
+
+import {cn} from '@/design/ui/components';
 
 import Dropdown from '@/components/dropdown';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';

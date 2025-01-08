@@ -13,7 +13,9 @@ import {
 	useVibrate,
 } from '@/hooks';
 
-import {Tab, Tabs, cn} from '@nextui-org/react';
+import {Tab, Tabs} from '@nextui-org/react';
+
+import {cn} from '@/design/ui/components';
 
 import BeverageTabContent from './beverageTabContent';
 import CustomerCard from './customerCard';

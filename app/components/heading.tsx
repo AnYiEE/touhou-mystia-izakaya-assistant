@@ -1,6 +1,6 @@
 import {type PropsWithChildren, memo, useMemo} from 'react';
 
-import {cn} from '@nextui-org/react';
+import {cn} from '@/design/ui/components';
 
 type THeadingClassName = Pick<HTMLHeadingElementAttributes, 'className'>['className'];
 type TSpanClassName = Pick<HTMLSpanElementAttributes, 'className'>['className'];

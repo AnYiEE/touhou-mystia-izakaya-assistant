@@ -1,18 +1,14 @@
 import type {TColorScale} from '../types';
-import {createShiftedColorScale} from '../utils';
 
 export const brown = {
-	50: '#fef7e4',
-	100: '#ede0c4',
-	200: '#ddc9a1',
-	300: '#cfb07d',
-	400: '#c19658',
-	500: '#a8793f',
-	600: '#825c30',
-	700: '#5e3f22',
-	800: '#392812',
-	900: '#180f00',
+	50: '#fbf8f3',
+	100: '#f8f2e8',
+	200: '#f1e6d4',
+	300: '#e9d7b9',
+	400: '#e2c9a2',
+	500: '#d7b681',
+	600: '#cda360',
+	700: '#be8c3c',
+	800: '#9f7532',
+	900: '#705324',
 } as const satisfies TColorScale;
-
-export const brownShifted1 = createShiftedColorScale(brown);
-export const brownShifted2 = createShiftedColorScale(brownShifted1);

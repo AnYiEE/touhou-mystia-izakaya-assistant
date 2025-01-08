@@ -10,9 +10,10 @@ import {
 	type AutocompleteProps,
 	PopoverContent,
 	PopoverTrigger,
-	cn,
 } from '@nextui-org/react';
 import {faMagnifyingGlass} from '@fortawesome/free-solid-svg-icons';
+
+import {cn} from '@/design/ui/components';
 
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
 import Popover from '@/components/popover';

@@ -2,9 +2,11 @@ import {Fragment, memo} from 'react';
 
 import {useVibrate, useViewInNewWindow} from '@/hooks';
 
-import {Card, Divider, PopoverContent, PopoverTrigger, cn} from '@nextui-org/react';
+import {Card, Divider, PopoverContent, PopoverTrigger} from '@nextui-org/react';
 import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
 import {faArrowDown, faArrowUp} from '@fortawesome/free-solid-svg-icons';
+
+import {cn} from '@/design/ui/components';
 
 import {Plus} from './resultCard';
 import TagGroup from './tagGroup';

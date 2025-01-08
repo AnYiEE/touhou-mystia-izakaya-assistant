@@ -3,7 +3,9 @@ import {execSync} from 'node:child_process';
 
 import {getMotionProps} from '@/hooks/useMotionProps';
 
-import {Tooltip, type TooltipProps, cn} from '@nextui-org/react';
+import {Tooltip, type TooltipProps} from '@nextui-org/react';
+
+import {cn} from '@/design/ui/components';
 
 import Link, {type ILinkProps} from '@/components/link';
 import QRCode from '@/components/qrCode';

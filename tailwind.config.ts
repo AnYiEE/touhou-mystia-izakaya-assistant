@@ -25,6 +25,10 @@ const config: Config = {
 	plugins: [
 		nextui({
 			themes: {
+				'izakaya-dark': {
+					extend: 'dark',
+					colors: semanticColors.dark,
+				},
 				izakaya: {
 					extend: 'light',
 					colors: semanticColors.light,

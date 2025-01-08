@@ -2,14 +2,13 @@
 
 import {type CSSProperties, type ElementRef, forwardRef, memo, useEffect, useMemo, useState} from 'react';
 
-import {cn} from '@nextui-org/react';
+import {CLASSNAME_FOCUS_VISIBLE_OUTLINE, cn} from '@/design/ui/components';
 
 import {checkCompatibility} from '@/components/compatibleBrowser';
 import PressElement, {type IPressProp} from '@/components/pressElement';
 
 import {siteConfig} from '@/configs';
 import {type TItemName} from '@/data';
-import {CLASS_FOCUS_VISIBLE_OUTLINE} from '@/design/theme';
 import {remToPx} from '@/utilities';
 import {Sprite as SpriteClass} from '@/utils';
 import type {TSpriteTarget} from '@/utils/sprite/types';
@@ -129,7 +128,7 @@ export default memo(
 				className={cn(
 					'inline-block',
 					{
-						[CLASS_FOCUS_VISIBLE_OUTLINE]: isAsButton,
+						[CLASSNAME_FOCUS_VISIBLE_OUTLINE]: isAsButton,
 						'cursor-pointer': isAsButton,
 					},
 					className
