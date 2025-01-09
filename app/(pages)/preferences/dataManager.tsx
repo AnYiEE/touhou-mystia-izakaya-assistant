@@ -5,9 +5,9 @@ import {useRouter} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
 import {usePathname, useThrottle} from '@/hooks';
 
-import {PopoverContent, PopoverTrigger, Snippet, Tab, Tabs, Textarea} from '@nextui-org/react';
+import {Snippet, Tab, Tabs, Textarea} from '@nextui-org/react';
 
-import {cn} from '@/design/ui/components';
+import {Button, Popover, PopoverContent, PopoverTrigger, Tooltip, cn} from '@/design/ui/components';
 
 import {showProgress} from '@/(pages)/navbar';
 import {trackEvent} from '@/components/analytics';
@@ -16,10 +16,7 @@ import {
 	customerRareTutorialResetLabel,
 	customerRareTutorialStoreKey,
 } from '@/components/customerRareTutorial';
-import Button from '@/components/button';
 import Heading from '@/components/heading';
-import Popover from '@/components/popover';
-import Tooltip from '@/components/tooltip';
 
 import {customerNormalStore, customerRareStore, globalStore} from '@/stores';
 import {FILE_TYPE_JSON, checkA11yConfirmKey, downloadJson, parseJsonFromInput, toggleBoolean} from '@/utilities';
@@ -183,7 +180,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								variant="flat"
 								classNames={{
 									base: cn({
-										'bg-default-100/40 backdrop-blur': isHighAppearance,
+										'bg-default/40 backdrop-blur': isHighAppearance,
 									}),
 									pre: 'max-h-[13.25rem] w-full overflow-auto whitespace-pre-wrap',
 								}}
@@ -199,7 +196,6 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 							>
 								<Button
 									fullWidth
-									highAppearance
 									color={isDownloadButtonDisabled ? 'success' : 'primary'}
 									isDisabled={isDownloadButtonDisabled}
 									isLoading={isDownloadButtonDisabled}
@@ -219,10 +215,13 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								value={importValue}
 								onValueChange={setImportValue}
 								classNames={{
-									inputWrapper: cn('transition-background data-[hover=true]:bg-default-200', {
-										'bg-default-100/40 backdrop-blur data-[hover=true]:bg-default-200/40 group-data-[focus=true]:bg-default-100/70':
-											isHighAppearance,
-									}),
+									inputWrapper: cn(
+										'bg-default/40 transition-background data-[hover=true]:bg-default-200 group-data-[focus=true]:bg-default',
+										{
+											'bg-default/40 backdrop-blur data-[hover=true]:bg-default-400/40 group-data-[focus=true]:bg-default/70':
+												isHighAppearance,
+										}
+									),
 								}}
 							/>
 							<input
@@ -232,20 +231,13 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								className="hidden"
 								ref={importInputRef}
 							/>
-							<Button
-								fullWidth
-								highAppearance
-								color="primary"
-								variant="flat"
-								onPress={handleImportButtonPress}
-							>
+							<Button fullWidth color="primary" variant="flat" onPress={handleImportButtonPress}>
 								上传
 							</Button>
 							<Popover shouldBlockScroll showArrow isOpen={isSavePopoverOpened}>
 								<PopoverTrigger>
 									<Button
 										fullWidth
-										highAppearance
 										color={isSaveButtonError ? 'danger' : 'primary'}
 										isDisabled={isSaveButtonDisabled}
 										isLoading={isSaveButtonLoading}
@@ -285,7 +277,6 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								<PopoverTrigger>
 									<Button
 										fullWidth
-										highAppearance
 										color="danger"
 										variant="flat"
 										onClick={toggleResetPopoverOpened}
@@ -317,7 +308,6 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 							</Popover>
 							<Button
 								fullWidth
-								highAppearance
 								color="primary"
 								variant="flat"
 								onPress={() => {

@@ -4,9 +4,7 @@ import {type ElementRef, forwardRef, memo} from 'react';
 
 import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
 
-import {cn} from '@/design/ui/components';
-
-import Link, {type ILinkProps} from '@/components/link';
+import {type ILinkProps, Link, cn} from '@/design/ui/components';
 
 interface IProps extends Omit<ILinkProps, 'size'>, Pick<FontAwesomeIconProps, 'icon' | 'size'> {}
 
@@ -16,7 +14,7 @@ export default memo(
 		ref
 	) {
 		return (
-			<Link className={cn('text-default-400', className)} {...props} ref={ref}>
+			<Link className={cn('text-foreground', className)} {...props} ref={ref}>
 				<FontAwesomeIcon icon={icon} size={size} />
 			</Link>
 		);

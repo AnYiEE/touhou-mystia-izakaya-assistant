@@ -18,18 +18,25 @@ import {useParams} from '@/hooks';
 import {PARAM_SPECIFY} from '@/hooks/useOpenedItemPopover';
 import {PARAM_PREVIEW, useViewInNewWindow} from '@/hooks/useViewInNewWindow';
 
-import {PopoverContent, PopoverTrigger, type PopoverTriggerProps, Snippet, usePopoverContext} from '@nextui-org/react';
+import {Snippet} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faLink, faShare, faXmark} from '@fortawesome/free-solid-svg-icons';
 
-import {CLASSNAME_FOCUS_VISIBLE_OUTLINE, cn} from '@/design/ui/components';
+import {
+	CLASSNAME_FOCUS_VISIBLE_OUTLINE,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	type PopoverTriggerProps,
+	Tooltip,
+	cn,
+	usePopoverContext,
+} from '@/design/ui/components';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
-import Popover from '@/components/popover';
 import Price from '@/components/price';
 import Sprite, {type ISpriteProps} from '@/components/sprite';
 import TagsComponent from '@/components/tags';
-import Tooltip from '@/components/tooltip';
 
 import {siteConfig} from '@/configs';
 import {
@@ -83,7 +90,7 @@ const CloseButton: FC<ICloseButtonProps> = () => {
 				onClick={handleClose}
 				onKeyDown={debounce(checkA11yConfirmKey(handleClose))}
 				aria-label={label}
-				className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
+				className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 			/>
 		</Tooltip>
 	);
@@ -141,19 +148,19 @@ const ShareButton = memo<IShareButtonProps>(function ShareButton({name}) {
 							variant="light"
 							onPress={handlePress}
 							aria-label={label}
-							className="h-4 w-4 min-w-0 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
+							className="h-4 w-4 min-w-0 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 						/>
 					</PopoverTrigger>
 				</div>
 			</Tooltip>
 			<PopoverContent>
-				<p className="mr-4 cursor-default select-none self-end text-right text-tiny text-default-400">
+				<p className="mr-4 cursor-default select-none self-end text-right text-tiny text-default-500">
 					点击以复制到当前选中项的链接↓
 				</p>
 				<Snippet
 					disableTooltip
 					size="sm"
-					symbol={<FontAwesomeIcon icon={faLink} className="mr-1 !align-middle text-default-400" />}
+					symbol={<FontAwesomeIcon icon={faLink} className="mr-1 !align-middle text-default-700" />}
 					classNames={{
 						pre: 'flex max-w-screen-p-60 items-center whitespace-normal break-all',
 					}}
@@ -237,8 +244,8 @@ const ItemPopoverCardComponent = memo(
 		const dlcLabel = dlc === 0 ? LABEL_DLC_0 : '';
 
 		return (
-			<div className="max-w-80 space-y-2 p-2 text-tiny text-default-400 dark:text-default-500" ref={ref}>
-				<div className="flex items-center gap-2 text-small text-default-700">
+			<div className="max-w-80 space-y-2 p-2 text-tiny text-default-800" ref={ref}>
+				<div className="flex items-center gap-2 text-small text-foreground">
 					<Sprite
 						target={target}
 						name={name}
@@ -363,11 +370,15 @@ const ItemPopoverCardComponent = memo(
 const ItemPopoverCard = ItemPopoverCardComponent as typeof ItemPopoverCardComponent & {
 	CloseButton: typeof CloseButton;
 	ShareButton: typeof ShareButton;
+	Popover: typeof Popover;
 	Trigger: typeof Trigger;
+	Content: typeof PopoverContent;
 };
 
 ItemPopoverCard.CloseButton = CloseButton;
 ItemPopoverCard.ShareButton = ShareButton;
+ItemPopoverCard.Popover = Popover;
 ItemPopoverCard.Trigger = Trigger;
+ItemPopoverCard.Content = PopoverContent;
 
 export default ItemPopoverCard;

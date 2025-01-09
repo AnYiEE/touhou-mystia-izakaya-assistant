@@ -4,7 +4,7 @@ import {type ElementRef, forwardRef, memo} from 'react';
 
 import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
 
-import Button, {type IButtonProps} from '@/components/button';
+import {Button, type IButtonProps} from '@/design/ui/components';
 
 interface IProps extends Omit<IButtonProps, 'isIconOnly'>, Pick<FontAwesomeIconProps, 'icon'> {}
 

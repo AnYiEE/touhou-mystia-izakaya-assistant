@@ -1,7 +1,7 @@
+import {Link, Tooltip} from '@/design/ui/components';
+
 import Heading from '@/components/heading';
-import Link from '@/components/link';
 import QRCode from '@/components/qrCode';
-import Tooltip from '@/components/tooltip';
 
 import {siteConfig} from '@/configs';
 
@@ -20,7 +20,7 @@ export default function Introduction() {
 						showAnchorIcon
 						href={links.github.href}
 						title={links.github.label}
-						className="indent-0"
+						className="rounded-small indent-0 font-medium"
 					>
 						GitHub仓库
 					</Link>
@@ -51,7 +51,7 @@ export default function Introduction() {
 							showAnchorIcon
 							href={links.donate.href}
 							title={links.donate.label}
-							className="indent-0"
+							className="rounded-small indent-0 font-medium"
 						>
 							向我捐赠
 						</Link>

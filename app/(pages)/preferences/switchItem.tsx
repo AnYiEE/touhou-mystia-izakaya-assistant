@@ -30,7 +30,6 @@ export default memo<PropsWithChildren<IProps>>(function SwitchItem({
 				classNames={{
 					endContent: 'leading-none',
 					startContent: 'leading-none',
-					wrapper: 'bg-default-300 dark:bg-default-200',
 				}}
 				{...props}
 			/>

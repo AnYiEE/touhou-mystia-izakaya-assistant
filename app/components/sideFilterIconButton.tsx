@@ -2,18 +2,15 @@
 
 import {type Dispatch, memo, useCallback, useMemo} from 'react';
 
-import {useMotionProps, useVibrate} from '@/hooks';
+import {useVibrate} from '@/hooks';
 
-import {PopoverContent, PopoverTrigger, Select, SelectItem, type SelectProps, type Selection} from '@nextui-org/react';
+import {Select, SelectItem, type SelectProps, type Selection} from '@nextui-org/react';
 import {faFilter} from '@fortawesome/free-solid-svg-icons';
 
-import {cn} from '@/design/ui/components';
+import {Button, Popover, PopoverContent, PopoverTrigger, Tooltip, cn, useMotionProps} from '@/design/ui/components';
 
-import Button from '@/components/button';
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
-import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
-import Tooltip from '@/components/tooltip';
 
 import {LABEL_DLC_0} from '@/data';
 import {globalStore as store} from '@/stores';
@@ -76,7 +73,7 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 							icon={faFilter}
 							variant="shadow"
 							aria-label={content}
-							className={cn('text-white', className)}
+							className={cn(hasFilter ? 'bg-warning-600' : 'bg-primary-600', className)}
 							{...props}
 						/>
 					</PopoverTrigger>
@@ -101,7 +98,7 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 								}}
 								classNames={{
 									listboxWrapper: cn('[&_li]:transition-background', {
-										'focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40':
+										'focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40':
 											isHighAppearance,
 									}),
 									popoverContent: cn({
@@ -110,8 +107,8 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 									trigger: cn(
 										'transition-background',
 										isHighAppearance
-											? 'bg-default-100/70 data-[hover=true]:bg-default-200/70'
-											: 'data-[hover=true]:bg-default-200'
+											? 'bg-default/40 data-[hover=true]:bg-default-400/40'
+											: 'bg-default-200 data-[hover=true]:bg-default'
 									),
 								}}
 							>

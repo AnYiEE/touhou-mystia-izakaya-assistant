@@ -2,18 +2,14 @@ import {Fragment} from 'react';
 
 import {useVibrate, useViewInNewWindow} from '@/hooks';
 
-import {Card, Divider, PopoverContent, PopoverTrigger} from '@nextui-org/react';
+import {Card, Divider} from '@nextui-org/react';
 
-import {cn} from '@/design/ui/components';
+import {Avatar, Button, Popover, PopoverContent, PopoverTrigger, Tooltip, cn} from '@/design/ui/components';
 
 import {Plus} from './resultCard';
 import {type IMoveButtonProps, MoveButton} from '@/(pages)/customer-rare/savedMealCard';
 import {trackEvent} from '@/components/analytics';
-import Avatar from '@/components/avatar';
-import Button from '@/components/button';
-import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
-import Tooltip from '@/components/tooltip';
 
 import {CUSTOMER_RATING_MAP} from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
@@ -202,7 +198,7 @@ export default function SavedMealCard() {
 												);
 											})}
 											{lestExtraIngredients.length > 0 && (
-												<div className="flex items-center gap-x-3 rounded bg-default-100/50 outline outline-2 outline-offset-1 outline-default-100 dark:bg-default-200/50 dark:outline-default-200">
+												<div className="flex items-center gap-x-3 rounded bg-content2/70 outline outline-2 outline-offset-1 outline-content2">
 													{lestExtraIngredients.map((name, index) => {
 														const label = `点击：在新窗口中查看额外食材【${name}】的详情`;
 														return (

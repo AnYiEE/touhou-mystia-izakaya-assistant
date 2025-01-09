@@ -7,10 +7,6 @@ import {useProgress} from 'react-transition-progress';
 import {usePathname, useVibrate} from '@/hooks';
 
 import {
-	type ButtonProps,
-	DropdownItem,
-	DropdownMenu,
-	DropdownTrigger,
 	NavbarBrand,
 	NavbarContent,
 	NavbarItem,
@@ -23,15 +19,22 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faGithub} from '@fortawesome/free-brands-svg-icons';
 import {faChevronDown} from '@fortawesome/free-solid-svg-icons';
 
-import {cn} from '@/design/ui/components';
+import {
+	Button,
+	Dropdown,
+	DropdownItem,
+	DropdownMenu,
+	DropdownTrigger,
+	type IButtonProps,
+	type ILinkProps,
+	Link,
+	Tooltip,
+	cn,
+} from '@/design/ui/components';
 
-import Button from '@/components/button';
-import Dropdown from '@/components/dropdown';
 import FontAwesomeIconLink, {type IFontAwesomeIconLinkProps} from '@/components/fontAwesomeIconLink';
-import Link, {type ILinkProps} from '@/components/link';
 import ThemeSwitcher from '@/components/themeSwitcher';
 import Sprite from '@/components/sprite';
-import Tooltip from '@/components/tooltip';
 
 import {siteConfig} from '@/configs';
 import {globalStore as store} from '@/stores';
@@ -49,7 +52,7 @@ export function showProgress(startProgress: () => void) {
 }
 
 interface INavbarLinkProps
-	extends Pick<ButtonProps, 'className' | 'startContent' | 'fullWidth'>,
+	extends Pick<IButtonProps, 'className' | 'startContent' | 'fullWidth'>,
 		Pick<ILinkProps, 'href'> {
 	isActivated: boolean;
 }
@@ -95,7 +98,7 @@ const GitHubIconLink = memo<IGitHubIconLinkProps>(function IconLink({className, 
 			aria-label={links.github.label}
 			aria-hidden={tabIndex === -1}
 			tabIndex={tabIndex}
-			className={cn('rounded-full', className)}
+			className={cn('h-5 w-5 rounded-full', className)}
 		/>
 	);
 });
@@ -109,7 +112,7 @@ const GitHubLink = memo<IGitHubLinkProps>(function GitHubLink({showTooltip}) {
 		return (
 			<Tooltip showArrow content={links.github.label} placement="bottom">
 				<span className="flex">
-					<GitHubIconLink className="dark:text-default-500" />
+					<GitHubIconLink className="text-primary-600 dark:text-default-foreground" />
 				</span>
 			</Tooltip>
 		);
@@ -117,8 +120,8 @@ const GitHubLink = memo<IGitHubLinkProps>(function GitHubLink({showTooltip}) {
 
 	return (
 		<span className="flex gap-1">
-			<GitHubIconLink tabIndex={-1} className="text-foreground" />
-			<Link isExternal color="foreground" href={links.github.href} role="button">
+			<GitHubIconLink tabIndex={-1} />
+			<Link isExternal color="foreground" href={links.github.href}>
 				{links.github.label}
 			</Link>
 		</span>
@@ -161,8 +164,7 @@ export default function Navbar() {
 						href={links.index.href}
 						onPress={handlePress}
 						aria-label={links.index.label}
-						role="button"
-						className="flex select-none items-center justify-start gap-1 rounded-small"
+						className="flex select-none items-center justify-start gap-1 rounded-small hover:opacity-hover hover:brightness-100 active:opacity-disabled"
 					>
 						<span
 							aria-hidden
@@ -296,7 +298,6 @@ export default function Navbar() {
 								size="lg"
 								onClick={handlePress}
 								href={href}
-								role="button"
 								className={cn({
 									'underline underline-offset-4': isActivated || href === '/preferences',
 								})}

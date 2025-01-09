@@ -1,8 +1,7 @@
 import {type ElementRef, type ForwardedRef, forwardRef, memo, useCallback, useMemo} from 'react';
 
-import {cn} from '@/design/ui/components';
+import {Button, type IButtonProps, cn} from '@/design/ui/components';
 
-import Button, {type IButtonProps} from '@/components/button';
 import {type HTMLElementClickEvent, type HTMLElementKeyDownEvent, type IPressProp} from '@/components/pressElement';
 
 import {type TTag} from '@/data';
@@ -87,7 +86,7 @@ const Tag = memo(
 				onClick={handleClick}
 				onKeyDown={handleKeyDown}
 				className={cn(
-					'inline-block min-w-max select-auto rounded-none px-0 text-base data-[pressed=true]:scale-100 data-[hover=true]:bg-transparent',
+					'inline-block min-w-max select-auto rounded-none px-0 text-base !transition data-[pressed=true]:scale-100 data-[hover=true]:bg-transparent data-[pressed=true]:ring-1 data-[pressed=true]:ring-inset data-[pressed=true]:ring-current data-[pressed=true]:ring-offset-1',
 					baseClassName,
 					className
 				)}

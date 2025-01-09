@@ -46,9 +46,12 @@ export default function PreferencesModal() {
 			onClose={handleClose}
 			classNames={{
 				base: isHighAppearance ? 'bg-blend-mystia' : 'bg-background dark:bg-content1',
-				closeButton: cn('transition-background', {
-					'hover:bg-content1 dark:hover:bg-content2': isHighAppearance,
-				}),
+				closeButton: cn(
+					'transition-background',
+					isHighAppearance
+						? 'hover:bg-content1 active:bg-content2'
+						: 'dark:hover:bg-default-200 dark:active:bg-default'
+				),
 			}}
 		>
 			<ModalContent className="py-3">

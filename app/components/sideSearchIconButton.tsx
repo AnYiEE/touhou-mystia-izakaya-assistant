@@ -2,23 +2,15 @@
 
 import {type Dispatch, type SetStateAction, memo, useCallback} from 'react';
 
-import {useMotionProps, useVibrate} from '@/hooks';
+import {useVibrate} from '@/hooks';
 
-import {
-	Autocomplete,
-	AutocompleteItem,
-	type AutocompleteProps,
-	PopoverContent,
-	PopoverTrigger,
-} from '@nextui-org/react';
+import {Autocomplete, AutocompleteItem, type AutocompleteProps} from '@nextui-org/react';
 import {faMagnifyingGlass} from '@fortawesome/free-solid-svg-icons';
 
-import {cn} from '@/design/ui/components';
+import {Popover, PopoverContent, PopoverTrigger, Tooltip, cn, useMotionProps} from '@/design/ui/components';
 
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
-import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
-import Tooltip from '@/components/tooltip';
 
 import {globalStore as store} from '@/stores';
 import type {TSpriteTarget} from '@/utils/sprite/types';
@@ -73,7 +65,7 @@ export default memo<IProps>(function SideSearchIconButton({
 							icon={faMagnifyingGlass}
 							variant="shadow"
 							aria-label={content}
-							className={cn('text-white', className)}
+							className={cn(searchValue ? 'bg-warning-600' : 'bg-primary-600', className)}
 							{...props}
 						/>
 					</PopoverTrigger>
@@ -94,10 +86,10 @@ export default memo<IProps>(function SideSearchIconButton({
 					}}
 					classNames={{
 						base: isHighAppearance
-							? 'data-[slot="input-wrapper"]:[&_div]:!bg-default-100/70 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:!bg-default-200/70'
-							: 'data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:bg-default-200',
+							? 'data-[slot="input-wrapper"]:[&_div]:!bg-default/40 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:!bg-default-400/40'
+							: 'data-[slot="input-wrapper"]:[&_div]:!bg-default-200 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:!bg-default',
 						listboxWrapper: cn('[&_li]:transition-background', {
-							'data-[hover=true]:[&_li]:!bg-default-200/40': isHighAppearance,
+							'data-[hover=true]:[&_li]:!bg-default/40': isHighAppearance,
 						}),
 						popoverContent: cn({
 							'bg-content1/70 backdrop-blur-lg': isHighAppearance,

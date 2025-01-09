@@ -6,10 +6,9 @@ import {useVibrate} from '@/hooks';
 
 import {faArrowDownAZ, faArrowUpAZ} from '@fortawesome/free-solid-svg-icons';
 
-import {cn} from '@/design/ui/components';
+import {Tooltip, cn} from '@/design/ui/components';
 
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
-import Tooltip from '@/components/tooltip';
 
 export enum PinyinSortState {
 	NONE,
@@ -58,7 +57,10 @@ export default memo<IProps>(function SidePinyinSortIconButton({
 				variant="shadow"
 				onPress={handlePress}
 				aria-label={label}
-				className={cn('text-white', className)}
+				className={cn(
+					pinyinSortState === PinyinSortState.NONE ? 'bg-primary-600' : 'bg-warning-600',
+					className
+				)}
 				{...props}
 			/>
 		</Tooltip>

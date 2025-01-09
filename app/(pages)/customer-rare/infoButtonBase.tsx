@@ -5,11 +5,10 @@ import {useVibrate} from '@/hooks';
 import {Accordion, type AccordionProps, Modal, ModalBody, ModalContent, ScrollShadow} from '@nextui-org/react';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
-import {cn} from '@/design/ui/components';
+import {Tooltip, cn} from '@/design/ui/components';
 
 import {trackEvent} from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
-import Tooltip from '@/components/tooltip';
 
 import {globalStore as store} from '@/stores';
 
@@ -42,7 +41,7 @@ export default memo<IProps>(function InfoButtonBase({children, defaultExpandedKe
 					variant="light"
 					onPress={handlePress}
 					aria-label={buttonLabel}
-					className="absolute bottom-1 right-1 h-4 w-4 min-w-0 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover dark:text-default-300"
+					className="absolute bottom-1 right-1 h-4 w-4 min-w-0 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 				/>
 			</Tooltip>
 			<Modal
@@ -54,9 +53,12 @@ export default memo<IProps>(function InfoButtonBase({children, defaultExpandedKe
 				onClose={handleClose}
 				classNames={{
 					base: isHighAppearance ? 'bg-blend-mystia' : 'bg-background dark:bg-content1',
-					closeButton: cn('transition-background', {
-						'hover:bg-content1 dark:hover:bg-content2': isHighAppearance,
-					}),
+					closeButton: cn(
+						'transition-background',
+						isHighAppearance
+							? 'hover:bg-content1 active:bg-content2'
+							: 'dark:hover:bg-default-200 dark:active:bg-default'
+					),
 				}}
 			>
 				<ModalContent className="py-3">

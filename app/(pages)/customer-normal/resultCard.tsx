@@ -6,13 +6,11 @@ import {Card} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark} from '@fortawesome/free-solid-svg-icons';
 
-import {cn} from '@/design/ui/components';
+import {Button, Tooltip, cn} from '@/design/ui/components';
 
 import {Plus, UnknownItem} from '@/(pages)/customer-rare/resultCard';
-import Button from '@/components/button';
 import Placeholder from '@/components/placeholder';
 import Sprite from '@/components/sprite';
-import Tooltip from '@/components/tooltip';
 
 import {CUSTOMER_RATING_MAP, type TIngredientName} from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
@@ -74,7 +72,7 @@ function IngredientsList() {
 											role="button"
 											tabIndex={1}
 											title={ingredient}
-											className="absolute flex h-10 w-10 cursor-pointer items-center justify-center bg-foreground bg-opacity-50 text-background opacity-0 transition-opacity hover:opacity-100"
+											className="absolute flex h-10 w-10 cursor-pointer items-center justify-center rounded-small bg-foreground bg-opacity-50 text-background opacity-0 transition-opacity hover:opacity-100"
 										>
 											<FontAwesomeIcon icon={faCircleXmark} size="1x" />
 										</span>
@@ -198,7 +196,7 @@ export default function ResultCard() {
 						variant="flat"
 						onPress={handleSaveButtonPress}
 						aria-label={`保存套餐，当前${currentRating === null ? '未评级' : `评级为${CUSTOMER_RATING_MAP[currentRating]}`}`}
-						className={cn('!transition-opacity md:w-auto', {
+						className={cn('!transition md:w-auto', {
 							'opacity-disabled': isSaveButtonDisabled,
 						})}
 					>

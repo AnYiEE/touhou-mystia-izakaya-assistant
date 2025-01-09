@@ -2,22 +2,18 @@ import {Fragment, memo} from 'react';
 
 import {useVibrate, useViewInNewWindow} from '@/hooks';
 
-import {Card, Divider, PopoverContent, PopoverTrigger} from '@nextui-org/react';
+import {Card, Divider} from '@nextui-org/react';
 import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
 import {faArrowDown, faArrowUp} from '@fortawesome/free-solid-svg-icons';
 
-import {cn} from '@/design/ui/components';
+import {Avatar, Button, Popover, PopoverContent, PopoverTrigger, Tooltip, cn} from '@/design/ui/components';
 
 import {Plus} from './resultCard';
 import TagGroup from './tagGroup';
 import {trackEvent} from '@/components/analytics';
-import Avatar from '@/components/avatar';
-import Button from '@/components/button';
-import Popover from '@/components/popover';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
-import Tooltip from '@/components/tooltip';
 
 import {BEVERAGE_TAG_STYLE, CUSTOMER_RATING_MAP, DARK_MATTER_NAME, RECIPE_TAG_STYLE} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
@@ -53,8 +49,8 @@ const MoveButtonComponent = memo<IMoveButtonProps>(function MoveButton({directio
 				size="1x"
 				onClick={onClick}
 				role="button"
-				className={cn('cursor-pointer transition-colors hover:text-primary/40 dark:hover:text-default-200', {
-					'cursor-not-allowed hover:text-primary/20': isDisabled,
+				className={cn('cursor-pointer text-default transition-colors hover:text-default-400', {
+					'cursor-not-allowed hover:text-default-200': isDisabled,
 				})}
 			/>
 		</Tooltip>
@@ -296,7 +292,7 @@ export default function SavedMealCard() {
 													);
 												})}
 												{lestExtraIngredients.length > 0 && (
-													<div className="flex items-center gap-x-3 rounded bg-default-100/50 outline outline-2 outline-offset-1 outline-default-100 md:gap-x-1 lg:gap-x-3 xl:gap-x-1 dark:bg-default-200/50 dark:outline-default-200">
+													<div className="flex items-center gap-x-3 rounded bg-content2/70 outline outline-2 outline-offset-1 outline-content2 md:gap-x-1 lg:gap-x-3 xl:gap-x-1">
 														{lestExtraIngredients.map((name, index) => {
 															const label = `点击：在新窗口中查看额外食材【${name}】的详情`;
 															return (

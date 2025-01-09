@@ -2,20 +2,26 @@ import {useCallback, useMemo} from 'react';
 
 import {useVibrate} from '@/hooks';
 
-import {Card, Divider, PopoverContent, PopoverTrigger, type Selection} from '@nextui-org/react';
+import {Card, Divider, type Selection} from '@nextui-org/react';
 import {faArrowsRotate, faXmark} from '@fortawesome/free-solid-svg-icons';
 
-import {CLASSNAME_FOCUS_VISIBLE_OUTLINE, cn} from '@/design/ui/components';
+import {ratingStyles} from '@/design/theme/styles/rating';
+import {
+	Avatar,
+	CLASSNAME_FOCUS_VISIBLE_OUTLINE,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	Tooltip,
+	cn,
+} from '@/design/ui/components';
 
 import InfoButton from './infoButton';
 import TagGroup from './tagGroup';
 import {trackEvent} from '@/components/analytics';
-import Avatar, {ratingStyleMap} from '@/components/avatar';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
-import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
-import Tooltip from '@/components/tooltip';
 
 import {
 	CUSTOMER_NORMAL_TAG_STYLE,
@@ -176,7 +182,7 @@ export default function CustomerCard() {
 						'bg-content1/40 backdrop-blur': isHighAppearance,
 						'ring-4 ring-opacity-50': hasRating,
 					},
-					avatarRatingColor !== undefined && ratingStyleMap[avatarRatingColor]
+					avatarRatingColor !== undefined && ratingStyles[avatarRatingColor]
 				),
 			}}
 		>
@@ -229,7 +235,7 @@ export default function CustomerCard() {
 						</Tooltip>
 						<PopoverContent>{avatarRatingContent}</PopoverContent>
 					</Popover>
-					<div className="whitespace-nowrap text-tiny font-medium text-default-400 dark:text-default-500">
+					<div className="whitespace-nowrap text-tiny font-medium text-default-800">
 						<p className="flex justify-between gap-10">
 							<Popover showArrow isTriggerDisabled={!dlcLabel} offset={4}>
 								<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={0}>
@@ -321,7 +327,7 @@ export default function CustomerCard() {
 										}}
 										aria-label={`${tag}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
 										className={cn(
-											'p-1 font-semibold leading-none !transition-opacity data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
+											'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 											{
 												'font-normal opacity-50': !currentRecipeTagsWithPopular.includes(tag),
 											}
@@ -368,7 +374,7 @@ export default function CustomerCard() {
 										}}
 										aria-label={`${tag}${beverageTags.includes(tag) ? '/已满足' : ''}`}
 										className={cn(
-											'p-1 font-semibold leading-none !transition-opacity data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
+											'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 											{
 												'font-normal opacity-50': !beverageTags.includes(tag),
 											}
@@ -388,7 +394,7 @@ export default function CustomerCard() {
 								handleRefreshSelectedItems(currentCustomerName);
 							}}
 							aria-label="重置当前选定项"
-							className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover dark:text-default-300"
+							className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 						/>
 					</Tooltip>
 				) : (
@@ -398,7 +404,7 @@ export default function CustomerCard() {
 							variant="light"
 							onPress={handleRefreshCustomer}
 							aria-label="取消选择当前顾客"
-							className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-200 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover dark:text-default-300"
+							className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 						/>
 					</Tooltip>
 				)}

@@ -3,19 +3,24 @@ import {type ReactElement, memo} from 'react';
 import useBreakpoint from 'use-breakpoint';
 import {useViewInNewWindow} from '@/hooks';
 
-import {AccordionItem, PopoverContent, PopoverTrigger} from '@nextui-org/react';
+import {AccordionItem} from '@nextui-org/react';
 
-import {CLASSNAME_FOCUS_VISIBLE_OUTLINE, cn} from '@/design/ui/components';
+import {
+	Avatar,
+	CLASSNAME_FOCUS_VISIBLE_OUTLINE,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	Tooltip,
+	cn,
+} from '@/design/ui/components';
 
 import InfoButtonBase from './infoButtonBase';
-import Avatar from '@/components/avatar';
 import Ol from '@/components/ol';
-import Popover from '@/components/popover';
 import PressElement from '@/components/pressElement';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tachie from '@/components/tachie';
-import Tooltip from '@/components/tooltip';
 
 import {CUSTOMER_EVALUATION_KEY_MAP, CUSTOMER_RATING_MAP, LABEL_BR, type TRatingKey, type TRewardType} from '@/data';
 import {customerRareStore as store} from '@/stores';
@@ -117,7 +122,7 @@ export default function InfoButton() {
 				aria-label="稀客介绍"
 				title="稀客介绍"
 				classNames={{
-					content: 'space-y-1 break-all pt-2 text-justify',
+					content: 'space-y-1 break-all pt-2 text-justify text-default-900',
 				}}
 			>
 				<div className="flex items-center gap-4">
@@ -181,7 +186,7 @@ export default function InfoButton() {
 					aria-label={`${currentCustomerName}羁绊奖励`}
 					title="羁绊奖励"
 					classNames={{
-						content: 'flex flex-col gap-2 pt-2',
+						content: 'flex flex-col gap-2 pt-2 text-default-900',
 					}}
 				>
 					<div className="grid grid-cols-2 content-start gap-1">
@@ -322,7 +327,7 @@ export default function InfoButton() {
 					aria-label={`${currentCustomerName}符卡效果`}
 					title="符卡效果"
 					classNames={{
-						content: 'space-y-1 break-all pt-2 text-justify',
+						content: 'space-y-1 break-all pt-2 text-justify text-default-900',
 					}}
 				>
 					{hasPositiveSpellCards && (
@@ -373,7 +378,7 @@ export default function InfoButton() {
 					aria-label="闲聊对话"
 					title="闲聊对话"
 					classNames={{
-						content: 'break-all pt-2 text-justify text-small',
+						content: 'break-all pt-2 text-justify text-small text-default-900',
 					}}
 				>
 					<Ol>
@@ -390,7 +395,7 @@ export default function InfoButton() {
 				aria-label="评价对话"
 				title="评价对话"
 				classNames={{
-					content: 'space-y-1 break-all pt-2 text-justify text-small',
+					content: 'space-y-1 break-all pt-2 text-justify text-small text-default-900',
 				}}
 			>
 				{Object.entries(CUSTOMER_EVALUATION_KEY_MAP).map(([evaluation, evaluationKey], index) => {
@@ -435,7 +440,7 @@ export default function InfoButton() {
 				aria-label="特别说明"
 				title="特别说明"
 				classNames={{
-					content: 'space-y-1 break-all pt-2 text-justify',
+					content: 'space-y-1 break-all pt-2 text-justify text-default-900',
 				}}
 			>
 				<div>

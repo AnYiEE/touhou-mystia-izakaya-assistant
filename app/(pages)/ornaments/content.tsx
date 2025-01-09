@@ -2,14 +2,11 @@ import {memo, useRef} from 'react';
 
 import {useOpenedItemPopover} from '@/hooks';
 
-import {PopoverContent} from '@nextui-org/react';
-
 import {cn} from '@/design/ui/components';
 
 import {trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
 import ItemPopoverCard from '@/components/itemPopoverCard';
-import Popover from '@/components/popover';
 import Sprite from '@/components/sprite';
 
 // import {globalStore as store} from '@/stores';
@@ -27,7 +24,7 @@ export default memo<IProps>(function Content({data}) {
 	// const isHighAppearance = store.persistence.highAppearance.use();
 
 	return data.map(({description, dlc, effect, from, id, name}, index) => (
-		<Popover
+		<ItemPopoverCard.Popover
 			key={index}
 			showArrow
 			/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/3736} is fixed. */
@@ -55,7 +52,7 @@ export default memo<IProps>(function Content({data}) {
 					}}
 				/>
 			</ItemPopoverCard.Trigger>
-			<PopoverContent>
+			<ItemPopoverCard.Content>
 				<ItemPopoverCard.CloseButton />
 				<ItemPopoverCard.ShareButton name={name} />
 				<ItemPopoverCard
@@ -93,7 +90,7 @@ export default memo<IProps>(function Content({data}) {
 						{effect}
 					</p>
 				</ItemPopoverCard>
-			</PopoverContent>
-		</Popover>
+			</ItemPopoverCard.Content>
+		</ItemPopoverCard.Popover>
 	));
 });

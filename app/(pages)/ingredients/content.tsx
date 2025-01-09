@@ -2,18 +2,23 @@ import {Fragment, memo, useRef} from 'react';
 
 import {useOpenedItemPopover} from '@/hooks';
 
-import {PopoverContent, PopoverTrigger, ScrollShadow} from '@nextui-org/react';
+import {ScrollShadow} from '@nextui-org/react';
 
-import {CLASSNAME_FOCUS_VISIBLE_OUTLINE, cn} from '@/design/ui/components';
+import {
+	CLASSNAME_FOCUS_VISIBLE_OUTLINE,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	Tooltip,
+	cn,
+} from '@/design/ui/components';
 
 import {trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
 import ItemPopoverCard from '@/components/itemPopoverCard';
 import Ol from '@/components/ol';
-import Popover from '@/components/popover';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
-import Tooltip from '@/components/tooltip';
 
 import {type IIngredient, INGREDIENT_TAG_STYLE} from '@/data';
 // import {globalStore as store} from '@/stores';
@@ -50,7 +55,7 @@ export default memo<IProps>(function Content({data}) {
 					}}
 				/>
 			</ItemPopoverCard.Trigger>
-			<PopoverContent>
+			<ItemPopoverCard.Content>
 				<ItemPopoverCard.CloseButton />
 				<ItemPopoverCard.ShareButton name={name} />
 				<ItemPopoverCard
@@ -176,7 +181,7 @@ export default memo<IProps>(function Content({data}) {
 						})}
 					</ScrollShadow>
 				</ItemPopoverCard>
-			</PopoverContent>
+			</ItemPopoverCard.Content>
 		</Popover>
 	));
 });

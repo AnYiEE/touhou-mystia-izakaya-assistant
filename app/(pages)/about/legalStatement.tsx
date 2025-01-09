@@ -1,5 +1,6 @@
+import {Link} from '@/design/ui/components';
+
 import Heading from '@/components/heading';
-import Link from '@/components/link';
 
 import {siteConfig} from '@/configs';
 
@@ -44,7 +45,7 @@ export default function LegalStatement() {
 						showAnchorIcon
 						href={links.steam.href}
 						title={links.steam.label}
-						className="indent-0"
+						className="rounded-small indent-0 font-medium"
 					>
 						原作者
 					</Link>
@@ -57,7 +58,7 @@ export default function LegalStatement() {
 						showAnchorIcon
 						href={links.gnuLicense.href}
 						title={links.gnuLicense.label}
-						className="indent-0"
+						className="rounded-small indent-0"
 					>
 						见此
 					</Link>
@@ -67,7 +68,7 @@ export default function LegalStatement() {
 						showAnchorIcon
 						href={links.github.href}
 						title={links.github.label}
-						className="indent-0"
+						className="rounded-small indent-0 font-medium"
 					>
 						GitHub
 					</Link>

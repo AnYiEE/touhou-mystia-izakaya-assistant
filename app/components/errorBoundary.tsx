@@ -83,7 +83,7 @@ export default class ErrorBoundary extends Component<IProps, IStates> {
 							href={links.qqGroup.href}
 							referrerPolicy="same-origin"
 							target="_blank"
-							className="text-primary hover:underline hover:underline-offset-2"
+							className="font-medium text-primary hover:underline hover:underline-offset-2"
 						>
 							{links.qqGroup.label}
 						</a>

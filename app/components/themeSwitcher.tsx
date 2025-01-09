@@ -5,21 +5,20 @@ import {memo, useCallback, useEffect, useMemo, useState} from 'react';
 import {THEME_MAP, type TTheme, useTheme} from '@/design/hooks';
 import {useMounted, useVibrate} from '@/hooks';
 
-import {
-	DropdownItem,
-	DropdownMenu,
-	type DropdownProps,
-	DropdownTrigger,
-	type Selection,
-	Spinner,
-} from '@nextui-org/react';
+import {type Selection, Spinner} from '@nextui-org/react';
 import {faCircleHalfStroke, faMoon, faSun} from '@fortawesome/free-solid-svg-icons';
 
-import {cn} from '@/design/ui/components';
+import {
+	Dropdown,
+	DropdownItem,
+	DropdownMenu,
+	DropdownTrigger,
+	type IDropdownProps,
+	Tooltip,
+	cn,
+} from '@/design/ui/components';
 
-import Dropdown from '@/components/dropdown';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
-import Tooltip from '@/components/tooltip';
 
 import {globalStore as store} from '@/stores';
 import {toGetValueCollection} from '@/utilities';
@@ -32,7 +31,7 @@ const THEME_LABEL_MAP = {
 	system: '跟随系统',
 } as const satisfies Record<TTheme, string> & Record<'list' | 'switcher', string>;
 
-interface IProps extends Pick<DropdownProps, 'className'> {
+interface IProps extends Pick<IDropdownProps, 'className'> {
 	isMenu?: boolean;
 }
 
@@ -79,7 +78,7 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 					title={THEME_LABEL_MAP.switcher}
 					classNames={{
 						base: 'flex',
-						wrapper: 'h-4 w-4',
+						wrapper: 'h-5 w-5',
 					}}
 				/>
 			</div>
@@ -105,8 +104,8 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 							icon={themeIcon}
 							aria-label={THEME_LABEL_MAP.switcher}
 							className={cn(
-								'h-min w-min min-w-min bg-transparent !text-medium',
-								isMenu ? 'h-full text-foreground' : 'text-default-400 dark:text-default-500',
+								'h-5 w-5 min-w-min bg-transparent !text-medium',
+								isMenu ? 'h-full text-foreground' : 'text-primary-600 dark:text-default-foreground',
 								className
 							)}
 						/>

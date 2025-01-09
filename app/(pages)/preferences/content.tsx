@@ -2,15 +2,14 @@
 
 import {memo, useCallback} from 'react';
 
-import {useMotionProps, useVibrate} from '@/hooks';
+import {useVibrate} from '@/hooks';
 
 import {Select, SelectItem, type Selection, Switch} from '@nextui-org/react';
 
-import {cn} from '@/design/ui/components';
+import {Button, cn, useMotionProps} from '@/design/ui/components';
 
 import DataManager, {type IDataManagerProps} from './dataManager';
 import SwitchItem from './switchItem';
-import Button from '@/components/button';
 import Heading from '@/components/heading';
 import Sprite from '@/components/sprite';
 
@@ -116,7 +115,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 							classNames={{
 								base: 'w-28',
 								listboxWrapper: cn('[&_li]:transition-background', {
-									'focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40':
+									'focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40':
 										isHighAppearance,
 								}),
 								popoverContent: cn({
@@ -125,8 +124,8 @@ export default memo<IProps>(function Content({onModalClose}) {
 								trigger: cn(
 									'transition-background',
 									onModalClose !== undefined || !isHighAppearance
-										? 'bg-default-50 data-[hover=true]:bg-default-100 dark:bg-default-100 dark:data-[hover=true]:bg-default-200'
-										: 'bg-default-100/40 backdrop-blur data-[hover=true]:bg-default-200/40'
+										? 'bg-default-200 data-[hover=true]:bg-default dark:bg-default-100 dark:data-[hover=true]:bg-default-200'
+										: 'bg-default/40 backdrop-blur data-[hover=true]:bg-default-400/40'
 								),
 							}}
 						>
@@ -134,7 +133,6 @@ export default memo<IProps>(function Content({onModalClose}) {
 						</Select>
 					</div>
 					<Button
-						highAppearance
 						color="primary"
 						isDisabled={selectedPopularTag.has(null as never)}
 						size="sm"

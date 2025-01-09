@@ -3,11 +3,10 @@ import {debounce} from 'lodash';
 
 import {useVibrate} from '@/hooks';
 
-import {Avatar, ScrollShadow} from '@nextui-org/react';
+import {ScrollShadow} from '@nextui-org/react';
 
-import {cn} from '@/design/ui/components';
+import {Avatar, Button, cn} from '@/design/ui/components';
 
-import Button from '@/components/button';
 import PressElement from '@/components/pressElement';
 import Sprite from '@/components/sprite';
 
@@ -76,7 +75,7 @@ export default memo<IProps>(function CustomerTabContent({customerTabStyle, sorte
 									icon: 'inline-table transition group-hover:scale-125 lg:inline-block',
 								}}
 							/>
-							<span className="whitespace-nowrap text-tiny transition-opacity group-hover:opacity-hover">
+							<span className="whitespace-nowrap text-tiny text-default-800 transition-colors group-hover:text-default-900">
 								{name}
 							</span>
 						</PressElement>
@@ -85,14 +84,13 @@ export default memo<IProps>(function CustomerTabContent({customerTabStyle, sorte
 			</ScrollShadow>
 			<div className="flex justify-center xl:hidden">
 				<Button
-					highAppearance
 					isIconOnly
 					size="sm"
 					variant="flat"
 					onClick={handleButtonPress}
 					onKeyDown={debounce(checkA11yConfirmKey(handleButtonPress))}
 					aria-label={customerTabStyle.ariaLabel}
-					className="h-4 w-4/5 text-default-300"
+					className="h-4 w-4/5 text-default-400"
 				>
 					{customerTabStyle.buttonNode}
 				</Button>

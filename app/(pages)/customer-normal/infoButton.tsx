@@ -2,8 +2,9 @@ import {type ReactElement} from 'react';
 
 import {AccordionItem} from '@nextui-org/react';
 
+import {Avatar} from '@/design/ui/components';
+
 import InfoButtonBase from '@/(pages)/customer-rare/infoButtonBase';
-import Avatar from '@/components/avatar';
 import Ol from '@/components/ol';
 import Price from '@/components/price';
 
@@ -42,7 +43,7 @@ export default function InfoButton() {
 				aria-label="普客介绍"
 				title="普客介绍"
 				classNames={{
-					content: 'space-y-1 break-all pt-2 text-justify',
+					content: 'space-y-1 break-all pt-2 text-justify text-default-900',
 				}}
 			>
 				<div className="flex items-center gap-4">
@@ -63,7 +64,7 @@ export default function InfoButton() {
 					aria-label="闲聊对话"
 					title="闲聊对话"
 					classNames={{
-						content: 'break-all pt-2 text-justify text-small',
+						content: 'break-all pt-2 text-justify text-small text-default-900',
 					}}
 				>
 					<Ol>
@@ -80,7 +81,7 @@ export default function InfoButton() {
 				aria-label="评级图例"
 				title="评级图例"
 				classNames={{
-					content: 'grid grid-cols-3 content-start break-all pt-2 text-justify text-small',
+					content: 'grid grid-cols-3 content-start break-all pt-2 text-justify text-small text-default-900',
 				}}
 			>
 				{CUSTOMER_RATING_KEY.filter((key) => key === 'exbad' || key === 'norm' || key === 'good').map(
@@ -106,7 +107,7 @@ export default function InfoButton() {
 				aria-label="特别说明"
 				title="特别说明"
 				classNames={{
-					content: 'space-y-1 break-all pt-2 text-justify',
+					content: 'space-y-1 break-all pt-2 text-justify text-default-900',
 				}}
 			>
 				<div>

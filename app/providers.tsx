@@ -127,7 +127,7 @@ export default function Providers({children, locale}: PropsWithChildren<IProps>)
 		<NextUIProvider locale={locale} navigate={router.push}>
 			<ProgressBarProvider>
 				{children}
-				<ProgressBar className="fixed top-0 z-60 h-1 rounded-2xl bg-default-300 dark:bg-primary dark:lg:h-0.5" />
+				<ProgressBar className="fixed top-0 z-60 h-1 rounded-2xl bg-primary dark:lg:h-0.5" />
 				<CompatibleBrowser />
 				<CustomerRareTutorial />
 			</ProgressBarProvider>

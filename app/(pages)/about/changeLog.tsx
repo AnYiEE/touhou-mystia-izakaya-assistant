@@ -1,8 +1,9 @@
 /* eslint-disable sort-keys */
 import {Fragment} from 'react';
 
+import {Link} from '@/design/ui/components';
+
 import Heading from '@/components/heading';
-import Link from '@/components/link';
 import Ul from '@/components/ul';
 
 import {siteConfig} from '@/configs';
@@ -126,6 +127,7 @@ export default function ChangeLog() {
 							showAnchorIcon
 							href={`${links.github.href}/commits`}
 							title={`${links.github.label}提交记录`}
+							className="rounded-small font-medium"
 						>
 							GitHub
 						</Link>

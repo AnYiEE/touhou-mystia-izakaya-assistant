@@ -4,18 +4,21 @@ import {isObjectLike} from 'lodash';
 import useBreakpoint from 'use-breakpoint';
 import {useOpenedItemPopover, useViewInNewWindow} from '@/hooks';
 
-import {PopoverContent, PopoverTrigger} from '@nextui-org/react';
-
-import {CLASSNAME_FOCUS_VISIBLE_OUTLINE, cn} from '@/design/ui/components';
+import {
+	CLASSNAME_FOCUS_VISIBLE_OUTLINE,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	Tooltip,
+	cn,
+} from '@/design/ui/components';
 
 import {trackEvent} from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
 import ItemPopoverCard from '@/components/itemPopoverCard';
-import Popover from '@/components/popover';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tachie from '@/components/tachie';
-import Tooltip from '@/components/tooltip';
 
 import {type IClothes} from '@/data';
 import {clothesStore /* , globalStore */} from '@/stores';
@@ -43,7 +46,7 @@ export default memo<IProps>(function Content({data}) {
 	const instance = clothesStore.instance.get();
 
 	return data.map(({description, dlc, from, id, izakaya, name}, dataIndex) => (
-		<Popover
+		<ItemPopoverCard.Popover
 			key={dataIndex}
 			showArrow
 			/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/3736} is fixed. */
@@ -78,7 +81,7 @@ export default memo<IProps>(function Content({data}) {
 					}}
 				/>
 			</ItemPopoverCard.Trigger>
-			<PopoverContent>
+			<ItemPopoverCard.Content>
 				<ItemPopoverCard.CloseButton />
 				<ItemPopoverCard.ShareButton name={name} />
 				<ItemPopoverCard
@@ -182,7 +185,7 @@ export default memo<IProps>(function Content({data}) {
 						</Popover>
 					</p>
 				</ItemPopoverCard>
-			</PopoverContent>
-		</Popover>
+			</ItemPopoverCard.Content>
+		</ItemPopoverCard.Popover>
 	));
 });

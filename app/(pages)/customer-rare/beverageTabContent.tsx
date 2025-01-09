@@ -1,16 +1,11 @@
 import {useCallback, useMemo} from 'react';
 
-import {useMotionProps, useVibrate, useViewInNewWindow} from '@/hooks';
+import {useVibrate, useViewInNewWindow} from '@/hooks';
 
 import {
 	Autocomplete,
 	AutocompleteItem,
-	DropdownItem,
-	DropdownMenu,
-	DropdownTrigger,
 	Pagination,
-	PopoverContent,
-	PopoverTrigger,
 	Select,
 	SelectItem,
 	type SortDescriptor,
@@ -24,18 +19,26 @@ import {
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faChevronDown, faMagnifyingGlass, faPlus, faTags} from '@fortawesome/free-solid-svg-icons';
 
-import {cn} from '@/design/ui/components';
+import {
+	Button,
+	Dropdown,
+	DropdownItem,
+	DropdownMenu,
+	DropdownTrigger,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	Tooltip,
+	cn,
+	useMotionProps,
+} from '@/design/ui/components';
 
 import TagGroup from './tagGroup';
-import Button from '@/components/button';
-import Dropdown from '@/components/dropdown';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Placeholder from '@/components/placeholder';
-import Popover from '@/components/popover';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
-import Tooltip from '@/components/tooltip';
 
 import {beverageTableColumns as tableColumns} from './constants';
 import type {ITableColumn, ITableSortDescriptor, TBeverageWithSuitability, TBeveragesWithSuitability} from './types';
@@ -231,7 +234,7 @@ export default function BeverageTabContent() {
 														icon={faTags}
 														variant="light"
 														aria-label="酒水标签"
-														className="inline h-4 w-4 min-w-0 scale-75 text-default-300 data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover dark:text-default-400"
+														className="inline h-4 w-4 min-w-0 scale-75 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
 													/>
 												</PopoverTrigger>
 											</span>
@@ -312,8 +315,7 @@ export default function BeverageTabContent() {
 										'backdrop-blur': isHighAppearance,
 									}
 								),
-								listboxWrapper:
-									'[&_li]:transition-background data-[hover=true]:[&_li]:!bg-default-200/40',
+								listboxWrapper: '[&_li]:transition-background data-[hover=true]:[&_li]:!bg-default/40',
 								popoverContent: cn({
 									'bg-content1/70 backdrop-blur-lg': isHighAppearance,
 								}),
@@ -352,7 +354,7 @@ export default function BeverageTabContent() {
 							classNames={{
 								base: 'w-2/3 md:w-full',
 								listboxWrapper:
-									'[&_li]:transition-background focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40',
+									'[&_li]:transition-background focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40',
 								popoverContent: cn({
 									'bg-content1/70 backdrop-blur-lg': isHighAppearance,
 								}),
@@ -371,13 +373,16 @@ export default function BeverageTabContent() {
 						<Dropdown showArrow>
 							<DropdownTrigger>
 								<Button
-									highAppearance
 									endContent={<FontAwesomeIcon icon={faChevronDown} />}
 									size="sm"
-									variant="flat"
-									className={cn({
-										'ring-2 ring-default': selectedDlcs.size > 0,
-									})}
+									variant="light"
+									className={cn(
+										'bg-default/40 data-[hover=true]:bg-default/40 data-[pressed=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
+										{
+											'backdrop-blur': isHighAppearance,
+											'ring-2 ring-default': selectedDlcs.size > 0,
+										}
+									)}
 								>
 									DLC
 								</Button>
@@ -404,10 +409,15 @@ export default function BeverageTabContent() {
 						<Dropdown showArrow>
 							<DropdownTrigger>
 								<Button
-									highAppearance
 									endContent={<FontAwesomeIcon icon={faChevronDown} />}
 									size="sm"
-									variant="flat"
+									variant="light"
+									className={cn(
+										'bg-default/40 data-[hover=true]:bg-default/40 data-[pressed=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
+										{
+											'backdrop-blur': isHighAppearance,
+										}
+									)}
 								>
 									条目
 								</Button>
@@ -431,7 +441,7 @@ export default function BeverageTabContent() {
 						</Dropdown>
 					</div>
 				</div>
-				<div className="flex items-center justify-between text-small text-default-400">
+				<div className="flex items-center justify-between text-small text-default-700">
 					<span>总计{filteredData.length}种酒水</span>
 					<label className="flex items-center gap-2">
 						<span className="cursor-auto whitespace-nowrap">表格行数</span>
@@ -452,7 +462,7 @@ export default function BeverageTabContent() {
 							classNames={{
 								base: 'min-w-16',
 								listboxWrapper:
-									'[&_li]:transition-background focus:[&_li]:!bg-default-200/40 data-[focus=true]:[&_li]:!bg-default-200/40 data-[hover=true]:[&_li]:!bg-default-200/40',
+									'[&_li]:transition-background focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40',
 								popoverContent: cn('min-w-20', {
 									'bg-content1/70 backdrop-blur-lg': isHighAppearance,
 								}),
@@ -462,7 +472,7 @@ export default function BeverageTabContent() {
 										'backdrop-blur': isHighAppearance,
 									}
 								),
-								value: '!text-default-400',
+								value: '!text-default-700',
 							}}
 						>
 							{({value}) => (
@@ -508,7 +518,7 @@ export default function BeverageTabContent() {
 							customerStore.onBeverageTablePageChange(page);
 						}}
 						classNames={{
-							item: cn('bg-default-100/70', {
+							item: cn('bg-default/40', {
 								'backdrop-blur': isHighAppearance,
 							}),
 						}}
@@ -536,12 +546,12 @@ export default function BeverageTabContent() {
 			aria-label="酒水选择表格"
 			classNames={{
 				base: 'gap-2',
-				td: 'before:transition-colors-opacity',
-				th: cn({
-					'bg-default-100/70 backdrop-blur-sm': isHighAppearance,
+				td: 'before:bg-default-200/70 before:transition-colors-opacity',
+				th: cn('bg-default-200/70', {
+					'backdrop-blur-sm': isHighAppearance,
 				}),
-				wrapper: cn('xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)] xl:p-2', {
-					'bg-content1/40 backdrop-blur': isHighAppearance,
+				wrapper: cn('bg-content1/40 xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)] xl:p-2', {
+					'backdrop-blur': isHighAppearance,
 				}),
 			}}
 		>

@@ -1,5 +1,6 @@
+import {Link} from '@/design/ui/components';
+
 import Heading from '@/components/heading';
-import Link from '@/components/link';
 import Ul from '@/components/ul';
 
 export default function KnownIssue() {
@@ -9,7 +10,12 @@ export default function KnownIssue() {
 			<Ul>
 				<li>
 					表格无法排序多个列：见
-					<Link isExternal showAnchorIcon href="https://github.com/nextui-org/nextui/issues/2282">
+					<Link
+						isExternal
+						showAnchorIcon
+						href="https://github.com/nextui-org/nextui/issues/2282"
+						className="rounded-small font-medium"
+					>
 						issue#2282
 					</Link>
 					。

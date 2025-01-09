@@ -2,17 +2,16 @@
 
 import {useCallback, useMemo, useState} from 'react';
 
-import {Button, PopoverContent, PopoverTrigger, Spinner} from '@nextui-org/react';
+import {Spinner} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faQq, faWeixin} from '@fortawesome/free-brands-svg-icons';
 
+import {Button, Link, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@/design/ui/components';
+
 import {trackEvent} from '@/components/analytics';
 import FontAwesomeIconLink from '@/components/fontAwesomeIconLink';
-import Link from '@/components/link';
 import Placeholder from '@/components/placeholder';
-import Popover from '@/components/popover';
 import QRCode from '@/components/qrCode';
-import Tooltip from '@/components/tooltip';
 import Xiaohongshu from '@/components/xiaohongshu';
 
 import {siteConfig} from '@/configs';
@@ -78,7 +77,7 @@ export default function Home() {
 			<QRCode
 				options={{
 					color: {
-						light: '#fef7e4',
+						light: '#fbf8f3',
 					},
 					width: 512,
 				}}
@@ -102,11 +101,7 @@ export default function Home() {
 						<p className="hidden text-large md:inline-block lg:hidden">点击顶部的按钮以使用各项功能</p>
 						<p className="inline-flex items-center md:hidden">
 							点击右上角的
-							<span
-								aria-label="菜单按钮图例"
-								role="img"
-								className="mx-0.5 block h-4 rounded bg-default-50 dark:bg-default-100"
-							>
+							<span aria-label="菜单按钮图例" role="img" className="mx-0.5 block h-4 rounded bg-content2">
 								<span className="flex h-full flex-col justify-center p-1 before:h-px before:w-4 before:-translate-y-1 before:bg-current after:h-px after:w-4 after:translate-y-1 after:bg-current"></span>
 							</span>
 							以使用各项功能
@@ -117,7 +112,7 @@ export default function Home() {
 								showAnchorIcon
 								href={links.appQA.href}
 								title={links.appQA.label}
-								className="text-small text-foreground-500 md:text-base lg:text-large"
+								className="rounded-small text-small text-foreground-500 md:text-base lg:text-large"
 							>
 								{links.appQA.label}
 							</Link>
@@ -138,7 +133,7 @@ export default function Home() {
 									icon={faQq}
 									href={links.qqGroup.href}
 									title={links.qqGroup.label}
-									className="text-xl text-qq-blue"
+									className="rounded-small text-xl text-qq-blue hover:opacity-hover hover:brightness-100 active:opacity-disabled"
 								/>
 							</Tooltip>
 							<Popover
@@ -163,8 +158,9 @@ export default function Home() {
 												isIconOnly
 												radius="none"
 												variant="light"
+												role="link"
 												title={links.wxGroup.label}
-												className="h-min w-min min-w-min text-xl text-wx-green data-[hover=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
+												className="h-min w-min min-w-min rounded-small text-xl text-wx-green active:opacity-disabled data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
 											>
 												<FontAwesomeIcon icon={faWeixin} size="1x" />
 											</Button>
@@ -184,10 +180,11 @@ export default function Home() {
 									as={Link}
 									isExternal
 									isIconOnly
+									variant="light"
 									href={links.xiaohongshuGroup.href}
 									role="link"
 									title={links.xiaohongshuGroup.label}
-									className="h-5"
+									className="h-5 active:opacity-disabled data-[hover=true]:!opacity-hover data-[pressed=true]:!opacity-hover"
 								>
 									<Xiaohongshu />
 								</Button>

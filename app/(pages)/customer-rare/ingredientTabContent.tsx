@@ -5,13 +5,11 @@ import {useVibrate} from '@/hooks';
 
 import {Badge, ScrollShadow} from '@nextui-org/react';
 
-import {cn} from '@/design/ui/components';
+import {Button, Tooltip, cn} from '@/design/ui/components';
 
-import Button from '@/components/button';
 import Placeholder from '@/components/placeholder';
 import PressElement from '@/components/pressElement';
 import Sprite from '@/components/sprite';
-import Tooltip from '@/components/tooltip';
 
 import {checkIngredientEasterEgg} from './evaluateMeal';
 import type {IIngredientsTabStyle} from './types';
@@ -245,6 +243,7 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 						return (
 							<Tooltip
 								key={index}
+								disableBlur
 								showArrow
 								closeDelay={0}
 								color={color}
@@ -285,7 +284,7 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 											className="transition group-hover:scale-105"
 										/>
 									</Badge>
-									<span className="whitespace-nowrap text-center text-tiny group-hover:font-bold">
+									<span className="whitespace-nowrap text-center text-tiny text-default-800 transition-colors group-hover:text-default-900">
 										{name}
 									</span>
 								</PressElement>
@@ -296,14 +295,13 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 			</ScrollShadow>
 			<div className="flex justify-center xl:hidden">
 				<Button
-					highAppearance
 					isIconOnly
 					size="sm"
 					variant="flat"
 					onClick={handleButtonPress}
 					onKeyDown={debounce(checkA11yConfirmKey(handleButtonPress))}
 					aria-label={ingredientTabStyle.ariaLabel}
-					className="h-4 w-4/5 text-default-300"
+					className="h-4 w-4/5 text-default-400"
 				>
 					{ingredientTabStyle.buttonNode}
 				</Button>

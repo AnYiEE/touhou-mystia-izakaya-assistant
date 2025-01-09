@@ -7,13 +7,11 @@ import {Card} from '@nextui-org/react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-icons';
 
-import {cn} from '@/design/ui/components';
+import {Button, Tooltip, cn} from '@/design/ui/components';
 
-import Button from '@/components/button';
 import Placeholder from '@/components/placeholder';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
-import Tooltip from '@/components/tooltip';
 
 import {CUSTOMER_RATING_MAP, DARK_MATTER_NAME, DARK_MATTER_PRICE, type TIngredientName} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
@@ -51,9 +49,13 @@ export const UnknownItem = memo<IUnknownItemProps>(function UnknownItem({classNa
 			<span
 				role="img"
 				title={title}
-				className={cn('outline-3 inline-block text-center leading-none outline-double', className)}
+				className={cn(
+					'outline-3 inline-block rounded-small text-center leading-none outline-double',
+					className
+				)}
 				style={{
 					fontSize: remString,
+					height: remString,
 					width: remString,
 				}}
 			>
@@ -117,7 +119,7 @@ function IngredientsList() {
 											role="button"
 											tabIndex={1}
 											title={ingredient}
-											className="absolute flex h-10 w-10 cursor-pointer items-center justify-center bg-foreground bg-opacity-50 text-background opacity-0 transition-opacity hover:opacity-100"
+											className="absolute flex h-10 w-10 cursor-pointer items-center justify-center rounded-small bg-foreground bg-opacity-50 text-background opacity-0 transition-opacity hover:opacity-100"
 										>
 											<FontAwesomeIcon icon={faCircleXmark} size="1x" />
 										</span>
@@ -271,7 +273,7 @@ export default function ResultCard() {
 												role={isDarkMatter ? undefined : 'button'}
 												tabIndex={isDarkMatter ? undefined : 0}
 												aria-label={label}
-												className={cn({
+												className={cn('!duration-500 ease-out transition-background', {
 													'cursor-pointer': !isDarkMatter,
 												})}
 											/>
@@ -308,7 +310,7 @@ export default function ResultCard() {
 						variant="flat"
 						onPress={handleSaveButtonPress}
 						aria-label={`保存套餐，当前${currentRating === null ? '未评级' : `评级为${CUSTOMER_RATING_MAP[currentRating]}`}`}
-						className={cn('flex-col gap-0 text-tiny leading-none !transition-opacity md:w-auto', {
+						className={cn('flex-col gap-0 text-tiny leading-none !transition md:w-auto', {
 							'opacity-disabled': isSaveButtonDisabled,
 						})}
 					>
