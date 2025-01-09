@@ -4,7 +4,6 @@ import {Fragment} from 'react';
 import {Link} from '@/design/ui/components';
 
 import Heading from '@/components/heading';
-import Ul from '@/components/ul';
 
 import {siteConfig} from '@/configs';
 import {DARK_MATTER_NAME, TAG_LARGE_PARTITION, TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data';
@@ -142,11 +141,11 @@ export default function ChangeLog() {
 					<Heading as="h2" isFirst={versionIndex === 0}>
 						{version}
 					</Heading>
-					<Ul>
+					<ul className="list-inside list-decimal space-y-2 break-all text-justify">
 						{changes.map((change, changeIndex) => (
 							<li key={changeIndex}>{change}</li>
 						))}
-					</Ul>
+					</ul>
 				</Fragment>
 			))}
 		</>

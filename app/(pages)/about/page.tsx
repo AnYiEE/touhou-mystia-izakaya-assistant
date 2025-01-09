@@ -1,6 +1,5 @@
 import ChangeLog from './changeLog';
 import Introduction from './introduction';
-import KnownIssue from './knownIssue';
 import LegalStatement from './legalStatement';
 
 export default function About() {
@@ -9,7 +8,6 @@ export default function About() {
 			<Introduction />
 			<LegalStatement />
 			<ChangeLog />
-			<KnownIssue />
 		</div>
 	);
 }
