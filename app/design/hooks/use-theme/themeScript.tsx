@@ -1,8 +1,6 @@
 import {COLOR_MAP, MEDIA, STORAGE_KEY, THEME_MAP} from './constants';
 import {TTheme} from './types';
 
-import './styles.scss';
-
 const script = (
 	media: typeof MEDIA,
 	storageKey: typeof STORAGE_KEY,
