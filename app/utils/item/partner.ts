@@ -1,5 +1,5 @@
+import {Item} from './base';
 import {PARTNER_LIST, type TCustomerRareName, type TPartnerName, type TPartners} from '@/data';
-import {Item} from '@/utils/item';
 
 import {siteConfig} from '@/configs';
 import {processPinyin} from '@/utilities';

@@ -22,15 +22,9 @@ const getNames = createNamesCache(instance);
 const state = {
 	instance,
 
-	dlcs: instance.getValuesByProp(instance.data, 'dlc', true).sort(numberSort),
-	levels: instance.getValuesByProp(instance.data, 'level', true).sort(numberSort),
-	tags: (
-		[
-			...instance.getValuesByProp(instance.data, 'tags'),
-			TAG_POPULAR_NEGATIVE,
-			TAG_POPULAR_POSITIVE,
-		] as TIngredientTag[]
-	)
+	dlcs: instance.getValuesByProp('dlc', true).sort(numberSort),
+	levels: instance.getValuesByProp('level', true).sort(numberSort),
+	tags: ([...instance.getValuesByProp('tags'), TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE] as TIngredientTag[])
 		.map(toGetValueCollection)
 		.sort(pinyinSort),
 	types: instance.sortedTypes.map(toGetValueCollection),

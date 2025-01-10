@@ -17,8 +17,8 @@ const storeVersion = {
 const state = {
 	instance,
 
-	dlcs: instance.getValuesByProp(instance.data, 'dlc', true).sort(numberSort),
-	levels: instance.getValuesByProp(instance.data, 'level', true).sort(numberSort),
+	dlcs: instance.getValuesByProp('dlc', true).sort(numberSort),
+	levels: instance.getValuesByProp('level', true).sort(numberSort),
 	tags: instance.sortedTags.map(toGetValueCollection),
 
 	persistence: {

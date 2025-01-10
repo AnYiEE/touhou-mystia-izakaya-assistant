@@ -20,18 +20,14 @@ const storeVersion = {
 const state = {
 	instance,
 
-	dlcs: instance.getValuesByProp(instance.data, 'dlc', true).sort(numberSort),
-	levels: instance.getValuesByProp(instance.data, 'level', true).sort(numberSort),
+	dlcs: instance.getValuesByProp('dlc', true).sort(numberSort),
+	levels: instance.getValuesByProp('level', true).sort(numberSort),
 
-	cookers: instance.getValuesByProp(instance.data, 'cooker', true).sort(pinyinSort),
-	ingredients: instance.getValuesByProp(instance.data, 'ingredients', true).sort(pinyinSort),
-	negativeTags: instance.getValuesByProp(instance.data, 'negativeTags', true).sort(pinyinSort),
+	cookers: instance.getValuesByProp('cooker', true).sort(pinyinSort),
+	ingredients: instance.getValuesByProp('ingredients', true).sort(pinyinSort),
+	negativeTags: instance.getValuesByProp('negativeTags', true).sort(pinyinSort),
 	positiveTags: (
-		[
-			...instance.getValuesByProp(instance.data, 'positiveTags'),
-			TAG_POPULAR_NEGATIVE,
-			TAG_POPULAR_POSITIVE,
-		] as TRecipeTag[]
+		[...instance.getValuesByProp('positiveTags'), TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE] as TRecipeTag[]
 	)
 		.map(toGetValueCollection)
 		.sort(pinyinSort),

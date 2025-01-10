@@ -1,7 +1,7 @@
 import {isObjectLike, sortBy} from 'lodash';
 
+import {Item} from './base';
 import {ORNAMENT_LIST, type TCustomerRareName, type TOrnamentName, type TOrnaments} from '@/data';
-import {Item} from '@/utils/item';
 
 type TBondOrnaments = {
 	level: number;

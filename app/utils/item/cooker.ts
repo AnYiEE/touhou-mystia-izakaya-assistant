@@ -1,7 +1,7 @@
 import {isObjectLike} from 'lodash';
 
+import {Item} from './base';
 import {COOKER_LIST, type TCookerCategory, type TCookerName, type TCookers, type TCustomerRareName} from '@/data';
-import {Item} from '@/utils/item';
 
 import {checkArrayEqualOf} from '@/utilities';
 
@@ -44,7 +44,7 @@ export class Cooker extends Item<TCookers> {
 			return categories;
 		}
 
-		const isCategoriesEqual = checkArrayEqualOf(categories, this.getValuesByProp(this.data, 'category'));
+		const isCategoriesEqual = checkArrayEqualOf(categories, this.getValuesByProp('category'));
 		if (!isCategoriesEqual) {
 			throw new Error(
 				'[utils/item/Cooker]: the given categories is inconsistent with the types in the original data'

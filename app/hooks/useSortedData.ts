@@ -16,9 +16,12 @@ export function useSortedData<T extends TItemInstance>(
 	const sortData = useCallback(() => {
 		switch (pinyinSortState) {
 			case PinyinSortState.AZ:
-				return instance.sortByPinyin(filteredData as never);
+				return instance.getPinyinSortedData(filteredData as never).get();
 			case PinyinSortState.ZA:
-				return instance.sortByPinyin(filteredData as never).reverse();
+				return instance
+					.getPinyinSortedData(filteredData as never)
+					.fork()
+					.reverse();
 			default:
 				return filteredData;
 		}

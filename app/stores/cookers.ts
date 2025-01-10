@@ -17,8 +17,8 @@ const state = {
 	instance,
 
 	categories: instance.sortedCategories.map(toGetValueCollection),
-	dlcs: instance.getValuesByProp(instance.data, 'dlc', true).sort(numberSort),
-	types: instance.getValuesByProp(instance.data, 'type', true).sort(pinyinSort),
+	dlcs: instance.getValuesByProp('dlc', true).sort(numberSort),
+	types: instance.getValuesByProp('type', true).sort(pinyinSort),
 
 	persistence: {
 		filters: {

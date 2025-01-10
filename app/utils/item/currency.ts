@@ -1,5 +1,5 @@
+import {Item} from './base';
 import {CURRENCY_LIST, type TCurrencies} from '@/data';
-import {Item} from '@/utils/item';
 
 export class Currency extends Item<TCurrencies> {
 	private static _instance: Currency | undefined;

@@ -13,11 +13,11 @@ const instance_ingredient = Ingredient.getInstance();
 const instance_recipe = Recipe.getInstance();
 
 const ingredientTags = instance_ingredient
-	.getValuesByProp(instance_ingredient.data, 'tags')
+	.getValuesByProp('tags')
 	.filter((tag) => !instance_ingredient.blockedTags.has(tag));
 
 const recipePositiveTags = instance_recipe
-	.getValuesByProp(instance_recipe.data, 'positiveTags')
+	.getValuesByProp('positiveTags')
 	.filter((tag) => !instance_recipe.blockedTags.has(tag));
 
 const popularValidTags = (union(ingredientTags, recipePositiveTags) as TPopularTag[])
@@ -129,7 +129,7 @@ globalStore.persistence.famousShop.onChange((famousShop) => {
 	recipesStore.shared.famousShop.set(famousShop);
 });
 
-// Update the current popular tag when there is a change in the persisted popular tag data.
+// Update the current popular trend when there is a change in the persisted popular trend data.
 globalStore.persistence.popular.onChange((popular) => {
 	customerNormalStore.shared.customer.popular.assign(popular);
 	customerRareStore.shared.customer.popular.assign(popular);

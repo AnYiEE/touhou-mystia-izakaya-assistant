@@ -1,9 +1,6 @@
 import {Food} from './base';
 import {
 	INGREDIENT_LIST,
-	TAG_POPULAR_NEGATIVE,
-	TAG_POPULAR_POSITIVE,
-	TAG_SIGNATURE,
 	type TIngredientName,
 	type TIngredientTag,
 	type TIngredientType,
@@ -33,9 +30,7 @@ export class Ingredient extends Food<TIngredients> {
 	}
 
 	public blockedLevels: Set<TLevel> = new Set([10]);
-
 	public blockedIngredients: Set<TIngredientName> = new Set(['铃仙', '噗噗哟果', '强效辣椒素']);
-
 	public blockedTags: Set<TIngredientTag> = new Set(['特产', '天罚']);
 
 	/**
@@ -48,7 +43,7 @@ export class Ingredient extends Food<TIngredients> {
 			return types;
 		}
 
-		const isTypesEqual = checkArrayEqualOf(types, this.getValuesByProp(this.data, 'type'));
+		const isTypesEqual = checkArrayEqualOf(types, this.getValuesByProp('type'));
 		if (!isTypesEqual) {
 			throw new Error(
 				'[utils/food/Ingredient]: the given types is inconsistent with the types in the original data'
@@ -61,24 +56,13 @@ export class Ingredient extends Food<TIngredients> {
 	}
 
 	/**
-	 * @description Calculate the tags based on the original tags, the popular tag data and the famous shop state.
+	 * @description Calculate the tags based on the original tags, the popular trend data and the famous shop state.
 	 */
-	public calculateTagsWithPopular(
+	public override calculateTagsWithTrend(
 		ingredientTags: ReadonlyArray<TIngredientTag>,
-		popular: IPopularTrend,
+		popularTrend: IPopularTrend,
 		isFamousShop: boolean
 	) {
-		const ingredientTagsWithPopular = new Set(ingredientTags);
-		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popular;
-
-		if (isFamousShop && ingredientTags.includes(TAG_SIGNATURE)) {
-			ingredientTagsWithPopular.add(TAG_POPULAR_POSITIVE);
-		}
-
-		if (currentPopularTag !== null && ingredientTags.includes(currentPopularTag as TIngredientTag)) {
-			ingredientTagsWithPopular.add(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
-		}
-
-		return [...ingredientTagsWithPopular];
+		return super.calculateTagsWithTrend(ingredientTags, popularTrend, isFamousShop) as TIngredientTag[];
 	}
 }

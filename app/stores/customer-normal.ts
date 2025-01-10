@@ -69,24 +69,24 @@ const state = {
 	},
 
 	beverage: {
-		dlcs: instance_beverage.getValuesByProp(instance_beverage.data, 'dlc', true).sort(numberSort),
-		names: instance_beverage.getValuesByProp(instance_beverage.data, 'name', true).sort(pinyinSort),
+		dlcs: instance_beverage.getValuesByProp('dlc', true).sort(numberSort),
+		names: instance_beverage.getValuesByProp('name', true).sort(pinyinSort),
 		tags: instance_beverage.sortedTags.map(toGetValueCollection),
 	},
 	customer: {
-		dlcs: instance_customer.getValuesByProp(instance_customer.data, 'dlc', true).sort(numberSort),
-		places: instance_customer.getValuesByProp(instance_customer.data, 'places', true).sort(pinyinSort),
+		dlcs: instance_customer.getValuesByProp('dlc', true).sort(numberSort),
+		places: instance_customer.getValuesByProp('places', true).sort(pinyinSort),
 	},
 	ingredient: {
-		dlcs: instance_ingredient.getValuesByProp(instance_ingredient.data, 'dlc', true).sort(numberSort),
+		dlcs: instance_ingredient.getValuesByProp('dlc', true).sort(numberSort),
 		levels: instance_ingredient
-			.getValuesByProp(instance_ingredient.data, 'level', true)
+			.getValuesByProp('level', true)
 			.filter(({value}) => !instance_ingredient.blockedLevels.has(value))
 			.sort(numberSort),
 		tags: (
 			[
 				...instance_ingredient
-					.getValuesByProp(instance_ingredient.data, 'tags')
+					.getValuesByProp('tags')
 					.filter((tag) => !instance_ingredient.blockedTags.has(tag)),
 				TAG_POPULAR_NEGATIVE,
 				TAG_POPULAR_POSITIVE,
@@ -96,16 +96,16 @@ const state = {
 			.sort(pinyinSort),
 	},
 	recipe: {
-		cookers: instance_recipe.getValuesByProp(instance_recipe.data, 'cooker', true).sort(pinyinSort),
-		dlcs: instance_recipe.getValuesByProp(instance_recipe.data, 'dlc', true).sort(numberSort),
+		cookers: instance_recipe.getValuesByProp('cooker', true).sort(pinyinSort),
+		dlcs: instance_recipe.getValuesByProp('dlc', true).sort(numberSort),
 		names: instance_recipe
-			.getValuesByProp(instance_recipe.data, 'name', true)
+			.getValuesByProp('name', true)
 			.filter(({value}) => !instance_recipe.blockedRecipes.has(value))
 			.sort(pinyinSort),
 		positiveTags: (
 			[
 				...instance_recipe
-					.getValuesByProp(instance_recipe.data, 'positiveTags')
+					.getValuesByProp('positiveTags')
 					.filter((tag) => !instance_recipe.blockedTags.has(tag)),
 				TAG_POPULAR_NEGATIVE,
 				TAG_POPULAR_POSITIVE,

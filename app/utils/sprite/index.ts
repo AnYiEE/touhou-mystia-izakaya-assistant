@@ -23,7 +23,7 @@ import {
 	RECIPE_LIST,
 	RECIPE_SPRITE_CONFIG,
 } from '@/data';
-import {Item} from '@/utils/item';
+import {Item} from '@/utils/item/base';
 
 import {pxToRem} from '@/utilities';
 
@@ -54,10 +54,9 @@ const SPRITE_DATA_MAP = {
 } as const satisfies Record<TSpriteTarget, TSpriteData<TSpriteTarget>>;
 
 export class Sprite<
-	TTarget extends TSpriteTarget,
-	TData extends TSpriteData<TTarget> = TSpriteData<TTarget>,
-	TName extends TData[number]['name'] = TData[number]['name'],
-> extends Item<TData> {
+	TCurrentSpriteTarget extends TSpriteTarget,
+	TItems extends TSpriteData<TCurrentSpriteTarget> = TSpriteData<TCurrentSpriteTarget>,
+> extends Item<TItems> {
 	private static _instances = new Map<TSpriteTarget, Sprite<TSpriteTarget>>();
 
 	private _config: ISpriteConfig;
@@ -65,7 +64,7 @@ export class Sprite<
 	public spriteHeight: number;
 	public spriteWidth: number;
 
-	private constructor(data: TData, config: ISpriteConfig) {
+	private constructor(data: TItems, config: ISpriteConfig) {
 		super(data);
 
 		this._config = config;
@@ -88,7 +87,7 @@ export class Sprite<
 		return instance;
 	}
 
-	public getPosByIndex(index: number) {
+	private getPosByIndex(index: number) {
 		this.checkIndexRange(index);
 
 		const {col} = this._config;
@@ -97,13 +96,6 @@ export class Sprite<
 			x: (index % col) * this.spriteWidth,
 			y: Math.floor(index / col) * this.spriteHeight,
 		};
-	}
-
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-	public getPosByName<T extends string = TName>(name: T) {
-		const index = this.findIndexByName(name);
-
-		return this.getPosByIndex(index);
 	}
 
 	public getBackgroundPropsByIndex(
@@ -125,18 +117,5 @@ export class Sprite<
 			height: `${pxToRem(displayHeight)}rem`,
 			width: `${pxToRem(displayWidth)}rem`,
 		};
-	}
-
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-	public getBackgroundPropsByName<T extends string = TName>(
-		name: T,
-		{displayHeight = this.spriteHeight, displayWidth = this.spriteWidth} = {}
-	): CSSProperties {
-		const index = this.findIndexByName(name);
-
-		return this.getBackgroundPropsByIndex(index, {
-			displayHeight,
-			displayWidth,
-		});
 	}
 }

@@ -1,7 +1,7 @@
 import {isObjectLike} from 'lodash';
 
+import {Item} from './base';
 import {CLOTHES_LIST, type TClothes, type TClothesName, type TCustomerRareName} from '@/data';
-import {Item} from '@/utils/item';
 
 import {siteConfig} from '@/configs';
 import {processPinyin} from '@/utilities';

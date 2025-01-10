@@ -1,6 +1,7 @@
+import {type TItemName} from '@/data';
 import type {IItemBase} from '@/data/types';
 
-export interface IItem<T extends string = string> extends IItemBase {
+export interface IItem<T extends TItemName = TItemName> extends IItemBase {
 	name: T;
 }
 
