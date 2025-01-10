@@ -216,7 +216,7 @@ const state = {
 				beverageTag: null,
 				recipeTag: null,
 			} as ICustomerOrder,
-			popular: {
+			popularTrend: {
 				isNegative: false,
 				tag: null,
 			} as IPopularTrend,
@@ -228,7 +228,7 @@ const state = {
 		recipe: {
 			data: null as IRecipeData | null,
 
-			tagsWithPopular: [] as TRecipeTag[],
+			tagsWithTrend: [] as TRecipeTag[],
 
 			page: 1,
 			searchValue: '',
@@ -724,7 +724,7 @@ export const customerRareStore = store(state, {
 					...recipeData.extraIngredients
 				);
 			}
-			const recipeTagsWithPopular = currentStore.shared.recipe.tagsWithPopular.get();
+			const recipeTagsWithTrend = currentStore.shared.recipe.tagsWithTrend.get();
 			const rating = evaluateMeal({
 				currentBeverageTags: beverageTags,
 				currentCustomerBeverageTags: customerBeverageTags,
@@ -734,7 +734,7 @@ export const customerRareStore = store(state, {
 				currentCustomerPositiveTags: customerPositiveTags,
 				currentIngredients: ingredients,
 				currentRecipeName: recipeName,
-				currentRecipeTagsWithPopular: recipeTagsWithPopular,
+				currentRecipeTagsWithTrend: recipeTagsWithTrend,
 				hasMystiaCooker,
 				isDarkMatter,
 			});
@@ -747,14 +747,15 @@ export const customerRareStore = store(state, {
 			hasMystiaCooker: boolean;
 			isFamousShop: boolean;
 			order: ICustomerOrder;
-			popular: IPopularTrend;
+			popularTrend: IPopularTrend;
 			recipeName: TRecipeName;
 		}) {
 			const stringifiedData = JSON.stringify(data);
 			if (savedMealRatingCache.has(stringifiedData)) {
 				return savedMealRatingCache.get(stringifiedData);
 			}
-			const {beverageName, customerName, extraIngredients, hasMystiaCooker, order, popular, recipeName} = data;
+			const {beverageName, customerName, extraIngredients, hasMystiaCooker, order, popularTrend, recipeName} =
+				data;
 			const {
 				beverageTags: customerBeverageTags,
 				negativeTags: customerNegativeTags,
@@ -770,16 +771,16 @@ export const customerRareStore = store(state, {
 			});
 			const recipePrice = isDarkMatter ? DARK_MATTER_PRICE : originalRecipePrice;
 			const isFamousShop = currentStore.shared.customer.famousShop.get();
-			const composedRecipeTags = instance_recipe.composeTagsWithPopular(
+			const composedRecipeTags = instance_recipe.composeTagsWithPopularTrend(
 				ingredients,
 				extraIngredients,
 				positiveTags,
 				extraTags,
-				popular
+				popularTrend
 			);
-			const recipeTagsWithPopular = instance_recipe.calculateTagsWithPopular(
+			const recipeTagsWithTrend = instance_recipe.calculateTagsWithTrend(
 				composedRecipeTags,
-				popular,
+				popularTrend,
 				isFamousShop
 			);
 			const rating = evaluateMeal({
@@ -791,7 +792,7 @@ export const customerRareStore = store(state, {
 				currentCustomerPositiveTags: customerPositiveTags,
 				currentIngredients: union(ingredients, extraIngredients),
 				currentRecipeName: recipeName,
-				currentRecipeTagsWithPopular: recipeTagsWithPopular,
+				currentRecipeTagsWithTrend: recipeTagsWithTrend,
 				hasMystiaCooker,
 				isDarkMatter,
 			});
@@ -870,7 +871,7 @@ export const customerRareStore = store(state, {
 			});
 			currentStore.shared.customer.rating.set(null);
 			currentStore.shared.recipe.data.set(null);
-			currentStore.shared.recipe.tagsWithPopular.set([]);
+			currentStore.shared.recipe.tagsWithTrend.set([]);
 			currentStore.shared.recipe.page.set(1);
 			currentStore.shared.beverage.name.set(null);
 			currentStore.shared.beverage.page.set(1);
@@ -915,6 +916,6 @@ customerRareStore.shared.customer.famousShop.onChange(customerRareStore.evaluate
 customerRareStore.shared.customer.hasMystiaCooker.onChange(customerRareStore.evaluateMealResult);
 customerRareStore.shared.customer.isDarkMatter.onChange(customerRareStore.evaluateMealResult);
 customerRareStore.shared.customer.order.onChange(customerRareStore.evaluateMealResult);
-customerRareStore.shared.customer.popular.onChange(customerRareStore.evaluateMealResult);
+customerRareStore.shared.customer.popularTrend.onChange(customerRareStore.evaluateMealResult);
 customerRareStore.shared.beverage.name.onChange(customerRareStore.evaluateMealResult);
-customerRareStore.shared.recipe.tagsWithPopular.onChange(customerRareStore.evaluateMealResult);
+customerRareStore.shared.recipe.tagsWithTrend.onChange(customerRareStore.evaluateMealResult);

@@ -70,7 +70,7 @@ export default function SavedMealCard() {
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
-	const currentCustomerPopular = customerStore.shared.customer.popular.use();
+	const currentCustomerPopularTrend = customerStore.shared.customer.popularTrend.use();
 	const currentSavedMeals = customerStore.persistence.meals.use();
 	const isFamousShop = customerStore.shared.customer.famousShop.use();
 
@@ -145,7 +145,7 @@ export default function SavedMealCard() {
 											hasMystiaCooker,
 											isFamousShop,
 											order,
-											popular: currentCustomerPopular,
+											popularTrend: currentCustomerPopularTrend,
 											recipeName: recipe,
 										});
 										const isDarkMatterOrNormalMeal = isDarkMatter || !hasMystiaCooker;

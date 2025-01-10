@@ -9,19 +9,19 @@ export class Food<TTarget extends IFood[]> extends Item<TTarget> {
 	/**
 	 * @description Calculate the tags based on the original tags, the popular trend data and the famous shop state.
 	 */
-	protected calculateTagsWithPopular(tags: ReadonlyArray<TTag>, popularTrend: IPopularTrend, isFamousShop: boolean) {
-		const tagsWithPopular = new Set(tags);
+	protected calculateTagsWithTrend(tags: ReadonlyArray<TTag>, popularTrend: IPopularTrend, isFamousShop: boolean) {
+		const tagsWithTrend = new Set(tags);
 		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popularTrend;
 
 		if (isFamousShop && tags.includes(TAG_SIGNATURE)) {
-			tagsWithPopular.add(TAG_POPULAR_POSITIVE);
+			tagsWithTrend.add(TAG_POPULAR_POSITIVE);
 		}
 
 		if (currentPopularTag !== null && tags.includes(currentPopularTag)) {
-			tagsWithPopular.add(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
+			tagsWithTrend.add(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
 		}
 
-		return [...tagsWithPopular];
+		return [...tagsWithTrend];
 	}
 
 	/**

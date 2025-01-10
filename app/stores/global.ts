@@ -20,7 +20,7 @@ const recipePositiveTags = instance_recipe
 	.getValuesByProp('positiveTags')
 	.filter((tag) => !instance_recipe.blockedTags.has(tag));
 
-const popularValidTags = (union(ingredientTags, recipePositiveTags) as TPopularTag[])
+const validPopularTags = (union(ingredientTags, recipePositiveTags) as TPopularTag[])
 	.map(toGetValueCollection)
 	.sort(pinyinSort);
 
@@ -34,17 +34,18 @@ const storeVersion = {
 	vibrate: 6, // eslint-disable-next-line sort-keys
 	renameBg: 7, // eslint-disable-next-line sort-keys
 	famousShop: 8,
+	popularTrend: 9,
 } as const;
 
 const state = {
-	popularTags: popularValidTags,
+	popularTags: validPopularTags,
 
 	persistence: {
 		customerCardTagsTooltip: true,
 
 		dirver: [] as string[],
 		famousShop: false,
-		popular: {
+		popularTrend: {
 			isNegative: false,
 			tag: null,
 		} as IPopularTrend,
@@ -65,7 +66,7 @@ export const globalStore = store(state, {
 	persist: {
 		enabled: true,
 		name: globalStoreKey,
-		version: storeVersion.famousShop,
+		version: storeVersion.popularTrend,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -98,6 +99,13 @@ export const globalStore = store(state, {
 			if (version < storeVersion.famousShop) {
 				oldState.persistence.famousShop = false;
 			}
+			if (version < storeVersion.popularTrend) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				const {persistence} = oldState;
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				persistence.popularTrend = persistence.popular;
+				delete persistence.popular;
+			}
 			return persistedState as typeof state;
 		},
 		partialize(currentStore) {
@@ -109,10 +117,10 @@ export const globalStore = store(state, {
 	},
 }).computed((currentStore) => ({
 	selectedPopularTag: {
-		read: () => new Set([currentStore.persistence.popular.tag.use()]) as SelectionSet,
+		read: () => new Set([currentStore.persistence.popularTrend.tag.use()]) as SelectionSet,
 		write: (tags: Selection) => {
-			const tag = [...tags][0] as typeof state.persistence.popular.tag;
-			currentStore.persistence.popular.tag.set(tag || null);
+			const tag = [...tags][0] as typeof state.persistence.popularTrend.tag;
+			currentStore.persistence.popularTrend.tag.set(tag || null);
 		},
 	},
 }));
@@ -130,9 +138,9 @@ globalStore.persistence.famousShop.onChange((famousShop) => {
 });
 
 // Update the current popular trend when there is a change in the persisted popular trend data.
-globalStore.persistence.popular.onChange((popular) => {
-	customerNormalStore.shared.customer.popular.assign(popular);
-	customerRareStore.shared.customer.popular.assign(popular);
-	ingredientsStore.shared.popular.assign(popular);
-	recipesStore.shared.popular.assign(popular);
+globalStore.persistence.popularTrend.onChange((popularTrend) => {
+	customerNormalStore.shared.customer.popularTrend.assign(popularTrend);
+	customerRareStore.shared.customer.popularTrend.assign(popularTrend);
+	ingredientsStore.shared.popularTrend.assign(popularTrend);
+	recipesStore.shared.popularTrend.assign(popularTrend);
 });

@@ -182,7 +182,7 @@ const state = {
 			filterVisibility: true,
 
 			famousShop: false,
-			popular: {
+			popularTrend: {
 				isNegative: false,
 				tag: null,
 			} as IPopularTrend,
@@ -194,7 +194,7 @@ const state = {
 		recipe: {
 			data: null as IMealRecipe | null,
 
-			tagsWithPopular: [] as TRecipeTag[],
+			tagsWithTrend: [] as TRecipeTag[],
 
 			page: 1,
 			searchValue: '',
@@ -593,7 +593,7 @@ export const customerNormalStore = store(state, {
 				return;
 			}
 			const customerPositiveTags = instance_customer.getPropsByName(customerName, 'positiveTags');
-			const customerPopularData = currentStore.shared.customer.popular.get();
+			const customerPopularTrend = currentStore.shared.customer.popularTrend.get();
 			let extraIngredients: TIngredientName[] = [];
 			const recipeData = currentStore.shared.recipe.data.get();
 			if (recipeData !== null) {
@@ -610,7 +610,7 @@ export const customerNormalStore = store(state, {
 			const isFamousShop = currentStore.shared.customer.famousShop.get();
 			const rating = evaluateMeal({
 				currentCustomerName: customerName,
-				currentCustomerPopularData: customerPopularData,
+				currentCustomerPopularTrend: customerPopularTrend,
 				currentCustomerPositiveTags: customerPositiveTags,
 				currentExtraIngredientsLength: extraIngredients.length,
 				currentExtraTags: extraTags,
@@ -623,21 +623,21 @@ export const customerNormalStore = store(state, {
 			customerName: TCustomerNormalName;
 			extraIngredients: TIngredientName[];
 			isFamousShop: boolean;
-			popular: IPopularTrend;
+			popularTrend: IPopularTrend;
 			recipeName: TRecipeName;
 		}) {
 			const stringifiedData = JSON.stringify(data);
 			if (savedMealRatingCache.has(stringifiedData)) {
 				return savedMealRatingCache.get(stringifiedData);
 			}
-			const {customerName, extraIngredients, isFamousShop, popular, recipeName} = data;
+			const {customerName, extraIngredients, isFamousShop, popularTrend, recipeName} = data;
 			const extraTags: TPopularTag[] = [];
 			extraIngredients.forEach((ingredient) => {
 				extraTags.push(...(instance_ingredient.getPropsByName(ingredient, 'tags') as TPopularTag[]));
 			});
 			const rating = evaluateMeal({
 				currentCustomerName: customerName,
-				currentCustomerPopularData: popular,
+				currentCustomerPopularTrend: popularTrend,
 				currentCustomerPositiveTags: instance_customer.getPropsByName(customerName, 'positiveTags'),
 				currentExtraIngredientsLength: extraIngredients.length,
 				currentExtraTags: extraTags,
@@ -693,7 +693,7 @@ export const customerNormalStore = store(state, {
 			currentStore.shared.customer.positiveTags.set(new Set());
 			currentStore.shared.customer.rating.set(null);
 			currentStore.shared.recipe.data.set(null);
-			currentStore.shared.recipe.tagsWithPopular.set([]);
+			currentStore.shared.recipe.tagsWithTrend.set([]);
 			currentStore.shared.recipe.page.set(1);
 			currentStore.shared.beverage.name.set(null);
 			currentStore.shared.beverage.page.set(1);
@@ -720,5 +720,5 @@ customerNormalStore.shared.customer.name.onChange((name) => {
 });
 
 customerNormalStore.shared.customer.famousShop.onChange(customerNormalStore.evaluateMealResult);
-customerNormalStore.shared.customer.popular.onChange(customerNormalStore.evaluateMealResult);
-customerNormalStore.shared.recipe.tagsWithPopular.onChange(customerNormalStore.evaluateMealResult);
+customerNormalStore.shared.customer.popularTrend.onChange(customerNormalStore.evaluateMealResult);
+customerNormalStore.shared.recipe.tagsWithTrend.onChange(customerNormalStore.evaluateMealResult);

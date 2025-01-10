@@ -1,8 +1,8 @@
 import {Customer} from './base';
-import {siteConfig} from '@/configs';
 import {CUSTOMER_RARE_LIST, type TCustomerRareName, type TCustomerRares} from '@/data';
 import {Clothes} from '@/utils';
 
+import {siteConfig} from '@/configs';
 import {processPinyin} from '@/utilities';
 
 const {cdnUrl} = siteConfig;
@@ -24,8 +24,8 @@ export class CustomerRare extends Customer<TCustomerRares> {
 		return instance;
 	}
 
-	public getTachiePath(customerName: TCustomerRareName | null) {
-		if (customerName === null) {
+	public getTachiePath(name: TCustomerRareName | null) {
+		if (name === null) {
 			return Clothes.getInstance().getTachiePath('夜雀服');
 		}
 
@@ -33,11 +33,11 @@ export class CustomerRare extends Customer<TCustomerRares> {
 
 		let path: string;
 
-		if (CustomerRare._tachiePathCache.has(customerName)) {
-			path = CustomerRare._tachiePathCache.get(customerName);
+		if (CustomerRare._tachiePathCache.has(name)) {
+			path = CustomerRare._tachiePathCache.get(name);
 		} else {
-			path = `${basePath}/${processPinyin(this.getPropsByName(customerName, 'pinyin')).pinyinWithoutTone.join('')}.png`;
-			CustomerRare._tachiePathCache.set(customerName, path);
+			path = `${basePath}/${processPinyin(this.getPropsByName(name, 'pinyin')).pinyinWithoutTone.join('')}.png`;
+			CustomerRare._tachiePathCache.set(name, path);
 		}
 
 		return path;

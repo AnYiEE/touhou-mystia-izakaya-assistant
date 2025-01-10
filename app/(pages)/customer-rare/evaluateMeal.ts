@@ -20,7 +20,7 @@ interface IParameters {
 	currentCustomerPositiveTags: TRecipeTag[];
 	currentIngredients: TIngredientName[];
 	currentRecipeName: TRecipeName | null;
-	currentRecipeTagsWithPopular: TRecipeTag[];
+	currentRecipeTagsWithTrend: TRecipeTag[];
 	hasMystiaCooker: boolean;
 	isDarkMatter: boolean;
 }
@@ -28,11 +28,11 @@ interface IParameters {
 function calculateMaxScore({
 	currentBeverageTags,
 	currentCustomerOrder,
-	currentRecipeTagsWithPopular,
+	currentRecipeTagsWithTrend,
 	hasMystiaCooker,
 }: Pick<
 	IParameters,
-	'currentBeverageTags' | 'currentCustomerOrder' | 'currentRecipeTagsWithPopular' | 'hasMystiaCooker'
+	'currentBeverageTags' | 'currentCustomerOrder' | 'currentRecipeTagsWithTrend' | 'hasMystiaCooker'
 >) {
 	const {beverageTag: customerOrderBeverageTag, recipeTag: customerOrderRecipeTag} = currentCustomerOrder;
 
@@ -48,7 +48,7 @@ function calculateMaxScore({
 	const recipeMaxScore = hasMystiaCooker
 		? 1
 		: customerOrderRecipeTag
-			? Number(currentRecipeTagsWithPopular.includes(customerOrderRecipeTag))
+			? Number(currentRecipeTagsWithTrend.includes(customerOrderRecipeTag))
 			: 0;
 
 	if (beverageMaxScore + recipeMaxScore === 0) {
@@ -61,12 +61,12 @@ function calculateMaxScore({
 function calculateMinScore({
 	currentBeverageTags,
 	currentCustomerOrder,
-	currentRecipeTagsWithPopular,
+	currentRecipeTagsWithTrend,
 	hasMystiaCooker,
 	mealScore,
 }: Pick<
 	IParameters,
-	'currentBeverageTags' | 'currentCustomerOrder' | 'currentRecipeTagsWithPopular' | 'hasMystiaCooker'
+	'currentBeverageTags' | 'currentCustomerOrder' | 'currentRecipeTagsWithTrend' | 'hasMystiaCooker'
 > & {
 	mealScore: number;
 }) {
@@ -82,7 +82,7 @@ function calculateMinScore({
 
 	if (
 		currentBeverageTags.includes(customerOrderBeverageTag) &&
-		currentRecipeTagsWithPopular.includes(customerOrderRecipeTag)
+		currentRecipeTagsWithTrend.includes(customerOrderRecipeTag)
 	) {
 		return Math.max(mealScore, 2);
 	}
@@ -259,7 +259,7 @@ export function evaluateMeal({
 	currentCustomerPositiveTags,
 	currentIngredients,
 	currentRecipeName,
-	currentRecipeTagsWithPopular,
+	currentRecipeTagsWithTrend,
 	hasMystiaCooker,
 	isDarkMatter,
 }: IParameters) {
@@ -272,7 +272,7 @@ export function evaluateMeal({
 	if (isDarkMatter) {
 		currentRecipeName = DARK_MATTER_NAME;
 		currentRecipeScore = 0;
-		currentRecipeTagsWithPopular = [DARK_MATTER_TAG];
+		currentRecipeTagsWithTrend = [DARK_MATTER_TAG];
 		hasMystiaCooker = false;
 	}
 
@@ -301,8 +301,8 @@ export function evaluateMeal({
 	const beverageScore = orderedBeverageScore + matchedBeverageScore;
 
 	if (currentRecipeScore === null) {
-		const matchedRecipeNegativeTags = intersection(currentRecipeTagsWithPopular, currentCustomerNegativeTags);
-		const matchedRecipePositiveTags = intersection(currentRecipeTagsWithPopular, currentCustomerPositiveTags);
+		const matchedRecipeNegativeTags = intersection(currentRecipeTagsWithTrend, currentCustomerNegativeTags);
+		const matchedRecipePositiveTags = intersection(currentRecipeTagsWithTrend, currentCustomerPositiveTags);
 		const matchedRecipePositiveTagsWithoutOrderedRecipe = without(
 			matchedRecipePositiveTags,
 			hasMystiaCooker ? matchedRecipePositiveTags[0] : customerOrderRecipeTag
@@ -326,7 +326,7 @@ export function evaluateMeal({
 		calculateMaxScore({
 			currentBeverageTags,
 			currentCustomerOrder,
-			currentRecipeTagsWithPopular,
+			currentRecipeTagsWithTrend,
 			hasMystiaCooker,
 		})
 	);
@@ -334,7 +334,7 @@ export function evaluateMeal({
 	mealScore = calculateMinScore({
 		currentBeverageTags,
 		currentCustomerOrder,
-		currentRecipeTagsWithPopular,
+		currentRecipeTagsWithTrend,
 		hasMystiaCooker,
 		mealScore,
 	});

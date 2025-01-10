@@ -105,12 +105,12 @@ export class Recipe extends Food<TRecipes> {
 	/**
 	 * @description Calculate the tags based on the original tags, the popular trend data and the famous shop state.
 	 */
-	public override calculateTagsWithPopular(
+	public override calculateTagsWithTrend(
 		recipeTags: ReadonlyArray<TRecipeTag>,
 		popularTrend: IPopularTrend,
 		isFamousShop: boolean
 	) {
-		return super.calculateTagsWithPopular(recipeTags, popularTrend, isFamousShop) as TRecipeTag[];
+		return super.calculateTagsWithTrend(recipeTags, popularTrend, isFamousShop) as TRecipeTag[];
 	}
 
 	/**
@@ -146,7 +146,7 @@ export class Recipe extends Food<TRecipes> {
 	/**
 	 * @description Compose recipe tags based on all ingredient count, original recipe tags, the extra ingredient tags and the popular trend data.
 	 */
-	public composeTagsWithPopular(
+	public composeTagsWithPopularTrend(
 		originalIngredients: ReadonlyArray<TIngredientName>,
 		extraIngredients: ReadonlyArray<TIngredientName>,
 		originalRecipePositiveTags: ReadonlyArray<TRecipeTag>,

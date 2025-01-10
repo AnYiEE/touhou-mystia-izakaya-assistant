@@ -49,7 +49,7 @@ const state = {
 	},
 	shared: {
 		famousShop: false,
-		popular: {
+		popularTrend: {
 			isNegative: false,
 			tag: null,
 		} as IPopularTrend,

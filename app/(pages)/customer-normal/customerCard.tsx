@@ -40,7 +40,7 @@ export default function CustomerCard() {
 	const currentCustomerName = customerStore.shared.customer.name.use();
 	const selectedCustomerBeverageTags = customerStore.shared.customer.beverageTags.use();
 	const selectedCustomerPositiveTags = customerStore.shared.customer.positiveTags.use();
-	const currentCustomerPopular = customerStore.shared.customer.popular.use();
+	const currentCustomerPopularTrend = customerStore.shared.customer.popularTrend.use();
 	const currentRating = customerStore.shared.customer.rating.use();
 	const isFamousShop = customerStore.shared.customer.famousShop.use();
 
@@ -103,8 +103,8 @@ export default function CustomerCard() {
 		return _beverageTags;
 	}, [currentBeverageName, instance_beverage]);
 
-	const currentRecipeTagsWithPopular = useMemo(() => {
-		const _currentRecipeTagsWithPopular: TRecipeTag[] = [];
+	const currentRecipeTagsWithTrend = useMemo(() => {
+		const _currentRecipeTagsWithTrend: TRecipeTag[] = [];
 
 		if (currentRecipeData !== null) {
 			const {extraIngredients, name: currentRecipeName} = currentRecipeData;
@@ -116,25 +116,25 @@ export default function CustomerCard() {
 				instance_ingredient.getPropsByName(extraIngredient, 'tags')
 			);
 
-			const composedRecipeTags = instance_recipe.composeTagsWithPopular(
+			const composedRecipeTags = instance_recipe.composeTagsWithPopularTrend(
 				originalIngredients,
 				extraIngredients,
 				originalTags,
 				extraTags,
-				currentCustomerPopular
+				currentCustomerPopularTrend
 			);
 
-			_currentRecipeTagsWithPopular.push(
-				...instance_recipe.calculateTagsWithPopular(composedRecipeTags, currentCustomerPopular, isFamousShop)
+			_currentRecipeTagsWithTrend.push(
+				...instance_recipe.calculateTagsWithTrend(composedRecipeTags, currentCustomerPopularTrend, isFamousShop)
 			);
 
 			setTimeout(() => {
-				customerStore.shared.recipe.tagsWithPopular.set(_currentRecipeTagsWithPopular);
+				customerStore.shared.recipe.tagsWithTrend.set(_currentRecipeTagsWithTrend);
 			}, 0);
 		}
 
-		return _currentRecipeTagsWithPopular;
-	}, [currentCustomerPopular, currentRecipeData, instance_ingredient, instance_recipe, isFamousShop]);
+		return _currentRecipeTagsWithTrend;
+	}, [currentCustomerPopularTrend, currentRecipeData, instance_ingredient, instance_recipe, isFamousShop]);
 
 	const avatarRatingContent = currentRating === null ? '请选择点单料理以评级' : CUSTOMER_RATING_MAP[currentRating];
 
@@ -325,11 +325,11 @@ export default function CustomerCard() {
 										onPress={() => {
 											handleRecipeTagClick(tag);
 										}}
-										aria-label={`${tag}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
+										aria-label={`${tag}${currentRecipeTagsWithTrend.includes(tag) ? '/已满足' : ''}`}
 										className={cn(
 											'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 											{
-												'font-normal opacity-50': !currentRecipeTagsWithPopular.includes(tag),
+												'font-normal opacity-50': !currentRecipeTagsWithTrend.includes(tag),
 											}
 										)}
 									/>
@@ -346,7 +346,7 @@ export default function CustomerCard() {
 									tagStyle={CUSTOMER_NORMAL_TAG_STYLE.negative}
 									tagType="negative"
 									className={cn('cursor-not-allowed p-1 font-semibold leading-none', {
-										'font-normal opacity-50': !currentRecipeTagsWithPopular.includes(tag),
+										'font-normal opacity-50': !currentRecipeTagsWithTrend.includes(tag),
 									})}
 								/>
 							))}

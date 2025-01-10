@@ -42,7 +42,7 @@ export default function CustomerCard() {
 	const selectedCustomerBeverageTags = customerStore.shared.customer.beverageTags.use();
 	const selectedCustomerPositiveTags = customerStore.shared.customer.positiveTags.use();
 	const currentCustomerOrder = customerStore.shared.customer.order.use();
-	const currentCustomerPopular = customerStore.shared.customer.popular.use();
+	const currentCustomerPopularTrend = customerStore.shared.customer.popularTrend.use();
 	const currentRating = customerStore.shared.customer.rating.use();
 	const hasMystiaCooker = customerStore.shared.customer.hasMystiaCooker.use();
 	const isDarkMatter = customerStore.shared.customer.isDarkMatter.use();
@@ -117,8 +117,8 @@ export default function CustomerCard() {
 		return _beverageTags;
 	}, [currentBeverageName, instance_beverage]);
 
-	const currentRecipeTagsWithPopular = useMemo(() => {
-		const _currentRecipeTagsWithPopular: TRecipeTag[] = [];
+	const currentRecipeTagsWithTrend = useMemo(() => {
+		const _currentRecipeTagsWithTrend: TRecipeTag[] = [];
 
 		if (currentRecipeData !== null) {
 			const {extraIngredients, name: currentRecipeName} = currentRecipeData;
@@ -130,25 +130,25 @@ export default function CustomerCard() {
 				instance_ingredient.getPropsByName(extraIngredient, 'tags')
 			);
 
-			const composedRecipeTags = instance_recipe.composeTagsWithPopular(
+			const composedRecipeTags = instance_recipe.composeTagsWithPopularTrend(
 				originalIngredients,
 				extraIngredients,
 				originalTags,
 				extraTags,
-				currentCustomerPopular
+				currentCustomerPopularTrend
 			);
 
-			_currentRecipeTagsWithPopular.push(
-				...instance_recipe.calculateTagsWithPopular(composedRecipeTags, currentCustomerPopular, isFamousShop)
+			_currentRecipeTagsWithTrend.push(
+				...instance_recipe.calculateTagsWithTrend(composedRecipeTags, currentCustomerPopularTrend, isFamousShop)
 			);
 
 			setTimeout(() => {
-				customerStore.shared.recipe.tagsWithPopular.set(_currentRecipeTagsWithPopular);
+				customerStore.shared.recipe.tagsWithTrend.set(_currentRecipeTagsWithTrend);
 			}, 0);
 		}
 
-		return _currentRecipeTagsWithPopular;
-	}, [currentCustomerPopular, currentRecipeData, instance_ingredient, instance_recipe, isFamousShop]);
+		return _currentRecipeTagsWithTrend;
+	}, [currentCustomerPopularTrend, currentRecipeData, instance_ingredient, instance_recipe, isFamousShop]);
 
 	const avatarRatingContent = useMemo(() => {
 		if (hasRating) {
@@ -363,14 +363,14 @@ export default function CustomerCard() {
 										onPress={() => {
 											handleRecipeTagClick(tag);
 										}}
-										aria-label={`${tag}${currentCustomerOrder.recipeTag === tag ? '/已选定' : ''}${currentRecipeTagsWithPopular.includes(tag) ? '/已满足' : ''}`}
+										aria-label={`${tag}${currentCustomerOrder.recipeTag === tag ? '/已选定' : ''}${currentRecipeTagsWithTrend.includes(tag) ? '/已满足' : ''}`}
 										className={cn(
 											'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 											{
 												'cursor-not-allowed':
 													hasMystiaCooker && !isDarkMatter && !isOrderLinkedFilter,
 												'font-normal opacity-50':
-													isDarkMatter || !currentRecipeTagsWithPopular.includes(tag),
+													isDarkMatter || !currentRecipeTagsWithTrend.includes(tag),
 												'ring-2 ring-current':
 													currentCustomerOrder.recipeTag === tag &&
 													((hasMystiaCooker && isDarkMatter) || !hasMystiaCooker),
@@ -391,7 +391,7 @@ export default function CustomerCard() {
 									tagType="negative"
 									className={cn('cursor-not-allowed p-1 font-semibold leading-none', {
 										'font-normal opacity-50':
-											isDarkMatter || !currentRecipeTagsWithPopular.includes(tag),
+											isDarkMatter || !currentRecipeTagsWithTrend.includes(tag),
 									})}
 								/>
 							))}

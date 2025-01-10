@@ -165,7 +165,7 @@ export default function CustomerNormal() {
 
 	const isCustomerTabFilterVisible = customerStore.shared.customer.filterVisibility.use();
 
-	const currentCustomerPopular = customerStore.shared.customer.popular.use();
+	const currentCustomerPopularTrend = customerStore.shared.customer.popularTrend.use();
 	const isFamousShop = customerStore.shared.customer.famousShop.use();
 
 	const instance_ingredient = customerStore.instances.ingredient.get();
@@ -184,19 +184,19 @@ export default function CustomerNormal() {
 	const ingredientFilteredData = useMemo(
 		() =>
 			instance_ingredient.data.filter(({dlc, level, name, tags}) => {
-				const tagsWithPopular = instance_ingredient.calculateTagsWithPopular(
+				const tagsWithTrend = instance_ingredient.calculateTagsWithTrend(
 					tags,
-					currentCustomerPopular,
+					currentCustomerPopularTrend,
 					isFamousShop
 				);
 
 				const isDlcMatched =
 					ingredientFilterDlcs.length > 0 ? ingredientFilterDlcs.includes(dlc.toString()) : true;
 				const isTagMatched =
-					ingredientFilterTags.length > 0 ? checkArraySubsetOf(ingredientFilterTags, tagsWithPopular) : true;
+					ingredientFilterTags.length > 0 ? checkArraySubsetOf(ingredientFilterTags, tagsWithTrend) : true;
 				const isNoTagMatched =
 					ingredientFilterNoTags.length > 0
-						? !checkArrayContainsOf(ingredientFilterNoTags, tagsWithPopular)
+						? !checkArrayContainsOf(ingredientFilterNoTags, tagsWithTrend)
 						: true;
 				const isLevelMatched =
 					ingredientFilterLevels.length > 0 ? ingredientFilterLevels.includes(level.toString()) : true;
@@ -210,7 +210,7 @@ export default function CustomerNormal() {
 				);
 			}),
 		[
-			currentCustomerPopular,
+			currentCustomerPopularTrend,
 			ingredientFilterDlcs,
 			ingredientFilterLevels,
 			ingredientFilterNoTags,

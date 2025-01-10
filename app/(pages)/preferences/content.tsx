@@ -27,7 +27,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 
 	const isFamousShop = globalStore.persistence.famousShop.use();
 	const popularTags = globalStore.popularTags.get();
-	const isNegativePopularTag = globalStore.persistence.popular.isNegative.use();
+	const isPopularTrendNegative = globalStore.persistence.popularTrend.isNegative.use();
 	const selectedPopularTag = globalStore.selectedPopularTag.use();
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
@@ -47,9 +47,9 @@ export default memo<IProps>(function Content({onModalClose}) {
 		[resetRecipeTablePage]
 	);
 
-	const onIsNegativePopularTagChange = useCallback(
+	const onIsPopularTrendNegativeChange = useCallback(
 		(value: boolean) => {
-			globalStore.persistence.popular.isNegative.set(value);
+			globalStore.persistence.popularTrend.isNegative.set(value);
 			resetRecipeTablePage();
 		},
 		[resetRecipeTablePage]
@@ -63,9 +63,9 @@ export default memo<IProps>(function Content({onModalClose}) {
 		[resetRecipeTablePage]
 	);
 
-	const onClearPopularTagButtonPress = useCallback(() => {
+	const onClearPopularTrendButtonPress = useCallback(() => {
 		vibrate();
-		globalStore.persistence.popular.isNegative.set(false);
+		globalStore.persistence.popularTrend.isNegative.set(false);
 		globalStore.selectedPopularTag.set(new Set());
 		resetRecipeTablePage();
 	}, [resetRecipeTablePage, vibrate]);
@@ -78,18 +78,18 @@ export default memo<IProps>(function Content({onModalClose}) {
 			<Heading as="h2" className="mt-0">
 				全局设置
 			</Heading>
-			<Heading as="h3" subTitle="正确设置游戏中现时流行的标签可以使套餐评级更为准确">
-				流行标签
+			<Heading as="h3" subTitle="正确设置游戏中现时的流行趋势可以使套餐评级更为准确">
+				流行趋势
 			</Heading>
 			<div className="space-y-2">
 				<div className="flex items-center">
 					<span className="font-medium">类别：</span>
 					{TAG_POPULAR_POSITIVE}
 					<Switch
-						isSelected={isNegativePopularTag}
+						isSelected={isPopularTrendNegative}
 						size="sm"
-						onValueChange={onIsNegativePopularTagChange}
-						aria-label={`设置为${isNegativePopularTag ? TAG_POPULAR_POSITIVE : TAG_POPULAR_NEGATIVE}`}
+						onValueChange={onIsPopularTrendNegativeChange}
+						aria-label={`设置为${isPopularTrendNegative ? TAG_POPULAR_POSITIVE : TAG_POPULAR_NEGATIVE}`}
 						classNames={{
 							base: 'mx-2',
 							wrapper: 'bg-primary',
@@ -137,7 +137,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 						isDisabled={selectedPopularTag.has(null as never)}
 						size="sm"
 						variant="flat"
-						onPress={onClearPopularTagButtonPress}
+						onPress={onClearPopularTrendButtonPress}
 					>
 						清除选择
 					</Button>

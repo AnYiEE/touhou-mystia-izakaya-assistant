@@ -30,7 +30,7 @@ import {checkArrayContainsOf, checkArraySubsetOf} from '@/utilities';
 export default function Recipes() {
 	const shouldSkipProcessData = useSkipProcessItemData();
 
-	const currentPopular = store.shared.popular.use();
+	const currentPopularTrend = store.shared.popularTrend.use();
 	const isFamousShop = store.shared.famousShop.use();
 
 	const instance = store.instance.get();
@@ -59,22 +59,22 @@ export default function Recipes() {
 	const filterPositiveTags = store.persistence.filters.positiveTags.use();
 	const filterNoPositiveTags = store.persistence.filters.noPositiveTags.use();
 
-	const dataWithPopular = useMemo(
+	const dataWithTrend = useMemo(
 		() =>
 			searchResult.map((data) => ({
 				...data,
-				positiveTags: instance.calculateTagsWithPopular(
-					instance.composeTagsWithPopular(data.ingredients, [], data.positiveTags, [], null),
-					currentPopular,
+				positiveTags: instance.calculateTagsWithTrend(
+					instance.composeTagsWithPopularTrend(data.ingredients, [], data.positiveTags, [], null),
+					currentPopularTrend,
 					isFamousShop
 				),
 			})) as unknown as typeof searchResult,
-		[currentPopular, instance, isFamousShop, searchResult]
+		[currentPopularTrend, instance, isFamousShop, searchResult]
 	);
 
 	const filterData = useCallback(
 		() =>
-			dataWithPopular.filter(({cooker, dlc, ingredients, level, negativeTags, positiveTags}) => {
+			dataWithTrend.filter(({cooker, dlc, ingredients, level, negativeTags, positiveTags}) => {
 				const isDlcMatched = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
 				const isLevelMatched = filterLevels.length > 0 ? filterLevels.includes(level.toString()) : true;
 				const isCookerMatched = filterCookers.length > 0 ? filterCookers.includes(cooker) : true;
@@ -104,7 +104,7 @@ export default function Recipes() {
 				);
 			}),
 		[
-			dataWithPopular,
+			dataWithTrend,
 			filterCookers,
 			filterDlcs,
 			filterIngredients,
@@ -117,7 +117,7 @@ export default function Recipes() {
 		]
 	);
 
-	const filteredData = useFilteredData(dataWithPopular, filterData);
+	const filteredData = useFilteredData(dataWithTrend, filterData);
 
 	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
 

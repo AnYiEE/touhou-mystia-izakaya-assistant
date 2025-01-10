@@ -30,7 +30,7 @@ import {checkArrayContainsOf, checkArraySubsetOf} from '@/utilities';
 export default function Ingredients() {
 	const shouldSkipProcessData = useSkipProcessItemData();
 
-	const currentPopular = store.shared.popular.use();
+	const currentPopularTrend = store.shared.popularTrend.use();
 	const isFamousShop = store.shared.famousShop.use();
 
 	const instance = store.instance.get();
@@ -54,18 +54,18 @@ export default function Ingredients() {
 	const filterTypes = store.persistence.filters.types.use();
 	const filterNoTypes = store.persistence.filters.noTypes.use();
 
-	const dataWithPopular = useMemo(
+	const dataWithTrend = useMemo(
 		() =>
 			searchResult.map((data) => ({
 				...data,
-				tags: instance.calculateTagsWithPopular(data.tags, currentPopular, isFamousShop),
+				tags: instance.calculateTagsWithTrend(data.tags, currentPopularTrend, isFamousShop),
 			})) as unknown as typeof searchResult,
-		[currentPopular, instance, isFamousShop, searchResult]
+		[currentPopularTrend, instance, isFamousShop, searchResult]
 	);
 
 	const filterData = useCallback(
 		() =>
-			dataWithPopular.filter(({dlc, level, tags, type}) => {
+			dataWithTrend.filter(({dlc, level, tags, type}) => {
 				const isDlcMatched = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
 				const isLevelMatched = filterLevels.length > 0 ? filterLevels.includes(level.toString()) : true;
 				const isTagMatched = filterTags.length > 0 ? checkArraySubsetOf(filterTags, tags) : true;
@@ -77,10 +77,10 @@ export default function Ingredients() {
 					isDlcMatched && isLevelMatched && isTagMatched && isNoTagMatched && isTypeMatched && isNoTypeMatched
 				);
 			}),
-		[dataWithPopular, filterDlcs, filterLevels, filterNoTags, filterNoTypes, filterTags, filterTypes]
+		[dataWithTrend, filterDlcs, filterLevels, filterNoTags, filterNoTypes, filterTags, filterTypes]
 	);
 
-	const filteredData = useFilteredData(dataWithPopular, filterData);
+	const filteredData = useFilteredData(dataWithTrend, filterData);
 
 	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
 

@@ -37,7 +37,7 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 
 	const currentCustomerName = store.shared.customer.name.use();
 	const currentCustomerOrderRecipeTag = store.shared.customer.order.use().recipeTag;
-	const currentCustomerPopular = store.shared.customer.popular.use();
+	const currentCustomerPopularTrend = store.shared.customer.popularTrend.use();
 	const currentRecipeData = store.shared.recipe.data.use();
 	const isDarkMatter = store.shared.customer.isDarkMatter.use();
 	const isFamousShop = store.shared.customer.famousShop.use();
@@ -96,32 +96,32 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 	const isFullFilled = currentRecipeIngredients.length + currentRecipeExtraIngredients.length >= 5;
 	const isLargePartitionTagNext = currentRecipeIngredients.length + currentRecipeExtraIngredients.length === 4;
 	const shouldCalculateLargePartitionTag =
-		isLargePartitionTagNext && currentCustomerPopular.tag === TAG_LARGE_PARTITION;
+		isLargePartitionTagNext && currentCustomerPopularTrend.tag === TAG_LARGE_PARTITION;
 
-	const calculateIngredientTagsWithPopular = curryRight(instance_ingredient.calculateTagsWithPopular)(
-		currentCustomerPopular,
+	const calculateIngredientTagsWithTrend = curryRight(instance_ingredient.calculateTagsWithTrend)(
+		currentCustomerPopularTrend,
 		isFamousShop
 	);
-	const calculateRecipeTagsWithPopular = curryRight(instance_recipe.calculateTagsWithPopular)(
-		currentCustomerPopular,
+	const calculateRecipeTagsWithTrend = curryRight(instance_recipe.calculateTagsWithTrend)(
+		currentCustomerPopularTrend,
 		isFamousShop
 	);
-	const composeRecipeTagsWithPopular = curry(instance_recipe.composeTagsWithPopular)(
+	const composeRecipeTagsWithPopularTrend = curry(instance_recipe.composeTagsWithPopularTrend)(
 		currentRecipeIngredients,
 		currentRecipeExtraIngredients,
 		currentRecipePositiveTags,
 		curry.placeholder,
-		currentCustomerPopular
+		currentCustomerPopularTrend
 	);
 
 	const currentRecipeExtraIngredientsTags = currentRecipeExtraIngredients.flatMap((extraIngredient) =>
 		instance_ingredient.getPropsByName(extraIngredient, 'tags')
 	);
-	const currentRecipeExtraIngredientsTagsWithPopular = calculateIngredientTagsWithPopular(
+	const currentRecipeExtraIngredientsTagsWithTrend = calculateIngredientTagsWithTrend(
 		currentRecipeExtraIngredientsTags
 	);
-	const currentRecipeComposedTags = composeRecipeTagsWithPopular(currentRecipeExtraIngredientsTagsWithPopular);
-	const currentRecipeTagsWithPopular = union(calculateRecipeTagsWithPopular(currentRecipeComposedTags));
+	const currentRecipeComposedTags = composeRecipeTagsWithPopularTrend(currentRecipeExtraIngredientsTagsWithTrend);
+	const currentRecipeTagsWithTrend = union(calculateRecipeTagsWithTrend(currentRecipeComposedTags));
 
 	return (
 		<>
@@ -146,11 +146,13 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 							);
 						}
 
-						const tagsWithPopular = calculateIngredientTagsWithPopular(tags);
-						const allTagsWithPopular = union(currentRecipeTagsWithPopular, tagsWithPopular);
+						const tagsWithTrend = calculateIngredientTagsWithTrend(tags);
+						const allTagsWithTrend = union(currentRecipeTagsWithTrend, tagsWithTrend);
 
-						const before = composeRecipeTagsWithPopular(currentRecipeTagsWithPopular as TIngredientTag[]);
-						const after = composeRecipeTagsWithPopular(allTagsWithPopular as TIngredientTag[]);
+						const before = composeRecipeTagsWithPopularTrend(
+							currentRecipeTagsWithTrend as TIngredientTag[]
+						);
+						const after = composeRecipeTagsWithPopularTrend(allTagsWithTrend as TIngredientTag[]);
 
 						let scoreChange = instance_recipe.getIngredientScoreChange(
 							before,
@@ -173,22 +175,22 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 						scoreChange -= Number(
 							shouldCalculateLargePartitionTag &&
 								(customerNegativeTags as TRecipeTag[]).includes(TAG_POPULAR_NEGATIVE) &&
-								currentCustomerPopular.isNegative
+								currentCustomerPopularTrend.isNegative
 						);
 						scoreChange -= Number(
 							shouldCalculateLargePartitionTag &&
 								(customerNegativeTags as TRecipeTag[]).includes(TAG_POPULAR_POSITIVE) &&
-								!currentCustomerPopular.isNegative
+								!currentCustomerPopularTrend.isNegative
 						);
 						scoreChange += Number(
 							shouldCalculateLargePartitionTag &&
 								(customerPositiveTags as TRecipeTag[]).includes(TAG_POPULAR_NEGATIVE) &&
-								currentCustomerPopular.isNegative
+								currentCustomerPopularTrend.isNegative
 						);
 						scoreChange += Number(
 							shouldCalculateLargePartitionTag &&
 								(customerPositiveTags as TRecipeTag[]).includes(TAG_POPULAR_POSITIVE) &&
-								!currentCustomerPopular.isNegative
+								!currentCustomerPopularTrend.isNegative
 						);
 
 						// The customer has a ingredient-based easter agg.
@@ -222,7 +224,7 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 						const isHightestRestricted = scoreChange === -Infinity;
 						const isOrderTag =
 							currentCustomerOrderRecipeTag !== null &&
-							tagsWithPopular.includes(currentCustomerOrderRecipeTag as TIngredientTag) &&
+							tagsWithTrend.includes(currentCustomerOrderRecipeTag as TIngredientTag) &&
 							after.includes(currentCustomerOrderRecipeTag) &&
 							!before.includes(currentCustomerOrderRecipeTag);
 

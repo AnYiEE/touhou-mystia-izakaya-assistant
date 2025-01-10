@@ -59,7 +59,7 @@ export default function RecipeTabContent() {
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
-	const currentCustomerPopular = customerStore.shared.customer.popular.use();
+	const currentCustomerPopularTrend = customerStore.shared.customer.popularTrend.use();
 	const selectedCustomerPositiveTags = customerStore.shared.customer.positiveTags.use();
 	const isFamousShop = customerStore.shared.customer.famousShop.use();
 
@@ -85,21 +85,21 @@ export default function RecipeTabContent() {
 	const tableSortDescriptor = customerStore.persistence.recipe.table.sortDescriptor.use();
 	const tableVisibleColumns = customerStore.recipeTableColumns.use();
 
-	const composeTagsWithPopular = useMemo(
+	const composeTagsWithPopularTrend = useMemo(
 		() =>
-			curry(instance_recipe.composeTagsWithPopular)(
+			curry(instance_recipe.composeTagsWithPopularTrend)(
 				curry.placeholder,
 				[],
 				curry.placeholder,
 				[],
-				currentCustomerPopular
+				currentCustomerPopularTrend
 			),
-		[currentCustomerPopular, instance_recipe.composeTagsWithPopular]
+		[currentCustomerPopularTrend, instance_recipe.composeTagsWithPopularTrend]
 	);
 
-	const calculateTagsWithPopular = useMemo(
-		() => curryRight(instance_recipe.calculateTagsWithPopular)(currentCustomerPopular, isFamousShop),
-		[currentCustomerPopular, instance_recipe.calculateTagsWithPopular, isFamousShop]
+	const calculateTagsWithTrend = useMemo(
+		() => curryRight(instance_recipe.calculateTagsWithTrend)(currentCustomerPopularTrend, isFamousShop),
+		[currentCustomerPopularTrend, instance_recipe.calculateTagsWithTrend, isFamousShop]
 	);
 
 	const data = useMemo(
@@ -124,8 +124,8 @@ export default function RecipeTabContent() {
 			instance_customer.getPropsByName(currentCustomerName);
 
 		const dataWithRealSuitability = data.map((item) => {
-			const composedRecipeTags = composeTagsWithPopular(item.ingredients, item.positiveTags);
-			const recipeTagsWithPopular = calculateTagsWithPopular(composedRecipeTags);
+			const composedRecipeTags = composeTagsWithPopularTrend(item.ingredients, item.positiveTags);
+			const recipeTagsWithTrend = calculateTagsWithTrend(composedRecipeTags);
 
 			const {recipe: easterEggRecipe, score: easterEggScore} = checkEasterEgg({
 				currentCustomerName,
@@ -145,11 +145,7 @@ export default function RecipeTabContent() {
 				negativeTags: matchedNegativeTags,
 				positiveTags: matchedPositiveTags,
 				suitability,
-			} = instance_recipe.getCustomerSuitability(
-				recipeTagsWithPopular,
-				customerNegativeTags,
-				customerPositiveTags
-			);
+			} = instance_recipe.getCustomerSuitability(recipeTagsWithTrend, customerNegativeTags, customerPositiveTags);
 
 			return {
 				...item,
@@ -172,7 +168,7 @@ export default function RecipeTabContent() {
 
 		return dataWithRealSuitability.filter(({cooker, dlc, name, pinyin, positiveTags}) => {
 			const {pinyinFirstLetters, pinyinWithoutTone} = processPinyin(pinyin);
-			const recipeTagsWithPopular = calculateTagsWithPopular(positiveTags);
+			const recipeTagsWithTrend = calculateTagsWithTrend(positiveTags);
 
 			const isNameMatched = hasNameFilter
 				? name.toLowerCase().includes(searchValueLowerCase) ||
@@ -183,14 +179,14 @@ export default function RecipeTabContent() {
 			const isCookerMatched = selectedCookers.size > 0 ? selectedCookers.has(cooker) : true;
 			const isPositiveTagsMatched =
 				selectedCustomerPositiveTags.size > 0
-					? checkArraySubsetOf([...selectedCustomerPositiveTags], recipeTagsWithPopular)
+					? checkArraySubsetOf([...selectedCustomerPositiveTags], recipeTagsWithTrend)
 					: true;
 
 			return isNameMatched && isDlcMatched && isCookerMatched && isPositiveTagsMatched;
 		});
 	}, [
-		calculateTagsWithPopular,
-		composeTagsWithPopular,
+		calculateTagsWithTrend,
+		composeTagsWithPopularTrend,
 		currentCustomerName,
 		data,
 		hasNameFilter,
@@ -263,14 +259,14 @@ export default function RecipeTabContent() {
 				return null;
 			}
 
-			const composedRecipeTags = composeTagsWithPopular(ingredients, positiveTags);
-			const recipeTagsWithPopular = calculateTagsWithPopular(composedRecipeTags);
+			const composedRecipeTags = composeTagsWithPopularTrend(ingredients, positiveTags);
+			const recipeTagsWithTrend = calculateTagsWithTrend(composedRecipeTags);
 
 			const {negative: negativeTagStyle, positive: positiveTagStyle} = CUSTOMER_NORMAL_TAG_STYLE;
 
 			const tags = (
 				<TagGroup>
-					{recipeTagsWithPopular.sort(pinyinSort).map((tag, index) => {
+					{recipeTagsWithTrend.sort(pinyinSort).map((tag, index) => {
 						const isNegativeTagMatched = matchedNegativeTags.includes(tag);
 						const isPositiveTagMatched = matchedPositiveTags.includes(tag);
 						const isTagMatched = isNegativeTagMatched || isPositiveTagMatched;
@@ -413,7 +409,7 @@ export default function RecipeTabContent() {
 				}
 			}
 		},
-		[calculateTagsWithPopular, composeTagsWithPopular, currentCustomerName, openWindow, vibrate]
+		[calculateTagsWithTrend, composeTagsWithPopularTrend, currentCustomerName, openWindow, vibrate]
 	);
 
 	const tableToolbar = useMemo(

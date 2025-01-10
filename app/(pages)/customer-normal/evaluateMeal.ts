@@ -14,7 +14,7 @@ import {intersection} from '@/utilities';
 
 interface IParameters {
 	currentCustomerName: TCustomerNormalName;
-	currentCustomerPopularData: IPopularTrend;
+	currentCustomerPopularTrend: IPopularTrend;
 	currentCustomerPositiveTags: TRecipeTag[];
 	currentExtraIngredientsLength: number;
 	currentExtraTags: TPopularTag[];
@@ -65,7 +65,7 @@ function getRatingKey(mealScore: number): TRatingKey {
 
 export function evaluateMeal({
 	currentCustomerName,
-	currentCustomerPopularData,
+	currentCustomerPopularTrend,
 	currentCustomerPositiveTags,
 	currentExtraIngredientsLength,
 	currentExtraTags,
@@ -87,10 +87,10 @@ export function evaluateMeal({
 	}
 
 	let currentCustomerPopularTag: IPopularTrend['tag'] = null;
-	const {isNegative: popularIsNegative, tag: popularTag} = currentCustomerPopularData;
-	if (popularIsNegative && currentCustomerPositiveTags.includes(TAG_POPULAR_NEGATIVE)) {
+	const {isNegative: popularTrendIsNegative, tag: popularTag} = currentCustomerPopularTrend;
+	if (popularTrendIsNegative && currentCustomerPositiveTags.includes(TAG_POPULAR_NEGATIVE)) {
 		currentCustomerPopularTag = popularTag;
-	} else if (!popularIsNegative && currentCustomerPositiveTags.includes(TAG_POPULAR_POSITIVE)) {
+	} else if (!popularTrendIsNegative && currentCustomerPositiveTags.includes(TAG_POPULAR_POSITIVE)) {
 		currentCustomerPopularTag = popularTag;
 	}
 

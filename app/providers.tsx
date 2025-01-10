@@ -51,12 +51,12 @@ export default function Providers({children, locale}: PropsWithChildren<IProps>)
 		ingredientsStore.shared.famousShop.set(globalFamousShop);
 		recipesStore.shared.famousShop.set(globalFamousShop);
 
-		// Initialize popular tag based on the persistence data.
-		const globalPopular = globalStore.persistence.popular.get();
-		customerNormalStore.shared.customer.popular.set(globalPopular);
-		customerRareStore.shared.customer.popular.set(globalPopular);
-		ingredientsStore.shared.popular.set(globalPopular);
-		recipesStore.shared.popular.set(globalPopular);
+		// Initialize popular trend based on the persistence data.
+		const globalPopularTrend = globalStore.persistence.popularTrend.get();
+		customerNormalStore.shared.customer.popularTrend.set(globalPopularTrend);
+		customerRareStore.shared.customer.popularTrend.set(globalPopularTrend);
+		ingredientsStore.shared.popularTrend.set(globalPopularTrend);
+		recipesStore.shared.popularTrend.set(globalPopularTrend);
 
 		// Synchronize state across multiple tabs as needed.
 		const updateStore = debounce((event: StorageEvent) => {
