@@ -7,7 +7,8 @@ import Footer from '@/(pages)/footer';
 import Navbar from '@/(pages)/navbar';
 import Analytics from '@/components/analytics';
 import ErrorBoundary from '@/components/errorBoundary';
-import Providers from '@/providers';
+import Polyfills from '@/polyfills';
+import Providers, {AddBodyClassName} from '@/providers';
 import {ThemeScript} from '@/design/hooks';
 
 import {config as fontawesomeConfig} from '@fortawesome/fontawesome-svg-core';
@@ -86,38 +87,7 @@ export default function RootLayout({
 	return (
 		<html suppressHydrationWarning lang={locale} className="selection-custom light:izakaya dark:izakaya-dark">
 			<head>
-				<script
-					dangerouslySetInnerHTML={{
-						/**
-						 * @description Add `globalThis` polyfill for Chrome < 71.
-						 * @see {@link https://mathiasbynens.be/notes/globalthis}
-						 */
-						__html: `if (typeof globalThis !== 'object') {
-	Object.prototype.__defineGetter__('__magic__', function () {
-		return this;
-	});
-	__magic__.globalThis = __magic__;
-	delete Object.prototype.__magic__;
-}`,
-					}}
-				/>
-				<script
-					dangerouslySetInnerHTML={{
-						/**
-						 * @description Add `queueMicrotask` polyfill for Chrome < 71.
-						 */
-						__html: `if (typeof queueMicrotask !== 'function') {
-	const promise = Promise.resolve();
-	globalThis.queueMicrotask = (callback) => {
-		promise.then(callback).catch((error) => {
-			setTimeout(() => {
-				throw error;
-			}, 0);
-		});
-	};
-}`,
-					}}
-				/>
+				<Polyfills />
 				<ThemeScript />
 				{
 					// Register service worker. The `sha` is the commit SHA of the current commit, used to bypass browser caching.
@@ -126,26 +96,7 @@ export default function RootLayout({
 				<Script async src={`${cdnUrl}/SmoothScroll.min.js`} />
 			</head>
 			<body suppressHydrationWarning className="antialiased">
-				<script
-					dangerouslySetInnerHTML={{
-						/**
-						 * @description Add `bg-blend-mystia-pseudo` class to body if the `globalStorage.highAppearance` setting is enabled.
-						 * @see /app/providers.tsx
-						 */
-						__html: `(() => {
-	let enable;
-	try {
-		const globalStorage = localStorage.getItem('global-storage');
-		if (globalStorage !== null) {
-			enable = JSON.parse(globalStorage).state.persistence.highAppearance;
-		}
-	} catch (e) {}
-	if (enable !== false) {
-		document.body.classList.add('bg-blend-mystia-pseudo');
-	}
-})();`,
-					}}
-				/>
+				<AddBodyClassName />
 				<ErrorBoundary>
 					<Providers locale={locale}>
 						<div className="flex min-h-dvh-safe flex-col">

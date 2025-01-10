@@ -134,3 +134,37 @@ export default function Providers({children, locale}: PropsWithChildren<IProps>)
 		</NextUIProvider>
 	);
 }
+
+const script = (storeKey: string) => {
+	let enable: boolean | undefined;
+
+	try {
+		const globalStorage = localStorage.getItem(storeKey);
+		if (globalStorage !== null) {
+			const state = (JSON.parse(globalStorage) as TGlobalPersistenceState).state.persistence;
+			enable = state.highAppearance;
+		}
+	} catch {
+		/* empty */
+	}
+
+	if (enable !== false) {
+		document.body.classList.add('bg-blend-mystia-pseudo');
+	}
+};
+
+/**
+ * @description Add `bg-blend-mystia-pseudo` class to body if the `globalStorage.highAppearance` setting is enabled.
+ */
+export function AddBodyClassName() {
+	const scriptArgs = JSON.stringify([globalStoreKey]).slice(1, -1);
+
+	return (
+		<script
+			suppressHydrationWarning
+			dangerouslySetInnerHTML={{
+				__html: `(${script.toString()})(${scriptArgs})`,
+			}}
+		/>
+	);
+}
