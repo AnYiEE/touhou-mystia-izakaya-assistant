@@ -3,7 +3,7 @@ import {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import useBreakpoint from 'use-breakpoint';
 import {useVibrate} from '@/hooks';
 
-import {Card} from '@nextui-org/react';
+import {Card} from '@nextui-org/card';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark, faPlus, faQuestion} from '@fortawesome/free-solid-svg-icons';
 

@@ -1,7 +1,7 @@
 import {type PropsWithChildren, memo} from 'react';
 import {execSync} from 'node:child_process';
 
-import {Tooltip, type TooltipProps} from '@nextui-org/react';
+import {Tooltip, type TooltipProps} from '@nextui-org/tooltip';
 
 import {type ILinkProps, Link, cn, getMotionProps} from '@/design/ui/components';
 

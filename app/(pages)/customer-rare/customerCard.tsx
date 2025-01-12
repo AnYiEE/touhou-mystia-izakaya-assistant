@@ -2,7 +2,8 @@ import {useCallback, useMemo} from 'react';
 
 import {useVibrate} from '@/hooks';
 
-import {Card, Divider} from '@nextui-org/react';
+import {Card} from '@nextui-org/card';
+import {Divider} from '@nextui-org/divider';
 import {faArrowsRotate, faXmark} from '@fortawesome/free-solid-svg-icons';
 
 import {ratingStyles} from '@/design/theme/styles/rating';

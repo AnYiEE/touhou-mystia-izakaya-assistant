@@ -18,7 +18,7 @@ import {useParams} from '@/hooks';
 import {PARAM_SPECIFY} from '@/hooks/useOpenedItemPopover';
 import {PARAM_PREVIEW, useViewInNewWindow} from '@/hooks/useViewInNewWindow';
 
-import {Snippet} from '@nextui-org/react';
+import {Snippet} from '@nextui-org/snippet';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faLink, faShare, faXmark} from '@fortawesome/free-solid-svg-icons';
 

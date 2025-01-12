@@ -2,7 +2,8 @@
 
 import {type ElementRef, forwardRef, memo} from 'react';
 
-import {type InternalForwardRefRenderFunction, type LinkProps, Link as NextUILink} from '@nextui-org/react';
+import {type LinkProps, Link as NextUILink} from '@nextui-org/link';
+import {type InternalForwardRefRenderFunction} from '@nextui-org/system';
 
 import {cn} from '@/design/ui/utils';
 

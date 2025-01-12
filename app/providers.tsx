@@ -6,7 +6,7 @@ import {debounce} from 'lodash';
 
 import {useRouter} from 'next/navigation';
 
-import {NextUIProvider} from '@nextui-org/react';
+import {NextUIProvider} from '@nextui-org/system';
 import {ProgressBar, ProgressBarProvider} from 'react-transition-progress';
 
 import {trackEvent} from '@/components/analytics';

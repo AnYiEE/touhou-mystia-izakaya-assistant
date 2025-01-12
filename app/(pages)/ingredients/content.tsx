@@ -2,7 +2,7 @@ import {Fragment, memo, useRef} from 'react';
 
 import {useOpenedItemPopover} from '@/hooks';
 
-import {ScrollShadow} from '@nextui-org/react';
+import {ScrollShadow} from '@nextui-org/scroll-shadow';
 
 import {
 	CLASSNAME_FOCUS_VISIBLE_OUTLINE,

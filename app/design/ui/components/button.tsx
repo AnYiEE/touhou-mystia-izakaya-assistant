@@ -2,7 +2,8 @@
 
 import {type ElementRef, forwardRef, memo, useMemo} from 'react';
 
-import {type ButtonProps, type InternalForwardRefRenderFunction, Button as NextUIButton} from '@nextui-org/react';
+import {type ButtonProps, Button as NextUIButton} from '@nextui-org/button';
+import {type InternalForwardRefRenderFunction} from '@nextui-org/system';
 
 import {cn} from '@/design/ui/utils';
 

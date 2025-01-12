@@ -14,7 +14,7 @@ import {
 	NavbarMenuItem,
 	NavbarMenuToggle,
 	Navbar as NextUINavbar,
-} from '@nextui-org/react';
+} from '@nextui-org/navbar';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faGithub} from '@fortawesome/free-brands-svg-icons';
 import {faChevronDown} from '@fortawesome/free-solid-svg-icons';

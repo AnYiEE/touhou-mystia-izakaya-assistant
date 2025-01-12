@@ -4,7 +4,9 @@ import {memo, useCallback} from 'react';
 
 import {useVibrate} from '@/hooks';
 
-import {Select, SelectItem, type Selection, Switch} from '@nextui-org/react';
+import {Select, SelectItem} from '@nextui-org/select';
+import {Switch} from '@nextui-org/switch';
+import {type Selection} from '@nextui-org/table';
 
 import {Button, cn, useMotionProps} from '@/design/ui/components';
 

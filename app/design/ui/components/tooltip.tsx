@@ -4,7 +4,8 @@ import {type ComponentProps, type ElementRef, forwardRef, memo, useMemo} from 'r
 
 import {useMotionProps} from '@/design/ui/hooks';
 
-import {type InternalForwardRefRenderFunction, Tooltip as NextUITooltip, extendVariants} from '@nextui-org/react';
+import {type InternalForwardRefRenderFunction, extendVariants} from '@nextui-org/system';
+import {Tooltip as NextUITooltip} from '@nextui-org/tooltip';
 
 import {getStyleBlur} from '@/design/ui/components/popover';
 import {cn, generateRatingVariants} from '@/design/ui/utils';
@@ -16,6 +17,8 @@ const CustomNextUITooltip = extendVariants(NextUITooltip, generateRatingVariants
 interface IProps extends ComponentProps<typeof CustomNextUITooltip> {
 	disableBlur?: boolean;
 }
+
+type Ref = NonNullable<IProps['ref']>;
 
 export default memo(
 	forwardRef<ElementRef<typeof NextUITooltip>, IProps>(function Tooltip(
@@ -43,7 +46,7 @@ export default memo(
 					content: cn(styleBlur, classNames?.content),
 				}}
 				{...props}
-				ref={ref}
+				ref={ref as Ref}
 			/>
 		);
 	})

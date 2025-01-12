@@ -1,4 +1,4 @@
-import {type SortDescriptor} from '@nextui-org/react';
+import {type SortDescriptor} from '@nextui-org/table';
 
 import {type TabVisibilityState} from './constants';
 import {type Beverage, type Recipe} from '@/utils';

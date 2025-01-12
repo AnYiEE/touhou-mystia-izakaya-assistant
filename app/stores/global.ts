@@ -1,7 +1,7 @@
 import {store} from '@davstack/store';
 import {createJSONStorage} from 'zustand/middleware';
 
-import {type Selection} from '@nextui-org/react';
+import {type Selection} from '@nextui-org/table';
 
 import type {IPersistenceState} from './types';
 import {customerNormalStore, customerRareStore, ingredientsStore, recipesStore} from '@/stores';

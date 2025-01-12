@@ -13,7 +13,7 @@ import {
 	useVibrate,
 } from '@/hooks';
 
-import {Tab, Tabs} from '@nextui-org/react';
+import {Tab, Tabs} from '@nextui-org/tabs';
 
 import {cn} from '@/design/ui/components';
 

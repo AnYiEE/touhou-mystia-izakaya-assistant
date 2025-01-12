@@ -2,20 +2,10 @@ import {useCallback, useMemo} from 'react';
 
 import {useVibrate, useViewInNewWindow} from '@/hooks';
 
-import {
-	Autocomplete,
-	AutocompleteItem,
-	Pagination,
-	Select,
-	SelectItem,
-	type SortDescriptor,
-	Table,
-	TableBody,
-	TableCell,
-	TableColumn,
-	TableHeader,
-	TableRow,
-} from '@nextui-org/react';
+import {Autocomplete, AutocompleteItem} from '@nextui-org/autocomplete';
+import {Pagination} from '@nextui-org/pagination';
+import {Select, SelectItem} from '@nextui-org/select';
+import {type SortDescriptor, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow} from '@nextui-org/table';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faChevronDown, faMagnifyingGlass, faPlus, faTags} from '@fortawesome/free-solid-svg-icons';
 

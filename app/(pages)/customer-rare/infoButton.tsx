@@ -3,7 +3,7 @@ import {type ReactElement, memo} from 'react';
 import useBreakpoint from 'use-breakpoint';
 import {useViewInNewWindow} from '@/hooks';
 
-import {AccordionItem} from '@nextui-org/react';
+import {AccordionItem} from '@nextui-org/accordion';
 
 import {
 	Avatar,

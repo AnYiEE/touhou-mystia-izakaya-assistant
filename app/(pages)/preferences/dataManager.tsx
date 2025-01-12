@@ -5,7 +5,9 @@ import {useRouter} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
 import {usePathname, useThrottle} from '@/hooks';
 
-import {Snippet, Tab, Tabs, Textarea} from '@nextui-org/react';
+import {Textarea} from '@nextui-org/input';
+import {Snippet} from '@nextui-org/snippet';
+import {Tab, Tabs} from '@nextui-org/tabs';
 
 import {Button, Popover, PopoverContent, PopoverTrigger, Tooltip, cn} from '@/design/ui/components';
 

@@ -4,7 +4,7 @@ import {type ElementRef, forwardRef, memo} from 'react';
 
 import {useMotionProps} from '@/design/ui/hooks';
 
-import {type DropdownProps, Dropdown as NextUIDropdown} from '@nextui-org/react';
+import {type DropdownProps, Dropdown as NextUIDropdown} from '@nextui-org/dropdown';
 
 import {cn} from '@/design/ui/utils';
 
@@ -48,5 +48,5 @@ export default memo(
 
 export type {IProps as IDropdownProps};
 
-export {DropdownItem, DropdownMenu, DropdownTrigger} from '@nextui-org/react';
-export type {DropdownItemProps, DropdownMenuProps, DropdownTriggerProps} from '@nextui-org/react';
+export {DropdownItem, DropdownMenu, DropdownTrigger} from '@nextui-org/dropdown';
+export type {DropdownItemProps, DropdownMenuProps, DropdownTriggerProps} from '@nextui-org/dropdown';

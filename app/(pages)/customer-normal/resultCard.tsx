@@ -2,7 +2,7 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import {useVibrate} from '@/hooks';
 
-import {Card} from '@nextui-org/react';
+import {Card} from '@nextui-org/card';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark} from '@fortawesome/free-solid-svg-icons';
 

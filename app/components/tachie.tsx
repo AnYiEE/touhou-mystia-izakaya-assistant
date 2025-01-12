@@ -2,7 +2,7 @@
 
 import {memo} from 'react';
 
-import {Image, type ImageProps} from '@nextui-org/react';
+import {Image, type ImageProps} from '@nextui-org/image';
 
 import {cn} from '@/design/ui/components';
 

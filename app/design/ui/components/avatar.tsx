@@ -2,7 +2,8 @@
 
 import {type ComponentProps, type ElementRef, forwardRef, memo} from 'react';
 
-import {type InternalForwardRefRenderFunction, Avatar as NextUIAvatar, extendVariants} from '@nextui-org/react';
+import {Avatar as NextUIAvatar} from '@nextui-org/avatar';
+import {type InternalForwardRefRenderFunction, extendVariants} from '@nextui-org/system';
 
 import {generateRatingVariants} from '@/design/ui/utils';
 

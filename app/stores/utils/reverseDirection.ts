@@ -1,4 +1,4 @@
-import {SortDescriptor} from '@nextui-org/react';
+import {SortDescriptor} from '@nextui-org/table';
 
 type TSortDirection = SortDescriptor['direction'];
 

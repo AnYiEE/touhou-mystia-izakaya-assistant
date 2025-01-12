@@ -3,7 +3,8 @@ import {curry, curryRight, debounce} from 'lodash';
 
 import {useVibrate} from '@/hooks';
 
-import {Badge, ScrollShadow} from '@nextui-org/react';
+import {Badge} from '@nextui-org/badge';
+import {ScrollShadow} from '@nextui-org/scroll-shadow';
 
 import {Button, Tooltip, cn} from '@/design/ui/components';
 

@@ -4,7 +4,8 @@ import {type ComponentProps, type ElementRef, forwardRef, memo, useMemo} from 'r
 
 import {useMotionProps} from '@/design/ui/hooks';
 
-import {type InternalForwardRefRenderFunction, Popover as NextUIPopover, extendVariants} from '@nextui-org/react';
+import {Popover as NextUIPopover} from '@nextui-org/popover';
+import {type InternalForwardRefRenderFunction, extendVariants} from '@nextui-org/system';
 
 import {cn, generateRatingVariants} from '@/design/ui/utils';
 
@@ -50,6 +51,8 @@ interface IProps extends ComponentProps<typeof CustomNextUIPopover> {
 	disableBlur?: boolean;
 }
 
+type Ref = NonNullable<IProps['ref']>;
+
 export default memo(
 	forwardRef<ElementRef<typeof NextUIPopover>, IProps>(function Popover(
 		{classNames, color, disableBlur, offset, shouldBlockScroll, shouldCloseOnScroll, showArrow, size, ...props},
@@ -83,7 +86,7 @@ export default memo(
 					content: cn(styleBlur, classNames?.content),
 				}}
 				{...props}
-				ref={ref}
+				ref={ref as Ref}
 			/>
 		);
 	})
@@ -91,5 +94,5 @@ export default memo(
 
 export type {IProps as IPopoverProps};
 
-export {PopoverContent, PopoverTrigger, usePopoverContext} from '@nextui-org/react';
-export type {PopoverContentProps, PopoverTriggerProps} from '@nextui-org/react';
+export {PopoverContent, PopoverTrigger, usePopoverContext} from '@nextui-org/popover';
+export type {PopoverContentProps, PopoverTriggerProps} from '@nextui-org/popover';

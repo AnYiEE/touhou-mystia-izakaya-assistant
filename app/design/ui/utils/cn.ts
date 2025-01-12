@@ -1,1 +1,1 @@
-export {cn} from '@nextui-org/react';
+export {cn} from '@nextui-org/theme';

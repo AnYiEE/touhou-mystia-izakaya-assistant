@@ -2,7 +2,7 @@ import {type Key} from 'react';
 import {store} from '@davstack/store';
 import {createJSONStorage} from 'zustand/middleware';
 
-import {type Selection} from '@nextui-org/react';
+import {type Selection} from '@nextui-org/table';
 
 import {TabVisibilityState, beverageTableColumns, recipeTableColumns} from '@/(pages)/customer-normal/constants';
 import {type TTableSortDescriptor as TBeverageTableSortDescriptor} from '@/(pages)/customer-normal/beverageTabContent';

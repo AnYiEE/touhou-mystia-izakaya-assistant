@@ -1,4 +1,4 @@
-import {type BaseColors, type ColorScale, type SemanticBaseColors, type ThemeColors} from '@nextui-org/react';
+import {type BaseColors, type ColorScale, type SemanticBaseColors, type ThemeColors} from '@nextui-org/theme';
 
 export type TColorScale = Required<Omit<Exclude<ColorScale, string>, 'DEFAULT' | 'foreground'>>;
 

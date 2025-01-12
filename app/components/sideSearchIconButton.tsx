@@ -4,7 +4,7 @@ import {type Dispatch, type SetStateAction, memo, useCallback} from 'react';
 
 import {useVibrate} from '@/hooks';
 
-import {Autocomplete, AutocompleteItem, type AutocompleteProps} from '@nextui-org/react';
+import {Autocomplete, AutocompleteItem, type AutocompleteProps} from '@nextui-org/autocomplete';
 import {faMagnifyingGlass} from '@fortawesome/free-solid-svg-icons';
 
 import {Popover, PopoverContent, PopoverTrigger, Tooltip, cn, useMotionProps} from '@/design/ui/components';
@@ -88,6 +88,9 @@ export default memo<IProps>(function SideSearchIconButton({
 						base: isHighAppearance
 							? 'data-[slot="input-wrapper"]:[&_div]:!bg-default/40 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:!bg-default-400/40'
 							: 'data-[slot="input-wrapper"]:[&_div]:!bg-default-200 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:!bg-default',
+						clearButton: isHighAppearance
+							? 'data-[hover=true]:bg-default/40'
+							: 'data-[hover=true]:bg-default-400 [&+button[data-hover=true]]:bg-default-400',
 						listboxWrapper: cn('[&_li]:transition-background', {
 							'data-[hover=true]:[&_li]:!bg-default/40': isHighAppearance,
 						}),

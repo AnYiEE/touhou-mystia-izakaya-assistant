@@ -2,7 +2,8 @@ import {Fragment, memo} from 'react';
 
 import {useVibrate, useViewInNewWindow} from '@/hooks';
 
-import {Card, Divider} from '@nextui-org/react';
+import {Card} from '@nextui-org/card';
+import {Divider} from '@nextui-org/divider';
 import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
 import {faArrowDown, faArrowUp} from '@fortawesome/free-solid-svg-icons';
 

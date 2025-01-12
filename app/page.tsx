@@ -2,7 +2,7 @@
 
 import {useCallback, useMemo, useState} from 'react';
 
-import {Spinner} from '@nextui-org/react';
+import {Spinner} from '@nextui-org/spinner';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faQq, faWeixin} from '@fortawesome/free-brands-svg-icons';
 

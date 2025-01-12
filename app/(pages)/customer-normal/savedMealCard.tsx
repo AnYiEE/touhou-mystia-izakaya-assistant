@@ -2,7 +2,8 @@ import {Fragment} from 'react';
 
 import {useVibrate, useViewInNewWindow} from '@/hooks';
 
-import {Card, Divider} from '@nextui-org/react';
+import {Card} from '@nextui-org/card';
+import {Divider} from '@nextui-org/divider';
 
 import {Avatar, Button, Popover, PopoverContent, PopoverTrigger, Tooltip, cn} from '@/design/ui/components';
 

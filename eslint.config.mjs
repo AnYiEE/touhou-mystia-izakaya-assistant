@@ -172,6 +172,7 @@ export default tsEslint.config(
 			'@eslint-community/eslint-comments/no-unlimited-disable': 'off',
 			'@eslint-community/eslint-comments/no-unused-disable': 'warn',
 
+			'@typescript-eslint/no-deprecated': 'warn',
 			'@typescript-eslint/no-empty-function': [
 				'error',
 				{
