@@ -1,8 +1,8 @@
-import {semanticColors} from '@/design/theme';
+import {defaultBackgrounds} from '@/design/theme/colors/constants/backgroundColors';
 
 export const COLOR_MAP = {
-	DARK: semanticColors.dark.background.DEFAULT,
-	LIGHT: semanticColors.light.background.DEFAULT,
+	DARK: defaultBackgrounds.dark,
+	LIGHT: defaultBackgrounds.light,
 };
 
 export const MEDIA = '(prefers-color-scheme: dark)';

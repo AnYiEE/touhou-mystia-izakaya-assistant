@@ -1,3 +1,4 @@
+import {defaultBackgrounds} from './backgroundColors';
 import {black} from './black';
 import {blue} from './blue';
 import {brown} from './brown';
@@ -27,5 +28,6 @@ export const colors = {
 	purple,
 
 	constants,
+	defaultBackgrounds,
 	divider,
 };

@@ -24,7 +24,7 @@ const script = (
 
 		document.head.append(metaElement);
 	} catch (error) {
-		console.error('[hooks/use-theme]:', error);
+		console.error('[design/hooks/use-theme]:', error);
 	}
 };
 
