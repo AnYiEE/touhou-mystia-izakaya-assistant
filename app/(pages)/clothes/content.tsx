@@ -1,5 +1,5 @@
 import {Fragment, memo, useRef} from 'react';
-import {isObjectLike} from 'lodash';
+import {isObject} from 'lodash';
 
 import useBreakpoint from 'use-breakpoint';
 import {useOpenedItemPopover, useViewInNewWindow} from '@/hooks';
@@ -103,7 +103,7 @@ export default memo<IProps>(function Content({data}) {
 											type TFrom = Exclude<IClothes['from'][number], string>;
 											const [method, target] = itemObject as [keyof TFrom, TFrom[keyof TFrom]];
 											const isBond = method === 'bond' && typeof target === 'string';
-											const isBuy = method === 'buy' && isObjectLike(target) && 'price' in target;
+											const isBuy = method === 'buy' && isObject(target) && 'price' in target;
 											const isSelf = method === 'self';
 											return (
 												<Fragment key={`${fromIndex}-${itemIndex}`}>

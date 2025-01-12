@@ -1,4 +1,4 @@
-import {isObjectLike} from 'lodash';
+import {isObject} from 'lodash';
 
 import {getPinyin, numberSort} from '@/utilities';
 
@@ -11,7 +11,7 @@ interface IValueCollection {
 type TTarget = TValue | IValueCollection;
 
 function checkValueCollection(value: TTarget): value is IValueCollection {
-	return isObjectLike(value) && 'value' in value;
+	return isObject(value) && 'value' in value;
 }
 
 function getTone(pinyin: string) {

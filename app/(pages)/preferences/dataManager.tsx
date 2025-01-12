@@ -1,5 +1,5 @@
 import {type ChangeEvent, memo, useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
-import {debounce, isObjectLike} from 'lodash';
+import {debounce, isObject} from 'lodash';
 
 import {useRouter} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
@@ -123,7 +123,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 			}
 			setIsSaveButtonLoading(true);
 			const json = JSON.parse(throttledImportValue) as unknown;
-			if (Array.isArray(json) || !isObjectLike(json)) {
+			if (Array.isArray(json) || !isObject(json)) {
 				throw new TypeError('not an object');
 			}
 			setImportData(json);

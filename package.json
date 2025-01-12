@@ -135,9 +135,6 @@
 	"pnpm": {
 		"overrides": {
 			"@react-aria/interactions@^3.22.3": "3.22.2"
-		},
-		"patchedDependencies": {
-			"@types/lodash@4.17.14": "patches/@types__lodash@4.17.14.patch"
 		}
 	}
 }

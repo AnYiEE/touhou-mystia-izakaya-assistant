@@ -7,11 +7,6 @@ settings:
 overrides:
   '@react-aria/interactions@^3.22.3': 3.22.2
 
-patchedDependencies:
-  '@types/lodash@4.17.14':
-    hash: o7xtuvkox2mp3ircotp35wszsm
-    path: patches/@types__lodash@4.17.14.patch
-
 importers:
 
   .:
@@ -109,7 +104,7 @@ importers:
         version: 13.3.0
       '@types/lodash':
         specifier: ^4.17.14
-        version: 4.17.14(patch_hash=o7xtuvkox2mp3ircotp35wszsm)
+        version: 4.17.14
       '@types/node':
         specifier: ^22.10.5
         version: 22.10.5
@@ -8265,9 +8260,9 @@ snapshots:
 
   '@types/lodash.debounce@4.0.9':
     dependencies:
-      '@types/lodash': 4.17.14(patch_hash=o7xtuvkox2mp3ircotp35wszsm)
+      '@types/lodash': 4.17.14
 
-  '@types/lodash@4.17.14(patch_hash=o7xtuvkox2mp3ircotp35wszsm)': {}
+  '@types/lodash@4.17.14': {}
 
   '@types/node@22.10.5':
     dependencies:

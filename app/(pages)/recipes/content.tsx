@@ -1,5 +1,5 @@
 import {Fragment, memo, useRef} from 'react';
-import {isObjectLike} from 'lodash';
+import {isObject} from 'lodash';
 
 import {useOpenedItemPopover, useViewInNewWindow} from '@/hooks';
 
@@ -96,8 +96,8 @@ export default memo<IProps>(function Content({data}) {
 								: Object.entries(from).map((fromObject, fromIndex) => {
 										type TFrom = Exclude<IRecipe['from'], string>;
 										const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
-										const isBond = method === 'bond' && isObjectLike(target) && 'level' in target;
-										const isBuy = method === 'buy' && isObjectLike(target) && 'price' in target;
+										const isBond = method === 'bond' && isObject(target) && 'level' in target;
+										const isBuy = method === 'buy' && isObject(target) && 'price' in target;
 										const isLevelUp = method === 'levelup' && Array.isArray(target);
 										const isSelf = method === 'self';
 										return (

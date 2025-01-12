@@ -1,4 +1,4 @@
-import {cloneDeep, isObjectLike, sortBy} from 'lodash';
+import {cloneDeep, isObject, sortBy} from 'lodash';
 
 import {Food} from './base';
 import {Ingredient} from './ingredients';
@@ -87,7 +87,7 @@ export class Recipe extends Food<TRecipes> {
 		let bondRecipes: TBondRecipes = [];
 
 		this._data.forEach(({from, name}) => {
-			if (isObjectLike(from) && 'bond' in from && from.bond.name === customerName) {
+			if (isObject(from) && 'bond' in from && from.bond.name === customerName) {
 				bondRecipes.push({
 					level: from.bond.level,
 					name,

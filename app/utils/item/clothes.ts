@@ -1,4 +1,4 @@
-import {isObjectLike} from 'lodash';
+import {isObject} from 'lodash';
 
 import {Item} from './base';
 import {CLOTHES_LIST, type TClothes, type TClothesName, type TCustomerRareName} from '@/data';
@@ -38,7 +38,7 @@ export class Clothes extends Item<TClothes> {
 
 		this._data.some(({from, name}) =>
 			from.some((item) => {
-				if (isObjectLike(item) && 'bond' in item && item.bond === customerName) {
+				if (isObject(item) && 'bond' in item && item.bond === customerName) {
 					bondClothes = name;
 					return true;
 				}

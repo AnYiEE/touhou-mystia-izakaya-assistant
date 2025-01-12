@@ -1,5 +1,5 @@
 import {Fragment, memo, useRef} from 'react';
-import {isObjectLike} from 'lodash';
+import {isObject} from 'lodash';
 
 import {useOpenedItemPopover, useViewInNewWindow} from '@/hooks';
 
@@ -77,7 +77,7 @@ export default memo<IProps>(function Content({data}) {
 									: Object.entries(item).map((itemObject, itemIndex) => {
 											type TFrom = Exclude<ICurrency['from'][number], string>;
 											const [method, target] = itemObject as [keyof TFrom, TFrom[keyof TFrom]];
-											const isBuy = method === 'buy' && isObjectLike(target);
+											const isBuy = method === 'buy' && isObject(target);
 											const isTask = method === 'task' && typeof target === 'string';
 											return (
 												<Fragment key={`${fromIndex}-${itemIndex}`}>
