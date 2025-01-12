@@ -1,6 +1,8 @@
 /* eslint-disable sort-keys */
 import {customPinyin, pinyin} from 'pinyin-pro';
 
+import {memoize} from '@/utilities/memoize';
+
 customPinyin(
 	{
 		// cSpell:disable
@@ -15,20 +17,12 @@ customPinyin(
 	}
 );
 
-const pinyinCache = new Map<string, string[]>();
-
-export function getPinyin(word: string) {
-	if (pinyinCache.has(word)) {
-		return pinyinCache.get(word);
-	}
-
+export const getPinyin = memoize(function getPinyin(word: string) {
 	const result = pinyin(word, {
 		toneType: 'num',
 		type: 'array',
 		v: true,
 	});
 
-	pinyinCache.set(word, result);
-
 	return result;
-}
+});

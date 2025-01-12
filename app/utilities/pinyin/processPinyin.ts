@@ -1,4 +1,6 @@
-export function processPinyin(pinyin: ReadonlyArray<string>) {
+import {memoize} from '@/utilities/memoize';
+
+export const processPinyin = memoize(function processPinyin(pinyin: ReadonlyArray<string>) {
 	const {pinyinFirstLetters, pinyinWithoutTone} = pinyin.reduce<{
 		pinyinFirstLetters: string;
 		pinyinWithoutTone: string[];
@@ -23,4 +25,4 @@ export function processPinyin(pinyin: ReadonlyArray<string>) {
 		pinyinFirstLetters,
 		pinyinWithoutTone,
 	};
-}
+}, 'WeakMap');
