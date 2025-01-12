@@ -1,9 +1,9 @@
 // @ts-check
-/* eslint-disable unicorn/prefer-module, unicorn/prefer-top-level-await */
+/* eslint-disable unicorn/prefer-module, unicorn/prefer-global-this, unicorn/prefer-top-level-await */
 'use strict';
 
 (async function registerServiceWorker() {
-	if (!('serviceWorker' in navigator) || !('caches' in globalThis)) {
+	if (!('serviceWorker' in navigator) || !('caches' in window)) {
 		return;
 	}
 
