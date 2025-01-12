@@ -19,7 +19,7 @@ import {
 	type TRecipes,
 } from '@/data';
 
-import {intersection} from '@/utilities';
+import {intersection, toArray, toSet} from '@/utilities';
 import type {IMealRecipe, IPopularTrend} from '@/types';
 
 type TRecipeProcessedPositiveTags = Omit<TRecipes[number], 'positiveTags'> & {
@@ -73,8 +73,8 @@ export class Recipe extends Food<TRecipes> {
 		return instance;
 	}
 
-	public blockedRecipes: Set<TRecipeName> = new Set([DARK_MATTER_NAME]);
-	public blockedTags: Set<TRecipeTag> = new Set([DARK_MATTER_TAG]);
+	public blockedRecipes: Set<TRecipeName> = toSet([DARK_MATTER_NAME]);
+	public blockedTags: Set<TRecipeTag> = toSet([DARK_MATTER_TAG]);
 
 	/**
 	 * @description Get the recipes for a customer based on their bond level.
@@ -133,8 +133,9 @@ export class Recipe extends Food<TRecipes> {
 			negativeTags = recipeData.negativeTags;
 		}
 
+		const instance_ingredient = Ingredient.getInstance();
 		const extraTags = recipeData.extraIngredients.flatMap((extraIngredient) =>
-			Ingredient.getInstance().getPropsByName(extraIngredient, 'tags')
+			instance_ingredient.getPropsByName(extraIngredient, 'tags')
 		);
 
 		return {
@@ -153,7 +154,7 @@ export class Recipe extends Food<TRecipes> {
 		extraIngredientTags: ReadonlyArray<TIngredientTag>,
 		popularTrend: IPopularTrend | null
 	) {
-		const resultTags = new Set([...originalRecipePositiveTags, ...extraIngredientTags]);
+		const resultTags = toSet(originalRecipePositiveTags, extraIngredientTags);
 		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popularTrend ?? {};
 
 		if (originalIngredients.length + extraIngredients.length >= 5) {
@@ -172,7 +173,7 @@ export class Recipe extends Food<TRecipes> {
 			}
 		});
 
-		return [...resultTags] as TRecipeTag[];
+		return toArray(resultTags) as TRecipeTag[];
 	}
 
 	/**

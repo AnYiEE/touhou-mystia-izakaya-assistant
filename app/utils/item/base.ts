@@ -2,7 +2,7 @@ import {cloneDeep} from 'lodash';
 
 import type {IItem, TItemWithPinyin} from './types';
 
-import {getPinyin, pinyinSort, toGetValueCollection, union} from '@/utilities';
+import {copyArray, getPinyin, pinyinSort, toGetValueCollection, union} from '@/utilities';
 
 export class Item<
 	TItems extends IItem[],
@@ -123,7 +123,7 @@ export class Item<
 	public getValuesByProp<T extends keyof TItem>(prop: T | T[], wrap?: boolean, data?: ReadonlyArray<TItem>) {
 		const target = data ?? this._data;
 
-		const props = [prop].flat(Infinity) as T[];
+		const props = [prop].flat() as T[];
 		const values = union(target.map((item) => props.map((key) => item[key])).flat(Infinity));
 
 		if (wrap) {
@@ -148,24 +148,22 @@ export class Item<
 	public getPinyinSortedData(data?: ReadonlyArray<TItem>) {
 		const target = data ?? this._data;
 
+		const generateReturn = (returnData: typeof target) => ({
+			fork: () => copyArray(returnData),
+			get: () => returnData,
+		});
+
 		if (this._pinyinSortedDataCacheMap.has(target)) {
-			const cachedSortedData = this._pinyinSortedDataCacheMap.get(target);
-			return {
-				fork: () => [...cachedSortedData],
-				get: () => cachedSortedData,
-			};
+			return generateReturn(this._pinyinSortedDataCacheMap.get(target));
 		}
 
 		const sortedData = this.sortByPinyin(target);
 		this._pinyinSortedDataCacheMap.set(target, sortedData);
 
-		return {
-			fork: () => [...sortedData],
-			get: () => sortedData,
-		};
+		return generateReturn(sortedData);
 	}
 
 	private sortByPinyin(data: ReadonlyArray<TItem>) {
-		return [...data].sort(({pinyin: a}, {pinyin: b}) => pinyinSort(a, b));
+		return copyArray(data).sort(({pinyin: a}, {pinyin: b}) => pinyinSort(a, b));
 	}
 }

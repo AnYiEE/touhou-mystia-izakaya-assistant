@@ -45,7 +45,7 @@ import {beverageTableColumns as tableColumns} from './constants';
 import type {TBeverageWithSuitability, TBeveragesWithSuitability} from './types';
 import {CUSTOMER_NORMAL_TAG_STYLE, LABEL_DLC_0} from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
-import {checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utilities';
+import {checkArraySubsetOf, copyArray, numberSort, pinyinSort, processPinyin, toArray, toSet} from '@/utilities';
 
 export type {TTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
 
@@ -119,7 +119,7 @@ export default function BeverageTabContent() {
 			const isDlcMatched = selectedDlcs.size > 0 ? selectedDlcs.has(dlc.toString()) : true;
 			const isTagsMatched =
 				selectedCustomerBeverageTags.size > 0
-					? checkArraySubsetOf([...selectedCustomerBeverageTags], tags)
+					? checkArraySubsetOf(toArray(selectedCustomerBeverageTags), tags)
 					: true;
 
 			return isNameMatched && isDlcMatched && isTagsMatched;
@@ -140,15 +140,15 @@ export default function BeverageTabContent() {
 
 		switch (column) {
 			case 'beverage':
-				return [...filteredData].sort(({name: a}, {name: b}) =>
+				return copyArray(filteredData).sort(({name: a}, {name: b}) =>
 					isAscending ? pinyinSort(a, b) : pinyinSort(b, a)
 				);
 			case 'price':
-				return [...filteredData].sort(({price: a}, {price: b}) =>
+				return copyArray(filteredData).sort(({price: a}, {price: b}) =>
 					isAscending ? numberSort(a, b) : numberSort(b, a)
 				);
 			case 'suitability':
-				return [...filteredData].sort(({suitability: a}, {suitability: b}) =>
+				return copyArray(filteredData).sort(({suitability: a}, {suitability: b}) =>
 					isAscending ? numberSort(a, b) : numberSort(b, a)
 				);
 			default:
@@ -170,7 +170,7 @@ export default function BeverageTabContent() {
 
 	const tableTotalPages = Math.ceil(filteredData.length / tableRowsPerPageNumber);
 
-	const tableSelectedKeys = new Set([currentBeverageName ?? '']);
+	const tableSelectedKeys = toSet([currentBeverageName ?? '']);
 
 	const renderTableCell = useCallback(
 		(data: TBeverageWithSuitability, columnKey: TTableColumnKey) => {

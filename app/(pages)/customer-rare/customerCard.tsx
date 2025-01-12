@@ -33,7 +33,7 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {pinyinSort} from '@/utilities';
+import {copyArray, pinyinSort} from '@/utilities';
 
 export default function CustomerCard() {
 	const vibrate = useVibrate();
@@ -216,13 +216,13 @@ export default function CustomerCard() {
 
 	const dlcLabel = currentCustomerDlc === 0 ? LABEL_DLC_0 : '';
 
-	const clonedCurrentCustomerPlaces = [...currentCustomerPlaces];
-	const currentCustomerMainPlace = clonedCurrentCustomerPlaces.shift();
+	const copiedCurrentCustomerPlaces = copyArray(currentCustomerPlaces);
+	const currentCustomerMainPlace = copiedCurrentCustomerPlaces.shift();
 
-	const hasOtherPlaces = clonedCurrentCustomerPlaces.length > 0;
+	const hasOtherPlaces = copiedCurrentCustomerPlaces.length > 0;
 
 	const placeContent = hasOtherPlaces
-		? `其他出没地区：${clonedCurrentCustomerPlaces.join('、')}`
+		? `其他出没地区：${copiedCurrentCustomerPlaces.join('、')}`
 		: '暂未收录其他出没地区';
 
 	return (
@@ -336,65 +336,69 @@ export default function CustomerCard() {
 				<div className="flex w-full flex-col justify-evenly gap-3 whitespace-nowrap">
 					{currentCustomerPositiveTags.length > 0 && (
 						<TagGroup>
-							{[...currentCustomerPositiveTags].sort(pinyinSort).map((tag, index) => (
-								<Tooltip
-									key={index}
-									showArrow
-									content={getTagTooltip('recipeTag', tag)}
-									closeDelay={0}
-									delay={500}
-									isDisabled={!isShowTagsTooltip}
-									size="sm"
-								>
-									<Tags.Tag
-										isButton
-										tag={
-											isShowTagDescription && tag in currentCustomerPositiveTagMapping
-												? [
-														tag,
-														currentCustomerPositiveTagMapping[
-															tag as keyof typeof currentCustomerPositiveTagMapping
-														],
-													]
-												: tag
-										}
-										tagStyle={CUSTOMER_RARE_TAG_STYLE.positive}
-										tagType="positive"
-										onPress={() => {
-											handleRecipeTagClick(tag);
-										}}
-										aria-label={`${tag}${currentCustomerOrder.recipeTag === tag ? '/已选定' : ''}${currentRecipeTagsWithTrend.includes(tag) ? '/已满足' : ''}`}
-										className={cn(
-											'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
-											{
-												'cursor-not-allowed':
-													hasMystiaCooker && !isDarkMatter && !isOrderLinkedFilter,
-												'font-normal opacity-50':
-													isDarkMatter || !currentRecipeTagsWithTrend.includes(tag),
-												'ring-2 ring-current':
-													currentCustomerOrder.recipeTag === tag &&
-													((hasMystiaCooker && isDarkMatter) || !hasMystiaCooker),
+							{copyArray(currentCustomerPositiveTags)
+								.sort(pinyinSort)
+								.map((tag, index) => (
+									<Tooltip
+										key={index}
+										showArrow
+										content={getTagTooltip('recipeTag', tag)}
+										closeDelay={0}
+										delay={500}
+										isDisabled={!isShowTagsTooltip}
+										size="sm"
+									>
+										<Tags.Tag
+											isButton
+											tag={
+												isShowTagDescription && tag in currentCustomerPositiveTagMapping
+													? [
+															tag,
+															currentCustomerPositiveTagMapping[
+																tag as keyof typeof currentCustomerPositiveTagMapping
+															],
+														]
+													: tag
 											}
-										)}
-									/>
-								</Tooltip>
-							))}
+											tagStyle={CUSTOMER_RARE_TAG_STYLE.positive}
+											tagType="positive"
+											onPress={() => {
+												handleRecipeTagClick(tag);
+											}}
+											aria-label={`${tag}${currentCustomerOrder.recipeTag === tag ? '/已选定' : ''}${currentRecipeTagsWithTrend.includes(tag) ? '/已满足' : ''}`}
+											className={cn(
+												'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
+												{
+													'cursor-not-allowed':
+														hasMystiaCooker && !isDarkMatter && !isOrderLinkedFilter,
+													'font-normal opacity-50':
+														isDarkMatter || !currentRecipeTagsWithTrend.includes(tag),
+													'ring-2 ring-current':
+														currentCustomerOrder.recipeTag === tag &&
+														((hasMystiaCooker && isDarkMatter) || !hasMystiaCooker),
+												}
+											)}
+										/>
+									</Tooltip>
+								))}
 						</TagGroup>
 					)}
 					{currentCustomerNegativeTags.length > 0 && (
 						<TagGroup>
-							{[...currentCustomerNegativeTags].sort(pinyinSort).map((tag, index) => (
-								<Tags.Tag
-									key={index}
-									tag={tag}
-									tagStyle={CUSTOMER_RARE_TAG_STYLE.negative}
-									tagType="negative"
-									className={cn('cursor-not-allowed p-1 font-semibold leading-none', {
-										'font-normal opacity-50':
-											isDarkMatter || !currentRecipeTagsWithTrend.includes(tag),
-									})}
-								/>
-							))}
+							{copyArray(currentCustomerNegativeTags)
+								.sort(pinyinSort)
+								.map((tag, index) => (
+									<Tags.Tag
+										key={index}
+										tag={tag}
+										tagStyle={CUSTOMER_RARE_TAG_STYLE.negative}
+										tagType="negative"
+										className={cn('cursor-not-allowed p-1 font-semibold leading-none', {
+											'font-normal opacity-50':
+												isDarkMatter || !currentRecipeTagsWithTrend.includes(tag),
+										})}
+									/>
+								))}
 						</TagGroup>
 					)}
 					{currentCustomerBeverageTags.length > 0 && (

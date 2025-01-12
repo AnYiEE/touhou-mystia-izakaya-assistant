@@ -32,7 +32,7 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
-import {pinyinSort} from '@/utilities';
+import {copyArray, pinyinSort} from '@/utilities';
 
 export default function CustomerCard() {
 	const vibrate = useVibrate();
@@ -162,13 +162,13 @@ export default function CustomerCard() {
 
 	const dlcLabel = currentCustomerDlc === 0 ? LABEL_DLC_0 : '';
 
-	const clonedCurrentCustomerPlaces = [...currentCustomerPlaces];
-	const currentCustomerMainPlace = clonedCurrentCustomerPlaces.shift();
+	const copiedCurrentCustomerPlaces = copyArray(currentCustomerPlaces);
+	const currentCustomerMainPlace = copiedCurrentCustomerPlaces.shift();
 
-	const hasOtherPlaces = clonedCurrentCustomerPlaces.length > 0;
+	const hasOtherPlaces = copiedCurrentCustomerPlaces.length > 0;
 
 	const placeContent = hasOtherPlaces
-		? `其他出没地区：${clonedCurrentCustomerPlaces.join('、')}`
+		? `其他出没地区：${copiedCurrentCustomerPlaces.join('、')}`
 		: '暂未收录其他出没地区';
 
 	return (
@@ -307,49 +307,53 @@ export default function CustomerCard() {
 				<div className="flex w-full flex-col justify-evenly gap-3 whitespace-nowrap">
 					{currentCustomerPositiveTags.length > 0 && (
 						<TagGroup>
-							{[...currentCustomerPositiveTags].sort(pinyinSort).map((tag, index) => (
-								<Tooltip
-									key={index}
-									showArrow
-									content={getTagTooltip('recipeTag', selectedCustomerPositiveTags, tag)}
-									closeDelay={0}
-									delay={500}
-									isDisabled={!isShowTagsTooltip}
-									size="sm"
-								>
-									<Tags.Tag
-										isButton
-										tag={tag}
-										tagStyle={CUSTOMER_NORMAL_TAG_STYLE.positive}
-										tagType="positive"
-										onPress={() => {
-											handleRecipeTagClick(tag);
-										}}
-										aria-label={`${tag}${currentRecipeTagsWithTrend.includes(tag) ? '/已满足' : ''}`}
-										className={cn(
-											'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
-											{
-												'font-normal opacity-50': !currentRecipeTagsWithTrend.includes(tag),
-											}
-										)}
-									/>
-								</Tooltip>
-							))}
+							{copyArray(currentCustomerPositiveTags)
+								.sort(pinyinSort)
+								.map((tag, index) => (
+									<Tooltip
+										key={index}
+										showArrow
+										content={getTagTooltip('recipeTag', selectedCustomerPositiveTags, tag)}
+										closeDelay={0}
+										delay={500}
+										isDisabled={!isShowTagsTooltip}
+										size="sm"
+									>
+										<Tags.Tag
+											isButton
+											tag={tag}
+											tagStyle={CUSTOMER_NORMAL_TAG_STYLE.positive}
+											tagType="positive"
+											onPress={() => {
+												handleRecipeTagClick(tag);
+											}}
+											aria-label={`${tag}${currentRecipeTagsWithTrend.includes(tag) ? '/已满足' : ''}`}
+											className={cn(
+												'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
+												{
+													'font-normal opacity-50': !currentRecipeTagsWithTrend.includes(tag),
+												}
+											)}
+										/>
+									</Tooltip>
+								))}
 						</TagGroup>
 					)}
 					{(currentCustomerNegativeTags as string[]).length > 0 && (
 						<TagGroup>
-							{[...currentCustomerNegativeTags].sort(pinyinSort).map((tag, index) => (
-								<Tags.Tag
-									key={index}
-									tag={tag}
-									tagStyle={CUSTOMER_NORMAL_TAG_STYLE.negative}
-									tagType="negative"
-									className={cn('cursor-not-allowed p-1 font-semibold leading-none', {
-										'font-normal opacity-50': !currentRecipeTagsWithTrend.includes(tag),
-									})}
-								/>
-							))}
+							{copyArray(currentCustomerNegativeTags)
+								.sort(pinyinSort)
+								.map((tag, index) => (
+									<Tags.Tag
+										key={index}
+										tag={tag}
+										tagStyle={CUSTOMER_NORMAL_TAG_STYLE.negative}
+										tagType="negative"
+										className={cn('cursor-not-allowed p-1 font-semibold leading-none', {
+											'font-normal opacity-50': !currentRecipeTagsWithTrend.includes(tag),
+										})}
+									/>
+								))}
 						</TagGroup>
 					)}
 					{currentCustomerBeverageTags.length > 0 && (

@@ -1,7 +1,7 @@
 import {type Metadata} from 'next';
 
 import {siteConfig} from '@/configs';
-import {getPageTitle} from '@/utilities';
+import {getPageTitle, toArray} from '@/utilities';
 import {Partner} from '@/utils';
 
 const {description, keywords} = siteConfig;
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 	title,
 
 	description: `本页面可以查询${partners.join('、')}等${title}的详情。${description}`,
-	keywords: [...keywords.slice(0, 18), ...partners],
+	keywords: toArray(keywords.slice(0, 18), partners),
 };
 
 export {WithPreference as default} from '@/(pages)/layouts';

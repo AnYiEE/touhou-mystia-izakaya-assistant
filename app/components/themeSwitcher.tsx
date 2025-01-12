@@ -21,7 +21,7 @@ import {
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 
 import {globalStore as store} from '@/stores';
-import {toGetValueCollection} from '@/utilities';
+import {toGetValueCollection, toSet} from '@/utilities';
 
 const THEME_LABEL_MAP = {
 	dark: '深色主题',
@@ -38,7 +38,7 @@ interface IProps extends Pick<IDropdownProps, 'className'> {
 export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 	const isMounted = useMounted();
 	const [theme, setTheme] = useTheme();
-	const [selectedTheme, setSelectedTheme] = useState(new Set([theme]) as SelectionSet);
+	const [selectedTheme, setSelectedTheme] = useState(toSet([theme]) as SelectionSet);
 	const vibrate = useVibrate();
 
 	const isHighAppearance = store.persistence.highAppearance.use();
@@ -56,7 +56,7 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 
 	useEffect(() => {
 		if (!selectedTheme.has(theme)) {
-			setSelectedTheme(new Set([theme]));
+			setSelectedTheme(toSet([theme]));
 		}
 	}, [selectedTheme, theme]);
 

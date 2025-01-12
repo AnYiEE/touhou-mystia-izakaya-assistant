@@ -1,4 +1,5 @@
-export * from './checkArray';
+export * from './check';
+export * from './covert';
 export * from './generateRange';
 export * from './intersection';
 export * from './removeLastElement';

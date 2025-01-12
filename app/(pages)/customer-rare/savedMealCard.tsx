@@ -17,6 +17,7 @@ import Tags from '@/components/tags';
 
 import {BEVERAGE_TAG_STYLE, CUSTOMER_RATING_MAP, DARK_MATTER_NAME, RECIPE_TAG_STYLE} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
+import {copyArray} from '@/utilities';
 
 enum MoveButtonDirection {
 	Down,
@@ -89,7 +90,7 @@ export default function SavedMealCard() {
 	const moveMeal = (mealIndex: number, direction: IMoveButtonProps['direction']) => {
 		vibrate();
 
-		const newSavedCustomerMeal = [...savedCustomerMeal];
+		const newSavedCustomerMeal = copyArray(savedCustomerMeal);
 		const currentIndex = newSavedCustomerMeal.findIndex(({index}) => index === mealIndex);
 		type Meal = (typeof newSavedCustomerMeal)[number];
 

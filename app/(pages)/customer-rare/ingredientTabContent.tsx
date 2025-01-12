@@ -23,7 +23,7 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import {customerRareStore as store} from '@/stores';
-import {checkA11yConfirmKey, intersection, toGetItemWithKey, union} from '@/utilities';
+import {checkA11yConfirmKey, intersection, toGetItemWithKey, toSet, union} from '@/utilities';
 import {type Ingredient, type Recipe} from '@/utils';
 import type {TItemData, TItemDataItem} from '@/utils/types';
 
@@ -53,7 +53,7 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 
 	const darkIngredients = useMemo(
 		() =>
-			new Set(
+			toSet(
 				sortedData
 					.filter(({tags}) => intersection(tags, currentRecipe?.negativeTags ?? []).length > 0)
 					.map(toGetItemWithKey('name'))

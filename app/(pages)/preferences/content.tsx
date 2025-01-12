@@ -15,6 +15,7 @@ import Sprite from '@/components/sprite';
 
 import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
+import {toSet} from '@/utilities';
 
 interface IProps extends IDataManagerProps {}
 
@@ -66,7 +67,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 	const onClearPopularTrendButtonPress = useCallback(() => {
 		vibrate();
 		globalStore.persistence.popularTrend.isNegative.set(false);
-		globalStore.selectedPopularTag.set(new Set());
+		globalStore.selectedPopularTag.set(toSet());
 		resetRecipeTablePage();
 	}, [resetRecipeTablePage, vibrate]);
 

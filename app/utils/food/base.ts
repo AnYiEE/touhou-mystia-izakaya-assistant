@@ -2,7 +2,7 @@ import type {IFood} from './types';
 import {Item} from '@/utils/item/base';
 
 import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE, TAG_SIGNATURE, type TTag} from '@/data';
-import {intersection} from '@/utilities';
+import {intersection, toArray, toSet} from '@/utilities';
 import type {IPopularTrend} from '@/types';
 
 export class Food<TTarget extends IFood[]> extends Item<TTarget> {
@@ -10,7 +10,7 @@ export class Food<TTarget extends IFood[]> extends Item<TTarget> {
 	 * @description Calculate the tags based on the original tags, the popular trend data and the famous shop state.
 	 */
 	protected calculateTagsWithTrend(tags: ReadonlyArray<TTag>, popularTrend: IPopularTrend, isFamousShop: boolean) {
-		const tagsWithTrend = new Set(tags);
+		const tagsWithTrend = toSet(tags);
 		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popularTrend;
 
 		if (isFamousShop && tags.includes(TAG_SIGNATURE)) {
@@ -21,7 +21,7 @@ export class Food<TTarget extends IFood[]> extends Item<TTarget> {
 			tagsWithTrend.add(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
 		}
 
-		return [...tagsWithTrend];
+		return toArray(tagsWithTrend);
 	}
 
 	/**

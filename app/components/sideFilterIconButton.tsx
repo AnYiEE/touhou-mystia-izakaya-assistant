@@ -14,7 +14,7 @@ import Sprite from '@/components/sprite';
 
 import {LABEL_DLC_0} from '@/data';
 import {globalStore as store} from '@/stores';
-import {pinyinSort} from '@/utilities';
+import {pinyinSort, toArray} from '@/utilities';
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
 interface ISelectConfigItem extends Pick<SelectProps, 'label' | 'selectionMode'> {
@@ -41,7 +41,7 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 
 	const handleSelectionChange = useCallback(
 		(setSelectedKeys: ISelectConfigItem['setSelectedKeys']) => (key: Selection) => {
-			setSelectedKeys([...(key as Set<string>)].sort(pinyinSort));
+			setSelectedKeys(toArray(key as Set<string>).sort(pinyinSort));
 		},
 		[]
 	);

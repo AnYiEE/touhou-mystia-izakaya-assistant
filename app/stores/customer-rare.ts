@@ -33,8 +33,10 @@ import {
 	numberSort,
 	pinyinSort,
 	removeLastElement,
+	toArray,
 	toGetItemWithKey,
 	toGetValueCollection,
+	toSet,
 	union,
 } from '@/utilities';
 import {Beverage, Clothes, Cooker, CustomerRare, Ingredient, Ornament, Partner, Recipe} from '@/utils';
@@ -204,8 +206,8 @@ const state = {
 		customer: {
 			name: null as TCustomerRareName | null,
 
-			beverageTags: new Set() as SelectionSet,
-			positiveTags: new Set() as SelectionSet,
+			beverageTags: toSet() as SelectionSet,
+			positiveTags: toSet() as SelectionSet,
 
 			filterVisibility: true,
 
@@ -455,45 +457,49 @@ export const customerRareStore = store(state, {
 		customerNames: () => getNames(currentStore.persistence.customer.pinyinSortState.use()),
 
 		beverageTableColumns: {
-			read: () => new Set(currentStore.persistence.beverage.table.visibleColumns.use()) as SelectionSet,
+			read: () => toSet(currentStore.persistence.beverage.table.visibleColumns.use()) as SelectionSet,
 			write: (columns: Selection) => {
-				currentStore.persistence.beverage.table.visibleColumns.set([...columns] as never);
+				currentStore.persistence.beverage.table.visibleColumns.set(toArray(columns as SelectionSet) as never);
 			},
 		},
 		beverageTableDlcs: {
-			read: () => new Set(currentStore.persistence.beverage.table.dlcs.use()) as SelectionSet,
+			read: () => toSet(currentStore.persistence.beverage.table.dlcs.use()) as SelectionSet,
 			write: (dlcs: Selection) => {
-				currentStore.persistence.beverage.table.dlcs.set([...dlcs] as never);
+				currentStore.persistence.beverage.table.dlcs.set(toArray(dlcs as SelectionSet) as never);
 			},
 		},
 		beverageTableRows: {
-			read: () => new Set([currentStore.persistence.beverage.table.rows.use().toString()]) as SelectionSet,
+			read: () => toSet([currentStore.persistence.beverage.table.rows.use().toString()]) as SelectionSet,
 			write: (rows: Selection) => {
-				currentStore.persistence.beverage.table.rows.set(Number.parseInt([...rows][0] as string));
+				currentStore.persistence.beverage.table.rows.set(
+					Number.parseInt(toArray(rows as SelectionSet)[0] as string)
+				);
 			},
 		},
 		recipeTableColumns: {
-			read: () => new Set(currentStore.persistence.recipe.table.visibleColumns.use()) as SelectionSet,
+			read: () => toSet(currentStore.persistence.recipe.table.visibleColumns.use()) as SelectionSet,
 			write: (columns: Selection) => {
-				currentStore.persistence.recipe.table.visibleColumns.set([...columns] as never);
+				currentStore.persistence.recipe.table.visibleColumns.set(toArray(columns as SelectionSet) as never);
 			},
 		},
 		recipeTableCookers: {
-			read: () => new Set(currentStore.persistence.recipe.table.cookers.use()) as SelectionSet,
+			read: () => toSet(currentStore.persistence.recipe.table.cookers.use()) as SelectionSet,
 			write: (cookers: Selection) => {
-				currentStore.persistence.recipe.table.cookers.set([...cookers] as never);
+				currentStore.persistence.recipe.table.cookers.set(toArray(cookers as SelectionSet) as never);
 			},
 		},
 		recipeTableDlcs: {
-			read: () => new Set(currentStore.persistence.recipe.table.dlcs.use()) as SelectionSet,
+			read: () => toSet(currentStore.persistence.recipe.table.dlcs.use()) as SelectionSet,
 			write: (dlcs: Selection) => {
-				currentStore.persistence.recipe.table.dlcs.set([...dlcs] as never);
+				currentStore.persistence.recipe.table.dlcs.set(toArray(dlcs as SelectionSet) as never);
 			},
 		},
 		recipeTableRows: {
-			read: () => new Set([currentStore.persistence.recipe.table.rows.use().toString()]) as SelectionSet,
+			read: () => toSet([currentStore.persistence.recipe.table.rows.use().toString()]) as SelectionSet,
 			write: (rows: Selection) => {
-				currentStore.persistence.recipe.table.rows.set(Number.parseInt([...rows][0] as string));
+				currentStore.persistence.recipe.table.rows.set(
+					Number.parseInt(toArray(rows as SelectionSet)[0] as string)
+				);
 			},
 		},
 	}))
@@ -861,8 +867,8 @@ export const customerRareStore = store(state, {
 			currentStore.shared.ingredient.filterVisibility.set(false);
 		},
 		refreshCustomerSelectedItems() {
-			currentStore.shared.customer.beverageTags.set(new Set());
-			currentStore.shared.customer.positiveTags.set(new Set());
+			currentStore.shared.customer.beverageTags.set(toSet());
+			currentStore.shared.customer.positiveTags.set(toSet());
 			currentStore.shared.customer.hasMystiaCooker.set(false);
 			currentStore.shared.customer.isDarkMatter.set(null);
 			currentStore.shared.customer.order.set({

@@ -1,9 +1,11 @@
+import {checkEmptyArray, toSet} from '@/utilities';
+
 export function without<T>(array: ReadonlyArray<T>, ...values: T[]) {
-	if (array.length === 0) {
+	if (checkEmptyArray(array)) {
 		return [];
 	}
 
-	const valuesSet = new Set(values);
+	const valuesSet = toSet(values);
 
 	return array.filter((value) => !valuesSet.has(value));
 }

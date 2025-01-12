@@ -6,7 +6,7 @@ import {type Selection} from '@nextui-org/react';
 import type {IPersistenceState} from './types';
 import {customerNormalStore, customerRareStore, ingredientsStore, recipesStore} from '@/stores';
 import type {IPopularTrend, TPopularTag} from '@/types';
-import {pinyinSort, toGetValueCollection, union} from '@/utilities';
+import {pinyinSort, toArray, toGetValueCollection, toSet, union} from '@/utilities';
 import {Ingredient, Recipe} from '@/utils';
 
 const instance_ingredient = Ingredient.getInstance();
@@ -117,9 +117,9 @@ export const globalStore = store(state, {
 	},
 }).computed((currentStore) => ({
 	selectedPopularTag: {
-		read: () => new Set([currentStore.persistence.popularTrend.tag.use()]) as SelectionSet,
+		read: () => toSet([currentStore.persistence.popularTrend.tag.use()]) as SelectionSet,
 		write: (tags: Selection) => {
-			const tag = [...tags][0] as typeof state.persistence.popularTrend.tag;
+			const tag = toArray(tags as SelectionSet)[0] as typeof state.persistence.popularTrend.tag;
 			currentStore.persistence.popularTrend.tag.set(tag || null);
 		},
 	},

@@ -22,7 +22,7 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import {customerNormalStore as store} from '@/stores';
-import {checkA11yConfirmKey, intersection, toGetItemWithKey, union} from '@/utilities';
+import {checkA11yConfirmKey, intersection, toArray, toGetItemWithKey, toSet, union} from '@/utilities';
 import {type Recipe} from '@/utils';
 import type {TItemDataItem} from '@/utils/types';
 
@@ -45,7 +45,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 
 	const darkIngredients = useMemo(
 		() =>
-			new Set(
+			toSet(
 				sortedData
 					.filter(({tags}) => intersection(tags, currentRecipe?.negativeTags ?? []).length > 0)
 					.map(toGetItemWithKey('name'))
@@ -261,7 +261,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 							<div className="h-px w-full bg-foreground-300"></div>
 						</div>
 						<div className="m-2 grid grid-cols-fill-12 justify-around gap-4">
-							{[...darkIngredients].map((name, index) => (
+							{toArray(darkIngredients).map((name, index) => (
 								<div key={index} className="flex cursor-not-allowed flex-col items-center">
 									<Sprite target="ingredient" name={name} size={3} />
 									<span className="whitespace-nowrap text-center text-tiny">{name}</span>

@@ -13,6 +13,7 @@ import Sprite from '@/components/sprite';
 
 import {CUSTOMER_RATING_MAP} from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
+import {copyArray} from '@/utilities';
 
 export default function SavedMealCard() {
 	const openWindow = useViewInNewWindow();
@@ -40,7 +41,7 @@ export default function SavedMealCard() {
 	const moveMeal = (mealIndex: number, direction: IMoveButtonProps['direction']) => {
 		vibrate();
 
-		const newSavedCustomerMeal = [...savedCustomerMeal];
+		const newSavedCustomerMeal = copyArray(savedCustomerMeal);
 		const currentIndex = newSavedCustomerMeal.findIndex(({index}) => index === mealIndex);
 		type Meal = (typeof newSavedCustomerMeal)[number];
 

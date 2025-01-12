@@ -1,9 +1,11 @@
+import {checkEmptyArray, toSet} from '@/utilities';
+
 export function intersection<T>(arrayA: ReadonlyArray<T>, arrayB: ReadonlyArray<T>) {
-	if (arrayA.length === 0 || arrayB.length === 0) {
+	if (checkEmptyArray(arrayA) || checkEmptyArray(arrayB)) {
 		return [];
 	}
 
-	const arrayBSet = new Set(arrayB);
+	const arrayBSet = toSet(arrayB);
 
 	return arrayA.filter((value) => arrayBSet.has(value));
 }

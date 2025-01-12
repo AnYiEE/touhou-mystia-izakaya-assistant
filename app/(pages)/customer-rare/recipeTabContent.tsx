@@ -46,7 +46,7 @@ import {checkRecipeEasterEgg} from './evaluateMeal';
 import type {ITableColumn, ITableSortDescriptor, TRecipeWithSuitability, TRecipesWithSuitability} from './types';
 import {CUSTOMER_RARE_TAG_STYLE, LABEL_DLC_0} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {checkArraySubsetOf, numberSort, pinyinSort, processPinyin} from '@/utilities';
+import {checkArraySubsetOf, copyArray, numberSort, pinyinSort, processPinyin, toArray, toSet} from '@/utilities';
 
 export type TTableColumnKey = 'recipe' | 'cooker' | 'ingredient' | 'price' | 'suitability' | 'time' | 'action';
 export type TTableColumns = ITableColumn<TTableColumnKey>[];
@@ -182,7 +182,7 @@ export default function RecipeTabContent() {
 			const isCookerMatched = selectedCookers.size > 0 ? selectedCookers.has(cooker) : true;
 			const isPositiveTagsMatched =
 				selectedCustomerPositiveTags.size > 0
-					? checkArraySubsetOf([...selectedCustomerPositiveTags], recipeTagsWithTrend)
+					? checkArraySubsetOf(toArray(selectedCustomerPositiveTags), recipeTagsWithTrend)
 					: true;
 
 			return isNameMatched && isDlcMatched && isCookerMatched && isPositiveTagsMatched;
@@ -207,19 +207,19 @@ export default function RecipeTabContent() {
 
 		switch (column) {
 			case 'recipe':
-				return [...filteredData].sort(({name: a}, {name: b}) =>
+				return copyArray(filteredData).sort(({name: a}, {name: b}) =>
 					isAscending ? pinyinSort(a, b) : pinyinSort(b, a)
 				);
 			case 'price':
-				return [...filteredData].sort(({price: a}, {price: b}) =>
+				return copyArray(filteredData).sort(({price: a}, {price: b}) =>
 					isAscending ? numberSort(a, b) : numberSort(b, a)
 				);
 			case 'suitability':
-				return [...filteredData].sort(({suitability: a}, {suitability: b}) =>
+				return copyArray(filteredData).sort(({suitability: a}, {suitability: b}) =>
 					isAscending ? numberSort(a, b) : numberSort(b, a)
 				);
 			case 'time':
-				return [...filteredData].sort(({min: a}, {min: b}) =>
+				return copyArray(filteredData).sort(({min: a}, {min: b}) =>
 					isAscending ? numberSort(a, b) : numberSort(b, a)
 				);
 			default:
@@ -241,7 +241,7 @@ export default function RecipeTabContent() {
 
 	const tableTotalPages = Math.ceil(filteredData.length / tableRowsPerPageNumber);
 
-	const tableSelectedKeys = new Set([currentRecipeData?.name ?? '']);
+	const tableSelectedKeys = toSet([currentRecipeData?.name ?? '']);
 
 	const renderTableCell = useCallback(
 		(recipeData: TRecipeWithSuitability, columnKey: TTableColumnKey) => {

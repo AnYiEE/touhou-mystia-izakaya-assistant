@@ -1,8 +1,10 @@
 import {type Observable, filter, first, fromEvent, merge, of} from 'rxjs';
 
+import {toSet} from '@/utilities';
+
 const READY_STATE: DocumentReadyState[] = ['complete', 'interactive'];
 
-const readyStateSet = new Set<DocumentReadyState>(READY_STATE);
+const readyStateSet = toSet(READY_STATE);
 
 function checkReadyState() {
 	return readyStateSet.has(document.readyState);

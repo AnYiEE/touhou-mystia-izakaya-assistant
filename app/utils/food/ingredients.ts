@@ -8,7 +8,7 @@ import {
 	type TLevel,
 } from '@/data';
 
-import {checkArrayEqualOf} from '@/utilities';
+import {checkArrayEqualOf, toSet} from '@/utilities';
 import type {IPopularTrend} from '@/types';
 
 export class Ingredient extends Food<TIngredients> {
@@ -29,9 +29,9 @@ export class Ingredient extends Food<TIngredients> {
 		return instance;
 	}
 
-	public blockedLevels: Set<TLevel> = new Set([10]);
-	public blockedIngredients: Set<TIngredientName> = new Set(['铃仙', '噗噗哟果', '强效辣椒素']);
-	public blockedTags: Set<TIngredientTag> = new Set(['特产', '天罚']);
+	public blockedLevels: Set<TLevel> = toSet([10]);
+	public blockedIngredients: Set<TIngredientName> = toSet(['铃仙', '噗噗哟果', '强效辣椒素']);
+	public blockedTags: Set<TIngredientTag> = toSet(['特产', '天罚']);
 
 	/**
 	 * @description Types sorted in the suggested order. Used for selecting ingredient types.
