@@ -41,9 +41,13 @@ export default function Introduction() {
 					如果{shortName}对您的游玩过程有所帮助，您可以考虑
 					<Tooltip
 						showArrow
-						content={<QRCode text={links.donate.href}>{links.donate.label.replace('链接', '码')}</QRCode>}
+						content={
+							<QRCode text={links.donate.href} className="w-24">
+								{links.donate.label.replace('链接', '码')}
+							</QRCode>
+						}
 						classNames={{
-							content: 'p-0 pb-1',
+							content: 'px-1',
 						}}
 					>
 						<Link

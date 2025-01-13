@@ -122,7 +122,7 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 				aria-label={THEME_LABEL_MAP.list}
 				className="w-28"
 				itemClasses={{
-					base: 'my-px transition-background data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40',
+					base: 'my-px transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40',
 				}}
 			>
 				{({value}) => <DropdownItem key={value}>{THEME_LABEL_MAP[value]}</DropdownItem>}

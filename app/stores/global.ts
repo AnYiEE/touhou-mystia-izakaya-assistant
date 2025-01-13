@@ -43,13 +43,13 @@ const state = {
 	persistence: {
 		customerCardTagsTooltip: true,
 
-		dirver: [] as string[],
 		famousShop: false,
 		popularTrend: {
 			isNegative: false,
 			tag: null,
 		} as IPopularTrend,
 
+		dirver: [] as string[],
 		highAppearance: true,
 		tachie: true,
 		vibrate: true,

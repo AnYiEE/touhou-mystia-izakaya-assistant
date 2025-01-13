@@ -220,7 +220,7 @@ export default function Navbar() {
 											items={dropdownItems}
 											aria-label={`${dropdownLabel}列表`}
 											itemClasses={{
-												base: 'my-px p-0 transition-background focus:bg-default/40 data-[hover=true]:bg-default/40',
+												base: 'my-px p-0 transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40',
 											}}
 										>
 											{({href, label, sprite, spriteIndex}) => (
