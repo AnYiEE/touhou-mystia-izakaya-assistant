@@ -65,6 +65,7 @@ const FooterLinkWithTooltip = memo<PropsWithChildren<IFooterLinkWithTooltipProps
 		<Tooltip
 			content={props.content}
 			isDisabled={!props.content}
+			offset={2}
 			size="sm"
 			motionProps={getMotionProps('tooltip')}
 			classNames={{

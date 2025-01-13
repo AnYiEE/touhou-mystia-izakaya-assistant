@@ -46,6 +46,7 @@ export default function Introduction() {
 								{links.donate.label.replace('链接', '码')}
 							</QRCode>
 						}
+						offset={2}
 						classNames={{
 							content: 'px-1',
 						}}
