@@ -47,7 +47,7 @@ export default function BeverageTabContent() {
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
-	const selectedCustomerBeverageTags = customerStore.shared.customer.beverageTags.use();
+	const selectedCustomerBeverageTag = customerStore.shared.customer.select.beverageTag.use();
 
 	const currentBeverageName = customerStore.shared.beverage.name.use();
 	const selectedDlcs = customerStore.beverageTableDlcs.use();
@@ -92,7 +92,7 @@ export default function BeverageTabContent() {
 			};
 		});
 
-		if (selectedCustomerBeverageTags.size === 0 && selectedDlcs.size === 0 && !hasNameFilter) {
+		if (selectedCustomerBeverageTag.size === 0 && selectedDlcs.size === 0 && !hasNameFilter) {
 			return dataWithRealSuitability;
 		}
 
@@ -108,8 +108,8 @@ export default function BeverageTabContent() {
 				: true;
 			const isDlcMatched = selectedDlcs.size > 0 ? selectedDlcs.has(dlc.toString()) : true;
 			const isTagsMatched =
-				selectedCustomerBeverageTags.size > 0
-					? checkArraySubsetOf(toArray(selectedCustomerBeverageTags), tags)
+				selectedCustomerBeverageTag.size > 0
+					? checkArraySubsetOf(toArray(selectedCustomerBeverageTag), tags)
 					: true;
 
 			return isNameMatched && isDlcMatched && isTagsMatched;
@@ -120,7 +120,7 @@ export default function BeverageTabContent() {
 		instance_beverage,
 		instance_customer,
 		searchValue,
-		selectedCustomerBeverageTags,
+		selectedCustomerBeverageTag,
 		selectedDlcs,
 	]);
 
@@ -327,7 +327,7 @@ export default function BeverageTabContent() {
 							isVirtualized={false}
 							items={allBeverageTags}
 							placeholder="标签"
-							selectedKeys={selectedCustomerBeverageTags}
+							selectedKeys={selectedCustomerBeverageTag}
 							size="sm"
 							startContent={<FontAwesomeIcon icon={faTags} />}
 							variant="flat"
@@ -480,7 +480,7 @@ export default function BeverageTabContent() {
 			isHighAppearance,
 			popoverMotionProps,
 			searchValue,
-			selectedCustomerBeverageTags,
+			selectedCustomerBeverageTag,
 			selectedDlcs,
 			tableRowsPerPage,
 			tableSelectableRows,

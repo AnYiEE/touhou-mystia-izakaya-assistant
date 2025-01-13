@@ -40,30 +40,27 @@ export default function CustomerCard() {
 	const vibrate = useVibrate();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
-	const selectedCustomerBeverageTags = customerStore.shared.customer.beverageTags.use();
-	const selectedCustomerPositiveTags = customerStore.shared.customer.positiveTags.use();
-	const currentCustomerPopularTrend = customerStore.shared.customer.popularTrend.use();
+	const selectedCustomerBeverageTag = customerStore.shared.customer.select.beverageTag.use();
+	const selectedCustomerRecipeTag = customerStore.shared.customer.select.recipeTag.use();
 	const currentRating = customerStore.shared.customer.rating.use();
-	const isFamousShop = customerStore.shared.customer.famousShop.use();
 
 	const currentBeverageName = customerStore.shared.beverage.name.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
+	const currentRecipeTagsWithTrend = customerStore.shared.recipe.tagsWithTrend.use();
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 	const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
 
 	const instance_beverage = customerStore.instances.beverage.get();
 	const instance_customer = customerStore.instances.customer.get();
-	const instance_ingredient = customerStore.instances.ingredient.get();
-	const instance_recipe = customerStore.instances.recipe.get();
 
 	const hasRating = currentRating !== null;
 
 	const hasSelected =
 		currentBeverageName !== null ||
 		currentRecipeData !== null ||
-		selectedCustomerBeverageTags.size > 0 ||
-		selectedCustomerPositiveTags.size > 0;
+		selectedCustomerBeverageTag.size > 0 ||
+		selectedCustomerRecipeTag.size > 0;
 
 	const handleBeverageTagClick = useCallback(
 		(tag: TBeverageTag) => {
@@ -104,39 +101,6 @@ export default function CustomerCard() {
 
 		return _beverageTags;
 	}, [currentBeverageName, instance_beverage]);
-
-	const currentRecipeTagsWithTrend = useMemo(() => {
-		const _currentRecipeTagsWithTrend: TRecipeTag[] = [];
-
-		if (currentRecipeData !== null) {
-			const {extraIngredients, name: currentRecipeName} = currentRecipeData;
-
-			const recipe = instance_recipe.getPropsByName(currentRecipeName);
-			const {ingredients: originalIngredients, positiveTags: originalTags} = recipe;
-
-			const extraTags = extraIngredients.flatMap((extraIngredient) =>
-				instance_ingredient.getPropsByName(extraIngredient, 'tags')
-			);
-
-			const composedRecipeTags = instance_recipe.composeTagsWithPopularTrend(
-				originalIngredients,
-				extraIngredients,
-				originalTags,
-				extraTags,
-				currentCustomerPopularTrend
-			);
-
-			_currentRecipeTagsWithTrend.push(
-				...instance_recipe.calculateTagsWithTrend(composedRecipeTags, currentCustomerPopularTrend, isFamousShop)
-			);
-
-			setTimeout(() => {
-				customerStore.shared.recipe.tagsWithTrend.set(_currentRecipeTagsWithTrend);
-			}, 0);
-		}
-
-		return _currentRecipeTagsWithTrend;
-	}, [currentCustomerPopularTrend, currentRecipeData, instance_ingredient, instance_recipe, isFamousShop]);
 
 	const avatarRatingContent = currentRating === null ? '请选择点单料理以评级' : CUSTOMER_RATING_MAP[currentRating];
 
@@ -315,7 +279,7 @@ export default function CustomerCard() {
 									<Tooltip
 										key={index}
 										showArrow
-										content={getTagTooltip('recipeTag', selectedCustomerPositiveTags, tag)}
+										content={getTagTooltip('recipeTag', selectedCustomerRecipeTag, tag)}
 										closeDelay={0}
 										delay={500}
 										isDisabled={!isShowTagsTooltip}
@@ -364,7 +328,7 @@ export default function CustomerCard() {
 								<Tooltip
 									key={index}
 									showArrow
-									content={getTagTooltip('beverageTag', selectedCustomerBeverageTags, tag)}
+									content={getTagTooltip('beverageTag', selectedCustomerBeverageTag, tag)}
 									closeDelay={0}
 									delay={500}
 									isDisabled={!isShowTagsTooltip}

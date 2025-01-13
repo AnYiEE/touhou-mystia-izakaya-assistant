@@ -104,7 +104,7 @@ const state = {
 			.getValuesByProp('name', true)
 			.filter(({value}) => !instance_recipe.blockedRecipes.has(value))
 			.sort(pinyinSort),
-		positiveTags: (
+		tags: (
 			[
 				...instance_recipe
 					.getValuesByProp('positiveTags')
@@ -178,8 +178,10 @@ const state = {
 		customer: {
 			name: null as TCustomerNormalName | null,
 
-			beverageTags: toSet() as SelectionSet,
-			positiveTags: toSet() as SelectionSet,
+			select: {
+				beverageTag: toSet() as SelectionSet,
+				recipeTag: toSet() as SelectionSet,
+			},
 
 			filterVisibility: true,
 
@@ -188,6 +190,7 @@ const state = {
 				isNegative: false,
 				tag: null,
 			} as IPopularTrend,
+
 			rating: null as TRatingKey | null,
 		},
 		ingredient: {
@@ -425,7 +428,7 @@ export const customerNormalStore = store(state, {
 			currentStore.shared.beverage.page.set(1);
 			currentStore.shared.customer.filterVisibility.set(false);
 			currentStore.shared.ingredient.filterVisibility.set(false);
-			currentStore.shared.customer.beverageTags.set((prev) => {
+			currentStore.shared.customer.select.beverageTag.set((prev) => {
 				keepLastTag(prev, tag);
 			});
 		},
@@ -434,7 +437,7 @@ export const customerNormalStore = store(state, {
 			currentStore.shared.recipe.page.set(1);
 			currentStore.shared.customer.filterVisibility.set(false);
 			currentStore.shared.ingredient.filterVisibility.set(false);
-			currentStore.shared.customer.positiveTags.set((prev) => {
+			currentStore.shared.customer.select.recipeTag.set((prev) => {
 				keepLastTag(prev, tag);
 			});
 		},
@@ -463,7 +466,7 @@ export const customerNormalStore = store(state, {
 			currentStore.shared.beverage.page.set(1);
 		},
 		onBeverageTableSelectedTagsChange(tags: Selection) {
-			currentStore.shared.customer.beverageTags.set(tags as SelectionSet);
+			currentStore.shared.customer.select.beverageTag.set(tags as SelectionSet);
 			currentStore.shared.beverage.page.set(1);
 		},
 		onBeverageTableSortChange(config: TBeverageTableSortDescriptor) {
@@ -547,7 +550,7 @@ export const customerNormalStore = store(state, {
 			currentStore.shared.recipe.page.set(1);
 		},
 		onRecipeTableSelectedPositiveTagsChange(tags: Selection) {
-			currentStore.shared.customer.positiveTags.set(tags as SelectionSet);
+			currentStore.shared.customer.select.recipeTag.set(tags as SelectionSet);
 			currentStore.shared.recipe.page.set(1);
 		},
 		onRecipeTableSortChange(config: TRecipeTableSortDescriptor) {
@@ -600,10 +603,10 @@ export const customerNormalStore = store(state, {
 			}
 			const customerPositiveTags = instance_customer.getPropsByName(customerName, 'positiveTags');
 			const customerPopularTrend = currentStore.shared.customer.popularTrend.get();
-			let extraIngredients: TIngredientName[] = [];
+			const extraIngredients: TIngredientName[] = [];
 			const recipeData = currentStore.shared.recipe.data.get();
 			if (recipeData !== null) {
-				extraIngredients = recipeData.extraIngredients;
+				extraIngredients.push(...recipeData.extraIngredients);
 			}
 			const extraTags: TPopularTag[] = [];
 			extraIngredients.forEach((ingredient) => {
@@ -669,7 +672,11 @@ export const customerNormalStore = store(state, {
 				return;
 			}
 			const {extraIngredients, name: recipeName} = recipeData;
-			const saveObject = {beverage: beverageName, extraIngredients, recipe: recipeName} as const;
+			const saveObject = {
+				beverage: beverageName,
+				extraIngredients,
+				recipe: recipeName,
+			} as const;
 			currentStore.persistence.meals.set((prev) => {
 				if (customerName in prev) {
 					const indexes = prev[customerName]?.map(({index}) => index) ?? [];
@@ -695,11 +702,12 @@ export const customerNormalStore = store(state, {
 			currentStore.shared.ingredient.filterVisibility.set(false);
 		},
 		refreshCustomerSelectedItems() {
-			currentStore.shared.customer.beverageTags.set(toSet());
-			currentStore.shared.customer.positiveTags.set(toSet());
+			currentStore.shared.customer.select.set({
+				beverageTag: toSet(),
+				recipeTag: toSet(),
+			});
 			currentStore.shared.customer.rating.set(null);
 			currentStore.shared.recipe.data.set(null);
-			currentStore.shared.recipe.tagsWithTrend.set([]);
 			currentStore.shared.recipe.page.set(1);
 			currentStore.shared.beverage.name.set(null);
 			currentStore.shared.beverage.page.set(1);
@@ -718,6 +726,33 @@ export const customerNormalStore = store(state, {
 		toggleIngredientTabVisibilityState() {
 			currentStore.persistence.ingredient.tabVisibility.set(reverseVisibilityState);
 		},
+		updateRecipeTagsWithTrend() {
+			const recipeData = currentStore.shared.recipe.data.get();
+			if (recipeData === null) {
+				currentStore.shared.recipe.tagsWithTrend.set([]);
+			} else {
+				const {extraIngredients, name} = recipeData;
+				const {ingredients, positiveTags} = instance_recipe.getPropsByName(name);
+				const extraTags = extraIngredients.flatMap((extraIngredient) =>
+					instance_ingredient.getPropsByName(extraIngredient, 'tags')
+				);
+				const popularTrend = currentStore.shared.customer.popularTrend.get();
+				const isFamousShop = currentStore.shared.customer.famousShop.get();
+				const composedRecipeTags = instance_recipe.composeTagsWithPopularTrend(
+					ingredients,
+					extraIngredients,
+					positiveTags,
+					extraTags,
+					popularTrend
+				);
+				const recipeTagsWithTrend = instance_recipe.calculateTagsWithTrend(
+					composedRecipeTags,
+					popularTrend,
+					isFamousShop
+				);
+				currentStore.shared.recipe.tagsWithTrend.set(recipeTagsWithTrend);
+			}
+		},
 	}));
 
 customerNormalStore.shared.customer.name.onChange((name) => {
@@ -725,6 +760,16 @@ customerNormalStore.shared.customer.name.onChange((name) => {
 	customerNormalStore.refreshCustomerSelectedItems();
 });
 
-customerNormalStore.shared.customer.famousShop.onChange(customerNormalStore.evaluateMealResult);
-customerNormalStore.shared.customer.popularTrend.onChange(customerNormalStore.evaluateMealResult);
-customerNormalStore.shared.recipe.tagsWithTrend.onChange(customerNormalStore.evaluateMealResult);
+customerNormalStore.shared.customer.famousShop.onChange(() => {
+	customerNormalStore.updateRecipeTagsWithTrend();
+	customerNormalStore.evaluateMealResult();
+});
+customerNormalStore.shared.customer.popularTrend.onChange(() => {
+	customerNormalStore.updateRecipeTagsWithTrend();
+	customerNormalStore.evaluateMealResult();
+});
+
+customerNormalStore.shared.recipe.data.onChange(() => {
+	customerNormalStore.updateRecipeTagsWithTrend();
+	customerNormalStore.evaluateMealResult();
+});

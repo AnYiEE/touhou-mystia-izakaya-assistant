@@ -53,7 +53,7 @@ export default function RecipeTabContent() {
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
 	const currentCustomerPopularTrend = customerStore.shared.customer.popularTrend.use();
-	const selectedCustomerPositiveTags = customerStore.shared.customer.positiveTags.use();
+	const selectedCustomerRecipeTag = customerStore.shared.customer.select.recipeTag.use();
 	const isFamousShop = customerStore.shared.customer.famousShop.use();
 
 	const currentRecipeData = customerStore.shared.recipe.data.use();
@@ -65,7 +65,7 @@ export default function RecipeTabContent() {
 
 	const allRecipeDlcs = customerStore.recipe.dlcs.get();
 	const allRecipeNames = customerStore.recipe.names.get();
-	const allRecipeTags = customerStore.recipe.positiveTags.get();
+	const allRecipeTags = customerStore.recipe.tags.get();
 	const allCookers = customerStore.recipe.cookers.get();
 
 	const searchValue = customerStore.shared.recipe.searchValue.use();
@@ -150,7 +150,7 @@ export default function RecipeTabContent() {
 
 		if (
 			selectedCookers.size === 0 &&
-			selectedCustomerPositiveTags.size === 0 &&
+			selectedCustomerRecipeTag.size === 0 &&
 			selectedDlcs.size === 0 &&
 			!hasNameFilter
 		) {
@@ -171,8 +171,8 @@ export default function RecipeTabContent() {
 			const isDlcMatched = selectedDlcs.size > 0 ? selectedDlcs.has(dlc.toString()) : true;
 			const isCookerMatched = selectedCookers.size > 0 ? selectedCookers.has(cooker) : true;
 			const isPositiveTagsMatched =
-				selectedCustomerPositiveTags.size > 0
-					? checkArraySubsetOf(toArray(selectedCustomerPositiveTags), recipeTagsWithTrend)
+				selectedCustomerRecipeTag.size > 0
+					? checkArraySubsetOf(toArray(selectedCustomerRecipeTag), recipeTagsWithTrend)
 					: true;
 
 			return isNameMatched && isDlcMatched && isCookerMatched && isPositiveTagsMatched;
@@ -187,7 +187,7 @@ export default function RecipeTabContent() {
 		instance_recipe,
 		searchValue,
 		selectedCookers,
-		selectedCustomerPositiveTags,
+		selectedCustomerRecipeTag,
 		selectedDlcs,
 	]);
 
@@ -461,7 +461,7 @@ export default function RecipeTabContent() {
 							isVirtualized={false}
 							items={allRecipeTags}
 							placeholder="标签"
-							selectedKeys={selectedCustomerPositiveTags}
+							selectedKeys={selectedCustomerRecipeTag}
 							size="sm"
 							startContent={<FontAwesomeIcon icon={faTags} />}
 							variant="flat"
@@ -655,7 +655,7 @@ export default function RecipeTabContent() {
 			popoverMotionProps,
 			searchValue,
 			selectedCookers,
-			selectedCustomerPositiveTags,
+			selectedCustomerRecipeTag,
 			selectedDlcs,
 			tableRowsPerPage,
 			tableSelectableRows,

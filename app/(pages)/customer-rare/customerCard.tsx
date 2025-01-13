@@ -40,27 +40,24 @@ export default function CustomerCard() {
 	const vibrate = useVibrate();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
-	const selectedCustomerBeverageTags = customerStore.shared.customer.beverageTags.use();
-	const selectedCustomerPositiveTags = customerStore.shared.customer.positiveTags.use();
+	const selectedCustomerBeverageTag = customerStore.shared.customer.select.beverageTag.use();
+	const selectedCustomerRecipeTag = customerStore.shared.customer.select.recipeTag.use();
 	const currentCustomerOrder = customerStore.shared.customer.order.use();
-	const currentCustomerPopularTrend = customerStore.shared.customer.popularTrend.use();
 	const currentRating = customerStore.shared.customer.rating.use();
 	const hasMystiaCooker = customerStore.shared.customer.hasMystiaCooker.use();
 	const isDarkMatter = customerStore.shared.customer.isDarkMatter.use();
-	const isFamousShop = customerStore.shared.customer.famousShop.use();
 	const isOrderLinkedFilter = customerStore.persistence.customer.orderLinkedFilter.use();
 	const isShowTagDescription = customerStore.persistence.customer.showTagDescription.use();
 
 	const currentBeverageName = customerStore.shared.beverage.name.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
+	const currentRecipeTagsWithTrend = customerStore.shared.recipe.tagsWithTrend.use();
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 	const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
 
 	const instance_beverage = customerStore.instances.beverage.get();
 	const instance_customer = customerStore.instances.customer.get();
-	const instance_ingredient = customerStore.instances.ingredient.get();
-	const instance_recipe = customerStore.instances.recipe.get();
 
 	const hasRating = currentRating !== null;
 
@@ -69,8 +66,8 @@ export default function CustomerCard() {
 		currentCustomerOrder.recipeTag !== null ||
 		currentBeverageName !== null ||
 		currentRecipeData !== null ||
-		selectedCustomerBeverageTags.size > 0 ||
-		selectedCustomerPositiveTags.size > 0;
+		selectedCustomerBeverageTag.size > 0 ||
+		selectedCustomerRecipeTag.size > 0;
 
 	const handleBeverageTagClick = useCallback(
 		(tag: TBeverageTag) => {
@@ -117,39 +114,6 @@ export default function CustomerCard() {
 
 		return _beverageTags;
 	}, [currentBeverageName, instance_beverage]);
-
-	const currentRecipeTagsWithTrend = useMemo(() => {
-		const _currentRecipeTagsWithTrend: TRecipeTag[] = [];
-
-		if (currentRecipeData !== null) {
-			const {extraIngredients, name: currentRecipeName} = currentRecipeData;
-
-			const recipe = instance_recipe.getPropsByName(currentRecipeName);
-			const {ingredients: originalIngredients, positiveTags: originalTags} = recipe;
-
-			const extraTags = extraIngredients.flatMap((extraIngredient) =>
-				instance_ingredient.getPropsByName(extraIngredient, 'tags')
-			);
-
-			const composedRecipeTags = instance_recipe.composeTagsWithPopularTrend(
-				originalIngredients,
-				extraIngredients,
-				originalTags,
-				extraTags,
-				currentCustomerPopularTrend
-			);
-
-			_currentRecipeTagsWithTrend.push(
-				...instance_recipe.calculateTagsWithTrend(composedRecipeTags, currentCustomerPopularTrend, isFamousShop)
-			);
-
-			setTimeout(() => {
-				customerStore.shared.recipe.tagsWithTrend.set(_currentRecipeTagsWithTrend);
-			}, 0);
-		}
-
-		return _currentRecipeTagsWithTrend;
-	}, [currentCustomerPopularTrend, currentRecipeData, instance_ingredient, instance_recipe, isFamousShop]);
 
 	const avatarRatingContent = useMemo(() => {
 		if (hasRating) {

@@ -27,7 +27,7 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import {createNamesCache, keepLastTag, reverseDirection, reverseVisibilityState} from '@/stores/utils';
-import type {IPopularTrend} from '@/types';
+import type {IMealRecipe, IPopularTrend} from '@/types';
 import {
 	generateRange,
 	numberSort,
@@ -44,11 +44,6 @@ import {Beverage, Clothes, Cooker, CustomerRare, Ingredient, Ornament, Partner, 
 export interface ICustomerOrder {
 	beverageTag: TBeverageTag | null;
 	recipeTag: TRecipeTag | null;
-}
-
-export interface IRecipeData {
-	name: TRecipeName;
-	extraIngredients: TIngredientName[];
 }
 
 const instance_beverage = Beverage.getInstance();
@@ -127,7 +122,7 @@ const state = {
 			.getValuesByProp('name', true)
 			.filter(({value}) => !instance_recipe.blockedRecipes.has(value))
 			.sort(pinyinSort),
-		positiveTags: (
+		tags: (
 			[
 				...instance_recipe
 					.getValuesByProp('positiveTags')
@@ -206,29 +201,32 @@ const state = {
 		customer: {
 			name: null as TCustomerRareName | null,
 
-			beverageTags: toSet() as SelectionSet,
-			positiveTags: toSet() as SelectionSet,
-
-			filterVisibility: true,
-
-			famousShop: false,
-			hasMystiaCooker: false,
-			isDarkMatter: null as boolean | null,
 			order: {
 				beverageTag: null,
 				recipeTag: null,
 			} as ICustomerOrder,
+			select: {
+				beverageTag: toSet() as SelectionSet,
+				recipeTag: toSet() as SelectionSet,
+			},
+
+			filterVisibility: true,
+
+			famousShop: false,
 			popularTrend: {
 				isNegative: false,
 				tag: null,
 			} as IPopularTrend,
+
+			hasMystiaCooker: false,
+			isDarkMatter: null as boolean | null,
 			rating: null as TRatingKey | null,
 		},
 		ingredient: {
 			filterVisibility: false,
 		},
 		recipe: {
-			data: null as IRecipeData | null,
+			data: null as IMealRecipe | null,
 
 			tagsWithTrend: [] as TRecipeTag[],
 
@@ -509,7 +507,7 @@ export const customerRareStore = store(state, {
 			currentStore.shared.beverage.page.set(1);
 			currentStore.shared.customer.filterVisibility.set(false);
 			currentStore.shared.ingredient.filterVisibility.set(false);
-			currentStore.shared.customer.beverageTags.set((prev) => {
+			currentStore.shared.customer.select.beverageTag.set((prev) => {
 				keepLastTag(prev, tag, {
 					hasMystiaCooker,
 					orderTag: currentStore.shared.customer.order.beverageTag.get(),
@@ -521,7 +519,7 @@ export const customerRareStore = store(state, {
 			currentStore.shared.recipe.page.set(1);
 			currentStore.shared.customer.filterVisibility.set(false);
 			currentStore.shared.ingredient.filterVisibility.set(false);
-			currentStore.shared.customer.positiveTags.set((prev) => {
+			currentStore.shared.customer.select.recipeTag.set((prev) => {
 				keepLastTag(prev, tag, {
 					hasMystiaCooker,
 					orderTag: currentStore.shared.customer.order.recipeTag.get(),
@@ -573,7 +571,7 @@ export const customerRareStore = store(state, {
 			currentStore.shared.beverage.page.set(1);
 		},
 		onBeverageTableSelectedTagsChange(tags: Selection) {
-			currentStore.shared.customer.beverageTags.set(tags as SelectionSet);
+			currentStore.shared.customer.select.beverageTag.set(tags as SelectionSet);
 			currentStore.shared.beverage.page.set(1);
 		},
 		onBeverageTableSortChange(config: TBeverageTableSortDescriptor) {
@@ -657,7 +655,7 @@ export const customerRareStore = store(state, {
 			currentStore.shared.recipe.page.set(1);
 		},
 		onRecipeTableSelectedPositiveTagsChange(tags: Selection) {
-			currentStore.shared.customer.positiveTags.set(tags as SelectionSet);
+			currentStore.shared.customer.select.recipeTag.set(tags as SelectionSet);
 			currentStore.shared.recipe.page.set(1);
 		},
 		onRecipeTableSortChange(config: TRecipeTableSortDescriptor) {
@@ -716,10 +714,10 @@ export const customerRareStore = store(state, {
 			const order = currentStore.shared.customer.order.get();
 			const hasMystiaCooker = currentStore.shared.customer.hasMystiaCooker.get();
 			const isDarkMatter = Boolean(currentStore.shared.customer.isDarkMatter.get());
-			let beverageTags: TBeverageTag[] = [];
+			const beverageTags: TBeverageTag[] = [];
 			const beverageName = currentStore.shared.beverage.name.get();
 			if (beverageName !== null) {
-				beverageTags = instance_beverage.getPropsByName(beverageName, 'tags');
+				beverageTags.push(...instance_beverage.getPropsByName(beverageName, 'tags'));
 			}
 			const recipeData = currentStore.shared.recipe.data.get();
 			const recipeName = recipeData?.name ?? null;
@@ -760,8 +758,16 @@ export const customerRareStore = store(state, {
 			if (savedMealRatingCache.has(stringifiedData)) {
 				return savedMealRatingCache.get(stringifiedData);
 			}
-			const {beverageName, customerName, extraIngredients, hasMystiaCooker, order, popularTrend, recipeName} =
-				data;
+			const {
+				beverageName,
+				customerName,
+				extraIngredients,
+				hasMystiaCooker,
+				isFamousShop,
+				order,
+				popularTrend,
+				recipeName,
+			} = data;
 			const {
 				beverageTags: customerBeverageTags,
 				negativeTags: customerNegativeTags,
@@ -776,7 +782,6 @@ export const customerRareStore = store(state, {
 				negativeTags,
 			});
 			const recipePrice = isDarkMatter ? DARK_MATTER_PRICE : originalRecipePrice;
-			const isFamousShop = currentStore.shared.customer.famousShop.get();
 			const composedRecipeTags = instance_recipe.composeTagsWithPopularTrend(
 				ingredients,
 				extraIngredients,
@@ -826,9 +831,9 @@ export const customerRareStore = store(state, {
 				return;
 			}
 			const {extraIngredients, name: recipeName} = recipeData;
+			const order = currentStore.shared.customer.order.get();
 			const hasMystiaCooker = currentStore.shared.customer.hasMystiaCooker.get();
 			const isDarkMatter = currentStore.shared.customer.isDarkMatter.get();
-			const order = currentStore.shared.customer.order.get();
 			const saveObject = {
 				beverage: beverageName,
 				extraIngredients,
@@ -867,17 +872,18 @@ export const customerRareStore = store(state, {
 			currentStore.shared.ingredient.filterVisibility.set(false);
 		},
 		refreshCustomerSelectedItems() {
-			currentStore.shared.customer.beverageTags.set(toSet());
-			currentStore.shared.customer.positiveTags.set(toSet());
-			currentStore.shared.customer.hasMystiaCooker.set(false);
-			currentStore.shared.customer.isDarkMatter.set(null);
 			currentStore.shared.customer.order.set({
 				beverageTag: null,
 				recipeTag: null,
 			});
+			currentStore.shared.customer.select.set({
+				beverageTag: toSet(),
+				recipeTag: toSet(),
+			});
+			currentStore.shared.customer.hasMystiaCooker.set(false);
+			currentStore.shared.customer.isDarkMatter.set(null);
 			currentStore.shared.customer.rating.set(null);
 			currentStore.shared.recipe.data.set(null);
-			currentStore.shared.recipe.tagsWithTrend.set([]);
 			currentStore.shared.recipe.page.set(1);
 			currentStore.shared.beverage.name.set(null);
 			currentStore.shared.beverage.page.set(1);
@@ -901,6 +907,33 @@ export const customerRareStore = store(state, {
 			currentStore.shared.customer.hasMystiaCooker.set(!hasMystiaCooker);
 			trackEvent(hasMystiaCooker ? trackEvent.category.Unselect : trackEvent.category.Select, 'MystiaCooker');
 		},
+		updateRecipeTagsWithTrend() {
+			const recipeData = currentStore.shared.recipe.data.get();
+			if (recipeData === null) {
+				currentStore.shared.recipe.tagsWithTrend.set([]);
+			} else {
+				const {extraIngredients, name} = recipeData;
+				const {ingredients, positiveTags} = instance_recipe.getPropsByName(name);
+				const extraTags = extraIngredients.flatMap((extraIngredient) =>
+					instance_ingredient.getPropsByName(extraIngredient, 'tags')
+				);
+				const popularTrend = currentStore.shared.customer.popularTrend.get();
+				const isFamousShop = currentStore.shared.customer.famousShop.get();
+				const composedRecipeTags = instance_recipe.composeTagsWithPopularTrend(
+					ingredients,
+					extraIngredients,
+					positiveTags,
+					extraTags,
+					popularTrend
+				);
+				const recipeTagsWithTrend = instance_recipe.calculateTagsWithTrend(
+					composedRecipeTags,
+					popularTrend,
+					isFamousShop
+				);
+				currentStore.shared.recipe.tagsWithTrend.set(recipeTagsWithTrend);
+			}
+		},
 	}));
 
 customerRareStore.shared.customer.name.onChange((name) => {
@@ -908,7 +941,24 @@ customerRareStore.shared.customer.name.onChange((name) => {
 	customerRareStore.refreshCustomerSelectedItems();
 });
 
+customerRareStore.shared.customer.order.onChange(customerRareStore.evaluateMealResult);
+
+customerRareStore.shared.customer.famousShop.onChange(() => {
+	customerRareStore.updateRecipeTagsWithTrend();
+	customerRareStore.evaluateMealResult();
+});
+customerRareStore.shared.customer.popularTrend.onChange(() => {
+	customerRareStore.updateRecipeTagsWithTrend();
+	customerRareStore.evaluateMealResult();
+});
+
+customerRareStore.shared.customer.hasMystiaCooker.onChange(customerRareStore.evaluateMealResult);
+customerRareStore.shared.customer.isDarkMatter.onChange(customerRareStore.evaluateMealResult);
+
+customerRareStore.shared.beverage.name.onChange(customerRareStore.evaluateMealResult);
 customerRareStore.shared.recipe.data.onChange((data) => {
+	customerRareStore.updateRecipeTagsWithTrend();
+	customerRareStore.evaluateMealResult();
 	if (data !== null) {
 		if (data.extraIngredients.length > 0) {
 			customerRareStore.shared.customer.isDarkMatter.set(instance_recipe.checkDarkMatter(data).isDarkMatter);
@@ -917,11 +967,3 @@ customerRareStore.shared.recipe.data.onChange((data) => {
 		}
 	}
 });
-
-customerRareStore.shared.customer.famousShop.onChange(customerRareStore.evaluateMealResult);
-customerRareStore.shared.customer.hasMystiaCooker.onChange(customerRareStore.evaluateMealResult);
-customerRareStore.shared.customer.isDarkMatter.onChange(customerRareStore.evaluateMealResult);
-customerRareStore.shared.customer.order.onChange(customerRareStore.evaluateMealResult);
-customerRareStore.shared.customer.popularTrend.onChange(customerRareStore.evaluateMealResult);
-customerRareStore.shared.beverage.name.onChange(customerRareStore.evaluateMealResult);
-customerRareStore.shared.recipe.tagsWithTrend.onChange(customerRareStore.evaluateMealResult);
