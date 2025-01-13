@@ -8,17 +8,14 @@ import {
 	usePinyinSortConfig,
 	useSearchConfig,
 	useSearchResult,
-	useSkipProcessItemData,
 	useSortedData,
 	useThrottle,
 } from '@/hooks';
 
-import {cn} from '@/design/ui/components';
-
 import Content from '@/(pages)/beverages/content';
 import Loading from '@/loading';
 import FakeNameContent from '@/components/fakeNameContent';
-import Placeholder from '@/components/placeholder';
+import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
 import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
@@ -28,8 +25,6 @@ import {beveragesStore as store} from '@/stores';
 import {checkArrayContainsOf, checkArraySubsetOf} from '@/utilities';
 
 export default function Beverages() {
-	const shouldSkipProcessData = useSkipProcessItemData();
-
 	const instance = store.instance.get();
 
 	const allNames = store.names.use();
@@ -116,26 +111,18 @@ export default function Beverages() {
 		);
 	}
 
-	const isEmpty = sortedData.length === 0;
-
 	return (
-		<div
-			className={cn(
-				'min-h-main-content',
-				isEmpty
-					? 'flex justify-center'
-					: 'grid h-min grid-cols-2 content-start justify-items-center gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7'
-			)}
-		>
-			{!shouldSkipProcessData && (
+		<ItemPage
+			isEmpty={sortedData.length === 0}
+			sideButton={
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />
 					<SidePinyinSortIconButton pinyinSortConfig={pinyinSortConfig} />
 					<SideFilterIconButton selectConfig={selectConfig} />
 				</SideButtonGroup>
-			)}
-
-			{isEmpty ? <Placeholder>数据为空</Placeholder> : <Content data={sortedData} />}
-		</div>
+			}
+		>
+			<Content data={sortedData} />
+		</ItemPage>
 	);
 }

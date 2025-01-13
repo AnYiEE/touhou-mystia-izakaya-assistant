@@ -1,7 +1,7 @@
 import {Fragment, type PropsWithChildren, memo, useRef} from 'react';
 import {isObject} from 'lodash';
 
-import {useOpenedItemPopover, useViewInNewWindow} from '@/hooks';
+import {useItemPopoverState, useOpenedItemPopover, useViewInNewWindow} from '@/hooks';
 
 import {
 	CLASSNAME_FOCUS_VISIBLE_OUTLINE,
@@ -48,6 +48,7 @@ interface IProps {
 export default memo<IProps>(function Content({data}) {
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
 	const [openedPopover] = useOpenedItemPopover(popoverCardRef);
+	const {checkDefaultOpen, checkShouldEffect} = useItemPopoverState(openedPopover);
 	const openWindow = useViewInNewWindow();
 
 	// const isHighAppearance = store.persistence.highAppearance.use();
@@ -58,12 +59,12 @@ export default memo<IProps>(function Content({data}) {
 			showArrow
 			/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/3736} is fixed. */
 			// backdrop={isHighAppearance ? 'blur' : 'opaque'}
-			isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}
+			isOpen={checkDefaultOpen(name)}
 		>
 			<ItemPopoverCard.Trigger>
 				<ItemCard
-					isHoverable={openedPopover ? openedPopover === name : true}
-					isPressable={openedPopover ? openedPopover === name : true}
+					isHoverable={checkShouldEffect(name)}
+					isPressable={checkShouldEffect(name)}
 					name={<Name category={category}>{name}</Name>}
 					image={
 						<Sprite

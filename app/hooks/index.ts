@@ -5,6 +5,7 @@ export * from './useThrottle';
 export * from './useVibrate';
 
 export * from './useFilteredData';
+export * from './useItemPopoverState';
 export {useOpenedItemPopover} from './useOpenedItemPopover';
 export * from './usePinyinSortConfig';
 export * from './useSearchConfig';

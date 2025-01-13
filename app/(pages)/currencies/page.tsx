@@ -1,21 +1,11 @@
 'use client';
 
-import {
-	useMounted,
-	usePinyinSortConfig,
-	useSearchConfig,
-	useSearchResult,
-	useSkipProcessItemData,
-	useSortedData,
-	useThrottle,
-} from '@/hooks';
-
-import {cn} from '@/design/ui/components';
+import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
 
 import Content from '@/(pages)/currencies/content';
 import Loading from '@/loading';
 import FakeNameContent from '@/components/fakeNameContent';
-import Placeholder from '@/components/placeholder';
+import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
@@ -23,8 +13,6 @@ import SideSearchIconButton from '@/components/sideSearchIconButton';
 import {currenciesStore as store} from '@/stores';
 
 export default function Currencies() {
-	const shouldSkipProcessData = useSkipProcessItemData();
-
 	const instance = store.instance.get();
 
 	const allNames = store.names.use();
@@ -57,24 +45,17 @@ export default function Currencies() {
 		);
 	}
 
-	const isEmpty = sortedData.length === 0;
-
 	return (
-		<div
-			className={cn(
-				'min-h-main-content',
-				isEmpty
-					? 'flex justify-center'
-					: 'grid h-min grid-cols-2 content-start justify-items-center gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7'
-			)}
-		>
-			{!shouldSkipProcessData && (
+		<ItemPage
+			isEmpty={sortedData.length === 0}
+			sideButton={
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />
 					<SidePinyinSortIconButton pinyinSortConfig={pinyinSortConfig} />
 				</SideButtonGroup>
-			)}
-			{isEmpty ? <Placeholder>数据为空</Placeholder> : <Content data={sortedData} />}
-		</div>
+			}
+		>
+			<Content data={sortedData} />
+		</ItemPage>
 	);
 }

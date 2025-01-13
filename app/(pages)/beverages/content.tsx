@@ -1,6 +1,6 @@
 import {Fragment, memo, useRef} from 'react';
 
-import {useOpenedItemPopover} from '@/hooks';
+import {useItemPopoverState, useOpenedItemPopover} from '@/hooks';
 
 import {ScrollShadow} from '@nextui-org/scroll-shadow';
 
@@ -32,6 +32,7 @@ interface IProps {
 export default memo<IProps>(function Content({data}) {
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
 	const [openedPopover] = useOpenedItemPopover(popoverCardRef);
+	const {checkDefaultOpen, checkShouldEffect} = useItemPopoverState(openedPopover);
 
 	// const isHighAppearance = store.persistence.highAppearance.use();
 
@@ -41,12 +42,12 @@ export default memo<IProps>(function Content({data}) {
 			showArrow
 			/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/3736} is fixed. */
 			// backdrop={isHighAppearance ? 'blur' : 'opaque'}
-			isOpen={openedPopover ? openedPopover === name : (undefined as unknown as boolean)}
+			isOpen={checkDefaultOpen(name)}
 		>
 			<ItemPopoverCard.Trigger>
 				<ItemCard
-					isHoverable={openedPopover ? openedPopover === name : true}
-					isPressable={openedPopover ? openedPopover === name : true}
+					isHoverable={checkShouldEffect(name)}
+					isPressable={checkShouldEffect(name)}
 					name={name}
 					description={<Price>{price}</Price>}
 					image={
