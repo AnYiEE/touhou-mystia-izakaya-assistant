@@ -28,7 +28,7 @@ import {
 	recipesStore,
 } from '@/stores';
 
-const {version} = siteConfig;
+const {cdnUrl, version} = siteConfig;
 
 interface IProps {
 	locale: string;
@@ -135,7 +135,7 @@ export default function Providers({children, locale}: PropsWithChildren<IProps>)
 	);
 }
 
-const script = (storeKey: string) => {
+const script = (cdnPrefix: string, storeKey: string) => {
 	let enable: boolean | undefined;
 
 	try {
@@ -149,15 +149,20 @@ const script = (storeKey: string) => {
 	}
 
 	if (enable !== false) {
+		const smoothScrollScript = document.createElement('script');
+		smoothScrollScript.src = `${cdnPrefix}/SmoothScroll.min.js`;
+		smoothScrollScript.async = true;
+		document.head.append(smoothScrollScript);
 		document.body.classList.add('bg-blend-mystia-pseudo');
 	}
 };
 
 /**
- * @description Add `bg-blend-mystia-pseudo` class to body if the `globalStorage.highAppearance` setting is enabled.
+ * @description Add `bg-blend-mystia-pseudo` class to body and add smooth scroll effect,
+ * if the `globalStorage.highAppearance` setting is enabled.
  */
-export function AddBodyClassName() {
-	const scriptArgs = JSON.stringify([globalStoreKey]).slice(1, -1);
+export function AddHighAppearance() {
+	const scriptArgs = JSON.stringify([cdnUrl, globalStoreKey]).slice(1, -1);
 
 	return (
 		<script

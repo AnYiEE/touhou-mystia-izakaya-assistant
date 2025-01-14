@@ -2,6 +2,7 @@
 
 import {memo, useCallback} from 'react';
 
+import {useRouter} from 'next/navigation';
 import {useVibrate} from '@/hooks';
 
 import {Select, SelectItem} from '@nextui-org/select';
@@ -23,6 +24,7 @@ interface IProps extends IDataManagerProps {}
 
 export default memo<IProps>(function Content({onModalClose}) {
 	const popoverMotionProps = useMotionProps('popover');
+	const router = useRouter();
 	const vibrate = useVibrate();
 
 	const isOrderLinkedFilter = customerStore.persistence.customer.orderLinkedFilter.use();
@@ -72,6 +74,23 @@ export default memo<IProps>(function Content({onModalClose}) {
 		globalStore.selectedPopularTag.set(toSet());
 		resetRecipeTablePage();
 	}, [resetRecipeTablePage, vibrate]);
+
+	const handleIsHighAppearanceChange = useCallback(
+		(value: boolean) => {
+			globalStore.persistence.highAppearance.set(value);
+			if (onModalClose === undefined) {
+				location.reload();
+			} else {
+				onModalClose();
+				// Wait for the modal to close (the animate will take 300ms).
+				setTimeout(() => {
+					router.back();
+					location.reload();
+				}, 500);
+			}
+		},
+		[onModalClose, router]
+	);
 
 	return (
 		<div>
@@ -152,7 +171,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 					className="!mt-4"
 				>
 					“明星店”效果
-					<span className="-ml-1 text-tiny text-foreground-500">
+					<span className="text-tiny text-foreground-500">
 						【
 						<Sprite
 							target="customer_rare"
@@ -168,10 +187,17 @@ export default memo<IProps>(function Content({onModalClose}) {
 			<div className="space-y-2">
 				<SwitchItem
 					isSelected={isHighAppearance}
-					onValueChange={globalStore.persistence.highAppearance.set}
-					aria-label={`${isHighAppearance ? '关闭' : '开启'}全局背景图片和磨砂效果`}
+					onValueChange={handleIsHighAppearanceChange}
+					aria-label={`${isHighAppearance ? '关闭' : '开启'}平滑滚动和磨砂效果`}
 				>
-					全局背景图片和磨砂效果
+					<span className="flex w-min flex-wrap items-center break-keep md:flex-nowrap">
+						<span>平滑滚动和磨砂效果</span>
+						<span className="text-tiny text-foreground-500">
+							（如因浏览器性能受限而感卡顿可关闭）
+							<br />
+							（开启或关闭平滑滚动需刷新页面生效）
+						</span>
+					</span>
 				</SwitchItem>
 				<SwitchItem
 					isSelected={isShowTachie}
@@ -179,7 +205,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 					aria-label={`${isShowTagDescription ? '隐藏' : '显示'}顾客页面立绘`}
 				>
 					顾客页面右下角的立绘
-					<span className="-ml-1 text-tiny text-foreground-500">（宽屏可见）</span>
+					<span className="text-tiny text-foreground-500">（宽屏可见）</span>
 				</SwitchItem>
 			</div>
 			<Heading as="h3">体验</Heading>
@@ -190,7 +216,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 					aria-label={`${isVibrateEnabled ? '关闭' : '开启'}操作震动反馈`}
 				>
 					部分操作的震动反馈
-					<span className="-ml-1 text-tiny text-foreground-500">（需设备和浏览器支持）</span>
+					<span className="text-tiny text-foreground-500">（需设备和浏览器支持）</span>
 				</SwitchItem>
 				<SwitchItem
 					isSelected={isShowTagsTooltip}
@@ -198,7 +224,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 					aria-label={`${isShowTagsTooltip ? '隐藏' : '显示'}标签浮动提示`}
 				>
 					顾客卡片中标签的浮动提示
-					<span className="-ml-1 text-tiny text-foreground-500">（鼠标悬停可见）</span>
+					<span className="text-tiny text-foreground-500">（鼠标悬停可见）</span>
 				</SwitchItem>
 			</div>
 			<Heading as="h2">稀客页面</Heading>

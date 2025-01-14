@@ -8,7 +8,7 @@ import Navbar from '@/(pages)/navbar';
 import Analytics from '@/components/analytics';
 import ErrorBoundary from '@/components/errorBoundary';
 import Polyfills from '@/polyfills';
-import Providers, {AddBodyClassName} from '@/providers';
+import Providers, {AddHighAppearance} from '@/providers';
 import {ThemeScript} from '@/design/hooks';
 
 import {config as fontawesomeConfig} from '@fortawesome/fontawesome-svg-core';
@@ -93,10 +93,9 @@ export default function RootLayout({
 					// Register service worker. The `sha` is the commit SHA of the current commit, used to bypass browser caching.
 					isProduction && <Script async src={`/registerServiceWorker.js?v=${sha}`} />
 				}
-				<Script async src={`${cdnUrl}/SmoothScroll.min.js`} />
 			</head>
 			<body suppressHydrationWarning className="antialiased">
-				<AddBodyClassName />
+				<AddHighAppearance />
 				<ErrorBoundary>
 					<Providers locale={locale}>
 						<div className="flex min-h-dvh-safe flex-col">
