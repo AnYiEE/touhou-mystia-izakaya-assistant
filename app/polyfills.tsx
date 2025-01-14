@@ -27,6 +27,20 @@ const script = () => {
 			});
 		};
 	}
+
+	/**
+	 * @description Remove the <meta> tag added by the Quark browser, it disrupts hydration.
+	 */ // cSpell:ignore lowpri
+	const targetNode = document.head.querySelector('meta[name="wpk-bid_lowpri"]');
+	if (targetNode !== null) {
+		targetNode.remove();
+		for (const node of document.head.childNodes) {
+			if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() === '') {
+				node.remove();
+				break;
+			}
+		}
+	}
 };
 
 export default function Polyfills() {
