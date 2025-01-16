@@ -24,7 +24,7 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import {customerRareStore as store} from '@/stores';
-import {checkA11yConfirmKey, intersection, toGetItemWithKey, toSet, union} from '@/utilities';
+import {checkA11yConfirmKey, intersection, toArray, toGetItemWithKey, toSet, union} from '@/utilities';
 import {type Ingredient, type Recipe} from '@/utils';
 import type {TItemData, TItemDataItem} from '@/utils/types';
 
@@ -197,7 +197,7 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 						// The customer has a ingredient-based easter agg.
 						const {ingredient: easterEggIngredient, score: easterEggScore} = checkIngredientEasterEgg({
 							currentCustomerName,
-							currentIngredients: union([...currentRecipeAllIngredients, name]),
+							currentIngredients: union(toArray(currentRecipeAllIngredients, name)),
 						});
 						if (
 							name === easterEggIngredient &&

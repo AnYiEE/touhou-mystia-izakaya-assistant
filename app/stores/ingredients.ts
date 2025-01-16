@@ -6,7 +6,7 @@ import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE, type TIngredientTag} from '@/data';
 import {createNamesCache} from '@/stores/utils';
 import type {IPopularTrend} from '@/types';
-import {numberSort, pinyinSort, toGetValueCollection} from '@/utilities';
+import {numberSort, pinyinSort, toArray, toGetValueCollection} from '@/utilities';
 import {Ingredient} from '@/utils';
 
 const instance = Ingredient.getInstance();
@@ -24,7 +24,7 @@ const state = {
 
 	dlcs: instance.getValuesByProp('dlc', true).sort(numberSort),
 	levels: instance.getValuesByProp('level', true).sort(numberSort),
-	tags: ([...instance.getValuesByProp('tags'), TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE] as TIngredientTag[])
+	tags: toArray<TIngredientTag[]>(instance.getValuesByProp('tags'), TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE)
 		.map(toGetValueCollection)
 		.sort(pinyinSort),
 	types: instance.sortedTypes.map(toGetValueCollection),

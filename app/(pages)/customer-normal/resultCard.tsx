@@ -14,7 +14,7 @@ import Sprite from '@/components/sprite';
 
 import {CUSTOMER_RATING_MAP, type TIngredientName} from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
-import {checkA11yConfirmKey} from '@/utilities';
+import {checkA11yConfirmKey, toArray} from '@/utilities';
 
 export {Plus} from '@/(pages)/customer-rare/resultCard';
 
@@ -32,11 +32,11 @@ function IngredientsList() {
 
 	const filledIngredients = useMemo(
 		() =>
-			[
-				...originalIngredients,
-				...(currentRecipeData?.extraIngredients ?? []),
-				...new Array<null>(5).fill(null),
-			].slice(0, 5),
+			toArray<(TIngredientName | null)[]>(
+				originalIngredients,
+				currentRecipeData?.extraIngredients ?? [],
+				new Array<null>(5).fill(null)
+			).slice(0, 5),
 		[currentRecipeData?.extraIngredients, originalIngredients]
 	);
 

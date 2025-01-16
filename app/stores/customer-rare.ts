@@ -103,14 +103,10 @@ const state = {
 			.getValuesByProp('level', true)
 			.filter(({value}) => !instance_ingredient.blockedLevels.has(value))
 			.sort(numberSort),
-		tags: (
-			[
-				...instance_ingredient
-					.getValuesByProp('tags')
-					.filter((tag) => !instance_ingredient.blockedTags.has(tag)),
-				TAG_POPULAR_NEGATIVE,
-				TAG_POPULAR_POSITIVE,
-			] as TIngredientTag[]
+		tags: toArray<TIngredientTag[]>(
+			instance_ingredient.getValuesByProp('tags').filter((tag) => !instance_ingredient.blockedTags.has(tag)),
+			TAG_POPULAR_NEGATIVE,
+			TAG_POPULAR_POSITIVE
 		)
 			.map(toGetValueCollection)
 			.sort(pinyinSort),
@@ -122,14 +118,10 @@ const state = {
 			.getValuesByProp('name', true)
 			.filter(({value}) => !instance_recipe.blockedRecipes.has(value))
 			.sort(pinyinSort),
-		tags: (
-			[
-				...instance_recipe
-					.getValuesByProp('positiveTags')
-					.filter((tag) => !instance_recipe.blockedTags.has(tag)),
-				TAG_POPULAR_NEGATIVE,
-				TAG_POPULAR_POSITIVE,
-			] as TRecipeTag[]
+		tags: toArray<TRecipeTag[]>(
+			instance_recipe.getValuesByProp('positiveTags').filter((tag) => !instance_recipe.blockedTags.has(tag)),
+			TAG_POPULAR_NEGATIVE,
+			TAG_POPULAR_POSITIVE
 		)
 			.map(toGetValueCollection)
 			.sort(pinyinSort),
@@ -457,46 +449,46 @@ export const customerRareStore = store(state, {
 		beverageTableColumns: {
 			read: () => toSet(currentStore.persistence.beverage.table.visibleColumns.use()) as SelectionSet,
 			write: (columns: Selection) => {
-				currentStore.persistence.beverage.table.visibleColumns.set(toArray(columns as SelectionSet) as never);
+				currentStore.persistence.beverage.table.visibleColumns.set(toArray<SelectionSet>(columns) as never);
 			},
 		},
 		beverageTableDlcs: {
 			read: () => toSet(currentStore.persistence.beverage.table.dlcs.use()) as SelectionSet,
 			write: (dlcs: Selection) => {
-				currentStore.persistence.beverage.table.dlcs.set(toArray(dlcs as SelectionSet) as never);
+				currentStore.persistence.beverage.table.dlcs.set(toArray<SelectionSet>(dlcs) as never);
 			},
 		},
 		beverageTableRows: {
 			read: () => toSet([currentStore.persistence.beverage.table.rows.use().toString()]) as SelectionSet,
 			write: (rows: Selection) => {
 				currentStore.persistence.beverage.table.rows.set(
-					Number.parseInt(toArray(rows as SelectionSet)[0] as string)
+					Number.parseInt(toArray<SelectionSet>(rows)[0] as string)
 				);
 			},
 		},
 		recipeTableColumns: {
 			read: () => toSet(currentStore.persistence.recipe.table.visibleColumns.use()) as SelectionSet,
 			write: (columns: Selection) => {
-				currentStore.persistence.recipe.table.visibleColumns.set(toArray(columns as SelectionSet) as never);
+				currentStore.persistence.recipe.table.visibleColumns.set(toArray<SelectionSet>(columns) as never);
 			},
 		},
 		recipeTableCookers: {
 			read: () => toSet(currentStore.persistence.recipe.table.cookers.use()) as SelectionSet,
 			write: (cookers: Selection) => {
-				currentStore.persistence.recipe.table.cookers.set(toArray(cookers as SelectionSet) as never);
+				currentStore.persistence.recipe.table.cookers.set(toArray<SelectionSet>(cookers) as never);
 			},
 		},
 		recipeTableDlcs: {
 			read: () => toSet(currentStore.persistence.recipe.table.dlcs.use()) as SelectionSet,
 			write: (dlcs: Selection) => {
-				currentStore.persistence.recipe.table.dlcs.set(toArray(dlcs as SelectionSet) as never);
+				currentStore.persistence.recipe.table.dlcs.set(toArray<SelectionSet>(dlcs) as never);
 			},
 		},
 		recipeTableRows: {
 			read: () => toSet([currentStore.persistence.recipe.table.rows.use().toString()]) as SelectionSet,
 			write: (rows: Selection) => {
 				currentStore.persistence.recipe.table.rows.set(
-					Number.parseInt(toArray(rows as SelectionSet)[0] as string)
+					Number.parseInt(toArray<SelectionSet>(rows)[0] as string)
 				);
 			},
 		},

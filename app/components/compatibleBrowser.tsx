@@ -5,7 +5,7 @@ import {Observable, from, merge} from 'rxjs';
 import {filter, map, mergeMap} from 'rxjs/operators';
 import {UAParser} from 'ua-parser-js';
 
-import {checkDomReady, memoize} from '@/utilities';
+import {checkDomReady, memoize, toArray} from '@/utilities';
 
 type TFeature = 'flexGap' | 'webp';
 type TCompatibility = Record<TFeature, boolean>;
@@ -124,7 +124,7 @@ function replaceGapClasses(element: Element) {
 		return;
 	}
 
-	[...element.classList]
+	toArray(element.classList)
 		.filter((gapClass) => gapClass.includes('gap-') || gapClass.includes('gap-x-') || gapClass.includes('gap-y-'))
 		.forEach((gapClass) => {
 			const newClass = getReplacementClass(element, gapClass);
@@ -140,7 +140,7 @@ function nodeIsElement(node: Node): node is Element {
 }
 
 function getChildElements(element: Element) {
-	return [...element.querySelectorAll('*')].filter(nodeIsElement);
+	return toArray(element.querySelectorAll('*')).filter(nodeIsElement);
 }
 
 function processAllElements(element: Element) {
@@ -151,7 +151,7 @@ function processAllElements(element: Element) {
 function initFlexGapFix() {
 	const observer = new MutationObserver((mutations) => {
 		mutations.forEach((mutation) => {
-			[...mutation.addedNodes].filter(nodeIsElement).forEach(processAllElements);
+			toArray(mutation.addedNodes).filter(nodeIsElement).forEach(processAllElements);
 		});
 	});
 

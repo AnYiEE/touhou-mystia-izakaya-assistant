@@ -6,7 +6,7 @@ import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE, type TRecipeTag} from '@/data';
 import {createNamesCache} from '@/stores/utils';
 import type {IPopularTrend} from '@/types';
-import {numberSort, pinyinSort, toGetValueCollection} from '@/utilities';
+import {numberSort, pinyinSort, toArray, toGetValueCollection} from '@/utilities';
 import {Recipe} from '@/utils';
 
 const instance = Recipe.getInstance();
@@ -26,8 +26,10 @@ const state = {
 	cookers: instance.getValuesByProp('cooker', true).sort(pinyinSort),
 	ingredients: instance.getValuesByProp('ingredients', true).sort(pinyinSort),
 	negativeTags: instance.getValuesByProp('negativeTags', true).sort(pinyinSort),
-	positiveTags: (
-		[...instance.getValuesByProp('positiveTags'), TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE] as TRecipeTag[]
+	positiveTags: toArray<TRecipeTag[]>(
+		instance.getValuesByProp('positiveTags'),
+		TAG_POPULAR_NEGATIVE,
+		TAG_POPULAR_POSITIVE
 	)
 		.map(toGetValueCollection)
 		.sort(pinyinSort),

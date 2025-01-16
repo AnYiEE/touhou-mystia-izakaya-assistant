@@ -119,7 +119,7 @@ export const globalStore = store(state, {
 	selectedPopularTag: {
 		read: () => toSet([currentStore.persistence.popularTrend.tag.use()]) as SelectionSet,
 		write: (tags: Selection) => {
-			const tag = toArray(tags as SelectionSet)[0] as typeof state.persistence.popularTrend.tag;
+			const tag = toArray<SelectionSet>(tags)[0] as typeof state.persistence.popularTrend.tag;
 			currentStore.persistence.popularTrend.tag.set(tag || null);
 		},
 	},
