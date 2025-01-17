@@ -81,7 +81,8 @@ export function evaluateMeal({
 	if (
 		isFamousShop &&
 		currentCustomerPositiveTags.includes(TAG_POPULAR_POSITIVE) &&
-		((currentRecipe.positiveTags as string[]).includes(TAG_SIGNATURE) || currentExtraTags.includes(TAG_SIGNATURE))
+		((currentRecipe.positiveTags as TRecipeTag[]).includes(TAG_SIGNATURE) ||
+			currentExtraTags.includes(TAG_SIGNATURE))
 	) {
 		extraScore += 1;
 	}
@@ -96,7 +97,7 @@ export function evaluateMeal({
 
 	if (currentCustomerPopularTag !== null) {
 		extraScore +=
-			Number((currentRecipe.positiveTags as string[]).includes(currentCustomerPopularTag)) +
+			Number((currentRecipe.positiveTags as TRecipeTag[]).includes(currentCustomerPopularTag)) +
 			Number(currentExtraTags.includes(currentCustomerPopularTag));
 	}
 

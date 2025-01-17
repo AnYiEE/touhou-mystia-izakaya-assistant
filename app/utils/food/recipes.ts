@@ -182,8 +182,8 @@ export class Recipe extends Food<TRecipes> {
 	 */
 	public getCustomerSuitability(
 		recipeTags: ReadonlyArray<TRecipeTag>,
-		customerNegativeTags: ReadonlyArray<TRecipeTag>,
-		customerPositiveTags: ReadonlyArray<TRecipeTag>
+		customerPositiveTags: ReadonlyArray<TRecipeTag>,
+		customerNegativeTags: ReadonlyArray<TRecipeTag> = []
 	) {
 		const {commonTags: negativeTags, count: negativeCount} = this.getCommonTags(recipeTags, customerNegativeTags);
 		const {commonTags: positiveTags, count: positiveCount} = this.getCommonTags(recipeTags, customerPositiveTags);
@@ -201,8 +201,8 @@ export class Recipe extends Food<TRecipes> {
 	public getIngredientScoreChange(
 		oldRecipePositiveTags: ReadonlyArray<TRecipeTag>,
 		newRecipePositiveTags: ReadonlyArray<TRecipeTag>,
-		customerNegativeTags: ReadonlyArray<TRecipeTag>,
-		customerPositiveTags: ReadonlyArray<TRecipeTag>
+		customerPositiveTags: ReadonlyArray<TRecipeTag>,
+		customerNegativeTags: ReadonlyArray<TRecipeTag> = []
 	) {
 		const originalScore = this.calculateScore(oldRecipePositiveTags, customerNegativeTags, customerPositiveTags);
 		const newScore = this.calculateScore(newRecipePositiveTags, customerNegativeTags, customerPositiveTags);

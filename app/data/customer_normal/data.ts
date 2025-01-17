@@ -18,7 +18,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 0,
 		places: ['妖怪兽道', '红魔馆', '迷途竹林', '魔法森林', '妖怪之山', '地灵殿'],
 		positiveTags: ['家常', '咸', '鲜', '甜', TAG_SIGNATURE, '凉爽', '力量涌现', '果味', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['无酒精'],
 		chat: [
 			'注重健康的生活才能长寿呜撒！这就是妖怪兔的智慧呜撒！',
@@ -36,7 +35,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 0,
 		places: ['妖怪兽道', '博丽神社', '红魔馆', '迷途竹林', '魔法森林', '妖怪之山', '地灵殿'],
 		positiveTags: ['肉', '海味', '中华', TAG_SIGNATURE, '凉爽', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['可加冰', '啤酒', '苦'],
 		chat: [
 			'希望这家店的食材可以新鲜一点，猫的嘴可是很刁的。',
@@ -54,7 +52,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 0,
 		places: ['妖怪兽道', '博丽神社', '红魔馆', '迷途竹林', '魔法森林', '妖怪之山', '命莲寺'],
 		positiveTags: ['肉', '重油', '饱腹', '山珍', '咸', TAG_SIGNATURE, TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['甘', '辛'],
 		chat: [
 			'今天遇到的那个神社的巫女真的好可怕啊。',
@@ -72,7 +69,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 0,
 		places: ['妖怪兽道', '红魔馆', '迷途竹林', '妖怪之山', '旧地狱'],
 		positiveTags: ['肉', '和风', '中华', TAG_SIGNATURE, '小巧', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['直饮'],
 		chat: [
 			'我倒要看看现在的年轻人的居酒屋搞得怎么样。',
@@ -90,7 +86,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 0,
 		places: ['妖怪兽道', '妖怪之山', '旧地狱'],
 		positiveTags: ['肉', '下酒', '山珍', '力量涌现', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['烧酒', '清酒'],
 		chat: [
 			'妖兽果然还是要吃肉啊！',
@@ -108,7 +103,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 0,
 		places: ['人间之里'],
 		positiveTags: ['肉', '家常', '饱腹', '中华', '咸', '甜', TAG_SIGNATURE, '凉爽', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['无酒精'],
 		chat: [
 			'耶！攒够零花钱出来玩了！',
@@ -126,7 +120,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 0,
 		places: ['人间之里', '命莲寺', '神灵庙'],
 		positiveTags: ['肉', '下酒', '和风', '咸', '鲜', '灼热', '文化底蕴', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['可加热', '烧酒'],
 		chat: [
 			'干了一天活过来喝一杯！',
@@ -144,7 +137,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 0,
 		places: ['人间之里', '博丽神社', '命莲寺', '神灵庙'],
 		positiveTags: ['水产', '高级', '咸', '鲜', TAG_SIGNATURE, '凉爽', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['可加冰'],
 		chat: [
 			'听说看到报春精会带来好运，我也想见一见呢。',
@@ -162,7 +154,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 0,
 		places: ['人间之里', '博丽神社', '神灵庙'],
 		positiveTags: ['高级', TAG_SIGNATURE, '适合拍照', '灼热', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['低酒精'],
 		chat: [
 			'今天天气不错…不过以前有段时间天气很糟糕，一会起雾一会地震一会冰雹的。',
@@ -180,7 +171,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 0,
 		places: ['人间之里', '博丽神社'],
 		positiveTags: ['高级', '生', '力量涌现', '猎奇', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['高酒精'],
 		chat: [
 			'稗田家的大小姐，可是什么都知道呢，就是身体不太好，哎。',
@@ -198,7 +188,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 0,
 		places: ['博丽神社'],
 		positiveTags: ['山珍', '和风', '甜', '生', TAG_SIGNATURE, '凉爽', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['无酒精', '低酒精'],
 		chat: [
 			'虽然名字是童子，但我已经不是小孩子了！',
@@ -225,7 +214,6 @@ export const CUSTOMER_NORMAL_LIST = [
 			TAG_LARGE_PARTITION,
 			TAG_POPULAR_POSITIVE,
 		],
-		negativeTags: [],
 		beverageTags: ['甘'],
 		chat: [
 			'哦？原来也有这种店面啊。',
@@ -243,7 +231,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 0,
 		places: [],
 		positiveTags: ['高级', '重油', '山珍', '凉爽', '灼热', '力量涌现', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['清酒', '西洋酒'],
 		chat: [
 			'来了幻想乡这么久，还是一出门就会被盯着看。',
@@ -261,7 +248,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 0,
 		places: ['博丽神社', '红魔馆', '迷途竹林', '妖怪之山'],
 		positiveTags: ['高级', TAG_SIGNATURE, '适合拍照', '菌类', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['烧酒', '清酒'],
 		chat: [
 			'秋天的话，妖怪之山的枫叶会非常漂亮。',
@@ -279,7 +265,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 0,
 		places: ['红魔馆', '迷途竹林', '魔法森林'],
 		positiveTags: ['鲜', '甜', '适合拍照', '菌类', '梦幻', '特产', '果味', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['直饮', '水果', '甘', '气泡'],
 		chat: [
 			'哗~虽然妖精是不用吃东西的，但是还是来叨扰啦！',
@@ -297,7 +282,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 1,
 		places: ['妖怪之山'],
 		positiveTags: ['肉', '重油', '饱腹', '山珍', '咸', '鲜', '生', TAG_SIGNATURE, '特产', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['中酒精', '高酒精', '烧酒', '清酒'],
 		chat: [
 			'我们跑腿的只能在山上做些低端基本的工作。',
@@ -314,7 +298,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 1,
 		places: ['妖怪之山'],
 		positiveTags: ['肉', '家常', '高级', '饱腹', '鲜', '力量涌现', '猎奇', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['高酒精', '烧酒', '直饮', '古典'],
 		chat: [
 			'看什么看！再看挖了你的眼睛哦！',
@@ -340,7 +323,6 @@ export const CUSTOMER_NORMAL_LIST = [
 			TAG_LARGE_PARTITION,
 			TAG_POPULAR_POSITIVE,
 		],
-		negativeTags: [],
 		beverageTags: ['中酒精', '苦'],
 		chat: [
 			'河流什么的，我们早就不在意了。',
@@ -357,7 +339,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 1,
 		places: ['魔法森林'],
 		positiveTags: ['素', '家常', '高级', '传说', '清淡', '西式', '鲜', '适合拍照', '凉爽', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['可加热', '鸡尾酒', '西洋酒', '提神'],
 		chat: [
 			'魔法是一种超自然力，但归根结底，其本核还是科学。',
@@ -374,7 +355,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 1,
 		places: ['魔法森林'],
 		positiveTags: ['家常', '和风', '中华', '鲜', '甜', TAG_SIGNATURE, '凉爽', '小巧', '梦幻', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['无酒精', '低酒精', '清酒', '水果', '甘'],
 		chat: [
 			'森林里的地穴探险非常有意思！不过基本都是些怕寒妖精的家。',
@@ -391,7 +371,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 1,
 		places: ['魔法森林'],
 		positiveTags: ['家常', '咸', '生', '适合拍照', '猎奇', '菌类', '小巧', '梦幻', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['水果', '苦', '气泡', '提神'],
 		chat: [
 			'森林太潮湿了，感觉自己身上都要发霉了。',
@@ -419,7 +398,6 @@ export const CUSTOMER_NORMAL_LIST = [
 			TAG_LARGE_PARTITION,
 			TAG_POPULAR_POSITIVE,
 		],
-		negativeTags: [],
 		beverageTags: ['中酒精', '可加冰', '利口酒', '直饮', '甘', '苦', '现代'],
 		chat: [
 			'我也想变得像山女小姐一样受欢迎啊。',
@@ -436,7 +414,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 2,
 		places: ['旧地狱'],
 		positiveTags: ['肉', '高级', '传说', '下酒', '鲜', '力量涌现', '特产', '燃起来了', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['中酒精', '高酒精', '烧酒', '直饮'],
 		chat: [
 			'能喝酒的地方越多越好。',
@@ -453,7 +430,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 2,
 		places: ['旧地狱'],
 		positiveTags: ['素', '清淡', '鲜', '生', '凉爽', '猎奇', '菌类', '酸', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['低酒精', '可加热', '啤酒', '水果', '苦'],
 		chat: [
 			'那个桥姬每个晚上都在钉稻草人，怪吓人的。',
@@ -470,7 +446,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 2,
 		places: ['地灵殿'],
 		positiveTags: ['肉', '家常', '山珍', '海味', '咸', '小巧', '燃起来了', '酸', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['中酒精', '可加热', '啤酒', '辛', '苦'],
 		chat: [
 			'看守灼热地狱的那只乌鸦变成了三只足，看起来太奇怪了。',
@@ -487,7 +462,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 2,
 		places: ['地灵殿'],
 		positiveTags: ['水产', '家常', '清淡', '鲜', '猎奇', '文化底蕴', '酸', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['低酒精', '可加热', '烧酒', '苦'],
 		chat: [
 			'姑获鸟，姑获鸟抱走孩子；夏获鸟，夏获鸟收养孩子。',
@@ -504,7 +478,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 2,
 		places: ['地灵殿'],
 		positiveTags: ['肉', '高级', '重油', '山珍', '海味', '生', '灼热', '特产', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['中酒精', '高酒精', '直饮', '辛'],
 		chat: [
 			'捕猎虽然有趣，偶尔这样吃吃饭也不错。',
@@ -521,7 +494,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 3,
 		places: ['命莲寺'],
 		positiveTags: ['肉', '家常', '下酒', '山珍', '力量涌现', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['中酒精', '高酒精', '可加热', '烧酒', '古典'],
 		chat: [
 			'所谓“酒肉穿肠过，佛祖心中留”嘛。',
@@ -538,7 +510,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 3,
 		places: ['命莲寺'],
 		positiveTags: ['家常', '高级', '梦幻', '果味', TAG_LARGE_PARTITION, TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['鸡尾酒', '利口酒', '水果', '甘', '现代'],
 		chat: [
 			'村子里关于耗子药的使用已经普及，不能掉以轻心啊。',
@@ -556,7 +527,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 3,
 		places: ['命莲寺'],
 		positiveTags: ['和风', '西式', '鲜', '适合拍照', '凉爽', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['低酒精', '可加冰', '鸡尾酒', '西洋酒', '利口酒'],
 		chat: [
 			'对妖怪来说，没有存在感就和人类患上绝症一样。',
@@ -574,7 +544,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 3,
 		places: ['神灵庙'],
 		positiveTags: ['家常', '清淡', '山珍', TAG_SIGNATURE, '小巧', '特产', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['低酒精', '苦', '现代', '提神'],
 		chat: [
 			'传说庙里的那位圣人就是曾经名满天下的贵人。',
@@ -636,7 +605,6 @@ export const CUSTOMER_NORMAL_LIST = [
 			TAG_POPULAR_POSITIVE,
 			TAG_POPULAR_NEGATIVE,
 		],
-		negativeTags: [],
 		beverageTags: [
 			'无酒精',
 			'低酒精',
@@ -676,7 +644,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 3,
 		places: ['神灵庙'],
 		positiveTags: ['素', '高级', '清淡', '小巧', '梦幻', '果味', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['低酒精', '清酒', '水果', '甘', '气泡', '古典'],
 		chat: [
 			'没想到在仙界也能感受到市井烟火气。',
@@ -694,7 +661,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 4,
 		places: ['辉针城'],
 		positiveTags: ['传说', '和风', '力量涌现', '小巧', '梦幻', '燃起来了', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['可加冰', '可加热', '啤酒', '甘', '古典'],
 		chat: [
 			'美食的传承离不开挑剔的美食家。',
@@ -711,7 +677,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 4,
 		places: ['辉针城'],
 		positiveTags: ['家常', '下酒', '饱腹', '和风', '力量涌现', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['高酒精', '可加热', '烧酒', '啤酒', '苦', '提神'],
 		chat: ['俺已经闻到饭香啦！', '所有的乡愁都是因为馋。', '之后该怎么办呢。', '差不多也该考虑考虑以后了。'],
 	},
@@ -723,7 +688,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 4,
 		places: ['辉针城'],
 		positiveTags: ['家常', '高级', '和风', '适合拍照', '灼热', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['中酒精', '啤酒', '水果', '气泡', '现代'],
 		chat: [
 			'之后该怎么办呢。',
@@ -740,7 +704,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 4,
 		places: ['辉针城'],
 		positiveTags: ['海味', '西式', TAG_SIGNATURE, '凉爽', '不可思议', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['西洋酒', '利口酒', '直饮', '现代'],
 		chat: [
 			'最深刻体会到活着的快乐就是吃东西的时候。',
@@ -757,7 +720,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 4,
 		places: ['太阳花田'],
 		positiveTags: ['下酒', '生', '小巧', '梦幻', '毒', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['中酒精', '直饮', '辛', '气泡'],
 		chat: ['铃铃到底是谁呢。', '以毒攻毒最美味了！', '铃兰的毒是神经的毒哦。', '那个灯笼和铃兰有点像呢。'],
 	},
@@ -769,7 +731,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 4,
 		places: ['太阳花田'],
 		positiveTags: ['鲜', '甜', '力量涌现', '不可思议', '特产', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['利口酒', '水果', '甘', '气泡'],
 		chat: [
 			'我最喜欢在花田玩捉迷藏游戏了。',
@@ -786,7 +747,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 4,
 		places: ['太阳花田'],
 		positiveTags: ['高级', '西式', TAG_SIGNATURE, '适合拍照', '小巧', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['低酒精', '鸡尾酒', '甘', '现代'],
 		chat: [
 			'那颗星球，是叫B612吗？',
@@ -803,7 +763,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 4,
 		places: ['太阳花田'],
 		positiveTags: ['家常', '和风', '生', '凉爽', '猎奇', '不可思议', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['高酒精', '可加冰', '苦', '古典', '提神'],
 		chat: [
 			'我好恨呐。',
@@ -821,7 +780,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 5,
 		places: ['魔界'],
 		positiveTags: ['家常', '重油', '饱腹', '咸', TAG_SIGNATURE, '凉爽', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['中酒精', '可加热', '苦', '提神'],
 		chat: [
 			'好久没有人从“兔子洞”掉下来了。',
@@ -838,7 +796,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 5,
 		places: ['魔界'],
 		positiveTags: ['高级', '下酒', '生', '适合拍照', '猎奇', '菌类', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['可加冰', '利口酒', '直饮', '辛'],
 		chat: [
 			'没什么事可做呢。',
@@ -855,7 +812,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 5,
 		places: ['魔界'],
 		positiveTags: ['西式', '适合拍照', '猎奇', '菌类', '不可思议', '梦幻', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['高酒精', '西洋酒', '现代', '提神'],
 		chat: ['帽子帽子扔锅里！', '帽子着火了！', '沉迷工作时根本想不起来要吃饭。', '吃完再回去做帽子吧！'],
 	},
@@ -867,7 +823,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 5,
 		places: ['月之都'],
 		positiveTags: ['传说', '清淡', '海味', '中华', '不可思议', '梦幻', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['清酒', '鸡尾酒', '水果', '气泡', '现代'],
 		chat: [
 			'吃夜宵是不是有点不够矜持啊？',
@@ -884,7 +839,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 5,
 		places: ['月之都'],
 		positiveTags: ['饱腹', '山珍', '和风', '中华', '甜', '凉爽', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['中酒精', '烧酒', '啤酒', '甘', '提神'],
 		chat: [
 			'好想念XX大人。',
@@ -901,7 +855,6 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 5,
 		places: ['月之都'],
 		positiveTags: ['传说', '饱腹', '西式', TAG_SIGNATURE, '力量涌现', '特产', TAG_POPULAR_POSITIVE],
-		negativeTags: [],
 		beverageTags: ['无酒精', '可加热', '苦', '现代', '提神'],
 		chat: ['最近训练强度是不是加大了呀。', '感觉我好像长出了肌肉。'],
 	},

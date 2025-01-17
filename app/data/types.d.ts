@@ -221,7 +221,6 @@ export interface ICustomerBase extends IItemBase {
 	chat: TDescription[];
 	places: TPlace[];
 	positiveTags: TRecipeTag[];
-	negativeTags: TRecipeTag[];
 	beverageTags: TBeverageTag[];
 }
 

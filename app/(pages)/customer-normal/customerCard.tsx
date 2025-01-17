@@ -121,7 +121,6 @@ export default function CustomerCard() {
 	const {
 		beverageTags: currentCustomerBeverageTags,
 		dlc: currentCustomerDlc,
-		negativeTags: currentCustomerNegativeTags,
 		places: currentCustomerPlaces,
 		positiveTags: currentCustomerPositiveTags,
 	} = instance_customer.getPropsByName(currentCustomerName);
@@ -302,23 +301,6 @@ export default function CustomerCard() {
 											)}
 										/>
 									</Tooltip>
-								))}
-						</TagGroup>
-					)}
-					{(currentCustomerNegativeTags as string[]).length > 0 && (
-						<TagGroup>
-							{copyArray(currentCustomerNegativeTags)
-								.sort(pinyinSort)
-								.map((tag, index) => (
-									<Tags.Tag
-										key={index}
-										tag={tag}
-										tagStyle={CUSTOMER_NORMAL_TAG_STYLE.negative}
-										tagType="negative"
-										className={cn('cursor-not-allowed p-1 font-semibold leading-none', {
-											'font-normal opacity-50': !currentRecipeTagsWithTrend.includes(tag),
-										})}
-									/>
 								))}
 						</TagGroup>
 					)}

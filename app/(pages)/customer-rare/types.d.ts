@@ -1,6 +1,7 @@
 import {type SortDescriptor} from '@nextui-org/table';
 
 import {type TabVisibilityState} from './constants';
+import {type TBeverageTag, type TRecipeTag} from '@/data';
 import {type Beverage, type Recipe} from '@/utils';
 import type {TItemDataItem} from '@/utils/types';
 
@@ -44,7 +45,7 @@ export interface ITableSortDescriptor<T extends string> extends SortDescriptor {
 }
 
 type TBeverageSuitability = {
-	matchedTags: string[];
+	matchedTags: TBeverageTag[];
 	suitability: number;
 };
 
@@ -53,8 +54,8 @@ export type TBeverageWithSuitability = TBeverage & TBeverageSuitability;
 export type TBeveragesWithSuitability = TBeverageWithSuitability[];
 
 type TRecipeSuitability = {
-	matchedNegativeTags: string[];
-	matchedPositiveTags: string[];
+	matchedNegativeTags: TRecipeTag[];
+	matchedPositiveTags: TRecipeTag[];
 	suitability: number;
 };
 

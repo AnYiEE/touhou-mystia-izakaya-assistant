@@ -80,8 +80,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 		return <Placeholder className="pt-4 md:min-h-40 md:pt-0">数据为空</Placeholder>;
 	}
 
-	const {negativeTags: customerNegativeTags, positiveTags: customerPositiveTags} =
-		instance_customer.getPropsByName(currentCustomerName);
+	const customerPositiveTags = instance_customer.getPropsByName(currentCustomerName, 'positiveTags');
 
 	const {extraIngredients: currentRecipeExtraIngredients} = currentRecipeData;
 
@@ -151,34 +150,15 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 						);
 						const after = composeRecipeTagsWithPopularTrend(allTagsWithTrend as TIngredientTag[]);
 
-						let scoreChange = instance_recipe.getIngredientScoreChange(
-							before,
-							after,
-							customerNegativeTags,
-							customerPositiveTags
-						);
+						let scoreChange = instance_recipe.getIngredientScoreChange(before, after, customerPositiveTags);
 
-						// The customer like or dislike the large partition tag.
-						scoreChange -= Number(
-							isLargePartitionTagNext &&
-								(customerNegativeTags as TRecipeTag[]).includes(TAG_LARGE_PARTITION)
-						);
+						// The customer like the large partition tag.
 						scoreChange += Number(
 							isLargePartitionTagNext &&
 								(customerPositiveTags as TRecipeTag[]).includes(TAG_LARGE_PARTITION)
 						);
 
 						// The current popular tag is the large partition tag and the customer has popular tags.
-						scoreChange -= Number(
-							shouldCalculateLargePartitionTag &&
-								(customerNegativeTags as TRecipeTag[]).includes(TAG_POPULAR_NEGATIVE) &&
-								currentCustomerPopularTrend.isNegative
-						);
-						scoreChange -= Number(
-							shouldCalculateLargePartitionTag &&
-								(customerNegativeTags as TRecipeTag[]).includes(TAG_POPULAR_POSITIVE) &&
-								!currentCustomerPopularTrend.isNegative
-						);
 						scoreChange += Number(
 							shouldCalculateLargePartitionTag &&
 								(customerPositiveTags as TRecipeTag[]).includes(TAG_POPULAR_NEGATIVE) &&

@@ -104,14 +104,12 @@ export default function RecipeTabContent() {
 		if (currentCustomerName === null) {
 			return data.map((item) => ({
 				...item,
-				matchedNegativeTags: [] as string[],
-				matchedPositiveTags: [] as string[],
+				matchedPositiveTags: [],
 				suitability: 0,
 			}));
 		}
 
-		const {negativeTags: customerNegativeTags, positiveTags: customerPositiveTags} =
-			instance_customer.getPropsByName(currentCustomerName);
+		const customerPositiveTags = instance_customer.getPropsByName(currentCustomerName, 'positiveTags');
 
 		const dataWithRealSuitability = data.map((item) => {
 			const composedRecipeTags = composeTagsWithPopularTrend(item.ingredients, item.positiveTags);
@@ -125,21 +123,18 @@ export default function RecipeTabContent() {
 			if (item.name === easterEggRecipe) {
 				return {
 					...item,
-					matchedNegativeTags: [],
 					matchedPositiveTags: [],
 					suitability: easterEggScore > 0 ? Infinity : -Infinity,
 				};
 			}
 
-			const {
-				negativeTags: matchedNegativeTags,
-				positiveTags: matchedPositiveTags,
-				suitability,
-			} = instance_recipe.getCustomerSuitability(recipeTagsWithTrend, customerNegativeTags, customerPositiveTags);
+			const {positiveTags: matchedPositiveTags, suitability} = instance_recipe.getCustomerSuitability(
+				recipeTagsWithTrend,
+				customerPositiveTags
+			);
 
 			return {
 				...item,
-				matchedNegativeTags,
 				matchedPositiveTags,
 				suitability,
 			};
@@ -232,18 +227,8 @@ export default function RecipeTabContent() {
 
 	const renderTableCell = useCallback(
 		(recipeData: TRecipeWithSuitability, columnKey: TTableColumnKey) => {
-			const {
-				cooker,
-				ingredients,
-				matchedNegativeTags,
-				matchedPositiveTags,
-				max,
-				min,
-				name,
-				positiveTags,
-				price,
-				suitability,
-			} = recipeData;
+			const {cooker, ingredients, matchedPositiveTags, max, min, name, positiveTags, price, suitability} =
+				recipeData;
 
 			if (currentCustomerName === null) {
 				return null;
@@ -252,20 +237,14 @@ export default function RecipeTabContent() {
 			const composedRecipeTags = composeTagsWithPopularTrend(ingredients, positiveTags);
 			const recipeTagsWithTrend = calculateTagsWithTrend(composedRecipeTags);
 
-			const {negative: negativeTagStyle, positive: positiveTagStyle} = CUSTOMER_NORMAL_TAG_STYLE;
+			const {positive: positiveTagStyle} = CUSTOMER_NORMAL_TAG_STYLE;
 
 			const tags = (
 				<TagGroup>
 					{recipeTagsWithTrend.sort(pinyinSort).map((tag, index) => {
-						const isNegativeTagMatched = matchedNegativeTags.includes(tag);
 						const isPositiveTagMatched = matchedPositiveTags.includes(tag);
-						const isTagMatched = isNegativeTagMatched || isPositiveTagMatched;
-						const tagStyle = isNegativeTagMatched
-							? negativeTagStyle
-							: isPositiveTagMatched
-								? positiveTagStyle
-								: {};
-						const tagType = isNegativeTagMatched ? 'negative' : isPositiveTagMatched ? 'positive' : null;
+						const tagStyle = isPositiveTagMatched ? positiveTagStyle : {};
+						const tagType = isPositiveTagMatched ? 'positive' : null;
 						return (
 							<Tags.Tag
 								key={index}
@@ -273,7 +252,7 @@ export default function RecipeTabContent() {
 								tagStyle={tagStyle}
 								tagType={tagType}
 								className={cn({
-									'opacity-50': !isTagMatched,
+									'opacity-50': !isPositiveTagMatched,
 								})}
 							/>
 						);

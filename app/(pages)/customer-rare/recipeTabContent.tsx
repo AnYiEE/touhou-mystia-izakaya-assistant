@@ -107,8 +107,8 @@ export default function RecipeTabContent() {
 		if (currentCustomerName === null) {
 			return data.map((item) => ({
 				...item,
-				matchedNegativeTags: [] as string[],
-				matchedPositiveTags: [] as string[],
+				matchedNegativeTags: [],
+				matchedPositiveTags: [],
 				suitability: 0,
 			}));
 		}
@@ -138,7 +138,7 @@ export default function RecipeTabContent() {
 				negativeTags: matchedNegativeTags,
 				positiveTags: matchedPositiveTags,
 				suitability,
-			} = instance_recipe.getCustomerSuitability(recipeTagsWithTrend, customerNegativeTags, customerPositiveTags);
+			} = instance_recipe.getCustomerSuitability(recipeTagsWithTrend, customerPositiveTags, customerNegativeTags);
 
 			return {
 				...item,

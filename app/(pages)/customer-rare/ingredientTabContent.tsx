@@ -158,8 +158,8 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 						let scoreChange = instance_recipe.getIngredientScoreChange(
 							before,
 							after,
-							customerNegativeTags,
-							customerPositiveTags
+							customerPositiveTags,
+							customerNegativeTags
 						);
 
 						// The customer like or dislike the large partition tag.

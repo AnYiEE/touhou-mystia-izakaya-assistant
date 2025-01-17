@@ -78,7 +78,7 @@ export default function BeverageTabContent() {
 		if (currentCustomerName === null) {
 			return data.map((item) => ({
 				...item,
-				matchedTags: [] as string[],
+				matchedTags: [],
 				suitability: 0,
 			}));
 		}

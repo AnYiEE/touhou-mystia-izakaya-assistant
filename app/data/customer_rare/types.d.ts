@@ -13,6 +13,7 @@ interface ISpellCards {
 }
 
 export interface ICustomerRare extends ICustomerBase {
+	negativeTags: TRecipeTag[];
 	collection: boolean;
 	evaluation: Record<TEvaluationKey, TDescription | null>;
 	spellCards: Partial<ISpellCards>;
