@@ -2758,7 +2758,7 @@ export const RECIPE_LIST = [
 		from: {
 			bond: {
 				name: '少名针妙丸',
-				level: 3,
+				level: 2,
 			},
 		},
 	},
@@ -2779,7 +2779,7 @@ export const RECIPE_LIST = [
 		from: {
 			bond: {
 				name: '少名针妙丸',
-				level: 2,
+				level: 3,
 			},
 		},
 	},
