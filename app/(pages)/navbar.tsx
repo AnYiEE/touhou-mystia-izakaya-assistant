@@ -74,6 +74,7 @@ const NavbarLink = memo<PropsWithChildren<INavbarLinkProps>>(function NavbarLink
 	return (
 		<Button
 			as={Link}
+			animationUnderline={false}
 			size="sm"
 			variant={isActivated ? 'flat' : 'light'}
 			onPress={handlePress}
@@ -160,6 +161,7 @@ export default function Navbar() {
 			<NavbarContent as="div" justify="start" className="basis-full md:basis-1/5">
 				<NavbarBrand className="max-w-fit">
 					<Link
+						animationUnderline={false}
 						color="foreground"
 						href={links.index.href}
 						onPress={handlePress}
@@ -246,7 +248,7 @@ export default function Navbar() {
 																})}
 															/>
 														}
-														className="justify-start gap-1 text-small data-[hover=true]:bg-transparent"
+														className="justify-start gap-1 text-small hover:brightness-100 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 													>
 														{label}
 													</NavbarLink>
@@ -295,12 +297,10 @@ export default function Navbar() {
 						<NavbarMenuItem key={index} isActive={isActivated}>
 							<Link
 								color={isActivated ? 'primary' : 'foreground'}
+								forcedUnderline={isActivated || href === '/preferences'}
 								size="lg"
 								onClick={handlePress}
 								href={href}
-								className={cn({
-									'underline underline-offset-4': isActivated || href === '/preferences',
-								})}
 							>
 								{label}
 							</Link>

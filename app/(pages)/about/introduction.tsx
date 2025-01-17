@@ -41,6 +41,7 @@ export default function Introduction() {
 					如果{shortName}对您的游玩过程有所帮助，您可以考虑
 					<Tooltip
 						showArrow
+						closeDelay={0}
 						content={
 							<QRCode text={links.donate.href} className="w-24">
 								{links.donate.label.replace('链接', '码')}

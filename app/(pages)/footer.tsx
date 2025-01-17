@@ -46,7 +46,10 @@ const FooterLink = memo<PropsWithChildren<IFooterLinkProps>>(function FooterLink
 			href={href}
 			aria-label={typeof content === 'string' ? content : (title ?? (children as string))}
 			title={title}
-			className="rounded-small text-tiny"
+			classNames={{
+				base: 'rounded-small text-tiny',
+				underline: 'bottom-0',
+			}}
 		>
 			{children}
 		</Link>
@@ -63,6 +66,7 @@ const FooterLinkWithTooltip = memo<PropsWithChildren<IFooterLinkWithTooltipProps
 }) {
 	return (
 		<Tooltip
+			closeDelay={0}
 			content={props.content}
 			isDisabled={!props.content}
 			offset={2}
@@ -91,7 +95,7 @@ export default function Footer() {
 				</FooterLinkWithTooltip>
 				所有
 			</p>
-			<p className="[&>*]:after:mx-1 [&>*]:after:text-default [&>*]:after:content-['|'] last:[&>*]:after:hidden">
+			<p className="[&>*]:after:mx-1 [&>*]:after:-mb-0.5 [&>*]:after:inline-block [&>*]:after:h-3 [&>*]:after:w-px [&>*]:after:rounded-small [&>*]:after:bg-default-400 [&>*]:after:content-[''] last:[&>*]:after:hidden">
 				<span>
 					v{version}-
 					{sha ? (

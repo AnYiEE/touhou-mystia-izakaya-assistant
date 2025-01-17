@@ -14,7 +14,7 @@ export default memo(
 		ref
 	) {
 		return (
-			<Link className={cn('text-foreground', className)} {...props} ref={ref}>
+			<Link animationUnderline={false} className={cn('text-foreground', className)} {...props} ref={ref}>
 				<FontAwesomeIcon icon={icon} size={size} />
 			</Link>
 		);
