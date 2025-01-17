@@ -1,10 +1,8 @@
 'use client';
 
-import {useMounted, usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
+import {usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
 
-import Content from '@/(pages)/currencies/content';
-import Loading from '@/loading';
-import FakeNameContent from '@/components/fakeNameContent';
+import Content from './content';
 import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
@@ -34,16 +32,6 @@ export default function Currencies() {
 		setSearchValue: store.persistence.searchValue.set,
 		spriteTarget: 'currency',
 	});
-
-	const isMounted = useMounted();
-	if (!isMounted) {
-		return (
-			<>
-				<Loading />
-				<FakeNameContent instance={instance} />
-			</>
-		);
-	}
 
 	return (
 		<ItemPage

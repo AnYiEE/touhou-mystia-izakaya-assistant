@@ -4,7 +4,6 @@ import {useCallback, useMemo} from 'react';
 
 import {
 	useFilteredData,
-	useMounted,
 	usePinyinSortConfig,
 	useSearchConfig,
 	useSearchResult,
@@ -12,9 +11,7 @@ import {
 	useThrottle,
 } from '@/hooks';
 
-import Content from '@/(pages)/cookers/content';
-import Loading from '@/loading';
-import FakeNameContent from '@/components/fakeNameContent';
+import Content from './content';
 import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
 import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
@@ -111,16 +108,6 @@ export default function Cookers() {
 			] as const satisfies TSelectConfig,
 		[allCategories, allDlcs, allTypes, filterCategories, filterDlcs, filterNoCategories, filterNoTypes, filterTypes]
 	);
-
-	const isMounted = useMounted();
-	if (!isMounted) {
-		return (
-			<>
-				<Loading />
-				<FakeNameContent instance={instance} />
-			</>
-		);
-	}
 
 	return (
 		<ItemPage

@@ -1,9 +1,10 @@
 import {type PropsWithChildren, memo} from 'react';
 
-import {useSkipProcessItemData} from '@/hooks';
+import {useMounted, useSkipProcessItemData} from '@/hooks';
 
 import {cn} from '@/design/ui/components';
 
+import Loading from '@/loading';
 import Placeholder from '@/components/placeholder';
 
 interface IProps {
@@ -12,7 +13,12 @@ interface IProps {
 }
 
 export default memo<PropsWithChildren<IProps>>(function ItemPage({children, isEmpty, sideButton}) {
+	const isMounted = useMounted();
 	const shouldSkipProcessData = useSkipProcessItemData();
+
+	if (!isMounted) {
+		return <Loading />;
+	}
 
 	return (
 		<div

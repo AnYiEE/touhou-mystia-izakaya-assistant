@@ -25,7 +25,6 @@ import RecipeTabContent from './recipeTabContent';
 import ResultCard from './resultCard';
 import SavedMealCard from './savedMealCard';
 import Loading from '@/loading';
-import FakeNameContent from '@/components/fakeNameContent';
 import Placeholder from '@/components/placeholder';
 import SideButtonGroup from '@/components/sideButtonGroup';
 import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
@@ -284,12 +283,7 @@ export default function CustomerRare() {
 
 	const isMounted = useMounted();
 	if (!isMounted) {
-		return (
-			<>
-				<Loading />
-				<FakeNameContent instance={instance_customer} />
-			</>
-		);
+		return <Loading />;
 	}
 
 	return (
