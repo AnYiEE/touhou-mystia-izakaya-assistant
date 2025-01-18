@@ -12,7 +12,7 @@ export class Item<
 	protected _data: ReadonlyArray<TItem>;
 
 	protected _indexNameCache: Map<number, TItemName>;
-	protected _nameIndexCache: Map<string, number>;
+	protected _nameIndexCache: Map<TItemName, number>;
 	protected _pinyinSortedDataCacheMap: WeakMap<ReadonlyArray<TItem>, ReadonlyArray<TItem>>;
 
 	protected constructor(data: TItems) {
@@ -36,8 +36,7 @@ export class Item<
 		}
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-	public findIndexByName<T extends string = TItemName>(name: T) {
+	public findIndexByName(name: TItemName) {
 		if (this._nameIndexCache.has(name)) {
 			return this._nameIndexCache.get(name);
 		}
@@ -84,30 +83,20 @@ export class Item<
 		return item;
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-	public getPropsByName<T extends string = TItemName>(name: T): TItem;
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-	public getPropsByName<T extends string = TItemName>(name: T, prop: 'name'): TItemName;
-	public getPropsByName<
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-		T extends string = TItemName,
-		U extends keyof TItem = keyof TItem,
-		S extends Exclude<U, 'name'> = Exclude<U, 'name'>,
-	>(name: T, prop: S): TItem[S];
-	public getPropsByName<
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-		T extends string = TItemName,
-		U extends keyof TItem = keyof TItem,
-		S extends Exclude<U, 'name'> = Exclude<U, 'name'>,
-	>(name: T, ...props: S[]): TItem[S][];
-	public getPropsByName<
-		T extends string = TItemName,
-		U extends keyof TItem = keyof TItem,
-		S extends Exclude<U, 'name'> = Exclude<U, 'name'>,
-	>(name: T, ...props: S[]): TItem | TItem[S] | TItem[S][] {
+	public getPropsByName(name: TItemName): TItem;
+	public getPropsByName(name: TItemName, prop: 'name'): TItemName;
+	public getPropsByName<T extends keyof TItem, U extends Exclude<T, 'name'>>(name: TItemName, prop: U): TItem[U];
+	public getPropsByName<T extends keyof TItem, U extends Exclude<T, 'name'>>(
+		name: TItemName,
+		...props: U[]
+	): TItem[U][];
+	public getPropsByName<T extends keyof TItem, U extends Exclude<T, 'name'>>(
+		name: TItemName,
+		...props: U[]
+	): TItem | TItem[U] | TItem[U][] {
 		const index = this.findIndexByName(name);
 
-		return this.getPropsByIndex<S>(index, ...props);
+		return this.getPropsByIndex<U>(index, ...props);
 	}
 
 	public getValuesByProp<T extends keyof TItem>(

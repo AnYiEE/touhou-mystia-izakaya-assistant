@@ -29,12 +29,12 @@ export class Clothes extends Item<TClothes> {
 	/**
 	 * @description Get the clothes for a customer based on their bond level.
 	 */
-	public getBondClothes(customerName: TCustomerRareName) {
+	public getBondClothes(customerName: TCustomerRareName): TClothesName | null {
 		if (Clothes._bondClothesCache.has(customerName)) {
 			return Clothes._bondClothesCache.get(customerName);
 		}
 
-		let bondClothes: TClothesName | null = null;
+		let bondClothes = null;
 
 		this._data.some(({from, name}) =>
 			from.some((item) => {

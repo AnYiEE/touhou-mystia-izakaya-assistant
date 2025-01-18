@@ -27,12 +27,12 @@ export class Partner extends Item<TPartners> {
 	/**
 	 * @description Get the partner for a customer based on their bond level.
 	 */
-	public getBondPartner(customerName: TCustomerRareName) {
+	public getBondPartner(customerName: TCustomerRareName): TPartnerName | null {
 		if (Partner._bondPartnerCache.has(customerName)) {
 			return Partner._bondPartnerCache.get(customerName);
 		}
 
-		let bondPartner: TPartnerName | null = null;
+		let bondPartner = null;
 
 		this._data.some(({belong, name}) => {
 			if ((belong as TCustomerRareName[] | null)?.includes(customerName)) {

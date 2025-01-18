@@ -1,12 +1,8 @@
 import type {TColorScale} from './types';
 
-const swapCache = new WeakMap<TColorScale, TColorScale>();
+import {memoize} from '../../../utilities/memoize';
 
-export function swapColorScale(colors: TColorScale) {
-	if (swapCache.has(colors)) {
-		return swapCache.get(colors);
-	}
-
+export const swapColorScale = memoize(function swapColorScale(colors: TColorScale): TColorScale {
 	const keys = Object.keys(colors) as unknown as (keyof TColorScale)[];
 	const {length} = keys;
 	const halfLength = Math.floor(length / 2);
@@ -26,7 +22,5 @@ export function swapColorScale(colors: TColorScale) {
 		return result;
 	}, {} as TColorScale);
 
-	swapCache.set(colors, swappedColorScale);
-
 	return swappedColorScale;
-}
+});

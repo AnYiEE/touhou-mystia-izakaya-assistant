@@ -11,29 +11,32 @@ type TCache<T extends TFunction> =
 		? WeakMap<TFirstParameterType<T>, ReturnType<T>>
 		: Map<TFirstParameterType<T>, ReturnType<T>>;
 
+type TCacheType = 'Map' | 'WeakMap';
+
 type TMemoizedFn<T extends TFunction> = T & {
 	cache: TCache<T>;
 };
 
-export function memoize<T extends TFunction>(fn: T, cacheType?: 'Map' | 'WeakMap') {
-	const isWeakMap = cacheType === 'WeakMap';
-	const cache = (isWeakMap ? new WeakMap() : new Map()) as TCache<T>;
+export function memoize<T extends TFunction>(fn: T, cacheType?: TCacheType) {
+	const useWeakMap = cacheType === 'WeakMap';
 
-	const memoized = (...args: Parameters<T>) => {
-		const key = args[0] as TFirstParameterType<T>;
+	const cache = (useWeakMap ? new WeakMap() : new Map()) as TCache<T>;
 
-		if (isWeakMap && !isObject(key)) {
+	const memoized = function (this: unknown, ...args: Parameters<T>) {
+		const cacheKey = args[0] as TFirstParameterType<T>;
+
+		if (useWeakMap && !isObject(cacheKey)) {
 			throw new TypeError('[utilities/memoize]: `WeakMap` only supports objects as keys');
 		}
 
-		if (cache.has(key)) {
+		if (cache.has(cacheKey)) {
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-return
-			return cache.get(key) as ReturnType<T>;
+			return cache.get(cacheKey) as ReturnType<T>;
 		}
 
-		const result = fn(...args) as ReturnType<T>;
+		const result = fn.apply(this, args) as ReturnType<T>;
 
-		cache.set(key, result);
+		cache.set(cacheKey, result);
 
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 		return result;

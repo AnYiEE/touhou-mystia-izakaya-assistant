@@ -10,6 +10,16 @@ export class Cooker extends Item<TCookers> {
 
 	/** @description Flag to check if the categories are consistent with the original data. */
 	private static _isCategoriesChecked: boolean;
+	private static _sortedCategories = [
+		'初始',
+		'夜雀',
+		'超',
+		'极',
+		'核能',
+		'可疑',
+		'月见',
+		'DLC',
+	] as const satisfies TCookerCategory[];
 
 	private static _bondCookerCache = new Map<TCustomerRareName, TCookerName | null>();
 
@@ -29,22 +39,11 @@ export class Cooker extends Item<TCookers> {
 	 * @description Categories sorted in the suggested order. Used for selecting cooker types.
 	 */
 	public get sortedCategories() {
-		const categories = [
-			'初始',
-			'夜雀',
-			'超',
-			'极',
-			'核能',
-			'可疑',
-			'月见',
-			'DLC',
-		] as const satisfies TCookerCategory[];
-
 		if (Cooker._isCategoriesChecked) {
-			return categories;
+			return Cooker._sortedCategories;
 		}
 
-		const isCategoriesEqual = checkArrayEqualOf(categories, this.getValuesByProp('category'));
+		const isCategoriesEqual = checkArrayEqualOf(Cooker._sortedCategories, this.getValuesByProp('category'));
 		if (!isCategoriesEqual) {
 			throw new Error(
 				'[utils/item/Cooker]: the given categories is inconsistent with the types in the original data'
@@ -53,18 +52,18 @@ export class Cooker extends Item<TCookers> {
 
 		Cooker._isCategoriesChecked = true;
 
-		return categories;
+		return Cooker._sortedCategories;
 	}
 
 	/**
 	 * @description Get the cooker for a customer based on their bond level.
 	 */
-	public getBondCooker(customerName: TCustomerRareName) {
+	public getBondCooker(customerName: TCustomerRareName): TCookerName | null {
 		if (Cooker._bondCookerCache.has(customerName)) {
 			return Cooker._bondCookerCache.get(customerName);
 		}
 
-		let bondCooker: TCookerName | null = null;
+		let bondCooker = null;
 
 		this._data.some(({from, name}) =>
 			from.some((item) => {

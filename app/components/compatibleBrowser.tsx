@@ -5,18 +5,12 @@ import {Observable, from, merge} from 'rxjs';
 import {filter, map, mergeMap} from 'rxjs/operators';
 import {UAParser} from 'ua-parser-js';
 
-import {checkDomReady} from '@/utilities';
+import {checkDomReady, memoize} from '@/utilities';
 
 type TFeature = 'flexGap' | 'webp';
 type TCompatibility = Record<TFeature, boolean>;
 
-let compatibilityCache: TCompatibility | undefined;
-
-export function checkCompatibility() {
-	if (compatibilityCache !== undefined) {
-		return compatibilityCache;
-	}
-
+export const checkCompatibility = memoize(function checkCompatibility() {
 	const compatibility: TCompatibility = {
 		flexGap: true,
 		webp: true,
@@ -56,10 +50,8 @@ export function checkCompatibility() {
 		compatibility.webp = Boolean(isSupportedWebpSafari);
 	}
 
-	compatibilityCache = compatibility;
-
 	return compatibility;
-}
+});
 
 function getReplacementClass(element: Element, gapClass: string) {
 	if (gapClass.includes('gap-x-')) {

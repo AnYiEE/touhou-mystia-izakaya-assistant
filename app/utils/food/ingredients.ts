@@ -16,6 +16,7 @@ export class Ingredient extends Food<TIngredients> {
 
 	/** @description Flag to check if the types are consistent with the original data. */
 	private static _isTypesChecked: boolean;
+	private static _sortedTypes = ['海鲜', '肉类', '蔬菜', '其他'] as const satisfies TIngredientType[];
 
 	public static getInstance() {
 		if (Ingredient._instance !== undefined) {
@@ -37,13 +38,11 @@ export class Ingredient extends Food<TIngredients> {
 	 * @description Types sorted in the suggested order. Used for selecting ingredient types.
 	 */
 	public get sortedTypes() {
-		const types = ['海鲜', '肉类', '蔬菜', '其他'] as const satisfies TIngredientType[];
-
 		if (Ingredient._isTypesChecked) {
-			return types;
+			return Ingredient._sortedTypes;
 		}
 
-		const isTypesEqual = checkArrayEqualOf(types, this.getValuesByProp('type'));
+		const isTypesEqual = checkArrayEqualOf(Ingredient._sortedTypes, this.getValuesByProp('type'));
 		if (!isTypesEqual) {
 			throw new Error(
 				'[utils/food/Ingredient]: the given types is inconsistent with the types in the original data'
@@ -52,7 +51,7 @@ export class Ingredient extends Food<TIngredients> {
 
 		Ingredient._isTypesChecked = true;
 
-		return types;
+		return Ingredient._sortedTypes;
 	}
 
 	/**

@@ -8,6 +8,29 @@ export class Beverage extends Food<TBeverages> {
 
 	/** @description Flag to check if the tags are consistent with the original data. */
 	private static _isTagsChecked: boolean;
+	private static _sortedTags = [
+		'无酒精',
+		'低酒精',
+		'中酒精',
+		'高酒精',
+		'可加冰',
+		'可加热',
+		'烧酒',
+		'清酒',
+		'鸡尾酒',
+		'西洋酒',
+		'利口酒',
+		'啤酒',
+		'直饮',
+		'水果',
+		'甘',
+		'辛',
+		'苦',
+		'气泡',
+		'古典',
+		'现代',
+		'提神',
+	] as const satisfies TBeverageTag[];
 
 	public static getInstance() {
 		if (Beverage._instance !== undefined) {
@@ -25,42 +48,18 @@ export class Beverage extends Food<TBeverages> {
 	 * @description Tags sorted in the suggested order. Used for selecting beverage tags.
 	 */
 	public get sortedTags() {
-		const tags = [
-			'无酒精',
-			'低酒精',
-			'中酒精',
-			'高酒精',
-			'可加冰',
-			'可加热',
-			'烧酒',
-			'清酒',
-			'鸡尾酒',
-			'西洋酒',
-			'利口酒',
-			'啤酒',
-			'直饮',
-			'水果',
-			'甘',
-			'辛',
-			'苦',
-			'气泡',
-			'古典',
-			'现代',
-			'提神',
-		] as const satisfies TBeverageTag[];
-
 		if (Beverage._isTagsChecked) {
-			return tags;
+			return Beverage._sortedTags;
 		}
 
-		const isTagsEqual = checkArrayEqualOf(tags, this.getValuesByProp('tags'));
+		const isTagsEqual = checkArrayEqualOf(Beverage._sortedTags, this.getValuesByProp('tags'));
 		if (!isTagsEqual) {
 			throw new Error('[utils/food/Beverage]: the given tags is inconsistent with the tags in the original data');
 		}
 
 		Beverage._isTagsChecked = true;
 
-		return tags;
+		return Beverage._sortedTags;
 	}
 
 	/**
