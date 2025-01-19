@@ -1,15 +1,16 @@
-import {type ReactNode} from 'react';
+import {type PropsWithChildren} from 'react';
 import {type Metadata, type Viewport} from 'next';
 import Script from 'next/script';
 import {execSync} from 'node:child_process';
 
+import {ThemeScript} from '@/design/hooks';
+
+import Polyfills from '@/polyfills';
+import Providers, {AddHighAppearance} from '@/providers';
 import Footer from '@/(pages)/footer';
 import Navbar from '@/(pages)/navbar';
 import Analytics from '@/components/analytics';
 import ErrorBoundary from '@/components/errorBoundary';
-import Polyfills from '@/polyfills';
-import Providers, {AddHighAppearance} from '@/providers';
-import {ThemeScript} from '@/design/hooks';
 
 import {config as fontawesomeConfig} from '@fortawesome/fontawesome-svg-core';
 import {siteConfig} from '@/configs';
@@ -64,26 +65,20 @@ export const viewport: Viewport = {
 };
 
 const sha = (() => {
-	let _sha: string;
-
 	if (vercelSha) {
-		_sha = vercelSha.slice(0, 7);
+		return vercelSha.slice(0, 7);
 	}
 
 	try {
-		_sha = execSync('git rev-parse --short HEAD').toString('utf8');
+		return execSync('git rev-parse --short HEAD').toString('utf8').trim();
 	} catch {
-		_sha = 'unknown';
+		return 'unknown';
 	}
-
-	return _sha.trim();
 })();
 
-export default function RootLayout({
-	children,
-}: Readonly<{
-	children: ReactNode;
-}>) {
+interface IProps {}
+
+export default function RootLayout({children}: PropsWithChildren<IProps>) {
 	return (
 		<html suppressHydrationWarning lang={locale} className="selection-custom light:izakaya dark:izakaya-dark">
 			<head>

@@ -1,4 +1,4 @@
-@import './design/hooks/use-theme/styles';
+@import './design/hooks/use-theme/styles'; // To optimize the number of HTTP requests, import here instead of in the entry script file.
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

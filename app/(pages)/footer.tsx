@@ -12,20 +12,19 @@ import {siteConfig} from '@/configs';
 const {isIcpFiling, isProduction, isVercel, links, nodeEnv, shortName, vercelEnv, vercelSha, version} = siteConfig;
 
 const sha = (() => {
-	let _sha: string | undefined;
-
 	if (vercelSha) {
-		_sha = vercelSha.slice(0, 7);
+		return vercelSha.slice(0, 7);
 	}
+
 	if (isProduction) {
 		try {
-			_sha = execSync('git rev-parse --short HEAD').toString('utf8');
+			return execSync('git rev-parse --short HEAD').toString('utf8').trim();
 		} catch {
 			/* empty */
 		}
 	}
 
-	return _sha?.trim();
+	return null;
 })();
 
 interface IFooterLinkProps extends Pick<ILinkProps, 'href' | 'isExternal' | 'title'> {
@@ -98,7 +97,9 @@ export default function Footer() {
 			<p className="[&>*]:after:mx-1 [&>*]:after:-mb-0.5 [&>*]:after:inline-block [&>*]:after:h-3 [&>*]:after:w-px [&>*]:after:rounded-small [&>*]:after:bg-default-400 [&>*]:after:content-[''] last:[&>*]:after:hidden">
 				<span>
 					v{version}-
-					{sha ? (
+					{sha === null ? (
+						<>{isProduction ? '' : nodeEnv}</>
+					) : (
 						<>
 							{vercelEnv ?? nodeEnv}-
 							<FooterLinkWithTooltip
@@ -108,8 +109,6 @@ export default function Footer() {
 								{sha}
 							</FooterLinkWithTooltip>
 						</>
-					) : (
-						<>{isProduction ? '' : nodeEnv}</>
 					)}
 				</span>
 				{isIcpFiling && (
