@@ -27,10 +27,10 @@ function checkEvent(event: TPressEvent) {
 /**
  * @returns The warped callback that will only be called if the key pressed is either "Enter" or "Space".
  */
-export function checkA11yConfirmKey<T extends TPressEvent>(callback: (event: T) => void) {
+export function checkA11yConfirmKey<T extends TPressEvent>(callback?: (event: T) => void) {
 	return (initEvent: T) => {
 		if (checkEvent(initEvent)) {
-			callback(initEvent);
+			callback?.(initEvent);
 		}
 	};
 }

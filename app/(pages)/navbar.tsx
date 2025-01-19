@@ -38,6 +38,7 @@ import Sprite from '@/components/sprite';
 
 import {siteConfig} from '@/configs';
 import {globalStore as store} from '@/stores';
+import {checkA11yConfirmKey} from '@/utilities';
 
 const {links, name, navItems, navMenuItems, shortName} = siteConfig;
 
@@ -50,11 +51,11 @@ export function showProgress(startProgress: () => void) {
 	});
 }
 
-interface INavbarLinkProps extends Pick<IButtonProps, 'className' | 'startContent' | 'fullWidth' | 'onPress'> {
+interface INavbarLinkProps extends Pick<IButtonProps, 'className' | 'href' | 'startContent' | 'fullWidth' | 'onPress'> {
 	isActivated: boolean;
 }
 
-const NavbarButton = memo<PropsWithChildren<INavbarLinkProps>>(function NavbarLink({
+const NavbarButtonLink = memo<PropsWithChildren<INavbarLinkProps>>(function NavbarLink({
 	children,
 	className,
 	isActivated,
@@ -62,12 +63,18 @@ const NavbarButton = memo<PropsWithChildren<INavbarLinkProps>>(function NavbarLi
 }) {
 	return (
 		<Button
+			as={Link}
+			animationUnderline={false}
 			size="sm"
 			variant={isActivated ? 'flat' : 'light'}
-			className={cn('text-base', className)}
+			onClick={(event) => {
+				event.preventDefault();
+			}}
+			onKeyDown={checkA11yConfirmKey()}
 			onPressStart={(event) => {
 				event.continuePropagation();
 			}}
+			className={cn('text-base after:hidden', className)}
 			{...props}
 		>
 			{children}
@@ -86,7 +93,9 @@ const GitHubIconLink = memo<IGitHubIconLinkProps>(function IconLink({className, 
 			href={links.github.href}
 			aria-label={links.github.label}
 			aria-hidden={tabIndex === -1}
+			role="button"
 			tabIndex={tabIndex}
+			onKeyDown={checkA11yConfirmKey()}
 			className={cn('h-5 w-5 rounded-full', className)}
 		/>
 	);
@@ -160,10 +169,12 @@ export default function Navbar() {
 						animationUnderline={false}
 						color="foreground"
 						href={links.index.href}
+						onKeyDown={checkA11yConfirmKey()}
 						onPress={() => {
 							handlePress();
 						}}
 						aria-label={links.index.label}
+						role="button"
 						className="flex select-none items-center justify-start gap-1 rounded-small hover:opacity-hover hover:brightness-100 active:opacity-disabled"
 					>
 						<span
@@ -184,14 +195,15 @@ export default function Navbar() {
 							const isActivated = href === pathname;
 							return href === '/preferences' && !shouldShowPreferences ? null : (
 								<NavbarItem key={navItemIndex} isActive={isActivated}>
-									<NavbarButton
+									<NavbarButtonLink
 										isActivated={isActivated}
+										href={href}
 										onPress={() => {
 											handlePress(href);
 										}}
 									>
 										{label}
-									</NavbarButton>
+									</NavbarButtonLink>
 								</NavbarItem>
 							);
 						}
@@ -234,7 +246,7 @@ export default function Navbar() {
 										>
 											{({href, label, sprite, spriteIndex}) => (
 												<DropdownItem key={href} textValue={label}>
-													<NavbarButton
+													<NavbarButtonLink
 														fullWidth
 														isActivated={href === pathname}
 														startContent={
@@ -247,10 +259,11 @@ export default function Navbar() {
 																})}
 															/>
 														}
+														href={href}
 														className="justify-start gap-1 text-small hover:brightness-100 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 													>
 														{label}
-													</NavbarButton>
+													</NavbarButtonLink>
 												</DropdownItem>
 											)}
 										</DropdownMenu>
