@@ -10,6 +10,7 @@ export function downloadJson(fileName: string, jsonString: string, extension?: s
 	element.classList.add('hidden');
 	element.download = `${fileName}${extension ?? '.json'}`;
 	element.href = url;
+
 	document.body.append(element);
 	element.click();
 

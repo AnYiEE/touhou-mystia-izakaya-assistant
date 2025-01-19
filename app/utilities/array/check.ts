@@ -1,5 +1,9 @@
 import {toSet} from '@/utilities';
 
+export function checkArrayEmpty<T>(array: ReadonlyArray<T>) {
+	return array.length === 0;
+}
+
 export function checkArrayLengthEqualOf<T>(arrayA: ReadonlyArray<T>, arrayB: ReadonlyArray<T>) {
 	return arrayA.length === arrayB.length;
 }
@@ -23,7 +27,3 @@ export const checkArrayEqualOf: typeof checkArrayContainsOf = (arrayA, arrayB) =
 
 	return checkArraySubsetOf(arrayA, arrayB);
 };
-
-export function checkEmptyArray<T>(array: ReadonlyArray<T>) {
-	return array.length === 0;
-}

@@ -1,12 +1,12 @@
-import {checkEmptyArray, toArray, toSet} from '@/utilities';
+import {checkArrayEmpty, toArray, toSet} from '@/utilities';
 
 export function union<T>(...arrays: ReadonlyArray<T>[]) {
-	if (checkEmptyArray(arrays)) {
+	if (checkArrayEmpty(arrays)) {
 		return [];
 	}
 
 	const flattedArrays = arrays.flat();
-	if (checkEmptyArray(flattedArrays)) {
+	if (checkArrayEmpty(flattedArrays)) {
 		return [];
 	}
 

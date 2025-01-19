@@ -1,7 +1,7 @@
-import {checkEmptyArray, toSet} from '@/utilities';
+import {checkArrayEmpty, toSet} from '@/utilities';
 
 export function intersection<T>(arrayA: ReadonlyArray<T>, arrayB: ReadonlyArray<T>) {
-	if (checkEmptyArray(arrayA) || checkEmptyArray(arrayB)) {
+	if (checkArrayEmpty(arrayA) || checkArrayEmpty(arrayB)) {
 		return [];
 	}
 
