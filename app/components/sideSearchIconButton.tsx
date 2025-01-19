@@ -25,9 +25,7 @@ import type {TSpriteTarget} from '@/utils/sprite/types';
 
 export interface ISearchConfig {
 	label: AutocompleteProps['label'];
-	searchItems: {
-		value: string;
-	}[];
+	searchItems: ValueCollection[];
 	searchValue: string;
 	setSearchValue: Dispatch<SetStateAction<ISearchConfig['searchValue']>>;
 	spriteTarget?: TSpriteTarget;

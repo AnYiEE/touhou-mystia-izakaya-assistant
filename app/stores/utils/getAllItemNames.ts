@@ -4,9 +4,7 @@ import {type Item} from '@/utils/item/base';
 import type {TItemDataItem, TItemInstance} from '@/utils/types';
 
 type TName<T extends TItemInstance> = TItemDataItem<T>['name'];
-type TNameCollection<T extends TItemInstance> = {
-	value: TName<T>;
-}[];
+type TNameCollection<T extends TItemInstance> = ValueCollection<TName<T>>[];
 
 function getAllItemNames<T extends TItemInstance>(instance: T, pinyinSortState: PinyinSortState) {
 	switch (pinyinSortState) {

@@ -103,7 +103,7 @@ export class Item<
 		prop: T | T[],
 		wrap: true,
 		data?: ReadonlyArray<TItem>
-	): {value: FlatArray<TItem[T], number>}[];
+	): ValueCollection<FlatArray<TItem[T], number>>[];
 	public getValuesByProp<T extends keyof TItem>(
 		prop: T | T[],
 		wrap?: boolean,

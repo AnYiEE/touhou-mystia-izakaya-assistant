@@ -1,14 +1,10 @@
 import {isObject} from 'lodash';
 
 type TValue = number;
+type TValueCollection = ValueCollection<TValue>;
+type TTarget = TValue | TValueCollection;
 
-interface IValueCollection {
-	value: TValue;
-}
-
-type TTarget = TValue | IValueCollection;
-
-function checkValueCollection(value: TTarget): value is IValueCollection {
+function checkValueCollection(value: TTarget): value is TValueCollection {
 	return isObject(value) && 'value' in value;
 }
 

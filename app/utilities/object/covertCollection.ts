@@ -5,7 +5,7 @@ export function toGetItemWithKey<K extends keyof any>(key: K) {
 	return <U extends Record<K, unknown>>(collection: U) => collection[key];
 }
 
-export function toGetValue<T extends {value: unknown}>(collection: T) {
+export function toGetValue<T extends ValueCollection<unknown>>(collection: T) {
 	return toGetItemWithKey(KEY)(collection);
 }
 
