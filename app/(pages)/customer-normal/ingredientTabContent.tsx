@@ -3,10 +3,9 @@ import {curry, curryRight, debounce} from 'lodash';
 
 import {useVibrate} from '@/hooks';
 
-import {Badge} from '@nextui-org/badge';
 import {ScrollShadow} from '@nextui-org/scroll-shadow';
 
-import {Button, Tooltip, cn} from '@/design/ui/components';
+import {Badge, Button, Tooltip, cn} from '@/design/ui/components';
 
 import {type IIngredientTabContentProps} from '@/(pages)/customer-rare/ingredientTabContent';
 import Placeholder from '@/components/placeholder';
@@ -124,7 +123,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 			<ScrollShadow
 				hideScrollBar
 				className={cn(
-					'px-2 transition-all xl:max-h-[calc(var(--safe-h-dvh)-10.25rem-env(titlebar-area-height,0rem))]',
+					'px-2 transition-all motion-reduce:transition-none xl:max-h-[calc(var(--safe-h-dvh)-10.25rem-env(titlebar-area-height,0rem))]',
 					ingredientTabStyle.classNames.content
 				)}
 			>
@@ -199,10 +198,13 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 									role="button"
 									tabIndex={0}
 									aria-label={tooltipContent}
-									className={cn('group flex cursor-pointer flex-col items-center transition', {
-										'opacity-40 brightness-50 hover:opacity-100 hover:brightness-100 dark:opacity-80 dark:hover:opacity-100':
-											isNoChange,
-									})}
+									className={cn(
+										'group flex cursor-pointer flex-col items-center transition motion-reduce:transition-none',
+										{
+											'opacity-40 brightness-50 hover:opacity-100 hover:brightness-100 dark:opacity-80 dark:hover:opacity-100':
+												isNoChange,
+										}
+									)}
 								>
 									<Badge
 										color={color}
@@ -221,10 +223,10 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 											target="ingredient"
 											name={name}
 											size={3}
-											className="transition group-hover:scale-105"
+											className="transition group-hover:scale-105 motion-reduce:transition-none"
 										/>
 									</Badge>
-									<span className="whitespace-nowrap text-center text-tiny text-default-800 transition-colors group-hover:text-default-900">
+									<span className="whitespace-nowrap text-center text-tiny text-default-800 transition-colors group-hover:text-default-900 motion-reduce:transition-none">
 										{name}
 									</span>
 								</PressElement>

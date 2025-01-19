@@ -36,7 +36,7 @@ export default memo<IProps>(function CustomerTabContent({customerTabStyle, sorte
 			<ScrollShadow
 				hideScrollBar
 				className={cn(
-					'transition-all xl:max-h-[calc(var(--safe-h-dvh)-10.25rem-env(titlebar-area-height,0rem))]',
+					'transition-all motion-reduce:transition-none xl:max-h-[calc(var(--safe-h-dvh)-10.25rem-env(titlebar-area-height,0rem))]',
 					customerTabStyle.classNames.content
 				)}
 			>
@@ -70,15 +70,15 @@ export default memo<IProps>(function CustomerTabContent({customerTabStyle, sorte
 								role="button"
 								classNames={{
 									base: cn(
-										'h-16 w-16 ring-default transition-shadow group-hover:ring-warning lg:h-20 lg:w-20 [&>span]:data-[focus-visible=true]:scale-125',
+										'h-16 w-16 ring-default transition-shadow group-hover:ring-warning motion-reduce:transition-none lg:h-20 lg:w-20 [&>span]:data-[focus-visible=true]:scale-125',
 										{
 											'ring-primary': name === currentCustomerName,
 										}
 									),
-									icon: 'inline-table transition group-hover:scale-125 lg:inline-block',
+									icon: 'inline-table transition group-hover:scale-125 motion-reduce:transition-none lg:inline-block',
 								}}
 							/>
-							<span className="whitespace-nowrap text-tiny text-default-800 transition-colors group-hover:text-default-900">
+							<span className="whitespace-nowrap text-tiny text-default-800 transition-colors group-hover:text-default-900 motion-reduce:transition-none">
 								{name}
 							</span>
 						</PressElement>

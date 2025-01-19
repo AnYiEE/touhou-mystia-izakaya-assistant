@@ -2,7 +2,7 @@
 
 import {type ElementRef, forwardRef, memo} from 'react';
 
-import {useMotionProps} from '@/design/ui/hooks';
+import {useMotionProps, useReducedMotion} from '@/design/ui/hooks';
 
 import {type DropdownProps, Dropdown as NextUIDropdown} from '@nextui-org/dropdown';
 
@@ -16,15 +16,17 @@ type Ref = NonNullable<DropdownProps['ref']>;
 
 export default memo(
 	forwardRef<ElementRef<typeof NextUIDropdown>, IProps>(function Dropdown(
-		{classNames, shouldBlockScroll, shouldCloseOnScroll, showArrow, ...props},
+		{classNames, disableAnimation, shouldBlockScroll, shouldCloseOnScroll, showArrow, ...props},
 		ref
 	) {
 		const motionProps = useMotionProps('popover');
+		const isReducedMotion = useReducedMotion();
 
 		const isHighAppearance = store.persistence.highAppearance.use();
 
 		return (
 			<NextUIDropdown
+				disableAnimation={disableAnimation ?? isReducedMotion}
 				motionProps={motionProps}
 				shouldBlockScroll={Boolean(shouldBlockScroll)}
 				shouldCloseOnScroll={Boolean(shouldCloseOnScroll)}

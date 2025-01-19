@@ -26,10 +26,10 @@ import {
 	DropdownMenu,
 	DropdownTrigger,
 	type IButtonProps,
-	type ILinkProps,
 	Link,
 	Tooltip,
 	cn,
+	useReducedMotion,
 } from '@/design/ui/components';
 
 import FontAwesomeIconLink, {type IFontAwesomeIconLinkProps} from '@/components/fontAwesomeIconLink';
@@ -38,7 +38,6 @@ import Sprite from '@/components/sprite';
 
 import {siteConfig} from '@/configs';
 import {globalStore as store} from '@/stores';
-import {checkA11yConfirmKey} from '@/utilities';
 
 const {links, name, navItems, navMenuItems, shortName} = siteConfig;
 
@@ -51,35 +50,24 @@ export function showProgress(startProgress: () => void) {
 	});
 }
 
-interface INavbarLinkProps
-	extends Pick<IButtonProps, 'className' | 'startContent' | 'fullWidth'>,
-		Pick<ILinkProps, 'href'> {
+interface INavbarLinkProps extends Pick<IButtonProps, 'className' | 'startContent' | 'fullWidth' | 'onPress'> {
 	isActivated: boolean;
 }
 
-const NavbarLink = memo<PropsWithChildren<INavbarLinkProps>>(function NavbarLink({
+const NavbarButton = memo<PropsWithChildren<INavbarLinkProps>>(function NavbarLink({
 	children,
 	className,
 	isActivated,
 	...props
 }) {
-	const startProgress = useProgress();
-	const vibrate = useVibrate();
-
-	const handlePress = useCallback(() => {
-		vibrate();
-		showProgress(startProgress);
-	}, [startProgress, vibrate]);
-
 	return (
 		<Button
-			as={Link}
-			animationUnderline={false}
 			size="sm"
 			variant={isActivated ? 'flat' : 'light'}
-			onPress={handlePress}
-			role="link"
 			className={cn('text-base', className)}
+			onPressStart={(event) => {
+				event.continuePropagation();
+			}}
 			{...props}
 		>
 			{children}
@@ -133,16 +121,23 @@ export default function Navbar() {
 	const pathname = usePathname();
 	const router = useRouter();
 	const startProgress = useProgress();
-	const [isMenuOpened, setIsMenuOpened] = useState(false);
 	const vibrate = useVibrate();
+	const [isMenuOpened, setIsMenuOpened] = useState(false);
+	const isReducedMotion = useReducedMotion();
 
 	const isHighAppearance = store.persistence.highAppearance.use();
 
-	const handlePress = useCallback(() => {
-		vibrate();
-		showProgress(startProgress);
-		setIsMenuOpened(false);
-	}, [startProgress, vibrate]);
+	const handlePress = useCallback(
+		(href?: string) => {
+			vibrate();
+			showProgress(startProgress);
+			setIsMenuOpened(false);
+			if (href !== undefined) {
+				router.push(href);
+			}
+		},
+		[router, startProgress, vibrate]
+	);
 
 	// Support parallel routing pages.
 	const shouldShowPreferences = pathname !== '/' && pathname !== '/about';
@@ -150,6 +145,7 @@ export default function Navbar() {
 	return (
 		<NextUINavbar
 			isBordered
+			disableAnimation={isReducedMotion}
 			isBlurred={isHighAppearance}
 			maxWidth="xl"
 			isMenuOpen={isMenuOpened}
@@ -164,7 +160,9 @@ export default function Navbar() {
 						animationUnderline={false}
 						color="foreground"
 						href={links.index.href}
-						onPress={handlePress}
+						onPress={() => {
+							handlePress();
+						}}
 						aria-label={links.index.label}
 						className="flex select-none items-center justify-start gap-1 rounded-small hover:opacity-hover hover:brightness-100 active:opacity-disabled"
 					>
@@ -186,9 +184,14 @@ export default function Navbar() {
 							const isActivated = href === pathname;
 							return href === '/preferences' && !shouldShowPreferences ? null : (
 								<NavbarItem key={navItemIndex} isActive={isActivated}>
-									<NavbarLink isActivated={isActivated} href={href}>
+									<NavbarButton
+										isActivated={isActivated}
+										onPress={() => {
+											handlePress(href);
+										}}
+									>
 										{label}
-									</NavbarLink>
+									</NavbarButton>
 								</NavbarItem>
 							);
 						}
@@ -198,6 +201,7 @@ export default function Navbar() {
 								const dropdownElement = (
 									<Dropdown
 										key={dropdownIndex}
+										disableAnimation={isReducedMotion}
 										shouldCloseOnScroll
 										onOpenChange={vibrate}
 										classNames={{
@@ -220,24 +224,19 @@ export default function Navbar() {
 										</NavbarItem>
 										<DropdownMenu
 											items={dropdownItems}
+											onAction={(key) => {
+												handlePress(key as string);
+											}}
 											aria-label={`${dropdownLabel}列表`}
 											itemClasses={{
-												base: 'my-px p-0 transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40',
+												base: 'my-px p-0 transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40 motion-reduce:transition-none',
 											}}
 										>
 											{({href, label, sprite, spriteIndex}) => (
-												<DropdownItem
-													key={label}
-													textValue={label}
-													onKeyDown={checkA11yConfirmKey(() => {
-														handlePress();
-														router.push(href);
-													})}
-												>
-													<NavbarLink
+												<DropdownItem key={href} textValue={label}>
+													<NavbarButton
 														fullWidth
 														isActivated={href === pathname}
-														href={href}
 														startContent={
 															<Sprite
 																target={sprite}
@@ -251,7 +250,7 @@ export default function Navbar() {
 														className="justify-start gap-1 text-small hover:brightness-100 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 													>
 														{label}
-													</NavbarLink>
+													</NavbarButton>
 												</DropdownItem>
 											)}
 										</DropdownMenu>
@@ -299,7 +298,9 @@ export default function Navbar() {
 								color={isActivated ? 'primary' : 'foreground'}
 								forcedUnderline={isActivated || href === '/preferences'}
 								size="lg"
-								onClick={handlePress}
+								onClick={() => {
+									handlePress();
+								}}
 								href={href}
 							>
 								{label}

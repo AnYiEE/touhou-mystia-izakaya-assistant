@@ -6,10 +6,18 @@ import {useProgress} from 'react-transition-progress';
 import {usePathname, useThrottle} from '@/hooks';
 
 import {Textarea} from '@nextui-org/input';
-import {Snippet} from '@nextui-org/snippet';
 import {Tab, Tabs} from '@nextui-org/tabs';
 
-import {Button, Popover, PopoverContent, PopoverTrigger, Tooltip, cn} from '@/design/ui/components';
+import {
+	Button,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	Snippet,
+	Tooltip,
+	cn,
+	useReducedMotion,
+} from '@/design/ui/components';
 
 import {showProgress} from '@/(pages)/navbar';
 import {trackEvent} from '@/components/analytics';
@@ -37,6 +45,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 	const pathname = usePathname();
 	const router = useRouter();
 	const startProgress = useProgress();
+	const isReducedMotion = useReducedMotion();
 
 	const currentNormalMealData = customerNormalStore.persistence.meals.use();
 	const currentRareMealData = customerRareStore.persistence.meals.use();
@@ -162,6 +171,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 				<Tabs
 					defaultSelectedKey="reset"
 					destroyInactiveTabPanel={false}
+					disableAnimation={isReducedMotion}
 					variant="underlined"
 					onSelectionChange={() => {
 						setImportValue('');
@@ -213,12 +223,13 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 						<div className="w-full space-y-2 lg:w-1/2">
 							<Textarea
 								isClearable
+								disableAnimation={isReducedMotion}
 								placeholder="上传或输入顾客套餐数据"
 								value={importValue}
 								onValueChange={setImportValue}
 								classNames={{
 									inputWrapper: cn(
-										'bg-default/40 transition-background data-[hover=true]:bg-default-200 group-data-[focus=true]:bg-default',
+										'bg-default/40 transition-background data-[hover=true]:bg-default-200 group-data-[focus=true]:bg-default motion-reduce:transition-none',
 										{
 											'bg-default/40 backdrop-blur data-[hover=true]:bg-default-400/40 group-data-[focus=true]:bg-default/70':
 												isHighAppearance,

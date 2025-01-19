@@ -2,6 +2,8 @@
 
 import {type ComponentProps, type ElementRef, forwardRef, memo} from 'react';
 
+import {useReducedMotion} from '@/design/ui/hooks';
+
 import {Avatar as NextUIAvatar} from '@nextui-org/avatar';
 import {type InternalForwardRefRenderFunction, extendVariants} from '@nextui-org/system';
 
@@ -12,8 +14,10 @@ const CustomNextUIAvatar = extendVariants(NextUIAvatar, generateRatingVariants('
 interface IProps extends ComponentProps<typeof CustomNextUIAvatar> {}
 
 export default memo(
-	forwardRef<ElementRef<typeof CustomNextUIAvatar>, IProps>(function Avatar(props, ref) {
-		return <CustomNextUIAvatar {...props} ref={ref} />;
+	forwardRef<ElementRef<typeof CustomNextUIAvatar>, IProps>(function Avatar({disableAnimation, ...props}, ref) {
+		const isReducedMotion = useReducedMotion();
+
+		return <CustomNextUIAvatar disableAnimation={disableAnimation ?? isReducedMotion} {...props} ref={ref} />;
 	})
 ) as InternalForwardRefRenderFunction<'span', IProps>;
 

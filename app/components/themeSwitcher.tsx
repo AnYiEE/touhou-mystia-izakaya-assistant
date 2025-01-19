@@ -17,6 +17,7 @@ import {
 	type IDropdownProps,
 	Tooltip,
 	cn,
+	useReducedMotion,
 } from '@/design/ui/components';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
@@ -38,6 +39,7 @@ interface IProps extends Pick<IDropdownProps, 'className'> {
 
 export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 	const isMounted = useMounted();
+	const isReducedMotion = useReducedMotion();
 	const [theme, setTheme] = useTheme();
 	const [selectedTheme, setSelectedTheme] = useState(toSet([theme]) as SelectionSet);
 	const vibrate = useVibrate();
@@ -90,6 +92,7 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 		<Dropdown
 			shouldCloseOnScroll
 			showArrow
+			disableAnimation={isReducedMotion}
 			onOpenChange={vibrate}
 			classNames={{
 				content: cn('p-0 [&>[data-slot="base"]]:w-max', {
@@ -122,7 +125,7 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 				aria-label={THEME_LABEL_MAP.list}
 				className="w-28"
 				itemClasses={{
-					base: 'my-px transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40',
+					base: 'my-px transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40 motion-reduce:transition-none',
 				}}
 			>
 				{({value}) => <DropdownItem key={value}>{THEME_LABEL_MAP[value]}</DropdownItem>}

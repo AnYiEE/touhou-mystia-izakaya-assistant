@@ -22,6 +22,7 @@ import {
 	Tooltip,
 	cn,
 	useMotionProps,
+	useReducedMotion,
 } from '@/design/ui/components';
 
 import TagGroup from './tagGroup';
@@ -45,6 +46,7 @@ type TTableSortKey = Exclude<TTableColumnKey, 'cooker' | 'ingredient' | 'action'
 export type TTableSortDescriptor = ITableSortDescriptor<TTableSortKey>;
 
 export default function RecipeTabContent() {
+	const isReducedMotion = useReducedMotion();
 	const popoverMotionProps = useMotionProps('popover');
 	const openWindow = useViewInNewWindow();
 	const vibrate = useVibrate();
@@ -413,6 +415,7 @@ export default function RecipeTabContent() {
 						<Autocomplete
 							allowsCustomValue
 							defaultItems={allRecipeNames}
+							disableAnimation={isReducedMotion}
 							inputValue={searchValue}
 							isVirtualized={false}
 							placeholder="名称"
@@ -431,12 +434,13 @@ export default function RecipeTabContent() {
 							}}
 							classNames={{
 								base: cn(
-									'data-[slot="input-wrapper"]:[&_div]:!bg-default/40 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:opacity-hover data-[slot="input-wrapper"]:[&_div]:transition-opacity data-[slot="input-wrapper"]:[&_div]:!duration-250',
+									'data-[slot="input-wrapper"]:[&_div]:!bg-default/40 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:opacity-hover data-[slot="input-wrapper"]:[&_div]:transition-opacity data-[slot="input-wrapper"]:[&_div]:!duration-250 motion-reduce:data-[slot="input-wrapper"]:[&_div]:transition-none',
 									{
 										'backdrop-blur': isHighAppearance,
 									}
 								),
-								listboxWrapper: '[&_li]:transition-background data-[hover=true]:[&_li]:!bg-default/40',
+								listboxWrapper:
+									'[&_li]:transition-background data-[hover=true]:[&_li]:!bg-default/40 motion-reduce:[&_li]:transition-none',
 								popoverContent: cn({
 									'bg-content1/70 backdrop-blur-lg': isHighAppearance,
 								}),
@@ -458,6 +462,7 @@ export default function RecipeTabContent() {
 							)}
 						</Autocomplete>
 						<Select
+							disableAnimation={isReducedMotion}
 							isVirtualized={false}
 							items={allRecipeTags}
 							placeholder="标签"
@@ -475,12 +480,12 @@ export default function RecipeTabContent() {
 							classNames={{
 								base: 'w-2/3 md:w-full',
 								listboxWrapper:
-									'[&_li]:transition-background focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40',
+									'[&_li]:transition-background focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40 motion-reduce:[&_li]:transition-none',
 								popoverContent: cn({
 									'bg-content1/70 backdrop-blur-lg': isHighAppearance,
 								}),
 								trigger: cn(
-									'bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
+									'bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover motion-reduce:transition-none',
 									{
 										'backdrop-blur': isHighAppearance,
 									}
@@ -517,7 +522,7 @@ export default function RecipeTabContent() {
 								onSelectionChange={customerStore.onRecipeTableSelectedCookersChange}
 								aria-label="选择目标料理所使用的厨具"
 								itemClasses={{
-									base: 'transition-background',
+									base: 'transition-background motion-reduce:transition-none',
 								}}
 							>
 								{({value}) => (
@@ -556,7 +561,7 @@ export default function RecipeTabContent() {
 								onSelectionChange={customerStore.onRecipeTableSelectedDlcsChange}
 								aria-label="选择特定DLC中的料理"
 								itemClasses={{
-									base: 'transition-background',
+									base: 'transition-background motion-reduce:transition-none',
 								}}
 							>
 								{({value}) => (
@@ -593,7 +598,7 @@ export default function RecipeTabContent() {
 								onSelectionChange={customerStore.recipeTableColumns.set}
 								aria-label="选择表格所显示的列"
 								itemClasses={{
-									base: 'transition-background',
+									base: 'transition-background motion-reduce:transition-none',
 								}}
 							>
 								{({key, label}) => <DropdownItem key={key}>{label}</DropdownItem>}
@@ -607,6 +612,7 @@ export default function RecipeTabContent() {
 						<span className="cursor-auto whitespace-nowrap">表格行数</span>
 						<Select
 							disallowEmptySelection
+							disableAnimation={isReducedMotion}
 							isVirtualized={false}
 							items={tableSelectableRows}
 							selectedKeys={tableRowsPerPage}
@@ -622,12 +628,12 @@ export default function RecipeTabContent() {
 							classNames={{
 								base: 'min-w-16',
 								listboxWrapper:
-									'[&_li]:transition-background focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40',
+									'[&_li]:transition-background focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40 motion-reduce:[&_li]:transition-none',
 								popoverContent: cn('min-w-20', {
 									'bg-content1/70 backdrop-blur-lg': isHighAppearance,
 								}),
 								trigger: cn(
-									'h-6 min-h-6 bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
+									'h-6 min-h-6 bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover motion-reduce:transition-none',
 									{
 										'backdrop-blur': isHighAppearance,
 									}
@@ -652,6 +658,7 @@ export default function RecipeTabContent() {
 			allRecipeTags,
 			filteredData.length,
 			isHighAppearance,
+			isReducedMotion,
 			popoverMotionProps,
 			searchValue,
 			selectedCookers,
@@ -672,6 +679,7 @@ export default function RecipeTabContent() {
 						/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/4275} is fixed. */
 						// showControls
 						showShadow
+						disableAnimation={isReducedMotion}
 						size="sm"
 						page={tableCurrentPage}
 						total={tableTotalPages}
@@ -688,7 +696,7 @@ export default function RecipeTabContent() {
 				)}
 			</div>
 		),
-		[isHighAppearance, tableCurrentPage, tableCurrentPageItems.length, tableTotalPages, vibrate]
+		[isHighAppearance, isReducedMotion, tableCurrentPage, tableCurrentPageItems.length, tableTotalPages, vibrate]
 	);
 
 	return (
@@ -708,7 +716,7 @@ export default function RecipeTabContent() {
 			aria-label="料理选择表格"
 			classNames={{
 				base: 'gap-2',
-				td: 'before:bg-default-200/70 before:transition-colors-opacity',
+				td: 'before:bg-default-200/70 before:transition-colors-opacity motion-reduce:before:transition-none',
 				th: cn('bg-default-200/70', {
 					'backdrop-blur-sm': isHighAppearance,
 				}),

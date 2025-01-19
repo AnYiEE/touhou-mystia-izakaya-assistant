@@ -2,13 +2,11 @@
 
 import {type ElementRef, forwardRef, memo} from 'react';
 
-import {Card, type CardProps} from '@nextui-org/card';
-
-import {cn} from '@/design/ui/components';
+import {Card, type ICardProps, cn} from '@/design/ui/components';
 
 import {globalStore as store} from '@/stores';
 
-interface IProps extends Omit<CardProps, 'className' | 'classNames'> {
+interface IProps extends Omit<ICardProps, 'className' | 'classNames'> {
 	name: ReactNodeWithoutBoolean;
 	description?: ReactNodeWithoutBoolean;
 	image: ReactNodeWithoutBoolean;

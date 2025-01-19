@@ -2,7 +2,7 @@
 
 import {type ComponentProps, type ElementRef, forwardRef, memo, useMemo} from 'react';
 
-import {useMotionProps} from '@/design/ui/hooks';
+import {useMotionProps, useReducedMotion} from '@/design/ui/hooks';
 
 import {Popover as NextUIPopover} from '@nextui-org/popover';
 import {type InternalForwardRefRenderFunction, extendVariants} from '@nextui-org/system';
@@ -55,10 +55,22 @@ type Ref = NonNullable<IProps['ref']>;
 
 export default memo(
 	forwardRef<ElementRef<typeof NextUIPopover>, IProps>(function Popover(
-		{classNames, color, disableBlur, offset, shouldBlockScroll, shouldCloseOnScroll, showArrow, size, ...props},
+		{
+			classNames,
+			color,
+			disableAnimation,
+			disableBlur,
+			offset,
+			shouldBlockScroll,
+			shouldCloseOnScroll,
+			showArrow,
+			size,
+			...props
+		},
 		ref
 	) {
 		const motionProps = useMotionProps('popover');
+		const isReducedMotion = useReducedMotion();
 
 		const isHighAppearance = store.persistence.highAppearance.use();
 
@@ -70,6 +82,7 @@ export default memo(
 		return (
 			<CustomNextUIPopover
 				color={color}
+				disableAnimation={disableAnimation ?? isReducedMotion}
 				motionProps={motionProps}
 				// The same offset position as `Tooltip`.
 				offset={

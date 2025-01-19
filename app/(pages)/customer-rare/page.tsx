@@ -304,7 +304,7 @@ export default function CustomerRare() {
 					onSelectionChange={onTabSelectionChange}
 					classNames={{
 						tab: cn(
-							'transition data-[hover=true]:!opacity-100 data-[hover-unselected=true]:brightness-95 data-[pressed=true]:!brightness-90',
+							'transition data-[hover=true]:!opacity-100 data-[hover-unselected=true]:brightness-95 data-[pressed=true]:!brightness-90 motion-reduce:transition-none',
 							isHighAppearance
 								? 'data-[hover-unselected=true]:bg-default-200/40 data-[pressed=true]:!bg-default-200/40'
 								: 'data-[hover-unselected=true]:bg-default-200 data-[pressed=true]:!bg-default-200'

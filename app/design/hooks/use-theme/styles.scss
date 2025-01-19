@@ -1,3 +1,3 @@
 body {
-	@apply transition-colors;
+	@apply transition-colors motion-reduce:transition-none;
 }

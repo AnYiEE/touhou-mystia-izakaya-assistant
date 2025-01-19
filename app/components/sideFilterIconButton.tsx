@@ -8,7 +8,16 @@ import {type Selection} from '@nextui-org/table';
 import {Select, SelectItem, type SelectProps} from '@nextui-org/select';
 import {faFilter} from '@fortawesome/free-solid-svg-icons';
 
-import {Button, Popover, PopoverContent, PopoverTrigger, Tooltip, cn, useMotionProps} from '@/design/ui/components';
+import {
+	Button,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	Tooltip,
+	cn,
+	useMotionProps,
+	useReducedMotion,
+} from '@/design/ui/components';
 
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
 import Sprite from '@/components/sprite';
@@ -34,6 +43,7 @@ interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color
 
 export default memo<IProps>(function SideFilterIconButton({className, selectConfig, ...props}) {
 	const selectMotionProps = useMotionProps('select');
+	const isReducedMotion = useReducedMotion();
 	const vibrate = useVibrate();
 
 	const isHighAppearance = store.persistence.highAppearance.use();
@@ -86,6 +96,7 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 						({items, label, selectedKeys, selectionMode, setSelectedKeys, spriteTarget}, index) => (
 							<Select
 								key={index}
+								disableAnimation={isReducedMotion}
 								isVirtualized={false}
 								items={items}
 								label={label}
@@ -98,15 +109,18 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 									shouldCloseOnScroll: false,
 								}}
 								classNames={{
-									listboxWrapper: cn('[&_li]:transition-background', {
-										'focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40':
-											isHighAppearance,
-									}),
+									listboxWrapper: cn(
+										'[&_li]:transition-background motion-reduce:[&_li]:transition-none',
+										{
+											'focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40':
+												isHighAppearance,
+										}
+									),
 									popoverContent: cn({
 										'bg-content1/70 backdrop-blur-lg': isHighAppearance,
 									}),
 									trigger: cn(
-										'transition-background',
+										'transition-background motion-reduce:transition-none',
 										isHighAppearance
 											? 'bg-default/40 data-[hover=true]:bg-default-400/40'
 											: 'bg-default-200 data-[hover=true]:bg-default'

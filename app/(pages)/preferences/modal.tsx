@@ -8,7 +8,7 @@ import {useMounted, useVibrate} from '@/hooks';
 import {Modal, ModalBody, ModalContent} from '@nextui-org/modal';
 import {ScrollShadow} from '@nextui-org/scroll-shadow';
 
-import {cn} from '@/design/ui/components';
+import {cn, useReducedMotion} from '@/design/ui/components';
 
 import Content from './content';
 
@@ -22,6 +22,7 @@ export default function PreferencesModal() {
 	const isMounted = useMounted();
 	const router = useRouter();
 	const vibrate = useVibrate();
+	const isReducedMotion = useReducedMotion();
 
 	const isHighAppearance = store.persistence.highAppearance.use();
 
@@ -41,6 +42,7 @@ export default function PreferencesModal() {
 		<Modal
 			defaultOpen
 			backdrop={isHighAppearance ? 'blur' : 'opaque'}
+			disableAnimation={isReducedMotion}
 			portalContainer={document.querySelector('#modal-portal-container')}
 			scrollBehavior="inside"
 			size="3xl"
@@ -48,7 +50,7 @@ export default function PreferencesModal() {
 			classNames={{
 				base: isHighAppearance ? 'bg-blend-mystia' : 'bg-background dark:bg-content1',
 				closeButton: cn(
-					'transition-background',
+					'transition-background motion-reduce:transition-none',
 					isHighAppearance
 						? 'hover:bg-content1 active:bg-content2'
 						: 'dark:hover:bg-default-200 dark:active:bg-default'

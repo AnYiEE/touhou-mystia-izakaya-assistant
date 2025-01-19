@@ -1,14 +1,12 @@
 import {type PropsWithChildren, memo} from 'react';
 
-import {Switch, type SwitchProps} from '@nextui-org/switch';
-
-import {cn} from '@/design/ui/components';
+import {type ISwitchProps, Switch, cn} from '@/design/ui/components';
 
 interface IProps {
-	'aria-label': NonNullable<SwitchProps['aria-label']>;
-	className?: NonNullable<SwitchProps['className']>;
-	isSelected: NonNullable<SwitchProps['isSelected']>;
-	onValueChange: NonNullable<SwitchProps['onValueChange']>;
+	'aria-label': NonNullable<ISwitchProps['aria-label']>;
+	className?: NonNullable<ISwitchProps['className']>;
+	isSelected: NonNullable<ISwitchProps['isSelected']>;
+	onValueChange: NonNullable<ISwitchProps['onValueChange']>;
 }
 
 export default memo<PropsWithChildren<IProps>>(function SwitchItem({

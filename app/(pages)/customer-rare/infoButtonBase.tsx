@@ -7,7 +7,7 @@ import {Modal, ModalBody, ModalContent} from '@nextui-org/modal';
 import {ScrollShadow} from '@nextui-org/scroll-shadow';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
-import {Tooltip, cn} from '@/design/ui/components';
+import {Tooltip, cn, useReducedMotion} from '@/design/ui/components';
 
 import {trackEvent} from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
@@ -17,6 +17,7 @@ import {globalStore as store} from '@/stores';
 interface IProps extends Pick<AccordionProps, 'children' | 'defaultExpandedKeys'> {}
 
 export default memo<IProps>(function InfoButtonBase({children, defaultExpandedKeys}) {
+	const isReducedMotion = useReducedMotion();
 	const [isOpened, setOpened] = useState(false);
 	const vibrate = useVibrate();
 
@@ -48,6 +49,7 @@ export default memo<IProps>(function InfoButtonBase({children, defaultExpandedKe
 			</Tooltip>
 			<Modal
 				backdrop={isHighAppearance ? 'blur' : 'opaque'}
+				disableAnimation={isReducedMotion}
 				isOpen={isOpened}
 				portalContainer={document.querySelector('#modal-portal-container')}
 				scrollBehavior="inside"
@@ -56,7 +58,7 @@ export default memo<IProps>(function InfoButtonBase({children, defaultExpandedKe
 				classNames={{
 					base: isHighAppearance ? 'bg-blend-mystia' : 'bg-background dark:bg-content1',
 					closeButton: cn(
-						'transition-background',
+						'transition-background motion-reduce:transition-none',
 						isHighAppearance
 							? 'hover:bg-content1 active:bg-content2'
 							: 'dark:hover:bg-default-200 dark:active:bg-default'

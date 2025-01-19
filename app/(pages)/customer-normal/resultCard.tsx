@@ -2,11 +2,10 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import {useVibrate} from '@/hooks';
 
-import {Card} from '@nextui-org/card';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCircleXmark} from '@fortawesome/free-solid-svg-icons';
 
-import {Button, Tooltip, cn} from '@/design/ui/components';
+import {Button, Card, Tooltip, cn} from '@/design/ui/components';
 
 import {Plus, UnknownItem} from '@/(pages)/customer-rare/resultCard';
 import Placeholder from '@/components/placeholder';
@@ -72,7 +71,7 @@ function IngredientsList() {
 											role="button"
 											tabIndex={1}
 											title={ingredient}
-											className="absolute flex h-10 w-10 cursor-pointer items-center justify-center rounded-small bg-foreground bg-opacity-50 text-background opacity-0 transition-opacity hover:opacity-100"
+											className="absolute flex h-10 w-10 cursor-pointer items-center justify-center rounded-small bg-foreground bg-opacity-50 text-background opacity-0 transition-opacity hover:opacity-100 motion-reduce:transition-none"
 										>
 											<FontAwesomeIcon icon={faCircleXmark} size="1x" />
 										</span>
@@ -196,7 +195,7 @@ export default function ResultCard() {
 						variant="flat"
 						onPress={handleSaveButtonPress}
 						aria-label={`保存套餐，当前${currentRating === null ? '未评级' : `评级为${CUSTOMER_RATING_MAP[currentRating]}`}`}
-						className={cn('!transition md:w-auto', {
+						className={cn('!transition motion-reduce:!transition-none md:w-auto', {
 							'opacity-disabled': isSaveButtonDisabled,
 						})}
 					>

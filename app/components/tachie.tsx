@@ -4,14 +4,17 @@ import {memo} from 'react';
 
 import {Image, type ImageProps} from '@nextui-org/image';
 
-import {cn} from '@/design/ui/components';
+import {cn, useReducedMotion} from '@/design/ui/components';
 
 interface IProps extends Pick<ImageProps, 'alt' | 'aria-hidden' | 'className' | 'src' | 'width'> {}
 
 export default memo<IProps>(function Tachie({alt, className, src, width, ...props}) {
+	const isReducedMotion = useReducedMotion();
+
 	return (
 		<Image
 			removeWrapper
+			disableAnimation={isReducedMotion}
 			draggable={false}
 			alt={alt}
 			src={src}

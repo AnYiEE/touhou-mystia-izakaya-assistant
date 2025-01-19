@@ -7,7 +7,15 @@ import {useVibrate} from '@/hooks';
 import {Autocomplete, AutocompleteItem, type AutocompleteProps} from '@nextui-org/autocomplete';
 import {faMagnifyingGlass} from '@fortawesome/free-solid-svg-icons';
 
-import {Popover, PopoverContent, PopoverTrigger, Tooltip, cn, useMotionProps} from '@/design/ui/components';
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	Tooltip,
+	cn,
+	useMotionProps,
+	useReducedMotion,
+} from '@/design/ui/components';
 
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
 import Sprite from '@/components/sprite';
@@ -35,6 +43,7 @@ export default memo<IProps>(function SideSearchIconButton({
 	...props
 }) {
 	const selectMotionProps = useMotionProps('select');
+	const isReducedMotion = useReducedMotion();
 	const vibrate = useVibrate();
 
 	const isHighAppearance = store.persistence.highAppearance.use();
@@ -75,6 +84,7 @@ export default memo<IProps>(function SideSearchIconButton({
 				<Autocomplete
 					allowsCustomValue
 					defaultItems={searchItems}
+					disableAnimation={isReducedMotion}
 					inputValue={searchValue}
 					isVirtualized={false}
 					label={label}
@@ -91,7 +101,7 @@ export default memo<IProps>(function SideSearchIconButton({
 						clearButton: isHighAppearance
 							? 'data-[hover=true]:bg-default/40'
 							: 'data-[hover=true]:bg-default-400 [&+button[data-hover=true]]:bg-default-400',
-						listboxWrapper: cn('[&_li]:transition-background', {
+						listboxWrapper: cn('[&_li]:transition-background motion-reduce:[&_li]:transition-none', {
 							'data-[hover=true]:[&_li]:!bg-default/40': isHighAppearance,
 						}),
 						popoverContent: cn({

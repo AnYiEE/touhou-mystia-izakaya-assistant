@@ -2,6 +2,8 @@
 
 import {type ElementRef, forwardRef, memo, useMemo} from 'react';
 
+import {useReducedMotion} from '@/design/ui/hooks';
+
 import {type ButtonProps, Button as NextUIButton} from '@nextui-org/button';
 import {type InternalForwardRefRenderFunction} from '@nextui-org/system';
 
@@ -16,12 +18,14 @@ export default memo(
 		{className, color, disableAnimation, variant, ...props},
 		ref
 	) {
+		const isReducedMotion = useReducedMotion();
+
 		const isHighAppearance = store.persistence.highAppearance.use();
 
 		const styleBase = useMemo(() => {
 			const effect = cn(
 				'data-[hover=true]:!opacity-100 data-[hover=true]:brightness-95',
-				'data-[pressed=true]:scale-[0.98] data-[pressed=true]:brightness-90'
+				'data-[pressed=true]:scale-[0.98] data-[pressed=true]:brightness-90 motion-reduce:data-[pressed=true]:scale-100'
 			);
 			const transition = cn('!transition motion-reduce:!transition-none', disableAnimation && '!transition-none');
 
@@ -181,7 +185,7 @@ export default memo(
 		return (
 			<NextUIButton
 				color={color}
-				disableAnimation={disableAnimation}
+				disableAnimation={disableAnimation ?? isReducedMotion}
 				variant={variant}
 				className={cn(styleBase, styleBlur, styleColor, className)}
 				{...props}

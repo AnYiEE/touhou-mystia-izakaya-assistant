@@ -36,6 +36,8 @@ interface IProps {
 
 export default function Providers({children, locale}: PropsWithChildren<IProps>) {
 	useEffect(() => {
+		const EVENT_TYPE = 'storage';
+
 		// If the saved version is not set or outdated, initialize it with the current version.
 		// When an outdated version is detected, the current tab will update the saved version in local storage.
 		// Other tabs will monitor changes in the saved version and reload the page as needed. See below.
@@ -59,7 +61,7 @@ export default function Providers({children, locale}: PropsWithChildren<IProps>)
 		recipesStore.shared.popularTrend.set(globalPopularTrend);
 
 		// Synchronize state across multiple tabs as needed.
-		const updateStore = debounce((event: StorageEvent) => {
+		const handleStorage = debounce((event: StorageEvent) => {
 			const {key, newValue} = event;
 			if (newValue === null) {
 				return;
@@ -114,10 +116,10 @@ export default function Providers({children, locale}: PropsWithChildren<IProps>)
 			}
 		}, 1000);
 
-		globalThis.addEventListener('storage', updateStore);
+		globalThis.addEventListener(EVENT_TYPE, handleStorage);
 
 		return () => {
-			globalThis.removeEventListener('storage', updateStore);
+			globalThis.removeEventListener(EVENT_TYPE, handleStorage);
 		};
 	}, []);
 

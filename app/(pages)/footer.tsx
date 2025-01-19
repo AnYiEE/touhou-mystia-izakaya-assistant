@@ -1,10 +1,6 @@
-import {type PropsWithChildren, memo} from 'react';
 import {execSync} from 'node:child_process';
 
-import {Tooltip, type TooltipProps} from '@nextui-org/tooltip';
-
-import {type ILinkProps, Link, cn, getMotionProps} from '@/design/ui/components';
-
+import {FooterLinkWithTooltip} from './footerLink';
 import QRCode from '@/components/qrCode';
 
 import {siteConfig} from '@/configs';
@@ -26,62 +22,6 @@ const sha = (() => {
 
 	return null;
 })();
-
-interface IFooterLinkProps extends Pick<ILinkProps, 'href' | 'isExternal' | 'title'> {
-	content?: ReactNodeWithoutBoolean;
-}
-
-const FooterLink = memo<PropsWithChildren<IFooterLinkProps>>(function FooterLink({
-	children,
-	content,
-	href = '#',
-	isExternal = true,
-	title,
-}) {
-	return (
-		<Link
-			isExternal={isExternal}
-			showAnchorIcon={isExternal}
-			href={href}
-			aria-label={typeof content === 'string' ? content : (title ?? (children as string))}
-			title={title}
-			classNames={{
-				base: 'rounded-small text-tiny',
-				underline: 'bottom-0',
-			}}
-		>
-			{children}
-		</Link>
-	);
-});
-
-interface IFooterLinkWithTooltipProps extends IFooterLinkProps, Pick<TooltipProps, 'classNames'> {
-	content: ReactNodeWithoutBoolean;
-}
-
-const FooterLinkWithTooltip = memo<PropsWithChildren<IFooterLinkWithTooltipProps>>(function FooterLinkWithTooltip({
-	classNames,
-	...props
-}) {
-	return (
-		<Tooltip
-			closeDelay={0}
-			content={props.content}
-			isDisabled={!props.content}
-			offset={2}
-			size="sm"
-			motionProps={getMotionProps('tooltip')}
-			classNames={{
-				...classNames,
-				content: cn('bg-content1/40 backdrop-blur-lg dark:bg-content1/70', classNames?.content),
-			}}
-		>
-			<span>
-				<FooterLink {...props} />
-			</span>
-		</Tooltip>
-	);
-});
 
 export default function Footer() {
 	return (

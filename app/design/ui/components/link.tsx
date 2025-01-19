@@ -2,6 +2,8 @@
 
 import {type ElementRef, forwardRef, memo} from 'react';
 
+import {useReducedMotion} from '@/design/ui/hooks';
+
 import {type LinkProps, Link as NextUILink} from '@nextui-org/link';
 import {type InternalForwardRefRenderFunction} from '@nextui-org/system';
 
@@ -30,9 +32,11 @@ export default memo(
 		},
 		ref
 	) {
+		const isReducedMotion = useReducedMotion();
+
 		return (
 			<NextUILink
-				disableAnimation={disableAnimation}
+				disableAnimation={disableAnimation ?? isReducedMotion}
 				referrerPolicy="same-origin"
 				showAnchorIcon={Boolean(showAnchorIcon)}
 				className={cn(
@@ -42,7 +46,7 @@ export default memo(
 						'transition hover:brightness-95',
 					],
 					{
-						'group relative transition': animationUnderline,
+						'group relative transition motion-reduce:transition-none': animationUnderline,
 					},
 					className,
 					classNames?.base
@@ -54,7 +58,7 @@ export default memo(
 				{animationUnderline && (
 					<span
 						className={cn(
-							'absolute bottom-0.5 left-1/2 h-px w-0 -translate-x-1/2 rounded-small bg-current transition-width group-hover:w-full',
+							'absolute bottom-0.5 left-1/2 h-px w-0 -translate-x-1/2 rounded-small bg-current transition-width group-hover:w-full motion-reduce:transition-none',
 							{
 								'h-0.5': !showAnchorIcon,
 								'w-full': forcedUnderline,

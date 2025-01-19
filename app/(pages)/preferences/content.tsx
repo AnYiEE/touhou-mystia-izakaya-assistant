@@ -6,10 +6,9 @@ import {useRouter} from 'next/navigation';
 import {useVibrate} from '@/hooks';
 
 import {Select, SelectItem} from '@nextui-org/select';
-import {Switch} from '@nextui-org/switch';
 import {type Selection} from '@nextui-org/table';
 
-import {Button, cn, useMotionProps} from '@/design/ui/components';
+import {Button, Switch, cn, useMotionProps, useReducedMotion} from '@/design/ui/components';
 
 import DataManager, {type IDataManagerProps} from './dataManager';
 import SwitchItem from './switchItem';
@@ -23,6 +22,7 @@ import {toSet} from '@/utilities';
 interface IProps extends IDataManagerProps {}
 
 export default memo<IProps>(function Content({onModalClose}) {
+	const isReducedMotion = useReducedMotion();
 	const popoverMotionProps = useMotionProps('popover');
 	const router = useRouter();
 	const vibrate = useVibrate();
@@ -123,6 +123,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 					<div className="flex items-center">
 						<span className="font-medium">标签：</span>
 						<Select
+							disableAnimation={isReducedMotion}
 							isVirtualized={false}
 							items={popularTags}
 							selectedKeys={selectedPopularTag}
@@ -136,15 +137,18 @@ export default memo<IProps>(function Content({onModalClose}) {
 							}}
 							classNames={{
 								base: 'w-28',
-								listboxWrapper: cn('[&_li]:transition-background', {
-									'focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40':
-										isHighAppearance,
-								}),
+								listboxWrapper: cn(
+									'[&_li]:transition-background motion-reduce:[&_li]:transition-none',
+									{
+										'focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40':
+											isHighAppearance,
+									}
+								),
 								popoverContent: cn({
 									'bg-content1/70 backdrop-blur-lg': isHighAppearance,
 								}),
 								trigger: cn(
-									'transition-background',
+									'transition-background motion-reduce:transition-none',
 									onModalClose !== undefined || !isHighAppearance
 										? 'bg-default-200 data-[hover=true]:bg-default dark:bg-default-100 dark:data-[hover=true]:bg-default-200'
 										: 'bg-default/40 backdrop-blur data-[hover=true]:bg-default-400/40'

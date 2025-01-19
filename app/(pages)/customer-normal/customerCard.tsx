@@ -2,7 +2,6 @@ import {useCallback, useMemo} from 'react';
 
 import {useVibrate} from '@/hooks';
 
-import {Card} from '@nextui-org/card';
 import {Divider} from '@nextui-org/divider';
 import {type Selection} from '@nextui-org/table';
 import {faArrowsRotate, faXmark} from '@fortawesome/free-solid-svg-icons';
@@ -11,6 +10,7 @@ import {ratingStyles} from '@/design/theme/styles/rating';
 import {
 	Avatar,
 	CLASSNAME_FOCUS_VISIBLE_OUTLINE,
+	Card,
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
@@ -142,7 +142,7 @@ export default function CustomerCard() {
 			shadow="sm"
 			classNames={{
 				base: cn(
-					'!transition',
+					'!transition motion-reduce:!transition-none',
 					{
 						'bg-content1/40 backdrop-blur': isHighAppearance,
 						'ring-4 ring-opacity-50': hasRating,
@@ -185,9 +185,12 @@ export default function CustomerCard() {
 												</div>
 											}
 											classNames={{
-												base: cn('h-12 w-12 transition lg:h-16 lg:w-16', {
-													'ring-4': hasRating,
-												}),
+												base: cn(
+													'h-12 w-12 transition motion-reduce:transition-none lg:h-16 lg:w-16',
+													{
+														'ring-4': hasRating,
+													}
+												),
 												icon: 'inline-table lg:inline-block',
 											}}
 										/>

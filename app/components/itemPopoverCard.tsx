@@ -18,7 +18,6 @@ import {useParams} from '@/hooks';
 import {PARAM_SPECIFY} from '@/hooks/useOpenedItemPopover';
 import {PARAM_PREVIEW, useViewInNewWindow} from '@/hooks/useViewInNewWindow';
 
-import {Snippet} from '@nextui-org/snippet';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faLink, faShare, faXmark} from '@fortawesome/free-solid-svg-icons';
 
@@ -28,6 +27,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 	type PopoverTriggerProps,
+	Snippet,
 	Tooltip,
 	cn,
 	usePopoverContext,
@@ -250,7 +250,7 @@ const ItemPopoverCardComponent = memo(
 						target={target}
 						name={name}
 						size={2}
-						className={cn('transition-transform hover:scale-150', {
+						className={cn('transition-transform hover:scale-150 motion-reduce:transition-none', {
 							'rounded-full': target === 'partner',
 						})}
 					/>

@@ -2,12 +2,11 @@ import {Fragment, memo} from 'react';
 
 import {useVibrate, useViewInNewWindow} from '@/hooks';
 
-import {Card} from '@nextui-org/card';
 import {Divider} from '@nextui-org/divider';
 import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
 import {faArrowDown, faArrowUp} from '@fortawesome/free-solid-svg-icons';
 
-import {Avatar, Button, Popover, PopoverContent, PopoverTrigger, Tooltip, cn} from '@/design/ui/components';
+import {Avatar, Button, Card, Popover, PopoverContent, PopoverTrigger, Tooltip, cn} from '@/design/ui/components';
 
 import {Plus} from './resultCard';
 import TagGroup from './tagGroup';
@@ -51,9 +50,12 @@ const MoveButtonComponent = memo<IMoveButtonProps>(function MoveButton({directio
 				size="1x"
 				onClick={onClick}
 				role="button"
-				className={cn('cursor-pointer text-default transition-colors hover:text-default-400', {
-					'cursor-not-allowed hover:text-default-200': isDisabled,
-				})}
+				className={cn(
+					'cursor-pointer text-default transition-colors hover:text-default-400 motion-reduce:transition-none',
+					{
+						'cursor-not-allowed hover:text-default-200': isDisabled,
+					}
+				)}
 			/>
 		</Tooltip>
 	);
