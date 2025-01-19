@@ -4,7 +4,7 @@ import {type ElementRef, forwardRef, memo} from 'react';
 
 import {useMotionProps, useReducedMotion} from '@/design/ui/hooks';
 
-import {type DropdownProps, Dropdown as NextUIDropdown} from '@nextui-org/dropdown';
+import {type DropdownProps, Dropdown as HeroUIDropdown} from '@heroui/dropdown';
 
 import {cn} from '@/design/ui/utils';
 
@@ -15,7 +15,7 @@ interface IProps extends DropdownProps {}
 type Ref = NonNullable<DropdownProps['ref']>;
 
 export default memo(
-	forwardRef<ElementRef<typeof NextUIDropdown>, IProps>(function Dropdown(
+	forwardRef<ElementRef<typeof HeroUIDropdown>, IProps>(function Dropdown(
 		{classNames, disableAnimation, shouldBlockScroll, shouldCloseOnScroll, showArrow, ...props},
 		ref
 	) {
@@ -25,7 +25,7 @@ export default memo(
 		const isHighAppearance = store.persistence.highAppearance.use();
 
 		return (
-			<NextUIDropdown
+			<HeroUIDropdown
 				disableAnimation={disableAnimation ?? isReducedMotion}
 				motionProps={motionProps}
 				shouldBlockScroll={Boolean(shouldBlockScroll)}
@@ -46,9 +46,9 @@ export default memo(
 			/>
 		);
 	})
-) as typeof NextUIDropdown;
+) as typeof HeroUIDropdown;
 
 export type {IProps as IDropdownProps};
 
-export {DropdownItem, DropdownMenu, DropdownTrigger} from '@nextui-org/dropdown';
-export type {DropdownItemProps, DropdownMenuProps, DropdownTriggerProps} from '@nextui-org/dropdown';
+export {DropdownItem, DropdownMenu, DropdownTrigger} from '@heroui/dropdown';
+export type {DropdownItemProps, DropdownMenuProps, DropdownTriggerProps} from '@heroui/dropdown';

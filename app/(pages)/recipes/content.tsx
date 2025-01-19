@@ -58,7 +58,7 @@ export default memo<IProps>(function Content({data}) {
 			<ItemPopoverCard.Popover
 				key={dataIndex}
 				showArrow
-				/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/3736} is fixed. */
+				/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/3736} is fixed. */
 				// backdrop={isHighAppearance ? 'blur' : 'opaque'}
 				isOpen={checkDefaultOpen(name)}
 			>

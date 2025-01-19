@@ -1,6 +1,6 @@
 import {type Metadata} from 'next';
 
-import {Divider} from '@nextui-org/divider';
+import {Divider} from '@heroui/divider';
 
 import {Button, Link} from '@/design/ui/components';
 

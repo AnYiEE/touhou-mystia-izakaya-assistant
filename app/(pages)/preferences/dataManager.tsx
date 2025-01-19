@@ -5,8 +5,8 @@ import {useRouter} from 'next/navigation';
 import {useProgress} from 'react-transition-progress';
 import {usePathname, useThrottle} from '@/hooks';
 
-import {Textarea} from '@nextui-org/input';
-import {Tab, Tabs} from '@nextui-org/tabs';
+import {Textarea} from '@heroui/input';
+import {Tab, Tabs} from '@heroui/tabs';
 
 import {
 	Button,

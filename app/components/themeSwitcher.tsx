@@ -5,8 +5,8 @@ import {memo, useCallback, useEffect, useMemo, useState} from 'react';
 import {THEME_MAP, type TTheme, useTheme} from '@/design/hooks';
 import {useMounted, useVibrate} from '@/hooks';
 
-import {type Selection} from '@nextui-org/table';
-import {Spinner} from '@nextui-org/spinner';
+import {type Selection} from '@heroui/table';
+import {Spinner} from '@heroui/spinner';
 import {faCircleHalfStroke, faMoon, faSun} from '@fortawesome/free-solid-svg-icons';
 
 import {

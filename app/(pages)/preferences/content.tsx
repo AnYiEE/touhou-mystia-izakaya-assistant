@@ -5,8 +5,8 @@ import {memo, useCallback} from 'react';
 import {useRouter} from 'next/navigation';
 import {useVibrate} from '@/hooks';
 
-import {Select, SelectItem} from '@nextui-org/select';
-import {type Selection} from '@nextui-org/table';
+import {Select, SelectItem} from '@heroui/select';
+import {type Selection} from '@heroui/table';
 
 import {Button, Switch, cn, useMotionProps, useReducedMotion} from '@/design/ui/components';
 

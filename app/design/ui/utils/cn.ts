@@ -1,1 +1,1 @@
-export {cn} from '@nextui-org/theme';
+export {cn} from '@heroui/theme';

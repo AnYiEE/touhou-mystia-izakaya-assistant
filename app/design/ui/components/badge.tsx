@@ -4,16 +4,16 @@ import {type ElementRef, forwardRef, memo} from 'react';
 
 import {useReducedMotion} from '@/design/ui/hooks';
 
-import {type BadgeProps, Badge as NextUIBadge} from '@nextui-org/badge';
-import {type InternalForwardRefRenderFunction} from '@nextui-org/system';
+import {type BadgeProps, Badge as HeroUIBadge} from '@heroui/badge';
+import {type InternalForwardRefRenderFunction} from '@heroui/system';
 
 interface IProps extends BadgeProps {}
 
 export default memo(
-	forwardRef<ElementRef<typeof NextUIBadge>, IProps>(function Badge({disableAnimation, ...props}, ref) {
+	forwardRef<ElementRef<typeof HeroUIBadge>, IProps>(function Badge({disableAnimation, ...props}, ref) {
 		const isReducedMotion = useReducedMotion();
 
-		return <NextUIBadge disableAnimation={disableAnimation ?? isReducedMotion} {...props} ref={ref} />;
+		return <HeroUIBadge disableAnimation={disableAnimation ?? isReducedMotion} {...props} ref={ref} />;
 	})
 ) as InternalForwardRefRenderFunction<'span', IProps>;
 

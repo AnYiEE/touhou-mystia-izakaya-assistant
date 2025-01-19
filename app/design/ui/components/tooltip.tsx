@@ -4,24 +4,24 @@ import {type ComponentProps, type ElementRef, forwardRef, memo, useMemo} from 'r
 
 import {useMotionProps, useReducedMotion} from '@/design/ui/hooks';
 
-import {type InternalForwardRefRenderFunction, extendVariants} from '@nextui-org/system';
-import {Tooltip as NextUITooltip} from '@nextui-org/tooltip';
+import {type InternalForwardRefRenderFunction, extendVariants} from '@heroui/system';
+import {Tooltip as HeroUITooltip} from '@heroui/tooltip';
 
 import {getStyleBlur} from '@/design/ui/components/popover';
 import {cn, generateRatingVariants} from '@/design/ui/utils';
 
 import {globalStore as store} from '@/stores';
 
-const CustomNextUITooltip = extendVariants(NextUITooltip, generateRatingVariants('content'));
+const CustomHeroUITooltip = extendVariants(HeroUITooltip, generateRatingVariants('content'));
 
-interface IProps extends ComponentProps<typeof CustomNextUITooltip> {
+interface IProps extends ComponentProps<typeof CustomHeroUITooltip> {
 	disableBlur?: boolean;
 }
 
 type Ref = NonNullable<IProps['ref']>;
 
 export default memo(
-	forwardRef<ElementRef<typeof NextUITooltip>, IProps>(function Tooltip(
+	forwardRef<ElementRef<typeof HeroUITooltip>, IProps>(function Tooltip(
 		{classNames, color, disableAnimation, disableBlur, radius, showArrow, ...props},
 		ref
 	) {
@@ -36,7 +36,7 @@ export default memo(
 		);
 
 		return (
-			<CustomNextUITooltip
+			<CustomHeroUITooltip
 				color={color}
 				disableAnimation={disableAnimation ?? isReducedMotion}
 				motionProps={motionProps}

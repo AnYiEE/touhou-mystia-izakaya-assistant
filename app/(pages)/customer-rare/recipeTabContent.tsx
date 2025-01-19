@@ -3,10 +3,10 @@ import {curry, curryRight} from 'lodash';
 
 import {useVibrate, useViewInNewWindow} from '@/hooks';
 
-import {Autocomplete, AutocompleteItem} from '@nextui-org/autocomplete';
-import {Pagination} from '@nextui-org/pagination';
-import {Select, SelectItem} from '@nextui-org/select';
-import {type SortDescriptor, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow} from '@nextui-org/table';
+import {Autocomplete, AutocompleteItem} from '@heroui/autocomplete';
+import {Pagination} from '@heroui/pagination';
+import {Select, SelectItem} from '@heroui/select';
+import {type SortDescriptor, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow} from '@heroui/table';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faChevronDown, faMagnifyingGlass, faPlus, faTags} from '@fortawesome/free-solid-svg-icons';
 
@@ -676,7 +676,7 @@ export default function RecipeTabContent() {
 			<div className="flex justify-center pt-2">
 				{tableCurrentPageItems.length > 0 && (
 					<Pagination
-						/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/4275} is fixed. */
+						/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/4275} is fixed. */
 						// showControls
 						showShadow
 						disableAnimation={isReducedMotion}

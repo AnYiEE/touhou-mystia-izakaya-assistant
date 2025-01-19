@@ -1,6 +1,6 @@
 import {type ReactElement} from 'react';
 
-import {AccordionItem} from '@nextui-org/accordion';
+import {AccordionItem} from '@heroui/accordion';
 
 import {Avatar} from '@/design/ui/components';
 

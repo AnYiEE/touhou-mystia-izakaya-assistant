@@ -3,7 +3,7 @@ import {curry, curryRight, debounce} from 'lodash';
 
 import {useVibrate} from '@/hooks';
 
-import {ScrollShadow} from '@nextui-org/scroll-shadow';
+import {ScrollShadow} from '@heroui/scroll-shadow';
 
 import {Badge, Button, Tooltip, cn} from '@/design/ui/components';
 

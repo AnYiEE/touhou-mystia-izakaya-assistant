@@ -3,7 +3,7 @@ import {debounce} from 'lodash';
 
 import {useVibrate} from '@/hooks';
 
-import {ScrollShadow} from '@nextui-org/scroll-shadow';
+import {ScrollShadow} from '@heroui/scroll-shadow';
 
 import {Avatar, Button, cn} from '@/design/ui/components';
 

@@ -4,7 +4,7 @@ import {type Dispatch, type SetStateAction, memo, useCallback} from 'react';
 
 import {useVibrate} from '@/hooks';
 
-import {Autocomplete, AutocompleteItem, type AutocompleteProps} from '@nextui-org/autocomplete';
+import {Autocomplete, AutocompleteItem, type AutocompleteProps} from '@heroui/autocomplete';
 import {faMagnifyingGlass} from '@fortawesome/free-solid-svg-icons';
 
 import {
@@ -61,7 +61,7 @@ export default memo<IProps>(function SideSearchIconButton({
 	return (
 		<Popover
 			shouldBlockScroll
-			/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/3736} is fixed. */
+			/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/3736} is fixed. */
 			// backdrop="opaque"
 			placement="left"
 			onOpenChange={vibrate}

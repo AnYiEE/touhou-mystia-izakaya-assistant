@@ -4,8 +4,8 @@ import {type Dispatch, memo, useCallback, useMemo} from 'react';
 
 import {useVibrate} from '@/hooks';
 
-import {type Selection} from '@nextui-org/table';
-import {Select, SelectItem, type SelectProps} from '@nextui-org/select';
+import {type Selection} from '@heroui/table';
+import {Select, SelectItem, type SelectProps} from '@heroui/select';
 import {faFilter} from '@fortawesome/free-solid-svg-icons';
 
 import {
@@ -71,7 +71,7 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 	return (
 		<Popover
 			shouldBlockScroll
-			/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/3736} is fixed. */
+			/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/3736} is fixed. */
 			// backdrop="opaque"
 			placement="left"
 			onOpenChange={vibrate}

@@ -1,4 +1,4 @@
-import {type SortDescriptor} from '@nextui-org/table';
+import {type SortDescriptor} from '@heroui/table';
 
 import {type TabVisibilityState} from './constants';
 import {type TBeverageTag, type TRecipeTag} from '@/data';

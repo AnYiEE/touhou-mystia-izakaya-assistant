@@ -1,0 +1,93 @@
+diff --git a/dist/index.js b/dist/index.js
+index cede50f2b62b1fa60e0467b05b6de2ff2180af60..c9d964a5eeb7d496f0ac5ab7fa4125f50c678989 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -24,7 +24,6 @@ __export(src_exports, {
+ });
+ module.exports = __toCommonJS(src_exports);
+ var import_utils = require("@react-aria/utils");
+-var import_shared_utils = require("@heroui/shared-utils");
+ var import_focus = require("@react-aria/focus");
+ var import_interactions = require("@react-aria/interactions");
+ function useAriaLink(props, ref) {
+@@ -45,22 +44,9 @@ function useAriaLink(props, ref) {
+       tabIndex: !isDisabled ? 0 : void 0
+     };
+   }
+-  let isMobile = (0, import_utils.isIOS)() || (0, import_utils.isAndroid)();
+-  if (deprecatedOnClick && typeof deprecatedOnClick === "function" && role !== "button") {
+-    (0, import_shared_utils.warn)(
+-      "onClick is deprecated, please use onPress instead. See: https://github.com/heroui-inc/heroui/issues/4292",
+-      "useLink"
+-    );
+-  }
+-  const handlePress = (e) => {
+-    if (isMobile) {
+-      deprecatedOnClick == null ? void 0 : deprecatedOnClick(e);
+-    }
+-    onPress == null ? void 0 : onPress(e);
+-  };
+   let { focusableProps } = (0, import_focus.useFocusable)(props, ref);
+   let { pressProps, isPressed } = (0, import_interactions.usePress)({
+-    onPress: handlePress,
++    onPress,
+     onPressStart,
+     onPressEnd,
+     isDisabled,
+@@ -80,7 +66,7 @@ function useAriaLink(props, ref) {
+       onClick: (e) => {
+         var _a;
+         (_a = pressProps.onClick) == null ? void 0 : _a.call(pressProps, e);
+-        if (!isMobile && deprecatedOnClick) {
++        if (deprecatedOnClick) {
+           deprecatedOnClick(e);
+         }
+         if (!router.isNative && e.currentTarget instanceof HTMLAnchorElement && e.currentTarget.href && !e.isDefaultPrevented() && (0, import_utils.shouldClientNavigate)(e.currentTarget, e) && props.href) {
+diff --git a/dist/index.mjs b/dist/index.mjs
+index a107d723c250e21694836f97bb31eb9e880d467b..ed0682b72e5d1516accc6a5edca785e83845d52e 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -5,10 +5,7 @@ import {
+   useRouter,
+   shouldClientNavigate,
+   useLinkProps,
+-  isAndroid,
+-  isIOS
+ } from "@react-aria/utils";
+-import { warn } from "@heroui/shared-utils";
+ import { useFocusable } from "@react-aria/focus";
+ import { usePress } from "@react-aria/interactions";
+ function useAriaLink(props, ref) {
+@@ -29,22 +26,9 @@ function useAriaLink(props, ref) {
+       tabIndex: !isDisabled ? 0 : void 0
+     };
+   }
+-  let isMobile = isIOS() || isAndroid();
+-  if (deprecatedOnClick && typeof deprecatedOnClick === "function" && role !== "button") {
+-    warn(
+-      "onClick is deprecated, please use onPress instead. See: https://github.com/heroui-inc/heroui/issues/4292",
+-      "useLink"
+-    );
+-  }
+-  const handlePress = (e) => {
+-    if (isMobile) {
+-      deprecatedOnClick == null ? void 0 : deprecatedOnClick(e);
+-    }
+-    onPress == null ? void 0 : onPress(e);
+-  };
+   let { focusableProps } = useFocusable(props, ref);
+   let { pressProps, isPressed } = usePress({
+-    onPress: handlePress,
++    onPress,
+     onPressStart,
+     onPressEnd,
+     isDisabled,
+@@ -64,7 +48,7 @@ function useAriaLink(props, ref) {
+       onClick: (e) => {
+         var _a;
+         (_a = pressProps.onClick) == null ? void 0 : _a.call(pressProps, e);
+-        if (!isMobile && deprecatedOnClick) {
++        if (deprecatedOnClick) {
+           deprecatedOnClick(e);
+         }
+         if (!router.isNative && e.currentTarget instanceof HTMLAnchorElement && e.currentTarget.href && !e.isDefaultPrevented() && shouldClientNavigate(e.currentTarget, e) && props.href) {

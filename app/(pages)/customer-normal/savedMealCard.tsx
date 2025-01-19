@@ -2,7 +2,7 @@ import {Fragment} from 'react';
 
 import {useVibrate, useViewInNewWindow} from '@/hooks';
 
-import {Divider} from '@nextui-org/divider';
+import {Divider} from '@heroui/divider';
 
 import {Avatar, Button, Card, Popover, PopoverContent, PopoverTrigger, Tooltip, cn} from '@/design/ui/components';
 

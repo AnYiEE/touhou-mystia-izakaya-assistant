@@ -4,8 +4,8 @@ import {type ElementRef, forwardRef, memo, useMemo} from 'react';
 
 import {useReducedMotion} from '@/design/ui/hooks';
 
-import {type ButtonProps, Button as NextUIButton} from '@nextui-org/button';
-import {type InternalForwardRefRenderFunction} from '@nextui-org/system';
+import {type ButtonProps, Button as HeroUIButton} from '@heroui/button';
+import {type InternalForwardRefRenderFunction} from '@heroui/system';
 
 import {cn} from '@/design/ui/utils';
 
@@ -14,7 +14,7 @@ import {globalStore as store} from '@/stores';
 interface IProps extends ButtonProps {}
 
 export default memo(
-	forwardRef<ElementRef<typeof NextUIButton>, IProps>(function Button(
+	forwardRef<ElementRef<typeof HeroUIButton>, IProps>(function Button(
 		{className, color, disableAnimation, variant, ...props},
 		ref
 	) {
@@ -183,7 +183,7 @@ export default memo(
 		}, [color, variant]);
 
 		return (
-			<NextUIButton
+			<HeroUIButton
 				color={color}
 				disableAnimation={disableAnimation ?? isReducedMotion}
 				variant={variant}

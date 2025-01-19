@@ -1,0 +1,96 @@
+diff --git a/dist/index.js b/dist/index.js
+index 713c650e8e6624373fb2572320777c57dadd71ed..dbf85cfbf157c751b1a4179dd3d8c1e5ed4076d3 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -23,7 +23,6 @@ __export(src_exports, {
+   useAriaButton: () => useAriaButton
+ });
+ module.exports = __toCommonJS(src_exports);
+-var import_shared_utils = require("@heroui/shared-utils");
+ var import_utils = require("@react-aria/utils");
+ var import_focus = require("@react-aria/focus");
+ var import_interactions = require("@react-aria/interactions");
+@@ -62,24 +61,11 @@ function useAriaButton(props, ref) {
+       rel: elementType === "a" ? rel : void 0
+     };
+   }
+-  let isMobile = (0, import_utils.isIOS)() || (0, import_utils.isAndroid)();
+-  if (deprecatedOnClick && typeof deprecatedOnClick === "function") {
+-    (0, import_shared_utils.warn)(
+-      "onClick is deprecated, please use onPress instead. See: https://github.com/heroui-inc/heroui/issues/4292",
+-      "useButton"
+-    );
+-  }
+-  const handlePress = (e) => {
+-    if (isMobile) {
+-      deprecatedOnClick == null ? void 0 : deprecatedOnClick(e);
+-    }
+-    onPress == null ? void 0 : onPress(e);
+-  };
+   let { pressProps, isPressed } = (0, import_interactions.usePress)({
+     onPressStart,
+     onPressEnd,
+     onPressChange,
+-    onPress: handlePress,
++    onPress,
+     isDisabled,
+     preventFocusOnPress,
+     allowTextSelectionOnPress,
+@@ -102,9 +88,6 @@ function useAriaButton(props, ref) {
+       "aria-controls": props["aria-controls"],
+       "aria-pressed": props["aria-pressed"],
+       onClick: (e) => {
+-        if (type === "button" && isMobile) {
+-          return;
+-        }
+         deprecatedOnClick == null ? void 0 : deprecatedOnClick(e);
+       }
+     })
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 4fdbfbd9bd29fc75a1049b85b4868485654affb9..4dbcd7e4274c179a39794607182b3d8c0f931e65 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -1,6 +1,5 @@
+ // src/index.ts
+-import { warn } from "@heroui/shared-utils";
+-import { filterDOMProps, isAndroid, isIOS, mergeProps } from "@react-aria/utils";
++import { filterDOMProps, mergeProps } from "@react-aria/utils";
+ import { useFocusable } from "@react-aria/focus";
+ import { usePress } from "@react-aria/interactions";
+ function useAriaButton(props, ref) {
+@@ -38,24 +37,11 @@ function useAriaButton(props, ref) {
+       rel: elementType === "a" ? rel : void 0
+     };
+   }
+-  let isMobile = isIOS() || isAndroid();
+-  if (deprecatedOnClick && typeof deprecatedOnClick === "function") {
+-    warn(
+-      "onClick is deprecated, please use onPress instead. See: https://github.com/heroui-inc/heroui/issues/4292",
+-      "useButton"
+-    );
+-  }
+-  const handlePress = (e) => {
+-    if (isMobile) {
+-      deprecatedOnClick == null ? void 0 : deprecatedOnClick(e);
+-    }
+-    onPress == null ? void 0 : onPress(e);
+-  };
+   let { pressProps, isPressed } = usePress({
+     onPressStart,
+     onPressEnd,
+     onPressChange,
+-    onPress: handlePress,
++    onPress,
+     isDisabled,
+     preventFocusOnPress,
+     allowTextSelectionOnPress,
+@@ -78,9 +64,6 @@ function useAriaButton(props, ref) {
+       "aria-controls": props["aria-controls"],
+       "aria-pressed": props["aria-pressed"],
+       onClick: (e) => {
+-        if (type === "button" && isMobile) {
+-          return;
+-        }
+         deprecatedOnClick == null ? void 0 : deprecatedOnClick(e);
+       }
+     })

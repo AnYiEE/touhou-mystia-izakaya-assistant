@@ -4,8 +4,8 @@ import {type ComponentProps, type ElementRef, forwardRef, memo, useMemo} from 'r
 
 import {useMotionProps, useReducedMotion} from '@/design/ui/hooks';
 
-import {Popover as NextUIPopover} from '@nextui-org/popover';
-import {type InternalForwardRefRenderFunction, extendVariants} from '@nextui-org/system';
+import {Popover as HeroUIPopover} from '@heroui/popover';
+import {type InternalForwardRefRenderFunction, extendVariants} from '@heroui/system';
 
 import {cn, generateRatingVariants} from '@/design/ui/utils';
 
@@ -45,16 +45,16 @@ export function getStyleBlur(color: IProps['color'], disableBlur = false, isHigh
 	}
 }
 
-const CustomNextUIPopover = extendVariants(NextUIPopover, generateRatingVariants('content'));
+const CustomHeroUIPopover = extendVariants(HeroUIPopover, generateRatingVariants('content'));
 
-interface IProps extends ComponentProps<typeof CustomNextUIPopover> {
+interface IProps extends ComponentProps<typeof CustomHeroUIPopover> {
 	disableBlur?: boolean;
 }
 
 type Ref = NonNullable<IProps['ref']>;
 
 export default memo(
-	forwardRef<ElementRef<typeof NextUIPopover>, IProps>(function Popover(
+	forwardRef<ElementRef<typeof HeroUIPopover>, IProps>(function Popover(
 		{
 			classNames,
 			color,
@@ -80,7 +80,7 @@ export default memo(
 		);
 
 		return (
-			<CustomNextUIPopover
+			<CustomHeroUIPopover
 				color={color}
 				disableAnimation={disableAnimation ?? isReducedMotion}
 				motionProps={motionProps}
@@ -107,5 +107,5 @@ export default memo(
 
 export type {IProps as IPopoverProps};
 
-export {PopoverContent, PopoverTrigger, usePopoverContext} from '@nextui-org/popover';
-export type {PopoverContentProps, PopoverTriggerProps} from '@nextui-org/popover';
+export {PopoverContent, PopoverTrigger, usePopoverContext} from '@heroui/popover';
+export type {PopoverContentProps, PopoverTriggerProps} from '@heroui/popover';

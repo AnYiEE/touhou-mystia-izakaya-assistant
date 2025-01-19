@@ -2,9 +2,9 @@ import {Fragment, memo, useCallback, useState} from 'react';
 
 import {useVibrate} from '@/hooks';
 
-import {Accordion, type AccordionProps} from '@nextui-org/accordion';
-import {Modal, ModalBody, ModalContent} from '@nextui-org/modal';
-import {ScrollShadow} from '@nextui-org/scroll-shadow';
+import {Accordion, type AccordionProps} from '@heroui/accordion';
+import {Modal, ModalBody, ModalContent} from '@heroui/modal';
+import {ScrollShadow} from '@heroui/scroll-shadow';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
 import {Tooltip, cn, useReducedMotion} from '@/design/ui/components';

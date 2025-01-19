@@ -8,7 +8,7 @@ interface ParentNode {
 
 type ExtractStringTypes<T> = T extends string ? T : never;
 type ReactNodeWithoutBoolean = Exclude<React.ReactNode, boolean>;
-type SelectionSet = Exclude<import('@nextui-org/table').Selection, 'all'>;
+type SelectionSet = Exclude<import('@heroui/table').Selection, 'all'>;
 
 type HTMLButtonElementAttributes = import('react').HTMLAttributes<HTMLButtonElement>;
 type HTMLDivElementAttributes = import('react').HTMLAttributes<HTMLDivElement>;

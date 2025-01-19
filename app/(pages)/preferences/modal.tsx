@@ -5,8 +5,8 @@ import {useCallback} from 'react';
 import {useRouter} from 'next/navigation';
 import {useMounted, useVibrate} from '@/hooks';
 
-import {Modal, ModalBody, ModalContent} from '@nextui-org/modal';
-import {ScrollShadow} from '@nextui-org/scroll-shadow';
+import {Modal, ModalBody, ModalContent} from '@heroui/modal';
+import {ScrollShadow} from '@heroui/scroll-shadow';
 
 import {cn, useReducedMotion} from '@/design/ui/components';
 

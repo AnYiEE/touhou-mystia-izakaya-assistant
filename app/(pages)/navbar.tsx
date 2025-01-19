@@ -7,14 +7,14 @@ import {useProgress} from 'react-transition-progress';
 import {usePathname, useVibrate} from '@/hooks';
 
 import {
+	Navbar as HeroUINavbar,
 	NavbarBrand,
 	NavbarContent,
 	NavbarItem,
 	NavbarMenu,
 	NavbarMenuItem,
 	NavbarMenuToggle,
-	Navbar as NextUINavbar,
-} from '@nextui-org/navbar';
+} from '@heroui/navbar';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faGithub} from '@fortawesome/free-brands-svg-icons';
 import {faChevronDown} from '@fortawesome/free-solid-svg-icons';
@@ -143,7 +143,7 @@ export default function Navbar() {
 	const shouldShowPreferences = pathname !== '/' && pathname !== '/about';
 
 	return (
-		<NextUINavbar
+		<HeroUINavbar
 			isBordered
 			disableAnimation={isReducedMotion}
 			isBlurred={isHighAppearance}
@@ -312,6 +312,6 @@ export default function Navbar() {
 					<GitHubLink />
 				</NavbarMenuItem>
 			</NavbarMenu>
-		</NextUINavbar>
+		</HeroUINavbar>
 	);
 }

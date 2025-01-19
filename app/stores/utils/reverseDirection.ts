@@ -1,4 +1,4 @@
-import {SortDescriptor} from '@nextui-org/table';
+import {SortDescriptor} from '@heroui/table';
 
 type TSortDirection = SortDescriptor['direction'];
 

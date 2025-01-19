@@ -4,20 +4,20 @@ import {type ElementRef, forwardRef, memo} from 'react';
 
 import {useReducedMotion} from '@/design/ui/hooks';
 
-import {type InternalForwardRefRenderFunction} from '@nextui-org/system';
-import {Snippet as NextUISnippet, type SnippetProps} from '@nextui-org/snippet';
+import {type InternalForwardRefRenderFunction} from '@heroui/system';
+import {Snippet as HeroUISnippet, type SnippetProps} from '@heroui/snippet';
 
 interface IProps extends SnippetProps {}
 
 export default memo(
-	forwardRef<ElementRef<typeof NextUISnippet>, IProps>(function Snippet(
+	forwardRef<ElementRef<typeof HeroUISnippet>, IProps>(function Snippet(
 		{copyButtonProps, disableAnimation, tooltipProps, ...props},
 		ref
 	) {
 		const isReducedMotion = useReducedMotion();
 
 		return (
-			<NextUISnippet
+			<HeroUISnippet
 				copyButtonProps={{
 					disableAnimation: isReducedMotion,
 					...copyButtonProps,

@@ -4,8 +4,8 @@ import {type ElementRef, forwardRef, memo} from 'react';
 
 import {useReducedMotion} from '@/design/ui/hooks';
 
-import {type LinkProps, Link as NextUILink} from '@nextui-org/link';
-import {type InternalForwardRefRenderFunction} from '@nextui-org/system';
+import {Link as HeroUILink, type LinkProps} from '@heroui/link';
+import {type InternalForwardRefRenderFunction} from '@heroui/system';
 
 import {cn} from '@/design/ui/utils';
 
@@ -19,7 +19,7 @@ interface IProps extends Omit<LinkProps, 'referrerPolicy'> {
 }
 
 export default memo(
-	forwardRef<ElementRef<typeof NextUILink>, IProps>(function Link(
+	forwardRef<ElementRef<typeof HeroUILink>, IProps>(function Link(
 		{
 			animationUnderline = true,
 			children,
@@ -35,7 +35,7 @@ export default memo(
 		const isReducedMotion = useReducedMotion();
 
 		return (
-			<NextUILink
+			<HeroUILink
 				disableAnimation={disableAnimation ?? isReducedMotion}
 				referrerPolicy="same-origin"
 				showAnchorIcon={Boolean(showAnchorIcon)}
@@ -67,7 +67,7 @@ export default memo(
 						)}
 					/>
 				)}
-			</NextUILink>
+			</HeroUILink>
 		);
 	})
 ) as InternalForwardRefRenderFunction<'a', IProps>;

@@ -2,8 +2,8 @@ import {useCallback, useMemo} from 'react';
 
 import {useVibrate} from '@/hooks';
 
-import {Divider} from '@nextui-org/divider';
-import {type Selection} from '@nextui-org/table';
+import {Divider} from '@heroui/divider';
+import {type Selection} from '@heroui/table';
 import {faArrowsRotate, faXmark} from '@fortawesome/free-solid-svg-icons';
 
 import {ratingStyles} from '@/design/theme/styles/rating';

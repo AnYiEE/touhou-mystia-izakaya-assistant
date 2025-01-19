@@ -2,7 +2,7 @@ import {useCallback, useMemo} from 'react';
 
 import {useVibrate} from '@/hooks';
 
-import {Divider} from '@nextui-org/divider';
+import {Divider} from '@heroui/divider';
 import {faArrowsRotate, faXmark} from '@fortawesome/free-solid-svg-icons';
 
 import {ratingStyles} from '@/design/theme/styles/rating';

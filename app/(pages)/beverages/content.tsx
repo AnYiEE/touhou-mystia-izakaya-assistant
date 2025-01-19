@@ -2,7 +2,7 @@ import {Fragment, memo, useRef} from 'react';
 
 import {useItemPopoverState, useOpenedItemPopover} from '@/hooks';
 
-import {ScrollShadow} from '@nextui-org/scroll-shadow';
+import {ScrollShadow} from '@heroui/scroll-shadow';
 
 import {
 	CLASSNAME_FOCUS_VISIBLE_OUTLINE,
@@ -40,7 +40,7 @@ export default memo<IProps>(function Content({data}) {
 		<ItemPopoverCard.Popover
 			key={dataIndex}
 			showArrow
-			/** @todo Add it back after {@link https://github.com/nextui-org/nextui/issues/3736} is fixed. */
+			/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/3736} is fixed. */
 			// backdrop={isHighAppearance ? 'blur' : 'opaque'}
 			isOpen={checkDefaultOpen(name)}
 		>

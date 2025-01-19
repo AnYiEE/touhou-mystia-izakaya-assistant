@@ -6,7 +6,7 @@ import {debounce} from 'lodash';
 
 import {useRouter} from 'next/navigation';
 
-import {NextUIProvider} from '@nextui-org/system';
+import {HeroUIProvider} from '@heroui/system';
 import {ProgressBar, ProgressBarProvider} from 'react-transition-progress';
 
 import {trackEvent} from '@/components/analytics';
@@ -126,14 +126,14 @@ export default function Providers({children, locale}: PropsWithChildren<IProps>)
 	const router = useRouter();
 
 	return (
-		<NextUIProvider locale={locale} navigate={router.push}>
+		<HeroUIProvider locale={locale} navigate={router.push}>
 			<ProgressBarProvider>
 				{children}
 				<ProgressBar className="fixed top-0 z-60 h-1 rounded-2xl bg-primary dark:lg:h-0.5" />
 				<CompatibleBrowser />
 				<CustomerRareTutorial />
 			</ProgressBarProvider>
-		</NextUIProvider>
+		</HeroUIProvider>
 	);
 }
 
