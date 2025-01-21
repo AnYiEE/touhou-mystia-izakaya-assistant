@@ -1,4 +1,4 @@
-import {type TPlace} from '@/data';
+import {type TPlaceId} from '@/data';
 import type {IItemBase, TMerchant} from '@/data/types';
 
 export interface ICurrency extends IItemBase {
@@ -12,11 +12,12 @@ export interface ICurrency extends IItemBase {
 						amount: number;
 					};
 				};
-				task: TPlace;
+				task: TPlaceId;
 		  }>
 	>;
 }
 
 export type TCurrencies = typeof import('./data').CURRENCY_LIST;
 
+export type TCurrencyId = TCurrencies[number]['id'];
 export type TCurrencyName = TCurrencies[number]['name'];
