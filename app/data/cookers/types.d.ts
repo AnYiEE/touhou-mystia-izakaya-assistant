@@ -1,25 +1,26 @@
-import {type TCurrencyName, type TCustomerRareName} from '@/data';
+import {type TCurrencyId, type TCustomerRareId} from '@/data';
+import {type COOKER_CATEGORY_MAP, type COOKER_TYPE_MAP} from '@/data/constant';
 import type {IItemBase, TDescription, TMerchant} from '@/data/types';
 
-type TCategory = 'DLC' | '初始' | '夜雀' | '超' | '极' | '核能' | '可疑' | '月见';
+type TCategoryId = keyof typeof COOKER_CATEGORY_MAP;
 
-type TType = '煮锅' | '烧烤架' | '油锅' | '蒸锅' | '料理台';
+type TTypeId = keyof typeof COOKER_TYPE_MAP;
 
 export interface ICooker extends IItemBase {
-	type: TType | TType[];
-	category: TCategory;
+	type: TTypeId | TTypeId[];
+	category: TCategoryId;
 	/** @description If it is an array, the first element represents the effect, and the second element represents whether it is a mystia only effect. */
 	effect: TDescription | [TDescription, boolean] | null;
 	from: Array<
 		| string
 		| Partial<{
-				bond: TCustomerRareName;
+				bond: TCustomerRareId;
 				buy: {
 					name: TMerchant;
 					price: Array<
 						| number
 						| {
-								currency: TCurrencyName;
+								currency: TCurrencyId;
 								amount: number;
 						  }
 					>;
@@ -32,6 +33,7 @@ export interface ICooker extends IItemBase {
 
 export type TCookers = typeof import('./data').COOKER_LIST;
 
+export type TCookerId = TCookers[number]['id'];
 export type TCookerName = TCookers[number]['name'];
-export type TCookerCategory = TCookers[number]['category'];
-export type TCookerType = FlatArray<TCookers[number]['type'], 1>;
+export type TCookerCategoryId = TCookers[number]['category'];
+export type TCookerTypeId = FlatArray<TCookers[number]['type'], 1>;

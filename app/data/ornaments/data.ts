@@ -9,7 +9,7 @@ export const ORNAMENT_LIST = [
 		dlc: 0,
 		effect: '使店内的小费率额外增加15%。',
 		from: {
-			bond: '橙',
+			bond: 2,
 			level: 5,
 		},
 	},
@@ -20,7 +20,7 @@ export const ORNAMENT_LIST = [
 		dlc: 0,
 		effect: '如果顾客对料理的评价至少为普通，则心情额外增加15。',
 		from: {
-			bond: '茨木华扇',
+			bond: 5,
 			level: 5,
 		},
 	},
@@ -31,7 +31,7 @@ export const ORNAMENT_LIST = [
 		dlc: 0,
 		effect: '如果顾客对料理的评价至少为普通，则有15%的概率提高评价至完美。',
 		from: {
-			bond: '比那名居天子',
+			bond: 9,
 			level: 5,
 		},
 	},
@@ -43,7 +43,7 @@ export const ORNAMENT_LIST = [
 		dlc: 0,
 		effect: '店内所有顾客每15秒会进行1-20円的打赏。',
 		from: {
-			bond: '红美铃',
+			bond: 15,
 			level: 5,
 		},
 	},
@@ -54,7 +54,7 @@ export const ORNAMENT_LIST = [
 		dlc: 0,
 		effect: '制作料理时有15%的概率不会减少食材。',
 		from: {
-			bond: '因幡帝',
+			bond: 29,
 			level: 5,
 		},
 	},
@@ -65,7 +65,7 @@ export const ORNAMENT_LIST = [
 		dlc: 1,
 		effect: '每天参拜会得到很棒的供品（两种酒水和两份食材）。',
 		from: {
-			bond: '矢田寺成美',
+			bond: 1004,
 			level: 5,
 		},
 	},
@@ -76,7 +76,7 @@ export const ORNAMENT_LIST = [
 		dlc: 1,
 		effect: '使用它不用到达朋友的面前也可以通话。',
 		from: {
-			bond: '河城荷取',
+			bond: 1000,
 			level: 5,
 		},
 	},
@@ -87,7 +87,7 @@ export const ORNAMENT_LIST = [
 		dlc: 2,
 		effect: '可以看到每个顾客的预算额度。',
 		from: {
-			bond: '古明地觉',
+			bond: 2003,
 			level: 5,
 		},
 	},
@@ -98,7 +98,7 @@ export const ORNAMENT_LIST = [
 		dlc: 2,
 		effect: '可以抵挡一次中断Combo的失误。',
 		from: {
-			bond: '水桥帕露西',
+			bond: 2001,
 			level: 5,
 		},
 	},
@@ -109,7 +109,7 @@ export const ORNAMENT_LIST = [
 		dlc: 3,
 		effect: '有几率获得意外奖励。抽奖结果：“红红红”➞海鲜类和肉类食材共十份；“绿绿绿”➞蔬菜类食材共十份；“蓝蓝蓝”➞四或五种酒水；“红绿蓝”➞前述奖励随机共十份，必然有四种三级或以上等级的酒水。',
 		from: {
-			bond: '封兽鵺',
+			bond: 3002,
 			level: 5,
 		},
 	},
@@ -120,7 +120,7 @@ export const ORNAMENT_LIST = [
 		dlc: 4,
 		effect: '在地下室的展示柜中启用后，各地会出现钓鱼点。',
 		from: {
-			bond: '今泉影狼',
+			bond: 4005,
 			level: 1,
 		},
 	},
@@ -131,7 +131,7 @@ export const ORNAMENT_LIST = [
 		dlc: 4,
 		effect: '在地下室的展示柜中启用后，各地会出现钓鱼点。',
 		from: {
-			bond: '今泉影狼',
+			bond: 4005,
 			level: 5,
 		},
 	},
@@ -142,7 +142,7 @@ export const ORNAMENT_LIST = [
 		dlc: 5,
 		effect: '能够屏蔽普通顾客来店（包括符卡效果）。',
 		from: {
-			bond: '绵月丰姬',
+			bond: 5001,
 			level: 5,
 		},
 	},
@@ -153,7 +153,7 @@ export const ORNAMENT_LIST = [
 		dlc: 5,
 		effect: '能够屏蔽稀有顾客来店（包括邀请顾客）。',
 		from: {
-			bond: '魅魔',
+			bond: 5004,
 			level: 5,
 		},
 	},

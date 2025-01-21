@@ -11,16 +11,16 @@ export * from './ornaments';
 export * from './partners';
 export * from './recipes';
 
-export type {TBeverages, TBeverageName, IBeverage} from './beverages/types';
-export type {TClothes, TClothesName, IClothes} from './clothes/types';
-export type {TCookers, TCookerCategory, TCookerName, TCookerType, ICooker} from './cookers/types';
-export type {TCurrencies, TCurrencyName, ICurrency} from './currencies/types';
-export type {TCustomerNormals, TCustomerNormalName, ICustomerNormal} from './customer_normal/types';
-export type {TCustomerRares, TCustomerRareName, ICustomerRare} from './customer_rare/types';
-export type {TIngredients, TIngredientName, TIngredientType, IIngredient} from './ingredients/types';
-export type {TOrnaments, TOrnamentName, IOrnament} from './ornaments/types';
-export type {TPartners, TPartnerName, IPartner} from './partners/types';
-export type {TRecipes, TRecipeName, IRecipe} from './recipes/types';
+export type {TBeverages, TBeverageId, TBeverageName, IBeverage} from './beverages/types';
+export type {TClothes, TClothesId, TClothesName, IClothes} from './clothes/types';
+export type {TCookers, TCookerCategoryId, TCookerId, TCookerName, TCookerTypeId, ICooker} from './cookers/types';
+export type {TCurrencies, TCurrencyId, TCurrencyName, ICurrency} from './currencies/types';
+export type {TCustomerNormals, TCustomerNormalId, TCustomerNormalName, ICustomerNormal} from './customer_normal/types';
+export type {TCustomerRares, TCustomerRareId, TCustomerRareName, ICustomerRare} from './customer_rare/types';
+export type {TIngredients, TIngredientId, TIngredientName, TIngredientTypeId, IIngredient} from './ingredients/types';
+export type {TOrnaments, TOrnamentId, TOrnamentName, IOrnament} from './ornaments/types';
+export type {TPartners, TPartnerId, TPartnerName, IPartner} from './partners/types';
+export type {TRecipes, TRecipeId, TRecipeName, IRecipe} from './recipes/types';
 
 export type TCustomers =
 	| import('./customer_normal/types').TCustomerNormals
@@ -40,14 +40,32 @@ export type TItems =
 	| import('./ornaments/types').TOrnaments
 	| import('./partners/types').TPartners;
 
+export type TCustomerId =
+	| import('./customer_normal/types').TCustomerNormalId
+	| import('./customer_rare/types').TCustomerRareId;
+
 export type TCustomerName =
 	| import('./customer_normal/types').TCustomerNormalName
 	| import('./customer_rare/types').TCustomerRareName;
+
+export type TFoodId =
+	| import('./beverages/types').TBeverageId
+	| import('./ingredients/types').TIngredientId
+	| import('./recipes/types').TRecipeId;
 
 export type TFoodName =
 	| import('./beverages/types').TBeverageName
 	| import('./ingredients/types').TIngredientName
 	| import('./recipes/types').TRecipeName;
+
+export type TItemId =
+	| TCustomerId
+	| TFoodId
+	| import('./clothes/types').TClothesId
+	| import('./cookers/types').TCookerId
+	| import('./currencies/types').TCurrencyId
+	| import('./ornaments/types').TOrnamentId
+	| import('./partners/types').TPartnerId;
 
 export type TItemName =
 	| TCustomerName
@@ -58,17 +76,18 @@ export type TItemName =
 	| import('./ornaments/types').TOrnamentName
 	| import('./partners/types').TPartnerName;
 
-export type TBeverageTag = import('./types').TBeverageTag;
-export type TIngredientTag = import('./types').TIngredientTag;
-export type TRecipeTag = import('./types').TRecipeTag;
-export type TTag = TBeverageTag | TIngredientTag | TRecipeTag;
+export type TBeverageTagId = import('./types').TBeverageTagId;
+export type TIngredientTagId = import('./types').TIngredientTagId;
+export type TRecipeTagId = import('./types').TRecipeTagId;
+ 
+export type TTagId = TBeverageTagId | TIngredientTagId | TRecipeTagId;
 
 export type TCollectionLocation = import('./types').TCollectionLocation;
 export type TDlc = import('./types').TDlc;
 export type TLevel = import('./types').TLevel;
-export type TPlace = import('./types').TPlace;
+export type TPlaceId = import('./types').TPlaceId;
 export type TRewardType = import('./types').TRewardType;
-export type TSpeed = import('./types').TSpeed;
+export type TSpeedId = import('./types').TSpeedId;
 
 export type TEvaluation = import('@/types').TEvaluation;
 export type TEvaluationKey = import('@/types').TEvaluationKey;
