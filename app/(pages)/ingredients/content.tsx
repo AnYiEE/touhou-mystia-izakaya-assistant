@@ -20,7 +20,12 @@ import Ol from '@/components/ol';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 
-import {type IIngredient, INGREDIENT_TAG_STYLE} from '@/data';
+import {
+	COLLECTION_LOCATION_REFRESH_TIME_MAP,
+	type IIngredient,
+	INGREDIENT_TAG_STYLE,
+	type TCollectionLocation,
+} from '@/data';
 // import {globalStore as store} from '@/stores';
 import {type Ingredient} from '@/utils';
 import type {TItemData} from '@/utils/types';
@@ -37,7 +42,7 @@ export default memo<IProps>(function Content({data}) {
 	// const isHighAppearance = store.persistence.highAppearance.use();
 
 	return data.map(({description, dlc, from, id, level, name, price, tags, type}, dataIndex) => (
-		<Popover
+		<ItemPopoverCard.Popover
 			key={dataIndex}
 			showArrow
 			/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/3736} is fixed. */
@@ -74,6 +79,7 @@ export default memo<IProps>(function Content({data}) {
 							type TFrom = Exclude<IIngredient['from'], string>;
 							const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
 							const isBuy = method === 'buy';
+							const isCollect = method === 'collect';
 							const isFishing = method === 'fishing';
 							const isFishingAdvanced = method === 'fishingAdvanced';
 							const isTask = method === 'task';
@@ -121,37 +127,67 @@ export default memo<IProps>(function Content({data}) {
 									<Ol className="ml-3">
 										{target?.map((item, targetIndex) => (
 											<Ol.Li key={targetIndex}>
-												{Array.isArray(item)
+												{isCollect || Array.isArray(item)
 													? (() => {
-															const itemProbability =
-																typeof item[1] === 'number'
+															const isArray = Array.isArray(item);
+															const itemProbability = isArray
+																? typeof item[1] === 'number'
 																	? `${item[1]}%${probability}`
 																	: item[1]
 																		? probability
-																		: null;
-															const itemTime =
-																item.length === 4 ? (
+																		: null
+																: null;
+															const collectableTimeRange =
+																isCollect && isArray && item.length === 4
+																	? ([item[2], item[3]] as [number, number])
+																	: null;
+															const collectableTimeRangeContent =
+																collectableTimeRange === null ? null : (
 																	<>
-																		{itemProbability === null ? '' : '，'}
+																		{itemProbability === null ? '' : '；'}
 																		采集点出现时间：
-																		{item[2]}
+																		{collectableTimeRange[0]}
 																		<span className="mx-0.5">-</span>
-																		{item[3]}点
+																		{collectableTimeRange[1]}点
 																	</>
-																) : null;
-															const content =
-																itemProbability !== null || itemTime !== null ? (
+																);
+															const refreshTime = isCollect
+																? COLLECTION_LOCATION_REFRESH_TIME_MAP[
+																		(isArray
+																			? item[0]
+																			: item) as TCollectionLocation
+																	]
+																: null;
+															const refreshTimeContent =
+																refreshTime === null ? null : (
+																	<>
+																		{collectableTimeRange === null
+																			? itemProbability === null
+																				? ''
+																				: '；'
+																			: '，'}
+																		采集点刷新周期：
+																		{refreshTime}
+																		小时
+																	</>
+																);
+															const itemContent = isArray ? item[0] : item;
+															const tooltipContent =
+																itemProbability !== null ||
+																collectableTimeRangeContent !== null ||
+																refreshTimeContent !== null ? (
 																	<p>
 																		{itemProbability}
-																		{itemTime}
+																		{collectableTimeRangeContent}
+																		{refreshTimeContent}
 																	</p>
 																) : null;
-															return content === null ? (
-																item[0]
+															return tooltipContent === null ? (
+																itemContent
 															) : (
 																<Popover offset={2} size="sm">
 																	<Tooltip
-																		content={content}
+																		content={tooltipContent}
 																		closeDelay={0}
 																		offset={0}
 																		size="sm"
@@ -164,12 +200,12 @@ export default memo<IProps>(function Content({data}) {
 																						CLASSNAME_FOCUS_VISIBLE_OUTLINE
 																					}
 																				>
-																					{item[0]}
+																					{itemContent}
 																				</span>
 																			</PopoverTrigger>
 																		</span>
 																	</Tooltip>
-																	<PopoverContent>{content}</PopoverContent>
+																	<PopoverContent>{tooltipContent}</PopoverContent>
 																</Popover>
 															);
 														})()
@@ -183,6 +219,6 @@ export default memo<IProps>(function Content({data}) {
 					</ScrollShadow>
 				</ItemPopoverCard>
 			</ItemPopoverCard.Content>
-		</Popover>
+		</ItemPopoverCard.Popover>
 	));
 });

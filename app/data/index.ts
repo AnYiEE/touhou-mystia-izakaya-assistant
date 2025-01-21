@@ -63,6 +63,7 @@ export type TIngredientTag = import('./types').TIngredientTag;
 export type TRecipeTag = import('./types').TRecipeTag;
 export type TTag = TBeverageTag | TIngredientTag | TRecipeTag;
 
+export type TCollectionLocation = import('./types').TCollectionLocation;
 export type TDlc = import('./types').TDlc;
 export type TLevel = import('./types').TLevel;
 export type TPlace = import('./types').TPlace;
