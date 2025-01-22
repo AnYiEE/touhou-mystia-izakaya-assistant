@@ -990,7 +990,7 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['魔法森林', '妖怪之山', '命莲寺', '神灵庙'],
 		price: '400-600',
 		positiveTags: ['家常', '和风', '甜', '适合拍照', '梦幻', TAG_POPULAR_POSITIVE],
-		negativeTags: ['重油', '生', '灼热', '猎奇', TAG_POPULAR_NEGATIVE],
+		negativeTags: ['重油', '生', '灼热', '猎奇'],
 		beverageTags: ['无酒精', '低酒精', '清酒', '直饮', '水果', '甘', '苦', '气泡', '现代'],
 		chat: [
 			'总觉得河童们最近是不是兴奋得有些异常…',
@@ -1194,7 +1194,7 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['旧地狱'],
 		price: '300-400',
 		positiveTags: ['肉', '咸', '鲜', '果味', '辣', '酸', TAG_POPULAR_NEGATIVE],
-		negativeTags: ['甜'],
+		negativeTags: ['甜', TAG_POPULAR_POSITIVE],
 		beverageTags: ['无酒精', '可加热', '直饮', '辛', '苦'],
 		chat: [
 			'你站在桥上看风景，看风景的人在楼上看你。',
