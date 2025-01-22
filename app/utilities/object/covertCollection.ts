@@ -1,7 +1,15 @@
-const KEY = 'value';
+import {isObject} from 'lodash';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function toGetItemWithKey<K extends keyof any>(key: K) {
+type TCollectionKey = keyof any;
+
+const KEY = 'value';
+
+export function isValueCollection<T>(value: T | ValueCollection<T>): value is ValueCollection<T> {
+	return isObject(value) && 'value' in value;
+}
+
+export function toGetItemWithKey<K extends TCollectionKey>(key: K) {
 	return <U extends Record<K, unknown>>(collection: U) => collection[key];
 }
 
@@ -9,8 +17,7 @@ export function toGetValue<T extends ValueCollection<unknown>>(collection: T) {
 	return toGetItemWithKey(KEY)(collection);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function toGetCollectionWithKey<K extends keyof any>(key: K) {
+export function toGetCollectionWithKey<K extends TCollectionKey>(key: K) {
 	return <V>(item: V) =>
 		({
 			[key]: item,

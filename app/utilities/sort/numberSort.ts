@@ -1,12 +1,8 @@
-import {isObject} from 'lodash';
+import {isValueCollection} from '@/utilities';
 
 type TValue = number;
 type TValueCollection = ValueCollection<TValue>;
 type TTarget = TValue | TValueCollection;
-
-function checkValueCollection(value: TTarget): value is TValueCollection {
-	return isObject(value) && 'value' in value;
-}
 
 export function numberSort<T extends TTarget>(a: T, b: T) {
 	let numberA: number, numberB: number;
@@ -15,8 +11,8 @@ export function numberSort<T extends TTarget>(a: T, b: T) {
 		numberA = a;
 		numberB = b;
 	} else if (
-		checkValueCollection(a) &&
-		checkValueCollection(b) &&
+		isValueCollection(a) &&
+		isValueCollection(b) &&
 		typeof a.value === 'number' &&
 		typeof b.value === 'number'
 	) {

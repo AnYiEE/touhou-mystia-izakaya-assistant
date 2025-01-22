@@ -1,14 +1,8 @@
-import {isObject} from 'lodash';
-
-import {getPinyin, numberSort} from '@/utilities';
+import {getPinyin, isValueCollection, numberSort} from '@/utilities';
 
 type TValue = string | string[];
 type TValueCollection = ValueCollection<TValue>;
 type TTarget = TValue | TValueCollection;
-
-function checkValueCollection(value: TTarget): value is TValueCollection {
-	return isObject(value) && 'value' in value;
-}
 
 function getTone(pinyin: string) {
 	const match = pinyin.match(/\d/u);
@@ -33,7 +27,7 @@ export function pinyinSort<T extends TTarget>(a: T, b: T) {
 	} else if (typeof a === 'string' && typeof b === 'string') {
 		arrayA = getPinyin(a);
 		arrayB = getPinyin(b);
-	} else if (checkValueCollection(a) && checkValueCollection(b)) {
+	} else if (isValueCollection(a) && isValueCollection(b)) {
 		if (Array.isArray(a.value) && Array.isArray(b.value)) {
 			arrayA = a.value;
 			arrayB = b.value;

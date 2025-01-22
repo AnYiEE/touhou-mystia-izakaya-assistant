@@ -1,16 +1,15 @@
 import {isObject} from 'lodash';
 
+type TIsObject<T> = T extends object ? (T extends null ? false : true) : false;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TFunction = (...args: any[]) => any;
-
 type TFirstParameterType<T extends TFunction> = Parameters<T>[0];
-type TIsObject<T> = T extends object ? (T extends null ? false : true) : false;
 
 type TCache<T extends TFunction> =
 	TIsObject<TFirstParameterType<T>> extends true
 		? WeakMap<TFirstParameterType<T>, ReturnType<T>>
 		: Map<TFirstParameterType<T>, ReturnType<T>>;
-
 type TCacheType = 'Map' | 'WeakMap';
 
 type TMemoizedFn<T extends TFunction> = T & {
@@ -22,7 +21,7 @@ export function memoize<T extends TFunction>(fn: T, cacheType?: TCacheType) {
 
 	const cache = (useWeakMap ? new WeakMap() : new Map()) as TCache<T>;
 
-	const memoized = function (this: unknown, ...args: Parameters<T>) {
+	const memoizedFn = function (this: unknown, ...args: Parameters<T>) {
 		const cacheKey = args[0] as TFirstParameterType<T>;
 
 		if (useWeakMap && !isObject(cacheKey)) {
@@ -42,7 +41,7 @@ export function memoize<T extends TFunction>(fn: T, cacheType?: TCacheType) {
 		return result;
 	};
 
-	memoized.cache = cache;
+	memoizedFn.cache = cache;
 
-	return memoized as TMemoizedFn<T>;
+	return memoizedFn as TMemoizedFn<T>;
 }

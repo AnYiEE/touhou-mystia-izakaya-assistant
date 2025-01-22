@@ -63,7 +63,7 @@ const CloseButton: FC<ICloseButtonProps> = () => {
 	const isPreviewMode = params.has(PARAM_PREVIEW);
 
 	const handleClose = useCallback(
-		(event: TPressEvent) => {
+		(event: TPressEvent<HTMLButtonElement>) => {
 			getBackdropProps().onClick?.(event as MouseEvent<HTMLButtonElement>);
 
 			if (isPreviewMode) {

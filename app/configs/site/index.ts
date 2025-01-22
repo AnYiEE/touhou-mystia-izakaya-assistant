@@ -2,6 +2,12 @@
 import PACKAGE from '@/../package.json';
 import type {ISiteConfig, TNavMenuItem} from './types';
 
+function getShortUrl<T extends string>(key: T, isJson?: boolean) {
+	return `${process.env.SHORT_LINK_URL ?? '/#'}/${key}${isJson ? '.json' : ''}` as const;
+}
+
+const {hostname: domain} = new URL(process.env.BASE_URL ?? PACKAGE.homepage);
+
 const navItems = [
 	{
 		label: '首页',
@@ -76,11 +82,6 @@ const navItems = [
 		href: '/about',
 	},
 ] as const satisfies ISiteConfig['navItems'];
-
-const {hostname: domain} = new URL(process.env.BASE_URL ?? PACKAGE.homepage);
-
-const getShortUrl = <T extends string>(key: T, isJson?: boolean) =>
-	`${process.env.SHORT_LINK_URL ?? '/#'}/${key}${isJson ? '.json' : ''}` as const;
 
 export const siteConfig = {
 	domain,

@@ -1,6 +1,6 @@
 import {type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent} from 'react';
 
-export type TPressEvent = ReactKeyboardEvent | ReactMouseEvent | KeyboardEvent | MouseEvent;
+export type TPressEvent<T = Element> = ReactKeyboardEvent<T> | ReactMouseEvent<T> | KeyboardEvent | MouseEvent;
 
 function checkEvent(event: TPressEvent) {
 	const {type} = event;
