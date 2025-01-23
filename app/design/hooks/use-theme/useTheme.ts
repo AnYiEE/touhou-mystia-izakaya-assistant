@@ -4,6 +4,7 @@ import {useCallback, useEffect, useState} from 'react';
 
 import {COLOR_MAP, MEDIA, STORAGE_KEY, THEME_MAP} from './constants';
 import type {TTheme} from './types';
+import {addSafeMediaQueryEventListener} from '@/design/utils';
 
 // eslint-disable-next-line unicorn/prefer-global-this
 const isServer = typeof window === 'undefined';
@@ -83,21 +84,14 @@ export function useTheme() {
 			return;
 		}
 
-		const EVENT_TYPE = 'change';
 		const mediaQueryList = globalThis.matchMedia(MEDIA);
 
-		const handleMediaQuery = (event: MediaQueryListEvent) => {
+		return addSafeMediaQueryEventListener(mediaQueryList, (event) => {
 			const storedTheme = getThemeCallback();
 			if (storedTheme === THEME_MAP.SYSTEM) {
 				setThemeCallback(getSystemTheme(event), true);
 			}
-		};
-
-		mediaQueryList.addEventListener(EVENT_TYPE, handleMediaQuery);
-
-		return () => {
-			mediaQueryList.removeEventListener(EVENT_TYPE, handleMediaQuery);
-		};
+		});
 	}, []);
 
 	useEffect(() => {
