@@ -6,7 +6,7 @@ type TCollectionKey = keyof any;
 const KEY = 'value';
 
 export function isValueCollection<T>(value: T | ValueCollection<T>): value is ValueCollection<T> {
-	return isObject(value) && 'value' in value;
+	return isObject(value) && KEY in value;
 }
 
 export function toGetItemWithKey<K extends TCollectionKey>(key: K) {

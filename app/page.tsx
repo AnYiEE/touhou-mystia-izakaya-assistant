@@ -59,8 +59,8 @@ export default function Home() {
 	const wxGroupQrCode = useMemo(() => {
 		if (wxGroupUrl === undefined) {
 			return (
-				<div className="flex h-40 w-32 flex-col items-center justify-between px-1">
-					<div className="mt-1 flex h-full w-full items-center justify-center bg-background p-1">
+				<div className="flex h-40 w-32 flex-col items-center justify-between px-2">
+					<div className="m-2 flex h-full w-full items-center justify-center bg-background/70 dark:bg-background/20">
 						<Spinner
 							color="default"
 							title="加载中"
@@ -69,22 +69,12 @@ export default function Home() {
 							}}
 						/>
 					</div>
-					<p className="mt-1 text-center text-tiny">{qrCodeDescription}</p>
+					<p className="text-center text-tiny">{qrCodeDescription}</p>
 				</div>
 			);
 		}
 		return (
-			<QRCode
-				options={{
-					color: {
-						light: '#fbf8f3',
-					},
-					width: 512,
-				}}
-				text={wxGroupUrl}
-				type="image"
-				className="p-1"
-			>
+			<QRCode text={wxGroupUrl} className="px-0.5 pt-0.5">
 				{qrCodeDescription}
 			</QRCode>
 		);
@@ -180,6 +170,7 @@ export default function Home() {
 									as={Link}
 									isExternal
 									isIconOnly
+									animationUnderline={false}
 									variant="light"
 									href={links.xiaohongshuGroup.href}
 									role="link"
