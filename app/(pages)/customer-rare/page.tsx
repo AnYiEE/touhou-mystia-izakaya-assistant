@@ -339,7 +339,7 @@ export default function CustomerRare() {
 
 			<div
 				className={cn('flex flex-col gap-4 p-2 pt-0 md:pb-0 md:pt-2 xl:w-full xl:pb-2', {
-					'flex-grow': currentCustomerName === null,
+					grow: currentCustomerName === null,
 				})}
 			>
 				{currentCustomerName ? (

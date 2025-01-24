@@ -147,12 +147,12 @@ export default memo<IProps>(function Content({onModalClose}) {
 								popoverContent: cn({
 									'bg-content1/70 backdrop-blur-lg': isHighAppearance,
 								}),
-								trigger: cn(
-									'transition-background motion-reduce:transition-none',
-									onModalClose !== undefined || !isHighAppearance
-										? 'bg-default-200 data-[hover=true]:bg-default dark:bg-default-100 dark:data-[hover=true]:bg-default-200'
-										: 'bg-default/40 backdrop-blur data-[hover=true]:bg-default-400/40'
-								),
+								trigger: cn('transition-background motion-reduce:transition-none', {
+									'bg-default/40 backdrop-blur data-[hover=true]:bg-default-400/40': isHighAppearance,
+									'bg-default-200 data-[hover=true]:bg-default': !isHighAppearance,
+									'dark:bg-default-100 dark:data-[hover=true]:bg-default-200':
+										!isHighAppearance && onModalClose === undefined,
+								}),
 							}}
 						>
 							{({value}) => <SelectItem key={value}>{value}</SelectItem>}

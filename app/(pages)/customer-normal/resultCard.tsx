@@ -71,7 +71,7 @@ function IngredientsList() {
 											role="button"
 											tabIndex={1}
 											title={ingredient}
-											className="absolute flex h-10 w-10 cursor-pointer items-center justify-center rounded-small bg-foreground bg-opacity-50 text-background opacity-0 transition-opacity hover:opacity-100 motion-reduce:transition-none"
+											className="absolute flex h-10 w-10 cursor-pointer items-center justify-center rounded-small bg-foreground/50 text-background opacity-0 transition-opacity hover:opacity-100 motion-reduce:transition-none"
 										>
 											<FontAwesomeIcon icon={faCircleXmark} size="1x" />
 										</span>
