@@ -143,13 +143,13 @@ export const siteConfig = {
 			label: '点击加入QQ群',
 			href: getShortUrl('l40oUu'),
 		},
+		rednoteGroup: {
+			label: '扫码加入小红书群',
+			href: getShortUrl('Y9YVAt'),
+		},
 		steam: {
 			label: "Steam上的东方夜雀食堂 - Touhou Mystia's Izakaya",
 			href: 'https://store.steampowered.com/app/1584090/__Touhou_Mystias_Izakaya',
-		},
-		xiaohongshuGroup: {
-			label: '扫码加入小红书群',
-			href: getShortUrl('Y9YVAt'),
 		},
 		wxGroup: {
 			label: '扫码加入微信群',

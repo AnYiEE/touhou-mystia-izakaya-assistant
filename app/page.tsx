@@ -12,7 +12,7 @@ import {trackEvent} from '@/components/analytics';
 import FontAwesomeIconLink from '@/components/fontAwesomeIconLink';
 import Placeholder from '@/components/placeholder';
 import QRCode from '@/components/qrCode';
-import Xiaohongshu from '@/components/xiaohongshu';
+import Rednote from '@/components/rednote';
 
 import {siteConfig} from '@/configs';
 
@@ -161,7 +161,7 @@ export default function Home() {
 							</Popover>
 							<Tooltip
 								showArrow
-								content={<QRCode text={links.xiaohongshuGroup.href}>{qrCodeDescription}</QRCode>}
+								content={<QRCode text={links.rednoteGroup.href}>{qrCodeDescription}</QRCode>}
 								classNames={{
 									content: 'p-0 pb-1',
 								}}
@@ -172,12 +172,12 @@ export default function Home() {
 									isIconOnly
 									animationUnderline={false}
 									variant="light"
-									href={links.xiaohongshuGroup.href}
+									href={links.rednoteGroup.href}
 									role="link"
-									title={links.xiaohongshuGroup.label}
+									title={links.rednoteGroup.label}
 									className="h-5 active:opacity-disabled data-[hover=true]:!opacity-hover data-[pressed=true]:!opacity-hover"
 								>
-									<Xiaohongshu />
+									<Rednote />
 								</Button>
 							</Tooltip>
 						</div>
