@@ -5,15 +5,15 @@ import {COLOR_MAP} from '@/design/hooks';
 
 import {siteConfig} from '@/configs';
 
-const {cdnUrl, description, id, locale, name, shortName} = siteConfig;
+const {cdnUrl, description, id, isOffline, locale, name, shortName} = siteConfig;
 
 export const dynamic = 'force-static';
 
 export default function manifest(): MetadataRoute.Manifest {
 	return {
-		id,
-		name,
-		short_name: shortName,
+		id: isOffline ? `${id}-offline` : id,
+		name: isOffline ? `${name}（离线版）` : name,
+		short_name: isOffline ? `${shortName}（离线版）` : shortName,
 		description,
 		display: 'standalone',
 		display_override: ['window-controls-overlay', 'standalone', 'browser'],

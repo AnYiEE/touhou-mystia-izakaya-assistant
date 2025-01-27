@@ -22,8 +22,20 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 /** @see {@link https://docs.fontawesome.com/web/use-with/react/use-with#getting-font-awesome-css-to-work} */
 fontawesomeConfig.autoAddCss = false;
 
-const {author, cdnUrl, description, enName, isAnalytics, isProduction, keywords, locale, name, shortName, vercelSha} =
-	siteConfig;
+const {
+	author,
+	cdnUrl,
+	description,
+	enName,
+	isAnalytics,
+	isOffline,
+	isProduction,
+	keywords,
+	locale,
+	name,
+	shortName,
+	vercelSha,
+} = siteConfig;
 
 export const metadata: Metadata = {
 	title: {
@@ -43,16 +55,19 @@ export const metadata: Metadata = {
 		icon: `${cdnUrl}/favicon.ico`,
 	},
 
-	twitter: {
-		card: 'summary',
-	},
-
-	verification: {
-		other: {
-			// cSpell:ignore codeva
-			'baidu-site-verification': 'codeva-aSffMaEHAj',
-		},
-	},
+	...(isOffline
+		? {}
+		: {
+				twitter: {
+					card: 'summary',
+				},
+				verification: {
+					other: {
+						// cSpell:ignore codeva
+						'baidu-site-verification': 'codeva-aSffMaEHAj',
+					},
+				},
+			}),
 };
 
 export const viewport: Viewport = {
@@ -65,7 +80,7 @@ const sha = (() => {
 	}
 
 	try {
-		return execSync('git rev-parse --short HEAD').toString('utf8').trim();
+		return execSync('git rev-parse --short HEAD').toString('utf8').trim().slice(0, 7);
 	} catch {
 		return 'unknown';
 	}
@@ -81,7 +96,7 @@ export default function RootLayout({children}: PropsWithChildren<IProps>) {
 				<ThemeScript />
 				{
 					// Register service worker. The `sha` is the commit SHA of the current commit, used to bypass browser caching.
-					isProduction && <Script async src={`/registerServiceWorker.js?v=${sha}`} />
+					isProduction && !isOffline && <Script async src={`/registerServiceWorker.js?v=${sha}`} />
 				}
 			</head>
 			<body suppressHydrationWarning className="antialiased">

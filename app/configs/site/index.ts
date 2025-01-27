@@ -7,6 +7,7 @@ function getShortUrl<T extends string>(key: T, isJson?: boolean) {
 }
 
 const {hostname: domain} = new URL(process.env.BASE_URL ?? PACKAGE.homepage);
+const isOffline = Boolean(process.env.OFFLINE);
 
 const navItems = [
 	{
@@ -157,17 +158,18 @@ export const siteConfig = {
 			href: getShortUrl('3hGM9A', true),
 		},
 	},
-	cdnUrl: process.env.CDN_URL ?? '',
+	cdnUrl: isOffline ? '' : (process.env.CDN_URL ?? ''),
 	analyticsApiUrl: process.env.ANALYTICS_API_URL ?? '',
 	analyticsScriptUrl: process.env.ANALYTICS_SCRIPT_URL ?? '',
 	analyticsSiteId: process.env.ANALYTICS_SITE_ID ?? '',
-	isAnalytics: Boolean(process.env.ANALYTICS_SITE_ID),
-	isIcpFiling: Boolean(process.env.ICP_FILING),
+	isAnalytics: Boolean(process.env.ANALYTICS_SITE_ID) && !isOffline,
+	isIcpFiling: Boolean(process.env.ICP_FILING) && !isOffline,
 	nodeEnv: process.env.NODE_ENV,
 	vercelEnv: process.env.VERCEL_ENV,
 	vercelSha: process.env.VERCEL_GIT_COMMIT_SHA,
+	isOffline,
 	isProduction: process.env.NODE_ENV === 'production',
-	isSelfHosted: Boolean(process.env.SELF_HOSTED),
+	isSelfHosted: Boolean(process.env.SELF_HOSTED) && !isOffline,
 	isVercel: Boolean(process.env.VERCEL),
 } as const satisfies ISiteConfig;
 

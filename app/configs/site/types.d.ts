@@ -37,6 +37,7 @@ export interface ISiteConfig {
 	nodeEnv: NodeJS.ProcessEnv['NODE_ENV'];
 	vercelEnv: NodeJS.ProcessEnv['NODE_ENV'] | undefined;
 	vercelSha: string | undefined;
+	isOffline: boolean;
 	isProduction: boolean;
 	isSelfHosted: boolean;
 	isVercel: boolean;

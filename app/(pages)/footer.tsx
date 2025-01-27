@@ -5,7 +5,8 @@ import QRCode from '@/components/qrCode';
 
 import {siteConfig} from '@/configs';
 
-const {isIcpFiling, isProduction, isVercel, links, nodeEnv, shortName, vercelEnv, vercelSha, version} = siteConfig;
+const {isIcpFiling, isOffline, isProduction, isVercel, links, nodeEnv, shortName, vercelEnv, vercelSha, version} =
+	siteConfig;
 
 const sha = (() => {
 	if (vercelSha) {
@@ -14,7 +15,7 @@ const sha = (() => {
 
 	if (isProduction) {
 		try {
-			return execSync('git rev-parse --short HEAD').toString('utf8').trim();
+			return execSync('git rev-parse --short HEAD').toString('utf8').trim().slice(0, 7);
 		} catch {
 			/* empty */
 		}
@@ -41,7 +42,7 @@ export default function Footer() {
 						<>{isProduction ? '' : nodeEnv}</>
 					) : (
 						<>
-							{vercelEnv ?? nodeEnv}-
+							{isOffline ? 'offline' : (vercelEnv ?? nodeEnv)}-
 							<FooterLinkWithTooltip
 								content="在GitHub上查看此提交"
 								href={`${links.github.href}/commit/${sha}`}

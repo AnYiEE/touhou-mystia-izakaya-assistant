@@ -11,6 +11,7 @@ declare global {
 
 			ICP_FILING?: string;
 
+			OFFLINE?: string;
 			SELF_HOSTED?: string;
 			SKIP_LINT?: string;
 
