@@ -12,6 +12,7 @@ export type TNavMenuItem<T extends string = string> = TLink<T> & {
 
 export interface ISiteConfig {
 	domain: string;
+	id: string;
 	name: string;
 	enName: string;
 	shortName: string;

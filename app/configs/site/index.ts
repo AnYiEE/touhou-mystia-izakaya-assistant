@@ -85,6 +85,7 @@ const navItems = [
 
 export const siteConfig = {
 	domain,
+	id: PACKAGE.name,
 	name: '东方夜雀食堂小助手',
 	enName: "Touhou Mystia's Izakaya Assistant",
 	shortName: '夜雀助手',

@@ -36,7 +36,6 @@ export const metadata: Metadata = {
 
 	appleWebApp: true,
 	applicationName: shortName,
-	manifest: '/manifest.json',
 
 	authors: author,
 	icons: {
@@ -53,10 +52,6 @@ export const metadata: Metadata = {
 			// cSpell:ignore codeva
 			'baidu-site-verification': 'codeva-aSffMaEHAj',
 		},
-	},
-
-	other: {
-		'mobile-web-app-capable': 'yes',
 	},
 };
 
