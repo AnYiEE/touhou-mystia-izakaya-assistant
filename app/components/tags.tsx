@@ -1,3 +1,5 @@
+'use client';
+
 import {type ElementRef, type ForwardedRef, forwardRef, memo, useCallback, useMemo} from 'react';
 
 import {Button, type IButtonProps, cn} from '@/design/ui/components';

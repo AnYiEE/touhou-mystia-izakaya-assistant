@@ -63,12 +63,12 @@ function getReplacementClass(element: Element, gapClass: string) {
 
 		const isFlexCol = classList.contains('flex-col');
 		const isFlexRow = classList.contains('flex-row');
-		const isMdFlexRow = classList.contains('md:flex-row');
-		const isLgFlexRow = classList.contains('lg:flex-row');
-		const isXlFlexRow = classList.contains('xl:flex-row');
 		const isMdFlexCol = classList.contains('md:flex-col');
 		const isLgFlexCol = classList.contains('lg:flex-col');
 		const isXlFlexCol = classList.contains('xl:flex-col');
+		const isMdFlexRow = classList.contains('md:flex-row');
+		const isLgFlexRow = classList.contains('lg:flex-row');
+		const isXlFlexRow = classList.contains('xl:flex-row');
 
 		const isMdSpecify = classList.contains(`md:${gapClass}`);
 		const isLgSpecify = classList.contains(`lg:${gapClass}`);
@@ -125,7 +125,7 @@ function replaceGapClasses(element: Element) {
 	}
 
 	toArray(element.classList)
-		.filter((gapClass) => gapClass.includes('gap-') || gapClass.includes('gap-x-') || gapClass.includes('gap-y-'))
+		.filter((gapClass) => gapClass.includes('gap-'))
 		.forEach((gapClass) => {
 			const newClass = getReplacementClass(element, gapClass);
 			if (newClass) {

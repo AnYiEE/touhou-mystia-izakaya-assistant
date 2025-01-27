@@ -26,6 +26,25 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({e
 		location.reload();
 	}, []);
 
+	const Button = useCallback(
+		({
+			children,
+			shouldClear = false,
+		}: PropsWithChildren<{
+			shouldClear?: boolean;
+		}>) => (
+			<button
+				className="mx-auto block w-1/2 cursor-pointer rounded-medium bg-content1 p-2 transition-background hover:bg-content2 motion-reduce:transition-none"
+				onClick={() => {
+					handleClick(shouldClear);
+				}}
+			>
+				{children}
+			</button>
+		),
+		[handleClick]
+	);
+
 	return (
 		<div className="space-y-3 p-4">
 			<h1 className="text-2xl font-bold">出错啦！以下是错误信息：</h1>
@@ -34,22 +53,8 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({e
 				<code>{error?.stack}</code>
 				<code>{info?.componentStack}</code>
 			</pre>
-			<button
-				className="mx-auto block w-1/2 cursor-pointer rounded-medium bg-content1 p-2 transition-background hover:bg-content2 motion-reduce:transition-none"
-				onClick={() => {
-					handleClick(false);
-				}}
-			>
-				点此重试（仅刷新页面）
-			</button>
-			<button
-				className="mx-auto block w-1/2 cursor-pointer rounded-medium bg-content1 p-2 transition-background hover:bg-content2 motion-reduce:transition-none"
-				onClick={() => {
-					handleClick(true);
-				}}
-			>
-				点此重试（将清空已保存的数据）
-			</button>
+			<Button>点此重试（仅刷新页面）</Button>
+			<Button shouldClear>点此重试（将清空已保存的数据）</Button>
 			<p className="text-center text-small">
 				请完整复制或截图上方的错误信息，
 				<a

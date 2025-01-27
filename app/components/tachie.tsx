@@ -19,7 +19,7 @@ export default memo<IProps>(function Tachie({alt, className, src, width, ...prop
 			alt={alt}
 			src={src}
 			width={width}
-			aria-label={props['aria-hidden'] ? undefined : `${alt}立绘`}
+			aria-label={props['aria-hidden'] === true || props['aria-hidden'] === 'true' ? undefined : `${alt}立绘`}
 			title={alt}
 			className={cn('select-none', className)}
 		/>

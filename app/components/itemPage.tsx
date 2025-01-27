@@ -1,3 +1,5 @@
+'use client';
+
 import {type PropsWithChildren, memo} from 'react';
 
 import {useMounted, useSkipProcessItemData} from '@/hooks';

@@ -1,4 +1,4 @@
-import {SortDescriptor} from '@heroui/table';
+import {type SortDescriptor} from '@heroui/table';
 
 type TSortDirection = SortDescriptor['direction'];
 

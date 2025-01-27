@@ -95,6 +95,7 @@ const CloseButton: FC<ICloseButtonProps> = () => {
 		</Tooltip>
 	);
 };
+
 interface IShareButtonProps {
 	name: TItemName;
 }
