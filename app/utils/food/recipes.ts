@@ -1,4 +1,4 @@
-import {cloneDeep, isObject, sortBy} from 'lodash';
+import {isObject} from 'lodash';
 
 import {Food} from './base';
 import {Ingredient} from './ingredients';
@@ -19,7 +19,7 @@ import {
 	type TRecipes,
 } from '@/data';
 
-import {intersection, toArray, toSet} from '@/utilities';
+import {cloneJsonObject, intersection, numberSort, toArray, toSet} from '@/utilities';
 import type {IMealRecipe, IPopularTrend} from '@/types';
 
 type TRecipeProcessedPositiveTags = Omit<TRecipes[number], 'positiveTags'> & {
@@ -45,7 +45,7 @@ export class Recipe extends Food<TRecipes> {
 	private static _bondRecipesCache = new Map<TCustomerRareName, TBondRecipes>();
 
 	private constructor(data: TRecipes) {
-		const clonedData = cloneDeep(data);
+		const clonedData = cloneJsonObject(data);
 
 		(clonedData as TRecipeProcessedPositiveTags[]).forEach((recipe) => {
 			const {name, positiveTags, price} = recipe;
@@ -84,7 +84,7 @@ export class Recipe extends Food<TRecipes> {
 			return Recipe._bondRecipesCache.get(customerName);
 		}
 
-		let bondRecipes: TBondRecipes = [];
+		const bondRecipes: TBondRecipes = [];
 
 		this._data.forEach(({from, name}) => {
 			if (isObject(from) && 'bond' in from && from.bond.name === customerName) {
@@ -95,7 +95,7 @@ export class Recipe extends Food<TRecipes> {
 			}
 		});
 
-		bondRecipes = sortBy(bondRecipes, 'level');
+		bondRecipes.sort(({level: a}, {level: b}) => numberSort(a, b));
 
 		Recipe._bondRecipesCache.set(customerName, bondRecipes);
 

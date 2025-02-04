@@ -1,7 +1,8 @@
-import {isObject, sortBy} from 'lodash';
+import {isObject} from 'lodash';
 
 import {Item} from './base';
 import {ORNAMENT_LIST, type TCustomerRareName, type TOrnamentName, type TOrnaments} from '@/data';
+import {numberSort} from '@/utilities';
 
 type TBondOrnaments = {
 	level: number;
@@ -33,7 +34,7 @@ export class Ornament extends Item<TOrnaments> {
 			return Ornament._bondOrnamentsCache.get(customerName);
 		}
 
-		let bondOrnaments: TBondOrnaments = [];
+		const bondOrnaments: TBondOrnaments = [];
 
 		this._data.forEach(({from, name}) => {
 			if (isObject(from) && from.bond === customerName) {
@@ -44,7 +45,7 @@ export class Ornament extends Item<TOrnaments> {
 			}
 		});
 
-		bondOrnaments = sortBy(bondOrnaments, 'level');
+		bondOrnaments.sort(({level: a}, {level: b}) => numberSort(a, b));
 
 		Ornament._bondOrnamentsCache.set(customerName, bondOrnaments);
 

@@ -1,8 +1,6 @@
-import {cloneDeep} from 'lodash';
-
 import type {IItem, TItemWithPinyin} from './types';
 
-import {copyArray, getPinyin, pinyinSort, toGetValueCollection, union} from '@/utilities';
+import {cloneJsonObject, copyArray, getPinyin, pinyinSort, toGetValueCollection, union} from '@/utilities';
 
 export class Item<
 	TItems extends IItem[],
@@ -16,7 +14,7 @@ export class Item<
 	protected _pinyinSortedDataCacheMap: WeakMap<ReadonlyArray<TItem>, ReadonlyArray<TItem>>;
 
 	protected constructor(data: TItems) {
-		this._data = cloneDeep(data).map((item) => ({
+		this._data = cloneJsonObject(data).map((item) => ({
 			...item,
 			pinyin: getPinyin(item.name),
 		})) as TItem[];
