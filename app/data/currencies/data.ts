@@ -9,7 +9,7 @@ export const CURRENCY_LIST = [
 		dlc: 0,
 		from: [
 			{
-				task: '妖怪兽道',
+				task: 0,
 			},
 		],
 	},
@@ -20,7 +20,7 @@ export const CURRENCY_LIST = [
 		dlc: 0,
 		from: [
 			{
-				task: '人间之里',
+				task: 1,
 			},
 		],
 	},
@@ -31,7 +31,7 @@ export const CURRENCY_LIST = [
 		dlc: 0,
 		from: [
 			{
-				task: '博丽神社',
+				task: 2,
 			},
 		],
 	},
@@ -42,7 +42,7 @@ export const CURRENCY_LIST = [
 		dlc: 0,
 		from: [
 			{
-				task: '红魔馆',
+				task: 3,
 			},
 		],
 	},
@@ -53,7 +53,7 @@ export const CURRENCY_LIST = [
 		dlc: 0,
 		from: [
 			{
-				task: '迷途竹林',
+				task: 4,
 			},
 		],
 	},

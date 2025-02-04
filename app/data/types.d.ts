@@ -1,10 +1,4 @@
-import {
-	type TAG_ECONOMICAL,
-	type TAG_EXPENSIVE,
-	type TAG_POPULAR_NEGATIVE,
-	type TAG_POPULAR_POSITIVE,
-} from '@/data/constant';
-
+import {type PLACE_MAP, type SPEED_MAP} from '@/data/constant';
 import type {IBeverage} from '@/data/beverages/types';
 import type {IIngredient} from '@/data/ingredients/types';
 import type {IRecipe} from '@/data/recipes/types';
@@ -177,37 +171,17 @@ export type TMerchant =
 
 type TTask = '阿求小姐的色纸' | '女仆长的采购委托' | '月都试炼' | '最终收网行动';
 
-type TTagNeedCalculate = typeof TAG_EXPENSIVE | typeof TAG_ECONOMICAL;
-type TPopularTags = typeof TAG_POPULAR_NEGATIVE | typeof TAG_POPULAR_POSITIVE;
-
-type TBeverageTag = IBeverage['tags'][number];
-type TIngredientTag = IIngredient['tags'][number] | TPopularTags;
-type TRecipeTag =
+type TBeverageTagId = IBeverage['tags'][number];
+type TIngredientTagId = IIngredient['tags'][number];
+type TRecipeTagId =
 	| IRecipe['positiveTags'][number] // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
-	| IRecipe['negativeTags'][number]
-	| TTagNeedCalculate
-	| TPopularTags;
+	| IRecipe['negativeTags'][number];
 
-type TPlace =
-	| '妖怪兽道'
-	| '人间之里'
-	| '博丽神社'
-	| '红魔馆'
-	| '迷途竹林'
-	| '魔法森林'
-	| '妖怪之山'
-	| '旧地狱'
-	| '地灵殿'
-	| '命莲寺'
-	| '神灵庙'
-	| '太阳花田'
-	| '辉针城'
-	| '月之都'
-	| '魔界';
+type TPlaceId = keyof typeof PLACE_MAP;
 
 type TRewardType = '摆件' | '采集' | '厨具' | '伙伴' | '料理' | '衣服';
 
-type TSpeed = '慢' | '中等' | '快' | '瞬间移动';
+type TSpeedId = keyof typeof SPEED_MAP;
 
 export type TDescription = `${string}。` | `${string}？` | `${string}！` | `${string}…`;
 
@@ -220,9 +194,9 @@ export interface IItemBase {
 
 export interface ICustomerBase extends IItemBase {
 	chat: TDescription[];
-	places: TPlace[];
-	positiveTags: TRecipeTag[];
-	beverageTags: TBeverageTag[];
+	places: TPlaceId[];
+	positiveTags: TRecipeTagId[];
+	beverageTags: TBeverageTagId[];
 }
 
 interface IFoodFrom {
@@ -234,8 +208,8 @@ interface IFoodFrom {
 		| [TCollectionLocation, boolean | number]
 		| [TCollectionLocation, boolean | number, number, number]
 	>;
-	fishing: TPlace[];
-	fishingAdvanced: TPlace[];
+	fishing: TPlaceId[];
+	fishingAdvanced: TPlaceId[];
 	task: TTask[];
 }
 

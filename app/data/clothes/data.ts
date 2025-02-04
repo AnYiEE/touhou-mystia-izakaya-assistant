@@ -37,7 +37,7 @@ export const CLOTHES_LIST = [
 		izakaya: false,
 		from: [
 			{
-				bond: '露米娅',
+				bond: 1,
 			},
 		],
 	},
@@ -50,7 +50,7 @@ export const CLOTHES_LIST = [
 		izakaya: false,
 		from: [
 			{
-				bond: '上白泽慧音',
+				bond: 4,
 			},
 		],
 	},
@@ -64,7 +64,7 @@ export const CLOTHES_LIST = [
 		izakaya: false,
 		from: [
 			{
-				bond: '博丽灵梦',
+				bond: 7,
 			},
 		],
 	},
@@ -77,7 +77,7 @@ export const CLOTHES_LIST = [
 		izakaya: false,
 		from: [
 			{
-				bond: '帕秋莉',
+				bond: 27,
 			},
 		],
 	},
@@ -90,7 +90,7 @@ export const CLOTHES_LIST = [
 		izakaya: false,
 		from: [
 			{
-				bond: '蓬莱山辉夜',
+				bond: 25,
 			},
 		],
 	},
@@ -115,7 +115,7 @@ export const CLOTHES_LIST = [
 				buy: {
 					name: '【人间之里】香霖堂',
 					price: {
-						currency: '银色的青蛙硬币',
+						currency: 29,
 						amount: 25,
 					},
 				},
@@ -144,7 +144,7 @@ export const CLOTHES_LIST = [
 				buy: {
 					name: '【人间之里】香霖堂',
 					price: {
-						currency: '银色的青蛙硬币',
+						currency: 29,
 						amount: 25,
 					},
 				},
@@ -164,7 +164,7 @@ export const CLOTHES_LIST = [
 				buy: {
 					name: '【人间之里】香霖堂',
 					price: {
-						currency: '银色的青蛙硬币',
+						currency: 29,
 						amount: 15,
 					},
 				},
@@ -184,7 +184,7 @@ export const CLOTHES_LIST = [
 				buy: {
 					name: '【人间之里】香霖堂',
 					price: {
-						currency: '银色的青蛙硬币',
+						currency: 29,
 						amount: 25,
 					},
 				},
@@ -204,7 +204,7 @@ export const CLOTHES_LIST = [
 				buy: {
 					name: '【人间之里】香霖堂',
 					price: {
-						currency: '银色的青蛙硬币',
+						currency: 29,
 						amount: 15,
 					},
 				},
@@ -221,7 +221,7 @@ export const CLOTHES_LIST = [
 		izakaya: false,
 		from: [
 			{
-				bond: '东风谷早苗',
+				bond: 1005,
 			},
 		],
 	},
@@ -235,7 +235,7 @@ export const CLOTHES_LIST = [
 		izakaya: false,
 		from: [
 			{
-				bond: '雾雨魔理沙',
+				bond: 10,
 			},
 		],
 	},
@@ -249,7 +249,7 @@ export const CLOTHES_LIST = [
 		izakaya: false,
 		from: [
 			{
-				bond: '星熊勇仪',
+				bond: 2002,
 			},
 		],
 	},
@@ -263,7 +263,7 @@ export const CLOTHES_LIST = [
 		izakaya: false,
 		from: [
 			{
-				bond: '灵乌路空',
+				bond: 2005,
 			},
 		],
 	},
@@ -279,7 +279,7 @@ export const CLOTHES_LIST = [
 				buy: {
 					name: '【人间之里】香霖堂',
 					price: {
-						currency: '银色的青蛙硬币',
+						currency: 29,
 						amount: 10,
 					},
 				},
@@ -296,7 +296,7 @@ export const CLOTHES_LIST = [
 		izakaya: false,
 		from: [
 			{
-				bond: '村纱水蜜',
+				bond: 3001,
 			},
 		],
 	},
@@ -309,7 +309,7 @@ export const CLOTHES_LIST = [
 		izakaya: false,
 		from: [
 			{
-				bond: '霍青娥',
+				bond: 3004,
 			},
 		],
 	},
@@ -322,7 +322,7 @@ export const CLOTHES_LIST = [
 		izakaya: false,
 		from: [
 			{
-				bond: '风见幽香',
+				bond: 4002,
 			},
 		],
 	},
@@ -336,7 +336,7 @@ export const CLOTHES_LIST = [
 		izakaya: false,
 		from: [
 			{
-				bond: '鬼人正邪',
+				bond: 4003,
 			},
 		],
 	},
@@ -349,7 +349,7 @@ export const CLOTHES_LIST = [
 		izakaya: false,
 		from: [
 			{
-				bond: '绵月依姬',
+				bond: 5002,
 			},
 		],
 	},
@@ -363,7 +363,7 @@ export const CLOTHES_LIST = [
 		izakaya: false,
 		from: [
 			{
-				bond: '露易兹',
+				bond: 5005,
 			},
 		],
 	},
