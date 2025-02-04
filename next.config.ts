@@ -23,13 +23,11 @@ const envKeys: (keyof NodeJS.ProcessEnv)[] = [
 	'VERCEL_GIT_COMMIT_SHA',
 ];
 
-const emptyEnvObject: Partial<NodeJS.ProcessEnv> = {};
-
 const nextConfig: NextConfig = {
-	env: envKeys.reduce((acc, key) => {
+	env: envKeys.reduce<Partial<NodeJS.ProcessEnv>>((acc, key) => {
 		acc[key] = env[key];
 		return acc;
-	}, emptyEnvObject),
+	}, {}),
 
 	// Hand over to Nginx and other web servers for reverse proxy and compression.
 	compress: !env.SELF_HOSTED,
@@ -53,9 +51,10 @@ if (exportMode) {
 } else {
 	nextConfig.headers = async () => {
 		const headers: Awaited<ReturnType<NonNullable<NextConfig['headers']>>> = [];
+
 		if (IS_PRODUCTION && !env.VERCEL) {
 			headers.push({
-				source: '/:all*(.gif|.ico|.png|.webp|.json|.txt|.js)',
+				source: '/:all*(.gif|.ico|.png|.webp|.js|.txt|.webmanifest)',
 				headers: [
 					{
 						key: 'Cache-Control',
@@ -64,6 +63,7 @@ if (exportMode) {
 				],
 			});
 		}
+
 		return headers;
 	};
 }
