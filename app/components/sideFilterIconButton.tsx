@@ -22,7 +22,7 @@ import {
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
 import Sprite from '@/components/sprite';
 
-import {LABEL_DLC_0} from '@/data';
+import {LABEL_MAP} from '@/data';
 import {globalStore as store} from '@/stores';
 import {pinyinSort, toArray} from '@/utilities';
 import type {TSpriteTarget} from '@/utils/sprite/types';
@@ -159,7 +159,7 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 										</SelectItem>
 									) : (
 										<SelectItem key={value}>
-											{label === 'DLC' && value === 0 ? LABEL_DLC_0 : value.toString()}
+											{label === 'DLC' && value === 0 ? LABEL_MAP.dlc0 : value.toString()}
 										</SelectItem>
 									)
 								}

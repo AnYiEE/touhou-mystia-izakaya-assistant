@@ -1,14 +1,5 @@
 import type {TRecipe} from './types';
-import {
-	TAG_LARGE_PARTITION,
-	TAG_POPULAR_NEGATIVE,
-	TAG_POPULAR_POSITIVE,
-	TAG_SIGNATURE,
-	type TCustomerNormalName,
-	type TRatingKey,
-	type TRecipeName,
-	type TRecipeTag,
-} from '@/data';
+import {DYNAMIC_TAG_MAP, type TCustomerNormalName, type TRatingKey, type TRecipeName, type TRecipeTag} from '@/data';
 import {type IPopularTrend, type TPopularTag} from '@/types';
 import {intersection} from '@/utilities';
 
@@ -80,18 +71,18 @@ export function evaluateMeal({
 
 	if (
 		isFamousShop &&
-		currentCustomerPositiveTags.includes(TAG_POPULAR_POSITIVE) &&
-		((currentRecipe.positiveTags as TRecipeTag[]).includes(TAG_SIGNATURE) ||
-			currentExtraTags.includes(TAG_SIGNATURE))
+		currentCustomerPositiveTags.includes(DYNAMIC_TAG_MAP.popularPositive) &&
+		((currentRecipe.positiveTags as TRecipeTag[]).includes(DYNAMIC_TAG_MAP.signature) ||
+			currentExtraTags.includes(DYNAMIC_TAG_MAP.signature))
 	) {
 		extraScore += 1;
 	}
 
 	let currentCustomerPopularTag: IPopularTrend['tag'] = null;
 	const {isNegative: popularTrendIsNegative, tag: popularTag} = currentCustomerPopularTrend;
-	if (popularTrendIsNegative && currentCustomerPositiveTags.includes(TAG_POPULAR_NEGATIVE)) {
+	if (popularTrendIsNegative && currentCustomerPositiveTags.includes(DYNAMIC_TAG_MAP.popularNegative)) {
 		currentCustomerPopularTag = popularTag;
-	} else if (!popularTrendIsNegative && currentCustomerPositiveTags.includes(TAG_POPULAR_POSITIVE)) {
+	} else if (!popularTrendIsNegative && currentCustomerPositiveTags.includes(DYNAMIC_TAG_MAP.popularPositive)) {
 		currentCustomerPopularTag = popularTag;
 	}
 
@@ -105,8 +96,8 @@ export function evaluateMeal({
 	const totalIngredientsLength = originalIngredientsLength + currentExtraIngredientsLength;
 
 	if (
-		(currentCustomerPopularTag === TAG_LARGE_PARTITION ||
-			currentCustomerPositiveTags.includes(TAG_LARGE_PARTITION)) &&
+		(currentCustomerPopularTag === DYNAMIC_TAG_MAP.largePartition ||
+			currentCustomerPositiveTags.includes(DYNAMIC_TAG_MAP.largePartition)) &&
 		originalIngredientsLength !== 5 &&
 		totalIngredientsLength === 5
 	) {

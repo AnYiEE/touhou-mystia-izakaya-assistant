@@ -14,9 +14,8 @@ import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import type {IPersistenceState} from './types';
 import {
-	DARK_MATTER_PRICE,
-	TAG_POPULAR_NEGATIVE,
-	TAG_POPULAR_POSITIVE,
+	DARK_MATTER_META_MAP,
+	DYNAMIC_TAG_MAP,
 	type TBeverageName,
 	type TBeverageTag,
 	type TCustomerRareName,
@@ -73,7 +72,8 @@ const storeVersion = {
 	showCooker: 14,
 	tableRows: 15, // eslint-disable-next-line sort-keys
 	ingredientTag: 16,
-	tablePersist: 17,
+	tablePersist: 17, // eslint-disable-next-line sort-keys
+	mealData: 18,
 } as const;
 
 const state = {
@@ -105,8 +105,8 @@ const state = {
 			.sort(numberSort),
 		tags: toArray<TIngredientTag[]>(
 			instance_ingredient.getValuesByProp('tags').filter((tag) => !instance_ingredient.blockedTags.has(tag)),
-			TAG_POPULAR_NEGATIVE,
-			TAG_POPULAR_POSITIVE
+			DYNAMIC_TAG_MAP.popularNegative,
+			DYNAMIC_TAG_MAP.popularPositive
 		)
 			.map(toGetValueCollection)
 			.sort(pinyinSort),
@@ -120,8 +120,8 @@ const state = {
 			.sort(pinyinSort),
 		tags: toArray<TRecipeTag[]>(
 			instance_recipe.getValuesByProp('positiveTags').filter((tag) => !instance_recipe.blockedTags.has(tag)),
-			TAG_POPULAR_NEGATIVE,
-			TAG_POPULAR_POSITIVE
+			DYNAMIC_TAG_MAP.popularNegative,
+			DYNAMIC_TAG_MAP.popularPositive
 		)
 			.map(toGetValueCollection)
 			.sort(pinyinSort),
@@ -174,11 +174,10 @@ const state = {
 		meals: {} as {
 			[key in TCustomerRareName]?: {
 				index: number;
-				hasMystiaCooker: boolean;
 				order: ICustomerOrder;
+				hasMystiaCooker: boolean;
 				beverage: TBeverageName;
-				recipe: TRecipeName;
-				extraIngredients: TIngredientName[];
+				recipe: IMealRecipe;
 			}[];
 		},
 	},
@@ -247,7 +246,7 @@ export const customerRareStore = store(state, {
 	persist: {
 		enabled: true,
 		name: customerRareStoreKey,
-		version: storeVersion.tablePersist,
+		version: storeVersion.mealData,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -432,6 +431,23 @@ export const customerRareStore = store(state, {
 				recipeTable.cookers = [];
 				recipeTable.dlcs = [];
 				recipeTable.sortDescriptor = {};
+			}
+			if (version < storeVersion.mealData) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				const {persistence} = oldState;
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+				for (const meals of Object.values(persistence.meals) as any) {
+					for (const meal of meals) {
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+						const {extraIngredients, recipe: recipeName} = meal;
+						meal.recipe = {
+							// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+							extraIngredients, // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+							name: recipeName,
+						};
+						delete meal.extraIngredients;
+					}
+				}
 			}
 			return persistedState as typeof state;
 		},
@@ -703,7 +719,7 @@ export const customerRareStore = store(state, {
 				negativeTags: customerNegativeTags,
 				positiveTags: customerPositiveTags,
 			} = instance_customer.getPropsByName(customerName);
-			const order = currentStore.shared.customer.order.get();
+			const customerOrder = currentStore.shared.customer.order.get();
 			const hasMystiaCooker = currentStore.shared.customer.hasMystiaCooker.get();
 			const isDarkMatter = Boolean(currentStore.shared.customer.isDarkMatter.get());
 			const beverageTags: TBeverageTag[] = [];
@@ -726,7 +742,7 @@ export const customerRareStore = store(state, {
 				currentCustomerBeverageTags: customerBeverageTags,
 				currentCustomerName: customerName,
 				currentCustomerNegativeTags: customerNegativeTags,
-				currentCustomerOrder: order,
+				currentCustomerOrder: customerOrder,
 				currentCustomerPositiveTags: customerPositiveTags,
 				currentIngredients: ingredients,
 				currentRecipeName: recipeName,
@@ -737,14 +753,13 @@ export const customerRareStore = store(state, {
 			currentStore.shared.customer.rating.set(rating);
 		},
 		evaluateSavedMealResult(data: {
-			beverageName: TBeverageName;
 			customerName: TCustomerRareName;
-			extraIngredients: TIngredientName[];
+			customerOrder: ICustomerOrder;
 			hasMystiaCooker: boolean;
+			beverageName: TBeverageName;
+			recipeData: IMealRecipe;
 			isFamousShop: boolean;
-			order: ICustomerOrder;
 			popularTrend: IPopularTrend;
-			recipeName: TRecipeName;
 		}) {
 			const stringifiedData = JSON.stringify(data);
 			if (savedMealRatingCache.has(stringifiedData)) {
@@ -753,12 +768,11 @@ export const customerRareStore = store(state, {
 			const {
 				beverageName,
 				customerName,
-				extraIngredients,
+				customerOrder,
 				hasMystiaCooker,
 				isFamousShop,
-				order,
 				popularTrend,
-				recipeName,
+				recipeData: {extraIngredients, name: recipeName},
 			} = data;
 			const {
 				beverageTags: customerBeverageTags,
@@ -773,7 +787,7 @@ export const customerRareStore = store(state, {
 				extraIngredients,
 				negativeTags,
 			});
-			const recipePrice = isDarkMatter ? DARK_MATTER_PRICE : originalRecipePrice;
+			const recipePrice = isDarkMatter ? DARK_MATTER_META_MAP.price : originalRecipePrice;
 			const composedRecipeTags = instance_recipe.composeTagsWithPopularTrend(
 				ingredients,
 				extraIngredients,
@@ -791,7 +805,7 @@ export const customerRareStore = store(state, {
 				currentCustomerBeverageTags: customerBeverageTags,
 				currentCustomerName: customerName,
 				currentCustomerNegativeTags: customerNegativeTags,
-				currentCustomerOrder: order,
+				currentCustomerOrder: customerOrder,
 				currentCustomerPositiveTags: customerPositiveTags,
 				currentIngredients: union(ingredients, extraIngredients),
 				currentRecipeName: recipeName,
@@ -823,12 +837,11 @@ export const customerRareStore = store(state, {
 				return;
 			}
 			const {extraIngredients, name: recipeName} = recipeData;
-			const order = currentStore.shared.customer.order.get();
+			const customerOrder = currentStore.shared.customer.order.get();
 			const hasMystiaCooker = currentStore.shared.customer.hasMystiaCooker.get();
 			const isDarkMatter = currentStore.shared.customer.isDarkMatter.get();
 			const saveObject = {
 				beverage: beverageName,
-				extraIngredients,
 				hasMystiaCooker,
 				order:
 					hasMystiaCooker && !isDarkMatter
@@ -836,8 +849,11 @@ export const customerRareStore = store(state, {
 								beverageTag: null,
 								recipeTag: null,
 							}
-						: order,
-				recipe: recipeName,
+						: customerOrder,
+				recipe: {
+					extraIngredients,
+					name: recipeName,
+				},
 			} as const;
 			currentStore.persistence.meals.set((prev) => {
 				if (customerName in prev) {

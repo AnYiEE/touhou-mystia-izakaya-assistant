@@ -3,14 +3,9 @@ import {isObject} from 'lodash';
 import {Food} from './base';
 import {Ingredient} from './ingredients';
 import {
-	DARK_MATTER_NAME,
-	DARK_MATTER_TAG,
+	DARK_MATTER_META_MAP,
+	DYNAMIC_TAG_MAP,
 	RECIPE_LIST,
-	TAG_ECONOMICAL,
-	TAG_EXPENSIVE,
-	TAG_LARGE_PARTITION,
-	TAG_POPULAR_NEGATIVE,
-	TAG_POPULAR_POSITIVE,
 	type TCustomerRareName,
 	type TIngredientName,
 	type TIngredientTag,
@@ -35,7 +30,7 @@ export class Recipe extends Food<TRecipes> {
 	private static _instance: Recipe | undefined;
 
 	private static _tagCoverMap = {
-		[TAG_LARGE_PARTITION]: '小巧',
+		[DYNAMIC_TAG_MAP.largePartition]: '小巧',
 		灼热: '凉爽',
 		肉: '素',
 		重油: '清淡',
@@ -49,11 +44,11 @@ export class Recipe extends Food<TRecipes> {
 
 		(clonedData as TRecipeProcessedPositiveTags[]).forEach((recipe) => {
 			const {name, positiveTags, price} = recipe;
-			if (name !== DARK_MATTER_NAME) {
+			if (name !== DARK_MATTER_META_MAP.name) {
 				if (price > 60) {
-					positiveTags.push(TAG_EXPENSIVE);
+					positiveTags.push(DYNAMIC_TAG_MAP.expensive);
 				} else if (price < 20) {
-					positiveTags.push(TAG_ECONOMICAL);
+					positiveTags.push(DYNAMIC_TAG_MAP.economical);
 				}
 			}
 		});
@@ -73,8 +68,8 @@ export class Recipe extends Food<TRecipes> {
 		return instance;
 	}
 
-	public blockedRecipes: Set<TRecipeName> = toSet([DARK_MATTER_NAME]);
-	public blockedTags: Set<TRecipeTag> = toSet([DARK_MATTER_TAG]);
+	public blockedRecipes: Set<TRecipeName> = toSet([DARK_MATTER_META_MAP.name]);
+	public blockedTags: Set<TRecipeTag> = toSet([DARK_MATTER_META_MAP.positiveTag]);
 
 	/**
 	 * @description Get the recipes for a customer based on their bond level.
@@ -158,9 +153,11 @@ export class Recipe extends Food<TRecipes> {
 		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popularTrend ?? {};
 
 		if (originalIngredients.length + extraIngredients.length >= 5) {
-			resultTags.add(TAG_LARGE_PARTITION);
-			if (currentPopularTag === TAG_LARGE_PARTITION) {
-				resultTags.add(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
+			resultTags.add(DYNAMIC_TAG_MAP.largePartition);
+			if (currentPopularTag === DYNAMIC_TAG_MAP.largePartition) {
+				resultTags.add(
+					isNegativePopularTag ? DYNAMIC_TAG_MAP.popularNegative : DYNAMIC_TAG_MAP.popularPositive
+				);
 			}
 		}
 
@@ -168,7 +165,9 @@ export class Recipe extends Food<TRecipes> {
 			if (resultTags.has(targetTag as TRecipeTag)) {
 				resultTags.delete(coveredTag);
 				if (currentPopularTag === coveredTag) {
-					resultTags.delete(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
+					resultTags.delete(
+						isNegativePopularTag ? DYNAMIC_TAG_MAP.popularNegative : DYNAMIC_TAG_MAP.popularPositive
+					);
 				}
 			}
 		});

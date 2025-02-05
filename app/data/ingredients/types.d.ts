@@ -1,4 +1,4 @@
-import {type TAG_SIGNATURE} from '@/data/constant';
+import {type DYNAMIC_TAG_MAP} from '@/data/constant';
 import type {IFoodBase} from '@/data/types';
 
 type TTag =
@@ -19,7 +19,7 @@ type TTag =
 	| '鲜'
 	| '甜'
 	| '生'
-	| typeof TAG_SIGNATURE
+	| (typeof DYNAMIC_TAG_MAP)['signature']
 	| '适合拍照'
 	| '凉爽'
 	| '猎奇'

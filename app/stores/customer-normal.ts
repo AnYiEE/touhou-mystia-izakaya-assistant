@@ -14,8 +14,7 @@ import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 import type {IPersistenceState} from './types';
 import {
-	TAG_POPULAR_NEGATIVE,
-	TAG_POPULAR_POSITIVE,
+	DYNAMIC_TAG_MAP,
 	type TBeverageName,
 	type TBeverageTag,
 	type TCustomerNormalName,
@@ -58,7 +57,8 @@ const storeVersion = {
 	ingredientTag: 9,
 	removeBeverage: 10, // eslint-disable-next-line sort-keys
 	addBackBeverage: 11,
-	tablePersist: 12,
+	tablePersist: 12, // eslint-disable-next-line sort-keys
+	mealData: 13,
 } as const;
 
 const state = {
@@ -87,8 +87,8 @@ const state = {
 			.sort(numberSort),
 		tags: toArray<TIngredientTag[]>(
 			instance_ingredient.getValuesByProp('tags').filter((tag) => !instance_ingredient.blockedTags.has(tag)),
-			TAG_POPULAR_NEGATIVE,
-			TAG_POPULAR_POSITIVE
+			DYNAMIC_TAG_MAP.popularNegative,
+			DYNAMIC_TAG_MAP.popularPositive
 		)
 			.map(toGetValueCollection)
 			.sort(pinyinSort),
@@ -102,8 +102,8 @@ const state = {
 			.sort(pinyinSort),
 		tags: toArray<TRecipeTag[]>(
 			instance_recipe.getValuesByProp('positiveTags').filter((tag) => !instance_recipe.blockedTags.has(tag)),
-			TAG_POPULAR_NEGATIVE,
-			TAG_POPULAR_POSITIVE
+			DYNAMIC_TAG_MAP.popularNegative,
+			DYNAMIC_TAG_MAP.popularPositive
 		)
 			.map(toGetValueCollection)
 			.sort(pinyinSort),
@@ -154,8 +154,7 @@ const state = {
 			[key in TCustomerNormalName]?: {
 				index: number;
 				beverage: TBeverageName | null;
-				recipe: TRecipeName;
-				extraIngredients: TIngredientName[];
+				recipe: IMealRecipe;
 			}[];
 		},
 	},
@@ -213,7 +212,7 @@ export const customerNormalStore = store(state, {
 	persist: {
 		enabled: true,
 		name: customerNormalStoreKey,
-		version: storeVersion.tablePersist,
+		version: storeVersion.mealData,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -353,6 +352,23 @@ export const customerNormalStore = store(state, {
 				recipeTable.cookers = [];
 				recipeTable.dlcs = [];
 				recipeTable.sortDescriptor = {};
+			}
+			if (version < storeVersion.mealData) {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+				const {persistence} = oldState;
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+				for (const meals of Object.values(persistence.meals) as any) {
+					for (const meal of meals) {
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+						const {extraIngredients, recipe: recipeName} = meal;
+						meal.recipe = {
+							// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+							extraIngredients, // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+							name: recipeName,
+						};
+						delete meal.extraIngredients;
+					}
+				}
 			}
 			return persistedState as typeof state;
 		},
@@ -622,16 +638,20 @@ export const customerNormalStore = store(state, {
 		},
 		evaluateSavedMealResult(data: {
 			customerName: TCustomerNormalName;
-			extraIngredients: TIngredientName[];
+			recipeData: IMealRecipe;
 			isFamousShop: boolean;
 			popularTrend: IPopularTrend;
-			recipeName: TRecipeName;
 		}) {
 			const stringifiedData = JSON.stringify(data);
 			if (savedMealRatingCache.has(stringifiedData)) {
 				return savedMealRatingCache.get(stringifiedData);
 			}
-			const {customerName, extraIngredients, isFamousShop, popularTrend, recipeName} = data;
+			const {
+				customerName,
+				isFamousShop,
+				popularTrend,
+				recipeData: {extraIngredients, name: recipeName},
+			} = data;
 			const extraTags: TPopularTag[] = [];
 			extraIngredients.forEach((ingredient) => {
 				extraTags.push(...(instance_ingredient.getPropsByName(ingredient, 'tags') as TPopularTag[]));
@@ -666,8 +686,10 @@ export const customerNormalStore = store(state, {
 			const {extraIngredients, name: recipeName} = recipeData;
 			const saveObject = {
 				beverage: beverageName,
-				extraIngredients,
-				recipe: recipeName,
+				recipe: {
+					extraIngredients,
+					name: recipeName,
+				},
 			} as const;
 			currentStore.persistence.meals.set((prev) => {
 				if (customerName in prev) {

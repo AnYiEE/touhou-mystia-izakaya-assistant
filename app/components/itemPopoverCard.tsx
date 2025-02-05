@@ -42,7 +42,7 @@ import {siteConfig} from '@/configs';
 import {
 	type ICooker,
 	type IIngredient,
-	LABEL_DLC_0,
+	LABEL_MAP,
 	type TCookerName,
 	type TIngredientName,
 	type TItemName,
@@ -242,7 +242,7 @@ const ItemPopoverCardComponent = memo(
 				(mergedTags?.negative !== undefined && mergedTags.negative.length > 0)
 		);
 
-		const dlcLabel = dlc === 0 ? LABEL_DLC_0 : '';
+		const dlcLabel = dlc === 0 ? LABEL_MAP.dlc0 : '';
 
 		return (
 			<div className="max-w-80 space-y-2 p-2 text-tiny text-default-800" ref={ref}>

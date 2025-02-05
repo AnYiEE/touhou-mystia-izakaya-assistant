@@ -15,7 +15,7 @@ import SwitchItem from './switchItem';
 import Heading from '@/components/heading';
 import Sprite from '@/components/sprite';
 
-import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data';
+import {DYNAMIC_TAG_MAP} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {toSet} from '@/utilities';
 
@@ -106,18 +106,18 @@ export default memo<IProps>(function Content({onModalClose}) {
 			<div className="space-y-2">
 				<div className="flex items-center">
 					<span className="font-medium">类别：</span>
-					{TAG_POPULAR_POSITIVE}
+					{DYNAMIC_TAG_MAP.popularPositive}
 					<Switch
 						isSelected={isPopularTrendNegative}
 						size="sm"
 						onValueChange={onIsPopularTrendNegativeChange}
-						aria-label={`设置为${isPopularTrendNegative ? TAG_POPULAR_POSITIVE : TAG_POPULAR_NEGATIVE}`}
+						aria-label={`设置为${isPopularTrendNegative ? DYNAMIC_TAG_MAP.popularPositive : DYNAMIC_TAG_MAP.popularNegative}`}
 						classNames={{
 							base: 'mx-2',
 							wrapper: 'bg-primary',
 						}}
 					/>
-					{TAG_POPULAR_NEGATIVE}
+					{DYNAMIC_TAG_MAP.popularNegative}
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
 					<div className="flex items-center">

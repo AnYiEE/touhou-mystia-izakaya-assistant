@@ -13,10 +13,8 @@ import PressElement from '@/components/pressElement';
 import Sprite from '@/components/sprite';
 
 import {
-	DARK_MATTER_NAME,
-	TAG_LARGE_PARTITION,
-	TAG_POPULAR_NEGATIVE,
-	TAG_POPULAR_POSITIVE,
+	DARK_MATTER_META_MAP,
+	DYNAMIC_TAG_MAP,
 	type TIngredientName,
 	type TIngredientTag,
 	type TRecipeTag,
@@ -91,7 +89,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 	const isFullFilled = currentRecipeIngredients.length + currentRecipeExtraIngredients.length >= 5;
 	const isLargePartitionTagNext = currentRecipeIngredients.length + currentRecipeExtraIngredients.length === 4;
 	const shouldCalculateLargePartitionTag =
-		isLargePartitionTagNext && currentCustomerPopularTrend.tag === TAG_LARGE_PARTITION;
+		isLargePartitionTagNext && currentCustomerPopularTrend.tag === DYNAMIC_TAG_MAP.largePartition;
 
 	const calculateIngredientTagsWithTrend = curryRight(instance_ingredient.calculateTagsWithTrend)(
 		currentCustomerPopularTrend,
@@ -154,18 +152,18 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 						// The customer like the large partition tag.
 						scoreChange += Number(
 							isLargePartitionTagNext &&
-								(customerPositiveTags as TRecipeTag[]).includes(TAG_LARGE_PARTITION)
+								(customerPositiveTags as TRecipeTag[]).includes(DYNAMIC_TAG_MAP.largePartition)
 						);
 
 						// The current popular tag is the large partition tag and the customer has popular tags.
 						scoreChange += Number(
 							shouldCalculateLargePartitionTag &&
-								(customerPositiveTags as TRecipeTag[]).includes(TAG_POPULAR_NEGATIVE) &&
+								(customerPositiveTags as TRecipeTag[]).includes(DYNAMIC_TAG_MAP.popularNegative) &&
 								currentCustomerPopularTrend.isNegative
 						);
 						scoreChange += Number(
 							shouldCalculateLargePartitionTag &&
-								(customerPositiveTags as TRecipeTag[]).includes(TAG_POPULAR_POSITIVE) &&
+								(customerPositiveTags as TRecipeTag[]).includes(DYNAMIC_TAG_MAP.popularPositive) &&
 								!currentCustomerPopularTrend.isNegative
 						);
 
@@ -239,7 +237,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 						<div className="my-4 flex items-center">
 							<div className="h-px w-full bg-foreground-300"></div>
 							<div className="select-none whitespace-nowrap text-small font-light text-foreground-500">
-								制作{DARK_MATTER_NAME}？
+								制作{DARK_MATTER_META_MAP.name}？
 							</div>
 							<div className="h-px w-full bg-foreground-300"></div>
 						</div>

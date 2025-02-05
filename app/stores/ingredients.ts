@@ -3,7 +3,7 @@ import {createJSONStorage} from 'zustand/middleware';
 
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
-import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE, type TIngredientTag} from '@/data';
+import {DYNAMIC_TAG_MAP, type TIngredientTag} from '@/data';
 import {createNamesCache} from '@/stores/utils';
 import type {IPopularTrend} from '@/types';
 import {numberSort, pinyinSort, toArray, toGetValueCollection} from '@/utilities';
@@ -24,7 +24,11 @@ const state = {
 
 	dlcs: instance.getValuesByProp('dlc', true).sort(numberSort),
 	levels: instance.getValuesByProp('level', true).sort(numberSort),
-	tags: toArray<TIngredientTag[]>(instance.getValuesByProp('tags'), TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE)
+	tags: toArray<TIngredientTag[]>(
+		instance.getValuesByProp('tags'),
+		DYNAMIC_TAG_MAP.popularNegative,
+		DYNAMIC_TAG_MAP.popularPositive
+	)
 		.map(toGetValueCollection)
 		.sort(pinyinSort),
 	types: instance.sortedTypes.map(toGetValueCollection),

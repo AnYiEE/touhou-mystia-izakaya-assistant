@@ -1,10 +1,10 @@
 import {type TCookerName, type TCurrencyName, type TCustomerRareName, type TIngredientName, type TPlace} from '@/data';
-import {type DARK_MATTER_TAG, type TAG_LARGE_PARTITION, type TAG_SIGNATURE} from '@/data/constant';
+import {type DARK_MATTER_META_MAP, type DYNAMIC_TAG_MAP} from '@/data/constant';
 import type {IFoodBase, TMerchant} from '@/data/types';
 
 type TTag =
-	| typeof DARK_MATTER_TAG
-	| typeof TAG_LARGE_PARTITION
+	| (typeof DARK_MATTER_META_MAP)['positiveTag']
+	| (typeof DYNAMIC_TAG_MAP)['largePartition']
 	| '肉'
 	| '水产'
 	| '素'
@@ -24,7 +24,7 @@ type TTag =
 	| '鲜'
 	| '甜'
 	| '生'
-	| typeof TAG_SIGNATURE
+	| (typeof DYNAMIC_TAG_MAP)['signature']
 	| '适合拍照'
 	| '凉爽'
 	| '灼热'

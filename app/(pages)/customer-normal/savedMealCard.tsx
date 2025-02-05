@@ -80,17 +80,16 @@ export default function SavedMealCard() {
 			}}
 		>
 			<div className="space-y-3 p-4 xl:space-y-2">
-				{savedCustomerMeal.map(({beverage, extraIngredients, index: mealIndex, recipe}, loopIndex) => (
+				{savedCustomerMeal.map(({beverage, index: mealIndex, recipe: recipeData}, loopIndex) => (
 					<Fragment key={loopIndex}>
 						<div className="flex flex-col items-center gap-4 md:flex-row">
 							<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
 								{(() => {
 									const ratingKey = customerStore.evaluateSavedMealResult({
 										customerName: currentCustomerName,
-										extraIngredients,
 										isFamousShop,
 										popularTrend: currentCustomerPopularTrend,
-										recipeName: recipe,
+										recipeData,
 									});
 									const rating = CUSTOMER_RATING_MAP[ratingKey];
 									return (
@@ -118,7 +117,7 @@ export default function SavedMealCard() {
 								})()}
 								<div className="flex items-center gap-2">
 									{(() => {
-										const cooker = instance_recipe.getPropsByName(recipe, 'cooker');
+										const cooker = instance_recipe.getPropsByName(recipeData.name, 'cooker');
 										const cookerLabel = `点击：在新窗口中查看厨具【${cooker}】的详情`;
 										return (
 											<Tooltip showArrow content={cookerLabel} offset={8}>
@@ -136,15 +135,15 @@ export default function SavedMealCard() {
 										);
 									})()}
 									{(() => {
-										const recipeLabel = `点击：在新窗口中查看料理【${recipe}】的详情`;
+										const recipeLabel = `点击：在新窗口中查看料理【${recipeData.name}】的详情`;
 										return (
 											<Tooltip showArrow content={recipeLabel} offset={4}>
 												<Sprite
 													target="recipe"
-													name={recipe}
+													name={recipeData.name}
 													size={2}
 													onPress={() => {
-														openWindow('recipes', recipe);
+														openWindow('recipes', recipeData.name);
 													}}
 													aria-label={recipeLabel}
 													role="button"
@@ -176,9 +175,15 @@ export default function SavedMealCard() {
 								</div>
 								<Plus size={0.75} />
 								{(() => {
-									const originalIngredients = instance_recipe.getPropsByName(recipe, 'ingredients');
+									const originalIngredients = instance_recipe.getPropsByName(
+										recipeData.name,
+										'ingredients'
+									);
 									const lestExtraIngredientsLength = Math.max(5 - originalIngredients.length, 0);
-									const lestExtraIngredients = extraIngredients.slice(0, lestExtraIngredientsLength);
+									const lestExtraIngredients = recipeData.extraIngredients.slice(
+										0,
+										lestExtraIngredientsLength
+									);
 									return (
 										<div className="flex items-center gap-x-3">
 											{originalIngredients.map((name, index) => {
@@ -255,14 +260,11 @@ export default function SavedMealCard() {
 									onPress={() => {
 										vibrate();
 										customerStore.shared.beverage.name.set(beverage);
-										customerStore.shared.recipe.data.set({
-											extraIngredients,
-											name: recipe,
-										});
+										customerStore.shared.recipe.data.set(recipeData);
 										trackEvent(
 											trackEvent.category.Click,
 											'Select Button',
-											`${recipe}${beverage === null ? '' : ` - ${beverage}`}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
+											`${recipeData.name}${beverage === null ? '' : ` - ${beverage}`}${recipeData.extraIngredients.length > 0 ? ` - ${recipeData.extraIngredients.join(' ')}` : ''}`
 										);
 									}}
 									className="md:w-auto"
@@ -281,7 +283,7 @@ export default function SavedMealCard() {
 										trackEvent(
 											trackEvent.category.Click,
 											'Remove Button',
-											`${recipe}${beverage === null ? '' : ` - ${beverage}`}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
+											`${recipeData.name}${beverage === null ? '' : ` - ${beverage}`}${recipeData.extraIngredients.length > 0 ? ` - ${recipeData.extraIngredients.join(' ')}` : ''}`
 										);
 									}}
 									className="md:w-auto"

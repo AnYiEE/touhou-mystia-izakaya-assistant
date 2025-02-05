@@ -12,7 +12,7 @@ import Placeholder from '@/components/placeholder';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 
-import {CUSTOMER_RATING_MAP, DARK_MATTER_NAME, DARK_MATTER_PRICE, type TIngredientName} from '@/data';
+import {CUSTOMER_RATING_MAP, DARK_MATTER_META_MAP, type TIngredientName} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkA11yConfirmKey, toArray} from '@/utilities';
 
@@ -257,7 +257,7 @@ export default function ResultCard() {
 								const cooker = isDarkMatterOrNormalMeal
 									? originalCooker
 									: (`夜雀${originalCooker}` as const);
-								const recipeName = isDarkMatter ? DARK_MATTER_NAME : currentRecipeData.name;
+								const recipeName = isDarkMatter ? DARK_MATTER_META_MAP.name : currentRecipeData.name;
 								const label = isDarkMatter
 									? originalCooker
 									: `点击：将此点单标记为使用${hasMystiaCooker ? '非' : ''}【夜雀${originalCooker}】制作`;
@@ -327,7 +327,7 @@ export default function ResultCard() {
 									: 0) +
 									(currentRecipeData?.name
 										? isDarkMatter
-											? DARK_MATTER_PRICE
+											? DARK_MATTER_META_MAP.price
 											: instance_recipe.getPropsByName(currentRecipeData.name, 'price')
 										: 0)}
 							</Price>

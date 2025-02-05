@@ -5,7 +5,7 @@ import {driver} from 'driver.js';
 
 import {usePathname} from '@/hooks';
 
-import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data';
+import {DYNAMIC_TAG_MAP} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {getPageTitle} from '@/utilities';
 
@@ -141,7 +141,7 @@ export default function CustomerRareTutorial() {
 					element: '[aria-label="更多信息"]',
 					popover: {
 						title: '更多信息', // eslint-disable-next-line sort-keys
-						description: `在此处可以查看更多信息，如：稀客的羁绊奖励和符卡效果。点击导航栏中的“设置”按钮可以调整更多偏好项，如：设置游戏中现时的${TAG_POPULAR_POSITIVE}或${TAG_POPULAR_NEGATIVE}趋势。`,
+						description: `在此处可以查看更多信息，如：稀客的羁绊奖励和符卡效果。点击导航栏中的“设置”按钮可以调整更多偏好项，如：设置游戏中现时的${DYNAMIC_TAG_MAP.popularPositive}或${DYNAMIC_TAG_MAP.popularNegative}趋势。`,
 						onPopoverRender(popover) {
 							const completeButton = document.createElement('button');
 							completeButton.textContent = '完成';

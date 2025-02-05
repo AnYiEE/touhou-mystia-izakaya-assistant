@@ -1,22 +1,6 @@
 /* eslint-disable sort-keys */
 import {type TCollectionLocation} from '@/data';
 
-// For the dark matter.
-export const DARK_MATTER_NAME = '黑暗物质';
-export const DARK_MATTER_PRICE = 1;
-export const DARK_MATTER_TAG = '黑暗物质';
-
-// For dynamic tags.
-export const TAG_ECONOMICAL = '实惠';
-export const TAG_EXPENSIVE = '昂贵';
-export const TAG_LARGE_PARTITION = '大份';
-export const TAG_POPULAR_NEGATIVE = '流行厌恶';
-export const TAG_POPULAR_POSITIVE = '流行喜爱';
-export const TAG_SIGNATURE = '招牌';
-
-export const LABEL_BR = '{{br}}';
-export const LABEL_DLC_0 = '游戏本体';
-
 export const COLLECTION_LOCATION_REFRESH_TIME_MAP = {
 	'【博丽神社】花丛': 12,
 	'【博丽神社】蘑菇堆（西侧）': 24,
@@ -150,3 +134,23 @@ export const COLLECTION_LOCATION_REFRESH_TIME_MAP = {
 	'非【迷途竹林】河流': null,
 	'非【妖怪兽道】河流': null,
 } as const satisfies Record<TCollectionLocation, number | null>;
+
+export const DARK_MATTER_META_MAP = {
+	name: '黑暗物质',
+	positiveTag: '黑暗物质',
+	price: 1,
+} as const;
+
+export const DYNAMIC_TAG_MAP = {
+	economical: '实惠',
+	expensive: '昂贵',
+	largePartition: '大份',
+	popularNegative: '流行厌恶',
+	popularPositive: '流行喜爱',
+	signature: '招牌',
+} as const;
+
+export const LABEL_MAP = {
+	br: '{{br}}',
+	dlc0: '游戏本体',
+} as const;

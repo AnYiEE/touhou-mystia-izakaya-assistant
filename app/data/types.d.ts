@@ -1,9 +1,4 @@
-import {
-	type TAG_ECONOMICAL,
-	type TAG_EXPENSIVE,
-	type TAG_POPULAR_NEGATIVE,
-	type TAG_POPULAR_POSITIVE,
-} from '@/data/constant';
+import {type DYNAMIC_TAG_MAP} from '@/data/constant';
 
 import type {IBeverage} from '@/data/beverages/types';
 import type {IIngredient} from '@/data/ingredients/types';
@@ -177,16 +172,16 @@ export type TMerchant =
 
 type TTask = '阿求小姐的色纸' | '女仆长的采购委托' | '月都试炼' | '最终收网行动';
 
-type TTagNeedCalculate = typeof TAG_EXPENSIVE | typeof TAG_ECONOMICAL;
-type TPopularTags = typeof TAG_POPULAR_NEGATIVE | typeof TAG_POPULAR_POSITIVE;
+type TTagNeedCalculate = (typeof DYNAMIC_TAG_MAP)['economical'] | (typeof DYNAMIC_TAG_MAP)['expensive'];
+type TPopularTag = (typeof DYNAMIC_TAG_MAP)['popularNegative'] | (typeof DYNAMIC_TAG_MAP)['popularPositive'];
 
 type TBeverageTag = IBeverage['tags'][number];
-type TIngredientTag = IIngredient['tags'][number] | TPopularTags;
+type TIngredientTag = IIngredient['tags'][number] | TPopularTag;
 type TRecipeTag =
 	| IRecipe['positiveTags'][number] // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
 	| IRecipe['negativeTags'][number]
 	| TTagNeedCalculate
-	| TPopularTags;
+	| TPopularTag;
 
 type TPlace =
 	| '妖怪兽道'

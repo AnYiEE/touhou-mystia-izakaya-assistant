@@ -1,6 +1,5 @@
 import {
-	DARK_MATTER_NAME,
-	DARK_MATTER_TAG,
+	DARK_MATTER_META_MAP,
 	type TBeverageTag,
 	type TCustomerRareName,
 	type TIngredientName,
@@ -161,7 +160,7 @@ export function checkRecipeEasterEgg({
 			break;
 		}
 		case '梅蒂欣': {
-			const recipe = DARK_MATTER_NAME;
+			const recipe = DARK_MATTER_META_MAP.name;
 			if (currentRecipeName === recipe) {
 				return {
 					recipe,
@@ -270,9 +269,9 @@ export function evaluateMeal({
 	let currentRecipeScore: number | null = null;
 
 	if (isDarkMatter) {
-		currentRecipeName = DARK_MATTER_NAME;
+		currentRecipeName = DARK_MATTER_META_MAP.name;
 		currentRecipeScore = 0;
-		currentRecipeTagsWithTrend = [DARK_MATTER_TAG];
+		currentRecipeTagsWithTrend = [DARK_MATTER_META_MAP.positiveTag];
 		hasMystiaCooker = false;
 	}
 

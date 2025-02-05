@@ -28,7 +28,7 @@ import Tags from '@/components/tags';
 import {
 	CUSTOMER_RARE_TAG_STYLE,
 	CUSTOMER_RATING_MAP,
-	LABEL_DLC_0,
+	LABEL_MAP,
 	type TBeverageTag,
 	type TCustomerRareName,
 	type TRecipeTag,
@@ -179,7 +179,7 @@ export default function CustomerCard() {
 		price: currentCustomerPrice,
 	} = instance_customer.getPropsByName(currentCustomerName);
 
-	const dlcLabel = currentCustomerDlc === 0 ? LABEL_DLC_0 : '';
+	const dlcLabel = currentCustomerDlc === 0 ? LABEL_MAP.dlc0 : '';
 
 	const copiedCurrentCustomerPlaces = copyArray(currentCustomerPlaces);
 	const currentCustomerMainPlace = copiedCurrentCustomerPlaces.shift();

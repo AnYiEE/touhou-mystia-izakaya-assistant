@@ -33,7 +33,7 @@ import Tags from '@/components/tags';
 
 import {beverageTableColumns as tableColumns} from './constants';
 import type {ITableColumn, ITableSortDescriptor, TBeverageWithSuitability, TBeveragesWithSuitability} from './types';
-import {CUSTOMER_RARE_TAG_STYLE, LABEL_DLC_0} from '@/data';
+import {CUSTOMER_RARE_TAG_STYLE, LABEL_MAP} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkArraySubsetOf, copyArray, numberSort, pinyinSort, processPinyin, toArray, toSet} from '@/utilities';
 
@@ -396,7 +396,7 @@ export default function BeverageTabContent() {
 							>
 								{({value}) => (
 									<DropdownItem key={value} textValue={value.toString()}>
-										{value || LABEL_DLC_0}
+										{value || LABEL_MAP.dlc0}
 									</DropdownItem>
 								)}
 							</DropdownMenu>

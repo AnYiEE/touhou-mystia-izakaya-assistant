@@ -15,7 +15,7 @@ import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 
-import {BEVERAGE_TAG_STYLE, CUSTOMER_RATING_MAP, DARK_MATTER_NAME, RECIPE_TAG_STYLE} from '@/data';
+import {BEVERAGE_TAG_STYLE, CUSTOMER_RATING_MAP, DARK_MATTER_META_MAP, RECIPE_TAG_STYLE} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {copyArray} from '@/utilities';
 
@@ -133,7 +133,10 @@ export default function SavedMealCard() {
 		>
 			<div className="space-y-3 p-4 xl:space-y-2 xl:px-2 xl:py-3">
 				{savedCustomerMeal.map(
-					({beverage, extraIngredients, hasMystiaCooker, index: mealIndex, order, recipe}, loopIndex) => (
+					(
+						{beverage, hasMystiaCooker, index: mealIndex, order: customerOrder, recipe: recipeData},
+						loopIndex
+					) => (
 						<Fragment key={loopIndex}>
 							<div className="flex flex-col items-center gap-4 md:flex-row md:gap-3 lg:gap-4 xl:gap-3">
 								<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap md:gap-2 lg:gap-3 xl:gap-2">
@@ -145,19 +148,21 @@ export default function SavedMealCard() {
 										} = customerStore.evaluateSavedMealResult({
 											beverageName: beverage,
 											customerName: currentCustomerName,
-											extraIngredients,
+											customerOrder,
 											hasMystiaCooker,
 											isFamousShop,
-											order,
 											popularTrend: currentCustomerPopularTrend,
-											recipeName: recipe,
+											recipeData,
 										});
 										const isDarkMatterOrNormalMeal = isDarkMatter || !hasMystiaCooker;
-										const originalCooker = instance_recipe.getPropsByName(recipe, 'cooker');
+										const originalCooker = instance_recipe.getPropsByName(
+											recipeData.name,
+											'cooker'
+										);
 										const cooker = isDarkMatterOrNormalMeal
 											? originalCooker
 											: (`夜雀${originalCooker}` as const);
-										const recipeName = isDarkMatter ? DARK_MATTER_NAME : recipe;
+										const recipeName = isDarkMatter ? DARK_MATTER_META_MAP.name : recipeData.name;
 										const rating = CUSTOMER_RATING_MAP[ratingKey];
 										const beverageLabel = `点击：在新窗口中查看酒水【${beverage}】的详情`;
 										const cookerLabel = `点击：在新窗口中查看厨具【${cooker}】的详情`;
@@ -190,20 +195,20 @@ export default function SavedMealCard() {
 																					className="p-0.5"
 																				/>
 																			)}
-																			{order.recipeTag &&
+																			{customerOrder.recipeTag &&
 																				isDarkMatterOrNormalMeal && (
 																					<Tags.Tag
-																						tag={order.recipeTag}
+																						tag={customerOrder.recipeTag}
 																						tagStyle={
 																							RECIPE_TAG_STYLE.positive
 																						}
 																						className="p-0.5"
 																					/>
 																				)}
-																			{order.beverageTag &&
+																			{customerOrder.beverageTag &&
 																				isDarkMatterOrNormalMeal && (
 																					<Tags.Tag
-																						tag={order.beverageTag}
+																						tag={customerOrder.beverageTag}
 																						tagStyle={
 																							BEVERAGE_TAG_STYLE.positive
 																						}
@@ -268,11 +273,11 @@ export default function SavedMealCard() {
 									<Plus size={0.75} className="md:mx-0 lg:mx-1 xl:mx-0" />
 									{(() => {
 										const originalIngredients = instance_recipe.getPropsByName(
-											recipe,
+											recipeData.name,
 											'ingredients'
 										);
 										const lestExtraIngredientsLength = Math.max(5 - originalIngredients.length, 0);
-										const lestExtraIngredients = extraIngredients.slice(
+										const lestExtraIngredients = recipeData.extraIngredients.slice(
 											0,
 											lestExtraIngredientsLength
 										);
@@ -357,16 +362,13 @@ export default function SavedMealCard() {
 										onPress={() => {
 											vibrate();
 											customerStore.shared.customer.hasMystiaCooker.set(hasMystiaCooker);
-											customerStore.shared.customer.order.set(order);
+											customerStore.shared.customer.order.set(customerOrder);
 											customerStore.shared.beverage.name.set(beverage);
-											customerStore.shared.recipe.data.set({
-												extraIngredients,
-												name: recipe,
-											});
+											customerStore.shared.recipe.data.set(recipeData);
 											trackEvent(
 												trackEvent.category.Click,
 												'Select Button',
-												`${recipe} - ${beverage}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
+												`${recipeData.name} - ${beverage}${recipeData.extraIngredients.length > 0 ? ` - ${recipeData.extraIngredients.join(' ')}` : ''}`
 											);
 										}}
 										className="md:w-auto xl:h-6"
@@ -385,7 +387,7 @@ export default function SavedMealCard() {
 											trackEvent(
 												trackEvent.category.Click,
 												'Remove Button',
-												`${recipe} - ${beverage}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
+												`${recipeData.name} - ${beverage}${recipeData.extraIngredients.length > 0 ? ` - ${recipeData.extraIngredients.join(' ')}` : ''}`
 											);
 										}}
 										className="md:w-auto xl:h-6"

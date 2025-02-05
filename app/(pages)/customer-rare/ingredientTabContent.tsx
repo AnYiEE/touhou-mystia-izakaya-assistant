@@ -14,10 +14,8 @@ import Sprite from '@/components/sprite';
 import {checkIngredientEasterEgg} from './evaluateMeal';
 import type {IIngredientsTabStyle} from './types';
 import {
-	DARK_MATTER_NAME,
-	TAG_LARGE_PARTITION,
-	TAG_POPULAR_NEGATIVE,
-	TAG_POPULAR_POSITIVE,
+	DARK_MATTER_META_MAP,
+	DYNAMIC_TAG_MAP,
 	type TIngredientName,
 	type TIngredientTag,
 	type TRecipeTag,
@@ -96,7 +94,7 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 	const isFullFilled = currentRecipeIngredients.length + currentRecipeExtraIngredients.length >= 5;
 	const isLargePartitionTagNext = currentRecipeIngredients.length + currentRecipeExtraIngredients.length === 4;
 	const shouldCalculateLargePartitionTag =
-		isLargePartitionTagNext && currentCustomerPopularTrend.tag === TAG_LARGE_PARTITION;
+		isLargePartitionTagNext && currentCustomerPopularTrend.tag === DYNAMIC_TAG_MAP.largePartition;
 
 	const calculateIngredientTagsWithTrend = curryRight(instance_ingredient.calculateTagsWithTrend)(
 		currentCustomerPopularTrend,
@@ -164,32 +162,32 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 						// The customer like or dislike the large partition tag.
 						scoreChange -= Number(
 							isLargePartitionTagNext &&
-								(customerNegativeTags as TRecipeTag[]).includes(TAG_LARGE_PARTITION)
+								(customerNegativeTags as TRecipeTag[]).includes(DYNAMIC_TAG_MAP.largePartition)
 						);
 						scoreChange += Number(
 							isLargePartitionTagNext &&
-								(customerPositiveTags as TRecipeTag[]).includes(TAG_LARGE_PARTITION)
+								(customerPositiveTags as TRecipeTag[]).includes(DYNAMIC_TAG_MAP.largePartition)
 						);
 
 						// The current popular tag is the large partition tag and the customer has popular tags.
 						scoreChange -= Number(
 							shouldCalculateLargePartitionTag &&
-								(customerNegativeTags as TRecipeTag[]).includes(TAG_POPULAR_NEGATIVE) &&
+								(customerNegativeTags as TRecipeTag[]).includes(DYNAMIC_TAG_MAP.popularNegative) &&
 								currentCustomerPopularTrend.isNegative
 						);
 						scoreChange -= Number(
 							shouldCalculateLargePartitionTag &&
-								(customerNegativeTags as TRecipeTag[]).includes(TAG_POPULAR_POSITIVE) &&
+								(customerNegativeTags as TRecipeTag[]).includes(DYNAMIC_TAG_MAP.popularPositive) &&
 								!currentCustomerPopularTrend.isNegative
 						);
 						scoreChange += Number(
 							shouldCalculateLargePartitionTag &&
-								(customerPositiveTags as TRecipeTag[]).includes(TAG_POPULAR_NEGATIVE) &&
+								(customerPositiveTags as TRecipeTag[]).includes(DYNAMIC_TAG_MAP.popularNegative) &&
 								currentCustomerPopularTrend.isNegative
 						);
 						scoreChange += Number(
 							shouldCalculateLargePartitionTag &&
-								(customerPositiveTags as TRecipeTag[]).includes(TAG_POPULAR_POSITIVE) &&
+								(customerPositiveTags as TRecipeTag[]).includes(DYNAMIC_TAG_MAP.popularPositive) &&
 								!currentCustomerPopularTrend.isNegative
 						);
 
@@ -240,7 +238,7 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 									: isNoChange
 										? ''
 										: score;
-						const tooltipContent = `点击：加入额外食材【${name}】${isNoChange ? '' : `，${isDarkIngredient ? `制作【${DARK_MATTER_NAME}】` : isHLowestRestricted ? '最低评级受限' : isHightestRestricted ? '最高评级受限' : `匹配度${score}${isOrderTag ? '（点单需求）' : ''}`}`}`;
+						const tooltipContent = `点击：加入额外食材【${name}】${isNoChange ? '' : `，${isDarkIngredient ? `制作【${DARK_MATTER_META_MAP.name}】` : isHLowestRestricted ? '最低评级受限' : isHightestRestricted ? '最高评级受限' : `匹配度${score}${isOrderTag ? '（点单需求）' : ''}`}`}`;
 
 						return (
 							<Tooltip

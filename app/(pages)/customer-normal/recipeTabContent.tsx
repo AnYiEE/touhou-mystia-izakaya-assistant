@@ -36,7 +36,7 @@ import {type TTableColumnKey, type TTableSortDescriptor} from '@/(pages)/custome
 import {recipeTableColumns as tableColumns} from './constants';
 import {checkEasterEgg} from './evaluateMeal';
 import type {TRecipeWithSuitability, TRecipesWithSuitability} from './types';
-import {CUSTOMER_NORMAL_TAG_STYLE, LABEL_DLC_0} from '@/data';
+import {CUSTOMER_NORMAL_TAG_STYLE, LABEL_MAP} from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {checkArraySubsetOf, copyArray, numberSort, pinyinSort, processPinyin, toArray, toSet} from '@/utilities';
 
@@ -542,7 +542,7 @@ export default function RecipeTabContent() {
 							>
 								{({value}) => (
 									<DropdownItem key={value} textValue={value.toString()}>
-										{value || LABEL_DLC_0}
+										{value || LABEL_MAP.dlc0}
 									</DropdownItem>
 								)}
 							</DropdownMenu>

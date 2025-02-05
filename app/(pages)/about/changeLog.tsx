@@ -6,7 +6,7 @@ import {Link} from '@/design/ui/components';
 import Heading from '@/components/heading';
 
 import {siteConfig} from '@/configs';
-import {DARK_MATTER_NAME, TAG_LARGE_PARTITION, TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE} from '@/data';
+import {DARK_MATTER_META_MAP, DYNAMIC_TAG_MAP} from '@/data';
 
 const {links} = siteConfig;
 
@@ -32,7 +32,7 @@ const changelog = [
 	{
 		version: 'v0.4',
 		changes: [
-			`新增：支持设置全局的“${TAG_POPULAR_POSITIVE}”或“${TAG_POPULAR_NEGATIVE}”趋势。`,
+			`新增：支持设置全局的“${DYNAMIC_TAG_MAP.popularPositive}”或“${DYNAMIC_TAG_MAP.popularNegative}”趋势。`,
 			'新增：作为渐进式网络应用程序安装后，提供常用功能的快捷方式。',
 			'改善：无障碍（键盘导航）支持。',
 			'修复：稀客套餐评级逻辑。',
@@ -66,7 +66,7 @@ const changelog = [
 	{
 		version: 'v0.9',
 		changes: [
-			`新增：稀客套餐评级支持“${DARK_MATTER_NAME}”。`,
+			`新增：稀客套餐评级支持“${DARK_MATTER_META_MAP.name}”。`,
 			'新增：稀客符卡效果数据及其展示界面。',
 			'新增：稀客、米斯蒂娅的角色和衣服立绘。',
 			'新增：部分场景下支持临时唤起新窗口查看料理、酒水或食材详情。',
@@ -88,8 +88,8 @@ const changelog = [
 		changes: [
 			'新增：摆件和衣服页面。',
 			'新增：支持同时导出稀客和普客的套餐搭配数据。',
-			`新增：料理和食材页面中的料理和食材标签将依照已设置的“${TAG_POPULAR_POSITIVE}”或“${TAG_POPULAR_NEGATIVE}”趋势而动态调整。`,
-			`修复：料理页面的部分料理未显示“${TAG_LARGE_PARTITION}”标签。`,
+			`新增：料理和食材页面中的料理和食材标签将依照已设置的“${DYNAMIC_TAG_MAP.popularPositive}”或“${DYNAMIC_TAG_MAP.popularNegative}”趋势而动态调整。`,
+			`修复：料理页面的部分料理未显示“${DYNAMIC_TAG_MAP.largePartition}”标签。`,
 			'修复：额外食材评分逻辑。',
 		],
 	},

@@ -1,6 +1,6 @@
 /* eslint-disable sort-keys */
 import type {IIngredient} from './types';
-import {TAG_SIGNATURE} from '@/data/constant';
+import {DYNAMIC_TAG_MAP} from '@/data/constant';
 
 export const INGREDIENT_LIST = [
 	{
@@ -215,7 +215,7 @@ export const INGREDIENT_LIST = [
 		name: '八目鳗',
 		description: '一种洄游性海鱼，但却在幻想乡的河流湖泊随处可见。',
 		type: '海鲜',
-		tags: ['水产', '鲜', TAG_SIGNATURE],
+		tags: ['水产', '鲜', DYNAMIC_TAG_MAP.signature],
 		dlc: 0,
 		level: 2,
 		price: 14,
@@ -870,7 +870,7 @@ export const INGREDIENT_LIST = [
 		name: '莲子',
 		description: '非常古老的水生植物——莲的种子。莲子的芯很苦，千万得处理好，别混到料理给客人吃了。',
 		type: '其他',
-		tags: ['清淡', TAG_SIGNATURE, '文化底蕴'],
+		tags: ['清淡', DYNAMIC_TAG_MAP.signature, '文化底蕴'],
 		dlc: 3,
 		level: 3,
 		price: 22,
@@ -903,7 +903,7 @@ export const INGREDIENT_LIST = [
 		description:
 			'红松树的种子。据说在外界已经被列为濒危物种，但在幻想乡仍然很常见。传说松子有延年益寿的功能，是古代道士辟谷时的常备之物。',
 		type: '其他',
-		tags: ['高级', '清淡', TAG_SIGNATURE],
+		tags: ['高级', '清淡', DYNAMIC_TAG_MAP.signature],
 		dlc: 3,
 		level: 2,
 		price: 15,
@@ -1106,7 +1106,7 @@ export const INGREDIENT_LIST = [
 		name: '铃仙',
 		description: '我是谁？？？我在哪？？？我为什么会在这里？？？',
 		type: '其他',
-		tags: [TAG_SIGNATURE, '适合拍照', '不可思议', '特产'],
+		tags: [DYNAMIC_TAG_MAP.signature, '适合拍照', '不可思议', '特产'],
 		dlc: 0,
 		level: 10,
 		price: 530000,

@@ -22,7 +22,7 @@ import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tachie from '@/components/tachie';
 
-import {CUSTOMER_EVALUATION_KEY_MAP, CUSTOMER_RATING_MAP, LABEL_BR, type TRatingKey, type TRewardType} from '@/data';
+import {CUSTOMER_EVALUATION_KEY_MAP, CUSTOMER_RATING_MAP, LABEL_MAP, type TRatingKey, type TRewardType} from '@/data';
 import {customerRareStore as store} from '@/stores';
 
 interface ILevelLabelProps {
@@ -338,7 +338,7 @@ export default function InfoButton() {
 									<div key={index} className="space-y-0.5">
 										<p className="font-medium">{name}</p>
 										<div className="ml-4 text-small">
-											{description.split(LABEL_BR).map((text, line) => (
+											{description.split(LABEL_MAP.br).map((text, line) => (
 												<p key={`${index}-${line}`}>{text}</p>
 											))}
 										</div>
@@ -359,7 +359,7 @@ export default function InfoButton() {
 									<div key={index} className="space-y-0.5">
 										<p className="font-medium">{name}</p>
 										<div className="ml-4 text-small">
-											{description.split(LABEL_BR).map((text, line) => (
+											{description.split(LABEL_MAP.br).map((text, line) => (
 												<p key={`${index}-${line}`}>{text}</p>
 											))}
 										</div>

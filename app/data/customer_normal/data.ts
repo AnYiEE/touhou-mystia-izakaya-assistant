@@ -1,13 +1,6 @@
 /* eslint-disable sort-keys */
 import type {ICustomerNormal} from './types';
-import {
-	TAG_ECONOMICAL,
-	TAG_EXPENSIVE,
-	TAG_LARGE_PARTITION,
-	TAG_POPULAR_NEGATIVE,
-	TAG_POPULAR_POSITIVE,
-	TAG_SIGNATURE,
-} from '@/data/constant';
+import {DYNAMIC_TAG_MAP} from '@/data/constant';
 
 export const CUSTOMER_NORMAL_LIST = [
 	{
@@ -17,7 +10,17 @@ export const CUSTOMER_NORMAL_LIST = [
 			'兔子就算变成了妖怪，也还是喜欢甘甜新鲜的味道呢，真是可爱。当然啦，已经成为了妖怪，不吃肉是不可能的。吃肉的样子也很可爱。',
 		dlc: 0,
 		places: ['妖怪兽道', '红魔馆', '迷途竹林', '魔法森林', '妖怪之山', '地灵殿'],
-		positiveTags: ['家常', '咸', '鲜', '甜', TAG_SIGNATURE, '凉爽', '力量涌现', '果味', TAG_POPULAR_POSITIVE],
+		positiveTags: [
+			'家常',
+			'咸',
+			'鲜',
+			'甜',
+			DYNAMIC_TAG_MAP.signature,
+			'凉爽',
+			'力量涌现',
+			'果味',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		beverageTags: ['无酒精'],
 		chat: [
 			'注重健康的生活才能长寿呜撒！这就是妖怪兔的智慧呜撒！',
@@ -34,7 +37,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'妖怪猫特征是两尾分岔成两股，据说妖力越大，分岔越明显。明明长得那么可爱，性格却很凶！幻想乡就连野猫的嘴巴也很刁呢。',
 		dlc: 0,
 		places: ['妖怪兽道', '博丽神社', '红魔馆', '迷途竹林', '魔法森林', '妖怪之山', '地灵殿'],
-		positiveTags: ['肉', '海味', '中华', TAG_SIGNATURE, '凉爽', TAG_POPULAR_POSITIVE],
+		positiveTags: ['肉', '海味', '中华', DYNAMIC_TAG_MAP.signature, '凉爽', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['可加冰', '啤酒', '苦'],
 		chat: [
 			'希望这家店的食材可以新鲜一点，猫的嘴可是很刁的。',
@@ -51,7 +54,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'性格暴躁，总是摆出一副老油条的样子，其实也没啥本事吧。不过，它们似乎很擅长变幻，要警惕它们用叶子来付账！',
 		dlc: 0,
 		places: ['妖怪兽道', '博丽神社', '红魔馆', '迷途竹林', '魔法森林', '妖怪之山', '命莲寺'],
-		positiveTags: ['肉', '重油', '饱腹', '山珍', '咸', TAG_SIGNATURE, TAG_POPULAR_POSITIVE],
+		positiveTags: ['肉', '重油', '饱腹', '山珍', '咸', DYNAMIC_TAG_MAP.signature, DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['甘', '辛'],
 		chat: [
 			'今天遇到的那个神社的巫女真的好可怕啊。',
@@ -68,7 +71,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'经常用一副过来人的口气说话，有种倚老卖老的感觉。不过，可能是因为活得比较久，有时候也会说一些似乎挺有用的话。',
 		dlc: 0,
 		places: ['妖怪兽道', '红魔馆', '迷途竹林', '妖怪之山', '旧地狱'],
-		positiveTags: ['肉', '和风', '中华', TAG_SIGNATURE, '小巧', TAG_POPULAR_POSITIVE],
+		positiveTags: ['肉', '和风', '中华', DYNAMIC_TAG_MAP.signature, '小巧', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['直饮'],
 		chat: [
 			'我倒要看看现在的年轻人的居酒屋搞得怎么样。',
@@ -85,7 +88,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'似乎是上古的凶兽…曾经是这样认为的。实际见了之后，才发现只是一只馋怪而已。食量很大，而且对口感的要求很高。',
 		dlc: 0,
 		places: ['妖怪兽道', '妖怪之山', '旧地狱'],
-		positiveTags: ['肉', '下酒', '山珍', '力量涌现', TAG_POPULAR_POSITIVE],
+		positiveTags: ['肉', '下酒', '山珍', '力量涌现', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['烧酒', '清酒'],
 		chat: [
 			'妖兽果然还是要吃肉啊！',
@@ -102,7 +105,17 @@ export const CUSTOMER_NORMAL_LIST = [
 			'吵吵闹闹的人类小不点儿，这种家伙要是在以前…现在好好接触下来以后，偶尔看着他们亲近自己的笑脸，会不知不觉地感到疲劳减少，真是奇怪啊。',
 		dlc: 0,
 		places: ['人间之里'],
-		positiveTags: ['肉', '家常', '饱腹', '中华', '咸', '甜', TAG_SIGNATURE, '凉爽', TAG_POPULAR_POSITIVE],
+		positiveTags: [
+			'肉',
+			'家常',
+			'饱腹',
+			'中华',
+			'咸',
+			'甜',
+			DYNAMIC_TAG_MAP.signature,
+			'凉爽',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		beverageTags: ['无酒精'],
 		chat: [
 			'耶！攒够零花钱出来玩了！',
@@ -119,7 +132,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'看着也不是多了不起的角色，却总是自说自话。尤其是喝了酒就喜欢发牢骚。不过在人类这一种族中，似乎是体格最强的存在，常被依赖着。',
 		dlc: 0,
 		places: ['人间之里', '命莲寺', '神灵庙'],
-		positiveTags: ['肉', '下酒', '和风', '咸', '鲜', '灼热', '文化底蕴', TAG_POPULAR_POSITIVE],
+		positiveTags: ['肉', '下酒', '和风', '咸', '鲜', '灼热', '文化底蕴', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['可加热', '烧酒'],
 		chat: [
 			'干了一天活过来喝一杯！',
@@ -136,7 +149,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'只要聚在一起就会有说不完的话，基本说的都是些生活琐事，或者互相奉承衣服首饰什么的。偶尔还能听到关于料理的技巧，这点倒是挺好的。',
 		dlc: 0,
 		places: ['人间之里', '博丽神社', '命莲寺', '神灵庙'],
-		positiveTags: ['水产', '高级', '咸', '鲜', TAG_SIGNATURE, '凉爽', TAG_POPULAR_POSITIVE],
+		positiveTags: ['水产', '高级', '咸', '鲜', DYNAMIC_TAG_MAP.signature, '凉爽', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['可加冰'],
 		chat: [
 			'听说看到报春精会带来好运，我也想见一见呢。',
@@ -153,7 +166,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'人类的长者充其量也不过活了几十年罢了，对我们妖怪来说是很短的岁月。但是有些老人身上似乎有种仙人般的气质…偶尔听听老人的话，应该也不会吃亏吧。',
 		dlc: 0,
 		places: ['人间之里', '博丽神社', '神灵庙'],
-		positiveTags: ['高级', TAG_SIGNATURE, '适合拍照', '灼热', TAG_POPULAR_POSITIVE],
+		positiveTags: ['高级', DYNAMIC_TAG_MAP.signature, '适合拍照', '灼热', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['低酒精'],
 		chat: [
 			'今天天气不错…不过以前有段时间天气很糟糕，一会起雾一会地震一会冰雹的。',
@@ -170,7 +183,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'据说是人类里的有名的大胃王，为了追寻美味，甚至不惜离开村子到处旅行…能平安地活着真是不容易啊，就让我来满足你的胃吧。',
 		dlc: 0,
 		places: ['人间之里', '博丽神社'],
-		positiveTags: ['高级', '生', '力量涌现', '猎奇', TAG_POPULAR_POSITIVE],
+		positiveTags: ['高级', '生', '力量涌现', '猎奇', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['高酒精'],
 		chat: [
 			'稗田家的大小姐，可是什么都知道呢，就是身体不太好，哎。',
@@ -187,7 +200,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'一直以为座敷童子是地缚灵的一种，没想到这种认知是错误的。似乎只要依附在什么东西上，就可以到处往来的样子。对了，听说座敷童子会给店家带来好运，至少希望这个传言是真的呢。',
 		dlc: 0,
 		places: ['博丽神社'],
-		positiveTags: ['山珍', '和风', '甜', '生', TAG_SIGNATURE, '凉爽', TAG_POPULAR_POSITIVE],
+		positiveTags: ['山珍', '和风', '甜', '生', DYNAMIC_TAG_MAP.signature, '凉爽', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['无酒精', '低酒精'],
 		chat: [
 			'虽然名字是童子，但我已经不是小孩子了！',
@@ -207,12 +220,12 @@ export const CUSTOMER_NORMAL_LIST = [
 		positiveTags: [
 			'高级',
 			'海味',
-			TAG_SIGNATURE,
+			DYNAMIC_TAG_MAP.signature,
 			'灼热',
 			'猎奇',
 			'小巧',
-			TAG_LARGE_PARTITION,
-			TAG_POPULAR_POSITIVE,
+			DYNAMIC_TAG_MAP.largePartition,
+			DYNAMIC_TAG_MAP.popularPositive,
 		],
 		beverageTags: ['甘'],
 		chat: [
@@ -230,7 +243,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'让人有点儿头疼的客人。虽然性格挺沉稳的，但似乎因为长相，会吓到一些人类客人。真是搞不懂，明明和其他妖怪同桌都没问题啊…',
 		dlc: 0,
 		places: [],
-		positiveTags: ['高级', '重油', '山珍', '凉爽', '灼热', '力量涌现', TAG_POPULAR_POSITIVE],
+		positiveTags: ['高级', '重油', '山珍', '凉爽', '灼热', '力量涌现', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['清酒', '西洋酒'],
 		chat: [
 			'来了幻想乡这么久，还是一出门就会被盯着看。',
@@ -247,7 +260,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'谈吐虽然彬彬有礼，却又感觉有点儿强势。这是时常跑外勤的鸦天狗这一类天狗的通性，我实在有些不擅于应付。不过来者是客，我会努力照顾好的！',
 		dlc: 0,
 		places: ['博丽神社', '红魔馆', '迷途竹林', '妖怪之山'],
-		positiveTags: ['高级', TAG_SIGNATURE, '适合拍照', '菌类', TAG_POPULAR_POSITIVE],
+		positiveTags: ['高级', DYNAMIC_TAG_MAP.signature, '适合拍照', '菌类', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['烧酒', '清酒'],
 		chat: [
 			'秋天的话，妖怪之山的枫叶会非常漂亮。',
@@ -264,7 +277,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'妖精其实不用吃东西，它们看见人吃美味的东西就模仿着吃。喜欢热闹，也喜欢恶作剧，千万要注意别着了它们的道！',
 		dlc: 0,
 		places: ['红魔馆', '迷途竹林', '魔法森林'],
-		positiveTags: ['鲜', '甜', '适合拍照', '菌类', '梦幻', '特产', '果味', TAG_POPULAR_POSITIVE],
+		positiveTags: ['鲜', '甜', '适合拍照', '菌类', '梦幻', '特产', '果味', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['直饮', '水果', '甘', '气泡'],
 		chat: [
 			'哗~虽然妖精是不用吃东西的，但是还是来叨扰啦！',
@@ -281,7 +294,18 @@ export const CUSTOMER_NORMAL_LIST = [
 			'天狗的社会有严密的等级制度，山中侍卫这一职务基本都是由白狼天狗担当。大概是职责所在，他们多数的性格比较严肃，但有时候喝多了也会口无遮拦。',
 		dlc: 1,
 		places: ['妖怪之山'],
-		positiveTags: ['肉', '重油', '饱腹', '山珍', '咸', '鲜', '生', TAG_SIGNATURE, '特产', TAG_POPULAR_POSITIVE],
+		positiveTags: [
+			'肉',
+			'重油',
+			'饱腹',
+			'山珍',
+			'咸',
+			'鲜',
+			'生',
+			DYNAMIC_TAG_MAP.signature,
+			'特产',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		beverageTags: ['中酒精', '高酒精', '烧酒', '清酒'],
 		chat: [
 			'我们跑腿的只能在山上做些低端基本的工作。',
@@ -297,7 +321,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'住在妖怪山上的非常孤僻的种族，哪怕是同族之间也几乎没有交流。有传言说她们会抓走在山中迷路的小孩…但这是误会，虽然她们经常撂狠话，可她们只是不善言谈，其实是非常直爽善良的妖怪。',
 		dlc: 1,
 		places: ['妖怪之山'],
-		positiveTags: ['肉', '家常', '高级', '饱腹', '鲜', '力量涌现', '猎奇', TAG_POPULAR_POSITIVE],
+		positiveTags: ['肉', '家常', '高级', '饱腹', '鲜', '力量涌现', '猎奇', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['高酒精', '烧酒', '直饮', '古典'],
 		chat: [
 			'看什么看！再看挖了你的眼睛哦！',
@@ -316,12 +340,12 @@ export const CUSTOMER_NORMAL_LIST = [
 		positiveTags: [
 			'高级',
 			'山珍',
-			TAG_SIGNATURE,
+			DYNAMIC_TAG_MAP.signature,
 			'灼热',
 			'猎奇',
 			'小巧',
-			TAG_LARGE_PARTITION,
-			TAG_POPULAR_POSITIVE,
+			DYNAMIC_TAG_MAP.largePartition,
+			DYNAMIC_TAG_MAP.popularPositive,
 		],
 		beverageTags: ['中酒精', '苦'],
 		chat: [
@@ -338,7 +362,18 @@ export const CUSTOMER_NORMAL_LIST = [
 			'魔法森林里生长着许多有助于魔法使提高魔力的蘑菇，因此这里住着好多魔法使。她们大多独居，性格比较孤僻，大概魔法修行本身就是一件寂寞的事情吧。',
 		dlc: 1,
 		places: ['魔法森林'],
-		positiveTags: ['素', '家常', '高级', '传说', '清淡', '西式', '鲜', '适合拍照', '凉爽', TAG_POPULAR_POSITIVE],
+		positiveTags: [
+			'素',
+			'家常',
+			'高级',
+			'传说',
+			'清淡',
+			'西式',
+			'鲜',
+			'适合拍照',
+			'凉爽',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		beverageTags: ['可加热', '鸡尾酒', '西洋酒', '提神'],
 		chat: [
 			'魔法是一种超自然力，但归根结底，其本核还是科学。',
@@ -354,7 +389,18 @@ export const CUSTOMER_NORMAL_LIST = [
 			'妖精越多，大自然就会越有生机。魔法森林的各种物资都非常丰富，这是因为森林中寄宿许多妖精。据说每棵树都有妖精寄宿其中。妖精多恶作剧也多，要小心才行呢。',
 		dlc: 1,
 		places: ['魔法森林'],
-		positiveTags: ['家常', '和风', '中华', '鲜', '甜', TAG_SIGNATURE, '凉爽', '小巧', '梦幻', TAG_POPULAR_POSITIVE],
+		positiveTags: [
+			'家常',
+			'和风',
+			'中华',
+			'鲜',
+			'甜',
+			DYNAMIC_TAG_MAP.signature,
+			'凉爽',
+			'小巧',
+			'梦幻',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		beverageTags: ['无酒精', '低酒精', '清酒', '水果', '甘'],
 		chat: [
 			'森林里的地穴探险非常有意思！不过基本都是些怕寒妖精的家。',
@@ -370,7 +416,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'来历不明的人偶。暂时还不确定是不是付丧神。毕竟森林里住着一位能够操纵人偶的魔法使…但这些人偶看起来实在不像是被操纵的，大概还是付丧神吧？',
 		dlc: 1,
 		places: ['魔法森林'],
-		positiveTags: ['家常', '咸', '生', '适合拍照', '猎奇', '菌类', '小巧', '梦幻', TAG_POPULAR_POSITIVE],
+		positiveTags: ['家常', '咸', '生', '适合拍照', '猎奇', '菌类', '小巧', '梦幻', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['水果', '苦', '气泡', '提神'],
 		chat: [
 			'森林太潮湿了，感觉自己身上都要发霉了。',
@@ -395,8 +441,8 @@ export const CUSTOMER_NORMAL_LIST = [
 			'甜',
 			'生',
 			'猎奇',
-			TAG_LARGE_PARTITION,
-			TAG_POPULAR_POSITIVE,
+			DYNAMIC_TAG_MAP.largePartition,
+			DYNAMIC_TAG_MAP.popularPositive,
 		],
 		beverageTags: ['中酒精', '可加冰', '利口酒', '直饮', '甘', '苦', '现代'],
 		chat: [
@@ -413,7 +459,17 @@ export const CUSTOMER_NORMAL_LIST = [
 			'远古时期就已经存在、传说中幻想乡最强的妖怪种族！但其实已经离开幻想乡很久了，没想到原来是盘踞在地底世界。鬼族性格爽朗但凶猛，绝对不能对他们说谎哦！',
 		dlc: 2,
 		places: ['旧地狱'],
-		positiveTags: ['肉', '高级', '传说', '下酒', '鲜', '力量涌现', '特产', '燃起来了', TAG_POPULAR_POSITIVE],
+		positiveTags: [
+			'肉',
+			'高级',
+			'传说',
+			'下酒',
+			'鲜',
+			'力量涌现',
+			'特产',
+			'燃起来了',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		beverageTags: ['中酒精', '高酒精', '烧酒', '直饮'],
 		chat: [
 			'能喝酒的地方越多越好。',
@@ -429,7 +485,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'非常擅长打扮的姐姐们，谈吐温柔又成熟。手上总是执着一盏牡丹花灯，据说可以迷惑过路的人类。实际上在洞穴遇到时，会帮我照亮前面的路。',
 		dlc: 2,
 		places: ['旧地狱'],
-		positiveTags: ['素', '清淡', '鲜', '生', '凉爽', '猎奇', '菌类', '酸', TAG_POPULAR_POSITIVE],
+		positiveTags: ['素', '清淡', '鲜', '生', '凉爽', '猎奇', '菌类', '酸', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['低酒精', '可加热', '啤酒', '水果', '苦'],
 		chat: [
 			'那个桥姬每个晚上都在钉稻草人，怪吓人的。',
@@ -445,7 +501,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'栖息于旧地狱最深处的地狱鸦。住在旧地狱的妖怪基本上都是因为原住地成了废墟，继而迁居于此，但地狱鸦本来就住在地狱，是这里最早的住民。',
 		dlc: 2,
 		places: ['地灵殿'],
-		positiveTags: ['肉', '家常', '山珍', '海味', '咸', '小巧', '燃起来了', '酸', TAG_POPULAR_POSITIVE],
+		positiveTags: ['肉', '家常', '山珍', '海味', '咸', '小巧', '燃起来了', '酸', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['中酒精', '可加热', '啤酒', '辛', '苦'],
 		chat: [
 			'看守灼热地狱的那只乌鸦变成了三只足，看起来太奇怪了。',
@@ -461,7 +517,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'传说中穿上羽毛就是鸟，脱下羽毛就会变成少女的妖怪。通过收集别人的指甲可以预知福祸，所以从事占卜业的很多。大概是为了保持神秘，说话总是神神叨叨的。',
 		dlc: 2,
 		places: ['地灵殿'],
-		positiveTags: ['水产', '家常', '清淡', '鲜', '猎奇', '文化底蕴', '酸', TAG_POPULAR_POSITIVE],
+		positiveTags: ['水产', '家常', '清淡', '鲜', '猎奇', '文化底蕴', '酸', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['低酒精', '可加热', '烧酒', '苦'],
 		chat: [
 			'姑获鸟，姑获鸟抱走孩子；夏获鸟，夏获鸟收养孩子。',
@@ -477,7 +533,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'野性十足的妖兽。性格爽朗而任性。出于种族天性，我有点儿害怕她们…不过，虽然豹子本身的实力很强大，但能成为妖怪的数量似乎并不多。',
 		dlc: 2,
 		places: ['地灵殿'],
-		positiveTags: ['肉', '高级', '重油', '山珍', '海味', '生', '灼热', '特产', TAG_POPULAR_POSITIVE],
+		positiveTags: ['肉', '高级', '重油', '山珍', '海味', '生', '灼热', '特产', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['中酒精', '高酒精', '直饮', '辛'],
 		chat: [
 			'捕猎虽然有趣，偶尔这样吃吃饭也不错。',
@@ -493,7 +549,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'人类可能不太了解，但我知道…命莲寺的修行僧几乎都是妖怪。虽说也会进行什么六个菠萝蜜的修行，但谁也没看出究竟有什么效果，不少妖怪在修行之外依然我行我素。',
 		dlc: 3,
 		places: ['命莲寺'],
-		positiveTags: ['肉', '家常', '下酒', '山珍', '力量涌现', TAG_POPULAR_POSITIVE],
+		positiveTags: ['肉', '家常', '下酒', '山珍', '力量涌现', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['中酒精', '高酒精', '可加热', '烧酒', '古典'],
 		chat: [
 			'所谓“酒肉穿肠过，佛祖心中留”嘛。',
@@ -509,7 +565,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'幻想乡随处可见的探宝者。要是能和它们打好关系，以后就不用担心丢东西了。不过委托它们寻找食物的话，可能会在拿回来之前就被它们啃光。',
 		dlc: 3,
 		places: ['命莲寺'],
-		positiveTags: ['家常', '高级', '梦幻', '果味', TAG_LARGE_PARTITION, TAG_POPULAR_POSITIVE],
+		positiveTags: ['家常', '高级', '梦幻', '果味', DYNAMIC_TAG_MAP.largePartition, DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['鸡尾酒', '利口酒', '水果', '甘', '现代'],
 		chat: [
 			'村子里关于耗子药的使用已经普及，不能掉以轻心啊。',
@@ -526,7 +582,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'身长八尺的鬼怪，总是戴着一顶宽檐帽所以皮肤很白。过去还喜欢穿白色连衣裙，结果白天的时候存在感很低，几乎整个种族都饿瘦了。现在有些上进的也开始寻找其他更能增加注视的服饰了。',
 		dlc: 3,
 		places: ['命莲寺'],
-		positiveTags: ['和风', '西式', '鲜', '适合拍照', '凉爽', TAG_POPULAR_POSITIVE],
+		positiveTags: ['和风', '西式', '鲜', '适合拍照', '凉爽', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['低酒精', '可加冰', '鸡尾酒', '西洋酒', '利口酒'],
 		chat: [
 			'对妖怪来说，没有存在感就和人类患上绝症一样。',
@@ -543,7 +599,15 @@ export const CUSTOMER_NORMAL_LIST = [
 			'在神灵庙里有不少拜神子为师，希望学习仙术的弟子。不过似乎只被支使用来打杂。看起来总是一副斗志昂扬、雄心勃勃的样子…说不定打杂也是一个很有趣的工作？',
 		dlc: 3,
 		places: ['神灵庙'],
-		positiveTags: ['家常', '清淡', '山珍', TAG_SIGNATURE, '小巧', '特产', TAG_POPULAR_POSITIVE],
+		positiveTags: [
+			'家常',
+			'清淡',
+			'山珍',
+			DYNAMIC_TAG_MAP.signature,
+			'小巧',
+			'特产',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		beverageTags: ['低酒精', '苦', '现代', '提神'],
 		chat: [
 			'传说庙里的那位圣人就是曾经名满天下的贵人。',
@@ -561,9 +625,9 @@ export const CUSTOMER_NORMAL_LIST = [
 		dlc: 3,
 		places: ['神灵庙'],
 		positiveTags: [
-			TAG_EXPENSIVE,
-			TAG_ECONOMICAL,
-			TAG_LARGE_PARTITION,
+			DYNAMIC_TAG_MAP.expensive,
+			DYNAMIC_TAG_MAP.economical,
+			DYNAMIC_TAG_MAP.largePartition,
 			'肉',
 			'水产',
 			'素',
@@ -583,7 +647,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'鲜',
 			'甜',
 			'生',
-			TAG_SIGNATURE,
+			DYNAMIC_TAG_MAP.signature,
 			'适合拍照',
 			'凉爽',
 			'灼热',
@@ -602,8 +666,8 @@ export const CUSTOMER_NORMAL_LIST = [
 			'燃起来了',
 			'酸',
 			'毒',
-			TAG_POPULAR_POSITIVE,
-			TAG_POPULAR_NEGATIVE,
+			DYNAMIC_TAG_MAP.popularPositive,
+			DYNAMIC_TAG_MAP.popularNegative,
 		],
 		beverageTags: [
 			'无酒精',
@@ -643,7 +707,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'通过长年累月的修行获得超越常人能力的人类，对很多妖怪来说是上等佳肴，活得可谓是多灾多厄了。大概是因为活得太艰难，所以他们的性格都有些古怪…',
 		dlc: 3,
 		places: ['神灵庙'],
-		positiveTags: ['素', '高级', '清淡', '小巧', '梦幻', '果味', TAG_POPULAR_POSITIVE],
+		positiveTags: ['素', '高级', '清淡', '小巧', '梦幻', '果味', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['低酒精', '清酒', '水果', '甘', '气泡', '古典'],
 		chat: [
 			'没想到在仙界也能感受到市井烟火气。',
@@ -660,7 +724,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'传说中是少彦名神的后裔一族，身长只有一寸左右。因为一直在城里没有出去过，所以普遍缺乏常识，但拥有很强的求知心，对外界十分向往。',
 		dlc: 4,
 		places: ['辉针城'],
-		positiveTags: ['传说', '和风', '力量涌现', '小巧', '梦幻', '燃起来了', TAG_POPULAR_POSITIVE],
+		positiveTags: ['传说', '和风', '力量涌现', '小巧', '梦幻', '燃起来了', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['可加冰', '可加热', '啤酒', '甘', '古典'],
 		chat: [
 			'美食的传承离不开挑剔的美食家。',
@@ -676,7 +740,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'正邪从幻想乡四处蛊惑来的各种族男性，几乎都是对未来感到迷茫的年轻人，对于正邪提出的“宏图伟业”感到热血沸腾而追随于她。但似乎现在更加迷茫了…',
 		dlc: 4,
 		places: ['辉针城'],
-		positiveTags: ['家常', '下酒', '饱腹', '和风', '力量涌现', TAG_POPULAR_POSITIVE],
+		positiveTags: ['家常', '下酒', '饱腹', '和风', '力量涌现', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['高酒精', '可加热', '烧酒', '啤酒', '苦', '提神'],
 		chat: ['俺已经闻到饭香啦！', '所有的乡愁都是因为馋。', '之后该怎么办呢。', '差不多也该考虑考虑以后了。'],
 	},
@@ -687,7 +751,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'正邪从幻想乡四处蛊惑来的各种族女性，几乎都是对未来感到迷茫的年轻人，对于正邪提出的“宏图伟业”感到热血沸腾而追随于她。但似乎现在更加迷茫了…',
 		dlc: 4,
 		places: ['辉针城'],
-		positiveTags: ['家常', '高级', '和风', '适合拍照', '灼热', TAG_POPULAR_POSITIVE],
+		positiveTags: ['家常', '高级', '和风', '适合拍照', '灼热', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['中酒精', '啤酒', '水果', '气泡', '现代'],
 		chat: [
 			'之后该怎么办呢。',
@@ -703,7 +767,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'因为万宝槌的力量而活过来的道具。似乎受哪位高人指点，将体内本该被回收的小槌魔力转化成了自己的魔力，从此得到了真正的生命。',
 		dlc: 4,
 		places: ['辉针城'],
-		positiveTags: ['海味', '西式', TAG_SIGNATURE, '凉爽', '不可思议', TAG_POPULAR_POSITIVE],
+		positiveTags: ['海味', '西式', DYNAMIC_TAG_MAP.signature, '凉爽', '不可思议', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['西洋酒', '利口酒', '直饮', '现代'],
 		chat: [
 			'最深刻体会到活着的快乐就是吃东西的时候。',
@@ -719,7 +783,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'寄宿在铃兰花中的妖精。每天都在致力于解开“梅蒂欣小姐说的铃铃究竟是谁”之谜，目前的悬赏已经高达九十九颗“史上最圆的石头”，依然没有人能解开谜题。',
 		dlc: 4,
 		places: ['太阳花田'],
-		positiveTags: ['下酒', '生', '小巧', '梦幻', '毒', TAG_POPULAR_POSITIVE],
+		positiveTags: ['下酒', '生', '小巧', '梦幻', '毒', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['中酒精', '直饮', '辛', '气泡'],
 		chat: ['铃铃到底是谁呢。', '以毒攻毒最美味了！', '铃兰的毒是神经的毒哦。', '那个灯笼和铃兰有点像呢。'],
 	},
@@ -730,7 +794,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'寄宿在向日葵中的妖精。据说向日葵之所以一直向着太阳，就是因为她们偷偷躲在背后给花转向。这一招把不少人类都骗倒了，是她们引以为傲的绝技。',
 		dlc: 4,
 		places: ['太阳花田'],
-		positiveTags: ['鲜', '甜', '力量涌现', '不可思议', '特产', TAG_POPULAR_POSITIVE],
+		positiveTags: ['鲜', '甜', '力量涌现', '不可思议', '特产', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['利口酒', '水果', '甘', '气泡'],
 		chat: [
 			'我最喜欢在花田玩捉迷藏游戏了。',
@@ -746,7 +810,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'寄宿在玫瑰花中的妖精。不知道她们从哪里听说，玫瑰是某颗星球上独一份的、最娇贵的花，于是掀起了要集体搬家的热潮。不过还没有妖精成功。',
 		dlc: 4,
 		places: ['太阳花田'],
-		positiveTags: ['高级', '西式', TAG_SIGNATURE, '适合拍照', '小巧', TAG_POPULAR_POSITIVE],
+		positiveTags: ['高级', '西式', DYNAMIC_TAG_MAP.signature, '适合拍照', '小巧', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['低酒精', '鸡尾酒', '甘', '现代'],
 		chat: [
 			'那颗星球，是叫B612吗？',
@@ -762,7 +826,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'性质上介于幽灵和怨灵之间的灵。似乎因为离世的时候怀有怨恨，所以喜欢对人类恶作剧。夜晚在屋中看到一个人的影子来回走却找不到人，就是影女捣的鬼。模样看起来有些阴沉，其实都是装出来的。',
 		dlc: 4,
 		places: ['太阳花田'],
-		positiveTags: ['家常', '和风', '生', '凉爽', '猎奇', '不可思议', TAG_POPULAR_POSITIVE],
+		positiveTags: ['家常', '和风', '生', '凉爽', '猎奇', '不可思议', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['高酒精', '可加冰', '苦', '古典', '提神'],
 		chat: [
 			'我好恨呐。',
@@ -779,7 +843,15 @@ export const CUSTOMER_NORMAL_LIST = [
 			'由魔界造物主的魔力所化的纸牌人。性格老实到木讷，即使没有被安排工作也会非常自觉地去巡逻。另外总在期待着有什么人从天而降的样子，似乎和什么兔子洞的故事有关？',
 		dlc: 5,
 		places: ['魔界'],
-		positiveTags: ['家常', '重油', '饱腹', '咸', TAG_SIGNATURE, '凉爽', TAG_POPULAR_POSITIVE],
+		positiveTags: [
+			'家常',
+			'重油',
+			'饱腹',
+			'咸',
+			DYNAMIC_TAG_MAP.signature,
+			'凉爽',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		beverageTags: ['中酒精', '可加热', '苦', '提神'],
 		chat: [
 			'好久没有人从“兔子洞”掉下来了。',
@@ -795,7 +867,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'由魔界造物主的魔力所化的纸牌人，担当着类似士兵长的职位。不仅没有长官的架子，连能安排给士兵们的工作也没有。整天在魔界各处游荡，比起士兵长，更像街头艺人什么的。',
 		dlc: 5,
 		places: ['魔界'],
-		positiveTags: ['高级', '下酒', '生', '适合拍照', '猎奇', '菌类', TAG_POPULAR_POSITIVE],
+		positiveTags: ['高级', '下酒', '生', '适合拍照', '猎奇', '菌类', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['可加冰', '利口酒', '直饮', '辛'],
 		chat: [
 			'没什么事可做呢。',
@@ -811,7 +883,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'擅长制帽和剪裁的匠人。据说在保存制帽用的毛毡布时需要用到水银，因此他们经常发生水银中毒的抽搐现象，有时甚至会出现幻觉，所以被称为疯帽匠。但我知道，在疯癫的外衣下是对自己作品的热烈和执着。',
 		dlc: 5,
 		places: ['魔界'],
-		positiveTags: ['西式', '适合拍照', '猎奇', '菌类', '不可思议', '梦幻', TAG_POPULAR_POSITIVE],
+		positiveTags: ['西式', '适合拍照', '猎奇', '菌类', '不可思议', '梦幻', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['高酒精', '西洋酒', '现代', '提神'],
 		chat: ['帽子帽子扔锅里！', '帽子着火了！', '沉迷工作时根本想不起来要吃饭。', '吃完再回去做帽子吧！'],
 	},
@@ -822,7 +894,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'居住在月之都的人。他们舍弃了寿命，致力于去除污秽以消除生死。但他们并非不老不死，也会因为事故和战争而死去，身上还是微微带有一丝污秽。',
 		dlc: 5,
 		places: ['月之都'],
-		positiveTags: ['传说', '清淡', '海味', '中华', '不可思议', '梦幻', TAG_POPULAR_POSITIVE],
+		positiveTags: ['传说', '清淡', '海味', '中华', '不可思议', '梦幻', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['清酒', '鸡尾酒', '水果', '气泡', '现代'],
 		chat: [
 			'吃夜宵是不是有点不够矜持啊？',
@@ -838,7 +910,7 @@ export const CUSTOMER_NORMAL_LIST = [
 			'负责捣药的月兔。看起来像是在捣年糕，但臼里的东西其实是药。捣药的行为并不是为了产出有价值的药，而是为了替某个人赎罪。因为一直重复着看起来毫无益处的劳动，积累了不少疲倦。',
 		dlc: 5,
 		places: ['月之都'],
-		positiveTags: ['饱腹', '山珍', '和风', '中华', '甜', '凉爽', TAG_POPULAR_POSITIVE],
+		positiveTags: ['饱腹', '山珍', '和风', '中华', '甜', '凉爽', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['中酒精', '烧酒', '啤酒', '甘', '提神'],
 		chat: [
 			'好想念XX大人。',
@@ -854,7 +926,15 @@ export const CUSTOMER_NORMAL_LIST = [
 			'负责月都警备工作的月兔。月之使者这个工作在月兔的一众工作中相对纪律比较严格。为保证在关键时刻能和地上人进行交战，它们需要接受非常严格的训练，很不轻松。',
 		dlc: 5,
 		places: ['月之都'],
-		positiveTags: ['传说', '饱腹', '西式', TAG_SIGNATURE, '力量涌现', '特产', TAG_POPULAR_POSITIVE],
+		positiveTags: [
+			'传说',
+			'饱腹',
+			'西式',
+			DYNAMIC_TAG_MAP.signature,
+			'力量涌现',
+			'特产',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		beverageTags: ['无酒精', '可加热', '苦', '现代', '提神'],
 		chat: ['最近训练强度是不是加大了呀。', '感觉我好像长出了肌肉。'],
 	},

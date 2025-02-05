@@ -1,6 +1,6 @@
 /* eslint-disable sort-keys */
 import type {IPartner} from './types';
-import {DARK_MATTER_NAME, TAG_EXPENSIVE} from '@/data/constant';
+import {DARK_MATTER_META_MAP, DYNAMIC_TAG_MAP} from '@/data/constant';
 
 export const PARTNER_LIST = [
 	{
@@ -106,7 +106,7 @@ export const PARTNER_LIST = [
 			'为了不让厄运转移到人类身上而收集厄运的厄神。虽然名字里有个神，但其实和我一样是妖怪。明明是妖怪却满心满意为人类着想，真不可思议。这样的她还要遭受人类的排斥，实在太可怜了。最近为了进行抑制厄的修行而到夜雀食堂打工。',
 		dlc: 1,
 		belong: ['河城荷取', '犬走椛', '东风谷早苗'],
-		effect: `瞬间完成料理，但有15%的概率制作出${DARK_MATTER_NAME}。可以将【苏我屠自古】惩罚符卡的击晕效果转移至其他伙伴。`,
+		effect: `瞬间完成料理，但有15%的概率制作出${DARK_MATTER_META_MAP.name}。可以将【苏我屠自古】惩罚符卡的击晕效果转移至其他伙伴。`,
 		from: {
 			place: '妖怪之山',
 		},
@@ -191,7 +191,7 @@ export const PARTNER_LIST = [
 			'死后被邪仙操纵着的僵尸，因为被施加了防腐的咒语所以不会腐烂。性格不明，大概已经没有自我了吧？经常念叨一些谁也听不懂的话，不过干活的力气很大！就是吃得有点儿多…',
 		dlc: 3,
 		belong: ['物部布都', '霍青娥', '苏我屠自古'],
-		effect: `吃掉${DARK_MATTER_NAME}。每吃一份，全速度增加20%，直到200%。`,
+		effect: `吃掉${DARK_MATTER_META_MAP.name}。每吃一份，全速度增加20%，直到200%。`,
 		from: {
 			place: '神灵庙',
 		},
@@ -208,7 +208,7 @@ export const PARTNER_LIST = [
 			'凤蝶的妖精。性格似乎比一般的妖精要成熟，而且有种迷雾重重的感觉…应该是错觉吧？虽然看起来娴静温厚，不过骨子里还是喜欢恶作剧，希望她工作的时候不会捣蛋吧！',
 		dlc: 4,
 		belong: ['射命丸文', '梅蒂欣', '风见幽香'],
-		effect: `【鳞粉乃梦泉】每隔30秒，拉尔瓦会在场上播撒一次持续15秒的催眠粉。期间稀有顾客在用餐时会忘掉自己的点单，普通顾客会爱上“${TAG_EXPENSIVE}”标签并在用餐时返还当次消耗掉的料理预算。`,
+		effect: `【鳞粉乃梦泉】每隔30秒，拉尔瓦会在场上播撒一次持续15秒的催眠粉。期间稀有顾客在用餐时会忘掉自己的点单，普通顾客会爱上“${DYNAMIC_TAG_MAP.expensive}”标签并在用餐时返还当次消耗掉的料理预算。`,
 		from: {
 			place: '太阳花田',
 		},

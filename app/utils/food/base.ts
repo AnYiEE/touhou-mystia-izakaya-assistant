@@ -1,7 +1,7 @@
 import type {IFood} from './types';
 import {Item} from '@/utils/item/base';
 
-import {TAG_POPULAR_NEGATIVE, TAG_POPULAR_POSITIVE, TAG_SIGNATURE, type TTag} from '@/data';
+import {DYNAMIC_TAG_MAP, type TTag} from '@/data';
 import {intersection, toArray, toSet} from '@/utilities';
 import type {IPopularTrend} from '@/types';
 
@@ -13,12 +13,12 @@ export class Food<TTarget extends IFood[]> extends Item<TTarget> {
 		const tagsWithTrend = toSet(tags);
 		const {isNegative: isNegativePopularTag, tag: currentPopularTag} = popularTrend;
 
-		if (isFamousShop && tags.includes(TAG_SIGNATURE)) {
-			tagsWithTrend.add(TAG_POPULAR_POSITIVE);
+		if (isFamousShop && tags.includes(DYNAMIC_TAG_MAP.signature)) {
+			tagsWithTrend.add(DYNAMIC_TAG_MAP.popularPositive);
 		}
 
 		if (currentPopularTag !== null && tags.includes(currentPopularTag)) {
-			tagsWithTrend.add(isNegativePopularTag ? TAG_POPULAR_NEGATIVE : TAG_POPULAR_POSITIVE);
+			tagsWithTrend.add(isNegativePopularTag ? DYNAMIC_TAG_MAP.popularNegative : DYNAMIC_TAG_MAP.popularPositive);
 		}
 
 		return toArray(tagsWithTrend);
