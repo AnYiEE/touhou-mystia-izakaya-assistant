@@ -15,7 +15,7 @@ interface IProps extends ButtonProps {}
 
 export default memo(
 	forwardRef<ElementRef<typeof HeroUIButton>, IProps>(function Button(
-		{className, color, disableAnimation, variant, ...props},
+		{children, className, color, disableAnimation, endContent, variant, ...props},
 		ref
 	) {
 		const isReducedMotion = useReducedMotion();
@@ -186,11 +186,18 @@ export default memo(
 			<HeroUIButton
 				color={color}
 				disableAnimation={disableAnimation ?? isReducedMotion}
+				endContent={endContent}
 				variant={variant}
 				className={cn(styleBase, styleBlur, styleColor, className)}
 				{...props}
 				ref={ref}
-			/>
+			>
+				{typeof children === 'string' && endContent !== undefined ? (
+					<span className="leading-none">{children}</span>
+				) : (
+					children
+				)}
+			</HeroUIButton>
 		);
 	})
 ) as InternalForwardRefRenderFunction<'button', IProps>;
