@@ -1,7 +1,11 @@
-import {Observable} from 'rxjs';
+function cleanup(element: HTMLElement) {
+	if (document.head.contains(element)) {
+		element.remove();
+	}
+}
 
 export function setScriptUrlTag(url: string, method?: 'async' | 'defer', crossOrigin?: boolean) {
-	return new Observable<boolean>((subscriber) => {
+	return new Promise<void>((resolve, reject) => {
 		const scriptElement = document.createElement('script');
 		scriptElement.src = url;
 
@@ -16,15 +20,16 @@ export function setScriptUrlTag(url: string, method?: 'async' | 'defer', crossOr
 		}
 
 		scriptElement.addEventListener('load', () => {
-			subscriber.next(true);
-			subscriber.complete();
+			cleanup(scriptElement);
+			resolve();
 		});
-		scriptElement.addEventListener('error', () => {
-			subscriber.error(false);
+
+		scriptElement.addEventListener('error', (error) => {
+			cleanup(scriptElement);
+			// eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+			reject(error);
 		});
 
 		document.head.append(scriptElement);
-
-		return scriptElement.remove.bind(scriptElement);
 	});
 }

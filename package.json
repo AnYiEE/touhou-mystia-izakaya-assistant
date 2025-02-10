@@ -111,7 +111,6 @@
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"react-transition-progress": "github:AnYiEE/react-transition-progress",
-		"rxjs": "^7.8.1",
 		"ua-parser-js": "^2.0.1",
 		"use-breakpoint": "^4.0.6"
 	},

@@ -1,8 +1,6 @@
 'use client';
 
 import {useEffect} from 'react';
-import {Observable, from, merge} from 'rxjs';
-import {filter, map, mergeMap} from 'rxjs/operators';
 import {UAParser} from 'ua-parser-js';
 
 import {checkDomReady, memoize, toArray} from '@/utilities';
@@ -148,33 +146,24 @@ function processAllElements(element: Element) {
 	getChildElements(element).forEach(replaceGapClasses);
 }
 
+function processMutations(mutations: MutationRecord[]) {
+	mutations.forEach((mutation) => {
+		toArray(mutation.addedNodes).filter(nodeIsElement).forEach(processAllElements);
+	});
+}
+
 function initFlexGapFix() {
-	const observer = new MutationObserver((mutations) => {
-		mutations.forEach((mutation) => {
-			toArray(mutation.addedNodes).filter(nodeIsElement).forEach(processAllElements);
-		});
+	void checkDomReady().then(() => {
+		getChildElements(document.body).forEach(replaceGapClasses);
 	});
 
-	const observer$ = new Observable(() => {
-		observer.observe(document.body, {
-			childList: true,
-			subtree: true,
-		});
+	const observer = new MutationObserver(processMutations);
 
-		return observer.disconnect.bind(observer);
-	}).pipe(
-		mergeMap(() => from(observer.takeRecords())),
-		mergeMap((mutation) => from(mutation.addedNodes)),
-		filter(nodeIsElement),
-		map(processAllElements)
-	);
-
-	const domReady$ = checkDomReady().pipe(
-		mergeMap(() => from(getChildElements(document.body))),
-		map(replaceGapClasses)
-	);
-
-	return merge(observer$, domReady$).subscribe();
+	observer.observe(document.body, {
+		childList: true,
+		subtree: true,
+	});
+	return observer;
 }
 
 export default function CompatibleBrowser() {
@@ -183,9 +172,12 @@ export default function CompatibleBrowser() {
 			return;
 		}
 
-		const subscription = initFlexGapFix();
+		const observer = initFlexGapFix();
 
-		return subscription.unsubscribe.bind(subscription);
+		return () => {
+			processMutations(observer.takeRecords());
+			observer.disconnect();
+		};
 	}, []);
 
 	return null;

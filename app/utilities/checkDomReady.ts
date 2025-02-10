@@ -1,5 +1,3 @@
-import {type Observable, filter, first, fromEvent, merge, of} from 'rxjs';
-
 import {toSet} from '@/utilities';
 
 const READY_STATE: DocumentReadyState[] = ['complete', 'interactive'];
@@ -11,11 +9,23 @@ function checkReadyState() {
 }
 
 /**
- * @returns Observable that emits true when the DOM is ready.
+ * @returns Promise that resolves when the DOM is ready.
  */
 export function checkDomReady() {
-	return merge(
-		of(checkReadyState()).pipe(filter(Boolean)),
-		fromEvent(document, 'readystatechange').pipe(filter(checkReadyState))
-	).pipe(first()) as Observable<true>;
+	return new Promise<void>((resolve) => {
+		if (checkReadyState()) {
+			resolve();
+		}
+
+		const EVENT_TYPE = 'readystatechange';
+
+		const handleReadystatechange = () => {
+			if (checkReadyState()) {
+				document.removeEventListener(EVENT_TYPE, handleReadystatechange);
+				resolve();
+			}
+		};
+
+		document.addEventListener(EVENT_TYPE, handleReadystatechange);
+	});
 }

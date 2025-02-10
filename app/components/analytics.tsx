@@ -1,8 +1,6 @@
 'use client';
 
 import {useEffect, useRef} from 'react';
-import {of} from 'rxjs';
-import {catchError} from 'rxjs/operators';
 
 import {usePathname} from '@/hooks';
 
@@ -86,21 +84,13 @@ export default function Analytics() {
 			['setSiteId', analyticsSiteId]
 		);
 
-		const subscription = setScriptUrlTag(analyticsScriptUrl, 'async', true)
-			.pipe(
-				catchError((error) => {
-					console.info('Analytics load failed.', error);
-					return of(false);
-				})
-			)
-			.subscribe((isSuccess) => {
-				if (isSuccess) {
-					console.info('Analytics load succeeded.');
-					trackPageView();
-				}
+		setScriptUrlTag(analyticsScriptUrl, 'async', true)
+			.then(() => {
+				console.info('Analytics load succeeded.');
+			})
+			.catch((error: unknown) => {
+				console.error('Analytics load failed.', error);
 			});
-
-		return subscription.unsubscribe.bind(subscription);
 	}, []);
 
 	// It has already been tracked once when entering the page for the first time.
