@@ -6,7 +6,7 @@ import {env} from 'node:process';
 export const IS_OFFLINE = Boolean(env.OFFLINE);
 export const IS_PRODUCTION = env.NODE_ENV === 'production';
 
-export const CDN_URL = env.CDN_URL ?? '';
+export const CDN_URL = IS_OFFLINE ? '' : (env.CDN_URL ?? '');
 
 export const getSha = () => {
 	if (env.VERCEL_GIT_COMMIT_SHA) {
