@@ -163,6 +163,7 @@ function initFlexGapFix() {
 		childList: true,
 		subtree: true,
 	});
+
 	return observer;
 }
 

@@ -1,6 +1,6 @@
 /* eslint-disable sort-keys */
 import PACKAGE from '@/../package.json';
-import type {ISiteConfig, TNavMenuItem} from './types';
+import type {ISiteConfig, TLink, TNavItem} from './types';
 
 function getShortUrl<T extends string>(key: T, isJson?: boolean) {
 	return `${process.env.SHORT_LINK_URL ?? '/#'}/${key}${isJson ? '.json' : ''}` as const;
@@ -82,7 +82,7 @@ const navItems = [
 		label: '关于',
 		href: '/about',
 	},
-] as const satisfies ISiteConfig['navItems'];
+] as const satisfies TNavItem[];
 
 export const siteConfig = {
 	domain,
@@ -99,16 +99,18 @@ export const siteConfig = {
 	locale: 'zh-CN',
 	version: PACKAGE.version,
 	navItems,
-	navMenuItems: navItems.reduce<TNavMenuItem[]>((acc, navItem) => {
+	navMenuItems: navItems.reduce<TLink[]>((acc, _navItem) => {
+		const navItem = _navItem as ISiteConfig['navMenuItems'][number];
 		let hasNestedArray = false as boolean;
 		Object.keys(navItem).forEach((key) => {
-			if (Array.isArray(navItem[key as never])) {
+			const value = navItem[key as keyof typeof navItem] as unknown as TLink | TLink[];
+			if (Array.isArray(value)) {
 				hasNestedArray = true;
-				acc.push(...(navItem[key as never] as TNavMenuItem[]));
+				acc.push(...value);
 			}
 		});
 		if (!hasNestedArray) {
-			acc.push(navItem as TNavMenuItem);
+			acc.push(navItem);
 		}
 		return acc;
 	}, []),

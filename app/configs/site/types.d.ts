@@ -1,14 +1,21 @@
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
-type TLink<T extends string = string> = {
+export type TLink<T extends string = string> = {
 	label: string;
 	href: T;
 };
 
-export type TNavMenuItem<T extends string = string> = TLink<T> & {
-	sprite: TSpriteTarget | null;
-	spriteIndex: number | null;
-};
+export type TNavItem<T extends string = string> =
+	| TLink<T>
+	| Record<
+			string,
+			Array<
+				TLink<T> & {
+					sprite: TSpriteTarget | null;
+					spriteIndex: number | null;
+				}
+			>
+	  >;
 
 export interface ISiteConfig {
 	domain: string;
@@ -25,7 +32,7 @@ export interface ISiteConfig {
 	/** @see {@link https://www.heroui.com/docs/api-references/heroui-provider} */
 	locale: string;
 	version: string;
-	navItems: Array<TLink | Record<string, TNavMenuItem[]>>;
+	navItems: TNavItem[];
 	navMenuItems: TLink[];
 	links: Record<string, TLink>;
 	cdnUrl: string;
