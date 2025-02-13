@@ -35,7 +35,16 @@ import {beverageTableColumns as tableColumns} from './constants';
 import type {ITableColumn, ITableSortDescriptor, TBeverageWithSuitability, TBeveragesWithSuitability} from './types';
 import {CUSTOMER_RARE_TAG_STYLE, LABEL_MAP} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {checkArraySubsetOf, copyArray, numberSort, pinyinSort, processPinyin, toArray, toSet} from '@/utilities';
+import {
+	checkArraySubsetOf,
+	checkEmpty,
+	copyArray,
+	numberSort,
+	pinyinSort,
+	processPinyin,
+	toArray,
+	toSet,
+} from '@/utilities';
 
 export type TTableColumnKey = 'beverage' | 'price' | 'suitability' | 'action';
 export type TTableColumns = ITableColumn<TTableColumnKey>[];
@@ -97,7 +106,7 @@ export default function BeverageTabContent() {
 			};
 		});
 
-		if (selectedCustomerBeverageTag.size === 0 && selectedDlcs.size === 0 && !hasNameFilter) {
+		if (checkEmpty(selectedCustomerBeverageTag) && checkEmpty(selectedDlcs) && !hasNameFilter) {
 			return dataWithRealSuitability;
 		}
 
@@ -111,11 +120,10 @@ export default function BeverageTabContent() {
 					pinyinWithoutTone.join('').includes(searchValueLowerCase) ||
 					pinyinFirstLetters.includes(searchValueLowerCase)
 				: true;
-			const isDlcMatched = selectedDlcs.size > 0 ? selectedDlcs.has(dlc.toString()) : true;
+			const isDlcMatched = checkEmpty(selectedDlcs) || selectedDlcs.has(dlc.toString());
 			const isTagsMatched =
-				selectedCustomerBeverageTag.size > 0
-					? checkArraySubsetOf(toArray(selectedCustomerBeverageTag), tags)
-					: true;
+				checkEmpty(selectedCustomerBeverageTag) ||
+				checkArraySubsetOf(toArray(selectedCustomerBeverageTag), tags);
 
 			return isNameMatched && isDlcMatched && isTagsMatched;
 		});
@@ -375,7 +383,7 @@ export default function BeverageTabContent() {
 										'bg-default/40 data-[hover=true]:bg-default/40 data-[pressed=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 										{
 											'backdrop-blur': isHighAppearance,
-											'ring-2 ring-default': selectedDlcs.size > 0,
+											'ring-2 ring-default': !checkEmpty(selectedDlcs),
 										}
 									)}
 								>
@@ -502,7 +510,7 @@ export default function BeverageTabContent() {
 	const tablePagination = useMemo(
 		() => (
 			<div className="flex justify-center pt-2">
-				{tableCurrentPageItems.length > 0 && (
+				{!checkEmpty(tableCurrentPageItems) && (
 					<Pagination
 						/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/4275} is fixed. */
 						// showControls
@@ -524,7 +532,7 @@ export default function BeverageTabContent() {
 				)}
 			</div>
 		),
-		[isHighAppearance, isReducedMotion, tableCurrentPage, tableCurrentPageItems.length, tableTotalPages, vibrate]
+		[isHighAppearance, isReducedMotion, tableCurrentPage, tableCurrentPageItems, tableTotalPages, vibrate]
 	);
 
 	return (

@@ -24,7 +24,7 @@ import Sprite from '@/components/sprite';
 
 import {LABEL_MAP} from '@/data';
 import {globalStore as store} from '@/stores';
-import {pinyinSort, toArray} from '@/utilities';
+import {checkEmpty, pinyinSort, toArray} from '@/utilities';
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
 interface ISelectConfigItem extends Pick<SelectProps, 'label' | 'selectionMode'> {
@@ -46,7 +46,7 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 
 	const isHighAppearance = store.persistence.highAppearance.use();
 
-	const hasFilter = useMemo(() => selectConfig.some(({selectedKeys}) => selectedKeys.length > 0), [selectConfig]);
+	const hasFilter = useMemo(() => selectConfig.some(({selectedKeys}) => !checkEmpty(selectedKeys)), [selectConfig]);
 
 	const handleSelectionChange = useCallback(
 		(setSelectedKeys: ISelectConfigItem['setSelectedKeys']) => (key: Selection) => {
@@ -58,7 +58,7 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 	const handleResetFilters = useCallback(() => {
 		vibrate();
 		selectConfig.forEach(({selectedKeys, setSelectedKeys}) => {
-			if (selectedKeys.length > 0) {
+			if (!checkEmpty(selectedKeys)) {
 				setSelectedKeys([]);
 			}
 		});

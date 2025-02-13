@@ -19,7 +19,7 @@ import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import {recipesStore as store} from '@/stores';
-import {checkArrayContainsOf, checkArraySubsetOf} from '@/utilities';
+import {checkArrayContainsOf, checkArraySubsetOf, checkEmpty} from '@/utilities';
 
 export default function Recipes() {
 	const currentPopularTrend = store.shared.popularTrend.use();
@@ -67,21 +67,21 @@ export default function Recipes() {
 	const filterData = useCallback(
 		() =>
 			dataWithTrend.filter(({cooker, dlc, ingredients, level, negativeTags, positiveTags}) => {
-				const isDlcMatched = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
-				const isLevelMatched = filterLevels.length > 0 ? filterLevels.includes(level.toString()) : true;
-				const isCookerMatched = filterCookers.length > 0 ? filterCookers.includes(cooker) : true;
+				const isDlcMatched = checkEmpty(filterDlcs) || filterDlcs.includes(dlc.toString());
+				const isLevelMatched = checkEmpty(filterLevels) || filterLevels.includes(level.toString());
+				const isCookerMatched = checkEmpty(filterCookers) || filterCookers.includes(cooker);
 				const isIngredientMatched =
-					filterIngredients.length > 0 ? checkArraySubsetOf(filterIngredients, ingredients) : true;
+					checkEmpty(filterIngredients) || checkArraySubsetOf(filterIngredients, ingredients);
 				const isNoIngredientMatched =
-					filterNoIngredients.length > 0 ? !checkArrayContainsOf(filterNoIngredients, ingredients) : true;
+					checkEmpty(filterNoIngredients) || !checkArrayContainsOf(filterNoIngredients, ingredients);
 				const isNegativeTagMatched =
-					filterNegativeTags.length > 0 ? checkArraySubsetOf(filterNegativeTags, negativeTags) : true;
+					checkEmpty(filterNegativeTags) || checkArraySubsetOf(filterNegativeTags, negativeTags);
 				const isNoNegativeTagMatched =
-					filterNoNegativeTags.length > 0 ? !checkArrayContainsOf(filterNoNegativeTags, negativeTags) : true;
+					checkEmpty(filterNoNegativeTags) || !checkArrayContainsOf(filterNoNegativeTags, negativeTags);
 				const isPositiveTagMatched =
-					filterPositiveTags.length > 0 ? checkArraySubsetOf(filterPositiveTags, positiveTags) : true;
+					checkEmpty(filterPositiveTags) || checkArraySubsetOf(filterPositiveTags, positiveTags);
 				const isNoPositiveTagMatched =
-					filterNoPositiveTags.length > 0 ? !checkArrayContainsOf(filterNoPositiveTags, positiveTags) : true;
+					checkEmpty(filterNoPositiveTags) || !checkArrayContainsOf(filterNoPositiveTags, positiveTags);
 
 				return (
 					isDlcMatched &&
@@ -205,7 +205,7 @@ export default function Recipes() {
 
 	return (
 		<ItemPage
-			isEmpty={sortedData.length === 0}
+			isEmpty={checkEmpty(sortedData)}
 			sideButton={
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />

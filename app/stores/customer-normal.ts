@@ -27,6 +27,7 @@ import {
 import {createNamesCache, keepLastTag, reverseDirection, reverseVisibilityState} from '@/stores/utils';
 import type {IMealRecipe, IPopularTrend, TPopularTag} from '@/types';
 import {
+	checkEmpty,
 	generateRange,
 	numberSort,
 	pinyinSort,
@@ -694,7 +695,7 @@ export const customerNormalStore = store(state, {
 			currentStore.persistence.meals.set((prev) => {
 				if (customerName in prev) {
 					const indexes = prev[customerName]?.map(({index}) => index) ?? [];
-					const index = indexes.length > 0 ? Math.max(...indexes, 0) + 1 : 0;
+					const index = checkEmpty(indexes) ? 0 : Math.max(...indexes, 0) + 1;
 					prev[customerName]?.push({...saveObject, index});
 				} else {
 					prev[customerName] = [{...saveObject, index: 0}];
@@ -703,7 +704,7 @@ export const customerNormalStore = store(state, {
 			trackEvent(
 				trackEvent.category.Click,
 				'Save Button',
-				`${recipeName}${beverageName === null ? '' : ` - ${beverageName}`}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
+				`${recipeName}${beverageName === null ? '' : ` - ${beverageName}`}${checkEmpty(extraIngredients) ? '' : ` - ${extraIngredients.join(' ')}`}`
 			);
 		},
 

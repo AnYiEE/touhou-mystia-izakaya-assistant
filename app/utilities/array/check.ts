@@ -1,10 +1,14 @@
 import {toSet} from '@/utilities';
 
-export function checkArrayEmpty<T>(array: ReadonlyArray<T>) {
-	return array.length === 0;
+export function checkEmpty<T>(target: ArrayLike<T> | ReadonlySetLike<T>) {
+	if ('length' in target) {
+		return target.length === 0;
+	}
+
+	return target.size === 0;
 }
 
-export function checkArrayLengthEqualOf<T>(arrayA: ReadonlyArray<T>, arrayB: ReadonlyArray<T>) {
+export function checkArrayLengthEqualOf<T>(arrayA: ArrayLike<T>, arrayB: ArrayLike<T>) {
 	return arrayA.length === arrayB.length;
 }
 

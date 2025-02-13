@@ -34,7 +34,7 @@ import Tachie from '@/components/tachie';
 
 import {customerTabStyleMap, ingredientTabStyleMap, tachieBreakPoint} from './constants';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {checkArrayContainsOf, checkArraySubsetOf} from '@/utilities';
+import {checkArrayContainsOf, checkArraySubsetOf, checkEmpty} from '@/utilities';
 
 export default function CustomerRare() {
 	const {breakpoint} = useBreakpoint(tachieBreakPoint, 'noTachie');
@@ -68,20 +68,17 @@ export default function CustomerRare() {
 	const customerFilteredData = useMemo(
 		() =>
 			customerSearchResult.filter(({dlc, name, places}) => {
-				if (customerFilterIncludes.length > 0) {
-					const result = customerFilterIncludes.includes(name);
-					if (result) {
-						return true;
-					}
+				if (customerFilterIncludes.includes(name)) {
+					return true;
 				}
 
 				const isNameExcludesMatched =
-					customerFilterExcludes.length > 0 ? !customerFilterExcludes.includes(name) : true;
-				const isDlcMatched = customerFilterDlcs.length > 0 ? customerFilterDlcs.includes(dlc.toString()) : true;
+					checkEmpty(customerFilterExcludes) || !customerFilterExcludes.includes(name);
+				const isDlcMatched = checkEmpty(customerFilterDlcs) || customerFilterDlcs.includes(dlc.toString());
 				const isPlaceMatched =
-					customerFilterPlaces.length > 0 ? checkArrayContainsOf(customerFilterPlaces, places) : true;
+					checkEmpty(customerFilterPlaces) || checkArrayContainsOf(customerFilterPlaces, places);
 				const isNoPlaceMatched =
-					customerFilterNoPlaces.length > 0 ? !checkArrayContainsOf(customerFilterNoPlaces, places) : true;
+					checkEmpty(customerFilterNoPlaces) || !checkArrayContainsOf(customerFilterNoPlaces, places);
 
 				return isNameExcludesMatched && isDlcMatched && isPlaceMatched && isNoPlaceMatched;
 			}),
@@ -189,16 +186,13 @@ export default function CustomerRare() {
 					isFamousShop
 				);
 
-				const isDlcMatched =
-					ingredientFilterDlcs.length > 0 ? ingredientFilterDlcs.includes(dlc.toString()) : true;
+				const isDlcMatched = checkEmpty(ingredientFilterDlcs) || ingredientFilterDlcs.includes(dlc.toString());
 				const isTagMatched =
-					ingredientFilterTags.length > 0 ? checkArraySubsetOf(ingredientFilterTags, tagsWithTrend) : true;
+					checkEmpty(ingredientFilterTags) || checkArraySubsetOf(ingredientFilterTags, tagsWithTrend);
 				const isNoTagMatched =
-					ingredientFilterNoTags.length > 0
-						? !checkArrayContainsOf(ingredientFilterNoTags, tagsWithTrend)
-						: true;
+					checkEmpty(ingredientFilterNoTags) || !checkArrayContainsOf(ingredientFilterNoTags, tagsWithTrend);
 				const isLevelMatched =
-					ingredientFilterLevels.length > 0 ? ingredientFilterLevels.includes(level.toString()) : true;
+					checkEmpty(ingredientFilterLevels) || ingredientFilterLevels.includes(level.toString());
 
 				return (
 					isDlcMatched &&
@@ -368,7 +362,7 @@ export default function CustomerRare() {
 
 			<SideButtonGroup
 				className={cn('xl:left-6', ingredientTabStyle.classNames.sideButtonGroup, {
-					'!block': selectedTabKey === 'ingredient' && ingredientFilteredData.length === 0,
+					'!block': selectedTabKey === 'ingredient' && checkEmpty(ingredientFilteredData),
 					'!hidden': !isIngredientTabFilterVisible,
 				})}
 			>

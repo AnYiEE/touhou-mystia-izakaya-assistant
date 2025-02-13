@@ -19,6 +19,7 @@ import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import {ornamentsStore as store} from '@/stores';
+import {checkEmpty} from '@/utilities';
 
 export default function Ornaments() {
 	const instance = store.instance.get();
@@ -37,7 +38,7 @@ export default function Ornaments() {
 	const filterData = useCallback(
 		() =>
 			searchResult.filter(({dlc}) => {
-				const isDlcMatched = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
+				const isDlcMatched = checkEmpty(filterDlcs) || filterDlcs.includes(dlc.toString());
 
 				return isDlcMatched;
 			}),
@@ -73,7 +74,7 @@ export default function Ornaments() {
 
 	return (
 		<ItemPage
-			isEmpty={sortedData.length === 0}
+			isEmpty={checkEmpty(sortedData)}
 			sideButton={
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />

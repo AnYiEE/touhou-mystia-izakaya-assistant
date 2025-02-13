@@ -19,7 +19,7 @@ import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import {ingredientsStore as store} from '@/stores';
-import {checkArrayContainsOf, checkArraySubsetOf} from '@/utilities';
+import {checkArrayContainsOf, checkArraySubsetOf, checkEmpty} from '@/utilities';
 
 export default function Ingredients() {
 	const currentPopularTrend = store.shared.popularTrend.use();
@@ -58,12 +58,12 @@ export default function Ingredients() {
 	const filterData = useCallback(
 		() =>
 			dataWithTrend.filter(({dlc, level, tags, type}) => {
-				const isDlcMatched = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
-				const isLevelMatched = filterLevels.length > 0 ? filterLevels.includes(level.toString()) : true;
-				const isTagMatched = filterTags.length > 0 ? checkArraySubsetOf(filterTags, tags) : true;
-				const isNoTagMatched = filterNoTags.length > 0 ? !checkArrayContainsOf(filterNoTags, tags) : true;
-				const isTypeMatched = filterTypes.length > 0 ? filterTypes.includes(type) : true;
-				const isNoTypeMatched = filterNoTypes.length > 0 ? !filterNoTypes.includes(type) : true;
+				const isDlcMatched = checkEmpty(filterDlcs) || filterDlcs.includes(dlc.toString());
+				const isLevelMatched = checkEmpty(filterLevels) || filterLevels.includes(level.toString());
+				const isTagMatched = checkEmpty(filterTags) || checkArraySubsetOf(filterTags, tags);
+				const isNoTagMatched = checkEmpty(filterNoTags) || !checkArrayContainsOf(filterNoTags, tags);
+				const isTypeMatched = checkEmpty(filterTypes) || filterTypes.includes(type);
+				const isNoTypeMatched = checkEmpty(filterNoTypes) || !filterNoTypes.includes(type);
 
 				return (
 					isDlcMatched && isLevelMatched && isTagMatched && isNoTagMatched && isTypeMatched && isNoTypeMatched
@@ -142,7 +142,7 @@ export default function Ingredients() {
 
 	return (
 		<ItemPage
-			isEmpty={sortedData.length === 0}
+			isEmpty={checkEmpty(sortedData)}
 			sideButton={
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />

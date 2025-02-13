@@ -34,7 +34,7 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
-import {copyArray, pinyinSort} from '@/utilities';
+import {checkEmpty, copyArray, pinyinSort} from '@/utilities';
 
 export default function CustomerCard() {
 	const vibrate = useVibrate();
@@ -59,8 +59,8 @@ export default function CustomerCard() {
 	const hasSelected =
 		currentBeverageName !== null ||
 		currentRecipeData !== null ||
-		selectedCustomerBeverageTag.size > 0 ||
-		selectedCustomerRecipeTag.size > 0;
+		!checkEmpty(selectedCustomerBeverageTag) ||
+		!checkEmpty(selectedCustomerRecipeTag);
 
 	const handleBeverageTagClick = useCallback(
 		(tag: TBeverageTag) => {
@@ -130,7 +130,7 @@ export default function CustomerCard() {
 	const copiedCurrentCustomerPlaces = copyArray(currentCustomerPlaces);
 	const currentCustomerMainPlace = copiedCurrentCustomerPlaces.shift();
 
-	const hasOtherPlaces = copiedCurrentCustomerPlaces.length > 0;
+	const hasOtherPlaces = !checkEmpty(copiedCurrentCustomerPlaces);
 
 	const placeContent = hasOtherPlaces
 		? `其他出没地区：${copiedCurrentCustomerPlaces.join('、')}`
@@ -273,7 +273,7 @@ export default function CustomerCard() {
 				<Divider className="md:hidden" />
 				<Divider orientation="vertical" className="hidden md:block" />
 				<div className="flex w-full flex-col justify-evenly gap-3 whitespace-nowrap">
-					{currentCustomerPositiveTags.length > 0 && (
+					{!checkEmpty(currentCustomerPositiveTags) && (
 						<TagGroup>
 							{copyArray(currentCustomerPositiveTags)
 								.sort(pinyinSort)
@@ -307,7 +307,7 @@ export default function CustomerCard() {
 								))}
 						</TagGroup>
 					)}
-					{currentCustomerBeverageTags.length > 0 && (
+					{!checkEmpty(currentCustomerBeverageTags) && (
 						<TagGroup>
 							{currentCustomerBeverageTags.map((tag, index) => (
 								<Tooltip

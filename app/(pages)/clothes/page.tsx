@@ -19,6 +19,7 @@ import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import {clothesStore as store} from '@/stores';
+import {checkEmpty} from '@/utilities';
 
 export default function Clothes() {
 	const instance = store.instance.get();
@@ -37,7 +38,7 @@ export default function Clothes() {
 	const filterData = useCallback(
 		() =>
 			searchResult.filter(({dlc}) => {
-				const isDlcMatched = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
+				const isDlcMatched = checkEmpty(filterDlcs) || filterDlcs.includes(dlc.toString());
 
 				return isDlcMatched;
 			}),
@@ -73,7 +74,7 @@ export default function Clothes() {
 
 	return (
 		<ItemPage
-			isEmpty={sortedData.length === 0}
+			isEmpty={checkEmpty(sortedData)}
 			sideButton={
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />

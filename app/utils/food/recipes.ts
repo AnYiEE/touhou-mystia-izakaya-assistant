@@ -14,7 +14,7 @@ import {
 	type TRecipes,
 } from '@/data';
 
-import {cloneJsonObject, intersection, numberSort, toArray, toSet} from '@/utilities';
+import {checkEmpty, cloneJsonObject, intersection, numberSort, toArray, toSet} from '@/utilities';
 import type {IMealRecipe, IPopularTrend} from '@/types';
 
 type TRecipeProcessedPositiveTags = Omit<TRecipes[number], 'positiveTags'> & {
@@ -135,7 +135,7 @@ export class Recipe extends Food<TRecipes> {
 
 		return {
 			extraTags,
-			isDarkMatter: intersection(extraTags, negativeTags).length > 0,
+			isDarkMatter: !checkEmpty(intersection(extraTags, negativeTags)),
 		};
 	}
 

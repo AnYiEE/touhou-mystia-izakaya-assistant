@@ -17,7 +17,7 @@ import Tags from '@/components/tags';
 
 import {BEVERAGE_TAG_STYLE, CUSTOMER_RATING_MAP, DARK_MATTER_META_MAP, RECIPE_TAG_STYLE} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {copyArray} from '@/utilities';
+import {checkEmpty, copyArray} from '@/utilities';
 
 enum MoveButtonDirection {
 	Down,
@@ -84,7 +84,7 @@ export default function SavedMealCard() {
 		return null;
 	}
 
-	if (currentSavedMeals[currentCustomerName] === undefined || currentSavedMeals[currentCustomerName].length === 0) {
+	if (currentSavedMeals[currentCustomerName] === undefined || checkEmpty(currentSavedMeals[currentCustomerName])) {
 		return null;
 	}
 
@@ -300,7 +300,7 @@ export default function SavedMealCard() {
 														</Tooltip>
 													);
 												})}
-												{lestExtraIngredients.length > 0 && (
+												{!checkEmpty(lestExtraIngredients) && (
 													<div className="flex items-center gap-x-3 rounded bg-content2/70 outline outline-2 outline-offset-1 outline-content2 md:gap-x-1 lg:gap-x-3 xl:gap-x-1">
 														{lestExtraIngredients.map((name, index) => {
 															const label = `点击：在新窗口中查看额外食材【${name}】的详情`;
@@ -368,7 +368,7 @@ export default function SavedMealCard() {
 											trackEvent(
 												trackEvent.category.Click,
 												'Select Button',
-												`${recipeData.name} - ${beverage}${recipeData.extraIngredients.length > 0 ? ` - ${recipeData.extraIngredients.join(' ')}` : ''}`
+												`${recipeData.name} - ${beverage}${checkEmpty(recipeData.extraIngredients) ? '' : ` - ${recipeData.extraIngredients.join(' ')}`}`
 											);
 										}}
 										className="md:w-auto xl:h-6"
@@ -387,7 +387,7 @@ export default function SavedMealCard() {
 											trackEvent(
 												trackEvent.category.Click,
 												'Remove Button',
-												`${recipeData.name} - ${beverage}${recipeData.extraIngredients.length > 0 ? ` - ${recipeData.extraIngredients.join(' ')}` : ''}`
+												`${recipeData.name} - ${beverage}${checkEmpty(recipeData.extraIngredients) ? '' : ` - ${recipeData.extraIngredients.join(' ')}`}`
 											);
 										}}
 										className="md:w-auto xl:h-6"

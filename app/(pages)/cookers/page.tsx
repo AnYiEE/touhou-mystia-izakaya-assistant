@@ -19,7 +19,7 @@ import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import {cookersStore as store} from '@/stores';
-import {checkArrayContainsOf} from '@/utilities';
+import {checkArrayContainsOf, checkEmpty} from '@/utilities';
 
 export default function Cookers() {
 	const instance = store.instance.get();
@@ -46,12 +46,11 @@ export default function Cookers() {
 			searchResult.filter(({category, dlc, type}) => {
 				const types = [type].flat();
 
-				const isDlcMatched = filterDlcs.length > 0 ? filterDlcs.includes(dlc.toString()) : true;
-				const isCategoryMatched = filterCategories.length > 0 ? filterCategories.includes(category) : true;
-				const isNoCategoryMatched =
-					filterNoCategories.length > 0 ? !filterNoCategories.includes(category) : true;
-				const isTypeMatched = filterTypes.length > 0 ? checkArrayContainsOf(filterTypes, types) : true;
-				const isNoTypeMatched = filterNoTypes.length > 0 ? !checkArrayContainsOf(filterNoTypes, types) : true;
+				const isDlcMatched = checkEmpty(filterDlcs) || filterDlcs.includes(dlc.toString());
+				const isCategoryMatched = checkEmpty(filterCategories) || filterCategories.includes(category);
+				const isNoCategoryMatched = checkEmpty(filterNoCategories) || !filterNoCategories.includes(category);
+				const isTypeMatched = checkEmpty(filterTypes) || checkArrayContainsOf(filterTypes, types);
+				const isNoTypeMatched = checkEmpty(filterNoTypes) || !checkArrayContainsOf(filterNoTypes, types);
 
 				return isDlcMatched && isCategoryMatched && isNoCategoryMatched && isTypeMatched && isNoTypeMatched;
 			}),
@@ -111,7 +110,7 @@ export default function Cookers() {
 
 	return (
 		<ItemPage
-			isEmpty={sortedData.length === 0}
+			isEmpty={checkEmpty(sortedData)}
 			sideButton={
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />

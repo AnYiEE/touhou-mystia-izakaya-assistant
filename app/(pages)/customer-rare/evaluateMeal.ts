@@ -8,7 +8,7 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import {type ICustomerOrder} from '@/stores';
-import {intersection, without} from '@/utilities';
+import {checkEmpty, intersection, without} from '@/utilities';
 
 interface IParameters {
 	currentBeverageTags: TBeverageTag[];
@@ -262,7 +262,7 @@ export function evaluateMeal({
 	hasMystiaCooker,
 	isDarkMatter,
 }: IParameters) {
-	if (currentBeverageTags.length === 0 || currentRecipeName === null) {
+	if (checkEmpty(currentBeverageTags) || currentRecipeName === null) {
 		return null;
 	}
 
@@ -289,13 +289,12 @@ export function evaluateMeal({
 		matchedBeverageTags,
 		hasMystiaCooker ? matchedBeverageTags[0] : customerOrderBeverageTag
 	);
-	const orderedBeverageScore =
-		matchedBeverageTags.length > 0
-			? Number(
-					hasMystiaCooker ||
-						(customerOrderBeverageTag ? matchedBeverageTags.includes(customerOrderBeverageTag) : 0)
-				)
-			: 0;
+	const orderedBeverageScore = checkEmpty(matchedBeverageTags)
+		? 0
+		: Number(
+				hasMystiaCooker ||
+					(customerOrderBeverageTag ? matchedBeverageTags.includes(customerOrderBeverageTag) : 0)
+			);
 	const {length: matchedBeverageScore} = matchedBeverageTagsWithoutOrderedBeverage;
 	const beverageScore = orderedBeverageScore + matchedBeverageScore;
 
@@ -306,13 +305,12 @@ export function evaluateMeal({
 			matchedRecipePositiveTags,
 			hasMystiaCooker ? matchedRecipePositiveTags[0] : customerOrderRecipeTag
 		);
-		const orderedRecipeScore =
-			matchedRecipePositiveTags.length > 0
-				? Number(
-						hasMystiaCooker ||
-							(customerOrderRecipeTag ? matchedRecipePositiveTags.includes(customerOrderRecipeTag) : 0)
-					)
-				: 0;
+		const orderedRecipeScore = checkEmpty(matchedRecipePositiveTags)
+			? 0
+			: Number(
+					hasMystiaCooker ||
+						(customerOrderRecipeTag ? matchedRecipePositiveTags.includes(customerOrderRecipeTag) : 0)
+				);
 		const {length: matchedRecipeNegativeScore} = matchedRecipeNegativeTags;
 		const {length: matchedRecipePositiveScore} = matchedRecipePositiveTagsWithoutOrderedRecipe;
 		currentRecipeScore = isDarkMatter

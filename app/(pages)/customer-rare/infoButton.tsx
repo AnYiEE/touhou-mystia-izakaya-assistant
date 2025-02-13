@@ -24,6 +24,7 @@ import Tachie from '@/components/tachie';
 
 import {CUSTOMER_EVALUATION_KEY_MAP, CUSTOMER_RATING_MAP, LABEL_MAP, type TRatingKey, type TRewardType} from '@/data';
 import {customerRareStore as store} from '@/stores';
+import {checkEmpty} from '@/utilities';
 
 interface ILevelLabelProps {
 	level: number | string;
@@ -75,30 +76,26 @@ export default function InfoButton() {
 
 	const bondClothes = instance_clothes.getBondClothes(currentCustomerName);
 	const bondCooker = instance_cooker.getBondCooker(currentCustomerName);
-	const bondPartner = instance_partner.getBondPartner(currentCustomerName);
-
 	const bondOrnamentsData = instance_ornament.getBondOrnaments(currentCustomerName);
-	const {length: bondOrnamentsDataLength} = bondOrnamentsData;
-
+	const bondPartner = instance_partner.getBondPartner(currentCustomerName);
 	const bondRecipesData = instance_recipe.getBondRecipes(currentCustomerName);
-	const {length: bondRecipesDataLength} = bondRecipesData;
 
 	const hasBondRewards =
 		currentCustomerCollection ||
 		bondClothes !== null ||
 		bondCooker !== null ||
 		bondPartner !== null ||
-		bondRecipesDataLength > 0 ||
-		bondOrnamentsDataLength > 0;
-	const hasSpellCards = Object.keys(currentCustomerSpellCards).length > 0;
+		!checkEmpty(bondOrnamentsData) ||
+		!checkEmpty(bondRecipesData);
+	const hasSpellCards = !checkEmpty(Object.keys(currentCustomerSpellCards));
 	const hasNegativeSpellCards =
 		hasSpellCards &&
 		'negative' in currentCustomerSpellCards &&
-		(currentCustomerSpellCards.negative as unknown[]).length > 0;
+		!checkEmpty(currentCustomerSpellCards.negative as unknown[]);
 	const hasPositiveSpellCards =
 		hasSpellCards &&
 		'positive' in currentCustomerSpellCards &&
-		(currentCustomerSpellCards.positive as unknown[]).length > 0;
+		!checkEmpty(currentCustomerSpellCards.positive as unknown[]);
 
 	const getDefaultExpandedKeys = () => {
 		const defaultExpandedKeys = ['description'];
@@ -372,7 +369,9 @@ export default function InfoButton() {
 			) : (
 				(null as unknown as ReactElement)
 			)}
-			{currentCustomerChat.length > 0 ? (
+			{checkEmpty(currentCustomerChat) ? (
+				(null as unknown as ReactElement)
+			) : (
 				<AccordionItem
 					key="chat"
 					aria-label="闲聊对话"
@@ -387,8 +386,6 @@ export default function InfoButton() {
 						))}
 					</Ol>
 				</AccordionItem>
-			) : (
-				(null as unknown as ReactElement)
 			)}
 			<AccordionItem
 				key="rating"

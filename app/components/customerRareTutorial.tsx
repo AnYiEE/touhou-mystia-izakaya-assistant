@@ -7,7 +7,7 @@ import {usePathname} from '@/hooks';
 
 import {DYNAMIC_TAG_MAP} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {getPageTitle} from '@/utilities';
+import {checkEmpty, getPageTitle} from '@/utilities';
 
 const key = 'customer_rare_tutorial';
 const pathname = '/customer-rare';
@@ -217,7 +217,7 @@ export default function CustomerRareTutorial() {
 			isRecipeSelected.current = true;
 			driverRef.current.moveNext();
 		}
-		if (currentExtraIngredients !== undefined && currentExtraIngredients.length > 0) {
+		if (currentExtraIngredients !== undefined && !checkEmpty(currentExtraIngredients)) {
 			if (currentExtraIngredients.includes('鸡蛋') && !hasExtraEgg.current) {
 				hasExtraEgg.current = true;
 				moveNext(HONEY_POSITION);

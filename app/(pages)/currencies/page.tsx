@@ -9,6 +9,7 @@ import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
 import {currenciesStore as store} from '@/stores';
+import {checkEmpty} from '@/utilities';
 
 export default function Currencies() {
 	const instance = store.instance.get();
@@ -35,7 +36,7 @@ export default function Currencies() {
 
 	return (
 		<ItemPage
-			isEmpty={sortedData.length === 0}
+			isEmpty={checkEmpty(sortedData)}
 			sideButton={
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />

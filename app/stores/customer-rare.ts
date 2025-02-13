@@ -28,6 +28,7 @@ import {
 import {createNamesCache, keepLastTag, reverseDirection, reverseVisibilityState} from '@/stores/utils';
 import type {IMealRecipe, IPopularTrend} from '@/types';
 import {
+	checkEmpty,
 	generateRange,
 	numberSort,
 	pinyinSort,
@@ -858,7 +859,7 @@ export const customerRareStore = store(state, {
 			currentStore.persistence.meals.set((prev) => {
 				if (customerName in prev) {
 					const indexes = prev[customerName]?.map(({index}) => index) ?? [];
-					const index = indexes.length > 0 ? Math.max(...indexes, 0) + 1 : 0;
+					const index = checkEmpty(indexes) ? 0 : Math.max(...indexes, 0) + 1;
 					prev[customerName]?.push({...saveObject, index});
 				} else {
 					prev[customerName] = [{...saveObject, index: 0}];
@@ -867,7 +868,7 @@ export const customerRareStore = store(state, {
 			trackEvent(
 				trackEvent.category.Click,
 				'Save Button',
-				`${recipeName} - ${beverageName}${extraIngredients.length > 0 ? ` - ${extraIngredients.join(' ')}` : ''}`
+				`${recipeName} - ${beverageName}${checkEmpty(extraIngredients) ? '' : ` - ${extraIngredients.join(' ')}`}`
 			);
 		},
 
@@ -968,10 +969,10 @@ customerRareStore.shared.recipe.data.onChange((data) => {
 	customerRareStore.updateRecipeTagsWithTrend();
 	customerRareStore.evaluateMealResult();
 	if (data !== null) {
-		if (data.extraIngredients.length > 0) {
-			customerRareStore.shared.customer.isDarkMatter.set(instance_recipe.checkDarkMatter(data).isDarkMatter);
-		} else {
+		if (checkEmpty(data.extraIngredients)) {
 			customerRareStore.shared.customer.isDarkMatter.set(false);
+		} else {
+			customerRareStore.shared.customer.isDarkMatter.set(instance_recipe.checkDarkMatter(data).isDarkMatter);
 		}
 	}
 });

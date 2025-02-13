@@ -37,7 +37,16 @@ import {checkRecipeEasterEgg} from './evaluateMeal';
 import type {ITableColumn, ITableSortDescriptor, TRecipeWithSuitability, TRecipesWithSuitability} from './types';
 import {CUSTOMER_RARE_TAG_STYLE, LABEL_MAP} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {checkArraySubsetOf, copyArray, numberSort, pinyinSort, processPinyin, toArray, toSet} from '@/utilities';
+import {
+	checkArraySubsetOf,
+	checkEmpty,
+	copyArray,
+	numberSort,
+	pinyinSort,
+	processPinyin,
+	toArray,
+	toSet,
+} from '@/utilities';
 
 export type TTableColumnKey = 'recipe' | 'cooker' | 'ingredient' | 'price' | 'suitability' | 'time' | 'action';
 export type TTableColumns = ITableColumn<TTableColumnKey>[];
@@ -151,9 +160,9 @@ export default function RecipeTabContent() {
 		});
 
 		if (
-			selectedCookers.size === 0 &&
-			selectedCustomerRecipeTag.size === 0 &&
-			selectedDlcs.size === 0 &&
+			checkEmpty(selectedCookers) &&
+			checkEmpty(selectedCustomerRecipeTag) &&
+			checkEmpty(selectedDlcs) &&
 			!hasNameFilter
 		) {
 			return dataWithRealSuitability;
@@ -170,12 +179,11 @@ export default function RecipeTabContent() {
 					pinyinWithoutTone.join('').includes(searchValueLowerCase) ||
 					pinyinFirstLetters.includes(searchValueLowerCase)
 				: true;
-			const isDlcMatched = selectedDlcs.size > 0 ? selectedDlcs.has(dlc.toString()) : true;
-			const isCookerMatched = selectedCookers.size > 0 ? selectedCookers.has(cooker) : true;
+			const isDlcMatched = checkEmpty(selectedDlcs) || selectedDlcs.has(dlc.toString());
+			const isCookerMatched = checkEmpty(selectedCookers) || selectedCookers.has(cooker);
 			const isPositiveTagsMatched =
-				selectedCustomerRecipeTag.size > 0
-					? checkArraySubsetOf(toArray(selectedCustomerRecipeTag), recipeTagsWithTrend)
-					: true;
+				checkEmpty(selectedCustomerRecipeTag) ||
+				checkArraySubsetOf(toArray(selectedCustomerRecipeTag), recipeTagsWithTrend);
 
 			return isNameMatched && isDlcMatched && isCookerMatched && isPositiveTagsMatched;
 		});
@@ -506,7 +514,7 @@ export default function RecipeTabContent() {
 										'bg-default/40 data-[hover=true]:bg-default/40 data-[pressed=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 										{
 											'backdrop-blur': isHighAppearance,
-											'ring-2 ring-default': selectedCookers.size > 0,
+											'ring-2 ring-default': !checkEmpty(selectedCookers),
 										}
 									)}
 								>
@@ -545,7 +553,7 @@ export default function RecipeTabContent() {
 										'bg-default/40 data-[hover=true]:bg-default/40 data-[pressed=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 										{
 											'backdrop-blur': isHighAppearance,
-											'ring-2 ring-default': selectedDlcs.size > 0,
+											'ring-2 ring-default': !checkEmpty(selectedDlcs),
 										}
 									)}
 								>
@@ -674,7 +682,7 @@ export default function RecipeTabContent() {
 	const tablePagination = useMemo(
 		() => (
 			<div className="flex justify-center pt-2">
-				{tableCurrentPageItems.length > 0 && (
+				{!checkEmpty(tableCurrentPageItems) && (
 					<Pagination
 						/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/4275} is fixed. */
 						// showControls
@@ -696,7 +704,7 @@ export default function RecipeTabContent() {
 				)}
 			</div>
 		),
-		[isHighAppearance, isReducedMotion, tableCurrentPage, tableCurrentPageItems.length, tableTotalPages, vibrate]
+		[isHighAppearance, isReducedMotion, tableCurrentPage, tableCurrentPageItems, tableTotalPages, vibrate]
 	);
 
 	return (

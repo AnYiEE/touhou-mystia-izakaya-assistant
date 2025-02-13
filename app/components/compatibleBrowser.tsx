@@ -3,7 +3,7 @@
 import {useEffect} from 'react';
 import {UAParser} from 'ua-parser-js';
 
-import {checkDomReady, memoize, toArray} from '@/utilities';
+import {checkDomReady, checkEmpty, memoize, toArray} from '@/utilities';
 
 type TFeature = 'flexGap' | 'webp';
 type TCompatibility = Record<TFeature, boolean>;
@@ -113,7 +113,7 @@ function getReplacementClass(element: Element, gapClass: string) {
 
 function replaceGapClasses(element: Element) {
 	if (
-		element.classList.length === 0 ||
+		checkEmpty(element.classList) ||
 		(!(element.classList.contains('flex') || element.classList.contains('inline-flex')) &&
 			!(element.classList.contains('md:flex') || element.classList.contains('md:inline-flex')) &&
 			!(element.classList.contains('lg:flex') || element.classList.contains('lg:inline-flex')) &&

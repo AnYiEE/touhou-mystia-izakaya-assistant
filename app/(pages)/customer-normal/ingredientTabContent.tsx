@@ -20,7 +20,7 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import {customerNormalStore as store} from '@/stores';
-import {checkA11yConfirmKey, intersection, toArray, toGetItemWithKey, toSet, union} from '@/utilities';
+import {checkA11yConfirmKey, checkEmpty, intersection, toArray, toGetItemWithKey, toSet, union} from '@/utilities';
 import {type Recipe} from '@/utils';
 import type {TItemDataItem} from '@/utils/types';
 
@@ -45,7 +45,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 		() =>
 			toSet(
 				sortedData
-					.filter(({tags}) => intersection(tags, currentRecipe?.negativeTags ?? []).length > 0)
+					.filter(({tags}) => !checkEmpty(intersection(tags, currentRecipe?.negativeTags ?? [])))
 					.map(toGetItemWithKey('name'))
 			),
 		[currentRecipe?.negativeTags, sortedData]
@@ -73,7 +73,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 		return null;
 	}
 
-	if (sortedData.length === 0) {
+	if (checkEmpty(sortedData)) {
 		return <Placeholder className="pt-4 md:min-h-40 md:pt-0">数据为空</Placeholder>;
 	}
 
@@ -232,7 +232,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 						);
 					})}
 				</div>
-				{darkIngredients.size > 0 && (
+				{!checkEmpty(darkIngredients) && (
 					<>
 						<div className="my-4 flex items-center">
 							<div className="h-px w-full bg-foreground-300"></div>

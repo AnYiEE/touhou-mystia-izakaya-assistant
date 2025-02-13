@@ -1,6 +1,6 @@
 import type {IItem, TItemWithPinyin} from './types';
 
-import {cloneJsonObject, copyArray, getPinyin, pinyinSort, toGetValueCollection, union} from '@/utilities';
+import {checkEmpty, cloneJsonObject, copyArray, getPinyin, pinyinSort, toGetValueCollection, union} from '@/utilities';
 
 export class Item<
 	TItems extends IItem[],
@@ -71,7 +71,7 @@ export class Item<
 		const item = this._data[index];
 		this.checkIndexRange(index, item);
 
-		if (props.length > 0) {
+		if (!checkEmpty(props)) {
 			if (props.length === 1) {
 				return item[props[0] as T];
 			}

@@ -50,7 +50,7 @@ import {
 } from '@/data';
 import type {ITagStyle} from '@/data/types';
 import {globalStore as store} from '@/stores';
-import {type TPressEvent, checkA11yConfirmKey, union} from '@/utilities';
+import {type TPressEvent, checkA11yConfirmKey, checkEmpty, union} from '@/utilities';
 
 const {name: siteName} = siteConfig;
 
@@ -238,8 +238,8 @@ const ItemPopoverCardComponent = memo(
 		}, [tags]);
 
 		const hasTag = Boolean(
-			(mergedTags?.positive !== undefined && mergedTags.positive.length > 0) ||
-				(mergedTags?.negative !== undefined && mergedTags.negative.length > 0)
+			(mergedTags?.positive !== undefined && !checkEmpty(mergedTags.positive)) ||
+				(mergedTags?.negative !== undefined && !checkEmpty(mergedTags.negative))
 		);
 
 		const dlcLabel = dlc === 0 ? LABEL_MAP.dlc0 : '';

@@ -21,7 +21,7 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import {customerRareStore as store} from '@/stores';
-import {checkA11yConfirmKey, intersection, toArray, toGetItemWithKey, toSet, union} from '@/utilities';
+import {checkA11yConfirmKey, checkEmpty, intersection, toArray, toGetItemWithKey, toSet, union} from '@/utilities';
 import {type Ingredient, type Recipe} from '@/utils';
 import type {TItemData, TItemDataItem} from '@/utils/types';
 
@@ -53,7 +53,7 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 		() =>
 			toSet(
 				sortedData
-					.filter(({tags}) => intersection(tags, currentRecipe?.negativeTags ?? []).length > 0)
+					.filter(({tags}) => !checkEmpty(intersection(tags, currentRecipe?.negativeTags ?? [])))
 					.map(toGetItemWithKey('name'))
 			),
 		[currentRecipe?.negativeTags, sortedData]
@@ -76,7 +76,7 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 		return null;
 	}
 
-	if (sortedData.length === 0) {
+	if (checkEmpty(sortedData)) {
 		return <Placeholder className="pt-4 md:min-h-40 md:pt-0">数据为空</Placeholder>;
 	}
 
