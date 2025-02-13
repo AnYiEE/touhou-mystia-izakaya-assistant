@@ -329,7 +329,7 @@ export default function InfoButton() {
 				>
 					{hasPositiveSpellCards && (
 						<div className="space-y-1">
-							<p className="text-large font-semibold">奖励符卡</p>
+							<p className="text-large font-semibold text-exgood-border dark:text-exgood">奖励符卡</p>
 							<div className="space-y-1.5">
 								{currentCustomerSpellCards.positive.map(({description, name}, index) => (
 									<div key={index} className="space-y-0.5">
@@ -350,7 +350,7 @@ export default function InfoButton() {
 								'!mt-2': hasPositiveSpellCards,
 							})}
 						>
-							<p className="text-large font-semibold">惩罚符卡</p>
+							<p className="text-large font-semibold text-bad dark:text-bad-border">惩罚符卡</p>
 							<div className="space-y-1.5">
 								{currentCustomerSpellCards.negative.map(({description, name}, index) => (
 									<div key={index} className="space-y-0.5">

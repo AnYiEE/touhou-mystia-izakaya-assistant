@@ -557,6 +557,7 @@ export default function BeverageTabContent() {
 				th: cn('bg-default-200/70', {
 					'backdrop-blur-sm': isHighAppearance,
 				}),
+				thead: '[&>tr[tabindex="-1"]]:invisible',
 				wrapper: cn('bg-content1/40 xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)] xl:p-2', {
 					'backdrop-blur': isHighAppearance,
 				}),
