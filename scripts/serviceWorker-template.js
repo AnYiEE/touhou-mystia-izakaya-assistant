@@ -55,7 +55,9 @@ async function fetchAndCache(/** @type {Request} */ request) {
 		mode: IS_USE_CDN ? 'cors' : undefined,
 	});
 
-	void putInCache(request, response.clone(), VERSION);
+	if (response.ok) {
+		void putInCache(request, response.clone(), VERSION);
+	}
 
 	return response;
 }
