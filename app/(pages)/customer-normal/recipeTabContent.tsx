@@ -147,9 +147,10 @@ export default function RecipeTabContent() {
 			return {
 				...item,
 				matchedPositiveTags,
+				positiveTags: recipeTagsWithTrend,
 				suitability,
 			};
-		});
+		}) as TRecipesWithSuitability;
 
 		if (
 			checkEmpty(selectedCookers) &&
@@ -244,29 +245,28 @@ export default function RecipeTabContent() {
 				return null;
 			}
 
-			const composedRecipeTags = composeTagsWithPopularTrend(ingredients, positiveTags);
-			const recipeTagsWithTrend = calculateTagsWithTrend(composedRecipeTags);
-
 			const {positive: positiveTagStyle} = CUSTOMER_NORMAL_TAG_STYLE;
 
 			const tags = (
 				<TagGroup>
-					{recipeTagsWithTrend.sort(pinyinSort).map((tag, index) => {
-						const isPositiveTagMatched = matchedPositiveTags.includes(tag);
-						const tagStyle = isPositiveTagMatched ? positiveTagStyle : {};
-						const tagType = isPositiveTagMatched ? 'positive' : null;
-						return (
-							<Tags.Tag
-								key={index}
-								tag={tag}
-								tagStyle={tagStyle}
-								tagType={tagType}
-								className={cn({
-									'opacity-50': !isPositiveTagMatched,
-								})}
-							/>
-						);
-					})}
+					{copyArray(positiveTags)
+						.sort(pinyinSort)
+						.map((tag, index) => {
+							const isPositiveTagMatched = matchedPositiveTags.includes(tag);
+							const tagStyle = isPositiveTagMatched ? positiveTagStyle : {};
+							const tagType = isPositiveTagMatched ? 'positive' : null;
+							return (
+								<Tags.Tag
+									key={index}
+									tag={tag}
+									tagStyle={tagStyle}
+									tagType={tagType}
+									className={cn({
+										'opacity-50': !isPositiveTagMatched,
+									})}
+								/>
+							);
+						})}
 				</TagGroup>
 			);
 
@@ -388,7 +388,7 @@ export default function RecipeTabContent() {
 				}
 			}
 		},
-		[calculateTagsWithTrend, composeTagsWithPopularTrend, currentCustomerName, openWindow, vibrate]
+		[currentCustomerName, openWindow, vibrate]
 	);
 
 	const tableToolbar = useMemo(
