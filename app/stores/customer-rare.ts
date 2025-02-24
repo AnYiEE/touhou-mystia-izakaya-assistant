@@ -38,7 +38,7 @@ import {
 	toSet,
 	union,
 } from '@/utilities';
-import {Beverage, Clothes, Cooker, CustomerRare, Ingredient, Ornament, Partner, Recipe} from '@/utils';
+import {Beverage, Clothes, Cooker, CustomerRare, Ingredient, Meal, Ornament, Partner, Recipe} from '@/utils';
 import type {TRecipe} from '@/utils/types';
 
 export interface ICustomerOrder {
@@ -51,6 +51,7 @@ const instance_clothes = Clothes.getInstance();
 const instance_cooker = Cooker.getInstance();
 const instance_customer = CustomerRare.getInstance();
 const instance_ingredient = Ingredient.getInstance();
+const instance_meal = Meal.getInstance('customer_rare');
 const instance_ornament = Ornament.getInstance();
 const instance_partner = Partner.getInstance();
 const instance_recipe = Recipe.getInstance();
@@ -84,6 +85,7 @@ const state = {
 		cooker: instance_cooker,
 		customer: instance_customer,
 		ingredient: instance_ingredient,
+		meal: instance_meal,
 		ornament: instance_ornament,
 		partner: instance_partner,
 		recipe: instance_recipe,
