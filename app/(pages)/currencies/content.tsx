@@ -11,7 +11,7 @@ import ItemPopoverCard from '@/components/itemPopoverCard';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 
-import {type ICurrency} from '@/data';
+import {type ICurrency, type TCurrencyName} from '@/data';
 // import {globalStore as store} from '@/stores';
 import {type Currency} from '@/utils';
 import type {TItemData} from '@/utils/types';
@@ -96,12 +96,12 @@ export default memo<IProps>(function Content({data}) {
 																>
 																	<Sprite
 																		target="currency"
-																		name={target.price.currency as never}
+																		name={target.price.currency as TCurrencyName}
 																		size={1.25}
 																		onPress={() => {
 																			openWindow(
 																				'currencies',
-																				target.price.currency as never
+																				target.price.currency as TCurrencyName
 																			);
 																		}}
 																		aria-label={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}

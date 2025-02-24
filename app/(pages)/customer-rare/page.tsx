@@ -107,42 +107,41 @@ export default function CustomerRare() {
 		spriteTarget: 'customer_rare',
 	});
 
-	const customerSelectConfig = useMemo(
-		() =>
-			[
-				{
-					items: allCustomerDlcs,
-					label: 'DLC',
-					selectedKeys: customerFilterDlcs,
-					setSelectedKeys: customerStore.persistence.customer.filters.dlcs.set,
-				},
-				{
-					items: allCustomerPlaces,
-					label: '出没地区（包含）',
-					selectedKeys: customerFilterPlaces,
-					setSelectedKeys: customerStore.persistence.customer.filters.places.set,
-				},
-				{
-					items: allCustomerPlaces,
-					label: '出没地区（排除）',
-					selectedKeys: customerFilterNoPlaces,
-					setSelectedKeys: customerStore.persistence.customer.filters.noPlaces.set,
-				},
-				{
-					items: allCustomerNames,
-					label: '额外包含',
-					selectedKeys: customerFilterIncludes,
-					setSelectedKeys: customerStore.persistence.customer.filters.includes.set,
-					spriteTarget: 'customer_rare',
-				},
-				{
-					items: allCustomerNames,
-					label: '额外排除',
-					selectedKeys: customerFilterExcludes,
-					setSelectedKeys: customerStore.persistence.customer.filters.excludes.set,
-					spriteTarget: 'customer_rare',
-				},
-			] as const satisfies TSelectConfig,
+	const customerSelectConfig = useMemo<TSelectConfig>(
+		() => [
+			{
+				items: allCustomerDlcs,
+				label: 'DLC',
+				selectedKeys: customerFilterDlcs,
+				setSelectedKeys: customerStore.persistence.customer.filters.dlcs.set,
+			},
+			{
+				items: allCustomerPlaces,
+				label: '出没地区（包含）',
+				selectedKeys: customerFilterPlaces,
+				setSelectedKeys: customerStore.persistence.customer.filters.places.set,
+			},
+			{
+				items: allCustomerPlaces,
+				label: '出没地区（排除）',
+				selectedKeys: customerFilterNoPlaces,
+				setSelectedKeys: customerStore.persistence.customer.filters.noPlaces.set,
+			},
+			{
+				items: allCustomerNames,
+				label: '额外包含',
+				selectedKeys: customerFilterIncludes,
+				setSelectedKeys: customerStore.persistence.customer.filters.includes.set,
+				spriteTarget: 'customer_rare',
+			},
+			{
+				items: allCustomerNames,
+				label: '额外排除',
+				selectedKeys: customerFilterExcludes,
+				setSelectedKeys: customerStore.persistence.customer.filters.excludes.set,
+				spriteTarget: 'customer_rare',
+			},
+		],
 		[
 			allCustomerDlcs,
 			allCustomerNames,
@@ -220,34 +219,33 @@ export default function CustomerRare() {
 		customerStore.persistence.ingredient.pinyinSortState.set
 	);
 
-	const ingredientSelectConfig = useMemo(
-		() =>
-			[
-				{
-					items: allIngredientDlcs,
-					label: 'DLC',
-					selectedKeys: ingredientFilterDlcs,
-					setSelectedKeys: customerStore.persistence.ingredient.filters.dlcs.set,
-				},
-				{
-					items: allIngredientTags,
-					label: '食材标签（包含）',
-					selectedKeys: ingredientFilterTags,
-					setSelectedKeys: customerStore.persistence.ingredient.filters.tags.set,
-				},
-				{
-					items: allIngredientTags,
-					label: '食材标签（排除）',
-					selectedKeys: ingredientFilterNoTags,
-					setSelectedKeys: customerStore.persistence.ingredient.filters.noTags.set,
-				},
-				{
-					items: allIngredientLevels,
-					label: '等级',
-					selectedKeys: ingredientFilterLevels,
-					setSelectedKeys: customerStore.persistence.ingredient.filters.levels.set,
-				},
-			] as const satisfies TSelectConfig,
+	const ingredientSelectConfig = useMemo<TSelectConfig>(
+		() => [
+			{
+				items: allIngredientDlcs,
+				label: 'DLC',
+				selectedKeys: ingredientFilterDlcs,
+				setSelectedKeys: customerStore.persistence.ingredient.filters.dlcs.set,
+			},
+			{
+				items: allIngredientTags,
+				label: '食材标签（包含）',
+				selectedKeys: ingredientFilterTags,
+				setSelectedKeys: customerStore.persistence.ingredient.filters.tags.set,
+			},
+			{
+				items: allIngredientTags,
+				label: '食材标签（排除）',
+				selectedKeys: ingredientFilterNoTags,
+				setSelectedKeys: customerStore.persistence.ingredient.filters.noTags.set,
+			},
+			{
+				items: allIngredientLevels,
+				label: '等级',
+				selectedKeys: ingredientFilterLevels,
+				setSelectedKeys: customerStore.persistence.ingredient.filters.levels.set,
+			},
+		],
 		[
 			allIngredientDlcs,
 			allIngredientLevels,

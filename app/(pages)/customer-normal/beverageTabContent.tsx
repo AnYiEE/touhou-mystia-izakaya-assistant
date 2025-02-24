@@ -80,8 +80,8 @@ export default function BeverageTabContent() {
 	const tableSortDescriptor = customerStore.persistence.beverage.table.sortDescriptor.use();
 	const tableVisibleColumns = customerStore.beverageTableColumns.use();
 
-	const filteredData = useMemo(() => {
-		const data = instance_beverage.data as TBeveragesWithSuitability;
+	const filteredData = useMemo<TBeveragesWithSuitability>(() => {
+		const {data} = instance_beverage;
 
 		if (currentCustomerName === null) {
 			return data.map((item) => ({

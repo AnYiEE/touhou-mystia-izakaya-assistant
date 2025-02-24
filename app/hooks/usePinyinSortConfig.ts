@@ -6,12 +6,11 @@ export function usePinyinSortConfig(
 	pinyinSortState: PinyinSortState,
 	setPinyinSortState: Dispatch<SetStateAction<PinyinSortState>>
 ) {
-	const pinyinSortConfig = useMemo(
-		() =>
-			({
-				pinyinSortState,
-				setPinyinSortState,
-			}) as const satisfies IPinyinSortConfig,
+	const pinyinSortConfig = useMemo<IPinyinSortConfig>(
+		() => ({
+			pinyinSortState,
+			setPinyinSortState,
+		}),
 		[pinyinSortState, setPinyinSortState]
 	);
 

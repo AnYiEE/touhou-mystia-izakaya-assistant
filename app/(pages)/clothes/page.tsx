@@ -59,16 +59,15 @@ export default function Clothes() {
 		spriteTarget: 'clothes',
 	});
 
-	const selectConfig = useMemo(
-		() =>
-			[
-				{
-					items: allDlcs,
-					label: 'DLC',
-					selectedKeys: filterDlcs,
-					setSelectedKeys: store.persistence.filters.dlcs.set,
-				},
-			] as const satisfies TSelectConfig,
+	const selectConfig = useMemo<TSelectConfig>(
+		() => [
+			{
+				items: allDlcs,
+				label: 'DLC',
+				selectedKeys: filterDlcs,
+				setSelectedKeys: store.persistence.filters.dlcs.set,
+			},
+		],
 		[allDlcs, filterDlcs]
 	);
 

@@ -67,34 +67,33 @@ export default function Beverages() {
 		spriteTarget: 'beverage',
 	});
 
-	const selectConfig = useMemo(
-		() =>
-			[
-				{
-					items: allDlcs,
-					label: 'DLC',
-					selectedKeys: filterDlcs,
-					setSelectedKeys: store.persistence.filters.dlcs.set,
-				},
-				{
-					items: allTags,
-					label: '酒水标签（包含）',
-					selectedKeys: filterTags,
-					setSelectedKeys: store.persistence.filters.tags.set,
-				},
-				{
-					items: allTags,
-					label: '酒水标签（排除）',
-					selectedKeys: filterNoTags,
-					setSelectedKeys: store.persistence.filters.noTags.set,
-				},
-				{
-					items: allLevels,
-					label: '等级',
-					selectedKeys: filterLevels,
-					setSelectedKeys: store.persistence.filters.levels.set,
-				},
-			] as const satisfies TSelectConfig,
+	const selectConfig = useMemo<TSelectConfig>(
+		() => [
+			{
+				items: allDlcs,
+				label: 'DLC',
+				selectedKeys: filterDlcs,
+				setSelectedKeys: store.persistence.filters.dlcs.set,
+			},
+			{
+				items: allTags,
+				label: '酒水标签（包含）',
+				selectedKeys: filterTags,
+				setSelectedKeys: store.persistence.filters.tags.set,
+			},
+			{
+				items: allTags,
+				label: '酒水标签（排除）',
+				selectedKeys: filterNoTags,
+				setSelectedKeys: store.persistence.filters.noTags.set,
+			},
+			{
+				items: allLevels,
+				label: '等级',
+				selectedKeys: filterLevels,
+				setSelectedKeys: store.persistence.filters.levels.set,
+			},
+		],
 		[allDlcs, allLevels, allTags, filterDlcs, filterLevels, filterNoTags, filterTags]
 	);
 

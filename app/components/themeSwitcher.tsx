@@ -41,7 +41,7 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 	const isMounted = useMounted();
 	const isReducedMotion = useReducedMotion();
 	const [theme, setTheme] = useTheme();
-	const [selectedTheme, setSelectedTheme] = useState(toSet([theme]) as SelectionSet);
+	const [selectedTheme, setSelectedTheme] = useState<SelectionSet>(toSet([theme]));
 	const vibrate = useVibrate();
 
 	const isHighAppearance = store.persistence.highAppearance.use();

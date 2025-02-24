@@ -86,46 +86,45 @@ export default function Ingredients() {
 		spriteTarget: 'ingredient',
 	});
 
-	const selectConfig = useMemo(
-		() =>
-			[
-				{
-					items: allDlcs,
-					label: 'DLC',
-					selectedKeys: filterDlcs,
-					setSelectedKeys: store.persistence.filters.dlcs.set,
-				},
-				{
-					items: allTags,
-					label: '食材标签（包含）',
-					selectedKeys: filterTags,
-					setSelectedKeys: store.persistence.filters.tags.set,
-				},
-				{
-					items: allTags,
-					label: '食材标签（排除）',
-					selectedKeys: filterNoTags,
-					setSelectedKeys: store.persistence.filters.noTags.set,
-				},
-				{
-					items: allTypes,
-					label: '食材类别（包含）',
-					selectedKeys: filterTypes,
-					setSelectedKeys: store.persistence.filters.types.set,
-				},
-				{
-					items: allTypes,
-					label: '食材类别（排除）',
-					selectedKeys: filterNoTypes,
-					setSelectedKeys: store.persistence.filters.noTypes.set,
-				},
-				{
-					items: allLevels,
-					label: '等级',
-					selectedKeys: filterLevels,
-					setSelectedKeys: store.persistence.filters.levels.set,
-				},
-			] as const satisfies TSelectConfig,
+	const selectConfig = useMemo<TSelectConfig>(
+		() => [
+			{
+				items: allDlcs,
+				label: 'DLC',
+				selectedKeys: filterDlcs,
+				setSelectedKeys: store.persistence.filters.dlcs.set,
+			},
+			{
+				items: allTags,
+				label: '食材标签（包含）',
+				selectedKeys: filterTags,
+				setSelectedKeys: store.persistence.filters.tags.set,
+			},
+			{
+				items: allTags,
+				label: '食材标签（排除）',
+				selectedKeys: filterNoTags,
+				setSelectedKeys: store.persistence.filters.noTags.set,
+			},
+			{
+				items: allTypes,
+				label: '食材类别（包含）',
+				selectedKeys: filterTypes,
+				setSelectedKeys: store.persistence.filters.types.set,
+			},
+			{
+				items: allTypes,
+				label: '食材类别（排除）',
+				selectedKeys: filterNoTypes,
+				setSelectedKeys: store.persistence.filters.noTypes.set,
+			},
+			{
+				items: allLevels,
+				label: '等级',
+				selectedKeys: filterLevels,
+				setSelectedKeys: store.persistence.filters.levels.set,
+			},
+		],
 		[
 			allDlcs,
 			allLevels,

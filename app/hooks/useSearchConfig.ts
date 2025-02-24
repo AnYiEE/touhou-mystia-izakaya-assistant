@@ -19,15 +19,14 @@ export function useSearchConfig<T extends ValueCollection[]>({
 	setSearchValue,
 	spriteTarget,
 }: IUseSearchConfig<T>) {
-	const searchConfig = useMemo(
-		() =>
-			({
-				label,
-				searchItems,
-				searchValue,
-				setSearchValue,
-				spriteTarget: spriteTarget as TSpriteTarget,
-			}) as const satisfies ISearchConfig,
+	const searchConfig = useMemo<ISearchConfig>(
+		() => ({
+			label,
+			searchItems,
+			searchValue,
+			setSearchValue,
+			spriteTarget: spriteTarget as TSpriteTarget,
+		}),
 		[label, searchItems, searchValue, setSearchValue, spriteTarget]
 	);
 

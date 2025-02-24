@@ -186,11 +186,7 @@ export default function SavedMealCard() {
 																		<TagGroup className="h-4 flex-nowrap items-center whitespace-nowrap">
 																			{price !== 0 && (
 																				<Tags.Tag
-																					tag={
-																						(
-																							<Price>{price}</Price>
-																						) as never
-																					}
+																					tag={<Price>{price}</Price>}
 																					tagStyle={{}}
 																					className="p-0.5"
 																				/>

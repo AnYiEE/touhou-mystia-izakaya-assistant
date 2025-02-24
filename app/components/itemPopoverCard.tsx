@@ -220,7 +220,7 @@ const ItemPopoverCardComponent = memo(
 	) {
 		const openWindow = useViewInNewWindow();
 
-		const mergedTags = useMemo((): Omit<NonNullable<typeof tags>, 'beverage'> | null => {
+		const mergedTags = useMemo<Omit<NonNullable<typeof tags>, 'beverage'> | null>(() => {
 			if (tags === undefined) {
 				return null;
 			}

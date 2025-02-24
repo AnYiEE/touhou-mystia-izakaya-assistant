@@ -22,7 +22,7 @@ import {
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
 import Sprite from '@/components/sprite';
 
-import {LABEL_MAP} from '@/data';
+import {LABEL_MAP, type TItemName} from '@/data';
 import {globalStore as store} from '@/stores';
 import {checkEmpty, pinyinSort, toArray} from '@/utilities';
 import type {TSpriteTarget} from '@/utils/sprite/types';
@@ -129,7 +129,7 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 									spriteTarget ? (
 										<SelectItem
 											key={value}
-											textValue={value as string}
+											textValue={value as TItemName}
 											classNames={{
 												base: '[&>span]:inline-flex',
 											}}
@@ -139,7 +139,7 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 													<div className="h-6 w-6 overflow-hidden rounded-full">
 														<Sprite
 															target={spriteTarget}
-															name={value as never}
+															name={value as TItemName}
 															size={2.15}
 															className="-translate-x-[0.315rem] -translate-y-px"
 														/>
@@ -147,12 +147,12 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 												) : spriteTarget === 'customer_rare' ? (
 													<Sprite
 														target={spriteTarget}
-														name={value as never}
+														name={value as TItemName}
 														size={1.5}
 														className="rounded-full"
 													/>
 												) : (
-													<Sprite target={spriteTarget} name={value as never} size={1} />
+													<Sprite target={spriteTarget} name={value as TItemName} size={1} />
 												)}
 												<span className="ml-1">{value}</span>
 											</span>
