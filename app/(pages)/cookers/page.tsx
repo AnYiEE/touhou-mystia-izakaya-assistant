@@ -71,40 +71,39 @@ export default function Cookers() {
 		spriteTarget: 'cooker',
 	});
 
-	const selectConfig = useMemo(
-		() =>
-			[
-				{
-					items: allDlcs,
-					label: 'DLC',
-					selectedKeys: filterDlcs,
-					setSelectedKeys: store.persistence.filters.dlcs.set,
-				},
-				{
-					items: allCategories,
-					label: '厨具系列（包含）',
-					selectedKeys: filterCategories,
-					setSelectedKeys: store.persistence.filters.categories.set,
-				},
-				{
-					items: allCategories,
-					label: '厨具系列（排除）',
-					selectedKeys: filterNoCategories,
-					setSelectedKeys: store.persistence.filters.noCategories.set,
-				},
-				{
-					items: allTypes,
-					label: '厨具类别（包含）',
-					selectedKeys: filterTypes,
-					setSelectedKeys: store.persistence.filters.types.set,
-				},
-				{
-					items: allTypes,
-					label: '厨具类别（排除）',
-					selectedKeys: filterNoTypes,
-					setSelectedKeys: store.persistence.filters.noTypes.set,
-				},
-			] as const satisfies TSelectConfig,
+	const selectConfig = useMemo<TSelectConfig>(
+		() => [
+			{
+				items: allDlcs,
+				label: 'DLC',
+				selectedKeys: filterDlcs,
+				setSelectedKeys: store.persistence.filters.dlcs.set,
+			},
+			{
+				items: allCategories,
+				label: '厨具系列（包含）',
+				selectedKeys: filterCategories,
+				setSelectedKeys: store.persistence.filters.categories.set,
+			},
+			{
+				items: allCategories,
+				label: '厨具系列（排除）',
+				selectedKeys: filterNoCategories,
+				setSelectedKeys: store.persistence.filters.noCategories.set,
+			},
+			{
+				items: allTypes,
+				label: '厨具类别（包含）',
+				selectedKeys: filterTypes,
+				setSelectedKeys: store.persistence.filters.types.set,
+			},
+			{
+				items: allTypes,
+				label: '厨具类别（排除）',
+				selectedKeys: filterNoTypes,
+				setSelectedKeys: store.persistence.filters.noTypes.set,
+			},
+		],
 		[allCategories, allDlcs, allTypes, filterCategories, filterDlcs, filterNoCategories, filterNoTypes, filterTypes]
 	);
 

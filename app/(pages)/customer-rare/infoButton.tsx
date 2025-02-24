@@ -91,11 +91,11 @@ export default function InfoButton() {
 	const hasNegativeSpellCards =
 		hasSpellCards &&
 		'negative' in currentCustomerSpellCards &&
-		!checkEmpty(currentCustomerSpellCards.negative as unknown[]);
+		!checkEmpty<unknown>(currentCustomerSpellCards.negative);
 	const hasPositiveSpellCards =
 		hasSpellCards &&
 		'positive' in currentCustomerSpellCards &&
-		!checkEmpty(currentCustomerSpellCards.positive as unknown[]);
+		!checkEmpty<unknown>(currentCustomerSpellCards.positive);
 
 	const getDefaultExpandedKeys = () => {
 		const defaultExpandedKeys = ['description'];

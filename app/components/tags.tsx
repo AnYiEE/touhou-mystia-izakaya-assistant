@@ -1,6 +1,6 @@
 'use client';
 
-import {type ElementRef, type ForwardedRef, forwardRef, memo, useCallback, useMemo} from 'react';
+import {type ElementRef, type ForwardedRef, type JSX, forwardRef, memo, useCallback, useMemo} from 'react';
 
 import {Button, type IButtonProps, cn} from '@/design/ui/components';
 
@@ -21,7 +21,7 @@ interface ITagProps
 		Omit<IButtonProps, 'onClick' | 'onKeyDown' | 'onPress'>,
 		Partial<IPressProp<HTMLSpanElement>> {
 	isButton?: boolean;
-	tag: TTag | [TTag, string];
+	tag: TTag | [TTag, string] | JSX.Element;
 }
 
 const Tag = memo(

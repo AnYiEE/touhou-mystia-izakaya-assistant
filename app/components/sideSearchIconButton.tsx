@@ -20,6 +20,7 @@ import {
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
 import Sprite from '@/components/sprite';
 
+import {type TItemName} from '@/data';
 import {globalStore as store} from '@/stores';
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
@@ -121,7 +122,7 @@ export default memo<IProps>(function SideSearchIconButton({
 										<div className="h-6 w-6 overflow-hidden rounded-full">
 											<Sprite
 												target={spriteTarget}
-												name={value as never}
+												name={value as TItemName}
 												size={2.15}
 												className="-translate-x-[0.315rem] -translate-y-px"
 											/>
@@ -129,12 +130,12 @@ export default memo<IProps>(function SideSearchIconButton({
 									) : spriteTarget === 'customer_rare' || spriteTarget === 'partner' ? (
 										<Sprite
 											target={spriteTarget}
-											name={value as never}
+											name={value as TItemName}
 											size={1.5}
 											className="rounded-full"
 										/>
 									) : (
-										<Sprite target={spriteTarget} name={value as never} size={1} />
+										<Sprite target={spriteTarget} name={value as TItemName} size={1} />
 									)}
 									<span className="ml-1">{value}</span>
 								</span>
