@@ -8,9 +8,7 @@ import {
 	forwardRef,
 	memo,
 	useCallback,
-	useEffect,
 	useMemo,
-	useState,
 } from 'react';
 import {debounce, isNil} from 'lodash';
 
@@ -102,8 +100,6 @@ interface IShareButtonProps {
 
 const ShareButton = memo<IShareButtonProps>(function ShareButton({name}) {
 	const [params] = useParams();
-	const [isCanShare, setIsCanShare] = useState(false);
-	const [shareObject, setShareObject] = useState<ShareData>({});
 
 	const generatedUrl = useMemo(() => {
 		const newParams = new URLSearchParams(params);
@@ -113,23 +109,24 @@ const ShareButton = memo<IShareButtonProps>(function ShareButton({name}) {
 		return `${location.origin}${location.pathname}?${newParams.toString()}`;
 	}, [name, params]);
 
-	useEffect(() => {
+	const shareObject = useMemo<ShareData>(() => {
 		const text = `在${siteName}上查看【${name}】的详情`;
-		const currentShareObject = {
+
+		return {
 			text,
 			title: text,
 			url: generatedUrl,
 		};
+	}, [generatedUrl, name]);
 
-		setShareObject(currentShareObject);
-
+	const isCanShare = useMemo(() => {
 		try {
 			// For checking if the browser supports the share API.
-			setIsCanShare(navigator.canShare(currentShareObject));
+			return navigator.canShare(shareObject);
 		} catch {
-			/* empty */
+			return false;
 		}
-	}, [generatedUrl, name]);
+	}, [shareObject]);
 
 	const handlePress = useCallback(() => {
 		if (isCanShare) {
