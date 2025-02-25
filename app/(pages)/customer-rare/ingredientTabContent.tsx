@@ -11,7 +11,6 @@ import Placeholder from '@/components/placeholder';
 import PressElement from '@/components/pressElement';
 import Sprite from '@/components/sprite';
 
-import {checkIngredientEasterEgg} from './evaluateMeal';
 import type {IIngredientsTabStyle} from './types';
 import {
 	DARK_MATTER_META_MAP,
@@ -22,8 +21,8 @@ import {
 } from '@/data';
 import {customerRareStore as store} from '@/stores';
 import {checkA11yConfirmKey, checkEmpty, intersection, toArray, toGetItemWithKey, toSet, union} from '@/utilities';
-import {type Ingredient, type Recipe} from '@/utils';
-import type {TItemData, TItemDataItem} from '@/utils/types';
+import {type Ingredient} from '@/utils';
+import type {TItemData, TRecipe} from '@/utils/types';
 
 interface IProps {
 	ingredientTabStyle: IIngredientsTabStyle;
@@ -86,7 +85,7 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 	const {extraIngredients: currentRecipeExtraIngredients} = currentRecipeData;
 
 	// Checked `currentRecipe` is not null above.
-	const _nonNullableRecipe = currentRecipe as TItemDataItem<Recipe>;
+	const _nonNullableRecipe = currentRecipe as TRecipe;
 
 	const {ingredients: currentRecipeIngredients, positiveTags: currentRecipePositiveTags} = _nonNullableRecipe;
 	const currentRecipeAllIngredients = union(currentRecipeIngredients, currentRecipeExtraIngredients);
@@ -192,10 +191,11 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 						);
 
 						// The customer has a ingredient-based easter agg.
-						const {ingredient: easterEggIngredient, score: easterEggScore} = checkIngredientEasterEgg({
-							currentCustomerName,
-							currentIngredients: union(toArray(currentRecipeAllIngredients, name)),
-						});
+						const {ingredient: easterEggIngredient, score: easterEggScore} =
+							instance_customer.checkIngredientEasterEgg({
+								currentCustomerName,
+								currentIngredients: union(toArray(currentRecipeAllIngredients, name)),
+							});
 						if (
 							name === easterEggIngredient &&
 							!currentRecipeAllIngredients.includes(easterEggIngredient)

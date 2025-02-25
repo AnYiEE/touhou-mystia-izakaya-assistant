@@ -25,3 +25,6 @@ export type TItemInstance =
 
 export type TItemData<T extends TItemInstance> = T['data'];
 export type TItemDataItem<T extends TItemInstance> = TItemData<T>[number];
+
+export type TBeverage = TItemDataItem<Beverage>;
+export type TRecipe = TItemDataItem<Recipe>;

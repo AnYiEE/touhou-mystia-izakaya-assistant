@@ -2,8 +2,7 @@ import {type SortDescriptor} from '@heroui/table';
 
 import {type TabVisibilityState} from './constants';
 import {type TBeverageTag, type TRecipeTag} from '@/data';
-import {type Beverage, type Recipe} from '@/utils';
-import type {TItemDataItem} from '@/utils/types';
+import type {TBeverage, TRecipe} from '@/utils/types';
 
 export interface ICustomerTabStyle {
 	ariaLabel: string;
@@ -49,7 +48,6 @@ type TBeverageSuitability = {
 	suitability: number;
 };
 
-type TBeverage = TItemDataItem<Beverage>;
 export type TBeverageWithSuitability = TBeverage & TBeverageSuitability;
 export type TBeveragesWithSuitability = TBeverageWithSuitability[];
 
@@ -59,7 +57,6 @@ type TRecipeSuitability = {
 	suitability: number;
 };
 
-export type TRecipe = TItemDataItem<Recipe>;
 export type TRecipeWithSuitability = TRecipe & TRecipeSuitability;
 export type TRecipesWithSuitability = TRecipeWithSuitability[];
 

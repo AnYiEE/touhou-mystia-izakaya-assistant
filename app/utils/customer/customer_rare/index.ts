@@ -1,4 +1,5 @@
-import {Customer} from './base';
+import {checkIngredientEasterEgg, checkRecipeEasterEgg, evaluateMeal} from './evaluateMeal';
+import {Customer} from '../base';
 import {CUSTOMER_RARE_LIST, type TCustomerRareName, type TCustomerRares} from '@/data';
 import {Clothes} from '@/utils';
 
@@ -22,6 +23,18 @@ export class CustomerRare extends Customer<TCustomerRares> {
 		CustomerRare._instance = instance;
 
 		return instance;
+	}
+
+	public checkIngredientEasterEgg(args: Parameters<typeof checkIngredientEasterEgg>[number]) {
+		return checkIngredientEasterEgg(args);
+	}
+
+	public checkRecipeEasterEgg(args: Parameters<typeof checkRecipeEasterEgg>[number]) {
+		return checkRecipeEasterEgg(args);
+	}
+
+	public evaluateMeal(args: Parameters<typeof evaluateMeal>[number]) {
+		return evaluateMeal(args);
 	}
 
 	public getTachiePath(name: TCustomerRareName | null) {
