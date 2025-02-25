@@ -1,4 +1,5 @@
-import {Customer} from './base';
+import {checkEasterEgg, evaluateMeal} from './evaluateMeal';
+import {Customer} from '../base';
 import {CUSTOMER_NORMAL_LIST, type TCustomerNormals} from '@/data';
 
 export class CustomerNormal extends Customer<TCustomerNormals> {
@@ -14,5 +15,13 @@ export class CustomerNormal extends Customer<TCustomerNormals> {
 		CustomerNormal._instance = instance;
 
 		return instance;
+	}
+
+	public checkEasterEgg(args: Parameters<typeof checkEasterEgg>[number]) {
+		return checkEasterEgg(args);
+	}
+
+	public evaluateMeal(args: Parameters<typeof evaluateMeal>[number]) {
+		return evaluateMeal(args);
 	}
 }

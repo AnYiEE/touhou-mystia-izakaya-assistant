@@ -21,8 +21,7 @@ import {
 } from '@/data';
 import {customerNormalStore as store} from '@/stores';
 import {checkA11yConfirmKey, checkEmpty, intersection, toArray, toGetItemWithKey, toSet, union} from '@/utilities';
-import {type Recipe} from '@/utils';
-import type {TItemDataItem} from '@/utils/types';
+import type {TRecipe} from '@/utils/types';
 
 export default memo<IIngredientTabContentProps>(function IngredientsTabContent({ingredientTabStyle, sortedData}) {
 	const vibrate = useVibrate();
@@ -82,7 +81,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 	const {extraIngredients: currentRecipeExtraIngredients} = currentRecipeData;
 
 	// Checked `currentRecipe` is not null above.
-	const _nonNullableRecipe = currentRecipe as TItemDataItem<Recipe>;
+	const _nonNullableRecipe = currentRecipe as TRecipe;
 
 	const {ingredients: currentRecipeIngredients, positiveTags: currentRecipePositiveTags} = _nonNullableRecipe;
 

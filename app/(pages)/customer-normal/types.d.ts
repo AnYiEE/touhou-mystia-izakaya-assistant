@@ -1,5 +1,5 @@
-import type {TRecipe} from '@/(pages)/customer-rare/types';
 import {type TRecipeTag} from '@/data';
+import type {TRecipe} from '@/utils/types';
 
 type TRecipeSuitability = {
 	matchedPositiveTags: TRecipeTag[];
@@ -13,6 +13,5 @@ export type {
 	ICustomerTabStyle,
 	TBeverageWithSuitability,
 	TBeveragesWithSuitability,
-	TRecipe,
 	TTab,
 } from '@/(pages)/customer-rare/types';

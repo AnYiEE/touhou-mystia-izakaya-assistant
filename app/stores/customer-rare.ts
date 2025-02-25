@@ -6,9 +6,8 @@ import {type Selection} from '@heroui/table';
 
 import {TabVisibilityState, beverageTableColumns, recipeTableColumns} from '@/(pages)/customer-rare/constants';
 import {type TTableSortDescriptor as TBeverageTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
-import {evaluateMeal} from '@/(pages)/customer-rare/evaluateMeal';
 import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
-import type {TRecipe, TTab} from '@/(pages)/customer-rare/types';
+import type {TTab} from '@/(pages)/customer-rare/types';
 import {trackEvent} from '@/components/analytics';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
@@ -40,6 +39,7 @@ import {
 	union,
 } from '@/utilities';
 import {Beverage, Clothes, Cooker, CustomerRare, Ingredient, Ornament, Partner, Recipe} from '@/utils';
+import type {TRecipe} from '@/utils/types';
 
 export interface ICustomerOrder {
 	beverageTag: TBeverageTag | null;
@@ -738,7 +738,7 @@ export const customerRareStore = store(state, {
 				);
 			}
 			const recipeTagsWithTrend = currentStore.shared.recipe.tagsWithTrend.get();
-			const rating = evaluateMeal({
+			const rating = instance_customer.evaluateMeal({
 				currentBeverageTags: beverageTags,
 				currentCustomerBeverageTags: customerBeverageTags,
 				currentCustomerName: customerName,
@@ -801,7 +801,7 @@ export const customerRareStore = store(state, {
 				popularTrend,
 				isFamousShop
 			);
-			const rating = evaluateMeal({
+			const rating = instance_customer.evaluateMeal({
 				currentBeverageTags: beverageTags,
 				currentCustomerBeverageTags: customerBeverageTags,
 				currentCustomerName: customerName,

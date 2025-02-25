@@ -33,7 +33,6 @@ import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 
 import {recipeTableColumns as tableColumns} from './constants';
-import {checkRecipeEasterEgg} from './evaluateMeal';
 import type {ITableColumn, ITableSortDescriptor, TRecipeWithSuitability, TRecipesWithSuitability} from './types';
 import {CUSTOMER_RARE_TAG_STYLE, LABEL_MAP} from '@/data';
 import {customerRareStore as customerStore, globalStore} from '@/stores';
@@ -131,7 +130,7 @@ export default function RecipeTabContent() {
 			const composedRecipeTags = composeTagsWithPopularTrend(item.ingredients, item.positiveTags);
 			const recipeTagsWithTrend = calculateTagsWithTrend(composedRecipeTags);
 
-			const {recipe: easterEggRecipe, score: easterEggScore} = checkRecipeEasterEgg({
+			const {recipe: easterEggRecipe, score: easterEggScore} = instance_customer.checkRecipeEasterEgg({
 				currentCustomerName,
 				currentRecipeName: item.name,
 			});

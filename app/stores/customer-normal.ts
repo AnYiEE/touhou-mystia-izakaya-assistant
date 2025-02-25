@@ -6,9 +6,8 @@ import {type Selection} from '@heroui/table';
 
 import {TabVisibilityState, beverageTableColumns, recipeTableColumns} from '@/(pages)/customer-normal/constants';
 import {type TTableSortDescriptor as TBeverageTableSortDescriptor} from '@/(pages)/customer-normal/beverageTabContent';
-import {evaluateMeal} from '@/(pages)/customer-normal/evaluateMeal';
 import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)/customer-normal/recipeTabContent';
-import type {TRecipe, TTab} from '@/(pages)/customer-normal/types';
+import type {TTab} from '@/(pages)/customer-normal/types';
 import {trackEvent} from '@/components/analytics';
 import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
 
@@ -38,6 +37,7 @@ import {
 	toSet,
 } from '@/utilities';
 import {Beverage, Clothes, CustomerNormal, Ingredient, Recipe} from '@/utils';
+import type {TRecipe} from '@/utils/types';
 
 const instance_beverage = Beverage.getInstance();
 const instance_clothes = Clothes.getInstance();
@@ -626,7 +626,7 @@ export const customerNormalStore = store(state, {
 				recipe = instance_recipe.getPropsByName(recipeData.name);
 			}
 			const isFamousShop = currentStore.shared.customer.famousShop.get();
-			const rating = evaluateMeal({
+			const rating = instance_customer.evaluateMeal({
 				currentCustomerName: customerName,
 				currentCustomerPopularTrend: customerPopularTrend,
 				currentCustomerPositiveTags: customerPositiveTags,
@@ -657,7 +657,7 @@ export const customerNormalStore = store(state, {
 			extraIngredients.forEach((ingredient) => {
 				extraTags.push(...(instance_ingredient.getPropsByName(ingredient, 'tags') as TPopularTag[]));
 			});
-			const rating = evaluateMeal({
+			const rating = instance_customer.evaluateMeal({
 				currentCustomerName: customerName,
 				currentCustomerPopularTrend: popularTrend,
 				currentCustomerPositiveTags: instance_customer.getPropsByName(customerName, 'positiveTags'),

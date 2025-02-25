@@ -1,7 +1,7 @@
-import type {TRecipe} from './types';
 import {DYNAMIC_TAG_MAP, type TCustomerNormalName, type TRatingKey, type TRecipeName, type TRecipeTag} from '@/data';
 import {type IPopularTrend, type TPopularTag} from '@/types';
 import {intersection} from '@/utilities';
+import type {TRecipe} from '@/utils/types';
 
 interface IParameters {
 	currentCustomerName: TCustomerNormalName;
