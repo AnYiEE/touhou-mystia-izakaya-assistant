@@ -251,6 +251,7 @@ export default tsEslint.config(
 			'unicorn/no-array-reduce': 'off',
 			'unicorn/no-document-cookie': 'off',
 			'unicorn/no-keyword-prefix': 'off',
+			'unicorn/no-named-default': 'off',
 			'unicorn/no-nested-ternary': 'off',
 			'unicorn/no-new-array': 'off',
 			'unicorn/no-null': 'off',

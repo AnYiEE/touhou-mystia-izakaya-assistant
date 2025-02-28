@@ -7,8 +7,8 @@ import {ThemeScript} from '@/design/hooks';
 
 import Polyfills from '@/polyfills';
 import Providers, {AddHighAppearance} from '@/providers';
-import Footer from '@/(pages)/footer';
-import Navbar from '@/(pages)/navbar';
+import Footer from '@/(pages)/(layout)/footer';
+import Navbar from '@/(pages)/(layout)/navbar';
 import Analytics from '@/components/analytics';
 import ErrorBoundary from '@/components/errorBoundary';
 
