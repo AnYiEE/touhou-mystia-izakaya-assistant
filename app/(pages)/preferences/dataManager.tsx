@@ -19,7 +19,7 @@ import {
 	useReducedMotion,
 } from '@/design/ui/components';
 
-import {showProgress} from '@/(pages)/navbar';
+import {showProgress} from '@/(pages)/(layout)/navbar';
 import {trackEvent} from '@/components/analytics';
 import {
 	customerRareTutorialPathname,
