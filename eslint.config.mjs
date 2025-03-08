@@ -29,7 +29,7 @@ export default tsEslint.config(
 			comments.recommended,
 			eslint.configs.recommended,
 			tsEslint.configs.strictTypeChecked,
-			unicorn.configs['flat/recommended'],
+			unicorn.configs['recommended'],
 			...flatCompat.extends('next/core-web-vitals', 'next/typescript'),
 			prettier,
 		],

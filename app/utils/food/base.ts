@@ -28,8 +28,8 @@ export class Food<TTarget extends IFood[]> extends Item<TTarget> {
 	 * @description Obtain the common elements and their counts between two different string arrays.
 	 * The type of the returned `commonTags` is changed to that of the second array to avoid type errors.
 	 */
-	protected getCommonTags<T extends string, U extends string>(arrayA: ReadonlyArray<T>, arrayB: ReadonlyArray<U>) {
-		const intersectionArray = intersection(arrayA as unknown as U[], arrayB);
+	protected getCommonTags<T extends string>(arrayA: ReadonlyArray<string>, arrayB: ReadonlyArray<T>) {
+		const intersectionArray = intersection(arrayA as T[], arrayB);
 
 		return {
 			commonTags: intersectionArray,
