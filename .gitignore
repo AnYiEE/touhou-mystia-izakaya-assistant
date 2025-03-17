@@ -6,7 +6,8 @@
 /out/
 
 # production
-/public/*serviceworker*.js
+/public/registerServiceWorker.js
+/public/serviceWorker.js
 /*offline*.zip
 
 # local env files
