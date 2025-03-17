@@ -1,14 +1,11 @@
 'use client';
 
-import {useCallback, useMemo, useState} from 'react';
+import {useMemo} from 'react';
 
-import {Spinner} from '@heroui/spinner';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faQq, faWeixin} from '@fortawesome/free-brands-svg-icons';
+import {faQq} from '@fortawesome/free-brands-svg-icons';
 
-import {Button, Link, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@/design/ui/components';
+import {Button, Link, Tooltip} from '@/design/ui/components';
 
-import {trackEvent} from '@/components/analytics';
 import FontAwesomeIconLink from '@/components/fontAwesomeIconLink';
 import Placeholder from '@/components/placeholder';
 import QRCode from '@/components/qrCode';
@@ -19,8 +16,6 @@ import {siteConfig} from '@/configs';
 const {links, shortName} = siteConfig;
 
 export default function Home() {
-	const [wxGroupUrl, setWxGroupUrl] = useState<string>();
-
 	const qrCodeDescription = useMemo(
 		() => (
 			<>
@@ -31,54 +26,6 @@ export default function Home() {
 		),
 		[]
 	);
-
-	const getWxGroupUrl = useCallback(() => {
-		if (wxGroupUrl !== undefined) {
-			return;
-		}
-		void fetch(links.wxGroup.href, {
-			cache: 'no-cache',
-		})
-			.then(
-				(response) =>
-					response.json() as Promise<{
-						url: string;
-					}>
-			)
-			.then(({url}) => {
-				setWxGroupUrl(url);
-			})
-			.catch((error: unknown) => {
-				console.error(error);
-				if (error instanceof Error) {
-					trackEvent(trackEvent.category.Error, 'QRCode', error.name, error.message);
-				}
-			});
-	}, [wxGroupUrl]);
-
-	const wxGroupQrCode = useMemo(() => {
-		if (wxGroupUrl === undefined) {
-			return (
-				<div className="flex h-40 w-32 flex-col items-center justify-between px-2">
-					<div className="m-2 flex h-full w-full items-center justify-center bg-background/70 dark:bg-background/20">
-						<Spinner
-							color="default"
-							title="加载中"
-							classNames={{
-								base: 'flex',
-							}}
-						/>
-					</div>
-					<p className="text-center text-tiny">{qrCodeDescription}</p>
-				</div>
-			);
-		}
-		return (
-			<QRCode text={wxGroupUrl} className="px-0.5 pt-0.5">
-				{qrCodeDescription}
-			</QRCode>
-		);
-	}, [qrCodeDescription, wxGroupUrl]);
 
 	return (
 		<div className="grid min-h-main-content grid-cols-1 lg:grid-cols-2 xl:pt-8">
@@ -126,39 +73,6 @@ export default function Home() {
 									className="rounded-small text-xl text-qq-blue hover:opacity-hover hover:brightness-100 active:opacity-disabled"
 								/>
 							</Tooltip>
-							<Popover
-								showArrow
-								offset={11}
-								onOpenChange={getWxGroupUrl}
-								classNames={{
-									content: 'p-0 pb-1',
-								}}
-							>
-								<Tooltip
-									showArrow
-									content={wxGroupQrCode}
-									onOpenChange={getWxGroupUrl}
-									classNames={{
-										content: 'p-0 pb-1',
-									}}
-								>
-									<span className="flex">
-										<PopoverTrigger>
-											<Button
-												isIconOnly
-												radius="none"
-												variant="light"
-												role="link"
-												title={links.wxGroup.label}
-												className="h-min w-min min-w-min rounded-small text-xl text-wx-green active:opacity-disabled data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
-											>
-												<FontAwesomeIcon icon={faWeixin} size="1x" />
-											</Button>
-										</PopoverTrigger>
-									</span>
-								</Tooltip>
-								<PopoverContent>{wxGroupQrCode}</PopoverContent>
-							</Popover>
 							<Tooltip
 								showArrow
 								content={<QRCode text={links.rednoteGroup.href}>{qrCodeDescription}</QRCode>}

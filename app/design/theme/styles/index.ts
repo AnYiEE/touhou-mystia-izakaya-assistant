@@ -15,7 +15,6 @@ export const getExtendConfig = (cdnUrl: string) =>
 			...ratingColors,
 			'qq-blue': '#1479d7',
 			rednote: '#ff2741',
-			'wx-green': '#07c160',
 		},
 		gridTemplateColumns: {
 			'fill-12': 'repeat(auto-fill,3rem)',

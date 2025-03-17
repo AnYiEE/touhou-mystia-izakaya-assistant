@@ -8,25 +8,19 @@ import {cn} from '@/design/ui/components';
 
 import {type IQRCode} from 'next-qrcode/dist/useQRCode';
 
-interface IProps extends Omit<IQRCode, 'logo'>, Pick<HTMLDivElementAttributes, 'className'> {
-	type?: 'image' | 'svg';
-}
+interface IProps extends Omit<IQRCode, 'logo'>, Pick<HTMLDivElementAttributes, 'className'> {}
 
-export default memo<PropsWithChildren<IProps>>(function QRCode({children, className, options, text, type = 'svg'}) {
-	const {Image, SVG} = useQRCode();
-
-	const isImage = type === 'image';
-
-	const Component = isImage ? Image : SVG;
+export default memo<PropsWithChildren<IProps>>(function QRCode({children, className, options, text}) {
+	const {SVG} = useQRCode();
 
 	return (
 		<div className="flex flex-col items-center">
 			<div aria-hidden className={cn('w-32 dark:invert', className)}>
-				<Component
+				<SVG
 					options={{
 						color: {
-							dark: isImage ? '' : '#000000ff',
-							light: isImage ? '' : '#ffffff00',
+							dark: '#000000ff',
+							light: '#ffffff00',
 							...options?.color,
 						},
 						errorCorrectionLevel: 'L',

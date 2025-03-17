@@ -2,8 +2,8 @@
 import PACKAGE from '@/../package.json';
 import type {ISiteConfig, TLink, TNavItem} from './types';
 
-function getShortUrl<T extends string>(key: T, isJson?: boolean) {
-	return `${process.env.SHORT_LINK_URL ?? '/#'}/${key}${isJson ? '.json' : ''}` as const;
+function getShortUrl(key: string) {
+	return `${process.env.SHORT_LINK_URL ?? '/#'}/${key}`;
 }
 
 const {hostname: domain} = new URL(process.env.BASE_URL ?? PACKAGE.homepage);
@@ -154,10 +154,6 @@ export const siteConfig = {
 		steam: {
 			label: "Steam上的东方夜雀食堂 - Touhou Mystia's Izakaya",
 			href: 'https://store.steampowered.com/app/1584090/__Touhou_Mystias_Izakaya',
-		},
-		wxGroup: {
-			label: '扫码加入微信群',
-			href: getShortUrl('3hGM9A', true),
 		},
 	},
 	cdnUrl: isOffline ? '' : (process.env.CDN_URL ?? ''),
