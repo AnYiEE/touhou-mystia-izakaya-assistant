@@ -103,19 +103,19 @@
 		"@heroui/tooltip": "2.2.8",
 		"compare-versions": "^6.1.1",
 		"driver.js": "^1.3.5",
-		"framer-motion": "^12.4.10",
+		"framer-motion": "^12.5.0",
 		"lodash": "^4.17.21",
-		"next": "15.1.7",
+		"next": "^15.2.3",
 		"next-qrcode": "^2.5.1",
 		"pinyin-pro": "^3.26.0",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"react-transition-progress": "github:AnYiEE/react-transition-progress",
-		"ua-parser-js": "^2.0.2",
+		"ua-parser-js": "^2.0.3",
 		"use-breakpoint": "^4.0.6"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.26.9",
+		"@babel/core": "^7.26.10",
 		"@babel/preset-env": "^7.26.9",
 		"@commitlint/cli": "^19.8.0",
 		"@commitlint/config-conventional": "^19.8.0",
@@ -127,36 +127,36 @@
 		"@types/eslint-config-prettier": "^6.11.3",
 		"@types/lint-staged": "^13.3.0",
 		"@types/lodash": "^4.17.16",
-		"@types/node": "^22.13.9",
+		"@types/node": "^22.13.10",
 		"@types/react": "^18.3.18",
 		"@types/react-dom": "^18.3.5",
-		"@types/serviceworker": "^0.0.123",
+		"@types/serviceworker": "^0.0.126",
 		"@types/ua-parser-js": "^0.7.39",
 		"adm-zip": "^0.5.16",
 		"cross-env": "^7.0.3",
 		"dotenv": "^16.4.7",
 		"eslint": "^9.22.0",
-		"eslint-config-next": "15.1.7",
+		"eslint-config-next": "^15.2.3",
 		"eslint-config-prettier": "^10.1.1",
 		"eslint-plugin-compat": "^6.0.2",
 		"eslint-plugin-sort-destructure-keys": "^2.0.0",
 		"eslint-plugin-unicorn": "^57.0.0",
 		"globals": "^16.0.0",
 		"husky": "^9.1.7",
-		"lint-staged": "^15.4.3",
+		"lint-staged": "^15.5.0",
 		"only-allow": "^1.2.1",
 		"postcss": "^8.5.3",
 		"postcss-flexbugs-fixes": "^5.0.2",
 		"postcss-preset-env": "^10.1.5",
 		"prettier": "^3.5.3",
 		"prettier-plugin-tailwindcss": "^0.6.11",
-		"sass": "^1.85.1",
-		"stylelint": "^16.15.0",
+		"sass": "^1.86.0",
+		"stylelint": "^16.16.0",
 		"stylelint-config-standard-scss": "^14.0.0",
 		"stylelint-scss": "^6.11.1",
 		"tailwindcss": "^3.4.17",
 		"typescript": "^5.8.2",
-		"typescript-eslint": "^8.26.0"
+		"typescript-eslint": "^8.26.1"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
@@ -169,7 +169,16 @@
 		},
 		"patchedDependencies": {
 			"@heroui/use-aria-button": "patches/@heroui__use-aria-button.patch",
-			"@heroui/use-aria-link": "patches/@heroui__use-aria-link.patch"
+			"@heroui/use-aria-link": "patches/@heroui__use-aria-link.patch",
+			"next": "patches/next.patch"
+		},
+		"updateConfig": {
+			"ignoreDependencies": [
+				"@heroui/*",
+				"@react-aria/*",
+				"@react-stately/*",
+				"@react-types/*"
+			]
 		}
 	}
 }

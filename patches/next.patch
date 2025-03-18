@@ -1,0 +1,31 @@
+diff --git a/dist/export/index.js b/dist/export/index.js
+index 319744f37f0e44cf6f1287abca8ab7c91449b4b9..30b4341fb822822df103f9caed83178ac07a90ed 100644
+--- a/dist/export/index.js
++++ b/dist/export/index.js
+@@ -284,11 +284,7 @@ async function exportAppImpl(dir, options, span) {
+             if ((routesManifest == null ? void 0 : (_routesManifest_rewrites = routesManifest.rewrites) == null ? void 0 : (_routesManifest_rewrites_beforeFiles = _routesManifest_rewrites.beforeFiles) == null ? void 0 : _routesManifest_rewrites_beforeFiles.length) > 0) {
+                 const hasInterceptionRouteRewrite = routesManifest.rewrites.beforeFiles.some(_generateinterceptionroutesrewrites.isInterceptionRouteRewrite);
+                 if (hasInterceptionRouteRewrite) {
+-                    throw Object.defineProperty(new ExportError(`Intercepting routes are not supported with static export.\nRead more: https://nextjs.org/docs/app/building-your-application/deploying/static-exports#unsupported-features`), "__NEXT_ERROR_CODE", {
+-                        value: "E626",
+-                        enumerable: false,
+-                        configurable: true
+-                    });
++                    _log.warn(`Intercepting routes are not supported with static export.\nRead more: https://nextjs.org/docs/app/building-your-application/deploying/static-exports#unsupported-features`);
+                 }
+             }
+             const actionIds = [
+diff --git a/dist/server/dev/next-dev-server.js b/dist/server/dev/next-dev-server.js
+index e1d68a6813a974d79eaafe16c93f4dcbbe2aceca..57d6980762a0bcf01737dc1eaa3752c6367bf985 100644
+--- a/dist/server/dev/next-dev-server.js
++++ b/dist/server/dev/next-dev-server.js
+@@ -438,8 +438,7 @@ class DevServer extends _nextserver.default {
+     getinterceptionRoutePatterns() {
+         const rewrites = (0, _generateinterceptionroutesrewrites.generateInterceptionRoutesRewrites)(Object.keys(this.appPathRoutes ?? {}), this.nextConfig.basePath).map((route)=>new RegExp((0, _buildcustomroute.buildCustomRoute)('rewrite', route).regex));
+         if (this.nextConfig.output === 'export' && rewrites.length > 0) {
+-            _log.error('Intercepting routes are not supported with static export.\nRead more: https://nextjs.org/docs/app/building-your-application/deploying/static-exports#unsupported-features');
+-            process.exit(1);
++            _log.warn('Intercepting routes are not supported with static export.\nRead more: https://nextjs.org/docs/app/building-your-application/deploying/static-exports#unsupported-features');
+         }
+         return rewrites ?? [];
+     }
