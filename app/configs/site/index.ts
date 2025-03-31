@@ -143,12 +143,16 @@ export const siteConfig = {
 			label: '首页',
 			href: '/',
 		},
-		qqGroup: {
-			label: '点击加入QQ群',
+		qqGroup1: {
+			label: 'QQ一群',
 			href: getShortUrl('l40oUu'),
 		},
+		qqGroup2: {
+			label: 'QQ二群',
+			href: getShortUrl('KCo1fT'),
+		},
 		rednoteGroup: {
-			label: '扫码加入小红书群',
+			label: '小红书群',
 			href: getShortUrl('Y9YVAt'),
 		},
 		steam: {

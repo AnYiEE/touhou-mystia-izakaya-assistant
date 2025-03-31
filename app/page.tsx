@@ -4,9 +4,9 @@ import {useMemo} from 'react';
 
 import {faQq} from '@fortawesome/free-brands-svg-icons';
 
-import {Button, Link, Tooltip} from '@/design/ui/components';
+import {Button, Link, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@/design/ui/components';
 
-import FontAwesomeIconLink from '@/components/fontAwesomeIconLink';
+import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Placeholder from '@/components/placeholder';
 import QRCode from '@/components/qrCode';
 import Rednote from '@/components/rednote';
@@ -16,13 +16,35 @@ import {siteConfig} from '@/configs';
 const {links, shortName} = siteConfig;
 
 export default function Home() {
-	const qrCodeDescription = useMemo(
+	const qqCodeContent = useMemo(
 		() => (
-			<>
-				分享经验、交流心得
-				<br />
-				提出建议、反馈问题
-			</>
+			<div className="flex flex-col items-center">
+				<p className="pt-1 text-xs leading-none">分享经验、交流心得、提出建议、反馈问题</p>
+				<div className="flex">
+					<QRCode text={links.qqGroup1.href}>
+						<Link
+							isExternal
+							showAnchorIcon
+							href={links.qqGroup1.href}
+							title={links.qqGroup1.label}
+							className="text-xs text-foreground"
+						>
+							点击加入{links.qqGroup1.label}
+						</Link>
+					</QRCode>
+					<QRCode text={links.qqGroup2.href}>
+						<Link
+							isExternal
+							showAnchorIcon
+							href={links.qqGroup2.href}
+							title={links.qqGroup2.label}
+							className="text-xs text-foreground"
+						>
+							点击加入{links.qqGroup2.label}
+						</Link>
+					</QRCode>
+				</div>
+			</div>
 		),
 		[]
 	);
@@ -58,24 +80,37 @@ export default function Home() {
 					<div className="flex flex-wrap items-end leading-none">
 						<p className="text-foreground-500 lg:hidden">官方群：</p>
 						<div className="flex items-center gap-2 lg:gap-4">
-							<Tooltip
+							<Popover
 								showArrow
-								content={<QRCode text={links.qqGroup.href}>{qrCodeDescription}</QRCode>}
 								classNames={{
-									content: 'p-0 pb-1',
+									content: 'px-0 pb-1',
 								}}
 							>
-								<FontAwesomeIconLink
-									isExternal
-									icon={faQq}
-									href={links.qqGroup.href}
-									title={links.qqGroup.label}
-									className="rounded-small text-xl text-qq-blue hover:opacity-hover hover:brightness-100 active:opacity-disabled"
-								/>
-							</Tooltip>
+								<Tooltip
+									showArrow
+									content={qqCodeContent}
+									classNames={{
+										content: 'px-0 pb-1',
+									}}
+								>
+									<span className="inline-flex">
+										<PopoverTrigger>
+											<FontAwesomeIconButton
+												icon={faQq}
+												variant="light"
+												aria-label="夜雀助手QQ群加群链接和二维码"
+												className="h-auto w-auto min-w-0 rounded-sm text-base text-qq-blue data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
+											/>
+										</PopoverTrigger>
+									</span>
+								</Tooltip>
+								<PopoverContent>{qqCodeContent}</PopoverContent>
+							</Popover>
 							<Tooltip
 								showArrow
-								content={<QRCode text={links.rednoteGroup.href}>{qrCodeDescription}</QRCode>}
+								content={
+									<QRCode text={links.rednoteGroup.href}>扫码加入{links.rednoteGroup.label}</QRCode>
+								}
 								classNames={{
 									content: 'p-0 pb-1',
 								}}
@@ -88,7 +123,7 @@ export default function Home() {
 									variant="light"
 									href={links.rednoteGroup.href}
 									role="link"
-									title={links.rednoteGroup.label}
+									title={`点击加入${links.rednoteGroup.label}`}
 									className="h-5 active:opacity-disabled data-[hover=true]:!opacity-hover data-[pressed=true]:!opacity-hover"
 								>
 									<Rednote />

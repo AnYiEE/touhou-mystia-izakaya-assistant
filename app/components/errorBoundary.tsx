@@ -56,14 +56,23 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({e
 			<Button>点此重试（仅刷新页面）</Button>
 			<Button shouldClear>点此重试（将清空已保存的数据）</Button>
 			<p className="text-center text-small">
-				请完整复制或截图上方的错误信息，
+				请完整复制或截图上方的错误信息， 点击加入
 				<a
-					href={links.qqGroup.href}
+					href={links.qqGroup1.href}
 					referrerPolicy="same-origin"
 					target="_blank"
 					className="font-medium text-primary hover:underline hover:underline-offset-2"
 				>
-					{links.qqGroup.label}
+					{links.qqGroup1.label}
+				</a>
+				或
+				<a
+					href={links.qqGroup2.href}
+					referrerPolicy="same-origin"
+					target="_blank"
+					className="font-medium text-primary hover:underline hover:underline-offset-2"
+				>
+					{links.qqGroup2.label}
 				</a>
 				以反馈问题。
 			</p>
