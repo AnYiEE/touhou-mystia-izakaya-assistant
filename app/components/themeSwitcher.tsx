@@ -7,7 +7,8 @@ import {useMounted, useVibrate} from '@/hooks';
 
 import {type Selection} from '@heroui/table';
 import {Spinner} from '@heroui/spinner';
-import {faCircleHalfStroke, faMoon, faSun} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
+import {faCircleHalfStroke, faDesktop, faMoon, faSun} from '@fortawesome/free-solid-svg-icons';
 
 import {
 	Dropdown,
@@ -25,6 +26,12 @@ import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import {globalStore as store} from '@/stores';
 import {toGetValueCollection, toSet} from '@/utilities';
 
+const THEME_ICON_MAP = {
+	dark: faMoon,
+	light: faSun,
+	system: faCircleHalfStroke,
+} as const satisfies Record<TTheme, FontAwesomeIconProps['icon']>;
+
 const THEME_LABEL_MAP = {
 	dark: '深色主题',
 	light: '浅色主题',
@@ -32,6 +39,12 @@ const THEME_LABEL_MAP = {
 	switcher: '切换主题',
 	system: '跟随系统',
 } as const satisfies Record<TTheme, string> & Record<'list' | 'switcher', string>;
+
+const THEME_LABEL_ICON_MAP = {
+	dark: faMoon,
+	light: faSun,
+	system: faDesktop,
+} as const satisfies Record<TTheme, FontAwesomeIconProps['icon']>;
 
 interface IProps extends Pick<IDropdownProps, 'className'> {
 	isMenu?: boolean;
@@ -63,15 +76,10 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 		}
 	}, [selectedTheme, theme]);
 
-	const themeIcon = useMemo(() => {
-		if (selectedTheme.has(THEME_MAP.LIGHT)) {
-			return faSun;
-		}
-		if (selectedTheme.has(THEME_MAP.DARK)) {
-			return faMoon;
-		}
-		return faCircleHalfStroke;
-	}, [selectedTheme]);
+	const currentThemeIcon = useMemo(
+		() => THEME_ICON_MAP[selectedTheme.values().next().value as TTheme],
+		[selectedTheme]
+	);
 
 	if (!isMounted) {
 		return (
@@ -105,7 +113,7 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 					<DropdownTrigger>
 						<FontAwesomeIconButton
 							disableAnimation={isMenu}
-							icon={themeIcon}
+							icon={currentThemeIcon}
 							aria-label={THEME_LABEL_MAP.switcher}
 							className={cn(
 								'h-5 w-5 min-w-min bg-transparent !text-medium',
@@ -128,7 +136,14 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 					base: 'my-px transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40 motion-reduce:transition-none',
 				}}
 			>
-				{({value}) => <DropdownItem key={value}>{THEME_LABEL_MAP[value]}</DropdownItem>}
+				{({value}) => (
+					<DropdownItem key={value}>
+						<div className="flex items-center gap-1">
+							<FontAwesomeIcon icon={THEME_LABEL_ICON_MAP[value]} className="w-4 pb-px opacity-80" />
+							{THEME_LABEL_MAP[value]}
+						</div>
+					</DropdownItem>
+				)}
 			</DropdownMenu>
 		</Dropdown>
 	);
