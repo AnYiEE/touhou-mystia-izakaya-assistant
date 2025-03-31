@@ -58,7 +58,7 @@
 	"explorer.fileNesting.expand": false,
 	"explorer.fileNesting.patterns": {
 		"next.config.ts": "*.config.cjs, *.config.mjs, *.config.js, *.config.ts, next-env.d.ts, types.d.ts",
-		"package.json": ".*cache, .*ignore, .*rc, .editorconfig, .env*, .git*, pnpm-lock.yaml, tsconfig.json, vercel.json",
+		"package.json": ".*cache, .*ignore, .*rc, .editorconfig, .env*, .git*, pnpm-lock.yaml, pnpm-workspace.yaml, tsconfig.json, vercel.json",
 		"README*": "*.md, LICENSE"
 	},
 	"typescript.enablePromptUseWorkspaceTsdk": true,

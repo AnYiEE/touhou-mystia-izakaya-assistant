@@ -1,0 +1,8 @@
+publicHoistPattern:
+  - "*@heroui/*"
+  - "*eslint-plugin*"
+  - color2k
+  - glob
+  - immer
+  - postcss-load-config
+  - zustand
