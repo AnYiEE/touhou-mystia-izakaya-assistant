@@ -77,7 +77,10 @@ export default memo<IProps>(function Content({data}) {
 									? item
 									: Object.entries(item).map((itemObject, itemIndex) => {
 											type TFrom = Exclude<ICurrency['from'][number], string>;
-											const [method, target] = itemObject as [keyof TFrom, TFrom[keyof TFrom]];
+											const [method, target] = itemObject as [
+												keyof TFrom,
+												ExtractCollectionValue<TFrom>,
+											];
 											const isBuy = method === 'buy' && isObject(target);
 											const isTask = method === 'task' && typeof target === 'string';
 											return (

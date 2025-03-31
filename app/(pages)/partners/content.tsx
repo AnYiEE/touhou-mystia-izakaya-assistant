@@ -72,7 +72,7 @@ export default memo<IProps>(function Content({data}) {
 							? from
 							: Object.entries(from).map((fromObject, fromIndex) => {
 									type TFrom = Exclude<IPartner['from'], string>;
-									const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
+									const [method, target] = fromObject as [keyof TFrom, ExtractCollectionValue<TFrom>];
 									const isPlace = method === 'place';
 									const isSelf = method === 'self';
 									return (

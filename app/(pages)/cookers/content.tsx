@@ -102,7 +102,10 @@ export default memo<IProps>(function Content({data}) {
 									? item
 									: Object.entries(item).map((itemObject, itemIndex) => {
 											type TFrom = Exclude<ICooker['from'][number], string>;
-											const [method, target] = itemObject as [keyof TFrom, TFrom[keyof TFrom]];
+											const [method, target] = itemObject as [
+												keyof TFrom,
+												ExtractCollectionValue<TFrom>,
+											];
 											const isBond = method === 'bond' && typeof target === 'string';
 											const isBuy = method === 'buy' && isObject(target);
 											const isSelf = method === 'self';

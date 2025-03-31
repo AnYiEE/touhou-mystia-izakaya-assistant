@@ -96,7 +96,10 @@ export default memo<IProps>(function Content({data}) {
 								? from
 								: Object.entries(from).map((fromObject, fromIndex) => {
 										type TFrom = Exclude<IRecipe['from'], string>;
-										const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
+										const [method, target] = fromObject as [
+											keyof TFrom,
+											ExtractCollectionValue<TFrom>,
+										];
 										const isBond = method === 'bond' && isObject(target) && 'level' in target;
 										const isBuy = method === 'buy' && isObject(target) && 'price' in target;
 										const isLevelUp = method === 'levelup' && Array.isArray(target);

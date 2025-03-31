@@ -19,12 +19,12 @@ import {BEVERAGE_TAG_STYLE, CUSTOMER_RATING_MAP, DARK_MATTER_META_MAP, RECIPE_TA
 import {customerRareStore as customerStore, globalStore} from '@/stores';
 import {checkEmpty, copyArray} from '@/utilities';
 
-const MoveButtonDirectionMap = {
+const moveButtonDirectionMap = {
 	down: 0,
 	up: 1,
 } as const;
 
-type TMoveButtonDirection = (typeof MoveButtonDirectionMap)[keyof typeof MoveButtonDirectionMap];
+type TMoveButtonDirection = ExtractCollectionValue<typeof moveButtonDirectionMap>;
 
 export interface IMoveButtonProps extends Pick<FontAwesomeIconProps, 'onClick'> {
 	direction: TMoveButtonDirection;
@@ -36,7 +36,7 @@ const MoveButtonComponent = memo<IMoveButtonProps>(function MoveButton({directio
 		<Tooltip
 			showArrow
 			content={
-				direction === MoveButtonDirectionMap.down
+				direction === moveButtonDirectionMap.down
 					? isDisabled
 						? '已是末项'
 						: '下移此项'
@@ -48,7 +48,7 @@ const MoveButtonComponent = memo<IMoveButtonProps>(function MoveButton({directio
 			size="sm"
 		>
 			<FontAwesomeIcon
-				icon={direction === MoveButtonDirectionMap.down ? faArrowDown : faArrowUp}
+				icon={direction === moveButtonDirectionMap.down ? faArrowDown : faArrowUp}
 				size="1x"
 				onClick={onClick}
 				role="button"
@@ -64,10 +64,10 @@ const MoveButtonComponent = memo<IMoveButtonProps>(function MoveButton({directio
 });
 
 export const MoveButton = MoveButtonComponent as typeof MoveButtonComponent & {
-	direction: typeof MoveButtonDirectionMap;
+	direction: typeof moveButtonDirectionMap;
 };
 
-MoveButton.direction = MoveButtonDirectionMap;
+MoveButton.direction = moveButtonDirectionMap;
 
 export default function SavedMealCard() {
 	const openWindow = useViewInNewWindow();

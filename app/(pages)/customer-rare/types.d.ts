@@ -4,7 +4,7 @@ import {type tabVisibilityStateMap} from './constants';
 import {type TBeverageTag, type TRecipeTag} from '@/data';
 import type {TBeverage, TRecipe} from '@/utils/types';
 
-export type TTabVisibilityState = (typeof tabVisibilityStateMap)[keyof typeof tabVisibilityStateMap];
+export type TTabVisibilityState = ExtractCollectionValue<typeof tabVisibilityStateMap>;
 
 export interface ICustomerTabStyle {
 	ariaLabel: string;

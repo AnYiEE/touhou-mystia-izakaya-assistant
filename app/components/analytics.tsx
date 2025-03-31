@@ -21,7 +21,7 @@ const trackCategoryMap = {
 	unselect: 'Unselect',
 } as const;
 
-type TTrackCategory = (typeof trackCategoryMap)[keyof typeof trackCategoryMap];
+type TTrackCategory = ExtractCollectionValue<typeof trackCategoryMap>;
 
 type TAction = 'Import' | 'Info' | 'Remove' | 'Reset' | 'Save' | 'Select';
 type TActionButton = `${TAction} Button`;
