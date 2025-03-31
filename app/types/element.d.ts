@@ -6,6 +6,7 @@ interface ParentNode {
 	querySelector(selectors: 'main' | '#modal-portal-container'): HTMLElement;
 }
 
+type ExtractCollectionValue<T extends Record<string, unknown>> = T[keyof T];
 type ExtractStringTypes<T> = T extends string ? T : never;
 type ReactNodeWithoutBoolean = Exclude<React.ReactNode, boolean>;
 type SelectionSet = Exclude<import('@heroui/table').Selection, 'all'>;

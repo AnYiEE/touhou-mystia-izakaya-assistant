@@ -88,7 +88,7 @@ export default memo<IProps>(function Content({data}) {
 					<ScrollShadow hideScrollBar size={16} className="max-h-dvh-safe-half">
 						{Object.entries(from).map((fromObject, fromIndex) => {
 							type TFrom = Exclude<IBeverage['from'], string>;
-							const [method, target] = fromObject as [keyof TFrom, TFrom[keyof TFrom]];
+							const [method, target] = fromObject as [keyof TFrom, ExtractCollectionValue<TFrom>];
 							const isBuy = method === 'buy';
 							const isCollect = method === 'collect';
 							const isFishingAdvanced = method === 'fishingAdvanced';

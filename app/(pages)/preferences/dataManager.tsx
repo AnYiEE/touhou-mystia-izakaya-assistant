@@ -37,7 +37,7 @@ const downloadButtonLabelMap = {
 	downloadingTip: '如无响应，请检查浏览器权限、设置和浏览器扩展程序',
 } as const;
 
-type TDownloadButtonLabel = (typeof downloadButtonLabelMap)[keyof typeof downloadButtonLabelMap];
+type TDownloadButtonLabel = ExtractCollectionValue<typeof downloadButtonLabelMap>;
 
 interface IProps {
 	onModalClose?: (() => void) | undefined;

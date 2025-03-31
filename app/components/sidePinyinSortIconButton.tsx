@@ -16,7 +16,7 @@ export const pinyinSortStateMap = {
 	za: 2,
 } as const;
 
-export type TPinyinSortState = (typeof pinyinSortStateMap)[keyof typeof pinyinSortStateMap];
+export type TPinyinSortState = ExtractCollectionValue<typeof pinyinSortStateMap>;
 
 export interface IPinyinSortConfig {
 	pinyinSortState: TPinyinSortState;
