@@ -103,7 +103,7 @@ export default class ErrorBoundary extends Component<IProps, IStates> {
 				info,
 			});
 		}
-		trackEvent(trackEvent.category.Error, 'Global', message);
+		trackEvent(trackEvent.category.error, 'Global', message);
 	}
 
 	public override render() {

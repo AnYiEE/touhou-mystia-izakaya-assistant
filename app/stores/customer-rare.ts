@@ -4,12 +4,12 @@ import {createJSONStorage} from 'zustand/middleware';
 
 import {type Selection} from '@heroui/table';
 
-import {TabVisibilityState, beverageTableColumns, recipeTableColumns} from '@/(pages)/customer-rare/constants';
+import {beverageTableColumns, recipeTableColumns, tabVisibilityStateMap} from '@/(pages)/customer-rare/constants';
 import {type TTableSortDescriptor as TBeverageTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
 import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
-import type {TTab} from '@/(pages)/customer-rare/types';
+import type {TTab, TTabVisibilityState} from '@/(pages)/customer-rare/types';
 import {trackEvent} from '@/components/analytics';
-import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
+import {type TPinyinSortState, pinyinSortStateMap} from '@/components/sidePinyinSortIconButton';
 
 import type {IPersistenceState} from './types';
 import {
@@ -145,9 +145,9 @@ const state = {
 				includes: [] as string[], // eslint-disable-next-line sort-keys
 				excludes: [] as string[],
 			},
-			pinyinSortState: PinyinSortState.NONE,
+			pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
 			searchValue: '',
-			tabVisibility: TabVisibilityState.collapse,
+			tabVisibility: tabVisibilityStateMap.collapse as TTabVisibilityState,
 
 			orderLinkedFilter: true,
 			showTagDescription: true,
@@ -159,8 +159,8 @@ const state = {
 				noTags: [] as string[], // eslint-disable-next-line sort-keys
 				levels: [] as string[],
 			},
-			pinyinSortState: PinyinSortState.NONE,
-			tabVisibility: TabVisibilityState.collapse,
+			pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
+			tabVisibility: tabVisibilityStateMap.collapse as TTabVisibilityState,
 		},
 		recipe: {
 			table: {
@@ -538,31 +538,31 @@ export const customerRareStore = store(state, {
 		onCustomerOrderBeverageTag(tag: TBeverageTag) {
 			currentStore.shared.customer.order.beverageTag.set((prev) => {
 				if (prev === tag) {
-					trackEvent(trackEvent.category.Unselect, 'Customer Tag', tag);
+					trackEvent(trackEvent.category.unselect, 'Customer Tag', tag);
 					return null;
 				}
-				trackEvent(trackEvent.category.Select, 'Customer Tag', tag);
+				trackEvent(trackEvent.category.select, 'Customer Tag', tag);
 				return tag;
 			});
 		},
 		onCustomerOrderRecipeTag(tag: TRecipeTag) {
 			currentStore.shared.customer.order.recipeTag.set((prev) => {
 				if (prev === tag) {
-					trackEvent(trackEvent.category.Unselect, 'Customer Tag', tag);
+					trackEvent(trackEvent.category.unselect, 'Customer Tag', tag);
 					return null;
 				}
-				trackEvent(trackEvent.category.Select, 'Customer Tag', tag);
+				trackEvent(trackEvent.category.select, 'Customer Tag', tag);
 				return tag;
 			});
 		},
 		onCustomerSelectedChange(customerName: TCustomerRareName) {
 			currentStore.shared.customer.name.set(customerName);
-			trackEvent(trackEvent.category.Select, 'Customer', customerName);
+			trackEvent(trackEvent.category.select, 'Customer', customerName);
 		},
 
 		onBeverageTableAction(beverageName: TBeverageName) {
 			currentStore.shared.beverage.name.set(beverageName);
-			trackEvent(trackEvent.category.Select, 'Beverage', beverageName);
+			trackEvent(trackEvent.category.select, 'Beverage', beverageName);
 		},
 		onBeverageTablePageChange(page: number) {
 			currentStore.shared.beverage.page.set(page);
@@ -634,7 +634,7 @@ export const customerRareStore = store(state, {
 					prev.extraIngredients.push(ingredientName);
 				}
 			});
-			trackEvent(trackEvent.category.Select, 'Ingredient', ingredientName);
+			trackEvent(trackEvent.category.select, 'Ingredient', ingredientName);
 		},
 
 		onRecipeTableAction(recipeName: TRecipeName) {
@@ -642,7 +642,7 @@ export const customerRareStore = store(state, {
 				extraIngredients: [],
 				name: recipeName,
 			});
-			trackEvent(trackEvent.category.Select, 'Recipe', recipeName);
+			trackEvent(trackEvent.category.select, 'Recipe', recipeName);
 		},
 		onRecipeTablePageChange(page: number) {
 			currentStore.shared.recipe.page.set(page);
@@ -828,7 +828,7 @@ export const customerRareStore = store(state, {
 					prev.extraIngredients = removeLastElement(prev.extraIngredients, ingredientName);
 				}
 			});
-			trackEvent(trackEvent.category.Unselect, 'Ingredient', ingredientName);
+			trackEvent(trackEvent.category.unselect, 'Ingredient', ingredientName);
 		},
 		saveMealResult() {
 			const customerName = currentStore.shared.customer.name.get();
@@ -866,7 +866,7 @@ export const customerRareStore = store(state, {
 				}
 			});
 			trackEvent(
-				trackEvent.category.Click,
+				trackEvent.category.click,
 				'Save Button',
 				`${recipeName} - ${beverageName}${checkEmpty(extraIngredients) ? '' : ` - ${extraIngredients.join(' ')}`}`
 			);
@@ -914,7 +914,7 @@ export const customerRareStore = store(state, {
 		toggleMystiaCooker() {
 			const hasMystiaCooker = currentStore.shared.customer.hasMystiaCooker.get();
 			currentStore.shared.customer.hasMystiaCooker.set(!hasMystiaCooker);
-			trackEvent(hasMystiaCooker ? trackEvent.category.Unselect : trackEvent.category.Select, 'MystiaCooker');
+			trackEvent(hasMystiaCooker ? trackEvent.category.unselect : trackEvent.category.select, 'MystiaCooker');
 		},
 		updateRecipeTagsWithTrend() {
 			const recipeData = currentStore.shared.recipe.data.get();

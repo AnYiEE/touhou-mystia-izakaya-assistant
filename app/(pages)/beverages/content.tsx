@@ -68,7 +68,7 @@ export default memo<IProps>(function Content({data}) {
 						/>
 					}
 					onPress={() => {
-						trackEvent(trackEvent.category.Click, 'Beverage Card', name);
+						trackEvent(trackEvent.category.click, 'Beverage Card', name);
 					}}
 				/>
 			</ItemPopoverCard.Trigger>

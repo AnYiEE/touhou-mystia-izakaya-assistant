@@ -51,7 +51,7 @@ export default memo<IProps>(function Content({data}) {
 					name={name}
 					image={<Sprite target="partner" name={name} size={3} className="scale-90 rounded-xl" />}
 					onPress={() => {
-						trackEvent(trackEvent.category.Click, 'Partner Card', name);
+						trackEvent(trackEvent.category.click, 'Partner Card', name);
 					}}
 				/>
 			</ItemPopoverCard.Trigger>

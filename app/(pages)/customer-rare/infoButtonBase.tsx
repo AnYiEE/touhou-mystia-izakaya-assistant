@@ -31,7 +31,7 @@ export default memo<IProps>(function InfoButtonBase({children, defaultExpandedKe
 	const handlePress = useCallback(() => {
 		vibrate();
 		setOpened(true);
-		trackEvent(trackEvent.category.Click, 'Info Button');
+		trackEvent(trackEvent.category.click, 'Info Button');
 	}, [vibrate]);
 
 	const buttonLabel = '更多信息';

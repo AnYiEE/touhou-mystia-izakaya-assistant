@@ -87,7 +87,7 @@ export default function CustomerCard() {
 		(customerName: TCustomerNormalName) => {
 			vibrate();
 			customerStore.refreshCustomerSelectedItems();
-			trackEvent(trackEvent.category.Click, 'Reset Button', customerName);
+			trackEvent(trackEvent.category.click, 'Reset Button', customerName);
 		},
 		[vibrate]
 	);

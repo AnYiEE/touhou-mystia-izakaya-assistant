@@ -31,11 +31,13 @@ import Heading from '@/components/heading';
 import {customerNormalStore, customerRareStore, globalStore} from '@/stores';
 import {FILE_TYPE_JSON, checkA11yConfirmKey, downloadJson, parseJsonFromInput, toggleBoolean} from '@/utilities';
 
-enum DownloadButtonLabel {
-	Download = '下载',
-	Downloading = '尝试唤起下载器',
-	DownloadingTip = '如无响应，请检查浏览器权限、设置和浏览器扩展程序',
-}
+const downloadButtonLabelMap = {
+	download: '下载',
+	downloading: '尝试唤起下载器',
+	downloadingTip: '如无响应，请检查浏览器权限、设置和浏览器扩展程序',
+} as const;
+
+type TDownloadButtonLabel = (typeof downloadButtonLabelMap)[keyof typeof downloadButtonLabelMap];
 
 interface IProps {
 	onModalClose?: (() => void) | undefined;
@@ -69,7 +71,9 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 	const importInputRef = useRef<HTMLInputElement | null>(null);
 
 	const [isDownloadButtonDisabled, setIsDownloadButtonDisabled] = useState(false);
-	const [downloadButtonLabel, setDownloadButtonLabel] = useState(DownloadButtonLabel.Download);
+	const [downloadButtonLabel, setDownloadButtonLabel] = useState<TDownloadButtonLabel>(
+		downloadButtonLabelMap.download
+	);
 
 	const [isSaveButtonDisabled, setIsSaveButtonDisabled] = useState(true);
 	const [isSaveButtonError, setIsSaveButtonError] = useState(false);
@@ -81,10 +85,10 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 
 	const handleDownloadButtonPress = useCallback(() => {
 		setIsDownloadButtonDisabled(true);
-		setDownloadButtonLabel(DownloadButtonLabel.Downloading);
+		setDownloadButtonLabel(downloadButtonLabelMap.downloading);
 		setTimeout(() => {
 			setIsDownloadButtonDisabled(false);
-			setDownloadButtonLabel(DownloadButtonLabel.Download);
+			setDownloadButtonLabel(downloadButtonLabelMap.download);
 		}, 5000);
 		downloadJson(
 			`customer_data-${Object.keys(currentMealData.customer_normal).length}_${Object.keys(currentMealData.customer_rare).length}-${Date.now()}`,
@@ -98,10 +102,10 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 			if ('customer_normal' in importData) {
 				customerNormalStore.persistence.meals.set(importData.customer_normal);
 				customerRareStore.persistence.meals.set(importData.customer_rare);
-				trackEvent(trackEvent.category.Click, 'Import Button', 'Customer Data');
+				trackEvent(trackEvent.category.click, 'Import Button', 'Customer Data');
 			} else {
 				customerRareStore.persistence.meals.set(importData);
-				trackEvent(trackEvent.category.Click, 'Import Button', 'Customer Rare Data');
+				trackEvent(trackEvent.category.click, 'Import Button', 'Customer Rare Data');
 			}
 		}
 	}, [importData]);
@@ -110,7 +114,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 		toggleResetPopoverOpened();
 		customerNormalStore.persistence.meals.set({});
 		customerRareStore.persistence.meals.set({});
-		trackEvent(trackEvent.category.Click, 'Reset Button', 'Customer Data');
+		trackEvent(trackEvent.category.click, 'Reset Button', 'Customer Data');
 	}, []);
 
 	const handleImportButtonPress = useCallback(() => {
@@ -203,7 +207,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								isOpen
 								showArrow
 								color="success"
-								content={DownloadButtonLabel.DownloadingTip}
+								content={downloadButtonLabelMap.downloadingTip}
 								isDisabled={!isDownloadButtonDisabled}
 							>
 								<Button
@@ -358,7 +362,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 											}
 										}, 500);
 									}
-									trackEvent(trackEvent.category.Click, 'Reset Button', 'Customer Rare Tutorial');
+									trackEvent(trackEvent.category.click, 'Reset Button', 'Customer Rare Tutorial');
 								}}
 							>
 								{customerRareTutorialResetLabel}

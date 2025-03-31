@@ -38,6 +38,7 @@
 			}
 		],
 
+		"erasableSyntaxOnly": true,
 		"esModuleInterop": true,
 		"isolatedModules": true,
 

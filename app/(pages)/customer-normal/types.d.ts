@@ -14,4 +14,5 @@ export type {
 	TBeverageWithSuitability,
 	TBeveragesWithSuitability,
 	TTab,
+	TTabVisibilityState,
 } from '@/(pages)/customer-rare/types';

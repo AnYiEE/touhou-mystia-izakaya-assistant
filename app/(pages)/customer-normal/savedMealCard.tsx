@@ -46,7 +46,7 @@ export default function SavedMealCard() {
 		type Meal = (typeof newSavedCustomerMeal)[number];
 
 		switch (direction) {
-			case MoveButton.direction.Down:
+			case MoveButton.direction.down:
 				if (currentIndex >= newSavedCustomerMeal.length - 1) {
 					return;
 				}
@@ -55,7 +55,7 @@ export default function SavedMealCard() {
 					newSavedCustomerMeal[currentIndex] as Meal,
 				];
 				break;
-			case MoveButton.direction.Up:
+			case MoveButton.direction.up:
 				if (currentIndex <= 0) {
 					return;
 				}
@@ -239,17 +239,17 @@ export default function SavedMealCard() {
 									)}
 								>
 									<MoveButton
-										direction={MoveButton.direction.Up}
+										direction={MoveButton.direction.up}
 										isDisabled={loopIndex === 0}
 										onClick={() => {
-											moveMeal(mealIndex, MoveButton.direction.Up);
+											moveMeal(mealIndex, MoveButton.direction.up);
 										}}
 									/>
 									<MoveButton
-										direction={MoveButton.direction.Down}
+										direction={MoveButton.direction.down}
 										isDisabled={loopIndex === savedCustomerMeal.length - 1}
 										onClick={() => {
-											moveMeal(mealIndex, MoveButton.direction.Down);
+											moveMeal(mealIndex, MoveButton.direction.down);
 										}}
 									/>
 								</div>
@@ -262,7 +262,7 @@ export default function SavedMealCard() {
 										customerStore.shared.beverage.name.set(beverage);
 										customerStore.shared.recipe.data.set(recipeData);
 										trackEvent(
-											trackEvent.category.Click,
+											trackEvent.category.click,
 											'Select Button',
 											`${recipeData.name}${beverage === null ? '' : ` - ${beverage}`}${checkEmpty(recipeData.extraIngredients) ? '' : ` - ${recipeData.extraIngredients.join(' ')}`}`
 										);
@@ -281,7 +281,7 @@ export default function SavedMealCard() {
 											savedCustomerMeal.filter((meal) => meal.index !== mealIndex)
 										);
 										trackEvent(
-											trackEvent.category.Click,
+											trackEvent.category.click,
 											'Remove Button',
 											`${recipeData.name}${beverage === null ? '' : ` - ${beverage}`}${checkEmpty(recipeData.extraIngredients) ? '' : ` - ${recipeData.extraIngredients.join(' ')}`}`
 										);

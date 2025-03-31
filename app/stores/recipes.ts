@@ -1,7 +1,7 @@
 import {store} from '@davstack/store';
 import {createJSONStorage} from 'zustand/middleware';
 
-import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
+import {type TPinyinSortState, pinyinSortStateMap} from '@/components/sidePinyinSortIconButton';
 
 import {DYNAMIC_TAG_MAP, type TRecipeTag} from '@/data';
 import {createNamesCache} from '@/stores/utils';
@@ -46,7 +46,7 @@ const state = {
 			noPositiveTags: [] as string[],
 			positiveTags: [] as string[],
 		},
-		pinyinSortState: PinyinSortState.NONE,
+		pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
 		searchValue: '',
 	},
 	shared: {

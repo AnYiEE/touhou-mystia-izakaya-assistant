@@ -32,12 +32,12 @@ import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 import Tachie from '@/components/tachie';
 
-import {customerTabStyleMap, ingredientTabStyleMap, tachieBreakPoint} from './constants';
+import {customerTabStyleMap, ingredientTabStyleMap, tachieBreakPointMap} from './constants';
 import {customerNormalStore as customerStore, globalStore} from '@/stores';
 import {checkArrayContainsOf, checkArraySubsetOf, checkEmpty} from '@/utilities';
 
 export default function CustomerNormal() {
-	const {breakpoint} = useBreakpoint(tachieBreakPoint, 'noTachie');
+	const {breakpoint} = useBreakpoint(tachieBreakPointMap, 'noTachie');
 	const vibrate = useVibrate();
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();

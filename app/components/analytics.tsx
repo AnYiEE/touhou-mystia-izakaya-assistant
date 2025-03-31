@@ -14,12 +14,14 @@ function push(...args: unknown[][]) {
 	globalThis._paq.push(...args);
 }
 
-enum TrackCategory {
-	Click = 'Click',
-	Error = 'Error',
-	Select = 'Select',
-	Unselect = 'Unselect',
-}
+const trackCategoryMap = {
+	click: 'Click',
+	error: 'Error',
+	select: 'Select',
+	unselect: 'Unselect',
+} as const;
+
+type TTrackCategory = (typeof trackCategoryMap)[keyof typeof trackCategoryMap];
 
 type TAction = 'Import' | 'Info' | 'Remove' | 'Reset' | 'Save' | 'Select';
 type TActionButton = `${TAction} Button`;
@@ -29,20 +31,25 @@ type TItemCard = `${TItem} Card`;
 type TItemAlone = 'Customer' | 'Customer Tag' | 'MystiaCooker';
 
 function trackEventFunction(
-	category: TrackCategory.Click,
+	category: typeof trackCategoryMap.click,
 	action: TActionButton | TItemCard,
 	name?: string,
 	value?: number | string
 ): void;
-function trackEventFunction(category: TrackCategory.Error, action: TError, name: string, value?: number | string): void;
 function trackEventFunction(
-	category: TrackCategory.Select | TrackCategory.Unselect,
+	category: typeof trackCategoryMap.error,
+	action: TError,
+	name: string,
+	value?: number | string
+): void;
+function trackEventFunction(
+	category: typeof trackCategoryMap.select | typeof trackCategoryMap.unselect,
 	action: TItem | TItemAlone,
 	name?: string,
 	value?: number | string
 ): void;
 function trackEventFunction(
-	category: keyof typeof TrackCategory,
+	category: TTrackCategory,
 	action: TAction | TActionButton | TError | TItem | TItemCard | TItemAlone,
 	name?: string,
 	value?: number | string
@@ -55,10 +62,10 @@ function trackEventFunction(
 }
 
 export const trackEvent = trackEventFunction as typeof trackEventFunction & {
-	category: typeof TrackCategory;
+	category: typeof trackCategoryMap;
 };
 
-trackEvent.category = TrackCategory;
+trackEvent.category = trackCategoryMap;
 
 function trackPageView() {
 	push(['setCustomUrl', location.href], ['setDocumentTitle', document.title], ['trackPageView']);

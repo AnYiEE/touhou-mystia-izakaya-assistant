@@ -19,7 +19,7 @@ interface IProps {
 
 export default function GlobalError({error}: IProps) {
 	useEffect(() => {
-		trackEvent(trackEvent.category.Error, 'Global', error.message);
+		trackEvent(trackEvent.category.error, 'Global', error.message);
 	}, [error.message]);
 
 	return (

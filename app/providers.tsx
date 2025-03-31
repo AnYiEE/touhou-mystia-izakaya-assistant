@@ -93,7 +93,7 @@ export default function Providers({children, locale}: PropsWithChildren<IProps>)
 						// Reload page if current tab version is lower than the version of the new tab.
 						if (state.version && compareVersions(state.version, version) === 1) {
 							trackEvent(
-								trackEvent.category.Error,
+								trackEvent.category.error,
 								'Global',
 								'Outdated version detected in multiple tabs'
 							);
@@ -107,10 +107,10 @@ export default function Providers({children, locale}: PropsWithChildren<IProps>)
 			} catch (error) {
 				console.error(error);
 				if (error instanceof Error) {
-					trackEvent(trackEvent.category.Error, 'Sync', String(key), error.message);
+					trackEvent(trackEvent.category.error, 'Sync', String(key), error.message);
 				}
 				if (typeof error === 'string') {
-					trackEvent(trackEvent.category.Error, 'Sync', String(key), error);
+					trackEvent(trackEvent.category.error, 'Sync', String(key), error);
 				}
 				throw error;
 			}

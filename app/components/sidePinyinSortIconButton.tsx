@@ -10,23 +10,25 @@ import {Tooltip, cn} from '@/design/ui/components';
 
 import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
 
-export enum PinyinSortState {
-	NONE,
-	AZ,
-	ZA,
-}
+export const pinyinSortStateMap = {
+	az: 1,
+	none: 0,
+	za: 2,
+} as const;
+
+export type TPinyinSortState = (typeof pinyinSortStateMap)[keyof typeof pinyinSortStateMap];
 
 export interface IPinyinSortConfig {
-	pinyinSortState: PinyinSortState;
-	setPinyinSortState: Dispatch<SetStateAction<PinyinSortState>>;
+	pinyinSortState: TPinyinSortState;
+	setPinyinSortState: Dispatch<SetStateAction<TPinyinSortState>>;
 }
 
 interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'> {
 	pinyinSortConfig: IPinyinSortConfig;
 }
 
-function getNextPinyinSortState(currentState: PinyinSortState): PinyinSortState {
-	return (currentState + 1) % 3;
+function getNextPinyinSortState(currentState: TPinyinSortState) {
+	return ((currentState + 1) % 3) as TPinyinSortState;
 }
 
 export default memo<IProps>(function SidePinyinSortIconButton({
@@ -42,9 +44,9 @@ export default memo<IProps>(function SidePinyinSortIconButton({
 	}, [pinyinSortState, setPinyinSortState, vibrate]);
 
 	const label = `拼音排序（${
-		pinyinSortState === PinyinSortState.NONE
+		pinyinSortState === pinyinSortStateMap.none
 			? '未激活'
-			: pinyinSortState === PinyinSortState.AZ
+			: pinyinSortState === pinyinSortStateMap.az
 				? '已激活：升序'
 				: '已激活：降序'
 	}）`;
@@ -52,13 +54,13 @@ export default memo<IProps>(function SidePinyinSortIconButton({
 	return (
 		<Tooltip showArrow content={label} placement="left">
 			<FontAwesomeIconButton
-				color={pinyinSortState === PinyinSortState.NONE ? 'primary' : 'warning'}
-				icon={pinyinSortState === PinyinSortState.ZA ? faArrowUpAZ : faArrowDownAZ}
+				color={pinyinSortState === pinyinSortStateMap.none ? 'primary' : 'warning'}
+				icon={pinyinSortState === pinyinSortStateMap.za ? faArrowUpAZ : faArrowDownAZ}
 				variant="shadow"
 				onPress={handlePress}
 				aria-label={label}
 				className={cn(
-					pinyinSortState === PinyinSortState.NONE ? 'bg-primary-600' : 'bg-warning-600',
+					pinyinSortState === pinyinSortStateMap.none ? 'bg-primary-600' : 'bg-warning-600',
 					className
 				)}
 				{...props}

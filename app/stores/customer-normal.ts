@@ -4,12 +4,12 @@ import {createJSONStorage} from 'zustand/middleware';
 
 import {type Selection} from '@heroui/table';
 
-import {TabVisibilityState, beverageTableColumns, recipeTableColumns} from '@/(pages)/customer-normal/constants';
+import {beverageTableColumns, recipeTableColumns, tabVisibilityStateMap} from '@/(pages)/customer-normal/constants';
 import {type TTableSortDescriptor as TBeverageTableSortDescriptor} from '@/(pages)/customer-normal/beverageTabContent';
 import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)/customer-normal/recipeTabContent';
-import type {TTab} from '@/(pages)/customer-normal/types';
+import type {TTab, TTabVisibilityState} from '@/(pages)/customer-normal/types';
 import {trackEvent} from '@/components/analytics';
-import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
+import {type TPinyinSortState, pinyinSortStateMap} from '@/components/sidePinyinSortIconButton';
 
 import type {IPersistenceState} from './types';
 import {
@@ -127,9 +127,9 @@ const state = {
 				includes: [] as string[], // eslint-disable-next-line sort-keys
 				excludes: [] as string[],
 			},
-			pinyinSortState: PinyinSortState.NONE,
+			pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
 			searchValue: '',
-			tabVisibility: TabVisibilityState.collapse,
+			tabVisibility: tabVisibilityStateMap.collapse as TTabVisibilityState,
 		},
 		ingredient: {
 			filters: {
@@ -138,8 +138,8 @@ const state = {
 				noTags: [] as string[], // eslint-disable-next-line sort-keys
 				levels: [] as string[],
 			},
-			pinyinSortState: PinyinSortState.NONE,
-			tabVisibility: TabVisibilityState.collapse,
+			pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
+			tabVisibility: tabVisibilityStateMap.collapse as TTabVisibilityState,
 		},
 		recipe: {
 			table: {
@@ -452,12 +452,12 @@ export const customerNormalStore = store(state, {
 		},
 		onCustomerSelectedChange(customerName: TCustomerNormalName) {
 			currentStore.shared.customer.name.set(customerName);
-			trackEvent(trackEvent.category.Select, 'Customer', customerName);
+			trackEvent(trackEvent.category.select, 'Customer', customerName);
 		},
 
 		onBeverageTableAction(beverageName: TBeverageName) {
 			currentStore.shared.beverage.name.set(beverageName);
-			trackEvent(trackEvent.category.Select, 'Beverage', beverageName);
+			trackEvent(trackEvent.category.select, 'Beverage', beverageName);
 		},
 		onBeverageTablePageChange(page: number) {
 			currentStore.shared.beverage.page.set(page);
@@ -529,7 +529,7 @@ export const customerNormalStore = store(state, {
 					prev.extraIngredients.push(ingredientName);
 				}
 			});
-			trackEvent(trackEvent.category.Select, 'Ingredient', ingredientName);
+			trackEvent(trackEvent.category.select, 'Ingredient', ingredientName);
 		},
 
 		onRecipeTableAction(recipeName: TRecipeName) {
@@ -537,7 +537,7 @@ export const customerNormalStore = store(state, {
 				extraIngredients: [],
 				name: recipeName,
 			});
-			trackEvent(trackEvent.category.Select, 'Recipe', recipeName);
+			trackEvent(trackEvent.category.select, 'Recipe', recipeName);
 		},
 		onRecipeTablePageChange(page: number) {
 			currentStore.shared.recipe.page.set(page);
@@ -675,7 +675,7 @@ export const customerNormalStore = store(state, {
 					prev.extraIngredients = removeLastElement(prev.extraIngredients, ingredientName);
 				}
 			});
-			trackEvent(trackEvent.category.Unselect, 'Ingredient', ingredientName);
+			trackEvent(trackEvent.category.unselect, 'Ingredient', ingredientName);
 		},
 		saveMealResult() {
 			const customerName = currentStore.shared.customer.name.get();
@@ -702,7 +702,7 @@ export const customerNormalStore = store(state, {
 				}
 			});
 			trackEvent(
-				trackEvent.category.Click,
+				trackEvent.category.click,
 				'Save Button',
 				`${recipeName}${beverageName === null ? '' : ` - ${beverageName}`}${checkEmpty(extraIngredients) ? '' : ` - ${extraIngredients.join(' ')}`}`
 			);

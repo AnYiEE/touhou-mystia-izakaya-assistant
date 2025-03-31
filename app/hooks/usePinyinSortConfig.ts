@@ -1,10 +1,10 @@
 import {type Dispatch, type SetStateAction, useMemo} from 'react';
 
-import {type IPinyinSortConfig, PinyinSortState} from '@/components/sidePinyinSortIconButton';
+import {type IPinyinSortConfig, type TPinyinSortState} from '@/components/sidePinyinSortIconButton';
 
 export function usePinyinSortConfig(
-	pinyinSortState: PinyinSortState,
-	setPinyinSortState: Dispatch<SetStateAction<PinyinSortState>>
+	pinyinSortState: TPinyinSortState,
+	setPinyinSortState: Dispatch<SetStateAction<TPinyinSortState>>
 ) {
 	const pinyinSortConfig = useMemo<IPinyinSortConfig>(
 		() => ({

@@ -1,8 +1,8 @@
 export {
-	TabVisibilityState,
 	beverageTableColumns,
 	customerTabStyleMap,
 	ingredientTabStyleMap,
 	recipeTableColumns,
-	tachieBreakPoint,
+	tabVisibilityStateMap,
+	tachieBreakPointMap,
 } from '@/(pages)/customer-rare/constants';

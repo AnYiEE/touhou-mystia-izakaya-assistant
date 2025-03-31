@@ -1,7 +1,7 @@
 import {store} from '@davstack/store';
 import {createJSONStorage} from 'zustand/middleware';
 
-import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
+import {type TPinyinSortState, pinyinSortStateMap} from '@/components/sidePinyinSortIconButton';
 
 import {createNamesCache} from '@/stores/utils';
 import {numberSort, pinyinSort, toGetValueCollection} from '@/utilities';
@@ -28,7 +28,7 @@ const state = {
 			types: [] as string[], // eslint-disable-next-line sort-keys
 			noTypes: [] as string[],
 		},
-		pinyinSortState: PinyinSortState.NONE,
+		pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
 		searchValue: '',
 	},
 };

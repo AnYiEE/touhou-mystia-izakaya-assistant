@@ -70,7 +70,7 @@ export default memo<IProps>(function Content({data}) {
 						description={<Price>{price}</Price>}
 						image={<Sprite target="recipe" name={name} size={3} />}
 						onPress={() => {
-							trackEvent(trackEvent.category.Click, 'Recipe Card', name);
+							trackEvent(trackEvent.category.click, 'Recipe Card', name);
 						}}
 					/>
 				</ItemPopoverCard.Trigger>

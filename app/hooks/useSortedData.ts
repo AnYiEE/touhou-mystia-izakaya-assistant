@@ -2,22 +2,22 @@ import {useCallback, useMemo} from 'react';
 
 import {useSkipProcessItemData} from '@/hooks';
 
-import {PinyinSortState} from '@/components/sidePinyinSortIconButton';
+import {type TPinyinSortState, pinyinSortStateMap} from '@/components/sidePinyinSortIconButton';
 
 import type {TItemData, TItemInstance} from '@/utils/types';
 
 export function useSortedData<T extends TItemInstance>(
 	instance: T,
 	filteredData: TItemData<T>,
-	pinyinSortState: PinyinSortState
+	pinyinSortState: TPinyinSortState
 ) {
 	const shouldSkipProcessData = useSkipProcessItemData();
 
 	const sortData = useCallback(() => {
 		switch (pinyinSortState) {
-			case PinyinSortState.AZ:
+			case pinyinSortStateMap.az:
 				return instance.getPinyinSortedData(filteredData as never).get();
-			case PinyinSortState.ZA:
+			case pinyinSortStateMap.za:
 				return instance
 					.getPinyinSortedData(filteredData as never)
 					.fork()

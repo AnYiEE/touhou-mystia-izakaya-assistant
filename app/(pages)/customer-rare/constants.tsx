@@ -5,7 +5,7 @@ import {faCaretDown, faCaretUp} from '@fortawesome/free-solid-svg-icons';
 
 import {type TTableColumns as TBeverageTableColumns} from './beverageTabContent';
 import {type TTableColumns as TRecipeTableColumns} from './recipeTabContent';
-import type {ICustomerTabStyleMap, IIngredientsTabStyleMap} from './types';
+import type {TCustomerTabStyleMap, TIngredientsTabStyleMap} from './types';
 
 export const customerTabStyleMap = {
 	collapse: {
@@ -24,7 +24,7 @@ export const customerTabStyleMap = {
 			sideButtonGroup: '',
 		},
 	},
-} as const satisfies ICustomerTabStyleMap;
+} as const satisfies TCustomerTabStyleMap;
 
 export const ingredientTabStyleMap = {
 	collapse: {
@@ -43,12 +43,7 @@ export const ingredientTabStyleMap = {
 			sideButtonGroup: '',
 		},
 	},
-} as const satisfies IIngredientsTabStyleMap;
-
-export enum TabVisibilityState {
-	collapse = 'collapse',
-	expand = 'expand',
-}
+} as const satisfies TIngredientsTabStyleMap;
 
 export const beverageTableColumns = [
 	{key: 'beverage', label: '酒水', sortable: true},
@@ -67,7 +62,12 @@ export const recipeTableColumns = [
 	{key: 'action', label: '操作', sortable: false},
 ] as const satisfies TRecipeTableColumns;
 
-export const tachieBreakPoint = {
+export const tabVisibilityStateMap = {
+	collapse: 'collapse',
+	expand: 'expand',
+} as const;
+
+export const tachieBreakPointMap = {
 	noTachie: -1,
 	tachie: 1460,
 } as const satisfies Config;

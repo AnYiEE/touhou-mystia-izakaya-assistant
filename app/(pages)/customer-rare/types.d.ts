@@ -1,8 +1,10 @@
 import {type SortDescriptor} from '@heroui/table';
 
-import {type TabVisibilityState} from './constants';
+import {type tabVisibilityStateMap} from './constants';
 import {type TBeverageTag, type TRecipeTag} from '@/data';
 import type {TBeverage, TRecipe} from '@/utils/types';
+
+export type TTabVisibilityState = (typeof tabVisibilityStateMap)[keyof typeof tabVisibilityStateMap];
 
 export interface ICustomerTabStyle {
 	ariaLabel: string;
@@ -13,9 +15,7 @@ export interface ICustomerTabStyle {
 	};
 }
 
-export interface ICustomerTabStyleMap {
-	[key in TabVisibilityState]: ICustomerTabStyle;
-}
+export type TCustomerTabStyleMap = Record<TTabVisibilityState, ICustomerTabStyle>;
 
 export interface IIngredientsTabStyle {
 	ariaLabel: string;
@@ -26,9 +26,7 @@ export interface IIngredientsTabStyle {
 	};
 }
 
-export interface IIngredientsTabStyleMap {
-	[key in TabVisibilityState]: IIngredientsTabStyle;
-}
+export type TIngredientsTabStyleMap = Record<TTabVisibilityState, IIngredientsTabStyle>;
 
 export interface ITableColumn<T extends string> {
 	key: T;

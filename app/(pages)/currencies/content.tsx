@@ -53,7 +53,7 @@ export default memo<IProps>(function Content({data}) {
 						/>
 					}
 					onPress={() => {
-						trackEvent(trackEvent.category.Click, 'Currency Card', name);
+						trackEvent(trackEvent.category.click, 'Currency Card', name);
 					}}
 				/>
 			</ItemPopoverCard.Trigger>

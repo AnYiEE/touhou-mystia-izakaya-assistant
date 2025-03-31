@@ -1,7 +1,6 @@
-import {TabVisibilityState} from '@/(pages)/customer-rare/constants';
+import {tabVisibilityStateMap} from '@/(pages)/customer-rare/constants';
+import type {TTabVisibilityState} from '@/(pages)/customer-rare/types';
 
-type TTabVisibilityState = keyof typeof TabVisibilityState;
-
-export function reverseVisibilityState(state: TTabVisibilityState) {
-	return state === TabVisibilityState.expand ? TabVisibilityState.collapse : TabVisibilityState.expand;
+export function reverseVisibilityState(state: TTabVisibilityState): TTabVisibilityState {
+	return state === tabVisibilityStateMap.expand ? tabVisibilityStateMap.collapse : tabVisibilityStateMap.expand;
 }

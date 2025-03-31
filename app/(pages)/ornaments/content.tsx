@@ -49,7 +49,7 @@ export default memo<IProps>(function Content({data}) {
 						/>
 					}
 					onPress={() => {
-						trackEvent(trackEvent.category.Click, 'Ornament Card', name);
+						trackEvent(trackEvent.category.click, 'Ornament Card', name);
 					}}
 				/>
 			</ItemPopoverCard.Trigger>
