@@ -5,6 +5,7 @@
 		"EditorConfig.EditorConfig",
 		"esbenp.prettier-vscode",
 		"mgmcdermott.vscode-language-babel",
+		"redhat.vscode-yaml",
 		"streetsidesoftware.code-spell-checker",
 		"stylelint.vscode-stylelint",
 		"syler.sass-indented"
