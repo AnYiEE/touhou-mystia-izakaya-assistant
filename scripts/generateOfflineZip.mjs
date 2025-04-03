@@ -2,8 +2,10 @@
 
 import AdmZip from 'adm-zip';
 import dotenv from 'dotenv';
-import {copyFileSync, existsSync, unlinkSync} from 'node:fs';
+import minimist from 'minimist';
+import {copyFileSync, existsSync, renameSync, unlinkSync} from 'node:fs';
 import {resolve} from 'node:path';
+import {argv} from 'node:process';
 
 import {getSha} from './utils.mjs';
 import PACKAGE from '../package.json' with {type: 'json'};
@@ -12,14 +14,24 @@ dotenv.config({
 	path: ['.env.local', '.env'],
 });
 
+const isOffline = !!process.env.OFFLINE;
+const {prepare: isPrepare} = minimist(argv.slice(2));
+
 const filesToDelete = ['registerServiceWorker.js', 'robots.txt', 'serviceWorker.js', 'sitemap.xml'];
 const filesToRename = ['LICENSE', 'README.md'];
 
+const appPath = resolve(import.meta.dirname, '../app');
 const outputPath = resolve(import.meta.dirname, '../out');
 const rootPath = resolve(import.meta.dirname, '..');
 const scriptPath = resolve(import.meta.dirname);
 
-if (process.env.OFFLINE) {
+if (isOffline && isPrepare) {
+	renameSync(resolve(appPath, 'api'), resolve(appPath, '_api'));
+}
+
+if (isOffline && !isPrepare) {
+	renameSync(resolve(appPath, '_api'), resolve(appPath, 'api'));
+
 	const replaceExtension = (/** @type {string} */ fileName) => {
 		const f = fileName.split('.');
 		if (f.length > 1) {

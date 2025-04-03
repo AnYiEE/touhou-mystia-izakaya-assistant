@@ -109,6 +109,10 @@ const changelog = [
 		version: 'v1.5',
 		changes: ['新增：更新数据至游戏版本4.2.0。', '改善：交互体验和视觉效果。'],
 	},
+	{
+		version: 'v1.6',
+		changes: ['新增：支持云备份套餐搭配数据。'],
+	},
 ] as const satisfies {
 	version: `v${string}`;
 	changes: `${'新增' | '改善' | '修复'}：${string}。`[];

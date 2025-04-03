@@ -12,6 +12,7 @@ const envKeys: (keyof NodeJS.ProcessEnv)[] = [
 	'ANALYTICS_API_URL',
 	'ANALYTICS_SCRIPT_URL',
 	'ANALYTICS_SITE_ID',
+	'CLEANUP_SECRET',
 	'BASE_URL',
 	'CDN_URL',
 	'ICP_FILING',

@@ -34,7 +34,8 @@ const storeVersion = {
 	vibrate: 6, // eslint-disable-next-line sort-keys
 	renameBg: 7, // eslint-disable-next-line sort-keys
 	famousShop: 8,
-	popularTrend: 9,
+	popularTrend: 9, // eslint-disable-next-line sort-keys
+	cloud: 10,
 } as const;
 
 const state = {
@@ -49,6 +50,7 @@ const state = {
 			tag: null,
 		} as IPopularTrend,
 
+		cloudCode: null as string | null,
 		dirver: [] as string[],
 		highAppearance: true,
 		tachie: true,
@@ -66,7 +68,7 @@ export const globalStore = store(state, {
 	persist: {
 		enabled: true,
 		name: globalStoreKey,
-		version: storeVersion.popularTrend,
+		version: storeVersion.cloud,
 
 		migrate(persistedState, version) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -105,6 +107,9 @@ export const globalStore = store(state, {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				persistence.popularTrend = persistence.popular;
 				delete persistence.popular;
+			}
+			if (version < storeVersion.cloud) {
+				oldState.persistence.cloudCode = null;
 			}
 			return persistedState as typeof state;
 		},
