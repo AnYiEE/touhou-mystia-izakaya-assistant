@@ -10,6 +10,10 @@
 /public/serviceWorker.js
 /*offline*.zip
 
+# server-side files
+/upload
+/sqlite.db
+
 # local env files
 .env*.local
 
