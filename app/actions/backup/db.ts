@@ -1,10 +1,5 @@
-import {db} from '@/lib';
-import type {
-	IBackupFileRecord,
-	IBackupFileRecordNew,
-	IBackupFileRecordUpdate,
-	TBackupFileRecordTableName,
-} from '@/lib/types';
+import {TABLE_NAME_BACKUP_FILE_RECORD as TABLE_NAME, db} from '@/lib';
+import type {IBackupFileRecord, IBackupFileRecordNew, IBackupFileRecordUpdate} from '@/lib/types';
 
 type TFileRecord =
 	| (IBackupFileRecord & {
@@ -13,8 +8,6 @@ type TFileRecord =
 	| {
 			status: 201 | 404 | 429 | 500;
 	  };
-
-const TABLE_NAME: TBackupFileRecordTableName = 'backup_files';
 
 function generateResponse(record: IBackupFileRecord | undefined, errorStatus = 500) {
 	if (record === undefined) {

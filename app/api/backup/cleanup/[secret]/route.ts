@@ -1,4 +1,5 @@
 import {NextRequest, NextResponse} from 'next/server';
+import {env} from 'node:process';
 
 import {deleteFile, deleteRecord, getExpiredRecords} from '@/actions/backup';
 
@@ -14,7 +15,7 @@ export async function DELETE(
 ) {
 	const {secret} = await params;
 
-	if (secret !== process.env.CLEANUP_SECRET) {
+	if (secret !== env.CLEANUP_SECRET) {
 		return NextResponse.json({message: 'Invalid secret'}, {status: 401});
 	}
 

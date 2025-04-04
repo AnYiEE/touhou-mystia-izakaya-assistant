@@ -1,16 +1,17 @@
 import {access, mkdir, readFile, unlink, writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
+import {cwd} from 'node:process';
 
 import type {IBackupFileRecord} from '@/lib/types';
 
-const dir = join(process.cwd(), 'upload/backups');
+const dir = join(cwd(), 'upload/backups');
 
-function getFilePath(code: IBackupFileRecord['code']) {
+function generateFilePath(code: IBackupFileRecord['code']) {
 	return join(dir, `${code}.json`);
 }
 
 export async function deleteFile(code: IBackupFileRecord['code']) {
-	const filePath = getFilePath(code);
+	const filePath = generateFilePath(code);
 
 	try {
 		await unlink(filePath);
@@ -20,12 +21,12 @@ export async function deleteFile(code: IBackupFileRecord['code']) {
 }
 
 export async function getFile(code: IBackupFileRecord['code']) {
-	const filePath = getFilePath(code);
+	const filePath = generateFilePath(code);
 
 	try {
 		return await readFile(filePath, 'utf8');
 	} catch {
-		return false;
+		return null;
 	}
 }
 
@@ -38,9 +39,7 @@ export async function saveFile(code: IBackupFileRecord['code'], content: string)
 		});
 	}
 
-	const filePath = getFilePath(code);
+	const filePath = generateFilePath(code);
 
 	await writeFile(filePath, content, 'utf8');
-
-	return filePath;
 }

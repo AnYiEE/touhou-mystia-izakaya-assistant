@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	const json = (await request.json()) as Partial<{
-		code: string;
+		code: string | null;
 		customer_normal: object;
 		customer_rare: object;
 	}>;
@@ -48,14 +48,13 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json({message: 'Requests are too frequent'}, {status: 429});
 	}
 
-	const filePath = await saveFile(code, jsonString);
+	await saveFile(code, jsonString);
 
 	const record = await getRecord(code);
 	if (record.status === 404) {
 		await setRecord({
 			code,
 			created_at: now,
-			file_path: filePath,
 			ip_address: ip,
 			last_accessed: now,
 		});

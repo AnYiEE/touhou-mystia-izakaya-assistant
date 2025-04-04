@@ -1,6 +1,7 @@
 import {NextRequest, NextResponse} from 'next/server';
 
 import {getFile, getRecord, updateRecordTimeout} from '@/actions/backup';
+import {FILE_TYPE_JSON} from '@/utilities';
 
 export async function GET(
 	_request: NextRequest,
@@ -23,10 +24,14 @@ export async function GET(
 
 	const fileContent = await getFile(code);
 
-	const isFileExisted = fileContent !== false;
+	const isFileExisted = fileContent !== null;
 	if (!isFileExisted) {
 		return NextResponse.json({message: 'The file does not exist or has been deleted'}, {status: 404});
 	}
 
-	return NextResponse.json(JSON.parse(fileContent));
+	return new NextResponse(fileContent, {
+		headers: {
+			'Content-Type': FILE_TYPE_JSON,
+		},
+	});
 }
