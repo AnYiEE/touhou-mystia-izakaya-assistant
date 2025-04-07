@@ -1,25 +1,31 @@
 import {TABLE_NAME_BACKUP_FILE_RECORD as TABLE_NAME, db} from '@/lib';
 import type {IBackupFileRecord, IBackupFileRecordNew, IBackupFileRecordUpdate} from '@/lib/types';
 
-type TFileRecord =
-	| (IBackupFileRecord & {
-			status: 200;
-	  })
-	| {
-			status: 201 | 404 | 429 | 500;
-	  };
+type TFileRecordWithStatus = IBackupFileRecord & {
+	status: 200;
+};
 
-function generateResponse(record: IBackupFileRecord | undefined, errorStatus = 500) {
+type TOtherStatus = 201 | 404 | 429 | 500;
+interface IOtherStatus<T extends TOtherStatus> {
+	status: T & TOtherStatus;
+}
+
+type TResponse<T, U extends TOtherStatus> = T extends IBackupFileRecord ? TFileRecordWithStatus : IOtherStatus<U>;
+
+function generateResponse<T extends IBackupFileRecord | undefined, U extends TOtherStatus>(
+	record: T,
+	errorStatus?: U
+): TResponse<T, U> {
 	if (record === undefined) {
 		return {
-			status: errorStatus,
-		} as TFileRecord;
+			status: errorStatus ?? 500,
+		} as TResponse<T, U>;
 	}
 
 	return {
 		...record,
 		status: 200,
-	} as TFileRecord;
+	} as TResponse<T, U>;
 }
 
 export async function checkIpFrequency(ip: IBackupFileRecord['ip_address'], time: IBackupFileRecord['created_at']) {
