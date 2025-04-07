@@ -29,8 +29,13 @@ export async function POST(request: NextRequest) {
 	}
 
 	let code = uuid();
-	if ('code' in json && typeof json.code === 'string' && validate(json.code)) {
-		code = json.code;
+	if ('code' in json && typeof json.code === 'string') {
+		const isValid = validate(json.code);
+		if (isValid) {
+			code = json.code;
+		} else if (code !== 'null') {
+			return NextResponse.json({message: 'Invalid code'}, {status: 400});
+		}
 	}
 
 	delete json.code;

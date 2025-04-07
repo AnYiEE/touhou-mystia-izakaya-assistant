@@ -1,4 +1,5 @@
 import {NextRequest, NextResponse} from 'next/server';
+import {validate} from 'uuid';
 
 import {getFile, getRecord, updateRecordTimeout} from '@/actions/backup';
 import {FILE_TYPE_JSON} from '@/utilities';
@@ -14,10 +15,13 @@ export async function GET(
 	}
 ) {
 	const {code} = await params;
+	if (!validate(code)) {
+		return NextResponse.json({message: 'Invalid code'}, {status: 400});
+	}
 
 	const {status} = await getRecord(code);
 	if (status === 404) {
-		return NextResponse.json({message: 'The file record does not exist or has been deleted'}, {status});
+		return NextResponse.json({message: 'The file record does not exist or has been deleted'}, {status: 404});
 	}
 
 	await updateRecordTimeout(code, Date.now());
