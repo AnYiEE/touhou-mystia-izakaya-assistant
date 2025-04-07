@@ -1,0 +1,87 @@
+diff --git a/dist/chunk-6LIX6LVT.mjs b/dist/chunk-6LIX6LVT.mjs
+index 3f3a26fa84ec5c62997dc507426e7c9b73e8d74f..f928f93db57d4bf8c855949235b2484629d66439 100644
+--- a/dist/chunk-6LIX6LVT.mjs
++++ b/dist/chunk-6LIX6LVT.mjs
+@@ -47,7 +47,7 @@ var Tooltip = forwardRef((props, ref) => {
+     warn("Tooltip must have only one child node. Please, check your code.");
+   }
+   const { ref: tooltipRef, id, style, ...otherTooltipProps } = getTooltipProps();
+-  const animatedContent = /* @__PURE__ */ jsx("div", { ref: tooltipRef, id, style, children: /* @__PURE__ */ jsx(LazyMotion, { features: domAnimation, children: /* @__PURE__ */ jsx(
++  const animatedContent = /* @__PURE__ */ jsx("div", { ref: tooltipRef, id, style, children: /* @__PURE__ */ jsx(
+     m.div,
+     {
+       animate: "enter",
+@@ -59,11 +59,12 @@ var Tooltip = forwardRef((props, ref) => {
+         ...getTransformOrigins(placement)
+       },
+       children: /* @__PURE__ */ jsx(Component, { ...getTooltipContentProps(), children: content })
+-    }
+-  ) }) });
++    },
++    `${id}-tooltip-inner`
++  ) }, `${id}-tooltip-content`);
+   return /* @__PURE__ */ jsxs(Fragment, { children: [
+     trigger,
+-    disableAnimation && isOpen ? /* @__PURE__ */ jsx(OverlayContainer, { portalContainer, children: /* @__PURE__ */ jsx("div", { ref: tooltipRef, id, style, ...otherTooltipProps, children: /* @__PURE__ */ jsx(Component, { ...getTooltipContentProps(), children: content }) }) }) : /* @__PURE__ */ jsx(AnimatePresence, { children: isOpen ? /* @__PURE__ */ jsx(OverlayContainer, { portalContainer, children: animatedContent }) : null })
++    disableAnimation ? isOpen && /* @__PURE__ */ jsx(OverlayContainer, { portalContainer, children: /* @__PURE__ */ jsx("div", { ref: tooltipRef, id, style, ...otherTooltipProps, children: /* @__PURE__ */ jsx(Component, { ...getTooltipContentProps(), children: content }) }) }) : /* @__PURE__ */ jsx(LazyMotion, { features: domAnimation, children: /* @__PURE__ */ jsx(AnimatePresence, { children: isOpen && /* @__PURE__ */ jsx(OverlayContainer, { portalContainer, children: animatedContent }) }) })
+   ] });
+ });
+ Tooltip.displayName = "HeroUI.Tooltip";
+diff --git a/dist/index.js b/dist/index.js
+index f3aae2b1984bf8bec86c9e9691b22b53f0e7054a..1fb4f69cdb96b46d95d5f530e79b4a021ddd5337 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -278,7 +278,7 @@ var Tooltip = (0, import_system2.forwardRef)((props, ref) => {
+     (0, import_shared_utils2.warn)("Tooltip must have only one child node. Please, check your code.");
+   }
+   const { ref: tooltipRef, id, style, ...otherTooltipProps } = getTooltipProps();
+-  const animatedContent = /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { ref: tooltipRef, id, style, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_framer_motion.LazyMotion, { features: domAnimation, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
++  const animatedContent = /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { ref: tooltipRef, id, style, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+     import_framer_motion.m.div,
+     {
+       animate: "enter",
+@@ -290,11 +290,12 @@ var Tooltip = (0, import_system2.forwardRef)((props, ref) => {
+         ...(0, import_aria_utils2.getTransformOrigins)(placement)
+       },
+       children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Component, { ...getTooltipContentProps(), children: content })
+-    }
+-  ) }) });
++    },
++    `${id}-tooltip-inner`
++  ) }, `${id}-tooltip-content`);
+   return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+     trigger,
+-    disableAnimation && isOpen ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_overlays2.OverlayContainer, { portalContainer, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { ref: tooltipRef, id, style, ...otherTooltipProps, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Component, { ...getTooltipContentProps(), children: content }) }) }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_framer_motion.AnimatePresence, { children: isOpen ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_overlays2.OverlayContainer, { portalContainer, children: animatedContent }) : null })
++    disableAnimation ? isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_overlays2.OverlayContainer, { portalContainer, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { ref: tooltipRef, id, style, ...otherTooltipProps, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Component, { ...getTooltipContentProps(), children: content }) }) }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_framer_motion.LazyMotion, { features: domAnimation, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_framer_motion.AnimatePresence, { children: isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_overlays2.OverlayContainer, { portalContainer, children: animatedContent }) }) })
+   ] });
+ });
+ Tooltip.displayName = "HeroUI.Tooltip";
+diff --git a/dist/tooltip.js b/dist/tooltip.js
+index 8c5b7d7de4fb173d5acb65d8de6433f13e9ea225..25a293bc27b2c9e799c640b0b1713ad8d5d7fcdc 100644
+--- a/dist/tooltip.js
++++ b/dist/tooltip.js
+@@ -275,7 +275,7 @@ var Tooltip = (0, import_system2.forwardRef)((props, ref) => {
+     (0, import_shared_utils2.warn)("Tooltip must have only one child node. Please, check your code.");
+   }
+   const { ref: tooltipRef, id, style, ...otherTooltipProps } = getTooltipProps();
+-  const animatedContent = /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { ref: tooltipRef, id, style, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_framer_motion.LazyMotion, { features: domAnimation, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
++  const animatedContent = /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { ref: tooltipRef, id, style, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+     import_framer_motion.m.div,
+     {
+       animate: "enter",
+@@ -287,11 +287,12 @@ var Tooltip = (0, import_system2.forwardRef)((props, ref) => {
+         ...(0, import_aria_utils2.getTransformOrigins)(placement)
+       },
+       children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Component, { ...getTooltipContentProps(), children: content })
+-    }
+-  ) }) });
++    },
++    `${id}-tooltip-inner`
++  ) }, `${id}-tooltip-content`);
+   return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+     trigger,
+-    disableAnimation && isOpen ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_overlays2.OverlayContainer, { portalContainer, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { ref: tooltipRef, id, style, ...otherTooltipProps, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Component, { ...getTooltipContentProps(), children: content }) }) }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_framer_motion.AnimatePresence, { children: isOpen ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_overlays2.OverlayContainer, { portalContainer, children: animatedContent }) : null })
++    disableAnimation ? isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_overlays2.OverlayContainer, { portalContainer, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { ref: tooltipRef, id, style, ...otherTooltipProps, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Component, { ...getTooltipContentProps(), children: content }) }) }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_framer_motion.LazyMotion, { features: domAnimation, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_framer_motion.AnimatePresence, { children: isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_overlays2.OverlayContainer, { portalContainer, children: animatedContent }) }) })
+   ] });
+ });
+ Tooltip.displayName = "HeroUI.Tooltip";

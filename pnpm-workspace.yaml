@@ -5,10 +5,6 @@ onlyBuiltDependencies:
   - sharp
 overrides:
   "@react-aria/interactions@^3.22.3": 3.22.2
-patchedDependencies:
-  "@heroui/use-aria-button": patches/@heroui__use-aria-button.patch
-  "@heroui/use-aria-link": patches/@heroui__use-aria-link.patch
-  next: patches/next.patch
 publicHoistPattern:
   - "*@heroui/*"
   - "*eslint-plugin*"
