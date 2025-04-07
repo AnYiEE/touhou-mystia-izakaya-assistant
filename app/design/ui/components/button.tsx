@@ -188,7 +188,7 @@ export default memo(
 				disableAnimation={disableAnimation ?? isReducedMotion}
 				endContent={endContent}
 				variant={variant}
-				className={cn(styleBase, styleBlur, styleColor, className)}
+				className={cn('transform-gpu', styleBase, styleBlur, styleColor, className)}
 				{...props}
 				ref={ref}
 			>
