@@ -29,6 +29,7 @@ import {
 	customerRareTutorialStoreKey,
 } from '@/components/customerRareTutorial';
 import Heading from '@/components/heading';
+import TimeAgo from '@/components/timeAgo';
 
 import {siteConfig} from '@/configs';
 import {customerNormalStore, customerRareStore, globalStore} from '@/stores';
@@ -112,7 +113,9 @@ function setErrorState({
 			message,
 			status,
 		});
-		setLabel(`${label}（${status === 404 ? '目标文件不存在' : status === 429 ? '五分钟后再试' : status}）`);
+		setLabel(
+			`${label}（${status === 400 ? '无效的备份码' : status === 404 ? '目标文件不存在' : status === 429 ? '五分钟后再试' : status}）`
+		);
 		trackEvent(trackEvent.category.error, 'Cloud', type, status);
 	}
 }
@@ -176,13 +179,55 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 	const currentCloudCode = globalStore.persistence.cloudCode.use();
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
+	const isCloudCodeValid = currentCloudCode !== null;
+
+	const [cloudCodeInfo, setCloudCodeInfo] = useState<ReactNodeWithoutBoolean>(null);
+
+	const updateCloudCodeInfo = useCallback((cloudCode: typeof currentCloudCode) => {
+		if (cloudCode === null) {
+			setCloudCodeInfo(
+				<>
+					无<span className="text-xs">（下次备份时将自动生成，请自行保存至他处）</span>
+				</>
+			);
+			return;
+		}
+		fetch(`/api/backup/check/${cloudCode}`)
+			.then(checkResponse)
+			.then(({created_at, last_accessed}: {created_at: number; last_accessed: number}) => {
+				setCloudCodeInfo(
+					<span className="text-xs">
+						（更新于
+						<TimeAgo timestamp={created_at} />
+						，上次使用于
+						<TimeAgo timestamp={last_accessed} />）
+					</span>
+				);
+			})
+			.catch((error: unknown) => {
+				if (typeof error === 'object' && error !== null && 'status' in error) {
+					setCloudCodeInfo(
+						<span className="text-xs">
+							（{error.status === 404 ? '云端未记录此备份码，可能已于他处删除？' : '无效的备份码'}）
+						</span>
+					);
+				} else {
+					setCloudCodeInfo(<span className="text-xs">（获取备份码信息失败）</span>);
+				}
+			});
+	}, []);
+
+	useEffect(() => {
+		updateCloudCodeInfo(currentCloudCode);
+	}, [currentCloudCode, updateCloudCodeInfo]);
+
 	const handleCloudDeleteButtonPress = useCallback(() => {
-		if (currentCloudCode === null) {
+		if (!isCloudCodeValid) {
 			return;
 		}
 		setIsCloudDeleteButtonDisabled(true);
 		setCloudDeleteButtonLabel(cloudDeleteButtonLabelMap.deleting);
-		void fetch(`/api/backup/delete/${currentCloudCode}`, {
+		fetch(`/api/backup/delete/${currentCloudCode}`, {
 			method: 'DELETE',
 		})
 			.then(checkResponse)
@@ -208,7 +253,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 					setCloudDeleteButtonLabel(cloudDeleteButtonLabelMap.delete);
 				}, 3000);
 			});
-	}, [currentCloudCode]);
+	}, [currentCloudCode, isCloudCodeValid]);
 
 	const handleCloudDownloadButtonPress = useCallback(() => {
 		let code = currentCloudCode;
@@ -220,7 +265,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 		}
 		setIsCloudDownloadButtonDisabled(true);
 		setCloudDownloadButtonLabel(cloudDownloadButtonLabelMap.downloading);
-		void fetch(`/api/backup/download/${code}`, {
+		fetch(`/api/backup/download/${code}`, {
 			cache: 'no-cache',
 		})
 			.then(checkResponse)
@@ -242,18 +287,19 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 				});
 			})
 			.finally(() => {
+				updateCloudCodeInfo(currentCloudCode);
 				setTimeout(() => {
 					setCloudDownloadState('default');
 					setIsCloudDownloadButtonDisabled(false);
 					setCloudDownloadButtonLabel(cloudDownloadButtonLabelMap.download);
 				}, 3000);
 			});
-	}, [currentCloudCode]);
+	}, [currentCloudCode, updateCloudCodeInfo]);
 
 	const handleCloudUploadButtonPress = useCallback(() => {
 		setIsCloudUploadButtonDisabled(true);
 		setCloudUploadButtonLabel(cloudUploadButtonLabelMap.uploading);
-		void fetch('/api/backup/upload', {
+		fetch('/api/backup/upload', {
 			body: JSON.stringify({
 				code: currentCloudCode,
 				...currentMealData,
@@ -280,13 +326,14 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 				});
 			})
 			.finally(() => {
+				updateCloudCodeInfo(currentCloudCode);
 				setTimeout(() => {
 					setCloudUploadState('default');
 					setIsCloudUploadButtonDisabled(false);
 					setCloudUploadButtonLabel(cloudUploadButtonLabelMap.upload);
 				}, 3000);
 			});
-	}, [currentCloudCode, currentMealData]);
+	}, [currentCloudCode, currentMealData, updateCloudCodeInfo]);
 
 	const handleExportButtonPress = useCallback(() => {
 		setIsExportButtonDisabled(true);
@@ -497,43 +544,44 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 					</Tab>
 					{!isOffline && (
 						<Tab key="backup-cloud" title="云端备份/还原">
-							<p className="-mt-1 text-sm leading-none text-foreground-500">
+							<p className="-mt-1 text-sm text-foreground-500">
 								当前备份码：
-								<Popover shouldCloseOnScroll showArrow>
-									<PopoverTrigger>
-										<Button
-											isDisabled={currentCloudCode === null}
-											variant="light"
-											className="-ml-1 inline-block h-auto w-auto min-w-0 p-1 leading-none text-foreground-500"
-										>
-											{currentCloudCode === null
-												? '无（下次备份时将自动生成，请自行保存至他处）'
-												: '点此查看'}
-										</Button>
-									</PopoverTrigger>
-									<PopoverContent>
-										<Snippet
-											size="sm"
-											symbol={
-												<FontAwesomeIcon
-													icon={faKey}
-													className="mr-1 !align-middle text-default-700"
-												/>
-											}
-											tooltipProps={{
-												content: '点击以复制备份码',
-												delay: 0,
-												offset: 0,
-												size: 'sm',
-											}}
-											classNames={{
-												pre: 'flex max-w-screen-p-60 items-center whitespace-normal break-all',
-											}}
-										>
-											{currentCloudCode}
-										</Snippet>
-									</PopoverContent>
-								</Popover>
+								{isCloudCodeValid && (
+									<Popover shouldCloseOnScroll showArrow>
+										<PopoverTrigger>
+											<Button
+												isDisabled={!isCloudCodeValid}
+												variant="light"
+												className="-ml-1 inline-block h-auto w-auto min-w-0 p-1 leading-none text-foreground-500"
+											>
+												点此查看
+											</Button>
+										</PopoverTrigger>
+										<PopoverContent>
+											<Snippet
+												size="sm"
+												symbol={
+													<FontAwesomeIcon
+														icon={faKey}
+														className="mr-1 !align-middle text-default-700"
+													/>
+												}
+												tooltipProps={{
+													content: '点击以复制备份码',
+													delay: 0,
+													offset: 0,
+													size: 'sm',
+												}}
+												classNames={{
+													pre: 'flex max-w-screen-p-60 items-center whitespace-normal break-all',
+												}}
+											>
+												{currentCloudCode}
+											</Snippet>
+										</PopoverContent>
+									</Popover>
+								)}
+								{cloudCodeInfo}
 							</p>
 							<p className="mb-2 mt-0.5 text-xs text-foreground-500">
 								备份码有效期为180天，每次使用后会自动续期，逾期将自动失效
@@ -542,7 +590,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								<Button
 									fullWidth
 									color={isCloudUploadButtonDisabled ? cloudUploadState : 'primary'}
-									isDisabled={isCloudDoing || isCloudUploadButtonDisabled}
+									isDisabled={isCloudDoing}
 									isLoading={isCloudUploadButtonDisabled}
 									variant="flat"
 									onPress={handleCloudUploadButtonPress}
@@ -552,7 +600,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								<Button
 									fullWidth
 									color={isCloudDownloadButtonDisabled ? cloudDownloadState : 'primary'}
-									isDisabled={isCloudDoing || isCloudDownloadButtonDisabled}
+									isDisabled={isCloudDoing}
 									isLoading={isCloudDownloadButtonDisabled}
 									variant="flat"
 									onPress={handleCloudDownloadButtonPress}
@@ -562,9 +610,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								<Button
 									fullWidth
 									color={isCloudDeleteButtonDisabled ? cloudDeleteState : 'primary'}
-									isDisabled={
-										currentCloudCode === null || isCloudDoing || isCloudDeleteButtonDisabled
-									}
+									isDisabled={isCloudDoing || !isCloudCodeValid}
 									isLoading={isCloudDeleteButtonDisabled}
 									variant="flat"
 									onPress={handleCloudDeleteButtonPress}
