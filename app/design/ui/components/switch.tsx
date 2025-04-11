@@ -1,6 +1,6 @@
 'use client';
 
-import {type ElementRef, forwardRef, memo} from 'react';
+import {memo} from 'react';
 
 import {useReducedMotion} from '@/design/ui/hooks';
 
@@ -9,12 +9,10 @@ import {Switch as HeroUISwitch, type SwitchProps} from '@heroui/switch';
 
 interface IProps extends SwitchProps {}
 
-export default memo(
-	forwardRef<ElementRef<typeof HeroUISwitch>, IProps>(function Switch({disableAnimation, ...props}, ref) {
-		const isReducedMotion = useReducedMotion();
+export default memo<IProps>(function Switch({disableAnimation, ...props}) {
+	const isReducedMotion = useReducedMotion();
 
-		return <HeroUISwitch disableAnimation={disableAnimation ?? isReducedMotion} {...props} ref={ref} />;
-	})
-) as InternalForwardRefRenderFunction<'input', IProps>;
+	return <HeroUISwitch disableAnimation={disableAnimation ?? isReducedMotion} {...props} />;
+}) as InternalForwardRefRenderFunction<'input', IProps>;
 
 export type {IProps as ISwitchProps};

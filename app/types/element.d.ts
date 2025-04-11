@@ -9,6 +9,7 @@ interface ParentNode {
 type ExtractCollectionValue<T extends Record<string, unknown>> = T[keyof T];
 type ExtractStringTypes<T> = T extends string ? T : never;
 type ReactNodeWithoutBoolean = Exclude<React.ReactNode, boolean>;
+type RefProps<T> = Partial<Record<'ref', React.Ref<T>>>;
 type SelectionSet = Exclude<import('@heroui/table').Selection, 'all'>;
 type ValueCollection<T = string> = Record<'value', T>;
 

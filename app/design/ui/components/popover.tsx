@@ -1,6 +1,6 @@
 'use client';
 
-import {type ComponentProps, type ElementRef, forwardRef, memo, useMemo} from 'react';
+import {type ComponentProps, memo, useMemo} from 'react';
 
 import {useMotionProps, useReducedMotion} from '@/design/ui/hooks';
 
@@ -51,59 +51,51 @@ interface IProps extends ComponentProps<typeof CustomHeroUIPopover> {
 	disableBlur?: boolean;
 }
 
-type Ref = NonNullable<IProps['ref']>;
+export default memo<IProps>(function Popover({
+	classNames,
+	color,
+	disableAnimation,
+	disableBlur,
+	offset,
+	shouldBlockScroll,
+	shouldCloseOnScroll,
+	showArrow,
+	size,
+	...props
+}) {
+	const motionProps = useMotionProps('popover');
+	const isReducedMotion = useReducedMotion();
 
-export default memo(
-	forwardRef<ElementRef<typeof HeroUIPopover>, IProps>(function Popover(
-		{
-			classNames,
-			color,
-			disableAnimation,
-			disableBlur,
-			offset,
-			shouldBlockScroll,
-			shouldCloseOnScroll,
-			showArrow,
-			size,
-			...props
-		},
-		ref
-	) {
-		const motionProps = useMotionProps('popover');
-		const isReducedMotion = useReducedMotion();
+	const isHighAppearance = store.persistence.highAppearance.use();
 
-		const isHighAppearance = store.persistence.highAppearance.use();
+	const styleBlur = useMemo(
+		() => getStyleBlur(color, disableBlur, isHighAppearance),
+		[color, disableBlur, isHighAppearance]
+	);
 
-		const styleBlur = useMemo(
-			() => getStyleBlur(color, disableBlur, isHighAppearance),
-			[color, disableBlur, isHighAppearance]
-		);
-
-		return (
-			<CustomHeroUIPopover
-				color={color}
-				disableAnimation={disableAnimation ?? isReducedMotion}
-				motionProps={motionProps}
-				// The same offset position as `Tooltip`.
-				offset={
-					typeof offset === 'number'
-						? offset + (isHighAppearance ? -2 : size === 'sm' && !showArrow ? -3 : showArrow ? 1 : -3)
-						: (offset as unknown as number)
-				}
-				shouldBlockScroll={Boolean(shouldBlockScroll)}
-				shouldCloseOnScroll={Boolean(shouldCloseOnScroll)}
-				showArrow={isHighAppearance ? false : Boolean(showArrow)}
-				size={size}
-				classNames={{
-					...classNames,
-					content: cn(styleBlur, classNames?.content),
-				}}
-				{...props}
-				ref={ref as Ref}
-			/>
-		);
-	})
-) as InternalForwardRefRenderFunction<'div', IProps>;
+	return (
+		<CustomHeroUIPopover
+			color={color}
+			disableAnimation={disableAnimation ?? isReducedMotion}
+			motionProps={motionProps}
+			// The same offset position as `Tooltip`.
+			offset={
+				typeof offset === 'number'
+					? offset + (isHighAppearance ? -2 : size === 'sm' && !showArrow ? -3 : showArrow ? 1 : -3)
+					: (offset as unknown as number)
+			}
+			shouldBlockScroll={Boolean(shouldBlockScroll)}
+			shouldCloseOnScroll={Boolean(shouldCloseOnScroll)}
+			showArrow={isHighAppearance ? false : Boolean(showArrow)}
+			size={size}
+			classNames={{
+				...classNames,
+				content: cn(styleBlur, classNames?.content),
+			}}
+			{...props}
+		/>
+	);
+}) as InternalForwardRefRenderFunction<'div', IProps>;
 
 export type {IProps as IPopoverProps};
 

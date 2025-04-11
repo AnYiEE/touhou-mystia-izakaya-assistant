@@ -1,6 +1,6 @@
 'use client';
 
-import {type CSSProperties, type ElementRef, forwardRef, memo, useEffect, useMemo, useState} from 'react';
+import {type CSSProperties, memo, useEffect, useMemo, useState} from 'react';
 
 import {CLASSNAME_FOCUS_VISIBLE_OUTLINE, cn} from '@/design/ui/components';
 
@@ -32,113 +32,111 @@ interface ISpriteBase {
 	width?: number;
 }
 
-interface IProps extends ISpriteBase, HTMLSpanElementAttributes, Partial<IPressProp<HTMLSpanElement>> {}
+interface IProps
+	extends HTMLSpanElementAttributes,
+		Partial<IPressProp<HTMLSpanElement>>,
+		ISpriteBase,
+		RefProps<HTMLSpanElement> {}
 
-export default memo(
-	forwardRef<ElementRef<'span'>, IProps>(function Sprite(
-		{
-			className,
-			height,
-			index,
-			name,
-			onClick,
-			onKeyDown,
-			onPress,
-			role,
-			size,
-			style,
-			tabIndex,
-			target,
-			title,
-			width,
-			...props
-		},
-		ref
-	) {
-		const [isSupportedWebp, setIsSupportedWebp] = useState(true);
+export default memo<IProps>(function Sprite({
+	className,
+	height,
+	index,
+	name,
+	onClick,
+	onKeyDown,
+	onPress,
+	role,
+	size,
+	style,
+	tabIndex,
+	target,
+	title,
+	width,
+	...props
+}) {
+	const [isSupportedWebp, setIsSupportedWebp] = useState(true);
 
-		useEffect(() => {
-			setIsSupportedWebp(checkCompatibility()['webp']);
-		}, []);
+	useEffect(() => {
+		setIsSupportedWebp(checkCompatibility()['webp']);
+	}, []);
 
-		const instance = SpriteClass.getInstance(target);
+	const instance = SpriteClass.getInstance(target);
 
-		const {calculatedIndex, calculatedName} = useMemo(() => {
-			let _calculatedIndex = index;
-			let _calculatedName = name;
+	const {calculatedIndex, calculatedName} = useMemo(() => {
+		let _calculatedIndex = index;
+		let _calculatedName = name;
 
-			if (_calculatedIndex !== undefined) {
-				_calculatedName = instance.findNameByIndex(_calculatedIndex);
-			} else if (_calculatedName === undefined) {
-				_calculatedIndex = 0;
-			} else {
-				_calculatedIndex = instance.findIndexByName(_calculatedName);
-			}
+		if (_calculatedIndex !== undefined) {
+			_calculatedName = instance.findNameByIndex(_calculatedIndex);
+		} else if (_calculatedName === undefined) {
+			_calculatedIndex = 0;
+		} else {
+			_calculatedIndex = instance.findIndexByName(_calculatedName);
+		}
 
-			return {
-				calculatedIndex: _calculatedIndex,
-				calculatedName: _calculatedName,
-			};
-		}, [index, instance, name]);
+		return {
+			calculatedIndex: _calculatedIndex,
+			calculatedName: _calculatedName,
+		};
+	}, [index, instance, name]);
 
-		const {calculatedHeight, calculatedSize, calculatedWidth} = useMemo(() => {
-			let _calculatedHeight = height ?? instance.spriteHeight;
-			let _calculateWidth = width ?? instance.spriteWidth;
-			let _calculateSize = size;
+	const {calculatedHeight, calculatedSize, calculatedWidth} = useMemo(() => {
+		let _calculatedHeight = height ?? instance.spriteHeight;
+		let _calculateWidth = width ?? instance.spriteWidth;
+		let _calculateSize = size;
 
-			if (_calculatedHeight === _calculateWidth) {
-				_calculateSize ??= _calculatedHeight;
-			}
-			if (_calculateSize !== undefined) {
-				_calculatedHeight = _calculateSize;
-				_calculateWidth = _calculateSize;
-			}
+		if (_calculatedHeight === _calculateWidth) {
+			_calculateSize ??= _calculatedHeight;
+		}
+		if (_calculateSize !== undefined) {
+			_calculatedHeight = _calculateSize;
+			_calculateWidth = _calculateSize;
+		}
 
-			return {
-				calculatedHeight: _calculatedHeight,
-				calculatedWidth: _calculateWidth,
+		return {
+			calculatedHeight: _calculatedHeight,
+			calculatedWidth: _calculateWidth,
 
-				calculatedSize: remToPx(_calculateSize),
-			};
-		}, [height, instance.spriteHeight, instance.spriteWidth, size, width]);
+			calculatedSize: remToPx(_calculateSize),
+		};
+	}, [height, instance.spriteHeight, instance.spriteWidth, size, width]);
 
-		const calculatedStyle = useMemo(
-			() => ({
-				...getSpriteStyle(target, isSupportedWebp),
-				...instance.getBackgroundPropsByIndex(calculatedIndex, {
-					displayHeight: calculatedSize ?? calculatedHeight,
-					displayWidth: calculatedSize ?? calculatedWidth,
-				}),
+	const calculatedStyle = useMemo(
+		() => ({
+			...getSpriteStyle(target, isSupportedWebp),
+			...instance.getBackgroundPropsByIndex(calculatedIndex, {
+				displayHeight: calculatedSize ?? calculatedHeight,
+				displayWidth: calculatedSize ?? calculatedWidth,
 			}),
-			[calculatedHeight, calculatedIndex, calculatedSize, calculatedWidth, instance, isSupportedWebp, target]
-		);
+		}),
+		[calculatedHeight, calculatedIndex, calculatedSize, calculatedWidth, instance, isSupportedWebp, target]
+	);
 
-		const finalTitle = title ?? calculatedName;
-		const isAsButton = role === 'button';
+	const finalTitle = title ?? calculatedName;
+	const isAsButton = role === 'button';
 
-		return (
-			<PressElement
-				as="span"
-				onClick={onClick}
-				onKeyDown={onKeyDown}
-				onPress={onPress}
-				role={role ?? 'img'}
-				tabIndex={tabIndex ?? (isAsButton ? 0 : undefined)}
-				title={finalTitle}
-				className={cn(
-					'inline-block',
-					{
-						[CLASSNAME_FOCUS_VISIBLE_OUTLINE]: isAsButton,
-						'cursor-pointer': isAsButton,
-					},
-					className
-				)}
-				style={{...calculatedStyle, ...style}}
-				{...props}
-				ref={ref}
-			/>
-		);
-	})
-);
+	return (
+		<PressElement
+			as="span"
+			onClick={onClick}
+			onKeyDown={onKeyDown}
+			onPress={onPress}
+			role={role ?? 'img'}
+			tabIndex={tabIndex ?? (isAsButton ? 0 : undefined)}
+			title={finalTitle}
+			className={cn(
+				'inline-block',
+				{
+					[CLASSNAME_FOCUS_VISIBLE_OUTLINE]: isAsButton,
+					'cursor-pointer': isAsButton,
+				},
+				className
+			)}
+			style={{...calculatedStyle, ...style}}
+			{...props}
+		/>
+	);
+});
 
 export type {IProps as ISpriteProps};

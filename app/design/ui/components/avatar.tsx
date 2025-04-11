@@ -1,6 +1,6 @@
 'use client';
 
-import {type ComponentProps, type ElementRef, forwardRef, memo} from 'react';
+import {type ComponentProps, memo} from 'react';
 
 import {useReducedMotion} from '@/design/ui/hooks';
 
@@ -13,12 +13,10 @@ const CustomHeroUIAvatar = extendVariants(HeroUIAvatar, generateRatingVariants('
 
 interface IProps extends ComponentProps<typeof CustomHeroUIAvatar> {}
 
-export default memo(
-	forwardRef<ElementRef<typeof CustomHeroUIAvatar>, IProps>(function Avatar({disableAnimation, ...props}, ref) {
-		const isReducedMotion = useReducedMotion();
+export default memo<IProps>(function Avatar({disableAnimation, ...props}) {
+	const isReducedMotion = useReducedMotion();
 
-		return <CustomHeroUIAvatar disableAnimation={disableAnimation ?? isReducedMotion} {...props} ref={ref} />;
-	})
-) as InternalForwardRefRenderFunction<'span', IProps>;
+	return <CustomHeroUIAvatar disableAnimation={disableAnimation ?? isReducedMotion} {...props} />;
+}) as InternalForwardRefRenderFunction<'span', IProps>;
 
 export type {IProps as IAvatarProps};

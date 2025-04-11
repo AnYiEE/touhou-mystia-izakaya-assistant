@@ -1,6 +1,6 @@
 'use client';
 
-import {type ElementType, type ForwardedRef, type HTMLAttributes, forwardRef, memo, useCallback} from 'react';
+import {type ElementType, type HTMLAttributes, memo, useCallback} from 'react';
 
 import {checkA11yConfirmKey} from '@/utilities';
 
@@ -24,31 +24,32 @@ interface IProps<T extends HTMLElement> extends HTMLAttributes<T>, IPressProp<T>
 	as: ElementType;
 }
 
-export default memo(
-	forwardRef(function PressElement<T extends HTMLElement>(
-		{as: Component = 'span', onClick, onKeyDown, onPress, ...props}: IProps<T>,
-		ref: ForwardedRef<T>
-	) {
-		const handleClick = useCallback(
-			(event: HTMLElementPressEvent<T>) => {
-				onClick?.(event);
-				onPress?.(event);
-			},
-			[onClick, onPress]
-		);
+export default memo(function PressElement<T extends HTMLElement>({
+	as: Component = 'span',
+	onClick,
+	onKeyDown,
+	onPress,
+	...props
+}: IProps<T>) {
+	const handleClick = useCallback(
+		(event: HTMLElementPressEvent<T>) => {
+			onClick?.(event);
+			onPress?.(event);
+		},
+		[onClick, onPress]
+	);
 
-		const handleKeyDown = useCallback(
-			(event: HTMLElementPressEvent<T>) => {
-				if (onKeyDown !== undefined) {
-					checkA11yConfirmKey(onKeyDown)(event);
-				}
-				if (onPress !== undefined) {
-					checkA11yConfirmKey(onPress)(event);
-				}
-			},
-			[onKeyDown, onPress]
-		);
+	const handleKeyDown = useCallback(
+		(event: HTMLElementPressEvent<T>) => {
+			if (onKeyDown !== undefined) {
+				checkA11yConfirmKey(onKeyDown)(event);
+			}
+			if (onPress !== undefined) {
+				checkA11yConfirmKey(onPress)(event);
+			}
+		},
+		[onKeyDown, onPress]
+	);
 
-		return <Component onClick={handleClick} onKeyDown={handleKeyDown} {...props} ref={ref} />;
-	})
-);
+	return <Component onClick={handleClick} onKeyDown={handleKeyDown} {...props} />;
+});

@@ -1,4 +1,4 @@
-import {type ElementRef, forwardRef, memo, useEffect, useState} from 'react';
+import {memo, useEffect, useState} from 'react';
 
 function formatTimeAgo(pastTimestamp: number, nowTimestamp = Date.now()) {
 	const diff = nowTimestamp - pastTimestamp;
@@ -18,32 +18,26 @@ function formatTimeAgo(pastTimestamp: number, nowTimestamp = Date.now()) {
 	return '刚刚';
 }
 
-interface IProps extends HTMLSpanElementAttributes {
+interface IProps extends HTMLSpanElementAttributes, RefProps<HTMLSpanElement> {
 	timestamp: number;
 }
 
-export default memo(
-	forwardRef<ElementRef<'span'>, IProps>(function TimeAgo({timestamp, ...props}, ref) {
-		const [timeAgo, setTimeAgo] = useState('');
+export default memo<IProps>(function TimeAgo({timestamp, ...props}) {
+	const [timeAgo, setTimeAgo] = useState('');
 
-		useEffect(() => {
-			const update = () => {
-				setTimeAgo(formatTimeAgo(timestamp));
-			};
+	useEffect(() => {
+		const update = () => {
+			setTimeAgo(formatTimeAgo(timestamp));
+		};
 
-			update();
+		update();
 
-			const interval = setInterval(update, 60 * 1000);
+		const interval = setInterval(update, 60 * 1000);
 
-			return () => {
-				clearInterval(interval);
-			};
-		}, [timestamp]);
+		return () => {
+			clearInterval(interval);
+		};
+	}, [timestamp]);
 
-		return (
-			<span {...props} ref={ref}>
-				{timeAgo}
-			</span>
-		);
-	})
-);
+	return <span {...props}>{timeAgo}</span>;
+});

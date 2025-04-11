@@ -106,7 +106,7 @@ export default function ResultCard() {
 
 	const instance_recipe = customerStore.instances.recipe.get();
 
-	const saveButtonTooltipTimer = useRef<NodeJS.Timeout>();
+	const saveButtonTooltipTimer = useRef<NodeJS.Timeout | undefined>(undefined);
 	const [isShowSaveButtonTooltip, setIsShowSaveButtonTooltip] = useState(false);
 	const isSaveButtonDisabled = currentCustomerName === null || currentRecipeData === null || currentRating === null;
 
