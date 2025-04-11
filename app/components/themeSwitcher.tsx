@@ -137,7 +137,7 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 				}}
 			>
 				{({value}) => (
-					<DropdownItem key={value}>
+					<DropdownItem key={value} textValue={THEME_LABEL_MAP[value]}>
 						<div className="flex items-center gap-1">
 							<FontAwesomeIcon icon={THEME_LABEL_ICON_MAP[value]} className="w-4 pb-px opacity-80" />
 							{THEME_LABEL_MAP[value]}
