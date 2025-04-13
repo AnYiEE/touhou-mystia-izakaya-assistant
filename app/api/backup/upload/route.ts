@@ -1,4 +1,5 @@
 import {NextRequest, NextResponse} from 'next/server';
+import {sha1} from 'js-sha1';
 import {v7 as uuid, validate} from 'uuid';
 
 import {checkIpFrequency, getRecord, saveFile, setRecord, updateRecord} from '@/actions/backup';
@@ -18,11 +19,13 @@ export async function POST(request: NextRequest) {
 	if (ip.startsWith('::ffff:')) {
 		ip = ip.slice(7);
 	}
+	ip = sha1(ip);
 
-	const ua = request.headers.get('user-agent')?.trim();
+	let ua = request.headers.get('user-agent')?.trim();
 	if (ua === undefined || ua.length === 0) {
 		return NextResponse.json({message: 'Invalid user agent'}, {status: 400});
 	}
+	ua = sha1(ua);
 
 	const json = (await request.json()) as Partial<{
 		code: string | null;
