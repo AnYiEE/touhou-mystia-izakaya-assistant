@@ -19,6 +19,11 @@ export async function POST(request: NextRequest) {
 		ip = ip.slice(7);
 	}
 
+	const ua = request.headers.get('user-agent')?.trim();
+	if (ua === undefined || ua.length === 0) {
+		return NextResponse.json({message: 'Invalid user agent'}, {status: 400});
+	}
+
 	const json = (await request.json()) as Partial<{
 		code: string | null;
 		customer_normal: object;
@@ -48,7 +53,7 @@ export async function POST(request: NextRequest) {
 	const now = Date.now();
 	const fiveMinutesAgo = now - 5 * 60 * 1000;
 
-	const recentRecord = await checkIpFrequency(ip, fiveMinutesAgo);
+	const recentRecord = await checkIpFrequency(ip, ua, fiveMinutesAgo);
 	if (recentRecord.status === 429) {
 		return NextResponse.json({message: 'Requests are too frequent'}, {status: 429});
 	}
@@ -62,12 +67,14 @@ export async function POST(request: NextRequest) {
 			created_at: now,
 			ip_address: ip,
 			last_accessed: now,
+			user_agent: ua,
 		});
 	} else {
 		await updateRecord(code, {
 			created_at: now,
 			ip_address: ip,
 			last_accessed: now,
+			user_agent: ua,
 		});
 	}
 

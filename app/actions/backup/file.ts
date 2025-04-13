@@ -2,7 +2,7 @@ import {access, mkdir, readFile, unlink, writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {cwd} from 'node:process';
 
-import type {IBackupFileRecord} from '@/lib/types';
+import type {IBackupFileRecord} from '@/lib/db/types';
 
 const dir = join(cwd(), 'upload/backups');
 

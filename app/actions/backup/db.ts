@@ -1,5 +1,7 @@
-import {TABLE_NAME_BACKUP_FILE_RECORD as TABLE_NAME, db} from '@/lib';
-import type {IBackupFileRecord, IBackupFileRecordNew, IBackupFileRecordUpdate} from '@/lib/types';
+import {TABLE_NAME_MAP, db} from '@/lib/db';
+import type {IBackupFileRecord, IBackupFileRecordNew, IBackupFileRecordUpdate} from '@/lib/db/types';
+
+const TABLE_NAME = TABLE_NAME_MAP.backupFileRecord;
 
 type TFileRecordWithStatus = IBackupFileRecord & {
 	status: 200;
@@ -28,12 +30,17 @@ function generateResponse<T extends IBackupFileRecord | undefined, U extends TOt
 	} as TResponse<T, U>;
 }
 
-export async function checkIpFrequency(ip: IBackupFileRecord['ip_address'], time: IBackupFileRecord['created_at']) {
+export async function checkIpFrequency(
+	ip: IBackupFileRecord['ip_address'],
+	ua: IBackupFileRecord['user_agent'],
+	time: IBackupFileRecord['created_at']
+) {
 	const record = await db
 		.selectFrom(TABLE_NAME)
 		.select('code')
-		.where('ip_address', '=', ip)
 		.where('created_at', '>', time)
+		.where('ip_address', '=', ip)
+		.where('user_agent', '=', ua)
 		.executeTakeFirst();
 
 	if (record === undefined) {
