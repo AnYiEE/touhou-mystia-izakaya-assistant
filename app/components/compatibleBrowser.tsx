@@ -133,7 +133,7 @@ function replaceGapClasses(element: Element) {
 		});
 }
 
-function nodeIsElement(node: Node): node is Element {
+function nodeIsElement(node: Node) {
 	return node instanceof Element;
 }
 
@@ -169,7 +169,7 @@ function initFlexGapFix() {
 
 export default function CompatibleBrowser() {
 	useEffect(() => {
-		if (checkCompatibility()['flexGap']) {
+		if (checkCompatibility().flexGap) {
 			return;
 		}
 

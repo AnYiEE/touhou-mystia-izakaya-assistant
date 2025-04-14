@@ -47,7 +47,7 @@ import {
 } from '@/utilities';
 
 export type TTableColumnKey = 'beverage' | 'price' | 'suitability' | 'action';
-export type TTableColumns = ITableColumn<TTableColumnKey>[];
+export type TTableColumns = Array<ITableColumn<TTableColumnKey>>;
 
 type TTableSortKey = Exclude<TTableColumnKey, 'action'>;
 export type TTableSortDescriptor = ITableSortDescriptor<TTableSortKey>;

@@ -5,9 +5,9 @@ type TValueCollection = ValueCollection<TValue>;
 type TTarget = TValue | TValueCollection;
 
 function getTone(pinyin: string) {
-	const match = pinyin.match(/\d/u);
+	const exec = /\d/u.exec(pinyin);
 
-	return match ? Number.parseInt(match[0]) : 0;
+	return exec === null ? 0 : Number.parseInt(exec[0]);
 }
 
 function removeTone(pinyin: string) {

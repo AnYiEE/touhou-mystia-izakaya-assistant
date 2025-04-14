@@ -7,11 +7,11 @@ import {Button, type IButtonProps, cn} from '@/design/ui/components';
 import {type HTMLElementClickEvent, type HTMLElementKeyDownEvent, type IPressProp} from '@/components/pressElement';
 
 import {type TTag} from '@/data';
-import type {TTagStyle} from '@/data/types';
+import type {ITagStyleConfig} from '@/data/types';
 import {checkA11yConfirmKey, checkEmpty} from '@/utilities';
 
 interface ITagPropsBase {
-	tagStyle?: Partial<TTagStyle> | undefined;
+	tagStyle?: Partial<ITagStyleConfig> | undefined;
 	tagType?: 'negative' | 'positive' | null | undefined;
 }
 

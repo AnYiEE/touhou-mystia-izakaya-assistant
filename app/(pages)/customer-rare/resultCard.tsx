@@ -78,7 +78,7 @@ function IngredientsList() {
 
 	const filledIngredients = useMemo(
 		() =>
-			toArray<(TIngredientName | null)[]>(
+			toArray<Array<TIngredientName | null>>(
 				originalIngredients,
 				currentRecipeData?.extraIngredients ?? [],
 				new Array<null>(5).fill(null)
@@ -252,6 +252,7 @@ export default function ResultCard() {
 					<div className="flex items-center gap-2">
 						{currentRecipeData ? (
 							(() => {
+								// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 								const isDarkMatterOrNormalMeal = isDarkMatter || !hasMystiaCooker;
 								const originalCooker = instance_recipe.getPropsByName(currentRecipeData.name, 'cooker');
 								const cooker = isDarkMatterOrNormalMeal

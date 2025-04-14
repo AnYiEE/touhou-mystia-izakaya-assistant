@@ -1,14 +1,14 @@
 import {type MetadataRoute} from 'next';
 
 import {type TSitePath, siteConfig} from '@/configs';
-import type {TLink} from '@/configs/site/types';
+import type {ILink} from '@/configs/site/types';
 
 const {domain, navMenuItems} = siteConfig;
 
 export const dynamic = 'force-static';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-	return (navMenuItems as TLink<TSitePath>[])
+	return (navMenuItems as Array<ILink<TSitePath>>)
 		.filter(({href}) => href !== '/preferences')
 		.map<MetadataRoute.Sitemap[number]>(({href}) => ({
 			changeFrequency: 'monthly',

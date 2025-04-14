@@ -3,7 +3,7 @@ import type {TColorScale} from './types';
 import {memoize} from '../../../utilities/memoize';
 
 export const swapColorScale = memoize(function swapColorScale(colors: TColorScale): TColorScale {
-	const keys = Object.keys(colors).map(Number) as (keyof TColorScale)[];
+	const keys = Object.keys(colors).map(Number) as Array<keyof TColorScale>;
 	const {length} = keys;
 	const halfLength = Math.floor(length / 2);
 

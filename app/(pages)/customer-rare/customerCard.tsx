@@ -340,9 +340,11 @@ export default function CustomerCard() {
 													'cursor-not-allowed':
 														hasMystiaCooker && !isDarkMatter && !isOrderLinkedFilter,
 													'font-normal opacity-50':
+														// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 														isDarkMatter || !currentRecipeTagsWithTrend.includes(tag),
 													'ring-2 ring-current':
 														currentCustomerOrder.recipeTag === tag &&
+														// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 														((hasMystiaCooker && isDarkMatter) || !hasMystiaCooker),
 												}
 											)}
@@ -363,6 +365,7 @@ export default function CustomerCard() {
 										tagType="negative"
 										className={cn('cursor-not-allowed p-1 font-semibold leading-none', {
 											'font-normal opacity-50':
+												// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 												isDarkMatter || !currentRecipeTagsWithTrend.includes(tag),
 										})}
 									/>
@@ -398,6 +401,7 @@ export default function CustomerCard() {
 												'font-normal opacity-50': !beverageTags.includes(tag),
 												'ring-2 ring-current':
 													currentCustomerOrder.beverageTag === tag &&
+													// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 													((hasMystiaCooker && isDarkMatter) || !hasMystiaCooker),
 											}
 										)}

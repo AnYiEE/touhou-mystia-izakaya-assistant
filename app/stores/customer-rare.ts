@@ -172,15 +172,18 @@ const state = {
 			},
 		},
 
-		meals: {} as {
-			[key in TCustomerRareName]?: {
-				index: number;
-				order: ICustomerOrder;
-				hasMystiaCooker: boolean;
-				beverage: TBeverageName;
-				recipe: IMealRecipe;
-			}[];
-		},
+		meals: {} as Partial<
+			Record<
+				TCustomerRareName,
+				Array<{
+					index: number;
+					order: ICustomerOrder;
+					hasMystiaCooker: boolean;
+					beverage: TBeverageName;
+					recipe: IMealRecipe;
+				}>
+			>
+		>,
 	},
 	shared: {
 		beverage: {
@@ -236,12 +239,12 @@ export const customerRareStoreKey = 'page-customer_rare-storage';
 
 const getNames = createNamesCache(instance_customer);
 
-type TSavedMealRatingResult = {
+interface ISavedMealRatingResult {
 	isDarkMatter: boolean;
 	price: number;
 	rating: TRatingKey;
-};
-const savedMealRatingCache = new Map<string, TSavedMealRatingResult>();
+}
+const savedMealRatingCache = new Map<string, ISavedMealRatingResult>();
 
 export const customerRareStore = store(state, {
 	persist: {
@@ -818,7 +821,7 @@ export const customerRareStore = store(state, {
 				isDarkMatter,
 				price: beveragePrice + recipePrice,
 				rating,
-			} as TSavedMealRatingResult;
+			} as ISavedMealRatingResult;
 			savedMealRatingCache.set(stringifiedData, result);
 			return result;
 		},

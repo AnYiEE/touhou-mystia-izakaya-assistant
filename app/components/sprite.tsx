@@ -58,7 +58,7 @@ export default memo<IProps>(function Sprite({
 	const [isSupportedWebp, setIsSupportedWebp] = useState(true);
 
 	useEffect(() => {
-		setIsSupportedWebp(checkCompatibility()['webp']);
+		setIsSupportedWebp(checkCompatibility().webp);
 	}, []);
 
 	const instance = SpriteClass.getInstance(target);

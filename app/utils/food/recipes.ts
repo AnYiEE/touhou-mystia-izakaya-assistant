@@ -17,14 +17,16 @@ import {
 import {checkEmpty, cloneJsonObject, intersection, numberSort, toArray, toSet} from '@/utilities';
 import type {IMealRecipe, IPopularTrend} from '@/types';
 
-type TRecipeProcessedPositiveTags = Omit<TRecipes[number], 'positiveTags'> & {
-	positiveTags: TRecipeTag[];
-};
+type TRecipeProcessedPositiveTags = Prettify<
+	Omit<TRecipes[number], 'positiveTags'> & {
+		positiveTags: TRecipeTag[];
+	}
+>;
 
-type TBondRecipes = {
+type TBondRecipes = Array<{
 	level: number;
 	name: TRecipeName;
-}[];
+}>;
 
 export class Recipe extends Food<TRecipes> {
 	private static _instance: Recipe | undefined;

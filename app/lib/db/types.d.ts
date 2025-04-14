@@ -12,10 +12,8 @@ interface ITableBackupFileRecord {
 	user_agent: string;
 }
 
-export type IBackupFileRecord = Selectable<ITableBackupFileRecord>;
-export type IBackupFileRecordNew = Insertable<ITableBackupFileRecord>;
-export type IBackupFileRecordUpdate = Updateable<ITableBackupFileRecord>;
+export type TBackupFileRecord = Selectable<ITableBackupFileRecord>;
+export type TBackupFileRecordNew = Insertable<ITableBackupFileRecord>;
+export type TBackupFileRecordUpdate = Updateable<ITableBackupFileRecord>;
 
-export type TDatabase = {
-	[key in TTableNameMap['backupFileRecord']]: ITableBackupFileRecord;
-};
+export type TDatabase = Record<TTableNameMap['backupFileRecord'], ITableBackupFileRecord>;

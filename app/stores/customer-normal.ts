@@ -151,13 +151,16 @@ const state = {
 			},
 		},
 
-		meals: {} as {
-			[key in TCustomerNormalName]?: {
-				index: number;
-				beverage: TBeverageName | null;
-				recipe: IMealRecipe;
-			}[];
-		},
+		meals: {} as Partial<
+			Record<
+				TCustomerNormalName,
+				Array<{
+					index: number;
+					beverage: TBeverageName | null;
+					recipe: IMealRecipe;
+				}>
+			>
+		>,
 	},
 	shared: {
 		beverage: {

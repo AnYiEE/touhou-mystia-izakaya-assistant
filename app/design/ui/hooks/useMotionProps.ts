@@ -102,7 +102,7 @@ export function getMotionProps<T extends TMotionType>(
 	}
 
 	if (!isHighAppearance) {
-		return MOTION_PROP_MAP['default'];
+		return MOTION_PROP_MAP.default;
 	}
 
 	return MOTION_PROP_MAP[type];

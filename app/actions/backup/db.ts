@@ -1,20 +1,22 @@
 import {TABLE_NAME_MAP, db} from '@/lib/db';
-import type {IBackupFileRecord, IBackupFileRecordNew, IBackupFileRecordUpdate} from '@/lib/db/types';
+import type {TBackupFileRecord, TBackupFileRecordNew, TBackupFileRecordUpdate} from '@/lib/db/types';
 
 const TABLE_NAME = TABLE_NAME_MAP.backupFileRecord;
 
-type TFileRecordWithStatus = IBackupFileRecord & {
-	status: 200;
-};
+type TFileRecordWithStatus = Prettify<
+	TBackupFileRecord & {
+		status: 200;
+	}
+>;
 
 type TOtherStatus = 201 | 404 | 429 | 500;
 interface IOtherStatus<T extends TOtherStatus> {
 	status: T & TOtherStatus;
 }
 
-type TResponse<T, U extends TOtherStatus> = T extends IBackupFileRecord ? TFileRecordWithStatus : IOtherStatus<U>;
+type TResponse<T, U extends TOtherStatus> = T extends TBackupFileRecord ? TFileRecordWithStatus : IOtherStatus<U>;
 
-function generateResponse<T extends IBackupFileRecord | undefined, U extends TOtherStatus>(
+function generateResponse<T extends TBackupFileRecord | undefined, U extends TOtherStatus>(
 	record: T,
 	errorStatus?: U
 ): TResponse<T, U> {
@@ -31,9 +33,9 @@ function generateResponse<T extends IBackupFileRecord | undefined, U extends TOt
 }
 
 export async function checkIpFrequency(
-	ip: IBackupFileRecord['ip_address'],
-	ua: IBackupFileRecord['user_agent'],
-	time: IBackupFileRecord['created_at']
+	ip: TBackupFileRecord['ip_address'],
+	ua: TBackupFileRecord['user_agent'],
+	time: TBackupFileRecord['created_at']
 ) {
 	const record = await db
 		.selectFrom(TABLE_NAME)
@@ -50,31 +52,31 @@ export async function checkIpFrequency(
 	return generateResponse(undefined, 429);
 }
 
-export async function deleteRecord(code: IBackupFileRecord['code']) {
+export async function deleteRecord(code: TBackupFileRecord['code']) {
 	const record = await db.deleteFrom(TABLE_NAME).where('code', '=', code).returningAll().executeTakeFirst();
 
 	return generateResponse(record);
 }
 
-export async function getRecord(code: IBackupFileRecord['code']) {
+export async function getRecord(code: TBackupFileRecord['code']) {
 	const record = await db.selectFrom(TABLE_NAME).where('code', '=', code).selectAll().executeTakeFirst();
 
 	return generateResponse(record, 404);
 }
 
-export async function getExpiredRecords(time: IBackupFileRecord['last_accessed']) {
+export async function getExpiredRecords(time: TBackupFileRecord['last_accessed']) {
 	const records = await db.selectFrom(TABLE_NAME).select('code').where('last_accessed', '<', time).execute();
 
 	return records;
 }
 
-export async function setRecord(backupFileRecord: IBackupFileRecordNew) {
+export async function setRecord(backupFileRecord: TBackupFileRecordNew) {
 	const record = await db.insertInto(TABLE_NAME).values(backupFileRecord).returningAll().executeTakeFirst();
 
 	return generateResponse(record);
 }
 
-export async function updateRecord(code: IBackupFileRecord['code'], backupFileRecord: IBackupFileRecordUpdate) {
+export async function updateRecord(code: TBackupFileRecord['code'], backupFileRecord: TBackupFileRecordUpdate) {
 	const record = await db
 		.updateTable(TABLE_NAME)
 		.set(backupFileRecord)
@@ -85,7 +87,7 @@ export async function updateRecord(code: IBackupFileRecord['code'], backupFileRe
 	return generateResponse(record, 404);
 }
 
-export async function updateRecordTimeout(code: IBackupFileRecord['code'], time: IBackupFileRecord['last_accessed']) {
+export async function updateRecordTimeout(code: TBackupFileRecord['code'], time: TBackupFileRecord['last_accessed']) {
 	const record = await db
 		.updateTable(TABLE_NAME)
 		.set({

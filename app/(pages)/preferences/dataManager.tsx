@@ -67,7 +67,7 @@ const exportButtonLabelMap = {
 type TCloudState = 'danger' | 'default' | 'success';
 type TExportButtonLabel = ExtractCollectionValue<typeof exportButtonLabelMap>;
 
-function checkResponse(response: Response) {
+function checkResponse<T>(response: Response) {
 	if (!response.ok) {
 		return response.json().then((error) => {
 			// eslint-disable-next-line @typescript-eslint/only-throw-error
@@ -78,7 +78,7 @@ function checkResponse(response: Response) {
 		});
 	}
 
-	return response.json();
+	return response.json() as Promise<T>;
 }
 
 function setErrorState({
@@ -193,8 +193,13 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 			return;
 		}
 		fetch(`/api/backup/check/${cloudCode}`)
-			.then(checkResponse)
-			.then(({created_at, last_accessed}: {created_at: number; last_accessed: number}) => {
+			.then(
+				checkResponse<{
+					created_at: number;
+					last_accessed: number;
+				}>
+			)
+			.then(({created_at, last_accessed}) => {
 				setCloudCodeInfo(
 					<span className="text-xs">
 						（更新于
@@ -257,9 +262,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 
 	const handleCloudDownloadButtonPress = useCallback(() => {
 		let code = currentCloudCode;
-		if (code === null) {
-			code = prompt('请输入已有备份码');
-		}
+		code ??= prompt('请输入已有备份码');
 		if (!code?.trim()) {
 			return;
 		}
@@ -268,8 +271,8 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 		fetch(`/api/backup/download/${code}`, {
 			cache: 'no-cache',
 		})
-			.then(checkResponse)
-			.then((data: typeof currentMealData) => {
+			.then(checkResponse<typeof currentMealData>)
+			.then((data) => {
 				setCloudDownloadState('success');
 				setCloudDownloadButtonLabel(cloudDownloadButtonLabelMap.success);
 				customerNormalStore.persistence.meals.set(data.customer_normal);
@@ -309,8 +312,12 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 			},
 			method: 'POST',
 		})
-			.then(checkResponse)
-			.then(({code}: {code: string}) => {
+			.then(
+				checkResponse<{
+					code: string;
+				}>
+			)
+			.then(({code}) => {
 				setCloudUploadState('success');
 				setCloudUploadButtonLabel(cloudUploadButtonLabelMap.success);
 				globalStore.persistence.cloudCode.set(code);
@@ -388,7 +395,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 				setIsSaveButtonError(false);
 			}
 			setIsSaveButtonLoading(true);
-			const json = JSON.parse(throttledImportValue) as unknown;
+			const json = JSON.parse(throttledImportValue);
 			if (Array.isArray(json) || !isObject(json)) {
 				throw new TypeError('not an object');
 			}

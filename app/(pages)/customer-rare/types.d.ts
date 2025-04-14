@@ -41,21 +41,21 @@ export interface ITableSortDescriptor<T extends string> extends SortDescriptor {
 	time?: number;
 }
 
-type TBeverageSuitability = {
+interface IBeverageSuitability {
 	matchedTags: TBeverageTag[];
 	suitability: number;
-};
+}
 
-export type TBeverageWithSuitability = TBeverage & TBeverageSuitability;
+export type TBeverageWithSuitability = Prettify<TBeverage & IBeverageSuitability>;
 export type TBeveragesWithSuitability = TBeverageWithSuitability[];
 
-type TRecipeSuitability = {
+interface IRecipeSuitability {
 	matchedNegativeTags: TRecipeTag[];
 	matchedPositiveTags: TRecipeTag[];
 	suitability: number;
-};
+}
 
-export type TRecipeWithSuitability = TRecipe & TRecipeSuitability;
+export type TRecipeWithSuitability = Prettify<TRecipe & IRecipeSuitability>;
 export type TRecipesWithSuitability = TRecipeWithSuitability[];
 
 export type TTab = 'beverage' | 'customer' | 'ingredient' | 'recipe';

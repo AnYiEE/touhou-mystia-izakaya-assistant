@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	let ip =
+		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 		request.headers.get('x-real-ip')?.trim() || request.headers.get('x-forwarded-for')?.split(',').at(0)?.trim();
 	if (ip === undefined) {
 		return NextResponse.json({message: 'Invalid IP address'}, {status: 400});

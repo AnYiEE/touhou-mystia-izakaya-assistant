@@ -5,7 +5,7 @@ import type {TSemanticBaseColors, TThemeColors} from './types';
 import {swapColorScale} from './utils';
 
 function checkBackgroundColor(target: Record<keyof typeof colors.defaultBackgrounds, string>) {
-	if (target['dark'] !== colors.constants.BLACK || target['light'] !== colors.brown[50]) {
+	if (target.dark !== colors.constants.BLACK || target.light !== colors.brown[50]) {
 		throw new Error('[design/theme/semantic]: `defaultBackgrounds` does not match `colors.constants`');
 	}
 }

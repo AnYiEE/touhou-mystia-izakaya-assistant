@@ -1,19 +1,21 @@
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
-export type TLink<T extends string = string> = {
+export interface ILink<T extends string = string> {
 	label: string;
 	href: T;
-};
+}
 
 export type TNavItem<T extends string = string> =
-	| TLink<T>
+	| ILink<T>
 	| Record<
 			string,
 			Array<
-				TLink<T> & {
-					sprite: TSpriteTarget | null;
-					spriteIndex: number | null;
-				}
+				Prettify<
+					ILink<T> & {
+						sprite: TSpriteTarget | null;
+						spriteIndex: number | null;
+					}
+				>
 			>
 	  >;
 
@@ -33,8 +35,8 @@ export interface ISiteConfig {
 	locale: string;
 	version: string;
 	navItems: TNavItem[];
-	navMenuItems: TLink[];
-	links: Record<string, TLink>;
+	navMenuItems: ILink[];
+	links: Record<string, ILink>;
 	cdnUrl: string;
 	analyticsApiUrl: string;
 	analyticsScriptUrl: string;

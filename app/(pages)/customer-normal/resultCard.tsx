@@ -31,7 +31,7 @@ function IngredientsList() {
 
 	const filledIngredients = useMemo(
 		() =>
-			toArray<(TIngredientName | null)[]>(
+			toArray<Array<TIngredientName | null>>(
 				originalIngredients,
 				currentRecipeData?.extraIngredients ?? [],
 				new Array<null>(5).fill(null)

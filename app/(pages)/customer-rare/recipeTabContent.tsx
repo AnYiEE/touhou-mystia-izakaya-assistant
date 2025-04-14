@@ -48,7 +48,7 @@ import {
 } from '@/utilities';
 
 export type TTableColumnKey = 'recipe' | 'cooker' | 'ingredient' | 'price' | 'suitability' | 'time' | 'action';
-export type TTableColumns = ITableColumn<TTableColumnKey>[];
+export type TTableColumns = Array<ITableColumn<TTableColumnKey>>;
 
 type TTableSortKey = Exclude<TTableColumnKey, 'cooker' | 'ingredient' | 'action'>;
 export type TTableSortDescriptor = ITableSortDescriptor<TTableSortKey>;

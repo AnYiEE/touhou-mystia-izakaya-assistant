@@ -28,7 +28,7 @@ import {checkEmpty, pinyinSort, toArray} from '@/utilities';
 import type {TSpriteTarget} from '@/utils/sprite/types';
 
 interface ISelectConfigItem extends Pick<SelectProps, 'label' | 'selectionMode'> {
-	items: ValueCollection<number | string>[];
+	items: Array<ValueCollection<number | string>>;
 	selectedKeys: string[];
 	setSelectedKeys: Dispatch<ISelectConfigItem['selectedKeys']>;
 	spriteTarget?: TSpriteTarget;

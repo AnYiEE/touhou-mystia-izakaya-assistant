@@ -1,6 +1,6 @@
 import {checkEmpty, toArray, toSet} from '@/utilities';
 
-export function union<T>(...arrays: ReadonlyArray<T>[]) {
+export function union<T>(...arrays: Array<ReadonlyArray<T>>) {
 	if (checkEmpty(arrays)) {
 		return [];
 	}

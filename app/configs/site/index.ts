@@ -1,6 +1,6 @@
 /* eslint-disable sort-keys */
 import PACKAGE from '@/../package.json';
-import type {ISiteConfig, TLink, TNavItem} from './types';
+import type {ILink, ISiteConfig, TNavItem} from './types';
 
 function getShortUrl(key: string) {
 	return `${process.env.SHORT_LINK_URL ?? '/#'}/${key}`;
@@ -99,11 +99,11 @@ export const siteConfig = {
 	locale: 'zh-CN',
 	version: PACKAGE.version,
 	navItems,
-	navMenuItems: navItems.reduce<TLink[]>((acc, _navItem) => {
+	navMenuItems: navItems.reduce<ILink[]>((acc, _navItem) => {
 		const navItem = _navItem as ISiteConfig['navMenuItems'][number];
 		let hasNestedArray = false as boolean;
 		Object.keys(navItem).forEach((key) => {
-			const value = navItem[key as keyof typeof navItem] as unknown as TLink | TLink[];
+			const value = navItem[key as keyof typeof navItem] as unknown as ILink | ILink[];
 			if (Array.isArray(value)) {
 				hasNestedArray = true;
 				acc.push(...value);

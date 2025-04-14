@@ -125,6 +125,7 @@ export const globalStore = store(state, {
 		read: () => toSet([currentStore.persistence.popularTrend.tag.use()]) as SelectionSet,
 		write: (tags: Selection) => {
 			const tag = toArray<SelectionSet>(tags)[0] as typeof state.persistence.popularTrend.tag;
+			// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 			currentStore.persistence.popularTrend.tag.set(tag || null);
 		},
 	},

@@ -66,8 +66,8 @@ export class Item<
 	public getPropsByIndex(index: number): TItem;
 	public getPropsByIndex(index: number, prop: 'name'): TItemName;
 	public getPropsByIndex<T extends keyof TItem>(index: number, prop: T): TItem[T];
-	public getPropsByIndex<T extends keyof TItem>(index: number, ...props: T[]): TItem[T][];
-	public getPropsByIndex<T extends keyof TItem>(index: number, ...props: T[]): TItem | TItem[T] | TItem[T][] {
+	public getPropsByIndex<T extends keyof TItem>(index: number, ...props: T[]): Array<TItem[T]>;
+	public getPropsByIndex<T extends keyof TItem>(index: number, ...props: T[]): TItem | TItem[T] | Array<TItem[T]> {
 		const item = this._data[index];
 		this.checkIndexRange(index, item);
 
@@ -75,7 +75,7 @@ export class Item<
 			if (props.length === 1) {
 				return item[props[0] as T];
 			}
-			return props.map((prop) => item[prop]) as TItem[T][];
+			return props.map((prop) => item[prop]) as Array<TItem[T]>;
 		}
 
 		return item;
@@ -87,11 +87,11 @@ export class Item<
 	public getPropsByName<T extends keyof TItem, U extends Exclude<T, 'name'>>(
 		name: TItemName,
 		...props: U[]
-	): TItem[U][];
+	): Array<TItem[U]>;
 	public getPropsByName<T extends keyof TItem, U extends Exclude<T, 'name'>>(
 		name: TItemName,
 		...props: U[]
-	): TItem | TItem[U] | TItem[U][] {
+	): TItem | TItem[U] | Array<TItem[U]> {
 		const index = this.findIndexByName(name);
 
 		return this.getPropsByIndex<U>(index, ...props);
@@ -101,12 +101,12 @@ export class Item<
 		prop: T | T[],
 		wrap: true,
 		data?: ReadonlyArray<TItem>
-	): ValueCollection<FlatArray<TItem[T], number>>[];
+	): Array<ValueCollection<FlatArray<TItem[T], number>>>;
 	public getValuesByProp<T extends keyof TItem>(
 		prop: T | T[],
 		wrap?: boolean,
 		data?: ReadonlyArray<TItem>
-	): FlatArray<TItem[T], number>[];
+	): Array<FlatArray<TItem[T], number>>;
 	public getValuesByProp<T extends keyof TItem>(prop: T | T[], wrap?: boolean, data?: ReadonlyArray<TItem>) {
 		const target = data ?? this._data;
 

@@ -29,7 +29,8 @@ export default tsEslint.config(
 			comments.recommended,
 			eslint.configs.recommended,
 			tsEslint.configs.strictTypeChecked,
-			unicorn.configs['recommended'],
+			tsEslint.configs.stylisticTypeChecked,
+			unicorn.configs.recommended,
 			...flatCompat.extends('next/core-web-vitals', 'next/typescript'),
 			prettier,
 		],
@@ -172,6 +173,13 @@ export default tsEslint.config(
 			'@eslint-community/eslint-comments/no-unlimited-disable': 'off',
 			'@eslint-community/eslint-comments/no-unused-disable': 'warn',
 
+			'@typescript-eslint/array-type': [
+				'error',
+				{
+					default: 'array-simple',
+					readonly: 'generic',
+				},
+			],
 			'@typescript-eslint/no-deprecated': 'warn',
 			'@typescript-eslint/no-empty-function': [
 				'error',
@@ -193,7 +201,6 @@ export default tsEslint.config(
 			],
 			'@typescript-eslint/no-loop-func': 'error',
 			'@typescript-eslint/no-shadow': 'error',
-			'@typescript-eslint/no-unnecessary-template-expression': 'error',
 			'@typescript-eslint/no-unsafe-argument': 'warn',
 			'@typescript-eslint/no-unsafe-assignment': 'warn',
 			'@typescript-eslint/no-unsafe-call': 'warn',
@@ -212,21 +219,20 @@ export default tsEslint.config(
 				},
 			],
 			'@typescript-eslint/no-use-before-define': 'error',
+			'@typescript-eslint/non-nullable-type-assertion-style': 'off',
 			'@typescript-eslint/prefer-destructuring': [
 				'error',
 				{
-					VariableDeclarator: {
-						array: true,
-						object: true,
-					},
-
 					AssignmentExpression: {
 						array: false,
 						object: false,
 					},
+					VariableDeclarator: {
+						array: true,
+						object: true,
+					},
 				},
 			],
-			'@typescript-eslint/prefer-find': 'error',
 			'@typescript-eslint/restrict-template-expressions': [
 				'error',
 				{

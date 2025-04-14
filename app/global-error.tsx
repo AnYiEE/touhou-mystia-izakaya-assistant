@@ -11,9 +11,11 @@ import {siteConfig} from '@/configs';
 const {locale} = siteConfig;
 
 interface IProps {
-	error: Error & {
-		digest?: string;
-	};
+	error: Prettify<
+		Error & {
+			digest?: string;
+		}
+	>;
 	reset: () => void;
 }
 

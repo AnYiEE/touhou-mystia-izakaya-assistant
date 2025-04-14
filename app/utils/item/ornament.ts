@@ -4,10 +4,10 @@ import {Item} from './base';
 import {ORNAMENT_LIST, type TCustomerRareName, type TOrnamentName, type TOrnaments} from '@/data';
 import {numberSort} from '@/utilities';
 
-type TBondOrnaments = {
+type TBondOrnaments = Array<{
 	level: number;
 	name: TOrnamentName;
-}[];
+}>;
 
 export class Ornament extends Item<TOrnaments> {
 	private static _instance: Ornament | undefined;

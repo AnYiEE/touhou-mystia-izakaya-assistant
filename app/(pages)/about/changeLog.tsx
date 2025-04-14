@@ -113,10 +113,10 @@ const changelog = [
 		version: 'v1.6',
 		changes: ['新增：支持云备份套餐搭配数据。'],
 	},
-] as const satisfies {
+] as const satisfies Array<{
 	version: `v${string}`;
-	changes: `${'新增' | '改善' | '修复'}：${string}。`[];
-}[];
+	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;
+}>;
 
 export default function ChangeLog() {
 	return (
