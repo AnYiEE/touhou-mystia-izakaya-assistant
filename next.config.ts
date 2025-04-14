@@ -8,7 +8,7 @@ import {CDN_URL, IS_OFFLINE, IS_PRODUCTION, getSha} from './scripts/utils.mjs';
 const exportMode = IS_OFFLINE || (!env.SELF_HOSTED && !env.VERCEL);
 const skipLint = IS_OFFLINE || (IS_PRODUCTION && Boolean(env.SKIP_LINT));
 
-const envKeys: (keyof NodeJS.ProcessEnv)[] = [
+const envKeys: Array<keyof NodeJS.ProcessEnv> = [
 	'ANALYTICS_API_URL',
 	'ANALYTICS_SCRIPT_URL',
 	'ANALYTICS_SITE_ID',
@@ -44,6 +44,10 @@ const nextConfig: NextConfig = {
 	},
 	typescript: {
 		ignoreBuildErrors: skipLint,
+	},
+
+	experimental: {
+		webpackMemoryOptimizations: skipLint,
 	},
 };
 
