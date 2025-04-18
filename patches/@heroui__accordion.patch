@@ -1,0 +1,64 @@
+diff --git a/dist/accordion-item.js b/dist/accordion-item.js
+index 7364cf027c9c85e117cf8a819eefb92f86a58808..16541afb68568e1c6b8ffc23c8d5534de9f8788b 100644
+--- a/dist/accordion-item.js
++++ b/dist/accordion-item.js
+@@ -295,7 +295,10 @@ var AccordionItem = (0, import_system2.forwardRef)((props, ref) => {
+   const indicatorComponent = indicatorContent || /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_shared_icons.ChevronIcon, {});
+   const content = (0, import_react2.useMemo)(() => {
+     if (disableAnimation) {
+-      return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { ...getContentProps(), children });
++      if (keepContentMounted) {
++        return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { ...getContentProps(), children });
++      }
++      return isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { ...getContentProps(), children });
+     }
+     const transitionVariants = {
+       exit: { ...import_framer_utils.TRANSITION_VARIANTS.collapse.exit, overflowY: "hidden" },
+diff --git a/dist/accordion.js b/dist/accordion.js
+index 1d313976b53f9f2f3bc7e1d2b3ce052a95c01d24..7955f8c8f7ba47f284db38079d2a3c9cd803096a 100644
+--- a/dist/accordion.js
++++ b/dist/accordion.js
+@@ -461,7 +461,10 @@ var AccordionItem = (0, import_system3.forwardRef)((props, ref) => {
+   const indicatorComponent = indicatorContent || /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_shared_icons.ChevronIcon, {});
+   const content = (0, import_react4.useMemo)(() => {
+     if (disableAnimation) {
+-      return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { ...getContentProps(), children });
++      if (keepContentMounted) {
++        return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { ...getContentProps(), children });
++      }
++      return isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { ...getContentProps(), children });
+     }
+     const transitionVariants = {
+       exit: { ...import_framer_utils.TRANSITION_VARIANTS.collapse.exit, overflowY: "hidden" },
+diff --git a/dist/chunk-6MMBG3SS.mjs b/dist/chunk-6MMBG3SS.mjs
+index 3d6c97d131fe953a66781f6c9c4ebdc23f095a7a..6cf710460bf60857065f9622603251d1bf6c5d1f 100644
+--- a/dist/chunk-6MMBG3SS.mjs
++++ b/dist/chunk-6MMBG3SS.mjs
+@@ -48,7 +48,10 @@ var AccordionItem = forwardRef((props, ref) => {
+   const indicatorComponent = indicatorContent || /* @__PURE__ */ jsx(ChevronIcon, {});
+   const content = useMemo(() => {
+     if (disableAnimation) {
+-      return /* @__PURE__ */ jsx("div", { ...getContentProps(), children });
++      if (keepContentMounted) {
++        return /* @__PURE__ */ jsx("div", { ...getContentProps(), children });
++      }
++      return isOpen && /* @__PURE__ */ jsx("div", { ...getContentProps(), children });
+     }
+     const transitionVariants = {
+       exit: { ...TRANSITION_VARIANTS.collapse.exit, overflowY: "hidden" },
+diff --git a/dist/index.js b/dist/index.js
+index 75347eabc129fdde5eaa03cc7f4c735f20092745..ddd2f3fc94155886b5cd3e742114d4054f89b68b 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -471,7 +471,10 @@ var AccordionItem = (0, import_system3.forwardRef)((props, ref) => {
+   const indicatorComponent = indicatorContent || /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_shared_icons.ChevronIcon, {});
+   const content = (0, import_react4.useMemo)(() => {
+     if (disableAnimation) {
+-      return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { ...getContentProps(), children });
++      if (keepContentMounted) {
++        return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { ...getContentProps(), children });
++      }
++      return isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { ...getContentProps(), children });
+     }
+     const transitionVariants = {
+       exit: { ...import_framer_utils.TRANSITION_VARIANTS.collapse.exit, overflowY: "hidden" },
