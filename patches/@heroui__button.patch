@@ -1,0 +1,56 @@
+diff --git a/dist/button.js b/dist/button.js
+index 74814b7e0809ea6649524838b23508a7903a7b2d..93f065b3177590ca1d5b45bf501e26a02909e42d 100644
+--- a/dist/button.js
++++ b/dist/button.js
+@@ -166,8 +166,7 @@ function useButton(props) {
+   );
+   const getIconClone = (icon) => (0, import_react2.isValidElement)(icon) ? (0, import_react2.cloneElement)(icon, {
+     "aria-hidden": true,
+-    focusable: false,
+-    tabIndex: -1
++    focusable: false
+   }) : null;
+   const startContent = getIconClone(startContentProp);
+   const endContent = getIconClone(endContentProp);
+diff --git a/dist/chunk-JLZ7IZPR.mjs b/dist/chunk-JLZ7IZPR.mjs
+index 2776d70857c1bb35a48b7f49c114d141899893c6..7be6651737fc00d68ab99f45425ddb047791dee5 100644
+--- a/dist/chunk-JLZ7IZPR.mjs
++++ b/dist/chunk-JLZ7IZPR.mjs
+@@ -132,8 +132,7 @@ function useButton(props) {
+   );
+   const getIconClone = (icon) => isValidElement(icon) ? cloneElement(icon, {
+     "aria-hidden": true,
+-    focusable: false,
+-    tabIndex: -1
++    focusable: false
+   }) : null;
+   const startContent = getIconClone(startContentProp);
+   const endContent = getIconClone(endContentProp);
+diff --git a/dist/index.js b/dist/index.js
+index 375b1025432a74cc5c16af10159a87241eb32382..588fee3a04ee97c0687178b8e58aa477f4cf9b46 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -173,8 +173,7 @@ function useButton(props) {
+   );
+   const getIconClone = (icon) => (0, import_react2.isValidElement)(icon) ? (0, import_react2.cloneElement)(icon, {
+     "aria-hidden": true,
+-    focusable: false,
+-    tabIndex: -1
++    focusable: false
+   }) : null;
+   const startContent = getIconClone(startContentProp);
+   const endContent = getIconClone(endContentProp);
+diff --git a/dist/use-button.js b/dist/use-button.js
+index 48812ce3fdd0cff8103593d8785519b8d329ea82..8ba03d209d9c8fae5178d90cf5ad0d21cfcb724b 100644
+--- a/dist/use-button.js
++++ b/dist/use-button.js
+@@ -161,8 +161,7 @@ function useButton(props) {
+   );
+   const getIconClone = (icon) => (0, import_react2.isValidElement)(icon) ? (0, import_react2.cloneElement)(icon, {
+     "aria-hidden": true,
+-    focusable: false,
+-    tabIndex: -1
++    focusable: false
+   }) : null;
+   const startContent = getIconClone(startContentProp);
+   const endContent = getIconClone(endContentProp);
