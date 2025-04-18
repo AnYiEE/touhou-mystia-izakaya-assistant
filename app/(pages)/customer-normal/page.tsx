@@ -15,7 +15,7 @@ import {
 
 import {Tab, Tabs} from '@heroui/tabs';
 
-import {cn} from '@/design/ui/components';
+import {cn, useReducedMotion} from '@/design/ui/components';
 
 import BeverageTabContent from './beverageTabContent';
 import CustomerCard from './customerCard';
@@ -38,6 +38,7 @@ import {checkArrayContainsOf, checkArraySubsetOf, checkEmpty} from '@/utilities'
 
 export default function CustomerNormal() {
 	const {breakpoint} = useBreakpoint(tachieBreakPointMap, 'noTachie');
+	const isReducedMotion = useReducedMotion();
 	const vibrate = useVibrate();
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
@@ -293,15 +294,19 @@ export default function CustomerNormal() {
 				<Tabs
 					fullWidth
 					destroyInactiveTabPanel={false}
+					disableAnimation={isReducedMotion}
 					size="sm"
 					selectedKey={selectedTabKey}
 					onSelectionChange={onTabSelectionChange}
 					classNames={{
 						tab: cn(
-							'transition data-[hover=true]:!opacity-100 data-[hover-unselected=true]:brightness-95 data-[pressed=true]:!brightness-90 motion-reduce:transition-none',
+							'data-[hover=true]:!opacity-100 data-[hover-unselected=true]:brightness-95 data-[pressed=true]:!brightness-90',
 							isHighAppearance
 								? 'data-[hover-unselected=true]:bg-default-200/40 data-[pressed=true]:!bg-default-200/40'
-								: 'data-[hover-unselected=true]:bg-default-200 data-[pressed=true]:!bg-default-200'
+								: 'data-[hover-unselected=true]:bg-default-200 data-[pressed=true]:!bg-default-200',
+							isReducedMotion
+								? 'data-[selected=true]:bg-background data-[selected=true]:text-default-foreground dark:data-[selected=true]:bg-default dark:data-[selected=true]:text-foreground'
+								: 'transition'
 						),
 						tabList: cn('grid grid-cols-4 bg-default/40', {
 							'backdrop-blur': isHighAppearance,

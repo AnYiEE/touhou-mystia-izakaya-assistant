@@ -45,7 +45,7 @@ export default function LegalStatement() {
 						showAnchorIcon
 						href={links.steam.href}
 						title={links.steam.label}
-						className="rounded-small indent-0 font-medium"
+						className="rounded-small indent-0"
 					>
 						原作者
 					</Link>
@@ -68,7 +68,7 @@ export default function LegalStatement() {
 						showAnchorIcon
 						href={links.github.href}
 						title={links.github.label}
-						className="rounded-small indent-0 font-medium"
+						className="rounded-small indent-0"
 					>
 						GitHub
 					</Link>

@@ -715,6 +715,7 @@ export default function RecipeTabContent() {
 			isHeaderSticky
 			bottomContent={tablePagination}
 			bottomContentPlacement="outside"
+			disableAnimation={isReducedMotion}
 			selectedKeys={tableSelectedKeys}
 			selectionMode="single"
 			sortDescriptor={tableSortDescriptor as SortDescriptor}

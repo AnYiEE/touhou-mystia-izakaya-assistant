@@ -175,7 +175,7 @@ export default function Navbar() {
 						}}
 						aria-label={links.index.label}
 						role="button"
-						className="flex select-none items-center justify-start gap-1 rounded-small hover:opacity-hover hover:brightness-100 active:opacity-disabled"
+						className="flex select-none items-center justify-start gap-1 rounded-small hover:brightness-100 active:opacity-disabled"
 					>
 						<span
 							aria-hidden

@@ -23,6 +23,7 @@ export default memo<IProps>(function Link({
 	children,
 	className,
 	classNames,
+	color,
 	disableAnimation,
 	forcedUnderline,
 	isBlock,
@@ -33,6 +34,7 @@ export default memo<IProps>(function Link({
 
 	return (
 		<HeroUILink
+			color={color}
 			disableAnimation={disableAnimation ?? isReducedMotion}
 			isBlock={isBlock}
 			referrerPolicy="same-origin"
@@ -46,6 +48,7 @@ export default memo<IProps>(function Link({
 				],
 				{
 					'group relative transition motion-reduce:transition-none': animationUnderline,
+					'text-primary-600': color === 'primary' || color === undefined,
 				},
 				className,
 				classNames?.base

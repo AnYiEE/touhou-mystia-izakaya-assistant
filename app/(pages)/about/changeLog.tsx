@@ -130,7 +130,7 @@ export default function ChangeLog() {
 							showAnchorIcon
 							href={`${links.github.href}/commits`}
 							title={`${links.github.label}提交记录`}
-							className="rounded-small font-medium"
+							className="rounded-small"
 						>
 							GitHub
 						</Link>

@@ -23,7 +23,7 @@ export const FooterLink = memo<PropsWithChildren<IFooterLinkProps>>(function Foo
 			aria-label={typeof content === 'string' ? content : (title ?? (children as string))}
 			title={title}
 			classNames={{
-				base: 'rounded-small text-tiny',
+				base: 'rounded-small text-tiny text-primary',
 				underline: 'bottom-0',
 			}}
 		>

@@ -71,6 +71,7 @@ export default memo<IProps>(function InfoButtonBase({children, defaultExpandedKe
 							<Accordion
 								isCompact
 								defaultExpandedKeys={defaultExpandedKeys ?? []}
+								disableAnimation={isReducedMotion}
 								selectionMode="multiple"
 								itemClasses={{
 									base: 'mb-1 mt-3',

@@ -183,7 +183,7 @@ export default function InfoButton() {
 					aria-label={`${currentCustomerName}羁绊奖励`}
 					title="羁绊奖励"
 					classNames={{
-						content: 'flex flex-col gap-2 pt-2 text-default-900',
+						content: 'flex-col gap-2 pt-2 text-default-900 data-[open=true]:flex',
 					}}
 				>
 					<div className="grid grid-cols-2 content-start gap-1">

@@ -20,7 +20,7 @@ export default function Introduction() {
 						showAnchorIcon
 						href={links.github.href}
 						title={links.github.label}
-						className="rounded-small indent-0 font-medium"
+						className="rounded-small indent-0"
 					>
 						GitHub仓库
 					</Link>
@@ -57,7 +57,7 @@ export default function Introduction() {
 							showAnchorIcon
 							href={links.donate.href}
 							title={links.donate.label}
-							className="rounded-small indent-0 font-medium"
+							className="rounded-small indent-0"
 						>
 							向我捐赠
 						</Link>
