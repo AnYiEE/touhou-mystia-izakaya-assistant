@@ -25,6 +25,7 @@ export default memo<IProps>(function Link({
 	classNames,
 	disableAnimation,
 	forcedUnderline,
+	isBlock,
 	showAnchorIcon,
 	...props
 }) {
@@ -33,9 +34,11 @@ export default memo<IProps>(function Link({
 	return (
 		<HeroUILink
 			disableAnimation={disableAnimation ?? isReducedMotion}
+			isBlock={isBlock}
 			referrerPolicy="same-origin"
 			showAnchorIcon={Boolean(showAnchorIcon)}
 			className={cn(
+				!isBlock && 'hover:opacity-hover',
 				!disableAnimation && [
 					'hover:opacity-100 active:opacity-100',
 					'motion-reduce:transition-none',
