@@ -43,7 +43,7 @@ function setThemeCallback(selectedTheme: TTheme, isFromEvent?: boolean) {
 	});
 
 	const metaElement = document.createElement('meta');
-	metaElement.content = isTargetDarkTheme ? COLOR_MAP.DARK : COLOR_MAP.LIGHT;
+	metaElement.content = isTargetDarkTheme ? COLOR_MAP.DARK : COLOR_MAP.LIGHT_THEME;
 	metaElement.name = 'theme-color';
 
 	document.head.append(metaElement);

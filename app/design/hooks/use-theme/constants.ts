@@ -3,7 +3,8 @@ import {defaultBackgrounds} from '@/design/theme/colors/constants/backgroundColo
 export const COLOR_MAP = {
 	DARK: defaultBackgrounds.dark,
 	LIGHT: defaultBackgrounds.light,
-};
+	LIGHT_THEME: defaultBackgrounds.lightTheme,
+} as const;
 
 export const MEDIA = '(prefers-color-scheme: dark)';
 

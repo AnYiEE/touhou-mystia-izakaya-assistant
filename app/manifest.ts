@@ -52,6 +52,6 @@ export default function manifest(): MetadataRoute.Manifest {
 		dir: 'ltr',
 		lang: locale,
 		background_color: COLOR_MAP.LIGHT,
-		theme_color: COLOR_MAP.LIGHT,
+		theme_color: COLOR_MAP.LIGHT_THEME,
 	};
 }

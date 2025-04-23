@@ -19,7 +19,7 @@ const script = (
 		document.documentElement.style.colorScheme = currentTheme;
 
 		const metaElement = document.createElement('meta');
-		metaElement.content = isDarkTheme ? colors.DARK : colors.LIGHT;
+		metaElement.content = isDarkTheme ? colors.DARK : colors.LIGHT_THEME;
 		metaElement.name = 'theme-color';
 
 		document.head.append(metaElement);
