@@ -1,8 +1,3 @@
-onlyBuiltDependencies:
-  - "@heroui/shared-utils"
-  - "@parcel/watcher"
-  - better-sqlite3
-  - sharp
 overrides:
   "@react-aria/interactions@^3.22.3": 3.22.2
   react-dom: $react-dom
