@@ -4,7 +4,6 @@ import {curry, curryRight} from 'lodash';
 import {useVibrate, useViewInNewWindow} from '@/hooks';
 
 import {Autocomplete, AutocompleteItem} from '@heroui/autocomplete';
-import {Pagination} from '@heroui/pagination';
 import {Select, SelectItem} from '@heroui/select';
 import {type SortDescriptor, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow} from '@heroui/table';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -16,6 +15,7 @@ import {
 	DropdownItem,
 	DropdownMenu,
 	DropdownTrigger,
+	Pagination,
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
@@ -662,7 +662,6 @@ export default function RecipeTabContent() {
 						/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/4275} is fixed. */
 						// showControls
 						showShadow
-						disableAnimation={isReducedMotion}
 						size="sm"
 						page={tableCurrentPage}
 						total={tableTotalPages}
@@ -679,7 +678,7 @@ export default function RecipeTabContent() {
 				)}
 			</div>
 		),
-		[isHighAppearance, isReducedMotion, tableCurrentPage, tableCurrentPageItems, tableTotalPages, vibrate]
+		[isHighAppearance, tableCurrentPage, tableCurrentPageItems, tableTotalPages, vibrate]
 	);
 
 	return (

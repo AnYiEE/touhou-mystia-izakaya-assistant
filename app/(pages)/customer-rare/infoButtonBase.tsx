@@ -4,10 +4,9 @@ import {useVibrate} from '@/hooks';
 
 import {Accordion, type AccordionProps} from '@heroui/accordion';
 import {Modal, ModalBody, ModalContent} from '@heroui/modal';
-import {ScrollShadow} from '@heroui/scroll-shadow';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
-import {Tooltip, cn, useReducedMotion} from '@/design/ui/components';
+import {ScrollShadow, Tooltip, cn, useReducedMotion} from '@/design/ui/components';
 
 import {trackEvent} from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
@@ -67,7 +66,7 @@ export default memo<IProps>(function InfoButtonBase({children, defaultExpandedKe
 			>
 				<ModalContent className="py-3">
 					<ModalBody>
-						<ScrollShadow hideScrollBar size={16}>
+						<ScrollShadow size={16}>
 							<Accordion
 								isCompact
 								defaultExpandedKeys={defaultExpandedKeys ?? []}

@@ -3,9 +3,7 @@ import {debounce} from 'lodash';
 
 import {useVibrate} from '@/hooks';
 
-import {ScrollShadow} from '@heroui/scroll-shadow';
-
-import {Avatar, Button, cn} from '@/design/ui/components';
+import {Avatar, Button, ScrollShadow, cn} from '@/design/ui/components';
 
 import PressElement from '@/components/pressElement';
 import Sprite from '@/components/sprite';
@@ -34,7 +32,6 @@ export default memo<IProps>(function CustomerTabContent({customerTabStyle, sorte
 	return (
 		<>
 			<ScrollShadow
-				hideScrollBar
 				className={cn(
 					'transition-all motion-reduce:transition-none xl:max-h-[calc(var(--safe-h-dvh)-10.25rem-env(titlebar-area-height,0rem))]',
 					customerTabStyle.classNames.content

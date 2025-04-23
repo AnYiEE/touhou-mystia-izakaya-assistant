@@ -213,7 +213,6 @@ export default function Navbar() {
 								const dropdownElement = (
 									<Dropdown
 										key={dropdownIndex}
-										disableAnimation={isReducedMotion}
 										shouldCloseOnScroll
 										onOpenChange={vibrate}
 										classNames={{

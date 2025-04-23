@@ -2,13 +2,12 @@ import {Fragment, memo, useRef} from 'react';
 
 import {useItemPopoverState, useOpenedItemPopover} from '@/hooks';
 
-import {ScrollShadow} from '@heroui/scroll-shadow';
-
 import {
 	CLASSNAME_FOCUS_VISIBLE_OUTLINE,
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
+	ScrollShadow,
 	Tooltip,
 	cn,
 } from '@/design/ui/components';
@@ -85,7 +84,7 @@ export default memo<IProps>(function Content({data}) {
 					tagColors={BEVERAGE_TAG_STYLE}
 					ref={popoverCardRef}
 				>
-					<ScrollShadow hideScrollBar size={16} className="max-h-dvh-safe-half">
+					<ScrollShadow size={16} className="max-h-dvh-safe-half">
 						{Object.entries(from).map((fromObject, fromIndex) => {
 							type TFrom = Exclude<IBeverage['from'], string>;
 							const [method, target] = fromObject as [keyof TFrom, ExtractCollectionValue<TFrom>];

@@ -3,9 +3,7 @@ import {curry, curryRight, debounce} from 'lodash';
 
 import {useVibrate} from '@/hooks';
 
-import {ScrollShadow} from '@heroui/scroll-shadow';
-
-import {Badge, Button, Tooltip, cn} from '@/design/ui/components';
+import {Badge, Button, ScrollShadow, Tooltip, cn} from '@/design/ui/components';
 
 import Placeholder from '@/components/placeholder';
 import PressElement from '@/components/pressElement';
@@ -123,7 +121,6 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 	return (
 		<>
 			<ScrollShadow
-				hideScrollBar
 				className={cn(
 					'px-2 transition-all motion-reduce:transition-none xl:max-h-[calc(var(--safe-h-dvh)-10.25rem-env(titlebar-area-height,0rem))]',
 					ingredientTabStyle.classNames.content

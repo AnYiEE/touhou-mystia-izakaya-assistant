@@ -6,9 +6,8 @@ import {useRouter} from 'next/navigation';
 import {useMounted, useVibrate} from '@/hooks';
 
 import {Modal, ModalBody, ModalContent} from '@heroui/modal';
-import {ScrollShadow} from '@heroui/scroll-shadow';
 
-import {cn, useReducedMotion} from '@/design/ui/components';
+import {ScrollShadow, cn, useReducedMotion} from '@/design/ui/components';
 
 import Content from './content';
 
@@ -60,7 +59,7 @@ export default function PreferencesModal() {
 			<ModalContent className="py-3">
 				{(onClose) => (
 					<ModalBody>
-						<ScrollShadow hideScrollBar size={16} visibility="bottom">
+						<ScrollShadow size={16} visibility="bottom">
 							<Content onModalClose={onClose} />
 						</ScrollShadow>
 					</ModalBody>

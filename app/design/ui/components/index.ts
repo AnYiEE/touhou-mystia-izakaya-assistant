@@ -13,6 +13,7 @@ export {
 	type DropdownTriggerProps,
 } from './dropdown';
 export {default as Link, type ILinkProps} from './link';
+export {default as Pagination, type IPaginationProps} from './pagination';
 export {
 	default as Popover,
 	type IPopoverProps,
@@ -22,6 +23,7 @@ export {
 	type PopoverTriggerProps,
 	usePopoverContext,
 } from './popover';
+export {default as ScrollShadow, type IScrollShadowProps} from './scrollShadow';
 export {default as Snippet, type ISnippetProps} from './snippet';
 export {default as Switch, type ISwitchProps} from './switch';
 export {default as Tooltip, type ITooltipProps} from './tooltip';
