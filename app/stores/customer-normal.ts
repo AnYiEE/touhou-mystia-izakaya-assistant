@@ -36,13 +36,14 @@ import {
 	toGetValueCollection,
 	toSet,
 } from '@/utilities';
-import {Beverage, Clothes, CustomerNormal, Ingredient, Recipe} from '@/utils';
+import {Beverage, Clothes, CustomerNormal, Ingredient, Meal, Recipe} from '@/utils';
 import type {TRecipe} from '@/utils/types';
 
 const instance_beverage = Beverage.getInstance();
 const instance_clothes = Clothes.getInstance();
 const instance_customer = CustomerNormal.getInstance();
 const instance_ingredient = Ingredient.getInstance();
+const instance_meal = Meal.getInstance('customer_normal');
 const instance_recipe = Recipe.getInstance();
 
 const storeVersion = {
@@ -68,6 +69,7 @@ const state = {
 		clothes: instance_clothes,
 		customer: instance_customer,
 		ingredient: instance_ingredient,
+		meal: instance_meal,
 		recipe: instance_recipe,
 	},
 

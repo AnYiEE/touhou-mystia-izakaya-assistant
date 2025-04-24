@@ -7,8 +7,8 @@ import {
 	type TRecipeName,
 	type TRecipeTag,
 } from '@/data';
-import {type ICustomerOrder} from '@/stores';
 import {checkEmpty, intersection, without} from '@/utilities';
+import type {ICustomerOrder} from '@/utils/types';
 
 interface IParameters {
 	currentBeverageTags: TBeverageTag[];
