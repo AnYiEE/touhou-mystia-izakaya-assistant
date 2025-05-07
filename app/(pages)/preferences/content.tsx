@@ -2,7 +2,6 @@
 
 import {memo, useCallback} from 'react';
 
-import {useRouter} from 'next/navigation';
 import {useVibrate} from '@/hooks';
 
 import {Select, SelectItem} from '@heroui/select';
@@ -24,7 +23,6 @@ interface IProps extends IDataManagerProps {}
 export default memo<IProps>(function Content({onModalClose}) {
 	const isReducedMotion = useReducedMotion();
 	const popoverMotionProps = useMotionProps('popover');
-	const router = useRouter();
 	const vibrate = useVibrate();
 
 	const isOrderLinkedFilter = customerStore.persistence.customer.orderLinkedFilter.use();
@@ -74,23 +72,6 @@ export default memo<IProps>(function Content({onModalClose}) {
 		globalStore.selectedPopularTag.set(toSet());
 		resetRecipeTablePage();
 	}, [resetRecipeTablePage, vibrate]);
-
-	const handleIsHighAppearanceChange = useCallback(
-		(value: boolean) => {
-			globalStore.persistence.highAppearance.set(value);
-			if (onModalClose === undefined) {
-				location.reload();
-			} else {
-				onModalClose();
-				// Wait for the modal to close (the animate will take 300ms).
-				setTimeout(() => {
-					router.back();
-					location.reload();
-				}, 500);
-			}
-		},
-		[onModalClose, router]
-	);
 
 	return (
 		<div>
@@ -191,17 +172,11 @@ export default memo<IProps>(function Content({onModalClose}) {
 			<div className="space-y-2">
 				<SwitchItem
 					isSelected={isHighAppearance}
-					onValueChange={handleIsHighAppearanceChange}
-					aria-label={`${isHighAppearance ? '关闭' : '开启'}平滑滚动和磨砂效果`}
+					onValueChange={globalStore.persistence.highAppearance.set}
+					aria-label={`${isHighAppearance ? '关闭' : '开启'}半透明和磨砂效果`}
 				>
-					<span className="flex w-min flex-wrap items-center break-keep md:flex-nowrap">
-						<span>平滑滚动和磨砂效果</span>
-						<span className="text-tiny text-foreground-500">
-							（如因浏览器性能受限而感卡顿可关闭）
-							<br />
-							（开启或关闭平滑滚动需刷新页面生效）
-						</span>
-					</span>
+					半透明和磨砂效果
+					<span className="text-tiny text-foreground-500">（如因浏览器性能受限而感卡顿可关闭）</span>
 				</SwitchItem>
 				<SwitchItem
 					isSelected={isShowTachie}

@@ -6,7 +6,7 @@ import {execSync} from 'node:child_process';
 import {ThemeScript} from '@/design/hooks';
 
 import Polyfills from '@/polyfills';
-import Providers, {AddHighAppearance} from '@/providers';
+import Providers from '@/providers';
 import Footer from '@/(pages)/(layout)/footer';
 import Navbar from '@/(pages)/(layout)/navbar';
 import Analytics from '@/components/analytics';
@@ -99,8 +99,7 @@ export default function RootLayout({children}: PropsWithChildren<IProps>) {
 					isProduction && !isOffline && <Script async src={`/registerServiceWorker.js?v=${sha}`} />
 				}
 			</head>
-			<body suppressHydrationWarning className="antialiased">
-				<AddHighAppearance />
+			<body suppressHydrationWarning className="bg-blend-mystia-pseudo antialiased">
 				<ErrorBoundary>
 					<Providers locale={locale}>
 						<div className="flex min-h-dvh-safe flex-col">

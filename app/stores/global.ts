@@ -131,10 +131,6 @@ export const globalStore = store(state, {
 	},
 }));
 
-globalStore.persistence.highAppearance.onChange((isEnabled) => {
-	document.body.classList.toggle('bg-blend-mystia-pseudo', isEnabled);
-});
-
 // Update the current famous shop state when there is a change in the persisted state.
 globalStore.persistence.famousShop.onChange((famousShop) => {
 	customerNormalStore.shared.customer.famousShop.set(famousShop);
