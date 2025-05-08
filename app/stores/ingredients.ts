@@ -1,10 +1,10 @@
 import {store} from '@davstack/store';
-import {createJSONStorage} from 'zustand/middleware';
 
 import {type TPinyinSortState, pinyinSortStateMap} from '@/components/sidePinyinSortIconButton';
 
 import {DYNAMIC_TAG_MAP, type TIngredientTag} from '@/data';
-import {createNamesCache} from '@/stores/utils';
+import {persist as persistMiddleware} from '@/stores/middlewares';
+import {createIndexDBStorage, createNamesCache} from '@/stores/utils';
 import type {IPopularTrend} from '@/types';
 import {numberSort, pinyinSort, toArray, toGetValueCollection} from '@/utilities';
 import {Ingredient} from '@/utils';
@@ -55,35 +55,36 @@ const state = {
 };
 
 export const ingredientsStore = store(state, {
-	persist: {
-		enabled: true,
-		name: 'page-ingredients-storage',
-		version: storeVersion.filterTypes,
+	middlewares: [
+		persistMiddleware<typeof state>({
+			name: 'page-ingredients-storage',
+			version: storeVersion.filterTypes,
 
-		migrate(persistedState, version) {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-			const oldState = persistedState as any;
-			if (version < storeVersion.popular) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				oldState.persistence = oldState.page;
-				delete oldState.page;
-			}
-			if (version < storeVersion.filterTypes) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const {
-					persistence: {filters},
-				} = oldState;
-				filters.types = [];
-				filters.noTypes = [];
-			}
-			return persistedState as typeof state;
-		},
-		partialize: (currentStore) =>
-			({
-				persistence: currentStore.persistence,
-			}) as typeof currentStore,
-		storage: createJSONStorage(() => localStorage),
-	},
+			migrate(persistedState, version) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+				const oldState = persistedState as any;
+				if (version < storeVersion.popular) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					oldState.persistence = oldState.page;
+					delete oldState.page;
+				}
+				if (version < storeVersion.filterTypes) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const {
+						persistence: {filters},
+					} = oldState;
+					filters.types = [];
+					filters.noTypes = [];
+				}
+				return persistedState as typeof state;
+			},
+			partialize: (currentStore) =>
+				({
+					persistence: currentStore.persistence,
+				}) as typeof currentStore,
+			storage: createIndexDBStorage(),
+		}),
+	],
 }).computed((currentStore) => ({
 	names: () => getNames(currentStore.persistence.pinyinSortState.use()),
 }));

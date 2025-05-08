@@ -1,6 +1,5 @@
 import {type Key} from 'react';
 import {store} from '@davstack/store';
-import {createJSONStorage} from 'zustand/middleware';
 
 import {type Selection} from '@heroui/table';
 
@@ -11,7 +10,6 @@ import type {TTab, TTabVisibilityState} from '@/(pages)/customer-rare/types';
 import {trackEvent} from '@/components/analytics';
 import {type TPinyinSortState, pinyinSortStateMap} from '@/components/sidePinyinSortIconButton';
 
-import type {IPersistenceState} from './types';
 import {
 	DARK_MATTER_META_MAP,
 	DYNAMIC_TAG_MAP,
@@ -24,7 +22,14 @@ import {
 	type TRecipeName,
 	type TRecipeTag,
 } from '@/data';
-import {createNamesCache, keepLastTag, reverseDirection, reverseVisibilityState} from '@/stores/utils';
+import {persist as persistMiddleware, sync as syncMiddleware} from '@/stores/middlewares';
+import {
+	createIndexDBStorage,
+	createNamesCache,
+	keepLastTag,
+	reverseDirection,
+	reverseVisibilityState,
+} from '@/stores/utils';
 import type {IMealRecipe, IPopularTrend} from '@/types';
 import {
 	checkEmpty,
@@ -55,6 +60,7 @@ const instance_ornament = Ornament.getInstance();
 const instance_partner = Partner.getInstance();
 const instance_recipe = Recipe.getInstance();
 
+const storeName = 'page-customer_rare-storage';
 const storeVersion = {
 	initial: 0,
 	rating: 1, // eslint-disable-next-line sort-keys
@@ -233,10 +239,6 @@ const state = {
 	},
 };
 
-export type TCustomerRarePersistenceState = IPersistenceState<(typeof state)['persistence']>;
-
-export const customerRareStoreKey = 'page-customer_rare-storage';
-
 const getNames = createNamesCache(instance_customer);
 
 interface ISavedMealRatingResult {
@@ -247,221 +249,230 @@ interface ISavedMealRatingResult {
 const savedMealRatingCache = new Map<string, ISavedMealRatingResult>();
 
 export const customerRareStore = store(state, {
-	persist: {
-		enabled: true,
-		name: customerRareStoreKey,
-		version: storeVersion.mealData,
+	middlewares: [
+		syncMiddleware<typeof state>({
+			name: storeName,
+			watch: [
+				'persistence.customer.orderLinkedFilter',
+				'persistence.customer.showTagDescription',
+				'persistence.meals',
+			],
+		}),
+		persistMiddleware<typeof state>({
+			name: storeName,
+			version: storeVersion.mealData,
 
-		migrate(persistedState, version) {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-			const oldState = persistedState as any;
-			if (version < storeVersion.rating) {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-				for (const meals of Object.values(oldState.page.selected) as any) {
-					for (const meal of meals) {
-						meal.rating = 'exgood';
-					}
-				}
-			}
-			if (version < storeVersion.popular) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				oldState.persistence = oldState.page;
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-				for (const meals of Object.values(oldState.persistence.selected) as any) {
-					for (const meal of meals) {
-						meal.hasMystiaKitchenware = false;
-						meal.order = {
-							beverageTag: null,
-							recipeTag: null,
-						};
-						meal.popular = {
-							isNegative: false,
-							tag: null,
-						};
-					}
-				}
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				oldState.persistence.meals = oldState.page.selected;
-				delete oldState.persistence.selected;
-				delete oldState.page;
-			}
-			if (version < storeVersion.popularTypo) {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-				for (const meals of Object.values(oldState.persistence.meals) as any) {
-					for (const meal of meals) {
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-						meal.hasMystiaKitchenware = meal.hasMystiaKitchenwware;
-						// cSpell:ignore kitchenwware
-						delete meal.hasMystiaKitchenwware;
-					}
-				}
-			}
-			if (version < storeVersion.price) {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-				for (const meals of Object.values(oldState.persistence.meals) as any) {
-					for (const meal of meals) {
-						meal.price = 0;
-					}
-				}
-			}
-			if (version < storeVersion.cooker) {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-				for (const meals of Object.values(oldState.persistence.meals) as any) {
-					for (const meal of meals) {
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-						meal.hasMystiaCooker = meal.hasMystiaKitchenware;
-						delete meal.hasMystiaKitchenware;
-					}
-				}
-			}
-			if (version < storeVersion.ingredientLevel) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const {
-					persistence: {
-						ingredient: {filters},
-					},
-				} = oldState;
-				filters.levels = [];
-			}
-			if (version < storeVersion.tagDescription) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const {
-					persistence: {customer},
-				} = oldState;
-				customer.showTagDescription = true;
-			}
-			if (version < storeVersion.extraCustomer) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const {
-					persistence: {
-						customer: {filters},
-					},
-				} = oldState;
-				filters.includes = [];
-				filters.excludes = [];
-			}
-			if (version < storeVersion.linkedFilter) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const {
-					persistence: {customer},
-				} = oldState;
-				customer.orderLinkedFilter = true;
-			}
-			if (version < storeVersion.mystiaCooker) {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-				for (const meals of Object.values(oldState.persistence.meals) as any) {
-					for (const meal of meals) {
-						if (meal.hasMystiaCooker) {
-							meal.order.beverageTag = null;
-							meal.order.recipeTag = null;
+			migrate(persistedState, version) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+				const oldState = persistedState as any;
+				if (version < storeVersion.rating) {
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+					for (const meals of Object.values(oldState.page.selected) as any) {
+						for (const meal of meals) {
+							meal.rating = 'exgood';
 						}
 					}
 				}
-			}
-			if (version < storeVersion.dynamicMeal) {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-				for (const meals of Object.values(oldState.persistence.meals) as any) {
-					for (const meal of meals) {
-						delete meal.popular;
-						delete meal.price;
-						delete meal.rating;
+				if (version < storeVersion.popular) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					oldState.persistence = oldState.page;
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+					for (const meals of Object.values(oldState.persistence.selected) as any) {
+						for (const meal of meals) {
+							meal.hasMystiaKitchenware = false;
+							meal.order = {
+								beverageTag: null,
+								recipeTag: null,
+							};
+							meal.popular = {
+								isNegative: false,
+								tag: null,
+							};
+						}
 					}
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					oldState.persistence.meals = oldState.page.selected;
+					delete oldState.persistence.selected;
+					delete oldState.page;
 				}
-			}
-			if (version < storeVersion.tachie) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const {
-					persistence: {customer},
-				} = oldState;
-				customer.showTachie = true;
-			}
-			if (version < storeVersion.moveTachie) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const {
-					persistence: {customer},
-				} = oldState;
-				delete customer.showTachie;
-			}
-			if (version < storeVersion.showCooker) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const {
-					persistence: {
-						recipe: {
-							table: {visibleColumns},
-						},
-					},
-				} = oldState;
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-				if (!visibleColumns.includes('cooker')) {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-					visibleColumns.push('cooker');
-				}
-			}
-			if (version < storeVersion.tableRows) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const {
-					persistence: {
-						beverage: {table: beverageTable},
-						recipe: {table: recipeTable},
-					},
-				} = oldState;
-				if (beverageTable.rows === 7) {
-					beverageTable.rows = 8;
-				}
-				if (recipeTable.rows === 7) {
-					recipeTable.rows = 8;
-				}
-			}
-			if (version < storeVersion.ingredientTag) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const {
-					persistence: {
-						ingredient: {filters},
-					},
-				} = oldState;
-				filters.tags = [];
-				filters.noTags = [];
-			}
-			if (version < storeVersion.tablePersist) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const {
-					persistence: {
-						beverage: {table: beverageTable},
-						recipe: {table: recipeTable},
-					},
-				} = oldState;
-				beverageTable.dlcs = [];
-				beverageTable.sortDescriptor = {};
-				recipeTable.cookers = [];
-				recipeTable.dlcs = [];
-				recipeTable.sortDescriptor = {};
-			}
-			if (version < storeVersion.mealData) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const {persistence} = oldState;
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-				for (const meals of Object.values(persistence.meals) as any) {
-					for (const meal of meals) {
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-						const {extraIngredients, recipe: recipeName} = meal;
-						meal.recipe = {
+				if (version < storeVersion.popularTypo) {
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+					for (const meals of Object.values(oldState.persistence.meals) as any) {
+						for (const meal of meals) {
 							// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-							extraIngredients, // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-							name: recipeName,
-						};
-						delete meal.extraIngredients;
+							meal.hasMystiaKitchenware = meal.hasMystiaKitchenwware;
+							// cSpell:ignore kitchenwware
+							delete meal.hasMystiaKitchenwware;
+						}
 					}
 				}
-			}
-			return persistedState as typeof state;
-		},
-		partialize(currentStore) {
-			return {
-				persistence: currentStore.persistence,
-			} as typeof currentStore;
-		},
-		storage: createJSONStorage(() => localStorage),
-	},
+				if (version < storeVersion.price) {
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+					for (const meals of Object.values(oldState.persistence.meals) as any) {
+						for (const meal of meals) {
+							meal.price = 0;
+						}
+					}
+				}
+				if (version < storeVersion.cooker) {
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+					for (const meals of Object.values(oldState.persistence.meals) as any) {
+						for (const meal of meals) {
+							// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+							meal.hasMystiaCooker = meal.hasMystiaKitchenware;
+							delete meal.hasMystiaKitchenware;
+						}
+					}
+				}
+				if (version < storeVersion.ingredientLevel) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const {
+						persistence: {
+							ingredient: {filters},
+						},
+					} = oldState;
+					filters.levels = [];
+				}
+				if (version < storeVersion.tagDescription) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const {
+						persistence: {customer},
+					} = oldState;
+					customer.showTagDescription = true;
+				}
+				if (version < storeVersion.extraCustomer) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const {
+						persistence: {
+							customer: {filters},
+						},
+					} = oldState;
+					filters.includes = [];
+					filters.excludes = [];
+				}
+				if (version < storeVersion.linkedFilter) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const {
+						persistence: {customer},
+					} = oldState;
+					customer.orderLinkedFilter = true;
+				}
+				if (version < storeVersion.mystiaCooker) {
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+					for (const meals of Object.values(oldState.persistence.meals) as any) {
+						for (const meal of meals) {
+							if (meal.hasMystiaCooker) {
+								meal.order.beverageTag = null;
+								meal.order.recipeTag = null;
+							}
+						}
+					}
+				}
+				if (version < storeVersion.dynamicMeal) {
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+					for (const meals of Object.values(oldState.persistence.meals) as any) {
+						for (const meal of meals) {
+							delete meal.popular;
+							delete meal.price;
+							delete meal.rating;
+						}
+					}
+				}
+				if (version < storeVersion.tachie) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const {
+						persistence: {customer},
+					} = oldState;
+					customer.showTachie = true;
+				}
+				if (version < storeVersion.moveTachie) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const {
+						persistence: {customer},
+					} = oldState;
+					delete customer.showTachie;
+				}
+				if (version < storeVersion.showCooker) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const {
+						persistence: {
+							recipe: {
+								table: {visibleColumns},
+							},
+						},
+					} = oldState;
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+					if (!visibleColumns.includes('cooker')) {
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+						visibleColumns.push('cooker');
+					}
+				}
+				if (version < storeVersion.tableRows) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const {
+						persistence: {
+							beverage: {table: beverageTable},
+							recipe: {table: recipeTable},
+						},
+					} = oldState;
+					if (beverageTable.rows === 7) {
+						beverageTable.rows = 8;
+					}
+					if (recipeTable.rows === 7) {
+						recipeTable.rows = 8;
+					}
+				}
+				if (version < storeVersion.ingredientTag) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const {
+						persistence: {
+							ingredient: {filters},
+						},
+					} = oldState;
+					filters.tags = [];
+					filters.noTags = [];
+				}
+				if (version < storeVersion.tablePersist) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const {
+						persistence: {
+							beverage: {table: beverageTable},
+							recipe: {table: recipeTable},
+						},
+					} = oldState;
+					beverageTable.dlcs = [];
+					beverageTable.sortDescriptor = {};
+					recipeTable.cookers = [];
+					recipeTable.dlcs = [];
+					recipeTable.sortDescriptor = {};
+				}
+				if (version < storeVersion.mealData) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const {persistence} = oldState;
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+					for (const meals of Object.values(persistence.meals) as any) {
+						for (const meal of meals) {
+							// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+							const {extraIngredients, recipe: recipeName} = meal;
+							meal.recipe = {
+								// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+								extraIngredients, // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+								name: recipeName,
+							};
+							delete meal.extraIngredients;
+						}
+					}
+				}
+				return persistedState as typeof state;
+			},
+			partialize(currentStore) {
+				return {
+					persistence: currentStore.persistence,
+				} as typeof currentStore;
+			},
+			storage: createIndexDBStorage(),
+		}),
+	],
 })
 	.computed((currentStore) => ({
 		customerNames: () => getNames(currentStore.persistence.customer.pinyinSortState.use()),

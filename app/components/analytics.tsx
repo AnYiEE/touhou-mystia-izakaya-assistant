@@ -35,7 +35,7 @@ type TAction =
 	| 'Save'
 	| 'Select';
 type TActionButton = `${TAction} Button`;
-type TError = 'Cloud' | 'Global' | 'Sync';
+type TError = 'Cloud' | 'Global';
 type TItem = 'Beverage' | 'Clothes' | 'Cooker' | 'Currency' | 'Ingredient' | 'Ornament' | 'Partner' | 'Recipe';
 type TItemCard = `${TItem} Card`;
 type TItemAlone = 'Customer' | 'Customer Tag' | 'MystiaCooker';

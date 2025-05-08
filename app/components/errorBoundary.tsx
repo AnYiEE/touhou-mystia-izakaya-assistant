@@ -1,6 +1,7 @@
 'use client';
 
 import {Component, type ErrorInfo, type PropsWithChildren, memo, useCallback} from 'react';
+import {clear} from 'idb-keyval';
 
 import {trackEvent} from '@/components/analytics';
 
@@ -16,14 +17,11 @@ interface IErrorFallbackProps {
 export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({error, info}) {
 	const handleClick = useCallback((shouldClear: boolean) => {
 		if (shouldClear) {
-			try {
+			void clear().finally(() => {
 				localStorage.clear();
-			} catch (storageError) {
-				console.error(storageError);
-				alert(storageError);
-			}
+				location.reload();
+			});
 		}
-		location.reload();
 	}, []);
 
 	const Button = useCallback(
