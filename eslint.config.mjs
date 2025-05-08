@@ -11,13 +11,9 @@ import sortDestructureKeys from 'eslint-plugin-sort-destructure-keys';
 import unicorn from 'eslint-plugin-unicorn';
 
 import globals from 'globals';
-import {dirname} from 'node:path';
-import {fileURLToPath} from 'node:url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 const flatCompat = new FlatCompat({
-	baseDirectory: __dirname,
+	baseDirectory: import.meta.dirname,
 });
 
 export default tsEslint.config(

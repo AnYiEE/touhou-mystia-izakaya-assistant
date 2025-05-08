@@ -210,7 +210,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 				);
 			})
 			.catch((error: unknown) => {
-				if (typeof error === 'object' && error !== null && 'status' in error) {
+				if (isObject(error) && 'status' in error) {
 					setCloudCodeInfo(
 						<span className="text-xs">
 							（{error.status === 404 ? '云端未记录此备份码，可能已于他处删除？' : '无效的备份码'}）
