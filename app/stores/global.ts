@@ -1,13 +1,19 @@
 import {store} from '@davstack/store';
-import {createJSONStorage} from 'zustand/middleware';
+import {compareVersions} from 'compare-versions';
 
 import {type Selection} from '@heroui/table';
 
-import type {IPersistenceState} from './types';
+import {trackEvent} from '@/components/analytics';
+
+import {siteConfig} from '@/configs';
 import {customerNormalStore, customerRareStore, ingredientsStore, recipesStore} from '@/stores';
+import {persist as persistMiddleware, sync as syncMiddleware} from '@/stores/middlewares';
+import {createIndexDBStorage} from '@/stores/utils';
 import type {IPopularTrend, TPopularTag} from '@/types';
 import {pinyinSort, toArray, toGetValueCollection, toSet, union} from '@/utilities';
 import {Ingredient, Recipe} from '@/utils';
+
+const {version: appVersion} = siteConfig;
 
 const instance_ingredient = Ingredient.getInstance();
 const instance_recipe = Recipe.getInstance();
@@ -24,6 +30,7 @@ const validPopularTags = (union(ingredientTags, recipePositiveTags) as TPopularT
 	.map(toGetValueCollection)
 	.sort(pinyinSort);
 
+const storeName = 'global-storage';
 const storeVersion = {
 	initial: 0, // eslint-disable-next-line sort-keys
 	dirver: 1,
@@ -60,66 +67,67 @@ const state = {
 	},
 };
 
-export type TGlobalPersistenceState = IPersistenceState<(typeof state)['persistence']>;
-
-export const globalStoreKey = 'global-storage';
-
 export const globalStore = store(state, {
-	persist: {
-		enabled: true,
-		name: globalStoreKey,
-		version: storeVersion.cloud,
+	middlewares: [
+		syncMiddleware<typeof state>({
+			name: storeName,
+			watch: ['persistence'],
+		}),
+		persistMiddleware<typeof state>({
+			name: storeName,
+			version: storeVersion.cloud,
 
-		migrate(persistedState, version) {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-			const oldState = persistedState as any;
-			if (version < storeVersion.dirver) {
-				oldState.persistence.dirver = [];
-			}
-			if (version < storeVersion.tagsTooltip) {
-				oldState.persistence.customerCardTagsTooltip = true;
-			}
-			if (version < storeVersion.version) {
-				oldState.persistence.version = null;
-			}
-			if (version < storeVersion.backgroundImage) {
-				oldState.persistence.backgroundImage = true;
-			}
-			if (version < storeVersion.tachie) {
-				oldState.persistence.tachie = true;
-			}
-			if (version < storeVersion.vibrate) {
-				oldState.persistence.vibrate = true;
-			}
-			if (version < storeVersion.renameBg) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const {persistence} = oldState;
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				persistence.highAppearance = persistence.backgroundImage;
-				delete persistence.backgroundImage;
-			}
-			if (version < storeVersion.famousShop) {
-				oldState.persistence.famousShop = false;
-			}
-			if (version < storeVersion.popularTrend) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				const {persistence} = oldState;
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				persistence.popularTrend = persistence.popular;
-				delete persistence.popular;
-			}
-			if (version < storeVersion.cloud) {
-				oldState.persistence.cloudCode = null;
-			}
-			return persistedState as typeof state;
-		},
-		partialize(currentStore) {
-			return {
-				persistence: currentStore.persistence,
-			} as typeof currentStore;
-		},
-		storage: createJSONStorage(() => localStorage),
-	},
+			migrate(persistedState, version) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+				const oldState = persistedState as any;
+				if (version < storeVersion.dirver) {
+					oldState.persistence.dirver = [];
+				}
+				if (version < storeVersion.tagsTooltip) {
+					oldState.persistence.customerCardTagsTooltip = true;
+				}
+				if (version < storeVersion.version) {
+					oldState.persistence.version = null;
+				}
+				if (version < storeVersion.backgroundImage) {
+					oldState.persistence.backgroundImage = true;
+				}
+				if (version < storeVersion.tachie) {
+					oldState.persistence.tachie = true;
+				}
+				if (version < storeVersion.vibrate) {
+					oldState.persistence.vibrate = true;
+				}
+				if (version < storeVersion.renameBg) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const {persistence} = oldState;
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					persistence.highAppearance = persistence.backgroundImage;
+					delete persistence.backgroundImage;
+				}
+				if (version < storeVersion.famousShop) {
+					oldState.persistence.famousShop = false;
+				}
+				if (version < storeVersion.popularTrend) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const {persistence} = oldState;
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					persistence.popularTrend = persistence.popular;
+					delete persistence.popular;
+				}
+				if (version < storeVersion.cloud) {
+					oldState.persistence.cloudCode = null;
+				}
+				return persistedState as typeof state;
+			},
+			partialize(currentStore) {
+				return {
+					persistence: currentStore.persistence,
+				} as typeof currentStore;
+			},
+			storage: createIndexDBStorage(),
+		}),
+	],
 }).computed((currentStore) => ({
 	selectedPopularTag: {
 		read: () => toSet([currentStore.persistence.popularTrend.tag.use()]) as SelectionSet,
@@ -145,4 +153,12 @@ globalStore.persistence.popularTrend.onChange((popularTrend) => {
 	customerRareStore.shared.customer.popularTrend.assign(popularTrend);
 	ingredientsStore.shared.popularTrend.assign(popularTrend);
 	recipesStore.shared.popularTrend.assign(popularTrend);
+});
+
+// Reload page if current tab version is lower than the version of the new tab.
+globalStore.persistence.version.onChange((version) => {
+	if (version && compareVersions(version, appVersion) === 1) {
+		trackEvent(trackEvent.category.error, 'Global', 'Outdated version detected in multiple tabs');
+		location.reload();
+	}
 });
