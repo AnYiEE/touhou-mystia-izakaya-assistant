@@ -28,3 +28,5 @@ export type TItemDataItem<T extends TItemInstance> = TItemData<T>[number];
 
 export type TBeverage = TItemDataItem<Beverage>;
 export type TRecipe = TItemDataItem<Recipe>;
+
+export type {ICustomerOrder} from '@/utils/meal/types';
