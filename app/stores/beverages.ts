@@ -1,8 +1,8 @@
 import {store} from '@davstack/store';
-import {createJSONStorage} from 'zustand/middleware';
 
 import {type TPinyinSortState, pinyinSortStateMap} from '@/components/sidePinyinSortIconButton';
 
+import {persist as persistMiddleware} from '@/stores/middlewares';
 import {createNamesCache} from '@/stores/utils';
 import {numberSort, toGetValueCollection} from '@/utilities';
 import {Beverage} from '@/utils';
@@ -36,27 +36,27 @@ const state = {
 const getNames = createNamesCache(instance);
 
 export const beveragesStore = store(state, {
-	persist: {
-		enabled: true,
-		name: 'page-beverages-storage',
-		version: storeVersion.popular,
+	middlewares: [
+		persistMiddleware<typeof state>({
+			name: 'page-beverages-storage',
+			version: storeVersion.popular,
 
-		migrate(persistedState, version) {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-			const oldState = persistedState as any;
-			if (version < storeVersion.popular) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				oldState.persistence = oldState.page;
-				delete oldState.page;
-			}
-			return persistedState as typeof state;
-		},
-		partialize: (currentStore) =>
-			({
-				persistence: currentStore.persistence,
-			}) as typeof currentStore,
-		storage: createJSONStorage(() => localStorage),
-	},
+			migrate(persistedState, version) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+				const oldState = persistedState as any;
+				if (version < storeVersion.popular) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					oldState.persistence = oldState.page;
+					delete oldState.page;
+				}
+				return persistedState as typeof state;
+			},
+			partialize: (currentStore) =>
+				({
+					persistence: currentStore.persistence,
+				}) as typeof currentStore,
+		}),
+	],
 }).computed((currentStore) => ({
 	names: () => getNames(currentStore.persistence.pinyinSortState.use()),
 }));
