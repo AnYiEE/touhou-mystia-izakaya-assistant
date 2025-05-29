@@ -123,7 +123,7 @@ function assign<T, P extends TNestedKeys<T>>(object: T, path: P, value: TNestedT
 
 interface ISyncOptions<T> {
 	name: string;
-	watch: Array<TNestedKeys<T>>;
+	watch: Array<Extract<TNestedKeys<T>, `persistence${string}`>>;
 }
 
 const LOADED_SIGNAL = '__loaded__';
