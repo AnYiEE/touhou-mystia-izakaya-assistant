@@ -3046,7 +3046,7 @@ export const CUSTOMER_RARE_LIST = [
 			'魔界',
 		],
 		price: '800-1200',
-		positiveTags: ['咸', '甜', '生', '猎奇', '不可思议', '梦幻'],
+		positiveTags: ['咸', '甜', '生', '猎奇', '不可思议', '梦幻', DYNAMIC_TAG_MAP.popularNegative],
 		negativeTags: [],
 		beverageTags: ['高酒精', '烧酒', '苦', '气泡'],
 		chat: [
