@@ -1,6 +1,8 @@
 'use client';
 
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useState} from 'react';
+
+import {useMounted} from '@/hooks';
 
 import {COLOR_MAP, MEDIA, STORAGE_KEY, THEME_MAP} from './constants';
 import type {TTheme} from './types';
@@ -79,7 +81,7 @@ export function useTheme() {
 		setThemeState(newTheme);
 	}, []);
 
-	useEffect(() => {
+	useMounted(() => {
 		if (isServer) {
 			return;
 		}
@@ -92,9 +94,9 @@ export function useTheme() {
 				setThemeCallback(getSystemTheme(event), true);
 			}
 		});
-	}, []);
+	});
 
-	useEffect(() => {
+	useMounted(() => {
 		if (isServer) {
 			return;
 		}
@@ -118,7 +120,7 @@ export function useTheme() {
 		return () => {
 			globalThis.removeEventListener(EVENT_TYPE, handleStorage);
 		};
-	}, []);
+	});
 
 	return [theme, setTheme] as const;
 }

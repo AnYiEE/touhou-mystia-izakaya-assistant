@@ -1,6 +1,8 @@
 'use client';
 
-import {type CSSProperties, memo, useEffect, useMemo, useState} from 'react';
+import {type CSSProperties, memo, useMemo, useState} from 'react';
+
+import {useMounted} from '@/hooks';
 
 import {CLASSNAME_FOCUS_VISIBLE_OUTLINE, cn} from '@/design/ui/components';
 
@@ -57,9 +59,9 @@ export default memo<IProps>(function Sprite({
 }) {
 	const [isSupportedWebp, setIsSupportedWebp] = useState(true);
 
-	useEffect(() => {
+	useMounted(() => {
 		setIsSupportedWebp(checkCompatibility().webp);
-	}, []);
+	});
 
 	const instance = SpriteClass.getInstance(target);
 

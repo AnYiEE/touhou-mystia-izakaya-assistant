@@ -1,9 +1,10 @@
 'use client';
 
-import {type PropsWithChildren, useEffect} from 'react';
+import {type PropsWithChildren} from 'react';
 import {compareVersions} from 'compare-versions';
 
 import {useRouter} from 'next/navigation';
+import {useMounted} from '@/hooks';
 
 import {HeroUIProvider} from '@heroui/system';
 import {ProgressBar, ProgressBarProvider} from 'react-transition-progress';
@@ -29,7 +30,7 @@ interface IProps {
 }
 
 export default function Providers({children, locale}: PropsWithChildren<IProps>) {
-	useEffect(() => {
+	useMounted(() => {
 		// If the saved version is not set or outdated, initialize it with the current version.
 		// When an outdated version is detected, the current tab will update the saved version in local storage.
 		// Other tabs will monitor changes in the saved version and reload the page as needed. See below.
@@ -51,7 +52,7 @@ export default function Providers({children, locale}: PropsWithChildren<IProps>)
 		customerRareStore.shared.customer.popularTrend.set(globalPopularTrend);
 		ingredientsStore.shared.popularTrend.set(globalPopularTrend);
 		recipesStore.shared.popularTrend.set(globalPopularTrend);
-	}, []);
+	});
 
 	const router = useRouter();
 

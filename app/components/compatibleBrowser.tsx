@@ -1,7 +1,8 @@
 'use client';
 
-import {useEffect} from 'react';
 import {UAParser} from 'ua-parser-js';
+
+import {useMounted} from '@/hooks';
 
 import {checkDomReady, checkEmpty, memoize, toArray} from '@/utilities';
 
@@ -168,7 +169,7 @@ function initFlexGapFix() {
 }
 
 export default function CompatibleBrowser() {
-	useEffect(() => {
+	useMounted(() => {
 		if (checkCompatibility().flexGap) {
 			return;
 		}
@@ -179,7 +180,7 @@ export default function CompatibleBrowser() {
 			processMutations(observer.takeRecords());
 			observer.disconnect();
 		};
-	}, []);
+	});
 
 	return null;
 }

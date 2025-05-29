@@ -2,7 +2,7 @@
 
 import {useEffect, useRef} from 'react';
 
-import {usePathname} from '@/hooks';
+import {useMounted, usePathname} from '@/hooks';
 
 import {siteConfig} from '@/configs';
 import {setScriptUrlTag} from '@/utilities';
@@ -82,7 +82,7 @@ function trackPageView() {
 }
 
 export default function Analytics() {
-	useEffect(() => {
+	useMounted(() => {
 		// The tracker has been initialized, skip.
 		if (globalThis._paq !== undefined) {
 			trackPageView();
@@ -108,7 +108,7 @@ export default function Analytics() {
 			.catch((error: unknown) => {
 				console.error('Analytics load failed.', error);
 			});
-	}, []);
+	});
 
 	// It has already been tracked once when entering the page for the first time.
 	const isLoaded = useRef(true);
