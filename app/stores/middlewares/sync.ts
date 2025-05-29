@@ -1,6 +1,8 @@
 import {isObject} from 'lodash';
 import {type StateCreator} from 'zustand';
 
+import {checkArrayLengthEqualOf, checkEmpty} from '@/utilities';
+
 type TPlainObject = Record<string, unknown>;
 
 type TNestedKeys<T> = T extends TPlainObject
@@ -35,8 +37,8 @@ function isPlainObject(value: unknown): value is TPlainObject {
 	return Object.prototype.toString.call(value) === '[object Object]';
 }
 
-function isEqual(value1: unknown, value2: unknown): boolean {
-	if (Object.is(value1, value2)) {
+function checkEqual(value1: unknown, value2: unknown): boolean {
+	if (value1 === value2) {
 		return true;
 	}
 
@@ -45,13 +47,16 @@ function isEqual(value1: unknown, value2: unknown): boolean {
 		const keys2 = Object.keys(value2);
 
 		return (
-			keys1.length === keys2.length &&
-			keys1.every((key) => Object.hasOwn(value2, key) && isEqual(value1[key], value2[key]))
+			checkArrayLengthEqualOf(keys1, keys2) &&
+			keys1.every((key) => Object.hasOwn(value2, key) && checkEqual(value1[key], value2[key]))
 		);
 	}
 
 	if (Array.isArray(value1) && Array.isArray(value2)) {
-		return value1.length === value2.length && value1.every((element, index) => isEqual(element, value2[index]));
+		return (
+			checkArrayLengthEqualOf(value1, value2) &&
+			value1.every((element, index) => checkEqual(element, value2[index]))
+		);
 	}
 
 	return false;
@@ -99,7 +104,7 @@ function merge<T>(target: T, source: Partial<T>) {
 					isChanged = true;
 					acc[key] = mergedValue;
 				}
-			} else if (!isEqual(targetValue, sourceValue)) {
+			} else if (!checkEqual(targetValue, sourceValue)) {
 				isChanged = true;
 				acc[key] = sourceValue;
 			}
@@ -145,7 +150,7 @@ export function sync<T>(options: ISyncOptions<T>) {
 						return acc;
 					}, {} as T) as object;
 
-					if (Object.keys(watchedState).length > 0) {
+					if (!checkEmpty(Object.keys(watchedState))) {
 						channel.postMessage(watchedState);
 					}
 				} else {
@@ -166,14 +171,14 @@ export function sync<T>(options: ISyncOptions<T>) {
 					const currentValue = getNestedValue(currentState, path);
 					const prevValue = getNestedValue(prevState, path);
 
-					if (!isEqual(currentValue, prevValue)) {
+					if (!checkEqual(currentValue, prevValue)) {
 						assign(acc, path, currentValue);
 					}
 
 					return acc;
 				}, {} as T) as object;
 
-				if (Object.keys(watchedState).length > 0) {
+				if (!checkEmpty(Object.keys(watchedState))) {
 					channel.postMessage(watchedState);
 				}
 			};
