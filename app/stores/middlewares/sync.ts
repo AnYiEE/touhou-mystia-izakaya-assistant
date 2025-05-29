@@ -1,7 +1,7 @@
 import {isObject} from 'lodash';
 import {type StateCreator} from 'zustand';
 
-import {checkArrayLengthEqualOf, checkEmpty} from '@/utilities';
+import {checkArrayLengthEqualOf, checkEmpty, copyArray, memoize} from '@/utilities';
 
 type TPlainObject = Record<string, unknown>;
 
@@ -62,17 +62,19 @@ function checkEqual(value1: unknown, value2: unknown): boolean {
 	return false;
 }
 
+const getKeys = memoize(function getKeys<T extends string>(path: T) {
+	return path.split('.') as TSplitByDot<T>;
+});
+
 function getNestedValue<T, P extends TNestedKeys<T>>(object: T, path: P) {
-	return path
-		.split('.')
-		.reduce<unknown>(
-			(acc, key) => (acc === undefined ? undefined : (acc as TPlainObject)[key]),
-			object
-		) as TNestedType<T, TSplitByDot<P>>;
+	return getKeys(path).reduce<unknown>(
+		(acc, key) => (acc === undefined ? undefined : (acc as TPlainObject)[key]),
+		object
+	) as TNestedType<T, TSplitByDot<P>>;
 }
 
 function setNestedValue<T, P extends TNestedKeys<T>>(object: T, path: P, value: TNestedType<T, TSplitByDot<P>>) {
-	const keys = path.split('.') as TSplitByDot<P>;
+	const keys = copyArray(getKeys(path));
 	const lastKey = keys.pop() as string;
 
 	const target = keys.reduce((acc, key) => {
