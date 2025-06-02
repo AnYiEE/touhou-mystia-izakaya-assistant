@@ -1,0 +1,156 @@
+diff --git a/dist/autocomplete.js b/dist/autocomplete.js
+index 5458ba7c993d7c19b444df20a1e3b83b114e2241..bb6210fcc48915571e0f92def9707231b71c0a19 100644
+--- a/dist/autocomplete.js
++++ b/dist/autocomplete.js
+@@ -216,12 +216,29 @@ function useAutocomplete(originalProps) {
+     }
+   }, [inputRef.current]);
+   (0, import_react.useEffect)(() => {
+-    let key = state.collection.getFirstKey();
+-    while (key && state.disabledKeys.has(key)) {
+-      key = state.collection.getKeyAfter(key);
++    let keyToFocus;
++    if (state.selectedKey !== null && state.collection.getItem(state.selectedKey) && !state.disabledKeys.has(state.selectedKey)) {
++      keyToFocus = state.selectedKey;
++    } else {
++      let firstAvailableKey = state.collection.getFirstKey();
++      while (firstAvailableKey && state.disabledKeys.has(firstAvailableKey)) {
++        firstAvailableKey = state.collection.getKeyAfter(firstAvailableKey);
++      }
++      keyToFocus = firstAvailableKey;
++    }
++    state.selectionManager.setFocusedKey(keyToFocus);
++  }, [state.collection, state.disabledKeys, state.selectedKey]);
++  (0, import_react.useEffect)(() => {
++    if (state.isOpen && popoverRef.current && listBoxRef.current) {
++      let selectedItem = listBoxRef.current.querySelector("[aria-selected=true] [data-label=true]");
++      let scrollShadow = scrollShadowRef.current;
++      if (selectedItem && scrollShadow && selectedItem.parentElement) {
++        let scrollShadowRect = scrollShadow == null ? void 0 : scrollShadow.getBoundingClientRect();
++        let scrollShadowHeight = scrollShadowRect.height;
++        scrollShadow.scrollTop = selectedItem.parentElement.offsetTop - scrollShadowHeight / 2 + selectedItem.parentElement.clientHeight / 2;
++      }
+     }
+-    state.selectionManager.setFocusedKey(key);
+-  }, [state.collection, state.disabledKeys]);
++  }, [state.isOpen, disableAnimation]);
+   (0, import_react.useEffect)(() => {
+     if (isOpen) {
+       if (popoverRef.current && inputWrapperRef.current) {
+diff --git a/dist/chunk-QZCVHGAT.mjs b/dist/chunk-QZCVHGAT.mjs
+index f54795f69c1f19e73f04e22b19be8cd2c431fa67..3e13901f14bbcbaa5ccdc1bd798d8ce5fe36d1af 100644
+--- a/dist/chunk-QZCVHGAT.mjs
++++ b/dist/chunk-QZCVHGAT.mjs
+@@ -183,12 +183,29 @@ function useAutocomplete(originalProps) {
+     }
+   }, [inputRef.current]);
+   useEffect(() => {
+-    let key = state.collection.getFirstKey();
+-    while (key && state.disabledKeys.has(key)) {
+-      key = state.collection.getKeyAfter(key);
++    let keyToFocus;
++    if (state.selectedKey !== null && state.collection.getItem(state.selectedKey) && !state.disabledKeys.has(state.selectedKey)) {
++      keyToFocus = state.selectedKey;
++    } else {
++      let firstAvailableKey = state.collection.getFirstKey();
++      while (firstAvailableKey && state.disabledKeys.has(firstAvailableKey)) {
++        firstAvailableKey = state.collection.getKeyAfter(firstAvailableKey);
++      }
++      keyToFocus = firstAvailableKey;
++    }
++    state.selectionManager.setFocusedKey(keyToFocus);
++  }, [state.collection, state.disabledKeys, state.selectedKey]);
++  useEffect(() => {
++    if (state.isOpen && popoverRef.current && listBoxRef.current) {
++      let selectedItem = listBoxRef.current.querySelector("[aria-selected=true] [data-label=true]");
++      let scrollShadow = scrollShadowRef.current;
++      if (selectedItem && scrollShadow && selectedItem.parentElement) {
++        let scrollShadowRect = scrollShadow == null ? void 0 : scrollShadow.getBoundingClientRect();
++        let scrollShadowHeight = scrollShadowRect.height;
++        scrollShadow.scrollTop = selectedItem.parentElement.offsetTop - scrollShadowHeight / 2 + selectedItem.parentElement.clientHeight / 2;
++      }
+     }
+-    state.selectionManager.setFocusedKey(key);
+-  }, [state.collection, state.disabledKeys]);
++  }, [state.isOpen, disableAnimation]);
+   useEffect(() => {
+     if (isOpen) {
+       if (popoverRef.current && inputWrapperRef.current) {
+diff --git a/dist/index.js b/dist/index.js
+index 7ffc5983a0132b2178ebe4ca2187bc8ab67f4e6b..8e764cf4ee2cc00489db450668829c53140b3ccb 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -222,12 +222,29 @@ function useAutocomplete(originalProps) {
+     }
+   }, [inputRef.current]);
+   (0, import_react.useEffect)(() => {
+-    let key = state.collection.getFirstKey();
+-    while (key && state.disabledKeys.has(key)) {
+-      key = state.collection.getKeyAfter(key);
++    let keyToFocus;
++    if (state.selectedKey !== null && state.collection.getItem(state.selectedKey) && !state.disabledKeys.has(state.selectedKey)) {
++      keyToFocus = state.selectedKey;
++    } else {
++      let firstAvailableKey = state.collection.getFirstKey();
++      while (firstAvailableKey && state.disabledKeys.has(firstAvailableKey)) {
++        firstAvailableKey = state.collection.getKeyAfter(firstAvailableKey);
++      }
++      keyToFocus = firstAvailableKey;
++    }
++    state.selectionManager.setFocusedKey(keyToFocus);
++  }, [state.collection, state.disabledKeys, state.selectedKey]);
++  (0, import_react.useEffect)(() => {
++    if (state.isOpen && popoverRef.current && listBoxRef.current) {
++      let selectedItem = listBoxRef.current.querySelector("[aria-selected=true] [data-label=true]");
++      let scrollShadow = scrollShadowRef.current;
++      if (selectedItem && scrollShadow && selectedItem.parentElement) {
++        let scrollShadowRect = scrollShadow == null ? void 0 : scrollShadow.getBoundingClientRect();
++        let scrollShadowHeight = scrollShadowRect.height;
++        scrollShadow.scrollTop = selectedItem.parentElement.offsetTop - scrollShadowHeight / 2 + selectedItem.parentElement.clientHeight / 2;
++      }
+     }
+-    state.selectionManager.setFocusedKey(key);
+-  }, [state.collection, state.disabledKeys]);
++  }, [state.isOpen, disableAnimation]);
+   (0, import_react.useEffect)(() => {
+     if (isOpen) {
+       if (popoverRef.current && inputWrapperRef.current) {
+diff --git a/dist/use-autocomplete.js b/dist/use-autocomplete.js
+index e644781853f6341121165125832f86e9996c69e4..c35576cfa8e825252e2e34a63615a8844d6f320f 100644
+--- a/dist/use-autocomplete.js
++++ b/dist/use-autocomplete.js
+@@ -206,12 +206,29 @@ function useAutocomplete(originalProps) {
+     }
+   }, [inputRef.current]);
+   (0, import_react.useEffect)(() => {
+-    let key = state.collection.getFirstKey();
+-    while (key && state.disabledKeys.has(key)) {
+-      key = state.collection.getKeyAfter(key);
++    let keyToFocus;
++    if (state.selectedKey !== null && state.collection.getItem(state.selectedKey) && !state.disabledKeys.has(state.selectedKey)) {
++      keyToFocus = state.selectedKey;
++    } else {
++      let firstAvailableKey = state.collection.getFirstKey();
++      while (firstAvailableKey && state.disabledKeys.has(firstAvailableKey)) {
++        firstAvailableKey = state.collection.getKeyAfter(firstAvailableKey);
++      }
++      keyToFocus = firstAvailableKey;
++    }
++    state.selectionManager.setFocusedKey(keyToFocus);
++  }, [state.collection, state.disabledKeys, state.selectedKey]);
++  (0, import_react.useEffect)(() => {
++    if (state.isOpen && popoverRef.current && listBoxRef.current) {
++      let selectedItem = listBoxRef.current.querySelector("[aria-selected=true] [data-label=true]");
++      let scrollShadow = scrollShadowRef.current;
++      if (selectedItem && scrollShadow && selectedItem.parentElement) {
++        let scrollShadowRect = scrollShadow == null ? void 0 : scrollShadow.getBoundingClientRect();
++        let scrollShadowHeight = scrollShadowRect.height;
++        scrollShadow.scrollTop = selectedItem.parentElement.offsetTop - scrollShadowHeight / 2 + selectedItem.parentElement.clientHeight / 2;
++      }
+     }
+-    state.selectionManager.setFocusedKey(key);
+-  }, [state.collection, state.disabledKeys]);
++  }, [state.isOpen, disableAnimation]);
+   (0, import_react.useEffect)(() => {
+     if (isOpen) {
+       if (popoverRef.current && inputWrapperRef.current) {

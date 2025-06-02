@@ -175,7 +175,11 @@
 		],
 		"patchedDependencies": {
 			"@heroui/accordion": "patches/@heroui__accordion.patch",
+			"@heroui/autocomplete": "patches/@heroui__autocomplete.patch",
 			"@heroui/button": "patches/@heroui__button.patch",
+			"@heroui/select": "patches/@heroui__select.patch",
+			"@heroui/tabs": "patches/@heroui__tabs.patch",
+			"@heroui/theme": "patches/@heroui__theme.patch",
 			"@heroui/tooltip": "patches/@heroui__tooltip.patch",
 			"@heroui/use-aria-button": "patches/@heroui__use-aria-button.patch",
 			"@heroui/use-aria-link": "patches/@heroui__use-aria-link.patch",

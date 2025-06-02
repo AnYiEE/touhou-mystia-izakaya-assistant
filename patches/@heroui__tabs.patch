@@ -1,0 +1,52 @@
+diff --git a/dist/chunk-TTZQXKQZ.mjs b/dist/chunk-TTZQXKQZ.mjs
+index f7f5c72f32e94213f48dc1d80186be536665a394..94ff2f692f6bd33259f19b032027dcf98ec314c1 100644
+--- a/dist/chunk-TTZQXKQZ.mjs
++++ b/dist/chunk-TTZQXKQZ.mjs
+@@ -54,7 +54,7 @@ var Tab = forwardRef((props, ref) => {
+     rerender: true
+   });
+   const handleClick = () => {
+-    chain(onClick, tabProps.onClick);
++    chain(onClick, tabProps.onClick)();
+     if (!(domRef == null ? void 0 : domRef.current) || !(listRef == null ? void 0 : listRef.current))
+       return;
+     scrollIntoView(domRef.current, {
+diff --git a/dist/index.js b/dist/index.js
+index 8ff210aa74c8e7fc8162e252a5f0b4270121e83d..12e7eabbeddb2b1cf924c10dff3a5b7bbd3f0a04 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -206,7 +206,7 @@ var Tab = (0, import_system2.forwardRef)((props, ref) => {
+     rerender: true
+   });
+   const handleClick = () => {
+-    (0, import_utils2.chain)(onClick, tabProps.onClick);
++    (0, import_utils2.chain)(onClick, tabProps.onClick)();
+     if (!(domRef == null ? void 0 : domRef.current) || !(listRef == null ? void 0 : listRef.current))
+       return;
+     (0, import_scroll_into_view_if_needed.default)(domRef.current, {
+diff --git a/dist/tab.js b/dist/tab.js
+index 09588a6f0244285bb3efe34d07be53176e624faa..6c9c52c02060720bea65c3a266fbb376c89df8f3 100644
+--- a/dist/tab.js
++++ b/dist/tab.js
+@@ -83,7 +83,7 @@ var Tab = (0, import_system.forwardRef)((props, ref) => {
+     rerender: true
+   });
+   const handleClick = () => {
+-    (0, import_utils.chain)(onClick, tabProps.onClick);
++    (0, import_utils.chain)(onClick, tabProps.onClick)();
+     if (!(domRef == null ? void 0 : domRef.current) || !(listRef == null ? void 0 : listRef.current))
+       return;
+     (0, import_scroll_into_view_if_needed.default)(domRef.current, {
+diff --git a/dist/tabs.js b/dist/tabs.js
+index 61765e340621ba9cda81e19b6ce612fe160fa747..b42a3adf06f71b5ddacd5304fb2e8918997029b9 100644
+--- a/dist/tabs.js
++++ b/dist/tabs.js
+@@ -202,7 +202,7 @@ var Tab = (0, import_system2.forwardRef)((props, ref) => {
+     rerender: true
+   });
+   const handleClick = () => {
+-    (0, import_utils2.chain)(onClick, tabProps.onClick);
++    (0, import_utils2.chain)(onClick, tabProps.onClick)();
+     if (!(domRef == null ? void 0 : domRef.current) || !(listRef == null ? void 0 : listRef.current))
+       return;
+     (0, import_scroll_into_view_if_needed.default)(domRef.current, {

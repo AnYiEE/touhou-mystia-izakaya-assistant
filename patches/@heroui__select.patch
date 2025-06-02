@@ -1,0 +1,88 @@
+diff --git a/dist/chunk-B4ETW6ZK.mjs b/dist/chunk-B4ETW6ZK.mjs
+index 54025aee7c66de7bcb0cc8db28b70bf0dbcd07ca..90f8ad5fd6cc62028259d9495464c8636478ffd1 100644
+--- a/dist/chunk-B4ETW6ZK.mjs
++++ b/dist/chunk-B4ETW6ZK.mjs
+@@ -187,17 +187,6 @@ function useSelect(originalProps) {
+     }),
+     [objectToDeps(variantProps), isInvalid, labelPlacement, disableAnimation, className]
+   );
+-  useEffect(() => {
+-    if (state.isOpen && popoverRef.current && listBoxRef.current) {
+-      let selectedItem = listBoxRef.current.querySelector("[aria-selected=true] [data-label=true]");
+-      let scrollShadow = scrollShadowRef.current;
+-      if (selectedItem && scrollShadow && selectedItem.parentElement) {
+-        let scrollShadowRect = scrollShadow == null ? void 0 : scrollShadow.getBoundingClientRect();
+-        let scrollShadowHeight = scrollShadowRect.height;
+-        scrollShadow.scrollTop = selectedItem.parentElement.offsetTop - scrollShadowHeight / 2 + selectedItem.parentElement.clientHeight / 2;
+-      }
+-    }
+-  }, [state.isOpen, disableAnimation]);
+   const errorMessage = typeof props.errorMessage === "function" ? props.errorMessage({ isInvalid, validationErrors, validationDetails }) : props.errorMessage || (validationErrors == null ? void 0 : validationErrors.join(" "));
+   const hasHelper = !!description || !!errorMessage;
+   useEffect(() => {
+diff --git a/dist/index.js b/dist/index.js
+index 4ee9904933d705efe60bbd2c099ca7d72a3f99ea..1ab5063f82c5796db857cfb0fefecf4dcf43e278 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -228,17 +228,6 @@ function useSelect(originalProps) {
+     }),
+     [(0, import_shared_utils.objectToDeps)(variantProps), isInvalid, labelPlacement, disableAnimation, className]
+   );
+-  (0, import_react.useEffect)(() => {
+-    if (state.isOpen && popoverRef.current && listBoxRef.current) {
+-      let selectedItem = listBoxRef.current.querySelector("[aria-selected=true] [data-label=true]");
+-      let scrollShadow = scrollShadowRef.current;
+-      if (selectedItem && scrollShadow && selectedItem.parentElement) {
+-        let scrollShadowRect = scrollShadow == null ? void 0 : scrollShadow.getBoundingClientRect();
+-        let scrollShadowHeight = scrollShadowRect.height;
+-        scrollShadow.scrollTop = selectedItem.parentElement.offsetTop - scrollShadowHeight / 2 + selectedItem.parentElement.clientHeight / 2;
+-      }
+-    }
+-  }, [state.isOpen, disableAnimation]);
+   const errorMessage = typeof props.errorMessage === "function" ? props.errorMessage({ isInvalid, validationErrors, validationDetails }) : props.errorMessage || (validationErrors == null ? void 0 : validationErrors.join(" "));
+   const hasHelper = !!description || !!errorMessage;
+   (0, import_react.useEffect)(() => {
+diff --git a/dist/select.js b/dist/select.js
+index 2f88dd459c6e8ac2f9f4a031a876f3e48bc58bd7..951ca1a9ec6018f70b687b9fc312e82fe790cf65 100644
+--- a/dist/select.js
++++ b/dist/select.js
+@@ -221,17 +221,6 @@ function useSelect(originalProps) {
+     }),
+     [(0, import_shared_utils.objectToDeps)(variantProps), isInvalid, labelPlacement, disableAnimation, className]
+   );
+-  (0, import_react.useEffect)(() => {
+-    if (state.isOpen && popoverRef.current && listBoxRef.current) {
+-      let selectedItem = listBoxRef.current.querySelector("[aria-selected=true] [data-label=true]");
+-      let scrollShadow = scrollShadowRef.current;
+-      if (selectedItem && scrollShadow && selectedItem.parentElement) {
+-        let scrollShadowRect = scrollShadow == null ? void 0 : scrollShadow.getBoundingClientRect();
+-        let scrollShadowHeight = scrollShadowRect.height;
+-        scrollShadow.scrollTop = selectedItem.parentElement.offsetTop - scrollShadowHeight / 2 + selectedItem.parentElement.clientHeight / 2;
+-      }
+-    }
+-  }, [state.isOpen, disableAnimation]);
+   const errorMessage = typeof props.errorMessage === "function" ? props.errorMessage({ isInvalid, validationErrors, validationDetails }) : props.errorMessage || (validationErrors == null ? void 0 : validationErrors.join(" "));
+   const hasHelper = !!description || !!errorMessage;
+   (0, import_react.useEffect)(() => {
+diff --git a/dist/use-select.js b/dist/use-select.js
+index fb43419c1dcaac933a6ea39f4809dc7214552259..b7c250cd0b7159aa123be309e36a65be986a6453 100644
+--- a/dist/use-select.js
++++ b/dist/use-select.js
+@@ -205,17 +205,6 @@ function useSelect(originalProps) {
+     }),
+     [(0, import_shared_utils.objectToDeps)(variantProps), isInvalid, labelPlacement, disableAnimation, className]
+   );
+-  (0, import_react.useEffect)(() => {
+-    if (state.isOpen && popoverRef.current && listBoxRef.current) {
+-      let selectedItem = listBoxRef.current.querySelector("[aria-selected=true] [data-label=true]");
+-      let scrollShadow = scrollShadowRef.current;
+-      if (selectedItem && scrollShadow && selectedItem.parentElement) {
+-        let scrollShadowRect = scrollShadow == null ? void 0 : scrollShadow.getBoundingClientRect();
+-        let scrollShadowHeight = scrollShadowRect.height;
+-        scrollShadow.scrollTop = selectedItem.parentElement.offsetTop - scrollShadowHeight / 2 + selectedItem.parentElement.clientHeight / 2;
+-      }
+-    }
+-  }, [state.isOpen, disableAnimation]);
+   const errorMessage = typeof props.errorMessage === "function" ? props.errorMessage({ isInvalid, validationErrors, validationDetails }) : props.errorMessage || (validationErrors == null ? void 0 : validationErrors.join(" "));
+   const hasHelper = !!description || !!errorMessage;
+   (0, import_react.useEffect)(() => {
