@@ -286,7 +286,6 @@ export default tsEslint.config(
 			polyfills: [
 				'Array.flat',
 				'Array.flatMap',
-				'BroadcastChannel',
 				'Object.hasOwn',
 				'Promise.allSettled',
 				'String.trimEnd',
