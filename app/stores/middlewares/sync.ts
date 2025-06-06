@@ -1,3 +1,4 @@
+import {BroadcastChannel} from 'broadcast-channel';
 import {isObject} from 'lodash';
 import {type StateCreator} from 'zustand';
 
@@ -139,10 +140,12 @@ export function sync<T>(options: ISyncOptions<T>) {
 	return (initializer: StateCreator<T>): StateCreator<T> =>
 		(set, get, api) => {
 			const {name, watch} = options;
-			const channel = new BroadcastChannel(name);
+			const channel = new BroadcastChannel(name, {
+				webWorkerSupport: false,
+			});
 
-			channel.postMessage(LOADED_SIGNAL);
-			channel.addEventListener('message', ({data}) => {
+			void channel.postMessage(LOADED_SIGNAL);
+			channel.addEventListener('message', (data) => {
 				if (data === LOADED_SIGNAL) {
 					const currentState = get();
 
@@ -153,7 +156,7 @@ export function sync<T>(options: ISyncOptions<T>) {
 					}, {} as T) as object;
 
 					if (!checkEmpty(Object.keys(watchedState))) {
-						channel.postMessage(watchedState);
+						void channel.postMessage(watchedState);
 					}
 				} else {
 					set((state) => merge(state, data as Partial<T>));
@@ -181,7 +184,7 @@ export function sync<T>(options: ISyncOptions<T>) {
 				}, {} as T) as object;
 
 				if (!checkEmpty(Object.keys(watchedState))) {
-					channel.postMessage(watchedState);
+					void channel.postMessage(watchedState);
 				}
 			};
 
