@@ -1,8 +1,16 @@
 diff --git a/dist/autocomplete.js b/dist/autocomplete.js
-index 5458ba7c993d7c19b444df20a1e3b83b114e2241..bb6210fcc48915571e0f92def9707231b71c0a19 100644
+index 5458ba7c993d7c19b444df20a1e3b83b114e2241..cc3ad87cc0035094efa210c1a21a25ee06fe61f6 100644
 --- a/dist/autocomplete.js
 +++ b/dist/autocomplete.js
-@@ -216,12 +216,29 @@ function useAutocomplete(originalProps) {
+@@ -87,6 +87,7 @@ function useAutocomplete(originalProps) {
+     errorMessage,
+     onOpenChange,
+     onClose,
++    onClear,
+     isReadOnly = false,
+     ...otherProps
+   } = props;
+@@ -216,12 +217,29 @@ function useAutocomplete(originalProps) {
      }
    }, [inputRef.current]);
    (0, import_react.useEffect)(() => {
@@ -37,11 +45,27 @@ index 5458ba7c993d7c19b444df20a1e3b83b114e2241..bb6210fcc48915571e0f92def9707231
    (0, import_react.useEffect)(() => {
      if (isOpen) {
        if (popoverRef.current && inputWrapperRef.current) {
+@@ -283,6 +301,7 @@ function useAutocomplete(originalProps) {
+         }
+         state.setInputValue("");
+         state.open();
++        onClear?.();
+       },
+       "data-visible": !!state.selectedItem || ((_a2 = state.inputValue) == null ? void 0 : _a2.length) > 0,
+       className: slots.clearButton({
 diff --git a/dist/chunk-QZCVHGAT.mjs b/dist/chunk-QZCVHGAT.mjs
-index f54795f69c1f19e73f04e22b19be8cd2c431fa67..3e13901f14bbcbaa5ccdc1bd798d8ce5fe36d1af 100644
+index f54795f69c1f19e73f04e22b19be8cd2c431fa67..d792df5e958b49603fd12ccab4f18136c75a39e1 100644
 --- a/dist/chunk-QZCVHGAT.mjs
 +++ b/dist/chunk-QZCVHGAT.mjs
-@@ -183,12 +183,29 @@ function useAutocomplete(originalProps) {
+@@ -54,6 +54,7 @@ function useAutocomplete(originalProps) {
+     errorMessage,
+     onOpenChange,
+     onClose,
++    onClear,
+     isReadOnly = false,
+     ...otherProps
+   } = props;
+@@ -183,12 +184,29 @@ function useAutocomplete(originalProps) {
      }
    }, [inputRef.current]);
    useEffect(() => {
@@ -76,11 +100,27 @@ index f54795f69c1f19e73f04e22b19be8cd2c431fa67..3e13901f14bbcbaa5ccdc1bd798d8ce5
    useEffect(() => {
      if (isOpen) {
        if (popoverRef.current && inputWrapperRef.current) {
+@@ -250,6 +268,7 @@ function useAutocomplete(originalProps) {
+         }
+         state.setInputValue("");
+         state.open();
++        onClear?.();
+       },
+       "data-visible": !!state.selectedItem || ((_a2 = state.inputValue) == null ? void 0 : _a2.length) > 0,
+       className: slots.clearButton({
 diff --git a/dist/index.js b/dist/index.js
-index 7ffc5983a0132b2178ebe4ca2187bc8ab67f4e6b..8e764cf4ee2cc00489db450668829c53140b3ccb 100644
+index 7ffc5983a0132b2178ebe4ca2187bc8ab67f4e6b..5b83d330e810d6883cef466cbe016e2f55df92d2 100644
 --- a/dist/index.js
 +++ b/dist/index.js
-@@ -222,12 +222,29 @@ function useAutocomplete(originalProps) {
+@@ -93,6 +93,7 @@ function useAutocomplete(originalProps) {
+     errorMessage,
+     onOpenChange,
+     onClose,
++    onClear,
+     isReadOnly = false,
+     ...otherProps
+   } = props;
+@@ -222,12 +223,29 @@ function useAutocomplete(originalProps) {
      }
    }, [inputRef.current]);
    (0, import_react.useEffect)(() => {
@@ -115,11 +155,43 @@ index 7ffc5983a0132b2178ebe4ca2187bc8ab67f4e6b..8e764cf4ee2cc00489db450668829c53
    (0, import_react.useEffect)(() => {
      if (isOpen) {
        if (popoverRef.current && inputWrapperRef.current) {
+@@ -289,6 +307,7 @@ function useAutocomplete(originalProps) {
+         }
+         state.setInputValue("");
+         state.open();
++        onClear?.();
+       },
+       "data-visible": !!state.selectedItem || ((_a2 = state.inputValue) == null ? void 0 : _a2.length) > 0,
+       className: slots.clearButton({
+diff --git a/dist/use-autocomplete.d.ts b/dist/use-autocomplete.d.ts
+index b67a788f8919ace339e89326cff3eed90e7f5273..23b12163a4028613be6d77fad2b8f4015dfacc35 100644
+--- a/dist/use-autocomplete.d.ts
++++ b/dist/use-autocomplete.d.ts
+@@ -105,6 +105,11 @@ interface Props<T> extends Omit<HTMLHeroUIProps<"input">, keyof ComboBoxProps<T>
+      * Callback fired when the select menu is closed.
+      */
+     onClose?: () => void;
++    /**
++     * Callback fired when the value is cleared.
++     * if you pass this prop, the clear button will be shown.
++     */
++    onClear?: () => void;
+     /**
+      * Whether to enable virtualization of the listbox items.
+      * By default, virtualization is automatically enabled when the number of items is greater than 50.
 diff --git a/dist/use-autocomplete.js b/dist/use-autocomplete.js
-index e644781853f6341121165125832f86e9996c69e4..c35576cfa8e825252e2e34a63615a8844d6f320f 100644
+index e644781853f6341121165125832f86e9996c69e4..e21f29f38747197cb4adc52e524b7e61c9868165 100644
 --- a/dist/use-autocomplete.js
 +++ b/dist/use-autocomplete.js
-@@ -206,12 +206,29 @@ function useAutocomplete(originalProps) {
+@@ -77,6 +77,7 @@ function useAutocomplete(originalProps) {
+     errorMessage,
+     onOpenChange,
+     onClose,
++    onClear,
+     isReadOnly = false,
+     ...otherProps
+   } = props;
+@@ -206,12 +207,29 @@ function useAutocomplete(originalProps) {
      }
    }, [inputRef.current]);
    (0, import_react.useEffect)(() => {
@@ -154,3 +226,11 @@ index e644781853f6341121165125832f86e9996c69e4..c35576cfa8e825252e2e34a63615a884
    (0, import_react.useEffect)(() => {
      if (isOpen) {
        if (popoverRef.current && inputWrapperRef.current) {
+@@ -273,6 +291,7 @@ function useAutocomplete(originalProps) {
+         }
+         state.setInputValue("");
+         state.open();
++        onClear?.();
+       },
+       "data-visible": !!state.selectedItem || ((_a2 = state.inputValue) == null ? void 0 : _a2.length) > 0,
+       className: slots.clearButton({
