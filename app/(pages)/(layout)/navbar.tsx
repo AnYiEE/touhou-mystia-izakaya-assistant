@@ -156,11 +156,11 @@ export default function Navbar() {
 			isBordered
 			disableAnimation={isReducedMotion}
 			isBlurred={isHighAppearance}
-			maxWidth="xl"
 			isMenuOpen={isMenuOpened}
 			onMenuOpenChange={setIsMenuOpened}
 			classNames={{
 				base: 'pt-titlebar',
+				wrapper: 'max-w-screen-xl 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl',
 			}}
 		>
 			<NavbarContent as="div" justify="start" className="basis-full md:basis-1/5">

@@ -180,7 +180,7 @@ export default function CustomerCard() {
 														target="customer_normal"
 														name={currentCustomerName}
 														size={5.6}
-														className="-translate-x-3 -translate-y-0.5"
+														className="-translate-x-[0.77rem] -translate-y-0.5"
 													/>
 												</div>
 											}

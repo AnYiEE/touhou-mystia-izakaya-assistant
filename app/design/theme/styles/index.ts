@@ -41,6 +41,10 @@ export const getExtendConfig = (cdnUrl: string) =>
 		padding: {
 			titlebar: 'env(titlebar-area-height,0rem)',
 		},
+		screens: {
+			'3xl': '1920px',
+			'4xl': '2560px',
+		},
 		width: {
 			loading: '120px',
 		},
