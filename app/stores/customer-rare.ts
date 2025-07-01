@@ -3,7 +3,7 @@ import {store} from '@davstack/store';
 
 import {type Selection} from '@heroui/table';
 
-import {beverageTableColumns, recipeTableColumns, tabVisibilityStateMap} from '@/(pages)/customer-rare/constants';
+import {tabVisibilityStateMap} from '@/(pages)/customer-rare/constants';
 import {type TTableSortDescriptor as TBeverageTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
 import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
 import type {TTab, TTabVisibilityState} from '@/(pages)/customer-rare/types';
@@ -27,12 +27,10 @@ import {createNamesCache, keepLastTag, reverseDirection, reverseVisibilityState}
 import type {IMealRecipe, IPopularTrend} from '@/types';
 import {
 	checkEmpty,
-	generateRange,
 	numberSort,
 	pinyinSort,
 	removeLastElement,
 	toArray,
-	toGetItemWithKey,
 	toGetValueCollection,
 	toSet,
 	union,
@@ -75,6 +73,7 @@ const storeVersion = {
 	ingredientTag: 16,
 	tablePersist: 17, // eslint-disable-next-line sort-keys
 	mealData: 18,
+	tableShare: 19,
 } as const;
 
 const state = {
@@ -132,9 +131,7 @@ const state = {
 		beverage: {
 			table: {
 				dlcs: [] as string[],
-				rows: 8,
 				sortDescriptor: {} as TBeverageTableSortDescriptor,
-				visibleColumns: beverageTableColumns.map(toGetItemWithKey('key')),
 			},
 		},
 		customer: {
@@ -166,9 +163,7 @@ const state = {
 			table: {
 				cookers: [] as string[],
 				dlcs: [] as string[],
-				rows: 8,
 				sortDescriptor: {} as TRecipeTableSortDescriptor,
-				visibleColumns: recipeTableColumns.filter(({key}) => key !== 'time').map(toGetItemWithKey('key')),
 			},
 		},
 
@@ -189,9 +184,14 @@ const state = {
 		beverage: {
 			name: null as TBeverageName | null,
 
-			page: 1,
 			searchValue: '',
-			selectableRows: generateRange(5, 20).map(toGetValueCollection),
+			table: {
+				columns: toSet() as SelectionSet,
+				page: 1,
+				row: 1,
+				rows: toSet() as SelectionSet,
+				selectableRows: [] as Array<Record<'value', number>>,
+			},
 		},
 		customer: {
 			name: null as TCustomerRareName | null,
@@ -225,9 +225,14 @@ const state = {
 
 			tagsWithTrend: [] as TRecipeTag[],
 
-			page: 1,
 			searchValue: '',
-			selectableRows: generateRange(5, 20).map(toGetValueCollection),
+			table: {
+				columns: toSet() as SelectionSet,
+				page: 1,
+				row: 1,
+				rows: toSet() as SelectionSet,
+				selectableRows: [] as Array<Record<'value', number>>,
+			},
 		},
 		tab: 'customer' as TTab,
 	},
@@ -254,7 +259,7 @@ export const customerRareStore = store(state, {
 		}),
 		persistMiddleware<typeof state>({
 			name: storeName,
-			version: storeVersion.mealData,
+			version: storeVersion.tableShare,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -457,6 +462,19 @@ export const customerRareStore = store(state, {
 						}
 					}
 				}
+				if (version < storeVersion.tableShare) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const {
+						persistence: {
+							beverage: {table: beverageTable},
+							recipe: {table: recipeTable},
+						},
+					} = oldState;
+					delete beverageTable.rows;
+					delete beverageTable.visibleColumns;
+					delete recipeTable.rows;
+					delete recipeTable.visibleColumns;
+				}
 				return persistedState as typeof state;
 			},
 			partialize(currentStore) {
@@ -470,30 +488,10 @@ export const customerRareStore = store(state, {
 	.computed((currentStore) => ({
 		customerNames: () => getNames(currentStore.persistence.customer.pinyinSortState.use()),
 
-		beverageTableColumns: {
-			read: () => toSet(currentStore.persistence.beverage.table.visibleColumns.use()) as SelectionSet,
-			write: (columns: Selection) => {
-				currentStore.persistence.beverage.table.visibleColumns.set(toArray<SelectionSet>(columns) as never);
-			},
-		},
 		beverageTableDlcs: {
 			read: () => toSet(currentStore.persistence.beverage.table.dlcs.use()) as SelectionSet,
 			write: (dlcs: Selection) => {
 				currentStore.persistence.beverage.table.dlcs.set(toArray<SelectionSet>(dlcs) as never);
-			},
-		},
-		beverageTableRows: {
-			read: () => toSet([currentStore.persistence.beverage.table.rows.use().toString()]) as SelectionSet,
-			write: (rows: Selection) => {
-				currentStore.persistence.beverage.table.rows.set(
-					Number.parseInt(toArray<SelectionSet>(rows)[0] as string)
-				);
-			},
-		},
-		recipeTableColumns: {
-			read: () => toSet(currentStore.persistence.recipe.table.visibleColumns.use()) as SelectionSet,
-			write: (columns: Selection) => {
-				currentStore.persistence.recipe.table.visibleColumns.set(toArray<SelectionSet>(columns) as never);
 			},
 		},
 		recipeTableCookers: {
@@ -508,19 +506,11 @@ export const customerRareStore = store(state, {
 				currentStore.persistence.recipe.table.dlcs.set(toArray<SelectionSet>(dlcs) as never);
 			},
 		},
-		recipeTableRows: {
-			read: () => toSet([currentStore.persistence.recipe.table.rows.use().toString()]) as SelectionSet,
-			write: (rows: Selection) => {
-				currentStore.persistence.recipe.table.rows.set(
-					Number.parseInt(toArray<SelectionSet>(rows)[0] as string)
-				);
-			},
-		},
 	}))
 	.actions((currentStore) => ({
 		onCustomerFilterBeverageTag(tag: TBeverageTag, hasMystiaCooker: boolean) {
 			currentStore.shared.tab.set('beverage');
-			currentStore.shared.beverage.page.set(1);
+			currentStore.shared.beverage.table.page.set(1);
 			currentStore.shared.customer.filterVisibility.set(false);
 			currentStore.shared.ingredient.filterVisibility.set(false);
 			currentStore.shared.customer.select.beverageTag.set((prev) => {
@@ -532,7 +522,7 @@ export const customerRareStore = store(state, {
 		},
 		onCustomerFilterRecipeTag(tag: TRecipeTag, hasMystiaCooker: boolean) {
 			currentStore.shared.tab.set('recipe');
-			currentStore.shared.recipe.page.set(1);
+			currentStore.shared.recipe.table.page.set(1);
 			currentStore.shared.customer.filterVisibility.set(false);
 			currentStore.shared.ingredient.filterVisibility.set(false);
 			currentStore.shared.customer.select.recipeTag.set((prev) => {
@@ -572,26 +562,22 @@ export const customerRareStore = store(state, {
 			trackEvent(trackEvent.category.select, 'Beverage', beverageName);
 		},
 		onBeverageTablePageChange(page: number) {
-			currentStore.shared.beverage.page.set(page);
-		},
-		onBeverageTableRowsPerPageChange(rows: Selection) {
-			currentStore.beverageTableRows.set(rows);
-			currentStore.shared.beverage.page.set(1);
+			currentStore.shared.beverage.table.page.set(page);
 		},
 		onBeverageTableSearchValueChange(value: string) {
 			currentStore.shared.beverage.searchValue.set(value);
-			currentStore.shared.beverage.page.set(1);
+			currentStore.shared.beverage.table.page.set(1);
 		},
 		onBeverageTableSelectedDlcsChange(dlcs: Selection) {
 			currentStore.beverageTableDlcs.set(dlcs);
-			currentStore.shared.beverage.page.set(1);
+			currentStore.shared.beverage.table.page.set(1);
 		},
 		onBeverageTableSelectedTagsChange(tags: Selection) {
 			currentStore.shared.customer.select.beverageTag.set(tags as SelectionSet);
-			currentStore.shared.beverage.page.set(1);
+			currentStore.shared.beverage.table.page.set(1);
 		},
 		onBeverageTableSortChange(config: TBeverageTableSortDescriptor) {
-			currentStore.shared.beverage.page.set(1);
+			currentStore.shared.beverage.table.page.set(1);
 			const sortConfig = config as Required<TBeverageTableSortDescriptor>;
 			const {column, direction} = sortConfig;
 			const {lastColumn, time} = currentStore.persistence.beverage.table.sortDescriptor.get();
@@ -652,30 +638,26 @@ export const customerRareStore = store(state, {
 			trackEvent(trackEvent.category.select, 'Recipe', recipeName);
 		},
 		onRecipeTablePageChange(page: number) {
-			currentStore.shared.recipe.page.set(page);
-		},
-		onRecipeTableRowsPerPageChange(rows: Selection) {
-			currentStore.recipeTableRows.set(rows);
-			currentStore.shared.recipe.page.set(1);
+			currentStore.shared.recipe.table.page.set(page);
 		},
 		onRecipeTableSearchValueChange(value: string) {
 			currentStore.shared.recipe.searchValue.set(value);
-			currentStore.shared.recipe.page.set(1);
+			currentStore.shared.recipe.table.page.set(1);
 		},
 		onRecipeTableSelectedCookersChange(cookers: Selection) {
 			currentStore.recipeTableCookers.set(cookers);
-			currentStore.shared.recipe.page.set(1);
+			currentStore.shared.recipe.table.page.set(1);
 		},
 		onRecipeTableSelectedDlcsChange(dlcs: Selection) {
 			currentStore.recipeTableDlcs.set(dlcs);
-			currentStore.shared.recipe.page.set(1);
+			currentStore.shared.recipe.table.page.set(1);
 		},
 		onRecipeTableSelectedPositiveTagsChange(tags: Selection) {
 			currentStore.shared.customer.select.recipeTag.set(tags as SelectionSet);
-			currentStore.shared.recipe.page.set(1);
+			currentStore.shared.recipe.table.page.set(1);
 		},
 		onRecipeTableSortChange(config: TRecipeTableSortDescriptor) {
-			currentStore.shared.recipe.page.set(1);
+			currentStore.shared.recipe.table.page.set(1);
 			const sortConfig = config as Required<TRecipeTableSortDescriptor>;
 			const {column, direction} = sortConfig;
 			const {lastColumn, time} = currentStore.persistence.recipe.table.sortDescriptor.get();
@@ -900,9 +882,9 @@ export const customerRareStore = store(state, {
 			currentStore.shared.customer.isDarkMatter.set(null);
 			currentStore.shared.customer.rating.set(null);
 			currentStore.shared.recipe.data.set(null);
-			currentStore.shared.recipe.page.set(1);
+			currentStore.shared.recipe.table.page.set(1);
 			currentStore.shared.beverage.name.set(null);
-			currentStore.shared.beverage.page.set(1);
+			currentStore.shared.beverage.table.page.set(1);
 			currentStore.shared.ingredient.filterVisibility.set(false);
 			if (currentStore.shared.tab.get() === 'ingredient') {
 				if (currentStore.shared.customer.name.get() === null) {

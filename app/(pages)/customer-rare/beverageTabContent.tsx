@@ -76,12 +76,12 @@ export default function BeverageTabContent() {
 	const searchValue = customerStore.shared.beverage.searchValue.use();
 	const hasNameFilter = Boolean(searchValue);
 
-	const tableCurrentPage = customerStore.shared.beverage.page.use();
-	const tableRowsPerPage = customerStore.beverageTableRows.use();
-	const tableRowsPerPageNumber = customerStore.persistence.beverage.table.rows.use();
-	const tableSelectableRows = customerStore.shared.beverage.selectableRows.get();
+	const tableCurrentPage = customerStore.shared.beverage.table.page.use();
+	const tableRowsPerPage = customerStore.shared.beverage.table.rows.use();
+	const tableRowsPerPageNumber = customerStore.shared.beverage.table.row.use();
+	const tableSelectableRows = customerStore.shared.beverage.table.selectableRows.get();
 	const tableSortDescriptor = customerStore.persistence.beverage.table.sortDescriptor.use();
-	const tableVisibleColumns = customerStore.beverageTableColumns.use();
+	const tableVisibleColumns = customerStore.shared.beverage.table.columns.use();
 
 	const filteredData = useMemo<TBeveragesWithSuitability>(() => {
 		const {data} = instance_beverage;
@@ -433,7 +433,7 @@ export default function BeverageTabContent() {
 								selectedKeys={tableVisibleColumns}
 								selectionMode="multiple"
 								variant="flat"
-								onSelectionChange={customerStore.beverageTableColumns.set}
+								onSelectionChange={globalStore.beverageTableColumns.set}
 								aria-label="选择表格所显示的列"
 								itemClasses={{
 									base: 'transition-background motion-reduce:transition-none',
@@ -456,7 +456,7 @@ export default function BeverageTabContent() {
 							selectedKeys={tableRowsPerPage}
 							size="sm"
 							variant="flat"
-							onSelectionChange={customerStore.onBeverageTableRowsPerPageChange}
+							onSelectionChange={globalStore.onTableRowsPerPageChange}
 							aria-label="选择表格每页最大行数"
 							title="选择表格每页最大行数"
 							popoverProps={{

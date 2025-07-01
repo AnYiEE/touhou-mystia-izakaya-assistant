@@ -81,12 +81,12 @@ export default function RecipeTabContent() {
 	const searchValue = customerStore.shared.recipe.searchValue.use();
 	const hasNameFilter = Boolean(searchValue);
 
-	const tableCurrentPage = customerStore.shared.recipe.page.use();
-	const tableRowsPerPage = customerStore.recipeTableRows.use();
-	const tableRowsPerPageNumber = customerStore.persistence.recipe.table.rows.use();
-	const tableSelectableRows = customerStore.shared.recipe.selectableRows.get();
+	const tableCurrentPage = customerStore.shared.recipe.table.page.use();
+	const tableRowsPerPage = customerStore.shared.recipe.table.rows.use();
+	const tableRowsPerPageNumber = customerStore.shared.recipe.table.row.use();
+	const tableSelectableRows = customerStore.shared.recipe.table.selectableRows.get();
 	const tableSortDescriptor = customerStore.persistence.recipe.table.sortDescriptor.use();
-	const tableVisibleColumns = customerStore.recipeTableColumns.use();
+	const tableVisibleColumns = customerStore.shared.recipe.table.columns.use();
 
 	const composeTagsWithPopularTrend = useMemo(
 		() =>
@@ -606,7 +606,7 @@ export default function RecipeTabContent() {
 								selectedKeys={tableVisibleColumns}
 								selectionMode="multiple"
 								variant="flat"
-								onSelectionChange={customerStore.recipeTableColumns.set}
+								onSelectionChange={globalStore.recipeTableColumns.set}
 								aria-label="选择表格所显示的列"
 								itemClasses={{
 									base: 'transition-background motion-reduce:transition-none',
@@ -629,7 +629,7 @@ export default function RecipeTabContent() {
 							selectedKeys={tableRowsPerPage}
 							size="sm"
 							variant="flat"
-							onSelectionChange={customerStore.onRecipeTableRowsPerPageChange}
+							onSelectionChange={globalStore.onTableRowsPerPageChange}
 							aria-label="选择表格每页最大行数"
 							title="选择表格每页最大行数"
 							popoverProps={{

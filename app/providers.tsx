@@ -22,6 +22,7 @@ import {
 	ingredientsStore,
 	recipesStore,
 } from '@/stores';
+import {toSet} from '@/utilities';
 
 const {cdnUrl, version} = siteConfig;
 
@@ -52,6 +53,28 @@ export default function Providers({children, locale}: PropsWithChildren<IProps>)
 		customerRareStore.shared.customer.popularTrend.set(globalPopularTrend);
 		ingredientsStore.shared.popularTrend.set(globalPopularTrend);
 		recipesStore.shared.popularTrend.set(globalPopularTrend);
+
+		// Initialize table state based on the persistence data.
+		const globalBeverageTableColumns = globalStore.persistence.table.columns.beverage.get();
+		const globalRecipeTableColumns = globalStore.persistence.table.columns.recipe.get();
+		const globalTableRow = globalStore.persistence.table.row.get();
+		const globalTableSelectableRows = globalStore.shared.table.selectableRows.get();
+		customerNormalStore.shared.beverage.table.columns.set(toSet(globalBeverageTableColumns));
+		customerNormalStore.shared.recipe.table.row.set(globalTableRow);
+		customerNormalStore.shared.beverage.table.rows.set(toSet([globalTableRow.toString()]));
+		customerNormalStore.shared.beverage.table.selectableRows.set(globalTableSelectableRows);
+		customerNormalStore.shared.recipe.table.columns.set(toSet(globalRecipeTableColumns));
+		customerNormalStore.shared.recipe.table.row.set(globalTableRow);
+		customerNormalStore.shared.recipe.table.rows.set(toSet([globalTableRow.toString()]));
+		customerNormalStore.shared.recipe.table.selectableRows.set(globalTableSelectableRows);
+		customerRareStore.shared.beverage.table.columns.set(toSet(globalBeverageTableColumns));
+		customerRareStore.shared.beverage.table.row.set(globalTableRow);
+		customerRareStore.shared.beverage.table.rows.set(toSet([globalTableRow.toString()]));
+		customerRareStore.shared.beverage.table.selectableRows.set(globalTableSelectableRows);
+		customerRareStore.shared.recipe.table.columns.set(toSet(globalRecipeTableColumns));
+		customerRareStore.shared.recipe.table.row.set(globalTableRow);
+		customerRareStore.shared.recipe.table.rows.set(toSet([globalTableRow.toString()]));
+		customerRareStore.shared.recipe.table.selectableRows.set(globalTableSelectableRows);
 	});
 
 	const router = useRouter();

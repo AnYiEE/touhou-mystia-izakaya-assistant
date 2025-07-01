@@ -41,7 +41,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 	const isVibrateEnabled = globalStore.persistence.vibrate.use();
 
 	const resetRecipeTablePage = useCallback(() => {
-		customerStore.shared.recipe.page.set(1);
+		customerStore.shared.recipe.table.page.set(1);
 	}, []);
 
 	const onIsFamousShopChange = useCallback(
