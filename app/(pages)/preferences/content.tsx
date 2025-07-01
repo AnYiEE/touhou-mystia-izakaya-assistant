@@ -16,7 +16,7 @@ import Heading from '@/components/heading';
 import Sprite from '@/components/sprite';
 
 import {DYNAMIC_TAG_MAP} from '@/data';
-import {customerRareStore as customerStore, globalStore} from '@/stores';
+import {customerNormalStore, customerRareStore, globalStore} from '@/stores';
 import {toSet} from '@/utilities';
 
 interface IProps extends IDataManagerProps {}
@@ -27,8 +27,8 @@ export default memo<IProps>(function Content({onModalClose}) {
 	const router = useRouter();
 	const vibrate = useVibrate();
 
-	const isOrderLinkedFilter = customerStore.persistence.customer.orderLinkedFilter.use();
-	const isShowTagDescription = customerStore.persistence.customer.showTagDescription.use();
+	const isOrderLinkedFilter = customerRareStore.persistence.customer.orderLinkedFilter.use();
+	const isShowTagDescription = customerRareStore.persistence.customer.showTagDescription.use();
 
 	const isFamousShop = globalStore.persistence.famousShop.use();
 	const popularTags = globalStore.popularTags.get();
@@ -41,7 +41,8 @@ export default memo<IProps>(function Content({onModalClose}) {
 	const isVibrateEnabled = globalStore.persistence.vibrate.use();
 
 	const resetRecipeTablePage = useCallback(() => {
-		customerStore.shared.recipe.table.page.set(1);
+		customerRareStore.shared.recipe.table.page.set(1);
+		customerNormalStore.shared.recipe.table.page.set(1);
 	}, []);
 
 	const onIsFamousShopChange = useCallback(
@@ -236,14 +237,14 @@ export default memo<IProps>(function Content({onModalClose}) {
 			<div className="space-y-2">
 				<SwitchItem
 					isSelected={isOrderLinkedFilter}
-					onValueChange={customerStore.persistence.customer.orderLinkedFilter.set}
+					onValueChange={customerRareStore.persistence.customer.orderLinkedFilter.set}
 					aria-label={`选择点单需求标签的同时${isOrderLinkedFilter ? '不' : ''}筛选表格`}
 				>
 					选择点单需求的同时筛选表格
 				</SwitchItem>
 				<SwitchItem
 					isSelected={isShowTagDescription}
-					onValueChange={customerStore.persistence.customer.showTagDescription.set}
+					onValueChange={customerRareStore.persistence.customer.showTagDescription.set}
 					aria-label={`${isShowTagDescription ? '隐藏' : '显示'}料理标签描述`}
 				>
 					显示料理标签所对应的关键词
