@@ -12,6 +12,7 @@ import PACKAGE from '../package.json' with {type: 'json'};
 
 dotenv.config({
 	path: ['.env.local', '.env'],
+	quiet: true,
 });
 
 const isOffline = !!process.env.OFFLINE;
