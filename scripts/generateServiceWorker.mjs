@@ -8,6 +8,7 @@ import {getSha} from './utils.mjs';
 
 dotenv.config({
 	path: ['.env.local', '.env'],
+	quiet: true,
 });
 
 const sha = getSha();
