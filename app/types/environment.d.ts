@@ -1,9 +1,11 @@
 declare global {
 	namespace NodeJS {
 		interface ProcessEnv {
+			ANALYTICS_API_ENDPOINT?: string;
 			ANALYTICS_API_URL?: string;
 			ANALYTICS_SCRIPT_URL?: string;
 			ANALYTICS_SITE_ID?: string;
+			ANALYTICS_TOKEN?: string;
 
 			BASE_URL?: string;
 			CDN_URL?: string;
@@ -23,8 +25,11 @@ declare global {
 		}
 	}
 
-	// eslint-disable-next-line no-var, vars-on-top
+	// eslint-disable-next-line vars-on-top
 	var _paq: unknown[] | undefined;
+
+	// eslint-disable-next-line vars-on-top
+	var __analyticsCacheInitialized: boolean;
 }
 
 export {};
