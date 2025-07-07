@@ -1,10 +1,10 @@
 'use client';
 
-import {type PropsWithChildren} from 'react';
+import {type PropsWithChildren, useEffect} from 'react';
 import {compareVersions} from 'compare-versions';
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
 import {useRouter} from 'next/navigation';
-import {useMounted} from '@/hooks';
 
 import {HeroUIProvider} from '@heroui/system';
 import {ProgressBar, ProgressBarProvider} from 'react-transition-progress';
@@ -31,13 +31,23 @@ interface IProps {
 }
 
 export default function Providers({children, locale}: PropsWithChildren<IProps>) {
-	useMounted(() => {
+	useEffect(() => {
 		// If the saved version is not set or outdated, initialize it with the current version.
 		// When an outdated version is detected, the current tab will update the saved version in local storage.
-		// Other tabs will monitor changes in the saved version and reload the page as needed. See below.
+		// Other tabs will monitor changes in the saved version and reload the page as needed.
 		const savedVersion = globalStore.persistence.version.get();
 		if (savedVersion === null || compareVersions(version, savedVersion) === 1) {
 			globalStore.persistence.version.set(version);
+		}
+
+		// Initialize the user ID.
+		const globalUserId = globalStore.persistence.userId.get();
+		if (globalUserId === null) {
+			const fpPromise = FingerprintJS.load();
+			void fpPromise.then(async (fp) => {
+				const fpResult = await fp.get();
+				globalStore.persistence.userId.set(fpResult.visitorId);
+			});
 		}
 
 		// Initialize famous shop state based on the persistence state.
@@ -75,7 +85,7 @@ export default function Providers({children, locale}: PropsWithChildren<IProps>)
 		customerRareStore.shared.recipe.table.row.set(globalTableRow);
 		customerRareStore.shared.recipe.table.rows.set(toSet([globalTableRow.toString()]));
 		customerRareStore.shared.recipe.table.selectableRows.set(globalTableSelectableRows);
-	});
+	}, []);
 
 	const router = useRouter();
 

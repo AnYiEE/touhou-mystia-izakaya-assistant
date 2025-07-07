@@ -45,6 +45,7 @@ const storeVersion = {
 	popularTrend: 9, // eslint-disable-next-line sort-keys
 	cloud: 10,
 	tableShare: 11,
+	userId: 12,
 } as const;
 
 const state = {
@@ -72,6 +73,7 @@ const state = {
 		tachie: true,
 		vibrate: true,
 
+		userId: null as string | null,
 		version: null as string | null,
 	},
 
@@ -90,7 +92,7 @@ export const globalStore = store(state, {
 		}),
 		persistMiddleware<typeof state>({
 			name: storeName,
-			version: storeVersion.tableShare,
+			version: storeVersion.userId,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -141,6 +143,9 @@ export const globalStore = store(state, {
 						},
 						row: 8,
 					};
+				}
+				if (version < storeVersion.userId) {
+					oldState.persistence.userId = null;
 				}
 				return persistedState as typeof state;
 			},

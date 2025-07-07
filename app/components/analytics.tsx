@@ -5,6 +5,7 @@ import {useEffect, useRef} from 'react';
 import {useMounted, usePathname} from '@/hooks';
 
 import {siteConfig} from '@/configs';
+import {globalStore as store} from '@/stores';
 import {setScriptUrlTag} from '@/utilities';
 
 const {analyticsApiUrl, analyticsScriptUrl, analyticsSiteId, domain} = siteConfig;
@@ -85,7 +86,6 @@ export default function Analytics() {
 	useMounted(() => {
 		// The tracker has been initialized, skip.
 		if (globalThis._paq !== undefined) {
-			trackPageView();
 			return;
 		}
 
@@ -98,11 +98,13 @@ export default function Analytics() {
 			['setRequestMethod', 'GET'],
 			['setTrackerUrl', analyticsApiUrl],
 			['setSecureCookie', true],
-			['setSiteId', analyticsSiteId]
+			['setSiteId', analyticsSiteId],
+			['setUserId', store.persistence.userId.get()]
 		);
 
 		setScriptUrlTag(analyticsScriptUrl, 'async', true)
 			.then(() => {
+				trackPageView();
 				console.info('Analytics load succeeded.');
 			})
 			.catch((error: unknown) => {

@@ -1,16 +1,21 @@
-import {type EffectCallback, useEffect, useState} from 'react';
+import {type EffectCallback, useEffect, useRef, useState} from 'react';
+
+import {globalStore as store} from '@/stores';
 
 function useMounted(callback?: EffectCallback) {
-	const [mounted, setMounted] = useState(false);
+	const isFired = useRef(false);
+	const [isMounted, setIsMounted] = useState(false);
+	const userId = store.persistence.userId.use();
 
 	useEffect(() => {
-		setMounted(true);
+		if (!isFired.current && userId !== null) {
+			isFired.current = true;
+			setIsMounted(true);
+			return callback?.();
+		}
+	}, [callback, userId]);
 
-		return callback?.();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
-
-	return mounted;
+	return isMounted;
 }
 
 export {useMounted};
