@@ -135,14 +135,14 @@
 		"@types/lint-staged": "^13.3.0",
 		"@types/lodash": "^4.17.20",
 		"@types/minimist": "^1.2.5",
-		"@types/node": "^24.0.10",
+		"@types/node": "^24.0.12",
 		"@types/react": "^19.1.8",
 		"@types/react-dom": "^19.1.6",
 		"@types/serviceworker": "^0.0.140",
 		"@types/ua-parser-js": "^0.7.39",
 		"adm-zip": "^0.5.16",
 		"cross-env": "^7.0.3",
-		"dotenv": "^17.0.1",
+		"dotenv": "^17.1.0",
 		"eslint": "^9.30.1",
 		"eslint-config-next": "^15.3.5",
 		"eslint-config-prettier": "^10.1.5",
@@ -165,7 +165,7 @@
 		"stylelint-scss": "^6.12.1",
 		"tailwindcss": "^3.4.17",
 		"typescript": "^5.8.3",
-		"typescript-eslint": "^8.35.1"
+		"typescript-eslint": "^8.36.0"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
