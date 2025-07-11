@@ -20,7 +20,7 @@ export async function DELETE(
 	}
 
 	const now = Date.now();
-	const sixMonthsAgo = now - 180 * 24 * 60 * 60 * 1000;
+	const sixMonthsAgo = now - 181 * 24 * 60 * 60 * 1000;
 
 	const records = await getExpiredRecords(sixMonthsAgo);
 
