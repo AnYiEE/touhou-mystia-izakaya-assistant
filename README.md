@@ -8,10 +8,10 @@
 
 功能概览和更新摘要[见此](https://izakaya.cc/about)，完整的提交日志[见此](https://github.com/AnYiEE/touhou-mystia-izakaya-assistant/commits)。
 
-### 相关视频
+### 相关链接
 
-- [【东方夜雀食堂】用小助手来辅助你搭配料理吧！](https://www.bilibili.com/video/BV1SphBe8EZM/)
-- [【东方夜雀食堂】小助手使用教程+游戏中演示](https://www.bilibili.com/video/BV12bbWeGELA/)
+- [最佳辅助 | 东方夜雀食堂小助手来啦 🎉](https://www.xiaoheihe.cn/app/bbs/link/44a57086a91b)
+- [《东方夜雀食堂》最好用的小助手！料理-食材-收集-图鉴！](https://www.xiaoheihe.cn/app/bbs/link/afe2705d4db7)
 
 ## 许可证
 
