@@ -1,4 +1,4 @@
-import {Kysely, sql} from 'kysely';
+import {type Kysely, sql} from 'kysely';
 
 export async function getTableColumns<T>(database: Kysely<T>, tableName: string) {
 	const record = await sql<{

@@ -1,16 +1,27 @@
 import {NextResponse} from 'next/server';
 import {env} from 'node:process';
 
-let cache: {
+type TVisitorCountResponse = [
+	{
+		actions: string;
+		convertedVisits: string;
+		visitors: string;
+		visits: string;
+	},
+];
+
+interface IVisitorCountCache {
 	data: {
 		visitors: number;
 	} | null;
 	timestamp: number;
-	ttl: number;
-} = {
+	refreshTtl: number;
+}
+
+const cache: IVisitorCountCache = {
 	data: null,
+	refreshTtl: 30 * 1000,
 	timestamp: 0,
-	ttl: 30 * 1000,
 };
 
 async function refreshCache() {
@@ -24,7 +35,10 @@ async function refreshCache() {
 			{
 				body: new URLSearchParams({
 					token_auth: env.ANALYTICS_TOKEN,
-				}),
+				}).toString(),
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+				},
 				method: 'POST',
 			}
 		);
@@ -33,33 +47,25 @@ async function refreshCache() {
 			return;
 		}
 
-		const [{visitors}] = (await response.json()) as [
-			{
-				actions: string;
-				convertedVisits: string;
-				visitors: string;
-				visits: string;
-			},
-		];
+		const [{visitors}] = (await response.json()) as TVisitorCountResponse;
 
-		cache = {
-			...cache,
+		Object.assign(cache, {
 			data: {
 				visitors: Number.parseInt(visitors),
 			},
 			timestamp: Date.now(),
-		};
+		});
 	} catch {
 		/* empty */
 	}
 }
 
-if (!globalThis.__analyticsCacheInitialized) {
-	globalThis.__analyticsCacheInitialized = true;
+if (!globalThis.__visitorCountCacheInitialized) {
+	globalThis.__visitorCountCacheInitialized = true;
 	await refreshCache();
 	setInterval(() => {
 		void refreshCache();
-	}, cache.ttl);
+	}, cache.refreshTtl);
 }
 
 export function GET() {

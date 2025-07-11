@@ -5,6 +5,8 @@ import {v7 as uuid, validate} from 'uuid';
 import {checkIpFrequency, getRecord, saveFile, setRecord, updateRecord} from '@/actions/backup';
 import {FILE_TYPE_JSON} from '@/utilities';
 
+const MAX_DATA_SIZE = 10 * 1024 * 1024;
+
 export async function POST(request: NextRequest) {
 	const contentType = request.headers.get('content-type');
 	if (contentType !== FILE_TYPE_JSON) {
@@ -50,7 +52,7 @@ export async function POST(request: NextRequest) {
 	delete json.code;
 
 	const jsonString = JSON.stringify(json);
-	if (jsonString.length > 10 * 1024 * 1024) {
+	if (jsonString.length > MAX_DATA_SIZE) {
 		return NextResponse.json({message: 'The data is too large'}, {status: 413});
 	}
 

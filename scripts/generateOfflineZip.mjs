@@ -26,12 +26,15 @@ const outputPath = resolve(import.meta.dirname, '../out');
 const rootPath = resolve(import.meta.dirname, '..');
 const scriptPath = resolve(import.meta.dirname);
 
+const apiPath = resolve(appPath, 'api');
+const fakeApiPath = resolve(appPath, '_api');
+
 if (isOffline && isPrepare) {
-	renameSync(resolve(appPath, 'api'), resolve(appPath, '_api'));
+	renameSync(apiPath, fakeApiPath);
 }
 
 if (isOffline && !isPrepare) {
-	renameSync(resolve(appPath, '_api'), resolve(appPath, 'api'));
+	renameSync(fakeApiPath, apiPath);
 
 	const replaceExtension = (/** @type {string} */ fileName) => {
 		const f = fileName.split('.');

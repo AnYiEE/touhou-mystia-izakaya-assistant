@@ -29,7 +29,7 @@ declare global {
 	var _paq: unknown[] | undefined;
 
 	// eslint-disable-next-line vars-on-top
-	var __analyticsCacheInitialized: boolean;
+	var __visitorCountCacheInitialized: boolean;
 }
 
 export {};
