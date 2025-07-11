@@ -13,21 +13,13 @@ function generateFilePath(code: TBackupFileRecord['code']) {
 export async function deleteFile(code: TBackupFileRecord['code']) {
 	const filePath = generateFilePath(code);
 
-	try {
-		await unlink(filePath);
-	} catch {
-		/* empty */
-	}
+	await unlink(filePath);
 }
 
 export async function getFile(code: TBackupFileRecord['code']) {
 	const filePath = generateFilePath(code);
 
-	try {
-		return await readFile(filePath, 'utf8');
-	} catch {
-		return null;
-	}
+	return await readFile(filePath, 'utf8');
 }
 
 export async function saveFile(code: TBackupFileRecord['code'], content: string) {

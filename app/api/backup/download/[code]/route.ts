@@ -26,10 +26,10 @@ export async function GET(
 
 	await updateRecordTimeout(code, Date.now());
 
-	const fileContent = await getFile(code);
-
-	const isFileExisted = fileContent !== null;
-	if (!isFileExisted) {
+	let fileContent: string;
+	try {
+		fileContent = await getFile(code);
+	} catch {
 		return NextResponse.json({message: 'The file does not exist or has been deleted'}, {status: 404});
 	}
 

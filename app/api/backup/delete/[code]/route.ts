@@ -23,8 +23,12 @@ export async function DELETE(
 		return NextResponse.json({message: 'The file record does not exist or has been deleted'}, {status: 404});
 	}
 
-	await deleteRecord(code);
-	await deleteFile(code);
+	try {
+		await deleteFile(code);
+		await deleteRecord(code);
+	} catch {
+		return NextResponse.json({message: 'Failed to delete file'}, {status: 500});
+	}
 
 	return NextResponse.json({message: 'The file record has been deleted'});
 }

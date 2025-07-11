@@ -25,11 +25,11 @@ export async function DELETE(
 	const records = await getExpiredRecords(sixMonthsAgo);
 
 	let deletedCount = 0;
-	await Promise.all(
+	await Promise.allSettled(
 		records.map(async ({code}) => {
-			deletedCount++;
-			await deleteRecord(code);
 			await deleteFile(code);
+			await deleteRecord(code);
+			deletedCount++;
 		})
 	);
 

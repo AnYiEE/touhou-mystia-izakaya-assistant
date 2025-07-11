@@ -62,7 +62,11 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json({message: 'Requests are too frequent'}, {status: 429});
 	}
 
-	await saveFile(code, jsonString);
+	try {
+		await saveFile(code, jsonString);
+	} catch {
+		return NextResponse.json({message: 'Failed to save file'}, {status: 500});
+	}
 
 	const record = await getRecord(code);
 	if (record.status === 404) {
