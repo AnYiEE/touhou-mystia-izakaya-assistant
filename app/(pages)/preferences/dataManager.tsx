@@ -31,6 +31,7 @@ import {
 import Heading from '@/components/heading';
 import TimeAgo from '@/components/timeAgo';
 
+import type {IBackupCheckSuccessResponse, IBackupUploadBody, IBackupUploadSuccessResponse} from '@/api/backup/types';
 import {siteConfig} from '@/configs';
 import {customerNormalStore, customerRareStore, globalStore} from '@/stores';
 import {FILE_TYPE_JSON, checkA11yConfirmKey, downloadJson, parseJsonFromInput, toggleBoolean} from '@/utilities';
@@ -178,6 +179,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 
 	const currentCloudCode = globalStore.persistence.cloudCode.use();
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
+	const userId = globalStore.persistence.userId.use();
 
 	const isCloudCodeValid = currentCloudCode !== null;
 
@@ -193,12 +195,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 			return;
 		}
 		fetch(`/api/backup/check/${cloudCode}`)
-			.then(
-				checkResponse<{
-					created_at: number;
-					last_accessed: number;
-				}>
-			)
+			.then(checkResponse<IBackupCheckSuccessResponse>)
 			.then(({created_at, last_accessed}) => {
 				setCloudCodeInfo(
 					<span className="text-xs">
@@ -305,18 +302,15 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 		fetch('/api/backup/upload', {
 			body: JSON.stringify({
 				code: currentCloudCode,
-				...currentMealData,
-			}),
+				data: currentMealData,
+				user_id: userId,
+			} satisfies IBackupUploadBody),
 			headers: {
 				'Content-Type': FILE_TYPE_JSON,
 			},
 			method: 'POST',
 		})
-			.then(
-				checkResponse<{
-					code: string;
-				}>
-			)
+			.then(checkResponse<IBackupUploadSuccessResponse>)
 			.then(({code}) => {
 				setCloudUploadState('success');
 				setCloudUploadButtonLabel(cloudUploadButtonLabelMap.success);
@@ -340,7 +334,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 					setCloudUploadButtonLabel(cloudUploadButtonLabelMap.upload);
 				}, 3000);
 			});
-	}, [currentCloudCode, currentMealData, updateCloudCodeInfo]);
+	}, [currentCloudCode, currentMealData, updateCloudCodeInfo, userId]);
 
 	const handleExportButtonPress = useCallback(() => {
 		setIsExportButtonDisabled(true);

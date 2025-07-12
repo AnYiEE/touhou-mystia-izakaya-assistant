@@ -22,14 +22,25 @@ await db.schema
 	.addColumn('last_accessed', 'integer', (col) => col.notNull())
 	.addColumn('ip_address', 'text', (col) => col.notNull())
 	.addColumn('user_agent', 'text', (col) => col.notNull())
+	.addColumn('user_id', 'text', (col) => col.notNull())
 	.execute();
 
-// Add user_agent column to old backup_files table if it doesn't exist.
 const backupFileRecordTableColumns = await getTableColumns(db, TABLE_NAME_MAP.backupFileRecord);
+
+// Add user_agent column to old backup_files table if it doesn't exist.
 const hasUserAgentColumn = backupFileRecordTableColumns.includes('user_agent');
 if (!hasUserAgentColumn) {
 	await db.schema
 		.alterTable(TABLE_NAME_MAP.backupFileRecord)
 		.addColumn('user_agent', 'text', (col) => col.notNull().defaultTo(''))
+		.execute();
+}
+
+// Add user_id column to old backup_files table if it doesn't exist.
+const hasUserIdColumn = backupFileRecordTableColumns.includes('user_id');
+if (!hasUserIdColumn) {
+	await db.schema
+		.alterTable(TABLE_NAME_MAP.backupFileRecord)
+		.addColumn('user_id', 'text', (col) => col.notNull().defaultTo(''))
 		.execute();
 }

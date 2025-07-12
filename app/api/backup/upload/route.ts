@@ -1,11 +1,13 @@
-import {NextRequest, NextResponse} from 'next/server';
+import {type NextRequest, NextResponse} from 'next/server';
 import {sha1} from 'js-sha1';
 import {v7 as uuid, validate} from 'uuid';
 
 import {checkIpFrequency, getRecord, saveFile, setRecord, updateRecord} from '@/actions/backup';
+import type {IBackupUploadBody, IBackupUploadSuccessResponse} from '@/api/backup/types';
 import {FILE_TYPE_JSON} from '@/utilities';
 
 const MAX_DATA_SIZE = 10 * 1024 * 1024;
+const FREQUENCY_CHECK_TTL = 5 * 60 * 1000;
 
 export async function POST(request: NextRequest) {
 	const contentType = request.headers.get('content-type');
@@ -30,12 +32,13 @@ export async function POST(request: NextRequest) {
 	}
 	ua = sha1(ua);
 
-	const json = (await request.json()) as Partial<{
-		code: string | null;
-		customer_normal: object;
-		customer_rare: object;
-	}>;
-	if (!('customer_normal' in json) || !('customer_rare' in json)) {
+	const json = (await request.json()) as Partial<IBackupUploadBody>;
+	if (
+		!('data' in json) ||
+		!('customer_normal' in json.data) ||
+		!('customer_rare' in json.data) ||
+		!('user_id' in json)
+	) {
 		return NextResponse.json({message: 'Invalid object structure'}, {status: 400});
 	}
 
@@ -49,17 +52,15 @@ export async function POST(request: NextRequest) {
 		}
 	}
 
-	delete json.code;
-
-	const jsonString = JSON.stringify(json);
+	const jsonString = JSON.stringify(json.data);
 	if (jsonString.length > MAX_DATA_SIZE) {
 		return NextResponse.json({message: 'The data is too large'}, {status: 413});
 	}
 
 	const now = Date.now();
-	const fiveMinutesAgo = now - 5 * 60 * 1000;
+	const userId = json.user_id ?? '';
 
-	const recentRecord = await checkIpFrequency(ip, ua, fiveMinutesAgo);
+	const recentRecord = await checkIpFrequency(now - FREQUENCY_CHECK_TTL, {ip, ua, userId});
 	if (recentRecord.status === 429) {
 		return NextResponse.json({message: 'Requests are too frequent'}, {status: 429});
 	}
@@ -78,6 +79,7 @@ export async function POST(request: NextRequest) {
 			ip_address: ip,
 			last_accessed: now,
 			user_agent: ua,
+			user_id: userId,
 		});
 	} else {
 		await updateRecord(code, {
@@ -85,8 +87,9 @@ export async function POST(request: NextRequest) {
 			ip_address: ip,
 			last_accessed: now,
 			user_agent: ua,
+			user_id: userId,
 		});
 	}
 
-	return NextResponse.json({code});
+	return NextResponse.json({code} satisfies IBackupUploadSuccessResponse);
 }
