@@ -31,7 +31,7 @@ async function refreshCache() {
 
 	try {
 		const response = await fetch(
-			`${env.ANALYTICS_API_ENDPOINT}?module=API&method=Live.getCounters&format=json&lastMinutes=1&idSite=${env.ANALYTICS_SITE_ID}&date=today&period=day`,
+			`${env.ANALYTICS_API_ENDPOINT}?module=API&method=Live.getCounters&format=json&lastMinutes=3&idSite=${env.ANALYTICS_SITE_ID}&date=today&period=day`,
 			{
 				body: new URLSearchParams({
 					token_auth: env.ANALYTICS_TOKEN,
