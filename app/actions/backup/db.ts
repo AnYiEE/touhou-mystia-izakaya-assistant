@@ -33,9 +33,16 @@ function generateResponse<T extends TBackupFileRecord | undefined, U extends TOt
 }
 
 export async function checkIpFrequency(
-	ip: TBackupFileRecord['ip_address'],
-	ua: TBackupFileRecord['user_agent'],
-	time: TBackupFileRecord['created_at']
+	time: TBackupFileRecord['created_at'],
+	{
+		ip,
+		ua,
+		userId,
+	}: {
+		ip: TBackupFileRecord['ip_address'];
+		ua: TBackupFileRecord['user_agent'];
+		userId: TBackupFileRecord['user_id'];
+	}
 ) {
 	const record = await db
 		.selectFrom(TABLE_NAME)
@@ -43,6 +50,7 @@ export async function checkIpFrequency(
 		.where('created_at', '>', time)
 		.where('ip_address', '=', ip)
 		.where('user_agent', '=', ua)
+		.where('user_id', '=', userId)
 		.executeTakeFirst();
 
 	if (record === undefined) {

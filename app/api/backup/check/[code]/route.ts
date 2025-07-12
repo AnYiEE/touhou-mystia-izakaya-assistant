@@ -1,7 +1,8 @@
-import {NextRequest, NextResponse} from 'next/server';
+import {type NextRequest, NextResponse} from 'next/server';
 import {validate} from 'uuid';
 
 import {getRecord} from '@/actions/backup';
+import type {IBackupCheckSuccessResponse} from '@/api/backup/types';
 
 export async function GET(
 	_request: NextRequest,
@@ -25,5 +26,5 @@ export async function GET(
 
 	const {created_at, last_accessed} = record;
 
-	return NextResponse.json({created_at, last_accessed});
+	return NextResponse.json({created_at, last_accessed} satisfies IBackupCheckSuccessResponse);
 }

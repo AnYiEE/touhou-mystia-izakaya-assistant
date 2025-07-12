@@ -10,6 +10,7 @@ interface ITableBackupFileRecord {
 	last_accessed: number;
 	ip_address: string;
 	user_agent: string;
+	user_id: string;
 }
 
 export type TBackupFileRecord = Selectable<ITableBackupFileRecord>;

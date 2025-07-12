@@ -1,4 +1,4 @@
-import {NextRequest, NextResponse} from 'next/server';
+import {type NextRequest, NextResponse} from 'next/server';
 import {validate} from 'uuid';
 
 import {deleteFile, deleteRecord, getRecord} from '@/actions/backup';
