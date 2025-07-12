@@ -3,8 +3,8 @@
 import AdmZip from 'adm-zip';
 import dotenv from 'dotenv';
 import minimist from 'minimist';
-import {copyFileSync, existsSync, renameSync, unlinkSync} from 'node:fs';
-import {resolve} from 'node:path';
+import {copyFileSync, existsSync, mkdirSync, readdirSync, renameSync, rmSync, unlinkSync} from 'node:fs';
+import {join, resolve} from 'node:path';
 import {argv} from 'node:process';
 
 import {getSha} from './utils.mjs';
@@ -29,12 +29,36 @@ const scriptPath = resolve(import.meta.dirname);
 const apiPath = resolve(appPath, 'api');
 const fakeApiPath = resolve(appPath, '_api');
 
+function moveRouterFiles(/** @type {string} */ currentPath, /** @type {string} */ targetPath) {
+	if (!existsSync(targetPath)) {
+		mkdirSync(targetPath, {
+			recursive: true,
+		});
+	}
+
+	const entries = readdirSync(currentPath, {
+		withFileTypes: true,
+	});
+
+	for (const entry of entries) {
+		const fromPath = join(currentPath, entry.name);
+		const toPath = join(targetPath, entry.name);
+
+		if (entry.isDirectory()) {
+			moveRouterFiles(fromPath, toPath);
+		} else if (entry.name === 'route.ts') {
+			renameSync(fromPath, toPath);
+		}
+	}
+}
+
 if (isOffline && isPrepare) {
-	renameSync(apiPath, fakeApiPath);
+	moveRouterFiles(apiPath, fakeApiPath);
 }
 
 if (isOffline && !isPrepare) {
-	renameSync(fakeApiPath, apiPath);
+	moveRouterFiles(fakeApiPath, apiPath);
+	rmSync(fakeApiPath, {recursive: true});
 
 	const replaceExtension = (/** @type {string} */ fileName) => {
 		const f = fileName.split('.');
