@@ -82,6 +82,10 @@ function trackPageView() {
 	push(['setCustomUrl', location.href], ['setDocumentTitle', document.title], ['trackPageView']);
 }
 
+export function ping() {
+	push(['ping']);
+}
+
 export default function Analytics() {
 	useMounted(() => {
 		// The tracker has been initialized, skip.

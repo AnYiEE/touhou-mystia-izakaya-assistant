@@ -2,6 +2,7 @@ import {execSync} from 'node:child_process';
 import {env} from 'node:process';
 
 import {FooterLinkWithTooltip} from './footerLink';
+import FooterVisitors from './footerVisitors';
 import QRCode from '@/components/qrCode';
 
 import {siteConfig} from '@/configs';
@@ -68,7 +69,7 @@ export default async function Footer() {
 					</FooterLinkWithTooltip>
 					所有
 				</span>
-				{visitors !== -1 && <span>实时{visitors}人在线</span>}
+				<FooterVisitors initialVisitors={visitors} />
 			</p>
 			<p className={className}>
 				<span>
