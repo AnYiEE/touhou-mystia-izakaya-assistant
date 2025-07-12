@@ -31,6 +31,7 @@ import {
 import Heading from '@/components/heading';
 import TimeAgo from '@/components/timeAgo';
 
+import {FREQUENCY_TTL} from '@/api/backup/constant';
 import type {IBackupCheckSuccessResponse, IBackupUploadBody, IBackupUploadSuccessResponse} from '@/api/backup/types';
 import {siteConfig} from '@/configs';
 import {customerNormalStore, customerRareStore, globalStore} from '@/stores';
@@ -115,8 +116,11 @@ function setErrorState({
 			status,
 		});
 		setLabel(
-			`${label}（${status === 400 ? '无效的备份码' : status === 404 ? '目标文件不存在' : status === 429 ? '五分钟后再试' : status}）`
+			`${label}（${status === 400 ? '无效的备份码' : status === 404 ? '目标文件不存在' : status === 429 ? `请${FREQUENCY_TTL / 1000 / 60}分钟后再试` : status}）`
 		);
+		if (type === 'Delete' && status === 404) {
+			globalStore.persistence.cloudCode.set(null);
+		}
 		trackEvent(trackEvent.category.error, 'Cloud', type, status);
 	}
 }
@@ -200,9 +204,16 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 				setCloudCodeInfo(
 					<span className="text-xs">
 						（更新于
-						<TimeAgo timestamp={created_at} />
-						，上次使用于
-						<TimeAgo timestamp={last_accessed} />）
+						<TimeAgo timestamp={created_at} />，
+						{last_accessed === -1 ? (
+							'尚未被下载过'
+						) : (
+							<>
+								下载于
+								<TimeAgo timestamp={last_accessed} />
+							</>
+						)}
+						）
 					</span>
 				);
 			})
@@ -265,7 +276,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 		}
 		setIsCloudDownloadButtonDisabled(true);
 		setCloudDownloadButtonLabel(cloudDownloadButtonLabelMap.downloading);
-		fetch(`/api/backup/download/${code}`, {
+		fetch(`/api/backup/download/${code}?user_id=${userId}`, {
 			cache: 'no-cache',
 		})
 			.then(checkResponse<typeof currentMealData>)
@@ -294,7 +305,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 					setCloudDownloadButtonLabel(cloudDownloadButtonLabelMap.download);
 				}, 3000);
 			});
-	}, [currentCloudCode, updateCloudCodeInfo]);
+	}, [currentCloudCode, updateCloudCodeInfo, userId]);
 
 	const handleCloudUploadButtonPress = useCallback(() => {
 		setIsCloudUploadButtonDisabled(true);
