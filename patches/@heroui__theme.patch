@@ -1,5 +1,5 @@
 diff --git a/dist/chunk-3ZDIPBHM.mjs b/dist/chunk-3ZDIPBHM.mjs
-index efe5a8debd5d314148a06bce5fd781aca5160ddc..3773e89812a792793d37340558979de6c98a6e11 100644
+index efe5a8debd5d314148a06bce5fd781aca5160ddc..809178a68299142b804a8d0f78fc62920d89167d 100644
 --- a/dist/chunk-3ZDIPBHM.mjs
 +++ b/dist/chunk-3ZDIPBHM.mjs
 @@ -44,7 +44,6 @@ var input = tv({
@@ -26,8 +26,76 @@ index efe5a8debd5d314148a06bce5fd781aca5160ddc..3773e89812a792793d37340558979de6
        }
      },
      radius: {
+diff --git a/dist/chunk-C3HKPBNA.mjs b/dist/chunk-C3HKPBNA.mjs
+index 6ca544110f3cdbc9c293564bde3219a49f9d3c2a..8913c9306dcfd3ae3b90c39043f4efaa44448fec 100644
+--- a/dist/chunk-C3HKPBNA.mjs
++++ b/dist/chunk-C3HKPBNA.mjs
+@@ -55,6 +55,7 @@ var table = tv({
+       "[&>*]:z-1",
+       "[&>*]:relative",
+       ...dataFocusVisibleClasses,
++      "before:pointer-events-none",
+       "before:content-['']",
+       "before:absolute",
+       "before:z-0",
+@@ -108,20 +109,6 @@ var table = tv({
+         table: "table-fixed"
+       }
+     },
+-    radius: {
+-      none: {
+-        wrapper: "rounded-none"
+-      },
+-      sm: {
+-        wrapper: "rounded-small"
+-      },
+-      md: {
+-        wrapper: "rounded-medium"
+-      },
+-      lg: {
+-        wrapper: "rounded-large"
+-      }
+-    },
+     shadow: {
+       none: {
+         wrapper: "shadow-none"
+@@ -184,6 +171,34 @@ var table = tv({
+         td: ["first:before:rounded-s-lg", "last:before:rounded-e-lg"]
+       }
+     },
++    radius: {
++      none: {
++        wrapper: "rounded-none",
++        th: [
++          "first:rounded-s-none",
++          "first:before:rounded-s-none",
++          "last:rounded-e-none",
++          "last:before:rounded-e-none"
++        ],
++        td: [
++          "first:before:rounded-s-none",
++          "last:before:rounded-e-none",
++          "group-data-[first=true]/tr:first:before:rounded-ss-none",
++          "group-data-[first=true]/tr:last:before:rounded-se-none",
++          "group-data-[last=true]/tr:first:before:rounded-es-none",
++          "group-data-[last=true]/tr:last:before:rounded-ee-none"
++        ],
++      },
++      sm: {
++        wrapper: "rounded-small"
++      },
++      md: {
++        wrapper: "rounded-medium"
++      },
++      lg: {
++        wrapper: "rounded-large"
++      },
++    },
+     fullWidth: {
+       true: {
+         base: "w-full",
 diff --git a/dist/chunk-EYPT3KBI.mjs b/dist/chunk-EYPT3KBI.mjs
-index 15663cbfe414824a4847bdfbd086c8ae224f3365..8e4ded5898c47273bb92549f06d1a14ace848a97 100644
+index 15663cbfe414824a4847bdfbd086c8ae224f3365..46c942db60c0e45397267e68ea70b9e3f9c61ecd 100644
 --- a/dist/chunk-EYPT3KBI.mjs
 +++ b/dist/chunk-EYPT3KBI.mjs
 @@ -80,7 +80,7 @@ var breadcrumbItem = tv({
@@ -40,7 +108,7 @@ index 15663cbfe414824a4847bdfbd086c8ae224f3365..8e4ded5898c47273bb92549f06d1a14a
      },
      isDisabled: {
 diff --git a/dist/chunk-UEWXQXTA.mjs b/dist/chunk-UEWXQXTA.mjs
-index 40fc49cd9673177fcf33c5418002269309c4ec1f..a814e933b3133fbe5d3398002ff89eb0d24e6c5a 100644
+index 40fc49cd9673177fcf33c5418002269309c4ec1f..67880ee0bf9f80c5461a5435a0f613eb21303e77 100644
 --- a/dist/chunk-UEWXQXTA.mjs
 +++ b/dist/chunk-UEWXQXTA.mjs
 @@ -46,7 +46,7 @@ var link = tv({
@@ -52,8 +120,39 @@ index 40fc49cd9673177fcf33c5418002269309c4ec1f..a814e933b3133fbe5d3398002ff89eb0
      },
      isDisabled: {
        true: "opacity-disabled cursor-default pointer-events-none"
+diff --git a/dist/chunk-WN6AL2BX.mjs b/dist/chunk-WN6AL2BX.mjs
+index d126dd5114b7bafc1557bf9aa1938cb059c91fe2..e0a540fa5f4593c23fa56d37b1625a003363fc6c 100644
+--- a/dist/chunk-WN6AL2BX.mjs
++++ b/dist/chunk-WN6AL2BX.mjs
+@@ -32,22 +32,22 @@ var transition_default = {
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-opacity": {
+-    "transition-property": "transform, opacity",
++    "transition-property": "transform, scale, opacity, rotate",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-background": {
+-    "transition-property": "transform, background",
++    "transition-property": "transform, scale, background",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-colors": {
+-    "transition-property": "transform, color, background, background-color, border-color, text-decoration-color, fill, stroke",
++    "transition-property": "transform, scale, color, background, background-color, border-color, text-decoration-color, fill, stroke",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-colors-opacity": {
+-    "transition-property": "transform, color, background, background-color, border-color, text-decoration-color, fill, stroke, opacity",
++    "transition-property": "transform, scale, color, background, background-color, border-color, text-decoration-color, fill, stroke, opacity",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   }
 diff --git a/dist/components/breadcrumbs.js b/dist/components/breadcrumbs.js
-index 37a2f2239052c7d5643f1e35c0c4de8c3cfe7c80..56d93991948decb1a1016422d2a23063d5629052 100644
+index 37a2f2239052c7d5643f1e35c0c4de8c3cfe7c80..982bd6435a129f4407a41dec462dbb8f7ccfcc86 100644
 --- a/dist/components/breadcrumbs.js
 +++ b/dist/components/breadcrumbs.js
 @@ -153,7 +153,7 @@ var breadcrumbItem = tv({
@@ -66,7 +165,7 @@ index 37a2f2239052c7d5643f1e35c0c4de8c3cfe7c80..56d93991948decb1a1016422d2a23063
      },
      isDisabled: {
 diff --git a/dist/components/index.js b/dist/components/index.js
-index 5fa42877de7564b782b1718556496eacab49e05a..60a3ba8930bac1225dcd883d54ce56ddd6eeed40 100644
+index 5fa42877de7564b782b1718556496eacab49e05a..84578b63df9720902af4f6da28a7e54c667a7e3a 100644
 --- a/dist/components/index.js
 +++ b/dist/components/index.js
 @@ -626,7 +626,7 @@ var link = tv({
@@ -102,7 +201,71 @@ index 5fa42877de7564b782b1718556496eacab49e05a..60a3ba8930bac1225dcd883d54ce56dd
        }
      },
      radius: {
-@@ -8336,7 +8335,7 @@ var breadcrumbItem = tv({
+@@ -5979,6 +5978,7 @@ var table = tv({
+       "[&>*]:z-1",
+       "[&>*]:relative",
+       ...dataFocusVisibleClasses,
++      "before:pointer-events-none",
+       "before:content-['']",
+       "before:absolute",
+       "before:z-0",
+@@ -6032,20 +6032,6 @@ var table = tv({
+         table: "table-fixed"
+       }
+     },
+-    radius: {
+-      none: {
+-        wrapper: "rounded-none"
+-      },
+-      sm: {
+-        wrapper: "rounded-small"
+-      },
+-      md: {
+-        wrapper: "rounded-medium"
+-      },
+-      lg: {
+-        wrapper: "rounded-large"
+-      }
+-    },
+     shadow: {
+       none: {
+         wrapper: "shadow-none"
+@@ -6108,6 +6094,34 @@ var table = tv({
+         td: ["first:before:rounded-s-lg", "last:before:rounded-e-lg"]
+       }
+     },
++    radius: {
++      none: {
++        wrapper: "rounded-none",
++        th: [
++          "first:rounded-s-none",
++          "first:before:rounded-s-none",
++          "last:rounded-e-none",
++          "last:before:rounded-e-none"
++        ],
++        td: [
++          "first:before:rounded-s-none",
++          "last:before:rounded-e-none",
++          "group-data-[first=true]/tr:first:before:rounded-ss-none",
++          "group-data-[first=true]/tr:last:before:rounded-se-none",
++          "group-data-[last=true]/tr:first:before:rounded-es-none",
++          "group-data-[last=true]/tr:last:before:rounded-ee-none"
++        ],
++      },
++      sm: {
++        wrapper: "rounded-small"
++      },
++      md: {
++        wrapper: "rounded-medium"
++      },
++      lg: {
++        wrapper: "rounded-large"
++      },
++    },
+     fullWidth: {
+       true: {
+         base: "w-full",
+@@ -8336,7 +8350,7 @@ var breadcrumbItem = tv({
          item: "cursor-default"
        },
        false: {
@@ -112,7 +275,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..60a3ba8930bac1225dcd883d54ce56dd
      },
      isDisabled: {
 diff --git a/dist/components/input.js b/dist/components/input.js
-index bdaa5a49dc3fca3391701248b8cc7b15d06c144a..d9df55b1497015e64397a29d23621df96287bc6d 100644
+index bdaa5a49dc3fca3391701248b8cc7b15d06c144a..3a94a6c16aed83d4b8cee86436284de055029792 100644
 --- a/dist/components/input.js
 +++ b/dist/components/input.js
 @@ -125,7 +125,6 @@ var input = tv({
@@ -140,7 +303,7 @@ index bdaa5a49dc3fca3391701248b8cc7b15d06c144a..d9df55b1497015e64397a29d23621df9
      },
      radius: {
 diff --git a/dist/components/link.d.ts b/dist/components/link.d.ts
-index bc40393ca311a2cc8dbb4a758af02124603f42c3..116d14da36e1f60a9715769bdc8779e391f205cc 100644
+index bc40393ca311a2cc8dbb4a758af02124603f42c3..d275577f423595ea91f80d05b774c1cee22d85aa 100644
 --- a/dist/components/link.d.ts
 +++ b/dist/components/link.d.ts
 @@ -31,7 +31,7 @@ declare const link: tailwind_variants.TVReturnType<{
@@ -153,7 +316,7 @@ index bc40393ca311a2cc8dbb4a758af02124603f42c3..116d14da36e1f60a9715769bdc8779e3
      isDisabled: {
          true: "opacity-disabled cursor-default pointer-events-none";
 diff --git a/dist/components/link.js b/dist/components/link.js
-index 517baccd4d957f86ec391ad88526c52a85bfb918..0b6f662852b3b612eba8952ecc286590b4363564 100644
+index 517baccd4d957f86ec391ad88526c52a85bfb918..eac883a115f065e971d15b121385f71e2e1c594a 100644
 --- a/dist/components/link.js
 +++ b/dist/components/link.js
 @@ -121,7 +121,7 @@ var link = tv({
@@ -165,8 +328,76 @@ index 517baccd4d957f86ec391ad88526c52a85bfb918..0b6f662852b3b612eba8952ecc286590
      },
      isDisabled: {
        true: "opacity-disabled cursor-default pointer-events-none"
+diff --git a/dist/components/table.js b/dist/components/table.js
+index 6611ad4c44f7c2413f76f2fdc9a08ca7209b1efd..a116273fbd5497cb3b25c0d9a3df2de9c9a4e698 100644
+--- a/dist/components/table.js
++++ b/dist/components/table.js
+@@ -127,6 +127,7 @@ var table = tv({
+       "[&>*]:z-1",
+       "[&>*]:relative",
+       ...dataFocusVisibleClasses,
++      "before:pointer-events-none",
+       "before:content-['']",
+       "before:absolute",
+       "before:z-0",
+@@ -180,20 +181,6 @@ var table = tv({
+         table: "table-fixed"
+       }
+     },
+-    radius: {
+-      none: {
+-        wrapper: "rounded-none"
+-      },
+-      sm: {
+-        wrapper: "rounded-small"
+-      },
+-      md: {
+-        wrapper: "rounded-medium"
+-      },
+-      lg: {
+-        wrapper: "rounded-large"
+-      }
+-    },
+     shadow: {
+       none: {
+         wrapper: "shadow-none"
+@@ -256,6 +243,34 @@ var table = tv({
+         td: ["first:before:rounded-s-lg", "last:before:rounded-e-lg"]
+       }
+     },
++    radius: {
++      none: {
++        wrapper: "rounded-none",
++        th: [
++          "first:rounded-s-none",
++          "first:before:rounded-s-none",
++          "last:rounded-e-none",
++          "last:before:rounded-e-none"
++        ],
++        td: [
++          "first:before:rounded-s-none",
++          "last:before:rounded-e-none",
++          "group-data-[first=true]/tr:first:before:rounded-ss-none",
++          "group-data-[first=true]/tr:last:before:rounded-se-none",
++          "group-data-[last=true]/tr:first:before:rounded-es-none",
++          "group-data-[last=true]/tr:last:before:rounded-ee-none"
++        ],
++      },
++      sm: {
++        wrapper: "rounded-small"
++      },
++      md: {
++        wrapper: "rounded-medium"
++      },
++      lg: {
++        wrapper: "rounded-large"
++      },
++    },
+     fullWidth: {
+       true: {
+         base: "w-full",
 diff --git a/dist/index.js b/dist/index.js
-index 3b031a7453c6ed04ffdf4904e6377960086a76e7..81b00250c23814c87f2ea7a96cc5b8473970a00e 100644
+index 3b031a7453c6ed04ffdf4904e6377960086a76e7..2e729a91c5df0d3cdce2ab650490d4e6db4e6a32 100644
 --- a/dist/index.js
 +++ b/dist/index.js
 @@ -688,7 +688,7 @@ var link = tv({
@@ -202,7 +433,71 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..81b00250c23814c87f2ea7a96cc5b847
        }
      },
      radius: {
-@@ -8398,7 +8397,7 @@ var breadcrumbItem = tv({
+@@ -6041,6 +6040,7 @@ var table = tv({
+       "[&>*]:z-1",
+       "[&>*]:relative",
+       ...dataFocusVisibleClasses,
++      "before:pointer-events-none",
+       "before:content-['']",
+       "before:absolute",
+       "before:z-0",
+@@ -6094,20 +6094,6 @@ var table = tv({
+         table: "table-fixed"
+       }
+     },
+-    radius: {
+-      none: {
+-        wrapper: "rounded-none"
+-      },
+-      sm: {
+-        wrapper: "rounded-small"
+-      },
+-      md: {
+-        wrapper: "rounded-medium"
+-      },
+-      lg: {
+-        wrapper: "rounded-large"
+-      }
+-    },
+     shadow: {
+       none: {
+         wrapper: "shadow-none"
+@@ -6170,6 +6156,34 @@ var table = tv({
+         td: ["first:before:rounded-s-lg", "last:before:rounded-e-lg"]
+       }
+     },
++    radius: {
++      none: {
++        wrapper: "rounded-none",
++        th: [
++          "first:rounded-s-none",
++          "first:before:rounded-s-none",
++          "last:rounded-e-none",
++          "last:before:rounded-e-none"
++        ],
++        td: [
++          "first:before:rounded-s-none",
++          "last:before:rounded-e-none",
++          "group-data-[first=true]/tr:first:before:rounded-ss-none",
++          "group-data-[first=true]/tr:last:before:rounded-se-none",
++          "group-data-[last=true]/tr:first:before:rounded-es-none",
++          "group-data-[last=true]/tr:last:before:rounded-ee-none"
++        ],
++      },
++      sm: {
++        wrapper: "rounded-small"
++      },
++      md: {
++        wrapper: "rounded-medium"
++      },
++      lg: {
++        wrapper: "rounded-large"
++      },
++    },
+     fullWidth: {
+       true: {
+         base: "w-full",
+@@ -8398,7 +8412,7 @@ var breadcrumbItem = tv({
          item: "cursor-default"
        },
        false: {
@@ -211,3 +506,123 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..81b00250c23814c87f2ea7a96cc5b847
        }
      },
      isDisabled: {
+@@ -10277,22 +10291,22 @@ var transition_default = {
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-opacity": {
+-    "transition-property": "transform, opacity",
++    "transition-property": "transform, scale, opacity, rotate",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-background": {
+-    "transition-property": "transform, background",
++    "transition-property": "transform, scale, background",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-colors": {
+-    "transition-property": "transform, color, background, background-color, border-color, text-decoration-color, fill, stroke",
++    "transition-property": "transform, scale, color, background, background-color, border-color, text-decoration-color, fill, stroke",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-colors-opacity": {
+-    "transition-property": "transform, color, background, background-color, border-color, text-decoration-color, fill, stroke, opacity",
++    "transition-property": "transform, scale, color, background, background-color, border-color, text-decoration-color, fill, stroke, opacity",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   }
+diff --git a/dist/plugin.js b/dist/plugin.js
+index a241ba4296f2c8f68c4524a3e41c3c0bac74f990..6226124dfb2d88c8653f8610f5071bb5a149bf99 100644
+--- a/dist/plugin.js
++++ b/dist/plugin.js
+@@ -452,22 +452,22 @@ var transition_default = {
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-opacity": {
+-    "transition-property": "transform, opacity",
++    "transition-property": "transform, scale, opacity, rotate",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-background": {
+-    "transition-property": "transform, background",
++    "transition-property": "transform, scale, background",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-colors": {
+-    "transition-property": "transform, color, background, background-color, border-color, text-decoration-color, fill, stroke",
++    "transition-property": "transform, scale, color, background, background-color, border-color, text-decoration-color, fill, stroke",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-colors-opacity": {
+-    "transition-property": "transform, color, background, background-color, border-color, text-decoration-color, fill, stroke, opacity",
++    "transition-property": "transform, scale, color, background, background-color, border-color, text-decoration-color, fill, stroke, opacity",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   }
+diff --git a/dist/utilities/index.js b/dist/utilities/index.js
+index 1fc11005040a3580cfdf8fed051ec68f6edc64c0..13b6c387d8e3bff611e3ab6ffe2564693c062a2f 100644
+--- a/dist/utilities/index.js
++++ b/dist/utilities/index.js
+@@ -58,22 +58,22 @@ var transition_default = {
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-opacity": {
+-    "transition-property": "transform, opacity",
++    "transition-property": "transform, scale, opacity, rotate",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-background": {
+-    "transition-property": "transform, background",
++    "transition-property": "transform, scale, background",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-colors": {
+-    "transition-property": "transform, color, background, background-color, border-color, text-decoration-color, fill, stroke",
++    "transition-property": "transform, scale, color, background, background-color, border-color, text-decoration-color, fill, stroke",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-colors-opacity": {
+-    "transition-property": "transform, color, background, background-color, border-color, text-decoration-color, fill, stroke, opacity",
++    "transition-property": "transform, scale, color, background, background-color, border-color, text-decoration-color, fill, stroke, opacity",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   }
+diff --git a/dist/utilities/transition.js b/dist/utilities/transition.js
+index 170626d46a3db20840c315f3e6396ba692b29d0c..354523179be4df71d3f3cc2f5fb70bb213a41cb5 100644
+--- a/dist/utilities/transition.js
++++ b/dist/utilities/transition.js
+@@ -57,22 +57,22 @@ var transition_default = {
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-opacity": {
+-    "transition-property": "transform, opacity",
++    "transition-property": "transform, scale, opacity, rotate",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-background": {
+-    "transition-property": "transform, background",
++    "transition-property": "transform, scale, background",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-colors": {
+-    "transition-property": "transform, color, background, background-color, border-color, text-decoration-color, fill, stroke",
++    "transition-property": "transform, scale, color, background, background-color, border-color, text-decoration-color, fill, stroke",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   },
+   ".transition-transform-colors-opacity": {
+-    "transition-property": "transform, color, background, background-color, border-color, text-decoration-color, fill, stroke, opacity",
++    "transition-property": "transform, scale, color, background, background-color, border-color, text-decoration-color, fill, stroke, opacity",
+     "transition-timing-function": "ease",
+     "transition-duration": DEFAULT_TRANSITION_DURATION
+   }

@@ -1,5 +1,5 @@
 diff --git a/dist/autocomplete.js b/dist/autocomplete.js
-index 5458ba7c993d7c19b444df20a1e3b83b114e2241..cc3ad87cc0035094efa210c1a21a25ee06fe61f6 100644
+index 5458ba7c993d7c19b444df20a1e3b83b114e2241..968f09ccb065e994fe0b76e627a614301e8992a6 100644
 --- a/dist/autocomplete.js
 +++ b/dist/autocomplete.js
 @@ -87,6 +87,7 @@ function useAutocomplete(originalProps) {
@@ -53,6 +53,15 @@ index 5458ba7c993d7c19b444df20a1e3b83b114e2241..cc3ad87cc0035094efa210c1a21a25ee
        },
        "data-visible": !!state.selectedItem || ((_a2 = state.inputValue) == null ? void 0 : _a2.length) > 0,
        className: slots.clearButton({
+@@ -435,7 +454,7 @@ var Autocomplete = (0, import_system2.forwardRef)(function Autocomplete2(props,
+         ...getInputProps(),
+         endContent: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { ...getEndContentWrapperProps(), children: [
+           endContent || /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_button.Button, { ...getClearButtonProps(), children: clearIcon }),
+-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_button.Button, { ...getSelectorButtonProps(), children: selectorIcon })
++          selectorIcon && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_button.Button, { ...getSelectorButtonProps(), children: selectorIcon })
+         ] })
+       }
+     ),
 diff --git a/dist/chunk-QZCVHGAT.mjs b/dist/chunk-QZCVHGAT.mjs
 index f54795f69c1f19e73f04e22b19be8cd2c431fa67..d792df5e958b49603fd12ccab4f18136c75a39e1 100644
 --- a/dist/chunk-QZCVHGAT.mjs
@@ -108,8 +117,21 @@ index f54795f69c1f19e73f04e22b19be8cd2c431fa67..d792df5e958b49603fd12ccab4f18136
        },
        "data-visible": !!state.selectedItem || ((_a2 = state.inputValue) == null ? void 0 : _a2.length) > 0,
        className: slots.clearButton({
+diff --git a/dist/chunk-SV7R5B4H.mjs b/dist/chunk-SV7R5B4H.mjs
+index 09b37df32ed4cdcccf6df45c0891039422ec0195..a9f2f52e61bf8e899671c759bbf19b9e55919af6 100644
+--- a/dist/chunk-SV7R5B4H.mjs
++++ b/dist/chunk-SV7R5B4H.mjs
+@@ -41,7 +41,7 @@ var Autocomplete = forwardRef(function Autocomplete2(props, ref) {
+         ...getInputProps(),
+         endContent: /* @__PURE__ */ jsxs("div", { ...getEndContentWrapperProps(), children: [
+           endContent || /* @__PURE__ */ jsx(Button, { ...getClearButtonProps(), children: clearIcon }),
+-          /* @__PURE__ */ jsx(Button, { ...getSelectorButtonProps(), children: selectorIcon })
++          selectorIcon && /* @__PURE__ */ jsx(Button, { ...getSelectorButtonProps(), children: selectorIcon })
+         ] })
+       }
+     ),
 diff --git a/dist/index.js b/dist/index.js
-index 7ffc5983a0132b2178ebe4ca2187bc8ab67f4e6b..5b83d330e810d6883cef466cbe016e2f55df92d2 100644
+index 7ffc5983a0132b2178ebe4ca2187bc8ab67f4e6b..56a1804a9d8b029f9f827304c6d19d78fd4ec054 100644
 --- a/dist/index.js
 +++ b/dist/index.js
 @@ -93,6 +93,7 @@ function useAutocomplete(originalProps) {
@@ -163,6 +185,15 @@ index 7ffc5983a0132b2178ebe4ca2187bc8ab67f4e6b..5b83d330e810d6883cef466cbe016e2f
        },
        "data-visible": !!state.selectedItem || ((_a2 = state.inputValue) == null ? void 0 : _a2.length) > 0,
        className: slots.clearButton({
+@@ -441,7 +460,7 @@ var Autocomplete = (0, import_system2.forwardRef)(function Autocomplete2(props,
+         ...getInputProps(),
+         endContent: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { ...getEndContentWrapperProps(), children: [
+           endContent || /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_button.Button, { ...getClearButtonProps(), children: clearIcon }),
+-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_button.Button, { ...getSelectorButtonProps(), children: selectorIcon })
++          selectorIcon && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_button.Button, { ...getSelectorButtonProps(), children: selectorIcon })
+         ] })
+       }
+     ),
 diff --git a/dist/use-autocomplete.d.ts b/dist/use-autocomplete.d.ts
 index b67a788f8919ace339e89326cff3eed90e7f5273..23b12163a4028613be6d77fad2b8f4015dfacc35 100644
 --- a/dist/use-autocomplete.d.ts
