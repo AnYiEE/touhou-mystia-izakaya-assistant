@@ -110,7 +110,7 @@
 		"js-sha1": "^0.7.0",
 		"kysely": "^0.28.2",
 		"lodash": "^4.17.21",
-		"next": "^15.3.5",
+		"next": "^15.4.1",
 		"next-qrcode": "^2.5.1",
 		"pinyin-pro": "^3.26.0",
 		"react": "^19.1.0",
@@ -144,7 +144,7 @@
 		"cross-env": "^7.0.3",
 		"dotenv": "^17.2.0",
 		"eslint": "^9.31.0",
-		"eslint-config-next": "^15.3.5",
+		"eslint-config-next": "^15.4.1",
 		"eslint-config-prettier": "^10.1.5",
 		"eslint-plugin-compat": "^6.0.2",
 		"eslint-plugin-sort-destructure-keys": "^2.0.0",
@@ -165,7 +165,7 @@
 		"stylelint-scss": "^6.12.1",
 		"tailwindcss": "^3.4.17",
 		"typescript": "^5.8.3",
-		"typescript-eslint": "^8.36.0"
+		"typescript-eslint": "^8.37.0"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
