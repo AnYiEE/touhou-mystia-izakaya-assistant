@@ -1,45 +1,57 @@
 'use client';
 
-import {memo, useEffect, useState} from 'react';
+import {memo, useCallback, useEffect, useState} from 'react';
 
 import {ping} from '@/components/analytics';
 
-interface IProps {
-	initialVisitors: number;
-}
+import {siteConfig} from '@/configs';
 
-export default memo<IProps>(function FooterVisitors({initialVisitors}) {
-	const [visitors, setVisitors] = useState(initialVisitors);
+const {isAnalytics, isOffline, isSelfHosted} = siteConfig;
 
-	useEffect(() => {
-		if (visitors === -1) {
-			return;
-		}
+interface IProps {}
 
-		const updateVisitors = () => {
-			ping();
-			fetch('/api/real-time-visitors', {
-				cache: 'no-cache',
-			})
-				.then((response) => {
-					if (response.ok) {
-						void response.json().then((data) => {
-							setVisitors(data.visitors as number);
-						});
-					}
-				})
-				.catch(() => {});
+export default memo<IProps>(function FooterVisitors() {
+	const [visitors, setVisitors] = useState<number | null>(null);
+
+	const fetchVisitors = useCallback(() => {
+		const setFailed = () => {
+			setVisitors(-1);
 		};
 
-		const intervalId = setInterval(updateVisitors, 30 * 1000);
+		fetch('/api/real-time-visitors', {
+			cache: 'no-cache',
+		})
+			.then((response) => {
+				if (response.ok) {
+					void response.json().then((data) => {
+						setVisitors(data.visitors as number);
+					});
+				} else {
+					setFailed();
+				}
+			})
+			.catch(setFailed);
+	}, []);
+
+	useEffect(() => {
+		fetchVisitors();
+
+		const intervalId = setInterval(() => {
+			ping();
+			fetchVisitors();
+		}, 30 * 1000);
 
 		return () => {
 			clearInterval(intervalId);
 		};
-	}, [visitors]);
+	}, [fetchVisitors]);
 
-	if (visitors === -1) {
+	if (isOffline || !isAnalytics || !isSelfHosted) {
 		return null;
+	} else if (visitors === null) {
+		return <span>正在获取在线人数</span>;
+	} else if (visitors === -1) {
+		return <span>获取在线人数失败</span>;
 	}
 
 	return <span>实时{visitors}人在线</span>;

@@ -1,5 +1,4 @@
 import {execSync} from 'node:child_process';
-import {env} from 'node:process';
 
 import {FooterLinkWithTooltip} from './footerLink';
 import FooterVisitors from './footerVisitors';
@@ -26,35 +25,7 @@ const sha = (() => {
 	return null;
 })();
 
-async function fetchVisitors() {
-	if (isOffline) {
-		return -1;
-	}
-
-	try {
-		const response = await fetch(`http://127.0.0.1:${env['PORT'] ?? 3000}/api/real-time-visitors`, {
-			cache: 'no-store',
-		});
-
-		if (!response.ok) {
-			return -1;
-		}
-
-		const {visitors} = (await response.json()) as {
-			visitors: number;
-		};
-
-		return visitors;
-	} catch {
-		return -1;
-	}
-}
-
-export const dynamic = 'force-dynamic';
-
-export default async function Footer() {
-	const visitors = await fetchVisitors();
-
+export default function Footer() {
 	const className =
 		"[&>*]:after:mx-1 [&>*]:after:-mb-0.5 [&>*]:after:inline-block [&>*]:after:h-3 [&>*]:after:w-px [&>*]:after:rounded-small [&>*]:after:bg-default-400 [&>*]:after:content-[''] last:[&>*]:after:hidden";
 
@@ -69,7 +40,7 @@ export default async function Footer() {
 					</FooterLinkWithTooltip>
 					所有
 				</span>
-				<FooterVisitors initialVisitors={visitors} />
+				<FooterVisitors />
 			</p>
 			<p className={className}>
 				<span>
