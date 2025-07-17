@@ -92,8 +92,9 @@ function calculateMinScore({
 export function checkIngredientEasterEgg({
 	currentCustomerName,
 	currentIngredients,
+	currentRecipeName,
 	mealScore = 0,
-}: Pick<IParameters, 'currentCustomerName' | 'currentIngredients'> & {
+}: Pick<IParameters, 'currentCustomerName' | 'currentIngredients' | 'currentRecipeName'> & {
 	mealScore?: number;
 }): {
 	ingredient: TIngredientName | null;
@@ -102,7 +103,8 @@ export function checkIngredientEasterEgg({
 	switch (currentCustomerName) {
 		case '河城荷取': {
 			const ingredient = '黄瓜';
-			if (currentIngredients.includes(ingredient)) {
+			const recipe = DARK_MATTER_META_MAP.name;
+			if (currentIngredients.includes(ingredient) && currentRecipeName !== recipe) {
 				return {
 					ingredient,
 					score: Math.max(mealScore, 3),
@@ -212,6 +214,7 @@ function checkEasterEgg({
 			return checkIngredientEasterEgg({
 				currentCustomerName,
 				currentIngredients,
+				currentRecipeName,
 				mealScore,
 			}).score;
 		case '古明地恋':

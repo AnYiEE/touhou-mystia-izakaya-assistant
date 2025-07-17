@@ -187,11 +187,17 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 								!currentCustomerPopularTrend.isNegative
 						);
 
+						const isDarkIngredient = darkIngredients.has(name);
+
 						// The customer has a ingredient-based easter agg.
 						const {ingredient: easterEggIngredient, score: easterEggScore} =
 							instance_customer.checkIngredientEasterEgg({
 								currentCustomerName,
 								currentIngredients: union(toArray(currentRecipeAllIngredients, name)),
+								currentRecipeName:
+									isDarkIngredient || isDarkMatter
+										? DARK_MATTER_META_MAP.name
+										: currentRecipeData.name,
 							});
 						if (
 							name === easterEggIngredient &&
@@ -203,7 +209,6 @@ export default memo<IProps>(function IngredientTabContent({ingredientTabStyle, s
 							scoreChange = easterEggScore === 0 ? -Infinity : Infinity;
 						}
 
-						const isDarkIngredient = darkIngredients.has(name);
 						if (isDarkIngredient) {
 							scoreChange = -Infinity;
 						}
