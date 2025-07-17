@@ -70,7 +70,7 @@ export default function Providers({children, locale}: PropsWithChildren<IProps>)
 		const globalTableRow = globalStore.persistence.table.row.get();
 		const globalTableSelectableRows = globalStore.shared.table.selectableRows.get();
 		customerNormalStore.shared.beverage.table.columns.set(toSet(globalBeverageTableColumns));
-		customerNormalStore.shared.recipe.table.row.set(globalTableRow);
+		customerNormalStore.shared.beverage.table.row.set(globalTableRow);
 		customerNormalStore.shared.beverage.table.rows.set(toSet([globalTableRow.toString()]));
 		customerNormalStore.shared.beverage.table.selectableRows.set(globalTableSelectableRows);
 		customerNormalStore.shared.recipe.table.columns.set(toSet(globalRecipeTableColumns));
