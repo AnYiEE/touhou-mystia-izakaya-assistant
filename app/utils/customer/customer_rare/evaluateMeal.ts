@@ -100,11 +100,19 @@ export function checkIngredientEasterEgg({
 	ingredient: TIngredientName | null;
 	score: number;
 } {
+	const noChanged = {
+		ingredient: null,
+		score: mealScore,
+	};
+
+	if (currentRecipeName === DARK_MATTER_META_MAP.name) {
+		return noChanged;
+	}
+
 	switch (currentCustomerName) {
 		case '河城荷取': {
 			const ingredient = '黄瓜';
-			const recipe = DARK_MATTER_META_MAP.name;
-			if (currentIngredients.includes(ingredient) && currentRecipeName !== recipe) {
+			if (currentIngredients.includes(ingredient)) {
 				return {
 					ingredient,
 					score: Math.max(mealScore, 3),
@@ -124,10 +132,7 @@ export function checkIngredientEasterEgg({
 		}
 	}
 
-	return {
-		ingredient: null,
-		score: mealScore,
-	};
+	return noChanged;
 }
 
 export function checkRecipeEasterEgg({
