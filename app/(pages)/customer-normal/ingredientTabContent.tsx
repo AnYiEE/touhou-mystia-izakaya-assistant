@@ -148,7 +148,8 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 						// The customer like the large partition tag.
 						scoreChange += Number(
 							isLargePartitionTagNext &&
-								(customerPositiveTags as TRecipeTag[]).includes(DYNAMIC_TAG_MAP.largePartition)
+								(customerPositiveTags as TRecipeTag[]).includes(DYNAMIC_TAG_MAP.largePartition) &&
+								!before.includes(DYNAMIC_TAG_MAP.largePartition)
 						);
 
 						// The current popular tag is the large partition tag and the customer has popular tags.
