@@ -244,8 +244,8 @@ importers:
         specifier: ^19.1.6
         version: 19.1.6(@types/react@19.1.8)
       '@types/serviceworker':
-        specifier: ^0.0.146
-        version: 0.0.146
+        specifier: ^0.0.147
+        version: 0.0.147
       '@types/ua-parser-js':
         specifier: ^0.7.39
         version: 0.7.39
@@ -2539,8 +2539,8 @@ packages:
   '@types/react@19.1.8':
     resolution: {integrity: sha512-AwAfQ2Wa5bCx9WP8nZL2uMZWod7J7/JSplxbTmBQ5ms6QpqNYm672H0Vu9ZVKVngQ+ii4R/byguVEUZQyeg44g==}
 
-  '@types/serviceworker@0.0.146':
-    resolution: {integrity: sha512-0aCmij37nArc1bXObQ//8Dj0EBWs6y+p+oUCUNxbOg9qXXjIgD5XBHHebAWFxKpmt/D1QGEFrovF0bblIHU8Yw==}
+  '@types/serviceworker@0.0.147':
+    resolution: {integrity: sha512-l+nd8PlzcPF+FNZ/FGYLMjn1sIghd769RrmFCCYqEzzSIfUcTUfJX3q+X04qgr8n5tVXFfQnOzCopIumrWTQAg==}
 
   '@types/ua-parser-js@0.7.39':
     resolution: {integrity: sha512-P/oDfpofrdtF5xw433SPALpdSchtJmY7nsJItf8h3KXqOslkbySh8zq4dSWXH2oTjRvJ5PczVEoCZPow6GicLg==}
@@ -8504,7 +8504,7 @@ snapshots:
     dependencies:
       csstype: 3.1.3
 
-  '@types/serviceworker@0.0.146': {}
+  '@types/serviceworker@0.0.147': {}
 
   '@types/ua-parser-js@0.7.39': {}
 
