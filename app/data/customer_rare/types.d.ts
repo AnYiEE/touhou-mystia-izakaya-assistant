@@ -18,7 +18,7 @@ export interface ICustomerRare extends ICustomerBase {
 	evaluation: Record<TEvaluationKey, TDescription | null>;
 	spellCards: Partial<ISpellCards>;
 	positiveTagMapping: Partial<Record<TRecipeTag, string>>;
-	price: `${number}-${number}`;
+	price: [number, number];
 }
 
 export type TCustomerRares = typeof import('./data').CUSTOMER_RARE_LIST;
