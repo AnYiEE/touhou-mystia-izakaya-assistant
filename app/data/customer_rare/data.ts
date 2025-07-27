@@ -2794,7 +2794,7 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['妖怪兽道', '人间之里', '博丽神社', '红魔馆', '迷途竹林'],
 		price: '400-600',
 		positiveTags: ['水产', '家常', '中华', '辣', DYNAMIC_TAG_MAP.popularPositive],
-		negativeTags: ['重油', '下酒', '生', DYNAMIC_TAG_MAP.popularNegative],
+		negativeTags: ['重油', '下酒', '生'],
 		beverageTags: ['无酒精', '甘', '气泡'],
 		chat: [
 			'我的麟是麒麟的麟哦！很厉害吧。',
