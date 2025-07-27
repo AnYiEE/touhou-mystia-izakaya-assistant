@@ -1,4 +1,4 @@
-/* eslint-disable func-names, @typescript-eslint/ban-ts-comment, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
+/* eslint-disable func-names, @typescript-eslint/ban-ts-comment, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, require-unicode-regexp */
 // @ts-nocheck
 
 const script = () => {
@@ -41,6 +41,22 @@ const script = () => {
 			}
 		}
 	}
+
+	/**
+	 * @description Global sync error handler for non-network errors.
+	 */
+	globalThis.addEventListener('error', (event) => {
+		const unknown = '未知';
+		const {colno = unknown, error, filename = unknown, lineno = unknown, message} = event;
+
+		if (/fetch|load\sfail|loading\schunk|network|net::/i.test(message)) {
+			return;
+		}
+
+		alert(
+			`错误：${message}\n文件：${filename}\n行号：${lineno}    列号：${colno}${error?.stack ? `\n\n${error.stack}` : ''}`
+		);
+	});
 };
 
 export default function Polyfills() {
