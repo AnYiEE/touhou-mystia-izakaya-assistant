@@ -129,16 +129,23 @@ function assign<T, P extends TNestedKeys<T>>(object: T, path: P, value: TNestedT
 	Object.assign(object as object, merge(object, tempObjectForPath));
 }
 
+// eslint-disable-next-line unicorn/prefer-global-this
+const isServer = typeof window === 'undefined';
+
+const LOADED_SIGNAL = '__loaded__';
+
 interface ISyncOptions<T> {
 	name: string;
 	watch: Array<Extract<TNestedKeys<T>, `persistence${string}`>>;
 }
 
-const LOADED_SIGNAL = '__loaded__';
-
 export function sync<T>(options: ISyncOptions<T>) {
-	return (initializer: StateCreator<T>): StateCreator<T> =>
-		(set, get, api) => {
+	return (initializer: StateCreator<T>): StateCreator<T> => {
+		if (isServer) {
+			return initializer;
+		}
+
+		return (set, get, api) => {
 			const {name, watch} = options;
 			const channel = new BroadcastChannel(name, {
 				webWorkerSupport: false,
@@ -192,4 +199,5 @@ export function sync<T>(options: ISyncOptions<T>) {
 
 			return initializer(mySet, get, api);
 		};
+	};
 }
