@@ -122,6 +122,10 @@ const changelog = [
 			'修复：顾客套餐评级逻辑。',
 		],
 	},
+	{
+		version: 'v1.8',
+		changes: ['新增：稀客预算超支容忍度数据。'],
+	},
 ] as const satisfies Array<{
 	version: `v${string}`;
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;

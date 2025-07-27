@@ -19,6 +19,7 @@ export interface ICustomerRare extends ICustomerBase {
 	spellCards: Partial<ISpellCards>;
 	positiveTagMapping: Partial<Record<TRecipeTag, string>>;
 	price: [number, number];
+	enduranceLimit: number;
 }
 
 export type TCustomerRares = typeof import('./data').CUSTOMER_RARE_LIST;

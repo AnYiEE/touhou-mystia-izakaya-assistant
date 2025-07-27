@@ -172,11 +172,13 @@ export default function CustomerCard() {
 	const {
 		beverageTags: currentCustomerBeverageTags,
 		dlc: currentCustomerDlc,
+		enduranceLimit: currentCustomerEnduranceLimit,
 		negativeTags: currentCustomerNegativeTags,
 		places: currentCustomerPlaces,
 		positiveTagMapping: currentCustomerPositiveTagMapping,
 		positiveTags: currentCustomerPositiveTags,
 		price: currentCustomerPrice,
+		spellCards: currentCustomerSpellCards,
 	} = instance_customer.getPropsByName(currentCustomerName);
 
 	const dlcLabel = currentCustomerDlc === 0 ? LABEL_MAP.dlc0 : '';
@@ -189,6 +191,43 @@ export default function CustomerCard() {
 	const placeContent = hasOtherPlaces
 		? `其他出没地区：${copiedCurrentCustomerPlaces.join('、')}`
 		: '暂未收录其他出没地区';
+
+	const hasSpellCards = !checkEmpty(Object.keys(currentCustomerSpellCards));
+	const hasNegativeSpellCards =
+		hasSpellCards &&
+		'negative' in currentCustomerSpellCards &&
+		!checkEmpty<unknown>(currentCustomerSpellCards.negative);
+
+	const currentCustomerAveragePrice = (currentCustomerPrice[0] + currentCustomerPrice[1]) / 2;
+	const currentCustomerEnduranceLimitPercent = Math.floor(currentCustomerEnduranceLimit * 100 - 100);
+	const hasEnduranceLimit = currentCustomerEnduranceLimitPercent > 0;
+
+	const enduranceLimitContent = (
+		<div>
+			<p>
+				{hasEnduranceLimit ? (
+					<>
+						可超支预算
+						<Price showSymbol={false}>{currentCustomerEnduranceLimitPercent}</Price>%
+					</>
+				) : hasNegativeSpellCards ? (
+					'不接受预算超支'
+				) : (
+					''
+				)}
+				{hasNegativeSpellCards && `（超${hasEnduranceLimit ? '过' : '支'}则释放惩罚符卡）`}
+			</p>
+			<p>
+				最少<Price>{Math.ceil(currentCustomerPrice[0] * currentCustomerEnduranceLimit)}</Price>，平均
+				<Price>
+					{currentCustomerAveragePrice}
+					{hasEnduranceLimit && `-${Math.ceil(currentCustomerAveragePrice * currentCustomerEnduranceLimit)}`}
+				</Price>
+				， 最多
+				<Price>{Math.ceil(currentCustomerPrice[1] * currentCustomerEnduranceLimit)}</Price>
+			</p>
+		</div>
+	);
 
 	return (
 		<Card
@@ -295,7 +334,26 @@ export default function CustomerCard() {
 							</Popover>
 						</p>
 						<p>
-							可能持有：<Price>{currentCustomerPrice}</Price>
+							可能持有：
+							<Popover showArrow offset={4}>
+								<Tooltip showArrow content={enduranceLimitContent} offset={0}>
+									<span className="cursor-pointer">
+										<PopoverTrigger>
+											<span
+												role="button"
+												tabIndex={0}
+												className={cn(
+													CLASSNAME_FOCUS_VISIBLE_OUTLINE,
+													'underline-dotted-linear'
+												)}
+											>
+												<Price>{currentCustomerPrice}</Price>
+											</span>
+										</PopoverTrigger>
+									</span>
+								</Tooltip>
+								<PopoverContent>{enduranceLimitContent}</PopoverContent>
+							</Popover>
 						</p>
 					</div>
 				</div>
