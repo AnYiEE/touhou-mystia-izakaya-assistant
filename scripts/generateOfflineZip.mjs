@@ -1,7 +1,7 @@
 // @ts-check
 
+import nextEnv from '@next/env';
 import AdmZip from 'adm-zip';
-import dotenv from 'dotenv';
 import minimist from 'minimist';
 import {
 	copyFileSync,
@@ -13,12 +13,12 @@ import {
 	unlinkSync,
 } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { argv } from 'node:process';
+import { argv, cwd } from 'node:process';
 
 import { getSha } from './utils.mjs';
 import PACKAGE from '../package.json' with { type: 'json' };
 
-dotenv.config({ path: ['.env.local', '.env'], quiet: true });
+nextEnv.loadEnvConfig(cwd());
 
 const isOffline = !!process.env.OFFLINE;
 const { prepare: isPrepare } = minimist(argv.slice(2));

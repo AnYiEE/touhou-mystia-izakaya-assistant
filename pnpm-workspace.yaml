@@ -3,6 +3,7 @@ overrides:
   react-dom: $react-dom
 publicHoistPattern:
   - "*@heroui/*"
+  - '@next/env'
   - "*eslint-plugin*"
   - color2k
   - glob

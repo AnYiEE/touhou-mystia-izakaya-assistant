@@ -1,12 +1,13 @@
 // @ts-check
 
-import dotenv from 'dotenv';
+import nextEnv from '@next/env';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { cwd } from 'node:process';
 
 import { getSha } from './utils.mjs';
 
-dotenv.config({ path: ['.env.local', '.env'], quiet: true });
+nextEnv.loadEnvConfig(cwd());
 
 const encoding = 'utf8';
 const sha = getSha();

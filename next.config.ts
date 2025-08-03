@@ -13,13 +13,10 @@ import {
 const exportMode = IS_OFFLINE || (!env.SELF_HOSTED && !env.VERCEL);
 const skipLint = IS_OFFLINE || (IS_PRODUCTION && Boolean(env.SKIP_LINT));
 
-const envKeys: Array<keyof NodeJS.ProcessEnv> = [
-	'ANALYTICS_API_ENDPOINT',
+const publicEnvKeys: Array<keyof NodeJS.ProcessEnv> = [
 	'ANALYTICS_API_URL',
 	'ANALYTICS_SCRIPT_URL',
 	'ANALYTICS_SITE_ID',
-	'ANALYTICS_TOKEN',
-	'CLEANUP_SECRET',
 	'BASE_URL',
 	'CDN_URL',
 	'ICP_FILING',
@@ -32,7 +29,7 @@ const envKeys: Array<keyof NodeJS.ProcessEnv> = [
 ];
 
 const nextConfig: NextConfig = {
-	env: envKeys.reduce<Partial<NodeJS.ProcessEnv>>((acc, key) => {
+	env: publicEnvKeys.reduce<Partial<NodeJS.ProcessEnv>>((acc, key) => {
 		acc[key] = env[key];
 		return acc;
 	}, {}),
