@@ -65,6 +65,7 @@ const MoveButtonComponent = memo<IMoveButtonProps>(function MoveButton({
 						? '已是首项'
 						: '上移此项'
 			}
+			offset={5}
 			placement="left"
 			size="sm"
 		>

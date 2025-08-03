@@ -66,7 +66,7 @@ export default function CustomerCard() {
 		!checkEmpty(selectedCustomerBeverageTag) ||
 		!checkEmpty(selectedCustomerRecipeTag);
 
-	const handleBeverageTagClick = useCallback(
+	const handleBeverageTagPress = useCallback(
 		(tag: TBeverageTag) => {
 			vibrate();
 			customerStore.onCustomerFilterBeverageTag(tag);
@@ -74,7 +74,7 @@ export default function CustomerCard() {
 		[vibrate]
 	);
 
-	const handleRecipeTagClick = useCallback(
+	const handleRecipeTagPress = useCallback(
 		(tag: TRecipeTag) => {
 			vibrate();
 			customerStore.onCustomerFilterRecipeTag(tag);
@@ -357,7 +357,7 @@ export default function CustomerCard() {
 											}
 											tagType="positive"
 											onPress={() => {
-												handleRecipeTagClick(tag);
+												handleRecipeTagPress(tag);
 											}}
 											aria-label={`${tag}${currentRecipeTagsWithTrend.includes(tag) ? '/已满足' : ''}`}
 											className={cn(
@@ -398,7 +398,7 @@ export default function CustomerCard() {
 										}
 										tagType="positive"
 										onPress={() => {
-											handleBeverageTagClick(tag);
+											handleBeverageTagPress(tag);
 										}}
 										aria-label={`${tag}${beverageTags.includes(tag) ? '/已满足' : ''}`}
 										className={cn(

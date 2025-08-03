@@ -59,7 +59,7 @@ export const UnknownItem = memo<IUnknownItemProps>(function UnknownItem({
 				role="img"
 				title={title}
 				className={cn(
-					'outline-3 inline-block rounded-small text-center leading-none outline-double',
+					'outline-3 flex items-center justify-center rounded-small p-0.5 text-center leading-none outline-double',
 					className
 				)}
 				style={{
@@ -68,7 +68,10 @@ export const UnknownItem = memo<IUnknownItemProps>(function UnknownItem({
 					width: remString,
 				}}
 			>
-				<FontAwesomeIcon icon={faQuestion} className="rotate-12" />
+				<FontAwesomeIcon
+					icon={faQuestion}
+					className="!h-full rotate-12"
+				/>
 			</span>
 		</Tooltip>
 	);
@@ -226,7 +229,7 @@ export default function ResultCard() {
 		}, 3000);
 	}, [hideTooltip]);
 
-	const handleCookerClick = useCallback(() => {
+	const handleCookerPress = useCallback(() => {
 		if (isDarkMatter) {
 			return;
 		}
@@ -320,7 +323,7 @@ export default function ResultCard() {
 												target="cooker"
 												name={cooker}
 												size={2}
-												onPress={handleCookerClick}
+												onPress={handleCookerPress}
 												role={
 													isDarkMatter
 														? undefined

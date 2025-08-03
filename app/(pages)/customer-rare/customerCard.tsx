@@ -75,7 +75,7 @@ export default function CustomerCard() {
 		!checkEmpty(selectedCustomerBeverageTag) ||
 		!checkEmpty(selectedCustomerRecipeTag);
 
-	const handleBeverageTagClick = useCallback(
+	const handleBeverageTagPress = useCallback(
 		(tag: TBeverageTag) => {
 			vibrate();
 			customerStore.onCustomerOrderBeverageTag(tag);
@@ -86,7 +86,7 @@ export default function CustomerCard() {
 		[hasMystiaCooker, isOrderLinkedFilter, vibrate]
 	);
 
-	const handleRecipeTagClick = useCallback(
+	const handleRecipeTagPress = useCallback(
 		(tag: TRecipeTag) => {
 			vibrate();
 			customerStore.onCustomerOrderRecipeTag(tag);
@@ -480,7 +480,7 @@ export default function CustomerCard() {
 											}
 											tagType="positive"
 											onPress={() => {
-												handleRecipeTagClick(tag);
+												handleRecipeTagPress(tag);
 											}}
 											aria-label={`${tag}${currentCustomerOrder.recipeTag === tag ? '/已选定' : ''}${currentRecipeTagsWithTrend.includes(tag) ? '/已满足' : ''}`}
 											className={cn(
@@ -557,7 +557,7 @@ export default function CustomerCard() {
 										}
 										tagType="positive"
 										onPress={() => {
-											handleBeverageTagClick(tag);
+											handleBeverageTagPress(tag);
 										}}
 										aria-label={`${tag}${currentCustomerOrder.beverageTag === tag ? '/已选定' : ''}${beverageTags.includes(tag) ? '/已满足' : ''}`}
 										className={cn(

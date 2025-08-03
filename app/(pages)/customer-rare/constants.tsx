@@ -11,7 +11,11 @@ export const customerTabStyleMap = {
 	collapse: {
 		ariaLabel: '展开',
 		buttonNode: (
-			<FontAwesomeIcon icon={faCaretDown} size="xl" className="-mt-0.5" />
+			<FontAwesomeIcon
+				icon={faCaretDown}
+				size="xl"
+				className="-mt-0.5 !h-full"
+			/>
 		),
 		classNames: {
 			content: 'max-h-[calc(var(--safe-h-dvh-half)-9.25rem)] min-h-20',
@@ -21,7 +25,11 @@ export const customerTabStyleMap = {
 	expand: {
 		ariaLabel: '收起',
 		buttonNode: (
-			<FontAwesomeIcon icon={faCaretUp} size="xl" className="mt-0.5" />
+			<FontAwesomeIcon
+				icon={faCaretUp}
+				size="xl"
+				className="mt-0.5 !h-full"
+			/>
 		),
 		classNames: { content: 'max-h-vmax-half', sideButtonGroup: '' },
 	},
@@ -31,7 +39,11 @@ export const ingredientTabStyleMap = {
 	collapse: {
 		ariaLabel: '展开',
 		buttonNode: (
-			<FontAwesomeIcon icon={faCaretDown} size="xl" className="-mt-0.5" />
+			<FontAwesomeIcon
+				icon={faCaretDown}
+				size="xl"
+				className="-mt-0.5 !h-full"
+			/>
 		),
 		classNames: {
 			content: 'max-h-[calc(var(--safe-h-dvh-half)-9.25rem)] min-h-20',
@@ -41,7 +53,11 @@ export const ingredientTabStyleMap = {
 	expand: {
 		ariaLabel: '收起',
 		buttonNode: (
-			<FontAwesomeIcon icon={faCaretUp} size="xl" className="mt-0.5" />
+			<FontAwesomeIcon
+				icon={faCaretUp}
+				size="xl"
+				className="mt-0.5 !h-full"
+			/>
 		),
 		classNames: { content: 'max-h-vmax-half', sideButtonGroup: '' },
 	},
