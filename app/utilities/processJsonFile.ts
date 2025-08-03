@@ -1,9 +1,11 @@
 export const FILE_TYPE_JSON = 'application/json';
 
-export function downloadJson(fileName: string, jsonString: string, extension?: string) {
-	const blob = new Blob([jsonString], {
-		type: FILE_TYPE_JSON,
-	});
+export function downloadJson(
+	fileName: string,
+	jsonString: string,
+	extension?: string
+) {
+	const blob = new Blob([jsonString], { type: FILE_TYPE_JSON });
 	const url = URL.createObjectURL(blob);
 
 	const element = document.createElement('a');
@@ -18,7 +20,10 @@ export function downloadJson(fileName: string, jsonString: string, extension?: s
 	URL.revokeObjectURL(url);
 }
 
-export function parseJsonFromInput(input: HTMLInputElement, callback: (value: string) => void) {
+export function parseJsonFromInput(
+	input: HTMLInputElement,
+	callback: (value: string) => void
+) {
 	if (input.files === null) {
 		return;
 	}
@@ -31,9 +36,7 @@ export function parseJsonFromInput(input: HTMLInputElement, callback: (value: st
 		return;
 	}
 
-	const blob = new Blob([file], {
-		type: FILE_TYPE_JSON,
-	});
+	const blob = new Blob([file], { type: FILE_TYPE_JSON });
 
 	void blob.text().then(callback);
 }

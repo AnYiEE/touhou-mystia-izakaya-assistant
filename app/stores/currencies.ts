@@ -1,16 +1,17 @@
-import {store} from '@davstack/store';
+import { store } from '@davstack/store';
 
-import {type TPinyinSortState, pinyinSortStateMap} from '@/components/sidePinyinSortIconButton';
+import {
+	type TPinyinSortState,
+	pinyinSortStateMap,
+} from '@/components/sidePinyinSortIconButton';
 
-import {persist as persistMiddleware} from '@/stores/middlewares';
-import {createNamesCache} from '@/stores/utils';
-import {Currency} from '@/utils';
+import { persist as persistMiddleware } from '@/stores/middlewares';
+import { createNamesCache } from '@/stores/utils';
+import { Currency } from '@/utils';
 
 const instance = Currency.getInstance();
 
-const storeVersion = {
-	initial: 0,
-} as const;
+const storeVersion = { initial: 0 } as const;
 
 const state = {
 	instance,

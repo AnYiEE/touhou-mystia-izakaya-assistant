@@ -1,7 +1,15 @@
-import {type TCurrencyName, type TCustomerRareName} from '@/data';
-import type {IItemBase, TDescription, TMerchant} from '@/data/types';
+import { type TCurrencyName, type TCustomerRareName } from '@/data';
+import type { IItemBase, TDescription, TMerchant } from '@/data/types';
 
-type TCategory = 'DLC' | '初始' | '夜雀' | '超' | '极' | '核能' | '可疑' | '月见';
+type TCategory =
+	| 'DLC'
+	| '初始'
+	| '夜雀'
+	| '超'
+	| '极'
+	| '核能'
+	| '可疑'
+	| '月见';
 
 type TType = '煮锅' | '烧烤架' | '油锅' | '蒸锅' | '料理台';
 
@@ -17,11 +25,7 @@ export interface ICooker extends IItemBase {
 				buy: {
 					name: TMerchant;
 					price: Array<
-						| number
-						| {
-								currency: TCurrencyName;
-								amount: number;
-						  }
+						number | { currency: TCurrencyName; amount: number }
 					>;
 				};
 				/** @description Initial cookers. */

@@ -1,17 +1,17 @@
 'use client';
 
-import {useCallback} from 'react';
+import { useCallback } from 'react';
 
-import {useRouter} from 'next/navigation';
-import {useMounted, useVibrate} from '@/hooks';
+import { useRouter } from 'next/navigation';
+import { useMounted, useVibrate } from '@/hooks';
 
-import {Modal, ModalBody, ModalContent} from '@heroui/modal';
+import { Modal, ModalBody, ModalContent } from '@heroui/modal';
 
-import {ScrollShadow, cn, useReducedMotion} from '@/design/ui/components';
+import { ScrollShadow, cn, useReducedMotion } from '@/design/ui/components';
 
 import Content from './content';
 
-import {globalStore as store} from '@/stores';
+import { globalStore as store } from '@/stores';
 
 export function PreferencesModalDefault() {
 	return null;
@@ -47,7 +47,9 @@ export default function PreferencesModal() {
 			size="3xl"
 			onClose={handleClose}
 			classNames={{
-				base: isHighAppearance ? 'bg-blend-mystia' : 'bg-background dark:bg-content1',
+				base: isHighAppearance
+					? 'bg-blend-mystia'
+					: 'bg-background dark:bg-content1',
 				closeButton: cn(
 					'transition-background motion-reduce:transition-none',
 					isHighAppearance

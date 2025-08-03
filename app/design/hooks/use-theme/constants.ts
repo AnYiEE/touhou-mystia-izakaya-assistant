@@ -1,4 +1,4 @@
-import {defaultBackgrounds} from '@/design/theme/colors/constants/backgroundColors';
+import { defaultBackgrounds } from '@/design/theme/colors/constants/backgroundColors';
 
 export const COLOR_MAP = {
 	DARK: defaultBackgrounds.dark,

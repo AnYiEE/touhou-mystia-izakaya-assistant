@@ -1,4 +1,4 @@
-import type {ISpriteConfig} from '@/utils/sprite/types';
+import type { ISpriteConfig } from '@/utils/sprite/types';
 
 export const CURRENCY_SPRITE_CONFIG = {
 	col: 7,

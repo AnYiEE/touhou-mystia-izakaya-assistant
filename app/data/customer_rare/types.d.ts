@@ -1,5 +1,5 @@
-import {type TEvaluationKey, type TRecipeTag} from '@/data';
-import type {ICustomerBase, TDescription} from '@/data/types';
+import { type TEvaluationKey, type TRecipeTag } from '@/data';
+import type { ICustomerBase, TDescription } from '@/data/types';
 
 interface ISpellCard {
 	name: string;

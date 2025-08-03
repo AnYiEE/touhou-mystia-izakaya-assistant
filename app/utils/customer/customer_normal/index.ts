@@ -1,6 +1,6 @@
-import {checkEasterEgg, evaluateMeal} from './evaluateMeal';
-import {Customer} from '../base';
-import {CUSTOMER_NORMAL_LIST, type TCustomerNormals} from '@/data';
+import { checkEasterEgg, evaluateMeal } from './evaluateMeal';
+import { Customer } from '../base';
+import { CUSTOMER_NORMAL_LIST, type TCustomerNormals } from '@/data';
 
 export class CustomerNormal extends Customer<TCustomerNormals> {
 	private static _instance: CustomerNormal | undefined;

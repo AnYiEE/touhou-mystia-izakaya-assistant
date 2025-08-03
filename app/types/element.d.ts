@@ -10,10 +10,15 @@ type ReactNodeWithoutBoolean = Exclude<React.ReactNode, boolean>;
 type RefProps<T> = Partial<Record<'ref', React.Ref<T>>>;
 type SelectionSet = Exclude<import('@heroui/table').Selection, 'all'>;
 
-type HTMLButtonElementAttributes = import('react').HTMLAttributes<HTMLButtonElement>;
+type HTMLButtonElementAttributes =
+	import('react').HTMLAttributes<HTMLButtonElement>;
 type HTMLDivElementAttributes = import('react').HTMLAttributes<HTMLDivElement>;
-type HTMLSpanElementAttributes = import('react').HTMLAttributes<HTMLSpanElement>;
-type HTMLHeadingElementAttributes = import('react').HTMLAttributes<HTMLHeadingElement>;
+type HTMLSpanElementAttributes =
+	import('react').HTMLAttributes<HTMLSpanElement>;
+type HTMLHeadingElementAttributes =
+	import('react').HTMLAttributes<HTMLHeadingElement>;
 type HTMLLIElementAttributes = import('react').HTMLAttributes<HTMLLIElement>;
-type HTMLOListElementAttributes = import('react').HTMLAttributes<HTMLOListElement>;
-type HTMLUListElementAttributes = import('react').HTMLAttributes<HTMLUListElement>;
+type HTMLOListElementAttributes =
+	import('react').HTMLAttributes<HTMLOListElement>;
+type HTMLUListElementAttributes =
+	import('react').HTMLAttributes<HTMLUListElement>;

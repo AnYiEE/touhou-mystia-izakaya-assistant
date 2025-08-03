@@ -1,9 +1,14 @@
 /* eslint-disable sort-keys, @typescript-eslint/require-await */
 
-import {type NextConfig} from 'next';
-import {env} from 'node:process';
+import { type NextConfig } from 'next';
+import { env } from 'node:process';
 
-import {CDN_URL, IS_OFFLINE, IS_PRODUCTION, getSha} from './scripts/utils.mjs';
+import {
+	CDN_URL,
+	IS_OFFLINE,
+	IS_PRODUCTION,
+	getSha,
+} from './scripts/utils.mjs';
 
 const exportMode = IS_OFFLINE || (!env.SELF_HOSTED && !env.VERCEL);
 const skipLint = IS_OFFLINE || (IS_PRODUCTION && Boolean(env.SKIP_LINT));
@@ -41,23 +46,18 @@ const nextConfig: NextConfig = {
 	assetPrefix: env.VERCEL ? '' : CDN_URL,
 	reactStrictMode: true,
 
-	eslint: {
-		ignoreDuringBuilds: skipLint,
-	},
-	typescript: {
-		ignoreBuildErrors: skipLint,
-	},
+	eslint: { ignoreDuringBuilds: skipLint },
+	typescript: { ignoreBuildErrors: skipLint },
 
-	experimental: {
-		webpackMemoryOptimizations: skipLint,
-	},
+	experimental: { webpackMemoryOptimizations: skipLint },
 };
 
 if (exportMode) {
 	nextConfig.output = 'export';
 } else {
 	nextConfig.headers = async () => {
-		const headers: Awaited<ReturnType<NonNullable<NextConfig['headers']>>> = [];
+		const headers: Awaited<ReturnType<NonNullable<NextConfig['headers']>>> =
+			[];
 
 		if (IS_PRODUCTION && !env.VERCEL) {
 			headers.push({

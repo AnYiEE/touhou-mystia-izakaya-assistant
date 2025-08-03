@@ -1,7 +1,7 @@
 // @ts-check
 /* eslint-disable sort-keys */
 
-import {IS_PRODUCTION} from './scripts/utils.mjs';
+import { IS_PRODUCTION } from './scripts/utils.mjs';
 
 /** @type {import('postcss-load-config').Config} */
 const config = {
@@ -11,9 +11,7 @@ const config = {
 				'postcss-flexbugs-fixes': {},
 				'postcss-preset-env': {},
 			}
-		: {
-				tailwindcss: {},
-			},
+		: { tailwindcss: {} },
 };
 
 export default config;

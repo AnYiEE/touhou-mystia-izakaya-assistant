@@ -1,18 +1,24 @@
 'use client';
 
-import {type ComponentProps, memo, useMemo} from 'react';
+import { type ComponentProps, memo, useMemo } from 'react';
 
-import {useMotionProps, useReducedMotion} from '@/design/ui/hooks';
+import { useMotionProps, useReducedMotion } from '@/design/ui/hooks';
 
-import {type InternalForwardRefRenderFunction, extendVariants} from '@heroui/system';
-import {Tooltip as HeroUITooltip} from '@heroui/tooltip';
+import {
+	type InternalForwardRefRenderFunction,
+	extendVariants,
+} from '@heroui/system';
+import { Tooltip as HeroUITooltip } from '@heroui/tooltip';
 
-import {getStyleBlur} from '@/design/ui/components/popover';
-import {cn, generateRatingVariants} from '@/design/ui/utils';
+import { getStyleBlur } from '@/design/ui/components/popover';
+import { cn, generateRatingVariants } from '@/design/ui/utils';
 
-import {globalStore as store} from '@/stores';
+import { globalStore as store } from '@/stores';
 
-const CustomHeroUITooltip = extendVariants(HeroUITooltip, generateRatingVariants('content'));
+const CustomHeroUITooltip = extendVariants(
+	HeroUITooltip,
+	generateRatingVariants('content')
+);
 
 interface IProps extends ComponentProps<typeof CustomHeroUITooltip> {
 	disableBlur?: boolean;
@@ -54,4 +60,4 @@ export default memo<IProps>(function Tooltip({
 	);
 }) as InternalForwardRefRenderFunction<'div', IProps>;
 
-export type {IProps as ITooltipProps};
+export type { IProps as ITooltipProps };

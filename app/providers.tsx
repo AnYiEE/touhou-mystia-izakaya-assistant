@@ -1,18 +1,18 @@
 'use client';
 
-import {type PropsWithChildren, useEffect} from 'react';
-import {compareVersions} from 'compare-versions';
+import { type PropsWithChildren, useEffect } from 'react';
+import { compareVersions } from 'compare-versions';
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
-import {useRouter} from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
-import {HeroUIProvider} from '@heroui/system';
-import {ProgressBar, ProgressBarProvider} from 'react-transition-progress';
+import { HeroUIProvider } from '@heroui/system';
+import { ProgressBar, ProgressBarProvider } from 'react-transition-progress';
 
 import CompatibleBrowser from '@/components/compatibleBrowser';
 import CustomerRareTutorial from '@/components/customerRareTutorial';
 
-import {siteConfig} from '@/configs';
+import { siteConfig } from '@/configs';
 import {
 	type TGlobalPersistenceState,
 	customerNormalStore,
@@ -22,21 +22,27 @@ import {
 	ingredientsStore,
 	recipesStore,
 } from '@/stores';
-import {toSet} from '@/utilities';
+import { toSet } from '@/utilities';
 
-const {cdnUrl, version} = siteConfig;
+const { cdnUrl, version } = siteConfig;
 
 interface IProps {
 	locale: string;
 }
 
-export default function Providers({children, locale}: PropsWithChildren<IProps>) {
+export default function Providers({
+	children,
+	locale,
+}: PropsWithChildren<IProps>) {
 	useEffect(() => {
 		// If the saved version is not set or outdated, initialize it with the current version.
 		// When an outdated version is detected, the current tab will update the saved version in local storage.
 		// Other tabs will monitor changes in the saved version and reload the page as needed.
 		const savedVersion = globalStore.persistence.version.get();
-		if (savedVersion === null || compareVersions(version, savedVersion) === 1) {
+		if (
+			savedVersion === null ||
+			compareVersions(version, savedVersion) === 1
+		) {
 			globalStore.persistence.version.set(version);
 		}
 
@@ -59,32 +65,61 @@ export default function Providers({children, locale}: PropsWithChildren<IProps>)
 
 		// Initialize popular trend based on the persistence data.
 		const globalPopularTrend = globalStore.persistence.popularTrend.get();
-		customerNormalStore.shared.customer.popularTrend.set(globalPopularTrend);
+		customerNormalStore.shared.customer.popularTrend.set(
+			globalPopularTrend
+		);
 		customerRareStore.shared.customer.popularTrend.set(globalPopularTrend);
 		ingredientsStore.shared.popularTrend.set(globalPopularTrend);
 		recipesStore.shared.popularTrend.set(globalPopularTrend);
 
 		// Initialize table state based on the persistence data.
-		const globalBeverageTableColumns = globalStore.persistence.table.columns.beverage.get();
-		const globalRecipeTableColumns = globalStore.persistence.table.columns.recipe.get();
+		const globalBeverageTableColumns =
+			globalStore.persistence.table.columns.beverage.get();
+		const globalRecipeTableColumns =
+			globalStore.persistence.table.columns.recipe.get();
 		const globalTableRow = globalStore.persistence.table.row.get();
-		const globalTableSelectableRows = globalStore.shared.table.selectableRows.get();
-		customerNormalStore.shared.beverage.table.columns.set(toSet(globalBeverageTableColumns));
+		const globalTableSelectableRows =
+			globalStore.shared.table.selectableRows.get();
+		customerNormalStore.shared.beverage.table.columns.set(
+			toSet(globalBeverageTableColumns)
+		);
 		customerNormalStore.shared.beverage.table.row.set(globalTableRow);
-		customerNormalStore.shared.beverage.table.rows.set(toSet([globalTableRow.toString()]));
-		customerNormalStore.shared.beverage.table.selectableRows.set(globalTableSelectableRows);
-		customerNormalStore.shared.recipe.table.columns.set(toSet(globalRecipeTableColumns));
+		customerNormalStore.shared.beverage.table.rows.set(
+			toSet([globalTableRow.toString()])
+		);
+		customerNormalStore.shared.beverage.table.selectableRows.set(
+			globalTableSelectableRows
+		);
+		customerNormalStore.shared.recipe.table.columns.set(
+			toSet(globalRecipeTableColumns)
+		);
 		customerNormalStore.shared.recipe.table.row.set(globalTableRow);
-		customerNormalStore.shared.recipe.table.rows.set(toSet([globalTableRow.toString()]));
-		customerNormalStore.shared.recipe.table.selectableRows.set(globalTableSelectableRows);
-		customerRareStore.shared.beverage.table.columns.set(toSet(globalBeverageTableColumns));
+		customerNormalStore.shared.recipe.table.rows.set(
+			toSet([globalTableRow.toString()])
+		);
+		customerNormalStore.shared.recipe.table.selectableRows.set(
+			globalTableSelectableRows
+		);
+		customerRareStore.shared.beverage.table.columns.set(
+			toSet(globalBeverageTableColumns)
+		);
 		customerRareStore.shared.beverage.table.row.set(globalTableRow);
-		customerRareStore.shared.beverage.table.rows.set(toSet([globalTableRow.toString()]));
-		customerRareStore.shared.beverage.table.selectableRows.set(globalTableSelectableRows);
-		customerRareStore.shared.recipe.table.columns.set(toSet(globalRecipeTableColumns));
+		customerRareStore.shared.beverage.table.rows.set(
+			toSet([globalTableRow.toString()])
+		);
+		customerRareStore.shared.beverage.table.selectableRows.set(
+			globalTableSelectableRows
+		);
+		customerRareStore.shared.recipe.table.columns.set(
+			toSet(globalRecipeTableColumns)
+		);
 		customerRareStore.shared.recipe.table.row.set(globalTableRow);
-		customerRareStore.shared.recipe.table.rows.set(toSet([globalTableRow.toString()]));
-		customerRareStore.shared.recipe.table.selectableRows.set(globalTableSelectableRows);
+		customerRareStore.shared.recipe.table.rows.set(
+			toSet([globalTableRow.toString()])
+		);
+		customerRareStore.shared.recipe.table.selectableRows.set(
+			globalTableSelectableRows
+		);
 	}, []);
 
 	const router = useRouter();
@@ -107,7 +142,8 @@ const script = (cdnPrefix: string, storeKey: string) => {
 	try {
 		const globalStorage = localStorage.getItem(storeKey);
 		if (globalStorage !== null) {
-			const state = (JSON.parse(globalStorage) as TGlobalPersistenceState).state.persistence;
+			const state = (JSON.parse(globalStorage) as TGlobalPersistenceState)
+				.state.persistence;
 			enable = state.highAppearance;
 		}
 	} catch {

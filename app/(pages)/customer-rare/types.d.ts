@@ -1,32 +1,34 @@
-import {type SortDescriptor} from '@heroui/table';
+import { type SortDescriptor } from '@heroui/table';
 
-import {type tabVisibilityStateMap} from './constants';
-import {type TBeverageTag, type TRecipeTag} from '@/data';
-import type {TBeverage, TRecipe} from '@/utils/types';
+import { type tabVisibilityStateMap } from './constants';
+import { type TBeverageTag, type TRecipeTag } from '@/data';
+import type { TBeverage, TRecipe } from '@/utils/types';
 
-export type TTabVisibilityState = ExtractCollectionValue<typeof tabVisibilityStateMap>;
+export type TTabVisibilityState = ExtractCollectionValue<
+	typeof tabVisibilityStateMap
+>;
 
 export interface ICustomerTabStyle {
 	ariaLabel: string;
 	buttonNode: ReactNodeWithoutBoolean;
-	classNames: {
-		content: string;
-		sideButtonGroup: string;
-	};
+	classNames: { content: string; sideButtonGroup: string };
 }
 
-export type TCustomerTabStyleMap = Record<TTabVisibilityState, ICustomerTabStyle>;
+export type TCustomerTabStyleMap = Record<
+	TTabVisibilityState,
+	ICustomerTabStyle
+>;
 
 export interface IIngredientsTabStyle {
 	ariaLabel: string;
 	buttonNode: ReactNodeWithoutBoolean;
-	classNames: {
-		content: string;
-		sideButtonGroup: string;
-	};
+	classNames: { content: string; sideButtonGroup: string };
 }
 
-export type TIngredientsTabStyleMap = Record<TTabVisibilityState, IIngredientsTabStyle>;
+export type TIngredientsTabStyleMap = Record<
+	TTabVisibilityState,
+	IIngredientsTabStyle
+>;
 
 export interface ITableColumn<T extends string> {
 	key: T;
@@ -46,7 +48,9 @@ interface IBeverageSuitability {
 	suitability: number;
 }
 
-export type TBeverageWithSuitability = Prettify<TBeverage & IBeverageSuitability>;
+export type TBeverageWithSuitability = Prettify<
+	TBeverage & IBeverageSuitability
+>;
 export type TBeveragesWithSuitability = TBeverageWithSuitability[];
 
 interface IRecipeSuitability {

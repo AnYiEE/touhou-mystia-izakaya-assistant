@@ -1,11 +1,11 @@
-import {defaultBackgrounds} from './backgroundColors';
-import {black} from './black';
-import {blue} from './blue';
-import {brown} from './brown';
-import {green} from './green';
-import {orange} from './orange';
-import {pink} from './pink';
-import {purple} from './purple';
+import { defaultBackgrounds } from './backgroundColors';
+import { black } from './black';
+import { blue } from './blue';
+import { brown } from './brown';
+import { green } from './green';
+import { orange } from './orange';
+import { pink } from './pink';
+import { purple } from './purple';
 
 const constants = {
 	BLACK: '#000000',

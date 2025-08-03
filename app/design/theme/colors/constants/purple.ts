@@ -1,4 +1,4 @@
-import type {TColorScale} from '../types';
+import type { TColorScale } from '../types';
 
 export const purple = {
 	50: '#faf5f7',

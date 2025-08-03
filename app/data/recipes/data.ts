@@ -1,6 +1,6 @@
 /* eslint-disable sort-keys */
-import type {IRecipe} from './types';
-import {DARK_MATTER_META_MAP, DYNAMIC_TAG_MAP} from '@/data/constant';
+import type { IRecipe } from './types';
+import { DARK_MATTER_META_MAP, DYNAMIC_TAG_MAP } from '@/data/constant';
 
 export const RECIPE_LIST = [
 	{
@@ -18,15 +18,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 1,
 		price: 8,
-		from: {
-			self: true,
-		},
+		from: { self: true },
 	},
 	{
 		id: 1,
 		recipeId: 1,
 		name: '豆腐味噌',
-		description: '居酒屋常见的快手汤羹。使用了豆腐来提鲜，最简单又最原始的美味。',
+		description:
+			'居酒屋常见的快手汤羹。使用了豆腐来提鲜，最简单又最原始的美味。',
 		ingredients: ['豆腐'],
 		positiveTags: ['素', '家常', '清淡', '和风', '汤羹'],
 		negativeTags: ['重油'],
@@ -36,18 +35,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 21,
-		from: {
-			bond: {
-				name: '稗田阿求',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '稗田阿求', level: 2 } },
 	},
 	{
 		id: 2,
 		recipeId: 2,
 		name: '力量汤',
-		description: '荤素搭配的美味汤羹。使用了野猪肉和海带煲煮而成，能最快捷地补充身体所需能量。',
+		description:
+			'荤素搭配的美味汤羹。使用了野猪肉和海带煲煮而成，能最快捷地补充身体所需能量。',
 		ingredients: ['海苔', '野猪肉'],
 		positiveTags: ['肉', '山珍', '灼热', '力量涌现', '汤羹'],
 		negativeTags: ['凉爽', '小巧'],
@@ -57,18 +52,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 34,
-		from: {
-			bond: {
-				name: '橙',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '橙', level: 4 } },
 	},
 	{
 		id: 3,
 		recipeId: 3,
 		name: '猪肉鳟鱼熏',
-		description: '把猪肉和鳟鱼放在一起熏制而成，是简单好吃的肉食料理，也比较能保存。',
+		description:
+			'把猪肉和鳟鱼放在一起熏制而成，是简单好吃的肉食料理，也比较能保存。',
 		ingredients: ['鳟鱼', '猪肉'],
 		positiveTags: ['肉', '水产', '家常', '烧烤'],
 		negativeTags: [],
@@ -78,12 +69,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 26,
-		from: {
-			bond: {
-				name: '橙',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '橙', level: 3 } },
 	},
 	{
 		id: 4,
@@ -100,15 +86,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 22,
-		from: {
-			self: true,
-		},
+		from: { self: true },
 	},
 	{
 		id: 5,
 		recipeId: 5,
 		name: '能量串',
-		description: '牛肉搭配洋葱、南瓜烤成的串串。巧妙地利用了洋葱的刺激和南瓜的甜味去除肉质的油腻，食之更加清爽。',
+		description:
+			'牛肉搭配洋葱、南瓜烤成的串串。巧妙地利用了洋葱的刺激和南瓜的甜味去除肉质的油腻，食之更加清爽。',
 		ingredients: ['牛肉', '洋葱', '南瓜'],
 		positiveTags: ['肉', '饱腹', '烧烤'],
 		negativeTags: [],
@@ -118,12 +103,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 50,
-		from: {
-			bond: {
-				name: '伊吹萃香',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '伊吹萃香', level: 3 } },
 	},
 	{
 		id: 6,
@@ -140,12 +120,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 4,
 		price: 90,
-		from: {
-			bond: {
-				name: '伊吹萃香',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '伊吹萃香', level: 4 } },
 	},
 	{
 		id: 7,
@@ -161,15 +136,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 1,
 		price: 6,
-		from: {
-			levelup: [2, null],
-		},
+		from: { levelup: [2, null] },
 	},
 	{
 		id: 8,
 		recipeId: 7,
 		name: '炙猪肉饭团',
-		description: '常见的平价饭团。在饭团中放入烤制后的猪肉，为其增加了一份香浓的嚼劲。',
+		description:
+			'常见的平价饭团。在饭团中放入烤制后的猪肉，为其增加了一份香浓的嚼劲。',
 		ingredients: ['猪肉'],
 		positiveTags: ['肉', '家常', '饱腹', '和风'],
 		negativeTags: [],
@@ -196,20 +170,24 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 30,
-		from: {
-			bond: {
-				name: '博丽灵梦',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '博丽灵梦', level: 2 } },
 	},
 	{
 		id: 10,
 		recipeId: 9,
 		name: '樱落雪',
-		description: '高级寿司的一种。粉红色的高级生鱼片盖在白米饭上，就如樱花飘落在白雪上，有着不可思议的美感。',
+		description:
+			'高级寿司的一种。粉红色的高级生鱼片盖在白米饭上，就如樱花飘落在白雪上，有着不可思议的美感。',
 		ingredients: ['极上金枪鱼'],
-		positiveTags: ['水产', '高级', '海味', '和风', '生', '适合拍照', '小巧'],
+		positiveTags: [
+			'水产',
+			'高级',
+			'海味',
+			'和风',
+			'生',
+			'适合拍照',
+			'小巧',
+		],
 		negativeTags: ['重油'],
 		cooker: '料理台',
 		min: 7.2,
@@ -217,12 +195,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 4,
 		price: 50,
-		from: {
-			bond: {
-				name: '稗田阿求',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '稗田阿求', level: 4 } },
 	},
 	{
 		id: 11,
@@ -254,15 +227,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 21,
-		from: {
-			self: true,
-		},
+		from: { self: true },
 	},
 	{
 		id: 13,
 		recipeId: 12,
 		name: '红烧鳗鱼',
-		description: '本店招牌。将鳗鱼用特殊酱料进行烧制后肉汁四溢，光闻着香味便让人垂涎不已。',
+		description:
+			'本店招牌。将鳗鱼用特殊酱料进行烧制后肉汁四溢，光闻着香味便让人垂涎不已。',
 		ingredients: ['洋葱', '八目鳗'],
 		positiveTags: ['水产', '素', '重油', '鲜', DYNAMIC_TAG_MAP.signature],
 		negativeTags: [],
@@ -272,18 +244,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 42,
-		from: {
-			bond: {
-				name: '红美铃',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '红美铃', level: 2 } },
 	},
 	{
 		id: 14,
 		recipeId: 13,
 		name: '土豆可乐饼',
-		description: '主要由土豆制成的，外表酥脆，内在绵软可口，在油炸类食品中有着较高的人气。',
+		description:
+			'主要由土豆制成的，外表酥脆，内在绵软可口，在油炸类食品中有着较高的人气。',
 		ingredients: ['土豆'],
 		positiveTags: ['素', '家常', '重油'],
 		negativeTags: ['凉爽'],
@@ -293,15 +261,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 1,
 		price: 22,
-		from: {
-			levelup: [11, null],
-		},
+		from: { levelup: [11, null] },
 	},
 	{
 		id: 15,
 		recipeId: 14,
 		name: '野味加农',
-		description: '用农家蔬菜佐以优质黑毛猪肉炖煮的烩锅。口感饱满，香浓却不油腻，是农家人最高级的大菜。',
+		description:
+			'用农家蔬菜佐以优质黑毛猪肉炖煮的烩锅。口感饱满，香浓却不油腻，是农家人最高级的大菜。',
 		ingredients: ['土豆', '南瓜', '黑毛猪肉'],
 		positiveTags: ['肉', '重油', '饱腹', '山珍', '灼热'],
 		negativeTags: [],
@@ -311,18 +278,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 4,
 		price: 66,
-		from: {
-			bond: {
-				name: '茨木华扇',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '茨木华扇', level: 4 } },
 	},
 	{
 		id: 16,
 		recipeId: 15,
 		name: '猪肉盖浇饭',
-		description: '常见的家常菜。看上去颗颗饭粒饱满，淋上的香酱和猪肉的口感融为一体，令人胃口倍增。',
+		description:
+			'常见的家常菜。看上去颗颗饭粒饱满，淋上的香酱和猪肉的口感融为一体，令人胃口倍增。',
 		ingredients: ['猪肉'],
 		positiveTags: ['肉', '家常', '饱腹'],
 		negativeTags: [],
@@ -332,15 +295,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 20,
-		from: {
-			levelup: [8, null],
-		},
+		from: { levelup: [8, null] },
 	},
 	{
 		id: 17,
 		recipeId: 16,
 		name: '牛肉盖浇饭',
-		description: '常见的家常菜。看上去颗颗饭粒饱满，淋上的香酱和牛肉的口感融为一体，令人胃口倍增。',
+		description:
+			'常见的家常菜。看上去颗颗饭粒饱满，淋上的香酱和牛肉的口感融为一体，令人胃口倍增。',
 		ingredients: ['牛肉'],
 		positiveTags: ['肉', '家常', '饱腹'],
 		negativeTags: [],
@@ -350,18 +312,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 20,
-		from: {
-			bond: {
-				name: '茨木华扇',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '茨木华扇', level: 3 } },
 	},
 	{
 		id: 18,
 		recipeId: 17,
 		name: '炸八目鳗',
-		description: '本店招牌。长相怪异的八目鳗在喜欢尝鲜的幻想乡曾一度成为话题，油炸后爽滑酥嫩，深受大众喜爱。',
+		description:
+			'本店招牌。长相怪异的八目鳗在喜欢尝鲜的幻想乡曾一度成为话题，油炸后爽滑酥嫩，深受大众喜爱。',
 		ingredients: ['八目鳗'],
 		positiveTags: ['水产', '重油', DYNAMIC_TAG_MAP.signature],
 		negativeTags: ['凉爽'],
@@ -371,18 +329,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 27,
-		from: {
-			bond: {
-				name: '露米娅',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '露米娅', level: 3 } },
 	},
 	{
 		id: 19,
 		recipeId: 18,
 		name: '蔬菜专辑',
-		description: '用新鲜的蔬菜生拌而成的沙拉。口感清新，可以去除嘴里的油腻，不知为何被年轻的姑娘们奉为减肥圣餐。',
+		description:
+			'用新鲜的蔬菜生拌而成的沙拉。口感清新，可以去除嘴里的油腻，不知为何被年轻的姑娘们奉为减肥圣餐。',
 		ingredients: ['土豆', '洋葱', '南瓜'],
 		positiveTags: ['素', '清淡', '生', '凉爽'],
 		negativeTags: ['肉', '水产', '灼热'],
@@ -392,12 +346,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 56,
-		from: {
-			bond: {
-				name: '稗田阿求',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '稗田阿求', level: 3 } },
 	},
 	{
 		id: 20,
@@ -414,12 +363,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 4,
 		price: 98,
-		from: {
-			bond: {
-				name: '上白泽慧音',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '上白泽慧音', level: 4 } },
 	},
 	{
 		id: 21,
@@ -436,18 +380,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 1,
 		price: 19,
-		from: {
-			bond: {
-				name: '茨木华扇',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '茨木华扇', level: 2 } },
 	},
 	{
 		id: 22,
 		recipeId: 21,
 		name: '杂炊',
-		description: '使用一些边角料食材杂烩而成的烩锅。享受美味的同时还能避免浪费，可谓一举两得。',
+		description:
+			'使用一些边角料食材杂烩而成的烩锅。享受美味的同时还能避免浪费，可谓一举两得。',
 		ingredients: ['海苔', '豆腐', '鳟鱼'],
 		positiveTags: ['肉', '家常', '鲜', '灼热'],
 		negativeTags: [],
@@ -457,18 +397,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 40,
-		from: {
-			bond: {
-				name: '博丽灵梦',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '博丽灵梦', level: 3 } },
 	},
 	{
 		id: 23,
 		recipeId: 22,
 		name: '刺身拼盘',
-		description: '作为和风料理的代表，将刺身级的三文鱼和金枪鱼鱼生配上芥末和酱油，引出鲜味的绝妙料理。',
+		description:
+			'作为和风料理的代表，将刺身级的三文鱼和金枪鱼鱼生配上芥末和酱油，引出鲜味的绝妙料理。',
 		ingredients: ['三文鱼', '金枪鱼'],
 		positiveTags: ['水产', '高级', '和风', '生', '适合拍照'],
 		negativeTags: ['灼热'],
@@ -478,12 +414,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 88,
-		from: {
-			bond: {
-				name: '琪露诺',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '琪露诺', level: 3 } },
 	},
 	{
 		id: 24,
@@ -500,12 +431,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 105,
-		from: {
-			bond: {
-				name: '博丽灵梦',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '博丽灵梦', level: 4 } },
 	},
 	{
 		id: 25,
@@ -522,9 +448,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 60,
-		from: {
-			levelup: [14, null],
-		},
+		from: { levelup: [14, null] },
 	},
 	{
 		id: 26,
@@ -533,7 +457,15 @@ export const RECIPE_LIST = [
 		description:
 			'用高级牛肉和松露炖煮而成的烩锅，最初以麻辣为特色，因炖煮中冒出的气泡如岩浆而得名，款款而起的香味更是让人食指大动。改良后也增加了不辣的版本。',
 		ingredients: ['牛肉', '和牛', '河豚', '松露'],
-		positiveTags: ['肉', '水产', '高级', '饱腹', '灼热', '力量涌现', '菌类'],
+		positiveTags: [
+			'肉',
+			'水产',
+			'高级',
+			'饱腹',
+			'灼热',
+			'力量涌现',
+			'菌类',
+		],
 		negativeTags: ['凉爽'],
 		cooker: '煮锅',
 		min: 4.8,
@@ -541,18 +473,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 125,
-		from: {
-			bond: {
-				name: '藤原妹红',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '藤原妹红', level: 4 } },
 	},
 	{
 		id: 27,
 		recipeId: 24,
 		name: '香炸蝉蜕',
-		description: '蝉科昆虫黑蚱羽化后的蜕壳，可以入药，有利咽开音、明目退翳之效，香炸后口感酥脆，颇受欢迎。',
+		description:
+			'蝉科昆虫黑蚱羽化后的蜕壳，可以入药，有利咽开音、明目退翳之效，香炸后口感酥脆，颇受欢迎。',
 		ingredients: ['蝉蜕'],
 		positiveTags: ['重油', '猎奇'],
 		negativeTags: [],
@@ -562,12 +490,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 1,
 		price: 19,
-		from: {
-			bond: {
-				name: '莉格露',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '莉格露', level: 3 } },
 	},
 	{
 		id: 28,
@@ -584,12 +507,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 18,
-		from: {
-			bond: {
-				name: '莉格露',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '莉格露', level: 2 } },
 	},
 	{
 		id: 29,
@@ -606,12 +524,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 78,
-		from: {
-			bond: {
-				name: '莉格露',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '莉格露', level: 4 } },
 	},
 	{
 		id: 30,
@@ -620,7 +533,15 @@ export const RECIPE_LIST = [
 		description:
 			'黑不溜秋的怪异美食之首！香飘万里，让人回味无穷。因为打不过熊，没法直接用熊掌做，但是比真正的熊掌还要鲜美百倍。',
 		ingredients: ['黑毛猪肉', '竹笋', '河豚'],
-		positiveTags: ['肉', '水产', '高级', '山珍', '鲜', '力量涌现', '不可思议'],
+		positiveTags: [
+			'肉',
+			'水产',
+			'高级',
+			'山珍',
+			'鲜',
+			'力量涌现',
+			'不可思议',
+		],
 		negativeTags: [],
 		cooker: '蒸锅',
 		min: 7.2,
@@ -628,18 +549,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 70,
-		from: {
-			bond: {
-				name: '露米娅',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '露米娅', level: 4 } },
 	},
 	{
 		id: 31,
 		recipeId: 27,
 		name: '秘制小鱼干',
-		description: '用秘制的香料将小鱼干腌制后晒干，酥脆香口的同时又易于保存，寻常人家都喜欢在家中保存一份。',
+		description:
+			'用秘制的香料将小鱼干腌制后晒干，酥脆香口的同时又易于保存，寻常人家都喜欢在家中保存一份。',
 		ingredients: ['鳟鱼'],
 		positiveTags: ['水产', '咸', '鲜', '小巧'],
 		negativeTags: [],
@@ -649,18 +566,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 30,
-		from: {
-			bond: {
-				name: '橙',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '橙', level: 2 } },
 	},
 	{
 		id: 32,
 		recipeId: 28,
 		name: '凉菜雕花',
-		description: '将鲜果蔬菜雕刻成鲜花的模样，虽然材料简单，但却非常考验刀工。',
+		description:
+			'将鲜果蔬菜雕刻成鲜花的模样，虽然材料简单，但却非常考验刀工。',
 		ingredients: ['萝卜'],
 		positiveTags: ['素', '清淡', '适合拍照', '凉爽'],
 		negativeTags: ['肉', '灼热'],
@@ -670,12 +583,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 1,
 		price: 20,
-		from: {
-			bond: {
-				name: '比那名居天子',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '比那名居天子', level: 2 } },
 	},
 	{
 		id: 33,
@@ -692,20 +600,24 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 55,
-		from: {
-			bond: {
-				name: '比那名居天子',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '比那名居天子', level: 3 } },
 	},
 	{
 		id: 34,
 		recipeId: 40,
 		name: '北极甜虾蜜桃色拉',
-		description: '选用品质最好、肉质最鲜的虾和桃子加工而成的高级料理，据说在外界只有在宴席上才有机会一见。',
+		description:
+			'选用品质最好、肉质最鲜的虾和桃子加工而成的高级料理，据说在外界只有在宴席上才有机会一见。',
 		ingredients: ['桃子', '冰块', '虾'],
-		positiveTags: ['水产', '素', '清淡', '甜', '适合拍照', '不可思议', '果味'],
+		positiveTags: [
+			'水产',
+			'素',
+			'清淡',
+			'甜',
+			'适合拍照',
+			'不可思议',
+			'果味',
+		],
 		negativeTags: ['肉', '咸'],
 		cooker: '料理台',
 		min: 6,
@@ -713,12 +625,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 25,
-		from: {
-			bond: {
-				name: '比那名居天子',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '比那名居天子', level: 4 } },
 	},
 	{
 		id: 35,
@@ -734,18 +641,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 1,
 		price: 16,
-		from: {
-			bond: {
-				name: '上白泽慧音',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '上白泽慧音', level: 2 } },
 	},
 	{
 		id: 36,
 		recipeId: 30,
 		name: '诗礼银杏',
-		description: '以选用孔庙“诗礼堂”前银杏树所结果实烹制而得名，清香甜美，柔韧筋道，可解酒止咳。',
+		description:
+			'以选用孔庙“诗礼堂”前银杏树所结果实烹制而得名，清香甜美，柔韧筋道，可解酒止咳。',
 		ingredients: ['白果', '蜂蜜'],
 		positiveTags: ['素', '中华', '甜', '文化底蕴'],
 		negativeTags: ['咸'],
@@ -755,18 +658,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 60,
-		from: {
-			bond: {
-				name: '上白泽慧音',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '上白泽慧音', level: 3 } },
 	},
 	{
 		id: 37,
 		recipeId: 31,
 		name: '真·海鲜味噌汤',
-		description: '选用新鲜鳟鱼和海带煲煮而成的味噌汤。浓浓的鲜味四处漂荡，鲜而不腥。',
+		description:
+			'选用新鲜鳟鱼和海带煲煮而成的味噌汤。浓浓的鲜味四处漂荡，鲜而不腥。',
 		ingredients: ['三文鱼', '鳟鱼'],
 		positiveTags: ['水产', '家常', '清淡', '汤羹'],
 		negativeTags: [],
@@ -776,18 +675,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 55,
-		from: {
-			bond: {
-				name: '琪露诺',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '琪露诺', level: 2 } },
 	},
 	{
 		id: 38,
 		recipeId: 32,
 		name: '烤蘑菇',
-		description: '采用蘑菇为原料，将蘑菇用竹签串起来后，刷少量油进行烧烤，撒上粗盐，味道简直不输给直接吃肉！',
+		description:
+			'采用蘑菇为原料，将蘑菇用竹签串起来后，刷少量油进行烧烤，撒上粗盐，味道简直不输给直接吃肉！',
 		ingredients: ['蘑菇'],
 		positiveTags: ['素', '咸', '灼热', '菌类', '烧烤'],
 		negativeTags: [],
@@ -803,7 +698,8 @@ export const RECIPE_LIST = [
 		id: 39,
 		recipeId: 33,
 		name: '煮豆腐',
-		description: '常见的家常菜，但也讲究烧制的火候，才能将豆腐的鲜嫩口感得到最大展现。',
+		description:
+			'常见的家常菜，但也讲究烧制的火候，才能将豆腐的鲜嫩口感得到最大展现。',
 		ingredients: ['豆腐'],
 		positiveTags: ['素', '家常', '清淡'],
 		negativeTags: [],
@@ -813,15 +709,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 1,
 		price: 22,
-		from: {
-			levelup: [4, null],
-		},
+		from: { levelup: [4, null] },
 	},
 	{
 		id: 40,
 		recipeId: 34,
 		name: '炸猪肉排',
-		description: '常见的家常菜。以猪肉为主要材料，裹以面粉一炸，邻居家的孩子都馋哭了。',
+		description:
+			'常见的家常菜。以猪肉为主要材料，裹以面粉一炸，邻居家的孩子都馋哭了。',
 		ingredients: ['猪肉'],
 		positiveTags: ['肉', '家常', '重油', '饱腹'],
 		negativeTags: [],
@@ -831,18 +726,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 25,
-		from: {
-			bond: {
-				name: '伊吹萃香',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '伊吹萃香', level: 2 } },
 	},
 	{
 		id: 41,
 		recipeId: 60,
 		name: '黄油牛排',
-		description: '简单而复杂，根据火候和食材的选择，呈现出不同感觉的基础西餐。顺带一提红魔馆的那位喜欢的是三分熟。',
+		description:
+			'简单而复杂，根据火候和食材的选择，呈现出不同感觉的基础西餐。顺带一提红魔馆的那位喜欢的是三分熟。',
 		ingredients: ['和牛', '黄油'],
 		positiveTags: ['肉', '重油', '饱腹', '西式'],
 		negativeTags: ['甜', '凉爽'],
@@ -858,7 +749,8 @@ export const RECIPE_LIST = [
 		id: 42,
 		recipeId: 57,
 		name: '意式烩饭',
-		description: '将食材炒熟之后倒入生米，充分混合米粒和食材香味的外界某个半岛的做法。',
+		description:
+			'将食材炒熟之后倒入生米，充分混合米粒和食材香味的外界某个半岛的做法。',
 		ingredients: ['洋葱', '蘑菇', '竹笋', '黄油'],
 		positiveTags: ['饱腹', '西式', '鲜', '菌类'],
 		negativeTags: ['甜'],
@@ -868,12 +760,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 70,
-		from: {
-			bond: {
-				name: '帕秋莉',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '帕秋莉', level: 3 } },
 	},
 	{
 		id: 43,
@@ -890,12 +777,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 4,
 		price: 150,
-		from: {
-			bond: {
-				name: '帕秋莉',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '帕秋莉', level: 4 } },
 	},
 	{
 		id: 44,
@@ -911,12 +793,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 35,
-		from: {
-			bond: {
-				name: '帕秋莉',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '帕秋莉', level: 2 } },
 	},
 	{
 		id: 45,
@@ -932,9 +809,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 22,
-		from: {
-			levelup: [27, '红魔馆'],
-		},
+		from: { levelup: [27, '红魔馆'] },
 	},
 	{
 		id: 46,
@@ -950,9 +825,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 1,
 		price: 8,
-		from: {
-			levelup: [18, '红魔馆'],
-		},
+		from: { levelup: [18, '红魔馆'] },
 	},
 	{
 		id: 47,
@@ -969,15 +842,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 58,
-		from: {
-			levelup: [21, '红魔馆'],
-		},
+		from: { levelup: [21, '红魔馆'] },
 	},
 	{
 		id: 48,
 		recipeId: 64,
 		name: '奶油炖菜',
-		description: '制作家常奶油浓汤，制作方法简单，无论是蘸面包还是当作炖菜来吃都是非常不错的料理。',
+		description:
+			'制作家常奶油浓汤，制作方法简单，无论是蘸面包还是当作炖菜来吃都是非常不错的料理。',
 		ingredients: ['蘑菇', '洋葱', '黄油'],
 		positiveTags: ['素', '西式', '菌类', '汤羹'],
 		negativeTags: [],
@@ -987,15 +859,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 20,
-		from: {
-			levelup: [24, '迷途竹林'],
-		},
+		from: { levelup: [24, '迷途竹林'] },
 	},
 	{
 		id: 49,
 		recipeId: 61,
 		name: '蜜汁叉烧',
-		description: '来自红美铃老家的特殊做法，制作工序有点儿繁复，但是口感独一无二，令人难忘。',
+		description:
+			'来自红美铃老家的特殊做法，制作工序有点儿繁复，但是口感独一无二，令人难忘。',
 		ingredients: ['猪肉', '蜂蜜'],
 		positiveTags: ['肉', '重油', '中华', '甜', '不可思议'],
 		negativeTags: [],
@@ -1021,12 +892,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 65,
-		from: {
-			bond: {
-				name: '红美铃',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '红美铃', level: 3 } },
 	},
 	{
 		id: 51,
@@ -1035,7 +901,15 @@ export const RECIPE_LIST = [
 		description:
 			'在永远亭就地取材，使用新鲜的食材和米饭一起塞进竹筒中蒸熟。饭被竹子的清香充分浸润后，中和了山猪肉带来的油腻。',
 		ingredients: ['竹子', '竹笋', '松露', '白果', '黑毛猪肉'],
-		positiveTags: ['肉', '高级', '传说', '和风', '适合拍照', '文化底蕴', '特产'],
+		positiveTags: [
+			'肉',
+			'高级',
+			'传说',
+			'和风',
+			'适合拍照',
+			'文化底蕴',
+			'特产',
+		],
 		negativeTags: [],
 		cooker: '蒸锅',
 		min: 7.2,
@@ -1066,7 +940,8 @@ export const RECIPE_LIST = [
 		id: 53,
 		recipeId: 48,
 		name: '月光团子',
-		description: '永远亭特产改良的麻薯团子，加入了高级食材月光草，造型可爱的同时，还有“月光一样的口感”。',
+		description:
+			'永远亭特产改良的麻薯团子，加入了高级食材月光草，造型可爱的同时，还有“月光一样的口感”。',
 		ingredients: ['月光草', '糯米'],
 		positiveTags: ['和风', '甜', '不可思议', '特产'],
 		negativeTags: ['肉', '水产', '咸', '鲜'],
@@ -1076,12 +951,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 80,
-		from: {
-			bond: {
-				name: '因幡帝',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '因幡帝', level: 4 } },
 	},
 	{
 		id: 54,
@@ -1097,18 +967,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 30,
-		from: {
-			bond: {
-				name: '因幡帝',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '因幡帝', level: 2 } },
 	},
 	{
 		id: 55,
 		recipeId: 47,
 		name: '白桃生八桥',
-		description: '状似外界古筝的经典和果子，加入白桃内馅儿之后呈现淡粉色，非常诱人。',
+		description:
+			'状似外界古筝的经典和果子，加入白桃内馅儿之后呈现淡粉色，非常诱人。',
 		ingredients: ['糯米', '桃子'],
 		positiveTags: ['和风', '甜', '果味'],
 		negativeTags: ['肉', '水产', '咸', '鲜'],
@@ -1118,18 +984,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 55,
-		from: {
-			bond: {
-				name: '因幡帝',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '因幡帝', level: 3 } },
 	},
 	{
 		id: 56,
 		recipeId: 52,
 		name: '月之恋人',
-		description: '外界似乎很流行使用〇〇恋人作为地区伴手礼，永远亭也不甘落后潮流，推出了自己的版本！',
+		description:
+			'外界似乎很流行使用〇〇恋人作为地区伴手礼，永远亭也不甘落后潮流，推出了自己的版本！',
 		ingredients: ['黄油', '面粉', '鸡蛋', '月光草'],
 		positiveTags: ['甜', '适合拍照', '小巧', '特产'],
 		negativeTags: ['肉', '水产', '素'],
@@ -1139,18 +1001,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 66,
-		from: {
-			bond: {
-				name: '蓬莱山辉夜',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '蓬莱山辉夜', level: 3 } },
 	},
 	{
 		id: 57,
 		recipeId: 59,
 		name: '猪鹿蝶',
-		description: '脱胎于花札的猪鹿蝶牌型，将猪肉和鹿肉清炖，佐以花朵引出食材本身鲜味的精致料理。',
+		description:
+			'脱胎于花札的猪鹿蝶牌型，将猪肉和鹿肉清炖，佐以花朵引出食材本身鲜味的精致料理。',
 		ingredients: ['野猪肉', '鹿肉', '月光草'],
 		positiveTags: ['肉', '高级', '适合拍照', '文化底蕴'],
 		negativeTags: [],
@@ -1160,12 +1018,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 78,
-		from: {
-			bond: {
-				name: '琪露诺',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '琪露诺', level: 4 } },
 	},
 	{
 		id: 58,
@@ -1197,9 +1050,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 25,
-		from: {
-			levelup: [33, '迷途竹林'],
-		},
+		from: { levelup: [33, '迷途竹林'] },
 	},
 	{
 		id: 60,
@@ -1215,12 +1066,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 40,
-		from: {
-			bond: {
-				name: '蓬莱山辉夜',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '蓬莱山辉夜', level: 2 } },
 	},
 	{
 		id: 61,
@@ -1237,12 +1083,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 5,
 		price: 125,
-		from: {
-			bond: {
-				name: '蓬莱山辉夜',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '蓬莱山辉夜', level: 4 } },
 	},
 	{
 		id: 62,
@@ -1259,18 +1100,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 1,
 		price: 24,
-		from: {
-			bond: {
-				name: '露米娅',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '露米娅', level: 2 } },
 	},
 	{
 		id: 63,
 		recipeId: 55,
 		name: '华光玉煎包',
-		description: '散发着七彩的气场的高级生煎包。据说有些生煎原教旨主义者尖锐地反对加入猪肉以外食材的做法。',
+		description:
+			'散发着七彩的气场的高级生煎包。据说有些生煎原教旨主义者尖锐地反对加入猪肉以外食材的做法。',
 		ingredients: ['蘑菇', '黑毛猪肉'],
 		positiveTags: ['肉', '高级', '传说', '中华', '菌类', '梦幻'],
 		negativeTags: [],
@@ -1280,18 +1117,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 4,
 		price: 128,
-		from: {
-			bond: {
-				name: '红美铃',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '红美铃', level: 4 } },
 	},
 	{
 		id: 64,
 		recipeId: 49,
 		name: '麻婆豆腐',
-		description: '在日本很有名的中华料理。使用独特的豆腐烹饪技巧烹制而成的辛辣料理，用它来拌饭吃可是会上瘾的哦。',
+		description:
+			'在日本很有名的中华料理。使用独特的豆腐烹饪技巧烹制而成的辛辣料理，用它来拌饭吃可是会上瘾的哦。',
 		ingredients: ['豆腐', '猪肉', '辣椒'],
 		positiveTags: ['素', '中华', '灼热', '辣'],
 		negativeTags: ['甜', '凉爽', '果味'],
@@ -1301,12 +1134,7 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 32,
-		from: {
-			bond: {
-				name: '藤原妹红',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '藤原妹红', level: 2 } },
 	},
 	{
 		id: 65,
@@ -1323,18 +1151,14 @@ export const RECIPE_LIST = [
 		dlc: 0,
 		level: 3,
 		price: 68,
-		from: {
-			bond: {
-				name: '藤原妹红',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '藤原妹红', level: 3 } },
 	},
 	{
 		id: 66,
 		recipeId: 42,
 		name: '月饼',
-		description: '原本是内测人员的特殊食谱，三年来一直令全收集强迫症玩家坐卧不宁，这次彻底开放了。',
+		description:
+			'原本是内测人员的特殊食谱，三年来一直令全收集强迫症玩家坐卧不宁，这次彻底开放了。',
 		ingredients: ['月光草', '面粉'],
 		positiveTags: ['饱腹', '中华', '甜', '文化底蕴', '不可思议', '小巧'],
 		negativeTags: [],
@@ -1347,10 +1171,7 @@ export const RECIPE_LIST = [
 		from: {
 			buy: {
 				name: '【人间之里】香霖堂',
-				price: {
-					currency: '银色的青蛙硬币',
-					amount: 5,
-				},
+				price: { currency: '银色的青蛙硬币', amount: 5 },
 			},
 		},
 	},
@@ -1358,7 +1179,8 @@ export const RECIPE_LIST = [
 		id: 67,
 		recipeId: 67,
 		name: '毛玉三色冰激凌',
-		description: '方形的三色毛玉冰激凌，从颜色到口味上都非常惹人喜爱。几乎是人手一份的招牌甜品。',
+		description:
+			'方形的三色毛玉冰激凌，从颜色到口味上都非常惹人喜爱。几乎是人手一份的招牌甜品。',
 		ingredients: ['露水', '豆腐', '蜂蜜', '鸡蛋'],
 		positiveTags: ['西式', '甜', '适合拍照', '凉爽', '梦幻'],
 		negativeTags: [],
@@ -1374,7 +1196,8 @@ export const RECIPE_LIST = [
 		id: 68,
 		recipeId: 68,
 		name: '毛玉熔岩豆腐',
-		description: '方形的火山毛玉造型，仿佛着了火的熔岩豆腐。受到喜欢舌苔刺激的人的追捧。',
+		description:
+			'方形的火山毛玉造型，仿佛着了火的熔岩豆腐。受到喜欢舌苔刺激的人的追捧。',
 		ingredients: ['豆腐', '辣椒', '牛肉', '洋葱'],
 		positiveTags: ['素', '中华', '鲜', '适合拍照', '不可思议'],
 		negativeTags: [],
@@ -1390,7 +1213,8 @@ export const RECIPE_LIST = [
 		id: 69,
 		recipeId: 69,
 		name: '猩红恶魔蛋糕',
-		description: '以猩红恶魔头上的帽子为原型制作的梦幻甜食，切开会有仿佛血液一般的甜美酱料流出。',
+		description:
+			'以猩红恶魔头上的帽子为原型制作的梦幻甜食，切开会有仿佛血液一般的甜美酱料流出。',
 		ingredients: ['露水', '南瓜', '土豆', '蜂蜜'],
 		positiveTags: ['西式', '甜', '适合拍照', '猎奇', '梦幻'],
 		negativeTags: [],
@@ -1437,10 +1261,7 @@ export const RECIPE_LIST = [
 		from: {
 			buy: {
 				name: '【人间之里】香霖堂',
-				price: {
-					currency: '银色的青蛙硬币',
-					amount: 5,
-				},
+				price: { currency: '银色的青蛙硬币', amount: 5 },
 			},
 		},
 	},
@@ -1462,10 +1283,7 @@ export const RECIPE_LIST = [
 		from: {
 			buy: {
 				name: '【人间之里】香霖堂',
-				price: {
-					currency: '银色的青蛙硬币',
-					amount: 5,
-				},
+				price: { currency: '银色的青蛙硬币', amount: 5 },
 			},
 		},
 	},
@@ -1484,18 +1302,14 @@ export const RECIPE_LIST = [
 		dlc: 1,
 		level: 1,
 		price: 22,
-		from: {
-			bond: {
-				name: '犬走椛',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '犬走椛', level: 2 } },
 	},
 	{
 		id: 1001,
 		recipeId: 1001,
 		name: '黄金酥鱼饼',
-		description: '在鱼馅儿内加入适量蜂蜜搅拌后，碾压成鱼饼，投入油锅炸至金黄色，随炸随食。',
+		description:
+			'在鱼馅儿内加入适量蜂蜜搅拌后，碾压成鱼饼，投入油锅炸至金黄色，随炸随食。',
 		ingredients: ['鳟鱼', '面粉', '蜂蜜'],
 		positiveTags: ['水产', '重油', '下酒', '力量涌现'],
 		negativeTags: [],
@@ -1505,20 +1319,25 @@ export const RECIPE_LIST = [
 		dlc: 1,
 		level: 2,
 		price: 40,
-		from: {
-			bond: {
-				name: '犬走椛',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '犬走椛', level: 3 } },
 	},
 	{
 		id: 1002,
 		recipeId: 1002,
 		name: '全肉盛宴',
-		description: '将各种高级烤肉堆成小山的料理。无论视觉还是分量上都简单暴力，对于嗅觉灵敏的食客是秒杀级的食谱。',
+		description:
+			'将各种高级烤肉堆成小山的料理。无论视觉还是分量上都简单暴力，对于嗅觉灵敏的食客是秒杀级的食谱。',
 		ingredients: ['野猪肉', '鹿肉', '黑毛猪肉', '和牛'],
-		positiveTags: ['肉', '高级', '下酒', '山珍', '咸', '适合拍照', '灼热', DYNAMIC_TAG_MAP.largePartition],
+		positiveTags: [
+			'肉',
+			'高级',
+			'下酒',
+			'山珍',
+			'咸',
+			'适合拍照',
+			'灼热',
+			DYNAMIC_TAG_MAP.largePartition,
+		],
 		negativeTags: [],
 		cooker: '烧烤架',
 		min: 8.4,
@@ -1526,12 +1345,7 @@ export const RECIPE_LIST = [
 		dlc: 1,
 		level: 4,
 		price: 115,
-		from: {
-			bond: {
-				name: '犬走椛',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '犬走椛', level: 4 } },
 	},
 	{
 		id: 1003,
@@ -1547,12 +1361,7 @@ export const RECIPE_LIST = [
 		dlc: 1,
 		level: 1,
 		price: 16,
-		from: {
-			bond: {
-				name: '河城荷取',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '河城荷取', level: 2 } },
 	},
 	{
 		id: 1004,
@@ -1561,7 +1370,14 @@ export const RECIPE_LIST = [
 		description:
 			'奶油焗的螃蟹在没开盖之前就已经香气四溢，然而这香气只是前戏。撕开蟹钳，弹出白嫩饱满的肉质，此时再细细地吸入汤汁，螃蟹固有的鲜味才彻底的融合和释放。',
 		ingredients: ['奶油', '螃蟹'],
-		positiveTags: ['高级', '下酒', '海味', '鲜', DYNAMIC_TAG_MAP.signature, '适合拍照'],
+		positiveTags: [
+			'高级',
+			'下酒',
+			'海味',
+			'鲜',
+			DYNAMIC_TAG_MAP.signature,
+			'适合拍照',
+		],
 		negativeTags: [],
 		cooker: '油锅',
 		min: 7.2,
@@ -1569,12 +1385,7 @@ export const RECIPE_LIST = [
 		dlc: 1,
 		level: 3,
 		price: 88,
-		from: {
-			bond: {
-				name: '河城荷取',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '河城荷取', level: 3 } },
 	},
 	{
 		id: 1005,
@@ -1591,12 +1402,7 @@ export const RECIPE_LIST = [
 		dlc: 1,
 		level: 4,
 		price: 120,
-		from: {
-			bond: {
-				name: '河城荷取',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '河城荷取', level: 4 } },
 	},
 	{
 		id: 1006,
@@ -1613,12 +1419,7 @@ export const RECIPE_LIST = [
 		dlc: 1,
 		level: 2,
 		price: 24,
-		from: {
-			bond: {
-				name: '东风谷早苗',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '东风谷早苗', level: 2 } },
 	},
 	{
 		id: 1007,
@@ -1627,7 +1428,13 @@ export const RECIPE_LIST = [
 		description:
 			'听说也是外界流行的街边小吃，在特制的面糊中裹上引发奇迹的章鱼脚，糯脆的外衣之下Q弹的章鱼脚产生让人幸福的感觉。',
 		ingredients: ['面粉', '海苔', '章鱼'],
-		positiveTags: ['水产', '饱腹', DYNAMIC_TAG_MAP.signature, '适合拍照', '小巧'],
+		positiveTags: [
+			'水产',
+			'饱腹',
+			DYNAMIC_TAG_MAP.signature,
+			'适合拍照',
+			'小巧',
+		],
 		negativeTags: [],
 		cooker: '油锅',
 		min: 4.8,
@@ -1635,20 +1442,24 @@ export const RECIPE_LIST = [
 		dlc: 1,
 		level: 2,
 		price: 36,
-		from: {
-			bond: {
-				name: '东风谷早苗',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '东风谷早苗', level: 3 } },
 	},
 	{
 		id: 1008,
 		recipeId: 1008,
 		name: '海胆刺身',
-		description: '制作意外的简单，但获取食材却非常困难。据说是现世流行的超高级料理，是每个人的梦想。',
+		description:
+			'制作意外的简单，但获取食材却非常困难。据说是现世流行的超高级料理，是每个人的梦想。',
 		ingredients: ['海胆', '露水'],
-		positiveTags: ['高级', '海味', '甜', '适合拍照', '不可思议', '小巧', '特产'],
+		positiveTags: [
+			'高级',
+			'海味',
+			'甜',
+			'适合拍照',
+			'不可思议',
+			'小巧',
+			'特产',
+		],
 		negativeTags: [],
 		cooker: '料理台',
 		min: 4.8,
@@ -1656,12 +1467,7 @@ export const RECIPE_LIST = [
 		dlc: 1,
 		level: 4,
 		price: 108,
-		from: {
-			bond: {
-				name: '东风谷早苗',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '东风谷早苗', level: 4 } },
 	},
 	{
 		id: 1009,
@@ -1677,12 +1483,7 @@ export const RECIPE_LIST = [
 		dlc: 1,
 		level: 1,
 		price: 20,
-		from: {
-			bond: {
-				name: '雾雨魔理沙',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '雾雨魔理沙', level: 2 } },
 	},
 	{
 		id: 1010,
@@ -1699,12 +1500,7 @@ export const RECIPE_LIST = [
 		dlc: 1,
 		level: 3,
 		price: 62,
-		from: {
-			bond: {
-				name: '雾雨魔理沙',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '雾雨魔理沙', level: 3 } },
 	},
 	{
 		id: 1011,
@@ -1713,7 +1509,16 @@ export const RECIPE_LIST = [
 		description:
 			'蘑菇为主角，佐以各种鲜嫩食材的强力料理。金灿灿的光芒散发着强烈的存在感，香浓的口感可以瞬间蒸发人的灵魂，一发沉沦。',
 		ingredients: ['蘑菇', '虾', '章鱼', '辣椒'],
-		positiveTags: ['水产', '重油', '咸', '鲜', '适合拍照', '灼热', '菌类', '辣'],
+		positiveTags: [
+			'水产',
+			'重油',
+			'咸',
+			'鲜',
+			'适合拍照',
+			'灼热',
+			'菌类',
+			'辣',
+		],
 		negativeTags: [],
 		cooker: '煮锅',
 		min: 8.4,
@@ -1721,12 +1526,7 @@ export const RECIPE_LIST = [
 		dlc: 1,
 		level: 4,
 		price: 112,
-		from: {
-			bond: {
-				name: '雾雨魔理沙',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '雾雨魔理沙', level: 4 } },
 	},
 	{
 		id: 1012,
@@ -1743,18 +1543,14 @@ export const RECIPE_LIST = [
 		dlc: 1,
 		level: 1,
 		price: 28,
-		from: {
-			bond: {
-				name: '爱丽丝',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '爱丽丝', level: 2 } },
 	},
 	{
 		id: 1013,
 		recipeId: 1013,
 		name: '普通小蛋糕',
-		description: '有着惊人热量的小点心，据说能迅速强健体魄。上面写着“吃掉我”，非常诱人，吃多了估计会长胖吧…',
+		description:
+			'有着惊人热量的小点心，据说能迅速强健体魄。上面写着“吃掉我”，非常诱人，吃多了估计会长胖吧…',
 		ingredients: ['鸡蛋', '葡萄', '奶油'],
 		positiveTags: ['高级', '甜', '适合拍照', '文化底蕴', '果味'],
 		negativeTags: [],
@@ -1764,20 +1560,24 @@ export const RECIPE_LIST = [
 		dlc: 1,
 		level: 2,
 		price: 56,
-		from: {
-			bond: {
-				name: '爱丽丝',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '爱丽丝', level: 3 } },
 	},
 	{
 		id: 1014,
 		recipeId: 1014,
 		name: '七色羊羹',
-		description: '经典甜食辅以特殊的处理，呈现梦幻的色彩，让人敬畏，只敢远观不敢亵玩。能吃上一次，终生难忘。',
+		description:
+			'经典甜食辅以特殊的处理，呈现梦幻的色彩，让人敬畏，只敢远观不敢亵玩。能吃上一次，终生难忘。',
 		ingredients: ['海苔', '葡萄', '露水', '幻昙华'],
-		positiveTags: ['高级', '甜', '适合拍照', '文化底蕴', '不可思议', '梦幻', '果味'],
+		positiveTags: [
+			'高级',
+			'甜',
+			'适合拍照',
+			'文化底蕴',
+			'不可思议',
+			'梦幻',
+			'果味',
+		],
 		negativeTags: [],
 		cooker: '蒸锅',
 		min: 4.8,
@@ -1785,18 +1585,14 @@ export const RECIPE_LIST = [
 		dlc: 1,
 		level: 4,
 		price: 92,
-		from: {
-			bond: {
-				name: '爱丽丝',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '爱丽丝', level: 4 } },
 	},
 	{
 		id: 1015,
 		recipeId: 1015,
 		name: '手握寿司',
-		description: '日本最传统的料理之一。将鱼切片后盖在手握的饭团上，解饿又鲜美，拥有很长的历史。',
+		description:
+			'日本最传统的料理之一。将鱼切片后盖在手握的饭团上，解饿又鲜美，拥有很长的历史。',
 		ingredients: ['三文鱼', '金枪鱼'],
 		positiveTags: ['水产', '清淡', '和风', '鲜', '生', '文化底蕴'],
 		negativeTags: [],
@@ -1806,18 +1602,14 @@ export const RECIPE_LIST = [
 		dlc: 1,
 		level: 1,
 		price: 28,
-		from: {
-			bond: {
-				name: '矢田寺成美',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '矢田寺成美', level: 2 } },
 	},
 	{
 		id: 1016,
 		recipeId: 1016,
 		name: '南瓜虾盅',
-		description: '掏空小南瓜，用鲜嫩的虾肉和豆腐填充，再进行蒸制，香甜可口，又非常健康。',
+		description:
+			'掏空小南瓜，用鲜嫩的虾肉和豆腐填充，再进行蒸制，香甜可口，又非常健康。',
 		ingredients: ['南瓜', '虾', '豆腐'],
 		positiveTags: ['水产', '清淡', '饱腹', '鲜', '甜', '适合拍照', '特产'],
 		negativeTags: [],
@@ -1827,18 +1619,14 @@ export const RECIPE_LIST = [
 		dlc: 1,
 		level: 2,
 		price: 55,
-		from: {
-			bond: {
-				name: '矢田寺成美',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '矢田寺成美', level: 3 } },
 	},
 	{
 		id: 1017,
 		recipeId: 1017,
 		name: '幻想佛跳墙',
-		description: '由东方文明古国最强料理改造而来，据说得道的真佛也会因为它的气味夺墙而走，摒弃斋戒，真的很神奇！',
+		description:
+			'由东方文明古国最强料理改造而来，据说得道的真佛也会因为它的气味夺墙而走，摒弃斋戒，真的很神奇！',
 		ingredients: ['和牛', '极上金枪鱼', '黑毛猪肉', '河豚', '松露'],
 		positiveTags: [
 			'肉',
@@ -1860,12 +1648,7 @@ export const RECIPE_LIST = [
 		dlc: 1,
 		level: 4,
 		price: 160,
-		from: {
-			bond: {
-				name: '矢田寺成美',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '矢田寺成美', level: 4 } },
 	},
 	{
 		id: 2000,
@@ -1882,12 +1665,7 @@ export const RECIPE_LIST = [
 		dlc: 2,
 		level: 1,
 		price: 25,
-		from: {
-			bond: {
-				name: '水桥帕露西',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '水桥帕露西', level: 2 } },
 	},
 	{
 		id: 2001,
@@ -1904,12 +1682,7 @@ export const RECIPE_LIST = [
 		dlc: 2,
 		level: 2,
 		price: 36,
-		from: {
-			bond: {
-				name: '水桥帕露西',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '水桥帕露西', level: 3 } },
 	},
 	{
 		id: 2002,
@@ -1918,7 +1691,17 @@ export const RECIPE_LIST = [
 		description:
 			'旧地狱中最流行的聚会小吃。将各种食材置入后，加上辣椒刺激，让人汗流满面的同时却无法停下，是魔力十足的料理。',
 		ingredients: ['辣椒', '辣椒', '牛肉', '萝卜', '豆腐'],
-		positiveTags: ['肉', '高级', '饱腹', '鲜', '灼热', '力量涌现', '特产', '辣', DYNAMIC_TAG_MAP.largePartition],
+		positiveTags: [
+			'肉',
+			'高级',
+			'饱腹',
+			'鲜',
+			'灼热',
+			'力量涌现',
+			'特产',
+			'辣',
+			DYNAMIC_TAG_MAP.largePartition,
+		],
 		negativeTags: [],
 		cooker: '煮锅',
 		min: 7.2,
@@ -1926,18 +1709,14 @@ export const RECIPE_LIST = [
 		dlc: 2,
 		level: 4,
 		price: 92,
-		from: {
-			bond: {
-				name: '水桥帕露西',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '水桥帕露西', level: 4 } },
 	},
 	{
 		id: 2003,
 		recipeId: 2003,
 		name: '脆旋风',
-		description: '将虫类的甲壳磨成大碎块，拌入面中，吃起来香脆又下火，有一种别样的异世界猎奇感的奇怪料理。',
+		description:
+			'将虫类的甲壳磨成大碎块，拌入面中，吃起来香脆又下火，有一种别样的异世界猎奇感的奇怪料理。',
 		ingredients: ['面粉', '蜂蜜', '蝉蜕'],
 		positiveTags: ['饱腹', '生', '猎奇', '特产'],
 		negativeTags: ['重油'],
@@ -1947,20 +1726,23 @@ export const RECIPE_LIST = [
 		dlc: 2,
 		level: 1,
 		price: 42,
-		from: {
-			bond: {
-				name: '黑谷山女',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '黑谷山女', level: 2 } },
 	},
 	{
 		id: 2004,
 		recipeId: 2004,
 		name: '仰望天花板派',
-		description: '在水果派里探出一个鱼头，仿佛看着地底的天花板，充满了和地狱相衬的绝望气息。',
+		description:
+			'在水果派里探出一个鱼头，仿佛看着地底的天花板，充满了和地狱相衬的绝望气息。',
 		ingredients: ['鳟鱼', '面粉', '桃子'],
-		positiveTags: ['下酒', '海味', DYNAMIC_TAG_MAP.signature, '适合拍照', '猎奇', '特产'],
+		positiveTags: [
+			'下酒',
+			'海味',
+			DYNAMIC_TAG_MAP.signature,
+			'适合拍照',
+			'猎奇',
+			'特产',
+		],
 		negativeTags: ['肉'],
 		cooker: '蒸锅',
 		min: 5.4,
@@ -1968,20 +1750,26 @@ export const RECIPE_LIST = [
 		dlc: 2,
 		level: 2,
 		price: 66,
-		from: {
-			bond: {
-				name: '黑谷山女',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '黑谷山女', level: 3 } },
 	},
 	{
 		id: 2005,
 		recipeId: 2005,
 		name: '兜甲蒸糕',
-		description: '无论是地上还是地下，兜角甲虫都是力量和无敌的象征！这是憧憬它的力量而诞生的盔甲料理！',
+		description:
+			'无论是地上还是地下，兜角甲虫都是力量和无敌的象征！这是憧憬它的力量而诞生的盔甲料理！',
 		ingredients: ['面粉', '黑毛猪肉', '蜂蜜', '蝉蜕'],
-		positiveTags: ['高级', '饱腹', '鲜', '生', DYNAMIC_TAG_MAP.signature, '适合拍照', '力量涌现', '猎奇', '特产'],
+		positiveTags: [
+			'高级',
+			'饱腹',
+			'鲜',
+			'生',
+			DYNAMIC_TAG_MAP.signature,
+			'适合拍照',
+			'力量涌现',
+			'猎奇',
+			'特产',
+		],
 		negativeTags: [],
 		cooker: '蒸锅',
 		min: 7.2,
@@ -1989,18 +1777,14 @@ export const RECIPE_LIST = [
 		dlc: 2,
 		level: 3,
 		price: 105,
-		from: {
-			bond: {
-				name: '黑谷山女',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '黑谷山女', level: 4 } },
 	},
 	{
 		id: 2006,
 		recipeId: 2006,
 		name: '狮子头',
-		description: '爱酒之人无不喜欢的基础下酒菜！气派又野性的狮子头配上烈性的酒，是鬼族起床的早餐！',
+		description:
+			'爱酒之人无不喜欢的基础下酒菜！气派又野性的狮子头配上烈性的酒，是鬼族起床的早餐！',
 		ingredients: ['牛肉'],
 		positiveTags: ['肉', '下酒', '鲜', DYNAMIC_TAG_MAP.signature, '特产'],
 		negativeTags: ['水产', '饱腹'],
@@ -2010,18 +1794,14 @@ export const RECIPE_LIST = [
 		dlc: 2,
 		level: 1,
 		price: 28,
-		from: {
-			bond: {
-				name: '星熊勇仪',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '星熊勇仪', level: 2 } },
 	},
 	{
 		id: 2007,
 		recipeId: 2007,
 		name: '巨人玉子烧',
-		description: '将普通的玉子烧做大许多倍，就是这款在鬼族中流行的巨人玉子烧了！其澎湃的存在感让豪迈之人为其燃烧！',
+		description:
+			'将普通的玉子烧做大许多倍，就是这款在鬼族中流行的巨人玉子烧了！其澎湃的存在感让豪迈之人为其燃烧！',
 		ingredients: ['面粉', '面粉', '鸡蛋', '鸡蛋'],
 		positiveTags: ['高级', '饱腹', '和风', '甜', '力量涌现'],
 		negativeTags: ['下酒'],
@@ -2031,18 +1811,14 @@ export const RECIPE_LIST = [
 		dlc: 2,
 		level: 2,
 		price: 60,
-		from: {
-			bond: {
-				name: '星熊勇仪',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '星熊勇仪', level: 3 } },
 	},
 	{
 		id: 2008,
 		recipeId: 2008,
 		name: '大江户船祭',
-		description: '用华丽的祭典船造型，摆满上好的鱼刺身，周围散发着保鲜而制作的冰雾，是真真正正的宴会的焦点！',
+		description:
+			'用华丽的祭典船造型，摆满上好的鱼刺身，周围散发着保鲜而制作的冰雾，是真真正正的宴会的焦点！',
 		ingredients: ['三文鱼', '金枪鱼', '极上金枪鱼', '鳟鱼', '冰块'],
 		positiveTags: [
 			'水产',
@@ -2064,18 +1840,14 @@ export const RECIPE_LIST = [
 		dlc: 2,
 		level: 4,
 		price: 206,
-		from: {
-			bond: {
-				name: '星熊勇仪',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '星熊勇仪', level: 4 } },
 	},
 	{
 		id: 2009,
 		recipeId: 2009,
 		name: '樱花布丁',
-		description: '粉色的可爱甜品，Q软又富有弹性，香蜜的甜美气息使它成为世界上所有的女孩子都无法拒绝的无敌甜品。',
+		description:
+			'粉色的可爱甜品，Q软又富有弹性，香蜜的甜美气息使它成为世界上所有的女孩子都无法拒绝的无敌甜品。',
 		ingredients: ['蜂蜜', '桃子'],
 		positiveTags: ['甜', '适合拍照', '凉爽', '小巧', '特产', '果味'],
 		negativeTags: ['重油', '咸'],
@@ -2085,12 +1857,7 @@ export const RECIPE_LIST = [
 		dlc: 2,
 		level: 2,
 		price: 32,
-		from: {
-			bond: {
-				name: '古明地觉',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '古明地觉', level: 2 } },
 	},
 	{
 		id: 2010,
@@ -2107,12 +1874,7 @@ export const RECIPE_LIST = [
 		dlc: 2,
 		level: 2,
 		price: 42,
-		from: {
-			bond: {
-				name: '古明地觉',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '古明地觉', level: 3 } },
 	},
 	{
 		id: 2011,
@@ -2121,7 +1883,16 @@ export const RECIPE_LIST = [
 		description:
 			'究极加料、一颗就调动起身上包括多巴胺和肾上腺激素等多种兴奋元素疯狂舞动的禁忌甜食。妖怪食用后可以疯狂舞蹈一整夜，但是兴奋过后会不由地感到“我燃尽了”。',
 		ingredients: ['葡萄', '蜂蜜', '柠檬', '柠檬'],
-		positiveTags: ['甜', DYNAMIC_TAG_MAP.signature, '凉爽', '力量涌现', '小巧', '梦幻', '果味', '酸'],
+		positiveTags: [
+			'甜',
+			DYNAMIC_TAG_MAP.signature,
+			'凉爽',
+			'力量涌现',
+			'小巧',
+			'梦幻',
+			'果味',
+			'酸',
+		],
 		negativeTags: ['重油', '咸'],
 		cooker: '蒸锅',
 		min: 4.8,
@@ -2129,12 +1900,7 @@ export const RECIPE_LIST = [
 		dlc: 2,
 		level: 4,
 		price: 73,
-		from: {
-			bond: {
-				name: '古明地觉',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '古明地觉', level: 4 } },
 	},
 	{
 		id: 2012,
@@ -2151,18 +1917,14 @@ export const RECIPE_LIST = [
 		dlc: 2,
 		level: 1,
 		price: 26,
-		from: {
-			bond: {
-				name: '火焰猫燐',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '火焰猫燐', level: 2 } },
 	},
 	{
 		id: 2013,
 		recipeId: 2013,
 		name: '三文鱼天妇罗',
-		description: '将三文鱼裹上蛋液和面粉，炸至通体金黄，咬一口汁水四溢，隔壁的猫猫都馋哭啦！',
+		description:
+			'将三文鱼裹上蛋液和面粉，炸至通体金黄，咬一口汁水四溢，隔壁的猫猫都馋哭啦！',
 		ingredients: ['三文鱼', '黄油', '鸡蛋', '面粉'],
 		positiveTags: ['水产', '高级', '重油', '鲜', '小巧'],
 		negativeTags: [],
@@ -2172,18 +1934,14 @@ export const RECIPE_LIST = [
 		dlc: 2,
 		level: 2,
 		price: 44,
-		from: {
-			bond: {
-				name: '火焰猫燐',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '火焰猫燐', level: 3 } },
 	},
 	{
 		id: 2014,
 		recipeId: 2014,
 		name: '鱼跃龙门',
-		description: '外表是鲤鱼起跳的造型，剖开后尽是梦幻的宝藏，是猫科动物无法抵抗的究极美食。',
+		description:
+			'外表是鲤鱼起跳的造型，剖开后尽是梦幻的宝藏，是猫科动物无法抵抗的究极美食。',
 		ingredients: ['极上金枪鱼', '鹿肉', '蜂蜜', '月光草', '松露'],
 		positiveTags: [
 			'肉',
@@ -2205,18 +1963,14 @@ export const RECIPE_LIST = [
 		dlc: 2,
 		level: 4,
 		price: 142,
-		from: {
-			bond: {
-				name: '火焰猫燐',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '火焰猫燐', level: 4 } },
 	},
 	{
 		id: 2015,
 		recipeId: 2015,
 		name: '芝士蛋',
-		description: '据说是阿空刚刚被觉收养时，觉常做给她的料理。在蛋饼里混入浓香的芝士，让人无法拒绝的小吃。',
+		description:
+			'据说是阿空刚刚被觉收养时，觉常做给她的料理。在蛋饼里混入浓香的芝士，让人无法拒绝的小吃。',
 		ingredients: ['鸡蛋', '芝士'],
 		positiveTags: ['重油', '咸', '鲜', '生'],
 		negativeTags: ['肉'],
@@ -2226,12 +1980,7 @@ export const RECIPE_LIST = [
 		dlc: 2,
 		level: 1,
 		price: 26,
-		from: {
-			bond: {
-				name: '灵乌路空',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '灵乌路空', level: 2 } },
 	},
 	{
 		id: 2016,
@@ -2248,20 +1997,25 @@ export const RECIPE_LIST = [
 		dlc: 2,
 		level: 3,
 		price: 62,
-		from: {
-			bond: {
-				name: '灵乌路空',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '灵乌路空', level: 3 } },
 	},
 	{
 		id: 2017,
 		recipeId: 2017,
 		name: '地狱激辛警告！',
-		description: '超超超级辣加倍的牛肉咖喱饭！据说只有拥有极限忍耐力的人和傻瓜才会尝试这道料理！',
+		description:
+			'超超超级辣加倍的牛肉咖喱饭！据说只有拥有极限忍耐力的人和傻瓜才会尝试这道料理！',
 		ingredients: ['辣椒', '辣椒', '辣椒', '芝士', '牛肉'],
-		positiveTags: ['肉', '重油', '咸', '适合拍照', '灼热', '力量涌现', '猎奇', '辣'],
+		positiveTags: [
+			'肉',
+			'重油',
+			'咸',
+			'适合拍照',
+			'灼热',
+			'力量涌现',
+			'猎奇',
+			'辣',
+		],
 		negativeTags: ['素', '清淡'],
 		cooker: '油锅',
 		min: 7.2,
@@ -2269,12 +2023,7 @@ export const RECIPE_LIST = [
 		dlc: 2,
 		level: 4,
 		price: 108,
-		from: {
-			bond: {
-				name: '灵乌路空',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '灵乌路空', level: 4 } },
 	},
 	{
 		id: 3000,
@@ -2291,12 +2040,7 @@ export const RECIPE_LIST = [
 		dlc: 3,
 		level: 1,
 		price: 25,
-		from: {
-			bond: {
-				name: '多多良小伞',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '多多良小伞', level: 2 } },
 	},
 	{
 		id: 3001,
@@ -2313,12 +2057,7 @@ export const RECIPE_LIST = [
 		dlc: 3,
 		level: 2,
 		price: 45,
-		from: {
-			bond: {
-				name: '多多良小伞',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '多多良小伞', level: 3 } },
 	},
 	{
 		id: 3002,
@@ -2327,7 +2066,14 @@ export const RECIPE_LIST = [
 		description:
 			'从幻昙华中提取色素，给一个个蘑菇伞染上颜色，将之铺在宝箱周围就像被锦花簇拥着。宝箱里究竟藏有什么惊喜呢？怀着这样的想法打开，跳出来的却是伸着大舌头的滑稽的伞！吓一跳了吧——？',
 		ingredients: ['蘑菇', '幻昙华', '蜂蜜', '奶油'],
-		positiveTags: ['适合拍照', '力量涌现', '猎奇', '不可思议', '梦幻', '特产'],
+		positiveTags: [
+			'适合拍照',
+			'力量涌现',
+			'猎奇',
+			'不可思议',
+			'梦幻',
+			'特产',
+		],
 		negativeTags: ['家常'],
 		cooker: '蒸锅',
 		min: 7.2,
@@ -2335,12 +2081,7 @@ export const RECIPE_LIST = [
 		dlc: 3,
 		level: 4,
 		price: 90,
-		from: {
-			bond: {
-				name: '多多良小伞',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '多多良小伞', level: 4 } },
 	},
 	{
 		id: 3003,
@@ -2357,12 +2098,7 @@ export const RECIPE_LIST = [
 		dlc: 3,
 		level: 1,
 		price: 26,
-		from: {
-			bond: {
-				name: '村纱水蜜',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '村纱水蜜', level: 2 } },
 	},
 	{
 		id: 3004,
@@ -2371,7 +2107,13 @@ export const RECIPE_LIST = [
 		description:
 			'据说“海盗”这个词的来源是在明火上烹制的熏肉。加勒比本地人就是用这种做法来处理肉类，然后卖给海盗。听起来就和米饭盖浇米饭一样奇怪。',
 		ingredients: ['牛肉', '黑盐', '辣椒', '蜂蜜'],
-		positiveTags: ['肉', '传说', '力量涌现', '特产', DYNAMIC_TAG_MAP.largePartition],
+		positiveTags: [
+			'肉',
+			'传说',
+			'力量涌现',
+			'特产',
+			DYNAMIC_TAG_MAP.largePartition,
+		],
 		negativeTags: ['酸'],
 		cooker: '烧烤架',
 		min: 5.4,
@@ -2379,12 +2121,7 @@ export const RECIPE_LIST = [
 		dlc: 3,
 		level: 2,
 		price: 58,
-		from: {
-			bond: {
-				name: '村纱水蜜',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '村纱水蜜', level: 3 } },
 	},
 	{
 		id: 3005,
@@ -2393,7 +2130,16 @@ export const RECIPE_LIST = [
 		description:
 			'源自佛门的斋菜。传闻正宗的罗汉斋用十八种原料制成，工序复杂考究，成菜色泽缤纷雅致，味道清淡香郁。堪称佛门最奢华的一道素菜。',
 		ingredients: ['幻昙华', '竹笋', '松露', '松子', '莲子'],
-		positiveTags: ['素', '高级', '清淡', '鲜', '凉爽', '文化底蕴', '梦幻', '特产'],
+		positiveTags: [
+			'素',
+			'高级',
+			'清淡',
+			'鲜',
+			'凉爽',
+			'文化底蕴',
+			'梦幻',
+			'特产',
+		],
 		negativeTags: ['肉', '辣'],
 		cooker: '煮锅',
 		min: 7.2,
@@ -2401,12 +2147,7 @@ export const RECIPE_LIST = [
 		dlc: 3,
 		level: 4,
 		price: 97,
-		from: {
-			bond: {
-				name: '村纱水蜜',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '村纱水蜜', level: 4 } },
 	},
 	{
 		id: 3006,
@@ -2423,12 +2164,7 @@ export const RECIPE_LIST = [
 		dlc: 3,
 		level: 1,
 		price: 20,
-		from: {
-			bond: {
-				name: '封兽鵺',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '封兽鵺', level: 2 } },
 	},
 	{
 		id: 3007,
@@ -2445,12 +2181,7 @@ export const RECIPE_LIST = [
 		dlc: 3,
 		level: 2,
 		price: 56,
-		from: {
-			bond: {
-				name: '封兽鵺',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '封兽鵺', level: 3 } },
 	},
 	{
 		id: 3008,
@@ -2459,7 +2190,17 @@ export const RECIPE_LIST = [
 		description:
 			'以南瓜做的船，承载着如梦似幻的食材，在莲子铺成的河上驶入幻想。据说每每享用完这道料理，都会有如梦方醒的感觉。至于究竟是何种梦境，便是因人而异了。',
 		ingredients: ['南瓜', '莲子', '金枪鱼', '并蒂莲', '月光草'],
-		positiveTags: ['高级', '鲜', '生', DYNAMIC_TAG_MAP.signature, '适合拍照', '凉爽', '不可思议', '梦幻', '特产'],
+		positiveTags: [
+			'高级',
+			'鲜',
+			'生',
+			DYNAMIC_TAG_MAP.signature,
+			'适合拍照',
+			'凉爽',
+			'不可思议',
+			'梦幻',
+			'特产',
+		],
 		negativeTags: ['猎奇'],
 		cooker: '料理台',
 		min: 7.8,
@@ -2467,18 +2208,14 @@ export const RECIPE_LIST = [
 		dlc: 3,
 		level: 4,
 		price: 132,
-		from: {
-			bond: {
-				name: '封兽鵺',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '封兽鵺', level: 4 } },
 	},
 	{
 		id: 3009,
 		recipeId: 3009,
 		name: '松子糕',
-		description: '以糯米为主料、辅以松子制作的药膳。松子糕的粉质细腻，柔软可口，并有清香的松子味，深受道士们喜爱。',
+		description:
+			'以糯米为主料、辅以松子制作的药膳。松子糕的粉质细腻，柔软可口，并有清香的松子味，深受道士们喜爱。',
 		ingredients: ['糯米', '松子'],
 		positiveTags: ['清淡', '特产'],
 		negativeTags: [],
@@ -2488,12 +2225,7 @@ export const RECIPE_LIST = [
 		dlc: 3,
 		level: 2,
 		price: 46,
-		from: {
-			bond: {
-				name: '物部布都',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '物部布都', level: 2 } },
 	},
 	{
 		id: 3010,
@@ -2510,12 +2242,7 @@ export const RECIPE_LIST = [
 		dlc: 3,
 		level: 3,
 		price: 72,
-		from: {
-			bond: {
-				name: '物部布都',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '物部布都', level: 3 } },
 	},
 	{
 		id: 3011,
@@ -2532,18 +2259,14 @@ export const RECIPE_LIST = [
 		dlc: 3,
 		level: 4,
 		price: 136,
-		from: {
-			bond: {
-				name: '物部布都',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '物部布都', level: 4 } },
 	},
 	{
 		id: 3012,
 		recipeId: 3012,
 		name: '蜜饯栗子',
-		description: '把栗子用蜂蜜熬煮之后的成品。栗子里温和而浓郁的味道，可以有效地平衡外在的甜味。',
+		description:
+			'把栗子用蜂蜜熬煮之后的成品。栗子里温和而浓郁的味道，可以有效地平衡外在的甜味。',
 		ingredients: ['蜂蜜', '板栗'],
 		positiveTags: ['甜', '小巧', '特产'],
 		negativeTags: [],
@@ -2553,12 +2276,7 @@ export const RECIPE_LIST = [
 		dlc: 3,
 		level: 1,
 		price: 30,
-		from: {
-			bond: {
-				name: '霍青娥',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '霍青娥', level: 2 } },
 	},
 	{
 		id: 3013,
@@ -2575,12 +2293,7 @@ export const RECIPE_LIST = [
 		dlc: 3,
 		level: 2,
 		price: 55,
-		from: {
-			bond: {
-				name: '霍青娥',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '霍青娥', level: 3 } },
 	},
 	{
 		id: 3014,
@@ -2589,7 +2302,15 @@ export const RECIPE_LIST = [
 		description:
 			'洁白的盘中铺上碧绿的荷叶，叶上还滚动着晶莹的水珠，盘中央一朵白荷则增添了“仙气”。每一盏里都以鲜嫩的粉色荷花花瓣为底，盛着极上金枪鱼、莲子组成的“鱼米盏”，又好吃又健康。',
 		ingredients: ['极上金枪鱼', '并蒂莲', '莲子', '露水'],
-		positiveTags: ['水产', '传说', '清淡', '中华', '文化底蕴', '不可思议', '梦幻'],
+		positiveTags: [
+			'水产',
+			'传说',
+			'清淡',
+			'中华',
+			'文化底蕴',
+			'不可思议',
+			'梦幻',
+		],
 		negativeTags: [],
 		cooker: '蒸锅',
 		min: 6.6,
@@ -2597,12 +2318,7 @@ export const RECIPE_LIST = [
 		dlc: 3,
 		level: 4,
 		price: 94,
-		from: {
-			bond: {
-				name: '霍青娥',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '霍青娥', level: 4 } },
 	},
 	{
 		id: 3015,
@@ -2619,12 +2335,7 @@ export const RECIPE_LIST = [
 		dlc: 3,
 		level: 1,
 		price: 30,
-		from: {
-			bond: {
-				name: '苏我屠自古',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '苏我屠自古', level: 2 } },
 	},
 	{
 		id: 3016,
@@ -2633,7 +2344,15 @@ export const RECIPE_LIST = [
 		description:
 			'荤素搭配均匀，味道也很好的常见佳肴。用两种不同口感的菇类，包裹着精挑细选的嫩肉，给味蕾带来层次感十足的享受。',
 		ingredients: ['猪肉', '蘑菇', '松露'],
-		positiveTags: ['肉', '家常', '重油', '下酒', DYNAMIC_TAG_MAP.signature, '灼热', '菌类'],
+		positiveTags: [
+			'肉',
+			'家常',
+			'重油',
+			'下酒',
+			DYNAMIC_TAG_MAP.signature,
+			'灼热',
+			'菌类',
+		],
 		negativeTags: ['凉爽'],
 		cooker: '油锅',
 		min: 5.4,
@@ -2641,12 +2360,7 @@ export const RECIPE_LIST = [
 		dlc: 3,
 		level: 3,
 		price: 63,
-		from: {
-			bond: {
-				name: '苏我屠自古',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '苏我屠自古', level: 3 } },
 	},
 	{
 		id: 3017,
@@ -2655,7 +2369,16 @@ export const RECIPE_LIST = [
 		description:
 			'谁说炸物就必须得是鸟类呢？地上跑的、土里长的、水里游的都可以裹上面粉放到油锅里炸一炸，出锅皆是香味四溢、酥脆爽口。最后以梦幻的月光草为缀，巧妙地中和了炸物拼盘的油腻。',
 		ingredients: ['黑毛猪肉', '松露', '八目鳗', '月光草'],
-		positiveTags: ['肉', '家常', '重油', '下酒', '和风', DYNAMIC_TAG_MAP.signature, '力量涌现', '菌类'],
+		positiveTags: [
+			'肉',
+			'家常',
+			'重油',
+			'下酒',
+			'和风',
+			DYNAMIC_TAG_MAP.signature,
+			'力量涌现',
+			'菌类',
+		],
 		negativeTags: [],
 		cooker: '油锅',
 		min: 4.2,
@@ -2663,18 +2386,14 @@ export const RECIPE_LIST = [
 		dlc: 3,
 		level: 3,
 		price: 72,
-		from: {
-			bond: {
-				name: '苏我屠自古',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '苏我屠自古', level: 4 } },
 	},
 	{
 		id: 4000,
 		recipeId: 4000,
 		name: '炸番茄条',
-		description: '把西红柿裹上面粉后放到油锅炸一炸，出锅后淋上自制土豆酱，尝起来也算是别有一番趣味。',
+		description:
+			'把西红柿裹上面粉后放到油锅炸一炸，出锅后淋上自制土豆酱，尝起来也算是别有一番趣味。',
 		ingredients: ['西红柿', '土豆'],
 		positiveTags: ['猎奇', '不可思议', '小巧'],
 		negativeTags: ['水产'],
@@ -2684,18 +2403,14 @@ export const RECIPE_LIST = [
 		dlc: 4,
 		level: 1,
 		price: 26,
-		from: {
-			bond: {
-				name: '鬼人正邪',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '鬼人正邪', level: 2 } },
 	},
 	{
 		id: 4001,
 		recipeId: 4001,
 		name: '蜜桃红烧肉',
-		description: '软糯的肉加上香甜的桃子，即使白嘴吃也不会觉得腻。淋上蜂蜜一起翻炒，更是红润添香，非常适合下酒。',
+		description:
+			'软糯的肉加上香甜的桃子，即使白嘴吃也不会觉得腻。淋上蜂蜜一起翻炒，更是红润添香，非常适合下酒。',
 		ingredients: ['蜂蜜', '桃子', '猪肉'],
 		positiveTags: ['肉', '下酒', '不可思议', '果味'],
 		negativeTags: [],
@@ -2705,12 +2420,7 @@ export const RECIPE_LIST = [
 		dlc: 4,
 		level: 2,
 		price: 42,
-		from: {
-			bond: {
-				name: '鬼人正邪',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '鬼人正邪', level: 3 } },
 	},
 	{
 		id: 4002,
@@ -2719,7 +2429,15 @@ export const RECIPE_LIST = [
 		description:
 			'使用革新技术制作的分子料理。据说是来自月都的食谱。在制作过程中存在许多无法理解之处，所以经过一定程度的再创作，最终成为这样一个结合了世人眼中的“雅”和“俗”之物的地上料理，也寄托着正邪想要搅混天下的意愿。',
 		ingredients: ['竹子', '鲜花', '梅子', '黑毛猪肉', '松露'],
-		positiveTags: ['山珍', '凉爽', '猎奇', '菌类', '不可思议', '梦幻', '燃起来了'],
+		positiveTags: [
+			'山珍',
+			'凉爽',
+			'猎奇',
+			'菌类',
+			'不可思议',
+			'梦幻',
+			'燃起来了',
+		],
 		negativeTags: [],
 		cooker: '料理台',
 		min: 7.2,
@@ -2727,12 +2445,7 @@ export const RECIPE_LIST = [
 		dlc: 4,
 		level: 4,
 		price: 124,
-		from: {
-			bond: {
-				name: '鬼人正邪',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '鬼人正邪', level: 4 } },
 	},
 	{
 		id: 4003,
@@ -2749,18 +2462,14 @@ export const RECIPE_LIST = [
 		dlc: 4,
 		level: 2,
 		price: 28,
-		from: {
-			bond: {
-				name: '少名针妙丸',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '少名针妙丸', level: 2 } },
 	},
 	{
 		id: 4004,
 		recipeId: 4004,
 		name: '铜锣烧',
-		description: '一种烤制面皮、内置红豆沙夹心的甜点。因由两块像铜锣一样的饼合起来的，故而得名铜锣烧。',
+		description:
+			'一种烤制面皮、内置红豆沙夹心的甜点。因由两块像铜锣一样的饼合起来的，故而得名铜锣烧。',
 		ingredients: ['红豆', '鸡蛋', '面粉'],
 		positiveTags: ['素', '和风', '甜', '特产'],
 		negativeTags: ['肉'],
@@ -2770,12 +2479,7 @@ export const RECIPE_LIST = [
 		dlc: 4,
 		level: 2,
 		price: 40,
-		from: {
-			bond: {
-				name: '少名针妙丸',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '少名针妙丸', level: 3 } },
 	},
 	{
 		id: 4005,
@@ -2784,7 +2488,15 @@ export const RECIPE_LIST = [
 		description:
 			'用豆腐的洁白来形容貂婵的纯洁，以泥鳅的钻营来影射董卓的奸滑。让人在品尝中，想到王允献貂婵，巧使美人计而除奸贼董卓的故事，自然为美食增添了文化的含量。',
 		ingredients: ['八目鳗', '豆腐', '螃蟹', '竹子', '露水'],
-		positiveTags: ['水产', '高级', '传说', '中华', '猎奇', '文化底蕴', '汤羹'],
+		positiveTags: [
+			'水产',
+			'高级',
+			'传说',
+			'中华',
+			'猎奇',
+			'文化底蕴',
+			'汤羹',
+		],
 		negativeTags: ['重油'],
 		cooker: '煮锅',
 		min: 7.2,
@@ -2792,12 +2504,7 @@ export const RECIPE_LIST = [
 		dlc: 4,
 		level: 4,
 		price: 115,
-		from: {
-			bond: {
-				name: '少名针妙丸',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '少名针妙丸', level: 4 } },
 	},
 	{
 		id: 4006,
@@ -2814,12 +2521,7 @@ export const RECIPE_LIST = [
 		dlc: 4,
 		level: 3,
 		price: 42,
-		from: {
-			bond: {
-				name: '今泉影狼',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '今泉影狼', level: 2 } },
 	},
 	{
 		id: 4007,
@@ -2836,12 +2538,7 @@ export const RECIPE_LIST = [
 		dlc: 4,
 		level: 3,
 		price: 72,
-		from: {
-			bond: {
-				name: '今泉影狼',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '今泉影狼', level: 3 } },
 	},
 	{
 		id: 4008,
@@ -2850,7 +2547,13 @@ export const RECIPE_LIST = [
 		description:
 			'将各种鲜嫩的食材放入多节竹筒蒸熟，寓意节节高升。而春竹翠绿娇艳的样子，既给客人带来视觉味觉上的新意，还蕴含着迎春的美好寓意。',
 		ingredients: ['黄瓜', '鸡蛋', '萝卜', '鹿肉', '月光草'],
-		positiveTags: ['高级', '山珍', DYNAMIC_TAG_MAP.signature, '适合拍照', '文化底蕴'],
+		positiveTags: [
+			'高级',
+			'山珍',
+			DYNAMIC_TAG_MAP.signature,
+			'适合拍照',
+			'文化底蕴',
+		],
 		negativeTags: ['猎奇', '菌类'],
 		cooker: '蒸锅',
 		min: 8.4,
@@ -2858,12 +2561,7 @@ export const RECIPE_LIST = [
 		dlc: 4,
 		level: 4,
 		price: 99,
-		from: {
-			bond: {
-				name: '今泉影狼',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '今泉影狼', level: 4 } },
 	},
 	{
 		id: 4009,
@@ -2880,12 +2578,7 @@ export const RECIPE_LIST = [
 		dlc: 4,
 		level: 1,
 		price: 32,
-		from: {
-			bond: {
-				name: '射命丸文',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '射命丸文', level: 2 } },
 	},
 	{
 		id: 4010,
@@ -2902,12 +2595,7 @@ export const RECIPE_LIST = [
 		dlc: 4,
 		level: 3,
 		price: 112,
-		from: {
-			bond: {
-				name: '射命丸文',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '射命丸文', level: 3 } },
 	},
 	{
 		id: 4011,
@@ -2916,7 +2604,15 @@ export const RECIPE_LIST = [
 		description:
 			'对火候要求极其苛刻的一道菜，需聚息凝神地将肉品烤至完美的三分熟。暗红的色调以及极具破坏性的龙卷风形状，带来了山海欲来的压迫感。一口下去，有种仿佛征服了天下的快感。',
 		ingredients: ['洋葱', '野猪肉', '牛肉', '松露', '西红柿'],
-		positiveTags: ['肉', '重油', '饱腹', '生', DYNAMIC_TAG_MAP.signature, '适合拍照', '力量涌现'],
+		positiveTags: [
+			'肉',
+			'重油',
+			'饱腹',
+			'生',
+			DYNAMIC_TAG_MAP.signature,
+			'适合拍照',
+			'力量涌现',
+		],
 		negativeTags: ['清淡', '凉爽'],
 		cooker: '烧烤架',
 		min: 10.8,
@@ -2924,12 +2620,7 @@ export const RECIPE_LIST = [
 		dlc: 4,
 		level: 5,
 		price: 185,
-		from: {
-			bond: {
-				name: '射命丸文',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '射命丸文', level: 4 } },
 	},
 	{
 		id: 4012,
@@ -2945,12 +2636,7 @@ export const RECIPE_LIST = [
 		dlc: 4,
 		level: 1,
 		price: 24,
-		from: {
-			bond: {
-				name: '风见幽香',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '风见幽香', level: 2 } },
 	},
 	{
 		id: 4013,
@@ -2967,12 +2653,7 @@ export const RECIPE_LIST = [
 		dlc: 4,
 		level: 3,
 		price: 78,
-		from: {
-			bond: {
-				name: '风见幽香',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '风见幽香', level: 3 } },
 	},
 	{
 		id: 4014,
@@ -2981,7 +2662,15 @@ export const RECIPE_LIST = [
 		description:
 			'以花卉为主题的双层奶油蛋糕。锦簇花团铺在细腻的奶油上，散发出丝丝香甜，蓝色的蝴蝶轻轻驻足，久久不归。这不是梦境，却胜似梦境。',
 		ingredients: ['鲜花', '幻昙华', '月光草', '露水', '奶油'],
-		positiveTags: ['高级', '清淡', '西式', '甜', '适合拍照', '凉爽', '梦幻'],
+		positiveTags: [
+			'高级',
+			'清淡',
+			'西式',
+			'甜',
+			'适合拍照',
+			'凉爽',
+			'梦幻',
+		],
 		negativeTags: ['肉', '水产', '下酒'],
 		cooker: '蒸锅',
 		min: 7.2,
@@ -2989,12 +2678,7 @@ export const RECIPE_LIST = [
 		dlc: 4,
 		level: 4,
 		price: 133,
-		from: {
-			bond: {
-				name: '风见幽香',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '风见幽香', level: 4 } },
 	},
 	{
 		id: 4015,
@@ -3011,12 +2695,7 @@ export const RECIPE_LIST = [
 		dlc: 4,
 		level: 1,
 		price: 30,
-		from: {
-			bond: {
-				name: '梅蒂欣',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '梅蒂欣', level: 2 } },
 	},
 	{
 		id: 4016,
@@ -3033,12 +2712,7 @@ export const RECIPE_LIST = [
 		dlc: 4,
 		level: 3,
 		price: 58,
-		from: {
-			bond: {
-				name: '梅蒂欣',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '梅蒂欣', level: 3 } },
 	},
 	{
 		id: 4017,
@@ -3055,18 +2729,14 @@ export const RECIPE_LIST = [
 		dlc: 4,
 		level: 3,
 		price: 87,
-		from: {
-			bond: {
-				name: '梅蒂欣',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '梅蒂欣', level: 4 } },
 	},
 	{
 		id: 5000,
 		recipeId: 5000,
 		name: '鳗鱼嫩蛋丼',
-		description: '厚切的鳗鱼块抹上特调酱汁，再覆盖一层软嫩的生蛋，在食用前将其搅拌得金灿灿的样子，吃下去超级满足！',
+		description:
+			'厚切的鳗鱼块抹上特调酱汁，再覆盖一层软嫩的生蛋，在食用前将其搅拌得金灿灿的样子，吃下去超级满足！',
 		ingredients: ['八目鳗', '鸡蛋'],
 		positiveTags: ['水产', '生', DYNAMIC_TAG_MAP.signature],
 		negativeTags: [],
@@ -3076,12 +2746,7 @@ export const RECIPE_LIST = [
 		dlc: 5,
 		level: 2,
 		price: 45,
-		from: {
-			bond: {
-				name: '魅魔',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '魅魔', level: 2 } },
 	},
 	{
 		id: 5001,
@@ -3098,12 +2763,7 @@ export const RECIPE_LIST = [
 		dlc: 5,
 		level: 3,
 		price: 60,
-		from: {
-			bond: {
-				name: '魅魔',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '魅魔', level: 3 } },
 	},
 	{
 		id: 5002,
@@ -3112,7 +2772,16 @@ export const RECIPE_LIST = [
 		description:
 			'一边是魔界辣椒汤底，一边是萝卜牛骨汤底，兼具红白两种汤汁的特色双锅牛肉。一家人，一个锅，两种口味团团圆圆，仿佛有了它就有家的气息。',
 		ingredients: ['辣椒', '萝卜', '松露', '牛肉', '和牛'],
-		positiveTags: ['肉', '家常', '山珍', '中华', '灼热', '力量涌现', '菌类', '辣'],
+		positiveTags: [
+			'肉',
+			'家常',
+			'山珍',
+			'中华',
+			'灼热',
+			'力量涌现',
+			'菌类',
+			'辣',
+		],
 		negativeTags: ['凉爽', '梦幻'],
 		cooker: '煮锅',
 		min: 3,
@@ -3120,12 +2789,7 @@ export const RECIPE_LIST = [
 		dlc: 5,
 		level: 4,
 		price: 188,
-		from: {
-			bond: {
-				name: '魅魔',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '魅魔', level: 4 } },
 	},
 	{
 		id: 5003,
@@ -3142,12 +2806,7 @@ export const RECIPE_LIST = [
 		dlc: 5,
 		level: 2,
 		price: 45,
-		from: {
-			bond: {
-				name: '爱莲',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '爱莲', level: 2 } },
 	},
 	{
 		id: 5004,
@@ -3164,12 +2823,7 @@ export const RECIPE_LIST = [
 		dlc: 5,
 		level: 3,
 		price: 75,
-		from: {
-			bond: {
-				name: '爱莲',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '爱莲', level: 3 } },
 	},
 	{
 		id: 5005,
@@ -3186,12 +2840,7 @@ export const RECIPE_LIST = [
 		dlc: 5,
 		level: 4,
 		price: 120,
-		from: {
-			bond: {
-				name: '爱莲',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '爱莲', level: 4 } },
 	},
 	{
 		id: 5006,
@@ -3208,12 +2857,7 @@ export const RECIPE_LIST = [
 		dlc: 5,
 		level: 2,
 		price: 36,
-		from: {
-			bond: {
-				name: '露易兹',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '露易兹', level: 2 } },
 	},
 	{
 		id: 5007,
@@ -3230,12 +2874,7 @@ export const RECIPE_LIST = [
 		dlc: 5,
 		level: 4,
 		price: 128,
-		from: {
-			bond: {
-				name: '露易兹',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '露易兹', level: 3 } },
 	},
 	{
 		id: 5008,
@@ -3244,7 +2883,15 @@ export const RECIPE_LIST = [
 		description:
 			'以魔界茶会为印象制作的甜品。表面看起来是一个巧克力做的茶壶，茶壶的肚子里是层层堆叠的奶油蛋糕，周围装饰着蘑菇和西蓝花，就像某个故事里的巧克力房子一样，是充满了梦幻和不可思议的幸福甜品。',
 		ingredients: ['可可豆', '奶油', '面粉', '蘑菇', '西兰花'],
-		positiveTags: ['西式', '甜', '适合拍照', '菌类', '不可思议', '梦幻', '特产'],
+		positiveTags: [
+			'西式',
+			'甜',
+			'适合拍照',
+			'菌类',
+			'不可思议',
+			'梦幻',
+			'特产',
+		],
 		negativeTags: ['重油'],
 		cooker: '蒸锅',
 		min: 9,
@@ -3252,12 +2899,7 @@ export const RECIPE_LIST = [
 		dlc: 5,
 		level: 5,
 		price: 188,
-		from: {
-			bond: {
-				name: '露易兹',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '露易兹', level: 4 } },
 	},
 	{
 		id: 5009,
@@ -3266,7 +2908,15 @@ export const RECIPE_LIST = [
 		description:
 			'通过胶凝化技术，把粉嫩可爱的桃花制成晶莹剔透的琉璃果冻外皮，裹着糯叽叽的豆沙馅儿，记录季节的浪漫和甜蜜。',
 		ingredients: ['桃子', '红豆', '薜茘'],
-		positiveTags: ['高级', '和风', '甜', '适合拍照', '小巧', '梦幻', '特产'],
+		positiveTags: [
+			'高级',
+			'和风',
+			'甜',
+			'适合拍照',
+			'小巧',
+			'梦幻',
+			'特产',
+		],
 		negativeTags: ['肉', '饱腹', '猎奇', '菌类'],
 		cooker: '蒸锅',
 		min: 4.8,
@@ -3274,12 +2924,7 @@ export const RECIPE_LIST = [
 		dlc: 5,
 		level: 3,
 		price: 60,
-		from: {
-			bond: {
-				name: '绵月丰姬',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '绵月丰姬', level: 2 } },
 	},
 	{
 		id: 5010,
@@ -3288,7 +2933,15 @@ export const RECIPE_LIST = [
 		description:
 			'清爽细腻的葡萄乌龙冻，白色的是奶油慕斯！奶油的绵密和葡萄的清爽在舌尖碰撞出别样滋味，茶冻间点缀片片青提，馥郁果香充盈唇齿。菏泽上的小露珠也相当有趣。',
 		ingredients: ['葡萄', '薜茘', '奶油', '银耳'],
-		positiveTags: ['高级', '清淡', '中华', '甜', '适合拍照', '凉爽', '文化底蕴'],
+		positiveTags: [
+			'高级',
+			'清淡',
+			'中华',
+			'甜',
+			'适合拍照',
+			'凉爽',
+			'文化底蕴',
+		],
 		negativeTags: ['肉', '下酒', '灼热', '猎奇'],
 		cooker: '料理台',
 		min: 7.2,
@@ -3296,12 +2949,7 @@ export const RECIPE_LIST = [
 		dlc: 5,
 		level: 4,
 		price: 128,
-		from: {
-			bond: {
-				name: '绵月丰姬',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '绵月丰姬', level: 3 } },
 	},
 	{
 		id: 5011,
@@ -3310,7 +2958,16 @@ export const RECIPE_LIST = [
 		description:
 			'本质上就是用桃子来制作桃子。将桃子作为原材料打碎，最后再还原出最初始的形状，从表面来看似乎是贯彻了一种返璞归真的理念，但制作过程极其繁琐考究。',
 		ingredients: ['可可豆', '桃子', '桃子', '桃子', '桃子'],
-		positiveTags: ['高级', '传说', '清淡', '甜', '凉爽', '不可思议', '特产', '果味'],
+		positiveTags: [
+			'高级',
+			'传说',
+			'清淡',
+			'甜',
+			'凉爽',
+			'不可思议',
+			'特产',
+			'果味',
+		],
 		negativeTags: ['肉', '海味', '生', '猎奇', '菌类'],
 		cooker: '料理台',
 		min: 10.8,
@@ -3318,12 +2975,7 @@ export const RECIPE_LIST = [
 		dlc: 5,
 		level: 5,
 		price: 199,
-		from: {
-			bond: {
-				name: '绵月丰姬',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '绵月丰姬', level: 4 } },
 	},
 	{
 		id: 5012,
@@ -3340,12 +2992,7 @@ export const RECIPE_LIST = [
 		dlc: 5,
 		level: 3,
 		price: 80,
-		from: {
-			bond: {
-				name: '绵月依姬',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '绵月依姬', level: 2 } },
 	},
 	{
 		id: 5013,
@@ -3354,7 +3001,15 @@ export const RECIPE_LIST = [
 		description:
 			'初见就像是云山雾罩的神秘星球，打开一看“星球”里竟然摆了个生鸡蛋？仔细看蛋液其实是银耳汤，蛋黄则是南瓜泥。吃起来口感清爽，还有香浓的南瓜味。',
 		ingredients: ['可可豆', '银耳', '南瓜', '露水'],
-		positiveTags: ['高级', '传说', '清淡', '生', '菌类', '不可思议', '汤羹'],
+		positiveTags: [
+			'高级',
+			'传说',
+			'清淡',
+			'生',
+			'菌类',
+			'不可思议',
+			'汤羹',
+		],
 		negativeTags: ['山珍'],
 		cooker: '蒸锅',
 		min: 7.8,
@@ -3362,12 +3017,7 @@ export const RECIPE_LIST = [
 		dlc: 5,
 		level: 4,
 		price: 124,
-		from: {
-			bond: {
-				name: '绵月依姬',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '绵月依姬', level: 3 } },
 	},
 	{
 		id: 5014,
@@ -3376,7 +3026,16 @@ export const RECIPE_LIST = [
 		description:
 			'特别定制的盘底如火星地表一般，上面盛放着顶级的螃蟹冻以及白葡萄分子技术制作的果凝。螃蟹口感冰凉顺滑不腻，果凝如水滴一般，而且带着淡淡酒香。寓意火星上一滴水珠，代表着最后的希望。',
 		ingredients: ['薜茘', '葡萄', '螃蟹', '露水'],
-		positiveTags: ['水产', '高级', '传说', '海味', '适合拍照', '文化底蕴', '不可思议', '果味'],
+		positiveTags: [
+			'水产',
+			'高级',
+			'传说',
+			'海味',
+			'适合拍照',
+			'文化底蕴',
+			'不可思议',
+			'果味',
+		],
 		negativeTags: ['山珍'],
 		cooker: '蒸锅',
 		min: 14.4,
@@ -3384,18 +3043,14 @@ export const RECIPE_LIST = [
 		dlc: 5,
 		level: 5,
 		price: 198,
-		from: {
-			bond: {
-				name: '绵月依姬',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '绵月依姬', level: 4 } },
 	},
 	{
 		id: 5015,
 		recipeId: 5015,
 		name: '养心粥',
-		description: '口味偏甜、营养丰富的银耳莲子粥。滋润而不腻滞，还具有养心安神的功效。',
+		description:
+			'口味偏甜、营养丰富的银耳莲子粥。滋润而不腻滞，还具有养心安神的功效。',
 		ingredients: ['银耳', '莲子'],
 		positiveTags: ['清淡', '甜', '特产'],
 		negativeTags: [],
@@ -3405,12 +3060,7 @@ export const RECIPE_LIST = [
 		dlc: 5,
 		level: 1,
 		price: 35,
-		from: {
-			bond: {
-				name: '铃仙',
-				level: 2,
-			},
-		},
+		from: { bond: { name: '铃仙', level: 2 } },
 	},
 	{
 		id: 5016,
@@ -3427,12 +3077,7 @@ export const RECIPE_LIST = [
 		dlc: 5,
 		level: 2,
 		price: 60,
-		from: {
-			bond: {
-				name: '铃仙',
-				level: 3,
-			},
-		},
+		from: { bond: { name: '铃仙', level: 3 } },
 	},
 	{
 		id: 5017,
@@ -3449,18 +3094,14 @@ export const RECIPE_LIST = [
 		dlc: 5,
 		level: 4,
 		price: 135,
-		from: {
-			bond: {
-				name: '铃仙',
-				level: 4,
-			},
-		},
+		from: { bond: { name: '铃仙', level: 4 } },
 	},
 	{
 		id: -1,
 		recipeId: -1,
 		name: DARK_MATTER_META_MAP.name,
-		description: '烹饪失误、散发着黑色气场的不明物质，不会有人想吃这种东西…吧？',
+		description:
+			'烹饪失误、散发着黑色气场的不明物质，不会有人想吃这种东西…吧？',
 		ingredients: [],
 		positiveTags: [DARK_MATTER_META_MAP.positiveTag],
 		negativeTags: [],

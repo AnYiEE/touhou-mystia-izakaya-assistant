@@ -1,6 +1,6 @@
-import {useParams} from '@/hooks';
-import {PARAM_SPECIFY} from '@/hooks/useOpenedItemPopover';
-import {PARAM_PREVIEW} from '@/hooks/useViewInNewWindow';
+import { useParams } from '@/hooks';
+import { PARAM_SPECIFY } from '@/hooks/useOpenedItemPopover';
+import { PARAM_PREVIEW } from '@/hooks/useViewInNewWindow';
 
 export function useSkipProcessItemData() {
 	const [params] = useParams();

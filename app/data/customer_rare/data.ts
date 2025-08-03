@@ -1,6 +1,10 @@
 /* eslint-disable sort-keys */
-import type {ICustomerRare} from './types';
-import {DARK_MATTER_META_MAP, DYNAMIC_TAG_MAP, LABEL_MAP} from '@/data/constant';
+import type { ICustomerRare } from './types';
+import {
+	DARK_MATTER_META_MAP,
+	DYNAMIC_TAG_MAP,
+	LABEL_MAP,
+} from '@/data/constant';
 
 export const CUSTOMER_RARE_LIST = [
 	{
@@ -50,9 +54,7 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {
-			生: '生肉总比熟肉好吃',
-		},
+		positiveTagMapping: { 生: '生肉总比熟肉好吃' },
 		collection: true,
 	},
 	{
@@ -67,8 +69,19 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['妖怪兽道', '魔法森林'],
 		price: [150, 350],
 		enduranceLimit: 1.4,
-		positiveTags: ['肉', '饱腹', '生', DYNAMIC_TAG_MAP.signature, '猎奇', DYNAMIC_TAG_MAP.popularPositive],
-		negativeTags: ['下酒', DYNAMIC_TAG_MAP.expensive, DYNAMIC_TAG_MAP.popularNegative],
+		positiveTags: [
+			'肉',
+			'饱腹',
+			'生',
+			DYNAMIC_TAG_MAP.signature,
+			'猎奇',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
+		negativeTags: [
+			'下酒',
+			DYNAMIC_TAG_MAP.expensive,
+			DYNAMIC_TAG_MAP.popularNegative,
+		],
 		beverageTags: ['苦', '气泡'],
 		chat: [
 			'“黑夜给了我们黑色的眼睛”，不就是为了让人寻找黑暗嘛。',
@@ -92,19 +105,19 @@ export const CUSTOMER_RARE_LIST = [
 			positive: [
 				{
 					name: '月符「月光射线」',
-					description: '随机获得图鉴中记录的三种肉类食材（如果图鉴中记录的肉类食材只有两种，则获得两种）。',
+					description:
+						'随机获得图鉴中记录的三种肉类食材（如果图鉴中记录的肉类食材只有两种，则获得两种）。',
 				},
 			],
 			negative: [
 				{
 					name: '暗符「境界线」',
-					description: '在厨房放出黑雾，让你无法辨识哪些是厨具，哪些是食柜，黑雾持续20秒消失。',
+					description:
+						'在厨房放出黑雾，让你无法辨识哪些是厨具，哪些是食柜，黑雾持续20秒消失。',
 				},
 			],
 		},
-		positiveTagMapping: {
-			[DYNAMIC_TAG_MAP.signature]: '拿手好菜',
-		},
+		positiveTagMapping: { [DYNAMIC_TAG_MAP.signature]: '拿手好菜' },
 		collection: false,
 	},
 	{
@@ -119,7 +132,14 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['妖怪兽道'],
 		price: [400, 600],
 		enduranceLimit: 1.5,
-		positiveTags: ['肉', '水产', '重油', '甜', '烧烤', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'肉',
+			'水产',
+			'重油',
+			'甜',
+			'烧烤',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['素', '灼热', '猎奇', DYNAMIC_TAG_MAP.popularNegative],
 		beverageTags: ['水果', '辛'],
 		chat: [
@@ -148,15 +168,10 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 			negative: [
-				{
-					name: '方符「奇门遁甲」',
-					description: '减少顾客的出现率。',
-				},
+				{ name: '方符「奇门遁甲」', description: '减少顾客的出现率。' },
 			],
 		},
-		positiveTagMapping: {
-			烧烤: '把肉串起来',
-		},
+		positiveTagMapping: { 烧烤: '把肉串起来' },
 		collection: false,
 	},
 	{
@@ -171,7 +186,15 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['人间之里', '命莲寺'],
 		price: [500, 800],
 		enduranceLimit: 1.4,
-		positiveTags: ['高级', '清淡', '和风', '甜', '文化底蕴', '汤羹', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'高级',
+			'清淡',
+			'和风',
+			'甜',
+			'文化底蕴',
+			'汤羹',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['重油', '咸', '灼热', DYNAMIC_TAG_MAP.popularNegative],
 		beverageTags: ['可加热', '清酒'],
 		chat: [
@@ -206,9 +229,7 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {
-			高级: '作为稗田家主',
-		},
+		positiveTagMapping: { 高级: '作为稗田家主' },
 		collection: true,
 	},
 	{
@@ -223,8 +244,21 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['人间之里', '魔法森林', '命莲寺'],
 		price: [400, 800],
 		enduranceLimit: 1.8,
-		positiveTags: ['素', '家常', '清淡', '和风', '中华', '文化底蕴', DYNAMIC_TAG_MAP.popularPositive],
-		negativeTags: ['重油', '咸', DYNAMIC_TAG_MAP.largePartition, DYNAMIC_TAG_MAP.popularNegative],
+		positiveTags: [
+			'素',
+			'家常',
+			'清淡',
+			'和风',
+			'中华',
+			'文化底蕴',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
+		negativeTags: [
+			'重油',
+			'咸',
+			DYNAMIC_TAG_MAP.largePartition,
+			DYNAMIC_TAG_MAP.popularNegative,
+		],
 		beverageTags: ['烧酒', '清酒', '利口酒'],
 		chat: [
 			'食物的历史也是非常久远的。',
@@ -256,7 +290,8 @@ export const CUSTOMER_RARE_LIST = [
 				},
 				{
 					name: '三种神器「玉」',
-					description: '随机解锁一名未完全解锁全部喜好的稀有顾客的一条信息。',
+					description:
+						'随机解锁一名未完全解锁全部喜好的稀有顾客的一条信息。',
 				},
 				{
 					name: '三种神器「乡」',
@@ -270,9 +305,7 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {
-			文化底蕴: '历史和文化相辅相成',
-		},
+		positiveTagMapping: { 文化底蕴: '历史和文化相辅相成' },
 		collection: false,
 	},
 	{
@@ -304,7 +337,8 @@ export const CUSTOMER_RARE_LIST = [
 			good: '味道极佳，值得称赞！',
 			exgood: '此绝味，竟叫无欲之仙沉沦！',
 			lackmoneyangry: '这种违背常识的定价透露着丑恶的欲望。',
-			lackmoneynormal: '不小心超过预算了…要不，免费让你去我那儿修炼作为补偿吧。',
+			lackmoneynormal:
+				'不小心超过预算了…要不，免费让你去我那儿修炼作为补偿吧。',
 			repell: '不知腐鼠成滋味，猜意鹓雏竟未休。',
 			seenRepell: '骅骝拳跼不能食，蹇驴得志鸣春风！',
 		},
@@ -312,7 +346,8 @@ export const CUSTOMER_RARE_LIST = [
 			positive: [
 				{
 					name: '「猛兽的艺术用法」',
-					description: '每隔一段时间，在场排队和就座的顾客，每人随机打赏1-30円。',
+					description:
+						'每隔一段时间，在场排队和就座的顾客，每人随机打赏1-30円。',
 				},
 			],
 			negative: [
@@ -337,8 +372,19 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['博丽神社', '妖怪兽道', '人间之里', '魔法森林', '妖怪之山'],
 		price: [150, 300],
 		enduranceLimit: 1.1,
-		positiveTags: ['高级', '饱腹', '甜', '不可思议', DYNAMIC_TAG_MAP.economical, DYNAMIC_TAG_MAP.popularPositive],
-		negativeTags: ['下酒', DYNAMIC_TAG_MAP.expensive, DYNAMIC_TAG_MAP.popularNegative],
+		positiveTags: [
+			'高级',
+			'饱腹',
+			'甜',
+			'不可思议',
+			DYNAMIC_TAG_MAP.economical,
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
+		negativeTags: [
+			'下酒',
+			DYNAMIC_TAG_MAP.expensive,
+			DYNAMIC_TAG_MAP.popularNegative,
+		],
 		beverageTags: ['无酒精', '低酒精', '可加热'],
 		chat: [
 			'明明是妖怪开的店，为什么人比神社都多？！',
@@ -362,7 +408,8 @@ export const CUSTOMER_RARE_LIST = [
 			positive: [
 				{
 					name: '梦符「二重结界」',
-					description: '发动一次保护结界，可以完全防御下一位稀有顾客的惩罚符卡。',
+					description:
+						'发动一次保护结界，可以完全防御下一位稀有顾客的惩罚符卡。',
 				},
 			],
 			negative: [
@@ -390,7 +437,14 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['博丽神社', '妖怪之山', '辉针城'],
 		price: [600, 800],
 		enduranceLimit: 1.8,
-		positiveTags: ['肉', '下酒', '和风', '力量涌现', '小巧', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'肉',
+			'下酒',
+			'和风',
+			'力量涌现',
+			'小巧',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['重油', DYNAMIC_TAG_MAP.popularNegative],
 		beverageTags: ['高酒精', '直饮'],
 		chat: [
@@ -484,7 +538,8 @@ export const CUSTOMER_RARE_LIST = [
 			negative: [
 				{
 					name: '「天罚的石柱」',
-					description: '破坏桌椅，吓走桌面上的顾客，该桌椅在60秒内无法再被使用。',
+					description:
+						'破坏桌椅，吓走桌面上的顾客，该桌椅在60秒内无法再被使用。',
 				},
 			],
 		},
@@ -524,7 +579,14 @@ export const CUSTOMER_RARE_LIST = [
 		],
 		price: [3000, 5000],
 		enduranceLimit: 1.1,
-		positiveTags: ['传说', '重油', '和风', '灼热', '菌类', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'传说',
+			'重油',
+			'和风',
+			'灼热',
+			'菌类',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['猎奇', DYNAMIC_TAG_MAP.popularNegative],
 		beverageTags: ['低酒精', '可加冰'],
 		chat: [
@@ -555,14 +617,12 @@ export const CUSTOMER_RARE_LIST = [
 			negative: [
 				{
 					name: '魔符「拿来吧你」',
-					description: '随机偷走两样东西，可能是料理、食材或酒水。且在偷完东西后，不付钱直接走人。',
+					description:
+						'随机偷走两样东西，可能是料理、食材或酒水。且在偷完东西后，不付钱直接走人。',
 				},
 			],
 		},
-		positiveTagMapping: {
-			传说: '古老的东西',
-			重油: '油炸食品',
-		},
+		positiveTagMapping: { 传说: '古老的东西', 重油: '油炸食品' },
 		collection: false,
 	},
 	{
@@ -577,7 +637,13 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['红魔馆'],
 		price: [200, 400],
 		enduranceLimit: 1.2,
-		positiveTags: ['肉', '饱腹', '中华', '力量涌现', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'肉',
+			'饱腹',
+			'中华',
+			'力量涌现',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['西式', '猎奇', '果味', DYNAMIC_TAG_MAP.popularNegative],
 		beverageTags: ['可加热', '古典', '提神'],
 		chat: [
@@ -602,7 +668,8 @@ export const CUSTOMER_RARE_LIST = [
 			positive: [
 				{
 					name: '华符「芳华绚烂」',
-					description: '每2秒提升1点店内气氛，且期间完成稀有顾客的订单后获得的好感度提高，持续30秒。',
+					description:
+						'每2秒提升1点店内气氛，且期间完成稀有顾客的订单后获得的好感度提高，持续30秒。',
 				},
 			],
 			negative: [
@@ -614,9 +681,7 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {
-			中华: '祖国的味道',
-		},
+		positiveTagMapping: { 中华: '祖国的味道' },
 		collection: false,
 	},
 	{
@@ -631,8 +696,19 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['红魔馆', '妖怪之山'],
 		price: [100, 200],
 		enduranceLimit: 1.2,
-		positiveTags: ['甜', '适合拍照', '凉爽', '猎奇', DYNAMIC_TAG_MAP.popularNegative],
-		negativeTags: ['下酒', '文化底蕴', DYNAMIC_TAG_MAP.expensive, DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'甜',
+			'适合拍照',
+			'凉爽',
+			'猎奇',
+			DYNAMIC_TAG_MAP.popularNegative,
+		],
+		negativeTags: [
+			'下酒',
+			'文化底蕴',
+			DYNAMIC_TAG_MAP.expensive,
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		beverageTags: ['可加冰', '水果', '甘'],
 		chat: [
 			'本小姐是最强的！',
@@ -656,7 +732,8 @@ export const CUSTOMER_RARE_LIST = [
 			positive: [
 				{
 					name: '「甜美的冰霜小妖精」',
-					description: '随机获得三种带有“可加冰”标签的平价酒水和2-5枚冰块。',
+					description:
+						'随机获得三种带有“可加冰”标签的平价酒水和2-5枚冰块。',
 				},
 			],
 			negative: [
@@ -667,10 +744,7 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {
-			适合拍照: '丑拒',
-			凉爽: '要吃冰的',
-		},
+		positiveTagMapping: { 适合拍照: '丑拒', 凉爽: '要吃冰的' },
 		collection: true,
 	},
 	{
@@ -710,7 +784,8 @@ export const CUSTOMER_RARE_LIST = [
 			positive: [
 				{
 					name: '知识的奇妙冒险「文化之风」',
-					description: '给顾客上含有“文化底蕴”标签的料理，必然获得最高等级的评价，持续30秒。',
+					description:
+						'给顾客上含有“文化底蕴”标签的料理，必然获得最高等级的评价，持续30秒。',
 				},
 			],
 			negative: [
@@ -720,10 +795,7 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {
-			西式: '文化的差异',
-			适合拍照: '品相好看',
-		},
+		positiveTagMapping: { 西式: '文化的差异', 适合拍照: '品相好看' },
 		collection: false,
 	},
 	{
@@ -769,13 +841,12 @@ export const CUSTOMER_RARE_LIST = [
 			negative: [
 				{
 					name: '藤原「灭罪寺院伤」',
-					description: '无论提供多好的料理，最高只能获得顾客的普通评价，持续30秒。',
+					description:
+						'无论提供多好的料理，最高只能获得顾客的普通评价，持续30秒。',
 				},
 			],
 		},
-		positiveTagMapping: {
-			燃起来了: '复仇之火永扑不尽',
-		},
+		positiveTagMapping: { 燃起来了: '复仇之火永扑不尽' },
 		collection: true,
 	},
 	{
@@ -790,7 +861,13 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['迷途竹林', '辉针城'],
 		price: [1000, 1500],
 		enduranceLimit: 1.5,
-		positiveTags: ['传说', '和风', '文化底蕴', '不可思议', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'传说',
+			'和风',
+			'文化底蕴',
+			'不可思议',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: [
 			DYNAMIC_TAG_MAP.signature,
 			'猎奇',
@@ -826,13 +903,12 @@ export const CUSTOMER_RARE_LIST = [
 			negative: [
 				{
 					name: '神宝「蓬莱的玉枝 梦色之乡」',
-					description: '减少相当于现实时间30秒的营业时间，到时间时会强行终止营业。',
+					description:
+						'减少相当于现实时间30秒的营业时间，到时间时会强行终止营业。',
 				},
 			],
 		},
-		positiveTagMapping: {
-			文化底蕴: '不可磨灭的过去',
-		},
+		positiveTagMapping: { 文化底蕴: '不可磨灭的过去' },
 		collection: false,
 	},
 	{
@@ -848,7 +924,14 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['迷途竹林'],
 		price: [200, 400],
 		enduranceLimit: 1.25,
-		positiveTags: ['传说', '甜', '凉爽', '小巧', '梦幻', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'传说',
+			'甜',
+			'凉爽',
+			'小巧',
+			'梦幻',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['重油', '山珍', '猎奇', DYNAMIC_TAG_MAP.popularNegative],
 		beverageTags: ['无酒精', '水果', '甘'],
 		chat: [
@@ -873,13 +956,15 @@ export const CUSTOMER_RARE_LIST = [
 			positive: [
 				{
 					name: '生机「四十叶草般的幸运」',
-					description: '所有食材采集点的冷却时间清零，且次日进行采集活动时，可以额外获得1-2份食材。',
+					description:
+						'所有食材采集点的冷却时间清零，且次日进行采集活动时，可以额外获得1-2份食材。',
 				},
 			],
 			negative: [
 				{
 					name: '想起「那年的素兔的恐怖」',
-					description: '再一次激活强买强卖功能，如果不买，将发动另一张符卡“恶作剧「Combo消失术」”。',
+					description:
+						'再一次激活强买强卖功能，如果不买，将发动另一张符卡“恶作剧「Combo消失术」”。',
 				},
 				{
 					name: '恶作剧「Combo消失术」',
@@ -887,10 +972,7 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {
-			凉爽: '降温工作',
-			小巧: '三分饱',
-		},
+		positiveTagMapping: { 凉爽: '降温工作', 小巧: '三分饱' },
 		collection: false,
 	},
 	{
@@ -905,7 +987,14 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['妖怪之山'],
 		price: [400, 500],
 		enduranceLimit: 1.2,
-		positiveTags: ['水产', '高级', '下酒', '咸', DYNAMIC_TAG_MAP.signature, '猎奇'],
+		positiveTags: [
+			'水产',
+			'高级',
+			'下酒',
+			'咸',
+			DYNAMIC_TAG_MAP.signature,
+			'猎奇',
+		],
 		negativeTags: ['素', '山珍', '文化底蕴'],
 		beverageTags: ['中酒精', '高酒精', '清酒', '直饮'],
 		chat: [
@@ -931,7 +1020,8 @@ export const CUSTOMER_RARE_LIST = [
 			positive: [
 				{
 					name: '河童「延展手臂」',
-					description: '伙伴可以通过“延展手臂”远程上菜上酒，持续120秒。',
+					description:
+						'伙伴可以通过“延展手臂”远程上菜上酒，持续120秒。',
 				},
 			],
 			negative: [
@@ -960,7 +1050,13 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['妖怪之山'],
 		price: [300, 400],
 		enduranceLimit: 1.2,
-		positiveTags: ['肉', '重油', '下酒', '山珍', DYNAMIC_TAG_MAP.largePartition],
+		positiveTags: [
+			'肉',
+			'重油',
+			'下酒',
+			'山珍',
+			DYNAMIC_TAG_MAP.largePartition,
+		],
 		negativeTags: ['素', '清淡', '猎奇'],
 		beverageTags: ['中酒精', '高酒精', '直饮'],
 		chat: [
@@ -1013,9 +1109,26 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['魔法森林', '妖怪之山', '命莲寺', '神灵庙'],
 		price: [400, 600],
 		enduranceLimit: 1.2,
-		positiveTags: ['家常', '和风', '甜', '适合拍照', '梦幻', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'家常',
+			'和风',
+			'甜',
+			'适合拍照',
+			'梦幻',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['重油', '生', '灼热', '猎奇'],
-		beverageTags: ['无酒精', '低酒精', '清酒', '直饮', '水果', '甘', '苦', '气泡', '现代'],
+		beverageTags: [
+			'无酒精',
+			'低酒精',
+			'清酒',
+			'直饮',
+			'水果',
+			'甘',
+			'苦',
+			'气泡',
+			'现代',
+		],
 		chat: [
 			'总觉得河童们最近是不是兴奋得有些异常…',
 			'现在的我，应该能被幻想乡的大家记住了吧？',
@@ -1048,10 +1161,7 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {
-			和风: '大和风情',
-			适合拍照: '手机',
-		},
+		positiveTagMapping: { 和风: '大和风情', 适合拍照: '手机' },
 		collection: false,
 	},
 	{
@@ -1100,9 +1210,7 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {
-			高级: '低级趣味',
-		},
+		positiveTagMapping: { 高级: '低级趣味' },
 		collection: true,
 	},
 	{
@@ -1142,19 +1250,19 @@ export const CUSTOMER_RARE_LIST = [
 			positive: [
 				{
 					name: '魔符「即席菩提」',
-					description: '顾客在结账时，会额外支付50%的小费作为化缘，持续60秒。',
+					description:
+						'顾客在结账时，会额外支付50%的小费作为化缘，持续60秒。',
 				},
 			],
 			negative: [
 				{
 					name: '地藏「业火救济」',
-					description: '业火随机烧掉三个Buff纸张，其带来的效果也会随之失效。',
+					description:
+						'业火随机烧掉三个Buff纸张，其带来的效果也会随之失效。',
 				},
 			],
 		},
-		positiveTagMapping: {
-			特产: '不同地方的美食',
-		},
+		positiveTagMapping: { 特产: '不同地方的美食' },
 		collection: false,
 	},
 	{
@@ -1169,7 +1277,14 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['旧地狱', '妖怪兽道', '红魔馆', '魔法森林', '妖怪之山'],
 		price: [250, 400],
 		enduranceLimit: 1.2,
-		positiveTags: ['鲜', '甜', '生', '适合拍照', '猎奇', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'鲜',
+			'甜',
+			'生',
+			'适合拍照',
+			'猎奇',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['重油', '咸', '灼热'],
 		beverageTags: ['低酒精', '中酒精', '啤酒', '甘'],
 		chat: [
@@ -1193,7 +1308,8 @@ export const CUSTOMER_RARE_LIST = [
 			positive: [
 				{
 					name: '「地下偶像狂欢夜」',
-					description: '排队顾客会被偶像吸引，即使夜间营业结束也不会离去，持续30秒。',
+					description:
+						'排队顾客会被偶像吸引，即使夜间营业结束也不会离去，持续30秒。',
 				},
 			],
 			negative: [
@@ -1203,10 +1319,7 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {
-			生: '太熟吃不惯',
-			猎奇: '蜘蛛的口味',
-		},
+		positiveTagMapping: { 生: '太熟吃不惯', 猎奇: '蜘蛛的口味' },
 		collection: true,
 	},
 	{
@@ -1221,7 +1334,15 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['旧地狱'],
 		price: [300, 400],
 		enduranceLimit: 1.2,
-		positiveTags: ['肉', '咸', '鲜', '果味', '辣', '酸', DYNAMIC_TAG_MAP.popularNegative],
+		positiveTags: [
+			'肉',
+			'咸',
+			'鲜',
+			'果味',
+			'辣',
+			'酸',
+			DYNAMIC_TAG_MAP.popularNegative,
+		],
 		negativeTags: ['甜', DYNAMIC_TAG_MAP.popularPositive],
 		beverageTags: ['无酒精', '可加热', '直饮', '辛', '苦'],
 		chat: [
@@ -1245,7 +1366,8 @@ export const CUSTOMER_RARE_LIST = [
 			positive: [
 				{
 					name: '「嫉妒与透支」',
-					description: '将在座顾客的预算拉到和在座最富顾客同等的水准。',
+					description:
+						'将在座顾客的预算拉到和在座最富顾客同等的水准。',
 				},
 			],
 			negative: [
@@ -1330,11 +1452,24 @@ export const CUSTOMER_RARE_LIST = [
 			'我明白为什么宠物们那么依恋觉小姐了。被繁重的工作埋没，心中还能一直牵挂着妹妹和宠物。在清冷的外表下的这份温柔，确实是会让人念念不忘呢。',
 		],
 		dlc: 2,
-		places: ['地灵殿', '人间之里', '博丽神社', '红魔馆', '迷途竹林', '魔法森林'],
+		places: [
+			'地灵殿',
+			'人间之里',
+			'博丽神社',
+			'红魔馆',
+			'迷途竹林',
+			'魔法森林',
+		],
 		price: [500, 600],
 		enduranceLimit: 1.5,
 		positiveTags: ['家常', '甜', '力量涌现', '小巧', '梦幻', '特产'],
-		negativeTags: ['肉', '山珍', '灼热', '猎奇', DYNAMIC_TAG_MAP.largePartition],
+		negativeTags: [
+			'肉',
+			'山珍',
+			'灼热',
+			'猎奇',
+			DYNAMIC_TAG_MAP.largePartition,
+		],
 		beverageTags: ['无酒精', '苦', '气泡', '提神'],
 		chat: [
 			'距离太远的话，就读不到了…',
@@ -1357,13 +1492,15 @@ export const CUSTOMER_RARE_LIST = [
 			positive: [
 				{
 					name: '想起「高兴的事情」',
-					description: '随机发动一名已解锁的稀有顾客（不包括自己）的奖励符卡。',
+					description:
+						'随机发动一名已解锁的稀有顾客（不包括自己）的奖励符卡。',
 				},
 			],
 			negative: [
 				{
 					name: '想起「不高兴的事情」',
-					description: '随机发动一名已解锁的稀有顾客（不包括自己）的惩罚符卡。',
+					description:
+						'随机发动一名已解锁的稀有顾客（不包括自己）的惩罚符卡。',
 				},
 			],
 		},
@@ -1382,10 +1519,26 @@ export const CUSTOMER_RARE_LIST = [
 			'活在偏见下的“凶兆的黑猫”，原来要经历那么艰辛的事。偏见真是不可取啊。幸好阿燐遇到了觉小姐。一个好的主人可以改变宠物的一生。希望阿燐今后可以一直过着无忧无虑地偷尸体的生活。',
 		],
 		dlc: 2,
-		places: ['地灵殿', '人间之里', '博丽神社', '妖怪之山', '旧地狱', '命莲寺', '神灵庙'],
+		places: [
+			'地灵殿',
+			'人间之里',
+			'博丽神社',
+			'妖怪之山',
+			'旧地狱',
+			'命莲寺',
+			'神灵庙',
+		],
 		price: [500, 700],
 		enduranceLimit: 1.3,
-		positiveTags: ['水产', '海味', '鲜', '甜', '猎奇', '梦幻', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'水产',
+			'海味',
+			'鲜',
+			'甜',
+			'猎奇',
+			'梦幻',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['生', '灼热'],
 		beverageTags: ['低酒精', '清酒', '水果'],
 		chat: [
@@ -1409,7 +1562,8 @@ export const CUSTOMER_RARE_LIST = [
 			positive: [
 				{
 					name: '猫符「猫醉步」',
-					description: '给顾客上含有“中酒精”标签的酒水，必然获得最高等级的评价，持续30秒。',
+					description:
+						'给顾客上含有“中酒精”标签的酒水，必然获得最高等级的评价，持续30秒。',
 				},
 			],
 			negative: [
@@ -1420,9 +1574,7 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {
-			海味: '地底海底相通',
-		},
+		positiveTagMapping: { 海味: '地底海底相通' },
 		collection: true,
 	},
 	{
@@ -1524,7 +1676,8 @@ export const CUSTOMER_RARE_LIST = [
 			positive: [
 				{
 					name: '雨符「雨夜怪谈」',
-					description: '带有“猎奇”标签的食物制作速度提高30%，且额外提供30%续单率，持续30秒。',
+					description:
+						'带有“猎奇”标签的食物制作速度提高30%，且额外提供30%续单率，持续30秒。',
 				},
 			],
 			negative: [
@@ -1589,10 +1742,7 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {
-			鲜: '食物的保质期',
-			特产: '食物的相逢',
-		},
+		positiveTagMapping: { 鲜: '食物的保质期', 特产: '食物的相逢' },
 		collection: false,
 	},
 	{
@@ -1653,10 +1803,7 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {
-			鲜: '腐肉',
-			适合拍照: '拍个不停',
-		},
+		positiveTagMapping: { 鲜: '腐肉', 适合拍照: '拍个不停' },
 		collection: false,
 	},
 	{
@@ -1671,7 +1818,15 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['神灵庙'],
 		price: [600, 900],
 		enduranceLimit: 1.4,
-		positiveTags: ['高级', '传说', '清淡', '山珍', '和风', '燃起来了', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'高级',
+			'传说',
+			'清淡',
+			'山珍',
+			'和风',
+			'燃起来了',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['西式', '生', DYNAMIC_TAG_MAP.popularNegative],
 		beverageTags: ['中酒精', '可加热', '直饮', '气泡'],
 		chat: [
@@ -1702,13 +1857,12 @@ export const CUSTOMER_RARE_LIST = [
 			negative: [
 				{
 					name: '传薪「浴火捏盘」',
-					description: '只能使用一个托盘进行服务，被禁用托盘内的还未拿走的物品会被焚毁，持续30秒。',
+					description:
+						'只能使用一个托盘进行服务，被禁用托盘内的还未拿走的物品会被焚毁，持续30秒。',
 				},
 			],
 		},
-		positiveTagMapping: {
-			和风: '吾之时代',
-		},
+		positiveTagMapping: { 和风: '吾之时代' },
 		collection: false,
 	},
 	{
@@ -1723,7 +1877,16 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['神灵庙'],
 		price: [400, 900],
 		enduranceLimit: 1.4,
-		positiveTags: ['素', '传说', '中华', '甜', '不可思议', '小巧', '特产', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'素',
+			'传说',
+			'中华',
+			'甜',
+			'不可思议',
+			'小巧',
+			'特产',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['重油', '饱腹'],
 		beverageTags: ['低酒精', '清酒', '水果', '现代'],
 		chat: [
@@ -1747,7 +1910,8 @@ export const CUSTOMER_RARE_LIST = [
 			positive: [
 				{
 					name: '邪术「天下无墙」',
-					description: '伙伴在食堂区域移动时可以穿过顾客或障碍物，持续30秒。',
+					description:
+						'伙伴在食堂区域移动时可以穿过顾客或障碍物，持续30秒。',
 				},
 			],
 			negative: [
@@ -1778,7 +1942,15 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['神灵庙'],
 		price: [500, 600],
 		enduranceLimit: 1.5,
-		positiveTags: ['家常', '重油', '饱腹', '和风', DYNAMIC_TAG_MAP.signature, '力量涌现', '烧烤'],
+		positiveTags: [
+			'家常',
+			'重油',
+			'饱腹',
+			'和风',
+			DYNAMIC_TAG_MAP.signature,
+			'力量涌现',
+			'烧烤',
+		],
 		negativeTags: ['甜', '凉爽'],
 		beverageTags: ['高酒精', '烧酒', '啤酒', '苦'],
 		chat: [
@@ -1793,7 +1965,8 @@ export const CUSTOMER_RARE_LIST = [
 			norm: '聊胜于无。',
 			good: '这般美味比仇恨更让人惦记。',
 			exgood: '有此美食作伴就算千年孤独也不在话下！',
-			lackmoneyangry: '什么黑店！太子大人给的家用竟然堪堪支付一顿饭钱？！',
+			lackmoneyangry:
+				'什么黑店！太子大人给的家用竟然堪堪支付一顿饭钱？！',
 			lackmoneynormal: '我的钱和我的怨恨都消散得差不多了。',
 			repell: '你就不怕我怨恨你吗？',
 			seenRepell: '麻雀老板的心眼也太小了…',
@@ -1808,7 +1981,8 @@ export const CUSTOMER_RARE_LIST = [
 			negative: [
 				{
 					name: '天罚「天雷暴击」',
-					description: '下一次没有成功完美演唱的料理，将会引来天雷，击晕一位伙伴30秒。',
+					description:
+						'下一次没有成功完美演唱的料理，将会引来天雷，击晕一位伙伴30秒。',
 				},
 			],
 		},
@@ -1894,10 +2068,7 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {
-			下酒: '有酒无菜',
-			适合拍照: '入我相机',
-		},
+		positiveTagMapping: { 下酒: '有酒无菜', 适合拍照: '入我相机' },
 		collection: false,
 	},
 	{
@@ -1912,10 +2083,24 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['太阳花田'],
 		price: [200, 400],
 		enduranceLimit: 1.1,
-		positiveTags: ['甜', DYNAMIC_TAG_MAP.signature, '适合拍照', '凉爽', '菌类', '小巧', '梦幻', '毒'],
+		positiveTags: [
+			'甜',
+			DYNAMIC_TAG_MAP.signature,
+			'适合拍照',
+			'凉爽',
+			'菌类',
+			'小巧',
+			'梦幻',
+			'毒',
+		],
 		negativeTags: ['文化底蕴'],
 		beverageTags: ['无酒精', '水果', '甘', '苦'],
-		chat: ['孤独是毒也是药。', '毒取少量即为药。', '饮酒过量可是对身体的毒哟。', '向日葵要是也有毒就好了。'],
+		chat: [
+			'孤独是毒也是药。',
+			'毒取少量即为药。',
+			'饮酒过量可是对身体的毒哟。',
+			'向日葵要是也有毒就好了。',
+		],
 		evaluation: {
 			exbad: '完全无法和铃铃的毒相比！',
 			bad: '铃铃不太喜欢这种味道。',
@@ -1964,7 +2149,16 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['太阳花田'],
 		price: [1200, 1800],
 		enduranceLimit: 1.3,
-		positiveTags: ['高级', '传说', '清淡', '西式', '不可思议', '梦幻', '特产', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'高级',
+			'传说',
+			'清淡',
+			'西式',
+			'不可思议',
+			'梦幻',
+			'特产',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['饱腹', '和风', '咸', '灼热'],
 		beverageTags: ['鸡尾酒', '西洋酒', '利口酒', '现代'],
 		chat: [
@@ -2153,7 +2347,15 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['迷途竹林', '辉针城'],
 		price: [300, 600],
 		enduranceLimit: 1.2,
-		positiveTags: ['肉', '家常', '山珍', '和风', '适合拍照', '凉爽', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'肉',
+			'家常',
+			'山珍',
+			'和风',
+			'适合拍照',
+			'凉爽',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['灼热'],
 		beverageTags: ['中酒精', '可加冰', '清酒', '直饮'],
 		chat: [
@@ -2212,7 +2414,12 @@ export const CUSTOMER_RARE_LIST = [
 		positiveTags: ['家常', '山珍', '海味', '中华', '甜', '小巧', '特产'],
 		negativeTags: ['不可思议', DYNAMIC_TAG_MAP.expensive],
 		beverageTags: ['高酒精', '可加热', '烧酒', '啤酒', '苦'],
-		chat: ['今天也好累啊…', '忙碌的一天终于结束了！', '现在是犒赏自己的时间！', '肌肉好酸痛。'],
+		chat: [
+			'今天也好累啊…',
+			'忙碌的一天终于结束了！',
+			'现在是犒赏自己的时间！',
+			'肌肉好酸痛。',
+		],
 		evaluation: {
 			exbad: '真是糟糕的一天…',
 			bad: '今天也是就这样过去了吗…',
@@ -2261,7 +2468,16 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['月之都'],
 		price: [1200, 1500],
 		enduranceLimit: 1,
-		positiveTags: ['素', '高级', '和风', '甜', '凉爽', '文化底蕴', '果味', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'素',
+			'高级',
+			'和风',
+			'甜',
+			'凉爽',
+			'文化底蕴',
+			'果味',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['山珍', '咸', '力量涌现'],
 		beverageTags: ['高酒精', '可加冰', '清酒', '水果', '古典'],
 		chat: [
@@ -2317,7 +2533,16 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['月之都'],
 		price: [1000, 1200],
 		enduranceLimit: 1,
-		positiveTags: ['高级', '传说', '清淡', '中华', '灼热', '力量涌现', '文化底蕴', '小巧'],
+		positiveTags: [
+			'高级',
+			'传说',
+			'清淡',
+			'中华',
+			'灼热',
+			'力量涌现',
+			'文化底蕴',
+			'小巧',
+		],
 		negativeTags: ['山珍', '菌类'],
 		beverageTags: ['可加热', '烧酒', '直饮', '辛', '提神'],
 		chat: [
@@ -2348,7 +2573,8 @@ export const CUSTOMER_RARE_LIST = [
 			negative: [
 				{
 					name: '诫罚「诸神圣裁」',
-					description: '带有“传说”标签的料理或使用带有“传说”标签的食材制作的料理无法被制作，持续30秒。',
+					description:
+						'带有“传说”标签的料理或使用带有“传说”标签的食材制作的料理无法被制作，持续30秒。',
 				},
 			],
 		},
@@ -2372,7 +2598,15 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['魔界'],
 		price: [300, 500],
 		enduranceLimit: 1,
-		positiveTags: ['家常', '饱腹', '西式', '甜', '凉爽', '梦幻', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'家常',
+			'饱腹',
+			'西式',
+			'甜',
+			'凉爽',
+			'梦幻',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['水产', '重油', '生'],
 		beverageTags: ['低酒精', '可加热', '啤酒', '甘', '古典'],
 		chat: [
@@ -2403,13 +2637,12 @@ export const CUSTOMER_RARE_LIST = [
 			negative: [
 				{
 					name: '「呜撒的猫咪」',
-					description: '伙伴移动速度下降30%，工作速度下降50%，持续30秒。',
+					description:
+						'伙伴移动速度下降30%，工作速度下降50%，持续30秒。',
 				},
 			],
 		},
-		positiveTagMapping: {
-			凉爽: '毕竟是猫舌头',
-		},
+		positiveTagMapping: { 凉爽: '毕竟是猫舌头' },
 		collection: true,
 	},
 	{
@@ -2459,7 +2692,8 @@ export const CUSTOMER_RARE_LIST = [
 			negative: [
 				{
 					name: '「渎神的代价」',
-					description: '受到“恶灵缠怨”：无法获得夜雀之歌类Buff，且无法触发特殊厨具效果，持续30秒。',
+					description:
+						'受到“恶灵缠怨”：无法获得夜雀之歌类Buff，且无法触发特殊厨具效果，持续30秒。',
 				},
 			],
 		},
@@ -2495,7 +2729,15 @@ export const CUSTOMER_RARE_LIST = [
 		],
 		price: [800, 1000],
 		enduranceLimit: 1,
-		positiveTags: ['水产', '西式', '甜', '适合拍照', '小巧', '特产', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'水产',
+			'西式',
+			'甜',
+			'适合拍照',
+			'小巧',
+			'特产',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['重油', '饱腹'],
 		beverageTags: ['中酒精', '可加冰', '鸡尾酒', '啤酒', '现代'],
 		chat: [
@@ -2526,7 +2768,8 @@ export const CUSTOMER_RARE_LIST = [
 			negative: [
 				{
 					name: '「遗落的水晶鞋」',
-					description: '当晚营业结束后，再经过60秒，将会强制驱逐店铺内的顾客并关店。',
+					description:
+						'当晚营业结束后，再经过60秒，将会强制驱逐店铺内的顾客并关店。',
 				},
 			],
 		},
@@ -2574,7 +2817,8 @@ export const CUSTOMER_RARE_LIST = [
 			positive: [
 				{
 					name: '「香霖堂购物节」',
-					description: '获得一张香霖堂购物七折的打折卡，仅限次日使用，过期作废。',
+					description:
+						'获得一张香霖堂购物七折的打折卡，仅限次日使用，过期作废。',
 				},
 			],
 			negative: [
@@ -2584,9 +2828,7 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {
-			饱腹: '不能吃不饱',
-		},
+		positiveTagMapping: { 饱腹: '不能吃不饱' },
 		collection: false,
 	},
 	{
@@ -2601,7 +2843,14 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['博丽神社', '红魔馆'],
 		price: [4950, 5000],
 		enduranceLimit: 1.05,
-		positiveTags: ['高级', '传说', '西式', '甜', '生', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'高级',
+			'传说',
+			'西式',
+			'甜',
+			'生',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['咸', '辣', '酸', DYNAMIC_TAG_MAP.economical],
 		beverageTags: ['高酒精', '西洋酒', '水果', '甘', '古典'],
 		chat: [
@@ -2635,9 +2884,7 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {
-			西式: '异国风味',
-		},
+		positiveTagMapping: { 西式: '异国风味' },
 		collection: false,
 	},
 	{
@@ -2683,7 +2930,8 @@ export const CUSTOMER_RARE_LIST = [
 			negative: [
 				{
 					name: '天上剑「天人之五衰」',
-					description: '顾客耐心衰减速度翻倍，且每2秒减少1点气氛，持续60秒。',
+					description:
+						'顾客耐心衰减速度翻倍，且每2秒减少1点气氛，持续60秒。',
 				},
 			],
 		},
@@ -2702,7 +2950,16 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['博丽神社', '红魔馆', '迷途竹林', '神灵庙'],
 		price: [1500, 2000],
 		enduranceLimit: 1.4,
-		positiveTags: ['肉', '水产', '高级', '传说', '饱腹', '和风', '中华', DYNAMIC_TAG_MAP.largePartition],
+		positiveTags: [
+			'肉',
+			'水产',
+			'高级',
+			'传说',
+			'饱腹',
+			'和风',
+			'中华',
+			DYNAMIC_TAG_MAP.largePartition,
+		],
 		negativeTags: ['素', '清淡', '小巧'],
 		beverageTags: ['高酒精', '可加冰', '鸡尾酒'],
 		chat: [
@@ -2739,7 +2996,8 @@ export const CUSTOMER_RARE_LIST = [
 			negative: [
 				{
 					name: '「加料加量不加价」',
-					description: '接下来直到营业结束为止，料理不加满五个档位的料，都会收到差评。',
+					description:
+						'接下来直到营业结束为止，料理不加满五个档位的料，都会收到差评。',
 				},
 			],
 		},
@@ -2772,7 +3030,13 @@ export const CUSTOMER_RARE_LIST = [
 		],
 		price: [1200, 1600],
 		enduranceLimit: 1,
-		positiveTags: ['肉', '水产', '甜', '梦幻', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'肉',
+			'水产',
+			'甜',
+			'梦幻',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['灼热', '猎奇', DYNAMIC_TAG_MAP.popularNegative],
 		beverageTags: ['可加冰', '水果', '甘', '辛'],
 		chat: [
@@ -2804,10 +3068,25 @@ export const CUSTOMER_RARE_LIST = [
 			null,
 		],
 		dlc: 0,
-		places: ['妖怪兽道', '人间之里', '博丽神社', '红魔馆', '迷途竹林', '妖怪之山'],
+		places: [
+			'妖怪兽道',
+			'人间之里',
+			'博丽神社',
+			'红魔馆',
+			'迷途竹林',
+			'妖怪之山',
+		],
 		price: [300, 400],
 		enduranceLimit: 1,
-		positiveTags: ['家常', '甜', '凉爽', '菌类', '小巧', '梦幻', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'家常',
+			'甜',
+			'凉爽',
+			'菌类',
+			'小巧',
+			'梦幻',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['生', '灼热', '猎奇', DYNAMIC_TAG_MAP.popularNegative],
 		beverageTags: ['无酒精', '水果', '甘', '苦'],
 		chat: [
@@ -2845,7 +3124,13 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['妖怪兽道', '人间之里', '博丽神社', '红魔馆', '迷途竹林'],
 		price: [400, 600],
 		enduranceLimit: 1.2,
-		positiveTags: ['水产', '家常', '中华', '辣', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'水产',
+			'家常',
+			'中华',
+			'辣',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['重油', '下酒', '生'],
 		beverageTags: ['无酒精', '甘', '气泡'],
 		chat: [
@@ -2877,7 +3162,8 @@ export const CUSTOMER_RARE_LIST = [
 			negative: [
 				{
 					name: '「饭要一口一口吃才健康」',
-					description: '包括排队顾客在内的所有顾客，用餐时间增加一倍，但此技能效果优先级低于立刻完食类Buff。',
+					description:
+						'包括排队顾客在内的所有顾客，用餐时间增加一倍，但此技能效果优先级低于立刻完食类Buff。',
 				},
 			],
 		},
@@ -2986,7 +3272,8 @@ export const CUSTOMER_RARE_LIST = [
 			negative: [
 				{
 					name: '律符「颠倒错乱」',
-					description: '无论上的料理和酒水如何合衬顾客的心意，得到的评价都是随机的一种，持续60秒。',
+					description:
+						'无论上的料理和酒水如何合衬顾客的心意，得到的评价都是随机的一种，持续60秒。',
 				},
 			],
 		},
@@ -3055,7 +3342,8 @@ export const CUSTOMER_RARE_LIST = [
 			positive: [
 				{
 					name: '「饕餮的饕餮之宴」',
-					description: '除尤魔以外的顾客都只会点最贵的食物和酒水，且这些订单不消耗预算，持续30秒。',
+					description:
+						'除尤魔以外的顾客都只会点最贵的食物和酒水，且这些订单不消耗预算，持续30秒。',
 				},
 			],
 			negative: [
@@ -3102,7 +3390,15 @@ export const CUSTOMER_RARE_LIST = [
 		],
 		price: [800, 1200],
 		enduranceLimit: 1.5,
-		positiveTags: ['咸', '甜', '生', '猎奇', '不可思议', '梦幻', DYNAMIC_TAG_MAP.popularNegative],
+		positiveTags: [
+			'咸',
+			'甜',
+			'生',
+			'猎奇',
+			'不可思议',
+			'梦幻',
+			DYNAMIC_TAG_MAP.popularNegative,
+		],
 		negativeTags: [],
 		beverageTags: ['高酒精', '烧酒', '苦', '气泡'],
 		chat: [
@@ -3133,13 +3429,12 @@ export const CUSTOMER_RARE_LIST = [
 			negative: [
 				{
 					name: '「自我极意无意识」',
-					description: '普通顾客点单全部变成被恋恋遮住的盲单，需要通过查询图鉴喜好来完成，持续60秒。',
+					description:
+						'普通顾客点单全部变成被恋恋遮住的盲单，需要通过查询图鉴喜好来完成，持续60秒。',
 				},
 			],
 		},
-		positiveTagMapping: {
-			不可思议: '永远猜不到我想要的是什么',
-		},
+		positiveTagMapping: { 不可思议: '永远猜不到我想要的是什么' },
 		collection: false,
 	},
 	{
@@ -3154,7 +3449,16 @@ export const CUSTOMER_RARE_LIST = [
 		places: ['妖怪兽道', '人间之里', '博丽神社', '命莲寺', '神灵庙'],
 		price: [1000, 1200],
 		enduranceLimit: 2,
-		positiveTags: ['肉', '水产', '家常', '传说', '下酒', '和风', '果味', DYNAMIC_TAG_MAP.popularPositive],
+		positiveTags: [
+			'肉',
+			'水产',
+			'家常',
+			'传说',
+			'下酒',
+			'和风',
+			'果味',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
 		negativeTags: ['灼热', '辣'],
 		beverageTags: ['高酒精', '可加热', '烧酒', '古典'],
 		chat: [
@@ -3190,9 +3494,7 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {
-			和风: '佐渡老家',
-		},
+		positiveTagMapping: { 和风: '佐渡老家' },
 		collection: false,
 	},
 	{
@@ -3222,10 +3524,23 @@ export const CUSTOMER_RARE_LIST = [
 		],
 		price: [4000, 6000],
 		enduranceLimit: 1,
-		positiveTags: ['家常', '高级', '传说', '适合拍照', '凉爽', '猎奇', '汤羹'],
+		positiveTags: [
+			'家常',
+			'高级',
+			'传说',
+			'适合拍照',
+			'凉爽',
+			'猎奇',
+			'汤羹',
+		],
 		negativeTags: ['饱腹', '菌类'],
 		beverageTags: ['中酒精', '高酒精', '烧酒', '古典'],
-		chat: ['久违地出来吃饭了呢…', '接下来可以睡个长觉了。', '一路走来真是辛苦你了。', '你的努力我都看在眼里。'],
+		chat: [
+			'久违地出来吃饭了呢…',
+			'接下来可以睡个长觉了。',
+			'一路走来真是辛苦你了。',
+			'你的努力我都看在眼里。',
+		],
 		evaluation: {
 			exbad: '这种东西连呆在隙间的资格都没有。',
 			bad: '这种东西应该扔到隙间去。',
@@ -3253,9 +3568,7 @@ export const CUSTOMER_RARE_LIST = [
 				},
 			],
 		},
-		positiveTagMapping: {
-			适合拍照: '食之品相',
-		},
+		positiveTagMapping: { 适合拍照: '食之品相' },
 		collection: false,
 	},
 ] as const satisfies ICustomerRare[];

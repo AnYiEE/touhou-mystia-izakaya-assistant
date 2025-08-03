@@ -1,5 +1,5 @@
 // cSpell:disable
-import type {TThemeConfig} from '../types';
+import type { TThemeConfig } from '../types';
 
 export const fontFamily = {
 	mono: [

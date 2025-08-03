@@ -1,17 +1,25 @@
-import {isObject} from 'lodash';
+import { isObject } from 'lodash';
 
-import {Item} from './base';
-import {CLOTHES_LIST, type TClothes, type TClothesName, type TCustomerRareName} from '@/data';
+import { Item } from './base';
+import {
+	CLOTHES_LIST,
+	type TClothes,
+	type TClothesName,
+	type TCustomerRareName,
+} from '@/data';
 
-import {siteConfig} from '@/configs';
-import {processPinyin} from '@/utilities';
+import { siteConfig } from '@/configs';
+import { processPinyin } from '@/utilities';
 
-const {cdnUrl} = siteConfig;
+const { cdnUrl } = siteConfig;
 
 export class Clothes extends Item<TClothes> {
 	private static _instance: Clothes | undefined;
 
-	private static _bondClothesCache = new Map<TCustomerRareName, TClothesName | null>();
+	private static _bondClothesCache = new Map<
+		TCustomerRareName,
+		TClothesName | null
+	>();
 	private static _tachiePathCache = new Map<TClothesName, string>();
 
 	public static getInstance() {
@@ -29,16 +37,22 @@ export class Clothes extends Item<TClothes> {
 	/**
 	 * @description Get the clothes for a customer based on their bond level.
 	 */
-	public getBondClothes(customerName: TCustomerRareName): TClothesName | null {
+	public getBondClothes(
+		customerName: TCustomerRareName
+	): TClothesName | null {
 		if (Clothes._bondClothesCache.has(customerName)) {
 			return Clothes._bondClothesCache.get(customerName);
 		}
 
 		let bondClothes = null;
 
-		this._data.some(({from, name}) =>
+		this._data.some(({ from, name }) =>
 			from.some((item) => {
-				if (isObject(item) && 'bond' in item && item.bond === customerName) {
+				if (
+					isObject(item) &&
+					'bond' in item &&
+					item.bond === customerName
+				) {
 					bondClothes = name;
 					return true;
 				}
@@ -62,7 +76,7 @@ export class Clothes extends Item<TClothes> {
 		if (Clothes._tachiePathCache.has(name)) {
 			path = Clothes._tachiePathCache.get(name);
 		} else {
-			const {gif, pinyin} = this.getPropsByName(name);
+			const { gif, pinyin } = this.getPropsByName(name);
 			path = `${basePath}/${processPinyin(pinyin).pinyinWithoutTone.join('')}.${gif ? 'gif' : 'png'}`;
 			Clothes._tachiePathCache.set(name, path);
 		}

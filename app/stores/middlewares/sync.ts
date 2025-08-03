@@ -1,8 +1,13 @@
-import {BroadcastChannel} from 'broadcast-channel';
-import {isObject} from 'lodash';
-import {type StateCreator} from 'zustand';
+import { BroadcastChannel } from 'broadcast-channel';
+import { isObject } from 'lodash';
+import { type StateCreator } from 'zustand';
 
-import {checkArrayLengthEqualOf, checkEmpty, copyArray, memoize} from '@/utilities';
+import {
+	checkArrayLengthEqualOf,
+	checkEmpty,
+	copyArray,
+	memoize,
+} from '@/utilities';
 
 type TPlainObject = Record<string, unknown>;
 
@@ -17,7 +22,9 @@ type TNestedKeys<T> = T extends TPlainObject
 type TNestedType<T, P> = P extends [infer Head, ...infer Tail]
 	? Head extends keyof T
 		? Tail extends string[]
-			? TNestedType<NonNullable<T[Head]>, Tail> | (T[Head] extends undefined ? undefined : never)
+			?
+					| TNestedType<NonNullable<T[Head]>, Tail>
+					| (T[Head] extends undefined ? undefined : never)
 			: never
 		: undefined
 	: T;
@@ -49,7 +56,11 @@ function checkEqual(value1: unknown, value2: unknown): boolean {
 
 		return (
 			checkArrayLengthEqualOf(keys1, keys2) &&
-			keys1.every((key) => Object.hasOwn(value2, key) && checkEqual(value1[key], value2[key]))
+			keys1.every(
+				(key) =>
+					Object.hasOwn(value2, key) &&
+					checkEqual(value1[key], value2[key])
+			)
 		);
 	}
 
@@ -69,12 +80,17 @@ const getKeys = memoize(function getKeys<T extends string>(path: T) {
 
 function getNestedValue<T, P extends TNestedKeys<T>>(object: T, path: P) {
 	return getKeys(path).reduce<unknown>(
-		(acc, key) => (acc === undefined ? undefined : (acc as TPlainObject)[key]),
+		(acc, key) =>
+			acc === undefined ? undefined : (acc as TPlainObject)[key],
 		object
 	) as TNestedType<T, TSplitByDot<P>>;
 }
 
-function setNestedValue<T, P extends TNestedKeys<T>>(object: T, path: P, value: TNestedType<T, TSplitByDot<P>>) {
+function setNestedValue<T, P extends TNestedKeys<T>>(
+	object: T,
+	path: P,
+	value: TNestedType<T, TSplitByDot<P>>
+) {
 	const keys = copyArray(getKeys(path));
 	const lastKey = keys.pop() as string;
 
@@ -114,15 +130,17 @@ function merge<T>(target: T, source: Partial<T>) {
 
 			return acc;
 		},
-		{
-			...target,
-		} as TPlainObject
+		{ ...target } as TPlainObject
 	) as T;
 
 	return isChanged ? result : target;
 }
 
-function assign<T, P extends TNestedKeys<T>>(object: T, path: P, value: TNestedType<T, TSplitByDot<P>>) {
+function assign<T, P extends TNestedKeys<T>>(
+	object: T,
+	path: P,
+	value: TNestedType<T, TSplitByDot<P>>
+) {
 	const tempObjectForPath = {} as T;
 
 	setNestedValue(tempObjectForPath, path, value);
@@ -146,7 +164,7 @@ export function sync<T>(options: ISyncOptions<T>) {
 		}
 
 		return (set, get, api) => {
-			const {name, watch} = options;
+			const { name, watch } = options;
 			const channel = new BroadcastChannel(name, {
 				webWorkerSupport: false,
 			});

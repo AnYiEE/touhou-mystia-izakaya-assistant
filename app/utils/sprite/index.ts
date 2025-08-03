@@ -1,6 +1,6 @@
-import {type CSSProperties} from 'react';
+import { type CSSProperties } from 'react';
 
-import type {ISpriteConfig, TSpriteData, TSpriteTarget} from './types';
+import type { ISpriteConfig, TSpriteData, TSpriteTarget } from './types';
 import {
 	BEVERAGE_LIST,
 	BEVERAGE_SPRITE_CONFIG,
@@ -23,9 +23,9 @@ import {
 	RECIPE_LIST,
 	RECIPE_SPRITE_CONFIG,
 } from '@/data';
-import {Item} from '@/utils/item/base';
+import { Item } from '@/utils/item/base';
 
-import {pxToRem} from '@/utilities';
+import { pxToRem } from '@/utilities';
 
 const SPRITE_CONFIG_MAP = {
 	beverage: BEVERAGE_SPRITE_CONFIG,
@@ -55,7 +55,8 @@ const SPRITE_DATA_MAP = {
 
 export class Sprite<
 	TCurrentSpriteTarget extends TSpriteTarget,
-	TItems extends TSpriteData<TCurrentSpriteTarget> = TSpriteData<TCurrentSpriteTarget>,
+	TItems extends
+		TSpriteData<TCurrentSpriteTarget> = TSpriteData<TCurrentSpriteTarget>,
 > extends Item<TItems> {
 	private static _instances = new Map<TSpriteTarget, Sprite<TSpriteTarget>>();
 
@@ -69,7 +70,7 @@ export class Sprite<
 
 		this._config = config;
 
-		const {col, height, row, width} = config;
+		const { col, height, row, width } = config;
 
 		this.spriteHeight = height / row;
 		this.spriteWidth = width / col;
@@ -80,7 +81,10 @@ export class Sprite<
 			return Sprite._instances.get(target);
 		}
 
-		const instance = new Sprite(SPRITE_DATA_MAP[target], SPRITE_CONFIG_MAP[target]);
+		const instance = new Sprite(
+			SPRITE_DATA_MAP[target],
+			SPRITE_CONFIG_MAP[target]
+		);
 
 		Sprite._instances.set(target, instance);
 
@@ -90,7 +94,7 @@ export class Sprite<
 	private getPosByIndex(index: number) {
 		this.checkIndexRange(index);
 
-		const {col} = this._config;
+		const { col } = this._config;
 
 		return {
 			x: (index % col) * this.spriteWidth,
@@ -100,14 +104,17 @@ export class Sprite<
 
 	public getBackgroundPropsByIndex(
 		index: number,
-		{displayHeight = this.spriteHeight, displayWidth = this.spriteWidth} = {}
+		{
+			displayHeight = this.spriteHeight,
+			displayWidth = this.spriteWidth,
+		} = {}
 	): CSSProperties {
 		this.checkIndexRange(index);
 
-		const {_config, spriteHeight, spriteWidth} = this;
-		const {height: sheetHeight, width: sheetWidth} = _config;
+		const { _config, spriteHeight, spriteWidth } = this;
+		const { height: sheetHeight, width: sheetWidth } = _config;
 
-		const {x, y} = this.getPosByIndex(index);
+		const { x, y } = this.getPosByIndex(index);
 		const backgroundPosition = `-${pxToRem(x * (displayWidth / spriteWidth))}rem -${pxToRem(y * (displayHeight / spriteHeight))}rem`;
 		const backgroundSize = `${pxToRem(sheetWidth * (displayWidth / spriteWidth))}rem ${pxToRem(sheetHeight * (displayHeight / spriteHeight))}rem`;
 

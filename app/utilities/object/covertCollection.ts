@@ -1,4 +1,4 @@
-import {isObject} from 'lodash';
+import { isObject } from 'lodash';
 
 const KEY = 'value';
 
@@ -15,10 +15,7 @@ export function toGetValue<T extends ValueCollection<unknown>>(collection: T) {
 }
 
 export function toGetCollectionWithKey<K extends PropertyKey>(key: K) {
-	return <V>(item: V) =>
-		({
-			[key]: item,
-		}) as Record<K, V>;
+	return <V>(item: V) => ({ [key]: item }) as Record<K, V>;
 }
 
 export function toGetValueCollection<V>(value: V) {

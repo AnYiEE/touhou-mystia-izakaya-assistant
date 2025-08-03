@@ -1,20 +1,27 @@
-import {readableColor} from 'color2k';
+import { readableColor } from 'color2k';
 
-import {colors} from './constants';
-import type {TSemanticBaseColors, TThemeColors} from './types';
-import {swapColorScale} from './utils';
+import { colors } from './constants';
+import type { TSemanticBaseColors, TThemeColors } from './types';
+import { swapColorScale } from './utils';
 
-function checkBackgroundColor(target: Record<keyof typeof colors.defaultBackgrounds, string>) {
+function checkBackgroundColor(
+	target: Record<keyof typeof colors.defaultBackgrounds, string>
+) {
 	if (
 		target.dark !== colors.constants.BLACK ||
 		target.light !== colors.brown[50] ||
 		target.lightTheme !== colors.brown[200]
 	) {
-		throw new Error('[design/theme/semantic]: `defaultBackgrounds` does not match `colors.constants`');
+		throw new Error(
+			'[design/theme/semantic]: `defaultBackgrounds` does not match `colors.constants`'
+		);
 	}
 }
 
-function getBackgroundColor(target: typeof colors.defaultBackgrounds, key: keyof typeof colors.defaultBackgrounds) {
+function getBackgroundColor(
+	target: typeof colors.defaultBackgrounds,
+	key: keyof typeof colors.defaultBackgrounds
+) {
 	checkBackgroundColor(target);
 
 	return colors.defaultBackgrounds[key];
@@ -68,22 +75,10 @@ const base = {
 			DEFAULT: colors.brown[200],
 			foreground: colors.black[800],
 		},
-		divider: {
-			...colors.black,
-			DEFAULT: colors.divider.light,
-		},
-		focus: {
-			...colors.blue,
-			DEFAULT: colors.blue[500],
-		},
-		foreground: {
-			...colors.black,
-			DEFAULT: colors.black[900],
-		},
-		overlay: {
-			...colors.black,
-			DEFAULT: colors.constants.BLACK,
-		},
+		divider: { ...colors.black, DEFAULT: colors.divider.light },
+		focus: { ...colors.blue, DEFAULT: colors.blue[500] },
+		foreground: { ...colors.black, DEFAULT: colors.black[900] },
+		overlay: { ...colors.black, DEFAULT: colors.constants.BLACK },
 	},
 } as const satisfies TSemanticBaseColors;
 

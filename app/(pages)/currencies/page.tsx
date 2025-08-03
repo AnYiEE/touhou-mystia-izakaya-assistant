@@ -1,6 +1,12 @@
 'use client';
 
-import {usePinyinSortConfig, useSearchConfig, useSearchResult, useSortedData, useThrottle} from '@/hooks';
+import {
+	usePinyinSortConfig,
+	useSearchConfig,
+	useSearchResult,
+	useSortedData,
+	useThrottle,
+} from '@/hooks';
 
 import Content from './content';
 import ItemPage from '@/components/itemPage';
@@ -8,8 +14,8 @@ import SideButtonGroup from '@/components/sideButtonGroup';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
-import {currenciesStore as store} from '@/stores';
-import {checkEmpty} from '@/utilities';
+import { currenciesStore as store } from '@/stores';
+import { checkEmpty } from '@/utilities';
 
 export default function Currencies() {
 	const instance = store.instance.get();
@@ -24,7 +30,10 @@ export default function Currencies() {
 
 	const sortedData = useSortedData(instance, searchResult, pinyinSortState);
 
-	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, store.persistence.pinyinSortState.set);
+	const pinyinSortConfig = usePinyinSortConfig(
+		pinyinSortState,
+		store.persistence.pinyinSortState.set
+	);
 
 	const searchConfig = useSearchConfig({
 		label: '选择或输入货币名称',
@@ -40,7 +49,9 @@ export default function Currencies() {
 			sideButton={
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />
-					<SidePinyinSortIconButton pinyinSortConfig={pinyinSortConfig} />
+					<SidePinyinSortIconButton
+						pinyinSortConfig={pinyinSortConfig}
+					/>
 				</SideButtonGroup>
 			}
 		>

@@ -1,13 +1,21 @@
-import {store} from '@davstack/store';
+import { store } from '@davstack/store';
 
-import {type TPinyinSortState, pinyinSortStateMap} from '@/components/sidePinyinSortIconButton';
+import {
+	type TPinyinSortState,
+	pinyinSortStateMap,
+} from '@/components/sidePinyinSortIconButton';
 
-import {DYNAMIC_TAG_MAP, type TRecipeTag} from '@/data';
-import {persist as persistMiddleware} from '@/stores/middlewares';
-import {createNamesCache} from '@/stores/utils';
-import type {IPopularTrend} from '@/types';
-import {numberSort, pinyinSort, toArray, toGetValueCollection} from '@/utilities';
-import {Recipe} from '@/utils';
+import { DYNAMIC_TAG_MAP, type TRecipeTag } from '@/data';
+import { persist as persistMiddleware } from '@/stores/middlewares';
+import { createNamesCache } from '@/stores/utils';
+import type { IPopularTrend } from '@/types';
+import {
+	numberSort,
+	pinyinSort,
+	toArray,
+	toGetValueCollection,
+} from '@/utilities';
+import { Recipe } from '@/utils';
 
 const instance = Recipe.getInstance();
 
@@ -25,7 +33,9 @@ const state = {
 
 	cookers: instance.getValuesByProp('cooker', true).sort(pinyinSort),
 	ingredients: instance.getValuesByProp('ingredients', true).sort(pinyinSort),
-	negativeTags: instance.getValuesByProp('negativeTags', true).sort(pinyinSort),
+	negativeTags: instance
+		.getValuesByProp('negativeTags', true)
+		.sort(pinyinSort),
 	positiveTags: toArray<TRecipeTag[]>(
 		instance.getValuesByProp('positiveTags'),
 		DYNAMIC_TAG_MAP.popularNegative,
@@ -51,10 +61,7 @@ const state = {
 	},
 	shared: {
 		famousShop: false,
-		popularTrend: {
-			isNegative: false,
-			tag: null,
-		} as IPopularTrend,
+		popularTrend: { isNegative: false, tag: null } as IPopularTrend,
 	},
 };
 
@@ -77,7 +84,8 @@ export const recipesStore = store(state, {
 				if (version < storeVersion.cooker) {
 					// cSpell:ignore kitchenwares
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-					oldState.persistence.filters.cookers = oldState.persistence.filters.kitchenwares;
+					oldState.persistence.filters.cookers =
+						oldState.persistence.filters.kitchenwares;
 					delete oldState.persistence.filters.kitchenwares;
 				}
 				return persistedState as typeof state;

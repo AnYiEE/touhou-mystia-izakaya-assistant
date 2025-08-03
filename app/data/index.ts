@@ -11,16 +11,35 @@ export * from './ornaments';
 export * from './partners';
 export * from './recipes';
 
-export type {TBeverages, TBeverageName, IBeverage} from './beverages/types';
-export type {TClothes, TClothesName, IClothes} from './clothes/types';
-export type {TCookers, TCookerCategory, TCookerName, TCookerType, ICooker} from './cookers/types';
-export type {TCurrencies, TCurrencyName, ICurrency} from './currencies/types';
-export type {TCustomerNormals, TCustomerNormalName, ICustomerNormal} from './customer_normal/types';
-export type {TCustomerRares, TCustomerRareName, ICustomerRare} from './customer_rare/types';
-export type {TIngredients, TIngredientName, TIngredientType, IIngredient} from './ingredients/types';
-export type {TOrnaments, TOrnamentName, IOrnament} from './ornaments/types';
-export type {TPartners, TPartnerName, IPartner} from './partners/types';
-export type {TRecipes, TRecipeName, IRecipe} from './recipes/types';
+export type { TBeverages, TBeverageName, IBeverage } from './beverages/types';
+export type { TClothes, TClothesName, IClothes } from './clothes/types';
+export type {
+	TCookers,
+	TCookerCategory,
+	TCookerName,
+	TCookerType,
+	ICooker,
+} from './cookers/types';
+export type { TCurrencies, TCurrencyName, ICurrency } from './currencies/types';
+export type {
+	TCustomerNormals,
+	TCustomerNormalName,
+	ICustomerNormal,
+} from './customer_normal/types';
+export type {
+	TCustomerRares,
+	TCustomerRareName,
+	ICustomerRare,
+} from './customer_rare/types';
+export type {
+	TIngredients,
+	TIngredientName,
+	TIngredientType,
+	IIngredient,
+} from './ingredients/types';
+export type { TOrnaments, TOrnamentName, IOrnament } from './ornaments/types';
+export type { TPartners, TPartnerName, IPartner } from './partners/types';
+export type { TRecipes, TRecipeName, IRecipe } from './recipes/types';
 
 export type TCustomers =
 	| import('./customer_normal/types').TCustomerNormals

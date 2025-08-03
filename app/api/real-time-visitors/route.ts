@@ -1,5 +1,5 @@
-import {NextResponse} from 'next/server';
-import {env} from 'node:process';
+import { NextResponse } from 'next/server';
+import { env } from 'node:process';
 
 type TVisitorCountResponse = [
 	{
@@ -11,9 +11,7 @@ type TVisitorCountResponse = [
 ];
 
 interface IVisitorCountCache {
-	data: {
-		visitors: number;
-	} | null;
+	data: { visitors: number } | null;
 	timestamp: number;
 	refreshTtl: number;
 }
@@ -25,7 +23,11 @@ const cache: IVisitorCountCache = {
 };
 
 async function refreshCache() {
-	if (!env.ANALYTICS_API_ENDPOINT || !env.ANALYTICS_SITE_ID || !env.ANALYTICS_TOKEN) {
+	if (
+		!env.ANALYTICS_API_ENDPOINT ||
+		!env.ANALYTICS_SITE_ID ||
+		!env.ANALYTICS_TOKEN
+	) {
 		return;
 	}
 
@@ -47,12 +49,10 @@ async function refreshCache() {
 			return;
 		}
 
-		const [{visitors}] = (await response.json()) as TVisitorCountResponse;
+		const [{ visitors }] = (await response.json()) as TVisitorCountResponse;
 
 		Object.assign(cache, {
-			data: {
-				visitors: Number.parseInt(visitors),
-			},
+			data: { visitors: Number.parseInt(visitors) },
 			timestamp: Date.now(),
 		});
 	} catch {
@@ -70,9 +70,7 @@ if (!globalThis.__visitorCountCacheInitialized) {
 
 export function GET() {
 	if (cache.data === null) {
-		return NextResponse.json({
-			visitors: -1,
-		});
+		return NextResponse.json({ visitors: -1 });
 	}
 
 	return NextResponse.json(cache.data);

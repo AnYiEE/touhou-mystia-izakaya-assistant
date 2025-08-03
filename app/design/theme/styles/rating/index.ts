@@ -1,4 +1,4 @@
-import type {TRatingStyleMap} from './types';
+import type { TRatingStyleMap } from './types';
 
 export const ratingStyles = {
 	bad: 'ring-bad-border bg-bad',

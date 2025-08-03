@@ -1,6 +1,6 @@
-import {type EffectCallback, useEffect, useRef, useState} from 'react';
+import { type EffectCallback, useEffect, useRef, useState } from 'react';
 
-import {globalStore as store} from '@/stores';
+import { globalStore as store } from '@/stores';
 
 function useMounted(callback?: EffectCallback) {
 	const isFired = useRef(false);
@@ -18,4 +18,4 @@ function useMounted(callback?: EffectCallback) {
 	return isMounted;
 }
 
-export {useMounted};
+export { useMounted };

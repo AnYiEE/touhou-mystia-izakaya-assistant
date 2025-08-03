@@ -1,20 +1,17 @@
 /* eslint-disable sort-keys */
-import {Fragment} from 'react';
+import { Fragment } from 'react';
 
-import {Link} from '@/design/ui/components';
+import { Link } from '@/design/ui/components';
 
 import Heading from '@/components/heading';
 
-import {siteConfig} from '@/configs';
-import {DARK_MATTER_META_MAP, DYNAMIC_TAG_MAP} from '@/data';
+import { siteConfig } from '@/configs';
+import { DARK_MATTER_META_MAP, DYNAMIC_TAG_MAP } from '@/data';
 
-const {links} = siteConfig;
+const { links } = siteConfig;
 
 const changelog = [
-	{
-		version: 'v0.1',
-		changes: ['新增：料理、酒水和食材页面。'],
-	},
+	{ version: 'v0.1', changes: ['新增：料理、酒水和食材页面。'] },
 	{
 		version: 'v0.2',
 		changes: [
@@ -61,7 +58,10 @@ const changelog = [
 	},
 	{
 		version: 'v0.8',
-		changes: ['新增：稀客羁绊奖励数据及其展示界面。', '修复：顾客套餐评级逻辑。'],
+		changes: [
+			'新增：稀客羁绊奖励数据及其展示界面。',
+			'修复：顾客套餐评级逻辑。',
+		],
 	},
 	{
 		version: 'v0.9',
@@ -79,10 +79,7 @@ const changelog = [
 		version: 'v1.0',
 		changes: ['新增：食材“铃仙”、“噗噗哟果”和“强效辣椒素”。'],
 	},
-	{
-		version: 'v1.1',
-		changes: ['新增：厨具页面。'],
-	},
+	{ version: 'v1.1', changes: ['新增：厨具页面。'] },
 	{
 		version: 'v1.2',
 		changes: [
@@ -103,16 +100,19 @@ const changelog = [
 	},
 	{
 		version: 'v1.4',
-		changes: ['新增：支持设置全局的“明星店”效果。', '修复：顾客套餐评级逻辑。'],
+		changes: [
+			'新增：支持设置全局的“明星店”效果。',
+			'修复：顾客套餐评级逻辑。',
+		],
 	},
 	{
 		version: 'v1.5',
-		changes: ['新增：更新数据至游戏版本4.2.0。', '改善：交互体验和视觉效果。'],
+		changes: [
+			'新增：更新数据至游戏版本4.2.0。',
+			'改善：交互体验和视觉效果。',
+		],
 	},
-	{
-		version: 'v1.6',
-		changes: ['新增：支持云备份套餐搭配数据。'],
-	},
+	{ version: 'v1.6', changes: ['新增：支持云备份套餐搭配数据。'] },
 	{
 		version: 'v1.7',
 		changes: [
@@ -122,10 +122,7 @@ const changelog = [
 			'修复：顾客套餐评级逻辑。',
 		],
 	},
-	{
-		version: 'v1.8',
-		changes: ['新增：稀客预算超支容忍度数据。'],
-	},
+	{ version: 'v1.8', changes: ['新增：稀客预算超支容忍度数据。'] },
 ] as const satisfies Array<{
 	version: `v${string}`;
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;
@@ -153,7 +150,7 @@ export default function ChangeLog() {
 			>
 				更新日志
 			</Heading>
-			{changelog.map(({changes, version}, versionIndex) => (
+			{changelog.map(({ changes, version }, versionIndex) => (
 				<Fragment key={versionIndex}>
 					<Heading as="h2" isFirst={versionIndex === 0}>
 						{version}

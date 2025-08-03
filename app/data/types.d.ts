@@ -1,8 +1,8 @@
-import {type DYNAMIC_TAG_MAP} from '@/data/constant';
+import { type DYNAMIC_TAG_MAP } from '@/data/constant';
 
-import type {IBeverage} from '@/data/beverages/types';
-import type {IIngredient} from '@/data/ingredients/types';
-import type {IRecipe} from '@/data/recipes/types';
+import type { IBeverage } from '@/data/beverages/types';
+import type { IIngredient } from '@/data/ingredients/types';
+import type { IRecipe } from '@/data/recipes/types';
 
 /** @description The meaning of "DLC 0" here refers to the base game. */
 type TDlc = 0 | 1 | 2 | 2.5 | 3 | 4 | 5;
@@ -170,10 +170,18 @@ export type TMerchant =
 	| '【月之都】月兔'
 	| '【魔界】蓬松松爱莲♡魔法店';
 
-type TTask = '阿求小姐的色纸' | '女仆长的采购委托' | '月都试炼' | '最终收网行动';
+type TTask =
+	| '阿求小姐的色纸'
+	| '女仆长的采购委托'
+	| '月都试炼'
+	| '最终收网行动';
 
-type TTagNeedCalculate = (typeof DYNAMIC_TAG_MAP)['economical'] | (typeof DYNAMIC_TAG_MAP)['expensive'];
-type TPopularTag = (typeof DYNAMIC_TAG_MAP)['popularNegative'] | (typeof DYNAMIC_TAG_MAP)['popularPositive'];
+type TTagNeedCalculate =
+	| (typeof DYNAMIC_TAG_MAP)['economical']
+	| (typeof DYNAMIC_TAG_MAP)['expensive'];
+type TPopularTag =
+	| (typeof DYNAMIC_TAG_MAP)['popularNegative']
+	| (typeof DYNAMIC_TAG_MAP)['popularPositive'];
 
 type TBeverageTag = IBeverage['tags'][number];
 type TIngredientTag = IIngredient['tags'][number] | TPopularTag;
@@ -204,12 +212,18 @@ type TRewardType = '摆件' | '采集' | '厨具' | '伙伴' | '料理' | '衣�
 
 type TSpeed = '慢' | '中等' | '快' | '瞬间移动';
 
-export type TDescription = `${string}。` | `${string}？` | `${string}！` | `${string}…`;
+export type TDescription =
+	| `${string}。`
+	| `${string}？`
+	| `${string}！`
+	| `${string}…`;
 
 export interface IItemBase {
 	id: number;
 	name: string;
-	description: TDescription | [TDescription, TDescription | null, TDescription | null];
+	description:
+		| TDescription
+		| [TDescription, TDescription | null, TDescription | null];
 	dlc: TDlc;
 }
 

@@ -1,14 +1,15 @@
 'use client';
 
-import {useEffect, useRef} from 'react';
+import { useEffect, useRef } from 'react';
 
-import {useMounted, usePathname} from '@/hooks';
+import { useMounted, usePathname } from '@/hooks';
 
-import {siteConfig} from '@/configs';
-import {globalStore as store} from '@/stores';
-import {setScriptUrlTag} from '@/utilities';
+import { siteConfig } from '@/configs';
+import { globalStore as store } from '@/stores';
+import { setScriptUrlTag } from '@/utilities';
 
-const {analyticsApiUrl, analyticsScriptUrl, analyticsSiteId, domain} = siteConfig;
+const { analyticsApiUrl, analyticsScriptUrl, analyticsSiteId, domain } =
+	siteConfig;
 
 function push(...args: unknown[][]) {
 	globalThis._paq ??= [];
@@ -37,7 +38,15 @@ type TAction =
 	| 'Select';
 type TActionButton = `${TAction} Button`;
 type TError = 'Cloud' | 'Global';
-type TItem = 'Beverage' | 'Clothes' | 'Cooker' | 'Currency' | 'Ingredient' | 'Ornament' | 'Partner' | 'Recipe';
+type TItem =
+	| 'Beverage'
+	| 'Clothes'
+	| 'Cooker'
+	| 'Currency'
+	| 'Ingredient'
+	| 'Ornament'
+	| 'Partner'
+	| 'Recipe';
 type TItemCard = `${TItem} Card`;
 type TItemAlone = 'Customer' | 'Customer Tag' | 'MystiaCooker';
 
@@ -79,7 +88,11 @@ export const trackEvent = trackEventFunction as typeof trackEventFunction & {
 trackEvent.category = trackCategoryMap;
 
 function trackPageView() {
-	push(['setCustomUrl', location.href], ['setDocumentTitle', document.title], ['trackPageView']);
+	push(
+		['setCustomUrl', location.href],
+		['setDocumentTitle', document.title],
+		['trackPageView']
+	);
 }
 
 export function ping() {

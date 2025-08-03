@@ -1,15 +1,23 @@
-import {Item} from './base';
-import {PARTNER_LIST, type TCustomerRareName, type TPartnerName, type TPartners} from '@/data';
+import { Item } from './base';
+import {
+	PARTNER_LIST,
+	type TCustomerRareName,
+	type TPartnerName,
+	type TPartners,
+} from '@/data';
 
-import {siteConfig} from '@/configs';
-import {processPinyin} from '@/utilities';
+import { siteConfig } from '@/configs';
+import { processPinyin } from '@/utilities';
 
-const {cdnUrl} = siteConfig;
+const { cdnUrl } = siteConfig;
 
 export class Partner extends Item<TPartners> {
 	private static _instance: Partner | undefined;
 
-	private static _bondPartnerCache = new Map<TCustomerRareName, TPartnerName | null>();
+	private static _bondPartnerCache = new Map<
+		TCustomerRareName,
+		TPartnerName | null
+	>();
 	private static _tachiePathCache = new Map<TPartnerName, string>();
 
 	public static getInstance() {
@@ -27,15 +35,19 @@ export class Partner extends Item<TPartners> {
 	/**
 	 * @description Get the partner for a customer based on their bond level.
 	 */
-	public getBondPartner(customerName: TCustomerRareName): TPartnerName | null {
+	public getBondPartner(
+		customerName: TCustomerRareName
+	): TPartnerName | null {
 		if (Partner._bondPartnerCache.has(customerName)) {
 			return Partner._bondPartnerCache.get(customerName);
 		}
 
 		let bondPartner = null;
 
-		this._data.some(({belong, name}) => {
-			if ((belong as TCustomerRareName[] | null)?.includes(customerName)) {
+		this._data.some(({ belong, name }) => {
+			if (
+				(belong as TCustomerRareName[] | null)?.includes(customerName)
+			) {
 				bondPartner = name;
 				return true;
 			}

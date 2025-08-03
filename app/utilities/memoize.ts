@@ -1,4 +1,4 @@
-import {isObject} from 'lodash';
+import { isObject } from 'lodash';
 
 type TIsObject<T> = T extends object ? (T extends null ? false : true) : false;
 
@@ -12,9 +12,7 @@ type TCache<T extends TFunction> =
 		: Map<TFirstParameterType<T>, ReturnType<T>>;
 type TCacheType = 'Map' | 'WeakMap';
 
-type TMemoizedFn<T extends TFunction> = T & {
-	cache: TCache<T>;
-};
+type TMemoizedFn<T extends TFunction> = T & { cache: TCache<T> };
 
 export function memoize<T extends TFunction>(fn: T, cacheType?: TCacheType) {
 	const useWeakMap = cacheType === 'WeakMap';
@@ -25,7 +23,9 @@ export function memoize<T extends TFunction>(fn: T, cacheType?: TCacheType) {
 		const cacheKey = args[0] as TFirstParameterType<T>;
 
 		if (useWeakMap && !isObject(cacheKey)) {
-			throw new TypeError('[utilities/memoize]: `WeakMap` only supports objects as keys');
+			throw new TypeError(
+				'[utilities/memoize]: `WeakMap` only supports objects as keys'
+			);
 		}
 
 		if (cache.has(cacheKey)) {

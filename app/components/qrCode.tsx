@@ -1,17 +1,24 @@
 'use client';
 
-import {type PropsWithChildren, memo} from 'react';
+import { type PropsWithChildren, memo } from 'react';
 
-import {useQRCode} from 'next-qrcode';
+import { useQRCode } from 'next-qrcode';
 
-import {cn} from '@/design/ui/components';
+import { cn } from '@/design/ui/components';
 
-import {type IQRCode} from 'next-qrcode/dist/useQRCode';
+import { type IQRCode } from 'next-qrcode/dist/useQRCode';
 
-interface IProps extends Omit<IQRCode, 'logo'>, Pick<HTMLDivElementAttributes, 'className'> {}
+interface IProps
+	extends Omit<IQRCode, 'logo'>,
+		Pick<HTMLDivElementAttributes, 'className'> {}
 
-export default memo<PropsWithChildren<IProps>>(function QRCode({children, className, options, text}) {
-	const {SVG} = useQRCode();
+export default memo<PropsWithChildren<IProps>>(function QRCode({
+	children,
+	className,
+	options,
+	text,
+}) {
+	const { SVG } = useQRCode();
 
 	return (
 		<div className="flex flex-col items-center">
@@ -31,7 +38,9 @@ export default memo<PropsWithChildren<IProps>>(function QRCode({children, classN
 					text={text}
 				/>
 			</div>
-			{children !== undefined && <p className="text-center text-tiny">{children}</p>}
+			{children !== undefined && (
+				<p className="text-center text-tiny">{children}</p>
+			)}
 		</div>
 	);
 });

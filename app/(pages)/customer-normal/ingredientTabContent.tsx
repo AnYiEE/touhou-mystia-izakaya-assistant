@@ -1,11 +1,17 @@
-import {memo, useCallback, useMemo} from 'react';
-import {curry, curryRight, debounce} from 'lodash';
+import { memo, useCallback, useMemo } from 'react';
+import { curry, curryRight, debounce } from 'lodash';
 
-import {useVibrate} from '@/hooks';
+import { useVibrate } from '@/hooks';
 
-import {Badge, Button, ScrollShadow, Tooltip, cn} from '@/design/ui/components';
+import {
+	Badge,
+	Button,
+	ScrollShadow,
+	Tooltip,
+	cn,
+} from '@/design/ui/components';
 
-import {type IIngredientTabContentProps} from '@/(pages)/customer-rare/ingredientTabContent';
+import { type IIngredientTabContentProps } from '@/(pages)/customer-rare/ingredientTabContent';
 import Placeholder from '@/components/placeholder';
 import PressElement from '@/components/pressElement';
 import Sprite from '@/components/sprite';
@@ -17,15 +23,27 @@ import {
 	type TIngredientTag,
 	type TRecipeTag,
 } from '@/data';
-import {customerNormalStore as store} from '@/stores';
-import {checkA11yConfirmKey, checkEmpty, intersection, toArray, toGetItemWithKey, toSet, union} from '@/utilities';
-import type {TRecipe} from '@/utils/types';
+import { customerNormalStore as store } from '@/stores';
+import {
+	checkA11yConfirmKey,
+	checkEmpty,
+	intersection,
+	toArray,
+	toGetItemWithKey,
+	toSet,
+	union,
+} from '@/utilities';
+import type { TRecipe } from '@/utils/types';
 
-export default memo<IIngredientTabContentProps>(function IngredientsTabContent({ingredientTabStyle, sortedData}) {
+export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
+	ingredientTabStyle,
+	sortedData,
+}) {
 	const vibrate = useVibrate();
 
 	const currentCustomerName = store.shared.customer.name.use();
-	const currentCustomerPopularTrend = store.shared.customer.popularTrend.use();
+	const currentCustomerPopularTrend =
+		store.shared.customer.popularTrend.use();
 	const currentRecipeData = store.shared.recipe.data.use();
 	const isFamousShop = store.shared.customer.famousShop.use();
 
@@ -34,7 +52,10 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 	const instance_recipe = store.instances.recipe.get();
 
 	const currentRecipe = useMemo(
-		() => (currentRecipeData ? instance_recipe.getPropsByName(currentRecipeData.name) : null),
+		() =>
+			currentRecipeData
+				? instance_recipe.getPropsByName(currentRecipeData.name)
+				: null,
 		[currentRecipeData, instance_recipe]
 	);
 
@@ -42,14 +63,22 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 		() =>
 			toSet(
 				sortedData
-					.filter(({tags}) => !checkEmpty(intersection(tags, currentRecipe?.negativeTags ?? [])))
+					.filter(
+						({ tags }) =>
+							!checkEmpty(
+								intersection(
+									tags,
+									currentRecipe?.negativeTags ?? []
+								)
+							)
+					)
 					.map(toGetItemWithKey('name'))
 			),
 		[currentRecipe?.negativeTags, sortedData]
 	);
 
 	const data = useMemo(
-		() => sortedData.filter(({name}) => !darkIngredients.has(name)),
+		() => sortedData.filter(({ name }) => !darkIngredients.has(name)),
 		[darkIngredients, sortedData]
 	);
 
@@ -71,32 +100,50 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 	}
 
 	if (checkEmpty(sortedData)) {
-		return <Placeholder className="pt-4 md:min-h-40 md:pt-0">数据为空</Placeholder>;
+		return (
+			<Placeholder className="pt-4 md:min-h-40 md:pt-0">
+				数据为空
+			</Placeholder>
+		);
 	}
 
-	const customerPositiveTags = instance_customer.getPropsByName(currentCustomerName, 'positiveTags');
+	const customerPositiveTags = instance_customer.getPropsByName(
+		currentCustomerName,
+		'positiveTags'
+	);
 
-	const {extraIngredients: currentRecipeExtraIngredients} = currentRecipeData;
+	const { extraIngredients: currentRecipeExtraIngredients } =
+		currentRecipeData;
 
 	// Checked `currentRecipe` is not null above.
 	const _nonNullableRecipe = currentRecipe as TRecipe;
 
-	const {ingredients: currentRecipeIngredients, positiveTags: currentRecipePositiveTags} = _nonNullableRecipe;
+	const {
+		ingredients: currentRecipeIngredients,
+		positiveTags: currentRecipePositiveTags,
+	} = _nonNullableRecipe;
 
-	const isFullFilled = currentRecipeIngredients.length + currentRecipeExtraIngredients.length >= 5;
-	const isLargePartitionTagNext = currentRecipeIngredients.length + currentRecipeExtraIngredients.length === 4;
+	const isFullFilled =
+		currentRecipeIngredients.length +
+			currentRecipeExtraIngredients.length >=
+		5;
+	const isLargePartitionTagNext =
+		currentRecipeIngredients.length +
+			currentRecipeExtraIngredients.length ===
+		4;
 	const shouldCalculateLargePartitionTag =
-		isLargePartitionTagNext && currentCustomerPopularTrend.tag === DYNAMIC_TAG_MAP.largePartition;
+		isLargePartitionTagNext &&
+		currentCustomerPopularTrend.tag === DYNAMIC_TAG_MAP.largePartition;
 
-	const calculateIngredientTagsWithTrend = curryRight(instance_ingredient.calculateTagsWithTrend)(
-		currentCustomerPopularTrend,
-		isFamousShop
-	);
-	const calculateRecipeTagsWithTrend = curryRight(instance_recipe.calculateTagsWithTrend)(
-		currentCustomerPopularTrend,
-		isFamousShop
-	);
-	const composeRecipeTagsWithPopularTrend = curry(instance_recipe.composeTagsWithPopularTrend)(
+	const calculateIngredientTagsWithTrend = curryRight(
+		instance_ingredient.calculateTagsWithTrend
+	)(currentCustomerPopularTrend, isFamousShop);
+	const calculateRecipeTagsWithTrend = curryRight(
+		instance_recipe.calculateTagsWithTrend
+	)(currentCustomerPopularTrend, isFamousShop);
+	const composeRecipeTagsWithPopularTrend = curry(
+		instance_recipe.composeTagsWithPopularTrend
+	)(
 		currentRecipeIngredients,
 		currentRecipeExtraIngredients,
 		currentRecipePositiveTags,
@@ -104,14 +151,18 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 		currentCustomerPopularTrend
 	);
 
-	const currentRecipeExtraIngredientsTags = currentRecipeExtraIngredients.flatMap((extraIngredient) =>
-		instance_ingredient.getPropsByName(extraIngredient, 'tags')
+	const currentRecipeExtraIngredientsTags =
+		currentRecipeExtraIngredients.flatMap((extraIngredient) =>
+			instance_ingredient.getPropsByName(extraIngredient, 'tags')
+		);
+	const currentRecipeExtraIngredientsTagsWithTrend =
+		calculateIngredientTagsWithTrend(currentRecipeExtraIngredientsTags);
+	const currentRecipeComposedTags = composeRecipeTagsWithPopularTrend(
+		currentRecipeExtraIngredientsTagsWithTrend
 	);
-	const currentRecipeExtraIngredientsTagsWithTrend = calculateIngredientTagsWithTrend(
-		currentRecipeExtraIngredientsTags
+	const currentRecipeTagsWithTrend = union(
+		calculateRecipeTagsWithTrend(currentRecipeComposedTags)
 	);
-	const currentRecipeComposedTags = composeRecipeTagsWithPopularTrend(currentRecipeExtraIngredientsTagsWithTrend);
-	const currentRecipeTagsWithTrend = union(calculateRecipeTagsWithTrend(currentRecipeComposedTags));
 
 	return (
 		<>
@@ -122,45 +173,68 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 				)}
 			>
 				<div className="m-2 grid grid-cols-fill-12 justify-around gap-4">
-					{data.map(({name, tags}, index) => {
+					{data.map(({ name, tags }, index) => {
 						if (isFullFilled) {
 							return (
 								<div
 									key={index}
 									className="flex cursor-not-allowed flex-col items-center opacity-40 brightness-50 dark:opacity-80"
 								>
-									<Sprite target="ingredient" name={name} size={3} />
-									<span className="whitespace-nowrap text-center text-tiny">{name}</span>
+									<Sprite
+										target="ingredient"
+										name={name}
+										size={3}
+									/>
+									<span className="whitespace-nowrap text-center text-tiny">
+										{name}
+									</span>
 								</div>
 							);
 						}
 
-						const tagsWithTrend = calculateIngredientTagsWithTrend(tags);
-						const allTagsWithTrend = union(currentRecipeTagsWithTrend, tagsWithTrend);
+						const tagsWithTrend =
+							calculateIngredientTagsWithTrend(tags);
+						const allTagsWithTrend = union(
+							currentRecipeTagsWithTrend,
+							tagsWithTrend
+						);
 
 						const before = composeRecipeTagsWithPopularTrend(
 							currentRecipeTagsWithTrend as TIngredientTag[]
 						);
-						const after = composeRecipeTagsWithPopularTrend(allTagsWithTrend as TIngredientTag[]);
+						const after = composeRecipeTagsWithPopularTrend(
+							allTagsWithTrend as TIngredientTag[]
+						);
 
-						let scoreChange = instance_recipe.getIngredientScoreChange(before, after, customerPositiveTags);
+						let scoreChange =
+							instance_recipe.getIngredientScoreChange(
+								before,
+								after,
+								customerPositiveTags
+							);
 
 						// The customer like the large partition tag.
 						scoreChange += Number(
 							isLargePartitionTagNext &&
-								(customerPositiveTags as TRecipeTag[]).includes(DYNAMIC_TAG_MAP.largePartition) &&
+								(customerPositiveTags as TRecipeTag[]).includes(
+									DYNAMIC_TAG_MAP.largePartition
+								) &&
 								!before.includes(DYNAMIC_TAG_MAP.largePartition)
 						);
 
 						// The current popular tag is the large partition tag and the customer has popular tags.
 						scoreChange += Number(
 							shouldCalculateLargePartitionTag &&
-								(customerPositiveTags as TRecipeTag[]).includes(DYNAMIC_TAG_MAP.popularNegative) &&
+								(customerPositiveTags as TRecipeTag[]).includes(
+									DYNAMIC_TAG_MAP.popularNegative
+								) &&
 								currentCustomerPopularTrend.isNegative
 						);
 						scoreChange += Number(
 							shouldCalculateLargePartitionTag &&
-								(customerPositiveTags as TRecipeTag[]).includes(DYNAMIC_TAG_MAP.popularPositive) &&
+								(customerPositiveTags as TRecipeTag[]).includes(
+									DYNAMIC_TAG_MAP.popularPositive
+								) &&
 								!currentCustomerPopularTrend.isNegative
 						);
 
@@ -168,8 +242,14 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 						const isUp = scoreChange > 0;
 						const isNoChange = scoreChange === 0;
 
-						const color = isUp ? 'success' : isDown ? 'danger' : 'default';
-						const score = isUp ? `+${scoreChange}` : `${scoreChange}`;
+						const color = isUp
+							? 'success'
+							: isDown
+								? 'danger'
+								: 'default';
+						const score = isUp
+							? `+${scoreChange}`
+							: `${scoreChange}`;
 
 						const badgeContent = isNoChange ? '' : score;
 						const tooltipContent = `点击：加入额外食材【${name}】${isNoChange ? '' : `，匹配度${score}`}`;
@@ -208,8 +288,10 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 										size="sm"
 										classNames={{
 											badge: cn('font-mono', {
-												'brightness-125': scoreChange > 2,
-												'scale-125 font-medium': scoreChange > 1,
+												'brightness-125':
+													scoreChange > 2,
+												'scale-125 font-medium':
+													scoreChange > 1,
 											}),
 											base: 'group-hover:drop-shadow-md',
 										}}
@@ -240,9 +322,18 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 						</div>
 						<div className="m-2 grid grid-cols-fill-12 justify-around gap-4">
 							{toArray(darkIngredients).map((name, index) => (
-								<div key={index} className="flex cursor-not-allowed flex-col items-center">
-									<Sprite target="ingredient" name={name} size={3} />
-									<span className="whitespace-nowrap text-center text-tiny">{name}</span>
+								<div
+									key={index}
+									className="flex cursor-not-allowed flex-col items-center"
+								>
+									<Sprite
+										target="ingredient"
+										name={name}
+										size={3}
+									/>
+									<span className="whitespace-nowrap text-center text-tiny">
+										{name}
+									</span>
 								</div>
 							))}
 						</div>

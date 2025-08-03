@@ -1,14 +1,17 @@
 'use client';
 
-import {type JSX, memo} from 'react';
+import { type JSX, memo } from 'react';
 
-import {useMotionProps, useReducedMotion} from '@/design/ui/hooks';
+import { useMotionProps, useReducedMotion } from '@/design/ui/hooks';
 
-import {type DropdownProps, Dropdown as HeroUIDropdown} from '@heroui/dropdown';
+import {
+	type DropdownProps,
+	Dropdown as HeroUIDropdown,
+} from '@heroui/dropdown';
 
-import {cn} from '@/design/ui/utils';
+import { cn } from '@/design/ui/utils';
 
-import {globalStore as store} from '@/stores';
+import { globalStore as store } from '@/stores';
 
 interface IProps extends DropdownProps {}
 
@@ -37,7 +40,8 @@ export default memo<IProps>(function Dropdown({
 				content: cn(
 					'min-w-min',
 					{
-						'bg-content1/40 backdrop-blur-lg dark:bg-content1/70': isHighAppearance,
+						'bg-content1/40 backdrop-blur-lg dark:bg-content1/70':
+							isHighAppearance,
 					},
 					classNames?.content
 				),
@@ -45,12 +49,13 @@ export default memo<IProps>(function Dropdown({
 			{...props}
 		/>
 	);
-}) as {
-	(props: IProps): JSX.Element;
-	displayName: string;
-};
+}) as { (props: IProps): JSX.Element; displayName: string };
 
-export type {IProps as IDropdownProps};
+export type { IProps as IDropdownProps };
 
-export {DropdownItem, DropdownMenu, DropdownTrigger} from '@heroui/dropdown';
-export type {DropdownItemProps, DropdownMenuProps, DropdownTriggerProps} from '@heroui/dropdown';
+export { DropdownItem, DropdownMenu, DropdownTrigger } from '@heroui/dropdown';
+export type {
+	DropdownItemProps,
+	DropdownMenuProps,
+	DropdownTriggerProps,
+} from '@heroui/dropdown';

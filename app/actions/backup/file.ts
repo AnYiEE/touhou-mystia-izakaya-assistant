@@ -1,8 +1,8 @@
-import {access, mkdir, readFile, unlink, writeFile} from 'node:fs/promises';
-import {join} from 'node:path';
-import {cwd} from 'node:process';
+import { access, mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { cwd } from 'node:process';
 
-import type {TBackupFileRecord} from '@/lib/db/types';
+import type { TBackupFileRecord } from '@/lib/db/types';
 
 const dir = join(cwd(), 'upload/backups');
 const encoding = 'utf8';
@@ -23,13 +23,14 @@ export async function getFile(code: TBackupFileRecord['code']) {
 	return await readFile(filePath, encoding);
 }
 
-export async function saveFile(code: TBackupFileRecord['code'], content: string) {
+export async function saveFile(
+	code: TBackupFileRecord['code'],
+	content: string
+) {
 	try {
 		await access(dir);
 	} catch {
-		await mkdir(dir, {
-			recursive: true,
-		});
+		await mkdir(dir, { recursive: true });
 	}
 
 	const filePath = generateFilePath(code);

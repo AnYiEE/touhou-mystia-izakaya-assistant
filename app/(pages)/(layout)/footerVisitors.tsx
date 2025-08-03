@@ -1,12 +1,12 @@
 'use client';
 
-import {memo, useCallback, useEffect, useState} from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 
-import {ping} from '@/components/analytics';
+import { ping } from '@/components/analytics';
 
-import {siteConfig} from '@/configs';
+import { siteConfig } from '@/configs';
 
-const {isAnalytics, isOffline, isSelfHosted} = siteConfig;
+const { isAnalytics, isOffline, isSelfHosted } = siteConfig;
 
 interface IProps {}
 
@@ -18,9 +18,7 @@ export default memo<IProps>(function FooterVisitors() {
 			setVisitors(-1);
 		};
 
-		fetch('/api/real-time-visitors', {
-			cache: 'no-cache',
-		})
+		fetch('/api/real-time-visitors', { cache: 'no-cache' })
 			.then((response) => {
 				if (response.ok) {
 					void response.json().then((data) => {

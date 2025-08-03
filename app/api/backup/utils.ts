@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
-import {type NextRequest} from 'next/server';
-import {sha1} from 'js-sha1';
+import { type NextRequest } from 'next/server';
+import { sha1 } from 'js-sha1';
 
 export function getRequestMeta(request: NextRequest) {
 	const contentType = request.headers.get('content-type') || null;
@@ -21,9 +21,5 @@ export function getRequestMeta(request: NextRequest) {
 		ua = sha1(ua);
 	}
 
-	return {
-		contentType,
-		ip,
-		ua,
-	};
+	return { contentType, ip, ua };
 }

@@ -1,16 +1,14 @@
-import {type Metadata} from 'next';
+import { type Metadata } from 'next';
 
-import {Divider} from '@heroui/divider';
+import { Divider } from '@heroui/divider';
 
-import {Button, Link} from '@/design/ui/components';
+import { Button, Link } from '@/design/ui/components';
 
-import {siteConfig} from '@/configs';
+import { siteConfig } from '@/configs';
 
-const {links} = siteConfig;
+const { links } = siteConfig;
 
-export const metadata: Metadata = {
-	title: 'Oops!',
-};
+export const metadata: Metadata = { title: 'Oops!' };
 
 export default function NotFound() {
 	return (

@@ -1,6 +1,6 @@
 'use client';
 
-import {useCallback, useMemo} from 'react';
+import { useCallback, useMemo } from 'react';
 
 import {
 	useFilteredData,
@@ -14,12 +14,14 @@ import {
 import Content from './content';
 import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
-import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
+import SideFilterIconButton, {
+	type TSelectConfig,
+} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
-import {cookersStore as store} from '@/stores';
-import {checkArrayContainsOf, checkEmpty} from '@/utilities';
+import { cookersStore as store } from '@/stores';
+import { checkArrayContainsOf, checkEmpty } from '@/utilities';
 
 export default function Cookers() {
 	const instance = store.instance.get();
@@ -43,25 +45,51 @@ export default function Cookers() {
 
 	const filterData = useCallback(
 		() =>
-			searchResult.filter(({category, dlc, type}) => {
+			searchResult.filter(({ category, dlc, type }) => {
 				const types = [type].flat();
 
-				const isDlcMatched = checkEmpty(filterDlcs) || filterDlcs.includes(dlc.toString());
-				const isCategoryMatched = checkEmpty(filterCategories) || filterCategories.includes(category);
-				const isNoCategoryMatched = checkEmpty(filterNoCategories) || !filterNoCategories.includes(category);
-				const isTypeMatched = checkEmpty(filterTypes) || checkArrayContainsOf(filterTypes, types);
-				const isNoTypeMatched = checkEmpty(filterNoTypes) || !checkArrayContainsOf(filterNoTypes, types);
+				const isDlcMatched =
+					checkEmpty(filterDlcs) ||
+					filterDlcs.includes(dlc.toString());
+				const isCategoryMatched =
+					checkEmpty(filterCategories) ||
+					filterCategories.includes(category);
+				const isNoCategoryMatched =
+					checkEmpty(filterNoCategories) ||
+					!filterNoCategories.includes(category);
+				const isTypeMatched =
+					checkEmpty(filterTypes) ||
+					checkArrayContainsOf(filterTypes, types);
+				const isNoTypeMatched =
+					checkEmpty(filterNoTypes) ||
+					!checkArrayContainsOf(filterNoTypes, types);
 
-				return isDlcMatched && isCategoryMatched && isNoCategoryMatched && isTypeMatched && isNoTypeMatched;
+				return (
+					isDlcMatched &&
+					isCategoryMatched &&
+					isNoCategoryMatched &&
+					isTypeMatched &&
+					isNoTypeMatched
+				);
 			}),
-		[filterCategories, filterDlcs, filterNoCategories, filterNoTypes, filterTypes, searchResult]
+		[
+			filterCategories,
+			filterDlcs,
+			filterNoCategories,
+			filterNoTypes,
+			filterTypes,
+			searchResult,
+		]
 	);
 
 	const filteredData = useFilteredData(instance, filterData);
 
 	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
 
-	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, store.persistence.pinyinSortState.set);
+	const pinyinSortConfig = usePinyinSortConfig(
+		pinyinSortState,
+		store.persistence.pinyinSortState.set
+	);
 
 	const searchConfig = useSearchConfig({
 		label: '选择或输入厨具名称',
@@ -104,7 +132,16 @@ export default function Cookers() {
 				setSelectedKeys: store.persistence.filters.noTypes.set,
 			},
 		],
-		[allCategories, allDlcs, allTypes, filterCategories, filterDlcs, filterNoCategories, filterNoTypes, filterTypes]
+		[
+			allCategories,
+			allDlcs,
+			allTypes,
+			filterCategories,
+			filterDlcs,
+			filterNoCategories,
+			filterNoTypes,
+			filterTypes,
+		]
 	);
 
 	return (
@@ -113,7 +150,9 @@ export default function Cookers() {
 			sideButton={
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />
-					<SidePinyinSortIconButton pinyinSortConfig={pinyinSortConfig} />
+					<SidePinyinSortIconButton
+						pinyinSortConfig={pinyinSortConfig}
+					/>
 					<SideFilterIconButton selectConfig={selectConfig} />
 				</SideButtonGroup>
 			}

@@ -1,5 +1,5 @@
 /* eslint-disable sort-keys */
-import type {IClothes} from './types';
+import type { IClothes } from './types';
 
 export const CLOTHES_LIST = [
 	{
@@ -9,11 +9,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [
-			{
-				self: true,
-			},
-		],
+		from: [{ self: true }],
 	},
 	{
 		id: -2,
@@ -22,37 +18,27 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [
-			{
-				self: true,
-			},
-		],
+		from: [{ self: true }],
 	},
 	{
 		id: 23,
 		name: '黑色套装',
-		description: '有着宵暗妖怪风格的服饰套装。但其实只是把原来的衣服染黑了而已，眼罩倒是很有趣。',
+		description:
+			'有着宵暗妖怪风格的服饰套装。但其实只是把原来的衣服染黑了而已，眼罩倒是很有趣。',
 		dlc: 0,
 		gif: true,
 		izakaya: false,
-		from: [
-			{
-				bond: '露米娅',
-			},
-		],
+		from: [{ bond: '露米娅' }],
 	},
 	{
 		id: 24,
 		name: '中华风校服',
-		description: '上白泽慧音利用学童们用剩下的布料缝制而成的衣裳。似乎是中国某个时代，女孩子开始读书时候穿的衣服。',
+		description:
+			'上白泽慧音利用学童们用剩下的布料缝制而成的衣裳。似乎是中国某个时代，女孩子开始读书时候穿的衣服。',
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [
-			{
-				bond: '上白泽慧音',
-			},
-		],
+		from: [{ bond: '上白泽慧音' }],
 	},
 	{
 		id: 25,
@@ -62,24 +48,17 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [
-			{
-				bond: '博丽灵梦',
-			},
-		],
+		from: [{ bond: '博丽灵梦' }],
 	},
 	{
 		id: 26,
 		name: '睡衣',
-		description: '帕秋莉·诺蕾姬送的舒服又保暖的家居服，穿上就不想脱下来了。',
+		description:
+			'帕秋莉·诺蕾姬送的舒服又保暖的家居服，穿上就不想脱下来了。',
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [
-			{
-				bond: '帕秋莉',
-			},
-		],
+		from: [{ bond: '帕秋莉' }],
 	},
 	{
 		id: 27,
@@ -88,16 +67,13 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [
-			{
-				bond: '蓬莱山辉夜',
-			},
-		],
+		from: [{ bond: '蓬莱山辉夜' }],
 	},
 	{
 		id: 31,
 		name: '水手服',
-		description: '从位于博丽神社的守矢分社中离奇获得的服饰，似乎在外界很流行。',
+		description:
+			'从位于博丽神社的守矢分社中离奇获得的服饰，似乎在外界很流行。',
 		dlc: 0,
 		gif: false,
 		izakaya: false,
@@ -106,7 +82,8 @@ export const CLOTHES_LIST = [
 	{
 		id: 54,
 		name: '万圣节特典晚装',
-		description: '在2021年万圣节期间登录游戏获得的限定晚装，结合万圣节的气氛做了特别的设计，可爱又精怪。',
+		description:
+			'在2021年万圣节期间登录游戏获得的限定晚装，结合万圣节的气氛做了特别的设计，可爱又精怪。',
 		dlc: 0,
 		gif: false,
 		izakaya: true,
@@ -114,10 +91,7 @@ export const CLOTHES_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: {
-						currency: '银色的青蛙硬币',
-						amount: 25,
-					},
+					price: { currency: '银色的青蛙硬币', amount: 25 },
 				},
 			},
 		],
@@ -143,10 +117,7 @@ export const CLOTHES_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: {
-						currency: '银色的青蛙硬币',
-						amount: 25,
-					},
+					price: { currency: '银色的青蛙硬币', amount: 25 },
 				},
 			},
 		],
@@ -163,10 +134,7 @@ export const CLOTHES_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: {
-						currency: '银色的青蛙硬币',
-						amount: 15,
-					},
+					price: { currency: '银色的青蛙硬币', amount: 15 },
 				},
 			},
 		],
@@ -183,10 +151,7 @@ export const CLOTHES_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: {
-						currency: '银色的青蛙硬币',
-						amount: 25,
-					},
+					price: { currency: '银色的青蛙硬币', amount: 25 },
 				},
 			},
 		],
@@ -203,10 +168,7 @@ export const CLOTHES_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: {
-						currency: '银色的青蛙硬币',
-						amount: 15,
-					},
+					price: { currency: '银色的青蛙硬币', amount: 15 },
 				},
 			},
 		],
@@ -219,11 +181,7 @@ export const CLOTHES_LIST = [
 		dlc: 1,
 		gif: false,
 		izakaya: false,
-		from: [
-			{
-				bond: '东风谷早苗',
-			},
-		],
+		from: [{ bond: '东风谷早苗' }],
 	},
 	{
 		id: 1002,
@@ -233,11 +191,7 @@ export const CLOTHES_LIST = [
 		dlc: 1,
 		gif: false,
 		izakaya: false,
-		from: [
-			{
-				bond: '雾雨魔理沙',
-			},
-		],
+		from: [{ bond: '雾雨魔理沙' }],
 	},
 	{
 		id: 2001,
@@ -247,11 +201,7 @@ export const CLOTHES_LIST = [
 		dlc: 2,
 		gif: false,
 		izakaya: false,
-		from: [
-			{
-				bond: '星熊勇仪',
-			},
-		],
+		from: [{ bond: '星熊勇仪' }],
 	},
 	{
 		id: 2002,
@@ -261,16 +211,13 @@ export const CLOTHES_LIST = [
 		dlc: 2,
 		gif: true,
 		izakaya: false,
-		from: [
-			{
-				bond: '灵乌路空',
-			},
-		],
+		from: [{ bond: '灵乌路空' }],
 	},
 	{
 		id: 2500,
 		name: '朋克演出服',
-		description: '充满朋克灵魂的演出装束！是“鸟兽伎乐”乐队的起点，真希望有机会可以继续尽情地咆哮和歌唱啊！',
+		description:
+			'充满朋克灵魂的演出装束！是“鸟兽伎乐”乐队的起点，真希望有机会可以继续尽情地咆哮和歌唱啊！',
 		dlc: 2.5,
 		gif: false,
 		izakaya: false,
@@ -278,10 +225,7 @@ export const CLOTHES_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: {
-						currency: '银色的青蛙硬币',
-						amount: 10,
-					},
+					price: { currency: '银色的青蛙硬币', amount: 10 },
 				},
 			},
 			'完成“爱乐者的挑战赛”任务后自动获得',
@@ -290,41 +234,32 @@ export const CLOTHES_LIST = [
 	{
 		id: 3001,
 		name: '海盗服',
-		description: '曾经随着村纱东飘西泊的船长服，是村纱海上生涯的重要见证，同时也是船长荣耀的象征。',
+		description:
+			'曾经随着村纱东飘西泊的船长服，是村纱海上生涯的重要见证，同时也是船长荣耀的象征。',
 		dlc: 3,
 		gif: false,
 		izakaya: false,
-		from: [
-			{
-				bond: '村纱水蜜',
-			},
-		],
+		from: [{ bond: '村纱水蜜' }],
 	},
 	{
 		id: 3002,
 		name: '仙女服',
-		description: '散发着缕缕仙气的纱裙。轻盈的丝纱质感，薄如蝉翼，似乎随时将化蝶飞去。',
+		description:
+			'散发着缕缕仙气的纱裙。轻盈的丝纱质感，薄如蝉翼，似乎随时将化蝶飞去。',
 		dlc: 3,
 		gif: false,
 		izakaya: false,
-		from: [
-			{
-				bond: '霍青娥',
-			},
-		],
+		from: [{ bond: '霍青娥' }],
 	},
 	{
 		id: 4003,
 		name: '花的报恩',
-		description: '用鲜花编织的小裙子。鲜花上附着了花之主的魔力，故而永不凋谢。',
+		description:
+			'用鲜花编织的小裙子。鲜花上附着了花之主的魔力，故而永不凋谢。',
 		dlc: 4,
 		gif: false,
 		izakaya: false,
-		from: [
-			{
-				bond: '风见幽香',
-			},
-		],
+		from: [{ bond: '风见幽香' }],
 	},
 	{
 		id: 4004,
@@ -334,24 +269,17 @@ export const CLOTHES_LIST = [
 		dlc: 4,
 		gif: false,
 		izakaya: false,
-		from: [
-			{
-				bond: '鬼人正邪',
-			},
-		],
+		from: [{ bond: '鬼人正邪' }],
 	},
 	{
 		id: 5009,
 		name: '军乐队礼服',
-		description: '月之使者中军乐队的礼服，穿在身上有种威风凛凛的感觉！搭配的乐器是小号，也是我擅长的乐器之一哦！',
+		description:
+			'月之使者中军乐队的礼服，穿在身上有种威风凛凛的感觉！搭配的乐器是小号，也是我擅长的乐器之一哦！',
 		dlc: 5,
 		gif: false,
 		izakaya: false,
-		from: [
-			{
-				bond: '绵月依姬',
-			},
-		],
+		from: [{ bond: '绵月依姬' }],
 	},
 	{
 		id: 5010,
@@ -361,10 +289,6 @@ export const CLOTHES_LIST = [
 		dlc: 5,
 		gif: false,
 		izakaya: false,
-		from: [
-			{
-				bond: '露易兹',
-			},
-		],
+		from: [{ bond: '露易兹' }],
 	},
 ] as const satisfies IClothes[];

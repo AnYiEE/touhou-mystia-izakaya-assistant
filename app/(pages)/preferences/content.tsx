@@ -1,43 +1,53 @@
 'use client';
 
-import {memo, useCallback} from 'react';
+import { memo, useCallback } from 'react';
 
-import {useRouter} from 'next/navigation';
-import {useVibrate} from '@/hooks';
+import { useRouter } from 'next/navigation';
+import { useVibrate } from '@/hooks';
 
-import {Select, SelectItem} from '@heroui/select';
-import {type Selection} from '@heroui/table';
+import { Select, SelectItem } from '@heroui/select';
+import { type Selection } from '@heroui/table';
 
-import {Button, Switch, cn, useMotionProps, useReducedMotion} from '@/design/ui/components';
+import {
+	Button,
+	Switch,
+	cn,
+	useMotionProps,
+	useReducedMotion,
+} from '@/design/ui/components';
 
-import DataManager, {type IDataManagerProps} from './dataManager';
+import DataManager, { type IDataManagerProps } from './dataManager';
 import SwitchItem from './switchItem';
 import Heading from '@/components/heading';
 import Sprite from '@/components/sprite';
 
-import {DYNAMIC_TAG_MAP} from '@/data';
-import {customerNormalStore, customerRareStore, globalStore} from '@/stores';
-import {toSet} from '@/utilities';
+import { DYNAMIC_TAG_MAP } from '@/data';
+import { customerNormalStore, customerRareStore, globalStore } from '@/stores';
+import { toSet } from '@/utilities';
 
 interface IProps extends IDataManagerProps {}
 
-export default memo<IProps>(function Content({onModalClose}) {
+export default memo<IProps>(function Content({ onModalClose }) {
 	const isReducedMotion = useReducedMotion();
 	const popoverMotionProps = useMotionProps('popover');
 	const router = useRouter();
 	const vibrate = useVibrate();
 
-	const isOrderLinkedFilter = customerRareStore.persistence.customer.orderLinkedFilter.use();
-	const isShowTagDescription = customerRareStore.persistence.customer.showTagDescription.use();
+	const isOrderLinkedFilter =
+		customerRareStore.persistence.customer.orderLinkedFilter.use();
+	const isShowTagDescription =
+		customerRareStore.persistence.customer.showTagDescription.use();
 
 	const isFamousShop = globalStore.persistence.famousShop.use();
 	const popularTags = globalStore.popularTags.get();
-	const isPopularTrendNegative = globalStore.persistence.popularTrend.isNegative.use();
+	const isPopularTrendNegative =
+		globalStore.persistence.popularTrend.isNegative.use();
 	const selectedPopularTag = globalStore.selectedPopularTag.use();
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 	const isShowTachie = globalStore.persistence.tachie.use();
-	const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
+	const isShowTagsTooltip =
+		globalStore.persistence.customerCardTagsTooltip.use();
 	const isVibrateEnabled = globalStore.persistence.vibrate.use();
 
 	const resetRecipeTablePage = useCallback(() => {
@@ -101,7 +111,10 @@ export default memo<IProps>(function Content({onModalClose}) {
 			<Heading as="h2" className="mt-0">
 				全局设置
 			</Heading>
-			<Heading as="h3" subTitle="正确设置游戏中现时的流行趋势可以使套餐评级更为准确">
+			<Heading
+				as="h3"
+				subTitle="正确设置游戏中现时的流行趋势可以使套餐评级更为准确"
+			>
 				流行趋势
 			</Heading>
 			<div className="space-y-2">
@@ -113,10 +126,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 						size="sm"
 						onValueChange={onIsPopularTrendNegativeChange}
 						aria-label={`设置为${isPopularTrendNegative ? DYNAMIC_TAG_MAP.popularPositive : DYNAMIC_TAG_MAP.popularNegative}`}
-						classNames={{
-							base: 'mx-2',
-							wrapper: 'bg-primary',
-						}}
+						classNames={{ base: 'mx-2', wrapper: 'bg-primary' }}
 					/>
 					{DYNAMIC_TAG_MAP.popularNegative}
 				</div>
@@ -133,9 +143,7 @@ export default memo<IProps>(function Content({onModalClose}) {
 							onSelectionChange={onSelectedPopularTagChange}
 							aria-label="选择游戏中现时流行的标签"
 							title="选择游戏中现时流行的标签"
-							popoverProps={{
-								motionProps: popoverMotionProps,
-							}}
+							popoverProps={{ motionProps: popoverMotionProps }}
 							classNames={{
 								base: 'w-28',
 								listboxWrapper: cn(
@@ -146,17 +154,26 @@ export default memo<IProps>(function Content({onModalClose}) {
 									}
 								),
 								popoverContent: cn({
-									'bg-content1/70 backdrop-blur-lg': isHighAppearance,
+									'bg-content1/70 backdrop-blur-lg':
+										isHighAppearance,
 								}),
-								trigger: cn('transition-background motion-reduce:transition-none', {
-									'bg-default/40 backdrop-blur data-[hover=true]:bg-default-400/40': isHighAppearance,
-									'bg-default-200 data-[hover=true]:bg-default': !isHighAppearance,
-									'dark:bg-default-100 dark:data-[hover=true]:bg-default-200':
-										!isHighAppearance && onModalClose === undefined,
-								}),
+								trigger: cn(
+									'transition-background motion-reduce:transition-none',
+									{
+										'bg-default/40 backdrop-blur data-[hover=true]:bg-default-400/40':
+											isHighAppearance,
+										'bg-default-200 data-[hover=true]:bg-default':
+											!isHighAppearance,
+										'dark:bg-default-100 dark:data-[hover=true]:bg-default-200':
+											!isHighAppearance &&
+											onModalClose === undefined,
+									}
+								),
 							}}
 						>
-							{({value}) => <SelectItem key={value}>{value}</SelectItem>}
+							{({ value }) => (
+								<SelectItem key={value}>{value}</SelectItem>
+							)}
 						</Select>
 					</div>
 					<Button
@@ -210,7 +227,9 @@ export default memo<IProps>(function Content({onModalClose}) {
 					aria-label={`${isShowTagDescription ? '隐藏' : '显示'}顾客页面立绘`}
 				>
 					顾客页面右下角的立绘
-					<span className="text-tiny text-foreground-500">（宽屏可见）</span>
+					<span className="text-tiny text-foreground-500">
+						（宽屏可见）
+					</span>
 				</SwitchItem>
 			</div>
 			<Heading as="h3">体验</Heading>
@@ -221,15 +240,21 @@ export default memo<IProps>(function Content({onModalClose}) {
 					aria-label={`${isVibrateEnabled ? '关闭' : '开启'}操作震动反馈`}
 				>
 					部分操作的震动反馈
-					<span className="text-tiny text-foreground-500">（需设备和浏览器支持）</span>
+					<span className="text-tiny text-foreground-500">
+						（需设备和浏览器支持）
+					</span>
 				</SwitchItem>
 				<SwitchItem
 					isSelected={isShowTagsTooltip}
-					onValueChange={globalStore.persistence.customerCardTagsTooltip.set}
+					onValueChange={
+						globalStore.persistence.customerCardTagsTooltip.set
+					}
 					aria-label={`${isShowTagsTooltip ? '隐藏' : '显示'}标签浮动提示`}
 				>
 					顾客卡片中标签的浮动提示
-					<span className="text-tiny text-foreground-500">（鼠标悬停可见）</span>
+					<span className="text-tiny text-foreground-500">
+						（鼠标悬停可见）
+					</span>
 				</SwitchItem>
 			</div>
 			<Heading as="h2">稀客页面</Heading>
@@ -237,14 +262,20 @@ export default memo<IProps>(function Content({onModalClose}) {
 			<div className="space-y-2">
 				<SwitchItem
 					isSelected={isOrderLinkedFilter}
-					onValueChange={customerRareStore.persistence.customer.orderLinkedFilter.set}
+					onValueChange={
+						customerRareStore.persistence.customer.orderLinkedFilter
+							.set
+					}
 					aria-label={`选择点单需求标签的同时${isOrderLinkedFilter ? '不' : ''}筛选表格`}
 				>
 					选择点单需求的同时筛选表格
 				</SwitchItem>
 				<SwitchItem
 					isSelected={isShowTagDescription}
-					onValueChange={customerRareStore.persistence.customer.showTagDescription.set}
+					onValueChange={
+						customerRareStore.persistence.customer
+							.showTagDescription.set
+					}
 					aria-label={`${isShowTagDescription ? '隐藏' : '显示'}料理标签描述`}
 				>
 					显示料理标签所对应的关键词

@@ -1,12 +1,20 @@
-import {checkIngredientEasterEgg, checkRecipeEasterEgg, evaluateMeal} from './evaluateMeal';
-import {Customer} from '../base';
-import {CUSTOMER_RARE_LIST, type TCustomerRareName, type TCustomerRares} from '@/data';
-import {Clothes} from '@/utils';
+import {
+	checkIngredientEasterEgg,
+	checkRecipeEasterEgg,
+	evaluateMeal,
+} from './evaluateMeal';
+import { Customer } from '../base';
+import {
+	CUSTOMER_RARE_LIST,
+	type TCustomerRareName,
+	type TCustomerRares,
+} from '@/data';
+import { Clothes } from '@/utils';
 
-import {siteConfig} from '@/configs';
-import {processPinyin} from '@/utilities';
+import { siteConfig } from '@/configs';
+import { processPinyin } from '@/utilities';
 
-const {cdnUrl} = siteConfig;
+const { cdnUrl } = siteConfig;
 
 export class CustomerRare extends Customer<TCustomerRares> {
 	private static _instance: CustomerRare | undefined;
@@ -25,11 +33,15 @@ export class CustomerRare extends Customer<TCustomerRares> {
 		return instance;
 	}
 
-	public checkIngredientEasterEgg(args: Parameters<typeof checkIngredientEasterEgg>[number]) {
+	public checkIngredientEasterEgg(
+		args: Parameters<typeof checkIngredientEasterEgg>[number]
+	) {
 		return checkIngredientEasterEgg(args);
 	}
 
-	public checkRecipeEasterEgg(args: Parameters<typeof checkRecipeEasterEgg>[number]) {
+	public checkRecipeEasterEgg(
+		args: Parameters<typeof checkRecipeEasterEgg>[number]
+	) {
 		return checkRecipeEasterEgg(args);
 	}
 

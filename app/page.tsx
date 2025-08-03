@@ -1,25 +1,34 @@
 'use client';
 
-import {useMemo} from 'react';
+import { useMemo } from 'react';
 
-import {faQq} from '@fortawesome/free-brands-svg-icons';
+import { faQq } from '@fortawesome/free-brands-svg-icons';
 
-import {Button, Link, Popover, PopoverContent, PopoverTrigger, Tooltip} from '@/design/ui/components';
+import {
+	Button,
+	Link,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	Tooltip,
+} from '@/design/ui/components';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Placeholder from '@/components/placeholder';
 import QRCode from '@/components/qrCode';
 import Rednote from '@/components/rednote';
 
-import {siteConfig} from '@/configs';
+import { siteConfig } from '@/configs';
 
-const {links, shortName} = siteConfig;
+const { links, shortName } = siteConfig;
 
 export default function Home() {
 	const qqCodeContent = useMemo(
 		() => (
 			<div className="flex flex-col items-center">
-				<p className="pt-1 text-xs leading-none">分享经验、交流心得、提出建议、反馈问题</p>
+				<p className="pt-1 text-xs leading-none">
+					分享经验、交流心得、提出建议、反馈问题
+				</p>
 				<div className="flex">
 					<QRCode text={links.qqGroup1.href}>
 						<Link
@@ -57,10 +66,16 @@ export default function Home() {
 						<p className="text-4xl tracking-wider md:text-5xl">
 							欢迎使用<strong>{shortName}</strong>
 						</p>
-						<p className="hidden text-large md:inline-block lg:hidden">点击顶部的按钮以使用各项功能</p>
+						<p className="hidden text-large md:inline-block lg:hidden">
+							点击顶部的按钮以使用各项功能
+						</p>
 						<p className="inline-flex items-center md:hidden">
 							点击右上角的
-							<span aria-label="菜单按钮图例" role="img" className="mx-0.5 block h-4 rounded bg-content2">
+							<span
+								aria-label="菜单按钮图例"
+								role="img"
+								className="mx-0.5 block h-4 rounded bg-content2"
+							>
 								<span className="flex h-full flex-col justify-center p-1 before:h-px before:w-4 before:-translate-y-1 before:bg-current after:h-px after:w-4 after:translate-y-1 after:bg-current"></span>
 							</span>
 							以使用各项功能
@@ -78,20 +93,18 @@ export default function Home() {
 						</p>
 					</div>
 					<div className="flex flex-wrap items-end leading-none">
-						<p className="text-foreground-500 lg:hidden">官方群：</p>
+						<p className="text-foreground-500 lg:hidden">
+							官方群：
+						</p>
 						<div className="flex items-center gap-2 lg:gap-4">
 							<Popover
 								showArrow
-								classNames={{
-									content: 'px-0 pb-1',
-								}}
+								classNames={{ content: 'px-0 pb-1' }}
 							>
 								<Tooltip
 									showArrow
 									content={qqCodeContent}
-									classNames={{
-										content: 'px-0 pb-1',
-									}}
+									classNames={{ content: 'px-0 pb-1' }}
 								>
 									<span className="inline-flex">
 										<PopoverTrigger>
@@ -109,11 +122,11 @@ export default function Home() {
 							<Tooltip
 								showArrow
 								content={
-									<QRCode text={links.rednoteGroup.href}>扫码加入{links.rednoteGroup.label}</QRCode>
+									<QRCode text={links.rednoteGroup.href}>
+										扫码加入{links.rednoteGroup.label}
+									</QRCode>
 								}
-								classNames={{
-									content: 'p-0 pb-1',
-								}}
+								classNames={{ content: 'p-0 pb-1' }}
 							>
 								<Button
 									as={Link}
@@ -134,7 +147,10 @@ export default function Home() {
 				</div>
 			</div>
 			<Placeholder className="m-auto hidden lg:flex">
-				<span aria-hidden className="block h-loading w-loading bg-loading" />
+				<span
+					aria-hidden
+					className="block h-loading w-loading bg-loading"
+				/>
 				<p>点击顶部的按钮以使用各项功能</p>
 			</Placeholder>
 		</div>

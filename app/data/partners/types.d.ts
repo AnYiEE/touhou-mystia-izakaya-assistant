@@ -1,5 +1,5 @@
-import {type TCustomerRareName, type TPlace, type TSpeed} from '@/data';
-import type {IItemBase, TDescription} from '@/data/types';
+import { type TCustomerRareName, type TPlace, type TSpeed } from '@/data';
+import type { IItemBase, TDescription } from '@/data/types';
 
 export interface IPartner extends IItemBase {
 	belong: TCustomerRareName[] | null;
@@ -15,10 +15,7 @@ export interface IPartner extends IItemBase {
 				task: TPlace;
 		  }>;
 	pay: number;
-	speed: {
-		moving: TSpeed;
-		working: Exclude<TSpeed, '瞬间移动'>;
-	};
+	speed: { moving: TSpeed; working: Exclude<TSpeed, '瞬间移动'> };
 }
 
 export type TPartners = typeof import('./data').PARTNER_LIST;

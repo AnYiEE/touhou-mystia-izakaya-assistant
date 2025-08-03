@@ -1,30 +1,31 @@
-import {memo, useRef} from 'react';
+import { memo, useRef } from 'react';
 
-import {useItemPopoverState, useOpenedItemPopover} from '@/hooks';
+import { useItemPopoverState, useOpenedItemPopover } from '@/hooks';
 
-import {cn} from '@/design/ui/components';
+import { cn } from '@/design/ui/components';
 
-import {trackEvent} from '@/components/analytics';
+import { trackEvent } from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
 import ItemPopoverCard from '@/components/itemPopoverCard';
 import Sprite from '@/components/sprite';
 
 // import {globalStore as store} from '@/stores';
-import {type Ornament} from '@/utils';
-import type {TItemData} from '@/utils/types';
+import { type Ornament } from '@/utils';
+import type { TItemData } from '@/utils/types';
 
 interface IProps {
 	data: TItemData<Ornament>;
 }
 
-export default memo<IProps>(function Content({data}) {
+export default memo<IProps>(function Content({ data }) {
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
 	const [openedPopover] = useOpenedItemPopover(popoverCardRef);
-	const {checkDefaultOpen, checkShouldEffect} = useItemPopoverState(openedPopover);
+	const { checkDefaultOpen, checkShouldEffect } =
+		useItemPopoverState(openedPopover);
 
 	// const isHighAppearance = store.persistence.highAppearance.use();
 
-	return data.map(({description, dlc, effect, from, id, name}, index) => (
+	return data.map(({ description, dlc, effect, from, id, name }, index) => (
 		<ItemPopoverCard.Popover
 			key={index}
 			showArrow
@@ -49,7 +50,11 @@ export default memo<IProps>(function Content({data}) {
 						/>
 					}
 					onPress={() => {
-						trackEvent(trackEvent.category.click, 'Ornament Card', name);
+						trackEvent(
+							trackEvent.category.click,
+							'Ornament Card',
+							name
+						);
 					}}
 				/>
 			</ItemPopoverCard.Trigger>
@@ -60,7 +65,7 @@ export default memo<IProps>(function Content({data}) {
 					target="ornament"
 					id={id}
 					name={name}
-					description={{description}}
+					description={{ description }}
 					dlc={dlc}
 					ref={popoverCardRef}
 				>

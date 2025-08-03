@@ -1,25 +1,28 @@
-import {memo, useCallback} from 'react';
-import {debounce} from 'lodash';
+import { memo, useCallback } from 'react';
+import { debounce } from 'lodash';
 
-import {useVibrate} from '@/hooks';
+import { useVibrate } from '@/hooks';
 
-import {Avatar, Button, ScrollShadow, cn} from '@/design/ui/components';
+import { Avatar, Button, ScrollShadow, cn } from '@/design/ui/components';
 
 import PressElement from '@/components/pressElement';
 import Sprite from '@/components/sprite';
 
-import type {ICustomerTabStyle} from './types';
-import {customerNormalStore as store} from '@/stores';
-import {checkA11yConfirmKey} from '@/utilities';
-import {type CustomerNormal} from '@/utils';
-import type {TItemData} from '@/utils/types';
+import type { ICustomerTabStyle } from './types';
+import { customerNormalStore as store } from '@/stores';
+import { checkA11yConfirmKey } from '@/utilities';
+import { type CustomerNormal } from '@/utils';
+import type { TItemData } from '@/utils/types';
 
 interface IProps {
 	customerTabStyle: ICustomerTabStyle;
 	sortedData: TItemData<CustomerNormal>;
 }
 
-export default memo<IProps>(function CustomerTabContent({customerTabStyle, sortedData}) {
+export default memo<IProps>(function CustomerTabContent({
+	customerTabStyle,
+	sortedData,
+}) {
 	const vibrate = useVibrate();
 
 	const currentCustomerName = store.shared.customer.name.use();
@@ -38,7 +41,7 @@ export default memo<IProps>(function CustomerTabContent({customerTabStyle, sorte
 				)}
 			>
 				<div className="m-2 grid grid-cols-fill-16 justify-around gap-4 lg:grid-cols-fill-20">
-					{sortedData.map(({name}, index) => (
+					{sortedData.map(({ name }, index) => (
 						<PressElement
 							key={index}
 							as="div"
@@ -69,7 +72,8 @@ export default memo<IProps>(function CustomerTabContent({customerTabStyle, sorte
 									base: cn(
 										'h-16 w-16 ring-default transition-shadow group-hover:ring-warning motion-reduce:transition-none lg:h-20 lg:w-20 [&>span]:data-[focus-visible=true]:scale-125',
 										{
-											'ring-primary': name === currentCustomerName,
+											'ring-primary':
+												name === currentCustomerName,
 										}
 									),
 									icon: 'inline-table transition group-hover:scale-125 motion-reduce:transition-none lg:inline-block',

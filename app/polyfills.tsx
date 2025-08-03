@@ -31,11 +31,16 @@ const script = () => {
 	/**
 	 * @description Remove the <meta> tag added by the Quark browser, it disrupts hydration.
 	 */ // cSpell:ignore lowpri
-	const targetNode = document.head.querySelector('meta[name="wpk-bid_lowpri"]');
+	const targetNode = document.head.querySelector(
+		'meta[name="wpk-bid_lowpri"]'
+	);
 	if (targetNode !== null) {
 		targetNode.remove();
 		for (const node of document.head.childNodes) {
-			if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() === '') {
+			if (
+				node.nodeType === Node.TEXT_NODE &&
+				node.textContent.trim() === ''
+			) {
 				node.remove();
 				break;
 			}
@@ -47,7 +52,13 @@ const script = () => {
 	 */
 	globalThis.addEventListener('error', (event) => {
 		const unknown = '未知';
-		const {colno = unknown, error, filename = unknown, lineno = unknown, message} = event;
+		const {
+			colno = unknown,
+			error,
+			filename = unknown,
+			lineno = unknown,
+			message,
+		} = event;
 
 		if (/fetch|load\sfail|loading\schunk|network|net::/i.test(message)) {
 			return;
@@ -63,9 +74,7 @@ export default function Polyfills() {
 	return (
 		<script
 			suppressHydrationWarning
-			dangerouslySetInnerHTML={{
-				__html: `(${script.toString()})()`,
-			}}
+			dangerouslySetInnerHTML={{ __html: `(${script.toString()})()` }}
 		/>
 	);
 }

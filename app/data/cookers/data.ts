@@ -1,6 +1,6 @@
 /* eslint-disable sort-keys */
-import type {ICooker} from './types';
-import {DARK_MATTER_META_MAP, DYNAMIC_TAG_MAP} from '@/data/constant';
+import type { ICooker } from './types';
+import { DARK_MATTER_META_MAP, DYNAMIC_TAG_MAP } from '@/data/constant';
 
 export const COOKER_LIST = [
 	{
@@ -13,15 +13,8 @@ export const COOKER_LIST = [
 		dlc: 0,
 		effect: null,
 		from: [
-			{
-				self: true,
-			},
-			{
-				buy: {
-					name: '【人间之里】香霖堂',
-					price: [500],
-				},
-			},
+			{ self: true },
+			{ buy: { name: '【人间之里】香霖堂', price: [500] } },
 		],
 	},
 	{
@@ -34,15 +27,8 @@ export const COOKER_LIST = [
 		dlc: 0,
 		effect: null,
 		from: [
-			{
-				self: true,
-			},
-			{
-				buy: {
-					name: '【人间之里】香霖堂',
-					price: [500],
-				},
-			},
+			{ self: true },
+			{ buy: { name: '【人间之里】香霖堂', price: [500] } },
 		],
 	},
 	{
@@ -55,15 +41,8 @@ export const COOKER_LIST = [
 		dlc: 0,
 		effect: null,
 		from: [
-			{
-				self: true,
-			},
-			{
-				buy: {
-					name: '【人间之里】香霖堂',
-					price: [500],
-				},
-			},
+			{ self: true },
+			{ buy: { name: '【人间之里】香霖堂', price: [500] } },
 		],
 	},
 	{
@@ -76,15 +55,8 @@ export const COOKER_LIST = [
 		dlc: 0,
 		effect: null,
 		from: [
-			{
-				self: true,
-			},
-			{
-				buy: {
-					name: '【人间之里】香霖堂',
-					price: [500],
-				},
-			},
+			{ self: true },
+			{ buy: { name: '【人间之里】香霖堂', price: [500] } },
 		],
 	},
 	{
@@ -97,15 +69,8 @@ export const COOKER_LIST = [
 		dlc: 0,
 		effect: null,
 		from: [
-			{
-				self: true,
-			},
-			{
-				buy: {
-					name: '【人间之里】香霖堂',
-					price: [500],
-				},
-			},
+			{ self: true },
+			{ buy: { name: '【人间之里】香霖堂', price: [500] } },
 		],
 	},
 	{
@@ -123,12 +88,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '奇怪的石头',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '奇怪的石头', amount: 7 }],
 				},
 			},
 		],
@@ -148,12 +108,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '奇怪的石头',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '奇怪的石头', amount: 7 }],
 				},
 			},
 		],
@@ -173,12 +128,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '奇怪的石头',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '奇怪的石头', amount: 7 }],
 				},
 			},
 		],
@@ -198,12 +148,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '奇怪的石头',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '奇怪的石头', amount: 7 }],
 				},
 			},
 		],
@@ -223,12 +168,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '奇怪的石头',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '奇怪的石头', amount: 7 }],
 				},
 			},
 		],
@@ -241,14 +181,7 @@ export const COOKER_LIST = [
 		category: '超',
 		dlc: 0,
 		effect: '减少5%料理时间，增加3%续单概率。',
-		from: [
-			{
-				buy: {
-					name: '【人间之里】香霖堂',
-					price: [2000],
-				},
-			},
-		],
+		from: [{ buy: { name: '【人间之里】香霖堂', price: [2000] } }],
 	},
 	{
 		id: 11,
@@ -258,14 +191,7 @@ export const COOKER_LIST = [
 		category: '超',
 		dlc: 0,
 		effect: '减少5%料理时间，增加3%续单概率。',
-		from: [
-			{
-				buy: {
-					name: '【人间之里】香霖堂',
-					price: [2000],
-				},
-			},
-		],
+		from: [{ buy: { name: '【人间之里】香霖堂', price: [2000] } }],
 	},
 	{
 		id: 12,
@@ -275,14 +201,7 @@ export const COOKER_LIST = [
 		category: '超',
 		dlc: 0,
 		effect: '减少5%料理时间，增加3%续单概率。',
-		from: [
-			{
-				buy: {
-					name: '【人间之里】香霖堂',
-					price: [2000],
-				},
-			},
-		],
+		from: [{ buy: { name: '【人间之里】香霖堂', price: [2000] } }],
 	},
 	{
 		id: 13,
@@ -292,14 +211,7 @@ export const COOKER_LIST = [
 		category: '超',
 		dlc: 0,
 		effect: '减少5%料理时间，增加3%续单概率。',
-		from: [
-			{
-				buy: {
-					name: '【人间之里】香霖堂',
-					price: [2000],
-				},
-			},
-		],
+		from: [{ buy: { name: '【人间之里】香霖堂', price: [2000] } }],
 	},
 	{
 		id: 14,
@@ -309,14 +221,7 @@ export const COOKER_LIST = [
 		category: '超',
 		dlc: 0,
 		effect: '减少5%料理时间，增加3%续单概率。',
-		from: [
-			{
-				buy: {
-					name: '【人间之里】香霖堂',
-					price: [2000],
-				},
-			},
-		],
+		from: [{ buy: { name: '【人间之里】香霖堂', price: [2000] } }],
 	},
 	{
 		id: 15,
@@ -330,13 +235,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '古朴的铜钱',
-							amount: 7,
-						},
-						5000,
-					],
+					price: [{ currency: '古朴的铜钱', amount: 7 }, 5000],
 				},
 			},
 		],
@@ -353,13 +252,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '古朴的铜钱',
-							amount: 7,
-						},
-						5000,
-					],
+					price: [{ currency: '古朴的铜钱', amount: 7 }, 5000],
 				},
 			},
 		],
@@ -376,13 +269,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '古朴的铜钱',
-							amount: 7,
-						},
-						5000,
-					],
+					price: [{ currency: '古朴的铜钱', amount: 7 }, 5000],
 				},
 			},
 		],
@@ -399,13 +286,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '古朴的铜钱',
-							amount: 7,
-						},
-						5000,
-					],
+					price: [{ currency: '古朴的铜钱', amount: 7 }, 5000],
 				},
 			},
 		],
@@ -422,13 +303,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '古朴的铜钱',
-							amount: 7,
-						},
-						5000,
-					],
+					price: [{ currency: '古朴的铜钱', amount: 7 }, 5000],
 				},
 			},
 		],
@@ -448,12 +323,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '破损的符咒',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '破损的符咒', amount: 7 }],
 				},
 			},
 		],
@@ -473,12 +343,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '破损的符咒',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '破损的符咒', amount: 7 }],
 				},
 			},
 		],
@@ -498,12 +363,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '破损的符咒',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '破损的符咒', amount: 7 }],
 				},
 			},
 		],
@@ -523,12 +383,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '破损的符咒',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '破损的符咒', amount: 7 }],
 				},
 			},
 		],
@@ -548,12 +403,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '破损的符咒',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '破损的符咒', amount: 7 }],
 				},
 			},
 		],
@@ -561,7 +411,8 @@ export const COOKER_LIST = [
 	{
 		id: 25,
 		name: '可疑煮锅',
-		description: '加入了“可疑的”技术，让吃了料理的客人非常开心！虽然不明白，但生意太火爆了！',
+		description:
+			'加入了“可疑的”技术，让吃了料理的客人非常开心！虽然不明白，但生意太火爆了！',
 		type: '煮锅',
 		category: '可疑',
 		dlc: 0,
@@ -570,12 +421,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '红色的宝石',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '红色的宝石', amount: 7 }],
 				},
 			},
 		],
@@ -583,7 +429,8 @@ export const COOKER_LIST = [
 	{
 		id: 26,
 		name: '可疑烧烤架',
-		description: '加入了“可疑的”技术，让吃了料理的客人非常开心！虽然不明白，但生意太火爆了！',
+		description:
+			'加入了“可疑的”技术，让吃了料理的客人非常开心！虽然不明白，但生意太火爆了！',
 		type: '烧烤架',
 		category: '可疑',
 		dlc: 0,
@@ -592,12 +439,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '红色的宝石',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '红色的宝石', amount: 7 }],
 				},
 			},
 		],
@@ -605,7 +447,8 @@ export const COOKER_LIST = [
 	{
 		id: 27,
 		name: '可疑油锅',
-		description: '加入了“可疑的”技术，让吃了料理的客人非常开心！虽然不明白，但生意太火爆了！',
+		description:
+			'加入了“可疑的”技术，让吃了料理的客人非常开心！虽然不明白，但生意太火爆了！',
 		type: '油锅',
 		category: '可疑',
 		dlc: 0,
@@ -614,12 +457,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '红色的宝石',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '红色的宝石', amount: 7 }],
 				},
 			},
 		],
@@ -627,7 +465,8 @@ export const COOKER_LIST = [
 	{
 		id: 28,
 		name: '可疑蒸锅',
-		description: '加入了“可疑的”技术，让吃了料理的客人非常开心！虽然不明白，但生意太火爆了！',
+		description:
+			'加入了“可疑的”技术，让吃了料理的客人非常开心！虽然不明白，但生意太火爆了！',
 		type: '蒸锅',
 		category: '可疑',
 		dlc: 0,
@@ -636,12 +475,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '红色的宝石',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '红色的宝石', amount: 7 }],
 				},
 			},
 		],
@@ -649,7 +483,8 @@ export const COOKER_LIST = [
 	{
 		id: 29,
 		name: '可疑料理台',
-		description: '加入了“可疑的”技术，让吃了料理的客人非常开心！虽然不明白，但生意太火爆了！',
+		description:
+			'加入了“可疑的”技术，让吃了料理的客人非常开心！虽然不明白，但生意太火爆了！',
 		type: '料理台',
 		category: '可疑',
 		dlc: 0,
@@ -658,12 +493,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '红色的宝石',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '红色的宝石', amount: 7 }],
 				},
 			},
 		],
@@ -671,21 +501,20 @@ export const COOKER_LIST = [
 	{
 		id: 30,
 		name: '月见煮锅',
-		description: '和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢？！',
+		description:
+			'和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢？！',
 		type: '煮锅',
 		category: '月见',
 		dlc: 0,
-		effect: ['每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续20秒。', true],
+		effect: [
+			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续20秒。',
+			true,
+		],
 		from: [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '发光的竹子',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '发光的竹子', amount: 7 }],
 				},
 			},
 		],
@@ -693,21 +522,20 @@ export const COOKER_LIST = [
 	{
 		id: 31,
 		name: '月见烧烤架',
-		description: '和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢？！',
+		description:
+			'和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢？！',
 		type: '烧烤架',
 		category: '月见',
 		dlc: 0,
-		effect: ['每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续20秒。', true],
+		effect: [
+			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续20秒。',
+			true,
+		],
 		from: [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '发光的竹子',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '发光的竹子', amount: 7 }],
 				},
 			},
 		],
@@ -715,21 +543,20 @@ export const COOKER_LIST = [
 	{
 		id: 32,
 		name: '月见油锅',
-		description: '和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢？！',
+		description:
+			'和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢？！',
 		type: '油锅',
 		category: '月见',
 		dlc: 0,
-		effect: ['每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续20秒。', true],
+		effect: [
+			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续20秒。',
+			true,
+		],
 		from: [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '发光的竹子',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '发光的竹子', amount: 7 }],
 				},
 			},
 		],
@@ -737,21 +564,20 @@ export const COOKER_LIST = [
 	{
 		id: 33,
 		name: '月见蒸锅',
-		description: '和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢？！',
+		description:
+			'和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢？！',
 		type: '蒸锅',
 		category: '月见',
 		dlc: 0,
-		effect: ['每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续20秒。', true],
+		effect: [
+			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续20秒。',
+			true,
+		],
 		from: [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '发光的竹子',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '发光的竹子', amount: 7 }],
 				},
 			},
 		],
@@ -759,21 +585,20 @@ export const COOKER_LIST = [
 	{
 		id: 34,
 		name: '月见料理台',
-		description: '和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢？！',
+		description:
+			'和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢？！',
 		type: '料理台',
 		category: '月见',
 		dlc: 0,
-		effect: ['每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续20秒。', true],
+		effect: [
+			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续20秒。',
+			true,
+		],
 		from: [
 			{
 				buy: {
 					name: '【人间之里】香霖堂',
-					price: [
-						{
-							currency: '发光的竹子',
-							amount: 7,
-						},
-					],
+					price: [{ currency: '发光的竹子', amount: 7 }],
 				},
 			},
 		],
@@ -811,12 +636,11 @@ export const COOKER_LIST = [
 		type: '烧烤架',
 		category: 'DLC',
 		dlc: 3,
-		effect: ['减少15%料理时间，瞬间完成带有“肉”标签的料理，有30%的概率返还料理食材。', true],
-		from: [
-			{
-				bond: '物部布都',
-			},
+		effect: [
+			'减少15%料理时间，瞬间完成带有“肉”标签的料理，有30%的概率返还料理食材。',
+			true,
 		],
+		from: [{ bond: '物部布都' }],
 	},
 	{
 		id: 4000,
@@ -829,11 +653,7 @@ export const COOKER_LIST = [
 			`减少20%料理时间；如果没有添加任何额外食材，则减少70%料理时间，否则增加30%续单率。如果料理带有“${DYNAMIC_TAG_MAP.popularPositive}”标签则二者同时触发。`,
 			true,
 		],
-		from: [
-			{
-				bond: '射命丸文',
-			},
-		],
+		from: [{ bond: '射命丸文' }],
 	},
 	{
 		id: 5000,
@@ -850,13 +670,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【魔界】蓬松松爱莲♡魔法店',
-					price: [
-						{
-							currency: '蓬松松糖果',
-							amount: 160,
-						},
-						40000,
-					],
+					price: [{ currency: '蓬松松糖果', amount: 160 }, 40000],
 				},
 			},
 		],
@@ -873,13 +687,7 @@ export const COOKER_LIST = [
 			{
 				buy: {
 					name: '【魔界】蓬松松爱莲♡魔法店',
-					price: [
-						{
-							currency: '蓬松松糖果',
-							amount: 33,
-						},
-						33333,
-					],
+					price: [{ currency: '蓬松松糖果', amount: 33 }, 33333],
 				},
 			},
 		],

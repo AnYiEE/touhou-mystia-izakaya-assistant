@@ -1,11 +1,15 @@
 'use client';
 
-import {type Dispatch, type SetStateAction, memo, useCallback} from 'react';
+import { type Dispatch, type SetStateAction, memo, useCallback } from 'react';
 
-import {useVibrate} from '@/hooks';
+import { useVibrate } from '@/hooks';
 
-import {Autocomplete, AutocompleteItem, type AutocompleteProps} from '@heroui/autocomplete';
-import {faMagnifyingGlass} from '@fortawesome/free-solid-svg-icons';
+import {
+	Autocomplete,
+	AutocompleteItem,
+	type AutocompleteProps,
+} from '@heroui/autocomplete';
+import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 
 import {
 	Popover,
@@ -17,12 +21,14 @@ import {
 	useReducedMotion,
 } from '@/design/ui/components';
 
-import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
+import FontAwesomeIconButton, {
+	type IFontAwesomeIconButtonProps,
+} from '@/components/fontAwesomeIconButton';
 import Sprite from '@/components/sprite';
 
-import {type TItemName} from '@/data';
-import {globalStore as store} from '@/stores';
-import type {TSpriteTarget} from '@/utils/sprite/types';
+import { type TItemName } from '@/data';
+import { globalStore as store } from '@/stores';
+import type { TSpriteTarget } from '@/utils/sprite/types';
 
 export interface ISearchConfig {
 	label: AutocompleteProps['label'];
@@ -32,13 +38,23 @@ export interface ISearchConfig {
 	spriteTarget?: TSpriteTarget;
 }
 
-interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'> {
+interface IProps
+	extends Omit<
+		IFontAwesomeIconButtonProps,
+		'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'
+	> {
 	searchConfig: ISearchConfig;
 }
 
 export default memo<IProps>(function SideSearchIconButton({
 	className,
-	searchConfig: {label, searchItems, searchValue, setSearchValue, spriteTarget},
+	searchConfig: {
+		label,
+		searchItems,
+		searchValue,
+		setSearchValue,
+		spriteTarget,
+	},
 	...props
 }) {
 	const selectMotionProps = useMotionProps('select');
@@ -73,7 +89,12 @@ export default memo<IProps>(function SideSearchIconButton({
 							icon={faMagnifyingGlass}
 							variant="shadow"
 							aria-label={content}
-							className={cn(searchValue ? 'bg-warning-600' : 'bg-primary-600', className)}
+							className={cn(
+								searchValue
+									? 'bg-warning-600'
+									: 'bg-primary-600',
+								className
+							)}
 							{...props}
 						/>
 					</PopoverTrigger>
@@ -100,22 +121,24 @@ export default memo<IProps>(function SideSearchIconButton({
 						clearButton: isHighAppearance
 							? 'data-[hover=true]:bg-default/40'
 							: 'data-[hover=true]:bg-default-400 [&+button[data-hover=true]]:bg-default-400',
-						listboxWrapper: cn('[&_li]:transition-background motion-reduce:[&_li]:transition-none', {
-							'data-[hover=true]:[&_li]:!bg-default/40': isHighAppearance,
-						}),
+						listboxWrapper: cn(
+							'[&_li]:transition-background motion-reduce:[&_li]:transition-none',
+							{
+								'data-[hover=true]:[&_li]:!bg-default/40':
+									isHighAppearance,
+							}
+						),
 						popoverContent: cn({
 							'bg-content1/70 backdrop-blur-lg': isHighAppearance,
 						}),
 					}}
 				>
-					{({value}) =>
+					{({ value }) =>
 						spriteTarget ? (
 							<AutocompleteItem
 								key={value}
 								textValue={value}
-								classNames={{
-									base: '[&>span]:inline-flex',
-								}}
+								classNames={{ base: '[&>span]:inline-flex' }}
 							>
 								<span className="inline-flex items-center">
 									{spriteTarget === 'customer_normal' ? (
@@ -127,7 +150,8 @@ export default memo<IProps>(function SideSearchIconButton({
 												className="-translate-x-[0.315rem] -translate-y-px"
 											/>
 										</div>
-									) : spriteTarget === 'customer_rare' || spriteTarget === 'partner' ? (
+									) : spriteTarget === 'customer_rare' ||
+									  spriteTarget === 'partner' ? (
 										<Sprite
 											target={spriteTarget}
 											name={value as TItemName}
@@ -135,13 +159,19 @@ export default memo<IProps>(function SideSearchIconButton({
 											className="rounded-full"
 										/>
 									) : (
-										<Sprite target={spriteTarget} name={value as TItemName} size={1} />
+										<Sprite
+											target={spriteTarget}
+											name={value as TItemName}
+											size={1}
+										/>
 									)}
 									<span className="ml-1">{value}</span>
 								</span>
 							</AutocompleteItem>
 						) : (
-							<AutocompleteItem key={value}>{value}</AutocompleteItem>
+							<AutocompleteItem key={value}>
+								{value}
+							</AutocompleteItem>
 						)
 					}
 				</Autocomplete>

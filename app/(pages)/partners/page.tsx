@@ -1,6 +1,6 @@
 'use client';
 
-import {useCallback, useMemo} from 'react';
+import { useCallback, useMemo } from 'react';
 
 import {
 	useFilteredData,
@@ -14,12 +14,14 @@ import {
 import Content from './content';
 import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
-import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
+import SideFilterIconButton, {
+	type TSelectConfig,
+} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
-import {partnersStore as store} from '@/stores';
-import {checkEmpty} from '@/utilities';
+import { partnersStore as store } from '@/stores';
+import { checkEmpty } from '@/utilities';
 
 export default function Partners() {
 	const instance = store.instance.get();
@@ -37,8 +39,10 @@ export default function Partners() {
 
 	const filterData = useCallback(
 		() =>
-			searchResult.filter(({dlc}) => {
-				const isDlcMatched = checkEmpty(filterDlcs) || filterDlcs.includes(dlc.toString());
+			searchResult.filter(({ dlc }) => {
+				const isDlcMatched =
+					checkEmpty(filterDlcs) ||
+					filterDlcs.includes(dlc.toString());
 
 				return isDlcMatched;
 			}),
@@ -49,7 +53,10 @@ export default function Partners() {
 
 	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
 
-	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, store.persistence.pinyinSortState.set);
+	const pinyinSortConfig = usePinyinSortConfig(
+		pinyinSortState,
+		store.persistence.pinyinSortState.set
+	);
 
 	const searchConfig = useSearchConfig({
 		label: '选择或输入伙伴名称',
@@ -77,7 +84,9 @@ export default function Partners() {
 			sideButton={
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />
-					<SidePinyinSortIconButton pinyinSortConfig={pinyinSortConfig} />
+					<SidePinyinSortIconButton
+						pinyinSortConfig={pinyinSortConfig}
+					/>
 					<SideFilterIconButton selectConfig={selectConfig} />
 				</SideButtonGroup>
 			}

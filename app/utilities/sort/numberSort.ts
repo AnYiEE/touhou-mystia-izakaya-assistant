@@ -1,4 +1,4 @@
-import {isValueCollection} from '@/utilities';
+import { isValueCollection } from '@/utilities';
 
 type TValue = number;
 type TValueCollection = ValueCollection<TValue>;
@@ -19,8 +19,10 @@ export function numberSort<T extends TTarget>(a: T, b: T) {
 		numberA = a.value;
 		numberB = b.value;
 	} else {
-		// eslint-disable-next-line @typescript-eslint/no-base-to-string
-		throw new TypeError(`[utilities/sort/numberSort]: invalid parameter: ${a.toString()}; ${b.toString()}`);
+		throw new TypeError(
+			// eslint-disable-next-line @typescript-eslint/no-base-to-string
+			`[utilities/sort/numberSort]: invalid parameter: ${a.toString()}; ${b.toString()}`
+		);
 	}
 
 	return numberA - numberB;

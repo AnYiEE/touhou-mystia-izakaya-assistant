@@ -1,5 +1,5 @@
-import type {ITagStyle} from '@/data/types';
-import type {ISpriteConfig} from '@/utils/sprite/types';
+import type { ITagStyle } from '@/data/types';
+import type { ISpriteConfig } from '@/utils/sprite/types';
 
 export const RECIPE_SPRITE_CONFIG = {
 	col: 10,

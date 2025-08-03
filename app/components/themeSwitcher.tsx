@@ -1,14 +1,22 @@
 'use client';
 
-import {memo, useCallback, useEffect, useMemo, useState} from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
-import {THEME_MAP, type TTheme, useTheme} from '@/design/hooks';
-import {useMounted, useVibrate} from '@/hooks';
+import { THEME_MAP, type TTheme, useTheme } from '@/design/hooks';
+import { useMounted, useVibrate } from '@/hooks';
 
-import {type Selection} from '@heroui/table';
-import {Spinner} from '@heroui/spinner';
-import {FontAwesomeIcon, type FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
-import {faCircleHalfStroke, faDesktop, faMoon, faSun} from '@fortawesome/free-solid-svg-icons';
+import { type Selection } from '@heroui/table';
+import { Spinner } from '@heroui/spinner';
+import {
+	FontAwesomeIcon,
+	type FontAwesomeIconProps,
+} from '@fortawesome/react-fontawesome';
+import {
+	faCircleHalfStroke,
+	faDesktop,
+	faMoon,
+	faSun,
+} from '@fortawesome/free-solid-svg-icons';
 
 import {
 	Dropdown,
@@ -22,8 +30,8 @@ import {
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 
-import {globalStore as store} from '@/stores';
-import {toGetValueCollection, toSet} from '@/utilities';
+import { globalStore as store } from '@/stores';
+import { toGetValueCollection, toSet } from '@/utilities';
 
 const THEME_ICON_MAP = {
 	dark: faMoon,
@@ -37,7 +45,8 @@ const THEME_LABEL_MAP = {
 	list: '可选主题列表',
 	switcher: '切换主题',
 	system: '跟随系统',
-} as const satisfies Record<TTheme, string> & Record<'list' | 'switcher', string>;
+} as const satisfies Record<TTheme, string> &
+	Record<'list' | 'switcher', string>;
 
 const THEME_LABEL_ICON_MAP = {
 	dark: faMoon,
@@ -49,10 +58,12 @@ interface IProps extends Pick<IDropdownProps, 'className'> {
 	isMenu?: boolean;
 }
 
-export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
+export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 	const isMounted = useMounted();
 	const [theme, setTheme] = useTheme();
-	const [selectedTheme, setSelectedTheme] = useState<SelectionSet>(toSet([theme]));
+	const [selectedTheme, setSelectedTheme] = useState<SelectionSet>(
+		toSet([theme])
+	);
 	const vibrate = useVibrate();
 
 	const isHighAppearance = store.persistence.highAppearance.use();
@@ -60,7 +71,8 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 	const onSelectedThemeChange = useCallback(
 		(value: Selection) => {
 			const newValue = value as SelectionSet;
-			const currentSelectedTheme = newValue.values().next().value as TTheme;
+			const currentSelectedTheme = newValue.values().next()
+				.value as TTheme;
 
 			setTheme(currentSelectedTheme);
 			setSelectedTheme(newValue);
@@ -85,10 +97,7 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 				<Spinner
 					color="default"
 					title={THEME_LABEL_MAP.switcher}
-					classNames={{
-						base: 'flex',
-						wrapper: 'h-5 w-5',
-					}}
+					classNames={{ base: 'flex', wrapper: 'h-5 w-5' }}
 				/>
 			</div>
 		);
@@ -105,7 +114,11 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 				}),
 			}}
 		>
-			<Tooltip showArrow content={THEME_LABEL_MAP.switcher} placement={isMenu ? 'left' : 'bottom'}>
+			<Tooltip
+				showArrow
+				content={THEME_LABEL_MAP.switcher}
+				placement={isMenu ? 'left' : 'bottom'}
+			>
 				<span className="flex">
 					<DropdownTrigger>
 						<FontAwesomeIconButton
@@ -114,7 +127,9 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 							aria-label={THEME_LABEL_MAP.switcher}
 							className={cn(
 								'h-5 w-5 min-w-min bg-transparent !text-medium',
-								isMenu ? 'h-full text-foreground' : 'text-primary-600 dark:text-default-foreground',
+								isMenu
+									? 'h-full text-foreground'
+									: 'text-primary-600 dark:text-default-foreground',
 								className
 							)}
 						/>
@@ -133,10 +148,16 @@ export default memo<IProps>(function ThemeSwitcher({className, isMenu}) {
 					base: 'my-px transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40 motion-reduce:transition-none',
 				}}
 			>
-				{({value}) => (
-					<DropdownItem key={value} textValue={THEME_LABEL_MAP[value]}>
+				{({ value }) => (
+					<DropdownItem
+						key={value}
+						textValue={THEME_LABEL_MAP[value]}
+					>
 						<div className="flex items-center gap-1">
-							<FontAwesomeIcon icon={THEME_LABEL_ICON_MAP[value]} className="w-4 pb-px opacity-80" />
+							<FontAwesomeIcon
+								icon={THEME_LABEL_ICON_MAP[value]}
+								className="w-4 pb-px opacity-80"
+							/>
 							{THEME_LABEL_MAP[value]}
 						</div>
 					</DropdownItem>

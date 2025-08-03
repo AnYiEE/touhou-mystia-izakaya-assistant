@@ -1,6 +1,6 @@
-import {useCallback, useEffect, useRef, useState} from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import {PARAM_SPECIFY} from '@/hooks/useOpenedItemPopover';
+import { PARAM_SPECIFY } from '@/hooks/useOpenedItemPopover';
 
 import {
 	type TClothesName,
@@ -21,15 +21,25 @@ type TItemPath =
 	| 'partners'
 	| 'recipes';
 
-type TItemName = TClothesName | TCookerName | TCurrencyName | TFoodName | TOrnamentName | TPartnerName;
+type TItemName =
+	| TClothesName
+	| TCookerName
+	| TCurrencyName
+	| TFoodName
+	| TOrnamentName
+	| TPartnerName;
 
 export type TOpenWindow = (path: TItemPath, name: TItemName) => void;
 
 export const PARAM_PREVIEW = 'preview';
 
 export function useViewInNewWindow() {
-	const [windowItemName, setWindowItemName] = useState<[TItemName] | null>(null);
-	const [windowItemPath, setWindowItemPath] = useState<[TItemPath] | null>(null);
+	const [windowItemName, setWindowItemName] = useState<[TItemName] | null>(
+		null
+	);
+	const [windowItemPath, setWindowItemPath] = useState<[TItemPath] | null>(
+		null
+	);
 	const windowObjectRef = useRef<Window | null>(null);
 
 	useEffect(() => {
@@ -47,7 +57,7 @@ export function useViewInNewWindow() {
 		const height = 640;
 		const width = 384;
 
-		const {height: screenHeight, width: screenWidth} = screen;
+		const { height: screenHeight, width: screenWidth } = screen;
 		const newWindowObject = globalThis.open(
 			pathname,
 			'_blank',

@@ -1,6 +1,6 @@
 'use client';
 
-import {useCallback, useMemo} from 'react';
+import { useCallback, useMemo } from 'react';
 
 import {
 	useFilteredData,
@@ -14,12 +14,18 @@ import {
 import Content from './content';
 import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
-import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
+import SideFilterIconButton, {
+	type TSelectConfig,
+} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
-import {recipesStore as store} from '@/stores';
-import {checkArrayContainsOf, checkArraySubsetOf, checkEmpty} from '@/utilities';
+import { recipesStore as store } from '@/stores';
+import {
+	checkArrayContainsOf,
+	checkArraySubsetOf,
+	checkEmpty,
+} from '@/utilities';
 
 export default function Recipes() {
 	const currentPopularTrend = store.shared.popularTrend.use();
@@ -56,7 +62,13 @@ export default function Recipes() {
 			searchResult.map((data) => ({
 				...data,
 				positiveTags: instance.calculateTagsWithTrend(
-					instance.composeTagsWithPopularTrend(data.ingredients, [], data.positiveTags, [], null),
+					instance.composeTagsWithPopularTrend(
+						data.ingredients,
+						[],
+						data.positiveTags,
+						[],
+						null
+					),
 					currentPopularTrend,
 					isFamousShop
 				),
@@ -66,35 +78,62 @@ export default function Recipes() {
 
 	const filterData = useCallback(
 		() =>
-			dataWithTrend.filter(({cooker, dlc, ingredients, level, negativeTags, positiveTags}) => {
-				const isDlcMatched = checkEmpty(filterDlcs) || filterDlcs.includes(dlc.toString());
-				const isLevelMatched = checkEmpty(filterLevels) || filterLevels.includes(level.toString());
-				const isCookerMatched = checkEmpty(filterCookers) || filterCookers.includes(cooker);
-				const isIngredientMatched =
-					checkEmpty(filterIngredients) || checkArraySubsetOf(filterIngredients, ingredients);
-				const isNoIngredientMatched =
-					checkEmpty(filterNoIngredients) || !checkArrayContainsOf(filterNoIngredients, ingredients);
-				const isNegativeTagMatched =
-					checkEmpty(filterNegativeTags) || checkArraySubsetOf(filterNegativeTags, negativeTags);
-				const isNoNegativeTagMatched =
-					checkEmpty(filterNoNegativeTags) || !checkArrayContainsOf(filterNoNegativeTags, negativeTags);
-				const isPositiveTagMatched =
-					checkEmpty(filterPositiveTags) || checkArraySubsetOf(filterPositiveTags, positiveTags);
-				const isNoPositiveTagMatched =
-					checkEmpty(filterNoPositiveTags) || !checkArrayContainsOf(filterNoPositiveTags, positiveTags);
+			dataWithTrend.filter(
+				({
+					cooker,
+					dlc,
+					ingredients,
+					level,
+					negativeTags,
+					positiveTags,
+				}) => {
+					const isDlcMatched =
+						checkEmpty(filterDlcs) ||
+						filterDlcs.includes(dlc.toString());
+					const isLevelMatched =
+						checkEmpty(filterLevels) ||
+						filterLevels.includes(level.toString());
+					const isCookerMatched =
+						checkEmpty(filterCookers) ||
+						filterCookers.includes(cooker);
+					const isIngredientMatched =
+						checkEmpty(filterIngredients) ||
+						checkArraySubsetOf(filterIngredients, ingredients);
+					const isNoIngredientMatched =
+						checkEmpty(filterNoIngredients) ||
+						!checkArrayContainsOf(filterNoIngredients, ingredients);
+					const isNegativeTagMatched =
+						checkEmpty(filterNegativeTags) ||
+						checkArraySubsetOf(filterNegativeTags, negativeTags);
+					const isNoNegativeTagMatched =
+						checkEmpty(filterNoNegativeTags) ||
+						!checkArrayContainsOf(
+							filterNoNegativeTags,
+							negativeTags
+						);
+					const isPositiveTagMatched =
+						checkEmpty(filterPositiveTags) ||
+						checkArraySubsetOf(filterPositiveTags, positiveTags);
+					const isNoPositiveTagMatched =
+						checkEmpty(filterNoPositiveTags) ||
+						!checkArrayContainsOf(
+							filterNoPositiveTags,
+							positiveTags
+						);
 
-				return (
-					isDlcMatched &&
-					isLevelMatched &&
-					isIngredientMatched &&
-					isNoIngredientMatched &&
-					isCookerMatched &&
-					isNegativeTagMatched &&
-					isNoNegativeTagMatched &&
-					isPositiveTagMatched &&
-					isNoPositiveTagMatched
-				);
-			}),
+					return (
+						isDlcMatched &&
+						isLevelMatched &&
+						isIngredientMatched &&
+						isNoIngredientMatched &&
+						isCookerMatched &&
+						isNegativeTagMatched &&
+						isNoNegativeTagMatched &&
+						isPositiveTagMatched &&
+						isNoPositiveTagMatched
+					);
+				}
+			),
 		[
 			dataWithTrend,
 			filterCookers,
@@ -113,7 +152,10 @@ export default function Recipes() {
 
 	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
 
-	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, store.persistence.pinyinSortState.set);
+	const pinyinSortConfig = usePinyinSortConfig(
+		pinyinSortState,
+		store.persistence.pinyinSortState.set
+	);
 
 	const searchConfig = useSearchConfig({
 		label: '选择或输入料理名称',
@@ -208,7 +250,9 @@ export default function Recipes() {
 			sideButton={
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />
-					<SidePinyinSortIconButton pinyinSortConfig={pinyinSortConfig} />
+					<SidePinyinSortIconButton
+						pinyinSortConfig={pinyinSortConfig}
+					/>
 					<SideFilterIconButton selectConfig={selectConfig} />
 				</SideButtonGroup>
 			}

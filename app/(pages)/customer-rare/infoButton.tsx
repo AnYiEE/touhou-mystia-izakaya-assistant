@@ -1,9 +1,9 @@
-import {type ReactElement, memo} from 'react';
+import { type ReactElement, memo } from 'react';
 
 import useBreakpoint from 'use-breakpoint';
-import {useViewInNewWindow} from '@/hooks';
+import { useViewInNewWindow } from '@/hooks';
 
-import {AccordionItem} from '@heroui/accordion';
+import { AccordionItem } from '@heroui/accordion';
 
 import {
 	Avatar,
@@ -22,15 +22,21 @@ import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tachie from '@/components/tachie';
 
-import {CUSTOMER_EVALUATION_KEY_MAP, CUSTOMER_RATING_MAP, LABEL_MAP, type TRatingKey, type TRewardType} from '@/data';
-import {customerRareStore as store} from '@/stores';
-import {checkEmpty} from '@/utilities';
+import {
+	CUSTOMER_EVALUATION_KEY_MAP,
+	CUSTOMER_RATING_MAP,
+	LABEL_MAP,
+	type TRatingKey,
+	type TRewardType,
+} from '@/data';
+import { customerRareStore as store } from '@/stores';
+import { checkEmpty } from '@/utilities';
 
 interface ILevelLabelProps {
 	level: number | string;
 }
 
-const LevelLabel = memo<ILevelLabelProps>(function LevelLabel({level}) {
+const LevelLabel = memo<ILevelLabelProps>(function LevelLabel({ level }) {
 	return (
 		<span className="font-medium">
 			{typeof level === 'number' ? 'Lv.' : ''}
@@ -41,11 +47,8 @@ const LevelLabel = memo<ILevelLabelProps>(function LevelLabel({level}) {
 
 export default function InfoButton() {
 	const openWindow = useViewInNewWindow();
-	const {breakpoint: placement} = useBreakpoint(
-		{
-			bottom: -1,
-			'right-start': 426,
-		},
+	const { breakpoint: placement } = useBreakpoint(
+		{ bottom: -1, 'right-start': 426 },
 		'bottom'
 	);
 
@@ -76,7 +79,8 @@ export default function InfoButton() {
 
 	const bondClothes = instance_clothes.getBondClothes(currentCustomerName);
 	const bondCooker = instance_cooker.getBondCooker(currentCustomerName);
-	const bondOrnamentsData = instance_ornament.getBondOrnaments(currentCustomerName);
+	const bondOrnamentsData =
+		instance_ornament.getBondOrnaments(currentCustomerName);
 	const bondPartner = instance_partner.getBondPartner(currentCustomerName);
 	const bondRecipesData = instance_recipe.getBondRecipes(currentCustomerName);
 
@@ -110,7 +114,8 @@ export default function InfoButton() {
 		return defaultExpandedKeys;
 	};
 
-	const getLabel = (type: TRewardType) => `点击：在新窗口中查看此${type}的详情`;
+	const getLabel = (type: TRewardType) =>
+		`点击：在新窗口中查看此${type}的详情`;
 
 	return (
 		<InfoButtonBase defaultExpandedKeys={getDefaultExpandedKeys()}>
@@ -119,7 +124,8 @@ export default function InfoButton() {
 				aria-label="稀客介绍"
 				title="稀客介绍"
 				classNames={{
-					content: 'space-y-1 break-all pt-2 text-justify text-default-900',
+					content:
+						'space-y-1 break-all pt-2 text-justify text-default-900',
 				}}
 			>
 				<div className="flex items-center gap-4">
@@ -129,7 +135,10 @@ export default function InfoButton() {
 					</p>
 					<p className="flex items-center">
 						<span className="font-semibold">立绘：</span>
-						<Popover placement={placement} showArrow={placement === 'bottom'}>
+						<Popover
+							placement={placement}
+							showArrow={placement === 'bottom'}
+						>
 							<PopoverTrigger>
 								<span
 									role="button"
@@ -151,7 +160,9 @@ export default function InfoButton() {
 							<PopoverContent>
 								<Tachie
 									alt={currentCustomerName}
-									src={instance_customer.getTachiePath(currentCustomerName)}
+									src={instance_customer.getTachiePath(
+										currentCustomerName
+									)}
 									width={240}
 								/>
 							</PopoverContent>
@@ -183,14 +194,19 @@ export default function InfoButton() {
 					aria-label={`${currentCustomerName}羁绊奖励`}
 					title="羁绊奖励"
 					classNames={{
-						content: 'flex-col gap-2 pt-2 text-default-900 data-[open=true]:flex',
+						content:
+							'flex-col gap-2 pt-2 text-default-900 data-[open=true]:flex',
 					}}
 				>
 					<div className="grid grid-cols-2 content-start gap-1">
-						{bondRecipesData.map(({level, name}, index) => (
+						{bondRecipesData.map(({ level, name }, index) => (
 							<p key={index} className="flex items-center">
 								<LevelLabel level={level} />
-								<Tooltip showArrow content={getLabel('料理')} placement="right">
+								<Tooltip
+									showArrow
+									content={getLabel('料理')}
+									placement="right"
+								>
 									<PressElement
 										as="span"
 										onPress={() => {
@@ -204,7 +220,12 @@ export default function InfoButton() {
 											CLASSNAME_FOCUS_VISIBLE_OUTLINE
 										)}
 									>
-										<Sprite target="recipe" name={name} size={1.25} className="mr-0.5" />
+										<Sprite
+											target="recipe"
+											name={name}
+											size={1.25}
+											className="mr-0.5"
+										/>
 										{name}
 									</PressElement>
 								</Tooltip>
@@ -213,7 +234,11 @@ export default function InfoButton() {
 						{bondCooker !== null && (
 							<p className="flex items-center">
 								<LevelLabel level={5} />
-								<Tooltip showArrow content={getLabel('厨具')} placement="right">
+								<Tooltip
+									showArrow
+									content={getLabel('厨具')}
+									placement="right"
+								>
 									<PressElement
 										as="span"
 										onPress={() => {
@@ -227,7 +252,12 @@ export default function InfoButton() {
 											CLASSNAME_FOCUS_VISIBLE_OUTLINE
 										)}
 									>
-										<Sprite target="cooker" name={bondCooker} size={1.25} className="mr-0.5" />
+										<Sprite
+											target="cooker"
+											name={bondCooker}
+											size={1.25}
+											className="mr-0.5"
+										/>
 										{bondCooker}
 									</PressElement>
 								</Tooltip>
@@ -236,7 +266,11 @@ export default function InfoButton() {
 						{bondClothes !== null && (
 							<p className="flex items-center">
 								<LevelLabel level={5} />
-								<Tooltip showArrow content={getLabel('衣服')} placement="right">
+								<Tooltip
+									showArrow
+									content={getLabel('衣服')}
+									placement="right"
+								>
 									<PressElement
 										as="span"
 										onPress={() => {
@@ -250,16 +284,25 @@ export default function InfoButton() {
 											CLASSNAME_FOCUS_VISIBLE_OUTLINE
 										)}
 									>
-										<Sprite target="clothes" name={bondClothes} size={1.25} className="mr-0.5" />
+										<Sprite
+											target="clothes"
+											name={bondClothes}
+											size={1.25}
+											className="mr-0.5"
+										/>
 										{bondClothes}
 									</PressElement>
 								</Tooltip>
 							</p>
 						)}
-						{bondOrnamentsData.map(({level, name}, index) => (
+						{bondOrnamentsData.map(({ level, name }, index) => (
 							<p key={index} className="flex items-center">
 								<LevelLabel level={level} />
-								<Tooltip showArrow content={getLabel('摆件')} placement="right">
+								<Tooltip
+									showArrow
+									content={getLabel('摆件')}
+									placement="right"
+								>
 									<PressElement
 										as="span"
 										onPress={() => {
@@ -273,7 +316,12 @@ export default function InfoButton() {
 											CLASSNAME_FOCUS_VISIBLE_OUTLINE
 										)}
 									>
-										<Sprite target="ornament" name={name} size={1.25} className="mr-0.5" />
+										<Sprite
+											target="ornament"
+											name={name}
+											size={1.25}
+											className="mr-0.5"
+										/>
 										{name}
 									</PressElement>
 								</Tooltip>
@@ -288,7 +336,11 @@ export default function InfoButton() {
 						{bondPartner !== null && (
 							<p className="flex items-center">
 								<LevelLabel level="伙伴" />
-								<Tooltip showArrow content={getLabel('伙伴')} placement="right">
+								<Tooltip
+									showArrow
+									content={getLabel('伙伴')}
+									placement="right"
+								>
 									<PressElement
 										as="span"
 										onPress={() => {
@@ -324,23 +376,39 @@ export default function InfoButton() {
 					aria-label={`${currentCustomerName}符卡效果`}
 					title="符卡效果"
 					classNames={{
-						content: 'space-y-1 break-all pt-2 text-justify text-default-900',
+						content:
+							'space-y-1 break-all pt-2 text-justify text-default-900',
 					}}
 				>
 					{hasPositiveSpellCards && (
 						<div className="space-y-1">
-							<p className="text-large font-semibold text-exgood-border dark:text-exgood">奖励符卡</p>
+							<p className="text-large font-semibold text-exgood-border dark:text-exgood">
+								奖励符卡
+							</p>
 							<div className="space-y-1.5">
-								{currentCustomerSpellCards.positive.map(({description, name}, index) => (
-									<div key={index} className="space-y-0.5">
-										<p className="font-medium">{name}</p>
-										<div className="ml-4 text-small">
-											{description.split(LABEL_MAP.br).map((text, line) => (
-												<p key={`${index}-${line}`}>{text}</p>
-											))}
+								{currentCustomerSpellCards.positive.map(
+									({ description, name }, index) => (
+										<div
+											key={index}
+											className="space-y-0.5"
+										>
+											<p className="font-medium">
+												{name}
+											</p>
+											<div className="ml-4 text-small">
+												{description
+													.split(LABEL_MAP.br)
+													.map((text, line) => (
+														<p
+															key={`${index}-${line}`}
+														>
+															{text}
+														</p>
+													))}
+											</div>
 										</div>
-									</div>
-								))}
+									)
+								)}
 							</div>
 						</div>
 					)}
@@ -350,18 +418,33 @@ export default function InfoButton() {
 								'!mt-2': hasPositiveSpellCards,
 							})}
 						>
-							<p className="text-large font-semibold text-bad dark:text-bad-border">惩罚符卡</p>
+							<p className="text-large font-semibold text-bad dark:text-bad-border">
+								惩罚符卡
+							</p>
 							<div className="space-y-1.5">
-								{currentCustomerSpellCards.negative.map(({description, name}, index) => (
-									<div key={index} className="space-y-0.5">
-										<p className="font-medium">{name}</p>
-										<div className="ml-4 text-small">
-											{description.split(LABEL_MAP.br).map((text, line) => (
-												<p key={`${index}-${line}`}>{text}</p>
-											))}
+								{currentCustomerSpellCards.negative.map(
+									({ description, name }, index) => (
+										<div
+											key={index}
+											className="space-y-0.5"
+										>
+											<p className="font-medium">
+												{name}
+											</p>
+											<div className="ml-4 text-small">
+												{description
+													.split(LABEL_MAP.br)
+													.map((text, line) => (
+														<p
+															key={`${index}-${line}`}
+														>
+															{text}
+														</p>
+													))}
+											</div>
 										</div>
-									</div>
-								))}
+									)
+								)}
 							</div>
 						</div>
 					)}
@@ -377,7 +460,8 @@ export default function InfoButton() {
 					aria-label="闲聊对话"
 					title="闲聊对话"
 					classNames={{
-						content: 'break-all pt-2 text-justify text-small text-default-900',
+						content:
+							'break-all pt-2 text-justify text-small text-default-900',
 					}}
 				>
 					<Ol>
@@ -392,52 +476,68 @@ export default function InfoButton() {
 				aria-label="评价对话"
 				title="评价对话"
 				classNames={{
-					content: 'space-y-1 break-all pt-2 text-justify text-small text-default-900',
+					content:
+						'space-y-1 break-all pt-2 text-justify text-small text-default-900',
 				}}
 			>
-				{Object.entries(CUSTOMER_EVALUATION_KEY_MAP).map(([evaluation, evaluationKey], index) => {
-					const customerEvaluation = currentCustomerEvaluation[evaluationKey];
-					if (evaluationKey in CUSTOMER_RATING_MAP) {
-						return (
-							<div key={index} className="flex items-center gap-3 px-1">
-								<Avatar
-									isBordered
-									showFallback
-									color={evaluationKey as TRatingKey}
-									fallback={<div></div>}
-									radius="sm"
-									classNames={{
-										base: 'h-6 w-2 ring-offset-0',
-									}}
-								/>
-								<div>
-									<p className="font-semibold">
-										{evaluation}
-										{evaluation === '极度不满' ? (
-											<span className="font-normal">（释放惩罚符卡）</span>
-										) : evaluation === '完美' ? (
-											<span className="font-normal">（释放奖励符卡）</span>
-										) : null}
-									</p>
-									{customerEvaluation !== null && <p>{customerEvaluation}</p>}
+				{Object.entries(CUSTOMER_EVALUATION_KEY_MAP).map(
+					([evaluation, evaluationKey], index) => {
+						const customerEvaluation =
+							currentCustomerEvaluation[evaluationKey];
+						if (evaluationKey in CUSTOMER_RATING_MAP) {
+							return (
+								<div
+									key={index}
+									className="flex items-center gap-3 px-1"
+								>
+									<Avatar
+										isBordered
+										showFallback
+										color={evaluationKey as TRatingKey}
+										fallback={<div></div>}
+										radius="sm"
+										classNames={{
+											base: 'h-6 w-2 ring-offset-0',
+										}}
+									/>
+									<div>
+										<p className="font-semibold">
+											{evaluation}
+											{evaluation === '极度不满' ? (
+												<span className="font-normal">
+													（释放惩罚符卡）
+												</span>
+											) : evaluation === '完美' ? (
+												<span className="font-normal">
+													（释放奖励符卡）
+												</span>
+											) : null}
+										</p>
+										{customerEvaluation !== null && (
+											<p>{customerEvaluation}</p>
+										)}
+									</div>
 								</div>
-							</div>
+							);
+						}
+						return customerEvaluation === null ? null : (
+							<p key={index}>
+								<span className="font-semibold">
+									{evaluation}：
+								</span>
+								{customerEvaluation}
+							</p>
 						);
 					}
-					return customerEvaluation === null ? null : (
-						<p key={index}>
-							<span className="font-semibold">{evaluation}：</span>
-							{customerEvaluation}
-						</p>
-					);
-				})}
+				)}
 			</AccordionItem>
 			<AccordionItem
 				key="help"
 				aria-label="特别说明"
 				title="特别说明"
 				classNames={{
-					content: 'space-y-1 break-all pt-2 text-justify text-default-900',
+					content:
+						'space-y-1 break-all pt-2 text-justify text-default-900',
 				}}
 			>
 				<div>
@@ -452,15 +552,21 @@ export default function InfoButton() {
 						<li>
 							点击套餐卡片中的厨具可以为当前套餐标记是否使用“夜雀”系列厨具，厨具类别是套餐评级时的参考维度之一。
 						</li>
-						<li>“保存套餐”按钮仅会在选择了料理和酒水，且选定了顾客的点单需求标签时被启用。</li>
+						<li>
+							“保存套餐”按钮仅会在选择了料理和酒水，且选定了顾客的点单需求标签时被启用。
+						</li>
 					</Ol>
 				</div>
 				<div>
 					<p className="font-semibold">交互时</p>
 					<Ol className="text-small">
 						<li>
-							<span className="hidden md:inline">点击顶部的“设置”按钮</span>
-							<span className="md:hidden">点击右上角的按钮打开菜单。再点击“设置”按钮</span>
+							<span className="hidden md:inline">
+								点击顶部的“设置”按钮
+							</span>
+							<span className="md:hidden">
+								点击右上角的按钮打开菜单。再点击“设置”按钮
+							</span>
 							，可以更改设置或使用数据管理功能。
 						</li>
 						<li>

@@ -36,8 +36,13 @@
 	@apply inline-block;
 
 	line-height: 1.05;
-	background: linear-gradient(to right, currentcolor, currentcolor 1px, transparent 1.5px) repeat-x 0 bottom/2.5px
-		1.5px;
+	background: linear-gradient(
+			to right,
+			currentcolor,
+			currentcolor 1px,
+			transparent 1.5px
+		)
+		repeat-x 0 bottom/2.5px 1.5px;
 }
 
 ::-webkit-scrollbar {

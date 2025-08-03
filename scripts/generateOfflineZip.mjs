@@ -3,22 +3,32 @@
 import AdmZip from 'adm-zip';
 import dotenv from 'dotenv';
 import minimist from 'minimist';
-import {copyFileSync, existsSync, mkdirSync, readdirSync, renameSync, rmSync, unlinkSync} from 'node:fs';
-import {join, resolve} from 'node:path';
-import {argv} from 'node:process';
+import {
+	copyFileSync,
+	existsSync,
+	mkdirSync,
+	readdirSync,
+	renameSync,
+	rmSync,
+	unlinkSync,
+} from 'node:fs';
+import { join, resolve } from 'node:path';
+import { argv } from 'node:process';
 
-import {getSha} from './utils.mjs';
-import PACKAGE from '../package.json' with {type: 'json'};
+import { getSha } from './utils.mjs';
+import PACKAGE from '../package.json' with { type: 'json' };
 
-dotenv.config({
-	path: ['.env.local', '.env'],
-	quiet: true,
-});
+dotenv.config({ path: ['.env.local', '.env'], quiet: true });
 
 const isOffline = !!process.env.OFFLINE;
-const {prepare: isPrepare} = minimist(argv.slice(2));
+const { prepare: isPrepare } = minimist(argv.slice(2));
 
-const filesToDelete = ['registerServiceWorker.js', 'robots.txt', 'serviceWorker.js', 'sitemap.xml'];
+const filesToDelete = [
+	'registerServiceWorker.js',
+	'robots.txt',
+	'serviceWorker.js',
+	'sitemap.xml',
+];
 const filesToRename = ['LICENSE', 'README.md'];
 
 const appPath = resolve(import.meta.dirname, '../app');
@@ -29,16 +39,15 @@ const scriptPath = resolve(import.meta.dirname);
 const apiPath = resolve(appPath, 'api');
 const fakeApiPath = resolve(appPath, '_api');
 
-function moveRouterFiles(/** @type {string} */ currentPath, /** @type {string} */ targetPath) {
+function moveRouterFiles(
+	/** @type {string} */ currentPath,
+	/** @type {string} */ targetPath
+) {
 	if (!existsSync(targetPath)) {
-		mkdirSync(targetPath, {
-			recursive: true,
-		});
+		mkdirSync(targetPath, { recursive: true });
 	}
 
-	const entries = readdirSync(currentPath, {
-		withFileTypes: true,
-	});
+	const entries = readdirSync(currentPath, { withFileTypes: true });
 
 	for (const entry of entries) {
 		const fromPath = join(currentPath, entry.name);
@@ -58,7 +67,7 @@ if (isOffline && isPrepare) {
 
 if (isOffline && !isPrepare) {
 	moveRouterFiles(fakeApiPath, apiPath);
-	rmSync(fakeApiPath, {recursive: true});
+	rmSync(fakeApiPath, { recursive: true });
 
 	const replaceExtension = (/** @type {string} */ fileName) => {
 		const f = fileName.split('.');
@@ -84,13 +93,18 @@ if (isOffline && !isPrepare) {
 	const zipFileName = `${PACKAGE.name}_${PACKAGE.version}_${getSha()}_offline-Windows`;
 	const zipTemplateFileName = 'offline-template';
 
-	const templateZip = new AdmZip(resolve(scriptPath, `${zipTemplateFileName}.zip`));
+	const templateZip = new AdmZip(
+		resolve(scriptPath, `${zipTemplateFileName}.zip`)
+	);
 	const zip = new AdmZip();
 
 	templateZip.getEntries().forEach((entry) => {
-		const {entryName} = entry;
+		const { entryName } = entry;
 		if (entryName.startsWith(`${zipTemplateFileName}/`)) {
-			const newEntryName = entryName.replace(zipTemplateFileName, zipFileName);
+			const newEntryName = entryName.replace(
+				zipTemplateFileName,
+				zipFileName
+			);
 			zip.addFile(newEntryName, entry.getData());
 		} else {
 			zip.addFile(entryName, entry.getData());

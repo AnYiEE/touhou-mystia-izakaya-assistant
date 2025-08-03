@@ -1,17 +1,16 @@
 /* eslint-disable sort-keys */
-import {type MetadataRoute} from 'next';
+import { type MetadataRoute } from 'next';
 
-import {COLOR_MAP} from '@/design/hooks';
+import { COLOR_MAP } from '@/design/hooks';
 
-import {siteConfig} from '@/configs';
+import { siteConfig } from '@/configs';
 
 type TManifest = MetadataRoute.Manifest & {
-	edge_side_panel: Partial<{
-		preferred_width: number;
-	}>;
+	edge_side_panel: Partial<{ preferred_width: number }>;
 };
 
-const {cdnUrl, description, id, isOffline, locale, name, shortName} = siteConfig;
+const { cdnUrl, description, id, isOffline, locale, name, shortName } =
+	siteConfig;
 
 export const dynamic = 'force-static';
 
@@ -25,12 +24,8 @@ export default function manifest(): TManifest {
 
 		display: 'standalone',
 		display_override: ['window-controls-overlay', 'standalone', 'browser'],
-		edge_side_panel: {
-			preferred_width: 780,
-		},
-		launch_handler: {
-			client_mode: ['navigate-existing', 'auto'],
-		},
+		edge_side_panel: { preferred_width: 780 },
+		launch_handler: { client_mode: ['navigate-existing', 'auto'] },
 		orientation: 'any',
 
 		icons: [
@@ -49,7 +44,8 @@ export default function manifest(): TManifest {
 			{
 				name: '为稀有顾客搭配料理套餐',
 				short_name: '搭配稀客套餐',
-				description: '搭配稀客的料理套餐或查看顾客图鉴（包括羁绊奖励和符卡效果查询）',
+				description:
+					'搭配稀客的料理套餐或查看顾客图鉴（包括羁绊奖励和符卡效果查询）',
 				url: '/customer-rare',
 				icons: [
 					{

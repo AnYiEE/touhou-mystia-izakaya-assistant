@@ -1,10 +1,10 @@
-import {type Metadata} from 'next';
+import { type Metadata } from 'next';
 
-import {siteConfig} from '@/configs';
-import {getPageTitle, toArray} from '@/utilities';
-import {CustomerNormal} from '@/utils';
+import { siteConfig } from '@/configs';
+import { getPageTitle, toArray } from '@/utilities';
+import { CustomerNormal } from '@/utils';
 
-const {description, keywords} = siteConfig;
+const { description, keywords } = siteConfig;
 
 const customers = CustomerNormal.getInstance().getNames(10);
 const title = getPageTitle('/customer-normal');
@@ -16,4 +16,4 @@ export const metadata: Metadata = {
 	keywords: toArray(keywords.slice(0, 18), customers),
 };
 
-export {default} from '@/(pages)/customer-rare/layout';
+export { default } from '@/(pages)/customer-rare/layout';

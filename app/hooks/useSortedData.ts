@@ -1,10 +1,13 @@
-import {useCallback, useMemo} from 'react';
+import { useCallback, useMemo } from 'react';
 
-import {useSkipProcessItemData} from '@/hooks';
+import { useSkipProcessItemData } from '@/hooks';
 
-import {type TPinyinSortState, pinyinSortStateMap} from '@/components/sidePinyinSortIconButton';
+import {
+	type TPinyinSortState,
+	pinyinSortStateMap,
+} from '@/components/sidePinyinSortIconButton';
 
-import type {TItemData, TItemInstance} from '@/utils/types';
+import type { TItemData, TItemInstance } from '@/utils/types';
 
 export function useSortedData<T extends TItemInstance>(
 	instance: T,
@@ -16,7 +19,9 @@ export function useSortedData<T extends TItemInstance>(
 	const sortData = useCallback(() => {
 		switch (pinyinSortState) {
 			case pinyinSortStateMap.az:
-				return instance.getPinyinSortedData(filteredData as never).get();
+				return instance
+					.getPinyinSortedData(filteredData as never)
+					.get();
 			case pinyinSortStateMap.za:
 				return instance
 					.getPinyinSortedData(filteredData as never)

@@ -1,4 +1,4 @@
-import type {ICustomerBase} from '@/data/types';
+import type { ICustomerBase } from '@/data/types';
 
 export interface ICustomerNormal extends ICustomerBase {}
 

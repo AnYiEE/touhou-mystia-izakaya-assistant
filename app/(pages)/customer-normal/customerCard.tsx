@@ -1,12 +1,12 @@
-import {useCallback, useMemo} from 'react';
+import { useCallback, useMemo } from 'react';
 
-import {useVibrate} from '@/hooks';
+import { useVibrate } from '@/hooks';
 
-import {Divider} from '@heroui/divider';
-import {type Selection} from '@heroui/table';
-import {faArrowsRotate, faXmark} from '@fortawesome/free-solid-svg-icons';
+import { Divider } from '@heroui/divider';
+import { type Selection } from '@heroui/table';
+import { faArrowsRotate, faXmark } from '@fortawesome/free-solid-svg-icons';
 
-import {ratingStyles} from '@/design/theme/styles/rating';
+import { ratingStyles } from '@/design/theme/styles/rating';
 import {
 	Avatar,
 	CLASSNAME_FOCUS_VISIBLE_OUTLINE,
@@ -20,7 +20,7 @@ import {
 
 import InfoButton from './infoButton';
 import TagGroup from './tagGroup';
-import {trackEvent} from '@/components/analytics';
+import { trackEvent } from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
@@ -33,23 +33,27 @@ import {
 	type TCustomerNormalName,
 	type TRecipeTag,
 } from '@/data';
-import {customerNormalStore as customerStore, globalStore} from '@/stores';
-import {checkEmpty, copyArray, pinyinSort} from '@/utilities';
+import { customerNormalStore as customerStore, globalStore } from '@/stores';
+import { checkEmpty, copyArray, pinyinSort } from '@/utilities';
 
 export default function CustomerCard() {
 	const vibrate = useVibrate();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
-	const selectedCustomerBeverageTag = customerStore.shared.customer.select.beverageTag.use();
-	const selectedCustomerRecipeTag = customerStore.shared.customer.select.recipeTag.use();
+	const selectedCustomerBeverageTag =
+		customerStore.shared.customer.select.beverageTag.use();
+	const selectedCustomerRecipeTag =
+		customerStore.shared.customer.select.recipeTag.use();
 	const currentRating = customerStore.shared.customer.rating.use();
 
 	const currentBeverageName = customerStore.shared.beverage.name.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
-	const currentRecipeTagsWithTrend = customerStore.shared.recipe.tagsWithTrend.use();
+	const currentRecipeTagsWithTrend =
+		customerStore.shared.recipe.tagsWithTrend.use();
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
-	const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
+	const isShowTagsTooltip =
+		globalStore.persistence.customerCardTagsTooltip.use();
 
 	const instance_beverage = customerStore.instances.beverage.get();
 	const instance_customer = customerStore.instances.customer.get();
@@ -96,23 +100,37 @@ export default function CustomerCard() {
 		const _beverageTags: TBeverageTag[] = [];
 
 		if (currentBeverageName !== null) {
-			_beverageTags.push(...instance_beverage.getPropsByName(currentBeverageName, 'tags'));
+			_beverageTags.push(
+				...instance_beverage.getPropsByName(currentBeverageName, 'tags')
+			);
 		}
 
 		return _beverageTags;
 	}, [currentBeverageName, instance_beverage]);
 
-	const avatarRatingContent = currentRating === null ? '请选择点单料理以评级' : CUSTOMER_RATING_MAP[currentRating];
+	const avatarRatingContent =
+		currentRating === null
+			? '请选择点单料理以评级'
+			: CUSTOMER_RATING_MAP[currentRating];
 
-	const avatarRatingColor = hasRating ? (`${currentRating}-border` as const) : undefined;
+	const avatarRatingColor = hasRating
+		? (`${currentRating}-border` as const)
+		: undefined;
 	const tooltipRatingColor = hasRating ? currentRating : undefined;
 
-	const getTagTooltip = useCallback((type: 'beverageTag' | 'recipeTag', selectedTags: Selection, tag: string) => {
-		const tagType = type === 'beverageTag' ? '酒水' : '料理';
-		const isTagExisted = (selectedTags as SelectionSet).has(tag);
+	const getTagTooltip = useCallback(
+		(
+			type: 'beverageTag' | 'recipeTag',
+			selectedTags: Selection,
+			tag: string
+		) => {
+			const tagType = type === 'beverageTag' ? '酒水' : '料理';
+			const isTagExisted = (selectedTags as SelectionSet).has(tag);
 
-		return `点击：${isTagExisted ? `取消筛选${tagType}表格` : `以此标签筛选${tagType}表格`}`;
-	}, []);
+			return `点击：${isTagExisted ? `取消筛选${tagType}表格` : `以此标签筛选${tagType}表格`}`;
+		},
+		[]
+	);
 
 	if (currentCustomerName === null) {
 		return null;
@@ -147,13 +165,18 @@ export default function CustomerCard() {
 						'bg-content1/40 backdrop-blur': isHighAppearance,
 						'ring-4 ring-opacity-50': hasRating,
 					},
-					avatarRatingColor !== undefined && ratingStyles[avatarRatingColor]
+					avatarRatingColor !== undefined &&
+						ratingStyles[avatarRatingColor]
 				),
 			}}
 		>
 			<div className="flex flex-col gap-3 p-4 md:flex-row">
 				<div className="flex flex-col justify-evenly gap-2">
-					<Popover showArrow color={tooltipRatingColor} offset={hasRating ? 13 : 9}>
+					<Popover
+						showArrow
+						color={tooltipRatingColor}
+						offset={hasRating ? 13 : 9}
+					>
 						<Tooltip
 							showArrow
 							color={tooltipRatingColor}
@@ -178,7 +201,9 @@ export default function CustomerCard() {
 												<div className="h-16 w-16 overflow-hidden rounded-full">
 													<Sprite
 														target="customer_normal"
-														name={currentCustomerName}
+														name={
+															currentCustomerName
+														}
 														size={5.6}
 														className="-translate-x-[0.77rem] -translate-y-0.5"
 													/>
@@ -187,9 +212,7 @@ export default function CustomerCard() {
 											classNames={{
 												base: cn(
 													'h-12 w-12 transition motion-reduce:transition-none lg:h-16 lg:w-16',
-													{
-														'ring-4': hasRating,
-													}
+													{ 'ring-4': hasRating }
 												),
 												icon: 'inline-table lg:inline-block',
 											}}
@@ -205,8 +228,17 @@ export default function CustomerCard() {
 					</Popover>
 					<div className="whitespace-nowrap text-tiny font-medium text-default-800">
 						<p className="flex justify-between gap-10">
-							<Popover showArrow isTriggerDisabled={!dlcLabel} offset={4}>
-								<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={0}>
+							<Popover
+								showArrow
+								isTriggerDisabled={!dlcLabel}
+								offset={4}
+							>
+								<Tooltip
+									showArrow
+									content={dlcLabel}
+									isDisabled={!dlcLabel}
+									offset={0}
+								>
 									<span
 										className={cn({
 											'cursor-text': !dlcLabel,
@@ -214,12 +246,20 @@ export default function CustomerCard() {
 									>
 										<PopoverTrigger>
 											<span
-												role={dlcLabel ? 'button' : undefined}
-												tabIndex={dlcLabel ? 0 : undefined}
+												role={
+													dlcLabel
+														? 'button'
+														: undefined
+												}
+												tabIndex={
+													dlcLabel ? 0 : undefined
+												}
 												title={dlcLabel}
 												className={cn('opacity-100', {
-													[CLASSNAME_FOCUS_VISIBLE_OUTLINE]: dlcLabel,
-													'underline-dotted-linear': dlcLabel,
+													[CLASSNAME_FOCUS_VISIBLE_OUTLINE]:
+														dlcLabel,
+													'underline-dotted-linear':
+														dlcLabel,
 												})}
 											>
 												DLC{currentCustomerDlc}
@@ -231,7 +271,9 @@ export default function CustomerCard() {
 							</Popover>
 							{(() => {
 								const isGoblin = currentCustomerName === '地精';
-								const mainPlace = isGoblin ? '符卡幻化' : currentCustomerMainPlace;
+								const mainPlace = isGoblin
+									? '符卡幻化'
+									: currentCustomerMainPlace;
 								const otherPlaces = isGoblin ? (
 									<span className="inline-flex items-center">
 										【
@@ -247,23 +289,39 @@ export default function CustomerCard() {
 									placeContent
 								);
 								return (
-									<Popover showArrow offset={hasOtherPlaces || isGoblin ? 6 : 4}>
-										<Tooltip showArrow content={otherPlaces} offset={2}>
+									<Popover
+										showArrow
+										offset={
+											hasOtherPlaces || isGoblin ? 6 : 4
+										}
+									>
+										<Tooltip
+											showArrow
+											content={otherPlaces}
+											offset={2}
+										>
 											<span className="cursor-pointer">
 												<PopoverTrigger>
 													<span
 														role="button"
 														tabIndex={0}
-														className={cn(CLASSNAME_FOCUS_VISIBLE_OUTLINE, {
-															'underline-dotted-linear': hasOtherPlaces || isGoblin,
-														})}
+														className={cn(
+															CLASSNAME_FOCUS_VISIBLE_OUTLINE,
+															{
+																'underline-dotted-linear':
+																	hasOtherPlaces ||
+																	isGoblin,
+															}
+														)}
 													>
 														{mainPlace}
 													</span>
 												</PopoverTrigger>
 											</span>
 										</Tooltip>
-										<PopoverContent>{otherPlaces}</PopoverContent>
+										<PopoverContent>
+											{otherPlaces}
+										</PopoverContent>
 									</Popover>
 								);
 							})()}
@@ -281,7 +339,11 @@ export default function CustomerCard() {
 									<Tooltip
 										key={index}
 										showArrow
-										content={getTagTooltip('recipeTag', selectedCustomerRecipeTag, tag)}
+										content={getTagTooltip(
+											'recipeTag',
+											selectedCustomerRecipeTag,
+											tag
+										)}
 										closeDelay={0}
 										delay={500}
 										isDisabled={!isShowTagsTooltip}
@@ -290,7 +352,9 @@ export default function CustomerCard() {
 										<Tags.Tag
 											isButton
 											tag={tag}
-											tagStyle={CUSTOMER_NORMAL_TAG_STYLE.positive}
+											tagStyle={
+												CUSTOMER_NORMAL_TAG_STYLE.positive
+											}
 											tagType="positive"
 											onPress={() => {
 												handleRecipeTagClick(tag);
@@ -299,7 +363,10 @@ export default function CustomerCard() {
 											className={cn(
 												'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 												{
-													'font-normal opacity-50': !currentRecipeTagsWithTrend.includes(tag),
+													'font-normal opacity-50':
+														!currentRecipeTagsWithTrend.includes(
+															tag
+														),
 												}
 											)}
 										/>
@@ -313,7 +380,11 @@ export default function CustomerCard() {
 								<Tooltip
 									key={index}
 									showArrow
-									content={getTagTooltip('beverageTag', selectedCustomerBeverageTag, tag)}
+									content={getTagTooltip(
+										'beverageTag',
+										selectedCustomerBeverageTag,
+										tag
+									)}
 									closeDelay={0}
 									delay={500}
 									isDisabled={!isShowTagsTooltip}
@@ -322,7 +393,9 @@ export default function CustomerCard() {
 									<Tags.Tag
 										isButton
 										tag={tag}
-										tagStyle={CUSTOMER_NORMAL_TAG_STYLE.beverage}
+										tagStyle={
+											CUSTOMER_NORMAL_TAG_STYLE.beverage
+										}
 										tagType="positive"
 										onPress={() => {
 											handleBeverageTagClick(tag);
@@ -331,7 +404,8 @@ export default function CustomerCard() {
 										className={cn(
 											'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 											{
-												'font-normal opacity-50': !beverageTags.includes(tag),
+												'font-normal opacity-50':
+													!beverageTags.includes(tag),
 											}
 										)}
 									/>

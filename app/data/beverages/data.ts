@@ -1,5 +1,5 @@
 /* eslint-disable sort-keys */
-import type {IBeverage} from './types';
+import type { IBeverage } from './types';
 
 export const BEVERAGE_LIST = [
 	{
@@ -10,35 +10,29 @@ export const BEVERAGE_LIST = [
 		dlc: 0,
 		level: 1,
 		price: 1,
-		from: {
-			self: true,
-		},
+		from: { self: true },
 	},
 	{
 		id: 1,
 		name: '果味High Ball',
-		description: '居酒屋常见的，使用威士忌、果汁和苏打勾兑的简单调酒，降低了酒精度之后成为了谁都可以享受的饮料。',
+		description:
+			'居酒屋常见的，使用威士忌、果汁和苏打勾兑的简单调酒，降低了酒精度之后成为了谁都可以享受的饮料。',
 		tags: ['低酒精', '可加冰', '鸡尾酒', '西洋酒', '水果', '甘', '苦'],
 		dlc: 0,
 		level: 1,
 		price: 12,
-		from: {
-			buy: ['【妖怪兽道】杂货商人'],
-			fishingAdvanced: ['妖怪兽道'],
-		},
+		from: { buy: ['【妖怪兽道】杂货商人'], fishingAdvanced: ['妖怪兽道'] },
 	},
 	{
 		id: 2,
 		name: '果味SOUR',
-		description: '居酒屋常见的，使用烧酒、果汁和苏打勾兑的简单调酒，比起果味High Ball更加有日式风格。',
+		description:
+			'居酒屋常见的，使用烧酒、果汁和苏打勾兑的简单调酒，比起果味High Ball更加有日式风格。',
 		tags: ['低酒精', '可加冰', '烧酒', '鸡尾酒', '水果', '甘', '苦'],
 		dlc: 0,
 		level: 1,
 		price: 12,
-		from: {
-			buy: ['【妖怪兽道】杂货商人'],
-			fishingAdvanced: ['妖怪兽道'],
-		},
+		from: { buy: ['【妖怪兽道】杂货商人'], fishingAdvanced: ['妖怪兽道'] },
 	},
 	{
 		id: 3,
@@ -57,32 +51,30 @@ export const BEVERAGE_LIST = [
 	{
 		id: 4,
 		name: '超ZUN啤酒',
-		description: '某位和幻想乡很有渊源的大人物作为副业的产品。虽然是出于兴趣而研制的啤酒，但意外地十分有人气。',
+		description:
+			'某位和幻想乡很有渊源的大人物作为副业的产品。虽然是出于兴趣而研制的啤酒，但意外地十分有人气。',
 		tags: ['低酒精', '可加冰', '啤酒', '苦'],
 		dlc: 0,
 		level: 1,
 		price: 18,
-		from: {
-			buy: ['【人间之里】酒商'],
-		},
+		from: { buy: ['【人间之里】酒商'] },
 	},
 	{
 		id: 5,
 		name: '日月星',
-		description: '纯米酒，有着妖精的祝福。度数不高，口感柔顺，价格平易近人，是居酒屋受欢迎的选择。',
+		description:
+			'纯米酒，有着妖精的祝福。度数不高，口感柔顺，价格平易近人，是居酒屋受欢迎的选择。',
 		tags: ['中酒精', '可加冰', '可加热', '清酒', '直饮'],
 		dlc: 0,
 		level: 2,
 		price: 34,
-		from: {
-			buy: ['【人间之里】酒商'],
-			fishingAdvanced: ['人间之里'],
-		},
+		from: { buy: ['【人间之里】酒商'], fishingAdvanced: ['人间之里'] },
 	},
 	{
 		id: 6,
 		name: '梅酒',
-		description: '人间之里的人类自酿的梅子酒。因为喝起来很甜，所以经常有不了解它的生物被它的后劲儿击倒。',
+		description:
+			'人间之里的人类自酿的梅子酒。因为喝起来很甜，所以经常有不了解它的生物被它的后劲儿击倒。',
 		tags: ['中酒精', '可加冰', '可加热', '利口酒', '水果'],
 		dlc: 0,
 		level: 2,
@@ -115,14 +107,13 @@ export const BEVERAGE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 45,
-		from: {
-			buy: [['【博丽神社】妖精女仆', 80]],
-		},
+		from: { buy: [['【博丽神社】妖精女仆', 80]] },
 	},
 	{
 		id: 9,
 		name: '神之麦',
-		description: '使用妖怪之山上被秋天的神明们所庇佑的大麦所酿造的大麦烧酒。',
+		description:
+			'使用妖怪之山上被秋天的神明们所庇佑的大麦所酿造的大麦烧酒。',
 		tags: ['中酒精', '可加冰', '可加热', '烧酒', '直饮'],
 		dlc: 0,
 		level: 2,
@@ -156,7 +147,8 @@ export const BEVERAGE_LIST = [
 	{
 		id: 11,
 		name: '晓',
-		description: '针对幻想乡居民口味改良的威士忌。在保留威士忌独有的气味的同时也有着顺滑的口感。',
+		description:
+			'针对幻想乡居民口味改良的威士忌。在保留威士忌独有的气味的同时也有着顺滑的口感。',
 		tags: ['高酒精', '可加冰', '西洋酒', '直饮'],
 		dlc: 0,
 		level: 4,
@@ -199,23 +191,18 @@ export const BEVERAGE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 25,
-		from: {
-			buy: ['【红魔馆】小恶魔'],
-			fishingAdvanced: ['红魔馆'],
-		},
+		from: { buy: ['【红魔馆】小恶魔'], fishingAdvanced: ['红魔馆'] },
 	},
 	{
 		id: 14,
 		name: '阿芙加朵',
-		description: '将冰激凌融化在咖啡中的做法，对于怕苦又需要咖啡提神的人来说是再好不过的饮料。',
+		description:
+			'将冰激凌融化在咖啡中的做法，对于怕苦又需要咖啡提神的人来说是再好不过的饮料。',
 		tags: ['无酒精', '可加冰', '甘', '苦', '提神'],
 		dlc: 0,
 		level: 2,
 		price: 35,
-		from: {
-			buy: ['【红魔馆】小恶魔'],
-			fishingAdvanced: ['地灵殿'],
-		},
+		from: { buy: ['【红魔馆】小恶魔'], fishingAdvanced: ['地灵殿'] },
 	},
 	{
 		id: 15,
@@ -253,7 +240,8 @@ export const BEVERAGE_LIST = [
 	{
 		id: 17,
 		name: '教父',
-		description: '浓烈的北方威士忌和杏仁利口酒混合，非常古典的调酒。口感也相当硬汉，普通的妖怪应付不来。',
+		description:
+			'浓烈的北方威士忌和杏仁利口酒混合，非常古典的调酒。口感也相当硬汉，普通的妖怪应付不来。',
 		tags: ['高酒精', '可加冰', '鸡尾酒', '西洋酒', '苦', '古典'],
 		dlc: 0,
 		level: 3,
@@ -272,7 +260,8 @@ export const BEVERAGE_LIST = [
 	{
 		id: 18,
 		name: '风祝',
-		description: '轻松愉快的餐后酒。薄荷和奶油为主的口感，比起酒精饮料更像甜品。',
+		description:
+			'轻松愉快的餐后酒。薄荷和奶油为主的口感，比起酒精饮料更像甜品。',
 		tags: ['中酒精', '可加冰', '鸡尾酒', '甘', '现代'],
 		dlc: 0,
 		level: 3,
@@ -305,7 +294,13 @@ export const BEVERAGE_LIST = [
 				'【神灵庙】道士',
 				'【太阳花田】太阳花精',
 			],
-			fishingAdvanced: ['人间之里', '博丽神社', '迷途竹林', '魔法森林', '辉针城'],
+			fishingAdvanced: [
+				'人间之里',
+				'博丽神社',
+				'迷途竹林',
+				'魔法森林',
+				'辉针城',
+			],
 		},
 	},
 	{
@@ -331,7 +326,8 @@ export const BEVERAGE_LIST = [
 	{
 		id: 21,
 		name: '火鼠裘',
-		description: '如果不使用火鼠裘来承装也许就会烧起来的烈酒，几乎无人能承受其辣度的超级辣口烧酒。',
+		description:
+			'如果不使用火鼠裘来承装也许就会烧起来的烈酒，几乎无人能承受其辣度的超级辣口烧酒。',
 		tags: ['高酒精', '可加热', '烧酒', '辛'],
 		dlc: 0,
 		level: 4,
@@ -350,7 +346,8 @@ export const BEVERAGE_LIST = [
 	{
 		id: 22,
 		name: '玉露茶',
-		description: '几乎是日本茶中最高级的茶叶，需要用较低的水温来冲泡，甘醇飘香，口感独特。',
+		description:
+			'几乎是日本茶中最高级的茶叶，需要用较低的水温来冲泡，甘醇飘香，口感独特。',
 		tags: ['无酒精', '可加热', '古典'],
 		dlc: 0,
 		level: 2,
@@ -365,7 +362,8 @@ export const BEVERAGE_LIST = [
 	{
 		id: 23,
 		name: '月面火箭',
-		description: '使用月之都先进技术制作的高级气泡水。迸发的口感有如火箭一般，只需要加一片柠檬就是完美的饮品。',
+		description:
+			'使用月之都先进技术制作的高级气泡水。迸发的口感有如火箭一般，只需要加一片柠檬就是完美的饮品。',
 		tags: ['无酒精', '可加冰', '气泡', '现代'],
 		dlc: 0,
 		level: 2,
@@ -378,26 +376,24 @@ export const BEVERAGE_LIST = [
 	{
 		id: 24,
 		name: '牛奶',
-		description: '温润纯白的饮品，无论小孩还是大人都适合饮用，好处多到说不完。',
+		description:
+			'温润纯白的饮品，无论小孩还是大人都适合饮用，好处多到说不完。',
 		tags: ['无酒精', '直饮'],
 		dlc: 0,
 		level: 2,
 		price: 16,
-		from: {
-			buy: ['【人间之里】清兰'],
-		},
+		from: { buy: ['【人间之里】清兰'] },
 	},
 	{
 		id: 25,
 		name: '红柚果汁',
-		description: '据说是来自外界的人气饮料。用红色柚子这种水果榨汁，尤其是盛夏饮用，健康祛暑，让人回甘无穷。',
+		description:
+			'据说是来自外界的人气饮料。用红色柚子这种水果榨汁，尤其是盛夏饮用，健康祛暑，让人回甘无穷。',
 		tags: ['无酒精', '水果'],
 		dlc: 0,
 		level: 2,
 		price: 24,
-		from: {
-			buy: ['【人间之里】清兰'],
-		},
+		from: { buy: ['【人间之里】清兰'] },
 	},
 	{
 		id: 26,
@@ -417,38 +413,35 @@ export const BEVERAGE_LIST = [
 	{
 		id: 27,
 		name: '冰山毛玉冻柠',
-		description: '仿佛是融化在可口的冰沙中的毛玉，佐以冻柠口味，在炎热的夏季，不知拯救了多少人命。',
+		description:
+			'仿佛是融化在可口的冰沙中的毛玉，佐以冻柠口味，在炎热的夏季，不知拯救了多少人命。',
 		tags: ['无酒精', '可加冰', '直饮', '水果', '甘', '气泡', '提神'],
 		dlc: 0,
 		level: 2,
 		price: 45,
-		from: {
-			buy: ['【妖怪兽道】萌澄果'],
-		},
+		from: { buy: ['【妖怪兽道】萌澄果'] },
 	},
 	{
 		id: 28,
 		name: '“大冰棍儿！”',
-		description: '简单又富有重量感的大冰块，有梦幻的甜蜜和薄荷的调味。夏天解暑、让所有人满血复活的神奇冰品。',
+		description:
+			'简单又富有重量感的大冰块，有梦幻的甜蜜和薄荷的调味。夏天解暑、让所有人满血复活的神奇冰品。',
 		tags: ['无酒精', '甘', '现代', '提神'],
 		dlc: 0,
 		level: 2,
 		price: 35,
-		from: {
-			buy: ['【妖怪兽道】蹦蹦跳跳的三妖精'],
-		},
+		from: { buy: ['【妖怪兽道】蹦蹦跳跳的三妖精'] },
 	},
 	{
 		id: 1000,
 		name: '大吟酿',
-		description: '最高级的清酒，口感极佳而且有水果的香味。必须避光，在太阳的照射下颜色会迅速变深。',
+		description:
+			'最高级的清酒，口感极佳而且有水果的香味。必须避光，在太阳的照射下颜色会迅速变深。',
 		tags: ['中酒精', '可加冰', '清酒', '直饮', '水果', '甘', '古典'],
 		dlc: 1,
 		level: 3,
 		price: 210,
-		from: {
-			buy: ['【妖怪之山】河童商人'],
-		},
+		from: { buy: ['【妖怪之山】河童商人'] },
 	},
 	{
 		id: 1001,
@@ -459,9 +452,7 @@ export const BEVERAGE_LIST = [
 		dlc: 1,
 		level: 2,
 		price: 62,
-		from: {
-			buy: ['【魔法森林】上海人形'],
-		},
+		from: { buy: ['【魔法森林】上海人形'] },
 	},
 	{
 		id: 1002,
@@ -486,10 +477,7 @@ export const BEVERAGE_LIST = [
 		dlc: 1,
 		level: 1,
 		price: 42,
-		from: {
-			buy: ['【魔法森林】上海人形'],
-			fishingAdvanced: ['太阳花田'],
-		},
+		from: { buy: ['【魔法森林】上海人形'], fishingAdvanced: ['太阳花田'] },
 	},
 	{
 		id: 1004,
@@ -500,9 +488,7 @@ export const BEVERAGE_LIST = [
 		dlc: 1,
 		level: 2,
 		price: 32,
-		from: {
-			buy: ['【魔法森林】上海人形'],
-		},
+		from: { buy: ['【魔法森林】上海人形'] },
 	},
 	{
 		id: 2000,
@@ -528,22 +514,18 @@ export const BEVERAGE_LIST = [
 		dlc: 2,
 		level: 2,
 		price: 45,
-		from: {
-			buy: ['【地灵殿】地狱鸦'],
-		},
+		from: { buy: ['【地灵殿】地狱鸦'] },
 	},
 	{
 		id: 2002,
 		name: '古明地冰激凌',
-		description: '地灵殿的限定纪念甜品！以地灵殿的觉妖怪姐妹为原型设计的可爱甜筒，在地底妖怪中有很大的人气。',
+		description:
+			'地灵殿的限定纪念甜品！以地灵殿的觉妖怪姐妹为原型设计的可爱甜筒，在地底妖怪中有很大的人气。',
 		tags: ['无酒精', '水果', '甘', '现代'],
 		dlc: 2,
 		level: 2,
 		price: 35,
-		from: {
-			buy: ['【地灵殿】地狱鸦'],
-			fishingAdvanced: ['地灵殿'],
-		},
+		from: { buy: ['【地灵殿】地狱鸦'], fishingAdvanced: ['地灵殿'] },
 	},
 	{
 		id: 3000,
@@ -554,22 +536,18 @@ export const BEVERAGE_LIST = [
 		dlc: 3,
 		level: 2,
 		price: 50,
-		from: {
-			buy: ['【命莲寺】娜兹玲'],
-		},
+		from: { buy: ['【命莲寺】娜兹玲'] },
 	},
 	{
 		id: 3001,
 		name: '麒麟',
-		description: '道士们采用外界的技术，只提取第一道麦汁酿造的啤酒。因此没有一般啤酒的涩味，口感更纯更顺。',
+		description:
+			'道士们采用外界的技术，只提取第一道麦汁酿造的啤酒。因此没有一般啤酒的涩味，口感更纯更顺。',
 		tags: ['中酒精', '啤酒', '直饮'],
 		dlc: 3,
 		level: 3,
 		price: 180,
-		from: {
-			buy: ['【神灵庙】道士'],
-			fishingAdvanced: ['神灵庙'],
-		},
+		from: { buy: ['【神灵庙】道士'], fishingAdvanced: ['神灵庙'] },
 	},
 	{
 		id: 4000,
@@ -588,7 +566,8 @@ export const BEVERAGE_LIST = [
 	{
 		id: 4001,
 		name: '伶人醉',
-		description: '桃花酿的酒。妖精之间有着饮一壶桃花酒，醉卧花间，就会遇到桃花仙的传说。这怎么看都是喝醉了吧？',
+		description:
+			'桃花酿的酒。妖精之间有着饮一壶桃花酒，醉卧花间，就会遇到桃花仙的传说。这怎么看都是喝醉了吧？',
 		tags: ['低酒精', '直饮', '水果', '甘', '古典'],
 		dlc: 4,
 		level: 3,
@@ -608,9 +587,7 @@ export const BEVERAGE_LIST = [
 		dlc: 5,
 		level: 3,
 		price: 80,
-		from: {
-			buy: [['【魔界】蓬松松爱莲♡魔法店', true], '【魔界】小丑'],
-		},
+		from: { buy: [['【魔界】蓬松松爱莲♡魔法店', true], '【魔界】小丑'] },
 	},
 	{
 		id: 5001,
@@ -665,8 +642,6 @@ export const BEVERAGE_LIST = [
 		dlc: 5,
 		level: 3,
 		price: 96,
-		from: {
-			buy: ['【月之都】月兔', ['【魔界】蓬松松爱莲♡魔法店', true]],
-		},
+		from: { buy: ['【月之都】月兔', ['【魔界】蓬松松爱莲♡魔法店', true]] },
 	},
 ] as const satisfies IBeverage[];

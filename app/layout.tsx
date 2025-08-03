@@ -1,19 +1,19 @@
-import {type PropsWithChildren} from 'react';
-import {type Metadata, type Viewport} from 'next';
+import { type PropsWithChildren } from 'react';
+import { type Metadata, type Viewport } from 'next';
 import Script from 'next/script';
-import {execSync} from 'node:child_process';
+import { execSync } from 'node:child_process';
 
-import {ThemeScript} from '@/design/hooks';
+import { ThemeScript } from '@/design/hooks';
 
 import Polyfills from '@/polyfills';
-import Providers, {AddHighAppearance} from '@/providers';
+import Providers, { AddHighAppearance } from '@/providers';
 import Footer from '@/(pages)/(layout)/footer';
 import Navbar from '@/(pages)/(layout)/navbar';
 import Analytics from '@/components/analytics';
 import ErrorBoundary from '@/components/errorBoundary';
 
-import {config as fontawesomeConfig} from '@fortawesome/fontawesome-svg-core';
-import {siteConfig} from '@/configs';
+import { config as fontawesomeConfig } from '@fortawesome/fontawesome-svg-core';
+import { siteConfig } from '@/configs';
 
 import './globals.scss';
 import 'driver.js/dist/driver.css';
@@ -58,9 +58,7 @@ export const metadata: Metadata = {
 	...(isOffline
 		? {}
 		: {
-				twitter: {
-					card: 'summary',
-				},
+				twitter: { card: 'summary' },
 				verification: {
 					other: {
 						// cSpell:ignore codeva
@@ -70,9 +68,7 @@ export const metadata: Metadata = {
 			}),
 };
 
-export const viewport: Viewport = {
-	viewportFit: 'cover',
-};
+export const viewport: Viewport = { viewportFit: 'cover' };
 
 const sha = (() => {
 	if (vercelSha) {
@@ -80,7 +76,10 @@ const sha = (() => {
 	}
 
 	try {
-		return execSync('git rev-parse --short HEAD').toString('utf8').trim().slice(0, 7);
+		return execSync('git rev-parse --short HEAD')
+			.toString('utf8')
+			.trim()
+			.slice(0, 7);
 	} catch {
 		return 'unknown';
 	}
@@ -88,15 +87,24 @@ const sha = (() => {
 
 interface IProps {}
 
-export default function RootLayout({children}: PropsWithChildren<IProps>) {
+export default function RootLayout({ children }: PropsWithChildren<IProps>) {
 	return (
-		<html suppressHydrationWarning lang={locale} className="selection-custom light:izakaya dark:izakaya-dark">
+		<html
+			suppressHydrationWarning
+			lang={locale}
+			className="selection-custom light:izakaya dark:izakaya-dark"
+		>
 			<head>
 				<Polyfills />
 				<ThemeScript />
 				{
 					// Register service worker. The `sha` is the commit SHA of the current commit, used to bypass browser caching.
-					isProduction && !isOffline && <Script async src={`/registerServiceWorker.js?v=${sha}`} />
+					isProduction && !isOffline && (
+						<Script
+							async
+							src={`/registerServiceWorker.js?v=${sha}`}
+						/>
+					)
 				}
 			</head>
 			<body suppressHydrationWarning className="antialiased">

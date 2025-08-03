@@ -1,7 +1,7 @@
 // @ts-check
 
-import {execSync} from 'node:child_process';
-import {env} from 'node:process';
+import { execSync } from 'node:child_process';
+import { env } from 'node:process';
 
 export const IS_OFFLINE = Boolean(env.OFFLINE);
 export const IS_PRODUCTION = env.NODE_ENV === 'production';
@@ -14,7 +14,10 @@ export const getSha = () => {
 	}
 
 	try {
-		return execSync('git rev-parse --short HEAD').toString('utf8').trim().slice(0, 7);
+		return execSync('git rev-parse --short HEAD')
+			.toString('utf8')
+			.trim()
+			.slice(0, 7);
 	} catch {
 		return 'unknown';
 	}

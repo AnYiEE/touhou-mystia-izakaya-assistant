@@ -1,5 +1,5 @@
-import {ratingColors} from '../colors';
-import type {TThemeExtendConfig} from '../types';
+import { ratingColors } from '../colors';
+import type { TThemeExtendConfig } from '../types';
 
 export const getExtendConfig = (cdnUrl: string) =>
 	({
@@ -8,22 +8,14 @@ export const getExtendConfig = (cdnUrl: string) =>
 			logo: `url("${cdnUrl}/assets/icon.png")`,
 			mystia: `url("${cdnUrl}/assets/mystia.png")`,
 		},
-		backgroundSize: {
-			'y-auto': 'auto 100%',
-		},
-		colors: {
-			...ratingColors,
-			'qq-blue': '#1479d7',
-			rednote: '#ff2741',
-		},
+		backgroundSize: { 'y-auto': 'auto 100%' },
+		colors: { ...ratingColors, 'qq-blue': '#1479d7', rednote: '#ff2741' },
 		gridTemplateColumns: {
 			'fill-12': 'repeat(auto-fill,3rem)',
 			'fill-16': 'repeat(auto-fill,4rem)',
 			'fill-20': 'repeat(auto-fill,5rem)',
 		},
-		height: {
-			loading: '120px',
-		},
+		height: { loading: '120px' },
 		maxHeight: {
 			'dvh-safe-half': 'var(--safe-h-dvh-half)',
 			'vmax-half': '50vmax',
@@ -38,19 +30,10 @@ export const getExtendConfig = (cdnUrl: string) =>
 			'main-content': 'calc(var(--safe-h-dvh) - 8rem)',
 			'main-content-pb-0': 'calc(var(--safe-h-dvh) - 6rem)',
 		},
-		padding: {
-			titlebar: 'env(titlebar-area-height,0rem)',
-		},
-		screens: {
-			'3xl': '1920px',
-			'4xl': '2560px',
-		},
-		width: {
-			loading: '120px',
-		},
-		zIndex: {
-			60: '60',
-		},
+		padding: { titlebar: 'env(titlebar-area-height,0rem)' },
+		screens: { '3xl': '1920px', '4xl': '2560px' },
+		width: { loading: '120px' },
+		zIndex: { 60: '60' },
 	}) as const satisfies TThemeExtendConfig;
 
 export * from './fontFamily';

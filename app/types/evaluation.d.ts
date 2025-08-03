@@ -19,8 +19,14 @@ export type TEvaluationKey =
 	| 'repell'
 	| 'seenRepell';
 
-export type TRating = Exclude<TEvaluation, '小额超支' | '大额超支' | '被驱赶' | '评价驱赶行为'>;
-export type TRatingKey = Exclude<TEvaluationKey, 'lackmoneynormal' | 'lackmoneyangry' | 'repell' | 'seenRepell'>;
+export type TRating = Exclude<
+	TEvaluation,
+	'小额超支' | '大额超支' | '被驱赶' | '评价驱赶行为'
+>;
+export type TRatingKey = Exclude<
+	TEvaluationKey,
+	'lackmoneynormal' | 'lackmoneyangry' | 'repell' | 'seenRepell'
+>;
 
 export type TEvaluationKeyMap = Record<TEvaluation, TEvaluationKey>;
 export type TEvaluationMap = Record<TEvaluationKey, TEvaluation>;

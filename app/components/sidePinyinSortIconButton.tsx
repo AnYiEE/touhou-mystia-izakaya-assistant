@@ -1,29 +1,33 @@
 'use client';
 
-import {type Dispatch, type SetStateAction, memo, useCallback} from 'react';
+import { type Dispatch, type SetStateAction, memo, useCallback } from 'react';
 
-import {useVibrate} from '@/hooks';
+import { useVibrate } from '@/hooks';
 
-import {faArrowDownAZ, faArrowUpAZ} from '@fortawesome/free-solid-svg-icons';
+import { faArrowDownAZ, faArrowUpAZ } from '@fortawesome/free-solid-svg-icons';
 
-import {Tooltip, cn} from '@/design/ui/components';
+import { Tooltip, cn } from '@/design/ui/components';
 
-import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
+import FontAwesomeIconButton, {
+	type IFontAwesomeIconButtonProps,
+} from '@/components/fontAwesomeIconButton';
 
-export const pinyinSortStateMap = {
-	az: 1,
-	none: 0,
-	za: 2,
-} as const;
+export const pinyinSortStateMap = { az: 1, none: 0, za: 2 } as const;
 
-export type TPinyinSortState = ExtractCollectionValue<typeof pinyinSortStateMap>;
+export type TPinyinSortState = ExtractCollectionValue<
+	typeof pinyinSortStateMap
+>;
 
 export interface IPinyinSortConfig {
 	pinyinSortState: TPinyinSortState;
 	setPinyinSortState: Dispatch<SetStateAction<TPinyinSortState>>;
 }
 
-interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'> {
+interface IProps
+	extends Omit<
+		IFontAwesomeIconButtonProps,
+		'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'
+	> {
 	pinyinSortConfig: IPinyinSortConfig;
 }
 
@@ -33,7 +37,7 @@ function getNextPinyinSortState(currentState: TPinyinSortState) {
 
 export default memo<IProps>(function SidePinyinSortIconButton({
 	className,
-	pinyinSortConfig: {pinyinSortState, setPinyinSortState},
+	pinyinSortConfig: { pinyinSortState, setPinyinSortState },
 	...props
 }) {
 	const vibrate = useVibrate();
@@ -54,13 +58,23 @@ export default memo<IProps>(function SidePinyinSortIconButton({
 	return (
 		<Tooltip showArrow content={label} placement="left">
 			<FontAwesomeIconButton
-				color={pinyinSortState === pinyinSortStateMap.none ? 'primary' : 'warning'}
-				icon={pinyinSortState === pinyinSortStateMap.za ? faArrowUpAZ : faArrowDownAZ}
+				color={
+					pinyinSortState === pinyinSortStateMap.none
+						? 'primary'
+						: 'warning'
+				}
+				icon={
+					pinyinSortState === pinyinSortStateMap.za
+						? faArrowUpAZ
+						: faArrowDownAZ
+				}
 				variant="shadow"
 				onPress={handlePress}
 				aria-label={label}
 				className={cn(
-					pinyinSortState === pinyinSortStateMap.none ? 'bg-primary-600' : 'bg-warning-600',
+					pinyinSortState === pinyinSortStateMap.none
+						? 'bg-primary-600'
+						: 'bg-warning-600',
 					className
 				)}
 				{...props}

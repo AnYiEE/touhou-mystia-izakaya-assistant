@@ -1,21 +1,30 @@
-import {Fragment, memo, useCallback, useState} from 'react';
+import { Fragment, memo, useCallback, useState } from 'react';
 
-import {useVibrate} from '@/hooks';
+import { useVibrate } from '@/hooks';
 
-import {Accordion, type AccordionProps} from '@heroui/accordion';
-import {Modal, ModalBody, ModalContent} from '@heroui/modal';
-import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
+import { Accordion, type AccordionProps } from '@heroui/accordion';
+import { Modal, ModalBody, ModalContent } from '@heroui/modal';
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
-import {ScrollShadow, Tooltip, cn, useReducedMotion} from '@/design/ui/components';
+import {
+	ScrollShadow,
+	Tooltip,
+	cn,
+	useReducedMotion,
+} from '@/design/ui/components';
 
-import {trackEvent} from '@/components/analytics';
+import { trackEvent } from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 
-import {globalStore as store} from '@/stores';
+import { globalStore as store } from '@/stores';
 
-interface IProps extends Pick<AccordionProps, 'children' | 'defaultExpandedKeys'> {}
+interface IProps
+	extends Pick<AccordionProps, 'children' | 'defaultExpandedKeys'> {}
 
-export default memo<IProps>(function InfoButtonBase({children, defaultExpandedKeys}) {
+export default memo<IProps>(function InfoButtonBase({
+	children,
+	defaultExpandedKeys,
+}) {
 	const isReducedMotion = useReducedMotion();
 	const [isOpened, setOpened] = useState(false);
 	const vibrate = useVibrate();
@@ -50,12 +59,16 @@ export default memo<IProps>(function InfoButtonBase({children, defaultExpandedKe
 				backdrop={isHighAppearance ? 'blur' : 'opaque'}
 				disableAnimation={isReducedMotion}
 				isOpen={isOpened}
-				portalContainer={document.querySelector('#modal-portal-container')}
+				portalContainer={document.querySelector(
+					'#modal-portal-container'
+				)}
 				scrollBehavior="inside"
 				size="3xl"
 				onClose={handleClose}
 				classNames={{
-					base: isHighAppearance ? 'bg-blend-mystia' : 'bg-background dark:bg-content1',
+					base: isHighAppearance
+						? 'bg-blend-mystia'
+						: 'bg-background dark:bg-content1',
 					closeButton: cn(
 						'transition-background motion-reduce:transition-none',
 						isHighAppearance

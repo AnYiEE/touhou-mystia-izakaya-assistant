@@ -1,17 +1,30 @@
-import type {IItem, TItemWithPinyin} from './types';
+import type { IItem, TItemWithPinyin } from './types';
 
-import {checkEmpty, cloneJsonObject, copyArray, getPinyin, pinyinSort, toGetValueCollection, union} from '@/utilities';
+import {
+	checkEmpty,
+	cloneJsonObject,
+	copyArray,
+	getPinyin,
+	pinyinSort,
+	toGetValueCollection,
+	union,
+} from '@/utilities';
 
 export class Item<
 	TItems extends IItem[],
-	TItem extends TItemWithPinyin<TItems[number]> = TItemWithPinyin<TItems[number]>,
+	TItem extends TItemWithPinyin<TItems[number]> = TItemWithPinyin<
+		TItems[number]
+	>,
 	TItemName extends TItem['name'] = TItem['name'],
 > {
 	protected _data: ReadonlyArray<TItem>;
 
 	protected _indexNameCache: Map<number, TItemName>;
 	protected _nameIndexCache: Map<TItemName, number>;
-	protected _pinyinSortedDataCacheMap: WeakMap<ReadonlyArray<TItem>, ReadonlyArray<TItem>>;
+	protected _pinyinSortedDataCacheMap: WeakMap<
+		ReadonlyArray<TItem>,
+		ReadonlyArray<TItem>
+	>;
 
 	protected constructor(data: TItems) {
 		this._data = cloneJsonObject(data).map((item) => ({
@@ -30,7 +43,9 @@ export class Item<
 
 	protected checkIndexRange(index: number, _data?: unknown): asserts _data {
 		if (index < 0 || index >= this._data.length) {
-			throw new Error(`[utils/item/Item]: index \`${index}\` out of range`);
+			throw new Error(
+				`[utils/item/Item]: index \`${index}\` out of range`
+			);
 		}
 	}
 
@@ -39,7 +54,9 @@ export class Item<
 			return this._nameIndexCache.get(name);
 		}
 
-		const index = this._data.findIndex(({name: target}) => target === name);
+		const index = this._data.findIndex(
+			({ name: target }) => target === name
+		);
 		if (index === -1) {
 			throw new Error(`[utils/item/Item]: name \`${name}\` not found`);
 		}
@@ -57,7 +74,7 @@ export class Item<
 		const item = this._data[index];
 		this.checkIndexRange(index, item);
 
-		const {name} = item;
+		const { name } = item;
 		this._indexNameCache.set(index, name as TItemName);
 
 		return name;
@@ -65,9 +82,18 @@ export class Item<
 
 	public getPropsByIndex(index: number): TItem;
 	public getPropsByIndex(index: number, prop: 'name'): TItemName;
-	public getPropsByIndex<T extends keyof TItem>(index: number, prop: T): TItem[T];
-	public getPropsByIndex<T extends keyof TItem>(index: number, ...props: T[]): Array<TItem[T]>;
-	public getPropsByIndex<T extends keyof TItem>(index: number, ...props: T[]): TItem | TItem[T] | Array<TItem[T]> {
+	public getPropsByIndex<T extends keyof TItem>(
+		index: number,
+		prop: T
+	): TItem[T];
+	public getPropsByIndex<T extends keyof TItem>(
+		index: number,
+		...props: T[]
+	): Array<TItem[T]>;
+	public getPropsByIndex<T extends keyof TItem>(
+		index: number,
+		...props: T[]
+	): TItem | TItem[T] | Array<TItem[T]> {
 		const item = this._data[index];
 		this.checkIndexRange(index, item);
 
@@ -83,7 +109,10 @@ export class Item<
 
 	public getPropsByName(name: TItemName): TItem;
 	public getPropsByName(name: TItemName, prop: 'name'): TItemName;
-	public getPropsByName<T extends keyof TItem, U extends Exclude<T, 'name'>>(name: TItemName, prop: U): TItem[U];
+	public getPropsByName<T extends keyof TItem, U extends Exclude<T, 'name'>>(
+		name: TItemName,
+		prop: U
+	): TItem[U];
 	public getPropsByName<T extends keyof TItem, U extends Exclude<T, 'name'>>(
 		name: TItemName,
 		...props: U[]
@@ -107,11 +136,17 @@ export class Item<
 		wrap?: boolean,
 		data?: ReadonlyArray<TItem>
 	): Array<FlatArray<TItem[T], number>>;
-	public getValuesByProp<T extends keyof TItem>(prop: T | T[], wrap?: boolean, data?: ReadonlyArray<TItem>) {
+	public getValuesByProp<T extends keyof TItem>(
+		prop: T | T[],
+		wrap?: boolean,
+		data?: ReadonlyArray<TItem>
+	) {
 		const target = data ?? this._data;
 
 		const props = [prop].flat() as T[];
-		const values = union(target.map((item) => props.map((key) => item[key])).flat(Infinity));
+		const values = union(
+			target.map((item) => props.map((key) => item[key])).flat(Infinity)
+		);
 
 		if (wrap) {
 			return values.map(toGetValueCollection);
@@ -129,7 +164,9 @@ export class Item<
 			length = this._data.length;
 		}
 
-		return Array.from({length}, (_, index) => this.findNameByIndex(index));
+		return Array.from({ length }, (_, index) =>
+			this.findNameByIndex(index)
+		);
 	}
 
 	public getPinyinSortedData(data?: ReadonlyArray<TItem>) {
@@ -151,6 +188,8 @@ export class Item<
 	}
 
 	private sortByPinyin(data: ReadonlyArray<TItem>) {
-		return copyArray(data).sort(({pinyin: a}, {pinyin: b}) => pinyinSort(a, b));
+		return copyArray(data).sort(({ pinyin: a }, { pinyin: b }) =>
+			pinyinSort(a, b)
+		);
 	}
 }

@@ -1,5 +1,5 @@
-import {type TPlace} from '@/data';
-import type {IItemBase, TMerchant} from '@/data/types';
+import { type TPlace } from '@/data';
+import type { IItemBase, TMerchant } from '@/data/types';
 
 export interface ICurrency extends IItemBase {
 	from: Array<

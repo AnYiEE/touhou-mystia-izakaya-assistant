@@ -1,12 +1,12 @@
 'use client';
 
-import {type Dispatch, memo, useCallback, useMemo} from 'react';
+import { type Dispatch, memo, useCallback, useMemo } from 'react';
 
-import {useVibrate} from '@/hooks';
+import { useVibrate } from '@/hooks';
 
-import {type Selection} from '@heroui/table';
-import {Select, SelectItem, type SelectProps} from '@heroui/select';
-import {faFilter} from '@fortawesome/free-solid-svg-icons';
+import { type Selection } from '@heroui/table';
+import { Select, SelectItem, type SelectProps } from '@heroui/select';
+import { faFilter } from '@fortawesome/free-solid-svg-icons';
 
 import {
 	Button,
@@ -19,15 +19,18 @@ import {
 	useReducedMotion,
 } from '@/design/ui/components';
 
-import FontAwesomeIconButton, {type IFontAwesomeIconButtonProps} from '@/components/fontAwesomeIconButton';
+import FontAwesomeIconButton, {
+	type IFontAwesomeIconButtonProps,
+} from '@/components/fontAwesomeIconButton';
 import Sprite from '@/components/sprite';
 
-import {LABEL_MAP, type TItemName} from '@/data';
-import {globalStore as store} from '@/stores';
-import {checkEmpty, pinyinSort, toArray} from '@/utilities';
-import type {TSpriteTarget} from '@/utils/sprite/types';
+import { LABEL_MAP, type TItemName } from '@/data';
+import { globalStore as store } from '@/stores';
+import { checkEmpty, pinyinSort, toArray } from '@/utilities';
+import type { TSpriteTarget } from '@/utils/sprite/types';
 
-interface ISelectConfigItem extends Pick<SelectProps, 'label' | 'selectionMode'> {
+interface ISelectConfigItem
+	extends Pick<SelectProps, 'label' | 'selectionMode'> {
 	items: Array<ValueCollection<number | string>>;
 	selectedKeys: string[];
 	setSelectedKeys: Dispatch<ISelectConfigItem['selectedKeys']>;
@@ -35,29 +38,42 @@ interface ISelectConfigItem extends Pick<SelectProps, 'label' | 'selectionMode'>
 }
 export type TSelectConfig = ISelectConfigItem[];
 
-interface IProps extends Omit<IFontAwesomeIconButtonProps, 'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'> {
+interface IProps
+	extends Omit<
+		IFontAwesomeIconButtonProps,
+		'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'
+	> {
 	selectConfig: TSelectConfig;
 }
 
-export default memo<IProps>(function SideFilterIconButton({className, selectConfig, ...props}) {
+export default memo<IProps>(function SideFilterIconButton({
+	className,
+	selectConfig,
+	...props
+}) {
 	const selectMotionProps = useMotionProps('select');
 	const isReducedMotion = useReducedMotion();
 	const vibrate = useVibrate();
 
 	const isHighAppearance = store.persistence.highAppearance.use();
 
-	const hasFilter = useMemo(() => selectConfig.some(({selectedKeys}) => !checkEmpty(selectedKeys)), [selectConfig]);
+	const hasFilter = useMemo(
+		() =>
+			selectConfig.some(({ selectedKeys }) => !checkEmpty(selectedKeys)),
+		[selectConfig]
+	);
 
 	const handleSelectionChange = useCallback(
-		(setSelectedKeys: ISelectConfigItem['setSelectedKeys']) => (key: Selection) => {
-			setSelectedKeys(toArray(key as Set<string>).sort(pinyinSort));
-		},
+		(setSelectedKeys: ISelectConfigItem['setSelectedKeys']) =>
+			(key: Selection) => {
+				setSelectedKeys(toArray(key as Set<string>).sort(pinyinSort));
+			},
 		[]
 	);
 
 	const handleResetFilters = useCallback(() => {
 		vibrate();
-		selectConfig.forEach(({selectedKeys, setSelectedKeys}) => {
+		selectConfig.forEach(({ selectedKeys, setSelectedKeys }) => {
 			if (!checkEmpty(selectedKeys)) {
 				setSelectedKeys([]);
 			}
@@ -82,7 +98,10 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 							icon={faFilter}
 							variant="shadow"
 							aria-label={content}
-							className={cn(hasFilter ? 'bg-warning-600' : 'bg-primary-600', className)}
+							className={cn(
+								hasFilter ? 'bg-warning-600' : 'bg-primary-600',
+								className
+							)}
 							{...props}
 						/>
 					</PopoverTrigger>
@@ -91,7 +110,17 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 			<PopoverContent className="w-64">
 				<div className="w-full space-y-1">
 					{selectConfig.map(
-						({items, label, selectedKeys, selectionMode, setSelectedKeys, spriteTarget}, index) => (
+						(
+							{
+								items,
+								label,
+								selectedKeys,
+								selectionMode,
+								setSelectedKeys,
+								spriteTarget,
+							},
+							index
+						) => (
 							<Select
 								key={index}
 								disableAnimation={isReducedMotion}
@@ -101,7 +130,9 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 								selectedKeys={selectedKeys}
 								selectionMode={selectionMode ?? 'multiple'}
 								size="sm"
-								onSelectionChange={handleSelectionChange(setSelectedKeys)}
+								onSelectionChange={handleSelectionChange(
+									setSelectedKeys
+								)}
 								popoverProps={{
 									motionProps: selectMotionProps,
 									shouldCloseOnScroll: false,
@@ -115,7 +146,8 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 										}
 									),
 									popoverContent: cn({
-										'bg-content1/70 backdrop-blur-lg': isHighAppearance,
+										'bg-content1/70 backdrop-blur-lg':
+											isHighAppearance,
 									}),
 									trigger: cn(
 										'transition-background motion-reduce:transition-none',
@@ -125,7 +157,7 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 									),
 								}}
 							>
-								{({value}) =>
+								{({ value }) =>
 									spriteTarget ? (
 										<SelectItem
 											key={value}
@@ -135,31 +167,49 @@ export default memo<IProps>(function SideFilterIconButton({className, selectConf
 											}}
 										>
 											<span className="inline-flex items-center">
-												{spriteTarget === 'customer_normal' ? (
+												{spriteTarget ===
+												'customer_normal' ? (
 													<div className="h-6 w-6 overflow-hidden rounded-full">
 														<Sprite
-															target={spriteTarget}
-															name={value as TItemName}
+															target={
+																spriteTarget
+															}
+															name={
+																value as TItemName
+															}
 															size={2.15}
 															className="-translate-x-[0.315rem] -translate-y-px"
 														/>
 													</div>
-												) : spriteTarget === 'customer_rare' ? (
+												) : spriteTarget ===
+												  'customer_rare' ? (
 													<Sprite
 														target={spriteTarget}
-														name={value as TItemName}
+														name={
+															value as TItemName
+														}
 														size={1.5}
 														className="rounded-full"
 													/>
 												) : (
-													<Sprite target={spriteTarget} name={value as TItemName} size={1} />
+													<Sprite
+														target={spriteTarget}
+														name={
+															value as TItemName
+														}
+														size={1}
+													/>
 												)}
-												<span className="ml-1">{value}</span>
+												<span className="ml-1">
+													{value}
+												</span>
 											</span>
 										</SelectItem>
 									) : (
 										<SelectItem key={value}>
-											{label === 'DLC' && value === 0 ? LABEL_MAP.dlc0 : value.toString()}
+											{label === 'DLC' && value === 0
+												? LABEL_MAP.dlc0
+												: value.toString()}
 										</SelectItem>
 									)
 								}

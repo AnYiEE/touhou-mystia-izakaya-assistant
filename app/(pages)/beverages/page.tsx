@@ -1,6 +1,6 @@
 'use client';
 
-import {useCallback, useMemo} from 'react';
+import { useCallback, useMemo } from 'react';
 
 import {
 	useFilteredData,
@@ -14,12 +14,18 @@ import {
 import Content from './content';
 import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
-import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
+import SideFilterIconButton, {
+	type TSelectConfig,
+} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
-import {beveragesStore as store} from '@/stores';
-import {checkArrayContainsOf, checkArraySubsetOf, checkEmpty} from '@/utilities';
+import { beveragesStore as store } from '@/stores';
+import {
+	checkArrayContainsOf,
+	checkArraySubsetOf,
+	checkEmpty,
+} from '@/utilities';
 
 export default function Beverages() {
 	const instance = store.instance.get();
@@ -42,13 +48,26 @@ export default function Beverages() {
 
 	const filterData = useCallback(
 		() =>
-			searchResult.filter(({dlc, level, tags}) => {
-				const isDlcMatched = checkEmpty(filterDlcs) || filterDlcs.includes(dlc.toString());
-				const isLevelMatched = checkEmpty(filterLevels) || filterLevels.includes(level.toString());
-				const isTagMatched = checkEmpty(filterTags) || checkArraySubsetOf(filterTags, tags);
-				const isNoTagMatched = checkEmpty(filterNoTags) || !checkArrayContainsOf(filterNoTags, tags);
+			searchResult.filter(({ dlc, level, tags }) => {
+				const isDlcMatched =
+					checkEmpty(filterDlcs) ||
+					filterDlcs.includes(dlc.toString());
+				const isLevelMatched =
+					checkEmpty(filterLevels) ||
+					filterLevels.includes(level.toString());
+				const isTagMatched =
+					checkEmpty(filterTags) ||
+					checkArraySubsetOf(filterTags, tags);
+				const isNoTagMatched =
+					checkEmpty(filterNoTags) ||
+					!checkArrayContainsOf(filterNoTags, tags);
 
-				return isDlcMatched && isLevelMatched && isTagMatched && isNoTagMatched;
+				return (
+					isDlcMatched &&
+					isLevelMatched &&
+					isTagMatched &&
+					isNoTagMatched
+				);
 			}),
 		[filterDlcs, filterLevels, filterNoTags, filterTags, searchResult]
 	);
@@ -57,7 +76,10 @@ export default function Beverages() {
 
 	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
 
-	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, store.persistence.pinyinSortState.set);
+	const pinyinSortConfig = usePinyinSortConfig(
+		pinyinSortState,
+		store.persistence.pinyinSortState.set
+	);
 
 	const searchConfig = useSearchConfig({
 		label: '选择或输入酒水名称',
@@ -94,7 +116,15 @@ export default function Beverages() {
 				setSelectedKeys: store.persistence.filters.levels.set,
 			},
 		],
-		[allDlcs, allLevels, allTags, filterDlcs, filterLevels, filterNoTags, filterTags]
+		[
+			allDlcs,
+			allLevels,
+			allTags,
+			filterDlcs,
+			filterLevels,
+			filterNoTags,
+			filterTags,
+		]
 	);
 
 	return (
@@ -103,7 +133,9 @@ export default function Beverages() {
 			sideButton={
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />
-					<SidePinyinSortIconButton pinyinSortConfig={pinyinSortConfig} />
+					<SidePinyinSortIconButton
+						pinyinSortConfig={pinyinSortConfig}
+					/>
 					<SideFilterIconButton selectConfig={selectConfig} />
 				</SideButtonGroup>
 			}

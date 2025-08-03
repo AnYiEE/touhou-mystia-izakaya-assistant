@@ -1,13 +1,13 @@
 'use client';
 
-import {useCallback, useEffect, useRef} from 'react';
-import {driver} from 'driver.js';
+import { useCallback, useEffect, useRef } from 'react';
+import { driver } from 'driver.js';
 
-import {usePathname} from '@/hooks';
+import { usePathname } from '@/hooks';
 
-import {DYNAMIC_TAG_MAP} from '@/data';
-import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {checkEmpty, getPageTitle} from '@/utilities';
+import { DYNAMIC_TAG_MAP } from '@/data';
+import { customerRareStore as customerStore, globalStore } from '@/stores';
+import { checkEmpty, getPageTitle } from '@/utilities';
 
 const key = 'customer_rare_tutorial';
 const pathname = '/customer-rare';
@@ -19,10 +19,14 @@ export default function CustomerRareTutorial() {
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
 	const currentCustomerOrder = customerStore.shared.customer.order.use();
-	const {beverageTag: currentOrderedBeverageTag, recipeTag: currentOrderedRecipeTag} = currentCustomerOrder;
+	const {
+		beverageTag: currentOrderedBeverageTag,
+		recipeTag: currentOrderedRecipeTag,
+	} = currentCustomerOrder;
 
 	const currentBeverageName = customerStore.shared.beverage.name.use();
-	const currentBeverageTableDirection = customerStore.persistence.beverage.table.sortDescriptor.direction?.use();
+	const currentBeverageTableDirection =
+		customerStore.persistence.beverage.table.sortDescriptor.direction?.use();
 
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 	const currentRecipeName = currentRecipeData?.name;
@@ -35,10 +39,13 @@ export default function CustomerRareTutorial() {
 	const dirverState = globalStore.persistence.dirver.get();
 	const isCompleted = dirverState.includes(key);
 
-	const BEVERAGE_POSITION = '[role="tabpanel"] tbody>tr[data-key="水獭祭"]>:last-child button';
+	const BEVERAGE_POSITION =
+		'[role="tabpanel"] tbody>tr[data-key="水獭祭"]>:last-child button';
 	const EGG_POSITION = '[aria-label="点击：加入额外食材【鸡蛋】，匹配度+1"]';
-	const HONEY_POSITION = '[aria-label="点击：加入额外食材【蜂蜜】，匹配度+1"]';
-	const RECIPE_POSITION = '[role="tabpanel"] tbody>tr[data-key="香炸蝉蜕"]>:last-child button';
+	const HONEY_POSITION =
+		'[aria-label="点击：加入额外食材【蜂蜜】，匹配度+1"]';
+	const RECIPE_POSITION =
+		'[role="tabpanel"] tbody>tr[data-key="香炸蝉蜕"]>:last-child button';
 
 	const driverRef = useRef(
 		driver({
@@ -64,11 +71,20 @@ export default function CustomerRareTutorial() {
 						onPopoverRender(popover) {
 							const skipButton = document.createElement('button');
 							skipButton.textContent = '跳过';
-							skipButton.addEventListener('click', driverRef.current.destroy);
+							skipButton.addEventListener(
+								'click',
+								driverRef.current.destroy
+							);
 							const nextButton = document.createElement('button');
 							nextButton.textContent = '下一步 →';
-							nextButton.addEventListener('click', driverRef.current.moveNext);
-							popover.footerButtons.append(skipButton, nextButton);
+							nextButton.addEventListener(
+								'click',
+								driverRef.current.moveNext
+							);
+							popover.footerButtons.append(
+								skipButton,
+								nextButton
+							);
 						},
 					},
 				},
@@ -83,7 +99,8 @@ export default function CustomerRareTutorial() {
 					element: '[aria-label="可加冰"]',
 					popover: {
 						title: '选择酒水标签', // eslint-disable-next-line sort-keys
-						description: '点击标签，选中“可加冰”标签。此次教程中，假设莉格露的酒水点单需求为“可加冰”。',
+						description:
+							'点击标签，选中“可加冰”标签。此次教程中，假设莉格露的酒水点单需求为“可加冰”。',
 					},
 				},
 				{
@@ -97,14 +114,16 @@ export default function CustomerRareTutorial() {
 					element: BEVERAGE_POSITION,
 					popover: {
 						title: '选择目标酒水', // eslint-disable-next-line sort-keys
-						description: '点击加号，选择【水獭祭】。选择酒水时，酒水售价尽量不要超过目标稀客的最大持有金。',
+						description:
+							'点击加号，选择【水獭祭】。选择酒水时，酒水售价尽量不要超过目标稀客的最大持有金。',
 					},
 				},
 				{
 					element: '[aria-label="猎奇"]',
 					popover: {
 						title: '选择料理标签', // eslint-disable-next-line sort-keys
-						description: '点击标签，选中“猎奇”标签。此次教程中，假设莉格露的料理点单需求为“猎奇”。',
+						description:
+							'点击标签，选中“猎奇”标签。此次教程中，假设莉格露的料理点单需求为“猎奇”。',
 					},
 				},
 				{
@@ -119,7 +138,8 @@ export default function CustomerRareTutorial() {
 					element: '[data-key="ingredient"]',
 					popover: {
 						title: '选择额外食材', // eslint-disable-next-line sort-keys
-						description: '当前套餐评级为绿评“普通”，添加额外食材以提高评级。',
+						description:
+							'当前套餐评级为绿评“普通”，添加额外食材以提高评级。',
 					},
 				},
 				{
@@ -134,7 +154,8 @@ export default function CustomerRareTutorial() {
 					element: HONEY_POSITION,
 					popover: {
 						title: '加入额外食材【蜂蜜】', // eslint-disable-next-line sort-keys
-						description: '点击图标，加入额外食材【蜂蜜】。加入后套餐评级应为粉评“完美”。',
+						description:
+							'点击图标，加入额外食材【蜂蜜】。加入后套餐评级应为粉评“完美”。',
 					},
 				},
 				{
@@ -143,9 +164,13 @@ export default function CustomerRareTutorial() {
 						title: '更多信息', // eslint-disable-next-line sort-keys
 						description: `在此处可以查看更多信息，如：稀客的羁绊奖励和符卡效果。点击导航栏中的“设置”按钮可以调整更多偏好项，如：设置游戏中现时的${DYNAMIC_TAG_MAP.popularPositive}或${DYNAMIC_TAG_MAP.popularNegative}趋势。`,
 						onPopoverRender(popover) {
-							const completeButton = document.createElement('button');
+							const completeButton =
+								document.createElement('button');
 							completeButton.textContent = '完成';
-							completeButton.addEventListener('click', driverRef.current.destroy);
+							completeButton.addEventListener(
+								'click',
+								driverRef.current.destroy
+							);
 							popover.footerButtons.append(completeButton);
 						},
 					},
@@ -167,28 +192,31 @@ export default function CustomerRareTutorial() {
 
 	const isInIngredientTab = useRef(false);
 
-	const moveNext = useCallback((selectors: string, position?: ScrollLogicalPosition) => {
-		// The `xl` breakpoint is 1280px.
-		if (globalThis.innerWidth >= 1280) {
-			driverRef.current.moveNext();
-		} else {
-			const element = document.querySelector(selectors);
-			// Some browsers don't support scrollIntoViewOptions
-			try {
-				element?.scrollIntoView({
-					behavior: 'smooth',
-					block: position ?? 'start',
-				});
-			} catch {
-				element?.scrollIntoView(true);
-			}
-			// Delay focusing to allow time for scroll animation.
-			setTimeout(() => {
-				document.querySelector('main').scrollIntoView(true);
+	const moveNext = useCallback(
+		(selectors: string, position?: ScrollLogicalPosition) => {
+			// The `xl` breakpoint is 1280px.
+			if (globalThis.innerWidth >= 1280) {
 				driverRef.current.moveNext();
-			}, 1000);
-		}
-	}, []);
+			} else {
+				const element = document.querySelector(selectors);
+				// Some browsers don't support scrollIntoViewOptions
+				try {
+					element?.scrollIntoView({
+						behavior: 'smooth',
+						block: position ?? 'start',
+					});
+				} catch {
+					element?.scrollIntoView(true);
+				}
+				// Delay focusing to allow time for scroll animation.
+				setTimeout(() => {
+					document.querySelector('main').scrollIntoView(true);
+					driverRef.current.moveNext();
+				}, 1000);
+			}
+		},
+		[]
+	);
 
 	useEffect(() => {
 		if (!driverRef.current.isActive()) {
@@ -204,11 +232,17 @@ export default function CustomerRareTutorial() {
 			isBeverageSelected.current = true;
 			driverRef.current.moveNext();
 		}
-		if (currentBeverageTableDirection === 'descending' && !isBeverageTableSorted.current) {
+		if (
+			currentBeverageTableDirection === 'descending' &&
+			!isBeverageTableSorted.current
+		) {
 			isBeverageTableSorted.current = true;
 			moveNext(BEVERAGE_POSITION, 'nearest');
 		}
-		if (currentOrderedBeverageTag !== null && !hasOrderedBeverageTag.current) {
+		if (
+			currentOrderedBeverageTag !== null &&
+			!hasOrderedBeverageTag.current
+		) {
 			hasOrderedBeverageTag.current = true;
 			driverRef.current.moveNext();
 		}
@@ -217,12 +251,21 @@ export default function CustomerRareTutorial() {
 			isRecipeSelected.current = true;
 			driverRef.current.moveNext();
 		}
-		if (currentExtraIngredients !== undefined && !checkEmpty(currentExtraIngredients)) {
-			if (currentExtraIngredients.includes('鸡蛋') && !hasExtraEgg.current) {
+		if (
+			currentExtraIngredients !== undefined &&
+			!checkEmpty(currentExtraIngredients)
+		) {
+			if (
+				currentExtraIngredients.includes('鸡蛋') &&
+				!hasExtraEgg.current
+			) {
 				hasExtraEgg.current = true;
 				moveNext(HONEY_POSITION);
 			}
-			if (currentExtraIngredients.includes('蜂蜜') && !hasExtraHoney.current) {
+			if (
+				currentExtraIngredients.includes('蜂蜜') &&
+				!hasExtraHoney.current
+			) {
 				hasExtraHoney.current = true;
 				driverRef.current.moveNext();
 			}

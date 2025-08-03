@@ -1,8 +1,8 @@
-import {type MetadataRoute} from 'next';
+import { type MetadataRoute } from 'next';
 
-import {siteConfig} from '@/configs';
+import { siteConfig } from '@/configs';
 
-const {domain} = siteConfig;
+const { domain } = siteConfig;
 
 export const dynamic = 'force-static';
 
@@ -78,14 +78,8 @@ export default function robots(): MetadataRoute.Robots {
 
 	return {
 		rules: [
-			{
-				disallow: '/preferences',
-				userAgent: '*',
-			},
-			{
-				disallow: '/',
-				userAgent: disallowBots,
-			},
+			{ disallow: '/preferences', userAgent: '*' },
+			{ disallow: '/', userAgent: disallowBots },
 		],
 		sitemap: `https://${domain}/sitemap.xml`,
 	};

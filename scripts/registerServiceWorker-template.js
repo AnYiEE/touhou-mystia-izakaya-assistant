@@ -8,7 +8,9 @@
 	}
 
 	try {
-		const registration = await navigator.serviceWorker.register('/serviceWorker.js?v={{version}}');
+		const registration = await navigator.serviceWorker.register(
+			'/serviceWorker.js?v={{version}}'
+		);
 		if (registration.installing !== null) {
 			console.info('ServiceWorker is installing.');
 		} else if (registration.waiting !== null) {

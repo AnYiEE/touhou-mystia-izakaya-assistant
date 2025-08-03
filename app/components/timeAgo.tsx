@@ -1,4 +1,4 @@
-import {memo, useEffect, useState} from 'react';
+import { memo, useEffect, useState } from 'react';
 
 function formatTimeAgo(pastTimestamp: number, nowTimestamp = Date.now()) {
 	const diff = nowTimestamp - pastTimestamp;
@@ -22,7 +22,7 @@ interface IProps extends HTMLSpanElementAttributes, RefProps<HTMLSpanElement> {
 	timestamp: number;
 }
 
-export default memo<IProps>(function TimeAgo({timestamp, ...props}) {
+export default memo<IProps>(function TimeAgo({ timestamp, ...props }) {
 	const [timeAgo, setTimeAgo] = useState('');
 
 	useEffect(() => {

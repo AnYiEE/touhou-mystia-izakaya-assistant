@@ -1,11 +1,11 @@
-import {useCallback, useMemo} from 'react';
+import { useCallback, useMemo } from 'react';
 
-import {useVibrate} from '@/hooks';
+import { useVibrate } from '@/hooks';
 
-import {Divider} from '@heroui/divider';
-import {faArrowsRotate, faXmark} from '@fortawesome/free-solid-svg-icons';
+import { Divider } from '@heroui/divider';
+import { faArrowsRotate, faXmark } from '@fortawesome/free-solid-svg-icons';
 
-import {ratingStyles} from '@/design/theme/styles/rating';
+import { ratingStyles } from '@/design/theme/styles/rating';
 import {
 	Avatar,
 	CLASSNAME_FOCUS_VISIBLE_OUTLINE,
@@ -19,7 +19,7 @@ import {
 
 import InfoButton from './infoButton';
 import TagGroup from './tagGroup';
-import {trackEvent} from '@/components/analytics';
+import { trackEvent } from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
@@ -33,28 +33,34 @@ import {
 	type TCustomerRareName,
 	type TRecipeTag,
 } from '@/data';
-import {customerRareStore as customerStore, globalStore} from '@/stores';
-import {checkEmpty, copyArray, pinyinSort} from '@/utilities';
+import { customerRareStore as customerStore, globalStore } from '@/stores';
+import { checkEmpty, copyArray, pinyinSort } from '@/utilities';
 
 export default function CustomerCard() {
 	const vibrate = useVibrate();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
-	const selectedCustomerBeverageTag = customerStore.shared.customer.select.beverageTag.use();
-	const selectedCustomerRecipeTag = customerStore.shared.customer.select.recipeTag.use();
+	const selectedCustomerBeverageTag =
+		customerStore.shared.customer.select.beverageTag.use();
+	const selectedCustomerRecipeTag =
+		customerStore.shared.customer.select.recipeTag.use();
 	const currentCustomerOrder = customerStore.shared.customer.order.use();
 	const currentRating = customerStore.shared.customer.rating.use();
 	const hasMystiaCooker = customerStore.shared.customer.hasMystiaCooker.use();
 	const isDarkMatter = customerStore.shared.customer.isDarkMatter.use();
-	const isOrderLinkedFilter = customerStore.persistence.customer.orderLinkedFilter.use();
-	const isShowTagDescription = customerStore.persistence.customer.showTagDescription.use();
+	const isOrderLinkedFilter =
+		customerStore.persistence.customer.orderLinkedFilter.use();
+	const isShowTagDescription =
+		customerStore.persistence.customer.showTagDescription.use();
 
 	const currentBeverageName = customerStore.shared.beverage.name.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
-	const currentRecipeTagsWithTrend = customerStore.shared.recipe.tagsWithTrend.use();
+	const currentRecipeTagsWithTrend =
+		customerStore.shared.recipe.tagsWithTrend.use();
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
-	const isShowTagsTooltip = globalStore.persistence.customerCardTagsTooltip.use();
+	const isShowTagsTooltip =
+		globalStore.persistence.customerCardTagsTooltip.use();
 
 	const instance_beverage = customerStore.instances.beverage.get();
 	const instance_customer = customerStore.instances.customer.get();
@@ -109,7 +115,9 @@ export default function CustomerCard() {
 		const _beverageTags: TBeverageTag[] = [];
 
 		if (currentBeverageName !== null) {
-			_beverageTags.push(...instance_beverage.getPropsByName(currentBeverageName, 'tags'));
+			_beverageTags.push(
+				...instance_beverage.getPropsByName(currentBeverageName, 'tags')
+			);
 		}
 
 		return _beverageTags;
@@ -137,9 +145,18 @@ export default function CustomerCard() {
 		}
 
 		return `请选择${content}以评级`;
-	}, [currentBeverageName, currentRating, currentRecipeData, hasMystiaCooker, hasRating, isDarkMatter]);
+	}, [
+		currentBeverageName,
+		currentRating,
+		currentRecipeData,
+		hasMystiaCooker,
+		hasRating,
+		isDarkMatter,
+	]);
 
-	const avatarRatingColor = hasRating ? (`${currentRating}-border` as const) : undefined;
+	const avatarRatingColor = hasRating
+		? (`${currentRating}-border` as const)
+		: undefined;
 	const tooltipRatingColor = hasRating ? currentRating : undefined;
 
 	const getTagTooltip = useCallback(
@@ -156,13 +173,20 @@ export default function CustomerCard() {
 				: `点击：${isCurrentTag ? '不再' : ''}将此标签视为顾客点单需求`;
 			const filterTip = isOrderLinkedFilter
 				? `${isNormalMeal ? '点击：' : '并'}${
-						isCurrentTag ? `取消筛选${tagType}表格` : `以此标签筛选${tagType}表格`
+						isCurrentTag
+							? `取消筛选${tagType}表格`
+							: `以此标签筛选${tagType}表格`
 					}${isNormalMeal ? `（${cookerTip}）` : ''}`
 				: '';
 
 			return `${orderTip}${filterTip}`;
 		},
-		[currentCustomerOrder, hasMystiaCooker, isDarkMatter, isOrderLinkedFilter]
+		[
+			currentCustomerOrder,
+			hasMystiaCooker,
+			isDarkMatter,
+			isOrderLinkedFilter,
+		]
 	);
 
 	if (currentCustomerName === null) {
@@ -198,8 +222,11 @@ export default function CustomerCard() {
 		'negative' in currentCustomerSpellCards &&
 		!checkEmpty<unknown>(currentCustomerSpellCards.negative);
 
-	const currentCustomerAveragePrice = (currentCustomerPrice[0] + currentCustomerPrice[1]) / 2;
-	const currentCustomerEnduranceLimitPercent = Math.floor(currentCustomerEnduranceLimit * 100 - 100);
+	const currentCustomerAveragePrice =
+		(currentCustomerPrice[0] + currentCustomerPrice[1]) / 2;
+	const currentCustomerEnduranceLimitPercent = Math.floor(
+		currentCustomerEnduranceLimit * 100 - 100
+	);
 	const hasEnduranceLimit = currentCustomerEnduranceLimitPercent > 0;
 
 	const enduranceLimitContent = (
@@ -208,23 +235,38 @@ export default function CustomerCard() {
 				{hasEnduranceLimit ? (
 					<>
 						可超支预算
-						<Price showSymbol={false}>{currentCustomerEnduranceLimitPercent}</Price>%
+						<Price showSymbol={false}>
+							{currentCustomerEnduranceLimitPercent}
+						</Price>
+						%
 					</>
 				) : hasNegativeSpellCards ? (
 					'不接受预算超支'
 				) : (
 					''
 				)}
-				{hasNegativeSpellCards && `（超${hasEnduranceLimit ? '过' : '支'}则释放惩罚符卡）`}
+				{hasNegativeSpellCards &&
+					`（超${hasEnduranceLimit ? '过' : '支'}则释放惩罚符卡）`}
 			</p>
 			<p>
-				最少<Price>{Math.ceil(currentCustomerPrice[0] * currentCustomerEnduranceLimit)}</Price>，平均
+				最少
+				<Price>
+					{Math.ceil(
+						currentCustomerPrice[0] * currentCustomerEnduranceLimit
+					)}
+				</Price>
+				，平均
 				<Price>
 					{currentCustomerAveragePrice}
-					{hasEnduranceLimit && `-${Math.ceil(currentCustomerAveragePrice * currentCustomerEnduranceLimit)}`}
+					{hasEnduranceLimit &&
+						`-${Math.ceil(currentCustomerAveragePrice * currentCustomerEnduranceLimit)}`}
 				</Price>
 				， 最多
-				<Price>{Math.ceil(currentCustomerPrice[1] * currentCustomerEnduranceLimit)}</Price>
+				<Price>
+					{Math.ceil(
+						currentCustomerPrice[1] * currentCustomerEnduranceLimit
+					)}
+				</Price>
 			</p>
 		</div>
 	);
@@ -241,13 +283,18 @@ export default function CustomerCard() {
 						'ring-4 ring-opacity-50': hasRating,
 						'ring-8': currentRating === 'exgood',
 					},
-					avatarRatingColor !== undefined && ratingStyles[avatarRatingColor]
+					avatarRatingColor !== undefined &&
+						ratingStyles[avatarRatingColor]
 				),
 			}}
 		>
 			<div className="flex flex-col gap-3 p-4 md:flex-row">
 				<div className="flex flex-col justify-evenly gap-2">
-					<Popover showArrow color={tooltipRatingColor} offset={hasRating ? 13 : 9}>
+					<Popover
+						showArrow
+						color={tooltipRatingColor}
+						offset={hasRating ? 13 : 9}
+					>
 						<Tooltip
 							showArrow
 							color={tooltipRatingColor}
@@ -268,13 +315,17 @@ export default function CustomerCard() {
 											isBordered={hasRating}
 											color={avatarRatingColor}
 											radius="full"
-											icon={<Sprite target="customer_rare" name={currentCustomerName} size={4} />}
+											icon={
+												<Sprite
+													target="customer_rare"
+													name={currentCustomerName}
+													size={4}
+												/>
+											}
 											classNames={{
 												base: cn(
 													'h-12 w-12 transition motion-reduce:transition-none lg:h-16 lg:w-16',
-													{
-														'ring-4': hasRating,
-													}
+													{ 'ring-4': hasRating }
 												),
 												icon: 'inline-table lg:inline-block',
 											}}
@@ -290,8 +341,17 @@ export default function CustomerCard() {
 					</Popover>
 					<div className="whitespace-nowrap text-tiny font-medium text-default-800">
 						<p className="flex justify-between gap-10">
-							<Popover showArrow isTriggerDisabled={!dlcLabel} offset={4}>
-								<Tooltip showArrow content={dlcLabel} isDisabled={!dlcLabel} offset={0}>
+							<Popover
+								showArrow
+								isTriggerDisabled={!dlcLabel}
+								offset={4}
+							>
+								<Tooltip
+									showArrow
+									content={dlcLabel}
+									isDisabled={!dlcLabel}
+									offset={0}
+								>
 									<span
 										className={cn({
 											'cursor-text': !dlcLabel,
@@ -299,12 +359,20 @@ export default function CustomerCard() {
 									>
 										<PopoverTrigger>
 											<span
-												role={dlcLabel ? 'button' : undefined}
-												tabIndex={dlcLabel ? 0 : undefined}
+												role={
+													dlcLabel
+														? 'button'
+														: undefined
+												}
+												tabIndex={
+													dlcLabel ? 0 : undefined
+												}
 												title={dlcLabel}
 												className={cn('opacity-100', {
-													[CLASSNAME_FOCUS_VISIBLE_OUTLINE]: dlcLabel,
-													'underline-dotted-linear': dlcLabel,
+													[CLASSNAME_FOCUS_VISIBLE_OUTLINE]:
+														dlcLabel,
+													'underline-dotted-linear':
+														dlcLabel,
 												})}
 											>
 												DLC{currentCustomerDlc}
@@ -315,15 +383,23 @@ export default function CustomerCard() {
 								<PopoverContent>{dlcLabel}</PopoverContent>
 							</Popover>
 							<Popover showArrow offset={hasOtherPlaces ? 6 : 4}>
-								<Tooltip showArrow content={placeContent} offset={2}>
+								<Tooltip
+									showArrow
+									content={placeContent}
+									offset={2}
+								>
 									<span className="cursor-pointer">
 										<PopoverTrigger>
 											<span
 												role="button"
 												tabIndex={0}
-												className={cn(CLASSNAME_FOCUS_VISIBLE_OUTLINE, {
-													'underline-dotted-linear': hasOtherPlaces,
-												})}
+												className={cn(
+													CLASSNAME_FOCUS_VISIBLE_OUTLINE,
+													{
+														'underline-dotted-linear':
+															hasOtherPlaces,
+													}
+												)}
 											>
 												{currentCustomerMainPlace}
 											</span>
@@ -336,7 +412,11 @@ export default function CustomerCard() {
 						<p>
 							可能持有：
 							<Popover showArrow offset={4}>
-								<Tooltip showArrow content={enduranceLimitContent} offset={0}>
+								<Tooltip
+									showArrow
+									content={enduranceLimitContent}
+									offset={0}
+								>
 									<span className="cursor-pointer">
 										<PopoverTrigger>
 											<span
@@ -347,12 +427,16 @@ export default function CustomerCard() {
 													'underline-dotted-linear'
 												)}
 											>
-												<Price>{currentCustomerPrice}</Price>
+												<Price>
+													{currentCustomerPrice}
+												</Price>
 											</span>
 										</PopoverTrigger>
 									</span>
 								</Tooltip>
-								<PopoverContent>{enduranceLimitContent}</PopoverContent>
+								<PopoverContent>
+									{enduranceLimitContent}
+								</PopoverContent>
 							</Popover>
 						</p>
 					</div>
@@ -368,7 +452,10 @@ export default function CustomerCard() {
 									<Tooltip
 										key={index}
 										showArrow
-										content={getTagTooltip('recipeTag', tag)}
+										content={getTagTooltip(
+											'recipeTag',
+											tag
+										)}
 										closeDelay={0}
 										delay={500}
 										isDisabled={!isShowTagsTooltip}
@@ -377,7 +464,9 @@ export default function CustomerCard() {
 										<Tags.Tag
 											isButton
 											tag={
-												isShowTagDescription && tag in currentCustomerPositiveTagMapping
+												isShowTagDescription &&
+												tag in
+													currentCustomerPositiveTagMapping
 													? [
 															tag,
 															currentCustomerPositiveTagMapping[
@@ -386,7 +475,9 @@ export default function CustomerCard() {
 														]
 													: tag
 											}
-											tagStyle={CUSTOMER_RARE_TAG_STYLE.positive}
+											tagStyle={
+												CUSTOMER_RARE_TAG_STYLE.positive
+											}
 											tagType="positive"
 											onPress={() => {
 												handleRecipeTagClick(tag);
@@ -396,14 +487,22 @@ export default function CustomerCard() {
 												'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 												{
 													'cursor-not-allowed':
-														hasMystiaCooker && !isDarkMatter && !isOrderLinkedFilter,
+														hasMystiaCooker &&
+														!isDarkMatter &&
+														!isOrderLinkedFilter,
 													'font-normal opacity-50':
 														// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-														isDarkMatter || !currentRecipeTagsWithTrend.includes(tag),
+														isDarkMatter ||
+														!currentRecipeTagsWithTrend.includes(
+															tag
+														),
 													'ring-2 ring-current':
-														currentCustomerOrder.recipeTag === tag &&
-														// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-														((hasMystiaCooker && isDarkMatter) || !hasMystiaCooker),
+														currentCustomerOrder.recipeTag ===
+															tag &&
+														((hasMystiaCooker &&
+															// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+															isDarkMatter) ||
+															!hasMystiaCooker),
 												}
 											)}
 										/>
@@ -419,13 +518,21 @@ export default function CustomerCard() {
 									<Tags.Tag
 										key={index}
 										tag={tag}
-										tagStyle={CUSTOMER_RARE_TAG_STYLE.negative}
+										tagStyle={
+											CUSTOMER_RARE_TAG_STYLE.negative
+										}
 										tagType="negative"
-										className={cn('cursor-not-allowed p-1 font-semibold leading-none', {
-											'font-normal opacity-50':
-												// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-												isDarkMatter || !currentRecipeTagsWithTrend.includes(tag),
-										})}
+										className={cn(
+											'cursor-not-allowed p-1 font-semibold leading-none',
+											{
+												'font-normal opacity-50':
+													// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+													isDarkMatter ||
+													!currentRecipeTagsWithTrend.includes(
+														tag
+													),
+											}
+										)}
 									/>
 								))}
 						</TagGroup>
@@ -445,7 +552,9 @@ export default function CustomerCard() {
 									<Tags.Tag
 										isButton
 										tag={tag}
-										tagStyle={CUSTOMER_RARE_TAG_STYLE.beverage}
+										tagStyle={
+											CUSTOMER_RARE_TAG_STYLE.beverage
+										}
 										tagType="positive"
 										onPress={() => {
 											handleBeverageTagClick(tag);
@@ -455,12 +564,18 @@ export default function CustomerCard() {
 											'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 											{
 												'cursor-not-allowed':
-													hasMystiaCooker && !isDarkMatter && !isOrderLinkedFilter,
-												'font-normal opacity-50': !beverageTags.includes(tag),
+													hasMystiaCooker &&
+													!isDarkMatter &&
+													!isOrderLinkedFilter,
+												'font-normal opacity-50':
+													!beverageTags.includes(tag),
 												'ring-2 ring-current':
-													currentCustomerOrder.beverageTag === tag &&
-													// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-													((hasMystiaCooker && isDarkMatter) || !hasMystiaCooker),
+													currentCustomerOrder.beverageTag ===
+														tag &&
+													((hasMystiaCooker &&
+														// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+														isDarkMatter) ||
+														!hasMystiaCooker),
 											}
 										)}
 									/>

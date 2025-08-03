@@ -10,12 +10,10 @@ const FAKE_URL = 'https://url.internal';
 const CDN_HOST = new URL(CDN_URL, FAKE_URL).host;
 const IS_USE_CDN = Boolean(CDN_URL);
 
-const networkErrorResponse = new Response('A network error occurred, but no cached resources were found.', {
-	headers: {
-		'Content-Type': 'text/plain',
-	},
-	status: 418,
-});
+const networkErrorResponse = new Response(
+	'A network error occurred, but no cached resources were found.',
+	{ headers: { 'Content-Type': 'text/plain' }, status: 418 }
+);
 
 function delay(/** @type {number} */ ms) {
 	return new Promise((resolve) => {
@@ -62,7 +60,10 @@ async function fetchAndCache(/** @type {Request} */ request) {
 	return response;
 }
 
-async function fetchWithRetry(/** @type {Request} */ request, /** @type {number} */ retries) {
+async function fetchWithRetry(
+	/** @type {Request} */ request,
+	/** @type {number} */ retries
+) {
 	try {
 		return await fetchAndCache(request);
 	} catch (error) {
@@ -113,7 +114,7 @@ self.addEventListener('fetch', (/** @type {FetchEvent} */ event) => {
 	}
 
 	const urlObject = new URL(event.request.url, FAKE_URL);
-	const {host, pathname, protocol} = urlObject;
+	const { host, pathname, protocol } = urlObject;
 
 	const isCdnServer = host === CDN_HOST;
 	const isSelfHost = host === location.host;

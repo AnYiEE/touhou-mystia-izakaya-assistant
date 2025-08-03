@@ -1,8 +1,11 @@
-import {type PropsWithChildren, memo, useMemo} from 'react';
+import { type PropsWithChildren, memo, useMemo } from 'react';
 
-import {cn} from '@/design/ui/components';
+import { cn } from '@/design/ui/components';
 
-type THeadingClassName = Pick<HTMLHeadingElementAttributes, 'className'>['className'];
+type THeadingClassName = Pick<
+	HTMLHeadingElementAttributes,
+	'className'
+>['className'];
 type TSpanClassName = Pick<HTMLSpanElementAttributes, 'className'>['className'];
 
 interface IProps {
@@ -27,28 +30,51 @@ export default memo<PropsWithChildren<IProps>>(function Heading({
 	const headingClassName = useMemo(() => {
 		switch (Component) {
 			case 'h1':
-				return cn('mb-4 text-2xl font-bold', !isFirst && 'mt-8', className, classNames?.title);
+				return cn(
+					'mb-4 text-2xl font-bold',
+					!isFirst && 'mt-8',
+					className,
+					classNames?.title
+				);
 			case 'h2':
-				return cn('mb-3 text-xl font-semibold', !isFirst && 'mt-6', className, classNames?.title);
+				return cn(
+					'mb-3 text-xl font-semibold',
+					!isFirst && 'mt-6',
+					className,
+					classNames?.title
+				);
 			case 'h3':
-				return cn('mb-3 text-large font-medium', !isFirst && 'mt-4', className, classNames?.title);
+				return cn(
+					'mb-3 text-large font-medium',
+					!isFirst && 'mt-4',
+					className,
+					classNames?.title
+				);
 		}
 	}, [Component, className, classNames?.title, isFirst]);
 
 	const subTitleClassName = useMemo(() => {
 		switch (Component) {
 			case 'h1':
-				return cn('-mt-4 mb-4 block text-foreground-500', classNames?.subTitle);
+				return cn(
+					'-mt-4 mb-4 block text-foreground-500',
+					classNames?.subTitle
+				);
 			case 'h2':
 			case 'h3':
-				return cn('-mt-3 mb-3 block text-small text-foreground-500', classNames?.subTitle);
+				return cn(
+					'-mt-3 mb-3 block text-small text-foreground-500',
+					classNames?.subTitle
+				);
 		}
 	}, [Component, classNames?.subTitle]);
 
 	return (
 		<>
 			<Component className={headingClassName}>{children}</Component>
-			{subTitle !== undefined && <span className={subTitleClassName}>{subTitle}</span>}
+			{subTitle !== undefined && (
+				<span className={subTitleClassName}>{subTitle}</span>
+			)}
 		</>
 	);
 });

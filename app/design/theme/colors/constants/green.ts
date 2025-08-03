@@ -1,4 +1,4 @@
-import type {TColorScale} from '../types';
+import type { TColorScale } from '../types';
 
 export const green = {
 	50: '#f7faf5',

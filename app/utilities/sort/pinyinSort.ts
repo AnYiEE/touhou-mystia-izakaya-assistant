@@ -1,4 +1,4 @@
-import {getPinyin, isValueCollection, numberSort} from '@/utilities';
+import { getPinyin, isValueCollection, numberSort } from '@/utilities';
 
 type TValue = string | string[];
 type TValueCollection = ValueCollection<TValue>;
@@ -15,7 +15,9 @@ function removeTone(pinyin: string) {
 }
 
 function throwError(...args: unknown[]): never {
-	throw new TypeError(`[utilities/sort/pinyinSort]: invalid parameter: ${args.join('; ')}`);
+	throw new TypeError(
+		`[utilities/sort/pinyinSort]: invalid parameter: ${args.join('; ')}`
+	);
 }
 
 export function pinyinSort<T extends TTarget>(a: T, b: T) {

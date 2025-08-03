@@ -1,9 +1,15 @@
-import {isObject} from 'lodash';
+import { isObject } from 'lodash';
 
-import {Item} from './base';
-import {COOKER_LIST, type TCookerCategory, type TCookerName, type TCookers, type TCustomerRareName} from '@/data';
+import { Item } from './base';
+import {
+	COOKER_LIST,
+	type TCookerCategory,
+	type TCookerName,
+	type TCookers,
+	type TCustomerRareName,
+} from '@/data';
 
-import {checkArrayEqualOf} from '@/utilities';
+import { checkArrayEqualOf } from '@/utilities';
 
 export class Cooker extends Item<TCookers> {
 	private static _instance: Cooker | undefined;
@@ -21,7 +27,10 @@ export class Cooker extends Item<TCookers> {
 		'DLC',
 	] as const satisfies TCookerCategory[];
 
-	private static _bondCookerCache = new Map<TCustomerRareName, TCookerName | null>();
+	private static _bondCookerCache = new Map<
+		TCustomerRareName,
+		TCookerName | null
+	>();
 
 	public static getInstance() {
 		if (Cooker._instance !== undefined) {
@@ -43,7 +52,10 @@ export class Cooker extends Item<TCookers> {
 			return Cooker._sortedCategories;
 		}
 
-		const isCategoriesEqual = checkArrayEqualOf(Cooker._sortedCategories, this.getValuesByProp('category'));
+		const isCategoriesEqual = checkArrayEqualOf(
+			Cooker._sortedCategories,
+			this.getValuesByProp('category')
+		);
 		if (!isCategoriesEqual) {
 			throw new Error(
 				'[utils/item/Cooker]: the given categories is inconsistent with the types in the original data'
@@ -65,9 +77,13 @@ export class Cooker extends Item<TCookers> {
 
 		let bondCooker = null;
 
-		this._data.some(({from, name}) =>
+		this._data.some(({ from, name }) =>
 			from.some((item) => {
-				if (isObject(item) && 'bond' in item && item.bond === customerName) {
+				if (
+					isObject(item) &&
+					'bond' in item &&
+					item.bond === customerName
+				) {
 					bondCooker = name;
 					return true;
 				}

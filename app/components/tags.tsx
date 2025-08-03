@@ -1,14 +1,18 @@
 'use client';
 
-import {type JSX, memo, useCallback, useMemo} from 'react';
+import { type JSX, memo, useCallback, useMemo } from 'react';
 
-import {Button, type IButtonProps, cn} from '@/design/ui/components';
+import { Button, type IButtonProps, cn } from '@/design/ui/components';
 
-import {type HTMLElementClickEvent, type HTMLElementKeyDownEvent, type IPressProp} from '@/components/pressElement';
+import {
+	type HTMLElementClickEvent,
+	type HTMLElementKeyDownEvent,
+	type IPressProp,
+} from '@/components/pressElement';
 
-import {type TTag} from '@/data';
-import type {ITagStyleConfig} from '@/data/types';
-import {checkA11yConfirmKey, checkEmpty} from '@/utilities';
+import { type TTag } from '@/data';
+import type { ITagStyleConfig } from '@/data/types';
+import { checkA11yConfirmKey, checkEmpty } from '@/utilities';
 
 interface ITagPropsBase {
 	tagStyle?: Partial<ITagStyleConfig> | undefined;
@@ -16,7 +20,10 @@ interface ITagPropsBase {
 }
 
 interface ITagProps
-	extends Omit<HTMLSpanElementAttributes, Exclude<keyof IButtonProps, 'onClick' | 'onKeyDown'>>,
+	extends Omit<
+			HTMLSpanElementAttributes,
+			Exclude<keyof IButtonProps, 'onClick' | 'onKeyDown'>
+		>,
 		Omit<IButtonProps, 'onClick' | 'onKeyDown' | 'onPress'>,
 		Partial<IPressProp<HTMLSpanElement>>,
 		ITagPropsBase {
@@ -40,8 +47,10 @@ const Tag = memo<ITagProps>(function Tag({
 	const tagName = isArray ? tag[0] : tag;
 
 	const baseClassName = cn('inline-block h-max w-max rounded border px-1', {
-		'after:ml-0.5 after:font-normal after:content-["✘"]': tagType === 'negative',
-		'before:mr-1 before:font-normal before:content-["⦁"]': tagType === 'positive',
+		'after:ml-0.5 after:font-normal after:content-["✘"]':
+			tagType === 'negative',
+		'before:mr-1 before:font-normal before:content-["⦁"]':
+			tagType === 'positive',
 	});
 
 	const baseStyle = useMemo(
@@ -59,7 +68,9 @@ const Tag = memo<ITagProps>(function Tag({
 			<>
 				{tagName}
 				{tagDescription !== null && (
-					<span className="-mx-1 select-none text-tiny font-normal leading-none">{tagDescription}</span>
+					<span className="-mx-1 select-none text-tiny font-normal leading-none">
+						{tagDescription}
+					</span>
 				)}
 			</>
 		),
@@ -104,7 +115,11 @@ const Tag = memo<ITagProps>(function Tag({
 			{children}
 		</Button>
 	) : (
-		<span className={cn(baseClassName, className)} style={baseStyle} {...props}>
+		<span
+			className={cn(baseClassName, className)}
+			style={baseStyle}
+			{...props}
+		>
 			{children}
 		</span>
 	);
@@ -114,19 +129,30 @@ interface ITagsPropsBase extends ITagPropsBase {
 	tags: TTag[] | undefined;
 }
 
-interface ITagsProps extends ITagsPropsBase, Pick<HTMLSpanElementAttributes, 'className'> {}
+interface ITagsProps
+	extends ITagsPropsBase,
+		Pick<HTMLSpanElementAttributes, 'className'> {}
 
-const TagsComponent = memo<ITagsProps>(function Tags({className, tagStyle = {}, tagType, tags}) {
+const TagsComponent = memo<ITagsProps>(function Tags({
+	className,
+	tagStyle = {},
+	tagType,
+	tags,
+}) {
 	return tags !== undefined && !checkEmpty(tags)
 		? tags.map((tag, index) => (
-				<Tag key={index} tag={tag} tagStyle={tagStyle} tagType={tagType} className={className} />
+				<Tag
+					key={index}
+					tag={tag}
+					tagStyle={tagStyle}
+					tagType={tagType}
+					className={className}
+				/>
 			))
 		: null;
 });
 
-const Tags = TagsComponent as typeof TagsComponent & {
-	Tag: typeof Tag;
-};
+const Tags = TagsComponent as typeof TagsComponent & { Tag: typeof Tag };
 
 Tags.Tag = Tag;
 

@@ -1,5 +1,5 @@
-import {COLOR_MAP, MEDIA, STORAGE_KEY, THEME_MAP} from './constants';
-import {TTheme} from './types';
+import { COLOR_MAP, MEDIA, STORAGE_KEY, THEME_MAP } from './constants';
+import { TTheme } from './types';
 
 const script = (
 	media: typeof MEDIA,
@@ -8,16 +8,21 @@ const script = (
 	colors: typeof COLOR_MAP
 ) => {
 	try {
-		const systemTheme = globalThis.matchMedia(media).matches ? themeMap.DARK : themeMap.LIGHT;
+		const systemTheme = globalThis.matchMedia(media).matches
+			? themeMap.DARK
+			: themeMap.LIGHT;
 
 		let storedTheme;
 		try {
-			storedTheme = (localStorage.getItem(storageKey) as TTheme | null) ?? systemTheme;
+			storedTheme =
+				(localStorage.getItem(storageKey) as TTheme | null) ??
+				systemTheme;
 		} catch {
 			storedTheme = systemTheme;
 		}
 
-		const currentTheme = storedTheme === themeMap.SYSTEM ? systemTheme : storedTheme;
+		const currentTheme =
+			storedTheme === themeMap.SYSTEM ? systemTheme : storedTheme;
 		const isDarkTheme = currentTheme === themeMap.DARK;
 
 		document.documentElement.classList.remove(...Object.values(themeMap));
@@ -35,7 +40,12 @@ const script = (
 };
 
 export default function ThemeScript() {
-	const scriptArgs = JSON.stringify([MEDIA, STORAGE_KEY, THEME_MAP, COLOR_MAP]).slice(1, -1);
+	const scriptArgs = JSON.stringify([
+		MEDIA,
+		STORAGE_KEY,
+		THEME_MAP,
+		COLOR_MAP,
+	]).slice(1, -1);
 
 	return (
 		<script

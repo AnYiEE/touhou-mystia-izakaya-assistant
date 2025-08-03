@@ -1,4 +1,8 @@
-import {type DARK_MATTER_META_MAP, type TIngredientTag, type TRecipeTag} from '@/data';
+import {
+	type DARK_MATTER_META_MAP,
+	type TIngredientTag,
+	type TRecipeTag,
+} from '@/data';
 
 export type TPopularTag = Exclude<
 	TIngredientTag | TRecipeTag,

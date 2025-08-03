@@ -1,4 +1,4 @@
-import type {TSpriteTarget} from '@/utils/sprite/types';
+import type { TSpriteTarget } from '@/utils/sprite/types';
 
 export interface ILink<T extends string = string> {
 	label: string;
@@ -25,10 +25,7 @@ export interface ISiteConfig {
 	name: string;
 	enName: string;
 	shortName: string;
-	author: {
-		name: string;
-		url: string;
-	};
+	author: { name: string; url: string };
 	description: string;
 	keywords: string[];
 	/** @see {@link https://www.heroui.com/docs/api-references/heroui-provider} */
@@ -54,5 +51,9 @@ export interface ISiteConfig {
 
 export type TSiteConfig = typeof import('./index').siteConfig;
 
-type ExtractNestedHref<T> = T extends {href: infer U} ? U : {[K in keyof T]: ExtractNestedHref<T[K]>}[keyof T];
-export type TSitePath = ExtractStringTypes<ExtractNestedHref<TSiteConfig['navItems'][number]>>;
+type ExtractNestedHref<T> = T extends { href: infer U }
+	? U
+	: { [K in keyof T]: ExtractNestedHref<T[K]> }[keyof T];
+export type TSitePath = ExtractStringTypes<
+	ExtractNestedHref<TSiteConfig['navItems'][number]>
+>;

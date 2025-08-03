@@ -1,7 +1,7 @@
 /* eslint-disable sort-keys */
-import {customPinyin, pinyin} from 'pinyin-pro';
+import { customPinyin, pinyin } from 'pinyin-pro';
 
-import {memoize} from '@/utilities/memoize';
+import { memoize } from '@/utilities/memoize';
 
 customPinyin(
 	{
@@ -12,17 +12,11 @@ customPinyin(
 		冯风渡御: 'píng fēng dù yù',
 		// cSpell:enable
 	},
-	{
-		multiple: 'replace',
-	}
+	{ multiple: 'replace' }
 );
 
 export const getPinyin = memoize(function getPinyin(word: string) {
-	const result = pinyin(word, {
-		toneType: 'num',
-		type: 'array',
-		v: true,
-	});
+	const result = pinyin(word, { toneType: 'num', type: 'array', v: true });
 
 	return result;
 });

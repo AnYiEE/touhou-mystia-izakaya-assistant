@@ -6,10 +6,10 @@ import {
 	type TRatingKeyMap,
 	type TRatingMap,
 } from '@/data';
-import {BEVERAGE_TAG_STYLE} from '@/data/beverages';
-import {RECIPE_TAG_STYLE} from '@/data/recipes';
-import type {ITagStyle} from '@/data/types';
-import type {ISpriteConfig} from '@/utils/sprite/types';
+import { BEVERAGE_TAG_STYLE } from '@/data/beverages';
+import { RECIPE_TAG_STYLE } from '@/data/recipes';
+import type { ITagStyle } from '@/data/types';
+import type { ISpriteConfig } from '@/utils/sprite/types';
 
 export const CUSTOMER_RARE_SPRITE_CONFIG = {
 	col: 10,
@@ -36,42 +36,43 @@ export const CUSTOMER_EVALUATION_MAP: TEvaluationMap = {
 	seenRepell: '评价驱赶行为',
 };
 
-export const CUSTOMER_EVALUATION_KEY_MAP = Object.entries(CUSTOMER_EVALUATION_MAP).reduce<Partial<TEvaluationKeyMap>>(
-	(acc, [key, value]) => {
-		acc[value] = key as TEvaluationKey;
-		return acc;
-	},
-	{}
-) as TEvaluationKeyMap;
+export const CUSTOMER_EVALUATION_KEY_MAP = Object.entries(
+	CUSTOMER_EVALUATION_MAP
+).reduce<Partial<TEvaluationKeyMap>>((acc, [key, value]) => {
+	acc[value] = key as TEvaluationKey;
+	return acc;
+}, {}) as TEvaluationKeyMap;
 
-export const CUSTOMER_RATING_MAP = Object.entries(CUSTOMER_EVALUATION_MAP).reduce<Partial<TEvaluationMap>>(
-	(acc, [key, value]) => {
-		const ratingKey = key as TEvaluationKey;
-		if (
-			ratingKey === 'exbad' ||
-			ratingKey === 'bad' ||
-			ratingKey === 'norm' ||
-			ratingKey === 'good' ||
-			ratingKey === 'exgood'
-		) {
-			acc[ratingKey as TRatingKey] = value;
-		}
-		return acc;
-	},
-	{}
-) as TRatingMap;
+export const CUSTOMER_RATING_MAP = Object.entries(
+	CUSTOMER_EVALUATION_MAP
+).reduce<Partial<TEvaluationMap>>((acc, [key, value]) => {
+	const ratingKey = key as TEvaluationKey;
+	if (
+		ratingKey === 'exbad' ||
+		ratingKey === 'bad' ||
+		ratingKey === 'norm' ||
+		ratingKey === 'good' ||
+		ratingKey === 'exgood'
+	) {
+		acc[ratingKey as TRatingKey] = value;
+	}
+	return acc;
+}, {}) as TRatingMap;
 
-export const CUSTOMER_RATING_KEY_MAP = Object.entries(CUSTOMER_RATING_MAP).reduce<Partial<TRatingKeyMap>>(
-	(acc, [key, value]) => {
-		acc[value] = key as TRatingKey;
-		return acc;
-	},
-	{}
-) as TRatingKeyMap;
+export const CUSTOMER_RATING_KEY_MAP = Object.entries(
+	CUSTOMER_RATING_MAP
+).reduce<Partial<TRatingKeyMap>>((acc, [key, value]) => {
+	acc[value] = key as TRatingKey;
+	return acc;
+}, {}) as TRatingKeyMap;
 
 export const CUSTOMER_EVALUATION = Object.values(CUSTOMER_EVALUATION_MAP);
-export const CUSTOMER_EVALUATION_KEY = Object.keys(CUSTOMER_EVALUATION_MAP) as TEvaluationKey[];
+export const CUSTOMER_EVALUATION_KEY = Object.keys(
+	CUSTOMER_EVALUATION_MAP
+) as TEvaluationKey[];
 export const CUSTOMER_RATING = Object.values(CUSTOMER_RATING_MAP);
-export const CUSTOMER_RATING_KEY = Object.keys(CUSTOMER_RATING_MAP) as TRatingKey[];
+export const CUSTOMER_RATING_KEY = Object.keys(
+	CUSTOMER_RATING_MAP
+) as TRatingKey[];
 
 export * from './data';

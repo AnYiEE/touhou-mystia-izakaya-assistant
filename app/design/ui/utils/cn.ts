@@ -1,1 +1,1 @@
-export {cn} from '@heroui/theme';
+export { cn } from '@heroui/theme';

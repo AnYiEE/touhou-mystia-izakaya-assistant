@@ -1,5 +1,5 @@
-import {type DYNAMIC_TAG_MAP} from '@/data/constant';
-import type {IFoodBase} from '@/data/types';
+import { type DYNAMIC_TAG_MAP } from '@/data/constant';
+import type { IFoodBase } from '@/data/types';
 
 type TTag =
 	| '肉'

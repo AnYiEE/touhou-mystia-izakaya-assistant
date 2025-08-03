@@ -1,6 +1,15 @@
-import {type TCookerName, type TCurrencyName, type TCustomerRareName, type TIngredientName, type TPlace} from '@/data';
-import {type DARK_MATTER_META_MAP, type DYNAMIC_TAG_MAP} from '@/data/constant';
-import type {IFoodBase, TMerchant} from '@/data/types';
+import {
+	type TCookerName,
+	type TCurrencyName,
+	type TCustomerRareName,
+	type TIngredientName,
+	type TPlace,
+} from '@/data';
+import {
+	type DARK_MATTER_META_MAP,
+	type DYNAMIC_TAG_MAP,
+} from '@/data/constant';
+import type { IFoodBase, TMerchant } from '@/data/types';
 
 type TTag =
 	| (typeof DARK_MATTER_META_MAP)['positiveTag']
@@ -56,16 +65,10 @@ export interface IRecipe extends IFoodBase {
 	from:
 		| string
 		| Partial<{
-				bond: {
-					name: TCustomerRareName;
-					level: number;
-				};
+				bond: { name: TCustomerRareName; level: number };
 				buy: {
 					name: TMerchant;
-					price: {
-						currency: TCurrencyName;
-						amount: number;
-					};
+					price: { currency: TCurrencyName; amount: number };
 				};
 				/** @description Recipes by levelup. */
 				levelup: [number, TPlace | null];

@@ -1,4 +1,4 @@
-import type {ISpriteConfig} from '@/utils/sprite/types';
+import type { ISpriteConfig } from '@/utils/sprite/types';
 
 export const PARTNER_SPRITE_CONFIG = {
 	col: 10,

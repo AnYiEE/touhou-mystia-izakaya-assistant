@@ -1,5 +1,5 @@
-import {type TRecipeTag} from '@/data';
-import type {TRecipe} from '@/utils/types';
+import { type TRecipeTag } from '@/data';
+import type { TRecipe } from '@/utils/types';
 
 interface IRecipeSuitability {
 	matchedPositiveTags: TRecipeTag[];

@@ -1,40 +1,43 @@
 'use client';
 
-import {UAParser} from 'ua-parser-js';
+import { UAParser } from 'ua-parser-js';
 
-import {useMounted} from '@/hooks';
+import { useMounted } from '@/hooks';
 
-import {checkDomReady, checkEmpty, memoize, toArray} from '@/utilities';
+import { checkDomReady, checkEmpty, memoize, toArray } from '@/utilities';
 
 type TFeature = 'flexGap' | 'webp';
 type TCompatibility = Record<TFeature, boolean>;
 
 export const checkCompatibility = memoize(function checkCompatibility() {
-	const compatibility: TCompatibility = {
-		flexGap: true,
-		webp: true,
-	};
+	const compatibility: TCompatibility = { flexGap: true, webp: true };
 
 	const {
-		browser: {name: _browserName, version: _browserVersion},
-		os: {name: _osName, version: _osVersion},
+		browser: { name: _browserName, version: _browserVersion },
+		os: { name: _osName, version: _osVersion },
 	} = UAParser();
 	const browserName = (_browserName ?? '').toLowerCase();
-	const browserVersion = _browserVersion !== undefined && Number.parseInt(_browserVersion);
+	const browserVersion =
+		_browserVersion !== undefined && Number.parseInt(_browserVersion);
 	const osName = (_osName ?? '').toLowerCase();
 	const osVersion = _osVersion !== undefined && Number.parseInt(_osVersion);
 
 	const isChromium =
-		browserName.includes('chromium') || browserName.includes('chrome') || browserName.includes('edge');
+		browserName.includes('chromium') ||
+		browserName.includes('chrome') ||
+		browserName.includes('edge');
 	const isFirefox = browserName.includes('firefox');
 	const isSafari = browserName.includes('safari') || osName.includes('ios');
 
-	const isSupportedFlexGapChromium = typeof browserVersion === 'number' && browserVersion > 83;
-	const isSupportedFlexGapFirefox = typeof browserVersion === 'number' && browserVersion > 62;
+	const isSupportedFlexGapChromium =
+		typeof browserVersion === 'number' && browserVersion > 83;
+	const isSupportedFlexGapFirefox =
+		typeof browserVersion === 'number' && browserVersion > 62;
 	const isSupportedFlexGapSafari =
 		(typeof browserVersion === 'number' && browserVersion > 14) ||
 		(typeof osVersion === 'number' && osVersion > 14);
-	const isSupportedWebpFirefox = typeof browserVersion === 'number' && browserVersion > 64;
+	const isSupportedWebpFirefox =
+		typeof browserVersion === 'number' && browserVersion > 64;
 	const isSupportedWebpSafari =
 		(typeof browserVersion === 'number' && browserVersion > 15) ||
 		(typeof osVersion === 'number' && osVersion > 15);
@@ -58,7 +61,7 @@ function getReplacementClass(element: Element, gapClass: string) {
 	} else if (gapClass.includes('gap-y-')) {
 		return gapClass.replace('gap-y-', 'space-y-');
 	} else if (gapClass.includes('gap-')) {
-		const {classList} = element;
+		const { classList } = element;
 
 		const isFlexCol = classList.contains('flex-col');
 		const isFlexRow = classList.contains('flex-row');
@@ -115,10 +118,22 @@ function getReplacementClass(element: Element, gapClass: string) {
 function replaceGapClasses(element: Element) {
 	if (
 		checkEmpty(element.classList) ||
-		(!(element.classList.contains('flex') || element.classList.contains('inline-flex')) &&
-			!(element.classList.contains('md:flex') || element.classList.contains('md:inline-flex')) &&
-			!(element.classList.contains('lg:flex') || element.classList.contains('lg:inline-flex')) &&
-			!(element.classList.contains('xl:flex') || element.classList.contains('xl:inline-flex')))
+		(!(
+			element.classList.contains('flex') ||
+			element.classList.contains('inline-flex')
+		) &&
+			!(
+				element.classList.contains('md:flex') ||
+				element.classList.contains('md:inline-flex')
+			) &&
+			!(
+				element.classList.contains('lg:flex') ||
+				element.classList.contains('lg:inline-flex')
+			) &&
+			!(
+				element.classList.contains('xl:flex') ||
+				element.classList.contains('xl:inline-flex')
+			))
 	) {
 		return;
 	}
@@ -149,7 +164,9 @@ function processAllElements(element: Element) {
 
 function processMutations(mutations: MutationRecord[]) {
 	mutations.forEach((mutation) => {
-		toArray(mutation.addedNodes).filter(nodeIsElement).forEach(processAllElements);
+		toArray(mutation.addedNodes)
+			.filter(nodeIsElement)
+			.forEach(processAllElements);
 	});
 }
 
@@ -160,10 +177,7 @@ function initFlexGapFix() {
 
 	const observer = new MutationObserver(processMutations);
 
-	observer.observe(document.body, {
-		childList: true,
-		subtree: true,
-	});
+	observer.observe(document.body, { childList: true, subtree: true });
 
 	return observer;
 }

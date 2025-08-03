@@ -1,4 +1,4 @@
-import type {TRatingColorMap} from './types';
+import type { TRatingColorMap } from './types';
 
 export const ratingColors = {
 	bad: '#4a4459',

@@ -1,4 +1,4 @@
-import {checkEmpty, toArray, toSet} from '@/utilities';
+import { checkEmpty, toArray, toSet } from '@/utilities';
 
 export function union<T>(...arrays: Array<ReadonlyArray<T>>) {
 	if (checkEmpty(arrays)) {

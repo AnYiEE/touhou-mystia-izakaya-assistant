@@ -1,13 +1,23 @@
-import {execSync} from 'node:child_process';
+import { execSync } from 'node:child_process';
 
-import {FooterLinkWithTooltip} from './footerLink';
+import { FooterLinkWithTooltip } from './footerLink';
 import FooterVisitors from './footerVisitors';
 import QRCode from '@/components/qrCode';
 
-import {siteConfig} from '@/configs';
+import { siteConfig } from '@/configs';
 
-const {isIcpFiling, isOffline, isProduction, isVercel, links, nodeEnv, shortName, vercelEnv, vercelSha, version} =
-	siteConfig;
+const {
+	isIcpFiling,
+	isOffline,
+	isProduction,
+	isVercel,
+	links,
+	nodeEnv,
+	shortName,
+	vercelEnv,
+	vercelSha,
+	version,
+} = siteConfig;
 
 const sha = (() => {
 	if (vercelSha) {
@@ -16,7 +26,10 @@ const sha = (() => {
 
 	if (isProduction) {
 		try {
-			return execSync('git rev-parse --short HEAD').toString('utf8').trim().slice(0, 7);
+			return execSync('git rev-parse --short HEAD')
+				.toString('utf8')
+				.trim()
+				.slice(0, 7);
 		} catch {
 			/* empty */
 		}
@@ -35,7 +48,10 @@ export default function Footer() {
 				<span>
 					{shortName}
 					内所涉及的名称、商标、产品等均为其各自所有者的资产，仅供识别。游戏素材版权均归
-					<FooterLinkWithTooltip content={links.steam.label} href={links.steam.href}>
+					<FooterLinkWithTooltip
+						content={links.steam.label}
+						href={links.steam.href}
+					>
 						原作者
 					</FooterLinkWithTooltip>
 					所有
@@ -61,7 +77,10 @@ export default function Footer() {
 				</span>
 				{isIcpFiling && (
 					<span>
-						<FooterLinkWithTooltip content={null} href={links.icpFiling.href}>
+						<FooterLinkWithTooltip
+							content={null}
+							href={links.icpFiling.href}
+						>
 							{links.icpFiling.label}
 						</FooterLinkWithTooltip>
 					</span>
@@ -82,9 +101,7 @@ export default function Footer() {
 					}
 					href={links.donate.href}
 					title={links.donate.label}
-					classNames={{
-						content: 'px-1',
-					}}
+					classNames={{ content: 'px-1' }}
 				>
 					支持{shortName}
 				</FooterLinkWithTooltip>

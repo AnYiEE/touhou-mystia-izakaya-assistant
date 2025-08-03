@@ -1,5 +1,5 @@
 /* eslint-disable sort-keys */
-import {type TCollectionLocation} from '@/data';
+import { type TCollectionLocation } from '@/data';
 
 export const COLLECTION_LOCATION_REFRESH_TIME_MAP = {
 	'【博丽神社】花丛': 12,
@@ -150,7 +150,4 @@ export const DYNAMIC_TAG_MAP = {
 	signature: '招牌',
 } as const;
 
-export const LABEL_MAP = {
-	br: '{{br}}',
-	dlc0: '游戏本体',
-} as const;
+export const LABEL_MAP = { br: '{{br}}', dlc0: '游戏本体' } as const;

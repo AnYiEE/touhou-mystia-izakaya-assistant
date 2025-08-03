@@ -1,20 +1,39 @@
-import {store} from '@davstack/store';
-import {compareVersions} from 'compare-versions';
+import { store } from '@davstack/store';
+import { compareVersions } from 'compare-versions';
 
-import {type Selection} from '@heroui/table';
+import { type Selection } from '@heroui/table';
 
-import {beverageTableColumns, recipeTableColumns} from '@/(pages)/customer-rare/constants';
-import {trackEvent} from '@/components/analytics';
+import {
+	beverageTableColumns,
+	recipeTableColumns,
+} from '@/(pages)/customer-rare/constants';
+import { trackEvent } from '@/components/analytics';
 
-import type {IPersistenceState} from './types';
-import {siteConfig} from '@/configs';
-import {customerNormalStore, customerRareStore, ingredientsStore, recipesStore} from '@/stores';
-import {persist as persistMiddleware, sync as syncMiddleware} from '@/stores/middlewares';
-import type {IPopularTrend, TPopularTag} from '@/types';
-import {generateRange, pinyinSort, toArray, toGetItemWithKey, toGetValueCollection, toSet, union} from '@/utilities';
-import {Ingredient, Recipe} from '@/utils';
+import type { IPersistenceState } from './types';
+import { siteConfig } from '@/configs';
+import {
+	customerNormalStore,
+	customerRareStore,
+	ingredientsStore,
+	recipesStore,
+} from '@/stores';
+import {
+	persist as persistMiddleware,
+	sync as syncMiddleware,
+} from '@/stores/middlewares';
+import type { IPopularTrend, TPopularTag } from '@/types';
+import {
+	generateRange,
+	pinyinSort,
+	toArray,
+	toGetItemWithKey,
+	toGetValueCollection,
+	toSet,
+	union,
+} from '@/utilities';
+import { Ingredient, Recipe } from '@/utils';
 
-const {version: appVersion} = siteConfig;
+const { version: appVersion } = siteConfig;
 
 const instance_ingredient = Ingredient.getInstance();
 const instance_recipe = Recipe.getInstance();
@@ -27,7 +46,9 @@ const recipePositiveTags = instance_recipe
 	.getValuesByProp('positiveTags')
 	.filter((tag) => !instance_recipe.blockedTags.has(tag));
 
-const validPopularTags = (union(ingredientTags, recipePositiveTags) as TPopularTag[])
+const validPopularTags = (
+	union(ingredientTags, recipePositiveTags) as TPopularTag[]
+)
 	.map(toGetValueCollection)
 	.sort(pinyinSort);
 
@@ -56,16 +77,15 @@ const state = {
 		table: {
 			columns: {
 				beverage: beverageTableColumns.map(toGetItemWithKey('key')),
-				recipe: recipeTableColumns.filter(({key}) => key !== 'time').map(toGetItemWithKey('key')),
+				recipe: recipeTableColumns
+					.filter(({ key }) => key !== 'time')
+					.map(toGetItemWithKey('key')),
 			},
 			row: 8,
 		},
 
 		famousShop: false,
-		popularTrend: {
-			isNegative: false,
-			tag: null,
-		} as IPopularTrend,
+		popularTrend: { isNegative: false, tag: null } as IPopularTrend,
 
 		cloudCode: null as string | null,
 		dirver: [] as string[],
@@ -117,7 +137,7 @@ export const globalStore = store(state, {
 				}
 				if (version < storeVersion.renameBg) {
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-					const {persistence} = oldState;
+					const { persistence } = oldState;
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 					persistence.highAppearance = persistence.backgroundImage;
 					delete persistence.backgroundImage;
@@ -127,7 +147,7 @@ export const globalStore = store(state, {
 				}
 				if (version < storeVersion.popularTrend) {
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-					const {persistence} = oldState;
+					const { persistence } = oldState;
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 					persistence.popularTrend = persistence.popular;
 					delete persistence.popular;
@@ -138,8 +158,12 @@ export const globalStore = store(state, {
 				if (version < storeVersion.tableShare) {
 					oldState.persistence.table = {
 						columns: {
-							beverage: beverageTableColumns.map(toGetItemWithKey('key')),
-							recipe: recipeTableColumns.filter(({key}) => key !== 'time').map(toGetItemWithKey('key')),
+							beverage: beverageTableColumns.map(
+								toGetItemWithKey('key')
+							),
+							recipe: recipeTableColumns
+								.filter(({ key }) => key !== 'time')
+								.map(toGetItemWithKey('key')),
 						},
 						row: 8,
 					};
@@ -159,29 +183,49 @@ export const globalStore = store(state, {
 })
 	.computed((currentStore) => ({
 		beverageTableColumns: {
-			read: () => toSet(currentStore.persistence.table.columns.beverage.use()) as SelectionSet,
+			read: () =>
+				toSet(
+					currentStore.persistence.table.columns.beverage.use()
+				) as SelectionSet,
 			write: (columns: Selection) => {
-				currentStore.persistence.table.columns.beverage.set(toArray<SelectionSet>(columns) as never);
+				currentStore.persistence.table.columns.beverage.set(
+					toArray<SelectionSet>(columns) as never
+				);
 			},
 		},
 		recipeTableColumns: {
-			read: () => toSet(currentStore.persistence.table.columns.recipe.use()) as SelectionSet,
+			read: () =>
+				toSet(
+					currentStore.persistence.table.columns.recipe.use()
+				) as SelectionSet,
 			write: (columns: Selection) => {
-				currentStore.persistence.table.columns.recipe.set(toArray<SelectionSet>(columns) as never);
+				currentStore.persistence.table.columns.recipe.set(
+					toArray<SelectionSet>(columns) as never
+				);
 			},
 		},
 
 		tableRows: {
-			read: () => toSet([currentStore.persistence.table.row.use().toString()]) as SelectionSet,
+			read: () =>
+				toSet([
+					currentStore.persistence.table.row.use().toString(),
+				]) as SelectionSet,
 			write: (rows: Selection) => {
-				currentStore.persistence.table.row.set(Number.parseInt(toArray<SelectionSet>(rows)[0] as string));
+				currentStore.persistence.table.row.set(
+					Number.parseInt(toArray<SelectionSet>(rows)[0] as string)
+				);
 			},
 		},
 
 		selectedPopularTag: {
-			read: () => toSet([currentStore.persistence.popularTrend.tag.use()]) as SelectionSet,
+			read: () =>
+				toSet([
+					currentStore.persistence.popularTrend.tag.use(),
+				]) as SelectionSet,
 			write: (tags: Selection) => {
-				const tag = toArray<SelectionSet>(tags)[0] as typeof state.persistence.popularTrend.tag;
+				const tag = toArray<SelectionSet>(
+					tags
+				)[0] as typeof state.persistence.popularTrend.tag;
 				// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 				currentStore.persistence.popularTrend.tag.set(tag || null);
 			},
@@ -201,7 +245,11 @@ globalStore.persistence.highAppearance.onChange((isEnabled) => {
 // Reload page if current tab version is lower than the version of the new tab.
 globalStore.persistence.version.onChange((version) => {
 	if (version && compareVersions(version, appVersion) === 1) {
-		trackEvent(trackEvent.category.error, 'Global', 'Outdated version detected in multiple tabs');
+		trackEvent(
+			trackEvent.category.error,
+			'Global',
+			'Outdated version detected in multiple tabs'
+		);
 		location.reload();
 	}
 });
@@ -246,5 +294,7 @@ globalStore.persistence.table.row.onChange((row) => {
 	customerRareStore.shared.recipe.table.rows.set(toSet([row.toString()]));
 });
 
-export {storeName as globalStoreKey};
-export type TGlobalPersistenceState = IPersistenceState<(typeof state)['persistence']>;
+export { storeName as globalStoreKey };
+export type TGlobalPersistenceState = IPersistenceState<
+	(typeof state)['persistence']
+>;

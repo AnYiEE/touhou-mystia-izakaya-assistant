@@ -1,16 +1,23 @@
-import {type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent} from 'react';
+import {
+	type KeyboardEvent as ReactKeyboardEvent,
+	type MouseEvent as ReactMouseEvent,
+} from 'react';
 
-export type TPressEvent<T = Element> = ReactKeyboardEvent<T> | ReactMouseEvent<T> | KeyboardEvent | MouseEvent;
+export type TPressEvent<T = Element> =
+	| ReactKeyboardEvent<T>
+	| ReactMouseEvent<T>
+	| KeyboardEvent
+	| MouseEvent;
 
 function checkEvent(event: TPressEvent) {
-	const {type} = event;
+	const { type } = event;
 
 	if (type === 'click') {
 		return true;
 	}
 
 	if (type === 'keydown') {
-		const {key} = event as KeyboardEvent;
+		const { key } = event as KeyboardEvent;
 		const isEnter = key === 'Enter';
 		const isSpace = key === ' ';
 
@@ -27,7 +34,9 @@ function checkEvent(event: TPressEvent) {
 /**
  * @returns The warped callback that will only be called if the key pressed is either "Enter" or "Space".
  */
-export function checkA11yConfirmKey<T extends TPressEvent>(callback?: (event: T) => void) {
+export function checkA11yConfirmKey<T extends TPressEvent>(
+	callback?: (event: T) => void
+) {
 	return (initEvent: T) => {
 		if (checkEvent(initEvent)) {
 			callback?.(initEvent);

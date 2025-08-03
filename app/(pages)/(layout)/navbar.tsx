@@ -1,10 +1,17 @@
 'use client';
 
-import {type JSX, type PropsWithChildren, memo, startTransition, useCallback, useState} from 'react';
+import {
+	type JSX,
+	type PropsWithChildren,
+	memo,
+	startTransition,
+	useCallback,
+	useState,
+} from 'react';
 
-import {useRouter} from 'next/navigation';
-import {useProgress} from 'react-transition-progress';
-import {usePathname, useVibrate} from '@/hooks';
+import { useRouter } from 'next/navigation';
+import { useProgress } from 'react-transition-progress';
+import { usePathname, useVibrate } from '@/hooks';
 
 import {
 	Navbar as HeroUINavbar,
@@ -15,9 +22,9 @@ import {
 	NavbarMenuItem,
 	NavbarMenuToggle,
 } from '@heroui/navbar';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faGithub} from '@fortawesome/free-brands-svg-icons';
-import {faChevronDown} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faGithub } from '@fortawesome/free-brands-svg-icons';
+import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
 import {
 	Button,
@@ -32,15 +39,17 @@ import {
 	useReducedMotion,
 } from '@/design/ui/components';
 
-import FontAwesomeIconLink, {type IFontAwesomeIconLinkProps} from '@/components/fontAwesomeIconLink';
+import FontAwesomeIconLink, {
+	type IFontAwesomeIconLinkProps,
+} from '@/components/fontAwesomeIconLink';
 import ThemeSwitcher from '@/components/themeSwitcher';
 import Sprite from '@/components/sprite';
 
-import {siteConfig} from '@/configs';
-import {globalStore as store} from '@/stores';
-import {checkA11yConfirmKey} from '@/utilities';
+import { siteConfig } from '@/configs';
+import { globalStore as store } from '@/stores';
+import { checkA11yConfirmKey } from '@/utilities';
 
-const {links, name, navItems, navMenuItems, shortName} = siteConfig;
+const { links, name, navItems, navMenuItems, shortName } = siteConfig;
 
 export function showProgress(startProgress: () => void) {
 	startTransition(async () => {
@@ -51,40 +60,45 @@ export function showProgress(startProgress: () => void) {
 	});
 }
 
-interface INavbarLinkProps extends Pick<IButtonProps, 'className' | 'href' | 'startContent' | 'fullWidth' | 'onPress'> {
+interface INavbarLinkProps
+	extends Pick<
+		IButtonProps,
+		'className' | 'href' | 'startContent' | 'fullWidth' | 'onPress'
+	> {
 	isActivated: boolean;
 }
 
-const NavbarButtonLink = memo<PropsWithChildren<INavbarLinkProps>>(function NavbarLink({
-	children,
+const NavbarButtonLink = memo<PropsWithChildren<INavbarLinkProps>>(
+	function NavbarLink({ children, className, isActivated, ...props }) {
+		return (
+			<Button
+				as={Link}
+				animationUnderline={false}
+				size="sm"
+				variant={isActivated ? 'flat' : 'light'}
+				onClick={(event) => {
+					event.preventDefault();
+				}}
+				onKeyDown={checkA11yConfirmKey()}
+				onPressStart={(event) => {
+					event.continuePropagation();
+				}}
+				className={cn('text-base after:hidden', className)}
+				{...props}
+			>
+				{children}
+			</Button>
+		);
+	}
+);
+
+interface IGitHubIconLinkProps
+	extends Pick<IFontAwesomeIconLinkProps, 'className' | 'tabIndex'> {}
+
+const GitHubIconLink = memo<IGitHubIconLinkProps>(function IconLink({
 	className,
-	isActivated,
-	...props
+	tabIndex,
 }) {
-	return (
-		<Button
-			as={Link}
-			animationUnderline={false}
-			size="sm"
-			variant={isActivated ? 'flat' : 'light'}
-			onClick={(event) => {
-				event.preventDefault();
-			}}
-			onKeyDown={checkA11yConfirmKey()}
-			onPressStart={(event) => {
-				event.continuePropagation();
-			}}
-			className={cn('text-base after:hidden', className)}
-			{...props}
-		>
-			{children}
-		</Button>
-	);
-});
-
-interface IGitHubIconLinkProps extends Pick<IFontAwesomeIconLinkProps, 'className' | 'tabIndex'> {}
-
-const GitHubIconLink = memo<IGitHubIconLinkProps>(function IconLink({className, tabIndex}) {
 	return (
 		<FontAwesomeIconLink
 			isExternal
@@ -105,7 +119,7 @@ interface IGitHubLinkProps {
 	showTooltip?: boolean;
 }
 
-const GitHubLink = memo<IGitHubLinkProps>(function GitHubLink({showTooltip}) {
+const GitHubLink = memo<IGitHubLinkProps>(function GitHubLink({ showTooltip }) {
 	if (showTooltip) {
 		return (
 			<Tooltip showArrow content={links.github.label} placement="bottom">
@@ -160,10 +174,15 @@ export default function Navbar() {
 			onMenuOpenChange={setIsMenuOpened}
 			classNames={{
 				base: 'pt-titlebar',
-				wrapper: 'max-w-screen-xl 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl',
+				wrapper:
+					'max-w-screen-xl 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl',
 			}}
 		>
-			<NavbarContent as="div" justify="start" className="basis-full md:basis-1/5">
+			<NavbarContent
+				as="div"
+				justify="start"
+				className="basis-full md:basis-1/5"
+			>
 				<NavbarBrand className="max-w-fit">
 					<Link
 						animationUnderline={false}
@@ -184,17 +203,23 @@ export default function Navbar() {
 						/>
 						<p className="font-bold">
 							<span className="hidden lg:inline">{name}</span>
-							<span className="inline lg:hidden">{shortName}</span>
+							<span className="inline lg:hidden">
+								{shortName}
+							</span>
 						</p>
 					</Link>
 				</NavbarBrand>
 				<ul className="hidden justify-start gap-4 pl-2 md:flex">
 					{navItems.map((navItem, navItemIndex) => {
 						if ('href' in navItem) {
-							const {href, label} = navItem;
+							const { href, label } = navItem;
 							const isActivated = href === pathname;
-							return href === '/preferences' && !shouldShowPreferences ? null : (
-								<NavbarItem key={navItemIndex} isActive={isActivated}>
+							return href === '/preferences' &&
+								!shouldShowPreferences ? null : (
+								<NavbarItem
+									key={navItemIndex}
+									isActive={isActivated}
+								>
 									<NavbarButtonLink
 										isActivated={isActivated}
 										href={href}
@@ -208,8 +233,14 @@ export default function Navbar() {
 							);
 						}
 						return Object.entries(navItem).reduce<JSX.Element[]>(
-							(acc, [dropdownLabel, dropdownItems], dropdownIndex) => {
-								const isDropdownActivated = dropdownItems.some(({href}) => href === pathname);
+							(
+								acc,
+								[dropdownLabel, dropdownItems],
+								dropdownIndex
+							) => {
+								const isDropdownActivated = dropdownItems.some(
+									({ href }) => href === pathname
+								);
 								const dropdownElement = (
 									<Dropdown
 										key={dropdownIndex}
@@ -217,16 +248,26 @@ export default function Navbar() {
 										onOpenChange={vibrate}
 										classNames={{
 											content: cn('p-0', {
-												'bg-background/70 backdrop-saturate-150': isHighAppearance,
+												'bg-background/70 backdrop-saturate-150':
+													isHighAppearance,
 											}),
 										}}
 									>
 										<NavbarItem>
 											<DropdownTrigger>
 												<Button
-													endContent={<FontAwesomeIcon icon={faChevronDown} size="sm" />}
+													endContent={
+														<FontAwesomeIcon
+															icon={faChevronDown}
+															size="sm"
+														/>
+													}
 													size="sm"
-													variant={isDropdownActivated ? 'flat' : 'light'}
+													variant={
+														isDropdownActivated
+															? 'flat'
+															: 'light'
+													}
 													className="text-base"
 												>
 													{dropdownLabel}
@@ -243,18 +284,32 @@ export default function Navbar() {
 												base: 'my-px p-0 transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40 motion-reduce:transition-none',
 											}}
 										>
-											{({href, label, sprite, spriteIndex}) => (
-												<DropdownItem key={href} textValue={label}>
+											{({
+												href,
+												label,
+												sprite,
+												spriteIndex,
+											}) => (
+												<DropdownItem
+													key={href}
+													textValue={label}
+												>
 													<NavbarButtonLink
 														fullWidth
-														isActivated={href === pathname}
+														isActivated={
+															href === pathname
+														}
 														startContent={
 															<Sprite
 																target={sprite}
-																index={spriteIndex}
+																index={
+																	spriteIndex
+																}
 																size={1.25}
 																className={cn({
-																	'rounded-full': href === '/partners',
+																	'rounded-full':
+																		href ===
+																		'/partners',
 																})}
 															/>
 														}
@@ -276,7 +331,10 @@ export default function Navbar() {
 				</ul>
 			</NavbarContent>
 
-			<NavbarContent justify="end" className="hidden basis-full md:flex md:basis-1/5">
+			<NavbarContent
+				justify="end"
+				className="hidden basis-full md:flex md:basis-1/5"
+			>
 				<NavbarItem>
 					<GitHubLink showTooltip />
 				</NavbarItem>
@@ -285,14 +343,22 @@ export default function Navbar() {
 				</NavbarItem>
 			</NavbarContent>
 
-			<NavbarContent as="div" justify="end" className="basis-1 pl-4 md:hidden">
+			<NavbarContent
+				as="div"
+				justify="end"
+				className="basis-1 pl-4 md:hidden"
+			>
 				<ThemeSwitcher
 					isMenu
 					className={cn({
 						'pointer-events-none h-0 w-0 opacity-0': !isMenuOpened,
 					})}
 				/>
-				<Tooltip showArrow content={isMenuOpened ? '收起菜单' : '打开菜单'} placement="left">
+				<Tooltip
+					showArrow
+					content={isMenuOpened ? '收起菜单' : '打开菜单'}
+					placement="left"
+				>
 					<NavbarMenuToggle
 						onChange={vibrate}
 						srOnlyText="打开或收起菜单"
@@ -302,13 +368,16 @@ export default function Navbar() {
 			</NavbarContent>
 
 			<NavbarMenu className="px-10 pt-4">
-				{navMenuItems.map(({href, label}, index) => {
+				{navMenuItems.map(({ href, label }, index) => {
 					const isActivated = href === pathname;
-					return href === '/preferences' && !shouldShowPreferences ? null : (
+					return href === '/preferences' &&
+						!shouldShowPreferences ? null : (
 						<NavbarMenuItem key={index} isActive={isActivated}>
 							<Link
 								color={isActivated ? 'primary' : 'foreground'}
-								forcedUnderline={isActivated || href === '/preferences'}
+								forcedUnderline={
+									isActivated || href === '/preferences'
+								}
 								size="lg"
 								onClick={() => {
 									handlePress();

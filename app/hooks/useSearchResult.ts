@@ -1,19 +1,23 @@
-import {useCallback, useMemo} from 'react';
+import { useCallback, useMemo } from 'react';
 
-import {useSkipProcessItemData} from '@/hooks';
+import { useSkipProcessItemData } from '@/hooks';
 
-import {processPinyin} from '@/utilities';
-import type {TItemData, TItemInstance} from '@/utils/types';
+import { processPinyin } from '@/utilities';
+import type { TItemData, TItemInstance } from '@/utils/types';
 
-export function useSearchResult<T extends TItemInstance>(instance: T, searchValue: string) {
+export function useSearchResult<T extends TItemInstance>(
+	instance: T,
+	searchValue: string
+) {
 	const shouldSkipProcessData = useSkipProcessItemData();
 
 	const getSearchResult = useCallback(() => {
 		if (searchValue) {
 			const searchValueLowerCase = searchValue.toLowerCase();
 
-			return instance.data.filter(({name, pinyin}) => {
-				const {pinyinFirstLetters, pinyinWithoutTone} = processPinyin(pinyin);
+			return instance.data.filter(({ name, pinyin }) => {
+				const { pinyinFirstLetters, pinyinWithoutTone } =
+					processPinyin(pinyin);
 
 				return (
 					name.toLowerCase().includes(searchValueLowerCase) ||

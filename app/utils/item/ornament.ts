@@ -1,18 +1,23 @@
-import {isObject} from 'lodash';
+import { isObject } from 'lodash';
 
-import {Item} from './base';
-import {ORNAMENT_LIST, type TCustomerRareName, type TOrnamentName, type TOrnaments} from '@/data';
-import {numberSort} from '@/utilities';
+import { Item } from './base';
+import {
+	ORNAMENT_LIST,
+	type TCustomerRareName,
+	type TOrnamentName,
+	type TOrnaments,
+} from '@/data';
+import { numberSort } from '@/utilities';
 
-type TBondOrnaments = Array<{
-	level: number;
-	name: TOrnamentName;
-}>;
+type TBondOrnaments = Array<{ level: number; name: TOrnamentName }>;
 
 export class Ornament extends Item<TOrnaments> {
 	private static _instance: Ornament | undefined;
 
-	private static _bondOrnamentsCache = new Map<TCustomerRareName, TBondOrnaments>();
+	private static _bondOrnamentsCache = new Map<
+		TCustomerRareName,
+		TBondOrnaments
+	>();
 
 	public static getInstance() {
 		if (Ornament._instance !== undefined) {
@@ -36,16 +41,13 @@ export class Ornament extends Item<TOrnaments> {
 
 		const bondOrnaments: TBondOrnaments = [];
 
-		this._data.forEach(({from, name}) => {
+		this._data.forEach(({ from, name }) => {
 			if (isObject(from) && from.bond === customerName) {
-				bondOrnaments.push({
-					level: from.level,
-					name,
-				});
+				bondOrnaments.push({ level: from.level, name });
 			}
 		});
 
-		bondOrnaments.sort(({level: a}, {level: b}) => numberSort(a, b));
+		bondOrnaments.sort(({ level: a }, { level: b }) => numberSort(a, b));
 
 		Ornament._bondOrnamentsCache.set(customerName, bondOrnaments);
 

@@ -1,10 +1,12 @@
-import {type RefObject, useCallback, useEffect, useState} from 'react';
+import { type RefObject, useCallback, useEffect, useState } from 'react';
 
-import {useParams} from '@/hooks';
+import { useParams } from '@/hooks';
 
 export const PARAM_SPECIFY = 'select';
 
-export function useOpenedItemPopover(popoverCardRef: RefObject<HTMLElement | null>) {
+export function useOpenedItemPopover(
+	popoverCardRef: RefObject<HTMLElement | null>
+) {
 	const [params, replace] = useParams();
 	const [openedPopover, _setOpenedPopover] = useState<string | null>(null);
 
@@ -13,7 +15,11 @@ export function useOpenedItemPopover(popoverCardRef: RefObject<HTMLElement | nul
 
 		_setOpenedPopover(param);
 
-		if (openedPopover !== null && param !== null && popoverCardRef.current !== null) {
+		if (
+			openedPopover !== null &&
+			param !== null &&
+			popoverCardRef.current !== null
+		) {
 			// Some browsers don't support scrollIntoViewOptions
 			try {
 				popoverCardRef.current.scrollIntoView({

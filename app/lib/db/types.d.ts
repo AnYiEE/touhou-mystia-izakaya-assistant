@@ -1,6 +1,6 @@
-import {type Insertable, type Selectable, type Updateable} from 'kysely';
+import { type Insertable, type Selectable, type Updateable } from 'kysely';
 
-import {type TABLE_NAME_MAP} from './constant';
+import { type TABLE_NAME_MAP } from './constant';
 
 type TTableNameMap = typeof TABLE_NAME_MAP;
 
@@ -17,4 +17,7 @@ export type TBackupFileRecord = Selectable<ITableBackupFileRecord>;
 export type TBackupFileRecordNew = Insertable<ITableBackupFileRecord>;
 export type TBackupFileRecordUpdate = Updateable<ITableBackupFileRecord>;
 
-export type TDatabase = Record<TTableNameMap['backupFileRecord'], ITableBackupFileRecord>;
+export type TDatabase = Record<
+	TTableNameMap['backupFileRecord'],
+	ITableBackupFileRecord
+>;

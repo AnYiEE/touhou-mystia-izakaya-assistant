@@ -1,11 +1,11 @@
-import {Link, Tooltip} from '@/design/ui/components';
+import { Link, Tooltip } from '@/design/ui/components';
 
 import Heading from '@/components/heading';
 import QRCode from '@/components/qrCode';
 
-import {siteConfig} from '@/configs';
+import { siteConfig } from '@/configs';
 
-const {domain, enName, links, name, shortName} = siteConfig;
+const { domain, enName, links, name, shortName } = siteConfig;
 
 export default function Introduction() {
 	return (
@@ -13,7 +13,8 @@ export default function Introduction() {
 			<Heading isFirst>项目介绍</Heading>
 			<div className="space-y-2 break-all text-justify indent-8">
 				<p>
-					“{name}”（英语：{enName}）网站（下文中称“本网站”或“{shortName}
+					“{name}”（英语：{enName}）网站（下文中称“本网站”或“
+					{shortName}
 					”）是由此
 					<Link
 						isExternal
@@ -24,13 +25,15 @@ export default function Introduction() {
 					>
 						GitHub仓库
 					</Link>
-					所有者（下文中称“开发者”或“我”） 为游戏《东方夜雀食堂》开发的辅助工具。
+					所有者（下文中称“开发者”或“我”）
+					为游戏《东方夜雀食堂》开发的辅助工具。
 				</p>
 				<p>
 					{shortName}
 					提供顾客图鉴（包括羁绊奖励和符卡效果查询）、搭配稀客和普客的料理套餐，以及料理（食谱）、酒水、食材、厨具、摆件、衣服和伙伴查询等功能，通过本网站（https://
 					{domain}
-					）、现在或未来可能提供的其他网站、计算机软件、移动应用程序、其他类似产品或服务，为{shortName}
+					）、现在或未来可能提供的其他网站、计算机软件、移动应用程序、其他类似产品或服务，为
+					{shortName}
 					用户（下文中称“玩家”或“您”）的游玩过程提供帮助。
 				</p>
 				<p>
@@ -48,9 +51,7 @@ export default function Introduction() {
 							</QRCode>
 						}
 						offset={2}
-						classNames={{
-							content: 'px-1',
-						}}
+						classNames={{ content: 'px-1' }}
 					>
 						<Link
 							isExternal

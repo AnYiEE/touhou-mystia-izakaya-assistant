@@ -1,4 +1,4 @@
-import {type TIngredientName, type TRecipeName} from '@/data';
+import { type TIngredientName, type TRecipeName } from '@/data';
 
 export interface IMealRecipe {
 	name: TRecipeName;

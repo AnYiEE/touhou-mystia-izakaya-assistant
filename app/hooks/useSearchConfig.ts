@@ -1,8 +1,8 @@
-import {type Dispatch, type SetStateAction, useMemo} from 'react';
+import { type Dispatch, type SetStateAction, useMemo } from 'react';
 
-import {type ISearchConfig} from '@/components/sideSearchIconButton';
+import { type ISearchConfig } from '@/components/sideSearchIconButton';
 
-import type {TSpriteTarget} from '@/utils/sprite/types';
+import type { TSpriteTarget } from '@/utils/sprite/types';
 
 interface IUseSearchConfig<T extends ValueCollection[]> {
 	label: string;

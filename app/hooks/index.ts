@@ -6,10 +6,10 @@ export * from './useVibrate';
 
 export * from './useFilteredData';
 export * from './useItemPopoverState';
-export {useOpenedItemPopover} from './useOpenedItemPopover';
+export { useOpenedItemPopover } from './useOpenedItemPopover';
 export * from './usePinyinSortConfig';
 export * from './useSearchConfig';
 export * from './useSearchResult';
 export * from './useSkipProcessItemData';
 export * from './useSortedData';
-export {useViewInNewWindow} from './useViewInNewWindow';
+export { useViewInNewWindow } from './useViewInNewWindow';

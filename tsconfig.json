@@ -19,9 +19,7 @@
 		"baseUrl": ".",
 		"module": "ESNext",
 		"moduleResolution": "bundler",
-		"paths": {
-			"@/*": ["./app/*"]
-		},
+		"paths": { "@/*": ["./app/*"] },
 		"resolveJsonModule": true,
 
 		"downlevelIteration": true,
@@ -32,11 +30,7 @@
 		"allowJs": true,
 		"checkJs": true,
 
-		"plugins": [
-			{
-				"name": "next"
-			}
-		],
+		"plugins": [{ "name": "next" }],
 
 		"erasableSyntaxOnly": true,
 		"esModuleInterop": true,

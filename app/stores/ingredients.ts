@@ -1,13 +1,21 @@
-import {store} from '@davstack/store';
+import { store } from '@davstack/store';
 
-import {type TPinyinSortState, pinyinSortStateMap} from '@/components/sidePinyinSortIconButton';
+import {
+	type TPinyinSortState,
+	pinyinSortStateMap,
+} from '@/components/sidePinyinSortIconButton';
 
-import {DYNAMIC_TAG_MAP, type TIngredientTag} from '@/data';
-import {persist as persistMiddleware} from '@/stores/middlewares';
-import {createNamesCache} from '@/stores/utils';
-import type {IPopularTrend} from '@/types';
-import {numberSort, pinyinSort, toArray, toGetValueCollection} from '@/utilities';
-import {Ingredient} from '@/utils';
+import { DYNAMIC_TAG_MAP, type TIngredientTag } from '@/data';
+import { persist as persistMiddleware } from '@/stores/middlewares';
+import { createNamesCache } from '@/stores/utils';
+import type { IPopularTrend } from '@/types';
+import {
+	numberSort,
+	pinyinSort,
+	toArray,
+	toGetValueCollection,
+} from '@/utilities';
+import { Ingredient } from '@/utils';
 
 const instance = Ingredient.getInstance();
 
@@ -47,10 +55,7 @@ const state = {
 	},
 	shared: {
 		famousShop: false,
-		popularTrend: {
-			isNegative: false,
-			tag: null,
-		} as IPopularTrend,
+		popularTrend: { isNegative: false, tag: null } as IPopularTrend,
 	},
 };
 
@@ -71,7 +76,7 @@ export const ingredientsStore = store(state, {
 				if (version < storeVersion.filterTypes) {
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 					const {
-						persistence: {filters},
+						persistence: { filters },
 					} = oldState;
 					filters.types = [];
 					filters.noTypes = [];

@@ -4,7 +4,11 @@ function cleanup(element: HTMLElement) {
 	}
 }
 
-export function setScriptUrlTag(url: string, method?: 'async' | 'defer', crossOrigin?: boolean) {
+export function setScriptUrlTag(
+	url: string,
+	method?: 'async' | 'defer',
+	crossOrigin?: boolean
+) {
 	return new Promise<void>((resolve, reject) => {
 		const scriptElement = document.createElement('script');
 		scriptElement.src = url;

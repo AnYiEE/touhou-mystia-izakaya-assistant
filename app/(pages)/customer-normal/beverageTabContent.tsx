@@ -1,12 +1,25 @@
-import {useCallback, useMemo} from 'react';
+import { useCallback, useMemo } from 'react';
 
-import {useVibrate, useViewInNewWindow} from '@/hooks';
+import { useVibrate, useViewInNewWindow } from '@/hooks';
 
-import {Autocomplete, AutocompleteItem} from '@heroui/autocomplete';
-import {Select, SelectItem} from '@heroui/select';
-import {type SortDescriptor, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow} from '@heroui/table';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faChevronDown, faMagnifyingGlass, faPlus, faTags} from '@fortawesome/free-solid-svg-icons';
+import { Autocomplete, AutocompleteItem } from '@heroui/autocomplete';
+import { Select, SelectItem } from '@heroui/select';
+import {
+	type SortDescriptor,
+	Table,
+	TableBody,
+	TableCell,
+	TableColumn,
+	TableHeader,
+	TableRow,
+} from '@heroui/table';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+	faChevronDown,
+	faMagnifyingGlass,
+	faPlus,
+	faTags,
+} from '@fortawesome/free-solid-svg-icons';
 
 import {
 	Button,
@@ -31,11 +44,17 @@ import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 
-import {type TTableColumnKey, type TTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
-import {beverageTableColumns as tableColumns} from './constants';
-import type {TBeverageWithSuitability, TBeveragesWithSuitability} from './types';
-import {CUSTOMER_NORMAL_TAG_STYLE, LABEL_MAP} from '@/data';
-import {customerNormalStore as customerStore, globalStore} from '@/stores';
+import {
+	type TTableColumnKey,
+	type TTableSortDescriptor,
+} from '@/(pages)/customer-rare/beverageTabContent';
+import { beverageTableColumns as tableColumns } from './constants';
+import type {
+	TBeverageWithSuitability,
+	TBeveragesWithSuitability,
+} from './types';
+import { CUSTOMER_NORMAL_TAG_STYLE, LABEL_MAP } from '@/data';
+import { customerNormalStore as customerStore, globalStore } from '@/stores';
 import {
 	checkArraySubsetOf,
 	checkEmpty,
@@ -47,7 +66,7 @@ import {
 	toSet,
 } from '@/utilities';
 
-export type {TTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
+export type { TTableSortDescriptor } from '@/(pages)/customer-rare/beverageTabContent';
 
 export default function BeverageTabContent() {
 	const isReducedMotion = useReducedMotion();
@@ -58,7 +77,8 @@ export default function BeverageTabContent() {
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
-	const selectedCustomerBeverageTag = customerStore.shared.customer.select.beverageTag.use();
+	const selectedCustomerBeverageTag =
+		customerStore.shared.customer.select.beverageTag.use();
 
 	const currentBeverageName = customerStore.shared.beverage.name.use();
 	const selectedDlcs = customerStore.beverageTableDlcs.use();
@@ -75,13 +95,17 @@ export default function BeverageTabContent() {
 
 	const tableCurrentPage = customerStore.shared.beverage.table.page.use();
 	const tableRowsPerPage = customerStore.shared.beverage.table.rows.use();
-	const tableRowsPerPageNumber = customerStore.shared.beverage.table.row.use();
-	const tableSelectableRows = customerStore.shared.beverage.table.selectableRows.get();
-	const tableSortDescriptor = customerStore.persistence.beverage.table.sortDescriptor.use();
-	const tableVisibleColumns = customerStore.shared.beverage.table.columns.use();
+	const tableRowsPerPageNumber =
+		customerStore.shared.beverage.table.row.use();
+	const tableSelectableRows =
+		customerStore.shared.beverage.table.selectableRows.get();
+	const tableSortDescriptor =
+		customerStore.persistence.beverage.table.sortDescriptor.use();
+	const tableVisibleColumns =
+		customerStore.shared.beverage.table.columns.use();
 
 	const filteredData = useMemo<TBeveragesWithSuitability>(() => {
-		const {data} = instance_beverage;
+		const { data } = instance_beverage;
 
 		if (currentCustomerName === null) {
 			return data.map((item) => ({
@@ -91,33 +115,42 @@ export default function BeverageTabContent() {
 			}));
 		}
 
-		const beverageTags = instance_customer.getPropsByName(currentCustomerName, 'beverageTags');
+		const beverageTags = instance_customer.getPropsByName(
+			currentCustomerName,
+			'beverageTags'
+		);
 
 		const dataWithRealSuitability = data.map((item) => {
-			const {suitability, tags: matchedTags} = instance_beverage.getCustomerSuitability(item.name, beverageTags);
+			const { suitability, tags: matchedTags } =
+				instance_beverage.getCustomerSuitability(
+					item.name,
+					beverageTags
+				);
 
-			return {
-				...item,
-				matchedTags,
-				suitability,
-			};
+			return { ...item, matchedTags, suitability };
 		});
 
-		if (checkEmpty(selectedCustomerBeverageTag) && checkEmpty(selectedDlcs) && !hasNameFilter) {
+		if (
+			checkEmpty(selectedCustomerBeverageTag) &&
+			checkEmpty(selectedDlcs) &&
+			!hasNameFilter
+		) {
 			return dataWithRealSuitability;
 		}
 
 		const searchValueLowerCase = searchValue.toLowerCase();
 
-		return dataWithRealSuitability.filter(({dlc, name, pinyin, tags}) => {
-			const {pinyinFirstLetters, pinyinWithoutTone} = processPinyin(pinyin);
+		return dataWithRealSuitability.filter(({ dlc, name, pinyin, tags }) => {
+			const { pinyinFirstLetters, pinyinWithoutTone } =
+				processPinyin(pinyin);
 
 			const isNameMatched = hasNameFilter
 				? name.toLowerCase().includes(searchValueLowerCase) ||
 					pinyinWithoutTone.join('').includes(searchValueLowerCase) ||
 					pinyinFirstLetters.includes(searchValueLowerCase)
 				: true;
-			const isDlcMatched = checkEmpty(selectedDlcs) || selectedDlcs.has(dlc.toString());
+			const isDlcMatched =
+				checkEmpty(selectedDlcs) || selectedDlcs.has(dlc.toString());
 			const isTagsMatched =
 				checkEmpty(selectedCustomerBeverageTag) ||
 				checkArraySubsetOf(toArray(selectedCustomerBeverageTag), tags);
@@ -135,21 +168,24 @@ export default function BeverageTabContent() {
 	]);
 
 	const sortedData = useMemo(() => {
-		const {column, direction} = tableSortDescriptor;
+		const { column, direction } = tableSortDescriptor;
 		const isAscending = direction === 'ascending';
 
 		switch (column) {
 			case 'beverage':
-				return copyArray(filteredData).sort(({name: a}, {name: b}) =>
-					isAscending ? pinyinSort(a, b) : pinyinSort(b, a)
+				return copyArray(filteredData).sort(
+					({ name: a }, { name: b }) =>
+						isAscending ? pinyinSort(a, b) : pinyinSort(b, a)
 				);
 			case 'price':
-				return copyArray(filteredData).sort(({price: a}, {price: b}) =>
-					isAscending ? numberSort(a, b) : numberSort(b, a)
+				return copyArray(filteredData).sort(
+					({ price: a }, { price: b }) =>
+						isAscending ? numberSort(a, b) : numberSort(b, a)
 				);
 			case 'suitability':
-				return copyArray(filteredData).sort(({suitability: a}, {suitability: b}) =>
-					isAscending ? numberSort(a, b) : numberSort(b, a)
+				return copyArray(filteredData).sort(
+					({ suitability: a }, { suitability: b }) =>
+						isAscending ? numberSort(a, b) : numberSort(b, a)
 				);
 			default:
 				return filteredData;
@@ -164,23 +200,31 @@ export default function BeverageTabContent() {
 	}, [sortedData, tableCurrentPage, tableRowsPerPageNumber]);
 
 	const tableHeaderColumns = useMemo(
-		() => tableColumns.filter(({key}) => tableVisibleColumns.has(key)),
+		() => tableColumns.filter(({ key }) => tableVisibleColumns.has(key)),
 		[tableVisibleColumns]
 	);
 
-	const tableTotalPages = Math.ceil(filteredData.length / tableRowsPerPageNumber);
+	const tableTotalPages = Math.ceil(
+		filteredData.length / tableRowsPerPageNumber
+	);
 
 	const tableSelectedKeys = toSet([currentBeverageName ?? '']);
 
 	const renderTableCell = useCallback(
 		(data: TBeverageWithSuitability, columnKey: TTableColumnKey) => {
-			const {matchedTags, name, price, suitability, tags: beverageTags} = data;
+			const {
+				matchedTags,
+				name,
+				price,
+				suitability,
+				tags: beverageTags,
+			} = data;
 
 			if (currentCustomerName === null) {
 				return null;
 			}
 
-			const {beverage: beverageTagStyle} = CUSTOMER_NORMAL_TAG_STYLE;
+			const { beverage: beverageTagStyle } = CUSTOMER_NORMAL_TAG_STYLE;
 
 			const tags = (
 				<TagGroup>
@@ -194,9 +238,7 @@ export default function BeverageTabContent() {
 								tag={tag}
 								tagStyle={tagStyle}
 								tagType={tagType}
-								className={cn({
-									'opacity-50': !isTagMatched,
-								})}
+								className={cn({ 'opacity-50': !isTagMatched })}
 							/>
 						);
 					})}
@@ -208,7 +250,12 @@ export default function BeverageTabContent() {
 					const label = `点击：在新窗口中查看酒水【${name}】的详情`;
 					return (
 						<div className="flex items-center gap-2">
-							<Tooltip showArrow content={label} placement="right" size="sm">
+							<Tooltip
+								showArrow
+								content={label}
+								placement="right"
+								size="sm"
+							>
 								<Sprite
 									target="beverage"
 									name={name}
@@ -221,10 +268,18 @@ export default function BeverageTabContent() {
 								/>
 							</Tooltip>
 							<div className="inline-flex flex-1 items-center whitespace-nowrap">
-								<span className="text-small font-medium">{name}</span>
+								<span className="text-small font-medium">
+									{name}
+								</span>
 								<span className="ml-0.5">
 									<Popover showArrow offset={10} size="sm">
-										<Tooltip showArrow content={tags} offset={5} placement="right" size="sm">
+										<Tooltip
+											showArrow
+											content={tags}
+											offset={5}
+											placement="right"
+											size="sm"
+										>
 											<span className="inline-flex">
 												<PopoverTrigger>
 													<FontAwesomeIconButton
@@ -259,14 +314,21 @@ export default function BeverageTabContent() {
 					const label = '点击：选择此项';
 					return (
 						<div className="flex justify-center">
-							<Tooltip showArrow content={label} placement="left" size="sm">
+							<Tooltip
+								showArrow
+								content={label}
+								placement="left"
+								size="sm"
+							>
 								<Button
 									isIconOnly
 									size="sm"
 									variant="light"
 									onPress={() => {
 										vibrate();
-										customerStore.onBeverageTableAction(name);
+										customerStore.onBeverageTableAction(
+											name
+										);
 									}}
 									aria-label={label}
 								>
@@ -294,11 +356,18 @@ export default function BeverageTabContent() {
 							isVirtualized={false}
 							placeholder="名称"
 							size="sm"
-							startContent={<FontAwesomeIcon icon={faMagnifyingGlass} className="pointer-events-none" />}
+							startContent={
+								<FontAwesomeIcon
+									icon={faMagnifyingGlass}
+									className="pointer-events-none"
+								/>
+							}
 							variant="flat"
 							onInputChange={(value) => {
 								vibrate(!value);
-								customerStore.onBeverageTableSearchValueChange(value);
+								customerStore.onBeverageTableSearchValueChange(
+									value
+								);
 							}}
 							aria-label="选择或输入酒水名称"
 							title="选择或输入酒水名称"
@@ -309,18 +378,17 @@ export default function BeverageTabContent() {
 							classNames={{
 								base: cn(
 									'data-[slot="input-wrapper"]:[&_div]:!bg-default/40 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:opacity-hover data-[slot="input-wrapper"]:[&_div]:transition-opacity data-[slot="input-wrapper"]:[&_div]:!duration-250 motion-reduce:data-[slot="input-wrapper"]:[&_div]:transition-none',
-									{
-										'backdrop-blur': isHighAppearance,
-									}
+									{ 'backdrop-blur': isHighAppearance }
 								),
 								listboxWrapper:
 									'[&_li]:transition-background data-[hover=true]:[&_li]:!bg-default/40 motion-reduce:[&_li]:transition-none',
 								popoverContent: cn({
-									'bg-content1/70 backdrop-blur-lg': isHighAppearance,
+									'bg-content1/70 backdrop-blur-lg':
+										isHighAppearance,
 								}),
 							}}
 						>
-							{({value}) => (
+							{({ value }) => (
 								<AutocompleteItem
 									key={value}
 									textValue={value}
@@ -329,7 +397,11 @@ export default function BeverageTabContent() {
 									}}
 								>
 									<span className="inline-flex items-center">
-										<Sprite target="beverage" name={value} size={1} />
+										<Sprite
+											target="beverage"
+											name={value}
+											size={1}
+										/>
 										<span className="ml-1">{value}</span>
 									</span>
 								</AutocompleteItem>
@@ -344,7 +416,9 @@ export default function BeverageTabContent() {
 							size="sm"
 							startContent={<FontAwesomeIcon icon={faTags} />}
 							variant="flat"
-							onSelectionChange={customerStore.onBeverageTableSelectedTagsChange}
+							onSelectionChange={
+								customerStore.onBeverageTableSelectedTagsChange
+							}
 							aria-label="选择顾客所点单的酒水标签"
 							title="选择顾客所点单的酒水标签"
 							popoverProps={{
@@ -356,31 +430,35 @@ export default function BeverageTabContent() {
 								listboxWrapper:
 									'[&_li]:transition-background focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40 motion-reduce:[&_li]:transition-none',
 								popoverContent: cn({
-									'bg-content1/70 backdrop-blur-lg': isHighAppearance,
+									'bg-content1/70 backdrop-blur-lg':
+										isHighAppearance,
 								}),
 								trigger: cn(
 									'bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover motion-reduce:transition-none',
-									{
-										'backdrop-blur': isHighAppearance,
-									}
+									{ 'backdrop-blur': isHighAppearance }
 								),
 							}}
 						>
-							{({value}) => <SelectItem key={value}>{value}</SelectItem>}
+							{({ value }) => (
+								<SelectItem key={value}>{value}</SelectItem>
+							)}
 						</Select>
 					</div>
 					<div className="flex w-full gap-3 md:w-auto">
 						<Dropdown showArrow>
 							<DropdownTrigger>
 								<Button
-									endContent={<FontAwesomeIcon icon={faChevronDown} />}
+									endContent={
+										<FontAwesomeIcon icon={faChevronDown} />
+									}
 									size="sm"
 									variant="light"
 									className={cn(
 										'bg-default/40 data-[hover=true]:bg-default/40 data-[pressed=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 										{
 											'backdrop-blur': isHighAppearance,
-											'ring-2 ring-default': !checkEmpty(selectedDlcs),
+											'ring-2 ring-default':
+												!checkEmpty(selectedDlcs),
 										}
 									)}
 								>
@@ -393,14 +471,19 @@ export default function BeverageTabContent() {
 								selectedKeys={selectedDlcs}
 								selectionMode="multiple"
 								variant="flat"
-								onSelectionChange={customerStore.onBeverageTableSelectedDlcsChange}
+								onSelectionChange={
+									customerStore.onBeverageTableSelectedDlcsChange
+								}
 								aria-label="选择特定DLC中的酒水"
 								itemClasses={{
 									base: 'transition-background motion-reduce:transition-none',
 								}}
 							>
-								{({value}) => (
-									<DropdownItem key={value} textValue={value.toString()}>
+								{({ value }) => (
+									<DropdownItem
+										key={value}
+										textValue={value.toString()}
+									>
 										{value || LABEL_MAP.dlc0}
 									</DropdownItem>
 								)}
@@ -409,14 +492,14 @@ export default function BeverageTabContent() {
 						<Dropdown showArrow>
 							<DropdownTrigger>
 								<Button
-									endContent={<FontAwesomeIcon icon={faChevronDown} />}
+									endContent={
+										<FontAwesomeIcon icon={faChevronDown} />
+									}
 									size="sm"
 									variant="light"
 									className={cn(
 										'bg-default/40 data-[hover=true]:bg-default/40 data-[pressed=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
-										{
-											'backdrop-blur': isHighAppearance,
-										}
+										{ 'backdrop-blur': isHighAppearance }
 									)}
 								>
 									条目
@@ -425,18 +508,29 @@ export default function BeverageTabContent() {
 							<DropdownMenu
 								disallowEmptySelection
 								closeOnSelect={false}
-								disabledKeys={['action', 'beverage'] satisfies TTableColumnKey[]}
+								disabledKeys={
+									[
+										'action',
+										'beverage',
+									] satisfies TTableColumnKey[]
+								}
 								items={tableColumns}
 								selectedKeys={tableVisibleColumns}
 								selectionMode="multiple"
 								variant="flat"
-								onSelectionChange={globalStore.beverageTableColumns.set}
+								onSelectionChange={
+									globalStore.beverageTableColumns.set
+								}
 								aria-label="选择表格所显示的列"
 								itemClasses={{
 									base: 'transition-background motion-reduce:transition-none',
 								}}
 							>
-								{({key, label}) => <DropdownItem key={key}>{label}</DropdownItem>}
+								{({ key, label }) => (
+									<DropdownItem key={key}>
+										{label}
+									</DropdownItem>
+								)}
 							</DropdownMenu>
 						</Dropdown>
 					</div>
@@ -444,7 +538,9 @@ export default function BeverageTabContent() {
 				<div className="flex items-center justify-between text-small text-default-700">
 					<span>总计{filteredData.length}种酒水</span>
 					<label className="flex items-center gap-2">
-						<span className="cursor-auto whitespace-nowrap">表格行数</span>
+						<span className="cursor-auto whitespace-nowrap">
+							表格行数
+						</span>
 						<Select
 							disallowEmptySelection
 							disableAnimation={isReducedMotion}
@@ -453,7 +549,9 @@ export default function BeverageTabContent() {
 							selectedKeys={tableRowsPerPage}
 							size="sm"
 							variant="flat"
-							onSelectionChange={globalStore.onTableRowsPerPageChange}
+							onSelectionChange={
+								globalStore.onTableRowsPerPageChange
+							}
 							aria-label="选择表格每页最大行数"
 							title="选择表格每页最大行数"
 							popoverProps={{
@@ -465,19 +563,21 @@ export default function BeverageTabContent() {
 								listboxWrapper:
 									'[&_li]:transition-background focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40 motion-reduce:[&_li]:transition-none',
 								popoverContent: cn('min-w-20', {
-									'bg-content1/70 backdrop-blur-lg': isHighAppearance,
+									'bg-content1/70 backdrop-blur-lg':
+										isHighAppearance,
 								}),
 								trigger: cn(
 									'h-6 min-h-6 bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover motion-reduce:transition-none',
-									{
-										'backdrop-blur': isHighAppearance,
-									}
+									{ 'backdrop-blur': isHighAppearance }
 								),
 								value: '!text-default-700',
 							}}
 						>
-							{({value}) => (
-								<SelectItem key={value} textValue={value.toString()}>
+							{({ value }) => (
+								<SelectItem
+									key={value}
+									textValue={value.toString()}
+								>
 									{value}
 								</SelectItem>
 							)}
@@ -528,7 +628,13 @@ export default function BeverageTabContent() {
 				)}
 			</div>
 		),
-		[isHighAppearance, tableCurrentPage, tableCurrentPageItems, tableTotalPages, vibrate]
+		[
+			isHighAppearance,
+			tableCurrentPage,
+			tableCurrentPageItems,
+			tableTotalPages,
+			vibrate,
+		]
 	);
 
 	return (
@@ -544,7 +650,9 @@ export default function BeverageTabContent() {
 			topContentPlacement="outside"
 			onSortChange={(config) => {
 				vibrate();
-				customerStore.onBeverageTableSortChange(config as TTableSortDescriptor);
+				customerStore.onBeverageTableSortChange(
+					config as TTableSortDescriptor
+				);
 			}}
 			aria-label="酒水选择表格"
 			classNames={{
@@ -554,22 +662,37 @@ export default function BeverageTabContent() {
 					'backdrop-blur-sm': isHighAppearance,
 				}),
 				thead: '[&>tr[tabindex="-1"]]:invisible',
-				wrapper: cn('bg-content1/40 xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)] xl:p-2', {
-					'backdrop-blur': isHighAppearance,
-				}),
+				wrapper: cn(
+					'bg-content1/40 xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)] xl:p-2',
+					{ 'backdrop-blur': isHighAppearance }
+				),
 			}}
 		>
 			<TableHeader columns={tableHeaderColumns}>
-				{({key, label, sortable}) => (
-					<TableColumn key={key} align={key === 'action' ? 'center' : 'start'} allowsSorting={sortable}>
+				{({ key, label, sortable }) => (
+					<TableColumn
+						key={key}
+						align={key === 'action' ? 'center' : 'start'}
+						allowsSorting={sortable}
+					>
 						{label}
 					</TableColumn>
 				)}
 			</TableHeader>
-			<TableBody emptyContent={<Placeholder>数据为空</Placeholder>} items={tableCurrentPageItems}>
+			<TableBody
+				emptyContent={<Placeholder>数据为空</Placeholder>}
+				items={tableCurrentPageItems}
+			>
 				{(item) => (
 					<TableRow key={item.name}>
-						{(columnKey) => <TableCell>{renderTableCell(item, columnKey as TTableColumnKey)}</TableCell>}
+						{(columnKey) => (
+							<TableCell>
+								{renderTableCell(
+									item,
+									columnKey as TTableColumnKey
+								)}
+							</TableCell>
+						)}
 					</TableRow>
 				)}
 			</TableBody>

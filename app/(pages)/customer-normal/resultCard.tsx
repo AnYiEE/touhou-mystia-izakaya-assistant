@@ -1,21 +1,21 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import {useVibrate} from '@/hooks';
+import { useVibrate } from '@/hooks';
 
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faCircleXmark} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleXmark } from '@fortawesome/free-solid-svg-icons';
 
-import {Button, Card, Tooltip, cn} from '@/design/ui/components';
+import { Button, Card, Tooltip, cn } from '@/design/ui/components';
 
-import {Plus, UnknownItem} from '@/(pages)/customer-rare/resultCard';
+import { Plus, UnknownItem } from '@/(pages)/customer-rare/resultCard';
 import Placeholder from '@/components/placeholder';
 import Sprite from '@/components/sprite';
 
-import {CUSTOMER_RATING_MAP, type TIngredientName} from '@/data';
-import {customerNormalStore as customerStore, globalStore} from '@/stores';
-import {checkA11yConfirmKey, toArray} from '@/utilities';
+import { CUSTOMER_RATING_MAP, type TIngredientName } from '@/data';
+import { customerNormalStore as customerStore, globalStore } from '@/stores';
+import { checkA11yConfirmKey, toArray } from '@/utilities';
 
-export {Plus} from '@/(pages)/customer-rare/resultCard';
+export { Plus } from '@/(pages)/customer-rare/resultCard';
 
 function IngredientsList() {
 	const vibrate = useVibrate();
@@ -25,7 +25,13 @@ function IngredientsList() {
 	const instance_recipe = customerStore.instances.recipe.get();
 
 	const originalIngredients = useMemo(
-		() => (currentRecipeData ? instance_recipe.getPropsByName(currentRecipeData.name, 'ingredients') : []),
+		() =>
+			currentRecipeData
+				? instance_recipe.getPropsByName(
+						currentRecipeData.name,
+						'ingredients'
+					)
+				: [],
 		[currentRecipeData, instance_recipe]
 	);
 
@@ -55,7 +61,12 @@ function IngredientsList() {
 						(() => {
 							const label = `点击：删除额外食材【${ingredient}】`;
 							return (
-								<Tooltip key={index} showArrow content={label} offset={4}>
+								<Tooltip
+									key={index}
+									showArrow
+									content={label}
+									offset={4}
+								>
 									<span
 										onKeyDown={checkA11yConfirmKey(() => {
 											handleRemoveButtonPress(ingredient);
@@ -66,23 +77,41 @@ function IngredientsList() {
 									>
 										<span
 											onClick={() => {
-												handleRemoveButtonPress(ingredient);
+												handleRemoveButtonPress(
+													ingredient
+												);
 											}}
 											role="button"
 											tabIndex={1}
 											title={ingredient}
 											className="absolute flex h-10 w-10 cursor-pointer items-center justify-center rounded-small bg-foreground/50 text-background opacity-0 transition-opacity hover:opacity-100 motion-reduce:transition-none"
 										>
-											<FontAwesomeIcon icon={faCircleXmark} size="1x" />
+											<FontAwesomeIcon
+												icon={faCircleXmark}
+												size="1x"
+											/>
 										</span>
-										<Sprite target="ingredient" name={ingredient} size={2.5} />
+										<Sprite
+											target="ingredient"
+											name={ingredient}
+											size={2.5}
+										/>
 									</span>
 								</Tooltip>
 							);
 						})()
 					) : (
-						<Tooltip key={index} showArrow content={ingredient} offset={4}>
-							<Sprite target="ingredient" name={ingredient} size={2.5} />
+						<Tooltip
+							key={index}
+							showArrow
+							content={ingredient}
+							offset={4}
+						>
+							<Sprite
+								target="ingredient"
+								name={ingredient}
+								size={2.5}
+							/>
 						</Tooltip>
 					)
 				) : (
@@ -106,9 +135,15 @@ export default function ResultCard() {
 
 	const instance_recipe = customerStore.instances.recipe.get();
 
-	const saveButtonTooltipTimer = useRef<NodeJS.Timeout | undefined>(undefined);
-	const [isShowSaveButtonTooltip, setIsShowSaveButtonTooltip] = useState(false);
-	const isSaveButtonDisabled = currentCustomerName === null || currentRecipeData === null || currentRating === null;
+	const saveButtonTooltipTimer = useRef<NodeJS.Timeout | undefined>(
+		undefined
+	);
+	const [isShowSaveButtonTooltip, setIsShowSaveButtonTooltip] =
+		useState(false);
+	const isSaveButtonDisabled =
+		currentCustomerName === null ||
+		currentRecipeData === null ||
+		currentRating === null;
 
 	const hideTooltip = useCallback(() => {
 		setIsShowSaveButtonTooltip(false);
@@ -139,10 +174,17 @@ export default function ResultCard() {
 	}, [hideTooltip, isSaveButtonDisabled, isShowSaveButtonTooltip]);
 
 	if (currentBeverageName === null && currentRecipeData === null) {
-		if (currentCustomerName !== null && currentSavedMeals[currentCustomerName]?.length) {
+		if (
+			currentCustomerName !== null &&
+			currentSavedMeals[currentCustomerName]?.length
+		) {
 			return null;
 		}
-		return <Placeholder className="pb-6 pt-12 md:py-8 xl:pb-2 xl:pt-0">选择点单料理以继续</Placeholder>;
+		return (
+			<Placeholder className="pb-6 pt-12 md:py-8 xl:pb-2 xl:pt-0">
+				选择点单料理以继续
+			</Placeholder>
+		);
 	}
 
 	return (
@@ -150,9 +192,7 @@ export default function ResultCard() {
 			fullWidth
 			shadow="sm"
 			classNames={{
-				base: cn({
-					'bg-content1/40 backdrop-blur': isHighAppearance,
-				}),
+				base: cn({ 'bg-content1/40 backdrop-blur': isHighAppearance }),
 			}}
 		>
 			<div className="flex flex-col items-center gap-4 p-4 md:flex-row">
@@ -162,11 +202,22 @@ export default function ResultCard() {
 							<>
 								<Sprite
 									target="cooker"
-									name={instance_recipe.getPropsByName(currentRecipeData.name, 'cooker')}
+									name={instance_recipe.getPropsByName(
+										currentRecipeData.name,
+										'cooker'
+									)}
 									size={2}
 								/>
-								<Tooltip showArrow content={currentRecipeData.name} offset={4}>
-									<Sprite target="recipe" name={currentRecipeData.name} size={2.5} />
+								<Tooltip
+									showArrow
+									content={currentRecipeData.name}
+									offset={4}
+								>
+									<Sprite
+										target="recipe"
+										name={currentRecipeData.name}
+										size={2.5}
+									/>
 								</Tooltip>
 							</>
 						) : (
@@ -177,8 +228,16 @@ export default function ResultCard() {
 						)}
 						<Plus />
 						{currentBeverageName ? (
-							<Tooltip showArrow content={currentBeverageName} offset={4}>
-								<Sprite target="beverage" name={currentBeverageName} size={2.5} />
+							<Tooltip
+								showArrow
+								content={currentBeverageName}
+								offset={4}
+							>
+								<Sprite
+									target="beverage"
+									name={currentBeverageName}
+									size={2.5}
+								/>
 							</Tooltip>
 						) : (
 							<UnknownItem title="可选择酒水" />
@@ -187,7 +246,11 @@ export default function ResultCard() {
 					<Plus />
 					<IngredientsList />
 				</div>
-				<Tooltip showArrow content="请选择点单料理以保存" isOpen={isShowSaveButtonTooltip}>
+				<Tooltip
+					showArrow
+					content="请选择点单料理以保存"
+					isOpen={isShowSaveButtonTooltip}
+				>
 					<Button
 						color="primary"
 						disableAnimation={isSaveButtonDisabled}
@@ -195,9 +258,10 @@ export default function ResultCard() {
 						variant="flat"
 						onPress={handleSaveButtonPress}
 						aria-label={`保存套餐，当前${currentRating === null ? '未评级' : `评级为${CUSTOMER_RATING_MAP[currentRating]}`}`}
-						className={cn('!transition motion-reduce:!transition-none md:w-auto', {
-							'opacity-disabled': isSaveButtonDisabled,
-						})}
+						className={cn(
+							'!transition motion-reduce:!transition-none md:w-auto',
+							{ 'opacity-disabled': isSaveButtonDisabled }
+						)}
 					>
 						保存套餐
 					</Button>

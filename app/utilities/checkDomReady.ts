@@ -1,4 +1,4 @@
-import {toSet} from '@/utilities';
+import { toSet } from '@/utilities';
 
 const READY_STATE: DocumentReadyState[] = ['complete', 'interactive'];
 
@@ -21,7 +21,10 @@ export function checkDomReady() {
 
 		const handleReadystatechange = () => {
 			if (checkReadyState()) {
-				document.removeEventListener(EVENT_TYPE, handleReadystatechange);
+				document.removeEventListener(
+					EVENT_TYPE,
+					handleReadystatechange
+				);
 				resolve();
 			}
 		};

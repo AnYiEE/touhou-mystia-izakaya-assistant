@@ -1,4 +1,4 @@
-import {Food} from './base';
+import { Food } from './base';
 import {
 	INGREDIENT_LIST,
 	type TIngredientName,
@@ -8,15 +8,20 @@ import {
 	type TLevel,
 } from '@/data';
 
-import {checkArrayEqualOf, toSet} from '@/utilities';
-import type {IPopularTrend} from '@/types';
+import { checkArrayEqualOf, toSet } from '@/utilities';
+import type { IPopularTrend } from '@/types';
 
 export class Ingredient extends Food<TIngredients> {
 	private static _instance: Ingredient | undefined;
 
 	/** @description Flag to check if the types are consistent with the original data. */
 	private static _isTypesChecked: boolean;
-	private static _sortedTypes = ['海鲜', '肉类', '蔬菜', '其他'] as const satisfies TIngredientType[];
+	private static _sortedTypes = [
+		'海鲜',
+		'肉类',
+		'蔬菜',
+		'其他',
+	] as const satisfies TIngredientType[];
 
 	public static getInstance() {
 		if (Ingredient._instance !== undefined) {
@@ -31,7 +36,11 @@ export class Ingredient extends Food<TIngredients> {
 	}
 
 	public blockedLevels: Set<TLevel> = toSet([10]);
-	public blockedIngredients: Set<TIngredientName> = toSet(['铃仙', '噗噗哟果', '强效辣椒素']);
+	public blockedIngredients: Set<TIngredientName> = toSet([
+		'铃仙',
+		'噗噗哟果',
+		'强效辣椒素',
+	]);
 	public blockedTags: Set<TIngredientTag> = toSet(['特产', '天罚']);
 
 	/**
@@ -42,7 +51,10 @@ export class Ingredient extends Food<TIngredients> {
 			return Ingredient._sortedTypes;
 		}
 
-		const isTypesEqual = checkArrayEqualOf(Ingredient._sortedTypes, this.getValuesByProp('type'));
+		const isTypesEqual = checkArrayEqualOf(
+			Ingredient._sortedTypes,
+			this.getValuesByProp('type')
+		);
 		if (!isTypesEqual) {
 			throw new Error(
 				'[utils/food/Ingredient]: the given types is inconsistent with the types in the original data'
@@ -62,6 +74,10 @@ export class Ingredient extends Food<TIngredients> {
 		popularTrend: IPopularTrend,
 		isFamousShop: boolean
 	) {
-		return super.calculateTagsWithTrend(ingredientTags, popularTrend, isFamousShop) as TIngredientTag[];
+		return super.calculateTagsWithTrend(
+			ingredientTags,
+			popularTrend,
+			isFamousShop
+		) as TIngredientTag[];
 	}
 }

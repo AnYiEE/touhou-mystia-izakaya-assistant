@@ -1,7 +1,7 @@
-import {BEVERAGE_TAG_STYLE} from '@/data/beverages';
-import {RECIPE_TAG_STYLE} from '@/data/recipes';
-import type {ITagStyle} from '@/data/types';
-import type {ISpriteConfig} from '@/utils/sprite/types';
+import { BEVERAGE_TAG_STYLE } from '@/data/beverages';
+import { RECIPE_TAG_STYLE } from '@/data/recipes';
+import type { ITagStyle } from '@/data/types';
+import type { ISpriteConfig } from '@/utils/sprite/types';
 
 export const CUSTOMER_NORMAL_SPRITE_CONFIG = {
 	col: 10,

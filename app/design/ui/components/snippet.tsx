@@ -1,15 +1,20 @@
 'use client';
 
-import {memo} from 'react';
+import { memo } from 'react';
 
-import {useReducedMotion} from '@/design/ui/hooks';
+import { useReducedMotion } from '@/design/ui/hooks';
 
-import {type InternalForwardRefRenderFunction} from '@heroui/system';
-import {Snippet as HeroUISnippet, type SnippetProps} from '@heroui/snippet';
+import { type InternalForwardRefRenderFunction } from '@heroui/system';
+import { Snippet as HeroUISnippet, type SnippetProps } from '@heroui/snippet';
 
 interface IProps extends SnippetProps {}
 
-export default memo<IProps>(function Snippet({copyButtonProps, disableAnimation, tooltipProps, ...props}) {
+export default memo<IProps>(function Snippet({
+	copyButtonProps,
+	disableAnimation,
+	tooltipProps,
+	...props
+}) {
 	const isReducedMotion = useReducedMotion();
 
 	return (
@@ -28,4 +33,4 @@ export default memo<IProps>(function Snippet({copyButtonProps, disableAnimation,
 	);
 }) as InternalForwardRefRenderFunction<'div', IProps>;
 
-export type {IProps as ISnippetProps};
+export type { IProps as ISnippetProps };

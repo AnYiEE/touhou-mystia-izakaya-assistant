@@ -1,10 +1,13 @@
-import {Fragment, type PropsWithChildren, memo} from 'react';
+import { Fragment, type PropsWithChildren, memo } from 'react';
 
 interface IProps {
 	showSymbol?: boolean;
 }
 
-export default memo<PropsWithChildren<IProps>>(function Price({children, showSymbol = true}) {
+export default memo<PropsWithChildren<IProps>>(function Price({
+	children,
+	showSymbol = true,
+}) {
 	const Component = showSymbol ? 'span' : Fragment;
 
 	return (

@@ -1,8 +1,8 @@
-import {useMemo} from 'react';
+import { useMemo } from 'react';
 
-import {useSkipProcessItemData} from '@/hooks';
+import { useSkipProcessItemData } from '@/hooks';
 
-import type {TItemData, TItemInstance} from '@/utils/types';
+import type { TItemData, TItemInstance } from '@/utils/types';
 
 export function useFilteredData<
 	T extends TItemInstance | TItemData<TItemInstance>,

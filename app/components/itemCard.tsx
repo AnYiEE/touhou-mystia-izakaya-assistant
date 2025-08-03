@@ -1,10 +1,10 @@
 'use client';
 
-import {memo} from 'react';
+import { memo } from 'react';
 
-import {Card, type ICardProps, cn} from '@/design/ui/components';
+import { Card, type ICardProps, cn } from '@/design/ui/components';
 
-import {globalStore as store} from '@/stores';
+import { globalStore as store } from '@/stores';
 
 interface IProps extends Omit<ICardProps, 'className' | 'classNames'> {
 	name: ReactNodeWithoutBoolean;
@@ -12,7 +12,12 @@ interface IProps extends Omit<ICardProps, 'className' | 'classNames'> {
 	image: ReactNodeWithoutBoolean;
 }
 
-export default memo<IProps>(function ItemCard({description, image, name, ...props}) {
+export default memo<IProps>(function ItemCard({
+	description,
+	image,
+	name,
+	...props
+}) {
 	const isHighAppearance = store.persistence.highAppearance.use();
 
 	return (
@@ -28,10 +33,16 @@ export default memo<IProps>(function ItemCard({description, image, name, ...prop
 			{...props}
 		>
 			<div className="flex items-center gap-1">
-				<div className="m-1 flex rounded-xl shadow-[inset_0_0_2px] shadow-foreground-400">{image}</div>
+				<div className="m-1 flex rounded-xl shadow-[inset_0_0_2px] shadow-foreground-400">
+					{image}
+				</div>
 				<div className="mr-2 space-y-1 text-left">
 					<p className="text-small font-medium">{name}</p>
-					{description !== undefined && <p className="text-tiny text-default-700">{description}</p>}
+					{description !== undefined && (
+						<p className="text-tiny text-default-700">
+							{description}
+						</p>
+					)}
 				</div>
 			</div>
 		</Card>

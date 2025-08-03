@@ -1,6 +1,6 @@
 'use client';
 
-import {useCallback, useMemo} from 'react';
+import { useCallback, useMemo } from 'react';
 
 import {
 	useFilteredData,
@@ -14,12 +14,18 @@ import {
 import Content from './content';
 import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
-import SideFilterIconButton, {type TSelectConfig} from '@/components/sideFilterIconButton';
+import SideFilterIconButton, {
+	type TSelectConfig,
+} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
-import {ingredientsStore as store} from '@/stores';
-import {checkArrayContainsOf, checkArraySubsetOf, checkEmpty} from '@/utilities';
+import { ingredientsStore as store } from '@/stores';
+import {
+	checkArrayContainsOf,
+	checkArraySubsetOf,
+	checkEmpty,
+} from '@/utilities';
 
 export default function Ingredients() {
 	const currentPopularTrend = store.shared.popularTrend.use();
@@ -50,33 +56,63 @@ export default function Ingredients() {
 		() =>
 			searchResult.map((data) => ({
 				...data,
-				tags: instance.calculateTagsWithTrend(data.tags, currentPopularTrend, isFamousShop),
+				tags: instance.calculateTagsWithTrend(
+					data.tags,
+					currentPopularTrend,
+					isFamousShop
+				),
 			})) as unknown as typeof searchResult,
 		[currentPopularTrend, instance, isFamousShop, searchResult]
 	);
 
 	const filterData = useCallback(
 		() =>
-			dataWithTrend.filter(({dlc, level, tags, type}) => {
-				const isDlcMatched = checkEmpty(filterDlcs) || filterDlcs.includes(dlc.toString());
-				const isLevelMatched = checkEmpty(filterLevels) || filterLevels.includes(level.toString());
-				const isTagMatched = checkEmpty(filterTags) || checkArraySubsetOf(filterTags, tags);
-				const isNoTagMatched = checkEmpty(filterNoTags) || !checkArrayContainsOf(filterNoTags, tags);
-				const isTypeMatched = checkEmpty(filterTypes) || filterTypes.includes(type);
-				const isNoTypeMatched = checkEmpty(filterNoTypes) || !filterNoTypes.includes(type);
+			dataWithTrend.filter(({ dlc, level, tags, type }) => {
+				const isDlcMatched =
+					checkEmpty(filterDlcs) ||
+					filterDlcs.includes(dlc.toString());
+				const isLevelMatched =
+					checkEmpty(filterLevels) ||
+					filterLevels.includes(level.toString());
+				const isTagMatched =
+					checkEmpty(filterTags) ||
+					checkArraySubsetOf(filterTags, tags);
+				const isNoTagMatched =
+					checkEmpty(filterNoTags) ||
+					!checkArrayContainsOf(filterNoTags, tags);
+				const isTypeMatched =
+					checkEmpty(filterTypes) || filterTypes.includes(type);
+				const isNoTypeMatched =
+					checkEmpty(filterNoTypes) || !filterNoTypes.includes(type);
 
 				return (
-					isDlcMatched && isLevelMatched && isTagMatched && isNoTagMatched && isTypeMatched && isNoTypeMatched
+					isDlcMatched &&
+					isLevelMatched &&
+					isTagMatched &&
+					isNoTagMatched &&
+					isTypeMatched &&
+					isNoTypeMatched
 				);
 			}),
-		[dataWithTrend, filterDlcs, filterLevels, filterNoTags, filterNoTypes, filterTags, filterTypes]
+		[
+			dataWithTrend,
+			filterDlcs,
+			filterLevels,
+			filterNoTags,
+			filterNoTypes,
+			filterTags,
+			filterTypes,
+		]
 	);
 
 	const filteredData = useFilteredData(dataWithTrend, filterData);
 
 	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
 
-	const pinyinSortConfig = usePinyinSortConfig(pinyinSortState, store.persistence.pinyinSortState.set);
+	const pinyinSortConfig = usePinyinSortConfig(
+		pinyinSortState,
+		store.persistence.pinyinSortState.set
+	);
 
 	const searchConfig = useSearchConfig({
 		label: '选择或输入食材名称',
@@ -145,7 +181,9 @@ export default function Ingredients() {
 			sideButton={
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />
-					<SidePinyinSortIconButton pinyinSortConfig={pinyinSortConfig} />
+					<SidePinyinSortIconButton
+						pinyinSortConfig={pinyinSortConfig}
+					/>
 					<SideFilterIconButton selectConfig={selectConfig} />
 				</SideButtonGroup>
 			}

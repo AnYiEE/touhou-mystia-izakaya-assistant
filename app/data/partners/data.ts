@@ -1,6 +1,6 @@
 /* eslint-disable sort-keys */
-import type {IPartner} from './types';
-import {DARK_MATTER_META_MAP, DYNAMIC_TAG_MAP} from '@/data/constant';
+import type { IPartner } from './types';
+import { DARK_MATTER_META_MAP, DYNAMIC_TAG_MAP } from '@/data/constant';
 
 export const PARTNER_LIST = [
 	{
@@ -11,14 +11,9 @@ export const PARTNER_LIST = [
 		dlc: 0,
 		belong: null,
 		effect: null,
-		from: {
-			self: true,
-		},
+		from: { self: true },
 		pay: 5,
-		speed: {
-			moving: '中等',
-			working: '中等',
-		},
+		speed: { moving: '中等', working: '中等' },
 	},
 	{
 		id: 18,
@@ -28,14 +23,9 @@ export const PARTNER_LIST = [
 		dlc: 0,
 		belong: ['稗田阿求', '上白泽慧音', '茨木华扇'],
 		effect: null,
-		from: {
-			task: '人间之里',
-		},
+		from: { task: '人间之里' },
 		pay: 5,
-		speed: {
-			moving: '慢',
-			working: '快',
-		},
+		speed: { moving: '慢', working: '快' },
 	},
 	{
 		id: 19,
@@ -47,10 +37,7 @@ export const PARTNER_LIST = [
 		effect: '可以免疫【苏我屠自古】惩罚符卡的击晕效果。',
 		from: '解锁地区【红魔馆】后，和【博丽灵梦】对话。',
 		pay: 5,
-		speed: {
-			moving: '快',
-			working: '慢',
-		},
+		speed: { moving: '快', working: '慢' },
 	},
 	{
 		id: 20,
@@ -62,10 +49,7 @@ export const PARTNER_LIST = [
 		effect: null,
 		from: '解锁地区【红魔馆】后，完成由【蕾米莉亚】于3月5日发起的试炼。',
 		pay: 10,
-		speed: {
-			moving: '瞬间移动',
-			working: '快',
-		},
+		speed: { moving: '瞬间移动', working: '快' },
 	},
 	{
 		id: 21,
@@ -75,14 +59,9 @@ export const PARTNER_LIST = [
 		dlc: 0,
 		belong: ['藤原妹红', '蓬莱山辉夜', '因幡帝'],
 		effect: '顾客小费增加20%。作为伙伴上场时，可使稀客【铃仙】惩罚符卡的持续时间降至10秒。',
-		from: {
-			task: '迷途竹林',
-		},
+		from: { task: '迷途竹林' },
 		pay: 10,
-		speed: {
-			moving: '快',
-			working: '中等',
-		},
+		speed: { moving: '快', working: '中等' },
 	},
 	{
 		id: 39,
@@ -94,10 +73,7 @@ export const PARTNER_LIST = [
 		effect: '料理台的料理瞬间完成。',
 		from: '完成主线剧情后，和地区【白玉楼】的【魂魄妖梦】对话，选择“重修「第二次试炼」”。',
 		pay: 10,
-		speed: {
-			moving: '快',
-			working: '快',
-		},
+		speed: { moving: '快', working: '快' },
 	},
 	{
 		id: 1006,
@@ -107,14 +83,9 @@ export const PARTNER_LIST = [
 		dlc: 1,
 		belong: ['河城荷取', '犬走椛', '东风谷早苗'],
 		effect: `瞬间完成料理，但有15%的概率制作出${DARK_MATTER_META_MAP.name}。可以将【苏我屠自古】惩罚符卡的击晕效果转移至其他伙伴。`,
-		from: {
-			place: '妖怪之山',
-		},
+		from: { place: '妖怪之山' },
 		pay: 0,
-		speed: {
-			moving: '慢',
-			working: '中等',
-		},
+		speed: { moving: '慢', working: '中等' },
 	},
 	{
 		id: 1007,
@@ -124,14 +95,9 @@ export const PARTNER_LIST = [
 		dlc: 1,
 		belong: ['雾雨魔理沙', '爱丽丝', '矢田寺成美'],
 		effect: '使用飞刀投掷上菜（包括酒水）。',
-		from: {
-			place: '魔法森林',
-		},
+		from: { place: '魔法森林' },
 		pay: 5,
-		speed: {
-			moving: '中等',
-			working: '快',
-		},
+		speed: { moving: '中等', working: '快' },
 	},
 	{
 		id: 2007,
@@ -141,14 +107,9 @@ export const PARTNER_LIST = [
 		dlc: 2,
 		belong: ['黑谷山女', '水桥帕露西', '星熊勇仪'],
 		effect: '【钓瓶落之怪】驱赶普通顾客时不会受到不良影响，但会收不到钱。',
-		from: {
-			place: '旧地狱',
-		},
+		from: { place: '旧地狱' },
 		pay: 5,
-		speed: {
-			moving: '中等',
-			working: '中等',
-		},
+		speed: { moving: '中等', working: '中等' },
 	},
 	{
 		id: 2008,
@@ -158,14 +119,9 @@ export const PARTNER_LIST = [
 		dlc: 2,
 		belong: ['古明地觉', '火焰猫燐', '灵乌路空'],
 		effect: '【八重雾中渡】工作时会摸鱼，但顾客试图落座时会被立即拉到桌子旁。到【星熊勇仪】处泡温泉后，可使当晚工作时不会再摸鱼。',
-		from: {
-			place: '地灵殿',
-		},
+		from: { place: '地灵殿' },
 		pay: 0,
-		speed: {
-			moving: '慢',
-			working: '慢',
-		},
+		speed: { moving: '慢', working: '慢' },
 	},
 	{
 		id: 3006,
@@ -175,14 +131,9 @@ export const PARTNER_LIST = [
 		dlc: 3,
 		belong: ['多多良小伞', '村纱水蜜', '封兽鵺'],
 		effect: '【双人成行】召唤云山和自己一起工作。',
-		from: {
-			place: '命莲寺',
-		},
+		from: { place: '命莲寺' },
 		pay: 5,
-		speed: {
-			moving: '中等',
-			working: '快',
-		},
+		speed: { moving: '中等', working: '快' },
 	},
 	{
 		id: 3008,
@@ -192,14 +143,9 @@ export const PARTNER_LIST = [
 		dlc: 3,
 		belong: ['物部布都', '霍青娥', '苏我屠自古'],
 		effect: `吃掉${DARK_MATTER_META_MAP.name}。每吃一份，全速度增加20%，直到200%。`,
-		from: {
-			place: '神灵庙',
-		},
+		from: { place: '神灵庙' },
 		pay: 0,
-		speed: {
-			moving: '慢',
-			working: '慢',
-		},
+		speed: { moving: '慢', working: '慢' },
 	},
 	{
 		id: 4009,
@@ -209,14 +155,9 @@ export const PARTNER_LIST = [
 		dlc: 4,
 		belong: ['射命丸文', '梅蒂欣', '风见幽香'],
 		effect: `【鳞粉乃梦泉】每隔30秒，拉尔瓦会在场上播撒一次持续15秒的催眠粉。期间稀有顾客在用餐时会忘掉自己的点单，普通顾客会爱上“${DYNAMIC_TAG_MAP.expensive}”标签并在用餐时返还当次消耗掉的料理预算。`,
-		from: {
-			place: '太阳花田',
-		},
+		from: { place: '太阳花田' },
 		pay: 5,
-		speed: {
-			moving: '快',
-			working: '中等',
-		},
+		speed: { moving: '快', working: '中等' },
 	},
 	{
 		id: 4010,
@@ -226,30 +167,21 @@ export const PARTNER_LIST = [
 		dlc: 4,
 		belong: ['鬼人正邪', '少名针妙丸', '今泉影狼'],
 		effect: '【分头行动】作为厨师时，赤蛮奇会分出两个头进行传菜和酒水工作；作为传菜或酒水时，会分出一个头进行另一项工作。移动速度随着头的数量减少而提升，工作速度随着头的数量减少而下降。同时，可受到【少名针妙丸】施加的“万宝槌之力”影响，使移动速度提高200%。',
-		from: {
-			place: '辉针城',
-		},
+		from: { place: '辉针城' },
 		pay: 7,
-		speed: {
-			moving: '中等',
-			working: '中等',
-		},
+		speed: { moving: '中等', working: '中等' },
 	},
 	{
 		id: 5006,
 		name: '哆来咪',
-		description: '支配着梦境世界的梦貘。平时栖息于梦境世界，为了维护秩序而监视着生物的梦。',
+		description:
+			'支配着梦境世界的梦貘。平时栖息于梦境世界，为了维护秩序而监视着生物的梦。',
 		dlc: 5,
 		belong: ['铃仙', '绵月丰姬', '绵月依姬'],
 		effect: '【捕梦之网】依照顾客评价生成梦境能量，哆来咪吸收这些能量以提升自身制作料理的速度和返还食材的概率。',
-		from: {
-			place: '月之都',
-		},
+		from: { place: '月之都' },
 		pay: 10,
-		speed: {
-			moving: '慢',
-			working: '慢',
-		},
+		speed: { moving: '慢', working: '慢' },
 	},
 	{
 		id: 5007,
@@ -259,13 +191,8 @@ export const PARTNER_LIST = [
 		dlc: 5,
 		belong: ['爱莲', '魅魔', '露易兹'],
 		effect: '【时盛运旺】处于“热火朝天”状态时，萨拉将阻止普通顾客来店，并每隔一段时间从整个幻想乡随机邀请稀有顾客来店。',
-		from: {
-			place: '魔界',
-		},
+		from: { place: '魔界' },
 		pay: 7,
-		speed: {
-			moving: '快',
-			working: '中等',
-		},
+		speed: { moving: '快', working: '中等' },
 	},
 ] as const satisfies IPartner[];

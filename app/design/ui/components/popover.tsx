@@ -1,17 +1,24 @@
 'use client';
 
-import {type ComponentProps, memo, useMemo} from 'react';
+import { type ComponentProps, memo, useMemo } from 'react';
 
-import {useMotionProps, useReducedMotion} from '@/design/ui/hooks';
+import { useMotionProps, useReducedMotion } from '@/design/ui/hooks';
 
-import {Popover as HeroUIPopover} from '@heroui/popover';
-import {type InternalForwardRefRenderFunction, extendVariants} from '@heroui/system';
+import { Popover as HeroUIPopover } from '@heroui/popover';
+import {
+	type InternalForwardRefRenderFunction,
+	extendVariants,
+} from '@heroui/system';
 
-import {cn, generateRatingVariants} from '@/design/ui/utils';
+import { cn, generateRatingVariants } from '@/design/ui/utils';
 
-import {globalStore as store} from '@/stores';
+import { globalStore as store } from '@/stores';
 
-export function getStyleBlur(color: IProps['color'], disableBlur = false, isHighAppearance = false) {
+export function getStyleBlur(
+	color: IProps['color'],
+	disableBlur = false,
+	isHighAppearance = false
+) {
 	if (!isHighAppearance) {
 		return '';
 	}
@@ -45,7 +52,10 @@ export function getStyleBlur(color: IProps['color'], disableBlur = false, isHigh
 	}
 }
 
-const CustomHeroUIPopover = extendVariants(HeroUIPopover, generateRatingVariants('content'));
+const CustomHeroUIPopover = extendVariants(
+	HeroUIPopover,
+	generateRatingVariants('content')
+);
 
 interface IProps extends ComponentProps<typeof CustomHeroUIPopover> {
 	disableBlur?: boolean;
@@ -81,7 +91,14 @@ export default memo<IProps>(function Popover({
 			// The same offset position as `Tooltip`.
 			offset={
 				typeof offset === 'number'
-					? offset + (isHighAppearance ? -2 : size === 'sm' && !showArrow ? -3 : showArrow ? 1 : -3)
+					? offset +
+						(isHighAppearance
+							? -2
+							: size === 'sm' && !showArrow
+								? -3
+								: showArrow
+									? 1
+									: -3)
 					: (offset as unknown as number)
 			}
 			shouldBlockScroll={Boolean(shouldBlockScroll)}
@@ -97,7 +114,11 @@ export default memo<IProps>(function Popover({
 	);
 }) as InternalForwardRefRenderFunction<'div', IProps>;
 
-export type {IProps as IPopoverProps};
+export type { IProps as IPopoverProps };
 
-export {PopoverContent, PopoverTrigger, usePopoverContext} from '@heroui/popover';
-export type {PopoverContentProps, PopoverTriggerProps} from '@heroui/popover';
+export {
+	PopoverContent,
+	PopoverTrigger,
+	usePopoverContext,
+} from '@heroui/popover';
+export type { PopoverContentProps, PopoverTriggerProps } from '@heroui/popover';

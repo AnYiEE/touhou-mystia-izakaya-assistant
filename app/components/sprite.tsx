@@ -1,23 +1,26 @@
 'use client';
 
-import {type CSSProperties, memo, useMemo, useState} from 'react';
+import { type CSSProperties, memo, useMemo, useState } from 'react';
 
-import {useMounted} from '@/hooks';
+import { useMounted } from '@/hooks';
 
-import {CLASSNAME_FOCUS_VISIBLE_OUTLINE, cn} from '@/design/ui/components';
+import { CLASSNAME_FOCUS_VISIBLE_OUTLINE, cn } from '@/design/ui/components';
 
-import {checkCompatibility} from '@/components/compatibleBrowser';
-import PressElement, {type IPressProp} from '@/components/pressElement';
+import { checkCompatibility } from '@/components/compatibleBrowser';
+import PressElement, { type IPressProp } from '@/components/pressElement';
 
-import {siteConfig} from '@/configs';
-import {type TItemName} from '@/data';
-import {remToPx} from '@/utilities';
-import {Sprite as SpriteClass} from '@/utils';
-import type {TSpriteTarget} from '@/utils/sprite/types';
+import { siteConfig } from '@/configs';
+import { type TItemName } from '@/data';
+import { remToPx } from '@/utilities';
+import { Sprite as SpriteClass } from '@/utils';
+import type { TSpriteTarget } from '@/utils/sprite/types';
 
-const {cdnUrl} = siteConfig;
+const { cdnUrl } = siteConfig;
 
-const getSpriteStyle = (target: TSpriteTarget, isSupportedWebp?: boolean): CSSProperties => {
+const getSpriteStyle = (
+	target: TSpriteTarget,
+	isSupportedWebp?: boolean
+): CSSProperties => {
 	const basePath = `${cdnUrl}/assets/sprites`;
 
 	return {
@@ -65,7 +68,7 @@ export default memo<IProps>(function Sprite({
 
 	const instance = SpriteClass.getInstance(target);
 
-	const {calculatedIndex, calculatedName} = useMemo(() => {
+	const { calculatedIndex, calculatedName } = useMemo(() => {
 		let _calculatedIndex = index;
 		let _calculatedName = name;
 
@@ -83,26 +86,27 @@ export default memo<IProps>(function Sprite({
 		};
 	}, [index, instance, name]);
 
-	const {calculatedHeight, calculatedSize, calculatedWidth} = useMemo(() => {
-		let _calculatedHeight = height ?? instance.spriteHeight;
-		let _calculateWidth = width ?? instance.spriteWidth;
-		let _calculateSize = size;
+	const { calculatedHeight, calculatedSize, calculatedWidth } =
+		useMemo(() => {
+			let _calculatedHeight = height ?? instance.spriteHeight;
+			let _calculateWidth = width ?? instance.spriteWidth;
+			let _calculateSize = size;
 
-		if (_calculatedHeight === _calculateWidth) {
-			_calculateSize ??= _calculatedHeight;
-		}
-		if (_calculateSize !== undefined) {
-			_calculatedHeight = _calculateSize;
-			_calculateWidth = _calculateSize;
-		}
+			if (_calculatedHeight === _calculateWidth) {
+				_calculateSize ??= _calculatedHeight;
+			}
+			if (_calculateSize !== undefined) {
+				_calculatedHeight = _calculateSize;
+				_calculateWidth = _calculateSize;
+			}
 
-		return {
-			calculatedHeight: _calculatedHeight,
-			calculatedWidth: _calculateWidth,
+			return {
+				calculatedHeight: _calculatedHeight,
+				calculatedWidth: _calculateWidth,
 
-			calculatedSize: remToPx(_calculateSize),
-		};
-	}, [height, instance.spriteHeight, instance.spriteWidth, size, width]);
+				calculatedSize: remToPx(_calculateSize),
+			};
+		}, [height, instance.spriteHeight, instance.spriteWidth, size, width]);
 
 	const calculatedStyle = useMemo(
 		() => ({
@@ -112,7 +116,15 @@ export default memo<IProps>(function Sprite({
 				displayWidth: calculatedSize ?? calculatedWidth,
 			}),
 		}),
-		[calculatedHeight, calculatedIndex, calculatedSize, calculatedWidth, instance, isSupportedWebp, target]
+		[
+			calculatedHeight,
+			calculatedIndex,
+			calculatedSize,
+			calculatedWidth,
+			instance,
+			isSupportedWebp,
+			target,
+		]
 	);
 
 	const finalTitle = title ?? calculatedName;
@@ -135,10 +147,10 @@ export default memo<IProps>(function Sprite({
 				},
 				className
 			)}
-			style={{...calculatedStyle, ...style}}
+			style={{ ...calculatedStyle, ...style }}
 			{...props}
 		/>
 	);
 });
 
-export type {IProps as ISpriteProps};
+export type { IProps as ISpriteProps };

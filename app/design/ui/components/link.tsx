@@ -1,13 +1,13 @@
 'use client';
 
-import {memo} from 'react';
+import { memo } from 'react';
 
-import {useReducedMotion} from '@/design/ui/hooks';
+import { useReducedMotion } from '@/design/ui/hooks';
 
-import {Link as HeroUILink, type LinkProps} from '@heroui/link';
-import {type InternalForwardRefRenderFunction} from '@heroui/system';
+import { Link as HeroUILink, type LinkProps } from '@heroui/link';
+import { type InternalForwardRefRenderFunction } from '@heroui/system';
 
-import {cn} from '@/design/ui/utils';
+import { cn } from '@/design/ui/utils';
 
 interface IProps extends Omit<LinkProps, 'referrerPolicy'> {
 	animationUnderline?: boolean;
@@ -47,8 +47,10 @@ export default memo<IProps>(function Link({
 					'transition hover:brightness-95',
 				],
 				{
-					'group relative transition motion-reduce:transition-none': animationUnderline,
-					'text-primary-600': color === 'primary' || color === undefined,
+					'group relative transition motion-reduce:transition-none':
+						animationUnderline,
+					'text-primary-600':
+						color === 'primary' || color === undefined,
 				},
 				className,
 				classNames?.base
@@ -60,10 +62,7 @@ export default memo<IProps>(function Link({
 				<span
 					className={cn(
 						'absolute bottom-0.5 left-1/2 h-px w-0 -translate-x-1/2 rounded-small bg-current transition-width group-hover:w-full motion-reduce:transition-none',
-						{
-							'h-0.5': !showAnchorIcon,
-							'w-full': forcedUnderline,
-						},
+						{ 'h-0.5': !showAnchorIcon, 'w-full': forcedUnderline },
 						classNames?.underline
 					)}
 				/>
@@ -72,4 +71,4 @@ export default memo<IProps>(function Link({
 	);
 }) as InternalForwardRefRenderFunction<'a', IProps>;
 
-export type {IProps as ILinkProps};
+export type { IProps as ILinkProps };

@@ -1,9 +1,7 @@
-import {type Metadata} from 'next';
+import { type Metadata } from 'next';
 
-import {getPageTitle} from '@/utilities';
+import { getPageTitle } from '@/utilities';
 
-export const metadata: Metadata = {
-	title: getPageTitle('/about'),
-};
+export const metadata: Metadata = { title: getPageTitle('/about') };
 
-export {default} from '@/(pages)/layouts';
+export { default } from '@/(pages)/layouts';

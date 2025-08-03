@@ -1,17 +1,13 @@
 import Database from 'better-sqlite3';
-import {Kysely, SqliteDialect} from 'kysely';
+import { Kysely, SqliteDialect } from 'kysely';
 
-import {TABLE_NAME_MAP} from './constant';
-import type {TDatabase} from './types';
-import {getTableColumns} from './utils';
+import { TABLE_NAME_MAP } from './constant';
+import type { TDatabase } from './types';
+import { getTableColumns } from './utils';
 
 // Create and export database instance.
-const dialect = new SqliteDialect({
-	database: new Database('sqlite.db'),
-});
-export const db = new Kysely<TDatabase>({
-	dialect,
-});
+const dialect = new SqliteDialect({ database: new Database('sqlite.db') });
+export const db = new Kysely<TDatabase>({ dialect });
 
 // Create backup_files table if it doesn't exist.
 await db.schema
@@ -25,7 +21,10 @@ await db.schema
 	.addColumn('user_id', 'text', (col) => col.notNull())
 	.execute();
 
-const backupFileRecordTableColumns = await getTableColumns(db, TABLE_NAME_MAP.backupFileRecord);
+const backupFileRecordTableColumns = await getTableColumns(
+	db,
+	TABLE_NAME_MAP.backupFileRecord
+);
 
 // Add user_agent column to old backup_files table if it doesn't exist.
 const hasUserAgentColumn = backupFileRecordTableColumns.includes('user_agent');

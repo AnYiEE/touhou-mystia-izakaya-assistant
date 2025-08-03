@@ -1,5 +1,5 @@
-import {type TCurrencyName, type TCustomerRareName} from '@/data';
-import type {IItemBase, TMerchant} from '@/data/types';
+import { type TCurrencyName, type TCustomerRareName } from '@/data';
+import type { IItemBase, TMerchant } from '@/data/types';
 
 export interface IClothes extends IItemBase {
 	/** @description Whether the tachie image of the clothes is a gif. */
@@ -12,10 +12,7 @@ export interface IClothes extends IItemBase {
 				bond: TCustomerRareName;
 				buy: {
 					name: TMerchant;
-					price: {
-						currency: TCurrencyName;
-						amount: number;
-					};
+					price: { currency: TCurrencyName; amount: number };
 				};
 				/** @description Initial clothes. */
 				self: true;

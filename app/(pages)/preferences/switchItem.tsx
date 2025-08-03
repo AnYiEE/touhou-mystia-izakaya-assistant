@@ -1,6 +1,6 @@
-import {type PropsWithChildren, memo} from 'react';
+import { type PropsWithChildren, memo } from 'react';
 
-import {type ISwitchProps, Switch, cn} from '@/design/ui/components';
+import { type ISwitchProps, Switch, cn } from '@/design/ui/components';
 
 interface IProps {
 	'aria-label': NonNullable<ISwitchProps['aria-label']>;

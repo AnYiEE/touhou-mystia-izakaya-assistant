@@ -1,6 +1,6 @@
-import {useMemo} from 'react';
+import { useMemo } from 'react';
 
-import {globalStore as store} from '@/stores';
+import { globalStore as store } from '@/stores';
 
 const MOTION_DEFAULT = {} as const;
 
@@ -8,24 +8,14 @@ const MOTION_POPOVER = {
 	variants: {
 		enter: {
 			transform: 'scale(1)',
-			transition: {
-				bounce: 0,
-				duration: 0.3,
-				type: 'spring',
-			},
+			transition: { bounce: 0, duration: 0.3, type: 'spring' },
 		},
 		exit: {
 			opacity: 0,
 			transform: 'scale(0.96)',
-			transition: {
-				bounce: 0,
-				duration: 0.15,
-				type: 'easeOut',
-			},
+			transition: { bounce: 0, duration: 0.15, type: 'easeOut' },
 		},
-		initial: {
-			transform: 'scale(0.8)',
-		},
+		initial: { transform: 'scale(0.8)' },
 	},
 } as const;
 
@@ -33,24 +23,14 @@ const MOTION_SELECT = {
 	variants: {
 		enter: {
 			transform: 'scale(1)',
-			transition: {
-				bounce: 0,
-				duration: 0.15,
-				type: 'easeIn',
-			},
+			transition: { bounce: 0, duration: 0.15, type: 'easeIn' },
 		},
 		exit: {
 			opacity: 0,
 			transform: 'scale(0.96, 1)',
-			transition: {
-				bounce: 0,
-				duration: 0.3,
-				type: 'easeOut',
-			},
+			transition: { bounce: 0, duration: 0.3, type: 'easeOut' },
 		},
-		initial: {
-			transform: 'scale(0.96, 1)',
-		},
+		initial: { transform: 'scale(0.96, 1)' },
 	},
 } as const;
 
@@ -58,23 +38,13 @@ const MOTION_TOOLTIP = {
 	variants: {
 		enter: {
 			transform: 'scale(1)',
-			transition: {
-				bounce: 0,
-				duration: 0.1,
-				type: 'spring',
-			},
+			transition: { bounce: 0, duration: 0.1, type: 'spring' },
 		},
 		exit: {
 			transform: 'scale(0)',
-			transition: {
-				bounce: 0,
-				duration: 0.1,
-				type: 'easeOut',
-			},
+			transition: { bounce: 0, duration: 0.1, type: 'easeOut' },
 		},
-		initial: {
-			transform: 'scale(0.8)',
-		},
+		initial: { transform: 'scale(0.8)' },
 	},
 } as const;
 
@@ -88,7 +58,9 @@ const MOTION_PROP_MAP = {
 type TMotionPropMap = typeof MOTION_PROP_MAP;
 type TMotionType = Exclude<keyof TMotionPropMap, 'default'>;
 
-export function getMotionProps<T extends TMotionType>(type: T): Omit<TMotionPropMap, 'default'>[T];
+export function getMotionProps<T extends TMotionType>(
+	type: T
+): Omit<TMotionPropMap, 'default'>[T];
 export function getMotionProps<T extends TMotionType>(
 	type: T,
 	isHighAppearance: boolean
@@ -111,7 +83,10 @@ export function getMotionProps<T extends TMotionType>(
 export function useMotionProps<T extends TMotionType>(type: T) {
 	const isHighAppearance = store.persistence.highAppearance.use();
 
-	const motionProps = useMemo(() => getMotionProps(type, isHighAppearance), [isHighAppearance, type]);
+	const motionProps = useMemo(
+		() => getMotionProps(type, isHighAppearance),
+		[isHighAppearance, type]
+	);
 
 	return motionProps;
 }

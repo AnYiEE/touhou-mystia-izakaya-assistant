@@ -1,14 +1,23 @@
-import {type ChangeEvent, memo, useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
-import {debounce, isObject} from 'lodash';
+import {
+	type ChangeEvent,
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useReducer,
+	useRef,
+	useState,
+} from 'react';
+import { debounce, isObject } from 'lodash';
 
-import {useRouter} from 'next/navigation';
-import {useProgress} from 'react-transition-progress';
-import {usePathname, useThrottle} from '@/hooks';
+import { useRouter } from 'next/navigation';
+import { useProgress } from 'react-transition-progress';
+import { usePathname, useThrottle } from '@/hooks';
 
-import {Textarea} from '@heroui/input';
-import {Tab, Tabs} from '@heroui/tabs';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faKey} from '@fortawesome/free-solid-svg-icons';
+import { Textarea } from '@heroui/input';
+import { Tab, Tabs } from '@heroui/tabs';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faKey } from '@fortawesome/free-solid-svg-icons';
 
 import {
 	Button,
@@ -21,8 +30,8 @@ import {
 	useReducedMotion,
 } from '@/design/ui/components';
 
-import {showProgress} from '@/(pages)/(layout)/navbar';
-import {trackEvent} from '@/components/analytics';
+import { showProgress } from '@/(pages)/(layout)/navbar';
+import { trackEvent } from '@/components/analytics';
 import {
 	customerRareTutorialPathname,
 	customerRareTutorialResetLabel,
@@ -31,13 +40,23 @@ import {
 import Heading from '@/components/heading';
 import TimeAgo from '@/components/timeAgo';
 
-import {FREQUENCY_TTL} from '@/api/backup/constant';
-import type {IBackupCheckSuccessResponse, IBackupUploadBody, IBackupUploadSuccessResponse} from '@/api/backup/types';
-import {siteConfig} from '@/configs';
-import {customerNormalStore, customerRareStore, globalStore} from '@/stores';
-import {FILE_TYPE_JSON, checkA11yConfirmKey, downloadJson, parseJsonFromInput, toggleBoolean} from '@/utilities';
+import { FREQUENCY_TTL } from '@/api/backup/constant';
+import type {
+	IBackupCheckSuccessResponse,
+	IBackupUploadBody,
+	IBackupUploadSuccessResponse,
+} from '@/api/backup/types';
+import { siteConfig } from '@/configs';
+import { customerNormalStore, customerRareStore, globalStore } from '@/stores';
+import {
+	FILE_TYPE_JSON,
+	checkA11yConfirmKey,
+	downloadJson,
+	parseJsonFromInput,
+	toggleBoolean,
+} from '@/utilities';
 
-const {isOffline} = siteConfig;
+const { isOffline } = siteConfig;
 
 const cloudDeleteButtonLabelMap = {
 	delete: '删除云备份',
@@ -73,10 +92,7 @@ function checkResponse<T>(response: Response) {
 	if (!response.ok) {
 		return response.json().then((error) => {
 			// eslint-disable-next-line @typescript-eslint/only-throw-error
-			throw {
-				data: error as object,
-				status: response.status,
-			};
+			throw { data: error as object, status: response.status };
 		});
 	}
 
@@ -103,18 +119,10 @@ function setErrorState({
 		trackEvent(trackEvent.category.error, 'Cloud', type, error.message);
 	} else {
 		const {
-			data: {message},
+			data: { message },
 			status,
-		} = error as {
-			data: {
-				message: string;
-			};
-			status: number;
-		};
-		console.error({
-			message,
-			status,
-		});
+		} = error as { data: { message: string }; status: number };
+		console.error({ message, status });
 		setLabel(
 			`${label}（${status === 400 ? '无效的备份码' : status === 404 ? '目标文件不存在' : status === 429 ? `请${FREQUENCY_TTL / 1000 / 60}分钟后再试` : status}）`
 		);
@@ -129,7 +137,7 @@ interface IProps {
 	onModalClose?: (() => void) | undefined;
 }
 
-export default memo<IProps>(function DataManager({onModalClose}) {
+export default memo<IProps>(function DataManager({ onModalClose }) {
 	const pathname = usePathname();
 	const router = useRouter();
 	const startProgress = useProgress();
@@ -149,7 +157,10 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 	// For compatibility with older versions
 	type TMealData = typeof currentMealData | typeof currentRareMealData;
 
-	const currentMealDataString = useMemo(() => JSON.stringify(currentMealData, null, '\t'), [currentMealData]);
+	const currentMealDataString = useMemo(
+		() => JSON.stringify(currentMealData, null, '\t'),
+		[currentMealData]
+	);
 
 	const [importValue, setImportValue] = useState('');
 	const throttledImportValue = useThrottle(importValue);
@@ -157,29 +168,46 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 	const importInputRef = useRef<HTMLInputElement | null>(null);
 
 	const [isExportButtonDisabled, setIsExportButtonDisabled] = useState(false);
-	const [exportButtonLabel, setExportButtonLabel] = useState<TExportButtonLabel>(exportButtonLabelMap.download);
+	const [exportButtonLabel, setExportButtonLabel] =
+		useState<TExportButtonLabel>(exportButtonLabelMap.download);
 
 	const [isSaveButtonDisabled, setIsSaveButtonDisabled] = useState(true);
 	const [isSaveButtonError, setIsSaveButtonError] = useState(false);
 	const [isSaveButtonLoading, setIsSaveButtonLoading] = useState(false);
-	const [isSavePopoverOpened, toggleSavePopoverOpened] = useReducer(toggleBoolean, false);
-	const [isResetPopoverOpened, toggleResetPopoverOpened] = useReducer(toggleBoolean, false);
-
-	const [isCloudDeleteButtonDisabled, setIsCloudDeleteButtonDisabled] = useState(false);
-	const [cloudDeleteButtonLabel, setCloudDeleteButtonLabel] = useState<string>(cloudDeleteButtonLabelMap.delete);
-	const [cloudDeleteState, setCloudDeleteState] = useState<TCloudState>('default');
-
-	const [isCloudDownloadButtonDisabled, setIsCloudDownloadButtonDisabled] = useState(false);
-	const [cloudDownloadButtonLabel, setCloudDownloadButtonLabel] = useState<string>(
-		cloudDownloadButtonLabelMap.download
+	const [isSavePopoverOpened, toggleSavePopoverOpened] = useReducer(
+		toggleBoolean,
+		false
 	);
-	const [cloudDownloadState, setCloudDownloadState] = useState<TCloudState>('default');
+	const [isResetPopoverOpened, toggleResetPopoverOpened] = useReducer(
+		toggleBoolean,
+		false
+	);
 
-	const [isCloudUploadButtonDisabled, setIsCloudUploadButtonDisabled] = useState(false);
-	const [cloudUploadButtonLabel, setCloudUploadButtonLabel] = useState<string>(cloudUploadButtonLabelMap.upload);
-	const [cloudUploadState, setCloudUploadState] = useState<TCloudState>('default');
+	const [isCloudDeleteButtonDisabled, setIsCloudDeleteButtonDisabled] =
+		useState(false);
+	const [cloudDeleteButtonLabel, setCloudDeleteButtonLabel] =
+		useState<string>(cloudDeleteButtonLabelMap.delete);
+	const [cloudDeleteState, setCloudDeleteState] =
+		useState<TCloudState>('default');
 
-	const isCloudDoing = isCloudDeleteButtonDisabled || isCloudDownloadButtonDisabled || isCloudUploadButtonDisabled;
+	const [isCloudDownloadButtonDisabled, setIsCloudDownloadButtonDisabled] =
+		useState(false);
+	const [cloudDownloadButtonLabel, setCloudDownloadButtonLabel] =
+		useState<string>(cloudDownloadButtonLabelMap.download);
+	const [cloudDownloadState, setCloudDownloadState] =
+		useState<TCloudState>('default');
+
+	const [isCloudUploadButtonDisabled, setIsCloudUploadButtonDisabled] =
+		useState(false);
+	const [cloudUploadButtonLabel, setCloudUploadButtonLabel] =
+		useState<string>(cloudUploadButtonLabelMap.upload);
+	const [cloudUploadState, setCloudUploadState] =
+		useState<TCloudState>('default');
+
+	const isCloudDoing =
+		isCloudDeleteButtonDisabled ||
+		isCloudDownloadButtonDisabled ||
+		isCloudUploadButtonDisabled;
 
 	const currentCloudCode = globalStore.persistence.cloudCode.use();
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
@@ -187,48 +215,63 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 
 	const isCloudCodeValid = currentCloudCode !== null;
 
-	const [cloudCodeInfo, setCloudCodeInfo] = useState<ReactNodeWithoutBoolean>(null);
+	const [cloudCodeInfo, setCloudCodeInfo] =
+		useState<ReactNodeWithoutBoolean>(null);
 
-	const updateCloudCodeInfo = useCallback((cloudCode: typeof currentCloudCode) => {
-		if (cloudCode === null) {
-			setCloudCodeInfo(
-				<>
-					无<span className="text-xs">（下次备份时将自动生成，请自行保存至他处）</span>
-				</>
-			);
-			return;
-		}
-		fetch(`/api/backup/check/${cloudCode}`)
-			.then(checkResponse<IBackupCheckSuccessResponse>)
-			.then(({created_at, last_accessed}) => {
+	const updateCloudCodeInfo = useCallback(
+		(cloudCode: typeof currentCloudCode) => {
+			if (cloudCode === null) {
 				setCloudCodeInfo(
-					<span className="text-xs">
-						（更新于
-						<TimeAgo timestamp={created_at} />，
-						{last_accessed === -1 ? (
-							'尚未被下载过'
-						) : (
-							<>
-								下载于
-								<TimeAgo timestamp={last_accessed} />
-							</>
-						)}
-						）
-					</span>
+					<>
+						无
+						<span className="text-xs">
+							（下次备份时将自动生成，请自行保存至他处）
+						</span>
+					</>
 				);
-			})
-			.catch((error: unknown) => {
-				if (isObject(error) && 'status' in error) {
+				return;
+			}
+			fetch(`/api/backup/check/${cloudCode}`)
+				.then(checkResponse<IBackupCheckSuccessResponse>)
+				.then(({ created_at, last_accessed }) => {
 					setCloudCodeInfo(
 						<span className="text-xs">
-							（{error.status === 404 ? '云端未记录此备份码，可能已于他处删除？' : '无效的备份码'}）
+							（更新于
+							<TimeAgo timestamp={created_at} />，
+							{last_accessed === -1 ? (
+								'尚未被下载过'
+							) : (
+								<>
+									下载于
+									<TimeAgo timestamp={last_accessed} />
+								</>
+							)}
+							）
 						</span>
 					);
-				} else {
-					setCloudCodeInfo(<span className="text-xs">（获取备份码信息失败）</span>);
-				}
-			});
-	}, []);
+				})
+				.catch((error: unknown) => {
+					if (isObject(error) && 'status' in error) {
+						setCloudCodeInfo(
+							<span className="text-xs">
+								（
+								{error.status === 404
+									? '云端未记录此备份码，可能已于他处删除？'
+									: '无效的备份码'}
+								）
+							</span>
+						);
+					} else {
+						setCloudCodeInfo(
+							<span className="text-xs">
+								（获取备份码信息失败）
+							</span>
+						);
+					}
+				});
+		},
+		[]
+	);
 
 	useEffect(() => {
 		updateCloudCodeInfo(currentCloudCode);
@@ -240,15 +283,17 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 		}
 		setIsCloudDeleteButtonDisabled(true);
 		setCloudDeleteButtonLabel(cloudDeleteButtonLabelMap.deleting);
-		fetch(`/api/backup/delete/${currentCloudCode}`, {
-			method: 'DELETE',
-		})
+		fetch(`/api/backup/delete/${currentCloudCode}`, { method: 'DELETE' })
 			.then(checkResponse)
 			.then(() => {
 				setCloudDeleteState('success');
 				setCloudDeleteButtonLabel(cloudDeleteButtonLabelMap.success);
 				globalStore.persistence.cloudCode.set(null);
-				trackEvent(trackEvent.category.click, 'Cloud Delete Button', currentCloudCode);
+				trackEvent(
+					trackEvent.category.click,
+					'Cloud Delete Button',
+					currentCloudCode
+				);
 			})
 			.catch((error: unknown) => {
 				setErrorState({
@@ -282,11 +327,17 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 			.then(checkResponse<typeof currentMealData>)
 			.then((data) => {
 				setCloudDownloadState('success');
-				setCloudDownloadButtonLabel(cloudDownloadButtonLabelMap.success);
+				setCloudDownloadButtonLabel(
+					cloudDownloadButtonLabelMap.success
+				);
 				customerNormalStore.persistence.meals.set(data.customer_normal);
 				customerRareStore.persistence.meals.set(data.customer_rare);
 				globalStore.persistence.cloudCode.set(code);
-				trackEvent(trackEvent.category.click, 'Cloud Download Button', code);
+				trackEvent(
+					trackEvent.category.click,
+					'Cloud Download Button',
+					code
+				);
 			})
 			.catch((error: unknown) => {
 				setErrorState({
@@ -302,7 +353,9 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 				setTimeout(() => {
 					setCloudDownloadState('default');
 					setIsCloudDownloadButtonDisabled(false);
-					setCloudDownloadButtonLabel(cloudDownloadButtonLabelMap.download);
+					setCloudDownloadButtonLabel(
+						cloudDownloadButtonLabelMap.download
+					);
 				}, 3000);
 			});
 	}, [currentCloudCode, updateCloudCodeInfo, userId]);
@@ -316,17 +369,19 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 				data: currentMealData,
 				user_id: userId,
 			} satisfies IBackupUploadBody),
-			headers: {
-				'Content-Type': FILE_TYPE_JSON,
-			},
+			headers: { 'Content-Type': FILE_TYPE_JSON },
 			method: 'POST',
 		})
 			.then(checkResponse<IBackupUploadSuccessResponse>)
-			.then(({code}) => {
+			.then(({ code }) => {
 				setCloudUploadState('success');
 				setCloudUploadButtonLabel(cloudUploadButtonLabelMap.success);
 				globalStore.persistence.cloudCode.set(code);
-				trackEvent(trackEvent.category.click, 'Cloud Upload Button', code);
+				trackEvent(
+					trackEvent.category.click,
+					'Cloud Upload Button',
+					code
+				);
 			})
 			.catch((error: unknown) => {
 				setErrorState({
@@ -363,12 +418,24 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 		toggleSavePopoverOpened();
 		if (importData !== null) {
 			if ('customer_normal' in importData) {
-				customerNormalStore.persistence.meals.set(importData.customer_normal);
-				customerRareStore.persistence.meals.set(importData.customer_rare);
-				trackEvent(trackEvent.category.click, 'Import Button', 'Customer Data');
+				customerNormalStore.persistence.meals.set(
+					importData.customer_normal
+				);
+				customerRareStore.persistence.meals.set(
+					importData.customer_rare
+				);
+				trackEvent(
+					trackEvent.category.click,
+					'Import Button',
+					'Customer Data'
+				);
 			} else {
 				customerRareStore.persistence.meals.set(importData);
-				trackEvent(trackEvent.category.click, 'Import Button', 'Customer Rare Data');
+				trackEvent(
+					trackEvent.category.click,
+					'Import Button',
+					'Customer Rare Data'
+				);
 			}
 		}
 	}, [importData]);
@@ -384,13 +451,16 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 		importInputRef.current?.click();
 	}, []);
 
-	const handleImportInputChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-		const {target} = event;
-		parseJsonFromInput(target, (text) => {
-			setImportValue(text);
-			target.value = '';
-		});
-	}, []);
+	const handleImportInputChange = useCallback(
+		(event: ChangeEvent<HTMLInputElement>) => {
+			const { target } = event;
+			parseJsonFromInput(target, (text) => {
+				setImportValue(text);
+				target.value = '';
+			});
+		},
+		[]
+	);
 
 	useEffect(() => {
 		const hasValue = Boolean(throttledImportValue);
@@ -421,14 +491,11 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 		const container = document.querySelector<HTMLDivElement>(
 			'#modal-portal-container [data-orientation="vertical"]'
 		);
-		if (!container) {
+		if (container === null) {
 			return;
 		}
-		if (isSavePopoverOpened || isResetPopoverOpened) {
-			container.style.overflowY = 'hidden';
-		} else {
-			container.style.overflowY = 'auto';
-		}
+		container.style.overflowY =
+			isSavePopoverOpened || isResetPopoverOpened ? 'hidden' : 'auto';
 	}, [isSavePopoverOpened, isResetPopoverOpened]);
 
 	return (
@@ -444,9 +511,7 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 						setImportValue('');
 					}}
 					aria-label="数据管理选项卡"
-					classNames={{
-						base: '-ml-3',
-					}}
+					classNames={{ base: '-ml-3' }}
 				>
 					<Tab key="backup-local" title="本地导入/导出">
 						<div className="w-full space-y-4">
@@ -474,19 +539,36 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 									className="hidden"
 									ref={importInputRef}
 								/>
-								<Button fullWidth color="primary" variant="flat" onPress={handleImportButtonPress}>
+								<Button
+									fullWidth
+									color="primary"
+									variant="flat"
+									onPress={handleImportButtonPress}
+								>
 									导入
 								</Button>
-								<Popover shouldBlockScroll showArrow isOpen={isSavePopoverOpened}>
+								<Popover
+									shouldBlockScroll
+									showArrow
+									isOpen={isSavePopoverOpened}
+								>
 									<PopoverTrigger>
 										<Button
 											fullWidth
-											color={isSaveButtonError ? 'danger' : 'primary'}
+											color={
+												isSaveButtonError
+													? 'danger'
+													: 'primary'
+											}
 											isDisabled={isSaveButtonDisabled}
 											isLoading={isSaveButtonLoading}
 											variant="flat"
 											onClick={toggleSavePopoverOpened}
-											onKeyDown={debounce(checkA11yConfirmKey(toggleSavePopoverOpened))}
+											onKeyDown={debounce(
+												checkA11yConfirmKey(
+													toggleSavePopoverOpened
+												)
+											)}
 										>
 											保存
 										</Button>
@@ -526,7 +608,8 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 									variant="flat"
 									classNames={{
 										base: cn({
-											'bg-default/40 backdrop-blur': isHighAppearance,
+											'bg-default/40 backdrop-blur':
+												isHighAppearance,
 										}),
 										pre: 'max-h-[13.25rem] w-full overflow-auto whitespace-pre-wrap',
 									}}
@@ -537,12 +620,18 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 									isOpen
 									showArrow
 									color="success"
-									content={exportButtonLabelMap.downloadingTip}
+									content={
+										exportButtonLabelMap.downloadingTip
+									}
 									isDisabled={!isExportButtonDisabled}
 								>
 									<Button
 										fullWidth
-										color={isExportButtonDisabled ? 'success' : 'primary'}
+										color={
+											isExportButtonDisabled
+												? 'success'
+												: 'primary'
+										}
 										isDisabled={isExportButtonDisabled}
 										isLoading={isExportButtonDisabled}
 										variant="flat"
@@ -601,7 +690,11 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 							<div className="w-full space-y-2 lg:w-1/2">
 								<Button
 									fullWidth
-									color={isCloudUploadButtonDisabled ? cloudUploadState : 'primary'}
+									color={
+										isCloudUploadButtonDisabled
+											? cloudUploadState
+											: 'primary'
+									}
 									isDisabled={isCloudDoing}
 									isLoading={isCloudUploadButtonDisabled}
 									variant="flat"
@@ -611,7 +704,11 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								</Button>
 								<Button
 									fullWidth
-									color={isCloudDownloadButtonDisabled ? cloudDownloadState : 'primary'}
+									color={
+										isCloudDownloadButtonDisabled
+											? cloudDownloadState
+											: 'primary'
+									}
 									isDisabled={isCloudDoing}
 									isLoading={isCloudDownloadButtonDisabled}
 									variant="flat"
@@ -621,8 +718,14 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								</Button>
 								<Button
 									fullWidth
-									color={isCloudDeleteButtonDisabled ? cloudDeleteState : 'primary'}
-									isDisabled={isCloudDoing || !isCloudCodeValid}
+									color={
+										isCloudDeleteButtonDisabled
+											? cloudDeleteState
+											: 'primary'
+									}
+									isDisabled={
+										isCloudDoing || !isCloudCodeValid
+									}
 									isLoading={isCloudDeleteButtonDisabled}
 									variant="flat"
 									onPress={handleCloudDeleteButtonPress}
@@ -634,14 +737,22 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 					)}
 					<Tab key="reset" title="重置">
 						<div className="w-full space-y-2 lg:w-1/2">
-							<Popover shouldBlockScroll showArrow isOpen={isResetPopoverOpened}>
+							<Popover
+								shouldBlockScroll
+								showArrow
+								isOpen={isResetPopoverOpened}
+							>
 								<PopoverTrigger>
 									<Button
 										fullWidth
 										color="danger"
 										variant="flat"
 										onClick={toggleResetPopoverOpened}
-										onKeyDown={debounce(checkA11yConfirmKey(toggleResetPopoverOpened))}
+										onKeyDown={debounce(
+											checkA11yConfirmKey(
+												toggleResetPopoverOpened
+											)
+										)}
 									>
 										重置已保存的顾客套餐数据
 									</Button>
@@ -673,40 +784,70 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 								variant="flat"
 								onPress={() => {
 									showProgress(startProgress);
-									customerRareStore.persistence.customer.filters.set((prev) => {
-										Object.keys(prev).forEach((key) => {
-											prev[key as keyof typeof prev] = [];
-										});
-									});
-									customerRareStore.persistence.customer.orderLinkedFilter.set(true);
-									customerRareStore.persistence.recipe.table.cookers.set([]);
-									customerRareStore.persistence.recipe.table.dlcs.set([]);
-									customerRareStore.persistence.recipe.table.sortDescriptor.set({});
-									customerRareStore.persistence.beverage.table.dlcs.set([]);
-									customerRareStore.persistence.beverage.table.sortDescriptor.set({});
-									customerRareStore.persistence.ingredient.filters.set((prev) => {
-										Object.keys(prev).forEach((key) => {
-											prev[key as keyof typeof prev] = [];
-										});
-									});
+									customerRareStore.persistence.customer.filters.set(
+										(prev) => {
+											Object.keys(prev).forEach((key) => {
+												prev[key as keyof typeof prev] =
+													[];
+											});
+										}
+									);
+									customerRareStore.persistence.customer.orderLinkedFilter.set(
+										true
+									);
+									customerRareStore.persistence.recipe.table.cookers.set(
+										[]
+									);
+									customerRareStore.persistence.recipe.table.dlcs.set(
+										[]
+									);
+									customerRareStore.persistence.recipe.table.sortDescriptor.set(
+										{}
+									);
+									customerRareStore.persistence.beverage.table.dlcs.set(
+										[]
+									);
+									customerRareStore.persistence.beverage.table.sortDescriptor.set(
+										{}
+									);
+									customerRareStore.persistence.ingredient.filters.set(
+										(prev) => {
+											Object.keys(prev).forEach((key) => {
+												prev[key as keyof typeof prev] =
+													[];
+											});
+										}
+									);
 									globalStore.persistence.set((prev) => {
 										const dirver = prev.dirver.filter(
-											(item) => item !== customerRareTutorialStoreKey
+											(item) =>
+												item !==
+												customerRareTutorialStoreKey
 										);
 										prev.dirver = dirver;
 									});
 									if (onModalClose === undefined) {
-										router.push(customerRareTutorialPathname);
+										router.push(
+											customerRareTutorialPathname
+										);
 									} else {
 										onModalClose();
 										// Wait for the modal to close and restore the pathname (the animate will take 300ms).
 										setTimeout(() => {
-											if (pathname !== customerRareTutorialPathname) {
-												location.href = customerRareTutorialPathname;
+											if (
+												pathname !==
+												customerRareTutorialPathname
+											) {
+												location.href =
+													customerRareTutorialPathname;
 											}
 										}, 500);
 									}
-									trackEvent(trackEvent.category.click, 'Reset Button', 'Customer Rare Tutorial');
+									trackEvent(
+										trackEvent.category.click,
+										'Reset Button',
+										'Customer Rare Tutorial'
+									);
 								}}
 							>
 								{customerRareTutorialResetLabel}
@@ -719,4 +860,4 @@ export default memo<IProps>(function DataManager({onModalClose}) {
 	);
 });
 
-export type {IProps as IDataManagerProps};
+export type { IProps as IDataManagerProps };

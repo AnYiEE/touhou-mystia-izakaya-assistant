@@ -1,14 +1,17 @@
-import {type Key} from 'react';
-import {store} from '@davstack/store';
+import { type Key } from 'react';
+import { store } from '@davstack/store';
 
-import {type Selection} from '@heroui/table';
+import { type Selection } from '@heroui/table';
 
-import {tabVisibilityStateMap} from '@/(pages)/customer-rare/constants';
-import {type TTableSortDescriptor as TBeverageTableSortDescriptor} from '@/(pages)/customer-rare/beverageTabContent';
-import {type TTableSortDescriptor as TRecipeTableSortDescriptor} from '@/(pages)/customer-rare/recipeTabContent';
-import type {TTab, TTabVisibilityState} from '@/(pages)/customer-rare/types';
-import {trackEvent} from '@/components/analytics';
-import {type TPinyinSortState, pinyinSortStateMap} from '@/components/sidePinyinSortIconButton';
+import { tabVisibilityStateMap } from '@/(pages)/customer-rare/constants';
+import { type TTableSortDescriptor as TBeverageTableSortDescriptor } from '@/(pages)/customer-rare/beverageTabContent';
+import { type TTableSortDescriptor as TRecipeTableSortDescriptor } from '@/(pages)/customer-rare/recipeTabContent';
+import type { TTab, TTabVisibilityState } from '@/(pages)/customer-rare/types';
+import { trackEvent } from '@/components/analytics';
+import {
+	type TPinyinSortState,
+	pinyinSortStateMap,
+} from '@/components/sidePinyinSortIconButton';
 
 import {
 	DARK_MATTER_META_MAP,
@@ -22,9 +25,17 @@ import {
 	type TRecipeName,
 	type TRecipeTag,
 } from '@/data';
-import {persist as persistMiddleware, sync as syncMiddleware} from '@/stores/middlewares';
-import {createNamesCache, keepLastTag, reverseDirection, reverseVisibilityState} from '@/stores/utils';
-import type {IMealRecipe, IPopularTrend} from '@/types';
+import {
+	persist as persistMiddleware,
+	sync as syncMiddleware,
+} from '@/stores/middlewares';
+import {
+	createNamesCache,
+	keepLastTag,
+	reverseDirection,
+	reverseVisibilityState,
+} from '@/stores/utils';
+import type { IMealRecipe, IPopularTrend } from '@/types';
 import {
 	checkEmpty,
 	numberSort,
@@ -35,8 +46,17 @@ import {
 	toSet,
 	union,
 } from '@/utilities';
-import {Beverage, Clothes, Cooker, CustomerRare, Ingredient, Ornament, Partner, Recipe} from '@/utils';
-import type {TRecipe} from '@/utils/types';
+import {
+	Beverage,
+	Clothes,
+	Cooker,
+	CustomerRare,
+	Ingredient,
+	Ornament,
+	Partner,
+	Recipe,
+} from '@/utils';
+import type { TRecipe } from '@/utils/types';
 
 export interface ICustomerOrder {
 	beverageTag: TBeverageTag | null;
@@ -95,16 +115,22 @@ const state = {
 	},
 	customer: {
 		dlcs: instance_customer.getValuesByProp('dlc', true).sort(numberSort),
-		places: instance_customer.getValuesByProp('places', true).sort(pinyinSort),
+		places: instance_customer
+			.getValuesByProp('places', true)
+			.sort(pinyinSort),
 	},
 	ingredient: {
 		dlcs: instance_ingredient.getValuesByProp('dlc', true).sort(numberSort),
 		levels: instance_ingredient
 			.getValuesByProp('level', true)
-			.filter(({value}) => !instance_ingredient.blockedLevels.has(value))
+			.filter(
+				({ value }) => !instance_ingredient.blockedLevels.has(value)
+			)
 			.sort(numberSort),
 		tags: toArray<TIngredientTag[]>(
-			instance_ingredient.getValuesByProp('tags').filter((tag) => !instance_ingredient.blockedTags.has(tag)),
+			instance_ingredient
+				.getValuesByProp('tags')
+				.filter((tag) => !instance_ingredient.blockedTags.has(tag)),
 			DYNAMIC_TAG_MAP.popularNegative,
 			DYNAMIC_TAG_MAP.popularPositive
 		)
@@ -112,14 +138,18 @@ const state = {
 			.sort(pinyinSort),
 	},
 	recipe: {
-		cookers: instance_recipe.getValuesByProp('cooker', true).sort(pinyinSort),
+		cookers: instance_recipe
+			.getValuesByProp('cooker', true)
+			.sort(pinyinSort),
 		dlcs: instance_recipe.getValuesByProp('dlc', true).sort(numberSort),
 		names: instance_recipe
 			.getValuesByProp('name', true)
-			.filter(({value}) => !instance_recipe.blockedRecipes.has(value))
+			.filter(({ value }) => !instance_recipe.blockedRecipes.has(value))
 			.sort(pinyinSort),
 		tags: toArray<TRecipeTag[]>(
-			instance_recipe.getValuesByProp('positiveTags').filter((tag) => !instance_recipe.blockedTags.has(tag)),
+			instance_recipe
+				.getValuesByProp('positiveTags')
+				.filter((tag) => !instance_recipe.blockedTags.has(tag)),
 			DYNAMIC_TAG_MAP.popularNegative,
 			DYNAMIC_TAG_MAP.popularPositive
 		)
@@ -144,7 +174,8 @@ const state = {
 			},
 			pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
 			searchValue: '',
-			tabVisibility: tabVisibilityStateMap.collapse as TTabVisibilityState,
+			tabVisibility:
+				tabVisibilityStateMap.collapse as TTabVisibilityState,
 
 			orderLinkedFilter: true,
 			showTagDescription: true,
@@ -157,7 +188,8 @@ const state = {
 				levels: [] as string[],
 			},
 			pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
-			tabVisibility: tabVisibilityStateMap.collapse as TTabVisibilityState,
+			tabVisibility:
+				tabVisibilityStateMap.collapse as TTabVisibilityState,
 		},
 		recipe: {
 			table: {
@@ -196,10 +228,7 @@ const state = {
 		customer: {
 			name: null as TCustomerRareName | null,
 
-			order: {
-				beverageTag: null,
-				recipeTag: null,
-			} as ICustomerOrder,
+			order: { beverageTag: null, recipeTag: null } as ICustomerOrder,
 			select: {
 				beverageTag: toSet() as SelectionSet,
 				recipeTag: toSet() as SelectionSet,
@@ -208,18 +237,13 @@ const state = {
 			filterVisibility: true,
 
 			famousShop: false,
-			popularTrend: {
-				isNegative: false,
-				tag: null,
-			} as IPopularTrend,
+			popularTrend: { isNegative: false, tag: null } as IPopularTrend,
 
 			hasMystiaCooker: false,
 			isDarkMatter: null as boolean | null,
 			rating: null as TRatingKey | null,
 		},
-		ingredient: {
-			filterVisibility: false,
-		},
+		ingredient: { filterVisibility: false },
 		recipe: {
 			data: null as IMealRecipe | null,
 
@@ -265,8 +289,11 @@ export const customerRareStore = store(state, {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
 				const oldState = persistedState as any;
 				if (version < storeVersion.rating) {
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-					for (const meals of Object.values(oldState.page.selected) as any) {
+					for (const meals of Object.values(
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+						oldState.page.selected
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					) as any) {
 						for (const meal of meals) {
 							meal.rating = 'exgood';
 						}
@@ -275,18 +302,15 @@ export const customerRareStore = store(state, {
 				if (version < storeVersion.popular) {
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 					oldState.persistence = oldState.page;
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-					for (const meals of Object.values(oldState.persistence.selected) as any) {
+					for (const meals of Object.values(
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+						oldState.persistence.selected
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					) as any) {
 						for (const meal of meals) {
 							meal.hasMystiaKitchenware = false;
-							meal.order = {
-								beverageTag: null,
-								recipeTag: null,
-							};
-							meal.popular = {
-								isNegative: false,
-								tag: null,
-							};
+							meal.order = { beverageTag: null, recipeTag: null };
+							meal.popular = { isNegative: false, tag: null };
 						}
 					}
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -295,27 +319,37 @@ export const customerRareStore = store(state, {
 					delete oldState.page;
 				}
 				if (version < storeVersion.popularTypo) {
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-					for (const meals of Object.values(oldState.persistence.meals) as any) {
+					for (const meals of Object.values(
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+						oldState.persistence.meals
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					) as any) {
 						for (const meal of meals) {
 							// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-							meal.hasMystiaKitchenware = meal.hasMystiaKitchenwware;
+							meal.hasMystiaKitchenware =
+								meal.hasMystiaKitchenwware;
 							// cSpell:ignore kitchenwware
 							delete meal.hasMystiaKitchenwware;
 						}
 					}
 				}
 				if (version < storeVersion.price) {
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-					for (const meals of Object.values(oldState.persistence.meals) as any) {
+					for (const meals of Object.values(
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+						oldState.persistence.meals
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					) as any) {
 						for (const meal of meals) {
 							meal.price = 0;
 						}
 					}
 				}
 				if (version < storeVersion.cooker) {
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-					for (const meals of Object.values(oldState.persistence.meals) as any) {
+					for (const meals of Object.values(
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+						oldState.persistence.meals
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					) as any) {
 						for (const meal of meals) {
 							// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 							meal.hasMystiaCooker = meal.hasMystiaKitchenware;
@@ -327,7 +361,7 @@ export const customerRareStore = store(state, {
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 					const {
 						persistence: {
-							ingredient: {filters},
+							ingredient: { filters },
 						},
 					} = oldState;
 					filters.levels = [];
@@ -335,7 +369,7 @@ export const customerRareStore = store(state, {
 				if (version < storeVersion.tagDescription) {
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 					const {
-						persistence: {customer},
+						persistence: { customer },
 					} = oldState;
 					customer.showTagDescription = true;
 				}
@@ -343,7 +377,7 @@ export const customerRareStore = store(state, {
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 					const {
 						persistence: {
-							customer: {filters},
+							customer: { filters },
 						},
 					} = oldState;
 					filters.includes = [];
@@ -352,13 +386,16 @@ export const customerRareStore = store(state, {
 				if (version < storeVersion.linkedFilter) {
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 					const {
-						persistence: {customer},
+						persistence: { customer },
 					} = oldState;
 					customer.orderLinkedFilter = true;
 				}
 				if (version < storeVersion.mystiaCooker) {
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-					for (const meals of Object.values(oldState.persistence.meals) as any) {
+					for (const meals of Object.values(
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+						oldState.persistence.meals
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					) as any) {
 						for (const meal of meals) {
 							if (meal.hasMystiaCooker) {
 								meal.order.beverageTag = null;
@@ -368,8 +405,11 @@ export const customerRareStore = store(state, {
 					}
 				}
 				if (version < storeVersion.dynamicMeal) {
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-					for (const meals of Object.values(oldState.persistence.meals) as any) {
+					for (const meals of Object.values(
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+						oldState.persistence.meals
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					) as any) {
 						for (const meal of meals) {
 							delete meal.popular;
 							delete meal.price;
@@ -380,14 +420,14 @@ export const customerRareStore = store(state, {
 				if (version < storeVersion.tachie) {
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 					const {
-						persistence: {customer},
+						persistence: { customer },
 					} = oldState;
 					customer.showTachie = true;
 				}
 				if (version < storeVersion.moveTachie) {
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 					const {
-						persistence: {customer},
+						persistence: { customer },
 					} = oldState;
 					delete customer.showTachie;
 				}
@@ -396,7 +436,7 @@ export const customerRareStore = store(state, {
 					const {
 						persistence: {
 							recipe: {
-								table: {visibleColumns},
+								table: { visibleColumns },
 							},
 						},
 					} = oldState;
@@ -410,8 +450,8 @@ export const customerRareStore = store(state, {
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 					const {
 						persistence: {
-							beverage: {table: beverageTable},
-							recipe: {table: recipeTable},
+							beverage: { table: beverageTable },
+							recipe: { table: recipeTable },
 						},
 					} = oldState;
 					if (beverageTable.rows === 7) {
@@ -425,7 +465,7 @@ export const customerRareStore = store(state, {
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 					const {
 						persistence: {
-							ingredient: {filters},
+							ingredient: { filters },
 						},
 					} = oldState;
 					filters.tags = [];
@@ -435,8 +475,8 @@ export const customerRareStore = store(state, {
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 					const {
 						persistence: {
-							beverage: {table: beverageTable},
-							recipe: {table: recipeTable},
+							beverage: { table: beverageTable },
+							recipe: { table: recipeTable },
 						},
 					} = oldState;
 					beverageTable.dlcs = [];
@@ -447,12 +487,16 @@ export const customerRareStore = store(state, {
 				}
 				if (version < storeVersion.mealData) {
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-					const {persistence} = oldState;
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-					for (const meals of Object.values(persistence.meals) as any) {
+					const { persistence } = oldState;
+					for (const meals of Object.values(
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+						persistence.meals
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					) as any) {
 						for (const meal of meals) {
 							// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-							const {extraIngredients, recipe: recipeName} = meal;
+							const { extraIngredients, recipe: recipeName } =
+								meal;
 							meal.recipe = {
 								// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 								extraIngredients, // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -466,8 +510,8 @@ export const customerRareStore = store(state, {
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 					const {
 						persistence: {
-							beverage: {table: beverageTable},
-							recipe: {table: recipeTable},
+							beverage: { table: beverageTable },
+							recipe: { table: recipeTable },
 						},
 					} = oldState;
 					delete beverageTable.rows;
@@ -486,29 +530,48 @@ export const customerRareStore = store(state, {
 	],
 })
 	.computed((currentStore) => ({
-		customerNames: () => getNames(currentStore.persistence.customer.pinyinSortState.use()),
+		customerNames: () =>
+			getNames(currentStore.persistence.customer.pinyinSortState.use()),
 
 		beverageTableDlcs: {
-			read: () => toSet(currentStore.persistence.beverage.table.dlcs.use()) as SelectionSet,
+			read: () =>
+				toSet(
+					currentStore.persistence.beverage.table.dlcs.use()
+				) as SelectionSet,
 			write: (dlcs: Selection) => {
-				currentStore.persistence.beverage.table.dlcs.set(toArray<SelectionSet>(dlcs) as never);
+				currentStore.persistence.beverage.table.dlcs.set(
+					toArray<SelectionSet>(dlcs) as never
+				);
 			},
 		},
 		recipeTableCookers: {
-			read: () => toSet(currentStore.persistence.recipe.table.cookers.use()) as SelectionSet,
+			read: () =>
+				toSet(
+					currentStore.persistence.recipe.table.cookers.use()
+				) as SelectionSet,
 			write: (cookers: Selection) => {
-				currentStore.persistence.recipe.table.cookers.set(toArray<SelectionSet>(cookers) as never);
+				currentStore.persistence.recipe.table.cookers.set(
+					toArray<SelectionSet>(cookers) as never
+				);
 			},
 		},
 		recipeTableDlcs: {
-			read: () => toSet(currentStore.persistence.recipe.table.dlcs.use()) as SelectionSet,
+			read: () =>
+				toSet(
+					currentStore.persistence.recipe.table.dlcs.use()
+				) as SelectionSet,
 			write: (dlcs: Selection) => {
-				currentStore.persistence.recipe.table.dlcs.set(toArray<SelectionSet>(dlcs) as never);
+				currentStore.persistence.recipe.table.dlcs.set(
+					toArray<SelectionSet>(dlcs) as never
+				);
 			},
 		},
 	}))
 	.actions((currentStore) => ({
-		onCustomerFilterBeverageTag(tag: TBeverageTag, hasMystiaCooker: boolean) {
+		onCustomerFilterBeverageTag(
+			tag: TBeverageTag,
+			hasMystiaCooker: boolean
+		) {
 			currentStore.shared.tab.set('beverage');
 			currentStore.shared.beverage.table.page.set(1);
 			currentStore.shared.customer.filterVisibility.set(false);
@@ -516,7 +579,8 @@ export const customerRareStore = store(state, {
 			currentStore.shared.customer.select.beverageTag.set((prev) => {
 				keepLastTag(prev, tag, {
 					hasMystiaCooker,
-					orderTag: currentStore.shared.customer.order.beverageTag.get(),
+					orderTag:
+						currentStore.shared.customer.order.beverageTag.get(),
 				});
 			});
 		},
@@ -528,14 +592,19 @@ export const customerRareStore = store(state, {
 			currentStore.shared.customer.select.recipeTag.set((prev) => {
 				keepLastTag(prev, tag, {
 					hasMystiaCooker,
-					orderTag: currentStore.shared.customer.order.recipeTag.get(),
+					orderTag:
+						currentStore.shared.customer.order.recipeTag.get(),
 				});
 			});
 		},
 		onCustomerOrderBeverageTag(tag: TBeverageTag) {
 			currentStore.shared.customer.order.beverageTag.set((prev) => {
 				if (prev === tag) {
-					trackEvent(trackEvent.category.unselect, 'Customer Tag', tag);
+					trackEvent(
+						trackEvent.category.unselect,
+						'Customer Tag',
+						tag
+					);
 					return null;
 				}
 				trackEvent(trackEvent.category.select, 'Customer Tag', tag);
@@ -545,7 +614,11 @@ export const customerRareStore = store(state, {
 		onCustomerOrderRecipeTag(tag: TRecipeTag) {
 			currentStore.shared.customer.order.recipeTag.set((prev) => {
 				if (prev === tag) {
-					trackEvent(trackEvent.category.unselect, 'Customer Tag', tag);
+					trackEvent(
+						trackEvent.category.unselect,
+						'Customer Tag',
+						tag
+					);
 					return null;
 				}
 				trackEvent(trackEvent.category.select, 'Customer Tag', tag);
@@ -573,14 +646,17 @@ export const customerRareStore = store(state, {
 			currentStore.shared.beverage.table.page.set(1);
 		},
 		onBeverageTableSelectedTagsChange(tags: Selection) {
-			currentStore.shared.customer.select.beverageTag.set(tags as SelectionSet);
+			currentStore.shared.customer.select.beverageTag.set(
+				tags as SelectionSet
+			);
 			currentStore.shared.beverage.table.page.set(1);
 		},
 		onBeverageTableSortChange(config: TBeverageTableSortDescriptor) {
 			currentStore.shared.beverage.table.page.set(1);
 			const sortConfig = config as Required<TBeverageTableSortDescriptor>;
-			const {column, direction} = sortConfig;
-			const {lastColumn, time} = currentStore.persistence.beverage.table.sortDescriptor.get();
+			const { column, direction } = sortConfig;
+			const { lastColumn, time } =
+				currentStore.persistence.beverage.table.sortDescriptor.get();
 			if (lastColumn === undefined || column !== lastColumn) {
 				currentStore.persistence.beverage.table.sortDescriptor.assign({
 					column,
@@ -594,18 +670,23 @@ export const customerRareStore = store(state, {
 			if (time !== undefined) {
 				if (column === lastColumn) {
 					if (time % 2 === 0) {
-						currentStore.persistence.beverage.table.sortDescriptor.set({});
+						currentStore.persistence.beverage.table.sortDescriptor.set(
+							{}
+						);
 						return;
 					}
 				} else {
-					currentStore.persistence.beverage.table.sortDescriptor.assign({
-						time: 1,
-					});
+					currentStore.persistence.beverage.table.sortDescriptor.assign(
+						{ time: 1 }
+					);
 				}
 			}
 			// Reverse direction `ascending` to `descending` when first time
 			let reversedDirection = direction;
-			if ((column === 'price' || column === 'suitability') && column !== lastColumn) {
+			if (
+				(column === 'price' || column === 'suitability') &&
+				column !== lastColumn
+			) {
 				reversedDirection = reverseDirection(direction);
 			}
 			currentStore.persistence.beverage.table.sortDescriptor.assign({
@@ -623,11 +704,18 @@ export const customerRareStore = store(state, {
 				return;
 			}
 			currentStore.shared.recipe.data.set((prev) => {
-				if (prev !== null && recipe.ingredients.length + prev.extraIngredients.length < 5) {
+				if (
+					prev !== null &&
+					recipe.ingredients.length + prev.extraIngredients.length < 5
+				) {
 					prev.extraIngredients.push(ingredientName);
 				}
 			});
-			trackEvent(trackEvent.category.select, 'Ingredient', ingredientName);
+			trackEvent(
+				trackEvent.category.select,
+				'Ingredient',
+				ingredientName
+			);
 		},
 
 		onRecipeTableAction(recipeName: TRecipeName) {
@@ -653,14 +741,17 @@ export const customerRareStore = store(state, {
 			currentStore.shared.recipe.table.page.set(1);
 		},
 		onRecipeTableSelectedPositiveTagsChange(tags: Selection) {
-			currentStore.shared.customer.select.recipeTag.set(tags as SelectionSet);
+			currentStore.shared.customer.select.recipeTag.set(
+				tags as SelectionSet
+			);
 			currentStore.shared.recipe.table.page.set(1);
 		},
 		onRecipeTableSortChange(config: TRecipeTableSortDescriptor) {
 			currentStore.shared.recipe.table.page.set(1);
 			const sortConfig = config as Required<TRecipeTableSortDescriptor>;
-			const {column, direction} = sortConfig;
-			const {lastColumn, time} = currentStore.persistence.recipe.table.sortDescriptor.get();
+			const { column, direction } = sortConfig;
+			const { lastColumn, time } =
+				currentStore.persistence.recipe.table.sortDescriptor.get();
 			if (lastColumn === undefined || column !== lastColumn) {
 				currentStore.persistence.recipe.table.sortDescriptor.assign({
 					column,
@@ -674,18 +765,23 @@ export const customerRareStore = store(state, {
 			if (time !== undefined) {
 				if (column === lastColumn) {
 					if (time % 2 === 0) {
-						currentStore.persistence.recipe.table.sortDescriptor.set({});
+						currentStore.persistence.recipe.table.sortDescriptor.set(
+							{}
+						);
 						return;
 					}
 				} else {
-					currentStore.persistence.recipe.table.sortDescriptor.assign({
-						time: 1,
-					});
+					currentStore.persistence.recipe.table.sortDescriptor.assign(
+						{ time: 1 }
+					);
 				}
 			}
 			// Reverse direction `ascending` to `descending` when first time
 			let reversedDirection = direction;
-			if ((column === 'price' || column === 'suitability') && column !== lastColumn) {
+			if (
+				(column === 'price' || column === 'suitability') &&
+				column !== lastColumn
+			) {
 				reversedDirection = reverseDirection(direction);
 			}
 			currentStore.persistence.recipe.table.sortDescriptor.assign({
@@ -695,8 +791,12 @@ export const customerRareStore = store(state, {
 
 		onTabSelectionChange(tab: Key) {
 			currentStore.shared.tab.set(tab as TTab);
-			currentStore.shared.customer.filterVisibility.set(tab === 'customer');
-			currentStore.shared.ingredient.filterVisibility.set(tab === 'ingredient');
+			currentStore.shared.customer.filterVisibility.set(
+				tab === 'customer'
+			);
+			currentStore.shared.ingredient.filterVisibility.set(
+				tab === 'ingredient'
+			);
 		},
 
 		evaluateMealResult() {
@@ -710,23 +810,32 @@ export const customerRareStore = store(state, {
 				positiveTags: customerPositiveTags,
 			} = instance_customer.getPropsByName(customerName);
 			const customerOrder = currentStore.shared.customer.order.get();
-			const hasMystiaCooker = currentStore.shared.customer.hasMystiaCooker.get();
-			const isDarkMatter = Boolean(currentStore.shared.customer.isDarkMatter.get());
+			const hasMystiaCooker =
+				currentStore.shared.customer.hasMystiaCooker.get();
+			const isDarkMatter = Boolean(
+				currentStore.shared.customer.isDarkMatter.get()
+			);
 			const beverageTags: TBeverageTag[] = [];
 			const beverageName = currentStore.shared.beverage.name.get();
 			if (beverageName !== null) {
-				beverageTags.push(...instance_beverage.getPropsByName(beverageName, 'tags'));
+				beverageTags.push(
+					...instance_beverage.getPropsByName(beverageName, 'tags')
+				);
 			}
 			const recipeData = currentStore.shared.recipe.data.get();
 			const recipeName = recipeData?.name ?? null;
 			const ingredients: TIngredientName[] = [];
 			if (recipeData !== null) {
 				ingredients.push(
-					...instance_recipe.getPropsByName(recipeData.name, 'ingredients'),
+					...instance_recipe.getPropsByName(
+						recipeData.name,
+						'ingredients'
+					),
 					...recipeData.extraIngredients
 				);
 			}
-			const recipeTagsWithTrend = currentStore.shared.recipe.tagsWithTrend.get();
+			const recipeTagsWithTrend =
+				currentStore.shared.recipe.tagsWithTrend.get();
 			const rating = instance_customer.evaluateMeal({
 				currentBeverageTags: beverageTags,
 				currentCustomerBeverageTags: customerBeverageTags,
@@ -762,7 +871,7 @@ export const customerRareStore = store(state, {
 				hasMystiaCooker,
 				isFamousShop,
 				popularTrend,
-				recipeData: {extraIngredients, name: recipeName},
+				recipeData: { extraIngredients, name: recipeName },
 			} = data;
 			const {
 				beverageTags: customerBeverageTags,
@@ -770,21 +879,28 @@ export const customerRareStore = store(state, {
 				positiveTags: customerPositiveTags,
 			} = instance_customer.getPropsByName(customerName);
 			const beverage = instance_beverage.getPropsByName(beverageName);
-			const {price: beveragePrice, tags: beverageTags} = beverage;
+			const { price: beveragePrice, tags: beverageTags } = beverage;
 			const recipe = instance_recipe.getPropsByName(recipeName);
-			const {ingredients, negativeTags, positiveTags, price: originalRecipePrice} = recipe;
-			const {extraTags, isDarkMatter} = instance_recipe.checkDarkMatter({
-				extraIngredients,
-				negativeTags,
-			});
-			const recipePrice = isDarkMatter ? DARK_MATTER_META_MAP.price : originalRecipePrice;
-			const composedRecipeTags = instance_recipe.composeTagsWithPopularTrend(
+			const {
 				ingredients,
-				extraIngredients,
+				negativeTags,
 				positiveTags,
-				extraTags,
-				popularTrend
+				price: originalRecipePrice,
+			} = recipe;
+			const { extraTags, isDarkMatter } = instance_recipe.checkDarkMatter(
+				{ extraIngredients, negativeTags }
 			);
+			const recipePrice = isDarkMatter
+				? DARK_MATTER_META_MAP.price
+				: originalRecipePrice;
+			const composedRecipeTags =
+				instance_recipe.composeTagsWithPopularTrend(
+					ingredients,
+					extraIngredients,
+					positiveTags,
+					extraTags,
+					popularTrend
+				);
 			const recipeTagsWithTrend = instance_recipe.calculateTagsWithTrend(
 				composedRecipeTags,
 				popularTrend,
@@ -814,44 +930,54 @@ export const customerRareStore = store(state, {
 		removeMealIngredient(ingredientName: TIngredientName) {
 			currentStore.shared.recipe.data.set((prev) => {
 				if (prev !== null) {
-					prev.extraIngredients = removeLastElement(prev.extraIngredients, ingredientName);
+					prev.extraIngredients = removeLastElement(
+						prev.extraIngredients,
+						ingredientName
+					);
 				}
 			});
-			trackEvent(trackEvent.category.unselect, 'Ingredient', ingredientName);
+			trackEvent(
+				trackEvent.category.unselect,
+				'Ingredient',
+				ingredientName
+			);
 		},
 		saveMealResult() {
 			const customerName = currentStore.shared.customer.name.get();
 			const beverageName = currentStore.shared.beverage.name.get();
 			const recipeData = currentStore.shared.recipe.data.get();
-			if (customerName === null || beverageName === null || recipeData === null) {
+			if (
+				customerName === null ||
+				beverageName === null ||
+				recipeData === null
+			) {
 				return;
 			}
-			const {extraIngredients, name: recipeName} = recipeData;
+			const { extraIngredients, name: recipeName } = recipeData;
 			const customerOrder = currentStore.shared.customer.order.get();
-			const hasMystiaCooker = currentStore.shared.customer.hasMystiaCooker.get();
-			const isDarkMatter = currentStore.shared.customer.isDarkMatter.get();
+			const hasMystiaCooker =
+				currentStore.shared.customer.hasMystiaCooker.get();
+			const isDarkMatter =
+				currentStore.shared.customer.isDarkMatter.get();
 			const saveObject = {
 				beverage: beverageName,
 				hasMystiaCooker,
 				order:
 					hasMystiaCooker && !isDarkMatter
-						? {
-								beverageTag: null,
-								recipeTag: null,
-							}
+						? { beverageTag: null, recipeTag: null }
 						: customerOrder,
-				recipe: {
-					extraIngredients,
-					name: recipeName,
-				},
+				recipe: { extraIngredients, name: recipeName },
 			} as const;
 			currentStore.persistence.meals.set((prev) => {
 				if (customerName in prev) {
-					const indexes = prev[customerName]?.map(({index}) => index) ?? [];
-					const index = checkEmpty(indexes) ? 0 : Math.max(...indexes, 0) + 1;
-					prev[customerName]?.push({...saveObject, index});
+					const indexes =
+						prev[customerName]?.map(({ index }) => index) ?? [];
+					const index = checkEmpty(indexes)
+						? 0
+						: Math.max(...indexes, 0) + 1;
+					prev[customerName]?.push({ ...saveObject, index });
 				} else {
-					prev[customerName] = [{...saveObject, index: 0}];
+					prev[customerName] = [{ ...saveObject, index: 0 }];
 				}
 			});
 			trackEvent(
@@ -895,41 +1021,58 @@ export const customerRareStore = store(state, {
 			}
 		},
 		toggleCustomerTabVisibilityState() {
-			currentStore.persistence.customer.tabVisibility.set(reverseVisibilityState);
+			currentStore.persistence.customer.tabVisibility.set(
+				reverseVisibilityState
+			);
 		},
 		toggleIngredientTabVisibilityState() {
-			currentStore.persistence.ingredient.tabVisibility.set(reverseVisibilityState);
+			currentStore.persistence.ingredient.tabVisibility.set(
+				reverseVisibilityState
+			);
 		},
 		toggleMystiaCooker() {
-			const hasMystiaCooker = currentStore.shared.customer.hasMystiaCooker.get();
+			const hasMystiaCooker =
+				currentStore.shared.customer.hasMystiaCooker.get();
 			currentStore.shared.customer.hasMystiaCooker.set(!hasMystiaCooker);
-			trackEvent(hasMystiaCooker ? trackEvent.category.unselect : trackEvent.category.select, 'MystiaCooker');
+			trackEvent(
+				hasMystiaCooker
+					? trackEvent.category.unselect
+					: trackEvent.category.select,
+				'MystiaCooker'
+			);
 		},
 		updateRecipeTagsWithTrend() {
 			const recipeData = currentStore.shared.recipe.data.get();
 			if (recipeData === null) {
 				currentStore.shared.recipe.tagsWithTrend.set([]);
 			} else {
-				const {extraIngredients, name} = recipeData;
-				const {ingredients, positiveTags} = instance_recipe.getPropsByName(name);
+				const { extraIngredients, name } = recipeData;
+				const { ingredients, positiveTags } =
+					instance_recipe.getPropsByName(name);
 				const extraTags = extraIngredients.flatMap((extraIngredient) =>
 					instance_ingredient.getPropsByName(extraIngredient, 'tags')
 				);
-				const popularTrend = currentStore.shared.customer.popularTrend.get();
-				const isFamousShop = currentStore.shared.customer.famousShop.get();
-				const composedRecipeTags = instance_recipe.composeTagsWithPopularTrend(
-					ingredients,
-					extraIngredients,
-					positiveTags,
-					extraTags,
-					popularTrend
+				const popularTrend =
+					currentStore.shared.customer.popularTrend.get();
+				const isFamousShop =
+					currentStore.shared.customer.famousShop.get();
+				const composedRecipeTags =
+					instance_recipe.composeTagsWithPopularTrend(
+						ingredients,
+						extraIngredients,
+						positiveTags,
+						extraTags,
+						popularTrend
+					);
+				const recipeTagsWithTrend =
+					instance_recipe.calculateTagsWithTrend(
+						composedRecipeTags,
+						popularTrend,
+						isFamousShop
+					);
+				currentStore.shared.recipe.tagsWithTrend.set(
+					recipeTagsWithTrend
 				);
-				const recipeTagsWithTrend = instance_recipe.calculateTagsWithTrend(
-					composedRecipeTags,
-					popularTrend,
-					isFamousShop
-				);
-				currentStore.shared.recipe.tagsWithTrend.set(recipeTagsWithTrend);
 			}
 		},
 	}));
@@ -939,7 +1082,9 @@ customerRareStore.shared.customer.name.onChange((name) => {
 	customerRareStore.refreshCustomerSelectedItems();
 });
 
-customerRareStore.shared.customer.order.onChange(customerRareStore.evaluateMealResult);
+customerRareStore.shared.customer.order.onChange(
+	customerRareStore.evaluateMealResult
+);
 
 customerRareStore.shared.customer.famousShop.onChange(() => {
 	customerRareStore.updateRecipeTagsWithTrend();
@@ -950,10 +1095,16 @@ customerRareStore.shared.customer.popularTrend.onChange(() => {
 	customerRareStore.evaluateMealResult();
 });
 
-customerRareStore.shared.customer.hasMystiaCooker.onChange(customerRareStore.evaluateMealResult);
-customerRareStore.shared.customer.isDarkMatter.onChange(customerRareStore.evaluateMealResult);
+customerRareStore.shared.customer.hasMystiaCooker.onChange(
+	customerRareStore.evaluateMealResult
+);
+customerRareStore.shared.customer.isDarkMatter.onChange(
+	customerRareStore.evaluateMealResult
+);
 
-customerRareStore.shared.beverage.name.onChange(customerRareStore.evaluateMealResult);
+customerRareStore.shared.beverage.name.onChange(
+	customerRareStore.evaluateMealResult
+);
 customerRareStore.shared.recipe.data.onChange((data) => {
 	customerRareStore.updateRecipeTagsWithTrend();
 	customerRareStore.evaluateMealResult();
@@ -961,7 +1112,9 @@ customerRareStore.shared.recipe.data.onChange((data) => {
 		if (checkEmpty(data.extraIngredients)) {
 			customerRareStore.shared.customer.isDarkMatter.set(false);
 		} else {
-			customerRareStore.shared.customer.isDarkMatter.set(instance_recipe.checkDarkMatter(data).isDarkMatter);
+			customerRareStore.shared.customer.isDarkMatter.set(
+				instance_recipe.checkDarkMatter(data).isDarkMatter
+			);
 		}
 	}
 });

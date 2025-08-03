@@ -1,4 +1,4 @@
-import type {IFoodBase} from '@/data/types';
+import type { IFoodBase } from '@/data/types';
 
 type TTag =
 	| '无酒精'

@@ -1,17 +1,18 @@
-import {store} from '@davstack/store';
+import { store } from '@davstack/store';
 
-import {type TPinyinSortState, pinyinSortStateMap} from '@/components/sidePinyinSortIconButton';
+import {
+	type TPinyinSortState,
+	pinyinSortStateMap,
+} from '@/components/sidePinyinSortIconButton';
 
-import {persist as persistMiddleware} from '@/stores/middlewares';
-import {createNamesCache} from '@/stores/utils';
-import {numberSort, pinyinSort, toGetValueCollection} from '@/utilities';
-import {Cooker} from '@/utils';
+import { persist as persistMiddleware } from '@/stores/middlewares';
+import { createNamesCache } from '@/stores/utils';
+import { numberSort, pinyinSort, toGetValueCollection } from '@/utilities';
+import { Cooker } from '@/utils';
 
 const instance = Cooker.getInstance();
 
-const storeVersion = {
-	initial: 0,
-} as const;
+const storeVersion = { initial: 0 } as const;
 
 const state = {
 	instance,

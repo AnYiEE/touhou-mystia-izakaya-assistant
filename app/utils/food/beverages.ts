@@ -1,7 +1,12 @@
-import {Food} from './base';
-import {BEVERAGE_LIST, type TBeverageName, type TBeverageTag, type TBeverages} from '@/data';
+import { Food } from './base';
+import {
+	BEVERAGE_LIST,
+	type TBeverageName,
+	type TBeverageTag,
+	type TBeverages,
+} from '@/data';
 
-import {checkArrayEqualOf} from '@/utilities';
+import { checkArrayEqualOf } from '@/utilities';
 
 export class Beverage extends Food<TBeverages> {
 	private static _instance: Beverage | undefined;
@@ -52,9 +57,14 @@ export class Beverage extends Food<TBeverages> {
 			return Beverage._sortedTags;
 		}
 
-		const isTagsEqual = checkArrayEqualOf(Beverage._sortedTags, this.getValuesByProp('tags'));
+		const isTagsEqual = checkArrayEqualOf(
+			Beverage._sortedTags,
+			this.getValuesByProp('tags')
+		);
 		if (!isTagsEqual) {
-			throw new Error('[utils/food/Beverage]: the given tags is inconsistent with the tags in the original data');
+			throw new Error(
+				'[utils/food/Beverage]: the given tags is inconsistent with the tags in the original data'
+			);
 		}
 
 		Beverage._isTagsChecked = true;
@@ -66,14 +76,17 @@ export class Beverage extends Food<TBeverages> {
 	 * @description Get the suitability of a beverage for a customer based on their tags.
 	 * @returns An object containing the suitability of the beverage and the tags that are common to both the beverage and the customer.
 	 */
-	public getCustomerSuitability<T extends string>(name: TBeverageName, customerTags: ReadonlyArray<T>) {
+	public getCustomerSuitability<T extends string>(
+		name: TBeverageName,
+		customerTags: ReadonlyArray<T>
+	) {
 		const beverageTags = this.getPropsByName(name, 'tags');
 
-		const {commonTags, count} = this.getCommonTags(beverageTags, customerTags);
+		const { commonTags, count } = this.getCommonTags(
+			beverageTags,
+			customerTags
+		);
 
-		return {
-			suitability: count,
-			tags: commonTags,
-		};
+		return { suitability: count, tags: commonTags };
 	}
 }

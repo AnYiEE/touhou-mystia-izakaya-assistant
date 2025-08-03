@@ -1,19 +1,28 @@
 'use client';
 
-import {Component, type ErrorInfo, type PropsWithChildren, memo, useCallback} from 'react';
+import {
+	Component,
+	type ErrorInfo,
+	type PropsWithChildren,
+	memo,
+	useCallback,
+} from 'react';
 
-import {trackEvent} from '@/components/analytics';
+import { trackEvent } from '@/components/analytics';
 
-import {siteConfig} from '@/configs';
+import { siteConfig } from '@/configs';
 
-const {links} = siteConfig;
+const { links } = siteConfig;
 
 interface IErrorFallbackProps {
 	error: Error | null;
 	info?: ErrorInfo | null;
 }
 
-export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({error, info}) {
+export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
+	error,
+	info,
+}) {
 	const handleClick = useCallback((shouldClear: boolean) => {
 		if (shouldClear) {
 			try {
@@ -30,9 +39,7 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({e
 		({
 			children,
 			shouldClear = false,
-		}: PropsWithChildren<{
-			shouldClear?: boolean;
-		}>) => (
+		}: PropsWithChildren<{ shouldClear?: boolean }>) => (
 			<button
 				className="mx-auto block w-1/2 cursor-pointer rounded-medium bg-content1 p-2 transition-background hover:bg-content2 motion-reduce:transition-none"
 				onClick={() => {
@@ -92,32 +99,28 @@ export default class ErrorBoundary extends Component<IProps, IStates> {
 	public constructor(props: IProps) {
 		super(props);
 
-		this.state = {
-			error: null,
-			hasError: false,
-			info: null,
-		};
+		this.state = { error: null, hasError: false, info: null };
 	}
 
 	static getDerivedStateFromError(error: Error) {
-		return {
-			error,
-			hasError: true,
-		};
+		return { error, hasError: true };
 	}
 
-	public override componentDidCatch({message}: Error, info: ErrorInfo) {
+	public override componentDidCatch({ message }: Error, info: ErrorInfo) {
 		if (!this.state.hasError) {
-			this.setState({
-				info,
-			});
+			this.setState({ info });
 		}
 		trackEvent(trackEvent.category.error, 'Global', message);
 	}
 
 	public override render() {
 		if (this.state.hasError) {
-			return <ErrorFallback error={this.state.error} info={this.state.info} />;
+			return (
+				<ErrorFallback
+					error={this.state.error}
+					info={this.state.info}
+				/>
+			);
 		}
 
 		return this.props.children;

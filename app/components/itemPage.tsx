@@ -1,10 +1,10 @@
 'use client';
 
-import {type PropsWithChildren, memo} from 'react';
+import { type PropsWithChildren, memo } from 'react';
 
-import {useMounted, useSkipProcessItemData} from '@/hooks';
+import { useMounted, useSkipProcessItemData } from '@/hooks';
 
-import {cn} from '@/design/ui/components';
+import { cn } from '@/design/ui/components';
 
 import Loading from '@/loading';
 import Placeholder from '@/components/placeholder';
@@ -14,7 +14,11 @@ interface IProps {
 	sideButton: ReactNodeWithoutBoolean;
 }
 
-export default memo<PropsWithChildren<IProps>>(function ItemPage({children, isEmpty, sideButton}) {
+export default memo<PropsWithChildren<IProps>>(function ItemPage({
+	children,
+	isEmpty,
+	sideButton,
+}) {
 	const isMounted = useMounted();
 	const shouldSkipProcessData = useSkipProcessItemData();
 

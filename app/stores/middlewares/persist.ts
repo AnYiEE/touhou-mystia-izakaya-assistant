@@ -1,5 +1,8 @@
-import {type StateCreator} from 'zustand';
-import {type PersistOptions, persist as persistMiddleware} from 'zustand/middleware';
+import { type StateCreator } from 'zustand';
+import {
+	type PersistOptions,
+	persist as persistMiddleware,
+} from 'zustand/middleware';
 
 // eslint-disable-next-line unicorn/prefer-global-this
 const isServer = typeof window === 'undefined';

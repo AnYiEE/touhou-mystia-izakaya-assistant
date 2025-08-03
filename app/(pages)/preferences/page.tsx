@@ -1,6 +1,6 @@
 'use client';
 
-import {useMounted} from '@/hooks';
+import { useMounted } from '@/hooks';
 
 import Content from './content';
 import Loading from '@/loading';

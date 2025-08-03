@@ -1,7 +1,9 @@
-import {memoize} from '@/utilities/memoize';
+import { memoize } from '@/utilities/memoize';
 
-export const processPinyin = memoize(function processPinyin(pinyin: ReadonlyArray<string>) {
-	const {pinyinFirstLetters, pinyinWithoutTone} = pinyin.reduce<{
+export const processPinyin = memoize(function processPinyin(
+	pinyin: ReadonlyArray<string>
+) {
+	const { pinyinFirstLetters, pinyinWithoutTone } = pinyin.reduce<{
 		pinyinFirstLetters: string;
 		pinyinWithoutTone: string[];
 	}>(
@@ -15,14 +17,8 @@ export const processPinyin = memoize(function processPinyin(pinyin: ReadonlyArra
 
 			return acc;
 		},
-		{
-			pinyinFirstLetters: '',
-			pinyinWithoutTone: [],
-		}
+		{ pinyinFirstLetters: '', pinyinWithoutTone: [] }
 	);
 
-	return {
-		pinyinFirstLetters,
-		pinyinWithoutTone,
-	};
+	return { pinyinFirstLetters, pinyinWithoutTone };
 }, 'WeakMap');

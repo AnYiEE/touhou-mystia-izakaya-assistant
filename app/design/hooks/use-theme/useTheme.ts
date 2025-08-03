@@ -1,12 +1,12 @@
 'use client';
 
-import {useCallback, useState} from 'react';
+import { useCallback, useState } from 'react';
 
-import {useMounted} from '@/hooks';
+import { useMounted } from '@/hooks';
 
-import {COLOR_MAP, MEDIA, STORAGE_KEY, THEME_MAP} from './constants';
-import type {TTheme} from './types';
-import {addSafeMediaQueryEventListener} from '@/design/utils';
+import { COLOR_MAP, MEDIA, STORAGE_KEY, THEME_MAP } from './constants';
+import type { TTheme } from './types';
+import { addSafeMediaQueryEventListener } from '@/design/utils';
 
 // eslint-disable-next-line unicorn/prefer-global-this
 const isServer = typeof window === 'undefined';
@@ -33,19 +33,24 @@ function getThemeCallback() {
 }
 
 function setThemeCallback(selectedTheme: TTheme, isFromEvent?: boolean) {
-	const targetTheme = selectedTheme === THEME_MAP.SYSTEM ? getSystemTheme() : selectedTheme;
+	const targetTheme =
+		selectedTheme === THEME_MAP.SYSTEM ? getSystemTheme() : selectedTheme;
 	const isTargetDarkTheme = targetTheme === THEME_MAP.DARK;
 
 	document.documentElement.classList.remove(...Object.values(THEME_MAP));
 	document.documentElement.classList.add(targetTheme);
 	document.documentElement.style.colorScheme = targetTheme;
 
-	document.querySelectorAll('meta[name="theme-color"]').forEach((metaElement) => {
-		metaElement.remove();
-	});
+	document
+		.querySelectorAll('meta[name="theme-color"]')
+		.forEach((metaElement) => {
+			metaElement.remove();
+		});
 
 	const metaElement = document.createElement('meta');
-	metaElement.content = isTargetDarkTheme ? COLOR_MAP.DARK : COLOR_MAP.LIGHT_THEME;
+	metaElement.content = isTargetDarkTheme
+		? COLOR_MAP.DARK
+		: COLOR_MAP.LIGHT_THEME;
 	metaElement.name = 'theme-color';
 
 	document.head.append(metaElement);

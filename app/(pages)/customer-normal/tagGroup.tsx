@@ -1,1 +1,1 @@
-export {default} from '@/(pages)/customer-rare/tagGroup';
+export { default } from '@/(pages)/customer-rare/tagGroup';

@@ -1,1 +1,1 @@
-export {PreferencesModalDefault as default} from '@/(pages)/preferences/modal';
+export { PreferencesModalDefault as default } from '@/(pages)/preferences/modal';

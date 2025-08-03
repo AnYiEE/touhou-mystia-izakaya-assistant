@@ -1,15 +1,15 @@
 'use client';
 
-import {memo, useMemo} from 'react';
+import { memo, useMemo } from 'react';
 
-import {useReducedMotion} from '@/design/ui/hooks';
+import { useReducedMotion } from '@/design/ui/hooks';
 
-import {type ButtonProps, Button as HeroUIButton} from '@heroui/button';
-import {type InternalForwardRefRenderFunction} from '@heroui/system';
+import { type ButtonProps, Button as HeroUIButton } from '@heroui/button';
+import { type InternalForwardRefRenderFunction } from '@heroui/system';
 
-import {cn} from '@/design/ui/utils';
+import { cn } from '@/design/ui/utils';
 
-import {globalStore as store} from '@/stores';
+import { globalStore as store } from '@/stores';
 
 interface IProps extends ButtonProps {}
 
@@ -31,7 +31,10 @@ export default memo<IProps>(function Button({
 			'data-[hover=true]:!opacity-100 data-[hover=true]:brightness-95',
 			'data-[pressed=true]:scale-[0.98] data-[pressed=true]:brightness-90 motion-reduce:data-[pressed=true]:scale-100'
 		);
-		const transition = cn('!transition motion-reduce:!transition-none', disableAnimation && '!transition-none');
+		const transition = cn(
+			'!transition motion-reduce:!transition-none',
+			disableAnimation && '!transition-none'
+		);
 
 		switch (variant) {
 			case 'light':
@@ -58,7 +61,10 @@ export default memo<IProps>(function Button({
 			case 'ghost':
 				return cn('backdrop-blur');
 			case 'light':
-				return cn('data-[hover=true]:backdrop-blur', 'data-[pressed=true]:backdrop-blur');
+				return cn(
+					'data-[hover=true]:backdrop-blur',
+					'data-[pressed=true]:backdrop-blur'
+				);
 			default:
 				return cn('bg-opacity-80 backdrop-blur');
 		}
@@ -79,15 +85,25 @@ export default memo<IProps>(function Button({
 			case 'flat':
 				switch (color) {
 					case 'danger':
-						return cn('bg-danger/40 text-danger-700 dark:text-danger-600');
+						return cn(
+							'bg-danger/40 text-danger-700 dark:text-danger-600'
+						);
 					case 'primary':
-						return cn('bg-primary/40 text-primary-700 dark:text-primary');
+						return cn(
+							'bg-primary/40 text-primary-700 dark:text-primary'
+						);
 					case 'secondary':
-						return cn('bg-secondary/40 text-secondary-700 dark:text-secondary');
+						return cn(
+							'bg-secondary/40 text-secondary-700 dark:text-secondary'
+						);
 					case 'success':
-						return cn('bg-success/40 text-success-700 dark:text-success');
+						return cn(
+							'bg-success/40 text-success-700 dark:text-success'
+						);
 					case 'warning':
-						return cn('bg-warning/40 text-warning-700 dark:text-warning-600');
+						return cn(
+							'bg-warning/40 text-warning-700 dark:text-warning-600'
+						);
 					default:
 						return cn('dark:text-default-600');
 				}
@@ -192,7 +208,13 @@ export default memo<IProps>(function Button({
 			disableAnimation={disableAnimation ?? isReducedMotion}
 			endContent={endContent}
 			variant={variant}
-			className={cn('transform-gpu', styleBase, styleBlur, styleColor, className)}
+			className={cn(
+				'transform-gpu',
+				styleBase,
+				styleBlur,
+				styleColor,
+				className
+			)}
 			{...props}
 		>
 			{typeof children === 'string' && endContent !== undefined ? (
@@ -204,4 +226,4 @@ export default memo<IProps>(function Button({
 	);
 }) as InternalForwardRefRenderFunction<'button', IProps>;
 
-export type {IProps as IButtonProps};
+export type { IProps as IButtonProps };

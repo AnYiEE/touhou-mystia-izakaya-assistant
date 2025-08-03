@@ -1,17 +1,18 @@
-import {store} from '@davstack/store';
+import { store } from '@davstack/store';
 
-import {type TPinyinSortState, pinyinSortStateMap} from '@/components/sidePinyinSortIconButton';
+import {
+	type TPinyinSortState,
+	pinyinSortStateMap,
+} from '@/components/sidePinyinSortIconButton';
 
-import {persist as persistMiddleware} from '@/stores/middlewares';
-import {createNamesCache} from '@/stores/utils';
-import {numberSort} from '@/utilities';
-import {Partner} from '@/utils';
+import { persist as persistMiddleware } from '@/stores/middlewares';
+import { createNamesCache } from '@/stores/utils';
+import { numberSort } from '@/utilities';
+import { Partner } from '@/utils';
 
 const instance = Partner.getInstance();
 
-const storeVersion = {
-	initial: 0,
-} as const;
+const storeVersion = { initial: 0 } as const;
 
 const state = {
 	instance,
@@ -19,9 +20,7 @@ const state = {
 	dlcs: instance.getValuesByProp('dlc', true).sort(numberSort),
 
 	persistence: {
-		filters: {
-			dlcs: [] as string[],
-		},
+		filters: { dlcs: [] as string[] },
 		pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
 		searchValue: '',
 	},
