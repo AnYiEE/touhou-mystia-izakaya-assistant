@@ -159,8 +159,8 @@ importers:
         specifier: ^0.7.0
         version: 0.7.0
       kysely:
-        specifier: ^0.28.3
-        version: 0.28.3
+        specifier: ^0.28.4
+        version: 0.28.4
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -171,8 +171,8 @@ importers:
         specifier: ^2.5.1
         version: 2.5.1(react@19.1.1)
       pinyin-pro:
-        specifier: ^3.26.0
-        version: 3.26.0
+        specifier: ^3.27.0
+        version: 3.27.0
       react:
         specifier: ^19.1.1
         version: 19.1.1
@@ -244,8 +244,8 @@ importers:
         specifier: ^19.1.7
         version: 19.1.7(@types/react@19.1.9)
       '@types/serviceworker':
-        specifier: ^0.0.147
-        version: 0.0.147
+        specifier: ^0.0.149
+        version: 0.0.149
       '@types/ua-parser-js':
         specifier: ^0.7.39
         version: 0.7.39
@@ -2536,8 +2536,8 @@ packages:
   '@types/react@19.1.9':
     resolution: {integrity: sha512-WmdoynAX8Stew/36uTSVMcLJJ1KRh6L3IZRx1PZ7qJtBqT3dYTgyDTx8H1qoRghErydW7xw9mSJ3wS//tCRpFA==}
 
-  '@types/serviceworker@0.0.147':
-    resolution: {integrity: sha512-l+nd8PlzcPF+FNZ/FGYLMjn1sIghd769RrmFCCYqEzzSIfUcTUfJX3q+X04qgr8n5tVXFfQnOzCopIumrWTQAg==}
+  '@types/serviceworker@0.0.149':
+    resolution: {integrity: sha512-WMBou3Q5hQYGqQbCKTfdNWPUFmaiGyVDaM5wdN08+zkpbEOjl7RwYqfh0TCV0CUSFhL6HjyDP7z3xLZTQmaylw==}
 
   '@types/ua-parser-js@0.7.39':
     resolution: {integrity: sha512-P/oDfpofrdtF5xw433SPALpdSchtJmY7nsJItf8h3KXqOslkbySh8zq4dSWXH2oTjRvJ5PczVEoCZPow6GicLg==}
@@ -3966,8 +3966,8 @@ packages:
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
-  keyv@5.4.0:
-    resolution: {integrity: sha512-TMckyVjEoacG5IteUpUrOBsFORtheqziVyyY2dLUwg1jwTb8u48LX4TgmtogkNl9Y9unaEJ1luj10fGyjMGFOQ==}
+  keyv@5.5.0:
+    resolution: {integrity: sha512-QG7qR2tijh1ftOvClut4YKKg1iW6cx3GZsKoGyJPxHkGWK9oJhG9P3j5deP0QQOGDowBMVQFaP+Vm4NpGYvmIQ==}
 
   kind-of@6.0.3:
     resolution: {integrity: sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==}
@@ -3979,8 +3979,8 @@ packages:
   known-css-properties@0.37.0:
     resolution: {integrity: sha512-JCDrsP4Z1Sb9JwG0aJ8Eo2r7k4Ou5MwmThS/6lcIe1ICyb7UBJKGRIUUdqc2ASdE/42lgz6zFUnzAIhtXnBVrQ==}
 
-  kysely@0.28.3:
-    resolution: {integrity: sha512-svKnkSH72APRdjfVCCOknxaC9Eb3nA2StHG9d5/sKOqRvHRp2Dtf1XwDvc92b4B5v6LV+EAGWXQbZ5jMOvHaDw==}
+  kysely@0.28.4:
+    resolution: {integrity: sha512-pfQj8/Bo3KSzC1HIZB5MeeYRWcDmx1ZZv8H25LsyeygqXE+gfsbUAgPT1GSYZFctB1cdOVlv+OifuCls2mQSnw==}
     engines: {node: '>=20.0.0'}
 
   language-subtag-registry@0.3.23:
@@ -4383,8 +4383,8 @@ packages:
     resolution: {integrity: sha512-udgsAY+fTnvv7kI7aaxbqwWNb0AHiB0qBO89PZKPkoTmGOgdbrHDKD+0B2X4uTfJ/FT1R09r9gTsjUjNJotuog==}
     engines: {node: '>=0.10.0'}
 
-  pinyin-pro@3.26.0:
-    resolution: {integrity: sha512-HcBZZb0pvm0/JkPhZHWA5Hqp2cWHXrrW/WrV+OtaYYM+kf35ffvZppIUuGmyuQ7gDr1JDJKMkbEE+GN0wfMoGg==}
+  pinyin-pro@3.27.0:
+    resolution: {integrity: sha512-Osdgjwe7Rm17N2paDMM47yW+jUIUH3+0RGo8QP39ZTLpTaJVDK0T58hOLaMQJbcMmAebVuK2ePunTEVEx1clNQ==}
 
   pirates@4.0.7:
     resolution: {integrity: sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA==}
@@ -8497,7 +8497,7 @@ snapshots:
     dependencies:
       csstype: 3.1.3
 
-  '@types/serviceworker@0.0.147': {}
+  '@types/serviceworker@0.0.149': {}
 
   '@types/ua-parser-js@0.7.39': {}
 
@@ -8892,7 +8892,7 @@ snapshots:
   cacheable@1.10.3:
     dependencies:
       hookified: 1.11.0
-      keyv: 5.4.0
+      keyv: 5.5.0
 
   call-bind-apply-helpers@1.0.2:
     dependencies:
@@ -10062,7 +10062,7 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
-  keyv@5.4.0:
+  keyv@5.5.0:
     dependencies:
       '@keyv/serialize': 1.1.0
 
@@ -10072,7 +10072,7 @@ snapshots:
 
   known-css-properties@0.37.0: {}
 
-  kysely@0.28.3: {}
+  kysely@0.28.4: {}
 
   language-subtag-registry@0.3.23: {}
 
@@ -10434,7 +10434,7 @@ snapshots:
 
   pify@2.3.0: {}
 
-  pinyin-pro@3.26.0: {}
+  pinyin-pro@3.27.0: {}
 
   pirates@4.0.7: {}
 
