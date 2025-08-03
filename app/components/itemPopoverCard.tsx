@@ -29,6 +29,7 @@ import {
 	usePopoverContext,
 } from '@/design/ui/components';
 
+import { trackEvent } from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Price from '@/components/price';
 import Sprite, { type ISpriteProps } from '@/components/sprite';
@@ -139,7 +140,8 @@ const ShareButton = memo<IShareButtonProps>(function ShareButton({ name }) {
 		if (isCanShare) {
 			navigator.share(shareObject).catch(() => {});
 		}
-	}, [isCanShare, shareObject]);
+		trackEvent(trackEvent.category.click, 'Share Button', name);
+	}, [isCanShare, name, shareObject]);
 
 	const label = '点击：分享当前选中项的链接';
 

@@ -11,6 +11,7 @@ import {
 import { trackEvent } from '@/components/analytics';
 
 import { siteConfig } from '@/configs';
+import { checkA11yConfirmKey } from '@/utilities';
 
 const { links } = siteConfig;
 
@@ -23,7 +24,7 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 	error,
 	info,
 }) {
-	const handleClick = useCallback((shouldClear: boolean) => {
+	const handleButtonPress = useCallback((shouldClear: boolean) => {
 		if (shouldClear) {
 			try {
 				localStorage.clear();
@@ -32,6 +33,11 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 				alert(storageError);
 			}
 		}
+		trackEvent(
+			trackEvent.category.click,
+			'Error Button',
+			shouldClear ? 'Retry and clear' : 'Retry'
+		);
 		location.reload();
 	}, []);
 
@@ -43,14 +49,25 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 			<button
 				className="mx-auto block w-1/2 cursor-pointer rounded-medium bg-content1 p-2 transition-background hover:bg-content2 motion-reduce:transition-none"
 				onClick={() => {
-					handleClick(shouldClear);
+					handleButtonPress(shouldClear);
 				}}
+				onKeyDown={checkA11yConfirmKey(() => {
+					handleButtonPress(shouldClear);
+				})}
 			>
 				{children}
 			</button>
 		),
-		[handleClick]
+		[handleButtonPress]
 	);
+
+	const handleLinkPress = useCallback((number: number) => {
+		trackEvent(
+			trackEvent.category.click,
+			'Link',
+			`error:QQ group ${number}`
+		);
+	}, []);
 
 	return (
 		<div className="space-y-3 p-4">
@@ -68,6 +85,12 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 					href={links.qqGroup1.href}
 					referrerPolicy="same-origin"
 					target="_blank"
+					onClick={() => {
+						handleLinkPress(1);
+					}}
+					onKeyDown={checkA11yConfirmKey(() => {
+						handleLinkPress(1);
+					})}
 					className="font-medium text-primary hover:underline hover:underline-offset-2"
 				>
 					{links.qqGroup1.label}
@@ -77,6 +100,12 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 					href={links.qqGroup2.href}
 					referrerPolicy="same-origin"
 					target="_blank"
+					onClick={() => {
+						handleLinkPress(2);
+					}}
+					onKeyDown={checkA11yConfirmKey(() => {
+						handleLinkPress(2);
+					})}
 					className="font-medium text-primary hover:underline hover:underline-offset-2"
 				>
 					{links.qqGroup2.label}

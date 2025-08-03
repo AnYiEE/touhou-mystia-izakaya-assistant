@@ -39,6 +39,7 @@ import {
 	useReducedMotion,
 } from '@/design/ui/components';
 
+import { trackEvent } from '@/components/analytics';
 import FontAwesomeIconLink, {
 	type IFontAwesomeIconLinkProps,
 } from '@/components/fontAwesomeIconLink';
@@ -99,6 +100,10 @@ const GitHubIconLink = memo<IGitHubIconLinkProps>(function IconLink({
 	className,
 	tabIndex,
 }) {
+	const handlePress = useCallback(() => {
+		trackEvent(trackEvent.category.click, 'Link', 'navbar:GitHub');
+	}, []);
+
 	return (
 		<FontAwesomeIconLink
 			isExternal
@@ -109,7 +114,7 @@ const GitHubIconLink = memo<IGitHubIconLinkProps>(function IconLink({
 			aria-hidden={tabIndex === -1}
 			role="button"
 			tabIndex={tabIndex}
-			onKeyDown={checkA11yConfirmKey()}
+			onClick={handlePress}
 			className={cn('h-5 w-5 rounded-full', className)}
 		/>
 	);
@@ -120,6 +125,10 @@ interface IGitHubLinkProps {
 }
 
 const GitHubLink = memo<IGitHubLinkProps>(function GitHubLink({ showTooltip }) {
+	const handlePress = useCallback(() => {
+		trackEvent(trackEvent.category.click, 'Link', 'navbar:GitHub');
+	}, []);
+
 	if (showTooltip) {
 		return (
 			<Tooltip showArrow content={links.github.label} placement="bottom">
@@ -133,7 +142,12 @@ const GitHubLink = memo<IGitHubLinkProps>(function GitHubLink({ showTooltip }) {
 	return (
 		<span className="flex gap-1">
 			<GitHubIconLink tabIndex={-1} />
-			<Link isExternal color="foreground" href={links.github.href}>
+			<Link
+				isExternal
+				color="foreground"
+				href={links.github.href}
+				onClick={handlePress}
+			>
 				{links.github.label}
 			</Link>
 		</span>

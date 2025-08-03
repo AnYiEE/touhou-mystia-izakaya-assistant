@@ -1038,7 +1038,8 @@ export const customerRareStore = store(state, {
 				hasMystiaCooker
 					? trackEvent.category.unselect
 					: trackEvent.category.select,
-				'MystiaCooker'
+				'MystiaCooker',
+				currentStore.shared.customer.name.get() ?? ''
 			);
 		},
 		updateRecipeTagsWithTrend() {

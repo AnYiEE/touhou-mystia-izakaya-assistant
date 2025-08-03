@@ -1,5 +1,8 @@
+'use client';
+
 import { Link, Tooltip } from '@/design/ui/components';
 
+import { trackEvent } from '@/components/analytics';
 import Heading from '@/components/heading';
 import QRCode from '@/components/qrCode';
 
@@ -21,6 +24,13 @@ export default function Introduction() {
 						showAnchorIcon
 						href={links.github.href}
 						title={links.github.label}
+						onPress={() => {
+							trackEvent(
+								trackEvent.category.click,
+								'Link',
+								'about:GitHub'
+							);
+						}}
 						className="rounded-small indent-0"
 					>
 						GitHub仓库
@@ -44,13 +54,22 @@ export default function Introduction() {
 					如果{shortName}对您的游玩过程有所帮助，您可以考虑
 					<Tooltip
 						showArrow
-						closeDelay={0}
+						closeDelay={10}
 						content={
 							<QRCode text={links.donate.href} className="w-24">
 								{links.donate.label.replace('链接', '码')}
 							</QRCode>
 						}
 						offset={2}
+						onOpenChange={(isOpen) => {
+							if (isOpen) {
+								trackEvent(
+									trackEvent.category.show,
+									'Tooltip',
+									'about:Donate'
+								);
+							}
+						}}
 						classNames={{ content: 'px-1' }}
 					>
 						<Link
@@ -58,6 +77,13 @@ export default function Introduction() {
 							showAnchorIcon
 							href={links.donate.href}
 							title={links.donate.label}
+							onPress={() => {
+								trackEvent(
+									trackEvent.category.click,
+									'Link',
+									'about:Donate'
+								);
+							}}
 							className="rounded-small indent-0"
 						>
 							向我捐赠

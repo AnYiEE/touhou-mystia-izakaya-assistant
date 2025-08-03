@@ -1,5 +1,8 @@
+'use client';
+
 import { Link } from '@/design/ui/components';
 
+import { trackEvent } from '@/components/analytics';
 import Heading from '@/components/heading';
 
 import { siteConfig } from '@/configs';
@@ -50,6 +53,13 @@ export default function LegalStatement() {
 						showAnchorIcon
 						href={links.steam.href}
 						title={links.steam.label}
+						onPress={() => {
+							trackEvent(
+								trackEvent.category.click,
+								'Link',
+								'about:Steam'
+							);
+						}}
 						className="rounded-small indent-0"
 					>
 						原作者
@@ -64,6 +74,13 @@ export default function LegalStatement() {
 						showAnchorIcon
 						href={links.gnuLicense.href}
 						title={links.gnuLicense.label}
+						onPress={() => {
+							trackEvent(
+								trackEvent.category.click,
+								'Link',
+								'License'
+							);
+						}}
 						className="rounded-small indent-0"
 					>
 						见此
@@ -74,6 +91,13 @@ export default function LegalStatement() {
 						showAnchorIcon
 						href={links.github.href}
 						title={links.github.label}
+						onPress={() => {
+							trackEvent(
+								trackEvent.category.click,
+								'Link',
+								'about:GitHub'
+							);
+						}}
 						className="rounded-small indent-0"
 					>
 						GitHub

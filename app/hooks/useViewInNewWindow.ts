@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { PARAM_SPECIFY } from '@/hooks/useOpenedItemPopover';
 
+import { trackEvent } from '@/components/analytics';
+
 import {
 	type TClothesName,
 	type TCookerName,
@@ -68,6 +70,7 @@ export function useViewInNewWindow() {
 	}, [windowItemName, windowItemPath]);
 
 	const openWindow = useCallback<TOpenWindow>((path, name) => {
+		trackEvent(trackEvent.category.click, 'OpenWindow Button', path, name);
 		setWindowItemName([name]);
 		setWindowItemPath([path]);
 	}, []);

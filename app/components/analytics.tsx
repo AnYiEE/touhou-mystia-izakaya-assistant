@@ -20,6 +20,7 @@ const trackCategoryMap = {
 	click: 'Click',
 	error: 'Error',
 	select: 'Select',
+	show: 'Show',
 	unselect: 'Unselect',
 } as const;
 
@@ -29,15 +30,20 @@ type TAction =
 	| 'Cloud Delete'
 	| 'Cloud Download'
 	| 'Cloud Upload'
+	| 'Error'
 	| 'Export'
 	| 'Import'
 	| 'Info'
+	| 'OpenWindow'
 	| 'Remove'
 	| 'Reset'
 	| 'Save'
-	| 'Select';
-type TActionButton = `${TAction} Button`;
-type TError = 'Cloud' | 'Global';
+	| 'Share'
+	| 'Select'
+	| 'Theme'
+	| 'Tutorial';
+type TActions = `${TAction} Button` | 'Link';
+
 type TItem =
 	| 'Beverage'
 	| 'Clothes'
@@ -47,13 +53,16 @@ type TItem =
 	| 'Ornament'
 	| 'Partner'
 	| 'Recipe';
-type TItemCard = `${TItem} Card`;
 type TItemAlone = 'Customer' | 'Customer Tag' | 'MystiaCooker';
+type TItemCard = `${TItem} Card`;
+
+type TError = 'Cloud' | 'Global' | 'Update';
+type TShow = 'Popover' | 'Tooltip';
 
 function trackEventFunction(
 	category: typeof trackCategoryMap.click,
-	action: TActionButton | TItemCard,
-	name?: string,
+	action: TActions | TItemCard,
+	name: string,
 	value?: number | string
 ): void;
 function trackEventFunction(
@@ -65,13 +74,19 @@ function trackEventFunction(
 function trackEventFunction(
 	category: typeof trackCategoryMap.select | typeof trackCategoryMap.unselect,
 	action: TItem | TItemAlone,
-	name?: string,
+	name: string,
+	value?: number | string
+): void;
+function trackEventFunction(
+	category: typeof trackCategoryMap.show,
+	action: TShow,
+	name: string,
 	value?: number | string
 ): void;
 function trackEventFunction(
 	category: TTrackCategory,
-	action: TAction | TActionButton | TError | TItem | TItemCard | TItemAlone,
-	name?: string,
+	action: TActions | TError | TItem | TItemAlone | TItemCard | TShow,
+	name: string,
 	value?: number | string
 ) {
 	push(

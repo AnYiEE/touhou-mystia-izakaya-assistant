@@ -5,6 +5,7 @@ import { AccordionItem } from '@heroui/accordion';
 import { Avatar } from '@/design/ui/components';
 
 import InfoButtonBase from '@/(pages)/customer-rare/infoButtonBase';
+import { trackEvent } from '@/components/analytics';
 import Ol from '@/components/ol';
 import Price from '@/components/price';
 
@@ -38,7 +39,16 @@ export default function InfoButton() {
 	};
 
 	return (
-		<InfoButtonBase defaultExpandedKeys={getDefaultExpandedKeys()}>
+		<InfoButtonBase
+			defaultExpandedKeys={getDefaultExpandedKeys()}
+			onButtonPress={() => {
+				trackEvent(
+					trackEvent.category.click,
+					'Info Button',
+					currentCustomerName
+				);
+			}}
+		>
 			<AccordionItem
 				key="description"
 				aria-label="普客介绍"

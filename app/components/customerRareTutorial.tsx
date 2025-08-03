@@ -5,6 +5,8 @@ import { driver } from 'driver.js';
 
 import { usePathname } from '@/hooks';
 
+import { trackEvent } from '@/components/analytics';
+
 import { DYNAMIC_TAG_MAP } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
 import { checkEmpty, getPageTitle } from '@/utilities';
@@ -71,16 +73,24 @@ export default function CustomerRareTutorial() {
 						onPopoverRender(popover) {
 							const skipButton = document.createElement('button');
 							skipButton.textContent = '跳过';
-							skipButton.addEventListener(
-								'click',
-								driverRef.current.destroy
-							);
+							skipButton.addEventListener('click', () => {
+								driverRef.current.destroy();
+								trackEvent(
+									trackEvent.category.click,
+									'Tutorial Button',
+									'Skip'
+								);
+							});
 							const nextButton = document.createElement('button');
 							nextButton.textContent = '下一步 →';
-							nextButton.addEventListener(
-								'click',
-								driverRef.current.moveNext
-							);
+							nextButton.addEventListener('click', () => {
+								driverRef.current.moveNext();
+								trackEvent(
+									trackEvent.category.click,
+									'Tutorial Button',
+									'Next'
+								);
+							});
 							popover.footerButtons.append(
 								skipButton,
 								nextButton
@@ -167,10 +177,14 @@ export default function CustomerRareTutorial() {
 							const completeButton =
 								document.createElement('button');
 							completeButton.textContent = '完成';
-							completeButton.addEventListener(
-								'click',
-								driverRef.current.destroy
-							);
+							completeButton.addEventListener('click', () => {
+								driverRef.current.destroy();
+								trackEvent(
+									trackEvent.category.click,
+									'Tutorial Button',
+									'Complete'
+								);
+							});
 							popover.footerButtons.append(completeButton);
 						},
 					},
@@ -295,6 +309,11 @@ export default function CustomerRareTutorial() {
 		if (isTargetPage && !isCompleted && !driverRef.current.isActive()) {
 			setTimeout(() => {
 				driverRef.current.drive();
+				trackEvent(
+					trackEvent.category.click,
+					'Tutorial Button',
+					'Start'
+				);
 			}, 1000);
 		}
 		if (!isTargetPage) {

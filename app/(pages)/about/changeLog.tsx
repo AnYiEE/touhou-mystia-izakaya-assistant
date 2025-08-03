@@ -1,8 +1,11 @@
 /* eslint-disable sort-keys */
+'use client';
+
 import { Fragment } from 'react';
 
 import { Link } from '@/design/ui/components';
 
+import { trackEvent } from '@/components/analytics';
 import Heading from '@/components/heading';
 
 import { siteConfig } from '@/configs';
@@ -140,6 +143,13 @@ export default function ChangeLog() {
 							showAnchorIcon
 							href={`${links.github.href}/commits`}
 							title={`${links.github.label}提交记录`}
+							onPress={() => {
+								trackEvent(
+									trackEvent.category.click,
+									'Link',
+									'about:GitHub'
+								);
+							}}
 							className="rounded-small"
 						>
 							GitHub

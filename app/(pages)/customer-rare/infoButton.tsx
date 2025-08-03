@@ -16,6 +16,7 @@ import {
 } from '@/design/ui/components';
 
 import InfoButtonBase from './infoButtonBase';
+import { trackEvent } from '@/components/analytics';
 import Ol from '@/components/ol';
 import PressElement from '@/components/pressElement';
 import Price from '@/components/price';
@@ -118,7 +119,16 @@ export default function InfoButton() {
 		`点击：在新窗口中查看此${type}的详情`;
 
 	return (
-		<InfoButtonBase defaultExpandedKeys={getDefaultExpandedKeys()}>
+		<InfoButtonBase
+			defaultExpandedKeys={getDefaultExpandedKeys()}
+			onButtonPress={() => {
+				trackEvent(
+					trackEvent.category.click,
+					'Info Button',
+					currentCustomerName
+				);
+			}}
+		>
 			<AccordionItem
 				key="description"
 				aria-label="稀客介绍"

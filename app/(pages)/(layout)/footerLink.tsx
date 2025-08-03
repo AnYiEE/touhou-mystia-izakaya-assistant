@@ -10,8 +10,10 @@ import {
 	cn,
 } from '@/design/ui/components';
 
+import { trackEvent } from '@/components/analytics';
+
 interface IFooterLinkProps
-	extends Pick<ILinkProps, 'href' | 'isExternal' | 'title'> {
+	extends Pick<ILinkProps, 'href' | 'isExternal' | 'onPress' | 'title'> {
 	content?: ReactNodeWithoutBoolean;
 }
 
@@ -22,6 +24,7 @@ export const FooterLink = memo<PropsWithChildren<IFooterLinkProps>>(
 		href = '#',
 		isExternal = true,
 		title,
+		...props
 	}) {
 		return (
 			<Link
@@ -38,6 +41,7 @@ export const FooterLink = memo<PropsWithChildren<IFooterLinkProps>>(
 					base: 'rounded-small text-tiny text-primary',
 					underline: 'bottom-0',
 				}}
+				{...props}
 			>
 				{children}
 			</Link>
@@ -49,18 +53,28 @@ interface IFooterLinkWithTooltipProps
 	extends IFooterLinkProps,
 		Pick<ITooltipProps, 'classNames'> {
 	content: ReactNodeWithoutBoolean;
+	event?: { click: string; show?: true };
 }
 
 export const FooterLinkWithTooltip = memo<
 	PropsWithChildren<IFooterLinkWithTooltipProps>
->(function FooterLinkWithTooltip({ classNames, ...props }) {
+>(function FooterLinkWithTooltip({ classNames, event, ...props }) {
 	return (
 		<Tooltip
-			closeDelay={0}
+			closeDelay={10}
 			content={props.content}
 			isDisabled={!props.content}
-			offset={2}
+			offset={0}
 			size="sm"
+			onOpenChange={(isOpen) => {
+				if (isOpen && event?.show) {
+					trackEvent(
+						trackEvent.category.show,
+						'Tooltip',
+						event.click
+					);
+				}
+			}}
 			classNames={{
 				...classNames,
 				content: cn(
@@ -70,7 +84,18 @@ export const FooterLinkWithTooltip = memo<
 			}}
 		>
 			<span>
-				<FooterLink {...props} />
+				<FooterLink
+					onPress={() => {
+						if (event?.click !== undefined) {
+							trackEvent(
+								trackEvent.category.click,
+								'Link',
+								event.click
+							);
+						}
+					}}
+					{...props}
+				/>
 			</span>
 		</Tooltip>
 	);

@@ -13,17 +13,19 @@ import {
 	useReducedMotion,
 } from '@/design/ui/components';
 
-import { trackEvent } from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 
 import { globalStore as store } from '@/stores';
 
 interface IProps
-	extends Pick<AccordionProps, 'children' | 'defaultExpandedKeys'> {}
+	extends Pick<AccordionProps, 'children' | 'defaultExpandedKeys'> {
+	onButtonPress?: () => void;
+}
 
 export default memo<IProps>(function InfoButtonBase({
 	children,
 	defaultExpandedKeys,
+	onButtonPress,
 }) {
 	const isReducedMotion = useReducedMotion();
 	const [isOpened, setOpened] = useState(false);
@@ -39,8 +41,8 @@ export default memo<IProps>(function InfoButtonBase({
 	const handlePress = useCallback(() => {
 		vibrate();
 		setOpened(true);
-		trackEvent(trackEvent.category.click, 'Info Button');
-	}, [vibrate]);
+		onButtonPress?.();
+	}, [onButtonPress, vibrate]);
 
 	const buttonLabel = '更多信息';
 

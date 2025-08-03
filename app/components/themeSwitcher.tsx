@@ -28,6 +28,7 @@ import {
 	cn,
 } from '@/design/ui/components';
 
+import { trackEvent } from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 
 import { globalStore as store } from '@/stores';
@@ -152,6 +153,13 @@ export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 					<DropdownItem
 						key={value}
 						textValue={THEME_LABEL_MAP[value]}
+						onPress={() => {
+							trackEvent(
+								trackEvent.category.click,
+								'Theme Button',
+								value
+							);
+						}}
 					>
 						<div className="flex items-center gap-1">
 							<FontAwesomeIcon

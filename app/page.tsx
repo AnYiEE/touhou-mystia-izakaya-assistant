@@ -13,6 +13,7 @@ import {
 	Tooltip,
 } from '@/design/ui/components';
 
+import { trackEvent } from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Placeholder from '@/components/placeholder';
 import QRCode from '@/components/qrCode';
@@ -36,6 +37,13 @@ export default function Home() {
 							showAnchorIcon
 							href={links.qqGroup1.href}
 							title={links.qqGroup1.label}
+							onPress={() => {
+								trackEvent(
+									trackEvent.category.click,
+									'Link',
+									'index:QQ group 1'
+								);
+							}}
 							className="text-xs text-foreground"
 						>
 							点击加入{links.qqGroup1.label}
@@ -47,6 +55,13 @@ export default function Home() {
 							showAnchorIcon
 							href={links.qqGroup2.href}
 							title={links.qqGroup2.label}
+							onPress={() => {
+								trackEvent(
+									trackEvent.category.click,
+									'Link',
+									'index:QQ group 2'
+								);
+							}}
 							className="text-xs text-foreground"
 						>
 							点击加入{links.qqGroup2.label}
@@ -86,6 +101,13 @@ export default function Home() {
 								showAnchorIcon
 								href={links.appQA.href}
 								title={links.appQA.label}
+								onPress={() => {
+									trackEvent(
+										trackEvent.category.click,
+										'Link',
+										'APP QA'
+									);
+								}}
 								className="rounded-small text-small text-foreground-500 md:text-base lg:text-large"
 							>
 								{links.appQA.label}
@@ -99,11 +121,29 @@ export default function Home() {
 						<div className="flex items-center gap-2 lg:gap-4">
 							<Popover
 								showArrow
+								onOpenChange={(isOpen) => {
+									if (isOpen) {
+										trackEvent(
+											trackEvent.category.show,
+											'Popover',
+											'QQ groups'
+										);
+									}
+								}}
 								classNames={{ content: 'px-0 pb-1' }}
 							>
 								<Tooltip
 									showArrow
 									content={qqCodeContent}
+									onOpenChange={(isOpen) => {
+										if (isOpen) {
+											trackEvent(
+												trackEvent.category.show,
+												'Tooltip',
+												'QQ groups'
+											);
+										}
+									}}
 									classNames={{ content: 'px-0 pb-1' }}
 								>
 									<span className="inline-flex">
@@ -126,6 +166,15 @@ export default function Home() {
 										扫码加入{links.rednoteGroup.label}
 									</QRCode>
 								}
+								onOpenChange={(isOpen) => {
+									if (isOpen) {
+										trackEvent(
+											trackEvent.category.show,
+											'Tooltip',
+											'Rednote group'
+										);
+									}
+								}}
 								classNames={{ content: 'p-0 pb-1' }}
 							>
 								<Button
@@ -137,6 +186,13 @@ export default function Home() {
 									href={links.rednoteGroup.href}
 									role="link"
 									title={`点击加入${links.rednoteGroup.label}`}
+									onPress={() => {
+										trackEvent(
+											trackEvent.category.click,
+											'Link',
+											'Rednote group'
+										);
+									}}
 									className="h-5 active:opacity-disabled data-[hover=true]:!opacity-hover data-[pressed=true]:!opacity-hover"
 								>
 									<Rednote />

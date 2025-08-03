@@ -247,8 +247,9 @@ globalStore.persistence.version.onChange((version) => {
 	if (version && compareVersions(version, appVersion) === 1) {
 		trackEvent(
 			trackEvent.category.error,
-			'Global',
-			'Outdated version detected in multiple tabs'
+			'Update',
+			'Outdated version detected in multiple tabs',
+			`${appVersion}, ${version}`
 		);
 		location.reload();
 	}
