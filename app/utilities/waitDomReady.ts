@@ -11,7 +11,7 @@ function checkReadyState() {
 /**
  * @returns Promise that resolves when the DOM is ready.
  */
-export function checkDomReady() {
+export function waitDomReady() {
 	return new Promise<void>((resolve) => {
 		if (checkReadyState()) {
 			resolve();

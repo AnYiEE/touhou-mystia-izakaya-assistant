@@ -31,8 +31,6 @@ type TItemName =
 	| TOrnamentName
 	| TPartnerName;
 
-export type TOpenWindow = (path: TItemPath, name: TItemName) => void;
-
 export const PARAM_PREVIEW = 'preview';
 
 export function useViewInNewWindow() {
@@ -69,7 +67,7 @@ export function useViewInNewWindow() {
 		windowObjectRef.current = newWindowObject;
 	}, [windowItemName, windowItemPath]);
 
-	const openWindow = useCallback<TOpenWindow>((path, name) => {
+	const openWindow = useCallback((path: TItemPath, name: TItemName) => {
 		trackEvent(trackEvent.category.click, 'OpenWindow Button', path, name);
 		setWindowItemName([name]);
 		setWindowItemPath([path]);

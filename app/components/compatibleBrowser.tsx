@@ -4,7 +4,7 @@ import { UAParser } from 'ua-parser-js';
 
 import { useMounted } from '@/hooks';
 
-import { checkDomReady, checkEmpty, memoize, toArray } from '@/utilities';
+import { checkEmpty, memoize, toArray, waitDomReady } from '@/utilities';
 
 type TFeature = 'flexGap' | 'webp';
 type TCompatibility = Record<TFeature, boolean>;
@@ -171,7 +171,7 @@ function processMutations(mutations: MutationRecord[]) {
 }
 
 function initFlexGapFix() {
-	void checkDomReady().then(() => {
+	void waitDomReady().then(() => {
 		getChildElements(document.body).forEach(replaceGapClasses);
 	});
 

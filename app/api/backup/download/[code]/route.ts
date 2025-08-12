@@ -44,7 +44,7 @@ export async function GET(
 	const recentRecord = await checkIpFrequency(
 		'last_accessed',
 		now - FREQUENCY_TTL,
-		{ ip, ua, userId: request.nextUrl.searchParams.get('user_id') ?? '' }
+		{ ip, ua, userId }
 	);
 	if (recentRecord.status === 429) {
 		return NextResponse.json(

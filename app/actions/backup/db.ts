@@ -29,11 +29,9 @@ function generateResponse<
 	return { ...record, status: 200 } as TResponse<T, U>;
 }
 
-export async function checkIpFrequency<
-	T extends 'created_at' | 'last_accessed',
->(
-	column: T,
-	time: TBackupFileRecord[T],
+export async function checkIpFrequency(
+	column: 'created_at' | 'last_accessed',
+	time: TBackupFileRecord[typeof column],
 	{
 		ip,
 		ua,
@@ -47,7 +45,7 @@ export async function checkIpFrequency<
 	const record = await db
 		.selectFrom(TABLE_NAME)
 		.select('code')
-		.where(column, '>', time as never)
+		.where(column, '>', time)
 		.where('ip_address', '=', ip)
 		.where('user_agent', '=', ua)
 		.where('user_id', '=', userId)

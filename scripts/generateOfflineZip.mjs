@@ -47,9 +47,7 @@ function moveRouterFiles(
 		mkdirSync(targetPath, { recursive: true });
 	}
 
-	const entries = readdirSync(currentPath, { withFileTypes: true });
-
-	for (const entry of entries) {
+	readdirSync(currentPath, { withFileTypes: true }).forEach((entry) => {
 		const fromPath = join(currentPath, entry.name);
 		const toPath = join(targetPath, entry.name);
 
@@ -58,7 +56,7 @@ function moveRouterFiles(
 		} else if (entry.name === 'route.ts') {
 			renameSync(fromPath, toPath);
 		}
-	}
+	});
 }
 
 if (isOffline && isPrepare) {
