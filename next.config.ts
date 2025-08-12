@@ -58,7 +58,7 @@ if (exportMode) {
 
 		if (IS_PRODUCTION && !env.VERCEL) {
 			headers.push({
-				source: '/:all*(.gif|.ico|.png|.webp|.js|.txt|.webmanifest)',
+				source: '/:all*(.gif|.ico|.png|.webp|.js|.txt|.webmanifest|.xml)',
 				headers: [
 					{
 						key: 'Cache-Control',
