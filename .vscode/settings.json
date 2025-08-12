@@ -2,19 +2,13 @@
 	"editor.formatOnSave": true,
 	"editor.insertSpaces": false,
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
-	"files.associations": { "*.css": "css" },
 	"eslint.enable": true,
 	"eslint.format.enable": true,
 	"eslint.useFlatConfig": true,
 	"prettier.enable": true,
 	"[markdown]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-	"[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
 	"[scss]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
 	"[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-	"[javascriptreact]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	},
-	"[jsx]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
 	"[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
 	"[typescriptreact]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -40,7 +34,7 @@
 	"explorer.fileNesting.enabled": true,
 	"explorer.fileNesting.expand": false,
 	"explorer.fileNesting.patterns": {
-		"next.config.ts": "*.config.cjs, *.config.mjs, *.config.js, *.config.ts, next-env.d.ts, types.d.ts",
+		"next.config.ts": "*.config.mjs, *.config.ts, next-env.d.ts, types.d.ts",
 		"package.json": ".*cache, .*ignore, .*rc, .editorconfig, .env*, .git*, pnpm-lock.yaml, pnpm-workspace.yaml, tsconfig.json, vercel.json",
 		"README*": "*.md, LICENSE"
 	},

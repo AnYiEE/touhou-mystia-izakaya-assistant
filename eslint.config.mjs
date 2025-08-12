@@ -211,7 +211,10 @@ export default tsEslint.config(
 		},
 	},
 
-	{ extends: [tsEslint.configs.disableTypeChecked], files: ['**/*.js'] },
+	{
+		extends: [tsEslint.configs.disableTypeChecked],
+		files: ['**/*.mjs', '**/*.js'],
+	},
 
 	{
 		files: ['app/**/*.ts', 'app/**/*.tsx'],
