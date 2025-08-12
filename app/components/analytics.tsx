@@ -8,7 +8,7 @@ import { siteConfig } from '@/configs';
 import { globalStore as store } from '@/stores';
 import { setScriptUrlTag } from '@/utilities';
 
-const { analyticsApiUrl, analyticsScriptUrl, analyticsSiteId, domain } =
+const { analyticsApiUrl, analyticsScriptUrl, analyticsSiteId, baseURL } =
 	siteConfig;
 
 function push(...args: unknown[][]) {
@@ -125,8 +125,8 @@ export default function Analytics() {
 		push(
 			['enableHeartBeatTimer'],
 			['enableLinkTracking'],
-			['setCookieDomain', `*.${domain}`],
-			['setDomains', [`*.${domain}`]],
+			['setCookieDomain', `*.${baseURL}`],
+			['setDomains', [`*.${baseURL}`]],
 			['setRequestMethod', 'GET'],
 			['setTrackerUrl', analyticsApiUrl],
 			['setSecureCookie', true],

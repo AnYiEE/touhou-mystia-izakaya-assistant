@@ -20,7 +20,7 @@ export type TNavItem<T extends string = string> =
 	  >;
 
 export interface ISiteConfig {
-	domain: string;
+	baseURL: string;
 	id: string;
 	name: string;
 	enName: string;

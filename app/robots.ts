@@ -2,7 +2,7 @@ import { type MetadataRoute } from 'next';
 
 import { siteConfig } from '@/configs';
 
-const { domain } = siteConfig;
+const { baseURL } = siteConfig;
 
 export const dynamic = 'force-static';
 
@@ -81,6 +81,6 @@ export default function robots(): MetadataRoute.Robots {
 			{ disallow: '/preferences', userAgent: '*' },
 			{ disallow: '/', userAgent: disallowBots },
 		],
-		sitemap: `https://${domain}/sitemap.xml`,
+		sitemap: `https://${baseURL}/sitemap.xml`,
 	};
 }

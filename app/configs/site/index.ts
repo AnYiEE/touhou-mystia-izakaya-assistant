@@ -6,7 +6,7 @@ function getShortUrl(key: string) {
 	return `${process.env.SHORT_LINK_URL ?? '/#'}/${key}`;
 }
 
-const { hostname: domain } = new URL(process.env.BASE_URL ?? PACKAGE.homepage);
+const { host: baseURL } = new URL(process.env.BASE_URL ?? PACKAGE.homepage);
 const isOffline = Boolean(process.env.OFFLINE);
 
 const navItems = [
@@ -70,7 +70,7 @@ const navItems = [
 ] as const satisfies TNavItem[];
 
 export const siteConfig = {
-	domain,
+	baseURL,
 	id: PACKAGE.name,
 	name: '东方夜雀食堂小助手',
 	enName: "Touhou Mystia's Izakaya Assistant",
