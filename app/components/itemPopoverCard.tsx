@@ -270,12 +270,11 @@ const ItemPopoverCardComponent = memo<PropsWithChildren<IItemPopoverCardProps>>(
 			return { ...rest, positive: mergedTagValues };
 		}, [tags]);
 
-		const hasTag = Boolean(
+		const hasTag =
 			(mergedTags?.positive !== undefined &&
 				!checkEmpty(mergedTags.positive)) ||
-				(mergedTags?.negative !== undefined &&
-					!checkEmpty(mergedTags.negative))
-		);
+			(mergedTags?.negative !== undefined &&
+				!checkEmpty(mergedTags.negative));
 
 		const dlcLabel = dlc === 0 ? LABEL_MAP.dlc0 : '';
 
@@ -428,12 +427,12 @@ const ItemPopoverCardComponent = memo<PropsWithChildren<IItemPopoverCardProps>>(
 				{hasTag && (
 					<div className="flex flex-wrap gap-x-2 gap-y-1">
 						<TagsComponent
-							tags={mergedTags?.positive}
+							tags={mergedTags.positive}
 							tagStyle={tagColors?.positive}
 							tagType="positive"
 						/>
 						<TagsComponent
-							tags={mergedTags?.negative}
+							tags={mergedTags.negative}
 							tagStyle={tagColors?.negative}
 							tagType="negative"
 						/>

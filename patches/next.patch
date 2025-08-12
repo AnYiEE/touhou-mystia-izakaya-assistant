@@ -1,8 +1,8 @@
 diff --git a/dist/export/index.js b/dist/export/index.js
-index 319744f37f0e44cf6f1287abca8ab7c91449b4b9..30b4341fb822822df103f9caed83178ac07a90ed 100644
+index 7cb007c1738889133a9a1d46f40fc6eb7d6d86a3..0688656f18353e76d2fc98137ae6ec09f5043e58 100644
 --- a/dist/export/index.js
 +++ b/dist/export/index.js
-@@ -284,11 +284,7 @@ async function exportAppImpl(dir, options, span) {
+@@ -287,11 +287,7 @@ async function exportAppImpl(dir, options, span) {
              if ((routesManifest == null ? void 0 : (_routesManifest_rewrites = routesManifest.rewrites) == null ? void 0 : (_routesManifest_rewrites_beforeFiles = _routesManifest_rewrites.beforeFiles) == null ? void 0 : _routesManifest_rewrites_beforeFiles.length) > 0) {
                  const hasInterceptionRouteRewrite = routesManifest.rewrites.beforeFiles.some(_generateinterceptionroutesrewrites.isInterceptionRouteRewrite);
                  if (hasInterceptionRouteRewrite) {
@@ -16,10 +16,10 @@ index 319744f37f0e44cf6f1287abca8ab7c91449b4b9..30b4341fb822822df103f9caed83178a
              }
              const actionIds = [
 diff --git a/dist/server/dev/next-dev-server.js b/dist/server/dev/next-dev-server.js
-index e1d68a6813a974d79eaafe16c93f4dcbbe2aceca..57d6980762a0bcf01737dc1eaa3752c6367bf985 100644
+index 3544cd86e4353c5c7b256b3af2fba0127bffc4bd..e15e2b46a04edfe6a77429b6355174a96fa89c24 100644
 --- a/dist/server/dev/next-dev-server.js
 +++ b/dist/server/dev/next-dev-server.js
-@@ -438,8 +438,7 @@ class DevServer extends _nextserver.default {
+@@ -465,8 +465,7 @@ class DevServer extends _nextserver.default {
      getinterceptionRoutePatterns() {
          const rewrites = (0, _generateinterceptionroutesrewrites.generateInterceptionRoutesRewrites)(Object.keys(this.appPathRoutes ?? {}), this.nextConfig.basePath).map((route)=>new RegExp((0, _buildcustomroute.buildCustomRoute)('rewrite', route).regex));
          if (this.nextConfig.output === 'export' && rewrites.length > 0) {

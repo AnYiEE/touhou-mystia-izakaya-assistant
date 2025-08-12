@@ -43,13 +43,13 @@ export const checkCompatibility = memoize(function checkCompatibility() {
 		(typeof osVersion === 'number' && osVersion > 15);
 
 	if (isChromium) {
-		compatibility.flexGap = Boolean(isSupportedFlexGapChromium);
+		compatibility.flexGap = isSupportedFlexGapChromium;
 	} else if (isFirefox) {
-		compatibility.flexGap = Boolean(isSupportedFlexGapFirefox);
-		compatibility.webp = Boolean(isSupportedWebpFirefox);
+		compatibility.flexGap = isSupportedFlexGapFirefox;
+		compatibility.webp = isSupportedWebpFirefox;
 	} else if (isSafari) {
-		compatibility.flexGap = Boolean(isSupportedFlexGapSafari);
-		compatibility.webp = Boolean(isSupportedWebpSafari);
+		compatibility.flexGap = isSupportedFlexGapSafari;
+		compatibility.webp = isSupportedWebpSafari;
 	}
 
 	return compatibility;
