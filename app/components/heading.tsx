@@ -9,7 +9,7 @@ type THeadingClassName = Pick<
 type TSpanClassName = Pick<HTMLSpanElementAttributes, 'className'>['className'];
 
 interface IProps {
-	as?: 'h1' | 'h2' | 'h3';
+	as?: 'h1' | 'h2' | 'h3' | 'h4';
 	className?: THeadingClassName;
 	classNames?: Partial<{
 		title: THeadingClassName;
@@ -50,6 +50,13 @@ export default memo<PropsWithChildren<IProps>>(function Heading({
 					className,
 					classNames?.title
 				);
+			case 'h4':
+				return cn(
+					'mb-3 text-medium font-medium',
+					!isFirst && 'mt-4',
+					className,
+					classNames?.title
+				);
 		}
 	}, [Component, className, classNames?.title, isFirst]);
 
@@ -62,6 +69,7 @@ export default memo<PropsWithChildren<IProps>>(function Heading({
 				);
 			case 'h2':
 			case 'h3':
+			case 'h4':
 				return cn(
 					'-mt-3 mb-3 block text-small text-foreground-500',
 					classNames?.subTitle

@@ -1,6 +1,6 @@
 'use client';
 
-import { type JSX, memo, useCallback, useRef, useState } from 'react';
+import { type JSX, memo, useCallback, useMemo, useState } from 'react';
 
 import { useVibrate } from '@/hooks';
 
@@ -17,14 +17,15 @@ import SwitchItem from './switchItem';
 import Heading from '@/components/heading';
 import Sprite, { type ISpriteProps } from '@/components/sprite';
 
-import { type TItemName } from '@/data';
+import { LABEL_MAP } from '@/data';
 import {
-	allBeverageNames,
-	allIngredientNames,
-	allRecipeNames,
-	globalStore as store,
+	beveragesStore,
+	globalStore,
+	ingredientsStore,
+	recipesStore,
 } from '@/stores';
-import { checkEmpty } from '@/utilities';
+import { checkEmpty, numberSort, toArray } from '@/utilities';
+import type { TItemData, TItemInstance } from '@/utils/types';
 
 interface ISettingsButtonProps {
 	isActive: boolean;
@@ -66,12 +67,10 @@ const SettingsModal = memo<ISettingsModalProps>(function SettingsPanel({
 	onClose,
 	...props
 }) {
-	const ref = useRef<HTMLDivElement | null>(null);
-
 	const vibrate = useVibrate();
 	const isReducedMotion = useReducedMotion();
 
-	const isHighAppearance = store.persistence.highAppearance.use();
+	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
 	const handleClose = useCallback(() => {
 		vibrate();
@@ -80,7 +79,6 @@ const SettingsModal = memo<ISettingsModalProps>(function SettingsPanel({
 
 	return (
 		<Modal
-			ref={ref}
 			backdrop={isHighAppearance ? 'blur' : 'opaque'}
 			disableAnimation={isReducedMotion}
 			isDismissable={!isInModal}
@@ -109,34 +107,100 @@ const SettingsModal = memo<ISettingsModalProps>(function SettingsPanel({
 	);
 });
 
-interface ISettingsPanelProps<T extends TItemName>
-	extends Pick<ISpriteProps, 'target'> {
-	allOptions: T[];
-	closedOptions: Set<T>;
-	setOptions: (options: Set<T>) => void;
+interface ISettingsPanelProps<
+	T extends TItemData<TItemInstance>,
+	U extends T[number]['name'],
+> extends Pick<ISpriteProps, 'target'> {
+	data: T;
+	hiddenItems: Set<U>;
+	setHiddenItems: (options: Set<U>) => void;
 	title: string;
 }
 
-const SettingsPanel = memo(function SettingsPanel<T extends TItemName>({
-	allOptions,
-	closedOptions,
-	setOptions,
+const SettingsPanel = memo(function SettingsPanel<
+	T extends TItemData<TItemInstance>,
+	U extends T[number],
+>({
+	data,
+	hiddenItems,
+	setHiddenItems,
 	target,
 	title,
-}: ISettingsPanelProps<T>) {
-	const handleValueChange = useCallback(
-		(option: T) => {
-			const newClosed = new Set(closedOptions);
+}: ISettingsPanelProps<T, U['name']>) {
+	const dataGroupByDlcMap = useMemo(
+		() =>
+			data.reduce<Map<U['dlc'], U[]>>((map, item) => {
+				if (!map.has(item.dlc)) {
+					map.set(item.dlc, []);
+				}
 
-			if (newClosed.has(option)) {
-				newClosed.delete(option);
+				(map.get(item.dlc) as U[]).push(item as U);
+
+				return map;
+			}, new Map()),
+		[data]
+	);
+
+	const dataGroupByDlcPinyinSorted = useMemo(
+		() => toArray(dataGroupByDlcMap).sort(([a], [b]) => numberSort(a, b)),
+		[dataGroupByDlcMap]
+	);
+
+	const handleValueChange = useCallback(
+		(name: U['name']) => {
+			const newHiddenItems = new Set(hiddenItems);
+
+			if (newHiddenItems.has(name)) {
+				newHiddenItems.delete(name);
 			} else {
-				newClosed.add(option);
+				newHiddenItems.add(name);
 			}
 
-			setOptions(newClosed);
+			setHiddenItems(newHiddenItems);
 		},
-		[closedOptions, setOptions]
+		[hiddenItems, setHiddenItems]
+	);
+
+	const handleDlcToggle = useCallback(
+		(dlc: U['dlc']) => {
+			const dlcItems = dataGroupByDlcMap.get(dlc) ?? [];
+			const newHiddenItems = new Set(hiddenItems);
+
+			const isAllHidden = dlcItems.every((item) =>
+				hiddenItems.has(item.name)
+			);
+
+			if (isAllHidden) {
+				dlcItems.forEach((item) => {
+					newHiddenItems.delete(item.name);
+				});
+			} else {
+				dlcItems.forEach((item) => {
+					newHiddenItems.add(item.name);
+				});
+			}
+
+			setHiddenItems(newHiddenItems);
+		},
+		[dataGroupByDlcMap, hiddenItems, setHiddenItems]
+	);
+
+	const getDlcToggleState = useCallback(
+		(dlc: U['dlc']) => {
+			const dlcItems = dataGroupByDlcMap.get(dlc) ?? [];
+			const hiddenCount = dlcItems.filter((item) =>
+				hiddenItems.has(item.name)
+			).length;
+
+			if (hiddenCount === 0) {
+				return true;
+			}
+			if (hiddenCount === dlcItems.length) {
+				return false;
+			}
+			return true;
+		},
+		[dataGroupByDlcMap, hiddenItems]
 	);
 
 	return (
@@ -144,34 +208,58 @@ const SettingsPanel = memo(function SettingsPanel<T extends TItemName>({
 			<Heading as="h3" isFirst>
 				{title}
 			</Heading>
-			<div className="grid h-min grid-cols-2 content-start justify-items-start gap-4 sm:grid-cols-3 md:gap-x-12">
-				{allOptions.map((option) => (
+			{dataGroupByDlcPinyinSorted.map(([dlc, items], index) => (
+				<div key={dlc}>
 					<div
-						key={option}
-						className="flex w-full items-center justify-between"
+						className={cn(
+							'flex gap-2',
+							index === 0 ? 'items-start' : 'items-center'
+						)}
 					>
-						<p className="flex items-center text-sm">
-							<Sprite
-								target={target}
-								name={option}
-								size={1.25}
-								className="mr-0.5"
-							/>
-							{option}
-						</p>
+						<Heading as="h4" isFirst={index === 0}>
+							{dlc === 0 ? LABEL_MAP.dlc0 : `DLC${dlc}`}
+						</Heading>
 						<SwitchItem
-							isSelected={!closedOptions.has(option)}
+							color="warning"
+							isSelected={getDlcToggleState(dlc)}
 							onValueChange={() => {
-								handleValueChange(option);
+								handleDlcToggle(dlc);
 							}}
-							aria-label={`${closedOptions.has(option) ? '显示' : '隐藏'}${option}`}
+							aria-label={`${getDlcToggleState(dlc) ? '隐藏' : '显示'}${dlc === 0 ? LABEL_MAP.dlc0 : `DLC${dlc}`}的全部项目`}
 						/>
 					</div>
-				))}
-			</div>
+					<div className="grid h-min grid-cols-2 content-start justify-items-start gap-4 sm:grid-cols-3 md:gap-2 md:gap-x-12">
+						{items.map(({ name }) => (
+							<div
+								key={name}
+								className="flex w-full items-center justify-between"
+							>
+								<p className="flex items-center text-sm">
+									<Sprite
+										target={target}
+										name={name}
+										size={1.25}
+										className="mr-0.5"
+									/>
+									{name}
+								</p>
+								<SwitchItem
+									isSelected={!hiddenItems.has(name)}
+									onValueChange={() => {
+										handleValueChange(name);
+									}}
+									aria-label={`${hiddenItems.has(name) ? '显示' : '隐藏'}${name}`}
+								/>
+							</div>
+						))}
+					</div>
+				</div>
+			))}
 		</div>
 	);
-}) as <T extends TItemName>(props: ISettingsPanelProps<T>) => JSX.Element;
+}) as <T extends TItemData<TItemInstance>, U extends T[number]>(
+	props: ISettingsPanelProps<T, U['name']>
+) => JSX.Element;
 
 interface IProps {
 	onModalClose?: (() => void) | undefined;
@@ -185,9 +273,41 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 	const [isRecipesSettingsPanelOpen, setRecipesSettingsPanelOpen] =
 		useState(false);
 
-	const hiddenBeverages = store.hiddenBeverages.use();
-	const hiddenIngredients = store.hiddenIngredients.use();
-	const hiddenRecipes = store.hiddenRecipes.use();
+	const hiddenBeverages = globalStore.hiddenBeverages.use();
+	const hiddenIngredients = globalStore.hiddenIngredients.use();
+	const hiddenRecipes = globalStore.hiddenRecipes.use();
+
+	const instance_beverage = beveragesStore.instance.get();
+	const instance_ingredient = ingredientsStore.instance.get();
+	const instance_recipe = recipesStore.instance.get();
+
+	const beverageData = useMemo(
+		() => instance_beverage.getPinyinSortedData().get(),
+		[instance_beverage]
+	);
+
+	const ingredientData = useMemo(
+		() =>
+			instance_ingredient
+				.getPinyinSortedData()
+				.get()
+				.filter(
+					({ name }) =>
+						!instance_ingredient.blockedIngredients.has(name)
+				),
+		[instance_ingredient]
+	);
+
+	const recipeData = useMemo(
+		() =>
+			instance_recipe
+				.getPinyinSortedData()
+				.get()
+				.filter(
+					({ name }) => !instance_recipe.blockedRecipes.has(name)
+				),
+		[instance_recipe]
+	);
 
 	const isInModal = onModalClose !== undefined;
 
@@ -229,9 +349,9 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 					onClose={handleBeveragesSettingsPanelClose}
 				>
 					<SettingsPanel
-						allOptions={allBeverageNames}
-						closedOptions={hiddenBeverages}
-						setOptions={store.hiddenBeverages.set}
+						data={beverageData}
+						hiddenItems={hiddenBeverages}
+						setHiddenItems={globalStore.hiddenBeverages.set}
 						target="beverage"
 						title="显示或隐藏特定酒水"
 					/>
@@ -249,9 +369,9 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 					onClose={handleRecipesSettingsPanelClose}
 				>
 					<SettingsPanel
-						allOptions={allRecipeNames}
-						closedOptions={hiddenRecipes}
-						setOptions={store.hiddenRecipes.set}
+						data={recipeData}
+						hiddenItems={hiddenRecipes}
+						setHiddenItems={globalStore.hiddenRecipes.set}
 						target="recipe"
 						title="显示或隐藏特定料理"
 					/>
@@ -271,9 +391,9 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 					onClose={handleIngredientsSettingsPanelClose}
 				>
 					<SettingsPanel
-						allOptions={allIngredientNames}
-						closedOptions={hiddenIngredients}
-						setOptions={store.hiddenIngredients.set}
+						data={ingredientData}
+						hiddenItems={hiddenIngredients}
+						setHiddenItems={globalStore.hiddenIngredients.set}
 						target="ingredient"
 						title="显示或隐藏包含特定食材的料理"
 					/>

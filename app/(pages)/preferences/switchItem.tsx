@@ -2,7 +2,7 @@ import { type PropsWithChildren, memo } from 'react';
 
 import { type ISwitchProps, Switch, cn } from '@/design/ui/components';
 
-interface IProps {
+interface IProps extends Pick<ISwitchProps, 'color'> {
 	'aria-label': NonNullable<ISwitchProps['aria-label']>;
 	className?: NonNullable<ISwitchProps['className']>;
 	isSelected: NonNullable<ISwitchProps['isSelected']>;
