@@ -61,7 +61,7 @@ export default function PreferencesModal() {
 			<ModalContent className="py-3">
 				{(onClose) => (
 					<ModalBody>
-						<ScrollShadow size={16} visibility="bottom">
+						<ScrollShadow size={16}>
 							<Content onModalClose={onClose} />
 						</ScrollShadow>
 					</ModalBody>

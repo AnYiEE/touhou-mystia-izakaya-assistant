@@ -104,6 +104,9 @@ export default function BeverageTabContent() {
 	const tableVisibleColumns =
 		customerStore.shared.beverage.table.columns.use();
 
+	const hiddenBeverages =
+		customerStore.shared.beverage.table.hiddenBeverages.use();
+
 	const filteredData = useMemo<TBeveragesWithSuitability>(() => {
 		const { data } = instance_beverage;
 
@@ -120,15 +123,17 @@ export default function BeverageTabContent() {
 			'beverageTags'
 		);
 
-		const dataWithRealSuitability = data.map((item) => {
-			const { suitability, tags: matchedTags } =
-				instance_beverage.getCustomerSuitability(
-					item.name,
-					beverageTags
-				);
+		const dataWithRealSuitability = data
+			.map((item) => {
+				const { suitability, tags: matchedTags } =
+					instance_beverage.getCustomerSuitability(
+						item.name,
+						beverageTags
+					);
 
-			return { ...item, matchedTags, suitability };
-		});
+				return { ...item, matchedTags, suitability };
+			})
+			.filter(({ name }) => !hiddenBeverages.has(name));
 
 		if (
 			checkEmpty(selectedCustomerBeverageTag) &&
@@ -160,6 +165,7 @@ export default function BeverageTabContent() {
 	}, [
 		currentCustomerName,
 		hasNameFilter,
+		hiddenBeverages,
 		instance_beverage,
 		instance_customer,
 		searchValue,

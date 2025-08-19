@@ -7,7 +7,7 @@ import {
 
 import { persist as persistMiddleware } from '@/stores/middlewares';
 import { createNamesCache } from '@/stores/utils';
-import { numberSort, toGetValueCollection } from '@/utilities';
+import { numberSort, toGetValue, toGetValueCollection } from '@/utilities';
 import { Beverage } from '@/utils';
 
 const instance = Beverage.getInstance();
@@ -60,3 +60,5 @@ export const beveragesStore = store(state, {
 }).computed((currentStore) => ({
 	names: () => getNames(currentStore.persistence.pinyinSortState.use()),
 }));
+
+export const allBeverageNames = getNames(pinyinSortStateMap.az).map(toGetValue);

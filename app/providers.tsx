@@ -120,6 +120,31 @@ export default function Providers({
 		customerRareStore.shared.recipe.table.selectableRows.set(
 			globalTableSelectableRows
 		);
+
+		const globalHiddenBeverages =
+			globalStore.persistence.table.hiddenItems.beverages.get();
+		const globalHiddenIngredients =
+			globalStore.persistence.table.hiddenItems.ingredients.get();
+		const globalHiddenRecipes =
+			globalStore.persistence.table.hiddenItems.recipes.get();
+		customerNormalStore.shared.beverage.table.hiddenBeverages.set(
+			toSet(globalHiddenBeverages)
+		);
+		customerNormalStore.shared.recipe.table.hiddenIngredients.set(
+			toSet(globalHiddenIngredients)
+		);
+		customerNormalStore.shared.recipe.table.hiddenRecipes.set(
+			toSet(globalHiddenRecipes)
+		);
+		customerRareStore.shared.beverage.table.hiddenBeverages.set(
+			toSet(globalHiddenBeverages)
+		);
+		customerRareStore.shared.recipe.table.hiddenIngredients.set(
+			toSet(globalHiddenIngredients)
+		);
+		customerRareStore.shared.recipe.table.hiddenRecipes.set(
+			toSet(globalHiddenRecipes)
+		);
 	}, []);
 
 	const router = useRouter();

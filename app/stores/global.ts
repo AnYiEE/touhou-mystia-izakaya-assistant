@@ -12,6 +12,11 @@ import { trackEvent } from '@/components/analytics';
 import type { IPersistenceState } from './types';
 import { siteConfig } from '@/configs';
 import {
+	type TBeverageName,
+	type TIngredientName,
+	type TRecipeName,
+} from '@/data';
+import {
 	customerNormalStore,
 	customerRareStore,
 	ingredientsStore,
@@ -66,7 +71,8 @@ const storeVersion = {
 	popularTrend: 9, // eslint-disable-next-line sort-keys
 	cloud: 10,
 	tableShare: 11,
-	userId: 12,
+	userId: 12, // eslint-disable-next-line sort-keys
+	hiddenItems: 13,
 } as const;
 
 const state = {
@@ -80,6 +86,11 @@ const state = {
 				recipe: recipeTableColumns
 					.filter(({ key }) => key !== 'time')
 					.map(toGetItemWithKey('key')),
+			},
+			hiddenItems: {
+				beverages: [] as TBeverageName[],
+				ingredients: [] as TIngredientName[],
+				recipes: [] as TRecipeName[],
 			},
 			row: 8,
 		},
@@ -112,7 +123,7 @@ export const globalStore = store(state, {
 		}),
 		persistMiddleware<typeof state>({
 			name: storeName,
-			version: storeVersion.userId,
+			version: storeVersion.hiddenItems,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -171,6 +182,13 @@ export const globalStore = store(state, {
 				if (version < storeVersion.userId) {
 					oldState.persistence.userId = null;
 				}
+				if (version < storeVersion.hiddenItems) {
+					oldState.persistence.table.hiddenItems = {
+						beverages: [],
+						ingredients: [],
+						recipes: [],
+					};
+				}
 				return persistedState as typeof state;
 			},
 			partialize(currentStore) {
@@ -213,6 +231,38 @@ export const globalStore = store(state, {
 			write: (rows: Selection) => {
 				currentStore.persistence.table.row.set(
 					Number.parseInt(toArray<SelectionSet>(rows)[0] as string)
+				);
+			},
+		},
+
+		hiddenBeverages: {
+			read: () =>
+				toSet(
+					currentStore.persistence.table.hiddenItems.beverages.use()
+				),
+			write: (beverages: Set<TBeverageName>) => {
+				currentStore.persistence.table.hiddenItems.beverages.set(
+					toArray(beverages)
+				);
+			},
+		},
+		hiddenIngredients: {
+			read: () =>
+				toSet(
+					currentStore.persistence.table.hiddenItems.ingredients.use()
+				),
+			write: (ingredients: Set<TIngredientName>) => {
+				currentStore.persistence.table.hiddenItems.ingredients.set(
+					toArray(ingredients)
+				);
+			},
+		},
+		hiddenRecipes: {
+			read: () =>
+				toSet(currentStore.persistence.table.hiddenItems.recipes.use()),
+			write: (recipes: Set<TRecipeName>) => {
+				currentStore.persistence.table.hiddenItems.recipes.set(
+					toArray(recipes)
 				);
 			},
 		},
@@ -271,7 +321,7 @@ globalStore.persistence.popularTrend.onChange((popularTrend) => {
 	recipesStore.shared.popularTrend.assign(popularTrend);
 });
 
-// Update the table columns and rows when there is a change in the persisted table state.
+// Update the table columns, rows and hidden items when there is a change in the persisted table state.
 globalStore.persistence.table.columns.beverage.onChange((columns) => {
 	customerNormalStore.shared.beverage.table.columns.set(toSet(columns));
 	customerRareStore.shared.beverage.table.columns.set(toSet(columns));
@@ -293,6 +343,28 @@ globalStore.persistence.table.row.onChange((row) => {
 	customerRareStore.shared.recipe.table.page.set(1);
 	customerRareStore.shared.recipe.table.row.set(row);
 	customerRareStore.shared.recipe.table.rows.set(toSet([row.toString()]));
+});
+globalStore.persistence.table.hiddenItems.beverages.onChange((beverages) => {
+	customerNormalStore.shared.beverage.table.hiddenBeverages.set(
+		toSet(beverages)
+	);
+	customerRareStore.shared.beverage.table.hiddenBeverages.set(
+		toSet(beverages)
+	);
+});
+globalStore.persistence.table.hiddenItems.ingredients.onChange(
+	(ingredients) => {
+		customerNormalStore.shared.recipe.table.hiddenIngredients.set(
+			toSet(ingredients)
+		);
+		customerRareStore.shared.recipe.table.hiddenIngredients.set(
+			toSet(ingredients)
+		);
+	}
+);
+globalStore.persistence.table.hiddenItems.recipes.onChange((recipes) => {
+	customerNormalStore.shared.recipe.table.hiddenRecipes.set(toSet(recipes));
+	customerRareStore.shared.recipe.table.hiddenRecipes.set(toSet(recipes));
 });
 
 export { storeName as globalStoreKey };

@@ -18,7 +18,9 @@ export default memo<PropsWithChildren<IProps>>(function SwitchItem({
 }) {
 	return (
 		<div className={cn('flex items-center gap-2', className)}>
-			<span className="font-medium">{children}</span>
+			{children !== undefined && (
+				<span className="font-medium">{children}</span>
+			)}
 			<Switch
 				endContent={<span>关</span>}
 				startContent={<span>开</span>}

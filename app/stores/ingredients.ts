@@ -13,6 +13,7 @@ import {
 	numberSort,
 	pinyinSort,
 	toArray,
+	toGetValue,
 	toGetValueCollection,
 } from '@/utilities';
 import { Ingredient } from '@/utils';
@@ -92,3 +93,7 @@ export const ingredientsStore = store(state, {
 }).computed((currentStore) => ({
 	names: () => getNames(currentStore.persistence.pinyinSortState.use()),
 }));
+
+export const allIngredientNames = getNames(pinyinSortStateMap.az).map(
+	toGetValue
+);

@@ -120,6 +120,10 @@ export default function RecipeTabContent() {
 		customerStore.persistence.recipe.table.sortDescriptor.use();
 	const tableVisibleColumns = customerStore.shared.recipe.table.columns.use();
 
+	const hiddenIngredients =
+		customerStore.shared.recipe.table.hiddenIngredients.use();
+	const hiddenRecipes = customerStore.shared.recipe.table.hiddenRecipes.use();
+
 	const composeTagsWithPopularTrend = useMemo(
 		() =>
 			curry(instance_recipe.composeTagsWithPopularTrend)(
@@ -171,47 +175,53 @@ export default function RecipeTabContent() {
 			positiveTags: customerPositiveTags,
 		} = instance_customer.getPropsByName(currentCustomerName);
 
-		const dataWithRealSuitability = data.map((item) => {
-			const composedRecipeTags = composeTagsWithPopularTrend(
-				item.ingredients,
-				item.positiveTags
-			);
-			const recipeTagsWithTrend =
-				calculateTagsWithTrend(composedRecipeTags);
+		const dataWithRealSuitability = data
+			.map((item) => {
+				const composedRecipeTags = composeTagsWithPopularTrend(
+					item.ingredients,
+					item.positiveTags
+				);
+				const recipeTagsWithTrend =
+					calculateTagsWithTrend(composedRecipeTags);
 
-			const { recipe: easterEggRecipe, score: easterEggScore } =
-				instance_customer.checkRecipeEasterEgg({
-					currentCustomerName,
-					currentRecipeName: item.name,
-				});
+				const { recipe: easterEggRecipe, score: easterEggScore } =
+					instance_customer.checkRecipeEasterEgg({
+						currentCustomerName,
+						currentRecipeName: item.name,
+					});
 
-			if (item.name === easterEggRecipe) {
+				if (item.name === easterEggRecipe) {
+					return {
+						...item,
+						matchedNegativeTags: [],
+						matchedPositiveTags: [],
+						suitability: easterEggScore > 0 ? Infinity : -Infinity,
+					};
+				}
+
+				const {
+					negativeTags: matchedNegativeTags,
+					positiveTags: matchedPositiveTags,
+					suitability,
+				} = instance_recipe.getCustomerSuitability(
+					recipeTagsWithTrend,
+					customerPositiveTags,
+					customerNegativeTags
+				);
+
 				return {
 					...item,
-					matchedNegativeTags: [],
-					matchedPositiveTags: [],
-					suitability: easterEggScore > 0 ? Infinity : -Infinity,
+					matchedNegativeTags,
+					matchedPositiveTags,
+					positiveTags: recipeTagsWithTrend,
+					suitability,
 				};
-			}
-
-			const {
-				negativeTags: matchedNegativeTags,
-				positiveTags: matchedPositiveTags,
-				suitability,
-			} = instance_recipe.getCustomerSuitability(
-				recipeTagsWithTrend,
-				customerPositiveTags,
-				customerNegativeTags
-			);
-
-			return {
-				...item,
-				matchedNegativeTags,
-				matchedPositiveTags,
-				positiveTags: recipeTagsWithTrend,
-				suitability,
-			};
-		}) as TRecipesWithSuitability;
+			})
+			.filter(
+				({ ingredients, name }) =>
+					!ingredients.some((item) => hiddenIngredients.has(item)) &&
+					!hiddenRecipes.has(name)
+			) as TRecipesWithSuitability;
 
 		if (
 			checkEmpty(selectedCookers) &&
@@ -264,6 +274,8 @@ export default function RecipeTabContent() {
 		currentCustomerName,
 		data,
 		hasNameFilter,
+		hiddenIngredients,
+		hiddenRecipes,
 		instance_customer,
 		instance_recipe,
 		searchValue,

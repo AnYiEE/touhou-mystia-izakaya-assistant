@@ -17,6 +17,7 @@ import {
 } from '@/design/ui/components';
 
 import DataManager, { type IDataManagerProps } from './dataManager';
+import HiddenItems from './hiddenItems';
 import SwitchItem from './switchItem';
 import Heading from '@/components/heading';
 import Sprite from '@/components/sprite';
@@ -257,7 +258,9 @@ export default memo<IProps>(function Content({ onModalClose }) {
 					</span>
 				</SwitchItem>
 			</div>
-			<Heading as="h2">稀客页面</Heading>
+			<Heading as="h2">顾客页面</Heading>
+			<Heading as="h3">料理和酒水表格</Heading>
+			<HiddenItems onModalClose={onModalClose} />
 			<Heading as="h3">稀客卡片</Heading>
 			<div className="space-y-2">
 				<SwitchItem

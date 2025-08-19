@@ -126,6 +126,10 @@ const changelog = [
 		],
 	},
 	{ version: 'v1.8', changes: ['新增：稀客预算超支容忍度数据。'] },
+	{
+		version: 'v1.9',
+		changes: ['新增：支持全局设置料理和酒水表格中特定项目的可见性。'],
+	},
 ] as const satisfies Array<{
 	version: `v${string}`;
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;
