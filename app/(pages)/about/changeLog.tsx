@@ -10,6 +10,7 @@ import Heading from '@/components/heading';
 
 import { siteConfig } from '@/configs';
 import { DARK_MATTER_META_MAP, DYNAMIC_TAG_MAP } from '@/data';
+import { copyArray } from '@/utilities';
 
 const { links } = siteConfig;
 
@@ -164,18 +165,20 @@ export default function ChangeLog() {
 			>
 				更新日志
 			</Heading>
-			{changelog.map(({ changes, version }, versionIndex) => (
-				<Fragment key={versionIndex}>
-					<Heading as="h2" isFirst={versionIndex === 0}>
-						{version}
-					</Heading>
-					<ul className="list-inside list-decimal space-y-2 break-all text-justify">
-						{changes.map((change, changeIndex) => (
-							<li key={changeIndex}>{change}</li>
-						))}
-					</ul>
-				</Fragment>
-			))}
+			{copyArray(changelog)
+				.reverse()
+				.map(({ changes, version }, versionIndex) => (
+					<Fragment key={versionIndex}>
+						<Heading as="h2" isFirst={versionIndex === 0}>
+							{version}
+						</Heading>
+						<ul className="list-inside list-decimal space-y-2 break-all text-justify">
+							{changes.map((change, changeIndex) => (
+								<li key={changeIndex}>{change}</li>
+							))}
+						</ul>
+					</Fragment>
+				))}
 		</>
 	);
 }
