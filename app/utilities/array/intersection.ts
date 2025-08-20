@@ -1,14 +1,14 @@
 import { checkEmpty, toSet } from '@/utilities';
 
 export function intersection<T>(
-	arrayA: ReadonlyArray<T>,
-	arrayB: ReadonlyArray<T>
+	array: ReadonlyArray<T>,
+	target: ArrayLike<T> | ReadonlySetLike<T>
 ) {
-	if (checkEmpty(arrayA) || checkEmpty(arrayB)) {
+	if (checkEmpty(array) || checkEmpty(target)) {
 		return [];
 	}
 
-	const arrayBSet = toSet(arrayB);
+	const set = toSet(target);
 
-	return arrayA.filter((value) => arrayBSet.has(value));
+	return array.filter((value) => set.has(value));
 }

@@ -1,9 +1,11 @@
 import { isObject } from 'lodash';
 
-type TGetElementType<T> = T extends Iterable<infer U> ? U : T;
+import type { TGetElementType } from './types';
 
 function isIterable<T>(value: T | Iterable<T>) {
-	return isObject(value) && Symbol.iterator in value;
+	return (
+		isObject(value) && Symbol.iterator in value && typeof value !== 'string'
+	);
 }
 
 export function toArray(...args: DOMTokenList[]): string[];
@@ -21,8 +23,23 @@ export function toArray<T>(...args: T[]) {
 	});
 }
 
-export function toSet<T>(...arrays: Array<ReadonlyArray<T>>) {
-	return new Set(arrays.flat());
+export function toSet<T, U extends TGetElementType<T> = TGetElementType<T>>(
+	...args: Array<T | U>
+): Set<U>;
+export function toSet<T>(...args: T[]) {
+	const set = new Set<T>();
+
+	args.forEach((arg) => {
+		if (isIterable(arg)) {
+			for (const item of arg) {
+				set.add(item);
+			}
+		} else {
+			set.add(arg);
+		}
+	});
+
+	return set;
 }
 
-export { toArray as copyArray };
+export { toArray as copyArray, toSet as copySet };

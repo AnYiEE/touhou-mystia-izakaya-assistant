@@ -45,15 +45,15 @@ const instance_recipe = Recipe.getInstance();
 
 const ingredientTags = instance_ingredient
 	.getValuesByProp('tags')
-	.filter((tag) => !instance_ingredient.blockedTags.has(tag));
+	.filter(
+		(tag) => !instance_ingredient.blockedTags.has(tag)
+	) as TPopularTag[];
 
 const recipePositiveTags = instance_recipe
 	.getValuesByProp('positiveTags')
-	.filter((tag) => !instance_recipe.blockedTags.has(tag));
+	.filter((tag) => !instance_recipe.blockedTags.has(tag)) as TPopularTag[];
 
-const validPopularTags = (
-	union(ingredientTags, recipePositiveTags) as TPopularTag[]
-)
+const validPopularTags = union(ingredientTags, recipePositiveTags)
 	.map(toGetValueCollection)
 	.sort(pinyinSort);
 
@@ -225,9 +225,9 @@ export const globalStore = store(state, {
 
 		tableRows: {
 			read: () =>
-				toSet([
-					currentStore.persistence.table.row.use().toString(),
-				]) as SelectionSet,
+				toSet(
+					currentStore.persistence.table.row.use().toString()
+				) as SelectionSet,
 			write: (rows: Selection) => {
 				currentStore.persistence.table.row.set(
 					Number.parseInt(toArray<SelectionSet>(rows)[0] as string)
@@ -269,9 +269,9 @@ export const globalStore = store(state, {
 
 		selectedPopularTag: {
 			read: () =>
-				toSet([
-					currentStore.persistence.popularTrend.tag.use(),
-				]) as SelectionSet,
+				toSet(
+					currentStore.persistence.popularTrend.tag.use()
+				) as SelectionSet,
 			write: (tags: Selection) => {
 				const tag = toArray<SelectionSet>(
 					tags
@@ -333,16 +333,16 @@ globalStore.persistence.table.columns.recipe.onChange((columns) => {
 globalStore.persistence.table.row.onChange((row) => {
 	customerNormalStore.shared.beverage.table.page.set(1);
 	customerNormalStore.shared.beverage.table.row.set(row);
-	customerNormalStore.shared.beverage.table.rows.set(toSet([row.toString()]));
+	customerNormalStore.shared.beverage.table.rows.set(toSet(row.toString()));
 	customerNormalStore.shared.recipe.table.page.set(1);
 	customerNormalStore.shared.recipe.table.row.set(row);
-	customerNormalStore.shared.recipe.table.rows.set(toSet([row.toString()]));
+	customerNormalStore.shared.recipe.table.rows.set(toSet(row.toString()));
 	customerRareStore.shared.beverage.table.page.set(1);
 	customerRareStore.shared.beverage.table.row.set(row);
-	customerRareStore.shared.beverage.table.rows.set(toSet([row.toString()]));
+	customerRareStore.shared.beverage.table.rows.set(toSet(row.toString()));
 	customerRareStore.shared.recipe.table.page.set(1);
 	customerRareStore.shared.recipe.table.row.set(row);
-	customerRareStore.shared.recipe.table.rows.set(toSet([row.toString()]));
+	customerRareStore.shared.recipe.table.rows.set(toSet(row.toString()));
 });
 globalStore.persistence.table.hiddenItems.beverages.onChange((beverages) => {
 	customerNormalStore.shared.beverage.table.hiddenBeverages.set(

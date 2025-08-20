@@ -3,8 +3,8 @@ import { isObject } from 'lodash';
 import { type StateCreator } from 'zustand';
 
 import {
-	checkArrayLengthEqualOf,
 	checkEmpty,
+	checkLengthEqualOf,
 	copyArray,
 	memoize,
 } from '@/utilities';
@@ -55,7 +55,7 @@ function checkEqual(value1: unknown, value2: unknown): boolean {
 		const keys2 = Object.keys(value2);
 
 		return (
-			checkArrayLengthEqualOf(keys1, keys2) &&
+			checkLengthEqualOf(keys1, keys2) &&
 			keys1.every(
 				(key) =>
 					Object.hasOwn(value2, key) &&
@@ -66,7 +66,7 @@ function checkEqual(value1: unknown, value2: unknown): boolean {
 
 	if (Array.isArray(value1) && Array.isArray(value2)) {
 		return (
-			checkArrayLengthEqualOf(value1, value2) &&
+			checkLengthEqualOf(value1, value2) &&
 			value1.every((element, index) => checkEqual(element, value2[index]))
 		);
 	}

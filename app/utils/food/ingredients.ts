@@ -35,13 +35,13 @@ export class Ingredient extends Food<TIngredients> {
 		return instance;
 	}
 
-	public blockedLevels: Set<TLevel> = toSet([10]);
-	public blockedIngredients: Set<TIngredientName> = toSet([
+	public blockedLevels = toSet(10) as Set<TLevel>;
+	public blockedIngredients = toSet(
 		'铃仙',
 		'噗噗哟果',
-		'强效辣椒素',
-	]);
-	public blockedTags: Set<TIngredientTag> = toSet(['特产', '天罚']);
+		'强效辣椒素'
+	) as Set<TIngredientName>;
+	public blockedTags = toSet('特产', '天罚') as Set<TIngredientTag>;
 
 	/**
 	 * @description Types sorted in the suggested order. Used for selecting ingredient types.

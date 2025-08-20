@@ -216,7 +216,7 @@ export default function BeverageTabContent() {
 		filteredData.length / tableRowsPerPageNumber
 	);
 
-	const tableSelectedKeys = toSet([currentBeverageName ?? '']);
+	const tableSelectedKeys = toSet(currentBeverageName ?? '');
 
 	const renderTableCell = useCallback(
 		(data: TBeverageWithSuitability, columnKey: TTableColumnKey) => {

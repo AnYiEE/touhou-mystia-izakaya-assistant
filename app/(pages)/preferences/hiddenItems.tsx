@@ -24,7 +24,7 @@ import {
 	ingredientsStore,
 	recipesStore,
 } from '@/stores';
-import { checkEmpty, numberSort, toArray } from '@/utilities';
+import { checkEmpty, copySet, numberSort, toArray } from '@/utilities';
 import type { TItemData, TItemInstance } from '@/utils/types';
 
 interface ISettingsButtonProps {
@@ -61,7 +61,7 @@ interface ISettingsModalProps
 	isInModal: boolean;
 }
 
-const SettingsModal = memo<ISettingsModalProps>(function SettingsPanel({
+const SettingsModal = memo<ISettingsModalProps>(function SettingsModal({
 	children,
 	isInModal,
 	onClose,
@@ -148,7 +148,7 @@ const SettingsPanel = memo(function SettingsPanel<
 
 	const handleValueChange = useCallback(
 		(name: U['name']) => {
-			const newHiddenItems = new Set(hiddenItems);
+			const newHiddenItems = copySet(hiddenItems);
 
 			if (newHiddenItems.has(name)) {
 				newHiddenItems.delete(name);
@@ -164,7 +164,7 @@ const SettingsPanel = memo(function SettingsPanel<
 	const handleDlcToggle = useCallback(
 		(dlc: U['dlc']) => {
 			const dlcItems = dataGroupByDlcMap.get(dlc) ?? [];
-			const newHiddenItems = new Set(hiddenItems);
+			const newHiddenItems = copySet(hiddenItems);
 
 			const isAllHidden = dlcItems.every((item) =>
 				hiddenItems.has(item.name)
@@ -226,6 +226,7 @@ const SettingsPanel = memo(function SettingsPanel<
 								handleDlcToggle(dlc);
 							}}
 							aria-label={`${getDlcToggleState(dlc) ? '隐藏' : '显示'}${dlc === 0 ? LABEL_MAP.dlc0 : `DLC${dlc}`}的全部项目`}
+							className={cn(index !== 0 && 'mt-1')}
 						/>
 					</div>
 					<div className="grid h-min grid-cols-2 content-start justify-items-start gap-4 sm:grid-cols-3 md:gap-2 md:gap-x-12">

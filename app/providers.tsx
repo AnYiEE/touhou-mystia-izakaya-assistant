@@ -85,7 +85,7 @@ export default function Providers({
 		);
 		customerNormalStore.shared.beverage.table.row.set(globalTableRow);
 		customerNormalStore.shared.beverage.table.rows.set(
-			toSet([globalTableRow.toString()])
+			toSet(globalTableRow.toString())
 		);
 		customerNormalStore.shared.beverage.table.selectableRows.set(
 			globalTableSelectableRows
@@ -95,7 +95,7 @@ export default function Providers({
 		);
 		customerNormalStore.shared.recipe.table.row.set(globalTableRow);
 		customerNormalStore.shared.recipe.table.rows.set(
-			toSet([globalTableRow.toString()])
+			toSet(globalTableRow.toString())
 		);
 		customerNormalStore.shared.recipe.table.selectableRows.set(
 			globalTableSelectableRows
@@ -105,7 +105,7 @@ export default function Providers({
 		);
 		customerRareStore.shared.beverage.table.row.set(globalTableRow);
 		customerRareStore.shared.beverage.table.rows.set(
-			toSet([globalTableRow.toString()])
+			toSet(globalTableRow.toString())
 		);
 		customerRareStore.shared.beverage.table.selectableRows.set(
 			globalTableSelectableRows
@@ -115,7 +115,7 @@ export default function Providers({
 		);
 		customerRareStore.shared.recipe.table.row.set(globalTableRow);
 		customerRareStore.shared.recipe.table.rows.set(
-			toSet([globalTableRow.toString()])
+			toSet(globalTableRow.toString())
 		);
 		customerRareStore.shared.recipe.table.selectableRows.set(
 			globalTableSelectableRows

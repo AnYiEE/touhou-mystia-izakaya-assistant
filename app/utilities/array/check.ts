@@ -8,38 +8,46 @@ export function checkEmpty<T>(target: ArrayLike<T> | ReadonlySetLike<T>) {
 	return target.size === 0;
 }
 
-export function checkArrayLengthEqualOf<T>(
-	arrayA: ArrayLike<T>,
-	arrayB: ArrayLike<T>
-) {
-	return arrayA.length === arrayB.length;
+export function checkLengthEqualOf<
+	T,
+	U extends ArrayLike<T> | ReadonlySetLike<T>,
+>(targetA: U, targetB: U) {
+	if ('length' in targetA && 'length' in targetB) {
+		return targetA.length === targetB.length;
+	}
+
+	if ('size' in targetA && 'size' in targetB) {
+		return targetA.size === targetB.size;
+	}
+
+	return false;
 }
 
 export function checkArrayContainsOf<T>(
-	arrayA: ReadonlyArray<T>,
-	arrayB: ReadonlyArray<T>
+	array: ReadonlyArray<T>,
+	target: ArrayLike<T> | ReadonlySetLike<T>
 ) {
-	const arrayBSet = toSet(arrayB);
+	const set = toSet(target);
 
-	return arrayA.some((value) => arrayBSet.has(value));
+	return array.some((value) => set.has(value));
 }
 
-export function checkArraySubsetOf<T>(
-	arrayA: ReadonlyArray<T>,
-	arrayB: ReadonlyArray<T>
-) {
-	const arrayBSet = toSet(arrayB);
+export const checkArraySubsetOf: typeof checkArrayContainsOf = (
+	array,
+	target
+) => {
+	const set = toSet(target);
 
-	return arrayA.every((value) => arrayBSet.has(value));
-}
+	return array.every((value) => set.has(value));
+};
 
 export const checkArrayEqualOf: typeof checkArrayContainsOf = (
-	arrayA,
-	arrayB
+	array,
+	target
 ) => {
-	if (!checkArrayLengthEqualOf(arrayA, arrayB)) {
+	if (!checkLengthEqualOf(array, target)) {
 		return false;
 	}
 
-	return checkArraySubsetOf(arrayA, arrayB);
+	return checkArraySubsetOf(array, target);
 };

@@ -1,11 +1,15 @@
+import type { TGetElementType } from './types';
+
 import { checkEmpty, toArray, toSet } from '@/utilities';
 
-export function union<T>(...arrays: Array<ReadonlyArray<T>>) {
-	if (checkEmpty(arrays)) {
+export function union<T, U extends TGetElementType<T> = TGetElementType<T>>(
+	...args: U[]
+) {
+	if (checkEmpty(args)) {
 		return [];
 	}
 
-	const flattedArrays = arrays.flat();
+	const flattedArrays = args.flat();
 	if (checkEmpty(flattedArrays)) {
 		return [];
 	}

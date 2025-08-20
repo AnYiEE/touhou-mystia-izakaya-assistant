@@ -75,12 +75,10 @@ export class Recipe extends Food<TRecipes> {
 		return instance;
 	}
 
-	public blockedRecipes: Set<TRecipeName> = toSet([
-		DARK_MATTER_META_MAP.name,
-	]);
-	public blockedTags: Set<TRecipeTag> = toSet([
-		DARK_MATTER_META_MAP.positiveTag,
-	]);
+	public blockedRecipes: Set<TRecipeName> = toSet(DARK_MATTER_META_MAP.name);
+	public blockedTags: Set<TRecipeTag> = toSet(
+		DARK_MATTER_META_MAP.positiveTag
+	);
 
 	/**
 	 * @description Get the recipes for a customer based on their bond level.
@@ -165,7 +163,7 @@ export class Recipe extends Food<TRecipes> {
 	) {
 		const resultTags = toSet(
 			originalRecipePositiveTags,
-			extraIngredientTags
+			extraIngredientTags as TRecipeTag[]
 		);
 		const { isNegative: isNegativePopularTag, tag: currentPopularTag } =
 			popularTrend ?? {};
@@ -196,7 +194,7 @@ export class Recipe extends Food<TRecipes> {
 			}
 		);
 
-		return toArray(resultTags) as TRecipeTag[];
+		return toArray(resultTags);
 	}
 
 	/**

@@ -5,7 +5,7 @@ export function without<T>(array: ReadonlyArray<T>, ...values: T[]) {
 		return [];
 	}
 
-	const valuesSet = toSet(values);
+	const set = toSet(values);
 
-	return array.filter((value) => !valuesSet.has(value));
+	return array.filter((value) => !set.has(value));
 }

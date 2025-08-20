@@ -200,8 +200,9 @@ export default memo<IProps>(function IngredientTabContent({
 							);
 						}
 
-						const tagsWithTrend =
-							calculateIngredientTagsWithTrend(tags);
+						const tagsWithTrend = calculateIngredientTagsWithTrend(
+							tags
+						) as TRecipeTag[];
 						const allTagsWithTrend = union(
 							currentRecipeTagsWithTrend,
 							tagsWithTrend
@@ -313,7 +314,7 @@ export default memo<IProps>(function IngredientTabContent({
 						const isOrderTag =
 							currentCustomerOrderRecipeTag !== null &&
 							tagsWithTrend.includes(
-								currentCustomerOrderRecipeTag as TIngredientTag
+								currentCustomerOrderRecipeTag
 							) &&
 							after.includes(currentCustomerOrderRecipeTag) &&
 							!before.includes(currentCustomerOrderRecipeTag);

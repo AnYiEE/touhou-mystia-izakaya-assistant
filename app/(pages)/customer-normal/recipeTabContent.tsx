@@ -54,6 +54,7 @@ import type { TRecipeWithSuitability, TRecipesWithSuitability } from './types';
 import { CUSTOMER_NORMAL_TAG_STYLE, LABEL_MAP } from '@/data';
 import { customerNormalStore as customerStore, globalStore } from '@/stores';
 import {
+	checkArrayContainsOf,
 	checkArraySubsetOf,
 	checkEmpty,
 	copyArray,
@@ -197,7 +198,7 @@ export default function RecipeTabContent() {
 			})
 			.filter(
 				({ ingredients, name }) =>
-					!ingredients.some((item) => hiddenIngredients.has(item)) &&
+					!checkArrayContainsOf(ingredients, hiddenIngredients) &&
 					!hiddenRecipes.has(name)
 			) as TRecipesWithSuitability;
 
@@ -307,7 +308,7 @@ export default function RecipeTabContent() {
 		filteredData.length / tableRowsPerPageNumber
 	);
 
-	const tableSelectedKeys = toSet([currentRecipeData?.name ?? '']);
+	const tableSelectedKeys = toSet(currentRecipeData?.name ?? '');
 
 	const renderTableCell = useCallback(
 		(recipeData: TRecipeWithSuitability, columnKey: TTableColumnKey) => {

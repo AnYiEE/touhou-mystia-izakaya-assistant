@@ -63,7 +63,7 @@ export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 	const isMounted = useMounted();
 	const [theme, setTheme] = useTheme();
 	const [selectedTheme, setSelectedTheme] = useState<SelectionSet>(
-		toSet([theme])
+		toSet(theme)
 	);
 	const vibrate = useVibrate();
 
@@ -83,7 +83,7 @@ export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 
 	useEffect(() => {
 		if (!selectedTheme.has(theme)) {
-			setSelectedTheme(toSet([theme]));
+			setSelectedTheme(toSet(theme));
 		}
 	}, [selectedTheme, theme]);
 

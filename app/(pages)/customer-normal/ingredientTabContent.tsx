@@ -192,8 +192,9 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 							);
 						}
 
-						const tagsWithTrend =
-							calculateIngredientTagsWithTrend(tags);
+						const tagsWithTrend = calculateIngredientTagsWithTrend(
+							tags
+						) as TRecipeTag[];
 						const allTagsWithTrend = union(
 							currentRecipeTagsWithTrend,
 							tagsWithTrend
