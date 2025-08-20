@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { curry, curryRight } from 'lodash';
 
-import { useVibrate, useViewInNewWindow } from '@/hooks';
+import { getSearchResult, useVibrate, useViewInNewWindow } from '@/hooks';
 
 import { Autocomplete, AutocompleteItem } from '@heroui/autocomplete';
 import { Select, SelectItem } from '@heroui/select';
@@ -60,7 +60,6 @@ import {
 	copyArray,
 	numberSort,
 	pinyinSort,
-	processPinyin,
 	toArray,
 	toSet,
 } from '@/utilities';
@@ -211,21 +210,13 @@ export default function RecipeTabContent() {
 			return dataWithRealSuitability;
 		}
 
-		const searchValueLowerCase = searchValue.toLowerCase();
-
 		return dataWithRealSuitability.filter(
 			({ cooker, dlc, name, pinyin, positiveTags }) => {
-				const { pinyinFirstLetters, pinyinWithoutTone } =
-					processPinyin(pinyin);
 				const recipeTagsWithTrend =
 					calculateTagsWithTrend(positiveTags);
 
 				const isNameMatched = hasNameFilter
-					? name.toLowerCase().includes(searchValueLowerCase) ||
-						pinyinWithoutTone
-							.join('')
-							.includes(searchValueLowerCase) ||
-						pinyinFirstLetters.includes(searchValueLowerCase)
+					? getSearchResult(searchValue, { name, pinyin })
 					: true;
 				const isDlcMatched =
 					checkEmpty(selectedDlcs) ||
