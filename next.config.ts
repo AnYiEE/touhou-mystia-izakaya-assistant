@@ -42,6 +42,7 @@ const nextConfig: NextConfig = {
 
 	assetPrefix: env.VERCEL ? '' : CDN_URL,
 	reactStrictMode: true,
+	typedRoutes: true,
 
 	eslint: { ignoreDuringBuilds: skipLint },
 	typescript: { ignoreBuildErrors: skipLint },

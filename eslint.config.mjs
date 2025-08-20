@@ -15,7 +15,16 @@ import globals from 'globals';
 const flatCompat = new FlatCompat({ baseDirectory: import.meta.dirname });
 
 export default tsEslint.config(
-	{ ignores: ['public/*.js'] },
+	{
+		ignores: [
+			'node_modules/**',
+			'.next/**',
+			'build/**',
+			'out/**',
+			'next-env.d.ts',
+			'public/*.js',
+		],
+	},
 	{
 		extends: [
 			comments.recommended,
