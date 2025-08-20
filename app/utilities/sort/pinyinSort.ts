@@ -1,18 +1,14 @@
-import { getPinyin, isValueCollection, numberSort } from '@/utilities';
+import {
+	getPinyin,
+	getTone,
+	isValueCollection,
+	numberSort,
+	removeTone,
+} from '@/utilities';
 
 type TValue = string | string[];
 type TValueCollection = ValueCollection<TValue>;
 type TTarget = TValue | TValueCollection;
-
-function getTone(pinyin: string) {
-	const exec = /\d/u.exec(pinyin);
-
-	return exec === null ? 0 : Number.parseInt(exec[0]);
-}
-
-function removeTone(pinyin: string) {
-	return pinyin.replace(/\d/u, '');
-}
 
 function throwError(...args: unknown[]): never {
 	throw new TypeError(
