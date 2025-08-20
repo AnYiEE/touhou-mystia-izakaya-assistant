@@ -10,10 +10,8 @@ export const processPinyin = memoize(function processPinyin(
 		(acc, string) => {
 			const cleanedString = string.replace(/\d/u, '').toLowerCase();
 
-			if (/\w/u.test(cleanedString)) {
-				acc.pinyinFirstLetters += cleanedString.charAt(0);
-				acc.pinyinWithoutTone.push(cleanedString);
-			}
+			acc.pinyinFirstLetters += cleanedString.charAt(0);
+			acc.pinyinWithoutTone.push(cleanedString);
 
 			return acc;
 		},
