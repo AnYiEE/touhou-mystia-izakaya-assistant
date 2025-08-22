@@ -60,7 +60,11 @@ const script = () => {
 			message,
 		} = event;
 
-		if (/fetch|load\sfail|loading\schunk|network|net::/i.test(message)) {
+		if (
+			/fetch|load\sfail|loading\schunk|network|net::|ResizeObserver/i.test(
+				message
+			)
+		) {
 			return;
 		}
 
