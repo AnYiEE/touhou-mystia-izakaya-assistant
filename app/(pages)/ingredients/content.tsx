@@ -1,6 +1,10 @@
 import { Fragment, memo, useRef } from 'react';
 
-import { useItemPopoverState, useOpenedItemPopover } from '@/hooks';
+import {
+	useItemPopoverState,
+	useOpenedItemPopover,
+	useViewInNewWindow,
+} from '@/hooks';
 
 import {
 	CLASSNAME_FOCUS_VISIBLE_OUTLINE,
@@ -16,6 +20,7 @@ import { trackEvent } from '@/components/analytics';
 import ItemCard from '@/components/itemCard';
 import ItemPopoverCard from '@/components/itemPopoverCard';
 import Ol from '@/components/ol';
+import PressElement from '@/components/pressElement';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 
@@ -23,11 +28,14 @@ import {
 	COLLECTION_LOCATION_REFRESH_TIME_MAP,
 	type IIngredient,
 	INGREDIENT_TAG_STYLE,
+	LABEL_MAP,
 	type TCollectionLocation,
+	type TDlc,
 } from '@/data';
-// import {globalStore as store} from '@/stores';
+import { /* globalStore, */ ingredientsStore } from '@/stores';
+import { numberSort, toArray } from '@/utilities';
 import { type Ingredient } from '@/utils';
-import type { TItemData } from '@/utils/types';
+import type { TItemData, TRecipe } from '@/utils/types';
 
 interface IProps {
 	data: TItemData<Ingredient>;
@@ -38,8 +46,11 @@ export default memo<IProps>(function Content({ data }) {
 	const [openedPopover] = useOpenedItemPopover(popoverCardRef);
 	const { checkDefaultOpen, checkShouldEffect } =
 		useItemPopoverState(openedPopover);
+	const openWindow = useViewInNewWindow();
 
 	// const isHighAppearance = store.persistence.highAppearance.use();
+
+	const instance = ingredientsStore.instance.get();
 
 	return data.map(
 		(
@@ -84,241 +95,384 @@ export default memo<IProps>(function Content({ data }) {
 						tagColors={INGREDIENT_TAG_STYLE}
 						ref={popoverCardRef}
 					>
-						<ScrollShadow size={16} className="max-h-dvh-safe-half">
-							{Object.entries(from).map(
-								(fromObject, fromIndex) => {
-									type TFrom = Exclude<
-										IIngredient['from'],
-										string
-									>;
-									const [method, target] = fromObject as [
-										keyof TFrom,
-										ExtractCollectionValue<TFrom>,
-									];
-									const isBuy = method === 'buy';
-									const isCollect = method === 'collect';
-									const isFishing = method === 'fishing';
-									const isFishingAdvanced =
-										method === 'fishingAdvanced';
-									const isTask = method === 'task';
-									const probability = `概率${isBuy ? '出售' : '掉落'}`;
-									const way = isBuy
-										? '购买'
-										: isFishing
-											? '钓鱼'
-											: isFishingAdvanced
-												? '高级钓鱼'
-												: isTask
-													? '任务'
-													: '采集';
-									const label = `${probability}，使用摆件【${isFishing ? '普通的' : '超级'}钓鱼竿】`;
-									return (
-										<Fragment key={fromIndex}>
-											<p
-												className={cn('font-semibold', {
-													'mt-1': fromIndex !== 0,
-												})}
-											>
-												{isFishing ||
-												isFishingAdvanced ? (
-													<Popover
-														showArrow
-														offset={5}
-														size="sm"
-													>
-														<Tooltip
-															showArrow
-															content={label}
-															offset={3}
-															size="sm"
-														>
-															<span className="inline-flex cursor-pointer">
-																<PopoverTrigger>
-																	<span
-																		tabIndex={
-																			0
-																		}
-																		className={cn(
-																			'underline-dotted-offset2',
-																			CLASSNAME_FOCUS_VISIBLE_OUTLINE
-																		)}
-																	>
-																		{way}
-																	</span>
-																</PopoverTrigger>
-															</span>
-														</Tooltip>
-														<PopoverContent>
-															{label}
-														</PopoverContent>
-													</Popover>
-												) : (
-													way
-												)}
-											</p>
-											<Ol className="ml-3">
-												{target?.map(
-													(item, targetIndex) => (
-														<Ol.Li
-															key={targetIndex}
-														>
-															{isCollect ||
-															Array.isArray(item)
-																? (() => {
-																		const isArray =
-																			Array.isArray(
-																				item
-																			);
-																		const itemProbability =
-																			isArray
-																				? typeof item[1] ===
-																					'number'
-																					? `${item[1]}%${probability}`
-																					: item[1]
-																						? probability
-																						: null
-																				: null;
-																		const collectableTimeRange =
-																			isCollect &&
-																			isArray &&
-																			item.length ===
-																				4
-																				? ([
-																						item[2],
-																						item[3],
-																					] as [
-																						number,
-																						number,
-																					])
-																				: null;
-																		const collectableTimeRangeContent =
-																			collectableTimeRange ===
-																			null ? null : (
-																				<>
-																					{itemProbability ===
-																					null
-																						? ''
-																						: '；'}
-																					采集点出现时间：
-																					{
-																						collectableTimeRange[0]
-																					}
-																					<span className="mx-0.5">
-																						-
-																					</span>
-																					{
-																						collectableTimeRange[1]
-																					}
-
-																					点
-																				</>
-																			);
-																		const refreshTime =
-																			isCollect
-																				? COLLECTION_LOCATION_REFRESH_TIME_MAP[
-																						(isArray
-																							? item[0]
-																							: item) as TCollectionLocation
-																					]
-																				: null;
-																		const refreshTimeContent =
-																			refreshTime ===
-																			null ? null : (
-																				<>
-																					{collectableTimeRange ===
-																					null
-																						? itemProbability ===
-																							null
-																							? ''
-																							: '；'
-																						: '，'}
-																					采集点刷新周期：
-																					{
-																						refreshTime
-																					}
-																					小时
-																				</>
-																			);
-																		const itemContent =
-																			isArray
-																				? item[0]
-																				: item;
-																		const tooltipContent =
-																			itemProbability !==
-																				null ||
-																			collectableTimeRangeContent !==
-																				null ||
-																			refreshTimeContent !==
-																				null ? (
-																				<p>
-																					{
-																						itemProbability
-																					}
-																					{
-																						collectableTimeRangeContent
-																					}
-																					{
-																						refreshTimeContent
-																					}
-																				</p>
-																			) : null;
-																		return tooltipContent ===
-																			null ? (
-																			itemContent
-																		) : (
-																			<Popover
+						<>
+							{(() => {
+								const relatedRecipes =
+									instance.getRelatedRecipes(name);
+								if (relatedRecipes.length === 0) {
+									return null;
+								}
+								const relatedRecipesGroupByDlcMap =
+									relatedRecipes.reduce<Map<TDlc, TRecipe[]>>(
+										(map, item) => {
+											if (!map.has(item.dlc)) {
+												map.set(item.dlc, []);
+											}
+											(
+												map.get(item.dlc) as TRecipe[]
+											).push(item);
+											return map;
+										},
+										new Map()
+									);
+								const relatedRecipesGroupByDlcSorted = toArray(
+									relatedRecipesGroupByDlcMap
+								).sort(([a], [b]) => numberSort(a, b));
+								const label =
+									'点击：在新窗口中查看此料理的详情';
+								return (
+									<p>
+										<span className="font-semibold">
+											关联料理：
+										</span>
+										<Popover
+											offset={5}
+											placement="bottom-start"
+											size="sm"
+										>
+											<PopoverTrigger>
+												<span
+													role="button"
+													tabIndex={0}
+													className={cn(
+														'underline-dotted-offset2',
+														CLASSNAME_FOCUS_VISIBLE_OUTLINE
+													)}
+												>
+													查看包含此食材的料理
+												</span>
+											</PopoverTrigger>
+											<PopoverContent>
+												<div className="flex flex-col gap-2 p-2">
+													{relatedRecipesGroupByDlcSorted.map(
+														(
+															[
+																relatedDlc,
+																recipes,
+															],
+															dlcIndex
+														) => (
+															<div key={dlcIndex}>
+																<p className="mb-1 text-small font-medium">
+																	{relatedDlc ===
+																	0
+																		? LABEL_MAP.dlc0
+																		: `DLC${relatedDlc}`}
+																</p>
+																<div className="grid h-min grid-cols-2 content-start justify-items-start gap-x-4 gap-y-2">
+																	{recipes.map(
+																		({
+																			name: recipeName,
+																		}) => (
+																			<Tooltip
+																				key={
+																					recipeName
+																				}
+																				showArrow
+																				content={
+																					label
+																				}
 																				offset={
-																					2
+																					3
 																				}
 																				size="sm"
 																			>
-																				<Tooltip
-																					content={
-																						tooltipContent
+																				<PressElement
+																					as="span"
+																					onPress={() => {
+																						openWindow(
+																							'recipes',
+																							recipeName
+																						);
+																					}}
+																					aria-label={
+																						label
 																					}
-																					closeDelay={
+																					role="button"
+																					tabIndex={
 																						0
 																					}
+																					className={cn(
+																						'underline-dotted-offset2 inline-flex cursor-pointer items-center text-tiny',
+																						CLASSNAME_FOCUS_VISIBLE_OUTLINE
+																					)}
+																				>
+																					<Sprite
+																						target="recipe"
+																						name={
+																							recipeName
+																						}
+																						size={
+																							1
+																						}
+																						className="mr-0.5"
+																					/>
+																					{
+																						recipeName
+																					}
+																				</PressElement>
+																			</Tooltip>
+																		)
+																	)}
+																</div>
+															</div>
+														)
+													)}
+												</div>
+											</PopoverContent>
+										</Popover>
+									</p>
+								);
+							})()}
+							<ScrollShadow
+								size={16}
+								className="max-h-dvh-safe-half"
+							>
+								{Object.entries(from).map(
+									(fromObject, fromIndex) => {
+										type TFrom = Exclude<
+											IIngredient['from'],
+											string
+										>;
+										const [method, target] = fromObject as [
+											keyof TFrom,
+											ExtractCollectionValue<TFrom>,
+										];
+										const isBuy = method === 'buy';
+										const isCollect = method === 'collect';
+										const isFishing = method === 'fishing';
+										const isFishingAdvanced =
+											method === 'fishingAdvanced';
+										const isTask = method === 'task';
+										const probability = `概率${isBuy ? '出售' : '掉落'}`;
+										const way = isBuy
+											? '购买'
+											: isFishing
+												? '钓鱼'
+												: isFishingAdvanced
+													? '高级钓鱼'
+													: isTask
+														? '任务'
+														: '采集';
+										const label = `${probability}，使用摆件【${isFishing ? '普通的' : '超级'}钓鱼竿】`;
+										return (
+											<Fragment key={fromIndex}>
+												<p
+													className={cn(
+														'font-semibold',
+														{
+															'mt-1':
+																fromIndex !== 0,
+														}
+													)}
+												>
+													{isFishing ||
+													isFishingAdvanced ? (
+														<Popover
+															showArrow
+															offset={5}
+															size="sm"
+														>
+															<Tooltip
+																showArrow
+																content={label}
+																offset={3}
+																size="sm"
+															>
+																<span className="inline-flex cursor-pointer">
+																	<PopoverTrigger>
+																		<span
+																			tabIndex={
+																				0
+																			}
+																			className={cn(
+																				'underline-dotted-offset2',
+																				CLASSNAME_FOCUS_VISIBLE_OUTLINE
+																			)}
+																		>
+																			{
+																				way
+																			}
+																		</span>
+																	</PopoverTrigger>
+																</span>
+															</Tooltip>
+															<PopoverContent>
+																{label}
+															</PopoverContent>
+														</Popover>
+													) : (
+														way
+													)}
+												</p>
+												<Ol className="ml-3">
+													{target?.map(
+														(item, targetIndex) => (
+															<Ol.Li
+																key={
+																	targetIndex
+																}
+															>
+																{isCollect ||
+																Array.isArray(
+																	item
+																)
+																	? (() => {
+																			const isArray =
+																				Array.isArray(
+																					item
+																				);
+																			const itemProbability =
+																				isArray
+																					? typeof item[1] ===
+																						'number'
+																						? `${item[1]}%${probability}`
+																						: item[1]
+																							? probability
+																							: null
+																					: null;
+																			const collectableTimeRange =
+																				isCollect &&
+																				isArray &&
+																				item.length ===
+																					4
+																					? ([
+																							item[2],
+																							item[3],
+																						] as [
+																							number,
+																							number,
+																						])
+																					: null;
+																			const collectableTimeRangeContent =
+																				collectableTimeRange ===
+																				null ? null : (
+																					<>
+																						{itemProbability ===
+																						null
+																							? ''
+																							: '；'}
+																						采集点出现时间：
+																						{
+																							collectableTimeRange[0]
+																						}
+																						<span className="mx-0.5">
+																							-
+																						</span>
+																						{
+																							collectableTimeRange[1]
+																						}
+
+																						点
+																					</>
+																				);
+																			const refreshTime =
+																				isCollect
+																					? COLLECTION_LOCATION_REFRESH_TIME_MAP[
+																							(isArray
+																								? item[0]
+																								: item) as TCollectionLocation
+																						]
+																					: null;
+																			const refreshTimeContent =
+																				refreshTime ===
+																				null ? null : (
+																					<>
+																						{collectableTimeRange ===
+																						null
+																							? itemProbability ===
+																								null
+																								? ''
+																								: '；'
+																							: '，'}
+																						采集点刷新周期：
+																						{
+																							refreshTime
+																						}
+																						小时
+																					</>
+																				);
+																			const itemContent =
+																				isArray
+																					? item[0]
+																					: item;
+																			const tooltipContent =
+																				itemProbability !==
+																					null ||
+																				collectableTimeRangeContent !==
+																					null ||
+																				refreshTimeContent !==
+																					null ? (
+																					<p>
+																						{
+																							itemProbability
+																						}
+																						{
+																							collectableTimeRangeContent
+																						}
+																						{
+																							refreshTimeContent
+																						}
+																					</p>
+																				) : null;
+																			return tooltipContent ===
+																				null ? (
+																				itemContent
+																			) : (
+																				<Popover
 																					offset={
-																						0
+																						2
 																					}
 																					size="sm"
 																				>
-																					<span className="underline-dotted-offset2 cursor-pointer">
-																						<PopoverTrigger>
-																							<span
-																								tabIndex={
-																									0
-																								}
-																								className={
-																									CLASSNAME_FOCUS_VISIBLE_OUTLINE
-																								}
-																							>
-																								{
-																									itemContent
-																								}
-																							</span>
-																						</PopoverTrigger>
-																					</span>
-																				</Tooltip>
-																				<PopoverContent>
-																					{
-																						tooltipContent
-																					}
-																				</PopoverContent>
-																			</Popover>
-																		);
-																	})()
-																: item}
-														</Ol.Li>
-													)
-												)}
-											</Ol>
-										</Fragment>
-									);
-								}
-							)}
-						</ScrollShadow>
+																					<Tooltip
+																						content={
+																							tooltipContent
+																						}
+																						closeDelay={
+																							0
+																						}
+																						offset={
+																							0
+																						}
+																						size="sm"
+																					>
+																						<span className="underline-dotted-offset2 cursor-pointer">
+																							<PopoverTrigger>
+																								<span
+																									tabIndex={
+																										0
+																									}
+																									className={
+																										CLASSNAME_FOCUS_VISIBLE_OUTLINE
+																									}
+																								>
+																									{
+																										itemContent
+																									}
+																								</span>
+																							</PopoverTrigger>
+																						</span>
+																					</Tooltip>
+																					<PopoverContent>
+																						{
+																							tooltipContent
+																						}
+																					</PopoverContent>
+																				</Popover>
+																			);
+																		})()
+																	: item}
+															</Ol.Li>
+														)
+													)}
+												</Ol>
+											</Fragment>
+										);
+									}
+								)}
+							</ScrollShadow>
+						</>
 					</ItemPopoverCard>
 				</ItemPopoverCard.Content>
 			</ItemPopoverCard.Popover>

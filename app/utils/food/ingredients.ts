@@ -7,6 +7,8 @@ import {
 	type TIngredients,
 	type TLevel,
 } from '@/data';
+import { Recipe } from '@/utils';
+import type { TRecipe } from '@/utils/types';
 
 import { checkArrayEqualOf, toSet } from '@/utilities';
 import type { IPopularTrend } from '@/types';
@@ -22,6 +24,8 @@ export class Ingredient extends Food<TIngredients> {
 		'蔬菜',
 		'其他',
 	] as const satisfies TIngredientType[];
+
+	private static _relatedRecipesCache = new Map<TIngredientName, TRecipe[]>();
 
 	public static getInstance() {
 		if (Ingredient._instance !== undefined) {
@@ -79,5 +83,33 @@ export class Ingredient extends Food<TIngredients> {
 			popularTrend,
 			isFamousShop
 		) as TIngredientTag[];
+	}
+
+	/**
+	 * @description Get the recipes related to the ingredient.
+	 */
+	public getRelatedRecipes(ingredientName: TIngredientName) {
+		if (Ingredient._relatedRecipesCache.has(ingredientName)) {
+			return Ingredient._relatedRecipesCache.get(ingredientName);
+		}
+
+		const relatedRecipes: TRecipe[] = [];
+
+		Recipe.getInstance()
+			.getPinyinSortedData()
+			.get()
+			.forEach((recipe) => {
+				if (
+					(recipe.ingredients as TIngredientName[]).includes(
+						ingredientName
+					)
+				) {
+					relatedRecipes.push(recipe);
+				}
+			});
+
+		Ingredient._relatedRecipesCache.set(ingredientName, relatedRecipes);
+
+		return relatedRecipes;
 	}
 }
