@@ -113,7 +113,7 @@ const SettingsPanel = memo(function SettingsPanel<
 		[data]
 	);
 
-	const dataGroupByDlcPinyinSorted = useMemo(
+	const dataGroupByDlcSorted = useMemo(
 		() => toArray(dataGroupByDlcMap).sort(([a], [b]) => numberSort(a, b)),
 		[dataGroupByDlcMap]
 	);
@@ -180,7 +180,7 @@ const SettingsPanel = memo(function SettingsPanel<
 			<Heading as="h3" isFirst>
 				{title}
 			</Heading>
-			{dataGroupByDlcPinyinSorted.map(([dlc, items], index) => (
+			{dataGroupByDlcSorted.map(([dlc, items], index) => (
 				<div key={dlc}>
 					<div
 						className={cn(
@@ -207,7 +207,7 @@ const SettingsPanel = memo(function SettingsPanel<
 								key={name}
 								className="flex w-full items-center justify-between"
 							>
-								<p className="flex items-center text-sm">
+								<p className="flex items-center text-small">
 									<Sprite
 										target={target}
 										name={name}

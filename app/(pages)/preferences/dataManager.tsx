@@ -224,7 +224,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				setCloudCodeInfo(
 					<>
 						无
-						<span className="text-xs">
+						<span className="text-tiny">
 							（下次备份时将自动生成，请自行保存至他处）
 						</span>
 					</>
@@ -235,7 +235,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				.then(checkResponse<IBackupCheckSuccessResponse>)
 				.then(({ created_at, last_accessed }) => {
 					setCloudCodeInfo(
-						<span className="text-xs">
+						<span className="text-tiny">
 							（更新于
 							<TimeAgo timestamp={created_at} />，
 							{last_accessed === -1 ? (
@@ -253,7 +253,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				.catch((error: unknown) => {
 					if (isObject(error) && 'status' in error) {
 						setCloudCodeInfo(
-							<span className="text-xs">
+							<span className="text-tiny">
 								（
 								{error.status === 404
 									? '云端未记录此备份码，可能已于他处删除？'
@@ -263,7 +263,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 						);
 					} else {
 						setCloudCodeInfo(
-							<span className="text-xs">
+							<span className="text-tiny">
 								（获取备份码信息失败）
 							</span>
 						);
@@ -645,7 +645,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 					</Tab>
 					{!isOffline && (
 						<Tab key="backup-cloud" title="云端备份/还原">
-							<p className="-mt-1 text-sm text-foreground-500">
+							<p className="-mt-1 text-small text-foreground-500">
 								当前备份码：
 								{isCloudCodeValid && (
 									<Popover shouldCloseOnScroll showArrow>
@@ -684,7 +684,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 								)}
 								{cloudCodeInfo}
 							</p>
-							<p className="mb-2 mt-0.5 text-xs text-foreground-500">
+							<p className="mb-2 mt-0.5 text-tiny text-foreground-500">
 								备份码有效期为180天，每次使用后会自动续期，逾期将自动失效
 							</p>
 							<div className="w-full space-y-2 lg:w-1/2">

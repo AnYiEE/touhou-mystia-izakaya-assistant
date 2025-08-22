@@ -27,7 +27,7 @@ export default function Home() {
 	const qqCodeContent = useMemo(
 		() => (
 			<div className="flex flex-col items-center">
-				<p className="pt-1 text-xs leading-none">
+				<p className="pt-1 text-tiny leading-none">
 					分享经验、交流心得、提出建议、反馈问题
 				</p>
 				<div className="flex">
@@ -44,7 +44,7 @@ export default function Home() {
 									'index:QQ group 1'
 								);
 							}}
-							className="text-xs text-foreground"
+							className="text-tiny text-foreground"
 						>
 							点击加入{links.qqGroup1.label}
 						</Link>
@@ -62,7 +62,7 @@ export default function Home() {
 									'index:QQ group 2'
 								);
 							}}
-							className="text-xs text-foreground"
+							className="text-tiny text-foreground"
 						>
 							点击加入{links.qqGroup2.label}
 						</Link>
