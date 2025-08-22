@@ -13,6 +13,7 @@ export {
 	type DropdownTriggerProps,
 } from './dropdown';
 export { default as Link, type ILinkProps } from './link';
+export { default as Modal, type IModalProps } from './modal';
 export { default as Pagination, type IPaginationProps } from './pagination';
 export {
 	default as Popover,

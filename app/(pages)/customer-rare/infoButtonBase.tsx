@@ -3,19 +3,11 @@ import { Fragment, memo, useCallback, useState } from 'react';
 import { useVibrate } from '@/hooks';
 
 import { Accordion, type AccordionProps } from '@heroui/accordion';
-import { Modal, ModalBody, ModalContent } from '@heroui/modal';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
-import {
-	ScrollShadow,
-	Tooltip,
-	cn,
-	useReducedMotion,
-} from '@/design/ui/components';
+import { Modal, Tooltip, useReducedMotion } from '@/design/ui/components';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
-
-import { globalStore as store } from '@/stores';
 
 interface IProps
 	extends Pick<AccordionProps, 'children' | 'defaultExpandedKeys'> {
@@ -30,8 +22,6 @@ export default memo<IProps>(function InfoButtonBase({
 	const isReducedMotion = useReducedMotion();
 	const [isOpened, setOpened] = useState(false);
 	const vibrate = useVibrate();
-
-	const isHighAppearance = store.persistence.highAppearance.use();
 
 	const handleClose = useCallback(() => {
 		vibrate();
@@ -58,46 +48,25 @@ export default memo<IProps>(function InfoButtonBase({
 				/>
 			</Tooltip>
 			<Modal
-				backdrop={isHighAppearance ? 'blur' : 'opaque'}
-				disableAnimation={isReducedMotion}
 				isOpen={isOpened}
 				portalContainer={document.querySelector(
 					'#modal-portal-container'
 				)}
-				scrollBehavior="inside"
-				size="3xl"
 				onClose={handleClose}
-				classNames={{
-					base: isHighAppearance
-						? 'bg-blend-mystia'
-						: 'bg-background dark:bg-content1',
-					closeButton: cn(
-						'transition-background motion-reduce:transition-none',
-						isHighAppearance
-							? 'hover:bg-content1 active:bg-content2'
-							: 'dark:hover:bg-default-200 dark:active:bg-default'
-					),
-				}}
 			>
-				<ModalContent className="py-3">
-					<ModalBody>
-						<ScrollShadow size={16}>
-							<Accordion
-								isCompact
-								defaultExpandedKeys={defaultExpandedKeys ?? []}
-								disableAnimation={isReducedMotion}
-								selectionMode="multiple"
-								itemClasses={{
-									base: 'mb-1 mt-3',
-									title: 'text-xl font-bold',
-									trigger: 'p-0',
-								}}
-							>
-								{children}
-							</Accordion>
-						</ScrollShadow>
-					</ModalBody>
-				</ModalContent>
+				<Accordion
+					isCompact
+					defaultExpandedKeys={defaultExpandedKeys ?? []}
+					disableAnimation={isReducedMotion}
+					selectionMode="multiple"
+					itemClasses={{
+						base: 'mb-1 mt-3',
+						title: 'text-xl font-bold',
+						trigger: 'p-0',
+					}}
+				>
+					{children}
+				</Accordion>
 			</Modal>
 		</Fragment>
 	);

@@ -4,14 +4,7 @@ import { type JSX, memo, useCallback, useMemo, useState } from 'react';
 
 import { useVibrate } from '@/hooks';
 
-import { Modal, ModalBody, ModalContent, type ModalProps } from '@heroui/modal';
-
-import {
-	Button,
-	ScrollShadow,
-	cn,
-	useReducedMotion,
-} from '@/design/ui/components';
+import { Button, type IModalProps, Modal, cn } from '@/design/ui/components';
 
 import SwitchItem from './switchItem';
 import Heading from '@/components/heading';
@@ -57,7 +50,7 @@ const SettingsButton = memo<ISettingsButtonProps>(function SettingsButton({
 });
 
 interface ISettingsModalProps
-	extends Pick<ModalProps, 'children' | 'isOpen' | 'onClose'> {
+	extends Pick<IModalProps, 'children' | 'isOpen' | 'onClose'> {
 	isInModal: boolean;
 }
 
@@ -68,9 +61,6 @@ const SettingsModal = memo<ISettingsModalProps>(function SettingsModal({
 	...props
 }) {
 	const vibrate = useVibrate();
-	const isReducedMotion = useReducedMotion();
-
-	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
 	const handleClose = useCallback(() => {
 		vibrate();
@@ -79,30 +69,12 @@ const SettingsModal = memo<ISettingsModalProps>(function SettingsModal({
 
 	return (
 		<Modal
-			backdrop={isHighAppearance ? 'blur' : 'opaque'}
-			disableAnimation={isReducedMotion}
 			isDismissable={!isInModal}
-			scrollBehavior="inside"
 			size="2xl"
 			onClose={handleClose}
-			classNames={{
-				base: isHighAppearance
-					? 'bg-blend-mystia'
-					: 'bg-background dark:bg-content1',
-				closeButton: cn(
-					'transition-background motion-reduce:transition-none',
-					isHighAppearance
-						? 'hover:bg-content1 active:bg-content2'
-						: 'dark:hover:bg-default-200 dark:active:bg-default'
-				),
-			}}
 			{...props}
 		>
-			<ModalContent className="py-3">
-				<ModalBody>
-					<ScrollShadow size={16}>{children}</ScrollShadow>
-				</ModalBody>
-			</ModalContent>
+			{children}
 		</Modal>
 	);
 });
