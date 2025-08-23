@@ -169,11 +169,14 @@ export default memo<IProps>(function Content({ data }) {
 																					recipeName
 																				}
 																				showArrow
+																				closeDelay={
+																					0
+																				}
 																				content={
 																					label
 																				}
 																				offset={
-																					3
+																					2
 																				}
 																				size="sm"
 																			>
