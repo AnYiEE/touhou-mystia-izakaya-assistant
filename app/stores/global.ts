@@ -9,7 +9,6 @@ import {
 } from '@/(pages)/customer-rare/constants';
 import { trackEvent } from '@/components/analytics';
 
-import type { IPersistenceState } from './types';
 import { siteConfig } from '@/configs';
 import {
 	type TBeverageName,
@@ -287,9 +286,19 @@ export const globalStore = store(state, {
 		},
 	}));
 
-// Toggle the background when there is a change in the high appearance state.
+export const globalSettingKeyIsHighAppearance = 'setting-high_appearance';
+
+// Update the body class and local storage when there is a change in the high appearance mode.
 globalStore.persistence.highAppearance.onChange((isEnabled) => {
 	document.body.classList.toggle('bg-blend-mystia-pseudo', isEnabled);
+	if (isEnabled) {
+		localStorage.removeItem(globalSettingKeyIsHighAppearance);
+	} else {
+		localStorage.setItem(
+			globalSettingKeyIsHighAppearance,
+			Number(isEnabled).toString()
+		);
+	}
 });
 
 // Reload page if current tab version is lower than the version of the new tab.
@@ -366,8 +375,3 @@ globalStore.persistence.table.hiddenItems.recipes.onChange((recipes) => {
 	customerNormalStore.shared.recipe.table.hiddenRecipes.set(toSet(recipes));
 	customerRareStore.shared.recipe.table.hiddenRecipes.set(toSet(recipes));
 });
-
-export { storeName as globalStoreKey };
-export type TGlobalPersistenceState = IPersistenceState<
-	(typeof state)['persistence']
->;

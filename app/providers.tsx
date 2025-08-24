@@ -14,11 +14,10 @@ import CustomerRareTutorial from '@/components/customerRareTutorial';
 
 import { siteConfig } from '@/configs';
 import {
-	type TGlobalPersistenceState,
 	customerNormalStore,
 	customerRareStore,
+	globalSettingKeyIsHighAppearance,
 	globalStore,
-	globalStoreKey,
 	ingredientsStore,
 	recipesStore,
 } from '@/stores';
@@ -161,18 +160,12 @@ export default function Providers({
 	);
 }
 
-const script = (cdnPrefix: string, storeKey: string) => {
+const script = (cdnPrefix: string, settingKey: string) => {
 	let enable: boolean | undefined;
 
-	try {
-		const globalStorage = localStorage.getItem(storeKey);
-		if (globalStorage !== null) {
-			const state = (JSON.parse(globalStorage) as TGlobalPersistenceState)
-				.state.persistence;
-			enable = state.highAppearance;
-		}
-	} catch {
-		/* empty */
+	const isHighAppearance = localStorage.getItem(settingKey);
+	if (isHighAppearance !== null) {
+		enable = isHighAppearance === '1';
 	}
 
 	if (enable !== false) {
@@ -189,7 +182,10 @@ const script = (cdnPrefix: string, storeKey: string) => {
  * if the `globalStorage.highAppearance` setting is enabled.
  */
 export function AddHighAppearance() {
-	const scriptArgs = JSON.stringify([cdnUrl, globalStoreKey]).slice(1, -1);
+	const scriptArgs = JSON.stringify([
+		cdnUrl,
+		globalSettingKeyIsHighAppearance,
+	]).slice(1, -1);
 
 	return (
 		<script
