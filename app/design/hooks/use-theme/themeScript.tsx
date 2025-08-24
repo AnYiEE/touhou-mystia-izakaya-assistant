@@ -11,15 +11,8 @@ const script = (
 		const systemTheme = globalThis.matchMedia(media).matches
 			? themeMap.DARK
 			: themeMap.LIGHT;
-
-		let storedTheme;
-		try {
-			storedTheme =
-				(localStorage.getItem(storageKey) as TTheme | null) ??
-				systemTheme;
-		} catch {
-			storedTheme = systemTheme;
-		}
+		const storedTheme =
+			(localStorage.getItem(storageKey) as TTheme | null) ?? systemTheme;
 
 		const currentTheme =
 			storedTheme === themeMap.SYSTEM ? systemTheme : storedTheme;

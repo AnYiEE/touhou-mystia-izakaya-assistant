@@ -22,17 +22,14 @@ function getThemeCallback() {
 		return;
 	}
 
-	let theme;
-	try {
-		theme = localStorage.getItem(STORAGE_KEY) as TTheme | null;
-	} catch {
-		/* empty */
-	}
-
-	return theme;
+	return localStorage.getItem(STORAGE_KEY) as TTheme | null;
 }
 
 function setThemeCallback(selectedTheme: TTheme, isFromEvent?: boolean) {
+	if (isServer) {
+		return;
+	}
+
 	const targetTheme =
 		selectedTheme === THEME_MAP.SYSTEM ? getSystemTheme() : selectedTheme;
 	const isTargetDarkTheme = targetTheme === THEME_MAP.DARK;
@@ -59,11 +56,7 @@ function setThemeCallback(selectedTheme: TTheme, isFromEvent?: boolean) {
 		return;
 	}
 
-	try {
-		localStorage.setItem(STORAGE_KEY, selectedTheme);
-	} catch {
-		/* empty */
-	}
+	localStorage.setItem(STORAGE_KEY, selectedTheme);
 }
 
 export function useTheme() {
@@ -87,10 +80,6 @@ export function useTheme() {
 	}, []);
 
 	useMounted(() => {
-		if (isServer) {
-			return;
-		}
-
 		const mediaQueryList = globalThis.matchMedia(MEDIA);
 
 		return addSafeMediaQueryEventListener(mediaQueryList, (event) => {
@@ -102,10 +91,6 @@ export function useTheme() {
 	});
 
 	useMounted(() => {
-		if (isServer) {
-			return;
-		}
-
 		const EVENT_TYPE = 'storage';
 
 		const handleStorage = (event: StorageEvent) => {
