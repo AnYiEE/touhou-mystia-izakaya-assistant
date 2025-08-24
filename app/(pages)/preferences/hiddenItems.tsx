@@ -17,7 +17,13 @@ import {
 	ingredientsStore,
 	recipesStore,
 } from '@/stores';
-import { checkEmpty, copySet, numberSort, toArray } from '@/utilities';
+import {
+	checkArrayContainsOf,
+	checkEmpty,
+	copySet,
+	numberSort,
+	toArray,
+} from '@/utilities';
 import type { TItemData, TItemInstance } from '@/utils/types';
 
 interface ISettingsButtonProps {
@@ -79,10 +85,15 @@ const SettingsModal = memo<ISettingsModalProps>(function SettingsModal({
 	);
 });
 
-interface ISettingsPanelProps<
-	T extends TItemData<TItemInstance>,
-	U extends T[number]['name'],
-> extends Pick<ISpriteProps, 'target'> {
+interface IDataProps {
+	isHiddenByIngredient?: boolean;
+}
+
+type TData<T extends TItemData<TItemInstance> = TItemData<TItemInstance>> =
+	ReadonlyArray<T[number] & IDataProps>;
+
+interface ISettingsPanelProps<T extends TData, U extends T[number]['name']>
+	extends Pick<ISpriteProps, 'target'> {
 	data: T;
 	hiddenItems: Set<U>;
 	setHiddenItems: (options: Set<U>) => void;
@@ -90,7 +101,7 @@ interface ISettingsPanelProps<
 }
 
 const SettingsPanel = memo(function SettingsPanel<
-	T extends TItemData<TItemInstance>,
+	T extends TData,
 	U extends T[number],
 >({
 	data,
@@ -160,12 +171,21 @@ const SettingsPanel = memo(function SettingsPanel<
 	const getDlcToggleState = useCallback(
 		(dlc: U['dlc']) => {
 			const dlcItems = dataGroupByDlcMap.get(dlc) ?? [];
-			const hiddenCount = dlcItems.filter((item) =>
-				hiddenItems.has(item.name)
-			).length;
+			const { hiddenByIngredientCount, hiddenCount } = dlcItems.reduce(
+				(acc, { isHiddenByIngredient, name }) => {
+					if (hiddenItems.has(name)) {
+						acc.hiddenCount++;
+					}
+					if (isHiddenByIngredient) {
+						acc.hiddenByIngredientCount++;
+					}
+					return acc;
+				},
+				{ hiddenByIngredientCount: 0, hiddenCount: 0 }
+			);
 
-			if (hiddenCount === 0) {
-				return true;
+			if (hiddenByIngredientCount === dlcItems.length) {
+				return 'disabled';
 			}
 			if (hiddenCount === dlcItems.length) {
 				return false;
@@ -180,57 +200,82 @@ const SettingsPanel = memo(function SettingsPanel<
 			<Heading as="h3" isFirst>
 				{title}
 			</Heading>
-			{dataGroupByDlcSorted.map(([dlc, items], index) => (
-				<div key={dlc}>
-					<div
-						className={cn(
-							'flex gap-2',
-							index === 0 ? 'items-start' : 'items-center'
-						)}
-					>
-						<Heading as="h4" isFirst={index === 0}>
-							{dlc === 0 ? LABEL_MAP.dlc0 : `DLC${dlc}`}
-						</Heading>
-						<SwitchItem
-							color="warning"
-							isSelected={getDlcToggleState(dlc)}
-							onValueChange={() => {
-								handleDlcToggle(dlc);
-							}}
-							aria-label={`${getDlcToggleState(dlc) ? '隐藏' : '显示'}${dlc === 0 ? LABEL_MAP.dlc0 : `DLC${dlc}`}的全部项目`}
-							className={cn(index !== 0 && 'mt-1')}
-						/>
-					</div>
-					<div className="grid h-min grid-cols-2 content-start justify-items-start gap-4 sm:grid-cols-3 md:gap-2 md:gap-x-12">
-						{items.map(({ name }) => (
-							<div
-								key={name}
-								className="flex w-full items-center justify-between"
-							>
-								<p className="flex items-center text-small">
-									<Sprite
-										target={target}
-										name={name}
-										size={1.25}
-										className="mr-0.5"
+			{dataGroupByDlcSorted.map(([dlc, items], index) => {
+				const dlcToggleState = getDlcToggleState(dlc);
+				const isDlcToggleDisabled = dlcToggleState === 'disabled';
+				return (
+					<div key={dlc} className="overflow-x-hidden">
+						<div
+							className={cn(
+								'flex gap-2',
+								index === 0 ? 'items-start' : 'items-center'
+							)}
+						>
+							<Heading as="h4" isFirst={index === 0}>
+								{dlc === 0 ? LABEL_MAP.dlc0 : `DLC${dlc}`}
+							</Heading>
+							<SwitchItem
+								color="warning"
+								isDisabled={isDlcToggleDisabled}
+								isSelected={
+									isDlcToggleDisabled ? false : dlcToggleState
+								}
+								onValueChange={() => {
+									handleDlcToggle(dlc);
+								}}
+								aria-label={`${dlcToggleState === true ? '隐藏' : '显示'}${dlc === 0 ? LABEL_MAP.dlc0 : `DLC${dlc}`}的全部项目`}
+								title={
+									isDlcToggleDisabled
+										? '此分组下的所有料理均因包含已被隐藏的食材而被隐藏'
+										: undefined
+								}
+								className={cn(index !== 0 && 'mt-1')}
+							/>
+						</div>
+						<div className="grid h-min grid-cols-2 content-start justify-items-start gap-4 sm:grid-cols-3 md:gap-2 md:gap-x-12">
+							{items.map(({ isHiddenByIngredient, name }) => (
+								<div
+									key={name}
+									className="flex w-full items-center justify-between"
+								>
+									<p className="flex items-center text-small">
+										<Sprite
+											target={target}
+											name={name}
+											size={1.25}
+											className="mr-0.5"
+										/>
+										{name}
+									</p>
+									<SwitchItem
+										isDisabled={Boolean(
+											isHiddenByIngredient
+										)}
+										isSelected={
+											isHiddenByIngredient
+												? false
+												: !hiddenItems.has(name)
+										}
+										onValueChange={() => {
+											console.log(name);
+											handleValueChange(name);
+										}}
+										aria-label={`${hiddenItems.has(name) ? '显示' : '隐藏'}${name}`}
+										title={
+											isHiddenByIngredient
+												? '此料理因包含已被隐藏的食材而被隐藏'
+												: undefined
+										}
 									/>
-									{name}
-								</p>
-								<SwitchItem
-									isSelected={!hiddenItems.has(name)}
-									onValueChange={() => {
-										handleValueChange(name);
-									}}
-									aria-label={`${hiddenItems.has(name) ? '显示' : '隐藏'}${name}`}
-								/>
-							</div>
-						))}
+								</div>
+							))}
+						</div>
 					</div>
-				</div>
-			))}
+				);
+			})}
 		</div>
 	);
-}) as <T extends TItemData<TItemInstance>, U extends T[number]>(
+}) as <T extends TData, U extends T[number]>(
 	props: ISettingsPanelProps<T, U['name']>
 ) => JSX.Element;
 
@@ -276,10 +321,19 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 			instance_recipe
 				.getPinyinSortedData()
 				.get()
-				.filter(
-					({ name }) => !instance_recipe.blockedRecipes.has(name)
-				),
-		[instance_recipe]
+				.filter(({ name }) => !instance_recipe.blockedRecipes.has(name))
+				.map((recipe) => {
+					if (
+						checkArrayContainsOf(
+							recipe.ingredients,
+							hiddenIngredients
+						)
+					) {
+						return { ...recipe, isHiddenByIngredient: true };
+					}
+					return recipe;
+				}),
+		[hiddenIngredients, instance_recipe]
 	);
 
 	const isInModal = onModalClose !== undefined;
