@@ -177,7 +177,7 @@ export default memo<IProps>(function Content({ data }) {
 																<Tooltip
 																	showArrow
 																	content={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
-																	offset={6}
+																	offset={1}
 																	size="sm"
 																>
 																	<Sprite
@@ -238,11 +238,11 @@ export default memo<IProps>(function Content({ data }) {
 						</p>
 						{max !== 0 && (
 							<p>
-								<Popover showArrow offset={5} size="sm">
+								<Popover showArrow offset={3} size="sm">
 									<Tooltip
 										showArrow
 										content="随游戏等级提升而降低"
-										offset={3}
+										offset={1}
 										size="sm"
 									>
 										<span className="inline-flex cursor-pointer">

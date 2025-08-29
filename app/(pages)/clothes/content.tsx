@@ -186,7 +186,7 @@ export default memo<IProps>(function Content({ data }) {
 																				showArrow
 																				content={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
 																				offset={
-																					6
+																					1
 																				}
 																				size="sm"
 																			>

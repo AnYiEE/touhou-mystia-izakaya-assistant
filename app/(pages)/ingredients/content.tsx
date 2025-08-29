@@ -176,7 +176,7 @@ export default memo<IProps>(function Content({ data }) {
 																					label
 																				}
 																				offset={
-																					2
+																					1
 																				}
 																				size="sm"
 																			>
@@ -273,13 +273,13 @@ export default memo<IProps>(function Content({ data }) {
 													isFishingAdvanced ? (
 														<Popover
 															showArrow
-															offset={5}
+															offset={3}
 															size="sm"
 														>
 															<Tooltip
 																showArrow
 																content={label}
-																offset={3}
+																offset={1}
 																size="sm"
 															>
 																<span className="inline-flex cursor-pointer">

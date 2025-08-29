@@ -26,7 +26,7 @@ export default memo<PropsWithChildren<IProps>>(function SwitchItem({
 			<Tooltip
 				content={title}
 				isDisabled={title === undefined}
-				offset={2}
+				offset={1}
 				size="sm"
 			>
 				<Switch

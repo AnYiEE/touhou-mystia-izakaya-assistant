@@ -64,7 +64,7 @@ export const FooterLinkWithTooltip = memo<
 			closeDelay={10}
 			content={props.content}
 			isDisabled={!props.content}
-			offset={0}
+			offset={1}
 			size="sm"
 			onOpenChange={(isOpen) => {
 				if (isOpen && event?.show) {

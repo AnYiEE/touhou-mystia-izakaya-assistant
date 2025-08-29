@@ -298,14 +298,14 @@ const ItemPopoverCardComponent = memo<PropsWithChildren<IItemPopoverCardProps>>(
 							<Popover
 								showArrow
 								isTriggerDisabled={!dlcLabel}
-								offset={4}
+								offset={3}
 								size="sm"
 							>
 								<Tooltip
 									showArrow
 									content={dlcLabel}
 									isDisabled={!dlcLabel}
-									offset={2}
+									offset={1}
 									size="sm"
 								>
 									<span
@@ -353,7 +353,12 @@ const ItemPopoverCardComponent = memo<PropsWithChildren<IItemPopoverCardProps>>(
 				</div>
 				{!isNil(cooker) && ingredients !== undefined && (
 					<div className="flex flex-wrap gap-x-2 gap-y-1">
-						<Tooltip showArrow content={cooker} size="sm">
+						<Tooltip
+							showArrow
+							content={cooker}
+							offset={1}
+							size="sm"
+						>
 							<Sprite
 								target="cooker"
 								name={cooker}
@@ -368,6 +373,7 @@ const ItemPopoverCardComponent = memo<PropsWithChildren<IItemPopoverCardProps>>(
 									showArrow
 									key={index}
 									content={ingredientLabel}
+									offset={1}
 									size="sm"
 								>
 									<Sprite

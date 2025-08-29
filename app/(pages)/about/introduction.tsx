@@ -60,7 +60,7 @@ export default function Introduction() {
 								{links.donate.label.replace('链接', '码')}
 							</QRCode>
 						}
-						offset={2}
+						offset={1}
 						onOpenChange={(isOpen) => {
 							if (isOpen) {
 								trackEvent(
