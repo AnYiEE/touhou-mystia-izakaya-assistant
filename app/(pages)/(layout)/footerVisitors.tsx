@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { ping } from '@/components/analytics';
 
@@ -8,9 +8,7 @@ import { siteConfig } from '@/configs';
 
 const { isAnalytics, isOffline, isSelfHosted } = siteConfig;
 
-interface IProps {}
-
-export default memo<IProps>(function FooterVisitors() {
+export default function FooterVisitors() {
 	const [visitors, setVisitors] = useState<number | null>(null);
 
 	const fetchVisitors = useCallback(() => {
@@ -53,4 +51,4 @@ export default memo<IProps>(function FooterVisitors() {
 	}
 
 	return <span>实时{visitors}人在线</span>;
-});
+}

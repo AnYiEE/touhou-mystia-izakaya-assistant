@@ -61,7 +61,7 @@ export function showProgress(startProgress: () => void) {
 	});
 }
 
-interface INavbarLinkProps
+interface INavbarButtonLinkProps
 	extends Pick<
 		IButtonProps,
 		'className' | 'href' | 'startContent' | 'fullWidth' | 'onPress'
@@ -69,8 +69,8 @@ interface INavbarLinkProps
 	isActivated: boolean;
 }
 
-const NavbarButtonLink = memo<PropsWithChildren<INavbarLinkProps>>(
-	function NavbarLink({ children, className, isActivated, ...props }) {
+const NavbarButtonLink = memo<PropsWithChildren<INavbarButtonLinkProps>>(
+	function NavbarButtonLink({ children, className, isActivated, ...props }) {
 		return (
 			<Button
 				as={Link}

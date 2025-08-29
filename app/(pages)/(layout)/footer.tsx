@@ -31,7 +31,7 @@ const sha = (() => {
 				.trim()
 				.slice(0, 7);
 		} catch {
-			/* empty */
+			return null;
 		}
 	}
 
@@ -63,7 +63,11 @@ export default function Footer() {
 				<span>
 					v{version}-
 					{sha === null ? (
-						<>{isProduction ? '' : nodeEnv}</>
+						isProduction ? (
+							''
+						) : (
+							nodeEnv
+						)
 					) : (
 						<>
 							{isOffline ? 'offline' : (vercelEnv ?? nodeEnv)}-
@@ -78,15 +82,13 @@ export default function Footer() {
 					)}
 				</span>
 				{isIcpFiling && (
-					<span>
-						<FooterLinkWithTooltip
-							content={null}
-							event={{ click: 'ICP filing' }}
-							href={links.icpFiling.href}
-						>
-							{links.icpFiling.label}
-						</FooterLinkWithTooltip>
-					</span>
+					<FooterLinkWithTooltip
+						content={null}
+						event={{ click: 'ICP filing' }}
+						href={links.icpFiling.href}
+					>
+						{links.icpFiling.label}
+					</FooterLinkWithTooltip>
 				)}
 				{isVercel && (
 					<FooterLinkWithTooltip
