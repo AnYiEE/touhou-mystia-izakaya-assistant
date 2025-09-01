@@ -22,8 +22,10 @@ interface IProps extends Omit<ModalProps, 'children'> {
 }
 
 export default memo<IProps>(function Modal({
+	backdrop,
 	children,
 	classNames,
+	disableAnimation,
 	scrollBehavior = 'inside',
 	scrollShadow = true,
 	scrollShadowSize = 16,
@@ -36,8 +38,8 @@ export default memo<IProps>(function Modal({
 
 	return (
 		<HeroUIModal
-			backdrop={isHighAppearance ? 'blur' : 'opaque'}
-			disableAnimation={isReducedMotion}
+			backdrop={backdrop ?? (isHighAppearance ? 'blur' : 'opaque')}
+			disableAnimation={disableAnimation ?? isReducedMotion}
 			scrollBehavior={scrollBehavior}
 			size={size}
 			classNames={{

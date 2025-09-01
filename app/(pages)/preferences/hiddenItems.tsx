@@ -1,6 +1,14 @@
 'use client';
 
-import { type JSX, memo, useCallback, useMemo, useState } from 'react';
+import {
+	type JSX,
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
 
 import { useVibrate } from '@/hooks';
 
@@ -63,9 +71,11 @@ interface ISettingsModalProps
 const SettingsModal = memo<ISettingsModalProps>(function SettingsModal({
 	children,
 	isInModal,
+	isOpen = false,
 	onClose,
 	...props
 }) {
+	const ref = useRef<HTMLDivElement | null>(null);
 	const vibrate = useVibrate();
 
 	const handleClose = useCallback(() => {
@@ -73,11 +83,25 @@ const SettingsModal = memo<ISettingsModalProps>(function SettingsModal({
 		onClose?.();
 	}, [onClose, vibrate]);
 
+	useEffect(() => {
+		if (isInModal && isOpen && ref.current !== null) {
+			ref.current.closest('div')?.addEventListener('click', (event) => {
+				if (event.currentTarget === event.target) {
+					handleClose();
+				}
+			});
+		}
+	}, [handleClose, isInModal, isOpen]);
+
 	return (
 		<Modal
+			backdrop={isInModal ? 'opaque' : undefined}
 			isDismissable={!isInModal}
+			isOpen={isOpen}
 			size="2xl"
 			onClose={handleClose}
+			classNames={{ backdrop: 'bg-overlay/30 backdrop-saturate-150' }}
+			ref={ref}
 			{...props}
 		>
 			{children}
@@ -257,7 +281,6 @@ const SettingsPanel = memo(function SettingsPanel<
 												: !hiddenItems.has(name)
 										}
 										onValueChange={() => {
-											console.log(name);
 											handleValueChange(name);
 										}}
 										aria-label={`${hiddenItems.has(name) ? '显示' : '隐藏'}${name}`}
