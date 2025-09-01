@@ -1,8 +1,23 @@
 diff --git a/dist/chunk-B4ETW6ZK.mjs b/dist/chunk-B4ETW6ZK.mjs
-index 54025aee7c66de7bcb0cc8db28b70bf0dbcd07ca..90f8ad5fd6cc62028259d9495464c8636478ffd1 100644
+index 54025aee7c66de7bcb0cc8db28b70bf0dbcd07ca..a660c287a6a19bfb7bf24039c8e31d6758d3de18 100644
 --- a/dist/chunk-B4ETW6ZK.mjs
 +++ b/dist/chunk-B4ETW6ZK.mjs
-@@ -187,17 +187,6 @@ function useSelect(originalProps) {
+@@ -170,12 +170,13 @@ function useSelect(originalProps) {
+     return (_a2 = originalProps.labelPlacement) != null ? _a2 : "inside";
+   }, [originalProps.labelPlacement, label]);
+   const hasPlaceholder = !!placeholder;
+-  const shouldLabelBeOutside = labelPlacement === "outside-left" || labelPlacement === "outside" && (!(hasPlaceholder || !!description) || !!originalProps.isMultiline);
++  const shouldLabelBeOutside = labelPlacement === "outside-left" || labelPlacement === "outside";
+   const shouldLabelBeInside = labelPlacement === "inside";
+   const isOutsideLeft = labelPlacement === "outside-left";
+   const isFilled = state.isOpen || hasPlaceholder || !!((_e = state.selectedItems) == null ? void 0 : _e.length) || !!startContent || !!endContent || !!originalProps.isMultiline;
+   const hasValue = !!((_f = state.selectedItems) == null ? void 0 : _f.length);
+   const hasLabel = !!label;
++  const hasLabelOutside = hasLabel && (isOutsideLeft || (shouldLabelBeOutside && hasPlaceholder));
+   const baseStyles = clsx(classNames == null ? void 0 : classNames.base, className);
+   const slots = useMemo(
+     () => select({
+@@ -187,17 +188,6 @@ function useSelect(originalProps) {
      }),
      [objectToDeps(variantProps), isInvalid, labelPlacement, disableAnimation, className]
    );
@@ -20,11 +35,41 @@ index 54025aee7c66de7bcb0cc8db28b70bf0dbcd07ca..90f8ad5fd6cc62028259d9495464c863
    const errorMessage = typeof props.errorMessage === "function" ? props.errorMessage({ isInvalid, validationErrors, validationDetails }) : props.errorMessage || (validationErrors == null ? void 0 : validationErrors.join(" "));
    const hasHelper = !!description || !!errorMessage;
    useEffect(() => {
+@@ -215,12 +205,13 @@ function useSelect(originalProps) {
+       "data-has-label": dataAttr(hasLabel),
+       "data-has-helper": dataAttr(hasHelper),
+       "data-invalid": dataAttr(isInvalid),
++      "data-has-label-outside": dataAttr(hasLabelOutside),
+       className: slots.base({
+         class: clsx(baseStyles, props2.className)
+       }),
+       ...props2
+     }),
+-    [slots, hasHelper, hasValue, hasLabel, isFilled, baseStyles]
++    [slots, hasHelper, hasValue, hasLabel, hasLabelOutside, isFilled, baseStyles]
+   );
+   const getTriggerProps = useCallback(
+     (props2 = {}) => {
 diff --git a/dist/index.js b/dist/index.js
-index 4ee9904933d705efe60bbd2c099ca7d72a3f99ea..1ab5063f82c5796db857cfb0fefecf4dcf43e278 100644
+index 4ee9904933d705efe60bbd2c099ca7d72a3f99ea..88d3d269b130e98ab9d556065a7be56b50004c92 100644
 --- a/dist/index.js
 +++ b/dist/index.js
-@@ -228,17 +228,6 @@ function useSelect(originalProps) {
+@@ -211,12 +211,13 @@ function useSelect(originalProps) {
+     return (_a2 = originalProps.labelPlacement) != null ? _a2 : "inside";
+   }, [originalProps.labelPlacement, label]);
+   const hasPlaceholder = !!placeholder;
+-  const shouldLabelBeOutside = labelPlacement === "outside-left" || labelPlacement === "outside" && (!(hasPlaceholder || !!description) || !!originalProps.isMultiline);
++  const shouldLabelBeOutside = labelPlacement === "outside-left" || labelPlacement === "outside";
+   const shouldLabelBeInside = labelPlacement === "inside";
+   const isOutsideLeft = labelPlacement === "outside-left";
+   const isFilled = state.isOpen || hasPlaceholder || !!((_e = state.selectedItems) == null ? void 0 : _e.length) || !!startContent || !!endContent || !!originalProps.isMultiline;
+   const hasValue = !!((_f = state.selectedItems) == null ? void 0 : _f.length);
+   const hasLabel = !!label;
++  const hasLabelOutside = hasLabel && (isOutsideLeft || (shouldLabelBeOutside && hasPlaceholder));
+   const baseStyles = (0, import_shared_utils.clsx)(classNames == null ? void 0 : classNames.base, className);
+   const slots = (0, import_react.useMemo)(
+     () => (0, import_theme.select)({
+@@ -228,17 +229,6 @@ function useSelect(originalProps) {
      }),
      [(0, import_shared_utils.objectToDeps)(variantProps), isInvalid, labelPlacement, disableAnimation, className]
    );
@@ -42,6 +87,21 @@ index 4ee9904933d705efe60bbd2c099ca7d72a3f99ea..1ab5063f82c5796db857cfb0fefecf4d
    const errorMessage = typeof props.errorMessage === "function" ? props.errorMessage({ isInvalid, validationErrors, validationDetails }) : props.errorMessage || (validationErrors == null ? void 0 : validationErrors.join(" "));
    const hasHelper = !!description || !!errorMessage;
    (0, import_react.useEffect)(() => {
+@@ -256,12 +246,13 @@ function useSelect(originalProps) {
+       "data-has-label": (0, import_shared_utils.dataAttr)(hasLabel),
+       "data-has-helper": (0, import_shared_utils.dataAttr)(hasHelper),
+       "data-invalid": (0, import_shared_utils.dataAttr)(isInvalid),
++      "data-has-label-outside": (0, import_shared_utils.dataAttr)(hasLabelOutside),
+       className: slots.base({
+         class: (0, import_shared_utils.clsx)(baseStyles, props2.className)
+       }),
+       ...props2
+     }),
+-    [slots, hasHelper, hasValue, hasLabel, isFilled, baseStyles]
++    [slots, hasHelper, hasValue, hasLabel, hasLabelOutside, isFilled, baseStyles]
+   );
+   const getTriggerProps = (0, import_react.useCallback)(
+     (props2 = {}) => {
 diff --git a/dist/select.js b/dist/select.js
 index 2f88dd459c6e8ac2f9f4a031a876f3e48bc58bd7..951ca1a9ec6018f70b687b9fc312e82fe790cf65 100644
 --- a/dist/select.js
@@ -65,10 +125,25 @@ index 2f88dd459c6e8ac2f9f4a031a876f3e48bc58bd7..951ca1a9ec6018f70b687b9fc312e82f
    const hasHelper = !!description || !!errorMessage;
    (0, import_react.useEffect)(() => {
 diff --git a/dist/use-select.js b/dist/use-select.js
-index fb43419c1dcaac933a6ea39f4809dc7214552259..b7c250cd0b7159aa123be309e36a65be986a6453 100644
+index fb43419c1dcaac933a6ea39f4809dc7214552259..073ddfbff383dfc32501515fed55a6c4264a580f 100644
 --- a/dist/use-select.js
 +++ b/dist/use-select.js
-@@ -205,17 +205,6 @@ function useSelect(originalProps) {
+@@ -188,12 +188,13 @@ function useSelect(originalProps) {
+     return (_a2 = originalProps.labelPlacement) != null ? _a2 : "inside";
+   }, [originalProps.labelPlacement, label]);
+   const hasPlaceholder = !!placeholder;
+-  const shouldLabelBeOutside = labelPlacement === "outside-left" || labelPlacement === "outside" && (!(hasPlaceholder || !!description) || !!originalProps.isMultiline);
++  const shouldLabelBeOutside = labelPlacement === "outside-left" || labelPlacement === "outside";
+   const shouldLabelBeInside = labelPlacement === "inside";
+   const isOutsideLeft = labelPlacement === "outside-left";
+   const isFilled = state.isOpen || hasPlaceholder || !!((_e = state.selectedItems) == null ? void 0 : _e.length) || !!startContent || !!endContent || !!originalProps.isMultiline;
+   const hasValue = !!((_f = state.selectedItems) == null ? void 0 : _f.length);
+   const hasLabel = !!label;
++  const hasLabelOutside = hasLabel && (isOutsideLeft || (shouldLabelBeOutside && hasPlaceholder));
+   const baseStyles = (0, import_shared_utils.clsx)(classNames == null ? void 0 : classNames.base, className);
+   const slots = (0, import_react.useMemo)(
+     () => (0, import_theme.select)({
+@@ -205,17 +206,6 @@ function useSelect(originalProps) {
      }),
      [(0, import_shared_utils.objectToDeps)(variantProps), isInvalid, labelPlacement, disableAnimation, className]
    );
@@ -86,3 +161,18 @@ index fb43419c1dcaac933a6ea39f4809dc7214552259..b7c250cd0b7159aa123be309e36a65be
    const errorMessage = typeof props.errorMessage === "function" ? props.errorMessage({ isInvalid, validationErrors, validationDetails }) : props.errorMessage || (validationErrors == null ? void 0 : validationErrors.join(" "));
    const hasHelper = !!description || !!errorMessage;
    (0, import_react.useEffect)(() => {
+@@ -233,12 +223,13 @@ function useSelect(originalProps) {
+       "data-has-label": (0, import_shared_utils.dataAttr)(hasLabel),
+       "data-has-helper": (0, import_shared_utils.dataAttr)(hasHelper),
+       "data-invalid": (0, import_shared_utils.dataAttr)(isInvalid),
++      "data-has-label-outside": (0, import_shared_utils.dataAttr)(hasLabelOutside),
+       className: slots.base({
+         class: (0, import_shared_utils.clsx)(baseStyles, props2.className)
+       }),
+       ...props2
+     }),
+-    [slots, hasHelper, hasValue, hasLabel, isFilled, baseStyles]
++    [slots, hasHelper, hasValue, hasLabel, hasLabelOutside, isFilled, baseStyles]
+   );
+   const getTriggerProps = (0, import_react.useCallback)(
+     (props2 = {}) => {

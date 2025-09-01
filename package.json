@@ -178,6 +178,7 @@
 			"@fortawesome/fontawesome-svg-core": "patches/@fortawesome__fontawesome-svg-core.patch",
 			"@heroui/accordion": "patches/@heroui__accordion.patch",
 			"@heroui/autocomplete": "patches/@heroui__autocomplete.patch",
+			"@heroui/avatar": "patches/@heroui__avatar.patch",
 			"@heroui/button": "patches/@heroui__button.patch",
 			"@heroui/select": "patches/@heroui__select.patch",
 			"@heroui/tabs": "patches/@heroui__tabs.patch",

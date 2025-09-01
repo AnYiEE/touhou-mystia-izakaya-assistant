@@ -1,5 +1,5 @@
 diff --git a/dist/chunk-3ZDIPBHM.mjs b/dist/chunk-3ZDIPBHM.mjs
-index efe5a8debd5d314148a06bce5fd781aca5160ddc..809178a68299142b804a8d0f78fc62920d89167d 100644
+index efe5a8debd5d314148a06bce5fd781aca5160ddc..188cdd6263fb7275a01a2396c31a34d0f37d9d32 100644
 --- a/dist/chunk-3ZDIPBHM.mjs
 +++ b/dist/chunk-3ZDIPBHM.mjs
 @@ -44,7 +44,6 @@ var input = tv({
@@ -26,6 +26,35 @@ index efe5a8debd5d314148a06bce5fd781aca5160ddc..809178a68299142b804a8d0f78fc6292
        }
      },
      radius: {
+@@ -839,6 +838,13 @@ var input = tv({
+           "group-data-[has-value=true]:pointer-events-auto"
+         ]
+       }
++    },
++    {
++      isClearable: true,
++      isDisabled: true,
++      class: {
++        clearButton: "peer-data-[filled=true]:pointer-events-none"
++      }
+     }
+   ]
+ });
+diff --git a/dist/chunk-6B2RD5MH.mjs b/dist/chunk-6B2RD5MH.mjs
+index 02ba88f5868a4119eaa6554bf642350f2f6919bb..e427818077f2cd4b7b0736d8b1184a7489e43eca 100644
+--- a/dist/chunk-6B2RD5MH.mjs
++++ b/dist/chunk-6B2RD5MH.mjs
+@@ -43,8 +43,8 @@ var menuItem = tv({
+       ...dataFocusVisibleClasses,
+       "data-[focus-visible=true]:dark:ring-offset-background-content1"
+     ],
+-    wrapper: "w-full flex flex-col items-start justify-center",
+-    title: "flex-1 text-small font-normal",
++    wrapper: "w-full flex flex-col items-start justify-center min-w-0",
++    title: "flex-1 text-small font-normal w-full",
+     description: ["w-full", "text-tiny", "text-foreground-500", "group-hover:text-current"],
+     selectedIcon: ["text-inherit", "w-3", "h-3", "flex-shrink-0"],
+     shortcut: [
 diff --git a/dist/chunk-C3HKPBNA.mjs b/dist/chunk-C3HKPBNA.mjs
 index 6ca544110f3cdbc9c293564bde3219a49f9d3c2a..8913c9306dcfd3ae3b90c39043f4efaa44448fec 100644
 --- a/dist/chunk-C3HKPBNA.mjs
@@ -94,6 +123,50 @@ index 6ca544110f3cdbc9c293564bde3219a49f9d3c2a..8913c9306dcfd3ae3b90c39043f4efaa
      fullWidth: {
        true: {
          base: "w-full",
+diff --git a/dist/chunk-CRDAR2QA.mjs b/dist/chunk-CRDAR2QA.mjs
+index 42b535d074e1ba999c1ba23de4de7cde3f47309e..6ba12249c549bbdee2e21f1a888bd893ce0eb064 100644
+--- a/dist/chunk-CRDAR2QA.mjs
++++ b/dist/chunk-CRDAR2QA.mjs
+@@ -18,7 +18,8 @@ var select = tv({
+       "subpixel-antialiased",
+       "text-small",
+       "text-foreground-500",
+-      "pointer-events-none"
++      "pointer-events-none",
++      "group-data-[has-label-outside=true]:pointer-events-auto"
+     ],
+     mainWrapper: "w-full flex flex-col",
+     trigger: "relative px-3 gap-3 w-full inline-flex flex-row items-center shadow-sm outline-none tap-highlight-transparent",
+@@ -664,7 +665,8 @@ var select = tv({
+         label: [
+           "start-2",
+           "text-tiny",
+-          "group-data-[filled=true]:-translate-y-[calc(100%_+_theme(fontSize.tiny)/2_+_16px)]"
++          "group-data-[filled=true]:-translate-y-[calc(100%_+_theme(fontSize.tiny)/2_+_16px)]",
++          "group-data-[has-helper=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_26px)]"
+         ],
+         base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_8px)]"
+       }
+@@ -677,7 +679,8 @@ var select = tv({
+         label: [
+           "start-3",
+           "text-small",
+-          "group-data-[filled=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_20px)]"
++          "group-data-[filled=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_20px)]",
++          "group-data-[has-helper=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_30px)]"
+         ],
+         base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_10px)]"
+       }
+@@ -690,7 +693,8 @@ var select = tv({
+         label: [
+           "start-3",
+           "text-medium",
+-          "group-data-[filled=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_24px)]"
++          "group-data-[filled=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_24px)]",
++          "group-data-[has-helper=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_34px)]"
+         ],
+         base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_12px)]"
+       }
 diff --git a/dist/chunk-EYPT3KBI.mjs b/dist/chunk-EYPT3KBI.mjs
 index 15663cbfe414824a4847bdfbd086c8ae224f3365..46c942db60c0e45397267e68ea70b9e3f9c61ecd 100644
 --- a/dist/chunk-EYPT3KBI.mjs
@@ -151,6 +224,30 @@ index d126dd5114b7bafc1557bf9aa1938cb059c91fe2..e0a540fa5f4593c23fa56d37b1625a00
      "transition-timing-function": "ease",
      "transition-duration": DEFAULT_TRANSITION_DURATION
    }
+diff --git a/dist/chunk-ZYU6U7HG.mjs b/dist/chunk-ZYU6U7HG.mjs
+index d0faec56d74482a0afaf17a5c9c4fbed2d2d9a74..5c110bd96d199b94454f7ed8e81b9b6d532871e3 100644
+--- a/dist/chunk-ZYU6U7HG.mjs
++++ b/dist/chunk-ZYU6U7HG.mjs
+@@ -212,15 +212,10 @@ var heroui = (config = {}) => {
+   let otherThemes = omit(themeObject, ["light", "dark"]) || {};
+   Object.entries(otherThemes).forEach(([themeName, { extend, colors, layout }]) => {
+     const baseTheme = extend && isBaseTheme(extend) ? extend : defaultExtendTheme;
+-    if (colors && typeof colors === "object") {
+-      otherThemes[themeName].colors = deepMerge(semanticColors[baseTheme], colors);
+-    }
+-    if (layout && typeof layout === "object") {
+-      otherThemes[themeName].layout = deepMerge(
+-        extend ? baseLayouts[extend] : defaultLayoutObj,
+-        layout
+-      );
+-    }
++    const baseColors = semanticColors[baseTheme];
++    otherThemes[themeName].colors = colors && typeof colors === "object" ? deepMerge(baseColors, colors) : baseColors;
++    const baseLayout = extend ? baseLayouts[extend] : defaultLayoutObj;
++    otherThemes[themeName].layout = layout && typeof layout === "object" ? deepMerge(baseLayout, layout) : baseLayout;
+   });
+   const light = {
+     layout: deepMerge(baseLayouts.light, ((_c = themeObject == null ? void 0 : themeObject.light) == null ? void 0 : _c.layout) || {}),
 diff --git a/dist/components/breadcrumbs.js b/dist/components/breadcrumbs.js
 index 37a2f2239052c7d5643f1e35c0c4de8c3cfe7c80..982bd6435a129f4407a41dec462dbb8f7ccfcc86 100644
 --- a/dist/components/breadcrumbs.js
@@ -275,7 +372,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..84578b63df9720902af4f6da28a7e54c
      },
      isDisabled: {
 diff --git a/dist/components/input.js b/dist/components/input.js
-index bdaa5a49dc3fca3391701248b8cc7b15d06c144a..3a94a6c16aed83d4b8cee86436284de055029792 100644
+index bdaa5a49dc3fca3391701248b8cc7b15d06c144a..6f51b2ad9d8f83cb0dcd4e28c18795880666013b 100644
 --- a/dist/components/input.js
 +++ b/dist/components/input.js
 @@ -125,7 +125,6 @@ var input = tv({
@@ -302,6 +399,20 @@ index bdaa5a49dc3fca3391701248b8cc7b15d06c144a..3a94a6c16aed83d4b8cee86436284de0
        }
      },
      radius: {
+@@ -920,6 +919,13 @@ var input = tv({
+           "group-data-[has-value=true]:pointer-events-auto"
+         ]
+       }
++    },
++    {
++      isClearable: true,
++      isDisabled: true,
++      class: {
++        clearButton: "peer-data-[filled=true]:pointer-events-none"
++      }
+     }
+   ]
+ });
 diff --git a/dist/components/link.d.ts b/dist/components/link.d.ts
 index bc40393ca311a2cc8dbb4a758af02124603f42c3..d275577f423595ea91f80d05b774c1cee22d85aa 100644
 --- a/dist/components/link.d.ts
@@ -328,6 +439,65 @@ index 517baccd4d957f86ec391ad88526c52a85bfb918..eac883a115f065e971d15b121385f71e
      },
      isDisabled: {
        true: "opacity-disabled cursor-default pointer-events-none"
+diff --git a/dist/components/menu.js b/dist/components/menu.js
+index 26430db951a4fb0481e6eb9c26b0f3b3942b227b..9396cbf5edbdd9bfe902cf13e3a07ebab56e5231 100644
+--- a/dist/components/menu.js
++++ b/dist/components/menu.js
+@@ -119,8 +119,8 @@ var menuItem = tv({
+       ...dataFocusVisibleClasses,
+       "data-[focus-visible=true]:dark:ring-offset-background-content1"
+     ],
+-    wrapper: "w-full flex flex-col items-start justify-center",
+-    title: "flex-1 text-small font-normal",
++    wrapper: "w-full flex flex-col items-start justify-center min-w-0",
++    title: "flex-1 text-small font-normal w-full",
+     description: ["w-full", "text-tiny", "text-foreground-500", "group-hover:text-current"],
+     selectedIcon: ["text-inherit", "w-3", "h-3", "flex-shrink-0"],
+     shortcut: [
+diff --git a/dist/components/select.js b/dist/components/select.js
+index 3523d93f094a3d1010634b724690d51318967dbc..983607481555207a2b0dd9d263c8c70f1d949d01 100644
+--- a/dist/components/select.js
++++ b/dist/components/select.js
+@@ -90,7 +90,8 @@ var select = tv({
+       "subpixel-antialiased",
+       "text-small",
+       "text-foreground-500",
+-      "pointer-events-none"
++      "pointer-events-none",
++      "group-data-[has-label-outside=true]:pointer-events-auto"
+     ],
+     mainWrapper: "w-full flex flex-col",
+     trigger: "relative px-3 gap-3 w-full inline-flex flex-row items-center shadow-sm outline-none tap-highlight-transparent",
+@@ -736,7 +737,8 @@ var select = tv({
+         label: [
+           "start-2",
+           "text-tiny",
+-          "group-data-[filled=true]:-translate-y-[calc(100%_+_theme(fontSize.tiny)/2_+_16px)]"
++          "group-data-[filled=true]:-translate-y-[calc(100%_+_theme(fontSize.tiny)/2_+_16px)]",
++          "group-data-[has-helper=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_26px)]"
+         ],
+         base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_8px)]"
+       }
+@@ -749,7 +751,8 @@ var select = tv({
+         label: [
+           "start-3",
+           "text-small",
+-          "group-data-[filled=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_20px)]"
++          "group-data-[filled=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_20px)]",
++          "group-data-[has-helper=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_30px)]"
+         ],
+         base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_10px)]"
+       }
+@@ -762,7 +765,8 @@ var select = tv({
+         label: [
+           "start-3",
+           "text-medium",
+-          "group-data-[filled=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_24px)]"
++          "group-data-[filled=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_24px)]",
++          "group-data-[has-helper=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_34px)]"
+         ],
+         base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_12px)]"
+       }
 diff --git a/dist/components/table.js b/dist/components/table.js
 index 6611ad4c44f7c2413f76f2fdc9a08ca7209b1efd..a116273fbd5497cb3b25c0d9a3df2de9c9a4e698 100644
 --- a/dist/components/table.js
@@ -397,7 +567,7 @@ index 6611ad4c44f7c2413f76f2fdc9a08ca7209b1efd..a116273fbd5497cb3b25c0d9a3df2de9
        true: {
          base: "w-full",
 diff --git a/dist/index.js b/dist/index.js
-index 3b031a7453c6ed04ffdf4904e6377960086a76e7..2e729a91c5df0d3cdce2ab650490d4e6db4e6a32 100644
+index 3b031a7453c6ed04ffdf4904e6377960086a76e7..aeeb47350eff54ed8aae271883ec196fbb7402ef 100644
 --- a/dist/index.js
 +++ b/dist/index.js
 @@ -688,7 +688,7 @@ var link = tv({
@@ -433,7 +603,21 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..2e729a91c5df0d3cdce2ab650490d4e6
        }
      },
      radius: {
-@@ -6041,6 +6040,7 @@ var table = tv({
+@@ -5130,6 +5129,13 @@ var input = tv({
+           "group-data-[has-value=true]:pointer-events-auto"
+         ]
+       }
++    },
++    {
++      isClearable: true,
++      isDisabled: true,
++      class: {
++        clearButton: "peer-data-[filled=true]:pointer-events-none"
++      }
+     }
+   ]
+ });
+@@ -6041,6 +6047,7 @@ var table = tv({
        "[&>*]:z-1",
        "[&>*]:relative",
        ...dataFocusVisibleClasses,
@@ -441,7 +625,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..2e729a91c5df0d3cdce2ab650490d4e6
        "before:content-['']",
        "before:absolute",
        "before:z-0",
-@@ -6094,20 +6094,6 @@ var table = tv({
+@@ -6094,20 +6101,6 @@ var table = tv({
          table: "table-fixed"
        }
      },
@@ -462,7 +646,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..2e729a91c5df0d3cdce2ab650490d4e6
      shadow: {
        none: {
          wrapper: "shadow-none"
-@@ -6170,6 +6156,34 @@ var table = tv({
+@@ -6170,6 +6163,34 @@ var table = tv({
          td: ["first:before:rounded-s-lg", "last:before:rounded-e-lg"]
        }
      },
@@ -497,7 +681,58 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..2e729a91c5df0d3cdce2ab650490d4e6
      fullWidth: {
        true: {
          base: "w-full",
-@@ -8398,7 +8412,7 @@ var breadcrumbItem = tv({
+@@ -6749,7 +6770,8 @@ var select = tv({
+       "subpixel-antialiased",
+       "text-small",
+       "text-foreground-500",
+-      "pointer-events-none"
++      "pointer-events-none",
++      "group-data-[has-label-outside=true]:pointer-events-auto"
+     ],
+     mainWrapper: "w-full flex flex-col",
+     trigger: "relative px-3 gap-3 w-full inline-flex flex-row items-center shadow-sm outline-none tap-highlight-transparent",
+@@ -7395,7 +7417,8 @@ var select = tv({
+         label: [
+           "start-2",
+           "text-tiny",
+-          "group-data-[filled=true]:-translate-y-[calc(100%_+_theme(fontSize.tiny)/2_+_16px)]"
++          "group-data-[filled=true]:-translate-y-[calc(100%_+_theme(fontSize.tiny)/2_+_16px)]",
++          "group-data-[has-helper=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_26px)]"
+         ],
+         base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_8px)]"
+       }
+@@ -7408,7 +7431,8 @@ var select = tv({
+         label: [
+           "start-3",
+           "text-small",
+-          "group-data-[filled=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_20px)]"
++          "group-data-[filled=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_20px)]",
++          "group-data-[has-helper=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_30px)]"
+         ],
+         base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_10px)]"
+       }
+@@ -7421,7 +7445,8 @@ var select = tv({
+         label: [
+           "start-3",
+           "text-medium",
+-          "group-data-[filled=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_24px)]"
++          "group-data-[filled=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_24px)]",
++          "group-data-[has-helper=true]:-translate-y-[calc(100%_+_theme(fontSize.small)/2_+_34px)]"
+         ],
+         base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_12px)]"
+       }
+@@ -7480,8 +7505,8 @@ var menuItem = tv({
+       ...dataFocusVisibleClasses,
+       "data-[focus-visible=true]:dark:ring-offset-background-content1"
+     ],
+-    wrapper: "w-full flex flex-col items-start justify-center",
+-    title: "flex-1 text-small font-normal",
++    wrapper: "w-full flex flex-col items-start justify-center min-w-0",
++    title: "flex-1 text-small font-normal w-full",
+     description: ["w-full", "text-tiny", "text-foreground-500", "group-hover:text-current"],
+     selectedIcon: ["text-inherit", "w-3", "h-3", "flex-shrink-0"],
+     shortcut: [
+@@ -8398,7 +8423,7 @@ var breadcrumbItem = tv({
          item: "cursor-default"
        },
        false: {
@@ -506,7 +741,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..2e729a91c5df0d3cdce2ab650490d4e6
        }
      },
      isDisabled: {
-@@ -10277,22 +10291,22 @@ var transition_default = {
+@@ -10277,22 +10302,22 @@ var transition_default = {
      "transition-duration": DEFAULT_TRANSITION_DURATION
    },
    ".transition-transform-opacity": {
@@ -533,8 +768,28 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..2e729a91c5df0d3cdce2ab650490d4e6
      "transition-timing-function": "ease",
      "transition-duration": DEFAULT_TRANSITION_DURATION
    }
+@@ -10574,15 +10599,10 @@ var heroui = (config = {}) => {
+   let otherThemes = (0, import_shared_utils2.omit)(themeObject, ["light", "dark"]) || {};
+   Object.entries(otherThemes).forEach(([themeName, { extend, colors: colors2, layout }]) => {
+     const baseTheme = extend && isBaseTheme(extend) ? extend : defaultExtendTheme;
+-    if (colors2 && typeof colors2 === "object") {
+-      otherThemes[themeName].colors = (0, import_deepmerge.default)(semanticColors[baseTheme], colors2);
+-    }
+-    if (layout && typeof layout === "object") {
+-      otherThemes[themeName].layout = (0, import_deepmerge.default)(
+-        extend ? baseLayouts[extend] : defaultLayoutObj,
+-        layout
+-      );
+-    }
++    const baseColors = semanticColors[baseTheme];
++    otherThemes[themeName].colors = colors2 && typeof colors2 === "object" ? (0, import_deepmerge.default)(baseColors, colors2) : baseColors;
++    const baseLayout = extend ? baseLayouts[extend] : defaultLayoutObj;
++    otherThemes[themeName].layout = layout && typeof layout === "object" ? (0, import_deepmerge.default)(baseLayout, layout) : baseLayout;
+   });
+   const light2 = {
+     layout: (0, import_deepmerge.default)(baseLayouts.light, ((_c = themeObject == null ? void 0 : themeObject.light) == null ? void 0 : _c.layout) || {}),
 diff --git a/dist/plugin.js b/dist/plugin.js
-index a241ba4296f2c8f68c4524a3e41c3c0bac74f990..6226124dfb2d88c8653f8610f5071bb5a149bf99 100644
+index a241ba4296f2c8f68c4524a3e41c3c0bac74f990..40d0d5690a2c5ac5bc90610ac8485afce4811b55 100644
 --- a/dist/plugin.js
 +++ b/dist/plugin.js
 @@ -452,22 +452,22 @@ var transition_default = {
@@ -564,6 +819,26 @@ index a241ba4296f2c8f68c4524a3e41c3c0bac74f990..6226124dfb2d88c8653f8610f5071bb5
      "transition-timing-function": "ease",
      "transition-duration": DEFAULT_TRANSITION_DURATION
    }
+@@ -755,15 +755,10 @@ var heroui = (config = {}) => {
+   let otherThemes = (0, import_shared_utils.omit)(themeObject, ["light", "dark"]) || {};
+   Object.entries(otherThemes).forEach(([themeName, { extend, colors: colors2, layout }]) => {
+     const baseTheme = extend && isBaseTheme(extend) ? extend : defaultExtendTheme;
+-    if (colors2 && typeof colors2 === "object") {
+-      otherThemes[themeName].colors = (0, import_deepmerge.default)(semanticColors[baseTheme], colors2);
+-    }
+-    if (layout && typeof layout === "object") {
+-      otherThemes[themeName].layout = (0, import_deepmerge.default)(
+-        extend ? baseLayouts[extend] : defaultLayoutObj,
+-        layout
+-      );
+-    }
++    const baseColors = semanticColors[baseTheme];
++    otherThemes[themeName].colors = colors2 && typeof colors2 === "object" ? (0, import_deepmerge.default)(baseColors, colors2) : baseColors;
++    const baseLayout = extend ? baseLayouts[extend] : defaultLayoutObj;
++    otherThemes[themeName].layout = layout && typeof layout === "object" ? (0, import_deepmerge.default)(baseLayout, layout) : baseLayout;
+   });
+   const light = {
+     layout: (0, import_deepmerge.default)(baseLayouts.light, ((_c = themeObject == null ? void 0 : themeObject.light) == null ? void 0 : _c.layout) || {}),
 diff --git a/dist/utilities/index.js b/dist/utilities/index.js
 index 1fc11005040a3580cfdf8fed051ec68f6edc64c0..13b6c387d8e3bff611e3ab6ffe2564693c062a2f 100644
 --- a/dist/utilities/index.js

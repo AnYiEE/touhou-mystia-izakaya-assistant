@@ -1,0 +1,66 @@
+diff --git a/dist/chunk-LTC67JRI.mjs b/dist/chunk-LTC67JRI.mjs
+index 09dc3daa0d8a79fea4f4bc0089f2084e356c7ef5..db414e7ef8df7f2cb2273943d3e823060374c501 100644
+--- a/dist/chunk-LTC67JRI.mjs
++++ b/dist/chunk-LTC67JRI.mjs
+@@ -50,6 +50,7 @@ function useAvatar(originalProps = {}) {
+   const { isFocusVisible, isFocused, focusProps } = useFocusRing();
+   const { isHovered, hoverProps } = useHover({ isDisabled });
+   const disableAnimation = (_f = disableAnimationProp != null ? disableAnimationProp : globalContext == null ? void 0 : globalContext.disableAnimation) != null ? _f : false;
++  const isHeroImage = typeof ImgComponent === "object" && ImgComponent?.displayName?.includes("HeroUI") ? true : false;
+   const imageStatus = useImage({ src, onError, ignoreFallback });
+   const isImgLoaded = imageStatus === "loaded";
+   const shouldFilterDOMProps = typeof ImgComponent === "string";
+@@ -65,7 +66,8 @@ function useAvatar(originalProps = {}) {
+         isDisabled,
+         isInGroup,
+         disableAnimation,
+-        isInGridGroup: (_a2 = groupContext == null ? void 0 : groupContext.isGrid) != null ? _a2 : false
++        isInGridGroup: (_a2 = groupContext == null ? void 0 : groupContext.isGrid) != null ? _a2 : false,
++        shouldBypassImageLoad: as !== undefined || (ImgComponent !== "img" && !isHeroImage)
+       });
+     },
+     [
+diff --git a/dist/index.js b/dist/index.js
+index 0c7171537f3380a6071ec7eeaeb0a925be6f4aef..ab1d508b471f72a914c1443f656ff8df5bd011ef 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -121,6 +121,7 @@ function useAvatar(originalProps = {}) {
+   const { isFocusVisible, isFocused, focusProps } = (0, import_focus.useFocusRing)();
+   const { isHovered, hoverProps } = (0, import_interactions.useHover)({ isDisabled });
+   const disableAnimation = (_f = disableAnimationProp != null ? disableAnimationProp : globalContext == null ? void 0 : globalContext.disableAnimation) != null ? _f : false;
++  const isHeroImage = typeof ImgComponent === "object" && ImgComponent?.displayName?.includes("HeroUI") ? true : false;
+   const imageStatus = (0, import_use_image.useImage)({ src, onError, ignoreFallback });
+   const isImgLoaded = imageStatus === "loaded";
+   const shouldFilterDOMProps = typeof ImgComponent === "string";
+@@ -136,7 +137,8 @@ function useAvatar(originalProps = {}) {
+         isDisabled,
+         isInGroup,
+         disableAnimation,
+-        isInGridGroup: (_a2 = groupContext == null ? void 0 : groupContext.isGrid) != null ? _a2 : false
++        isInGridGroup: (_a2 = groupContext == null ? void 0 : groupContext.isGrid) != null ? _a2 : false,
++        shouldBypassImageLoad: as !== undefined || (ImgComponent !== "img" && !isHeroImage)
+       });
+     },
+     [
+diff --git a/dist/use-avatar.js b/dist/use-avatar.js
+index 74681a822ab9431386a1e8f9e271615803a3187f..df0843ae0aac281f1fa6036857383f2725549182 100644
+--- a/dist/use-avatar.js
++++ b/dist/use-avatar.js
+@@ -79,6 +79,7 @@ function useAvatar(originalProps = {}) {
+   const { isFocusVisible, isFocused, focusProps } = (0, import_focus.useFocusRing)();
+   const { isHovered, hoverProps } = (0, import_interactions.useHover)({ isDisabled });
+   const disableAnimation = (_f = disableAnimationProp != null ? disableAnimationProp : globalContext == null ? void 0 : globalContext.disableAnimation) != null ? _f : false;
++  const isHeroImage = typeof ImgComponent === "object" && ImgComponent?.displayName?.includes("HeroUI") ? true : false;
+   const imageStatus = (0, import_use_image.useImage)({ src, onError, ignoreFallback });
+   const isImgLoaded = imageStatus === "loaded";
+   const shouldFilterDOMProps = typeof ImgComponent === "string";
+@@ -94,7 +95,8 @@ function useAvatar(originalProps = {}) {
+         isDisabled,
+         isInGroup,
+         disableAnimation,
+-        isInGridGroup: (_a2 = groupContext == null ? void 0 : groupContext.isGrid) != null ? _a2 : false
++        isInGridGroup: (_a2 = groupContext == null ? void 0 : groupContext.isGrid) != null ? _a2 : false,
++        shouldBypassImageLoad: as !== undefined || (ImgComponent !== "img" && !isHeroImage)
+       });
+     },
+     [
