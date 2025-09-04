@@ -189,7 +189,7 @@ export default function SavedMealCard() {
 							loopIndex
 						) => (
 							<Fragment key={loopIndex}>
-								<div className="flex flex-col items-center gap-4 md:flex-row md:gap-3 lg:gap-4 xl:gap-3">
+								<div className="relative flex flex-col items-center gap-4 md:static md:flex-row md:gap-3 lg:gap-4 xl:gap-3">
 									<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap md:gap-2 lg:gap-3 xl:gap-2">
 										{(() => {
 											const {
@@ -498,7 +498,7 @@ export default function SavedMealCard() {
 										<div
 											aria-hidden
 											className={cn(
-												'absolute right-2 flex flex-col gap-3 text-tiny text-primary/20 md:left-2 md:right-[unset] md:gap-6 xl:gap-9 dark:text-default-100',
+												'absolute -right-2 -top-1 flex flex-col gap-3 text-tiny text-primary/20 md:left-2 md:right-[unset] md:top-[unset] md:gap-6 xl:gap-9 dark:text-default-100',
 												{
 													hidden:
 														savedCustomerMeal.length <=
@@ -536,6 +536,7 @@ export default function SavedMealCard() {
 											/>
 										</div>
 										<Button
+											fullWidth
 											color="primary"
 											size="sm"
 											variant="flat"
@@ -564,6 +565,7 @@ export default function SavedMealCard() {
 											选择
 										</Button>
 										<Button
+											fullWidth
 											color="danger"
 											size="sm"
 											variant="flat"
