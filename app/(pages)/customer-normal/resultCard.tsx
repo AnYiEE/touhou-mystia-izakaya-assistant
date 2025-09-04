@@ -5,7 +5,14 @@ import { useVibrate } from '@/hooks';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleXmark } from '@fortawesome/free-solid-svg-icons';
 
-import { Button, Card, Tooltip, cn } from '@/design/ui/components';
+import {
+	Button,
+	Card,
+	FadeMotionDiv,
+	type IFadeMotionDivProps,
+	Tooltip,
+	cn,
+} from '@/design/ui/components';
 
 import { Plus, UnknownItem } from '@/(pages)/customer-rare/resultCard';
 import Placeholder from '@/components/placeholder';
@@ -173,100 +180,130 @@ export default function ResultCard() {
 		}
 	}, [hideTooltip, isSaveButtonDisabled, isShowSaveButtonTooltip]);
 
+	let content: IFadeMotionDivProps['children'];
+	let contentClassName: IFadeMotionDivProps['className'];
+	let contentTarget: IFadeMotionDivProps['target'];
+	let contentVariant: IFadeMotionDivProps['variant'];
+
 	if (currentBeverageName === null && currentRecipeData === null) {
 		if (
 			currentCustomerName !== null &&
 			currentSavedMeals[currentCustomerName]?.length
 		) {
-			return null;
+			content = null;
+			contentClassName = '';
+			contentTarget = 'null';
+			contentVariant = 'content';
+		} else {
+			content = (
+				<Placeholder className="pb-6 pt-12 md:py-8 xl:pb-2 xl:pt-0">
+					选择点单料理以继续
+				</Placeholder>
+			);
+			contentClassName = 'my-auto';
+			contentTarget = 'placeholder';
+			contentVariant = 'placeholder';
 		}
-		return (
-			<Placeholder className="pb-6 pt-12 md:py-8 xl:pb-2 xl:pt-0">
-				选择点单料理以继续
-			</Placeholder>
-		);
-	}
-
-	return (
-		<Card
-			fullWidth
-			shadow="sm"
-			classNames={{
-				base: cn({ 'bg-content1/40 backdrop-blur': isHighAppearance }),
-			}}
-		>
-			<div className="flex flex-col items-center gap-4 p-4 md:flex-row">
-				<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
-					<div className="flex items-center gap-2">
-						{currentRecipeData ? (
-							<>
-								<Sprite
-									target="cooker"
-									name={instance_recipe.getPropsByName(
-										currentRecipeData.name,
-										'cooker'
-									)}
-									size={2}
-								/>
+	} else {
+		content = (
+			<Card
+				fullWidth
+				shadow="sm"
+				classNames={{
+					base: cn({
+						'bg-content1/40 backdrop-blur': isHighAppearance,
+					}),
+				}}
+			>
+				<div className="flex flex-col items-center gap-4 p-4 md:flex-row">
+					<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
+						<div className="flex items-center gap-2">
+							{currentRecipeData ? (
+								<>
+									<Sprite
+										target="cooker"
+										name={instance_recipe.getPropsByName(
+											currentRecipeData.name,
+											'cooker'
+										)}
+										size={2}
+									/>
+									<Tooltip
+										showArrow
+										content={currentRecipeData.name}
+										offset={4}
+									>
+										<Sprite
+											target="recipe"
+											name={currentRecipeData.name}
+											size={2.5}
+										/>
+									</Tooltip>
+								</>
+							) : (
+								<>
+									<UnknownItem
+										title="请选择料理"
+										size={1.5}
+									/>
+									<UnknownItem title="请选择料理" />
+								</>
+							)}
+							<Plus />
+							{currentBeverageName ? (
 								<Tooltip
 									showArrow
-									content={currentRecipeData.name}
+									content={currentBeverageName}
 									offset={4}
 								>
 									<Sprite
-										target="recipe"
-										name={currentRecipeData.name}
+										target="beverage"
+										name={currentBeverageName}
 										size={2.5}
 									/>
 								</Tooltip>
-							</>
-						) : (
-							<>
-								<UnknownItem title="请选择料理" size={1.5} />
-								<UnknownItem title="请选择料理" />
-							</>
-						)}
+							) : (
+								<UnknownItem title="可选择酒水" />
+							)}
+						</div>
 						<Plus />
-						{currentBeverageName ? (
-							<Tooltip
-								showArrow
-								content={currentBeverageName}
-								offset={4}
-							>
-								<Sprite
-									target="beverage"
-									name={currentBeverageName}
-									size={2.5}
-								/>
-							</Tooltip>
-						) : (
-							<UnknownItem title="可选择酒水" />
-						)}
+						<IngredientsList />
 					</div>
-					<Plus />
-					<IngredientsList />
-				</div>
-				<Tooltip
-					showArrow
-					content="请选择点单料理以保存"
-					isOpen={isShowSaveButtonTooltip}
-				>
-					<Button
-						color="primary"
-						disableAnimation={isSaveButtonDisabled}
-						size="sm"
-						variant="flat"
-						onPress={handleSaveButtonPress}
-						aria-label={`保存套餐，当前${currentRating === null ? '未评级' : `评级为${CUSTOMER_RATING_MAP[currentRating]}`}`}
-						className={cn(
-							'!transition motion-reduce:!transition-none md:w-auto',
-							{ 'opacity-disabled': isSaveButtonDisabled }
-						)}
+					<Tooltip
+						showArrow
+						content="请选择点单料理以保存"
+						isOpen={isShowSaveButtonTooltip}
 					>
-						保存套餐
-					</Button>
-				</Tooltip>
-			</div>
-		</Card>
+						<Button
+							color="primary"
+							disableAnimation={isSaveButtonDisabled}
+							size="sm"
+							variant="flat"
+							onPress={handleSaveButtonPress}
+							aria-label={`保存套餐，当前${currentRating === null ? '未评级' : `评级为${CUSTOMER_RATING_MAP[currentRating]}`}`}
+							className={cn(
+								'!transition motion-reduce:!transition-none md:w-auto',
+								{ 'opacity-disabled': isSaveButtonDisabled }
+							)}
+						>
+							保存套餐
+						</Button>
+					</Tooltip>
+				</div>
+			</Card>
+		);
+		contentClassName = '';
+		contentTarget = 'content';
+		contentVariant = 'content';
+	}
+
+	return (
+		<FadeMotionDiv
+			target={contentTarget}
+			variant={contentVariant}
+			className={contentClassName}
+		>
+			{content}
+		</FadeMotionDiv>
 	);
 }

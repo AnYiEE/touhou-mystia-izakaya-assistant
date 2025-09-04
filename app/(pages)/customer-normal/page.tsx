@@ -15,7 +15,7 @@ import {
 
 import { Tab, Tabs } from '@heroui/tabs';
 
-import { cn, useReducedMotion } from '@/design/ui/components';
+import { FadeMotionDiv, cn, useReducedMotion } from '@/design/ui/components';
 
 import BeverageTabContent from './beverageTabContent';
 import CustomerCard from './customerCard';
@@ -422,7 +422,9 @@ export default function CustomerNormal() {
 				</Tabs>
 			</div>
 
-			<div
+			<FadeMotionDiv
+				target={currentCustomerName ? 'content' : 'placeholder'}
+				variant={currentCustomerName ? 'content' : 'placeholder'}
 				className={cn(
 					'flex flex-col gap-4 p-2 pt-0 md:pb-0 md:pt-2 xl:w-full xl:pb-2',
 					{ grow: currentCustomerName === null }
@@ -443,7 +445,7 @@ export default function CustomerNormal() {
 						<p>选择顾客以继续</p>
 					</Placeholder>
 				)}
-			</div>
+			</FadeMotionDiv>
 
 			<SideButtonGroup
 				className={cn(
