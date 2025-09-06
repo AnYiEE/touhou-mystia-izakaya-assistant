@@ -47,7 +47,7 @@ export default function Footer() {
 			<p className={className}>
 				<span>
 					{shortName}
-					内所涉及的名称、商标、产品等均为其各自所有者的资产，仅供识别。游戏素材版权均归
+					内所涉及的名称、商标、产品等均为其各自所有者的资产，仅供识别。游戏素材的著作权归
 					<FooterLinkWithTooltip
 						content={links.steam.label}
 						event={{ click: 'footer:Steam' }}
