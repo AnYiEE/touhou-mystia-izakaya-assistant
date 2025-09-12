@@ -111,15 +111,15 @@
 		"kysely": "^0.28.5",
 		"lodash": "^4.17.21",
 		"lz-string": "^1.5.0",
-		"next": "^15.5.2",
+		"next": "^15.5.3",
 		"next-qrcode": "^2.5.1",
 		"pinyin-pro": "^3.27.0",
 		"react": "^19.1.1",
 		"react-dom": "^19.1.1",
 		"react-transition-progress": "github:AnYiEE/react-transition-progress",
-		"ua-parser-js": "^2.0.4",
+		"ua-parser-js": "^2.0.5",
 		"use-breakpoint": "^4.0.6",
-		"uuid": "^12.0.0"
+		"uuid": "^13.0.0"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.28.4",
@@ -143,12 +143,12 @@
 		"adm-zip": "^0.5.16",
 		"cross-env": "^10.0.0",
 		"eslint": "^9.35.0",
-		"eslint-config-next": "^15.5.2",
+		"eslint-config-next": "^15.5.3",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-compat": "^6.0.2",
 		"eslint-plugin-sort-destructure-keys": "^2.0.0",
-		"eslint-plugin-unicorn": "^61.0.1",
-		"globals": "^16.3.0",
+		"eslint-plugin-unicorn": "^61.0.2",
+		"globals": "^16.4.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^16.1.6",
 		"minimist": "^1.2.8",
@@ -159,12 +159,12 @@
 		"prettier": "^3.6.2",
 		"prettier-plugin-tailwindcss": "^0.6.14",
 		"sass": "^1.92.1",
-		"stylelint": "^16.23.1",
-		"stylelint-config-standard-scss": "^15.0.1",
+		"stylelint": "^16.24.0",
+		"stylelint-config-standard-scss": "^16.0.0",
 		"stylelint-scss": "^6.12.1",
 		"tailwindcss": "^3.4.17",
 		"typescript": "^5.9.2",
-		"typescript-eslint": "^8.42.0"
+		"typescript-eslint": "^8.43.0"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
