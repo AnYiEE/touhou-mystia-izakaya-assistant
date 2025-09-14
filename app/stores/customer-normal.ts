@@ -504,9 +504,26 @@ export const customerNormalStore = store(state, {
 				keepLastTag(prev, tag);
 			});
 		},
-		onCustomerSelectedChange(customerName: TCustomerNormalName) {
-			currentStore.shared.customer.name.set(customerName);
-			trackEvent(trackEvent.category.select, 'Customer', customerName);
+		onCustomerSelectedChange(customerName: TCustomerNormalName | null) {
+			currentStore.shared.customer.name.set((prev) => {
+				if (prev === null) {
+					trackEvent(
+						trackEvent.category.select,
+						'Customer',
+						customerName as TCustomerNormalName
+					);
+				} else if (customerName === null) {
+					trackEvent(trackEvent.category.unselect, 'Customer', prev);
+				} else {
+					trackEvent(trackEvent.category.unselect, 'Customer', prev);
+					trackEvent(
+						trackEvent.category.select,
+						'Customer',
+						customerName
+					);
+				}
+				return customerName;
+			});
 		},
 
 		onBeverageTableAction(beverageName: TBeverageName) {

@@ -1,10 +1,11 @@
 'use client';
 
-import { type Key, useCallback, useMemo } from 'react';
+import { type Key, useCallback, useEffect, useMemo } from 'react';
 
 import useBreakpoint from 'use-breakpoint';
 import {
 	useMounted,
+	usePathname,
 	usePinyinSortConfig,
 	useSearchConfig,
 	useSearchResult,
@@ -17,13 +18,13 @@ import { Tab, Tabs } from '@heroui/tabs';
 
 import { FadeMotionDiv, cn, useReducedMotion } from '@/design/ui/components';
 
-import BeverageTabContent from './beverageTabContent';
-import CustomerCard from './customerCard';
-import CustomerTabContent from './customerTabContent';
-import IngredientTabContent from './ingredientTabContent';
-import RecipeTabContent from './recipeTabContent';
-import ResultCard from './resultCard';
-import SavedMealCard from './savedMealCard';
+import BeverageTabContent from '../beverageTabContent';
+import CustomerCard from '../customerCard';
+import CustomerTabContent from '../customerTabContent';
+import IngredientTabContent from '../ingredientTabContent';
+import RecipeTabContent from '../recipeTabContent';
+import ResultCard from '../resultCard';
+import SavedMealCard from '../savedMealCard';
 import Loading from '@/loading';
 import Placeholder from '@/components/placeholder';
 import SideButtonGroup from '@/components/sideButtonGroup';
@@ -38,15 +39,58 @@ import {
 	customerTabStyleMap,
 	ingredientTabStyleMap,
 	tachieBreakPointMap,
-} from './constants';
+} from '../constants';
+import { siteConfig } from '@/configs';
+import { type TCustomerNormalName } from '@/data';
 import { customerNormalStore as customerStore, globalStore } from '@/stores';
 import {
 	checkArrayContainsOf,
 	checkArraySubsetOf,
 	checkEmpty,
+	getPageTitle,
 } from '@/utilities';
 
-export default function CustomerNormal() {
+const { enName, name: zhName } = siteConfig;
+
+function validateName(name: string | undefined) {
+	const instance_customer = customerStore.instances.customer.get();
+
+	try {
+		const decodedName = decodeURIComponent(name ?? '');
+		instance_customer.findIndexByName(decodedName as never);
+		return decodedName as TCustomerNormalName;
+	} catch {
+		return null;
+	}
+}
+
+export default function Content() {
+	const { pathname } = usePathname();
+
+	useEffect(() => {
+		const validName = validateName(pathname.split('/')[2]);
+
+		customerStore.shared.customer.name.set(validName);
+
+		const title = `${validName === null ? '' : `${validName} | `}${getPageTitle('/customer-normal')} | ${zhName} - ${enName}`;
+		const observer = new MutationObserver((_, ob) => {
+			if (
+				location.pathname.startsWith('/customer-normal') &&
+				document.title.trim() !== title
+			) {
+				document.title = title;
+				ob.disconnect();
+			}
+		});
+
+		document.title = title;
+		observer.observe(document.head, { childList: true });
+
+		return () => {
+			observer.disconnect();
+		};
+	}, [pathname]);
+
 	const { breakpoint } = useBreakpoint(tachieBreakPointMap, 'noTachie');
 	const isReducedMotion = useReducedMotion();
 	const vibrate = useVibrate();

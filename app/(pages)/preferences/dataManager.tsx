@@ -138,7 +138,7 @@ interface IProps {
 }
 
 export default memo<IProps>(function DataManager({ onModalClose }) {
-	const pathname = usePathname();
+	const { pathname } = usePathname();
 	const router = useRouter();
 	const startProgress = useProgress();
 	const isReducedMotion = useReducedMotion();

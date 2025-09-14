@@ -628,9 +628,26 @@ export const customerRareStore = store(state, {
 				return tag;
 			});
 		},
-		onCustomerSelectedChange(customerName: TCustomerRareName) {
-			currentStore.shared.customer.name.set(customerName);
-			trackEvent(trackEvent.category.select, 'Customer', customerName);
+		onCustomerSelectedChange(customerName: TCustomerRareName | null) {
+			currentStore.shared.customer.name.set((prev) => {
+				if (prev === null) {
+					trackEvent(
+						trackEvent.category.select,
+						'Customer',
+						customerName as TCustomerRareName
+					);
+				} else if (customerName === null) {
+					trackEvent(trackEvent.category.unselect, 'Customer', prev);
+				} else {
+					trackEvent(trackEvent.category.unselect, 'Customer', prev);
+					trackEvent(
+						trackEvent.category.select,
+						'Customer',
+						customerName
+					);
+				}
+				return customerName;
+			});
 		},
 
 		onBeverageTableAction(beverageName: TBeverageName) {

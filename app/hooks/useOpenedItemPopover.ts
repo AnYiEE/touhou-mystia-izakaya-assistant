@@ -7,7 +7,7 @@ export const PARAM_SPECIFY = 'select';
 export function useOpenedItemPopover(
 	popoverCardRef: RefObject<HTMLElement | null>
 ) {
-	const [params, replace] = useParams();
+	const { params, replaceState } = useParams();
 	const [openedPopover, _setOpenedPopover] = useState<string | null>(null);
 
 	useEffect(() => {
@@ -43,9 +43,9 @@ export function useOpenedItemPopover(
 				newParams.set(PARAM_SPECIFY, name);
 			}
 
-			replace(newParams);
+			replaceState(newParams);
 		},
-		[params, replace]
+		[params, replaceState]
 	);
 
 	return [openedPopover, setOpenedPopover] as const;

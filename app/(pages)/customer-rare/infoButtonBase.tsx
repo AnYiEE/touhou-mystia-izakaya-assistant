@@ -1,6 +1,6 @@
-import { Fragment, memo, useCallback, useState } from 'react';
+import { Fragment, memo, useCallback, useEffect, useState } from 'react';
 
-import { useVibrate } from '@/hooks';
+import { useParams, useVibrate } from '@/hooks';
 
 import { Accordion, type AccordionProps } from '@heroui/accordion';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
@@ -8,6 +8,8 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { Modal, Tooltip, useReducedMotion } from '@/design/ui/components';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
+
+export const PARAM_INFO = 'info';
 
 interface IProps
 	extends Pick<AccordionProps, 'children' | 'defaultExpandedKeys'> {
@@ -20,19 +22,32 @@ export default memo<IProps>(function InfoButtonBase({
 	onButtonPress,
 }) {
 	const isReducedMotion = useReducedMotion();
+	const { params, replaceState } = useParams();
 	const [isOpened, setOpened] = useState(false);
 	const vibrate = useVibrate();
 
 	const handleClose = useCallback(() => {
 		vibrate();
 		setOpened(false);
-	}, [vibrate]);
+
+		const newParams = new URLSearchParams(params);
+		newParams.delete(PARAM_INFO);
+		replaceState(newParams);
+	}, [params, replaceState, vibrate]);
 
 	const handlePress = useCallback(() => {
 		vibrate();
 		setOpened(true);
 		onButtonPress?.();
-	}, [onButtonPress, vibrate]);
+
+		const newParams = new URLSearchParams(params);
+		newParams.set(PARAM_INFO, '');
+		replaceState(newParams);
+	}, [onButtonPress, params, replaceState, vibrate]);
+
+	useEffect(() => {
+		setOpened(params.has(PARAM_INFO));
+	}, [params]);
 
 	const buttonLabel = '更多信息';
 

@@ -5,6 +5,7 @@ import { driver } from 'driver.js';
 
 import { usePathname } from '@/hooks';
 
+import { PARAM_INFO } from '@/(pages)/customer-rare/infoButtonBase';
 import { trackEvent } from '@/components/analytics';
 
 import { DYNAMIC_TAG_MAP } from '@/data';
@@ -16,8 +17,8 @@ const pathname = '/customer-rare';
 const resetLabel = '重新进入稀客套餐搭配教程';
 
 export default function CustomerRareTutorial() {
-	const currentPathname = usePathname();
-	const isTargetPage = currentPathname === pathname;
+	const { pathname: currentPathname } = usePathname();
+	const isTargetPage = currentPathname.startsWith(pathname);
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
 	const currentCustomerOrder = customerStore.shared.customer.order.use();
@@ -307,19 +308,23 @@ export default function CustomerRareTutorial() {
 
 	useEffect(() => {
 		if (isTargetPage && !isCompleted && !driverRef.current.isActive()) {
-			setTimeout(() => {
-				driverRef.current.drive();
-				trackEvent(
-					trackEvent.category.click,
-					'Tutorial Button',
-					'Start'
-				);
-			}, 1000);
+			if (currentPathname === pathname) {
+				setTimeout(() => {
+					driverRef.current.drive();
+					trackEvent(
+						trackEvent.category.click,
+						'Tutorial Button',
+						'Start'
+					);
+				}, 1000);
+			} else if (!new URLSearchParams(location.search).has(PARAM_INFO)) {
+				location.href = pathname;
+			}
 		}
 		if (!isTargetPage) {
 			driverRef.current.destroy();
 		}
-	}, [isCompleted, isTargetPage]);
+	}, [currentPathname, isCompleted, isTargetPage]);
 
 	return null;
 }

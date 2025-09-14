@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 
-import { useVibrate } from '@/hooks';
+import { usePathname, useVibrate } from '@/hooks';
 
 import { Divider } from '@heroui/divider';
 import { faArrowsRotate, faXmark } from '@fortawesome/free-solid-svg-icons';
@@ -37,6 +37,7 @@ import { customerRareStore as customerStore, globalStore } from '@/stores';
 import { checkEmpty, copyArray, pinyinSort } from '@/utilities';
 
 export default function CustomerCard() {
+	const { pushState } = usePathname();
 	const vibrate = useVibrate();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
@@ -99,8 +100,9 @@ export default function CustomerCard() {
 
 	const handleRefreshCustomer = useCallback(() => {
 		vibrate();
-		customerStore.shared.customer.name.set(null);
-	}, [vibrate]);
+		customerStore.onCustomerSelectedChange(null);
+		pushState('/customer-rare');
+	}, [pushState, vibrate]);
 
 	const handleRefreshSelectedItems = useCallback(
 		(customerName: TCustomerRareName) => {

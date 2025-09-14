@@ -59,7 +59,7 @@ const { name: siteName } = siteConfig;
 interface ICloseButtonProps {}
 
 const CloseButton: FC<ICloseButtonProps> = () => {
-	const [params, replace] = useParams();
+	const { params, replaceState } = useParams();
 	const { getBackdropProps } = usePopoverContext();
 
 	const isPreviewMode = params.has(PARAM_PREVIEW);
@@ -78,10 +78,10 @@ const CloseButton: FC<ICloseButtonProps> = () => {
 				const newParams = new URLSearchParams(params);
 
 				newParams.delete(PARAM_SPECIFY);
-				replace(newParams);
+				replaceState(newParams);
 			}
 		},
-		[getBackdropProps, isPreviewMode, params, replace]
+		[getBackdropProps, isPreviewMode, params, replaceState]
 	);
 
 	const label = `点击：关闭${isPreviewMode ? '窗口' : '弹出框'}`;
@@ -111,7 +111,7 @@ interface IShareButtonProps {
 }
 
 const ShareButton = memo<IShareButtonProps>(function ShareButton({ name }) {
-	const [params] = useParams();
+	const { params } = useParams();
 
 	const generatedUrl = useMemo(() => {
 		const newParams = new URLSearchParams(params);
@@ -143,7 +143,7 @@ const ShareButton = memo<IShareButtonProps>(function ShareButton({ name }) {
 		trackEvent(trackEvent.category.click, 'Share Button', name);
 	}, [isCanShare, name, shareObject]);
 
-	const label = '点击：分享当前选中项的链接';
+	const label = '点击：分享到当前选中项的链接';
 
 	return (
 		<Popover showArrow>

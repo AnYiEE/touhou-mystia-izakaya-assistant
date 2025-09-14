@@ -146,7 +146,7 @@ export default function Analytics() {
 
 	// It has already been tracked once when entering the page for the first time.
 	const isLoaded = useRef(true);
-	const pathname = usePathname();
+	const { pathname } = usePathname();
 
 	useEffect(() => {
 		// Avoid tracking repeatedly when first entering the page, only track when the next pathname changes (route change by Next.js).

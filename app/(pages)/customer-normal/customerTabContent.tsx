@@ -1,7 +1,7 @@
 import { memo, useCallback } from 'react';
 import { debounce } from 'lodash';
 
-import { useVibrate } from '@/hooks';
+import { usePathname, useVibrate } from '@/hooks';
 
 import { Avatar, Button, ScrollShadow, cn } from '@/design/ui/components';
 
@@ -23,6 +23,7 @@ export default memo<IProps>(function CustomerTabContent({
 	customerTabStyle,
 	sortedData,
 }) {
+	const { pushState } = usePathname();
 	const vibrate = useVibrate();
 
 	const currentCustomerName = store.shared.customer.name.use();
@@ -48,6 +49,7 @@ export default memo<IProps>(function CustomerTabContent({
 							onPress={() => {
 								vibrate();
 								store.onCustomerSelectedChange(name);
+								pushState('/customer-normal', name);
 							}}
 							title={`点击：选择【${name}】`}
 							className="group flex cursor-pointer flex-col items-center gap-1"

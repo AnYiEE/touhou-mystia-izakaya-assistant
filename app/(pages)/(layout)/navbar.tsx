@@ -155,7 +155,8 @@ const GitHubLink = memo<IGitHubLinkProps>(function GitHubLink({ showTooltip }) {
 });
 
 export default function Navbar() {
-	const pathname = usePathname();
+	const { pathname } = usePathname();
+	const basePathname = `/${pathname.split('/')[1]}`;
 	const router = useRouter();
 	const startProgress = useProgress();
 	const vibrate = useVibrate();
@@ -177,7 +178,8 @@ export default function Navbar() {
 	);
 
 	// Support parallel routing pages.
-	const shouldShowPreferences = pathname !== '/' && pathname !== '/about';
+	const shouldShowPreferences =
+		basePathname !== '/' && basePathname !== '/about';
 
 	return (
 		<HeroUINavbar
@@ -227,7 +229,7 @@ export default function Navbar() {
 					{navItems.map((navItem, navItemIndex) => {
 						if ('href' in navItem) {
 							const { href, label } = navItem;
-							const isActivated = href === pathname;
+							const isActivated = href === basePathname;
 							return href === '/preferences' &&
 								!shouldShowPreferences ? null : (
 								<NavbarItem
@@ -253,7 +255,7 @@ export default function Navbar() {
 								dropdownIndex
 							) => {
 								const isDropdownActivated = dropdownItems.some(
-									({ href }) => href === pathname
+									({ href }) => href === basePathname
 								);
 								const dropdownElement = (
 									<Dropdown
@@ -311,7 +313,8 @@ export default function Navbar() {
 													<NavbarButtonLink
 														fullWidth
 														isActivated={
-															href === pathname
+															href ===
+															basePathname
 														}
 														startContent={
 															<Sprite
@@ -383,7 +386,7 @@ export default function Navbar() {
 
 			<NavbarMenu className="px-10 pt-4">
 				{navMenuItems.map(({ href, label }, index) => {
-					const isActivated = href === pathname;
+					const isActivated = href === basePathname;
 					return href === '/preferences' &&
 						!shouldShowPreferences ? null : (
 						<NavbarMenuItem key={index} isActive={isActivated}>
