@@ -131,8 +131,8 @@ export default function InfoButton() {
 		>
 			<AccordionItem
 				key="description"
-				aria-label="稀客介绍"
-				title="稀客介绍"
+				aria-label={`${currentCustomerName}介绍`}
+				title={currentCustomerName}
 				classNames={{
 					content:
 						'space-y-1 break-all pt-2 text-justify text-default-900',
