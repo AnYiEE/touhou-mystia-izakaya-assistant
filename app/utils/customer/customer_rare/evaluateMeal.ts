@@ -187,6 +187,13 @@ export function checkRecipeEasterEgg({
 			}
 			break;
 		}
+		case '雾雨魔理沙': {
+			const recipe = '牛肉鸳鸯火锅';
+			if (currentRecipeName === recipe) {
+				return { recipe, score: 4 };
+			}
+			break;
+		}
 	}
 
 	return { recipe: null, score: mealScore };
@@ -213,9 +220,10 @@ function checkEasterEgg({
 		case '古明地恋':
 		case '蕾米莉亚':
 		case '梅蒂欣':
-		case '饕餮尤魔':
 		case '绵月丰姬':
 		case '绵月依姬':
+		case '饕餮尤魔':
+		case '雾雨魔理沙':
 			return checkRecipeEasterEgg({
 				currentCustomerName,
 				currentRecipeName,

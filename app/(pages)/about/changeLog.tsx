@@ -135,6 +135,7 @@ const changelog = [
 		version: 'v1.10',
 		changes: ['新增：食材页面的详情弹出框中支持查看包含此食材的料理。'],
 	},
+	{ version: 'v1.11', changes: ['新增：更新数据至游戏版本4.2.1。'] },
 ] as const satisfies Array<{
 	version: `v${string}`;
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;
