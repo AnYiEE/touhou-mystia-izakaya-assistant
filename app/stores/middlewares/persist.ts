@@ -7,11 +7,13 @@ import {
 	persist as persistMiddleware,
 } from 'zustand/middleware';
 
+import { safeStorage } from '@/utilities';
+
 const COMPRESS_PREFIX = '__LZ__';
 
 const lZLocalStorage = {
 	getItem(name: string) {
-		const value = localStorage.getItem(name);
+		const value = safeStorage.getItem(name);
 		if (value === null) {
 			return null;
 		}
@@ -21,10 +23,10 @@ const lZLocalStorage = {
 		return value;
 	},
 	removeItem(name: string) {
-		localStorage.removeItem(name);
+		safeStorage.removeItem(name);
 	},
 	setItem(name: string, value: string) {
-		localStorage.setItem(name, COMPRESS_PREFIX + compressToUTF16(value));
+		safeStorage.setItem(name, COMPRESS_PREFIX + compressToUTF16(value));
 	},
 } satisfies StateStorage;
 

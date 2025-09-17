@@ -7,6 +7,7 @@ import { useMounted } from '@/hooks';
 import { COLOR_MAP, MEDIA, STORAGE_KEY, THEME_MAP } from './constants';
 import type { TTheme } from './types';
 import { addSafeMediaQueryEventListener } from '@/design/utils';
+import { safeStorage } from '@/utilities';
 
 // eslint-disable-next-line unicorn/prefer-global-this
 const isServer = typeof window === 'undefined';
@@ -22,7 +23,7 @@ function getThemeCallback() {
 		return;
 	}
 
-	return localStorage.getItem(STORAGE_KEY) as TTheme | null;
+	return safeStorage.getItem<TTheme>(STORAGE_KEY);
 }
 
 function setThemeCallback(selectedTheme: TTheme, isFromEvent?: boolean) {
@@ -56,7 +57,7 @@ function setThemeCallback(selectedTheme: TTheme, isFromEvent?: boolean) {
 		return;
 	}
 
-	localStorage.setItem(STORAGE_KEY, selectedTheme);
+	safeStorage.setItem(STORAGE_KEY, selectedTheme);
 }
 
 export function useTheme() {

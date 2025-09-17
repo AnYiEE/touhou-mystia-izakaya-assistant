@@ -163,7 +163,13 @@ export default function Providers({
 const script = (cdnPrefix: string, settingKey: string) => {
 	let enable: boolean | undefined;
 
-	const isHighAppearance = localStorage.getItem(settingKey);
+	let isHighAppearance = null;
+	try {
+		isHighAppearance = localStorage.getItem(settingKey);
+	} catch {
+		isHighAppearance = '1';
+	}
+
 	if (isHighAppearance !== null) {
 		enable = isHighAppearance === '1';
 	}

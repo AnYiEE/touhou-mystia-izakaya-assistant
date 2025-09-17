@@ -29,6 +29,7 @@ import type { IPopularTrend, TPopularTag } from '@/types';
 import {
 	generateRange,
 	pinyinSort,
+	safeStorage,
 	toArray,
 	toGetItemWithKey,
 	toGetValueCollection,
@@ -292,9 +293,9 @@ export const globalSettingKeyIsHighAppearance = 'setting-high_appearance';
 globalStore.persistence.highAppearance.onChange((isEnabled) => {
 	document.body.classList.toggle('bg-blend-mystia-pseudo', isEnabled);
 	if (isEnabled) {
-		localStorage.removeItem(globalSettingKeyIsHighAppearance);
+		safeStorage.removeItem(globalSettingKeyIsHighAppearance);
 	} else {
-		localStorage.setItem(
+		safeStorage.setItem(
 			globalSettingKeyIsHighAppearance,
 			Number(isEnabled).toString()
 		);

@@ -72,6 +72,16 @@ const script = () => {
 			`错误：${message}\n文件：${filename}\n行号：${lineno}    列号：${colno}${error?.stack ? `\n\n${error.stack}` : ''}`
 		);
 	});
+
+	try {
+		const testKey = '__test__';
+		localStorage.setItem(testKey, '');
+		localStorage.removeItem(testKey);
+	} catch {
+		alert(
+			'警告：本地存储（localStorage）不可用。\n这可能是因为您正处于无痕或隐身模式下，或浏览器开启了“不允许网站将数据保存在设备上”等类似设置。\n\n本次会话将通过内存模拟本地存储。在您关闭或刷新当前标签页后，您所保存的任何数据都会被丢弃。'
+		);
+	}
 };
 
 export default function Polyfills() {
