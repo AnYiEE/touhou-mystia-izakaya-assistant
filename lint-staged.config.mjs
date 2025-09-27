@@ -2,7 +2,7 @@
 
 import { relative } from 'node:path';
 
-const buildEslintCommand = (/** @type {string[]} */ filenames) =>
+const buildEslintCommand = (/** @type {ReadonlyArray<string>} */ filenames) =>
 	`next lint --fix --file ${filenames.map((f) => relative(process.cwd(), f)).join(' --file ')}`;
 
 /** @type {import('lint-staged').Configuration} */
