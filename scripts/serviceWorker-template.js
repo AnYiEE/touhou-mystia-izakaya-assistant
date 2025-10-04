@@ -89,13 +89,16 @@ async function cacheFirst(/** @type {Request} */ request) {
 }
 
 async function networkFirst(/** @type {Request} */ request) {
+	const responseFromCache = await caches.match(request);
+
+	if (responseFromCache !== undefined) {
+		fetchWithRetry(request, 3).catch(() => {});
+		return responseFromCache;
+	}
+
 	try {
 		return await fetchWithRetry(request, 3);
 	} catch {
-		const responseFromCache = await caches.match(request);
-		if (responseFromCache !== undefined) {
-			return responseFromCache;
-		}
 		return networkErrorResponse.clone();
 	}
 }
