@@ -19,6 +19,7 @@ import { faLink, faShare, faXmark } from '@fortawesome/free-solid-svg-icons';
 
 import {
 	CLASSNAME_FOCUS_VISIBLE_OUTLINE,
+	type IPopoverProps,
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
@@ -54,7 +55,7 @@ import {
 	union,
 } from '@/utilities';
 
-const { name: siteName } = siteConfig;
+const { baseURL, name: siteName } = siteConfig;
 
 interface ICloseButtonProps {}
 
@@ -100,7 +101,7 @@ const CloseButton: FC<ICloseButtonProps> = () => {
 				onClick={handleClose}
 				onKeyDown={debounce(checkA11yConfirmKey(handleClose))}
 				aria-label={label}
-				className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
+				className="absolute right-1 top-1 z-20 h-4 w-4 min-w-0 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 			/>
 		</Tooltip>
 	);
@@ -146,55 +147,92 @@ const ShareButton = memo<IShareButtonProps>(function ShareButton({ name }) {
 	const label = '点击：分享到当前选中项的链接';
 
 	return (
-		<Popover showArrow>
-			<Tooltip
-				showArrow
-				content={label}
-				offset={5}
-				placement="left"
-				size="sm"
+		<>
+			<div
+				aria-hidden
+				className="pointer-events-none absolute bottom-1 right-6 flex h-4 select-none items-center"
 			>
-				<div className="absolute bottom-1 right-1 flex">
-					<PopoverTrigger>
-						<FontAwesomeIconButton
-							icon={faShare}
-							variant="light"
-							onPress={handlePress}
-							aria-label={label}
-							className="h-4 w-4 min-w-0 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
-						/>
-					</PopoverTrigger>
+				<div className="space-y-0.5 text-right font-mono text-[7px] font-light leading-none text-default-400 [text-shadow:0px_0.5px_0.75px_rgba(0,0,0,0.15)]">
+					<p>{siteName}</p>
+					<p
+						style={{
+							fontSize: `${
+								(7 * siteName.length) / (baseURL.length + 0.85)
+							}px`,
+						}}
+					>
+						https://{baseURL}
+					</p>
 				</div>
-			</Tooltip>
-			<PopoverContent>
-				<p className="mr-4 cursor-default select-none self-end text-right text-tiny text-default-500">
-					点击以复制到当前选中项的链接↓
-				</p>
-				<Snippet
-					disableTooltip
+			</div>
+			<Popover showArrow>
+				<Tooltip
+					showArrow
+					content={label}
+					offset={5}
+					placement="left"
 					size="sm"
-					symbol={
-						<FontAwesomeIcon
-							icon={faLink}
-							className="mr-1 !align-middle text-default-700"
-						/>
-					}
-					classNames={{
-						pre: 'flex max-w-screen-p-60 items-center whitespace-normal break-all',
-					}}
 				>
-					{generatedUrl}
-				</Snippet>
-			</PopoverContent>
-		</Popover>
+					<div className="absolute bottom-1 right-1 z-20 flex">
+						<PopoverTrigger>
+							<FontAwesomeIconButton
+								icon={faShare}
+								variant="light"
+								onPress={handlePress}
+								aria-label={label}
+								className="h-4 w-4 min-w-0 transform-gpu text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
+							/>
+						</PopoverTrigger>
+					</div>
+				</Tooltip>
+				<PopoverContent>
+					<p className="mr-4 cursor-default select-none self-end text-right text-tiny text-default-500">
+						点击以复制到当前选中项的链接↓
+					</p>
+					<Snippet
+						disableTooltip
+						size="sm"
+						symbol={
+							<FontAwesomeIcon
+								icon={faLink}
+								className="mr-1 !align-middle text-default-700"
+							/>
+						}
+						classNames={{
+							pre: 'flex max-w-screen-p-60 items-center whitespace-normal break-all',
+						}}
+					>
+						{generatedUrl}
+					</Snippet>
+				</PopoverContent>
+			</Popover>
+		</>
 	);
 });
 
-interface ITriggerProps
+const ItemPopover = memo<IPopoverProps>(function ItemPopover({
+	classNames,
+	...props
+}) {
+	return (
+		<Popover
+			classNames={{
+				...classNames,
+				content: cn('relative', classNames?.content),
+			}}
+			{...props}
+		/>
+	);
+});
+
+interface IItemPopoverTriggerProps
 	extends PopoverTriggerProps,
 		HTMLButtonElementAttributes {}
 
-const Trigger = memo<ITriggerProps>(function Trigger({ className, ...props }) {
+const ItemPopoverTrigger = memo<IItemPopoverTriggerProps>(function Trigger({
+	className,
+	...props
+}) {
 	const isHighAppearance = store.persistence.highAppearance.use();
 
 	return (
@@ -280,7 +318,7 @@ const ItemPopoverCardComponent = memo<PropsWithChildren<IItemPopoverCardProps>>(
 
 		return (
 			<div
-				className="max-w-80 space-y-2 p-2 text-tiny text-default-800"
+				className="z-10 max-w-80 space-y-2 p-2 text-tiny text-default-800"
 				{...props}
 			>
 				<div className="flex items-center gap-2 text-small text-foreground">
@@ -464,15 +502,15 @@ const ItemPopoverCard =
 	ItemPopoverCardComponent as typeof ItemPopoverCardComponent & {
 		CloseButton: typeof CloseButton;
 		ShareButton: typeof ShareButton;
-		Popover: typeof Popover;
-		Trigger: typeof Trigger;
+		Popover: typeof ItemPopover;
+		Trigger: typeof ItemPopoverTrigger;
 		Content: typeof PopoverContent;
 	};
 
 ItemPopoverCard.CloseButton = CloseButton;
 ItemPopoverCard.ShareButton = ShareButton;
-ItemPopoverCard.Popover = Popover;
-ItemPopoverCard.Trigger = Trigger;
+ItemPopoverCard.Popover = ItemPopover;
+ItemPopoverCard.Trigger = ItemPopoverTrigger;
 ItemPopoverCard.Content = PopoverContent;
 
 export default ItemPopoverCard;

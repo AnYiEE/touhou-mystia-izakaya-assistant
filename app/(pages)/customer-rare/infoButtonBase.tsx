@@ -9,7 +9,31 @@ import { Modal, Tooltip, useReducedMotion } from '@/design/ui/components';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 
+import { siteConfig } from '@/configs';
+
+const { baseURL, name: siteName } = siteConfig;
+
 export const PARAM_INFO = 'info';
+
+export function SiteInfo() {
+	return (
+		<div
+			aria-hidden
+			className="pointer-events-none select-none space-y-0.5 text-right font-mono text-[8px] font-light leading-none text-default-400"
+		>
+			<p>{siteName}</p>
+			<p
+				style={{
+					fontSize: `${
+						(8 * siteName.length) / (baseURL.length + 0.85)
+					}px`,
+				}}
+			>
+				https://{baseURL}
+			</p>
+		</div>
+	);
+}
 
 interface IProps
 	extends Pick<AccordionProps, 'children' | 'defaultExpandedKeys'> {

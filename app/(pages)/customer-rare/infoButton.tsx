@@ -15,7 +15,7 @@ import {
 	cn,
 } from '@/design/ui/components';
 
-import InfoButtonBase from './infoButtonBase';
+import InfoButtonBase, { SiteInfo } from './infoButtonBase';
 import { trackEvent } from '@/components/analytics';
 import Ol from '@/components/ol';
 import PressElement from '@/components/pressElement';
@@ -132,7 +132,13 @@ export default function InfoButton() {
 			<AccordionItem
 				key="description"
 				aria-label={`${currentCustomerName}介绍`}
-				title={currentCustomerName}
+				textValue={currentCustomerName}
+				title={
+					<div className="flex items-center justify-between">
+						<span>{currentCustomerName}</span>
+						<SiteInfo />
+					</div>
+				}
 				classNames={{
 					content:
 						'space-y-1 break-all pt-2 text-justify text-default-900',
