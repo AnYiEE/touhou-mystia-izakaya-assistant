@@ -138,7 +138,7 @@
 		"@types/node": "^22.18.8",
 		"@types/react": "^19.2.0",
 		"@types/react-dom": "^19.2.0",
-		"@types/serviceworker": "^0.0.157",
+		"@types/serviceworker": "^0.0.158",
 		"@types/ua-parser-js": "^0.7.39",
 		"adm-zip": "^0.5.16",
 		"cross-env": "^10.1.0",
