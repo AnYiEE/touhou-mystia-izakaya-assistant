@@ -50,7 +50,7 @@ import { siteConfig } from '@/configs';
 import { globalStore as store } from '@/stores';
 import { checkA11yConfirmKey } from '@/utilities';
 
-const { links, name, navItems, navMenuItems, shortName } = siteConfig;
+const { baseURL, links, name, navItems, navMenuItems, shortName } = siteConfig;
 
 export function showProgress(startProgress: () => void) {
 	startTransition(async () => {
@@ -217,12 +217,22 @@ export default function Navbar() {
 							title={shortName}
 							className="h-10 w-10 rounded-full bg-logo bg-cover bg-no-repeat"
 						/>
-						<p className="font-bold">
-							<span className="hidden lg:inline">{name}</span>
-							<span className="inline lg:hidden">
-								{shortName}
-							</span>
+						<p className="hidden font-bold lg:inline-block">
+							{name}
 						</p>
+						<div className="space-y-0.5 font-mono font-bold leading-none lg:hidden">
+							<p>{shortName}</p>
+							<p
+								style={{
+									fontSize: `${
+										(16 * shortName.length) /
+										(baseURL.length + 0.85)
+									}px`,
+								}}
+							>
+								https://{baseURL}
+							</p>
+						</div>
 					</Link>
 				</NavbarBrand>
 				<ul className="hidden justify-start gap-4 pl-2 md:flex">
