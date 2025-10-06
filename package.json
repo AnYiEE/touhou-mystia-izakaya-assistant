@@ -180,6 +180,7 @@
 			"@heroui/avatar": "patches/@heroui__avatar.patch",
 			"@heroui/button": "patches/@heroui__button.patch",
 			"@heroui/select": "patches/@heroui__select.patch",
+			"@heroui/shared-utils": "patches/@heroui__shared-utils.patch",
 			"@heroui/tabs": "patches/@heroui__tabs.patch",
 			"@heroui/theme": "patches/@heroui__theme.patch",
 			"@heroui/tooltip": "patches/@heroui__tooltip.patch",

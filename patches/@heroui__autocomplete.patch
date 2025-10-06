@@ -1,5 +1,5 @@
 diff --git a/dist/autocomplete.js b/dist/autocomplete.js
-index 5458ba7c993d7c19b444df20a1e3b83b114e2241..968f09ccb065e994fe0b76e627a614301e8992a6 100644
+index 5458ba7c993d7c19b444df20a1e3b83b114e2241..e0dd6ae611fb56a08d76594894e4e5436ab0577d 100644
 --- a/dist/autocomplete.js
 +++ b/dist/autocomplete.js
 @@ -87,6 +87,7 @@ function useAutocomplete(originalProps) {
@@ -45,7 +45,18 @@ index 5458ba7c993d7c19b444df20a1e3b83b114e2241..968f09ccb065e994fe0b76e627a61430
    (0, import_react.useEffect)(() => {
      if (isOpen) {
        if (popoverRef.current && inputWrapperRef.current) {
-@@ -283,6 +301,7 @@ function useAutocomplete(originalProps) {
+@@ -270,7 +288,9 @@ function useAutocomplete(originalProps) {
+   const getClearButtonProps = () => {
+     var _a2, _b2;
+     return {
+-      ...(0, import_utils.mergeProps)(buttonProps, slotsProps.clearButtonProps),
++      ...slotsProps.clearButtonProps,
++      preventFocusOnPress: true,
++      excludeFromTabOrder: true,
+       onPressStart: () => {
+         var _a3;
+         (_a3 = inputRef.current) == null ? void 0 : _a3.focus();
+@@ -283,6 +303,7 @@ function useAutocomplete(originalProps) {
          }
          state.setInputValue("");
          state.open();
@@ -53,7 +64,7 @@ index 5458ba7c993d7c19b444df20a1e3b83b114e2241..968f09ccb065e994fe0b76e627a61430
        },
        "data-visible": !!state.selectedItem || ((_a2 = state.inputValue) == null ? void 0 : _a2.length) > 0,
        className: slots.clearButton({
-@@ -435,7 +454,7 @@ var Autocomplete = (0, import_system2.forwardRef)(function Autocomplete2(props,
+@@ -435,7 +456,7 @@ var Autocomplete = (0, import_system2.forwardRef)(function Autocomplete2(props,
          ...getInputProps(),
          endContent: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { ...getEndContentWrapperProps(), children: [
            endContent || /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_button.Button, { ...getClearButtonProps(), children: clearIcon }),
@@ -63,7 +74,7 @@ index 5458ba7c993d7c19b444df20a1e3b83b114e2241..968f09ccb065e994fe0b76e627a61430
        }
      ),
 diff --git a/dist/chunk-QZCVHGAT.mjs b/dist/chunk-QZCVHGAT.mjs
-index f54795f69c1f19e73f04e22b19be8cd2c431fa67..d792df5e958b49603fd12ccab4f18136c75a39e1 100644
+index f54795f69c1f19e73f04e22b19be8cd2c431fa67..812f54dcd620b5a8645b3e46d9f1148f4d24012c 100644
 --- a/dist/chunk-QZCVHGAT.mjs
 +++ b/dist/chunk-QZCVHGAT.mjs
 @@ -54,6 +54,7 @@ function useAutocomplete(originalProps) {
@@ -109,7 +120,18 @@ index f54795f69c1f19e73f04e22b19be8cd2c431fa67..d792df5e958b49603fd12ccab4f18136
    useEffect(() => {
      if (isOpen) {
        if (popoverRef.current && inputWrapperRef.current) {
-@@ -250,6 +268,7 @@ function useAutocomplete(originalProps) {
+@@ -237,7 +255,9 @@ function useAutocomplete(originalProps) {
+   const getClearButtonProps = () => {
+     var _a2, _b2;
+     return {
+-      ...mergeProps(buttonProps, slotsProps.clearButtonProps),
++      ...slotsProps.clearButtonProps,
++      preventFocusOnPress: true,
++      excludeFromTabOrder: true,
+       onPressStart: () => {
+         var _a3;
+         (_a3 = inputRef.current) == null ? void 0 : _a3.focus();
+@@ -250,6 +270,7 @@ function useAutocomplete(originalProps) {
          }
          state.setInputValue("");
          state.open();
@@ -118,7 +140,7 @@ index f54795f69c1f19e73f04e22b19be8cd2c431fa67..d792df5e958b49603fd12ccab4f18136
        "data-visible": !!state.selectedItem || ((_a2 = state.inputValue) == null ? void 0 : _a2.length) > 0,
        className: slots.clearButton({
 diff --git a/dist/chunk-SV7R5B4H.mjs b/dist/chunk-SV7R5B4H.mjs
-index 09b37df32ed4cdcccf6df45c0891039422ec0195..a9f2f52e61bf8e899671c759bbf19b9e55919af6 100644
+index 09b37df32ed4cdcccf6df45c0891039422ec0195..d3018f6f3f6f05af689f2a5465532233ea356759 100644
 --- a/dist/chunk-SV7R5B4H.mjs
 +++ b/dist/chunk-SV7R5B4H.mjs
 @@ -41,7 +41,7 @@ var Autocomplete = forwardRef(function Autocomplete2(props, ref) {
@@ -131,7 +153,7 @@ index 09b37df32ed4cdcccf6df45c0891039422ec0195..a9f2f52e61bf8e899671c759bbf19b9e
        }
      ),
 diff --git a/dist/index.js b/dist/index.js
-index 7ffc5983a0132b2178ebe4ca2187bc8ab67f4e6b..56a1804a9d8b029f9f827304c6d19d78fd4ec054 100644
+index 7ffc5983a0132b2178ebe4ca2187bc8ab67f4e6b..abace4c0df432e0eb430c9fe2c5ce1138829f9fc 100644
 --- a/dist/index.js
 +++ b/dist/index.js
 @@ -93,6 +93,7 @@ function useAutocomplete(originalProps) {
@@ -177,7 +199,18 @@ index 7ffc5983a0132b2178ebe4ca2187bc8ab67f4e6b..56a1804a9d8b029f9f827304c6d19d78
    (0, import_react.useEffect)(() => {
      if (isOpen) {
        if (popoverRef.current && inputWrapperRef.current) {
-@@ -289,6 +307,7 @@ function useAutocomplete(originalProps) {
+@@ -276,7 +294,9 @@ function useAutocomplete(originalProps) {
+   const getClearButtonProps = () => {
+     var _a2, _b2;
+     return {
+-      ...(0, import_utils.mergeProps)(buttonProps, slotsProps.clearButtonProps),
++      ...slotsProps.clearButtonProps,
++      preventFocusOnPress: true,
++      excludeFromTabOrder: true,
+       onPressStart: () => {
+         var _a3;
+         (_a3 = inputRef.current) == null ? void 0 : _a3.focus();
+@@ -289,6 +309,7 @@ function useAutocomplete(originalProps) {
          }
          state.setInputValue("");
          state.open();
@@ -185,7 +218,7 @@ index 7ffc5983a0132b2178ebe4ca2187bc8ab67f4e6b..56a1804a9d8b029f9f827304c6d19d78
        },
        "data-visible": !!state.selectedItem || ((_a2 = state.inputValue) == null ? void 0 : _a2.length) > 0,
        className: slots.clearButton({
-@@ -441,7 +460,7 @@ var Autocomplete = (0, import_system2.forwardRef)(function Autocomplete2(props,
+@@ -441,7 +462,7 @@ var Autocomplete = (0, import_system2.forwardRef)(function Autocomplete2(props,
          ...getInputProps(),
          endContent: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { ...getEndContentWrapperProps(), children: [
            endContent || /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_button.Button, { ...getClearButtonProps(), children: clearIcon }),
@@ -195,7 +228,7 @@ index 7ffc5983a0132b2178ebe4ca2187bc8ab67f4e6b..56a1804a9d8b029f9f827304c6d19d78
        }
      ),
 diff --git a/dist/use-autocomplete.d.ts b/dist/use-autocomplete.d.ts
-index b67a788f8919ace339e89326cff3eed90e7f5273..23b12163a4028613be6d77fad2b8f4015dfacc35 100644
+index b67a788f8919ace339e89326cff3eed90e7f5273..a827006f6431777d9643a0454904a9792aa77ea1 100644
 --- a/dist/use-autocomplete.d.ts
 +++ b/dist/use-autocomplete.d.ts
 @@ -105,6 +105,11 @@ interface Props<T> extends Omit<HTMLHeroUIProps<"input">, keyof ComboBoxProps<T>
@@ -211,7 +244,7 @@ index b67a788f8919ace339e89326cff3eed90e7f5273..23b12163a4028613be6d77fad2b8f401
       * Whether to enable virtualization of the listbox items.
       * By default, virtualization is automatically enabled when the number of items is greater than 50.
 diff --git a/dist/use-autocomplete.js b/dist/use-autocomplete.js
-index e644781853f6341121165125832f86e9996c69e4..e21f29f38747197cb4adc52e524b7e61c9868165 100644
+index e644781853f6341121165125832f86e9996c69e4..26c927f4246b2aefdf502df933be254907bd204d 100644
 --- a/dist/use-autocomplete.js
 +++ b/dist/use-autocomplete.js
 @@ -77,6 +77,7 @@ function useAutocomplete(originalProps) {
@@ -257,7 +290,18 @@ index e644781853f6341121165125832f86e9996c69e4..e21f29f38747197cb4adc52e524b7e61
    (0, import_react.useEffect)(() => {
      if (isOpen) {
        if (popoverRef.current && inputWrapperRef.current) {
-@@ -273,6 +291,7 @@ function useAutocomplete(originalProps) {
+@@ -260,7 +278,9 @@ function useAutocomplete(originalProps) {
+   const getClearButtonProps = () => {
+     var _a2, _b2;
+     return {
+-      ...(0, import_utils.mergeProps)(buttonProps, slotsProps.clearButtonProps),
++      ...slotsProps.clearButtonProps,
++      preventFocusOnPress: true,
++      excludeFromTabOrder: true,
+       onPressStart: () => {
+         var _a3;
+         (_a3 = inputRef.current) == null ? void 0 : _a3.focus();
+@@ -273,6 +293,7 @@ function useAutocomplete(originalProps) {
          }
          state.setInputValue("");
          state.open();

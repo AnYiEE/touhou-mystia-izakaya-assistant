@@ -1,7 +1,38 @@
+diff --git a/dist/avatar.js b/dist/avatar.js
+index fe4d76c7aa0634f27aba1d3240ecaab53d6e2c2c..1a839016c3d2330b86e3173710e4bf638d0719b0 100644
+--- a/dist/avatar.js
++++ b/dist/avatar.js
+@@ -97,7 +97,7 @@ function useAvatar(originalProps = {}) {
+     isBordered = (_d = groupContext == null ? void 0 : groupContext.isBordered) != null ? _d : false,
+     isDisabled = (_e = groupContext == null ? void 0 : groupContext.isDisabled) != null ? _e : false,
+     isFocusable = false,
+-    getInitials = import_shared_utils.safeText,
++    getInitials = import_shared_utils.safeInitials,
+     ignoreFallback = false,
+     showFallback: showFallbackProp = false,
+     ImgComponent = "img",
 diff --git a/dist/chunk-LTC67JRI.mjs b/dist/chunk-LTC67JRI.mjs
-index 09dc3daa0d8a79fea4f4bc0089f2084e356c7ef5..db414e7ef8df7f2cb2273943d3e823060374c501 100644
+index 09dc3daa0d8a79fea4f4bc0089f2084e356c7ef5..50aae83d99ae20ba6cec57195f6de44af4be693d 100644
 --- a/dist/chunk-LTC67JRI.mjs
 +++ b/dist/chunk-LTC67JRI.mjs
+@@ -8,7 +8,7 @@ import { avatar } from "@heroui/theme";
+ import { useProviderContext } from "@heroui/system";
+ import { mergeProps } from "@react-aria/utils";
+ import { useDOMRef, filterDOMProps } from "@heroui/react-utils";
+-import { clsx, safeText, dataAttr } from "@heroui/shared-utils";
++import { clsx, safeInitials, dataAttr } from "@heroui/shared-utils";
+ import { useFocusRing } from "@react-aria/focus";
+ import { useMemo, useCallback } from "react";
+ import { useImage } from "@heroui/use-image";
+@@ -34,7 +34,7 @@ function useAvatar(originalProps = {}) {
+     isBordered = (_d = groupContext == null ? void 0 : groupContext.isBordered) != null ? _d : false,
+     isDisabled = (_e = groupContext == null ? void 0 : groupContext.isDisabled) != null ? _e : false,
+     isFocusable = false,
+-    getInitials = safeText,
++    getInitials = safeInitials,
+     ignoreFallback = false,
+     showFallback: showFallbackProp = false,
+     ImgComponent = "img",
 @@ -50,6 +50,7 @@ function useAvatar(originalProps = {}) {
    const { isFocusVisible, isFocused, focusProps } = useFocusRing();
    const { isHovered, hoverProps } = useHover({ isDisabled });
@@ -21,9 +52,18 @@ index 09dc3daa0d8a79fea4f4bc0089f2084e356c7ef5..db414e7ef8df7f2cb2273943d3e82306
      },
      [
 diff --git a/dist/index.js b/dist/index.js
-index 0c7171537f3380a6071ec7eeaeb0a925be6f4aef..ab1d508b471f72a914c1443f656ff8df5bd011ef 100644
+index 0c7171537f3380a6071ec7eeaeb0a925be6f4aef..1a2173ab464a6496f30f199ed41075ed3214aeef 100644
 --- a/dist/index.js
 +++ b/dist/index.js
+@@ -105,7 +105,7 @@ function useAvatar(originalProps = {}) {
+     isBordered = (_d = groupContext == null ? void 0 : groupContext.isBordered) != null ? _d : false,
+     isDisabled = (_e = groupContext == null ? void 0 : groupContext.isDisabled) != null ? _e : false,
+     isFocusable = false,
+-    getInitials = import_shared_utils.safeText,
++    getInitials = import_shared_utils.safeInitials,
+     ignoreFallback = false,
+     showFallback: showFallbackProp = false,
+     ImgComponent = "img",
 @@ -121,6 +121,7 @@ function useAvatar(originalProps = {}) {
    const { isFocusVisible, isFocused, focusProps } = (0, import_focus.useFocusRing)();
    const { isHovered, hoverProps } = (0, import_interactions.useHover)({ isDisabled });
@@ -43,9 +83,18 @@ index 0c7171537f3380a6071ec7eeaeb0a925be6f4aef..ab1d508b471f72a914c1443f656ff8df
      },
      [
 diff --git a/dist/use-avatar.js b/dist/use-avatar.js
-index 74681a822ab9431386a1e8f9e271615803a3187f..df0843ae0aac281f1fa6036857383f2725549182 100644
+index 74681a822ab9431386a1e8f9e271615803a3187f..4c060115d2d59743591e5346ce50c982875adf88 100644
 --- a/dist/use-avatar.js
 +++ b/dist/use-avatar.js
+@@ -63,7 +63,7 @@ function useAvatar(originalProps = {}) {
+     isBordered = (_d = groupContext == null ? void 0 : groupContext.isBordered) != null ? _d : false,
+     isDisabled = (_e = groupContext == null ? void 0 : groupContext.isDisabled) != null ? _e : false,
+     isFocusable = false,
+-    getInitials = import_shared_utils.safeText,
++    getInitials = import_shared_utils.safeInitials,
+     ignoreFallback = false,
+     showFallback: showFallbackProp = false,
+     ImgComponent = "img",
 @@ -79,6 +79,7 @@ function useAvatar(originalProps = {}) {
    const { isFocusVisible, isFocused, focusProps } = (0, import_focus.useFocusRing)();
    const { isHovered, hoverProps } = (0, import_interactions.useHover)({ isDisabled });

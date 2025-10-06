@@ -1,0 +1,152 @@
+diff --git a/dist/chunk-CAFRINWI.mjs b/dist/chunk-CAFRINWI.mjs
+index d3a12fd05fdbd864c396e2c05335108a60884ac6..2562287fc9d4b79e2fb66e371b50cfcc00ef12bf 100644
+--- a/dist/chunk-CAFRINWI.mjs
++++ b/dist/chunk-CAFRINWI.mjs
+@@ -4,6 +4,17 @@ var safeText = (text) => {
+     return text;
+   return text == null ? void 0 : text.slice(0, 3);
+ };
++var safeInitials = (text) => {
++  const initials = text == null
++    ? void 0
++    : text
++      .trim()
++      .split(/[\s\-_.]+/)
++      .filter(Boolean)
++      .map((word) => word.charAt(0).toUpperCase())
++      .join("") || "";
++  return safeText(initials);
++};
+ var safeAriaLabel = (...texts) => {
+   let ariaLabel = " ";
+   for (const text of texts) {
+@@ -16,6 +27,7 @@ var safeAriaLabel = (...texts) => {
+ };
+ 
+ export {
++  safeInitials,
+   safeText,
+   safeAriaLabel
+ };
+diff --git a/dist/index.js b/dist/index.js
+index fc54d483bd69054bb1cdb761c676541b92432d57..74db394bcef52b23dd55a245d73792936fb28bf3 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -2171,6 +2171,7 @@ __export(src_exports, {
+   removeEvents: () => removeEvents,
+   renameProp: () => renameProp,
+   safeAriaLabel: () => safeAriaLabel,
++  safeInitials: () => safeInitials,
+   safeText: () => safeText,
+   uniqBy: () => uniqBy,
+   warn: () => warn
+@@ -2332,6 +2333,17 @@ var safeText = (text) => {
+     return text;
+   return text == null ? void 0 : text.slice(0, 3);
+ };
++var safeInitials = (text) => {
++  const initials = text == null
++    ? void 0
++    : text
++      .trim()
++      .split(/[\s\-_.]+/)
++      .filter(Boolean)
++      .map((word) => word.charAt(0).toUpperCase())
++      .join("") || "";
++  return safeText(initials);
++};
+ var safeAriaLabel = (...texts) => {
+   let ariaLabel = " ";
+   for (const text of texts) {
+@@ -2593,6 +2605,7 @@ var isPatternNumeric = (pattern) => {
+   removeEvents,
+   renameProp,
+   safeAriaLabel,
++  safeInitials,
+   safeText,
+   uniqBy,
+   warn
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 800c91e6a567d93ad42d1e106ecb6c38ab020e13..3734b661150e54776ae7767d54d86103e8825393 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -14,6 +14,7 @@ import {
+ } from "./chunk-SJYQ3O2I.mjs";
+ import {
+   safeAriaLabel,
++  safeInitials,
+   safeText
+ } from "./chunk-CAFRINWI.mjs";
+ import "./chunk-WBQAMGXK.mjs";
+@@ -108,6 +109,7 @@ export {
+   removeEvents,
+   renameProp,
+   safeAriaLabel,
++  safeInitials,
+   safeText,
+   uniqBy,
+   warn
+diff --git a/dist/text.d.ts b/dist/text.d.ts
+index 3702fea70f0d05cb111a2929008e6bbee8a736c2..8d8107d390a0c5822ca21933ddec89603381fe0e 100644
+--- a/dist/text.d.ts
++++ b/dist/text.d.ts
+@@ -1,4 +1,5 @@
++declare const safeInitials: (text: string) => string;
+ declare const safeText: (text: string) => string;
+ declare const safeAriaLabel: (...texts: any[]) => string;
+ 
+-export { safeAriaLabel, safeText };
++export { safeAriaLabel, safeInitials, safeText };
+diff --git a/dist/text.js b/dist/text.js
+index 77420ceb468ba371871c9301871765c24cde2306..f0fd78d29c4492591e6054fc532df34ca89f2e51 100644
+--- a/dist/text.js
++++ b/dist/text.js
+@@ -21,6 +21,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
+ var text_exports = {};
+ __export(text_exports, {
+   safeAriaLabel: () => safeAriaLabel,
++  safeInitials: () => safeInitials,
+   safeText: () => safeText
+ });
+ module.exports = __toCommonJS(text_exports);
+@@ -29,6 +30,17 @@ var safeText = (text) => {
+     return text;
+   return text == null ? void 0 : text.slice(0, 3);
+ };
++var safeInitials = (text) => {
++  const initials = text == null
++    ? void 0
++    : text
++      .trim()
++      .split(/[\s\-_.]+/)
++      .filter(Boolean)
++      .map((word) => word.charAt(0).toUpperCase())
++      .join("") || "";
++  return safeText(initials);
++};
+ var safeAriaLabel = (...texts) => {
+   let ariaLabel = " ";
+   for (const text of texts) {
+@@ -42,5 +54,6 @@ var safeAriaLabel = (...texts) => {
+ // Annotate the CommonJS export names for ESM import in node:
+ 0 && (module.exports = {
+   safeAriaLabel,
++  safeInitials,
+   safeText
+ });
+diff --git a/dist/text.mjs b/dist/text.mjs
+index 799f4938fadf0c5edf9f1e6ab68298124789a7ff..e917b206526b2d87e0f05b4e9c1e137eff1ee29c 100644
+--- a/dist/text.mjs
++++ b/dist/text.mjs
+@@ -1,9 +1,11 @@
+ import {
+   safeAriaLabel,
++  safeInitials,
+   safeText
+ } from "./chunk-CAFRINWI.mjs";
+ import "./chunk-UYSIEMEK.mjs";
+ export {
+   safeAriaLabel,
++  safeInitials,
+   safeText
+ };
