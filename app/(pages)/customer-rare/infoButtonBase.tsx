@@ -5,7 +5,7 @@ import { useParams, useVibrate } from '@/hooks';
 import { Accordion, type AccordionProps } from '@heroui/accordion';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
-import { Modal, Tooltip, useReducedMotion } from '@/design/ui/components';
+import { Modal, Tooltip, cn, useReducedMotion } from '@/design/ui/components';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 
@@ -15,17 +15,31 @@ const { baseURL, name: siteName } = siteConfig;
 
 export const PARAM_INFO = 'info';
 
-export function SiteInfo() {
+interface ISiteInfoBaseProps extends HTMLDivElementAttributes {
+	fontSize: number;
+}
+
+const SiteInfoBase = memo<ISiteInfoBaseProps>(function SiteInfoBase({
+	className,
+	fontSize,
+	style,
+	...props
+}) {
 	return (
 		<div
 			aria-hidden
-			className="pointer-events-none select-none space-y-0.5 text-right font-mono text-[8px] font-light leading-none text-default-400"
+			className={cn(
+				'pointer-events-none select-none space-y-0.5 text-right font-mono font-light leading-none text-default-400',
+				className
+			)}
+			style={{ ...style, fontSize: `${fontSize}px` }}
+			{...props}
 		>
 			<p>{siteName}</p>
 			<p
 				style={{
 					fontSize: `${
-						(8 * siteName.length) / (baseURL.length + 0.85)
+						(fontSize * siteName.length) / (baseURL.length + 0.85)
 					}px`,
 				}}
 			>
@@ -33,6 +47,10 @@ export function SiteInfo() {
 			</p>
 		</div>
 	);
+});
+
+export function SiteInfo() {
+	return <SiteInfoBase fontSize={8} />;
 }
 
 interface IProps
@@ -86,6 +104,13 @@ export default memo<IProps>(function InfoButtonBase({
 					className="absolute bottom-1 right-1 h-4 w-4 min-w-0 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 				/>
 			</Tooltip>
+			<SiteInfoBase
+				fontSize={7}
+				className="absolute bottom-0 right-0"
+				style={{
+					transform: `rotate(-90deg) translateX(${7 * siteName.length - 16}px) translateY(20px)`,
+				}}
+			/>
 			<Modal
 				isOpen={isOpened}
 				portalContainer={document.querySelector(
