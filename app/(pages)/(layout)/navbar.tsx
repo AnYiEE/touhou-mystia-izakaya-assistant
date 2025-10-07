@@ -43,14 +43,15 @@ import { trackEvent } from '@/components/analytics';
 import FontAwesomeIconLink, {
 	type IFontAwesomeIconLinkProps,
 } from '@/components/fontAwesomeIconLink';
-import ThemeSwitcher from '@/components/themeSwitcher';
+import SiteInfo from '@/components/siteInfo';
 import Sprite from '@/components/sprite';
+import ThemeSwitcher from '@/components/themeSwitcher';
 
 import { siteConfig } from '@/configs';
 import { globalStore as store } from '@/stores';
 import { checkA11yConfirmKey } from '@/utilities';
 
-const { baseURL, links, name, navItems, navMenuItems, shortName } = siteConfig;
+const { links, name, navItems, navMenuItems, shortName } = siteConfig;
 
 export function showProgress(startProgress: () => void) {
 	startTransition(async () => {
@@ -220,19 +221,12 @@ export default function Navbar() {
 						<p className="hidden font-bold lg:inline-block">
 							{name}
 						</p>
-						<div className="space-y-0.5 font-mono font-bold leading-none lg:hidden">
-							<p>{shortName}</p>
-							<p
-								style={{
-									fontSize: `${
-										(16 * shortName.length) /
-										(baseURL.length + 0.85)
-									}px`,
-								}}
-							>
-								https://{baseURL}
-							</p>
-						</div>
+						<SiteInfo
+							aria-hidden="false"
+							fontSize={16}
+							name={shortName}
+							className="pointer-events-auto h-full select-auto text-left font-bold text-foreground lg:hidden"
+						/>
 					</Link>
 				</NavbarBrand>
 				<ul className="hidden justify-start gap-4 pl-2 md:flex">

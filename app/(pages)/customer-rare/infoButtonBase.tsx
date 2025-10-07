@@ -5,52 +5,15 @@ import { useParams, useVibrate } from '@/hooks';
 import { Accordion, type AccordionProps } from '@heroui/accordion';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
-import { Modal, Tooltip, cn, useReducedMotion } from '@/design/ui/components';
+import { Modal, Tooltip, useReducedMotion } from '@/design/ui/components';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
-
-import { siteConfig } from '@/configs';
-
-const { baseURL, name: siteName } = siteConfig;
+import { default as SiteInfoBase } from '@/components/siteInfo';
 
 export const PARAM_INFO = 'info';
 
-interface ISiteInfoBaseProps extends HTMLDivElementAttributes {
-	fontSize: number;
-}
-
-const SiteInfoBase = memo<ISiteInfoBaseProps>(function SiteInfoBase({
-	className,
-	fontSize,
-	style,
-	...props
-}) {
-	return (
-		<div
-			aria-hidden
-			className={cn(
-				'pointer-events-none select-none space-y-0.5 text-right font-mono font-light leading-none text-default-400',
-				className
-			)}
-			style={{ ...style, fontSize: `${fontSize}px` }}
-			{...props}
-		>
-			<p>{siteName}</p>
-			<p
-				style={{
-					fontSize: `${
-						(fontSize * siteName.length) / (baseURL.length + 0.85)
-					}px`,
-				}}
-			>
-				https://{baseURL}
-			</p>
-		</div>
-	);
-});
-
 export function SiteInfo() {
-	return <SiteInfoBase fontSize={8} />;
+	return <SiteInfoBase fontSize={8} className="h-full" />;
 }
 
 interface IProps
@@ -107,9 +70,9 @@ export default memo<IProps>(function InfoButtonBase({
 			<SiteInfoBase
 				fontSize={7}
 				className="absolute bottom-0 right-0"
-				style={{
-					transform: `rotate(-90deg) translateX(${7 * siteName.length - 16}px) translateY(20px)`,
-				}}
+				style={(name, fontSize) => ({
+					transform: `rotate(-90deg) translateX(${fontSize * name.length - 16}px) translateY(20px)`,
+				})}
 			/>
 			<Modal
 				isOpen={isOpened}

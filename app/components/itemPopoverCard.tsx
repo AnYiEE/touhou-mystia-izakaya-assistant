@@ -33,6 +33,7 @@ import {
 import { trackEvent } from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Price from '@/components/price';
+import SiteInfo from '@/components/siteInfo';
 import Sprite, { type ISpriteProps } from '@/components/sprite';
 import TagsComponent from '@/components/tags';
 
@@ -55,7 +56,7 @@ import {
 	union,
 } from '@/utilities';
 
-const { baseURL, name: siteName } = siteConfig;
+const { name: siteName } = siteConfig;
 
 interface ICloseButtonProps {}
 
@@ -148,23 +149,10 @@ const ShareButton = memo<IShareButtonProps>(function ShareButton({ name }) {
 
 	return (
 		<>
-			<div
-				aria-hidden
-				className="pointer-events-none absolute bottom-1 right-6 flex h-4 select-none items-center"
-			>
-				<div className="space-y-0.5 text-right font-mono text-[7px] font-light leading-none text-default-400 [text-shadow:0px_0.5px_0.75px_rgba(0,0,0,0.15)]">
-					<p>{siteName}</p>
-					<p
-						style={{
-							fontSize: `${
-								(7 * siteName.length) / (baseURL.length + 0.85)
-							}px`,
-						}}
-					>
-						https://{baseURL}
-					</p>
-				</div>
-			</div>
+			<SiteInfo
+				fontSize={7}
+				className="absolute bottom-1 right-6 [text-shadow:0px_0.5px_0.75px_rgba(0,0,0,0.15)]"
+			/>
 			<Popover showArrow>
 				<Tooltip
 					showArrow
