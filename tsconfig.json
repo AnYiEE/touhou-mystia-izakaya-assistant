@@ -16,9 +16,9 @@
 		"strict": true,
 
 		"allowImportingTsExtensions": true,
-		"baseUrl": ".",
 		"module": "ESNext",
 		"moduleResolution": "bundler",
+		"noUncheckedSideEffectImports": true,
 		"paths": { "@/*": ["./app/*"] },
 		"resolveJsonModule": true,
 

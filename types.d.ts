@@ -11,3 +11,6 @@ declare module 'eslint-plugin-sort-destructure-keys' {
 	const sortDestructureKeys: typeof plugin;
 	export = sortDestructureKeys;
 }
+
+declare module '*.css' {}
+declare module '*.scss' {}
