@@ -225,7 +225,7 @@ export default function Navbar() {
 							aria-hidden="false"
 							fontSize={16}
 							name={shortName}
-							className="pointer-events-auto h-full select-auto text-left font-bold text-foreground lg:hidden"
+							className="pointer-events-auto h-full select-auto font-bold text-foreground lg:hidden"
 						/>
 					</Link>
 				</NavbarBrand>

@@ -151,7 +151,7 @@ const ShareButton = memo<IShareButtonProps>(function ShareButton({ name }) {
 		<>
 			<SiteInfo
 				fontSize={7}
-				className="absolute bottom-1 right-6 [text-shadow:0px_0.5px_0.75px_rgba(0,0,0,0.15)]"
+				className="absolute bottom-1 right-6 text-right [text-shadow:0px_0.5px_0.75px_rgba(0,0,0,0.15)]"
 			/>
 			<Popover showArrow>
 				<Tooltip

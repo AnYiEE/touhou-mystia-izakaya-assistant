@@ -35,7 +35,7 @@ export default memo<ISiteInfoProps>(function SiteInfo({
 		<div
 			aria-hidden
 			className={cn(
-				'pointer-events-none flex h-4 select-none items-center text-right font-mono font-light leading-none text-default-400',
+				'pointer-events-none flex h-4 select-none items-center font-mono font-light leading-none text-default-400',
 				className
 			)}
 			style={styleObject}

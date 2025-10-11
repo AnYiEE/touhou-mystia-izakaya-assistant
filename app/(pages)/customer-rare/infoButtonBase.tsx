@@ -13,7 +13,7 @@ import { default as SiteInfoBase } from '@/components/siteInfo';
 export const PARAM_INFO = 'info';
 
 export function SiteInfo() {
-	return <SiteInfoBase fontSize={8} className="h-full" />;
+	return <SiteInfoBase fontSize={8} className="h-full text-right" />;
 }
 
 interface IProps
@@ -71,7 +71,7 @@ export default memo<IProps>(function InfoButtonBase({
 				fontSize={7}
 				className="absolute bottom-0 right-0"
 				style={(name, fontSize) => ({
-					transform: `rotate(-90deg) translateX(${fontSize * name.length - 16}px) translateY(20px)`,
+					transform: `rotate(-90deg) translateX(${fontSize * name.length - 17}px) translateY(20px)`,
 				})}
 			/>
 			<Modal
