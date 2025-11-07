@@ -1,9 +1,11 @@
 import { type PropsWithChildren } from 'react';
 import { type Metadata, type Viewport } from 'next';
+import { Noto_Sans, Noto_Sans_Mono, Noto_Sans_SC } from 'next/font/google';
 import Script from 'next/script';
 import { execSync } from 'node:child_process';
 
 import { ThemeScript } from '@/design/hooks';
+import { cn } from '@/design/ui/components';
 
 import Polyfills from '@/polyfills';
 import Providers, { AddHighAppearance } from '@/providers';
@@ -85,6 +87,24 @@ const sha = (() => {
 	}
 })();
 
+const notoSans = Noto_Sans({
+	subsets: ['latin'],
+	variable: '--font-noto-sans',
+	weight: 'variable',
+});
+
+const notoSansMono = Noto_Sans_Mono({
+	subsets: ['latin'],
+	variable: '--font-noto-sans-mono',
+	weight: 'variable',
+});
+
+const notoSansSC = Noto_Sans_SC({
+	subsets: ['latin'],
+	variable: '--font-noto-sans-sc',
+	weight: 'variable',
+});
+
 interface IProps {}
 
 export default function RootLayout({ children }: PropsWithChildren<IProps>) {
@@ -92,7 +112,12 @@ export default function RootLayout({ children }: PropsWithChildren<IProps>) {
 		<html
 			suppressHydrationWarning
 			lang={locale}
-			className="selection-custom light:izakaya dark:izakaya-dark"
+			className={cn(
+				notoSans.variable,
+				notoSansMono.variable,
+				notoSansSC.variable,
+				'selection-custom light:izakaya dark:izakaya-dark'
+			)}
 		>
 			<head>
 				<Polyfills />
