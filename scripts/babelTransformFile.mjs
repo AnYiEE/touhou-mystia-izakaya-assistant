@@ -3,19 +3,27 @@
  */
 // @ts-check
 
-import { globSync } from 'glob';
+import { glob } from 'glob';
 import lodash from 'lodash';
-import { transformFile } from '@babel/core';
-import { writeFileSync } from 'node:fs';
+import { transformFileAsync } from '@babel/core';
+import { writeFile } from 'node:fs/promises';
 
-globSync(['out/**/*.js', 'public/**/*.js']).forEach((filePath) => {
-	transformFile(
-		filePath,
-		{
+function logError(
+	/** @type {string} */ filePath,
+	/** @type {unknown} */ error
+) {
+	console.error(`Error transforming file: ${filePath}`, error);
+}
+
+const filePaths = await glob(['out/**/*.js', 'public/**/*.js']);
+
+for (const filePath of filePaths) {
+	try {
+		const result = await transformFileAsync(filePath, {
 			comments: false,
 			compact: true,
 			presets: [['@babel/preset-env', { modules: false }]],
-			/** @see {@link https://nextjs.org/docs/architecture/supported-browsers} */
+			/** @see {@link https://nextjs.org/docs/15/architecture/supported-browsers} */
 			targets: [
 				'chrome 64',
 				'edge 79',
@@ -23,14 +31,14 @@ globSync(['out/**/*.js', 'public/**/*.js']).forEach((filePath) => {
 				'opera 51',
 				'safari 12',
 			],
-		},
-		(error, result) => {
-			if (!lodash.isNil(error) || !lodash.isString(result?.code)) {
-				console.error(`Error transforming file: ${filePath}`, error);
-				return;
-			}
+		});
 
-			writeFileSync(filePath, result.code);
+		if (!lodash.isNil(result) && lodash.isString(result.code)) {
+			await writeFile(filePath, result.code);
+		} else {
+			logError(filePath, 'No transformation result.');
 		}
-	);
-});
+	} catch (error) {
+		logError(filePath, error);
+	}
+}

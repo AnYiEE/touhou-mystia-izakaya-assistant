@@ -4,14 +4,14 @@ import nextEnv from '@next/env';
 import AdmZip from 'adm-zip';
 import minimist from 'minimist';
 import {
-	copyFileSync,
-	existsSync,
-	mkdirSync,
-	readdirSync,
-	renameSync,
-	rmSync,
-	unlinkSync,
-} from 'node:fs';
+	access,
+	copyFile,
+	mkdir,
+	readdir,
+	rename,
+	rm,
+	unlink,
+} from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { argv, cwd } from 'node:process';
 
@@ -20,7 +20,7 @@ import PACKAGE from '../package.json' with { type: 'json' };
 
 nextEnv.loadEnvConfig(cwd());
 
-const isOffline = !!process.env.OFFLINE;
+const isOffline = Boolean(process.env.OFFLINE);
 const { prepare: isPrepare } = minimist(argv.slice(2));
 
 const filesToDelete = [
@@ -39,33 +39,43 @@ const scriptPath = resolve(import.meta.dirname);
 const apiPath = resolve(appPath, 'api');
 const fakeApiPath = resolve(appPath, '_api');
 
-function moveRouterFiles(
+async function checkPathExists(/** @type {string} */ path) {
+	try {
+		await access(path);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+async function moveRouterFiles(
 	/** @type {string} */ currentPath,
 	/** @type {string} */ targetPath
 ) {
-	if (!existsSync(targetPath)) {
-		mkdirSync(targetPath, { recursive: true });
+	if (!(await checkPathExists(targetPath))) {
+		await mkdir(targetPath, { recursive: true });
 	}
 
-	readdirSync(currentPath, { withFileTypes: true }).forEach((entry) => {
+	const entries = await readdir(currentPath, { withFileTypes: true });
+	for (const entry of entries) {
 		const fromPath = join(currentPath, entry.name);
 		const toPath = join(targetPath, entry.name);
 
 		if (entry.isDirectory()) {
-			moveRouterFiles(fromPath, toPath);
+			await moveRouterFiles(fromPath, toPath);
 		} else if (entry.name === 'route.ts') {
-			renameSync(fromPath, toPath);
+			await rename(fromPath, toPath);
 		}
-	});
+	}
 }
 
 if (isOffline && isPrepare) {
-	moveRouterFiles(apiPath, fakeApiPath);
+	await moveRouterFiles(apiPath, fakeApiPath);
 }
 
 if (isOffline && !isPrepare) {
-	moveRouterFiles(fakeApiPath, apiPath);
-	rmSync(fakeApiPath, { recursive: true });
+	await moveRouterFiles(fakeApiPath, apiPath);
+	await rm(fakeApiPath, { recursive: true });
 
 	const replaceExtension = (/** @type {string} */ fileName) => {
 		const f = fileName.split('.');
@@ -75,20 +85,24 @@ if (isOffline && !isPrepare) {
 		return `${f.join('')}.txt`;
 	};
 
-	filesToDelete.forEach((file) => {
+	for (const file of filesToDelete) {
 		const filePath = resolve(outputPath, file);
-		if (existsSync(filePath)) {
-			unlinkSync(filePath);
+		if (await checkPathExists(filePath)) {
+			await unlink(filePath);
 		}
-	});
-	filesToRename.forEach((file) => {
-		if (existsSync(outputPath)) {
-			const filePath = resolve(rootPath, file);
-			copyFileSync(filePath, resolve(outputPath, replaceExtension(file)));
-		}
-	});
+	}
 
-	const zipFileName = `${PACKAGE.name}_${PACKAGE.version}_${getSha()}_offline-Windows`;
+	for (const file of filesToRename) {
+		if (await checkPathExists(outputPath)) {
+			const filePath = resolve(rootPath, file);
+			await copyFile(
+				filePath,
+				resolve(outputPath, replaceExtension(file))
+			);
+		}
+	}
+
+	const zipFileName = `${PACKAGE.name}_${PACKAGE.version}_${await getSha()}_offline-Windows`;
 	const zipTemplateFileName = 'offline-template';
 
 	const templateZip = new AdmZip(

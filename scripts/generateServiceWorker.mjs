@@ -1,7 +1,7 @@
 // @ts-check
 
 import nextEnv from '@next/env';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { cwd } from 'node:process';
 
@@ -10,13 +10,13 @@ import { getSha } from './utils.mjs';
 nextEnv.loadEnvConfig(cwd());
 
 const encoding = 'utf8';
-const sha = getSha();
+const sha = await getSha();
 
-const registerTemplate = readFileSync(
+const registerTemplate = await readFile(
 	resolve(import.meta.dirname, 'registerServiceWorker-template.js'),
 	encoding
 );
-const swTemplate = readFileSync(
+const swTemplate = await readFile(
 	resolve(import.meta.dirname, 'serviceWorker-template.js'),
 	encoding
 );
@@ -30,9 +30,9 @@ const swResult = swTemplate
 	.replaceAll(versionSlot, sha);
 
 const publicPath = resolve(import.meta.dirname, '../public');
-writeFileSync(
+await writeFile(
 	resolve(publicPath, 'registerServiceWorker.js'),
 	registerResult,
 	encoding
 );
-writeFileSync(resolve(publicPath, 'serviceWorker.js'), swResult, encoding);
+await writeFile(resolve(publicPath, 'serviceWorker.js'), swResult, encoding);
