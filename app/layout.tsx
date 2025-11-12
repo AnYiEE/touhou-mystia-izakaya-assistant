@@ -132,7 +132,10 @@ export default function RootLayout({ children }: PropsWithChildren<IProps>) {
 					)
 				}
 			</head>
-			<body suppressHydrationWarning className="antialiased">
+			<body
+				suppressHydrationWarning
+				className="text-autospace antialiased"
+			>
 				<AddHighAppearance />
 				<ErrorBoundary>
 					<Providers locale={locale}>

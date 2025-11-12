@@ -20,7 +20,8 @@
 	"[yml]": { "editor.defaultFormatter": "redhat.vscode-yaml" },
 	"css.format.spaceAroundSelectorSeparator": true,
 	"css.lint.unknownAtRules": "ignore",
-	"css.lint.validProperties": ["composes"],
+	"css.lint.validProperties": ["composes", "text-autospace"],
+	"scss.lint.validProperties": ["text-autospace"],
 	"stylelint.packageManager": "pnpm",
 	"tailwindCSS.classAttributes": [
 		"className",
@@ -41,6 +42,7 @@
 	"typescript.enablePromptUseWorkspaceTsdk": true,
 	"typescript.tsdk": "./node_modules/typescript/lib",
 	"cSpell.words": [
+		"autospace",
 		"commitlint",
 		"compat",
 		"davstack",

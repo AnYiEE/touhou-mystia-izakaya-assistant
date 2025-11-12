@@ -24,6 +24,11 @@
 	@apply before:fixed before:-z-10 before:h-full before:w-full before:bg-background before:bg-mystia before:bg-cover before:bg-center before:bg-no-repeat before:bg-blend-overlay before:content-[''] dark:before:bg-background/90;
 }
 
+.text-autospace {
+	text-autospace: normal;
+	text-spacing-trim: normal;
+}
+
 .selection-custom {
 	@apply selection:bg-focus/80 selection:text-background dark:selection:text-foreground;
 }
