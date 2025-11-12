@@ -1,5 +1,6 @@
 // @ts-check
 
+import { defineConfig } from 'eslint/config';
 import { FlatCompat } from '@eslint/eslintrc';
 import eslint from '@eslint/js';
 import tsEslint from 'typescript-eslint';
@@ -14,7 +15,7 @@ import globals from 'globals';
 
 const flatCompat = new FlatCompat({ baseDirectory: import.meta.dirname });
 
-export default tsEslint.config(
+export default defineConfig(
 	{
 		ignores: [
 			'node_modules/**',
@@ -183,7 +184,7 @@ export default tsEslint.config(
 			],
 			'@typescript-eslint/unbound-method': 'off',
 
-			/** @see {@link https://nextjs.org/docs/architecture/supported-browsers} */
+			/** @see {@link https://nextjs.org/docs/15/architecture/supported-browsers} */
 			'compat/compat': [
 				'error',
 				'chrome 64, edge 79, firefox 67, opera 51, safari 12',
