@@ -315,11 +315,11 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 				{!checkEmpty(darkIngredients) && (
 					<>
 						<div className="my-4 flex items-center">
-							<div className="h-px w-full bg-foreground-300"></div>
+							<div className="h-px w-full bg-foreground-300" />
 							<div className="select-none whitespace-nowrap text-small font-light text-foreground-500">
 								制作{DARK_MATTER_META_MAP.name}？
 							</div>
-							<div className="h-px w-full bg-foreground-300"></div>
+							<div className="h-px w-full bg-foreground-300" />
 						</div>
 						<div className="m-2 grid grid-cols-fill-12 justify-around gap-4">
 							{toArray(darkIngredients).map((name, index) => (

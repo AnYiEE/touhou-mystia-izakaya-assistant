@@ -510,7 +510,7 @@ export default function InfoButton() {
 										isBordered
 										showFallback
 										color={evaluationKey as TRatingKey}
-										fallback={<div></div>}
+										fallback={<div />}
 										radius="sm"
 										classNames={{
 											base: 'h-6 w-2 ring-offset-0',

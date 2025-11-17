@@ -91,7 +91,7 @@ export default function Home() {
 								role="img"
 								className="mx-0.5 block h-4 rounded bg-content2"
 							>
-								<span className="flex h-full flex-col justify-center p-1 before:h-px before:w-4 before:-translate-y-1 before:bg-current after:h-px after:w-4 after:translate-y-1 after:bg-current"></span>
+								<span className="flex h-full flex-col justify-center p-1 before:h-px before:w-4 before:-translate-y-1 before:bg-current after:h-px after:w-4 after:translate-y-1 after:bg-current" />
 							</span>
 							以使用各项功能
 						</p>

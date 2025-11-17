@@ -155,7 +155,7 @@ export default function SavedMealCard() {
 																		ratingKey
 																	}
 																	fallback={
-																		<div></div>
+																		<div />
 																	}
 																	radius="sm"
 																	role="banner"
