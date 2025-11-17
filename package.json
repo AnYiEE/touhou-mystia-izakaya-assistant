@@ -179,6 +179,7 @@
 			"@heroui/autocomplete": "patches/@heroui__autocomplete.patch",
 			"@heroui/avatar": "patches/@heroui__avatar.patch",
 			"@heroui/button": "patches/@heroui__button.patch",
+			"@heroui/ripple": "patches/@heroui__ripple.patch",
 			"@heroui/select": "patches/@heroui__select.patch",
 			"@heroui/shared-utils": "patches/@heroui__shared-utils.patch",
 			"@heroui/tabs": "patches/@heroui__tabs.patch",

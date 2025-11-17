@@ -1,0 +1,78 @@
+diff --git a/dist/chunk-QHRCZSEO.mjs b/dist/chunk-QHRCZSEO.mjs
+index f3243e82df715d0e8f2c6f9155ca8ca79370b678..6733cbfba50365b2d8b2ec9f04da4b2794a5af5b 100644
+--- a/dist/chunk-QHRCZSEO.mjs
++++ b/dist/chunk-QHRCZSEO.mjs
+@@ -12,10 +12,10 @@ var Ripple = (props) => {
+     return /* @__PURE__ */ jsx(LazyMotion, { features: domAnimation, children: /* @__PURE__ */ jsx(AnimatePresence, { mode: "popLayout", children: /* @__PURE__ */ jsx(
+       m.span,
+       {
+-        animate: { transform: "scale(2)", opacity: 0 },
++        animate: { transform: `translate(${ripple.x}px, ${ripple.y}px) scale(2)`, opacity: 0 },
+         className: "heroui-ripple",
+         exit: { opacity: 0 },
+-        initial: { transform: "scale(0)", opacity: 0.35 },
++        initial: { transform: `translate(${ripple.x}px, ${ripple.y}px) scale(0)`, opacity: 0.35 },
+         style: {
+           position: "absolute",
+           backgroundColor: color,
+@@ -25,8 +25,6 @@ var Ripple = (props) => {
+           overflow: "hidden",
+           inset: 0,
+           zIndex: 0,
+-          top: ripple.y,
+-          left: ripple.x,
+           width: `${ripple.size}px`,
+           height: `${ripple.size}px`,
+           ...style
+diff --git a/dist/index.js b/dist/index.js
+index 2b1f1cd1b8f7a91e86269f602c172264adbe4fc9..54ce530790a7d1603118e36257da505627b2ebcd 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -44,10 +44,10 @@ var Ripple = (props) => {
+     return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_framer_motion.LazyMotion, { features: domAnimation, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_framer_motion.AnimatePresence, { mode: "popLayout", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+       import_framer_motion.m.span,
+       {
+-        animate: { transform: "scale(2)", opacity: 0 },
++        animate: { transform: `translate(${ripple.x}px, ${ripple.y}px) scale(2)`, opacity: 0 },
+         className: "heroui-ripple",
+         exit: { opacity: 0 },
+-        initial: { transform: "scale(0)", opacity: 0.35 },
++        initial: { transform: `translate(${ripple.x}px, ${ripple.y}px) scale(0)`, opacity: 0.35 },
+         style: {
+           position: "absolute",
+           backgroundColor: color,
+@@ -57,8 +57,6 @@ var Ripple = (props) => {
+           overflow: "hidden",
+           inset: 0,
+           zIndex: 0,
+-          top: ripple.y,
+-          left: ripple.x,
+           width: `${ripple.size}px`,
+           height: `${ripple.size}px`,
+           ...style
+diff --git a/dist/ripple.js b/dist/ripple.js
+index 8d43db67957d45c1529599c575d07c3814630901..7ba2c19a705175fa7c45cd09decd594ddaaff94f 100644
+--- a/dist/ripple.js
++++ b/dist/ripple.js
+@@ -41,10 +41,10 @@ var Ripple = (props) => {
+     return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_framer_motion.LazyMotion, { features: domAnimation, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_framer_motion.AnimatePresence, { mode: "popLayout", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+       import_framer_motion.m.span,
+       {
+-        animate: { transform: "scale(2)", opacity: 0 },
++        animate: { transform: `translate(${ripple.x}px, ${ripple.y}px) scale(2)`, opacity: 0 },
+         className: "heroui-ripple",
+         exit: { opacity: 0 },
+-        initial: { transform: "scale(0)", opacity: 0.35 },
++        initial: { transform: `translate(${ripple.x}px, ${ripple.y}px) scale(0)`, opacity: 0.35 },
+         style: {
+           position: "absolute",
+           backgroundColor: color,
+@@ -54,8 +54,6 @@ var Ripple = (props) => {
+           overflow: "hidden",
+           inset: 0,
+           zIndex: 0,
+-          top: ripple.y,
+-          left: ripple.x,
+           width: `${ripple.size}px`,
+           height: `${ripple.size}px`,
+           ...style

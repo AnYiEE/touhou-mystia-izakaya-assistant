@@ -1,5 +1,5 @@
 diff --git a/dist/chunk-3ZDIPBHM.mjs b/dist/chunk-3ZDIPBHM.mjs
-index efe5a8debd5d314148a06bce5fd781aca5160ddc..188cdd6263fb7275a01a2396c31a34d0f37d9d32 100644
+index efe5a8debd5d314148a06bce5fd781aca5160ddc..3a79634d52bdea7efe24fce920dff05a066301a7 100644
 --- a/dist/chunk-3ZDIPBHM.mjs
 +++ b/dist/chunk-3ZDIPBHM.mjs
 @@ -44,7 +44,6 @@ var input = tv({
@@ -10,7 +10,17 @@ index efe5a8debd5d314148a06bce5fd781aca5160ddc..188cdd6263fb7275a01a2396c31a34d0
        "cursor-pointer",
        "active:!opacity-70",
        "rounded-full",
-@@ -125,13 +124,13 @@ var input = tv({
+@@ -77,7 +76,8 @@ var input = tv({
+           "border-medium",
+           "border-default-200",
+           "data-[hover=true]:border-default-400",
+-          "group-data-[focus=true]:border-default-foreground"
++          "group-data-[focus=true]:border-default-foreground",
++          "group-data-[focus=true]:data-[hover=true]:border-default-foreground"
+         ]
+       },
+       underlined: {
+@@ -125,13 +125,13 @@ var input = tv({
        md: {
          inputWrapper: "h-10 min-h-10 rounded-medium",
          input: "text-small",
@@ -26,7 +36,67 @@ index efe5a8debd5d314148a06bce5fd781aca5160ddc..188cdd6263fb7275a01a2396c31a34d0
        }
      },
      radius: {
-@@ -839,6 +838,13 @@ var input = tv({
+@@ -425,7 +425,10 @@ var input = tv({
+       variant: "bordered",
+       color: "primary",
+       class: {
+-        inputWrapper: "group-data-[focus=true]:border-primary",
++        inputWrapper: [
++          "group-data-[focus=true]:border-primary",
++          "group-data-[focus=true]:data-[hover=true]:border-primary"
++        ],
+         label: "text-primary"
+       }
+     },
+@@ -433,7 +436,10 @@ var input = tv({
+       variant: "bordered",
+       color: "secondary",
+       class: {
+-        inputWrapper: "group-data-[focus=true]:border-secondary",
++        inputWrapper: [
++          "group-data-[focus=true]:border-secondary",
++          "group-data-[focus=true]:data-[hover=true]:border-secondary"
++        ],
+         label: "text-secondary"
+       }
+     },
+@@ -441,7 +447,10 @@ var input = tv({
+       variant: "bordered",
+       color: "success",
+       class: {
+-        inputWrapper: "group-data-[focus=true]:border-success",
++        inputWrapper: [
++          "group-data-[focus=true]:border-success",
++          "group-data-[focus=true]:data-[hover=true]:border-success"
++        ],
+         label: "text-success"
+       }
+     },
+@@ -449,7 +458,10 @@ var input = tv({
+       variant: "bordered",
+       color: "warning",
+       class: {
+-        inputWrapper: "group-data-[focus=true]:border-warning",
++        inputWrapper: [
++          "group-data-[focus=true]:border-warning",
++          "group-data-[focus=true]:data-[hover=true]:border-warning"
++        ],
+         label: "text-warning"
+       }
+     },
+@@ -457,7 +469,10 @@ var input = tv({
+       variant: "bordered",
+       color: "danger",
+       class: {
+-        inputWrapper: "group-data-[focus=true]:border-danger",
++        inputWrapper: [
++          "group-data-[focus=true]:border-danger",
++          "group-data-[focus=true]:data-[hover=true]:border-danger"
++        ],
+         label: "text-danger"
+       }
+     },
+@@ -839,6 +854,13 @@ var input = tv({
            "group-data-[has-value=true]:pointer-events-auto"
          ]
        }
@@ -124,7 +194,7 @@ index 6ca544110f3cdbc9c293564bde3219a49f9d3c2a..8913c9306dcfd3ae3b90c39043f4efaa
        true: {
          base: "w-full",
 diff --git a/dist/chunk-CRDAR2QA.mjs b/dist/chunk-CRDAR2QA.mjs
-index 42b535d074e1ba999c1ba23de4de7cde3f47309e..6ba12249c549bbdee2e21f1a888bd893ce0eb064 100644
+index 42b535d074e1ba999c1ba23de4de7cde3f47309e..7cb368fafa47324baa130a95ab1a0213e838c63c 100644
 --- a/dist/chunk-CRDAR2QA.mjs
 +++ b/dist/chunk-CRDAR2QA.mjs
 @@ -18,7 +18,8 @@ var select = tv({
@@ -137,7 +207,82 @@ index 42b535d074e1ba999c1ba23de4de7cde3f47309e..6ba12249c549bbdee2e21f1a888bd893
      ],
      mainWrapper: "w-full flex flex-col",
      trigger: "relative px-3 gap-3 w-full inline-flex flex-row items-center shadow-sm outline-none tap-highlight-transparent",
-@@ -664,7 +665,8 @@ var select = tv({
+@@ -57,7 +58,8 @@ var select = tv({
+           "border-default-200",
+           "data-[hover=true]:border-default-400",
+           "data-[open=true]:border-default-foreground",
+-          "data-[focus=true]:border-default-foreground"
++          "data-[focus=true]:border-default-foreground",
++          "data-[focus=true]:data-[hover=true]:border-default-foreground"
+         ],
+         value: "group-data-[has-value=true]:text-default-foreground"
+       },
+@@ -397,7 +399,11 @@ var select = tv({
+       variant: "bordered",
+       color: "primary",
+       class: {
+-        trigger: ["data-[open=true]:border-primary", "data-[focus=true]:border-primary"],
++        trigger: [
++          "data-[open=true]:border-primary",
++          "data-[focus=true]:border-primary",
++          "data-[focus=true]:data-[hover=true]:border-primary"
++        ],
+         label: "text-primary"
+       }
+     },
+@@ -405,7 +411,11 @@ var select = tv({
+       variant: "bordered",
+       color: "secondary",
+       class: {
+-        trigger: ["data-[open=true]:border-secondary", "data-[focus=true]:border-secondary"],
++        trigger: [
++          "data-[open=true]:border-secondary",
++          "data-[focus=true]:border-secondary",
++          "data-[focus=true]:data-[hover=true]:border-secondary"
++        ],
+         label: "text-secondary"
+       }
+     },
+@@ -413,7 +423,11 @@ var select = tv({
+       variant: "bordered",
+       color: "success",
+       class: {
+-        trigger: ["data-[open=true]:border-success", "data-[focus=true]:border-success"],
++        trigger: [
++          "data-[open=true]:border-success",
++          "data-[focus=true]:border-success",
++          "data-[focus=true]:data-[hover=true]:border-success"
++        ],
+         label: "text-success"
+       }
+     },
+@@ -421,7 +435,11 @@ var select = tv({
+       variant: "bordered",
+       color: "warning",
+       class: {
+-        trigger: ["data-[open=true]:border-warning", "data-[focus=true]:border-warning"],
++        trigger: [
++          "data-[open=true]:border-warning",
++          "data-[focus=true]:border-warning",
++          "data-[focus=true]:data-[hover=true]:border-warning"
++        ],
+         label: "text-warning"
+       }
+     },
+@@ -429,7 +447,11 @@ var select = tv({
+       variant: "bordered",
+       color: "danger",
+       class: {
+-        trigger: ["data-[open=true]:border-danger", "data-[focus=true]:border-danger"],
++        trigger: [
++          "data-[open=true]:border-danger",
++          "data-[focus=true]:border-danger",
++          "data-[focus=true]:data-[hover=true]:border-danger"
++        ],
+         label: "text-danger"
+       }
+     },
+@@ -664,7 +686,8 @@ var select = tv({
          label: [
            "start-2",
            "text-tiny",
@@ -147,7 +292,7 @@ index 42b535d074e1ba999c1ba23de4de7cde3f47309e..6ba12249c549bbdee2e21f1a888bd893
          ],
          base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_8px)]"
        }
-@@ -677,7 +679,8 @@ var select = tv({
+@@ -677,7 +700,8 @@ var select = tv({
          label: [
            "start-3",
            "text-small",
@@ -157,7 +302,7 @@ index 42b535d074e1ba999c1ba23de4de7cde3f47309e..6ba12249c549bbdee2e21f1a888bd893
          ],
          base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_10px)]"
        }
-@@ -690,7 +693,8 @@ var select = tv({
+@@ -690,7 +714,8 @@ var select = tv({
          label: [
            "start-3",
            "text-medium",
@@ -262,7 +407,7 @@ index 37a2f2239052c7d5643f1e35c0c4de8c3cfe7c80..982bd6435a129f4407a41dec462dbb8f
      },
      isDisabled: {
 diff --git a/dist/components/index.js b/dist/components/index.js
-index 5fa42877de7564b782b1718556496eacab49e05a..84578b63df9720902af4f6da28a7e54c667a7e3a 100644
+index 5fa42877de7564b782b1718556496eacab49e05a..e0618bc315bb3da60ef99d740fdba701c0b69bbc 100644
 --- a/dist/components/index.js
 +++ b/dist/components/index.js
 @@ -626,7 +626,7 @@ var link = tv({
@@ -282,7 +427,17 @@ index 5fa42877de7564b782b1718556496eacab49e05a..84578b63df9720902af4f6da28a7e54c
        "cursor-pointer",
        "active:!opacity-70",
        "rounded-full",
-@@ -4354,13 +4353,13 @@ var input = tv({
+@@ -4306,7 +4305,8 @@ var input = tv({
+           "border-medium",
+           "border-default-200",
+           "data-[hover=true]:border-default-400",
+-          "group-data-[focus=true]:border-default-foreground"
++          "group-data-[focus=true]:border-default-foreground",
++          "group-data-[focus=true]:data-[hover=true]:border-default-foreground"
+         ]
+       },
+       underlined: {
+@@ -4354,13 +4354,13 @@ var input = tv({
        md: {
          inputWrapper: "h-10 min-h-10 rounded-medium",
          input: "text-small",
@@ -298,7 +453,67 @@ index 5fa42877de7564b782b1718556496eacab49e05a..84578b63df9720902af4f6da28a7e54c
        }
      },
      radius: {
-@@ -5979,6 +5978,7 @@ var table = tv({
+@@ -4654,7 +4654,10 @@ var input = tv({
+       variant: "bordered",
+       color: "primary",
+       class: {
+-        inputWrapper: "group-data-[focus=true]:border-primary",
++        inputWrapper: [
++          "group-data-[focus=true]:border-primary",
++          "group-data-[focus=true]:data-[hover=true]:border-primary"
++        ],
+         label: "text-primary"
+       }
+     },
+@@ -4662,7 +4665,10 @@ var input = tv({
+       variant: "bordered",
+       color: "secondary",
+       class: {
+-        inputWrapper: "group-data-[focus=true]:border-secondary",
++        inputWrapper: [
++          "group-data-[focus=true]:border-secondary",
++          "group-data-[focus=true]:data-[hover=true]:border-secondary"
++        ],
+         label: "text-secondary"
+       }
+     },
+@@ -4670,7 +4676,10 @@ var input = tv({
+       variant: "bordered",
+       color: "success",
+       class: {
+-        inputWrapper: "group-data-[focus=true]:border-success",
++        inputWrapper: [
++          "group-data-[focus=true]:border-success",
++          "group-data-[focus=true]:data-[hover=true]:border-success"
++        ],
+         label: "text-success"
+       }
+     },
+@@ -4678,7 +4687,10 @@ var input = tv({
+       variant: "bordered",
+       color: "warning",
+       class: {
+-        inputWrapper: "group-data-[focus=true]:border-warning",
++        inputWrapper: [
++          "group-data-[focus=true]:border-warning",
++          "group-data-[focus=true]:data-[hover=true]:border-warning"
++        ],
+         label: "text-warning"
+       }
+     },
+@@ -4686,7 +4698,10 @@ var input = tv({
+       variant: "bordered",
+       color: "danger",
+       class: {
+-        inputWrapper: "group-data-[focus=true]:border-danger",
++        inputWrapper: [
++          "group-data-[focus=true]:border-danger",
++          "group-data-[focus=true]:data-[hover=true]:border-danger"
++        ],
+         label: "text-danger"
+       }
+     },
+@@ -5979,6 +5994,7 @@ var table = tv({
        "[&>*]:z-1",
        "[&>*]:relative",
        ...dataFocusVisibleClasses,
@@ -306,7 +521,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..84578b63df9720902af4f6da28a7e54c
        "before:content-['']",
        "before:absolute",
        "before:z-0",
-@@ -6032,20 +6032,6 @@ var table = tv({
+@@ -6032,20 +6048,6 @@ var table = tv({
          table: "table-fixed"
        }
      },
@@ -327,7 +542,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..84578b63df9720902af4f6da28a7e54c
      shadow: {
        none: {
          wrapper: "shadow-none"
-@@ -6108,6 +6094,34 @@ var table = tv({
+@@ -6108,6 +6110,34 @@ var table = tv({
          td: ["first:before:rounded-s-lg", "last:before:rounded-e-lg"]
        }
      },
@@ -362,7 +577,82 @@ index 5fa42877de7564b782b1718556496eacab49e05a..84578b63df9720902af4f6da28a7e54c
      fullWidth: {
        true: {
          base: "w-full",
-@@ -8336,7 +8350,7 @@ var breadcrumbItem = tv({
+@@ -6726,7 +6756,8 @@ var select = tv({
+           "border-default-200",
+           "data-[hover=true]:border-default-400",
+           "data-[open=true]:border-default-foreground",
+-          "data-[focus=true]:border-default-foreground"
++          "data-[focus=true]:border-default-foreground",
++          "data-[focus=true]:data-[hover=true]:border-default-foreground"
+         ],
+         value: "group-data-[has-value=true]:text-default-foreground"
+       },
+@@ -7066,7 +7097,11 @@ var select = tv({
+       variant: "bordered",
+       color: "primary",
+       class: {
+-        trigger: ["data-[open=true]:border-primary", "data-[focus=true]:border-primary"],
++        trigger: [
++          "data-[open=true]:border-primary",
++          "data-[focus=true]:border-primary",
++          "data-[focus=true]:data-[hover=true]:border-primary"
++        ],
+         label: "text-primary"
+       }
+     },
+@@ -7074,7 +7109,11 @@ var select = tv({
+       variant: "bordered",
+       color: "secondary",
+       class: {
+-        trigger: ["data-[open=true]:border-secondary", "data-[focus=true]:border-secondary"],
++        trigger: [
++          "data-[open=true]:border-secondary",
++          "data-[focus=true]:border-secondary",
++          "data-[focus=true]:data-[hover=true]:border-secondary"
++        ],
+         label: "text-secondary"
+       }
+     },
+@@ -7082,7 +7121,11 @@ var select = tv({
+       variant: "bordered",
+       color: "success",
+       class: {
+-        trigger: ["data-[open=true]:border-success", "data-[focus=true]:border-success"],
++        trigger: [
++          "data-[open=true]:border-success",
++          "data-[focus=true]:border-success",
++          "data-[focus=true]:data-[hover=true]:border-success"
++        ],
+         label: "text-success"
+       }
+     },
+@@ -7090,7 +7133,11 @@ var select = tv({
+       variant: "bordered",
+       color: "warning",
+       class: {
+-        trigger: ["data-[open=true]:border-warning", "data-[focus=true]:border-warning"],
++        trigger: [
++          "data-[open=true]:border-warning",
++          "data-[focus=true]:border-warning",
++          "data-[focus=true]:data-[hover=true]:border-warning"
++        ],
+         label: "text-warning"
+       }
+     },
+@@ -7098,7 +7145,11 @@ var select = tv({
+       variant: "bordered",
+       color: "danger",
+       class: {
+-        trigger: ["data-[open=true]:border-danger", "data-[focus=true]:border-danger"],
++        trigger: [
++          "data-[open=true]:border-danger",
++          "data-[focus=true]:border-danger",
++          "data-[focus=true]:data-[hover=true]:border-danger"
++        ],
+         label: "text-danger"
+       }
+     },
+@@ -8336,7 +8387,7 @@ var breadcrumbItem = tv({
          item: "cursor-default"
        },
        false: {
@@ -372,7 +662,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..84578b63df9720902af4f6da28a7e54c
      },
      isDisabled: {
 diff --git a/dist/components/input.js b/dist/components/input.js
-index bdaa5a49dc3fca3391701248b8cc7b15d06c144a..6f51b2ad9d8f83cb0dcd4e28c18795880666013b 100644
+index bdaa5a49dc3fca3391701248b8cc7b15d06c144a..00762dcacf1e8df6db221879a05fc731a2e5560b 100644
 --- a/dist/components/input.js
 +++ b/dist/components/input.js
 @@ -125,7 +125,6 @@ var input = tv({
@@ -383,7 +673,17 @@ index bdaa5a49dc3fca3391701248b8cc7b15d06c144a..6f51b2ad9d8f83cb0dcd4e28c1879588
        "cursor-pointer",
        "active:!opacity-70",
        "rounded-full",
-@@ -206,13 +205,13 @@ var input = tv({
+@@ -158,7 +157,8 @@ var input = tv({
+           "border-medium",
+           "border-default-200",
+           "data-[hover=true]:border-default-400",
+-          "group-data-[focus=true]:border-default-foreground"
++          "group-data-[focus=true]:border-default-foreground",
++          "group-data-[focus=true]:data-[hover=true]:border-default-foreground"
+         ]
+       },
+       underlined: {
+@@ -206,13 +206,13 @@ var input = tv({
        md: {
          inputWrapper: "h-10 min-h-10 rounded-medium",
          input: "text-small",
@@ -399,7 +699,67 @@ index bdaa5a49dc3fca3391701248b8cc7b15d06c144a..6f51b2ad9d8f83cb0dcd4e28c1879588
        }
      },
      radius: {
-@@ -920,6 +919,13 @@ var input = tv({
+@@ -506,7 +506,10 @@ var input = tv({
+       variant: "bordered",
+       color: "primary",
+       class: {
+-        inputWrapper: "group-data-[focus=true]:border-primary",
++        inputWrapper: [
++          "group-data-[focus=true]:border-primary",
++          "group-data-[focus=true]:data-[hover=true]:border-primary"
++        ],
+         label: "text-primary"
+       }
+     },
+@@ -514,7 +517,10 @@ var input = tv({
+       variant: "bordered",
+       color: "secondary",
+       class: {
+-        inputWrapper: "group-data-[focus=true]:border-secondary",
++        inputWrapper: [
++          "group-data-[focus=true]:border-secondary",
++          "group-data-[focus=true]:data-[hover=true]:border-secondary"
++        ],
+         label: "text-secondary"
+       }
+     },
+@@ -522,7 +528,10 @@ var input = tv({
+       variant: "bordered",
+       color: "success",
+       class: {
+-        inputWrapper: "group-data-[focus=true]:border-success",
++        inputWrapper: [
++          "group-data-[focus=true]:border-success",
++          "group-data-[focus=true]:data-[hover=true]:border-success"
++        ],
+         label: "text-success"
+       }
+     },
+@@ -530,7 +539,10 @@ var input = tv({
+       variant: "bordered",
+       color: "warning",
+       class: {
+-        inputWrapper: "group-data-[focus=true]:border-warning",
++        inputWrapper: [
++          "group-data-[focus=true]:border-warning",
++          "group-data-[focus=true]:data-[hover=true]:border-warning"
++        ],
+         label: "text-warning"
+       }
+     },
+@@ -538,7 +550,10 @@ var input = tv({
+       variant: "bordered",
+       color: "danger",
+       class: {
+-        inputWrapper: "group-data-[focus=true]:border-danger",
++        inputWrapper: [
++          "group-data-[focus=true]:border-danger",
++          "group-data-[focus=true]:data-[hover=true]:border-danger"
++        ],
+         label: "text-danger"
+       }
+     },
+@@ -920,6 +935,13 @@ var input = tv({
            "group-data-[has-value=true]:pointer-events-auto"
          ]
        }
@@ -455,7 +815,7 @@ index 26430db951a4fb0481e6eb9c26b0f3b3942b227b..9396cbf5edbdd9bfe902cf13e3a07eba
      selectedIcon: ["text-inherit", "w-3", "h-3", "flex-shrink-0"],
      shortcut: [
 diff --git a/dist/components/select.js b/dist/components/select.js
-index 3523d93f094a3d1010634b724690d51318967dbc..983607481555207a2b0dd9d263c8c70f1d949d01 100644
+index 3523d93f094a3d1010634b724690d51318967dbc..bfa06e2ef0d2dece926d5bb0a5a1e7da3dfea1e0 100644
 --- a/dist/components/select.js
 +++ b/dist/components/select.js
 @@ -90,7 +90,8 @@ var select = tv({
@@ -468,7 +828,82 @@ index 3523d93f094a3d1010634b724690d51318967dbc..983607481555207a2b0dd9d263c8c70f
      ],
      mainWrapper: "w-full flex flex-col",
      trigger: "relative px-3 gap-3 w-full inline-flex flex-row items-center shadow-sm outline-none tap-highlight-transparent",
-@@ -736,7 +737,8 @@ var select = tv({
+@@ -129,7 +130,8 @@ var select = tv({
+           "border-default-200",
+           "data-[hover=true]:border-default-400",
+           "data-[open=true]:border-default-foreground",
+-          "data-[focus=true]:border-default-foreground"
++          "data-[focus=true]:border-default-foreground",
++          "data-[focus=true]:data-[hover=true]:border-default-foreground"
+         ],
+         value: "group-data-[has-value=true]:text-default-foreground"
+       },
+@@ -469,7 +471,11 @@ var select = tv({
+       variant: "bordered",
+       color: "primary",
+       class: {
+-        trigger: ["data-[open=true]:border-primary", "data-[focus=true]:border-primary"],
++        trigger: [
++          "data-[open=true]:border-primary",
++          "data-[focus=true]:border-primary",
++          "data-[focus=true]:data-[hover=true]:border-primary"
++        ],
+         label: "text-primary"
+       }
+     },
+@@ -477,7 +483,11 @@ var select = tv({
+       variant: "bordered",
+       color: "secondary",
+       class: {
+-        trigger: ["data-[open=true]:border-secondary", "data-[focus=true]:border-secondary"],
++        trigger: [
++          "data-[open=true]:border-secondary",
++          "data-[focus=true]:border-secondary",
++          "data-[focus=true]:data-[hover=true]:border-secondary"
++        ],
+         label: "text-secondary"
+       }
+     },
+@@ -485,7 +495,11 @@ var select = tv({
+       variant: "bordered",
+       color: "success",
+       class: {
+-        trigger: ["data-[open=true]:border-success", "data-[focus=true]:border-success"],
++        trigger: [
++          "data-[open=true]:border-success",
++          "data-[focus=true]:border-success",
++          "data-[focus=true]:data-[hover=true]:border-success"
++        ],
+         label: "text-success"
+       }
+     },
+@@ -493,7 +507,11 @@ var select = tv({
+       variant: "bordered",
+       color: "warning",
+       class: {
+-        trigger: ["data-[open=true]:border-warning", "data-[focus=true]:border-warning"],
++        trigger: [
++          "data-[open=true]:border-warning",
++          "data-[focus=true]:border-warning",
++          "data-[focus=true]:data-[hover=true]:border-warning"
++        ],
+         label: "text-warning"
+       }
+     },
+@@ -501,7 +519,11 @@ var select = tv({
+       variant: "bordered",
+       color: "danger",
+       class: {
+-        trigger: ["data-[open=true]:border-danger", "data-[focus=true]:border-danger"],
++        trigger: [
++          "data-[open=true]:border-danger",
++          "data-[focus=true]:border-danger",
++          "data-[focus=true]:data-[hover=true]:border-danger"
++        ],
+         label: "text-danger"
+       }
+     },
+@@ -736,7 +758,8 @@ var select = tv({
          label: [
            "start-2",
            "text-tiny",
@@ -478,7 +913,7 @@ index 3523d93f094a3d1010634b724690d51318967dbc..983607481555207a2b0dd9d263c8c70f
          ],
          base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_8px)]"
        }
-@@ -749,7 +751,8 @@ var select = tv({
+@@ -749,7 +772,8 @@ var select = tv({
          label: [
            "start-3",
            "text-small",
@@ -488,7 +923,7 @@ index 3523d93f094a3d1010634b724690d51318967dbc..983607481555207a2b0dd9d263c8c70f
          ],
          base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_10px)]"
        }
-@@ -762,7 +765,8 @@ var select = tv({
+@@ -762,7 +786,8 @@ var select = tv({
          label: [
            "start-3",
            "text-medium",
