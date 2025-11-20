@@ -3,7 +3,7 @@
  */
 // @ts-check
 
-import { glob } from 'glob';
+import fg from 'fast-glob';
 import lodash from 'lodash';
 import { transformFileAsync } from '@babel/core';
 import { writeFile } from 'node:fs/promises';
@@ -15,7 +15,7 @@ function logError(
 	console.error(`Error transforming file: ${filePath}`, error);
 }
 
-const filePaths = await glob(['out/**/*.js', 'public/**/*.js']);
+const filePaths = await fg.glob(['out/**/*.js', 'public/**/*.js']);
 
 for (const filePath of filePaths) {
 	try {

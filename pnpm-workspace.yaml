@@ -6,7 +6,7 @@ publicHoistPattern:
   - '@next/env'
   - "*eslint-plugin*"
   - color2k
-  - glob
+  - fast-glob
   - immer
   - postcss-load-config
   - zustand
