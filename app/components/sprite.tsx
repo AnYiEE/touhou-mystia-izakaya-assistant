@@ -38,7 +38,8 @@ interface ISpriteBase {
 }
 
 interface IProps
-	extends HTMLSpanElementAttributes,
+	extends
+		HTMLSpanElementAttributes,
 		Partial<IPressProp<HTMLSpanElement>>,
 		ISpriteBase,
 		RefProps<HTMLSpanElement> {}

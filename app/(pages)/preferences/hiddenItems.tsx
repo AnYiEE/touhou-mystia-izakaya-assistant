@@ -63,8 +63,10 @@ const SettingsButton = memo<ISettingsButtonProps>(function SettingsButton({
 	);
 });
 
-interface ISettingsModalProps
-	extends Pick<IModalProps, 'children' | 'isOpen' | 'onClose'> {
+interface ISettingsModalProps extends Pick<
+	IModalProps,
+	'children' | 'isOpen' | 'onClose'
+> {
 	isInModal: boolean;
 }
 
@@ -116,8 +118,10 @@ interface IDataProps {
 type TData<T extends TItemData<TItemInstance> = TItemData<TItemInstance>> =
 	ReadonlyArray<T[number] & IDataProps>;
 
-interface ISettingsPanelProps<T extends TData, U extends T[number]['name']>
-	extends Pick<ISpriteProps, 'target'> {
+interface ISettingsPanelProps<
+	T extends TData,
+	U extends T[number]['name'],
+> extends Pick<ISpriteProps, 'target'> {
 	data: T;
 	hiddenItems: Set<U>;
 	setHiddenItems: (options: Set<U>) => void;

@@ -55,8 +55,8 @@ const SPRITE_DATA_MAP = {
 
 export class Sprite<
 	TCurrentSpriteTarget extends TSpriteTarget,
-	TItems extends
-		TSpriteData<TCurrentSpriteTarget> = TSpriteData<TCurrentSpriteTarget>,
+	TItems extends TSpriteData<TCurrentSpriteTarget> =
+		TSpriteData<TCurrentSpriteTarget>,
 > extends Item<TItems> {
 	private static _instances = new Map<TSpriteTarget, Sprite<TSpriteTarget>>();
 

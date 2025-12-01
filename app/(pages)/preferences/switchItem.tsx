@@ -2,8 +2,10 @@ import { type PropsWithChildren, memo } from 'react';
 
 import { type ISwitchProps, Switch, Tooltip, cn } from '@/design/ui/components';
 
-interface IProps
-	extends Pick<ISwitchProps, 'color' | 'className' | 'isDisabled' | 'title'> {
+interface IProps extends Pick<
+	ISwitchProps,
+	'color' | 'className' | 'isDisabled' | 'title'
+> {
 	'aria-label': NonNullable<ISwitchProps['aria-label']>;
 	isSelected: NonNullable<ISwitchProps['isSelected']>;
 	onValueChange: NonNullable<ISwitchProps['onValueChange']>;

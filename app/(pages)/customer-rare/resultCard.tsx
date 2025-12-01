@@ -48,8 +48,10 @@ export const Plus = memo<IPlusProps>(function Plus({ className, size = 1 }) {
 	);
 });
 
-interface IUnknownItemProps
-	extends Pick<HTMLSpanElementAttributes, 'className' | 'title'> {
+interface IUnknownItemProps extends Pick<
+	HTMLSpanElementAttributes,
+	'className' | 'title'
+> {
 	size?: number;
 }
 

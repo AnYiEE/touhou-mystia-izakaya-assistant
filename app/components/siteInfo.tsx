@@ -10,7 +10,8 @@ import type { ISiteConfig } from '@/configs/site/types';
 const { baseURL, name: siteName } = siteConfig;
 
 interface ISiteInfoProps
-	extends Omit<HTMLDivElementAttributes, 'style'>,
+	extends
+		Omit<HTMLDivElementAttributes, 'style'>,
 		Partial<Pick<ISiteConfig, 'name'>> {
 	fontSize: number;
 	style?: CSSProperties | ((name: string, fontSize: number) => CSSProperties);

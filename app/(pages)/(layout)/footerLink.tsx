@@ -12,8 +12,10 @@ import {
 
 import { trackEvent } from '@/components/analytics';
 
-interface IFooterLinkProps
-	extends Pick<ILinkProps, 'href' | 'isExternal' | 'onPress' | 'title'> {
+interface IFooterLinkProps extends Pick<
+	ILinkProps,
+	'href' | 'isExternal' | 'onPress' | 'title'
+> {
 	content?: ReactNodeWithoutBoolean;
 }
 
@@ -50,8 +52,7 @@ export const FooterLink = memo<PropsWithChildren<IFooterLinkProps>>(
 );
 
 interface IFooterLinkWithTooltipProps
-	extends IFooterLinkProps,
-		Pick<ITooltipProps, 'classNames'> {
+	extends IFooterLinkProps, Pick<ITooltipProps, 'classNames'> {
 	content: ReactNodeWithoutBoolean;
 	event?: { click: string; show?: true };
 }

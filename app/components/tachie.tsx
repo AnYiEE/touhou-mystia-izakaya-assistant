@@ -6,11 +6,10 @@ import { Image, type ImageProps } from '@heroui/image';
 
 import { cn, useReducedMotion } from '@/design/ui/components';
 
-interface IProps
-	extends Pick<
-		ImageProps,
-		'alt' | 'aria-hidden' | 'className' | 'src' | 'width'
-	> {}
+interface IProps extends Pick<
+	ImageProps,
+	'alt' | 'aria-hidden' | 'className' | 'src' | 'width'
+> {}
 
 export default memo<IProps>(function Tachie({
 	alt,

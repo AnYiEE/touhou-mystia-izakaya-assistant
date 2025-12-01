@@ -23,11 +23,10 @@ export interface IPinyinSortConfig {
 	setPinyinSortState: Dispatch<SetStateAction<TPinyinSortState>>;
 }
 
-interface IProps
-	extends Omit<
-		IFontAwesomeIconButtonProps,
-		'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'
-	> {
+interface IProps extends Omit<
+	IFontAwesomeIconButtonProps,
+	'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'
+> {
 	pinyinSortConfig: IPinyinSortConfig;
 }
 

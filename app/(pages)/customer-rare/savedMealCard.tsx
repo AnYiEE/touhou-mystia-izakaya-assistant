@@ -44,8 +44,10 @@ type TMoveButtonDirection = ExtractCollectionValue<
 	typeof moveButtonDirectionMap
 >;
 
-export interface IMoveButtonProps
-	extends Pick<FontAwesomeIconProps, 'onClick'> {
+export interface IMoveButtonProps extends Pick<
+	FontAwesomeIconProps,
+	'onClick'
+> {
 	direction: TMoveButtonDirection;
 	isDisabled: boolean;
 }

@@ -10,7 +10,8 @@ import {
 import { type ILinkProps, Link } from '@/design/ui/components';
 
 interface IProps
-	extends Omit<ILinkProps, 'size'>,
+	extends
+		Omit<ILinkProps, 'size'>,
 		Pick<FontAwesomeIconProps, 'icon' | 'size'> {}
 
 export default memo<IProps>(function FontAwesomeIconLink({

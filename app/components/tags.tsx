@@ -20,7 +20,8 @@ interface ITagPropsBase {
 }
 
 interface ITagProps
-	extends Omit<
+	extends
+		Omit<
 			HTMLSpanElementAttributes,
 			Exclude<keyof IButtonProps, 'onClick' | 'onKeyDown'>
 		>,
@@ -130,8 +131,7 @@ interface ITagsPropsBase extends ITagPropsBase {
 }
 
 interface ITagsProps
-	extends ITagsPropsBase,
-		Pick<HTMLSpanElementAttributes, 'className'> {}
+	extends ITagsPropsBase, Pick<HTMLSpanElementAttributes, 'className'> {}
 
 const TagsComponent = memo<ITagsProps>(function Tags({
 	className,

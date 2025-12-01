@@ -16,8 +16,10 @@ export function SiteInfo() {
 	return <SiteInfoBase fontSize={8} className="h-full text-right" />;
 }
 
-interface IProps
-	extends Pick<AccordionProps, 'children' | 'defaultExpandedKeys'> {
+interface IProps extends Pick<
+	AccordionProps,
+	'children' | 'defaultExpandedKeys'
+> {
 	onButtonPress?: () => void;
 }
 

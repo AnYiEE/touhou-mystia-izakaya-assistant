@@ -62,11 +62,10 @@ export function showProgress(startProgress: () => void) {
 	});
 }
 
-interface INavbarButtonLinkProps
-	extends Pick<
-		IButtonProps,
-		'className' | 'href' | 'startContent' | 'fullWidth' | 'onPress'
-	> {
+interface INavbarButtonLinkProps extends Pick<
+	IButtonProps,
+	'className' | 'href' | 'startContent' | 'fullWidth' | 'onPress'
+> {
 	isActivated: boolean;
 }
 
@@ -94,8 +93,10 @@ const NavbarButtonLink = memo<PropsWithChildren<INavbarButtonLinkProps>>(
 	}
 );
 
-interface IGitHubIconLinkProps
-	extends Pick<IFontAwesomeIconLinkProps, 'className' | 'tabIndex'> {}
+interface IGitHubIconLinkProps extends Pick<
+	IFontAwesomeIconLinkProps,
+	'className' | 'tabIndex'
+> {}
 
 const GitHubIconLink = memo<IGitHubIconLinkProps>(function IconLink({
 	className,

@@ -29,8 +29,10 @@ import { globalStore as store } from '@/stores';
 import { checkEmpty, pinyinSort, toArray } from '@/utilities';
 import type { TSpriteTarget } from '@/utils/sprite/types';
 
-interface ISelectConfigItem
-	extends Pick<SelectProps, 'label' | 'selectionMode'> {
+interface ISelectConfigItem extends Pick<
+	SelectProps,
+	'label' | 'selectionMode'
+> {
 	items: Array<ValueCollection<number | string>>;
 	selectedKeys: string[];
 	setSelectedKeys: Dispatch<ISelectConfigItem['selectedKeys']>;
@@ -38,11 +40,10 @@ interface ISelectConfigItem
 }
 export type TSelectConfig = ISelectConfigItem[];
 
-interface IProps
-	extends Omit<
-		IFontAwesomeIconButtonProps,
-		'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'
-	> {
+interface IProps extends Omit<
+	IFontAwesomeIconButtonProps,
+	'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'
+> {
 	selectConfig: TSelectConfig;
 }
 

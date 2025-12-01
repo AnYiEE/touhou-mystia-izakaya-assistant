@@ -11,7 +11,7 @@ type TFileRecordWithStatus = Prettify<TBackupFileRecord & { status: 200 }>;
 
 type TOtherStatus = 201 | 404 | 429 | 500;
 interface IOtherStatus<T extends TOtherStatus> {
-	status: T & TOtherStatus;
+	status: T;
 }
 
 type TResponse<T, U extends TOtherStatus> = T extends TBackupFileRecord

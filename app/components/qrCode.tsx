@@ -9,7 +9,8 @@ import { cn } from '@/design/ui/components';
 import { type IQRCode } from 'next-qrcode/dist/useQRCode';
 
 interface IProps
-	extends Omit<IQRCode, 'logo'>,
+	extends
+		Omit<IQRCode, 'logo'>,
 		Pick<HTMLDivElementAttributes, 'className'> {}
 
 export default memo<PropsWithChildren<IProps>>(function QRCode({

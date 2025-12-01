@@ -214,8 +214,7 @@ const ItemPopover = memo<IPopoverProps>(function ItemPopover({
 });
 
 interface IItemPopoverTriggerProps
-	extends PopoverTriggerProps,
-		HTMLButtonElementAttributes {}
+	extends PopoverTriggerProps, HTMLButtonElementAttributes {}
 
 const ItemPopoverTrigger = memo<IItemPopoverTriggerProps>(function Trigger({
 	className,
@@ -238,8 +237,7 @@ const ItemPopoverTrigger = memo<IItemPopoverTriggerProps>(function Trigger({
 });
 
 interface IItemPopoverCardProps
-	extends Pick<ISpriteProps, 'target'>,
-		RefProps<HTMLDivElement> {
+	extends Pick<ISpriteProps, 'target'>, RefProps<HTMLDivElement> {
 	// Basic info.
 	id: number;
 	recipeId?: number;

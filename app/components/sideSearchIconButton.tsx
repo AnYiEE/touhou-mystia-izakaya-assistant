@@ -38,11 +38,10 @@ export interface ISearchConfig {
 	spriteTarget?: TSpriteTarget;
 }
 
-interface IProps
-	extends Omit<
-		IFontAwesomeIconButtonProps,
-		'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'
-	> {
+interface IProps extends Omit<
+	IFontAwesomeIconButtonProps,
+	'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'
+> {
 	searchConfig: ISearchConfig;
 }
 

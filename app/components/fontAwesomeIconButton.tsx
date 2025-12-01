@@ -10,7 +10,8 @@ import {
 import { Button, type IButtonProps } from '@/design/ui/components';
 
 interface IProps
-	extends Omit<IButtonProps, 'isIconOnly'>,
+	extends
+		Omit<IButtonProps, 'isIconOnly'>,
 		Pick<FontAwesomeIconProps, 'icon'> {}
 
 export default memo<IProps>(function FontAwesomeIconButton({
