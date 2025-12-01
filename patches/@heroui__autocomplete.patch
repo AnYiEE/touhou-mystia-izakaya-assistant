@@ -1,5 +1,5 @@
 diff --git a/dist/autocomplete.js b/dist/autocomplete.js
-index 5458ba7c993d7c19b444df20a1e3b83b114e2241..62e2cf6c687bed63edc6f21af9d8a585c1bc29f1 100644
+index 5458ba7c993d7c19b444df20a1e3b83b114e2241..5f90c2f749c17dc0c4b8e31683f14c2d53b01c67 100644
 --- a/dist/autocomplete.js
 +++ b/dist/autocomplete.js
 @@ -52,7 +52,7 @@ function useAutocomplete(originalProps) {
@@ -19,6 +19,15 @@ index 5458ba7c993d7c19b444df20a1e3b83b114e2241..62e2cf6c687bed63edc6f21af9d8a585
      isReadOnly = false,
      ...otherProps
    } = props;
+@@ -173,7 +174,7 @@ function useAutocomplete(originalProps) {
+     ),
+     listboxProps: (0, import_utils.mergeProps)(
+       {
+-        hideEmptyContent: allowsCustomValue,
++        hideEmptyContent: allowsCustomValue && !listboxProps?.emptyContent,
+         emptyContent: "No results found.",
+         disableAnimation
+       },
 @@ -216,12 +217,29 @@ function useAutocomplete(originalProps) {
      }
    }, [inputRef.current]);
@@ -83,7 +92,7 @@ index 5458ba7c993d7c19b444df20a1e3b83b114e2241..62e2cf6c687bed63edc6f21af9d8a585
        }
      ),
 diff --git a/dist/chunk-QZCVHGAT.mjs b/dist/chunk-QZCVHGAT.mjs
-index f54795f69c1f19e73f04e22b19be8cd2c431fa67..20e747ee65761d84a5c8bbe388fdd1d54b1da340 100644
+index f54795f69c1f19e73f04e22b19be8cd2c431fa67..fcf80e86759aaa3d7853a0f613ffc58182c5954f 100644
 --- a/dist/chunk-QZCVHGAT.mjs
 +++ b/dist/chunk-QZCVHGAT.mjs
 @@ -19,7 +19,7 @@ function useAutocomplete(originalProps) {
@@ -103,6 +112,15 @@ index f54795f69c1f19e73f04e22b19be8cd2c431fa67..20e747ee65761d84a5c8bbe388fdd1d5
      isReadOnly = false,
      ...otherProps
    } = props;
+@@ -140,7 +141,7 @@ function useAutocomplete(originalProps) {
+     ),
+     listboxProps: mergeProps(
+       {
+-        hideEmptyContent: allowsCustomValue,
++        hideEmptyContent: allowsCustomValue && !listboxProps?.emptyContent,
+         emptyContent: "No results found.",
+         disableAnimation
+       },
 @@ -183,12 +184,29 @@ function useAutocomplete(originalProps) {
      }
    }, [inputRef.current]);
@@ -171,7 +189,7 @@ index 09b37df32ed4cdcccf6df45c0891039422ec0195..d3018f6f3f6f05af689f2a5465532233
        }
      ),
 diff --git a/dist/index.js b/dist/index.js
-index 7ffc5983a0132b2178ebe4ca2187bc8ab67f4e6b..1a38fc237b56d1e81c687e3d85b74df2475812d0 100644
+index 7ffc5983a0132b2178ebe4ca2187bc8ab67f4e6b..20650d1f92c7a9604d93f6a60d8efb9ad09e9a1b 100644
 --- a/dist/index.js
 +++ b/dist/index.js
 @@ -58,7 +58,7 @@ function useAutocomplete(originalProps) {
@@ -191,6 +209,15 @@ index 7ffc5983a0132b2178ebe4ca2187bc8ab67f4e6b..1a38fc237b56d1e81c687e3d85b74df2
      isReadOnly = false,
      ...otherProps
    } = props;
+@@ -179,7 +180,7 @@ function useAutocomplete(originalProps) {
+     ),
+     listboxProps: (0, import_utils.mergeProps)(
+       {
+-        hideEmptyContent: allowsCustomValue,
++        hideEmptyContent: allowsCustomValue && !listboxProps?.emptyContent,
+         emptyContent: "No results found.",
+         disableAnimation
+       },
 @@ -222,12 +223,29 @@ function useAutocomplete(originalProps) {
      }
    }, [inputRef.current]);
@@ -271,7 +298,7 @@ index b67a788f8919ace339e89326cff3eed90e7f5273..a827006f6431777d9643a0454904a979
       * Whether to enable virtualization of the listbox items.
       * By default, virtualization is automatically enabled when the number of items is greater than 50.
 diff --git a/dist/use-autocomplete.js b/dist/use-autocomplete.js
-index e644781853f6341121165125832f86e9996c69e4..04bc9302d245a1651f27656fb9abd8c09aec518b 100644
+index e644781853f6341121165125832f86e9996c69e4..dc7ff0a5c2d98a28503ba48750a32c9c15d4c24c 100644
 --- a/dist/use-autocomplete.js
 +++ b/dist/use-autocomplete.js
 @@ -42,7 +42,7 @@ function useAutocomplete(originalProps) {
@@ -291,6 +318,15 @@ index e644781853f6341121165125832f86e9996c69e4..04bc9302d245a1651f27656fb9abd8c0
      isReadOnly = false,
      ...otherProps
    } = props;
+@@ -163,7 +164,7 @@ function useAutocomplete(originalProps) {
+     ),
+     listboxProps: (0, import_utils.mergeProps)(
+       {
+-        hideEmptyContent: allowsCustomValue,
++        hideEmptyContent: allowsCustomValue && !listboxProps?.emptyContent,
+         emptyContent: "No results found.",
+         disableAnimation
+       },
 @@ -206,12 +207,29 @@ function useAutocomplete(originalProps) {
      }
    }, [inputRef.current]);

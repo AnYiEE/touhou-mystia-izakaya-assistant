@@ -13,7 +13,7 @@ patchedDependencies:
     hash: 640280fe3688aaa7f499ced26e37af29cf5c25abe2466ca8e652775e70d8434a
     path: patches/@heroui__accordion.patch
   '@heroui/autocomplete':
-    hash: 4a707042bffde4921025bb033dda3f44bfff45d3ec537581edb02c8b293c923e
+    hash: b04ea4f923dbe6871341ac5535e9c842e2d7d09aabcac6f2cff53c66bbf13547
     path: patches/@heroui__autocomplete.patch
   '@heroui/avatar':
     hash: 19c0141cfaff685d4610d1ab7ebbeb76b8abe810c6822dcfd59d2315efc8572f
@@ -21,6 +21,9 @@ patchedDependencies:
   '@heroui/button':
     hash: 02a68a0feecf32d1b2e60acb8b44b1ef0325d741c6535cf85a500ecc5c68f63f
     path: patches/@heroui__button.patch
+  '@heroui/link':
+    hash: 0ccdb7897f6766a125ad264d172fea70be2cf3203d5927fd4a33bb96bf2275c5
+    path: patches/@heroui__link.patch
   '@heroui/ripple':
     hash: 644c27497983c608149b8a5660f20dc2a3996ce9b8e3e1e4496e7cc3a40c9f58
     path: patches/@heroui__ripple.patch
@@ -76,7 +79,7 @@ importers:
         version: 2.2.8(patch_hash=640280fe3688aaa7f499ced26e37af29cf5c25abe2466ca8e652775e70d8434a)(@heroui/system@2.4.7(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@heroui/autocomplete':
         specifier: 2.3.11
-        version: 2.3.11(patch_hash=4a707042bffde4921025bb033dda3f44bfff45d3ec537581edb02c8b293c923e)(@heroui/system@2.4.7(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(@types/react@19.2.6)(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 2.3.11(patch_hash=b04ea4f923dbe6871341ac5535e9c842e2d7d09aabcac6f2cff53c66bbf13547)(@heroui/system@2.4.7(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(@types/react@19.2.6)(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@heroui/avatar':
         specifier: 2.2.7
         version: 2.2.7(patch_hash=19c0141cfaff685d4610d1ab7ebbeb76b8abe810c6822dcfd59d2315efc8572f)(@heroui/system@2.4.7(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -103,7 +106,7 @@ importers:
         version: 2.4.10(@heroui/system@2.4.7(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(@types/react@19.2.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@heroui/link':
         specifier: 2.2.8
-        version: 2.2.8(@heroui/system@2.4.7(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 2.2.8(patch_hash=0ccdb7897f6766a125ad264d172fea70be2cf3203d5927fd4a33bb96bf2275c5)(@heroui/system@2.4.7(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@heroui/modal':
         specifier: 2.2.8
         version: 2.2.8(@heroui/system@2.4.7(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -6632,7 +6635,7 @@ snapshots:
       - '@heroui/theme'
       - framer-motion
 
-  '@heroui/autocomplete@2.3.11(patch_hash=4a707042bffde4921025bb033dda3f44bfff45d3ec537581edb02c8b293c923e)(@heroui/system@2.4.7(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(@types/react@19.2.6)(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@heroui/autocomplete@2.3.11(patch_hash=b04ea4f923dbe6871341ac5535e9c842e2d7d09aabcac6f2cff53c66bbf13547)(@heroui/system@2.4.7(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(@types/react@19.2.6)(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       '@heroui/aria-utils': 2.2.8(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@heroui/button': 2.2.10(patch_hash=02a68a0feecf32d1b2e60acb8b44b1ef0325d741c6535cf85a500ecc5c68f63f)(@heroui/system@2.4.7(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -6831,7 +6834,7 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@heroui/link@2.2.8(@heroui/system@2.4.7(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@heroui/link@2.2.8(patch_hash=0ccdb7897f6766a125ad264d172fea70be2cf3203d5927fd4a33bb96bf2275c5)(@heroui/system@2.4.7(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(framer-motion@12.17.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@heroui/theme@2.4.6(patch_hash=ff6e4b864a952fc62fd36b75db35989b2e4997c635c1754cf5a431dc3f22796c)(tailwindcss@3.4.18(yaml@2.8.1)))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       '@heroui/react-utils': 2.1.4(react@19.2.0)
       '@heroui/shared-icons': 2.1.2(react@19.2.0)
