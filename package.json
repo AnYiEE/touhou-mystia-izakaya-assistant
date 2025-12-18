@@ -183,6 +183,8 @@
 			"@heroui/ripple": "patches/@heroui__ripple.patch",
 			"@heroui/select": "patches/@heroui__select.patch",
 			"@heroui/shared-utils": "patches/@heroui__shared-utils.patch",
+			"@heroui/system-rsc": "patches/@heroui__system-rsc.patch",
+			"@heroui/table": "patches/@heroui__table.patch",
 			"@heroui/tabs": "patches/@heroui__tabs.patch",
 			"@heroui/theme": "patches/@heroui__theme.patch",
 			"@heroui/tooltip": "patches/@heroui__tooltip.patch",

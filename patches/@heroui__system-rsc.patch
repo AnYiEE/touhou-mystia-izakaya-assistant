@@ -1,0 +1,102 @@
+diff --git a/dist/chunk-K5WRECQH.mjs b/dist/chunk-K5WRECQH.mjs
+index 45cb47eac83f3bb83f5df9c42e39bd8869a2aa1a..3955a984b485864908ce221fd738dc729ba6beb9 100644
+--- a/dist/chunk-K5WRECQH.mjs
++++ b/dist/chunk-K5WRECQH.mjs
+@@ -54,11 +54,15 @@ function getClassNamesWithProps({
+     }
+   );
+   const [baseProps, variantProps] = mapPropsVariants(props, customTv.variantKeys, false);
+-  const newProps = { ...defaultVariants, ...baseProps };
++  const newProps = {
++    ...defaultVariants,
++    ...baseProps,
++    className: clsx(defaultVariants && typeof defaultVariants === "object" ? defaultVariants.className : '', baseProps.className)
++  };
+   let classNames = {};
+   const result = customTv(variantProps);
+   if (!hasSlots) {
+-    newProps.className = clsx(result, props.className);
++    newProps.className = clsx(result, newProps.className);
+   } else {
+     Object.entries(result).forEach(([key, value]) => {
+       const slotResult = value();
+@@ -76,8 +80,9 @@ function getClassNamesWithProps({
+   return newProps;
+ }
+ function extendVariants(BaseComponent, styles = {}, opts = {}) {
+-  const { variants, defaultVariants, compoundVariants } = styles || {};
+-  const slots = getSlots(variants);
++  const {variants, defaultVariants, compoundVariants, slots: directSlots} = styles || {};
++  const inferredSlots = getSlots(variants);
++  const slots = directSlots ? {...inferredSlots, ...directSlots} : inferredSlots;
+   const hasSlots = typeof slots === "object" && Object.keys(slots).length !== 0;
+   const ForwardedComponent = React.forwardRef((originalProps = {}, ref) => {
+     const newProps = React.useMemo(
+diff --git a/dist/extend-variants.js b/dist/extend-variants.js
+index 3a891ce755f0b2e75d95a6a25d20e49206de7040..a7cd1d947ff33cb6d4ff037679e5a8c733cd9dd1 100644
+--- a/dist/extend-variants.js
++++ b/dist/extend-variants.js
+@@ -103,11 +103,15 @@ function getClassNamesWithProps({
+     }
+   );
+   const [baseProps, variantProps] = mapPropsVariants(props, customTv.variantKeys, false);
+-  const newProps = { ...defaultVariants, ...baseProps };
++  const newProps = {
++    ...defaultVariants,
++    ...baseProps,
++    className: (0, import_clsx.default)(defaultVariants && typeof defaultVariants === "object" ? defaultVariants.className : '', baseProps.className)
++  };
+   let classNames = {};
+   const result = customTv(variantProps);
+   if (!hasSlots) {
+-    newProps.className = (0, import_clsx.default)(result, props.className);
++    newProps.className = (0, import_clsx.default)(result, newProps.className);
+   } else {
+     Object.entries(result).forEach(([key, value]) => {
+       const slotResult = value();
+@@ -125,8 +129,9 @@ function getClassNamesWithProps({
+   return newProps;
+ }
+ function extendVariants(BaseComponent, styles = {}, opts = {}) {
+-  const { variants, defaultVariants, compoundVariants } = styles || {};
+-  const slots = getSlots(variants);
++  const {variants, defaultVariants, compoundVariants, slots: directSlots} = styles || {};
++  const inferredSlots = getSlots(variants);
++  const slots = directSlots ? {...inferredSlots, ...directSlots} : inferredSlots;
+   const hasSlots = typeof slots === "object" && Object.keys(slots).length !== 0;
+   const ForwardedComponent = React.forwardRef((originalProps = {}, ref) => {
+     const newProps = React.useMemo(
+diff --git a/dist/index.js b/dist/index.js
+index 8a62c42f69c99fc125964a5cea968d865202c011..71fc393814fb6d0f09c92f40d4ee2343175ca60d 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -143,11 +143,15 @@ function getClassNamesWithProps({
+     }
+   );
+   const [baseProps, variantProps] = mapPropsVariants(props, customTv.variantKeys, false);
+-  const newProps = { ...defaultVariants, ...baseProps };
++  const newProps = {
++    ...defaultVariants,
++    ...baseProps,
++    className: (0, import_clsx.default)(defaultVariants && typeof defaultVariants === "object" ? defaultVariants.className : '', baseProps.className)
++  };
+   let classNames = {};
+   const result = customTv(variantProps);
+   if (!hasSlots) {
+-    newProps.className = (0, import_clsx.default)(result, props.className);
++    newProps.className = (0, import_clsx.default)(result, newProps.className);
+   } else {
+     Object.entries(result).forEach(([key, value]) => {
+       const slotResult = value();
+@@ -165,8 +169,9 @@ function getClassNamesWithProps({
+   return newProps;
+ }
+ function extendVariants(BaseComponent, styles = {}, opts = {}) {
+-  const { variants, defaultVariants, compoundVariants } = styles || {};
+-  const slots = getSlots(variants);
++  const {variants, defaultVariants, compoundVariants, slots: directSlots} = styles || {};
++  const inferredSlots = getSlots(variants);
++  const slots = directSlots ? {...inferredSlots, ...directSlots} : inferredSlots;
+   const hasSlots = typeof slots === "object" && Object.keys(slots).length !== 0;
+   const ForwardedComponent = React.forwardRef((originalProps = {}, ref) => {
+     const newProps = React.useMemo(

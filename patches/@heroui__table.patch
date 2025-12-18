@@ -1,0 +1,144 @@
+diff --git a/dist/chunk-PZT4K2LB.mjs b/dist/chunk-PZT4K2LB.mjs
+index c3be4473da2550917be0216145e5e6f39fbb3030..4d818dafeb326c528783b24602d4a72c6a9ad81e 100644
+--- a/dist/chunk-PZT4K2LB.mjs
++++ b/dist/chunk-PZT4K2LB.mjs
+@@ -11,6 +11,9 @@ import { useFocusRing } from "@react-aria/focus";
+ import { VisuallyHidden } from "@react-aria/visually-hidden";
+ import { useHover } from "@react-aria/interactions";
+ import { jsx, jsxs } from "react/jsx-runtime";
++var normalizeWidth = (value) => {
++  return typeof value === "number" ? `${value}px` : value;
++};
+ var TableColumnHeader = forwardRef((props, ref) => {
+   var _a, _b, _c, _d, _e;
+   const { as, className, state, node, slots, classNames, ...otherProps } = props;
+@@ -21,8 +24,12 @@ var TableColumnHeader = forwardRef((props, ref) => {
+   const thStyles = clsx(classNames == null ? void 0 : classNames.th, className, (_a = node.props) == null ? void 0 : _a.className);
+   const { isFocusVisible, focusProps } = useFocusRing();
+   const { isHovered, hoverProps } = useHover({});
+-  const { hideHeader, align, ...columnProps } = node.props;
++  const { hideHeader, align, width, minWidth, maxWidth, ...columnProps } = node.props;
+   const allowsSorting = columnProps.allowsSorting;
++  const columnStyles = {};
++  if (width) columnStyles.width = normalizeWidth(width);
++  if (minWidth) columnStyles.minWidth = normalizeWidth(minWidth);
++  if (maxWidth) columnStyles.maxWidth = normalizeWidth(maxWidth);
+   return /* @__PURE__ */ jsxs(
+     Component,
+     {
+@@ -31,6 +38,7 @@ var TableColumnHeader = forwardRef((props, ref) => {
+       "data-focus-visible": dataAttr(isFocusVisible),
+       "data-hover": dataAttr(isHovered),
+       "data-sortable": dataAttr(allowsSorting),
++      style: columnStyles,
+       ...mergeProps(
+         columnHeaderProps,
+         focusProps,
+diff --git a/dist/index.js b/dist/index.js
+index fdb3a3abfe0f6dc7670393881baeb04fe0807c7c..14d777df324895c7caa680f1735651162293ea98 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -264,6 +264,9 @@ var import_focus = require("@react-aria/focus");
+ var import_visually_hidden = require("@react-aria/visually-hidden");
+ var import_interactions = require("@react-aria/interactions");
+ var import_jsx_runtime3 = require("react/jsx-runtime");
++var normalizeWidth = (value) => {
++  return typeof value === "number" ? `${value}px` : value;
++};
+ var TableColumnHeader = (0, import_system4.forwardRef)((props, ref) => {
+   var _a, _b, _c, _d, _e;
+   const { as, className, state, node, slots, classNames, ...otherProps } = props;
+@@ -274,8 +277,12 @@ var TableColumnHeader = (0, import_system4.forwardRef)((props, ref) => {
+   const thStyles = (0, import_shared_utils4.clsx)(classNames == null ? void 0 : classNames.th, className, (_a = node.props) == null ? void 0 : _a.className);
+   const { isFocusVisible, focusProps } = (0, import_focus.useFocusRing)();
+   const { isHovered, hoverProps } = (0, import_interactions.useHover)({});
+-  const { hideHeader, align, ...columnProps } = node.props;
++  const { hideHeader, align, width, minWidth, maxWidth, ...columnProps } = node.props;
+   const allowsSorting = columnProps.allowsSorting;
++  const columnStyles = {};
++  if (width) columnStyles.width = normalizeWidth(width);
++  if (minWidth) columnStyles.minWidth = normalizeWidth(minWidth);
++  if (maxWidth) columnStyles.maxWidth = normalizeWidth(maxWidth);
+   return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(
+     Component,
+     {
+@@ -284,6 +291,7 @@ var TableColumnHeader = (0, import_system4.forwardRef)((props, ref) => {
+       "data-focus-visible": (0, import_shared_utils4.dataAttr)(isFocusVisible),
+       "data-hover": (0, import_shared_utils4.dataAttr)(isHovered),
+       "data-sortable": (0, import_shared_utils4.dataAttr)(allowsSorting),
++      style: columnStyles,
+       ...(0, import_utils4.mergeProps)(
+         columnHeaderProps,
+         focusProps,
+diff --git a/dist/table-column-header.js b/dist/table-column-header.js
+index d161a9f4de5b67ec4deb3ceea3939e61d5b827d6..ce73e20ced8391a53d9f7c894eadd1cb3a921a50 100644
+--- a/dist/table-column-header.js
++++ b/dist/table-column-header.js
+@@ -34,6 +34,9 @@ var import_focus = require("@react-aria/focus");
+ var import_visually_hidden = require("@react-aria/visually-hidden");
+ var import_interactions = require("@react-aria/interactions");
+ var import_jsx_runtime = require("react/jsx-runtime");
++var normalizeWidth = (value) => {
++  return typeof value === "number" ? `${value}px` : value;
++};
+ var TableColumnHeader = (0, import_system.forwardRef)((props, ref) => {
+   var _a, _b, _c, _d, _e;
+   const { as, className, state, node, slots, classNames, ...otherProps } = props;
+@@ -44,8 +47,12 @@ var TableColumnHeader = (0, import_system.forwardRef)((props, ref) => {
+   const thStyles = (0, import_shared_utils.clsx)(classNames == null ? void 0 : classNames.th, className, (_a = node.props) == null ? void 0 : _a.className);
+   const { isFocusVisible, focusProps } = (0, import_focus.useFocusRing)();
+   const { isHovered, hoverProps } = (0, import_interactions.useHover)({});
+-  const { hideHeader, align, ...columnProps } = node.props;
++  const { hideHeader, align, width, minWidth, maxWidth, ...columnProps } = node.props;
+   const allowsSorting = columnProps.allowsSorting;
++  const columnStyles = {};
++  if (width) columnStyles.width = normalizeWidth(width);
++  if (minWidth) columnStyles.minWidth = normalizeWidth(minWidth);
++  if (maxWidth) columnStyles.maxWidth = normalizeWidth(maxWidth);
+   return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+     Component,
+     {
+@@ -54,6 +61,7 @@ var TableColumnHeader = (0, import_system.forwardRef)((props, ref) => {
+       "data-focus-visible": (0, import_shared_utils.dataAttr)(isFocusVisible),
+       "data-hover": (0, import_shared_utils.dataAttr)(isHovered),
+       "data-sortable": (0, import_shared_utils.dataAttr)(allowsSorting),
++      style: columnStyles,
+       ...(0, import_utils.mergeProps)(
+         columnHeaderProps,
+         focusProps,
+diff --git a/dist/table.js b/dist/table.js
+index c84621aa10245b60e6cf81b6d5c90e7d72c7aa9b..52313ec5d668c1be728c9cf41ad3406ab550d952 100644
+--- a/dist/table.js
++++ b/dist/table.js
+@@ -252,6 +252,9 @@ var import_focus = require("@react-aria/focus");
+ var import_visually_hidden = require("@react-aria/visually-hidden");
+ var import_interactions = require("@react-aria/interactions");
+ var import_jsx_runtime3 = require("react/jsx-runtime");
++var normalizeWidth = (value) => {
++  return typeof value === "number" ? `${value}px` : value;
++};
+ var TableColumnHeader = (0, import_system4.forwardRef)((props, ref) => {
+   var _a, _b, _c, _d, _e;
+   const { as, className, state, node, slots, classNames, ...otherProps } = props;
+@@ -262,8 +265,12 @@ var TableColumnHeader = (0, import_system4.forwardRef)((props, ref) => {
+   const thStyles = (0, import_shared_utils4.clsx)(classNames == null ? void 0 : classNames.th, className, (_a = node.props) == null ? void 0 : _a.className);
+   const { isFocusVisible, focusProps } = (0, import_focus.useFocusRing)();
+   const { isHovered, hoverProps } = (0, import_interactions.useHover)({});
+-  const { hideHeader, align, ...columnProps } = node.props;
++  const { hideHeader, align, width, minWidth, maxWidth, ...columnProps } = node.props;
+   const allowsSorting = columnProps.allowsSorting;
++  const columnStyles = {};
++  if (width) columnStyles.width = normalizeWidth(width);
++  if (minWidth) columnStyles.minWidth = normalizeWidth(minWidth);
++  if (maxWidth) columnStyles.maxWidth = normalizeWidth(maxWidth);
+   return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(
+     Component,
+     {
+@@ -272,6 +279,7 @@ var TableColumnHeader = (0, import_system4.forwardRef)((props, ref) => {
+       "data-focus-visible": (0, import_shared_utils4.dataAttr)(isFocusVisible),
+       "data-hover": (0, import_shared_utils4.dataAttr)(isHovered),
+       "data-sortable": (0, import_shared_utils4.dataAttr)(allowsSorting),
++      style: columnStyles,
+       ...(0, import_utils4.mergeProps)(
+         columnHeaderProps,
+         focusProps,

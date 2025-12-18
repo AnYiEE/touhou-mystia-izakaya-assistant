@@ -1,39 +1,60 @@
 diff --git a/dist/chunk-3GGKNGCF.mjs b/dist/chunk-3GGKNGCF.mjs
-index 3d1fd2db5cc62915cf248215f91014da1ba493f8..076f9f717b9675ca72cdaf8b7caec1e786a6a7e2 100644
+index 3d1fd2db5cc62915cf248215f91014da1ba493f8..b70ef68175f6848fd5e976da1891d225775ccb4c 100644
 --- a/dist/chunk-3GGKNGCF.mjs
 +++ b/dist/chunk-3GGKNGCF.mjs
-@@ -65,7 +65,7 @@ function useLink(originalProps) {
+@@ -65,7 +65,9 @@ function useLink(originalProps) {
        "data-focus": dataAttr(isFocused),
        "data-disabled": dataAttr(originalProps.isDisabled),
        "data-focus-visible": dataAttr(isFocusVisible),
 -      ...mergeProps(focusProps, linkProps, otherProps)
-+      ...mergeProps(focusProps, otherProps, linkProps)
++      ...mergeProps(focusProps, linkProps, otherProps, {
++        href: linkProps.href
++      })
      };
    }, [classNames, isFocused, isFocusVisible, focusProps, linkProps, otherProps]);
    return { Component, children, anchorIcon, showAnchorIcon, getLinkProps };
 diff --git a/dist/index.js b/dist/index.js
-index d24de091f51b9c3117ee6fbd38549435722d6947..5bf2cf6c7d66036c1acd5568e53569133f4ee99b 100644
+index d24de091f51b9c3117ee6fbd38549435722d6947..bba80f25c699cbcc00a5cb32bece1388f1131051 100644
 --- a/dist/index.js
 +++ b/dist/index.js
-@@ -97,7 +97,7 @@ function useLink(originalProps) {
+@@ -97,7 +97,9 @@ function useLink(originalProps) {
        "data-focus": (0, import_shared_utils.dataAttr)(isFocused),
        "data-disabled": (0, import_shared_utils.dataAttr)(originalProps.isDisabled),
        "data-focus-visible": (0, import_shared_utils.dataAttr)(isFocusVisible),
 -      ...(0, import_utils.mergeProps)(focusProps, linkProps, otherProps)
-+      ...(0, import_utils.mergeProps)(focusProps, otherProps, linkProps)
++      ...(0, import_utils.mergeProps)(focusProps, linkProps, otherProps, {
++        href: linkProps.href
++      })
+     };
+   }, [classNames, isFocused, isFocusVisible, focusProps, linkProps, otherProps]);
+   return { Component, children, anchorIcon, showAnchorIcon, getLinkProps };
+diff --git a/dist/link.js b/dist/link.js
+index d2dae8be853d3e7ced2561afca69dd906c70285e..323461b4dfffdb36fce5baa9eaaf1a23d5cb402b 100644
+--- a/dist/link.js
++++ b/dist/link.js
+@@ -93,7 +93,9 @@ function useLink(originalProps) {
+       "data-focus": (0, import_shared_utils.dataAttr)(isFocused),
+       "data-disabled": (0, import_shared_utils.dataAttr)(originalProps.isDisabled),
+       "data-focus-visible": (0, import_shared_utils.dataAttr)(isFocusVisible),
+-      ...(0, import_utils.mergeProps)(focusProps, linkProps, otherProps)
++      ...(0, import_utils.mergeProps)(focusProps, linkProps, otherProps, {
++        href: linkProps.href
++      })
      };
    }, [classNames, isFocused, isFocusVisible, focusProps, linkProps, otherProps]);
    return { Component, children, anchorIcon, showAnchorIcon, getLinkProps };
 diff --git a/dist/use-link.js b/dist/use-link.js
-index 91ebc7baeca92084df91eca00d21d9f5d59f0990..fd41187df7ca7b805204d5567c656fab90653e89 100644
+index 91ebc7baeca92084df91eca00d21d9f5d59f0990..9b4a1a6c49b72166a747050be03ca3f87ed6713f 100644
 --- a/dist/use-link.js
 +++ b/dist/use-link.js
-@@ -88,7 +88,7 @@ function useLink(originalProps) {
+@@ -88,7 +88,9 @@ function useLink(originalProps) {
        "data-focus": (0, import_shared_utils.dataAttr)(isFocused),
        "data-disabled": (0, import_shared_utils.dataAttr)(originalProps.isDisabled),
        "data-focus-visible": (0, import_shared_utils.dataAttr)(isFocusVisible),
 -      ...(0, import_utils.mergeProps)(focusProps, linkProps, otherProps)
-+      ...(0, import_utils.mergeProps)(focusProps, otherProps, linkProps)
++      ...(0, import_utils.mergeProps)(focusProps, linkProps, otherProps, {
++        href: linkProps.href
++      })
      };
    }, [classNames, isFocused, isFocusVisible, focusProps, linkProps, otherProps]);
    return { Component, children, anchorIcon, showAnchorIcon, getLinkProps };
