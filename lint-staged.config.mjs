@@ -1,9 +1,10 @@
 // @ts-check
 
 import { relative } from 'node:path';
+import { cwd } from 'node:process';
 
 const buildEslintCommand = (/** @type {ReadonlyArray<string>} */ filenames) =>
-	`next lint --fix --file ${filenames.map((f) => relative(process.cwd(), f)).join(' --file ')}`;
+	`eslint --fix ${filenames.map((filename) => relative(cwd(), filename)).join(' ')}`;
 
 /** @type {import('lint-staged').Configuration} */
 const config = {
