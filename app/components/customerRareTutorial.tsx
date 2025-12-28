@@ -241,32 +241,31 @@ export default function CustomerRareTutorial() {
 		if (currentCustomerName !== null && !isCustomerSelected.current) {
 			isCustomerSelected.current = true;
 			driverRef.current.moveTo(2);
-		}
-
-		if (currentBeverageName !== null && !isBeverageSelected.current) {
+		} else if (
+			currentBeverageName !== null &&
+			!isBeverageSelected.current
+		) {
 			isBeverageSelected.current = true;
 			driverRef.current.moveNext();
-		}
-		if (
+		} else if (
 			currentBeverageTableDirection === 'descending' &&
 			!isBeverageTableSorted.current
 		) {
 			isBeverageTableSorted.current = true;
 			moveNext(BEVERAGE_POSITION, 'nearest');
-		}
-		if (
+		} else if (
 			currentOrderedBeverageTag !== null &&
 			!hasOrderedBeverageTag.current
 		) {
 			hasOrderedBeverageTag.current = true;
 			driverRef.current.moveNext();
-		}
-
-		if (currentRecipeName !== undefined && !isRecipeSelected.current) {
+		} else if (
+			currentRecipeName !== undefined &&
+			!isRecipeSelected.current
+		) {
 			isRecipeSelected.current = true;
 			driverRef.current.moveNext();
-		}
-		if (
+		} else if (
 			currentExtraIngredients !== undefined &&
 			!checkEmpty(currentExtraIngredients)
 		) {
@@ -276,21 +275,20 @@ export default function CustomerRareTutorial() {
 			) {
 				hasExtraEgg.current = true;
 				moveNext(HONEY_POSITION);
-			}
-			if (
+			} else if (
 				currentExtraIngredients.includes('蜂蜜') &&
 				!hasExtraHoney.current
 			) {
 				hasExtraHoney.current = true;
 				driverRef.current.moveNext();
 			}
-		}
-		if (currentOrderedRecipeTag !== null && !hasOrderedRecipeTag.current) {
+		} else if (
+			currentOrderedRecipeTag !== null &&
+			!hasOrderedRecipeTag.current
+		) {
 			hasOrderedRecipeTag.current = true;
 			moveNext(RECIPE_POSITION, 'nearest');
-		}
-
-		if (isIngredientTabSelected && !isInIngredientTab.current) {
+		} else if (isIngredientTabSelected && !isInIngredientTab.current) {
 			isInIngredientTab.current = true;
 			moveNext(EGG_POSITION);
 		}
