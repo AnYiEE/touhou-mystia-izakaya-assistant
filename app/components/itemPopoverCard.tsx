@@ -304,7 +304,7 @@ const ItemPopoverCardComponent = memo<PropsWithChildren<IItemPopoverCardProps>>(
 
 		return (
 			<div
-				className="z-10 max-w-80 space-y-2 p-2 text-tiny text-default-800"
+				className="z-10 max-w-82 space-y-2 p-2 text-tiny text-default-800"
 				{...props}
 			>
 				<div className="flex items-center gap-2 text-small text-foreground">

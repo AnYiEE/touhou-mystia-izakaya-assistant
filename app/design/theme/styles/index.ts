@@ -21,6 +21,7 @@ export const getExtendConfig = (cdnUrl: string) =>
 			'vmax-half': '50vmax',
 		},
 		maxWidth: {
+			'82': '328px',
 			'p-95': '95%',
 			'screen-p-30': '30vw',
 			'screen-p-60': '60vw',
