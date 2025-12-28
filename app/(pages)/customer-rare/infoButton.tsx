@@ -224,7 +224,6 @@ export default function InfoButton() {
 									placement="right"
 								>
 									<PressElement
-										as="span"
 										onPress={() => {
 											openWindow('recipes', name);
 										}}
@@ -256,7 +255,6 @@ export default function InfoButton() {
 									placement="right"
 								>
 									<PressElement
-										as="span"
 										onPress={() => {
 											openWindow('cookers', bondCooker);
 										}}
@@ -288,7 +286,6 @@ export default function InfoButton() {
 									placement="right"
 								>
 									<PressElement
-										as="span"
 										onPress={() => {
 											openWindow('clothes', bondClothes);
 										}}
@@ -320,7 +317,6 @@ export default function InfoButton() {
 									placement="right"
 								>
 									<PressElement
-										as="span"
 										onPress={() => {
 											openWindow('ornaments', name);
 										}}
@@ -358,7 +354,6 @@ export default function InfoButton() {
 									placement="right"
 								>
 									<PressElement
-										as="span"
 										onPress={() => {
 											openWindow('partners', bondPartner);
 										}}

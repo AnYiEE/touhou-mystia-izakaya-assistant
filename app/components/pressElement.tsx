@@ -32,7 +32,7 @@ export interface IPressProp<T extends HTMLElement> {
 
 interface IProps<T extends HTMLElement>
 	extends HTMLAttributes<T>, IPressProp<T> {
-	as: ElementType;
+	as?: ElementType;
 }
 
 export default memo(function PressElement<T extends HTMLElement>({

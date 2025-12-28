@@ -133,7 +133,6 @@ export default memo<IProps>(function Sprite({
 
 	return (
 		<PressElement
-			as="span"
 			onClick={onClick}
 			onKeyDown={onKeyDown}
 			onPress={onPress}

@@ -181,7 +181,6 @@ export default memo<IProps>(function Content({ data }) {
 																				size="sm"
 																			>
 																				<PressElement
-																					as="span"
 																					onPress={() => {
 																						openWindow(
 																							'recipes',
