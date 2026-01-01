@@ -171,6 +171,7 @@
 			"@heroui/shared-utils",
 			"@parcel/watcher",
 			"better-sqlite3",
+			"react-transition-progress",
 			"sharp",
 			"unrs-resolver"
 		],
