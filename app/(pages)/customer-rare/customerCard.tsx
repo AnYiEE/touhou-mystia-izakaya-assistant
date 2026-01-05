@@ -196,6 +196,7 @@ export default function CustomerCard() {
 	}
 
 	const {
+		beverageTagMapping: currentCustomerBeverageTagMapping,
 		beverageTags: currentCustomerBeverageTags,
 		dlc: currentCustomerDlc,
 		enduranceLimit: currentCustomerEnduranceLimit,
@@ -556,7 +557,18 @@ export default function CustomerCard() {
 								>
 									<Tags.Tag
 										isButton
-										tag={tag}
+										tag={
+											isShowTagDescription &&
+											tag in
+												currentCustomerBeverageTagMapping
+												? [
+														tag,
+														currentCustomerBeverageTagMapping[
+															tag as keyof typeof currentCustomerBeverageTagMapping
+														],
+													]
+												: tag
+										}
 										tagStyle={
 											CUSTOMER_RARE_TAG_STYLE.beverage
 										}

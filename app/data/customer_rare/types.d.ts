@@ -1,4 +1,8 @@
-import { type TEvaluationKey, type TRecipeTag } from '@/data';
+import {
+	type TBeverageTag,
+	type TEvaluationKey,
+	type TRecipeTag,
+} from '@/data';
 import type { ICustomerBase, TDescription } from '@/data/types';
 
 interface ISpellCard {
@@ -17,6 +21,7 @@ export interface ICustomerRare extends ICustomerBase {
 	collection: boolean;
 	evaluation: Record<TEvaluationKey, TDescription | null>;
 	spellCards: Partial<ISpellCards>;
+	beverageTagMapping: Partial<Record<TBeverageTag, string>>;
 	positiveTagMapping: Partial<Record<TRecipeTag, string>>;
 	price: [number, number];
 	enduranceLimit: number;
