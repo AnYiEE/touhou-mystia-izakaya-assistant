@@ -199,6 +199,7 @@
 			"@heroui/tooltip": "patches/@heroui__tooltip.patch",
 			"@heroui/use-aria-button": "patches/@heroui__use-aria-button.patch",
 			"@heroui/use-aria-link": "patches/@heroui__use-aria-link.patch",
+			"@heroui/use-image": "patches/@heroui__use-image.patch",
 			"next": "patches/next.patch"
 		},
 		"updateConfig": {

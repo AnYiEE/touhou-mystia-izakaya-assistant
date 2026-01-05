@@ -1,5 +1,5 @@
 diff --git a/dist/chunk-3ZDIPBHM.mjs b/dist/chunk-3ZDIPBHM.mjs
-index efe5a8debd5d314148a06bce5fd781aca5160ddc..9afaf1460011e40e887b58a93e2723ff56ca5e2a 100644
+index efe5a8debd5d314148a06bce5fd781aca5160ddc..861f6a3cdae74a8a43765b62dd07cda6a6bf5220 100644
 --- a/dist/chunk-3ZDIPBHM.mjs
 +++ b/dist/chunk-3ZDIPBHM.mjs
 @@ -30,7 +30,9 @@ var input = tv({
@@ -122,7 +122,7 @@ index efe5a8debd5d314148a06bce5fd781aca5160ddc..9afaf1460011e40e887b58a93e2723ff
    ]
  });
 diff --git a/dist/chunk-6B2RD5MH.mjs b/dist/chunk-6B2RD5MH.mjs
-index 02ba88f5868a4119eaa6554bf642350f2f6919bb..e427818077f2cd4b7b0736d8b1184a7489e43eca 100644
+index 02ba88f5868a4119eaa6554bf642350f2f6919bb..fd55243e0c165aa85d88fd63e9cc2d2585d8a668 100644
 --- a/dist/chunk-6B2RD5MH.mjs
 +++ b/dist/chunk-6B2RD5MH.mjs
 @@ -43,8 +43,8 @@ var menuItem = tv({
@@ -137,7 +137,7 @@ index 02ba88f5868a4119eaa6554bf642350f2f6919bb..e427818077f2cd4b7b0736d8b1184a74
      selectedIcon: ["text-inherit", "w-3", "h-3", "flex-shrink-0"],
      shortcut: [
 diff --git a/dist/chunk-C3HKPBNA.mjs b/dist/chunk-C3HKPBNA.mjs
-index 6ca544110f3cdbc9c293564bde3219a49f9d3c2a..8913c9306dcfd3ae3b90c39043f4efaa44448fec 100644
+index 6ca544110f3cdbc9c293564bde3219a49f9d3c2a..a4bad56d98dff6754a4e4788a276368ed21e465f 100644
 --- a/dist/chunk-C3HKPBNA.mjs
 +++ b/dist/chunk-C3HKPBNA.mjs
 @@ -55,6 +55,7 @@ var table = tv({
@@ -205,7 +205,7 @@ index 6ca544110f3cdbc9c293564bde3219a49f9d3c2a..8913c9306dcfd3ae3b90c39043f4efaa
        true: {
          base: "w-full",
 diff --git a/dist/chunk-CRDAR2QA.mjs b/dist/chunk-CRDAR2QA.mjs
-index 42b535d074e1ba999c1ba23de4de7cde3f47309e..0b998b116909910fd94a1a8a41c773425dbe7f06 100644
+index 42b535d074e1ba999c1ba23de4de7cde3f47309e..83b8776f73f6f55f6728aadf8d9189f2eaa7e212 100644
 --- a/dist/chunk-CRDAR2QA.mjs
 +++ b/dist/chunk-CRDAR2QA.mjs
 @@ -18,7 +18,8 @@ var select = tv({
@@ -349,7 +349,7 @@ index 15663cbfe414824a4847bdfbd086c8ae224f3365..46c942db60c0e45397267e68ea70b9e3
      },
      isDisabled: {
 diff --git a/dist/chunk-OAHW4NON.mjs b/dist/chunk-OAHW4NON.mjs
-index ffb281a6503e28183a97692319db73c4ecc819af..8385d23303d0d74e3fd7cbf8948e3adfed7ecfdb 100644
+index ffb281a6503e28183a97692319db73c4ecc819af..9a8ccd2a1f464ebc3cf2b1eefb616178cd404f86 100644
 --- a/dist/chunk-OAHW4NON.mjs
 +++ b/dist/chunk-OAHW4NON.mjs
 @@ -15,7 +15,6 @@ var skeleton = tv({
@@ -369,6 +369,60 @@ index ffb281a6503e28183a97692319db73c4ecc819af..8385d23303d0d74e3fd7cbf8948e3adf
          content: "transition-opacity motion-reduce:transition-none !duration-300"
        }
      }
+diff --git a/dist/chunk-QG4TODGA.mjs b/dist/chunk-QG4TODGA.mjs
+index 6e8a419651de50056e3e410b3e828a52a9cd3f2d..29798b200ce6395d31c9a8cedc65d1da95c56e83 100644
+--- a/dist/chunk-QG4TODGA.mjs
++++ b/dist/chunk-QG4TODGA.mjs
+@@ -36,7 +36,8 @@ var pagination = tv({
+       "select-none",
+       "touch-none",
+       "pointer-events-none",
+-      "z-20"
++      "z-20",
++      "box-border"
+     ],
+     forwardIcon: [
+       "hidden",
+@@ -55,14 +56,16 @@ var pagination = tv({
+           "border-default",
+           "bg-transparent",
+           "data-[hover=true]:bg-default-100"
+-        ]
++        ],
++        cursor: ["border-medium", "border-transparent"]
+       },
+       light: {
+         item: "bg-transparent"
+       },
+       flat: {},
+       faded: {
+-        item: ["border-medium", "border-default"]
++        item: ["border-medium", "border-default"],
++        cursor: ["border-medium", "border-transparent"]
+       }
+     },
+     color: {
+@@ -365,17 +368,17 @@ var pagination = tv({
+     {
+       slots: ["item", "cursor", "prev", "next"],
+       size: "sm",
+-      class: "min-w-8 w-8 h-8 text-tiny"
++      class: "min-w-8 w-auto h-8 text-tiny px-1"
+     },
+     {
+       slots: ["item", "cursor", "prev", "next"],
+       size: "md",
+-      class: "min-w-9 w-9 h-9 text-small"
++      class: "min-w-9 w-auto h-9 text-small px-2"
+     },
+     {
+       slots: ["item", "cursor", "prev", "next"],
+       size: "lg",
+-      class: "min-w-10 w-10 h-10 text-medium"
++      class: "min-w-10 w-auto h-10 text-medium px-2"
+     },
+     {
+       slots: ["wrapper", "item", "cursor", "prev", "next"],
 diff --git a/dist/chunk-UEWXQXTA.mjs b/dist/chunk-UEWXQXTA.mjs
 index 40fc49cd9673177fcf33c5418002269309c4ec1f..67880ee0bf9f80c5461a5435a0f613eb21303e77 100644
 --- a/dist/chunk-UEWXQXTA.mjs
@@ -383,7 +437,7 @@ index 40fc49cd9673177fcf33c5418002269309c4ec1f..67880ee0bf9f80c5461a5435a0f613eb
      isDisabled: {
        true: "opacity-disabled cursor-default pointer-events-none"
 diff --git a/dist/chunk-WN6AL2BX.mjs b/dist/chunk-WN6AL2BX.mjs
-index d126dd5114b7bafc1557bf9aa1938cb059c91fe2..e0a540fa5f4593c23fa56d37b1625a003363fc6c 100644
+index d126dd5114b7bafc1557bf9aa1938cb059c91fe2..7bb5b406f1c5c290fe7b6806291544acac4154a7 100644
 --- a/dist/chunk-WN6AL2BX.mjs
 +++ b/dist/chunk-WN6AL2BX.mjs
 @@ -32,22 +32,22 @@ var transition_default = {
@@ -414,7 +468,7 @@ index d126dd5114b7bafc1557bf9aa1938cb059c91fe2..e0a540fa5f4593c23fa56d37b1625a00
      "transition-duration": DEFAULT_TRANSITION_DURATION
    }
 diff --git a/dist/chunk-ZYU6U7HG.mjs b/dist/chunk-ZYU6U7HG.mjs
-index d0faec56d74482a0afaf17a5c9c4fbed2d2d9a74..5c110bd96d199b94454f7ed8e81b9b6d532871e3 100644
+index d0faec56d74482a0afaf17a5c9c4fbed2d2d9a74..76d8fa078422c9ec8cf709390d5e2dbc6302b1c5 100644
 --- a/dist/chunk-ZYU6U7HG.mjs
 +++ b/dist/chunk-ZYU6U7HG.mjs
 @@ -212,15 +212,10 @@ var heroui = (config = {}) => {
@@ -451,7 +505,7 @@ index 37a2f2239052c7d5643f1e35c0c4de8c3cfe7c80..982bd6435a129f4407a41dec462dbb8f
      },
      isDisabled: {
 diff --git a/dist/components/index.js b/dist/components/index.js
-index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f7524e18b3c5 100644
+index 5fa42877de7564b782b1718556496eacab49e05a..ced55c2fcd5e1faba3157541fd464dba2ee2a322 100644
 --- a/dist/components/index.js
 +++ b/dist/components/index.js
 @@ -626,7 +626,7 @@ var link = tv({
@@ -463,7 +517,57 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
      },
      isDisabled: {
        true: "opacity-disabled cursor-default pointer-events-none"
-@@ -4259,7 +4259,9 @@ var input = tv({
+@@ -2952,7 +2952,8 @@ var pagination = tv({
+       "select-none",
+       "touch-none",
+       "pointer-events-none",
+-      "z-20"
++      "z-20",
++      "box-border"
+     ],
+     forwardIcon: [
+       "hidden",
+@@ -2971,14 +2972,16 @@ var pagination = tv({
+           "border-default",
+           "bg-transparent",
+           "data-[hover=true]:bg-default-100"
+-        ]
++        ],
++        cursor: ["border-medium", "border-transparent"]
+       },
+       light: {
+         item: "bg-transparent"
+       },
+       flat: {},
+       faded: {
+-        item: ["border-medium", "border-default"]
++        item: ["border-medium", "border-default"],
++        cursor: ["border-medium", "border-transparent"]
+       }
+     },
+     color: {
+@@ -3281,17 +3284,17 @@ var pagination = tv({
+     {
+       slots: ["item", "cursor", "prev", "next"],
+       size: "sm",
+-      class: "min-w-8 w-8 h-8 text-tiny"
++      class: "min-w-8 w-auto h-8 text-tiny px-1"
+     },
+     {
+       slots: ["item", "cursor", "prev", "next"],
+       size: "md",
+-      class: "min-w-9 w-9 h-9 text-small"
++      class: "min-w-9 w-auto h-9 text-small px-2"
+     },
+     {
+       slots: ["item", "cursor", "prev", "next"],
+       size: "lg",
+-      class: "min-w-10 w-10 h-10 text-medium"
++      class: "min-w-10 w-auto h-10 text-medium px-2"
+     },
+     {
+       slots: ["wrapper", "item", "cursor", "prev", "next"],
+@@ -4259,7 +4262,9 @@ var input = tv({
        "data-[has-start-content=true]:ps-1.5",
        "data-[has-end-content=true]:pe-1.5",
        "file:cursor-pointer file:bg-transparent file:border-0",
@@ -474,7 +578,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
      ],
      clearButton: [
        "p-2",
-@@ -4273,7 +4275,6 @@ var input = tv({
+@@ -4273,7 +4278,6 @@ var input = tv({
        "outline-none",
        "select-none",
        "opacity-0",
@@ -482,7 +586,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
        "cursor-pointer",
        "active:!opacity-70",
        "rounded-full",
-@@ -4306,7 +4307,8 @@ var input = tv({
+@@ -4306,7 +4310,8 @@ var input = tv({
            "border-medium",
            "border-default-200",
            "data-[hover=true]:border-default-400",
@@ -492,7 +596,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
          ]
        },
        underlined: {
-@@ -4354,13 +4356,13 @@ var input = tv({
+@@ -4354,13 +4359,13 @@ var input = tv({
        md: {
          inputWrapper: "h-10 min-h-10 rounded-medium",
          input: "text-small",
@@ -508,7 +612,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
        }
      },
      radius: {
-@@ -4654,7 +4656,10 @@ var input = tv({
+@@ -4654,7 +4659,10 @@ var input = tv({
        variant: "bordered",
        color: "primary",
        class: {
@@ -520,7 +624,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
          label: "text-primary"
        }
      },
-@@ -4662,7 +4667,10 @@ var input = tv({
+@@ -4662,7 +4670,10 @@ var input = tv({
        variant: "bordered",
        color: "secondary",
        class: {
@@ -532,7 +636,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
          label: "text-secondary"
        }
      },
-@@ -4670,7 +4678,10 @@ var input = tv({
+@@ -4670,7 +4681,10 @@ var input = tv({
        variant: "bordered",
        color: "success",
        class: {
@@ -544,7 +648,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
          label: "text-success"
        }
      },
-@@ -4678,7 +4689,10 @@ var input = tv({
+@@ -4678,7 +4692,10 @@ var input = tv({
        variant: "bordered",
        color: "warning",
        class: {
@@ -556,7 +660,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
          label: "text-warning"
        }
      },
-@@ -4686,7 +4700,10 @@ var input = tv({
+@@ -4686,7 +4703,10 @@ var input = tv({
        variant: "bordered",
        color: "danger",
        class: {
@@ -568,7 +672,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
          label: "text-danger"
        }
      },
-@@ -5979,6 +5996,7 @@ var table = tv({
+@@ -5979,6 +5999,7 @@ var table = tv({
        "[&>*]:z-1",
        "[&>*]:relative",
        ...dataFocusVisibleClasses,
@@ -576,7 +680,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
        "before:content-['']",
        "before:absolute",
        "before:z-0",
-@@ -6032,20 +6050,6 @@ var table = tv({
+@@ -6032,20 +6053,6 @@ var table = tv({
          table: "table-fixed"
        }
      },
@@ -597,7 +701,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
      shadow: {
        none: {
          wrapper: "shadow-none"
-@@ -6108,6 +6112,34 @@ var table = tv({
+@@ -6108,6 +6115,34 @@ var table = tv({
          td: ["first:before:rounded-s-lg", "last:before:rounded-e-lg"]
        }
      },
@@ -632,7 +736,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
      fullWidth: {
        true: {
          base: "w-full",
-@@ -6637,7 +6669,6 @@ var skeleton = tv({
+@@ -6637,7 +6672,6 @@ var skeleton = tv({
        "before:absolute",
        "before:inset-0",
        "before:-translate-x-full",
@@ -640,7 +744,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
        "before:border-t",
        "before:border-content4/30",
        "before:bg-gradient-to-r",
-@@ -6666,7 +6697,7 @@ var skeleton = tv({
+@@ -6666,7 +6700,7 @@ var skeleton = tv({
          content: "transition-none"
        },
        false: {
@@ -649,7 +753,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
          content: "transition-opacity motion-reduce:transition-none !duration-300"
        }
      }
-@@ -6726,7 +6757,8 @@ var select = tv({
+@@ -6726,7 +6760,8 @@ var select = tv({
            "border-default-200",
            "data-[hover=true]:border-default-400",
            "data-[open=true]:border-default-foreground",
@@ -659,7 +763,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
          ],
          value: "group-data-[has-value=true]:text-default-foreground"
        },
-@@ -7066,7 +7098,11 @@ var select = tv({
+@@ -7066,7 +7101,11 @@ var select = tv({
        variant: "bordered",
        color: "primary",
        class: {
@@ -672,7 +776,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
          label: "text-primary"
        }
      },
-@@ -7074,7 +7110,11 @@ var select = tv({
+@@ -7074,7 +7113,11 @@ var select = tv({
        variant: "bordered",
        color: "secondary",
        class: {
@@ -685,7 +789,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
          label: "text-secondary"
        }
      },
-@@ -7082,7 +7122,11 @@ var select = tv({
+@@ -7082,7 +7125,11 @@ var select = tv({
        variant: "bordered",
        color: "success",
        class: {
@@ -698,7 +802,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
          label: "text-success"
        }
      },
-@@ -7090,7 +7134,11 @@ var select = tv({
+@@ -7090,7 +7137,11 @@ var select = tv({
        variant: "bordered",
        color: "warning",
        class: {
@@ -711,7 +815,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
          label: "text-warning"
        }
      },
-@@ -7098,7 +7146,11 @@ var select = tv({
+@@ -7098,7 +7149,11 @@ var select = tv({
        variant: "bordered",
        color: "danger",
        class: {
@@ -724,7 +828,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
          label: "text-danger"
        }
      },
-@@ -7333,7 +7385,12 @@ var select = tv({
+@@ -7333,7 +7388,12 @@ var select = tv({
          label: [
            "start-2",
            "text-tiny",
@@ -738,7 +842,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
          ],
          base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_8px)]"
        }
-@@ -7346,7 +7403,12 @@ var select = tv({
+@@ -7346,7 +7406,12 @@ var select = tv({
          label: [
            "start-3",
            "text-small",
@@ -752,7 +856,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
          ],
          base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_10px)]"
        }
-@@ -7359,7 +7421,12 @@ var select = tv({
+@@ -7359,7 +7424,12 @@ var select = tv({
          label: [
            "start-3",
            "text-medium",
@@ -766,7 +870,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
          ],
          base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_12px)]"
        }
-@@ -8336,7 +8403,7 @@ var breadcrumbItem = tv({
+@@ -8336,7 +8406,7 @@ var breadcrumbItem = tv({
          item: "cursor-default"
        },
        false: {
@@ -776,7 +880,7 @@ index 5fa42877de7564b782b1718556496eacab49e05a..bef7239459c75258efc74655e519f752
      },
      isDisabled: {
 diff --git a/dist/components/input.js b/dist/components/input.js
-index bdaa5a49dc3fca3391701248b8cc7b15d06c144a..3d3bcbd66de267d44b54adf2976c7d4b3e0b2d28 100644
+index bdaa5a49dc3fca3391701248b8cc7b15d06c144a..891abb7356515d77a7c768f49e464296ec334363 100644
 --- a/dist/components/input.js
 +++ b/dist/components/input.js
 @@ -111,7 +111,9 @@ var input = tv({
@@ -925,7 +1029,7 @@ index 517baccd4d957f86ec391ad88526c52a85bfb918..eac883a115f065e971d15b121385f71e
      isDisabled: {
        true: "opacity-disabled cursor-default pointer-events-none"
 diff --git a/dist/components/menu.js b/dist/components/menu.js
-index 26430db951a4fb0481e6eb9c26b0f3b3942b227b..9396cbf5edbdd9bfe902cf13e3a07ebab56e5231 100644
+index 26430db951a4fb0481e6eb9c26b0f3b3942b227b..aedd204b8bdeecdf3fe2a9b736f6992b6921feec 100644
 --- a/dist/components/menu.js
 +++ b/dist/components/menu.js
 @@ -119,8 +119,8 @@ var menuItem = tv({
@@ -939,8 +1043,62 @@ index 26430db951a4fb0481e6eb9c26b0f3b3942b227b..9396cbf5edbdd9bfe902cf13e3a07eba
      description: ["w-full", "text-tiny", "text-foreground-500", "group-hover:text-current"],
      selectedIcon: ["text-inherit", "w-3", "h-3", "flex-shrink-0"],
      shortcut: [
+diff --git a/dist/components/pagination.js b/dist/components/pagination.js
+index d2c7f8471f84502ac23704c3b6012965ff1c9918..d5fe979e4f970f5fbef09408f6b9ec603f687f0d 100644
+--- a/dist/components/pagination.js
++++ b/dist/components/pagination.js
+@@ -181,7 +181,8 @@ var pagination = tv({
+       "select-none",
+       "touch-none",
+       "pointer-events-none",
+-      "z-20"
++      "z-20",
++      "box-border"
+     ],
+     forwardIcon: [
+       "hidden",
+@@ -200,14 +201,16 @@ var pagination = tv({
+           "border-default",
+           "bg-transparent",
+           "data-[hover=true]:bg-default-100"
+-        ]
++        ],
++        cursor: ["border-medium", "border-transparent"]
+       },
+       light: {
+         item: "bg-transparent"
+       },
+       flat: {},
+       faded: {
+-        item: ["border-medium", "border-default"]
++        item: ["border-medium", "border-default"],
++        cursor: ["border-medium", "border-transparent"]
+       }
+     },
+     color: {
+@@ -510,17 +513,17 @@ var pagination = tv({
+     {
+       slots: ["item", "cursor", "prev", "next"],
+       size: "sm",
+-      class: "min-w-8 w-8 h-8 text-tiny"
++      class: "min-w-8 w-auto h-8 text-tiny px-1"
+     },
+     {
+       slots: ["item", "cursor", "prev", "next"],
+       size: "md",
+-      class: "min-w-9 w-9 h-9 text-small"
++      class: "min-w-9 w-auto h-9 text-small px-2"
+     },
+     {
+       slots: ["item", "cursor", "prev", "next"],
+       size: "lg",
+-      class: "min-w-10 w-10 h-10 text-medium"
++      class: "min-w-10 w-auto h-10 text-medium px-2"
+     },
+     {
+       slots: ["wrapper", "item", "cursor", "prev", "next"],
 diff --git a/dist/components/select.js b/dist/components/select.js
-index 3523d93f094a3d1010634b724690d51318967dbc..81065c9520a3f574f3880321fd6baf415339ed44 100644
+index 3523d93f094a3d1010634b724690d51318967dbc..d5e49312140ec7614532dd0c48338e7264aca7cd 100644
 --- a/dist/components/select.js
 +++ b/dist/components/select.js
 @@ -90,7 +90,8 @@ var select = tv({
@@ -1071,7 +1229,7 @@ index 3523d93f094a3d1010634b724690d51318967dbc..81065c9520a3f574f3880321fd6baf41
          base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_12px)]"
        }
 diff --git a/dist/components/skeleton.js b/dist/components/skeleton.js
-index c7d5922d34ada50cd8d47b7e14e18d3b2a65dc9b..6bfe8840cea26c114e4b02f50d65ceb35a630f58 100644
+index c7d5922d34ada50cd8d47b7e14e18d3b2a65dc9b..b55e5e9a3eb006041687e800ab3d3dfeb501d962 100644
 --- a/dist/components/skeleton.js
 +++ b/dist/components/skeleton.js
 @@ -83,7 +83,6 @@ var skeleton = tv({
@@ -1092,7 +1250,7 @@ index c7d5922d34ada50cd8d47b7e14e18d3b2a65dc9b..6bfe8840cea26c114e4b02f50d65ceb3
        }
      }
 diff --git a/dist/components/table.js b/dist/components/table.js
-index 6611ad4c44f7c2413f76f2fdc9a08ca7209b1efd..a116273fbd5497cb3b25c0d9a3df2de9c9a4e698 100644
+index 6611ad4c44f7c2413f76f2fdc9a08ca7209b1efd..f67b71d5f572fa9166838b9646dd2888d4fc8c91 100644
 --- a/dist/components/table.js
 +++ b/dist/components/table.js
 @@ -127,6 +127,7 @@ var table = tv({
@@ -1160,7 +1318,7 @@ index 6611ad4c44f7c2413f76f2fdc9a08ca7209b1efd..a116273fbd5497cb3b25c0d9a3df2de9
        true: {
          base: "w-full",
 diff --git a/dist/index.js b/dist/index.js
-index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3b9fa658a 100644
+index 3b031a7453c6ed04ffdf4904e6377960086a76e7..8cbe66fb3a2053716878e4d7a0f7b2aae2fa3a28 100644
 --- a/dist/index.js
 +++ b/dist/index.js
 @@ -688,7 +688,7 @@ var link = tv({
@@ -1172,7 +1330,57 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
      },
      isDisabled: {
        true: "opacity-disabled cursor-default pointer-events-none"
-@@ -4321,7 +4321,9 @@ var input = tv({
+@@ -3014,7 +3014,8 @@ var pagination = tv({
+       "select-none",
+       "touch-none",
+       "pointer-events-none",
+-      "z-20"
++      "z-20",
++      "box-border"
+     ],
+     forwardIcon: [
+       "hidden",
+@@ -3033,14 +3034,16 @@ var pagination = tv({
+           "border-default",
+           "bg-transparent",
+           "data-[hover=true]:bg-default-100"
+-        ]
++        ],
++        cursor: ["border-medium", "border-transparent"]
+       },
+       light: {
+         item: "bg-transparent"
+       },
+       flat: {},
+       faded: {
+-        item: ["border-medium", "border-default"]
++        item: ["border-medium", "border-default"],
++        cursor: ["border-medium", "border-transparent"]
+       }
+     },
+     color: {
+@@ -3343,17 +3346,17 @@ var pagination = tv({
+     {
+       slots: ["item", "cursor", "prev", "next"],
+       size: "sm",
+-      class: "min-w-8 w-8 h-8 text-tiny"
++      class: "min-w-8 w-auto h-8 text-tiny px-1"
+     },
+     {
+       slots: ["item", "cursor", "prev", "next"],
+       size: "md",
+-      class: "min-w-9 w-9 h-9 text-small"
++      class: "min-w-9 w-auto h-9 text-small px-2"
+     },
+     {
+       slots: ["item", "cursor", "prev", "next"],
+       size: "lg",
+-      class: "min-w-10 w-10 h-10 text-medium"
++      class: "min-w-10 w-auto h-10 text-medium px-2"
+     },
+     {
+       slots: ["wrapper", "item", "cursor", "prev", "next"],
+@@ -4321,7 +4324,9 @@ var input = tv({
        "data-[has-start-content=true]:ps-1.5",
        "data-[has-end-content=true]:pe-1.5",
        "file:cursor-pointer file:bg-transparent file:border-0",
@@ -1183,7 +1391,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
      ],
      clearButton: [
        "p-2",
-@@ -4335,7 +4337,6 @@ var input = tv({
+@@ -4335,7 +4340,6 @@ var input = tv({
        "outline-none",
        "select-none",
        "opacity-0",
@@ -1191,7 +1399,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
        "cursor-pointer",
        "active:!opacity-70",
        "rounded-full",
-@@ -4416,13 +4417,13 @@ var input = tv({
+@@ -4416,13 +4420,13 @@ var input = tv({
        md: {
          inputWrapper: "h-10 min-h-10 rounded-medium",
          input: "text-small",
@@ -1207,7 +1415,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
        }
      },
      radius: {
-@@ -4716,7 +4717,10 @@ var input = tv({
+@@ -4716,7 +4720,10 @@ var input = tv({
        variant: "bordered",
        color: "primary",
        class: {
@@ -1219,7 +1427,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
          label: "text-primary"
        }
      },
-@@ -4724,7 +4728,10 @@ var input = tv({
+@@ -4724,7 +4731,10 @@ var input = tv({
        variant: "bordered",
        color: "secondary",
        class: {
@@ -1231,7 +1439,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
          label: "text-secondary"
        }
      },
-@@ -4732,7 +4739,10 @@ var input = tv({
+@@ -4732,7 +4742,10 @@ var input = tv({
        variant: "bordered",
        color: "success",
        class: {
@@ -1243,7 +1451,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
          label: "text-success"
        }
      },
-@@ -4740,7 +4750,10 @@ var input = tv({
+@@ -4740,7 +4753,10 @@ var input = tv({
        variant: "bordered",
        color: "warning",
        class: {
@@ -1255,7 +1463,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
          label: "text-warning"
        }
      },
-@@ -4748,7 +4761,10 @@ var input = tv({
+@@ -4748,7 +4764,10 @@ var input = tv({
        variant: "bordered",
        color: "danger",
        class: {
@@ -1267,7 +1475,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
          label: "text-danger"
        }
      },
-@@ -5130,6 +5146,13 @@ var input = tv({
+@@ -5130,6 +5149,13 @@ var input = tv({
            "group-data-[has-value=true]:pointer-events-auto"
          ]
        }
@@ -1281,7 +1489,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
      }
    ]
  });
-@@ -6041,6 +6064,7 @@ var table = tv({
+@@ -6041,6 +6067,7 @@ var table = tv({
        "[&>*]:z-1",
        "[&>*]:relative",
        ...dataFocusVisibleClasses,
@@ -1289,7 +1497,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
        "before:content-['']",
        "before:absolute",
        "before:z-0",
-@@ -6094,20 +6118,6 @@ var table = tv({
+@@ -6094,20 +6121,6 @@ var table = tv({
          table: "table-fixed"
        }
      },
@@ -1310,7 +1518,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
      shadow: {
        none: {
          wrapper: "shadow-none"
-@@ -6170,6 +6180,34 @@ var table = tv({
+@@ -6170,6 +6183,34 @@ var table = tv({
          td: ["first:before:rounded-s-lg", "last:before:rounded-e-lg"]
        }
      },
@@ -1345,7 +1553,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
      fullWidth: {
        true: {
          base: "w-full",
-@@ -6699,7 +6737,6 @@ var skeleton = tv({
+@@ -6699,7 +6740,6 @@ var skeleton = tv({
        "before:absolute",
        "before:inset-0",
        "before:-translate-x-full",
@@ -1353,7 +1561,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
        "before:border-t",
        "before:border-content4/30",
        "before:bg-gradient-to-r",
-@@ -6728,7 +6765,7 @@ var skeleton = tv({
+@@ -6728,7 +6768,7 @@ var skeleton = tv({
          content: "transition-none"
        },
        false: {
@@ -1362,7 +1570,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
          content: "transition-opacity motion-reduce:transition-none !duration-300"
        }
      }
-@@ -6749,7 +6786,8 @@ var select = tv({
+@@ -6749,7 +6789,8 @@ var select = tv({
        "subpixel-antialiased",
        "text-small",
        "text-foreground-500",
@@ -1372,7 +1580,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
      ],
      mainWrapper: "w-full flex flex-col",
      trigger: "relative px-3 gap-3 w-full inline-flex flex-row items-center shadow-sm outline-none tap-highlight-transparent",
-@@ -6788,7 +6826,8 @@ var select = tv({
+@@ -6788,7 +6829,8 @@ var select = tv({
            "border-default-200",
            "data-[hover=true]:border-default-400",
            "data-[open=true]:border-default-foreground",
@@ -1382,7 +1590,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
          ],
          value: "group-data-[has-value=true]:text-default-foreground"
        },
-@@ -7041,7 +7080,11 @@ var select = tv({
+@@ -7041,7 +7083,11 @@ var select = tv({
        variant: "faded",
        color: "primary",
        class: {
@@ -1395,7 +1603,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
          label: "text-primary"
        }
      },
-@@ -7049,7 +7092,11 @@ var select = tv({
+@@ -7049,7 +7095,11 @@ var select = tv({
        variant: "faded",
        color: "secondary",
        class: {
@@ -1408,7 +1616,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
          label: "text-secondary"
        }
      },
-@@ -7057,7 +7104,11 @@ var select = tv({
+@@ -7057,7 +7107,11 @@ var select = tv({
        variant: "faded",
        color: "success",
        class: {
@@ -1421,7 +1629,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
          label: "text-success"
        }
      },
-@@ -7065,7 +7116,11 @@ var select = tv({
+@@ -7065,7 +7119,11 @@ var select = tv({
        variant: "faded",
        color: "warning",
        class: {
@@ -1434,7 +1642,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
          label: "text-warning"
        }
      },
-@@ -7073,7 +7128,11 @@ var select = tv({
+@@ -7073,7 +7131,11 @@ var select = tv({
        variant: "faded",
        color: "danger",
        class: {
@@ -1447,7 +1655,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
          label: "text-danger"
        }
      },
-@@ -7395,7 +7454,12 @@ var select = tv({
+@@ -7395,7 +7457,12 @@ var select = tv({
          label: [
            "start-2",
            "text-tiny",
@@ -1461,7 +1669,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
          ],
          base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_8px)]"
        }
-@@ -7408,7 +7472,12 @@ var select = tv({
+@@ -7408,7 +7475,12 @@ var select = tv({
          label: [
            "start-3",
            "text-small",
@@ -1475,7 +1683,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
          ],
          base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_10px)]"
        }
-@@ -7421,7 +7490,12 @@ var select = tv({
+@@ -7421,7 +7493,12 @@ var select = tv({
          label: [
            "start-3",
            "text-medium",
@@ -1489,7 +1697,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
          ],
          base: "data-[has-label=true]:mt-[calc(theme(fontSize.small)_+_12px)]"
        }
-@@ -7480,8 +7554,8 @@ var menuItem = tv({
+@@ -7480,8 +7557,8 @@ var menuItem = tv({
        ...dataFocusVisibleClasses,
        "data-[focus-visible=true]:dark:ring-offset-background-content1"
      ],
@@ -1500,7 +1708,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
      description: ["w-full", "text-tiny", "text-foreground-500", "group-hover:text-current"],
      selectedIcon: ["text-inherit", "w-3", "h-3", "flex-shrink-0"],
      shortcut: [
-@@ -8398,7 +8472,7 @@ var breadcrumbItem = tv({
+@@ -8398,7 +8475,7 @@ var breadcrumbItem = tv({
          item: "cursor-default"
        },
        false: {
@@ -1509,7 +1717,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
        }
      },
      isDisabled: {
-@@ -10277,22 +10351,22 @@ var transition_default = {
+@@ -10277,22 +10354,22 @@ var transition_default = {
      "transition-duration": DEFAULT_TRANSITION_DURATION
    },
    ".transition-transform-opacity": {
@@ -1536,7 +1744,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
      "transition-timing-function": "ease",
      "transition-duration": DEFAULT_TRANSITION_DURATION
    }
-@@ -10574,15 +10648,10 @@ var heroui = (config = {}) => {
+@@ -10574,15 +10651,10 @@ var heroui = (config = {}) => {
    let otherThemes = (0, import_shared_utils2.omit)(themeObject, ["light", "dark"]) || {};
    Object.entries(otherThemes).forEach(([themeName, { extend, colors: colors2, layout }]) => {
      const baseTheme = extend && isBaseTheme(extend) ? extend : defaultExtendTheme;
@@ -1557,7 +1765,7 @@ index 3b031a7453c6ed04ffdf4904e6377960086a76e7..b5f43e4a4438d8519a63fa3733f90bd3
    const light2 = {
      layout: (0, import_deepmerge.default)(baseLayouts.light, ((_c = themeObject == null ? void 0 : themeObject.light) == null ? void 0 : _c.layout) || {}),
 diff --git a/dist/plugin.js b/dist/plugin.js
-index a241ba4296f2c8f68c4524a3e41c3c0bac74f990..40d0d5690a2c5ac5bc90610ac8485afce4811b55 100644
+index a241ba4296f2c8f68c4524a3e41c3c0bac74f990..2437edc939557779fa69710c3f364ba5f519f03a 100644
 --- a/dist/plugin.js
 +++ b/dist/plugin.js
 @@ -452,22 +452,22 @@ var transition_default = {
@@ -1608,7 +1816,7 @@ index a241ba4296f2c8f68c4524a3e41c3c0bac74f990..40d0d5690a2c5ac5bc90610ac8485afc
    const light = {
      layout: (0, import_deepmerge.default)(baseLayouts.light, ((_c = themeObject == null ? void 0 : themeObject.light) == null ? void 0 : _c.layout) || {}),
 diff --git a/dist/utilities/index.js b/dist/utilities/index.js
-index 1fc11005040a3580cfdf8fed051ec68f6edc64c0..13b6c387d8e3bff611e3ab6ffe2564693c062a2f 100644
+index 1fc11005040a3580cfdf8fed051ec68f6edc64c0..896e9fd96bbdcda276a34b8b251c094a9ec2d144 100644
 --- a/dist/utilities/index.js
 +++ b/dist/utilities/index.js
 @@ -58,22 +58,22 @@ var transition_default = {
@@ -1639,7 +1847,7 @@ index 1fc11005040a3580cfdf8fed051ec68f6edc64c0..13b6c387d8e3bff611e3ab6ffe256469
      "transition-duration": DEFAULT_TRANSITION_DURATION
    }
 diff --git a/dist/utilities/transition.js b/dist/utilities/transition.js
-index 170626d46a3db20840c315f3e6396ba692b29d0c..354523179be4df71d3f3cc2f5fb70bb213a41cb5 100644
+index 170626d46a3db20840c315f3e6396ba692b29d0c..c651b50703596077a4981851856618139a8f3096 100644
 --- a/dist/utilities/transition.js
 +++ b/dist/utilities/transition.js
 @@ -57,22 +57,22 @@ var transition_default = {

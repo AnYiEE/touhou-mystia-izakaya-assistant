@@ -1,0 +1,199 @@
+diff --git a/dist/index.js b/dist/index.js
+index c001022f89bc625fe058a974a99bbec6ac8551f6..619dce00e3885c71c16d68c36c8fff72145a0e95 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -28,60 +28,53 @@ var import_react = require("react");
+ var import_react_utils = require("@heroui/react-utils");
+ var import_use_safe_layout_effect = require("@heroui/use-safe-layout-effect");
+ function useImage(props = {}) {
+-  const { onLoad, onError, ignoreFallback } = props;
++  const { onLoad, onError, ignoreFallback, src, crossOrigin, srcSet, sizes, loading } = props;
+   const isHydrated = (0, import_react_utils.useIsHydrated)();
+-  const imageRef = (0, import_react.useRef)(isHydrated ? new Image() : null);
++  const imageRef = (0, import_react.useRef)(null);
+   const [status, setStatus] = (0, import_react.useState)("pending");
+-  (0, import_react.useEffect)(() => {
+-    if (!imageRef.current)
+-      return;
+-    imageRef.current.onload = (event) => {
++  const flush = (0, import_react.useCallback)(() => {
++    if (imageRef.current) {
++      imageRef.current.onload = null;
++      imageRef.current.onerror = null;
++      imageRef.current = null;
++    }
++  }, []);
++  const load = (0, import_react.useCallback)(() => {
++    if (!src) return "pending";
++    if (ignoreFallback) return "loaded";
++    flush();
++    const img = new Image();
++    img.onload = (event) => {
+       flush();
+       setStatus("loaded");
+       onLoad == null ? void 0 : onLoad(event);
+-    };
+-    imageRef.current.onerror = (error) => {
++    }
++    img.onerror = (event) => {
+       flush();
+       setStatus("failed");
+-      onError == null ? void 0 : onError(error);
++      onError == null ? void 0 : onError(event);
+     };
+-  }, [imageRef.current]);
+-  const flush = () => {
+-    if (imageRef.current) {
+-      imageRef.current.onload = null;
+-      imageRef.current.onerror = null;
+-      imageRef.current = null;
++    if (crossOrigin) img.crossOrigin = crossOrigin;
++    if (srcSet) img.srcset = srcSet;
++    if (sizes) img.sizes = sizes;
++    if (loading) img.loading = loading;
++    img.src = src;
++    imageRef.current = img;
++    if (img.complete) {
++      if (img.naturalWidth && img.naturalHeight) {
++        return "loaded";
++      }
++      return "failed";
+     }
+-  };
++    return "loading";
++  }, [src, crossOrigin, srcSet, sizes, onLoad, onError, ignoreFallback, loading, flush]);
+   (0, import_use_safe_layout_effect.useSafeLayoutEffect)(() => {
+     if (isHydrated) {
+-      setStatus(setImageAndGetInitialStatus(props, imageRef));
++      setStatus(load());
+     }
+-  }, [isHydrated]);
++  }, [isHydrated, load]);
+   return ignoreFallback ? "loaded" : status;
+ }
+-function setImageAndGetInitialStatus(props, imageRef) {
+-  const { loading, src, srcSet, crossOrigin, sizes, ignoreFallback } = props;
+-  if (!src)
+-    return "pending";
+-  if (ignoreFallback)
+-    return "loaded";
+-  const img = new Image();
+-  img.src = src;
+-  if (crossOrigin)
+-    img.crossOrigin = crossOrigin;
+-  if (srcSet)
+-    img.srcset = srcSet;
+-  if (sizes)
+-    img.sizes = sizes;
+-  if (loading)
+-    img.loading = loading;
+-  imageRef.current = img;
+-  if (img.complete && img.naturalWidth) {
+-    return "loaded";
+-  }
+-  return "loading";
+-}
+ var shouldShowFallbackImage = (status, fallbackStrategy) => status !== "loaded" && fallbackStrategy === "beforeLoadOrError" || status === "failed" && fallbackStrategy === "onError";
+ // Annotate the CommonJS export names for ESM import in node:
+ 0 && (module.exports = {
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 0335df7990078bb9f8ff9e71d526d01f3d93d23f..3f4ca49b1eb6e308d1e42eca99351958e77ef65f 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -1,62 +1,55 @@
+ // src/index.ts
+-import { useRef, useState, useEffect } from "react";
++import { useRef, useState, useCallback } from "react";
+ import { useIsHydrated } from "@heroui/react-utils";
+ import { useSafeLayoutEffect } from "@heroui/use-safe-layout-effect";
+ function useImage(props = {}) {
+-  const { onLoad, onError, ignoreFallback } = props;
++  const { onLoad, onError, ignoreFallback, src, crossOrigin, srcSet, sizes, loading } = props;
+   const isHydrated = useIsHydrated();
+-  const imageRef = useRef(isHydrated ? new Image() : null);
++  const imageRef = useRef(null);
+   const [status, setStatus] = useState("pending");
+-  useEffect(() => {
+-    if (!imageRef.current)
+-      return;
+-    imageRef.current.onload = (event) => {
++  const flush = useCallback(() => {
++    if (imageRef.current) {
++      imageRef.current.onload = null;
++      imageRef.current.onerror = null;
++      imageRef.current = null;
++    }
++  }, []);
++  const load = useCallback(() => {
++    if (!src) return "pending";
++    if (ignoreFallback) return "loaded";
++    flush();
++    const img = new Image();
++    img.onload = (event) => {
+       flush();
+       setStatus("loaded");
+       onLoad == null ? void 0 : onLoad(event);
+-    };
+-    imageRef.current.onerror = (error) => {
++    }
++    img.onerror = (event) => {
+       flush();
+       setStatus("failed");
+-      onError == null ? void 0 : onError(error);
++      onError == null ? void 0 : onError(event);
+     };
+-  }, [imageRef.current]);
+-  const flush = () => {
+-    if (imageRef.current) {
+-      imageRef.current.onload = null;
+-      imageRef.current.onerror = null;
+-      imageRef.current = null;
++    if (crossOrigin) img.crossOrigin = crossOrigin;
++    if (srcSet) img.srcset = srcSet;
++    if (sizes) img.sizes = sizes;
++    if (loading) img.loading = loading;
++    img.src = src;
++    imageRef.current = img;
++    if (img.complete) {
++      if (img.naturalWidth && img.naturalHeight) {
++        return "loaded";
++      }
++      return "failed";
+     }
+-  };
++    return "loading";
++  }, [src, crossOrigin, srcSet, sizes, onLoad, onError, ignoreFallback, loading, flush]);
+   useSafeLayoutEffect(() => {
+     if (isHydrated) {
+-      setStatus(setImageAndGetInitialStatus(props, imageRef));
++      setStatus(load());
+     }
+-  }, [isHydrated]);
++  }, [isHydrated, load]);
+   return ignoreFallback ? "loaded" : status;
+ }
+-function setImageAndGetInitialStatus(props, imageRef) {
+-  const { loading, src, srcSet, crossOrigin, sizes, ignoreFallback } = props;
+-  if (!src)
+-    return "pending";
+-  if (ignoreFallback)
+-    return "loaded";
+-  const img = new Image();
+-  img.src = src;
+-  if (crossOrigin)
+-    img.crossOrigin = crossOrigin;
+-  if (srcSet)
+-    img.srcset = srcSet;
+-  if (sizes)
+-    img.sizes = sizes;
+-  if (loading)
+-    img.loading = loading;
+-  imageRef.current = img;
+-  if (img.complete && img.naturalWidth) {
+-    return "loaded";
+-  }
+-  return "loading";
+-}
+ var shouldShowFallbackImage = (status, fallbackStrategy) => status !== "loaded" && fallbackStrategy === "beforeLoadOrError" || status === "failed" && fallbackStrategy === "onError";
+ export {
+   shouldShowFallbackImage,
