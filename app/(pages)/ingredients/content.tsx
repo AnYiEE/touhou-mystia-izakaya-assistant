@@ -26,9 +26,9 @@ import Sprite from '@/components/sprite';
 
 import {
 	COLLECTION_LOCATION_REFRESH_TIME_MAP,
+	DLC_LABEL_MAP,
 	type IIngredient,
 	INGREDIENT_TAG_STYLE,
-	LABEL_MAP,
 	type TCollectionLocation,
 	type TDlc,
 } from '@/data';
@@ -154,10 +154,11 @@ export default memo<IProps>(function Content({ data }) {
 														) => (
 															<div key={dlcIndex}>
 																<p className="mb-1 text-small font-medium">
-																	{relatedDlc ===
-																	0
-																		? LABEL_MAP.dlc0
-																		: `DLC${relatedDlc}`}
+																	{
+																		DLC_LABEL_MAP[
+																			relatedDlc
+																		].label
+																	}
 																</p>
 																<div className="grid h-min grid-cols-2 content-start justify-items-start gap-x-4 gap-y-2">
 																	{recipes.map(

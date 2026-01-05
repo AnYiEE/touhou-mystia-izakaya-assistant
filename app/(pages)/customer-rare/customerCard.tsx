@@ -28,7 +28,7 @@ import Tags from '@/components/tags';
 import {
 	CUSTOMER_RARE_TAG_STYLE,
 	CUSTOMER_RATING_MAP,
-	LABEL_MAP,
+	DLC_LABEL_MAP,
 	type TBeverageTag,
 	type TCustomerRareName,
 	type TRecipeTag,
@@ -207,7 +207,8 @@ export default function CustomerCard() {
 		spellCards: currentCustomerSpellCards,
 	} = instance_customer.getPropsByName(currentCustomerName);
 
-	const dlcLabel = currentCustomerDlc === 0 ? LABEL_MAP.dlc0 : '';
+	const { label: dlcLabel, shortLabel: dlcShortLabel } =
+		DLC_LABEL_MAP[currentCustomerDlc];
 
 	const copiedCurrentCustomerPlaces = copyArray(currentCustomerPlaces);
 	const currentCustomerMainPlace = copiedCurrentCustomerPlaces.shift();
@@ -345,39 +346,41 @@ export default function CustomerCard() {
 						<p className="flex justify-between gap-10">
 							<Popover
 								showArrow
-								isTriggerDisabled={!dlcLabel}
+								isTriggerDisabled={!dlcShortLabel}
 								offset={4}
 							>
 								<Tooltip
 									showArrow
 									content={dlcLabel}
-									isDisabled={!dlcLabel}
+									isDisabled={!dlcShortLabel}
 									offset={0}
 								>
 									<span
 										className={cn({
-											'cursor-text': !dlcLabel,
+											'cursor-text': !dlcShortLabel,
 										})}
 									>
 										<PopoverTrigger>
 											<span
 												role={
-													dlcLabel
+													dlcShortLabel
 														? 'button'
 														: undefined
 												}
 												tabIndex={
-													dlcLabel ? 0 : undefined
+													dlcShortLabel
+														? 0
+														: undefined
 												}
 												title={dlcLabel}
 												className={cn('opacity-100', {
 													[CLASSNAME_FOCUS_VISIBLE_OUTLINE]:
-														dlcLabel,
+														dlcShortLabel,
 													'underline-dotted-linear':
-														dlcLabel,
+														dlcShortLabel,
 												})}
 											>
-												DLC{currentCustomerDlc}
+												{dlcShortLabel || dlcLabel}
 											</span>
 										</PopoverTrigger>
 									</span>

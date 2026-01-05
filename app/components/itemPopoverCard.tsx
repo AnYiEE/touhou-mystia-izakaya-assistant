@@ -39,10 +39,11 @@ import TagsComponent from '@/components/tags';
 
 import { siteConfig } from '@/configs';
 import {
+	DLC_LABEL_MAP,
 	type ICooker,
 	type IIngredient,
-	LABEL_MAP,
 	type TCookerName,
+	type TDlc,
 	type TIngredientName,
 	type TItemName,
 	type TTag,
@@ -300,7 +301,10 @@ const ItemPopoverCardComponent = memo<PropsWithChildren<IItemPopoverCardProps>>(
 			(mergedTags?.negative !== undefined &&
 				!checkEmpty(mergedTags.negative));
 
-		const dlcLabel = dlc === 0 ? LABEL_MAP.dlc0 : '';
+		const dlcLabel =
+			dlc === undefined ? '' : DLC_LABEL_MAP[dlc as TDlc].label;
+		const dlcShortLabel =
+			dlc === undefined ? '' : DLC_LABEL_MAP[dlc as TDlc].shortLabel;
 
 		return (
 			<div
@@ -321,36 +325,38 @@ const ItemPopoverCardComponent = memo<PropsWithChildren<IItemPopoverCardProps>>(
 						{dlc !== undefined && (
 							<Popover
 								showArrow
-								isTriggerDisabled={!dlcLabel}
+								isTriggerDisabled={!dlcShortLabel}
 								offset={3}
 								size="sm"
 							>
 								<Tooltip
 									showArrow
 									content={dlcLabel}
-									isDisabled={!dlcLabel}
+									isDisabled={!dlcShortLabel}
 									offset={1}
 									size="sm"
 								>
 									<span
 										className={cn({
-											'cursor-text': !dlcLabel,
+											'cursor-text': !dlcShortLabel,
 										})}
 									>
 										<PopoverTrigger
 											className={cn({
 												[CLASSNAME_FOCUS_VISIBLE_OUTLINE]:
-													dlcLabel,
+													dlcShortLabel,
 											})}
 										>
 											<span
 												role={
-													dlcLabel
+													dlcShortLabel
 														? 'button'
 														: undefined
 												}
 												tabIndex={
-													dlcLabel ? 0 : undefined
+													dlcShortLabel
+														? 0
+														: undefined
 												}
 												title={dlcLabel}
 												className="opacity-100"
@@ -359,10 +365,10 @@ const ItemPopoverCardComponent = memo<PropsWithChildren<IItemPopoverCardProps>>(
 												<span
 													className={cn({
 														'underline-dotted-linear':
-															dlcLabel,
+															dlcShortLabel,
 													})}
 												>
-													DLC{dlc}
+													{dlcShortLabel || dlcLabel}
 												</span>
 												】
 											</span>

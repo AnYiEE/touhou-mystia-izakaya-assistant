@@ -53,7 +53,7 @@ import type {
 	TBeverageWithSuitability,
 	TBeveragesWithSuitability,
 } from './types';
-import { CUSTOMER_NORMAL_TAG_STYLE, LABEL_MAP } from '@/data';
+import { CUSTOMER_NORMAL_TAG_STYLE, DLC_LABEL_MAP } from '@/data';
 import { customerNormalStore as customerStore, globalStore } from '@/stores';
 import {
 	checkArraySubsetOf,
@@ -482,7 +482,10 @@ export default function BeverageTabContent() {
 										key={value}
 										textValue={value.toString()}
 									>
-										{value || LABEL_MAP.dlc0}
+										{value === 0
+											? DLC_LABEL_MAP[0].label
+											: DLC_LABEL_MAP[value].shortLabel ||
+												DLC_LABEL_MAP[value].label}
 									</DropdownItem>
 								)}
 							</DropdownMenu>

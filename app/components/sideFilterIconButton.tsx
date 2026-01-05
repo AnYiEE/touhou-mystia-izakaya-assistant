@@ -24,7 +24,7 @@ import FontAwesomeIconButton, {
 } from '@/components/fontAwesomeIconButton';
 import Sprite from '@/components/sprite';
 
-import { LABEL_MAP, type TItemName } from '@/data';
+import { DLC_LABEL_MAP, type TDlc, type TItemName } from '@/data';
 import { globalStore as store } from '@/stores';
 import { checkEmpty, pinyinSort, toArray } from '@/utilities';
 import type { TSpriteTarget } from '@/utils/sprite/types';
@@ -208,8 +208,9 @@ export default memo<IProps>(function SideFilterIconButton({
 										</SelectItem>
 									) : (
 										<SelectItem key={value}>
-											{label === 'DLC' && value === 0
-												? LABEL_MAP.dlc0
+											{label === 'DLC'
+												? DLC_LABEL_MAP[value as TDlc]
+														.label
 												: value.toString()}
 										</SelectItem>
 									)

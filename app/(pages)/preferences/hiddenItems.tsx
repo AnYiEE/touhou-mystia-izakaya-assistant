@@ -18,7 +18,7 @@ import SwitchItem from './switchItem';
 import Heading from '@/components/heading';
 import Sprite, { type ISpriteProps } from '@/components/sprite';
 
-import { LABEL_MAP } from '@/data';
+import { DLC_LABEL_MAP } from '@/data';
 import {
 	beveragesStore,
 	globalStore,
@@ -240,7 +240,7 @@ const SettingsPanel = memo(function SettingsPanel<
 							)}
 						>
 							<Heading as="h4" isFirst={index === 0}>
-								{dlc === 0 ? LABEL_MAP.dlc0 : `DLC${dlc}`}
+								{DLC_LABEL_MAP[dlc].label}
 							</Heading>
 							<SwitchItem
 								color="warning"
@@ -251,7 +251,7 @@ const SettingsPanel = memo(function SettingsPanel<
 								onValueChange={() => {
 									handleDlcToggle(dlc);
 								}}
-								aria-label={`${dlcToggleState === true ? '隐藏' : '显示'}${dlc === 0 ? LABEL_MAP.dlc0 : `DLC${dlc}`}的全部项目`}
+								aria-label={`${dlcToggleState === true ? '隐藏' : '显示'}${DLC_LABEL_MAP[dlc].label}的全部项目`}
 								title={
 									isDlcToggleDisabled
 										? '此分组下的所有料理均因包含已被隐藏的食材而被隐藏'
