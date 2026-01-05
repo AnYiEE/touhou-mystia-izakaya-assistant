@@ -514,11 +514,13 @@ export default function InfoButton() {
 									<div>
 										<p className="font-semibold">
 											{evaluation}
-											{evaluation === '极度不满' ? (
+											{evaluation === '极度不满' &&
+											hasNegativeSpellCards ? (
 												<span className="font-normal">
 													（释放惩罚符卡）
 												</span>
-											) : evaluation === '完美' ? (
+											) : evaluation === '完美' &&
+											  hasPositiveSpellCards ? (
 												<span className="font-normal">
 													（释放奖励符卡）
 												</span>
