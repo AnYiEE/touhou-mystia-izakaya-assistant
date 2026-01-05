@@ -124,8 +124,8 @@
 	"devDependencies": {
 		"@babel/core": "^7.28.5",
 		"@babel/preset-env": "^7.28.5",
-		"@commitlint/cli": "^20.2.0",
-		"@commitlint/config-conventional": "^20.2.0",
+		"@commitlint/cli": "^20.3.0",
+		"@commitlint/config-conventional": "^20.3.0",
 		"@eslint-community/eslint-plugin-eslint-comments": "^4.5.0",
 		"@eslint/eslintrc": "^3.3.3",
 		"@eslint/js": "^9.39.2",
@@ -148,7 +148,7 @@
 		"eslint-plugin-compat": "^6.0.2",
 		"eslint-plugin-sort-destructure-keys": "^2.0.0",
 		"eslint-plugin-unicorn": "^62.0.0",
-		"globals": "^16.5.0",
+		"globals": "^17.0.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^16.2.7",
 		"minimist": "^1.2.8",
@@ -161,7 +161,7 @@
 		"sass": "^1.97.1",
 		"stylelint": "^16.26.1",
 		"stylelint-config-standard-scss": "^16.0.0",
-		"stylelint-scss": "^6.13.0",
+		"stylelint-scss": "^6.14.0",
 		"tailwindcss": "^3.4.19",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.49.0"
@@ -181,6 +181,7 @@
 			"@typescript-eslint/parser": "$typescript-eslint",
 			"@typescript-eslint/tsconfig-utils": "$typescript-eslint",
 			"@typescript-eslint/types": "$typescript-eslint",
+			"globals": "$globals",
 			"react-dom": "$react-dom"
 		},
 		"patchedDependencies": {
