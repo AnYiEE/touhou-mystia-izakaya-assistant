@@ -3,8 +3,7 @@ import { CURRENCY_LIST } from './data';
 
 export const CURRENCY_SPRITE_CONFIG = generateSpriteConfig(
 	CURRENCY_LIST.length,
-	{ height: 26, width: 26 },
-	7
+	{ height: 26, width: 26 }
 );
 
 export * from './data';
