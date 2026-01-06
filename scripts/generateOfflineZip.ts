@@ -1,7 +1,7 @@
 import nextEnv from '@next/env';
 import AdmZip from 'adm-zip';
 import minimist from 'minimist';
-import { access, copyFile, mkdir, readdir, rename, rm } from 'node:fs/promises';
+import { copyFile, mkdir, readdir, rename, rm } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { argv, cwd } from 'node:process';
 
@@ -29,19 +29,8 @@ const scriptPath = resolve(import.meta.dirname);
 const apiPath = resolve(appPath, 'api');
 const fakeApiPath = resolve(appPath, '_api');
 
-async function checkPathExists(path: string) {
-	try {
-		await access(path);
-		return true;
-	} catch {
-		return false;
-	}
-}
-
 async function moveRouterFiles(currentPath: string, targetPath: string) {
-	if (!(await checkPathExists(targetPath))) {
-		await mkdir(targetPath, { recursive: true });
-	}
+	await mkdir(targetPath, { recursive: true });
 
 	const entries = await readdir(currentPath, { withFileTypes: true });
 	for (const entry of entries) {
@@ -73,20 +62,14 @@ if (isOffline && !isPrepare) {
 	};
 
 	for (const file of filesToDelete) {
-		const filePath = resolve(outputPath, file);
-		if (await checkPathExists(filePath)) {
-			await rm(filePath);
-		}
+		await rm(resolve(outputPath, file), { force: true });
 	}
 
 	for (const file of filesToRename) {
-		if (await checkPathExists(outputPath)) {
-			const filePath = resolve(rootPath, file);
-			await copyFile(
-				filePath,
-				resolve(outputPath, replaceExtension(file))
-			);
-		}
+		await copyFile(
+			resolve(rootPath, file),
+			resolve(outputPath, replaceExtension(file))
+		);
 	}
 
 	const zipFileName = `${PACKAGE.name}_${PACKAGE.version}_${await getSha()}_offline-Windows`;

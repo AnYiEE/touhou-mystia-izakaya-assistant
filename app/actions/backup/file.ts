@@ -1,4 +1,4 @@
-import { access, mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { cwd } from 'node:process';
 
@@ -27,13 +27,6 @@ export async function saveFile(
 	code: TBackupFileRecord['code'],
 	content: string
 ) {
-	try {
-		await access(dir);
-	} catch {
-		await mkdir(dir, { recursive: true });
-	}
-
-	const filePath = generateFilePath(code);
-
-	await writeFile(filePath, content, encoding);
+	await mkdir(dir, { recursive: true });
+	await writeFile(generateFilePath(code), content, encoding);
 }
