@@ -1,9 +1,9 @@
-import type { ISpriteConfig } from '@/utils/sprite/types';
+import { generateSpriteConfig } from '@/data/utils';
+import { ORNAMENT_LIST } from './data';
 
-export const ORNAMENT_SPRITE_CONFIG = {
-	col: 10,
-	row: 2,
-	size: { height: 26, width: 26 },
-} as const satisfies ISpriteConfig;
+export const ORNAMENT_SPRITE_CONFIG = generateSpriteConfig(
+	ORNAMENT_LIST.length,
+	{ height: 26, width: 26 }
+);
 
 export * from './data';

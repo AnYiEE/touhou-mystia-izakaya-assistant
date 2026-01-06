@@ -9,13 +9,13 @@ import {
 import { BEVERAGE_TAG_STYLE } from '@/data/beverages';
 import { RECIPE_TAG_STYLE } from '@/data/recipes';
 import type { ITagStyle } from '@/data/types';
-import type { ISpriteConfig } from '@/utils/sprite/types';
+import { generateSpriteConfig } from '@/data/utils';
+import { CUSTOMER_RARE_LIST } from './data';
 
-export const CUSTOMER_RARE_SPRITE_CONFIG = {
-	col: 10,
-	row: 6,
-	size: { height: 184, width: 184 },
-} as const satisfies ISpriteConfig;
+export const CUSTOMER_RARE_SPRITE_CONFIG = generateSpriteConfig(
+	CUSTOMER_RARE_LIST.length,
+	{ height: 184, width: 184 }
+);
 
 export const CUSTOMER_RARE_TAG_STYLE = {
 	...RECIPE_TAG_STYLE,

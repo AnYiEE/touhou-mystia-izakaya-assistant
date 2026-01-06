@@ -1,11 +1,11 @@
 import type { ITagStyle } from '@/data/types';
-import type { ISpriteConfig } from '@/utils/sprite/types';
+import { generateSpriteConfig } from '@/data/utils';
+import { BEVERAGE_LIST } from './data';
 
-export const BEVERAGE_SPRITE_CONFIG = {
-	col: 10,
-	row: 5,
-	size: { height: 26, width: 26 },
-} as const satisfies ISpriteConfig;
+export const BEVERAGE_SPRITE_CONFIG = generateSpriteConfig(
+	BEVERAGE_LIST.length,
+	{ height: 26, width: 26 }
+);
 
 export const BEVERAGE_TAG_STYLE = {
 	positive: {

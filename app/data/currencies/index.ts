@@ -1,9 +1,10 @@
-import type { ISpriteConfig } from '@/utils/sprite/types';
+import { generateSpriteConfig } from '@/data/utils';
+import { CURRENCY_LIST } from './data';
 
-export const CURRENCY_SPRITE_CONFIG = {
-	col: 7,
-	row: 1,
-	size: { height: 26, width: 26 },
-} as const satisfies ISpriteConfig;
+export const CURRENCY_SPRITE_CONFIG = generateSpriteConfig(
+	CURRENCY_LIST.length,
+	{ height: 26, width: 26 },
+	7
+);
 
 export * from './data';

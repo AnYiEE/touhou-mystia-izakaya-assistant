@@ -1,9 +1,9 @@
-import type { ISpriteConfig } from '@/utils/sprite/types';
+import { generateSpriteConfig } from '@/data/utils';
+import { COOKER_LIST } from './data';
 
-export const COOKER_SPRITE_CONFIG = {
-	col: 10,
-	row: 5,
-	size: { height: 26, width: 26 },
-} as const satisfies ISpriteConfig;
+export const COOKER_SPRITE_CONFIG = generateSpriteConfig(COOKER_LIST.length, {
+	height: 26,
+	width: 26,
+});
 
 export * from './data';

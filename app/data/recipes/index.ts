@@ -1,11 +1,11 @@
 import type { ITagStyle } from '@/data/types';
-import type { ISpriteConfig } from '@/utils/sprite/types';
+import { generateSpriteConfig } from '@/data/utils';
+import { RECIPE_LIST } from './data';
 
-export const RECIPE_SPRITE_CONFIG = {
-	col: 10,
-	row: 17,
-	size: { height: 26, width: 26 },
-} as const satisfies ISpriteConfig;
+export const RECIPE_SPRITE_CONFIG = generateSpriteConfig(RECIPE_LIST.length, {
+	height: 26,
+	width: 26,
+});
 
 export const RECIPE_TAG_STYLE = {
 	negative: {
