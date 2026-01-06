@@ -51,14 +51,7 @@ const script = () => {
 	 * @description Global sync error handler for non-network errors.
 	 */
 	globalThis.addEventListener('error', (event) => {
-		const unknown = '未知';
-		const {
-			colno = unknown,
-			error,
-			filename = unknown,
-			lineno = unknown,
-			message,
-		} = event;
+		const { colno, error, filename, lineno, message } = event;
 
 		if (
 			/fetch|load\sfail|loading\schunk|network|net::|ResizeObserver/i.test(
