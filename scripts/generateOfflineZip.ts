@@ -1,35 +1,25 @@
-// @ts-check
-
 import nextEnv from '@next/env';
 import AdmZip from 'adm-zip';
 import minimist from 'minimist';
-import {
-	access,
-	copyFile,
-	mkdir,
-	readdir,
-	rename,
-	rm,
-	unlink,
-} from 'node:fs/promises';
+import { access, copyFile, mkdir, readdir, rename, rm } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { argv, cwd } from 'node:process';
 
-import { getSha } from './utils.mjs';
-import PACKAGE from '../package.json' with { type: 'json' };
+import { getSha } from './utils';
+import PACKAGE from '../package.json';
 
 nextEnv.loadEnvConfig(cwd());
 
 const isOffline = Boolean(process.env.OFFLINE);
-const { prepare: isPrepare } = minimist(argv.slice(2));
+const { prepare: isPrepare } = minimist<{ prepare?: boolean }>(argv.slice(2));
 
 const filesToDelete = [
 	'registerServiceWorker.js',
 	'robots.txt',
 	'serviceWorker.js',
 	'sitemap.xml',
-];
-const filesToRename = ['LICENSE', 'README.md'];
+] as const;
+const filesToRename = ['LICENSE', 'README.md'] as const;
 
 const appPath = resolve(import.meta.dirname, '../app');
 const outputPath = resolve(import.meta.dirname, '../out');
@@ -39,7 +29,7 @@ const scriptPath = resolve(import.meta.dirname);
 const apiPath = resolve(appPath, 'api');
 const fakeApiPath = resolve(appPath, '_api');
 
-async function checkPathExists(/** @type {string} */ path) {
+async function checkPathExists(path: string) {
 	try {
 		await access(path);
 		return true;
@@ -48,10 +38,7 @@ async function checkPathExists(/** @type {string} */ path) {
 	}
 }
 
-async function moveRouterFiles(
-	/** @type {string} */ currentPath,
-	/** @type {string} */ targetPath
-) {
+async function moveRouterFiles(currentPath: string, targetPath: string) {
 	if (!(await checkPathExists(targetPath))) {
 		await mkdir(targetPath, { recursive: true });
 	}
@@ -77,7 +64,7 @@ if (isOffline && !isPrepare) {
 	await moveRouterFiles(fakeApiPath, apiPath);
 	await rm(fakeApiPath, { recursive: true });
 
-	const replaceExtension = (/** @type {string} */ fileName) => {
+	const replaceExtension = (fileName: string) => {
 		const f = fileName.split('.');
 		if (f.length > 1) {
 			f.pop();
@@ -88,7 +75,7 @@ if (isOffline && !isPrepare) {
 	for (const file of filesToDelete) {
 		const filePath = resolve(outputPath, file);
 		if (await checkPathExists(filePath)) {
-			await unlink(filePath);
+			await rm(filePath);
 		}
 	}
 

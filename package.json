@@ -3,10 +3,11 @@
 	"version": "1.11.19",
 	"description": "东方夜雀食堂小助手（夜雀助手）是为游戏《东方夜雀食堂》所打造的辅助工具，提供顾客图鉴（包括羁绊奖励和符卡效果查询）、搭配稀客和普客的料理套餐，以及料理（食谱）、酒水、食材、厨具、摆件、衣服和伙伴查询等功能，旨在为玩家的游玩过程提供帮助。",
 	"private": true,
+	"type": "module",
 	"scripts": {
 		"dev": "next dev --turbopack",
-		"build": "node scripts/generateServiceWorker.mjs && next build && node scripts/babelTransformFile.mjs",
-		"build:offline": "cross-env-shell OFFLINE=true \"node scripts/generateOfflineZip.mjs --prepare && next build && node scripts/babelTransformFile.mjs && node scripts/generateOfflineZip.mjs\"",
+		"build": "tsx scripts/generateServiceWorker.ts && next build && tsx scripts/babelTransformFile.ts",
+		"build:offline": "cross-env-shell OFFLINE=true \"tsx scripts/generateOfflineZip.ts --prepare && next build && tsx scripts/babelTransformFile.ts && tsx scripts/generateOfflineZip.ts\"",
 		"start": "next start",
 		"serve": "pnpx serve out",
 		"lint": "eslint --cache .",
@@ -163,6 +164,7 @@
 		"stylelint-config-standard-scss": "^16.0.0",
 		"stylelint-scss": "^6.14.0",
 		"tailwindcss": "^3.4.19",
+		"tsx": "^4.21.0",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.49.0"
 	},
@@ -171,6 +173,7 @@
 			"@heroui/shared-utils",
 			"@parcel/watcher",
 			"better-sqlite3",
+			"esbuild",
 			"react-transition-progress",
 			"sharp",
 			"unrs-resolver"

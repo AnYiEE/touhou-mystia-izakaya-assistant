@@ -8,7 +8,7 @@ import {
 	getExtendConfig,
 	semanticColors,
 } from './app/design/theme';
-import { CDN_URL, IS_PRODUCTION } from './scripts/utils.mjs';
+import { CDN_URL, IS_PRODUCTION } from './scripts/utils';
 import PACKAGE from './package.json';
 
 const herouiComponents = [

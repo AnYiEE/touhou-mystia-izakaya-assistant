@@ -1,5 +1,3 @@
-// @ts-check
-
 import { exec } from 'node:child_process';
 import { env } from 'node:process';
 import { promisify } from 'node:util';

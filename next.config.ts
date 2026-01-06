@@ -3,12 +3,7 @@
 import { type NextConfig } from 'next';
 import { env } from 'node:process';
 
-import {
-	CDN_URL,
-	IS_OFFLINE,
-	IS_PRODUCTION,
-	getSha,
-} from './scripts/utils.mjs';
+import { CDN_URL, IS_OFFLINE, IS_PRODUCTION, getSha } from './scripts/utils';
 
 const exportMode = IS_OFFLINE || (!env.SELF_HOSTED && !env.VERCEL);
 const skipLint = IS_OFFLINE || (IS_PRODUCTION && Boolean(env.SKIP_LINT));

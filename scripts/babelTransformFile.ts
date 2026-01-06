@@ -1,17 +1,13 @@
 /**
  * @file Transform all JavaScript operators and syntaxes, **not methods**.
  */
-// @ts-check
 
+import { transformFileAsync } from '@babel/core';
 import fg from 'fast-glob';
 import lodash from 'lodash';
-import { transformFileAsync } from '@babel/core';
 import { writeFile } from 'node:fs/promises';
 
-function logError(
-	/** @type {string} */ filePath,
-	/** @type {unknown} */ error
-) {
+function logError(filePath: string, error: unknown) {
 	console.error(`Error transforming file: ${filePath}`, error);
 }
 

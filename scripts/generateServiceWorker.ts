@@ -1,11 +1,9 @@
-// @ts-check
-
 import nextEnv from '@next/env';
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { cwd } from 'node:process';
 
-import { getSha } from './utils.mjs';
+import { getSha } from './utils';
 
 nextEnv.loadEnvConfig(cwd());
 
