@@ -4,9 +4,8 @@ import type { ISpriteConfig } from '@/utils/sprite/types';
 export const INGREDIENT_SPRITE_CONFIG = {
 	col: 10,
 	row: 7,
-
-	height: 728,
-	width: 1040,
+	scale: 4,
+	size: { height: 26, width: 26 },
 } as const satisfies ISpriteConfig;
 
 export const INGREDIENT_TAG_STYLE = {

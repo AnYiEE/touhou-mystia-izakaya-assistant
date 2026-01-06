@@ -14,9 +14,8 @@ import type { ISpriteConfig } from '@/utils/sprite/types';
 export const CUSTOMER_RARE_SPRITE_CONFIG = {
 	col: 10,
 	row: 6,
-
-	height: 1104,
-	width: 1840,
+	scale: 1,
+	size: { height: 184, width: 184 },
 } as const satisfies ISpriteConfig;
 
 export const CUSTOMER_RARE_TAG_STYLE = {

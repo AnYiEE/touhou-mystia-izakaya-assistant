@@ -3,9 +3,8 @@ import type { ISpriteConfig } from '@/utils/sprite/types';
 export const PARTNER_SPRITE_CONFIG = {
 	col: 10,
 	row: 2,
-
-	height: 368,
-	width: 1840,
+	scale: 1,
+	size: { height: 184, width: 184 },
 } as const satisfies ISpriteConfig;
 
 export * from './data';

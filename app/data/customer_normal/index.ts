@@ -6,9 +6,8 @@ import type { ISpriteConfig } from '@/utils/sprite/types';
 export const CUSTOMER_NORMAL_SPRITE_CONFIG = {
 	col: 10,
 	row: 5,
-
-	height: 885,
-	width: 1330,
+	scale: 1,
+	size: { height: 177, width: 133 },
 } as const satisfies ISpriteConfig;
 
 export const CUSTOMER_NORMAL_TAG_STYLE = {

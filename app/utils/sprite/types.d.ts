@@ -100,6 +100,6 @@ export type TSpriteName<T extends TSpriteTarget = string> = T extends 'beverage'
 export interface ISpriteConfig {
 	col: number;
 	row: number;
-	height: number;
-	width: number;
+	scale: number;
+	size: { height: number; width: number };
 }
