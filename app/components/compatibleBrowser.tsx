@@ -6,11 +6,11 @@ import { useMounted } from '@/hooks';
 
 import { checkEmpty, memoize, toArray, waitDomReady } from '@/utilities';
 
-type TFeature = 'flexGap' | 'webp';
+type TFeature = 'flexGap';
 type TCompatibility = Record<TFeature, boolean>;
 
 export const checkCompatibility = memoize(function checkCompatibility() {
-	const compatibility: TCompatibility = { flexGap: true, webp: true };
+	const compatibility: TCompatibility = { flexGap: true };
 
 	const {
 		browser: { name: _browserName, version: _browserVersion },
@@ -36,20 +36,13 @@ export const checkCompatibility = memoize(function checkCompatibility() {
 	const isSupportedFlexGapSafari =
 		(typeof browserVersion === 'number' && browserVersion > 14) ||
 		(typeof osVersion === 'number' && osVersion > 14);
-	const isSupportedWebpFirefox =
-		typeof browserVersion === 'number' && browserVersion > 64;
-	const isSupportedWebpSafari =
-		(typeof browserVersion === 'number' && browserVersion > 15) ||
-		(typeof osVersion === 'number' && osVersion > 15);
 
 	if (isChromium) {
 		compatibility.flexGap = isSupportedFlexGapChromium;
 	} else if (isFirefox) {
 		compatibility.flexGap = isSupportedFlexGapFirefox;
-		compatibility.webp = isSupportedWebpFirefox;
 	} else if (isSafari) {
 		compatibility.flexGap = isSupportedFlexGapSafari;
-		compatibility.webp = isSupportedWebpSafari;
 	}
 
 	return compatibility;

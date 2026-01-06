@@ -71,12 +71,11 @@ export class Sprite<
 		this._config = config;
 
 		const {
-			scale,
 			size: { height, width },
 		} = config;
 
-		this.spriteHeight = height * scale;
-		this.spriteWidth = width * scale;
+		this.spriteHeight = height;
+		this.spriteWidth = width;
 	}
 
 	public static getInstance(target: TSpriteTarget) {
@@ -114,14 +113,19 @@ export class Sprite<
 	): CSSProperties {
 		this.checkIndexRange(index);
 
-		const { _config, spriteHeight, spriteWidth } = this;
-		const { col, row } = _config;
-		const sheetHeight = row * spriteHeight;
-		const sheetWidth = col * spriteWidth;
+		const {
+			_config: {
+				col,
+				row,
+				size: { height, width },
+			},
+		} = this;
+		const sheetHeight = row * height;
+		const sheetWidth = col * width;
 
 		const { x, y } = this.getPosByIndex(index);
-		const backgroundPosition = `-${pxToRem(x * (displayWidth / spriteWidth))}rem -${pxToRem(y * (displayHeight / spriteHeight))}rem`;
-		const backgroundSize = `${pxToRem(sheetWidth * (displayWidth / spriteWidth))}rem ${pxToRem(sheetHeight * (displayHeight / spriteHeight))}rem`;
+		const backgroundPosition = `-${pxToRem(x * (displayWidth / width))}rem -${pxToRem(y * (displayHeight / height))}rem`;
+		const backgroundSize = `${pxToRem(sheetWidth * (displayWidth / width))}rem ${pxToRem(sheetHeight * (displayHeight / height))}rem`;
 
 		return {
 			backgroundPosition,

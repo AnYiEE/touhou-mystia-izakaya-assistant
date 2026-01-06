@@ -4,7 +4,6 @@ import type { ISpriteConfig } from '@/utils/sprite/types';
 export const INGREDIENT_SPRITE_CONFIG = {
 	col: 10,
 	row: 7,
-	scale: 4,
 	size: { height: 26, width: 26 },
 } as const satisfies ISpriteConfig;
 

@@ -1,12 +1,9 @@
 'use client';
 
-import { type CSSProperties, memo, useMemo, useState } from 'react';
-
-import { useMounted } from '@/hooks';
+import { type CSSProperties, memo, useMemo } from 'react';
 
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE, cn } from '@/design/ui/components';
 
-import { checkCompatibility } from '@/components/compatibleBrowser';
 import PressElement, { type IPressProp } from '@/components/pressElement';
 
 import { siteConfig } from '@/configs';
@@ -17,15 +14,10 @@ import type { TSpriteTarget } from '@/utils/sprite/types';
 
 const { cdnUrl } = siteConfig;
 
-const getSpriteStyle = (
-	target: TSpriteTarget,
-	isSupportedWebp?: boolean
-): CSSProperties => {
+const getSpriteStyle = (target: TSpriteTarget): CSSProperties => {
 	const basePath = `${cdnUrl}/assets/sprites`;
 
-	return {
-		backgroundImage: `url('${basePath}/${target}.${isSupportedWebp ? 'webp' : 'png'}')`,
-	};
+	return { backgroundImage: `url('${basePath}/${target}.png')` };
 };
 
 interface ISpriteBase {
@@ -61,12 +53,6 @@ export default memo<IProps>(function Sprite({
 	width,
 	...props
 }) {
-	const [isSupportedWebp, setIsSupportedWebp] = useState(true);
-
-	useMounted(() => {
-		setIsSupportedWebp(checkCompatibility().webp);
-	});
-
 	const instance = SpriteClass.getInstance(target);
 
 	const { calculatedIndex, calculatedName } = useMemo(() => {
@@ -111,7 +97,7 @@ export default memo<IProps>(function Sprite({
 
 	const calculatedStyle = useMemo(
 		() => ({
-			...getSpriteStyle(target, isSupportedWebp),
+			...getSpriteStyle(target),
 			...instance.getBackgroundPropsByIndex(calculatedIndex, {
 				displayHeight: calculatedSize ?? calculatedHeight,
 				displayWidth: calculatedSize ?? calculatedWidth,
@@ -123,7 +109,6 @@ export default memo<IProps>(function Sprite({
 			calculatedSize,
 			calculatedWidth,
 			instance,
-			isSupportedWebp,
 			target,
 		]
 	);
