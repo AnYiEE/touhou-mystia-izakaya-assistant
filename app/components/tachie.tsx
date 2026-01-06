@@ -34,7 +34,7 @@ export default memo<IProps>(function Tachie({
 					: `${alt}立绘`
 			}
 			title={alt}
-			className={cn('select-none', className)}
+			className={cn('image-rendering-pixelated select-none', className)}
 		/>
 	);
 });

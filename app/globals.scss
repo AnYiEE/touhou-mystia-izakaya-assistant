@@ -3,6 +3,51 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+	.bg-blend-mystia {
+		@apply bg-background bg-mystia bg-cover bg-center bg-no-repeat bg-blend-overlay dark:bg-background/90;
+
+		image-rendering: pixelated;
+	}
+
+	.bg-blend-mystia-pseudo {
+		// Due to the poor performance of `background-attachment: fixed`, use pseudo-elements to achieve a similar fixed background effect.
+		@apply before:fixed before:-z-10 before:h-full before:w-full before:bg-background before:bg-mystia before:bg-cover before:bg-center before:bg-no-repeat before:bg-blend-overlay before:content-[''] dark:before:bg-background/90;
+
+		image-rendering: pixelated;
+	}
+
+	.image-rendering-pixelated {
+		image-rendering: pixelated;
+	}
+
+	.text-autospace {
+		text-autospace: normal;
+		text-spacing-trim: normal;
+	}
+
+	.selection-custom {
+		@apply selection:bg-focus/80 selection:text-background dark:selection:text-foreground;
+	}
+
+	.underline-dotted-offset2 {
+		@apply underline decoration-dotted underline-offset-2;
+	}
+
+	.underline-dotted-linear {
+		@apply inline-block;
+
+		line-height: 1.05;
+		background: linear-gradient(
+				to right,
+				currentcolor,
+				currentcolor 1px,
+				transparent 1.5px
+			)
+			repeat-x 0 bottom/2.5px 1.5px;
+	}
+}
+
 :root {
 	--safe-h-dvh: 100vh;
 	--safe-h-dvh-half: 50vh;
@@ -13,41 +58,6 @@
 		--safe-h-dvh: 100dvh;
 		--safe-h-dvh-half: 50dvh;
 	}
-}
-
-.bg-blend-mystia {
-	@apply bg-background bg-mystia bg-cover bg-center bg-no-repeat bg-blend-overlay dark:bg-background/90;
-}
-
-.bg-blend-mystia-pseudo {
-	// Due to the poor performance of `background-attachment: fixed`, use pseudo-elements to achieve a similar fixed background effect.
-	@apply before:fixed before:-z-10 before:h-full before:w-full before:bg-background before:bg-mystia before:bg-cover before:bg-center before:bg-no-repeat before:bg-blend-overlay before:content-[''] dark:before:bg-background/90;
-}
-
-.text-autospace {
-	text-autospace: normal;
-	text-spacing-trim: normal;
-}
-
-.selection-custom {
-	@apply selection:bg-focus/80 selection:text-background dark:selection:text-foreground;
-}
-
-.underline-dotted-offset2 {
-	@apply underline decoration-dotted underline-offset-2;
-}
-
-.underline-dotted-linear {
-	@apply inline-block;
-
-	line-height: 1.05;
-	background: linear-gradient(
-			to right,
-			currentcolor,
-			currentcolor 1px,
-			transparent 1.5px
-		)
-		repeat-x 0 bottom/2.5px 1.5px;
 }
 
 ::-webkit-scrollbar {

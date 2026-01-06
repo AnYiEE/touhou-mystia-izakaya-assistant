@@ -217,7 +217,7 @@ export default function Navbar() {
 						<span
 							aria-hidden
 							title={shortName}
-							className="h-10 w-10 rounded-full bg-logo bg-cover bg-no-repeat"
+							className="image-rendering-pixelated h-10 w-10 rounded-full bg-logo bg-cover bg-no-repeat"
 						/>
 						<p className="hidden font-bold lg:inline-block">
 							{name}

@@ -205,7 +205,7 @@ export default function Home() {
 			<Placeholder className="m-auto hidden lg:flex">
 				<span
 					aria-hidden
-					className="block h-loading w-loading bg-loading"
+					className="image-rendering-pixelated block h-loading w-loading bg-loading"
 				/>
 				<p>点击顶部的按钮以使用各项功能</p>
 			</Placeholder>

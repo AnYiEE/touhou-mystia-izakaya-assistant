@@ -482,7 +482,7 @@ export default function Content() {
 					<Placeholder className="pb-5 md:pb-9 xl:pb-0">
 						<span
 							aria-hidden
-							className="block h-loading w-loading bg-loading"
+							className="image-rendering-pixelated block h-loading w-loading bg-loading"
 						/>
 						<p>选择顾客以继续</p>
 					</Placeholder>

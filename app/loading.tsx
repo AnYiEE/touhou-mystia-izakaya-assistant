@@ -6,7 +6,7 @@ export default function Loading() {
 			<span
 				aria-hidden
 				title={`${content}...`}
-				className="block h-loading w-loading bg-loading"
+				className="image-rendering-pixelated block h-loading w-loading bg-loading"
 			/>
 			<p className="font-semibold text-default-400 dark:text-default">
 				{content}

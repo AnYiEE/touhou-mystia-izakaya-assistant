@@ -125,7 +125,7 @@ export default memo<IProps>(function Sprite({
 			tabIndex={tabIndex ?? (isAsButton ? 0 : undefined)}
 			title={finalTitle}
 			className={cn(
-				'inline-block',
+				'image-rendering-pixelated inline-block',
 				{
 					[CLASSNAME_FOCUS_VISIBLE_OUTLINE]: isAsButton,
 					'cursor-pointer': isAsButton,
