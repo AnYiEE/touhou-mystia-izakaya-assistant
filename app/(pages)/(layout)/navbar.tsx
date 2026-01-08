@@ -173,10 +173,18 @@ export default function Navbar() {
 			showProgress(startProgress);
 			setIsMenuOpened(false);
 			if (href !== undefined) {
-				router.push(href);
+				if (href === '/preferences') {
+					if (basePathname === '/preferences') {
+						router.refresh();
+					} else {
+						store.setPreferencesModalIsOpen(true);
+					}
+				} else {
+					router.push(href);
+				}
 			}
 		},
-		[router, startProgress, vibrate]
+		[basePathname, router, startProgress, vibrate]
 	);
 
 	// Support parallel routing pages.
