@@ -372,7 +372,9 @@ globalStore.persistence.version.onChange((version) => {
 			'Outdated version detected in multiple tabs',
 			`${appVersion}, ${version}`
 		);
-		location.reload();
+		setTimeout(() => {
+			location.reload();
+		}, 200);
 	}
 });
 
