@@ -168,20 +168,29 @@ export default function Navbar() {
 	const isHighAppearance = store.persistence.highAppearance.use();
 
 	const handlePress = useCallback(
-		(href?: string) => {
+		(href?: string, isInNavbarMenu?: boolean) => {
 			vibrate();
 			showProgress(startProgress);
-			setIsMenuOpened(false);
-			if (href !== undefined) {
-				if (href === '/preferences') {
-					if (basePathname === '/preferences') {
-						router.refresh();
+			const route = () => {
+				if (href !== undefined) {
+					if (href === '/preferences') {
+						if (basePathname === '/preferences') {
+							router.refresh();
+						} else {
+							store.setPreferencesModalIsOpen(true);
+						}
 					} else {
-						store.setPreferencesModalIsOpen(true);
+						router.push(href);
 					}
-				} else {
-					router.push(href);
 				}
+			};
+			if (isInNavbarMenu) {
+				setIsMenuOpened(false);
+				// Wait for the menu close animation to complete (the animate will take 300ms).
+				setTimeout(route, 300);
+			} else {
+				setIsMenuOpened(false);
+				route();
 			}
 		},
 		[basePathname, router, startProgress, vibrate]
@@ -409,8 +418,9 @@ export default function Navbar() {
 									isActivated || href === '/preferences'
 								}
 								size="lg"
-								onClick={() => {
-									handlePress();
+								onClick={(event) => {
+									event.preventDefault();
+									handlePress(href, true);
 								}}
 								href={href}
 							>
