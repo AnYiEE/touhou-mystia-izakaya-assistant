@@ -1,12 +1,13 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 
 import {
 	useFilteredData,
 	usePinyinSortConfig,
 	useSearchConfig,
 	useSearchResult,
+	useSelectConfig,
 	useSortedData,
 	useThrottle,
 } from '@/hooks';
@@ -14,9 +15,7 @@ import {
 import Content from './content';
 import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
-import SideFilterIconButton, {
-	type TSelectConfig,
-} from '@/components/sideFilterIconButton';
+import SideFilterIconButton from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
@@ -89,43 +88,32 @@ export default function Beverages() {
 		spriteTarget: 'beverage',
 	});
 
-	const selectConfig = useMemo<TSelectConfig>(
-		() => [
-			{
-				items: allDlcs,
-				label: 'DLC',
-				selectedKeys: filterDlcs,
-				setSelectedKeys: store.persistence.filters.dlcs.set,
-			},
-			{
-				items: allTags,
-				label: '酒水标签（包含）',
-				selectedKeys: filterTags,
-				setSelectedKeys: store.persistence.filters.tags.set,
-			},
-			{
-				items: allTags,
-				label: '酒水标签（排除）',
-				selectedKeys: filterNoTags,
-				setSelectedKeys: store.persistence.filters.noTags.set,
-			},
-			{
-				items: allLevels,
-				label: '等级',
-				selectedKeys: filterLevels,
-				setSelectedKeys: store.persistence.filters.levels.set,
-			},
-		],
-		[
-			allDlcs,
-			allLevels,
-			allTags,
-			filterDlcs,
-			filterLevels,
-			filterNoTags,
-			filterTags,
-		]
-	);
+	const selectConfig = useSelectConfig([
+		{
+			items: allDlcs,
+			label: 'DLC',
+			selectedKeys: filterDlcs,
+			setSelectedKeys: store.persistence.filters.dlcs.set,
+		},
+		{
+			items: allTags,
+			label: '酒水标签（包含）',
+			selectedKeys: filterTags,
+			setSelectedKeys: store.persistence.filters.tags.set,
+		},
+		{
+			items: allTags,
+			label: '酒水标签（排除）',
+			selectedKeys: filterNoTags,
+			setSelectedKeys: store.persistence.filters.noTags.set,
+		},
+		{
+			items: allLevels,
+			label: '等级',
+			selectedKeys: filterLevels,
+			setSelectedKeys: store.persistence.filters.levels.set,
+		},
+	]);
 
 	return (
 		<ItemPage

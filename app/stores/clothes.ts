@@ -5,9 +5,10 @@ import {
 	pinyinSortStateMap,
 } from '@/components/sidePinyinSortIconButton';
 
+import { type TDlc } from '@/data';
 import { persist as persistMiddleware } from '@/stores/middlewares';
 import { createNamesCache } from '@/stores/utils';
-import { numberSort } from '@/utilities';
+import { numberSort, toSet } from '@/utilities';
 import { Clothes } from '@/utils';
 
 const instance = Clothes.getInstance();
@@ -24,6 +25,7 @@ const state = {
 		pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
 		searchValue: '',
 	},
+	shared: { hiddenItems: { dlcs: toSet<TDlc>() } },
 };
 
 const getNames = createNamesCache(instance);

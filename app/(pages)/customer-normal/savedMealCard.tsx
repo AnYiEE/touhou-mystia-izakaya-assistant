@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, useMemo } from 'react';
 
 import { useVibrate, useViewInNewWindow } from '@/hooks';
 
@@ -35,27 +35,79 @@ export default function SavedMealCard() {
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
+	const hiddenDlcs = customerStore.shared.hiddenItems.dlcs.use();
+
 	const currentCustomerName = customerStore.shared.customer.name.use();
 	const currentCustomerPopularTrend =
 		customerStore.shared.customer.popularTrend.use();
 	const currentSavedMeals = customerStore.persistence.meals.use();
 	const isFamousShop = customerStore.shared.customer.famousShop.use();
 
+	const instance_beverage = customerStore.instances.beverage.get();
+	const instance_ingredient = customerStore.instances.ingredient.get();
 	const instance_recipe = customerStore.instances.recipe.get();
+
+	const savedCustomerMeal = useMemo(() => {
+		if (currentCustomerName === null) {
+			return null;
+		}
+
+		const customerMeals = currentSavedMeals[currentCustomerName];
+		if (customerMeals === undefined || checkEmpty(customerMeals)) {
+			return null;
+		}
+
+		return customerMeals.filter(
+			({
+				beverage: beverageName,
+				recipe: {
+					extraIngredients: extraIngredientNames,
+					name: recipeName,
+				},
+			}) => {
+				const beverageDlc =
+					beverageName === null
+						? 0
+						: instance_beverage.getPropsByName(beverageName, 'dlc');
+				const ingredientDlcs = extraIngredientNames.map(
+					(ingredientName) =>
+						instance_ingredient.getPropsByName(
+							ingredientName,
+							'dlc'
+						)
+				);
+				const recipeDlc = instance_recipe.getPropsByName(
+					recipeName,
+					'dlc'
+				);
+
+				return (
+					!hiddenDlcs.has(beverageDlc) &&
+					!ingredientDlcs.some((dlc) => hiddenDlcs.has(dlc)) &&
+					!hiddenDlcs.has(recipeDlc)
+				);
+			}
+		);
+	}, [
+		currentCustomerName,
+		currentSavedMeals,
+		hiddenDlcs,
+		instance_beverage,
+		instance_ingredient,
+		instance_recipe,
+	]);
 
 	let content: IFadeMotionDivProps['children'];
 	let contentTarget: IFadeMotionDivProps['target'];
 
 	if (
 		currentCustomerName === null ||
-		currentSavedMeals[currentCustomerName] === undefined ||
-		checkEmpty(currentSavedMeals[currentCustomerName])
+		savedCustomerMeal === null ||
+		checkEmpty(savedCustomerMeal)
 	) {
 		content = null;
 		contentTarget = 'null';
 	} else {
-		const savedCustomerMeal = currentSavedMeals[currentCustomerName];
-
 		const moveMeal = (
 			mealIndex: number,
 			direction: IMoveButtonProps['direction']

@@ -5,9 +5,15 @@ import {
 	pinyinSortStateMap,
 } from '@/components/sidePinyinSortIconButton';
 
+import { type TDlc } from '@/data';
 import { persist as persistMiddleware } from '@/stores/middlewares';
 import { createNamesCache } from '@/stores/utils';
-import { numberSort, pinyinSort, toGetValueCollection } from '@/utilities';
+import {
+	numberSort,
+	pinyinSort,
+	toGetValueCollection,
+	toSet,
+} from '@/utilities';
 import { Cooker } from '@/utils';
 
 const instance = Cooker.getInstance();
@@ -32,6 +38,7 @@ const state = {
 		pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
 		searchValue: '',
 	},
+	shared: { hiddenItems: { dlcs: toSet<TDlc>() } },
 };
 
 const getNames = createNamesCache(instance);

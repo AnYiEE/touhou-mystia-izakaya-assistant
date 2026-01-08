@@ -22,7 +22,7 @@ import SwitchItem from './switchItem';
 import Heading from '@/components/heading';
 import Sprite from '@/components/sprite';
 
-import { DYNAMIC_TAG_MAP } from '@/data';
+import { DLC_LABEL_MAP, DYNAMIC_TAG_MAP, type TDlc } from '@/data';
 import { customerNormalStore, customerRareStore, globalStore } from '@/stores';
 import { toSet } from '@/utilities';
 
@@ -38,6 +38,9 @@ export default memo<IProps>(function Content({ onModalClose }) {
 		customerRareStore.persistence.customer.orderLinkedFilter.use();
 	const isShowTagDescription =
 		customerRareStore.persistence.customer.showTagDescription.use();
+
+	const allDlcs = globalStore.dlcs.get();
+	const hiddenDlcs = globalStore.hiddenDlcs.use();
 
 	const isFamousShop = globalStore.persistence.famousShop.use();
 	const popularTags = globalStore.popularTags.get();
@@ -55,6 +58,14 @@ export default memo<IProps>(function Content({ onModalClose }) {
 		customerRareStore.shared.recipe.table.page.set(1);
 		customerNormalStore.shared.recipe.table.page.set(1);
 	}, []);
+
+	const onHiddenDlcsChange = useCallback(
+		(value: Set<TDlc>) => {
+			globalStore.hiddenDlcs.set(value);
+			resetRecipeTablePage();
+		},
+		[resetRecipeTablePage]
+	);
 
 	const onIsFamousShopChange = useCallback(
 		(value: boolean) => {
@@ -112,6 +123,38 @@ export default memo<IProps>(function Content({ onModalClose }) {
 			<Heading as="h2" className="mt-0">
 				全局设置
 			</Heading>
+			<Heading
+				as="h3"
+				subTitle="已关闭的数据集所对应的物品将在各个页面中被隐藏"
+			>
+				数据集
+			</Heading>
+			<div className="grid h-min grid-cols-2 content-start justify-items-start gap-2 md:grid-cols-3 md:gap-x-12">
+				{allDlcs.map((dlc, index) => {
+					const isHidden = hiddenDlcs.has(dlc);
+					return (
+						<SwitchItem
+							key={index}
+							isDisabled={dlc === 0}
+							isSelected={!isHidden}
+							onValueChange={(value) => {
+								const newHiddenDlcs = toSet(hiddenDlcs);
+								if (value) {
+									newHiddenDlcs.delete(dlc);
+								} else {
+									newHiddenDlcs.add(dlc);
+								}
+								onHiddenDlcsChange(newHiddenDlcs);
+							}}
+							aria-label={`${isHidden ? '显示' : '隐藏'}${DLC_LABEL_MAP[dlc].label}数据集`}
+						>
+							<span className="inline-block min-w-16">
+								{DLC_LABEL_MAP[dlc].label}
+							</span>
+						</SwitchItem>
+					);
+				})}
+			</div>
 			<Heading
 				as="h3"
 				subTitle="正确设置游戏中现时的流行趋势可以使套餐评级更为准确"

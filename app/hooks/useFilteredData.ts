@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { useSkipProcessItemData } from '@/hooks';
 
+import { globalStore as store } from '@/stores';
 import type { TItemData, TItemInstance } from '@/utils/types';
 
 export function useFilteredData<
@@ -10,6 +11,14 @@ export function useFilteredData<
 >(instanceOrData: T, filterData: () => U) {
 	const shouldSkipProcessData = useSkipProcessItemData();
 
+	const hiddenDlcs = store.hiddenDlcs.use();
+
+	const filterHiddenDlcs = useCallback(
+		<S extends TItemData<TItemInstance>>(data: S) =>
+			data.filter((item) => !hiddenDlcs.has(item.dlc)) as unknown as S,
+		[hiddenDlcs]
+	);
+
 	const filteredData = useMemo(() => {
 		if (shouldSkipProcessData) {
 			if ('length' in instanceOrData) {
@@ -17,8 +26,8 @@ export function useFilteredData<
 			}
 			return instanceOrData.data;
 		}
-		return filterData();
-	}, [filterData, instanceOrData, shouldSkipProcessData]);
+		return filterHiddenDlcs(filterData());
+	}, [filterData, filterHiddenDlcs, instanceOrData, shouldSkipProcessData]);
 
 	return filteredData as U;
 }

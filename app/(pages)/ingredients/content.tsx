@@ -50,6 +50,8 @@ export default memo<IProps>(function Content({ data }) {
 
 	// const isHighAppearance = store.persistence.highAppearance.use();
 
+	const hiddenDlcs = ingredientsStore.shared.hiddenItems.dlcs.use();
+
 	const instance = ingredientsStore.instance.get();
 
 	return data.map(
@@ -105,6 +107,9 @@ export default memo<IProps>(function Content({ data }) {
 								const relatedRecipesGroupByDlcMap =
 									relatedRecipes.reduce<Map<TDlc, TRecipe[]>>(
 										(map, item) => {
+											if (hiddenDlcs.has(item.dlc)) {
+												return map;
+											}
 											if (!map.has(item.dlc)) {
 												map.set(item.dlc, []);
 											}

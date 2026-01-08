@@ -5,7 +5,7 @@ import {
 	pinyinSortStateMap,
 } from '@/components/sidePinyinSortIconButton';
 
-import { DYNAMIC_TAG_MAP, type TIngredientTag } from '@/data';
+import { DYNAMIC_TAG_MAP, type TDlc, type TIngredientTag } from '@/data';
 import { persist as persistMiddleware } from '@/stores/middlewares';
 import { createNamesCache } from '@/stores/utils';
 import type { IPopularTrend } from '@/types';
@@ -14,6 +14,7 @@ import {
 	pinyinSort,
 	toArray,
 	toGetValueCollection,
+	toSet,
 } from '@/utilities';
 import { Ingredient } from '@/utils';
 
@@ -54,6 +55,8 @@ const state = {
 		searchValue: '',
 	},
 	shared: {
+		hiddenItems: { dlcs: toSet<TDlc>() },
+
 		famousShop: false,
 		popularTrend: { isNegative: false, tag: null } as IPopularTrend,
 	},

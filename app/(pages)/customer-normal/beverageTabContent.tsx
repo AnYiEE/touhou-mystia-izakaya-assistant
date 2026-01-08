@@ -89,6 +89,12 @@ export default function BeverageTabContent() {
 	const allBeverageDlcs = customerStore.beverage.dlcs.get();
 	const allBeverageTags = customerStore.beverage.tags.get();
 
+	const hiddenDlcs = customerStore.shared.hiddenItems.dlcs.use();
+	const allAvailableDlcs = useMemo(
+		() => allBeverageDlcs.filter(({ value }) => !hiddenDlcs.has(value)),
+		[allBeverageDlcs, hiddenDlcs]
+	);
+
 	const searchValue = customerStore.shared.beverage.searchValue.use();
 	const hasNameFilter = Boolean(searchValue);
 
@@ -106,9 +112,15 @@ export default function BeverageTabContent() {
 	const hiddenBeverages =
 		customerStore.shared.beverage.table.hiddenBeverages.use();
 
-	const filteredData = useMemo<TBeveragesWithSuitability>(() => {
-		const { data } = instance_beverage;
+	const data = useMemo(
+		() =>
+			instance_beverage.data.filter(
+				({ dlc }) => !hiddenDlcs.has(dlc)
+			) as TBeveragesWithSuitability,
+		[hiddenDlcs, instance_beverage.data]
+	);
 
+	const filteredData = useMemo<TBeveragesWithSuitability>(() => {
 		if (currentCustomerName === null) {
 			return data.map((item) => ({
 				...item,
@@ -156,6 +168,7 @@ export default function BeverageTabContent() {
 		});
 	}, [
 		currentCustomerName,
+		data,
 		hasNameFilter,
 		hiddenBeverages,
 		instance_beverage,
@@ -209,14 +222,17 @@ export default function BeverageTabContent() {
 	const tableSelectedKeys = toSet(currentBeverageName ?? '');
 
 	const renderTableCell = useCallback(
-		(data: TBeverageWithSuitability, columnKey: TTableColumnKey) => {
+		(
+			beverageData: TBeverageWithSuitability,
+			columnKey: TTableColumnKey
+		) => {
 			const {
 				matchedTags,
 				name,
 				price,
 				suitability,
 				tags: beverageTags,
-			} = data;
+			} = beverageData;
 
 			if (currentCustomerName === null) {
 				return null;
@@ -443,53 +459,59 @@ export default function BeverageTabContent() {
 						</Select>
 					</div>
 					<div className="flex w-full gap-3 md:w-auto">
-						<Dropdown showArrow>
-							<DropdownTrigger>
-								<Button
-									endContent={
-										<FontAwesomeIcon icon={faChevronDown} />
-									}
-									size="sm"
-									variant="light"
-									className={cn(
-										'bg-default/40 data-[hover=true]:bg-default/40 data-[pressed=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
-										{
-											'backdrop-blur': isHighAppearance,
-											'ring-2 ring-default':
-												!checkEmpty(selectedDlcs),
+						{allAvailableDlcs.length > 1 && (
+							<Dropdown showArrow>
+								<DropdownTrigger>
+									<Button
+										endContent={
+											<FontAwesomeIcon
+												icon={faChevronDown}
+											/>
 										}
-									)}
-								>
-									DLC
-								</Button>
-							</DropdownTrigger>
-							<DropdownMenu
-								closeOnSelect={false}
-								items={allBeverageDlcs}
-								selectedKeys={selectedDlcs}
-								selectionMode="multiple"
-								variant="flat"
-								onSelectionChange={
-									customerStore.onBeverageTableSelectedDlcsChange
-								}
-								aria-label="选择特定DLC中的酒水"
-								itemClasses={{
-									base: 'transition-background motion-reduce:transition-none',
-								}}
-							>
-								{({ value }) => (
-									<DropdownItem
-										key={value}
-										textValue={value.toString()}
+										size="sm"
+										variant="light"
+										className={cn(
+											'bg-default/40 data-[hover=true]:bg-default/40 data-[pressed=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
+											{
+												'backdrop-blur':
+													isHighAppearance,
+												'ring-2 ring-default':
+													!checkEmpty(selectedDlcs),
+											}
+										)}
 									>
-										{value === 0
-											? DLC_LABEL_MAP[0].label
-											: DLC_LABEL_MAP[value].shortLabel ||
-												DLC_LABEL_MAP[value].label}
-									</DropdownItem>
-								)}
-							</DropdownMenu>
-						</Dropdown>
+										DLC
+									</Button>
+								</DropdownTrigger>
+								<DropdownMenu
+									closeOnSelect={false}
+									items={allAvailableDlcs}
+									selectedKeys={selectedDlcs}
+									selectionMode="multiple"
+									variant="flat"
+									onSelectionChange={
+										customerStore.onBeverageTableSelectedDlcsChange
+									}
+									aria-label="选择特定DLC中的酒水"
+									itemClasses={{
+										base: 'transition-background motion-reduce:transition-none',
+									}}
+								>
+									{({ value }) => (
+										<DropdownItem
+											key={value}
+											textValue={value.toString()}
+										>
+											{value === 0
+												? DLC_LABEL_MAP[0].label
+												: DLC_LABEL_MAP[value]
+														.shortLabel ||
+													DLC_LABEL_MAP[value].label}
+										</DropdownItem>
+									)}
+								</DropdownMenu>
+							</Dropdown>
+						)}
 						<Dropdown showArrow>
 							<DropdownTrigger>
 								<Button
@@ -588,7 +610,7 @@ export default function BeverageTabContent() {
 			</div>
 		),
 		[
-			allBeverageDlcs,
+			allAvailableDlcs,
 			allBeverageNames,
 			allBeverageTags,
 			filteredData.length,

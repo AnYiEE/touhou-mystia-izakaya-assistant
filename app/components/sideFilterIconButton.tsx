@@ -81,6 +81,10 @@ export default memo<IProps>(function SideFilterIconButton({
 		});
 	}, [selectConfig, vibrate]);
 
+	if (checkEmpty(selectConfig)) {
+		return null;
+	}
+
 	const content = `筛选（${hasFilter ? '已' : '未'}激活）`;
 
 	return (

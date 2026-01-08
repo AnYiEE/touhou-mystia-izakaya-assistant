@@ -1,9 +1,13 @@
 'use client';
 
+import { useCallback } from 'react';
+
 import {
+	useFilteredData,
 	usePinyinSortConfig,
 	useSearchConfig,
 	useSearchResult,
+	useSelectConfig,
 	useSortedData,
 	useThrottle,
 } from '@/hooks';
@@ -11,6 +15,7 @@ import {
 import Content from './content';
 import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
+import SideFilterIconButton from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
@@ -21,6 +26,7 @@ export default function Currencies() {
 	const instance = store.instance.get();
 
 	const allNames = store.names.use();
+	const allDlcs = store.dlcs.get();
 
 	const pinyinSortState = store.persistence.pinyinSortState.use();
 	const searchValue = store.persistence.searchValue.use();
@@ -28,7 +34,23 @@ export default function Currencies() {
 	const throttledSearchValue = useThrottle(searchValue);
 	const searchResult = useSearchResult(instance, throttledSearchValue);
 
-	const sortedData = useSortedData(instance, searchResult, pinyinSortState);
+	const filterDlcs = store.persistence.filters.dlcs.use();
+
+	const filterData = useCallback(
+		() =>
+			searchResult.filter(({ dlc }) => {
+				const isDlcMatched =
+					checkEmpty(filterDlcs) ||
+					filterDlcs.includes(dlc.toString());
+
+				return isDlcMatched;
+			}),
+		[filterDlcs, searchResult]
+	);
+
+	const filteredData = useFilteredData(instance, filterData);
+
+	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
 
 	const pinyinSortConfig = usePinyinSortConfig(
 		pinyinSortState,
@@ -43,6 +65,15 @@ export default function Currencies() {
 		spriteTarget: 'currency',
 	});
 
+	const selectConfig = useSelectConfig([
+		{
+			items: allDlcs,
+			label: 'DLC',
+			selectedKeys: filterDlcs,
+			setSelectedKeys: store.persistence.filters.dlcs.set,
+		},
+	]);
+
 	return (
 		<ItemPage
 			isEmpty={checkEmpty(sortedData)}
@@ -52,6 +83,7 @@ export default function Currencies() {
 					<SidePinyinSortIconButton
 						pinyinSortConfig={pinyinSortConfig}
 					/>
+					<SideFilterIconButton selectConfig={selectConfig} />
 				</SideButtonGroup>
 			}
 		>
