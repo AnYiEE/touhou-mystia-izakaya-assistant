@@ -1,17 +1,20 @@
-import { type ReactNode } from 'react';
+import { type PropsWithChildren } from 'react';
 
-export default function Basic({ children }: Readonly<{ children: ReactNode }>) {
+import PreferencesModal from '@/(pages)/preferences/modal';
+
+export default function Basic({
+	children,
+}: Readonly<{ children: PropsWithChildren }>) {
 	return children;
 }
 
 export function WithPreference({
 	children,
-	preferences,
-}: Readonly<{ children: ReactNode; preferences: ReactNode }>) {
+}: Readonly<{ children: PropsWithChildren }>) {
 	return (
 		<>
 			{children}
-			{preferences}
+			<PreferencesModal />
 		</>
 	);
 }

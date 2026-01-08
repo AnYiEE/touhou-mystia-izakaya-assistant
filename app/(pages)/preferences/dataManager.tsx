@@ -10,7 +10,6 @@ import {
 } from 'react';
 import { debounce, isObject } from 'lodash';
 
-import { useRouter } from 'next/navigation';
 import { useProgress } from 'react-transition-progress';
 import { usePathname, useThrottle } from '@/hooks';
 
@@ -139,7 +138,6 @@ interface IProps {
 
 export default memo<IProps>(function DataManager({ onModalClose }) {
 	const { pathname } = usePathname();
-	const router = useRouter();
 	const startProgress = useProgress();
 	const isReducedMotion = useReducedMotion();
 
@@ -826,23 +824,22 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 										);
 										prev.dirver = dirver;
 									});
-									if (onModalClose === undefined) {
-										router.push(
-											customerRareTutorialPathname
-										);
-									} else {
-										onModalClose();
-										// Wait for the modal to close and restore the pathname (the animate will take 300ms).
+									// Wait for the button animation to complete (the animate will take 800ms).
+									setTimeout(() => {
+										onModalClose?.();
+										// Wait for the modal to close (the animate will take 300ms).
 										setTimeout(() => {
 											if (
-												pathname !==
+												pathname ===
 												customerRareTutorialPathname
 											) {
+												location.reload();
+											} else {
 												location.href =
 													customerRareTutorialPathname;
 											}
-										}, 500);
-									}
+										}, 300);
+									}, 800);
 									trackEvent(
 										trackEvent.category.click,
 										'Reset Button',

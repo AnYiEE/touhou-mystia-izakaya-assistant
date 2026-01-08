@@ -2,7 +2,6 @@
 
 import { memo, useCallback } from 'react';
 
-import { useRouter } from 'next/navigation';
 import { useVibrate } from '@/hooks';
 
 import { Select, SelectItem } from '@heroui/select';
@@ -31,8 +30,10 @@ interface IProps extends IDataManagerProps {}
 export default memo<IProps>(function Content({ onModalClose }) {
 	const isReducedMotion = useReducedMotion();
 	const popoverMotionProps = useMotionProps('popover');
-	const router = useRouter();
 	const vibrate = useVibrate();
+
+	const isPreferencesModalOpen =
+		globalStore.shared.preferencesModal.isOpen.use();
 
 	const isOrderLinkedFilter =
 		customerRareStore.persistence.customer.orderLinkedFilter.use();
@@ -101,18 +102,16 @@ export default memo<IProps>(function Content({ onModalClose }) {
 	const handleIsHighAppearanceChange = useCallback(
 		(value: boolean) => {
 			globalStore.persistence.highAppearance.set(value);
-			if (onModalClose === undefined) {
-				location.reload();
-			} else {
-				onModalClose();
+			// Wait for the switch animation to complete (the animate will take 800ms).
+			setTimeout(() => {
+				onModalClose?.();
 				// Wait for the modal to close (the animate will take 300ms).
 				setTimeout(() => {
-					router.back();
 					location.reload();
-				}, 500);
-			}
+				}, 300);
+			}, 800);
 		},
-		[onModalClose, router]
+		[onModalClose]
 	);
 
 	return (
@@ -129,7 +128,12 @@ export default memo<IProps>(function Content({ onModalClose }) {
 			>
 				数据集
 			</Heading>
-			<div className="grid h-min grid-cols-2 content-start justify-items-start gap-2 md:grid-cols-3 md:gap-x-12">
+			<div
+				className={cn(
+					'grid h-min w-full grid-cols-2 content-start justify-items-start gap-2 md:grid-cols-3 md:gap-x-12',
+					{ 'lg:w-1/2': !isPreferencesModalOpen }
+				)}
+			>
 				{allDlcs.map((dlc, index) => {
 					const isHidden = hiddenDlcs.has(dlc);
 					return (

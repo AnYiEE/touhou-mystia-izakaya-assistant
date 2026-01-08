@@ -144,6 +144,7 @@ const state = {
 	},
 
 	shared: {
+		preferencesModal: { isOpen: false },
 		table: {
 			selectableRows: generateRange(5, 20).map(toGetValueCollection),
 		},
@@ -338,6 +339,10 @@ export const globalStore = store(state, {
 		},
 	}))
 	.actions((currentStore) => ({
+		setPreferencesModalIsOpen(isOpen: boolean) {
+			currentStore.shared.preferencesModal.isOpen.set(isOpen);
+		},
+
 		onTableRowsPerPageChange(rows: Selection) {
 			currentStore.tableRows.set(rows);
 		},

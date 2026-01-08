@@ -2,15 +2,15 @@
 
 import { type PropsWithChildren, memo, useCallback } from 'react';
 
-import { useProgress } from 'react-transition-progress';
 import { useVibrate } from '@/hooks';
 
 import { faGear } from '@fortawesome/free-solid-svg-icons';
 
-import { Link, Tooltip, cn } from '@/design/ui/components';
+import { Tooltip, cn } from '@/design/ui/components';
 
-import { showProgress } from '@/(pages)/(layout)/navbar';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
+
+import { globalStore } from '@/stores';
 
 interface IProps extends Pick<HTMLDivElementAttributes, 'className'> {}
 
@@ -18,13 +18,12 @@ export default memo<PropsWithChildren<IProps>>(function SideButtonGroup({
 	children,
 	className,
 }) {
-	const startProgress = useProgress();
 	const vibrate = useVibrate();
 
 	const handlePress = useCallback(() => {
 		vibrate();
-		showProgress(startProgress);
-	}, [startProgress, vibrate]);
+		globalStore.setPreferencesModalIsOpen(true);
+	}, [vibrate]);
 
 	const preferencesLabel = '设置';
 
@@ -45,13 +44,9 @@ export default memo<PropsWithChildren<IProps>>(function SideButtonGroup({
 					>
 						<span className="flex md:hidden">
 							<FontAwesomeIconButton
-								as={Link}
-								// @ts-expect-error Button as Link
-								animationUnderline={false}
 								color="primary"
 								icon={faGear}
 								variant="shadow"
-								href="/preferences"
 								onPress={handlePress}
 								aria-label={preferencesLabel}
 								className="bg-primary-600"

@@ -2,29 +2,24 @@
 
 import { useCallback } from 'react';
 
-import { useRouter } from 'next/navigation';
 import { useMounted, useVibrate } from '@/hooks';
 
 import { Modal } from '@/design/ui/components';
 
 import Content from './content';
 
-export function PreferencesModalDefault() {
-	return null;
-}
+import { globalStore as store } from '@/stores';
 
 export default function PreferencesModal() {
 	const isMounted = useMounted();
-	const router = useRouter();
 	const vibrate = useVibrate();
+
+	const isOpen = store.shared.preferencesModal.isOpen.use();
 
 	const handleClose = useCallback(() => {
 		vibrate();
-		// Delay closing to allow time for exit animation.
-		setTimeout(() => {
-			router.back();
-		}, 300);
-	}, [router, vibrate]);
+		store.setPreferencesModalIsOpen(false);
+	}, [vibrate]);
 
 	if (!isMounted) {
 		return null;
@@ -32,7 +27,7 @@ export default function PreferencesModal() {
 
 	return (
 		<Modal
-			defaultOpen
+			isOpen={isOpen}
 			portalContainer={document.querySelector('#modal-portal-container')}
 			onClose={handleClose}
 		>
