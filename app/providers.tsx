@@ -13,12 +13,19 @@ import CompatibleBrowser from '@/components/compatibleBrowser';
 import CustomerRareTutorial from '@/components/customerRareTutorial';
 
 import { siteConfig } from '@/configs';
+import { type TDlc } from '@/data';
 import {
+	beveragesStore,
+	clothesStore,
+	cookersStore,
+	currenciesStore,
 	customerNormalStore,
 	customerRareStore,
 	globalSettingKeyIsHighAppearance,
 	globalStore,
 	ingredientsStore,
+	ornamentsStore,
+	partnersStore,
 	recipesStore,
 } from '@/stores';
 import { toSet } from '@/utilities';
@@ -54,6 +61,38 @@ export default function Providers({
 				globalStore.persistence.userId.set(fpResult.visitorId);
 			});
 		}
+
+		const globalHiddenDlcs = globalStore.persistence.hiddenItems.dlcs.get();
+		beveragesStore.shared.hiddenItems.dlcs.set(
+			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
+		);
+		clothesStore.shared.hiddenItems.dlcs.set(
+			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
+		);
+		cookersStore.shared.hiddenItems.dlcs.set(
+			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
+		);
+		currenciesStore.shared.hiddenItems.dlcs.set(
+			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
+		);
+		customerNormalStore.shared.hiddenItems.dlcs.set(
+			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
+		);
+		customerRareStore.shared.hiddenItems.dlcs.set(
+			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
+		);
+		ingredientsStore.shared.hiddenItems.dlcs.set(
+			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
+		);
+		ornamentsStore.shared.hiddenItems.dlcs.set(
+			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
+		);
+		partnersStore.shared.hiddenItems.dlcs.set(
+			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
+		);
+		recipesStore.shared.hiddenItems.dlcs.set(
+			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
+		);
 
 		// Initialize famous shop state based on the persistence state.
 		const globalFamousShop = globalStore.persistence.famousShop.get();

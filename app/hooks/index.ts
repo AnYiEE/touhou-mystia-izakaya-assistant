@@ -10,6 +10,7 @@ export { useOpenedItemPopover } from './useOpenedItemPopover';
 export * from './usePinyinSortConfig';
 export * from './useSearchConfig';
 export * from './useSearchResult';
+export * from './useSelectConfig';
 export * from './useSkipProcessItemData';
 export * from './useSortedData';
 export { useViewInNewWindow } from './useViewInNewWindow';

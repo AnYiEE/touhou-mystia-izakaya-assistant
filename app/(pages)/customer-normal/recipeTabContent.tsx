@@ -93,6 +93,12 @@ export default function RecipeTabContent() {
 	const allRecipeTags = customerStore.recipe.tags.get();
 	const allCookers = customerStore.recipe.cookers.get();
 
+	const hiddenDlcs = customerStore.shared.hiddenItems.dlcs.use();
+	const allAvailableDlcs = useMemo(
+		() => allRecipeDlcs.filter(({ value }) => !hiddenDlcs.has(value)),
+		[allRecipeDlcs, hiddenDlcs]
+	);
+
 	const searchValue = customerStore.shared.recipe.searchValue.use();
 	const hasNameFilter = Boolean(searchValue);
 
@@ -140,9 +146,11 @@ export default function RecipeTabContent() {
 	const data = useMemo(
 		() =>
 			instance_recipe.data.filter(
-				({ name }) => !instance_recipe.blockedRecipes.has(name)
+				({ dlc, name }) =>
+					!hiddenDlcs.has(dlc) &&
+					!instance_recipe.blockedRecipes.has(name)
 			) as TRecipesWithSuitability,
-		[instance_recipe.blockedRecipes, instance_recipe.data]
+		[hiddenDlcs, instance_recipe.blockedRecipes, instance_recipe.data]
 	);
 
 	const filteredData = useMemo(() => {
@@ -658,53 +666,59 @@ export default function RecipeTabContent() {
 								)}
 							</DropdownMenu>
 						</Dropdown>
-						<Dropdown showArrow>
-							<DropdownTrigger>
-								<Button
-									endContent={
-										<FontAwesomeIcon icon={faChevronDown} />
-									}
-									size="sm"
-									variant="light"
-									className={cn(
-										'bg-default/40 data-[hover=true]:bg-default/40 data-[pressed=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
-										{
-											'backdrop-blur': isHighAppearance,
-											'ring-2 ring-default':
-												!checkEmpty(selectedDlcs),
+						{allAvailableDlcs.length > 1 && (
+							<Dropdown showArrow>
+								<DropdownTrigger>
+									<Button
+										endContent={
+											<FontAwesomeIcon
+												icon={faChevronDown}
+											/>
 										}
-									)}
-								>
-									DLC
-								</Button>
-							</DropdownTrigger>
-							<DropdownMenu
-								closeOnSelect={false}
-								items={allRecipeDlcs}
-								selectedKeys={selectedDlcs}
-								selectionMode="multiple"
-								variant="flat"
-								onSelectionChange={
-									customerStore.onRecipeTableSelectedDlcsChange
-								}
-								aria-label="选择特定DLC中的料理"
-								itemClasses={{
-									base: 'transition-background motion-reduce:transition-none',
-								}}
-							>
-								{({ value }) => (
-									<DropdownItem
-										key={value}
-										textValue={value.toString()}
+										size="sm"
+										variant="light"
+										className={cn(
+											'bg-default/40 data-[hover=true]:bg-default/40 data-[pressed=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
+											{
+												'backdrop-blur':
+													isHighAppearance,
+												'ring-2 ring-default':
+													!checkEmpty(selectedDlcs),
+											}
+										)}
 									>
-										{value === 0
-											? DLC_LABEL_MAP[0].label
-											: DLC_LABEL_MAP[value].shortLabel ||
-												DLC_LABEL_MAP[value].label}
-									</DropdownItem>
-								)}
-							</DropdownMenu>
-						</Dropdown>
+										DLC
+									</Button>
+								</DropdownTrigger>
+								<DropdownMenu
+									closeOnSelect={false}
+									items={allAvailableDlcs}
+									selectedKeys={selectedDlcs}
+									selectionMode="multiple"
+									variant="flat"
+									onSelectionChange={
+										customerStore.onRecipeTableSelectedDlcsChange
+									}
+									aria-label="选择特定DLC中的料理"
+									itemClasses={{
+										base: 'transition-background motion-reduce:transition-none',
+									}}
+								>
+									{({ value }) => (
+										<DropdownItem
+											key={value}
+											textValue={value.toString()}
+										>
+											{value === 0
+												? DLC_LABEL_MAP[0].label
+												: DLC_LABEL_MAP[value]
+														.shortLabel ||
+													DLC_LABEL_MAP[value].label}
+										</DropdownItem>
+									)}
+								</DropdownMenu>
+							</Dropdown>
+						)}
 						<Dropdown showArrow>
 							<DropdownTrigger>
 								<Button
@@ -803,8 +817,8 @@ export default function RecipeTabContent() {
 			</div>
 		),
 		[
+			allAvailableDlcs,
 			allCookers,
-			allRecipeDlcs,
 			allRecipeNames,
 			allRecipeTags,
 			filteredData.length,

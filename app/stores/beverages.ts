@@ -5,9 +5,10 @@ import {
 	pinyinSortStateMap,
 } from '@/components/sidePinyinSortIconButton';
 
+import { type TDlc } from '@/data';
 import { persist as persistMiddleware } from '@/stores/middlewares';
 import { createNamesCache } from '@/stores/utils';
-import { numberSort, toGetValueCollection } from '@/utilities';
+import { numberSort, toGetValueCollection, toSet } from '@/utilities';
 import { Beverage } from '@/utils';
 
 const instance = Beverage.getInstance();
@@ -31,6 +32,7 @@ const state = {
 		pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
 		searchValue: '',
 	},
+	shared: { hiddenItems: { dlcs: toSet<TDlc>() } },
 };
 
 const getNames = createNamesCache(instance);

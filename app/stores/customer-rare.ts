@@ -19,6 +19,7 @@ import {
 	type TBeverageName,
 	type TBeverageTag,
 	type TCustomerRareName,
+	type TDlc,
 	type TIngredientName,
 	type TIngredientTag,
 	type TRatingKey,
@@ -244,6 +245,7 @@ const state = {
 			isDarkMatter: null as boolean | null,
 			rating: null as TRatingKey | null,
 		},
+		hiddenItems: { dlcs: toSet<TDlc>() },
 		ingredient: { filterVisibility: false },
 		recipe: {
 			data: null as IMealRecipe | null,

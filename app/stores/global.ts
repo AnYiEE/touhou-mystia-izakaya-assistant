@@ -12,13 +12,20 @@ import { trackEvent } from '@/components/analytics';
 import { siteConfig } from '@/configs';
 import {
 	type TBeverageName,
+	type TDlc,
 	type TIngredientName,
 	type TRecipeName,
 } from '@/data';
 import {
+	beveragesStore,
+	clothesStore,
+	cookersStore,
+	currenciesStore,
 	customerNormalStore,
 	customerRareStore,
 	ingredientsStore,
+	ornamentsStore,
+	partnersStore,
 	recipesStore,
 } from '@/stores';
 import {
@@ -28,6 +35,7 @@ import {
 import type { IPopularTrend, TPopularTag } from '@/types';
 import {
 	generateRange,
+	numberSort,
 	pinyinSort,
 	safeStorage,
 	toArray,
@@ -36,9 +44,33 @@ import {
 	toSet,
 	union,
 } from '@/utilities';
-import { Ingredient, Recipe } from '@/utils';
+import {
+	Beverage,
+	Clothes,
+	Cooker,
+	Currency,
+	CustomerNormal,
+	CustomerRare,
+	Ingredient,
+	Ornament,
+	Partner,
+	Recipe,
+} from '@/utils';
 
 const { version: appVersion } = siteConfig;
+
+const allDlcs = union(
+	(Beverage.getInstance().getValuesByProp('dlc'),
+	Clothes.getInstance().getValuesByProp('dlc'),
+	Cooker.getInstance().getValuesByProp('dlc'),
+	Currency.getInstance().getValuesByProp('dlc'),
+	Ingredient.getInstance().getValuesByProp('dlc'),
+	CustomerNormal.getInstance().getValuesByProp('dlc'),
+	CustomerRare.getInstance().getValuesByProp('dlc'),
+	Ornament.getInstance().getValuesByProp('dlc'),
+	Partner.getInstance().getValuesByProp('dlc'),
+	Recipe.getInstance().getValuesByProp('dlc')).flat()
+).sort(numberSort);
 
 const instance_ingredient = Ingredient.getInstance();
 const instance_recipe = Recipe.getInstance();
@@ -72,14 +104,17 @@ const storeVersion = {
 	cloud: 10,
 	tableShare: 11,
 	userId: 12, // eslint-disable-next-line sort-keys
-	hiddenItems: 13,
+	hiddenItems: 13, // eslint-disable-next-line sort-keys
+	hiddenDlcs: 14,
 } as const;
 
 const state = {
+	dlcs: allDlcs,
 	popularTags: validPopularTags,
 
 	persistence: {
 		customerCardTagsTooltip: true,
+		hiddenItems: { dlcs: [] as string[] },
 		table: {
 			columns: {
 				beverage: beverageTableColumns.map(toGetItemWithKey('key')),
@@ -123,7 +158,7 @@ export const globalStore = store(state, {
 		}),
 		persistMiddleware<typeof state>({
 			name: storeName,
-			version: storeVersion.hiddenItems,
+			version: storeVersion.hiddenDlcs,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -189,6 +224,9 @@ export const globalStore = store(state, {
 						recipes: [],
 					};
 				}
+				if (version < storeVersion.hiddenDlcs) {
+					oldState.persistence.hiddenItems = { dlcs: [] };
+				}
 				return persistedState as typeof state;
 			},
 			partialize(currentStore) {
@@ -231,6 +269,24 @@ export const globalStore = store(state, {
 			write: (rows: Selection) => {
 				currentStore.persistence.table.row.set(
 					Number.parseInt(toArray<SelectionSet>(rows)[0] as string)
+				);
+			},
+		},
+
+		hiddenDlcs: {
+			read: () => {
+				const dlcs = toSet(
+					currentStore.persistence.hiddenItems.dlcs
+						.use()
+						.map(Number) as TDlc[]
+				);
+				dlcs.delete(0);
+				return dlcs;
+			},
+			write: (dlcs: Set<TDlc>) => {
+				dlcs.delete(0);
+				currentStore.persistence.hiddenItems.dlcs.set(
+					toArray(dlcs).map(String)
 				);
 			},
 		},
@@ -313,6 +369,21 @@ globalStore.persistence.version.onChange((version) => {
 		);
 		location.reload();
 	}
+});
+
+// Update the hidden DLCs when there is a change in the persisted hidden DLCs.
+globalStore.persistence.hiddenItems.dlcs.onChange((hiddenDlcs) => {
+	const dlcs = hiddenDlcs.map(Number) as TDlc[];
+	beveragesStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
+	clothesStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
+	cookersStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
+	currenciesStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
+	ingredientsStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
+	customerNormalStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
+	customerRareStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
+	ornamentsStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
+	partnersStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
+	recipesStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
 });
 
 // Update the current famous shop state when there is a change in the persisted state.

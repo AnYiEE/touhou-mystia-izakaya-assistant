@@ -318,6 +318,8 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 	const [isRecipesSettingsPanelOpen, setRecipesSettingsPanelOpen] =
 		useState(false);
 
+	const hiddenDlcs = globalStore.hiddenDlcs.use();
+
 	const hiddenBeverages = globalStore.hiddenBeverages.use();
 	const hiddenIngredients = globalStore.hiddenIngredients.use();
 	const hiddenRecipes = globalStore.hiddenRecipes.use();
@@ -327,8 +329,12 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 	const instance_recipe = recipesStore.instance.get();
 
 	const beverageData = useMemo(
-		() => instance_beverage.getPinyinSortedData().get(),
-		[instance_beverage]
+		() =>
+			instance_beverage
+				.getPinyinSortedData()
+				.get()
+				.filter(({ dlc }) => !hiddenDlcs.has(dlc)),
+		[hiddenDlcs, instance_beverage]
 	);
 
 	const ingredientData = useMemo(
@@ -337,10 +343,11 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 				.getPinyinSortedData()
 				.get()
 				.filter(
-					({ name }) =>
+					({ dlc, name }) =>
+						!hiddenDlcs.has(dlc) &&
 						!instance_ingredient.blockedIngredients.has(name)
 				),
-		[instance_ingredient]
+		[hiddenDlcs, instance_ingredient]
 	);
 
 	const recipeData = useMemo(
@@ -348,7 +355,11 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 			instance_recipe
 				.getPinyinSortedData()
 				.get()
-				.filter(({ name }) => !instance_recipe.blockedRecipes.has(name))
+				.filter(
+					({ dlc, name }) =>
+						!hiddenDlcs.has(dlc) &&
+						!instance_recipe.blockedRecipes.has(name)
+				)
 				.map((recipe) => {
 					if (
 						checkArrayContainsOf(
@@ -360,7 +371,7 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 					}
 					return recipe;
 				}),
-		[hiddenIngredients, instance_recipe]
+		[hiddenDlcs, hiddenIngredients, instance_recipe]
 	);
 
 	const isInModal = onModalClose !== undefined;

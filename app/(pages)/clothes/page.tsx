@@ -1,12 +1,13 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 
 import {
 	useFilteredData,
 	usePinyinSortConfig,
 	useSearchConfig,
 	useSearchResult,
+	useSelectConfig,
 	useSortedData,
 	useThrottle,
 } from '@/hooks';
@@ -14,9 +15,7 @@ import {
 import Content from './content';
 import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
-import SideFilterIconButton, {
-	type TSelectConfig,
-} from '@/components/sideFilterIconButton';
+import SideFilterIconButton from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton from '@/components/sideSearchIconButton';
 
@@ -66,17 +65,14 @@ export default function Clothes() {
 		spriteTarget: 'clothes',
 	});
 
-	const selectConfig = useMemo<TSelectConfig>(
-		() => [
-			{
-				items: allDlcs,
-				label: 'DLC',
-				selectedKeys: filterDlcs,
-				setSelectedKeys: store.persistence.filters.dlcs.set,
-			},
-		],
-		[allDlcs, filterDlcs]
-	);
+	const selectConfig = useSelectConfig([
+		{
+			items: allDlcs,
+			label: 'DLC',
+			selectedKeys: filterDlcs,
+			setSelectedKeys: store.persistence.filters.dlcs.set,
+		},
+	]);
 
 	return (
 		<ItemPage
