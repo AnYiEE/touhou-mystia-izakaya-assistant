@@ -173,12 +173,11 @@ export default function Navbar() {
 			showProgress(startProgress);
 			const route = () => {
 				if (href !== undefined) {
-					if (href === '/preferences') {
-						if (basePathname === '/preferences') {
-							router.refresh();
-						} else {
-							store.setPreferencesModalIsOpen(true);
-						}
+					if (
+						href === '/preferences' &&
+						basePathname !== '/preferences'
+					) {
+						store.setPreferencesModalIsOpen(true);
 					} else {
 						router.push(href);
 					}
