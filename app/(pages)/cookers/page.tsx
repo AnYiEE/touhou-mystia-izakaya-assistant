@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import {
 	useFilteredData,
@@ -90,46 +90,65 @@ export default function Cookers() {
 		store.persistence.pinyinSortState.set
 	);
 
-	const searchConfig = useSearchConfig({
-		label: '选择或输入厨具名称',
-		searchItems: allNames,
-		searchValue,
-		setSearchValue: store.persistence.searchValue.set,
-		spriteTarget: 'cooker',
-	});
+	const searchConfig = useSearchConfig(
+		useMemo(
+			() => ({
+				label: '选择或输入厨具名称',
+				searchItems: allNames,
+				searchValue,
+				setSearchValue: store.persistence.searchValue.set,
+				spriteTarget: 'cooker',
+			}),
+			[allNames, searchValue]
+		)
+	);
 
-	const selectConfig = useSelectConfig([
-		{
-			items: allDlcs,
-			label: 'DLC',
-			selectedKeys: filterDlcs,
-			setSelectedKeys: store.persistence.filters.dlcs.set,
-		},
-		{
-			items: allCategories,
-			label: '厨具系列（包含）',
-			selectedKeys: filterCategories,
-			setSelectedKeys: store.persistence.filters.categories.set,
-		},
-		{
-			items: allCategories,
-			label: '厨具系列（排除）',
-			selectedKeys: filterNoCategories,
-			setSelectedKeys: store.persistence.filters.noCategories.set,
-		},
-		{
-			items: allTypes,
-			label: '厨具类别（包含）',
-			selectedKeys: filterTypes,
-			setSelectedKeys: store.persistence.filters.types.set,
-		},
-		{
-			items: allTypes,
-			label: '厨具类别（排除）',
-			selectedKeys: filterNoTypes,
-			setSelectedKeys: store.persistence.filters.noTypes.set,
-		},
-	]);
+	const selectConfig = useSelectConfig(
+		useMemo(
+			() => [
+				{
+					items: allDlcs,
+					label: 'DLC',
+					selectedKeys: filterDlcs,
+					setSelectedKeys: store.persistence.filters.dlcs.set,
+				},
+				{
+					items: allCategories,
+					label: '厨具系列（包含）',
+					selectedKeys: filterCategories,
+					setSelectedKeys: store.persistence.filters.categories.set,
+				},
+				{
+					items: allCategories,
+					label: '厨具系列（排除）',
+					selectedKeys: filterNoCategories,
+					setSelectedKeys: store.persistence.filters.noCategories.set,
+				},
+				{
+					items: allTypes,
+					label: '厨具类别（包含）',
+					selectedKeys: filterTypes,
+					setSelectedKeys: store.persistence.filters.types.set,
+				},
+				{
+					items: allTypes,
+					label: '厨具类别（排除）',
+					selectedKeys: filterNoTypes,
+					setSelectedKeys: store.persistence.filters.noTypes.set,
+				},
+			],
+			[
+				allCategories,
+				allDlcs,
+				allTypes,
+				filterCategories,
+				filterDlcs,
+				filterNoCategories,
+				filterNoTypes,
+				filterTypes,
+			]
+		)
+	);
 
 	return (
 		<ItemPage

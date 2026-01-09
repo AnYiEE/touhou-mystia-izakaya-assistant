@@ -156,73 +156,102 @@ export default function Recipes() {
 		store.persistence.pinyinSortState.set
 	);
 
-	const searchConfig = useSearchConfig({
-		label: '选择或输入料理名称',
-		searchItems: allNames,
-		searchValue,
-		setSearchValue: store.persistence.searchValue.set,
-		spriteTarget: 'recipe',
-	});
+	const searchConfig = useSearchConfig(
+		useMemo(
+			() => ({
+				label: '选择或输入料理名称',
+				searchItems: allNames,
+				searchValue,
+				setSearchValue: store.persistence.searchValue.set,
+				spriteTarget: 'recipe',
+			}),
+			[allNames, searchValue]
+		)
+	);
 
-	const selectConfig = useSelectConfig([
-		{
-			items: allDlcs,
-			label: 'DLC',
-			selectedKeys: filterDlcs,
-			setSelectedKeys: store.persistence.filters.dlcs.set,
-		},
-		{
-			items: allPositiveTags,
-			label: '正特性（包含）',
-			selectedKeys: filterPositiveTags,
-			setSelectedKeys: store.persistence.filters.positiveTags.set,
-		},
-		{
-			items: allPositiveTags,
-			label: '正特性（排除）',
-			selectedKeys: filterNoPositiveTags,
-			setSelectedKeys: store.persistence.filters.noPositiveTags.set,
-		},
-		{
-			items: allNegativeTags,
-			label: '反特性（包含）',
-			selectedKeys: filterNegativeTags,
-			setSelectedKeys: store.persistence.filters.negativeTags.set,
-		},
-		{
-			items: allNegativeTags,
-			label: '反特性（排除）',
-			selectedKeys: filterNoNegativeTags,
-			setSelectedKeys: store.persistence.filters.noNegativeTags.set,
-		},
-		{
-			items: allIngredients,
-			label: '食材（包含）',
-			selectedKeys: filterIngredients,
-			setSelectedKeys: store.persistence.filters.ingredients.set,
-			spriteTarget: 'ingredient',
-		},
-		{
-			items: allIngredients,
-			label: '食材（排除）',
-			selectedKeys: filterNoIngredients,
-			setSelectedKeys: store.persistence.filters.noIngredients.set,
-			spriteTarget: 'ingredient',
-		},
-		{
-			items: allCookers,
-			label: '厨具',
-			selectedKeys: filterCookers,
-			setSelectedKeys: store.persistence.filters.cookers.set,
-			spriteTarget: 'cooker',
-		},
-		{
-			items: allLevels,
-			label: '等级',
-			selectedKeys: filterLevels,
-			setSelectedKeys: store.persistence.filters.levels.set,
-		},
-	]);
+	const selectConfig = useSelectConfig(
+		useMemo(
+			() => [
+				{
+					items: allDlcs,
+					label: 'DLC',
+					selectedKeys: filterDlcs,
+					setSelectedKeys: store.persistence.filters.dlcs.set,
+				},
+				{
+					items: allPositiveTags,
+					label: '正特性（包含）',
+					selectedKeys: filterPositiveTags,
+					setSelectedKeys: store.persistence.filters.positiveTags.set,
+				},
+				{
+					items: allPositiveTags,
+					label: '正特性（排除）',
+					selectedKeys: filterNoPositiveTags,
+					setSelectedKeys:
+						store.persistence.filters.noPositiveTags.set,
+				},
+				{
+					items: allNegativeTags,
+					label: '反特性（包含）',
+					selectedKeys: filterNegativeTags,
+					setSelectedKeys: store.persistence.filters.negativeTags.set,
+				},
+				{
+					items: allNegativeTags,
+					label: '反特性（排除）',
+					selectedKeys: filterNoNegativeTags,
+					setSelectedKeys:
+						store.persistence.filters.noNegativeTags.set,
+				},
+				{
+					items: allIngredients,
+					label: '食材（包含）',
+					selectedKeys: filterIngredients,
+					setSelectedKeys: store.persistence.filters.ingredients.set,
+					spriteTarget: 'ingredient',
+				},
+				{
+					items: allIngredients,
+					label: '食材（排除）',
+					selectedKeys: filterNoIngredients,
+					setSelectedKeys:
+						store.persistence.filters.noIngredients.set,
+					spriteTarget: 'ingredient',
+				},
+				{
+					items: allCookers,
+					label: '厨具',
+					selectedKeys: filterCookers,
+					setSelectedKeys: store.persistence.filters.cookers.set,
+					spriteTarget: 'cooker',
+				},
+				{
+					items: allLevels,
+					label: '等级',
+					selectedKeys: filterLevels,
+					setSelectedKeys: store.persistence.filters.levels.set,
+				},
+			],
+			[
+				allCookers,
+				allDlcs,
+				allIngredients,
+				allLevels,
+				allNegativeTags,
+				allPositiveTags,
+				filterCookers,
+				filterDlcs,
+				filterIngredients,
+				filterLevels,
+				filterNegativeTags,
+				filterNoIngredients,
+				filterNoNegativeTags,
+				filterNoPositiveTags,
+				filterPositiveTags,
+			]
+		)
+	);
 
 	return (
 		<ItemPage
