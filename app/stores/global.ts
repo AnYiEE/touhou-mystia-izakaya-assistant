@@ -72,7 +72,7 @@ const allDlcs = union(
 		Partner.getInstance().getValuesByProp('dlc'),
 		Recipe.getInstance().getValuesByProp('dlc'),
 	].flat()
-).sort(numberSort);
+).sort(numberSort) as TDlc[];
 
 const instance_ingredient = Ingredient.getInstance();
 const instance_recipe = Recipe.getInstance();
@@ -111,7 +111,7 @@ const storeVersion = {
 } as const;
 
 const state = {
-	dlcs: allDlcs,
+	dlcs: allDlcs.map(toGetValueCollection),
 	popularTags: validPopularTags,
 
 	persistence: {
