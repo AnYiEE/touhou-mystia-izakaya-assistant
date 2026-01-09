@@ -115,7 +115,7 @@ export default function SavedMealCard() {
 	const instance_ingredient = customerStore.instances.ingredient.get();
 	const instance_recipe = customerStore.instances.recipe.get();
 
-	const savedCustomerMeal = useMemo(() => {
+	const savedCustomerMeals = useMemo(() => {
 		if (currentCustomerName === null) {
 			return null;
 		}
@@ -125,7 +125,7 @@ export default function SavedMealCard() {
 			return null;
 		}
 
-		return customerMeals.filter(
+		const visible = customerMeals.filter(
 			({
 				beverage: beverageName,
 				recipe: {
@@ -158,6 +158,8 @@ export default function SavedMealCard() {
 				);
 			}
 		);
+
+		return { all: customerMeals, visible };
 	}, [
 		currentCustomerName,
 		currentSavedMeals,
@@ -167,12 +169,16 @@ export default function SavedMealCard() {
 		instance_recipe,
 	]);
 
+	const savedCustomerMeal = savedCustomerMeals?.visible ?? null;
+	const savedCustomerMealAll = savedCustomerMeals?.all ?? null;
+
 	let content: IFadeMotionDivProps['children'];
 	let contentTarget: IFadeMotionDivProps['target'];
 
 	if (
 		currentCustomerName === null ||
 		savedCustomerMeal === null ||
+		savedCustomerMealAll === null ||
 		checkEmpty(savedCustomerMeal)
 	) {
 		content = null;
@@ -184,41 +190,48 @@ export default function SavedMealCard() {
 		) => {
 			vibrate();
 
-			const newSavedCustomerMeal = copyArray(savedCustomerMeal);
-			const currentIndex = newSavedCustomerMeal.findIndex(
-				({ index }) => index === mealIndex
-			);
-			type Meal = (typeof newSavedCustomerMeal)[number];
+			const newSavedCustomerMealAll = copyArray(savedCustomerMealAll);
+			type Meal = (typeof newSavedCustomerMealAll)[number];
 
-			switch (direction) {
-				case MoveButton.direction.down:
-					if (currentIndex >= newSavedCustomerMeal.length - 1) {
-						return;
-					}
-					[
-						newSavedCustomerMeal[currentIndex],
-						newSavedCustomerMeal[currentIndex + 1],
-					] = [
-						newSavedCustomerMeal[currentIndex + 1] as Meal,
-						newSavedCustomerMeal[currentIndex] as Meal,
-					];
-					break;
-				case MoveButton.direction.up:
-					if (currentIndex <= 0) {
-						return;
-					}
-					[
-						newSavedCustomerMeal[currentIndex],
-						newSavedCustomerMeal[currentIndex - 1],
-					] = [
-						newSavedCustomerMeal[currentIndex - 1] as Meal,
-						newSavedCustomerMeal[currentIndex] as Meal,
-					];
-					break;
+			const visibleIndexesInAll = savedCustomerMeal.map(
+				({ index: visibleMealIndex }) =>
+					newSavedCustomerMealAll.findIndex(
+						({ index: allMealIndex }) =>
+							allMealIndex === visibleMealIndex
+					)
+			);
+			const visiblePosition = savedCustomerMeal.findIndex(
+				({ index: visibleMealIndex }) => visibleMealIndex === mealIndex
+			);
+			const currentIndexInAll = visibleIndexesInAll[
+				visiblePosition
+			] as number;
+			const nextVisiblePosition =
+				direction === MoveButton.direction.down
+					? visiblePosition + 1
+					: visiblePosition - 1;
+
+			if (
+				nextVisiblePosition < 0 ||
+				nextVisiblePosition >= visibleIndexesInAll.length
+			) {
+				return;
 			}
 
+			const nextIndexInAll = visibleIndexesInAll[
+				nextVisiblePosition
+			] as number;
+
+			[
+				newSavedCustomerMealAll[currentIndexInAll],
+				newSavedCustomerMealAll[nextIndexInAll],
+			] = [
+				newSavedCustomerMealAll[nextIndexInAll] as Meal,
+				newSavedCustomerMealAll[currentIndexInAll] as Meal,
+			];
+
 			customerStore.persistence.meals[currentCustomerName]?.set(
-				newSavedCustomerMeal
+				newSavedCustomerMealAll
 			);
 		};
 
@@ -630,7 +643,7 @@ export default function SavedMealCard() {
 												customerStore.persistence.meals[
 													currentCustomerName
 												]?.set(
-													savedCustomerMeal.filter(
+													savedCustomerMealAll.filter(
 														(meal) =>
 															meal.index !==
 															mealIndex
