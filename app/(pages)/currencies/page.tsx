@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import {
 	useFilteredData,
@@ -57,22 +57,32 @@ export default function Currencies() {
 		store.persistence.pinyinSortState.set
 	);
 
-	const searchConfig = useSearchConfig({
-		label: '选择或输入货币名称',
-		searchItems: allNames,
-		searchValue,
-		setSearchValue: store.persistence.searchValue.set,
-		spriteTarget: 'currency',
-	});
+	const searchConfig = useSearchConfig(
+		useMemo(
+			() => ({
+				label: '选择或输入货币名称',
+				searchItems: allNames,
+				searchValue,
+				setSearchValue: store.persistence.searchValue.set,
+				spriteTarget: 'currency',
+			}),
+			[allNames, searchValue]
+		)
+	);
 
-	const selectConfig = useSelectConfig([
-		{
-			items: allDlcs,
-			label: 'DLC',
-			selectedKeys: filterDlcs,
-			setSelectedKeys: store.persistence.filters.dlcs.set,
-		},
-	]);
+	const selectConfig = useSelectConfig(
+		useMemo(
+			() => [
+				{
+					items: allDlcs,
+					label: 'DLC',
+					selectedKeys: filterDlcs,
+					setSelectedKeys: store.persistence.filters.dlcs.set,
+				},
+			],
+			[allDlcs, filterDlcs]
+		)
+	);
 
 	return (
 		<ItemPage

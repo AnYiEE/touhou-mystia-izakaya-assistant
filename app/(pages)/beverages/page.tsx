@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import {
 	useFilteredData,
@@ -80,40 +80,58 @@ export default function Beverages() {
 		store.persistence.pinyinSortState.set
 	);
 
-	const searchConfig = useSearchConfig({
-		label: '选择或输入酒水名称',
-		searchItems: allNames,
-		searchValue,
-		setSearchValue: store.persistence.searchValue.set,
-		spriteTarget: 'beverage',
-	});
+	const searchConfig = useSearchConfig(
+		useMemo(
+			() => ({
+				label: '选择或输入酒水名称',
+				searchItems: allNames,
+				searchValue,
+				setSearchValue: store.persistence.searchValue.set,
+				spriteTarget: 'beverage',
+			}),
+			[allNames, searchValue]
+		)
+	);
 
-	const selectConfig = useSelectConfig([
-		{
-			items: allDlcs,
-			label: 'DLC',
-			selectedKeys: filterDlcs,
-			setSelectedKeys: store.persistence.filters.dlcs.set,
-		},
-		{
-			items: allTags,
-			label: '酒水标签（包含）',
-			selectedKeys: filterTags,
-			setSelectedKeys: store.persistence.filters.tags.set,
-		},
-		{
-			items: allTags,
-			label: '酒水标签（排除）',
-			selectedKeys: filterNoTags,
-			setSelectedKeys: store.persistence.filters.noTags.set,
-		},
-		{
-			items: allLevels,
-			label: '等级',
-			selectedKeys: filterLevels,
-			setSelectedKeys: store.persistence.filters.levels.set,
-		},
-	]);
+	const selectConfig = useSelectConfig(
+		useMemo(
+			() => [
+				{
+					items: allDlcs,
+					label: 'DLC',
+					selectedKeys: filterDlcs,
+					setSelectedKeys: store.persistence.filters.dlcs.set,
+				},
+				{
+					items: allTags,
+					label: '酒水标签（包含）',
+					selectedKeys: filterTags,
+					setSelectedKeys: store.persistence.filters.tags.set,
+				},
+				{
+					items: allTags,
+					label: '酒水标签（排除）',
+					selectedKeys: filterNoTags,
+					setSelectedKeys: store.persistence.filters.noTags.set,
+				},
+				{
+					items: allLevels,
+					label: '等级',
+					selectedKeys: filterLevels,
+					setSelectedKeys: store.persistence.filters.levels.set,
+				},
+			],
+			[
+				allDlcs,
+				allLevels,
+				allTags,
+				filterDlcs,
+				filterLevels,
+				filterNoTags,
+				filterTags,
+			]
+		)
+	);
 
 	return (
 		<ItemPage

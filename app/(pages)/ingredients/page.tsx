@@ -113,52 +113,73 @@ export default function Ingredients() {
 		store.persistence.pinyinSortState.set
 	);
 
-	const searchConfig = useSearchConfig({
-		label: '选择或输入食材名称',
-		searchItems: allNames,
-		searchValue,
-		setSearchValue: store.persistence.searchValue.set,
-		spriteTarget: 'ingredient',
-	});
+	const searchConfig = useSearchConfig(
+		useMemo(
+			() => ({
+				label: '选择或输入食材名称',
+				searchItems: allNames,
+				searchValue,
+				setSearchValue: store.persistence.searchValue.set,
+				spriteTarget: 'ingredient',
+			}),
+			[allNames, searchValue]
+		)
+	);
 
-	const selectConfig = useSelectConfig([
-		{
-			items: allDlcs,
-			label: 'DLC',
-			selectedKeys: filterDlcs,
-			setSelectedKeys: store.persistence.filters.dlcs.set,
-		},
-		{
-			items: allTags,
-			label: '食材标签（包含）',
-			selectedKeys: filterTags,
-			setSelectedKeys: store.persistence.filters.tags.set,
-		},
-		{
-			items: allTags,
-			label: '食材标签（排除）',
-			selectedKeys: filterNoTags,
-			setSelectedKeys: store.persistence.filters.noTags.set,
-		},
-		{
-			items: allTypes,
-			label: '食材类别（包含）',
-			selectedKeys: filterTypes,
-			setSelectedKeys: store.persistence.filters.types.set,
-		},
-		{
-			items: allTypes,
-			label: '食材类别（排除）',
-			selectedKeys: filterNoTypes,
-			setSelectedKeys: store.persistence.filters.noTypes.set,
-		},
-		{
-			items: allLevels,
-			label: '等级',
-			selectedKeys: filterLevels,
-			setSelectedKeys: store.persistence.filters.levels.set,
-		},
-	]);
+	const selectConfig = useSelectConfig(
+		useMemo(
+			() => [
+				{
+					items: allDlcs,
+					label: 'DLC',
+					selectedKeys: filterDlcs,
+					setSelectedKeys: store.persistence.filters.dlcs.set,
+				},
+				{
+					items: allTags,
+					label: '食材标签（包含）',
+					selectedKeys: filterTags,
+					setSelectedKeys: store.persistence.filters.tags.set,
+				},
+				{
+					items: allTags,
+					label: '食材标签（排除）',
+					selectedKeys: filterNoTags,
+					setSelectedKeys: store.persistence.filters.noTags.set,
+				},
+				{
+					items: allTypes,
+					label: '食材类别（包含）',
+					selectedKeys: filterTypes,
+					setSelectedKeys: store.persistence.filters.types.set,
+				},
+				{
+					items: allTypes,
+					label: '食材类别（排除）',
+					selectedKeys: filterNoTypes,
+					setSelectedKeys: store.persistence.filters.noTypes.set,
+				},
+				{
+					items: allLevels,
+					label: '等级',
+					selectedKeys: filterLevels,
+					setSelectedKeys: store.persistence.filters.levels.set,
+				},
+			],
+			[
+				allDlcs,
+				allLevels,
+				allTags,
+				allTypes,
+				filterDlcs,
+				filterLevels,
+				filterNoTags,
+				filterNoTypes,
+				filterTags,
+				filterTypes,
+			]
+		)
+	);
 
 	return (
 		<ItemPage
