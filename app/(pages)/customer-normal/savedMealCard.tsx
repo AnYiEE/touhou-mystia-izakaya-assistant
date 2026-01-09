@@ -91,6 +91,10 @@ export default function SavedMealCard() {
 			}
 		);
 
+		if (checkEmpty(visible)) {
+			return null;
+		}
+
 		return { all: customerMeals, visible };
 	}, [
 		currentCustomerName,
@@ -101,58 +105,45 @@ export default function SavedMealCard() {
 		instance_recipe,
 	]);
 
-	const savedCustomerMeal = savedCustomerMeals?.visible ?? null;
-	const savedCustomerMealAll = savedCustomerMeals?.all ?? null;
+	const savedCustomerMealsAll = savedCustomerMeals?.all ?? null;
+	const savedCustomerMealsVisible = savedCustomerMeals?.visible ?? null;
 
 	let content: IFadeMotionDivProps['children'];
 	let contentTarget: IFadeMotionDivProps['target'];
 
 	if (
 		currentCustomerName === null ||
-		savedCustomerMeal === null ||
-		savedCustomerMealAll === null ||
-		checkEmpty(savedCustomerMeal)
+		savedCustomerMealsAll === null ||
+		savedCustomerMealsVisible === null
 	) {
 		content = null;
 		contentTarget = 'null';
 	} else {
 		const moveMeal = (
-			mealIndex: number,
+			index: number,
 			direction: IMoveButtonProps['direction']
 		) => {
 			vibrate();
 
-			const newSavedCustomerMealAll = copyArray(savedCustomerMealAll);
-			type Meal = (typeof newSavedCustomerMealAll)[number];
-
-			const visibleIndexesInAll = savedCustomerMeal.map(
-				({ index: visibleMealIndex }) =>
-					newSavedCustomerMealAll.findIndex(
-						({ index: allMealIndex }) =>
-							allMealIndex === visibleMealIndex
-					)
-			);
-			const visiblePosition = savedCustomerMeal.findIndex(
-				({ index: visibleMealIndex }) => visibleMealIndex === mealIndex
-			);
-			const currentIndexInAll = visibleIndexesInAll[
-				visiblePosition
-			] as number;
-			const nextVisiblePosition =
-				direction === MoveButton.direction.down
-					? visiblePosition + 1
-					: visiblePosition - 1;
+			const nextIndex =
+				direction === MoveButton.direction.down ? index + 1 : index - 1;
 
 			if (
-				nextVisiblePosition < 0 ||
-				nextVisiblePosition >= visibleIndexesInAll.length
+				nextIndex < 0 ||
+				nextIndex >= savedCustomerMealsVisible.length
 			) {
 				return;
 			}
 
-			const nextIndexInAll = visibleIndexesInAll[
-				nextVisiblePosition
-			] as number;
+			type Meal = (typeof savedCustomerMealsAll)[number];
+
+			const currentMeal = savedCustomerMealsVisible[index] as Meal;
+			const nextMeal = savedCustomerMealsVisible[nextIndex] as Meal;
+
+			const newSavedCustomerMealAll = copyArray(savedCustomerMealsAll);
+			const currentIndexInAll =
+				newSavedCustomerMealAll.indexOf(currentMeal);
+			const nextIndexInAll = newSavedCustomerMealAll.indexOf(nextMeal);
 
 			[
 				newSavedCustomerMealAll[currentIndexInAll],
@@ -178,7 +169,7 @@ export default function SavedMealCard() {
 				}}
 			>
 				<div className="space-y-3 p-4 xl:space-y-2">
-					{savedCustomerMeal.map(
+					{savedCustomerMealsVisible.map(
 						(
 							{ beverage, index: mealIndex, recipe: recipeData },
 							loopIndex
@@ -446,7 +437,7 @@ export default function SavedMealCard() {
 												'absolute -right-2 -top-1 flex flex-col gap-3 text-tiny text-primary/20 md:right-0.5 md:top-[unset] md:gap-5 xl:gap-4 dark:text-default-100',
 												{
 													hidden:
-														savedCustomerMeal.length <=
+														savedCustomerMealsVisible.length <=
 														1,
 												}
 											)}
@@ -458,7 +449,7 @@ export default function SavedMealCard() {
 												isDisabled={loopIndex === 0}
 												onClick={() => {
 													moveMeal(
-														mealIndex,
+														loopIndex,
 														MoveButton.direction.up
 													);
 												}}
@@ -469,11 +460,12 @@ export default function SavedMealCard() {
 												}
 												isDisabled={
 													loopIndex ===
-													savedCustomerMeal.length - 1
+													savedCustomerMealsVisible.length -
+														1
 												}
 												onClick={() => {
 													moveMeal(
-														mealIndex,
+														loopIndex,
 														MoveButton.direction
 															.down
 													);
@@ -513,7 +505,7 @@ export default function SavedMealCard() {
 												customerStore.persistence.meals[
 													currentCustomerName
 												]?.set(
-													savedCustomerMealAll.filter(
+													savedCustomerMealsAll.filter(
 														(meal) =>
 															meal.index !==
 															mealIndex
@@ -531,7 +523,8 @@ export default function SavedMealCard() {
 										</Button>
 									</div>
 								</div>
-								{loopIndex < savedCustomerMeal.length - 1 && (
+								{loopIndex <
+									savedCustomerMealsVisible.length - 1 && (
 									<Divider />
 								)}
 							</Fragment>
