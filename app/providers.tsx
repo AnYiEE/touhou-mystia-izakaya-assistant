@@ -63,36 +63,17 @@ export default function Providers({
 		}
 
 		const globalHiddenDlcs = globalStore.persistence.hiddenItems.dlcs.get();
-		beveragesStore.shared.hiddenItems.dlcs.set(
-			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
-		);
-		clothesStore.shared.hiddenItems.dlcs.set(
-			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
-		);
-		cookersStore.shared.hiddenItems.dlcs.set(
-			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
-		);
-		currenciesStore.shared.hiddenItems.dlcs.set(
-			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
-		);
-		customerNormalStore.shared.hiddenItems.dlcs.set(
-			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
-		);
-		customerRareStore.shared.hiddenItems.dlcs.set(
-			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
-		);
-		ingredientsStore.shared.hiddenItems.dlcs.set(
-			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
-		);
-		ornamentsStore.shared.hiddenItems.dlcs.set(
-			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
-		);
-		partnersStore.shared.hiddenItems.dlcs.set(
-			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
-		);
-		recipesStore.shared.hiddenItems.dlcs.set(
-			toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>
-		);
+		const hiddenDlcsSet = toSet(globalHiddenDlcs.map(Number)) as Set<TDlc>;
+		beveragesStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
+		clothesStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
+		cookersStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
+		currenciesStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
+		customerNormalStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
+		customerRareStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
+		ingredientsStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
+		ornamentsStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
+		partnersStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
+		recipesStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
 
 		// Initialize famous shop state based on the persistence state.
 		const globalFamousShop = globalStore.persistence.famousShop.get();
