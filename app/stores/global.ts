@@ -287,9 +287,10 @@ export const globalStore = store(state, {
 				return dlcs;
 			},
 			write: (dlcs: Set<TDlc>) => {
-				dlcs.delete(0);
+				const set = new Set(dlcs);
+				set.delete(0);
 				currentStore.persistence.hiddenItems.dlcs.set(
-					toArray(dlcs).map(String)
+					toArray(set).map(String)
 				);
 			},
 		},
