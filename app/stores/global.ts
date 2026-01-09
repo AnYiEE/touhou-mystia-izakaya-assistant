@@ -60,16 +60,18 @@ import {
 const { version: appVersion } = siteConfig;
 
 const allDlcs = union(
-	(Beverage.getInstance().getValuesByProp('dlc'),
-	Clothes.getInstance().getValuesByProp('dlc'),
-	Cooker.getInstance().getValuesByProp('dlc'),
-	Currency.getInstance().getValuesByProp('dlc'),
-	Ingredient.getInstance().getValuesByProp('dlc'),
-	CustomerNormal.getInstance().getValuesByProp('dlc'),
-	CustomerRare.getInstance().getValuesByProp('dlc'),
-	Ornament.getInstance().getValuesByProp('dlc'),
-	Partner.getInstance().getValuesByProp('dlc'),
-	Recipe.getInstance().getValuesByProp('dlc')).flat()
+	[
+		Beverage.getInstance().getValuesByProp('dlc'),
+		Clothes.getInstance().getValuesByProp('dlc'),
+		Cooker.getInstance().getValuesByProp('dlc'),
+		Currency.getInstance().getValuesByProp('dlc'),
+		Ingredient.getInstance().getValuesByProp('dlc'),
+		CustomerNormal.getInstance().getValuesByProp('dlc'),
+		CustomerRare.getInstance().getValuesByProp('dlc'),
+		Ornament.getInstance().getValuesByProp('dlc'),
+		Partner.getInstance().getValuesByProp('dlc'),
+		Recipe.getInstance().getValuesByProp('dlc'),
+	].flat()
 ).sort(numberSort);
 
 const instance_ingredient = Ingredient.getInstance();
