@@ -18,8 +18,7 @@ export function useSelectConfig(configs: TSelectConfig) {
 							return config;
 						}
 						const filteredItems = config.items.filter(
-							(item) =>
-								!hiddenDlcs.has(item.value as number as TDlc)
+							(item) => !hiddenDlcs.has(item.value as TDlc)
 						);
 						return {
 							...config,
