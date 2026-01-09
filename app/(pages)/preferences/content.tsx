@@ -134,7 +134,7 @@ export default memo<IProps>(function Content({ onModalClose }) {
 					{ 'lg:w-1/2': !isPreferencesModalOpen }
 				)}
 			>
-				{allDlcs.map((dlc, index) => {
+				{allDlcs.map(({ value: dlc }, index) => {
 					const isHidden = hiddenDlcs.has(dlc);
 					return (
 						<SwitchItem
