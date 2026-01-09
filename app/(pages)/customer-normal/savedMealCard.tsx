@@ -69,21 +69,23 @@ export default function SavedMealCard() {
 					beverageName === null
 						? 0
 						: instance_beverage.getPropsByName(beverageName, 'dlc');
-				const ingredientDlcs = extraIngredientNames.map(
-					(ingredientName) =>
-						instance_ingredient.getPropsByName(
-							ingredientName,
-							'dlc'
-						)
-				);
 				const recipeDlc = instance_recipe.getPropsByName(
 					recipeName,
 					'dlc'
 				);
+				const hasHiddenIngredientDlc = extraIngredientNames.some(
+					(ingredientName) =>
+						hiddenDlcs.has(
+							instance_ingredient.getPropsByName(
+								ingredientName,
+								'dlc'
+							)
+						)
+				);
 
 				return (
+					!hasHiddenIngredientDlc &&
 					!hiddenDlcs.has(beverageDlc) &&
-					!ingredientDlcs.some((dlc) => hiddenDlcs.has(dlc)) &&
 					!hiddenDlcs.has(recipeDlc)
 				);
 			}
