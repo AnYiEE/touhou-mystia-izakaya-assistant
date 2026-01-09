@@ -305,9 +305,11 @@ export default function CustomerRareTutorial() {
 	]);
 
 	useEffect(() => {
+		let handler: ReturnType<typeof setTimeout> | undefined;
+
 		if (isTargetPage && !isCompleted && !driverRef.current.isActive()) {
 			if (currentPathname === pathname) {
-				setTimeout(() => {
+				handler = setTimeout(() => {
 					driverRef.current.drive();
 					trackEvent(
 						trackEvent.category.click,
@@ -322,6 +324,10 @@ export default function CustomerRareTutorial() {
 		if (!isTargetPage) {
 			driverRef.current.destroy();
 		}
+
+		return () => {
+			clearTimeout(handler);
+		};
 	}, [currentPathname, isCompleted, isTargetPage]);
 
 	return null;
