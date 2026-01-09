@@ -242,7 +242,6 @@ export default function SavedMealCard() {
 							{
 								beverage,
 								hasMystiaCooker,
-								index: mealIndex,
 								order: customerOrder,
 								recipe: recipeData,
 							},
@@ -632,15 +631,27 @@ export default function SavedMealCard() {
 											variant="flat"
 											onPress={() => {
 												vibrate();
+												type Meal =
+													(typeof savedCustomerMealsVisible)[number];
+												const currentMeal =
+													savedCustomerMealsVisible[
+														loopIndex
+													] as Meal;
+												const currentIndexInAll =
+													savedCustomerMealsAll.indexOf(
+														currentMeal
+													);
+												const newSavedCustomerMealAll =
+													copyArray(
+														savedCustomerMealsAll
+													);
+												newSavedCustomerMealAll.splice(
+													currentIndexInAll,
+													1
+												);
 												customerStore.persistence.meals[
 													currentCustomerName
-												]?.set(
-													savedCustomerMealsAll.filter(
-														(meal) =>
-															meal.index !==
-															mealIndex
-													)
-												);
+												]?.set(newSavedCustomerMealAll);
 												trackEvent(
 													trackEvent.category.click,
 													'Remove Button',

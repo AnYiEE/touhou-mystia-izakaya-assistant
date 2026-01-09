@@ -170,10 +170,7 @@ export default function SavedMealCard() {
 			>
 				<div className="space-y-3 p-4 xl:space-y-2">
 					{savedCustomerMealsVisible.map(
-						(
-							{ beverage, index: mealIndex, recipe: recipeData },
-							loopIndex
-						) => (
+						({ beverage, recipe: recipeData }, loopIndex) => (
 							<Fragment key={loopIndex}>
 								<div className="relative flex flex-col items-center gap-4 md:static md:flex-row">
 									<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
@@ -502,15 +499,27 @@ export default function SavedMealCard() {
 											variant="flat"
 											onPress={() => {
 												vibrate();
+												type Meal =
+													(typeof savedCustomerMealsVisible)[number];
+												const currentMeal =
+													savedCustomerMealsVisible[
+														loopIndex
+													] as Meal;
+												const currentIndexInAll =
+													savedCustomerMealsAll.indexOf(
+														currentMeal
+													);
+												const newSavedCustomerMealAll =
+													copyArray(
+														savedCustomerMealsAll
+													);
+												newSavedCustomerMealAll.splice(
+													currentIndexInAll,
+													1
+												);
 												customerStore.persistence.meals[
 													currentCustomerName
-												]?.set(
-													savedCustomerMealsAll.filter(
-														(meal) =>
-															meal.index !==
-															mealIndex
-													)
-												);
+												]?.set(newSavedCustomerMealAll);
 												trackEvent(
 													trackEvent.category.click,
 													'Remove Button',
