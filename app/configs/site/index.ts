@@ -112,6 +112,10 @@ export const siteConfig = {
 			href: 'https://beian.miit.gov.cn/',
 		},
 		index: { label: '首页', href: '/' },
+		metaMystia: {
+			label: '联机经营就在MetaMystia',
+			href: getShortUrl('lgU9Dy'),
+		},
 		qqGroup1: { label: 'QQ一群', href: getShortUrl('l40oUu') },
 		qqGroup2: { label: 'QQ二群', href: getShortUrl('KCo1fT') },
 		rednoteGroup: { label: '小红书群', href: getShortUrl('Y9YVAt') },

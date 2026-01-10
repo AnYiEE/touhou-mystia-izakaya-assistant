@@ -113,6 +113,24 @@ export default function Home() {
 								{links.appQA.label}
 							</Link>
 						</p>
+						<p>
+							<Link
+								isExternal
+								showAnchorIcon
+								href={links.metaMystia.href}
+								title={links.metaMystia.label}
+								onPress={() => {
+									trackEvent(
+										trackEvent.category.click,
+										'Link',
+										'MetaMystia'
+									);
+								}}
+								className="rounded-small text-xs text-foreground-500 md:text-small lg:text-base"
+							>
+								{links.metaMystia.label}
+							</Link>
+						</p>
 					</div>
 					<div className="flex flex-wrap items-end leading-none">
 						<p className="text-foreground-500 lg:hidden">
