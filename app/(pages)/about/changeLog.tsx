@@ -136,7 +136,13 @@ const changelog = [
 		changes: ['新增：食材页面的详情弹出框中支持查看包含此食材的料理。'],
 	},
 	{ version: 'v1.11', changes: ['新增：更新数据至游戏版本4.2.1。'] },
-	{ version: 'v1.12', changes: ['新增：支持隐藏特定数据集。'] },
+	{
+		version: 'v1.12',
+		changes: [
+			'新增：支持隐藏特定数据集。',
+			'新增：数据集加入MetaMystia模组附加内容。',
+		],
+	},
 ] as const satisfies Array<{
 	version: `v${string}`;
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;

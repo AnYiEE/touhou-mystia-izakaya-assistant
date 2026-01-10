@@ -161,6 +161,7 @@ export const DLC_LABEL_MAP: Record<
 	3: { label: 'DLC3', shortLabel: '' },
 	4: { label: 'DLC4', shortLabel: '' },
 	5: { label: 'DLC5', shortLabel: '' },
+	9: { label: 'MetaMystia模组', shortLabel: 'META' },
 } as const;
 
 export const LABEL_MAP = { br: '{{br}}' } as const;
