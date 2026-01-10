@@ -840,21 +840,27 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 										prev.dirver = dirver;
 									});
 									// Wait for the button animation to complete (the animate will take 800ms).
-									setTimeout(() => {
-										onModalClose?.();
-										// Wait for the modal to close (the animate will take 300ms).
-										setTimeout(() => {
-											if (
-												pathname ===
-												customerRareTutorialPathname
-											) {
-												location.reload();
-											} else {
-												location.href =
-													customerRareTutorialPathname;
-											}
-										}, 300);
-									}, 800);
+									setTimeout(
+										() => {
+											onModalClose?.();
+											// Wait for the modal to close (the animate will take 300ms).
+											setTimeout(
+												() => {
+													if (
+														pathname ===
+														customerRareTutorialPathname
+													) {
+														location.reload();
+													} else {
+														location.href =
+															customerRareTutorialPathname;
+													}
+												},
+												isReducedMotion ? 0 : 300
+											);
+										},
+										isReducedMotion ? 0 : 800
+									);
 									trackEvent(
 										trackEvent.category.click,
 										'Reset Button',

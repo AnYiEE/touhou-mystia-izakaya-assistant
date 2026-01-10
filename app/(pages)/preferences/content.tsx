@@ -64,15 +64,21 @@ export default memo<IProps>(function Content({ onModalClose }) {
 		(value: boolean) => {
 			globalStore.persistence.highAppearance.set(value);
 			// Wait for the switch animation to complete (the animate will take 800ms).
-			setTimeout(() => {
-				onModalClose?.();
-				// Wait for the modal to close (the animate will take 300ms).
-				setTimeout(() => {
-					location.reload();
-				}, 300);
-			}, 800);
+			setTimeout(
+				() => {
+					onModalClose?.();
+					// Wait for the modal to close (the animate will take 300ms).
+					setTimeout(
+						() => {
+							location.reload();
+						},
+						isReducedMotion ? 0 : 300
+					);
+				},
+				isReducedMotion ? 0 : 800
+			);
 		},
-		[onModalClose]
+		[isReducedMotion, onModalClose]
 	);
 
 	return (

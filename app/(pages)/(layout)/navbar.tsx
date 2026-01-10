@@ -186,13 +186,13 @@ export default function Navbar() {
 			if (isInNavbarMenu) {
 				setIsMenuOpened(false);
 				// Wait for the menu close animation to complete (the animate will take 300ms).
-				setTimeout(route, 300);
+				setTimeout(route, isReducedMotion ? 0 : 300);
 			} else {
 				setIsMenuOpened(false);
 				route();
 			}
 		},
-		[basePathname, router, startProgress, vibrate]
+		[basePathname, isReducedMotion, router, startProgress, vibrate]
 	);
 
 	// Support parallel routing pages.
