@@ -1277,4 +1277,6 @@ customerRareStore.shared.hiddenItems.dlcs.onChange(() => {
 	});
 	customerRareStore.persistence.recipe.table.cookers.set([]);
 	customerRareStore.persistence.recipe.table.dlcs.set([]);
+	customerRareStore.shared.beverage.table.page.set(1);
+	customerRareStore.shared.recipe.table.page.set(1);
 });
