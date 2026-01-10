@@ -27,8 +27,8 @@ import { checkEmpty } from '@/utilities';
 export default function Ornaments() {
 	const instance = store.instance.get();
 
-	const allNames = store.names.use();
-	const allDlcs = store.dlcs.get();
+	const availableDlcs = store.availableDlcs.use();
+	const availableNames = store.availableNames.use();
 
 	const pinyinSortState = store.persistence.pinyinSortState.use();
 	const searchValue = store.persistence.searchValue.use();
@@ -62,24 +62,24 @@ export default function Ornaments() {
 	const searchConfig = useMemo<ISearchConfig>(
 		() => ({
 			label: '选择或输入摆件名称',
-			searchItems: allNames,
+			searchItems: availableNames,
 			searchValue,
 			setSearchValue: store.persistence.searchValue.set,
 			spriteTarget: 'ornament',
 		}),
-		[allNames, searchValue]
+		[availableNames, searchValue]
 	);
 
 	const selectConfig = useMemo<TSelectConfig>(
 		() => [
 			{
-				items: allDlcs,
+				items: availableDlcs,
 				label: 'DLC',
 				selectedKeys: filterDlcs,
 				setSelectedKeys: store.persistence.filters.dlcs.set,
 			},
 		],
-		[allDlcs, filterDlcs]
+		[availableDlcs, filterDlcs]
 	);
 
 	return (

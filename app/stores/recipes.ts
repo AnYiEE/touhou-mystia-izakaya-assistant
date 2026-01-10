@@ -12,6 +12,7 @@ import type { IPopularTrend } from '@/types';
 import {
 	numberSort,
 	pinyinSort,
+	sortBy,
 	toArray,
 	toGetValueCollection,
 	toSet,
@@ -28,22 +29,6 @@ const storeVersion = {
 
 const state = {
 	instance,
-
-	dlcs: instance.getValuesByProp('dlc', true).sort(numberSort),
-	levels: instance.getValuesByProp('level', true).sort(numberSort),
-
-	cookers: instance.getValuesByProp('cooker', true).sort(pinyinSort),
-	ingredients: instance.getValuesByProp('ingredients', true).sort(pinyinSort),
-	negativeTags: instance
-		.getValuesByProp('negativeTags', true)
-		.sort(pinyinSort),
-	positiveTags: toArray<TRecipeTag[]>(
-		instance.getValuesByProp('positiveTags'),
-		DYNAMIC_TAG_MAP.popularNegative,
-		DYNAMIC_TAG_MAP.popularPositive
-	)
-		.map(toGetValueCollection)
-		.sort(pinyinSort),
 
 	persistence: {
 		filters: {
@@ -100,5 +85,114 @@ export const recipesStore = store(state, {
 		}),
 	],
 }).computed((currentStore) => ({
-	names: () => getNames(currentStore.persistence.pinyinSortState.use()),
+	availableCookers: () =>
+		currentStore.instance
+			.get()
+			.getValuesByProp(
+				'cooker',
+				true,
+				currentStore.instance
+					.get()
+					.data.filter(
+						({ dlc }) =>
+							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
+					)
+			)
+			.sort(pinyinSort),
+	availableDlcs: () =>
+		currentStore.instance
+			.get()
+			.getValuesByProp('dlc', true)
+			.filter(
+				({ value }) =>
+					!currentStore.shared.hiddenItems.dlcs.use().has(value)
+			)
+			.sort(numberSort),
+	availableIngredients: () =>
+		currentStore.instance
+			.get()
+			.getValuesByProp(
+				'ingredients',
+				true,
+				currentStore.instance
+					.get()
+					.data.filter(
+						({ dlc }) =>
+							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
+					)
+			)
+			.sort(pinyinSort),
+	availableLevels: () =>
+		currentStore.instance
+			.get()
+			.getValuesByProp(
+				'level',
+				true,
+				currentStore.instance
+					.get()
+					.data.filter(
+						({ dlc }) =>
+							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
+					)
+			)
+			.sort(numberSort),
+	availableNames: () =>
+		sortBy(
+			getNames(currentStore.persistence.pinyinSortState.use()),
+			currentStore.instance.get().getValuesByProp(
+				'name',
+				false,
+				currentStore.instance
+					.get()
+					.data.filter(
+						({ dlc }) =>
+							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
+					)
+			)
+		).map(toGetValueCollection),
+	availableNegativeTags: () =>
+		currentStore.instance
+			.get()
+			.getValuesByProp(
+				'negativeTags',
+				true,
+				currentStore.instance
+					.get()
+					.data.filter(
+						({ dlc }) =>
+							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
+					)
+			)
+			.sort(pinyinSort),
+	availablePositiveTags: () =>
+		toArray<TRecipeTag[]>(
+			currentStore.instance.get().getValuesByProp(
+				'positiveTags',
+				false,
+				currentStore.instance
+					.get()
+					.data.filter(
+						({ dlc }) =>
+							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
+					)
+			),
+			DYNAMIC_TAG_MAP.popularNegative,
+			DYNAMIC_TAG_MAP.popularPositive
+		)
+			.map(toGetValueCollection)
+			.sort(pinyinSort),
 }));
+
+recipesStore.shared.hiddenItems.dlcs.onChange(() => {
+	recipesStore.persistence.filters.set({
+		cookers: [],
+		dlcs: [],
+		ingredients: [],
+		levels: [],
+		negativeTags: [],
+		noIngredients: [],
+		noNegativeTags: [],
+		noPositiveTags: [],
+		positiveTags: [],
+	});
+});

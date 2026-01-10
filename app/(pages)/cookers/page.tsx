@@ -27,10 +27,10 @@ import { checkArrayContainsOf, checkEmpty } from '@/utilities';
 export default function Cookers() {
 	const instance = store.instance.get();
 
-	const allNames = store.names.use();
-	const allCategories = store.categories.get();
-	const allDlcs = store.dlcs.get();
-	const allTypes = store.types.get();
+	const availableCategories = store.availableCategories.use();
+	const availableDlcs = store.availableDlcs.use();
+	const availableNames = store.availableNames.use();
+	const availableTypes = store.availableTypes.use();
 
 	const pinyinSortState = store.persistence.pinyinSortState.use();
 	const searchValue = store.persistence.searchValue.use();
@@ -95,51 +95,51 @@ export default function Cookers() {
 	const searchConfig = useMemo<ISearchConfig>(
 		() => ({
 			label: '选择或输入厨具名称',
-			searchItems: allNames,
+			searchItems: availableNames,
 			searchValue,
 			setSearchValue: store.persistence.searchValue.set,
 			spriteTarget: 'cooker',
 		}),
-		[allNames, searchValue]
+		[availableNames, searchValue]
 	);
 
 	const selectConfig = useMemo<TSelectConfig>(
 		() => [
 			{
-				items: allDlcs,
+				items: availableDlcs,
 				label: 'DLC',
 				selectedKeys: filterDlcs,
 				setSelectedKeys: store.persistence.filters.dlcs.set,
 			},
 			{
-				items: allCategories,
+				items: availableCategories,
 				label: '厨具系列（包含）',
 				selectedKeys: filterCategories,
 				setSelectedKeys: store.persistence.filters.categories.set,
 			},
 			{
-				items: allCategories,
+				items: availableCategories,
 				label: '厨具系列（排除）',
 				selectedKeys: filterNoCategories,
 				setSelectedKeys: store.persistence.filters.noCategories.set,
 			},
 			{
-				items: allTypes,
+				items: availableTypes,
 				label: '厨具类别（包含）',
 				selectedKeys: filterTypes,
 				setSelectedKeys: store.persistence.filters.types.set,
 			},
 			{
-				items: allTypes,
+				items: availableTypes,
 				label: '厨具类别（排除）',
 				selectedKeys: filterNoTypes,
 				setSelectedKeys: store.persistence.filters.noTypes.set,
 			},
 		],
 		[
-			allCategories,
-			allDlcs,
-			allTypes,
+			availableCategories,
+			availableDlcs,
+			availableTypes,
 			filterCategories,
 			filterDlcs,
 			filterNoCategories,

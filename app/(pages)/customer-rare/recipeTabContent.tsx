@@ -103,16 +103,12 @@ export default function RecipeTabContent() {
 	const instance_customer = customerStore.instances.customer.get();
 	const instance_recipe = customerStore.instances.recipe.get();
 
-	const allRecipeDlcs = customerStore.recipe.dlcs.get();
-	const allRecipeNames = customerStore.recipe.names.get();
-	const allRecipeTags = customerStore.recipe.tags.get();
-	const allCookers = customerStore.recipe.cookers.get();
+	const availableRecipeCookers = customerStore.availableRecipeCookers.use();
+	const availableRecipeDlcs = customerStore.availableRecipeDlcs.use();
+	const availableRecipeNames = customerStore.availableRecipeNames.use();
+	const availableRecipeTags = customerStore.availableRecipeTags.use();
 
 	const hiddenDlcs = customerStore.shared.hiddenItems.dlcs.use();
-	const allAvailableDlcs = useMemo(
-		() => allRecipeDlcs.filter(({ value }) => !hiddenDlcs.has(value)),
-		[allRecipeDlcs, hiddenDlcs]
-	);
 
 	const searchValue = customerStore.shared.recipe.searchValue.use();
 	const hasNameFilter = Boolean(searchValue);
@@ -553,7 +549,7 @@ export default function RecipeTabContent() {
 					<div className="flex flex-1 items-end gap-3">
 						<Autocomplete
 							allowsCustomValue
-							defaultItems={allRecipeNames}
+							defaultItems={availableRecipeNames}
 							disableAnimation={isReducedMotion}
 							inputValue={searchValue}
 							isVirtualized={false}
@@ -613,7 +609,7 @@ export default function RecipeTabContent() {
 						<Select
 							disableAnimation={isReducedMotion}
 							isVirtualized={false}
-							items={allRecipeTags}
+							items={availableRecipeTags}
 							placeholder="标签"
 							selectedKeys={selectedCustomerRecipeTag}
 							size="sm"
@@ -670,7 +666,7 @@ export default function RecipeTabContent() {
 							</DropdownTrigger>
 							<DropdownMenu
 								closeOnSelect={false}
-								items={allCookers}
+								items={availableRecipeCookers}
 								selectedKeys={selectedCookers}
 								selectionMode="multiple"
 								variant="flat"
@@ -698,7 +694,7 @@ export default function RecipeTabContent() {
 								)}
 							</DropdownMenu>
 						</Dropdown>
-						{allAvailableDlcs.length > 1 && (
+						{availableRecipeDlcs.length > 1 && (
 							<Dropdown showArrow>
 								<DropdownTrigger>
 									<Button
@@ -724,7 +720,7 @@ export default function RecipeTabContent() {
 								</DropdownTrigger>
 								<DropdownMenu
 									closeOnSelect={false}
-									items={allAvailableDlcs}
+									items={availableRecipeDlcs}
 									selectedKeys={selectedDlcs}
 									selectionMode="multiple"
 									variant="flat"
@@ -849,10 +845,10 @@ export default function RecipeTabContent() {
 			</div>
 		),
 		[
-			allAvailableDlcs,
-			allCookers,
-			allRecipeNames,
-			allRecipeTags,
+			availableRecipeCookers,
+			availableRecipeDlcs,
+			availableRecipeNames,
+			availableRecipeTags,
 			filteredData.length,
 			isHighAppearance,
 			isReducedMotion,

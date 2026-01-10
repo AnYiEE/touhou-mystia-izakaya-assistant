@@ -105,9 +105,9 @@ export default function Content() {
 
 	const instance_customer = customerStore.instances.customer.get();
 
-	const allCustomerNames = customerStore.customerNames.use();
-	const allCustomerDlcs = customerStore.customer.dlcs.get();
-	const allCustomerPlaces = customerStore.customer.places.get();
+	const availableCustomerDlcs = customerStore.availableCustomerDlcs.use();
+	const availableCustomerNames = customerStore.availableCustomerNames.use();
+	const availableCustomerPlaces = customerStore.availableCustomerPlaces.use();
 
 	const customerPinyinSortState =
 		customerStore.persistence.customer.pinyinSortState.use();
@@ -188,39 +188,39 @@ export default function Content() {
 	const customerSearchConfig = useMemo<ISearchConfig>(
 		() => ({
 			label: '选择或输入普客名称',
-			searchItems: allCustomerNames,
+			searchItems: availableCustomerNames,
 			searchValue: customerSearchValue,
 			setSearchValue: customerStore.persistence.customer.searchValue.set,
 			spriteTarget: 'customer_normal',
 		}),
-		[allCustomerNames, customerSearchValue]
+		[availableCustomerNames, customerSearchValue]
 	);
 
 	const customerSelectConfig = useMemo<TSelectConfig>(
 		() => [
 			{
-				items: allCustomerDlcs,
+				items: availableCustomerDlcs,
 				label: 'DLC',
 				selectedKeys: customerFilterDlcs,
 				setSelectedKeys:
 					customerStore.persistence.customer.filters.dlcs.set,
 			},
 			{
-				items: allCustomerPlaces,
+				items: availableCustomerPlaces,
 				label: '出没地区（包含）',
 				selectedKeys: customerFilterPlaces,
 				setSelectedKeys:
 					customerStore.persistence.customer.filters.places.set,
 			},
 			{
-				items: allCustomerPlaces,
+				items: availableCustomerPlaces,
 				label: '出没地区（排除）',
 				selectedKeys: customerFilterNoPlaces,
 				setSelectedKeys:
 					customerStore.persistence.customer.filters.noPlaces.set,
 			},
 			{
-				items: allCustomerNames,
+				items: availableCustomerNames,
 				label: '额外包含',
 				selectedKeys: customerFilterIncludes,
 				setSelectedKeys:
@@ -228,7 +228,7 @@ export default function Content() {
 				spriteTarget: 'customer_normal',
 			},
 			{
-				items: allCustomerNames,
+				items: availableCustomerNames,
 				label: '额外排除',
 				selectedKeys: customerFilterExcludes,
 				setSelectedKeys:
@@ -237,9 +237,9 @@ export default function Content() {
 			},
 		],
 		[
-			allCustomerDlcs,
-			allCustomerNames,
-			allCustomerPlaces,
+			availableCustomerDlcs,
+			availableCustomerNames,
+			availableCustomerPlaces,
 			customerFilterDlcs,
 			customerFilterExcludes,
 			customerFilterIncludes,
@@ -262,9 +262,10 @@ export default function Content() {
 
 	const instance_ingredient = customerStore.instances.ingredient.get();
 
-	const allIngredientDlcs = customerStore.ingredient.dlcs.get();
-	const allIngredientLevels = customerStore.ingredient.levels.get();
-	const allIngredientTags = customerStore.ingredient.tags.get();
+	const availableIngredientDlcs = customerStore.availableIngredientDlcs.use();
+	const availableIngredientLevels =
+		customerStore.availableIngredientLevels.use();
+	const availableIngredientTags = customerStore.availableIngredientTags.use();
 
 	const ingredientPinyinSortState =
 		customerStore.persistence.ingredient.pinyinSortState.use();
@@ -342,28 +343,28 @@ export default function Content() {
 	const ingredientSelectConfig = useMemo<TSelectConfig>(
 		() => [
 			{
-				items: allIngredientDlcs,
+				items: availableIngredientDlcs,
 				label: 'DLC',
 				selectedKeys: ingredientFilterDlcs,
 				setSelectedKeys:
 					customerStore.persistence.ingredient.filters.dlcs.set,
 			},
 			{
-				items: allIngredientTags,
+				items: availableIngredientTags,
 				label: '食材标签（包含）',
 				selectedKeys: ingredientFilterTags,
 				setSelectedKeys:
 					customerStore.persistence.ingredient.filters.tags.set,
 			},
 			{
-				items: allIngredientTags,
+				items: availableIngredientTags,
 				label: '食材标签（排除）',
 				selectedKeys: ingredientFilterNoTags,
 				setSelectedKeys:
 					customerStore.persistence.ingredient.filters.noTags.set,
 			},
 			{
-				items: allIngredientLevels,
+				items: availableIngredientLevels,
 				label: '等级',
 				selectedKeys: ingredientFilterLevels,
 				setSelectedKeys:
@@ -371,9 +372,9 @@ export default function Content() {
 			},
 		],
 		[
-			allIngredientDlcs,
-			allIngredientLevels,
-			allIngredientTags,
+			availableIngredientDlcs,
+			availableIngredientLevels,
+			availableIngredientTags,
 			ingredientFilterDlcs,
 			ingredientFilterLevels,
 			ingredientFilterNoTags,

@@ -85,15 +85,11 @@ export default function BeverageTabContent() {
 	const instance_beverage = customerStore.instances.beverage.get();
 	const instance_customer = customerStore.instances.customer.get();
 
-	const allBeverageNames = customerStore.beverage.names.get();
-	const allBeverageDlcs = customerStore.beverage.dlcs.get();
-	const allBeverageTags = customerStore.beverage.tags.get();
+	const availableBeverageDlcs = customerStore.availableBeverageDlcs.use();
+	const availableBeverageNames = customerStore.availableBeverageNames.use();
+	const availableBeverageTags = customerStore.availableBeverageTags.use();
 
 	const hiddenDlcs = customerStore.shared.hiddenItems.dlcs.use();
-	const allAvailableDlcs = useMemo(
-		() => allBeverageDlcs.filter(({ value }) => !hiddenDlcs.has(value)),
-		[allBeverageDlcs, hiddenDlcs]
-	);
 
 	const searchValue = customerStore.shared.beverage.searchValue.use();
 	const hasNameFilter = Boolean(searchValue);
@@ -364,7 +360,7 @@ export default function BeverageTabContent() {
 					<div className="flex flex-1 items-end gap-3">
 						<Autocomplete
 							allowsCustomValue
-							defaultItems={allBeverageNames}
+							defaultItems={availableBeverageNames}
 							disableAnimation={isReducedMotion}
 							inputValue={searchValue}
 							isVirtualized={false}
@@ -424,7 +420,7 @@ export default function BeverageTabContent() {
 						<Select
 							disableAnimation={isReducedMotion}
 							isVirtualized={false}
-							items={allBeverageTags}
+							items={availableBeverageTags}
 							placeholder="标签"
 							selectedKeys={selectedCustomerBeverageTag}
 							size="sm"
@@ -459,7 +455,7 @@ export default function BeverageTabContent() {
 						</Select>
 					</div>
 					<div className="flex w-full gap-3 md:w-auto">
-						{allAvailableDlcs.length > 1 && (
+						{availableBeverageDlcs.length > 1 && (
 							<Dropdown showArrow>
 								<DropdownTrigger>
 									<Button
@@ -485,7 +481,7 @@ export default function BeverageTabContent() {
 								</DropdownTrigger>
 								<DropdownMenu
 									closeOnSelect={false}
-									items={allAvailableDlcs}
+									items={availableBeverageDlcs}
 									selectedKeys={selectedDlcs}
 									selectionMode="multiple"
 									variant="flat"
@@ -610,9 +606,9 @@ export default function BeverageTabContent() {
 			</div>
 		),
 		[
-			allAvailableDlcs,
-			allBeverageNames,
-			allBeverageTags,
+			availableBeverageDlcs,
+			availableBeverageNames,
+			availableBeverageTags,
 			filteredData.length,
 			isHighAppearance,
 			isReducedMotion,
