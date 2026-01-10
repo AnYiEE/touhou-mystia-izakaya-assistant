@@ -170,7 +170,6 @@ export default function Navbar() {
 	const handlePress = useCallback(
 		(href?: string, isInNavbarMenu?: boolean) => {
 			vibrate();
-			showProgress(startProgress);
 			const route = () => {
 				if (href !== undefined) {
 					if (
@@ -179,6 +178,7 @@ export default function Navbar() {
 					) {
 						store.setPreferencesModalIsOpen(true);
 					} else {
+						showProgress(startProgress);
 						router.push(href);
 					}
 				}
