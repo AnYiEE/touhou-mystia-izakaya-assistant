@@ -94,7 +94,8 @@ const storeVersion = {
 	ingredientTag: 16,
 	tablePersist: 17, // eslint-disable-next-line sort-keys
 	mealData: 18,
-	tableShare: 19,
+	tableShare: 19, // eslint-disable-next-line sort-keys
+	deleteMealIndex: 20,
 } as const;
 
 const state = {
@@ -204,7 +205,6 @@ const state = {
 			Record<
 				TCustomerRareName,
 				Array<{
-					index: number;
 					order: ICustomerOrder;
 					hasMystiaCooker: boolean;
 					beverage: TBeverageName;
@@ -288,7 +288,7 @@ export const customerRareStore = store(state, {
 		}),
 		persistMiddleware<typeof state>({
 			name: storeName,
-			version: storeVersion.tableShare,
+			version: storeVersion.deleteMealIndex,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -523,6 +523,19 @@ export const customerRareStore = store(state, {
 					delete beverageTable.visibleColumns;
 					delete recipeTable.rows;
 					delete recipeTable.visibleColumns;
+				}
+				if (version < storeVersion.deleteMealIndex) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const { persistence } = oldState;
+					for (const meals of Object.values(
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+						persistence.meals
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					) as any) {
+						for (const meal of meals) {
+							delete meal.index;
+						}
+					}
 				}
 				return persistedState as typeof state;
 			},
@@ -992,14 +1005,9 @@ export const customerRareStore = store(state, {
 			} as const;
 			currentStore.persistence.meals.set((prev) => {
 				if (customerName in prev) {
-					const indexes =
-						prev[customerName]?.map(({ index }) => index) ?? [];
-					const index = checkEmpty(indexes)
-						? 0
-						: Math.max(...indexes, 0) + 1;
-					prev[customerName]?.push({ ...saveObject, index });
+					prev[customerName]?.push(saveObject);
 				} else {
-					prev[customerName] = [{ ...saveObject, index: 0 }];
+					prev[customerName] = [saveObject];
 				}
 			});
 			trackEvent(
