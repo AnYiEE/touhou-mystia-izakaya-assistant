@@ -184,9 +184,10 @@ export default function SavedMealCard() {
 				}}
 			>
 				<div className="space-y-3 p-4 xl:space-y-2">
-					{savedCustomerMealsVisible.map(
-						({ beverage, recipe: recipeData }, loopIndex) => (
-							<Fragment key={loopIndex}>
+					{savedCustomerMealsVisible.map((meal, loopIndex) => {
+						const { beverage, recipe: recipeData } = meal;
+						return (
+							<Fragment key={savedCustomerMealsAll.indexOf(meal)}>
 								<div className="relative flex flex-col items-center gap-4 md:static md:flex-row">
 									<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
 										{(() => {
@@ -555,8 +556,8 @@ export default function SavedMealCard() {
 									<Divider />
 								)}
 							</Fragment>
-						)
-					)}
+						);
+					})}
 				</div>
 			</Card>
 		);
