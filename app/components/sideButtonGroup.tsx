@@ -10,7 +10,7 @@ import { Tooltip, cn } from '@/design/ui/components';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 
-import { globalStore } from '@/stores';
+import { globalStore as store } from '@/stores';
 
 interface IProps extends Pick<HTMLDivElementAttributes, 'className'> {}
 
@@ -22,7 +22,7 @@ export default memo<PropsWithChildren<IProps>>(function SideButtonGroup({
 
 	const handlePress = useCallback(() => {
 		vibrate();
-		globalStore.setPreferencesModalIsOpen(true);
+		store.setPreferencesModalIsOpen(true);
 	}, [vibrate]);
 
 	const preferencesLabel = '设置';
