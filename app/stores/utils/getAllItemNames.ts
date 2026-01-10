@@ -39,7 +39,7 @@ export function createNamesCache<T extends TItemInstance>(instance: T) {
 
 	return function getNames(pinyinSortState: TPinyinSortState) {
 		if (cache.has(pinyinSortState)) {
-			cache.get(pinyinSortState);
+			return cache.get(pinyinSortState);
 		}
 
 		const names = getAllItemNames(instance, pinyinSortState);
