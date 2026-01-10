@@ -5,9 +5,7 @@ import { useCallback, useMemo } from 'react';
 import {
 	useFilteredData,
 	usePinyinSortConfig,
-	useSearchConfig,
 	useSearchResult,
-	useSelectConfig,
 	useSortedData,
 	useThrottle,
 } from '@/hooks';
@@ -15,9 +13,13 @@ import {
 import Content from './content';
 import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
-import SideFilterIconButton from '@/components/sideFilterIconButton';
+import SideFilterIconButton, {
+	type TSelectConfig,
+} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
-import SideSearchIconButton from '@/components/sideSearchIconButton';
+import SideSearchIconButton, {
+	type ISearchConfig,
+} from '@/components/sideSearchIconButton';
 
 import { cookersStore as store } from '@/stores';
 import { checkArrayContainsOf, checkEmpty } from '@/utilities';
@@ -90,64 +92,60 @@ export default function Cookers() {
 		store.persistence.pinyinSortState.set
 	);
 
-	const searchConfig = useSearchConfig(
-		useMemo(
-			() => ({
-				label: '选择或输入厨具名称',
-				searchItems: allNames,
-				searchValue,
-				setSearchValue: store.persistence.searchValue.set,
-				spriteTarget: 'cooker',
-			}),
-			[allNames, searchValue]
-		)
+	const searchConfig = useMemo<ISearchConfig>(
+		() => ({
+			label: '选择或输入厨具名称',
+			searchItems: allNames,
+			searchValue,
+			setSearchValue: store.persistence.searchValue.set,
+			spriteTarget: 'cooker',
+		}),
+		[allNames, searchValue]
 	);
 
-	const selectConfig = useSelectConfig(
-		useMemo(
-			() => [
-				{
-					items: allDlcs,
-					label: 'DLC',
-					selectedKeys: filterDlcs,
-					setSelectedKeys: store.persistence.filters.dlcs.set,
-				},
-				{
-					items: allCategories,
-					label: '厨具系列（包含）',
-					selectedKeys: filterCategories,
-					setSelectedKeys: store.persistence.filters.categories.set,
-				},
-				{
-					items: allCategories,
-					label: '厨具系列（排除）',
-					selectedKeys: filterNoCategories,
-					setSelectedKeys: store.persistence.filters.noCategories.set,
-				},
-				{
-					items: allTypes,
-					label: '厨具类别（包含）',
-					selectedKeys: filterTypes,
-					setSelectedKeys: store.persistence.filters.types.set,
-				},
-				{
-					items: allTypes,
-					label: '厨具类别（排除）',
-					selectedKeys: filterNoTypes,
-					setSelectedKeys: store.persistence.filters.noTypes.set,
-				},
-			],
-			[
-				allCategories,
-				allDlcs,
-				allTypes,
-				filterCategories,
-				filterDlcs,
-				filterNoCategories,
-				filterNoTypes,
-				filterTypes,
-			]
-		)
+	const selectConfig = useMemo<TSelectConfig>(
+		() => [
+			{
+				items: allDlcs,
+				label: 'DLC',
+				selectedKeys: filterDlcs,
+				setSelectedKeys: store.persistence.filters.dlcs.set,
+			},
+			{
+				items: allCategories,
+				label: '厨具系列（包含）',
+				selectedKeys: filterCategories,
+				setSelectedKeys: store.persistence.filters.categories.set,
+			},
+			{
+				items: allCategories,
+				label: '厨具系列（排除）',
+				selectedKeys: filterNoCategories,
+				setSelectedKeys: store.persistence.filters.noCategories.set,
+			},
+			{
+				items: allTypes,
+				label: '厨具类别（包含）',
+				selectedKeys: filterTypes,
+				setSelectedKeys: store.persistence.filters.types.set,
+			},
+			{
+				items: allTypes,
+				label: '厨具类别（排除）',
+				selectedKeys: filterNoTypes,
+				setSelectedKeys: store.persistence.filters.noTypes.set,
+			},
+		],
+		[
+			allCategories,
+			allDlcs,
+			allTypes,
+			filterCategories,
+			filterDlcs,
+			filterNoCategories,
+			filterNoTypes,
+			filterTypes,
+		]
 	);
 
 	return (

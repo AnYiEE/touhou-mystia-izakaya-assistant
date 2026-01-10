@@ -8,9 +8,7 @@ import {
 	useMounted,
 	usePathname,
 	usePinyinSortConfig,
-	useSearchConfig,
 	useSearchResult,
-	useSelectConfig,
 	useSortedData,
 	useThrottle,
 	useVibrate,
@@ -30,9 +28,13 @@ import SavedMealCard from '../savedMealCard';
 import Loading from '@/loading';
 import Placeholder from '@/components/placeholder';
 import SideButtonGroup from '@/components/sideButtonGroup';
-import SideFilterIconButton from '@/components/sideFilterIconButton';
+import SideFilterIconButton, {
+	type TSelectConfig,
+} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
-import SideSearchIconButton from '@/components/sideSearchIconButton';
+import SideSearchIconButton, {
+	type ISearchConfig,
+} from '@/components/sideSearchIconButton';
 import Tachie from '@/components/tachie';
 
 import {
@@ -183,72 +185,67 @@ export default function Content() {
 		customerStore.persistence.customer.pinyinSortState.set
 	);
 
-	const customerSearchConfig = useSearchConfig(
-		useMemo(
-			() => ({
-				label: '选择或输入普客名称',
-				searchItems: allCustomerNames,
-				searchValue: customerSearchValue,
-				setSearchValue:
-					customerStore.persistence.customer.searchValue.set,
-				spriteTarget: 'customer_normal',
-			}),
-			[allCustomerNames, customerSearchValue]
-		)
+	const customerSearchConfig = useMemo<ISearchConfig>(
+		() => ({
+			label: '选择或输入普客名称',
+			searchItems: allCustomerNames,
+			searchValue: customerSearchValue,
+			setSearchValue: customerStore.persistence.customer.searchValue.set,
+			spriteTarget: 'customer_normal',
+		}),
+		[allCustomerNames, customerSearchValue]
 	);
 
-	const customerSelectConfig = useSelectConfig(
-		useMemo(
-			() => [
-				{
-					items: allCustomerDlcs,
-					label: 'DLC',
-					selectedKeys: customerFilterDlcs,
-					setSelectedKeys:
-						customerStore.persistence.customer.filters.dlcs.set,
-				},
-				{
-					items: allCustomerPlaces,
-					label: '出没地区（包含）',
-					selectedKeys: customerFilterPlaces,
-					setSelectedKeys:
-						customerStore.persistence.customer.filters.places.set,
-				},
-				{
-					items: allCustomerPlaces,
-					label: '出没地区（排除）',
-					selectedKeys: customerFilterNoPlaces,
-					setSelectedKeys:
-						customerStore.persistence.customer.filters.noPlaces.set,
-				},
-				{
-					items: allCustomerNames,
-					label: '额外包含',
-					selectedKeys: customerFilterIncludes,
-					setSelectedKeys:
-						customerStore.persistence.customer.filters.includes.set,
-					spriteTarget: 'customer_normal',
-				},
-				{
-					items: allCustomerNames,
-					label: '额外排除',
-					selectedKeys: customerFilterExcludes,
-					setSelectedKeys:
-						customerStore.persistence.customer.filters.excludes.set,
-					spriteTarget: 'customer_normal',
-				},
-			],
-			[
-				allCustomerDlcs,
-				allCustomerNames,
-				allCustomerPlaces,
-				customerFilterDlcs,
-				customerFilterExcludes,
-				customerFilterIncludes,
-				customerFilterNoPlaces,
-				customerFilterPlaces,
-			]
-		)
+	const customerSelectConfig = useMemo<TSelectConfig>(
+		() => [
+			{
+				items: allCustomerDlcs,
+				label: 'DLC',
+				selectedKeys: customerFilterDlcs,
+				setSelectedKeys:
+					customerStore.persistence.customer.filters.dlcs.set,
+			},
+			{
+				items: allCustomerPlaces,
+				label: '出没地区（包含）',
+				selectedKeys: customerFilterPlaces,
+				setSelectedKeys:
+					customerStore.persistence.customer.filters.places.set,
+			},
+			{
+				items: allCustomerPlaces,
+				label: '出没地区（排除）',
+				selectedKeys: customerFilterNoPlaces,
+				setSelectedKeys:
+					customerStore.persistence.customer.filters.noPlaces.set,
+			},
+			{
+				items: allCustomerNames,
+				label: '额外包含',
+				selectedKeys: customerFilterIncludes,
+				setSelectedKeys:
+					customerStore.persistence.customer.filters.includes.set,
+				spriteTarget: 'customer_normal',
+			},
+			{
+				items: allCustomerNames,
+				label: '额外排除',
+				selectedKeys: customerFilterExcludes,
+				setSelectedKeys:
+					customerStore.persistence.customer.filters.excludes.set,
+				spriteTarget: 'customer_normal',
+			},
+		],
+		[
+			allCustomerDlcs,
+			allCustomerNames,
+			allCustomerPlaces,
+			customerFilterDlcs,
+			customerFilterExcludes,
+			customerFilterIncludes,
+			customerFilterNoPlaces,
+			customerFilterPlaces,
+		]
 	);
 
 	const customerTabVisibilityState =
@@ -342,48 +339,46 @@ export default function Content() {
 		customerStore.persistence.ingredient.pinyinSortState.set
 	);
 
-	const ingredientSelectConfig = useSelectConfig(
-		useMemo(
-			() => [
-				{
-					items: allIngredientDlcs,
-					label: 'DLC',
-					selectedKeys: ingredientFilterDlcs,
-					setSelectedKeys:
-						customerStore.persistence.ingredient.filters.dlcs.set,
-				},
-				{
-					items: allIngredientTags,
-					label: '食材标签（包含）',
-					selectedKeys: ingredientFilterTags,
-					setSelectedKeys:
-						customerStore.persistence.ingredient.filters.tags.set,
-				},
-				{
-					items: allIngredientTags,
-					label: '食材标签（排除）',
-					selectedKeys: ingredientFilterNoTags,
-					setSelectedKeys:
-						customerStore.persistence.ingredient.filters.noTags.set,
-				},
-				{
-					items: allIngredientLevels,
-					label: '等级',
-					selectedKeys: ingredientFilterLevels,
-					setSelectedKeys:
-						customerStore.persistence.ingredient.filters.levels.set,
-				},
-			],
-			[
-				allIngredientDlcs,
-				allIngredientLevels,
-				allIngredientTags,
-				ingredientFilterDlcs,
-				ingredientFilterLevels,
-				ingredientFilterNoTags,
-				ingredientFilterTags,
-			]
-		)
+	const ingredientSelectConfig = useMemo<TSelectConfig>(
+		() => [
+			{
+				items: allIngredientDlcs,
+				label: 'DLC',
+				selectedKeys: ingredientFilterDlcs,
+				setSelectedKeys:
+					customerStore.persistence.ingredient.filters.dlcs.set,
+			},
+			{
+				items: allIngredientTags,
+				label: '食材标签（包含）',
+				selectedKeys: ingredientFilterTags,
+				setSelectedKeys:
+					customerStore.persistence.ingredient.filters.tags.set,
+			},
+			{
+				items: allIngredientTags,
+				label: '食材标签（排除）',
+				selectedKeys: ingredientFilterNoTags,
+				setSelectedKeys:
+					customerStore.persistence.ingredient.filters.noTags.set,
+			},
+			{
+				items: allIngredientLevels,
+				label: '等级',
+				selectedKeys: ingredientFilterLevels,
+				setSelectedKeys:
+					customerStore.persistence.ingredient.filters.levels.set,
+			},
+		],
+		[
+			allIngredientDlcs,
+			allIngredientLevels,
+			allIngredientTags,
+			ingredientFilterDlcs,
+			ingredientFilterLevels,
+			ingredientFilterNoTags,
+			ingredientFilterTags,
+		]
 	);
 
 	const ingredientTabVisibilityState =
