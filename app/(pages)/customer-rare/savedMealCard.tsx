@@ -213,6 +213,10 @@ export default function SavedMealCard() {
 				newSavedCustomerMealAll.indexOf(currentMeal);
 			const nextIndexInAll = newSavedCustomerMealAll.indexOf(nextMeal);
 
+			if (currentIndexInAll === -1 || nextIndexInAll === -1) {
+				return;
+			}
+
 			[
 				newSavedCustomerMealAll[currentIndexInAll],
 				newSavedCustomerMealAll[nextIndexInAll],
@@ -641,6 +645,9 @@ export default function SavedMealCard() {
 													savedCustomerMealsAll.indexOf(
 														currentMeal
 													);
+												if (currentIndexInAll === -1) {
+													return;
+												}
 												const newSavedCustomerMealAll =
 													copyArray(
 														savedCustomerMealsAll
