@@ -412,210 +412,166 @@ export const customerNormalStore = store(state, {
 	],
 })
 	.computed((currentStore) => ({
-		availableBeverageDlcs: () =>
-			currentStore.instances.beverage
-				.get()
+		availableBeverageDlcs: () => {
+			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+			return instance_beverage
 				.getValuesByProp('dlc', true)
-				.filter(
-					({ value }) =>
-						!currentStore.shared.hiddenItems.dlcs.use().has(value)
-				)
-				.sort(numberSort),
-		availableBeverageNames: () =>
-			currentStore.instances.beverage
-				.get()
+				.filter(({ value }) => !hiddenDlcs.has(value))
+				.sort(numberSort);
+		},
+		availableBeverageNames: () => {
+			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+			return instance_beverage
 				.getValuesByProp(
 					'name',
 					true,
-					currentStore.instances.beverage
-						.get()
-						.data.filter(
-							({ dlc }) =>
-								!currentStore.shared.hiddenItems.dlcs
-									.use()
-									.has(dlc)
-						)
+					instance_beverage.data.filter(
+						({ dlc }) => !hiddenDlcs.has(dlc)
+					)
 				)
-				.sort(pinyinSort),
-		availableBeverageTags: () =>
-			sortBy(
-				currentStore.instances.beverage.get().sortedTags,
-				currentStore.instances.beverage.get().getValuesByProp(
+				.sort(pinyinSort);
+		},
+		availableBeverageTags: () => {
+			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+			return sortBy(
+				instance_beverage.sortedTags,
+				instance_beverage.getValuesByProp(
 					'tags',
 					false,
-					currentStore.instances.beverage
-						.get()
-						.data.filter(
-							({ dlc }) =>
-								!currentStore.shared.hiddenItems.dlcs
-									.use()
-									.has(dlc)
-						)
+					instance_beverage.data.filter(
+						({ dlc }) => !hiddenDlcs.has(dlc)
+					)
 				)
-			).map(toGetValueCollection),
-		availableCustomerDlcs: () =>
-			currentStore.instances.customer
-				.get()
+			).map(toGetValueCollection);
+		},
+		availableCustomerDlcs: () => {
+			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+			return instance_customer
 				.getValuesByProp('dlc', true)
-				.filter(
-					({ value }) =>
-						!currentStore.shared.hiddenItems.dlcs.use().has(value)
-				)
-				.sort(numberSort),
-		availableCustomerNames: () =>
-			sortBy(
+				.filter(({ value }) => !hiddenDlcs.has(value))
+				.sort(numberSort);
+		},
+		availableCustomerNames: () => {
+			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+			return sortBy(
 				getNames(
 					currentStore.persistence.customer.pinyinSortState.use()
 				),
-				currentStore.instances.customer.get().getValuesByProp(
+				instance_customer.getValuesByProp(
 					'name',
 					false,
-					currentStore.instances.customer
-						.get()
-						.data.filter(
-							({ dlc }) =>
-								!currentStore.shared.hiddenItems.dlcs
-									.use()
-									.has(dlc)
-						)
+					instance_customer.data.filter(
+						({ dlc }) => !hiddenDlcs.has(dlc)
+					)
 				)
-			).map(toGetValueCollection),
-		availableCustomerPlaces: () =>
-			currentStore.instances.customer
-				.get()
+			).map(toGetValueCollection);
+		},
+		availableCustomerPlaces: () => {
+			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+			return instance_customer
 				.getValuesByProp(
 					'places',
 					true,
-					currentStore.instances.customer
-						.get()
-						.data.filter(
-							({ dlc }) =>
-								!currentStore.shared.hiddenItems.dlcs
-									.use()
-									.has(dlc)
-						)
+					instance_customer.data.filter(
+						({ dlc }) => !hiddenDlcs.has(dlc)
+					)
 				)
-				.sort(pinyinSort),
-		availableIngredientDlcs: () =>
-			currentStore.instances.ingredient
-				.get()
+				.sort(pinyinSort);
+		},
+		availableIngredientDlcs: () => {
+			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+			return instance_ingredient
 				.getValuesByProp('dlc', true)
-				.filter(
-					({ value }) =>
-						!currentStore.shared.hiddenItems.dlcs.use().has(value)
-				)
-				.sort(numberSort),
-		availableIngredientLevels: () =>
-			currentStore.instances.ingredient
-				.get()
+				.filter(({ value }) => !hiddenDlcs.has(value))
+				.sort(numberSort);
+		},
+		availableIngredientLevels: () => {
+			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+			return instance_ingredient
 				.getValuesByProp(
 					'level',
 					true,
-					currentStore.instances.ingredient
-						.get()
-						.data.filter(
-							({ dlc, level }) =>
-								!currentStore.shared.hiddenItems.dlcs
-									.use()
-									.has(dlc) &&
-								!currentStore.instances.ingredient
-									.get()
-									.blockedLevels.has(level)
-						)
+					instance_ingredient.data.filter(
+						({ dlc, level }) =>
+							!hiddenDlcs.has(dlc) &&
+							!instance_ingredient.blockedLevels.has(level)
+					)
 				)
-				.sort(numberSort),
-		availableIngredientTags: () =>
-			toArray<TIngredientTag[]>(
-				currentStore.instances.ingredient.get().getValuesByProp(
+				.sort(numberSort);
+		},
+		availableIngredientTags: () => {
+			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+			return toArray<TIngredientTag[]>(
+				instance_ingredient.getValuesByProp(
 					'tags',
 					false,
-					currentStore.instances.ingredient
-						.get()
-						.data.filter(
-							({ dlc, tags }) =>
-								!currentStore.shared.hiddenItems.dlcs
-									.use()
-									.has(dlc) &&
-								!tags.some((tag) =>
-									currentStore.instances.ingredient
-										.get()
-										.blockedTags.has(tag)
-								)
-						)
+					instance_ingredient.data.filter(
+						({ dlc, tags }) =>
+							!hiddenDlcs.has(dlc) &&
+							!tags.some((tag) =>
+								instance_ingredient.blockedTags.has(tag)
+							)
+					)
 				),
 				DYNAMIC_TAG_MAP.popularNegative,
 				DYNAMIC_TAG_MAP.popularPositive
 			)
 				.map(toGetValueCollection)
-				.sort(pinyinSort),
-		availableRecipeCookers: () =>
-			currentStore.instances.recipe
-				.get()
+				.sort(pinyinSort);
+		},
+		availableRecipeCookers: () => {
+			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+			return instance_recipe
 				.getValuesByProp(
 					'cooker',
 					true,
-					currentStore.instances.recipe
-						.get()
-						.data.filter(
-							({ dlc }) =>
-								!currentStore.shared.hiddenItems.dlcs
-									.use()
-									.has(dlc)
-						)
+					instance_recipe.data.filter(
+						({ dlc }) => !hiddenDlcs.has(dlc)
+					)
 				)
-				.sort(pinyinSort),
-		availableRecipeDlcs: () =>
-			currentStore.instances.recipe
-				.get()
+				.sort(pinyinSort);
+		},
+		availableRecipeDlcs: () => {
+			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+			return instance_recipe
 				.getValuesByProp('dlc', true)
-				.filter(
-					({ value }) =>
-						!currentStore.shared.hiddenItems.dlcs.use().has(value)
-				)
-				.sort(numberSort),
-		availableRecipeNames: () =>
-			currentStore.instances.recipe
-				.get()
+				.filter(({ value }) => !hiddenDlcs.has(value))
+				.sort(numberSort);
+		},
+		availableRecipeNames: () => {
+			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+			return instance_recipe
 				.getValuesByProp(
 					'name',
 					true,
-					currentStore.instances.recipe
-						.get()
-						.data.filter(
-							({ dlc, name }) =>
-								!currentStore.shared.hiddenItems.dlcs
-									.use()
-									.has(dlc) &&
-								!currentStore.instances.recipe
-									.get()
-									.blockedRecipes.has(name)
-						)
+					instance_recipe.data.filter(
+						({ dlc, name }) =>
+							!hiddenDlcs.has(dlc) &&
+							!instance_recipe.blockedRecipes.has(name)
+					)
 				)
-				.sort(pinyinSort),
-		availableRecipeTags: () =>
-			toArray<TRecipeTag[]>(
-				currentStore.instances.recipe.get().getValuesByProp(
+				.sort(pinyinSort);
+		},
+		availableRecipeTags: () => {
+			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+			return toArray<TRecipeTag[]>(
+				instance_recipe.getValuesByProp(
 					'positiveTags',
 					false,
-					currentStore.instances.recipe
-						.get()
-						.data.filter(
-							({ dlc, positiveTags }) =>
-								!currentStore.shared.hiddenItems.dlcs
-									.use()
-									.has(dlc) &&
-								!positiveTags.some((positiveTag) =>
-									currentStore.instances.recipe
-										.get()
-										.blockedTags.has(positiveTag)
-								)
-						)
+					instance_recipe.data.filter(
+						({ dlc, positiveTags }) =>
+							!hiddenDlcs.has(dlc) &&
+							!positiveTags.some((positiveTag) =>
+								instance_recipe.blockedTags.has(positiveTag)
+							)
+					)
 				),
 				DYNAMIC_TAG_MAP.popularNegative,
 				DYNAMIC_TAG_MAP.popularPositive
 			)
 				.map(toGetValueCollection)
-				.sort(pinyinSort),
+				.sort(pinyinSort);
+		},
 
 		beverageTableDlcs: {
 			read: () =>

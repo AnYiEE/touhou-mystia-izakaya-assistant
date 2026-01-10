@@ -53,57 +53,45 @@ export const cookersStore = store(state, {
 		}),
 	],
 }).computed((currentStore) => ({
-	availableCategories: () =>
-		sortBy(
-			currentStore.instance.get().sortedCategories,
-			currentStore.instance.get().getValuesByProp(
+	availableCategories: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return sortBy(
+			instance.sortedCategories,
+			instance.getValuesByProp(
 				'category',
 				false,
-				currentStore.instance
-					.get()
-					.data.filter(
-						({ dlc }) =>
-							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
-					)
+				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
 			)
-		).map(toGetValueCollection),
-	availableDlcs: () =>
-		currentStore.instance
-			.get()
+		).map(toGetValueCollection);
+	},
+	availableDlcs: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return instance
 			.getValuesByProp('dlc', true)
-			.filter(
-				({ value }) =>
-					!currentStore.shared.hiddenItems.dlcs.use().has(value)
-			)
-			.sort(numberSort),
-	availableNames: () =>
-		sortBy(
+			.filter(({ value }) => !hiddenDlcs.has(value))
+			.sort(numberSort);
+	},
+	availableNames: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return sortBy(
 			getNames(currentStore.persistence.pinyinSortState.use()),
-			currentStore.instance.get().getValuesByProp(
+			instance.getValuesByProp(
 				'name',
 				false,
-				currentStore.instance
-					.get()
-					.data.filter(
-						({ dlc }) =>
-							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
-					)
+				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
 			)
-		).map(toGetValueCollection),
-	availableTypes: () =>
-		currentStore.instance
-			.get()
+		).map(toGetValueCollection);
+	},
+	availableTypes: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return instance
 			.getValuesByProp(
 				'type',
 				true,
-				currentStore.instance
-					.get()
-					.data.filter(
-						({ dlc }) =>
-							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
-					)
+				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
 			)
-			.sort(pinyinSort),
+			.sort(pinyinSort);
+	},
 }));
 
 cookersStore.shared.hiddenItems.dlcs.onChange(() => {
