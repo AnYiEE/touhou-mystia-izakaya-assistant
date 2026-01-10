@@ -99,13 +99,14 @@ export default function Providers({
 		const globalTableRow = globalStore.persistence.table.row.get();
 		const globalTableSelectableRows =
 			globalStore.shared.table.selectableRows.get();
+		const beverageTableColumnsSet = toSet(globalBeverageTableColumns);
+		const recipeTableColumnsSet = toSet(globalRecipeTableColumns);
+		const tableRowSet = toSet(globalTableRow.toString());
 		customerNormalStore.shared.beverage.table.columns.set(
-			toSet(globalBeverageTableColumns)
+			beverageTableColumnsSet
 		);
 		customerNormalStore.shared.beverage.table.row.set(globalTableRow);
-		customerNormalStore.shared.beverage.table.rows.set(
-			toSet(globalTableRow.toString())
-		);
+		customerNormalStore.shared.beverage.table.rows.set(tableRowSet);
 		customerNormalStore.shared.beverage.table.selectableRows.set(
 			globalTableSelectableRows
 		);
@@ -113,29 +114,23 @@ export default function Providers({
 			toSet(globalRecipeTableColumns)
 		);
 		customerNormalStore.shared.recipe.table.row.set(globalTableRow);
-		customerNormalStore.shared.recipe.table.rows.set(
-			toSet(globalTableRow.toString())
-		);
+		customerNormalStore.shared.recipe.table.rows.set(tableRowSet);
 		customerNormalStore.shared.recipe.table.selectableRows.set(
 			globalTableSelectableRows
 		);
 		customerRareStore.shared.beverage.table.columns.set(
-			toSet(globalBeverageTableColumns)
+			beverageTableColumnsSet
 		);
 		customerRareStore.shared.beverage.table.row.set(globalTableRow);
-		customerRareStore.shared.beverage.table.rows.set(
-			toSet(globalTableRow.toString())
-		);
+		customerRareStore.shared.beverage.table.rows.set(tableRowSet);
 		customerRareStore.shared.beverage.table.selectableRows.set(
 			globalTableSelectableRows
 		);
 		customerRareStore.shared.recipe.table.columns.set(
-			toSet(globalRecipeTableColumns)
+			recipeTableColumnsSet
 		);
 		customerRareStore.shared.recipe.table.row.set(globalTableRow);
-		customerRareStore.shared.recipe.table.rows.set(
-			toSet(globalTableRow.toString())
-		);
+		customerRareStore.shared.recipe.table.rows.set(tableRowSet);
 		customerRareStore.shared.recipe.table.selectableRows.set(
 			globalTableSelectableRows
 		);
@@ -146,23 +141,26 @@ export default function Providers({
 			globalStore.persistence.table.hiddenItems.ingredients.get();
 		const globalHiddenRecipes =
 			globalStore.persistence.table.hiddenItems.recipes.get();
+		const hiddenBeveragesSet = toSet(globalHiddenBeverages);
+		const hiddenIngredientsSet = toSet(globalHiddenIngredients);
+		const hiddenRecipesSet = toSet(globalHiddenRecipes);
 		customerNormalStore.shared.beverage.table.hiddenBeverages.set(
-			toSet(globalHiddenBeverages)
+			hiddenBeveragesSet
 		);
 		customerNormalStore.shared.recipe.table.hiddenIngredients.set(
-			toSet(globalHiddenIngredients)
+			hiddenIngredientsSet
 		);
 		customerNormalStore.shared.recipe.table.hiddenRecipes.set(
-			toSet(globalHiddenRecipes)
+			hiddenRecipesSet
 		);
 		customerRareStore.shared.beverage.table.hiddenBeverages.set(
-			toSet(globalHiddenBeverages)
+			hiddenBeveragesSet
 		);
 		customerRareStore.shared.recipe.table.hiddenIngredients.set(
-			toSet(globalHiddenIngredients)
+			hiddenIngredientsSet
 		);
 		customerRareStore.shared.recipe.table.hiddenRecipes.set(
-			toSet(globalHiddenRecipes)
+			hiddenRecipesSet
 		);
 	}, []);
 

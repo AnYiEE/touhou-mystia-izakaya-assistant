@@ -383,17 +383,17 @@ globalStore.persistence.version.onChange((version) => {
 
 // Update the hidden DLCs when there is a change in the persisted hidden DLCs.
 globalStore.persistence.hiddenItems.dlcs.onChange((hiddenDlcs) => {
-	const dlcs = hiddenDlcs.map(Number) as TDlc[];
-	beveragesStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
-	clothesStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
-	cookersStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
-	currenciesStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
-	ingredientsStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
-	customerNormalStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
-	customerRareStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
-	ornamentsStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
-	partnersStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
-	recipesStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
+	const hiddenDlcsSet = toSet(hiddenDlcs.map(Number)) as Set<TDlc>;
+	beveragesStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
+	clothesStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
+	cookersStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
+	currenciesStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
+	ingredientsStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
+	customerNormalStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
+	customerRareStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
+	ornamentsStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
+	partnersStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
+	recipesStore.shared.hiddenItems.dlcs.set(hiddenDlcsSet);
 });
 
 // Update the current famous shop state when there is a change in the persisted state.
@@ -414,46 +414,48 @@ globalStore.persistence.popularTrend.onChange((popularTrend) => {
 
 // Update the table columns, rows and hidden items when there is a change in the persisted table state.
 globalStore.persistence.table.columns.beverage.onChange((columns) => {
-	customerNormalStore.shared.beverage.table.columns.set(toSet(columns));
-	customerRareStore.shared.beverage.table.columns.set(toSet(columns));
+	const columnsSet = toSet(columns);
+	customerNormalStore.shared.beverage.table.columns.set(columnsSet);
+	customerRareStore.shared.beverage.table.columns.set(columnsSet);
 });
 globalStore.persistence.table.columns.recipe.onChange((columns) => {
-	customerNormalStore.shared.recipe.table.columns.set(toSet(columns));
-	customerRareStore.shared.recipe.table.columns.set(toSet(columns));
+	const columnsSet = toSet(columns);
+	customerNormalStore.shared.recipe.table.columns.set(columnsSet);
+	customerRareStore.shared.recipe.table.columns.set(columnsSet);
 });
 globalStore.persistence.table.row.onChange((row) => {
+	const rowSet = toSet(row.toString());
 	customerNormalStore.shared.beverage.table.page.set(1);
 	customerNormalStore.shared.beverage.table.row.set(row);
-	customerNormalStore.shared.beverage.table.rows.set(toSet(row.toString()));
+	customerNormalStore.shared.beverage.table.rows.set(rowSet);
 	customerNormalStore.shared.recipe.table.page.set(1);
 	customerNormalStore.shared.recipe.table.row.set(row);
-	customerNormalStore.shared.recipe.table.rows.set(toSet(row.toString()));
+	customerNormalStore.shared.recipe.table.rows.set(rowSet);
 	customerRareStore.shared.beverage.table.page.set(1);
 	customerRareStore.shared.beverage.table.row.set(row);
-	customerRareStore.shared.beverage.table.rows.set(toSet(row.toString()));
+	customerRareStore.shared.beverage.table.rows.set(rowSet);
 	customerRareStore.shared.recipe.table.page.set(1);
 	customerRareStore.shared.recipe.table.row.set(row);
-	customerRareStore.shared.recipe.table.rows.set(toSet(row.toString()));
+	customerRareStore.shared.recipe.table.rows.set(rowSet);
 });
 globalStore.persistence.table.hiddenItems.beverages.onChange((beverages) => {
-	customerNormalStore.shared.beverage.table.hiddenBeverages.set(
-		toSet(beverages)
-	);
-	customerRareStore.shared.beverage.table.hiddenBeverages.set(
-		toSet(beverages)
-	);
+	const beveragesSet = toSet(beverages);
+	customerNormalStore.shared.beverage.table.hiddenBeverages.set(beveragesSet);
+	customerRareStore.shared.beverage.table.hiddenBeverages.set(beveragesSet);
 });
 globalStore.persistence.table.hiddenItems.ingredients.onChange(
 	(ingredients) => {
+		const ingredientsSet = toSet(ingredients);
 		customerNormalStore.shared.recipe.table.hiddenIngredients.set(
-			toSet(ingredients)
+			ingredientsSet
 		);
 		customerRareStore.shared.recipe.table.hiddenIngredients.set(
-			toSet(ingredients)
+			ingredientsSet
 		);
 	}
 );
 globalStore.persistence.table.hiddenItems.recipes.onChange((recipes) => {
-	customerNormalStore.shared.recipe.table.hiddenRecipes.set(toSet(recipes));
-	customerRareStore.shared.recipe.table.hiddenRecipes.set(toSet(recipes));
+	const recipesSet = toSet(recipes);
+	customerNormalStore.shared.recipe.table.hiddenRecipes.set(recipesSet);
+	customerRareStore.shared.recipe.table.hiddenRecipes.set(recipesSet);
 });
