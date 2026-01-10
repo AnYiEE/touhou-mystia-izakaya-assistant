@@ -926,11 +926,7 @@ export const customerNormalStore = store(state, {
 				recipe: { extraIngredients, name: recipeName },
 			} as const;
 			currentStore.persistence.meals.set((prev) => {
-				if (customerName in prev) {
-					prev[customerName]?.push(saveObject);
-				} else {
-					prev[customerName] = [saveObject];
-				}
+				(prev[customerName] ??= []).push(saveObject);
 			});
 			trackEvent(
 				trackEvent.category.click,
