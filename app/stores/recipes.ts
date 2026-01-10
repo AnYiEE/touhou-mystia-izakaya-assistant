@@ -85,102 +85,78 @@ export const recipesStore = store(state, {
 		}),
 	],
 }).computed((currentStore) => ({
-	availableCookers: () =>
-		currentStore.instance
-			.get()
+	availableCookers: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return instance
 			.getValuesByProp(
 				'cooker',
 				true,
-				currentStore.instance
-					.get()
-					.data.filter(
-						({ dlc }) =>
-							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
-					)
+				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
 			)
-			.sort(pinyinSort),
-	availableDlcs: () =>
-		currentStore.instance
-			.get()
+			.sort(pinyinSort);
+	},
+	availableDlcs: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return instance
 			.getValuesByProp('dlc', true)
-			.filter(
-				({ value }) =>
-					!currentStore.shared.hiddenItems.dlcs.use().has(value)
-			)
-			.sort(numberSort),
-	availableIngredients: () =>
-		currentStore.instance
-			.get()
+			.filter(({ value }) => !hiddenDlcs.has(value))
+			.sort(numberSort);
+	},
+	availableIngredients: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return instance
 			.getValuesByProp(
 				'ingredients',
 				true,
-				currentStore.instance
-					.get()
-					.data.filter(
-						({ dlc }) =>
-							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
-					)
+				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
 			)
-			.sort(pinyinSort),
-	availableLevels: () =>
-		currentStore.instance
-			.get()
+			.sort(pinyinSort);
+	},
+	availableLevels: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return instance
 			.getValuesByProp(
 				'level',
 				true,
-				currentStore.instance
-					.get()
-					.data.filter(
-						({ dlc }) =>
-							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
-					)
+				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
 			)
-			.sort(numberSort),
-	availableNames: () =>
-		sortBy(
+			.sort(numberSort);
+	},
+	availableNames: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return sortBy(
 			getNames(currentStore.persistence.pinyinSortState.use()),
-			currentStore.instance.get().getValuesByProp(
+			instance.getValuesByProp(
 				'name',
 				false,
-				currentStore.instance
-					.get()
-					.data.filter(
-						({ dlc }) =>
-							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
-					)
+				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
 			)
-		).map(toGetValueCollection),
-	availableNegativeTags: () =>
-		currentStore.instance
-			.get()
+		).map(toGetValueCollection);
+	},
+	availableNegativeTags: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return instance
 			.getValuesByProp(
 				'negativeTags',
 				true,
-				currentStore.instance
-					.get()
-					.data.filter(
-						({ dlc }) =>
-							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
-					)
+				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
 			)
-			.sort(pinyinSort),
-	availablePositiveTags: () =>
-		toArray<TRecipeTag[]>(
-			currentStore.instance.get().getValuesByProp(
+			.sort(pinyinSort);
+	},
+	availablePositiveTags: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return toArray<TRecipeTag[]>(
+			instance.getValuesByProp(
 				'positiveTags',
 				false,
-				currentStore.instance
-					.get()
-					.data.filter(
-						({ dlc }) =>
-							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
-					)
+				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
 			),
 			DYNAMIC_TAG_MAP.popularNegative,
 			DYNAMIC_TAG_MAP.popularPositive
 		)
 			.map(toGetValueCollection)
-			.sort(pinyinSort),
+			.sort(pinyinSort);
+	},
 }));
 
 recipesStore.shared.hiddenItems.dlcs.onChange(() => {

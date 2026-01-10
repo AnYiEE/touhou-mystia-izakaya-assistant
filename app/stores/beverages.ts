@@ -56,57 +56,45 @@ export const beveragesStore = store(state, {
 		}),
 	],
 }).computed((currentStore) => ({
-	availableDlcs: () =>
-		currentStore.instance
-			.get()
+	availableDlcs: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return instance
 			.getValuesByProp('dlc', true)
-			.filter(
-				({ value }) =>
-					!currentStore.shared.hiddenItems.dlcs.use().has(value)
-			)
-			.sort(numberSort),
-	availableLevels: () =>
-		currentStore.instance
-			.get()
+			.filter(({ value }) => !hiddenDlcs.has(value))
+			.sort(numberSort);
+	},
+	availableLevels: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return instance
 			.getValuesByProp(
 				'level',
 				true,
-				currentStore.instance
-					.get()
-					.data.filter(
-						({ dlc }) =>
-							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
-					)
+				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
 			)
-			.sort(numberSort),
-	availableNames: () =>
-		sortBy(
+			.sort(numberSort);
+	},
+	availableNames: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return sortBy(
 			getNames(currentStore.persistence.pinyinSortState.use()),
-			currentStore.instance.get().getValuesByProp(
+			instance.getValuesByProp(
 				'name',
 				false,
-				currentStore.instance
-					.get()
-					.data.filter(
-						({ dlc }) =>
-							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
-					)
+				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
 			)
-		).map(toGetValueCollection),
-	availableTags: () =>
-		sortBy(
-			currentStore.instance.get().sortedTags,
-			currentStore.instance.get().getValuesByProp(
+		).map(toGetValueCollection);
+	},
+	availableTags: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return sortBy(
+			instance.sortedTags,
+			instance.getValuesByProp(
 				'tags',
 				false,
-				currentStore.instance
-					.get()
-					.data.filter(
-						({ dlc }) =>
-							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
-					)
+				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
 			)
-		).map(toGetValueCollection),
+		).map(toGetValueCollection);
+	},
 }));
 
 beveragesStore.shared.hiddenItems.dlcs.onChange(() => {
