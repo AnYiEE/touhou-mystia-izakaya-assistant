@@ -12,6 +12,7 @@ import type { IPopularTrend } from '@/types';
 import {
 	numberSort,
 	pinyinSort,
+	sortBy,
 	toArray,
 	toGetValueCollection,
 	toSet,
@@ -30,17 +31,6 @@ const getNames = createNamesCache(instance);
 
 const state = {
 	instance,
-
-	dlcs: instance.getValuesByProp('dlc', true).sort(numberSort),
-	levels: instance.getValuesByProp('level', true).sort(numberSort),
-	tags: toArray<TIngredientTag[]>(
-		instance.getValuesByProp('tags'),
-		DYNAMIC_TAG_MAP.popularNegative,
-		DYNAMIC_TAG_MAP.popularPositive
-	)
-		.map(toGetValueCollection)
-		.sort(pinyinSort),
-	types: instance.sortedTypes.map(toGetValueCollection),
 
 	persistence: {
 		filters: {
@@ -93,5 +83,83 @@ export const ingredientsStore = store(state, {
 		}),
 	],
 }).computed((currentStore) => ({
-	names: () => getNames(currentStore.persistence.pinyinSortState.use()),
+	availableDlcs: () =>
+		currentStore.instance
+			.get()
+			.getValuesByProp('dlc', true)
+			.filter(
+				({ value }) =>
+					!currentStore.shared.hiddenItems.dlcs.use().has(value)
+			)
+			.sort(numberSort),
+	availableLevels: () =>
+		currentStore.instance
+			.get()
+			.getValuesByProp(
+				'level',
+				true,
+				currentStore.instance
+					.get()
+					.data.filter(
+						({ dlc }) =>
+							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
+					)
+			)
+			.sort(numberSort),
+	availableNames: () =>
+		sortBy(
+			getNames(currentStore.persistence.pinyinSortState.use()),
+			currentStore.instance.get().getValuesByProp(
+				'name',
+				false,
+				currentStore.instance
+					.get()
+					.data.filter(
+						({ dlc }) =>
+							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
+					)
+			)
+		).map(toGetValueCollection),
+	availableTags: () =>
+		toArray<TIngredientTag[]>(
+			currentStore.instance.get().getValuesByProp(
+				'tags',
+				false,
+				currentStore.instance
+					.get()
+					.data.filter(
+						({ dlc }) =>
+							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
+					)
+			),
+			DYNAMIC_TAG_MAP.popularNegative,
+			DYNAMIC_TAG_MAP.popularPositive
+		)
+			.map(toGetValueCollection)
+			.sort(pinyinSort),
+	availableTypes: () =>
+		sortBy(
+			currentStore.instance.get().sortedTypes,
+			currentStore.instance.get().getValuesByProp(
+				'type',
+				false,
+				currentStore.instance
+					.get()
+					.data.filter(
+						({ dlc }) =>
+							!currentStore.shared.hiddenItems.dlcs.use().has(dlc)
+					)
+			)
+		).map(toGetValueCollection),
 }));
+
+ingredientsStore.shared.hiddenItems.dlcs.onChange(() => {
+	ingredientsStore.persistence.filters.set({
+		dlcs: [],
+		levels: [],
+		noTags: [],
+		noTypes: [],
+		tags: [],
+		types: [],
+	});
+});

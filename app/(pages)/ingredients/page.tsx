@@ -34,11 +34,11 @@ export default function Ingredients() {
 
 	const instance = store.instance.get();
 
-	const allNames = store.names.use();
-	const allDlcs = store.dlcs.get();
-	const allLevels = store.levels.get();
-	const allTags = store.tags.get();
-	const allTypes = store.types.get();
+	const availableDlcs = store.availableDlcs.use();
+	const availableLevels = store.availableLevels.use();
+	const availableNames = store.availableNames.use();
+	const availableTags = store.availableTags.use();
+	const availableTypes = store.availableTypes.use();
 
 	const pinyinSortState = store.persistence.pinyinSortState.use();
 	const searchValue = store.persistence.searchValue.use();
@@ -118,58 +118,58 @@ export default function Ingredients() {
 	const searchConfig = useMemo<ISearchConfig>(
 		() => ({
 			label: '选择或输入食材名称',
-			searchItems: allNames,
+			searchItems: availableNames,
 			searchValue,
 			setSearchValue: store.persistence.searchValue.set,
 			spriteTarget: 'ingredient',
 		}),
-		[allNames, searchValue]
+		[availableNames, searchValue]
 	);
 
 	const selectConfig = useMemo<TSelectConfig>(
 		() => [
 			{
-				items: allDlcs,
+				items: availableDlcs,
 				label: 'DLC',
 				selectedKeys: filterDlcs,
 				setSelectedKeys: store.persistence.filters.dlcs.set,
 			},
 			{
-				items: allTags,
+				items: availableTags,
 				label: '食材标签（包含）',
 				selectedKeys: filterTags,
 				setSelectedKeys: store.persistence.filters.tags.set,
 			},
 			{
-				items: allTags,
+				items: availableTags,
 				label: '食材标签（排除）',
 				selectedKeys: filterNoTags,
 				setSelectedKeys: store.persistence.filters.noTags.set,
 			},
 			{
-				items: allTypes,
+				items: availableTypes,
 				label: '食材类别（包含）',
 				selectedKeys: filterTypes,
 				setSelectedKeys: store.persistence.filters.types.set,
 			},
 			{
-				items: allTypes,
+				items: availableTypes,
 				label: '食材类别（排除）',
 				selectedKeys: filterNoTypes,
 				setSelectedKeys: store.persistence.filters.noTypes.set,
 			},
 			{
-				items: allLevels,
+				items: availableLevels,
 				label: '等级',
 				selectedKeys: filterLevels,
 				setSelectedKeys: store.persistence.filters.levels.set,
 			},
 		],
 		[
-			allDlcs,
-			allLevels,
-			allTags,
-			allTypes,
+			availableDlcs,
+			availableLevels,
+			availableTags,
+			availableTypes,
 			filterDlcs,
 			filterLevels,
 			filterNoTags,

@@ -34,13 +34,13 @@ export default function Recipes() {
 
 	const instance = store.instance.get();
 
-	const allNames = store.names.use();
-	const allDlcs = store.dlcs.get();
-	const allLevels = store.levels.get();
-	const allCookers = store.cookers.get();
-	const allIngredients = store.ingredients.get();
-	const allNegativeTags = store.negativeTags.get();
-	const allPositiveTags = store.positiveTags.get();
+	const availableDlcs = store.availableDlcs.use();
+	const availableCookers = store.availableCookers.use();
+	const availableIngredients = store.availableIngredients.use();
+	const availableLevels = store.availableLevels.use();
+	const availableNames = store.availableNames.use();
+	const availableNegativeTags = store.availableNegativeTags.use();
+	const availablePositiveTags = store.availablePositiveTags.use();
 
 	const pinyinSortState = store.persistence.pinyinSortState.use();
 	const searchValue = store.persistence.searchValue.use();
@@ -161,81 +161,81 @@ export default function Recipes() {
 	const searchConfig = useMemo<ISearchConfig>(
 		() => ({
 			label: '选择或输入料理名称',
-			searchItems: allNames,
+			searchItems: availableNames,
 			searchValue,
 			setSearchValue: store.persistence.searchValue.set,
 			spriteTarget: 'recipe',
 		}),
-		[allNames, searchValue]
+		[availableNames, searchValue]
 	);
 
 	const selectConfig = useMemo<TSelectConfig>(
 		() => [
 			{
-				items: allDlcs,
+				items: availableDlcs,
 				label: 'DLC',
 				selectedKeys: filterDlcs,
 				setSelectedKeys: store.persistence.filters.dlcs.set,
 			},
 			{
-				items: allPositiveTags,
+				items: availablePositiveTags,
 				label: '正特性（包含）',
 				selectedKeys: filterPositiveTags,
 				setSelectedKeys: store.persistence.filters.positiveTags.set,
 			},
 			{
-				items: allPositiveTags,
+				items: availablePositiveTags,
 				label: '正特性（排除）',
 				selectedKeys: filterNoPositiveTags,
 				setSelectedKeys: store.persistence.filters.noPositiveTags.set,
 			},
 			{
-				items: allNegativeTags,
+				items: availableNegativeTags,
 				label: '反特性（包含）',
 				selectedKeys: filterNegativeTags,
 				setSelectedKeys: store.persistence.filters.negativeTags.set,
 			},
 			{
-				items: allNegativeTags,
+				items: availableNegativeTags,
 				label: '反特性（排除）',
 				selectedKeys: filterNoNegativeTags,
 				setSelectedKeys: store.persistence.filters.noNegativeTags.set,
 			},
 			{
-				items: allIngredients,
+				items: availableIngredients,
 				label: '食材（包含）',
 				selectedKeys: filterIngredients,
 				setSelectedKeys: store.persistence.filters.ingredients.set,
 				spriteTarget: 'ingredient',
 			},
 			{
-				items: allIngredients,
+				items: availableIngredients,
 				label: '食材（排除）',
 				selectedKeys: filterNoIngredients,
 				setSelectedKeys: store.persistence.filters.noIngredients.set,
 				spriteTarget: 'ingredient',
 			},
 			{
-				items: allCookers,
+				items: availableCookers,
 				label: '厨具',
 				selectedKeys: filterCookers,
 				setSelectedKeys: store.persistence.filters.cookers.set,
 				spriteTarget: 'cooker',
 			},
 			{
-				items: allLevels,
+				items: availableLevels,
 				label: '等级',
 				selectedKeys: filterLevels,
 				setSelectedKeys: store.persistence.filters.levels.set,
 			},
 		],
 		[
-			allCookers,
-			allDlcs,
-			allIngredients,
-			allLevels,
-			allNegativeTags,
-			allPositiveTags,
+			availableCookers,
+			availableDlcs,
+			availableIngredients,
+			availableLevels,
+			availableNegativeTags,
+			availablePositiveTags,
 			filterCookers,
 			filterDlcs,
 			filterIngredients,
