@@ -25,7 +25,7 @@ import {
 import { trackEvent } from '@/components/analytics';
 import Sprite from '@/components/sprite';
 
-import { CUSTOMER_RATING_MAP } from '@/data';
+import { CUSTOMER_RATING_MAP, type TDlc } from '@/data';
 import { customerNormalStore as customerStore, globalStore } from '@/stores';
 import { checkEmpty, copyArray } from '@/utilities';
 
@@ -65,23 +65,34 @@ export default function SavedMealCard() {
 					name: recipeName,
 				},
 			}) => {
-				const beverageDlc =
-					beverageName === null
-						? 0
-						: instance_beverage.getPropsByName(beverageName, 'dlc');
-				const recipeDlc = instance_recipe.getPropsByName(
-					recipeName,
-					'dlc'
-				);
-				const hasHiddenIngredientDlc = extraIngredientNames.some(
-					(ingredientName) =>
-						hiddenDlcs.has(
-							instance_ingredient.getPropsByName(
-								ingredientName,
-								'dlc'
+				let beverageDlc: TDlc;
+				let recipeDlc: TDlc;
+				let hasHiddenIngredientDlc: boolean;
+
+				try {
+					beverageDlc =
+						beverageName === null
+							? 0
+							: instance_beverage.getPropsByName(
+									beverageName,
+									'dlc'
+								);
+					recipeDlc = instance_recipe.getPropsByName(
+						recipeName,
+						'dlc'
+					);
+					hasHiddenIngredientDlc = extraIngredientNames.some(
+						(ingredientName) =>
+							hiddenDlcs.has(
+								instance_ingredient.getPropsByName(
+									ingredientName,
+									'dlc'
+								)
 							)
-						)
-				);
+					);
+				} catch {
+					return false;
+				}
 
 				return (
 					!hasHiddenIngredientDlc &&
