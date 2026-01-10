@@ -99,11 +99,9 @@ export default function Providers({
 		const globalTableRow = globalStore.persistence.table.row.get();
 		const globalTableSelectableRows =
 			globalStore.shared.table.selectableRows.get();
-		const beverageTableColumnsSet = toSet(globalBeverageTableColumns);
-		const recipeTableColumnsSet = toSet(globalRecipeTableColumns);
 		const tableRowSet = toSet(globalTableRow.toString());
 		customerNormalStore.shared.beverage.table.columns.set(
-			beverageTableColumnsSet
+			toSet(globalBeverageTableColumns)
 		);
 		customerNormalStore.shared.beverage.table.row.set(globalTableRow);
 		customerNormalStore.shared.beverage.table.rows.set(tableRowSet);
@@ -119,7 +117,7 @@ export default function Providers({
 			globalTableSelectableRows
 		);
 		customerRareStore.shared.beverage.table.columns.set(
-			beverageTableColumnsSet
+			toSet(globalBeverageTableColumns)
 		);
 		customerRareStore.shared.beverage.table.row.set(globalTableRow);
 		customerRareStore.shared.beverage.table.rows.set(tableRowSet);
@@ -127,7 +125,7 @@ export default function Providers({
 			globalTableSelectableRows
 		);
 		customerRareStore.shared.recipe.table.columns.set(
-			recipeTableColumnsSet
+			toSet(globalRecipeTableColumns)
 		);
 		customerRareStore.shared.recipe.table.row.set(globalTableRow);
 		customerRareStore.shared.recipe.table.rows.set(tableRowSet);
@@ -141,26 +139,23 @@ export default function Providers({
 			globalStore.persistence.table.hiddenItems.ingredients.get();
 		const globalHiddenRecipes =
 			globalStore.persistence.table.hiddenItems.recipes.get();
-		const hiddenBeveragesSet = toSet(globalHiddenBeverages);
-		const hiddenIngredientsSet = toSet(globalHiddenIngredients);
-		const hiddenRecipesSet = toSet(globalHiddenRecipes);
 		customerNormalStore.shared.beverage.table.hiddenBeverages.set(
-			hiddenBeveragesSet
+			toSet(globalHiddenBeverages)
 		);
 		customerNormalStore.shared.recipe.table.hiddenIngredients.set(
-			hiddenIngredientsSet
+			toSet(globalHiddenIngredients)
 		);
 		customerNormalStore.shared.recipe.table.hiddenRecipes.set(
-			hiddenRecipesSet
+			toSet(globalHiddenRecipes)
 		);
 		customerRareStore.shared.beverage.table.hiddenBeverages.set(
-			hiddenBeveragesSet
+			toSet(globalHiddenBeverages)
 		);
 		customerRareStore.shared.recipe.table.hiddenIngredients.set(
-			hiddenIngredientsSet
+			toSet(globalHiddenIngredients)
 		);
 		customerRareStore.shared.recipe.table.hiddenRecipes.set(
-			hiddenRecipesSet
+			toSet(globalHiddenRecipes)
 		);
 	}, []);
 
