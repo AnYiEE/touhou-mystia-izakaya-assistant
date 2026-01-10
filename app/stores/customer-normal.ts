@@ -73,7 +73,8 @@ const storeVersion = {
 	addBackBeverage: 11,
 	tablePersist: 12, // eslint-disable-next-line sort-keys
 	mealData: 13,
-	tableShare: 14,
+	tableShare: 14, // eslint-disable-next-line sort-keys
+	deleteMealIndex: 15,
 } as const;
 
 const state = {
@@ -176,11 +177,7 @@ const state = {
 		meals: {} as Partial<
 			Record<
 				TCustomerNormalName,
-				Array<{
-					index: number;
-					beverage: TBeverageName | null;
-					recipe: IMealRecipe;
-				}>
+				Array<{ beverage: TBeverageName | null; recipe: IMealRecipe }>
 			>
 		>,
 	},
@@ -247,7 +244,7 @@ export const customerNormalStore = store(state, {
 		}),
 		persistMiddleware<typeof state>({
 			name: storeName,
-			version: storeVersion.tableShare,
+			version: storeVersion.deleteMealIndex,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -438,6 +435,19 @@ export const customerNormalStore = store(state, {
 					delete beverageTable.visibleColumns;
 					delete recipeTable.rows;
 					delete recipeTable.visibleColumns;
+				}
+				if (version < storeVersion.deleteMealIndex) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const { persistence } = oldState;
+					for (const meals of Object.values(
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+						persistence.meals
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					) as any) {
+						for (const meal of meals) {
+							delete meal.index;
+						}
+					}
 				}
 				return persistedState as typeof state;
 			},
@@ -807,14 +817,9 @@ export const customerNormalStore = store(state, {
 			} as const;
 			currentStore.persistence.meals.set((prev) => {
 				if (customerName in prev) {
-					const indexes =
-						prev[customerName]?.map(({ index }) => index) ?? [];
-					const index = checkEmpty(indexes)
-						? 0
-						: Math.max(...indexes, 0) + 1;
-					prev[customerName]?.push({ ...saveObject, index });
+					prev[customerName]?.push(saveObject);
 				} else {
-					prev[customerName] = [{ ...saveObject, index: 0 }];
+					prev[customerName] = [saveObject];
 				}
 			});
 			trackEvent(

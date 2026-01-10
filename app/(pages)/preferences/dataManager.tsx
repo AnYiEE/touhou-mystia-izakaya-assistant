@@ -132,6 +132,16 @@ function setErrorState({
 	}
 }
 
+function deleteIndexProperty(objects: Record<string, object[]>) {
+	Object.values(objects).forEach((data) => {
+		data.forEach((object) => {
+			if ('index' in object) {
+				delete object.index;
+			}
+		});
+	});
+}
+
 interface IProps {
 	onModalClose?: (() => void) | undefined;
 }
@@ -328,6 +338,8 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				setCloudDownloadButtonLabel(
 					cloudDownloadButtonLabelMap.success
 				);
+				deleteIndexProperty(data.customer_normal);
+				deleteIndexProperty(data.customer_rare);
 				customerNormalStore.persistence.meals.set(data.customer_normal);
 				customerRareStore.persistence.meals.set(data.customer_rare);
 				globalStore.persistence.cloudCode.set(code);
@@ -416,6 +428,8 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		toggleSavePopoverOpened();
 		if (importData !== null) {
 			if ('customer_normal' in importData) {
+				deleteIndexProperty(importData.customer_normal);
+				deleteIndexProperty(importData.customer_rare);
 				customerNormalStore.persistence.meals.set(
 					importData.customer_normal
 				);
@@ -428,6 +442,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 					'Customer Data'
 				);
 			} else {
+				deleteIndexProperty(importData);
 				customerRareStore.persistence.meals.set(importData);
 				trackEvent(
 					trackEvent.category.click,
