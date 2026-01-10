@@ -55,6 +55,11 @@ export default memo<IProps>(function Content({ onModalClose }) {
 		globalStore.persistence.customerCardTagsTooltip.use();
 	const isVibrateEnabled = globalStore.persistence.vibrate.use();
 
+	const resetBRecipeTablePage = useCallback(() => {
+		customerRareStore.shared.beverage.table.page.set(1);
+		customerNormalStore.shared.beverage.table.page.set(1);
+	}, []);
+
 	const resetRecipeTablePage = useCallback(() => {
 		customerRareStore.shared.recipe.table.page.set(1);
 		customerNormalStore.shared.recipe.table.page.set(1);
@@ -63,9 +68,10 @@ export default memo<IProps>(function Content({ onModalClose }) {
 	const onHiddenDlcsChange = useCallback(
 		(value: Set<TDlc>) => {
 			globalStore.hiddenDlcs.set(value);
+			resetBRecipeTablePage();
 			resetRecipeTablePage();
 		},
-		[resetRecipeTablePage]
+		[resetBRecipeTablePage, resetRecipeTablePage]
 	);
 
 	const onIsFamousShopChange = useCallback(
