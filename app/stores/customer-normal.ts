@@ -910,10 +910,14 @@ customerNormalStore.shared.customer.name.onChange((name) => {
 customerNormalStore.shared.customer.famousShop.onChange(() => {
 	customerNormalStore.updateRecipeTagsWithTrend();
 	customerNormalStore.evaluateMealResult();
+	customerNormalStore.shared.beverage.table.page.set(1);
+	customerNormalStore.shared.recipe.table.page.set(1);
 });
 customerNormalStore.shared.customer.popularTrend.onChange(() => {
 	customerNormalStore.updateRecipeTagsWithTrend();
 	customerNormalStore.evaluateMealResult();
+	customerNormalStore.shared.beverage.table.page.set(1);
+	customerNormalStore.shared.recipe.table.page.set(1);
 });
 
 customerNormalStore.shared.recipe.data.onChange(() => {

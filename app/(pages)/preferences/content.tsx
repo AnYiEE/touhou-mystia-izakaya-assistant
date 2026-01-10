@@ -5,7 +5,6 @@ import { memo, useCallback } from 'react';
 import { useVibrate } from '@/hooks';
 
 import { Select, SelectItem } from '@heroui/select';
-import { type Selection } from '@heroui/table';
 
 import {
 	Button,
@@ -21,8 +20,8 @@ import SwitchItem from './switchItem';
 import Heading from '@/components/heading';
 import Sprite from '@/components/sprite';
 
-import { DLC_LABEL_MAP, DYNAMIC_TAG_MAP, type TDlc } from '@/data';
-import { customerNormalStore, customerRareStore, globalStore } from '@/stores';
+import { DLC_LABEL_MAP, DYNAMIC_TAG_MAP } from '@/data';
+import { customerRareStore, globalStore } from '@/stores';
 import { toSet } from '@/utilities';
 
 interface IProps extends IDataManagerProps {}
@@ -55,55 +54,11 @@ export default memo<IProps>(function Content({ onModalClose }) {
 		globalStore.persistence.customerCardTagsTooltip.use();
 	const isVibrateEnabled = globalStore.persistence.vibrate.use();
 
-	const resetBRecipeTablePage = useCallback(() => {
-		customerRareStore.shared.beverage.table.page.set(1);
-		customerNormalStore.shared.beverage.table.page.set(1);
-	}, []);
-
-	const resetRecipeTablePage = useCallback(() => {
-		customerRareStore.shared.recipe.table.page.set(1);
-		customerNormalStore.shared.recipe.table.page.set(1);
-	}, []);
-
-	const onHiddenDlcsChange = useCallback(
-		(value: Set<TDlc>) => {
-			globalStore.hiddenDlcs.set(value);
-			resetBRecipeTablePage();
-			resetRecipeTablePage();
-		},
-		[resetBRecipeTablePage, resetRecipeTablePage]
-	);
-
-	const onIsFamousShopChange = useCallback(
-		(value: boolean) => {
-			globalStore.persistence.famousShop.set(value);
-			resetRecipeTablePage();
-		},
-		[resetRecipeTablePage]
-	);
-
-	const onIsPopularTrendNegativeChange = useCallback(
-		(value: boolean) => {
-			globalStore.persistence.popularTrend.isNegative.set(value);
-			resetRecipeTablePage();
-		},
-		[resetRecipeTablePage]
-	);
-
-	const onSelectedPopularTagChange = useCallback(
-		(value: Selection) => {
-			globalStore.selectedPopularTag.set(value);
-			resetRecipeTablePage();
-		},
-		[resetRecipeTablePage]
-	);
-
 	const onClearPopularTrendButtonPress = useCallback(() => {
 		vibrate();
 		globalStore.persistence.popularTrend.isNegative.set(false);
 		globalStore.selectedPopularTag.set(toSet());
-		resetRecipeTablePage();
-	}, [resetRecipeTablePage, vibrate]);
+	}, [vibrate]);
 
 	const handleIsHighAppearanceChange = useCallback(
 		(value: boolean) => {
@@ -154,7 +109,7 @@ export default memo<IProps>(function Content({ onModalClose }) {
 								} else {
 									newHiddenDlcs.add(dlc);
 								}
-								onHiddenDlcsChange(newHiddenDlcs);
+								globalStore.hiddenDlcs.set(newHiddenDlcs);
 							}}
 							aria-label={`${isHidden ? '显示' : '隐藏'}${DLC_LABEL_MAP[dlc].label}数据集`}
 						>
@@ -178,7 +133,9 @@ export default memo<IProps>(function Content({ onModalClose }) {
 					<Switch
 						isSelected={isPopularTrendNegative}
 						size="sm"
-						onValueChange={onIsPopularTrendNegativeChange}
+						onValueChange={
+							globalStore.persistence.popularTrend.isNegative.set
+						}
 						aria-label={`设置为${isPopularTrendNegative ? DYNAMIC_TAG_MAP.popularPositive : DYNAMIC_TAG_MAP.popularNegative}`}
 						classNames={{ base: 'mx-2', wrapper: 'bg-primary' }}
 					/>
@@ -194,7 +151,9 @@ export default memo<IProps>(function Content({ onModalClose }) {
 							selectedKeys={selectedPopularTag}
 							size="sm"
 							variant="flat"
-							onSelectionChange={onSelectedPopularTagChange}
+							onSelectionChange={
+								globalStore.selectedPopularTag.set
+							}
 							aria-label="选择游戏中现时流行的标签"
 							title="选择游戏中现时流行的标签"
 							popoverProps={{ motionProps: popoverMotionProps }}
@@ -242,7 +201,7 @@ export default memo<IProps>(function Content({ onModalClose }) {
 				</div>
 				<SwitchItem
 					isSelected={isFamousShop}
-					onValueChange={onIsFamousShopChange}
+					onValueChange={globalStore.persistence.famousShop.set}
 					aria-label={`${isFamousShop ? '关闭' : '开启'}“明星店”效果`}
 					className="!mt-4"
 				>
