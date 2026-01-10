@@ -1120,10 +1120,14 @@ customerRareStore.shared.customer.order.onChange(
 customerRareStore.shared.customer.famousShop.onChange(() => {
 	customerRareStore.updateRecipeTagsWithTrend();
 	customerRareStore.evaluateMealResult();
+	customerRareStore.shared.beverage.table.page.set(1);
+	customerRareStore.shared.recipe.table.page.set(1);
 });
 customerRareStore.shared.customer.popularTrend.onChange(() => {
 	customerRareStore.updateRecipeTagsWithTrend();
 	customerRareStore.evaluateMealResult();
+	customerRareStore.shared.beverage.table.page.set(1);
+	customerRareStore.shared.recipe.table.page.set(1);
 });
 
 customerRareStore.shared.customer.hasMystiaCooker.onChange(
