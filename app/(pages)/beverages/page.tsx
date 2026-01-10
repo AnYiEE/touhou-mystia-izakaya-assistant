@@ -5,9 +5,7 @@ import { useCallback, useMemo } from 'react';
 import {
 	useFilteredData,
 	usePinyinSortConfig,
-	useSearchConfig,
 	useSearchResult,
-	useSelectConfig,
 	useSortedData,
 	useThrottle,
 } from '@/hooks';
@@ -15,9 +13,13 @@ import {
 import Content from './content';
 import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
-import SideFilterIconButton from '@/components/sideFilterIconButton';
+import SideFilterIconButton, {
+	type TSelectConfig,
+} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
-import SideSearchIconButton from '@/components/sideSearchIconButton';
+import SideSearchIconButton, {
+	type ISearchConfig,
+} from '@/components/sideSearchIconButton';
 
 import { beveragesStore as store } from '@/stores';
 import {
@@ -80,57 +82,53 @@ export default function Beverages() {
 		store.persistence.pinyinSortState.set
 	);
 
-	const searchConfig = useSearchConfig(
-		useMemo(
-			() => ({
-				label: '选择或输入酒水名称',
-				searchItems: allNames,
-				searchValue,
-				setSearchValue: store.persistence.searchValue.set,
-				spriteTarget: 'beverage',
-			}),
-			[allNames, searchValue]
-		)
+	const searchConfig = useMemo<ISearchConfig>(
+		() => ({
+			label: '选择或输入酒水名称',
+			searchItems: allNames,
+			searchValue,
+			setSearchValue: store.persistence.searchValue.set,
+			spriteTarget: 'beverage',
+		}),
+		[allNames, searchValue]
 	);
 
-	const selectConfig = useSelectConfig(
-		useMemo(
-			() => [
-				{
-					items: allDlcs,
-					label: 'DLC',
-					selectedKeys: filterDlcs,
-					setSelectedKeys: store.persistence.filters.dlcs.set,
-				},
-				{
-					items: allTags,
-					label: '酒水标签（包含）',
-					selectedKeys: filterTags,
-					setSelectedKeys: store.persistence.filters.tags.set,
-				},
-				{
-					items: allTags,
-					label: '酒水标签（排除）',
-					selectedKeys: filterNoTags,
-					setSelectedKeys: store.persistence.filters.noTags.set,
-				},
-				{
-					items: allLevels,
-					label: '等级',
-					selectedKeys: filterLevels,
-					setSelectedKeys: store.persistence.filters.levels.set,
-				},
-			],
-			[
-				allDlcs,
-				allLevels,
-				allTags,
-				filterDlcs,
-				filterLevels,
-				filterNoTags,
-				filterTags,
-			]
-		)
+	const selectConfig = useMemo<TSelectConfig>(
+		() => [
+			{
+				items: allDlcs,
+				label: 'DLC',
+				selectedKeys: filterDlcs,
+				setSelectedKeys: store.persistence.filters.dlcs.set,
+			},
+			{
+				items: allTags,
+				label: '酒水标签（包含）',
+				selectedKeys: filterTags,
+				setSelectedKeys: store.persistence.filters.tags.set,
+			},
+			{
+				items: allTags,
+				label: '酒水标签（排除）',
+				selectedKeys: filterNoTags,
+				setSelectedKeys: store.persistence.filters.noTags.set,
+			},
+			{
+				items: allLevels,
+				label: '等级',
+				selectedKeys: filterLevels,
+				setSelectedKeys: store.persistence.filters.levels.set,
+			},
+		],
+		[
+			allDlcs,
+			allLevels,
+			allTags,
+			filterDlcs,
+			filterLevels,
+			filterNoTags,
+			filterTags,
+		]
 	);
 
 	return (

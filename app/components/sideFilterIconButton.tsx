@@ -58,10 +58,20 @@ export default memo<IProps>(function SideFilterIconButton({
 
 	const isHighAppearance = store.persistence.highAppearance.use();
 
+	const filteredSelectConfig = useMemo(
+		() =>
+			selectConfig.filter(
+				({ items, label }) => !(label === 'DLC' && items.length <= 1)
+			),
+		[selectConfig]
+	);
+
 	const hasFilter = useMemo(
 		() =>
-			selectConfig.some(({ selectedKeys }) => !checkEmpty(selectedKeys)),
-		[selectConfig]
+			filteredSelectConfig.some(
+				({ selectedKeys }) => !checkEmpty(selectedKeys)
+			),
+		[filteredSelectConfig]
 	);
 
 	const handleSelectionChange = useCallback(
@@ -74,14 +84,14 @@ export default memo<IProps>(function SideFilterIconButton({
 
 	const handleResetFilters = useCallback(() => {
 		vibrate();
-		selectConfig.forEach(({ selectedKeys, setSelectedKeys }) => {
+		filteredSelectConfig.forEach(({ selectedKeys, setSelectedKeys }) => {
 			if (!checkEmpty(selectedKeys)) {
 				setSelectedKeys([]);
 			}
 		});
-	}, [selectConfig, vibrate]);
+	}, [filteredSelectConfig, vibrate]);
 
-	if (checkEmpty(selectConfig)) {
+	if (checkEmpty(filteredSelectConfig)) {
 		return null;
 	}
 
@@ -114,7 +124,7 @@ export default memo<IProps>(function SideFilterIconButton({
 			</Tooltip>
 			<PopoverContent className="w-64">
 				<div className="w-full space-y-1">
-					{selectConfig.map(
+					{filteredSelectConfig.map(
 						(
 							{
 								items,

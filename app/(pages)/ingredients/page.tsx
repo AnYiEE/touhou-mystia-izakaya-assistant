@@ -5,9 +5,7 @@ import { useCallback, useMemo } from 'react';
 import {
 	useFilteredData,
 	usePinyinSortConfig,
-	useSearchConfig,
 	useSearchResult,
-	useSelectConfig,
 	useSortedData,
 	useThrottle,
 } from '@/hooks';
@@ -15,9 +13,13 @@ import {
 import Content from './content';
 import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
-import SideFilterIconButton from '@/components/sideFilterIconButton';
+import SideFilterIconButton, {
+	type TSelectConfig,
+} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
-import SideSearchIconButton from '@/components/sideSearchIconButton';
+import SideSearchIconButton, {
+	type ISearchConfig,
+} from '@/components/sideSearchIconButton';
 
 import { ingredientsStore as store } from '@/stores';
 import {
@@ -113,72 +115,68 @@ export default function Ingredients() {
 		store.persistence.pinyinSortState.set
 	);
 
-	const searchConfig = useSearchConfig(
-		useMemo(
-			() => ({
-				label: '选择或输入食材名称',
-				searchItems: allNames,
-				searchValue,
-				setSearchValue: store.persistence.searchValue.set,
-				spriteTarget: 'ingredient',
-			}),
-			[allNames, searchValue]
-		)
+	const searchConfig = useMemo<ISearchConfig>(
+		() => ({
+			label: '选择或输入食材名称',
+			searchItems: allNames,
+			searchValue,
+			setSearchValue: store.persistence.searchValue.set,
+			spriteTarget: 'ingredient',
+		}),
+		[allNames, searchValue]
 	);
 
-	const selectConfig = useSelectConfig(
-		useMemo(
-			() => [
-				{
-					items: allDlcs,
-					label: 'DLC',
-					selectedKeys: filterDlcs,
-					setSelectedKeys: store.persistence.filters.dlcs.set,
-				},
-				{
-					items: allTags,
-					label: '食材标签（包含）',
-					selectedKeys: filterTags,
-					setSelectedKeys: store.persistence.filters.tags.set,
-				},
-				{
-					items: allTags,
-					label: '食材标签（排除）',
-					selectedKeys: filterNoTags,
-					setSelectedKeys: store.persistence.filters.noTags.set,
-				},
-				{
-					items: allTypes,
-					label: '食材类别（包含）',
-					selectedKeys: filterTypes,
-					setSelectedKeys: store.persistence.filters.types.set,
-				},
-				{
-					items: allTypes,
-					label: '食材类别（排除）',
-					selectedKeys: filterNoTypes,
-					setSelectedKeys: store.persistence.filters.noTypes.set,
-				},
-				{
-					items: allLevels,
-					label: '等级',
-					selectedKeys: filterLevels,
-					setSelectedKeys: store.persistence.filters.levels.set,
-				},
-			],
-			[
-				allDlcs,
-				allLevels,
-				allTags,
-				allTypes,
-				filterDlcs,
-				filterLevels,
-				filterNoTags,
-				filterNoTypes,
-				filterTags,
-				filterTypes,
-			]
-		)
+	const selectConfig = useMemo<TSelectConfig>(
+		() => [
+			{
+				items: allDlcs,
+				label: 'DLC',
+				selectedKeys: filterDlcs,
+				setSelectedKeys: store.persistence.filters.dlcs.set,
+			},
+			{
+				items: allTags,
+				label: '食材标签（包含）',
+				selectedKeys: filterTags,
+				setSelectedKeys: store.persistence.filters.tags.set,
+			},
+			{
+				items: allTags,
+				label: '食材标签（排除）',
+				selectedKeys: filterNoTags,
+				setSelectedKeys: store.persistence.filters.noTags.set,
+			},
+			{
+				items: allTypes,
+				label: '食材类别（包含）',
+				selectedKeys: filterTypes,
+				setSelectedKeys: store.persistence.filters.types.set,
+			},
+			{
+				items: allTypes,
+				label: '食材类别（排除）',
+				selectedKeys: filterNoTypes,
+				setSelectedKeys: store.persistence.filters.noTypes.set,
+			},
+			{
+				items: allLevels,
+				label: '等级',
+				selectedKeys: filterLevels,
+				setSelectedKeys: store.persistence.filters.levels.set,
+			},
+		],
+		[
+			allDlcs,
+			allLevels,
+			allTags,
+			allTypes,
+			filterDlcs,
+			filterLevels,
+			filterNoTags,
+			filterNoTypes,
+			filterTags,
+			filterTypes,
+		]
 	);
 
 	return (

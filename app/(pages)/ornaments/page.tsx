@@ -5,9 +5,7 @@ import { useCallback, useMemo } from 'react';
 import {
 	useFilteredData,
 	usePinyinSortConfig,
-	useSearchConfig,
 	useSearchResult,
-	useSelectConfig,
 	useSortedData,
 	useThrottle,
 } from '@/hooks';
@@ -15,9 +13,13 @@ import {
 import Content from './content';
 import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
-import SideFilterIconButton from '@/components/sideFilterIconButton';
+import SideFilterIconButton, {
+	type TSelectConfig,
+} from '@/components/sideFilterIconButton';
 import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
-import SideSearchIconButton from '@/components/sideSearchIconButton';
+import SideSearchIconButton, {
+	type ISearchConfig,
+} from '@/components/sideSearchIconButton';
 
 import { ornamentsStore as store } from '@/stores';
 import { checkEmpty } from '@/utilities';
@@ -57,31 +59,27 @@ export default function Ornaments() {
 		store.persistence.pinyinSortState.set
 	);
 
-	const searchConfig = useSearchConfig(
-		useMemo(
-			() => ({
-				label: '选择或输入摆件名称',
-				searchItems: allNames,
-				searchValue,
-				setSearchValue: store.persistence.searchValue.set,
-				spriteTarget: 'ornament',
-			}),
-			[allNames, searchValue]
-		)
+	const searchConfig = useMemo<ISearchConfig>(
+		() => ({
+			label: '选择或输入摆件名称',
+			searchItems: allNames,
+			searchValue,
+			setSearchValue: store.persistence.searchValue.set,
+			spriteTarget: 'ornament',
+		}),
+		[allNames, searchValue]
 	);
 
-	const selectConfig = useSelectConfig(
-		useMemo(
-			() => [
-				{
-					items: allDlcs,
-					label: 'DLC',
-					selectedKeys: filterDlcs,
-					setSelectedKeys: store.persistence.filters.dlcs.set,
-				},
-			],
-			[allDlcs, filterDlcs]
-		)
+	const selectConfig = useMemo<TSelectConfig>(
+		() => [
+			{
+				items: allDlcs,
+				label: 'DLC',
+				selectedKeys: filterDlcs,
+				setSelectedKeys: store.persistence.filters.dlcs.set,
+			},
+		],
+		[allDlcs, filterDlcs]
 	);
 
 	return (
