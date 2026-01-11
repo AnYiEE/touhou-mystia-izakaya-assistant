@@ -1048,6 +1048,5 @@ customerNormalStore.shared.hiddenItems.dlcs.onChange(() => {
 	});
 	customerNormalStore.persistence.recipe.table.cookers.set([]);
 	customerNormalStore.persistence.recipe.table.dlcs.set([]);
-	customerNormalStore.shared.beverage.table.page.set(1);
-	customerNormalStore.shared.recipe.table.page.set(1);
+	customerNormalStore.shared.customer.name.set(null);
 });
