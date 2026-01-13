@@ -127,23 +127,23 @@ export class Item<
 	}
 
 	public getValuesByProp<T extends keyof TItem>(
-		prop: T | T[],
+		prop: T | ReadonlyArray<T>,
 		wrap: true,
 		data?: ReadonlyArray<TItem>
 	): Array<ValueCollection<FlatArray<TItem[T], number>>>;
 	public getValuesByProp<T extends keyof TItem>(
-		prop: T | T[],
+		prop: T | ReadonlyArray<T>,
 		wrap?: boolean,
 		data?: ReadonlyArray<TItem>
 	): Array<FlatArray<TItem[T], number>>;
 	public getValuesByProp<T extends keyof TItem>(
-		prop: T | T[],
+		prop: T | ReadonlyArray<T>,
 		wrap?: boolean,
 		data?: ReadonlyArray<TItem>
 	) {
 		const target = data ?? this._data;
 
-		const props = [prop].flat() as T[];
+		const props = [prop].flat() as ReadonlyArray<T>;
 		const values = union(
 			target.map((item) => props.map((key) => item[key])).flat(Infinity)
 		);

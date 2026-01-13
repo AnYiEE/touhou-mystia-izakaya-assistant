@@ -1,6 +1,6 @@
 import { toSet } from '@/utilities';
 
-export function sortBy<T>(arrayA: T[], arrayB: T[]) {
+export function sortBy<T>(arrayA: ReadonlyArray<T>, arrayB: ReadonlyArray<T>) {
 	const setA = toSet(arrayA);
 
 	const inA: T[] = [];

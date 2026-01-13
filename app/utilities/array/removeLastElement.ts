@@ -7,7 +7,7 @@ export function removeLastElement<T>(
 	array: ReadonlyArray<T>,
 	elementToRemove: T,
 	elementToInsert?: T
-): T[] {
+) {
 	const copiedArray = copyArray(array);
 
 	const index = array.lastIndexOf(elementToRemove);
