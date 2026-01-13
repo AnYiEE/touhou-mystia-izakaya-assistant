@@ -7,7 +7,6 @@ import {
 	useFilteredData,
 	useMounted,
 	usePathname,
-	usePinyinSortConfig,
 	useSearchResult,
 	useSortedData,
 	useThrottle,
@@ -31,7 +30,9 @@ import SideButtonGroup from '@/components/sideButtonGroup';
 import SideFilterIconButton, {
 	type TSelectConfig,
 } from '@/components/sideFilterIconButton';
-import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
+import SidePinyinSortIconButton, {
+	type IPinyinSortConfig,
+} from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton, {
 	type ISearchConfig,
 } from '@/components/sideSearchIconButton';
@@ -180,9 +181,13 @@ export default function Content() {
 		customerPinyinSortState
 	);
 
-	const customerPinyinSortConfig = usePinyinSortConfig(
-		customerPinyinSortState,
-		customerStore.persistence.customer.pinyinSortState.set
+	const customerPinyinSortConfig = useMemo<IPinyinSortConfig>(
+		() => ({
+			pinyinSortState: customerPinyinSortState,
+			setPinyinSortState:
+				customerStore.persistence.customer.pinyinSortState.set,
+		}),
+		[customerPinyinSortState]
 	);
 
 	const customerSearchConfig = useMemo<ISearchConfig>(
@@ -335,9 +340,13 @@ export default function Content() {
 		ingredientPinyinSortState
 	);
 
-	const ingredientPinyinSortConfig = usePinyinSortConfig(
-		ingredientPinyinSortState,
-		customerStore.persistence.ingredient.pinyinSortState.set
+	const ingredientPinyinSortConfig = useMemo<IPinyinSortConfig>(
+		() => ({
+			pinyinSortState: ingredientPinyinSortState,
+			setPinyinSortState:
+				customerStore.persistence.ingredient.pinyinSortState.set,
+		}),
+		[ingredientPinyinSortState]
 	);
 
 	const ingredientSelectConfig = useMemo<TSelectConfig>(

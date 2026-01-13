@@ -7,7 +7,6 @@ export * from './useVibrate';
 export * from './useFilteredData';
 export * from './useItemPopoverState';
 export { useOpenedItemPopover } from './useOpenedItemPopover';
-export * from './usePinyinSortConfig';
 export * from './useSearchResult';
 export * from './useSkipProcessItemData';
 export * from './useSortedData';

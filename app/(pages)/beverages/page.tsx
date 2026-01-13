@@ -4,7 +4,6 @@ import { useCallback, useMemo } from 'react';
 
 import {
 	useFilteredData,
-	usePinyinSortConfig,
 	useSearchResult,
 	useSortedData,
 	useThrottle,
@@ -16,7 +15,9 @@ import SideButtonGroup from '@/components/sideButtonGroup';
 import SideFilterIconButton, {
 	type TSelectConfig,
 } from '@/components/sideFilterIconButton';
-import SidePinyinSortIconButton from '@/components/sidePinyinSortIconButton';
+import SidePinyinSortIconButton, {
+	type IPinyinSortConfig,
+} from '@/components/sidePinyinSortIconButton';
 import SideSearchIconButton, {
 	type ISearchConfig,
 } from '@/components/sideSearchIconButton';
@@ -77,9 +78,12 @@ export default function Beverages() {
 
 	const sortedData = useSortedData(instance, filteredData, pinyinSortState);
 
-	const pinyinSortConfig = usePinyinSortConfig(
-		pinyinSortState,
-		store.persistence.pinyinSortState.set
+	const pinyinSortConfig = useMemo<IPinyinSortConfig>(
+		() => ({
+			pinyinSortState,
+			setPinyinSortState: store.persistence.pinyinSortState.set,
+		}),
+		[pinyinSortState]
 	);
 
 	const searchConfig = useMemo<ISearchConfig>(
