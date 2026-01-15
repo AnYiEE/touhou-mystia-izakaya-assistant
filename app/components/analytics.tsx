@@ -126,7 +126,6 @@ export default function Analytics() {
 			['enableHeartBeatTimer'],
 			['enableLinkTracking'],
 			['setCookieDomain', `*.${baseURL}`],
-			['setDomains', [`*.${baseURL}`]],
 			['setRequestMethod', 'GET'],
 			['setTrackerUrl', analyticsApiUrl],
 			['setSecureCookie', true],
