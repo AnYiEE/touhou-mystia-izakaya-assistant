@@ -11,12 +11,6 @@ export function generateStaticParams() {
 	];
 }
 
-export default async function CustomerNormal({
-	params,
-}: {
-	params: Promise<{ paths: string[] | undefined }>;
-}) {
-	const { paths } = await params;
-
-	return <Content nameSlug={paths?.[0]} />;
+export default function CustomerNormal() {
+	return <Content />;
 }
