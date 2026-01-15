@@ -1,10 +1,22 @@
 import Content from './content';
 
-// eslint-disable-next-line @typescript-eslint/require-await
-export async function generateStaticParams() {
-	return [{ paths: [] }];
+import { CustomerRare as Customer } from '@/utils';
+
+export function generateStaticParams() {
+	return [
+		{ paths: [] },
+		...Customer.getInstance()
+			.getNames()
+			.map((name) => ({ paths: [name] })),
+	];
 }
 
-export default function CustomerRare() {
-	return <Content />;
+export default async function CustomerRare({
+	params,
+}: {
+	params: Promise<{ paths: string[] | undefined }>;
+}) {
+	const { paths } = await params;
+
+	return <Content nameSlug={paths?.[0]} />;
 }

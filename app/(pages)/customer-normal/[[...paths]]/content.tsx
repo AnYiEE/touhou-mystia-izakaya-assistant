@@ -1,12 +1,11 @@
 'use client';
 
-import { type Key, useCallback, useEffect, useMemo } from 'react';
+import { type Key, memo, useCallback, useEffect, useMemo } from 'react';
 
 import useBreakpoint from 'use-breakpoint';
 import {
 	useFilteredData,
 	useMounted,
-	usePathname,
 	useSearchResult,
 	useSortedData,
 	useThrottle,
@@ -67,11 +66,13 @@ function validateName(name: string | undefined) {
 	}
 }
 
-export default function Content() {
-	const { pathname } = usePathname();
+interface IProps {
+	nameSlug: string | undefined;
+}
 
+export default memo<IProps>(function Content({ nameSlug }) {
 	useEffect(() => {
-		const validName = validateName(pathname.split('/')[2]);
+		const validName = validateName(nameSlug);
 
 		customerStore.shared.customer.name.set(validName);
 
@@ -92,7 +93,7 @@ export default function Content() {
 		return () => {
 			observer.disconnect();
 		};
-	}, [pathname]);
+	}, [nameSlug]);
 
 	const { breakpoint } = useBreakpoint(tachieBreakPointMap, 'noTachie');
 	const isReducedMotion = useReducedMotion();
@@ -561,4 +562,4 @@ export default function Content() {
 				)}
 		</div>
 	);
-}
+});
