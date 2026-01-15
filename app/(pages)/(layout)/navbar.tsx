@@ -399,7 +399,7 @@ export default function Navbar() {
 				>
 					<NavbarMenuToggle
 						onChange={vibrate}
-						srOnlyText="打开或收起菜单"
+						srOnlyText={isMenuOpened ? '收起菜单' : '打开菜单'}
 						aria-label={isMenuOpened ? '收起菜单' : '打开菜单'}
 					/>
 				</Tooltip>

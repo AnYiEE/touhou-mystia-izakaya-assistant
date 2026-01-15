@@ -176,7 +176,7 @@ const state = {
 				page: 1,
 				row: 1,
 				rows: toSet() as SelectionSet,
-				selectableRows: [] as Array<Record<'value', number>>,
+				selectableRows: [] as Array<ValueCollection<number>>,
 			},
 		},
 		customer: {
@@ -212,7 +212,7 @@ const state = {
 				page: 1,
 				row: 1,
 				rows: toSet() as SelectionSet,
-				selectableRows: [] as Array<Record<'value', number>>,
+				selectableRows: [] as Array<ValueCollection<number>>,
 			},
 		},
 		tab: 'customer' as TTab,

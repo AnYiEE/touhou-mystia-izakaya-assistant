@@ -29,5 +29,5 @@ export function useFilteredData<
 		return filterHiddenDlcs(filterData());
 	}, [filterData, filterHiddenDlcs, instanceOrData, shouldSkipProcessData]);
 
-	return filteredData as U;
+	return filteredData as Readonly<U>;
 }

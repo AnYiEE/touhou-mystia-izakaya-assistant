@@ -5,7 +5,7 @@ import { cwd } from 'node:process';
 import type { TBackupFileRecord } from '@/lib/db/types';
 
 const dir = join(cwd(), 'upload/backups');
-const encoding = 'utf8';
+const encoding: BufferEncoding = 'utf8';
 
 function generateFilePath(code: TBackupFileRecord['code']) {
 	return join(dir, `${code}.json`);

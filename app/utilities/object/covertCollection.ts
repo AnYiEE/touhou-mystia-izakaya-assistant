@@ -18,6 +18,6 @@ export function toGetCollectionWithKey<K extends PropertyKey>(key: K) {
 	return <V>(item: V) => ({ [key]: item }) as Record<K, V>;
 }
 
-export function toGetValueCollection<V>(value: V) {
+export function toGetValueCollection<V>(value: V): ValueCollection<V> {
 	return toGetCollectionWithKey(KEY)(value);
 }
