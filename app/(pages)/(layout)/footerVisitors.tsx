@@ -8,10 +8,16 @@ import { siteConfig } from '@/configs';
 
 const { isAnalytics, isOffline, isSelfHosted } = siteConfig;
 
+const shouldSkip = isOffline || !isAnalytics || !isSelfHosted;
+
 export default function FooterVisitors() {
 	const [visitors, setVisitors] = useState<number | null>(null);
 
 	const fetchVisitors = useCallback(() => {
+		if (shouldSkip) {
+			return;
+		}
+
 		const setFailed = () => {
 			setVisitors(-1);
 		};
@@ -42,7 +48,7 @@ export default function FooterVisitors() {
 		};
 	}, [fetchVisitors]);
 
-	if (isOffline || !isAnalytics || !isSelfHosted) {
+	if (shouldSkip) {
 		return null;
 	} else if (visitors === null) {
 		return <span>正在获取在线人数</span>;
