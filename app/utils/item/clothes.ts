@@ -44,7 +44,7 @@ export class Clothes extends Item<TClothes> {
 			return Clothes._bondClothesCache.get(customerName);
 		}
 
-		let bondClothes = null;
+		let bondClothes: TClothesName | null = null;
 
 		this._data.some(({ from, name }) =>
 			from.some((item) => {

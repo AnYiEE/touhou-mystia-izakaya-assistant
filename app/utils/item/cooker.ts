@@ -75,7 +75,7 @@ export class Cooker extends Item<TCookers> {
 			return Cooker._bondCookerCache.get(customerName);
 		}
 
-		let bondCooker = null;
+		let bondCooker: TCookerName | null = null;
 
 		this._data.some(({ from, name }) =>
 			from.some((item) => {

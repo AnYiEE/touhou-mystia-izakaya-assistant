@@ -42,7 +42,7 @@ export class Partner extends Item<TPartners> {
 			return Partner._bondPartnerCache.get(customerName);
 		}
 
-		let bondPartner = null;
+		let bondPartner: TPartnerName | null = null;
 
 		this._data.some(({ belong, name }) => {
 			if (
