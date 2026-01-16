@@ -27,6 +27,10 @@ export function checkArrayContainsOf<T>(
 	array: ReadonlyArray<T>,
 	target: ArrayLike<T> | ReadonlySetLike<T>
 ) {
+	if (checkEmpty(array) || checkEmpty(target)) {
+		return false;
+	}
+
 	const set = toSet(target);
 
 	return array.some((value) => set.has(value));
@@ -36,6 +40,10 @@ export const checkArraySubsetOf: typeof checkArrayContainsOf = (
 	array,
 	target
 ) => {
+	if (checkEmpty(array) || checkEmpty(target)) {
+		return false;
+	}
+
 	const set = toSet(target);
 
 	return array.every((value) => set.has(value));

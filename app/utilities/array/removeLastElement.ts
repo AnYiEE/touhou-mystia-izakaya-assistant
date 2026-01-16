@@ -1,4 +1,4 @@
-import { copyArray } from '@/utilities';
+import { checkEmpty, copyArray } from '@/utilities';
 
 /**
  * @example removeLastElement([1, 2, 3, 4, 2], 2) -> [1, 2, 3, 4]
@@ -9,6 +9,9 @@ export function removeLastElement<T>(
 	elementToInsert?: T
 ) {
 	const copiedArray = copyArray(array);
+	if (checkEmpty(copiedArray)) {
+		return copiedArray;
+	}
 
 	const index = array.lastIndexOf(elementToRemove);
 	if (index === -1) {

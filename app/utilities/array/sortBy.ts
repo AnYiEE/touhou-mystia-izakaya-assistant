@@ -1,6 +1,13 @@
-import { toSet } from '@/utilities';
+import { checkEmpty, copyArray, toSet } from '@/utilities';
 
 export function sortBy<T>(arrayA: ReadonlyArray<T>, arrayB: ReadonlyArray<T>) {
+	if (checkEmpty(arrayA)) {
+		return copyArray(arrayB);
+	}
+	if (checkEmpty(arrayB)) {
+		return [];
+	}
+
 	const setA = toSet(arrayA);
 
 	const inA: T[] = [];
