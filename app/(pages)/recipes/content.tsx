@@ -104,138 +104,152 @@ export default memo<IProps>(function Content({ data }) {
 						tagColors={RECIPE_TAG_STYLE}
 						ref={popoverCardRef}
 					>
-						<p className="break-all text-justify">
-							<span className="font-semibold">食谱来源：</span>
-							{typeof from === 'string'
-								? from
-								: Object.entries(from).map(
-										(fromObject, fromIndex) => {
-											type TFrom = Exclude<
-												IRecipe['from'],
-												string
-											>;
-											const [method, target] =
-												fromObject as [
-													keyof TFrom,
-													ExtractCollectionValue<TFrom>,
-												];
-											const isBond =
-												method === 'bond' &&
-												isObject(target) &&
-												'level' in target;
-											const isBuy =
-												method === 'buy' &&
-												isObject(target) &&
-												'price' in target;
-											const isLevelUp =
-												method === 'levelup' &&
-												Array.isArray(target);
-											const isSelf = method === 'self';
-											return (
-												<Fragment key={fromIndex}>
-													{isSelf ? (
-														'初始拥有'
-													) : isBond ? (
-														<>
-															<span className="mr-1 inline-flex items-center">
-																【
-																<Sprite
-																	target="customer_rare"
-																	name={
-																		target.name
-																	}
-																	size={1.25}
-																	className="mx-0.5 rounded-full"
-																/>
-																{target.name}
-																】羁绊
-															</span>
-															Lv.
-															{target.level - 1}
-															<span className="mx-0.5">
-																➞
-															</span>
-															Lv.
-															{target.level}
-														</>
-													) : isBuy ? (
-														<>
-															{target.name}（
-															<span className="inline-flex items-center">
-																<Price
-																	showSymbol={
-																		false
-																	}
-																>
-																	{
-																		target
-																			.price
-																			.amount
-																	}
-																	×
-																</Price>
-																<Tooltip
-																	showArrow
-																	content={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
-																	offset={1}
-																	size="sm"
-																>
+						{((typeof from === 'string' && from.length > 0) ||
+							Object.keys(from).length > 0) && (
+							<p className="break-all text-justify">
+								<span className="font-semibold">
+									食谱来源：
+								</span>
+								{typeof from === 'string'
+									? from
+									: Object.entries(from).map(
+											(fromObject, fromIndex) => {
+												type TFrom = Exclude<
+													IRecipe['from'],
+													string
+												>;
+												const [method, target] =
+													fromObject as [
+														keyof TFrom,
+														ExtractCollectionValue<TFrom>,
+													];
+												const isBond =
+													method === 'bond' &&
+													isObject(target) &&
+													'level' in target;
+												const isBuy =
+													method === 'buy' &&
+													isObject(target) &&
+													'price' in target;
+												const isLevelUp =
+													method === 'levelup' &&
+													Array.isArray(target);
+												const isSelf =
+													method === 'self';
+												return (
+													<Fragment key={fromIndex}>
+														{isSelf ? (
+															'初始拥有'
+														) : isBond ? (
+															<>
+																<span className="mr-1 inline-flex items-center">
+																	【
 																	<Sprite
-																		target="currency"
+																		target="customer_rare"
 																		name={
-																			target
-																				.price
-																				.currency
+																			target.name
 																		}
 																		size={
 																			1.25
 																		}
-																		onPress={() => {
-																			openWindow(
-																				'currencies',
-																				target
-																					.price
-																					.currency
-																			);
-																		}}
-																		aria-label={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
-																		role="button"
+																		className="mx-0.5 rounded-full"
 																	/>
-																</Tooltip>
-															</span>
-															）
-														</>
-													) : (
-														isLevelUp && (
-															<>
-																<span className="mr-1">
-																	游戏等级
+																	{
+																		target.name
+																	}
+																	】羁绊
 																</span>
 																Lv.
-																{target[0] - 1}
+																{target.level -
+																	1}
 																<span className="mx-0.5">
 																	➞
 																</span>
 																Lv.
-																{target[0]}
-																{target[1] !==
-																	null && (
-																	<span className="ml-0.5">
-																		且已解锁地区【
-																		{
-																			target[1]
-																		}
-																		】
-																	</span>
-																)}
+																{target.level}
 															</>
-														)
-													)}
-												</Fragment>
-											);
-										}
-									)}
-						</p>
+														) : isBuy ? (
+															<>
+																{target.name}（
+																<span className="inline-flex items-center">
+																	<Price
+																		showSymbol={
+																			false
+																		}
+																	>
+																		{
+																			target
+																				.price
+																				.amount
+																		}
+																		×
+																	</Price>
+																	<Tooltip
+																		showArrow
+																		content={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
+																		offset={
+																			1
+																		}
+																		size="sm"
+																	>
+																		<Sprite
+																			target="currency"
+																			name={
+																				target
+																					.price
+																					.currency
+																			}
+																			size={
+																				1.25
+																			}
+																			onPress={() => {
+																				openWindow(
+																					'currencies',
+																					target
+																						.price
+																						.currency
+																				);
+																			}}
+																			aria-label={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
+																			role="button"
+																		/>
+																	</Tooltip>
+																</span>
+																）
+															</>
+														) : (
+															isLevelUp && (
+																<>
+																	<span className="mr-1">
+																		游戏等级
+																	</span>
+																	Lv.
+																	{target[0] -
+																		1}
+																	<span className="mx-0.5">
+																		➞
+																	</span>
+																	Lv.
+																	{target[0]}
+																	{target[1] !==
+																		null && (
+																		<span className="ml-0.5">
+																			且已解锁地区【
+																			{
+																				target[1]
+																			}
+																			】
+																		</span>
+																	)}
+																</>
+															)
+														)}
+													</Fragment>
+												);
+											}
+										)}
+							</p>
+						)}
 						{max !== 0 && (
 							<p>
 								<Popover showArrow offset={3} size="sm">

@@ -69,28 +69,31 @@ export default memo<IProps>(function Content({ data }) {
 					dlc={dlc}
 					ref={popoverCardRef}
 				>
-					<p className="break-all text-justify">
-						<span className="font-semibold">来源：</span>
-						{typeof from === 'string' ? (
-							from
-						) : (
-							<>
-								<span className="mr-1 inline-flex items-center">
-									【
-									<Sprite
-										target="customer_rare"
-										name={from.bond}
-										size={1.25}
-										className="mx-0.5 rounded-full"
-									/>
-									{from.bond}】羁绊
-								</span>
-								Lv.{from.level - 1}
-								<span className="mx-0.5">➞</span>Lv.
-								{from.level}
-							</>
-						)}
-					</p>
+					{((typeof from === 'string' && from.length > 0) ||
+						Object.keys(from).length > 0) && (
+						<p className="break-all text-justify">
+							<span className="font-semibold">来源：</span>
+							{typeof from === 'string' ? (
+								from
+							) : (
+								<>
+									<span className="mr-1 inline-flex items-center">
+										【
+										<Sprite
+											target="customer_rare"
+											name={from.bond}
+											size={1.25}
+											className="mx-0.5 rounded-full"
+										/>
+										{from.bond}】羁绊
+									</span>
+									Lv.{from.level - 1}
+									<span className="mx-0.5">➞</span>Lv.
+									{from.level}
+								</>
+							)}
+						</p>
+					)}
 					<p className="break-all text-justify">
 						<span className="font-semibold">效果：</span>
 						{effect}

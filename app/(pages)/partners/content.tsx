@@ -85,35 +85,40 @@ export default memo<IProps>(function Content({ data }) {
 						dlc={dlc}
 						ref={popoverCardRef}
 					>
-						<p>
-							<span className="font-semibold">来源：</span>
-							{typeof from === 'string'
-								? from
-								: Object.entries(from).map(
-										(fromObject, fromIndex) => {
-											type TFrom = Exclude<
-												IPartner['from'],
-												string
-											>;
-											const [method, target] =
-												fromObject as [
-													keyof TFrom,
-													ExtractCollectionValue<TFrom>,
-												];
-											const isPlace = method === 'place';
-											const isSelf = method === 'self';
-											return (
-												<Fragment key={fromIndex}>
-													{isPlace
-														? `地区【${target}】全部稀客羁绊满级`
-														: isSelf
-															? '初始拥有'
-															: `完成地区【${target}】主线任务`}
-												</Fragment>
-											);
-										}
-									)}
-						</p>
+						{((typeof from === 'string' && from.length > 0) ||
+							Object.keys(from).length > 0) && (
+							<p>
+								<span className="font-semibold">来源：</span>
+								{typeof from === 'string'
+									? from
+									: Object.entries(from).map(
+											(fromObject, fromIndex) => {
+												type TFrom = Exclude<
+													IPartner['from'],
+													string
+												>;
+												const [method, target] =
+													fromObject as [
+														keyof TFrom,
+														ExtractCollectionValue<TFrom>,
+													];
+												const isPlace =
+													method === 'place';
+												const isSelf =
+													method === 'self';
+												return (
+													<Fragment key={fromIndex}>
+														{isPlace
+															? `地区【${target}】全部稀客羁绊满级`
+															: isSelf
+																? '初始拥有'
+																: `完成地区【${target}】主线任务`}
+													</Fragment>
+												);
+											}
+										)}
+							</p>
+						)}
 						<p>
 							<span className="font-semibold">
 								支付当天营收的：

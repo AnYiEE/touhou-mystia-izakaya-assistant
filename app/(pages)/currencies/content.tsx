@@ -81,95 +81,102 @@ export default memo<IProps>(function Content({ data }) {
 					dlc={dlc}
 					ref={popoverCardRef}
 				>
-					<p>
-						<span className="font-semibold">来源：</span>
-						{from.map((item, fromIndex) => (
-							<Fragment key={fromIndex}>
-								{fromIndex > 0 && '、'}
-								{typeof item === 'string'
-									? item
-									: Object.entries(item).map(
-											(itemObject, itemIndex) => {
-												type TFrom = Exclude<
-													ICurrency['from'][number],
-													string
-												>;
-												const [method, target] =
-													itemObject as [
-														keyof TFrom,
-														ExtractCollectionValue<TFrom>,
-													];
-												const isBuy =
-													method === 'buy' &&
-													isObject(target);
-												const isTask =
-													method === 'task' &&
-													typeof target === 'string';
-												return (
-													<Fragment
-														key={`${fromIndex}-${itemIndex}`}
-													>
-														{itemIndex > 0 && '、'}
-														{isBuy ? (
-															<>
-																{target.name}（
-																<span className="inline-flex items-center">
-																	<Price
-																		showSymbol={
-																			false
-																		}
-																	>
-																		{
-																			target
-																				.price
-																				.amount
-																		}
-																		×
-																	</Price>
-																	<Tooltip
-																		showArrow
-																		content={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
-																		offset={
-																			1
-																		}
-																		size="sm"
-																	>
-																		<Sprite
-																			target="currency"
-																			name={
+					{from.length > 0 && (
+						<p>
+							<span className="font-semibold">来源：</span>
+							{from.map((item, fromIndex) => (
+								<Fragment key={fromIndex}>
+									{fromIndex > 0 && '、'}
+									{typeof item === 'string'
+										? item
+										: Object.entries(item).map(
+												(itemObject, itemIndex) => {
+													type TFrom = Exclude<
+														ICurrency['from'][number],
+														string
+													>;
+													const [method, target] =
+														itemObject as [
+															keyof TFrom,
+															ExtractCollectionValue<TFrom>,
+														];
+													const isBuy =
+														method === 'buy' &&
+														isObject(target);
+													const isTask =
+														method === 'task' &&
+														typeof target ===
+															'string';
+													return (
+														<Fragment
+															key={`${fromIndex}-${itemIndex}`}
+														>
+															{itemIndex > 0 &&
+																'、'}
+															{isBuy ? (
+																<>
+																	{
+																		target.name
+																	}
+																	（
+																	<span className="inline-flex items-center">
+																		<Price
+																			showSymbol={
+																				false
+																			}
+																		>
+																			{
 																				target
 																					.price
-																					.currency as TCurrencyName
+																					.amount
 																			}
-																			size={
-																				1.25
+																			×
+																		</Price>
+																		<Tooltip
+																			showArrow
+																			content={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
+																			offset={
+																				1
 																			}
-																			onPress={() => {
-																				openWindow(
-																					'currencies',
+																			size="sm"
+																		>
+																			<Sprite
+																				target="currency"
+																				name={
 																					target
 																						.price
 																						.currency as TCurrencyName
-																				);
-																			}}
-																			aria-label={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
-																			role="button"
-																		/>
-																	</Tooltip>
-																</span>
-																）
-															</>
-														) : (
-															isTask &&
-															`地区【${target}】支线任务`
-														)}
-													</Fragment>
-												);
-											}
-										)}
-							</Fragment>
-						))}
-					</p>
+																				}
+																				size={
+																					1.25
+																				}
+																				onPress={() => {
+																					openWindow(
+																						'currencies',
+																						target
+																							.price
+																							.currency as TCurrencyName
+																					);
+																				}}
+																				aria-label={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
+																				role="button"
+																			/>
+																		</Tooltip>
+																	</span>
+																	）
+																</>
+															) : (
+																isTask &&
+																`地区【${target}】支线任务`
+															)}
+														</Fragment>
+													);
+												}
+											)}
+								</Fragment>
+							))}
+						</p>
+					)}
 				</ItemPopoverCard>
 			</ItemPopoverCard.Content>
 		</ItemPopoverCard.Popover>
