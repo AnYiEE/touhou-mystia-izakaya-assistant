@@ -7,7 +7,6 @@ import {
 } from '@/data';
 
 import { siteConfig } from '@/configs';
-import { processPinyin } from '@/utilities';
 
 const { cdnUrl } = siteConfig;
 
@@ -70,8 +69,7 @@ export class Partner extends Item<TPartners> {
 		if (Partner._tachiePathCache.has(name)) {
 			path = Partner._tachiePathCache.get(name);
 		} else {
-			const pinyin = this.getPropsByName(name, 'pinyin');
-			path = `${basePath}/${processPinyin(pinyin).pinyinWithoutTone.join('')}.png`;
+			path = `${basePath}/${this.formatId(this.getPropsByName(name, 'id'))}.png`;
 			Partner._tachiePathCache.set(name, path);
 		}
 

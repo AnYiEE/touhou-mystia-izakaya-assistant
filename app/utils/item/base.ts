@@ -15,6 +15,7 @@ export class Item<
 	TItem extends TItemWithPinyin<TItems[number]> = TItemWithPinyin<
 		TItems[number]
 	>,
+	TItemId extends TItem['id'] = TItem['id'],
 	TItemName extends TItem['name'] = TItem['name'],
 > {
 	protected _data: ReadonlyArray<TItem>;
@@ -39,6 +40,13 @@ export class Item<
 
 	public get data() {
 		return this._data;
+	}
+
+	public formatId(id: TItemId) {
+		if (id >= 0) {
+			return id.toString().padStart(4, '0');
+		}
+		return id.toString();
 	}
 
 	protected checkIndexRange(index: number, _data?: unknown): asserts _data {

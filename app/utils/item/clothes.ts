@@ -9,7 +9,6 @@ import {
 } from '@/data';
 
 import { siteConfig } from '@/configs';
-import { processPinyin } from '@/utilities';
 
 const { cdnUrl } = siteConfig;
 
@@ -76,8 +75,8 @@ export class Clothes extends Item<TClothes> {
 		if (Clothes._tachiePathCache.has(name)) {
 			path = Clothes._tachiePathCache.get(name);
 		} else {
-			const { gif, pinyin } = this.getPropsByName(name);
-			path = `${basePath}/${processPinyin(pinyin).pinyinWithoutTone.join('')}.${gif ? 'gif' : 'png'}`;
+			const { gif, id } = this.getPropsByName(name);
+			path = `${basePath}/${this.formatId(id)}.${gif ? 'gif' : 'png'}`;
 			Clothes._tachiePathCache.set(name, path);
 		}
 

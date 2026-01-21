@@ -12,7 +12,6 @@ import {
 import { Clothes } from '@/utils';
 
 import { siteConfig } from '@/configs';
-import { processPinyin } from '@/utilities';
 
 const { cdnUrl } = siteConfig;
 
@@ -61,7 +60,7 @@ export class CustomerRare extends Customer<TCustomerRares> {
 		if (CustomerRare._tachiePathCache.has(name)) {
 			path = CustomerRare._tachiePathCache.get(name);
 		} else {
-			path = `${basePath}/${processPinyin(this.getPropsByName(name, 'pinyin')).pinyinWithoutTone.join('')}.png`;
+			path = `${basePath}/${this.formatId(this.getPropsByName(name, 'id'))}.png`;
 			CustomerRare._tachiePathCache.set(name, path);
 		}
 
