@@ -34,6 +34,7 @@ export class Recipe extends Food<TRecipes> {
 	private static _instance: Recipe | undefined;
 
 	private static _tagCoverMap = {
+		[DYNAMIC_TAG_MAP.expensive]: DYNAMIC_TAG_MAP.economical,
 		[DYNAMIC_TAG_MAP.largePartition]: '小巧',
 		灼热: '凉爽',
 		肉: '素',
