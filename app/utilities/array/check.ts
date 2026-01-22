@@ -2,7 +2,15 @@ import { isNil } from 'lodash';
 
 import { toSet } from '@/utilities';
 
-export function checkLengthEmpty<T>(target: ArrayLike<T> | ReadonlySetLike<T>) {
+export function checkLengthEmpty<T>(
+	target: string | ArrayLike<T> | ReadonlySetLike<T> | null | undefined
+) {
+	if (isNil(target)) {
+		return true;
+	}
+	if (typeof target === 'string') {
+		return target.length === 0;
+	}
 	if ('length' in target) {
 		return target.length === 0;
 	}
@@ -16,7 +24,6 @@ export function checkObjectOrStringEmpty(
 	if (isNil(item)) {
 		return true;
 	}
-
 	if (typeof item === 'string' || Array.isArray(item)) {
 		return checkLengthEmpty(item);
 	}
