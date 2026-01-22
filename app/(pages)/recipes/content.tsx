@@ -24,6 +24,7 @@ import Sprite from '@/components/sprite';
 
 import { DARK_MATTER_META_MAP, type IRecipe, RECIPE_TAG_STYLE } from '@/data';
 // import {globalStore as store} from '@/stores';
+import { checkObjectOrStringEmpty } from '@/utilities';
 import { type Recipe } from '@/utils';
 import type { TItemData } from '@/utils/types';
 
@@ -104,8 +105,7 @@ export default memo<IProps>(function Content({ data }) {
 						tagColors={RECIPE_TAG_STYLE}
 						ref={popoverCardRef}
 					>
-						{((typeof from === 'string' && from.length > 0) ||
-							Object.keys(from).length > 0) && (
+						{!checkObjectOrStringEmpty(from) && (
 							<p className="break-all text-justify">
 								<span className="font-semibold">
 									食谱来源：

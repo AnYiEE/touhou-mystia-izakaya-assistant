@@ -26,7 +26,7 @@ import Sprite from '@/components/sprite';
 
 import { DLC_LABEL_MAP, type TDlc, type TItemName } from '@/data';
 import { globalStore as store } from '@/stores';
-import { checkEmpty, pinyinSort, toArray } from '@/utilities';
+import { checkLengthEmpty, pinyinSort, toArray } from '@/utilities';
 import type { TSpriteTarget } from '@/utils/sprite/types';
 
 interface ISelectConfigItem extends Pick<
@@ -69,7 +69,7 @@ export default memo<IProps>(function SideFilterIconButton({
 	const hasFilter = useMemo(
 		() =>
 			filteredSelectConfig.some(
-				({ selectedKeys }) => !checkEmpty(selectedKeys)
+				({ selectedKeys }) => !checkLengthEmpty(selectedKeys)
 			),
 		[filteredSelectConfig]
 	);
@@ -85,13 +85,13 @@ export default memo<IProps>(function SideFilterIconButton({
 	const handleResetFilters = useCallback(() => {
 		vibrate();
 		filteredSelectConfig.forEach(({ selectedKeys, setSelectedKeys }) => {
-			if (!checkEmpty(selectedKeys)) {
+			if (!checkLengthEmpty(selectedKeys)) {
 				setSelectedKeys([]);
 			}
 		});
 	}, [filteredSelectConfig, vibrate]);
 
-	if (checkEmpty(filteredSelectConfig)) {
+	if (checkLengthEmpty(filteredSelectConfig)) {
 		return null;
 	}
 

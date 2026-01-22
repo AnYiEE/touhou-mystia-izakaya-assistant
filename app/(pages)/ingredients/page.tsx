@@ -26,7 +26,7 @@ import { ingredientsStore as store } from '@/stores';
 import {
 	checkArrayContainsOf,
 	checkArraySubsetOf,
-	checkEmpty,
+	checkLengthEmpty,
 } from '@/utilities';
 
 export default function Ingredients() {
@@ -71,21 +71,22 @@ export default function Ingredients() {
 		() =>
 			dataWithTrend.filter(({ dlc, level, tags, type }) => {
 				const isDlcMatched =
-					checkEmpty(filterDlcs) ||
+					checkLengthEmpty(filterDlcs) ||
 					filterDlcs.includes(dlc.toString());
 				const isLevelMatched =
-					checkEmpty(filterLevels) ||
+					checkLengthEmpty(filterLevels) ||
 					filterLevels.includes(level.toString());
 				const isTagMatched =
-					checkEmpty(filterTags) ||
+					checkLengthEmpty(filterTags) ||
 					checkArraySubsetOf(filterTags, tags);
 				const isNoTagMatched =
-					checkEmpty(filterNoTags) ||
+					checkLengthEmpty(filterNoTags) ||
 					!checkArrayContainsOf(filterNoTags, tags);
 				const isTypeMatched =
-					checkEmpty(filterTypes) || filterTypes.includes(type);
+					checkLengthEmpty(filterTypes) || filterTypes.includes(type);
 				const isNoTypeMatched =
-					checkEmpty(filterNoTypes) || !filterNoTypes.includes(type);
+					checkLengthEmpty(filterNoTypes) ||
+					!filterNoTypes.includes(type);
 
 				return (
 					isDlcMatched &&
@@ -185,7 +186,7 @@ export default function Ingredients() {
 
 	return (
 		<ItemPage
-			isEmpty={checkEmpty(sortedData)}
+			isEmpty={checkLengthEmpty(sortedData)}
 			sideButton={
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />

@@ -1,7 +1,7 @@
 import type { IItem, TItemWithPinyin } from './types';
 
 import {
-	checkEmpty,
+	checkLengthEmpty,
 	cloneJsonObject,
 	copyArray,
 	getPinyin,
@@ -105,7 +105,7 @@ export class Item<
 		const item = this._data[index];
 		this.checkIndexRange(index, item);
 
-		if (!checkEmpty(props)) {
+		if (!checkLengthEmpty(props)) {
 			if (props.length === 1) {
 				return item[props[0] as T];
 			}

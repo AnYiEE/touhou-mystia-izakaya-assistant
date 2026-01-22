@@ -19,6 +19,7 @@ import Tachie from '@/components/tachie';
 
 import { type IPartner } from '@/data';
 import { partnersStore /* , globalStore */ } from '@/stores';
+import { checkObjectOrStringEmpty } from '@/utilities';
 import { type Partner } from '@/utils';
 import type { TItemData } from '@/utils/types';
 
@@ -85,8 +86,7 @@ export default memo<IProps>(function Content({ data }) {
 						dlc={dlc}
 						ref={popoverCardRef}
 					>
-						{((typeof from === 'string' && from.length > 0) ||
-							Object.keys(from).length > 0) && (
+						{!checkObjectOrStringEmpty(from) && (
 							<p>
 								<span className="font-semibold">来源：</span>
 								{typeof from === 'string'

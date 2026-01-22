@@ -31,7 +31,7 @@ import {
 	type TRewardType,
 } from '@/data';
 import { customerRareStore as store } from '@/stores';
-import { checkEmpty } from '@/utilities';
+import { checkLengthEmpty } from '@/utilities';
 
 interface ILevelLabelProps {
 	level: number | string;
@@ -90,17 +90,19 @@ export default function InfoButton() {
 		bondClothes !== null ||
 		bondCooker !== null ||
 		bondPartner !== null ||
-		!checkEmpty(bondOrnamentsData) ||
-		!checkEmpty(bondRecipesData);
-	const hasSpellCards = !checkEmpty(Object.keys(currentCustomerSpellCards));
+		!checkLengthEmpty(bondOrnamentsData) ||
+		!checkLengthEmpty(bondRecipesData);
+	const hasSpellCards = !checkLengthEmpty(
+		Object.keys(currentCustomerSpellCards)
+	);
 	const hasNegativeSpellCards =
 		hasSpellCards &&
 		'negative' in currentCustomerSpellCards &&
-		!checkEmpty<unknown>(currentCustomerSpellCards.negative);
+		!checkLengthEmpty<unknown>(currentCustomerSpellCards.negative);
 	const hasPositiveSpellCards =
 		hasSpellCards &&
 		'positive' in currentCustomerSpellCards &&
-		!checkEmpty<unknown>(currentCustomerSpellCards.positive);
+		!checkLengthEmpty<unknown>(currentCustomerSpellCards.positive);
 
 	const getDefaultExpandedKeys = () => {
 		const defaultExpandedKeys = ['description'];
@@ -463,7 +465,7 @@ export default function InfoButton() {
 			) : (
 				(null as unknown as ReactElement)
 			)}
-			{checkEmpty(currentCustomerChat) ? (
+			{checkLengthEmpty(currentCustomerChat) ? (
 				(null as unknown as ReactElement)
 			) : (
 				<AccordionItem

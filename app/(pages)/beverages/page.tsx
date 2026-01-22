@@ -26,7 +26,7 @@ import { beveragesStore as store } from '@/stores';
 import {
 	checkArrayContainsOf,
 	checkArraySubsetOf,
-	checkEmpty,
+	checkLengthEmpty,
 } from '@/utilities';
 
 export default function Beverages() {
@@ -52,16 +52,16 @@ export default function Beverages() {
 		() =>
 			searchResult.filter(({ dlc, level, tags }) => {
 				const isDlcMatched =
-					checkEmpty(filterDlcs) ||
+					checkLengthEmpty(filterDlcs) ||
 					filterDlcs.includes(dlc.toString());
 				const isLevelMatched =
-					checkEmpty(filterLevels) ||
+					checkLengthEmpty(filterLevels) ||
 					filterLevels.includes(level.toString());
 				const isTagMatched =
-					checkEmpty(filterTags) ||
+					checkLengthEmpty(filterTags) ||
 					checkArraySubsetOf(filterTags, tags);
 				const isNoTagMatched =
-					checkEmpty(filterNoTags) ||
+					checkLengthEmpty(filterNoTags) ||
 					!checkArrayContainsOf(filterNoTags, tags);
 
 				return (
@@ -137,7 +137,7 @@ export default function Beverages() {
 
 	return (
 		<ItemPage
-			isEmpty={checkEmpty(sortedData)}
+			isEmpty={checkLengthEmpty(sortedData)}
 			sideButton={
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />

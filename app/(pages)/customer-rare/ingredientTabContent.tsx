@@ -26,7 +26,7 @@ import {
 import { customerRareStore as store } from '@/stores';
 import {
 	checkA11yConfirmKey,
-	checkEmpty,
+	checkLengthEmpty,
 	intersection,
 	toArray,
 	toGetItemWithKey,
@@ -74,7 +74,7 @@ export default memo<IProps>(function IngredientTabContent({
 				sortedData
 					.filter(
 						({ tags }) =>
-							!checkEmpty(
+							!checkLengthEmpty(
 								intersection(
 									tags,
 									currentRecipe?.negativeTags ?? []
@@ -103,7 +103,7 @@ export default memo<IProps>(function IngredientTabContent({
 		return null;
 	}
 
-	if (checkEmpty(sortedData)) {
+	if (checkLengthEmpty(sortedData)) {
 		return (
 			<Placeholder className="pt-4 md:min-h-40 md:pt-0">
 				数据为空

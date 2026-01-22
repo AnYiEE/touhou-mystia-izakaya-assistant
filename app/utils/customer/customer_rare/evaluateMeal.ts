@@ -8,7 +8,7 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import { type ICustomerOrder } from '@/stores';
-import { checkEmpty, intersection, without } from '@/utilities';
+import { checkLengthEmpty, intersection, without } from '@/utilities';
 
 interface IParameters {
 	currentBeverageTags: TBeverageTag[];
@@ -266,7 +266,7 @@ export function evaluateMeal({
 	hasMystiaCooker,
 	isDarkMatter,
 }: IParameters) {
-	if (checkEmpty(currentBeverageTags) || currentRecipeName === null) {
+	if (checkLengthEmpty(currentBeverageTags) || currentRecipeName === null) {
 		return null;
 	}
 
@@ -299,7 +299,7 @@ export function evaluateMeal({
 		matchedBeverageTags,
 		hasMystiaCooker ? matchedBeverageTags[0] : customerOrderBeverageTag
 	);
-	const orderedBeverageScore = checkEmpty(matchedBeverageTags)
+	const orderedBeverageScore = checkLengthEmpty(matchedBeverageTags)
 		? 0
 		: Number(
 				hasMystiaCooker ||
@@ -326,7 +326,7 @@ export function evaluateMeal({
 				? matchedRecipePositiveTags[0]
 				: customerOrderRecipeTag
 		);
-		const orderedRecipeScore = checkEmpty(matchedRecipePositiveTags)
+		const orderedRecipeScore = checkLengthEmpty(matchedRecipePositiveTags)
 			? 0
 			: Number(
 					hasMystiaCooker ||

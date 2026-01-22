@@ -15,7 +15,7 @@ import {
 } from '@/data';
 
 import {
-	checkEmpty,
+	checkLengthEmpty,
 	cloneJsonObject,
 	intersection,
 	numberSort,
@@ -147,7 +147,9 @@ export class Recipe extends Food<TRecipes> {
 
 		return {
 			extraTags,
-			isDarkMatter: !checkEmpty(intersection(extraTags, negativeTags)),
+			isDarkMatter: !checkLengthEmpty(
+				intersection(extraTags, negativeTags)
+			),
 		};
 	}
 

@@ -27,7 +27,7 @@ import {
 } from '@/stores';
 import {
 	checkArrayContainsOf,
-	checkEmpty,
+	checkLengthEmpty,
 	copySet,
 	numberSort,
 	toArray,
@@ -405,7 +405,7 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 			<div className="flex items-center gap-2">
 				<span className="font-medium">在酒水表格中隐藏特定酒水</span>
 				<SettingsButton
-					isActive={!checkEmpty(hiddenBeverages)}
+					isActive={!checkLengthEmpty(hiddenBeverages)}
 					onPress={handleBeveragesSettingsButtonPress}
 				/>
 				<SettingsModal
@@ -425,7 +425,7 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 			<div className="flex items-center gap-2">
 				<span className="font-medium">在料理表格中隐藏特定料理</span>
 				<SettingsButton
-					isActive={!checkEmpty(hiddenRecipes)}
+					isActive={!checkLengthEmpty(hiddenRecipes)}
 					onPress={handleRecipesSettingsButtonPress}
 				/>
 				<SettingsModal
@@ -447,7 +447,7 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 					在料理表格中隐藏包含特定食材的料理
 				</span>
 				<SettingsButton
-					isActive={!checkEmpty(hiddenIngredients)}
+					isActive={!checkLengthEmpty(hiddenIngredients)}
 					onPress={handleIngredientsSettingsButtonPress}
 				/>
 				<SettingsModal

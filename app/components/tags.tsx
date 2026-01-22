@@ -12,7 +12,7 @@ import {
 
 import { type TTag } from '@/data';
 import type { ITagStyleConfig } from '@/data/types';
-import { checkA11yConfirmKey, checkEmpty } from '@/utilities';
+import { checkA11yConfirmKey, checkLengthEmpty } from '@/utilities';
 
 interface ITagPropsBase {
 	tagStyle?: Partial<ITagStyleConfig> | undefined;
@@ -139,7 +139,7 @@ const TagsComponent = memo<ITagsProps>(function Tags({
 	tagType,
 	tags,
 }) {
-	return tags !== undefined && !checkEmpty(tags)
+	return tags !== undefined && !checkLengthEmpty(tags)
 		? tags.map((tag, index) => (
 				<Tag
 					key={index}

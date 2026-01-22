@@ -49,7 +49,7 @@ import { customerNormalStore as customerStore, globalStore } from '@/stores';
 import {
 	checkArrayContainsOf,
 	checkArraySubsetOf,
-	checkEmpty,
+	checkLengthEmpty,
 	getPageTitle,
 } from '@/utilities';
 
@@ -141,16 +141,16 @@ export default function Content() {
 				}
 
 				const isNameExcludesMatched =
-					checkEmpty(customerFilterExcludes) ||
+					checkLengthEmpty(customerFilterExcludes) ||
 					!customerFilterExcludes.includes(name);
 				const isDlcMatched =
-					checkEmpty(customerFilterDlcs) ||
+					checkLengthEmpty(customerFilterDlcs) ||
 					customerFilterDlcs.includes(dlc.toString());
 				const isPlaceMatched =
-					checkEmpty(customerFilterPlaces) ||
+					checkLengthEmpty(customerFilterPlaces) ||
 					checkArrayContainsOf(customerFilterPlaces, places);
 				const isNoPlaceMatched =
-					checkEmpty(customerFilterNoPlaces) ||
+					checkLengthEmpty(customerFilterNoPlaces) ||
 					!checkArrayContainsOf(customerFilterNoPlaces, places);
 
 				return (
@@ -295,19 +295,19 @@ export default function Content() {
 					);
 
 				const isDlcMatched =
-					checkEmpty(ingredientFilterDlcs) ||
+					checkLengthEmpty(ingredientFilterDlcs) ||
 					ingredientFilterDlcs.includes(dlc.toString());
 				const isTagMatched =
-					checkEmpty(ingredientFilterTags) ||
+					checkLengthEmpty(ingredientFilterTags) ||
 					checkArraySubsetOf(ingredientFilterTags, tagsWithTrend);
 				const isNoTagMatched =
-					checkEmpty(ingredientFilterNoTags) ||
+					checkLengthEmpty(ingredientFilterNoTags) ||
 					!checkArrayContainsOf(
 						ingredientFilterNoTags,
 						tagsWithTrend
 					);
 				const isLevelMatched =
-					checkEmpty(ingredientFilterLevels) ||
+					checkLengthEmpty(ingredientFilterLevels) ||
 					ingredientFilterLevels.includes(level.toString());
 
 				return (
@@ -537,7 +537,7 @@ export default function Content() {
 					{
 						'!block':
 							selectedTabKey === 'ingredient' &&
-							checkEmpty(ingredientFilteredData),
+							checkLengthEmpty(ingredientFilteredData),
 						'!hidden': !isIngredientTabFilterVisible,
 					}
 				)}

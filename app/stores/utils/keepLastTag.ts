@@ -1,7 +1,7 @@
 import { isNil } from 'lodash';
 
 import { type TBeverageTag, type TRecipeTag } from '@/data';
-import { checkEmpty } from '@/utilities';
+import { checkLengthEmpty } from '@/utilities';
 
 type TTag = TBeverageTag | TRecipeTag;
 
@@ -13,7 +13,7 @@ export function keepLastTag(
 		orderTag,
 	}: { hasMystiaCooker?: boolean; orderTag?: TTag | null } = {}
 ) {
-	const hasFilteredTags = !checkEmpty(tagSet);
+	const hasFilteredTags = !checkLengthEmpty(tagSet);
 	const hasOrderTag = !isNil(orderTag);
 	const isTagExisted = tagSet.has(tag);
 

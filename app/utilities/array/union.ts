@@ -1,16 +1,16 @@
 import type { TGetElementType } from './types';
 
-import { checkEmpty, toArray, toSet } from '@/utilities';
+import { checkLengthEmpty, toArray, toSet } from '@/utilities';
 
 export function union<T, U extends TGetElementType<T> = TGetElementType<T>>(
 	...args: U[]
 ) {
-	if (checkEmpty(args)) {
+	if (checkLengthEmpty(args)) {
 		return [];
 	}
 
 	const flattedArrays = args.flat();
-	if (checkEmpty(flattedArrays)) {
+	if (checkLengthEmpty(flattedArrays)) {
 		return [];
 	}
 

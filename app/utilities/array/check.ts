@@ -1,11 +1,27 @@
+import { isNil } from 'lodash';
+
 import { toSet } from '@/utilities';
 
-export function checkEmpty<T>(target: ArrayLike<T> | ReadonlySetLike<T>) {
+export function checkLengthEmpty<T>(target: ArrayLike<T> | ReadonlySetLike<T>) {
 	if ('length' in target) {
 		return target.length === 0;
 	}
 
 	return target.size === 0;
+}
+
+export function checkObjectOrStringEmpty(
+	item: object | string | unknown[] | null | undefined
+) {
+	if (isNil(item)) {
+		return true;
+	}
+
+	if (typeof item === 'string' || Array.isArray(item)) {
+		return checkLengthEmpty(item);
+	}
+
+	return checkLengthEmpty(Object.keys(item));
 }
 
 export function checkLengthEqualOf<
@@ -27,7 +43,7 @@ export function checkArrayContainsOf<T>(
 	array: ReadonlyArray<T>,
 	target: ArrayLike<T> | ReadonlySetLike<T>
 ) {
-	if (checkEmpty(array) || checkEmpty(target)) {
+	if (checkLengthEmpty(array) || checkLengthEmpty(target)) {
 		return false;
 	}
 
@@ -40,7 +56,7 @@ export const checkArraySubsetOf: typeof checkArrayContainsOf = (
 	array,
 	target
 ) => {
-	if (checkEmpty(array) || checkEmpty(target)) {
+	if (checkLengthEmpty(array) || checkLengthEmpty(target)) {
 		return false;
 	}
 

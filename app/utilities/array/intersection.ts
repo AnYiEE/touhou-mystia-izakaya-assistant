@@ -1,10 +1,10 @@
-import { checkEmpty, toSet } from '@/utilities';
+import { checkLengthEmpty, toSet } from '@/utilities';
 
 export function intersection<T>(
 	array: ReadonlyArray<T>,
 	target: ArrayLike<T> | ReadonlySetLike<T>
 ) {
-	if (checkEmpty(array) || checkEmpty(target)) {
+	if (checkLengthEmpty(array) || checkLengthEmpty(target)) {
 		return [];
 	}
 

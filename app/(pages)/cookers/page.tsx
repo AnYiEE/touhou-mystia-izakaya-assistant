@@ -23,7 +23,7 @@ import SideSearchIconButton, {
 } from '@/components/sideSearchIconButton';
 
 import { cookersStore as store } from '@/stores';
-import { checkArrayContainsOf, checkEmpty } from '@/utilities';
+import { checkArrayContainsOf, checkLengthEmpty } from '@/utilities';
 
 export default function Cookers() {
 	const instance = store.instance.get();
@@ -51,19 +51,19 @@ export default function Cookers() {
 				const types = [type].flat();
 
 				const isDlcMatched =
-					checkEmpty(filterDlcs) ||
+					checkLengthEmpty(filterDlcs) ||
 					filterDlcs.includes(dlc.toString());
 				const isCategoryMatched =
-					checkEmpty(filterCategories) ||
+					checkLengthEmpty(filterCategories) ||
 					filterCategories.includes(category);
 				const isNoCategoryMatched =
-					checkEmpty(filterNoCategories) ||
+					checkLengthEmpty(filterNoCategories) ||
 					!filterNoCategories.includes(category);
 				const isTypeMatched =
-					checkEmpty(filterTypes) ||
+					checkLengthEmpty(filterTypes) ||
 					checkArrayContainsOf(filterTypes, types);
 				const isNoTypeMatched =
-					checkEmpty(filterNoTypes) ||
+					checkLengthEmpty(filterNoTypes) ||
 					!checkArrayContainsOf(filterNoTypes, types);
 
 				return (
@@ -154,7 +154,7 @@ export default function Cookers() {
 
 	return (
 		<ItemPage
-			isEmpty={checkEmpty(sortedData)}
+			isEmpty={checkLengthEmpty(sortedData)}
 			sideButton={
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />

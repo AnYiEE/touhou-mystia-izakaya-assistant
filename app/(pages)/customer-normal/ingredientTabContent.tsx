@@ -26,7 +26,7 @@ import {
 import { customerNormalStore as store } from '@/stores';
 import {
 	checkA11yConfirmKey,
-	checkEmpty,
+	checkLengthEmpty,
 	intersection,
 	toArray,
 	toGetItemWithKey,
@@ -65,7 +65,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 				sortedData
 					.filter(
 						({ tags }) =>
-							!checkEmpty(
+							!checkLengthEmpty(
 								intersection(
 									tags,
 									currentRecipe?.negativeTags ?? []
@@ -99,7 +99,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 		return null;
 	}
 
-	if (checkEmpty(sortedData)) {
+	if (checkLengthEmpty(sortedData)) {
 		return (
 			<Placeholder className="pt-4 md:min-h-40 md:pt-0">
 				数据为空
@@ -312,7 +312,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 						);
 					})}
 				</div>
-				{!checkEmpty(darkIngredients) && (
+				{!checkLengthEmpty(darkIngredients) && (
 					<>
 						<div className="my-4 flex items-center">
 							<div className="h-px w-full bg-foreground-300" />

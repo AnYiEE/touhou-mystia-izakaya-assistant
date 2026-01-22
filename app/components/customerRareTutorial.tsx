@@ -10,7 +10,7 @@ import { trackEvent } from '@/components/analytics';
 
 import { DYNAMIC_TAG_MAP } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
-import { checkEmpty, getPageTitle } from '@/utilities';
+import { checkLengthEmpty, getPageTitle } from '@/utilities';
 
 const key = 'customer_rare_tutorial';
 const pathname = '/customer-rare';
@@ -267,7 +267,7 @@ export default function CustomerRareTutorial() {
 			driverRef.current.moveNext();
 		} else if (
 			currentExtraIngredients !== undefined &&
-			!checkEmpty(currentExtraIngredients)
+			!checkLengthEmpty(currentExtraIngredients)
 		) {
 			if (
 				currentExtraIngredients.includes('鸡蛋') &&

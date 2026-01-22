@@ -26,7 +26,7 @@ import { recipesStore as store } from '@/stores';
 import {
 	checkArrayContainsOf,
 	checkArraySubsetOf,
-	checkEmpty,
+	checkLengthEmpty,
 } from '@/utilities';
 
 export default function Recipes() {
@@ -90,34 +90,34 @@ export default function Recipes() {
 					positiveTags,
 				}) => {
 					const isDlcMatched =
-						checkEmpty(filterDlcs) ||
+						checkLengthEmpty(filterDlcs) ||
 						filterDlcs.includes(dlc.toString());
 					const isLevelMatched =
-						checkEmpty(filterLevels) ||
+						checkLengthEmpty(filterLevels) ||
 						filterLevels.includes(level.toString());
 					const isCookerMatched =
-						checkEmpty(filterCookers) ||
+						checkLengthEmpty(filterCookers) ||
 						filterCookers.includes(cooker);
 					const isIngredientMatched =
-						checkEmpty(filterIngredients) ||
+						checkLengthEmpty(filterIngredients) ||
 						checkArraySubsetOf(filterIngredients, ingredients);
 					const isNoIngredientMatched =
-						checkEmpty(filterNoIngredients) ||
+						checkLengthEmpty(filterNoIngredients) ||
 						!checkArrayContainsOf(filterNoIngredients, ingredients);
 					const isNegativeTagMatched =
-						checkEmpty(filterNegativeTags) ||
+						checkLengthEmpty(filterNegativeTags) ||
 						checkArraySubsetOf(filterNegativeTags, negativeTags);
 					const isNoNegativeTagMatched =
-						checkEmpty(filterNoNegativeTags) ||
+						checkLengthEmpty(filterNoNegativeTags) ||
 						!checkArrayContainsOf(
 							filterNoNegativeTags,
 							negativeTags
 						);
 					const isPositiveTagMatched =
-						checkEmpty(filterPositiveTags) ||
+						checkLengthEmpty(filterPositiveTags) ||
 						checkArraySubsetOf(filterPositiveTags, positiveTags);
 					const isNoPositiveTagMatched =
-						checkEmpty(filterNoPositiveTags) ||
+						checkLengthEmpty(filterNoPositiveTags) ||
 						!checkArrayContainsOf(
 							filterNoPositiveTags,
 							positiveTags
@@ -254,7 +254,7 @@ export default function Recipes() {
 
 	return (
 		<ItemPage
-			isEmpty={checkEmpty(sortedData)}
+			isEmpty={checkLengthEmpty(sortedData)}
 			sideButton={
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />

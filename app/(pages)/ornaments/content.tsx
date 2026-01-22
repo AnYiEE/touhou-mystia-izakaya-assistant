@@ -10,6 +10,7 @@ import ItemPopoverCard from '@/components/itemPopoverCard';
 import Sprite from '@/components/sprite';
 
 // import {globalStore as store} from '@/stores';
+import { checkObjectOrStringEmpty } from '@/utilities';
 import { type Ornament } from '@/utils';
 import type { TItemData } from '@/utils/types';
 
@@ -69,8 +70,7 @@ export default memo<IProps>(function Content({ data }) {
 					dlc={dlc}
 					ref={popoverCardRef}
 				>
-					{((typeof from === 'string' && from.length > 0) ||
-						Object.keys(from).length > 0) && (
+					{!checkObjectOrStringEmpty(from) && (
 						<p className="break-all text-justify">
 							<span className="font-semibold">来源：</span>
 							{typeof from === 'string' ? (

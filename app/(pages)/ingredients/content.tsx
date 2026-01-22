@@ -33,7 +33,12 @@ import {
 	type TDlc,
 } from '@/data';
 import { /* globalStore, */ ingredientsStore } from '@/stores';
-import { numberSort, toArray } from '@/utilities';
+import {
+	checkLengthEmpty,
+	checkObjectOrStringEmpty,
+	numberSort,
+	toArray,
+} from '@/utilities';
 import { type Ingredient } from '@/utils';
 import type { TItemData, TRecipe } from '@/utils/types';
 
@@ -101,7 +106,7 @@ export default memo<IProps>(function Content({ data }) {
 							{(() => {
 								const relatedRecipes =
 									instance.getRelatedRecipes(name);
-								if (relatedRecipes.length === 0) {
+								if (checkLengthEmpty(relatedRecipes)) {
 									return null;
 								}
 								const relatedRecipesGroupByDlcMap =
@@ -232,7 +237,7 @@ export default memo<IProps>(function Content({ data }) {
 									</p>
 								);
 							})()}
-							{Object.keys(from).length > 0 && (
+							{!checkObjectOrStringEmpty(from) && (
 								<ScrollShadow
 									size={16}
 									className="max-h-dvh-safe-half"

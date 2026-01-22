@@ -37,7 +37,7 @@ import {
 	type TDlc,
 } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
-import { checkEmpty, copyArray } from '@/utilities';
+import { checkLengthEmpty, copyArray } from '@/utilities';
 
 const moveButtonDirectionMap = { down: 0, up: 1 } as const;
 
@@ -122,7 +122,7 @@ export default function SavedMealCard() {
 		}
 
 		const customerMeals = currentSavedMeals[currentCustomerName];
-		if (customerMeals === undefined || checkEmpty(customerMeals)) {
+		if (customerMeals === undefined || checkLengthEmpty(customerMeals)) {
 			return null;
 		}
 
@@ -168,7 +168,7 @@ export default function SavedMealCard() {
 			}
 		);
 
-		if (checkEmpty(visible)) {
+		if (checkLengthEmpty(visible)) {
 			return null;
 		}
 
@@ -512,7 +512,7 @@ export default function SavedMealCard() {
 															);
 														}
 													)}
-													{!checkEmpty(
+													{!checkLengthEmpty(
 														lestExtraIngredients
 													) && (
 														<div className="flex items-center gap-x-3 rounded bg-content2/70 outline outline-2 outline-offset-1 outline-content2 md:gap-x-1 lg:gap-x-3 xl:gap-x-1">
@@ -628,7 +628,7 @@ export default function SavedMealCard() {
 												trackEvent(
 													trackEvent.category.click,
 													'Select Button',
-													`${recipeData.name} - ${beverage}${checkEmpty(recipeData.extraIngredients) ? '' : ` - ${recipeData.extraIngredients.join(' ')}`}`
+													`${recipeData.name} - ${beverage}${checkLengthEmpty(recipeData.extraIngredients) ? '' : ` - ${recipeData.extraIngredients.join(' ')}`}`
 												);
 											}}
 											className="md:w-auto xl:h-6"
@@ -669,7 +669,7 @@ export default function SavedMealCard() {
 												trackEvent(
 													trackEvent.category.click,
 													'Remove Button',
-													`${recipeData.name} - ${beverage}${checkEmpty(recipeData.extraIngredients) ? '' : ` - ${recipeData.extraIngredients.join(' ')}`}`
+													`${recipeData.name} - ${beverage}${checkLengthEmpty(recipeData.extraIngredients) ? '' : ` - ${recipeData.extraIngredients.join(' ')}`}`
 												);
 											}}
 											className="md:w-auto xl:h-6"

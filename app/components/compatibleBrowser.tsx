@@ -4,7 +4,7 @@ import { UAParser } from 'ua-parser-js';
 
 import { useMounted } from '@/hooks';
 
-import { checkEmpty, memoize, toArray, waitDomReady } from '@/utilities';
+import { checkLengthEmpty, memoize, toArray, waitDomReady } from '@/utilities';
 
 type TFeature = 'flexGap';
 type TCompatibility = Record<TFeature, boolean>;
@@ -110,7 +110,7 @@ function getReplacementClass(element: Element, gapClass: string) {
 
 function replaceGapClasses(element: Element) {
 	if (
-		checkEmpty(element.classList) ||
+		checkLengthEmpty(element.classList) ||
 		(!(
 			element.classList.contains('flex') ||
 			element.classList.contains('inline-flex')

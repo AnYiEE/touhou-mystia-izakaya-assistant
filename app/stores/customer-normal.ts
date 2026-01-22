@@ -40,7 +40,7 @@ import {
 } from '@/stores/utils';
 import type { IMealRecipe, IPopularTrend, TPopularTag } from '@/types';
 import {
-	checkEmpty,
+	checkLengthEmpty,
 	numberSort,
 	pinyinSort,
 	removeLastElement,
@@ -931,7 +931,7 @@ export const customerNormalStore = store(state, {
 			trackEvent(
 				trackEvent.category.click,
 				'Save Button',
-				`${recipeName}${beverageName === null ? '' : ` - ${beverageName}`}${checkEmpty(extraIngredients) ? '' : ` - ${extraIngredients.join(' ')}`}`
+				`${recipeName}${beverageName === null ? '' : ` - ${beverageName}`}${checkLengthEmpty(extraIngredients) ? '' : ` - ${extraIngredients.join(' ')}`}`
 			);
 		},
 

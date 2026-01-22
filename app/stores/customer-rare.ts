@@ -38,7 +38,7 @@ import {
 } from '@/stores/utils';
 import type { IMealRecipe, IPopularTrend } from '@/types';
 import {
-	checkEmpty,
+	checkLengthEmpty,
 	numberSort,
 	pinyinSort,
 	removeLastElement,
@@ -1119,7 +1119,7 @@ export const customerRareStore = store(state, {
 			trackEvent(
 				trackEvent.category.click,
 				'Save Button',
-				`${recipeName} - ${beverageName}${checkEmpty(extraIngredients) ? '' : ` - ${extraIngredients.join(' ')}`}`
+				`${recipeName} - ${beverageName}${checkLengthEmpty(extraIngredients) ? '' : ` - ${extraIngredients.join(' ')}`}`
 			);
 		},
 
@@ -1250,7 +1250,7 @@ customerRareStore.shared.recipe.data.onChange((data) => {
 	customerRareStore.updateRecipeTagsWithTrend();
 	customerRareStore.evaluateMealResult();
 	if (data !== null) {
-		if (checkEmpty(data.extraIngredients)) {
+		if (checkLengthEmpty(data.extraIngredients)) {
 			customerRareStore.shared.customer.isDarkMatter.set(false);
 		} else {
 			customerRareStore.shared.customer.isDarkMatter.set(

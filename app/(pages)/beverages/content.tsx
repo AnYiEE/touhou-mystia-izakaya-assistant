@@ -26,6 +26,7 @@ import {
 	type TCollectionLocation,
 } from '@/data';
 // import {globalStore as store} from '@/stores';
+import { checkObjectOrStringEmpty } from '@/utilities';
 import { type Beverage } from '@/utils';
 import type { TItemData } from '@/utils/types';
 
@@ -94,7 +95,7 @@ export default memo<IProps>(function Content({ data }) {
 						tagColors={BEVERAGE_TAG_STYLE}
 						ref={popoverCardRef}
 					>
-						{Object.keys(from).length > 0 && (
+						{!checkObjectOrStringEmpty(from) && (
 							<ScrollShadow
 								size={16}
 								className="max-h-dvh-safe-half"

@@ -17,6 +17,7 @@ import Sprite from '@/components/sprite';
 
 import { type ICurrency, type TCurrencyName } from '@/data';
 // import {globalStore as store} from '@/stores';
+import { checkObjectOrStringEmpty } from '@/utilities';
 import { type Currency } from '@/utils';
 import type { TItemData } from '@/utils/types';
 
@@ -81,7 +82,7 @@ export default memo<IProps>(function Content({ data }) {
 					dlc={dlc}
 					ref={popoverCardRef}
 				>
-					{from.length > 0 && (
+					{!checkObjectOrStringEmpty(from) && (
 						<p>
 							<span className="font-semibold">来源：</span>
 							{from.map((item, fromIndex) => (

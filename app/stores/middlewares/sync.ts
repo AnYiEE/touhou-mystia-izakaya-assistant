@@ -3,7 +3,7 @@ import { isObject } from 'lodash';
 import { type StateCreator } from 'zustand';
 
 import {
-	checkEmpty,
+	checkLengthEmpty,
 	checkLengthEqualOf,
 	copyArray,
 	memoize,
@@ -180,7 +180,7 @@ export function sync<T>(options: ISyncOptions<T>) {
 						return acc;
 					}, {} as T) as object;
 
-					if (!checkEmpty(Object.keys(watchedState))) {
+					if (!checkLengthEmpty(Object.keys(watchedState))) {
 						void channel.postMessage(watchedState);
 					}
 				} else {
@@ -208,7 +208,7 @@ export function sync<T>(options: ISyncOptions<T>) {
 					return acc;
 				}, {} as T) as object;
 
-				if (!checkEmpty(Object.keys(watchedState))) {
+				if (!checkLengthEmpty(Object.keys(watchedState))) {
 					void channel.postMessage(watchedState);
 				}
 			};

@@ -1,10 +1,10 @@
-import { checkEmpty, copyArray, toSet } from '@/utilities';
+import { checkLengthEmpty, copyArray, toSet } from '@/utilities';
 
 export function sortBy<T>(arrayA: ReadonlyArray<T>, arrayB: ReadonlyArray<T>) {
-	if (checkEmpty(arrayA)) {
+	if (checkLengthEmpty(arrayA)) {
 		return copyArray(arrayB);
 	}
-	if (checkEmpty(arrayB)) {
+	if (checkLengthEmpty(arrayB)) {
 		return [];
 	}
 

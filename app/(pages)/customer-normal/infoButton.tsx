@@ -13,7 +13,7 @@ import Price from '@/components/price';
 
 import { CUSTOMER_RATING_KEY, CUSTOMER_RATING_MAP } from '@/data';
 import { customerNormalStore as store } from '@/stores';
-import { checkEmpty } from '@/utilities';
+import { checkLengthEmpty } from '@/utilities';
 
 export default function InfoButton() {
 	const currentCustomerName = store.shared.customer.name.use();
@@ -33,7 +33,7 @@ export default function InfoButton() {
 	const getDefaultExpandedKeys = () => {
 		const defaultExpandedKeys = ['description', 'rating'];
 
-		if (!checkEmpty(currentCustomerChat)) {
+		if (!checkLengthEmpty(currentCustomerChat)) {
 			defaultExpandedKeys.push('chat');
 		}
 
@@ -78,7 +78,7 @@ export default function InfoButton() {
 				</div>
 				<p className="text-small">{currentCustomerDescription}</p>
 			</AccordionItem>
-			{checkEmpty(currentCustomerChat) ? (
+			{checkLengthEmpty(currentCustomerChat) ? (
 				(null as unknown as ReactElement)
 			) : (
 				<AccordionItem

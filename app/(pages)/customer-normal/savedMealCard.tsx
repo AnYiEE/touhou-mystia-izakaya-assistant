@@ -27,7 +27,7 @@ import Sprite from '@/components/sprite';
 
 import { CUSTOMER_RATING_MAP, type TDlc } from '@/data';
 import { customerNormalStore as customerStore, globalStore } from '@/stores';
-import { checkEmpty, copyArray } from '@/utilities';
+import { checkLengthEmpty, copyArray } from '@/utilities';
 
 export default function SavedMealCard() {
 	const openWindow = useViewInNewWindow();
@@ -53,7 +53,7 @@ export default function SavedMealCard() {
 		}
 
 		const customerMeals = currentSavedMeals[currentCustomerName];
-		if (customerMeals === undefined || checkEmpty(customerMeals)) {
+		if (customerMeals === undefined || checkLengthEmpty(customerMeals)) {
 			return null;
 		}
 
@@ -102,7 +102,7 @@ export default function SavedMealCard() {
 			}
 		);
 
-		if (checkEmpty(visible)) {
+		if (checkLengthEmpty(visible)) {
 			return null;
 		}
 
@@ -391,7 +391,7 @@ export default function SavedMealCard() {
 															);
 														}
 													)}
-													{!checkEmpty(
+													{!checkLengthEmpty(
 														lestExtraIngredients
 													) && (
 														<div className="flex items-center gap-x-3 rounded bg-content2/70 outline outline-2 outline-offset-1 outline-content2">
@@ -501,7 +501,7 @@ export default function SavedMealCard() {
 												trackEvent(
 													trackEvent.category.click,
 													'Select Button',
-													`${recipeData.name}${beverage === null ? '' : ` - ${beverage}`}${checkEmpty(recipeData.extraIngredients) ? '' : ` - ${recipeData.extraIngredients.join(' ')}`}`
+													`${recipeData.name}${beverage === null ? '' : ` - ${beverage}`}${checkLengthEmpty(recipeData.extraIngredients) ? '' : ` - ${recipeData.extraIngredients.join(' ')}`}`
 												);
 											}}
 											className="md:w-auto"
@@ -542,7 +542,7 @@ export default function SavedMealCard() {
 												trackEvent(
 													trackEvent.category.click,
 													'Remove Button',
-													`${recipeData.name}${beverage === null ? '' : ` - ${beverage}`}${checkEmpty(recipeData.extraIngredients) ? '' : ` - ${recipeData.extraIngredients.join(' ')}`}`
+													`${recipeData.name}${beverage === null ? '' : ` - ${beverage}`}${checkLengthEmpty(recipeData.extraIngredients) ? '' : ` - ${recipeData.extraIngredients.join(' ')}`}`
 												);
 											}}
 											className="md:w-auto"

@@ -57,7 +57,7 @@ import { customerRareStore as customerStore, globalStore } from '@/stores';
 import {
 	checkArrayContainsOf,
 	checkArraySubsetOf,
-	checkEmpty,
+	checkLengthEmpty,
 	copyArray,
 	numberSort,
 	pinyinSort,
@@ -228,9 +228,9 @@ export default function RecipeTabContent() {
 			) as TRecipesWithSuitability;
 
 		if (
-			checkEmpty(selectedCookers) &&
-			checkEmpty(selectedCustomerRecipeTag) &&
-			checkEmpty(selectedDlcs) &&
+			checkLengthEmpty(selectedCookers) &&
+			checkLengthEmpty(selectedCustomerRecipeTag) &&
+			checkLengthEmpty(selectedDlcs) &&
 			!hasNameFilter
 		) {
 			return dataWithRealSuitability;
@@ -245,12 +245,13 @@ export default function RecipeTabContent() {
 					? getSearchResult(searchValue, { name, pinyin })
 					: true;
 				const isDlcMatched =
-					checkEmpty(selectedDlcs) ||
+					checkLengthEmpty(selectedDlcs) ||
 					selectedDlcs.has(dlc.toString());
 				const isCookerMatched =
-					checkEmpty(selectedCookers) || selectedCookers.has(cooker);
+					checkLengthEmpty(selectedCookers) ||
+					selectedCookers.has(cooker);
 				const isPositiveTagsMatched =
-					checkEmpty(selectedCustomerRecipeTag) ||
+					checkLengthEmpty(selectedCustomerRecipeTag) ||
 					checkArraySubsetOf(
 						toArray(selectedCustomerRecipeTag),
 						recipeTagsWithTrend
@@ -657,7 +658,9 @@ export default function RecipeTabContent() {
 										{
 											'backdrop-blur': isHighAppearance,
 											'ring-2 ring-default':
-												!checkEmpty(selectedCookers),
+												!checkLengthEmpty(
+													selectedCookers
+												),
 										}
 									)}
 								>
@@ -711,7 +714,9 @@ export default function RecipeTabContent() {
 												'backdrop-blur':
 													isHighAppearance,
 												'ring-2 ring-default':
-													!checkEmpty(selectedDlcs),
+													!checkLengthEmpty(
+														selectedDlcs
+													),
 											}
 										)}
 									>
@@ -867,7 +872,7 @@ export default function RecipeTabContent() {
 	const tablePagination = useMemo(
 		() => (
 			<div className="flex justify-center pt-2">
-				{!checkEmpty(tableCurrentPageItems) && (
+				{!checkLengthEmpty(tableCurrentPageItems) && (
 					<Pagination
 						/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/4275} is fixed. */
 						// showControls

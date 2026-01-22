@@ -23,7 +23,7 @@ import SideSearchIconButton, {
 } from '@/components/sideSearchIconButton';
 
 import { currenciesStore as store } from '@/stores';
-import { checkEmpty } from '@/utilities';
+import { checkLengthEmpty } from '@/utilities';
 
 export default function Currencies() {
 	const instance = store.instance.get();
@@ -43,7 +43,7 @@ export default function Currencies() {
 		() =>
 			searchResult.filter(({ dlc }) => {
 				const isDlcMatched =
-					checkEmpty(filterDlcs) ||
+					checkLengthEmpty(filterDlcs) ||
 					filterDlcs.includes(dlc.toString());
 
 				return isDlcMatched;
@@ -88,7 +88,7 @@ export default function Currencies() {
 
 	return (
 		<ItemPage
-			isEmpty={checkEmpty(sortedData)}
+			isEmpty={checkLengthEmpty(sortedData)}
 			sideButton={
 				<SideButtonGroup>
 					<SideSearchIconButton searchConfig={searchConfig} />

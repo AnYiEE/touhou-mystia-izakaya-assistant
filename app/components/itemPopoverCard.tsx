@@ -53,7 +53,7 @@ import { globalStore as store } from '@/stores';
 import {
 	type TPressEvent,
 	checkA11yConfirmKey,
-	checkEmpty,
+	checkLengthEmpty,
 	union,
 } from '@/utilities';
 
@@ -297,9 +297,9 @@ const ItemPopoverCardComponent = memo<PropsWithChildren<IItemPopoverCardProps>>(
 
 		const hasTag =
 			(mergedTags?.positive !== undefined &&
-				!checkEmpty(mergedTags.positive)) ||
+				!checkLengthEmpty(mergedTags.positive)) ||
 			(mergedTags?.negative !== undefined &&
-				!checkEmpty(mergedTags.negative));
+				!checkLengthEmpty(mergedTags.negative));
 
 		const dlcLabel =
 			dlc === undefined ? '' : DLC_LABEL_MAP[dlc as TDlc].label;

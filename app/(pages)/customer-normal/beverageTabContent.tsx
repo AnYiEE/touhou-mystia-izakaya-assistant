@@ -57,7 +57,7 @@ import { CUSTOMER_NORMAL_TAG_STYLE, DLC_LABEL_MAP } from '@/data';
 import { customerNormalStore as customerStore, globalStore } from '@/stores';
 import {
 	checkArraySubsetOf,
-	checkEmpty,
+	checkLengthEmpty,
 	copyArray,
 	numberSort,
 	pinyinSort,
@@ -143,8 +143,8 @@ export default function BeverageTabContent() {
 			.filter(({ name }) => !hiddenBeverages.has(name));
 
 		if (
-			checkEmpty(selectedCustomerBeverageTag) &&
-			checkEmpty(selectedDlcs) &&
+			checkLengthEmpty(selectedCustomerBeverageTag) &&
+			checkLengthEmpty(selectedDlcs) &&
 			!hasNameFilter
 		) {
 			return dataWithRealSuitability;
@@ -155,9 +155,10 @@ export default function BeverageTabContent() {
 				? getSearchResult(searchValue, { name, pinyin })
 				: true;
 			const isDlcMatched =
-				checkEmpty(selectedDlcs) || selectedDlcs.has(dlc.toString());
+				checkLengthEmpty(selectedDlcs) ||
+				selectedDlcs.has(dlc.toString());
 			const isTagsMatched =
-				checkEmpty(selectedCustomerBeverageTag) ||
+				checkLengthEmpty(selectedCustomerBeverageTag) ||
 				checkArraySubsetOf(toArray(selectedCustomerBeverageTag), tags);
 
 			return isNameMatched && isDlcMatched && isTagsMatched;
@@ -472,7 +473,9 @@ export default function BeverageTabContent() {
 												'backdrop-blur':
 													isHighAppearance,
 												'ring-2 ring-default':
-													!checkEmpty(selectedDlcs),
+													!checkLengthEmpty(
+														selectedDlcs
+													),
 											}
 										)}
 									>
@@ -626,7 +629,7 @@ export default function BeverageTabContent() {
 	const tablePagination = useMemo(
 		() => (
 			<div className="flex justify-center pt-2">
-				{!checkEmpty(tableCurrentPageItems) && (
+				{!checkLengthEmpty(tableCurrentPageItems) && (
 					<Pagination
 						/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/4275} is fixed. */
 						// showControls

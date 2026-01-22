@@ -1,7 +1,7 @@
-import { checkEmpty, toSet } from '@/utilities';
+import { checkLengthEmpty, toSet } from '@/utilities';
 
 export function without<T>(array: ReadonlyArray<T>, ...values: T[]) {
-	if (checkEmpty(array)) {
+	if (checkLengthEmpty(array)) {
 		return [];
 	}
 
