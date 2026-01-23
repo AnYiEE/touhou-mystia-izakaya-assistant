@@ -1,6 +1,6 @@
 import { Fragment, useMemo } from 'react';
 
-import { useVibrate, useViewInNewWindow } from '@/hooks';
+import { usePictureInPicture, useVibrate, useViewInNewWindow } from '@/hooks';
 
 import { Divider } from '@heroui/divider';
 
@@ -30,6 +30,13 @@ import { customerNormalStore as customerStore, globalStore } from '@/stores';
 import { checkLengthEmpty, copyArray } from '@/utilities';
 
 export default function SavedMealCard() {
+	const {
+		CLASSNAME_EXCLUDE_FROM_PIP,
+		PipButton,
+		containerRef,
+		isOpen: isPipOpen,
+		isSupported: isPipSupported,
+	} = usePictureInPicture({ offset: { height: 32 }, width: 468 });
 	const openWindow = useViewInNewWindow();
 	const vibrate = useVibrate();
 
@@ -443,7 +450,12 @@ export default function SavedMealCard() {
 											);
 										})()}
 									</div>
-									<div className="flex w-full flex-row-reverse items-center justify-center gap-2 md:w-auto">
+									<div
+										className={cn(
+											'flex w-full flex-row-reverse items-center justify-center gap-2 md:w-auto',
+											CLASSNAME_EXCLUDE_FROM_PIP
+										)}
+									>
 										<div
 											aria-hidden
 											className={cn(
@@ -564,5 +576,29 @@ export default function SavedMealCard() {
 		contentTarget = 'content';
 	}
 
-	return <FadeMotionDiv target={contentTarget}>{content}</FadeMotionDiv>;
+	return isPipSupported ? (
+		<div className="group">
+			<div
+				className={cn('transition-opacity', {
+					'pointer-events-none opacity-0': isPipOpen,
+				})}
+				ref={containerRef}
+			>
+				<FadeMotionDiv target={contentTarget}>{content}</FadeMotionDiv>
+			</div>
+			{content !== null && (
+				<PipButton
+					onOpen={() => {
+						trackEvent(
+							trackEvent.category.click,
+							'PIP Button',
+							`${currentCustomerName}`
+						);
+					}}
+				/>
+			)}
+		</div>
+	) : (
+		<FadeMotionDiv target={contentTarget}>{content}</FadeMotionDiv>
+	);
 }

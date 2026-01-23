@@ -141,6 +141,7 @@ const changelog = [
 		changes: [
 			'新增：支持隐藏特定数据集。',
 			'新增：数据集加入MetaMystia模组附加内容。',
+			'新增：支持以“画中画”模式查看已保存的套餐搭配数据。',
 		],
 	},
 ] as const satisfies Array<{

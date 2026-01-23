@@ -35,6 +35,7 @@ type TAction =
 	| 'Import'
 	| 'Info'
 	| 'OpenWindow'
+	| 'PIP'
 	| 'Remove'
 	| 'Reset'
 	| 'Save'
