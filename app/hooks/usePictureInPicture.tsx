@@ -71,6 +71,7 @@ export function usePictureInPicture(
 				globalThis.screen.height / 2;
 			height += options.offset?.height ?? 0;
 			height = Math.min(height, globalThis.screen.height / 2);
+			height = Math.max(height, 96);
 
 			const newPipWindow = await docPip.requestWindow({
 				height,
@@ -174,7 +175,12 @@ export function usePictureInPicture(
 
 			return (
 				<div className="flex justify-end pt-2 opacity-0 transition-opacity group-hover:opacity-100">
-					<Tooltip showArrow content={label} placement="top">
+					<Tooltip
+						showArrow
+						closeDelay={0}
+						content={label}
+						placement="top"
+					>
 						<FontAwesomeIconButton
 							icon={faUpRightAndDownLeftFromCenter}
 							variant="light"
@@ -184,7 +190,7 @@ export function usePictureInPicture(
 								onOpen?.();
 							}}
 							aria-label={label}
-							className="rounded-large shadow-small"
+							className="rounded-large opacity-70 !shadow-none transition-opacity hover:opacity-100 hover:!shadow-small hover:backdrop-blur"
 						/>
 					</Tooltip>
 				</div>
