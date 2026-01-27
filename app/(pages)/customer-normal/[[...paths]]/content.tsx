@@ -1,6 +1,7 @@
 'use client';
 
 import { type Key, useCallback, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 
 import useBreakpoint from 'use-breakpoint';
 import {
@@ -69,6 +70,7 @@ function validateName(name: string | undefined) {
 
 export default function Content() {
 	const { pathname } = usePathname();
+	const router = useRouter();
 
 	useEffect(() => {
 		const validName = validateName(pathname.split('/')[2]);
@@ -103,6 +105,12 @@ export default function Content() {
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
+
+	useEffect(() => {
+		if (currentCustomerName === null) {
+			router.replace('/customer-rare');
+		}
+	}, [currentCustomerName, router]);
 
 	const instance_customer = customerStore.instances.customer.get();
 
