@@ -108,7 +108,7 @@ export default function Content() {
 
 	useEffect(() => {
 		if (currentCustomerName === null) {
-			router.replace('/customer-rare');
+			router.replace('/customer-normal');
 		}
 	}, [currentCustomerName, router]);
 
