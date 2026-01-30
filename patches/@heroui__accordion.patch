@@ -1,5 +1,5 @@
 diff --git a/dist/accordion-item.js b/dist/accordion-item.js
-index 7364cf027c9c85e117cf8a819eefb92f86a58808..16541afb68568e1c6b8ffc23c8d5534de9f8788b 100644
+index 7364cf027c9c85e117cf8a819eefb92f86a58808..3d0a3b5a27fc35148556452c65671ae41e80600b 100644
 --- a/dist/accordion-item.js
 +++ b/dist/accordion-item.js
 @@ -295,7 +295,10 @@ var AccordionItem = (0, import_system2.forwardRef)((props, ref) => {
@@ -15,10 +15,18 @@ index 7364cf027c9c85e117cf8a819eefb92f86a58808..16541afb68568e1c6b8ffc23c8d5534d
      const transitionVariants = {
        exit: { ...import_framer_utils.TRANSITION_VARIANTS.collapse.exit, overflowY: "hidden" },
 diff --git a/dist/accordion.js b/dist/accordion.js
-index 1d313976b53f9f2f3bc7e1d2b3ce052a95c01d24..7955f8c8f7ba47f284db38079d2a3c9cd803096a 100644
+index 1d313976b53f9f2f3bc7e1d2b3ce052a95c01d24..bc3d3de2bcf9811e5afa5ee550edee16c4df84a3 100644
 --- a/dist/accordion.js
 +++ b/dist/accordion.js
-@@ -461,7 +461,10 @@ var AccordionItem = (0, import_system3.forwardRef)((props, ref) => {
+@@ -159,6 +159,7 @@ function useAccordion(props) {
+       disableIndicatorAnimation,
+       state.expandedKeys.size,
+       state.disabledKeys.size,
++      state.collection,
+       motionProps
+     ]
+   );
+@@ -461,7 +462,10 @@ var AccordionItem = (0, import_system3.forwardRef)((props, ref) => {
    const indicatorComponent = indicatorContent || /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_shared_icons.ChevronIcon, {});
    const content = (0, import_react4.useMemo)(() => {
      if (disableAnimation) {
@@ -31,7 +39,7 @@ index 1d313976b53f9f2f3bc7e1d2b3ce052a95c01d24..7955f8c8f7ba47f284db38079d2a3c9c
      const transitionVariants = {
        exit: { ...import_framer_utils.TRANSITION_VARIANTS.collapse.exit, overflowY: "hidden" },
 diff --git a/dist/chunk-6MMBG3SS.mjs b/dist/chunk-6MMBG3SS.mjs
-index 3d6c97d131fe953a66781f6c9c4ebdc23f095a7a..6cf710460bf60857065f9622603251d1bf6c5d1f 100644
+index 3d6c97d131fe953a66781f6c9c4ebdc23f095a7a..fb7b45be922f91e3cb543131165e12b094c426e5 100644
 --- a/dist/chunk-6MMBG3SS.mjs
 +++ b/dist/chunk-6MMBG3SS.mjs
 @@ -48,7 +48,10 @@ var AccordionItem = forwardRef((props, ref) => {
@@ -46,11 +54,31 @@ index 3d6c97d131fe953a66781f6c9c4ebdc23f095a7a..6cf710460bf60857065f9622603251d1
      }
      const transitionVariants = {
        exit: { ...TRANSITION_VARIANTS.collapse.exit, overflowY: "hidden" },
+diff --git a/dist/chunk-7YLS253M.mjs b/dist/chunk-7YLS253M.mjs
+index c873858484120ac15acfc8a5a6485c70aa563022..900911ecd9835c02da3f93b068cf7492b9a97128 100644
+--- a/dist/chunk-7YLS253M.mjs
++++ b/dist/chunk-7YLS253M.mjs
+@@ -124,6 +124,7 @@ function useAccordion(props) {
+       disableIndicatorAnimation,
+       state.expandedKeys.size,
+       state.disabledKeys.size,
++      state.collection,
+       motionProps
+     ]
+   );
 diff --git a/dist/index.js b/dist/index.js
-index 75347eabc129fdde5eaa03cc7f4c735f20092745..ddd2f3fc94155886b5cd3e742114d4054f89b68b 100644
+index 75347eabc129fdde5eaa03cc7f4c735f20092745..24aa68a68598ced28b8322f1fcdd18dbe6c59663 100644
 --- a/dist/index.js
 +++ b/dist/index.js
-@@ -471,7 +471,10 @@ var AccordionItem = (0, import_system3.forwardRef)((props, ref) => {
+@@ -169,6 +169,7 @@ function useAccordion(props) {
+       disableIndicatorAnimation,
+       state.expandedKeys.size,
+       state.disabledKeys.size,
++      state.collection,
+       motionProps
+     ]
+   );
+@@ -471,7 +472,10 @@ var AccordionItem = (0, import_system3.forwardRef)((props, ref) => {
    const indicatorComponent = indicatorContent || /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_shared_icons.ChevronIcon, {});
    const content = (0, import_react4.useMemo)(() => {
      if (disableAnimation) {
@@ -62,3 +90,15 @@ index 75347eabc129fdde5eaa03cc7f4c735f20092745..ddd2f3fc94155886b5cd3e742114d405
      }
      const transitionVariants = {
        exit: { ...import_framer_utils.TRANSITION_VARIANTS.collapse.exit, overflowY: "hidden" },
+diff --git a/dist/use-accordion.js b/dist/use-accordion.js
+index 98e36880b401fb528afbafe718301e4541047113..aea21dc56fcac3ca4f7aed9c6158aa5ef2ce6352 100644
+--- a/dist/use-accordion.js
++++ b/dist/use-accordion.js
+@@ -153,6 +153,7 @@ function useAccordion(props) {
+       disableIndicatorAnimation,
+       state.expandedKeys.size,
+       state.disabledKeys.size,
++      state.collection,
+       motionProps
+     ]
+   );
