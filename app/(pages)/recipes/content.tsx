@@ -252,14 +252,32 @@ export default memo<IProps>(function Content({ data }) {
 						)}
 						{max !== 0 && (
 							<p>
-								<Popover showArrow offset={3} size="sm">
+								<Popover
+									showArrow
+									isTriggerDisabled={min === max}
+									offset={3}
+									size="sm"
+									classNames={{
+										trigger: cn(
+											min === max && 'opacity-100'
+										),
+									}}
+								>
 									<Tooltip
 										showArrow
 										content="随游戏等级提升而降低"
+										isDisabled={min === max}
 										offset={1}
 										size="sm"
 									>
-										<span className="inline-flex cursor-pointer">
+										<span
+											className={cn(
+												'inline-flex',
+												min === max
+													? 'cursor-text'
+													: 'cursor-pointer'
+											)}
+										>
 											<PopoverTrigger>
 												<span
 													tabIndex={0}
@@ -268,7 +286,12 @@ export default memo<IProps>(function Content({ data }) {
 														CLASSNAME_FOCUS_VISIBLE_OUTLINE
 													)}
 												>
-													<span className="underline-dotted-offset2">
+													<span
+														className={cn(
+															min !== max &&
+																'underline-dotted-offset2'
+														)}
+													>
 														烹饪时间
 													</span>
 													：
@@ -280,8 +303,14 @@ export default memo<IProps>(function Content({ data }) {
 										随游戏等级提升而降低
 									</PopoverContent>
 								</Popover>
-								{max}秒<span className="mx-0.5">➞</span>
-								{min}秒
+								{min === max ? (
+									`${min}秒`
+								) : (
+									<>
+										{max}秒<span className="mx-0.5">➞</span>
+										{min}秒
+									</>
+								)}
 							</p>
 						)}
 					</ItemPopoverCard>

@@ -2,6 +2,7 @@ import { type DYNAMIC_TAG_MAP } from '@/data/constant';
 import type { IFoodBase } from '@/data/types';
 
 type TTag =
+	| (typeof DYNAMIC_TAG_MAP)['expensive']
 	| '肉'
 	| '水产'
 	| '素'
