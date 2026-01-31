@@ -132,6 +132,30 @@ function setErrorState({
 	}
 }
 
+function compatibilityCustomerRareData(objects: Record<string, object[]>) {
+	Object.values(objects).forEach((data) => {
+		data.forEach((item, index) => {
+			const object = item as Record<string, unknown>;
+			if (!('price' in object || 'rating' in object)) {
+				return;
+			}
+
+			const beverage = object['beverage'] as string;
+			const hasMystiaCooker = object['hasMystiaCooker'] as boolean;
+			const order = (object['order'] as {
+				beverageTag: string | null;
+				recipeTag: string | null;
+			} | null) ?? { beverageTag: null, recipeTag: null };
+			const recipe = {
+				extraIngredients: object['extraIngredients'] as string[],
+				name: object['recipe'] as string,
+			};
+
+			data[index] = { beverage, hasMystiaCooker, order, recipe };
+		});
+	});
+}
+
 function deleteIndexProperty(objects: Record<string, object[]>) {
 	Object.values(objects).forEach((data) => {
 		data.forEach((object) => {
@@ -332,16 +356,24 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		fetch(`/api/backup/download/${code}?user_id=${userId}`, {
 			cache: 'no-cache',
 		})
-			.then(checkResponse<typeof currentMealData>)
+			.then(checkResponse<TMealData>)
 			.then((data) => {
 				setCloudDownloadState('success');
 				setCloudDownloadButtonLabel(
 					cloudDownloadButtonLabelMap.success
 				);
-				deleteIndexProperty(data.customer_normal);
-				deleteIndexProperty(data.customer_rare);
-				customerNormalStore.persistence.meals.set(data.customer_normal);
-				customerRareStore.persistence.meals.set(data.customer_rare);
+				if ('customer_normal' in data) {
+					deleteIndexProperty(data.customer_normal);
+					deleteIndexProperty(data.customer_rare);
+					customerNormalStore.persistence.meals.set(
+						data.customer_normal
+					);
+					customerRareStore.persistence.meals.set(data.customer_rare);
+				} else {
+					deleteIndexProperty(data);
+					compatibilityCustomerRareData(data);
+					customerRareStore.persistence.meals.set(data);
+				}
 				globalStore.persistence.cloudCode.set(code);
 				trackEvent(
 					trackEvent.category.click,
@@ -443,6 +475,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				);
 			} else {
 				deleteIndexProperty(importData);
+				compatibilityCustomerRareData(importData);
 				customerRareStore.persistence.meals.set(importData);
 				trackEvent(
 					trackEvent.category.click,
