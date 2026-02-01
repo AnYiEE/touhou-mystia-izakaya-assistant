@@ -13,6 +13,7 @@ import type { IFoodBase, TMerchant } from '@/data/types';
 
 type TTag =
 	| (typeof DARK_MATTER_META_MAP)['positiveTag']
+	| (typeof DYNAMIC_TAG_MAP)['economical']
 	| (typeof DYNAMIC_TAG_MAP)['largePartition']
 	| '肉'
 	| '水产'

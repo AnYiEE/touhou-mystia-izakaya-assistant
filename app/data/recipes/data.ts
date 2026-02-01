@@ -2032,7 +2032,7 @@ export const RECIPE_LIST = [
 		description:
 			'无论什么时候都大受欢迎的民间小吃。尤其在寒冷的冬天，看到热气腾腾的烤炉，想到那红皮黄瓤的颜色，热乎甜软的口感，谁能忍得住呢？但不能贪嘴，吃太多容易导致胃腹不适。',
 		ingredients: ['地瓜'],
-		positiveTags: ['家常', '饱腹', '甜'],
+		positiveTags: ['家常', '饱腹', '甜', DYNAMIC_TAG_MAP.economical],
 		negativeTags: ['下酒'],
 		cooker: '烧烤架',
 		min: 3.6,
