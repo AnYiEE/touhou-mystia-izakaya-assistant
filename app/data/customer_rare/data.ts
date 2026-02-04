@@ -3668,7 +3668,7 @@ export const CUSTOMER_RARE_LIST = [
 			凉爽: '清风',
 			小巧: '比雾之湖大一点',
 		},
-		collection: false,
+		collection: true,
 	},
 	{
 		id: 9001,
