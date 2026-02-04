@@ -1,6 +1,6 @@
 'use client';
 
-import { type Key, useCallback, useEffect, useMemo } from 'react';
+import { type Key, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 import useBreakpoint from 'use-breakpoint';
@@ -106,7 +106,12 @@ export default function Content() {
 	const currentCustomerName = customerStore.shared.customer.name.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 
+	const isFirstRendering = useRef(true);
 	useEffect(() => {
+		if (isFirstRendering.current) {
+			isFirstRendering.current = false;
+			return;
+		}
 		if (currentCustomerName === null) {
 			router.replace('/customer-rare');
 		}
