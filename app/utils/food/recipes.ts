@@ -5,6 +5,7 @@ import { Ingredient } from './ingredients';
 import {
 	DARK_MATTER_META_MAP,
 	DYNAMIC_TAG_MAP,
+	type IRecipe,
 	RECIPE_LIST,
 	type TCustomerRareName,
 	type TIngredientName,
@@ -24,13 +25,16 @@ import {
 } from '@/utilities';
 import type { IMealRecipe, IPopularTrend } from '@/types';
 
-type TRecipeProcessedPositiveTags = Prettify<
-	Omit<TRecipes[number], 'positiveTags'> & { positiveTags: TRecipeTag[] }
+type TRecipe = Prettify<
+	Omit<TRecipes[number], 'baseCookTime' | 'positiveTags'> & {
+		cookTime: { max: number; min: number };
+		positiveTags: TRecipeTag[];
+	}
 >;
 
 type TBondRecipes = Array<{ level: number; name: TRecipeName }>;
 
-export class Recipe extends Food<TRecipes> {
+export class Recipe extends Food<TRecipe[]> {
 	private static _instance: Recipe | undefined;
 
 	private static _tagCoverMap = {
@@ -50,8 +54,10 @@ export class Recipe extends Food<TRecipes> {
 	private constructor(data: TRecipes) {
 		const clonedData = cloneJsonObject(data);
 
-		(clonedData as TRecipeProcessedPositiveTags[]).forEach((recipe) => {
-			const { name, positiveTags, price } = recipe;
+		clonedData.forEach((item) => {
+			const recipe = item as unknown as IRecipe & TRecipe;
+			const { baseCookTime, name, positiveTags, price } = recipe;
+
 			if (name !== DARK_MATTER_META_MAP.name) {
 				if (price > 60) {
 					positiveTags.push(DYNAMIC_TAG_MAP.expensive);
@@ -59,9 +65,15 @@ export class Recipe extends Food<TRecipes> {
 					positiveTags.push(DYNAMIC_TAG_MAP.economical);
 				}
 			}
+
+			delete (recipe as Partial<IRecipe>).baseCookTime;
+			recipe.cookTime = {
+				max: baseCookTime,
+				min: Math.round(baseCookTime * 0.6 * 10) / 10,
+			};
 		});
 
-		super(clonedData);
+		super(clonedData as unknown as TRecipe[]);
 	}
 
 	public static getInstance() {

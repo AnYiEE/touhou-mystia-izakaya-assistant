@@ -302,8 +302,9 @@ export default function RecipeTabContent() {
 						isAscending ? numberSort(a, b) : numberSort(b, a)
 				);
 			case 'time':
-				return copyArray(filteredData).sort(({ min: a }, { min: b }) =>
-					isAscending ? numberSort(a, b) : numberSort(b, a)
+				return copyArray(filteredData).sort(
+					({ cookTime: { min: a } }, { cookTime: { min: b } }) =>
+						isAscending ? numberSort(a, b) : numberSort(b, a)
 				);
 			default:
 				return filteredData;
@@ -331,12 +332,11 @@ export default function RecipeTabContent() {
 	const renderTableCell = useCallback(
 		(recipeData: TRecipeWithSuitability, columnKey: TTableColumnKey) => {
 			const {
+				cookTime,
 				cooker,
 				ingredients,
 				matchedNegativeTags,
 				matchedPositiveTags,
-				max,
-				min,
 				name,
 				positiveTags,
 				price,
@@ -507,9 +507,9 @@ export default function RecipeTabContent() {
 				case 'time':
 					return (
 						<div className="flex">
-							{min}
+							{cookTime.min}
 							<span className="mx-0.5">-</span>
-							{max}秒
+							{cookTime.max}秒
 						</div>
 					);
 				case 'action': {

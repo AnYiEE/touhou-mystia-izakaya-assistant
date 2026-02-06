@@ -61,8 +61,7 @@ export interface IRecipe extends IFoodBase {
 	positiveTags: TTag[];
 	negativeTags: TTag[];
 	cooker: TCookerName;
-	max: number;
-	min: number;
+	baseCookTime: number;
 	from:
 		| string
 		| Partial<{

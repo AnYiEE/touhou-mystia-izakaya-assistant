@@ -44,6 +44,7 @@ export default memo<IProps>(function Content({ data }) {
 	return data.map(
 		(
 			{
+				cookTime,
 				cooker,
 				description,
 				dlc,
@@ -51,8 +52,6 @@ export default memo<IProps>(function Content({ data }) {
 				id,
 				ingredients,
 				level,
-				max,
-				min,
 				name,
 				negativeTags,
 				positiveTags,
@@ -250,32 +249,18 @@ export default memo<IProps>(function Content({ data }) {
 										)}
 							</p>
 						)}
-						{max !== 0 && (
+						{cookTime.min !== 0 && (
 							<p>
-								<Popover
-									showArrow
-									isTriggerDisabled={min === max}
-									offset={3}
-									size="sm"
-									classNames={{
-										trigger: cn(
-											min === max && 'opacity-100'
-										),
-									}}
-								>
+								<Popover showArrow offset={3} size="sm">
 									<Tooltip
 										showArrow
 										content="随游戏等级提升而降低"
-										isDisabled={min === max}
 										offset={1}
 										size="sm"
 									>
 										<span
 											className={cn(
-												'inline-flex',
-												min === max
-													? 'cursor-text'
-													: 'cursor-pointer'
+												'inline-flex cursor-pointer'
 											)}
 										>
 											<PopoverTrigger>
@@ -286,12 +271,7 @@ export default memo<IProps>(function Content({ data }) {
 														CLASSNAME_FOCUS_VISIBLE_OUTLINE
 													)}
 												>
-													<span
-														className={cn(
-															min !== max &&
-																'underline-dotted-offset2'
-														)}
-													>
+													<span className="underline-dotted-offset2">
 														烹饪时间
 													</span>
 													：
@@ -303,14 +283,9 @@ export default memo<IProps>(function Content({ data }) {
 										随游戏等级提升而降低
 									</PopoverContent>
 								</Popover>
-								{min === max ? (
-									`${min}秒`
-								) : (
-									<>
-										{max}秒<span className="mx-0.5">➞</span>
-										{min}秒
-									</>
-								)}
+								{cookTime.max}秒
+								<span className="mx-0.5">➞</span>
+								{cookTime.min}秒
 							</p>
 						)}
 					</ItemPopoverCard>
