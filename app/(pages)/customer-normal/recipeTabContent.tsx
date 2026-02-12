@@ -474,7 +474,7 @@ export default function RecipeTabContent() {
 					);
 				case 'time':
 					return (
-						<div className="flex">
+						<div className="flex whitespace-nowrap">
 							{cookTime.min}
 							<span className="mx-0.5">-</span>
 							{cookTime.max}秒
