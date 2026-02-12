@@ -168,7 +168,9 @@ export type TMerchant =
 	| '【妖怪之山】河童商人'
 	| '【因幡帝】“强买强卖”商店'
 	| '【月之都】月兔'
-	| '【魔界】蓬松松爱莲♡魔法店';
+	| '【魔界】蓬松松爱莲♡魔法店'
+	| '【人间之里】雪'
+	| '【人间之里】舞';
 
 type TTask =
 	| '阿求小姐的色纸'
@@ -216,7 +218,8 @@ export type TDescription =
 	| `${string}。`
 	| `${string}？`
 	| `${string}！`
-	| `${string}…`;
+	| `${string}…`
+	| `${string}♡`;
 
 export interface IItemBase {
 	id: number;

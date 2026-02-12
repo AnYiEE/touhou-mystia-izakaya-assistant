@@ -2971,7 +2971,7 @@ export const RECIPE_LIST = [
 		name: '鱼饼',
 		description:
 			'相比来自东方的原版鱼饼口味更清淡一些，外形上也针对雾之湖的鱼种进行了调整。是一道非常不错的解酒小吃，也很受孩子们的喜欢。',
-		ingredients: ['豆腐', '土豆', '鳟鱼'],
+		ingredients: ['鳟鱼', '土豆', '豆腐'],
 		positiveTags: ['水产', '家常', '下酒'],
 		negativeTags: ['素'],
 		cooker: '油锅',
@@ -2987,7 +2987,7 @@ export const RECIPE_LIST = [
 		name: '白果灵盅',
 		description:
 			'简单而美观的茶碗蒸，使用白果替换了雾之湖少见的鲜虾，口味相比一般的茶碗蒸更显清淡。月光草作为点缀，为本来平凡的蒸蛋增加了一丝闪烁的灵光。如果放在上古时代，大概会是难得一见的名贵菜肴吧。',
-		ingredients: ['鸡蛋', '白果', '竹子', '月光草'],
+		ingredients: ['鸡蛋', '白果', '月光草', '竹子'],
 		positiveTags: [
 			'高级',
 			'传说',
@@ -3010,7 +3010,7 @@ export const RECIPE_LIST = [
 		name: '恶魔的甜甜圈',
 		description:
 			'形似甜甜圈而长了一对恶魔的角，说是甜品而其实完全就是芝士口味的汉堡包。不过由于中间有洞，吃的时候要尤其留意不要弄脏了衣服。',
-		ingredients: ['牛肉', '面粉', '芝士'],
+		ingredients: ['面粉', '牛肉', '芝士'],
 		positiveTags: ['肉', '重油', '咸', '力量涌现'],
 		negativeTags: [],
 		cooker: '油锅',
@@ -3058,7 +3058,7 @@ export const RECIPE_LIST = [
 		name: '甜心三明治',
 		description:
 			'超级猎奇口味的三明治，外表做得五颜六色很可爱，然而内里的味道简直令人咋舌。或许有些人会喜欢吧…',
-		ingredients: ['金枪鱼', '辣椒', '葡萄'],
+		ingredients: ['金枪鱼', '葡萄', '辣椒'],
 		positiveTags: ['肉', '水产', '猎奇', '辣'],
 		negativeTags: [],
 		cooker: '料理台',
@@ -3074,7 +3074,7 @@ export const RECIPE_LIST = [
 		name: ' 毛茸茸蘑菇汤',
 		description:
 			'利用了散碎的棉花糖模拟了绵羊般毛茸茸外表的西式汤。毛茸茸的表层下面是猩红色的肉汤，入口是极具侵略性和力量感的野味。是外表很可爱然而实际很暴力的料理呢。',
-		ingredients: ['黑毛猪肉', '蘑菇', '棉花糖'],
+		ingredients: ['棉花糖', '黑毛猪肉', '蘑菇'],
 		positiveTags: ['肉', '饱腹', '山珍', '鲜', '力量涌现', '菌类'],
 		negativeTags: [],
 		cooker: '煮锅',
@@ -3090,7 +3090,7 @@ export const RECIPE_LIST = [
 		name: '血色下午茶',
 		description:
 			'对蕾米莉亚一顿普通下午茶的模仿。区别是本来的熟成牛排被替换成了更贴近小孩子口味的蜜汁牛肉，配套的煎蛋也换成了全熟。顺带一提，最正宗的做法是牛排三分甚至一分熟。',
-		ingredients: ['鸡蛋', '和牛', '蜂蜜', '黄油'],
+		ingredients: ['和牛', '鸡蛋', '蜂蜜', '黄油'],
 		positiveTags: ['肉', '高级', '重油', '饱腹', '甜', '生', '特产'],
 		negativeTags: [],
 		cooker: '油锅',
@@ -3106,7 +3106,7 @@ export const RECIPE_LIST = [
 		name: '月见饼',
 		description:
 			'月之都为了纪念一位伟人而流传的零食。外形圆润如满月，口感细腻松软，带着淡淡的甜香，很适合小朋友食用。',
-		ingredients: ['面粉', '月光草'],
+		ingredients: ['月光草', '面粉'],
 		positiveTags: ['甜', '文化底蕴', '小巧', '特产'],
 		negativeTags: ['肉', '水产'],
 		cooker: '料理台',
@@ -3122,7 +3122,7 @@ export const RECIPE_LIST = [
 		name: '玉色良汤',
 		description:
 			'永琳所研发的药膳，口味带着一丝苦味的清甜。可以通肺止咳，化瘀补气，适合虚弱的病人食用。',
-		ingredients: ['白果', '蜂蜜', '露水'],
+		ingredients: ['蜂蜜', '白果', '露水'],
 		positiveTags: ['家常', '清淡', '甜', '汤羹'],
 		negativeTags: ['重油', '辣'],
 		cooker: '蒸锅',
@@ -3138,7 +3138,7 @@ export const RECIPE_LIST = [
 		name: '星月桃子糕',
 		description:
 			'给食欲不振的病人开胃的甜点，使用了幻昙华和月光草模拟了星光和月光，而桃子的甜香底味可以很好的刺激病人的胃口，又不至于过于刺激。是非常精致又非常贴心的甜点呢，不愧是月之头脑的作品。',
-		ingredients: ['桃子', '幻昙华', '露水', '月光草'],
+		ingredients: ['桃子', '幻昙华', '月光草', '露水'],
 		positiveTags: [
 			'和风',
 			'甜',
@@ -3155,4 +3155,52 @@ export const RECIPE_LIST = [
 		price: 68,
 		from: {},
 	},
+	// {
+	// 	id: 11012,
+	// 	recipeId: 11012,
+	// 	name: '樱绯星屑缀玉烩',
+	// 	description:
+	// 		'在外界似乎被称为“Risotto”的烩饭料理。魔界之神对此进行改良，使用糯米与帕尔马芝士糅合，添上辣椒碎与菌菇碎，在锅中炒热后，再撒上柔软的花瓣，这道西洋感满满的烩饭就做成了。香糯的芝士烩饭中，晶莹的菌菇碎如同满天星斗，照亮了遍布鲜花的原野。一口下去，是幻想乡春樱漫野结合魔界夜空般的甜辣。',
+	// 	ingredients: ['辣椒', '蘑菇', '鲜花', '糯米', '芝士'],
+	// 	positiveTags: [],
+	// 	negativeTags: [],
+	// 	cooker: '料理台',
+	// 	baseCookTime: 1,
+	// 	dlc: 9,
+	// 	level: 1,
+	// 	price: 0,
+	// 	from: { bond: { name: '神绮', level: 2 } },
+	// },
+	// {
+	// 	id: 11013,
+	// 	recipeId: 11013,
+	// 	name: '黯月魔境慕斯',
+	// 	description:
+	// 		'慕斯是一种混合鸡蛋、奶油和各种调味食材，口感香甜松软的甜品。魔界之神对此进行了改良，使用巧克力、香草与香芋的层层搭配，再放上两颗红色浆果，外观看上去犹如气派的魔界宫殿“万魔殿”。据说是神绮平时用来招待客人以及举办茶会时必备的高级甜点。',
+	// 	ingredients: ['鸡蛋', '奶油'],
+	// 	positiveTags: [],
+	// 	negativeTags: [],
+	// 	cooker: '料理台',
+	// 	baseCookTime: 1,
+	// 	dlc: 9,
+	// 	level: 1,
+	// 	price: 0,
+	// 	from: { bond: { name: '神绮', level: 3 } },
+	// },
+	// {
+	// 	id: 11014,
+	// 	recipeId: 11014,
+	// 	name: '烬色魔纹千层酥',
+	// 	description:
+	// 		'以魔神之翼为原型设计而成的咖啡色千层酥，苦涩与鲜香的夹心结合着酥脆的酥皮，一口咬下去别有一番风味。 最顶层使用成块的巧克力配上草莓果酱作为点缀，看起来就像魔神的翅膀一般。',
+	// 	ingredients: ['面粉', '鸡蛋', '可可豆', '黄油'],
+	// 	positiveTags: [],
+	// 	negativeTags: [],
+	// 	cooker: '料理台',
+	// 	baseCookTime: 1,
+	// 	dlc: 9,
+	// 	level: 1,
+	// 	price: 0,
+	// 	from: { bond: { name: '神绮', level: 4 } },
+	// },
 ] as const satisfies IRecipe[];

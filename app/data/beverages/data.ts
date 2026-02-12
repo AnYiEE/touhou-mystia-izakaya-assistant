@@ -653,7 +653,7 @@ export const BEVERAGE_LIST = [
 		dlc: 9,
 		level: 2,
 		price: 40,
-		from: {},
+		from: { buy: ['【人间之里】舞'] },
 	},
 	{
 		id: 11001,
@@ -664,6 +664,6 @@ export const BEVERAGE_LIST = [
 		dlc: 9,
 		level: 2,
 		price: 65,
-		from: {},
+		from: { buy: ['【人间之里】舞'] },
 	},
 ] as const satisfies IBeverage[];

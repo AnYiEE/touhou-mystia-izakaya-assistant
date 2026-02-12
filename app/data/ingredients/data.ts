@@ -1259,7 +1259,7 @@ export const INGREDIENT_LIST = [
 		dlc: 9,
 		level: 4,
 		price: 64,
-		from: {},
+		from: { buy: [['【人间之里】雪', 60]] },
 	},
 	{
 		id: 11001,
@@ -1271,7 +1271,7 @@ export const INGREDIENT_LIST = [
 		dlc: 9,
 		level: 2,
 		price: 8,
-		from: {},
+		from: { buy: [['【人间之里】雪', 90]] },
 	},
 	{
 		id: 11002,
@@ -1282,7 +1282,7 @@ export const INGREDIENT_LIST = [
 		dlc: 9,
 		level: 2,
 		price: 4,
-		from: {},
+		from: { buy: [['【人间之里】雪', 80]] },
 	},
 	{
 		id: 11003,
@@ -1294,7 +1294,7 @@ export const INGREDIENT_LIST = [
 		dlc: 9,
 		level: 1,
 		price: 1,
-		from: {},
+		from: { buy: ['【人间之里】雪'] },
 	},
 	{
 		id: 11004,
@@ -1305,7 +1305,7 @@ export const INGREDIENT_LIST = [
 		dlc: 9,
 		level: 1,
 		price: 1,
-		from: {},
+		from: { buy: ['【人间之里】雪'] },
 	},
 	{
 		id: 11005,
@@ -1317,7 +1317,7 @@ export const INGREDIENT_LIST = [
 		dlc: 9,
 		level: 1,
 		price: 1,
-		from: {},
+		from: { buy: ['【人间之里】舞'] },
 	},
 	{
 		id: 11006,
@@ -1329,7 +1329,7 @@ export const INGREDIENT_LIST = [
 		dlc: 9,
 		level: 3,
 		price: 35,
-		from: {},
+		from: { buy: [['【人间之里】舞', 90]] },
 	},
 	{
 		id: 11007,
@@ -1341,6 +1341,6 @@ export const INGREDIENT_LIST = [
 		dlc: 9,
 		level: 2,
 		price: 15,
-		from: {},
+		from: { buy: [['【人间之里】舞', 90]] },
 	},
 ] as const satisfies IIngredient[];

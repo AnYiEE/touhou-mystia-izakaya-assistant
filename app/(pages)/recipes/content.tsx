@@ -170,50 +170,66 @@ export default memo<IProps>(function Content({ data }) {
 														) : isBuy ? (
 															<>
 																{target.name}（
-																<span className="inline-flex items-center">
-																	<Price
-																		showSymbol={
-																			false
-																		}
-																	>
-																		{
-																			target
-																				.price
-																				.amount
-																		}
-																		×
-																	</Price>
-																	<Tooltip
-																		showArrow
-																		content={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
-																		offset={
-																			1
-																		}
-																		size="sm"
-																	>
-																		<Sprite
-																			target="currency"
-																			name={
+																{isObject(
+																	target.price
+																) ? (
+																	<span className="inline-flex items-center">
+																		<Price
+																			showSymbol={
+																				false
+																			}
+																		>
+																			{
 																				target
 																					.price
-																					.currency
+																					.amount
 																			}
-																			size={
-																				1.25
+																			×
+																		</Price>
+																		<Tooltip
+																			showArrow
+																			content={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
+																			offset={
+																				1
 																			}
-																			onPress={() => {
-																				openWindow(
-																					'currencies',
+																			size="sm"
+																		>
+																			<Sprite
+																				target="currency"
+																				name={
 																					target
 																						.price
 																						.currency
-																				);
-																			}}
-																			aria-label={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
-																			role="button"
-																		/>
-																	</Tooltip>
-																</span>
+																				}
+																				size={
+																					1.25
+																				}
+																				onPress={() => {
+																					if (
+																						isObject(
+																							target.price
+																						)
+																					) {
+																						openWindow(
+																							'currencies',
+																							target
+																								.price
+																								.currency
+																						);
+																					}
+																				}}
+																				aria-label={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
+																				role="button"
+																			/>
+																		</Tooltip>
+																	</span>
+																) : (
+																	<Price>
+																		{
+																			target.price
+																		}
+																	</Price>
+																)}
 																）
 															</>
 														) : (
