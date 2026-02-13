@@ -144,6 +144,7 @@ const changelog = [
 			'新增：支持以“画中画”模式查看已保存的套餐搭配数据。',
 		],
 	},
+	{ version: 'v1.13', changes: ['新增：更新法律声明。'] },
 ] as const satisfies Array<{
 	version: `v${string}`;
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;
