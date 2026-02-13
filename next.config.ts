@@ -1,4 +1,4 @@
-/* @typescript-eslint/require-await */
+/* eslint-disable sort-keys, @typescript-eslint/require-await */
 
 import { type NextConfig } from 'next';
 import { env } from 'node:process';
@@ -47,6 +47,20 @@ const nextConfig: NextConfig = {
 
 if (exportMode) {
 	nextConfig.output = 'export';
+} else {
+	nextConfig.headers = async () => {
+		const headers: Awaited<ReturnType<NonNullable<NextConfig['headers']>>> =
+			[];
+
+		if (IS_PRODUCTION) {
+			headers.push({
+				source: '/assets/:path*',
+				headers: [{ key: 'Cache-Control', value: 'no-cache' }],
+			});
+		}
+
+		return headers;
+	};
 }
 
 export default nextConfig;
