@@ -4090,7 +4090,11 @@ export const CUSTOMER_RARE_LIST = [
 				'为什么其他顾客都要重新排队？好哦，那我也去重新排队吧！',
 		},
 		spellCards: {},
-		beverageTagMapping: {},
+		beverageTagMapping: {
+			直饮: '讲究这么多',
+			气泡: '“唰”',
+			现代: '现今的饮料',
+		},
 		positiveTagMapping: {
 			果味: '我爱吃的糕点',
 			[DYNAMIC_TAG_MAP.largePartition]: '丰盛的大餐',
@@ -4141,7 +4145,7 @@ export const CUSTOMER_RARE_LIST = [
 				'原来还能用这种方式来激怒他人，我似乎想到了新的捉弄雪的点子呢~。',
 		},
 		spellCards: {},
-		beverageTagMapping: {},
+		beverageTagMapping: { 无酒精: '反应会下降', 古典: '一点点怀念' },
 		positiveTagMapping: { 小巧: '三分饱' },
 		collection: false,
 	},
