@@ -107,7 +107,8 @@ const storeVersion = {
 	tableShare: 11,
 	userId: 12, // eslint-disable-next-line sort-keys
 	hiddenItems: 13, // eslint-disable-next-line sort-keys
-	hiddenDlcs: 14,
+	hiddenDlcs: 14, // eslint-disable-next-line sort-keys
+	donationModal: 15,
 } as const;
 
 const state = {
@@ -143,9 +144,17 @@ const state = {
 
 		userId: null as string | null,
 		version: null as string | null,
+
+		donationModal: {
+			interactionCount: 0,
+			isDismiss: false,
+			lastMilestoneShown: 0,
+			lastShown: null as number | null,
+		},
 	},
 
 	shared: {
+		donationModal: { isOpen: false },
 		preferencesModal: { isOpen: false },
 		table: {
 			selectableRows: generateRange(5, 20).map(toGetValueCollection),
@@ -161,7 +170,7 @@ export const globalStore = store(state, {
 		}),
 		persistMiddleware<typeof state>({
 			name: storeName,
-			version: storeVersion.hiddenDlcs,
+			version: storeVersion.donationModal,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -229,6 +238,14 @@ export const globalStore = store(state, {
 				}
 				if (version < storeVersion.hiddenDlcs) {
 					oldState.persistence.hiddenItems = { dlcs: [] };
+				}
+				if (version < storeVersion.donationModal) {
+					oldState.persistence.donationModal = {
+						interactionCount: 0,
+						isDismiss: false,
+						lastMilestoneShown: 0,
+						lastShown: null,
+					};
 				}
 				return persistedState as typeof state;
 			},
@@ -342,6 +359,24 @@ export const globalStore = store(state, {
 		},
 	}))
 	.actions((currentStore) => ({
+		setDonationModalInteractionCount(count: number) {
+			currentStore.persistence.donationModal.interactionCount.set(count);
+		},
+		setDonationModalIsDismiss(isDismiss: boolean) {
+			currentStore.persistence.donationModal.isDismiss.set(isDismiss);
+		},
+		setDonationModalIsOpen(isOpen: boolean) {
+			currentStore.shared.donationModal.isOpen.set(isOpen);
+		},
+		setDonationModalLastMilestoneShown(milestone: number) {
+			currentStore.persistence.donationModal.lastMilestoneShown.set(
+				milestone
+			);
+		},
+		setDonationModalLastShown(timestamp: number) {
+			currentStore.persistence.donationModal.lastShown.set(timestamp);
+		},
+
 		setPreferencesModalIsOpen(isOpen: boolean) {
 			currentStore.shared.preferencesModal.isOpen.set(isOpen);
 		},

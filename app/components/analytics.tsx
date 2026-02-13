@@ -30,6 +30,7 @@ type TAction =
 	| 'Cloud Delete'
 	| 'Cloud Download'
 	| 'Cloud Upload'
+	| 'Donation Modal'
 	| 'Error'
 	| 'Export'
 	| 'Import'
@@ -95,6 +96,12 @@ function trackEventFunction(
 		['setDocumentTitle', document.title],
 		['trackEvent', category, action, name, value]
 	);
+	store.persistence.donationModal.interactionCount.set((count) => {
+		if (count === Number.MAX_SAFE_INTEGER) {
+			return count;
+		}
+		return count + 1;
+	});
 }
 
 export const trackEvent = trackEventFunction as typeof trackEventFunction & {

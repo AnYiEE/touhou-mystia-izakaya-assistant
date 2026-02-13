@@ -11,6 +11,7 @@ import { ProgressBar, ProgressBarProvider } from 'react-transition-progress';
 
 import CompatibleBrowser from '@/components/compatibleBrowser';
 import CustomerRareTutorial from '@/components/customerRareTutorial';
+import DonationModal from '@/components/donationModal';
 
 import { siteConfig } from '@/configs';
 import { type TDlc } from '@/data';
@@ -168,6 +169,7 @@ export default function Providers({
 				<ProgressBar className="fixed top-0 z-60 h-1 rounded-2xl bg-primary dark:lg:h-0.5" />
 				<CompatibleBrowser />
 				<CustomerRareTutorial />
+				<DonationModal />
 			</ProgressBarProvider>
 		</HeroUIProvider>
 	);
