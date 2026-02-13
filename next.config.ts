@@ -1,4 +1,4 @@
-/* eslint-disable sort-keys, @typescript-eslint/require-await */
+/* @typescript-eslint/require-await */
 
 import { type NextConfig } from 'next';
 import { env } from 'node:process';
@@ -47,25 +47,6 @@ const nextConfig: NextConfig = {
 
 if (exportMode) {
 	nextConfig.output = 'export';
-} else {
-	nextConfig.headers = async () => {
-		const headers: Awaited<ReturnType<NonNullable<NextConfig['headers']>>> =
-			[];
-
-		if (IS_PRODUCTION && !env.VERCEL) {
-			headers.push({
-				source: '/:all*(.gif|.ico|.png|.webp|.js|.txt|.webmanifest|.xml)',
-				headers: [
-					{
-						key: 'Cache-Control',
-						value: 'public, must-revalidate, max-age=2592000',
-					},
-				],
-			});
-		}
-
-		return headers;
-	};
 }
 
 export default nextConfig;
