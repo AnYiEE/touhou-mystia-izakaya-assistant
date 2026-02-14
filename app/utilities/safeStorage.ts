@@ -74,6 +74,18 @@ class SafeStorage implements Storage {
 
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 	public getItem<T extends string = string>(key: string): T | null {
+		if (this._storage !== null) {
+			try {
+				const value = this._storage.getItem(key);
+				if (value !== null) {
+					this._memoryStorage.set(key, value);
+					return value as T;
+				}
+				this._memoryStorage.delete(key);
+			} catch {
+				/* empty */
+			}
+		}
 		return (this._memoryStorage.get(key) as T | null) ?? null;
 	}
 
@@ -83,8 +95,6 @@ class SafeStorage implements Storage {
 	}
 
 	public removeItem(key: string) {
-		this._memoryStorage.delete(key);
-
 		if (this._storage !== null) {
 			try {
 				this._storage.removeItem(key);
@@ -92,11 +102,10 @@ class SafeStorage implements Storage {
 				/* empty */
 			}
 		}
+		this._memoryStorage.delete(key);
 	}
 
 	public setItem(key: string, value: string) {
-		this._memoryStorage.set(key, value);
-
 		if (this._storage !== null) {
 			try {
 				this._storage.setItem(key, value);
@@ -104,6 +113,7 @@ class SafeStorage implements Storage {
 				/* empty */
 			}
 		}
+		this._memoryStorage.set(key, value);
 	}
 }
 
