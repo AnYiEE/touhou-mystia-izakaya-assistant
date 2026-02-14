@@ -25,10 +25,7 @@ function getCurrentMilestone(count: number) {
 	if (count < 500) {
 		return 0;
 	}
-	if (count < 1000) {
-		return 500;
-	}
-	return Math.floor(count / 1000) * 1000;
+	return Math.floor(count / 500) * 500;
 }
 
 function useDonationModalTrigger() {
@@ -193,8 +190,15 @@ export default function DonationModal() {
 					>
 						永久关闭此弹窗
 					</Button>
-					<Button variant="solid" onPress={handleRemindLater}>
+					<Button
+						color="warning"
+						variant="light"
+						onPress={handleRemindLater}
+					>
 						{REMIND_LATER_DAYS}日内不再提醒
+					</Button>
+					<Button variant="solid" onPress={handleClose}>
+						关闭弹窗
 					</Button>
 				</div>
 			</div>
