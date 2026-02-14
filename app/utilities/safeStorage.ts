@@ -61,8 +61,6 @@ class SafeStorage implements Storage {
 	}
 
 	public clear() {
-		this._memoryStorage.clear();
-
 		if (this._storage !== null) {
 			try {
 				this._storage.clear();
@@ -70,6 +68,7 @@ class SafeStorage implements Storage {
 				/* empty */
 			}
 		}
+		this._memoryStorage.clear();
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
