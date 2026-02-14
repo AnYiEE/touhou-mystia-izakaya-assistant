@@ -71,12 +71,13 @@ function useDonationModalTrigger() {
 		store.persistence.donationModal.lastMilestoneShown.use();
 	const lastShown = store.persistence.donationModal.lastShown.use();
 
+	const currentMilestone = getCurrentMilestone(interactionCount);
+
 	useEffect(() => {
 		if (isDismiss || isOpen || !isMounted) {
 			return;
 		}
 
-		const currentMilestone = getCurrentMilestone(interactionCount);
 		const shouldShow =
 			currentMilestone > lastMilestoneShown && currentMilestone > 0;
 		if (!shouldShow) {
@@ -101,7 +102,7 @@ function useDonationModalTrigger() {
 			);
 		});
 	}, [
-		interactionCount,
+		currentMilestone,
 		isDismiss,
 		isMounted,
 		isOpen,
