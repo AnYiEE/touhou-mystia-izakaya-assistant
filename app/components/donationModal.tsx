@@ -16,7 +16,11 @@ import QRCode from '@/components/qrCode';
 
 import { siteConfig } from '@/configs';
 import { globalStore as store } from '@/stores';
+import { safeStorage } from '@/utilities';
 
+const LOCK_KEY = 'sync_lock-donation_modal_trigger';
+const LOCK_VERIFY_DELAY = 150;
+const LOCK_EXPIRE_TIME = 3000;
 const REMIND_LATER_DAYS = 7;
 
 const { links, name, shortName } = siteConfig;
@@ -26,6 +30,32 @@ function getCurrentMilestone(count: number) {
 		return 0;
 	}
 	return Math.floor(count / 500) * 500;
+}
+
+function tryAcquireLockAndExecute(onSuccess: () => void) {
+	const now = Date.now();
+
+	const existingLock = safeStorage.getItem(LOCK_KEY);
+	if (existingLock !== null) {
+		const lockTimestamp = Number.parseInt(existingLock, 10);
+		if (now - lockTimestamp < LOCK_EXPIRE_TIME) {
+			return;
+		}
+	}
+
+	safeStorage.setItem(LOCK_KEY, now.toString());
+
+	const handler = setTimeout(() => {
+		const currentLock = safeStorage.getItem(LOCK_KEY);
+		if (currentLock === now.toString()) {
+			onSuccess();
+			safeStorage.removeItem(LOCK_KEY);
+		}
+	}, LOCK_VERIFY_DELAY);
+
+	return () => {
+		clearTimeout(handler);
+	};
 }
 
 function useDonationModalTrigger() {
@@ -61,13 +91,15 @@ function useDonationModalTrigger() {
 			}
 		}
 
-		store.setDonationModalIsOpen(true);
-		trackEvent(
-			trackEvent.category.show,
-			'Popover',
-			'Donation Modal',
-			currentMilestone
-		);
+		return tryAcquireLockAndExecute(() => {
+			store.setDonationModalIsOpen(true);
+			trackEvent(
+				trackEvent.category.show,
+				'Popover',
+				'Donation Modal',
+				currentMilestone
+			);
+		});
 	}, [
 		interactionCount,
 		isDismiss,
