@@ -4036,7 +4036,7 @@ export const CUSTOMER_RARE_LIST = [
 		spellCards: {},
 		beverageTagMapping: {
 			中酒精: '头脑发昏',
-			高酒精: '烈酒',
+			高酒精: '浓烈的酒',
 			提神: '些许疲惫',
 		},
 		positiveTagMapping: {
