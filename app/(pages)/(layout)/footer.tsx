@@ -1,7 +1,7 @@
 import { execSync } from 'node:child_process';
 
 import { FooterLinkWithTooltip } from './footerLink';
-import FooterVisitors from './footerVisitors';
+// import FooterVisitors from './footerVisitors';
 import QRCode from '@/components/qrCode';
 
 import { siteConfig } from '@/configs';
@@ -57,7 +57,7 @@ export default function Footer() {
 					</FooterLinkWithTooltip>
 					所有
 				</span>
-				<FooterVisitors />
+				{/* <FooterVisitors /> */}
 			</p>
 			<p className={className}>
 				<span>
