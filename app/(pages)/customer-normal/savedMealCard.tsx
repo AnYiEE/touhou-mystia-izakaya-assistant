@@ -113,12 +113,6 @@ export default function SavedMealCard() {
 				) {
 					visibleIndices.push(index);
 				}
-
-				return (
-					!hasHiddenIngredientDlc &&
-					!hiddenDlcs.has(beverageDlc) &&
-					!hiddenDlcs.has(recipeDlc)
-				);
 			}
 		);
 

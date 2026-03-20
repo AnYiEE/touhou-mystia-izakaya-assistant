@@ -960,25 +960,23 @@ export const customerRareStore = store(state, {
 			const isDarkMatter = Boolean(
 				currentStore.shared.customer.isDarkMatter.get()
 			);
-			const beverageTags: TBeverageTag[] = [];
 			const beverageName = currentStore.shared.beverage.name.get();
-			if (beverageName !== null) {
-				beverageTags.push(
-					...instance_beverage.getPropsByName(beverageName, 'tags')
-				);
-			}
+			const beverageTags: TBeverageTag[] =
+				beverageName === null
+					? []
+					: instance_beverage.getPropsByName(beverageName, 'tags');
 			const recipeData = currentStore.shared.recipe.data.get();
 			const recipeName = recipeData?.name ?? null;
-			const ingredients: TIngredientName[] = [];
-			if (recipeData !== null) {
-				ingredients.push(
-					...instance_recipe.getPropsByName(
-						recipeData.name,
-						'ingredients'
-					),
-					...recipeData.extraIngredients
-				);
-			}
+			const ingredients: TIngredientName[] =
+				recipeData === null
+					? []
+					: [
+							...instance_recipe.getPropsByName(
+								recipeData.name,
+								'ingredients'
+							),
+							...recipeData.extraIngredients,
+						];
 			const recipeTagsWithTrend =
 				currentStore.shared.recipe.tagsWithTrend.get();
 			const rating = instance_customer.evaluateMeal({

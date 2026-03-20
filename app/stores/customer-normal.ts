@@ -828,20 +828,16 @@ export const customerNormalStore = store(state, {
 			);
 			const customerPopularTrend =
 				currentStore.shared.customer.popularTrend.get();
-			const extraIngredients: TIngredientName[] = [];
 			const recipeData = currentStore.shared.recipe.data.get();
-			if (recipeData !== null) {
-				extraIngredients.push(...recipeData.extraIngredients);
-			}
-			const extraTags: TPopularTag[] = [];
-			extraIngredients.forEach((ingredient) => {
-				extraTags.push(
-					...(instance_ingredient.getPropsByName(
+			const extraIngredients: TIngredientName[] =
+				recipeData === null ? [] : recipeData.extraIngredients;
+			const extraTags = extraIngredients.flatMap(
+				(ingredient) =>
+					instance_ingredient.getPropsByName(
 						ingredient,
 						'tags'
-					) as TPopularTag[])
-				);
-			});
+					) as TPopularTag[]
+			);
 			let recipe: TRecipe | null = null;
 			if (recipeData !== null) {
 				recipe = instance_recipe.getPropsByName(recipeData.name);
@@ -874,15 +870,13 @@ export const customerNormalStore = store(state, {
 				popularTrend,
 				recipeData: { extraIngredients, name: recipeName },
 			} = data;
-			const extraTags: TPopularTag[] = [];
-			extraIngredients.forEach((ingredient) => {
-				extraTags.push(
-					...(instance_ingredient.getPropsByName(
+			const extraTags = extraIngredients.flatMap(
+				(ingredient) =>
+					instance_ingredient.getPropsByName(
 						ingredient,
 						'tags'
-					) as TPopularTag[])
-				);
-			});
+					) as TPopularTag[]
+			);
 			const rating = instance_customer.evaluateMeal({
 				currentCustomerName: customerName,
 				currentCustomerPopularTrend: popularTrend,

@@ -55,6 +55,8 @@ const THEME_LABEL_ICON_MAP = {
 	system: faDesktop,
 } as const satisfies Record<TTheme, FontAwesomeIconProps['icon']>;
 
+const THEME_ITEMS = Object.values(THEME_MAP).map(toGetValueCollection);
+
 interface IProps extends Pick<IDropdownProps, 'className'> {
 	isMenu?: boolean;
 }
@@ -139,7 +141,7 @@ export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 			</Tooltip>
 			<DropdownMenu
 				disallowEmptySelection
-				items={Object.values(THEME_MAP).map(toGetValueCollection)}
+				items={THEME_ITEMS}
 				selectedKeys={selectedTheme}
 				selectionMode="single"
 				onSelectionChange={onSelectedThemeChange}

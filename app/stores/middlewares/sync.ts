@@ -172,17 +172,19 @@ export function sync<T>(options: ISyncOptions<T>) {
 			void channel.postMessage(LOADED_SIGNAL);
 			channel.addEventListener('message', (data) => {
 				if (data === LOADED_SIGNAL) {
+					if (checkLengthEmpty(watch)) {
+						return;
+					}
+
 					const currentState = get();
 
 					const watchedState = watch.reduce((acc, path) => {
 						assign(acc, path, getNestedValue(currentState, path));
 
 						return acc;
-					}, {} as T) as object;
+					}, {} as T);
 
-					if (!checkLengthEmpty(Object.keys(watchedState))) {
-						void channel.postMessage(watchedState);
-					}
+					void channel.postMessage(watchedState);
 				} else {
 					set((state) => merge(state, data as Partial<T>));
 				}
@@ -197,18 +199,20 @@ export function sync<T>(options: ISyncOptions<T>) {
 
 				const currentState = get();
 
+				let hasChanges = false as boolean;
 				const watchedState = watch.reduce((acc, path) => {
 					const currentValue = getNestedValue(currentState, path);
 					const prevValue = getNestedValue(prevState, path);
 
 					if (!checkEqual(currentValue, prevValue)) {
 						assign(acc, path, currentValue);
+						hasChanges = true;
 					}
 
 					return acc;
-				}, {} as T) as object;
+				}, {} as T);
 
-				if (!checkLengthEmpty(Object.keys(watchedState))) {
+				if (hasChanges) {
 					void channel.postMessage(watchedState);
 				}
 			};

@@ -59,7 +59,7 @@ export default function CustomerRareTutorial() {
 			showProgress: true,
 
 			onDestroyed() {
-				if (isTargetPage) {
+				if (location.pathname.startsWith(pathname)) {
 					globalStore.persistence.dirver.set((prev) => {
 						prev.push(key);
 					});

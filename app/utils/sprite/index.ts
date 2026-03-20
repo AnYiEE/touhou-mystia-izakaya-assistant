@@ -61,6 +61,9 @@ export class Sprite<
 	private static _instances = new Map<TSpriteTarget, Sprite<TSpriteTarget>>();
 
 	private _config: ISpriteConfig;
+	private _sheetHeight: number;
+	private _sheetWidth: number;
+	private _bgPropsCache: Map<string, CSSProperties>;
 
 	public spriteHeight: number;
 	public spriteWidth: number;
@@ -71,11 +74,16 @@ export class Sprite<
 		this._config = config;
 
 		const {
+			col,
+			row,
 			size: { height, width },
 		} = config;
 
 		this.spriteHeight = height;
 		this.spriteWidth = width;
+		this._sheetHeight = row * height;
+		this._sheetWidth = col * width;
+		this._bgPropsCache = new Map();
 	}
 
 	public static getInstance(target: TSpriteTarget) {
@@ -111,27 +119,37 @@ export class Sprite<
 			displayWidth = this.spriteWidth,
 		} = {}
 	): CSSProperties {
+		const cacheKey = `${index}_${displayHeight}_${displayWidth}`;
+		const cached = this._bgPropsCache.get(cacheKey);
+		if (cached) {
+			return cached;
+		}
+
 		this.checkIndexRange(index);
 
 		const {
-			_config: {
-				col,
-				row,
-				size: { height, width },
-			},
+			_bgPropsCache: bgPropsCache,
+			_sheetHeight: sheetHeight,
+			_sheetWidth: sheetWidth,
+			spriteHeight: height,
+			spriteWidth: width,
 		} = this;
-		const sheetHeight = row * height;
-		const sheetWidth = col * width;
+		const scaleX = displayWidth / width;
+		const scaleY = displayHeight / height;
 
 		const { x, y } = this.getPosByIndex(index);
-		const backgroundPosition = `-${pxToRem(x * (displayWidth / width))}rem -${pxToRem(y * (displayHeight / height))}rem`;
-		const backgroundSize = `${pxToRem(sheetWidth * (displayWidth / width))}rem ${pxToRem(sheetHeight * (displayHeight / height))}rem`;
+		const backgroundPosition = `-${pxToRem(x * scaleX)}rem -${pxToRem(y * scaleY)}rem`;
+		const backgroundSize = `${pxToRem(sheetWidth * scaleX)}rem ${pxToRem(sheetHeight * scaleY)}rem`;
 
-		return {
+		const result: CSSProperties = {
 			backgroundPosition,
 			backgroundSize,
 			height: `${pxToRem(displayHeight)}rem`,
 			width: `${pxToRem(displayWidth)}rem`,
 		};
+
+		bgPropsCache.set(cacheKey, result);
+
+		return result;
 	}
 }

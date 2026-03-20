@@ -182,6 +182,7 @@ export default function RecipeTabContent() {
 					return {
 						...item,
 						matchedPositiveTags: [],
+						positiveTags: recipeTagsWithTrend,
 						suitability: easterEggScore > 0 ? Infinity : -Infinity,
 					};
 				}
@@ -214,11 +215,10 @@ export default function RecipeTabContent() {
 			return dataWithRealSuitability;
 		}
 
+		const selectedRecipeTagArray = toArray(selectedCustomerRecipeTag);
+
 		return dataWithRealSuitability.filter(
 			({ cooker, dlc, name, pinyin, positiveTags }) => {
-				const recipeTagsWithTrend =
-					calculateTagsWithTrend(positiveTags);
-
 				const isNameMatched = hasNameFilter
 					? getSearchResult(searchValue, { name, pinyin })
 					: true;
@@ -230,10 +230,7 @@ export default function RecipeTabContent() {
 					selectedCookers.has(cooker);
 				const isPositiveTagsMatched =
 					checkLengthEmpty(selectedCustomerRecipeTag) ||
-					checkArraySubsetOf(
-						toArray(selectedCustomerRecipeTag),
-						recipeTagsWithTrend
-					);
+					checkArraySubsetOf(selectedRecipeTagArray, positiveTags);
 
 				return (
 					isNameMatched &&

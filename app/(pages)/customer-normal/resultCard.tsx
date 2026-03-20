@@ -157,6 +157,13 @@ export default function ResultCard() {
 		clearTimeout(saveButtonTooltipTimer.current);
 	}, []);
 
+	useEffect(
+		() => () => {
+			clearTimeout(saveButtonTooltipTimer.current);
+		},
+		[]
+	);
+
 	const showTooltip = useCallback(() => {
 		setIsShowSaveButtonTooltip(true);
 		clearTimeout(saveButtonTooltipTimer.current);

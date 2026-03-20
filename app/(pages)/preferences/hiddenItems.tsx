@@ -86,13 +86,21 @@ const SettingsModal = memo<ISettingsModalProps>(function SettingsModal({
 	}, [onClose, vibrate]);
 
 	useEffect(() => {
-		if (isInModal && isOpen && ref.current !== null) {
-			ref.current.closest('div')?.addEventListener('click', (event) => {
+		const div = ref.current?.closest('div');
+		let handler: (event: MouseEvent) => void = () => {};
+
+		if (isInModal && isOpen && div !== null) {
+			handler = (event) => {
 				if (event.currentTarget === event.target) {
 					handleClose();
 				}
-			});
+			};
+			div?.addEventListener('click', handler);
 		}
+
+		return () => {
+			div?.removeEventListener('click', handler);
+		};
 	}, [handleClose, isInModal, isOpen]);
 
 	return (

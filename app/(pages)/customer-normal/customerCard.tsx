@@ -98,17 +98,13 @@ export default function CustomerCard() {
 		[vibrate]
 	);
 
-	const beverageTags = useMemo(() => {
-		const _beverageTags: TBeverageTag[] = [];
-
-		if (currentBeverageName !== null) {
-			_beverageTags.push(
-				...instance_beverage.getPropsByName(currentBeverageName, 'tags')
-			);
-		}
-
-		return _beverageTags;
-	}, [currentBeverageName, instance_beverage]);
+	const beverageTags = useMemo(
+		() =>
+			currentBeverageName === null
+				? ([] as TBeverageTag[])
+				: instance_beverage.getPropsByName(currentBeverageName, 'tags'),
+		[currentBeverageName, instance_beverage]
+	);
 
 	const avatarRatingContent =
 		currentRating === null

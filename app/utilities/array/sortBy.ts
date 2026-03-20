@@ -1,4 +1,4 @@
-import { checkLengthEmpty, copyArray, toSet } from '@/utilities';
+import { checkLengthEmpty, copyArray } from '@/utilities';
 
 export function sortBy<T>(arrayA: ReadonlyArray<T>, arrayB: ReadonlyArray<T>) {
 	if (checkLengthEmpty(arrayA)) {
@@ -8,31 +8,24 @@ export function sortBy<T>(arrayA: ReadonlyArray<T>, arrayB: ReadonlyArray<T>) {
 		return [];
 	}
 
-	const setA = toSet(arrayA);
-
-	const inA: T[] = [];
-	const notInA: T[] = [];
-
-	arrayB.forEach((item) => {
-		if (setA.has(item)) {
-			inA.push(item);
-		} else {
-			notInA.push(item);
-		}
-	});
-
 	const orderMap = new Map<T, number>();
 
 	arrayA.forEach((item, index) => {
 		orderMap.set(item, index);
 	});
 
-	inA.sort((a, b) => {
-		const indexA = orderMap.get(a) ?? 0;
-		const indexB = orderMap.get(b) ?? 0;
+	const inA: T[] = [];
+	const notInA: T[] = [];
 
-		return indexA - indexB;
+	arrayB.forEach((item) => {
+		if (orderMap.has(item)) {
+			inA.push(item);
+		} else {
+			notInA.push(item);
+		}
 	});
+
+	inA.sort((a, b) => (orderMap.get(a) ?? 0) - (orderMap.get(b) ?? 0));
 
 	return [...inA, ...notInA];
 }

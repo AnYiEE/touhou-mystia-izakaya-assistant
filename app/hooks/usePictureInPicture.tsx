@@ -139,19 +139,18 @@ export function usePictureInPicture(
 				const applyResponsiveClasses = (el: Element) => {
 					const classList = toArray(el.classList);
 					const mdClasses: string[] = [];
+					const nonMdClasses: string[] = [];
 
 					classList.forEach((className) => {
 						if (className.startsWith('md:')) {
 							mdClasses.push(className.slice(3));
+						} else {
+							nonMdClasses.push(className);
 						}
 					});
 
 					if (!checkLengthEmpty(mdClasses)) {
-						const mergedClasses = cn(
-							classList.filter((c) => !c.startsWith('md:')),
-							mdClasses
-						);
-						el.className = mergedClasses;
+						el.className = cn(nonMdClasses, mdClasses);
 					}
 
 					toArray(el.children).forEach(applyResponsiveClasses);

@@ -218,21 +218,21 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	const [isCloudDeleteButtonDisabled, setIsCloudDeleteButtonDisabled] =
 		useState(false);
 	const [cloudDeleteButtonLabel, setCloudDeleteButtonLabel] =
-		useState<string>(cloudDeleteButtonLabelMap.delete);
+		useState(cloudDeleteButtonLabelMap.delete);
 	const [cloudDeleteState, setCloudDeleteState] =
 		useState<TCloudState>('default');
 
 	const [isCloudDownloadButtonDisabled, setIsCloudDownloadButtonDisabled] =
 		useState(false);
 	const [cloudDownloadButtonLabel, setCloudDownloadButtonLabel] =
-		useState<string>(cloudDownloadButtonLabelMap.download);
+		useState(cloudDownloadButtonLabelMap.download);
 	const [cloudDownloadState, setCloudDownloadState] =
 		useState<TCloudState>('default');
 
 	const [isCloudUploadButtonDisabled, setIsCloudUploadButtonDisabled] =
 		useState(false);
 	const [cloudUploadButtonLabel, setCloudUploadButtonLabel] =
-		useState<string>(cloudUploadButtonLabelMap.upload);
+		useState(cloudUploadButtonLabelMap.upload);
 	const [cloudUploadState, setCloudUploadState] =
 		useState<TCloudState>('default');
 
@@ -240,6 +240,15 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		isCloudDeleteButtonDisabled ||
 		isCloudDownloadButtonDisabled ||
 		isCloudUploadButtonDisabled;
+
+	const cloudTimers = useRef<Array<ReturnType<typeof setTimeout>>>([]);
+
+	useEffect(
+		() => () => {
+			cloudTimers.current.forEach(clearTimeout);
+		},
+		[]
+	);
 
 	const currentCloudCode = globalStore.persistence.cloudCode.use();
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
@@ -337,11 +346,15 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				});
 			})
 			.finally(() => {
-				setTimeout(() => {
+				const timerId = setTimeout(() => {
 					setCloudDeleteState('default');
 					setIsCloudDeleteButtonDisabled(false);
 					setCloudDeleteButtonLabel(cloudDeleteButtonLabelMap.delete);
+					cloudTimers.current = cloudTimers.current.filter(
+						(id) => id !== timerId
+					);
 				}, 3000);
+				cloudTimers.current.push(timerId);
 			});
 	}, [currentCloudCode, isCloudCodeValid]);
 
@@ -392,13 +405,17 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 			})
 			.finally(() => {
 				updateCloudCodeInfo(currentCloudCode);
-				setTimeout(() => {
+				const timerId = setTimeout(() => {
 					setCloudDownloadState('default');
 					setIsCloudDownloadButtonDisabled(false);
 					setCloudDownloadButtonLabel(
 						cloudDownloadButtonLabelMap.download
 					);
+					cloudTimers.current = cloudTimers.current.filter(
+						(id) => id !== timerId
+					);
 				}, 3000);
+				cloudTimers.current.push(timerId);
 			});
 	}, [currentCloudCode, updateCloudCodeInfo, userId]);
 
@@ -436,21 +453,29 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 			})
 			.finally(() => {
 				updateCloudCodeInfo(currentCloudCode);
-				setTimeout(() => {
-					setCloudUploadState('default');
-					setIsCloudUploadButtonDisabled(false);
-					setCloudUploadButtonLabel(cloudUploadButtonLabelMap.upload);
-				}, 3000);
+				cloudTimers.current.push(
+					setTimeout(() => {
+						setCloudUploadState('default');
+						setIsCloudUploadButtonDisabled(false);
+						setCloudUploadButtonLabel(
+							cloudUploadButtonLabelMap.upload
+						);
+					}, 3000)
+				);
 			});
 	}, [currentCloudCode, currentMealData, updateCloudCodeInfo, userId]);
 
 	const handleExportButtonPress = useCallback(() => {
 		setIsExportButtonDisabled(true);
 		setExportButtonLabel(exportButtonLabelMap.downloading);
-		setTimeout(() => {
+		const timerId = setTimeout(() => {
 			setIsExportButtonDisabled(false);
 			setExportButtonLabel(exportButtonLabelMap.download);
+			cloudTimers.current = cloudTimers.current.filter(
+				(id) => id !== timerId
+			);
 		}, 5000);
+		cloudTimers.current.push(timerId);
 		const fileName = `customer_data-${Object.keys(currentMealData.customer_normal).length}_${Object.keys(currentMealData.customer_rare).length}-${Date.now()}`;
 		downloadJson(fileName, currentMealDataString);
 		trackEvent(trackEvent.category.click, 'Export Button', fileName);
