@@ -50,6 +50,7 @@ import {
 	toSet,
 } from '@/utilities';
 import { Beverage, Clothes, CustomerNormal, Ingredient, Recipe } from '@/utils';
+import { buildFullMealEvaluationNormal } from '@/utils/evaluators';
 import type { TRecipe } from '@/utils/types';
 
 const instance_beverage = Beverage.getInstance();
@@ -871,25 +872,13 @@ export const customerNormalStore = store(state, {
 				popularTrend,
 				recipeData: { extraIngredients, name: recipeName },
 			} = data;
-			const extraTags = extraIngredients.flatMap(
-				(ingredient) =>
-					instance_ingredient.getPropsByName(
-						ingredient,
-						'tags'
-					) as TPopularTag[]
-			);
-			const rating = instance_customer.evaluateMeal({
-				currentCustomerName: customerName,
-				currentCustomerPopularTrend: popularTrend,
-				currentCustomerPositiveTags: instance_customer.getPropsByName(
-					customerName,
-					'positiveTags'
-				),
-				currentExtraIngredientsLength: extraIngredients.length,
-				currentExtraTags: extraTags,
-				currentRecipe: instance_recipe.getPropsByName(recipeName),
+			const { rating } = buildFullMealEvaluationNormal({
+				customerName,
+				extraIngredients,
 				isFamousShop,
-			}) as TRatingKey;
+				popularTrend,
+				recipeName,
+			});
 			savedMealRatingCache.set(stringifiedData, rating);
 			return rating;
 		},

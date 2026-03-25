@@ -1,5 +1,4 @@
 import { useCallback, useMemo } from 'react';
-import { curry, curryRight } from 'lodash';
 
 import { getSearchResult, useVibrate, useViewInNewWindow } from '@/hooks';
 
@@ -63,6 +62,7 @@ import {
 	toArray,
 	toSet,
 } from '@/utilities';
+import { getFullRecipeSuitability } from '@/utils/evaluators';
 
 export type { TTableSortDescriptor } from '@/(pages)/customer-rare/recipeTabContent';
 
@@ -111,34 +111,6 @@ export default function RecipeTabContent() {
 		customerStore.shared.recipe.table.hiddenIngredients.use();
 	const hiddenRecipes = customerStore.shared.recipe.table.hiddenRecipes.use();
 
-	const composeTagsWithPopularTrend = useMemo(
-		() =>
-			curry(instance_recipe.composeTagsWithPopularTrend)(
-				curry.placeholder,
-				[],
-				curry.placeholder,
-				[],
-				currentCustomerPopularTrend
-			),
-		[
-			currentCustomerPopularTrend,
-			instance_recipe.composeTagsWithPopularTrend,
-		]
-	);
-
-	const calculateTagsWithTrend = useMemo(
-		() =>
-			curryRight(instance_recipe.calculateTagsWithTrend)(
-				currentCustomerPopularTrend,
-				isFamousShop
-			),
-		[
-			currentCustomerPopularTrend,
-			instance_recipe.calculateTagsWithTrend,
-			isFamousShop,
-		]
-	);
-
 	const data = useMemo(
 		() =>
 			instance_recipe.data.filter(
@@ -165,33 +137,20 @@ export default function RecipeTabContent() {
 
 		const dataWithRealSuitability = data
 			.map((item) => {
-				const composedRecipeTags = composeTagsWithPopularTrend(
-					item.ingredients,
-					item.positiveTags
-				);
-				const recipeTagsWithTrend =
-					calculateTagsWithTrend(composedRecipeTags);
-
-				const { recipe: easterEggRecipe, score: easterEggScore } =
-					instance_customer.checkEasterEgg({
-						currentCustomerName,
-						currentRecipe: item,
-					});
-
-				if (item.name === easterEggRecipe) {
-					return {
-						...item,
-						matchedPositiveTags: [],
-						positiveTags: recipeTagsWithTrend,
-						suitability: easterEggScore > 0 ? Infinity : -Infinity,
-					};
-				}
-
-				const { positiveTags: matchedPositiveTags, suitability } =
-					instance_recipe.getCustomerSuitability(
-						recipeTagsWithTrend,
-						customerPositiveTags
-					);
+				const {
+					matchedPositiveTags,
+					recipeTagsWithTrend,
+					suitability,
+				} = getFullRecipeSuitability({
+					customerName: currentCustomerName,
+					customerPositiveTags,
+					customerType: 'normal',
+					isFamousShop,
+					popularTrend: currentCustomerPopularTrend,
+					recipeIngredients: item.ingredients,
+					recipeName: item.name,
+					recipePositiveTags: item.positiveTags,
+				});
 
 				return {
 					...item,
@@ -241,15 +200,14 @@ export default function RecipeTabContent() {
 			}
 		);
 	}, [
-		calculateTagsWithTrend,
-		composeTagsWithPopularTrend,
 		currentCustomerName,
+		currentCustomerPopularTrend,
 		data,
 		hasNameFilter,
 		hiddenIngredients,
 		hiddenRecipes,
 		instance_customer,
-		instance_recipe,
+		isFamousShop,
 		searchValue,
 		selectedCookers,
 		selectedCustomerRecipeTag,

@@ -33,6 +33,7 @@ import {
 	toSet,
 	union,
 } from '@/utilities';
+import { getFullIngredientScoreChange } from '@/utils/evaluators';
 import type { TRecipe } from '@/utils/types';
 
 export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
@@ -195,49 +196,23 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 						const tagsWithTrend = calculateIngredientTagsWithTrend(
 							tags
 						) as TRecipeTag[];
-						const allTagsWithTrend = union(
+
+						const { scoreChange } = getFullIngredientScoreChange({
+							candidateIngredientName: name,
+							composeRecipeTagsWithPopularTrend,
+							currentIngredients: currentRecipeExtraIngredients,
+							currentRecipeName: currentRecipeData.name,
 							currentRecipeTagsWithTrend,
-							tagsWithTrend
-						);
-
-						const before = composeRecipeTagsWithPopularTrend(
-							currentRecipeTagsWithTrend as TIngredientTag[]
-						);
-						const after = composeRecipeTagsWithPopularTrend(
-							allTagsWithTrend as TIngredientTag[]
-						);
-
-						let scoreChange =
-							instance_recipe.getIngredientScoreChange(
-								before,
-								after,
-								customerPositiveTags
-							);
-
-						// The customer like the large partition tag.
-						scoreChange += Number(
-							isLargePartitionTagNext &&
-								(customerPositiveTags as TRecipeTag[]).includes(
-									DYNAMIC_TAG_MAP.largePartition
-								) &&
-								!before.includes(DYNAMIC_TAG_MAP.largePartition)
-						);
-
-						// The current popular tag is the large partition tag and the customer has popular tags.
-						scoreChange += Number(
-							shouldCalculateLargePartitionTag &&
-								(customerPositiveTags as TRecipeTag[]).includes(
-									DYNAMIC_TAG_MAP.popularNegative
-								) &&
-								currentCustomerPopularTrend.isNegative
-						);
-						scoreChange += Number(
-							shouldCalculateLargePartitionTag &&
-								(customerPositiveTags as TRecipeTag[]).includes(
-									DYNAMIC_TAG_MAP.popularPositive
-								) &&
-								!currentCustomerPopularTrend.isNegative
-						);
+							customerName: currentCustomerName,
+							customerPositiveTags,
+							customerType: 'normal',
+							ingredientTags: tagsWithTrend as TIngredientTag[],
+							isDarkIngredient: false,
+							isDarkMatter: false,
+							isLargePartitionTagNext,
+							popularTrend: currentCustomerPopularTrend,
+							shouldCalculateLargePartitionTag,
+						});
 
 						const isDown = scoreChange < 0;
 						const isUp = scoreChange > 0;
