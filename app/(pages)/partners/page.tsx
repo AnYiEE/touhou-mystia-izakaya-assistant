@@ -23,7 +23,7 @@ import SideSearchIconButton, {
 } from '@/components/sideSearchIconButton';
 
 import { partnersStore as store } from '@/stores';
-import { checkLengthEmpty } from '@/utilities';
+import { checkLengthEmpty, filterItems } from '@/utilities';
 
 export default function Partners() {
 	const instance = store.instance.get();
@@ -41,13 +41,9 @@ export default function Partners() {
 
 	const filterData = useCallback(
 		() =>
-			searchResult.filter(({ dlc }) => {
-				const isDlcMatched =
-					checkLengthEmpty(filterDlcs) ||
-					filterDlcs.includes(dlc.toString());
-
-				return isDlcMatched;
-			}),
+			filterItems(searchResult, [
+				{ field: 'dlc', match: 'in', values: filterDlcs },
+			]),
 		[filterDlcs, searchResult]
 	);
 

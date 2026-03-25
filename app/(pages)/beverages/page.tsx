@@ -23,11 +23,7 @@ import SideSearchIconButton, {
 } from '@/components/sideSearchIconButton';
 
 import { beveragesStore as store } from '@/stores';
-import {
-	checkArrayContainsOf,
-	checkArraySubsetOf,
-	checkLengthEmpty,
-} from '@/utilities';
+import { checkLengthEmpty, filterItems } from '@/utilities';
 
 export default function Beverages() {
 	const instance = store.instance.get();
@@ -50,27 +46,12 @@ export default function Beverages() {
 
 	const filterData = useCallback(
 		() =>
-			searchResult.filter(({ dlc, level, tags }) => {
-				const isDlcMatched =
-					checkLengthEmpty(filterDlcs) ||
-					filterDlcs.includes(dlc.toString());
-				const isLevelMatched =
-					checkLengthEmpty(filterLevels) ||
-					filterLevels.includes(level.toString());
-				const isTagMatched =
-					checkLengthEmpty(filterTags) ||
-					checkArraySubsetOf(filterTags, tags);
-				const isNoTagMatched =
-					checkLengthEmpty(filterNoTags) ||
-					!checkArrayContainsOf(filterNoTags, tags);
-
-				return (
-					isDlcMatched &&
-					isLevelMatched &&
-					isTagMatched &&
-					isNoTagMatched
-				);
-			}),
+			filterItems(searchResult, [
+				{ field: 'dlc', match: 'in', values: filterDlcs },
+				{ field: 'level', match: 'in', values: filterLevels },
+				{ field: 'tags', match: 'all', values: filterTags },
+				{ field: 'tags', match: 'excludeAny', values: filterNoTags },
+			]),
 		[filterDlcs, filterLevels, filterNoTags, filterTags, searchResult]
 	);
 

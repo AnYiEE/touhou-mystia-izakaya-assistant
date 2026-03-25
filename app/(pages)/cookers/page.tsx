@@ -23,7 +23,7 @@ import SideSearchIconButton, {
 } from '@/components/sideSearchIconButton';
 
 import { cookersStore as store } from '@/stores';
-import { checkArrayContainsOf, checkLengthEmpty } from '@/utilities';
+import { checkLengthEmpty, filterItems } from '@/utilities';
 
 export default function Cookers() {
 	const instance = store.instance.get();
@@ -47,33 +47,17 @@ export default function Cookers() {
 
 	const filterData = useCallback(
 		() =>
-			searchResult.filter(({ category, dlc, type }) => {
-				const types = [type].flat();
-
-				const isDlcMatched =
-					checkLengthEmpty(filterDlcs) ||
-					filterDlcs.includes(dlc.toString());
-				const isCategoryMatched =
-					checkLengthEmpty(filterCategories) ||
-					filterCategories.includes(category);
-				const isNoCategoryMatched =
-					checkLengthEmpty(filterNoCategories) ||
-					!filterNoCategories.includes(category);
-				const isTypeMatched =
-					checkLengthEmpty(filterTypes) ||
-					checkArrayContainsOf(filterTypes, types);
-				const isNoTypeMatched =
-					checkLengthEmpty(filterNoTypes) ||
-					!checkArrayContainsOf(filterNoTypes, types);
-
-				return (
-					isDlcMatched &&
-					isCategoryMatched &&
-					isNoCategoryMatched &&
-					isTypeMatched &&
-					isNoTypeMatched
-				);
-			}),
+			filterItems(searchResult, [
+				{ field: 'dlc', match: 'in', values: filterDlcs },
+				{ field: 'category', match: 'in', values: filterCategories },
+				{
+					field: 'category',
+					match: 'excludeIn',
+					values: filterNoCategories,
+				},
+				{ field: 'type', match: 'any', values: filterTypes },
+				{ field: 'type', match: 'excludeAny', values: filterNoTypes },
+			]),
 		[
 			filterCategories,
 			filterDlcs,

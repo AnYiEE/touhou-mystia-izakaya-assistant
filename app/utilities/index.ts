@@ -2,6 +2,7 @@ export * from './array';
 export * from './object';
 export * from './string';
 
+export * from './filterItems';
 export * from './pinyin';
 export * from './sort';
 

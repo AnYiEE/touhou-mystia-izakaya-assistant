@@ -23,11 +23,7 @@ import SideSearchIconButton, {
 } from '@/components/sideSearchIconButton';
 
 import { recipesStore as store } from '@/stores';
-import {
-	checkArrayContainsOf,
-	checkArraySubsetOf,
-	checkLengthEmpty,
-} from '@/utilities';
+import { checkLengthEmpty, filterItems } from '@/utilities';
 
 export default function Recipes() {
 	const currentPopularTrend = store.shared.popularTrend.use();
@@ -80,62 +76,41 @@ export default function Recipes() {
 
 	const filterData = useCallback(
 		() =>
-			dataWithTrend.filter(
-				({
-					cooker,
-					dlc,
-					ingredients,
-					level,
-					negativeTags,
-					positiveTags,
-				}) => {
-					const isDlcMatched =
-						checkLengthEmpty(filterDlcs) ||
-						filterDlcs.includes(dlc.toString());
-					const isLevelMatched =
-						checkLengthEmpty(filterLevels) ||
-						filterLevels.includes(level.toString());
-					const isCookerMatched =
-						checkLengthEmpty(filterCookers) ||
-						filterCookers.includes(cooker);
-					const isIngredientMatched =
-						checkLengthEmpty(filterIngredients) ||
-						checkArraySubsetOf(filterIngredients, ingredients);
-					const isNoIngredientMatched =
-						checkLengthEmpty(filterNoIngredients) ||
-						!checkArrayContainsOf(filterNoIngredients, ingredients);
-					const isNegativeTagMatched =
-						checkLengthEmpty(filterNegativeTags) ||
-						checkArraySubsetOf(filterNegativeTags, negativeTags);
-					const isNoNegativeTagMatched =
-						checkLengthEmpty(filterNoNegativeTags) ||
-						!checkArrayContainsOf(
-							filterNoNegativeTags,
-							negativeTags
-						);
-					const isPositiveTagMatched =
-						checkLengthEmpty(filterPositiveTags) ||
-						checkArraySubsetOf(filterPositiveTags, positiveTags);
-					const isNoPositiveTagMatched =
-						checkLengthEmpty(filterNoPositiveTags) ||
-						!checkArrayContainsOf(
-							filterNoPositiveTags,
-							positiveTags
-						);
-
-					return (
-						isDlcMatched &&
-						isLevelMatched &&
-						isIngredientMatched &&
-						isNoIngredientMatched &&
-						isCookerMatched &&
-						isNegativeTagMatched &&
-						isNoNegativeTagMatched &&
-						isPositiveTagMatched &&
-						isNoPositiveTagMatched
-					);
-				}
-			),
+			filterItems(dataWithTrend, [
+				{ field: 'dlc', match: 'in', values: filterDlcs },
+				{ field: 'level', match: 'in', values: filterLevels },
+				{ field: 'cooker', match: 'in', values: filterCookers },
+				{
+					field: 'ingredients',
+					match: 'all',
+					values: filterIngredients,
+				},
+				{
+					field: 'ingredients',
+					match: 'excludeAny',
+					values: filterNoIngredients,
+				},
+				{
+					field: 'negativeTags',
+					match: 'all',
+					values: filterNegativeTags,
+				},
+				{
+					field: 'negativeTags',
+					match: 'excludeAny',
+					values: filterNoNegativeTags,
+				},
+				{
+					field: 'positiveTags',
+					match: 'all',
+					values: filterPositiveTags,
+				},
+				{
+					field: 'positiveTags',
+					match: 'excludeAny',
+					values: filterNoPositiveTags,
+				},
+			]),
 		[
 			dataWithTrend,
 			filterCookers,

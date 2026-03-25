@@ -47,12 +47,7 @@ import {
 import { siteConfig } from '@/configs';
 import { type TCustomerNormalName } from '@/data';
 import { customerNormalStore as customerStore, globalStore } from '@/stores';
-import {
-	checkArrayContainsOf,
-	checkArraySubsetOf,
-	checkLengthEmpty,
-	getPageTitle,
-} from '@/utilities';
+import { checkLengthEmpty, filterItems, getPageTitle } from '@/utilities';
 
 const { enName, name: zhName } = siteConfig;
 
@@ -146,42 +141,37 @@ export default function Content() {
 	const customerFilterExcludes =
 		customerStore.persistence.customer.filters.excludes.use();
 
-	const filterCustomerData = useCallback(
-		() =>
-			customerSearchResult.filter(({ dlc, name, places }) => {
-				if (customerFilterIncludes.includes(name)) {
-					return true;
-				}
-
-				const isNameExcludesMatched =
-					checkLengthEmpty(customerFilterExcludes) ||
-					!customerFilterExcludes.includes(name);
-				const isDlcMatched =
-					checkLengthEmpty(customerFilterDlcs) ||
-					customerFilterDlcs.includes(dlc.toString());
-				const isPlaceMatched =
-					checkLengthEmpty(customerFilterPlaces) ||
-					checkArrayContainsOf(customerFilterPlaces, places);
-				const isNoPlaceMatched =
-					checkLengthEmpty(customerFilterNoPlaces) ||
-					!checkArrayContainsOf(customerFilterNoPlaces, places);
-
-				return (
-					isNameExcludesMatched &&
-					isDlcMatched &&
-					isPlaceMatched &&
-					isNoPlaceMatched
-				);
-			}),
-		[
-			customerFilterDlcs,
-			customerFilterExcludes,
-			customerFilterIncludes,
-			customerFilterNoPlaces,
-			customerFilterPlaces,
-			customerSearchResult,
-		]
-	);
+	const filterCustomerData = useCallback(() => {
+		const filtered = filterItems(customerSearchResult, [
+			{
+				field: 'name',
+				match: 'excludeIn',
+				values: customerFilterExcludes,
+			},
+			{ field: 'dlc', match: 'in', values: customerFilterDlcs },
+			{ field: 'places', match: 'any', values: customerFilterPlaces },
+			{
+				field: 'places',
+				match: 'excludeAny',
+				values: customerFilterNoPlaces,
+			},
+		]);
+		if (checkLengthEmpty(customerFilterIncludes)) {
+			return filtered;
+		}
+		const filteredNames = new Set(filtered.map(({ name }) => name));
+		return customerSearchResult.filter(
+			({ name }) =>
+				filteredNames.has(name) || customerFilterIncludes.includes(name)
+		);
+	}, [
+		customerFilterDlcs,
+		customerFilterExcludes,
+		customerFilterIncludes,
+		customerFilterNoPlaces,
+		customerFilterPlaces,
+		customerSearchResult,
+	]);
 
 	const customerFilteredData = useFilteredData(
 		instance_customer,
@@ -297,50 +287,46 @@ export default function Content() {
 	const ingredientFilterLevels =
 		customerStore.persistence.ingredient.filters.levels.use();
 
-	const filterIngredientData = useCallback(
-		() =>
-			instance_ingredient.data.filter(({ dlc, level, name, tags }) => {
-				const tagsWithTrend =
-					instance_ingredient.calculateTagsWithTrend(
-						tags,
-						currentCustomerPopularTrend,
-						isFamousShop
-					);
-
-				const isDlcMatched =
-					checkLengthEmpty(ingredientFilterDlcs) ||
-					ingredientFilterDlcs.includes(dlc.toString());
-				const isTagMatched =
-					checkLengthEmpty(ingredientFilterTags) ||
-					checkArraySubsetOf(ingredientFilterTags, tagsWithTrend);
-				const isNoTagMatched =
-					checkLengthEmpty(ingredientFilterNoTags) ||
-					!checkArrayContainsOf(
-						ingredientFilterNoTags,
-						tagsWithTrend
-					);
-				const isLevelMatched =
-					checkLengthEmpty(ingredientFilterLevels) ||
-					ingredientFilterLevels.includes(level.toString());
-
-				return (
-					isDlcMatched &&
-					isTagMatched &&
-					isNoTagMatched &&
-					isLevelMatched &&
-					!instance_ingredient.blockedIngredients.has(name)
-				);
-			}),
-		[
-			currentCustomerPopularTrend,
-			ingredientFilterDlcs,
-			ingredientFilterLevels,
-			ingredientFilterNoTags,
-			ingredientFilterTags,
-			instance_ingredient,
-			isFamousShop,
-		]
-	);
+	const filterIngredientData = useCallback(() => {
+		const augmented = instance_ingredient.data
+			.filter(
+				({ name }) => !instance_ingredient.blockedIngredients.has(name)
+			)
+			.map((item) => ({
+				...item,
+				_tagsWithTrend: instance_ingredient.calculateTagsWithTrend(
+					item.tags,
+					currentCustomerPopularTrend,
+					isFamousShop
+				),
+			}));
+		const filtered = filterItems(augmented, [
+			{ field: 'dlc', match: 'in', values: ingredientFilterDlcs },
+			{
+				field: '_tagsWithTrend',
+				match: 'all',
+				values: ingredientFilterTags,
+			},
+			{
+				field: '_tagsWithTrend',
+				match: 'excludeAny',
+				values: ingredientFilterNoTags,
+			},
+			{ field: 'level', match: 'in', values: ingredientFilterLevels },
+		]);
+		const filteredNames = new Set(filtered.map(({ name }) => name));
+		return instance_ingredient.data.filter(({ name }) =>
+			filteredNames.has(name)
+		);
+	}, [
+		currentCustomerPopularTrend,
+		ingredientFilterDlcs,
+		ingredientFilterLevels,
+		ingredientFilterNoTags,
+		ingredientFilterTags,
+		instance_ingredient,
+		isFamousShop,
+	]);
 
 	const ingredientFilteredData = useFilteredData(
 		instance_ingredient,

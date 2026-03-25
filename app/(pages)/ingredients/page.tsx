@@ -23,11 +23,7 @@ import SideSearchIconButton, {
 } from '@/components/sideSearchIconButton';
 
 import { ingredientsStore as store } from '@/stores';
-import {
-	checkArrayContainsOf,
-	checkArraySubsetOf,
-	checkLengthEmpty,
-} from '@/utilities';
+import { checkLengthEmpty, filterItems } from '@/utilities';
 
 export default function Ingredients() {
 	const currentPopularTrend = store.shared.popularTrend.use();
@@ -69,34 +65,14 @@ export default function Ingredients() {
 
 	const filterData = useCallback(
 		() =>
-			dataWithTrend.filter(({ dlc, level, tags, type }) => {
-				const isDlcMatched =
-					checkLengthEmpty(filterDlcs) ||
-					filterDlcs.includes(dlc.toString());
-				const isLevelMatched =
-					checkLengthEmpty(filterLevels) ||
-					filterLevels.includes(level.toString());
-				const isTagMatched =
-					checkLengthEmpty(filterTags) ||
-					checkArraySubsetOf(filterTags, tags);
-				const isNoTagMatched =
-					checkLengthEmpty(filterNoTags) ||
-					!checkArrayContainsOf(filterNoTags, tags);
-				const isTypeMatched =
-					checkLengthEmpty(filterTypes) || filterTypes.includes(type);
-				const isNoTypeMatched =
-					checkLengthEmpty(filterNoTypes) ||
-					!filterNoTypes.includes(type);
-
-				return (
-					isDlcMatched &&
-					isLevelMatched &&
-					isTagMatched &&
-					isNoTagMatched &&
-					isTypeMatched &&
-					isNoTypeMatched
-				);
-			}),
+			filterItems(dataWithTrend, [
+				{ field: 'dlc', match: 'in', values: filterDlcs },
+				{ field: 'level', match: 'in', values: filterLevels },
+				{ field: 'tags', match: 'all', values: filterTags },
+				{ field: 'tags', match: 'excludeAny', values: filterNoTags },
+				{ field: 'type', match: 'in', values: filterTypes },
+				{ field: 'type', match: 'excludeIn', values: filterNoTypes },
+			]),
 		[
 			dataWithTrend,
 			filterDlcs,
