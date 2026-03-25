@@ -39,12 +39,16 @@ import {
 import Heading from '@/components/heading';
 import TimeAgo from '@/components/timeAgo';
 
-import { FREQUENCY_TTL } from '@/api/backup/constant';
+import {
+	compatibilityCustomerRareData,
+	deleteIndexProperty,
+} from '@/actions/backup/compatibility';
+import { FREQUENCY_TTL } from '@/api/v1/backups/constants';
 import type {
 	IBackupCheckSuccessResponse,
 	IBackupUploadBody,
 	IBackupUploadSuccessResponse,
-} from '@/api/backup/types';
+} from '@/api/v1/backups/types';
 import { siteConfig } from '@/configs';
 import { customerNormalStore, customerRareStore, globalStore } from '@/stores';
 import {
@@ -95,7 +99,18 @@ function checkResponse<T>(response: Response) {
 		});
 	}
 
-	return response.json() as Promise<T>;
+	return response.json().then((json) => {
+		if (
+			json !== null &&
+			typeof json === 'object' &&
+			'data' in json &&
+			'status' in json &&
+			json.status === 'ok'
+		) {
+			return json.data as T;
+		}
+		return json as T;
+	});
 }
 
 function setErrorState({
@@ -130,40 +145,6 @@ function setErrorState({
 		}
 		trackEvent(trackEvent.category.error, 'Cloud', type, status);
 	}
-}
-
-function compatibilityCustomerRareData(objects: Record<string, object[]>) {
-	Object.values(objects).forEach((data) => {
-		data.forEach((item, index) => {
-			const object = item as Record<string, unknown>;
-			if (!('price' in object || 'rating' in object)) {
-				return;
-			}
-
-			const beverage = object['beverage'] as string;
-			const hasMystiaCooker = object['hasMystiaCooker'] as boolean;
-			const order = (object['order'] as {
-				beverageTag: string | null;
-				recipeTag: string | null;
-			} | null) ?? { beverageTag: null, recipeTag: null };
-			const recipe = {
-				extraIngredients: object['extraIngredients'] as string[],
-				name: object['recipe'] as string,
-			};
-
-			data[index] = { beverage, hasMystiaCooker, order, recipe };
-		});
-	});
-}
-
-function deleteIndexProperty(objects: Record<string, object[]>) {
-	Object.values(objects).forEach((data) => {
-		data.forEach((object) => {
-			if ('index' in object) {
-				delete object.index;
-			}
-		});
-	});
 }
 
 interface IProps {
@@ -272,7 +253,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				);
 				return;
 			}
-			fetch(`/api/backup/check/${cloudCode}`)
+			fetch(`/api/v1/backups/${cloudCode}/metadata`)
 				.then(checkResponse<IBackupCheckSuccessResponse>)
 				.then(({ created_at, last_accessed }) => {
 					setCloudCodeInfo(
@@ -324,7 +305,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		}
 		setIsCloudDeleteButtonDisabled(true);
 		setCloudDeleteButtonLabel(cloudDeleteButtonLabelMap.deleting);
-		fetch(`/api/backup/delete/${currentCloudCode}`, { method: 'DELETE' })
+		fetch(`/api/v1/backups/${currentCloudCode}`, { method: 'DELETE' })
 			.then(checkResponse)
 			.then(() => {
 				setCloudDeleteState('success');
@@ -366,7 +347,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		}
 		setIsCloudDownloadButtonDisabled(true);
 		setCloudDownloadButtonLabel(cloudDownloadButtonLabelMap.downloading);
-		fetch(`/api/backup/download/${code}?user_id=${userId}`, {
+		fetch(`/api/v1/backups/${code}?user_id=${userId}`, {
 			cache: 'no-cache',
 		})
 			.then(checkResponse<TMealData>)
@@ -422,7 +403,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	const handleCloudUploadButtonPress = useCallback(() => {
 		setIsCloudUploadButtonDisabled(true);
 		setCloudUploadButtonLabel(cloudUploadButtonLabelMap.uploading);
-		fetch('/api/backup/upload', {
+		fetch('/api/v1/backups', {
 			body: JSON.stringify({
 				code: currentCloudCode,
 				data: currentMealData,

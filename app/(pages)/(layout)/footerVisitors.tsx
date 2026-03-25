@@ -22,12 +22,14 @@ export default function FooterVisitors() {
 			setVisitors(-1);
 		};
 
-		fetch('/api/real-time-visitors', { cache: 'no-cache' })
+		fetch('/api/v1/analytics/visitors', { cache: 'no-cache' })
 			.then((response) => {
 				if (response.ok) {
-					void response.json().then((data) => {
-						setVisitors(data.visitors as number);
-					});
+					void response
+						.json()
+						.then((json: { data: { visitors: number } }) => {
+							setVisitors(json.data.visitors);
+						});
 				} else {
 					setFailed();
 				}

@@ -1,7 +1,12 @@
-import { type NextRequest, NextResponse } from 'next/server';
+import { type NextRequest } from 'next/server';
 import { env } from 'node:process';
 
 import { deleteFile, deleteRecord, getExpiredRecords } from '@/actions/backup';
+import {
+	createErrorResponse,
+	createJsonResponse,
+	handleOptionsRequest,
+} from '@/api/v1/utils';
 
 export async function DELETE(
 	_request: NextRequest,
@@ -10,10 +15,7 @@ export async function DELETE(
 	const { secret } = await params;
 
 	if (secret !== env.CLEANUP_SECRET) {
-		return NextResponse.json(
-			{ message: 'Invalid secret' },
-			{ status: 401 }
-		);
+		return createErrorResponse('Invalid secret', 401);
 	}
 
 	const now = Date.now();
@@ -21,17 +23,21 @@ export async function DELETE(
 
 	const records = await getExpiredRecords(sixMonthsAgo);
 
-	let deletedCount = 0;
+	const deletedCodes: string[] = [];
 	await Promise.allSettled(
 		records.map(async ({ code }) => {
 			await deleteFile(code);
 			await deleteRecord(code);
-			deletedCount++;
+			deletedCodes.push(code);
 		})
 	);
 
-	return NextResponse.json({
-		deletedCount,
-		deletedFiles: records.map(({ code }) => code),
+	return createJsonResponse({
+		deletedCount: deletedCodes.length,
+		deletedFiles: deletedCodes,
 	});
+}
+
+export function OPTIONS() {
+	return handleOptionsRequest();
 }

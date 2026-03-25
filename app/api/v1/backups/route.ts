@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from 'next/server';
+import { type NextRequest } from 'next/server';
 import { v7 as uuid, validate } from 'uuid';
 
 import {
@@ -8,34 +8,27 @@ import {
 	setRecord,
 	updateRecord,
 } from '@/actions/backup';
-import { FREQUENCY_TTL, MAX_DATA_SIZE } from '@/api/backup/constant';
-import type {
-	IBackupUploadBody,
-	IBackupUploadSuccessResponse,
-} from '@/api/backup/types';
-import { getRequestMeta } from '@/api/backup/utils';
+import {
+	createErrorResponse,
+	createJsonResponse,
+	handleOptionsRequest,
+} from '@/api/v1/utils';
 import { FILE_TYPE_JSON } from '@/utilities';
+import { FREQUENCY_TTL, MAX_DATA_SIZE } from './constants';
+import type { IBackupUploadBody, IBackupUploadSuccessResponse } from './types';
+import { getRequestMeta } from './utils';
 
 export async function POST(request: NextRequest) {
 	const { contentType, ip, ua } = getRequestMeta(request);
 
 	if (contentType !== FILE_TYPE_JSON) {
-		return NextResponse.json(
-			{ message: 'Invalid content type' },
-			{ status: 400 }
-		);
+		return createErrorResponse('Invalid content type', 400);
 	}
 	if (ip === null) {
-		return NextResponse.json(
-			{ message: 'Invalid IP address' },
-			{ status: 400 }
-		);
+		return createErrorResponse('Invalid IP address', 400);
 	}
 	if (ua === null) {
-		return NextResponse.json(
-			{ message: 'Invalid user agent' },
-			{ status: 400 }
-		);
+		return createErrorResponse('Invalid user agent', 400);
 	}
 
 	const json = (await request.json()) as Partial<IBackupUploadBody>;
@@ -45,10 +38,7 @@ export async function POST(request: NextRequest) {
 		!('customer_rare' in json.data) ||
 		!('user_id' in json)
 	) {
-		return NextResponse.json(
-			{ message: 'Invalid object structure' },
-			{ status: 400 }
-		);
+		return createErrorResponse('Invalid object structure', 400);
 	}
 
 	let code = uuid();
@@ -56,20 +46,14 @@ export async function POST(request: NextRequest) {
 		const isValid = validate(json.code);
 		if (isValid) {
 			code = json.code;
-		} else if (code !== 'null') {
-			return NextResponse.json(
-				{ message: 'Invalid code' },
-				{ status: 400 }
-			);
+		} else if (json.code !== 'null') {
+			return createErrorResponse('Invalid code', 400);
 		}
 	}
 
 	const jsonString = JSON.stringify(json.data);
 	if (jsonString.length > MAX_DATA_SIZE) {
-		return NextResponse.json(
-			{ message: 'The data is too large' },
-			{ status: 413 }
-		);
+		return createErrorResponse('The data is too large', 413);
 	}
 
 	let userId = json.user_id ?? '';
@@ -85,19 +69,13 @@ export async function POST(request: NextRequest) {
 		{ ip, ua, userId }
 	);
 	if (recentRecord.status === 429) {
-		return NextResponse.json(
-			{ message: 'Requests are too frequent' },
-			{ status: 429 }
-		);
+		return createErrorResponse('Requests are too frequent', 429);
 	}
 
 	try {
 		await saveFile(code, jsonString);
 	} catch {
-		return NextResponse.json(
-			{ message: 'Failed to save file' },
-			{ status: 500 }
-		);
+		return createErrorResponse('Failed to save file', 500);
 	}
 
 	const record = await getRecord(code);
@@ -118,5 +96,9 @@ export async function POST(request: NextRequest) {
 				user_id: userId,
 			}));
 
-	return NextResponse.json({ code } satisfies IBackupUploadSuccessResponse);
+	return createJsonResponse({ code } satisfies IBackupUploadSuccessResponse);
+}
+
+export function OPTIONS() {
+	return handleOptionsRequest();
 }

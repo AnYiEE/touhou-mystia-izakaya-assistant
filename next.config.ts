@@ -59,6 +59,18 @@ if (exportMode) {
 			});
 		}
 
+		headers.push({
+			source: '/api/v1/:path*',
+			headers: [
+				{ key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
+				{
+					key: 'Access-Control-Allow-Methods',
+					value: 'DELETE, GET, OPTIONS, POST',
+				},
+				{ key: 'Access-Control-Allow-Origin', value: '*' },
+			],
+		});
+
 		return headers;
 	};
 }

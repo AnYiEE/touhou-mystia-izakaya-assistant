@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
 import { env } from 'node:process';
+
+import { createJsonResponse, handleOptionsRequest } from '@/api/v1/utils';
 
 type TVisitorCountResponse = [
 	{
@@ -70,8 +71,12 @@ if (!globalThis.__visitorCountCacheInitialized) {
 
 export function GET() {
 	if (cache.data === null) {
-		return NextResponse.json({ visitors: -1 });
+		return createJsonResponse({ visitors: -1 });
 	}
 
-	return NextResponse.json(cache.data);
+	return createJsonResponse(cache.data);
+}
+
+export function OPTIONS() {
+	return handleOptionsRequest();
 }
