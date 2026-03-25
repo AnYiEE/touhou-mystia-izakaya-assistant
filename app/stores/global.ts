@@ -109,6 +109,7 @@ const storeVersion = {
 	hiddenItems: 13, // eslint-disable-next-line sort-keys
 	hiddenDlcs: 14, // eslint-disable-next-line sort-keys
 	donationModal: 15,
+	donationModalRmDismiss: 16,
 } as const;
 
 const state = {
@@ -147,7 +148,6 @@ const state = {
 
 		donationModal: {
 			interactionCount: 0,
-			isDismiss: false,
 			lastMilestoneShown: 0,
 			lastShown: null as number | null,
 		},
@@ -170,7 +170,7 @@ export const globalStore = store(state, {
 		}),
 		persistMiddleware<typeof state>({
 			name: storeName,
-			version: storeVersion.donationModal,
+			version: storeVersion.donationModalRmDismiss,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -246,6 +246,11 @@ export const globalStore = store(state, {
 						lastMilestoneShown: 0,
 						lastShown: null,
 					};
+				}
+				if (version < storeVersion.donationModalRmDismiss) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const { persistence } = oldState;
+					delete persistence.donationModal.isDismiss;
 				}
 				return persistedState as typeof state;
 			},
@@ -361,9 +366,6 @@ export const globalStore = store(state, {
 	.actions((currentStore) => ({
 		setDonationModalInteractionCount(count: number) {
 			currentStore.persistence.donationModal.interactionCount.set(count);
-		},
-		setDonationModalIsDismiss(isDismiss: boolean) {
-			currentStore.persistence.donationModal.isDismiss.set(isDismiss);
 		},
 		setDonationModalIsOpen(isOpen: boolean) {
 			currentStore.shared.donationModal.isOpen.set(isOpen);

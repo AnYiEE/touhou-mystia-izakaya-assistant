@@ -29,7 +29,10 @@ function getCurrentMilestone(count: number) {
 	if (count < 500) {
 		return 0;
 	}
-	return Math.floor(count / 500) * 500;
+	if (count < 2000) {
+		return Math.floor(count / 500) * 500;
+	}
+	return 2000 + Math.floor((count - 2000) / 1000) * 1000;
 }
 
 function tryAcquireLockAndExecute(onSuccess: () => void) {
@@ -62,7 +65,6 @@ function useDonationModalTrigger() {
 	const isMounted = useMounted();
 	const { pathname } = usePathname();
 
-	const isDismiss = store.persistence.donationModal.isDismiss.use();
 	const isOpen = store.shared.donationModal.isOpen.use();
 
 	const interactionCount =
@@ -74,7 +76,7 @@ function useDonationModalTrigger() {
 	const currentMilestone = getCurrentMilestone(interactionCount);
 
 	useEffect(() => {
-		if (isDismiss || isOpen || !isMounted) {
+		if (isOpen || !isMounted) {
 			return;
 		}
 
@@ -103,7 +105,6 @@ function useDonationModalTrigger() {
 		});
 	}, [
 		currentMilestone,
-		isDismiss,
 		isMounted,
 		isOpen,
 		lastMilestoneShown,
@@ -121,7 +122,6 @@ export default function DonationModal() {
 
 	const interactionCount =
 		store.persistence.donationModal.interactionCount.use();
-	const isDismiss = store.persistence.donationModal.isDismiss.use();
 	const isOpen = store.shared.donationModal.isOpen.use();
 
 	const dirverState = store.persistence.dirver.use();
@@ -145,21 +145,6 @@ export default function DonationModal() {
 		store.setDonationModalIsOpen(false);
 	}, [vibrate]);
 
-	const handleDismissForever = useCallback(() => {
-		vibrate();
-		trackEvent(
-			trackEvent.category.click,
-			'Donation Modal Button',
-			'Dismiss Forever'
-		);
-		const currentCount =
-			store.persistence.donationModal.interactionCount.get();
-		const milestone = getCurrentMilestone(currentCount);
-		store.setDonationModalLastMilestoneShown(milestone);
-		store.setDonationModalIsDismiss(true);
-		store.setDonationModalIsOpen(false);
-	}, [vibrate]);
-
 	const handleRemindLater = useCallback(() => {
 		vibrate();
 		trackEvent(
@@ -172,7 +157,7 @@ export default function DonationModal() {
 		store.setDonationModalIsOpen(false);
 	}, [vibrate]);
 
-	if (isDismiss || shouldHideForTutorial || !isMounted) {
+	if (shouldHideForTutorial || !isMounted) {
 		return null;
 	}
 
@@ -209,7 +194,7 @@ export default function DonationModal() {
 						{shortName}继续成长、陪伴更多玩家的动力。
 					</p>
 					<p>
-						对于在使用过程中打扰到您，我深感歉意。我知道在专注游戏的时候弹窗可能会打扰您的体验，因此特别提供了下方按钮，您可以点击它永久关闭此弹窗。希望这不会过于影响您的使用体验，也感谢您一路以来的理解与支持。
+						对于在使用过程中打扰到您，我深感歉意。我知道在专注游戏的时候弹窗可能会打扰您的体验，因此特别提供了下方按钮，您可以点击它暂时关闭此弹窗。希望这不会过于影响您的使用体验，也感谢您一路以来的理解与支持。
 					</p>
 				</div>
 				<QRCode text={links.donate.href} className="w-28">
@@ -217,18 +202,11 @@ export default function DonationModal() {
 				</QRCode>
 				<div className="flex justify-end gap-2">
 					<Button
-						color="danger"
-						variant="light"
-						onPress={handleDismissForever}
-					>
-						永久关闭此弹窗
-					</Button>
-					<Button
 						color="warning"
 						variant="light"
 						onPress={handleRemindLater}
 					>
-						{REMIND_LATER_DAYS}日内不再提醒
+						{REMIND_LATER_DAYS}日内不再弹出
 					</Button>
 					<Button variant="solid" onPress={handleClose}>
 						关闭弹窗
