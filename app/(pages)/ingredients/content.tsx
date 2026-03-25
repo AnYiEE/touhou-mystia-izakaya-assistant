@@ -110,21 +110,18 @@ export default memo<IProps>(function Content({ data }) {
 									return null;
 								}
 								const relatedRecipesGroupByDlcMap =
-									relatedRecipes.reduce<Map<TDlc, TRecipe[]>>(
-										(map, item) => {
-											if (hiddenDlcs.has(item.dlc)) {
-												return map;
-											}
-											if (!map.has(item.dlc)) {
-												map.set(item.dlc, []);
-											}
-											(
-												map.get(item.dlc) as TRecipe[]
-											).push(item);
+									relatedRecipes.reduce((map, item) => {
+										if (hiddenDlcs.has(item.dlc)) {
 											return map;
-										},
-										new Map()
-									);
+										}
+										if (!map.has(item.dlc)) {
+											map.set(item.dlc, []);
+										}
+										(map.get(item.dlc) as TRecipe[]).push(
+											item
+										);
+										return map;
+									}, new Map<TDlc, TRecipe[]>());
 								const relatedRecipesGroupByDlcSorted = toArray(
 									relatedRecipesGroupByDlcMap
 								).sort(([a], [b]) => numberSort(a, b));

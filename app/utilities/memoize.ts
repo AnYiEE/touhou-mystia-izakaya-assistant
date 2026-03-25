@@ -29,7 +29,6 @@ export function memoize<T extends TFunction>(fn: T, cacheType?: TCacheType) {
 		}
 
 		if (cache.has(cacheKey)) {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 			return cache.get(cacheKey) as ReturnType<T>;
 		}
 
@@ -37,7 +36,6 @@ export function memoize<T extends TFunction>(fn: T, cacheType?: TCacheType) {
 
 		cache.set(cacheKey, result);
 
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 		return result;
 	};
 

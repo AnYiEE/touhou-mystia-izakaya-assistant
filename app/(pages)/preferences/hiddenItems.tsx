@@ -148,7 +148,7 @@ const SettingsPanel = memo(function SettingsPanel<
 }: ISettingsPanelProps<T, U['name']>) {
 	const dataGroupByDlcMap = useMemo(
 		() =>
-			data.reduce<Map<U['dlc'], U[]>>((map, item) => {
+			data.reduce((map, item) => {
 				if (!map.has(item.dlc)) {
 					map.set(item.dlc, []);
 				}
@@ -156,7 +156,7 @@ const SettingsPanel = memo(function SettingsPanel<
 				(map.get(item.dlc) as U[]).push(item as U);
 
 				return map;
-			}, new Map()),
+			}, new Map<U['dlc'], U[]>()),
 		[data]
 	);
 

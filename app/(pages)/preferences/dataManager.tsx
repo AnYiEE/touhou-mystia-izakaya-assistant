@@ -198,22 +198,25 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 
 	const [isCloudDeleteButtonDisabled, setIsCloudDeleteButtonDisabled] =
 		useState(false);
-	const [cloudDeleteButtonLabel, setCloudDeleteButtonLabel] =
-		useState(cloudDeleteButtonLabelMap.delete);
+	const [cloudDeleteButtonLabel, setCloudDeleteButtonLabel] = useState(
+		cloudDeleteButtonLabelMap.delete as string
+	);
 	const [cloudDeleteState, setCloudDeleteState] =
 		useState<TCloudState>('default');
 
 	const [isCloudDownloadButtonDisabled, setIsCloudDownloadButtonDisabled] =
 		useState(false);
-	const [cloudDownloadButtonLabel, setCloudDownloadButtonLabel] =
-		useState(cloudDownloadButtonLabelMap.download);
+	const [cloudDownloadButtonLabel, setCloudDownloadButtonLabel] = useState(
+		cloudDownloadButtonLabelMap.download as string
+	);
 	const [cloudDownloadState, setCloudDownloadState] =
 		useState<TCloudState>('default');
 
 	const [isCloudUploadButtonDisabled, setIsCloudUploadButtonDisabled] =
 		useState(false);
-	const [cloudUploadButtonLabel, setCloudUploadButtonLabel] =
-		useState(cloudUploadButtonLabelMap.upload);
+	const [cloudUploadButtonLabel, setCloudUploadButtonLabel] = useState(
+		cloudUploadButtonLabelMap.upload as string
+	);
 	const [cloudUploadState, setCloudUploadState] =
 		useState<TCloudState>('default');
 
