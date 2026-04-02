@@ -3566,6 +3566,7 @@ export const CUSTOMER_RARE_LIST = [
 		places: [
 			'妖怪兽道',
 			'人间之里',
+			'博丽神社',
 			'红魔馆',
 			'迷途竹林',
 			'魔法森林',
