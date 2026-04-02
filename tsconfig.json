@@ -22,7 +22,6 @@
 		"paths": { "@/*": ["./app/*"] },
 		"resolveJsonModule": true,
 
-		"downlevelIteration": true,
 		"newLine": "lf",
 		"noEmit": true,
 		"removeComments": false,
@@ -51,5 +50,6 @@
 		".next/types/**/*.ts",
 		"next-env.d.ts",
 		"node_modules/@types/serviceworker"
-	]
+	],
+	"types": ["*"]
 }

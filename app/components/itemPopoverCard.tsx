@@ -215,7 +215,9 @@ const ItemPopover = memo<IPopoverProps>(function ItemPopover({
 });
 
 interface IItemPopoverTriggerProps
-	extends PopoverTriggerProps, HTMLButtonElementAttributes {}
+	extends
+		Omit<PopoverTriggerProps, 'className'>,
+		HTMLButtonElementAttributes {}
 
 const ItemPopoverTrigger = memo<IItemPopoverTriggerProps>(function Trigger({
 	className,
