@@ -3204,7 +3204,7 @@ export const RECIPE_LIST = [
 		baseCookTime: 8,
 		dlc: 9,
 		level: 2,
-		price: 20,
+		price: 28,
 		from: { bond: { name: '神绮', level: 2 } },
 	},
 	{
