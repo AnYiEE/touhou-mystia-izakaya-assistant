@@ -90,6 +90,9 @@ export default memo<IProps>(function Content({ data }) {
 									Lv.{from.level - 1}
 									<span className="mx-0.5">➞</span>Lv.
 									{from.level}
+									{from.description !== null && (
+										<>，{from.description}</>
+									)}
 								</>
 							)}
 						</p>

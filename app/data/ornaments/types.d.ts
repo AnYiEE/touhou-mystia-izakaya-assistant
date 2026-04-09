@@ -3,7 +3,13 @@ import type { IItemBase, TDescription } from '@/data/types';
 
 export interface IOrnament extends IItemBase {
 	effect: TDescription;
-	from: TDescription | { bond: TCustomerRareName; level: number };
+	from:
+		| TDescription
+		| {
+				bond: TCustomerRareName;
+				level: number;
+				description: string | null;
+		  };
 }
 
 export type TOrnaments = typeof import('./data').ORNAMENT_LIST;
