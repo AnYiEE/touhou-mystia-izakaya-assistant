@@ -110,6 +110,7 @@ const storeVersion = {
 	hiddenDlcs: 14, // eslint-disable-next-line sort-keys
 	donationModal: 15,
 	donationModalRmDismiss: 16,
+	suggestMeals: 17,
 } as const;
 
 const state = {
@@ -119,6 +120,7 @@ const state = {
 	persistence: {
 		customerCardTagsTooltip: true,
 		hiddenItems: { dlcs: [] as string[] },
+		suggestMeals: { enabled: true, maxResults: 5 },
 		table: {
 			columns: {
 				beverage: beverageTableColumns.map(toGetItemWithKey('key')),
@@ -154,11 +156,17 @@ const state = {
 	},
 
 	shared: {
-		donationModal: { isOpen: false },
-		preferencesModal: { isOpen: false },
+		suggestMeals: {
+			selectableMaxResults: generateRange(1, 10).map(
+				toGetValueCollection
+			),
+		},
 		table: {
 			selectableRows: generateRange(5, 20).map(toGetValueCollection),
 		},
+
+		donationModal: { isOpen: false },
+		preferencesModal: { isOpen: false },
 	},
 };
 
@@ -170,7 +178,7 @@ export const globalStore = store(state, {
 		}),
 		persistMiddleware<typeof state>({
 			name: storeName,
-			version: storeVersion.donationModalRmDismiss,
+			version: storeVersion.suggestMeals,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -252,6 +260,12 @@ export const globalStore = store(state, {
 					const { persistence } = oldState;
 					delete persistence.donationModal.isDismiss;
 				}
+				if (version < storeVersion.suggestMeals) {
+					oldState.persistence.suggestMeals = {
+						enabled: true,
+						maxResults: 5,
+					};
+				}
 				return persistedState as typeof state;
 			},
 			partialize(currentStore) {
@@ -313,6 +327,22 @@ export const globalStore = store(state, {
 				set.delete(0);
 				currentStore.persistence.hiddenItems.dlcs.set(
 					toArray(set).map(String)
+				);
+			},
+		},
+
+		maxSuggestMealResults: {
+			read: () =>
+				toSet(
+					currentStore.persistence.suggestMeals.maxResults
+						.use()
+						.toString()
+				) as SelectionSet,
+			write: (maxResults: Selection) => {
+				currentStore.persistence.suggestMeals.maxResults.set(
+					Number.parseInt(
+						toArray<SelectionSet>(maxResults)[0] as string
+					)
 				);
 			},
 		},
@@ -431,6 +461,14 @@ globalStore.persistence.hiddenItems.dlcs.onChange((hiddenDlcs) => {
 	ornamentsStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
 	partnersStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
 	recipesStore.shared.hiddenItems.dlcs.set(toSet(dlcs));
+});
+
+// Update the suggest meal settings when there is a change in the persisted suggest meal settings.
+globalStore.persistence.suggestMeals.enabled.onChange((enabled) => {
+	customerRareStore.shared.suggestMeals.enabled.set(enabled);
+});
+globalStore.persistence.suggestMeals.maxResults.onChange((maxResults) => {
+	customerRareStore.shared.suggestMeals.maxResults.set(maxResults);
 });
 
 // Update the current famous shop state when there is a change in the persisted state.

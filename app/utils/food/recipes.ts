@@ -37,7 +37,12 @@ type TBondRecipes = Array<{ level: number; name: TRecipeName }>;
 export class Recipe extends Food<TRecipe[]> {
 	private static _instance: Recipe | undefined;
 
-	private static _tagCoverMap = {
+	private static _bondRecipesCache = new Map<
+		TCustomerRareName,
+		TBondRecipes
+	>();
+
+	public static tagCoverMap = {
 		[DYNAMIC_TAG_MAP.expensive]: DYNAMIC_TAG_MAP.economical,
 		[DYNAMIC_TAG_MAP.largePartition]: '小巧',
 		灼热: '凉爽',
@@ -46,10 +51,78 @@ export class Recipe extends Food<TRecipe[]> {
 		饱腹: '下酒',
 	} as const satisfies Partial<Record<TRecipeTag, TRecipeTag>>;
 
-	private static _bondRecipesCache = new Map<
-		TCustomerRareName,
-		TBondRecipes
-	>();
+	/**
+	 * @description Apply the large partition tag when total ingredient count reaches 5.
+	 * Also applies popular trend effect if the trend tag is `largePartition`.
+	 */
+	public static applyLargePartition(
+		tagSet: Set<string>,
+		totalIngredientCount: number,
+		popularTrend: IPopularTrend | null
+	) {
+		if (totalIngredientCount >= 5) {
+			tagSet.add(DYNAMIC_TAG_MAP.largePartition);
+			if (popularTrend?.tag === DYNAMIC_TAG_MAP.largePartition) {
+				tagSet.add(
+					popularTrend.isNegative
+						? DYNAMIC_TAG_MAP.popularNegative
+						: DYNAMIC_TAG_MAP.popularPositive
+				);
+			}
+		}
+	}
+
+	/**
+	 * @description Apply tag cover rules: when a cover tag is present, remove the covered tag.
+	 * Also removes popular trend effects if the covered tag matches the trend.
+	 */
+	public static applyTagCovers(
+		tagSet: Set<TRecipeTag>,
+		popularTrend: IPopularTrend | null
+	) {
+		const currentPopularTag = popularTrend?.tag;
+		const isNegativePopularTag = popularTrend?.isNegative;
+
+		Object.entries(Recipe.tagCoverMap).forEach(
+			([targetTag, coveredTag]) => {
+				if (tagSet.has(targetTag as TRecipeTag)) {
+					tagSet.delete(coveredTag);
+					if (currentPopularTag === coveredTag) {
+						tagSet.delete(
+							isNegativePopularTag
+								? DYNAMIC_TAG_MAP.popularNegative
+								: DYNAMIC_TAG_MAP.popularPositive
+						);
+					}
+				}
+			}
+		);
+	}
+
+	/**
+	 * @description Apply the famous shop signature effect: add `popularPositive` when the signature tag is present.
+	 */
+	public static applyFamousShop(tagSet: Set<string>, isFamousShop: boolean) {
+		if (isFamousShop && tagSet.has(DYNAMIC_TAG_MAP.signature)) {
+			tagSet.add(DYNAMIC_TAG_MAP.popularPositive);
+		}
+	}
+
+	/**
+	 * @description Apply the popular trend effect: add `popularPositive`/`popularNegative` when the trend tag is present.
+	 */
+	public static applyPopularTrend(
+		tagSet: Set<string>,
+		popularTrend: IPopularTrend
+	) {
+		if (popularTrend.tag !== null && tagSet.has(popularTrend.tag)) {
+			tagSet.add(
+				popularTrend.isNegative
+					? DYNAMIC_TAG_MAP.popularNegative
+					: DYNAMIC_TAG_MAP.popularPositive
+			);
+		}
+	}
 
 	private constructor(data: TRecipes) {
 		const clonedData = cloneJsonObject(data);
@@ -180,34 +253,13 @@ export class Recipe extends Food<TRecipe[]> {
 			originalRecipePositiveTags,
 			extraIngredientTags as TRecipeTag[]
 		);
-		const { isNegative: isNegativePopularTag, tag: currentPopularTag } =
-			popularTrend ?? {};
 
-		if (originalIngredients.length + extraIngredients.length >= 5) {
-			resultTags.add(DYNAMIC_TAG_MAP.largePartition);
-			if (currentPopularTag === DYNAMIC_TAG_MAP.largePartition) {
-				resultTags.add(
-					isNegativePopularTag
-						? DYNAMIC_TAG_MAP.popularNegative
-						: DYNAMIC_TAG_MAP.popularPositive
-				);
-			}
-		}
-
-		Object.entries(Recipe._tagCoverMap).forEach(
-			([targetTag, coveredTag]) => {
-				if (resultTags.has(targetTag as TRecipeTag)) {
-					resultTags.delete(coveredTag);
-					if (currentPopularTag === coveredTag) {
-						resultTags.delete(
-							isNegativePopularTag
-								? DYNAMIC_TAG_MAP.popularNegative
-								: DYNAMIC_TAG_MAP.popularPositive
-						);
-					}
-				}
-			}
+		Recipe.applyLargePartition(
+			resultTags,
+			originalIngredients.length + extraIngredients.length,
+			popularTrend
 		);
+		Recipe.applyTagCovers(resultTags, popularTrend);
 
 		return toArray(resultTags);
 	}

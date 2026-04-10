@@ -293,6 +293,9 @@ export default function ResultCard() {
 	let contentTarget: IFadeMotionDivProps['target'];
 	let contentVariant: IFadeMotionDivProps['variant'];
 
+	const isSuggestMealsVisible =
+		customerStore.shared.suggestMeals.visibility.use();
+
 	if (currentBeverageName === null && currentRecipeData === null) {
 		if (
 			currentCustomerName !== null &&
@@ -304,11 +307,16 @@ export default function ResultCard() {
 			contentVariant = 'content';
 		} else {
 			content = (
-				<Placeholder className="pb-6 pt-12 md:py-8 xl:pb-2 xl:pt-0">
+				<Placeholder
+					className={cn(
+						'pb-6 pt-12 md:py-8 xl:pb-2 xl:pt-0',
+						isSuggestMealsVisible ? 'pb-12 xl:py-6' : 'pb-2 md:pb-4'
+					)}
+				>
 					选择一种料理或酒水以继续
 				</Placeholder>
 			);
-			contentClassName = 'my-auto';
+			contentClassName = isSuggestMealsVisible ? '' : 'my-auto';
 			contentTarget = 'placeholder';
 			contentVariant = 'placeholder';
 		}

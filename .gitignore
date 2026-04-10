@@ -1,5 +1,6 @@
 /node_modules
 .*cache
+.DS_Store
 
 # next.js
 /.next/

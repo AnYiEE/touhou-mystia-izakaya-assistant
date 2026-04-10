@@ -76,6 +76,22 @@ export default function Providers({
 		partnersStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
 		recipesStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
 
+		const globalSuggestMealsEnabled =
+			globalStore.persistence.suggestMeals.enabled.get();
+		const globalSuggestMealsMaxResults =
+			globalStore.persistence.suggestMeals.maxResults.get();
+		const globalSuggestSelectableMaxResults =
+			globalStore.shared.suggestMeals.selectableMaxResults.get();
+		customerRareStore.shared.suggestMeals.enabled.set(
+			globalSuggestMealsEnabled
+		);
+		customerRareStore.shared.suggestMeals.maxResults.set(
+			globalSuggestMealsMaxResults
+		);
+		customerRareStore.shared.suggestMeals.selectableMaxResults.set(
+			globalSuggestSelectableMaxResults
+		);
+
 		// Initialize famous shop state based on the persistence state.
 		const globalFamousShop = globalStore.persistence.famousShop.get();
 		customerNormalStore.shared.customer.famousShop.set(globalFamousShop);

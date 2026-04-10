@@ -140,7 +140,7 @@ const state = {
 			searchValue: '',
 			table: {
 				columns: toSet() as SelectionSet,
-				hiddenBeverages: toSet<TBeverageName>(),
+				hiddenBeverages: toSet<TBeverageName>() as Set<TBeverageName>,
 				page: 1,
 				row: 1,
 				rows: toSet() as SelectionSet,
@@ -172,8 +172,9 @@ const state = {
 			searchValue: '',
 			table: {
 				columns: toSet() as SelectionSet,
-				hiddenIngredients: toSet<TIngredientName>(),
-				hiddenRecipes: toSet<TRecipeName>(),
+				hiddenIngredients:
+					toSet<TIngredientName>() as Set<TIngredientName>,
+				hiddenRecipes: toSet<TRecipeName>() as Set<TRecipeName>,
 				page: 1,
 				row: 1,
 				rows: toSet() as SelectionSet,

@@ -411,7 +411,7 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 	return (
 		<div className="mr-1 space-y-2">
 			<div className="flex items-center gap-2">
-				<span className="font-medium">在酒水表格中隐藏特定酒水</span>
+				<span className="font-medium">启用或禁用特定酒水</span>
 				<SettingsButton
 					isActive={!checkLengthEmpty(hiddenBeverages)}
 					onPress={handleBeveragesSettingsButtonPress}
@@ -426,12 +426,12 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 						hiddenItems={hiddenBeverages}
 						setHiddenItems={globalStore.hiddenBeverages.set}
 						target="beverage"
-						title="显示或隐藏特定酒水"
+						title="启用或禁用特定酒水"
 					/>
 				</SettingsModal>
 			</div>
 			<div className="flex items-center gap-2">
-				<span className="font-medium">在料理表格中隐藏特定料理</span>
+				<span className="font-medium">启用或禁用特定料理</span>
 				<SettingsButton
 					isActive={!checkLengthEmpty(hiddenRecipes)}
 					onPress={handleRecipesSettingsButtonPress}
@@ -446,14 +446,12 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 						hiddenItems={hiddenRecipes}
 						setHiddenItems={globalStore.hiddenRecipes.set}
 						target="recipe"
-						title="显示或隐藏特定料理"
+						title="启用或禁用特定料理"
 					/>
 				</SettingsModal>
 			</div>
 			<div className="flex items-center gap-2">
-				<span className="font-medium">
-					在料理表格中隐藏包含特定食材的料理
-				</span>
+				<span className="font-medium">启用或禁用特定食材</span>
 				<SettingsButton
 					isActive={!checkLengthEmpty(hiddenIngredients)}
 					onPress={handleIngredientsSettingsButtonPress}
@@ -468,7 +466,7 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 						hiddenItems={hiddenIngredients}
 						setHiddenItems={globalStore.hiddenIngredients.set}
 						target="ingredient"
-						title="显示或隐藏包含特定食材的料理"
+						title="启用或禁用特定食材"
 					/>
 				</SettingsModal>
 			</div>
