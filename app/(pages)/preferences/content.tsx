@@ -42,6 +42,11 @@ export default memo<IProps>(function Content({ onModalClose }) {
 	const allDlcs = globalStore.dlcs.get();
 	const hiddenDlcs = globalStore.hiddenDlcs.use();
 
+	const isSuggestEnabled = globalStore.persistence.suggestMeals.enabled.use();
+	const suggestMaxResults = globalStore.maxSuggestMealResults.use();
+	const suggestSelectableMaxResults =
+		globalStore.shared.suggestMeals.selectableMaxResults.get();
+
 	const isFamousShop = globalStore.persistence.famousShop.use();
 	const popularTags = globalStore.popularTags.get();
 	const isPopularTrendNegative =
@@ -277,8 +282,73 @@ export default memo<IProps>(function Content({ onModalClose }) {
 				</SwitchItem>
 			</div>
 			<Heading as="h2">顾客页面</Heading>
-			<Heading as="h3">料理和酒水表格</Heading>
-			<HiddenItems onModalClose={onModalClose} />
+			<Heading as="h3">酒水、料理和食材</Heading>
+			<div className="space-y-2">
+				<HiddenItems onModalClose={onModalClose} />
+				<SwitchItem
+					isSelected={isSuggestEnabled}
+					onValueChange={
+						globalStore.persistence.suggestMeals.enabled.set
+					}
+					aria-label={`${isSuggestEnabled ? '关闭' : '开启'}“猜您想要”套餐推荐卡片`}
+				>
+					“猜您想要”套餐推荐卡片
+				</SwitchItem>
+				{isSuggestEnabled && (
+					<div className="flex items-center gap-2 pl-5">
+						<span className="whitespace-nowrap font-medium">
+							最多推荐数：
+						</span>
+						<Select
+							disallowEmptySelection
+							disableAnimation={isReducedMotion}
+							isVirtualized={false}
+							items={suggestSelectableMaxResults}
+							selectedKeys={suggestMaxResults}
+							size="sm"
+							variant="flat"
+							onSelectionChange={
+								globalStore.maxSuggestMealResults.set
+							}
+							aria-label="选择最多推荐套餐数量"
+							title="选择最多推荐套餐数量"
+							popoverProps={{ motionProps: popoverMotionProps }}
+							classNames={{
+								base: 'w-20',
+								listboxWrapper: cn(
+									'[&_li]:transition-background motion-reduce:[&_li]:transition-none',
+									{
+										'focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40':
+											isHighAppearance,
+									}
+								),
+								popoverContent: cn({
+									'bg-content1/70 backdrop-blur-lg':
+										isHighAppearance,
+								}),
+								trigger: cn(
+									'transition-background motion-reduce:transition-none',
+									{
+										'bg-default/40 backdrop-blur data-[hover=true]:bg-default-400/40':
+											isHighAppearance,
+										'bg-default-200 data-[hover=true]:bg-default':
+											!isHighAppearance,
+									}
+								),
+							}}
+						>
+							{({ value }) => (
+								<SelectItem
+									key={value}
+									textValue={value.toString()}
+								>
+									{value}
+								</SelectItem>
+							)}
+						</Select>
+					</div>
+				)}
+			</div>
 			<Heading as="h3">稀客卡片</Heading>
 			<div className="space-y-2">
 				<SwitchItem

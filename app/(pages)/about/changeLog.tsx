@@ -146,6 +146,7 @@ const changelog = [
 	},
 	{ version: 'v1.13', changes: ['新增：更新法律声明。'] },
 	{ version: 'v1.14', changes: ['新增：更新法律声明。'] },
+	{ version: 'v1.15', changes: ['新增：支持自动推荐稀客套餐搭配。'] },
 ] as const satisfies Array<{
 	version: `v${string}`;
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;

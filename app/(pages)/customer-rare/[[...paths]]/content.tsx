@@ -25,6 +25,7 @@ import IngredientTabContent from '../ingredientTabContent';
 import RecipeTabContent from '../recipeTabContent';
 import ResultCard from '../resultCard';
 import SavedMealCard from '../savedMealCard';
+import SuggestedMealCard from '../suggestedMealCard';
 import Loading from '@/loading';
 import Placeholder from '@/components/placeholder';
 import SideButtonGroup from '@/components/sideButtonGroup';
@@ -287,10 +288,15 @@ export default function Content() {
 	const ingredientFilterLevels =
 		customerStore.persistence.ingredient.filters.levels.use();
 
+	const hiddenIngredients =
+		customerStore.shared.recipe.table.hiddenIngredients.use();
+
 	const filterIngredientData = useCallback(() => {
 		const augmented = instance_ingredient.data
 			.filter(
-				({ name }) => !instance_ingredient.blockedIngredients.has(name)
+				({ name }) =>
+					!instance_ingredient.blockedIngredients.has(name) &&
+					!hiddenIngredients.has(name)
 			)
 			.map((item) => ({
 				...item,
@@ -320,6 +326,7 @@ export default function Content() {
 		);
 	}, [
 		currentCustomerPopularTrend,
+		hiddenIngredients,
 		ingredientFilterDlcs,
 		ingredientFilterLevels,
 		ingredientFilterNoTags,
@@ -500,6 +507,7 @@ export default function Content() {
 					<>
 						<CustomerCard />
 						<ResultCard />
+						<SuggestedMealCard />
 						<SavedMealCard />
 					</>
 				) : (

@@ -375,7 +375,6 @@ export default function SavedMealCard() {
 																			</TagGroup>
 																		}
 																		radius="sm"
-																		role="banner"
 																		classNames={{
 																			base: 'h-5 w-44 ring-offset-0',
 																		}}
@@ -477,16 +476,16 @@ export default function SavedMealCard() {
 													recipeData.name,
 													'ingredients'
 												);
-											const lestExtraIngredientsLength =
+											const restExtraIngredientsLength =
 												Math.max(
 													5 -
 														originalIngredients.length,
 													0
 												);
-											const lestExtraIngredients =
+											const restExtraIngredients =
 												recipeData.extraIngredients.slice(
 													0,
-													lestExtraIngredientsLength
+													restExtraIngredientsLength
 												);
 											return (
 												<div className="flex items-center gap-x-3 md:gap-x-1 lg:gap-x-3 xl:gap-x-1">
@@ -524,10 +523,10 @@ export default function SavedMealCard() {
 														}
 													)}
 													{!checkLengthEmpty(
-														lestExtraIngredients
+														restExtraIngredients
 													) && (
 														<div className="flex items-center gap-x-3 rounded bg-content2/70 outline outline-2 outline-offset-1 outline-content2 md:gap-x-1 lg:gap-x-3 xl:gap-x-1">
-															{lestExtraIngredients.map(
+															{restExtraIngredients.map(
 																(
 																	name,
 																	index
