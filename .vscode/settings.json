@@ -39,8 +39,8 @@
 		"package.json": ".*cache, .*ignore, .*rc, .editorconfig, .env*, .git*, pnpm-lock.yaml, pnpm-workspace.yaml, tsconfig.json, vercel.json",
 		"README*": "*.md, LICENSE"
 	},
-	"typescript.enablePromptUseWorkspaceTsdk": true,
-	"typescript.tsdk": "./node_modules/typescript/lib",
+	"js/ts.tsdk.promptToUseWorkspaceVersion": true,
+	"js/ts.tsdk.path": "./node_modules/typescript/lib",
 	"cSpell.words": [
 		"autospace",
 		"commitlint",

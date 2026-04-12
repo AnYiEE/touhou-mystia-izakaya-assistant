@@ -236,7 +236,7 @@ export default function SuggestedMealCard() {
 										仅展示“满意”评级及以上的结果，评分优先
 									</Ol.Li>
 									<Ol.Li>
-										同评分下优先推荐游戏中更早获取的料理、酒水和食材
+										同评分下优先推荐获取更便利的料理、酒水和食材
 									</Ol.Li>
 									<Ol.Li>
 										超出顾客预算偏好的套餐会被降权，超出预算上限的将被排除
@@ -703,7 +703,14 @@ export default function SuggestedMealCard() {
 																							{!checkLengthEmpty(
 																								alternatives
 																							) && (
-																								<div className="flex flex-wrap gap-1">
+																								<div
+																									className={cn(
+																										'flex flex-wrap gap-1',
+																										alternatives.length ===
+																											1 &&
+																											'justify-center'
+																									)}
+																								>
 																									{alternatives.map(
 																										(
 																											altName
