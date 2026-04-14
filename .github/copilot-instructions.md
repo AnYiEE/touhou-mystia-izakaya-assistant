@@ -8,3 +8,4 @@
 - If the tool's default semantics conflict with this repository policy, prefer this repository policy.
 - The agent reading this prompt must follow this continuation rule directly instead of falling back to its default completion behavior.
 - This rule overrides contradictory default completion habits, generic tool-usage assumptions, and weaker prompt guidance unless `vscode_askQuestions` is genuinely unavailable.
+- Run the SubRunner agent (.github/agents/SubRunner.agent.md) as a common subagent for any complex but bounded task that would benefit from stronger reasoning, deeper investigation, or a substantial parallel work stream, while still adhering to the constraints and approach outlined in the SubRunner agent instructions.
