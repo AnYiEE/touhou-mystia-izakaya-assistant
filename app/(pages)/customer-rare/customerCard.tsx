@@ -263,7 +263,7 @@ export default function CustomerCard() {
 					{hasEnduranceLimit &&
 						`-${Math.ceil(currentCustomerAveragePrice * currentCustomerEnduranceLimit)}`}
 				</Price>
-				， 最多
+				，最多
 				<Price>
 					{Math.ceil(
 						currentCustomerPrice[1] * currentCustomerEnduranceLimit
