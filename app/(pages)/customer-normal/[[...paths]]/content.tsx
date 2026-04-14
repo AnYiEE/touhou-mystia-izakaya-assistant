@@ -19,6 +19,7 @@ import { Tab, Tabs } from '@heroui/tabs';
 import { FadeMotionDiv, cn, useReducedMotion } from '@/design/ui/components';
 
 import BeverageTabContent from '../beverageTabContent';
+import CoverageTabContent from '../coverageTabContent';
 import CustomerCard from '../customerCard';
 import CustomerTabContent from '../customerTabContent';
 import IngredientTabContent from '../ingredientTabContent';
@@ -289,13 +290,16 @@ export default function Content() {
 
 	const hiddenIngredients =
 		customerStore.shared.recipe.table.hiddenIngredients.use();
+	const rareOnlyIngredients =
+		customerStore.shared.recipe.table.rareOnlyIngredients.use();
 
 	const filterIngredientData = useCallback(() => {
 		const augmented = instance_ingredient.data
 			.filter(
 				({ name }) =>
 					!instance_ingredient.blockedIngredients.has(name) &&
-					!hiddenIngredients.has(name)
+					!hiddenIngredients.has(name) &&
+					!rareOnlyIngredients.has(name)
 			)
 			.map((item) => ({
 				...item,
@@ -332,6 +336,7 @@ export default function Content() {
 		ingredientFilterTags,
 		instance_ingredient,
 		isFamousShop,
+		rareOnlyIngredients,
 	]);
 
 	const ingredientFilteredData = useFilteredData(
@@ -450,7 +455,7 @@ export default function Content() {
 								? 'data-[selected=true]:bg-background data-[selected=true]:text-default-foreground dark:data-[selected=true]:bg-default dark:data-[selected=true]:text-foreground'
 								: 'transition'
 						),
-						tabList: cn('grid grid-cols-4 bg-default/40', {
+						tabList: cn('grid grid-cols-5 bg-default/40', {
 							'backdrop-blur': isHighAppearance,
 						}),
 					}}
@@ -492,6 +497,9 @@ export default function Content() {
 							ingredientTabStyle={ingredientTabStyle}
 							sortedData={ingredientSortedData}
 						/>
+					</Tab>
+					<Tab key="coverage" title="地区推荐">
+						<CoverageTabContent />
 					</Tab>
 				</Tabs>
 			</div>

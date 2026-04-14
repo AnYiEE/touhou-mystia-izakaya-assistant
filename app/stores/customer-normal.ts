@@ -24,6 +24,7 @@ import {
 	type TDlc,
 	type TIngredientName,
 	type TIngredientTag,
+	type TPlace,
 	type TRatingKey,
 	type TRecipeName,
 	type TRecipeTag,
@@ -49,6 +50,10 @@ import {
 	toGetValueCollection,
 	toSet,
 } from '@/utilities';
+import {
+	type ICoverageResult,
+	computeCoverageForPlace,
+} from '@/utils/customer/customer_normal/computeCoverage';
 import { Beverage, Clothes, CustomerNormal, Ingredient, Recipe } from '@/utils';
 import type { TRecipe } from '@/utils/types';
 
@@ -142,10 +147,15 @@ const state = {
 				columns: toSet() as SelectionSet,
 				hiddenBeverages: toSet<TBeverageName>() as Set<TBeverageName>,
 				page: 1,
+				rareOnlyBeverages: toSet<TBeverageName>() as Set<TBeverageName>,
 				row: 1,
 				rows: toSet() as SelectionSet,
 				selectableRows: [] as Array<ValueCollection<number>>,
 			},
+		},
+		coverage: {
+			results: [] as ICoverageResult[],
+			selectedPlace: null as TPlace | null,
 		},
 		customer: {
 			name: null as TCustomerNormalName | null,
@@ -176,6 +186,9 @@ const state = {
 					toSet<TIngredientName>() as Set<TIngredientName>,
 				hiddenRecipes: toSet<TRecipeName>() as Set<TRecipeName>,
 				page: 1,
+				rareOnlyIngredients:
+					toSet<TIngredientName>() as Set<TIngredientName>,
+				rareOnlyRecipes: toSet<TRecipeName>() as Set<TRecipeName>,
 				row: 1,
 				rows: toSet() as SelectionSet,
 				selectableRows: [] as Array<ValueCollection<number>>,
@@ -1001,6 +1014,56 @@ export const customerNormalStore = store(state, {
 				);
 			}
 		},
+
+		computeCoverage() {
+			const place = currentStore.shared.coverage.selectedPlace.get();
+			if (place === null) {
+				currentStore.shared.coverage.results.set([]);
+				return;
+			}
+
+			const results = computeCoverageForPlace({
+				hiddenDlcs: currentStore.shared.hiddenItems.dlcs.get(),
+				hiddenIngredients:
+					currentStore.shared.recipe.table.hiddenIngredients.get(),
+				hiddenRecipes:
+					currentStore.shared.recipe.table.hiddenRecipes.get(),
+				isFamousShop: currentStore.shared.customer.famousShop.get(),
+				place,
+				popularTrend: currentStore.shared.customer.popularTrend.get(),
+				rareOnlyIngredients:
+					currentStore.shared.recipe.table.rareOnlyIngredients.get(),
+				rareOnlyRecipes:
+					currentStore.shared.recipe.table.rareOnlyRecipes.get(),
+			});
+
+			currentStore.shared.coverage.results.set(results);
+		},
+
+		onCoveragePlaceChange(place: TPlace | null) {
+			currentStore.shared.coverage.selectedPlace.set(place);
+			if (place === null) {
+				currentStore.shared.coverage.results.set([]);
+				return;
+			}
+
+			const results = computeCoverageForPlace({
+				hiddenDlcs: currentStore.shared.hiddenItems.dlcs.get(),
+				hiddenIngredients:
+					currentStore.shared.recipe.table.hiddenIngredients.get(),
+				hiddenRecipes:
+					currentStore.shared.recipe.table.hiddenRecipes.get(),
+				isFamousShop: currentStore.shared.customer.famousShop.get(),
+				place,
+				popularTrend: currentStore.shared.customer.popularTrend.get(),
+				rareOnlyIngredients:
+					currentStore.shared.recipe.table.rareOnlyIngredients.get(),
+				rareOnlyRecipes:
+					currentStore.shared.recipe.table.rareOnlyRecipes.get(),
+			});
+
+			currentStore.shared.coverage.results.set(results);
+		},
 	}));
 
 customerNormalStore.shared.customer.name.onChange((name) => {
@@ -1013,12 +1076,14 @@ customerNormalStore.shared.customer.famousShop.onChange(() => {
 	customerNormalStore.evaluateMealResult();
 	customerNormalStore.shared.beverage.table.page.set(1);
 	customerNormalStore.shared.recipe.table.page.set(1);
+	customerNormalStore.computeCoverage();
 });
 customerNormalStore.shared.customer.popularTrend.onChange(() => {
 	customerNormalStore.updateRecipeTagsWithTrend();
 	customerNormalStore.evaluateMealResult();
 	customerNormalStore.shared.beverage.table.page.set(1);
 	customerNormalStore.shared.recipe.table.page.set(1);
+	customerNormalStore.computeCoverage();
 });
 
 customerNormalStore.shared.recipe.data.onChange(() => {
@@ -1044,4 +1109,18 @@ customerNormalStore.shared.hiddenItems.dlcs.onChange(() => {
 	customerNormalStore.persistence.recipe.table.cookers.set([]);
 	customerNormalStore.persistence.recipe.table.dlcs.set([]);
 	customerNormalStore.shared.customer.name.set(null);
+	customerNormalStore.computeCoverage();
+});
+
+customerNormalStore.shared.recipe.table.rareOnlyRecipes.onChange(() => {
+	customerNormalStore.refreshCustomerSelectedItems();
+	customerNormalStore.computeCoverage();
+});
+customerNormalStore.shared.recipe.table.rareOnlyIngredients.onChange(() => {
+	customerNormalStore.refreshCustomerSelectedItems();
+	customerNormalStore.computeCoverage();
+});
+customerNormalStore.shared.beverage.table.rareOnlyBeverages.onChange(() => {
+	customerNormalStore.refreshCustomerSelectedItems();
+	customerNormalStore.computeCoverage();
 });

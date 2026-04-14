@@ -13,6 +13,12 @@ export type {
 	ICustomerTabStyle,
 	TBeverageWithSuitability,
 	TBeveragesWithSuitability,
-	TTab,
 	TTabVisibilityState,
 } from '@/(pages)/customer-rare/types';
+
+export type TTab =
+	| 'beverage'
+	| 'coverage'
+	| 'customer'
+	| 'ingredient'
+	| 'recipe';

@@ -110,6 +110,10 @@ export default function RecipeTabContent() {
 	const hiddenIngredients =
 		customerStore.shared.recipe.table.hiddenIngredients.use();
 	const hiddenRecipes = customerStore.shared.recipe.table.hiddenRecipes.use();
+	const rareOnlyIngredients =
+		customerStore.shared.recipe.table.rareOnlyIngredients.use();
+	const rareOnlyRecipes =
+		customerStore.shared.recipe.table.rareOnlyRecipes.use();
 
 	const composeTagsWithPopularTrend = useMemo(
 		() =>
@@ -203,7 +207,9 @@ export default function RecipeTabContent() {
 			.filter(
 				({ ingredients, name }) =>
 					!checkArrayContainsOf(ingredients, hiddenIngredients) &&
-					!hiddenRecipes.has(name)
+					!hiddenRecipes.has(name) &&
+					!checkArrayContainsOf(ingredients, rareOnlyIngredients) &&
+					!rareOnlyRecipes.has(name)
 			) as TRecipesWithSuitability;
 
 		if (
@@ -250,6 +256,8 @@ export default function RecipeTabContent() {
 		hiddenRecipes,
 		instance_customer,
 		instance_recipe,
+		rareOnlyIngredients,
+		rareOnlyRecipes,
 		searchValue,
 		selectedCookers,
 		selectedCustomerRecipeTag,

@@ -107,6 +107,8 @@ export default function BeverageTabContent() {
 
 	const hiddenBeverages =
 		customerStore.shared.beverage.table.hiddenBeverages.use();
+	const rareOnlyBeverages =
+		customerStore.shared.beverage.table.rareOnlyBeverages.use();
 
 	const data = useMemo(
 		() =>
@@ -140,7 +142,10 @@ export default function BeverageTabContent() {
 
 				return { ...item, matchedTags, suitability };
 			})
-			.filter(({ name }) => !hiddenBeverages.has(name));
+			.filter(
+				({ name }) =>
+					!hiddenBeverages.has(name) && !rareOnlyBeverages.has(name)
+			);
 
 		if (
 			checkLengthEmpty(selectedCustomerBeverageTag) &&
@@ -170,6 +175,7 @@ export default function BeverageTabContent() {
 		hiddenBeverages,
 		instance_beverage,
 		instance_customer,
+		rareOnlyBeverages,
 		searchValue,
 		selectedCustomerBeverageTag,
 		selectedDlcs,

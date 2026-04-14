@@ -111,6 +111,7 @@ const storeVersion = {
 	donationModal: 15,
 	donationModalRmDismiss: 16,
 	suggestMeals: 17,
+	triStateAndCoverage: 18,
 } as const;
 
 const state = {
@@ -129,6 +130,11 @@ const state = {
 					.map(toGetItemWithKey('key')),
 			},
 			hiddenItems: {
+				beverages: [] as TBeverageName[],
+				ingredients: [] as TIngredientName[],
+				recipes: [] as TRecipeName[],
+			},
+			rareOnlyItems: {
 				beverages: [] as TBeverageName[],
 				ingredients: [] as TIngredientName[],
 				recipes: [] as TRecipeName[],
@@ -178,7 +184,7 @@ export const globalStore = store(state, {
 		}),
 		persistMiddleware<typeof state>({
 			name: storeName,
-			version: storeVersion.suggestMeals,
+			version: storeVersion.triStateAndCoverage,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -264,6 +270,13 @@ export const globalStore = store(state, {
 					oldState.persistence.suggestMeals = {
 						enabled: true,
 						maxResults: 5,
+					};
+				}
+				if (version < storeVersion.triStateAndCoverage) {
+					oldState.persistence.table.rareOnlyItems = {
+						beverages: [],
+						ingredients: [],
+						recipes: [],
 					};
 				}
 				return persistedState as typeof state;
@@ -374,6 +387,40 @@ export const globalStore = store(state, {
 				toSet(currentStore.persistence.table.hiddenItems.recipes.use()),
 			write: (recipes: Set<TRecipeName>) => {
 				currentStore.persistence.table.hiddenItems.recipes.set(
+					toArray(recipes)
+				);
+			},
+		},
+
+		rareOnlyBeverages: {
+			read: () =>
+				toSet(
+					currentStore.persistence.table.rareOnlyItems.beverages.use()
+				),
+			write: (beverages: Set<TBeverageName>) => {
+				currentStore.persistence.table.rareOnlyItems.beverages.set(
+					toArray(beverages)
+				);
+			},
+		},
+		rareOnlyIngredients: {
+			read: () =>
+				toSet(
+					currentStore.persistence.table.rareOnlyItems.ingredients.use()
+				),
+			write: (ingredients: Set<TIngredientName>) => {
+				currentStore.persistence.table.rareOnlyItems.ingredients.set(
+					toArray(ingredients)
+				);
+			},
+		},
+		rareOnlyRecipes: {
+			read: () =>
+				toSet(
+					currentStore.persistence.table.rareOnlyItems.recipes.use()
+				),
+			write: (recipes: Set<TRecipeName>) => {
+				currentStore.persistence.table.rareOnlyItems.recipes.set(
 					toArray(recipes)
 				);
 			},
@@ -532,4 +579,21 @@ globalStore.persistence.table.hiddenItems.ingredients.onChange(
 globalStore.persistence.table.hiddenItems.recipes.onChange((recipes) => {
 	customerNormalStore.shared.recipe.table.hiddenRecipes.set(toSet(recipes));
 	customerRareStore.shared.recipe.table.hiddenRecipes.set(toSet(recipes));
+});
+globalStore.persistence.table.rareOnlyItems.beverages.onChange((beverages) => {
+	const set = toSet(beverages);
+	customerNormalStore.shared.beverage.table.rareOnlyBeverages.set(set);
+	customerRareStore.shared.beverage.table.rareOnlyBeverages.set(set);
+});
+globalStore.persistence.table.rareOnlyItems.ingredients.onChange(
+	(ingredients) => {
+		const set = toSet(ingredients);
+		customerNormalStore.shared.recipe.table.rareOnlyIngredients.set(set);
+		customerRareStore.shared.recipe.table.rareOnlyIngredients.set(set);
+	}
+);
+globalStore.persistence.table.rareOnlyItems.recipes.onChange((recipes) => {
+	const set = toSet(recipes);
+	customerNormalStore.shared.recipe.table.rareOnlyRecipes.set(set);
+	customerRareStore.shared.recipe.table.rareOnlyRecipes.set(set);
 });

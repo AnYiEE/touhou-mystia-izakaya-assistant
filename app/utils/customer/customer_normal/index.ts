@@ -2,6 +2,9 @@ import { checkEasterEgg, evaluateMeal } from './evaluateMeal';
 import { Customer } from '../base';
 import { CUSTOMER_NORMAL_LIST, type TCustomerNormals } from '@/data';
 
+export { computeCoverageForPlace } from './computeCoverage';
+export type { ICoverageResult } from './computeCoverage';
+
 export class CustomerNormal extends Customer<TCustomerNormals> {
 	private static _instance: CustomerNormal | undefined;
 

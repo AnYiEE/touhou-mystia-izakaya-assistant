@@ -14,9 +14,13 @@ import { useVibrate } from '@/hooks';
 
 import { Button, type IModalProps, Modal, cn } from '@/design/ui/components';
 
-import SwitchItem from './switchItem';
 import Heading from '@/components/heading';
 import Sprite, { type ISpriteProps } from '@/components/sprite';
+import TriStateToggle, {
+	type TItemState,
+	cycleItemState,
+	getItemState,
+} from '@/components/triStateToggle';
 
 import { DLC_LABEL_MAP } from '@/data';
 import {
@@ -132,7 +136,9 @@ interface ISettingsPanelProps<
 > extends Pick<ISpriteProps, 'target'> {
 	data: T;
 	hiddenItems: Set<U>;
+	rareOnlyItems: Set<U>;
 	setHiddenItems: (options: Set<U>) => void;
+	setRareOnlyItems: (options: Set<U>) => void;
 	title: string;
 }
 
@@ -142,7 +148,9 @@ const SettingsPanel = memo(function SettingsPanel<
 >({
 	data,
 	hiddenItems,
+	rareOnlyItems,
 	setHiddenItems,
+	setRareOnlyItems,
 	target,
 	title,
 }: ISettingsPanelProps<T, U['name']>) {
@@ -167,68 +175,100 @@ const SettingsPanel = memo(function SettingsPanel<
 
 	const handleValueChange = useCallback(
 		(name: U['name']) => {
-			const newHiddenItems = copySet(hiddenItems);
+			const current = getItemState(name, hiddenItems, rareOnlyItems);
+			const next = cycleItemState(current);
 
-			if (newHiddenItems.has(name)) {
-				newHiddenItems.delete(name);
-			} else {
-				newHiddenItems.add(name);
+			const newHidden = copySet(hiddenItems);
+			const newRareOnly = copySet(rareOnlyItems);
+
+			newHidden.delete(name);
+			newRareOnly.delete(name);
+
+			if (next === 'disabled') {
+				newHidden.add(name);
+			} else if (next === 'rare') {
+				newRareOnly.add(name);
 			}
 
-			setHiddenItems(newHiddenItems);
+			setHiddenItems(newHidden);
+			setRareOnlyItems(newRareOnly);
 		},
-		[hiddenItems, setHiddenItems]
+		[hiddenItems, rareOnlyItems, setHiddenItems, setRareOnlyItems]
 	);
 
 	const handleDlcToggle = useCallback(
 		(dlc: U['dlc']) => {
 			const dlcItems = dataGroupByDlcMap.get(dlc) ?? [];
-			const newHiddenItems = copySet(hiddenItems);
-
-			const isAllHidden = dlcItems.every((item) =>
-				hiddenItems.has(item.name)
+			const applicableItems = dlcItems.filter(
+				(i) => !i.isHiddenByIngredient
 			);
 
-			if (isAllHidden) {
-				dlcItems.forEach((item) => {
-					newHiddenItems.delete(item.name);
-				});
-			} else {
-				dlcItems.forEach((item) => {
-					newHiddenItems.add(item.name);
-				});
+			if (applicableItems.length === 0) {
+				return;
 			}
 
-			setHiddenItems(newHiddenItems);
+			const newHidden = copySet(hiddenItems);
+			const newRareOnly = copySet(rareOnlyItems);
+
+			const stateCounts = { all: 0, disabled: 0, rare: 0 };
+			applicableItems.forEach(({ name }) => {
+				stateCounts[getItemState(name, hiddenItems, rareOnlyItems)]++;
+			});
+
+			let dominant: TItemState = 'all';
+			if (
+				stateCounts.disabled >= stateCounts.all &&
+				stateCounts.disabled >= stateCounts.rare
+			) {
+				dominant = 'disabled';
+			} else if (stateCounts.rare >= stateCounts.all) {
+				dominant = 'rare';
+			}
+			const nextState = cycleItemState(dominant);
+
+			applicableItems.forEach(({ name }) => {
+				newHidden.delete(name);
+				newRareOnly.delete(name);
+
+				if (nextState === 'disabled') {
+					newHidden.add(name);
+				} else if (nextState === 'rare') {
+					newRareOnly.add(name);
+				}
+			});
+
+			setHiddenItems(newHidden);
+			setRareOnlyItems(newRareOnly);
 		},
-		[dataGroupByDlcMap, hiddenItems, setHiddenItems]
+		[
+			dataGroupByDlcMap,
+			hiddenItems,
+			rareOnlyItems,
+			setHiddenItems,
+			setRareOnlyItems,
+		]
 	);
 
 	const getDlcToggleState = useCallback(
-		(dlc: U['dlc']) => {
+		(dlc: U['dlc']): TItemState | 'mixed' | 'byIngredient' => {
 			const dlcItems = dataGroupByDlcMap.get(dlc) ?? [];
-			const { hiddenByIngredientCount, hiddenCount } = dlcItems.reduce(
-				(acc, { isHiddenByIngredient, name }) => {
-					if (hiddenItems.has(name)) {
-						acc.hiddenCount++;
-					}
-					if (isHiddenByIngredient) {
-						acc.hiddenByIngredientCount++;
-					}
-					return acc;
-				},
-				{ hiddenByIngredientCount: 0, hiddenCount: 0 }
-			);
+			const hiddenByIngredientCount = dlcItems.filter(
+				(item) => item.isHiddenByIngredient
+			).length;
 
 			if (hiddenByIngredientCount === dlcItems.length) {
-				return 'disabled';
+				return 'byIngredient';
 			}
-			if (hiddenCount === dlcItems.length) {
-				return false;
-			}
-			return true;
+
+			const states = dlcItems.map((item) =>
+				getItemState(item.name, hiddenItems, rareOnlyItems)
+			);
+			const allSame = states.every((s) => s === states[0]);
+			const [firstState] = states;
+
+			return allSame && firstState !== undefined ? firstState : 'mixed';
 		},
-		[dataGroupByDlcMap, hiddenItems]
+		[dataGroupByDlcMap, hiddenItems, rareOnlyItems]
 	);
 
 	return (
@@ -238,7 +278,12 @@ const SettingsPanel = memo(function SettingsPanel<
 			</Heading>
 			{dataGroupByDlcSorted.map(([dlc, items], index) => {
 				const dlcToggleState = getDlcToggleState(dlc);
-				const isDlcToggleDisabled = dlcToggleState === 'disabled';
+				const isDlcToggleDisabled = dlcToggleState === 'byIngredient';
+				const dlcTriState: TItemState =
+					dlcToggleState === 'byIngredient' ||
+					dlcToggleState === 'mixed'
+						? 'all'
+						: dlcToggleState;
 				return (
 					<div key={dlc} className="overflow-x-hidden">
 						<div
@@ -250,16 +295,17 @@ const SettingsPanel = memo(function SettingsPanel<
 							<Heading as="h4" isFirst={index === 0}>
 								{DLC_LABEL_MAP[dlc].label}
 							</Heading>
-							<SwitchItem
-								color="warning"
+							<TriStateToggle
 								isDisabled={isDlcToggleDisabled}
-								isSelected={
-									isDlcToggleDisabled ? false : dlcToggleState
+								state={
+									isDlcToggleDisabled
+										? 'disabled'
+										: dlcTriState
 								}
-								onValueChange={() => {
+								onPress={() => {
 									handleDlcToggle(dlc);
 								}}
-								aria-label={`${dlcToggleState === true ? '隐藏' : '显示'}${DLC_LABEL_MAP[dlc].label}的全部项目`}
+								aria-label={`切换${DLC_LABEL_MAP[dlc].label}的全部项目`}
 								title={
 									isDlcToggleDisabled
 										? '此分组下的所有料理均因包含已被隐藏的食材而被隐藏'
@@ -283,19 +329,23 @@ const SettingsPanel = memo(function SettingsPanel<
 										/>
 										{name}
 									</p>
-									<SwitchItem
+									<TriStateToggle
 										isDisabled={Boolean(
 											isHiddenByIngredient
 										)}
-										isSelected={
+										state={
 											isHiddenByIngredient
-												? false
-												: !hiddenItems.has(name)
+												? 'disabled'
+												: getItemState(
+														name,
+														hiddenItems,
+														rareOnlyItems
+													)
 										}
-										onValueChange={() => {
+										onPress={() => {
 											handleValueChange(name);
 										}}
-										aria-label={`${hiddenItems.has(name) ? '显示' : '隐藏'}${name}`}
+										aria-label={`切换${name}的状态`}
 										title={
 											isHiddenByIngredient
 												? '此料理因包含已被隐藏的食材而被隐藏'
@@ -331,6 +381,10 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 	const hiddenBeverages = globalStore.hiddenBeverages.use();
 	const hiddenIngredients = globalStore.hiddenIngredients.use();
 	const hiddenRecipes = globalStore.hiddenRecipes.use();
+
+	const rareOnlyBeverages = globalStore.rareOnlyBeverages.use();
+	const rareOnlyIngredients = globalStore.rareOnlyIngredients.use();
+	const rareOnlyRecipes = globalStore.rareOnlyRecipes.use();
 
 	const instance_beverage = beveragesStore.instance.get();
 	const instance_ingredient = ingredientsStore.instance.get();
@@ -413,7 +467,10 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 			<div className="flex items-center gap-2">
 				<span className="font-medium">启用或禁用特定酒水</span>
 				<SettingsButton
-					isActive={!checkLengthEmpty(hiddenBeverages)}
+					isActive={
+						!checkLengthEmpty(hiddenBeverages) ||
+						!checkLengthEmpty(rareOnlyBeverages)
+					}
 					onPress={handleBeveragesSettingsButtonPress}
 				/>
 				<SettingsModal
@@ -424,7 +481,9 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 					<SettingsPanel
 						data={beverageData}
 						hiddenItems={hiddenBeverages}
+						rareOnlyItems={rareOnlyBeverages}
 						setHiddenItems={globalStore.hiddenBeverages.set}
+						setRareOnlyItems={globalStore.rareOnlyBeverages.set}
 						target="beverage"
 						title="启用或禁用特定酒水"
 					/>
@@ -433,7 +492,10 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 			<div className="flex items-center gap-2">
 				<span className="font-medium">启用或禁用特定料理</span>
 				<SettingsButton
-					isActive={!checkLengthEmpty(hiddenRecipes)}
+					isActive={
+						!checkLengthEmpty(hiddenRecipes) ||
+						!checkLengthEmpty(rareOnlyRecipes)
+					}
 					onPress={handleRecipesSettingsButtonPress}
 				/>
 				<SettingsModal
@@ -444,7 +506,9 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 					<SettingsPanel
 						data={recipeData}
 						hiddenItems={hiddenRecipes}
+						rareOnlyItems={rareOnlyRecipes}
 						setHiddenItems={globalStore.hiddenRecipes.set}
+						setRareOnlyItems={globalStore.rareOnlyRecipes.set}
 						target="recipe"
 						title="启用或禁用特定料理"
 					/>
@@ -453,7 +517,10 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 			<div className="flex items-center gap-2">
 				<span className="font-medium">启用或禁用特定食材</span>
 				<SettingsButton
-					isActive={!checkLengthEmpty(hiddenIngredients)}
+					isActive={
+						!checkLengthEmpty(hiddenIngredients) ||
+						!checkLengthEmpty(rareOnlyIngredients)
+					}
 					onPress={handleIngredientsSettingsButtonPress}
 				/>
 				<SettingsModal
@@ -464,7 +531,9 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 					<SettingsPanel
 						data={ingredientData}
 						hiddenItems={hiddenIngredients}
+						rareOnlyItems={rareOnlyIngredients}
 						setHiddenItems={globalStore.hiddenIngredients.set}
+						setRareOnlyItems={globalStore.rareOnlyIngredients.set}
 						target="ingredient"
 						title="启用或禁用特定食材"
 					/>

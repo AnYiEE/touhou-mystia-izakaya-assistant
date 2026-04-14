@@ -174,6 +174,31 @@ export default function Providers({
 		customerRareStore.shared.recipe.table.hiddenRecipes.set(
 			toSet(globalHiddenRecipes)
 		);
+
+		const globalRareOnlyBeverages =
+			globalStore.persistence.table.rareOnlyItems.beverages.get();
+		const globalRareOnlyIngredients =
+			globalStore.persistence.table.rareOnlyItems.ingredients.get();
+		const globalRareOnlyRecipes =
+			globalStore.persistence.table.rareOnlyItems.recipes.get();
+		customerNormalStore.shared.beverage.table.rareOnlyBeverages.set(
+			toSet(globalRareOnlyBeverages)
+		);
+		customerNormalStore.shared.recipe.table.rareOnlyIngredients.set(
+			toSet(globalRareOnlyIngredients)
+		);
+		customerNormalStore.shared.recipe.table.rareOnlyRecipes.set(
+			toSet(globalRareOnlyRecipes)
+		);
+		customerRareStore.shared.beverage.table.rareOnlyBeverages.set(
+			toSet(globalRareOnlyBeverages)
+		);
+		customerRareStore.shared.recipe.table.rareOnlyIngredients.set(
+			toSet(globalRareOnlyIngredients)
+		);
+		customerRareStore.shared.recipe.table.rareOnlyRecipes.set(
+			toSet(globalRareOnlyRecipes)
+		);
 	}, []);
 
 	const router = useRouter();

@@ -175,6 +175,7 @@ const state = {
 				columns: toSet() as SelectionSet,
 				hiddenBeverages: toSet<TBeverageName>() as Set<TBeverageName>,
 				page: 1,
+				rareOnlyBeverages: toSet<TBeverageName>() as Set<TBeverageName>,
 				row: 1,
 				rows: toSet() as SelectionSet,
 				selectableRows: [] as Array<ValueCollection<number>>,
@@ -212,6 +213,9 @@ const state = {
 					toSet<TIngredientName>() as Set<TIngredientName>,
 				hiddenRecipes: toSet<TRecipeName>() as Set<TRecipeName>,
 				page: 1,
+				rareOnlyIngredients:
+					toSet<TIngredientName>() as Set<TIngredientName>,
+				rareOnlyRecipes: toSet<TRecipeName>() as Set<TRecipeName>,
 				row: 1,
 				rows: toSet() as SelectionSet,
 				selectableRows: [] as Array<ValueCollection<number>>,
