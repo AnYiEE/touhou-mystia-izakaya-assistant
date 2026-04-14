@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
+import { tUI } from '@/i18n';
 
 import {
 	useFilteredData,
@@ -69,7 +70,7 @@ export default function Beverages() {
 
 	const searchConfig = useMemo<ISearchConfig>(
 		() => ({
-			label: '选择或输入酒水名称',
+			label: tUI('选择或输入酒水名称'),
 			searchItems: availableNames,
 			searchValue,
 			setSearchValue: store.persistence.searchValue.set,
@@ -88,19 +89,19 @@ export default function Beverages() {
 			},
 			{
 				items: availableTags,
-				label: '酒水标签（包含）',
+				label: tUI('酒水标签（包含）'),
 				selectedKeys: filterTags,
 				setSelectedKeys: store.persistence.filters.tags.set,
 			},
 			{
 				items: availableTags,
-				label: '酒水标签（排除）',
+				label: tUI('酒水标签（排除）'),
 				selectedKeys: filterNoTags,
 				setSelectedKeys: store.persistence.filters.noTags.set,
 			},
 			{
 				items: availableLevels,
-				label: '等级',
+				label: tUI('等级'),
 				selectedKeys: filterLevels,
 				setSelectedKeys: store.persistence.filters.levels.set,
 			},

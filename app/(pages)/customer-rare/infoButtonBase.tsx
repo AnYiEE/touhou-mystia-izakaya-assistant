@@ -10,6 +10,8 @@ import { Modal, Tooltip, useReducedMotion } from '@/design/ui/components';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import { default as SiteInfoBase } from '@/components/siteInfo';
 
+import { tUI } from '@/i18n';
+
 export const PARAM_INFO = 'info';
 
 export function SiteInfo() {
@@ -56,7 +58,7 @@ export default memo<IProps>(function InfoButtonBase({
 		setOpened(params.has(PARAM_INFO));
 	}, [params]);
 
-	const buttonLabel = '更多信息';
+	const buttonLabel = tUI('更多信息');
 
 	return (
 		<Fragment>

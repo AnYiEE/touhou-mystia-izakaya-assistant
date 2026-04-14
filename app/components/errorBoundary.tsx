@@ -11,6 +11,7 @@ import {
 import { trackEvent } from '@/components/analytics';
 
 import { siteConfig } from '@/configs';
+import { tUI } from '@/i18n';
 import { checkA11yConfirmKey } from '@/utilities';
 
 const { links } = siteConfig;
@@ -71,16 +72,18 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 
 	return (
 		<div className="space-y-3 p-4">
-			<h1 className="text-2xl font-bold">出错啦！以下是错误信息：</h1>
+			<h1 className="text-2xl font-bold">
+				{tUI('出错啦！以下是错误信息：')}
+			</h1>
 			<p className="text-large">{error?.toString()}</p>
 			<pre className="space-y-2 whitespace-pre-wrap break-all font-mono">
 				<code>{error?.stack}</code>
 				<code>{info?.componentStack}</code>
 			</pre>
-			<Button>点此重试（仅刷新页面）</Button>
-			<Button shouldClear>点此重试（将清空已保存的数据）</Button>
+			<Button>{tUI('点此重试（仅刷新页面）')}</Button>
+			<Button shouldClear>{tUI('点此重试（将清空已保存的数据）')}</Button>
 			<p className="text-center text-small">
-				请完整复制或截图上方的错误信息，点击加入
+				{tUI('请完整复制或截图上方的错误信息，点击加入')}
 				<a
 					href={links.qqGroup1.href}
 					referrerPolicy="same-origin"
@@ -93,9 +96,9 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 					})}
 					className="font-medium text-primary hover:underline hover:underline-offset-2"
 				>
-					{links.qqGroup1.label}
+					{tUI(links.qqGroup1.label)}
 				</a>
-				或
+				{tUI('或')}
 				<a
 					href={links.qqGroup2.href}
 					referrerPolicy="same-origin"
@@ -108,9 +111,9 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 					})}
 					className="font-medium text-primary hover:underline hover:underline-offset-2"
 				>
-					{links.qqGroup2.label}
+					{tUI(links.qqGroup2.label)}
 				</a>
-				以反馈问题。
+				{tUI('以反馈问题。')}
 			</p>
 		</div>
 	);

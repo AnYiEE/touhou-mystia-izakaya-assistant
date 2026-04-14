@@ -7,6 +7,8 @@ import {
 	useViewInNewWindow,
 } from '@/hooks';
 
+import { t, tUIf } from '@/i18n';
+
 import { Tooltip, cn } from '@/design/ui/components';
 
 import { trackEvent } from '@/components/analytics';
@@ -135,7 +137,7 @@ export default memo<IProps>(function Content({ data }) {
 																		</Price>
 																		<Tooltip
 																			showArrow
-																			content={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
+																			content={tUIf('点击：在新窗口中查看货币【{currency}】的详情', { currency: t(target.price.currency) })}
 																			offset={
 																				1
 																			}
@@ -159,7 +161,7 @@ export default memo<IProps>(function Content({ data }) {
 																							.currency as TCurrencyName
 																					);
 																				}}
-																				aria-label={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
+																				aria-label={tUIf('点击：在新窗口中查看货币【{currency}】的详情', { currency: t(target.price.currency) })}
 																				role="button"
 																			/>
 																		</Tooltip>
@@ -168,7 +170,7 @@ export default memo<IProps>(function Content({ data }) {
 																</>
 															) : (
 																isTask &&
-																`地区【${target}】支线任务`
+																tUIf('地区【{target}】支线任务', { target: t(target) })
 															)}
 														</Fragment>
 													);

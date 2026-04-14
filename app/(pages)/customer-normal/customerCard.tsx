@@ -2,6 +2,8 @@ import { useCallback, useMemo } from 'react';
 
 import { usePathname, useVibrate } from '@/hooks';
 
+import { t, tUI, tUIf } from '@/i18n';
+
 import { Divider } from '@heroui/divider';
 import { type Selection } from '@heroui/table';
 import { faArrowsRotate, faXmark } from '@fortawesome/free-solid-svg-icons';
@@ -108,7 +110,7 @@ export default function CustomerCard() {
 
 	const avatarRatingContent =
 		currentRating === null
-			? '请选择点单料理以评级'
+? tUI('请选择点单料理以评级')
 			: CUSTOMER_RATING_MAP[currentRating];
 
 	const avatarRatingColor = hasRating
@@ -122,10 +124,10 @@ export default function CustomerCard() {
 			selectedTags: Selection,
 			tag: string
 		) => {
-			const tagType = type === 'beverageTag' ? '酒水' : '料理';
+			const tagType = type === 'beverageTag' ? tUI('酒水') : tUI('料理');
 			const isTagExisted = (selectedTags as SelectionSet).has(tag);
 
-			return `点击：${isTagExisted ? `取消筛选${tagType}表格` : `以此标签筛选${tagType}表格`}`;
+			return isTagExisted ? tUIf('点击：取消筛选{tagType}表格', { tagType }) : tUIf('点击：以此标签筛选{tagType}表格', { tagType });
 		},
 		[]
 	);
@@ -150,8 +152,8 @@ export default function CustomerCard() {
 	const hasOtherPlaces = !checkLengthEmpty(copiedCurrentCustomerPlaces);
 
 	const placeContent = hasOtherPlaces
-		? `其他出没地区：${copiedCurrentCustomerPlaces.join('、')}`
-		: '暂未收录其他出没地区';
+		? tUIf('其他出没地区：{places}', { places: copiedCurrentCustomerPlaces.map((p) => t(p)).join(tUI('、')) })
+		: tUI('暂未收录其他出没地区');
 
 	return (
 		<Card
@@ -217,7 +219,7 @@ export default function CustomerCard() {
 											}}
 										/>
 										<span className="whitespace-nowrap text-center font-bold">
-											{currentCustomerName}
+											{t(currentCustomerName)}
 										</span>
 									</div>
 								</PopoverTrigger>
@@ -234,7 +236,7 @@ export default function CustomerCard() {
 							>
 								<Tooltip
 									showArrow
-									content={dlcLabel}
+										content={t(dlcLabel)}
 									isDisabled={!dlcShortLabel}
 									offset={0}
 								>
@@ -255,7 +257,7 @@ export default function CustomerCard() {
 														? 0
 														: undefined
 												}
-												title={dlcLabel}
+													title={t(dlcLabel)}
 												className={cn('opacity-100', {
 													[CLASSNAME_FOCUS_VISIBLE_OUTLINE]:
 														dlcShortLabel,
@@ -263,18 +265,18 @@ export default function CustomerCard() {
 														dlcShortLabel,
 												})}
 											>
-												{dlcShortLabel || dlcLabel}
+												{t(dlcShortLabel || dlcLabel)}
 											</span>
 										</PopoverTrigger>
 									</span>
 								</Tooltip>
-								<PopoverContent>{dlcLabel}</PopoverContent>
+									<PopoverContent>{t(dlcLabel)}</PopoverContent>
 							</Popover>
 							{(() => {
 								const isGoblin = currentCustomerName === '地精';
 								const mainPlace = isGoblin
-									? '符卡幻化'
-									: currentCustomerMainPlace;
+									? tUI('符卡幻化')
+										: currentCustomerMainPlace && t(currentCustomerMainPlace);
 								const otherPlaces = isGoblin ? (
 									<span className="inline-flex items-center">
 										【
@@ -284,7 +286,7 @@ export default function CustomerCard() {
 											size={1.25}
 											className="mx-0.5 rounded-full"
 										/>
-										爱丽丝】奖励符卡
+										{t('爱丽丝')}{tUI('】奖励符卡')}
 									</span>
 								) : (
 									placeContent
@@ -360,7 +362,7 @@ export default function CustomerCard() {
 											onPress={() => {
 												handleRecipeTagPress(tag);
 											}}
-											aria-label={`${tag}${currentRecipeTagsWithTrend.includes(tag) ? '/已满足' : ''}`}
+											aria-label={`${t(tag)}${currentRecipeTagsWithTrend.includes(tag) ? tUI('/已满足') : ''}`}
 											className={cn(
 												'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 												{
@@ -401,7 +403,7 @@ export default function CustomerCard() {
 										onPress={() => {
 											handleBeverageTagPress(tag);
 										}}
-										aria-label={`${tag}${beverageTags.includes(tag) ? '/已满足' : ''}`}
+										aria-label={`${t(tag)}${beverageTags.includes(tag) ? tUI('/已满足') : ''}`}
 										className={cn(
 											'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 											{
@@ -416,24 +418,24 @@ export default function CustomerCard() {
 					)}
 				</div>
 				{hasSelected ? (
-					<Tooltip showArrow content="重置当前选定项" offset={4}>
+					<Tooltip showArrow content={tUI('重置当前选定项')} offset={4}>
 						<FontAwesomeIconButton
 							icon={faArrowsRotate}
 							variant="light"
 							onPress={() => {
 								handleRefreshSelectedItems(currentCustomerName);
 							}}
-							aria-label="重置当前选定项"
+							aria-label={tUI('重置当前选定项')}
 							className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 						/>
 					</Tooltip>
 				) : (
-					<Tooltip showArrow content="取消选择当前顾客" offset={4}>
+					<Tooltip showArrow content={tUI('取消选择当前顾客')} offset={4}>
 						<FontAwesomeIconButton
 							icon={faXmark}
 							variant="light"
 							onPress={handleRefreshCustomer}
-							aria-label="取消选择当前顾客"
+							aria-label={tUI('取消选择当前顾客')}
 							className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 						/>
 					</Tooltip>

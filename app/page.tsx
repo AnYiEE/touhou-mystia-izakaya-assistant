@@ -20,6 +20,7 @@ import QRCode from '@/components/qrCode';
 import Rednote from '@/components/rednote';
 
 import { siteConfig } from '@/configs';
+import { tUI, tUIf } from '@/i18n';
 
 const { links, shortName } = siteConfig;
 
@@ -28,7 +29,7 @@ export default function Home() {
 		() => (
 			<div className="flex flex-col items-center">
 				<p className="pt-1 text-tiny leading-none">
-					分享经验、交流心得、提出建议、反馈问题
+					{tUI('分享经验、交流心得、提出建议、反馈问题')}
 				</p>
 				<div className="flex">
 					<QRCode text={links.qqGroup1.href}>
@@ -36,7 +37,7 @@ export default function Home() {
 							isExternal
 							showAnchorIcon
 							href={links.qqGroup1.href}
-							title={links.qqGroup1.label}
+							title={tUI(links.qqGroup1.label)}
 							onPress={() => {
 								trackEvent(
 									trackEvent.category.click,
@@ -46,7 +47,7 @@ export default function Home() {
 							}}
 							className="text-tiny text-foreground"
 						>
-							点击加入{links.qqGroup1.label}
+							{tUIf('点击加入{label}', { label: tUI(links.qqGroup1.label) })}
 						</Link>
 					</QRCode>
 					<QRCode text={links.qqGroup2.href}>
@@ -54,7 +55,7 @@ export default function Home() {
 							isExternal
 							showAnchorIcon
 							href={links.qqGroup2.href}
-							title={links.qqGroup2.label}
+							title={tUI(links.qqGroup2.label)}
 							onPress={() => {
 								trackEvent(
 									trackEvent.category.click,
@@ -64,7 +65,7 @@ export default function Home() {
 							}}
 							className="text-tiny text-foreground"
 						>
-							点击加入{links.qqGroup2.label}
+							{tUIf('点击加入{label}', { label: tUI(links.qqGroup2.label) })}
 						</Link>
 					</QRCode>
 				</div>
@@ -79,28 +80,28 @@ export default function Home() {
 				<div className="flex flex-col gap-6">
 					<div className="-mt-4 mb-8 whitespace-nowrap">
 						<p className="text-4xl tracking-wider md:text-5xl">
-							欢迎使用<strong>{shortName}</strong>
+							{tUI('欢迎使用')}<strong>{tUI(shortName)}</strong>
 						</p>
 						<p className="hidden text-large md:inline-block lg:hidden">
-							点击顶部的按钮以使用各项功能
+							{tUI('点击顶部的按钮以使用各项功能')}
 						</p>
 						<p className="inline-flex items-center md:hidden">
-							点击右上角的
+							{tUI('点击右上角的')}
 							<span
-								aria-label="菜单按钮图例"
+								aria-label={tUI('菜单按钮图例')}
 								role="img"
 								className="mx-0.5 block h-4 rounded bg-content2"
 							>
 								<span className="flex h-full flex-col justify-center p-1 before:h-px before:w-4 before:-translate-y-1 before:bg-current after:h-px after:w-4 after:translate-y-1 after:bg-current" />
 							</span>
-							以使用各项功能
+							{tUI('以使用各项功能')}
 						</p>
 						<p>
 							<Link
 								isExternal
 								showAnchorIcon
 								href={links.appQA.href}
-								title={links.appQA.label}
+							title={tUI(links.appQA.label)}
 								onPress={() => {
 									trackEvent(
 										trackEvent.category.click,
@@ -110,13 +111,13 @@ export default function Home() {
 								}}
 								className="rounded-small text-small text-foreground-500 md:text-base lg:text-large"
 							>
-								{links.appQA.label}
+								{tUI(links.appQA.label)}
 							</Link>
 						</p>
 					</div>
 					<div className="flex flex-wrap items-end leading-none">
 						<p className="text-foreground-500 lg:hidden">
-							官方群：
+							{tUI('官方群：')}
 						</p>
 						<div className="flex items-center gap-2 lg:gap-4">
 							<Popover
@@ -151,7 +152,7 @@ export default function Home() {
 											<FontAwesomeIconButton
 												icon={faQq}
 												variant="light"
-												aria-label="夜雀助手QQ群加群链接和二维码"
+												aria-label={tUIf('{shortName}QQ群加群链接和二维码', { shortName: tUI(shortName) })}
 												className="h-auto w-auto min-w-0 rounded-sm text-base text-qq-blue data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
 											/>
 										</PopoverTrigger>
@@ -163,7 +164,7 @@ export default function Home() {
 								showArrow
 								content={
 									<QRCode text={links.rednoteGroup.href}>
-										扫码加入{links.rednoteGroup.label}
+										{tUIf('扫码加入{label}', { label: tUI(links.rednoteGroup.label) })}
 									</QRCode>
 								}
 								onOpenChange={(isOpen) => {
@@ -185,7 +186,7 @@ export default function Home() {
 									variant="light"
 									href={links.rednoteGroup.href}
 									role="link"
-									title={`点击加入${links.rednoteGroup.label}`}
+									title={tUIf('点击加入{label}', { label: tUI(links.rednoteGroup.label) })}
 									onPress={() => {
 										trackEvent(
 											trackEvent.category.click,
@@ -207,7 +208,7 @@ export default function Home() {
 					aria-hidden
 					className="image-rendering-pixelated block h-loading w-loading bg-loading"
 				/>
-				<p>点击顶部的按钮以使用各项功能</p>
+				<p>{tUI('点击顶部的按钮以使用各项功能')}</p>
 			</Placeholder>
 		</div>
 	);

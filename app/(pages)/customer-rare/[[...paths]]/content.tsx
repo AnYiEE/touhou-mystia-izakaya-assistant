@@ -50,6 +50,8 @@ import { type TCustomerRareName } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
 import { checkLengthEmpty, filterItems, getPageTitle } from '@/utilities';
 
+import { t, tUI } from '@/i18n';
+
 const { enName, name: zhName } = siteConfig;
 
 function validateName(name: string | undefined) {
@@ -73,7 +75,7 @@ export default function Content() {
 
 		customerStore.shared.customer.name.set(validName);
 
-		const title = `${validName === null ? '' : `${validName} | `}${getPageTitle('/customer-rare')} | ${zhName} - ${enName}`;
+		const title = `${validName === null ? '' : `${t(validName)} | `}${tUI(getPageTitle('/customer-rare'))} | ${tUI(zhName)} - ${enName}`;
 		const observer = new MutationObserver((_, ob) => {
 			if (
 				location.pathname.startsWith('/customer-rare') &&

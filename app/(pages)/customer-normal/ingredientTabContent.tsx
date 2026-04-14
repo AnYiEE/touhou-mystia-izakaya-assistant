@@ -3,6 +3,8 @@ import { curry, curryRight, debounce } from 'lodash';
 
 import { useVibrate } from '@/hooks';
 
+import { t, tUI, tUIf } from '@/i18n';
+
 import {
 	Badge,
 	Button,
@@ -102,7 +104,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 	if (checkLengthEmpty(sortedData)) {
 		return (
 			<Placeholder className="pt-4 md:min-h-40 md:pt-0">
-				数据为空
+				{tUI('数据为空')}
 			</Placeholder>
 		);
 	}
@@ -253,7 +255,9 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 							: `${scoreChange}`;
 
 						const badgeContent = isNoChange ? '' : score;
-						const tooltipContent = `点击：加入额外食材【${name}】${isNoChange ? '' : `，匹配度${score}`}`;
+						const tooltipContent = isNoChange
+									? tUIf('点击：加入额外食材【{name}】', { name: t(name) })
+									: tUIf('点击：加入额外食材【{name}】，匹配度{score}', { name: t(name), score });
 
 						return (
 							<Tooltip
@@ -317,7 +321,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 						<div className="my-4 flex items-center">
 							<div className="h-px w-full bg-foreground-300" />
 							<div className="select-none whitespace-nowrap text-small font-light text-foreground-500">
-								制作{DARK_MATTER_META_MAP.name}？
+								{tUIf('制作{name}？', { name: t(DARK_MATTER_META_MAP.name) })}
 							</div>
 							<div className="h-px w-full bg-foreground-300" />
 						</div>

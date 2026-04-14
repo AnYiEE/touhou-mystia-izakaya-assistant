@@ -3,6 +3,8 @@ import { debounce } from 'lodash';
 
 import { usePathname, useVibrate } from '@/hooks';
 
+import { t, tUIf } from '@/i18n';
+
 import { Avatar, Button, ScrollShadow, cn } from '@/design/ui/components';
 
 import PressElement from '@/components/pressElement';
@@ -51,7 +53,7 @@ export default memo<IProps>(function CustomerTabContent({
 								store.onCustomerSelectedChange(name);
 								pushState('/customer-normal', name);
 							}}
-							title={`点击：选择【${name}】`}
+							title={tUIf('点击：选择【{name}】', { name: t(name) })}
 							className="group flex cursor-pointer flex-col items-center gap-1"
 						>
 							<Avatar
@@ -64,7 +66,7 @@ export default memo<IProps>(function CustomerTabContent({
 											target="customer_normal"
 											name={name}
 											size={7.1}
-											title={`点击：选择【${name}】`}
+											title={tUIf('点击：选择【{name}】', { name: t(name) })}
 											className="-translate-x-4 -translate-y-0.5"
 										/>
 									</div>

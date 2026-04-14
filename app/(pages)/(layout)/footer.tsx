@@ -5,6 +5,7 @@ import { FooterLinkWithTooltip } from './footerLink';
 import QRCode from '@/components/qrCode';
 
 import { siteConfig } from '@/configs';
+import { tUI, tUIf } from '@/i18n';
 
 const {
 	isIcpFiling,
@@ -46,16 +47,16 @@ export default function Footer() {
 		<footer className="mx-auto max-w-p-95 pb-3 text-center text-tiny text-default-400 md:max-w-full">
 			<p className={className}>
 				<span>
-					{shortName}
-					内所涉及的名称、商标、产品等均为其各自权利人的资产，仅供识别。游戏素材的著作权归
+					{tUI(shortName)}
+					{tUI('内所涉及的名称、商标、产品等均为其各自权利人的资产，仅供识别。游戏素材的著作权归')}
 					<FooterLinkWithTooltip
-						content={links.steam.label}
+						content={tUI(links.steam.label)}
 						event={{ click: 'footer:Steam' }}
 						href={links.steam.href}
 					>
-						原作者
+						{tUI('原作者')}
 					</FooterLinkWithTooltip>
-					所有
+					{tUI('所有')}
 				</span>
 				{/* <FooterVisitors /> */}
 			</p>
@@ -72,7 +73,7 @@ export default function Footer() {
 						<>
 							{isOffline ? 'offline' : (vercelEnv ?? nodeEnv)}-
 							<FooterLinkWithTooltip
-								content="在GitHub上查看此提交"
+							content={tUI('在GitHub上查看此提交')}
 								event={{ click: 'GitHub commit' }}
 								href={`${links.github.href}/commit/${sha}`}
 							>
@@ -92,25 +93,25 @@ export default function Footer() {
 				)}
 				{isVercel && (
 					<FooterLinkWithTooltip
-						content="如果访问或加载速度过慢，可尝试访问此国内线路"
+						content={tUI('如果访问或加载速度过慢，可尝试访问此国内线路')}
 						event={{ click: 'China server' }}
 						href={links.china.href}
 					>
-						{links.china.label}
+						{tUI(links.china.label)}
 					</FooterLinkWithTooltip>
 				)}
 				<FooterLinkWithTooltip
 					content={
 						<QRCode text={links.donate.href} className="w-24">
-							{links.donate.label.replace('链接', '码')}
+							{tUI('捐赠码')}
 						</QRCode>
 					}
 					event={{ click: 'footer:Donate', show: true }}
 					href={links.donate.href}
-					title={links.donate.label}
+					title={tUI(links.donate.label)}
 					classNames={{ content: 'px-1' }}
 				>
-					支持{shortName}
+					{tUIf('支持{shortName}', { shortName: tUI(shortName) })}
 				</FooterLinkWithTooltip>
 			</p>
 		</footer>

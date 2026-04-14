@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useVibrate } from '@/hooks';
 
+import { t, tUI, tUIf } from '@/i18n';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleXmark } from '@fortawesome/free-solid-svg-icons';
 
@@ -66,7 +68,7 @@ function IngredientsList() {
 				ingredient ? (
 					index >= originalIngredients.length ? (
 						(() => {
-							const label = `点击：删除额外食材【${ingredient}】`;
+							const label = tUIf('点击：删除额外食材【{name}】', { name: t(ingredient) });
 							return (
 								<Tooltip
 									key={index}
@@ -122,7 +124,7 @@ function IngredientsList() {
 						</Tooltip>
 					)
 				) : (
-					<UnknownItem key={index} title="空食材" />
+					<UnknownItem key={index} title={tUI('空食材')} />
 				)
 			)}
 		</div>
@@ -204,7 +206,7 @@ export default function ResultCard() {
 		} else {
 			content = (
 				<Placeholder className="pb-6 pt-12 md:py-8 xl:pb-2 xl:pt-0">
-					选择点单料理以继续
+					{tUI('选择点单料理以继续')}
 				</Placeholder>
 			);
 			contentClassName = 'my-auto';
@@ -250,10 +252,10 @@ export default function ResultCard() {
 							) : (
 								<>
 									<UnknownItem
-										title="请选择料理"
+										title={tUI('请选择料理')}
 										size={1.5}
 									/>
-									<UnknownItem title="请选择料理" />
+									<UnknownItem title={tUI('请选择料理')} />
 								</>
 							)}
 							<Plus />
@@ -270,7 +272,7 @@ export default function ResultCard() {
 									/>
 								</Tooltip>
 							) : (
-								<UnknownItem title="可选择酒水" />
+								<UnknownItem title={tUI('可选择酒水')} />
 							)}
 						</div>
 						<Plus />
@@ -278,7 +280,7 @@ export default function ResultCard() {
 					</div>
 					<Tooltip
 						showArrow
-						content="请选择点单料理以保存"
+						content={tUI('请选择点单料理以保存')}
 						isOpen={isShowSaveButtonTooltip}
 					>
 						<Button
@@ -287,13 +289,13 @@ export default function ResultCard() {
 							size="sm"
 							variant="flat"
 							onPress={handleSaveButtonPress}
-							aria-label={`保存套餐，当前${currentRating === null ? '未评级' : `评级为${CUSTOMER_RATING_MAP[currentRating]}`}`}
+							aria-label={currentRating === null ? tUI('保存套餐，当前未评级') : tUIf('保存套餐，当前评级为{rating}', { rating: t(CUSTOMER_RATING_MAP[currentRating]) })}
 							className={cn(
 								'!transition motion-reduce:!transition-none md:w-auto',
 								{ 'opacity-disabled': isSaveButtonDisabled }
 							)}
 						>
-							保存套餐
+							{tUI('保存套餐')}
 						</Button>
 					</Tooltip>
 				</div>

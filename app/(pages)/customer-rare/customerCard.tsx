@@ -35,6 +35,7 @@ import {
 } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
 import { checkLengthEmpty, copyArray, pinyinSort } from '@/utilities';
+import { t, tUI, tUIf } from '@/i18n';
 
 export default function CustomerCard() {
 	const { pushState } = usePathname();
@@ -128,21 +129,21 @@ export default function CustomerCard() {
 
 		const target = [];
 		if (currentBeverageName === null) {
-			target.push('酒水');
+			target.push(tUI('酒水'));
 		}
 		if (currentRecipeData === null) {
-			target.push('料理');
+			target.push(tUI('料理'));
 		}
 		if ((isDarkMatter && hasMystiaCooker) || !hasMystiaCooker) {
-			target.push('顾客点单需求');
+			target.push(tUI('顾客点单需求'));
 		}
 
-		let content = target.join('、');
+		let content = target.join(tUI('、'));
 		if (!isDarkMatter && !hasMystiaCooker) {
-			content += '或标记为使用“夜雀”系列厨具';
+			content += tUI('或标记为使用\u201c夜雀\u201d系列厨具');
 		}
 
-		return `请选择${content}以评级`;
+		return tUIf('请选择{content}以评级', { content });
 	}, [
 		currentBeverageName,
 		currentRating,
@@ -159,22 +160,26 @@ export default function CustomerCard() {
 
 	const getTagTooltip = useCallback(
 		(type: keyof typeof currentCustomerOrder, tag: string) => {
-			const tagType = type === 'beverageTag' ? '酒水' : '料理';
+			const tagType = type === 'beverageTag' ? tUI('酒水') : tUI('料理');
 			const isCurrentTag = currentCustomerOrder[type] === tag;
 			const isNormalMeal = hasMystiaCooker && !isDarkMatter;
 
-			const cookerTip = '已使用“夜雀”系列厨具无视顾客点单需求';
+			const cookerTip = tUI(
+				'已使用\u201c夜雀\u201d系列厨具无视顾客点单需求'
+			);
 			const orderTip = isNormalMeal
 				? isOrderLinkedFilter
 					? ''
 					: cookerTip
-				: `点击：${isCurrentTag ? '不再' : ''}将此标签视为顾客点单需求`;
+				: tUIf('点击：{action}将此标签视为顾客点单需求', {
+						action: isCurrentTag ? tUI('不再') : '',
+					});
 			const filterTip = isOrderLinkedFilter
-				? `${isNormalMeal ? '点击：' : '并'}${
+				? `${isNormalMeal ? tUI('点击：') : tUI('并')}${
 						isCurrentTag
-							? `取消筛选${tagType}表格`
-							: `以此标签筛选${tagType}表格`
-					}${isNormalMeal ? `（${cookerTip}）` : ''}`
+							? tUIf('取消筛选{tagType}表格', { tagType })
+							: tUIf('以此标签筛选{tagType}表格', { tagType })
+					}${isNormalMeal ? tUIf('\uff08{tip}\uff09', { tip: cookerTip }) : ''}`
 				: '';
 
 			return `${orderTip}${filterTip}`;
@@ -213,8 +218,12 @@ export default function CustomerCard() {
 	const hasOtherPlaces = !checkLengthEmpty(copiedCurrentCustomerPlaces);
 
 	const placeContent = hasOtherPlaces
-		? `其他出没地区：${copiedCurrentCustomerPlaces.join('、')}`
-		: '暂未收录其他出没地区';
+		? tUIf('其他出没地区：{places}', {
+				places: copiedCurrentCustomerPlaces
+					.map((p) => t(p))
+					.join(tUI('、')),
+			})
+		: tUI('暂未收录其他出没地区');
 
 	const hasSpellCards = !checkLengthEmpty(
 		Object.keys(currentCustomerSpellCards)
@@ -236,34 +245,36 @@ export default function CustomerCard() {
 			<p>
 				{hasEnduranceLimit ? (
 					<>
-						可超支预算
+						{tUI('可超支预算')}
 						<Price showSymbol={false}>
 							{currentCustomerEnduranceLimitPercent}
 						</Price>
 						%
 					</>
 				) : hasNegativeSpellCards ? (
-					'不接受预算超支'
+					tUI('不接受预算超支')
 				) : (
 					''
 				)}
 				{hasNegativeSpellCards &&
-					`（超${hasEnduranceLimit ? '过' : '支'}则释放惩罚符卡）`}
+					tUIf('（超{action}则释放惩罚符卡）', {
+						action: hasEnduranceLimit ? tUI('过') : tUI('支'),
+					})}
 			</p>
 			<p>
-				最少
+				{tUI('最少')}
 				<Price>
 					{Math.ceil(
 						currentCustomerPrice[0] * currentCustomerEnduranceLimit
 					)}
 				</Price>
-				，平均
+				{tUI('，平均')}
 				<Price>
 					{currentCustomerAveragePrice}
 					{hasEnduranceLimit &&
 						`-${Math.ceil(currentCustomerAveragePrice * currentCustomerEnduranceLimit)}`}
 				</Price>
-				，最多
+				{tUI('，最多')}
 				<Price>
 					{Math.ceil(
 						currentCustomerPrice[1] * currentCustomerEnduranceLimit
@@ -350,7 +361,7 @@ export default function CustomerCard() {
 							>
 								<Tooltip
 									showArrow
-									content={dlcLabel}
+									content={t(dlcLabel)}
 									isDisabled={!dlcShortLabel}
 									offset={0}
 								>
@@ -371,7 +382,7 @@ export default function CustomerCard() {
 														? 0
 														: undefined
 												}
-												title={dlcLabel}
+												title={t(dlcLabel)}
 												className={cn('opacity-100', {
 													[CLASSNAME_FOCUS_VISIBLE_OUTLINE]:
 														dlcShortLabel,
@@ -379,12 +390,12 @@ export default function CustomerCard() {
 														dlcShortLabel,
 												})}
 											>
-												{dlcShortLabel || dlcLabel}
+												{t(dlcShortLabel || dlcLabel)}
 											</span>
 										</PopoverTrigger>
 									</span>
 								</Tooltip>
-								<PopoverContent>{dlcLabel}</PopoverContent>
+								<PopoverContent>{t(dlcLabel)}</PopoverContent>
 							</Popover>
 							<Popover showArrow offset={hasOtherPlaces ? 6 : 4}>
 								<Tooltip
@@ -405,7 +416,10 @@ export default function CustomerCard() {
 													}
 												)}
 											>
-												{currentCustomerMainPlace}
+												{t(
+													currentCustomerMainPlace ??
+														''
+												)}
 											</span>
 										</PopoverTrigger>
 									</span>
@@ -414,7 +428,7 @@ export default function CustomerCard() {
 							</Popover>
 						</p>
 						<p>
-							可能持有：
+							{tUI('可能持有：')}
 							<Popover showArrow offset={4}>
 								<Tooltip
 									showArrow
@@ -486,7 +500,7 @@ export default function CustomerCard() {
 											onPress={() => {
 												handleRecipeTagPress(tag);
 											}}
-											aria-label={`${tag}${currentCustomerOrder.recipeTag === tag ? '/已选定' : ''}${currentRecipeTagsWithTrend.includes(tag) ? '/已满足' : ''}`}
+											aria-label={`${t(tag)}${currentCustomerOrder.recipeTag === tag ? '/' + tUI('已选定') : ''}${currentRecipeTagsWithTrend.includes(tag) ? '/' + tUI('已满足') : ''}`}
 											className={cn(
 												'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 												{
@@ -574,7 +588,7 @@ export default function CustomerCard() {
 										onPress={() => {
 											handleBeverageTagPress(tag);
 										}}
-										aria-label={`${tag}${currentCustomerOrder.beverageTag === tag ? '/已选定' : ''}${beverageTags.includes(tag) ? '/已满足' : ''}`}
+										aria-label={`${t(tag)}${currentCustomerOrder.beverageTag === tag ? '/' + tUI('已选定') : ''}${beverageTags.includes(tag) ? '/' + tUI('已满足') : ''}`}
 										className={cn(
 											'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 											{
@@ -600,24 +614,32 @@ export default function CustomerCard() {
 					)}
 				</div>
 				{hasSelected ? (
-					<Tooltip showArrow content="重置当前选定项" offset={4}>
+					<Tooltip
+						showArrow
+						content={tUI('重置当前选定项')}
+						offset={4}
+					>
 						<FontAwesomeIconButton
 							icon={faArrowsRotate}
 							variant="light"
 							onPress={() => {
 								handleRefreshSelectedItems(currentCustomerName);
 							}}
-							aria-label="重置当前选定项"
+							aria-label={tUI('重置当前选定项')}
 							className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 						/>
 					</Tooltip>
 				) : (
-					<Tooltip showArrow content="取消选择当前顾客" offset={4}>
+					<Tooltip
+						showArrow
+						content={tUI('取消选择当前顾客')}
+						offset={4}
+					>
 						<FontAwesomeIconButton
 							icon={faXmark}
 							variant="light"
 							onPress={handleRefreshCustomer}
-							aria-label="取消选择当前顾客"
+							aria-label={tUI('取消选择当前顾客')}
 							className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 						/>
 					</Tooltip>

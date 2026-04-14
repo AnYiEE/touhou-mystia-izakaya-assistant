@@ -5,6 +5,8 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { THEME_MAP, type TTheme, useTheme } from '@/design/hooks';
 import { useMounted, useVibrate } from '@/hooks';
 
+import { tUI } from '@/i18n';
+
 import { type Selection } from '@heroui/table';
 import { Spinner } from '@heroui/spinner';
 import {
@@ -41,12 +43,12 @@ const THEME_ICON_MAP = {
 } as const satisfies Record<TTheme, FontAwesomeIconProps['icon']>;
 
 const THEME_LABEL_MAP = {
-	dark: '深色主题',
-	light: '浅色主题',
-	list: '可选主题列表',
-	switcher: '切换主题',
-	system: '跟随系统',
-} as const satisfies Record<TTheme, string> &
+	dark: tUI('深色主题'),
+	light: tUI('浅色主题'),
+	list: tUI('可选主题列表'),
+	switcher: tUI('切换主题'),
+	system: tUI('跟随系统'),
+} satisfies Record<TTheme, string> &
 	Record<'list' | 'switcher', string>;
 
 const THEME_LABEL_ICON_MAP = {

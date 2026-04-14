@@ -50,6 +50,7 @@ import type {
 	IBackupUploadSuccessResponse,
 } from '@/api/v1/backups/types';
 import { siteConfig } from '@/configs';
+import { tUI, tUIf } from '@/i18n';
 import { customerNormalStore, customerRareStore, globalStore } from '@/stores';
 import {
 	FILE_TYPE_JSON,
@@ -129,7 +130,7 @@ function setErrorState({
 	setState('danger');
 	if (error instanceof Error) {
 		console.error(error);
-		setLabel(`${label}（网络错误）`);
+		setLabel(tUIf('{label}（{reason}）', { label: tUI(label), reason: tUI('网络错误') }));
 		trackEvent(trackEvent.category.error, 'Cloud', type, error.message);
 	} else {
 		const {
@@ -138,7 +139,7 @@ function setErrorState({
 		} = error as { data: { message: string }; status: number };
 		console.error({ message, status });
 		setLabel(
-			`${label}（${status === 400 ? '无效的备份码' : status === 404 ? '目标文件不存在' : status === 429 ? `请${FREQUENCY_TTL / 1000 / 60}分钟后再试` : status}）`
+			tUIf('{label}（{reason}）', { label: tUI(label), reason: status === 400 ? tUI('无效的备份码') : status === 404 ? tUI('目标文件不存在') : status === 429 ? tUIf('请{minutes}分钟后再试', { minutes: String(FREQUENCY_TTL / 1000 / 60) }) : String(status) })
 		);
 		if (type === 'Delete' && status === 404) {
 			globalStore.persistence.cloudCode.set(null);
@@ -248,9 +249,9 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 			if (cloudCode === null) {
 				setCloudCodeInfo(
 					<>
-						无
+						{tUI('无')}
 						<span className="text-tiny">
-							（下次备份时将自动生成，请自行保存至他处）
+							{tUI('（下次备份时将自动生成，请自行保存至他处）')}
 						</span>
 					</>
 				);
@@ -261,17 +262,18 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				.then(({ created_at, last_accessed }) => {
 					setCloudCodeInfo(
 						<span className="text-tiny">
-							（更新于
-							<TimeAgo timestamp={created_at} />，
+							{tUI('（更新于')}
+							<TimeAgo timestamp={created_at} />
+							{'，'}
 							{last_accessed === -1 ? (
-								'尚未被下载过'
+								tUI('尚未被下载过')
 							) : (
 								<>
-									下载于
+									{tUI('下载于')}
 									<TimeAgo timestamp={last_accessed} />
 								</>
 							)}
-							）
+							{'）'}
 						</span>
 					);
 				})
@@ -279,17 +281,17 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 					if (isObject(error) && 'status' in error) {
 						setCloudCodeInfo(
 							<span className="text-tiny">
-								（
+								{'（'}
 								{error.status === 404
-									? '云端未记录此备份码，可能已于他处删除？'
-									: '无效的备份码'}
-								）
+									? tUI('云端未记录此备份码，可能已于他处删除？')
+									: tUI('无效的备份码')}
+								{'）'}
 							</span>
 						);
 					} else {
 						setCloudCodeInfo(
 							<span className="text-tiny">
-								（获取备份码信息失败）
+								{tUI('（获取备份码信息失败）')}
 							</span>
 						);
 					}
@@ -344,7 +346,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 
 	const handleCloudDownloadButtonPress = useCallback(() => {
 		let code = currentCloudCode;
-		code ??= prompt('请输入已有备份码');
+		code ??= prompt(tUI('请输入已有备份码'));
 		if (!code?.trim()) {
 			return;
 		}
@@ -555,7 +557,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 
 	return (
 		<>
-			<Heading subTitle="备份/还原/重置顾客套餐数据">数据管理</Heading>
+			<Heading subTitle={tUI('备份/还原/重置顾客套餐数据')}>{tUI('数据管理')}</Heading>
 			<div className="-mt-2">
 				<Tabs
 					defaultSelectedKey="reset"
@@ -565,16 +567,16 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 					onSelectionChange={() => {
 						setImportValue('');
 					}}
-					aria-label="数据管理选项卡"
+					aria-label={tUI('数据管理选项卡')}
 					classNames={{ base: '-ml-3' }}
 				>
-					<Tab key="backup-local" title="本地导入/导出">
+					<Tab key="backup-local" title={tUI('本地导入/导出')}>
 						<div className="w-full space-y-4">
 							<div className="w-full space-y-2 lg:w-1/2">
 								<Textarea
 									isClearable
 									disableAnimation={isReducedMotion}
-									placeholder="从本地文件导入或输入顾客套餐数据"
+									placeholder={tUI('从本地文件导入或输入顾客套餐数据')}
 									value={importValue}
 									onValueChange={setImportValue}
 									classNames={{
@@ -600,7 +602,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 									variant="flat"
 									onPress={handleImportButtonPress}
 								>
-									导入
+									{tUI('导入')}
 								</Button>
 								<Popover
 									shouldBlockScroll
@@ -625,7 +627,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 												)
 											)}
 										>
-											保存
+											{tUI('保存')}
 										</Button>
 									</PopoverTrigger>
 									<PopoverContent className="space-y-1 p-1">
@@ -636,7 +638,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 											variant="ghost"
 											onPress={handleImportData}
 										>
-											确认保存
+											{tUI('确认保存')}
 										</Button>
 										<Button
 											fullWidth
@@ -645,7 +647,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 											variant="ghost"
 											onPress={toggleSavePopoverOpened}
 										>
-											取消保存
+											{tUI('取消保存')}
 										</Button>
 									</PopoverContent>
 								</Popover>
@@ -655,7 +657,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 									hideSymbol
 									fullWidth
 									tooltipProps={{
-										content: '点击以复制当前的顾客套餐数据',
+										content: tUI('点击以复制当前的顾客套餐数据'),
 										delay: 0,
 										offset: 0,
 										showArrow: !isHighAppearance,
@@ -676,7 +678,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 									showArrow
 									color="success"
 									content={
-										exportButtonLabelMap.downloadingTip
+										tUI(exportButtonLabelMap.downloadingTip)
 									}
 									isDisabled={!isExportButtonDisabled}
 								>
@@ -692,16 +694,16 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 										variant="flat"
 										onPress={handleExportButtonPress}
 									>
-										{exportButtonLabel}
+										{tUI(exportButtonLabel)}
 									</Button>
 								</Tooltip>
 							</div>
 						</div>
 					</Tab>
 					{!isOffline && (
-						<Tab key="backup-cloud" title="云端备份/还原">
+						<Tab key="backup-cloud" title={tUI('云端备份/还原')}>
 							<p className="-mt-1 text-small text-foreground-500">
-								当前备份码：
+								{tUI('当前备份码：')}
 								{isCloudCodeValid && (
 									<Popover shouldCloseOnScroll showArrow>
 										<PopoverTrigger>
@@ -710,7 +712,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 												variant="light"
 												className="-ml-1 inline-block h-auto w-auto min-w-0 p-1 leading-none text-foreground-500"
 											>
-												点此查看
+												{tUI('点此查看')}
 											</Button>
 										</PopoverTrigger>
 										<PopoverContent>
@@ -723,7 +725,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 													/>
 												}
 												tooltipProps={{
-													content: '点击以复制备份码',
+													content: tUI('点击以复制备份码'),
 													delay: 0,
 													offset: 0,
 													size: 'sm',
@@ -740,7 +742,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 								{cloudCodeInfo}
 							</p>
 							<p className="mb-2 mt-0.5 text-tiny text-foreground-500">
-								备份码有效期为180天，每次使用后会自动续期，逾期将自动失效
+								{tUI('备份码有效期为180天，每次使用后会自动续期，逾期将自动失效')}
 							</p>
 							<div className="w-full space-y-2 lg:w-1/2">
 								<Button
@@ -755,7 +757,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 									variant="flat"
 									onPress={handleCloudUploadButtonPress}
 								>
-									{cloudUploadButtonLabel}
+									{tUI(cloudUploadButtonLabel)}
 								</Button>
 								<Button
 									fullWidth
@@ -769,7 +771,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 									variant="flat"
 									onPress={handleCloudDownloadButtonPress}
 								>
-									{cloudDownloadButtonLabel}
+									{tUI(cloudDownloadButtonLabel)}
 								</Button>
 								<Button
 									fullWidth
@@ -785,12 +787,12 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 									variant="flat"
 									onPress={handleCloudDeleteButtonPress}
 								>
-									{cloudDeleteButtonLabel}
+									{tUI(cloudDeleteButtonLabel)}
 								</Button>
 							</div>
 						</Tab>
 					)}
-					<Tab key="reset" title="重置">
+					<Tab key="reset" title={tUI('重置')}>
 						<div className="w-full space-y-2 lg:w-1/2">
 							<Popover
 								shouldBlockScroll
@@ -809,7 +811,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 											)
 										)}
 									>
-										重置已保存的顾客套餐数据
+										{tUI('重置已保存的顾客套餐数据')}
 									</Button>
 								</PopoverTrigger>
 								<PopoverContent className="space-y-1 p-1">
@@ -820,7 +822,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 										variant="ghost"
 										onPress={handleResetData}
 									>
-										确认重置
+										{tUI('确认重置')}
 									</Button>
 									<Button
 										fullWidth
@@ -829,7 +831,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 										variant="ghost"
 										onPress={toggleResetPopoverOpened}
 									>
-										取消重置
+										{tUI('取消重置')}
 									</Button>
 								</PopoverContent>
 							</Popover>

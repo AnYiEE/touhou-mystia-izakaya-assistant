@@ -12,6 +12,7 @@ import {
 
 import { type TTag } from '@/data';
 import type { ITagStyleConfig } from '@/data/types';
+import { t } from '@/i18n';
 import { checkA11yConfirmKey, checkLengthEmpty } from '@/utilities';
 
 interface ITagPropsBase {
@@ -44,8 +45,9 @@ const Tag = memo<ITagProps>(function Tag({
 	...props
 }) {
 	const isArray = Array.isArray(tag);
-	const tagDescription = isArray ? `（${tag[1]}）` : null;
+	const tagDescription = isArray ? `（${t(tag[1])}）` : null;
 	const tagName = isArray ? tag[0] : tag;
+	const translatedTagName = typeof tagName === 'string' ? t(tagName) : tagName;
 
 	const baseClassName = cn('inline-block h-max w-max rounded border px-1', {
 		'after:ml-0.5 after:font-normal after:content-["✘"]':
@@ -67,7 +69,7 @@ const Tag = memo<ITagProps>(function Tag({
 	const children = useMemo(
 		() => (
 			<>
-				{tagName}
+				{translatedTagName}
 				{tagDescription !== null && (
 					<span className="-mx-1 select-none text-tiny font-normal leading-none">
 						{tagDescription}
@@ -75,7 +77,7 @@ const Tag = memo<ITagProps>(function Tag({
 				)}
 			</>
 		),
-		[tagDescription, tagName]
+		[tagDescription, translatedTagName]
 	);
 
 	const handleClick = useCallback(

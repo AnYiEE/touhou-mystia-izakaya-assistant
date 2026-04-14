@@ -37,6 +37,8 @@ import SiteInfo from '@/components/siteInfo';
 import Sprite, { type ISpriteProps } from '@/components/sprite';
 import TagsComponent from '@/components/tags';
 
+import { t, tUI, tUIf } from '@/i18n';
+
 import { siteConfig } from '@/configs';
 import {
 	DLC_LABEL_MAP,
@@ -87,7 +89,9 @@ const CloseButton: FC<ICloseButtonProps> = () => {
 		[getBackdropProps, isPreviewMode, params, replaceState]
 	);
 
-	const label = `点击：关闭${isPreviewMode ? '窗口' : '弹出框'}`;
+	const label = tUIf('点击：关闭{target}', {
+		target: isPreviewMode ? tUI('窗口') : tUI('弹出框'),
+	});
 
 	return (
 		<Tooltip
@@ -125,7 +129,10 @@ const ShareButton = memo<IShareButtonProps>(function ShareButton({ name }) {
 	}, [name, params]);
 
 	const shareObject = useMemo<ShareData>(() => {
-		const text = `在${siteName}上查看【${name}】的详情`;
+		const text = tUIf('在{siteName}上查看【{name}】的详情', {
+			siteName: tUI(siteName),
+			name: t(name),
+		});
 
 		return { text, title: text, url: generatedUrl };
 	}, [generatedUrl, name]);
@@ -146,7 +153,7 @@ const ShareButton = memo<IShareButtonProps>(function ShareButton({ name }) {
 		trackEvent(trackEvent.category.click, 'Share Button', name);
 	}, [isCanShare, name, shareObject]);
 
-	const label = '点击：分享到当前选中项的链接';
+	const label = tUI('点击：分享到当前选中项的链接');
 
 	return (
 		<>
@@ -176,7 +183,7 @@ const ShareButton = memo<IShareButtonProps>(function ShareButton({ name }) {
 				</Tooltip>
 				<PopoverContent>
 					<p className="mr-4 cursor-default select-none self-end text-right text-tiny text-default-500">
-						点击以复制到当前选中项的链接↓
+						{tUI('点击以复制到当前选中项的链接↓')}
 					</p>
 					<Snippet
 						disableTooltip
@@ -304,9 +311,9 @@ const ItemPopoverCardComponent = memo<PropsWithChildren<IItemPopoverCardProps>>(
 				!checkLengthEmpty(mergedTags.negative));
 
 		const dlcLabel =
-			dlc === undefined ? '' : DLC_LABEL_MAP[dlc as TDlc].label;
+			dlc === undefined ? '' : t(DLC_LABEL_MAP[dlc as TDlc].label);
 		const dlcShortLabel =
-			dlc === undefined ? '' : DLC_LABEL_MAP[dlc as TDlc].shortLabel;
+			dlc === undefined ? '' : t(DLC_LABEL_MAP[dlc as TDlc].shortLabel);
 
 		return (
 			<div
@@ -380,14 +387,14 @@ const ItemPopoverCardComponent = memo<PropsWithChildren<IItemPopoverCardProps>>(
 								<PopoverContent>{dlcLabel}</PopoverContent>
 							</Popover>
 						)}
-						{displayName === undefined ? name : displayName}
+						{displayName === undefined ? t(name) : displayName}
 					</p>
 				</div>
 				{!isNil(cooker) && ingredients !== undefined && (
 					<div className="flex flex-wrap gap-x-2 gap-y-1">
 						<Tooltip
 							showArrow
-							content={cooker}
+							content={t(cooker)}
 							offset={1}
 							size="sm"
 						>
@@ -399,7 +406,9 @@ const ItemPopoverCardComponent = memo<PropsWithChildren<IItemPopoverCardProps>>(
 							/>
 						</Tooltip>
 						{ingredients.map((ingredient, index) => {
-							const ingredientLabel = `点击：在新窗口中查看食材【${ingredient}】的详情`;
+							const ingredientLabel = tUIf('点击：在新窗口中查看食材【{name}】的详情', {
+						name: t(ingredient),
+					});
 							return (
 								<Tooltip
 									showArrow
@@ -429,7 +438,7 @@ const ItemPopoverCardComponent = memo<PropsWithChildren<IItemPopoverCardProps>>(
 				<div className="flex gap-4">
 					{description.price !== undefined && (
 						<p>
-							<span className="font-semibold">售价：</span>
+						<span className="font-semibold">{tUI('售价：')}</span>
 							<Price showSymbol={false}>
 								{description.price}
 							</Price>
@@ -437,7 +446,7 @@ const ItemPopoverCardComponent = memo<PropsWithChildren<IItemPopoverCardProps>>(
 					)}
 					{description.level !== undefined && (
 						<p>
-							<span className="font-semibold">等级：</span>
+						<span className="font-semibold">{tUI('等级：')}</span>
 							<Price showSymbol={false}>
 								{description.level}
 							</Price>
@@ -445,19 +454,19 @@ const ItemPopoverCardComponent = memo<PropsWithChildren<IItemPopoverCardProps>>(
 					)}
 					{description.type !== undefined && (
 						<p>
-							<span className="font-semibold">类别：</span>
-							{[description.type].flat().join('、')}
+						<span className="font-semibold">{tUI('类别：')}</span>
+						{[description.type].flat().map(v => t(v as string)).join(tUI('、'))}
 						</p>
 					)}
 					<p>
 						<span className="font-semibold">
-							{target === 'recipe' ? '料理' : ''}ID：
+						{target === 'recipe' ? tUI('料理') : ''}ID{tUI('：')}
 						</span>
 						<Price showSymbol={false}>{id}</Price>
 					</p>
 					{recipeId !== undefined && recipeId !== -1 && (
 						<p>
-							<span className="font-semibold">食谱ID：</span>
+							<span className="font-semibold">{tUI('食谱ID：')}</span>
 							<Price showSymbol={false}>{recipeId}</Price>
 						</p>
 					)}
@@ -481,8 +490,8 @@ const ItemPopoverCardComponent = memo<PropsWithChildren<IItemPopoverCardProps>>(
 						'!mt-1': mergedTags === null,
 					})}
 				>
-					<span className="font-semibold">简介：</span>
-					{description.description}
+					<span className="font-semibold">{tUI('简介：')}</span>
+					{t(description.description)}
 				</p>
 				{children !== undefined && (
 					<div className="!mt-1 space-y-1">{children}</div>

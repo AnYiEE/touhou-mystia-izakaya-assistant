@@ -5,6 +5,7 @@ import { Divider } from '@heroui/divider';
 import { Button, Link } from '@/design/ui/components';
 
 import { siteConfig } from '@/configs';
+import { tUI, tUIf } from '@/i18n';
 
 const { links } = siteConfig;
 
@@ -15,7 +16,7 @@ export default function NotFound() {
 		<div className="flex min-h-main-content items-center justify-center gap-4">
 			<h1 className="text-6xl font-bold">404</h1>
 			<Divider orientation="vertical" className="h-12" />
-			<p className="hidden text-xl md:inline">找不到您所请求的资源</p>
+			<p className="hidden text-xl md:inline">{tUI('找不到您所请求的资源')}</p>
 			<Button
 				as={Link}
 				animationUnderline={false}
@@ -25,7 +26,7 @@ export default function NotFound() {
 				href={links.index.href}
 				role="link"
 			>
-				返回{links.index.label}
+				{tUIf('返回{label}', { label: tUI(links.index.label) })}
 			</Button>
 		</div>
 	);

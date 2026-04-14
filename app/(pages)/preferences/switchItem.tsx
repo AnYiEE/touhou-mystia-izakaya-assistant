@@ -2,6 +2,8 @@ import { type PropsWithChildren, memo } from 'react';
 
 import { type ISwitchProps, Switch, Tooltip, cn } from '@/design/ui/components';
 
+import { tUI } from '@/i18n';
+
 interface IProps extends Pick<
 	ISwitchProps,
 	'color' | 'className' | 'isDisabled' | 'title'
@@ -32,8 +34,8 @@ export default memo<PropsWithChildren<IProps>>(function SwitchItem({
 				size="sm"
 			>
 				<Switch
-					endContent={<span>关</span>}
-					startContent={<span>开</span>}
+					endContent={<span>{tUI('关')}</span>}
+					startContent={<span>{tUI('开')}</span>}
 					isDisabled={Boolean(isDisabled)}
 					isSelected={isSelected}
 					size="sm"

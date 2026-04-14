@@ -9,6 +9,8 @@ import {
 	useThrottle,
 } from '@/hooks';
 
+import { tUI } from '@/i18n';
+
 import Content from './content';
 import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
@@ -61,7 +63,7 @@ export default function Partners() {
 
 	const searchConfig = useMemo<ISearchConfig>(
 		() => ({
-			label: '选择或输入伙伴名称',
+			label: tUI('选择或输入伙伴名称'),
 			searchItems: availableNames,
 			searchValue,
 			setSearchValue: store.persistence.searchValue.set,

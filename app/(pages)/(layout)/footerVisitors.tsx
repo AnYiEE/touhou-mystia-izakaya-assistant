@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ping } from '@/components/analytics';
 
 import { siteConfig } from '@/configs';
+import { tUI, tUIf } from '@/i18n';
 
 const { isAnalytics, isOffline, isSelfHosted } = siteConfig;
 
@@ -53,10 +54,10 @@ export default function FooterVisitors() {
 	if (shouldSkip) {
 		return null;
 	} else if (visitors === null) {
-		return <span>正在获取在线人数</span>;
+		return <span>{tUI('正在获取在线人数')}</span>;
 	} else if (visitors === -1) {
-		return <span>获取在线人数失败</span>;
+		return <span>{tUI('获取在线人数失败')}</span>;
 	}
 
-	return <span>实时{visitors}人在线</span>;
+	return <span>{tUIf('实时{visitors}人在线', { visitors: String(visitors) })}</span>;
 }

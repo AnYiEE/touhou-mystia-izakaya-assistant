@@ -6,10 +6,11 @@ import { faCaretDown, faCaretUp } from '@fortawesome/free-solid-svg-icons';
 import { type TTableColumns as TBeverageTableColumns } from './beverageTabContent';
 import { type TTableColumns as TRecipeTableColumns } from './recipeTabContent';
 import type { TCustomerTabStyleMap, TIngredientsTabStyleMap } from './types';
+import { tUI } from '@/i18n';
 
 export const customerTabStyleMap = {
 	collapse: {
-		ariaLabel: '展开',
+		ariaLabel: tUI('展开'),
 		buttonNode: (
 			<FontAwesomeIcon
 				icon={faCaretDown}
@@ -23,7 +24,7 @@ export const customerTabStyleMap = {
 		},
 	},
 	expand: {
-		ariaLabel: '收起',
+		ariaLabel: tUI('收起'),
 		buttonNode: (
 			<FontAwesomeIcon
 				icon={faCaretUp}
@@ -37,7 +38,7 @@ export const customerTabStyleMap = {
 
 export const ingredientTabStyleMap = {
 	collapse: {
-		ariaLabel: '展开',
+		ariaLabel: tUI('展开'),
 		buttonNode: (
 			<FontAwesomeIcon
 				icon={faCaretDown}
@@ -51,7 +52,7 @@ export const ingredientTabStyleMap = {
 		},
 	},
 	expand: {
-		ariaLabel: '收起',
+		ariaLabel: tUI('收起'),
 		buttonNode: (
 			<FontAwesomeIcon
 				icon={faCaretUp}
@@ -64,20 +65,20 @@ export const ingredientTabStyleMap = {
 } as const satisfies TIngredientsTabStyleMap;
 
 export const beverageTableColumns = [
-	{ key: 'beverage', label: '酒水', sortable: true },
-	{ key: 'price', label: '售价', sortable: true },
-	{ key: 'suitability', label: '匹配度', sortable: true },
-	{ key: 'action', label: '操作', sortable: false },
+	{ key: 'beverage', label: tUI('酒水'), sortable: true },
+	{ key: 'price', label: tUI('售价'), sortable: true },
+	{ key: 'suitability', label: tUI('匹配度'), sortable: true },
+	{ key: 'action', label: tUI('操作'), sortable: false },
 ] as const satisfies TBeverageTableColumns;
 
 export const recipeTableColumns = [
-	{ key: 'recipe', label: '料理', sortable: true },
-	{ key: 'cooker', label: '厨具', sortable: false },
-	{ key: 'ingredient', label: '食材', sortable: false },
-	{ key: 'price', label: '售价', sortable: true },
-	{ key: 'suitability', label: '匹配度', sortable: true },
-	{ key: 'time', label: '烹饪时间', sortable: true },
-	{ key: 'action', label: '操作', sortable: false },
+	{ key: 'recipe', label: tUI('料理'), sortable: true },
+	{ key: 'cooker', label: tUI('厨具'), sortable: false },
+	{ key: 'ingredient', label: tUI('食材'), sortable: false },
+	{ key: 'price', label: tUI('售价'), sortable: true },
+	{ key: 'suitability', label: tUI('匹配度'), sortable: true },
+	{ key: 'time', label: tUI('烹饪时间'), sortable: true },
+	{ key: 'action', label: tUI('操作'), sortable: false },
 ] as const satisfies TRecipeTableColumns;
 
 export const tabVisibilityStateMap = {

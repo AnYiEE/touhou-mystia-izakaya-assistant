@@ -9,6 +9,8 @@ import { useRouter } from 'next/navigation';
 import { HeroUIProvider } from '@heroui/system';
 import { ProgressBar, ProgressBarProvider } from 'react-transition-progress';
 
+import '@/i18n/register';
+
 import CompatibleBrowser from '@/components/compatibleBrowser';
 import CustomerRareTutorial from '@/components/customerRareTutorial';
 import DonationModal from '@/components/donationModal';

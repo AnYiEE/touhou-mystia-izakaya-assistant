@@ -48,6 +48,7 @@ import Sprite from '@/components/sprite';
 import ThemeSwitcher from '@/components/themeSwitcher';
 
 import { siteConfig } from '@/configs';
+import { tUI, tUIf } from '@/i18n';
 import { globalStore as store } from '@/stores';
 import { checkA11yConfirmKey } from '@/utilities';
 
@@ -112,7 +113,7 @@ const GitHubIconLink = memo<IGitHubIconLinkProps>(function IconLink({
 			icon={faGithub}
 			size="lg"
 			href={links.github.href}
-			aria-label={links.github.label}
+			aria-label={tUI(links.github.label)}
 			aria-hidden={tabIndex === -1}
 			role="button"
 			tabIndex={tabIndex}
@@ -133,7 +134,7 @@ const GitHubLink = memo<IGitHubLinkProps>(function GitHubLink({ showTooltip }) {
 
 	if (showTooltip) {
 		return (
-			<Tooltip showArrow content={links.github.label} placement="bottom">
+			<Tooltip showArrow content={tUI(links.github.label)} placement="bottom">
 				<span className="flex">
 					<GitHubIconLink className="text-primary-600 dark:text-default-foreground" />
 				</span>
@@ -150,7 +151,7 @@ const GitHubLink = memo<IGitHubLinkProps>(function GitHubLink({ showTooltip }) {
 				href={links.github.href}
 				onClick={handlePress}
 			>
-				{links.github.label}
+				{tUI(links.github.label)}
 			</Link>
 		</span>
 	);
@@ -226,22 +227,22 @@ export default function Navbar() {
 						onPress={() => {
 							handlePress();
 						}}
-						aria-label={links.index.label}
+						aria-label={tUI(links.index.label)}
 						role="button"
 						className="flex select-none items-center justify-start gap-1 rounded-small hover:brightness-100 active:opacity-disabled"
 					>
 						<span
 							aria-hidden
-							title={shortName}
+							title={tUI(shortName)}
 							className="image-rendering-pixelated h-10 w-10 rounded-full bg-logo bg-cover bg-no-repeat"
 						/>
 						<p className="hidden font-bold lg:inline-block">
-							{name}
+							{tUI(name)}
 						</p>
 						<SiteInfo
 							aria-hidden="false"
 							fontSize={16}
-							name={shortName}
+							name={tUI(shortName)}
 							className="pointer-events-auto h-full select-auto font-bold text-foreground lg:hidden"
 						/>
 					</Link>
@@ -264,7 +265,7 @@ export default function Navbar() {
 											handlePress(href);
 										}}
 									>
-										{label}
+										{tUI(label)}
 									</NavbarButtonLink>
 								</NavbarItem>
 							);
@@ -307,7 +308,7 @@ export default function Navbar() {
 													}
 													className="text-base"
 												>
-													{dropdownLabel}
+												{tUI(dropdownLabel)}
 												</Button>
 											</DropdownTrigger>
 										</NavbarItem>
@@ -316,7 +317,7 @@ export default function Navbar() {
 											onAction={(key) => {
 												handlePress(key as string);
 											}}
-											aria-label={`${dropdownLabel}列表`}
+											aria-label={tUIf('{label}列表', { label: tUI(dropdownLabel) })}
 											itemClasses={{
 												base: 'my-px p-0 transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40 motion-reduce:transition-none',
 											}}
@@ -354,7 +355,7 @@ export default function Navbar() {
 														href={href}
 														className="justify-start gap-1 text-small hover:brightness-100 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 													>
-														{label}
+													{tUI(label)}
 													</NavbarButtonLink>
 												</DropdownItem>
 											)}
@@ -394,13 +395,13 @@ export default function Navbar() {
 				/>
 				<Tooltip
 					showArrow
-					content={isMenuOpened ? '收起菜单' : '打开菜单'}
+					content={isMenuOpened ? tUI('收起菜单') : tUI('打开菜单')}
 					placement="left"
 				>
 					<NavbarMenuToggle
 						onChange={vibrate}
-						srOnlyText={isMenuOpened ? '收起菜单' : '打开菜单'}
-						aria-label={isMenuOpened ? '收起菜单' : '打开菜单'}
+						srOnlyText={isMenuOpened ? tUI('收起菜单') : tUI('打开菜单')}
+						aria-label={isMenuOpened ? tUI('收起菜单') : tUI('打开菜单')}
 					/>
 				</Tooltip>
 			</NavbarContent>
@@ -423,7 +424,7 @@ export default function Navbar() {
 								}}
 								href={href}
 							>
-								{label}
+								{tUI(label)}
 							</Link>
 						</NavbarMenuItem>
 					);

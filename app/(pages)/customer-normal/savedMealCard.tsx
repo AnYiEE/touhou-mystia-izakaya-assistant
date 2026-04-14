@@ -2,6 +2,8 @@ import { Fragment, useMemo } from 'react';
 
 import { usePictureInPicture, useVibrate, useViewInNewWindow } from '@/hooks';
 
+import { t, tUI, tUIf } from '@/i18n';
+
 import { Divider } from '@heroui/divider';
 
 import {
@@ -260,7 +262,7 @@ export default function SavedMealCard() {
 														recipeData.name,
 														'cooker'
 													);
-												const cookerLabel = `点击：在新窗口中查看厨具【${cooker}】的详情`;
+												const cookerLabel = tUIf('点击：在新窗口中查看厨具【{name}】的详情', { name: t(cooker) });
 												return (
 													<Tooltip
 														showArrow
@@ -286,7 +288,7 @@ export default function SavedMealCard() {
 												);
 											})()}
 											{(() => {
-												const recipeLabel = `点击：在新窗口中查看料理【${recipeData.name}】的详情`;
+												const recipeLabel = tUIf('点击：在新窗口中查看料理【{name}】的详情', { name: t(recipeData.name) });
 												return (
 													<Tooltip
 														showArrow
@@ -315,7 +317,7 @@ export default function SavedMealCard() {
 											})()}
 											{beverage !== null &&
 												(() => {
-													const beverageLabel = `点击：在新窗口中查看酒水【${beverage}】的详情`;
+													const beverageLabel = tUIf('点击：在新窗口中查看酒水【{name}】的详情', { name: t(beverage) });
 													return (
 														<>
 															<Plus size={0.75} />
@@ -370,7 +372,7 @@ export default function SavedMealCard() {
 												<div className="flex items-center gap-x-3">
 													{originalIngredients.map(
 														(name, index) => {
-															const label = `点击：在新窗口中查看食材【${name}】的详情`;
+															const label = tUIf('点击：在新窗口中查看食材【{name}】的详情', { name: t(name) });
 															return (
 																<Tooltip
 																	key={index}
@@ -410,7 +412,7 @@ export default function SavedMealCard() {
 																	name,
 																	index
 																) => {
-																	const label = `点击：在新窗口中查看额外食材【${name}】的详情`;
+																	const label = tUIf('点击：在新窗口中查看额外食材【{name}】的详情', { name: t(name) });
 																	return (
 																		<Tooltip
 																			key={
@@ -521,7 +523,7 @@ export default function SavedMealCard() {
 											}}
 											className="md:w-auto"
 										>
-											选择
+											{tUI('选择')}
 										</Button>
 										<Button
 											fullWidth
@@ -551,7 +553,7 @@ export default function SavedMealCard() {
 											}}
 											className="md:w-auto"
 										>
-											删除
+											{tUI('删除')}
 										</Button>
 									</div>
 								</div>

@@ -49,6 +49,8 @@ import { type TCustomerNormalName } from '@/data';
 import { customerNormalStore as customerStore, globalStore } from '@/stores';
 import { checkLengthEmpty, filterItems, getPageTitle } from '@/utilities';
 
+import { t, tUI } from '@/i18n';
+
 const { enName, name: zhName } = siteConfig;
 
 function validateName(name: string | undefined) {
@@ -72,7 +74,7 @@ export default function Content() {
 
 		customerStore.shared.customer.name.set(validName);
 
-		const title = `${validName === null ? '' : `${validName} | `}${getPageTitle('/customer-normal')} | ${zhName} - ${enName}`;
+		const title = `${validName === null ? '' : `${t(validName)} | `}${tUI(getPageTitle('/customer-normal'))} | ${tUI(zhName)} - ${enName}`;
 		const observer = new MutationObserver((_, ob) => {
 			if (
 				location.pathname.startsWith('/customer-normal') &&

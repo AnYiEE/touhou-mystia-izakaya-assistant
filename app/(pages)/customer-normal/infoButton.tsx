@@ -12,6 +12,7 @@ import Ol from '@/components/ol';
 import Price from '@/components/price';
 
 import { CUSTOMER_RATING_KEY, CUSTOMER_RATING_MAP } from '@/data';
+import { t, tUI, tUIf } from '@/i18n';
 import { customerNormalStore as store } from '@/stores';
 import { checkLengthEmpty } from '@/utilities';
 
@@ -53,7 +54,7 @@ export default function InfoButton() {
 		>
 			<AccordionItem
 				key="description"
-				aria-label={`${currentCustomerName}介绍`}
+				aria-label={tUIf('{name}介绍', { name: t(currentCustomerName) })}
 				textValue={currentCustomerName}
 				title={
 					<div className="flex items-center justify-between">
@@ -68,7 +69,7 @@ export default function InfoButton() {
 			>
 				<div className="flex items-center gap-4">
 					<p>
-						<span className="font-semibold">名字：</span>
+						<span className="font-semibold">{tUI('名字：')}</span>
 						{currentCustomerName}
 					</p>
 					<p>
@@ -83,8 +84,8 @@ export default function InfoButton() {
 			) : (
 				<AccordionItem
 					key="chat"
-					aria-label="闲聊对话"
-					title="闲聊对话"
+					aria-label={tUI('闲聊对话')}
+					title={tUI('闲聊对话')}
 					classNames={{
 						content:
 							'break-all pt-2 text-justify text-small text-default-900',
@@ -99,8 +100,8 @@ export default function InfoButton() {
 			)}
 			<AccordionItem
 				key="rating"
-				aria-label="评级图例"
-				title="评级图例"
+				aria-label={tUI('评级图例')}
+				title={tUI('评级图例')}
 				classNames={{
 					content:
 						'grid grid-cols-3 content-start break-all pt-2 text-justify text-small text-default-900',
@@ -124,46 +125,46 @@ export default function InfoButton() {
 			</AccordionItem>
 			<AccordionItem
 				key="help"
-				aria-label="特别说明"
-				title="特别说明"
+				aria-label={tUI('特别说明')}
+				title={tUI('特别说明')}
 				classNames={{
 					content:
 						'space-y-1 break-all pt-2 text-justify text-default-900',
 				}}
 			>
 				<div>
-					<p className="font-semibold">选单时</p>
+					<p className="font-semibold">{tUI('选单时')}</p>
 					<Ol className="text-small">
 						<li>
-							最终的套餐评级只适合一般情景，如果有提供改判效果的符卡生效，此时的套餐评级可能会不够准确。
+							{tUI('最终的套餐评级只适合一般情景，如果有提供改判效果的符卡生效，此时的套餐评级可能会不够准确。')}
 						</li>
 						<li>
-							点击顾客卡片中的标签可以将该标签添加至表格筛选列表或从中移除。
+							{tUI('点击顾客卡片中的标签可以将该标签添加至表格筛选列表或从中移除。')}
 						</li>
 						<li>
-							点击套餐卡片中的厨具可以为当前套餐标记是否使用“夜雀”系列厨具，厨具类别是套餐评级时的参考维度之一。
+							{tUI('点击套餐卡片中的厨具可以为当前套餐标记是否使用\u201c夜雀\u201d系列厨具，厨具类别是套餐评级时的参考维度之一。')}
 						</li>
-						<li>“保存套餐”按钮仅会在选择了料理和酒水时被启用。</li>
+						<li>{tUI('\u201c保存套餐\u201d按钮仅会在选择了料理和酒水时被启用。')}</li>
 						<li>
-							评级时，默认您正确选择了该普客所点单的料理和酒水。
+							{tUI('评级时，默认您正确选择了该普客所点单的料理和酒水。')}
 						</li>
 					</Ol>
 				</div>
 				<div>
-					<p className="font-semibold">交互时</p>
+					<p className="font-semibold">{tUI('交互时')}</p>
 					<Ol className="text-small">
 						<li>
 							<span className="hidden md:inline">
-								点击顶部的“设置”按钮
+								{tUI('点击顶部的\u201c设置\u201d按钮')}
 							</span>
 							<span className="md:hidden">
-								点击右上角的按钮打开菜单。再点击“设置”按钮
+								{tUI('点击右上角的按钮打开菜单。再点击\u201c设置\u201d按钮')}
 							</span>
-							，可以更改设置或使用数据管理功能。
+							{tUI('，可以更改设置或使用数据管理功能。')}
 						</li>
 						<li>
 							{/* cSpell:ignore haixian */}
-							所有的搜索框都支持模糊搜索，如使用“海鲜”、“haixian”或“hx”均可搜索到“海鲜味噌汤”。
+							{tUI('所有的搜索框都支持模糊搜索，如使用\u201c海鲜\u201d、\u201chaixian\u201d或\u201chx\u201d均可搜索到\u201c海鲜味噌汤\u201d。')}
 						</li>
 					</Ol>
 				</div>

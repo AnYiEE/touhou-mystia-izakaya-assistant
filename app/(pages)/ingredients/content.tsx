@@ -6,6 +6,8 @@ import {
 	useViewInNewWindow,
 } from '@/hooks';
 
+import { t, tUI, tUIf } from '@/i18n';
+
 import {
 	CLASSNAME_FOCUS_VISIBLE_OUTLINE,
 	Popover,
@@ -126,11 +128,11 @@ export default memo<IProps>(function Content({ data }) {
 									relatedRecipesGroupByDlcMap
 								).sort(([a], [b]) => numberSort(a, b));
 								const label =
-									'点击：在新窗口中查看此料理的详情';
+									tUI('点击：在新窗口中查看此料理的详情');
 								return (
 									<p>
 										<span className="font-semibold">
-											关联料理：
+										{tUI('关联料理：')}
 										</span>
 										<Popover
 											offset={5}
@@ -146,7 +148,7 @@ export default memo<IProps>(function Content({ data }) {
 														CLASSNAME_FOCUS_VISIBLE_OUTLINE
 													)}
 												>
-													查看包含此食材的料理
+													{tUI('查看包含此食材的料理')}
 												</span>
 											</PopoverTrigger>
 											<PopoverContent>
@@ -258,17 +260,17 @@ export default memo<IProps>(function Content({ data }) {
 											const isFishingAdvanced =
 												method === 'fishingAdvanced';
 											const isTask = method === 'task';
-											const probability = `概率${isBuy ? '出售' : '掉落'}`;
+											const probability = isBuy ? tUI('概率出售') : tUI('概率掉落');
 											const way = isBuy
-												? '购买'
+												? tUI('购买')
 												: isFishing
-													? '钓鱼'
+													? tUI('钓鱼')
 													: isFishingAdvanced
-														? '高级钓鱼'
+														? tUI('高级钓鱼')
 														: isTask
-															? '任务'
-															: '采集';
-											const label = `${probability}，使用摆件【${isFishing ? '普通的' : '超级'}钓鱼竿】`;
+															? tUI('任务')
+															: tUI('采集');
+											const label = tUIf('{probability}，使用摆件【{rod}】', { probability, rod: t(isFishing ? '普通的钓鱼竿' : '超级钓鱼竿') });
 											return (
 												<Fragment key={fromIndex}>
 													<p
@@ -346,7 +348,7 @@ export default memo<IProps>(function Content({ data }) {
 																					isArray
 																						? typeof item[1] ===
 																							'number'
-																							? `${item[1]}%${probability}`
+																							? tUIf('{percent}%{probability}', { percent: String(item[1]), probability })
 																							: item[1]
 																								? probability
 																								: null
@@ -372,7 +374,7 @@ export default memo<IProps>(function Content({ data }) {
 																							null
 																								? ''
 																								: '；'}
-																							采集点出现时间：
+																							{tUI('采集点出现时间：')}
 																							{
 																								collectableTimeRange[0]
 																							}
@@ -383,7 +385,7 @@ export default memo<IProps>(function Content({ data }) {
 																								collectableTimeRange[1]
 																							}
 
-																							点
+																							{tUI('点')}
 																						</>
 																					);
 																				const refreshTime =
@@ -405,11 +407,11 @@ export default memo<IProps>(function Content({ data }) {
 																									? ''
 																									: '；'
 																								: '，'}
-																							采集点刷新周期：
+																							{tUI('采集点刷新周期：')}
 																							{
 																								refreshTime
 																							}
-																							小时
+																							{tUI('小时')}
 																						</>
 																					);
 																				const itemContent =

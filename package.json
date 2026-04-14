@@ -155,6 +155,7 @@
 		"lint-staged": "^16.4.0",
 		"minimist": "^1.2.8",
 		"only-allow": "^1.2.2",
+		"opencc-js": "^1.0.5",
 		"postcss": "^8.5.9",
 		"postcss-flexbugs-fixes": "^5.0.2",
 		"postcss-preset-env": "^11.2.1",

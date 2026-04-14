@@ -10,6 +10,7 @@ import { Tooltip, cn } from '@/design/ui/components';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 
+import { tUI } from '@/i18n';
 import { globalStore as store } from '@/stores';
 
 interface IProps extends Pick<HTMLDivElementAttributes, 'className'> {}
@@ -25,7 +26,7 @@ export default memo<PropsWithChildren<IProps>>(function SideButtonGroup({
 		store.setPreferencesModalIsOpen(true);
 	}, [vibrate]);
 
-	const preferencesLabel = '设置';
+	const preferencesLabel = tUI('设置');
 
 	return (
 		<div className="absolute">

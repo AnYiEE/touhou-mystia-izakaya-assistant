@@ -4,6 +4,8 @@ import { type PropsWithChildren, memo } from 'react';
 
 import { useMounted, useSkipProcessItemData } from '@/hooks';
 
+import { tUI } from '@/i18n';
+
 import { cn } from '@/design/ui/components';
 
 import Loading from '@/loading';
@@ -36,7 +38,7 @@ export default memo<PropsWithChildren<IProps>>(function ItemPage({
 			)}
 		>
 			{!shouldSkipProcessData && sideButton}
-			{isEmpty ? <Placeholder>数据为空</Placeholder> : children}
+			{isEmpty ? <Placeholder>{tUI('数据为空')}</Placeholder> : children}
 		</div>
 	);
 });

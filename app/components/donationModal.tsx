@@ -15,6 +15,7 @@ import Heading from '@/components/heading';
 import QRCode from '@/components/qrCode';
 
 import { siteConfig } from '@/configs';
+import { tUI, tUIf } from '@/i18n';
 import { globalStore as store } from '@/stores';
 import { safeStorage } from '@/utilities';
 
@@ -169,36 +170,24 @@ export default function DonationModal() {
 		>
 			<div className="space-y-4">
 				<Heading as="h2" isFirst>
-					感谢您使用{name}！
+					{tUIf('感谢您使用{name}！', { name: tUI(name) })}
 				</Heading>
 				<div className="space-y-2 break-all text-justify indent-8">
 					<p>
-						您已经在{shortName}内做出了超过
-						{getCurrentMilestone(interactionCount)}
-						次互动，我相信经过一段时间的使用，您已经体验到了
-						{shortName}
-						带来的便利——顾客图鉴、料理搭配、食材查询等实用功能，希望它在您的《东方夜雀食堂》旅程中真正帮到了您，让游戏过程更轻松、方便。
+						{tUIf('您已经在{shortName}内做出了超过{count}次互动，我相信经过一段时间的使用，您已经体验到了{shortName}带来的便利——顾客图鉴、料理搭配、食材查询等实用功能，希望它在您的《东方夜雀食堂》旅程中真正帮到了您，让游戏过程更轻松、方便。', { shortName: tUI(shortName), count: String(getCurrentMilestone(interactionCount)) })}
 					</p>
 					<p>
-						作为个人开发者，我已经无偿持续开发和维护{shortName}
-						多年。即便不考虑我为了让{shortName}
-						变得更好用而投入的大量时间和精力，{shortName}
-						的运行也离不开服务器、互联网带宽等基础设施，每年开销至少1500元，而这仅是
-						{shortName}
-						能够持续为玩家提供基本服务的必要成本。在必要成本之外的、更多的支持可以让我提升算力、接入
-						CDN，带来更顺畅、更优质的使用体验，并为未来的功能和数据的及时更新提供保障。
+						{tUIf('作为个人开发者，我已经无偿持续开发和维护{shortName}多年。即便不考虑我为了让{shortName}变得更好用而投入的大量时间和精力，{shortName}的运行也离不开服务器、互联网带宽等基础设施，每年开销至少1500元，而这仅是{shortName}能够持续为玩家提供基本服务的必要成本。在必要成本之外的、更多的支持可以让我提升算力、接入CDN，带来更顺畅、更优质的使用体验，并为未来的功能和数据的及时更新提供保障。', { shortName: tUI(shortName) })}
 					</p>
 					<p>
-						如果{shortName}
-						对您的游戏体验有所帮助，欢迎通过支付宝进行捐赠。每一份支持，都是对我持续无偿开发和不断优化的认可，也是让
-						{shortName}继续成长、陪伴更多玩家的动力。
+						{tUIf('如果{shortName}对您的游戏体验有所帮助，欢迎通过支付宝进行捐赠。每一份支持，都是对我持续无偿开发和不断优化的认可，也是让{shortName}继续成长、陪伴更多玩家的动力。', { shortName: tUI(shortName) })}
 					</p>
 					<p>
-						对于在使用过程中打扰到您，我深感歉意。我知道在专注游戏的时候弹窗可能会打扰您的体验，因此特别提供了下方按钮，您可以点击它暂时关闭此弹窗。希望这不会过于影响您的使用体验，也感谢您一路以来的理解与支持。
+						{tUI('对于在使用过程中打扰到您，我深感歉意。我知道在专注游戏的时候弹窗可能会打扰您的体验，因此特别提供了下方按钮，您可以点击它暂时关闭此弹窗。希望这不会过于影响您的使用体验，也感谢您一路以来的理解与支持。')}
 					</p>
 				</div>
 				<QRCode text={links.donate.href} className="w-28">
-					{links.donate.label.replace('链接', '码')}
+					{tUI('捐赠码')}
 				</QRCode>
 				<div className="flex justify-end gap-2">
 					<Button
@@ -206,10 +195,10 @@ export default function DonationModal() {
 						variant="light"
 						onPress={handleRemindLater}
 					>
-						{REMIND_LATER_DAYS}日内不再弹出
+						{tUIf('{days}日内不再弹出', { days: String(REMIND_LATER_DAYS) })}
 					</Button>
 					<Button variant="solid" onPress={handleClose}>
-						关闭弹窗
+						{tUI('关闭弹窗')}
 					</Button>
 				</div>
 			</div>

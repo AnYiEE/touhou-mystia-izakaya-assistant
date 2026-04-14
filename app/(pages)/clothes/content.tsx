@@ -8,6 +8,8 @@ import {
 	useViewInNewWindow,
 } from '@/hooks';
 
+import { t, tUI, tUIf } from '@/i18n';
+
 import {
 	CLASSNAME_FOCUS_VISIBLE_OUTLINE,
 	Popover,
@@ -139,7 +141,7 @@ export default memo<IProps>(function Content({ data }) {
 																key={`${fromIndex}-${itemIndex}`}
 															>
 																{isSelf ? (
-																	'初始拥有'
+																	tUI('初始拥有')
 																) : isBond ? (
 																	<>
 																		<span className="mr-1 inline-flex items-center">
@@ -155,9 +157,9 @@ export default memo<IProps>(function Content({ data }) {
 																				className="mx-0.5 rounded-full"
 																			/>
 																			{
-																				target
+																				t(target)
 																			}
-																			】羁绊
+																			{tUI('】羁绊')}
 																		</span>
 																		Lv.4
 																		<span className="mx-0.5">
@@ -188,7 +190,7 @@ export default memo<IProps>(function Content({ data }) {
 																				</Price>
 																				<Tooltip
 																					showArrow
-																					content={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
+																					content={tUIf('点击：在新窗口中查看货币【{currency}】的详情', { currency: t(target.price.currency) })}
 																					offset={
 																						1
 																					}
@@ -212,7 +214,7 @@ export default memo<IProps>(function Content({ data }) {
 																									.currency
 																							);
 																						}}
-																						aria-label={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
+																						aria-label={tUIf('点击：在新窗口中查看货币【{currency}】的详情', { currency: t(target.price.currency) })}
 																						role="button"
 																					/>
 																				</Tooltip>
@@ -231,9 +233,9 @@ export default memo<IProps>(function Content({ data }) {
 						)}
 						<p>
 							<span className="font-semibold">
-								可选更改店铺装潢：
+								{tUI('可选更改店铺装潢：')}
 							</span>
-							{izakaya ? '是' : '否'}
+							{izakaya ? tUI('是') : tUI('否')}
 						</p>
 						<p>
 							<span className="font-semibold">立绘：</span>
@@ -250,7 +252,7 @@ export default memo<IProps>(function Content({ data }) {
 											CLASSNAME_FOCUS_VISIBLE_OUTLINE
 										)}
 									>
-										查看立绘
+										{tUI('查看立绘')}
 									</span>
 								</PopoverTrigger>
 								<PopoverContent>

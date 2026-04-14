@@ -30,6 +30,7 @@ import {
 } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
 import { checkA11yConfirmKey, toArray } from '@/utilities';
+import { t, tUI, tUIf } from '@/i18n';
 
 interface IPlusProps extends Pick<HTMLSpanElementAttributes, 'className'> {
 	size?: number;
@@ -128,7 +129,7 @@ function IngredientsList() {
 				ingredient ? (
 					index >= originalIngredients.length ? (
 						(() => {
-							const label = `点击：删除额外食材【${ingredient}】`;
+								const label = tUIf('点击：删除额外食材【{name}】', { name: t(ingredient) });
 							return (
 								<Tooltip
 									key={index}
@@ -152,7 +153,7 @@ function IngredientsList() {
 											}}
 											role="button"
 											tabIndex={1}
-											title={ingredient}
+											title={t(ingredient)}
 											className="absolute flex h-10 w-10 cursor-pointer items-center justify-center rounded-small bg-foreground/50 text-background opacity-0 transition-opacity hover:opacity-100 motion-reduce:transition-none"
 										>
 											<FontAwesomeIcon
@@ -173,7 +174,7 @@ function IngredientsList() {
 						<Tooltip
 							key={index}
 							showArrow
-							content={ingredient}
+							content={t(ingredient)}
 							offset={4}
 						>
 							<Sprite
@@ -184,7 +185,7 @@ function IngredientsList() {
 						</Tooltip>
 					)
 				) : (
-					<UnknownItem key={index} title="空食材" />
+					<UnknownItem key={index} title={tUI('空食材')} />
 				)
 			)}
 		</div>
@@ -271,21 +272,21 @@ export default function ResultCard() {
 	const saveButtonTooltip = useMemo(() => {
 		const target = [];
 		if (currentBeverageName === null) {
-			target.push('酒水');
+			target.push(tUI('酒水'));
 		}
 		if (currentRecipeData === null) {
-			target.push('料理');
+			target.push(tUI('料理'));
 		}
 		if ((isDarkMatter && hasMystiaCooker) || !hasMystiaCooker) {
-			target.push('顾客点单需求');
+			target.push(tUI('顾客点单需求'));
 		}
 
-		let content = target.join('、');
+		let content = target.join(tUI('、'));
 		if (!isDarkMatter && !hasMystiaCooker) {
-			content += '或标记为使用“夜雀”系列厨具';
+			content += tUI('或标记为使用\u201c夜雀\u201d系列厨具');
 		}
 
-		return `请选择${content}以保存`;
+		return tUIf('请选择{content}以保存', { content });
 	}, [currentBeverageName, currentRecipeData, hasMystiaCooker, isDarkMatter]);
 
 	let content: IFadeMotionDivProps['children'];
@@ -313,7 +314,7 @@ export default function ResultCard() {
 						isSuggestMealsVisible ? 'pb-12 xl:py-6' : 'pb-2 md:pb-4'
 					)}
 				>
-					选择一种料理或酒水以继续
+					{tUI('选择一种料理或酒水以继续')}
 				</Placeholder>
 			);
 			contentClassName = isSuggestMealsVisible ? '' : 'my-auto';
@@ -351,8 +352,8 @@ export default function ResultCard() {
 										? DARK_MATTER_META_MAP.name
 										: currentRecipeData.name;
 									const label = isDarkMatter
-										? originalCooker
-										: `点击：将此点单标记为使用${hasMystiaCooker ? '非' : ''}【夜雀${originalCooker}】制作`;
+											? t(originalCooker)
+											: tUIf('点击：将此点单标记为使用{action}【夜雀{cooker}】制作', { action: hasMystiaCooker ? tUI('非') : '', cooker: t(originalCooker) });
 									return (
 										<>
 											<Tooltip showArrow content={label}>
@@ -383,7 +384,7 @@ export default function ResultCard() {
 											</Tooltip>
 											<Tooltip
 												showArrow
-												content={recipeName}
+												content={t(recipeName)}
 												offset={4}
 											>
 												<Sprite
@@ -398,17 +399,17 @@ export default function ResultCard() {
 							) : (
 								<>
 									<UnknownItem
-										title="请选择料理"
+										title={tUI('请选择料理')}
 										size={1.5}
 									/>
-									<UnknownItem title="请选择料理" />
+									<UnknownItem title={tUI('请选择料理')} />
 								</>
 							)}
 							<Plus />
 							{currentBeverageName ? (
 								<Tooltip
 									showArrow
-									content={currentBeverageName}
+									content={t(currentBeverageName)}
 									offset={4}
 								>
 									<Sprite
@@ -418,7 +419,7 @@ export default function ResultCard() {
 									/>
 								</Tooltip>
 							) : (
-								<UnknownItem title="请选择酒水" />
+								<UnknownItem title={tUI('请选择酒水')} />
 							)}
 						</div>
 						<Plus />
@@ -436,13 +437,13 @@ export default function ResultCard() {
 							size="sm"
 							variant="flat"
 							onPress={handleSaveButtonPress}
-							aria-label={`保存套餐，当前${currentRating === null ? '未评级' : `评级为${CUSTOMER_RATING_MAP[currentRating]}`}`}
+							aria-label={tUIf('保存套餐，当前{status}', { status: currentRating === null ? tUI('未评级') : tUIf('评级为{rating}', { rating: CUSTOMER_RATING_MAP[currentRating] }) })}
 							className={cn(
 								'flex-col gap-0 text-tiny leading-none !transition motion-reduce:!transition-none md:w-auto',
 								{ 'opacity-disabled': isSaveButtonDisabled }
 							)}
 						>
-							<span>保存套餐</span>
+							<span>{tUI('保存套餐')}</span>
 							<span>
 								<Price>
 									{(currentBeverageName

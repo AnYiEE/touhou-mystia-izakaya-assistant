@@ -3,6 +3,8 @@ import { curry, curryRight, debounce } from 'lodash';
 
 import { useVibrate } from '@/hooks';
 
+import { t, tUI, tUIf } from '@/i18n';
+
 import {
 	Badge,
 	Button,
@@ -106,7 +108,7 @@ export default memo<IProps>(function IngredientTabContent({
 	if (checkLengthEmpty(sortedData)) {
 		return (
 			<Placeholder className="pt-4 md:min-h-40 md:pt-0">
-				数据为空
+				{tUI('数据为空')}
 			</Placeholder>
 		);
 	}
@@ -339,7 +341,7 @@ export default memo<IProps>(function IngredientTabContent({
 									: isNoChange
 										? ''
 										: score;
-						const tooltipContent = `点击：加入额外食材【${name}】${isNoChange ? '' : `，${isDarkIngredient ? `制作【${DARK_MATTER_META_MAP.name}】` : isHLowestRestricted ? '最低评级受限' : isHightestRestricted ? '最高评级受限' : `匹配度${score}${isOrderTag ? '（点单需求）' : ''}`}`}`;
+						const tooltipContent = tUIf('点击：加入额外食材【{name}】', { name: t(name) }) + (isNoChange ? '' : `${tUI('，')}${isDarkIngredient ? tUIf('制作【{name}】', { name: t(DARK_MATTER_META_MAP.name) }) : isHLowestRestricted ? tUI('最低评级受限') : isHightestRestricted ? tUI('最高评级受限') : tUIf('匹配度{score}', { score: String(score) }) + (isOrderTag ? tUI('（点单需求）') : '')}`);
 
 						return (
 							<Tooltip

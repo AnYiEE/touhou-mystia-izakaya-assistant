@@ -3,6 +3,8 @@ import { type ReactElement, memo } from 'react';
 import useBreakpoint from 'use-breakpoint';
 import { useViewInNewWindow } from '@/hooks';
 
+import { t, tUI, tUIf } from '@/i18n';
+
 import { AccordionItem } from '@heroui/accordion';
 
 import {
@@ -118,7 +120,7 @@ export default function InfoButton() {
 	};
 
 	const getLabel = (type: TRewardType) =>
-		`点击：在新窗口中查看此${type}的详情`;
+		tUIf('点击：在新窗口中查看此{type}的详情', { type: tUI(type) });
 
 	return (
 		<InfoButtonBase
@@ -133,11 +135,11 @@ export default function InfoButton() {
 		>
 			<AccordionItem
 				key="description"
-				aria-label={`${currentCustomerName}介绍`}
+				aria-label={tUIf('{name}介绍', { name: t(currentCustomerName) })}
 				textValue={currentCustomerName}
 				title={
 					<div className="flex items-center justify-between">
-						<span>{currentCustomerName}</span>
+						<span>{t(currentCustomerName)}</span>
 						<SiteInfo />
 					</div>
 				}
@@ -152,7 +154,7 @@ export default function InfoButton() {
 						<Price showSymbol={false}>{currentCustomerId}</Price>
 					</p>
 					<p className="flex items-center">
-						<span className="font-semibold">立绘：</span>
+						<span className="font-semibold">{tUI('立绘：')}</span>
 						<Popover
 							placement={placement}
 							showArrow={placement === 'bottom'}
@@ -172,7 +174,7 @@ export default function InfoButton() {
 										size={1.25}
 										className="mr-0.5 rounded-full"
 									/>
-									查看立绘
+									{tUI('查看立绘')}
 								</span>
 							</PopoverTrigger>
 							<PopoverContent>
@@ -209,8 +211,8 @@ export default function InfoButton() {
 			{hasBondRewards ? (
 				<AccordionItem
 					key="bond"
-					aria-label={`${currentCustomerName}羁绊奖励`}
-					title="羁绊奖励"
+					aria-label={tUIf('{name}羁绊奖励', { name: t(currentCustomerName) })}
+					title={tUI('羁绊奖励')}
 					classNames={{
 						content:
 							'flex-col gap-2 pt-2 text-default-900 data-[open=true]:flex',
@@ -243,7 +245,7 @@ export default function InfoButton() {
 											size={1.25}
 											className="mr-0.5"
 										/>
-										{name}
+										{t(name)}
 									</PressElement>
 								</Tooltip>
 							</p>
@@ -274,7 +276,7 @@ export default function InfoButton() {
 											size={1.25}
 											className="mr-0.5"
 										/>
-										{bondCooker}
+										{t(bondCooker)}
 									</PressElement>
 								</Tooltip>
 							</p>
@@ -305,7 +307,7 @@ export default function InfoButton() {
 											size={1.25}
 											className="mr-0.5"
 										/>
-										{bondClothes}
+										{t(bondClothes)}
 									</PressElement>
 								</Tooltip>
 							</p>
@@ -336,7 +338,7 @@ export default function InfoButton() {
 											size={1.25}
 											className="mr-0.5"
 										/>
-										{name}
+										{t(name)}
 									</PressElement>
 								</Tooltip>
 							</p>
@@ -344,12 +346,12 @@ export default function InfoButton() {
 						{currentCustomerCollection && (
 							<p className="flex items-center leading-5">
 								<LevelLabel level={5} />
-								采集【{currentCustomerMainPlace}】
+								{tUIf('采集【{place}】', { place: t(currentCustomerMainPlace) })}
 							</p>
 						)}
 						{bondPartner !== null && (
 							<p className="flex items-center">
-								<LevelLabel level="伙伴" />
+								<LevelLabel level={tUI('伙伴')} />
 								<Tooltip
 									showArrow
 									content={getLabel('伙伴')}
@@ -373,7 +375,7 @@ export default function InfoButton() {
 											size={1.25}
 											className="mr-0.5 rounded-full"
 										/>
-										{bondPartner}
+										{t(bondPartner)}
 									</PressElement>
 								</Tooltip>
 							</p>
@@ -386,8 +388,8 @@ export default function InfoButton() {
 			{hasSpellCards ? (
 				<AccordionItem
 					key="card"
-					aria-label={`${currentCustomerName}符卡效果`}
-					title="符卡效果"
+					aria-label={tUIf('{name}符卡效果', { name: t(currentCustomerName) })}
+					title={tUI('符卡效果')}
 					classNames={{
 						content:
 							'space-y-1 break-all pt-2 text-justify text-default-900',
@@ -396,7 +398,7 @@ export default function InfoButton() {
 					{hasPositiveSpellCards && (
 						<div className="space-y-1">
 							<p className="text-large font-semibold text-exgood-border dark:text-exgood">
-								奖励符卡
+								{tUI('奖励符卡')}
 							</p>
 							<div className="space-y-1.5">
 								{currentCustomerSpellCards.positive.map(
@@ -406,10 +408,10 @@ export default function InfoButton() {
 											className="space-y-0.5"
 										>
 											<p className="font-medium">
-												{name}
+												{t(name)}
 											</p>
 											<div className="ml-4 text-small">
-												{description
+												{t(description)
 													.split(LABEL_MAP.br)
 													.map((text, line) => (
 														<p
@@ -432,7 +434,7 @@ export default function InfoButton() {
 							})}
 						>
 							<p className="text-large font-semibold text-bad dark:text-bad-border">
-								惩罚符卡
+								{tUI('惩罚符卡')}
 							</p>
 							<div className="space-y-1.5">
 								{currentCustomerSpellCards.negative.map(
@@ -442,10 +444,10 @@ export default function InfoButton() {
 											className="space-y-0.5"
 										>
 											<p className="font-medium">
-												{name}
+												{t(name)}
 											</p>
 											<div className="ml-4 text-small">
-												{description
+												{t(description)
 													.split(LABEL_MAP.br)
 													.map((text, line) => (
 														<p
@@ -470,8 +472,8 @@ export default function InfoButton() {
 			) : (
 				<AccordionItem
 					key="chat"
-					aria-label="闲聊对话"
-					title="闲聊对话"
+					aria-label={tUI('闲聊对话')}
+					title={tUI('闲聊对话')}
 					classNames={{
 						content:
 							'break-all pt-2 text-justify text-small text-default-900',
@@ -479,15 +481,15 @@ export default function InfoButton() {
 				>
 					<Ol>
 						{currentCustomerChat.map((chat, index) => (
-							<li key={index}>{chat}</li>
+							<li key={index}>{t(chat)}</li>
 						))}
 					</Ol>
 				</AccordionItem>
 			)}
 			<AccordionItem
 				key="rating"
-				aria-label="评价对话"
-				title="评价对话"
+				aria-label={tUI('评价对话')}
+				title={tUI('评价对话')}
 				classNames={{
 					content:
 						'space-y-1 break-all pt-2 text-justify text-small text-default-900',
@@ -515,21 +517,21 @@ export default function InfoButton() {
 									/>
 									<div>
 										<p className="font-semibold">
-											{evaluation}
+											{t(evaluation)}
 											{evaluation === '极度不满' &&
 											hasNegativeSpellCards ? (
 												<span className="font-normal">
-													（释放惩罚符卡）
+													{tUI('（释放惩罚符卡）')}
 												</span>
 											) : evaluation === '完美' &&
 											  hasPositiveSpellCards ? (
 												<span className="font-normal">
-													（释放奖励符卡）
+													{tUI('（释放奖励符卡）')}
 												</span>
 											) : null}
 										</p>
 										{customerEvaluation !== null && (
-											<p>{customerEvaluation}</p>
+											<p>{t(customerEvaluation)}</p>
 										)}
 									</div>
 								</div>
@@ -538,9 +540,9 @@ export default function InfoButton() {
 						return customerEvaluation === null ? null : (
 							<p key={index}>
 								<span className="font-semibold">
-									{evaluation}：
+									{t(evaluation)}：
 								</span>
-								{customerEvaluation}
+								{t(customerEvaluation)}
 							</p>
 						);
 					}
@@ -548,45 +550,45 @@ export default function InfoButton() {
 			</AccordionItem>
 			<AccordionItem
 				key="help"
-				aria-label="特别说明"
-				title="特别说明"
+				aria-label={tUI('特别说明')}
+				title={tUI('特别说明')}
 				classNames={{
 					content:
 						'space-y-1 break-all pt-2 text-justify text-default-900',
 				}}
 			>
 				<div>
-					<p className="font-semibold">选单时</p>
+					<p className="font-semibold">{tUI('选单时')}</p>
 					<Ol className="text-small">
 						<li>
-							顾客卡片中的标签和最终的套餐评级只适合一般情景。在任务中的顾客可能临时存在其他的偏好标签；如果有提供改判效果的符卡生效，此时的套餐评级也可能会不够准确。
+							{tUI('顾客卡片中的标签和最终的套餐评级只适合一般情景。在任务中的顾客可能临时存在其他的偏好标签；如果有提供改判效果的符卡生效，此时的套餐评级也可能会不够准确。')}
 						</li>
 						<li>
-							点击顾客卡片中的标签可以将该标签视为顾客的点单需求，点单需求的满足程度是套餐评级时的参考维度之一。
+							{tUI('点击顾客卡片中的标签可以将该标签视为顾客的点单需求，点单需求的满足程度是套餐评级时的参考维度之一。')}
 						</li>
 						<li>
-							点击套餐卡片中的厨具可以为当前套餐标记是否使用“夜雀”系列厨具，厨具类别是套餐评级时的参考维度之一。
+							{tUI('点击套餐卡片中的厨具可以为当前套餐标记是否使用"夜雀"系列厨具，厨具类别是套餐评级时的参考维度之一。')}
 						</li>
 						<li>
-							“保存套餐”按钮仅会在选择了料理和酒水，且选定了顾客的点单需求标签时被启用。
+							{tUI('"保存套餐"按钮仅会在选择了料理和酒水，且选定了顾客的点单需求标签时被启用。')}
 						</li>
 					</Ol>
 				</div>
 				<div>
-					<p className="font-semibold">交互时</p>
+					<p className="font-semibold">{tUI('交互时')}</p>
 					<Ol className="text-small">
 						<li>
 							<span className="hidden md:inline">
-								点击顶部的“设置”按钮
+								{tUI('点击顶部的"设置"按钮')}
 							</span>
 							<span className="md:hidden">
-								点击右上角的按钮打开菜单。再点击“设置”按钮
+								{tUI('点击右上角的按钮打开菜单。再点击"设置"按钮')}
 							</span>
-							，可以更改设置或使用数据管理功能。
+							{tUI('，可以更改设置或使用数据管理功能。')}
 						</li>
 						<li>
 							{/* cSpell:ignore haixian */}
-							所有的搜索框都支持模糊搜索，如使用“海鲜”、“haixian”或“hx”均可搜索到“海鲜味噌汤”。
+							{tUI('所有的搜索框都支持模糊搜索，如使用"海鲜"、"haixian"或"hx"均可搜索到"海鲜味噌汤"。')}
 						</li>
 					</Ol>
 				</div>

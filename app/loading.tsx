@@ -1,5 +1,7 @@
+import { tUI } from '@/i18n';
+
 export default function Loading() {
-	const content = '少女料理中';
+	const content = tUI('少女料理中');
 
 	return (
 		<div className="flex min-h-main-content select-none flex-col items-center justify-center space-y-1 leading-none">

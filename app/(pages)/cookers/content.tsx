@@ -7,6 +7,8 @@ import {
 	useViewInNewWindow,
 } from '@/hooks';
 
+import { t, tUI, tUIf } from '@/i18n';
+
 import {
 	CLASSNAME_FOCUS_VISIBLE_OUTLINE,
 	Popover,
@@ -143,7 +145,7 @@ export default memo<IProps>(function Content({ data }) {
 																key={`${fromIndex}-${itemIndex}`}
 															>
 																{isSelf ? (
-																	'初始拥有'
+																	tUI('初始拥有')
 																) : isBond ? (
 																	<>
 																		<span className="mr-1 inline-flex items-center">
@@ -159,9 +161,9 @@ export default memo<IProps>(function Content({ data }) {
 																				className="mx-0.5 rounded-full"
 																			/>
 																			{
-																				target
+																				t(target)
 																			}
-																			】羁绊
+																			{tUI('】羁绊')}
 																		</span>
 																		Lv.4
 																		<span className="mx-0.5">
@@ -212,7 +214,7 @@ export default memo<IProps>(function Content({ data }) {
 																								</Price>
 																								<Tooltip
 																									showArrow
-																									content={`点击：在新窗口中查看货币【${priceItem.currency}】的详情`}
+																									content={tUIf('点击：在新窗口中查看货币【{currency}】的详情', { currency: t(priceItem.currency) })}
 																									offset={
 																										1
 																									}
@@ -232,7 +234,7 @@ export default memo<IProps>(function Content({ data }) {
 																												priceItem.currency
 																											);
 																										}}
-																										aria-label={`点击：在新窗口中查看货币【${priceItem.currency}】的详情`}
+																										aria-label={tUIf('点击：在新窗口中查看货币【{currency}】的详情', { currency: t(priceItem.currency) })}
 																										role="button"
 																									/>
 																								</Tooltip>
@@ -261,7 +263,7 @@ export default memo<IProps>(function Content({ data }) {
 										<Popover showArrow offset={3} size="sm">
 											<Tooltip
 												showArrow
-												content="只有米斯蒂娅使用才有此效果"
+												content={tUI('只有米斯蒂娅使用才有此效果')}
 												offset={1}
 												size="sm"
 											>
@@ -279,7 +281,7 @@ export default memo<IProps>(function Content({ data }) {
 												</span>
 											</Tooltip>
 											<PopoverContent>
-												只有米斯蒂娅使用才有此效果
+												{tUI('只有米斯蒂娅使用才有此效果')}
 											</PopoverContent>
 										</Popover>
 									) : (

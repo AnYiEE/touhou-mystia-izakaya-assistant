@@ -16,6 +16,7 @@ import {
 	type TIngredientName,
 	type TRecipeName,
 } from '@/data';
+import { type TLocale, DEFAULT_LOCALE, setLocaleGetter } from '@/i18n';
 import {
 	beveragesStore,
 	clothesStore,
@@ -111,6 +112,7 @@ const storeVersion = {
 	donationModal: 15,
 	donationModalRmDismiss: 16,
 	suggestMeals: 17,
+	locale: 18,
 } as const;
 
 const state = {
@@ -120,6 +122,7 @@ const state = {
 	persistence: {
 		customerCardTagsTooltip: true,
 		hiddenItems: { dlcs: [] as string[] },
+		locale: DEFAULT_LOCALE as TLocale,
 		suggestMeals: { enabled: true, maxResults: 5 },
 		table: {
 			columns: {
@@ -178,7 +181,7 @@ export const globalStore = store(state, {
 		}),
 		persistMiddleware<typeof state>({
 			name: storeName,
-			version: storeVersion.suggestMeals,
+			version: storeVersion.locale,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -265,6 +268,9 @@ export const globalStore = store(state, {
 						enabled: true,
 						maxResults: 5,
 					};
+				}
+				if (version < storeVersion.locale) {
+					oldState.persistence.locale = DEFAULT_LOCALE;
 				}
 				return persistedState as typeof state;
 			},
@@ -533,3 +539,6 @@ globalStore.persistence.table.hiddenItems.recipes.onChange((recipes) => {
 	customerNormalStore.shared.recipe.table.hiddenRecipes.set(toSet(recipes));
 	customerRareStore.shared.recipe.table.hiddenRecipes.set(toSet(recipes));
 });
+
+// Connect i18n locale getter to the store.
+setLocaleGetter(() => globalStore.persistence.locale.get());

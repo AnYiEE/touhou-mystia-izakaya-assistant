@@ -6,6 +6,8 @@ import { Image, type ImageProps } from '@heroui/image';
 
 import { cn, useReducedMotion } from '@/design/ui/components';
 
+import { tUIf } from '@/i18n';
+
 interface IProps extends Pick<
 	ImageProps,
 	'alt' | 'aria-hidden' | 'className' | 'src' | 'width'
@@ -31,7 +33,7 @@ export default memo<IProps>(function Tachie({
 			aria-label={
 				props['aria-hidden'] === true || props['aria-hidden'] === 'true'
 					? undefined
-					: `${alt}立绘`
+					: tUIf('{name}立绘', { name: alt ?? '' })
 			}
 			title={alt}
 			className={cn('image-rendering-pixelated select-none', className)}

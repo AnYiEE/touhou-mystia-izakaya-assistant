@@ -12,6 +12,7 @@ import type { ICustomerTabStyle } from './types';
 import { customerRareStore as store } from '@/stores';
 import { checkA11yConfirmKey } from '@/utilities';
 import { type CustomerRare } from '@/utils';
+import { t, tUIf } from '@/i18n';
 import type { TItemData } from '@/utils/types';
 
 interface IProps {
@@ -51,7 +52,7 @@ export default memo<IProps>(function CustomerTabContent({
 								store.onCustomerSelectedChange(name);
 								pushState('/customer-rare', name);
 							}}
-							title={`点击：选择【${name}】`}
+							title={tUIf('点击：选择【{name}】', { name: t(name) })}
 							className="group flex cursor-pointer flex-col items-center gap-1"
 						>
 							<Avatar
@@ -63,7 +64,7 @@ export default memo<IProps>(function CustomerTabContent({
 										target="customer_rare"
 										name={name}
 										size={5}
-										title={`点击：选择【${name}】`}
+										title={tUIf('点击：选择【{name}】', { name: t(name) })}
 									/>
 								}
 								role="button"

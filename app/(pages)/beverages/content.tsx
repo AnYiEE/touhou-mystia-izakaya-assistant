@@ -1,6 +1,7 @@
 import { Fragment, memo, useRef } from 'react';
 
 import { useItemPopoverState, useOpenedItemPopover } from '@/hooks';
+import { tUI, tUIf } from '@/i18n';
 
 import {
 	CLASSNAME_FOCUS_VISIBLE_OUTLINE,
@@ -115,15 +116,15 @@ export default memo<IProps>(function Content({ data }) {
 										const isFishingAdvanced =
 											method === 'fishingAdvanced';
 										const isTask = method === 'task';
-										const probability = `概率${isBuy ? '出售' : '掉落'}`;
+										const probability = tUIf('概率{type}', { type: tUI(isBuy ? '出售' : '掉落') });
 										const way = isBuy
-											? '购买'
+											? tUI('购买')
 											: isFishingAdvanced
-												? '高级钓鱼'
+												? tUI('高级钓鱼')
 												: isTask
-													? '任务'
-													: '采集';
-										const label = `${probability}，使用摆件【超级钓鱼竿】`;
+													? tUI('任务')
+													: tUI('采集');
+										const label = tUIf('{probability}，使用摆件【超级钓鱼竿】', { probability });
 										return (
 											<Fragment key={fromIndex}>
 												<p
@@ -224,7 +225,7 @@ export default memo<IProps>(function Content({ data }) {
 																							null
 																								? ''
 																								: '；'}
-																							采集点出现时间：
+																							{tUI('采集点出现时间：')}
 																							{
 																								collectableTimeRange[0]
 																							}
@@ -235,7 +236,7 @@ export default memo<IProps>(function Content({ data }) {
 																								collectableTimeRange[1]
 																							}
 
-																							点
+																							{tUI('点')}
 																						</>
 																					);
 																				const refreshTime =
@@ -257,11 +258,11 @@ export default memo<IProps>(function Content({ data }) {
 																									? ''
 																									: '；'
 																								: '，'}
-																							采集点刷新周期：
-																							{
-																								refreshTime
-																							}
-																							小时
+																						{tUI('采集点刷新周期：')}
+																						{
+																							refreshTime
+																						}
+																						{tUI('小时')}
 																						</>
 																					);
 																				const itemContent =
@@ -339,7 +340,7 @@ export default memo<IProps>(function Content({ data }) {
 															)
 														)
 													) : (
-														<Ol.Li>初始拥有</Ol.Li>
+														<Ol.Li>{tUI('初始拥有')}</Ol.Li>
 													)}
 												</Ol>
 											</Fragment>

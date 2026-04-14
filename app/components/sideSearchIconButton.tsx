@@ -27,6 +27,7 @@ import FontAwesomeIconButton, {
 import Sprite from '@/components/sprite';
 
 import { type TItemName } from '@/data';
+import { t, tUI, tUIf } from '@/i18n';
 import { globalStore as store } from '@/stores';
 import type { TSpriteTarget } from '@/utils/sprite/types';
 
@@ -70,7 +71,9 @@ export default memo<IProps>(function SideSearchIconButton({
 		[setSearchValue, vibrate]
 	);
 
-	const content = `搜索（${searchValue ? '已' : '未'}激活）`;
+	const content = tUIf('搜索（{state}激活）', {
+		state: searchValue ? tUI('已') : tUI('未'),
+	});
 
 	return (
 		<Popover
@@ -164,12 +167,12 @@ export default memo<IProps>(function SideSearchIconButton({
 											size={1}
 										/>
 									)}
-									<span className="ml-1">{value}</span>
+									<span className="ml-1">{t(value)}</span>
 								</span>
 							</AutocompleteItem>
 						) : (
 							<AutocompleteItem key={value}>
-								{value}
+							{t(value)}
 							</AutocompleteItem>
 						)
 					}

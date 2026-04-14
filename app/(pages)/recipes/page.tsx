@@ -9,6 +9,8 @@ import {
 	useThrottle,
 } from '@/hooks';
 
+import { tUI } from '@/i18n';
+
 import Content from './content';
 import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
@@ -139,7 +141,7 @@ export default function Recipes() {
 
 	const searchConfig = useMemo<ISearchConfig>(
 		() => ({
-			label: '选择或输入料理名称',
+			label: tUI('选择或输入料理名称'),
 			searchItems: availableNames,
 			searchValue,
 			setSearchValue: store.persistence.searchValue.set,
@@ -158,52 +160,52 @@ export default function Recipes() {
 			},
 			{
 				items: availablePositiveTags,
-				label: '正特性（包含）',
+				label: tUI('正特性（包含）'),
 				selectedKeys: filterPositiveTags,
 				setSelectedKeys: store.persistence.filters.positiveTags.set,
 			},
 			{
 				items: availablePositiveTags,
-				label: '正特性（排除）',
+				label: tUI('正特性（排除）'),
 				selectedKeys: filterNoPositiveTags,
 				setSelectedKeys: store.persistence.filters.noPositiveTags.set,
 			},
 			{
 				items: availableNegativeTags,
-				label: '反特性（包含）',
+				label: tUI('反特性（包含）'),
 				selectedKeys: filterNegativeTags,
 				setSelectedKeys: store.persistence.filters.negativeTags.set,
 			},
 			{
 				items: availableNegativeTags,
-				label: '反特性（排除）',
+				label: tUI('反特性（排除）'),
 				selectedKeys: filterNoNegativeTags,
 				setSelectedKeys: store.persistence.filters.noNegativeTags.set,
 			},
 			{
 				items: availableIngredients,
-				label: '食材（包含）',
+				label: tUI('食材（包含）'),
 				selectedKeys: filterIngredients,
 				setSelectedKeys: store.persistence.filters.ingredients.set,
 				spriteTarget: 'ingredient',
 			},
 			{
 				items: availableIngredients,
-				label: '食材（排除）',
+				label: tUI('食材（排除）'),
 				selectedKeys: filterNoIngredients,
 				setSelectedKeys: store.persistence.filters.noIngredients.set,
 				spriteTarget: 'ingredient',
 			},
 			{
 				items: availableCookers,
-				label: '厨具',
+				label: tUI('厨具'),
 				selectedKeys: filterCookers,
 				setSelectedKeys: store.persistence.filters.cookers.set,
 				spriteTarget: 'cooker',
 			},
 			{
 				items: availableLevels,
-				label: '等级',
+				label: tUI('等级'),
 				selectedKeys: filterLevels,
 				setSelectedKeys: store.persistence.filters.levels.set,
 			},

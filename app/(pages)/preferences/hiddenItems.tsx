@@ -19,6 +19,7 @@ import Heading from '@/components/heading';
 import Sprite, { type ISpriteProps } from '@/components/sprite';
 
 import { DLC_LABEL_MAP } from '@/data';
+import { t, tUI, tUIf } from '@/i18n';
 import {
 	beveragesStore,
 	globalStore,
@@ -58,7 +59,7 @@ const SettingsButton = memo<ISettingsButtonProps>(function SettingsButton({
 			onPress={handlePress}
 			className={cn(isActive && 'ring-2 ring-primary')}
 		>
-			打开设置
+			{tUI('打开设置')}
 		</Button>
 	);
 });
@@ -248,7 +249,7 @@ const SettingsPanel = memo(function SettingsPanel<
 							)}
 						>
 							<Heading as="h4" isFirst={index === 0}>
-								{DLC_LABEL_MAP[dlc].label}
+								{t(DLC_LABEL_MAP[dlc].label)}
 							</Heading>
 							<SwitchItem
 								color="warning"
@@ -259,10 +260,10 @@ const SettingsPanel = memo(function SettingsPanel<
 								onValueChange={() => {
 									handleDlcToggle(dlc);
 								}}
-								aria-label={`${dlcToggleState === true ? '隐藏' : '显示'}${DLC_LABEL_MAP[dlc].label}的全部项目`}
+								aria-label={tUIf('{action}{name}的全部项目', { action: tUI(dlcToggleState === true ? '隐藏' : '显示'), name: t(DLC_LABEL_MAP[dlc].label) })}
 								title={
 									isDlcToggleDisabled
-										? '此分组下的所有料理均因包含已被隐藏的食材而被隐藏'
+										? tUI('此分组下的所有料理均因包含已被隐藏的食材而被隐藏')
 										: undefined
 								}
 								className={cn(index !== 0 && 'mt-1')}
@@ -281,7 +282,7 @@ const SettingsPanel = memo(function SettingsPanel<
 											size={1.25}
 											className="mr-0.5"
 										/>
-										{name}
+										{t(name)}
 									</p>
 									<SwitchItem
 										isDisabled={Boolean(
@@ -295,10 +296,10 @@ const SettingsPanel = memo(function SettingsPanel<
 										onValueChange={() => {
 											handleValueChange(name);
 										}}
-										aria-label={`${hiddenItems.has(name) ? '显示' : '隐藏'}${name}`}
+										aria-label={tUIf('{action}{name}', { action: tUI(hiddenItems.has(name) ? '显示' : '隐藏'), name: t(name) })}
 										title={
 											isHiddenByIngredient
-												? '此料理因包含已被隐藏的食材而被隐藏'
+												? tUI('此料理因包含已被隐藏的食材而被隐藏')
 												: undefined
 										}
 									/>
@@ -411,7 +412,7 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 	return (
 		<div className="mr-1 space-y-2">
 			<div className="flex items-center gap-2">
-				<span className="font-medium">启用或禁用特定酒水</span>
+				<span className="font-medium">{tUI('启用或禁用特定酒水')}</span>
 				<SettingsButton
 					isActive={!checkLengthEmpty(hiddenBeverages)}
 					onPress={handleBeveragesSettingsButtonPress}
@@ -426,12 +427,12 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 						hiddenItems={hiddenBeverages}
 						setHiddenItems={globalStore.hiddenBeverages.set}
 						target="beverage"
-						title="启用或禁用特定酒水"
+						title={tUI('启用或禁用特定酒水')}
 					/>
 				</SettingsModal>
 			</div>
 			<div className="flex items-center gap-2">
-				<span className="font-medium">启用或禁用特定料理</span>
+				<span className="font-medium">{tUI('启用或禁用特定料理')}</span>
 				<SettingsButton
 					isActive={!checkLengthEmpty(hiddenRecipes)}
 					onPress={handleRecipesSettingsButtonPress}
@@ -446,12 +447,12 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 						hiddenItems={hiddenRecipes}
 						setHiddenItems={globalStore.hiddenRecipes.set}
 						target="recipe"
-						title="启用或禁用特定料理"
+						title={tUI('启用或禁用特定料理')}
 					/>
 				</SettingsModal>
 			</div>
 			<div className="flex items-center gap-2">
-				<span className="font-medium">启用或禁用特定食材</span>
+				<span className="font-medium">{tUI('启用或禁用特定食材')}</span>
 				<SettingsButton
 					isActive={!checkLengthEmpty(hiddenIngredients)}
 					onPress={handleIngredientsSettingsButtonPress}
@@ -466,7 +467,7 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 						hiddenItems={hiddenIngredients}
 						setHiddenItems={globalStore.hiddenIngredients.set}
 						target="ingredient"
-						title="启用或禁用特定食材"
+						title={tUI('启用或禁用特定食材')}
 					/>
 				</SettingsModal>
 			</div>

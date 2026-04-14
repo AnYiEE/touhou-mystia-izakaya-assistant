@@ -38,6 +38,7 @@ import {
 } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
 import { checkLengthEmpty, copyArray } from '@/utilities';
+import { t, tUI, tUIf } from '@/i18n';
 
 const moveButtonDirectionMap = { down: 0, up: 1 } as const;
 
@@ -64,11 +65,11 @@ const MoveButtonComponent = memo<IMoveButtonProps>(function MoveButton({
 			content={
 				direction === moveButtonDirectionMap.down
 					? isDisabled
-						? '已是末项'
-						: '下移此项'
+						? tUI('已是末项')
+						: tUI('下移此项')
 					: isDisabled
-						? '已是首项'
-						: '上移此项'
+						? tUI('已是首项')
+						: tUI('上移此项')
 			}
 			offset={5}
 			placement="left"
@@ -307,9 +308,9 @@ export default function SavedMealCard() {
 												: recipeData.name;
 											const rating =
 												CUSTOMER_RATING_MAP[ratingKey];
-											const beverageLabel = `点击：在新窗口中查看酒水【${beverage}】的详情`;
-											const cookerLabel = `点击：在新窗口中查看厨具【${cooker}】的详情`;
-											const recipeLabel = `点击：在新窗口中查看料理【${recipeName}】的详情`;
+												const beverageLabel = tUIf('点击：在新窗口中查看酒水【{name}】的详情', { name: t(beverage) });
+												const cookerLabel = tUIf('点击：在新窗口中查看厨具【{name}】的详情', { name: t(cooker) });
+												const recipeLabel = tUIf('点击：在新窗口中查看料理【{name}】的详情', { name: t(recipeName) });
 											return (
 												<>
 													<Popover
@@ -491,7 +492,7 @@ export default function SavedMealCard() {
 												<div className="flex items-center gap-x-3 md:gap-x-1 lg:gap-x-3 xl:gap-x-1">
 													{originalIngredients.map(
 														(name, index) => {
-															const label = `点击：在新窗口中查看食材【${name}】的详情`;
+															const label = tUIf('点击：在新窗口中查看食材【{name}】的详情', { name: t(name) });
 															return (
 																<Tooltip
 																	key={index}
@@ -531,7 +532,7 @@ export default function SavedMealCard() {
 																	name,
 																	index
 																) => {
-																	const label = `点击：在新窗口中查看额外食材【${name}】的详情`;
+																	const label = tUIf('点击：在新窗口中查看额外食材【{name}】的详情', { name: t(name) });
 																	return (
 																		<Tooltip
 																			key={
@@ -648,7 +649,7 @@ export default function SavedMealCard() {
 											}}
 											className="md:w-auto xl:h-6"
 										>
-											选择
+											{tUI('选择')}
 										</Button>
 										<Button
 											fullWidth
@@ -678,7 +679,7 @@ export default function SavedMealCard() {
 											}}
 											className="md:w-auto xl:h-6"
 										>
-											删除
+											{tUI('删除')}
 										</Button>
 									</div>
 								</div>

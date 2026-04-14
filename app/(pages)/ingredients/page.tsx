@@ -9,6 +9,8 @@ import {
 	useThrottle,
 } from '@/hooks';
 
+import { tUI } from '@/i18n';
+
 import Content from './content';
 import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
@@ -98,7 +100,7 @@ export default function Ingredients() {
 
 	const searchConfig = useMemo<ISearchConfig>(
 		() => ({
-			label: '选择或输入食材名称',
+			label: tUI('选择或输入食材名称'),
 			searchItems: availableNames,
 			searchValue,
 			setSearchValue: store.persistence.searchValue.set,
@@ -117,31 +119,31 @@ export default function Ingredients() {
 			},
 			{
 				items: availableTags,
-				label: '食材标签（包含）',
+				label: tUI('食材标签（包含）'),
 				selectedKeys: filterTags,
 				setSelectedKeys: store.persistence.filters.tags.set,
 			},
 			{
 				items: availableTags,
-				label: '食材标签（排除）',
+				label: tUI('食材标签（排除）'),
 				selectedKeys: filterNoTags,
 				setSelectedKeys: store.persistence.filters.noTags.set,
 			},
 			{
 				items: availableTypes,
-				label: '食材类别（包含）',
+				label: tUI('食材类别（包含）'),
 				selectedKeys: filterTypes,
 				setSelectedKeys: store.persistence.filters.types.set,
 			},
 			{
 				items: availableTypes,
-				label: '食材类别（排除）',
+				label: tUI('食材类别（排除）'),
 				selectedKeys: filterNoTypes,
 				setSelectedKeys: store.persistence.filters.noTypes.set,
 			},
 			{
 				items: availableLevels,
-				label: '等级',
+				label: tUI('等级'),
 				selectedKeys: filterLevels,
 				setSelectedKeys: store.persistence.filters.levels.set,
 			},

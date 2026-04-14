@@ -3,6 +3,8 @@ import { Fragment, memo, useRef } from 'react';
 import useBreakpoint from 'use-breakpoint';
 import { useItemPopoverState, useOpenedItemPopover } from '@/hooks';
 
+import { t, tUI, tUIf } from '@/i18n';
+
 import {
 	CLASSNAME_FOCUS_VISIBLE_OUTLINE,
 	Popover,
@@ -109,10 +111,10 @@ export default memo<IProps>(function Content({ data }) {
 												return (
 													<Fragment key={fromIndex}>
 														{isPlace
-															? `地区【${target}】全部稀客羁绊满级`
+															? tUIf('地区【{target}】全部稀客羁绊满级', { target: t(target as string) })
 															: isSelf
-																? '初始拥有'
-																: `完成地区【${target}】主线任务`}
+																? tUI('初始拥有')
+																: tUIf('完成地区【{target}】主线任务', { target: t(target as string) })}
 													</Fragment>
 												);
 											}
@@ -121,7 +123,7 @@ export default memo<IProps>(function Content({ data }) {
 						)}
 						<p>
 							<span className="font-semibold">
-								支付当天营收的：
+								{tUI('支付当天营收的：')}
 							</span>
 							{pay}%
 						</p>
@@ -154,7 +156,7 @@ export default memo<IProps>(function Content({ data }) {
 											CLASSNAME_FOCUS_VISIBLE_OUTLINE
 										)}
 									>
-										查看立绘
+										{tUI('查看立绘')}
 									</span>
 								</PopoverTrigger>
 								<PopoverContent>

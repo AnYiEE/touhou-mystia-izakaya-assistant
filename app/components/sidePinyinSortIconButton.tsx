@@ -12,6 +12,8 @@ import FontAwesomeIconButton, {
 	type IFontAwesomeIconButtonProps,
 } from '@/components/fontAwesomeIconButton';
 
+import { tUI, tUIf } from '@/i18n';
+
 export const pinyinSortStateMap = { az: 1, none: 0, za: 2 } as const;
 
 export type TPinyinSortState = ExtractCollectionValue<
@@ -46,13 +48,14 @@ export default memo<IProps>(function SidePinyinSortIconButton({
 		setPinyinSortState(getNextPinyinSortState(pinyinSortState));
 	}, [pinyinSortState, setPinyinSortState, vibrate]);
 
-	const label = `拼音排序（${
-		pinyinSortState === pinyinSortStateMap.none
-			? '未激活'
-			: pinyinSortState === pinyinSortStateMap.az
-				? '已激活：升序'
-				: '已激活：降序'
-	}）`;
+	const label = tUIf('拼音排序（{state}）', {
+		state:
+			pinyinSortState === pinyinSortStateMap.none
+				? tUI('未激活')
+				: pinyinSortState === pinyinSortStateMap.az
+					? tUI('已激活：升序')
+					: tUI('已激活：降序'),
+	});
 
 	return (
 		<Tooltip showArrow content={label} placement="left">

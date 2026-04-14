@@ -25,6 +25,7 @@ import FontAwesomeIconButton, {
 import Sprite from '@/components/sprite';
 
 import { DLC_LABEL_MAP, type TDlc, type TItemName } from '@/data';
+import { t, tUI, tUIf } from '@/i18n';
 import { globalStore as store } from '@/stores';
 import { checkLengthEmpty, pinyinSort, toArray } from '@/utilities';
 import type { TSpriteTarget } from '@/utils/sprite/types';
@@ -95,7 +96,9 @@ export default memo<IProps>(function SideFilterIconButton({
 		return null;
 	}
 
-	const content = `筛选（${hasFilter ? '已' : '未'}激活）`;
+	const content = tUIf('筛选（{state}激活）', {
+		state: hasFilter ? tUI('已') : tUI('未'),
+	});
 
 	return (
 		<Popover
@@ -216,7 +219,7 @@ export default memo<IProps>(function SideFilterIconButton({
 													/>
 												)}
 												<span className="ml-1">
-													{value}
+													{t(value as string)}
 												</span>
 											</span>
 										</SelectItem>
@@ -240,7 +243,7 @@ export default memo<IProps>(function SideFilterIconButton({
 						variant="flat"
 						onPress={handleResetFilters}
 					>
-						重置当前筛选
+						{tUI('重置当前筛选')}
 					</Button>
 				</div>
 			</PopoverContent>

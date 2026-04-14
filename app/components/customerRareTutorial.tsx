@@ -9,12 +9,13 @@ import { PARAM_INFO } from '@/(pages)/customer-rare/infoButtonBase';
 import { trackEvent } from '@/components/analytics';
 
 import { DYNAMIC_TAG_MAP } from '@/data';
+import { tUI, tUIf } from '@/i18n';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
 import { checkLengthEmpty, getPageTitle } from '@/utilities';
 
 const key = 'customer_rare_tutorial';
 const pathname = '/customer-rare';
-const resetLabel = '重新进入稀客套餐搭配教程';
+const resetLabel = tUI('重新进入稀客套餐搭配教程');
 
 export default function CustomerRareTutorial() {
 	const { pathname: currentPathname } = usePathname();
@@ -54,7 +55,7 @@ export default function CustomerRareTutorial() {
 		driver({
 			allowClose: false,
 			popoverClass: '!bg-background dark:!bg-content1 !text-foreground',
-			progressText: '第{{current}}步，共{{total}}步',
+			progressText: tUI('第{{current}}步，共{{total}}步'),
 			showButtons: ['close'],
 			showProgress: true,
 
@@ -69,11 +70,11 @@ export default function CustomerRareTutorial() {
 			steps: [
 				{
 					popover: {
-						title: '稀客套餐搭配教程', // eslint-disable-next-line sort-keys
-						description: `<div class="space-y-2"><p>跟随指引，搭配一次“完美”评级的稀客套餐。</p><p class="text-tiny text-foreground-500">注：本教程可随时通过“${getPageTitle('/preferences')}”页面的“${resetLabel}”按钮再次进入。</p></div>`,
+						title: tUI('稀客套餐搭配教程'), // eslint-disable-next-line sort-keys
+						description: `<div class="space-y-2"><p>${tUI('跟随指引，搭配一次“完美”评级的稀客套餐。')}</p><p class="text-tiny text-foreground-500">${tUIf('注：本教程可随时通过“{settings}”页面的“{resetLabel}”按钮再次进入。', { settings: getPageTitle('/preferences'), resetLabel })}</p></div>`,
 						onPopoverRender(popover) {
 							const skipButton = document.createElement('button');
-							skipButton.textContent = '跳过';
+							skipButton.textContent = tUI('跳过');
 							skipButton.addEventListener('click', () => {
 								driverRef.current.destroy();
 								trackEvent(
@@ -83,7 +84,7 @@ export default function CustomerRareTutorial() {
 								);
 							});
 							const nextButton = document.createElement('button');
-							nextButton.textContent = '下一步 →';
+							nextButton.textContent = tUI('下一步 →');
 							nextButton.addEventListener('click', () => {
 								driverRef.current.moveNext();
 								trackEvent(
@@ -102,82 +103,82 @@ export default function CustomerRareTutorial() {
 				{
 					element: '[title="点击：选择【莉格露】"]',
 					popover: {
-						title: '选择稀客', // eslint-disable-next-line sort-keys
-						description: '点击头像，选择【莉格露】作为目标稀客。',
+						title: tUI('选择稀客'), // eslint-disable-next-line sort-keys
+						description: tUI('点击头像，选择【莉格露】作为目标稀客。'),
 					},
 				},
 				{
 					element: '[aria-label="可加冰"]',
 					popover: {
-						title: '选择酒水标签', // eslint-disable-next-line sort-keys
+						title: tUI('选择酒水标签'), // eslint-disable-next-line sort-keys
 						description:
-							'点击标签，选中“可加冰”标签。此次教程中，假设莉格露的酒水点单需求为“可加冰”。',
+							tUI('点击标签，选中“可加冰”标签。此次教程中，假设莉格露的酒水点单需求为“可加冰”。'),
 					},
 				},
 				{
 					element: '[role="tabpanel"] [data-key="price"]',
 					popover: {
-						title: '按售价排序', // eslint-disable-next-line sort-keys
-						description: '点击以按售价升序排序酒水。',
+						title: tUI('按售价排序'), // eslint-disable-next-line sort-keys
+						description: tUI('点击以按售价升序排序酒水。'),
 					},
 				},
 				{
 					element: BEVERAGE_POSITION,
 					popover: {
-						title: '选择目标酒水', // eslint-disable-next-line sort-keys
+title: tUI('选择目标酒水'), // eslint-disable-next-line sort-keys
 						description:
-							'点击加号，选择【水獭祭】。选择酒水时，酒水售价尽量不要超过目标稀客的最大持有金。',
+							tUI('点击加号，选择【水獺祭】。选择酒水时，酒水售价尽量不要超过目标稀客的最大持有金。'),
 					},
 				},
 				{
 					element: '[aria-label="猎奇"]',
 					popover: {
-						title: '选择料理标签', // eslint-disable-next-line sort-keys
+						title: tUI('选择料理标签'), // eslint-disable-next-line sort-keys
 						description:
-							'点击标签，选中“猎奇”标签。此次教程中，假设莉格露的料理点单需求为“猎奇”。',
+							tUI('点击标签，选中“猎奇”标签。此次教程中，假设莉格露的料理点单需求为“猎奇”。'),
 					},
 				},
 				{
 					element: RECIPE_POSITION,
 					popover: {
-						title: '选择目标料理', // eslint-disable-next-line sort-keys
+						title: tUI('选择目标料理'), // eslint-disable-next-line sort-keys
 						description:
-							'点击加号，选择【香炸蝉蜕】。选择料理时，料理售价尽量不要超过目标稀客剩余的最大持有金。',
+							tUI('点击加号，选择【香炸蝉蜕】。选择料理时，料理售价尽量不要超过目标稀客剩余的最大持有金。'),
 					},
 				},
 				{
 					element: '[data-key="ingredient"]',
 					popover: {
-						title: '选择额外食材', // eslint-disable-next-line sort-keys
+						title: tUI('选择额外食材'), // eslint-disable-next-line sort-keys
 						description:
-							'当前套餐评级为绿评“普通”，添加额外食材以提高评级。',
+							tUI('当前套餐评级为绿评“普通”，添加额外食材以提高评级。'),
 					},
 				},
 				{
 					element: EGG_POSITION,
 					popover: {
-						title: '加入额外食材【鸡蛋】', // eslint-disable-next-line sort-keys
+						title: tUI('加入额外食材【鸡蛋】'), // eslint-disable-next-line sort-keys
 						description:
-							'点击图标，加入额外食材【鸡蛋】。加入后套餐评级应为橙评“满意”，继续添加额外食材以提高评级。',
+							tUI('点击图标，加入额外食材【鸡蛋】。加入后套餐评级应为橙评“满意”，继续添加额外食材以提高评级。'),
 					},
 				},
 				{
 					element: HONEY_POSITION,
 					popover: {
-						title: '加入额外食材【蜂蜜】', // eslint-disable-next-line sort-keys
+						title: tUI('加入额外食材【蜂蜜】'), // eslint-disable-next-line sort-keys
 						description:
-							'点击图标，加入额外食材【蜂蜜】。加入后套餐评级应为粉评“完美”。',
+							tUI('点击图标，加入额外食材【蜂蜜】。加入后套餐评级应为粉评“完美”。'),
 					},
 				},
 				{
 					element: '[aria-label="更多信息"]',
 					popover: {
-						title: '更多信息', // eslint-disable-next-line sort-keys
-						description: `在此处可以查看更多信息，如：稀客的羁绊奖励和符卡效果。点击导航栏中的“设置”按钮可以调整更多偏好项，如：设置游戏中现时的${DYNAMIC_TAG_MAP.popularPositive}或${DYNAMIC_TAG_MAP.popularNegative}趋势。`,
+						title: tUI('更多信息'), // eslint-disable-next-line sort-keys
+						description: tUIf('在此处可以查看更多信息，如：稀客的羁绊奖励和符卡效果。点击导航栏中的“设置”按钮可以调整更多偏好项，如：设置游戏中现时的{positive}或{negative}趋势。', { positive: DYNAMIC_TAG_MAP.popularPositive, negative: DYNAMIC_TAG_MAP.popularNegative }),
 						onPopoverRender(popover) {
 							const completeButton =
 								document.createElement('button');
-							completeButton.textContent = '完成';
+							completeButton.textContent = tUI('完成');
 							completeButton.addEventListener('click', () => {
 								driverRef.current.destroy();
 								trackEvent(

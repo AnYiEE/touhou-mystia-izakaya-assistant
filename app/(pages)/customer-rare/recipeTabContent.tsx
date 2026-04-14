@@ -54,6 +54,7 @@ import type {
 } from './types';
 import { CUSTOMER_RARE_TAG_STYLE, DLC_LABEL_MAP } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
+import { t, tUI, tUIf } from '@/i18n';
 import {
 	checkArrayContainsOf,
 	checkArraySubsetOf,
@@ -385,7 +386,7 @@ export default function RecipeTabContent() {
 
 			switch (columnKey) {
 				case 'recipe': {
-					const label = `点击：在新窗口中查看料理【${name}】的详情`;
+					const label = tUIf('点击：在新窗口中查看料理【{name}】的详情', { name: t(name) });
 					return (
 						<div className="flex items-center">
 							<Tooltip
@@ -408,7 +409,7 @@ export default function RecipeTabContent() {
 							</Tooltip>
 							<div className="inline-flex flex-1 items-center whitespace-nowrap">
 								<span className="text-small font-medium">
-									{name}
+								{t(name)}
 								</span>
 								<span className="ml-0.5">
 									<Popover showArrow offset={10} size="sm">
@@ -424,7 +425,7 @@ export default function RecipeTabContent() {
 													<FontAwesomeIconButton
 														icon={faTags}
 														variant="light"
-														aria-label="料理标签"
+														aria-label={tUI('料理标签')}
 														className="inline h-4 w-4 min-w-0 scale-75 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
 													/>
 												</PopoverTrigger>
@@ -442,7 +443,7 @@ export default function RecipeTabContent() {
 						<div className="flex">
 							<Tooltip
 								showArrow
-								content={cooker}
+								content={t(cooker)}
 								placement="left"
 								size="sm"
 							>
@@ -458,7 +459,7 @@ export default function RecipeTabContent() {
 					return (
 						<div className="flex flex-nowrap">
 							{ingredients.map((ingredient, index) => {
-								const ingredientLabel = `点击：在新窗口中查看食材【${ingredient}】的详情`;
+								const ingredientLabel = tUIf('点击：在新窗口中查看食材【{name}】的详情', { name: t(ingredient) });
 								return (
 									<Tooltip
 										key={index}
@@ -495,7 +496,7 @@ export default function RecipeTabContent() {
 						<div className="flex">
 							{suitability === Infinity ||
 							suitability === -Infinity ? (
-								'固定评级'
+								tUI('固定评级')
 							) : (
 								<Price showSymbol={false}>{suitability}</Price>
 							)}
@@ -506,11 +507,11 @@ export default function RecipeTabContent() {
 						<div className="flex whitespace-nowrap">
 							{cookTime.min}
 							<span className="mx-0.5">-</span>
-							{cookTime.max}秒
+							{cookTime.max}{tUI('秒')}
 						</div>
 					);
 				case 'action': {
-					const label = '点击：选择此项';
+					const label = tUI('点击：选择此项');
 					return (
 						<div className="flex justify-center">
 							<Tooltip
@@ -551,7 +552,7 @@ export default function RecipeTabContent() {
 							disableAnimation={isReducedMotion}
 							inputValue={searchValue}
 							isVirtualized={false}
-							placeholder="名称"
+							placeholder={tUI('名称')}
 							size="sm"
 							startContent={
 								<FontAwesomeIcon
@@ -566,8 +567,8 @@ export default function RecipeTabContent() {
 									value
 								);
 							}}
-							aria-label="选择或输入料理名称"
-							title="选择或输入料理名称"
+						aria-label={tUI('选择或输入料理名称')}
+						title={tUI('选择或输入料理名称')}
 							popoverProps={{
 								motionProps: popoverMotionProps,
 								shouldCloseOnScroll: false,
@@ -599,7 +600,7 @@ export default function RecipeTabContent() {
 											name={value}
 											size={1}
 										/>
-										<span className="ml-1">{value}</span>
+										<span className="ml-1">{t(value)}</span>
 									</span>
 								</AutocompleteItem>
 							)}
@@ -608,7 +609,7 @@ export default function RecipeTabContent() {
 							disableAnimation={isReducedMotion}
 							isVirtualized={false}
 							items={availableRecipeTags}
-							placeholder="标签"
+							placeholder={tUI('标签')}
 							selectedKeys={selectedCustomerRecipeTag}
 							size="sm"
 							startContent={<FontAwesomeIcon icon={faTags} />}
@@ -616,8 +617,8 @@ export default function RecipeTabContent() {
 							onSelectionChange={
 								customerStore.onRecipeTableSelectedPositiveTagsChange
 							}
-							aria-label="选择顾客所点单的料理标签"
-							title="选择顾客所点单的料理标签"
+						aria-label={tUI('选择顾客所点单的料理标签')}
+						title={tUI('选择顾客所点单的料理标签')}
 							popoverProps={{
 								motionProps: popoverMotionProps,
 								shouldCloseOnScroll: false,
@@ -637,7 +638,7 @@ export default function RecipeTabContent() {
 							}}
 						>
 							{({ value }) => (
-								<SelectItem key={value}>{value}</SelectItem>
+								<SelectItem key={value}>{t(value)}</SelectItem>
 							)}
 						</Select>
 					</div>
@@ -661,7 +662,7 @@ export default function RecipeTabContent() {
 										}
 									)}
 								>
-									厨具
+									{tUI('厨具')}
 								</Button>
 							</DropdownTrigger>
 							<DropdownMenu
@@ -673,7 +674,7 @@ export default function RecipeTabContent() {
 								onSelectionChange={
 									customerStore.onRecipeTableSelectedCookersChange
 								}
-								aria-label="选择目标料理所使用的厨具"
+								aria-label={tUI('选择目标料理所使用的厨具')}
 								itemClasses={{
 									base: 'transition-background motion-reduce:transition-none',
 								}}
@@ -687,7 +688,7 @@ export default function RecipeTabContent() {
 												size={1}
 											/>
 											<span className="ml-1">
-												{value}
+											{t(value)}
 											</span>
 										</div>
 									</DropdownItem>
@@ -729,7 +730,7 @@ export default function RecipeTabContent() {
 									onSelectionChange={
 										customerStore.onRecipeTableSelectedDlcsChange
 									}
-									aria-label="选择特定DLC中的料理"
+									aria-label={tUI('选择特定DLC中的料理')}
 									itemClasses={{
 										base: 'transition-background motion-reduce:transition-none',
 									}}
@@ -740,10 +741,10 @@ export default function RecipeTabContent() {
 											textValue={value.toString()}
 										>
 											{value === 0
-												? DLC_LABEL_MAP[0].label
-												: DLC_LABEL_MAP[value]
-														.shortLabel ||
-													DLC_LABEL_MAP[value].label}
+											? t(DLC_LABEL_MAP[0].label)
+											: t(DLC_LABEL_MAP[value]
+													.shortLabel ||
+												DLC_LABEL_MAP[value].label)}
 										</DropdownItem>
 									)}
 								</DropdownMenu>
@@ -762,7 +763,7 @@ export default function RecipeTabContent() {
 										{ 'backdrop-blur': isHighAppearance }
 									)}
 								>
-									条目
+									{tUI('条目')}
 								</Button>
 							</DropdownTrigger>
 							<DropdownMenu
@@ -781,7 +782,7 @@ export default function RecipeTabContent() {
 								onSelectionChange={
 									globalStore.recipeTableColumns.set
 								}
-								aria-label="选择表格所显示的列"
+								aria-label={tUI('选择表格所显示的列')}
 								itemClasses={{
 									base: 'transition-background motion-reduce:transition-none',
 								}}
@@ -796,10 +797,10 @@ export default function RecipeTabContent() {
 					</div>
 				</div>
 				<div className="flex items-center justify-between text-small text-default-700">
-					<span>总计{filteredData.length}道料理</span>
+					<span>{tUIf('总计{count}道料理', { count: String(filteredData.length) })}</span>
 					<label className="flex items-center gap-2">
 						<span className="cursor-auto whitespace-nowrap">
-							表格行数
+							{tUI('表格行数')}
 						</span>
 						<Select
 							disallowEmptySelection
@@ -812,8 +813,8 @@ export default function RecipeTabContent() {
 							onSelectionChange={
 								globalStore.onTableRowsPerPageChange
 							}
-							aria-label="选择表格每页最大行数"
-							title="选择表格每页最大行数"
+							aria-label={tUI('选择表格每页最大行数')}
+							title={tUI('选择表格每页最大行数')}
 							popoverProps={{
 								motionProps: popoverMotionProps,
 								shouldCloseOnScroll: false,
@@ -916,7 +917,7 @@ export default function RecipeTabContent() {
 					config as TTableSortDescriptor
 				);
 			}}
-			aria-label="料理选择表格"
+			aria-label={tUI('料理选择表格')}
 			classNames={{
 				base: 'gap-2',
 				td: 'before:bg-default-200/70 before:transition-colors-opacity motion-reduce:before:transition-none',
@@ -942,7 +943,7 @@ export default function RecipeTabContent() {
 				)}
 			</TableHeader>
 			<TableBody
-				emptyContent={<Placeholder>数据为空</Placeholder>}
+				emptyContent={<Placeholder>{tUI('数据为空')}</Placeholder>}
 				items={tableCurrentPageItems}
 			>
 				{(item) => (

@@ -9,6 +9,8 @@ import {
 	useThrottle,
 } from '@/hooks';
 
+import { tUI } from '@/i18n';
+
 import Content from './content';
 import ItemPage from '@/components/itemPage';
 import SideButtonGroup from '@/components/sideButtonGroup';
@@ -82,7 +84,7 @@ export default function Cookers() {
 
 	const searchConfig = useMemo<ISearchConfig>(
 		() => ({
-			label: '选择或输入厨具名称',
+			label: tUI('选择或输入厨具名称'),
 			searchItems: availableNames,
 			searchValue,
 			setSearchValue: store.persistence.searchValue.set,
@@ -101,25 +103,25 @@ export default function Cookers() {
 			},
 			{
 				items: availableCategories,
-				label: '厨具系列（包含）',
+				label: tUI('厨具系列（包含）'),
 				selectedKeys: filterCategories,
 				setSelectedKeys: store.persistence.filters.categories.set,
 			},
 			{
 				items: availableCategories,
-				label: '厨具系列（排除）',
+				label: tUI('厨具系列（排除）'),
 				selectedKeys: filterNoCategories,
 				setSelectedKeys: store.persistence.filters.noCategories.set,
 			},
 			{
 				items: availableTypes,
-				label: '厨具类别（包含）',
+				label: tUI('厨具类别（包含）'),
 				selectedKeys: filterTypes,
 				setSelectedKeys: store.persistence.filters.types.set,
 			},
 			{
 				items: availableTypes,
-				label: '厨具类别（排除）',
+				label: tUI('厨具类别（排除）'),
 				selectedKeys: filterNoTypes,
 				setSelectedKeys: store.persistence.filters.noTypes.set,
 			},

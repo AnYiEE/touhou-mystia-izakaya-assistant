@@ -2,6 +2,8 @@ import { memo, useRef } from 'react';
 
 import { useItemPopoverState, useOpenedItemPopover } from '@/hooks';
 
+import { t, tUI } from '@/i18n';
+
 import { cn } from '@/design/ui/components';
 
 import { trackEvent } from '@/components/analytics';
@@ -85,7 +87,7 @@ export default memo<IProps>(function Content({ data }) {
 											size={1.25}
 											className="mx-0.5 rounded-full"
 										/>
-										{from.bond}】羁绊
+										{t(from.bond)}{tUI('】羁绊')}
 									</span>
 									Lv.{from.level - 1}
 									<span className="mx-0.5">➞</span>Lv.

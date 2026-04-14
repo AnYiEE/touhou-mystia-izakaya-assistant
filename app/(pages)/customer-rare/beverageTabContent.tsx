@@ -53,6 +53,7 @@ import type {
 } from './types';
 import { CUSTOMER_RARE_TAG_STYLE, DLC_LABEL_MAP } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
+import { t, tUI, tUIf } from '@/i18n';
 import {
 	checkArraySubsetOf,
 	checkLengthEmpty,
@@ -260,7 +261,7 @@ export default function BeverageTabContent() {
 
 			switch (columnKey) {
 				case 'beverage': {
-					const label = `点击：在新窗口中查看酒水【${name}】的详情`;
+					const label = tUIf('点击：在新窗口中查看酒水【{name}】的详情', { name: t(name) });
 					return (
 						<div className="flex items-center gap-2">
 							<Tooltip
@@ -282,7 +283,7 @@ export default function BeverageTabContent() {
 							</Tooltip>
 							<div className="inline-flex flex-1 items-center whitespace-nowrap">
 								<span className="text-small font-medium">
-									{name}
+								{t(name)}
 								</span>
 								<span className="ml-0.5">
 									<Popover showArrow offset={10} size="sm">
@@ -298,7 +299,7 @@ export default function BeverageTabContent() {
 													<FontAwesomeIconButton
 														icon={faTags}
 														variant="light"
-														aria-label="酒水标签"
+														aria-label={tUI('酒水标签')}
 														className="inline h-4 w-4 min-w-0 scale-75 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
 													/>
 												</PopoverTrigger>
@@ -324,7 +325,7 @@ export default function BeverageTabContent() {
 						</div>
 					);
 				case 'action': {
-					const label = '点击：选择此项';
+					const label = tUI('点击：选择此项');
 					return (
 						<div className="flex justify-center">
 							<Tooltip
@@ -367,7 +368,7 @@ export default function BeverageTabContent() {
 							disableAnimation={isReducedMotion}
 							inputValue={searchValue}
 							isVirtualized={false}
-							placeholder="名称"
+							placeholder={tUI('名称')}
 							size="sm"
 							startContent={
 								<FontAwesomeIcon
@@ -382,8 +383,8 @@ export default function BeverageTabContent() {
 									value
 								);
 							}}
-							aria-label="选择或输入酒水名称"
-							title="选择或输入酒水名称"
+						aria-label={tUI('选择或输入酒水名称')}
+						title={tUI('选择或输入酒水名称')}
 							popoverProps={{
 								motionProps: popoverMotionProps,
 								shouldCloseOnScroll: false,
@@ -415,7 +416,7 @@ export default function BeverageTabContent() {
 											name={value}
 											size={1}
 										/>
-										<span className="ml-1">{value}</span>
+										<span className="ml-1">{t(value)}</span>
 									</span>
 								</AutocompleteItem>
 							)}
@@ -424,7 +425,7 @@ export default function BeverageTabContent() {
 							disableAnimation={isReducedMotion}
 							isVirtualized={false}
 							items={availableBeverageTags}
-							placeholder="标签"
+							placeholder={tUI('标签')}
 							selectedKeys={selectedCustomerBeverageTag}
 							size="sm"
 							startContent={<FontAwesomeIcon icon={faTags} />}
@@ -432,8 +433,8 @@ export default function BeverageTabContent() {
 							onSelectionChange={
 								customerStore.onBeverageTableSelectedTagsChange
 							}
-							aria-label="选择顾客所点单的酒水标签"
-							title="选择顾客所点单的酒水标签"
+						aria-label={tUI('选择顾客所点单的酒水标签')}
+						title={tUI('选择顾客所点单的酒水标签')}
 							popoverProps={{
 								motionProps: popoverMotionProps,
 								shouldCloseOnScroll: false,
@@ -453,7 +454,7 @@ export default function BeverageTabContent() {
 							}}
 						>
 							{({ value }) => (
-								<SelectItem key={value}>{value}</SelectItem>
+								<SelectItem key={value}>{t(value)}</SelectItem>
 							)}
 						</Select>
 					</div>
@@ -493,7 +494,7 @@ export default function BeverageTabContent() {
 									onSelectionChange={
 										customerStore.onBeverageTableSelectedDlcsChange
 									}
-									aria-label="选择特定DLC中的酒水"
+								aria-label={tUI('选择特定DLC中的酒水')}
 									itemClasses={{
 										base: 'transition-background motion-reduce:transition-none',
 									}}
@@ -504,10 +505,10 @@ export default function BeverageTabContent() {
 											textValue={value.toString()}
 										>
 											{value === 0
-												? DLC_LABEL_MAP[0].label
-												: DLC_LABEL_MAP[value]
-														.shortLabel ||
-													DLC_LABEL_MAP[value].label}
+											? t(DLC_LABEL_MAP[0].label)
+											: t(DLC_LABEL_MAP[value]
+													.shortLabel ||
+												DLC_LABEL_MAP[value].label)}
 										</DropdownItem>
 									)}
 								</DropdownMenu>
@@ -526,7 +527,7 @@ export default function BeverageTabContent() {
 										{ 'backdrop-blur': isHighAppearance }
 									)}
 								>
-									条目
+									{tUI('条目')}
 								</Button>
 							</DropdownTrigger>
 							<DropdownMenu
@@ -545,7 +546,7 @@ export default function BeverageTabContent() {
 								onSelectionChange={
 									globalStore.beverageTableColumns.set
 								}
-								aria-label="选择表格所显示的列"
+								aria-label={tUI('选择表格所显示的列')}
 								itemClasses={{
 									base: 'transition-background motion-reduce:transition-none',
 								}}
@@ -560,10 +561,10 @@ export default function BeverageTabContent() {
 					</div>
 				</div>
 				<div className="flex items-center justify-between text-small text-default-700">
-					<span>总计{filteredData.length}种酒水</span>
+					<span>{tUIf('总计{count}种酒水', { count: String(filteredData.length) })}</span>
 					<label className="flex items-center gap-2">
 						<span className="cursor-auto whitespace-nowrap">
-							表格行数
+							{tUI('表格行数')}
 						</span>
 						<Select
 							disallowEmptySelection
@@ -576,8 +577,8 @@ export default function BeverageTabContent() {
 							onSelectionChange={
 								globalStore.onTableRowsPerPageChange
 							}
-							aria-label="选择表格每页最大行数"
-							title="选择表格每页最大行数"
+							aria-label={tUI('选择表格每页最大行数')}
+							title={tUI('选择表格每页最大行数')}
 							popoverProps={{
 								motionProps: popoverMotionProps,
 								shouldCloseOnScroll: false,
@@ -678,7 +679,7 @@ export default function BeverageTabContent() {
 					config as TTableSortDescriptor
 				);
 			}}
-			aria-label="酒水选择表格"
+			aria-label={tUI('酒水选择表格')}
 			classNames={{
 				base: 'gap-2',
 				td: 'before:bg-default-200/70 before:transition-colors-opacity motion-reduce:before:transition-none',
@@ -704,7 +705,7 @@ export default function BeverageTabContent() {
 				)}
 			</TableHeader>
 			<TableBody
-				emptyContent={<Placeholder>数据为空</Placeholder>}
+				emptyContent={<Placeholder>{tUI('数据为空')}</Placeholder>}
 				items={tableCurrentPageItems}
 			>
 				{(item) => (

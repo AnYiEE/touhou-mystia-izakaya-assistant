@@ -9,6 +9,8 @@ import { isNil } from 'lodash';
 
 import { useVibrate } from '@/hooks';
 
+import { tUI } from '@/i18n';
+
 import { faUpRightAndDownLeftFromCenter } from '@fortawesome/free-solid-svg-icons';
 
 import { Tooltip, cn } from '@/design/ui/components';
@@ -170,7 +172,7 @@ export function usePictureInPicture(
 				return null;
 			}
 
-			const label = '在画中画中打开';
+			const label = tUI('在画中画中打开');
 
 			return (
 				<div className="flex justify-end pt-2 opacity-0 transition-opacity group-hover:opacity-100">

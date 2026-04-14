@@ -7,6 +7,8 @@ import {
 	useViewInNewWindow,
 } from '@/hooks';
 
+import { t, tUI, tUIf } from '@/i18n';
+
 import {
 	CLASSNAME_FOCUS_VISIBLE_OUTLINE,
 	Popover,
@@ -107,7 +109,7 @@ export default memo<IProps>(function Content({ data }) {
 						{!checkObjectOrStringEmpty(from) && (
 							<p className="break-all text-justify">
 								<span className="font-semibold">
-									食谱来源：
+									{tUI('食谱来源：')}
 								</span>
 								{typeof from === 'string'
 									? from
@@ -138,7 +140,7 @@ export default memo<IProps>(function Content({ data }) {
 												return (
 													<Fragment key={fromIndex}>
 														{isSelf ? (
-															'初始拥有'
+														tUI('初始拥有')
 														) : isBond ? (
 															<>
 																<span className="mr-1 inline-flex items-center">
@@ -154,9 +156,9 @@ export default memo<IProps>(function Content({ data }) {
 																		className="mx-0.5 rounded-full"
 																	/>
 																	{
-																		target.name
+																		t(target.name)
 																	}
-																	】羁绊
+																	{tUI('】羁绊')}
 																</span>
 																Lv.
 																{target.level -
@@ -188,7 +190,7 @@ export default memo<IProps>(function Content({ data }) {
 																		</Price>
 																		<Tooltip
 																			showArrow
-																			content={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
+																			content={tUIf('点击：在新窗口中查看货币【{currency}】的详情', { currency: t(target.price.currency) })}
 																			offset={
 																				1
 																			}
@@ -218,7 +220,7 @@ export default memo<IProps>(function Content({ data }) {
 																						);
 																					}
 																				}}
-																				aria-label={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
+																				aria-label={tUIf('点击：在新窗口中查看货币【{currency}】的详情', { currency: t(target.price.currency) })}
 																				role="button"
 																			/>
 																		</Tooltip>
@@ -236,7 +238,7 @@ export default memo<IProps>(function Content({ data }) {
 															isLevelUp && (
 																<>
 																	<span className="mr-1">
-																		游戏等级
+																		{tUI('游戏等级')}
 																	</span>
 																	Lv.
 																	{target[0] -
@@ -249,11 +251,7 @@ export default memo<IProps>(function Content({ data }) {
 																	{target[1] !==
 																		null && (
 																		<span className="ml-0.5">
-																			且已解锁地区【
-																			{
-																				target[1]
-																			}
-																			】
+																			{tUIf('且已解锁地区【{region}】', { region: t(target[1] as string) })}
 																		</span>
 																	)}
 																</>
@@ -270,7 +268,7 @@ export default memo<IProps>(function Content({ data }) {
 								<Popover showArrow offset={3} size="sm">
 									<Tooltip
 										showArrow
-										content="随游戏等级提升而降低"
+										content={tUI('随游戏等级提升而降低')}
 										offset={1}
 										size="sm"
 									>
@@ -288,7 +286,7 @@ export default memo<IProps>(function Content({ data }) {
 													)}
 												>
 													<span className="underline-dotted-offset2">
-														烹饪时间
+													{tUI('烹饪时间')}
 													</span>
 													：
 												</span>
@@ -296,12 +294,12 @@ export default memo<IProps>(function Content({ data }) {
 										</span>
 									</Tooltip>
 									<PopoverContent>
-										随游戏等级提升而降低
+										{tUI('随游戏等级提升而降低')}
 									</PopoverContent>
 								</Popover>
-								{cookTime.max}秒
-								<span className="mx-0.5">➞</span>
-								{cookTime.min}秒
+							{cookTime.max}{tUI('秒')}
+							<span className="mx-0.5">➞</span>
+							{cookTime.min}{tUI('秒')}
 							</p>
 						)}
 					</ItemPopoverCard>

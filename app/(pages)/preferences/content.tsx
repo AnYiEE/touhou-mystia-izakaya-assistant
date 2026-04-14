@@ -21,6 +21,7 @@ import Heading from '@/components/heading';
 import Sprite from '@/components/sprite';
 
 import { DLC_LABEL_MAP, DYNAMIC_TAG_MAP } from '@/data';
+import { t, tUI, tUIf } from '@/i18n';
 import { customerRareStore, globalStore } from '@/stores';
 import { toSet } from '@/utilities';
 
@@ -88,17 +89,17 @@ export default memo<IProps>(function Content({ onModalClose }) {
 
 	return (
 		<div>
-			<Heading isFirst subTitle="以下所有的更改都会即时生效">
-				设置
+			<Heading isFirst subTitle={tUI('以下所有的更改都会即时生效')}>
+				{tUI('设置')}
 			</Heading>
 			<Heading as="h2" className="mt-0">
-				全局设置
+				{tUI('全局设置')}
 			</Heading>
 			<Heading
 				as="h3"
-				subTitle="已关闭的数据集所对应的物品将在各个页面中被隐藏"
+				subTitle={tUI('已关闭的数据集所对应的物品将在各个页面中被隐藏')}
 			>
-				数据集
+				{tUI('数据集')}
 			</Heading>
 			<div
 				className={cn(
@@ -122,10 +123,10 @@ export default memo<IProps>(function Content({ onModalClose }) {
 								}
 								globalStore.hiddenDlcs.set(newHiddenDlcs);
 							}}
-							aria-label={`${isHidden ? '显示' : '隐藏'}${DLC_LABEL_MAP[dlc].label}数据集`}
+							aria-label={tUIf('{action}{name}数据集', { action: tUI(isHidden ? '显示' : '隐藏'), name: t(DLC_LABEL_MAP[dlc].label) })}
 						>
 							<span className="inline-block min-w-16">
-								{DLC_LABEL_MAP[dlc].label}
+								{t(DLC_LABEL_MAP[dlc].label)}
 							</span>
 						</SwitchItem>
 					);
@@ -133,28 +134,28 @@ export default memo<IProps>(function Content({ onModalClose }) {
 			</div>
 			<Heading
 				as="h3"
-				subTitle="正确设置游戏中现时的流行趋势可以使套餐评级更为准确"
+				subTitle={tUI('正确设置游戏中现时的流行趋势可以使套餐评级更为准确')}
 			>
-				流行趋势
+				{tUI('流行趋势')}
 			</Heading>
 			<div className="space-y-2">
 				<div className="flex items-center">
-					<span className="font-medium">类别：</span>
-					{DYNAMIC_TAG_MAP.popularPositive}
+					<span className="font-medium">{tUI('类别：')}</span>
+					{t(DYNAMIC_TAG_MAP.popularPositive)}
 					<Switch
 						isSelected={isPopularTrendNegative}
 						size="sm"
 						onValueChange={
 							globalStore.persistence.popularTrend.isNegative.set
 						}
-						aria-label={`设置为${isPopularTrendNegative ? DYNAMIC_TAG_MAP.popularPositive : DYNAMIC_TAG_MAP.popularNegative}`}
-						classNames={{ base: 'mx-2', wrapper: 'bg-primary' }}
-					/>
-					{DYNAMIC_TAG_MAP.popularNegative}
+							aria-label={tUIf('设置为{tag}', { tag: t(isPopularTrendNegative ? DYNAMIC_TAG_MAP.popularPositive : DYNAMIC_TAG_MAP.popularNegative) })}
+							classNames={{ base: 'mx-2', wrapper: 'bg-primary' }}
+						/>
+						{t(DYNAMIC_TAG_MAP.popularNegative)}
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
 					<div className="flex items-center">
-						<span className="font-medium">标签：</span>
+						<span className="font-medium">{tUI('标签：')}</span>
 						<Select
 							disableAnimation={isReducedMotion}
 							isVirtualized={false}
@@ -165,8 +166,8 @@ export default memo<IProps>(function Content({ onModalClose }) {
 							onSelectionChange={
 								globalStore.selectedPopularTag.set
 							}
-							aria-label="选择游戏中现时流行的标签"
-							title="选择游戏中现时流行的标签"
+							aria-label={tUI('选择游戏中现时流行的标签')}
+							title={tUI('选择游戏中现时流行的标签')}
 							popoverProps={{ motionProps: popoverMotionProps }}
 							classNames={{
 								base: 'w-28',
@@ -196,7 +197,7 @@ export default memo<IProps>(function Content({ onModalClose }) {
 							}}
 						>
 							{({ value }) => (
-								<SelectItem key={value}>{value}</SelectItem>
+								<SelectItem key={value}>{t(value)}</SelectItem>
 							)}
 						</Select>
 					</div>
@@ -207,65 +208,65 @@ export default memo<IProps>(function Content({ onModalClose }) {
 						variant="flat"
 						onPress={onClearPopularTrendButtonPress}
 					>
-						清除选择
+						{tUI('清除选择')}
 					</Button>
 				</div>
 				<SwitchItem
 					isSelected={isFamousShop}
 					onValueChange={globalStore.persistence.famousShop.set}
-					aria-label={`${isFamousShop ? '关闭' : '开启'}“明星店”效果`}
+					aria-label={tUIf('{action}"明星店"效果', { action: tUI(isFamousShop ? '关闭' : '开启') })}
 					className="!mt-4"
 				>
-					“明星店”效果
+					{tUI('"明星店"效果')}
 					<span className="text-tiny text-foreground-500">
-						【
+						{'【'}
 						<Sprite
 							target="customer_rare"
 							name="射命丸文"
 							size={1}
 							className="mx-0.5 rounded-full align-text-top"
 						/>
-						射命丸文】奖励符卡
+						{tUIf('{name}】奖励符卡', { name: t('射命丸文') })}
 					</span>
 				</SwitchItem>
 			</div>
-			<Heading as="h3">外观</Heading>
+			<Heading as="h3">{tUI('外观')}</Heading>
 			<div className="space-y-2">
 				<SwitchItem
 					isSelected={isHighAppearance}
 					onValueChange={handleIsHighAppearanceChange}
-					aria-label={`${isHighAppearance ? '关闭' : '开启'}平滑滚动和磨砂效果`}
+					aria-label={tUIf('{action}平滑滚动和磨砂效果', { action: tUI(isHighAppearance ? '关闭' : '开启') })}
 				>
 					<span className="flex w-min flex-wrap items-center break-keep md:flex-nowrap">
-						<span>平滑滚动和磨砂效果</span>
+						<span>{tUI('平滑滚动和磨砂效果')}</span>
 						<span className="text-tiny text-foreground-500">
-							（如因浏览器性能受限而感卡顿可关闭）
+							{tUI('（如因浏览器性能受限而感卡顿可关闭）')}
 							<br />
-							（开启或关闭平滑滚动需刷新页面生效）
+							{tUI('（开启或关闭平滑滚动需刷新页面生效）')}
 						</span>
 					</span>
 				</SwitchItem>
 				<SwitchItem
 					isSelected={isShowTachie}
 					onValueChange={globalStore.persistence.tachie.set}
-					aria-label={`${isShowTagDescription ? '隐藏' : '显示'}顾客页面立绘`}
+					aria-label={tUIf('{action}顾客页面立绘', { action: tUI(isShowTagDescription ? '隐藏' : '显示') })}
 				>
-					顾客页面右下角的立绘
+					{tUI('顾客页面右下角的立绘')}
 					<span className="text-tiny text-foreground-500">
-						（宽屏可见）
+						{tUI('（宽屏可见）')}
 					</span>
 				</SwitchItem>
 			</div>
-			<Heading as="h3">体验</Heading>
+			<Heading as="h3">{tUI('体验')}</Heading>
 			<div className="space-y-2">
 				<SwitchItem
 					isSelected={isVibrateEnabled}
 					onValueChange={globalStore.persistence.vibrate.set}
-					aria-label={`${isVibrateEnabled ? '关闭' : '开启'}操作震动反馈`}
+					aria-label={tUIf('{action}操作震动反馈', { action: tUI(isVibrateEnabled ? '关闭' : '开启') })}
 				>
-					部分操作的震动反馈
+					{tUI('部分操作的震动反馈')}
 					<span className="text-tiny text-foreground-500">
-						（需设备和浏览器支持）
+						{tUI('（需设备和浏览器支持）')}
 					</span>
 				</SwitchItem>
 				<SwitchItem
@@ -273,16 +274,16 @@ export default memo<IProps>(function Content({ onModalClose }) {
 					onValueChange={
 						globalStore.persistence.customerCardTagsTooltip.set
 					}
-					aria-label={`${isShowTagsTooltip ? '隐藏' : '显示'}标签浮动提示`}
+					aria-label={tUIf('{action}标签浮动提示', { action: tUI(isShowTagsTooltip ? '隐藏' : '显示') })}
 				>
-					顾客卡片中标签的浮动提示
+					{tUI('顾客卡片中标签的浮动提示')}
 					<span className="text-tiny text-foreground-500">
-						（鼠标悬停可见）
+						{tUI('（鼠标悬停可见）')}
 					</span>
 				</SwitchItem>
 			</div>
-			<Heading as="h2">顾客页面</Heading>
-			<Heading as="h3">酒水、料理和食材</Heading>
+			<Heading as="h2">{tUI('顾客页面')}</Heading>
+			<Heading as="h3">{tUI('酒水、料理和食材')}</Heading>
 			<div className="space-y-2">
 				<HiddenItems onModalClose={onModalClose} />
 				<SwitchItem
@@ -290,14 +291,14 @@ export default memo<IProps>(function Content({ onModalClose }) {
 					onValueChange={
 						globalStore.persistence.suggestMeals.enabled.set
 					}
-					aria-label={`${isSuggestEnabled ? '关闭' : '开启'}“猜您想要”套餐推荐卡片`}
+					aria-label={tUIf('{action}"猜您想要"套餐推荐卡片', { action: tUI(isSuggestEnabled ? '关闭' : '开启') })}
 				>
-					“猜您想要”套餐推荐卡片
+					{tUI('"猜您想要"套餐推荐卡片')}
 				</SwitchItem>
 				{isSuggestEnabled && (
 					<div className="flex items-center gap-2 pl-5">
 						<span className="whitespace-nowrap font-medium">
-							最多推荐数：
+							{tUI('最多推荐数：')}
 						</span>
 						<Select
 							disallowEmptySelection
@@ -310,8 +311,8 @@ export default memo<IProps>(function Content({ onModalClose }) {
 							onSelectionChange={
 								globalStore.maxSuggestMealResults.set
 							}
-							aria-label="选择最多推荐套餐数量"
-							title="选择最多推荐套餐数量"
+							aria-label={tUI('选择最多推荐套餐数量')}
+							title={tUI('选择最多推荐套餐数量')}
 							popoverProps={{ motionProps: popoverMotionProps }}
 							classNames={{
 								base: 'w-20',
@@ -349,7 +350,7 @@ export default memo<IProps>(function Content({ onModalClose }) {
 					</div>
 				)}
 			</div>
-			<Heading as="h3">稀客卡片</Heading>
+			<Heading as="h3">{tUI('稀客卡片')}</Heading>
 			<div className="space-y-2">
 				<SwitchItem
 					isSelected={isOrderLinkedFilter}
@@ -357,9 +358,9 @@ export default memo<IProps>(function Content({ onModalClose }) {
 						customerRareStore.persistence.customer.orderLinkedFilter
 							.set
 					}
-					aria-label={`选择点单需求标签的同时${isOrderLinkedFilter ? '不' : ''}筛选表格`}
+					aria-label={tUIf('选择点单需求标签的同时{not}筛选表格', { not: isOrderLinkedFilter ? tUI('不') : '' })}
 				>
-					选择点单需求的同时筛选表格
+					{tUI('选择点单需求的同时筛选表格')}
 				</SwitchItem>
 				<SwitchItem
 					isSelected={isShowTagDescription}
@@ -367,9 +368,9 @@ export default memo<IProps>(function Content({ onModalClose }) {
 						customerRareStore.persistence.customer
 							.showTagDescription.set
 					}
-					aria-label={`${isShowTagDescription ? '隐藏' : '显示'}料理标签描述`}
+					aria-label={tUIf('{action}料理标签描述', { action: tUI(isShowTagDescription ? '隐藏' : '显示') })}
 				>
-					显示料理标签所对应的关键词
+					{tUI('显示料理标签所对应的关键词')}
 				</SwitchItem>
 			</div>
 			<DataManager onModalClose={onModalClose} />

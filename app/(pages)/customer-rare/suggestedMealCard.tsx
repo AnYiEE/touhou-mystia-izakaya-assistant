@@ -51,6 +51,7 @@ import {
 } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
 import { checkLengthEmpty, toArray, toSet } from '@/utilities';
+import { t, tUI, tUIf } from '@/i18n';
 import {
 	getScoreBasedAlternatives,
 	suggestMeals,
@@ -204,13 +205,13 @@ export default function SuggestedMealCard() {
 						currentRecipeData !== null && '-mt-2 xl:mt-0'
 					)}
 				>
-					猜您想要
+					{tUI('猜您想要')}
 					<Popover showArrow>
 						<PopoverTrigger>
 							<span
 								role="button"
 								tabIndex={0}
-								aria-label="推荐说明"
+								aria-label={tUI('推荐说明')}
 								className="inline-flex cursor-pointer items-center text-default-500 transition-opacity hover:opacity-hover"
 							>
 								<FontAwesomeIcon
@@ -222,31 +223,31 @@ export default function SuggestedMealCard() {
 						<PopoverContent>
 							<div className="max-w-80 space-y-1.5 p-1 text-tiny text-default-700">
 								<p className="font-medium">
-									根据当前状态自动推荐高评级套餐：
+									{tUI('根据当前状态自动推荐高评级套餐：')}
 								</p>
 								<Ol className="space-y-0.5">
-									<Ol.Li>未选料理和酒水：搜索全部组合</Ol.Li>
-									<Ol.Li>已选料理：推荐酒水和额外食材</Ol.Li>
-									<Ol.Li>已选酒水：推荐料理和额外食材</Ol.Li>
-									<Ol.Li>已选料理和酒水：推荐额外食材</Ol.Li>
+									<Ol.Li>{tUI('未选料理和酒水：搜索全部组合')}</Ol.Li>
+									<Ol.Li>{tUI('已选料理：推荐酒水和额外食材')}</Ol.Li>
+									<Ol.Li>{tUI('已选酒水：推荐料理和额外食材')}</Ol.Li>
+									<Ol.Li>{tUI('已选料理和酒水：推荐额外食材')}</Ol.Li>
 								</Ol>
-								<p className="font-medium">推荐权重方案：</p>
+								<p className="font-medium">{tUI('推荐权重方案：')}</p>
 								<Ol className="space-y-0.5">
 									<Ol.Li>
-										仅展示“满意”评级及以上的结果，评分优先
+										{tUI('仅展示"满意"评级及以上的结果，评分优先')}
 									</Ol.Li>
 									<Ol.Li>
-										同评分下优先推荐获取更便利的料理、酒水和食材
+										{tUI('同评分下优先推荐获取更便利的料理、酒水和食材')}
 									</Ol.Li>
 									<Ol.Li>
-										超出顾客预算偏好的套餐会被降权，超出预算上限的将被排除
+										{tUI('超出顾客预算偏好的套餐会被降权，超出预算上限的将被排除')}
 									</Ol.Li>
 								</Ol>
 								<p>
-									搜索范围仅包含本体和当前稀客所属DLC中的料理、酒水和食材，已在设置中选择隐藏的项目不会出现。
+									{tUI('搜索范围仅包含本体和当前稀客所属DLC中的料理、酒水和食材，已在设置中选择隐藏的项目不会出现。')}
 								</p>
 								<p>
-									结果受“流行趋势”和“明星店”效果影响，点击额外食材图标可查看可替换食材。
+									{tUI('结果受"流行趋势"和"明星店"效果影响，点击额外食材图标可查看可替换食材。')}
 								</p>
 							</div>
 						</PopoverContent>
@@ -257,13 +258,13 @@ export default function SuggestedMealCard() {
 						disableAnimation={isReducedMotion}
 						isVirtualized={false}
 						items={availableRecipeCookers}
-						placeholder="全部厨具"
+						placeholder={tUI('全部厨具')}
 						selectedKeys={selectedCookerKeys}
 						size="sm"
 						variant="flat"
 						onSelectionChange={handleCookerChange}
-						aria-label="选择推荐套餐使用的厨具"
-						title="选择推荐套餐使用的厨具"
+					aria-label={tUI('选择推荐套餐使用的厨具')}
+						title={tUI('选择推荐套餐使用的厨具')}
 						popoverProps={{
 							motionProps: popoverMotionProps,
 							shouldCloseOnScroll: false,
@@ -290,7 +291,7 @@ export default function SuggestedMealCard() {
 										name={value}
 										size={1}
 									/>
-									<span className="ml-1">{value}</span>
+									<span className="ml-1">{t(value)}</span>
 								</div>
 							</SelectItem>
 						)}
@@ -313,12 +314,12 @@ export default function SuggestedMealCard() {
 					{cookerSelect}
 					{hasUnsetPopularOrderTag ? (
 						<Placeholder className="space-y-2 py-4">
-							<p>选定的点单需求包含流行趋势标签</p>
-							<p>请您先在设置中指定「流行趋势」</p>
+							<p>{tUI('选定的点单需求包含流行趋势标签')}</p>
+							<p>{tUI('请您先在设置中指定「流行趋势」')}</p>
 						</Placeholder>
 					) : suggestions === null ? (
 						<Placeholder className="py-4">
-							未找到匹配的推荐套餐
+							{tUI('未找到匹配的推荐套餐')}
 						</Placeholder>
 					) : (
 						(() => {
@@ -351,9 +352,9 @@ export default function SuggestedMealCard() {
 									? DARK_MATTER_META_MAP.name
 									: recipeData.name;
 								const rating = CUSTOMER_RATING_MAP[ratingKey];
-								const beverageLabel = `点击：在新窗口中查看酒水【${beverage}】的详情`;
-								const cookerLabel = `点击：在新窗口中查看厨具【${cooker}】的详情`;
-								const recipeLabel = `点击：在新窗口中查看料理【${recipeName}】的详情`;
+								const beverageLabel = tUIf('点击：在新窗口中查看酒水【{name}】的详情', { name: t(beverage) });
+								const cookerLabel = tUIf('点击：在新窗口中查看厨具【{name}】的详情', { name: t(cooker) });
+								const recipeLabel = tUIf('点击：在新窗口中查看料理【{name}】的详情', { name: t(recipeName) });
 								return (
 									<Fragment
 										key={`${recipeData.name}-${beverage}-${loopIndex}`}
@@ -534,7 +535,7 @@ export default function SuggestedMealCard() {
 																	name,
 																	index
 																) => {
-																	const label = `点击：在新窗口中查看食材【${name}】的详情`;
+																	const label = tUIf('点击：在新窗口中查看食材【{name}】的详情', { name: t(name) });
 																	return (
 																		<Tooltip
 																			key={
@@ -580,7 +581,7 @@ export default function SuggestedMealCard() {
 																			name,
 																			index
 																		) => {
-																			const label = `额外食材【${name}】`;
+																			const label = tUIf('额外食材【{name}】', { name: t(name) });
 																			const alternatives =
 																				alternativesMap
 																					.get(
@@ -670,7 +671,7 @@ export default function SuggestedMealCard() {
 																								alternatives
 																							)
 																								? label
-																								: `${label}（点击查看可替换食材）`
+																								: `${label}${tUI('（点击查看可替换食材）')}`
 																						}
 																						offset={
 																							4
@@ -697,8 +698,8 @@ export default function SuggestedMealCard() {
 																								{checkLengthEmpty(
 																									alternatives
 																								)
-																									? '无可用替换'
-																									: '可替换为'}
+																									? tUI('无可用替换')
+																									: tUI('可替换为')}
 																							</span>
 																							{!checkLengthEmpty(
 																								alternatives
@@ -715,7 +716,7 @@ export default function SuggestedMealCard() {
 																										(
 																											altName
 																										) => {
-																											const altLabel = `点击：在新窗口中查看食材【${altName}】的详情`;
+																											const altLabel = tUIf('点击：在新窗口中查看食材【{name}】的详情', { name: t(altName) });
 																											return (
 																												<Tooltip
 																													key={
@@ -794,7 +795,7 @@ export default function SuggestedMealCard() {
 													}}
 													className="md:w-auto xl:h-6"
 												>
-													选择
+													{tUI('选择')}
 												</Button>
 											</div>
 										</div>
