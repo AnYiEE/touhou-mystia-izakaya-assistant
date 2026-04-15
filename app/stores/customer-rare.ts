@@ -220,6 +220,8 @@ const state = {
 		suggestMeals: {
 			cooker: null as TCookerName | null,
 			enabled: true,
+			maxExtraIngredients: null as number | null,
+			maxRating: 4,
 			maxResults: 5,
 			selectableMaxResults: [] as Array<ValueCollection<number>>,
 			visibility: false,

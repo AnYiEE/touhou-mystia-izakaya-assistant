@@ -111,6 +111,7 @@ const storeVersion = {
 	donationModal: 15,
 	donationModalRmDismiss: 16,
 	suggestMeals: 17,
+	suggestMealsExtra: 18,
 } as const;
 
 const state = {
@@ -120,7 +121,12 @@ const state = {
 	persistence: {
 		customerCardTagsTooltip: true,
 		hiddenItems: { dlcs: [] as string[] },
-		suggestMeals: { enabled: true, maxResults: 5 },
+		suggestMeals: {
+			enabled: true,
+			maxExtraIngredients: null as number | null,
+			maxRating: 4,
+			maxResults: 5,
+		},
 		table: {
 			columns: {
 				beverage: beverageTableColumns.map(toGetItemWithKey('key')),
@@ -157,6 +163,20 @@ const state = {
 
 	shared: {
 		suggestMeals: {
+			selectableMaxExtraIngredients: [
+				{ label: '不限', value: null },
+				...generateRange(0, 4).map((n) => ({
+					label: n.toString(),
+					value: n,
+				})),
+			] as Array<{ label: string; value: number | null }>,
+			selectableMaxRatings: [
+				{ label: '极度不满', value: 0 },
+				{ label: '不满', value: 1 },
+				{ label: '普通', value: 2 },
+				{ label: '满意', value: 3 },
+				{ label: '完美', value: 4 },
+			] as Array<{ label: string; value: number }>,
 			selectableMaxResults: generateRange(1, 10).map(
 				toGetValueCollection
 			),
@@ -178,7 +198,7 @@ export const globalStore = store(state, {
 		}),
 		persistMiddleware<typeof state>({
 			name: storeName,
-			version: storeVersion.suggestMeals,
+			version: storeVersion.suggestMealsExtra,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -266,6 +286,12 @@ export const globalStore = store(state, {
 						maxResults: 5,
 					};
 				}
+				if (version < storeVersion.suggestMealsExtra) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const { persistence } = oldState;
+					persistence.suggestMeals.maxExtraIngredients = null;
+					persistence.suggestMeals.maxRating = 4;
+				}
 				return persistedState as typeof state;
 			},
 			partialize(currentStore) {
@@ -331,6 +357,36 @@ export const globalStore = store(state, {
 			},
 		},
 
+		maxSuggestMealExtraIngredients: {
+			read: () =>
+				toSet(
+					(
+						currentStore.persistence.suggestMeals.maxExtraIngredients.use() ??
+						''
+					).toString()
+				) as SelectionSet,
+			write: (maxExtra: Selection) => {
+				const value = toArray<SelectionSet>(maxExtra)[0] as string;
+				currentStore.persistence.suggestMeals.maxExtraIngredients.set(
+					value === '' ? null : Number.parseInt(value)
+				);
+			},
+		},
+		maxSuggestMealRating: {
+			read: () =>
+				toSet(
+					currentStore.persistence.suggestMeals.maxRating
+						.use()
+						.toString()
+				) as SelectionSet,
+			write: (maxRating: Selection) => {
+				currentStore.persistence.suggestMeals.maxRating.set(
+					Number.parseInt(
+						toArray<SelectionSet>(maxRating)[0] as string
+					)
+				);
+			},
+		},
 		maxSuggestMealResults: {
 			read: () =>
 				toSet(
@@ -466,6 +522,16 @@ globalStore.persistence.hiddenItems.dlcs.onChange((hiddenDlcs) => {
 // Update the suggest meal settings when there is a change in the persisted suggest meal settings.
 globalStore.persistence.suggestMeals.enabled.onChange((enabled) => {
 	customerRareStore.shared.suggestMeals.enabled.set(enabled);
+});
+globalStore.persistence.suggestMeals.maxExtraIngredients.onChange(
+	(maxExtraIngredients) => {
+		customerRareStore.shared.suggestMeals.maxExtraIngredients.set(
+			maxExtraIngredients
+		);
+	}
+);
+globalStore.persistence.suggestMeals.maxRating.onChange((maxRating) => {
+	customerRareStore.shared.suggestMeals.maxRating.set(maxRating);
 });
 globalStore.persistence.suggestMeals.maxResults.onChange((maxResults) => {
 	customerRareStore.shared.suggestMeals.maxResults.set(maxResults);

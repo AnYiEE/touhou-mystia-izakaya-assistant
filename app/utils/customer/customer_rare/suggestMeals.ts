@@ -52,6 +52,8 @@ interface ISuggestParams {
 	hiddenIngredients: ReadonlySet<TIngredientName>;
 	hiddenRecipes: ReadonlySet<TRecipeName>;
 	isFamousShop: boolean;
+	maxExtraIngredients: number | null;
+	maxRating: number;
 	maxResults: number;
 	popularTrend: IPopularTrend;
 }
@@ -725,6 +727,8 @@ function computeSuggestions(
 		customerOrder,
 		hasMystiaCooker,
 		isFamousShop,
+		maxExtraIngredients,
+		maxRating,
 		maxResults,
 		popularTrend,
 	}: ISuggestParams,
@@ -792,7 +796,10 @@ function computeSuggestions(
 		},
 		recipeTagsWithTrend,
 	} of recipesWithSuitability) {
-		const extraSlots = 5 - recipeIngredients.length;
+		const extraSlots =
+			maxExtraIngredients === null
+				? 5 - recipeIngredients.length
+				: Math.min(5 - recipeIngredients.length, maxExtraIngredients);
 
 		for (const {
 			members: beverageMembers,
@@ -846,7 +853,11 @@ function computeSuggestions(
 					recipeTagsBase: recipePositiveTags,
 				});
 
-				if (bestExtra !== null && bestExtra.score > score) {
+				if (
+					bestExtra !== null &&
+					bestExtra.score > score &&
+					bestExtra.score <= maxRating
+				) {
 					finalScore = bestExtra.score;
 					finalRating = bestExtra.rating;
 					finalExtra = bestExtra.extraIngredients;
@@ -854,7 +865,7 @@ function computeSuggestions(
 				}
 			}
 
-			if (finalScore >= 3) {
+			if (finalScore <= maxRating) {
 				for (const {
 					name: beverageName,
 					price: beveragePrice,
@@ -1222,6 +1233,8 @@ function suggestIngredients(
 		customerOrder,
 		hasMystiaCooker,
 		isFamousShop,
+		maxExtraIngredients,
+		maxRating,
 		popularTrend,
 	}: ISuggestParams,
 	{
@@ -1254,7 +1267,13 @@ function suggestIngredients(
 		recipeIngredients,
 		currentRecipe.extraIngredients
 	);
-	const extraSlots = 5 - allCurrentIngredients.length;
+	const extraSlots =
+		maxExtraIngredients === null
+			? 5 - allCurrentIngredients.length
+			: Math.min(
+					5 - allCurrentIngredients.length,
+					maxExtraIngredients - currentRecipe.extraIngredients.length
+				);
 
 	if (extraSlots <= 0) {
 		if (checkLengthEmpty(currentRecipe.extraIngredients)) {
@@ -1321,7 +1340,9 @@ function suggestIngredients(
 			maxIngredientEase,
 		});
 
-		return replacement === null || replacement.price > budgetMax
+		return replacement === null ||
+			replacement.price > budgetMax ||
+			SCORE_MAP[replacement.rating] > maxRating
 			? []
 			: [replacement];
 	}
@@ -1396,7 +1417,11 @@ function suggestIngredients(
 		recipeTagsBase: composedBaseRecipeTags as ReadonlyArray<TRecipeTag>,
 	});
 
-	if (bestExtra !== null && bestExtra.score > baseScore) {
+	if (
+		bestExtra !== null &&
+		bestExtra.score > baseScore &&
+		bestExtra.score <= maxRating
+	) {
 		const totalPrice = beveragePrice + recipePrice;
 		if (totalPrice > budgetMax) {
 			return [];
@@ -1429,6 +1454,8 @@ function suggestForBeverage(
 		customerOrder,
 		hasMystiaCooker,
 		isFamousShop,
+		maxExtraIngredients,
+		maxRating,
 		maxResults,
 		popularTrend,
 	}: ISuggestParams,
@@ -1511,7 +1538,10 @@ function suggestForBeverage(
 		};
 
 		let ingredientPenalty = 0;
-		const extraSlots = 5 - recipeIngredients.length;
+		const extraSlots =
+			maxExtraIngredients === null
+				? 5 - recipeIngredients.length
+				: Math.min(5 - recipeIngredients.length, maxExtraIngredients);
 		if (score < 4 && extraSlots > 0) {
 			const bestExtra = tryAddExtraIngredients({
 				baseGameIngredients: relevantIngredients,
@@ -1533,7 +1563,11 @@ function suggestForBeverage(
 				recipeTagsBase: recipePositiveTags,
 			});
 
-			if (bestExtra !== null && bestExtra.score > score) {
+			if (
+				bestExtra !== null &&
+				bestExtra.score > score &&
+				bestExtra.score <= maxRating
+			) {
 				score = bestExtra.score;
 				ingredientPenalty = bestExtra.ingredientPenalty;
 				bestMeal = {
@@ -1548,7 +1582,7 @@ function suggestForBeverage(
 			}
 		}
 
-		if (score >= 3) {
+		if (score <= maxRating) {
 			const totalPrice = bestMeal.price;
 			if (totalPrice > budgetMax) {
 				continue;
@@ -1601,6 +1635,8 @@ function suggestForRecipe(
 		customerOrder,
 		hasMystiaCooker,
 		isFamousShop,
+		maxExtraIngredients,
+		maxRating,
 		maxResults,
 		popularTrend,
 	}: ISuggestParams,
@@ -1675,7 +1711,13 @@ function suggestForRecipe(
 
 	const beverageTagGroups = buildBeverageTagGroups(filteredBeverages);
 
-	const extraSlots = 5 - allCurrentIngredients.length;
+	const extraSlots =
+		maxExtraIngredients === null
+			? 5 - allCurrentIngredients.length
+			: Math.min(
+					5 - allCurrentIngredients.length,
+					maxExtraIngredients - currentRecipe.extraIngredients.length
+				);
 
 	let exgoodCount = 0;
 
@@ -1729,7 +1771,11 @@ function suggestForRecipe(
 				recipeTagsBase: composedRecipeTags as ReadonlyArray<TRecipeTag>,
 			});
 
-			if (bestExtra !== null && bestExtra.score > baseScore) {
+			if (
+				bestExtra !== null &&
+				bestExtra.score > baseScore &&
+				bestExtra.score <= maxRating
+			) {
 				useExtra = true;
 				finalScore = bestExtra.score;
 				extraIngredients = bestExtra.extraIngredients;
@@ -1738,7 +1784,7 @@ function suggestForRecipe(
 			}
 		}
 
-		if (finalScore >= 3) {
+		if (finalScore <= maxRating) {
 			const baseRecipePrice = isBaseDarkMatter
 				? DARK_MATTER_META_MAP.price
 				: recipePrice;
@@ -1839,6 +1885,8 @@ function buildCacheKey({
 	hiddenIngredients,
 	hiddenRecipes,
 	isFamousShop,
+	maxExtraIngredients,
+	maxRating,
 	maxResults,
 	popularTrend,
 }: ISuggestParams) {
@@ -1856,7 +1904,9 @@ function buildCacheKey({
 		toArray(hiddenIngredients).sort().join(','),
 		toArray(hiddenRecipes).sort().join(','),
 		isFamousShop ? '1' : '0',
+		maxExtraIngredients?.toString() ?? '',
 		maxResults.toString(),
+		maxRating.toString(),
 		popularTrend.tag ?? '',
 		popularTrend.isNegative ? '1' : '0',
 	].join('|');

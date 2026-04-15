@@ -78,12 +78,22 @@ export default function Providers({
 
 		const globalSuggestMealsEnabled =
 			globalStore.persistence.suggestMeals.enabled.get();
+		const globalSuggestMealsMaxExtraIngredients =
+			globalStore.persistence.suggestMeals.maxExtraIngredients.get();
+		const globalSuggestMealsMaxRating =
+			globalStore.persistence.suggestMeals.maxRating.get();
 		const globalSuggestMealsMaxResults =
 			globalStore.persistence.suggestMeals.maxResults.get();
 		const globalSuggestSelectableMaxResults =
 			globalStore.shared.suggestMeals.selectableMaxResults.get();
 		customerRareStore.shared.suggestMeals.enabled.set(
 			globalSuggestMealsEnabled
+		);
+		customerRareStore.shared.suggestMeals.maxExtraIngredients.set(
+			globalSuggestMealsMaxExtraIngredients
+		);
+		customerRareStore.shared.suggestMeals.maxRating.set(
+			globalSuggestMealsMaxRating
 		);
 		customerRareStore.shared.suggestMeals.maxResults.set(
 			globalSuggestMealsMaxResults

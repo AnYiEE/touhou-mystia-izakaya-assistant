@@ -72,11 +72,19 @@ export default function SuggestedMealCard() {
 	const isFamousShop = customerStore.shared.customer.famousShop.use();
 
 	const isSuggestEnabled = customerStore.shared.suggestMeals.enabled.use();
+	const suggestMaxExtraIngredients =
+		customerStore.shared.suggestMeals.maxExtraIngredients.use();
+	const suggestMaxRating = customerStore.shared.suggestMeals.maxRating.use();
 	const suggestMaxResults =
 		customerStore.shared.suggestMeals.maxResults.use();
 	const selectedSuggestMealsCooker =
 		customerStore.shared.suggestMeals.cooker.use();
 	const availableRecipeCookers = customerStore.availableRecipeCookers.use();
+
+	const selectableMaxExtraIngredients =
+		globalStore.shared.suggestMeals.selectableMaxExtraIngredients.get();
+	const selectableMaxRatings =
+		globalStore.shared.suggestMeals.selectableMaxRatings.get();
 
 	const hiddenBeverages =
 		customerStore.shared.beverage.table.hiddenBeverages.use();
@@ -104,10 +112,43 @@ export default function SuggestedMealCard() {
 		[selectedSuggestMealsCooker]
 	);
 
+	const selectedMaxExtraKeys = useMemo(
+		() =>
+			toSet(
+				suggestMaxExtraIngredients === null
+					? ''
+					: suggestMaxExtraIngredients.toString()
+			) as SelectionSet,
+		[suggestMaxExtraIngredients]
+	);
+
+	const selectedMaxRatingKeys = useMemo(
+		() => toSet(suggestMaxRating.toString()) as SelectionSet,
+		[suggestMaxRating]
+	);
+
 	const handleCookerChange = useCallback((keys: Selection) => {
 		const selected = toArray(keys as SelectionSet);
 		const cooker = (selected[0] as TCookerName | undefined) ?? null;
 		customerStore.shared.suggestMeals.cooker.set(cooker);
+	}, []);
+
+	const handleMaxExtraChange = useCallback((keys: Selection) => {
+		const selected = toArray(keys as SelectionSet);
+		const value = selected[0] as string | undefined;
+		customerStore.shared.suggestMeals.maxExtraIngredients.set(
+			value === undefined || value === '' ? null : Number.parseInt(value)
+		);
+	}, []);
+
+	const handleMaxRatingChange = useCallback((keys: Selection) => {
+		const selected = toArray(keys as SelectionSet);
+		const value = selected[0] as string | undefined;
+		if (value !== undefined) {
+			customerStore.shared.suggestMeals.maxRating.set(
+				Number.parseInt(value)
+			);
+		}
 	}, []);
 
 	useEffect(() => {
@@ -146,6 +187,8 @@ export default function SuggestedMealCard() {
 			hiddenIngredients,
 			hiddenRecipes,
 			isFamousShop,
+			maxExtraIngredients: suggestMaxExtraIngredients,
+			maxRating: suggestMaxRating,
 			maxResults: suggestMaxResults,
 			popularTrend: currentCustomerPopularTrend,
 		});
@@ -164,14 +207,21 @@ export default function SuggestedMealCard() {
 		isActive,
 		isFamousShop,
 		selectedSuggestMealsCooker,
+		suggestMaxExtraIngredients,
+		suggestMaxRating,
 		suggestMaxResults,
 	]);
 
 	useLayoutEffect(() => {
 		customerStore.shared.suggestMeals.visibility.set(
-			suggestions !== null && suggestions.length > 0
+			isActive &&
+				!(
+					suggestions === null &&
+					currentRecipeData !== null &&
+					currentBeverageName !== null
+				)
 		);
-	}, [suggestions]);
+	}, [currentBeverageName, currentRecipeData, isActive, suggestions]);
 
 	const [prevSuggestions, setPrevSuggestions] = useState(suggestions);
 	if (prevSuggestions !== suggestions) {
@@ -196,8 +246,25 @@ export default function SuggestedMealCard() {
 			currentBeverageName !== null
 		)
 	) {
+		const selectClassNames = {
+			listboxWrapper:
+				'[&_li]:transition-background focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40 motion-reduce:[&_li]:transition-none',
+			popoverContent: cn({
+				'bg-content1/70 backdrop-blur-lg': isHighAppearance,
+			}),
+			trigger: cn(
+				'h-6 min-h-6 bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover motion-reduce:transition-none',
+				{ 'backdrop-blur': isHighAppearance }
+			),
+			value: '!text-default-700',
+		};
+
+		const maxRatingLabel =
+			selectableMaxRatings.find((item) => item.value === suggestMaxRating)
+				?.label ?? '完美';
+
 		const cookerSelect = (
-			<div className="flex items-center justify-between gap-2">
+			<div className="flex flex-col gap-x-2 md:flex-row md:items-center md:justify-between xl:flex-col xl:items-start xl:justify-start 3xl:flex-row 3xl:items-center 3xl:justify-between">
 				<span
 					className={cn(
 						'inline-flex items-center gap-1 whitespace-nowrap text-small font-medium leading-8 text-default-700',
@@ -222,7 +289,7 @@ export default function SuggestedMealCard() {
 						<PopoverContent>
 							<div className="max-w-80 space-y-1.5 p-1 text-tiny text-default-700">
 								<p className="font-medium">
-									根据当前状态自动推荐高评级套餐：
+									根据当前状态自动推荐套餐：
 								</p>
 								<Ol className="space-y-0.5">
 									<Ol.Li>未选料理和酒水：搜索全部组合</Ol.Li>
@@ -233,69 +300,144 @@ export default function SuggestedMealCard() {
 								<p className="font-medium">推荐权重方案：</p>
 								<Ol className="space-y-0.5">
 									<Ol.Li>
-										仅展示“满意”评级及以上的结果，评分优先
+										仅展示不超过“{maxRatingLabel}
+										”评级的结果，高评分优先
 									</Ol.Li>
 									<Ol.Li>
 										同评分下优先推荐获取更便利的料理、酒水和食材
+									</Ol.Li>
+									<Ol.Li>
+										可限制套餐的额外食材数量，超出上限的套餐将被排除
 									</Ol.Li>
 									<Ol.Li>
 										超出顾客预算偏好的套餐会被降权，超出预算上限的将被排除
 									</Ol.Li>
 								</Ol>
 								<p>
-									搜索范围仅包含本体和当前稀客所属DLC中的料理、酒水和食材，已在设置中选择隐藏的项目不会出现。
+									搜索范围仅包含本体和当前稀客所属DLC中的料理、酒水和食材，已在“设置”页面中选择隐藏的项目不会出现。
 								</p>
 								<p>
 									结果受“流行趋势”和“明星店”效果影响，点击额外食材图标可查看可替换食材。
+								</p>
+								<p className="font-medium text-danger-700">
+									此处调整的筛选条件仅在当前页面生效，如需永久保存请前往“设置”页面。
 								</p>
 							</div>
 						</PopoverContent>
 					</Popover>
 				</span>
-				{currentRecipeData === null && (
-					<Select
-						disableAnimation={isReducedMotion}
-						isVirtualized={false}
-						items={availableRecipeCookers}
-						placeholder="全部厨具"
-						selectedKeys={selectedCookerKeys}
-						size="sm"
-						variant="flat"
-						onSelectionChange={handleCookerChange}
-						aria-label="选择推荐套餐使用的厨具"
-						title="选择推荐套餐使用的厨具"
-						popoverProps={{
-							motionProps: popoverMotionProps,
-							shouldCloseOnScroll: false,
-						}}
-						classNames={{
-							base: 'max-w-32',
-							listboxWrapper:
-								'[&_li]:transition-background focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40 motion-reduce:[&_li]:transition-none',
-							popoverContent: cn({
-								'bg-content1/70 backdrop-blur-lg':
-									isHighAppearance,
-							}),
-							trigger: cn(
-								'bg-default/40 transition-opacity data-[hover=true]:bg-default/40 data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover motion-reduce:transition-none',
-								{ 'backdrop-blur': isHighAppearance }
-							),
-						}}
-					>
-						{({ value }) => (
-							<SelectItem key={value} textValue={value}>
-								<div className="flex items-center">
-									<Sprite
-										target="cooker"
-										name={value}
-										size={1}
-									/>
-									<span className="ml-1">{value}</span>
-								</div>
-							</SelectItem>
-						)}
-					</Select>
-				)}
+				<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-small text-default-700 md:flex-nowrap xl:flex-wrap 2xl:flex-nowrap">
+					{currentRecipeData === null && (
+						<label className="flex shrink-0 items-center gap-2">
+							<span className="cursor-auto whitespace-nowrap">
+								厨具
+							</span>
+							<Select
+								disableAnimation={isReducedMotion}
+								isVirtualized={false}
+								items={availableRecipeCookers}
+								placeholder="全部"
+								selectedKeys={selectedCookerKeys}
+								size="sm"
+								variant="flat"
+								onSelectionChange={handleCookerChange}
+								aria-label="选择推荐套餐使用的厨具"
+								title="选择推荐套餐使用的厨具"
+								popoverProps={{
+									motionProps: popoverMotionProps,
+									shouldCloseOnScroll: false,
+								}}
+								classNames={{
+									base: 'min-w-[116px]',
+									...selectClassNames,
+								}}
+							>
+								{({ value }) => (
+									<SelectItem key={value} textValue={value}>
+										<div className="flex items-center">
+											<Sprite
+												target="cooker"
+												name={value}
+												size={1}
+											/>
+											<span className="ml-1">
+												{value}
+											</span>
+										</div>
+									</SelectItem>
+								)}
+							</Select>
+						</label>
+					)}
+					<label className="flex shrink-0 items-center gap-2">
+						<span className="cursor-auto whitespace-nowrap">
+							评级上限
+						</span>
+						<Select
+							disallowEmptySelection
+							disableAnimation={isReducedMotion}
+							isVirtualized={false}
+							items={selectableMaxRatings}
+							selectedKeys={selectedMaxRatingKeys}
+							size="sm"
+							variant="flat"
+							onSelectionChange={handleMaxRatingChange}
+							aria-label="选择推荐套餐的最高评级"
+							title="选择推荐套餐的最高评级"
+							popoverProps={{
+								motionProps: popoverMotionProps,
+								shouldCloseOnScroll: false,
+							}}
+							classNames={{
+								base: 'min-w-28',
+								...selectClassNames,
+							}}
+						>
+							{({ label, value }) => (
+								<SelectItem
+									key={value.toString()}
+									textValue={label}
+								>
+									{label}
+								</SelectItem>
+							)}
+						</Select>
+					</label>
+					<label className="flex shrink-0 items-center gap-2">
+						<span className="cursor-auto whitespace-nowrap">
+							加料上限
+						</span>
+						<Select
+							disableAnimation={isReducedMotion}
+							isVirtualized={false}
+							items={selectableMaxExtraIngredients}
+							placeholder="不限"
+							selectedKeys={selectedMaxExtraKeys}
+							size="sm"
+							variant="flat"
+							onSelectionChange={handleMaxExtraChange}
+							aria-label="选择推荐套餐的额外食材上限"
+							title="选择推荐套餐的额外食材上限"
+							popoverProps={{
+								motionProps: popoverMotionProps,
+								shouldCloseOnScroll: false,
+							}}
+							classNames={{
+								base: 'min-w-20',
+								...selectClassNames,
+							}}
+						>
+							{({ label, value }) => (
+								<SelectItem
+									key={value === null ? '' : value.toString()}
+									textValue={label}
+								>
+									{label}
+								</SelectItem>
+							)}
+						</Select>
+					</label>
+				</div>
 			</div>
 		);
 
@@ -311,6 +453,7 @@ export default function SuggestedMealCard() {
 			>
 				<div className="space-y-3 p-4 xl:p-2 xl:pb-4">
 					{cookerSelect}
+					<Divider className="md:hidden" />
 					{hasUnsetPopularOrderTag ? (
 						<Placeholder className="space-y-2 py-4">
 							<p>选定的点单需求包含流行趋势标签</p>
