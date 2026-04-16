@@ -24,7 +24,8 @@ const instance = Ingredient.getInstance();
 const storeVersion = {
 	initial: 0,
 	popular: 1, // eslint-disable-next-line sort-keys
-	filterTypes: 2,
+	filterTypes: 2, // eslint-disable-next-line sort-keys
+	filterPlaces: 3,
 } as const;
 
 const getNames = createNamesCache(instance);
@@ -36,10 +37,12 @@ const state = {
 		filters: {
 			dlcs: [] as string[],
 			levels: [] as string[],
+			noPlaces: [] as string[],
 			noTags: [] as string[],
-			tags: [] as string[],
-			types: [] as string[], // eslint-disable-next-line sort-keys
 			noTypes: [] as string[],
+			places: [] as string[],
+			tags: [] as string[],
+			types: [] as string[],
 		},
 		pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
 		searchValue: '',
@@ -56,7 +59,7 @@ export const ingredientsStore = store(state, {
 	middlewares: [
 		persistMiddleware<typeof state>({
 			name: 'page-ingredients-storage',
-			version: storeVersion.filterTypes,
+			version: storeVersion.filterPlaces,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -73,6 +76,14 @@ export const ingredientsStore = store(state, {
 					} = oldState;
 					filters.types = [];
 					filters.noTypes = [];
+				}
+				if (version < storeVersion.filterPlaces) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const {
+						persistence: { filters },
+					} = oldState;
+					filters.places = [];
+					filters.noPlaces = [];
 				}
 				return persistedState as typeof state;
 			},
@@ -111,6 +122,16 @@ export const ingredientsStore = store(state, {
 			)
 		).map(toGetValueCollection);
 	},
+	availablePlaces: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return instance
+			.getValuesByProp(
+				'places',
+				true,
+				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
+			)
+			.sort(pinyinSort);
+	},
 	availableTags: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 		return toArray<TIngredientTag[]>(
@@ -142,8 +163,10 @@ ingredientsStore.shared.hiddenItems.dlcs.onChange(() => {
 	ingredientsStore.persistence.filters.set({
 		dlcs: [],
 		levels: [],
+		noPlaces: [],
 		noTags: [],
 		noTypes: [],
+		places: [],
 		tags: [],
 		types: [],
 	});

@@ -4,11 +4,15 @@ import {
 	type TBeverageName,
 	type TBeverageTag,
 	type TBeverages,
+	type TPlace,
 } from '@/data';
+import { extractPlacesFromFoodFrom } from '@/data/utils';
 
 import { checkArrayEqualOf } from '@/utilities';
 
-export class Beverage extends Food<TBeverages> {
+type TBeverage = Prettify<TBeverages[number] & { places: TPlace[] }>;
+
+export class Beverage extends Food<TBeverage[]> {
 	private static _instance: Beverage | undefined;
 
 	/** @description Flag to check if the tags are consistent with the original data. */
@@ -36,6 +40,15 @@ export class Beverage extends Food<TBeverages> {
 		'现代',
 		'提神',
 	] as const satisfies TBeverageTag[];
+
+	private constructor(data: TBeverages) {
+		const dataWithPlaces = data.map((item) => ({
+			...item,
+			places: extractPlacesFromFoodFrom(item.from),
+		}));
+
+		super(dataWithPlaces as TBeverage[]);
+	}
 
 	public static getInstance() {
 		if (Beverage._instance !== undefined) {

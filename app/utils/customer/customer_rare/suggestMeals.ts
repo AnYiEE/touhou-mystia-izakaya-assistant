@@ -1,6 +1,9 @@
 import {
 	COLLECTION_LOCATION_REFRESH_TIME_MAP,
 	DARK_MATTER_META_MAP,
+	PLACE_DLC_MAP,
+	PLACE_NAME_REGEX,
+	PLACE_UNLOCK_TIER_MAP,
 	type TBeverageName,
 	type TBeverageTag,
 	type TCookerName,
@@ -71,46 +74,6 @@ const BUDGET_OVER_PENALTY = 500;
 const CACHE_MAX_SIZE = 200;
 const GAME_DAY_HOURS = 8;
 
-const MAP_NAME_REGEX = /^【(.+?)】/u;
-
-/* eslint-disable sort-keys */
-const MAP_DLC: Record<TPlace, TDlc> = {
-	妖怪兽道: 0,
-	人间之里: 0,
-	博丽神社: 0,
-	红魔馆: 0,
-	迷途竹林: 0,
-	魔法森林: 1,
-	妖怪之山: 1,
-	旧地狱: 2,
-	地灵殿: 2,
-	命莲寺: 3,
-	神灵庙: 3,
-	太阳花田: 4,
-	辉针城: 4,
-	月之都: 5,
-	魔界: 5,
-};
-
-const MAP_UNLOCK_TIER: Record<TPlace, number> = {
-	妖怪兽道: 0,
-	人间之里: 1,
-	魔法森林: 1,
-	妖怪之山: 1,
-	博丽神社: 2,
-	旧地狱: 2,
-	地灵殿: 2,
-	红魔馆: 3,
-	命莲寺: 3,
-	神灵庙: 3,
-	迷途竹林: 4,
-	太阳花田: 4,
-	辉针城: 4,
-	月之都: 5,
-	魔界: 5,
-};
-/* eslint-enable sort-keys */
-
 const CROSS_DLC_MAP_WEIGHT = 0.25;
 const COLLECT_CHANNEL_BONUS = 1.2;
 const CUSTOMER_BOND_RECIPE_BONUS = 1.2;
@@ -128,17 +91,17 @@ interface IAcquisitionSource {
 }
 
 function getMapWeight(name: string, customerDlc: TDlc, customerPlace: TPlace) {
-	const match = MAP_NAME_REGEX.exec(name);
+	const match = PLACE_NAME_REGEX.exec(name);
 	if (!match?.[1]) {
 		return FALLBACK_MAP_WEIGHT;
 	}
 
 	const place = match[1] as TPlace;
-	if (!(place in MAP_DLC)) {
+	if (!(place in PLACE_DLC_MAP)) {
 		return FALLBACK_MAP_WEIGHT;
 	}
 
-	const mapDlc = MAP_DLC[place];
+	const mapDlc = PLACE_DLC_MAP[place];
 	const dlcFactor =
 		customerDlc !== 0 && mapDlc === customerDlc
 			? OWN_DLC_MAP_BONUS
@@ -146,8 +109,8 @@ function getMapWeight(name: string, customerDlc: TDlc, customerPlace: TPlace) {
 				? 1
 				: CROSS_DLC_MAP_WEIGHT;
 	const homeFactor = place === customerPlace ? CUSTOMER_HOME_MAP_WEIGHT : 1;
-	const customerTier = MAP_UNLOCK_TIER[customerPlace];
-	const mapTier = MAP_UNLOCK_TIER[place];
+	const customerTier = PLACE_UNLOCK_TIER_MAP[customerPlace];
+	const mapTier = PLACE_UNLOCK_TIER_MAP[place];
 	const progressionFactor =
 		mapTier > customerTier
 			? PROGRESSION_DECAY_PER_TIER ** (mapTier - customerTier)

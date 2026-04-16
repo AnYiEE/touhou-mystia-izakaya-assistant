@@ -31,6 +31,7 @@ export default function Beverages() {
 	const availableDlcs = store.availableDlcs.use();
 	const availableLevels = store.availableLevels.use();
 	const availableNames = store.availableNames.use();
+	const availablePlaces = store.availablePlaces.use();
 	const availableTags = store.availableTags.use();
 
 	const pinyinSortState = store.persistence.pinyinSortState.use();
@@ -43,6 +44,8 @@ export default function Beverages() {
 	const filterLevels = store.persistence.filters.levels.use();
 	const filterTags = store.persistence.filters.tags.use();
 	const filterNoTags = store.persistence.filters.noTags.use();
+	const filterPlaces = store.persistence.filters.places.use();
+	const filterNoPlaces = store.persistence.filters.noPlaces.use();
 
 	const filterData = useCallback(
 		() =>
@@ -51,8 +54,22 @@ export default function Beverages() {
 				{ field: 'level', match: 'in', values: filterLevels },
 				{ field: 'tags', match: 'all', values: filterTags },
 				{ field: 'tags', match: 'excludeAny', values: filterNoTags },
+				{ field: 'places', match: 'any', values: filterPlaces },
+				{
+					field: 'places',
+					match: 'excludeAny',
+					values: filterNoPlaces,
+				},
 			]),
-		[filterDlcs, filterLevels, filterNoTags, filterTags, searchResult]
+		[
+			filterDlcs,
+			filterLevels,
+			filterNoPlaces,
+			filterNoTags,
+			filterPlaces,
+			filterTags,
+			searchResult,
+		]
 	);
 
 	const filteredData = useFilteredData(instance, filterData);
@@ -104,14 +121,29 @@ export default function Beverages() {
 				selectedKeys: filterLevels,
 				setSelectedKeys: store.persistence.filters.levels.set,
 			},
+			{
+				items: availablePlaces,
+				label: '地区（包含）',
+				selectedKeys: filterPlaces,
+				setSelectedKeys: store.persistence.filters.places.set,
+			},
+			{
+				items: availablePlaces,
+				label: '地区（排除）',
+				selectedKeys: filterNoPlaces,
+				setSelectedKeys: store.persistence.filters.noPlaces.set,
+			},
 		],
 		[
 			availableDlcs,
 			availableLevels,
+			availablePlaces,
 			availableTags,
 			filterDlcs,
 			filterLevels,
+			filterNoPlaces,
 			filterNoTags,
+			filterPlaces,
 			filterTags,
 		]
 	);

@@ -3,17 +3,22 @@ import { isObject } from 'lodash';
 import { Food } from './base';
 import { Ingredient } from './ingredients';
 import {
+	ALL_PLACES,
+	ALL_PLACES_SET,
 	DARK_MATTER_META_MAP,
 	DYNAMIC_TAG_MAP,
 	type IRecipe,
+	PLACE_NAME_REGEX,
 	RECIPE_LIST,
 	type TCustomerRareName,
 	type TIngredientName,
 	type TIngredientTag,
+	type TPlace,
 	type TRecipeName,
 	type TRecipeTag,
 	type TRecipes,
 } from '@/data';
+import { CustomerRare } from '@/utils';
 
 import {
 	checkLengthEmpty,
@@ -28,9 +33,51 @@ import type { IMealRecipe, IPopularTrend } from '@/types';
 type TRecipe = Prettify<
 	Omit<TRecipes[number], 'baseCookTime' | 'positiveTags'> & {
 		cookTime: { max: number; min: number };
+		places: TPlace[];
 		positiveTags: TRecipeTag[];
 	}
 >;
+
+function extractPlacesFromRecipeFrom(from: IRecipe['from']) {
+	if (typeof from === 'string') {
+		const match = /【(.+?)】/u.exec(from);
+		if (match?.[1]) {
+			return [match[1] as TPlace];
+		}
+		return ALL_PLACES;
+	}
+	if (Object.keys(from).length === 0) {
+		return [];
+	}
+	if ('self' in from) {
+		return ALL_PLACES;
+	}
+	if ('bond' in from) {
+		const [customerPlace] = CustomerRare.getInstance().getPropsByName(
+			from.bond.name,
+			'places'
+		);
+		return [customerPlace];
+	}
+
+	const places: TPlace[] = [];
+
+	if ('levelup' in from) {
+		if (from.levelup[1] === null) {
+			return ALL_PLACES;
+		}
+		places.push(from.levelup[1]);
+	}
+
+	if ('buy' in from) {
+		const match = PLACE_NAME_REGEX.exec(from.buy.name);
+		if (match?.[1] && ALL_PLACES_SET.has(match[1])) {
+			places.push(match[1] as TPlace);
+		}
+	}
+
+	return checkLengthEmpty(places) ? ALL_PLACES : places;
+}
 
 type TBondRecipes = Array<{ level: number; name: TRecipeName }>;
 
@@ -144,6 +191,7 @@ export class Recipe extends Food<TRecipe[]> {
 				max: baseCookTime,
 				min: Math.round(baseCookTime * 0.6 * 10) / 10,
 			};
+			recipe.places = extractPlacesFromRecipeFrom(recipe.from);
 		});
 
 		super(clonedData as unknown as TRecipe[]);

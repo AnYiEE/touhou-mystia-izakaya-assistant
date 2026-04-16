@@ -37,6 +37,7 @@ export default function Recipes() {
 	const availableLevels = store.availableLevels.use();
 	const availableNames = store.availableNames.use();
 	const availableNegativeTags = store.availableNegativeTags.use();
+	const availablePlaces = store.availablePlaces.use();
 	const availablePositiveTags = store.availablePositiveTags.use();
 
 	const pinyinSortState = store.persistence.pinyinSortState.use();
@@ -54,6 +55,8 @@ export default function Recipes() {
 	const filterNoNegativeTags = store.persistence.filters.noNegativeTags.use();
 	const filterPositiveTags = store.persistence.filters.positiveTags.use();
 	const filterNoPositiveTags = store.persistence.filters.noPositiveTags.use();
+	const filterPlaces = store.persistence.filters.places.use();
+	const filterNoPlaces = store.persistence.filters.noPlaces.use();
 
 	const dataWithTrend = useMemo(
 		() =>
@@ -110,6 +113,12 @@ export default function Recipes() {
 					match: 'excludeAny',
 					values: filterNoPositiveTags,
 				},
+				{ field: 'places', match: 'any', values: filterPlaces },
+				{
+					field: 'places',
+					match: 'excludeAny',
+					values: filterNoPlaces,
+				},
 			]),
 		[
 			dataWithTrend,
@@ -120,7 +129,9 @@ export default function Recipes() {
 			filterNegativeTags,
 			filterNoIngredients,
 			filterNoNegativeTags,
+			filterNoPlaces,
 			filterNoPositiveTags,
+			filterPlaces,
 			filterPositiveTags,
 		]
 	);
@@ -207,6 +218,18 @@ export default function Recipes() {
 				selectedKeys: filterLevels,
 				setSelectedKeys: store.persistence.filters.levels.set,
 			},
+			{
+				items: availablePlaces,
+				label: '地区（包含）',
+				selectedKeys: filterPlaces,
+				setSelectedKeys: store.persistence.filters.places.set,
+			},
+			{
+				items: availablePlaces,
+				label: '地区（排除）',
+				selectedKeys: filterNoPlaces,
+				setSelectedKeys: store.persistence.filters.noPlaces.set,
+			},
 		],
 		[
 			availableCookers,
@@ -214,6 +237,7 @@ export default function Recipes() {
 			availableIngredients,
 			availableLevels,
 			availableNegativeTags,
+			availablePlaces,
 			availablePositiveTags,
 			filterCookers,
 			filterDlcs,
@@ -222,7 +246,9 @@ export default function Recipes() {
 			filterNegativeTags,
 			filterNoIngredients,
 			filterNoNegativeTags,
+			filterNoPlaces,
 			filterNoPositiveTags,
+			filterPlaces,
 			filterPositiveTags,
 		]
 	);

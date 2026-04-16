@@ -34,6 +34,7 @@ export default function Ingredients() {
 	const availableDlcs = store.availableDlcs.use();
 	const availableLevels = store.availableLevels.use();
 	const availableNames = store.availableNames.use();
+	const availablePlaces = store.availablePlaces.use();
 	const availableTags = store.availableTags.use();
 	const availableTypes = store.availableTypes.use();
 
@@ -49,6 +50,8 @@ export default function Ingredients() {
 	const filterNoTags = store.persistence.filters.noTags.use();
 	const filterTypes = store.persistence.filters.types.use();
 	const filterNoTypes = store.persistence.filters.noTypes.use();
+	const filterPlaces = store.persistence.filters.places.use();
+	const filterNoPlaces = store.persistence.filters.noPlaces.use();
 
 	const dataWithTrend = useMemo(
 		() =>
@@ -72,13 +75,21 @@ export default function Ingredients() {
 				{ field: 'tags', match: 'excludeAny', values: filterNoTags },
 				{ field: 'type', match: 'in', values: filterTypes },
 				{ field: 'type', match: 'excludeIn', values: filterNoTypes },
+				{ field: 'places', match: 'any', values: filterPlaces },
+				{
+					field: 'places',
+					match: 'excludeAny',
+					values: filterNoPlaces,
+				},
 			]),
 		[
 			dataWithTrend,
 			filterDlcs,
 			filterLevels,
+			filterNoPlaces,
 			filterNoTags,
 			filterNoTypes,
+			filterPlaces,
 			filterTags,
 			filterTypes,
 		]
@@ -145,16 +156,31 @@ export default function Ingredients() {
 				selectedKeys: filterLevels,
 				setSelectedKeys: store.persistence.filters.levels.set,
 			},
+			{
+				items: availablePlaces,
+				label: '地区（包含）',
+				selectedKeys: filterPlaces,
+				setSelectedKeys: store.persistence.filters.places.set,
+			},
+			{
+				items: availablePlaces,
+				label: '地区（排除）',
+				selectedKeys: filterNoPlaces,
+				setSelectedKeys: store.persistence.filters.noPlaces.set,
+			},
 		],
 		[
 			availableDlcs,
 			availableLevels,
+			availablePlaces,
 			availableTags,
 			availableTypes,
 			filterDlcs,
 			filterLevels,
+			filterNoPlaces,
 			filterNoTags,
 			filterNoTypes,
+			filterPlaces,
 			filterTags,
 			filterTypes,
 		]

@@ -10,6 +10,9 @@ import {
 	union,
 } from '@/utilities';
 
+type DeepFlatElement<T> =
+	T extends ReadonlyArray<infer E> ? DeepFlatElement<E> : T;
+
 export class Item<
 	TItems extends IItem[],
 	TItem extends TItemWithPinyin<TItems[number]> = TItemWithPinyin<
@@ -49,6 +52,7 @@ export class Item<
 		return id.toString();
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	protected checkIndexRange(index: number, _data?: unknown): asserts _data {
 		if (index < 0 || index >= this._data.length) {
 			throw new Error(
@@ -138,12 +142,12 @@ export class Item<
 		prop: T | ReadonlyArray<T>,
 		wrap: true,
 		data?: ReadonlyArray<TItem>
-	): Array<ValueCollection<FlatArray<TItem[T], number>>>;
+	): Array<ValueCollection<DeepFlatElement<TItem[T]>>>;
 	public getValuesByProp<T extends keyof TItem>(
 		prop: T | ReadonlyArray<T>,
 		wrap?: boolean,
 		data?: ReadonlyArray<TItem>
-	): Array<FlatArray<TItem[T], number>>;
+	): Array<DeepFlatElement<TItem[T]>>;
 	public getValuesByProp<T extends keyof TItem>(
 		prop: T | ReadonlyArray<T>,
 		wrap?: boolean,

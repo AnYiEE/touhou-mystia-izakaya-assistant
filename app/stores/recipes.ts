@@ -25,6 +25,7 @@ const storeVersion = {
 	initial: 0,
 	popular: 1, // eslint-disable-next-line sort-keys
 	cooker: 2,
+	filterPlaces: 3,
 } as const;
 
 const state = {
@@ -39,7 +40,9 @@ const state = {
 			negativeTags: [] as string[],
 			noIngredients: [] as string[],
 			noNegativeTags: [] as string[],
+			noPlaces: [] as string[],
 			noPositiveTags: [] as string[],
+			places: [] as string[],
 			positiveTags: [] as string[],
 		},
 		pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
@@ -59,7 +62,7 @@ export const recipesStore = store(state, {
 	middlewares: [
 		persistMiddleware<typeof state>({
 			name: 'page-recipes-storage',
-			version: storeVersion.cooker,
+			version: storeVersion.filterPlaces,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -75,6 +78,14 @@ export const recipesStore = store(state, {
 					oldState.persistence.filters.cookers =
 						oldState.persistence.filters.kitchenwares;
 					delete oldState.persistence.filters.kitchenwares;
+				}
+				if (version < storeVersion.filterPlaces) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const {
+						persistence: { filters },
+					} = oldState;
+					filters.places = [];
+					filters.noPlaces = [];
 				}
 				return persistedState as typeof state;
 			},
@@ -143,6 +154,16 @@ export const recipesStore = store(state, {
 			)
 			.sort(pinyinSort);
 	},
+	availablePlaces: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return instance
+			.getValuesByProp(
+				'places',
+				true,
+				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
+			)
+			.sort(pinyinSort);
+	},
 	availablePositiveTags: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 		return toArray<TRecipeTag[]>(
@@ -168,7 +189,9 @@ recipesStore.shared.hiddenItems.dlcs.onChange(() => {
 		negativeTags: [],
 		noIngredients: [],
 		noNegativeTags: [],
+		noPlaces: [],
 		noPositiveTags: [],
+		places: [],
 		positiveTags: [],
 	});
 });

@@ -6,14 +6,18 @@ import {
 	type TIngredientType,
 	type TIngredients,
 	type TLevel,
+	type TPlace,
 } from '@/data';
+import { extractPlacesFromFoodFrom } from '@/data/utils';
 import { Recipe } from '@/utils';
 import type { TRecipe } from '@/utils/types';
 
 import { checkArrayEqualOf, toSet } from '@/utilities';
 import type { IPopularTrend } from '@/types';
 
-export class Ingredient extends Food<TIngredients> {
+type TIngredient = Prettify<TIngredients[number] & { places: TPlace[] }>;
+
+export class Ingredient extends Food<TIngredient[]> {
 	private static _instance: Ingredient | undefined;
 
 	/** @description Flag to check if the types are consistent with the original data. */
@@ -26,6 +30,15 @@ export class Ingredient extends Food<TIngredients> {
 	] as const satisfies TIngredientType[];
 
 	private static _relatedRecipesCache = new Map<TIngredientName, TRecipe[]>();
+
+	private constructor(data: TIngredients) {
+		const dataWithPlaces = data.map((item) => ({
+			...item,
+			places: extractPlacesFromFoodFrom(item.from),
+		}));
+
+		super(dataWithPlaces as TIngredient[]);
+	}
 
 	public static getInstance() {
 		if (Ingredient._instance !== undefined) {
