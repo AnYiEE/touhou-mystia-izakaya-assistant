@@ -4,7 +4,7 @@ import type { IItemBase, TDescription } from '@/data/types';
 export interface IOrnament extends IItemBase {
 	effect: TDescription;
 	from:
-		| TDescription
+		| string
 		| {
 				bond: TCustomerRareName;
 				level: number;

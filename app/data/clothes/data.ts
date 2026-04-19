@@ -174,6 +174,16 @@ export const CLOTHES_LIST = [
 		],
 	},
 	{
+		id: 61,
+		name: '妖精服',
+		description:
+			'《东方妖精武踏会》的联动礼物。洋溢着妖精风格的可爱小裙子，是充满了活力的设计。穿上后能让人一扫烦恼，仿佛自己也变成了自由自在、无忧无虑的小妖精！更换该服装时，店铺的夜间装潢也会变成妖精风格。',
+		dlc: 0,
+		gif: false,
+		izakaya: true,
+		from: ['开启联动【东方妖精武踏会】后自动获得'],
+	},
+	{
 		id: 1001,
 		name: '冬季水手服',
 		description:
@@ -290,5 +300,15 @@ export const CLOTHES_LIST = [
 		gif: false,
 		izakaya: false,
 		from: [{ bond: '露易兹' }],
+	},
+	{
+		id: 9000,
+		name: 'OL装',
+		description:
+			'小恶魔曾经穿过的工作装，尽管经过反复洗涤已经缩水掉色，但是上身效果依旧十分可爱。',
+		dlc: 9,
+		gif: false,
+		izakaya: false,
+		from: [{ bond: '小恶魔' }],
 	},
 ] as const satisfies IClothes[];

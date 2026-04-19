@@ -3018,7 +3018,7 @@ export const RECIPE_LIST = [
 		dlc: 9,
 		level: 2,
 		price: 48,
-		from: {},
+		from: { bond: { name: '小恶魔', level: 2 } },
 	},
 	{
 		id: 11004,
@@ -3034,7 +3034,7 @@ export const RECIPE_LIST = [
 		dlc: 9,
 		level: 3,
 		price: 92,
-		from: {},
+		from: { bond: { name: '小恶魔', level: 3 } },
 	},
 	{
 		id: 11005,
@@ -3058,7 +3058,7 @@ export const RECIPE_LIST = [
 		dlc: 9,
 		level: 4,
 		price: 136,
-		from: {},
+		from: { bond: { name: '小恶魔', level: 4 } },
 	},
 	{
 		id: 11006,
@@ -3079,7 +3079,7 @@ export const RECIPE_LIST = [
 	{
 		id: 11007,
 		recipeId: 11007,
-		name: ' 毛茸茸蘑菇汤',
+		name: '毛茸茸蘑菇汤',
 		description:
 			'利用了散碎的棉花糖模拟了绵羊般毛茸茸外表的西式汤。毛茸茸的表层下面是猩红色的肉汤，入口是极具侵略性和力量感的野味。是外表很可爱然而实际很暴力的料理呢。',
 		ingredients: ['棉花糖', '黑毛猪肉', '蘑菇'],

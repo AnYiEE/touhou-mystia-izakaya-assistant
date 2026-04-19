@@ -153,6 +153,7 @@ const changelog = [
 			'新增：支持按地区筛选料理、酒水和食材。',
 		],
 	},
+	{ version: 'v1.16', changes: ['新增：更新数据至游戏版本4.4.0。'] },
 ] as const satisfies Array<{
 	version: `v${string}`;
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;

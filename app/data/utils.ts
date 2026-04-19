@@ -1,7 +1,6 @@
 import type { TPlace } from '@/data';
 import { ALL_PLACES, ALL_PLACES_SET, PLACE_NAME_REGEX } from '@/data/constant';
 import type { IFoodBase } from '@/data/types';
-import { toArray } from '@/utilities';
 import type { ISpriteConfig } from '@/utils/sprite/types';
 
 type BuildTuple<
@@ -80,5 +79,5 @@ export function extractPlacesFromFoodFrom(from: TFoodFrom) {
 	from.fishing?.forEach((p) => places.add(p));
 	from.fishingAdvanced?.forEach((p) => places.add(p));
 
-	return toArray(places);
+	return [...places];
 }

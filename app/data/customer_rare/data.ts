@@ -3335,6 +3335,91 @@ export const CUSTOMER_RARE_LIST = [
 		collection: false,
 	},
 	{
+		id: 41,
+		name: '秦心',
+		description: [
+			'同时由六十六个面具组成的付丧神，平时基本上是不苟言笑的样子，偶尔眼神对上的话还会马上避开。一开始可能会觉得她性格冷淡，其实她只是习惯了依赖面具，所以无法理解情绪。某种程度来说，她就像婴儿一样单纯，实际上她在妖怪中也算是刚出生不久啦！现在她正在为了能够理解情绪而相当努力地修行着，相信她最后一定能露出属于自己的笑容！',
+			null,
+			null,
+		],
+		dlc: 0,
+		places: ['人间之里', '博丽神社', '妖怪之山', '命莲寺', '神灵庙'],
+		price: [514, 850],
+		enduranceLimit: 1.4,
+		positiveTags: [
+			'传说',
+			'和风',
+			DYNAMIC_TAG_MAP.signature,
+			'适合拍照',
+			'凉爽',
+			'梦幻',
+			DYNAMIC_TAG_MAP.popularPositive,
+		],
+		negativeTags: ['重油', '咸', '灼热', DYNAMIC_TAG_MAP.popularNegative],
+		beverageTags: ['中酒精', '烧酒', '甘', '古典'],
+		chat: [
+			'这里也是梦境世界吗？',
+			'新的希望之面…不是很想戴呢。',
+			'和大家炙热的情绪战斗过后，我学习到了很多。',
+			'夜雀食堂…是个很适合收集人气的场所。',
+		],
+		evaluation: {
+			exbad: '好难吃…这是愠恼的表情。',
+			bad: '不太行…这是失望的表情。',
+			norm: '还可以吧。这是平静的表情。',
+			good: '好吃。这是开心的表情。',
+			exgood: '太完美了！这是超级满足的表情。',
+			lackmoneyangry: '被坑钱了！这是愤怒的表情。',
+			lackmoneynormal: '钱包空了…这是惭愧的表情。',
+			repell: '被赶走了…这是无语的表情。',
+			seenRepell: '怎么可以这样对待客人？这是讶恼的表情。',
+		},
+		spellCards: {
+			positive: [
+				{
+					name: '华心「喜怒哀乐 变幻」',
+					description:
+						'场上不存在情绪面具时，召唤当日对应的情绪面具，持续30秒。如果场上存在情绪面具，则在30秒内强化情绪面具的效果。',
+				},
+				{
+					name: '喜「盛心不渝」',
+					description:
+						'客人的预算提高20%。受到符卡效果强化后，效果提升至200%。',
+				},
+				{
+					name: '怒「炽心不息」',
+					description:
+						'减少10%料理时间。受到符卡效果强化后，效果提升至75%。',
+				},
+				{
+					name: '哀「恒心不却」',
+					description:
+						'客人的续单概率提高5%。受到符卡效果强化后，效果提升至50%。',
+				},
+				{
+					name: '乐「欢心不羁」',
+					description:
+						'稀有客人首次给出评价时，评价等级至少为普通。受到符卡效果强化后，效果改为至少为完美。',
+				},
+			],
+			negative: [
+				{
+					name: '丧心「七情六欲 解忧」',
+					description:
+						'秦心演奏“暗黑能乐”影响全场顾客的情感，使小费率下降到0，持续66秒。',
+				},
+			],
+		},
+		beverageTagMapping: {},
+		positiveTagMapping: {
+			和风: '古典歌舞剧',
+			招牌: '点一样的',
+			适合拍照: '我的舞姿',
+			凉爽: '凉风',
+		},
+		collection: false,
+	},
+	{
 		id: 1003,
 		name: '饕餮尤魔',
 		description: [
