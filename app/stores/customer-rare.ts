@@ -14,7 +14,6 @@ import {
 } from '@/components/sidePinyinSortIconButton';
 
 import {
-	DARK_MATTER_META_MAP,
 	DYNAMIC_TAG_MAP,
 	type TBeverageName,
 	type TBeverageTag,
@@ -47,7 +46,6 @@ import {
 	toArray,
 	toGetValueCollection,
 	toSet,
-	union,
 } from '@/utilities';
 import {
 	Beverage,
@@ -59,6 +57,7 @@ import {
 	Partner,
 	Recipe,
 } from '@/utils';
+import { buildFullMealEvaluationRare } from '@/utils/evaluators/meal';
 import type { TRecipe } from '@/utils/types';
 
 export interface ICustomerOrder {
@@ -1027,57 +1026,21 @@ export const customerRareStore = store(state, {
 				popularTrend,
 				recipeData: { extraIngredients, name: recipeName },
 			} = data;
-			const {
-				beverageTags: customerBeverageTags,
-				negativeTags: customerNegativeTags,
-				positiveTags: customerPositiveTags,
-			} = instance_customer.getPropsByName(customerName);
-			const beverage = instance_beverage.getPropsByName(beverageName);
-			const { price: beveragePrice, tags: beverageTags } = beverage;
-			const recipe = instance_recipe.getPropsByName(recipeName);
-			const {
-				ingredients,
-				negativeTags,
-				positiveTags,
-				price: originalRecipePrice,
-			} = recipe;
-			const { extraTags, isDarkMatter } = instance_recipe.checkDarkMatter(
-				{ extraIngredients, negativeTags }
-			);
-			const recipePrice = isDarkMatter
-				? DARK_MATTER_META_MAP.price
-				: originalRecipePrice;
-			const composedRecipeTags =
-				instance_recipe.composeTagsWithPopularTrend(
-					ingredients,
-					extraIngredients,
-					positiveTags,
-					extraTags,
-					popularTrend
-				);
-			const recipeTagsWithTrend = instance_recipe.calculateTagsWithTrend(
-				composedRecipeTags,
-				popularTrend,
-				isFamousShop
-			);
-			const rating = instance_customer.evaluateMeal({
-				currentBeverageTags: beverageTags,
-				currentCustomerBeverageTags: customerBeverageTags,
-				currentCustomerName: customerName,
-				currentCustomerNegativeTags: customerNegativeTags,
-				currentCustomerOrder: customerOrder,
-				currentCustomerPositiveTags: customerPositiveTags,
-				currentIngredients: union(ingredients, extraIngredients),
-				currentRecipeName: recipeName,
-				currentRecipeTagsWithTrend: recipeTagsWithTrend,
+			const evaluation = buildFullMealEvaluationRare({
+				beverageName,
+				customerName,
+				customerOrder,
+				extraIngredients,
 				hasMystiaCooker,
-				isDarkMatter,
+				isFamousShop,
+				popularTrend,
+				recipeName,
 			});
-			const result = {
-				isDarkMatter,
-				price: beveragePrice + recipePrice,
-				rating,
-			} as ISavedMealRatingResult;
+			const result: ISavedMealRatingResult = {
+				isDarkMatter: evaluation.isDarkMatter,
+				price: evaluation.price,
+				rating: evaluation.rating,
+			};
 			savedMealRatingCache.set(stringifiedData, result);
 			return result;
 		},
