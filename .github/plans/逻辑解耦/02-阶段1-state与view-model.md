@@ -15,8 +15,8 @@
 ## 当前状态
 
 - 状态：进行中
-- 已完成：PR-1.1
-- 下一步：PR-1.2
+- 已完成：PR-1.1、PR-1.2
+- 下一步：PR-1.3
 - 当前基线验证：`pnpm exec tsc --noEmit` 通过；`pnpm lint` 0 error / 12 warnings（现有 `onClick` deprecation warnings，非本轮新增）；`pnpm build` 通过，静态页 `137/137`
 
 ## 承接原则
@@ -222,6 +222,13 @@
 
 - 不在这一步调整 ingredient route 过滤。
 - 不强行给普客 resultCard 补一套与稀客对称的 display meta。
+
+### 本轮落地记录
+
+- `customer-rare` / `customer-normal` store 已新增 `ingredientScoreChanges`，页面只保留可见列表、点击行为与普客 dark ingredient 分区展示。
+- `customer-rare` / `customer-normal` store 已新增 `savedCustomerMealsWithEvaluation`，两个 savedMealCard 已切到消费 store computed，并继续保留 `dataIndex` / `visibleIndex` 语义用于移动与删除。
+- 稀客 store 已新增 `currentMealPrice`，稀客 resultCard 的保存套餐价格改为直接读取 computed。
+- 本轮直接复用阶段 0 的 `getIngredientScoreChanges`、`getVisibleSavedMeals`、`evaluateRareSavedMeal` 与 `evaluateNormalSavedMeal`，没有把 route 过滤、排序、节流链路一起下沉。
 
 ## PR-1.3：稀客专属派生与推荐 view-model
 

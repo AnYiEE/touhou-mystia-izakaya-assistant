@@ -1,4 +1,4 @@
-import { Fragment, useMemo } from 'react';
+import { Fragment } from 'react';
 
 import { usePictureInPicture, useVibrate, useViewInNewWindow } from '@/hooks';
 
@@ -25,7 +25,7 @@ import {
 import { trackEvent } from '@/components/analytics';
 import Sprite from '@/components/sprite';
 
-import { CUSTOMER_RATING_MAP, type TDlc } from '@/data';
+import { CUSTOMER_RATING_MAP } from '@/data';
 import { customerNormalStore as customerStore, globalStore } from '@/stores';
 import { checkLengthEmpty, copyArray } from '@/utilities';
 
@@ -42,104 +42,24 @@ export default function SavedMealCard() {
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
-	const hiddenDlcs = customerStore.shared.hiddenItems.dlcs.use();
-
 	const currentCustomerName = customerStore.shared.customer.name.use();
-	const currentCustomerPopularTrend =
-		customerStore.shared.customer.popularTrend.use();
-	const currentSavedMeals = customerStore.persistence.meals.use();
-	const isFamousShop = customerStore.shared.customer.famousShop.use();
+	const currentCustomerMeals =
+		currentCustomerName === null
+			? null
+			: (customerStore.persistence.meals[currentCustomerName]?.use() ??
+				null);
+	const savedCustomerMeals =
+		customerStore.savedCustomerMealsWithEvaluation.use();
 
-	const instance_beverage = customerStore.instances.beverage.get();
-	const instance_ingredient = customerStore.instances.ingredient.get();
 	const instance_recipe = customerStore.instances.recipe.get();
-
-	const savedCustomerMeals = useMemo(() => {
-		if (currentCustomerName === null) {
-			return null;
-		}
-
-		const customerMeals = currentSavedMeals[currentCustomerName];
-		if (customerMeals === undefined || checkLengthEmpty(customerMeals)) {
-			return null;
-		}
-
-		const visibleIndices: number[] = [];
-
-		customerMeals.forEach(
-			(
-				{
-					beverage: beverageName,
-					recipe: {
-						extraIngredients: extraIngredientNames,
-						name: recipeName,
-					},
-				},
-				index
-			) => {
-				let beverageDlc: TDlc;
-				let recipeDlc: TDlc;
-				let hasHiddenIngredientDlc: boolean;
-
-				try {
-					beverageDlc =
-						beverageName === null
-							? 0
-							: instance_beverage.getPropsByName(
-									beverageName,
-									'dlc'
-								);
-					recipeDlc = instance_recipe.getPropsByName(
-						recipeName,
-						'dlc'
-					);
-					hasHiddenIngredientDlc = extraIngredientNames.some(
-						(ingredientName) =>
-							hiddenDlcs.has(
-								instance_ingredient.getPropsByName(
-									ingredientName,
-									'dlc'
-								)
-							)
-					);
-				} catch {
-					return;
-				}
-
-				if (
-					!hasHiddenIngredientDlc &&
-					!hiddenDlcs.has(beverageDlc) &&
-					!hiddenDlcs.has(recipeDlc)
-				) {
-					visibleIndices.push(index);
-				}
-			}
-		);
-
-		if (checkLengthEmpty(visibleIndices)) {
-			return null;
-		}
-
-		return { data: customerMeals, order: visibleIndices };
-	}, [
-		currentCustomerName,
-		currentSavedMeals,
-		hiddenDlcs,
-		instance_beverage,
-		instance_ingredient,
-		instance_recipe,
-	]);
-
-	const savedCustomerMealsData = savedCustomerMeals?.data ?? null;
-	const savedCustomerMealsOrder = savedCustomerMeals?.order ?? null;
 
 	let content: IFadeMotionDivProps['children'];
 	let contentTarget: IFadeMotionDivProps['target'];
 
 	if (
 		currentCustomerName === null ||
-		savedCustomerMealsData === null ||
-		savedCustomerMealsOrder === null
+		currentCustomerMeals === null ||
+		savedCustomerMeals === null
 	) {
 		content = null;
 		contentTarget = 'null';
@@ -153,18 +73,21 @@ export default function SavedMealCard() {
 			const nextIndex =
 				direction === MoveButton.direction.down ? index + 1 : index - 1;
 
-			if (nextIndex < 0 || nextIndex >= savedCustomerMealsOrder.length) {
+			if (nextIndex < 0 || nextIndex >= savedCustomerMeals.length) {
 				return;
 			}
 
-			const currentDataIndex = savedCustomerMealsOrder[index];
-			const nextDataIndex = savedCustomerMealsOrder[nextIndex];
+			const currentEntry = savedCustomerMeals[index];
+			const nextEntry = savedCustomerMeals[nextIndex];
 
-			if (currentDataIndex === undefined || nextDataIndex === undefined) {
+			if (currentEntry === undefined || nextEntry === undefined) {
 				return;
 			}
 
-			const newData = copyArray(savedCustomerMealsData);
+			const { dataIndex: currentDataIndex } = currentEntry;
+			const { dataIndex: nextDataIndex } = nextEntry;
+
+			const newData = copyArray(currentCustomerMeals);
 			const currentMeal = newData[currentDataIndex];
 			const nextMeal = newData[nextDataIndex];
 
@@ -191,28 +114,19 @@ export default function SavedMealCard() {
 				}}
 			>
 				<div className="space-y-3 p-4 xl:space-y-2">
-					{savedCustomerMealsOrder.map((dataIndex, loopIndex) => {
-						const meal = savedCustomerMealsData[dataIndex];
-						if (meal === undefined) {
-							return;
-						}
-						const { beverage, recipe: recipeData } = meal;
-						return (
+					{savedCustomerMeals.map(
+						(
+							{
+								dataIndex,
+								evaluation: ratingKey,
+								meal: { beverage, recipe: recipeData },
+							},
+							loopIndex
+						) => (
 							<Fragment key={dataIndex}>
 								<div className="relative flex flex-col items-center gap-4 md:static md:flex-row">
 									<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
 										{(() => {
-											const ratingKey =
-												customerStore.evaluateSavedMealResult(
-													{
-														customerName:
-															currentCustomerName,
-														isFamousShop,
-														popularTrend:
-															currentCustomerPopularTrend,
-														recipeData,
-													}
-												);
 											const rating =
 												CUSTOMER_RATING_MAP[ratingKey];
 											return (
@@ -465,7 +379,7 @@ export default function SavedMealCard() {
 												'absolute -right-2 -top-1 flex flex-col gap-3 text-tiny text-primary/20 md:right-0.5 md:top-[unset] md:gap-5 xl:gap-4 dark:text-default-100',
 												{
 													hidden:
-														savedCustomerMealsOrder.length <=
+														savedCustomerMeals.length <=
 														1,
 												}
 											)}
@@ -488,7 +402,7 @@ export default function SavedMealCard() {
 												}
 												isDisabled={
 													loopIndex ===
-													savedCustomerMealsOrder.length -
+													savedCustomerMeals.length -
 														1
 												}
 												onClick={() => {
@@ -530,15 +444,10 @@ export default function SavedMealCard() {
 											variant="flat"
 											onPress={() => {
 												vibrate();
-												const currentDataIndex =
-													savedCustomerMealsOrder[
-														loopIndex
-													];
 												const newData =
-													savedCustomerMealsData.filter(
+													currentCustomerMeals.filter(
 														(_, index) =>
-															index !==
-															currentDataIndex
+															index !== dataIndex
 													);
 												customerStore.persistence.meals[
 													currentCustomerName
@@ -555,13 +464,12 @@ export default function SavedMealCard() {
 										</Button>
 									</div>
 								</div>
-								{loopIndex <
-									savedCustomerMealsOrder.length - 1 && (
+								{loopIndex < savedCustomerMeals.length - 1 && (
 									<Divider />
 								)}
 							</Fragment>
-						);
-					})}
+						)
+					)}
 				</div>
 			</Card>
 		);

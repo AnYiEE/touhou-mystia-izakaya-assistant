@@ -203,13 +203,13 @@ export default function ResultCard() {
 	const currentCustomerName = customerStore.shared.customer.name.use();
 	const currentCustomerOrder = customerStore.shared.customer.order.use();
 	const currentBeverageName = customerStore.shared.beverage.name.use();
+	const currentMealPrice = customerStore.currentMealPrice.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 	const currentRating = customerStore.shared.customer.rating.use();
 	const currentSavedMeals = customerStore.persistence.meals.use();
 	const hasMystiaCooker = customerStore.shared.customer.hasMystiaCooker.use();
 	const isDarkMatter = customerStore.shared.customer.isDarkMatter.use();
 
-	const instance_beverage = customerStore.instances.beverage.get();
 	const instance_recipe = customerStore.instances.recipe.get();
 
 	const saveButtonTooltipTimer = useRef<NodeJS.Timeout | undefined>(
@@ -444,22 +444,7 @@ export default function ResultCard() {
 						>
 							<span>保存套餐</span>
 							<span>
-								<Price>
-									{(currentBeverageName
-										? instance_beverage.getPropsByName(
-												currentBeverageName,
-												'price'
-											)
-										: 0) +
-										(currentRecipeData?.name
-											? isDarkMatter
-												? DARK_MATTER_META_MAP.price
-												: instance_recipe.getPropsByName(
-														currentRecipeData.name,
-														'price'
-													)
-											: 0)}
-								</Price>
+								<Price>{currentMealPrice}</Price>
 							</span>
 						</Button>
 					</Tooltip>

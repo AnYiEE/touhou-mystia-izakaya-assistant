@@ -1,5 +1,5 @@
 import { memo, useCallback, useMemo } from 'react';
-import { curry, curryRight, debounce } from 'lodash';
+import { debounce } from 'lodash';
 
 import { useVibrate } from '@/hooks';
 
@@ -16,24 +16,9 @@ import Placeholder from '@/components/placeholder';
 import PressElement from '@/components/pressElement';
 import Sprite from '@/components/sprite';
 
-import {
-	DARK_MATTER_META_MAP,
-	DYNAMIC_TAG_MAP,
-	type TIngredientName,
-	type TIngredientTag,
-	type TRecipeTag,
-} from '@/data';
+import { DARK_MATTER_META_MAP, type TIngredientName } from '@/data';
 import { customerNormalStore as store } from '@/stores';
-import {
-	checkA11yConfirmKey,
-	checkLengthEmpty,
-	intersection,
-	toArray,
-	toGetItemWithKey,
-	toSet,
-	union,
-} from '@/utilities';
-import type { TRecipe } from '@/utils/types';
+import { checkA11yConfirmKey, checkLengthEmpty, toSet } from '@/utilities';
 
 export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 	ingredientTabStyle,
@@ -42,13 +27,10 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 	const vibrate = useVibrate();
 
 	const currentCustomerName = store.shared.customer.name.use();
-	const currentCustomerPopularTrend =
-		store.shared.customer.popularTrend.use();
 	const currentRecipeData = store.shared.recipe.data.use();
-	const isFamousShop = store.shared.customer.famousShop.use();
+	const { changesByName, darkIngredientNames } =
+		store.ingredientScoreChanges.use();
 
-	const instance_customer = store.instances.customer.get();
-	const instance_ingredient = store.instances.ingredient.get();
 	const instance_recipe = store.instances.recipe.get();
 
 	const currentRecipe = useMemo(
@@ -60,21 +42,13 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 	);
 
 	const darkIngredients = useMemo(
-		() =>
-			toSet(
-				sortedData
-					.filter(
-						({ tags }) =>
-							!checkLengthEmpty(
-								intersection(
-									tags,
-									currentRecipe?.negativeTags ?? []
-								)
-							)
-					)
-					.map(toGetItemWithKey('name'))
-			),
-		[currentRecipe?.negativeTags, sortedData]
+		() => toSet(darkIngredientNames),
+		[darkIngredientNames]
+	);
+
+	const darkIngredientRows = useMemo(
+		() => sortedData.filter(({ name }) => darkIngredients.has(name)),
+		[darkIngredients, sortedData]
 	);
 
 	const data = useMemo(
@@ -95,7 +69,11 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 		[vibrate]
 	);
 
-	if (currentCustomerName === null || currentRecipeData === null) {
+	if (
+		currentCustomerName === null ||
+		currentRecipe === null ||
+		currentRecipeData === null
+	) {
 		return null;
 	}
 
@@ -107,62 +85,12 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 		);
 	}
 
-	const customerPositiveTags = instance_customer.getPropsByName(
-		currentCustomerName,
-		'positiveTags'
-	);
-
-	const { extraIngredients: currentRecipeExtraIngredients } =
-		currentRecipeData;
-
-	// Checked `currentRecipe` is not null above.
-	const _nonNullableRecipe = currentRecipe as TRecipe;
-
-	const {
-		ingredients: currentRecipeIngredients,
-		positiveTags: currentRecipePositiveTags,
-	} = _nonNullableRecipe;
+	const { ingredients: currentRecipeIngredients } = currentRecipe;
 
 	const isFullFilled =
 		currentRecipeIngredients.length +
-			currentRecipeExtraIngredients.length >=
+			currentRecipeData.extraIngredients.length >=
 		5;
-	const isLargePartitionTagNext =
-		currentRecipeIngredients.length +
-			currentRecipeExtraIngredients.length ===
-		4;
-	const shouldCalculateLargePartitionTag =
-		isLargePartitionTagNext &&
-		currentCustomerPopularTrend.tag === DYNAMIC_TAG_MAP.largePartition;
-
-	const calculateIngredientTagsWithTrend = curryRight(
-		instance_ingredient.calculateTagsWithTrend
-	)(currentCustomerPopularTrend, isFamousShop);
-	const calculateRecipeTagsWithTrend = curryRight(
-		instance_recipe.calculateTagsWithTrend
-	)(currentCustomerPopularTrend, isFamousShop);
-	const composeRecipeTagsWithPopularTrend = curry(
-		instance_recipe.composeTagsWithPopularTrend
-	)(
-		currentRecipeIngredients,
-		currentRecipeExtraIngredients,
-		currentRecipePositiveTags,
-		curry.placeholder,
-		currentCustomerPopularTrend
-	);
-
-	const currentRecipeExtraIngredientsTags =
-		currentRecipeExtraIngredients.flatMap((extraIngredient) =>
-			instance_ingredient.getPropsByName(extraIngredient, 'tags')
-		);
-	const currentRecipeExtraIngredientsTagsWithTrend =
-		calculateIngredientTagsWithTrend(currentRecipeExtraIngredientsTags);
-	const currentRecipeComposedTags = composeRecipeTagsWithPopularTrend(
-		currentRecipeExtraIngredientsTagsWithTrend
-	);
-	const currentRecipeTagsWithTrend = union(
-		calculateRecipeTagsWithTrend(currentRecipeComposedTags)
-	);
 
 	return (
 		<>
@@ -173,7 +101,11 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 				)}
 			>
 				<div className="m-2 grid grid-cols-fill-12 justify-around gap-4">
-					{data.map(({ name, tags }, index) => {
+					{data.map(({ name }, index) => {
+						const ingredientScoreChange = changesByName[name];
+						const scoreChange =
+							ingredientScoreChange?.scoreChange ?? 0;
+
 						if (isFullFilled) {
 							return (
 								<div
@@ -191,53 +123,6 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 								</div>
 							);
 						}
-
-						const tagsWithTrend = calculateIngredientTagsWithTrend(
-							tags
-						) as TRecipeTag[];
-						const allTagsWithTrend = union(
-							currentRecipeTagsWithTrend,
-							tagsWithTrend
-						);
-
-						const before = composeRecipeTagsWithPopularTrend(
-							currentRecipeTagsWithTrend as TIngredientTag[]
-						);
-						const after = composeRecipeTagsWithPopularTrend(
-							allTagsWithTrend as TIngredientTag[]
-						);
-
-						let scoreChange =
-							instance_recipe.getIngredientScoreChange(
-								before,
-								after,
-								customerPositiveTags
-							);
-
-						// The customer like the large partition tag.
-						scoreChange += Number(
-							isLargePartitionTagNext &&
-								(customerPositiveTags as TRecipeTag[]).includes(
-									DYNAMIC_TAG_MAP.largePartition
-								) &&
-								!before.includes(DYNAMIC_TAG_MAP.largePartition)
-						);
-
-						// The current popular tag is the large partition tag and the customer has popular tags.
-						scoreChange += Number(
-							shouldCalculateLargePartitionTag &&
-								(customerPositiveTags as TRecipeTag[]).includes(
-									DYNAMIC_TAG_MAP.popularNegative
-								) &&
-								currentCustomerPopularTrend.isNegative
-						);
-						scoreChange += Number(
-							shouldCalculateLargePartitionTag &&
-								(customerPositiveTags as TRecipeTag[]).includes(
-									DYNAMIC_TAG_MAP.popularPositive
-								) &&
-								!currentCustomerPopularTrend.isNegative
-						);
 
 						const isDown = scoreChange < 0;
 						const isUp = scoreChange > 0;
@@ -312,7 +197,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 						);
 					})}
 				</div>
-				{!checkLengthEmpty(darkIngredients) && (
+				{!checkLengthEmpty(darkIngredientRows) && (
 					<>
 						<div className="my-4 flex items-center">
 							<div className="h-px w-full bg-foreground-300" />
@@ -322,7 +207,7 @@ export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
 							<div className="h-px w-full bg-foreground-300" />
 						</div>
 						<div className="m-2 grid grid-cols-fill-12 justify-around gap-4">
-							{toArray(darkIngredients).map((name, index) => (
+							{darkIngredientRows.map(({ name }, index) => (
 								<div
 									key={index}
 									className="flex cursor-not-allowed flex-col items-center"

@@ -41,6 +41,9 @@ import {
 	type TRecipeTableSortKey,
 	buildBeverageSuitabilityRows,
 	buildRecipeSuitabilityRows,
+	evaluateRareSavedMeal,
+	getIngredientScoreChanges,
+	getVisibleSavedMeals,
 } from '@/utils/customer/shared';
 import type { IMealRecipe, IPopularTrend } from '@/types';
 import {
@@ -671,6 +674,227 @@ export const customerRareStore = store(state, {
 			});
 		});
 
+		const currentMealPrice = computed((getOrUse) => {
+			const shouldGet = getOrUse === 'get';
+			const currentBeverageName = shouldGet
+				? currentStore.shared.beverage.name.get()
+				: currentStore.shared.beverage.name.use();
+			const currentRecipeData = shouldGet
+				? currentStore.shared.recipe.data.get()
+				: currentStore.shared.recipe.data.use();
+			const isDarkMatter = Boolean(
+				shouldGet
+					? currentStore.shared.customer.isDarkMatter.get()
+					: currentStore.shared.customer.isDarkMatter.use()
+			);
+
+			const beveragePrice =
+				currentBeverageName === null
+					? 0
+					: instance_beverage.getPropsByName(
+							currentBeverageName,
+							'price'
+						);
+			const recipePrice =
+				currentRecipeData === null
+					? 0
+					: isDarkMatter
+						? DARK_MATTER_META_MAP.price
+						: instance_recipe.getPropsByName(
+								currentRecipeData.name,
+								'price'
+							);
+
+			return beveragePrice + recipePrice;
+		});
+
+		const ingredientScoreChanges = computed((getOrUse) => {
+			const shouldGet = getOrUse === 'get';
+			const currentCustomerName = shouldGet
+				? currentStore.shared.customer.name.get()
+				: currentStore.shared.customer.name.use();
+			const currentRecipeData = shouldGet
+				? currentStore.shared.recipe.data.get()
+				: currentStore.shared.recipe.data.use();
+
+			if (currentCustomerName === null || currentRecipeData === null) {
+				return { changesByName: {}, darkIngredientNames: [] };
+			}
+
+			const currentPopularTrend = shouldGet
+				? currentStore.shared.customer.popularTrend.get()
+				: currentStore.shared.customer.popularTrend.use();
+			const currentCustomerOrderRecipeTag = shouldGet
+				? currentStore.shared.customer.order.get().recipeTag
+				: currentStore.shared.customer.order.use().recipeTag;
+			const isDarkMatter = Boolean(
+				shouldGet
+					? currentStore.shared.customer.isDarkMatter.get()
+					: currentStore.shared.customer.isDarkMatter.use()
+			);
+			const isFamousShop = shouldGet
+				? currentStore.shared.customer.famousShop.get()
+				: currentStore.shared.customer.famousShop.use();
+			const {
+				ingredients: currentRecipeIngredients,
+				negativeTags: currentRecipeNegativeTags,
+				positiveTags: currentRecipePositiveTags,
+			} = instance_recipe.getPropsByName(currentRecipeData.name);
+			const currentRecipeAllIngredients = union(
+				currentRecipeIngredients,
+				currentRecipeData.extraIngredients
+			);
+			const {
+				negativeTags: customerNegativeTags,
+				positiveTags: customerPositiveTags,
+			} = instance_customer.getPropsByName(currentCustomerName);
+
+			return getIngredientScoreChanges({
+				calculateIngredientTagsWithTrend: (ingredientTags) =>
+					instance_ingredient.calculateTagsWithTrend(
+						ingredientTags,
+						currentPopularTrend,
+						isFamousShop
+					) as TRecipeTag[],
+				calculateRecipeTagsWithTrend: (recipeTags) =>
+					instance_recipe.calculateTagsWithTrend(
+						recipeTags,
+						currentPopularTrend,
+						isFamousShop
+					),
+				candidates: instance_ingredient.data.map(({ name, tags }) => ({
+					name,
+					tags: tags as TIngredientTag[],
+				})),
+				composeRecipeTagsWithPopularTrend: (tags) =>
+					instance_recipe.composeTagsWithPopularTrend(
+						currentRecipeIngredients,
+						currentRecipeData.extraIngredients,
+						currentRecipePositiveTags,
+						tags as TIngredientTag[],
+						currentPopularTrend
+					),
+				currentCustomerOrderRecipeTag,
+				currentPopularTrend,
+				currentRecipeExtraIngredients:
+					currentRecipeData.extraIngredients,
+				currentRecipeIngredients,
+				currentRecipeName: currentRecipeData.name,
+				currentRecipeNegativeTags,
+				customerNegativeTags,
+				customerPositiveTags,
+				getIngredientEasterEggScore: ({
+					currentIngredients,
+					currentRecipeName,
+					ingredientName,
+				}) => {
+					const { ingredient: easterEggIngredient, score } =
+						instance_customer.checkIngredientEasterEgg({
+							currentCustomerName,
+							currentIngredients: [...currentIngredients],
+							currentRecipeName,
+						});
+
+					if (
+						ingredientName !== easterEggIngredient ||
+						currentRecipeAllIngredients.includes(
+							easterEggIngredient
+						)
+					) {
+						return null;
+					}
+
+					return score;
+				},
+				getIngredientScoreChange: (
+					oldRecipePositiveTags,
+					newRecipePositiveTags,
+					selectedCustomerPositiveTags,
+					selectedCustomerNegativeTags
+				) =>
+					instance_recipe.getIngredientScoreChange(
+						oldRecipePositiveTags,
+						newRecipePositiveTags,
+						selectedCustomerPositiveTags,
+						selectedCustomerNegativeTags
+					),
+				getIngredientTags: (ingredientName) =>
+					instance_ingredient.getPropsByName(ingredientName, 'tags'),
+				isDarkMatter,
+			});
+		});
+
+		const savedCustomerMealsWithEvaluation = computed((getOrUse) => {
+			const shouldGet = getOrUse === 'get';
+			const currentCustomerName = shouldGet
+				? currentStore.shared.customer.name.get()
+				: currentStore.shared.customer.name.use();
+
+			if (currentCustomerName === null) {
+				return null;
+			}
+
+			const currentCustomerMeals = shouldGet
+				? currentStore.persistence.meals[currentCustomerName]?.get()
+				: currentStore.persistence.meals[currentCustomerName]?.use();
+			const hiddenDlcs = shouldGet
+				? currentStore.shared.hiddenItems.dlcs.get()
+				: currentStore.shared.hiddenItems.dlcs.use();
+			const currentPopularTrend = shouldGet
+				? currentStore.shared.customer.popularTrend.get()
+				: currentStore.shared.customer.popularTrend.use();
+			const isFamousShop = shouldGet
+				? currentStore.shared.customer.famousShop.get()
+				: currentStore.shared.customer.famousShop.use();
+
+			const visibleMeals = getVisibleSavedMeals({
+				hiddenDlcs,
+				meals: currentCustomerMeals,
+				resolveDlcRefs: (meal) => {
+					try {
+						return {
+							beverageDlc: instance_beverage.getPropsByName(
+								meal.beverage,
+								'dlc'
+							),
+							ingredientDlcs: meal.recipe.extraIngredients.map(
+								(ingredientName) =>
+									instance_ingredient.getPropsByName(
+										ingredientName,
+										'dlc'
+									)
+							),
+							recipeDlc: instance_recipe.getPropsByName(
+								meal.recipe.name,
+								'dlc'
+							),
+						};
+					} catch {
+						return null;
+					}
+				},
+			});
+
+			if (checkLengthEmpty(visibleMeals)) {
+				return null;
+			}
+
+			return visibleMeals.map(({ dataIndex, meal, visibleIndex }) => ({
+				dataIndex,
+				evaluation: evaluateRareSavedMeal({
+					beverageName: meal.beverage,
+					customerName: currentCustomerName,
+					customerOrder: meal.order,
+					hasMystiaCooker: meal.hasMystiaCooker,
+					isFamousShop,
+					popularTrend: currentPopularTrend,
+					recipeData: meal.recipe,
+				}),
+				meal,
+				visibleIndex,
+			}));
+		});
+
 		return {
 			availableBeverageDlcs: () => {
 				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
@@ -846,6 +1070,8 @@ export const customerRareStore = store(state, {
 			},
 			beverageTablePagedRows: () => beverageTableRows.use().pagedRows,
 			beverageTableSortedRows: () => beverageTableRows.use().sortedRows,
+			currentMealPrice: () => currentMealPrice.use(),
+			ingredientScoreChanges: () => ingredientScoreChanges.use(),
 			recipeTableCookers: {
 				read: () =>
 					toSet(
@@ -870,6 +1096,8 @@ export const customerRareStore = store(state, {
 			},
 			recipeTablePagedRows: () => recipeTableRows.use().pagedRows,
 			recipeTableSortedRows: () => recipeTableRows.use().sortedRows,
+			savedCustomerMealsWithEvaluation: () =>
+				savedCustomerMealsWithEvaluation.use(),
 		};
 	})
 	.actions((currentStore) => ({
