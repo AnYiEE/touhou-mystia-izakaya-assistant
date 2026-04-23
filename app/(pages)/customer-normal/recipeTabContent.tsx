@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from 'react';
-import { curry, curryRight } from 'lodash';
 
-import { getSearchResult, useVibrate, useViewInNewWindow } from '@/hooks';
+import { useVibrate, useViewInNewWindow } from '@/hooks';
 
 import { Autocomplete, AutocompleteItem } from '@heroui/autocomplete';
 import { Select, SelectItem } from '@heroui/select';
@@ -45,26 +44,25 @@ import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 
-import {
-	type TTableColumnKey,
-	type TTableSortDescriptor,
-} from '@/(pages)/customer-rare/recipeTabContent';
 import { recipeTableColumns as tableColumns } from './constants';
-import type { TRecipeWithSuitability, TRecipesWithSuitability } from './types';
 import { CUSTOMER_NORMAL_TAG_STYLE, DLC_LABEL_MAP } from '@/data';
 import { customerNormalStore as customerStore, globalStore } from '@/stores';
-import {
-	checkArrayContainsOf,
-	checkArraySubsetOf,
-	checkLengthEmpty,
-	copyArray,
-	numberSort,
-	pinyinSort,
-	toArray,
-	toSet,
-} from '@/utilities';
+import type {
+	ITableSortDescriptor,
+	TRecipeSuitabilityRow,
+	TRecipeTableSortKey,
+} from '@/utils/customer/shared';
+import { checkLengthEmpty, copyArray, pinyinSort, toSet } from '@/utilities';
 
-export type { TTableSortDescriptor } from '@/(pages)/customer-rare/recipeTabContent';
+type TTableColumnKey =
+	| 'recipe'
+	| 'cooker'
+	| 'ingredient'
+	| 'price'
+	| 'suitability'
+	| 'time'
+	| 'action';
+export type TTableSortDescriptor = ITableSortDescriptor<TRecipeTableSortKey>;
 
 export default function RecipeTabContent() {
 	const isReducedMotion = useReducedMotion();
@@ -75,28 +73,19 @@ export default function RecipeTabContent() {
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
-	const currentCustomerPopularTrend =
-		customerStore.shared.customer.popularTrend.use();
 	const selectedCustomerRecipeTag =
 		customerStore.shared.customer.select.recipeTag.use();
-	const isFamousShop = customerStore.shared.customer.famousShop.use();
 
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 	const selectedCookers = customerStore.recipeTableCookers.use();
 	const selectedDlcs = customerStore.recipeTableDlcs.use();
-
-	const instance_customer = customerStore.instances.customer.get();
-	const instance_recipe = customerStore.instances.recipe.get();
 
 	const availableRecipeCookers = customerStore.availableRecipeCookers.use();
 	const availableRecipeDlcs = customerStore.availableRecipeDlcs.use();
 	const availableRecipeNames = customerStore.availableRecipeNames.use();
 	const availableRecipeTags = customerStore.availableRecipeTags.use();
 
-	const hiddenDlcs = customerStore.shared.hiddenItems.dlcs.use();
-
 	const searchValue = customerStore.shared.recipe.searchValue.use();
-	const hasNameFilter = Boolean(searchValue);
 
 	const tableCurrentPage = customerStore.shared.recipe.table.page.use();
 	const tableRowsPerPage = customerStore.shared.recipe.table.rows.use();
@@ -107,191 +96,8 @@ export default function RecipeTabContent() {
 		customerStore.persistence.recipe.table.sortDescriptor.use();
 	const tableVisibleColumns = customerStore.shared.recipe.table.columns.use();
 
-	const hiddenIngredients =
-		customerStore.shared.recipe.table.hiddenIngredients.use();
-	const hiddenRecipes = customerStore.shared.recipe.table.hiddenRecipes.use();
-
-	const composeTagsWithPopularTrend = useMemo(
-		() =>
-			curry(instance_recipe.composeTagsWithPopularTrend)(
-				curry.placeholder,
-				[],
-				curry.placeholder,
-				[],
-				currentCustomerPopularTrend
-			),
-		[
-			currentCustomerPopularTrend,
-			instance_recipe.composeTagsWithPopularTrend,
-		]
-	);
-
-	const calculateTagsWithTrend = useMemo(
-		() =>
-			curryRight(instance_recipe.calculateTagsWithTrend)(
-				currentCustomerPopularTrend,
-				isFamousShop
-			),
-		[
-			currentCustomerPopularTrend,
-			instance_recipe.calculateTagsWithTrend,
-			isFamousShop,
-		]
-	);
-
-	const data = useMemo(
-		() =>
-			instance_recipe.data.filter(
-				({ dlc, name }) =>
-					!hiddenDlcs.has(dlc) &&
-					!instance_recipe.blockedRecipes.has(name)
-			) as TRecipesWithSuitability,
-		[hiddenDlcs, instance_recipe.blockedRecipes, instance_recipe.data]
-	);
-
-	const filteredData = useMemo(() => {
-		if (currentCustomerName === null) {
-			return data.map((item) => ({
-				...item,
-				matchedPositiveTags: [],
-				suitability: 0,
-			}));
-		}
-
-		const customerPositiveTags = instance_customer.getPropsByName(
-			currentCustomerName,
-			'positiveTags'
-		);
-
-		const dataWithRealSuitability = data
-			.map((item) => {
-				const composedRecipeTags = composeTagsWithPopularTrend(
-					item.ingredients,
-					item.positiveTags
-				);
-				const recipeTagsWithTrend =
-					calculateTagsWithTrend(composedRecipeTags);
-
-				const { recipe: easterEggRecipe, score: easterEggScore } =
-					instance_customer.checkEasterEgg({
-						currentCustomerName,
-						currentRecipe: item,
-					});
-
-				if (item.name === easterEggRecipe) {
-					return {
-						...item,
-						matchedPositiveTags: [],
-						positiveTags: recipeTagsWithTrend,
-						suitability: easterEggScore > 0 ? Infinity : -Infinity,
-					};
-				}
-
-				const { positiveTags: matchedPositiveTags, suitability } =
-					instance_recipe.getCustomerSuitability(
-						recipeTagsWithTrend,
-						customerPositiveTags
-					);
-
-				return {
-					...item,
-					matchedPositiveTags,
-					positiveTags: recipeTagsWithTrend,
-					suitability,
-				};
-			})
-			.filter(
-				({ ingredients, name }) =>
-					!checkArrayContainsOf(ingredients, hiddenIngredients) &&
-					!hiddenRecipes.has(name)
-			) as TRecipesWithSuitability;
-
-		if (
-			checkLengthEmpty(selectedCookers) &&
-			checkLengthEmpty(selectedCustomerRecipeTag) &&
-			checkLengthEmpty(selectedDlcs) &&
-			!hasNameFilter
-		) {
-			return dataWithRealSuitability;
-		}
-
-		const selectedRecipeTagArray = toArray(selectedCustomerRecipeTag);
-
-		return dataWithRealSuitability.filter(
-			({ cooker, dlc, name, pinyin, positiveTags }) => {
-				const isNameMatched = hasNameFilter
-					? getSearchResult(searchValue, { name, pinyin })
-					: true;
-				const isDlcMatched =
-					checkLengthEmpty(selectedDlcs) ||
-					selectedDlcs.has(dlc.toString());
-				const isCookerMatched =
-					checkLengthEmpty(selectedCookers) ||
-					selectedCookers.has(cooker);
-				const isPositiveTagsMatched =
-					checkLengthEmpty(selectedCustomerRecipeTag) ||
-					checkArraySubsetOf(selectedRecipeTagArray, positiveTags);
-
-				return (
-					isNameMatched &&
-					isDlcMatched &&
-					isCookerMatched &&
-					isPositiveTagsMatched
-				);
-			}
-		);
-	}, [
-		calculateTagsWithTrend,
-		composeTagsWithPopularTrend,
-		currentCustomerName,
-		data,
-		hasNameFilter,
-		hiddenIngredients,
-		hiddenRecipes,
-		instance_customer,
-		instance_recipe,
-		searchValue,
-		selectedCookers,
-		selectedCustomerRecipeTag,
-		selectedDlcs,
-	]);
-
-	const sortedData = useMemo(() => {
-		const { column, direction } = tableSortDescriptor;
-		const isAscending = direction === 'ascending';
-
-		switch (column) {
-			case 'recipe':
-				return copyArray(filteredData).sort(
-					({ name: a }, { name: b }) =>
-						isAscending ? pinyinSort(a, b) : pinyinSort(b, a)
-				);
-			case 'price':
-				return copyArray(filteredData).sort(
-					({ price: a }, { price: b }) =>
-						isAscending ? numberSort(a, b) : numberSort(b, a)
-				);
-			case 'suitability':
-				return copyArray(filteredData).sort(
-					({ suitability: a }, { suitability: b }) =>
-						isAscending ? numberSort(a, b) : numberSort(b, a)
-				);
-			case 'time':
-				return copyArray(filteredData).sort(
-					({ cookTime: { min: a } }, { cookTime: { min: b } }) =>
-						isAscending ? numberSort(a, b) : numberSort(b, a)
-				);
-			default:
-				return filteredData;
-		}
-	}, [filteredData, tableSortDescriptor]);
-
-	const tableCurrentPageItems = useMemo(() => {
-		const start = (tableCurrentPage - 1) * tableRowsPerPageNumber;
-		const end = start + tableRowsPerPageNumber;
-
-		return sortedData.slice(start, end);
-	}, [sortedData, tableCurrentPage, tableRowsPerPageNumber]);
+	const tableCurrentPageItems = customerStore.recipeTablePagedRows.use();
+	const tableSortedRows = customerStore.recipeTableSortedRows.use();
 
 	const tableHeaderColumns = useMemo(
 		() => tableColumns.filter(({ key }) => tableVisibleColumns.has(key)),
@@ -299,13 +105,13 @@ export default function RecipeTabContent() {
 	);
 
 	const tableTotalPages = Math.ceil(
-		filteredData.length / tableRowsPerPageNumber
+		tableSortedRows.length / tableRowsPerPageNumber
 	);
 
 	const tableSelectedKeys = toSet(currentRecipeData?.name ?? '');
 
 	const renderTableCell = useCallback(
-		(recipeData: TRecipeWithSuitability, columnKey: TTableColumnKey) => {
+		(recipeData: TRecipeSuitabilityRow, columnKey: TTableColumnKey) => {
 			const {
 				cookTime,
 				cooker,
@@ -764,7 +570,7 @@ export default function RecipeTabContent() {
 					</div>
 				</div>
 				<div className="flex items-center justify-between text-small text-default-700">
-					<span>总计{filteredData.length}道料理</span>
+					<span>总计{tableSortedRows.length}道料理</span>
 					<label className="flex items-center gap-2">
 						<span className="cursor-auto whitespace-nowrap">
 							表格行数
@@ -819,7 +625,6 @@ export default function RecipeTabContent() {
 			availableRecipeDlcs,
 			availableRecipeNames,
 			availableRecipeTags,
-			filteredData.length,
 			isHighAppearance,
 			isReducedMotion,
 			popoverMotionProps,
@@ -827,6 +632,7 @@ export default function RecipeTabContent() {
 			selectedCookers,
 			selectedCustomerRecipeTag,
 			selectedDlcs,
+			tableSortedRows.length,
 			tableRowsPerPage,
 			tableSelectableRows,
 			tableVisibleColumns,

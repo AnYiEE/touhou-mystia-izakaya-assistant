@@ -12,6 +12,13 @@
 - 不把 route 级业务 hook 强行推进 store computed。
 - 不为了稀客 / 普客对称，提前合并本来就不等价的派生节点。
 
+## 当前状态
+
+- 状态：进行中
+- 已完成：PR-1.1
+- 下一步：PR-1.2
+- 当前基线验证：`pnpm exec tsc --noEmit` 通过；`pnpm lint` 0 error / 12 warnings（现有 `onClick` deprecation warnings，非本轮新增）；`pnpm build` 通过，静态页 `137/137`
+
 ## 承接原则
 
 ### 进入 store computed 的条件
@@ -133,6 +140,13 @@
 ### 非目标
 
 - 不在这一步处理 route 容器的搜索节流。
+
+### 本轮落地记录
+
+- `getSearchResult` 已稳定下沉到 `app/utilities/getSearchResult.ts`，`useSearchResult` 改为复用该纯函数，避免 store 反向依赖 hook 模块。
+- `customer-rare` / `customer-normal` store 已新增 `recipeTableSortedRows`、`recipeTablePagedRows`、`beverageTableSortedRows`、`beverageTablePagedRows`，内部复用阶段 0 的 shared rows builder。
+- 四个 TabContent 已切到消费 store computed；页面仍保留 toolbar、列定义、排序交互与 pagination 组件责任。
+- 本轮没有强行加入 `recipeTableTotalPages` / `beverageTableTotalPages` 等附属派生，保持 PR-1.1 为最小可验证切口。
 
 ## PR-1.2：评分、保存套餐与套餐展示派生
 

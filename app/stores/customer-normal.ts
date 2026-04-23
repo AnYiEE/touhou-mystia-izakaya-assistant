@@ -1,11 +1,9 @@
 import { type Key } from 'react';
-import { store } from '@davstack/store';
+import { computed, store } from '@davstack/store';
 
 import { type Selection } from '@heroui/table';
 
 import { tabVisibilityStateMap } from '@/(pages)/customer-normal/constants';
-import { type TTableSortDescriptor as TBeverageTableSortDescriptor } from '@/(pages)/customer-normal/beverageTabContent';
-import { type TTableSortDescriptor as TRecipeTableSortDescriptor } from '@/(pages)/customer-normal/recipeTabContent';
 import type {
 	TTab,
 	TTabVisibilityState,
@@ -38,9 +36,17 @@ import {
 	reverseDirection,
 	reverseVisibilityState,
 } from '@/stores/utils';
+import {
+	type ITableSortDescriptor,
+	type TBeverageTableSortKey,
+	type TRecipeTableSortKey,
+	buildBeverageSuitabilityRows,
+	buildRecipeSuitabilityRows,
+} from '@/utils/customer/shared';
 import type { IMealRecipe, IPopularTrend, TPopularTag } from '@/types';
 import {
 	checkLengthEmpty,
+	getSearchResult,
 	numberSort,
 	pinyinSort,
 	removeLastElement,
@@ -50,7 +56,10 @@ import {
 	toSet,
 } from '@/utilities';
 import { Beverage, Clothes, CustomerNormal, Ingredient, Recipe } from '@/utils';
-import type { TRecipe } from '@/utils/types';
+import type { TBeverage, TRecipe } from '@/utils/types';
+
+type TBeverageTableSortDescriptor = ITableSortDescriptor<TBeverageTableSortKey>;
+type TRecipeTableSortDescriptor = ITableSortDescriptor<TRecipeTableSortKey>;
 
 const instance_beverage = Beverage.getInstance();
 const instance_clothes = Clothes.getInstance();
@@ -412,202 +421,359 @@ export const customerNormalStore = store(state, {
 		}),
 	],
 })
-	.computed((currentStore) => ({
-		availableBeverageDlcs: () => {
-			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-			return instance_beverage
-				.getValuesByProp('dlc', true)
-				.filter(({ value }) => !hiddenDlcs.has(value))
-				.sort(numberSort);
-		},
-		availableBeverageNames: () => {
-			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-			return instance_beverage
-				.getValuesByProp(
-					'name',
-					true,
-					instance_beverage.data.filter(
-						({ dlc }) => !hiddenDlcs.has(dlc)
-					)
-				)
-				.sort(pinyinSort);
-		},
-		availableBeverageTags: () => {
-			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-			return sortBy(
-				instance_beverage.sortedTags,
-				instance_beverage.getValuesByProp(
-					'tags',
-					false,
-					instance_beverage.data.filter(
-						({ dlc }) => !hiddenDlcs.has(dlc)
-					)
-				)
-			).map(toGetValueCollection);
-		},
-		availableCustomerDlcs: () => {
-			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-			return instance_customer
-				.getValuesByProp('dlc', true)
-				.filter(({ value }) => !hiddenDlcs.has(value))
-				.sort(numberSort);
-		},
-		availableCustomerNames: () => {
-			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-			return sortBy(
-				getNames(
-					currentStore.persistence.customer.pinyinSortState.use()
-				),
-				instance_customer.getValuesByProp(
-					'name',
-					false,
-					instance_customer.data.filter(
-						({ dlc }) => !hiddenDlcs.has(dlc)
-					)
-				)
-			).map(toGetValueCollection);
-		},
-		availableCustomerPlaces: () => {
-			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-			return instance_customer
-				.getValuesByProp(
-					'places',
-					true,
-					instance_customer.data.filter(
-						({ dlc }) => !hiddenDlcs.has(dlc)
-					)
-				)
-				.sort(pinyinSort);
-		},
-		availableIngredientDlcs: () => {
-			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-			return instance_ingredient
-				.getValuesByProp('dlc', true)
-				.filter(({ value }) => !hiddenDlcs.has(value))
-				.sort(numberSort);
-		},
-		availableIngredientLevels: () => {
-			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-			return instance_ingredient
-				.getValuesByProp(
-					'level',
-					true,
-					instance_ingredient.data.filter(
-						({ dlc, level }) =>
-							!hiddenDlcs.has(dlc) &&
-							!instance_ingredient.blockedLevels.has(level)
-					)
-				)
-				.sort(numberSort);
-		},
-		availableIngredientTags: () => {
-			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-			return toArray<TIngredientTag[]>(
-				instance_ingredient.getValuesByProp(
-					'tags',
-					false,
-					instance_ingredient.data.filter(
-						({ dlc, tags }) =>
-							!hiddenDlcs.has(dlc) &&
-							!tags.some((tag) =>
-								instance_ingredient.blockedTags.has(tag)
-							)
-					)
-				),
-				DYNAMIC_TAG_MAP.popularNegative,
-				DYNAMIC_TAG_MAP.popularPositive
-			)
-				.map(toGetValueCollection)
-				.sort(pinyinSort);
-		},
-		availableRecipeCookers: () => {
-			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-			return instance_recipe
-				.getValuesByProp(
-					'cooker',
-					true,
-					instance_recipe.data.filter(
-						({ dlc }) => !hiddenDlcs.has(dlc)
-					)
-				)
-				.sort(pinyinSort);
-		},
-		availableRecipeDlcs: () => {
-			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-			return instance_recipe
-				.getValuesByProp('dlc', true)
-				.filter(({ value }) => !hiddenDlcs.has(value))
-				.sort(numberSort);
-		},
-		availableRecipeNames: () => {
-			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-			return instance_recipe
-				.getValuesByProp(
-					'name',
-					true,
-					instance_recipe.data.filter(
-						({ dlc, name }) =>
-							!hiddenDlcs.has(dlc) &&
-							!instance_recipe.blockedRecipes.has(name)
-					)
-				)
-				.sort(pinyinSort);
-		},
-		availableRecipeTags: () => {
-			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-			return toArray<TRecipeTag[]>(
-				instance_recipe.getValuesByProp(
-					'positiveTags',
-					false,
-					instance_recipe.data.filter(
-						({ dlc, positiveTags }) =>
-							!hiddenDlcs.has(dlc) &&
-							!positiveTags.some((positiveTag) =>
-								instance_recipe.blockedTags.has(positiveTag)
-							)
-					)
-				),
-				DYNAMIC_TAG_MAP.popularNegative,
-				DYNAMIC_TAG_MAP.popularPositive
-			)
-				.map(toGetValueCollection)
-				.sort(pinyinSort);
-		},
+	.computed((currentStore) => {
+		const beverageTableRows = computed((getOrUse) => {
+			const shouldGet = getOrUse === 'get';
+			const currentCustomerName = shouldGet
+				? currentStore.shared.customer.name.get()
+				: currentStore.shared.customer.name.use();
+			const customerBeverageTags =
+				currentCustomerName === null
+					? null
+					: instance_customer.getPropsByName(
+							currentCustomerName,
+							'beverageTags'
+						);
 
-		beverageTableDlcs: {
-			read: () =>
-				toSet(
-					currentStore.persistence.beverage.table.dlcs.use()
-				) as SelectionSet,
-			write: (dlcs: Selection) => {
-				currentStore.persistence.beverage.table.dlcs.set(
-					toArray<SelectionSet>(dlcs) as never
-				);
+			return buildBeverageSuitabilityRows({
+				beverages: instance_beverage.data,
+				customerBeverageTags,
+				getCustomerSuitability: (beverageName, customerTags) =>
+					instance_beverage.getCustomerSuitability(
+						beverageName,
+						customerTags
+					),
+				hiddenBeverages: shouldGet
+					? currentStore.shared.beverage.table.hiddenBeverages.get()
+					: currentStore.shared.beverage.table.hiddenBeverages.use(),
+				hiddenDlcs: (shouldGet
+					? currentStore.shared.hiddenItems.dlcs.get()
+					: currentStore.shared.hiddenItems.dlcs.use()) as ReadonlySet<
+					TBeverage['dlc']
+				>,
+				matchSearch: getSearchResult,
+				page: shouldGet
+					? currentStore.shared.beverage.table.page.get()
+					: currentStore.shared.beverage.table.page.use(),
+				rowsPerPage: shouldGet
+					? currentStore.shared.beverage.table.row.get()
+					: currentStore.shared.beverage.table.row.use(),
+				searchValue: shouldGet
+					? currentStore.shared.beverage.searchValue.get()
+					: currentStore.shared.beverage.searchValue.use(),
+				selectedBeverageTags: [
+					...(shouldGet
+						? currentStore.shared.customer.select.beverageTag.get()
+						: currentStore.shared.customer.select.beverageTag.use()),
+				] as TBeverageTag[],
+				selectedDlcs: shouldGet
+					? currentStore.persistence.beverage.table.dlcs.get()
+					: currentStore.persistence.beverage.table.dlcs.use(),
+				sortDescriptor: shouldGet
+					? currentStore.persistence.beverage.table.sortDescriptor.get()
+					: currentStore.persistence.beverage.table.sortDescriptor.use(),
+			});
+		});
+
+		const recipeTableRows = computed((getOrUse) => {
+			const shouldGet = getOrUse === 'get';
+			const currentCustomerName = shouldGet
+				? currentStore.shared.customer.name.get()
+				: currentStore.shared.customer.name.use();
+			const currentCustomerPopularTrend = shouldGet
+				? currentStore.shared.customer.popularTrend.get()
+				: currentStore.shared.customer.popularTrend.use();
+			const isFamousShop = shouldGet
+				? currentStore.shared.customer.famousShop.get()
+				: currentStore.shared.customer.famousShop.use();
+			const customerPositiveTags =
+				currentCustomerName === null
+					? null
+					: instance_customer.getPropsByName(
+							currentCustomerName,
+							'positiveTags'
+						);
+
+			return buildRecipeSuitabilityRows({
+				blockedRecipeNames: instance_recipe.blockedRecipes,
+				calculateTagsWithTrend: (recipeTags) =>
+					instance_recipe.calculateTagsWithTrend(
+						recipeTags,
+						currentCustomerPopularTrend,
+						isFamousShop
+					),
+				composeTagsWithPopularTrend: (ingredients, positiveTags) =>
+					instance_recipe.composeTagsWithPopularTrend(
+						ingredients,
+						[],
+						positiveTags,
+						[],
+						currentCustomerPopularTrend
+					),
+				customerPositiveTags,
+				getCustomerSuitability: (
+					recipeTags,
+					selectedCustomerPositiveTags
+				) =>
+					instance_recipe.getCustomerSuitability(
+						recipeTags,
+						selectedCustomerPositiveTags
+					),
+				getEasterEggScore: (recipe) => {
+					if (currentCustomerName === null) {
+						return null;
+					}
+
+					const { recipe: easterEggRecipe, score } =
+						instance_customer.checkEasterEgg({
+							currentCustomerName,
+							currentRecipe: recipe,
+						});
+
+					return recipe.name === easterEggRecipe ? score : null;
+				},
+				hiddenDlcs: (shouldGet
+					? currentStore.shared.hiddenItems.dlcs.get()
+					: currentStore.shared.hiddenItems.dlcs.use()) as ReadonlySet<
+					TRecipe['dlc']
+				>,
+				hiddenIngredients: shouldGet
+					? currentStore.shared.recipe.table.hiddenIngredients.get()
+					: currentStore.shared.recipe.table.hiddenIngredients.use(),
+				hiddenRecipes: shouldGet
+					? currentStore.shared.recipe.table.hiddenRecipes.get()
+					: currentStore.shared.recipe.table.hiddenRecipes.use(),
+				matchSearch: getSearchResult,
+				page: shouldGet
+					? currentStore.shared.recipe.table.page.get()
+					: currentStore.shared.recipe.table.page.use(),
+				recipes: instance_recipe.data,
+				rowsPerPage: shouldGet
+					? currentStore.shared.recipe.table.row.get()
+					: currentStore.shared.recipe.table.row.use(),
+				searchValue: shouldGet
+					? currentStore.shared.recipe.searchValue.get()
+					: currentStore.shared.recipe.searchValue.use(),
+				selectedCookers: (shouldGet
+					? currentStore.persistence.recipe.table.cookers.get()
+					: currentStore.persistence.recipe.table.cookers.use()) as Array<
+					TRecipe['cooker']
+				>,
+				selectedDlcs: shouldGet
+					? currentStore.persistence.recipe.table.dlcs.get()
+					: currentStore.persistence.recipe.table.dlcs.use(),
+				selectedRecipeTags: [
+					...(shouldGet
+						? currentStore.shared.customer.select.recipeTag.get()
+						: currentStore.shared.customer.select.recipeTag.use()),
+				] as TRecipeTag[],
+				sortDescriptor: shouldGet
+					? currentStore.persistence.recipe.table.sortDescriptor.get()
+					: currentStore.persistence.recipe.table.sortDescriptor.use(),
+			});
+		});
+
+		return {
+			availableBeverageDlcs: () => {
+				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+				return instance_beverage
+					.getValuesByProp('dlc', true)
+					.filter(({ value }) => !hiddenDlcs.has(value))
+					.sort(numberSort);
 			},
-		},
-		recipeTableCookers: {
-			read: () =>
-				toSet(
-					currentStore.persistence.recipe.table.cookers.use()
-				) as SelectionSet,
-			write: (cookers: Selection) => {
-				currentStore.persistence.recipe.table.cookers.set(
-					toArray<SelectionSet>(cookers) as never
-				);
+			availableBeverageNames: () => {
+				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+				return instance_beverage
+					.getValuesByProp(
+						'name',
+						true,
+						instance_beverage.data.filter(
+							({ dlc }) => !hiddenDlcs.has(dlc)
+						)
+					)
+					.sort(pinyinSort);
 			},
-		},
-		recipeTableDlcs: {
-			read: () =>
-				toSet(
-					currentStore.persistence.recipe.table.dlcs.use()
-				) as SelectionSet,
-			write: (dlcs: Selection) => {
-				currentStore.persistence.recipe.table.dlcs.set(
-					toArray<SelectionSet>(dlcs) as never
-				);
+			availableBeverageTags: () => {
+				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+				return sortBy(
+					instance_beverage.sortedTags,
+					instance_beverage.getValuesByProp(
+						'tags',
+						false,
+						instance_beverage.data.filter(
+							({ dlc }) => !hiddenDlcs.has(dlc)
+						)
+					)
+				).map(toGetValueCollection);
 			},
-		},
-	}))
+			availableCustomerDlcs: () => {
+				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+				return instance_customer
+					.getValuesByProp('dlc', true)
+					.filter(({ value }) => !hiddenDlcs.has(value))
+					.sort(numberSort);
+			},
+			availableCustomerNames: () => {
+				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+				return sortBy(
+					getNames(
+						currentStore.persistence.customer.pinyinSortState.use()
+					),
+					instance_customer.getValuesByProp(
+						'name',
+						false,
+						instance_customer.data.filter(
+							({ dlc }) => !hiddenDlcs.has(dlc)
+						)
+					)
+				).map(toGetValueCollection);
+			},
+			availableCustomerPlaces: () => {
+				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+				return instance_customer
+					.getValuesByProp(
+						'places',
+						true,
+						instance_customer.data.filter(
+							({ dlc }) => !hiddenDlcs.has(dlc)
+						)
+					)
+					.sort(pinyinSort);
+			},
+			availableIngredientDlcs: () => {
+				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+				return instance_ingredient
+					.getValuesByProp('dlc', true)
+					.filter(({ value }) => !hiddenDlcs.has(value))
+					.sort(numberSort);
+			},
+			availableIngredientLevels: () => {
+				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+				return instance_ingredient
+					.getValuesByProp(
+						'level',
+						true,
+						instance_ingredient.data.filter(
+							({ dlc, level }) =>
+								!hiddenDlcs.has(dlc) &&
+								!instance_ingredient.blockedLevels.has(level)
+						)
+					)
+					.sort(numberSort);
+			},
+			availableIngredientTags: () => {
+				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+				return toArray<TIngredientTag[]>(
+					instance_ingredient.getValuesByProp(
+						'tags',
+						false,
+						instance_ingredient.data.filter(
+							({ dlc, tags }) =>
+								!hiddenDlcs.has(dlc) &&
+								!tags.some((tag) =>
+									instance_ingredient.blockedTags.has(tag)
+								)
+						)
+					),
+					DYNAMIC_TAG_MAP.popularNegative,
+					DYNAMIC_TAG_MAP.popularPositive
+				)
+					.map(toGetValueCollection)
+					.sort(pinyinSort);
+			},
+			availableRecipeCookers: () => {
+				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+				return instance_recipe
+					.getValuesByProp(
+						'cooker',
+						true,
+						instance_recipe.data.filter(
+							({ dlc }) => !hiddenDlcs.has(dlc)
+						)
+					)
+					.sort(pinyinSort);
+			},
+			availableRecipeDlcs: () => {
+				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+				return instance_recipe
+					.getValuesByProp('dlc', true)
+					.filter(({ value }) => !hiddenDlcs.has(value))
+					.sort(numberSort);
+			},
+			availableRecipeNames: () => {
+				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+				return instance_recipe
+					.getValuesByProp(
+						'name',
+						true,
+						instance_recipe.data.filter(
+							({ dlc, name }) =>
+								!hiddenDlcs.has(dlc) &&
+								!instance_recipe.blockedRecipes.has(name)
+						)
+					)
+					.sort(pinyinSort);
+			},
+			availableRecipeTags: () => {
+				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+				return toArray<TRecipeTag[]>(
+					instance_recipe.getValuesByProp(
+						'positiveTags',
+						false,
+						instance_recipe.data.filter(
+							({ dlc, positiveTags }) =>
+								!hiddenDlcs.has(dlc) &&
+								!positiveTags.some((positiveTag) =>
+									instance_recipe.blockedTags.has(positiveTag)
+								)
+						)
+					),
+					DYNAMIC_TAG_MAP.popularNegative,
+					DYNAMIC_TAG_MAP.popularPositive
+				)
+					.map(toGetValueCollection)
+					.sort(pinyinSort);
+			},
+
+			beverageTableDlcs: {
+				read: () =>
+					toSet(
+						currentStore.persistence.beverage.table.dlcs.use()
+					) as SelectionSet,
+				write: (dlcs: Selection) => {
+					currentStore.persistence.beverage.table.dlcs.set(
+						toArray<SelectionSet>(dlcs) as never
+					);
+				},
+			},
+			beverageTablePagedRows: () => beverageTableRows.use().pagedRows,
+			beverageTableSortedRows: () => beverageTableRows.use().sortedRows,
+			recipeTableCookers: {
+				read: () =>
+					toSet(
+						currentStore.persistence.recipe.table.cookers.use()
+					) as SelectionSet,
+				write: (cookers: Selection) => {
+					currentStore.persistence.recipe.table.cookers.set(
+						toArray<SelectionSet>(cookers) as never
+					);
+				},
+			},
+			recipeTableDlcs: {
+				read: () =>
+					toSet(
+						currentStore.persistence.recipe.table.dlcs.use()
+					) as SelectionSet,
+				write: (dlcs: Selection) => {
+					currentStore.persistence.recipe.table.dlcs.set(
+						toArray<SelectionSet>(dlcs) as never
+					);
+				},
+			},
+			recipeTablePagedRows: () => recipeTableRows.use().pagedRows,
+			recipeTableSortedRows: () => recipeTableRows.use().sortedRows,
+		};
+	})
 	.actions((currentStore) => ({
 		onCustomerFilterBeverageTag(tag: TBeverageTag) {
 			currentStore.shared.tab.set('beverage');

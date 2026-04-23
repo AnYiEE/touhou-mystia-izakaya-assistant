@@ -3,6 +3,7 @@ export * from './object';
 export * from './string';
 
 export * from './filterItems';
+export * from './getSearchResult';
 export * from './pinyin';
 export * from './sort';
 
