@@ -1,20 +1,16 @@
-import {
-	Fragment,
-	useCallback,
-	useEffect,
-	useLayoutEffect,
-	useMemo,
-	useState,
-} from 'react';
+import { Fragment } from 'react';
 
-import { useVibrate, useViewInNewWindow } from '@/hooks';
+import {
+	useSuggestedMealsViewModel,
+	useVibrate,
+	useViewInNewWindow,
+} from '@/hooks';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleQuestion } from '@fortawesome/free-solid-svg-icons';
 
 import { Divider } from '@heroui/divider';
 import { Select, SelectItem } from '@heroui/select';
-import { type Selection } from '@heroui/table';
 
 import {
 	Avatar,
@@ -44,208 +40,47 @@ import {
 	BEVERAGE_TAG_STYLE,
 	CUSTOMER_RATING_MAP,
 	DARK_MATTER_META_MAP,
-	DYNAMIC_TAG_MAP,
 	RECIPE_TAG_STYLE,
-	type TCookerName,
-	type TIngredientName,
 } from '@/data';
-import { customerRareStore as customerStore, globalStore } from '@/stores';
-import { checkLengthEmpty, toArray, toSet } from '@/utilities';
-import {
-	getScoreBasedAlternatives,
-	suggestMeals,
-} from '@/utils/customer/customer_rare/suggestMeals';
+import { customerRareStore as customerStore } from '@/stores';
+import { checkLengthEmpty } from '@/utilities';
 
 export default function SuggestedMealCard() {
 	const isReducedMotion = useReducedMotion();
 	const popoverMotionProps = useMotionProps('popover');
 	const openWindow = useViewInNewWindow();
 	const vibrate = useVibrate();
-
-	const isHighAppearance = globalStore.persistence.highAppearance.use();
-
-	const currentCustomerName = customerStore.shared.customer.name.use();
-	const currentCustomerOrder = customerStore.shared.customer.order.use();
-	const currentCustomerPopularTrend =
-		customerStore.shared.customer.popularTrend.use();
-	const hasMystiaCooker = customerStore.shared.customer.hasMystiaCooker.use();
-	const isFamousShop = customerStore.shared.customer.famousShop.use();
-
-	const isSuggestEnabled = customerStore.shared.suggestMeals.enabled.use();
-	const suggestMaxExtraIngredients =
-		customerStore.shared.suggestMeals.maxExtraIngredients.use();
-	const suggestMaxRating = customerStore.shared.suggestMeals.maxRating.use();
-	const suggestMaxResults =
-		customerStore.shared.suggestMeals.maxResults.use();
-	const selectedSuggestMealsCooker =
-		customerStore.shared.suggestMeals.cooker.use();
-	const availableRecipeCookers = customerStore.availableRecipeCookers.use();
-
-	const selectableMaxExtraIngredients =
-		globalStore.shared.suggestMeals.selectableMaxExtraIngredients.get();
-	const selectableMaxRatings =
-		globalStore.shared.suggestMeals.selectableMaxRatings.get();
-
-	const hiddenBeverages =
-		customerStore.shared.beverage.table.hiddenBeverages.use();
-	const hiddenRecipes = customerStore.shared.recipe.table.hiddenRecipes.use();
-	const hiddenIngredients =
-		customerStore.shared.recipe.table.hiddenIngredients.use();
-
-	const currentBeverageName = customerStore.shared.beverage.name.use();
-	const currentRecipeData = customerStore.shared.recipe.data.use();
-
-	const instance_beverage = customerStore.instances.beverage.get();
-	const instance_customer = customerStore.instances.customer.get();
-	const instance_ingredient = customerStore.instances.ingredient.get();
-	const instance_recipe = customerStore.instances.recipe.get();
-
-	const [alternativesMap, setAlternativesMap] = useState(
-		() => new Map<number, Map<TIngredientName, TIngredientName[]>>()
-	);
-
-	const selectedCookerKeys = useMemo(
-		() =>
-			(selectedSuggestMealsCooker === null
-				? toSet()
-				: toSet(selectedSuggestMealsCooker)) as SelectionSet,
-		[selectedSuggestMealsCooker]
-	);
-
-	const selectedMaxExtraKeys = useMemo(
-		() =>
-			toSet(
-				suggestMaxExtraIngredients === null
-					? ''
-					: suggestMaxExtraIngredients.toString()
-			) as SelectionSet,
-		[suggestMaxExtraIngredients]
-	);
-
-	const selectedMaxRatingKeys = useMemo(
-		() => toSet(suggestMaxRating.toString()) as SelectionSet,
-		[suggestMaxRating]
-	);
-
-	const handleCookerChange = useCallback((keys: Selection) => {
-		const selected = toArray(keys as SelectionSet);
-		const cooker = (selected[0] as TCookerName | undefined) ?? null;
-		customerStore.shared.suggestMeals.cooker.set(cooker);
-	}, []);
-
-	const handleMaxExtraChange = useCallback((keys: Selection) => {
-		const selected = toArray(keys as SelectionSet);
-		const value = selected[0] as string | undefined;
-		customerStore.shared.suggestMeals.maxExtraIngredients.set(
-			value === undefined || value === '' ? null : Number.parseInt(value)
-		);
-	}, []);
-
-	const handleMaxRatingChange = useCallback((keys: Selection) => {
-		const selected = toArray(keys as SelectionSet);
-		const value = selected[0] as string | undefined;
-		if (value !== undefined) {
-			customerStore.shared.suggestMeals.maxRating.set(
-				Number.parseInt(value)
-			);
-		}
-	}, []);
-
-	useEffect(() => {
-		if (currentRecipeData === null) {
-			customerStore.shared.suggestMeals.cooker.set(null);
-		} else {
-			customerStore.shared.suggestMeals.cooker.set(
-				instance_recipe.getPropsByName(currentRecipeData.name, 'cooker')
-			);
-		}
-	}, [currentRecipeData, instance_recipe]);
-
-	const hasSelection =
-		currentBeverageName !== null || currentRecipeData !== null;
-	const hasOrderTags =
-		currentCustomerOrder.beverageTag !== null &&
-		currentCustomerOrder.recipeTag !== null;
-	const isActive =
-		isSuggestEnabled &&
-		currentCustomerName !== null &&
-		(hasOrderTags || (hasMystiaCooker && hasSelection));
-
-	const suggestions = useMemo(() => {
-		if (!isActive) {
-			return null;
-		}
-
-		const results = suggestMeals({
-			cooker: selectedSuggestMealsCooker,
-			currentBeverage: currentBeverageName,
-			currentRecipe: currentRecipeData,
-			customerName: currentCustomerName,
-			customerOrder: currentCustomerOrder,
-			hasMystiaCooker,
-			hiddenBeverages,
-			hiddenIngredients,
-			hiddenRecipes,
-			isFamousShop,
-			maxExtraIngredients: suggestMaxExtraIngredients,
-			maxRating: suggestMaxRating,
-			maxResults: suggestMaxResults,
-			popularTrend: currentCustomerPopularTrend,
-		});
-
-		return checkLengthEmpty(results) ? null : results;
-	}, [
+	const {
+		alternativesMap,
+		availableRecipeCookers,
 		currentBeverageName,
 		currentCustomerName,
 		currentCustomerOrder,
-		currentCustomerPopularTrend,
 		currentRecipeData,
-		hasMystiaCooker,
-		hiddenBeverages,
-		hiddenIngredients,
-		hiddenRecipes,
-		isActive,
-		isFamousShop,
-		selectedSuggestMealsCooker,
-		suggestMaxExtraIngredients,
+		handleCookerChange,
+		handleMaxExtraChange,
+		handleMaxRatingChange,
+		hasUnsetPopularOrderTag,
+		isHighAppearance,
+		isVisible,
+		loadAlternatives,
+		selectableMaxExtraIngredients,
+		selectableMaxRatings,
+		selectedCookerKeys,
+		selectedMaxExtraKeys,
+		selectedMaxRatingKeys,
 		suggestMaxRating,
-		suggestMaxResults,
-	]);
+		suggestions,
+	} = useSuggestedMealsViewModel();
 
-	useLayoutEffect(() => {
-		customerStore.shared.suggestMeals.visibility.set(
-			isActive &&
-				!(
-					suggestions === null &&
-					currentRecipeData !== null &&
-					currentBeverageName !== null
-				)
-		);
-	}, [currentBeverageName, currentRecipeData, isActive, suggestions]);
-
-	const [prevSuggestions, setPrevSuggestions] = useState(suggestions);
-	if (prevSuggestions !== suggestions) {
-		setPrevSuggestions(suggestions);
-		setAlternativesMap(new Map());
-	}
-
-	const hasUnsetPopularOrderTag =
-		(currentCustomerOrder.recipeTag === DYNAMIC_TAG_MAP.popularPositive ||
-			currentCustomerOrder.recipeTag ===
-				DYNAMIC_TAG_MAP.popularNegative) &&
-		currentCustomerPopularTrend.tag === null;
+	const instance_beverage = customerStore.instances.beverage.get();
+	const instance_customer = customerStore.instances.customer.get();
+	const instance_recipe = customerStore.instances.recipe.get();
 
 	let content: IFadeMotionDivProps['children'];
 	let contentTarget: IFadeMotionDivProps['target'];
 
-	if (
-		isActive &&
-		!(
-			suggestions === null &&
-			currentRecipeData !== null &&
-			currentBeverageName !== null
-		)
-	) {
+	if (isVisible && currentCustomerName !== null) {
 		const selectClassNames = {
 			listboxWrapper:
 				'[&_li]:transition-background focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40 motion-reduce:[&_li]:transition-none',
@@ -757,47 +592,27 @@ export default function SuggestedMealCard() {
 																									beverage,
 																									'tags'
 																								);
-																							setAlternativesMap(
-																								(
-																									prev
-																								) => {
-																									const next =
-																										new Map(
-																											prev
-																										);
-																									next.set(
-																										loopIndex,
-																										getScoreBasedAlternatives(
-																											{
-																												baseRating:
-																													ratingKey,
-																												beverageTags,
-																												customerBeverageTags,
-																												customerDlc,
-																												customerName:
-																													currentCustomerName,
-																												customerNegativeTags,
-																												customerOrder:
-																													currentCustomerOrder,
-																												customerPositiveTags,
-																												extraIngredients:
-																													restExtraIngredients,
-																												hasMystiaCooker,
-																												hiddenIngredients,
-																												instance_ingredient,
-																												instance_recipe,
-																												isFamousShop,
-																												popularTrend:
-																													currentCustomerPopularTrend,
-																												recipeIngredients,
-																												recipeName:
-																													recipeData.name,
-																												recipeNegativeTags,
-																												recipePositiveTags,
-																											}
-																										)
-																									);
-																									return next;
+																							loadAlternatives(
+																								loopIndex,
+																								{
+																									baseRating:
+																										ratingKey,
+																									beverageTags,
+																									customerBeverageTags,
+																									customerDlc,
+																									customerName:
+																										currentCustomerName,
+																									customerNegativeTags,
+																									customerOrder:
+																										currentCustomerOrder,
+																									customerPositiveTags,
+																									extraIngredients:
+																										restExtraIngredients,
+																									recipeIngredients,
+																									recipeName:
+																										recipeData.name,
+																									recipeNegativeTags,
+																									recipePositiveTags,
 																								}
 																							);
 																						}

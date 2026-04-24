@@ -209,6 +209,7 @@ export default function ResultCard() {
 	const currentSavedMeals = customerStore.persistence.meals.use();
 	const hasMystiaCooker = customerStore.shared.customer.hasMystiaCooker.use();
 	const isDarkMatter = customerStore.shared.customer.isDarkMatter.use();
+	const unsatisfiedSelectionTip = customerStore.unsatisfiedSelectionTip.use();
 
 	const instance_recipe = customerStore.instances.recipe.get();
 
@@ -268,25 +269,7 @@ export default function ResultCard() {
 		}
 	}, [hideTooltip, isSaveButtonDisabled, isShowSaveButtonTooltip]);
 
-	const saveButtonTooltip = useMemo(() => {
-		const target = [];
-		if (currentBeverageName === null) {
-			target.push('酒水');
-		}
-		if (currentRecipeData === null) {
-			target.push('料理');
-		}
-		if ((isDarkMatter && hasMystiaCooker) || !hasMystiaCooker) {
-			target.push('顾客点单需求');
-		}
-
-		let content = target.join('、');
-		if (!isDarkMatter && !hasMystiaCooker) {
-			content += '或标记为使用“夜雀”系列厨具';
-		}
-
-		return `请选择${content}以保存`;
-	}, [currentBeverageName, currentRecipeData, hasMystiaCooker, isDarkMatter]);
+	const saveButtonTooltip = unsatisfiedSelectionTip.save;
 
 	let content: IFadeMotionDivProps['children'];
 	let contentClassName: IFadeMotionDivProps['className'];

@@ -15,8 +15,8 @@
 ## 当前状态
 
 - 状态：进行中
-- 已完成：PR-1.1、PR-1.2
-- 下一步：PR-1.3
+- 已完成：PR-1.1、PR-1.2、PR-1.3
+- 下一步：PR-1.4
 - 当前基线验证：`pnpm exec tsc --noEmit` 通过；`pnpm lint` 0 error / 12 warnings（现有 `onClick` deprecation warnings，非本轮新增）；`pnpm build` 通过，静态页 `137/137`
 
 ## 承接原则
@@ -283,7 +283,7 @@
 
 ### 建议输入 / 输出
 
-- `unsatisfiedSelectionTip`：输入当前酒水、料理、顾客点单状态、`hasMystiaCooker`、`isDarkMatter`；输出字符串。
+- `unsatisfiedSelectionTip`：输入当前酒水、料理、顾客点单状态、`hasMystiaCooker`、`isDarkMatter`；输出稳定文案结构，至少覆盖 rating / save 两个消费面。
 - `bondRewards`：输入当前顾客名、collection 与 bond getters；输出聚合奖励结构与 `hasBondRewards`。
 - `useSuggestedMealsViewModel`：输出至少包含 `isActive`、`suggestions`、`visibility`、`alternativesMap`、默认厨具同步结果。
 
@@ -301,6 +301,13 @@
 ### 非目标
 
 - 不在这一步补普客版 `unsatisfiedSelectionTip`、`bondRewards` 或推荐 view-model。
+
+### 本轮落地记录
+
+- `customer-rare` store 已新增 `unsatisfiedSelectionTip` 与 `bondRewards`，分别复用阶段 0 的 `buildSelectionTip` 与 `getBondRewards`，没有把 tooltip 控制、`defaultExpandedKeys` 等 UI 行为混入 computed。
+- `customerCard`、`resultCard`、`infoButton` 已切到消费新派生值，原本页面内联的缺项文案与 bond reward 聚合逻辑已收口。
+- 新增 `app/hooks/useSuggestedMealsViewModel.ts`，把 `suggestedMealCard` 顶部的推荐输入组合、默认厨具同步、`visibility` 写回、`alternativesMap` 与懒加载 handler 收口为业务 hook。
+- `suggestedMealCard` 仍保留 JSX、选择按钮行为与展示细节；`suggestMeals` 算法本体未改动，resultCard 联动继续依赖 `shared.suggestMeals.visibility`。
 
 ## PR-1.4：route 业务 hook
 

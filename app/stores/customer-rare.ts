@@ -41,7 +41,9 @@ import {
 	type TRecipeTableSortKey,
 	buildBeverageSuitabilityRows,
 	buildRecipeSuitabilityRows,
+	buildSelectionTip,
 	evaluateRareSavedMeal,
+	getBondRewards,
 	getIngredientScoreChanges,
 	getVisibleSavedMeals,
 } from '@/utils/customer/shared';
@@ -708,6 +710,45 @@ export const customerRareStore = store(state, {
 			return beveragePrice + recipePrice;
 		});
 
+		const bondRewards = computed((getOrUse) => {
+			const shouldGet = getOrUse === 'get';
+			const currentCustomerName = shouldGet
+				? currentStore.shared.customer.name.get()
+				: currentStore.shared.customer.name.use();
+
+			if (currentCustomerName === null) {
+				return {
+					bondClothes: null,
+					bondCooker: null,
+					bondOrnaments: [],
+					bondPartner: null,
+					bondRecipes: [],
+					collection: false,
+					hasBondRewards: false,
+				};
+			}
+
+			const currentCustomerCollection = instance_customer.getPropsByName(
+				currentCustomerName,
+				'collection'
+			);
+
+			return getBondRewards({
+				collection: currentCustomerCollection,
+				customerName: currentCustomerName,
+				getBondClothes: (customerName) =>
+					instance_clothes.getBondClothes(customerName),
+				getBondCooker: (customerName) =>
+					instance_cooker.getBondCooker(customerName),
+				getBondOrnaments: (customerName) =>
+					instance_ornament.getBondOrnaments(customerName),
+				getBondPartner: (customerName) =>
+					instance_partner.getBondPartner(customerName),
+				getBondRecipes: (customerName) =>
+					instance_recipe.getBondRecipes(customerName),
+			});
+		});
+
 		const ingredientScoreChanges = computed((getOrUse) => {
 			const shouldGet = getOrUse === 'get';
 			const currentCustomerName = shouldGet
@@ -895,6 +936,36 @@ export const customerRareStore = store(state, {
 			}));
 		});
 
+		const unsatisfiedSelectionTip = computed((getOrUse) => {
+			const shouldGet = getOrUse === 'get';
+			const currentBeverageName = shouldGet
+				? currentStore.shared.beverage.name.get()
+				: currentStore.shared.beverage.name.use();
+			const currentRecipeData = shouldGet
+				? currentStore.shared.recipe.data.get()
+				: currentStore.shared.recipe.data.use();
+			const hasMystiaCooker = shouldGet
+				? currentStore.shared.customer.hasMystiaCooker.get()
+				: currentStore.shared.customer.hasMystiaCooker.use();
+			const isDarkMatter = Boolean(
+				shouldGet
+					? currentStore.shared.customer.isDarkMatter.get()
+					: currentStore.shared.customer.isDarkMatter.use()
+			);
+
+			const args = {
+				hasMystiaCooker,
+				hasSelectedBeverage: currentBeverageName !== null,
+				hasSelectedRecipe: currentRecipeData !== null,
+				isDarkMatter,
+			};
+
+			return {
+				rating: buildSelectionTip({ action: '评级', ...args }),
+				save: buildSelectionTip({ action: '保存', ...args }),
+			};
+		});
+
 		return {
 			availableBeverageDlcs: () => {
 				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
@@ -1056,6 +1127,7 @@ export const customerRareStore = store(state, {
 					.map(toGetValueCollection)
 					.sort(pinyinSort);
 			},
+			bondRewards: () => bondRewards.use(),
 
 			beverageTableDlcs: {
 				read: () =>
@@ -1098,6 +1170,7 @@ export const customerRareStore = store(state, {
 			recipeTableSortedRows: () => recipeTableRows.use().sortedRows,
 			savedCustomerMealsWithEvaluation: () =>
 				savedCustomerMealsWithEvaluation.use(),
+			unsatisfiedSelectionTip: () => unsatisfiedSelectionTip.use(),
 		};
 	})
 	.actions((currentStore) => ({

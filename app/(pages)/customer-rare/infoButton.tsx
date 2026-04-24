@@ -54,13 +54,9 @@ export default function InfoButton() {
 	);
 
 	const currentCustomerName = store.shared.customer.name.use();
+	const bondRewards = store.bondRewards.use();
 
-	const instance_clothes = store.instances.clothes.get();
-	const instance_cooker = store.instances.cooker.get();
 	const instance_customer = store.instances.customer.get();
-	const instance_ornament = store.instances.ornament.get();
-	const instance_partner = store.instances.partner.get();
-	const instance_recipe = store.instances.recipe.get();
 
 	if (currentCustomerName === null) {
 		return null;
@@ -68,30 +64,23 @@ export default function InfoButton() {
 
 	const {
 		chat: currentCustomerChat,
-		collection: currentCustomerCollection,
 		description: currentCustomerDescription,
 		evaluation: currentCustomerEvaluation,
 		id: currentCustomerId,
 		places: currentCustomerPlaces,
 		spellCards: currentCustomerSpellCards,
 	} = instance_customer.getPropsByName(currentCustomerName);
+	const {
+		bondClothes,
+		bondCooker,
+		bondOrnaments: bondOrnamentsData,
+		bondPartner,
+		bondRecipes: bondRecipesData,
+		collection: currentCustomerCollection,
+		hasBondRewards,
+	} = bondRewards;
 
 	const [currentCustomerMainPlace] = currentCustomerPlaces;
-
-	const bondClothes = instance_clothes.getBondClothes(currentCustomerName);
-	const bondCooker = instance_cooker.getBondCooker(currentCustomerName);
-	const bondOrnamentsData =
-		instance_ornament.getBondOrnaments(currentCustomerName);
-	const bondPartner = instance_partner.getBondPartner(currentCustomerName);
-	const bondRecipesData = instance_recipe.getBondRecipes(currentCustomerName);
-
-	const hasBondRewards =
-		currentCustomerCollection ||
-		bondClothes !== null ||
-		bondCooker !== null ||
-		bondPartner !== null ||
-		!checkLengthEmpty(bondOrnamentsData) ||
-		!checkLengthEmpty(bondRecipesData);
 	const hasSpellCards = !checkLengthEmpty(
 		Object.keys(currentCustomerSpellCards)
 	);

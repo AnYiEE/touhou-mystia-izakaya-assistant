@@ -58,6 +58,7 @@ export default function CustomerCard() {
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 	const currentRecipeTagsWithTrend =
 		customerStore.shared.recipe.tagsWithTrend.use();
+	const unsatisfiedSelectionTip = customerStore.unsatisfiedSelectionTip.use();
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 	const isShowTagsTooltip =
@@ -121,36 +122,9 @@ export default function CustomerCard() {
 		[currentBeverageName, instance_beverage]
 	);
 
-	const avatarRatingContent = useMemo(() => {
-		if (hasRating) {
-			return CUSTOMER_RATING_MAP[currentRating];
-		}
-
-		const target = [];
-		if (currentBeverageName === null) {
-			target.push('酒水');
-		}
-		if (currentRecipeData === null) {
-			target.push('料理');
-		}
-		if ((isDarkMatter && hasMystiaCooker) || !hasMystiaCooker) {
-			target.push('顾客点单需求');
-		}
-
-		let content = target.join('、');
-		if (!isDarkMatter && !hasMystiaCooker) {
-			content += '或标记为使用“夜雀”系列厨具';
-		}
-
-		return `请选择${content}以评级`;
-	}, [
-		currentBeverageName,
-		currentRating,
-		currentRecipeData,
-		hasMystiaCooker,
-		hasRating,
-		isDarkMatter,
-	]);
+	const avatarRatingContent = hasRating
+		? CUSTOMER_RATING_MAP[currentRating]
+		: unsatisfiedSelectionTip.rating;
 
 	const avatarRatingColor = hasRating
 		? (`${currentRating}-border` as const)
