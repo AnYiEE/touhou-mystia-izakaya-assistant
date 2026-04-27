@@ -9,8 +9,6 @@ import {
 	Card,
 	FadeMotionDiv,
 	type IFadeMotionDivProps,
-	Popover,
-	PopoverContent,
 	PopoverTrigger,
 	Tooltip,
 	cn,
@@ -22,6 +20,7 @@ import {
 	type IMoveButtonProps,
 	MoveButton,
 } from '@/(pages)/customer-shared/moveButton';
+import RatingAvatarShell from '@/(pages)/customer-shared/ratingAvatarShell';
 import { Plus } from './resultCard';
 import TagGroup from './tagGroup';
 import { trackEvent } from '@/components/analytics';
@@ -178,18 +177,12 @@ export default function SavedMealCard() {
 											const recipeLabel = `点击：在新窗口中查看料理【${recipeName}】的详情`;
 											return (
 												<>
-													<Popover
-														showArrow
+													<RatingAvatarShell
 														color={ratingColor}
-														offset={12}
+														content={rating}
 														placement="left"
-													>
-														<Tooltip
-															showArrow
-															color={ratingColor}
-															content={rating}
-															placement="left"
-														>
+														popoverOffset={12}
+														trigger={
 															<span className="cursor-pointer">
 																<PopoverTrigger>
 																	<Avatar
@@ -247,11 +240,8 @@ export default function SavedMealCard() {
 																	/>
 																</PopoverTrigger>
 															</span>
-														</Tooltip>
-														<PopoverContent>
-															{rating}
-														</PopoverContent>
-													</Popover>
+														}
+													/>
 													<div className="flex items-center gap-2 xl:gap-1">
 														<Tooltip
 															showArrow

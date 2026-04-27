@@ -9,8 +9,6 @@ import {
 	Card,
 	FadeMotionDiv,
 	type IFadeMotionDivProps,
-	Popover,
-	PopoverContent,
 	PopoverTrigger,
 	Tooltip,
 	cn,
@@ -18,6 +16,7 @@ import {
 
 import SavedMealActionRail from '@/(pages)/customer-shared/savedMealActionRail';
 import SavedMealIngredientsStrip from '@/(pages)/customer-shared/savedMealIngredientsStrip';
+import RatingAvatarShell from '@/(pages)/customer-shared/ratingAvatarShell';
 import { Plus } from './resultCard';
 import {
 	type IMoveButtonProps,
@@ -131,18 +130,12 @@ export default function SavedMealCard() {
 											const rating =
 												CUSTOMER_RATING_MAP[ratingKey];
 											return (
-												<Popover
-													showArrow
+												<RatingAvatarShell
 													color={ratingKey}
-													offset={10}
+													content={rating}
 													placement="left"
-												>
-													<Tooltip
-														showArrow
-														color={ratingKey}
-														content={rating}
-														placement="left"
-													>
+													popoverOffset={10}
+													trigger={
 														<span className="cursor-pointer">
 															<PopoverTrigger>
 																<Avatar
@@ -161,11 +154,8 @@ export default function SavedMealCard() {
 																/>
 															</PopoverTrigger>
 														</span>
-													</Tooltip>
-													<PopoverContent>
-														{rating}
-													</PopoverContent>
-												</Popover>
+													}
+												/>
 											);
 										})()}
 										<div className="flex items-center gap-2">

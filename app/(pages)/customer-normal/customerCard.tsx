@@ -19,6 +19,7 @@ import {
 } from '@/design/ui/components';
 
 import InfoButton from './infoButton';
+import RatingAvatarShell from '@/(pages)/customer-shared/ratingAvatarShell';
 import TagGroup from './tagGroup';
 import { trackEvent } from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
@@ -171,17 +172,12 @@ export default function CustomerCard() {
 		>
 			<div className="flex flex-col gap-3 p-4 md:flex-row">
 				<div className="flex flex-col justify-evenly gap-2">
-					<Popover
-						showArrow
+					<RatingAvatarShell
 						color={tooltipRatingColor}
-						offset={hasRating ? 13 : 9}
-					>
-						<Tooltip
-							showArrow
-							color={tooltipRatingColor}
-							content={avatarRatingContent}
-							offset={hasRating ? 9 : 5}
-						>
+						content={avatarRatingContent}
+						popoverOffset={hasRating ? 13 : 9}
+						tooltipOffset={hasRating ? 9 : 5}
+						trigger={
 							<div className="flex cursor-pointer self-center">
 								<PopoverTrigger>
 									<div
@@ -222,9 +218,8 @@ export default function CustomerCard() {
 									</div>
 								</PopoverTrigger>
 							</div>
-						</Tooltip>
-						<PopoverContent>{avatarRatingContent}</PopoverContent>
-					</Popover>
+						}
+					/>
 					<div className="whitespace-nowrap text-tiny font-medium text-default-800">
 						<p className="flex justify-between gap-10">
 							<Popover
