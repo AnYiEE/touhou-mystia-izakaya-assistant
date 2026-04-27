@@ -4,15 +4,7 @@ import { useVibrate, useViewInNewWindow } from '@/hooks';
 
 import { Autocomplete, AutocompleteItem } from '@heroui/autocomplete';
 import { Select, SelectItem } from '@heroui/select';
-import {
-	type SortDescriptor,
-	Table,
-	TableBody,
-	TableCell,
-	TableColumn,
-	TableHeader,
-	TableRow,
-} from '@heroui/table';
+import { type SortDescriptor } from '@heroui/table';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
 	faChevronDown,
@@ -27,7 +19,6 @@ import {
 	DropdownItem,
 	DropdownMenu,
 	DropdownTrigger,
-	Pagination,
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
@@ -38,8 +29,10 @@ import {
 } from '@/design/ui/components';
 
 import TagGroup from './tagGroup';
+import RecipeTableShell, {
+	type TRecipeTableColumnKey,
+} from '@/(pages)/customer-shared/recipeTableShell';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
-import Placeholder from '@/components/placeholder';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
@@ -55,14 +48,7 @@ import type {
 } from '@/utils/customer/shared';
 import { checkLengthEmpty, copyArray, pinyinSort, toSet } from '@/utilities';
 
-export type TTableColumnKey =
-	| 'recipe'
-	| 'cooker'
-	| 'ingredient'
-	| 'price'
-	| 'suitability'
-	| 'time'
-	| 'action';
+export type TTableColumnKey = TRecipeTableColumnKey;
 export type TTableColumns = Array<ITableColumn<TTableColumnKey>>;
 
 export type TTableSortDescriptor = ITableSortDescriptor<TRecipeTableSortKey>;
@@ -653,98 +639,28 @@ export default function RecipeTabContent() {
 		]
 	);
 
-	const tablePagination = useMemo(
-		() => (
-			<div className="flex justify-center pt-2">
-				{!checkLengthEmpty(tableCurrentPageItems) && (
-					<Pagination
-						/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/4275} is fixed. */
-						// showControls
-						showShadow
-						size="sm"
-						page={tableCurrentPage}
-						total={tableTotalPages}
-						onChange={(page) => {
-							vibrate();
-							customerStore.onRecipeTablePageChange(page);
-						}}
-						classNames={{
-							item: cn('bg-default/40', {
-								'backdrop-blur': isHighAppearance,
-							}),
-						}}
-					/>
-				)}
-			</div>
-		),
-		[
-			isHighAppearance,
-			tableCurrentPage,
-			tableCurrentPageItems,
-			tableTotalPages,
-			vibrate,
-		]
-	);
-
 	return (
-		<Table
-			isHeaderSticky
-			bottomContent={tablePagination}
-			bottomContentPlacement="outside"
-			disableAnimation={isReducedMotion}
-			selectedKeys={tableSelectedKeys}
-			selectionMode="single"
-			sortDescriptor={tableSortDescriptor as SortDescriptor}
-			topContent={tableToolbar}
-			topContentPlacement="outside"
+		<RecipeTableShell
+			headerColumns={tableHeaderColumns}
+			isHighAppearance={isHighAppearance}
+			isReducedMotion={isReducedMotion}
+			items={tableCurrentPageItems}
+			onPageChange={(page) => {
+				vibrate();
+				customerStore.onRecipeTablePageChange(page);
+			}}
 			onSortChange={(config) => {
 				vibrate();
 				customerStore.onRecipeTableSortChange(
 					config as TTableSortDescriptor
 				);
 			}}
-			aria-label="料理选择表格"
-			classNames={{
-				base: 'gap-2',
-				td: 'before:bg-default-200/70 before:transition-colors-opacity motion-reduce:before:transition-none',
-				th: cn('bg-default-200/70', {
-					'backdrop-blur-sm': isHighAppearance,
-				}),
-				thead: '[&>tr[tabindex="-1"]]:invisible',
-				wrapper: cn(
-					'bg-content1/40 xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)] xl:p-2',
-					{ 'backdrop-blur': isHighAppearance }
-				),
-			}}
-		>
-			<TableHeader columns={tableHeaderColumns}>
-				{({ key, label, sortable }) => (
-					<TableColumn
-						key={key}
-						align={key === 'action' ? 'center' : 'start'}
-						allowsSorting={sortable}
-					>
-						{label}
-					</TableColumn>
-				)}
-			</TableHeader>
-			<TableBody
-				emptyContent={<Placeholder>数据为空</Placeholder>}
-				items={tableCurrentPageItems}
-			>
-				{(item) => (
-					<TableRow key={item.name}>
-						{(columnKey) => (
-							<TableCell>
-								{renderTableCell(
-									item,
-									columnKey as TTableColumnKey
-								)}
-							</TableCell>
-						)}
-					</TableRow>
-				)}
-			</TableBody>
-		</Table>
+			page={tableCurrentPage}
+			renderCell={renderTableCell}
+			selectedKeys={tableSelectedKeys}
+			sortDescriptor={tableSortDescriptor as SortDescriptor}
+			topContent={tableToolbar}
+			totalPages={tableTotalPages}
+		/>
 	);
 }
