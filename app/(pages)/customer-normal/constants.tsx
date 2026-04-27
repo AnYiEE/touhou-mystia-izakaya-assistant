@@ -5,4 +5,4 @@ export {
 	recipeTableColumns,
 	tabVisibilityStateMap,
 	tachieBreakPointMap,
-} from '@/(pages)/customer-rare/constants';
+} from '@/(pages)/customer-shared/constants';

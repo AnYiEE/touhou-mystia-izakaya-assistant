@@ -14,7 +14,7 @@ import {
 	cn,
 } from '@/design/ui/components';
 
-import { Plus, UnknownItem } from '@/(pages)/customer-rare/resultCard';
+import { Plus, UnknownItem } from '@/(pages)/customer-shared/resultCardAtoms';
 import Placeholder from '@/components/placeholder';
 import Sprite from '@/components/sprite';
 
@@ -22,7 +22,7 @@ import { CUSTOMER_RATING_MAP, type TIngredientName } from '@/data';
 import { customerNormalStore as customerStore, globalStore } from '@/stores';
 import { checkA11yConfirmKey, toArray } from '@/utilities';
 
-export { Plus } from '@/(pages)/customer-rare/resultCard';
+export { Plus } from '@/(pages)/customer-shared/resultCardAtoms';
 
 function IngredientsList() {
 	const vibrate = useVibrate();

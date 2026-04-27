@@ -11,7 +11,7 @@ import {
 	cn,
 } from '@/design/ui/components';
 
-import { type IIngredientTabContentProps } from '@/(pages)/customer-rare/ingredientTabContent';
+import { type IIngredientTabContentProps } from '@/(pages)/customer-shared/ingredientTabContentTypes';
 import Placeholder from '@/components/placeholder';
 import PressElement from '@/components/pressElement';
 import Sprite from '@/components/sprite';

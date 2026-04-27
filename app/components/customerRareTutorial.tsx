@@ -5,7 +5,7 @@ import { driver } from 'driver.js';
 
 import { usePathname } from '@/hooks';
 
-import { PARAM_INFO } from '@/(pages)/customer-rare/infoButtonBase';
+import { PARAM_INFO } from '@/(pages)/customer-shared/infoButtonBase';
 import { trackEvent } from '@/components/analytics';
 
 import { DYNAMIC_TAG_MAP } from '@/data';

@@ -6,7 +6,7 @@ import { Avatar } from '@/design/ui/components';
 
 import InfoButtonBase, {
 	SiteInfo,
-} from '@/(pages)/customer-rare/infoButtonBase';
+} from '@/(pages)/customer-shared/infoButtonBase';
 import { trackEvent } from '@/components/analytics';
 import Ol from '@/components/ol';
 import Price from '@/components/price';

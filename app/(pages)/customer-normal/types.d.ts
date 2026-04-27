@@ -1,5 +1,15 @@
-import { type TRecipeTag } from '@/data';
-import type { TRecipe } from '@/utils/types';
+import { type TBeverageTag, type TRecipeTag } from '@/data';
+import type { TBeverage, TRecipe } from '@/utils/types';
+
+interface IBeverageSuitability {
+	matchedTags: TBeverageTag[];
+	suitability: number;
+}
+
+export type TBeverageWithSuitability = Prettify<
+	TBeverage & IBeverageSuitability
+>;
+export type TBeveragesWithSuitability = TBeverageWithSuitability[];
 
 interface IRecipeSuitability {
 	matchedPositiveTags: TRecipeTag[];
@@ -11,8 +21,8 @@ export type TRecipesWithSuitability = TRecipeWithSuitability[];
 
 export type {
 	ICustomerTabStyle,
-	TBeverageWithSuitability,
-	TBeveragesWithSuitability,
+	ITableColumn,
+	ITableSortDescriptor,
 	TTab,
 	TTabVisibilityState,
-} from '@/(pages)/customer-rare/types';
+} from '@/(pages)/customer-shared/types';

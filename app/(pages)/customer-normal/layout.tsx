@@ -16,4 +16,4 @@ export const metadata: Metadata = {
 	keywords: toArray(keywords.slice(0, 18), customers),
 };
 
-export { default } from '@/(pages)/customer-rare/layout';
+export { WithPreference as default } from '@/(pages)/layouts';

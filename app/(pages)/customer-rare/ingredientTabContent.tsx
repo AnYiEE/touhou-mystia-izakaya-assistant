@@ -15,17 +15,12 @@ import Placeholder from '@/components/placeholder';
 import PressElement from '@/components/pressElement';
 import Sprite from '@/components/sprite';
 
-import type { IIngredientsTabStyle } from './types';
+import type { IIngredientTabContentProps } from '@/(pages)/customer-shared/ingredientTabContentTypes';
 import { DARK_MATTER_META_MAP, type TIngredientName } from '@/data';
 import { customerRareStore as store } from '@/stores';
 import { checkA11yConfirmKey, checkLengthEmpty } from '@/utilities';
-import { type Ingredient } from '@/utils';
-import type { TItemData } from '@/utils/types';
 
-interface IProps {
-	ingredientTabStyle: IIngredientsTabStyle;
-	sortedData: TItemData<Ingredient>;
-}
+interface IProps extends IIngredientTabContentProps {}
 
 export default memo<IProps>(function IngredientTabContent({
 	ingredientTabStyle,
@@ -236,4 +231,4 @@ export default memo<IProps>(function IngredientTabContent({
 	);
 });
 
-export type { IProps as IIngredientTabContentProps };
+export type { IIngredientTabContentProps } from '@/(pages)/customer-shared/ingredientTabContentTypes';

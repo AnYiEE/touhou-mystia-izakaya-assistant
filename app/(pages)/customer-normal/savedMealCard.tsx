@@ -21,7 +21,7 @@ import { Plus } from './resultCard';
 import {
 	type IMoveButtonProps,
 	MoveButton,
-} from '@/(pages)/customer-rare/savedMealCard';
+} from '@/(pages)/customer-shared/moveButton';
 import { trackEvent } from '@/components/analytics';
 import Sprite from '@/components/sprite';
 
