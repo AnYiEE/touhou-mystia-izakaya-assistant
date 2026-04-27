@@ -6,6 +6,7 @@ export * from './useThrottle';
 export * from './useVibrate';
 
 export * from './useFilteredData';
+export * from './useIngredientRouteData';
 export * from './useItemPopoverState';
 export { useOpenedItemPopover } from './useOpenedItemPopover';
 export * from './useSearchResult';

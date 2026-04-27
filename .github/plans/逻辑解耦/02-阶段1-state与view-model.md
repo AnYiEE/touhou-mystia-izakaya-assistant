@@ -15,8 +15,8 @@
 ## 当前状态
 
 - 状态：进行中
-- 已完成：PR-1.1、PR-1.2、PR-1.3
-- 下一步：PR-1.4
+- 已完成：PR-1.1、PR-1.2、PR-1.3、PR-1.4
+- 下一步：PR-1.5
 - 当前基线验证：`pnpm exec tsc --noEmit` 通过；`pnpm lint` 0 error / 12 warnings（现有 `onClick` deprecation warnings，非本轮新增）；`pnpm build` 通过，静态页 `137/137`
 
 ## 承接原则
@@ -370,6 +370,13 @@
 ### 非目标
 
 - 不在这一步处理 `document.title`。
+
+### 本轮落地记录
+
+- 新增共享 `app/hooks/useIngredientRouteData.ts`，内部继续组合 `useFilteredData`、`useSortedData` 与阶段 0 的 `filterIngredientData`，统一承接 rare / normal route 的食材过滤、排序与 trend 标签增强链路。
+- 在 `app/(pages)/customer-rare/[[...paths]]/useCustomerRouteData.ts` 与 `app/(pages)/customer-normal/[[...paths]]/useCustomerRouteData.ts` 分别新增薄业务 hook，继续复用 `useThrottle`、`useSearchResult`、`useFilteredData`、`useSortedData` 与 `filterCustomerData`，只收口顾客搜索、过滤、排序链路。
+- rare / normal 两个 `content.tsx` 已切到消费新 hook，原本内联的顾客与食材 route 数据流水线已移出页面容器。
+- 路径解析、顾客同步、`document.title` / `MutationObserver`、Tabs 结构、SideButton 配置与右侧卡片组合均保持在容器层，未越界推进到 PR-1.5 或阶段 2。
 
 ## PR-1.5：useDocumentTitle
 
