@@ -1,24 +1,15 @@
 import { memo, useCallback, useMemo } from 'react';
-import { debounce } from 'lodash';
 
 import { useVibrate } from '@/hooks';
 
-import {
-	Badge,
-	Button,
-	ScrollShadow,
-	Tooltip,
-	cn,
-} from '@/design/ui/components';
-
 import Placeholder from '@/components/placeholder';
-import PressElement from '@/components/pressElement';
-import Sprite from '@/components/sprite';
 
+import IngredientTabContentSkeleton from '@/(pages)/customer-shared/ingredientTabContentSkeleton';
+import IngredientTabItemPresenter from '@/(pages)/customer-shared/ingredientTabItemPresenter';
 import type { IIngredientTabContentProps } from '@/(pages)/customer-shared/ingredientTabContentTypes';
 import { DARK_MATTER_META_MAP, type TIngredientName } from '@/data';
 import { customerRareStore as store } from '@/stores';
-import { checkA11yConfirmKey, checkLengthEmpty } from '@/utilities';
+import { checkLengthEmpty } from '@/utilities';
 
 interface IProps extends IIngredientTabContentProps {}
 
@@ -80,154 +71,82 @@ export default memo<IProps>(function IngredientTabContent({
 		5;
 
 	return (
-		<>
-			<ScrollShadow
-				className={cn(
-					'px-2 transition-all motion-reduce:transition-none xl:max-h-[calc(var(--safe-h-dvh)-10.25rem-env(titlebar-area-height,0rem))]',
-					ingredientTabStyle.classNames.content
-				)}
-			>
-				<div className="m-2 grid grid-cols-fill-12 justify-around gap-4">
-					{sortedData.map(({ name }, index) => {
-						const ingredientScoreChange =
-							changesByName[name] ??
-							(darkIngredientNames.includes(name)
-								? {
-										isDarkIngredient: true,
-										isOrderTag: false,
-										restriction: 'darkIngredient' as const,
-										scoreChange: -Infinity,
-									}
-								: null);
-						const restriction =
-							ingredientScoreChange?.restriction ?? 'none';
-						const scoreChange =
-							ingredientScoreChange?.scoreChange ?? 0;
-						const isDarkIngredient =
-							ingredientScoreChange?.isDarkIngredient ?? false;
-						const isOrderTag =
-							ingredientScoreChange?.isOrderTag ?? false;
-						const isHighestRestricted =
-							restriction === 'highestRestricted';
-						const isLowestRestricted =
-							restriction === 'lowestRestricted';
+		<IngredientTabContentSkeleton
+			ingredientTabStyle={ingredientTabStyle}
+			onToggle={handleButtonPress}
+		>
+			{sortedData.map(({ name }, index) => {
+				const ingredientScoreChange =
+					changesByName[name] ??
+					(darkIngredientNames.includes(name)
+						? {
+								isDarkIngredient: true,
+								isOrderTag: false,
+								restriction: 'darkIngredient' as const,
+								scoreChange: -Infinity,
+							}
+						: null);
+				const restriction =
+					ingredientScoreChange?.restriction ?? 'none';
+				const scoreChange = ingredientScoreChange?.scoreChange ?? 0;
+				const isDarkIngredient =
+					ingredientScoreChange?.isDarkIngredient ?? false;
+				const isOrderTag = ingredientScoreChange?.isOrderTag ?? false;
+				const isHighestRestricted = restriction === 'highestRestricted';
+				const isLowestRestricted = restriction === 'lowestRestricted';
 
-						if (isFullFilled) {
-							return (
-								<div
-									key={index}
-									className="flex cursor-not-allowed flex-col items-center opacity-40 brightness-50 dark:opacity-80"
-								>
-									<Sprite
-										target="ingredient"
-										name={name}
-										size={3}
-									/>
-									<span className="whitespace-nowrap text-center text-tiny">
-										{name}
-									</span>
-								</div>
-							);
-						}
+				if (isFullFilled) {
+					return (
+						<IngredientTabItemPresenter
+							key={index}
+							className="opacity-40 brightness-50 dark:opacity-80"
+							kind="static"
+							name={name}
+						/>
+					);
+				}
 
-						const isDown = scoreChange < 0;
-						const isUp = scoreChange > 0;
-						const isNoChange = scoreChange === 0;
+				const isDown = scoreChange < 0;
+				const isUp = scoreChange > 0;
+				const isNoChange = scoreChange === 0;
 
-						const color = isOrderTag
-							? 'secondary'
-							: isUp
-								? 'success'
-								: isDown
-									? 'danger'
-									: 'default';
-						const score = isUp
-							? `+${scoreChange}`
-							: `${scoreChange}`;
+				const color = isOrderTag
+					? 'secondary'
+					: isUp
+						? 'success'
+						: isDown
+							? 'danger'
+							: 'default';
+				const score = isUp ? `+${scoreChange}` : `${scoreChange}`;
 
-						const badgeContent = isDarkIngredient
-							? '!!'
-							: isLowestRestricted
-								? '++'
-								: isHighestRestricted
-									? '--'
-									: isNoChange
-										? ''
-										: score;
-						const tooltipContent = `点击：加入额外食材【${name}】${isNoChange ? '' : `，${isDarkIngredient ? `制作【${DARK_MATTER_META_MAP.name}】` : isLowestRestricted ? '最低评级受限' : isHighestRestricted ? '最高评级受限' : `匹配度${score}${isOrderTag ? '（点单需求）' : ''}`}`}`;
+				const badgeContent = isDarkIngredient
+					? '!!'
+					: isLowestRestricted
+						? '++'
+						: isHighestRestricted
+							? '--'
+							: isNoChange
+								? ''
+								: score;
+				const tooltipContent = `点击：加入额外食材【${name}】${isNoChange ? '' : `，${isDarkIngredient ? `制作【${DARK_MATTER_META_MAP.name}】` : isLowestRestricted ? '最低评级受限' : isHighestRestricted ? '最高评级受限' : `匹配度${score}${isOrderTag ? '（点单需求）' : ''}`}`}`;
 
-						return (
-							<Tooltip
-								key={index}
-								disableBlur
-								showArrow
-								closeDelay={0}
-								color={color}
-								content={tooltipContent}
-								offset={scoreChange > 1 ? 10 : 7}
-								size="sm"
-							>
-								<PressElement
-									as="div"
-									onPress={() => {
-										handleSelect(name);
-									}}
-									role="button"
-									tabIndex={0}
-									aria-label={tooltipContent}
-									className={cn(
-										'group flex cursor-pointer flex-col items-center transition motion-reduce:transition-none',
-										{
-											'opacity-40 brightness-50 hover:opacity-100 hover:brightness-100 dark:opacity-80 dark:hover:opacity-100':
-												isNoChange,
-										}
-									)}
-								>
-									<Badge
-										color={color}
-										content={badgeContent}
-										isInvisible={isNoChange}
-										size="sm"
-										classNames={{
-											badge: cn('font-mono', {
-												'brightness-125':
-													scoreChange > 2,
-												'scale-125 font-medium':
-													scoreChange > 1,
-											}),
-											base: 'group-hover:drop-shadow-md',
-										}}
-									>
-										<Sprite
-											target="ingredient"
-											name={name}
-											size={3}
-											className="transition group-hover:scale-105 motion-reduce:transition-none"
-										/>
-									</Badge>
-									<span className="whitespace-nowrap text-center text-tiny text-default-800 transition-colors group-hover:text-default-900 motion-reduce:transition-none">
-										{name}
-									</span>
-								</PressElement>
-							</Tooltip>
-						);
-					})}
-				</div>
-			</ScrollShadow>
-			<div className="flex justify-center xl:hidden">
-				<Button
-					isIconOnly
-					size="sm"
-					variant="flat"
-					onClick={handleButtonPress}
-					onKeyDown={debounce(checkA11yConfirmKey(handleButtonPress))}
-					aria-label={ingredientTabStyle.ariaLabel}
-					className="h-4 w-4/5 text-default-400"
-				>
-					{ingredientTabStyle.buttonNode}
-				</Button>
-			</div>
-		</>
+				return (
+					<IngredientTabItemPresenter
+						key={index}
+						badgeContent={badgeContent}
+						color={color}
+						isNoChange={isNoChange}
+						kind="interactive"
+						name={name}
+						onPress={() => {
+							handleSelect(name);
+						}}
+						scoreChange={scoreChange}
+						tooltipContent={tooltipContent}
+					/>
+				);
+			})}
+		</IngredientTabContentSkeleton>
 	);
 });
 
