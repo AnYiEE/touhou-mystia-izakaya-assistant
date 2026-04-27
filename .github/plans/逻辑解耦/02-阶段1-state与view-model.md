@@ -14,9 +14,9 @@
 
 ## 当前状态
 
-- 状态：进行中
-- 已完成：PR-1.1、PR-1.2、PR-1.3、PR-1.4
-- 下一步：PR-1.5
+- 状态：已完成
+- 已完成：PR-1.1、PR-1.2、PR-1.3、PR-1.4、PR-1.5
+- 下一步：阶段 2
 - 当前基线验证：`pnpm exec tsc --noEmit` 通过；`pnpm lint` 0 error / 12 warnings（现有 `onClick` deprecation warnings，非本轮新增）；`pnpm build` 通过，静态页 `137/137`
 
 ## 承接原则
@@ -427,6 +427,12 @@
 ### 非目标
 
 - 不在首版中合并路径解析与顾客同步。
+
+### 本轮落地记录
+
+- 新增共享 `app/hooks/useDocumentTitle.ts`，签名保持为 `useDocumentTitle(title, pathnamePrefix?)`，只承接标题更新与 `MutationObserver` 修正，不混入路径解析或顾客同步。
+- `customer-rare/[[...paths]]/content.tsx` 与 `customer-normal/[[...paths]]/content.tsx` 已改为在容器层计算 `title` 并调用 `useDocumentTitle`，原有标题副作用逻辑不再散落在页面中。
+- 路径解析、`validateName`、`customerStore.shared.customer.name.set(...)` 与空顾客 redirect 逻辑仍保留在 route content，保持 PR-1.5 与 PR-1.4 的边界分离。
 
 ## 稀客 / 普客共用与分叉规则
 

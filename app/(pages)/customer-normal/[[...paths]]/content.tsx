@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 
 import useBreakpoint from 'use-breakpoint';
 import {
+	useDocumentTitle,
 	useIngredientRouteData,
 	useMounted,
 	usePathname,
@@ -64,30 +65,17 @@ function validateName(name: string | undefined) {
 export default function Content() {
 	const { pathname } = usePathname();
 	const router = useRouter();
+	const validName = useMemo(
+		() => validateName(pathname.split('/')[2]),
+		[pathname]
+	);
+	const title = `${validName === null ? '' : `${validName} | `}${getPageTitle('/customer-normal')} | ${zhName} - ${enName}`;
+
+	useDocumentTitle(title, '/customer-normal');
 
 	useEffect(() => {
-		const validName = validateName(pathname.split('/')[2]);
-
 		customerStore.shared.customer.name.set(validName);
-
-		const title = `${validName === null ? '' : `${validName} | `}${getPageTitle('/customer-normal')} | ${zhName} - ${enName}`;
-		const observer = new MutationObserver((_, ob) => {
-			if (
-				location.pathname.startsWith('/customer-normal') &&
-				document.title.trim() !== title
-			) {
-				document.title = title;
-				ob.disconnect();
-			}
-		});
-
-		document.title = title;
-		observer.observe(document.head, { childList: true });
-
-		return () => {
-			observer.disconnect();
-		};
-	}, [pathname]);
+	}, [validName]);
 
 	const { breakpoint } = useBreakpoint(tachieBreakPointMap, 'noTachie');
 	const isReducedMotion = useReducedMotion();
