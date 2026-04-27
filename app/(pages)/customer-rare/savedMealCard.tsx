@@ -6,7 +6,6 @@ import { Divider } from '@heroui/divider';
 
 import {
 	Avatar,
-	Button,
 	Card,
 	FadeMotionDiv,
 	type IFadeMotionDivProps,
@@ -17,6 +16,8 @@ import {
 	cn,
 } from '@/design/ui/components';
 
+import SavedMealActionRail from '@/(pages)/customer-shared/savedMealActionRail';
+import SavedMealIngredientsStrip from '@/(pages)/customer-shared/savedMealIngredientsStrip';
 import {
 	type IMoveButtonProps,
 	MoveButton,
@@ -35,7 +36,7 @@ import {
 	RECIPE_TAG_STYLE,
 } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
-import { checkLengthEmpty, copyArray } from '@/utilities';
+import { copyArray } from '@/utilities';
 
 export {
 	type IMoveButtonProps,
@@ -335,212 +336,86 @@ export default function SavedMealCard() {
 											size={0.75}
 											className="md:mx-0 lg:mx-1 xl:mx-0"
 										/>
-										{(() => {
-											const originalIngredients =
-												instance_recipe.getPropsByName(
-													recipeData.name,
-													'ingredients'
-												);
-											const restExtraIngredientsLength =
-												Math.max(
-													5 -
-														originalIngredients.length,
-													0
-												);
-											const restExtraIngredients =
-												recipeData.extraIngredients.slice(
-													0,
-													restExtraIngredientsLength
-												);
-											return (
-												<div className="flex items-center gap-x-3 md:gap-x-1 lg:gap-x-3 xl:gap-x-1">
-													{originalIngredients.map(
-														(name, index) => {
-															const label = `点击：在新窗口中查看食材【${name}】的详情`;
-															return (
-																<Tooltip
-																	key={index}
-																	showArrow
-																	content={
-																		label
-																	}
-																	offset={4}
-																>
-																	<Sprite
-																		target="ingredient"
-																		name={
-																			name
-																		}
-																		size={2}
-																		onPress={() => {
-																			openWindow(
-																				'ingredients',
-																				name
-																			);
-																		}}
-																		aria-label={
-																			label
-																		}
-																		role="button"
-																	/>
-																</Tooltip>
-															);
-														}
-													)}
-													{!checkLengthEmpty(
-														restExtraIngredients
-													) && (
-														<div className="flex items-center gap-x-3 rounded bg-content2/70 outline outline-2 outline-offset-1 outline-content2 md:gap-x-1 lg:gap-x-3 xl:gap-x-1">
-															{restExtraIngredients.map(
-																(
-																	name,
-																	index
-																) => {
-																	const label = `点击：在新窗口中查看额外食材【${name}】的详情`;
-																	return (
-																		<Tooltip
-																			key={
-																				index
-																			}
-																			showArrow
-																			content={
-																				label
-																			}
-																			offset={
-																				4
-																			}
-																		>
-																			<Sprite
-																				target="ingredient"
-																				name={
-																					name
-																				}
-																				size={
-																					2
-																				}
-																				onPress={() => {
-																					openWindow(
-																						'ingredients',
-																						name
-																					);
-																				}}
-																				aria-label={
-																					label
-																				}
-																				role="button"
-																			/>
-																		</Tooltip>
-																	);
-																}
-															)}
-														</div>
-													)}
-												</div>
-											);
-										})()}
-									</div>
-									<div
-										className={cn(
-											'flex w-full flex-row-reverse items-center justify-center gap-2 md:w-auto xl:flex-col',
-											CLASSNAME_EXCLUDE_FROM_PIP
-										)}
-									>
-										<div
-											aria-hidden
-											className={cn(
-												'absolute -right-2 -top-1 flex flex-col gap-3 text-tiny text-primary/20 md:left-2 md:right-[unset] md:top-[unset] md:gap-6 xl:gap-9 dark:text-default-100',
-												{
-													hidden:
-														savedCustomerMeals.length <=
-														1,
-												}
+										<SavedMealIngredientsStrip
+											className="md:gap-x-1 lg:gap-x-3 xl:gap-x-1"
+											extraIngredients={
+												recipeData.extraIngredients
+											}
+											extraIngredientsClassName="md:gap-x-1 lg:gap-x-3 xl:gap-x-1"
+											onOpenIngredient={(name) => {
+												openWindow('ingredients', name);
+											}}
+											originalIngredients={instance_recipe.getPropsByName(
+												recipeData.name,
+												'ingredients'
 											)}
-										>
-											<MoveButton
-												direction={
-													MoveButton.direction.up
-												}
-												isDisabled={loopIndex === 0}
-												onClick={() => {
-													moveMeal(
-														loopIndex,
-														MoveButton.direction.up
-													);
-												}}
-											/>
-											<MoveButton
-												direction={
-													MoveButton.direction.down
-												}
-												isDisabled={
-													loopIndex ===
-													savedCustomerMeals.length -
-														1
-												}
-												onClick={() => {
-													moveMeal(
-														loopIndex,
-														MoveButton.direction
-															.down
-													);
-												}}
-											/>
-										</div>
-										<Button
-											fullWidth
-											color="primary"
-											size="sm"
-											variant="flat"
-											onPress={() => {
-												vibrate();
-												customerStore.shared.customer.hasMystiaCooker.set(
-													hasMystiaCooker
-												);
-												customerStore.shared.customer.order.set(
-													customerOrder
-												);
-												customerStore.shared.beverage.name.set(
-													beverage
-												);
-												customerStore.shared.recipe.data.set(
-													recipeData
-												);
-												trackEvent(
-													trackEvent.category.click,
-													'Select Button',
-													`${recipeData.name} - ${beverage}${checkLengthEmpty(recipeData.extraIngredients) ? '' : ` - ${recipeData.extraIngredients.join(' ')}`}`
-												);
-											}}
-											className="md:w-auto xl:h-6"
-										>
-											选择
-										</Button>
-										<Button
-											fullWidth
-											color="danger"
-											size="sm"
-											variant="flat"
-											onPress={() => {
-												vibrate();
-												const newData =
-													currentCustomerMeals.filter(
-														(_, index) =>
-															index !== dataIndex
-													);
-												customerStore.persistence.meals[
-													currentCustomerName
-												]?.set(newData);
-												trackEvent(
-													trackEvent.category.click,
-													'Remove Button',
-													`${recipeData.name} - ${beverage}${checkLengthEmpty(recipeData.extraIngredients) ? '' : ` - ${recipeData.extraIngredients.join(' ')}`}`
-												);
-											}}
-											className="md:w-auto xl:h-6"
-										>
-											删除
-										</Button>
+										/>
 									</div>
+									<SavedMealActionRail
+										className={cn(
+											CLASSNAME_EXCLUDE_FROM_PIP,
+											'xl:flex-col'
+										)}
+										isMoveDownDisabled={
+											loopIndex ===
+											savedCustomerMeals.length - 1
+										}
+										isMoveUpDisabled={loopIndex === 0}
+										isReorderVisible={
+											savedCustomerMeals.length > 1
+										}
+										onMoveDown={() => {
+											moveMeal(
+												loopIndex,
+												MoveButton.direction.down
+											);
+										}}
+										onMoveUp={() => {
+											moveMeal(
+												loopIndex,
+												MoveButton.direction.up
+											);
+										}}
+										onRemove={() => {
+											vibrate();
+											const newData =
+												currentCustomerMeals.filter(
+													(_, index) =>
+														index !== dataIndex
+												);
+											customerStore.persistence.meals[
+												currentCustomerName
+											]?.set(newData);
+											trackEvent(
+												trackEvent.category.click,
+												'Remove Button',
+												`${recipeData.name} - ${beverage}${recipeData.extraIngredients.length === 0 ? '' : ` - ${recipeData.extraIngredients.join(' ')}`}`
+											);
+										}}
+										onSelect={() => {
+											vibrate();
+											customerStore.shared.customer.hasMystiaCooker.set(
+												hasMystiaCooker
+											);
+											customerStore.shared.customer.order.set(
+												customerOrder
+											);
+											customerStore.shared.beverage.name.set(
+												beverage
+											);
+											customerStore.shared.recipe.data.set(
+												recipeData
+											);
+											trackEvent(
+												trackEvent.category.click,
+												'Select Button',
+												`${recipeData.name} - ${beverage}${recipeData.extraIngredients.length === 0 ? '' : ` - ${recipeData.extraIngredients.join(' ')}`}`
+											);
+										}}
+										removeButtonClassName="xl:h-6"
+										reorderButtonsClassName="md:left-2 md:right-[unset] md:top-[unset] md:gap-6 xl:gap-9"
+										selectButtonClassName="xl:h-6"
+									/>
 								</div>
 								{loopIndex < savedCustomerMeals.length - 1 && (
 									<Divider />
