@@ -39,7 +39,6 @@ import Tags from '@/components/tags';
 import {
 	BEVERAGE_TAG_STYLE,
 	CUSTOMER_RATING_MAP,
-	DARK_MATTER_META_MAP,
 	RECIPE_TAG_STYLE,
 } from '@/data';
 import { customerRareStore as customerStore } from '@/stores';
@@ -51,7 +50,6 @@ export default function SuggestedMealCard() {
 	const openWindow = useViewInNewWindow();
 	const vibrate = useVibrate();
 	const {
-		alternativesMap,
 		availableRecipeCookers,
 		currentBeverageName,
 		currentCustomerName,
@@ -63,19 +61,14 @@ export default function SuggestedMealCard() {
 		hasUnsetPopularOrderTag,
 		isHighAppearance,
 		isVisible,
-		loadAlternatives,
 		selectableMaxExtraIngredients,
 		selectableMaxRatings,
 		selectedCookerKeys,
 		selectedMaxExtraKeys,
 		selectedMaxRatingKeys,
 		suggestMaxRating,
-		suggestions,
+		suggestedMealRows,
 	} = useSuggestedMealsViewModel();
-
-	const instance_beverage = customerStore.instances.beverage.get();
-	const instance_customer = customerStore.instances.customer.get();
-	const instance_recipe = customerStore.instances.recipe.get();
 
 	let content: IFadeMotionDivProps['children'];
 	let contentTarget: IFadeMotionDivProps['target'];
@@ -294,48 +287,35 @@ export default function SuggestedMealCard() {
 							<p>选定的点单需求包含流行趋势标签</p>
 							<p>请您先在设置中指定「流行趋势」</p>
 						</Placeholder>
-					) : suggestions === null ? (
+					) : suggestedMealRows === null ? (
 						<Placeholder className="py-4">
 							未找到匹配的推荐套餐
 						</Placeholder>
 					) : (
-						(() => {
-							const {
-								beverageTags: customerBeverageTags,
-								dlc: customerDlc,
-								negativeTags: customerNegativeTags,
-								positiveTags: customerPositiveTags,
-							} = instance_customer.getPropsByName(
-								currentCustomerName
-							);
-							return suggestions.map((meal, loopIndex) => {
-								const {
+						suggestedMealRows.map(
+							(
+								{
 									beverage,
+									cooker,
+									ensureAlternatives,
+									getAlternatives,
+									hasAlternativesLoaded,
+									key,
 									price,
-									rating: ratingKey,
-									recipe: recipeData,
-								} = meal;
-								const isDarkMatter =
-									!checkLengthEmpty(
-										recipeData.extraIngredients
-									) &&
-									instance_recipe.checkDarkMatter(recipeData)
-										.isDarkMatter;
-								const cooker = instance_recipe.getPropsByName(
-									recipeData.name,
-									'cooker'
-								);
-								const recipeName = isDarkMatter
-									? DARK_MATTER_META_MAP.name
-									: recipeData.name;
+									ratingKey,
+									recipeData,
+									recipeDisplayName,
+									recipeIngredients,
+									visibleExtraIngredients,
+								},
+								loopIndex
+							) => {
 								const rating = CUSTOMER_RATING_MAP[ratingKey];
 								const beverageLabel = `点击：在新窗口中查看酒水【${beverage}】的详情`;
 								const cookerLabel = `点击：在新窗口中查看厨具【${cooker}】的详情`;
-								const recipeLabel = `点击：在新窗口中查看料理【${recipeName}】的详情`;
+								const recipeLabel = `点击：在新窗口中查看料理【${recipeDisplayName}】的详情`;
 								return (
-									<Fragment
-										key={`${recipeData.name}-${beverage}-${loopIndex}`}
-									>
+									<Fragment key={key}>
 										<div className="relative flex flex-col items-center gap-4 md:static md:flex-row md:gap-3 lg:gap-4 xl:gap-3">
 											<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap md:gap-2 lg:gap-3 xl:gap-2">
 												<Popover
@@ -439,12 +419,14 @@ export default function SuggestedMealCard() {
 													>
 														<Sprite
 															target="recipe"
-															name={recipeName}
+															name={
+																recipeDisplayName
+															}
 															size={2}
 															onPress={() => {
 																openWindow(
 																	'recipes',
-																	recipeName
+																	recipeDisplayName
 																);
 															}}
 															aria-label={
@@ -483,244 +465,170 @@ export default function SuggestedMealCard() {
 													size={0.75}
 													className="md:mx-0 lg:mx-1 xl:mx-0"
 												/>
-												{(() => {
-													const {
-														ingredients:
-															recipeIngredients,
-														negativeTags:
-															recipeNegativeTags,
-														positiveTags:
-															recipePositiveTags,
-													} = instance_recipe.getPropsByName(
-														recipeData.name
-													);
-													const restExtraIngredientsLength =
-														Math.max(
-															5 -
-																recipeIngredients.length,
-															0
-														);
-													const restExtraIngredients =
-														recipeData.extraIngredients.slice(
-															0,
-															restExtraIngredientsLength
-														);
-													return (
-														<div className="flex items-center gap-x-3 md:gap-x-1 lg:gap-x-3 xl:gap-x-1">
-															{recipeIngredients.map(
+												<div className="flex items-center gap-x-3 md:gap-x-1 lg:gap-x-3 xl:gap-x-1">
+													{recipeIngredients.map(
+														(name, index) => {
+															const label = `点击：在新窗口中查看食材【${name}】的详情`;
+															return (
+																<Tooltip
+																	key={index}
+																	showArrow
+																	content={
+																		label
+																	}
+																	offset={4}
+																>
+																	<Sprite
+																		target="ingredient"
+																		name={
+																			name
+																		}
+																		size={2}
+																		onPress={() => {
+																			openWindow(
+																				'ingredients',
+																				name
+																			);
+																		}}
+																		aria-label={
+																			label
+																		}
+																		role="button"
+																	/>
+																</Tooltip>
+															);
+														}
+													)}
+													{!checkLengthEmpty(
+														visibleExtraIngredients
+													) && (
+														<div className="flex items-center gap-x-3 rounded bg-content2/70 outline outline-2 outline-offset-1 outline-content2 md:gap-x-1 lg:gap-x-3 xl:gap-x-1">
+															{visibleExtraIngredients.map(
 																(
 																	name,
 																	index
 																) => {
-																	const label = `点击：在新窗口中查看食材【${name}】的详情`;
+																	const label = `额外食材【${name}】`;
+																	const alternatives =
+																		getAlternatives(
+																			name
+																		);
 																	return (
-																		<Tooltip
+																		<Popover
 																			key={
 																				index
 																			}
 																			showArrow
-																			content={
-																				label
-																			}
 																			offset={
-																				4
+																				6
 																			}
+																			placement="bottom"
+																			onOpenChange={(
+																				isOpen
+																			) => {
+																				if (
+																					isOpen
+																				) {
+																					ensureAlternatives();
+																				}
+																			}}
 																		>
-																			<Sprite
-																				target="ingredient"
-																				name={
-																					name
+																			<Tooltip
+																				showArrow
+																				content={
+																					hasAlternativesLoaded &&
+																					checkLengthEmpty(
+																						alternatives
+																					)
+																						? label
+																						: `${label}（点击查看可替换食材）`
 																				}
-																				size={
-																					2
+																				offset={
+																					4
 																				}
-																				onPress={() => {
-																					openWindow(
-																						'ingredients',
-																						name
-																					);
-																				}}
-																				aria-label={
-																					label
-																				}
-																				role="button"
-																			/>
-																		</Tooltip>
+																			>
+																				<span className="flex cursor-pointer">
+																					<PopoverTrigger>
+																						<Sprite
+																							target="ingredient"
+																							name={
+																								name
+																							}
+																							size={
+																								2
+																							}
+																							role="button"
+																						/>
+																					</PopoverTrigger>
+																				</span>
+																			</Tooltip>
+																			<PopoverContent>
+																				<div className="flex flex-col gap-1 p-1">
+																					<span className="text-tiny text-default-700">
+																						{checkLengthEmpty(
+																							alternatives
+																						)
+																							? '无可用替换'
+																							: '可替换为'}
+																					</span>
+																					{!checkLengthEmpty(
+																						alternatives
+																					) && (
+																						<div
+																							className={cn(
+																								'flex flex-wrap gap-1'
+																							)}
+																						>
+																							{alternatives.map(
+																								(
+																									altName
+																								) => {
+																									const altLabel = `点击：在新窗口中查看食材【${altName}】的详情`;
+																									return (
+																										<Tooltip
+																											key={
+																												altName
+																											}
+																											showArrow
+																											content={
+																												altLabel
+																											}
+																											size="sm"
+																										>
+																											<Sprite
+																												target="ingredient"
+																												name={
+																													altName
+																												}
+																												size={
+																													2
+																												}
+																												onPress={() => {
+																													openWindow(
+																														'ingredients',
+																														altName
+																													);
+																												}}
+																												aria-label={
+																													altLabel
+																												}
+																												role="button"
+																											/>
+																										</Tooltip>
+																									);
+																								}
+																							)}
+																						</div>
+																					)}
+																				</div>
+																			</PopoverContent>
+																		</Popover>
 																	);
 																}
 															)}
-															{!checkLengthEmpty(
-																restExtraIngredients
-															) && (
-																<div className="flex items-center gap-x-3 rounded bg-content2/70 outline outline-2 outline-offset-1 outline-content2 md:gap-x-1 lg:gap-x-3 xl:gap-x-1">
-																	{restExtraIngredients.map(
-																		(
-																			name,
-																			index
-																		) => {
-																			const label = `额外食材【${name}】`;
-																			const alternatives =
-																				alternativesMap
-																					.get(
-																						loopIndex
-																					)
-																					?.get(
-																						name
-																					) ??
-																				[];
-																			return (
-																				<Popover
-																					key={
-																						index
-																					}
-																					showArrow
-																					offset={
-																						6
-																					}
-																					placement="bottom"
-																					onOpenChange={(
-																						isOpen
-																					) => {
-																						if (
-																							isOpen &&
-																							!alternativesMap.has(
-																								loopIndex
-																							)
-																						) {
-																							const beverageTags =
-																								instance_beverage.getPropsByName(
-																									beverage,
-																									'tags'
-																								);
-																							loadAlternatives(
-																								loopIndex,
-																								{
-																									baseRating:
-																										ratingKey,
-																									beverageTags,
-																									customerBeverageTags,
-																									customerDlc,
-																									customerName:
-																										currentCustomerName,
-																									customerNegativeTags,
-																									customerOrder:
-																										currentCustomerOrder,
-																									customerPositiveTags,
-																									extraIngredients:
-																										restExtraIngredients,
-																									recipeIngredients,
-																									recipeName:
-																										recipeData.name,
-																									recipeNegativeTags,
-																									recipePositiveTags,
-																								}
-																							);
-																						}
-																					}}
-																				>
-																					<Tooltip
-																						showArrow
-																						content={
-																							alternativesMap.has(
-																								loopIndex
-																							) &&
-																							checkLengthEmpty(
-																								alternatives
-																							)
-																								? label
-																								: `${label}（点击查看可替换食材）`
-																						}
-																						offset={
-																							4
-																						}
-																					>
-																						<span className="flex cursor-pointer">
-																							<PopoverTrigger>
-																								<Sprite
-																									target="ingredient"
-																									name={
-																										name
-																									}
-																									size={
-																										2
-																									}
-																									role="button"
-																								/>
-																							</PopoverTrigger>
-																						</span>
-																					</Tooltip>
-																					<PopoverContent>
-																						<div className="flex flex-col gap-1 p-1">
-																							<span className="text-tiny text-default-700">
-																								{checkLengthEmpty(
-																									alternatives
-																								)
-																									? '无可用替换'
-																									: '可替换为'}
-																							</span>
-																							{!checkLengthEmpty(
-																								alternatives
-																							) && (
-																								<div
-																									className={cn(
-																										'flex flex-wrap gap-1',
-																										alternatives.length ===
-																											1 &&
-																											'justify-center'
-																									)}
-																								>
-																									{alternatives.map(
-																										(
-																											altName
-																										) => {
-																											const altLabel = `点击：在新窗口中查看食材【${altName}】的详情`;
-																											return (
-																												<Tooltip
-																													key={
-																														altName
-																													}
-																													showArrow
-																													content={
-																														altLabel
-																													}
-																													size="sm"
-																												>
-																													<Sprite
-																														target="ingredient"
-																														name={
-																															altName
-																														}
-																														size={
-																															2
-																														}
-																														onPress={() => {
-																															openWindow(
-																																'ingredients',
-																																altName
-																															);
-																														}}
-																														aria-label={
-																															altLabel
-																														}
-																														role="button"
-																													/>
-																												</Tooltip>
-																											);
-																										}
-																									)}
-																								</div>
-																							)}
-																						</div>
-																					</PopoverContent>
-																				</Popover>
-																			);
-																		}
-																	)}
-																</div>
-															)}
 														</div>
-													);
-												})()}
+													)}
+												</div>
 											</div>
 											<div className="flex w-full flex-row-reverse items-center justify-center gap-2 md:w-auto xl:flex-col">
 												<Button
@@ -756,13 +664,14 @@ export default function SuggestedMealCard() {
 												</Button>
 											</div>
 										</div>
-										{loopIndex < suggestions.length - 1 && (
+										{loopIndex <
+											suggestedMealRows.length - 1 && (
 											<Divider />
 										)}
 									</Fragment>
 								);
-							});
-						})()
+							}
+						)
 					)}
 				</div>
 			</Card>

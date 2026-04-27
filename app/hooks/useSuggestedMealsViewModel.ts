@@ -12,6 +12,7 @@ import {
 import { type Selection } from '@heroui/table';
 
 import {
+	DARK_MATTER_META_MAP,
 	DYNAMIC_TAG_MAP,
 	type TCookerName,
 	type TIngredientName,
@@ -32,6 +33,29 @@ type TLoadSuggestedMealAlternativesArgs = Omit<
 	| 'isFamousShop'
 	| 'popularTrend'
 >;
+
+type TSuggestedMeal = ReturnType<typeof suggestMeals>[number];
+
+const EMPTY_ALTERNATIVES: TIngredientName[] = [];
+
+interface ISuggestedMealRowViewModel {
+	beverage: TSuggestedMeal['beverage'];
+	cooker: TCookerName;
+	ensureAlternatives: () => void;
+	getAlternatives: (
+		ingredientName: TIngredientName
+	) => ReadonlyArray<TIngredientName>;
+	hasAlternativesLoaded: boolean;
+	key: string;
+	price: TSuggestedMeal['price'];
+	ratingKey: TSuggestedMeal['rating'];
+	recipeData: TSuggestedMeal['recipe'];
+	recipeDisplayName:
+		| TSuggestedMeal['recipe']['name']
+		| typeof DARK_MATTER_META_MAP.name;
+	recipeIngredients: ReadonlyArray<TIngredientName>;
+	visibleExtraIngredients: TIngredientName[];
+}
 
 export function useSuggestedMealsViewModel() {
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
@@ -68,6 +92,8 @@ export function useSuggestedMealsViewModel() {
 	const selectableMaxRatings =
 		globalStore.shared.suggestMeals.selectableMaxRatings.get();
 
+	const instance_beverage = customerStore.instances.beverage.get();
+	const instance_customer = customerStore.instances.customer.get();
 	const instance_ingredient = customerStore.instances.ingredient.get();
 	const instance_recipe = customerStore.instances.recipe.get();
 
@@ -243,8 +269,99 @@ export function useSuggestedMealsViewModel() {
 		]
 	);
 
-	return {
+	const suggestedMealRows = useMemo<
+		ISuggestedMealRowViewModel[] | null
+	>(() => {
+		if (suggestions === null || currentCustomerName === null) {
+			return null;
+		}
+
+		const {
+			beverageTags: customerBeverageTags,
+			dlc: customerDlc,
+			negativeTags: customerNegativeTags,
+			positiveTags: customerPositiveTags,
+		} = instance_customer.getPropsByName(currentCustomerName);
+
+		return suggestions.map((meal, loopIndex) => {
+			const {
+				beverage,
+				price,
+				rating: ratingKey,
+				recipe: recipeData,
+			} = meal;
+			const {
+				cooker,
+				ingredients: recipeIngredients,
+				negativeTags: recipeNegativeTags,
+				positiveTags: recipePositiveTags,
+			} = instance_recipe.getPropsByName(recipeData.name);
+			const visibleExtraIngredients = recipeData.extraIngredients.slice(
+				0,
+				Math.max(5 - recipeIngredients.length, 0)
+			);
+			const isDarkMatter =
+				!checkLengthEmpty(recipeData.extraIngredients) &&
+				instance_recipe.checkDarkMatter(recipeData).isDarkMatter;
+			const currentAlternatives = alternativesMap.get(loopIndex);
+
+			return {
+				beverage,
+				cooker,
+				ensureAlternatives: () => {
+					if (
+						currentAlternatives !== undefined ||
+						checkLengthEmpty(visibleExtraIngredients)
+					) {
+						return;
+					}
+
+					loadAlternatives(loopIndex, {
+						baseRating: ratingKey,
+						beverageTags: instance_beverage.getPropsByName(
+							beverage,
+							'tags'
+						),
+						customerBeverageTags,
+						customerDlc,
+						customerName: currentCustomerName,
+						customerNegativeTags,
+						customerOrder: currentCustomerOrder,
+						customerPositiveTags,
+						extraIngredients: visibleExtraIngredients,
+						recipeIngredients,
+						recipeName: recipeData.name,
+						recipeNegativeTags,
+						recipePositiveTags,
+					});
+				},
+				getAlternatives: (ingredientName) =>
+					currentAlternatives?.get(ingredientName) ??
+					EMPTY_ALTERNATIVES,
+				hasAlternativesLoaded: currentAlternatives !== undefined,
+				key: `${recipeData.name}-${beverage}-${loopIndex}`,
+				price,
+				ratingKey,
+				recipeData,
+				recipeDisplayName: isDarkMatter
+					? DARK_MATTER_META_MAP.name
+					: recipeData.name,
+				recipeIngredients,
+				visibleExtraIngredients,
+			};
+		});
+	}, [
 		alternativesMap,
+		currentCustomerName,
+		currentCustomerOrder,
+		instance_beverage,
+		instance_customer,
+		instance_recipe,
+		loadAlternatives,
+		suggestions,
+	]);
+
+	return {
 		availableRecipeCookers,
 		currentBeverageName,
 		currentCustomerName,
@@ -257,13 +374,12 @@ export function useSuggestedMealsViewModel() {
 		isActive,
 		isHighAppearance,
 		isVisible,
-		loadAlternatives,
 		selectableMaxExtraIngredients,
 		selectableMaxRatings,
 		selectedCookerKeys,
 		selectedMaxExtraKeys,
 		selectedMaxRatingKeys,
-		suggestions,
+		suggestedMealRows,
 		suggestMaxRating,
 	};
 }
