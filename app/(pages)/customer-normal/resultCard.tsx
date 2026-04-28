@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 
-import { useVibrate } from '@/hooks';
+import { useAutoHideTooltip, useVibrate } from '@/hooks';
 
 import {
 	Button,
@@ -44,35 +44,12 @@ export default function ResultCard() {
 		[currentRecipeData, instance_recipe]
 	);
 
-	const saveButtonTooltipTimer = useRef<NodeJS.Timeout | undefined>(
-		undefined
-	);
-	const [isShowSaveButtonTooltip, setIsShowSaveButtonTooltip] =
-		useState(false);
 	const isSaveButtonDisabled =
 		currentCustomerName === null ||
 		currentRecipeData === null ||
 		currentRating === null;
-
-	const hideTooltip = useCallback(() => {
-		setIsShowSaveButtonTooltip(false);
-		clearTimeout(saveButtonTooltipTimer.current);
-	}, []);
-
-	useEffect(
-		() => () => {
-			clearTimeout(saveButtonTooltipTimer.current);
-		},
-		[]
-	);
-
-	const showTooltip = useCallback(() => {
-		setIsShowSaveButtonTooltip(true);
-		clearTimeout(saveButtonTooltipTimer.current);
-		saveButtonTooltipTimer.current = setTimeout(() => {
-			hideTooltip();
-		}, 3000);
-	}, [hideTooltip]);
+	const { isTooltipOpen: isShowSaveButtonTooltip, showTooltip } =
+		useAutoHideTooltip(!isSaveButtonDisabled);
 
 	const handleSaveButtonPress = useCallback(() => {
 		if (isSaveButtonDisabled) {
@@ -90,12 +67,6 @@ export default function ResultCard() {
 		},
 		[vibrate]
 	);
-
-	useEffect(() => {
-		if (isShowSaveButtonTooltip && !isSaveButtonDisabled) {
-			hideTooltip();
-		}
-	}, [hideTooltip, isSaveButtonDisabled, isShowSaveButtonTooltip]);
 
 	let content: IFadeMotionDivProps['children'];
 	let contentClassName: IFadeMotionDivProps['className'];

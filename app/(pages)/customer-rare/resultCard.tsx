@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import useBreakpoint from 'use-breakpoint';
-import { useVibrate } from '@/hooks';
+import { useAutoHideTooltip, useVibrate } from '@/hooks';
 
 import {
 	Button,
@@ -59,11 +59,6 @@ export default function ResultCard() {
 		[currentRecipeData, instance_recipe]
 	);
 
-	const saveButtonTooltipTimer = useRef<NodeJS.Timeout | undefined>(
-		undefined
-	);
-	const [isShowSaveButtonTooltip, setIsShowSaveButtonTooltip] =
-		useState(false);
 	const isSaveButtonDisabled =
 		currentCustomerName === null ||
 		(currentCustomerOrder.beverageTag === null && !hasMystiaCooker) ||
@@ -71,26 +66,8 @@ export default function ResultCard() {
 		currentBeverageName === null ||
 		currentRecipeData === null ||
 		currentRating === null;
-
-	const hideTooltip = useCallback(() => {
-		setIsShowSaveButtonTooltip(false);
-		clearTimeout(saveButtonTooltipTimer.current);
-	}, []);
-
-	useEffect(
-		() => () => {
-			clearTimeout(saveButtonTooltipTimer.current);
-		},
-		[]
-	);
-
-	const showTooltip = useCallback(() => {
-		setIsShowSaveButtonTooltip(true);
-		clearTimeout(saveButtonTooltipTimer.current);
-		saveButtonTooltipTimer.current = setTimeout(() => {
-			hideTooltip();
-		}, 3000);
-	}, [hideTooltip]);
+	const { isTooltipOpen: isShowSaveButtonTooltip, showTooltip } =
+		useAutoHideTooltip(!isSaveButtonDisabled);
 
 	const handleCookerPress = useCallback(() => {
 		if (isDarkMatter) {
@@ -116,12 +93,6 @@ export default function ResultCard() {
 			customerStore.saveMealResult();
 		}
 	}, [isSaveButtonDisabled, showTooltip, vibrate]);
-
-	useEffect(() => {
-		if (isShowSaveButtonTooltip && !isSaveButtonDisabled) {
-			hideTooltip();
-		}
-	}, [hideTooltip, isSaveButtonDisabled, isShowSaveButtonTooltip]);
 
 	const saveButtonTooltip = unsatisfiedSelectionTip.save;
 

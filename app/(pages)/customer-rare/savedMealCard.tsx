@@ -16,6 +16,7 @@ import {
 
 import SavedMealActionRail from '@/(pages)/customer-shared/savedMealActionRail';
 import SavedMealIngredientsStrip from '@/(pages)/customer-shared/savedMealIngredientsStrip';
+import { swapSavedMeals } from '@/(pages)/customer-shared/swapSavedMeals';
 import {
 	type IMoveButtonProps,
 	MoveButton,
@@ -35,7 +36,6 @@ import {
 	RECIPE_TAG_STYLE,
 } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
-import { copyArray } from '@/utilities';
 
 export {
 	type IMoveButtonProps,
@@ -85,33 +85,16 @@ export default function SavedMealCard() {
 
 			const nextIndex =
 				direction === MoveButton.direction.down ? index + 1 : index - 1;
+			const newData = swapSavedMeals({
+				currentMeals: currentCustomerMeals,
+				nextVisibleIndex: nextIndex,
+				savedMeals: savedCustomerMeals,
+				visibleIndex: index,
+			});
 
-			if (nextIndex < 0 || nextIndex >= savedCustomerMeals.length) {
+			if (newData === null) {
 				return;
 			}
-
-			const currentEntry = savedCustomerMeals[index];
-			const nextEntry = savedCustomerMeals[nextIndex];
-
-			if (currentEntry === undefined || nextEntry === undefined) {
-				return;
-			}
-
-			const { dataIndex: currentDataIndex } = currentEntry;
-			const { dataIndex: nextDataIndex } = nextEntry;
-
-			const newData = copyArray(currentCustomerMeals);
-			const currentMeal = newData[currentDataIndex];
-			const nextMeal = newData[nextDataIndex];
-
-			if (currentMeal === undefined || nextMeal === undefined) {
-				return;
-			}
-
-			[newData[currentDataIndex], newData[nextDataIndex]] = [
-				nextMeal,
-				currentMeal,
-			];
 
 			customerStore.persistence.meals[currentCustomerName]?.set(newData);
 		};
