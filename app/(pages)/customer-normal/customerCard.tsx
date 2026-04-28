@@ -3,7 +3,6 @@ import { useCallback, useMemo } from 'react';
 import { usePathname, useVibrate } from '@/hooks';
 
 import { Divider } from '@heroui/divider';
-import { type Selection } from '@heroui/table';
 import { faArrowsRotate, faXmark } from '@fortawesome/free-solid-svg-icons';
 
 import { ratingStyles } from '@/design/theme/styles/rating';
@@ -35,6 +34,7 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import { customerNormalStore as customerStore, globalStore } from '@/stores';
+import { buildNormalTagTooltip } from '@/utils/customer/shared';
 import { checkLengthEmpty, copyArray, pinyinSort } from '@/utilities';
 
 export default function CustomerCard() {
@@ -120,14 +120,9 @@ export default function CustomerCard() {
 	const getTagTooltip = useCallback(
 		(
 			type: 'beverageTag' | 'recipeTag',
-			selectedTags: Selection,
+			selectedTags: SelectionSet,
 			tag: string
-		) => {
-			const tagType = type === 'beverageTag' ? '酒水' : '料理';
-			const isTagExisted = (selectedTags as SelectionSet).has(tag);
-
-			return `点击：${isTagExisted ? `取消筛选${tagType}表格` : `以此标签筛选${tagType}表格`}`;
-		},
+		) => buildNormalTagTooltip({ selectedTags, tag, type }),
 		[]
 	);
 

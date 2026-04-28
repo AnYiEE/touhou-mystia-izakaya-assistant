@@ -10,7 +10,7 @@ export interface IBuildRareTagTooltipArgs {
 }
 
 export interface IBuildNormalTagTooltipArgs {
-	selectedTags: ReadonlySet<string>;
+	selectedTags: Pick<ReadonlySet<string>, 'has'>;
 	tag: string;
 	type: TTagType;
 }

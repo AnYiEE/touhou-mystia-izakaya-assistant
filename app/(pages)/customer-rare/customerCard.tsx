@@ -35,6 +35,7 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
+import { buildRareTagTooltip } from '@/utils/customer/shared';
 import { checkLengthEmpty, copyArray, pinyinSort } from '@/utilities';
 
 export default function CustomerCard() {
@@ -133,27 +134,15 @@ export default function CustomerCard() {
 	const tooltipRatingColor = hasRating ? currentRating : undefined;
 
 	const getTagTooltip = useCallback(
-		(type: keyof typeof currentCustomerOrder, tag: string) => {
-			const tagType = type === 'beverageTag' ? '酒水' : '料理';
-			const isCurrentTag = currentCustomerOrder[type] === tag;
-			const isNormalMeal = hasMystiaCooker && !isDarkMatter;
-
-			const cookerTip = '已使用“夜雀”系列厨具无视顾客点单需求';
-			const orderTip = isNormalMeal
-				? isOrderLinkedFilter
-					? ''
-					: cookerTip
-				: `点击：${isCurrentTag ? '不再' : ''}将此标签视为顾客点单需求`;
-			const filterTip = isOrderLinkedFilter
-				? `${isNormalMeal ? '点击：' : '并'}${
-						isCurrentTag
-							? `取消筛选${tagType}表格`
-							: `以此标签筛选${tagType}表格`
-					}${isNormalMeal ? `（${cookerTip}）` : ''}`
-				: '';
-
-			return `${orderTip}${filterTip}`;
-		},
+		(type: keyof typeof currentCustomerOrder, tag: string) =>
+			buildRareTagTooltip({
+				currentOrderTag: currentCustomerOrder[type],
+				hasMystiaCooker,
+				isDarkMatter: Boolean(isDarkMatter),
+				isOrderLinkedFilter,
+				tag,
+				type,
+			}),
 		[
 			currentCustomerOrder,
 			hasMystiaCooker,

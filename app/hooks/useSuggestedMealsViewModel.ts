@@ -5,7 +5,6 @@ import {
 	useEffect,
 	useLayoutEffect,
 	useMemo,
-	useRef,
 	useState,
 } from 'react';
 
@@ -36,8 +35,18 @@ type TLoadSuggestedMealAlternativesArgs = Omit<
 >;
 
 type TSuggestedMeal = ReturnType<typeof suggestMeals>[number];
+type TSuggestions = ReturnType<typeof suggestMeals> | null;
 
 const EMPTY_ALTERNATIVES: TIngredientName[] = [];
+const EMPTY_ALTERNATIVES_MAP = new Map<
+	number,
+	Map<TIngredientName, TIngredientName[]>
+>();
+
+interface IAlternativesState {
+	map: Map<number, Map<TIngredientName, TIngredientName[]>>;
+	suggestions: TSuggestions;
+}
 
 interface ISuggestedMealRowViewModel {
 	beverage: TSuggestedMeal['beverage'];
@@ -98,9 +107,11 @@ export function useSuggestedMealsViewModel() {
 	const instance_ingredient = customerStore.instances.ingredient.get();
 	const instance_recipe = customerStore.instances.recipe.get();
 
-	const [alternativesMap, setAlternativesMap] = useState(
-		() => new Map<number, Map<TIngredientName, TIngredientName[]>>()
-	);
+	const [alternativesState, setAlternativesState] =
+		useState<IAlternativesState>(() => ({
+			map: new Map(),
+			suggestions: null,
+		}));
 
 	const selectedCookerKeys = useMemo(
 		() =>
@@ -218,18 +229,24 @@ export function useSuggestedMealsViewModel() {
 			currentRecipeData !== null &&
 			currentBeverageName !== null
 		);
+	const alternativesMap =
+		alternativesState.suggestions === suggestions
+			? alternativesState.map
+			: EMPTY_ALTERNATIVES_MAP;
 
 	useLayoutEffect(() => {
 		customerStore.shared.suggestMeals.visibility.set(isVisible);
 	}, [isVisible]);
 
-	const prevSuggestionsRef = useRef(suggestions);
-	if (prevSuggestionsRef.current !== suggestions) {
-		prevSuggestionsRef.current = suggestions;
-		if (alternativesMap.size > 0) {
-			setAlternativesMap(new Map());
-		}
-	}
+	useEffect(() => {
+		setAlternativesState((prev) => {
+			if (prev.suggestions === suggestions && prev.map.size === 0) {
+				return prev;
+			}
+
+			return { map: new Map(), suggestions };
+		});
+	}, [suggestions]);
 
 	const hasUnsetPopularOrderTag =
 		(currentCustomerOrder.recipeTag === DYNAMIC_TAG_MAP.popularPositive ||
@@ -239,12 +256,17 @@ export function useSuggestedMealsViewModel() {
 
 	const loadAlternatives = useCallback(
 		(loopIndex: number, args: TLoadSuggestedMealAlternativesArgs) => {
-			setAlternativesMap((prev) => {
-				if (prev.has(loopIndex)) {
+			setAlternativesState((prev) => {
+				const prevMap =
+					prev.suggestions === suggestions
+						? prev.map
+						: EMPTY_ALTERNATIVES_MAP;
+
+				if (prevMap.has(loopIndex)) {
 					return prev;
 				}
 
-				const next = new Map(prev);
+				const next = new Map(prevMap);
 				next.set(
 					loopIndex,
 					getScoreBasedAlternatives({
@@ -257,7 +279,7 @@ export function useSuggestedMealsViewModel() {
 						popularTrend: currentCustomerPopularTrend,
 					})
 				);
-				return next;
+				return { map: next, suggestions };
 			});
 		},
 		[
@@ -267,6 +289,7 @@ export function useSuggestedMealsViewModel() {
 			instance_ingredient,
 			instance_recipe,
 			isFamousShop,
+			suggestions,
 		]
 	);
 
