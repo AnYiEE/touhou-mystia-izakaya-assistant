@@ -12,6 +12,13 @@ import { checkArrayEqualOf } from '@/utilities';
 
 type TBeverage = Prettify<TBeverages[number] & { places: TPlace[] }>;
 
+type TBeverageWithPinyin = TBeverage & { pinyin: string[] };
+
+type TBeverageSuitabilityRowData = TBeverageWithPinyin & {
+	matchedTags: TBeverageTag[];
+	suitability: number;
+};
+
 export class Beverage extends Food<TBeverage[]> {
 	private static _instance: Beverage | undefined;
 
@@ -101,5 +108,33 @@ export class Beverage extends Food<TBeverage[]> {
 		);
 
 		return { suitability: count, tags: commonTags };
+	}
+
+	/**
+	 * @description Build raw beverage suitability rows for table consumers without applying query-layer filtering, sorting or pagination.
+	 */
+	public buildBeverageSuitabilityRows(
+		customerBeverageTags?: ReadonlyArray<TBeverageTag> | null
+	): TBeverageSuitabilityRowData[] {
+		if (
+			customerBeverageTags === null ||
+			customerBeverageTags === undefined
+		) {
+			return this.data.map((beverage) => ({
+				...beverage,
+				matchedTags: [],
+				suitability: 0,
+			}));
+		}
+
+		return this.data.map((beverage) => {
+			const { suitability, tags: matchedTags } =
+				this.getCustomerSuitability(
+					beverage.name,
+					customerBeverageTags
+				);
+
+			return { ...beverage, matchedTags, suitability };
+		});
 	}
 }

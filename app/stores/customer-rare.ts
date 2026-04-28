@@ -539,13 +539,8 @@ export const customerRareStore = store(state, {
 						);
 
 			return buildBeverageSuitabilityRows({
-				beverages: instance_beverage.data,
+				beverageInstance: instance_beverage,
 				customerBeverageTags,
-				getCustomerSuitability: (beverageName, customerTags) =>
-					instance_beverage.getCustomerSuitability(
-						beverageName,
-						customerTags
-					),
 				hiddenBeverages: shouldGet
 					? currentStore.shared.beverage.table.hiddenBeverages.get()
 					: currentStore.shared.beverage.table.hiddenBeverages.use(),

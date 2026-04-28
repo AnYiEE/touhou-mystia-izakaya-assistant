@@ -6,6 +6,7 @@ import {
 	numberSort,
 	pinyinSort,
 } from '@/utilities';
+import type { Beverage } from '@/utils';
 import type { TBeverage } from '@/utils/types';
 
 import type {
@@ -16,18 +17,9 @@ import type {
 	TSearchMatcher,
 } from './types';
 
-interface IBeverageSuitabilityResult {
-	suitability: number;
-	tags: TBeverageTag[];
-}
-
 export interface IBuildBeverageSuitabilityRowsArgs {
-	beverages: ReadonlyArray<TBeverage>;
+	beverageInstance: Beverage;
 	customerBeverageTags?: ReadonlyArray<TBeverageTag> | null;
-	getCustomerSuitability: (
-		beverageName: TBeverage['name'],
-		customerTags: ReadonlyArray<TBeverageTag>
-	) => IBeverageSuitabilityResult;
 	hiddenBeverages: ReadonlySet<TBeverage['name']>;
 	hiddenDlcs: ReadonlySet<TBeverage['dlc']>;
 	matchSearch: TSearchMatcher;
@@ -76,9 +68,8 @@ function paginateRows<T>(rows: T[], page: number, rowsPerPage: number) {
  * 从 beverage 原始数据构建表格需要的 suitability 行数据，并保留现有过滤与排序顺序。
  */
 export function buildBeverageSuitabilityRows({
-	beverages,
+	beverageInstance,
 	customerBeverageTags,
-	getCustomerSuitability,
 	hiddenBeverages,
 	hiddenDlcs,
 	matchSearch,
@@ -89,25 +80,18 @@ export function buildBeverageSuitabilityRows({
 	selectedDlcs = [],
 	sortDescriptor,
 }: IBuildBeverageSuitabilityRowsArgs): IBeverageSuitabilityRowsResult {
-	const data = beverages.filter(({ dlc }) => !hiddenDlcs.has(dlc));
+	const data: TBeverageSuitabilityRow[] = beverageInstance
+		.buildBeverageSuitabilityRows(customerBeverageTags)
+		.filter(({ dlc }) => !hiddenDlcs.has(dlc));
 
 	let filteredRows: TBeverageSuitabilityRow[];
 
 	if (customerBeverageTags === null || customerBeverageTags === undefined) {
-		filteredRows = data.map((beverage) => ({
-			...beverage,
-			matchedTags: [],
-			suitability: 0,
-		}));
+		filteredRows = data;
 	} else {
-		const dataWithRealSuitability = data
-			.map((beverage) => {
-				const { suitability, tags: matchedTags } =
-					getCustomerSuitability(beverage.name, customerBeverageTags);
-
-				return { ...beverage, matchedTags, suitability };
-			})
-			.filter(({ name }) => !hiddenBeverages.has(name));
+		const dataWithRealSuitability = data.filter(
+			({ name }) => !hiddenBeverages.has(name)
+		);
 
 		const hasNameFilter = Boolean(searchValue);
 		const shouldFilterByTableOptions =
