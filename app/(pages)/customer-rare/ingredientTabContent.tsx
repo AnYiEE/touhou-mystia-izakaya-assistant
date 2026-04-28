@@ -21,8 +21,7 @@ export default memo<IProps>(function IngredientTabContent({
 
 	const currentCustomerName = store.shared.customer.name.use();
 	const currentRecipeData = store.shared.recipe.data.use();
-	const { changesByName, darkIngredientNames } =
-		store.ingredientScoreChanges.use();
+	const { changesByName } = store.ingredientScoreChanges.use();
 
 	const instance_recipe = store.instances.recipe.get();
 
@@ -76,16 +75,7 @@ export default memo<IProps>(function IngredientTabContent({
 			onToggle={handleButtonPress}
 		>
 			{sortedData.map(({ name }, index) => {
-				const ingredientScoreChange =
-					changesByName[name] ??
-					(darkIngredientNames.includes(name)
-						? {
-								isDarkIngredient: true,
-								isOrderTag: false,
-								restriction: 'darkIngredient' as const,
-								scoreChange: -Infinity,
-							}
-						: null);
+				const ingredientScoreChange = changesByName[name] ?? null;
 				const restriction =
 					ingredientScoreChange?.restriction ?? 'none';
 				const scoreChange = ingredientScoreChange?.scoreChange ?? 0;
