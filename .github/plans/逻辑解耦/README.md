@@ -394,7 +394,7 @@
 
 ### 阶段 6：阶段 5 之后的后置补遗（非主路径，详见 [07-阶段6-补遗.md](./07-阶段6-补遗.md)）
 
-- [ ] PR-6.1 store factory（`available*` computed × 13 + sort 状态机 × 4）
+- [ ] PR-6.1 store factory（已完成排序状态机子切口；`available*` computed 当前不单列推进）
 - [ ] PR-6.2 customer Tab 视图共享化（`customerTabContent` / `beverageTabContent` toolbar+cell / `recipeTabContent` toolbar+cell）
 - [ ] PR-6.3 resultCard / savedMealCard / customerCard 小共享（`useAutoHideTooltip` / `swapSavedMeals` / `CustomerDlcPill`）
 - [ ] PR-6.4 `useCustomerRouteData` 提升与剩余 view 派生收口（`currentBeverageTags` computed / `suggestMeals` 携 `isDarkMatter`）

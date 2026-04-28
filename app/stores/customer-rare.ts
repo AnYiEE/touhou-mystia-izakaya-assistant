@@ -30,9 +30,9 @@ import {
 	sync as syncMiddleware,
 } from '@/stores/middlewares';
 import {
+	applyTableSortChange,
 	createNamesCache,
 	keepLastTag,
-	reverseDirection,
 	reverseVisibilityState,
 } from '@/stores/utils';
 import {
@@ -1253,44 +1253,12 @@ export const customerRareStore = store(state, {
 		onBeverageTableSortChange(config: TBeverageTableSortDescriptor) {
 			currentStore.shared.beverage.table.page.set(1);
 			const sortConfig = config as Required<TBeverageTableSortDescriptor>;
-			const { column, direction } = sortConfig;
-			const { lastColumn, time } =
-				currentStore.persistence.beverage.table.sortDescriptor.get();
-			if (lastColumn === undefined || column !== lastColumn) {
-				currentStore.persistence.beverage.table.sortDescriptor.assign({
-					column,
-					lastColumn: column,
-				});
-			}
-			// Switch between ascending, descending and no sort.
-			currentStore.persistence.beverage.table.sortDescriptor.assign({
-				time: time === undefined ? 1 : time + 1,
-			});
-			if (time !== undefined) {
-				if (column === lastColumn) {
-					if (time % 2 === 0) {
-						currentStore.persistence.beverage.table.sortDescriptor.set(
-							{}
-						);
-						return;
-					}
-				} else {
-					currentStore.persistence.beverage.table.sortDescriptor.assign(
-						{ time: 1 }
-					);
-				}
-			}
-			// Reverse direction `ascending` to `descending` when first time
-			let reversedDirection = direction;
-			if (
-				(column === 'price' || column === 'suitability') &&
-				column !== lastColumn
-			) {
-				reversedDirection = reverseDirection(direction);
-			}
-			currentStore.persistence.beverage.table.sortDescriptor.assign({
-				direction: reversedDirection,
-			});
+			currentStore.persistence.beverage.table.sortDescriptor.set(
+				applyTableSortChange(
+					sortConfig,
+					currentStore.persistence.beverage.table.sortDescriptor.get()
+				)
+			);
 		},
 
 		onIngredientSelectedChange(ingredientName: TIngredientName) {
@@ -1348,44 +1316,12 @@ export const customerRareStore = store(state, {
 		onRecipeTableSortChange(config: TRecipeTableSortDescriptor) {
 			currentStore.shared.recipe.table.page.set(1);
 			const sortConfig = config as Required<TRecipeTableSortDescriptor>;
-			const { column, direction } = sortConfig;
-			const { lastColumn, time } =
-				currentStore.persistence.recipe.table.sortDescriptor.get();
-			if (lastColumn === undefined || column !== lastColumn) {
-				currentStore.persistence.recipe.table.sortDescriptor.assign({
-					column,
-					lastColumn: column,
-				});
-			}
-			// Switch between ascending, descending and no sort.
-			currentStore.persistence.recipe.table.sortDescriptor.assign({
-				time: time === undefined ? 1 : time + 1,
-			});
-			if (time !== undefined) {
-				if (column === lastColumn) {
-					if (time % 2 === 0) {
-						currentStore.persistence.recipe.table.sortDescriptor.set(
-							{}
-						);
-						return;
-					}
-				} else {
-					currentStore.persistence.recipe.table.sortDescriptor.assign(
-						{ time: 1 }
-					);
-				}
-			}
-			// Reverse direction `ascending` to `descending` when first time
-			let reversedDirection = direction;
-			if (
-				(column === 'price' || column === 'suitability') &&
-				column !== lastColumn
-			) {
-				reversedDirection = reverseDirection(direction);
-			}
-			currentStore.persistence.recipe.table.sortDescriptor.assign({
-				direction: reversedDirection,
-			});
+			currentStore.persistence.recipe.table.sortDescriptor.set(
+				applyTableSortChange(
+					sortConfig,
+					currentStore.persistence.recipe.table.sortDescriptor.get()
+				)
+			);
 		},
 
 		onTabSelectionChange(tab: Key) {
