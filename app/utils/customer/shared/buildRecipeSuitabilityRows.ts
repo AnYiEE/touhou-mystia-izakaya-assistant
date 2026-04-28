@@ -1,4 +1,5 @@
 import { type TIngredientName, type TRecipeTag } from '@/data';
+import type { IPopularTrend } from '@/types';
 import {
 	checkArrayContainsOf,
 	checkArraySubsetOf,
@@ -7,6 +8,7 @@ import {
 	numberSort,
 	pinyinSort,
 } from '@/utilities';
+import type { Recipe } from '@/utils';
 import type { TRecipe } from '@/utils/types';
 
 import type {
@@ -17,35 +19,18 @@ import type {
 	TSearchMatcher,
 } from './types';
 
-interface IRecipeSuitabilityResult {
-	negativeTags?: TRecipeTag[];
-	positiveTags: TRecipeTag[];
-	suitability: number;
-}
-
 export interface IBuildRecipeSuitabilityRowsArgs {
-	blockedRecipeNames: ReadonlySet<TRecipe['name']>;
-	calculateTagsWithTrend: (
-		recipeTags: ReadonlyArray<TRecipeTag>
-	) => TRecipeTag[];
-	composeTagsWithPopularTrend: (
-		ingredients: ReadonlyArray<TIngredientName>,
-		positiveTags: ReadonlyArray<TRecipeTag>
-	) => TRecipeTag[];
 	customerNegativeTags?: ReadonlyArray<TRecipeTag>;
 	customerPositiveTags?: ReadonlyArray<TRecipeTag> | null;
-	getCustomerSuitability: (
-		recipeTags: ReadonlyArray<TRecipeTag>,
-		customerPositiveTags: ReadonlyArray<TRecipeTag>,
-		customerNegativeTags?: ReadonlyArray<TRecipeTag>
-	) => IRecipeSuitabilityResult;
 	getEasterEggScore?: (recipe: TRecipe) => number | null | undefined;
 	hiddenDlcs: ReadonlySet<TRecipe['dlc']>;
 	hiddenIngredients: ReadonlySet<TIngredientName>;
 	hiddenRecipes: ReadonlySet<TRecipe['name']>;
+	isFamousShop: boolean;
 	matchSearch: TSearchMatcher;
 	page: number;
-	recipes: ReadonlyArray<TRecipe>;
+	popularTrend: IPopularTrend;
+	recipeInstance: Recipe;
 	rowsPerPage: number;
 	searchValue?: string;
 	selectedCookers?: ReadonlyArray<TRecipe['cooker']>;
@@ -92,39 +77,21 @@ function paginateRows<T>(rows: T[], page: number, rowsPerPage: number) {
 	return rows.slice(start, end);
 }
 
-function createRecipeRow(
-	recipe: TRecipe,
-	matchedPositiveTags: TRecipeTag[],
-	suitability: number,
-	positiveTags: TRecipeTag[] = recipe.positiveTags,
-	matchedNegativeTags?: TRecipeTag[]
-): TRecipeSuitabilityRow {
-	return {
-		...recipe,
-		...(matchedNegativeTags === undefined ? {} : { matchedNegativeTags }),
-		matchedPositiveTags,
-		positiveTags,
-		suitability,
-	};
-}
-
 /**
  * 从 recipe 原始数据构建表格需要的 suitability 行数据，并保留现有过滤与排序顺序。
  */
 export function buildRecipeSuitabilityRows({
-	blockedRecipeNames,
-	calculateTagsWithTrend,
-	composeTagsWithPopularTrend,
 	customerNegativeTags,
 	customerPositiveTags,
-	getCustomerSuitability,
 	getEasterEggScore,
 	hiddenDlcs,
 	hiddenIngredients,
 	hiddenRecipes,
+	isFamousShop,
 	matchSearch,
 	page,
-	recipes,
+	popularTrend,
+	recipeInstance,
 	rowsPerPage,
 	searchValue = '',
 	selectedCookers = [],
@@ -132,68 +99,27 @@ export function buildRecipeSuitabilityRows({
 	selectedRecipeTags = [],
 	sortDescriptor,
 }: IBuildRecipeSuitabilityRowsArgs): IRecipeSuitabilityRowsResult {
-	const data = recipes.filter(
-		({ dlc, name }) => !hiddenDlcs.has(dlc) && !blockedRecipeNames.has(name)
-	);
+	const domainRowsArgs = {
+		...(customerNegativeTags === undefined ? {} : { customerNegativeTags }),
+		...(customerPositiveTags === undefined ? {} : { customerPositiveTags }),
+		...(getEasterEggScore === undefined ? {} : { getEasterEggScore }),
+		isFamousShop,
+		popularTrend,
+	};
+	const data: TRecipeSuitabilityRow[] = recipeInstance
+		.buildRecipeSuitabilityRows(domainRowsArgs)
+		.filter(({ dlc }) => !hiddenDlcs.has(dlc));
 
 	let filteredRows: TRecipeSuitabilityRow[];
 
 	if (customerPositiveTags === null || customerPositiveTags === undefined) {
-		filteredRows = data.map((recipe) =>
-			createRecipeRow(
-				recipe,
-				[],
-				0,
-				recipe.positiveTags,
-				customerNegativeTags === undefined ? undefined : []
-			)
-		);
+		filteredRows = data;
 	} else {
-		const dataWithRealSuitability = data
-			.map((recipe) => {
-				const recipeTagsWithTrend = calculateTagsWithTrend(
-					composeTagsWithPopularTrend(
-						recipe.ingredients,
-						recipe.positiveTags
-					)
-				);
-				const easterEggScore = getEasterEggScore?.(recipe);
-
-				if (easterEggScore !== null && easterEggScore !== undefined) {
-					return createRecipeRow(
-						recipe,
-						[],
-						easterEggScore > 0 ? Infinity : -Infinity,
-						recipeTagsWithTrend,
-						customerNegativeTags === undefined ? undefined : []
-					);
-				}
-
-				const {
-					negativeTags = [],
-					positiveTags: matchedPositiveTags,
-					suitability,
-				} = getCustomerSuitability(
-					recipeTagsWithTrend,
-					customerPositiveTags,
-					customerNegativeTags
-				);
-
-				return createRecipeRow(
-					recipe,
-					matchedPositiveTags,
-					suitability,
-					recipeTagsWithTrend,
-					customerNegativeTags === undefined
-						? undefined
-						: negativeTags
-				);
-			})
-			.filter(
-				({ ingredients, name }) =>
-					!checkArrayContainsOf(ingredients, hiddenIngredients) &&
-					!hiddenRecipes.has(name)
-			);
+		const dataWithRealSuitability = data.filter(
+			({ ingredients, name }) =>
+				!checkArrayContainsOf(ingredients, hiddenIngredients) &&
+				!hiddenRecipes.has(name)
+		);
 
 		const hasNameFilter = Boolean(searchValue);
 		const shouldFilterByTableOptions =

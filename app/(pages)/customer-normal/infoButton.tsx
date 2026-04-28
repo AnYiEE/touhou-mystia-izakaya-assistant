@@ -5,7 +5,7 @@ import { AccordionItem } from '@heroui/accordion';
 import { Avatar } from '@/design/ui/components';
 
 import InfoButtonBase, {
-	SiteInfo,
+	InfoSectionTitle,
 } from '@/(pages)/customer-shared/infoButtonBase';
 import { trackEvent } from '@/components/analytics';
 import Ol from '@/components/ol';
@@ -55,12 +55,7 @@ export default function InfoButton() {
 				key="description"
 				aria-label={`${currentCustomerName}介绍`}
 				textValue={currentCustomerName}
-				title={
-					<div className="flex items-center justify-between">
-						<span>{currentCustomerName}</span>
-						<SiteInfo />
-					</div>
-				}
+				title={<InfoSectionTitle title={currentCustomerName} />}
 				classNames={{
 					content:
 						'space-y-1 break-all pt-2 text-justify text-default-900',

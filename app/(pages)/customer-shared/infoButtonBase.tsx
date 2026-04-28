@@ -16,6 +16,19 @@ export function SiteInfo() {
 	return <SiteInfoBase fontSize={8} className="h-full text-right" />;
 }
 
+interface IInfoSectionTitleProps {
+	title: string;
+}
+
+export function InfoSectionTitle({ title }: IInfoSectionTitleProps) {
+	return (
+		<div className="flex items-center justify-between">
+			<span>{title}</span>
+			<SiteInfo />
+		</div>
+	);
+}
+
 interface IProps extends Pick<
 	AccordionProps,
 	'children' | 'defaultExpandedKeys'

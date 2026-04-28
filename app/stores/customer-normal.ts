@@ -498,30 +498,7 @@ export const customerNormalStore = store(state, {
 						);
 
 			return buildRecipeSuitabilityRows({
-				blockedRecipeNames: instance_recipe.blockedRecipes,
-				calculateTagsWithTrend: (recipeTags) =>
-					instance_recipe.calculateTagsWithTrend(
-						recipeTags,
-						currentCustomerPopularTrend,
-						isFamousShop
-					),
-				composeTagsWithPopularTrend: (ingredients, positiveTags) =>
-					instance_recipe.composeTagsWithPopularTrend(
-						ingredients,
-						[],
-						positiveTags,
-						[],
-						currentCustomerPopularTrend
-					),
 				customerPositiveTags,
-				getCustomerSuitability: (
-					recipeTags,
-					selectedCustomerPositiveTags
-				) =>
-					instance_recipe.getCustomerSuitability(
-						recipeTags,
-						selectedCustomerPositiveTags
-					),
 				getEasterEggScore: (recipe) => {
 					if (currentCustomerName === null) {
 						return null;
@@ -546,11 +523,13 @@ export const customerNormalStore = store(state, {
 				hiddenRecipes: shouldGet
 					? currentStore.shared.recipe.table.hiddenRecipes.get()
 					: currentStore.shared.recipe.table.hiddenRecipes.use(),
+				isFamousShop,
 				matchSearch: getSearchResult,
 				page: shouldGet
 					? currentStore.shared.recipe.table.page.get()
 					: currentStore.shared.recipe.table.page.use(),
-				recipes: instance_recipe.data,
+				popularTrend: currentCustomerPopularTrend,
+				recipeInstance: instance_recipe,
 				rowsPerPage: shouldGet
 					? currentStore.shared.recipe.table.row.get()
 					: currentStore.shared.recipe.table.row.use(),
