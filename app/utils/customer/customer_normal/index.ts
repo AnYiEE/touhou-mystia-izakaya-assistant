@@ -1,6 +1,18 @@
 import { checkEasterEgg, evaluateMeal } from './evaluateMeal';
 import { Customer } from '../base';
-import { CUSTOMER_NORMAL_LIST, type TCustomerNormals } from '@/data';
+import {
+	CUSTOMER_NORMAL_LIST,
+	type TCustomerNormalName,
+	type TCustomerNormals,
+	type TPlace,
+} from '@/data';
+import { checkLengthEmpty } from '@/utilities';
+
+export interface ICustomerNormalDisplayMeta {
+	hasOtherPlaces: boolean;
+	mainPlace: TPlace | null;
+	placeContent: string;
+}
 
 export class CustomerNormal extends Customer<TCustomerNormals> {
 	private static _instance: CustomerNormal | undefined;
@@ -23,5 +35,24 @@ export class CustomerNormal extends Customer<TCustomerNormals> {
 
 	public evaluateMeal(args: Parameters<typeof evaluateMeal>[number]) {
 		return evaluateMeal(args);
+	}
+
+	/**
+	 * @description Build stable profile display meta for normal customer cards without carrying UI state or customer-specific presentation overrides.
+	 */
+	public getDisplayMeta(
+		name: TCustomerNormalName
+	): ICustomerNormalDisplayMeta {
+		const { places } = this.getPropsByName(name);
+		const [mainPlace = null, ...otherPlaces] = places;
+		const hasOtherPlaces = !checkLengthEmpty(otherPlaces);
+
+		return {
+			hasOtherPlaces,
+			mainPlace,
+			placeContent: hasOtherPlaces
+				? `其他出没地区：${otherPlaces.join('、')}`
+				: '暂未收录其他出没地区',
+		};
 	}
 }

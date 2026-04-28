@@ -138,21 +138,16 @@ export default function CustomerCard() {
 	const {
 		beverageTags: currentCustomerBeverageTags,
 		dlc: currentCustomerDlc,
-		places: currentCustomerPlaces,
 		positiveTags: currentCustomerPositiveTags,
 	} = instance_customer.getPropsByName(currentCustomerName);
+	const {
+		hasOtherPlaces,
+		mainPlace: currentCustomerMainPlace,
+		placeContent,
+	} = instance_customer.getDisplayMeta(currentCustomerName);
 
 	const { label: dlcLabel, shortLabel: dlcShortLabel } =
 		DLC_LABEL_MAP[currentCustomerDlc];
-
-	const copiedCurrentCustomerPlaces = copyArray(currentCustomerPlaces);
-	const currentCustomerMainPlace = copiedCurrentCustomerPlaces.shift();
-
-	const hasOtherPlaces = !checkLengthEmpty(copiedCurrentCustomerPlaces);
-
-	const placeContent = hasOtherPlaces
-		? `其他出没地区：${copiedCurrentCustomerPlaces.join('、')}`
-		: '暂未收录其他出没地区';
 
 	return (
 		<Card
