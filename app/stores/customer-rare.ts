@@ -50,6 +50,7 @@ import {
 import type { IMealRecipe, IPopularTrend } from '@/types';
 import {
 	checkLengthEmpty,
+	createBoundedRuntimeCache,
 	getSearchResult,
 	numberSort,
 	pinyinSort,
@@ -251,7 +252,10 @@ interface ISavedMealRatingResult {
 	price: number;
 	rating: TRatingKey;
 }
-const savedMealRatingCache = new Map<string, ISavedMealRatingResult>();
+const savedMealRatingCache = createBoundedRuntimeCache<
+	string,
+	ISavedMealRatingResult
+>(256);
 
 export const customerRareStore = store(state, {
 	middlewares: [
@@ -1454,8 +1458,10 @@ export const customerRareStore = store(state, {
 			popularTrend: IPopularTrend;
 		}) {
 			const stringifiedData = JSON.stringify(data);
-			if (savedMealRatingCache.has(stringifiedData)) {
-				return savedMealRatingCache.get(stringifiedData);
+			const cachedResult = savedMealRatingCache.get(stringifiedData);
+
+			if (cachedResult !== undefined) {
+				return cachedResult;
 			}
 			const {
 				beverageName,

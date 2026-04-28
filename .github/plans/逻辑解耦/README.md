@@ -9,7 +9,7 @@
 | 层                | 现状定位                                                                                                                                                                                     | 实际承担                                                                                                                                                                                                                                                                                                            | 备注                                                                                                                                 |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `app/data/`       | 静态游戏数据（JSON）+ 常量表                                                                                                                                                                 | 数据 + 常量                                                                                                                                                                                                                                                                                                         | OK                                                                                                                                   |
-| `app/utils/`      | 领域单例：`Beverage` / `Recipe` / `CustomerRare` / `CustomerNormal` / `Ingredient`… 以及 `customer/customer_rare/{evaluateMeal,suggestMeals}.ts`、`customer/customer_normal/evaluateMeal.ts` | 纯领域计算层                                                                                                                                                                                                                                                                                                        | `customer_normal` 无 `suggestMeals.ts`；`customer/shared/` 目录已存在但当前为空，尚未开始承接稀客/普客共享算法                       |
+| `app/utils/`      | 领域单例：`Beverage` / `Recipe` / `CustomerRare` / `CustomerNormal` / `Ingredient`… 以及 `customer/customer_rare/{evaluateMeal,suggestMeals}.ts`、`customer/customer_normal/evaluateMeal.ts` | 纯领域计算层                                                                                                                                                                                                                                                                                                        | `customer_normal` 无 `suggestMeals.ts`；`customer/shared/` 已开始承接稀客/普客共享算法与保存套餐评估 helper                          |
 | `app/utilities/`  | 通用纯函数：`filterItems` / `pinyin` / `sort` / `array` …                                                                                                                                    | OK                                                                                                                                                                                                                                                                                                                  |                                                                                                                                      |
 | `app/stores/`     | `@davstack/store` 单例；`shared` / `persistence` / `instances` / `.computed(...)` / `.actions(...)`                                                                                          | `.computed(...)` 目前不只 `availableXxx`，还包含 `beverageTableDlcs` / `recipeTableCookers` / `recipeTableDlcs` 这类 read/write adapter；`.actions(...)` + `onChange(...)` 已集中维护 `shared.recipe.tagsWithTrend`、`shared.customer.rating`、`shared.customer.isDarkMatter`、`evaluateSavedMealResult` 等派生逻辑 | 现状问题不是“store 完全没承接派生状态”，而是**承接方式零散且偏命令式**，表格/列表类 view-model 仍大量留在页面组件                    |
 | `app/hooks/`      | `useFilteredData` / `useSortedData` / `useSearchResult` / `useThrottle` …                                                                                                                    | 通用列表三件套 + 节流 + `useSkipProcessItemData` 等 UI 邻近派生逻辑                                                                                                                                                                                                                                                 | `customer-rare` / `customer-normal` 的路由页已经高度依赖这些 hook；后续若把列表逻辑改入 store，需要先确认是否要保留相同节流/跳过语义 |
@@ -121,7 +121,7 @@
 - 文件：[app/(pages)/customer-rare/infoButton.tsx](<app/(pages)/customer-rare/infoButton.tsx>)，以及普客同名组件作对照。
 - 现状：
     - 稀客页在视图中聚合 `bondClothes / bondCooker / bondOrnaments / bondPartner / bondRecipes`，再推导 `hasBondRewards`、`hasSpellCards`、`defaultExpandedKeys`。
-    - 普客页已经复用 [app/(pages)/customer-rare/infoButtonBase.tsx](<app/(pages)/customer-rare/infoButtonBase.tsx>)，且没有羁绊奖励聚合逻辑；默认展开项固定包含 `description` 与 `rating`，`chat` 非空时再追加 `chat`。
+    - 普客页已经复用 [app/(pages)/customer-shared/infoButtonBase.tsx](<app/(pages)/customer-shared/infoButtonBase.tsx>)，且没有羁绊奖励聚合逻辑；默认展开项固定包含 `description` 与 `rating`，`chat` 非空时再追加 `chat`。
 - `bondRewards` 是稀客专属派生；普客页只需清理 `defaultExpandedKeys` 等轻量逻辑，不必为了对称接入同一套奖励数据。
 
 ### P2 — 中：闭包过厚、局部字符串拼装、重复柯里化
@@ -344,53 +344,53 @@
 
 ### 阶段 0：纯函数下沉
 
-- [ ] PR-0.1 抽 `getIngredientScoreChanges`
-- [ ] PR-0.2 抽 `buildRecipeSuitabilityRows`
-- [ ] PR-0.3 抽 `buildBeverageSuitabilityRows`
-- [ ] PR-0.4 抽 `getVisibleSavedMeals` + `evaluateSavedMeals`（含 size 上限缓存）
-- [ ] PR-0.5 抽 `buildSelectionTip` / `buildTagTooltip` / `getBondRewards`
-- [ ] PR-0.6 抽 `filterCustomerData` / `filterIngredientData` 纯函数（若阶段 1 采用业务 hook 方案）
+- [x] PR-0.1 抽 `getIngredientScoreChanges`
+- [x] PR-0.2 抽 `buildRecipeSuitabilityRows`
+- [x] PR-0.3 抽 `buildBeverageSuitabilityRows`
+- [x] PR-0.4 抽 `getVisibleSavedMeals` + `evaluateSavedMeals`（含 size 上限缓存）
+- [x] PR-0.5 抽 `buildSelectionTip` / `buildTagTooltip` / `getBondRewards`
+- [x] PR-0.6 抽 `filterCustomerData` / `filterIngredientData` 纯函数（若阶段 1 采用业务 hook 方案）
 
 ### 阶段 1：state / view-model
 
-- [ ] PR-1.1 store computed：`recipeTableSortedRows` / `recipeTablePagedRows` / `beverageTableSortedRows` / `beverageTablePagedRows`
-- [ ] PR-1.2 store computed：`ingredientScoreChanges` / `savedCustomerMealsWithEvaluation` / `currentMealPrice`
-- [ ] PR-1.3 稀客派生：`unsatisfiedSelectionTip` / `bondRewards` / 推荐 view-model 第一版
-- [ ] PR-1.4 业务 hook：`useCustomerRouteData()` / `useIngredientRouteData()`
-- [ ] PR-1.5 通用副作用 hook：`useDocumentTitle()`
+- [x] PR-1.1 store computed：`recipeTableSortedRows` / `recipeTablePagedRows` / `beverageTableSortedRows` / `beverageTablePagedRows`
+- [x] PR-1.2 store computed：`ingredientScoreChanges` / `savedCustomerMealsWithEvaluation` / `currentMealPrice`
+- [x] PR-1.3 稀客派生：`unsatisfiedSelectionTip` / `bondRewards` / 推荐 view-model 第一版
+- [x] PR-1.4 业务 hook：`useCustomerRouteData()` / `useIngredientRouteData()`
+- [x] PR-1.5 通用副作用 hook：`useDocumentTitle()`
 
 ### 阶段 2：视图削薄
 
-- [ ] PR-2.1 改造 `recipe/beverage TabContent`（稀客 + 普客，共 4 文件）
-- [ ] PR-2.2 改造 `ingredientTabContent`（2 文件）
-- [ ] PR-2.3 改造 `savedMealCard`（2 文件）
-- [ ] PR-2.4 改造 `suggestedMealCard`（仅稀客）
-- [ ] PR-2.5 改造稀客 `resultCard` / `customerCard`，普客仅做必要清理
-- [ ] PR-2.6 改造稀客 `infoButton`，普客仅做必要清理
-- [ ] PR-2.7 改造 `[[...paths]]/content.tsx`（2 文件）
+- [x] PR-2.1 改造 `recipe/beverage TabContent`（稀客 + 普客，共 4 文件）
+- [x] PR-2.2 改造 `ingredientTabContent`（2 文件）
+- [x] PR-2.3 改造 `savedMealCard`（2 文件）
+- [x] PR-2.4 改造 `suggestedMealCard`（仅稀客）
+- [x] PR-2.5 改造稀客 `resultCard` / `customerCard`，普客仅做必要清理
+- [x] PR-2.6 改造稀客 `infoButton`，普客仅做必要清理
+- [x] PR-2.7 改造 `[[...paths]]/content.tsx`（2 文件）
 
 ### 阶段 3：共享子块与组件合并
 
-- [ ] PR-3.1 整理 shared surface（thin re-export barrel + 切换 normal 与跨页消费方）
-- [ ] PR-3.2 提取稀客/普客 tab body / table shell 共享层（`CustomerTableShell` + `CustomerTablePagination`）
-- [ ] PR-3.3 提取当前套餐 `currentMealIngredientsList` 共享展示
-- [ ] PR-3.4 提取 saved meal 共享条带（`savedMealIngredientStrip` / `savedMealActionRail` / `MoveButton`）
-- [ ] PR-3.5 提取 ingredient tab 共享 skeleton（`IngredientTabShell` / `IngredientTabGrid` / `IngredientTabItemPresenter`）
-- [ ] PR-3.6 提取 `RatingAvatarShell`（rare/normal customerCard 与 savedMealCard 复用）
-- [ ] PR-3.7 InfoButton 低强度收口（仅抽中性 `infoButtonSectionTitle` 片段）
+- [x] PR-3.1 整理 shared surface（thin re-export barrel + 切换 normal 与跨页消费方）
+- [x] PR-3.2 提取稀客/普客 tab body / table shell 共享层（`CustomerTableShell` + `CustomerTablePagination`）
+- [x] PR-3.3 提取当前套餐 `currentMealIngredientsList` 共享展示
+- [x] PR-3.4 提取 saved meal 共享条带（`savedMealIngredientStrip` / `savedMealActionRail` / `MoveButton`）
+- [x] PR-3.5 提取 ingredient tab 共享 skeleton（`IngredientTabShell` / `IngredientTabGrid` / `IngredientTabItemPresenter`）
+- [x] PR-3.6 提取 `RatingAvatarShell`（rare/normal customerCard 与 savedMealCard 复用）
+- [x] PR-3.7 InfoButton 低强度收口（仅抽中性 `infoButtonSectionTitle` 片段）
 
 ### 阶段 4：领域升级
 
-- [ ] PR-4.1 `Recipe` 增 `buildRecipeSuitabilityRows`
-- [ ] PR-4.2 `CustomerRare` 增 `getDisplayMeta`
-- [ ] PR-4.3 `CustomerNormal` 增 `getDisplayMeta`
-- [ ] PR-4.4 `Beverage` 增 `buildBeverageSuitabilityRows`（可选项）
+- [x] PR-4.1 `Recipe` 增 `buildRecipeSuitabilityRows`
+- [x] PR-4.2 `CustomerRare` 增 `getDisplayMeta`
+- [x] PR-4.3 `CustomerNormal` 增 `getDisplayMeta`
+- [x] PR-4.4 `Beverage` 增 `buildBeverageSuitabilityRows`（可选项）
 
 ### 阶段 5：清理与防退化
 
-- [ ] PR-5.1 删除页面层旧入口与死代码
-- [ ] PR-5.2 切换 saved-meal 评分 Map 到 `createBoundedRuntimeCache(256)`
-- [ ] PR-5.3 完成进度文档与 repo memory 收尾回写
+- [x] PR-5.1 删除页面层旧入口与死代码
+- [x] PR-5.2 切换 saved-meal 评分 Map 到 `createBoundedRuntimeCache(256)`
+- [x] PR-5.3 完成进度文档与 repo memory 收尾回写
 
 ### 阶段 6：阶段 5 之后的后置补遗（非主路径，详见 [07-阶段6-补遗.md](./07-阶段6-补遗.md)）
 

@@ -49,6 +49,7 @@ import {
 import type { IMealRecipe, IPopularTrend, TPopularTag } from '@/types';
 import {
 	checkLengthEmpty,
+	createBoundedRuntimeCache,
 	getSearchResult,
 	numberSort,
 	pinyinSort,
@@ -199,7 +200,7 @@ const state = {
 
 const getNames = createNamesCache(instance_customer);
 
-const savedMealRatingCache = new Map<string, TRatingKey>();
+const savedMealRatingCache = createBoundedRuntimeCache<string, TRatingKey>(256);
 
 export const customerNormalStore = store(state, {
 	middlewares: [
@@ -1155,8 +1156,10 @@ export const customerNormalStore = store(state, {
 			popularTrend: IPopularTrend;
 		}) {
 			const stringifiedData = JSON.stringify(data);
-			if (savedMealRatingCache.has(stringifiedData)) {
-				return savedMealRatingCache.get(stringifiedData);
+			const cachedResult = savedMealRatingCache.get(stringifiedData);
+
+			if (cachedResult !== undefined) {
+				return cachedResult;
 			}
 			const {
 				customerName,

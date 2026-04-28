@@ -8,6 +8,7 @@ export * from './pinyin';
 export * from './sort';
 
 export * from './checkA11yConfirmKey';
+export * from './createBoundedRuntimeCache';
 export * from './getPageTitle';
 export * from './memoize';
 export * from './processJsonFile';

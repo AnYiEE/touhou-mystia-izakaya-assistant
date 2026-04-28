@@ -18,13 +18,25 @@ import {
 	Ingredient,
 	Recipe,
 } from '@/utils';
-import { union } from '@/utilities';
+import { createBoundedRuntimeCache, union } from '@/utilities';
 
 const instance_beverage = Beverage.getInstance();
 const instance_customer_normal = CustomerNormal.getInstance();
 const instance_customer_rare = CustomerRare.getInstance();
 const instance_ingredient = Ingredient.getInstance();
 const instance_recipe = Recipe.getInstance();
+
+const SAVED_MEAL_RATING_CACHE_MAX_SIZE = 256;
+
+const rareSavedMealRatingCache = createBoundedRuntimeCache<
+	string,
+	IRareSavedMealEvaluation
+>(SAVED_MEAL_RATING_CACHE_MAX_SIZE);
+
+const normalSavedMealRatingCache = createBoundedRuntimeCache<
+	string,
+	TRatingKey
+>(SAVED_MEAL_RATING_CACHE_MAX_SIZE);
 
 export interface IEvaluateRareSavedMealArgs {
 	beverageName: TBeverageName;
@@ -61,6 +73,21 @@ export function evaluateRareSavedMeal({
 	popularTrend,
 	recipeData: { extraIngredients, name: recipeName },
 }: IEvaluateRareSavedMealArgs): IRareSavedMealEvaluation {
+	const cacheKey = JSON.stringify({
+		beverageName,
+		customerName,
+		customerOrder,
+		hasMystiaCooker,
+		isFamousShop,
+		popularTrend,
+		recipeData: { extraIngredients, name: recipeName },
+	});
+	const cachedResult = rareSavedMealRatingCache.get(cacheKey);
+
+	if (cachedResult !== undefined) {
+		return cachedResult;
+	}
+
 	const {
 		beverageTags: customerBeverageTags,
 		negativeTags: customerNegativeTags,
@@ -106,8 +133,11 @@ export function evaluateRareSavedMeal({
 		hasMystiaCooker,
 		isDarkMatter,
 	});
+	const result = { isDarkMatter, price: beveragePrice + recipePrice, rating };
 
-	return { isDarkMatter, price: beveragePrice + recipePrice, rating };
+	rareSavedMealRatingCache.set(cacheKey, result);
+
+	return result;
 }
 
 /**
@@ -119,6 +149,18 @@ export function evaluateNormalSavedMeal({
 	popularTrend,
 	recipeData: { extraIngredients, name: recipeName },
 }: IEvaluateNormalSavedMealArgs): TRatingKey {
+	const cacheKey = JSON.stringify({
+		customerName,
+		isFamousShop,
+		popularTrend,
+		recipeData: { extraIngredients, name: recipeName },
+	});
+	const cachedResult = normalSavedMealRatingCache.get(cacheKey);
+
+	if (cachedResult !== undefined) {
+		return cachedResult;
+	}
+
 	const extraTags = extraIngredients.flatMap(
 		(ingredientName) =>
 			instance_ingredient.getPropsByName(
@@ -127,7 +169,7 @@ export function evaluateNormalSavedMeal({
 			) as TPopularTag[]
 	);
 
-	return instance_customer_normal.evaluateMeal({
+	const rating = instance_customer_normal.evaluateMeal({
 		currentCustomerName: customerName,
 		currentCustomerPopularTrend: popularTrend,
 		currentCustomerPositiveTags: instance_customer_normal.getPropsByName(
@@ -139,4 +181,8 @@ export function evaluateNormalSavedMeal({
 		currentRecipe: instance_recipe.getPropsByName(recipeName),
 		isFamousShop,
 	}) as TRatingKey;
+
+	normalSavedMealRatingCache.set(cacheKey, rating);
+
+	return rating;
 }
