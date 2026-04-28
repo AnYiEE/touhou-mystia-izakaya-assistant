@@ -6,6 +6,7 @@ export * from './evaluateSavedMeals';
 export * from './filterCustomerData';
 export * from './filterIngredientData';
 export * from './getIngredientScoreChanges';
+export * from './getRestExtraIngredients';
 export * from './getBondRewards';
 export * from './getVisibleSavedMeals';
 

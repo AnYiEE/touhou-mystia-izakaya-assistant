@@ -3,6 +3,7 @@
 import { Tooltip, cn } from '@/design/ui/components';
 
 import Sprite from '@/components/sprite';
+import { getRestExtraIngredients } from '@/utils/customer/shared';
 
 import type { TIngredientName } from '@/data';
 
@@ -21,9 +22,9 @@ export default function SavedMealIngredientsStrip({
 	onOpenIngredient,
 	originalIngredients,
 }: ISavedMealIngredientsStripProps) {
-	const visibleExtraIngredients = extraIngredients.slice(
-		0,
-		Math.max(5 - originalIngredients.length, 0)
+	const visibleExtraIngredients = getRestExtraIngredients(
+		extraIngredients,
+		originalIngredients.length
 	);
 
 	return (

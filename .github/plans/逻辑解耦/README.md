@@ -398,7 +398,9 @@
 - [x] PR-6.2 customerTab 纯视图壳共享化（beverage / recipe toolbar+cell 当前跳过）
 - [x] PR-6.3 resultCard / savedMealCard / customerCard 小共享（已完成 `useAutoHideTooltip` / `swapSavedMeals`；`CustomerDlcPill` 当前跳过）
 - [x] PR-6.4 `useCustomerRouteData` 提升与剩余 view 派生收口（已完成 hook 上提；`currentBeverageTags` computed / `suggestMeals` 携 `isDarkMatter` 当前跳过）
-- [ ] PR-6.5 低优收尾（`getRestExtraIngredients` / `useIngredientTabPrelude` / `getRatingKey` 重命名）
+- [x] PR-6.5 低优收尾（已完成 `getRatingKey` 重命名与 `getRestExtraIngredients`；`useIngredientTabPrelude` 当前跳过）
+
+当前阶段 6 已无新的建议实现项；其余低收益候选在 latest code 下复核后继续跳过。
 
 实施参考：见 [08-实施风格与约定.md](./08-实施风格与约定.md)。
 

@@ -19,6 +19,7 @@ import {
 } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
 import { checkLengthEmpty, toArray, toSet } from '@/utilities';
+import { getRestExtraIngredients } from '@/utils/customer/shared';
 import {
 	getScoreBasedAlternatives,
 	suggestMeals,
@@ -296,9 +297,9 @@ export function useSuggestedMealsViewModel() {
 				negativeTags: recipeNegativeTags,
 				positiveTags: recipePositiveTags,
 			} = instance_recipe.getPropsByName(recipeData.name);
-			const visibleExtraIngredients = recipeData.extraIngredients.slice(
-				0,
-				Math.max(5 - recipeIngredients.length, 0)
+			const visibleExtraIngredients = getRestExtraIngredients(
+				recipeData.extraIngredients,
+				recipeIngredients.length
 			);
 			const isDarkMatter =
 				!checkLengthEmpty(recipeData.extraIngredients) &&
