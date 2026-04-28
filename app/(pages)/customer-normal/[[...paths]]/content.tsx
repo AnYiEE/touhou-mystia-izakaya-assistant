@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 
 import useBreakpoint from 'use-breakpoint';
 import {
+	useCustomerRouteData,
 	useDocumentTitle,
 	useIngredientRouteData,
 	useMounted,
@@ -42,7 +43,6 @@ import {
 	ingredientTabStyleMap,
 	tachieBreakPointMap,
 } from '../constants';
-import { useCustomerRouteData } from './useCustomerRouteData';
 import { siteConfig } from '@/configs';
 import { type TCustomerNormalName } from '@/data';
 import { customerNormalStore as customerStore, globalStore } from '@/stores';
@@ -98,7 +98,11 @@ export default function Content() {
 		}
 	}, [currentCustomerName, router]);
 
-	const { customerSortedData } = useCustomerRouteData();
+	const instance_customer = customerStore.instances.customer.get();
+	const { customerSortedData } = useCustomerRouteData(
+		instance_customer,
+		customerStore
+	);
 
 	const availableCustomerDlcs = customerStore.availableCustomerDlcs.use();
 	const availableCustomerNames = customerStore.availableCustomerNames.use();

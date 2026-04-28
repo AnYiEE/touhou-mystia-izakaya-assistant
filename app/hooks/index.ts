@@ -7,6 +7,7 @@ export * from './useThrottle';
 export * from './useVibrate';
 
 export * from './useFilteredData';
+export * from './useCustomerRouteData';
 export * from './useDocumentTitle';
 export * from './useIngredientRouteData';
 export * from './useItemPopoverState';
