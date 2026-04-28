@@ -49,7 +49,6 @@ import {
 import type { IMealRecipe, IPopularTrend, TPopularTag } from '@/types';
 import {
 	checkLengthEmpty,
-	createBoundedRuntimeCache,
 	getSearchResult,
 	numberSort,
 	pinyinSort,
@@ -199,8 +198,6 @@ const state = {
 };
 
 const getNames = createNamesCache(instance_customer);
-
-const savedMealRatingCache = createBoundedRuntimeCache<string, TRatingKey>(256);
 
 export const customerNormalStore = store(state, {
 	middlewares: [
@@ -1084,46 +1081,6 @@ export const customerNormalStore = store(state, {
 				isFamousShop,
 			});
 			currentStore.shared.customer.rating.set(rating);
-		},
-		evaluateSavedMealResult(data: {
-			customerName: TCustomerNormalName;
-			recipeData: IMealRecipe;
-			isFamousShop: boolean;
-			popularTrend: IPopularTrend;
-		}) {
-			const stringifiedData = JSON.stringify(data);
-			const cachedResult = savedMealRatingCache.get(stringifiedData);
-
-			if (cachedResult !== undefined) {
-				return cachedResult;
-			}
-			const {
-				customerName,
-				isFamousShop,
-				popularTrend,
-				recipeData: { extraIngredients, name: recipeName },
-			} = data;
-			const extraTags = extraIngredients.flatMap(
-				(ingredient) =>
-					instance_ingredient.getPropsByName(
-						ingredient,
-						'tags'
-					) as TPopularTag[]
-			);
-			const rating = instance_customer.evaluateMeal({
-				currentCustomerName: customerName,
-				currentCustomerPopularTrend: popularTrend,
-				currentCustomerPositiveTags: instance_customer.getPropsByName(
-					customerName,
-					'positiveTags'
-				),
-				currentExtraIngredientsLength: extraIngredients.length,
-				currentExtraTags: extraTags,
-				currentRecipe: instance_recipe.getPropsByName(recipeName),
-				isFamousShop,
-			}) as TRatingKey;
-			savedMealRatingCache.set(stringifiedData, rating);
-			return rating;
 		},
 		removeMealIngredient(ingredientName: TIngredientName) {
 			currentStore.shared.recipe.data.set((prev) => {

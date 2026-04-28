@@ -50,7 +50,6 @@ import {
 import type { IMealRecipe, IPopularTrend } from '@/types';
 import {
 	checkLengthEmpty,
-	createBoundedRuntimeCache,
 	getSearchResult,
 	numberSort,
 	pinyinSort,
@@ -246,16 +245,6 @@ const state = {
 };
 
 const getNames = createNamesCache(instance_customer);
-
-interface ISavedMealRatingResult {
-	isDarkMatter: boolean;
-	price: number;
-	rating: TRatingKey;
-}
-const savedMealRatingCache = createBoundedRuntimeCache<
-	string,
-	ISavedMealRatingResult
->(256);
 
 export const customerRareStore = store(state, {
 	middlewares: [
@@ -1383,84 +1372,6 @@ export const customerRareStore = store(state, {
 				isDarkMatter,
 			});
 			currentStore.shared.customer.rating.set(rating);
-		},
-		evaluateSavedMealResult(data: {
-			customerName: TCustomerRareName;
-			customerOrder: ICustomerOrder;
-			hasMystiaCooker: boolean;
-			beverageName: TBeverageName;
-			recipeData: IMealRecipe;
-			isFamousShop: boolean;
-			popularTrend: IPopularTrend;
-		}) {
-			const stringifiedData = JSON.stringify(data);
-			const cachedResult = savedMealRatingCache.get(stringifiedData);
-
-			if (cachedResult !== undefined) {
-				return cachedResult;
-			}
-			const {
-				beverageName,
-				customerName,
-				customerOrder,
-				hasMystiaCooker,
-				isFamousShop,
-				popularTrend,
-				recipeData: { extraIngredients, name: recipeName },
-			} = data;
-			const {
-				beverageTags: customerBeverageTags,
-				negativeTags: customerNegativeTags,
-				positiveTags: customerPositiveTags,
-			} = instance_customer.getPropsByName(customerName);
-			const beverage = instance_beverage.getPropsByName(beverageName);
-			const { price: beveragePrice, tags: beverageTags } = beverage;
-			const recipe = instance_recipe.getPropsByName(recipeName);
-			const {
-				ingredients,
-				negativeTags,
-				positiveTags,
-				price: originalRecipePrice,
-			} = recipe;
-			const { extraTags, isDarkMatter } = instance_recipe.checkDarkMatter(
-				{ extraIngredients, negativeTags }
-			);
-			const recipePrice = isDarkMatter
-				? DARK_MATTER_META_MAP.price
-				: originalRecipePrice;
-			const composedRecipeTags =
-				instance_recipe.composeTagsWithPopularTrend(
-					ingredients,
-					extraIngredients,
-					positiveTags,
-					extraTags,
-					popularTrend
-				);
-			const recipeTagsWithTrend = instance_recipe.calculateTagsWithTrend(
-				composedRecipeTags,
-				popularTrend,
-				isFamousShop
-			);
-			const rating = instance_customer.evaluateMeal({
-				currentBeverageTags: beverageTags,
-				currentCustomerBeverageTags: customerBeverageTags,
-				currentCustomerName: customerName,
-				currentCustomerNegativeTags: customerNegativeTags,
-				currentCustomerOrder: customerOrder,
-				currentCustomerPositiveTags: customerPositiveTags,
-				currentIngredients: union(ingredients, extraIngredients),
-				currentRecipeName: recipeName,
-				currentRecipeTagsWithTrend: recipeTagsWithTrend,
-				hasMystiaCooker,
-				isDarkMatter,
-			});
-			const result = {
-				isDarkMatter,
-				price: beveragePrice + recipePrice,
-				rating,
-			} as ISavedMealRatingResult;
-			savedMealRatingCache.set(stringifiedData, result);
-			return result;
 		},
 		removeMealIngredient(ingredientName: TIngredientName) {
 			currentStore.shared.recipe.data.set((prev) => {

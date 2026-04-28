@@ -30,7 +30,8 @@ export default function ResultCard() {
 	const currentBeverageName = customerStore.shared.beverage.name.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 	const currentRating = customerStore.shared.customer.rating.use();
-	const currentSavedMeals = customerStore.persistence.meals.use();
+	const savedCustomerMealsWithEvaluation =
+		customerStore.savedCustomerMealsWithEvaluation.use();
 
 	const instance_recipe = customerStore.instances.recipe.get();
 	const originalIngredients = useMemo(
@@ -72,12 +73,11 @@ export default function ResultCard() {
 	let contentClassName: IFadeMotionDivProps['className'];
 	let contentTarget: IFadeMotionDivProps['target'];
 	let contentVariant: IFadeMotionDivProps['variant'];
+	const hasVisibleSavedMeals =
+		(savedCustomerMealsWithEvaluation?.length ?? 0) > 0;
 
 	if (currentBeverageName === null && currentRecipeData === null) {
-		if (
-			currentCustomerName !== null &&
-			currentSavedMeals[currentCustomerName]?.length
-		) {
+		if (hasVisibleSavedMeals) {
 			content = null;
 			contentClassName = '';
 			contentTarget = 'null';

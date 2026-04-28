@@ -6,16 +6,16 @@
 
 ## 一、当前分层与职责
 
-| 层                | 现状定位                                                                                                                                                                                     | 实际承担                                                                                                                                                                                                                                                                                                            | 备注                                                                                                                                 |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `app/data/`       | 静态游戏数据（JSON）+ 常量表                                                                                                                                                                 | 数据 + 常量                                                                                                                                                                                                                                                                                                         | OK                                                                                                                                   |
-| `app/utils/`      | 领域单例：`Beverage` / `Recipe` / `CustomerRare` / `CustomerNormal` / `Ingredient`… 以及 `customer/customer_rare/{evaluateMeal,suggestMeals}.ts`、`customer/customer_normal/evaluateMeal.ts` | 纯领域计算层                                                                                                                                                                                                                                                                                                        | `customer_normal` 无 `suggestMeals.ts`；`customer/shared/` 已开始承接稀客/普客共享算法与保存套餐评估 helper                          |
-| `app/utilities/`  | 通用纯函数：`filterItems` / `pinyin` / `sort` / `array` …                                                                                                                                    | OK                                                                                                                                                                                                                                                                                                                  |                                                                                                                                      |
-| `app/stores/`     | `@davstack/store` 单例；`shared` / `persistence` / `instances` / `.computed(...)` / `.actions(...)`                                                                                          | `.computed(...)` 目前不只 `availableXxx`，还包含 `beverageTableDlcs` / `recipeTableCookers` / `recipeTableDlcs` 这类 read/write adapter；`.actions(...)` + `onChange(...)` 已集中维护 `shared.recipe.tagsWithTrend`、`shared.customer.rating`、`shared.customer.isDarkMatter`、`evaluateSavedMealResult` 等派生逻辑 | 现状问题不是“store 完全没承接派生状态”，而是**承接方式零散且偏命令式**，表格/列表类 view-model 仍大量留在页面组件                    |
-| `app/hooks/`      | `useFilteredData` / `useSortedData` / `useSearchResult` / `useThrottle` …                                                                                                                    | 通用列表三件套 + 节流 + `useSkipProcessItemData` 等 UI 邻近派生逻辑                                                                                                                                                                                                                                                 | `customer-rare` / `customer-normal` 的路由页已经高度依赖这些 hook；后续若把列表逻辑改入 store，需要先确认是否要保留相同节流/跳过语义 |
-| `app/components/` | 通用 UI（`tags` / `itemPopoverCard` / `sprite` / `sideXxx`…）                                                                                                                                | 多数 OK；`itemPopoverCard` 仍内嵌少量数据展示规则                                                                                                                                                                                                                                                                   | 稀客/普客页之间已经存在少量共享基础组件与共享片段，不是完全隔离                                                                      |
-| `app/lib/`        | 仅包含 `db/`（cloud backup 用）                                                                                                                                                              | DB 工具                                                                                                                                                                                                                                                                                                             | 本计划新增聚合纯函数仍建议放 `app/utils/customer/`，不入 `app/lib/`                                                                  |
-| `app/(pages)/`    | 路由页面 + 该页专属业务组件                                                                                                                                                                  | **视图与计算混合的重灾区**                                                                                                                                                                                                                                                                                          | 不只是 tab content，`[[...paths]]/content.tsx` 这种路由壳组件也承接了大量列表级派生逻辑                                              |
+| 层                | 现状定位                                                                                                                                                                                     | 实际承担                                                                                                                                                                                                                                                                                                          | 备注                                                                                                                                     |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/data/`       | 静态游戏数据（JSON）+ 常量表                                                                                                                                                                 | 数据 + 常量                                                                                                                                                                                                                                                                                                       | OK                                                                                                                                       |
+| `app/utils/`      | 领域单例：`Beverage` / `Recipe` / `CustomerRare` / `CustomerNormal` / `Ingredient`… 以及 `customer/customer_rare/{evaluateMeal,suggestMeals}.ts`、`customer/customer_normal/evaluateMeal.ts` | 纯领域计算层                                                                                                                                                                                                                                                                                                      | `customer_normal` 无 `suggestMeals.ts`；`customer/shared/` 已开始承接稀客/普客共享算法与保存套餐评估 helper                              |
+| `app/utilities/`  | 通用纯函数：`filterItems` / `pinyin` / `sort` / `array` …                                                                                                                                    | OK                                                                                                                                                                                                                                                                                                                |                                                                                                                                          |
+| `app/stores/`     | `@davstack/store` 单例；`shared` / `persistence` / `instances` / `.computed(...)` / `.actions(...)`                                                                                          | `.computed(...)` 目前不只 `availableXxx`，还包含表格 rows、`ingredientScoreChanges`、`savedCustomerMealsWithEvaluation`、`currentMealPrice` 这类 view-model 节点；`.actions(...)` + `onChange(...)` 已集中维护 `shared.recipe.tagsWithTrend`、`shared.customer.rating`、`shared.customer.isDarkMatter` 等派生逻辑 | 现状问题不是“store 完全没承接派生状态”，而是仍需守住 computed / hook / 页面展示边界，避免为了共享率把 DOM 副作用或大表流水线硬塞进 store |
+| `app/hooks/`      | `useFilteredData` / `useSortedData` / `useSearchResult` / `useThrottle` …                                                                                                                    | 通用列表三件套 + 节流 + `useSkipProcessItemData` 等 UI 邻近派生逻辑                                                                                                                                                                                                                                               | `customer-rare` / `customer-normal` 的路由页已经高度依赖这些 hook；后续若把列表逻辑改入 store，需要先确认是否要保留相同节流/跳过语义     |
+| `app/components/` | 通用 UI（`tags` / `itemPopoverCard` / `sprite` / `sideXxx`…）                                                                                                                                | 多数 OK；`itemPopoverCard` 仍内嵌少量数据展示规则                                                                                                                                                                                                                                                                 | 稀客/普客页之间已经存在少量共享基础组件与共享片段，不是完全隔离                                                                          |
+| `app/lib/`        | 仅包含 `db/`（cloud backup 用）                                                                                                                                                              | DB 工具                                                                                                                                                                                                                                                                                                           | 本计划新增聚合纯函数仍建议放 `app/utils/customer/`，不入 `app/lib/`                                                                      |
+| `app/(pages)/`    | 路由页面 + 该页专属业务组件                                                                                                                                                                  | **视图与计算混合的重灾区**                                                                                                                                                                                                                                                                                        | 不只是 tab content，`[[...paths]]/content.tsx` 这种路由壳组件也承接了大量列表级派生逻辑                                                  |
 
 ---
 
@@ -51,30 +51,26 @@
     - `app/utils/customer/shared/buildBeverageSuitabilityRows.ts`
     - store computed 暴露扁平 key：`recipeTableSortedRows` / `recipeTablePagedRows` / `beverageTableSortedRows` / `beverageTablePagedRows`
 
-#### P0-3. `suggestedMealCard` 仍在视图层承担“推荐 view-model”
+#### P0-3. `suggestedMealCard` 的推荐 view-model 已收口到 hook
 
 - 文件：[app/(pages)/customer-rare/suggestedMealCard.tsx](<app/(pages)/customer-rare/suggestedMealCard.tsx>)。
-- 现状：核心搜索算法已位于 `app/utils/customer/customer_rare/suggestMeals.ts`，但视图层仍负责：
-    - 从 `customerRareStore` 收集顾客、流行趋势、隐藏项、当前料理/酒水、厨具、评分上限等入参。
-    - 通过 `useEffect` 同步“当前料理默认厨具”。
-    - 计算 `isActive`、维护 `visibility` 副作用。
-    - 管理 `alternativesMap` 这类局部派生缓存。
-    - 从 `globalStore.shared.suggestMeals` 读取 `selectableMaxExtraIngredients` / `selectableMaxRatings` 这种**仍未镜像到 customerRareStore** 的配置项。
-- 推荐卡片优先抽成 `useSuggestedMealsViewModel()`，先在 hook 层统一组合跨 store 输入、`isActive`、`visibility`、默认厨具同步与 `alternativesMap`；纯派生部分稳定后，再评估是否继续下沉到 store computed。
+- 现状：核心搜索算法位于 `app/utils/customer/customer_rare/suggestMeals.ts`，跨 store 输入组合、`isActive`、`visibility`、默认厨具同步与 `alternativesMap` 已由 `app/hooks/useSuggestedMealsViewModel.ts` 承接。
+- 保留边界：`document` / 可见性类副作用继续停留在 hook 层；纯派生部分若继续推进 store computed，需要先确认重算触发面与性能预算。
+- 已知残余风险：`alternativesMap` 仍沿用 render 阶段 reset 的旧模式，后续若再动建议菜模型，应优先把这段迁到 effect 或更稳定的状态同步方式。
 
 ### P1 — 高：列表级派生与卡片级派生遗漏较多
 
 #### P1-4. 路由组件 `[[...paths]]/content.tsx` 里的顾客列表过滤/排序/节流流水线
 
 - 文件：[app/(pages)/customer-rare/[[...paths]]/content.tsx](<app/(pages)/customer-rare/[[...paths]]/content.tsx>) 与 [app/(pages)/customer-normal/[[...paths]]/content.tsx](<app/(pages)/customer-normal/[[...paths]]/content.tsx>)。
-- 现状：`validateName`、`useThrottle(customerSearchValue)`、`useSearchResult(...)`、`filterCustomerData`、`useFilteredData(...)`、`useSortedData(...)` 全都写在路由组件里。
-- 这里应被视为完整的“顾客列表 view-model”，优先抽成业务 hook，例如 `useCustomerRouteData()`，内部继续复用现有通用 hook，保留当前节流与 `useSkipProcessItemData` 语义。
+- 现状：`validateName` 仍保留在路由壳，顾客列表搜索、过滤、排序与节流流水线已由 `app/hooks/useCustomerRouteData.ts` 承接，内部继续复用通用 hook 并保留当前节流与 `useSkipProcessItemData` 语义。
+- 后续若继续推进 store computed，需要重新评估搜索节流与 skip-process 行为，不能直接把 hook 语义压平为同步 computed。
 
 #### P1-5. 路由组件 `[[...paths]]/content.tsx` 里的食材过滤/排序流水线
 
 - 文件：同上。
-- 现状：`filterIngredientData` 先构造带 `_tagsWithTrend` 的增强数据，再用 `filterItems(...)` 叠加 DLC / tag / level 过滤，之后再通过 `useFilteredData(...)` / `useSortedData(...)` 得出最终列表。
-- 这里与 tab content 的 suitability 流水线同级，且同样混合了业务规则（`calculateTagsWithTrend`）与页面级状态；应与 P1-4 一起收敛到业务 hook，或先抽纯函数 `filterIngredientData.ts` 再由 hook 组装。
+- 现状：带 `_tagsWithTrend` 的食材过滤纯逻辑已下沉到 shared helper，路由页食材过滤 / 排序流水线已由 `app/hooks/useIngredientRouteData.ts` 承接。
+- 后续如继续下沉，应保持 hidden ingredient、trend tag、DLC / tag / level 过滤和 `useSkipProcessItemData` 的现有语义。
 
 #### P1-6. “请选择 xx 以保存/评级” 文案只在稀客页形成了真正的复杂派生
 
@@ -95,18 +91,12 @@
 - 现状：`useMemo` 中用 `hiddenDlcs`、`instance_beverage`、`instance_recipe`、`instance_ingredient` 做可见性判断，带 `try/catch` 容错。普客分支还要处理 `beverage: null` 的情况。
 - 后续若统一成 store/hook view-model，必须保留“**可见顺序使用原始数据索引**”这一约束，否则会破坏当前上移/下移保存套餐的实现。
 
-#### P1-8. `savedMealCard`：渲染期 IIFE 调 `evaluateSavedMealResult`
+#### P1-8. `savedMealCard`：保存套餐评估已收口到 shared helper
 
 - 文件：同上。
-- 现状：
-    - 稀客 `evaluateSavedMealResult(...)` 返回 `{ isDarkMatter, price, rating }`。
-    - 普客 `evaluateSavedMealResult(...)` 只返回 `rating`。
-    - 两边都使用 `Map<string, ...>` 以 `JSON.stringify(data)` 为 key 做全局缓存，且都没有 size 上限。
-- 这里应改成纯函数，不是因为框架限制，而是为了避免在 render / computed 中复用带命令式语义的 action。
-- 处理建议：
-    1. 提供纯函数 `evaluateSavedMeals.ts`。
-    2. 缓存换成有 size 上限的 Map。
-    3. 视图层拿到的数据结构里保留 `dataIndex` / `visibleIndex`，便于 reorder。
+- 现状：保存套餐评估主线已改读 `savedCustomerMealsWithEvaluation`，并通过 `app/utils/customer/shared/evaluateSavedMeals.ts` 承接稀客 / 普客的评估与容量 `256` 的 runtime cache。
+- 稀客 / 普客返回结构继续保持分叉；视图层拿到的数据结构保留 `dataIndex` / `visibleIndex`，用于可见顺序到原始保存数据索引的 reorder 映射。
+- 原 rare / normal store 内未调用的 `evaluateSavedMealResult` action 与 store-local `savedMealRatingCache` 已清理，后续不要再把保存套餐评估逻辑放回 render action。
 
 #### P1-9. `customerCard`：元数据展开、预算/耐性、符卡派生主要集中在稀客分支
 
@@ -152,7 +142,7 @@
     - [app/(pages)/customer-rare/[[...paths]]/content.tsx](<app/(pages)/customer-rare/[[...paths]]/content.tsx>)
     - [app/(pages)/customer-normal/[[...paths]]/content.tsx](<app/(pages)/customer-normal/[[...paths]]/content.tsx>)
 - 现状：两边 `useEffect` 都做：路径解析 → store 设当前顾客 → 设置标题 → 启 `MutationObserver` 纠正标题。
-- 应下沉至：`app/hooks/useDocumentTitle.ts`，必要时再补一个 `useCustomerRouteSync()`，把“路径名校验 + 顾客名同步 + 标题副作用”一起收束。
+- 已下沉至：`app/hooks/useDocumentTitle.ts`。`document.title` / `MutationObserver` 属于 DOM 副作用，继续保留在 hook 层，不推进 store computed。
 
 ### P3 — 低：可选优化
 
@@ -170,7 +160,7 @@
 - **稀客/普客只在部分区域同构**：tab 表格高度同构，但 card / info / save / suggestion / dark ingredient policy 差异明显，不能用“全量组件一把梭合并”的思路推进。
 - **已有共享基础未被纳入重构策略**：`InfoButtonBase`、`Plus`、`UnknownItem`、`MoveButton`、`TagGroup`、共享 props type 已经存在，说明这套代码更适合“先提取共享子块，再考虑整组件合并”。
 - **领域单例方法颗粒度偏低**：`Recipe.getCustomerSuitability` / `Ingredient.calculateTagsWithTrend` 是低层基元，缺少直接对应页面需求的中层聚合函数。
-- **`savedMealRatingCache` 设计欠佳**：`JSON.stringify(data)` 作为 key、Map 无上限、结果结构两套分支不同，导致后续迁移成本上升。
+- **保存套餐评估链已收口，但仍需防回退**：运行主线使用 shared helper 与容量 `256` 的 runtime cache；不要再引入 store-local `savedMealRatingCache` 或 render 期命令式评估 action。
 
 ---
 
@@ -199,7 +189,7 @@
 
 > 仓库目前**没有引入测试框架**（无 `pnpm test` script、无 vitest/jest 依赖）。本计划遵循现状，不强制新增测试栈；通过 `pnpm exec tsc --noEmit` + `pnpm lint` + 人工冒烟回归来兜底。如未来引入 vitest，可补回归测试。
 
-目标目录：`app/utils/customer/shared/`（当前目录已存在但为空）
+目标目录：`app/utils/customer/shared/`（当前已承接稀客 / 普客共享算法、保存套餐评估、可见保存套餐过滤、额外食材裁剪等 helper）
 
 建议新增文件：
 
@@ -236,7 +226,7 @@
 
 #### 1B. 业务 hook：适合保留在页面层的 route view-model
 
-新增：
+已新增：
 
 - `useCustomerRouteData()`：封装 `useThrottle` + `useSearchResult` + `useFilteredData` + `useSortedData`
 - `useIngredientRouteData()`：封装食材过滤/排序流水线
@@ -246,7 +236,7 @@
 
 #### 1C. 推荐卡片 view-model：优先 hook，再评估是否补 store 节点
 
-建议先做 `useSuggestedMealsViewModel()`，负责：
+已新增 `useSuggestedMealsViewModel()`，负责：
 
 - `isActive`
 - `suggestions`
@@ -317,11 +307,11 @@
 ### 阶段 5：清理与防退化
 
 - 删除被新 view-model 取代的旧 `useMemo` 与渲染期 IIFE。
-- 给 `app/(pages)/customer-{rare,normal}/**/*.tsx` 加 ESLint 限制：
+- 可选后续门禁：给 `app/(pages)/customer-{rare,normal}/**/*.tsx` 加 ESLint 限制（当前尚未落地，不计入阶段 5 完成态）：
     - 不允许直接调用 `instance_*.calculate*` / `compose*` / `getCustomerSuitability` / `checkIngredientEasterEgg`
     - 不允许在页面层直接 `curry` / `curryRight` 业务函数
     - 不允许在页面层直连 `suggestMeals` / `getScoreBasedAlternatives` 这类推荐算法入口
-- 切换 `savedMealRatingCache` 为有 size 上限的 Map。
+- 保存套餐评估缓存已由 `app/utils/customer/shared/evaluateSavedMeals.ts` 内的 bounded runtime cache 负责；旧 store-local `savedMealRatingCache` 已删除。
 - 更新 repo memory：明确“页面优先消费 view-model；业务计算优先沉到 `utils/customer/shared`、store computed 或业务 hook”。
 
 ---
@@ -388,8 +378,8 @@
 
 ### 阶段 5：清理与防退化
 
-- [x] PR-5.1 删除页面层旧入口与死代码
-- [x] PR-5.2 切换 saved-meal 评分 Map 到 `createBoundedRuntimeCache(256)`
+- [x] PR-5.1 删除页面层旧入口与死代码（含两个 page-local `useCustomerRouteData.ts` 死副本）
+- [x] PR-5.2 切换 saved-meal 评分到 shared helper + bounded runtime cache，并清理 store-local `evaluateSavedMealResult` / `savedMealRatingCache` 遗留实现
 - [x] PR-5.3 完成进度文档与 repo memory 收尾回写
 
 ### 阶段 6：阶段 5 之后的后置补遗（非主路径，详见 [07-阶段6-补遗.md](./07-阶段6-补遗.md)）
@@ -400,7 +390,7 @@
 - [x] PR-6.4 `useCustomerRouteData` 提升与剩余 view 派生收口（已完成 hook 上提；`currentBeverageTags` computed / `suggestMeals` 携 `isDarkMatter` 当前跳过）
 - [x] PR-6.5 低优收尾（已完成 `getRatingKey` 重命名与 `getRestExtraIngredients`；`useIngredientTabPrelude` 当前跳过）
 
-当前阶段 6 已无新的建议实现项；其余低收益候选在 latest code 下复核后继续跳过。
+本次分支复审核对出的已知 findings 已按最小切口收口；其余低收益候选在 latest code 下复核后继续跳过。
 
 实施参考：见 [08-实施风格与约定.md](./08-实施风格与约定.md)。
 

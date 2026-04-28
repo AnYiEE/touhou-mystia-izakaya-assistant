@@ -42,9 +42,10 @@ export default function ResultCard() {
 	const currentMealPrice = customerStore.currentMealPrice.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 	const currentRating = customerStore.shared.customer.rating.use();
-	const currentSavedMeals = customerStore.persistence.meals.use();
 	const hasMystiaCooker = customerStore.shared.customer.hasMystiaCooker.use();
 	const isDarkMatter = customerStore.shared.customer.isDarkMatter.use();
+	const savedCustomerMealsWithEvaluation =
+		customerStore.savedCustomerMealsWithEvaluation.use();
 	const unsatisfiedSelectionTip = customerStore.unsatisfiedSelectionTip.use();
 
 	const instance_recipe = customerStore.instances.recipe.get();
@@ -103,12 +104,11 @@ export default function ResultCard() {
 
 	const isSuggestMealsVisible =
 		customerStore.shared.suggestMeals.visibility.use();
+	const hasVisibleSavedMeals =
+		(savedCustomerMealsWithEvaluation?.length ?? 0) > 0;
 
 	if (currentBeverageName === null && currentRecipeData === null) {
-		if (
-			currentCustomerName !== null &&
-			currentSavedMeals[currentCustomerName]?.length
-		) {
+		if (hasVisibleSavedMeals) {
 			content = null;
 			contentClassName = '';
 			contentTarget = 'null';
