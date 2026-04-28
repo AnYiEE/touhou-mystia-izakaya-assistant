@@ -172,39 +172,22 @@ export default function CustomerCard() {
 		dlc: currentCustomerDlc,
 		enduranceLimit: currentCustomerEnduranceLimit,
 		negativeTags: currentCustomerNegativeTags,
-		places: currentCustomerPlaces,
 		positiveTagMapping: currentCustomerPositiveTagMapping,
 		positiveTags: currentCustomerPositiveTags,
 		price: currentCustomerPrice,
-		spellCards: currentCustomerSpellCards,
 	} = instance_customer.getPropsByName(currentCustomerName);
+	const {
+		averagePrice: currentCustomerAveragePrice,
+		enduranceLimitPercent: currentCustomerEnduranceLimitPercent,
+		hasEnduranceLimit,
+		hasNegativeSpellCards,
+		hasOtherPlaces,
+		mainPlace: currentCustomerMainPlace,
+		placeContent,
+	} = instance_customer.getDisplayMeta(currentCustomerName);
 
 	const { label: dlcLabel, shortLabel: dlcShortLabel } =
 		DLC_LABEL_MAP[currentCustomerDlc];
-
-	const copiedCurrentCustomerPlaces = copyArray(currentCustomerPlaces);
-	const currentCustomerMainPlace = copiedCurrentCustomerPlaces.shift();
-
-	const hasOtherPlaces = !checkLengthEmpty(copiedCurrentCustomerPlaces);
-
-	const placeContent = hasOtherPlaces
-		? `其他出没地区：${copiedCurrentCustomerPlaces.join('、')}`
-		: '暂未收录其他出没地区';
-
-	const hasSpellCards = !checkLengthEmpty(
-		Object.keys(currentCustomerSpellCards)
-	);
-	const hasNegativeSpellCards =
-		hasSpellCards &&
-		'negative' in currentCustomerSpellCards &&
-		!checkLengthEmpty<unknown>(currentCustomerSpellCards.negative);
-
-	const currentCustomerAveragePrice =
-		(currentCustomerPrice[0] + currentCustomerPrice[1]) / 2;
-	const currentCustomerEnduranceLimitPercent = Math.floor(
-		currentCustomerEnduranceLimit * 100 - 100
-	);
-	const hasEnduranceLimit = currentCustomerEnduranceLimitPercent > 0;
 
 	const enduranceLimitContent = (
 		<div>

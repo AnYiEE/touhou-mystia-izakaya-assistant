@@ -8,12 +8,24 @@ import {
 	CUSTOMER_RARE_LIST,
 	type TCustomerRareName,
 	type TCustomerRares,
+	type TPlace,
 } from '@/data';
 import { Clothes } from '@/utils';
 
 import { siteConfig } from '@/configs';
+import { checkLengthEmpty } from '@/utilities';
 
 const { cdnUrl } = siteConfig;
+
+export interface ICustomerRareDisplayMeta {
+	averagePrice: number;
+	enduranceLimitPercent: number;
+	hasEnduranceLimit: boolean;
+	hasNegativeSpellCards: boolean;
+	hasOtherPlaces: boolean;
+	mainPlace: TPlace;
+	placeContent: string;
+}
 
 export class CustomerRare extends Customer<TCustomerRares> {
 	private static _instance: CustomerRare | undefined;
@@ -46,6 +58,33 @@ export class CustomerRare extends Customer<TCustomerRares> {
 
 	public evaluateMeal(args: Parameters<typeof evaluateMeal>[number]) {
 		return evaluateMeal(args);
+	}
+
+	/**
+	 * @description Build stable profile display meta for rare customer cards without carrying UI state or tooltip structure.
+	 */
+	public getDisplayMeta(name: TCustomerRareName): ICustomerRareDisplayMeta {
+		const { enduranceLimit, places, price, spellCards } =
+			this.getPropsByName(name);
+		const [mainPlace, ...otherPlaces] = places;
+		const hasOtherPlaces = !checkLengthEmpty(otherPlaces);
+		const averagePrice = (price[0] + price[1]) / 2;
+		const enduranceLimitPercent = Math.floor(enduranceLimit * 100 - 100);
+		const hasNegativeSpellCards =
+			'negative' in spellCards &&
+			!checkLengthEmpty<unknown>(spellCards.negative);
+
+		return {
+			averagePrice,
+			enduranceLimitPercent,
+			hasEnduranceLimit: enduranceLimitPercent > 0,
+			hasNegativeSpellCards,
+			hasOtherPlaces,
+			mainPlace,
+			placeContent: hasOtherPlaces
+				? `其他出没地区：${otherPlaces.join('、')}`
+				: '暂未收录其他出没地区',
+		};
 	}
 
 	public getTachiePath(name: TCustomerRareName | null) {
