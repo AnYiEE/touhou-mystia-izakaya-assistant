@@ -70,8 +70,22 @@ function sortRecipeRows(
 	}
 }
 
-function paginateRows<T>(rows: T[], page: number, rowsPerPage: number) {
-	const start = (page - 1) * rowsPerPage;
+function normalizePositiveInteger(value: number) {
+	return Number.isFinite(value) ? Math.max(1, Math.floor(value)) : 1;
+}
+
+function getTotalPages(totalRows: number, rowsPerPage: number) {
+	return Math.max(1, Math.ceil(totalRows / rowsPerPage));
+}
+
+function paginateRows<T>(
+	rows: T[],
+	page: number,
+	rowsPerPage: number,
+	totalPages: number
+) {
+	const currentPage = Math.min(normalizePositiveInteger(page), totalPages);
+	const start = (currentPage - 1) * rowsPerPage;
 	const end = start + rowsPerPage;
 
 	return rows.slice(start, end);
@@ -149,12 +163,17 @@ export function buildRecipeSuitabilityRows({
 		: dataWithVisibleRows;
 
 	const sortedRows = sortRecipeRows(filteredRows, sortDescriptor);
-	const pagedRows = paginateRows(sortedRows, page, rowsPerPage);
-
-	return {
-		filteredRows,
-		pagedRows,
+	const normalizedRowsPerPage = normalizePositiveInteger(rowsPerPage);
+	const totalPages = getTotalPages(
+		filteredRows.length,
+		normalizedRowsPerPage
+	);
+	const pagedRows = paginateRows(
 		sortedRows,
-		totalPages: Math.ceil(filteredRows.length / rowsPerPage),
-	};
+		page,
+		normalizedRowsPerPage,
+		totalPages
+	);
+
+	return { filteredRows, pagedRows, sortedRows, totalPages };
 }

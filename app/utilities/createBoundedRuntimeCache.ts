@@ -5,6 +5,12 @@ interface IBoundedRuntimeCache<TKey, TValue> {
 }
 
 export function createBoundedRuntimeCache<TKey, TValue>(maxSize: number) {
+	if (!Number.isInteger(maxSize) || maxSize < 0) {
+		throw new RangeError(
+			'[createBoundedRuntimeCache] maxSize must be an integer >= 0'
+		);
+	}
+
 	const cache = new Map<TKey, TValue>();
 
 	return {

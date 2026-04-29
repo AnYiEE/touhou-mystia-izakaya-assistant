@@ -39,7 +39,7 @@ export default function SavedMealActionRail({
 			)}
 		>
 			<div
-				aria-hidden
+				aria-hidden={!isReorderVisible}
 				className={cn(
 					'absolute -right-2 -top-1 flex flex-col gap-3 text-tiny text-primary/20 dark:text-default-100',
 					{ hidden: !isReorderVisible },
