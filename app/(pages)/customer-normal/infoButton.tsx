@@ -1,5 +1,3 @@
-import { type ReactElement } from 'react';
-
 import { AccordionItem } from '@heroui/accordion';
 
 import { Avatar } from '@/design/ui/components';
@@ -73,9 +71,7 @@ export default function InfoButton() {
 				</div>
 				<p className="text-small">{currentCustomerDescription}</p>
 			</AccordionItem>
-			{checkLengthEmpty(currentCustomerChat) ? (
-				(null as unknown as ReactElement)
-			) : (
+			{checkLengthEmpty(currentCustomerChat) ? null : (
 				<AccordionItem
 					key="chat"
 					aria-label="闲聊对话"

@@ -151,11 +151,11 @@ const state = {
 
 			searchValue: '',
 			table: {
-				columns: toSet() as SelectionSet,
+				columns: toSet<SelectionSet>(),
 				hiddenBeverages: toSet<TBeverageName>() as Set<TBeverageName>,
 				page: 1,
 				row: 1,
-				rows: toSet() as SelectionSet,
+				rows: toSet<SelectionSet>(),
 				selectableRows: [] as Array<ValueCollection<number>>,
 			},
 		},
@@ -163,8 +163,8 @@ const state = {
 			name: null as TCustomerNormalName | null,
 
 			select: {
-				beverageTag: toSet() as SelectionSet,
-				recipeTag: toSet() as SelectionSet,
+				beverageTag: toSet<SelectionSet>(),
+				recipeTag: toSet<SelectionSet>(),
 			},
 
 			filterVisibility: true,
@@ -183,13 +183,13 @@ const state = {
 
 			searchValue: '',
 			table: {
-				columns: toSet() as SelectionSet,
+				columns: toSet<SelectionSet>(),
 				hiddenIngredients:
 					toSet<TIngredientName>() as Set<TIngredientName>,
 				hiddenRecipes: toSet<TRecipeName>() as Set<TRecipeName>,
 				page: 1,
 				row: 1,
-				rows: toSet() as SelectionSet,
+				rows: toSet<SelectionSet>(),
 				selectableRows: [] as Array<ValueCollection<number>>,
 			},
 		},
@@ -592,7 +592,7 @@ export const customerNormalStore = store(state, {
 					),
 				candidates: instance_ingredient.data.map(({ name, tags }) => ({
 					name,
-					tags: tags as TIngredientTag[],
+					tags,
 				})),
 				composeRecipeTagsWithPopularTrend: (tags) =>
 					instance_recipe.composeTagsWithPopularTrend(
@@ -861,7 +861,7 @@ export const customerNormalStore = store(state, {
 				read: () =>
 					toSet(
 						currentStore.persistence.beverage.table.dlcs.use()
-					) as SelectionSet,
+					),
 				write: (dlcs: Selection) => {
 					currentStore.persistence.beverage.table.dlcs.set(
 						toArray<SelectionSet>(dlcs) as never
@@ -875,7 +875,7 @@ export const customerNormalStore = store(state, {
 				read: () =>
 					toSet(
 						currentStore.persistence.recipe.table.cookers.use()
-					) as SelectionSet,
+					),
 				write: (cookers: Selection) => {
 					currentStore.persistence.recipe.table.cookers.set(
 						toArray<SelectionSet>(cookers) as never
@@ -886,7 +886,7 @@ export const customerNormalStore = store(state, {
 				read: () =>
 					toSet(
 						currentStore.persistence.recipe.table.dlcs.use()
-					) as SelectionSet,
+					),
 				write: (dlcs: Selection) => {
 					currentStore.persistence.recipe.table.dlcs.set(
 						toArray<SelectionSet>(dlcs) as never

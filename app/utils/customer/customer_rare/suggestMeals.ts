@@ -772,12 +772,10 @@ function computeSuggestions(
 				currentBeverageTags: beverageTags,
 				currentCustomerBeverageTags: customerBeverageTags,
 				currentCustomerName: customerName,
-				currentCustomerNegativeTags:
-					customerNegativeTags as TRecipeTag[],
+				currentCustomerNegativeTags: customerNegativeTags,
 				currentCustomerOrder: customerOrder,
-				currentCustomerPositiveTags:
-					customerPositiveTags as TRecipeTag[],
-				currentIngredients: recipeIngredients as TIngredientName[],
+				currentCustomerPositiveTags: customerPositiveTags,
+				currentIngredients: recipeIngredients,
 				currentRecipeName: recipeName,
 				currentRecipeTagsWithTrend: recipeTagsWithTrend,
 				hasMystiaCooker: false,
@@ -810,7 +808,7 @@ function computeSuggestions(
 					isFamousShop,
 					maxIngredientEase,
 					popularTrend,
-					recipeIngredients: recipeIngredients as TIngredientName[],
+					recipeIngredients,
 					recipeName,
 					recipeNegativeTags,
 					recipeTagsBase: recipePositiveTags,
@@ -848,7 +846,7 @@ function computeSuggestions(
 							: 1;
 					const acquisitionWeight =
 						getRecipeAcquisitionWeight(
-							recipeIngredients as TIngredientName[],
+							recipeIngredients,
 							ingredientEaseMap,
 							maxIngredientEase
 						) *
@@ -1337,9 +1335,9 @@ function suggestIngredients(
 		currentBeverageTags: beverageTags,
 		currentCustomerBeverageTags: customerBeverageTags,
 		currentCustomerName: customerName,
-		currentCustomerNegativeTags: customerNegativeTags as TRecipeTag[],
+		currentCustomerNegativeTags: customerNegativeTags,
 		currentCustomerOrder: customerOrder,
-		currentCustomerPositiveTags: customerPositiveTags as TRecipeTag[],
+		currentCustomerPositiveTags: customerPositiveTags,
 		currentIngredients: allCurrentIngredients,
 		currentRecipeName: currentRecipe.name,
 		currentRecipeTagsWithTrend: baseRecipeTagsWithTrend,
@@ -1377,7 +1375,7 @@ function suggestIngredients(
 		recipeIngredients: allCurrentIngredients,
 		recipeName: currentRecipe.name,
 		recipeNegativeTags,
-		recipeTagsBase: composedBaseRecipeTags as ReadonlyArray<TRecipeTag>,
+		recipeTagsBase: composedBaseRecipeTags,
 	});
 
 	if (
@@ -1478,10 +1476,10 @@ function suggestForBeverage(
 			currentBeverageTags: beverageTags,
 			currentCustomerBeverageTags: customerBeverageTags,
 			currentCustomerName: customerName,
-			currentCustomerNegativeTags: customerNegativeTags as TRecipeTag[],
+			currentCustomerNegativeTags: customerNegativeTags,
 			currentCustomerOrder: customerOrder,
-			currentCustomerPositiveTags: customerPositiveTags as TRecipeTag[],
-			currentIngredients: recipeIngredients as TIngredientName[],
+			currentCustomerPositiveTags: customerPositiveTags,
+			currentIngredients: recipeIngredients,
 			currentRecipeName: recipeName,
 			currentRecipeTagsWithTrend: recipeTagsWithTrend,
 			hasMystiaCooker,
@@ -1520,7 +1518,7 @@ function suggestForBeverage(
 				isFamousShop,
 				maxIngredientEase,
 				popularTrend,
-				recipeIngredients: recipeIngredients as TIngredientName[],
+				recipeIngredients,
 				recipeName,
 				recipeNegativeTags,
 				recipeTagsBase: recipePositiveTags,
@@ -1561,7 +1559,7 @@ function suggestForBeverage(
 					: 1;
 			const acquisitionWeight =
 				getRecipeAcquisitionWeight(
-					recipeIngredients as TIngredientName[],
+					recipeIngredients,
 					ingredientEaseMap,
 					maxIngredientEase
 				) * bondBonus;
@@ -1692,9 +1690,9 @@ function suggestForRecipe(
 			currentBeverageTags: beverageTags,
 			currentCustomerBeverageTags: customerBeverageTags,
 			currentCustomerName: customerName,
-			currentCustomerNegativeTags: customerNegativeTags as TRecipeTag[],
+			currentCustomerNegativeTags: customerNegativeTags,
 			currentCustomerOrder: customerOrder,
-			currentCustomerPositiveTags: customerPositiveTags as TRecipeTag[],
+			currentCustomerPositiveTags: customerPositiveTags,
 			currentIngredients: allCurrentIngredients,
 			currentRecipeName: currentRecipe.name,
 			currentRecipeTagsWithTrend: recipeTagsWithTrend,
@@ -1731,7 +1729,7 @@ function suggestForRecipe(
 				recipeIngredients: allCurrentIngredients,
 				recipeName: currentRecipe.name,
 				recipeNegativeTags,
-				recipeTagsBase: composedRecipeTags as ReadonlyArray<TRecipeTag>,
+				recipeTagsBase: composedRecipeTags,
 			});
 
 			if (
@@ -1977,7 +1975,7 @@ export function getScoreBasedAlternatives({
 
 			const tagSet = new Set(baseTagSets[pos]);
 			for (const tag of item.tags) {
-				tagSet.add(tag as string);
+				tagSet.add(tag);
 			}
 			Recipe.applyLargePartition(
 				tagSet,

@@ -305,9 +305,7 @@ export const globalStore = store(state, {
 	.computed((currentStore) => ({
 		beverageTableColumns: {
 			read: () =>
-				toSet(
-					currentStore.persistence.table.columns.beverage.use()
-				) as SelectionSet,
+				toSet(currentStore.persistence.table.columns.beverage.use()),
 			write: (columns: Selection) => {
 				currentStore.persistence.table.columns.beverage.set(
 					toArray<SelectionSet>(columns) as never
@@ -316,9 +314,7 @@ export const globalStore = store(state, {
 		},
 		recipeTableColumns: {
 			read: () =>
-				toSet(
-					currentStore.persistence.table.columns.recipe.use()
-				) as SelectionSet,
+				toSet(currentStore.persistence.table.columns.recipe.use()),
 			write: (columns: Selection) => {
 				currentStore.persistence.table.columns.recipe.set(
 					toArray<SelectionSet>(columns) as never
@@ -328,9 +324,9 @@ export const globalStore = store(state, {
 
 		tableRows: {
 			read: () =>
-				toSet(
+				toSet<SelectionSet>(
 					currentStore.persistence.table.row.use().toString()
-				) as SelectionSet,
+				),
 			write: (rows: Selection) => {
 				currentStore.persistence.table.row.set(
 					Number.parseInt(toArray<SelectionSet>(rows)[0] as string)
@@ -359,12 +355,12 @@ export const globalStore = store(state, {
 
 		maxSuggestMealExtraIngredients: {
 			read: () =>
-				toSet(
+				toSet<SelectionSet>(
 					(
 						currentStore.persistence.suggestMeals.maxExtraIngredients.use() ??
 						''
 					).toString()
-				) as SelectionSet,
+				),
 			write: (maxExtra: Selection) => {
 				const value = toArray<SelectionSet>(maxExtra)[0] as string;
 				currentStore.persistence.suggestMeals.maxExtraIngredients.set(
@@ -374,11 +370,11 @@ export const globalStore = store(state, {
 		},
 		maxSuggestMealRating: {
 			read: () =>
-				toSet(
+				toSet<SelectionSet>(
 					currentStore.persistence.suggestMeals.maxRating
 						.use()
 						.toString()
-				) as SelectionSet,
+				),
 			write: (maxRating: Selection) => {
 				currentStore.persistence.suggestMeals.maxRating.set(
 					Number.parseInt(
@@ -389,11 +385,11 @@ export const globalStore = store(state, {
 		},
 		maxSuggestMealResults: {
 			read: () =>
-				toSet(
+				toSet<SelectionSet>(
 					currentStore.persistence.suggestMeals.maxResults
 						.use()
 						.toString()
-				) as SelectionSet,
+				),
 			write: (maxResults: Selection) => {
 				currentStore.persistence.suggestMeals.maxResults.set(
 					Number.parseInt(

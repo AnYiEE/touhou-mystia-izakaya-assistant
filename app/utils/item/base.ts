@@ -113,7 +113,7 @@ export class Item<
 			if (props.length === 1) {
 				return item[props[0] as T];
 			}
-			return props.map((prop) => item[prop]) as Array<TItem[T]>;
+			return props.map((prop) => item[prop]);
 		}
 
 		return item;

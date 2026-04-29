@@ -37,7 +37,7 @@ export class Ingredient extends Food<TIngredient[]> {
 			places: extractPlacesFromFoodFrom(item.from),
 		}));
 
-		super(dataWithPlaces as TIngredient[]);
+		super(dataWithPlaces);
 	}
 
 	public static getInstance() {

@@ -54,7 +54,7 @@ export class Beverage extends Food<TBeverage[]> {
 			places: extractPlacesFromFoodFrom(item.from),
 		}));
 
-		super(dataWithPlaces as TBeverage[]);
+		super(dataWithPlaces);
 	}
 
 	public static getInstance() {

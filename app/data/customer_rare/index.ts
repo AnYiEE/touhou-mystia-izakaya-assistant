@@ -52,7 +52,7 @@ export const CUSTOMER_RATING_MAP = Object.entries(
 		ratingKey === 'good' ||
 		ratingKey === 'exgood'
 	) {
-		acc[ratingKey as TRatingKey] = value;
+		acc[ratingKey] = value;
 	}
 	return acc;
 }, {}) as TRatingMap;

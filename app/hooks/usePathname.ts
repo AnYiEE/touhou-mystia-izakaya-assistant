@@ -11,7 +11,7 @@ function concatPath(route: string, path?: string) {
 }
 
 export function usePathname() {
-	const pathname = useNextPathname() as TSitePath | (string & {});
+	const pathname = useNextPathname() as TSitePath;
 	const router = useRouter();
 
 	const push = useCallback<TUpdateRoute>(
