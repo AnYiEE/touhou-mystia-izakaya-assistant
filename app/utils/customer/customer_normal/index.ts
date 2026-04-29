@@ -1,6 +1,13 @@
 import { checkEasterEgg, evaluateMeal } from './evaluateMeal';
 import { Customer } from '../base';
-import { CUSTOMER_NORMAL_LIST, type TCustomerNormals } from '@/data';
+import {
+	CUSTOMER_NORMAL_LIST,
+	type TCustomerNormals,
+	type TRatingKey,
+} from '@/data';
+import type { TRecipe } from '@/utils/types';
+
+type TEvaluateMealParams = Parameters<typeof evaluateMeal>[0];
 
 export class CustomerNormal extends Customer<TCustomerNormals> {
 	private static _instance: CustomerNormal | undefined;
@@ -21,7 +28,11 @@ export class CustomerNormal extends Customer<TCustomerNormals> {
 		return checkEasterEgg(args);
 	}
 
-	public evaluateMeal(args: Parameters<typeof evaluateMeal>[number]) {
+	public evaluateMeal(
+		args: TEvaluateMealParams & { currentRecipe: TRecipe }
+	): TRatingKey;
+	public evaluateMeal(args: TEvaluateMealParams): TRatingKey | null;
+	public evaluateMeal(args: TEvaluateMealParams) {
 		return evaluateMeal(args);
 	}
 }

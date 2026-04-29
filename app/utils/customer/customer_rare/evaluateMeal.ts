@@ -1,5 +1,6 @@
 import {
 	DARK_MATTER_META_MAP,
+	type TBeverageName,
 	type TBeverageTag,
 	type TCustomerRareName,
 	type TIngredientName,
@@ -8,7 +9,9 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import { type ICustomerOrder } from '@/stores';
-import { checkLengthEmpty, intersection, without } from '@/utilities';
+import { checkLengthEmpty, intersection, union, without } from '@/utilities';
+import { Beverage, CustomerRare, Recipe } from '@/utils';
+import type { IPopularTrend } from '@/types';
 
 interface IParameters {
 	currentBeverageTags: TBeverageTag[];
@@ -22,6 +25,18 @@ interface IParameters {
 	currentRecipeTagsWithTrend: TRecipeTag[];
 	hasMystiaCooker: boolean;
 	isDarkMatter: boolean;
+}
+
+interface INameBasedParameters {
+	mode: 'name-based';
+	customerName: TCustomerRareName;
+	recipeName: TRecipeName;
+	beverageName: TBeverageName;
+	extraIngredients?: TIngredientName[];
+	customerOrder: ICustomerOrder;
+	hasMystiaCooker?: boolean;
+	popularTrend?: IPopularTrend;
+	isFamousShop?: boolean;
 }
 
 function calculateMaxScore({
@@ -234,7 +249,7 @@ function checkEasterEgg({
 	return mealScore;
 }
 
-function getRatingKey(mealScore: number): TRatingKey | null {
+function getRatingKey(mealScore: number): TRatingKey {
 	if (mealScore <= 0) {
 		return 'exbad';
 	}
@@ -248,24 +263,86 @@ function getRatingKey(mealScore: number): TRatingKey | null {
 			return 'good';
 		case 4:
 			return 'exgood';
+		default:
+			return 'exbad';
 	}
-
-	return null;
 }
 
-export function evaluateMeal({
-	currentBeverageTags,
-	currentCustomerBeverageTags,
-	currentCustomerName,
-	currentCustomerNegativeTags,
-	currentCustomerOrder,
-	currentCustomerPositiveTags,
-	currentIngredients,
-	currentRecipeName,
-	currentRecipeTagsWithTrend,
-	hasMystiaCooker,
-	isDarkMatter,
-}: IParameters) {
+function resolveNameBasedParameters(params: INameBasedParameters): IParameters {
+	const {
+		beverageName,
+		customerName,
+		customerOrder,
+		extraIngredients = [],
+		hasMystiaCooker = false,
+		isFamousShop = false,
+		popularTrend = { isNegative: false, tag: null },
+		recipeName,
+	} = params;
+
+	const instance_customer = CustomerRare.getInstance();
+	const instance_beverage = Beverage.getInstance();
+	const instance_recipe = Recipe.getInstance();
+
+	const {
+		beverageTags: customerBeverageTags,
+		negativeTags: customerNegativeTags,
+		positiveTags: customerPositiveTags,
+	} = instance_customer.getPropsByName(customerName);
+
+	const { tags: beverageTags } =
+		instance_beverage.getPropsByName(beverageName);
+	const { ingredients, negativeTags, positiveTags } =
+		instance_recipe.getPropsByName(recipeName);
+
+	const { extraTags, isDarkMatter } = instance_recipe.checkDarkMatter({
+		extraIngredients,
+		negativeTags,
+	});
+
+	const composedRecipeTags = instance_recipe.composeTagsWithPopularTrend(
+		ingredients,
+		extraIngredients,
+		positiveTags,
+		extraTags,
+		popularTrend
+	);
+
+	const recipeTagsWithTrend = instance_recipe.calculateTagsWithTrend(
+		composedRecipeTags,
+		popularTrend,
+		isFamousShop
+	);
+
+	return {
+		currentBeverageTags: beverageTags,
+		currentCustomerBeverageTags: customerBeverageTags,
+		currentCustomerName: customerName,
+		currentCustomerNegativeTags: customerNegativeTags,
+		currentCustomerOrder: customerOrder,
+		currentCustomerPositiveTags: customerPositiveTags,
+		currentIngredients: union(ingredients, extraIngredients),
+		currentRecipeName: recipeName,
+		currentRecipeTagsWithTrend: recipeTagsWithTrend,
+		hasMystiaCooker,
+		isDarkMatter,
+	};
+}
+
+export function evaluateMeal(args: IParameters | INameBasedParameters) {
+	const resolved = 'mode' in args ? resolveNameBasedParameters(args) : args;
+	const {
+		currentBeverageTags,
+		currentCustomerBeverageTags,
+		currentCustomerName,
+		currentCustomerNegativeTags,
+		currentCustomerOrder,
+		currentCustomerPositiveTags,
+		currentIngredients,
+		isDarkMatter,
+	} = resolved;
+	let { currentRecipeName, currentRecipeTagsWithTrend, hasMystiaCooker } =
+		resolved;
 	if (checkLengthEmpty(currentBeverageTags) || currentRecipeName === null) {
 		return null;
 	}

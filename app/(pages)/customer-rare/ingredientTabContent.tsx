@@ -28,12 +28,12 @@ import {
 	checkA11yConfirmKey,
 	checkLengthEmpty,
 	intersection,
-	toArray,
 	toGetItemWithKey,
 	toSet,
 	union,
 } from '@/utilities';
 import { type Ingredient } from '@/utils';
+import { getFullIngredientScoreChange } from '@/utils/evaluators';
 import type { TItemData, TRecipe } from '@/utils/types';
 
 interface IProps {
@@ -203,108 +203,30 @@ export default memo<IProps>(function IngredientTabContent({
 						const tagsWithTrend = calculateIngredientTagsWithTrend(
 							tags
 						) as TRecipeTag[];
-						const allTagsWithTrend = union(
-							currentRecipeTagsWithTrend,
-							tagsWithTrend
-						);
-
-						const before = composeRecipeTagsWithPopularTrend(
-							currentRecipeTagsWithTrend as TIngredientTag[]
-						);
-						const after = composeRecipeTagsWithPopularTrend(
-							allTagsWithTrend as TIngredientTag[]
-						);
-
-						let scoreChange =
-							instance_recipe.getIngredientScoreChange(
-								before,
-								after,
-								customerPositiveTags,
-								customerNegativeTags
-							);
-
-						// The customer like or dislike the large partition tag.
-						scoreChange -= Number(
-							isLargePartitionTagNext &&
-								(customerNegativeTags as TRecipeTag[]).includes(
-									DYNAMIC_TAG_MAP.largePartition
-								) &&
-								!before.includes(DYNAMIC_TAG_MAP.largePartition)
-						);
-						scoreChange += Number(
-							isLargePartitionTagNext &&
-								(customerPositiveTags as TRecipeTag[]).includes(
-									DYNAMIC_TAG_MAP.largePartition
-								) &&
-								!before.includes(DYNAMIC_TAG_MAP.largePartition)
-						);
-
-						// The current popular tag is the large partition tag and the customer has popular tags.
-						scoreChange -= Number(
-							shouldCalculateLargePartitionTag &&
-								(customerNegativeTags as TRecipeTag[]).includes(
-									DYNAMIC_TAG_MAP.popularNegative
-								) &&
-								currentCustomerPopularTrend.isNegative
-						);
-						scoreChange -= Number(
-							shouldCalculateLargePartitionTag &&
-								(customerNegativeTags as TRecipeTag[]).includes(
-									DYNAMIC_TAG_MAP.popularPositive
-								) &&
-								!currentCustomerPopularTrend.isNegative
-						);
-						scoreChange += Number(
-							shouldCalculateLargePartitionTag &&
-								(customerPositiveTags as TRecipeTag[]).includes(
-									DYNAMIC_TAG_MAP.popularNegative
-								) &&
-								currentCustomerPopularTrend.isNegative
-						);
-						scoreChange += Number(
-							shouldCalculateLargePartitionTag &&
-								(customerPositiveTags as TRecipeTag[]).includes(
-									DYNAMIC_TAG_MAP.popularPositive
-								) &&
-								!currentCustomerPopularTrend.isNegative
-						);
-
 						const isDarkIngredient = darkIngredients.has(name);
 
-						// The customer has a ingredient-based easter agg.
 						const {
-							ingredient: easterEggIngredient,
-							score: easterEggScore,
-						} = instance_customer.checkIngredientEasterEgg({
-							currentCustomerName,
-							currentIngredients: union(
-								toArray(currentRecipeAllIngredients, name)
-							),
-							currentRecipeName:
-								isDarkIngredient || isDarkMatter
-									? DARK_MATTER_META_MAP.name
-									: currentRecipeData.name,
+							after,
+							before,
+							easterEggIngredient: _easterEggIngredient,
+							scoreChange,
+						} = getFullIngredientScoreChange({
+							candidateIngredientName: name,
+							composeRecipeTagsWithPopularTrend,
+							currentIngredients: currentRecipeAllIngredients,
+							currentRecipeName: currentRecipeData.name,
+							currentRecipeTagsWithTrend,
+							customerName: currentCustomerName,
+							customerNegativeTags,
+							customerPositiveTags,
+							customerType: 'rare',
+							ingredientTags: tagsWithTrend as TIngredientTag[],
+							isDarkIngredient,
+							isDarkMatter: isDarkMatter ?? false,
+							isLargePartitionTagNext,
+							popularTrend: currentCustomerPopularTrend,
+							shouldCalculateLargePartitionTag,
 						});
-						if (
-							name === easterEggIngredient &&
-							!currentRecipeAllIngredients.includes(
-								easterEggIngredient
-							)
-						) {
-							// The initial score of the Easter egg is 0.
-							// If it remains 0 after calculation, it means that the highest rating is restricted;
-							// otherwise, it restricts the lowest rating.
-							scoreChange =
-								easterEggScore === 0 ? -Infinity : Infinity;
-						}
-
-						if (isDarkIngredient) {
-							scoreChange = -Infinity;
-						}
-
-						if (isDarkMatter) {
-							scoreChange = 0;
-						}
 
 						const isDown = scoreChange < 0;
 						const isUp = scoreChange > 0;
