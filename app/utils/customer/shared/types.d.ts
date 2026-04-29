@@ -8,12 +8,15 @@ import {
 } from '@/data';
 import type { TBeverage, TRecipe } from '@/utils/types';
 
-export interface ITableSortDescriptor<T extends string> extends SortDescriptor {
+export type ITableSortDescriptor<T extends string> = Omit<
+	SortDescriptor,
+	'column' | 'direction'
+> & {
 	column?: T;
 	direction?: SortDescriptor['direction'];
 	lastColumn?: T;
 	time?: number;
-}
+};
 
 export type TRecipeTableSortKey = 'recipe' | 'price' | 'suitability' | 'time';
 export type TBeverageTableSortKey = 'beverage' | 'price' | 'suitability';

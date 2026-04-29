@@ -83,38 +83,31 @@ export function buildBeverageSuitabilityRows({
 	const data: TBeverageSuitabilityRow[] = beverageInstance
 		.buildBeverageSuitabilityRows(customerBeverageTags)
 		.filter(({ dlc }) => !hiddenDlcs.has(dlc));
+	const dataWithVisibleRows = data.filter(
+		({ name }) => !hiddenBeverages.has(name)
+	);
 
-	let filteredRows: TBeverageSuitabilityRow[];
+	const hasNameFilter = Boolean(searchValue);
+	const shouldFilterByTableOptions =
+		hasNameFilter ||
+		!checkLengthEmpty(selectedBeverageTags) ||
+		!checkLengthEmpty(selectedDlcs);
 
-	if (customerBeverageTags === null || customerBeverageTags === undefined) {
-		filteredRows = data;
-	} else {
-		const dataWithRealSuitability = data.filter(
-			({ name }) => !hiddenBeverages.has(name)
-		);
+	const filteredRows = shouldFilterByTableOptions
+		? dataWithVisibleRows.filter(({ dlc, name, pinyin, tags }) => {
+				const isNameMatched = hasNameFilter
+					? matchSearch(searchValue, { name, pinyin })
+					: true;
+				const isDlcMatched =
+					checkLengthEmpty(selectedDlcs) ||
+					selectedDlcs.includes(dlc.toString());
+				const isTagsMatched =
+					checkLengthEmpty(selectedBeverageTags) ||
+					checkArraySubsetOf(selectedBeverageTags, tags);
 
-		const hasNameFilter = Boolean(searchValue);
-		const shouldFilterByTableOptions =
-			hasNameFilter ||
-			!checkLengthEmpty(selectedBeverageTags) ||
-			!checkLengthEmpty(selectedDlcs);
-
-		filteredRows = shouldFilterByTableOptions
-			? dataWithRealSuitability.filter(({ dlc, name, pinyin, tags }) => {
-					const isNameMatched = hasNameFilter
-						? matchSearch(searchValue, { name, pinyin })
-						: true;
-					const isDlcMatched =
-						checkLengthEmpty(selectedDlcs) ||
-						selectedDlcs.includes(dlc.toString());
-					const isTagsMatched =
-						checkLengthEmpty(selectedBeverageTags) ||
-						checkArraySubsetOf(selectedBeverageTags, tags);
-
-					return isNameMatched && isDlcMatched && isTagsMatched;
-				})
-			: dataWithRealSuitability;
-	}
+				return isNameMatched && isDlcMatched && isTagsMatched;
+			})
+		: dataWithVisibleRows;
 
 	const sortedRows = sortBeverageRows(filteredRows, sortDescriptor);
 	const pagedRows = paginateRows(sortedRows, page, rowsPerPage);

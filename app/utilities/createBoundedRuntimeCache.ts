@@ -30,10 +30,10 @@ export function createBoundedRuntimeCache<TKey, TValue>(maxSize: number) {
 			cache.set(key, value);
 
 			if (cache.size > maxSize) {
-				const oldestKey = cache.keys().next().value;
+				const oldest = cache.keys().next();
 
-				if (oldestKey !== undefined) {
-					cache.delete(oldestKey);
+				if (!oldest.done) {
+					cache.delete(oldest.value);
 				}
 			}
 		},

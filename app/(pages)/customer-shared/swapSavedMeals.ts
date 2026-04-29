@@ -29,12 +29,17 @@ export function swapSavedMeals<TMeal, TSavedMeal extends IIndexedSavedMeal>({
 	const { dataIndex: currentDataIndex } = currentEntry;
 	const { dataIndex: nextDataIndex } = nextEntry;
 	const nextMeals = [...currentMeals];
-	const currentMeal = nextMeals[currentDataIndex];
-	const targetMeal = nextMeals[nextDataIndex];
 
-	if (currentMeal === undefined || targetMeal === undefined) {
+	if (
+		currentDataIndex < 0 ||
+		currentDataIndex >= nextMeals.length ||
+		nextDataIndex < 0 ||
+		nextDataIndex >= nextMeals.length
+	) {
 		return null;
 	}
+	const currentMeal = nextMeals[currentDataIndex] as TMeal;
+	const targetMeal = nextMeals[nextDataIndex] as TMeal;
 
 	[nextMeals[currentDataIndex], nextMeals[nextDataIndex]] = [
 		targetMeal,

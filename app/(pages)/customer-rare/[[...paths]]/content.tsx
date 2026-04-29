@@ -66,10 +66,13 @@ function validateName(name: string | undefined) {
 export default function Content() {
 	const { pathname } = usePathname();
 	const router = useRouter();
+	const routeCustomerName = useMemo(() => pathname.split('/')[2], [pathname]);
 	const validName = useMemo(
-		() => validateName(pathname.split('/')[2]),
-		[pathname]
+		() => validateName(routeCustomerName),
+		[routeCustomerName]
 	);
+	const hasCustomerPath =
+		routeCustomerName !== undefined && routeCustomerName !== '';
 	const title = `${validName === null ? '' : `${validName} | `}${getPageTitle('/customer-rare')} | ${zhName} - ${enName}`;
 
 	useDocumentTitle(title, '/customer-rare');
@@ -90,6 +93,11 @@ export default function Content() {
 
 	const isFirstRendering = useRef(true);
 	useEffect(() => {
+		if (hasCustomerPath && validName === null) {
+			router.replace('/customer-rare');
+			return;
+		}
+
 		if (isFirstRendering.current) {
 			isFirstRendering.current = false;
 			return;
@@ -97,7 +105,7 @@ export default function Content() {
 		if (currentCustomerName === null) {
 			router.replace('/customer-rare');
 		}
-	}, [currentCustomerName, router]);
+	}, [currentCustomerName, hasCustomerPath, router, validName]);
 
 	const instance_customer = customerStore.instances.customer.get();
 	const { customerSortedData } = useCustomerRouteData(

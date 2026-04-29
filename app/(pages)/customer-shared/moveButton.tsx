@@ -50,7 +50,16 @@ const MoveButtonComponent = memo<IMoveButtonProps>(function MoveButton({
 						: faArrowUp
 				}
 				size="1x"
-				onClick={onClick}
+				onClick={(event) => {
+					if (isDisabled) {
+						event.preventDefault();
+						event.stopPropagation();
+						return;
+					}
+
+					onClick?.(event);
+				}}
+				aria-disabled={isDisabled}
 				role="button"
 				className={cn(
 					'cursor-pointer text-default transition-colors hover:text-default-400 motion-reduce:transition-none',

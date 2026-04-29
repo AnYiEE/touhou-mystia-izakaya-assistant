@@ -109,54 +109,44 @@ export function buildRecipeSuitabilityRows({
 	const data: TRecipeSuitabilityRow[] = recipeInstance
 		.buildRecipeSuitabilityRows(domainRowsArgs)
 		.filter(({ dlc }) => !hiddenDlcs.has(dlc));
+	const dataWithVisibleRows = data.filter(
+		({ ingredients, name }) =>
+			!checkArrayContainsOf(ingredients, hiddenIngredients) &&
+			!hiddenRecipes.has(name)
+	);
 
-	let filteredRows: TRecipeSuitabilityRow[];
+	const hasNameFilter = Boolean(searchValue);
+	const shouldFilterByTableOptions =
+		hasNameFilter ||
+		!checkLengthEmpty(selectedCookers) ||
+		!checkLengthEmpty(selectedDlcs) ||
+		!checkLengthEmpty(selectedRecipeTags);
 
-	if (customerPositiveTags === null || customerPositiveTags === undefined) {
-		filteredRows = data;
-	} else {
-		const dataWithRealSuitability = data.filter(
-			({ ingredients, name }) =>
-				!checkArrayContainsOf(ingredients, hiddenIngredients) &&
-				!hiddenRecipes.has(name)
-		);
+	const filteredRows = shouldFilterByTableOptions
+		? dataWithVisibleRows.filter(
+				({ cooker, dlc, name, pinyin, positiveTags }) => {
+					const isNameMatched = hasNameFilter
+						? matchSearch(searchValue, { name, pinyin })
+						: true;
+					const isDlcMatched =
+						checkLengthEmpty(selectedDlcs) ||
+						selectedDlcs.includes(dlc.toString());
+					const isCookerMatched =
+						checkLengthEmpty(selectedCookers) ||
+						selectedCookers.includes(cooker);
+					const isPositiveTagsMatched =
+						checkLengthEmpty(selectedRecipeTags) ||
+						checkArraySubsetOf(selectedRecipeTags, positiveTags);
 
-		const hasNameFilter = Boolean(searchValue);
-		const shouldFilterByTableOptions =
-			hasNameFilter ||
-			!checkLengthEmpty(selectedCookers) ||
-			!checkLengthEmpty(selectedDlcs) ||
-			!checkLengthEmpty(selectedRecipeTags);
-
-		filteredRows = shouldFilterByTableOptions
-			? dataWithRealSuitability.filter(
-					({ cooker, dlc, name, pinyin, positiveTags }) => {
-						const isNameMatched = hasNameFilter
-							? matchSearch(searchValue, { name, pinyin })
-							: true;
-						const isDlcMatched =
-							checkLengthEmpty(selectedDlcs) ||
-							selectedDlcs.includes(dlc.toString());
-						const isCookerMatched =
-							checkLengthEmpty(selectedCookers) ||
-							selectedCookers.includes(cooker);
-						const isPositiveTagsMatched =
-							checkLengthEmpty(selectedRecipeTags) ||
-							checkArraySubsetOf(
-								selectedRecipeTags,
-								positiveTags
-							);
-
-						return (
-							isNameMatched &&
-							isDlcMatched &&
-							isCookerMatched &&
-							isPositiveTagsMatched
-						);
-					}
-				)
-			: dataWithRealSuitability;
-	}
+					return (
+						isNameMatched &&
+						isDlcMatched &&
+						isCookerMatched &&
+						isPositiveTagsMatched
+					);
+				}
+			)
+		: dataWithVisibleRows;
 
 	const sortedRows = sortRecipeRows(filteredRows, sortDescriptor);
 	const pagedRows = paginateRows(sortedRows, page, rowsPerPage);

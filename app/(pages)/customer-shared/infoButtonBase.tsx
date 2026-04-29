@@ -1,3 +1,5 @@
+'use client';
+
 import { Fragment, memo, useCallback, useEffect, useState } from 'react';
 
 import { useParams, useVibrate } from '@/hooks';
@@ -44,6 +46,9 @@ export default memo<IProps>(function InfoButtonBase({
 	const isReducedMotion = useReducedMotion();
 	const { params, replaceState } = useParams();
 	const [isOpened, setOpened] = useState(false);
+	const [portalContainer, setPortalContainer] = useState<Element | null>(
+		null
+	);
 	const vibrate = useVibrate();
 
 	const handleClose = useCallback(() => {
@@ -69,6 +74,10 @@ export default memo<IProps>(function InfoButtonBase({
 		setOpened(params.has(PARAM_INFO));
 	}, [params]);
 
+	useEffect(() => {
+		setPortalContainer(document.querySelector('#modal-portal-container'));
+	}, []);
+
 	const buttonLabel = '更多信息';
 
 	return (
@@ -91,9 +100,7 @@ export default memo<IProps>(function InfoButtonBase({
 			/>
 			<Modal
 				isOpen={isOpened}
-				portalContainer={document.querySelector(
-					'#modal-portal-container'
-				)}
+				{...(portalContainer === null ? {} : { portalContainer })}
 				onClose={handleClose}
 			>
 				<Accordion
