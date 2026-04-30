@@ -1,4 +1,4 @@
-import type { TIngredientName } from '@/data';
+import { type TIngredientName } from '@/data';
 
 export function getRestExtraIngredients(
 	extraIngredients: ReadonlyArray<TIngredientName>,

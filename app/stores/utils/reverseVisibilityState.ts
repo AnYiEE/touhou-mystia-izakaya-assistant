@@ -1,5 +1,5 @@
-import { tabVisibilityStateMap } from '@/(pages)/customer-rare/constants';
-import type { TTabVisibilityState } from '@/(pages)/customer-rare/types';
+import { tabVisibilityStateMap } from '@/(pages)/customer-shared/constants';
+import type { TTabVisibilityState } from '@/(pages)/customer-shared/types';
 
 export function reverseVisibilityState(
 	state: TTabVisibilityState

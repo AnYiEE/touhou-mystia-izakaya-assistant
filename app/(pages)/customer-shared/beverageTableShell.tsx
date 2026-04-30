@@ -1,6 +1,4 @@
-'use client';
-
-import type { ReactNode } from 'react';
+import { type ReactNode, memo } from 'react';
 
 import {
 	type SortDescriptor,
@@ -16,16 +14,14 @@ import { Pagination, cn } from '@/design/ui/components';
 
 import Placeholder from '@/components/placeholder';
 
-import type { ITableColumn } from '@/(pages)/customer-shared/types';
-import type { TBeverageSuitabilityRow } from '@/utils/customer/shared';
+import type {
+	ITableColumn,
+	TBeverageTableColumnKey,
+} from '@/(pages)/customer-shared/types';
+import { checkLengthEmpty } from '@/utilities';
+import { type TBeverageSuitabilityRow } from '@/utils/customer/shared';
 
-export type TBeverageTableColumnKey =
-	| 'beverage'
-	| 'price'
-	| 'suitability'
-	| 'action';
-
-interface IBeverageTableShellProps {
+interface IProps {
 	isHighAppearance: boolean;
 	isReducedMotion: boolean;
 	headerColumns: Array<ITableColumn<TBeverageTableColumnKey>>;
@@ -43,7 +39,7 @@ interface IBeverageTableShellProps {
 	totalPages: number;
 }
 
-export default function BeverageTableShell({
+export default memo<IProps>(function BeverageTableShell({
 	headerColumns,
 	isHighAppearance,
 	isReducedMotion,
@@ -56,13 +52,13 @@ export default function BeverageTableShell({
 	sortDescriptor,
 	topContent,
 	totalPages,
-}: IBeverageTableShellProps) {
+}) {
 	return (
 		<Table
 			isHeaderSticky
 			bottomContent={
 				<div className="flex justify-center pt-2">
-					{items.length > 0 && (
+					{!checkLengthEmpty(items) && (
 						<Pagination
 							/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/4275} is fixed. */
 							// showControls
@@ -132,4 +128,4 @@ export default function BeverageTableShell({
 			</TableBody>
 		</Table>
 	);
-}
+});

@@ -1,6 +1,4 @@
-'use client';
-
-import type { ReactNode } from 'react';
+import { type ReactNode, memo } from 'react';
 
 import {
 	type IPopoverProps,
@@ -19,14 +17,14 @@ interface IProps {
 	trigger: ReactNode;
 }
 
-export default function RatingAvatarShell({
+export default memo<IProps>(function RatingAvatarShell({
 	color,
 	content,
 	placement,
 	popoverOffset,
 	tooltipOffset,
 	trigger,
-}: IProps) {
+}) {
 	const popoverProps = {
 		...(placement === undefined ? {} : { placement }),
 		...(popoverOffset === undefined ? {} : { offset: popoverOffset }),
@@ -49,4 +47,4 @@ export default function RatingAvatarShell({
 			<PopoverContent>{content}</PopoverContent>
 		</Popover>
 	);
-}
+});

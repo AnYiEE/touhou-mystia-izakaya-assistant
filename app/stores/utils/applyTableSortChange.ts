@@ -1,6 +1,12 @@
-import type { ITableSortDescriptor } from '@/utils/customer/shared';
+import { type SortDescriptor } from '@heroui/table';
 
-import { reverseDirection } from './reverseDirection';
+import { type ITableSortDescriptor } from '@/utils/customer/shared';
+
+type TSortDirection = SortDescriptor['direction'];
+
+function reverseDirection(direction: TSortDirection) {
+	return direction === 'ascending' ? 'descending' : 'ascending';
+}
 
 export function applyTableSortChange<T extends string>(
 	config: Required<ITableSortDescriptor<T>>,

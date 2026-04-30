@@ -234,7 +234,7 @@ function checkEasterEgg({
 	return mealScore;
 }
 
-function getRareMealRatingKey(mealScore: number): TRatingKey | null {
+function getRatingKey(mealScore: number): TRatingKey | null {
 	if (mealScore <= 0) {
 		return 'exbad';
 	}
@@ -372,5 +372,5 @@ export function evaluateMeal({
 		mealScore,
 	});
 
-	return getRareMealRatingKey(mealScore);
+	return getRatingKey(mealScore);
 }

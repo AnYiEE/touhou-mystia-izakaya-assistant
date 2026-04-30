@@ -1,14 +1,19 @@
-import { processPinyin } from './pinyin';
+import { processPinyin } from '@/utilities';
 
-export interface ISearchableItem {
+interface ISearchableItem {
 	name: string;
 	pinyin: string[];
 }
 
-export function getSearchResult(
+export type TSearchMatcher = (
 	searchValue: string,
-	{ name, pinyin }: ISearchableItem
-) {
+	item: ISearchableItem
+) => boolean;
+
+export const getSearchResult: TSearchMatcher = (
+	searchValue: string,
+	{ name, pinyin }
+) => {
 	const nameToLowerCase = name.toLowerCase();
 	const { pinyinFirstLetters, pinyinWithoutTone } = processPinyin(pinyin);
 	const searchValueLowerCase = searchValue.toLowerCase();
@@ -20,4 +25,4 @@ export function getSearchResult(
 		pinyinWithoutTone.join('').includes(searchValueLowerCase) ||
 		pinyinFirstLetters.includes(searchValueLowerCase)
 	);
-}
+};

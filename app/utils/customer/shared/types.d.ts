@@ -21,16 +21,6 @@ export type ITableSortDescriptor<T extends string> = Omit<
 export type TRecipeTableSortKey = 'recipe' | 'price' | 'suitability' | 'time';
 export type TBeverageTableSortKey = 'beverage' | 'price' | 'suitability';
 
-export interface ISearchableItem {
-	name: string;
-	pinyin: string[];
-}
-
-export type TSearchMatcher = (
-	searchValue: string,
-	item: ISearchableItem
-) => boolean;
-
 export interface IIngredientScoreCandidate {
 	name: TIngredientName;
 	tags: ReadonlyArray<TIngredientTag>;
@@ -43,29 +33,28 @@ export type TIngredientScoreRestriction =
 	| 'lowestRestricted'
 	| 'none';
 
-export interface IIngredientScoreChangeEntry {
-	isDarkIngredient: boolean;
-	isOrderTag: boolean;
-	restriction: TIngredientScoreRestriction;
-	scoreChange: number;
-}
-
-export type TIngredientScoreChanges = Partial<
-	Record<TIngredientName, IIngredientScoreChangeEntry>
->;
-
 export interface IIngredientScoreChangesResult {
-	changesByName: TIngredientScoreChanges;
+	changesByName: Partial<
+		Record<
+			TIngredientName,
+			{
+				isDarkIngredient: boolean;
+				isOrderTag: boolean;
+				restriction: TIngredientScoreRestriction;
+				scoreChange: number;
+			}
+		>
+	>;
 	darkIngredientNames: TIngredientName[];
 }
 
-interface IRecipeSuitability {
-	matchedNegativeTags?: TRecipeTag[];
-	matchedPositiveTags: TRecipeTag[];
-	suitability: number;
-}
-
-export type TRecipeSuitabilityRow = Prettify<TRecipe & IRecipeSuitability>;
+export type TRecipeSuitabilityRow = Prettify<
+	TRecipe & {
+		matchedNegativeTags?: TRecipeTag[];
+		matchedPositiveTags: TRecipeTag[];
+		suitability: number;
+	}
+>;
 
 export interface IRecipeSuitabilityRowsResult {
 	filteredRows: TRecipeSuitabilityRow[];
@@ -74,13 +63,8 @@ export interface IRecipeSuitabilityRowsResult {
 	totalPages: number;
 }
 
-interface IBeverageSuitability {
-	matchedTags: TBeverageTag[];
-	suitability: number;
-}
-
 export type TBeverageSuitabilityRow = Prettify<
-	TBeverage & IBeverageSuitability
+	TBeverage & { matchedTags: TBeverageTag[]; suitability: number }
 >;
 
 export interface IBeverageSuitabilityRowsResult {

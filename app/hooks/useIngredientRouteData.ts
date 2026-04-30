@@ -1,10 +1,9 @@
-'use client';
-
 import { useCallback } from 'react';
+
+import { useFilteredData, useSortedData } from '@/hooks';
 
 import { type TIngredientTag } from '@/data';
 import { customerNormalStore, customerRareStore } from '@/stores';
-import { useFilteredData, useSortedData } from '@/hooks';
 import { filterIngredientData } from '@/utils/customer/shared';
 
 type TCustomerRouteStore =
@@ -12,8 +11,6 @@ type TCustomerRouteStore =
 	| typeof customerRareStore;
 
 export function useIngredientRouteData(store: TCustomerRouteStore) {
-	const currentCustomerPopularTrend =
-		store.shared.customer.popularTrend.use();
 	const hiddenIngredients = store.shared.recipe.table.hiddenIngredients.use();
 	const ingredientPinyinSortState =
 		store.persistence.ingredient.pinyinSortState.use();
@@ -25,6 +22,8 @@ export function useIngredientRouteData(store: TCustomerRouteStore) {
 		store.persistence.ingredient.filters.noTags.use();
 	const ingredientFilterTags =
 		store.persistence.ingredient.filters.tags.use();
+	const currentCustomerPopularTrend =
+		store.shared.customer.popularTrend.use();
 	const isFamousShop = store.shared.customer.famousShop.use();
 
 	const instance_ingredient = store.instances.ingredient.get();

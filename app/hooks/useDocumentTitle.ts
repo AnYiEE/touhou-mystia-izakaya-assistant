@@ -1,25 +1,28 @@
-'use client';
-
 import { useEffect } from 'react';
 
 export function useDocumentTitle(title: string, pathnamePrefix?: string) {
 	useEffect(() => {
 		if (
 			pathnamePrefix !== undefined &&
-			!globalThis.location.pathname.startsWith(pathnamePrefix)
+			!location.pathname.startsWith(pathnamePrefix)
 		) {
 			return;
 		}
 
-		const observer = new MutationObserver((_, ob) => {
+		const setExpectedTitle = () => {
 			if (document.title.trim() !== title) {
 				document.title = title;
-				ob.disconnect();
 			}
-		});
+		};
 
-		document.title = title;
-		observer.observe(document.head, { childList: true });
+		const observer = new MutationObserver(setExpectedTitle);
+
+		setExpectedTitle();
+		observer.observe(document.head, {
+			characterData: true,
+			childList: true,
+			subtree: true,
+		});
 
 		return () => {
 			observer.disconnect();

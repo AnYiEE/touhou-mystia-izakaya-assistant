@@ -1,35 +1,26 @@
 import { type TBeverageTag } from '@/data';
 import {
+	type TSearchMatcher,
 	checkArraySubsetOf,
 	checkLengthEmpty,
 	copyArray,
 	numberSort,
 	pinyinSort,
 } from '@/utilities';
-import type { Beverage } from '@/utils';
+import { type Beverage } from '@/utils';
 import type { TBeverage } from '@/utils/types';
 
+import {
+	buildPaginateRows,
+	getTotalPages,
+	normalizePositiveInteger,
+} from './getPaginateMeta';
 import type {
 	IBeverageSuitabilityRowsResult,
 	ITableSortDescriptor,
 	TBeverageSuitabilityRow,
 	TBeverageTableSortKey,
-	TSearchMatcher,
 } from './types';
-
-export interface IBuildBeverageSuitabilityRowsArgs {
-	beverageInstance: Beverage;
-	customerBeverageTags?: ReadonlyArray<TBeverageTag> | null;
-	hiddenBeverages: ReadonlySet<TBeverage['name']>;
-	hiddenDlcs: ReadonlySet<TBeverage['dlc']>;
-	matchSearch: TSearchMatcher;
-	page: number;
-	rowsPerPage: number;
-	searchValue?: string;
-	selectedBeverageTags?: ReadonlyArray<TBeverageTag>;
-	selectedDlcs?: ReadonlyArray<string>;
-	sortDescriptor: ITableSortDescriptor<TBeverageTableSortKey>;
-}
 
 function sortBeverageRows(
 	rows: TBeverageSuitabilityRow[],
@@ -57,16 +48,6 @@ function sortBeverageRows(
 	}
 }
 
-function paginateRows<T>(rows: T[], page: number, rowsPerPage: number) {
-	const start = (page - 1) * rowsPerPage;
-	const end = start + rowsPerPage;
-
-	return rows.slice(start, end);
-}
-
-/**
- * 从 beverage 原始数据构建表格需要的 suitability 行数据，并保留现有过滤与排序顺序。
- */
 export function buildBeverageSuitabilityRows({
 	beverageInstance,
 	customerBeverageTags,
@@ -79,7 +60,19 @@ export function buildBeverageSuitabilityRows({
 	selectedBeverageTags = [],
 	selectedDlcs = [],
 	sortDescriptor,
-}: IBuildBeverageSuitabilityRowsArgs): IBeverageSuitabilityRowsResult {
+}: {
+	beverageInstance: Beverage;
+	customerBeverageTags?: ReadonlyArray<TBeverageTag> | null;
+	hiddenBeverages: ReadonlySet<TBeverage['name']>;
+	hiddenDlcs: ReadonlySet<TBeverage['dlc']>;
+	matchSearch: TSearchMatcher;
+	page: number;
+	rowsPerPage: number;
+	searchValue?: string;
+	selectedBeverageTags?: ReadonlyArray<TBeverageTag>;
+	selectedDlcs?: ReadonlyArray<string>;
+	sortDescriptor: ITableSortDescriptor<TBeverageTableSortKey>;
+}): IBeverageSuitabilityRowsResult {
 	const data: TBeverageSuitabilityRow[] = beverageInstance
 		.buildBeverageSuitabilityRows(customerBeverageTags)
 		.filter(({ dlc }) => !hiddenDlcs.has(dlc));
@@ -110,12 +103,17 @@ export function buildBeverageSuitabilityRows({
 		: dataWithVisibleRows;
 
 	const sortedRows = sortBeverageRows(filteredRows, sortDescriptor);
-	const pagedRows = paginateRows(sortedRows, page, rowsPerPage);
-
-	return {
-		filteredRows,
-		pagedRows,
+	const normalizedRowsPerPage = normalizePositiveInteger(rowsPerPage);
+	const totalPages = getTotalPages(
+		filteredRows.length,
+		normalizedRowsPerPage
+	);
+	const pagedRows = buildPaginateRows(
 		sortedRows,
-		totalPages: Math.ceil(filteredRows.length / rowsPerPage),
-	};
+		page,
+		normalizedRowsPerPage,
+		totalPages
+	);
+
+	return { filteredRows, pagedRows, sortedRows, totalPages };
 }

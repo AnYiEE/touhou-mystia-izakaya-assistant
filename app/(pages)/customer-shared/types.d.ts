@@ -38,3 +38,18 @@ export interface ITableSortDescriptor<T extends string> extends SortDescriptor {
 }
 
 export type TTab = 'beverage' | 'customer' | 'ingredient' | 'recipe';
+
+export type TBeverageTableColumnKey =
+	| 'action'
+	| 'beverage'
+	| 'price'
+	| 'suitability';
+
+export type TRecipeTableColumnKey =
+	| 'action'
+	| 'cooker'
+	| 'ingredient'
+	| 'price'
+	| 'recipe'
+	| 'suitability'
+	| 'time';

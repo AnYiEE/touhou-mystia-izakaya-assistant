@@ -6,20 +6,6 @@ interface IFilterableCustomer {
 	places: ReadonlyArray<string>;
 }
 
-export interface IFilterCustomerDataArgs<
-	TCustomer extends IFilterableCustomer,
-> {
-	customerFilterDlcs: ReadonlyArray<string>;
-	customerFilterExcludes: ReadonlyArray<string>;
-	customerFilterIncludes: ReadonlyArray<string>;
-	customerFilterNoPlaces: ReadonlyArray<string>;
-	customerFilterPlaces: ReadonlyArray<string>;
-	customerSearchResult: ReadonlyArray<TCustomer>;
-}
-
-/**
- * 对顾客搜索结果应用纯过滤规则，保留 includes 对局部筛选的回补语义。
- */
 export function filterCustomerData<TCustomer extends IFilterableCustomer>({
 	customerFilterDlcs,
 	customerFilterExcludes,
@@ -27,7 +13,14 @@ export function filterCustomerData<TCustomer extends IFilterableCustomer>({
 	customerFilterNoPlaces,
 	customerFilterPlaces,
 	customerSearchResult,
-}: IFilterCustomerDataArgs<TCustomer>): TCustomer[] {
+}: {
+	customerFilterDlcs: ReadonlyArray<string>;
+	customerFilterExcludes: ReadonlyArray<string>;
+	customerFilterIncludes: ReadonlyArray<string>;
+	customerFilterNoPlaces: ReadonlyArray<string>;
+	customerFilterPlaces: ReadonlyArray<string>;
+	customerSearchResult: ReadonlyArray<TCustomer>;
+}): TCustomer[] {
 	const filtered = filterItems(customerSearchResult, [
 		{ field: 'name', match: 'excludeIn', values: customerFilterExcludes },
 		{ field: 'dlc', match: 'in', values: customerFilterDlcs },
@@ -38,6 +31,7 @@ export function filterCustomerData<TCustomer extends IFilterableCustomer>({
 			values: customerFilterNoPlaces,
 		},
 	]);
+
 	if (checkLengthEmpty(customerFilterIncludes)) {
 		return filtered;
 	}

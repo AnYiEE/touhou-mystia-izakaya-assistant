@@ -13,7 +13,25 @@ interface ILevelRewardEntry<TName extends string> {
 	name: TName;
 }
 
-export interface IGetBondRewardsArgs {
+interface IBondRewardsResult {
+	bondClothes: TClothesName | null;
+	bondCooker: TCookerName | null;
+	bondOrnaments: Array<ILevelRewardEntry<TOrnamentName>>;
+	bondPartner: TPartnerName | null;
+	bondRecipes: Array<ILevelRewardEntry<TRecipeName>>;
+	collection: boolean;
+	hasBondRewards: boolean;
+}
+
+export function getBondRewards({
+	collection,
+	customerName,
+	getBondClothes,
+	getBondCooker,
+	getBondOrnaments,
+	getBondPartner,
+	getBondRecipes,
+}: {
 	collection: boolean;
 	customerName: TCustomerRareName;
 	getBondClothes: (customerName: TCustomerRareName) => TClothesName | null;
@@ -25,30 +43,7 @@ export interface IGetBondRewardsArgs {
 	getBondRecipes: (
 		customerName: TCustomerRareName
 	) => Array<ILevelRewardEntry<TRecipeName>>;
-}
-
-export interface IGetBondRewardsResult {
-	bondClothes: TClothesName | null;
-	bondCooker: TCookerName | null;
-	bondOrnaments: Array<ILevelRewardEntry<TOrnamentName>>;
-	bondPartner: TPartnerName | null;
-	bondRecipes: Array<ILevelRewardEntry<TRecipeName>>;
-	collection: boolean;
-	hasBondRewards: boolean;
-}
-
-/**
- * 聚合稀客羁绊奖励数据，并保留组件当前使用的分类结果与存在性判断。
- */
-export function getBondRewards({
-	collection,
-	customerName,
-	getBondClothes,
-	getBondCooker,
-	getBondOrnaments,
-	getBondPartner,
-	getBondRecipes,
-}: IGetBondRewardsArgs): IGetBondRewardsResult {
+}): IBondRewardsResult {
 	const bondClothes = getBondClothes(customerName);
 	const bondCooker = getBondCooker(customerName);
 	const bondOrnaments = getBondOrnaments(customerName);

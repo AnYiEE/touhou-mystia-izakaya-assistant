@@ -34,6 +34,7 @@ export default function ResultCard() {
 		customerStore.savedCustomerMealsWithEvaluation.use();
 
 	const instance_recipe = customerStore.instances.recipe.get();
+
 	const originalIngredients = useMemo(
 		() =>
 			currentRecipeData
@@ -52,6 +53,14 @@ export default function ResultCard() {
 	const { isTooltipOpen: isShowSaveButtonTooltip, showTooltip } =
 		useAutoHideTooltip(!isSaveButtonDisabled);
 
+	const handleRemoveIngredient = useCallback(
+		(ingredient: TIngredientName) => {
+			vibrate();
+			customerStore.removeMealIngredient(ingredient);
+		},
+		[vibrate]
+	);
+
 	const handleSaveButtonPress = useCallback(() => {
 		if (isSaveButtonDisabled) {
 			showTooltip();
@@ -60,14 +69,6 @@ export default function ResultCard() {
 			customerStore.saveMealResult();
 		}
 	}, [isSaveButtonDisabled, showTooltip, vibrate]);
-
-	const handleRemoveIngredient = useCallback(
-		(ingredient: TIngredientName) => {
-			vibrate();
-			customerStore.removeMealIngredient(ingredient);
-		},
-		[vibrate]
-	);
 
 	let content: IFadeMotionDivProps['children'];
 	let contentClassName: IFadeMotionDivProps['className'];

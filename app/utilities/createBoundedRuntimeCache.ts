@@ -1,17 +1,17 @@
-interface IBoundedRuntimeCache<TKey, TValue> {
+interface IBoundedRuntimeCache<K, V> {
 	clear(): void;
-	get(key: TKey): TValue | undefined;
-	set(key: TKey, value: TValue): void;
+	get(key: K): V | undefined;
+	set(key: K, value: V): void;
 }
 
-export function createBoundedRuntimeCache<TKey, TValue>(maxSize: number) {
+export function createBoundedRuntimeCache<K, V>(maxSize: number) {
 	if (!Number.isInteger(maxSize) || maxSize < 0) {
 		throw new RangeError(
-			'[createBoundedRuntimeCache] maxSize must be an integer >= 0'
+			'[utilities/createBoundedRuntimeCache] maxSize must be an integer >= 0'
 		);
 	}
 
-	const cache = new Map<TKey, TValue>();
+	const cache = new Map<K, V>();
 
 	return {
 		clear() {
@@ -43,5 +43,5 @@ export function createBoundedRuntimeCache<TKey, TValue>(maxSize: number) {
 				}
 			}
 		},
-	} as IBoundedRuntimeCache<TKey, TValue>;
+	} as IBoundedRuntimeCache<K, V>;
 }

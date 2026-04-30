@@ -42,15 +42,15 @@ import {
 	customerTabStyleMap,
 	ingredientTabStyleMap,
 	tachieBreakPointMap,
-} from '../constants';
+} from '@/(pages)/customer-shared/constants';
 import { siteConfig } from '@/configs';
 import { type TCustomerNormalName } from '@/data';
 import { customerNormalStore as customerStore, globalStore } from '@/stores';
-import { checkLengthEmpty, getPageTitle } from '@/utilities';
+import { checkLengthEmpty, getPageTitle, memoize } from '@/utilities';
 
 const { enName, name: zhName } = siteConfig;
 
-function validateName(name: string | undefined) {
+const validateName = memoize(function validateName(name: string | undefined) {
 	const instance_customer = customerStore.instances.customer.get();
 
 	try {
@@ -60,16 +60,14 @@ function validateName(name: string | undefined) {
 	} catch {
 		return null;
 	}
-}
+});
 
 export default function Content() {
 	const { pathname } = usePathname();
 	const router = useRouter();
-	const routeCustomerName = useMemo(() => pathname.split('/')[2], [pathname]);
-	const validName = useMemo(
-		() => validateName(routeCustomerName),
-		[routeCustomerName]
-	);
+
+	const [, , routeCustomerName] = pathname.split('/');
+	const validName = validateName(routeCustomerName);
 	const hasCustomerPath =
 		routeCustomerName !== undefined && routeCustomerName !== '';
 	const title = `${validName === null ? '' : `${validName} | `}${getPageTitle('/customer-normal')} | ${zhName} - ${enName}`;
@@ -96,7 +94,6 @@ export default function Content() {
 			router.replace('/customer-normal');
 			return;
 		}
-
 		if (isFirstRendering.current) {
 			isFirstRendering.current = false;
 			return;
@@ -107,6 +104,7 @@ export default function Content() {
 	}, [currentCustomerName, hasCustomerPath, router, validName]);
 
 	const instance_customer = customerStore.instances.customer.get();
+
 	const { customerSortedData } = useCustomerRouteData(
 		instance_customer,
 		customerStore

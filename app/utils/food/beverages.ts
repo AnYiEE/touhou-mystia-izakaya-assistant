@@ -1,3 +1,5 @@
+import { isNil } from 'lodash';
+
 import { Food } from './base';
 import {
 	BEVERAGE_LIST,
@@ -116,10 +118,7 @@ export class Beverage extends Food<TBeverage[]> {
 	public buildBeverageSuitabilityRows(
 		customerBeverageTags?: ReadonlyArray<TBeverageTag> | null
 	): TBeverageSuitabilityRowData[] {
-		if (
-			customerBeverageTags === null ||
-			customerBeverageTags === undefined
-		) {
+		if (isNil(customerBeverageTags)) {
 			return this.data.map((beverage) => ({
 				...beverage,
 				matchedTags: [],

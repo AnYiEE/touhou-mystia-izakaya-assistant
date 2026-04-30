@@ -3,12 +3,16 @@ import { compareVersions } from 'compare-versions';
 
 import { type Selection } from '@heroui/table';
 
+import { trackEvent } from '@/components/analytics';
+
 import {
 	beverageTableColumns,
 	recipeTableColumns,
-} from '@/(pages)/customer-rare/constants';
-import { trackEvent } from '@/components/analytics';
-
+} from '@/(pages)/customer-shared/constants';
+import type {
+	TBeverageTableColumnKey,
+	TRecipeTableColumnKey,
+} from '@/(pages)/customer-shared/types';
 import { siteConfig } from '@/configs';
 import {
 	type TBeverageName,
@@ -308,7 +312,7 @@ export const globalStore = store(state, {
 				toSet(currentStore.persistence.table.columns.beverage.use()),
 			write: (columns: Selection) => {
 				currentStore.persistence.table.columns.beverage.set(
-					toArray<SelectionSet>(columns) as never
+					toArray(columns) as TBeverageTableColumnKey[]
 				);
 			},
 		},
@@ -317,7 +321,7 @@ export const globalStore = store(state, {
 				toSet(currentStore.persistence.table.columns.recipe.use()),
 			write: (columns: Selection) => {
 				currentStore.persistence.table.columns.recipe.set(
-					toArray<SelectionSet>(columns) as never
+					toArray(columns) as TRecipeTableColumnKey[]
 				);
 			},
 		},

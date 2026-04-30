@@ -28,30 +28,23 @@ import {
 	useReducedMotion,
 } from '@/design/ui/components';
 
-import TagGroup from './tagGroup';
-import BeverageTableShell, {
-	type TBeverageTableColumnKey,
-} from '@/(pages)/customer-shared/beverageTableShell';
+import BeverageTableShell from '@/(pages)/customer-shared/beverageTableShell';
+import TagGroup from '@/(pages)/customer-shared/tagGroup';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 
-import { beverageTableColumns as tableColumns } from './constants';
-import type { ITableColumn } from './types';
+import { beverageTableColumns } from '@/(pages)/customer-shared/constants';
+import type { TBeverageTableColumnKey } from '@/(pages)/customer-shared/types';
 import { CUSTOMER_RARE_TAG_STYLE, DLC_LABEL_MAP } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
-import type {
-	ITableSortDescriptor,
-	TBeverageSuitabilityRow,
-	TBeverageTableSortKey,
-} from '@/utils/customer/shared';
 import { checkLengthEmpty, toSet } from '@/utilities';
-
-export type TTableColumnKey = TBeverageTableColumnKey;
-export type TTableColumns = Array<ITableColumn<TTableColumnKey>>;
-
-export type TTableSortDescriptor = ITableSortDescriptor<TBeverageTableSortKey>;
+import {
+	type ITableSortDescriptor,
+	type TBeverageSuitabilityRow,
+	type TBeverageTableSortKey,
+} from '@/utils/customer/shared';
 
 export default function BeverageTabContent() {
 	const isReducedMotion = useReducedMotion();
@@ -89,7 +82,10 @@ export default function BeverageTabContent() {
 	const tableSortedRows = customerStore.beverageTableSortedRows.use();
 
 	const tableHeaderColumns = useMemo(
-		() => tableColumns.filter(({ key }) => tableVisibleColumns.has(key)),
+		() =>
+			beverageTableColumns.filter(({ key }) =>
+				tableVisibleColumns.has(key)
+			),
 		[tableVisibleColumns]
 	);
 
@@ -100,7 +96,10 @@ export default function BeverageTabContent() {
 	const tableSelectedKeys = toSet(currentBeverageName ?? '');
 
 	const renderTableCell = useCallback(
-		(beverageData: TBeverageSuitabilityRow, columnKey: TTableColumnKey) => {
+		(
+			beverageData: TBeverageSuitabilityRow,
+			columnKey: TBeverageTableColumnKey
+		) => {
 			const {
 				matchedTags,
 				name,
@@ -412,9 +411,9 @@ export default function BeverageTabContent() {
 									[
 										'action',
 										'beverage',
-									] satisfies TTableColumnKey[]
+									] satisfies TBeverageTableColumnKey[]
 								}
-								items={tableColumns}
+								items={beverageTableColumns}
 								selectedKeys={tableVisibleColumns}
 								selectionMode="multiple"
 								variant="flat"
@@ -517,7 +516,7 @@ export default function BeverageTabContent() {
 			onSortChange={(config) => {
 				vibrate();
 				customerStore.onBeverageTableSortChange(
-					config as TTableSortDescriptor
+					config as ITableSortDescriptor<TBeverageTableSortKey>
 				);
 			}}
 			page={tableCurrentPage}

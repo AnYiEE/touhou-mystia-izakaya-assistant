@@ -1,41 +1,35 @@
-'use client';
-
 import { useCallback } from 'react';
 
+import {
+	useFilteredData,
+	useSearchResult,
+	useSortedData,
+	useThrottle,
+} from '@/hooks';
+
 import { customerNormalStore, customerRareStore } from '@/stores';
+import { type CustomerNormal, type CustomerRare } from '@/utils';
 import { filterCustomerData } from '@/utils/customer/shared';
-import type { CustomerNormal, CustomerRare } from '@/utils';
 import type { TItemData } from '@/utils/types';
 
-import { useFilteredData } from './useFilteredData';
-import { useSearchResult } from './useSearchResult';
-import { useSortedData } from './useSortedData';
-import { useThrottle } from './useThrottle';
-
-interface IFilterableCustomer {
-	dlc: number;
-	name: string;
-	places: ReadonlyArray<string>;
-}
-
 type TCustomerInstance = CustomerNormal | CustomerRare;
-
 type TCustomerRouteStore =
 	| typeof customerNormalStore
 	| typeof customerRareStore;
 
 type TCustomerData = TItemData<CustomerNormal> | TItemData<CustomerRare>;
+type TCustomerRouteItem =
+	| TItemData<CustomerNormal>[number]
+	| TItemData<CustomerRare>[number];
 
 export function useCustomerRouteData(
 	instance_customer: CustomerNormal,
 	store: typeof customerNormalStore
 ): { customerSortedData: TItemData<CustomerNormal> };
-
 export function useCustomerRouteData(
 	instance_customer: CustomerRare,
 	store: typeof customerRareStore
 ): { customerSortedData: TItemData<CustomerRare> };
-
 export function useCustomerRouteData(
 	instance_customer: TCustomerInstance,
 	store: TCustomerRouteStore
@@ -46,9 +40,9 @@ export function useCustomerRouteData(
 	const throttledCustomerSearchValue = useThrottle(customerSearchValue);
 
 	const customerSearchResult = useSearchResult(
-		instance_customer as never,
+		instance_customer,
 		throttledCustomerSearchValue
-	) as TCustomerData;
+	);
 
 	const customerFilterDlcs = store.persistence.customer.filters.dlcs.use();
 	const customerFilterExcludes =
@@ -62,15 +56,14 @@ export function useCustomerRouteData(
 
 	const filterData = useCallback(
 		() =>
-			filterCustomerData({
+			filterCustomerData<TCustomerRouteItem>({
 				customerFilterDlcs,
 				customerFilterExcludes,
 				customerFilterIncludes,
 				customerFilterNoPlaces,
 				customerFilterPlaces,
-				customerSearchResult:
-					customerSearchResult as ReadonlyArray<IFilterableCustomer>,
-			}) as unknown as TCustomerData,
+				customerSearchResult,
+			}) as TCustomerData,
 		[
 			customerFilterDlcs,
 			customerFilterExcludes,
@@ -81,16 +74,13 @@ export function useCustomerRouteData(
 		]
 	);
 
-	const customerFilteredData = useFilteredData(
-		instance_customer as never,
-		filterData as never
-	) as TCustomerData;
+	const customerFilteredData = useFilteredData(instance_customer, filterData);
 
 	const customerSortedData = useSortedData(
-		instance_customer as never,
-		customerFilteredData as never,
+		instance_customer,
+		customerFilteredData,
 		customerPinyinSortState
-	) as TCustomerData;
+	);
 
 	return { customerSortedData };
 }

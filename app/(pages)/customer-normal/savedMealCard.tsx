@@ -16,13 +16,13 @@ import {
 
 import SavedMealActionRail from '@/(pages)/customer-shared/savedMealActionRail';
 import SavedMealIngredientsStrip from '@/(pages)/customer-shared/savedMealIngredientsStrip';
-import RatingAvatarShell from '@/(pages)/customer-shared/ratingAvatarShell';
 import { swapSavedMeals } from '@/(pages)/customer-shared/swapSavedMeals';
-import { Plus } from './resultCard';
 import {
 	type IMoveButtonProps,
 	MoveButton,
 } from '@/(pages)/customer-shared/moveButton';
+import RatingAvatarShell from '@/(pages)/customer-shared/ratingAvatarShell';
+import { Plus } from '@/(pages)/customer-shared/resultCardAtoms';
 import { trackEvent } from '@/components/analytics';
 import Sprite from '@/components/sprite';
 

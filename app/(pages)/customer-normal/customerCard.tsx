@@ -19,7 +19,7 @@ import {
 
 import InfoButton from './infoButton';
 import RatingAvatarShell from '@/(pages)/customer-shared/ratingAvatarShell';
-import TagGroup from './tagGroup';
+import TagGroup from '@/(pages)/customer-shared/tagGroup';
 import { trackEvent } from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Sprite from '@/components/sprite';
@@ -34,8 +34,8 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import { customerNormalStore as customerStore, globalStore } from '@/stores';
-import { buildNormalTagTooltip } from '@/utils/customer/shared';
 import { checkLengthEmpty, copyArray, pinyinSort } from '@/utilities';
+import { buildNormalTagTooltip } from '@/utils/customer/shared';
 
 export default function CustomerCard() {
 	const { pushState } = usePathname();

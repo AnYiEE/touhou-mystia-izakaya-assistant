@@ -17,16 +17,6 @@ import { checkLengthEmpty } from '@/utilities';
 
 const { cdnUrl } = siteConfig;
 
-export interface ICustomerRareDisplayMeta {
-	averagePrice: number;
-	enduranceLimitPercent: number;
-	hasEnduranceLimit: boolean;
-	hasNegativeSpellCards: boolean;
-	hasOtherPlaces: boolean;
-	mainPlace: TPlace;
-	placeContent: string;
-}
-
 export class CustomerRare extends Customer<TCustomerRares> {
 	private static _instance: CustomerRare | undefined;
 
@@ -63,7 +53,15 @@ export class CustomerRare extends Customer<TCustomerRares> {
 	/**
 	 * @description Build stable profile display meta for rare customer cards without carrying UI state or tooltip structure.
 	 */
-	public getDisplayMeta(name: TCustomerRareName): ICustomerRareDisplayMeta {
+	public getDisplayMeta(name: TCustomerRareName): {
+		averagePrice: number;
+		enduranceLimitPercent: number;
+		hasEnduranceLimit: boolean;
+		hasNegativeSpellCards: boolean;
+		hasOtherPlaces: boolean;
+		mainPlace: TPlace;
+		placeContent: string;
+	} {
 		const { enduranceLimit, places, price, spellCards } =
 			this.getPropsByName(name);
 		const [mainPlace, ...otherPlaces] = places;

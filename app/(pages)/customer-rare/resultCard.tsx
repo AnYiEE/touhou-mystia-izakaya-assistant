@@ -25,8 +25,6 @@ import {
 } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
 
-export { Plus, UnknownItem } from '@/(pages)/customer-shared/resultCardAtoms';
-
 export default function ResultCard() {
 	const { breakpoint: placement } = useBreakpoint(
 		{ left: 426, top: -1 },

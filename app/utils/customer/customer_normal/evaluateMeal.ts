@@ -41,7 +41,7 @@ export function checkEasterEgg({
 	return { recipe: null, score: mealScore };
 }
 
-function getNormalMealRatingKey(mealScore: number): TRatingKey {
+function getRatingKey(mealScore: number): TRatingKey {
 	if (mealScore <= 0) {
 		return 'exbad';
 	} else if (mealScore <= 2) {
@@ -125,5 +125,5 @@ export function evaluateMeal({
 		mealScore,
 	}).score;
 
-	return getNormalMealRatingKey(mealScore);
+	return getRatingKey(mealScore);
 }

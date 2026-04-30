@@ -2,16 +2,19 @@ import { memo, useCallback, useMemo } from 'react';
 
 import { useVibrate } from '@/hooks';
 
-import { type IIngredientTabContentProps } from '@/(pages)/customer-shared/ingredientTabContentTypes';
 import Placeholder from '@/components/placeholder';
 
 import IngredientTabContentSkeleton from '@/(pages)/customer-shared/ingredientTabContentSkeleton';
 import IngredientTabItemPresenter from '@/(pages)/customer-shared/ingredientTabItemPresenter';
+
+import type { IIngredientTabContentProps } from '@/(pages)/customer-shared/ingredientTabContentTypes';
 import { DARK_MATTER_META_MAP, type TIngredientName } from '@/data';
 import { customerNormalStore as store } from '@/stores';
 import { checkLengthEmpty, toSet } from '@/utilities';
 
-export default memo<IIngredientTabContentProps>(function IngredientsTabContent({
+interface IProps extends IIngredientTabContentProps {}
+
+export default memo<IProps>(function IngredientTabContent({
 	ingredientTabStyle,
 	sortedData,
 }) {

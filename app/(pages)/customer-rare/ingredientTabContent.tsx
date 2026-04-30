@@ -6,6 +6,7 @@ import Placeholder from '@/components/placeholder';
 
 import IngredientTabContentSkeleton from '@/(pages)/customer-shared/ingredientTabContentSkeleton';
 import IngredientTabItemPresenter from '@/(pages)/customer-shared/ingredientTabItemPresenter';
+
 import type { IIngredientTabContentProps } from '@/(pages)/customer-shared/ingredientTabContentTypes';
 import { DARK_MATTER_META_MAP, type TIngredientName } from '@/data';
 import { customerRareStore as store } from '@/stores';
@@ -139,5 +140,3 @@ export default memo<IProps>(function IngredientTabContent({
 		</IngredientTabContentSkeleton>
 	);
 });
-
-export type { IIngredientTabContentProps } from '@/(pages)/customer-shared/ingredientTabContentTypes';

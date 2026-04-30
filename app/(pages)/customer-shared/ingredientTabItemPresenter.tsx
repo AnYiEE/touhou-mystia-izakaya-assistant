@@ -1,11 +1,11 @@
-'use client';
+import { memo } from 'react';
 
 import { Badge, Tooltip, cn } from '@/design/ui/components';
 
 import PressElement from '@/components/pressElement';
 import Sprite from '@/components/sprite';
 
-import type { TIngredientName } from '@/data';
+import { type TIngredientName } from '@/data';
 
 type TIngredientTabItemColor = 'danger' | 'default' | 'secondary' | 'success';
 
@@ -28,7 +28,7 @@ interface IStaticProps {
 
 type TProps = IInteractiveProps | IStaticProps;
 
-export default function IngredientTabItemPresenter(props: TProps) {
+export default memo<TProps>(function IngredientTabItemPresenter(props) {
 	if (props.kind === 'static') {
 		const { className, name } = props;
 
@@ -107,4 +107,4 @@ export default function IngredientTabItemPresenter(props: TProps) {
 			</PressElement>
 		</Tooltip>
 	);
-}
+});

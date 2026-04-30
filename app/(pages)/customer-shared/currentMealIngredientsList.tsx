@@ -1,4 +1,4 @@
-'use client';
+import { memo } from 'react';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleXmark } from '@fortawesome/free-solid-svg-icons';
@@ -8,20 +8,20 @@ import { Tooltip } from '@/design/ui/components';
 import { UnknownItem } from '@/(pages)/customer-shared/resultCardAtoms';
 import Sprite from '@/components/sprite';
 
-import type { TIngredientName } from '@/data';
+import { type TIngredientName } from '@/data';
 import { checkA11yConfirmKey, toArray } from '@/utilities';
 
-interface ICurrentMealIngredientsListProps {
+interface IProps {
 	extraIngredients: TIngredientName[];
 	onRemoveExtraIngredient: (ingredient: TIngredientName) => void;
 	originalIngredients: TIngredientName[];
 }
 
-export default function CurrentMealIngredientsList({
+export default memo<IProps>(function CurrentMealIngredientsList({
 	extraIngredients,
 	onRemoveExtraIngredient,
 	originalIngredients,
-}: ICurrentMealIngredientsListProps) {
+}) {
 	const filledIngredients = toArray<Array<TIngredientName | null>>(
 		originalIngredients,
 		extraIngredients,
@@ -96,4 +96,4 @@ export default function CurrentMealIngredientsList({
 			)}
 		</div>
 	);
-}
+});

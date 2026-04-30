@@ -15,7 +15,9 @@ import {
 	cn,
 } from '@/design/ui/components';
 
-import InfoButtonBase, { InfoSectionTitle } from './infoButtonBase';
+import InfoButtonBase, {
+	InfoSectionTitle,
+} from '@/(pages)/customer-shared/infoButtonBase';
 import { trackEvent } from '@/components/analytics';
 import Ol from '@/components/ol';
 import PressElement from '@/components/pressElement';

@@ -1,4 +1,4 @@
-import type { IIngredientsTabStyle } from './types';
+import type { IIngredientsTabStyle } from '@/(pages)/customer-shared/types';
 import { type Ingredient } from '@/utils';
 import type { TItemData } from '@/utils/types';
 

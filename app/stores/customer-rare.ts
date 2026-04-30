@@ -3,8 +3,11 @@ import { computed, store } from '@davstack/store';
 
 import { type Selection } from '@heroui/table';
 
-import { tabVisibilityStateMap } from '@/(pages)/customer-rare/constants';
-import type { TTab, TTabVisibilityState } from '@/(pages)/customer-rare/types';
+import { tabVisibilityStateMap } from '@/(pages)/customer-shared/constants';
+import type {
+	TTab,
+	TTabVisibilityState,
+} from '@/(pages)/customer-shared/types';
 import { trackEvent } from '@/components/analytics';
 import {
 	type TPinyinSortState,
@@ -35,18 +38,6 @@ import {
 	keepLastTag,
 	reverseVisibilityState,
 } from '@/stores/utils';
-import {
-	type ITableSortDescriptor,
-	type TBeverageTableSortKey,
-	type TRecipeTableSortKey,
-	buildBeverageSuitabilityRows,
-	buildRecipeSuitabilityRows,
-	buildSelectionTip,
-	evaluateRareSavedMeal,
-	getBondRewards,
-	getIngredientScoreChanges,
-	getVisibleSavedMeals,
-} from '@/utils/customer/shared';
 import type { IMealRecipe, IPopularTrend } from '@/types';
 import {
 	checkLengthEmpty,
@@ -70,6 +61,18 @@ import {
 	Partner,
 	Recipe,
 } from '@/utils';
+import {
+	type ITableSortDescriptor,
+	type TBeverageTableSortKey,
+	type TRecipeTableSortKey,
+	buildBeverageSuitabilityRows,
+	buildRecipeSuitabilityRows,
+	buildSelectionTip,
+	evaluateRareSavedMeal,
+	getBondRewards,
+	getIngredientScoreChanges,
+	getVisibleSavedMeals,
+} from '@/utils/customer/shared';
 import type { TBeverage, TRecipe } from '@/utils/types';
 
 export interface ICustomerOrder {
@@ -1092,13 +1095,10 @@ export const customerRareStore = store(state, {
 					.map(toGetValueCollection)
 					.sort(pinyinSort);
 			},
-			bondRewards: () => bondRewards.use(),
 
 			beverageTableDlcs: {
 				read: () =>
-					toSet(
-						currentStore.persistence.beverage.table.dlcs.use()
-					),
+					toSet(currentStore.persistence.beverage.table.dlcs.use()),
 				write: (dlcs: Selection) => {
 					currentStore.persistence.beverage.table.dlcs.set(
 						toArray<SelectionSet>(dlcs) as never
@@ -1107,13 +1107,10 @@ export const customerRareStore = store(state, {
 			},
 			beverageTablePagedRows: () => beverageTableRows.use().pagedRows,
 			beverageTableSortedRows: () => beverageTableRows.use().sortedRows,
-			currentMealPrice: () => currentMealPrice.use(),
-			ingredientScoreChanges: () => ingredientScoreChanges.use(),
+
 			recipeTableCookers: {
 				read: () =>
-					toSet(
-						currentStore.persistence.recipe.table.cookers.use()
-					),
+					toSet(currentStore.persistence.recipe.table.cookers.use()),
 				write: (cookers: Selection) => {
 					currentStore.persistence.recipe.table.cookers.set(
 						toArray<SelectionSet>(cookers) as never
@@ -1122,9 +1119,7 @@ export const customerRareStore = store(state, {
 			},
 			recipeTableDlcs: {
 				read: () =>
-					toSet(
-						currentStore.persistence.recipe.table.dlcs.use()
-					),
+					toSet(currentStore.persistence.recipe.table.dlcs.use()),
 				write: (dlcs: Selection) => {
 					currentStore.persistence.recipe.table.dlcs.set(
 						toArray<SelectionSet>(dlcs) as never
@@ -1133,6 +1128,10 @@ export const customerRareStore = store(state, {
 			},
 			recipeTablePagedRows: () => recipeTableRows.use().pagedRows,
 			recipeTableSortedRows: () => recipeTableRows.use().sortedRows,
+
+			bondRewards: () => bondRewards.use(),
+			currentMealPrice: () => currentMealPrice.use(),
+			ingredientScoreChanges: () => ingredientScoreChanges.use(),
 			savedCustomerMealsWithEvaluation: () =>
 				savedCustomerMealsWithEvaluation.use(),
 			unsatisfiedSelectionTip: () => unsatisfiedSelectionTip.use(),

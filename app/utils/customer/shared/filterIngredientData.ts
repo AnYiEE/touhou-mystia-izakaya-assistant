@@ -10,24 +10,6 @@ interface IFilterableIngredient {
 type TIngredientWithTrendTags<TIngredient extends IFilterableIngredient> =
 	TIngredient & { _tagsWithTrend: ReadonlyArray<string> };
 
-export interface IFilterIngredientDataArgs<
-	TIngredient extends IFilterableIngredient,
-> {
-	blockedIngredientNames: ReadonlySet<string>;
-	calculateTagsWithTrend: (
-		tags: ReadonlyArray<string>
-	) => ReadonlyArray<string>;
-	filterDlcs: ReadonlyArray<string>;
-	filterLevels: ReadonlyArray<string>;
-	filterNoTags: ReadonlyArray<string>;
-	filterTags: ReadonlyArray<string>;
-	hiddenIngredientNames: ReadonlySet<string>;
-	ingredientData: ReadonlyArray<TIngredient>;
-}
-
-/**
- * 对食材数据应用纯过滤规则，并保留原始数据顺序作为返回顺序。
- */
 export function filterIngredientData<
 	TIngredient extends IFilterableIngredient,
 >({
@@ -39,7 +21,18 @@ export function filterIngredientData<
 	filterTags,
 	hiddenIngredientNames,
 	ingredientData,
-}: IFilterIngredientDataArgs<TIngredient>): TIngredient[] {
+}: {
+	blockedIngredientNames: ReadonlySet<string>;
+	calculateTagsWithTrend: (
+		tags: ReadonlyArray<string>
+	) => ReadonlyArray<string>;
+	filterDlcs: ReadonlyArray<string>;
+	filterLevels: ReadonlyArray<string>;
+	filterNoTags: ReadonlyArray<string>;
+	filterTags: ReadonlyArray<string>;
+	hiddenIngredientNames: ReadonlySet<string>;
+	ingredientData: ReadonlyArray<TIngredient>;
+}): TIngredient[] {
 	const augmented = ingredientData
 		.filter(
 			({ name }) =>

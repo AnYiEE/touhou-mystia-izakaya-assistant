@@ -6,13 +6,8 @@ import {
 	type TCustomerNormals,
 	type TPlace,
 } from '@/data';
-import { checkLengthEmpty } from '@/utilities';
 
-export interface ICustomerNormalDisplayMeta {
-	hasOtherPlaces: boolean;
-	mainPlace: TPlace | null;
-	placeContent: string;
-}
+import { checkLengthEmpty } from '@/utilities';
 
 export class CustomerNormal extends Customer<TCustomerNormals> {
 	private static _instance: CustomerNormal | undefined;
@@ -40,9 +35,11 @@ export class CustomerNormal extends Customer<TCustomerNormals> {
 	/**
 	 * @description Build stable profile display meta for normal customer cards without carrying UI state or customer-specific presentation overrides.
 	 */
-	public getDisplayMeta(
-		name: TCustomerNormalName
-	): ICustomerNormalDisplayMeta {
+	public getDisplayMeta(name: TCustomerNormalName): {
+		hasOtherPlaces: boolean;
+		mainPlace: TPlace | null;
+		placeContent: string;
+	} {
 		const { places } = this.getPropsByName(name);
 		const [mainPlace = null, ...otherPlaces] = places;
 		const hasOtherPlaces = !checkLengthEmpty(otherPlaces);

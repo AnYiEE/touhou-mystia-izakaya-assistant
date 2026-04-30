@@ -1,3 +1,5 @@
+import { isNil } from 'lodash';
+
 import { type TDlc } from '@/data';
 import { checkLengthEmpty } from '@/utilities';
 
@@ -7,27 +9,22 @@ export interface IVisibleSavedMealEntry<TMeal> {
 	visibleIndex: number;
 }
 
-export interface IVisibleSavedMealDlcRefs {
-	beverageDlc: TDlc;
-	ingredientDlcs: ReadonlyArray<TDlc>;
-	recipeDlc: TDlc;
-}
-
-export interface IGetVisibleSavedMealsArgs<TMeal> {
-	hiddenDlcs: ReadonlySet<TDlc>;
-	meals: ReadonlyArray<TMeal> | null | undefined;
-	resolveDlcRefs: (meal: TMeal) => IVisibleSavedMealDlcRefs | null;
-}
-
-/**
- * 按当前隐藏 DLC 设置过滤保存套餐，并显式保留原数组索引与可见索引的映射关系。
- */
 export function getVisibleSavedMeals<TMeal>({
 	hiddenDlcs,
 	meals,
 	resolveDlcRefs,
-}: IGetVisibleSavedMealsArgs<TMeal>): Array<IVisibleSavedMealEntry<TMeal>> {
-	if (meals === undefined || meals === null || checkLengthEmpty(meals)) {
+}: {
+	hiddenDlcs: ReadonlySet<TDlc>;
+	meals: ReadonlyArray<TMeal> | null | undefined;
+	resolveDlcRefs: (
+		meal: TMeal
+	) => {
+		beverageDlc: TDlc;
+		ingredientDlcs: ReadonlyArray<TDlc>;
+		recipeDlc: TDlc;
+	} | null;
+}): Array<IVisibleSavedMealEntry<TMeal>> {
+	if (isNil(meals) || checkLengthEmpty(meals)) {
 		return [];
 	}
 

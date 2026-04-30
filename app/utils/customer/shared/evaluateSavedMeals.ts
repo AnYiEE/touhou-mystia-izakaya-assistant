@@ -11,6 +11,7 @@ import {
 	type TPopularTag,
 	type TRatingKey,
 } from '@/types';
+import { createBoundedRuntimeCache, union } from '@/utilities';
 import {
 	Beverage,
 	CustomerNormal,
@@ -18,7 +19,12 @@ import {
 	Ingredient,
 	Recipe,
 } from '@/utils';
-import { createBoundedRuntimeCache, union } from '@/utilities';
+
+interface IRareSavedMealEvaluation {
+	isDarkMatter: boolean;
+	price: number;
+	rating: TRatingKey | null;
+}
 
 const instance_beverage = Beverage.getInstance();
 const instance_customer_normal = CustomerNormal.getInstance();
@@ -26,44 +32,67 @@ const instance_customer_rare = CustomerRare.getInstance();
 const instance_ingredient = Ingredient.getInstance();
 const instance_recipe = Recipe.getInstance();
 
-const SAVED_MEAL_RATING_CACHE_MAX_SIZE = 256;
-
-const rareSavedMealRatingCache = createBoundedRuntimeCache<
-	string,
-	IRareSavedMealEvaluation
->(SAVED_MEAL_RATING_CACHE_MAX_SIZE);
+const SAVED_MEAL_RATING_CACHE_MAX_SIZE = 1024;
 
 const normalSavedMealRatingCache = createBoundedRuntimeCache<
 	string,
 	TRatingKey
 >(SAVED_MEAL_RATING_CACHE_MAX_SIZE);
 
-export interface IEvaluateRareSavedMealArgs {
-	beverageName: TBeverageName;
-	customerName: TCustomerRareName;
-	customerOrder: ICustomerOrder;
-	hasMystiaCooker: boolean;
-	isFamousShop: boolean;
-	popularTrend: IPopularTrend;
-	recipeData: IMealRecipe;
-}
+const rareSavedMealRatingCache = createBoundedRuntimeCache<
+	string,
+	IRareSavedMealEvaluation
+>(SAVED_MEAL_RATING_CACHE_MAX_SIZE);
 
-export interface IRareSavedMealEvaluation {
-	isDarkMatter: boolean;
-	price: number;
-	rating: TRatingKey | null;
-}
-
-export interface IEvaluateNormalSavedMealArgs {
+export function evaluateNormalSavedMeal({
+	customerName,
+	isFamousShop,
+	popularTrend,
+	recipeData: { extraIngredients, name: recipeName },
+}: {
 	customerName: TCustomerNormalName;
 	isFamousShop: boolean;
 	popularTrend: IPopularTrend;
 	recipeData: IMealRecipe;
+}) {
+	const cacheKey = JSON.stringify({
+		customerName,
+		isFamousShop,
+		popularTrend,
+		recipeData: { extraIngredients, name: recipeName },
+	});
+	const cachedResult = normalSavedMealRatingCache.get(cacheKey);
+
+	if (cachedResult !== undefined) {
+		return cachedResult;
+	}
+
+	const extraTags = extraIngredients.flatMap(
+		(ingredientName) =>
+			instance_ingredient.getPropsByName(
+				ingredientName,
+				'tags'
+			) as TPopularTag[]
+	);
+
+	const rating = instance_customer_normal.evaluateMeal({
+		currentCustomerName: customerName,
+		currentCustomerPopularTrend: popularTrend,
+		currentCustomerPositiveTags: instance_customer_normal.getPropsByName(
+			customerName,
+			'positiveTags'
+		),
+		currentExtraIngredientsLength: extraIngredients.length,
+		currentExtraTags: extraTags,
+		currentRecipe: instance_recipe.getPropsByName(recipeName),
+		isFamousShop,
+	}) as TRatingKey;
+
+	normalSavedMealRatingCache.set(cacheKey, rating);
+
+	return rating;
 }
 
-/**
- * 评估单条稀客保存套餐，保留现有 Dark Matter、总价与评级计算逻辑。
- */
 export function evaluateRareSavedMeal({
 	beverageName,
 	customerName,
@@ -72,7 +101,15 @@ export function evaluateRareSavedMeal({
 	isFamousShop,
 	popularTrend,
 	recipeData: { extraIngredients, name: recipeName },
-}: IEvaluateRareSavedMealArgs): IRareSavedMealEvaluation {
+}: {
+	beverageName: TBeverageName;
+	customerName: TCustomerRareName;
+	customerOrder: ICustomerOrder;
+	hasMystiaCooker: boolean;
+	isFamousShop: boolean;
+	popularTrend: IPopularTrend;
+	recipeData: IMealRecipe;
+}): IRareSavedMealEvaluation {
 	const cacheKey = JSON.stringify({
 		beverageName,
 		customerName,
@@ -120,6 +157,7 @@ export function evaluateRareSavedMeal({
 		popularTrend,
 		isFamousShop
 	);
+
 	const rating = instance_customer_rare.evaluateMeal({
 		currentBeverageTags: beverageTags,
 		currentCustomerBeverageTags: customerBeverageTags,
@@ -138,51 +176,4 @@ export function evaluateRareSavedMeal({
 	rareSavedMealRatingCache.set(cacheKey, result);
 
 	return result;
-}
-
-/**
- * 评估单条普客保存套餐，保留现有额外食材与流行趋势的评级逻辑。
- */
-export function evaluateNormalSavedMeal({
-	customerName,
-	isFamousShop,
-	popularTrend,
-	recipeData: { extraIngredients, name: recipeName },
-}: IEvaluateNormalSavedMealArgs): TRatingKey {
-	const cacheKey = JSON.stringify({
-		customerName,
-		isFamousShop,
-		popularTrend,
-		recipeData: { extraIngredients, name: recipeName },
-	});
-	const cachedResult = normalSavedMealRatingCache.get(cacheKey);
-
-	if (cachedResult !== undefined) {
-		return cachedResult;
-	}
-
-	const extraTags = extraIngredients.flatMap(
-		(ingredientName) =>
-			instance_ingredient.getPropsByName(
-				ingredientName,
-				'tags'
-			) as TPopularTag[]
-	);
-
-	const rating = instance_customer_normal.evaluateMeal({
-		currentCustomerName: customerName,
-		currentCustomerPopularTrend: popularTrend,
-		currentCustomerPositiveTags: instance_customer_normal.getPropsByName(
-			customerName,
-			'positiveTags'
-		),
-		currentExtraIngredientsLength: extraIngredients.length,
-		currentExtraTags: extraTags,
-		currentRecipe: instance_recipe.getPropsByName(recipeName),
-		isFamousShop,
-	}) as TRatingKey;
-
-	normalSavedMealRatingCache.set(cacheKey, rating);
-
-	return rating;
 }

@@ -1,27 +1,26 @@
-'use client';
+import { memo } from 'react';
 
 import { Tooltip, cn } from '@/design/ui/components';
 
 import Sprite from '@/components/sprite';
+
+import { type TIngredientName } from '@/data';
 import { getRestExtraIngredients } from '@/utils/customer/shared';
 
-import type { TIngredientName } from '@/data';
-
-interface ISavedMealIngredientsStripProps {
-	className?: string;
+interface IProps extends Pick<HTMLDivElementAttributes, 'className'> {
 	extraIngredients: TIngredientName[];
-	extraIngredientsClassName?: string;
+	extraIngredientsClassName?: HTMLDivElementAttributes['className'];
 	onOpenIngredient: (ingredient: TIngredientName) => void;
 	originalIngredients: TIngredientName[];
 }
 
-export default function SavedMealIngredientsStrip({
+export default memo<IProps>(function SavedMealIngredientsStrip({
 	className,
 	extraIngredients,
 	extraIngredientsClassName,
 	onOpenIngredient,
 	originalIngredients,
-}: ISavedMealIngredientsStripProps) {
+}) {
 	const visibleExtraIngredients = getRestExtraIngredients(
 		extraIngredients,
 		originalIngredients.length
@@ -81,4 +80,4 @@ export default function SavedMealIngredientsStrip({
 			)}
 		</div>
 	);
-}
+});

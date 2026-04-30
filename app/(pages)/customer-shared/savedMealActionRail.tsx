@@ -1,11 +1,11 @@
-'use client';
+import { memo } from 'react';
 
 import { Button, cn } from '@/design/ui/components';
 
 import { MoveButton } from '@/(pages)/customer-shared/moveButton';
 
-interface ISavedMealActionRailProps {
-	className?: string;
+interface IProps {
+	className?: HTMLDivElementAttributes['className'];
 	isMoveDownDisabled: boolean;
 	isMoveUpDisabled: boolean;
 	isReorderVisible: boolean;
@@ -13,12 +13,12 @@ interface ISavedMealActionRailProps {
 	onMoveUp: () => void;
 	onRemove: () => void;
 	onSelect: () => void;
-	reorderButtonsClassName?: string;
-	removeButtonClassName?: string;
-	selectButtonClassName?: string;
+	reorderButtonsClassName?: HTMLDivElementAttributes['className'];
+	removeButtonClassName?: HTMLDivElementAttributes['className'];
+	selectButtonClassName?: HTMLDivElementAttributes['className'];
 }
 
-export default function SavedMealActionRail({
+export default memo<IProps>(function SavedMealActionRail({
 	className,
 	isMoveDownDisabled,
 	isMoveUpDisabled,
@@ -30,7 +30,7 @@ export default function SavedMealActionRail({
 	removeButtonClassName,
 	reorderButtonsClassName,
 	selectButtonClassName,
-}: ISavedMealActionRailProps) {
+}) {
 	return (
 		<div
 			className={cn(
@@ -79,4 +79,4 @@ export default function SavedMealActionRail({
 			</Button>
 		</div>
 	);
-}
+});

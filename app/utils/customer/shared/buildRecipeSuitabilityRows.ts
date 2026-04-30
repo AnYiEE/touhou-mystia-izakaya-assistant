@@ -1,6 +1,7 @@
 import { type TIngredientName, type TRecipeTag } from '@/data';
 import type { IPopularTrend } from '@/types';
 import {
+	type TSearchMatcher,
 	checkArrayContainsOf,
 	checkArraySubsetOf,
 	checkLengthEmpty,
@@ -8,36 +9,20 @@ import {
 	numberSort,
 	pinyinSort,
 } from '@/utilities';
-import type { Recipe } from '@/utils';
+import { type Recipe } from '@/utils';
 import type { TRecipe } from '@/utils/types';
 
+import {
+	buildPaginateRows,
+	getTotalPages,
+	normalizePositiveInteger,
+} from './getPaginateMeta';
 import type {
 	IRecipeSuitabilityRowsResult,
 	ITableSortDescriptor,
 	TRecipeSuitabilityRow,
 	TRecipeTableSortKey,
-	TSearchMatcher,
 } from './types';
-
-export interface IBuildRecipeSuitabilityRowsArgs {
-	customerNegativeTags?: ReadonlyArray<TRecipeTag>;
-	customerPositiveTags?: ReadonlyArray<TRecipeTag> | null;
-	getEasterEggScore?: (recipe: TRecipe) => number | null | undefined;
-	hiddenDlcs: ReadonlySet<TRecipe['dlc']>;
-	hiddenIngredients: ReadonlySet<TIngredientName>;
-	hiddenRecipes: ReadonlySet<TRecipe['name']>;
-	isFamousShop: boolean;
-	matchSearch: TSearchMatcher;
-	page: number;
-	popularTrend: IPopularTrend;
-	recipeInstance: Recipe;
-	rowsPerPage: number;
-	searchValue?: string;
-	selectedCookers?: ReadonlyArray<TRecipe['cooker']>;
-	selectedDlcs?: ReadonlyArray<string>;
-	selectedRecipeTags?: ReadonlyArray<TRecipeTag>;
-	sortDescriptor: ITableSortDescriptor<TRecipeTableSortKey>;
-}
 
 function sortRecipeRows(
 	rows: TRecipeSuitabilityRow[],
@@ -70,30 +55,6 @@ function sortRecipeRows(
 	}
 }
 
-function normalizePositiveInteger(value: number) {
-	return Number.isFinite(value) ? Math.max(1, Math.floor(value)) : 1;
-}
-
-function getTotalPages(totalRows: number, rowsPerPage: number) {
-	return Math.max(1, Math.ceil(totalRows / rowsPerPage));
-}
-
-function paginateRows<T>(
-	rows: T[],
-	page: number,
-	rowsPerPage: number,
-	totalPages: number
-) {
-	const currentPage = Math.min(normalizePositiveInteger(page), totalPages);
-	const start = (currentPage - 1) * rowsPerPage;
-	const end = start + rowsPerPage;
-
-	return rows.slice(start, end);
-}
-
-/**
- * 从 recipe 原始数据构建表格需要的 suitability 行数据，并保留现有过滤与排序顺序。
- */
 export function buildRecipeSuitabilityRows({
 	customerNegativeTags,
 	customerPositiveTags,
@@ -112,16 +73,37 @@ export function buildRecipeSuitabilityRows({
 	selectedDlcs = [],
 	selectedRecipeTags = [],
 	sortDescriptor,
-}: IBuildRecipeSuitabilityRowsArgs): IRecipeSuitabilityRowsResult {
-	const domainRowsArgs = {
-		...(customerNegativeTags === undefined ? {} : { customerNegativeTags }),
-		...(customerPositiveTags === undefined ? {} : { customerPositiveTags }),
-		...(getEasterEggScore === undefined ? {} : { getEasterEggScore }),
-		isFamousShop,
-		popularTrend,
-	};
+}: {
+	customerNegativeTags?: ReadonlyArray<TRecipeTag>;
+	customerPositiveTags?: ReadonlyArray<TRecipeTag> | null;
+	getEasterEggScore?: (recipe: TRecipe) => number | null | undefined;
+	hiddenDlcs: ReadonlySet<TRecipe['dlc']>;
+	hiddenIngredients: ReadonlySet<TIngredientName>;
+	hiddenRecipes: ReadonlySet<TRecipe['name']>;
+	isFamousShop: boolean;
+	matchSearch: TSearchMatcher;
+	page: number;
+	popularTrend: IPopularTrend;
+	recipeInstance: Recipe;
+	rowsPerPage: number;
+	searchValue?: string;
+	selectedCookers?: ReadonlyArray<TRecipe['cooker']>;
+	selectedDlcs?: ReadonlyArray<string>;
+	selectedRecipeTags?: ReadonlyArray<TRecipeTag>;
+	sortDescriptor: ITableSortDescriptor<TRecipeTableSortKey>;
+}): IRecipeSuitabilityRowsResult {
 	const data: TRecipeSuitabilityRow[] = recipeInstance
-		.buildRecipeSuitabilityRows(domainRowsArgs)
+		.buildRecipeSuitabilityRows({
+			...(customerNegativeTags === undefined
+				? {}
+				: { customerNegativeTags }),
+			...(customerPositiveTags === undefined
+				? {}
+				: { customerPositiveTags }),
+			...(getEasterEggScore === undefined ? {} : { getEasterEggScore }),
+			isFamousShop,
+			popularTrend,
+		})
 		.filter(({ dlc }) => !hiddenDlcs.has(dlc));
 	const dataWithVisibleRows = data.filter(
 		({ ingredients, name }) =>
@@ -168,7 +150,7 @@ export function buildRecipeSuitabilityRows({
 		filteredRows.length,
 		normalizedRowsPerPage
 	);
-	const pagedRows = paginateRows(
+	const pagedRows = buildPaginateRows(
 		sortedRows,
 		page,
 		normalizedRowsPerPage,

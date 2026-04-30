@@ -1,6 +1,4 @@
-'use client';
-
-import type { ReactNode } from 'react';
+import { type ReactNode, memo } from 'react';
 
 import {
 	type SortDescriptor,
@@ -16,19 +14,14 @@ import { Pagination, cn } from '@/design/ui/components';
 
 import Placeholder from '@/components/placeholder';
 
-import type { ITableColumn } from '@/(pages)/customer-shared/types';
+import type {
+	ITableColumn,
+	TRecipeTableColumnKey,
+} from '@/(pages)/customer-shared/types';
+import { checkLengthEmpty } from '@/utilities';
 import type { TRecipeSuitabilityRow } from '@/utils/customer/shared';
 
-export type TRecipeTableColumnKey =
-	| 'recipe'
-	| 'cooker'
-	| 'ingredient'
-	| 'price'
-	| 'suitability'
-	| 'time'
-	| 'action';
-
-interface IRecipeTableShellProps {
+interface IProps {
 	headerColumns: Array<ITableColumn<TRecipeTableColumnKey>>;
 	isHighAppearance: boolean;
 	isReducedMotion: boolean;
@@ -46,7 +39,7 @@ interface IRecipeTableShellProps {
 	totalPages: number;
 }
 
-export default function RecipeTableShell({
+export default memo<IProps>(function RecipeTableShell({
 	headerColumns,
 	isHighAppearance,
 	isReducedMotion,
@@ -59,13 +52,13 @@ export default function RecipeTableShell({
 	sortDescriptor,
 	topContent,
 	totalPages,
-}: IRecipeTableShellProps) {
+}) {
 	return (
 		<Table
 			isHeaderSticky
 			bottomContent={
 				<div className="flex justify-center pt-2">
-					{items.length > 0 && (
+					{!checkLengthEmpty(items) && (
 						<Pagination
 							/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/4275} is fixed. */
 							// showControls
@@ -135,4 +128,4 @@ export default function RecipeTableShell({
 			</TableBody>
 		</Table>
 	);
-}
+});

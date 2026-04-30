@@ -1,22 +1,19 @@
-export interface IBuildSelectionTipArgs {
-	action: '保存' | '评级';
-	hasMystiaCooker: boolean;
-	hasSelectedBeverage: boolean;
-	hasSelectedRecipe: boolean;
-	isDarkMatter: boolean;
-}
+import { checkLengthEmpty } from '@/utilities';
 
-/**
- * 构建稀客页用于保存或评级的缺项提示文案。
- */
 export function buildSelectionTip({
 	action,
 	hasMystiaCooker,
 	hasSelectedBeverage,
 	hasSelectedRecipe,
 	isDarkMatter,
-}: IBuildSelectionTipArgs) {
-	const target = [];
+}: {
+	action: '保存' | '评级';
+	hasMystiaCooker: boolean;
+	hasSelectedBeverage: boolean;
+	hasSelectedRecipe: boolean;
+	isDarkMatter: boolean;
+}) {
+	const target: string[] = [];
 
 	if (!hasSelectedBeverage) {
 		target.push('酒水');
@@ -28,7 +25,7 @@ export function buildSelectionTip({
 		target.push('顾客点单需求');
 	}
 
-	if (target.length === 0) {
+	if (checkLengthEmpty(target)) {
 		return '';
 	}
 

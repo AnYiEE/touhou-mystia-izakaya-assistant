@@ -1,4 +1,4 @@
-import { isObject } from 'lodash';
+import { isNil, isObject } from 'lodash';
 
 import { Food } from './base';
 import { Ingredient } from './ingredients';
@@ -37,16 +37,6 @@ type TRecipe = Prettify<
 		positiveTags: TRecipeTag[];
 	}
 >;
-
-interface IBuildRecipeSuitabilityRowsArgs {
-	customerNegativeTags?: ReadonlyArray<TRecipeTag>;
-	customerPositiveTags?: ReadonlyArray<TRecipeTag> | null;
-	getEasterEggScore?: (
-		recipe: TRecipeWithPinyin
-	) => number | null | undefined;
-	isFamousShop: boolean;
-	popularTrend: IPopularTrend;
-}
 
 type TRecipeWithPinyin = TRecipe & { pinyin: string[] };
 
@@ -284,15 +274,20 @@ export class Recipe extends Food<TRecipe[]> {
 		getEasterEggScore,
 		isFamousShop,
 		popularTrend,
-	}: IBuildRecipeSuitabilityRowsArgs): TRecipeSuitabilityRowData[] {
+	}: {
+		customerNegativeTags?: ReadonlyArray<TRecipeTag>;
+		customerPositiveTags?: ReadonlyArray<TRecipeTag> | null;
+		getEasterEggScore?: (
+			recipe: TRecipeWithPinyin
+		) => number | null | undefined;
+		isFamousShop: boolean;
+		popularTrend: IPopularTrend;
+	}): TRecipeSuitabilityRowData[] {
 		const data = this.data.filter(
 			({ name }) => !this.blockedRecipes.has(name)
 		);
 
-		if (
-			customerPositiveTags === null ||
-			customerPositiveTags === undefined
-		) {
+		if (isNil(customerPositiveTags)) {
 			return data.map((recipe) =>
 				createRecipeSuitabilityRow(
 					recipe,
@@ -318,7 +313,7 @@ export class Recipe extends Food<TRecipe[]> {
 			);
 			const easterEggScore = getEasterEggScore?.(recipe);
 
-			if (easterEggScore !== null && easterEggScore !== undefined) {
+			if (!isNil(easterEggScore)) {
 				return createRecipeSuitabilityRow(
 					recipe,
 					[],

@@ -5,24 +5,11 @@ import { faCaretDown, faCaretUp } from '@fortawesome/free-solid-svg-icons';
 
 import type {
 	ITableColumn,
+	TBeverageTableColumnKey,
 	TCustomerTabStyleMap,
 	TIngredientsTabStyleMap,
-} from './types';
-
-type TSharedBeverageTableColumnKey =
-	| 'action'
-	| 'beverage'
-	| 'price'
-	| 'suitability';
-
-type TSharedRecipeTableColumnKey =
-	| 'action'
-	| 'cooker'
-	| 'ingredient'
-	| 'price'
-	| 'recipe'
-	| 'suitability'
-	| 'time';
+	TRecipeTableColumnKey,
+} from '@/(pages)/customer-shared/types';
 
 export const customerTabStyleMap = {
 	collapse: {
@@ -85,7 +72,7 @@ export const beverageTableColumns = [
 	{ key: 'price', label: '售价', sortable: true },
 	{ key: 'suitability', label: '匹配度', sortable: true },
 	{ key: 'action', label: '操作', sortable: false },
-] as const satisfies Array<ITableColumn<TSharedBeverageTableColumnKey>>;
+] as const satisfies Array<ITableColumn<TBeverageTableColumnKey>>;
 
 export const recipeTableColumns = [
 	{ key: 'recipe', label: '料理', sortable: true },
@@ -95,7 +82,7 @@ export const recipeTableColumns = [
 	{ key: 'suitability', label: '匹配度', sortable: true },
 	{ key: 'time', label: '烹饪时间', sortable: true },
 	{ key: 'action', label: '操作', sortable: false },
-] as const satisfies Array<ITableColumn<TSharedRecipeTableColumnKey>>;
+] as const satisfies Array<ITableColumn<TRecipeTableColumnKey>>;
 
 export const tabVisibilityStateMap = {
 	collapse: 'collapse',

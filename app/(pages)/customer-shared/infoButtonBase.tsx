@@ -1,5 +1,3 @@
-'use client';
-
 import { Fragment, memo, useCallback, useEffect, useState } from 'react';
 
 import { useParams, useVibrate } from '@/hooks';
@@ -22,14 +20,16 @@ interface IInfoSectionTitleProps {
 	title: string;
 }
 
-export function InfoSectionTitle({ title }: IInfoSectionTitleProps) {
-	return (
-		<div className="flex items-center justify-between">
-			<span>{title}</span>
-			<SiteInfo />
-		</div>
-	);
-}
+export const InfoSectionTitle = memo<IInfoSectionTitleProps>(
+	function InfoSectionTitle({ title }) {
+		return (
+			<div className="flex items-center justify-between">
+				<span>{title}</span>
+				<SiteInfo />
+			</div>
+		);
+	}
+);
 
 interface IProps extends Pick<
 	AccordionProps,
@@ -46,9 +46,6 @@ export default memo<IProps>(function InfoButtonBase({
 	const isReducedMotion = useReducedMotion();
 	const { params, replaceState } = useParams();
 	const [isOpened, setOpened] = useState(false);
-	const [portalContainer, setPortalContainer] = useState<Element | null>(
-		null
-	);
 	const vibrate = useVibrate();
 
 	const handleClose = useCallback(() => {
@@ -74,10 +71,6 @@ export default memo<IProps>(function InfoButtonBase({
 		setOpened(params.has(PARAM_INFO));
 	}, [params]);
 
-	useEffect(() => {
-		setPortalContainer(document.querySelector('#modal-portal-container'));
-	}, []);
-
 	const buttonLabel = '更多信息';
 
 	return (
@@ -100,7 +93,9 @@ export default memo<IProps>(function InfoButtonBase({
 			/>
 			<Modal
 				isOpen={isOpened}
-				{...(portalContainer === null ? {} : { portalContainer })}
+				portalContainer={document.querySelector(
+					'#modal-portal-container'
+				)}
 				onClose={handleClose}
 			>
 				<Accordion

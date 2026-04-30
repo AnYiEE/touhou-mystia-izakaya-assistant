@@ -1,5 +1,3 @@
-'use client';
-
 import {
 	useCallback,
 	useEffect,
@@ -18,21 +16,11 @@ import {
 } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
 import { checkLengthEmpty, toArray, toSet } from '@/utilities';
-import { getRestExtraIngredients } from '@/utils/customer/shared';
 import {
 	getScoreBasedAlternatives,
 	suggestMeals,
 } from '@/utils/customer/customer_rare/suggestMeals';
-
-type TLoadSuggestedMealAlternativesArgs = Omit<
-	Parameters<typeof getScoreBasedAlternatives>[0],
-	| 'hasMystiaCooker'
-	| 'hiddenIngredients'
-	| 'instance_ingredient'
-	| 'instance_recipe'
-	| 'isFamousShop'
-	| 'popularTrend'
->;
+import { getRestExtraIngredients } from '@/utils/customer/shared';
 
 type TSuggestedMeal = ReturnType<typeof suggestMeals>[number];
 type TSuggestions = ReturnType<typeof suggestMeals> | null;
@@ -79,6 +67,7 @@ export function useSuggestedMealsViewModel() {
 
 	const currentBeverageName = customerStore.shared.beverage.name.use();
 	const currentRecipeData = customerStore.shared.recipe.data.use();
+	const currentRecipeName = currentRecipeData?.name ?? null;
 
 	const hasMystiaCooker = customerStore.shared.customer.hasMystiaCooker.use();
 	const hiddenBeverages =
@@ -113,26 +102,26 @@ export function useSuggestedMealsViewModel() {
 			suggestions: null,
 		}));
 
-	const selectedCookerKeys = useMemo(
+	const selectedCookerKeys = useMemo<SelectionSet>(
 		() =>
-			(selectedSuggestMealsCooker === null
+			selectedSuggestMealsCooker === null
 				? toSet()
-				: toSet(selectedSuggestMealsCooker)) as SelectionSet,
+				: toSet(selectedSuggestMealsCooker),
 		[selectedSuggestMealsCooker]
 	);
 
-	const selectedMaxExtraKeys = useMemo(
+	const selectedMaxExtraKeys = useMemo<SelectionSet>(
 		() =>
 			toSet(
 				suggestMaxExtraIngredients === null
 					? ''
 					: suggestMaxExtraIngredients.toString()
-			) as SelectionSet,
+			),
 		[suggestMaxExtraIngredients]
 	);
 
-	const selectedMaxRatingKeys = useMemo(
-		() => toSet(suggestMaxRating.toString()) as SelectionSet,
+	const selectedMaxRatingKeys = useMemo<SelectionSet>(
+		() => toSet(suggestMaxRating.toString()),
 		[suggestMaxRating]
 	);
 
@@ -161,15 +150,15 @@ export function useSuggestedMealsViewModel() {
 	}, []);
 
 	useEffect(() => {
-		if (currentRecipeData === null) {
+		if (currentRecipeName === null) {
 			customerStore.shared.suggestMeals.cooker.set(null);
 			return;
 		}
 
 		customerStore.shared.suggestMeals.cooker.set(
-			instance_recipe.getPropsByName(currentRecipeData.name, 'cooker')
+			instance_recipe.getPropsByName(currentRecipeName, 'cooker')
 		);
-	}, [currentRecipeData, instance_recipe]);
+	}, [currentRecipeName, instance_recipe]);
 
 	const hasSelection =
 		currentBeverageName !== null || currentRecipeData !== null;
@@ -255,7 +244,18 @@ export function useSuggestedMealsViewModel() {
 		currentCustomerPopularTrend.tag === null;
 
 	const loadAlternatives = useCallback(
-		(loopIndex: number, args: TLoadSuggestedMealAlternativesArgs) => {
+		(
+			loopIndex: number,
+			args: Omit<
+				Parameters<typeof getScoreBasedAlternatives>[0],
+				| 'hasMystiaCooker'
+				| 'hiddenIngredients'
+				| 'instance_ingredient'
+				| 'instance_recipe'
+				| 'isFamousShop'
+				| 'popularTrend'
+			>
+		) => {
 			setAlternativesState((prev) => {
 				const prevMap =
 					prev.suggestions === suggestions

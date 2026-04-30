@@ -22,8 +22,8 @@ import {
 	MoveButton,
 } from '@/(pages)/customer-shared/moveButton';
 import RatingAvatarShell from '@/(pages)/customer-shared/ratingAvatarShell';
-import { Plus } from './resultCard';
-import TagGroup from './tagGroup';
+import { Plus } from '@/(pages)/customer-shared/resultCardAtoms';
+import TagGroup from '@/(pages)/customer-shared/tagGroup';
 import { trackEvent } from '@/components/analytics';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';

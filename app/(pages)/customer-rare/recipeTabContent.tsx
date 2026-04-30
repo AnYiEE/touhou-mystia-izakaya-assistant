@@ -28,30 +28,23 @@ import {
 	useReducedMotion,
 } from '@/design/ui/components';
 
-import TagGroup from './tagGroup';
-import RecipeTableShell, {
-	type TRecipeTableColumnKey,
-} from '@/(pages)/customer-shared/recipeTableShell';
+import RecipeTableShell from '@/(pages)/customer-shared/recipeTableShell';
+import TagGroup from '@/(pages)/customer-shared/tagGroup';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Price from '@/components/price';
 import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 
-import { recipeTableColumns as tableColumns } from './constants';
-import type { ITableColumn } from './types';
+import { recipeTableColumns } from '@/(pages)/customer-shared/constants';
+import type { TRecipeTableColumnKey } from '@/(pages)/customer-shared/types';
 import { CUSTOMER_RARE_TAG_STYLE, DLC_LABEL_MAP } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
-import type {
-	ITableSortDescriptor,
-	TRecipeSuitabilityRow,
-	TRecipeTableSortKey,
-} from '@/utils/customer/shared';
 import { checkLengthEmpty, copyArray, pinyinSort, toSet } from '@/utilities';
-
-export type TTableColumnKey = TRecipeTableColumnKey;
-export type TTableColumns = Array<ITableColumn<TTableColumnKey>>;
-
-export type TTableSortDescriptor = ITableSortDescriptor<TRecipeTableSortKey>;
+import {
+	type ITableSortDescriptor,
+	type TRecipeSuitabilityRow,
+	type TRecipeTableSortKey,
+} from '@/utils/customer/shared';
 
 export default function RecipeTabContent() {
 	const isReducedMotion = useReducedMotion();
@@ -89,7 +82,10 @@ export default function RecipeTabContent() {
 	const tableSortedRows = customerStore.recipeTableSortedRows.use();
 
 	const tableHeaderColumns = useMemo(
-		() => tableColumns.filter(({ key }) => tableVisibleColumns.has(key)),
+		() =>
+			recipeTableColumns.filter(({ key }) =>
+				tableVisibleColumns.has(key)
+			),
 		[tableVisibleColumns]
 	);
 
@@ -100,7 +96,10 @@ export default function RecipeTabContent() {
 	const tableSelectedKeys = toSet(currentRecipeData?.name ?? '');
 
 	const renderTableCell = useCallback(
-		(recipeData: TRecipeSuitabilityRow, columnKey: TTableColumnKey) => {
+		(
+			recipeData: TRecipeSuitabilityRow,
+			columnKey: TRecipeTableColumnKey
+		) => {
 			const {
 				cookTime,
 				cooker,
@@ -545,9 +544,9 @@ export default function RecipeTabContent() {
 									[
 										'action',
 										'recipe',
-									] satisfies TTableColumnKey[]
+									] satisfies TRecipeTableColumnKey[]
 								}
-								items={tableColumns}
+								items={recipeTableColumns}
 								selectedKeys={tableVisibleColumns}
 								selectionMode="multiple"
 								variant="flat"
@@ -652,7 +651,7 @@ export default function RecipeTabContent() {
 			onSortChange={(config) => {
 				vibrate();
 				customerStore.onRecipeTableSortChange(
-					config as TTableSortDescriptor
+					config as ITableSortDescriptor<TRecipeTableSortKey>
 				);
 			}}
 			page={tableCurrentPage}

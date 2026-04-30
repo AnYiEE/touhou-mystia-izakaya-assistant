@@ -1,5 +1,3 @@
-'use client';
-
 import { type ReactNode, memo } from 'react';
 import { debounce } from 'lodash';
 
@@ -7,11 +5,10 @@ import { Button, ScrollShadow, cn } from '@/design/ui/components';
 
 import PressElement from '@/components/pressElement';
 
+import type { ICustomerTabStyle } from '@/(pages)/customer-shared/types';
 import { checkA11yConfirmKey } from '@/utilities';
 
-import type { ICustomerTabStyle } from './types';
-
-interface ICustomerTabShellProps<TItemName extends string> {
+interface IProps<TItemName extends string> {
 	currentCustomerName: TItemName | null;
 	customerTabStyle: ICustomerTabStyle;
 	onSelect: (name: TItemName) => void;
@@ -27,7 +24,7 @@ export default memo(function CustomerTabShell<TItemName extends string>({
 	onToggleVisibility,
 	renderAvatar,
 	sortedData,
-}: ICustomerTabShellProps<TItemName>) {
+}: IProps<TItemName>) {
 	return (
 		<>
 			<ScrollShadow
@@ -80,6 +77,4 @@ export default memo(function CustomerTabShell<TItemName extends string>({
 			</div>
 		</>
 	);
-}) as <TItemName extends string>(
-	props: ICustomerTabShellProps<TItemName>
-) => ReactNode;
+}) as <TItemName extends string>(props: IProps<TItemName>) => ReactNode;

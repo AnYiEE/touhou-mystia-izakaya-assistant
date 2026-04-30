@@ -3,11 +3,11 @@ import { computed, store } from '@davstack/store';
 
 import { type Selection } from '@heroui/table';
 
-import { tabVisibilityStateMap } from '@/(pages)/customer-normal/constants';
+import { tabVisibilityStateMap } from '@/(pages)/customer-shared/constants';
 import type {
 	TTab,
 	TTabVisibilityState,
-} from '@/(pages)/customer-normal/types';
+} from '@/(pages)/customer-shared/types';
 import { trackEvent } from '@/components/analytics';
 import {
 	type TPinyinSortState,
@@ -36,16 +36,6 @@ import {
 	keepLastTag,
 	reverseVisibilityState,
 } from '@/stores/utils';
-import {
-	type ITableSortDescriptor,
-	type TBeverageTableSortKey,
-	type TRecipeTableSortKey,
-	buildBeverageSuitabilityRows,
-	buildRecipeSuitabilityRows,
-	evaluateNormalSavedMeal,
-	getIngredientScoreChanges,
-	getVisibleSavedMeals,
-} from '@/utils/customer/shared';
 import type { IMealRecipe, IPopularTrend, TPopularTag } from '@/types';
 import {
 	checkLengthEmpty,
@@ -59,6 +49,16 @@ import {
 	toSet,
 } from '@/utilities';
 import { Beverage, Clothes, CustomerNormal, Ingredient, Recipe } from '@/utils';
+import {
+	type ITableSortDescriptor,
+	type TBeverageTableSortKey,
+	type TRecipeTableSortKey,
+	buildBeverageSuitabilityRows,
+	buildRecipeSuitabilityRows,
+	evaluateNormalSavedMeal,
+	getIngredientScoreChanges,
+	getVisibleSavedMeals,
+} from '@/utils/customer/shared';
 import type { TBeverage, TRecipe } from '@/utils/types';
 
 type TBeverageTableSortDescriptor = ITableSortDescriptor<TBeverageTableSortKey>;
@@ -859,9 +859,7 @@ export const customerNormalStore = store(state, {
 
 			beverageTableDlcs: {
 				read: () =>
-					toSet(
-						currentStore.persistence.beverage.table.dlcs.use()
-					),
+					toSet(currentStore.persistence.beverage.table.dlcs.use()),
 				write: (dlcs: Selection) => {
 					currentStore.persistence.beverage.table.dlcs.set(
 						toArray<SelectionSet>(dlcs) as never
@@ -870,12 +868,10 @@ export const customerNormalStore = store(state, {
 			},
 			beverageTablePagedRows: () => beverageTableRows.use().pagedRows,
 			beverageTableSortedRows: () => beverageTableRows.use().sortedRows,
-			ingredientScoreChanges: () => ingredientScoreChanges.use(),
+
 			recipeTableCookers: {
 				read: () =>
-					toSet(
-						currentStore.persistence.recipe.table.cookers.use()
-					),
+					toSet(currentStore.persistence.recipe.table.cookers.use()),
 				write: (cookers: Selection) => {
 					currentStore.persistence.recipe.table.cookers.set(
 						toArray<SelectionSet>(cookers) as never
@@ -884,9 +880,7 @@ export const customerNormalStore = store(state, {
 			},
 			recipeTableDlcs: {
 				read: () =>
-					toSet(
-						currentStore.persistence.recipe.table.dlcs.use()
-					),
+					toSet(currentStore.persistence.recipe.table.dlcs.use()),
 				write: (dlcs: Selection) => {
 					currentStore.persistence.recipe.table.dlcs.set(
 						toArray<SelectionSet>(dlcs) as never
@@ -895,6 +889,8 @@ export const customerNormalStore = store(state, {
 			},
 			recipeTablePagedRows: () => recipeTableRows.use().pagedRows,
 			recipeTableSortedRows: () => recipeTableRows.use().sortedRows,
+
+			ingredientScoreChanges: () => ingredientScoreChanges.use(),
 			savedCustomerMealsWithEvaluation: () =>
 				savedCustomerMealsWithEvaluation.use(),
 		};

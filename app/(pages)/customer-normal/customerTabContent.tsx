@@ -7,8 +7,8 @@ import { Avatar, cn } from '@/design/ui/components';
 import CustomerTabShell from '@/(pages)/customer-shared/customerTabShell';
 import Sprite from '@/components/sprite';
 
+import type { ICustomerTabStyle } from '@/(pages)/customer-shared/types';
 import { type TCustomerNormalName } from '@/data';
-import type { ICustomerTabStyle } from './types';
 import { customerNormalStore as store } from '@/stores';
 import { type CustomerNormal } from '@/utils';
 import type { TItemData } from '@/utils/types';
@@ -31,6 +31,7 @@ export default memo<IProps>(function CustomerTabContent({
 		vibrate();
 		store.toggleCustomerTabVisibilityState();
 	}, [vibrate]);
+
 	const handleCustomerSelect = useCallback(
 		(name: TCustomerNormalName) => {
 			vibrate();
@@ -76,9 +77,7 @@ export default memo<IProps>(function CustomerTabContent({
 			onSelect={handleCustomerSelect}
 			onToggleVisibility={handleButtonPress}
 			renderAvatar={renderAvatar}
-			sortedData={
-				sortedData as ReadonlyArray<{ name: TCustomerNormalName }>
-			}
+			sortedData={sortedData}
 		/>
 	);
 });

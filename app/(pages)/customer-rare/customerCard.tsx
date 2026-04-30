@@ -19,7 +19,7 @@ import {
 
 import InfoButton from './infoButton';
 import RatingAvatarShell from '@/(pages)/customer-shared/ratingAvatarShell';
-import TagGroup from './tagGroup';
+import TagGroup from '@/(pages)/customer-shared/tagGroup';
 import { trackEvent } from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Price from '@/components/price';
@@ -35,8 +35,8 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
-import { buildRareTagTooltip } from '@/utils/customer/shared';
 import { checkLengthEmpty, copyArray, pinyinSort } from '@/utilities';
+import { buildRareTagTooltip } from '@/utils/customer/shared';
 
 export default function CustomerCard() {
 	const { pushState } = usePathname();

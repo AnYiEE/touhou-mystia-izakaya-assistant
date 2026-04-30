@@ -15,46 +15,6 @@ import type {
 	TIngredientScoreRestriction,
 } from './types';
 
-export interface IIngredientEasterEggArgs {
-	currentIngredients: ReadonlyArray<TIngredientName>;
-	currentRecipeName: TRecipe['name'];
-	ingredientName: TIngredientName;
-}
-
-export interface IGetIngredientScoreChangesArgs {
-	candidates: ReadonlyArray<IIngredientScoreCandidate>;
-	calculateIngredientTagsWithTrend: (
-		tags: ReadonlyArray<TIngredientTag>
-	) => TRecipeTag[];
-	calculateRecipeTagsWithTrend: (
-		tags: ReadonlyArray<TRecipeTag>
-	) => TRecipeTag[];
-	composeRecipeTagsWithPopularTrend: (
-		tags: ReadonlyArray<TIngredientTag | TRecipeTag>
-	) => TRecipeTag[];
-	currentCustomerOrderRecipeTag?: TRecipeTag | null;
-	currentPopularTrend: IPopularTrend;
-	currentRecipeExtraIngredients: ReadonlyArray<TIngredientName>;
-	currentRecipeIngredients: ReadonlyArray<TIngredientName>;
-	currentRecipeName: TRecipe['name'];
-	currentRecipeNegativeTags: ReadonlyArray<TRecipeTag>;
-	customerNegativeTags?: ReadonlyArray<TRecipeTag>;
-	customerPositiveTags: ReadonlyArray<TRecipeTag>;
-	getIngredientEasterEggScore?: (
-		args: IIngredientEasterEggArgs
-	) => number | null | undefined;
-	getIngredientScoreChange: (
-		oldRecipePositiveTags: ReadonlyArray<TRecipeTag>,
-		newRecipePositiveTags: ReadonlyArray<TRecipeTag>,
-		customerPositiveTags: ReadonlyArray<TRecipeTag>,
-		customerNegativeTags?: ReadonlyArray<TRecipeTag>
-	) => number;
-	getIngredientTags: (
-		ingredientName: TIngredientName
-	) => ReadonlyArray<TIngredientTag>;
-	isDarkMatter?: boolean;
-}
-
 function getIngredientRestriction(
 	scoreChange: number,
 	isDarkIngredient: boolean,
@@ -132,9 +92,6 @@ function getLargePartitionScoreChange({
 	return scoreChange;
 }
 
-/**
- * 计算当前料理上下文中每个候选食材的评分变化与限制状态。
- */
 export function getIngredientScoreChanges({
 	calculateIngredientTagsWithTrend,
 	calculateRecipeTagsWithTrend,
@@ -152,7 +109,41 @@ export function getIngredientScoreChanges({
 	getIngredientScoreChange,
 	getIngredientTags,
 	isDarkMatter = false,
-}: IGetIngredientScoreChangesArgs): IIngredientScoreChangesResult {
+}: {
+	candidates: ReadonlyArray<IIngredientScoreCandidate>;
+	calculateIngredientTagsWithTrend: (
+		tags: ReadonlyArray<TIngredientTag>
+	) => TRecipeTag[];
+	calculateRecipeTagsWithTrend: (
+		tags: ReadonlyArray<TRecipeTag>
+	) => TRecipeTag[];
+	composeRecipeTagsWithPopularTrend: (
+		tags: ReadonlyArray<TIngredientTag | TRecipeTag>
+	) => TRecipeTag[];
+	currentCustomerOrderRecipeTag?: TRecipeTag | null;
+	currentPopularTrend: IPopularTrend;
+	currentRecipeExtraIngredients: ReadonlyArray<TIngredientName>;
+	currentRecipeIngredients: ReadonlyArray<TIngredientName>;
+	currentRecipeName: TRecipe['name'];
+	currentRecipeNegativeTags: ReadonlyArray<TRecipeTag>;
+	customerNegativeTags?: ReadonlyArray<TRecipeTag>;
+	customerPositiveTags: ReadonlyArray<TRecipeTag>;
+	getIngredientEasterEggScore?: (args: {
+		currentIngredients: ReadonlyArray<TIngredientName>;
+		currentRecipeName: TRecipe['name'];
+		ingredientName: TIngredientName;
+	}) => number | null | undefined;
+	getIngredientScoreChange: (
+		oldRecipePositiveTags: ReadonlyArray<TRecipeTag>,
+		newRecipePositiveTags: ReadonlyArray<TRecipeTag>,
+		customerPositiveTags: ReadonlyArray<TRecipeTag>,
+		customerNegativeTags?: ReadonlyArray<TRecipeTag>
+	) => number;
+	getIngredientTags: (
+		ingredientName: TIngredientName
+	) => ReadonlyArray<TIngredientTag>;
+	isDarkMatter?: boolean;
+}): IIngredientScoreChangesResult {
 	const currentRecipeAllIngredients = union(
 		currentRecipeIngredients,
 		currentRecipeExtraIngredients
@@ -187,7 +178,7 @@ export function getIngredientScoreChanges({
 
 	const changesByName: IIngredientScoreChangesResult['changesByName'] = {};
 
-	for (const { name, tags } of candidates) {
+	candidates.forEach(({ name, tags }) => {
 		const tagsWithTrend = calculateIngredientTagsWithTrend(tags);
 		const allTagsWithTrend = union(
 			currentRecipeTagsWithTrend,
@@ -195,11 +186,9 @@ export function getIngredientScoreChanges({
 		);
 
 		const before = composeRecipeTagsWithPopularTrend(
-			currentRecipeTagsWithTrend as TIngredientTag[]
+			currentRecipeTagsWithTrend
 		);
-		const after = composeRecipeTagsWithPopularTrend(
-			allTagsWithTrend as TIngredientTag[]
-		);
+		const after = composeRecipeTagsWithPopularTrend(allTagsWithTrend);
 
 		let scoreChange = getIngredientScoreChange(
 			before,
@@ -254,7 +243,7 @@ export function getIngredientScoreChanges({
 			),
 			scoreChange,
 		};
-	}
+	});
 
 	return { changesByName, darkIngredientNames };
 }

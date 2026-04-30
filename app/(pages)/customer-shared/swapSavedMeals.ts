@@ -1,20 +1,14 @@
-interface IIndexedSavedMeal {
-	dataIndex: number;
-}
-
-interface ISwapSavedMealsArgs<TMeal, TSavedMeal extends IIndexedSavedMeal> {
-	currentMeals: ReadonlyArray<TMeal>;
-	nextVisibleIndex: number;
-	savedMeals: ReadonlyArray<TSavedMeal>;
-	visibleIndex: number;
-}
-
-export function swapSavedMeals<TMeal, TSavedMeal extends IIndexedSavedMeal>({
+export function swapSavedMeals<TMeal>({
 	currentMeals,
 	nextVisibleIndex,
 	savedMeals,
 	visibleIndex,
-}: ISwapSavedMealsArgs<TMeal, TSavedMeal>) {
+}: {
+	currentMeals: ReadonlyArray<TMeal>;
+	nextVisibleIndex: number;
+	savedMeals: ReadonlyArray<{ dataIndex: number }>;
+	visibleIndex: number;
+}) {
 	if (nextVisibleIndex < 0 || nextVisibleIndex >= savedMeals.length) {
 		return null;
 	}
@@ -38,6 +32,7 @@ export function swapSavedMeals<TMeal, TSavedMeal extends IIndexedSavedMeal>({
 	) {
 		return null;
 	}
+
 	const currentMeal = nextMeals[currentDataIndex] as TMeal;
 	const targetMeal = nextMeals[nextDataIndex] as TMeal;
 
