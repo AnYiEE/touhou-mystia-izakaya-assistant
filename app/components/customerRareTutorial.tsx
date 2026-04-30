@@ -29,7 +29,7 @@ export default function CustomerRareTutorial() {
 
 	const currentBeverageName = customerStore.shared.beverage.name.use();
 	const currentBeverageTableDirection =
-		customerStore.persistence.beverage.table.sortDescriptor.direction?.use();
+		customerStore.persistence.beverage.table.sortDescriptor.use().direction;
 
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 	const currentRecipeName = currentRecipeData?.name;

@@ -725,11 +725,6 @@ export const customerRareStore = store(state, {
 			const currentRecipeData = shouldGet
 				? currentStore.shared.recipe.data.get()
 				: currentStore.shared.recipe.data.use();
-
-			if (currentCustomerName === null || currentRecipeData === null) {
-				return { changesByName: {}, darkIngredientNames: [] };
-			}
-
 			const currentPopularTrend = shouldGet
 				? currentStore.shared.customer.popularTrend.get()
 				: currentStore.shared.customer.popularTrend.use();
@@ -744,6 +739,11 @@ export const customerRareStore = store(state, {
 			const isFamousShop = shouldGet
 				? currentStore.shared.customer.famousShop.get()
 				: currentStore.shared.customer.famousShop.use();
+
+			if (currentCustomerName === null || currentRecipeData === null) {
+				return { changesByName: {}, darkIngredientNames: [] };
+			}
+
 			const {
 				ingredients: currentRecipeIngredients,
 				negativeTags: currentRecipeNegativeTags,
@@ -838,14 +838,9 @@ export const customerRareStore = store(state, {
 			const currentCustomerName = shouldGet
 				? currentStore.shared.customer.name.get()
 				: currentStore.shared.customer.name.use();
-
-			if (currentCustomerName === null) {
-				return null;
-			}
-
-			const currentCustomerMeals = shouldGet
-				? currentStore.persistence.meals[currentCustomerName]?.get()
-				: currentStore.persistence.meals[currentCustomerName]?.use();
+			const savedMeals = shouldGet
+				? currentStore.persistence.meals.get()
+				: currentStore.persistence.meals.use();
 			const hiddenDlcs = shouldGet
 				? currentStore.shared.hiddenItems.dlcs.get()
 				: currentStore.shared.hiddenItems.dlcs.use();
@@ -855,6 +850,12 @@ export const customerRareStore = store(state, {
 			const isFamousShop = shouldGet
 				? currentStore.shared.customer.famousShop.get()
 				: currentStore.shared.customer.famousShop.use();
+
+			if (currentCustomerName === null) {
+				return null;
+			}
+
+			const currentCustomerMeals = savedMeals[currentCustomerName];
 
 			const visibleMeals = getVisibleSavedMeals({
 				hiddenDlcs,

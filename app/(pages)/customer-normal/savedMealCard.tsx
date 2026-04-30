@@ -43,11 +43,11 @@ export default function SavedMealCard() {
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 
 	const currentCustomerName = customerStore.shared.customer.name.use();
+	const savedMeals = customerStore.persistence.meals.use();
 	const currentCustomerMeals =
 		currentCustomerName === null
 			? null
-			: (customerStore.persistence.meals[currentCustomerName]?.use() ??
-				null);
+			: (savedMeals[currentCustomerName] ?? null);
 	const savedCustomerMeals =
 		customerStore.savedCustomerMealsWithEvaluation.use();
 
