@@ -34,9 +34,9 @@ export default memo(function CustomerTabShell<TItemName extends string>({
 				)}
 			>
 				<div className="m-2 grid grid-cols-fill-16 justify-around gap-4 lg:grid-cols-fill-20">
-					{sortedData.map(({ name }, index) => (
+					{sortedData.map(({ name }) => (
 						<PressElement
-							key={index}
+							key={name}
 							as="div"
 							onPress={() => {
 								onSelect(name);

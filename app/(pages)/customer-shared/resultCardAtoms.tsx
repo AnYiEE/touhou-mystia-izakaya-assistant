@@ -24,9 +24,10 @@ export const Plus = memo<IPlusProps>(function Plus({ className, size = 1 }) {
 
 interface IUnknownItemProps extends Pick<
 	HTMLSpanElementAttributes,
-	'className' | 'title'
+	'className'
 > {
 	size?: number;
+	title: string;
 }
 
 export const UnknownItem = memo<IUnknownItemProps>(function UnknownItem({

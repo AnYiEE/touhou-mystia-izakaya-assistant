@@ -9,8 +9,9 @@ export function buildPaginateRows<T>(
 	totalPages: number
 ) {
 	const currentPage = Math.min(normalizePositiveInteger(page), totalPages);
-	const start = (currentPage - 1) * rowsPerPage;
-	const end = start + rowsPerPage;
+	const normalizedRowsPerPage = normalizePositiveInteger(rowsPerPage);
+	const start = (currentPage - 1) * normalizedRowsPerPage;
+	const end = start + normalizedRowsPerPage;
 
 	return rows.slice(start, end);
 }

@@ -1,4 +1,4 @@
-import { type ReactNode, memo } from 'react';
+import { type ReactElement, type ReactNode, memo } from 'react';
 
 import {
 	type IPopoverProps,
@@ -14,7 +14,7 @@ interface IProps {
 	placement?: IPopoverProps['placement'];
 	popoverOffset?: IPopoverProps['offset'];
 	tooltipOffset?: ITooltipProps['offset'];
-	trigger: ReactNode;
+	trigger: ReactElement;
 }
 
 export default memo<IProps>(function RatingAvatarShell({

@@ -1,3 +1,7 @@
+function isValidIndex(index: number, length: number) {
+	return Number.isInteger(index) && index >= 0 && index < length;
+}
+
 export function swapSavedMeals<TMeal>({
 	currentMeals,
 	nextVisibleIndex,
@@ -9,7 +13,10 @@ export function swapSavedMeals<TMeal>({
 	savedMeals: ReadonlyArray<{ dataIndex: number }>;
 	visibleIndex: number;
 }) {
-	if (nextVisibleIndex < 0 || nextVisibleIndex >= savedMeals.length) {
+	if (
+		!isValidIndex(visibleIndex, savedMeals.length) ||
+		!isValidIndex(nextVisibleIndex, savedMeals.length)
+	) {
 		return null;
 	}
 
@@ -25,10 +32,8 @@ export function swapSavedMeals<TMeal>({
 	const nextMeals = [...currentMeals];
 
 	if (
-		currentDataIndex < 0 ||
-		currentDataIndex >= nextMeals.length ||
-		nextDataIndex < 0 ||
-		nextDataIndex >= nextMeals.length
+		!isValidIndex(currentDataIndex, nextMeals.length) ||
+		!isValidIndex(nextDataIndex, nextMeals.length)
 	) {
 		return null;
 	}

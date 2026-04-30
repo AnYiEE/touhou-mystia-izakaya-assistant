@@ -72,7 +72,7 @@ export const beverageTableColumns = [
 	{ key: 'price', label: '售价', sortable: true },
 	{ key: 'suitability', label: '匹配度', sortable: true },
 	{ key: 'action', label: '操作', sortable: false },
-] as const satisfies Array<ITableColumn<TBeverageTableColumnKey>>;
+] as const satisfies ReadonlyArray<ITableColumn<TBeverageTableColumnKey>>;
 
 export const recipeTableColumns = [
 	{ key: 'recipe', label: '料理', sortable: true },
@@ -82,7 +82,7 @@ export const recipeTableColumns = [
 	{ key: 'suitability', label: '匹配度', sortable: true },
 	{ key: 'time', label: '烹饪时间', sortable: true },
 	{ key: 'action', label: '操作', sortable: false },
-] as const satisfies Array<ITableColumn<TRecipeTableColumnKey>>;
+] as const satisfies ReadonlyArray<ITableColumn<TRecipeTableColumnKey>>;
 
 export const tabVisibilityStateMap = {
 	collapse: 'collapse',

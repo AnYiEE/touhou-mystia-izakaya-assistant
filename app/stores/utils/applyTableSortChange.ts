@@ -11,13 +11,13 @@ function reverseDirection(direction: TSortDirection) {
 export function applyTableSortChange<T extends string>(
 	config: Required<ITableSortDescriptor<T>>,
 	previous: ITableSortDescriptor<T>
-) {
+): ITableSortDescriptor<T> {
 	const { column, direction } = config;
 	const { lastColumn, time } = previous;
 	const isSameColumn = column === lastColumn;
 
 	if (time !== undefined && isSameColumn && time % 2 === 0) {
-		return {} as ITableSortDescriptor<T>;
+		return {};
 	}
 
 	return {
