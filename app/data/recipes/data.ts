@@ -3053,7 +3053,7 @@ export const RECIPE_LIST = [
 			'燃起来了',
 		],
 		negativeTags: ['果味'],
-		cooker: '烧烤架',
+		cooker: '料理台',
 		baseCookTime: 5,
 		dlc: 9,
 		level: 4,
