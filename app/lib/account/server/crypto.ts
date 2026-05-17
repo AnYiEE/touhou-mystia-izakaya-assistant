@@ -1,0 +1,36 @@
+import { createHmac, timingSafeEqual } from 'node:crypto';
+
+import {
+	SERVER_MISCONFIGURED_MESSAGE,
+	checkSessionSecret,
+} from './environment';
+
+export type TAccountSecretDomain = 'admin:v1' | 'csrf:v1' | 'session:v1';
+
+function getSessionSecret() {
+	const secret = process.env.SESSION_SECRET;
+
+	if (!checkSessionSecret(secret)) {
+		throw new Error(SERVER_MISCONFIGURED_MESSAGE);
+	}
+	return secret;
+}
+
+export function createAccountHmac(domain: TAccountSecretDomain, value: string) {
+	return createHmac('sha256', getSessionSecret())
+		.update(domain)
+		.update('\0')
+		.update(value)
+		.digest('base64url');
+}
+
+export function checkFixedLengthEqual(left: string, right: string) {
+	const leftBuffer = Buffer.from(left);
+	const rightBuffer = Buffer.from(right);
+
+	if (leftBuffer.length !== rightBuffer.length) {
+		return false;
+	}
+
+	return timingSafeEqual(leftBuffer, rightBuffer);
+}

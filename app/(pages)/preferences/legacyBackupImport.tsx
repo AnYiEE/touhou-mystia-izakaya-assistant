@@ -1,0 +1,94 @@
+'use client';
+
+import { useState } from 'react';
+
+import { Input } from '@heroui/input';
+
+import { Button } from '@/design/ui/components';
+import { importBackupCode } from '@/lib/account/client/api';
+import { withAccountSyncPaused } from '@/lib/account/client/stateGuards';
+import { takeOverLocalAccountData } from '@/lib/account/client/syncClient';
+import { accountStore, globalStore } from '@/stores';
+
+export default function LegacyBackupImport() {
+	const cloudCode = globalStore.persistence.cloudCode.use();
+	const csrfToken = accountStore.shared.csrfToken.use();
+	const isLoggedIn = accountStore.shared.isLoggedIn.use();
+	const [code, setCode] = useState(cloudCode ?? '');
+	const [message, setMessage] = useState<string | null>(null);
+	const [isImporting, setIsImporting] = useState(false);
+	const normalizedCode = code.trim();
+
+	return (
+		<div className="space-y-2">
+			<Input label="旧备份码" value={code} onValueChange={setCode} />
+			<div className="flex items-center gap-2">
+				{isLoggedIn ? (
+					<Button
+						color="primary"
+						isDisabled={
+							csrfToken === null || normalizedCode.length === 0
+						}
+						isLoading={isImporting}
+						variant="flat"
+						onPress={() => {
+							if (csrfToken === null) {
+								return;
+							}
+							setIsImporting(true);
+							let hasImportedBackup = false;
+							void withAccountSyncPaused(async () => {
+								await importBackupCode(
+									normalizedCode,
+									csrfToken
+								);
+								hasImportedBackup = true;
+								globalStore.persistence.cloudCode.set(null);
+								await takeOverLocalAccountData();
+							})
+								.then(() => {
+									setMessage('导入成功');
+								})
+								.catch((error: unknown) => {
+									if (!hasImportedBackup) {
+										globalStore.persistence.cloudCode.set(
+											normalizedCode
+										);
+									}
+									setMessage(
+										error instanceof Error
+											? error.message
+											: '导入失败'
+									);
+								})
+								.finally(() => {
+									setIsImporting(false);
+								});
+						}}
+					>
+						导入到账号
+					</Button>
+				) : (
+					<Button
+						color="primary"
+						isDisabled={normalizedCode.length === 0}
+						variant="flat"
+						onPress={() => {
+							globalStore.persistence.cloudCode.set(
+								normalizedCode
+							);
+							setMessage('登录或注册后将自动导入');
+						}}
+					>
+						保存旧备份码
+					</Button>
+				)}
+				{message !== null && (
+					<span className="text-sm text-foreground-500">
+						{message}
+					</span>
+				)}
+			</div>
+		</div>
+	);
+}

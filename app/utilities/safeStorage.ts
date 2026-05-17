@@ -1,6 +1,7 @@
 class SafeStorage implements Storage {
 	private static _instance: SafeStorage | undefined;
 
+	private _mode: 'local' | 'memory' | 'session' = 'memory';
 	private _storage: Storage | null;
 	private _memoryStorage: Map<string, string>;
 
@@ -20,6 +21,7 @@ class SafeStorage implements Storage {
 		try {
 			localStorage.setItem(testKey, '');
 			localStorage.removeItem(testKey);
+			this._mode = 'local';
 			return localStorage;
 		} catch {
 			/* empty */
@@ -28,6 +30,7 @@ class SafeStorage implements Storage {
 		try {
 			sessionStorage.setItem(testKey, '');
 			sessionStorage.removeItem(testKey);
+			this._mode = 'session';
 			return sessionStorage;
 		} catch {
 			/* empty */
@@ -56,8 +59,50 @@ class SafeStorage implements Storage {
 		}
 	}
 
+	private switchToFallbackStorage(key: string, value: string) {
+		if (this._mode !== 'session') {
+			try {
+				this._memoryStorage.forEach((storedValue, storedKey) => {
+					sessionStorage.setItem(storedKey, storedValue);
+				});
+				sessionStorage.setItem(key, value);
+				this._storage = sessionStorage;
+				this._mode = 'session';
+				return;
+			} catch {
+				/* empty */
+			}
+		}
+
+		this._storage = null;
+		this._mode = 'memory';
+	}
+
+	private getStorageKeys() {
+		const keys = new Set(this._memoryStorage.keys());
+
+		if (this._storage !== null) {
+			try {
+				for (let i = 0; i < this._storage.length; i++) {
+					const key = this._storage.key(i);
+					if (key !== null) {
+						keys.add(key);
+					}
+				}
+			} catch {
+				/* empty */
+			}
+		}
+
+		return [...keys];
+	}
+
 	public get length() {
-		return this._memoryStorage.size;
+		return this.getStorageKeys().length;
+	}
+
+	public get mode() {
+		return this._mode;
 	}
 
 	public clear() {
@@ -89,7 +134,7 @@ class SafeStorage implements Storage {
 	}
 
 	public key(index: number) {
-		const keys = [...this._memoryStorage.keys()];
+		const keys = this.getStorageKeys();
 		return keys[index] ?? null;
 	}
 
@@ -108,8 +153,10 @@ class SafeStorage implements Storage {
 		if (this._storage !== null) {
 			try {
 				this._storage.setItem(key, value);
+				this._memoryStorage.set(key, value);
+				return;
 			} catch {
-				/* empty */
+				this.switchToFallbackStorage(key, value);
 			}
 		}
 		this._memoryStorage.set(key, value);
@@ -117,3 +164,7 @@ class SafeStorage implements Storage {
 }
 
 export const safeStorage = SafeStorage.getInstance();
+
+export function getSafeStorageMode() {
+	return safeStorage.mode;
+}

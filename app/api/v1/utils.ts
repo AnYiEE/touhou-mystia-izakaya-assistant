@@ -2,17 +2,58 @@ import { NextResponse } from 'next/server';
 
 import type { IApiErrorResponse, IApiSuccessResponse } from './types';
 
-export function createJsonResponse<T>(data: T, status = 200) {
+export const NO_STORE_HEADERS = {
+	'Cache-Control': 'no-store',
+	Vary: 'Cookie',
+} as const;
+
+export function createJsonResponse<T>(
+	data: T,
+	status = 200,
+	init?: ResponseInit
+) {
 	return NextResponse.json(
 		{ data, status: 'ok' } satisfies IApiSuccessResponse<T>,
-		{ status }
+		{ ...init, status }
 	);
 }
 
-export function createErrorResponse(message: string, status: number) {
+export function createErrorResponse<T>(
+	message: string,
+	status: number,
+	data?: T,
+	init?: ResponseInit
+) {
+	const body =
+		data === undefined
+			? ({ message, status: 'error' } satisfies IApiErrorResponse)
+			: ({
+					data,
+					message,
+					status: 'error',
+				} satisfies IApiErrorResponse<T>);
+
+	return NextResponse.json(body, { ...init, status });
+}
+
+export function createNoStoreJsonResponse<T>(data: T, status = 200) {
+	return createJsonResponse(data, status, { headers: NO_STORE_HEADERS });
+}
+
+export function createNoStoreErrorResponse<T>(
+	message: string,
+	status: number,
+	data?: T
+) {
 	return NextResponse.json(
-		{ message, status: 'error' } satisfies IApiErrorResponse,
-		{ status }
+		data === undefined
+			? ({ message, status: 'error' } satisfies IApiErrorResponse)
+			: ({
+					data,
+					message,
+					status: 'error',
+				} satisfies IApiErrorResponse<T>),
+		{ headers: NO_STORE_HEADERS, status }
 	);
 }
 

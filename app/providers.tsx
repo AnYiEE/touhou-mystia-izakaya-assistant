@@ -10,11 +10,17 @@ import { HeroUIProvider } from '@heroui/system';
 import { ProgressBar, ProgressBarProvider } from 'react-transition-progress';
 
 import CompatibleBrowser from '@/components/compatibleBrowser';
+import AccountConflictModal from '@/components/accountConflictModal';
+import AccountOnboarding from '@/components/accountOnboarding';
+import AccountPasswordMustChangeModal from '@/components/accountPasswordMustChangeModal';
 import CustomerRareTutorial from '@/components/customerRareTutorial';
 import DonationModal from '@/components/donationModal';
 
 import { siteConfig } from '@/configs';
 import { type TDlc } from '@/data';
+import { bootstrapAccount } from '@/lib/account/client/bootstrap';
+import { startAccountStoreSyncWatchers } from '@/lib/account/client/doubleWrite';
+import { startAccountSyncClient } from '@/lib/account/client/syncClient';
 import {
 	beveragesStore,
 	clothesStore,
@@ -184,6 +190,12 @@ export default function Providers({
 		customerRareStore.shared.recipe.table.hiddenRecipes.set(
 			toSet(globalHiddenRecipes)
 		);
+
+		startAccountStoreSyncWatchers();
+		void bootstrapAccount();
+		const stopAccountSyncClient = startAccountSyncClient();
+
+		return stopAccountSyncClient;
 	}, []);
 
 	const router = useRouter();
@@ -194,6 +206,9 @@ export default function Providers({
 				{children}
 				<ProgressBar className="fixed top-0 z-60 h-1 rounded-2xl bg-primary dark:lg:h-0.5" />
 				<CompatibleBrowser />
+				<AccountPasswordMustChangeModal />
+				<AccountConflictModal />
+				<AccountOnboarding />
 				<CustomerRareTutorial />
 				<DonationModal />
 			</ProgressBarProvider>

@@ -3,7 +3,8 @@ export interface IApiSuccessResponse<T> {
 	status: 'ok';
 }
 
-export interface IApiErrorResponse {
+export interface IApiErrorResponse<T = unknown> {
+	data?: T;
 	message: string;
 	status: 'error';
 }

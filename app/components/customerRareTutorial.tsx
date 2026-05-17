@@ -9,7 +9,11 @@ import { PARAM_INFO } from '@/(pages)/customer-shared/infoButtonBase';
 import { trackEvent } from '@/components/analytics';
 
 import { DYNAMIC_TAG_MAP } from '@/data';
-import { customerRareStore as customerStore, globalStore } from '@/stores';
+import {
+	accountStore,
+	customerRareStore as customerStore,
+	globalStore,
+} from '@/stores';
 import { checkLengthEmpty, getPageTitle } from '@/utilities';
 
 const key = 'customer_rare_tutorial';
@@ -17,6 +21,11 @@ const pathname = '/customer-rare';
 const resetLabel = '重新进入稀客套餐搭配教程';
 
 export default function CustomerRareTutorial() {
+	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
+	const accountConflicts = accountStore.shared.sync.conflicts.use();
+	const hasSkippedAccountOnboarding =
+		accountStore.persistence.hasSkippedOnboarding.use();
+	const passwordMustChange = accountStore.shared.passwordMustChange.use();
 	const { pathname: currentPathname } = usePathname();
 	const isTargetPage = currentPathname.startsWith(pathname);
 
@@ -38,9 +47,13 @@ export default function CustomerRareTutorial() {
 	const selectedTabKey = customerStore.shared.tab.use();
 	const isIngredientTabSelected = selectedTabKey === 'ingredient';
 
-	// Only obtain the state when first entering the page. Subsequent changes are triggered only by `isTargetPage`，so use `.get()`.
-	const dirverState = globalStore.persistence.dirver.get();
+	const dirverState = globalStore.persistence.dirver.use();
 	const isCompleted = dirverState.includes(key);
+	const hasBlockingAccountModal =
+		passwordMustChange ||
+		accountConflicts.length > 0 ||
+		(accountBootstrapStatus === 'anonymous' &&
+			!hasSkippedAccountOnboarding);
 
 	const BEVERAGE_POSITION =
 		'[role="tabpanel"] tbody>tr[data-key="水獭祭"]>:last-child button';
@@ -307,7 +320,13 @@ export default function CustomerRareTutorial() {
 	useEffect(() => {
 		let handler: ReturnType<typeof setTimeout> | undefined;
 
-		if (isTargetPage && !isCompleted && !driverRef.current.isActive()) {
+		if (
+			accountBootstrapStatus !== 'unknown' &&
+			!hasBlockingAccountModal &&
+			isTargetPage &&
+			!isCompleted &&
+			!driverRef.current.isActive()
+		) {
 			if (currentPathname === pathname) {
 				handler = setTimeout(() => {
 					driverRef.current.drive();
@@ -328,7 +347,13 @@ export default function CustomerRareTutorial() {
 		return () => {
 			clearTimeout(handler);
 		};
-	}, [currentPathname, isCompleted, isTargetPage]);
+	}, [
+		accountBootstrapStatus,
+		currentPathname,
+		hasBlockingAccountModal,
+		isCompleted,
+		isTargetPage,
+	]);
 
 	return null;
 }

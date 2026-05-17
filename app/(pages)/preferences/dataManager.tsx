@@ -50,7 +50,12 @@ import type {
 	IBackupUploadSuccessResponse,
 } from '@/api/v1/backups/types';
 import { siteConfig } from '@/configs';
-import { customerNormalStore, customerRareStore, globalStore } from '@/stores';
+import {
+	accountStore,
+	customerNormalStore,
+	customerRareStore,
+	globalStore,
+} from '@/stores';
 import {
 	FILE_TYPE_JSON,
 	checkA11yConfirmKey,
@@ -59,7 +64,7 @@ import {
 	toggleBoolean,
 } from '@/utilities';
 
-const { isOffline } = siteConfig;
+const { isAccountFeatureClientEnabled, isSelfHosted, isVercel } = siteConfig;
 
 const cloudDeleteButtonLabelMap = {
 	delete: '删除云备份',
@@ -235,6 +240,12 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	);
 
 	const currentCloudCode = globalStore.persistence.cloudCode.use();
+	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
+	const shouldShowLegacyCloud =
+		isSelfHosted &&
+		!isVercel &&
+		!isAccountFeatureClientEnabled &&
+		accountBootstrapStatus === 'disabled';
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 	const userId = globalStore.persistence.userId.use();
 
@@ -245,7 +256,8 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 
 	const updateCloudCodeInfo = useCallback(
 		(cloudCode: typeof currentCloudCode) => {
-			if (cloudCode === null) {
+			const normalizedCode = cloudCode?.trim() ?? null;
+			if (normalizedCode === null || normalizedCode === '') {
 				setCloudCodeInfo(
 					<>
 						无
@@ -256,7 +268,9 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				);
 				return;
 			}
-			fetch(`/api/v1/backups/${cloudCode}/metadata`)
+			fetch(
+				`/api/v1/backups/${encodeURIComponent(normalizedCode)}/metadata`
+			)
 				.then(checkResponse<IBackupCheckSuccessResponse>)
 				.then(({ created_at, last_accessed }) => {
 					setCloudCodeInfo(
@@ -299,16 +313,26 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	);
 
 	useEffect(() => {
+		if (!shouldShowLegacyCloud) {
+			setCloudCodeInfo(null);
+			return;
+		}
 		updateCloudCodeInfo(currentCloudCode);
-	}, [currentCloudCode, updateCloudCodeInfo]);
+	}, [currentCloudCode, shouldShowLegacyCloud, updateCloudCodeInfo]);
 
 	const handleCloudDeleteButtonPress = useCallback(() => {
 		if (!isCloudCodeValid) {
 			return;
 		}
+		const normalizedCode = currentCloudCode.trim();
+		if (normalizedCode === '') {
+			return;
+		}
 		setIsCloudDeleteButtonDisabled(true);
 		setCloudDeleteButtonLabel(cloudDeleteButtonLabelMap.deleting);
-		fetch(`/api/v1/backups/${currentCloudCode}`, { method: 'DELETE' })
+		fetch(`/api/v1/backups/${encodeURIComponent(normalizedCode)}`, {
+			method: 'DELETE',
+		})
 			.then(checkResponse)
 			.then(() => {
 				setCloudDeleteState('success');
@@ -317,7 +341,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				trackEvent(
 					trackEvent.category.click,
 					'Cloud Delete Button',
-					currentCloudCode
+					normalizedCode
 				);
 			})
 			.catch((error: unknown) => {
@@ -345,14 +369,16 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	const handleCloudDownloadButtonPress = useCallback(() => {
 		let code = currentCloudCode;
 		code ??= prompt('请输入已有备份码');
-		if (!code?.trim()) {
+		const normalizedCode = code?.trim() ?? '';
+		if (normalizedCode === '') {
 			return;
 		}
 		setIsCloudDownloadButtonDisabled(true);
 		setCloudDownloadButtonLabel(cloudDownloadButtonLabelMap.downloading);
-		fetch(`/api/v1/backups/${code}?user_id=${userId}`, {
-			cache: 'no-cache',
-		})
+		fetch(
+			`/api/v1/backups/${encodeURIComponent(normalizedCode)}?user_id=${encodeURIComponent(userId ?? '')}`,
+			{ cache: 'no-cache' }
+		)
 			.then(checkResponse<TMealData>)
 			.then((data) => {
 				setCloudDownloadState('success');
@@ -371,11 +397,11 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 					compatibilityCustomerRareData(data);
 					customerRareStore.persistence.meals.set(data);
 				}
-				globalStore.persistence.cloudCode.set(code);
+				globalStore.persistence.cloudCode.set(normalizedCode);
 				trackEvent(
 					trackEvent.category.click,
 					'Cloud Download Button',
-					code
+					normalizedCode
 				);
 			})
 			.catch((error: unknown) => {
@@ -388,7 +414,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				});
 			})
 			.finally(() => {
-				updateCloudCodeInfo(currentCloudCode);
+				updateCloudCodeInfo(normalizedCode);
 				const timerId = setTimeout(() => {
 					setCloudDownloadState('default');
 					setIsCloudDownloadButtonDisabled(false);
@@ -408,7 +434,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		setCloudUploadButtonLabel(cloudUploadButtonLabelMap.uploading);
 		fetch('/api/v1/backups', {
 			body: JSON.stringify({
-				code: currentCloudCode,
+				code: currentCloudCode?.trim() ?? null,
 				data: currentMealData,
 				user_id: userId,
 			} satisfies IBackupUploadBody),
@@ -698,7 +724,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 							</div>
 						</div>
 					</Tab>
-					{!isOffline && (
+					{shouldShowLegacyCloud && (
 						<Tab key="backup-cloud" title="云端备份/还原">
 							<p className="-mt-1 text-small text-foreground-500">
 								当前备份码：

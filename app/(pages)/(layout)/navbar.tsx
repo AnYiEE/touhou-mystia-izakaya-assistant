@@ -40,6 +40,7 @@ import {
 } from '@/design/ui/components';
 
 import { trackEvent } from '@/components/analytics';
+import AccountMenu from '@/components/accountMenu';
 import FontAwesomeIconLink, {
 	type IFontAwesomeIconLinkProps,
 } from '@/components/fontAwesomeIconLink';
@@ -374,6 +375,9 @@ export default function Navbar() {
 				className="hidden basis-full md:flex md:basis-1/5"
 			>
 				<NavbarItem>
+					<AccountMenu />
+				</NavbarItem>
+				<NavbarItem>
 					<GitHubLink showTooltip />
 				</NavbarItem>
 				<NavbarItem>
@@ -406,6 +410,13 @@ export default function Navbar() {
 			</NavbarContent>
 
 			<NavbarMenu className="px-10 pt-4">
+				<NavbarMenuItem>
+					<AccountMenu
+						onPress={() => {
+							handlePress('/preferences', true);
+						}}
+					/>
+				</NavbarMenuItem>
 				{navMenuItems.map(({ href, label }, index) => {
 					const isActivated = href === basePathname;
 					return href === '/preferences' &&

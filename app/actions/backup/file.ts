@@ -1,4 +1,11 @@
-import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
+import {
+	mkdir,
+	readFile,
+	readdir,
+	stat,
+	unlink,
+	writeFile,
+} from 'node:fs/promises';
 import { join } from 'node:path';
 import { cwd } from 'node:process';
 
@@ -21,6 +28,24 @@ export async function getFile(code: TBackupFileRecord['code']) {
 	const filePath = generateFilePath(code);
 
 	return await readFile(filePath, encoding);
+}
+
+export async function getFileSize(code: TBackupFileRecord['code']) {
+	const filePath = generateFilePath(code);
+	const fileStat = await stat(filePath);
+
+	return fileStat.size;
+}
+
+export async function getBackupFileCodes() {
+	try {
+		const entries = await readdir(dir, { withFileTypes: true });
+		return entries
+			.filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
+			.map((entry) => entry.name.slice(0, -'.json'.length));
+	} catch {
+		return [];
+	}
 }
 
 export async function saveFile(

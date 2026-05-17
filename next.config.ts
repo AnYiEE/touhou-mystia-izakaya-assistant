@@ -3,39 +3,57 @@
 import { type NextConfig } from 'next';
 import { env } from 'node:process';
 
-import { CDN_URL, IS_OFFLINE, IS_PRODUCTION, getSha } from './scripts/utils';
+import {
+	CDN_URL,
+	IS_OFFLINE,
+	IS_PRODUCTION,
+	IS_SELF_HOSTED,
+	IS_VERCEL,
+	getSha,
+} from './scripts/utils';
 
-const exportMode = IS_OFFLINE || (!env.SELF_HOSTED && !env.VERCEL);
+const exportMode = IS_OFFLINE || (!IS_SELF_HOSTED && !IS_VERCEL);
 const skipLint = IS_OFFLINE || (IS_PRODUCTION && Boolean(env.SKIP_LINT));
 
-const publicEnvKeys: Array<keyof NodeJS.ProcessEnv> = [
-	'ANALYTICS_API_URL',
-	'ANALYTICS_SCRIPT_URL',
-	'ANALYTICS_SITE_ID',
-	'BASE_URL',
-	'CDN_URL',
-	'ICP_FILING',
-	'OFFLINE',
-	'SELF_HOSTED',
-	'SHORT_LINK_URL',
-	'VERCEL',
-	'VERCEL_ENV',
-	'VERCEL_GIT_COMMIT_SHA',
-];
+const legacyApiCorsHeaders = [
+	{ key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
+	{
+		key: 'Access-Control-Allow-Methods',
+		value: 'DELETE, GET, OPTIONS, POST',
+	},
+	{ key: 'Access-Control-Allow-Origin', value: '*' },
+] as const;
+
+const legacyApiCorsSources = [
+	'/api/v1/backups',
+	'/api/v1/backups/:code',
+	'/api/v1/backups/:code/metadata',
+	'/api/v1/analytics/:path*',
+] as const;
 
 const nextConfig: NextConfig = {
-	env: publicEnvKeys.reduce<Partial<NodeJS.ProcessEnv>>((acc, key) => {
-		acc[key] = env[key];
-		return acc;
-	}, {}),
+	env: {
+		ANALYTICS_API_URL: env.ANALYTICS_API_URL,
+		ANALYTICS_SCRIPT_URL: env.ANALYTICS_SCRIPT_URL,
+		ANALYTICS_SITE_ID: env.ANALYTICS_SITE_ID,
+		BASE_URL: env.BASE_URL,
+		CDN_URL: env.CDN_URL,
+		ICP_FILING: env.ICP_FILING,
+		OFFLINE: env.OFFLINE,
+		SELF_HOSTED: env.SELF_HOSTED,
+		SHORT_LINK_URL: env.SHORT_LINK_URL,
+		VERCEL: env.VERCEL,
+		VERCEL_ENV: env.VERCEL_ENV,
+		VERCEL_GIT_COMMIT_SHA: env.VERCEL_GIT_COMMIT_SHA,
+	},
 
 	// Hand over to Nginx and other web servers for reverse proxy and compression.
-	compress: !env.SELF_HOSTED,
+	compress: !IS_SELF_HOSTED,
 
 	// To generate a consistent build ID to use for CDN caching.
 	generateBuildId: getSha,
 
-	assetPrefix: env.VERCEL ? '' : CDN_URL,
+	assetPrefix: IS_VERCEL ? '' : CDN_URL,
 	reactStrictMode: true,
 	typedRoutes: true,
 
@@ -59,17 +77,12 @@ if (exportMode) {
 			});
 		}
 
-		headers.push({
-			source: '/api/v1/:path*',
-			headers: [
-				{ key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
-				{
-					key: 'Access-Control-Allow-Methods',
-					value: 'DELETE, GET, OPTIONS, POST',
-				},
-				{ key: 'Access-Control-Allow-Origin', value: '*' },
-			],
-		});
+		headers.push(
+			...legacyApiCorsSources.map((source) => ({
+				source,
+				headers: [...legacyApiCorsHeaders],
+			}))
+		);
 
 		return headers;
 	};

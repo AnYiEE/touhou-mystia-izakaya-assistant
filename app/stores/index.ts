@@ -4,6 +4,8 @@ enableMapSet();
 
 export * from './global';
 
+export * from './account';
+
 export * from './beverages';
 export * from './clothes';
 export * from './cookers';

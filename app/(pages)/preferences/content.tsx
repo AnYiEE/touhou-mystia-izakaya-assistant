@@ -14,6 +14,7 @@ import {
 	useReducedMotion,
 } from '@/design/ui/components';
 
+import AccountManager from './accountManager';
 import DataManager, { type IDataManagerProps } from './dataManager';
 import HiddenItems from './hiddenItems';
 import SwitchItem from './switchItem';
@@ -101,6 +102,7 @@ export default memo<IProps>(function Content({ onModalClose }) {
 			<Heading as="h2" className="mt-0">
 				全局设置
 			</Heading>
+			<AccountManager />
 			<Heading
 				as="h3"
 				subTitle="已关闭的数据集所对应的物品将在各个页面中被隐藏"
