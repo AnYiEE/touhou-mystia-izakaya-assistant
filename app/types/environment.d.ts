@@ -1,6 +1,9 @@
 declare global {
 	namespace NodeJS {
 		interface ProcessEnv {
+			ADMIN_PASSWORD?: string;
+			ADMIN_USERNAME?: string;
+
 			ANALYTICS_API_ENDPOINT?: string;
 			ANALYTICS_API_URL?: string;
 			ANALYTICS_SCRIPT_URL?: string;
@@ -15,7 +18,10 @@ declare global {
 
 			OFFLINE?: string;
 			SELF_HOSTED?: string;
+			SESSION_SECRET?: string;
+			SQLITE_DATABASE_PATH?: string;
 			SKIP_LINT?: string;
+			TRUST_PROXY?: string;
 
 			VERCEL?: string;
 			VERCEL_ENV?: NodeJS.ProcessEnv['NODE_ENV'];

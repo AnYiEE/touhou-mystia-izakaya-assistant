@@ -1,0 +1,147 @@
+import { randomBytes } from 'node:crypto';
+import { type NextRequest, type NextResponse } from 'next/server';
+
+import { checkFixedLengthEqual, createAccountHmac } from './crypto';
+import { createCsrfToken, verifyCsrfToken } from './csrf';
+import { checkSecureRequest } from './request';
+import { ACCOUNT_COOKIE_NAME_MAP } from '../shared/constants';
+
+export const ADMIN_SESSION_MAX_AGE = 60 * 60 * 12;
+
+interface IAdminSessionPayload {
+	expires_at: number;
+	issued_at: number;
+	nonce: string;
+	username: string;
+}
+
+function encodeAdminPayload(payload: IAdminSessionPayload) {
+	return Buffer.from(JSON.stringify(payload), 'utf8').toString('base64url');
+}
+
+function decodeAdminPayload(value: string): IAdminSessionPayload | null {
+	try {
+		const payload = JSON.parse(
+			Buffer.from(value, 'base64url').toString('utf8')
+		) as IAdminSessionPayload;
+
+		if (
+			typeof payload.expires_at !== 'number' ||
+			typeof payload.issued_at !== 'number' ||
+			typeof payload.nonce !== 'string' ||
+			typeof payload.username !== 'string'
+		) {
+			return null;
+		}
+
+		return payload;
+	} catch {
+		return null;
+	}
+}
+
+export function checkAdminFeatureEnabled() {
+	return Boolean(process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD);
+}
+
+export function checkAdminCredentials(username: string, password: string) {
+	const adminUsername = process.env.ADMIN_USERNAME;
+	const adminPassword = process.env.ADMIN_PASSWORD;
+
+	if (!adminUsername || !adminPassword || username !== adminUsername) {
+		return false;
+	}
+
+	return checkFixedLengthEqual(
+		createAccountHmac('admin:v1', password),
+		createAccountHmac('admin:v1', adminPassword)
+	);
+}
+
+export function createAdminSessionToken(username: string, now = Date.now()) {
+	const payload = encodeAdminPayload({
+		expires_at: now + ADMIN_SESSION_MAX_AGE * 1000,
+		issued_at: now,
+		nonce: randomBytes(16).toString('base64url'),
+		username,
+	});
+	const signature = createAccountHmac('admin:v1', payload);
+
+	return `${payload}.${signature}`;
+}
+
+export function verifyAdminSessionToken(token: string, now = Date.now()) {
+	const [payloadValue, signature, extra] = token.split('.');
+	if (!payloadValue || !signature || extra !== undefined) {
+		return null;
+	}
+
+	const expectedSignature = createAccountHmac('admin:v1', payloadValue);
+	if (!checkFixedLengthEqual(signature, expectedSignature)) {
+		return null;
+	}
+
+	const payload = decodeAdminPayload(payloadValue);
+	if (!payload || payload.expires_at <= now) {
+		return null;
+	}
+
+	return payload;
+}
+
+export function getAdminSessionCookieOptions(request: NextRequest) {
+	return {
+		httpOnly: true,
+		maxAge: ADMIN_SESSION_MAX_AGE,
+		path: '/',
+		sameSite: 'lax',
+		secure:
+			checkSecureRequest(request) ||
+			process.env.NODE_ENV === 'production',
+	} as const;
+}
+
+export function setAdminSessionCookie(
+	response: NextResponse,
+	token: string,
+	request: NextRequest
+) {
+	response.cookies.set(
+		ACCOUNT_COOKIE_NAME_MAP.adminSession,
+		token,
+		getAdminSessionCookieOptions(request)
+	);
+}
+
+export function clearAdminSessionCookie(
+	response: NextResponse,
+	request: NextRequest
+) {
+	response.cookies.set(ACCOUNT_COOKIE_NAME_MAP.adminSession, '', {
+		...getAdminSessionCookieOptions(request),
+		maxAge: 0,
+	});
+}
+
+export function getAdminSessionToken(request: NextRequest) {
+	return (
+		request.cookies.get(ACCOUNT_COOKIE_NAME_MAP.adminSession)?.value ?? null
+	);
+}
+
+export function getAdminCsrfBinding(token: string) {
+	return createAccountHmac('admin:v1', token);
+}
+
+export function createAdminCsrfToken(token: string) {
+	return createCsrfToken(getAdminCsrfBinding(token));
+}
+
+export function verifyAdminCsrfToken(request: NextRequest, token: string) {
+	const csrfToken = request.headers.get('x-csrf-token');
+
+	return (
+		csrfToken !== null &&
+		verifyCsrfToken(csrfToken, getAdminCsrfBinding(token))
+	);
+}

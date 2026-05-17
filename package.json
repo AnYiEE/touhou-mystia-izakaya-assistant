@@ -104,6 +104,7 @@
 		"@heroui/tabs": "2.2.8",
 		"@heroui/theme": "2.4.6",
 		"@heroui/tooltip": "2.2.8",
+		"@node-rs/argon2": "^2.0.2",
 		"better-sqlite3": "^12.9.0",
 		"broadcast-channel": "^7.3.0",
 		"compare-versions": "^6.1.1",
@@ -174,6 +175,7 @@
 	"pnpm": {
 		"onlyBuiltDependencies": [
 			"@heroui/shared-utils",
+			"@node-rs/argon2",
 			"@parcel/watcher",
 			"better-sqlite3",
 			"esbuild",

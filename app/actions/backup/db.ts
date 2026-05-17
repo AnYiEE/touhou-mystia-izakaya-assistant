@@ -1,4 +1,5 @@
-import { TABLE_NAME_MAP, db } from '@/lib/db';
+import { TABLE_NAME_MAP } from '@/lib/db';
+import { db } from '@/lib/db/db';
 import type {
 	TBackupFileRecord,
 	TBackupFileRecordNew,
@@ -84,10 +85,27 @@ export async function getExpiredRecords(
 	const records = await db
 		.selectFrom(TABLE_NAME)
 		.select('code')
-		.where('last_accessed', '<', time)
+		.where((eb) =>
+			eb.or([
+				eb.and([
+					eb('last_accessed', '>=', 0),
+					eb('last_accessed', '<', time),
+				]),
+				eb.and([
+					eb('last_accessed', '<', 0),
+					eb('created_at', '<', time),
+				]),
+			])
+		)
 		.execute();
 
 	return records;
+}
+
+export async function getRecordCodes() {
+	const records = await db.selectFrom(TABLE_NAME).select('code').execute();
+
+	return records.map((record) => record.code);
 }
 
 export async function setRecord(backupFileRecord: TBackupFileRecordNew) {

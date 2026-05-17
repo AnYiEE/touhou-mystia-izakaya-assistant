@@ -10,8 +10,9 @@ import {
 	updateRecordTimeout,
 } from '@/actions/backup';
 import {
-	createErrorResponse,
-	createJsonResponse,
+	NO_STORE_HEADERS,
+	createNoStoreErrorResponse,
+	createNoStoreJsonResponse,
 	handleOptionsRequest,
 } from '@/api/v1/utils';
 import { FILE_TYPE_JSON } from '@/utilities';
@@ -22,17 +23,18 @@ export async function GET(
 	request: NextRequest,
 	{ params }: { params: Promise<{ code: string }> }
 ) {
-	const { code } = await params;
+	const { code: rawCode } = await params;
+	const code = rawCode.trim();
 	if (!validate(code)) {
-		return createErrorResponse('Invalid code', 400);
+		return createNoStoreErrorResponse('Invalid code', 400);
 	}
 
 	const { ip, ua } = getRequestMeta(request);
 	if (ip === null) {
-		return createErrorResponse('Invalid IP address', 400);
+		return createNoStoreErrorResponse('Invalid IP address', 400);
 	}
 	if (ua === null) {
-		return createErrorResponse('Invalid user agent', 400);
+		return createNoStoreErrorResponse('Invalid user agent', 400);
 	}
 
 	let userId = request.nextUrl.searchParams.get('user_id') ?? '';
@@ -48,12 +50,12 @@ export async function GET(
 		{ ip, ua, userId }
 	);
 	if (recentRecord.status === 429) {
-		return createErrorResponse('Requests are too frequent', 429);
+		return createNoStoreErrorResponse('Requests are too frequent', 429);
 	}
 
 	const { status } = await getRecord(code);
 	if (status === 404) {
-		return createErrorResponse(
+		return createNoStoreErrorResponse(
 			'The file record does not exist or has been deleted',
 			404
 		);
@@ -65,14 +67,14 @@ export async function GET(
 	try {
 		fileContent = await getFile(code);
 	} catch {
-		return createErrorResponse(
+		return createNoStoreErrorResponse(
 			'The file does not exist or has been deleted',
 			404
 		);
 	}
 
 	return new NextResponse(fileContent, {
-		headers: { 'Content-Type': FILE_TYPE_JSON },
+		headers: { ...NO_STORE_HEADERS, 'Content-Type': FILE_TYPE_JSON },
 	});
 }
 
@@ -80,27 +82,33 @@ export async function DELETE(
 	_request: NextRequest,
 	{ params }: { params: Promise<{ code: string }> }
 ) {
-	const { code } = await params;
+	const { code: rawCode } = await params;
+	const code = rawCode.trim();
 	if (!validate(code)) {
-		return createErrorResponse('Invalid code', 400);
+		return createNoStoreErrorResponse('Invalid code', 400);
 	}
 
 	const { status } = await getRecord(code);
 	if (status === 404) {
-		return createErrorResponse(
+		return createNoStoreErrorResponse(
 			'The file record does not exist or has been deleted',
 			404
 		);
 	}
 
+	let deletedFile = true;
 	try {
 		await deleteFile(code);
-		await deleteRecord(code);
-	} catch {
-		return createErrorResponse('Failed to delete file', 500);
+	} catch (error) {
+		deletedFile = false;
+		console.warn('Failed to delete backup file', { code, error });
 	}
+	await deleteRecord(code);
 
-	return createJsonResponse({ message: 'The file record has been deleted' });
+	return createNoStoreJsonResponse({
+		deletedFile,
+		message: 'The file record has been deleted',
+	});
 }
 
 export function OPTIONS() {

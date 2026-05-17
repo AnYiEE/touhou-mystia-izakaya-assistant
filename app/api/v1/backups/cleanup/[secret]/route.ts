@@ -1,12 +1,34 @@
 import { type NextRequest } from 'next/server';
 import { env } from 'node:process';
 
-import { deleteFile, deleteRecord, getExpiredRecords } from '@/actions/backup';
 import {
-	createErrorResponse,
-	createJsonResponse,
+	deleteFile,
+	deleteRecord,
+	getBackupFileCodes,
+	getExpiredRecords,
+	getRecord,
+	getRecordCodes,
+	withBackupCodeLock,
+} from '@/actions/backup';
+import {
+	createNoStoreErrorResponse,
+	createNoStoreJsonResponse,
 	handleOptionsRequest,
 } from '@/api/v1/utils';
+
+function maskBackupCode(code: string) {
+	return `${code.slice(0, 8)}...${code.slice(-4)}`;
+}
+
+function isExpiredBackupRecord(
+	record: { created_at: number; last_accessed: number },
+	expiredBefore: number
+) {
+	const expirationBase =
+		record.last_accessed < 0 ? record.created_at : record.last_accessed;
+
+	return expirationBase < expiredBefore;
+}
 
 export async function DELETE(
 	_request: NextRequest,
@@ -15,26 +37,89 @@ export async function DELETE(
 	const { secret } = await params;
 
 	if (secret !== env.CLEANUP_SECRET) {
-		return createErrorResponse('Invalid secret', 401);
+		return createNoStoreErrorResponse('Invalid secret', 401);
 	}
 
 	const now = Date.now();
 	const sixMonthsAgo = now - 181 * 24 * 60 * 60 * 1000;
 
 	const records = await getExpiredRecords(sixMonthsAgo);
+	const recordCodeSet = new Set(await getRecordCodes());
+	const backupFileCodes = await getBackupFileCodes();
+	const orphanCodes = backupFileCodes.filter(
+		(code) => !recordCodeSet.has(code)
+	);
 
-	const deletedCodes: string[] = [];
-	await Promise.allSettled(
+	let deletedFileCount = 0;
+	let deletedRecordCount = 0;
+	let failedFileCount = 0;
+	let failedRecordCount = 0;
+	let orphanDeletedCount = 0;
+
+	await Promise.all(
 		records.map(async ({ code }) => {
-			await deleteFile(code);
-			await deleteRecord(code);
-			deletedCodes.push(code);
+			await withBackupCodeLock(code, async () => {
+				const record = await getRecord(code);
+				if (
+					record.status === 404 ||
+					!isExpiredBackupRecord(record, sixMonthsAgo)
+				) {
+					return;
+				}
+
+				try {
+					await deleteFile(code);
+					deletedFileCount++;
+				} catch (error) {
+					failedFileCount++;
+					console.warn('Failed to delete expired backup file', {
+						code: maskBackupCode(code),
+						error,
+					});
+				}
+
+				try {
+					await deleteRecord(code);
+					deletedRecordCount++;
+				} catch (error) {
+					failedRecordCount++;
+					console.warn('Failed to delete expired backup record', {
+						code: maskBackupCode(code),
+						error,
+					});
+				}
+			});
+		})
+	);
+	await Promise.all(
+		orphanCodes.map(async (code) => {
+			await withBackupCodeLock(code, async () => {
+				const record = await getRecord(code);
+				if (record.status !== 404) {
+					return;
+				}
+
+				try {
+					await deleteFile(code);
+					orphanDeletedCount++;
+				} catch (error) {
+					failedFileCount++;
+					console.warn('Failed to delete orphan backup file', {
+						code: maskBackupCode(code),
+						error,
+					});
+				}
+			});
 		})
 	);
 
-	return createJsonResponse({
-		deletedCount: deletedCodes.length,
-		deletedFiles: deletedCodes,
+	return createNoStoreJsonResponse({
+		deletedFileCount,
+		deletedRecordCount,
+		failedFileCount,
+		failedRecordCount,
+		orphanDeletedCount,
+		orphanFoundCount: orphanCodes.length,
 	});
 }
 

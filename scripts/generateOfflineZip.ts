@@ -6,11 +6,12 @@ import { join, resolve } from 'node:path';
 import { argv, cwd } from 'node:process';
 
 import { getSha } from './utils';
+import { checkEnvFlag } from '../app/lib/environment';
 import PACKAGE from '../package.json';
 
 nextEnv.loadEnvConfig(cwd());
 
-const isOffline = Boolean(process.env.OFFLINE);
+const isOffline = checkEnvFlag(process.env.OFFLINE);
 const { prepare: isPrepare } = minimist<{ prepare?: boolean }>(argv.slice(2));
 
 const filesToDelete = [

@@ -12,13 +12,15 @@ import { safeStorage } from '@/utilities';
 // eslint-disable-next-line unicorn/prefer-global-this
 const isServer = typeof window === 'undefined';
 
+const themeListeners = new Set<(theme: TTheme) => void>();
+
 function getSystemTheme(mediaQueryList?: MediaQueryListEvent) {
 	const queryList = mediaQueryList ?? globalThis.matchMedia(MEDIA);
 
 	return queryList.matches ? THEME_MAP.DARK : THEME_MAP.LIGHT;
 }
 
-function getThemeCallback() {
+export function getStoredTheme() {
 	if (isServer) {
 		return;
 	}
@@ -26,7 +28,7 @@ function getThemeCallback() {
 	return safeStorage.getItem<TTheme>(STORAGE_KEY);
 }
 
-function setThemeCallback(selectedTheme: TTheme, isFromEvent?: boolean) {
+export function applyTheme(selectedTheme: TTheme, isFromEvent?: boolean) {
 	if (isServer) {
 		return;
 	}
@@ -58,38 +60,51 @@ function setThemeCallback(selectedTheme: TTheme, isFromEvent?: boolean) {
 	}
 
 	safeStorage.setItem(STORAGE_KEY, selectedTheme);
+	themeListeners.forEach((listener) => {
+		listener(selectedTheme);
+	});
+}
+
+export function addThemeChangeListener(listener: (theme: TTheme) => void) {
+	themeListeners.add(listener);
+
+	return () => {
+		themeListeners.delete(listener);
+	};
 }
 
 export function useTheme() {
 	const [theme, setThemeState] = useState<TTheme>(() => {
-		const storedTheme = getThemeCallback();
+		const storedTheme = getStoredTheme();
 
 		if (storedTheme === null) {
-			setThemeCallback(THEME_MAP.SYSTEM);
+			applyTheme(THEME_MAP.SYSTEM);
 			return THEME_MAP.SYSTEM;
 		}
 		if (storedTheme === undefined) {
 			return THEME_MAP.SYSTEM;
 		}
 
+		applyTheme(storedTheme, true);
 		return storedTheme;
 	});
 
 	const setTheme = useCallback((newTheme: typeof theme) => {
-		setThemeCallback(newTheme);
-		setThemeState(newTheme);
+		applyTheme(newTheme);
 	}, []);
 
 	useMounted(() => {
 		const mediaQueryList = globalThis.matchMedia(MEDIA);
 
 		return addSafeMediaQueryEventListener(mediaQueryList, (event) => {
-			const storedTheme = getThemeCallback();
+			const storedTheme = getStoredTheme();
 			if (storedTheme === THEME_MAP.SYSTEM) {
-				setThemeCallback(getSystemTheme(event), true);
+				applyTheme(getSystemTheme(event), true);
 			}
 		});
 	});
+
+	useMounted(() => addThemeChangeListener(setThemeState));
 
 	useMounted(() => {
 		const EVENT_TYPE = 'storage';
@@ -101,7 +116,7 @@ export function useTheme() {
 
 			const newTheme = event.newValue as TTheme | null;
 			if (newTheme !== null) {
-				setThemeCallback(newTheme, true);
+				applyTheme(newTheme, true);
 				setThemeState(newTheme);
 			}
 		};

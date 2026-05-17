@@ -5,7 +5,7 @@ import { useEffect, useRef } from 'react';
 import { useMounted, usePathname } from '@/hooks';
 
 import { siteConfig } from '@/configs';
-import { globalStore as store } from '@/stores';
+import { accountStore, globalStore as store } from '@/stores';
 import { setScriptUrlTag } from '@/utilities';
 
 const { analyticsApiUrl, analyticsScriptUrl, analyticsSiteId, baseURL } =
@@ -14,6 +14,24 @@ const { analyticsApiUrl, analyticsScriptUrl, analyticsSiteId, baseURL } =
 function push(...args: unknown[][]) {
 	globalThis._paq ??= [];
 	globalThis._paq.push(...args);
+}
+
+function getAnalyticsUserId() {
+	if (accountStore.shared.isLoggedIn.get()) {
+		return (
+			accountStore.shared.user.get()?.username ??
+			store.persistence.userId.get()
+		);
+	}
+
+	return store.persistence.userId.get();
+}
+
+function setAnalyticsUserId() {
+	const userId = getAnalyticsUserId();
+	if (userId !== null) {
+		push(['setUserId', userId]);
+	}
 }
 
 const trackCategoryMap = {
@@ -91,6 +109,7 @@ function trackEventFunction(
 	name: string,
 	value?: number | string
 ) {
+	setAnalyticsUserId();
 	push(
 		['setCustomUrl', location.href],
 		['setDocumentTitle', document.title],
@@ -111,6 +130,7 @@ export const trackEvent = trackEventFunction as typeof trackEventFunction & {
 trackEvent.category = trackCategoryMap;
 
 function trackPageView() {
+	setAnalyticsUserId();
 	push(
 		['setCustomUrl', location.href],
 		['setDocumentTitle', document.title],
@@ -119,6 +139,7 @@ function trackPageView() {
 }
 
 export function ping() {
+	setAnalyticsUserId();
 	push(['ping']);
 }
 
@@ -137,9 +158,9 @@ export default function Analytics() {
 			['setRequestMethod', 'GET'],
 			['setTrackerUrl', analyticsApiUrl],
 			['setSecureCookie', true],
-			['setSiteId', analyticsSiteId],
-			['setUserId', store.persistence.userId.get()]
+			['setSiteId', analyticsSiteId]
 		);
+		setAnalyticsUserId();
 
 		setScriptUrlTag(analyticsScriptUrl, 'async', true)
 			.then(() => {
@@ -154,6 +175,25 @@ export default function Analytics() {
 	// It has already been tracked once when entering the page for the first time.
 	const isLoaded = useRef(true);
 	const { pathname } = usePathname();
+	const isLoggedIn = accountStore.shared.isLoggedIn.use();
+	const user = accountStore.shared.user.use();
+	const fingerprintUserId = store.persistence.userId.use();
+	const analyticsUserId = isLoggedIn
+		? (user?.username ?? fingerprintUserId)
+		: fingerprintUserId;
+
+	useEffect(() => {
+		if (globalThis._paq === undefined) {
+			return;
+		}
+
+		if (analyticsUserId === null) {
+			push(['resetUserId']);
+			return;
+		}
+
+		push(['setUserId', analyticsUserId]);
+	}, [analyticsUserId]);
 
 	useEffect(() => {
 		// Avoid tracking repeatedly when first entering the page, only track when the next pathname changes (route change by Next.js).

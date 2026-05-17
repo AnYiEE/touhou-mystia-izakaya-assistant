@@ -38,6 +38,7 @@ export interface ISiteConfig {
 	analyticsApiUrl: string;
 	analyticsScriptUrl: string;
 	analyticsSiteId: string;
+	isAccountFeatureClientEnabled: boolean;
 	isAnalytics: boolean;
 	isIcpFiling: boolean;
 	nodeEnv: NodeJS.ProcessEnv['NODE_ENV'];
