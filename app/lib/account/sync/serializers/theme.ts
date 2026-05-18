@@ -1,4 +1,4 @@
-import { STORAGE_KEY, THEME_MAP, applyTheme } from '@/design/hooks';
+import { STORAGE_KEY, THEME_MAP, applyTheme, parseTheme } from '@/design/hooks';
 import { type TTheme } from '@/design/hooks/use-theme/types';
 import { type ISyncNamespaceSerializer } from '@/lib/account/sync';
 import { safeStorage } from '@/utilities';
@@ -16,7 +16,7 @@ export const themeSerializer = {
 		return THEME_MAP.SYSTEM;
 	},
 	getLocalSnapshot() {
-		return safeStorage.getItem<TTheme>(STORAGE_KEY) ?? THEME_MAP.SYSTEM;
+		return parseTheme(safeStorage.getItem(STORAGE_KEY));
 	},
 	merge({ cloud, local }) {
 		if (cloud === null) {

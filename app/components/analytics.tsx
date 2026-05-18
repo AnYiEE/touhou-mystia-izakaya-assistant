@@ -28,9 +28,12 @@ function getAnalyticsUserId() {
 
 function setAnalyticsUserId() {
 	const userId = getAnalyticsUserId();
-	if (userId !== null) {
-		push(['setUserId', userId]);
+	if (userId === null) {
+		push(['resetUserId']);
+		return;
 	}
+
+	push(['setUserId', userId]);
 }
 
 const trackCategoryMap = {

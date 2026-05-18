@@ -15,10 +15,7 @@ import {
 	createNoStoreJsonResponse,
 	handleOptionsRequest,
 } from '@/api/v1/utils';
-
-function maskBackupCode(code: string) {
-	return `${code.slice(0, 8)}...${code.slice(-4)}`;
-}
+import { maskBackupCode } from '../../utils';
 
 function isExpiredBackupRecord(
 	record: { created_at: number; last_accessed: number },
@@ -28,6 +25,28 @@ function isExpiredBackupRecord(
 		record.last_accessed < 0 ? record.created_at : record.last_accessed;
 
 	return expirationBase < expiredBefore;
+}
+
+async function runWithConcurrencyLimit<T>(
+	items: T[],
+	limit: number,
+	worker: (item: T) => Promise<void>
+) {
+	const iterator = items[Symbol.iterator]();
+	const workerCount = Math.min(limit, items.length);
+
+	await Promise.all(
+		Array.from({ length: workerCount }, async () => {
+			for (;;) {
+				const next = iterator.next();
+				if (next.done === true) {
+					return;
+				}
+
+				await worker(next.value);
+			}
+		})
+	);
 }
 
 export async function DELETE(
@@ -56,62 +75,58 @@ export async function DELETE(
 	let failedRecordCount = 0;
 	let orphanDeletedCount = 0;
 
-	await Promise.all(
-		records.map(async ({ code }) => {
-			await withBackupCodeLock(code, async () => {
-				const record = await getRecord(code);
-				if (
-					record.status === 404 ||
-					!isExpiredBackupRecord(record, sixMonthsAgo)
-				) {
-					return;
-				}
+	await runWithConcurrencyLimit(records, 8, async ({ code }) => {
+		await withBackupCodeLock(code, async () => {
+			const record = await getRecord(code);
+			if (
+				record.status === 404 ||
+				!isExpiredBackupRecord(record, sixMonthsAgo)
+			) {
+				return;
+			}
 
-				try {
-					await deleteFile(code);
-					deletedFileCount++;
-				} catch (error) {
-					failedFileCount++;
-					console.warn('Failed to delete expired backup file', {
-						code: maskBackupCode(code),
-						error,
-					});
-				}
+			try {
+				await deleteFile(code);
+				deletedFileCount++;
+			} catch (error) {
+				failedFileCount++;
+				console.warn('Failed to delete expired backup file', {
+					code: maskBackupCode(code),
+					error,
+				});
+			}
 
-				try {
-					await deleteRecord(code);
-					deletedRecordCount++;
-				} catch (error) {
-					failedRecordCount++;
-					console.warn('Failed to delete expired backup record', {
-						code: maskBackupCode(code),
-						error,
-					});
-				}
-			});
-		})
-	);
-	await Promise.all(
-		orphanCodes.map(async (code) => {
-			await withBackupCodeLock(code, async () => {
-				const record = await getRecord(code);
-				if (record.status !== 404) {
-					return;
-				}
+			try {
+				await deleteRecord(code);
+				deletedRecordCount++;
+			} catch (error) {
+				failedRecordCount++;
+				console.warn('Failed to delete expired backup record', {
+					code: maskBackupCode(code),
+					error,
+				});
+			}
+		});
+	});
+	await runWithConcurrencyLimit(orphanCodes, 8, async (code) => {
+		await withBackupCodeLock(code, async () => {
+			const record = await getRecord(code);
+			if (record.status !== 404) {
+				return;
+			}
 
-				try {
-					await deleteFile(code);
-					orphanDeletedCount++;
-				} catch (error) {
-					failedFileCount++;
-					console.warn('Failed to delete orphan backup file', {
-						code: maskBackupCode(code),
-						error,
-					});
-				}
-			});
-		})
-	);
+			try {
+				await deleteFile(code);
+				orphanDeletedCount++;
+			} catch (error) {
+				failedFileCount++;
+				console.warn('Failed to delete orphan backup file', {
+					code: maskBackupCode(code),
+					error,
+				});
+			}
+		});
+	});
 
 	return createNoStoreJsonResponse({
 		deletedFileCount,

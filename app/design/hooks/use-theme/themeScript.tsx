@@ -14,9 +14,11 @@ const script = (
 
 		let storedTheme: TTheme | null = null;
 		try {
-			storedTheme =
-				(localStorage.getItem(storageKey) as TTheme | null) ??
-				systemTheme;
+			const themeValues = Object.values(themeMap);
+			const rawStoredTheme = localStorage.getItem(storageKey);
+			storedTheme = themeValues.includes(rawStoredTheme as TTheme)
+				? (rawStoredTheme as TTheme)
+				: systemTheme;
 		} catch {
 			storedTheme = systemTheme;
 		}

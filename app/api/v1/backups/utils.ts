@@ -2,6 +2,10 @@
 import { type NextRequest } from 'next/server';
 import { sha1 } from 'js-sha1';
 
+export function maskBackupCode(code: string) {
+	return `${code.slice(0, 8)}...${code.slice(-4)}`;
+}
+
 export function getRequestMeta(request: NextRequest) {
 	const contentType = request.headers.get('content-type') || null;
 

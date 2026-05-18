@@ -262,6 +262,7 @@ export function parseSyncStatePutBody(
 		!('state_epoch' in body) ||
 		typeof body['state_epoch'] !== 'number' ||
 		!Number.isInteger(body['state_epoch']) ||
+		body['state_epoch'] < 0 ||
 		!('changes' in body) ||
 		!Array.isArray(body['changes'])
 	) {

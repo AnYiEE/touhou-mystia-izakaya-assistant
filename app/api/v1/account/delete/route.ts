@@ -33,10 +33,9 @@ export async function DELETE(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	const [authModule, usersModule, sessionsModule] = await Promise.all([
+	const [authModule, usersModule] = await Promise.all([
 		import('@/lib/account/server/auth'),
 		import('@/actions/account/users'),
-		import('@/actions/account/sessions'),
 	]);
 	const auth = await authModule.authenticateAccountRequest(request);
 	if (auth.status === 'error') {
@@ -46,8 +45,10 @@ export async function DELETE(request: NextRequest) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
-	await usersModule.setUserStatus(auth.data.user.id, USER_STATUS_MAP.deleted);
-	await sessionsModule.deleteSessionsByUserId(auth.data.user.id);
+	await usersModule.setUserStatusAndDeleteSessions(
+		auth.data.user.id,
+		USER_STATUS_MAP.deleted
+	);
 	const response = createNoStoreJsonResponse({ message: 'account-deleted' });
 	authModule.clearAccountSessionCookie(response, request);
 

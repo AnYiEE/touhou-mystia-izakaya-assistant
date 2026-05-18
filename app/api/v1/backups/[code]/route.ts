@@ -2,12 +2,14 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { validate } from 'uuid';
 
 import {
+	checkBackupFileNotFoundError,
 	checkIpFrequency,
 	deleteFile,
 	deleteRecord,
 	getFile,
 	getRecord,
 	updateRecordTimeout,
+	withBackupCodeLock,
 } from '@/actions/backup';
 import {
 	NO_STORE_HEADERS,
@@ -17,7 +19,7 @@ import {
 } from '@/api/v1/utils';
 import { FILE_TYPE_JSON } from '@/utilities';
 import { FREQUENCY_TTL } from '../constants';
-import { getRequestMeta } from '../utils';
+import { getRequestMeta, maskBackupCode } from '../utils';
 
 export async function GET(
 	request: NextRequest,
@@ -88,26 +90,36 @@ export async function DELETE(
 		return createNoStoreErrorResponse('Invalid code', 400);
 	}
 
-	const { status } = await getRecord(code);
-	if (status === 404) {
-		return createNoStoreErrorResponse(
-			'The file record does not exist or has been deleted',
-			404
-		);
-	}
+	return withBackupCodeLock(code, async () => {
+		const { status } = await getRecord(code);
+		if (status === 404) {
+			return createNoStoreErrorResponse(
+				'The file record does not exist or has been deleted',
+				404
+			);
+		}
 
-	let deletedFile = true;
-	try {
-		await deleteFile(code);
-	} catch (error) {
-		deletedFile = false;
-		console.warn('Failed to delete backup file', { code, error });
-	}
-	await deleteRecord(code);
+		let deletedFile = true;
+		try {
+			await deleteFile(code);
+		} catch (error) {
+			if (!checkBackupFileNotFoundError(error)) {
+				console.warn('Failed to delete backup file', {
+					code: maskBackupCode(code),
+					error,
+				});
 
-	return createNoStoreJsonResponse({
-		deletedFile,
-		message: 'The file record has been deleted',
+				return createNoStoreErrorResponse('Failed to delete file', 500);
+			}
+
+			deletedFile = false;
+		}
+		await deleteRecord(code);
+
+		return createNoStoreJsonResponse({
+			deletedFile,
+			message: 'The file record has been deleted',
+		});
 	});
 }
 

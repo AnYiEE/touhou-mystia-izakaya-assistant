@@ -13,6 +13,13 @@ import { safeStorage } from '@/utilities';
 const isServer = typeof window === 'undefined';
 
 const themeListeners = new Set<(theme: TTheme) => void>();
+const themeValues = new Set<string>(Object.values(THEME_MAP));
+
+export function parseTheme(value: unknown): TTheme {
+	return typeof value === 'string' && themeValues.has(value)
+		? (value as TTheme)
+		: THEME_MAP.SYSTEM;
+}
 
 function getSystemTheme(mediaQueryList?: MediaQueryListEvent) {
 	const queryList = mediaQueryList ?? globalThis.matchMedia(MEDIA);
@@ -25,7 +32,9 @@ export function getStoredTheme() {
 		return;
 	}
 
-	return safeStorage.getItem<TTheme>(STORAGE_KEY);
+	const storedTheme = safeStorage.getItem(STORAGE_KEY);
+
+	return storedTheme === null ? null : parseTheme(storedTheme);
 }
 
 export function applyTheme(selectedTheme: TTheme, isFromEvent?: boolean) {
@@ -114,7 +123,8 @@ export function useTheme() {
 				return;
 			}
 
-			const newTheme = event.newValue as TTheme | null;
+			const newTheme =
+				event.newValue === null ? null : parseTheme(event.newValue);
 			if (newTheme !== null) {
 				applyTheme(newTheme, true);
 				setThemeState(newTheme);

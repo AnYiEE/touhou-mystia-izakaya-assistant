@@ -2,7 +2,11 @@ import { type NextRequest } from 'next/server';
 import { v7 as uuid, validate } from 'uuid';
 
 import {
+	checkBackupFileNotFoundError,
 	checkIpFrequency,
+	deleteFile,
+	getFile,
+	getFileIdentity,
 	getRecord,
 	saveFile,
 	setRecord,
@@ -18,7 +22,7 @@ import {
 import { FILE_TYPE_JSON } from '@/utilities';
 import { FREQUENCY_TTL, MAX_DATA_SIZE } from './constants';
 import type { IBackupUploadBody, IBackupUploadSuccessResponse } from './types';
-import { getRequestMeta } from './utils';
+import { getRequestMeta, maskBackupCode } from './utils';
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
 	return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -87,30 +91,78 @@ export async function POST(request: NextRequest) {
 	}
 
 	return withBackupCodeLock(code, async () => {
+		const maskedCode = maskBackupCode(code);
+		const record = await getRecord(code);
+		let previousFileContent: string | null = null;
+		let hadPreviousFile = false;
+
+		if (record.status !== 404) {
+			try {
+				previousFileContent = await getFile(code);
+				hadPreviousFile = true;
+			} catch (error) {
+				if (!checkBackupFileNotFoundError(error)) {
+					return createNoStoreErrorResponse(
+						'Failed to read file',
+						500
+					);
+				}
+			}
+		}
+
+		let writtenFileIdentity: string;
 		try {
 			await saveFile(code, jsonString);
+			writtenFileIdentity = await getFileIdentity(code);
 		} catch {
 			return createNoStoreErrorResponse('Failed to save file', 500);
 		}
 
-		const record = await getRecord(code);
+		try {
+			const nextRecord = await (record.status === 404
+				? setRecord({
+						code,
+						created_at: now,
+						ip_address: ip,
+						last_accessed: -1,
+						user_agent: ua,
+						user_id: userId,
+					})
+				: updateRecord(code, {
+						created_at: now,
+						ip_address: ip,
+						last_accessed: -1,
+						user_agent: ua,
+						user_id: userId,
+					}));
 
-		await (record.status === 404
-			? setRecord({
-					code,
-					created_at: now,
-					ip_address: ip,
-					last_accessed: -1,
-					user_agent: ua,
-					user_id: userId,
-				})
-			: updateRecord(code, {
-					created_at: now,
-					ip_address: ip,
-					last_accessed: -1,
-					user_agent: ua,
-					user_id: userId,
-				}));
+			if (nextRecord.status !== 200) {
+				throw new Error('Failed to save record');
+			}
+		} catch (error) {
+			try {
+				const currentFileIdentity = await getFileIdentity(code);
+				if (currentFileIdentity === writtenFileIdentity) {
+					await (hadPreviousFile && previousFileContent !== null
+						? saveFile(code, previousFileContent)
+						: deleteFile(code));
+				}
+			} catch (restoreError) {
+				if (!checkBackupFileNotFoundError(restoreError)) {
+					console.warn('Failed to restore backup file', {
+						code: maskedCode,
+						error: restoreError,
+					});
+				}
+			}
+
+			console.warn('Failed to save backup record', {
+				code: maskedCode,
+				error,
+			});
+
+			return createNoStoreErrorResponse('Failed to save record', 500);
+		}
 
 		return createNoStoreJsonResponse({
 			code,

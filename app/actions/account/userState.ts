@@ -88,6 +88,9 @@ export async function putUserStateEntryIfRevision(
 		if (currentRevision !== expectedRevision) {
 			return { current, status: 'conflict' };
 		}
+		if (entry.revision !== expectedRevision + 1) {
+			return { current, status: 'conflict' };
+		}
 
 		if (current === null) {
 			const insertResult = await trx

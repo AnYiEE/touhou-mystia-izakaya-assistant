@@ -9,11 +9,15 @@ import {
 	updateSessionLastSeen,
 } from '@/actions/account/sessions';
 import { findUserById } from '@/actions/account/users';
-import { getCredentialByUserId } from '@/actions/account/credentials';
+import {
+	getCredentialByUserId,
+	updateCredentialAndRotateSession,
+} from '@/actions/account/credentials';
 import {
 	type TSession,
 	type TUser,
 	type TUserCredential,
+	type TUserCredentialUpdate,
 } from '@/lib/db/types';
 
 import { USER_STATUS_MAP } from '../shared/constants';
@@ -195,6 +199,30 @@ export async function rotateAccountSession(
 		user_agent: getRequestUserAgent(request),
 	});
 	await deleteOtherSessions(session.user_id, session.id);
+
+	return { csrfToken: createCsrfToken(tokenHash), token, tokenHash };
+}
+
+export async function rotateAccountSessionWithCredentialUpdate(
+	session: TSession,
+	request: NextRequest,
+	credential: TUserCredentialUpdate
+) {
+	const token = createSessionToken();
+	const tokenHash = hashSessionToken(token);
+	const now = Date.now();
+
+	await updateCredentialAndRotateSession({
+		credential,
+		session: {
+			ip_address: getRequestIp(request),
+			last_seen_at: now,
+			token_hash: tokenHash,
+			user_agent: getRequestUserAgent(request),
+		},
+		sessionId: session.id,
+		userId: session.user_id,
+	});
 
 	return { csrfToken: createCsrfToken(tokenHash), token, tokenHash };
 }

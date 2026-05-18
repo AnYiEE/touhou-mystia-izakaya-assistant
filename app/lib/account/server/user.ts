@@ -9,7 +9,7 @@ export const USERNAME_MAX_LENGTH = 32;
 const USERNAME_REGEXP = /^[\p{Script=Han}A-Za-z0-9_.-]+$/u;
 
 export function normalizeUsername(username: string) {
-	return username.trim().toLocaleLowerCase();
+	return username.trim().toLowerCase();
 }
 
 export function checkUsernamePolicy(username: string) {

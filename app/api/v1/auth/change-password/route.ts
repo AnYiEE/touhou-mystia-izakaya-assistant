@@ -37,13 +37,11 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	const [authModule, passwordModule, credentialsModule, userModule] =
-		await Promise.all([
-			import('@/lib/account/server/auth'),
-			import('@/lib/account/server/password'),
-			import('@/actions/account/credentials'),
-			import('@/lib/account/server/user'),
-		]);
+	const [authModule, passwordModule, userModule] = await Promise.all([
+		import('@/lib/account/server/auth'),
+		import('@/lib/account/server/password'),
+		import('@/lib/account/server/user'),
+	]);
 	const auth = await authModule.authenticateAccountRequest(request, true);
 	if (auth.status === 'error') {
 		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
@@ -72,16 +70,16 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-password', 401);
 	}
 
-	await credentialsModule.updateCredential(auth.data.user.id, {
-		failed_attempts: 0,
-		locked_until: null,
-		password_hash: await passwordModule.hashPassword(body.new_password),
-		password_must_change: 0,
-		updated_at: Date.now(),
-	});
-	const session = await authModule.rotateAccountSession(
+	const session = await authModule.rotateAccountSessionWithCredentialUpdate(
 		auth.data.session,
-		request
+		request,
+		{
+			failed_attempts: 0,
+			locked_until: null,
+			password_hash: await passwordModule.hashPassword(body.new_password),
+			password_must_change: 0,
+			updated_at: Date.now(),
+		}
 	);
 	const response = createNoStoreJsonResponse({
 		csrf_token: session.csrfToken,

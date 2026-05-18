@@ -47,14 +47,14 @@ export async function POST(request: NextRequest) {
 			import('@/lib/account/server/user'),
 		]);
 
-	if (!userModule.checkUsernamePolicy(body.username)) {
+	const username = body.username.trim();
+	if (!userModule.checkUsernamePolicy(username)) {
 		return createNoStoreErrorResponse('invalid-username', 400);
 	}
 	if (!passwordModule.checkPasswordPolicy(body.password)) {
 		return createNoStoreErrorResponse('invalid-password-rule', 400);
 	}
 
-	const username = body.username.trim();
 	const usernameNormalized = userModule.normalizeUsername(username);
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,

@@ -1,5 +1,7 @@
 import { TABLE_NAME_MAP } from '@/lib/db';
 import type {
+	TSession,
+	TSessionUpdate,
 	TUser,
 	TUserCredential,
 	TUserCredentialNew,
@@ -58,6 +60,45 @@ export async function updateCredentialAndDeleteSessions(
 		await trx
 			.deleteFrom(SESSION_TABLE_NAME)
 			.where('user_id', '=', userId)
+			.execute();
+	});
+}
+
+export async function updateCredentialAndRotateSession({
+	credential,
+	session,
+	sessionId,
+	userId,
+}: {
+	credential: TUserCredentialUpdate;
+	session: TSessionUpdate;
+	sessionId: TSession['id'];
+	userId: TUser['id'];
+}) {
+	const db = await getAccountDatabase();
+
+	await db.transaction().execute(async (trx) => {
+		await trx
+			.updateTable(TABLE_NAME)
+			.set(credential)
+			.where('user_id', '=', userId)
+			.execute();
+
+		const updateSessionResult = await trx
+			.updateTable(SESSION_TABLE_NAME)
+			.set(session)
+			.where('id', '=', sessionId)
+			.where('user_id', '=', userId)
+			.executeTakeFirst();
+
+		if (updateSessionResult.numUpdatedRows !== 1n) {
+			throw new Error('session-not-found');
+		}
+
+		await trx
+			.deleteFrom(SESSION_TABLE_NAME)
+			.where('user_id', '=', userId)
+			.where('id', '!=', sessionId)
 			.execute();
 	});
 }

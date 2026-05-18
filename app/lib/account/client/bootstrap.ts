@@ -29,15 +29,18 @@ export async function bootstrapAccount() {
 	try {
 		await refreshAccountState();
 	} catch (error) {
-		if (
-			error instanceof AccountApiError &&
-			error.status !== 404 &&
-			error.message !== 'feature-disabled'
-		) {
+		if (error instanceof AccountApiError) {
+			if (error.status === 404 || error.message === 'feature-disabled') {
+				disableAccountBootstrap();
+				return;
+			}
+
 			failAccountBootstrap(error.message);
 			return;
 		}
 
-		disableAccountBootstrap();
+		failAccountBootstrap(
+			error instanceof Error ? error.message : 'bootstrap-failed'
+		);
 	}
 }

@@ -25,6 +25,10 @@ export default function AccountOnboarding() {
 	const isOpen = bootstrapStatus === 'anonymous' && !hasSkippedOnboarding;
 
 	const handleAuth = useCallback(() => {
+		if (isSubmitting) {
+			return;
+		}
+
 		setIsSubmitting(true);
 		setMessage(null);
 		const request = authMode === 'login' ? loginAccount : registerAccount;
@@ -39,7 +43,7 @@ export default function AccountOnboarding() {
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [authMode, password, username]);
+	}, [authMode, isSubmitting, password, username]);
 
 	if (!isOpen) {
 		return null;
@@ -113,7 +117,9 @@ export default function AccountOnboarding() {
 					<Button
 						color="primary"
 						isDisabled={
-							username.length === 0 || password.length === 0
+							isSubmitting ||
+							username.length === 0 ||
+							password.length === 0
 						}
 						isLoading={isSubmitting}
 						variant="solid"

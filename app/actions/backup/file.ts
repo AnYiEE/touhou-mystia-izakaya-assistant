@@ -18,6 +18,10 @@ function generateFilePath(code: TBackupFileRecord['code']) {
 	return join(dir, `${code}.json`);
 }
 
+export function checkBackupFileNotFoundError(error: unknown) {
+	return (error as NodeJS.ErrnoException).code === 'ENOENT';
+}
+
 export async function deleteFile(code: TBackupFileRecord['code']) {
 	const filePath = generateFilePath(code);
 
@@ -37,6 +41,13 @@ export async function getFileSize(code: TBackupFileRecord['code']) {
 	return fileStat.size;
 }
 
+export async function getFileIdentity(code: TBackupFileRecord['code']) {
+	const filePath = generateFilePath(code);
+	const fileStat = await stat(filePath, { bigint: true });
+
+	return `${fileStat.size}:${fileStat.mtimeNs}`;
+}
+
 export async function getBackupFileCodes() {
 	try {
 		const entries = await readdir(dir, { withFileTypes: true });
@@ -44,8 +55,7 @@ export async function getBackupFileCodes() {
 			.filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
 			.map((entry) => entry.name.slice(0, -'.json'.length));
 	} catch (error) {
-		const fsError = error as NodeJS.ErrnoException;
-		if (fsError.code === 'ENOENT') {
+		if (checkBackupFileNotFoundError(error)) {
 			return [];
 		}
 
