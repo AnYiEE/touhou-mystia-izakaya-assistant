@@ -52,6 +52,8 @@ export async function POST(request: NextRequest) {
 		!isPlainObject(backupData) ||
 		!('customer_normal' in backupData) ||
 		!('customer_rare' in backupData) ||
+		!isPlainObject(backupData.customer_normal) ||
+		!isPlainObject(backupData.customer_rare) ||
 		!('user_id' in json) ||
 		(typeof rawUserId !== 'string' && rawUserId !== null)
 	) {

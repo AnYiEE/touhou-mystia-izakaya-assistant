@@ -72,7 +72,9 @@ export function readAccountSyncMeta(userId: string) {
 
 export function writeAccountSyncMeta(userId: string, meta: IAccountSyncMeta) {
 	writeAccountJsonStorage(createAccountSyncMetaStorageKey(userId), meta);
-	accountStore.shared.sync.meta.set(meta);
+	if (accountStore.shared.user.get()?.id === userId) {
+		accountStore.shared.sync.meta.set(meta);
+	}
 }
 
 export function applyRemoteAccountRecords({

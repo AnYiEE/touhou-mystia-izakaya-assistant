@@ -91,7 +91,7 @@ export async function acquireAccountSyncLease(
 	return lockManager.request(
 		createAccountSyncLeaseKey(userId),
 		{ mode: 'exclusive' },
-		() => tryAcquireAccountSyncLease(userId, ownerTabId, now)
+		() => tryAcquireAccountSyncLease(userId, ownerTabId, Date.now())
 	);
 }
 

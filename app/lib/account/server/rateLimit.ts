@@ -14,7 +14,11 @@ interface IRateLimitBucket {
 	resetAt: number;
 }
 
+const MAX_RATE_LIMIT_BUCKETS = 10_000;
+const RATE_LIMIT_CLEANUP_INTERVAL_MS = 60 * 1000;
+
 const rateLimitBucketMap = new Map<string, IRateLimitBucket>();
+let lastRateLimitCleanupAt = 0;
 
 export function clearExpiredRateLimitBuckets(now = Date.now()) {
 	rateLimitBucketMap.forEach((bucket, key) => {
@@ -22,6 +26,22 @@ export function clearExpiredRateLimitBuckets(now = Date.now()) {
 			rateLimitBucketMap.delete(key);
 		}
 	});
+}
+
+function trimRateLimitBuckets(now: number) {
+	if (now - lastRateLimitCleanupAt >= RATE_LIMIT_CLEANUP_INTERVAL_MS) {
+		clearExpiredRateLimitBuckets(now);
+		lastRateLimitCleanupAt = now;
+	}
+
+	while (rateLimitBucketMap.size >= MAX_RATE_LIMIT_BUCKETS) {
+		const oldestKey = rateLimitBucketMap.keys().next().value;
+		if (oldestKey === undefined) {
+			return;
+		}
+
+		rateLimitBucketMap.delete(oldestKey);
+	}
 }
 
 export function checkRateLimit(
@@ -40,10 +60,10 @@ export function checkRateLimit(
 		);
 	}
 
-	clearExpiredRateLimitBuckets(now);
 	const bucket = rateLimitBucketMap.get(key);
 
 	if (!bucket || bucket.resetAt <= now) {
+		trimRateLimitBuckets(now);
 		rateLimitBucketMap.set(key, { count: 1, resetAt: now + windowMs });
 		return { allowed: true, remaining: limit - 1, retryAfter: 0 };
 	}

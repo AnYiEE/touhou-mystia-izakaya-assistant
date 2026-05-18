@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useMounted } from '@/hooks';
 
@@ -83,23 +83,21 @@ export function addThemeChangeListener(listener: (theme: TTheme) => void) {
 }
 
 export function useTheme() {
-	const [theme, setThemeState] = useState<TTheme>(() => {
-		const storedTheme = getStoredTheme();
-
-		if (storedTheme === null) {
-			applyTheme(THEME_MAP.SYSTEM);
-			return THEME_MAP.SYSTEM;
-		}
-		if (storedTheme === undefined) {
-			return THEME_MAP.SYSTEM;
-		}
-
-		applyTheme(storedTheme, true);
-		return storedTheme;
-	});
+	const [theme, setThemeState] = useState<TTheme>(
+		() => getStoredTheme() ?? THEME_MAP.SYSTEM
+	);
 
 	const setTheme = useCallback((newTheme: typeof theme) => {
 		applyTheme(newTheme);
+	}, []);
+
+	useEffect(() => {
+		const storedTheme = getStoredTheme();
+		if (storedTheme === undefined) {
+			return;
+		}
+
+		applyTheme(storedTheme ?? THEME_MAP.SYSTEM, storedTheme !== null);
 	}, []);
 
 	useMounted(() => {

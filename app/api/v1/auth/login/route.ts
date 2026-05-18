@@ -60,11 +60,12 @@ export async function POST(request: NextRequest) {
 		import('@/lib/account/server/user'),
 	]);
 
-	if (!userModule.checkUsernamePolicy(body.username)) {
+	const username = body.username.trim();
+	if (!userModule.checkUsernamePolicy(username)) {
 		return createNoStoreErrorResponse('invalid-username', 400);
 	}
 
-	const usernameNormalized = userModule.normalizeUsername(body.username);
+	const usernameNormalized = userModule.normalizeUsername(username);
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
 		'login',

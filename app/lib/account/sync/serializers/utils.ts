@@ -73,7 +73,7 @@ function mergeFieldValue({
 		isPlainObject(local) &&
 		(base === null || isPlainObject(base))
 	) {
-		const data = { ...cloud };
+		const data: Record<string, unknown> = {};
 		let shouldUpload = false;
 
 		Object.keys(defaults).forEach((key) => {

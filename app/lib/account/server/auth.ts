@@ -3,9 +3,8 @@ import { type NextRequest, type NextResponse } from 'next/server';
 
 import {
 	createSession,
-	deleteOtherSessions,
 	getSessionByTokenHash,
-	updateSession,
+	updateSessionAndDeleteOtherSessions,
 	updateSessionLastSeen,
 } from '@/actions/account/sessions';
 import { findUserById } from '@/actions/account/users';
@@ -156,7 +155,11 @@ export async function authenticateAccountRequest(
 
 	const now = Date.now();
 	if (session.last_seen_at + SESSION_LAST_SEEN_UPDATE_INTERVAL < now) {
-		await updateSessionLastSeen(session.id, now);
+		try {
+			await updateSessionLastSeen(session.id, now);
+		} catch (error) {
+			console.error('Failed to update account session last seen.', error);
+		}
 	}
 
 	return {
@@ -192,13 +195,16 @@ export async function rotateAccountSession(
 	const tokenHash = hashSessionToken(token);
 	const now = Date.now();
 
-	await updateSession(session.id, {
-		ip_address: getRequestIp(request),
-		last_seen_at: now,
-		token_hash: tokenHash,
-		user_agent: getRequestUserAgent(request),
+	await updateSessionAndDeleteOtherSessions({
+		session: {
+			ip_address: getRequestIp(request),
+			last_seen_at: now,
+			token_hash: tokenHash,
+			user_agent: getRequestUserAgent(request),
+		},
+		sessionId: session.id,
+		userId: session.user_id,
 	});
-	await deleteOtherSessions(session.user_id, session.id);
 
 	return { csrfToken: createCsrfToken(tokenHash), token, tokenHash };
 }

@@ -53,6 +53,37 @@ export async function deleteOtherSessions(
 		.execute();
 }
 
+export async function updateSessionAndDeleteOtherSessions({
+	session,
+	sessionId,
+	userId,
+}: {
+	session: TSessionUpdate;
+	sessionId: TSession['id'];
+	userId: TUser['id'];
+}) {
+	const db = await getAccountDatabase();
+
+	await db.transaction().execute(async (trx) => {
+		const updateSessionResult = await trx
+			.updateTable(TABLE_NAME)
+			.set(session)
+			.where('id', '=', sessionId)
+			.where('user_id', '=', userId)
+			.executeTakeFirst();
+
+		if (updateSessionResult.numUpdatedRows !== 1n) {
+			throw new Error('session-not-found');
+		}
+
+		await trx
+			.deleteFrom(TABLE_NAME)
+			.where('user_id', '=', userId)
+			.where('id', '!=', sessionId)
+			.execute();
+	});
+}
+
 export async function updateSession(
 	id: TSession['id'],
 	session: TSessionUpdate

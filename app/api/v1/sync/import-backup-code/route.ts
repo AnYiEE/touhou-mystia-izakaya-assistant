@@ -19,12 +19,20 @@ import {
 	createNoStoreJsonResponse,
 } from '@/api/v1/utils';
 import { MAX_DATA_SIZE } from '@/api/v1/backups/constants';
-import { SYNC_NAMESPACE_MAP } from '@/lib/account/sync';
+import {
+	SYNC_NAMESPACE_MAP,
+	SYNC_SCHEMA_VERSION_MAP,
+	type TSyncNamespace,
+} from '@/lib/account/sync';
 import {
 	checkBeverageName,
 	validateMealRecipe,
 	validateMealSnapshot,
 } from '@/lib/account/sync/serializers/meals';
+import {
+	checkBeverageTag,
+	checkRecipeTag,
+} from '@/lib/account/sync/serializers/tags';
 import { isPlainObject } from '@/lib/account/sync/serializers/utils';
 import { TABLE_NAME_MAP } from '@/lib/db';
 import { type TDatabase, type TUserState } from '@/lib/db/types';
@@ -38,7 +46,7 @@ interface IImportBackupCodeBody {
 
 interface IImportNamespaceData {
 	data: Record<string, object[]>;
-	namespace: string;
+	namespace: TSyncNamespace;
 }
 
 function normalizeMealRecipe(data: unknown) {
@@ -93,9 +101,9 @@ function validateCustomerRareMeal(
 		typeof data['hasMystiaCooker'] === 'boolean' &&
 		isPlainObject(data['order']) &&
 		(data['order']['beverageTag'] === null ||
-			typeof data['order']['beverageTag'] === 'string') &&
+			checkBeverageTag(data['order']['beverageTag'])) &&
 		(data['order']['recipeTag'] === null ||
-			typeof data['order']['recipeTag'] === 'string') &&
+			checkRecipeTag(data['order']['recipeTag'])) &&
 		validateMealRecipe(data['recipe'])
 	);
 }
@@ -364,7 +372,7 @@ async function importBackupData(
 						data: JSON.stringify(mergedData),
 						namespace: item.namespace,
 						revision,
-						schema_version: 1,
+						schema_version: SYNC_SCHEMA_VERSION_MAP[item.namespace],
 						updated_at: updatedAt,
 						user_id: userId,
 					})
@@ -382,7 +390,7 @@ async function importBackupData(
 					.set({
 						data: JSON.stringify(mergedData),
 						revision,
-						schema_version: 1,
+						schema_version: SYNC_SCHEMA_VERSION_MAP[item.namespace],
 						updated_at: updatedAt,
 					})
 					.where('user_id', '=', userId)

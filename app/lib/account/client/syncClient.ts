@@ -26,6 +26,7 @@ import {
 	markAccountSyncDirty,
 	readDirtyQueueEntries,
 	removeDirtyQueueEntries,
+	removeDirtyQueueEntry,
 	writeDirtyQueueEntry,
 } from './queue';
 import {
@@ -242,38 +243,96 @@ function applyRemoteStatePreservingDirty({
 			targetNamespaceSet === null ||
 			targetNamespaceSet.has(entry.namespace)
 	);
-	const dirtyNamespaceSet = new Set(
-		dirtyEntries.map((entry) => entry.namespace)
-	);
+	const preserveNamespaceSet = new Set<TSyncNamespace>();
+	const dirtyRemoteRecords: ISyncStateRecord[] = [];
 	const recordMap = getRecordMap(records);
 
 	dirtyEntries.forEach((entry) => {
 		if (entry.paused === 'conflict' && entry.conflict !== null) {
 			setAccountSyncConflict(entry.conflict);
+			preserveNamespaceSet.add(entry.namespace);
+			return;
+		}
+
+		const serializer = getAccountSyncSerializer(entry.namespace);
+		const record = recordMap[entry.namespace];
+		const cloud =
+			record === undefined
+				? null
+				: serializer.migrate(record.data, record.schema_version);
+		const local = serializer.deserialize(entry.data);
+		const mergeResult = serializer.merge({
+			base: null,
+			cloud,
+			local,
+			namespace: entry.namespace,
+		});
+
+		if (mergeResult.conflict === null) {
+			if (mergeResult.shouldUpload) {
+				withApplyingRemoteState(() => {
+					serializer.setLocalSnapshot(mergeResult.data);
+				});
+				writeDirtyQueueEntry(userId, {
+					...entry,
+					baseRevision: record?.revision ?? 0,
+					clientMutationId: createAccountClientId(),
+					conflict: null,
+					data: mergeResult.data,
+					dirtyAt: Date.now(),
+					lastError: null,
+					paused: null,
+					schema_version: SYNC_SCHEMA_VERSION_MAP[entry.namespace],
+					snapshotHash: createSnapshotHash(mergeResult.data),
+				});
+				if (record !== undefined) {
+					dirtyRemoteRecords.push(record);
+				}
+				preserveNamespaceSet.add(entry.namespace);
+				return;
+			}
+
+			removeDirtyQueueEntry(userId, entry.namespace);
+			if (record === undefined) {
+				withApplyingRemoteState(() => {
+					serializer.setLocalSnapshot(mergeResult.data);
+				});
+			}
 			return;
 		}
 
 		pauseDirtyEntryWithConflict({
-			conflict: createConflictFromDirtyEntry({
-				entry,
-				record: recordMap[entry.namespace] ?? null,
+			conflict: {
+				...mergeResult.conflict,
+				revision: record?.revision ?? 0,
 				userId,
-			}),
+			},
 			entry,
 			userId,
 		});
+		preserveNamespaceSet.add(entry.namespace);
 	});
 
 	const recordsToApply = records.filter(
-		(record) => !dirtyNamespaceSet.has(record.namespace)
+		(record) => !preserveNamespaceSet.has(record.namespace)
 	);
-	applyRemoteAccountRecords({
-		preserveNamespaces: [...dirtyNamespaceSet],
+	const meta = applyRemoteAccountRecords({
+		preserveNamespaces: [...preserveNamespaceSet],
 		records: recordsToApply,
 		replaceMeta,
 		stateEpoch,
 		userId,
 	});
+	dirtyRemoteRecords.forEach((record) => {
+		const serializer = getAccountSyncSerializer(record.namespace);
+		const data = serializer.migrate(record.data, record.schema_version);
+		meta.lastAppliedRemoteHash[record.namespace] = createSnapshotHash(data);
+		meta.revisions[record.namespace] = record.revision;
+	});
+	if (dirtyRemoteRecords.length > 0) {
+		writeAccountSyncMeta(userId, meta);
+	}
+	updatePendingCount();
 
 	return recordsToApply;
 }
@@ -436,6 +495,7 @@ export async function flushAccountSyncQueue() {
 	clearSyncTimers();
 	startLeaseRenewal(context.user.id);
 	accountStore.shared.sync.isSyncing.set(true);
+	let shouldScheduleRetryAfterFlush = false;
 
 	try {
 		const response = await putSyncState(
@@ -513,6 +573,8 @@ export async function flushAccountSyncQueue() {
 		) {
 			try {
 				await handleStateEpochMismatch(context.user.id);
+				shouldScheduleRetryAfterFlush =
+					getFlushableEntries(context.user.id).length > 0;
 				accountStore.shared.sync.canRetry.set(false);
 				accountStore.shared.sync.failedAttempts.set(0);
 				accountStore.shared.sync.lastError.set(
@@ -550,6 +612,12 @@ export async function flushAccountSyncQueue() {
 			type: 'lease-changed',
 			userId: context.user.id,
 		});
+		if (shouldScheduleRetryAfterFlush) {
+			quietFlushTimer ??= setTimeout(() => {
+				quietFlushTimer = null;
+				void flushAccountSyncQueue();
+			}, 0);
+		}
 	}
 }
 
@@ -840,6 +908,8 @@ export function startAccountSyncClient() {
 	globalThis.addEventListener('pagehide', onPageHide);
 
 	return () => {
+		stopAccountSyncClient();
+		visibilityOperationId = null;
 		unsubscribeBroadcast();
 		document.removeEventListener('visibilitychange', onVisibilityChange);
 		globalThis.removeEventListener('focus', onRetrySignal);
