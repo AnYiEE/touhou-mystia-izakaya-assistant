@@ -2,13 +2,13 @@ import Database from 'better-sqlite3';
 import { Kysely, SqliteDialect } from 'kysely';
 import { env } from 'node:process';
 
-import { DEFAULT_SQLITE_DATABASE_PATH, TABLE_NAME_MAP } from './constant';
+import { TABLE_NAME_MAP, getSqliteDatabasePath } from './constant';
 import type { TDatabase } from './types';
 import { getTableColumns } from './utils';
 
 // Create and export database instance.
 const nativeDatabase = new Database(
-	env.SQLITE_DATABASE_PATH ?? DEFAULT_SQLITE_DATABASE_PATH
+	getSqliteDatabasePath(env.SQLITE_DATABASE_PATH)
 );
 nativeDatabase.pragma('foreign_keys = ON');
 nativeDatabase.pragma('busy_timeout = 5000');

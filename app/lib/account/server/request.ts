@@ -44,6 +44,7 @@ export function checkSameOriginRequest(request: NextRequest) {
 export function checkSecureRequest(request: NextRequest) {
 	return (
 		request.nextUrl.protocol === 'https:' ||
-		request.headers.get('x-forwarded-proto') === 'https'
+		(env.TRUST_PROXY === 'true' &&
+			request.headers.get('x-forwarded-proto') === 'https')
 	);
 }

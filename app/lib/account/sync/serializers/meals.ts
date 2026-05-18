@@ -74,15 +74,42 @@ function getMealSignature(meal: unknown) {
 	return stableJson(meal);
 }
 
-function hasDeletedBaseMeal<TMeal>(baseMeals: TMeal[], targetMeals: TMeal[]) {
-	const targetSignatures = new Set(targetMeals.map(getMealSignature));
+function createMealSignatureCountMap(meals: unknown[]) {
+	return meals.reduce<Map<string, number>>((result, meal) => {
+		const signature = getMealSignature(meal);
+		result.set(signature, (result.get(signature) ?? 0) + 1);
+
+		return result;
+	}, new Map());
+}
+
+function consumeMealSignature(
+	signatureCountMap: Map<string, number>,
+	signature: string
+) {
+	const count = signatureCountMap.get(signature) ?? 0;
+	if (count <= 0) {
+		return false;
+	}
+
+	signatureCountMap.set(signature, count - 1);
+
+	return true;
+}
+
+function hasDeletedBaseMeal(baseMeals: unknown[], targetMeals: unknown[]) {
+	const targetSignatureCountMap = createMealSignatureCountMap(targetMeals);
 
 	return baseMeals.some(
-		(meal) => !targetSignatures.has(getMealSignature(meal))
+		(meal) =>
+			!consumeMealSignature(
+				targetSignatureCountMap,
+				getMealSignature(meal)
+			)
 	);
 }
 
-function hasReorderedBaseMeal<TMeal>(baseMeals: TMeal[], targetMeals: TMeal[]) {
+function hasReorderedBaseMeal(baseMeals: unknown[], targetMeals: unknown[]) {
 	const targetSignatures = targetMeals.map(getMealSignature);
 	let searchStart = 0;
 
@@ -99,15 +126,16 @@ function hasReorderedBaseMeal<TMeal>(baseMeals: TMeal[], targetMeals: TMeal[]) {
 	});
 }
 
-function hasDuplicateIntent<TMeal>(cloudMeals: TMeal[], localMeals: TMeal[]) {
-	const cloudSignatures = cloudMeals.map(getMealSignature);
+function getMealAdditions<TMeal>(sourceMeals: TMeal[], targetMeals: TMeal[]) {
+	const targetSignatureCountMap = createMealSignatureCountMap(targetMeals);
 
-	return localMeals.some((meal, index) => {
-		const signature = getMealSignature(meal);
-		const cloudIndex = cloudSignatures.indexOf(signature);
-
-		return cloudIndex !== -1 && cloudIndex !== index;
-	});
+	return sourceMeals.filter(
+		(meal) =>
+			!consumeMealSignature(
+				targetSignatureCountMap,
+				getMealSignature(meal)
+			)
+	);
 }
 
 function mergeMealList<TMeal>({
@@ -123,22 +151,12 @@ function mergeMealList<TMeal>({
 		hasDeletedBaseMeal(baseMeals, cloudMeals) ||
 		hasDeletedBaseMeal(baseMeals, localMeals) ||
 		hasReorderedBaseMeal(baseMeals, cloudMeals) ||
-		hasReorderedBaseMeal(baseMeals, localMeals) ||
-		hasDuplicateIntent(cloudMeals, localMeals)
+		hasReorderedBaseMeal(baseMeals, localMeals)
 	) {
 		return null;
 	}
 
-	const signatures = new Set(cloudMeals.map(getMealSignature));
-	const localAdditions = localMeals.filter((meal) => {
-		const signature = getMealSignature(meal);
-		if (signatures.has(signature)) {
-			return false;
-		}
-
-		signatures.add(signature);
-		return true;
-	});
+	const localAdditions = getMealAdditions(localMeals, cloudMeals);
 
 	return [...cloudMeals, ...localAdditions];
 }
@@ -172,19 +190,9 @@ export function mergeMealSnapshot<TMeal>({
 		const data: TMealSnapshot<TMeal> = {};
 
 		customerNames.forEach((customerName) => {
-			const signatures = new Set(
-				(cloud[customerName] ?? []).map(getMealSignature)
-			);
-			const localAdditions = (local[customerName] ?? []).filter(
-				(meal) => {
-					const signature = getMealSignature(meal);
-					if (signatures.has(signature)) {
-						return false;
-					}
-
-					signatures.add(signature);
-					return true;
-				}
+			const localAdditions = getMealAdditions(
+				local[customerName] ?? [],
+				cloud[customerName] ?? []
 			);
 			const mergedMeals = [
 				...(cloud[customerName] ?? []),

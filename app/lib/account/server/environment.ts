@@ -4,7 +4,7 @@ import { dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
 import { checkEnvFlag, checkVercelEnv } from '@/lib/environment';
-import { DEFAULT_SQLITE_DATABASE_PATH } from '@/lib/db/constant';
+import { getSqliteDatabasePath } from '@/lib/db/constant';
 
 export const FEATURE_DISABLED_MESSAGE = 'feature-disabled';
 export const SERVER_MISCONFIGURED_MESSAGE = 'server-misconfigured';
@@ -36,10 +36,9 @@ export function checkSessionSecret(
 }
 
 export async function checkSqliteDirectoryWritable(
-	databasePath = process.env.SQLITE_DATABASE_PATH ??
-		DEFAULT_SQLITE_DATABASE_PATH
+	databasePath = process.env.SQLITE_DATABASE_PATH
 ) {
-	const directory = dirname(resolve(databasePath));
+	const directory = dirname(resolve(getSqliteDatabasePath(databasePath)));
 	const probePath = resolve(directory, `.sqlite-write-probe-${randomUUID()}`);
 
 	await access(directory, constants.R_OK | constants.W_OK);
@@ -47,7 +46,9 @@ export async function checkSqliteDirectoryWritable(
 	await rm(probePath, { force: true });
 }
 
-export async function getAccountFeatureStatus(): Promise<IAccountFeatureStatus> {
+let accountFeatureStatusPromise: Promise<IAccountFeatureStatus> | null = null;
+
+async function resolveAccountFeatureStatus(): Promise<IAccountFeatureStatus> {
 	if (!checkAccountRuntimeEnabled()) {
 		return { enabled: false, reason: FEATURE_DISABLED_MESSAGE };
 	}
@@ -63,4 +64,14 @@ export async function getAccountFeatureStatus(): Promise<IAccountFeatureStatus> 
 	}
 
 	return { enabled: true, reason: null };
+}
+
+export function resetAccountFeatureStatusCache() {
+	accountFeatureStatusPromise = null;
+}
+
+export async function getAccountFeatureStatus(): Promise<IAccountFeatureStatus> {
+	accountFeatureStatusPromise ??= resolveAccountFeatureStatus();
+
+	return accountFeatureStatusPromise;
 }

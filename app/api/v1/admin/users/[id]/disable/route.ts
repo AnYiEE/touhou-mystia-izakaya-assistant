@@ -56,10 +56,7 @@ export async function POST(
 	}
 
 	const { id } = await params;
-	const [usersModule, sessionsModule] = await Promise.all([
-		import('@/actions/account/users'),
-		import('@/actions/account/sessions'),
-	]);
+	const usersModule = await import('@/actions/account/users');
 	const user = await usersModule.findUserById(id);
 	if (user === null) {
 		return createNoStoreErrorResponse('target-user-not-found', 404);
@@ -71,8 +68,10 @@ export async function POST(
 		return createNoStoreErrorResponse('invalid-user-status', 400);
 	}
 
-	await usersModule.setUserStatus(id, USER_STATUS_MAP.disabled);
-	await sessionsModule.deleteSessionsByUserId(id);
+	await usersModule.setUserStatusAndDeleteSessions(
+		id,
+		USER_STATUS_MAP.disabled
+	);
 
 	return createNoStoreJsonResponse({ message: 'user-disabled' });
 }

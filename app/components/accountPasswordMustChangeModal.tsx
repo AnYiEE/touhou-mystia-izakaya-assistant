@@ -53,6 +53,8 @@ export default function AccountPasswordMustChangeModal() {
 
 	const handleLogout = useCallback(() => {
 		if (csrfToken === null) {
+			setMessage(null);
+			resetAccountState();
 			return;
 		}
 

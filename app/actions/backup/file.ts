@@ -43,8 +43,13 @@ export async function getBackupFileCodes() {
 		return entries
 			.filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
 			.map((entry) => entry.name.slice(0, -'.json'.length));
-	} catch {
-		return [];
+	} catch (error) {
+		const fsError = error as NodeJS.ErrnoException;
+		if (fsError.code === 'ENOENT') {
+			return [];
+		}
+
+		throw error;
 	}
 }
 

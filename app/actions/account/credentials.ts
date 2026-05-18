@@ -9,6 +9,7 @@ import type {
 import { getAccountDatabase } from '@/lib/account/server/db';
 
 const TABLE_NAME = TABLE_NAME_MAP.userCredential;
+const SESSION_TABLE_NAME = TABLE_NAME_MAP.session;
 
 export async function createCredential(credential: TUserCredentialNew) {
 	const db = await getAccountDatabase();
@@ -39,6 +40,26 @@ export async function updateCredential(
 		.set(credential)
 		.where('user_id', '=', userId)
 		.execute();
+}
+
+export async function updateCredentialAndDeleteSessions(
+	userId: TUser['id'],
+	credential: TUserCredentialUpdate
+) {
+	const db = await getAccountDatabase();
+
+	await db.transaction().execute(async (trx) => {
+		await trx
+			.updateTable(TABLE_NAME)
+			.set(credential)
+			.where('user_id', '=', userId)
+			.execute();
+
+		await trx
+			.deleteFrom(SESSION_TABLE_NAME)
+			.where('user_id', '=', userId)
+			.execute();
+	});
 }
 
 export async function incrementFailedAttempts(userId: TUser['id']) {

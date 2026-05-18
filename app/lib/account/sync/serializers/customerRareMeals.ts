@@ -13,6 +13,7 @@ import {
 	validateMealRecipe,
 	validateMealSnapshot,
 } from './meals';
+import { checkBeverageTag, checkRecipeTag } from './tags';
 import { isPlainObject } from './utils';
 
 export interface ICustomerRareMeal {
@@ -31,9 +32,9 @@ function validateCustomerRareMeal(data: unknown): data is ICustomerRareMeal {
 		typeof data['hasMystiaCooker'] === 'boolean' &&
 		isPlainObject(data['order']) &&
 		(data['order']['beverageTag'] === null ||
-			typeof data['order']['beverageTag'] === 'string') &&
+			checkBeverageTag(data['order']['beverageTag'])) &&
 		(data['order']['recipeTag'] === null ||
-			typeof data['order']['recipeTag'] === 'string') &&
+			checkRecipeTag(data['order']['recipeTag'])) &&
 		validateMealRecipe(data['recipe'])
 	);
 }

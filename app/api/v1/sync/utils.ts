@@ -13,6 +13,10 @@ import {
 	Ingredient,
 	Recipe,
 } from '@/utils';
+import {
+	checkBeverageTag,
+	checkRecipeTag,
+} from '@/lib/account/sync/serializers/tags';
 
 const SYNC_NAMESPACE_SET = new Set<TSyncNamespace>(
 	Object.values(SYNC_NAMESPACE_MAP)
@@ -104,9 +108,9 @@ function validateCustomerRareMeal(data: unknown) {
 		isPlainObject(data['order']) &&
 		hasExactKeys(data['order'], ['beverageTag', 'recipeTag']) &&
 		(data['order']['beverageTag'] === null ||
-			typeof data['order']['beverageTag'] === 'string') &&
+			checkBeverageTag(data['order']['beverageTag'])) &&
 		(data['order']['recipeTag'] === null ||
-			typeof data['order']['recipeTag'] === 'string') &&
+			checkRecipeTag(data['order']['recipeTag'])) &&
 		validateMealRecipe(data['recipe'])
 	);
 }

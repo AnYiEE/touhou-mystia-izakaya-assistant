@@ -11,6 +11,7 @@ import { type TUserStatus } from '@/lib/account/shared/types';
 
 const TABLE_NAME = TABLE_NAME_MAP.user;
 const CREDENTIAL_TABLE_NAME = TABLE_NAME_MAP.userCredential;
+const SESSION_TABLE_NAME = TABLE_NAME_MAP.session;
 
 export interface IListUsersOptions {
 	limit: number;
@@ -97,7 +98,7 @@ export async function createUserWithCredential(
 
 		await trx
 			.insertInto(CREDENTIAL_TABLE_NAME)
-			.values(credential)
+			.values({ ...credential, user_id: record.id })
 			.execute();
 
 		return record;
@@ -113,9 +114,34 @@ export async function updateUser(id: TUser['id'], user: TUserUpdate) {
 export async function setUserStatus(id: TUser['id'], status: TUserStatus) {
 	const now = Date.now();
 	await updateUser(id, {
-		...(status === 'deleted' ? { deleted_at: now } : {}),
+		deleted_at: status === 'deleted' ? now : null,
 		status,
 		updated_at: now,
+	});
+}
+
+export async function setUserStatusAndDeleteSessions(
+	id: TUser['id'],
+	status: TUserStatus
+) {
+	const db = await getAccountDatabase();
+	const now = Date.now();
+
+	await db.transaction().execute(async (trx) => {
+		await trx
+			.updateTable(TABLE_NAME)
+			.set({
+				deleted_at: status === 'deleted' ? now : null,
+				status,
+				updated_at: now,
+			})
+			.where('id', '=', id)
+			.execute();
+
+		await trx
+			.deleteFrom(SESSION_TABLE_NAME)
+			.where('user_id', '=', id)
+			.execute();
 	});
 }
 

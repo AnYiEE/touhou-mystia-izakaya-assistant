@@ -15,6 +15,7 @@ import {
 	checkAccountSyncPaused,
 	checkApplyingRemoteState,
 } from './stateGuards';
+import { createAccountClientId } from './random';
 
 function sortJsonValue(value: unknown): unknown {
 	if (Array.isArray(value)) {
@@ -115,7 +116,7 @@ export function markAccountSyncDirty({
 	const entry: IDirtyQueueEntry = {
 		attempts: previousEntry?.attempts ?? 0,
 		baseRevision,
-		clientMutationId: `${now.toString(36)}-${Math.random().toString(36).slice(2)}`,
+		clientMutationId: createAccountClientId(),
 		conflict: null,
 		data,
 		dirtyAt: now,

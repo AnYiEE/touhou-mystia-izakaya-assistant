@@ -19,8 +19,7 @@ function push(...args: unknown[][]) {
 function getAnalyticsUserId() {
 	if (accountStore.shared.isLoggedIn.get()) {
 		return (
-			accountStore.shared.user.get()?.username ??
-			store.persistence.userId.get()
+			accountStore.shared.user.get()?.id ?? store.persistence.userId.get()
 		);
 	}
 
@@ -179,7 +178,7 @@ export default function Analytics() {
 	const user = accountStore.shared.user.use();
 	const fingerprintUserId = store.persistence.userId.use();
 	const analyticsUserId = isLoggedIn
-		? (user?.username ?? fingerprintUserId)
+		? (user?.id ?? fingerprintUserId)
 		: fingerprintUserId;
 
 	useEffect(() => {

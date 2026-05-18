@@ -6,14 +6,11 @@ import { customerRareStore } from '@/stores/customer-rare';
 import { globalStore } from '@/stores/global';
 import { postAccountSyncBroadcastMessage } from './broadcast';
 import { createSnapshotHash, markAccountSyncDirty } from './queue';
+import { createAccountClientId } from './random';
 import { getAccountSyncSerializer } from './snapshot';
 import { scheduleAccountSyncFlush } from './syncClient';
 
 let hasStarted = false;
-
-function createClientOperationId() {
-	return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-}
 
 function getLoggedInContext() {
 	const meta = accountStore.shared.sync.meta.get();
@@ -67,7 +64,7 @@ function markNamespaceDirty(namespace: TSyncNamespace) {
 
 	void postAccountSyncBroadcastMessage({
 		namespaces: [namespace],
-		operationId: createClientOperationId(),
+		operationId: createAccountClientId(),
 		state_epoch: context.meta.state_epoch,
 		tabId: 'local',
 		type: 'dirty',

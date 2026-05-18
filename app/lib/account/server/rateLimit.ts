@@ -29,6 +29,17 @@ export function checkRateLimit(
 	{ limit, windowMs }: IRateLimitOptions,
 	now = Date.now()
 ): IRateLimitResult {
+	if (!Number.isInteger(limit) || limit <= 0) {
+		throw new Error(
+			'Invalid rate limit option: limit must be a positive integer'
+		);
+	}
+	if (!Number.isInteger(windowMs) || windowMs <= 0) {
+		throw new Error(
+			'Invalid rate limit option: windowMs must be a positive integer'
+		);
+	}
+
 	clearExpiredRateLimitBuckets(now);
 	const bucket = rateLimitBucketMap.get(key);
 

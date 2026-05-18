@@ -162,18 +162,16 @@ async function ensureTableColumns(
 		);
 	}
 
-	await Promise.all(
-		missingColumns.map((column) => {
-			const definition = columnDefinitionMap[column];
-			if (definition === undefined) {
-				throw new Error(
-					`${SERVER_MISCONFIGURED_MESSAGE}: account table ${tableName} has no definition for column: ${column}`
-				);
-			}
+	for (const column of missingColumns) {
+		const definition = columnDefinitionMap[column];
+		if (definition === undefined) {
+			throw new Error(
+				`${SERVER_MISCONFIGURED_MESSAGE}: account table ${tableName} has no definition for column: ${column}`
+			);
+		}
 
-			return addMissingColumn(database, tableName, column, definition);
-		})
-	);
+		await addMissingColumn(database, tableName, column, definition);
+	}
 }
 
 async function getPrimaryKeyColumns(
@@ -423,14 +421,12 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 		])
 		.execute();
 
-	await Promise.all(
-		Object.keys(ACCOUNT_TABLE_COLUMNS_MAP).map((tableName) =>
-			ensureTableColumns(
-				database,
-				tableName as keyof typeof ACCOUNT_TABLE_COLUMNS_MAP
-			)
-		)
-	);
+	for (const tableName of Object.keys(ACCOUNT_TABLE_COLUMNS_MAP)) {
+		await ensureTableColumns(
+			database,
+			tableName as keyof typeof ACCOUNT_TABLE_COLUMNS_MAP
+		);
+	}
 
 	await ensureAccountTableStructure(database);
 }

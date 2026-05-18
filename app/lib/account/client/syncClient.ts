@@ -32,6 +32,7 @@ import {
 	postAccountSyncBroadcastMessage,
 	subscribeAccountSyncBroadcastMessage,
 } from './broadcast';
+import { createAccountClientId } from './random';
 import {
 	applyRemoteAccountRecords,
 	createLocalAccountSnapshot,
@@ -52,10 +53,6 @@ let quietFlushTimer: ReturnType<typeof setTimeout> | null = null;
 let visibilityOperationId: string | null = null;
 
 const tabId = createAccountTabId();
-
-function createClientOperationId() {
-	return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-}
 
 function getLoggedInAccountContext() {
 	const csrfToken = accountStore.shared.csrfToken.get();
@@ -147,7 +144,7 @@ function postRemoteAppliedBroadcast({
 
 	void postAccountSyncBroadcastMessage({
 		namespaces: records.map((record) => record.namespace),
-		operationId: createClientOperationId(),
+		operationId: createAccountClientId(),
 		state_epoch: stateEpoch,
 		tabId,
 		type: 'remote-applied',
@@ -432,7 +429,7 @@ export async function flushAccountSyncQueue() {
 		return true;
 	}
 
-	if (!acquireAccountSyncLease(context.user.id, tabId)) {
+	if (!(await acquireAccountSyncLease(context.user.id, tabId))) {
 		return false;
 	}
 
@@ -497,7 +494,7 @@ export async function flushAccountSyncQueue() {
 		if (uploadedNamespaces.length > 0) {
 			void postAccountSyncBroadcastMessage({
 				namespaces: uploadedNamespaces,
-				operationId: createClientOperationId(),
+				operationId: createAccountClientId(),
 				state_epoch: response.state_epoch,
 				tabId,
 				type: 'uploaded',
@@ -547,7 +544,7 @@ export async function flushAccountSyncQueue() {
 		releaseAccountSyncLease(context.user.id, tabId);
 		void postAccountSyncBroadcastMessage({
 			namespaces: [],
-			operationId: createClientOperationId(),
+			operationId: createAccountClientId(),
 			state_epoch: context.user.state_epoch,
 			tabId,
 			type: 'lease-changed',
@@ -655,7 +652,7 @@ export async function takeOverLocalAccountData() {
 				entry: {
 					attempts: 0,
 					baseRevision: conflict.revision,
-					clientMutationId: createClientOperationId(),
+					clientMutationId: createAccountClientId(),
 					conflict,
 					data: conflict.local,
 					dirtyAt: now,
@@ -742,7 +739,7 @@ export function flushAccountSyncQueueWithBeacon() {
 		return;
 	}
 
-	const operationId = createClientOperationId();
+	const operationId = createAccountClientId();
 	if (sendSyncPing(body)) {
 		visibilityOperationId = operationId;
 	}

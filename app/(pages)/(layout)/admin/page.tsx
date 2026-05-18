@@ -47,8 +47,12 @@ export default function AdminPage() {
 
 	const refreshUsers = useCallback(() => {
 		setIsLoading(true);
+		setMessage(null);
 		void listAdminUsers({ page, query, status })
-			.then(setUsers)
+			.then((data) => {
+				setUsers(data);
+				setMessage(null);
+			})
 			.catch((error: unknown) => {
 				if (checkAdminSessionUnauthorized(error)) {
 					clearAdminSession();

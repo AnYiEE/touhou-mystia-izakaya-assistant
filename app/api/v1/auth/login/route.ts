@@ -21,6 +21,11 @@ export const dynamic = 'force-dynamic';
 
 const LOGIN_FAILED_ATTEMPT_LIMIT = 5;
 const LOGIN_LOCK_MS = 15 * 60 * 1000;
+const INVALID_LOGIN_MESSAGE = 'invalid-credentials';
+
+function createInvalidLoginResponse() {
+	return createNoStoreErrorResponse(INVALID_LOGIN_MESSAGE, 401);
+}
 
 export async function POST(request: NextRequest) {
 	const featureResponse = await checkAccountFeatureResponse();
@@ -72,13 +77,13 @@ export async function POST(request: NextRequest) {
 	const user =
 		await usersModule.findUserByUsernameNormalized(usernameNormalized);
 	if (user === null) {
-		return createNoStoreErrorResponse('user-not-found', 404);
+		return createInvalidLoginResponse();
 	}
 	if (user.status === USER_STATUS_MAP.disabled) {
-		return createNoStoreErrorResponse('user-disabled', 403);
+		return createInvalidLoginResponse();
 	}
 	if (user.status === USER_STATUS_MAP.deleted) {
-		return createNoStoreErrorResponse('user-deleted', 403);
+		return createInvalidLoginResponse();
 	}
 
 	const credential = await credentialsModule.getCredentialByUserId(user.id);
@@ -112,7 +117,7 @@ export async function POST(request: NextRequest) {
 			});
 		}
 
-		return createNoStoreErrorResponse('invalid-password', 401);
+		return createInvalidLoginResponse();
 	}
 
 	await Promise.all([
