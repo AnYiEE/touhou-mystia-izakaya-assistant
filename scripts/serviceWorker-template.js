@@ -134,7 +134,7 @@
 		if (!(isCdnServer || isSelfHost) || protocol !== 'https:') {
 			return;
 		}
-		if (pathname.startsWith('/api/')) {
+		if (pathname === '/api' || pathname.startsWith('/api/')) {
 			return;
 		}
 

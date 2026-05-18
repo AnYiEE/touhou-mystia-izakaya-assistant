@@ -19,6 +19,7 @@ import {
 	createNoStoreJsonResponse,
 } from '@/api/v1/utils';
 import { MAX_DATA_SIZE } from '@/api/v1/backups/constants';
+import { maskBackupCode } from '@/api/v1/backups/utils';
 import {
 	SYNC_NAMESPACE_MAP,
 	SYNC_SCHEMA_VERSION_MAP,
@@ -246,10 +247,6 @@ function createMealSignature(meal: object) {
 	return JSON.stringify(sortJsonValue(meal));
 }
 
-function maskBackupCode(code: string) {
-	return `${code.slice(0, 8)}...${code.slice(-4)}`;
-}
-
 function mergeMealRecord(
 	cloud: Record<string, object[]> | null,
 	imported: Record<string, object[]>
@@ -280,7 +277,12 @@ function parseCloudMealRecord(record: TUserState | null) {
 		return null;
 	}
 
-	const data = JSON.parse(record.data);
+	let data: unknown;
+	try {
+		data = JSON.parse(record.data);
+	} catch {
+		throw new Error('server-misconfigured');
+	}
 	if (!checkMealRecord(data)) {
 		throw new Error('server-misconfigured');
 	}
@@ -473,6 +475,12 @@ export async function POST(request: NextRequest) {
 				error.message === 'invalid-backup-file'
 			) {
 				return createNoStoreErrorResponse('invalid-backup-file', 400);
+			}
+			if (
+				error instanceof Error &&
+				error.message === 'server-misconfigured'
+			) {
+				return createNoStoreErrorResponse('server-misconfigured', 500);
 			}
 			if (error instanceof Error && error.message === 'sync-conflict') {
 				return createNoStoreErrorResponse('sync-conflict', 409);

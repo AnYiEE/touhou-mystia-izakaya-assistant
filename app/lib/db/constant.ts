@@ -10,6 +10,7 @@ export function getSqliteDatabasePath(databasePath: string | undefined) {
 }
 
 export const TABLE_NAME_MAP = {
+	backupCodeLock: 'backup_code_locks',
 	backupFileRecord: 'backup_files',
 	session: 'sessions',
 	user: 'users',

@@ -66,6 +66,10 @@ function getLoggedInAccountContext() {
 	return { csrfToken, user };
 }
 
+function checkCurrentAccountUser(userId: string) {
+	return accountStore.shared.user.get()?.id === userId;
+}
+
 function updatePendingCount(entries?: IDirtyQueueEntry[]) {
 	const user = accountStore.shared.user.get();
 	const pendingEntries =
@@ -114,9 +118,15 @@ function startLeaseRenewal(userId: string) {
 	}
 
 	leaseTimer = setInterval(() => {
-		if (!renewAccountSyncLease(userId, tabId)) {
-			stopAccountSyncClient();
-		}
+		void renewAccountSyncLease(userId, tabId)
+			.then((isRenewed) => {
+				if (!isRenewed) {
+					stopAccountSyncClient();
+				}
+			})
+			.catch(() => {
+				stopAccountSyncClient();
+			});
 	}, 5 * 1000);
 }
 
@@ -453,6 +463,10 @@ async function handleStateEpochMismatch(
 	shouldBroadcast = true
 ) {
 	const remoteState = await fetchSyncState();
+	if (!checkCurrentAccountUser(userId)) {
+		return false;
+	}
+
 	const recordsToApply = applyRemoteStatePreservingDirty({
 		records: remoteState.records,
 		stateEpoch: remoteState.state_epoch,
@@ -467,12 +481,14 @@ async function handleStateEpochMismatch(
 	}
 
 	const user = accountStore.shared.user.get();
-	if (user !== null) {
+	if (user?.id === userId) {
 		accountStore.shared.user.set({
 			...user,
 			state_epoch: remoteState.state_epoch,
 		});
 	}
+
+	return true;
 }
 
 export async function flushAccountSyncQueue() {
@@ -572,7 +588,13 @@ export async function flushAccountSyncQueue() {
 			error.message === 'state-epoch-mismatch'
 		) {
 			try {
-				await handleStateEpochMismatch(context.user.id);
+				const didRefresh = await handleStateEpochMismatch(
+					context.user.id
+				);
+				if (!didRefresh || !checkCurrentAccountUser(context.user.id)) {
+					return false;
+				}
+
 				shouldScheduleRetryAfterFlush =
 					getFlushableEntries(context.user.id).length > 0;
 				accountStore.shared.sync.canRetry.set(false);
@@ -603,7 +625,11 @@ export async function flushAccountSyncQueue() {
 		accountStore.shared.sync.isSyncing.set(false);
 		updatePendingCount();
 		stopLeaseRenewal();
-		releaseAccountSyncLease(context.user.id, tabId);
+		try {
+			await releaseAccountSyncLease(context.user.id, tabId);
+		} catch (error) {
+			console.warn('Failed to release account sync lease.', error);
+		}
 		void postAccountSyncBroadcastMessage({
 			namespaces: [],
 			operationId: createAccountClientId(),
@@ -658,6 +684,10 @@ export async function takeOverLocalAccountData() {
 
 	const localSnapshot = createLocalAccountSnapshot();
 	const remoteState = await fetchSyncState();
+	if (!checkCurrentAccountUser(context.user.id)) {
+		return;
+	}
+
 	const currentMeta = readAccountSyncMeta(context.user.id);
 	const hasRemoteClearedState =
 		remoteState.records.length === 0 &&
@@ -830,18 +860,23 @@ export function startAccountSyncClient() {
 			}
 
 			if (message.type === 'uploaded') {
+				const expectedUserId = context.user.id;
 				updatePendingCount();
 				void fetchSyncState(message.namespaces)
 					.then((remoteState) => {
+						if (!checkCurrentAccountUser(expectedUserId)) {
+							return;
+						}
+
 						applyRemoteStatePreservingDirty({
 							records: remoteState.records,
 							replaceMeta: false,
 							stateEpoch: remoteState.state_epoch,
 							targetNamespaces: message.namespaces,
-							userId: context.user.id,
+							userId: expectedUserId,
 						});
 						const user = accountStore.shared.user.get();
-						if (user !== null) {
+						if (user?.id === expectedUserId) {
 							accountStore.shared.user.set({
 								...user,
 								state_epoch: remoteState.state_epoch,
@@ -849,6 +884,10 @@ export function startAccountSyncClient() {
 						}
 					})
 					.catch((error: unknown) => {
+						if (!checkCurrentAccountUser(expectedUserId)) {
+							return;
+						}
+
 						accountStore.shared.sync.canRetry.set(true);
 						accountStore.shared.sync.lastError.set(
 							error instanceof Error
@@ -867,17 +906,26 @@ export function startAccountSyncClient() {
 				return;
 			}
 
+			const expectedUserId = context.user.id;
 			void fetchSyncState(message.namespaces)
 				.then((remoteState) => {
+					if (!checkCurrentAccountUser(expectedUserId)) {
+						return;
+					}
+
 					applyRemoteStatePreservingDirty({
 						records: remoteState.records,
 						replaceMeta: false,
 						stateEpoch: remoteState.state_epoch,
 						targetNamespaces: message.namespaces,
-						userId: context.user.id,
+						userId: expectedUserId,
 					});
 				})
 				.catch((error: unknown) => {
+					if (!checkCurrentAccountUser(expectedUserId)) {
+						return;
+					}
+
 					accountStore.shared.sync.canRetry.set(true);
 					accountStore.shared.sync.lastError.set(
 						error instanceof Error

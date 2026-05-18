@@ -15,6 +15,14 @@ export function isStringArray(data: unknown): data is string[] {
 }
 
 export function stableJson(data: unknown): string {
+	if (
+		data === undefined ||
+		typeof data === 'function' ||
+		typeof data === 'symbol'
+	) {
+		return 'undefined';
+	}
+
 	if (Array.isArray(data)) {
 		return `[${data.map(stableJson).join(',')}]`;
 	}

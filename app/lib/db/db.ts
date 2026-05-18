@@ -29,6 +29,14 @@ await db.schema
 	.addColumn('user_id', 'text', (col) => col.notNull())
 	.execute();
 
+await db.schema
+	.createTable(TABLE_NAME_MAP.backupCodeLock)
+	.ifNotExists()
+	.addColumn('code', 'text', (col) => col.primaryKey())
+	.addColumn('owner_id', 'text', (col) => col.notNull())
+	.addColumn('expires_at', 'integer', (col) => col.notNull())
+	.execute();
+
 const backupFileRecordTableColumns = await getTableColumns(
 	db,
 	TABLE_NAME_MAP.backupFileRecord

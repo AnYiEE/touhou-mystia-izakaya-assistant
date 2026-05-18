@@ -42,9 +42,15 @@ export async function POST(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
+	const adminModule = await import('@/lib/account/server/admin');
 	const auth = authenticateAdminRequest(request);
 	if (auth.status === 'error') {
-		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
+		const response = createNoStoreErrorResponse(
+			auth.message,
+			auth.httpStatus
+		);
+		adminModule.clearAdminSessionCookie(response, request);
+		return response;
 	}
 
 	const csrfResponse = checkAdminCsrfResponse(request, auth.token);
@@ -52,7 +58,6 @@ export async function POST(request: NextRequest) {
 		return csrfResponse;
 	}
 
-	const adminModule = await import('@/lib/account/server/admin');
 	const response = createNoStoreJsonResponse({ message: 'admin-logged-out' });
 	adminModule.clearAdminSessionCookie(response, request);
 

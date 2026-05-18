@@ -3,6 +3,10 @@ import { type NextRequest } from 'next/server';
 import { sha1 } from 'js-sha1';
 
 export function maskBackupCode(code: string) {
+	if (code.length <= 12) {
+		return '*'.repeat(Math.max(4, code.length));
+	}
+
 	return `${code.slice(0, 8)}...${code.slice(-4)}`;
 }
 
