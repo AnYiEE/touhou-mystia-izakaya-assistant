@@ -1,4 +1,8 @@
 import {
+	BEVERAGE_LIST,
+	DLC_LABEL_MAP,
+	INGREDIENT_LIST,
+	RECIPE_LIST,
 	type TBeverageName,
 	type TIngredientName,
 	type TRecipeName,
@@ -56,6 +60,67 @@ const recipeColumnKeys = new Set<string>([
 	'action',
 	'time',
 ]);
+const hiddenItemKeys = new Set(['dlcs']);
+const tableHiddenItemKeys = new Set(['beverages', 'ingredients', 'recipes']);
+const dlcKeys = new Set(Object.keys(DLC_LABEL_MAP));
+const beverageNames = new Set<string>(BEVERAGE_LIST.map((item) => item.name));
+const ingredientNames = new Set<string>(
+	INGREDIENT_LIST.map((item) => item.name)
+);
+const recipeNames = new Set<string>(RECIPE_LIST.map((item) => item.name));
+
+function checkExactKeys(data: Record<string, unknown>, keys: Set<string>) {
+	const dataKeys = Object.keys(data);
+
+	return (
+		dataKeys.length === keys.size && dataKeys.every((key) => keys.has(key))
+	);
+}
+
+function isAllowedStringArray(data: unknown, values: Set<string>) {
+	return isStringArray(data) && data.every((item) => values.has(item));
+}
+
+function filterAllowedStringArray(data: unknown, values: Set<string>) {
+	return isStringArray(data) ? data.filter((item) => values.has(item)) : data;
+}
+
+function sanitizeGlobalPreferences(data: unknown) {
+	if (!isPlainObject(data)) {
+		return data;
+	}
+
+	const { hiddenItems, table } = data;
+	const tableHiddenItems = isPlainObject(table) ? table['hiddenItems'] : null;
+
+	return {
+		...data,
+		hiddenItems: isPlainObject(hiddenItems)
+			? { dlcs: filterAllowedStringArray(hiddenItems['dlcs'], dlcKeys) }
+			: hiddenItems,
+		table: isPlainObject(table)
+			? {
+					...table,
+					hiddenItems: isPlainObject(tableHiddenItems)
+						? {
+								beverages: filterAllowedStringArray(
+									tableHiddenItems['beverages'],
+									beverageNames
+								),
+								ingredients: filterAllowedStringArray(
+									tableHiddenItems['ingredients'],
+									ingredientNames
+								),
+								recipes: filterAllowedStringArray(
+									tableHiddenItems['recipes'],
+									recipeNames
+								),
+							}
+						: tableHiddenItems,
+				}
+			: table,
+	};
+}
 
 function isBeverageColumnArray(
 	data: unknown
@@ -158,11 +223,12 @@ export const globalPreferencesSerializer = {
 		};
 	},
 	migrate(data) {
-		if (!this.validate(data)) {
+		const sanitizedData = sanitizeGlobalPreferences(data);
+		if (!this.validate(sanitizedData)) {
 			throw new Error('invalid-global-preferences');
 		}
 
-		return data;
+		return sanitizedData;
 	},
 	serialize(data) {
 		return data;
@@ -230,7 +296,8 @@ export const globalPreferencesSerializer = {
 		return (
 			typeof data['customerCardTagsTooltip'] === 'boolean' &&
 			typeof data['famousShop'] === 'boolean' &&
-			isStringArray(hiddenItems['dlcs']) &&
+			checkExactKeys(hiddenItems, hiddenItemKeys) &&
+			isAllowedStringArray(hiddenItems['dlcs'], dlcKeys) &&
 			typeof data['highAppearance'] === 'boolean' &&
 			typeof popularTrend['isNegative'] === 'boolean' &&
 			(popularTrend['tag'] === null ||
@@ -242,9 +309,16 @@ export const globalPreferencesSerializer = {
 			typeof suggestMeals['maxResults'] === 'number' &&
 			isBeverageColumnArray(tableColumns['beverage']) &&
 			isRecipeColumnArray(tableColumns['recipe']) &&
-			isStringArray(tableHiddenItems['beverages']) &&
-			isStringArray(tableHiddenItems['ingredients']) &&
-			isStringArray(tableHiddenItems['recipes']) &&
+			checkExactKeys(tableHiddenItems, tableHiddenItemKeys) &&
+			isAllowedStringArray(
+				tableHiddenItems['beverages'],
+				beverageNames
+			) &&
+			isAllowedStringArray(
+				tableHiddenItems['ingredients'],
+				ingredientNames
+			) &&
+			isAllowedStringArray(tableHiddenItems['recipes'], recipeNames) &&
 			typeof table['row'] === 'number' &&
 			typeof data['tachie'] === 'boolean' &&
 			typeof data['vibrate'] === 'boolean'

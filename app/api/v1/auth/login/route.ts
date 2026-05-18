@@ -19,12 +19,16 @@ import {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const LOGIN_FAILED_ATTEMPT_LIMIT = 5;
-const LOGIN_LOCK_MS = 15 * 60 * 1000;
 const INVALID_LOGIN_MESSAGE = 'invalid-credentials';
 
 function createInvalidLoginResponse() {
 	return createNoStoreErrorResponse(INVALID_LOGIN_MESSAGE, 401);
+}
+
+function createCredentialLockedResponse(retryAfter: number) {
+	return createNoStoreErrorResponse('too-many-requests', 429, {
+		retry_after: retryAfter,
+	});
 }
 
 export async function POST(request: NextRequest) {
@@ -78,25 +82,28 @@ export async function POST(request: NextRequest) {
 	const user =
 		await usersModule.findUserByUsernameNormalized(usernameNormalized);
 	if (user === null) {
+		await passwordModule.consumePasswordVerificationCost(body.password);
 		return createInvalidLoginResponse();
 	}
 	if (user.status === USER_STATUS_MAP.disabled) {
+		await passwordModule.consumePasswordVerificationCost(body.password);
 		return createInvalidLoginResponse();
 	}
 	if (user.status === USER_STATUS_MAP.deleted) {
+		await passwordModule.consumePasswordVerificationCost(body.password);
 		return createInvalidLoginResponse();
 	}
 
 	const credential = await credentialsModule.getCredentialByUserId(user.id);
 	if (credential === null) {
+		await passwordModule.consumePasswordVerificationCost(body.password);
 		return createNoStoreErrorResponse('server-misconfigured', 500);
 	}
 
 	const now = Date.now();
-	if (credential.locked_until !== null && credential.locked_until > now) {
-		return createNoStoreErrorResponse('too-many-requests', 429, {
-			retry_after: Math.ceil((credential.locked_until - now) / 1000),
-		});
+	const lockState = credentialsModule.getCredentialLockState(credential, now);
+	if (lockState.status === 'locked') {
+		return createCredentialLockedResponse(lockState.retryAfter);
 	}
 
 	const isValidPassword = await passwordModule.verifyPassword(
@@ -104,30 +111,29 @@ export async function POST(request: NextRequest) {
 		body.password
 	);
 	if (!isValidPassword) {
-		const failedAttempts = await credentialsModule.incrementFailedAttempts(
-			user.id
-		);
-
-		if (failedAttempts >= LOGIN_FAILED_ATTEMPT_LIMIT) {
-			await credentialsModule.setLockedUntil(
-				user.id,
-				now + LOGIN_LOCK_MS
-			);
-			return createNoStoreErrorResponse('too-many-requests', 429, {
-				retry_after: Math.ceil(LOGIN_LOCK_MS / 1000),
-			});
+		const failureState =
+			await credentialsModule.recordFailedCredentialAttempt(user.id, now);
+		if (failureState.status === 'locked') {
+			return createCredentialLockedResponse(failureState.retryAfter);
 		}
 
 		return createInvalidLoginResponse();
 	}
 
-	await Promise.all([
-		credentialsModule.resetFailedAttempts(user.id),
-		usersModule.updateUser(user.id, {
-			last_login_at: now,
-			updated_at: now,
-		}),
-	]);
+	const resetState = await credentialsModule.resetFailedAttemptsForCredential(
+		{ now, passwordHash: credential.password_hash, userId: user.id }
+	);
+	if (resetState.status === 'locked') {
+		return createCredentialLockedResponse(resetState.retryAfter);
+	}
+	if (resetState.status === 'stale') {
+		return createInvalidLoginResponse();
+	}
+
+	await usersModule.updateUser(user.id, {
+		last_login_at: now,
+		updated_at: now,
+	});
 
 	const currentUser = { ...user, last_login_at: now, updated_at: now };
 	const session = await authModule.createAccountSession(user.id, request);

@@ -70,6 +70,19 @@ function checkCurrentAccountUser(userId: string) {
 	return accountStore.shared.user.get()?.id === userId;
 }
 
+function setCurrentAccountUserStateEpoch(userId: string, stateEpoch: number) {
+	const user = accountStore.shared.user.get();
+	if (user?.id !== userId) {
+		return false;
+	}
+
+	if (user.state_epoch !== stateEpoch) {
+		accountStore.shared.user.set({ ...user, state_epoch: stateEpoch });
+	}
+
+	return true;
+}
+
 function updatePendingCount(entries?: IDirtyQueueEntry[]) {
 	const user = accountStore.shared.user.get();
 	const pendingEntries =
@@ -110,6 +123,23 @@ function stopLeaseRenewal() {
 export function stopAccountSyncClient() {
 	clearSyncTimers();
 	stopLeaseRenewal();
+}
+
+function handlePassiveSyncRefreshError(error: unknown, expectedUserId: string) {
+	if (!checkCurrentAccountUser(expectedUserId)) {
+		return;
+	}
+
+	if (error instanceof AccountApiError && error.status === 401) {
+		stopAccountSyncClient();
+		resetExpiredAccountSession();
+		return;
+	}
+
+	accountStore.shared.sync.canRetry.set(true);
+	accountStore.shared.sync.lastError.set(
+		error instanceof Error ? error.message : 'sync-refresh-failed'
+	);
 }
 
 function startLeaseRenewal(userId: string) {
@@ -480,13 +510,7 @@ async function handleStateEpochMismatch(
 		});
 	}
 
-	const user = accountStore.shared.user.get();
-	if (user?.id === userId) {
-		accountStore.shared.user.set({
-			...user,
-			state_epoch: remoteState.state_epoch,
-		});
-	}
+	setCurrentAccountUserStateEpoch(userId, remoteState.state_epoch);
 
 	return true;
 }
@@ -526,6 +550,9 @@ export async function flushAccountSyncQueue() {
 			},
 			context.csrfToken
 		);
+		if (!checkCurrentAccountUser(context.user.id)) {
+			return false;
+		}
 
 		const entryMap = new Map(
 			entries.map((entry) => [entry.namespace, entry] as const)
@@ -558,6 +585,7 @@ export async function flushAccountSyncQueue() {
 				}
 			}
 		});
+		setCurrentAccountUserStateEpoch(context.user.id, response.state_epoch);
 
 		accountStore.shared.sync.failedAttempts.set(0);
 		accountStore.shared.sync.lastError.set(null);
@@ -582,6 +610,7 @@ export async function flushAccountSyncQueue() {
 	} catch (error) {
 		if (error instanceof AccountApiError && error.status === 401) {
 			resetExpiredAccountSession();
+			return false;
 		}
 		if (
 			error instanceof Error &&
@@ -700,6 +729,10 @@ export async function takeOverLocalAccountData() {
 			revisions: {},
 			state_epoch: remoteState.state_epoch,
 		});
+		setCurrentAccountUserStateEpoch(
+			context.user.id,
+			remoteState.state_epoch
+		);
 		return;
 	}
 	const recordMap = getRecordMap(remoteState.records);
@@ -807,6 +840,7 @@ export async function takeOverLocalAccountData() {
 		stateEpoch: remoteState.state_epoch,
 		userId: context.user.id,
 	});
+	setCurrentAccountUserStateEpoch(context.user.id, remoteState.state_epoch);
 	scheduleAccountSyncFlush();
 }
 
@@ -875,25 +909,13 @@ export function startAccountSyncClient() {
 							targetNamespaces: message.namespaces,
 							userId: expectedUserId,
 						});
-						const user = accountStore.shared.user.get();
-						if (user?.id === expectedUserId) {
-							accountStore.shared.user.set({
-								...user,
-								state_epoch: remoteState.state_epoch,
-							});
-						}
+						setCurrentAccountUserStateEpoch(
+							expectedUserId,
+							remoteState.state_epoch
+						);
 					})
 					.catch((error: unknown) => {
-						if (!checkCurrentAccountUser(expectedUserId)) {
-							return;
-						}
-
-						accountStore.shared.sync.canRetry.set(true);
-						accountStore.shared.sync.lastError.set(
-							error instanceof Error
-								? error.message
-								: 'sync-refresh-failed'
-						);
+						handlePassiveSyncRefreshError(error, expectedUserId);
 					});
 				return;
 			}
@@ -920,18 +942,13 @@ export function startAccountSyncClient() {
 						targetNamespaces: message.namespaces,
 						userId: expectedUserId,
 					});
+					setCurrentAccountUserStateEpoch(
+						expectedUserId,
+						remoteState.state_epoch
+					);
 				})
 				.catch((error: unknown) => {
-					if (!checkCurrentAccountUser(expectedUserId)) {
-						return;
-					}
-
-					accountStore.shared.sync.canRetry.set(true);
-					accountStore.shared.sync.lastError.set(
-						error instanceof Error
-							? error.message
-							: 'sync-refresh-failed'
-					);
+					handlePassiveSyncRefreshError(error, expectedUserId);
 				});
 		}
 	);

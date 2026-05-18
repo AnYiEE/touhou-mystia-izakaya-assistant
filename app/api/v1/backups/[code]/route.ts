@@ -2,12 +2,14 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { validate } from 'uuid';
 
 import {
+	checkBackupCodeLockLostError,
 	checkBackupFileNotFoundError,
 	checkIpFrequency,
 	deleteFile,
 	deleteRecord,
 	getFile,
 	getRecord,
+	throwIfBackupCodeLockLost,
 	updateRecordTimeout,
 	withBackupCodeLock,
 } from '@/actions/backup';
@@ -90,37 +92,64 @@ export async function DELETE(
 		return createNoStoreErrorResponse('Invalid code', 400);
 	}
 
-	return withBackupCodeLock(code, async () => {
-		const { status } = await getRecord(code);
-		if (status === 404) {
-			return createNoStoreErrorResponse(
-				'The file record does not exist or has been deleted',
-				404
-			);
-		}
+	try {
+		return await withBackupCodeLock(code, async (signal) => {
+			const { status } = await getRecord(code);
+			throwIfBackupCodeLockLost(signal);
 
-		let deletedFile = true;
-		try {
-			await deleteFile(code);
-		} catch (error) {
-			if (!checkBackupFileNotFoundError(error)) {
-				console.warn('Failed to delete backup file', {
-					code: maskBackupCode(code),
-					error,
-				});
-
-				return createNoStoreErrorResponse('Failed to delete file', 500);
+			if (status === 404) {
+				return createNoStoreErrorResponse(
+					'The file record does not exist or has been deleted',
+					404
+				);
 			}
 
-			deletedFile = false;
-		}
-		await deleteRecord(code);
+			let deletedFile = true;
+			try {
+				throwIfBackupCodeLockLost(signal);
+				await deleteFile(code);
+				throwIfBackupCodeLockLost(signal);
+			} catch (error) {
+				if (
+					error instanceof Error &&
+					error.message === 'backup-code-lock-lost'
+				) {
+					return createNoStoreErrorResponse(
+						'backup-code-lock-lost',
+						409
+					);
+				}
 
-		return createNoStoreJsonResponse({
-			deletedFile,
-			message: 'The file record has been deleted',
+				if (!checkBackupFileNotFoundError(error)) {
+					console.warn('Failed to delete backup file', {
+						code: maskBackupCode(code),
+						error,
+					});
+
+					return createNoStoreErrorResponse(
+						'Failed to delete file',
+						500
+					);
+				}
+
+				deletedFile = false;
+			}
+			throwIfBackupCodeLockLost(signal);
+			await deleteRecord(code);
+			throwIfBackupCodeLockLost(signal);
+
+			return createNoStoreJsonResponse({
+				deletedFile,
+				message: 'The file record has been deleted',
+			});
 		});
-	});
+	} catch (error) {
+		if (checkBackupCodeLockLostError(error)) {
+			return createNoStoreErrorResponse('backup-code-lock-lost', 409);
+		}
+
+		throw error;
+	}
 }
 
 export function OPTIONS() {

@@ -115,7 +115,12 @@ export async function readJsonBody<T>(
 		}
 		text += decoder.decode();
 
-		return JSON.parse(text) as Partial<T>;
+		const data: unknown = JSON.parse(text);
+		if (data === null || Array.isArray(data) || typeof data !== 'object') {
+			return null;
+		}
+
+		return data as Partial<T>;
 	} catch {
 		return null;
 	}

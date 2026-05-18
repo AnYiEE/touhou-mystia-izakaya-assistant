@@ -37,11 +37,13 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	const [authModule, passwordModule, userModule] = await Promise.all([
-		import('@/lib/account/server/auth'),
-		import('@/lib/account/server/password'),
-		import('@/lib/account/server/user'),
-	]);
+	const [authModule, credentialsModule, passwordModule, userModule] =
+		await Promise.all([
+			import('@/lib/account/server/auth'),
+			import('@/actions/account/credentials'),
+			import('@/lib/account/server/password'),
+			import('@/lib/account/server/user'),
+		]);
 	const auth = await authModule.authenticateAccountRequest(request, true);
 	if (auth.status === 'error') {
 		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
@@ -62,11 +64,33 @@ export async function POST(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
+	const now = Date.now();
+	const lockState = credentialsModule.getCredentialLockState(
+		auth.data.credential,
+		now
+	);
+	if (lockState.status === 'locked') {
+		return createNoStoreErrorResponse('too-many-requests', 429, {
+			retry_after: lockState.retryAfter,
+		});
+	}
+
 	const isValidPassword = await passwordModule.verifyPassword(
 		auth.data.credential.password_hash,
 		body.current_password
 	);
 	if (!isValidPassword) {
+		const failureState =
+			await credentialsModule.recordFailedCredentialAttempt(
+				auth.data.user.id,
+				now
+			);
+		if (failureState.status === 'locked') {
+			return createNoStoreErrorResponse('too-many-requests', 429, {
+				retry_after: failureState.retryAfter,
+			});
+		}
+
 		return createNoStoreErrorResponse('invalid-password', 401);
 	}
 
@@ -78,7 +102,7 @@ export async function POST(request: NextRequest) {
 			locked_until: null,
 			password_hash: await passwordModule.hashPassword(body.new_password),
 			password_must_change: 0,
-			updated_at: Date.now(),
+			updated_at: now,
 		}
 	);
 	const response = createNoStoreJsonResponse({

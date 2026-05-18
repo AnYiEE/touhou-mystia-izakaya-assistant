@@ -2,12 +2,14 @@ import { type NextRequest } from 'next/server';
 import { env } from 'node:process';
 
 import {
+	checkBackupCodeLockLostError,
 	deleteFile,
 	deleteRecord,
 	getBackupFileCodes,
 	getExpiredRecords,
 	getRecord,
 	getRecordCodes,
+	throwIfBackupCodeLockLost,
 	withBackupCodeLock,
 } from '@/actions/backup';
 import {
@@ -75,58 +77,97 @@ export async function DELETE(
 	let failedRecordCount = 0;
 	let orphanDeletedCount = 0;
 
-	await runWithConcurrencyLimit(records, 8, async ({ code }) => {
-		await withBackupCodeLock(code, async () => {
-			const record = await getRecord(code);
-			if (
-				record.status === 404 ||
-				!isExpiredBackupRecord(record, sixMonthsAgo)
-			) {
-				return;
-			}
+	try {
+		await runWithConcurrencyLimit(records, 8, async ({ code }) => {
+			await withBackupCodeLock(code, async (signal) => {
+				const record = await getRecord(code);
+				throwIfBackupCodeLockLost(signal);
 
-			try {
-				await deleteFile(code);
-				deletedFileCount++;
-			} catch (error) {
-				failedFileCount++;
-				console.warn('Failed to delete expired backup file', {
-					code: maskBackupCode(code),
-					error,
-				});
-			}
+				if (
+					record.status === 404 ||
+					!isExpiredBackupRecord(record, sixMonthsAgo)
+				) {
+					return;
+				}
 
-			try {
-				await deleteRecord(code);
-				deletedRecordCount++;
-			} catch (error) {
-				failedRecordCount++;
-				console.warn('Failed to delete expired backup record', {
-					code: maskBackupCode(code),
-					error,
-				});
-			}
+				try {
+					throwIfBackupCodeLockLost(signal);
+					await deleteFile(code);
+					throwIfBackupCodeLockLost(signal);
+					deletedFileCount++;
+				} catch (error) {
+					if (
+						error instanceof Error &&
+						error.message === 'backup-code-lock-lost'
+					) {
+						throw error;
+					}
+
+					failedFileCount++;
+					console.warn('Failed to delete expired backup file', {
+						code: maskBackupCode(code),
+						error,
+					});
+				}
+
+				try {
+					throwIfBackupCodeLockLost(signal);
+					await deleteRecord(code);
+					throwIfBackupCodeLockLost(signal);
+					deletedRecordCount++;
+				} catch (error) {
+					if (
+						error instanceof Error &&
+						error.message === 'backup-code-lock-lost'
+					) {
+						throw error;
+					}
+
+					failedRecordCount++;
+					console.warn('Failed to delete expired backup record', {
+						code: maskBackupCode(code),
+						error,
+					});
+				}
+			});
 		});
-	});
-	await runWithConcurrencyLimit(orphanCodes, 8, async (code) => {
-		await withBackupCodeLock(code, async () => {
-			const record = await getRecord(code);
-			if (record.status !== 404) {
-				return;
-			}
+		await runWithConcurrencyLimit(orphanCodes, 8, async (code) => {
+			await withBackupCodeLock(code, async (signal) => {
+				const record = await getRecord(code);
+				throwIfBackupCodeLockLost(signal);
 
-			try {
-				await deleteFile(code);
-				orphanDeletedCount++;
-			} catch (error) {
-				failedFileCount++;
-				console.warn('Failed to delete orphan backup file', {
-					code: maskBackupCode(code),
-					error,
-				});
-			}
+				if (record.status !== 404) {
+					return;
+				}
+
+				try {
+					throwIfBackupCodeLockLost(signal);
+					await deleteFile(code);
+					throwIfBackupCodeLockLost(signal);
+					orphanDeletedCount++;
+				} catch (error) {
+					if (
+						error instanceof Error &&
+						error.message === 'backup-code-lock-lost'
+					) {
+						throw error;
+					}
+
+					failedFileCount++;
+					console.warn('Failed to delete orphan backup file', {
+						code: maskBackupCode(code),
+						error,
+					});
+				}
+			});
 		});
-	});
+	} catch (error) {
+		if (checkBackupCodeLockLostError(error)) {
+			return createNoStoreErrorResponse('backup-code-lock-lost', 409);
+		}
+
+		throw error;
+	}
 
 	return createNoStoreJsonResponse({
 		deletedFileCount,

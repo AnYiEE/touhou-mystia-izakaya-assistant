@@ -136,9 +136,16 @@ export function mergeFieldMap<T extends object>({
 	local: T;
 }) {
 	if (cloud === null) {
+		const sanitizedLocal = mergeFieldValue({
+			base: null,
+			cloud: defaults,
+			defaults,
+			local,
+		}) as { data: T; shouldUpload: boolean };
+
 		return {
-			data: local,
-			shouldUpload: !checkSnapshotEqual(local, defaults),
+			data: sanitizedLocal.data,
+			shouldUpload: !checkSnapshotEqual(sanitizedLocal.data, defaults),
 		};
 	}
 

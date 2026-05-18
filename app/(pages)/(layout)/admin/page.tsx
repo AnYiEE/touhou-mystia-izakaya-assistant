@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Input } from '@heroui/input';
 
@@ -44,16 +44,27 @@ export default function AdminPage() {
 	const [status, setStatus] = useState<TUserStatus | ''>('');
 	const [username, setUsername] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
+	const refreshUsersRequestIdRef = useRef(0);
 
 	const refreshUsers = useCallback(() => {
+		const requestId = refreshUsersRequestIdRef.current + 1;
+		refreshUsersRequestIdRef.current = requestId;
 		setIsLoading(true);
 		setMessage(null);
 		void listAdminUsers({ page, query, status })
 			.then((data) => {
+				if (refreshUsersRequestIdRef.current !== requestId) {
+					return;
+				}
+
 				setUsers(data);
 				setMessage(null);
 			})
 			.catch((error: unknown) => {
+				if (refreshUsersRequestIdRef.current !== requestId) {
+					return;
+				}
+
 				if (checkAdminSessionUnauthorized(error)) {
 					clearAdminSession();
 					setAdmin(null);
@@ -64,6 +75,10 @@ export default function AdminPage() {
 				);
 			})
 			.finally(() => {
+				if (refreshUsersRequestIdRef.current !== requestId) {
+					return;
+				}
+
 				setIsLoading(false);
 			});
 	}, [page, query, status]);

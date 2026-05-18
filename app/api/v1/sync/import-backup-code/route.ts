@@ -6,8 +6,18 @@ import {
 	compatibilityCustomerRareData,
 	deleteIndexProperty,
 } from '@/actions/backup/compatibility';
-import { deleteFile, getFile, getFileSize } from '@/actions/backup/file';
-import { withBackupCodeLock } from '@/actions/backup/lock';
+import {
+	checkBackupFileNotFoundError,
+	deleteFile,
+	getFile,
+	getFileSize,
+} from '@/actions/backup/file';
+import {
+	type IBackupCodeLockSignal,
+	checkBackupCodeLockLostError,
+	throwIfBackupCodeLockLost,
+	withBackupCodeLock,
+} from '@/actions/backup/lock';
 import {
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
@@ -294,14 +304,19 @@ async function importBackupData(
 	database: Kysely<TDatabase>,
 	userId: string,
 	code: string,
-	expectedStateEpoch: number
+	expectedStateEpoch: number,
+	signal: IBackupCodeLockSignal
 ) {
 	return database.transaction().execute(async (trx) => {
+		throwIfBackupCodeLockLost(signal);
+
 		const user = await trx
 			.selectFrom(TABLE_NAME_MAP.user)
 			.select('state_epoch')
 			.where('id', '=', userId)
 			.executeTakeFirstOrThrow();
+		throwIfBackupCodeLockLost(signal);
+
 		if (user.state_epoch !== expectedStateEpoch) {
 			return {
 				state_epoch: user.state_epoch,
@@ -314,6 +329,8 @@ async function importBackupData(
 			.where('code', '=', code)
 			.returning('code')
 			.executeTakeFirst();
+		throwIfBackupCodeLockLost(signal);
+
 		if (backupRecord === undefined) {
 			return { status: 'not-found' as const };
 		}
@@ -323,8 +340,10 @@ async function importBackupData(
 			if ((await getFileSize(code)) > MAX_DATA_SIZE) {
 				throw new Error('invalid-backup-file');
 			}
+			throwIfBackupCodeLockLost(signal);
 
 			fileContent = await getFile(code);
+			throwIfBackupCodeLockLost(signal);
 		} catch (error) {
 			if (
 				error instanceof Error &&
@@ -332,7 +351,16 @@ async function importBackupData(
 			) {
 				throw error;
 			}
-			throw new Error('backup-code-not-found');
+			if (
+				error instanceof Error &&
+				error.message === 'backup-code-lock-lost'
+			) {
+				throw error;
+			}
+			if (checkBackupFileNotFoundError(error)) {
+				throw new Error('backup-code-not-found');
+			}
+			throw new Error('server-misconfigured');
 		}
 
 		let fileData: unknown;
@@ -354,6 +382,8 @@ async function importBackupData(
 
 		const results = [];
 		for (const item of importNamespaceData) {
+			throwIfBackupCodeLockLost(signal);
+
 			const current = await trx
 				.selectFrom(TABLE_NAME_MAP.userState)
 				.selectAll()
@@ -453,58 +483,99 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
-	return withBackupCodeLock(code, async () => {
-		const database = await dbModule.getAccountDatabase();
-		let importResult;
-		try {
-			importResult = await importBackupData(
-				database,
-				auth.data.user.id,
-				code,
-				auth.data.user.state_epoch
-			);
-		} catch (error) {
-			if (
-				error instanceof Error &&
-				error.message === 'backup-code-not-found'
-			) {
+	try {
+		return await withBackupCodeLock(code, async (signal) => {
+			const database = await dbModule.getAccountDatabase();
+			let importResult;
+			try {
+				importResult = await importBackupData(
+					database,
+					auth.data.user.id,
+					code,
+					auth.data.user.state_epoch,
+					signal
+				);
+			} catch (error) {
+				if (
+					error instanceof Error &&
+					error.message === 'backup-code-not-found'
+				) {
+					return createNoStoreErrorResponse(
+						'backup-code-not-found',
+						404
+					);
+				}
+				if (
+					error instanceof Error &&
+					error.message === 'invalid-backup-file'
+				) {
+					return createNoStoreErrorResponse(
+						'invalid-backup-file',
+						400
+					);
+				}
+				if (
+					error instanceof Error &&
+					error.message === 'server-misconfigured'
+				) {
+					return createNoStoreErrorResponse(
+						'server-misconfigured',
+						500
+					);
+				}
+				if (
+					error instanceof Error &&
+					error.message === 'sync-conflict'
+				) {
+					return createNoStoreErrorResponse('sync-conflict', 409);
+				}
+				if (
+					error instanceof Error &&
+					error.message === 'backup-code-lock-lost'
+				) {
+					return createNoStoreErrorResponse(
+						'backup-code-lock-lost',
+						409
+					);
+				}
+				throw error;
+			}
+			if (importResult.status === 'not-found') {
 				return createNoStoreErrorResponse('backup-code-not-found', 404);
 			}
-			if (
-				error instanceof Error &&
-				error.message === 'invalid-backup-file'
-			) {
-				return createNoStoreErrorResponse('invalid-backup-file', 400);
+			if (importResult.status === 'state-epoch-mismatch') {
+				return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
+					state_epoch: importResult.state_epoch,
+				});
 			}
-			if (
-				error instanceof Error &&
-				error.message === 'server-misconfigured'
-			) {
-				return createNoStoreErrorResponse('server-misconfigured', 500);
+
+			try {
+				throwIfBackupCodeLockLost(signal);
+				await deleteFile(code);
+			} catch (error) {
+				if (
+					error instanceof Error &&
+					error.message === 'backup-code-lock-lost'
+				) {
+					return createNoStoreErrorResponse(
+						'backup-code-lock-lost',
+						409
+					);
+				}
+
+				console.warn('Failed to delete imported backup file', {
+					code: maskBackupCode(code),
+					error,
+				});
 			}
-			if (error instanceof Error && error.message === 'sync-conflict') {
-				return createNoStoreErrorResponse('sync-conflict', 409);
-			}
-			throw error;
-		}
-		if (importResult.status === 'not-found') {
-			return createNoStoreErrorResponse('backup-code-not-found', 404);
-		}
-		if (importResult.status === 'state-epoch-mismatch') {
-			return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
-				state_epoch: importResult.state_epoch,
-			});
+
+			return createNoStoreJsonResponse({ results: importResult.results });
+		});
+	} catch (error) {
+		if (checkBackupCodeLockLostError(error)) {
+			return createNoStoreErrorResponse('backup-code-lock-lost', 409);
 		}
 
-		try {
-			await deleteFile(code);
-		} catch (error) {
-			console.warn('Failed to delete imported backup file', {
-				code: maskBackupCode(code),
-				error,
-			});
-		}
-
-		return createNoStoreJsonResponse({ results: importResult.results });
-	});
+		throw error;
+	}
 }

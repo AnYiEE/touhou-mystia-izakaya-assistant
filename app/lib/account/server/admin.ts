@@ -58,6 +58,29 @@ export function checkAdminCredentials(username: string, password: string) {
 	);
 }
 
+function getAdminCredentialBinding() {
+	const adminUsername = process.env.ADMIN_USERNAME;
+	const adminPassword = process.env.ADMIN_PASSWORD;
+
+	if (!adminUsername || !adminPassword) {
+		return null;
+	}
+
+	return createAccountHmac(
+		'admin:v1',
+		`${adminUsername}\0${createAccountHmac('admin:v1', adminPassword)}`
+	);
+}
+
+function createAdminSessionSignature(payload: string) {
+	const credentialBinding = getAdminCredentialBinding();
+	if (credentialBinding === null) {
+		return null;
+	}
+
+	return createAccountHmac('admin:v1', `${credentialBinding}\0${payload}`);
+}
+
 export function createAdminSessionToken(username: string, now = Date.now()) {
 	const payload = encodeAdminPayload({
 		expires_at: now + ADMIN_SESSION_MAX_AGE * 1000,
@@ -65,7 +88,10 @@ export function createAdminSessionToken(username: string, now = Date.now()) {
 		nonce: randomBytes(16).toString('base64url'),
 		username,
 	});
-	const signature = createAccountHmac('admin:v1', payload);
+	const signature = createAdminSessionSignature(payload);
+	if (signature === null) {
+		throw new Error('feature-disabled');
+	}
 
 	return `${payload}.${signature}`;
 }
@@ -76,13 +102,20 @@ export function verifyAdminSessionToken(token: string, now = Date.now()) {
 		return null;
 	}
 
-	const expectedSignature = createAccountHmac('admin:v1', payloadValue);
+	const expectedSignature = createAdminSessionSignature(payloadValue);
+	if (expectedSignature === null) {
+		return null;
+	}
 	if (!checkFixedLengthEqual(signature, expectedSignature)) {
 		return null;
 	}
 
 	const payload = decodeAdminPayload(payloadValue);
-	if (!payload || payload.expires_at <= now) {
+	if (
+		!payload ||
+		payload.expires_at <= now ||
+		payload.username !== process.env.ADMIN_USERNAME
+	) {
 		return null;
 	}
 

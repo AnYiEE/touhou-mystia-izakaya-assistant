@@ -7,7 +7,13 @@ const backupCodeLocks = new Map<string, Promise<void>>();
 const BACKUP_CODE_LOCK_RETRY_MS = 50;
 const BACKUP_CODE_LOCK_TIMEOUT_MS = 10 * 1000;
 const BACKUP_CODE_LOCK_TTL_MS = 60 * 1000;
+const BACKUP_CODE_LOCK_LOST_MESSAGE = 'backup-code-lock-lost';
 const TABLE_NAME = TABLE_NAME_MAP.backupCodeLock;
+
+export interface IBackupCodeLockSignal {
+	readonly aborted: boolean;
+	readonly reason?: unknown;
+}
 
 function delay(ms: number) {
 	return new Promise((resolve) => {
@@ -75,9 +81,32 @@ async function releaseSharedBackupCodeLock(code: string, ownerId: string) {
 		.execute();
 }
 
+function createBackupCodeLockLostError() {
+	return new Error(BACKUP_CODE_LOCK_LOST_MESSAGE);
+}
+
+export function checkBackupCodeLockLostError(error: unknown) {
+	return (
+		error instanceof Error &&
+		error.message === BACKUP_CODE_LOCK_LOST_MESSAGE
+	);
+}
+
+export function throwIfBackupCodeLockLost(signal: IBackupCodeLockSignal) {
+	if (!signal.aborted) {
+		return;
+	}
+
+	if (checkBackupCodeLockLostError(signal.reason)) {
+		throw signal.reason;
+	}
+
+	throw createBackupCodeLockLostError();
+}
+
 export async function withBackupCodeLock<T>(
 	code: string,
-	task: () => Promise<T>
+	task: (signal: IBackupCodeLockSignal) => Promise<T>
 ) {
 	const previousLock = backupCodeLocks.get(code) ?? Promise.resolve();
 	let releaseCurrentLock!: () => void;
@@ -90,7 +119,24 @@ export async function withBackupCodeLock<T>(
 		await previousLock.catch(() => {});
 
 		const ownerId = randomUUID();
+		const lockSignal: { aborted: boolean; reason?: unknown } = {
+			aborted: false,
+		};
 		let renewalTimer: ReturnType<typeof setInterval> | null = null;
+		const abortTask = (message: string, error?: unknown) => {
+			if (lockSignal.aborted) {
+				return;
+			}
+
+			const lockLostError = createBackupCodeLockLostError();
+			lockSignal.aborted = true;
+			lockSignal.reason = lockLostError;
+			if (renewalTimer !== null) {
+				clearInterval(renewalTimer);
+				renewalTimer = null;
+			}
+			console.warn(message, { code, error, ownerId });
+		};
 
 		try {
 			await acquireSharedBackupCodeLock(code, ownerId);
@@ -98,20 +144,19 @@ export async function withBackupCodeLock<T>(
 				void renewSharedBackupCodeLock(code, ownerId)
 					.then((isRenewed) => {
 						if (!isRenewed) {
-							console.warn(
+							abortTask(
 								'Backup code lock renewal lost ownership.'
 							);
 						}
 					})
 					.catch((error: unknown) => {
-						console.warn(
-							'Failed to renew backup code lock.',
-							error
-						);
+						abortTask('Failed to renew backup code lock.', error);
 					});
 			}, BACKUP_CODE_LOCK_TTL_MS / 3);
 
-			return await task();
+			const result = await task(lockSignal);
+			throwIfBackupCodeLockLost(lockSignal);
+			return result;
 		} finally {
 			if (renewalTimer !== null) {
 				clearInterval(renewalTimer);

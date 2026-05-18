@@ -18,7 +18,11 @@ export async function withAccountSyncPaused<T>(callback: () => Promise<T>) {
 	}
 }
 
-export function withApplyingRemoteState<T>(callback: () => T) {
+type TSynchronousResult<T> = T extends PromiseLike<unknown> ? never : T;
+
+export function withApplyingRemoteState<T>(
+	callback: () => TSynchronousResult<T>
+) {
 	applyingRemoteStateCount += 1;
 	try {
 		return callback();
