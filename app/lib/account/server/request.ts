@@ -23,22 +23,83 @@ export function getRequestUserAgent(request: NextRequest) {
 	return request.headers.get('user-agent') ?? '';
 }
 
-export function checkSameOriginRequest(request: NextRequest) {
-	const origin = request.headers.get('origin');
-	if (origin !== null) {
-		return origin === request.nextUrl.origin;
+function getFirstHeaderValue(value: string | null) {
+	const firstValue = value?.split(',').at(0)?.trim();
+
+	return firstValue === undefined || firstValue === '' ? null : firstValue;
+}
+
+function normalizeRequestProtocol(protocol: string | null) {
+	const normalizedProtocol = protocol
+		?.trim()
+		.toLowerCase()
+		.replace(/:$/u, '');
+	if (normalizedProtocol !== 'http' && normalizedProtocol !== 'https') {
+		return null;
 	}
 
-	const referer = request.headers.get('referer');
-	if (referer === null) {
-		return false;
+	return `${normalizedProtocol}:`;
+}
+
+function normalizeRequestHost(host: string | null) {
+	const normalizedHost = host?.trim();
+	if (!normalizedHost || /[\s/\\?#@]/u.test(normalizedHost)) {
+		return null;
+	}
+
+	return normalizedHost;
+}
+
+export function getExpectedRequestOrigin(request: NextRequest) {
+	const trustProxy = env.TRUST_PROXY === 'true';
+	const host = normalizeRequestHost(
+		trustProxy
+			? (getFirstHeaderValue(request.headers.get('x-forwarded-host')) ??
+					request.headers.get('host'))
+			: request.headers.get('host')
+	);
+	const protocol = normalizeRequestProtocol(
+		trustProxy
+			? (getFirstHeaderValue(request.headers.get('x-forwarded-proto')) ??
+					request.nextUrl.protocol)
+			: request.nextUrl.protocol
+	);
+
+	if (host === null || protocol === null) {
+		return null;
 	}
 
 	try {
-		return new URL(referer).origin === request.nextUrl.origin;
+		return new URL(`${protocol}//${host}`).origin;
 	} catch {
+		return null;
+	}
+}
+
+export function getHeaderOrigin(value: string | null) {
+	if (value === null) {
+		return null;
+	}
+
+	try {
+		return new URL(value).origin;
+	} catch {
+		return null;
+	}
+}
+
+export function checkSameOriginRequest(request: NextRequest) {
+	const expectedOrigin = getExpectedRequestOrigin(request);
+	if (expectedOrigin === null) {
 		return false;
 	}
+
+	const origin = request.headers.get('origin');
+	if (origin !== null) {
+		return getHeaderOrigin(origin) === expectedOrigin;
+	}
+
+	return getHeaderOrigin(request.headers.get('referer')) === expectedOrigin;
 }
 
 export function checkSecureRequest(request: NextRequest) {
