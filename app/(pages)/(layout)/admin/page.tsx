@@ -198,15 +198,52 @@ export default function AdminPage() {
 				<Button
 					variant="flat"
 					onPress={() => {
-						adminAuthRequestIdRef.current += 1;
+						const requestId = adminAuthRequestIdRef.current + 1;
+						adminAuthRequestIdRef.current = requestId;
 						refreshUsersRequestIdRef.current += 1;
-						void logoutAdmin(admin.csrf_token).finally(() => {
-							clearAdminSession();
-							setAdmin(null);
-							setIsLoading(false);
-							setMessage(null);
-							setUsers(null);
-						});
+						setIsLoading(true);
+						setMessage(null);
+						void logoutAdmin(admin.csrf_token)
+							.then(() => {
+								if (
+									adminAuthRequestIdRef.current !== requestId
+								) {
+									return;
+								}
+
+								clearAdminSession();
+								setAdmin(null);
+								setUsers(null);
+							})
+							.catch((error: unknown) => {
+								if (
+									adminAuthRequestIdRef.current !== requestId
+								) {
+									return;
+								}
+
+								if (checkAdminSessionUnauthorized(error)) {
+									clearAdminSession();
+									setAdmin(null);
+									setUsers(null);
+									return;
+								}
+
+								setMessage(
+									error instanceof Error
+										? error.message
+										: '退出管理员失败'
+								);
+							})
+							.finally(() => {
+								if (
+									adminAuthRequestIdRef.current !== requestId
+								) {
+									return;
+								}
+
+								setIsLoading(false);
+							});
 					}}
 				>
 					退出管理员

@@ -120,7 +120,7 @@ export type TSyncNamespace =
 1. 对对象 key 排序。
 2. 去掉临时字段和 undefined。
 3. `JSON.stringify`。
-4. 用 `Set` 去重。
+4. 按签名计数形成 multiset，用计数消耗比较重复套餐。
 
 自动合并只处理纯新增：
 
@@ -128,7 +128,7 @@ export type TSyncNamespace =
 - cloud 和 local 都没有删除 base 中已有套餐。
 - cloud 和 local 都没有改变 base 中已有套餐顺序。
 - local 没有保存与 cloud 相同签名但位置不同的重复套餐。
-- 登录或注册后的本地接管是特例：当缺少 base、云端已有套餐且本地只有可按稳定签名去重的新增套餐时，允许把本地新增追加到云端快照并按云端 revision 入队；item-level revision conflict 仍只生成合并预览，不静默覆盖云端。
+- 登录或注册后的本地接管是特例：当缺少 base、云端已有套餐且本地只有可按稳定签名计数消耗后确认的新增套餐时，允许把本地新增追加到云端快照并按云端 revision 入队；item-level revision conflict 仍只生成合并预览，不静默覆盖云端。
 
 不满足以上条件时进入人工冲突，避免删除、排序或用户有意重复保存被自动吞掉。
 

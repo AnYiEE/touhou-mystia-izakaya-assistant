@@ -129,6 +129,51 @@ export async function setUserStatus(id: TUser['id'], status: TUserStatus) {
 	});
 }
 
+export async function setUserStatusIfCurrentStatus(
+	id: TUser['id'],
+	currentStatus: TUserStatus,
+	nextStatus: TUserStatus,
+	deleteSessions = false
+) {
+	const db = await getAccountDatabase();
+	const now = Date.now();
+	const userUpdate = {
+		deleted_at: nextStatus === 'deleted' ? now : null,
+		status: nextStatus,
+		updated_at: now,
+	} satisfies TUserUpdate;
+
+	if (!deleteSessions) {
+		const result = await db
+			.updateTable(TABLE_NAME)
+			.set(userUpdate)
+			.where('id', '=', id)
+			.where('status', '=', currentStatus)
+			.executeTakeFirst();
+
+		return result.numUpdatedRows === 1n;
+	}
+
+	return db.transaction().execute(async (trx) => {
+		const result = await trx
+			.updateTable(TABLE_NAME)
+			.set(userUpdate)
+			.where('id', '=', id)
+			.where('status', '=', currentStatus)
+			.executeTakeFirst();
+		if (result.numUpdatedRows !== 1n) {
+			return false;
+		}
+
+		await trx
+			.deleteFrom(SESSION_TABLE_NAME)
+			.where('user_id', '=', id)
+			.execute();
+
+		return true;
+	});
+}
+
 export async function setUserStatusAndDeleteSessions(
 	id: TUser['id'],
 	status: TUserStatus

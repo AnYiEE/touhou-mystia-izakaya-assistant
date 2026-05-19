@@ -32,10 +32,16 @@ const serializers = {
 	[SYNC_NAMESPACE_MAP.tutorialCustomerRare]: tutorialCustomerRareSerializer,
 } as const satisfies Record<TSyncNamespace, ISyncNamespaceSerializer<unknown>>;
 
-export function getAccountSyncSerializer(namespace: TSyncNamespace) {
-	return serializers[
-		namespace
-	] as unknown as ISyncNamespaceSerializer<unknown>;
+export function getAccountSyncSerializer(namespace: string) {
+	const serializerMap: Partial<
+		Record<string, ISyncNamespaceSerializer<unknown>>
+	> = serializers;
+	const serializer = serializerMap[namespace];
+	if (serializer === undefined) {
+		throw new Error(`unsupported-sync-namespace:${namespace}`);
+	}
+
+	return serializer;
 }
 
 export function getAccountSyncSerializers() {

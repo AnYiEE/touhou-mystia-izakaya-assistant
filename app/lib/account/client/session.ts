@@ -52,29 +52,63 @@ export async function importPendingLegacyBackupCode(csrfToken: string) {
 export async function refreshAccountState() {
 	const previousUser = accountStore.shared.user.get();
 	const result = await fetchAccountMe();
-	if (previousUser?.id !== result.user?.id) {
+	const response = result as {
+		csrf_token?: string | null;
+		isLoggedIn?: boolean;
+		password_must_change?: boolean;
+		syncMeta?: typeof result.syncMeta;
+		user?: typeof result.user;
+	};
+	const {
+		csrf_token: csrfToken,
+		isLoggedIn: responseIsLoggedIn,
+		password_must_change: passwordMustChange,
+		syncMeta,
+		user,
+	} = response;
+	let accountUser: NonNullable<typeof result.user> | null = null;
+	let accountCsrfToken: string | null = null;
+	let accountPasswordMustChange = false;
+	if (
+		responseIsLoggedIn === true &&
+		user !== null &&
+		user !== undefined &&
+		typeof csrfToken === 'string'
+	) {
+		accountUser = user;
+		accountCsrfToken = csrfToken;
+		accountPasswordMustChange = passwordMustChange === true;
+	}
+
+	const isLoggedIn = accountUser !== null;
+	const accountSyncMeta = syncMeta ?? null;
+	if (previousUser?.id !== accountUser?.id) {
 		resetAccountSyncRuntime();
 	}
 	accountStore.shared.bootstrapStatus.set(
-		result.isLoggedIn ? 'loggedIn' : 'anonymous'
+		isLoggedIn ? 'loggedIn' : 'anonymous'
 	);
-	accountStore.shared.csrfToken.set(result.csrf_token);
+	accountStore.shared.csrfToken.set(accountCsrfToken);
 	accountStore.shared.isBootstrapped.set(true);
-	accountStore.shared.isLoggedIn.set(result.isLoggedIn);
-	accountStore.shared.passwordMustChange.set(result.password_must_change);
+	accountStore.shared.isLoggedIn.set(isLoggedIn);
+	accountStore.shared.passwordMustChange.set(accountPasswordMustChange);
 	accountStore.shared.sync.meta.set(
-		result.isLoggedIn
-			? (readAccountSyncMeta(result.user.id) ?? result.syncMeta)
-			: result.syncMeta
+		accountUser === null
+			? accountSyncMeta
+			: (readAccountSyncMeta(accountUser.id) ?? accountSyncMeta)
 	);
-	accountStore.shared.user.set(result.user);
-	if (result.isLoggedIn) {
-		restoreAccountSyncRuntimeState(result.user.id);
+	accountStore.shared.user.set(accountUser);
+	if (accountUser !== null) {
+		restoreAccountSyncRuntimeState(accountUser.id);
 	}
 
-	if (result.isLoggedIn && !result.password_must_change) {
+	if (
+		accountUser !== null &&
+		accountCsrfToken !== null &&
+		!accountPasswordMustChange
+	) {
 		await withAccountSyncPaused(async () => {
-			await importPendingLegacyBackupCode(result.csrf_token);
+			await importPendingLegacyBackupCode(accountCsrfToken);
 			await takeOverLocalAccountData();
 		});
 	}

@@ -111,10 +111,9 @@ export function markAccountSyncDirty({
 		return null;
 	}
 
-	const previousEntry = readDirtyQueueEntry(userId, namespace);
 	const now = Date.now();
 	const entry: IDirtyQueueEntry = {
-		attempts: previousEntry?.attempts ?? 0,
+		attempts: 0,
 		baseRevision,
 		clientMutationId: createAccountClientId(),
 		conflict: null,

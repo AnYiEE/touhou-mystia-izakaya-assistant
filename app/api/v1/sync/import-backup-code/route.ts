@@ -257,6 +257,15 @@ function createMealSignature(meal: object) {
 	return JSON.stringify(sortJsonValue(meal));
 }
 
+function createMealSignatureCountMap(meals: object[]) {
+	return meals.reduce<Map<string, number>>((result, meal) => {
+		const signature = createMealSignature(meal);
+		result.set(signature, (result.get(signature) ?? 0) + 1);
+
+		return result;
+	}, new Map());
+}
+
 function mergeMealRecord(
 	cloud: Record<string, object[]> | null,
 	imported: Record<string, object[]>
@@ -265,14 +274,20 @@ function mergeMealRecord(
 
 	Object.entries(imported).forEach(([customerName, importedMeals]) => {
 		const cloudMeals = result[customerName] ?? [];
-		const signatureSet = new Set(cloudMeals.map(createMealSignature));
+		const signatureCountMap = createMealSignatureCountMap(cloudMeals);
 		const additions = importedMeals.filter((meal) => {
 			const signature = createMealSignature(meal);
-			if (signatureSet.has(signature)) {
+			const remainingCount = signatureCountMap.get(signature) ?? 0;
+			if (remainingCount > 0) {
+				if (remainingCount === 1) {
+					signatureCountMap.delete(signature);
+				} else {
+					signatureCountMap.set(signature, remainingCount - 1);
+				}
+
 				return false;
 			}
 
-			signatureSet.add(signature);
 			return true;
 		});
 

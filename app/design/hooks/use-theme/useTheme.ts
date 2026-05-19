@@ -105,7 +105,7 @@ export function useTheme() {
 
 		return addSafeMediaQueryEventListener(mediaQueryList, (event) => {
 			const storedTheme = getStoredTheme();
-			if (storedTheme === THEME_MAP.SYSTEM) {
+			if (storedTheme === null || storedTheme === THEME_MAP.SYSTEM) {
 				applyTheme(getSystemTheme(event), true);
 			}
 		});

@@ -110,10 +110,7 @@ export async function DELETE(
 				await deleteFile(code);
 				throwIfBackupCodeLockLost(signal);
 			} catch (error) {
-				if (
-					error instanceof Error &&
-					error.message === 'backup-code-lock-lost'
-				) {
+				if (checkBackupCodeLockLostError(error)) {
 					return createNoStoreErrorResponse(
 						'backup-code-lock-lost',
 						409

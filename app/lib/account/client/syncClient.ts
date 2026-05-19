@@ -165,6 +165,35 @@ function handlePassiveSyncRefreshError(error: unknown, expectedUserId: string) {
 	);
 }
 
+function handleActiveSyncRefreshUnauthorized(
+	error: unknown,
+	expectedUserId: string
+) {
+	if (
+		!(error instanceof AccountApiError) ||
+		error.status !== 401 ||
+		!checkCurrentAccountUser(expectedUserId)
+	) {
+		return false;
+	}
+
+	stopAccountSyncClient();
+	resetExpiredAccountSession();
+	return true;
+}
+
+async function fetchSyncStateForCurrentUser(userId: string) {
+	try {
+		return await fetchSyncState();
+	} catch (error) {
+		if (handleActiveSyncRefreshUnauthorized(error, userId)) {
+			return null;
+		}
+
+		throw error;
+	}
+}
+
 function startLeaseRenewal(
 	userId: string,
 	generation: number,
@@ -522,7 +551,10 @@ async function handleStateEpochMismatch(
 	userId: string,
 	shouldBroadcast = true
 ) {
-	const remoteState = await fetchSyncState();
+	const remoteState = await fetchSyncStateForCurrentUser(userId);
+	if (remoteState === null) {
+		return false;
+	}
 	if (!checkCurrentAccountUser(userId)) {
 		return false;
 	}
@@ -785,7 +817,10 @@ export async function takeOverLocalAccountData() {
 	}
 
 	const localSnapshot = createLocalAccountSnapshot();
-	const remoteState = await fetchSyncState();
+	const remoteState = await fetchSyncStateForCurrentUser(context.user.id);
+	if (remoteState === null) {
+		return;
+	}
 	if (!checkCurrentAccountUser(context.user.id)) {
 		return;
 	}
@@ -796,16 +831,10 @@ export async function takeOverLocalAccountData() {
 		(currentMeta?.clearedStateEpoch === remoteState.state_epoch ||
 			remoteState.state_epoch > (currentMeta?.state_epoch ?? 0));
 	if (hasRemoteClearedState) {
-		writeAccountSyncMeta(context.user.id, {
-			clearedStateEpoch: remoteState.state_epoch,
-			lastAppliedRemoteHash: {},
-			revisions: {},
-			state_epoch: remoteState.state_epoch,
+		resetAccountSyncCloudStateAfterDelete({
+			stateEpoch: remoteState.state_epoch,
+			userId: context.user.id,
 		});
-		setCurrentAccountUserStateEpoch(
-			context.user.id,
-			remoteState.state_epoch
-		);
 		return;
 	}
 	const recordMap = getRecordMap(remoteState.records);

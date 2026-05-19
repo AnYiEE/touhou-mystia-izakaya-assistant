@@ -64,7 +64,8 @@ import {
 	toggleBoolean,
 } from '@/utilities';
 
-const { isAccountFeatureClientEnabled, isSelfHosted, isVercel } = siteConfig;
+const { isAccountFeatureClientEnabled, isOffline, isSelfHosted, isVercel } =
+	siteConfig;
 
 const cloudDeleteButtonLabelMap = {
 	delete: '删除云备份',
@@ -243,6 +244,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const shouldShowLegacyCloud =
 		isSelfHosted &&
+		!isOffline &&
 		!isVercel &&
 		!isAccountFeatureClientEnabled &&
 		accountBootstrapStatus === 'disabled';

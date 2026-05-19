@@ -103,9 +103,12 @@ export function checkSameOriginRequest(request: NextRequest) {
 }
 
 export function checkSecureRequest(request: NextRequest) {
+	const forwardedProtocol = normalizeRequestProtocol(
+		getFirstHeaderValue(request.headers.get('x-forwarded-proto'))
+	);
+
 	return (
 		request.nextUrl.protocol === 'https:' ||
-		(env.TRUST_PROXY === 'true' &&
-			request.headers.get('x-forwarded-proto') === 'https')
+		(env.TRUST_PROXY === 'true' && forwardedProtocol === 'https:')
 	);
 }

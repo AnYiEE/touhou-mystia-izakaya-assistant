@@ -57,6 +57,15 @@ export async function POST(
 
 	const { id } = await params;
 	const usersModule = await import('@/actions/account/users');
+	const isUpdated = await usersModule.setUserStatusIfCurrentStatus(
+		id,
+		USER_STATUS_MAP.disabled,
+		USER_STATUS_MAP.active
+	);
+	if (isUpdated) {
+		return createNoStoreJsonResponse({ message: 'user-enabled' });
+	}
+
 	const user = await usersModule.findUserById(id);
 	if (user === null) {
 		return createNoStoreErrorResponse('target-user-not-found', 404);
@@ -68,7 +77,5 @@ export async function POST(
 		return createNoStoreErrorResponse('invalid-user-status', 400);
 	}
 
-	await usersModule.setUserStatus(id, USER_STATUS_MAP.active);
-
-	return createNoStoreJsonResponse({ message: 'user-enabled' });
+	return createNoStoreErrorResponse('invalid-user-status', 400);
 }

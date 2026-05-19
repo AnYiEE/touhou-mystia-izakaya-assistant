@@ -135,7 +135,7 @@ export const siteConfig = {
 	vercelSha: process.env.VERCEL_GIT_COMMIT_SHA,
 	isOffline,
 	isProduction: process.env.NODE_ENV === 'production',
-	isSelfHosted: isSelfHosted && !isOffline,
+	isSelfHosted,
 	isVercel,
 } as const satisfies ISiteConfig;
 
