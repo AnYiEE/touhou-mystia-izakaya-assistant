@@ -120,17 +120,53 @@ export function applyRemoteAccountRecords({
 		}
 	});
 
-	runWithApplyingRemoteState(() => {
-		records.forEach((record) => {
-			const serializer = getAccountSyncSerializer(record.namespace);
-			const data = serializer.migrate(record.data, record.schema_version);
+	const preparedRecords = records.map((record) => {
+		const serializer = getAccountSyncSerializer(record.namespace);
+		const data = serializer.migrate(record.data, record.schema_version);
 
-			serializer.setLocalSnapshot(data);
-			meta.lastAppliedRemoteHash[record.namespace] =
-				createSnapshotHash(data);
-			meta.revisions[record.namespace] = record.revision;
-		});
+		return {
+			data,
+			namespace: record.namespace,
+			revision: record.revision,
+			serializer,
+			snapshotHash: createSnapshotHash(data),
+		};
 	});
+	let appliedRecordCount = 0;
+
+	try {
+		runWithApplyingRemoteState(() => {
+			preparedRecords.forEach((record) => {
+				record.serializer.setLocalSnapshot(record.data);
+				meta.lastAppliedRemoteHash[record.namespace] =
+					record.snapshotHash;
+				meta.revisions[record.namespace] = record.revision;
+				appliedRecordCount += 1;
+			});
+		});
+	} catch (error) {
+		if (appliedRecordCount > 0) {
+			const partialMeta: IAccountSyncMeta = {
+				...meta,
+				lastAppliedRemoteHash: { ...meta.lastAppliedRemoteHash },
+				revisions: { ...meta.revisions },
+				state_epoch: previousMeta?.state_epoch ?? 0,
+			};
+			if (previousMeta?.clearedStateEpoch !== undefined) {
+				partialMeta.clearedStateEpoch = previousMeta.clearedStateEpoch;
+			}
+			try {
+				writeAccountSyncMeta(userId, partialMeta);
+			} catch (writeError) {
+				console.warn(
+					'Failed to persist partially applied account sync meta.',
+					writeError
+				);
+			}
+		}
+
+		throw error;
+	}
 
 	writeAccountSyncMeta(userId, meta);
 

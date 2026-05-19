@@ -1,8 +1,4 @@
 import {
-	type IApiErrorResponse,
-	type IApiSuccessResponse,
-} from '@/api/v1/types';
-import {
 	type IAccountUserProfile,
 	type IAdminLoginBody,
 	type IAdminResetPasswordBody,
@@ -32,11 +28,9 @@ export class AccountApiError extends Error {
 }
 
 async function readAccountApiResponse<T>(response: Response) {
-	let json: IApiErrorResponse | IApiSuccessResponse<T>;
+	let json: unknown;
 	try {
-		json = (await response.json()) as
-			| IApiErrorResponse
-			| IApiSuccessResponse<T>;
+		json = await response.json();
 	} catch {
 		throw new AccountApiError(
 			response.statusText || 'invalid-api-response',
@@ -44,11 +38,23 @@ async function readAccountApiResponse<T>(response: Response) {
 		);
 	}
 
-	if (json.status === 'error') {
-		throw new AccountApiError(json.message, response.status);
+	if (json === null || Array.isArray(json) || typeof json !== 'object') {
+		throw new AccountApiError('invalid-api-response', response.status);
 	}
 
-	return json.data;
+	if ('status' in json && json.status === 'error') {
+		if ('message' in json && typeof json.message === 'string') {
+			throw new AccountApiError(json.message, response.status);
+		}
+
+		throw new AccountApiError('invalid-api-response', response.status);
+	}
+
+	if ('status' in json && json.status === 'ok' && 'data' in json) {
+		return json.data as T;
+	}
+
+	throw new AccountApiError('invalid-api-response', response.status);
 }
 
 export interface IAccountExportData {
@@ -310,9 +316,15 @@ export async function listAdminUsers({
 	);
 }
 
+function createAdminUserPath(id: string) {
+	return `/api/v1/admin/users/${encodeURIComponent(id)}`;
+}
+
 export async function fetchAdminUser(id: string) {
+	const path = createAdminUserPath(id);
+
 	return readAccountApiResponse<IAdminUserDetailData>(
-		await fetch(`/api/v1/admin/users/${id}`, createAccountRequestInit())
+		await fetch(path, createAccountRequestInit())
 	);
 }
 
@@ -321,9 +333,11 @@ export async function resetAdminUserPassword(
 	body: IAdminResetPasswordBody,
 	csrfToken: string
 ) {
+	const path = createAdminUserPath(id);
+
 	return readAccountApiResponse(
 		await fetch(
-			`/api/v1/admin/users/${id}/reset-password`,
+			`${path}/reset-password`,
 			createAccountRequestInit({
 				body: JSON.stringify(body),
 				headers: { 'x-csrf-token': csrfToken },
@@ -334,9 +348,11 @@ export async function resetAdminUserPassword(
 }
 
 export async function disableAdminUser(id: string, csrfToken: string) {
+	const path = createAdminUserPath(id);
+
 	return readAccountApiResponse(
 		await fetch(
-			`/api/v1/admin/users/${id}/disable`,
+			`${path}/disable`,
 			createAccountRequestInit({
 				headers: { 'x-csrf-token': csrfToken },
 				method: 'POST',
@@ -346,9 +362,11 @@ export async function disableAdminUser(id: string, csrfToken: string) {
 }
 
 export async function enableAdminUser(id: string, csrfToken: string) {
+	const path = createAdminUserPath(id);
+
 	return readAccountApiResponse(
 		await fetch(
-			`/api/v1/admin/users/${id}/enable`,
+			`${path}/enable`,
 			createAccountRequestInit({
 				headers: { 'x-csrf-token': csrfToken },
 				method: 'POST',
@@ -358,9 +376,11 @@ export async function enableAdminUser(id: string, csrfToken: string) {
 }
 
 export async function deleteAdminUserSessions(id: string, csrfToken: string) {
+	const path = createAdminUserPath(id);
+
 	return readAccountApiResponse(
 		await fetch(
-			`/api/v1/admin/users/${id}/sessions`,
+			`${path}/sessions`,
 			createAccountRequestInit({
 				headers: { 'x-csrf-token': csrfToken },
 				method: 'DELETE',

@@ -1,3 +1,4 @@
+import { DLC_LABEL_MAP } from '@/data';
 import { type TUserStateNew } from '@/lib/db/types';
 import {
 	type ISyncStateChange,
@@ -31,6 +32,7 @@ const customerRareNames = new Set<string>(
 );
 const ingredientNames = new Set<string>(Ingredient.getInstance().getNames());
 const recipeNames = new Set<string>(Recipe.getInstance().getNames());
+const dlcKeys = new Set<string>(Object.keys(DLC_LABEL_MAP));
 const beverageColumnKeys = new Set([
 	'beverage',
 	'price',
@@ -65,6 +67,10 @@ function isStringArray(data: unknown): data is string[] {
 	return (
 		Array.isArray(data) && data.every((item) => typeof item === 'string')
 	);
+}
+
+function isAllowedStringArray(data: unknown, values: Set<string>) {
+	return isStringArray(data) && data.every((item) => values.has(item));
 }
 
 function validateMealRecipe(data: unknown) {
@@ -181,7 +187,7 @@ function validateGlobalPreferences(data: unknown) {
 		]) &&
 		typeof data['customerCardTagsTooltip'] === 'boolean' &&
 		typeof data['famousShop'] === 'boolean' &&
-		isStringArray(hiddenItems['dlcs']) &&
+		isAllowedStringArray(hiddenItems['dlcs'], dlcKeys) &&
 		typeof data['highAppearance'] === 'boolean' &&
 		typeof popularTrend['isNegative'] === 'boolean' &&
 		(popularTrend['tag'] === null ||
@@ -197,9 +203,12 @@ function validateGlobalPreferences(data: unknown) {
 		) &&
 		isStringArray(tableColumns['recipe']) &&
 		tableColumns['recipe'].every((item) => recipeColumnKeys.has(item)) &&
-		isStringArray(tableHiddenItems['beverages']) &&
-		isStringArray(tableHiddenItems['ingredients']) &&
-		isStringArray(tableHiddenItems['recipes']) &&
+		isAllowedStringArray(tableHiddenItems['beverages'], beverageNames) &&
+		isAllowedStringArray(
+			tableHiddenItems['ingredients'],
+			ingredientNames
+		) &&
+		isAllowedStringArray(tableHiddenItems['recipes'], recipeNames) &&
 		typeof table['row'] === 'number' &&
 		typeof data['tachie'] === 'boolean' &&
 		typeof data['vibrate'] === 'boolean'
