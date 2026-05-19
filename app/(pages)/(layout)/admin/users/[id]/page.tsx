@@ -35,6 +35,7 @@ export default function AdminUserDetailPage() {
 	const [detail, setDetail] = useState<IAdminUserDetailData | null>(null);
 	const [message, setMessage] = useState<string | null>(null);
 	const [password, setPassword] = useState('');
+	const [isAuthLoading, setIsAuthLoading] = useState(true);
 	const [isLoading, setIsLoading] = useState(false);
 
 	const refreshDetail = useCallback(() => {
@@ -65,6 +66,9 @@ export default function AdminUserDetailPage() {
 			.catch(() => {
 				clearAdminSession();
 				setAdmin(null);
+			})
+			.finally(() => {
+				setIsAuthLoading(false);
 			});
 	}, []);
 
@@ -73,6 +77,17 @@ export default function AdminUserDetailPage() {
 			refreshDetail();
 		}
 	}, [admin, refreshDetail]);
+
+	if (isAuthLoading) {
+		return (
+			<div className="min-h-main-content space-y-4">
+				<Heading isFirst>用户管理</Heading>
+				<Button isLoading variant="flat">
+					加载中
+				</Button>
+			</div>
+		);
+	}
 
 	if (admin === null) {
 		return (

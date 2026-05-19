@@ -192,7 +192,7 @@ export default function Providers({
 			toSet(globalHiddenRecipes)
 		);
 
-		startAccountStoreSyncWatchers();
+		const stopAccountStoreSyncWatchers = startAccountStoreSyncWatchers();
 		void bootstrapAccount().catch((error: unknown) => {
 			console.error('Account bootstrap failed.', error);
 			accountStore.shared.bootstrapStatus.set('error');
@@ -203,7 +203,10 @@ export default function Providers({
 		});
 		const stopAccountSyncClient = startAccountSyncClient();
 
-		return stopAccountSyncClient;
+		return () => {
+			stopAccountStoreSyncWatchers();
+			stopAccountSyncClient();
+		};
 	}, []);
 
 	const router = useRouter();

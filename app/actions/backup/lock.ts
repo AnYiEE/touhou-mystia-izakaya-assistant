@@ -21,6 +21,14 @@ function delay(ms: number) {
 	});
 }
 
+function maskBackupCodeForLog(code: string) {
+	if (code.length <= 12) {
+		return '*'.repeat(Math.max(4, code.length));
+	}
+
+	return `${code.slice(0, 8)}...${code.slice(-4)}`;
+}
+
 async function tryAcquireSharedBackupCodeLock(
 	code: string,
 	ownerId: string,
@@ -135,7 +143,11 @@ export async function withBackupCodeLock<T>(
 				clearInterval(renewalTimer);
 				renewalTimer = null;
 			}
-			console.warn(message, { code, error, ownerId });
+			console.warn(message, {
+				code: maskBackupCodeForLog(code),
+				error,
+				ownerId,
+			});
 		};
 
 		try {

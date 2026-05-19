@@ -65,11 +65,15 @@ export async function updateCredential(
 ) {
 	const db = await getAccountDatabase();
 
-	await db
+	const result = await db
 		.updateTable(TABLE_NAME)
 		.set(credential)
 		.where('user_id', '=', userId)
-		.execute();
+		.executeTakeFirst();
+
+	if (result.numUpdatedRows !== 1n) {
+		throw new Error('credential-not-found');
+	}
 }
 
 export async function updateCredentialAndDeleteSessions(

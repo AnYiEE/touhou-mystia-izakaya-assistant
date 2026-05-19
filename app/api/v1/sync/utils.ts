@@ -73,6 +73,15 @@ function isAllowedStringArray(data: unknown, values: Set<string>) {
 	return isStringArray(data) && data.every((item) => values.has(item));
 }
 
+function isIntegerInRange(data: unknown, min: number, max: number) {
+	return (
+		typeof data === 'number' &&
+		Number.isInteger(data) &&
+		data >= min &&
+		data <= max
+	);
+}
+
 function validateMealRecipe(data: unknown) {
 	return (
 		isPlainObject(data) &&
@@ -194,9 +203,9 @@ function validateGlobalPreferences(data: unknown) {
 			typeof popularTrend['tag'] === 'string') &&
 		typeof suggestMeals['enabled'] === 'boolean' &&
 		(suggestMeals['maxExtraIngredients'] === null ||
-			typeof suggestMeals['maxExtraIngredients'] === 'number') &&
-		typeof suggestMeals['maxRating'] === 'number' &&
-		typeof suggestMeals['maxResults'] === 'number' &&
+			isIntegerInRange(suggestMeals['maxExtraIngredients'], 0, 4)) &&
+		isIntegerInRange(suggestMeals['maxRating'], 0, 4) &&
+		isIntegerInRange(suggestMeals['maxResults'], 1, 10) &&
 		isStringArray(tableColumns['beverage']) &&
 		tableColumns['beverage'].every((item) =>
 			beverageColumnKeys.has(item)
@@ -209,7 +218,7 @@ function validateGlobalPreferences(data: unknown) {
 			ingredientNames
 		) &&
 		isAllowedStringArray(tableHiddenItems['recipes'], recipeNames) &&
-		typeof table['row'] === 'number' &&
+		isIntegerInRange(table['row'], 5, 20) &&
 		typeof data['tachie'] === 'boolean' &&
 		typeof data['vibrate'] === 'boolean'
 	);

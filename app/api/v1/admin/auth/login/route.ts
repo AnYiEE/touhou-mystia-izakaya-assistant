@@ -40,10 +40,11 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
+	const usernameRateLimitKey = body.username.trim().toLowerCase();
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
 		'admin-login',
-		body.username
+		usernameRateLimitKey
 	);
 	if (rateLimitResponse !== null) {
 		return rateLimitResponse;

@@ -36,7 +36,7 @@ isProject: false
 | `customer_rare.settings` | `orderLinkedFilter`、`showTagDescription` | 同左               | 字段级合并，冲突字段后提交服务端胜出               |
 | `global.preferences`     | `globalStore.persistence` 白名单          | 同左               | 字段级合并，未改字段不覆盖云端                     |
 | `theme`                  | `theme` localStorage                      | theme apply helper | 后提交服务端的快照胜出                             |
-| `tutorial.customer_rare` | legacy `dirver` 映射                      | `dirver` 映射      | 只同步完成状态，账号级已完成优先，不同步设备级重置 |
+| `tutorial.customer_rare` | legacy `dirver`（历史拼写）映射           | `dirver` 映射      | 只同步完成状态，账号级已完成优先，不同步设备级重置 |
 
 ## 四、global.preferences 白名单
 
@@ -66,7 +66,7 @@ isProject: false
 - `userId`
 - `cloudCode`
 - `donationModal`
-- 原始 `dirver`
+- 原始 `dirver`（历史拼写，勿改为 `driver`）
 
 ## 五、serializer 形状
 
