@@ -75,21 +75,25 @@ function mergeFieldValue({
 	defaults: unknown;
 	local: unknown;
 }): { data: unknown; shouldUpload: boolean } {
+	const normalizedBase = base === undefined ? defaults : base;
+	const normalizedCloud = cloud === undefined ? defaults : cloud;
+	const normalizedLocal = local === undefined ? defaults : local;
+
 	if (
 		isPlainObject(defaults) &&
-		isPlainObject(cloud) &&
-		isPlainObject(local) &&
-		(base === null || isPlainObject(base))
+		isPlainObject(normalizedCloud) &&
+		isPlainObject(normalizedLocal) &&
+		(normalizedBase === null || isPlainObject(normalizedBase))
 	) {
 		const data: Record<string, unknown> = {};
 		let shouldUpload = false;
 
 		Object.keys(defaults).forEach((key) => {
 			const merged = mergeFieldValue({
-				base: base === null ? null : base[key],
-				cloud: cloud[key],
+				base: normalizedBase === null ? null : normalizedBase[key],
+				cloud: normalizedCloud[key],
 				defaults: defaults[key],
-				local: local[key],
+				local: normalizedLocal[key],
 			});
 
 			data[key] = merged.data;
@@ -99,29 +103,35 @@ function mergeFieldValue({
 		return { data, shouldUpload };
 	}
 
-	if (base === null) {
-		if (checkSnapshotEqual(local, defaults)) {
-			return { data: cloud, shouldUpload: false };
+	if (normalizedBase === null) {
+		if (checkSnapshotEqual(normalizedLocal, defaults)) {
+			return { data: normalizedCloud, shouldUpload: false };
 		}
 		if (
-			!checkSnapshotEqual(cloud, defaults) &&
-			!checkSnapshotEqual(cloud, local)
+			!checkSnapshotEqual(normalizedCloud, defaults) &&
+			!checkSnapshotEqual(normalizedCloud, normalizedLocal)
 		) {
-			return { data: cloud, shouldUpload: false };
+			return { data: normalizedCloud, shouldUpload: false };
 		}
 
-		return { data: local, shouldUpload: !checkSnapshotEqual(local, cloud) };
+		return {
+			data: normalizedLocal,
+			shouldUpload: !checkSnapshotEqual(normalizedLocal, normalizedCloud),
+		};
 	}
 
-	const hasLocalChange = !checkSnapshotEqual(local, base);
-	const hasCloudChange = !checkSnapshotEqual(cloud, base);
-	const isLocalDefault = checkSnapshotEqual(local, defaults);
+	const hasLocalChange = !checkSnapshotEqual(normalizedLocal, normalizedBase);
+	const hasCloudChange = !checkSnapshotEqual(normalizedCloud, normalizedBase);
+	const isLocalDefault = checkSnapshotEqual(normalizedLocal, defaults);
 
 	if (!hasLocalChange || isLocalDefault || hasCloudChange) {
-		return { data: cloud, shouldUpload: false };
+		return { data: normalizedCloud, shouldUpload: false };
 	}
 
-	return { data: local, shouldUpload: !checkSnapshotEqual(local, cloud) };
+	return {
+		data: normalizedLocal,
+		shouldUpload: !checkSnapshotEqual(normalizedLocal, normalizedCloud),
+	};
 }
 
 export function mergeFieldMap<T extends object>({

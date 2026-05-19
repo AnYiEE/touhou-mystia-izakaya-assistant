@@ -36,8 +36,17 @@ function sortJsonValue(value: unknown): unknown {
 	return value;
 }
 
-export function createSnapshotHash(data: unknown) {
-	return JSON.stringify(sortJsonValue(data));
+export function createSnapshotHash(data: unknown): string {
+	const sortedData = sortJsonValue(data);
+	if (
+		sortedData === undefined ||
+		typeof sortedData === 'function' ||
+		typeof sortedData === 'symbol'
+	) {
+		return 'undefined';
+	}
+
+	return JSON.stringify(sortedData);
 }
 
 export function createDirtyQueueKey(userId: string, namespace: TSyncNamespace) {
@@ -60,6 +69,24 @@ export function writeDirtyQueueEntry(userId: string, entry: IDirtyQueueEntry) {
 		createDirtyQueueKey(userId, entry.namespace),
 		entry
 	);
+}
+
+function mergeDirtyQueueEntry(
+	userId: string,
+	entry: IDirtyQueueEntry
+): IDirtyQueueEntry {
+	const currentEntry = readDirtyQueueEntry(userId, entry.namespace);
+	if (currentEntry?.paused !== null) {
+		return entry;
+	}
+
+	return {
+		...entry,
+		attempts: currentEntry.attempts,
+		baseRevision: currentEntry.baseRevision,
+		clientMutationId: currentEntry.clientMutationId,
+		dirtyAt: Math.max(currentEntry.dirtyAt, entry.dirtyAt),
+	};
 }
 
 export function removeDirtyQueueEntry(
@@ -112,7 +139,7 @@ export function markAccountSyncDirty({
 	}
 
 	const now = Date.now();
-	const entry: IDirtyQueueEntry = {
+	const entry = mergeDirtyQueueEntry(userId, {
 		attempts: 0,
 		baseRevision,
 		clientMutationId: createAccountClientId(),
@@ -124,7 +151,7 @@ export function markAccountSyncDirty({
 		paused: null,
 		schema_version: SYNC_SCHEMA_VERSION_MAP[namespace],
 		snapshotHash: createSnapshotHash(data),
-	};
+	});
 
 	writeDirtyQueueEntry(userId, entry);
 

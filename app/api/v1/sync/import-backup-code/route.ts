@@ -341,8 +341,11 @@ async function importBackupData(
 			.selectFrom(TABLE_NAME_MAP.user)
 			.select('state_epoch')
 			.where('id', '=', userId)
-			.executeTakeFirstOrThrow();
+			.executeTakeFirst();
 		throwIfBackupCodeLockLost(signal);
+		if (user === undefined) {
+			throw new Error('unauthorized');
+		}
 
 		if (user.state_epoch !== expectedStateEpoch) {
 			return {
@@ -523,6 +526,12 @@ export async function POST(request: NextRequest) {
 					signal
 				);
 			} catch (error) {
+				if (
+					error instanceof Error &&
+					error.message === 'unauthorized'
+				) {
+					return createNoStoreErrorResponse('unauthorized', 401);
+				}
 				if (
 					error instanceof Error &&
 					error.message === 'backup-code-not-found'

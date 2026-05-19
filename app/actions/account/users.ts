@@ -72,6 +72,7 @@ export async function listUsers({
 
 	return query
 		.orderBy('updated_at', 'desc')
+		.orderBy('id', 'desc')
 		.limit(limit)
 		.offset(offset)
 		.execute();

@@ -72,7 +72,7 @@ function tryAcquireAccountSyncLease(
 	if (
 		lease !== null &&
 		lease.expiresAt > now &&
-		lease.ownerTabId !== ownerTabId
+		(lease.ownerTabId !== ownerTabId || lease.ownerRunId !== ownerRunId)
 	) {
 		return false;
 	}

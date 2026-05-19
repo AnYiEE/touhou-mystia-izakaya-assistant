@@ -129,6 +129,7 @@ export async function DELETE(
 				}
 
 				try {
+					throwIfBackupCodeLockLost(signal);
 					await deleteRecord(code);
 					deletedRecordCount++;
 				} catch (error) {

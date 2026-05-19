@@ -34,6 +34,15 @@ import LegacyBackupImport from './legacyBackupImport';
 
 type TAuthMode = 'login' | 'register';
 
+function handleUnauthorizedAccountError(error: unknown) {
+	if (error instanceof AccountApiError && error.status === 401) {
+		resetAccountState();
+		return true;
+	}
+
+	return false;
+}
+
 export default function AccountManager() {
 	const bootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const csrfToken = accountStore.shared.csrfToken.use();
@@ -87,6 +96,10 @@ export default function AccountManager() {
 				setMessage('密码已更新');
 			})
 			.catch((error: unknown) => {
+				if (handleUnauthorizedAccountError(error)) {
+					return;
+				}
+
 				setMessage(error instanceof Error ? error.message : '改密失败');
 			})
 			.finally(() => {
@@ -265,6 +278,14 @@ export default function AccountManager() {
 												setMessage('账号数据已导出');
 											})
 											.catch((error: unknown) => {
+												if (
+													handleUnauthorizedAccountError(
+														error
+													)
+												) {
+													return;
+												}
+
 												setMessage(
 													error instanceof Error
 														? error.message

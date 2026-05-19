@@ -85,6 +85,9 @@ function setCurrentAccountUserStateEpoch(userId: string, stateEpoch: number) {
 	if (user?.id !== userId) {
 		return false;
 	}
+	if (stateEpoch < user.state_epoch) {
+		return false;
+	}
 
 	if (user.state_epoch !== stateEpoch) {
 		accountStore.shared.user.set({ ...user, state_epoch: stateEpoch });
@@ -143,7 +146,6 @@ function stopLeaseRenewal(generation?: number) {
 
 export function stopAccountSyncClient() {
 	syncClientGeneration += 1;
-	activeFlushRunId = null;
 	clearSyncTimers();
 	stopLeaseRenewal();
 	accountStore.shared.sync.isSyncing.set(false);
@@ -635,6 +637,13 @@ export async function flushAccountSyncQueue() {
 				context.csrfToken
 			);
 			if (!checkCurrentSyncRun(generation, context.user.id)) {
+				return false;
+			}
+			const currentUser = accountStore.shared.user.get();
+			if (
+				currentUser?.id !== context.user.id ||
+				response.state_epoch < currentUser.state_epoch
+			) {
 				return false;
 			}
 

@@ -32,6 +32,10 @@ export async function importPendingLegacyBackupCode(csrfToken: string) {
 	const cloudCode = globalStore.persistence.cloudCode.get();
 	const normalizedCode = cloudCode?.trim() ?? '';
 	if (normalizedCode === '') {
+		if (cloudCode !== null) {
+			globalStore.persistence.cloudCode.set(null);
+		}
+
 		return false;
 	}
 

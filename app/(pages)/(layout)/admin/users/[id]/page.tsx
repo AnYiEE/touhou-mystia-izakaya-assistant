@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Input } from '@heroui/input';
 import { useParams } from 'next/navigation';
@@ -37,12 +37,30 @@ export default function AdminUserDetailPage() {
 	const [password, setPassword] = useState('');
 	const [isAuthLoading, setIsAuthLoading] = useState(true);
 	const [isLoading, setIsLoading] = useState(false);
+	const detailRequestIdRef = useRef(0);
+
+	const createDetailRequestId = useCallback(() => {
+		detailRequestIdRef.current += 1;
+		return detailRequestIdRef.current;
+	}, []);
+	const checkDetailRequestId = useCallback(
+		(requestId: number) => detailRequestIdRef.current === requestId,
+		[]
+	);
 
 	const refreshDetail = useCallback(() => {
+		const requestId = createDetailRequestId();
 		setIsLoading(true);
 		void fetchAdminUser(id)
-			.then(setDetail)
+			.then((data) => {
+				if (checkDetailRequestId(requestId)) {
+					setDetail(data);
+				}
+			})
 			.catch((error: unknown) => {
+				if (!checkDetailRequestId(requestId)) {
+					return;
+				}
 				if (checkAdminSessionUnauthorized(error)) {
 					clearAdminSession();
 					setAdmin(null);
@@ -53,9 +71,18 @@ export default function AdminUserDetailPage() {
 				);
 			})
 			.finally(() => {
-				setIsLoading(false);
+				if (checkDetailRequestId(requestId)) {
+					setIsLoading(false);
+				}
 			});
-	}, [id]);
+	}, [checkDetailRequestId, createDetailRequestId, id]);
+
+	useEffect(
+		() => () => {
+			detailRequestIdRef.current += 1;
+		},
+		[]
+	);
 
 	useEffect(() => {
 		void fetchAdminMe()
@@ -128,15 +155,25 @@ export default function AdminUserDetailPage() {
 		success: string,
 		onSuccess?: () => void
 	) => {
+		const requestId = createDetailRequestId();
 		setIsLoading(true);
 		setMessage(null);
 		void action()
 			.then(async () => {
+				if (!checkDetailRequestId(requestId)) {
+					return;
+				}
 				setMessage(success);
 				onSuccess?.();
-				await fetchAdminUser(id).then(setDetail);
+				const data = await fetchAdminUser(id);
+				if (checkDetailRequestId(requestId)) {
+					setDetail(data);
+				}
 			})
 			.catch((error: unknown) => {
+				if (!checkDetailRequestId(requestId)) {
+					return;
+				}
 				if (checkAdminSessionUnauthorized(error)) {
 					clearAdminSession();
 					setAdmin(null);
@@ -145,7 +182,9 @@ export default function AdminUserDetailPage() {
 				setMessage(error instanceof Error ? error.message : '操作失败');
 			})
 			.finally(() => {
-				setIsLoading(false);
+				if (checkDetailRequestId(requestId)) {
+					setIsLoading(false);
+				}
 			});
 	};
 
