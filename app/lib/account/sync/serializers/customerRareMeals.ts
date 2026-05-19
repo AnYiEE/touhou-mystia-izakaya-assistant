@@ -55,7 +55,11 @@ export const customerRareMealsSerializer = {
 			namespace: SYNC_NAMESPACE_MAP.customerRareMeals,
 		});
 	},
-	migrate(data) {
+	migrate(data, version) {
+		if (version !== 1) {
+			throw new Error('unsupported-customer-rare-meals-schema-version');
+		}
+
 		if (!this.validate(data)) {
 			throw new Error('invalid-customer-rare-meals');
 		}

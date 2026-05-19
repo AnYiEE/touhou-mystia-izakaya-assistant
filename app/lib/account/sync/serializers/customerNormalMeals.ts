@@ -48,7 +48,11 @@ export const customerNormalMealsSerializer = {
 			namespace: SYNC_NAMESPACE_MAP.customerNormalMeals,
 		});
 	},
-	migrate(data) {
+	migrate(data, version) {
+		if (version !== 1) {
+			throw new Error('unsupported-customer-normal-meals-schema-version');
+		}
+
 		if (!this.validate(data)) {
 			throw new Error('invalid-customer-normal-meals');
 		}

@@ -1,13 +1,10 @@
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
+import { createHash } from 'node:crypto';
 import { type NextRequest } from 'next/server';
 import { sha1 } from 'js-sha1';
 
 export function maskBackupCode(code: string) {
-	if (code.length <= 12) {
-		return '*'.repeat(Math.max(4, code.length));
-	}
-
-	return `${code.slice(0, 8)}...${code.slice(-4)}`;
+	return `sha256:${createHash('sha256').update(code).digest('hex').slice(0, 12)}`;
 }
 
 export function getRequestMeta(request: NextRequest) {

@@ -58,7 +58,8 @@ export async function getBackupFileCodes() {
 		const entries = await readdir(dir, { withFileTypes: true });
 		return entries
 			.filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
-			.map((entry) => entry.name.slice(0, -'.json'.length));
+			.map((entry) => entry.name.slice(0, -'.json'.length))
+			.filter((code) => validateUuid(code));
 	} catch (error) {
 		if (checkBackupFileNotFoundError(error)) {
 			return [];

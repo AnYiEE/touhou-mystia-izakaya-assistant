@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 import { TABLE_NAME_MAP } from '@/lib/db';
 import { db } from '@/lib/db/db';
@@ -12,6 +12,7 @@ const TABLE_NAME = TABLE_NAME_MAP.backupCodeLock;
 
 export interface IBackupCodeLockSignal {
 	readonly aborted: boolean;
+	readonly committed: boolean;
 	readonly reason?: unknown;
 }
 
@@ -22,11 +23,7 @@ function delay(ms: number) {
 }
 
 function maskBackupCodeForLog(code: string) {
-	if (code.length <= 12) {
-		return '*'.repeat(Math.max(4, code.length));
-	}
-
-	return `${code.slice(0, 8)}...${code.slice(-4)}`;
+	return `sha256:${createHash('sha256').update(code).digest('hex').slice(0, 12)}`;
 }
 
 async function tryAcquireSharedBackupCodeLock(
@@ -112,6 +109,10 @@ export function throwIfBackupCodeLockLost(signal: IBackupCodeLockSignal) {
 	throw createBackupCodeLockLostError();
 }
 
+export function markBackupCodeLockCommitted(signal: IBackupCodeLockSignal) {
+	(signal as { committed: boolean }).committed = true;
+}
+
 export async function withBackupCodeLock<T>(
 	code: string,
 	task: (signal: IBackupCodeLockSignal) => Promise<T>
@@ -127,9 +128,11 @@ export async function withBackupCodeLock<T>(
 		await previousLock.catch(() => {});
 
 		const ownerId = randomUUID();
-		const lockSignal: { aborted: boolean; reason?: unknown } = {
-			aborted: false,
-		};
+		const lockSignal: {
+			aborted: boolean;
+			committed: boolean;
+			reason?: unknown;
+		} = { aborted: false, committed: false };
 		let renewalTimer: ReturnType<typeof setInterval> | null = null;
 		const abortTask = (message: string, error?: unknown) => {
 			if (lockSignal.aborted) {
@@ -144,7 +147,7 @@ export async function withBackupCodeLock<T>(
 				renewalTimer = null;
 			}
 			console.warn(message, {
-				code: maskBackupCodeForLog(code),
+				codeHash: maskBackupCodeForLog(code),
 				error,
 				ownerId,
 			});
@@ -167,7 +170,9 @@ export async function withBackupCodeLock<T>(
 			}, BACKUP_CODE_LOCK_TTL_MS / 3);
 
 			const result = await task(lockSignal);
-			throwIfBackupCodeLockLost(lockSignal);
+			if (!lockSignal.committed) {
+				throwIfBackupCodeLockLost(lockSignal);
+			}
 			return result;
 		} finally {
 			if (renewalTimer !== null) {

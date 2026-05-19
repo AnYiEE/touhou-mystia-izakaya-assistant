@@ -61,16 +61,40 @@ class SafeStorage implements Storage {
 
 	private switchToFallbackStorage(key: string, value: string) {
 		if (this._mode !== 'session') {
+			const previousValues = new Map<string, string | null>();
+			const setSessionItem = (
+				storageKey: string,
+				storageValue: string
+			) => {
+				if (!previousValues.has(storageKey)) {
+					previousValues.set(
+						storageKey,
+						sessionStorage.getItem(storageKey)
+					);
+				}
+				sessionStorage.setItem(storageKey, storageValue);
+			};
+
 			try {
 				this._memoryStorage.forEach((storedValue, storedKey) => {
-					sessionStorage.setItem(storedKey, storedValue);
+					setSessionItem(storedKey, storedValue);
 				});
-				sessionStorage.setItem(key, value);
+				setSessionItem(key, value);
 				this._storage = sessionStorage;
 				this._mode = 'session';
 				return;
 			} catch {
-				/* empty */
+				previousValues.forEach((previousValue, previousKey) => {
+					try {
+						if (previousValue === null) {
+							sessionStorage.removeItem(previousKey);
+						} else {
+							sessionStorage.setItem(previousKey, previousValue);
+						}
+					} catch {
+						/* empty */
+					}
+				});
 			}
 		}
 

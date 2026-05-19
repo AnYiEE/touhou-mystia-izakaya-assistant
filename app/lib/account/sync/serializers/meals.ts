@@ -162,11 +162,13 @@ function mergeMealList<TMeal>({
 }
 
 export function mergeMealSnapshot<TMeal>({
+	allowBaseNullAutoMerge = false,
 	base,
 	cloud,
 	local,
 	namespace,
 }: {
+	allowBaseNullAutoMerge?: boolean;
 	base: TMealSnapshot<TMeal> | null;
 	cloud: TMealSnapshot<TMeal> | null;
 	local: TMealSnapshot<TMeal>;
@@ -181,6 +183,13 @@ export function mergeMealSnapshot<TMeal>({
 	if (base === null) {
 		if (checkSnapshotEqual(local, {})) {
 			return createMergeResult({ data: cloud, shouldUpload: false });
+		}
+		if (!allowBaseNullAutoMerge) {
+			return createMergeResult({
+				conflict: createSerializerConflict({ cloud, local, namespace }),
+				data: cloud,
+				shouldUpload: false,
+			});
 		}
 
 		const customerNames = new Set([

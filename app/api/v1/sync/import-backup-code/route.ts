@@ -15,6 +15,7 @@ import {
 import {
 	type IBackupCodeLockSignal,
 	checkBackupCodeLockLostError,
+	markBackupCodeLockCommitted,
 	throwIfBackupCodeLockLost,
 	withBackupCodeLock,
 } from '@/actions/backup/lock';
@@ -297,9 +298,15 @@ function mergeMealRecord(
 	return result;
 }
 
-function parseCloudMealRecord(record: TUserState | null) {
+function parseCloudMealRecord(
+	record: TUserState | null,
+	namespace: TSyncNamespace
+) {
 	if (record === null) {
 		return null;
+	}
+	if (record.schema_version !== SYNC_SCHEMA_VERSION_MAP[namespace]) {
+		throw new Error('server-misconfigured');
 	}
 
 	let data: unknown;
@@ -312,7 +319,12 @@ function parseCloudMealRecord(record: TUserState | null) {
 		throw new Error('server-misconfigured');
 	}
 
-	return data;
+	const normalized = normalizeImportNamespaceData({ data, namespace });
+	if (normalized === null) {
+		throw new Error('server-misconfigured');
+	}
+
+	return normalized.data;
 }
 
 async function importBackupData(
@@ -408,7 +420,7 @@ async function importBackupData(
 			const revision = (current?.revision ?? 0) + 1;
 			const updatedAt = Date.now();
 			const mergedData = mergeMealRecord(
-				parseCloudMealRecord(current ?? null),
+				parseCloudMealRecord(current ?? null, item.namespace),
 				item.data
 			);
 
@@ -564,22 +576,13 @@ export async function POST(request: NextRequest) {
 				});
 			}
 
+			markBackupCodeLockCommitted(signal);
 			try {
 				throwIfBackupCodeLockLost(signal);
 				await deleteFile(code);
 			} catch (error) {
-				if (
-					error instanceof Error &&
-					error.message === 'backup-code-lock-lost'
-				) {
-					return createNoStoreErrorResponse(
-						'backup-code-lock-lost',
-						409
-					);
-				}
-
 				console.warn('Failed to delete imported backup file', {
-					code: maskBackupCode(code),
+					codeHash: maskBackupCode(code),
 					error,
 				});
 			}

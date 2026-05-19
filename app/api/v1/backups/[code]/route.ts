@@ -9,6 +9,7 @@ import {
 	deleteRecord,
 	getFile,
 	getRecord,
+	markBackupCodeLockCommitted,
 	throwIfBackupCodeLockLost,
 	updateRecordTimeout,
 	withBackupCodeLock,
@@ -70,11 +71,19 @@ export async function GET(
 	let fileContent: string;
 	try {
 		fileContent = await getFile(code);
-	} catch {
-		return createNoStoreErrorResponse(
-			'The file does not exist or has been deleted',
-			404
-		);
+	} catch (error) {
+		if (checkBackupFileNotFoundError(error)) {
+			return createNoStoreErrorResponse(
+				'The file does not exist or has been deleted',
+				404
+			);
+		}
+
+		console.warn('Failed to read backup file', {
+			codeHash: maskBackupCode(code),
+			error,
+		});
+		return createNoStoreErrorResponse('Failed to read file', 500);
 	}
 
 	return new NextResponse(fileContent, {
@@ -107,8 +116,8 @@ export async function DELETE(
 			let deletedFile = true;
 			try {
 				throwIfBackupCodeLockLost(signal);
+				markBackupCodeLockCommitted(signal);
 				await deleteFile(code);
-				throwIfBackupCodeLockLost(signal);
 			} catch (error) {
 				if (checkBackupCodeLockLostError(error)) {
 					return createNoStoreErrorResponse(
@@ -119,7 +128,7 @@ export async function DELETE(
 
 				if (!checkBackupFileNotFoundError(error)) {
 					console.warn('Failed to delete backup file', {
-						code: maskBackupCode(code),
+						codeHash: maskBackupCode(code),
 						error,
 					});
 
@@ -131,9 +140,7 @@ export async function DELETE(
 
 				deletedFile = false;
 			}
-			throwIfBackupCodeLockLost(signal);
 			await deleteRecord(code);
-			throwIfBackupCodeLockLost(signal);
 
 			return createNoStoreJsonResponse({
 				deletedFile,

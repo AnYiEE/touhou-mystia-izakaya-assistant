@@ -113,6 +113,7 @@ export interface ISyncImportBackupCodeResponse {
 }
 
 export interface ISyncMergeParams<T> {
+	allowBaseNullAutoMerge?: boolean;
 	base: T | null;
 	cloud: T | null;
 	local: T;

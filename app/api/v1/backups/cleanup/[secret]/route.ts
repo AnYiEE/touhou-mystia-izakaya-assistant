@@ -9,6 +9,7 @@ import {
 	getExpiredRecords,
 	getRecord,
 	getRecordCodes,
+	markBackupCodeLockCommitted,
 	throwIfBackupCodeLockLost,
 	withBackupCodeLock,
 } from '@/actions/backup';
@@ -36,19 +37,36 @@ async function runWithConcurrencyLimit<T>(
 ) {
 	const iterator = items[Symbol.iterator]();
 	const workerCount = Math.min(limit, items.length);
+	const fatalErrorRef: { value: Error | null } = { value: null };
 
 	await Promise.all(
 		Array.from({ length: workerCount }, async () => {
 			for (;;) {
+				if (fatalErrorRef.value !== null) {
+					return;
+				}
+
 				const next = iterator.next();
 				if (next.done === true) {
 					return;
 				}
 
-				await worker(next.value);
+				try {
+					await worker(next.value);
+				} catch (error) {
+					fatalErrorRef.value ??=
+						error instanceof Error
+							? error
+							: new Error('backup-cleanup-failed');
+					return;
+				}
 			}
 		})
 	);
+
+	if (fatalErrorRef.value !== null) {
+		throw fatalErrorRef.value;
+	}
 }
 
 export async function DELETE(
@@ -92,8 +110,8 @@ export async function DELETE(
 
 				try {
 					throwIfBackupCodeLockLost(signal);
+					markBackupCodeLockCommitted(signal);
 					await deleteFile(code);
-					throwIfBackupCodeLockLost(signal);
 					deletedFileCount++;
 				} catch (error) {
 					if (
@@ -105,15 +123,13 @@ export async function DELETE(
 
 					failedFileCount++;
 					console.warn('Failed to delete expired backup file', {
-						code: maskBackupCode(code),
+						codeHash: maskBackupCode(code),
 						error,
 					});
 				}
 
 				try {
-					throwIfBackupCodeLockLost(signal);
 					await deleteRecord(code);
-					throwIfBackupCodeLockLost(signal);
 					deletedRecordCount++;
 				} catch (error) {
 					if (
@@ -125,7 +141,7 @@ export async function DELETE(
 
 					failedRecordCount++;
 					console.warn('Failed to delete expired backup record', {
-						code: maskBackupCode(code),
+						codeHash: maskBackupCode(code),
 						error,
 					});
 				}
@@ -142,8 +158,8 @@ export async function DELETE(
 
 				try {
 					throwIfBackupCodeLockLost(signal);
+					markBackupCodeLockCommitted(signal);
 					await deleteFile(code);
-					throwIfBackupCodeLockLost(signal);
 					orphanDeletedCount++;
 				} catch (error) {
 					if (
@@ -155,7 +171,7 @@ export async function DELETE(
 
 					failedFileCount++;
 					console.warn('Failed to delete orphan backup file', {
-						code: maskBackupCode(code),
+						codeHash: maskBackupCode(code),
 						error,
 					});
 				}

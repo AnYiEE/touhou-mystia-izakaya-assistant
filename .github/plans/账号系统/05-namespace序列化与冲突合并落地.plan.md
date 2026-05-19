@@ -73,6 +73,7 @@ isProject: false
 ```ts
 export interface ISyncNamespaceSerializer<T> {
 	deserialize(data: unknown): T;
+	getDefaultSnapshot(): T;
 	getLocalSnapshot(): T;
 	merge(params: ISyncMergeParams<T>): ISyncMergeResult<T>;
 	migrate(data: unknown, version: number): T;
@@ -82,6 +83,7 @@ export interface ISyncNamespaceSerializer<T> {
 }
 
 export interface ISyncMergeParams<T> {
+	allowBaseNullAutoMerge?: boolean;
 	base: T | null;
 	cloud: T | null;
 	local: T;

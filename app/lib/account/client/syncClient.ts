@@ -49,6 +49,7 @@ const QUIET_FLUSH_DELAY = 2 * 1000;
 const SEND_BEACON_BYTE_LIMIT = 48 * 1024;
 
 let activeFlushRunId: string | null = null;
+let activeFlushPromise: Promise<boolean> | null = null;
 let forceFlushTimer: ReturnType<typeof setTimeout> | null = null;
 let leaseTimer: ReturnType<typeof setInterval> | null = null;
 let leaseTimerGeneration: number | null = null;
@@ -593,192 +594,212 @@ export async function flushAccountSyncQueue() {
 
 	const flushRunId = createAccountClientId();
 	if (activeFlushRunId !== null) {
-		return false;
+		return activeFlushPromise ?? false;
 	}
 	activeFlushRunId = flushRunId;
 
-	let didAcquireLease = false;
-	let shouldScheduleRetryAfterFlush = false;
+	const flushPromise = (async () => {
+		let didAcquireLease = false;
+		let shouldScheduleRetryAfterFlush = false;
 
-	try {
-		if (
-			!(await acquireAccountSyncLease(context.user.id, tabId, flushRunId))
-		) {
-			return false;
-		}
-		didAcquireLease = true;
-
-		if (!checkCurrentSyncRun(generation, context.user.id)) {
-			return false;
-		}
-
-		clearSyncTimers();
-		startLeaseRenewal(context.user.id, generation, flushRunId);
-		accountStore.shared.sync.isSyncing.set(true);
-
-		const response = await putSyncState(
-			{
-				changes: entries.map((entry) => ({
-					data: entry.data,
-					namespace: entry.namespace,
-					revision: entry.baseRevision,
-					schema_version: entry.schema_version,
-				})),
-				state_epoch: context.user.state_epoch,
-			},
-			context.csrfToken
-		);
-		if (!checkCurrentSyncRun(generation, context.user.id)) {
-			return false;
-		}
-
-		const entryMap = new Map(
-			entries.map((entry) => [entry.namespace, entry] as const)
-		);
-		const uploadedNamespaces: TSyncNamespace[] = [];
-		response.results.forEach((result) => {
-			const entry = entryMap.get(result.namespace);
-			if (entry === undefined) {
-				return;
-			}
-			if (result.status === 'ok') {
-				handleSuccessfulUpload({
-					entry,
-					revision: result.revision,
-					stateEpoch: response.state_epoch,
-					userId: context.user.id,
-				});
-				uploadedNamespaces.push(result.namespace);
-				return;
-			}
-			if (result.status === 'conflict') {
-				const isConfirmed = handleConflictUpload({
-					entry,
-					result,
-					stateEpoch: response.state_epoch,
-					userId: context.user.id,
-				});
-				if (isConfirmed) {
-					uploadedNamespaces.push(result.namespace);
-				}
-			}
-		});
-		setCurrentAccountUserStateEpoch(context.user.id, response.state_epoch);
-
-		accountStore.shared.sync.failedAttempts.set(0);
-		accountStore.shared.sync.lastError.set(null);
-		accountStore.shared.sync.lastResult.set(
-			response.results.some((result) => result.status !== 'ok')
-				? 'partial'
-				: 'success'
-		);
-		accountStore.shared.sync.lastSyncedAt.set(Date.now());
-		if (uploadedNamespaces.length > 0) {
-			void postAccountSyncBroadcastMessage({
-				namespaces: uploadedNamespaces,
-				operationId: createAccountClientId(),
-				state_epoch: response.state_epoch,
-				tabId,
-				type: 'uploaded',
-				userId: context.user.id,
-			});
-		}
-
-		return response.results.every((result) => result.status === 'ok');
-	} catch (error) {
-		if (error instanceof AccountApiError && error.status === 401) {
-			if (checkCurrentSyncRun(generation, context.user.id)) {
-				resetExpiredAccountSession();
-			}
-			return false;
-		}
-		if (
-			error instanceof Error &&
-			error.message === 'state-epoch-mismatch'
-		) {
-			try {
-				const didRefresh = await handleStateEpochMismatch(
-					context.user.id
-				);
-				if (
-					!didRefresh ||
-					!checkCurrentSyncRun(generation, context.user.id)
-				) {
-					return false;
-				}
-
-				shouldScheduleRetryAfterFlush =
-					getFlushableEntries(context.user.id).length > 0;
-				accountStore.shared.sync.canRetry.set(false);
-				accountStore.shared.sync.failedAttempts.set(0);
-				accountStore.shared.sync.lastError.set(
-					accountStore.shared.sync.conflicts.get().length > 0
-						? 'conflict'
-						: null
-				);
-				accountStore.shared.sync.lastResult.set('partial');
-				return false;
-			} catch (refreshError) {
-				if (!checkCurrentSyncRun(generation, context.user.id)) {
-					return false;
-				}
-
-				accountStore.shared.sync.lastError.set(
-					refreshError instanceof Error
-						? refreshError.message
-						: 'sync-refresh-failed'
-				);
-			}
-		}
-		if (!checkCurrentSyncRun(generation, context.user.id)) {
-			return false;
-		}
-
-		accountStore.shared.sync.canRetry.set(true);
-		accountStore.shared.sync.failedAttempts.set((attempts) => attempts + 1);
-		accountStore.shared.sync.lastError.set(
-			error instanceof Error ? error.message : 'sync-failed'
-		);
-		accountStore.shared.sync.lastResult.set('failed');
-		return false;
-	} finally {
-		const isCurrentRun = checkCurrentSyncRun(generation, context.user.id);
-		if (isCurrentRun) {
-			accountStore.shared.sync.isSyncing.set(false);
-			updatePendingCount();
-		}
-		if (didAcquireLease) {
-			stopLeaseRenewal(generation);
-			try {
-				await releaseAccountSyncLease(
+		try {
+			if (
+				!(await acquireAccountSyncLease(
 					context.user.id,
 					tabId,
 					flushRunId
-				);
-			} catch (error) {
-				console.warn('Failed to release account sync lease.', error);
+				))
+			) {
+				return false;
+			}
+			didAcquireLease = true;
+
+			if (!checkCurrentSyncRun(generation, context.user.id)) {
+				return false;
+			}
+
+			clearSyncTimers();
+			startLeaseRenewal(context.user.id, generation, flushRunId);
+			accountStore.shared.sync.isSyncing.set(true);
+
+			const response = await putSyncState(
+				{
+					changes: entries.map((entry) => ({
+						data: entry.data,
+						namespace: entry.namespace,
+						revision: entry.baseRevision,
+						schema_version: entry.schema_version,
+					})),
+					state_epoch: context.user.state_epoch,
+				},
+				context.csrfToken
+			);
+			if (!checkCurrentSyncRun(generation, context.user.id)) {
+				return false;
+			}
+
+			const entryMap = new Map(
+				entries.map((entry) => [entry.namespace, entry] as const)
+			);
+			const uploadedNamespaces: TSyncNamespace[] = [];
+			response.results.forEach((result) => {
+				const entry = entryMap.get(result.namespace);
+				if (entry === undefined) {
+					return;
+				}
+				if (result.status === 'ok') {
+					handleSuccessfulUpload({
+						entry,
+						revision: result.revision,
+						stateEpoch: response.state_epoch,
+						userId: context.user.id,
+					});
+					uploadedNamespaces.push(result.namespace);
+					return;
+				}
+				if (result.status === 'conflict') {
+					const isConfirmed = handleConflictUpload({
+						entry,
+						result,
+						stateEpoch: response.state_epoch,
+						userId: context.user.id,
+					});
+					if (isConfirmed) {
+						uploadedNamespaces.push(result.namespace);
+					}
+				}
+			});
+			setCurrentAccountUserStateEpoch(
+				context.user.id,
+				response.state_epoch
+			);
+
+			accountStore.shared.sync.failedAttempts.set(0);
+			accountStore.shared.sync.lastError.set(null);
+			accountStore.shared.sync.lastResult.set(
+				response.results.some((result) => result.status !== 'ok')
+					? 'partial'
+					: 'success'
+			);
+			accountStore.shared.sync.lastSyncedAt.set(Date.now());
+			if (uploadedNamespaces.length > 0) {
+				void postAccountSyncBroadcastMessage({
+					namespaces: uploadedNamespaces,
+					operationId: createAccountClientId(),
+					state_epoch: response.state_epoch,
+					tabId,
+					type: 'uploaded',
+					userId: context.user.id,
+				});
+			}
+
+			return response.results.every((result) => result.status === 'ok');
+		} catch (error) {
+			if (error instanceof AccountApiError && error.status === 401) {
+				if (checkCurrentSyncRun(generation, context.user.id)) {
+					resetExpiredAccountSession();
+				}
+				return false;
+			}
+			if (
+				error instanceof Error &&
+				error.message === 'state-epoch-mismatch'
+			) {
+				try {
+					const didRefresh = await handleStateEpochMismatch(
+						context.user.id
+					);
+					if (
+						!didRefresh ||
+						!checkCurrentSyncRun(generation, context.user.id)
+					) {
+						return false;
+					}
+
+					shouldScheduleRetryAfterFlush =
+						getFlushableEntries(context.user.id).length > 0;
+					accountStore.shared.sync.canRetry.set(false);
+					accountStore.shared.sync.failedAttempts.set(0);
+					accountStore.shared.sync.lastError.set(
+						accountStore.shared.sync.conflicts.get().length > 0
+							? 'conflict'
+							: null
+					);
+					accountStore.shared.sync.lastResult.set('partial');
+					return false;
+				} catch (refreshError) {
+					if (!checkCurrentSyncRun(generation, context.user.id)) {
+						return false;
+					}
+
+					accountStore.shared.sync.lastError.set(
+						refreshError instanceof Error
+							? refreshError.message
+							: 'sync-refresh-failed'
+					);
+				}
+			}
+			if (!checkCurrentSyncRun(generation, context.user.id)) {
+				return false;
+			}
+
+			accountStore.shared.sync.canRetry.set(true);
+			accountStore.shared.sync.failedAttempts.set(
+				(attempts) => attempts + 1
+			);
+			accountStore.shared.sync.lastError.set(
+				error instanceof Error ? error.message : 'sync-failed'
+			);
+			accountStore.shared.sync.lastResult.set('failed');
+			return false;
+		} finally {
+			const isCurrentRun = checkCurrentSyncRun(
+				generation,
+				context.user.id
+			);
+			if (isCurrentRun) {
+				accountStore.shared.sync.isSyncing.set(false);
+				updatePendingCount();
+			}
+			if (didAcquireLease) {
+				stopLeaseRenewal(generation);
+				try {
+					await releaseAccountSyncLease(
+						context.user.id,
+						tabId,
+						flushRunId
+					);
+				} catch (error) {
+					console.warn(
+						'Failed to release account sync lease.',
+						error
+					);
+				}
+			}
+			if (activeFlushRunId === flushRunId) {
+				activeFlushRunId = null;
+				activeFlushPromise = null;
+			}
+			if (didAcquireLease && isCurrentRun) {
+				void postAccountSyncBroadcastMessage({
+					namespaces: [],
+					operationId: createAccountClientId(),
+					state_epoch: context.user.state_epoch,
+					tabId,
+					type: 'lease-changed',
+					userId: context.user.id,
+				});
+			}
+			if (isCurrentRun && shouldScheduleRetryAfterFlush) {
+				quietFlushTimer ??= setTimeout(() => {
+					quietFlushTimer = null;
+					void flushAccountSyncQueue();
+				}, 0);
 			}
 		}
-		if (activeFlushRunId === flushRunId) {
-			activeFlushRunId = null;
-		}
-		if (didAcquireLease && isCurrentRun) {
-			void postAccountSyncBroadcastMessage({
-				namespaces: [],
-				operationId: createAccountClientId(),
-				state_epoch: context.user.state_epoch,
-				tabId,
-				type: 'lease-changed',
-				userId: context.user.id,
-			});
-		}
-		if (isCurrentRun && shouldScheduleRetryAfterFlush) {
-			quietFlushTimer ??= setTimeout(() => {
-				quietFlushTimer = null;
-				void flushAccountSyncQueue();
-			}, 0);
-		}
-	}
+	})();
+	activeFlushPromise = flushPromise;
+	return flushPromise;
 }
 
 export function scheduleAccountSyncFlush() {
@@ -867,6 +888,7 @@ export async function takeOverLocalAccountData() {
 				? null
 				: serializer.migrate(record.data, record.schema_version);
 		const mergeResult = serializer.merge({
+			allowBaseNullAutoMerge: true,
 			base: null,
 			cloud,
 			local,
@@ -982,6 +1004,7 @@ export function flushAccountSyncQueueWithBeacon() {
 export function startAccountSyncClient() {
 	syncClientGeneration += 1;
 	activeFlushRunId = null;
+	activeFlushPromise = null;
 	clearSyncTimers();
 	stopLeaseRenewal();
 	accountStore.shared.sync.isSyncing.set(false);
