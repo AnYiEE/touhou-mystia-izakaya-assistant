@@ -26,6 +26,32 @@ function maskBackupCodeForLog(code: string) {
 	return `sha256:${createHash('sha256').update(code).digest('hex').slice(0, 12)}`;
 }
 
+async function waitForPreviousBackupCodeLock(
+	code: string,
+	previousLock: Promise<void>
+) {
+	let timeoutId!: ReturnType<typeof setTimeout>;
+	const timeout = new Promise<'timeout'>((resolve) => {
+		timeoutId = setTimeout(() => {
+			resolve('timeout');
+		}, BACKUP_CODE_LOCK_TIMEOUT_MS);
+	});
+	const result = await Promise.race([
+		previousLock.then(
+			() => 'released' as const,
+			() => 'released' as const
+		),
+		timeout,
+	]);
+
+	clearTimeout(timeoutId);
+	if (result === 'timeout') {
+		console.warn('Timed out waiting for backup code in-process queue.', {
+			codeHash: maskBackupCodeForLog(code),
+		});
+	}
+}
+
 async function tryAcquireSharedBackupCodeLock(
 	code: string,
 	ownerId: string,
@@ -125,7 +151,7 @@ export async function withBackupCodeLock<T>(
 	backupCodeLocks.set(code, currentLock);
 
 	try {
-		await previousLock.catch(() => {});
+		await waitForPreviousBackupCodeLock(code, previousLock);
 
 		const ownerId = randomUUID();
 		const lockSignal: {

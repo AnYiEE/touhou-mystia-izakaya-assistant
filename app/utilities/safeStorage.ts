@@ -59,6 +59,11 @@ class SafeStorage implements Storage {
 		}
 	}
 
+	private switchToMemoryStorage() {
+		this._storage = null;
+		this._mode = 'memory';
+	}
+
 	private switchToFallbackStorage(key: string, value: string) {
 		if (this._mode !== 'session') {
 			const previousValues = new Map<string, string | null>();
@@ -106,16 +111,21 @@ class SafeStorage implements Storage {
 		const keys = new Set(this._memoryStorage.keys());
 
 		if (this._storage !== null) {
+			const storageKeys: string[] = [];
 			try {
 				for (let i = 0; i < this._storage.length; i++) {
 					const key = this._storage.key(i);
 					if (key !== null) {
-						keys.add(key);
+						storageKeys.push(key);
 					}
 				}
 			} catch {
-				/* empty */
+				this.switchToMemoryStorage();
+				return [...this._memoryStorage.keys()];
 			}
+			storageKeys.forEach((key) => {
+				keys.add(key);
+			});
 		}
 
 		return [...keys];
@@ -134,7 +144,7 @@ class SafeStorage implements Storage {
 			try {
 				this._storage.clear();
 			} catch {
-				/* empty */
+				this.switchToMemoryStorage();
 			}
 		}
 		this._memoryStorage.clear();
@@ -151,7 +161,7 @@ class SafeStorage implements Storage {
 				}
 				this._memoryStorage.delete(key);
 			} catch {
-				/* empty */
+				this.switchToMemoryStorage();
 			}
 		}
 		return (this._memoryStorage.get(key) as T | null) ?? null;
@@ -167,7 +177,7 @@ class SafeStorage implements Storage {
 			try {
 				this._storage.removeItem(key);
 			} catch {
-				/* empty */
+				this.switchToMemoryStorage();
 			}
 		}
 		this._memoryStorage.delete(key);

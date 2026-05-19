@@ -343,7 +343,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				trackEvent(
 					trackEvent.category.click,
 					'Cloud Delete Button',
-					normalizedCode
+					'redacted'
 				);
 			})
 			.catch((error: unknown) => {
@@ -403,7 +403,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				trackEvent(
 					trackEvent.category.click,
 					'Cloud Download Button',
-					normalizedCode
+					'redacted'
 				);
 			})
 			.catch((error: unknown) => {
@@ -451,7 +451,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				trackEvent(
 					trackEvent.category.click,
 					'Cloud Upload Button',
-					code
+					'redacted'
 				);
 			})
 			.catch((error: unknown) => {
