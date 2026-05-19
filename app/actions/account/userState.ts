@@ -76,6 +76,25 @@ export async function putUserStateEntryIfRevision(
 			};
 		}
 
+		const stateEpochLockResult = await trx
+			.updateTable(USER_TABLE_NAME)
+			.set({ updated_at: sql<TUser['updated_at']>`updated_at` })
+			.where('id', '=', entry.user_id)
+			.where('state_epoch', '=', expectedStateEpoch)
+			.executeTakeFirst();
+		if (stateEpochLockResult.numUpdatedRows !== 1n) {
+			const currentUser = await trx
+				.selectFrom(USER_TABLE_NAME)
+				.select('state_epoch')
+				.where('id', '=', entry.user_id)
+				.executeTakeFirstOrThrow();
+
+			return {
+				state_epoch: currentUser.state_epoch,
+				status: 'state-epoch-mismatch',
+			};
+		}
+
 		const current =
 			(await trx
 				.selectFrom(TABLE_NAME)

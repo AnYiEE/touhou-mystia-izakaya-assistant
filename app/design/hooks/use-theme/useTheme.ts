@@ -122,11 +122,11 @@ export function useTheme() {
 			}
 
 			const newTheme =
-				event.newValue === null ? null : parseTheme(event.newValue);
-			if (newTheme !== null) {
-				applyTheme(newTheme, true);
-				setThemeState(newTheme);
-			}
+				event.newValue === null
+					? THEME_MAP.SYSTEM
+					: parseTheme(event.newValue);
+			applyTheme(newTheme, true);
+			setThemeState(newTheme);
 		};
 
 		globalThis.addEventListener(EVENT_TYPE, handleStorage);

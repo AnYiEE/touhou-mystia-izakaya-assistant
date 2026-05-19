@@ -28,20 +28,33 @@ export function clearExpiredRateLimitBuckets(now = Date.now()) {
 	});
 }
 
-function trimRateLimitBuckets(now: number) {
+function ensureRateLimitBucketCapacity(now: number) {
 	if (now - lastRateLimitCleanupAt >= RATE_LIMIT_CLEANUP_INTERVAL_MS) {
 		clearExpiredRateLimitBuckets(now);
 		lastRateLimitCleanupAt = now;
 	}
 
-	while (rateLimitBucketMap.size >= MAX_RATE_LIMIT_BUCKETS) {
-		const oldestKey = rateLimitBucketMap.keys().next().value;
-		if (oldestKey === undefined) {
-			return;
-		}
-
-		rateLimitBucketMap.delete(oldestKey);
+	if (rateLimitBucketMap.size < MAX_RATE_LIMIT_BUCKETS) {
+		return true;
 	}
+
+	clearExpiredRateLimitBuckets(now);
+	lastRateLimitCleanupAt = now;
+
+	return rateLimitBucketMap.size < MAX_RATE_LIMIT_BUCKETS;
+}
+
+function getNextRateLimitBucketResetAfter(now: number) {
+	let resetAt = Number.POSITIVE_INFINITY;
+	rateLimitBucketMap.forEach((bucket) => {
+		if (bucket.resetAt < resetAt) {
+			resetAt = bucket.resetAt;
+		}
+	});
+
+	return Number.isFinite(resetAt)
+		? Math.max(1, Math.ceil((resetAt - now) / 1000))
+		: 1;
 }
 
 export function checkRateLimit(
@@ -63,7 +76,14 @@ export function checkRateLimit(
 	const bucket = rateLimitBucketMap.get(key);
 
 	if (!bucket || bucket.resetAt <= now) {
-		trimRateLimitBuckets(now);
+		if (!ensureRateLimitBucketCapacity(now)) {
+			return {
+				allowed: false,
+				remaining: 0,
+				retryAfter: getNextRateLimitBucketResetAfter(now),
+			};
+		}
+
 		rateLimitBucketMap.set(key, { count: 1, resetAt: now + windowMs });
 		return { allowed: true, remaining: limit - 1, retryAfter: 0 };
 	}

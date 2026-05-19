@@ -19,6 +19,7 @@ interface IPragmaForeignKeyRow {
 	from: string;
 	on_delete: string;
 	table: string;
+	to: string;
 }
 
 interface IPragmaIndexInfoRow {
@@ -194,7 +195,7 @@ async function getForeignKeys(
 	tableName: TAccountTableName
 ) {
 	const { rows } = await sql<IPragmaForeignKeyRow>`
-		select "from", "table", on_delete
+		select "from", "table", "to", on_delete
 		from pragma_foreign_key_list(${tableName})
 	`.execute(database);
 
@@ -253,6 +254,7 @@ async function assertForeignKeyToUsers(
 		(foreignKey) =>
 			foreignKey.from === 'user_id' &&
 			foreignKey.table === TABLE_NAME_MAP.user &&
+			foreignKey.to === 'id' &&
 			foreignKey.on_delete.toLowerCase() === 'cascade'
 	);
 

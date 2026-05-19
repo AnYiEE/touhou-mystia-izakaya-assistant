@@ -44,6 +44,7 @@ export default function AdminPage() {
 	const [status, setStatus] = useState<TUserStatus | ''>('');
 	const [username, setUsername] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
+	const adminAuthRequestIdRef = useRef(0);
 	const refreshUsersRequestIdRef = useRef(0);
 
 	const refreshUsers = useCallback(() => {
@@ -84,12 +85,22 @@ export default function AdminPage() {
 	}, [page, query, status]);
 
 	useEffect(() => {
+		const requestId = adminAuthRequestIdRef.current + 1;
+		adminAuthRequestIdRef.current = requestId;
 		void fetchAdminMe()
 			.then((data) => {
+				if (adminAuthRequestIdRef.current !== requestId) {
+					return;
+				}
+
 				accountStore.shared.adminCsrfToken.set(data.csrf_token);
 				setAdmin(data);
 			})
 			.catch(() => {
+				if (adminAuthRequestIdRef.current !== requestId) {
+					return;
+				}
+
 				clearAdminSession();
 				setAdmin(null);
 			});
@@ -125,10 +136,19 @@ export default function AdminPage() {
 						isLoading={isLoading}
 						variant="flat"
 						onPress={() => {
+							const requestId = adminAuthRequestIdRef.current + 1;
+							adminAuthRequestIdRef.current = requestId;
 							setIsLoading(true);
 							setMessage(null);
 							void loginAdmin({ password, username })
 								.then((data) => {
+									if (
+										adminAuthRequestIdRef.current !==
+										requestId
+									) {
+										return;
+									}
+
 									accountStore.shared.adminCsrfToken.set(
 										data.csrf_token
 									);
@@ -136,6 +156,13 @@ export default function AdminPage() {
 									setPassword('');
 								})
 								.catch((error: unknown) => {
+									if (
+										adminAuthRequestIdRef.current !==
+										requestId
+									) {
+										return;
+									}
+
 									setMessage(
 										error instanceof Error
 											? error.message
@@ -143,6 +170,13 @@ export default function AdminPage() {
 									);
 								})
 								.finally(() => {
+									if (
+										adminAuthRequestIdRef.current !==
+										requestId
+									) {
+										return;
+									}
+
 									setIsLoading(false);
 								});
 						}}
@@ -164,6 +198,7 @@ export default function AdminPage() {
 				<Button
 					variant="flat"
 					onPress={() => {
+						adminAuthRequestIdRef.current += 1;
 						refreshUsersRequestIdRef.current += 1;
 						void logoutAdmin(admin.csrf_token).finally(() => {
 							clearAdminSession();

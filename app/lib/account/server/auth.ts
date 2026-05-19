@@ -3,6 +3,7 @@ import { type NextRequest, type NextResponse } from 'next/server';
 
 import {
 	createSession,
+	deleteSessionById,
 	getSessionByTokenHash,
 	updateSessionAndDeleteOtherSessions,
 	updateSessionLastSeen,
@@ -28,6 +29,8 @@ import {
 } from './request';
 import {
 	ACCOUNT_SESSION_COOKIE_NAME,
+	SESSION_ABSOLUTE_TIMEOUT_MS,
+	SESSION_IDLE_TIMEOUT_MS,
 	createSessionCookieOptions,
 	createSessionToken,
 	hashSessionToken,
@@ -126,6 +129,20 @@ export async function authenticateAccountRequest(
 		return { httpStatus: 401, message: 'unauthorized', status: 'error' };
 	}
 
+	const now = Date.now();
+	const isSessionExpired =
+		session.created_at + SESSION_ABSOLUTE_TIMEOUT_MS <= now ||
+		session.last_seen_at + SESSION_IDLE_TIMEOUT_MS <= now;
+	if (isSessionExpired) {
+		try {
+			await deleteSessionById(session.id);
+		} catch (error) {
+			console.warn('Failed to delete expired account session.', error);
+		}
+
+		return { httpStatus: 401, message: 'unauthorized', status: 'error' };
+	}
+
 	const [user, credential] = await Promise.all([
 		findUserById(session.user_id),
 		getCredentialByUserId(session.user_id),
@@ -153,7 +170,6 @@ export async function authenticateAccountRequest(
 		};
 	}
 
-	const now = Date.now();
 	if (session.last_seen_at + SESSION_LAST_SEEN_UPDATE_INTERVAL < now) {
 		try {
 			await updateSessionLastSeen(session.id, now);

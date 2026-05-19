@@ -104,6 +104,11 @@ export default function AccountManager() {
 			void flushAccountSyncQueue()
 				.then((isFlushed) => {
 					if (!isFlushed) {
+						if (accountStore.shared.user.get() === null) {
+							resetAccountState();
+							return null;
+						}
+
 						const syncLastError =
 							accountStore.shared.sync.lastError.get();
 						if (syncLastError === 'unauthorized') {

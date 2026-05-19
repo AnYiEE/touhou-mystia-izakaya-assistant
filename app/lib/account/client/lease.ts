@@ -12,6 +12,7 @@ export const ACCOUNT_SYNC_LEASE_RENEW_INTERVAL = 5 * 1000;
 
 export interface IAccountSyncLease {
 	expiresAt: number;
+	ownerRunId?: string;
 	ownerTabId: string;
 	renewedAt: number;
 }
@@ -50,10 +51,12 @@ export function readAccountSyncLease(userId: string) {
 function writeAccountSyncLease(
 	userId: string,
 	ownerTabId: string,
+	ownerRunId: string | undefined,
 	now: number
 ) {
 	writeAccountJsonStorage(createAccountSyncLeaseKey(userId), {
 		expiresAt: now + ACCOUNT_SYNC_LEASE_TTL,
+		...(ownerRunId === undefined ? {} : { ownerRunId }),
 		ownerTabId,
 		renewedAt: now,
 	} satisfies IAccountSyncLease);
@@ -62,6 +65,7 @@ function writeAccountSyncLease(
 function tryAcquireAccountSyncLease(
 	userId: string,
 	ownerTabId: string,
+	ownerRunId: string | undefined,
 	now: number
 ) {
 	const lease = readAccountSyncLease(userId);
@@ -73,28 +77,44 @@ function tryAcquireAccountSyncLease(
 		return false;
 	}
 
-	writeAccountSyncLease(userId, ownerTabId, now);
+	writeAccountSyncLease(userId, ownerTabId, ownerRunId, now);
 
-	return readAccountSyncLease(userId)?.ownerTabId === ownerTabId;
+	const nextLease = readAccountSyncLease(userId);
+	return (
+		nextLease?.ownerTabId === ownerTabId &&
+		(ownerRunId === undefined || nextLease.ownerRunId === ownerRunId)
+	);
 }
 
 function tryRenewAccountSyncLease(
 	userId: string,
 	ownerTabId: string,
+	ownerRunId: string | undefined,
 	now: number
 ) {
 	const lease = readAccountSyncLease(userId);
-	if (lease?.ownerTabId !== ownerTabId) {
+	if (
+		lease?.ownerTabId !== ownerTabId ||
+		(ownerRunId !== undefined && lease.ownerRunId !== ownerRunId)
+	) {
 		return false;
 	}
 
-	writeAccountSyncLease(userId, ownerTabId, now);
+	writeAccountSyncLease(userId, ownerTabId, ownerRunId, now);
 
 	return true;
 }
 
-function tryReleaseAccountSyncLease(userId: string, ownerTabId: string) {
-	if (readAccountSyncLease(userId)?.ownerTabId === ownerTabId) {
+function tryReleaseAccountSyncLease(
+	userId: string,
+	ownerTabId: string,
+	ownerRunId: string | undefined
+) {
+	const lease = readAccountSyncLease(userId);
+	if (
+		lease?.ownerTabId === ownerTabId &&
+		(ownerRunId === undefined || lease.ownerRunId === ownerRunId)
+	) {
 		removeAccountStorage(createAccountSyncLeaseKey(userId));
 	}
 }
@@ -102,44 +122,54 @@ function tryReleaseAccountSyncLease(userId: string, ownerTabId: string) {
 export async function acquireAccountSyncLease(
 	userId: string,
 	ownerTabId: string,
+	ownerRunId?: string,
 	now = Date.now()
 ) {
 	const lockManager = getAccountLockManager();
 	if (lockManager === null) {
-		return tryAcquireAccountSyncLease(userId, ownerTabId, now);
+		return tryAcquireAccountSyncLease(userId, ownerTabId, ownerRunId, now);
 	}
 
 	return lockManager.request(
 		createAccountSyncLeaseKey(userId),
 		{ mode: 'exclusive' },
-		() => tryAcquireAccountSyncLease(userId, ownerTabId, Date.now())
+		() =>
+			tryAcquireAccountSyncLease(
+				userId,
+				ownerTabId,
+				ownerRunId,
+				Date.now()
+			)
 	);
 }
 
 export async function renewAccountSyncLease(
 	userId: string,
 	ownerTabId: string,
+	ownerRunId?: string,
 	now = Date.now()
 ) {
 	const lockManager = getAccountLockManager();
 	if (lockManager === null) {
-		return tryRenewAccountSyncLease(userId, ownerTabId, now);
+		return tryRenewAccountSyncLease(userId, ownerTabId, ownerRunId, now);
 	}
 
 	return lockManager.request(
 		createAccountSyncLeaseKey(userId),
 		{ mode: 'exclusive' },
-		() => tryRenewAccountSyncLease(userId, ownerTabId, Date.now())
+		() =>
+			tryRenewAccountSyncLease(userId, ownerTabId, ownerRunId, Date.now())
 	);
 }
 
 export async function releaseAccountSyncLease(
 	userId: string,
-	ownerTabId: string
+	ownerTabId: string,
+	ownerRunId?: string
 ) {
 	const lockManager = getAccountLockManager();
 	if (lockManager === null) {
-		tryReleaseAccountSyncLease(userId, ownerTabId);
+		tryReleaseAccountSyncLease(userId, ownerTabId, ownerRunId);
 		return;
 	}
 
@@ -147,7 +177,7 @@ export async function releaseAccountSyncLease(
 		createAccountSyncLeaseKey(userId),
 		{ mode: 'exclusive' },
 		() => {
-			tryReleaseAccountSyncLease(userId, ownerTabId);
+			tryReleaseAccountSyncLease(userId, ownerTabId, ownerRunId);
 		}
 	);
 }

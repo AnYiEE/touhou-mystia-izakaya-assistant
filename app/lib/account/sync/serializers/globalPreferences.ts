@@ -61,6 +61,7 @@ const recipeColumnKeys = new Set<string>([
 	'time',
 ]);
 const hiddenItemKeys = new Set(['dlcs']);
+const tableColumnKeys = new Set(['beverage', 'recipe']);
 const tableHiddenItemKeys = new Set(['beverages', 'ingredients', 'recipes']);
 const dlcKeys = new Set(Object.keys(DLC_LABEL_MAP));
 const beverageNames = new Set<string>(BEVERAGE_LIST.map((item) => item.name));
@@ -316,6 +317,7 @@ export const globalPreferencesSerializer = {
 				isIntegerInRange(suggestMeals['maxExtraIngredients'], 0, 4)) &&
 			isIntegerInRange(suggestMeals['maxRating'], 0, 4) &&
 			isIntegerInRange(suggestMeals['maxResults'], 1, 10) &&
+			checkExactKeys(tableColumns, tableColumnKeys) &&
 			isBeverageColumnArray(tableColumns['beverage']) &&
 			isRecipeColumnArray(tableColumns['recipe']) &&
 			checkExactKeys(tableHiddenItems, tableHiddenItemKeys) &&

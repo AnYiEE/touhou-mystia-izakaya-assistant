@@ -8,6 +8,7 @@ import {
 } from 'node:fs/promises';
 import { join } from 'node:path';
 import { cwd } from 'node:process';
+import { validate as validateUuid } from 'uuid';
 
 import type { TBackupFileRecord } from '@/lib/db/types';
 
@@ -15,6 +16,10 @@ const dir = join(cwd(), 'upload/backups');
 const encoding: BufferEncoding = 'utf8';
 
 function generateFilePath(code: TBackupFileRecord['code']) {
+	if (!validateUuid(code)) {
+		throw new Error('invalid-backup-code');
+	}
+
 	return join(dir, `${code}.json`);
 }
 

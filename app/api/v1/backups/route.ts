@@ -30,6 +30,31 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 	return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
+async function restoreBackupFile({
+	code,
+	hadPreviousFile,
+	maskedCode,
+	previousFileContent,
+}: {
+	code: string;
+	hadPreviousFile: boolean;
+	maskedCode: string;
+	previousFileContent: string | null;
+}) {
+	try {
+		await (hadPreviousFile && previousFileContent !== null
+			? saveFile(code, previousFileContent)
+			: deleteFile(code));
+	} catch (restoreError) {
+		if (!checkBackupFileNotFoundError(restoreError)) {
+			console.warn('Failed to restore backup file', {
+				code: maskedCode,
+				error: restoreError,
+			});
+		}
+	}
+}
+
 export async function POST(request: NextRequest) {
 	const { contentType, ip, ua } = getRequestMeta(request);
 
@@ -132,6 +157,22 @@ export async function POST(request: NextRequest) {
 			try {
 				throwIfBackupCodeLockLost(signal);
 				await saveFile(code, jsonString);
+				throwIfBackupCodeLockLost(signal);
+			} catch (error) {
+				if (
+					error instanceof Error &&
+					error.message === 'backup-code-lock-lost'
+				) {
+					return createNoStoreErrorResponse(
+						'backup-code-lock-lost',
+						409
+					);
+				}
+
+				return createNoStoreErrorResponse('Failed to save file', 500);
+			}
+
+			try {
 				writtenFileIdentity = await getFileIdentity(code);
 				throwIfBackupCodeLockLost(signal);
 			} catch (error) {
@@ -144,6 +185,17 @@ export async function POST(request: NextRequest) {
 						409
 					);
 				}
+
+				await restoreBackupFile({
+					code,
+					hadPreviousFile,
+					maskedCode,
+					previousFileContent,
+				});
+				console.warn('Failed to identify backup file', {
+					code: maskedCode,
+					error,
+				});
 
 				return createNoStoreErrorResponse('Failed to save file', 500);
 			}

@@ -48,9 +48,12 @@ const FORCE_FLUSH_DELAY = 30 * 1000;
 const QUIET_FLUSH_DELAY = 2 * 1000;
 const SEND_BEACON_BYTE_LIMIT = 48 * 1024;
 
+let activeFlushRunId: string | null = null;
 let forceFlushTimer: ReturnType<typeof setTimeout> | null = null;
 let leaseTimer: ReturnType<typeof setInterval> | null = null;
+let leaseTimerGeneration: number | null = null;
 let quietFlushTimer: ReturnType<typeof setTimeout> | null = null;
+let syncClientGeneration = 0;
 let visibilityOperationId: string | null = null;
 
 const tabId = createAccountTabId();
@@ -68,6 +71,12 @@ function getLoggedInAccountContext() {
 
 function checkCurrentAccountUser(userId: string) {
 	return accountStore.shared.user.get()?.id === userId;
+}
+
+function checkCurrentSyncRun(generation: number, userId: string) {
+	return (
+		syncClientGeneration === generation && checkCurrentAccountUser(userId)
+	);
 }
 
 function setCurrentAccountUserStateEpoch(userId: string, stateEpoch: number) {
@@ -119,16 +128,24 @@ function resetExpiredAccountSession() {
 	accountStore.shared.user.set(null);
 }
 
-function stopLeaseRenewal() {
+function stopLeaseRenewal(generation?: number) {
+	if (generation !== undefined && leaseTimerGeneration !== generation) {
+		return;
+	}
+
 	if (leaseTimer !== null) {
 		clearInterval(leaseTimer);
 		leaseTimer = null;
 	}
+	leaseTimerGeneration = null;
 }
 
 export function stopAccountSyncClient() {
+	syncClientGeneration += 1;
+	activeFlushRunId = null;
 	clearSyncTimers();
 	stopLeaseRenewal();
+	accountStore.shared.sync.isSyncing.set(false);
 }
 
 function handlePassiveSyncRefreshError(error: unknown, expectedUserId: string) {
@@ -148,20 +165,27 @@ function handlePassiveSyncRefreshError(error: unknown, expectedUserId: string) {
 	);
 }
 
-function startLeaseRenewal(userId: string) {
+function startLeaseRenewal(
+	userId: string,
+	generation: number,
+	leaseRunId: string
+) {
 	if (leaseTimer !== null) {
 		return;
 	}
 
+	leaseTimerGeneration = generation;
 	leaseTimer = setInterval(() => {
-		void renewAccountSyncLease(userId, tabId)
+		void renewAccountSyncLease(userId, tabId, leaseRunId)
 			.then((isRenewed) => {
-				if (!isRenewed) {
+				if (!isRenewed && checkCurrentSyncRun(generation, userId)) {
 					stopAccountSyncClient();
 				}
 			})
 			.catch(() => {
-				stopAccountSyncClient();
+				if (checkCurrentSyncRun(generation, userId)) {
+					stopAccountSyncClient();
+				}
 			});
 	}, 5 * 1000);
 }
@@ -522,6 +546,7 @@ async function handleStateEpochMismatch(
 }
 
 export async function flushAccountSyncQueue() {
+	const generation = syncClientGeneration;
 	const context = getLoggedInAccountContext();
 	if (context === null) {
 		return true;
@@ -534,16 +559,31 @@ export async function flushAccountSyncQueue() {
 		return true;
 	}
 
-	if (!(await acquireAccountSyncLease(context.user.id, tabId))) {
+	const flushRunId = createAccountClientId();
+	if (activeFlushRunId !== null) {
 		return false;
 	}
+	activeFlushRunId = flushRunId;
 
-	clearSyncTimers();
-	startLeaseRenewal(context.user.id);
-	accountStore.shared.sync.isSyncing.set(true);
+	let didAcquireLease = false;
 	let shouldScheduleRetryAfterFlush = false;
 
 	try {
+		if (
+			!(await acquireAccountSyncLease(context.user.id, tabId, flushRunId))
+		) {
+			return false;
+		}
+		didAcquireLease = true;
+
+		if (!checkCurrentSyncRun(generation, context.user.id)) {
+			return false;
+		}
+
+		clearSyncTimers();
+		startLeaseRenewal(context.user.id, generation, flushRunId);
+		accountStore.shared.sync.isSyncing.set(true);
+
 		const response = await putSyncState(
 			{
 				changes: entries.map((entry) => ({
@@ -556,7 +596,7 @@ export async function flushAccountSyncQueue() {
 			},
 			context.csrfToken
 		);
-		if (!checkCurrentAccountUser(context.user.id)) {
+		if (!checkCurrentSyncRun(generation, context.user.id)) {
 			return false;
 		}
 
@@ -615,7 +655,9 @@ export async function flushAccountSyncQueue() {
 		return response.results.every((result) => result.status === 'ok');
 	} catch (error) {
 		if (error instanceof AccountApiError && error.status === 401) {
-			resetExpiredAccountSession();
+			if (checkCurrentSyncRun(generation, context.user.id)) {
+				resetExpiredAccountSession();
+			}
 			return false;
 		}
 		if (
@@ -626,7 +668,10 @@ export async function flushAccountSyncQueue() {
 				const didRefresh = await handleStateEpochMismatch(
 					context.user.id
 				);
-				if (!didRefresh || !checkCurrentAccountUser(context.user.id)) {
+				if (
+					!didRefresh ||
+					!checkCurrentSyncRun(generation, context.user.id)
+				) {
 					return false;
 				}
 
@@ -642,6 +687,10 @@ export async function flushAccountSyncQueue() {
 				accountStore.shared.sync.lastResult.set('partial');
 				return false;
 			} catch (refreshError) {
+				if (!checkCurrentSyncRun(generation, context.user.id)) {
+					return false;
+				}
+
 				accountStore.shared.sync.lastError.set(
 					refreshError instanceof Error
 						? refreshError.message
@@ -649,6 +698,10 @@ export async function flushAccountSyncQueue() {
 				);
 			}
 		}
+		if (!checkCurrentSyncRun(generation, context.user.id)) {
+			return false;
+		}
+
 		accountStore.shared.sync.canRetry.set(true);
 		accountStore.shared.sync.failedAttempts.set((attempts) => attempts + 1);
 		accountStore.shared.sync.lastError.set(
@@ -657,23 +710,37 @@ export async function flushAccountSyncQueue() {
 		accountStore.shared.sync.lastResult.set('failed');
 		return false;
 	} finally {
-		accountStore.shared.sync.isSyncing.set(false);
-		updatePendingCount();
-		stopLeaseRenewal();
-		try {
-			await releaseAccountSyncLease(context.user.id, tabId);
-		} catch (error) {
-			console.warn('Failed to release account sync lease.', error);
+		const isCurrentRun = checkCurrentSyncRun(generation, context.user.id);
+		if (isCurrentRun) {
+			accountStore.shared.sync.isSyncing.set(false);
+			updatePendingCount();
 		}
-		void postAccountSyncBroadcastMessage({
-			namespaces: [],
-			operationId: createAccountClientId(),
-			state_epoch: context.user.state_epoch,
-			tabId,
-			type: 'lease-changed',
-			userId: context.user.id,
-		});
-		if (shouldScheduleRetryAfterFlush) {
+		if (didAcquireLease) {
+			stopLeaseRenewal(generation);
+			try {
+				await releaseAccountSyncLease(
+					context.user.id,
+					tabId,
+					flushRunId
+				);
+			} catch (error) {
+				console.warn('Failed to release account sync lease.', error);
+			}
+		}
+		if (activeFlushRunId === flushRunId) {
+			activeFlushRunId = null;
+		}
+		if (didAcquireLease && isCurrentRun) {
+			void postAccountSyncBroadcastMessage({
+				namespaces: [],
+				operationId: createAccountClientId(),
+				state_epoch: context.user.state_epoch,
+				tabId,
+				type: 'lease-changed',
+				userId: context.user.id,
+			});
+		}
+		if (isCurrentRun && shouldScheduleRetryAfterFlush) {
 			quietFlushTimer ??= setTimeout(() => {
 				quietFlushTimer = null;
 				void flushAccountSyncQueue();
@@ -884,6 +951,11 @@ export function flushAccountSyncQueueWithBeacon() {
 }
 
 export function startAccountSyncClient() {
+	syncClientGeneration += 1;
+	activeFlushRunId = null;
+	clearSyncTimers();
+	stopLeaseRenewal();
+	accountStore.shared.sync.isSyncing.set(false);
 	const unsubscribeBroadcast = subscribeAccountSyncBroadcastMessage(
 		(message) => {
 			const context = getLoggedInAccountContext();

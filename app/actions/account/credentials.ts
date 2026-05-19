@@ -166,13 +166,19 @@ export async function recordFailedCredentialAttempt(
 	const lockedUntil = now + CREDENTIAL_LOCK_MS;
 	const record = await db
 		.updateTable(TABLE_NAME)
-		.set(({ eb, ref }) => ({
-			failed_attempts: eb(ref('failed_attempts'), '+', 1),
-			locked_until: sql<
-				TUserCredential['locked_until']
-			>`case when ${ref('failed_attempts')} + 1 >= ${CREDENTIAL_FAILED_ATTEMPT_LIMIT} then ${lockedUntil} else ${ref('locked_until')} end`,
-			updated_at: now,
-		}))
+		.set(({ ref }) => {
+			const nextFailedAttempts = sql<
+				TUserCredential['failed_attempts']
+			>`case when ${ref('locked_until')} is not null and ${ref('locked_until')} <= ${now} then 1 else ${ref('failed_attempts')} + 1 end`;
+
+			return {
+				failed_attempts: nextFailedAttempts,
+				locked_until: sql<
+					TUserCredential['locked_until']
+				>`case when ${nextFailedAttempts} >= ${CREDENTIAL_FAILED_ATTEMPT_LIMIT} then ${lockedUntil} else null end`,
+				updated_at: now,
+			};
+		})
 		.where('user_id', '=', userId)
 		.where((eb) =>
 			eb.or([
