@@ -28,7 +28,7 @@ export default function AccountPasswordMustChangeModal() {
 	const isOpen = isLoggedIn && passwordMustChange;
 
 	const handlePasswordChange = useCallback(() => {
-		if (csrfToken === null) {
+		if (isSubmitting || csrfToken === null) {
 			return;
 		}
 
@@ -49,9 +49,13 @@ export default function AccountPasswordMustChangeModal() {
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [csrfToken, currentPassword, newPassword]);
+	}, [csrfToken, currentPassword, isSubmitting, newPassword]);
 
 	const handleLogout = useCallback(() => {
+		if (isSubmitting) {
+			return;
+		}
+
 		if (csrfToken === null) {
 			setMessage(null);
 			resetAccountState();
@@ -74,7 +78,7 @@ export default function AccountPasswordMustChangeModal() {
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [csrfToken]);
+	}, [csrfToken, isSubmitting]);
 
 	if (!isOpen) {
 		return null;
@@ -109,6 +113,7 @@ export default function AccountPasswordMustChangeModal() {
 				)}
 				<div className="flex flex-wrap justify-end gap-2">
 					<Button
+						isDisabled={isSubmitting}
 						isLoading={isSubmitting}
 						variant="flat"
 						onPress={handleLogout}
@@ -118,6 +123,7 @@ export default function AccountPasswordMustChangeModal() {
 					<Button
 						color="primary"
 						isDisabled={
+							isSubmitting ||
 							csrfToken === null ||
 							currentPassword.length === 0 ||
 							newPassword.length === 0

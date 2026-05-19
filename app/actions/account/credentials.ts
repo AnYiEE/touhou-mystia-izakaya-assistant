@@ -79,11 +79,15 @@ export async function updateCredentialAndDeleteSessions(
 	const db = await getAccountDatabase();
 
 	await db.transaction().execute(async (trx) => {
-		await trx
+		const updateCredentialResult = await trx
 			.updateTable(TABLE_NAME)
 			.set(credential)
 			.where('user_id', '=', userId)
-			.execute();
+			.executeTakeFirst();
+
+		if (updateCredentialResult.numUpdatedRows !== 1n) {
+			throw new Error('credential-not-found');
+		}
 
 		await trx
 			.deleteFrom(SESSION_TABLE_NAME)
@@ -106,11 +110,15 @@ export async function updateCredentialAndRotateSession({
 	const db = await getAccountDatabase();
 
 	await db.transaction().execute(async (trx) => {
-		await trx
+		const updateCredentialResult = await trx
 			.updateTable(TABLE_NAME)
 			.set(credential)
 			.where('user_id', '=', userId)
-			.execute();
+			.executeTakeFirst();
+
+		if (updateCredentialResult.numUpdatedRows !== 1n) {
+			throw new Error('credential-not-found');
+		}
 
 		const updateSessionResult = await trx
 			.updateTable(SESSION_TABLE_NAME)

@@ -95,6 +95,10 @@ export async function POST(request: NextRequest) {
 			user_id: userId,
 		}
 	);
+	if (user === null) {
+		return createNoStoreErrorResponse('username-conflict', 409);
+	}
+
 	const session = await authModule.createAccountSession(user.id, request);
 	const response = createNoStoreJsonResponse({
 		csrf_token: session.csrfToken,

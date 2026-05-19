@@ -53,13 +53,17 @@ export async function listUsers({
 	status,
 }: IListUsersOptions) {
 	const db = await getAccountDatabase();
+	const normalizedUsernameQuery = usernameQuery?.trim().toLowerCase();
 	let query = db.selectFrom(TABLE_NAME).selectAll();
 
-	if (usernameQuery !== undefined && usernameQuery !== '') {
+	if (
+		normalizedUsernameQuery !== undefined &&
+		normalizedUsernameQuery !== ''
+	) {
 		query = query.where(
 			'username_normalized',
 			'like',
-			`%${usernameQuery}%`
+			`%${normalizedUsernameQuery}%`
 		);
 	}
 	if (status !== undefined) {
@@ -93,8 +97,13 @@ export async function createUserWithCredential(
 		const record = await trx
 			.insertInto(TABLE_NAME)
 			.values(user)
+			.onConflict((oc) => oc.column('username_normalized').doNothing())
 			.returningAll()
-			.executeTakeFirstOrThrow();
+			.executeTakeFirst();
+
+		if (record === undefined) {
+			return null;
+		}
 
 		await trx
 			.insertInto(CREDENTIAL_TABLE_NAME)

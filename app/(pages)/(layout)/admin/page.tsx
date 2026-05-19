@@ -164,9 +164,12 @@ export default function AdminPage() {
 				<Button
 					variant="flat"
 					onPress={() => {
+						refreshUsersRequestIdRef.current += 1;
 						void logoutAdmin(admin.csrf_token).finally(() => {
 							clearAdminSession();
 							setAdmin(null);
+							setIsLoading(false);
+							setMessage(null);
 							setUsers(null);
 						});
 					}}
