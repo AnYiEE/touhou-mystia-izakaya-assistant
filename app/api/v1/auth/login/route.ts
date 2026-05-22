@@ -103,7 +103,10 @@ export async function POST(request: NextRequest) {
 	const credential = await credentialsModule.getCredentialByUserId(user.id);
 	if (credential === null) {
 		await passwordModule.consumePasswordVerificationCost(body.password);
-		return createNoStoreErrorResponse('server-misconfigured', 500);
+		console.warn('Account credential is missing during login.', {
+			userId: user.id,
+		});
+		return createInvalidLoginResponse();
 	}
 
 	const now = Date.now();
