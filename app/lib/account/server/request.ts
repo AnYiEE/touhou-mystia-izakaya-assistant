@@ -1,6 +1,10 @@
 import { type NextRequest } from 'next/server';
 import { env } from 'node:process';
 
+import { checkEnvFlag } from '@/lib/environment';
+
+import { SERVER_MISCONFIGURED_MESSAGE } from './environment';
+
 export function getRequestIp(request: NextRequest) {
 	if (env.TRUST_PROXY !== 'true') {
 		return 'direct';
@@ -111,4 +115,33 @@ export function checkSecureRequest(request: NextRequest) {
 		request.nextUrl.protocol === 'https:' ||
 		(env.TRUST_PROXY === 'true' && forwardedProtocol === 'https:')
 	);
+}
+
+function checkLocalRequestHost(request: NextRequest) {
+	const hostname = request.nextUrl.hostname.toLowerCase();
+
+	return (
+		hostname === 'localhost' ||
+		hostname === '127.0.0.1' ||
+		hostname === '::1'
+	);
+}
+
+export function checkInsecureAccountCookiesAllowed(request: NextRequest) {
+	return (
+		env.NODE_ENV !== 'production' ||
+		checkLocalRequestHost(request) ||
+		checkEnvFlag(env.ALLOW_INSECURE_COOKIES)
+	);
+}
+
+export function getAccountCookieSecureFlag(request: NextRequest) {
+	if (checkSecureRequest(request)) {
+		return true;
+	}
+	if (checkInsecureAccountCookiesAllowed(request)) {
+		return false;
+	}
+
+	throw new Error(SERVER_MISCONFIGURED_MESSAGE);
 }

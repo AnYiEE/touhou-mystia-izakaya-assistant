@@ -23,7 +23,7 @@ import {
 import { USER_STATUS_MAP } from '../shared/constants';
 import { createCsrfToken, verifyCsrfToken } from './csrf';
 import {
-	checkSecureRequest,
+	getAccountCookieSecureFlag,
 	getRequestIp,
 	getRequestUserAgent,
 } from './request';
@@ -61,7 +61,7 @@ export type TAccountAuthResult =
 	  };
 
 export function getAccountSessionCookieOptions(request: NextRequest) {
-	return createSessionCookieOptions(checkSecureRequest(request));
+	return createSessionCookieOptions(getAccountCookieSecureFlag(request));
 }
 
 export async function createAccountSession(

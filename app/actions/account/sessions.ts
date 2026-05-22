@@ -10,6 +10,11 @@ import { getAccountDatabase } from '@/lib/account/server/db';
 
 const TABLE_NAME = TABLE_NAME_MAP.session;
 
+export type TSessionMutablePatch = Pick<
+	TSessionUpdate,
+	'ip_address' | 'last_seen_at' | 'token_hash' | 'user_agent'
+>;
+
 export async function createSession(session: TSessionNew) {
 	const db = await getAccountDatabase();
 
@@ -58,7 +63,7 @@ export async function updateSessionAndDeleteOtherSessions({
 	sessionId,
 	userId,
 }: {
-	session: TSessionUpdate;
+	session: TSessionMutablePatch;
 	sessionId: TSession['id'];
 	userId: TUser['id'];
 }) {
@@ -86,7 +91,7 @@ export async function updateSessionAndDeleteOtherSessions({
 
 export async function updateSession(
 	id: TSession['id'],
-	session: TSessionUpdate
+	session: TSessionMutablePatch
 ) {
 	const db = await getAccountDatabase();
 

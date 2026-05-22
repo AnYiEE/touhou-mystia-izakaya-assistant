@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server';
 
 import {
+	checkAccountCookieSecurityResponse,
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
@@ -40,6 +41,11 @@ export async function POST(request: NextRequest) {
 	const sameOriginResponse = checkSameOriginResponse(request);
 	if (sameOriginResponse !== null) {
 		return sameOriginResponse;
+	}
+
+	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	if (cookieSecurityResponse !== null) {
+		return cookieSecurityResponse;
 	}
 
 	const body = await readJsonBody<IAuthLoginBody>(request);

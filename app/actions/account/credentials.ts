@@ -3,12 +3,12 @@ import { sql } from 'kysely';
 import { TABLE_NAME_MAP } from '@/lib/db';
 import type {
 	TSession,
-	TSessionUpdate,
 	TUser,
 	TUserCredential,
 	TUserCredentialNew,
 	TUserCredentialUpdate,
 } from '@/lib/db/types';
+import { type TSessionMutablePatch } from './sessions';
 
 import { getAccountDatabase } from '@/lib/account/server/db';
 
@@ -107,7 +107,7 @@ export async function updateCredentialAndRotateSession({
 	userId,
 }: {
 	credential: TUserCredentialUpdate;
-	session: TSessionUpdate;
+	session: TSessionMutablePatch;
 	sessionId: TSession['id'];
 	userId: TUser['id'];
 }) {

@@ -7,7 +7,9 @@ import {
 } from '@/lib/account/server/environment';
 import { checkRateLimit } from '@/lib/account/server/rateLimit';
 import {
+	checkInsecureAccountCookiesAllowed,
 	checkSameOriginRequest,
+	checkSecureRequest,
 	getRequestIp,
 	getRequestUserAgent,
 } from '@/lib/account/server/request';
@@ -41,6 +43,17 @@ export function checkSameOriginResponse(request: NextRequest) {
 	}
 
 	return createNoStoreErrorResponse('forbidden', 403);
+}
+
+export function checkAccountCookieSecurityResponse(request: NextRequest) {
+	if (
+		checkSecureRequest(request) ||
+		checkInsecureAccountCookiesAllowed(request)
+	) {
+		return null;
+	}
+
+	return createNoStoreErrorResponse(SERVER_MISCONFIGURED_MESSAGE, 500);
 }
 
 export function checkAccountRateLimitResponse(

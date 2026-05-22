@@ -83,7 +83,8 @@ export async function POST(request: NextRequest) {
 		!isPlainObject(backupData.customer_normal) ||
 		!isPlainObject(backupData.customer_rare) ||
 		!('user_id' in json) ||
-		(typeof rawUserId !== 'string' && rawUserId !== null)
+		(typeof rawUserId !== 'string' && rawUserId !== null) ||
+		('code' in json && json.code !== null && typeof json.code !== 'string')
 	) {
 		return createNoStoreErrorResponse('Invalid object structure', 400);
 	}
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest) {
 			let previousFileContent: string | null = null;
 			let hadPreviousFile = false;
 
-			if (record.status !== 404) {
+			if (record.status === 200) {
 				try {
 					previousFileContent = await getFile(code);
 					throwIfBackupCodeLockLost(signal);

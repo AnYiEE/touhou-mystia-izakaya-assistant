@@ -3,7 +3,7 @@ import { type NextRequest, type NextResponse } from 'next/server';
 
 import { checkFixedLengthEqual, createAccountHmac } from './crypto';
 import { createCsrfToken, verifyCsrfToken } from './csrf';
-import { checkSecureRequest } from './request';
+import { getAccountCookieSecureFlag } from './request';
 import { ACCOUNT_COOKIE_NAME_MAP } from '../shared/constants';
 
 export const ADMIN_SESSION_MAX_AGE = 60 * 60 * 12;
@@ -128,7 +128,7 @@ export function getAdminSessionCookieOptions(request: NextRequest) {
 		maxAge: ADMIN_SESSION_MAX_AGE,
 		path: '/',
 		sameSite: 'lax',
-		secure: checkSecureRequest(request),
+		secure: getAccountCookieSecureFlag(request),
 	} as const;
 }
 

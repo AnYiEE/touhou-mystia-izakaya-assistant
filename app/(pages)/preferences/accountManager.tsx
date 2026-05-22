@@ -158,6 +158,32 @@ export default function AccountManager() {
 		},
 		[csrfToken, isSubmitting]
 	);
+	const handleExport = useCallback(() => {
+		if (isSubmitting || user === null) {
+			return;
+		}
+
+		setIsSubmitting(true);
+		setMessage(null);
+		void exportAccountData()
+			.then((data) => {
+				downloadJson(
+					`mystia-account-${user.username}`,
+					JSON.stringify(data, null, 2)
+				);
+				setMessage('账号数据已导出');
+			})
+			.catch((error: unknown) => {
+				if (handleUnauthorizedAccountError(error)) {
+					return;
+				}
+
+				setMessage(error instanceof Error ? error.message : '导出失败');
+			})
+			.finally(() => {
+				setIsSubmitting(false);
+			});
+	}, [isSubmitting, user]);
 
 	if (bootstrapStatus === 'error') {
 		return (
@@ -263,36 +289,10 @@ export default function AccountManager() {
 							<LegacyBackupImport />
 							<div className="flex flex-wrap gap-2">
 								<Button
+									isDisabled={isSubmitting}
+									isLoading={isSubmitting}
 									variant="flat"
-									onPress={() => {
-										void exportAccountData()
-											.then((data) => {
-												downloadJson(
-													`mystia-account-${user.username}`,
-													JSON.stringify(
-														data,
-														null,
-														2
-													)
-												);
-												setMessage('账号数据已导出');
-											})
-											.catch((error: unknown) => {
-												if (
-													handleUnauthorizedAccountError(
-														error
-													)
-												) {
-													return;
-												}
-
-												setMessage(
-													error instanceof Error
-														? error.message
-														: '导出失败'
-												);
-											});
-									}}
+									onPress={handleExport}
 								>
 									导出账号数据
 								</Button>
