@@ -60,7 +60,26 @@ const recipeColumnKeys = new Set<string>([
 	'action',
 	'time',
 ]);
+const rootKeys = new Set([
+	'customerCardTagsTooltip',
+	'famousShop',
+	'hiddenItems',
+	'highAppearance',
+	'popularTrend',
+	'suggestMeals',
+	'table',
+	'tachie',
+	'vibrate',
+]);
 const hiddenItemKeys = new Set(['dlcs']);
+const popularTrendKeys = new Set(['isNegative', 'tag']);
+const suggestMealsKeys = new Set([
+	'enabled',
+	'maxExtraIngredients',
+	'maxRating',
+	'maxResults',
+]);
+const tableKeys = new Set(['columns', 'hiddenItems', 'row']);
 const tableColumnKeys = new Set(['beverage', 'recipe']);
 const tableHiddenItemKeys = new Set(['beverages', 'ingredients', 'recipes']);
 const dlcKeys = new Set(Object.keys(DLC_LABEL_MAP));
@@ -75,6 +94,37 @@ function checkExactKeys(data: Record<string, unknown>, keys: Set<string>) {
 
 	return (
 		dataKeys.length === keys.size && dataKeys.every((key) => keys.has(key))
+	);
+}
+
+function checkGlobalPreferencesExactKeyShape(data: unknown) {
+	if (!isPlainObject(data)) {
+		return false;
+	}
+
+	const { hiddenItems, popularTrend, suggestMeals, table } = data;
+	if (
+		!isPlainObject(hiddenItems) ||
+		!isPlainObject(popularTrend) ||
+		!isPlainObject(suggestMeals) ||
+		!isPlainObject(table)
+	) {
+		return false;
+	}
+
+	const tableColumns = table['columns'];
+	const tableHiddenItems = table['hiddenItems'];
+
+	return (
+		checkExactKeys(data, rootKeys) &&
+		checkExactKeys(hiddenItems, hiddenItemKeys) &&
+		checkExactKeys(popularTrend, popularTrendKeys) &&
+		checkExactKeys(suggestMeals, suggestMealsKeys) &&
+		checkExactKeys(table, tableKeys) &&
+		isPlainObject(tableColumns) &&
+		checkExactKeys(tableColumns, tableColumnKeys) &&
+		isPlainObject(tableHiddenItems) &&
+		checkExactKeys(tableHiddenItems, tableHiddenItemKeys)
 	);
 }
 
@@ -233,6 +283,10 @@ export const globalPreferencesSerializer = {
 		};
 	},
 	migrate(data) {
+		if (!checkGlobalPreferencesExactKeyShape(data)) {
+			throw new Error('invalid-global-preferences');
+		}
+
 		const sanitizedData = sanitizeGlobalPreferences(data);
 		if (!this.validate(sanitizedData)) {
 			throw new Error('invalid-global-preferences');
@@ -304,9 +358,9 @@ export const globalPreferencesSerializer = {
 		}
 
 		return (
+			checkGlobalPreferencesExactKeyShape(data) &&
 			typeof data['customerCardTagsTooltip'] === 'boolean' &&
 			typeof data['famousShop'] === 'boolean' &&
-			checkExactKeys(hiddenItems, hiddenItemKeys) &&
 			isAllowedStringArray(hiddenItems['dlcs'], dlcKeys) &&
 			typeof data['highAppearance'] === 'boolean' &&
 			typeof popularTrend['isNegative'] === 'boolean' &&
@@ -317,10 +371,8 @@ export const globalPreferencesSerializer = {
 				isIntegerInRange(suggestMeals['maxExtraIngredients'], 0, 4)) &&
 			isIntegerInRange(suggestMeals['maxRating'], 0, 4) &&
 			isIntegerInRange(suggestMeals['maxResults'], 1, 10) &&
-			checkExactKeys(tableColumns, tableColumnKeys) &&
 			isBeverageColumnArray(tableColumns['beverage']) &&
 			isRecipeColumnArray(tableColumns['recipe']) &&
-			checkExactKeys(tableHiddenItems, tableHiddenItemKeys) &&
 			isAllowedStringArray(
 				tableHiddenItems['beverages'],
 				beverageNames

@@ -327,6 +327,90 @@ function parseCloudMealRecord(
 	return normalized.data;
 }
 
+async function checkImportBackupDataPreconditions(
+	database: Kysely<TDatabase>,
+	userId: string,
+	code: string,
+	expectedStateEpoch: number,
+	signal: IBackupCodeLockSignal
+) {
+	throwIfBackupCodeLockLost(signal);
+
+	const user = await database
+		.selectFrom(TABLE_NAME_MAP.user)
+		.select('state_epoch')
+		.where('id', '=', userId)
+		.executeTakeFirst();
+	throwIfBackupCodeLockLost(signal);
+	if (user === undefined) {
+		throw new Error('unauthorized');
+	}
+
+	if (user.state_epoch !== expectedStateEpoch) {
+		return {
+			state_epoch: user.state_epoch,
+			status: 'state-epoch-mismatch' as const,
+		};
+	}
+
+	const backupRecord = await database
+		.selectFrom(TABLE_NAME_MAP.backupFileRecord)
+		.select('code')
+		.where('code', '=', code)
+		.executeTakeFirst();
+	throwIfBackupCodeLockLost(signal);
+
+	return backupRecord === undefined
+		? { status: 'not-found' as const }
+		: { status: 'ok' as const };
+}
+
+async function readImportBackupFile(
+	code: string,
+	signal: IBackupCodeLockSignal
+) {
+	let fileContent: string;
+	try {
+		if ((await getFileSize(code)) > MAX_DATA_SIZE) {
+			throw new Error('invalid-backup-file');
+		}
+		throwIfBackupCodeLockLost(signal);
+
+		fileContent = await getFile(code);
+		throwIfBackupCodeLockLost(signal);
+	} catch (error) {
+		if (
+			error instanceof Error &&
+			(error.message === 'invalid-backup-file' ||
+				error.message === 'backup-code-lock-lost')
+		) {
+			throw error;
+		}
+		if (checkBackupFileNotFoundError(error)) {
+			throw new Error('backup-code-not-found');
+		}
+		throw new Error('server-misconfigured');
+	}
+
+	let fileData: unknown;
+	try {
+		fileData = JSON.parse(fileContent);
+	} catch {
+		throw new Error('invalid-backup-file');
+	}
+
+	const namespaceData = normalizeBackupData(fileData)?.map(
+		normalizeImportNamespaceData
+	);
+	if (namespaceData === undefined || namespaceData.includes(null)) {
+		throw new Error('invalid-backup-file');
+	}
+
+	return namespaceData.filter(
+		(item): item is IImportNamespaceData => item !== null
+	);
+}
+
 async function importBackupData(
 	database: Kysely<TDatabase>,
 	userId: string,
@@ -334,6 +418,19 @@ async function importBackupData(
 	expectedStateEpoch: number,
 	signal: IBackupCodeLockSignal
 ) {
+	const preflightResult = await checkImportBackupDataPreconditions(
+		database,
+		userId,
+		code,
+		expectedStateEpoch,
+		signal
+	);
+	if (preflightResult.status !== 'ok') {
+		return preflightResult;
+	}
+
+	const importNamespaceData = await readImportBackupFile(code, signal);
+
 	return database.transaction().execute(async (trx) => {
 		throwIfBackupCodeLockLost(signal);
 
@@ -364,51 +461,6 @@ async function importBackupData(
 		if (backupRecord === undefined) {
 			return { status: 'not-found' as const };
 		}
-
-		let fileContent: string;
-		try {
-			if ((await getFileSize(code)) > MAX_DATA_SIZE) {
-				throw new Error('invalid-backup-file');
-			}
-			throwIfBackupCodeLockLost(signal);
-
-			fileContent = await getFile(code);
-			throwIfBackupCodeLockLost(signal);
-		} catch (error) {
-			if (
-				error instanceof Error &&
-				error.message === 'invalid-backup-file'
-			) {
-				throw error;
-			}
-			if (
-				error instanceof Error &&
-				error.message === 'backup-code-lock-lost'
-			) {
-				throw error;
-			}
-			if (checkBackupFileNotFoundError(error)) {
-				throw new Error('backup-code-not-found');
-			}
-			throw new Error('server-misconfigured');
-		}
-
-		let fileData: unknown;
-		try {
-			fileData = JSON.parse(fileContent);
-		} catch {
-			throw new Error('invalid-backup-file');
-		}
-
-		const namespaceData = normalizeBackupData(fileData)?.map(
-			normalizeImportNamespaceData
-		);
-		if (namespaceData === undefined || namespaceData.includes(null)) {
-			throw new Error('invalid-backup-file');
-		}
-		const importNamespaceData = namespaceData.filter(
-			(item): item is IImportNamespaceData => item !== null
-		);
 
 		const results = [];
 		for (const item of importNamespaceData) {

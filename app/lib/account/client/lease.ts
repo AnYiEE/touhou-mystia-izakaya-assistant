@@ -82,7 +82,7 @@ function tryAcquireAccountSyncLease(
 	const nextLease = readAccountSyncLease(userId);
 	return (
 		nextLease?.ownerTabId === ownerTabId &&
-		(ownerRunId === undefined || nextLease.ownerRunId === ownerRunId)
+		nextLease.ownerRunId === ownerRunId
 	);
 }
 
@@ -93,10 +93,7 @@ function tryRenewAccountSyncLease(
 	now: number
 ) {
 	const lease = readAccountSyncLease(userId);
-	if (
-		lease?.ownerTabId !== ownerTabId ||
-		(ownerRunId !== undefined && lease.ownerRunId !== ownerRunId)
-	) {
+	if (lease?.ownerTabId !== ownerTabId || lease.ownerRunId !== ownerRunId) {
 		return false;
 	}
 
@@ -111,10 +108,7 @@ function tryReleaseAccountSyncLease(
 	ownerRunId: string | undefined
 ) {
 	const lease = readAccountSyncLease(userId);
-	if (
-		lease?.ownerTabId === ownerTabId &&
-		(ownerRunId === undefined || lease.ownerRunId === ownerRunId)
-	) {
+	if (lease?.ownerTabId === ownerTabId && lease.ownerRunId === ownerRunId) {
 		removeAccountStorage(createAccountSyncLeaseKey(userId));
 	}
 }

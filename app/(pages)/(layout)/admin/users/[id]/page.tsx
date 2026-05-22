@@ -101,9 +101,11 @@ export default function AdminUserDetailPage() {
 
 	useEffect(() => {
 		if (admin !== null) {
+			setDetail(null);
+			setMessage(null);
 			refreshDetail();
 		}
-	}, [admin, refreshDetail]);
+	}, [admin, id, refreshDetail]);
 
 	if (isAuthLoading) {
 		return (
@@ -142,6 +144,17 @@ export default function AdminUserDetailPage() {
 				{message !== null && (
 					<p className="text-sm text-foreground-500">{message}</p>
 				)}
+			</div>
+		);
+	}
+
+	if (detail.user.id !== id) {
+		return (
+			<div className="min-h-main-content space-y-4">
+				<Heading isFirst>用户管理</Heading>
+				<Button isLoading={isLoading} variant="flat">
+					加载中
+				</Button>
 			</div>
 		);
 	}

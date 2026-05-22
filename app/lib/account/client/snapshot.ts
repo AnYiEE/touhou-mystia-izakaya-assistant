@@ -135,7 +135,6 @@ export function applyRemoteAccountRecords({
 			namespace: record.namespace,
 			revision: record.revision,
 			serializer,
-			snapshotHash: createSnapshotHash(data),
 		};
 	});
 	let appliedRecordCount = 0;
@@ -145,7 +144,7 @@ export function applyRemoteAccountRecords({
 			preparedRecords.forEach((record) => {
 				record.serializer.setLocalSnapshot(record.data);
 				meta.lastAppliedRemoteHash[record.namespace] =
-					record.snapshotHash;
+					createSnapshotHash(record.serializer.getLocalSnapshot());
 				meta.revisions[record.namespace] = record.revision;
 				appliedRecordCount += 1;
 			});

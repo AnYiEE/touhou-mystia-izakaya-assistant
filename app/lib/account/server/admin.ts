@@ -128,9 +128,7 @@ export function getAdminSessionCookieOptions(request: NextRequest) {
 		maxAge: ADMIN_SESSION_MAX_AGE,
 		path: '/',
 		sameSite: 'lax',
-		secure:
-			checkSecureRequest(request) ||
-			process.env.NODE_ENV === 'production',
+		secure: checkSecureRequest(request),
 	} as const;
 }
 

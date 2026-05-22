@@ -24,6 +24,15 @@ import { FILE_TYPE_JSON } from '@/utilities';
 import { FREQUENCY_TTL } from '../constants';
 import { getRequestMeta, maskBackupCode } from '../utils';
 
+function getLogSafeErrorCode(error: unknown) {
+	return error !== null &&
+		typeof error === 'object' &&
+		'code' in error &&
+		typeof error.code === 'string'
+		? error.code
+		: 'unknown';
+}
+
 export async function GET(
 	request: NextRequest,
 	{ params }: { params: Promise<{ code: string }> }
@@ -81,7 +90,7 @@ export async function GET(
 
 		console.warn('Failed to read backup file', {
 			codeHash: maskBackupCode(code),
-			error,
+			errorCode: getLogSafeErrorCode(error),
 		});
 		return createNoStoreErrorResponse('Failed to read file', 500);
 	}
@@ -129,7 +138,7 @@ export async function DELETE(
 				if (!checkBackupFileNotFoundError(error)) {
 					console.warn('Failed to delete backup file', {
 						codeHash: maskBackupCode(code),
-						error,
+						errorCode: getLogSafeErrorCode(error),
 					});
 
 					return createNoStoreErrorResponse(

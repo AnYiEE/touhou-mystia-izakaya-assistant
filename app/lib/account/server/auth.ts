@@ -61,9 +61,7 @@ export type TAccountAuthResult =
 	  };
 
 export function getAccountSessionCookieOptions(request: NextRequest) {
-	return createSessionCookieOptions(
-		checkSecureRequest(request) || process.env.NODE_ENV === 'production'
-	);
+	return createSessionCookieOptions(checkSecureRequest(request));
 }
 
 export async function createAccountSession(
