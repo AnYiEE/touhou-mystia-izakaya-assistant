@@ -30,7 +30,7 @@ import {
 	createNoStoreJsonResponse,
 } from '@/api/v1/utils';
 import { MAX_DATA_SIZE } from '@/api/v1/backups/constants';
-import { maskBackupCode } from '@/api/v1/backups/utils';
+import { getLogSafeErrorCode, maskBackupCode } from '@/api/v1/backups/utils';
 import {
 	SYNC_NAMESPACE_MAP,
 	SYNC_SCHEMA_VERSION_MAP,
@@ -59,6 +59,74 @@ interface IImportBackupCodeBody {
 interface IImportNamespaceData {
 	data: Record<string, object[]>;
 	namespace: TSyncNamespace;
+}
+
+interface IImportBackupResult {
+	namespace: TSyncNamespace;
+	revision: number;
+	status: 'ok';
+}
+
+const syncNamespaceSet = new Set<TSyncNamespace>(
+	Object.values(SYNC_NAMESPACE_MAP)
+);
+
+function checkSyncNamespaceValue(value: unknown): value is TSyncNamespace {
+	return (
+		typeof value === 'string' &&
+		syncNamespaceSet.has(value as TSyncNamespace)
+	);
+}
+
+function parseImportBackupResults(data: string) {
+	let parsedData: unknown;
+	try {
+		parsedData = JSON.parse(data);
+	} catch {
+		return null;
+	}
+
+	if (
+		!Array.isArray(parsedData) ||
+		!parsedData.every(
+			(item): item is IImportBackupResult =>
+				isPlainObject(item) &&
+				item['status'] === 'ok' &&
+				checkSyncNamespaceValue(item['namespace']) &&
+				typeof item['revision'] === 'number' &&
+				Number.isInteger(item['revision']) &&
+				item['revision'] >= 0
+		)
+	) {
+		return null;
+	}
+
+	return parsedData;
+}
+
+async function getBackupImportResult(
+	database: Kysely<TDatabase>,
+	userId: string,
+	code: string,
+	expectedStateEpoch: number
+) {
+	const record = await database
+		.selectFrom(TABLE_NAME_MAP.backupImportRecord)
+		.select(['results'])
+		.where('code', '=', code)
+		.where('user_id', '=', userId)
+		.where('state_epoch', '=', expectedStateEpoch)
+		.executeTakeFirst();
+	if (record === undefined) {
+		return null;
+	}
+
+	const results = parseImportBackupResults(record.results);
+	if (results === null) {
+		throw new Error('server-misconfigured');
+	}
+
+	return { results, status: 'already-imported' as const };
 }
 
 function normalizeMealRecipe(data: unknown) {
@@ -361,7 +429,12 @@ async function checkImportBackupDataPreconditions(
 	throwIfBackupCodeLockLost(signal);
 
 	return backupRecord === undefined
-		? { status: 'not-found' as const }
+		? ((await getBackupImportResult(
+				database,
+				userId,
+				code,
+				expectedStateEpoch
+			)) ?? { status: 'not-found' as const })
 		: { status: 'ok' as const };
 }
 
@@ -459,10 +532,17 @@ async function importBackupData(
 		throwIfBackupCodeLockLost(signal);
 
 		if (backupRecord === undefined) {
-			return { status: 'not-found' as const };
+			return (
+				(await getBackupImportResult(
+					trx,
+					userId,
+					code,
+					expectedStateEpoch
+				)) ?? { status: 'not-found' as const }
+			);
 		}
 
-		const results = [];
+		const results: IImportBackupResult[] = [];
 		for (const item of importNamespaceData) {
 			throwIfBackupCodeLockLost(signal);
 
@@ -523,6 +603,17 @@ async function importBackupData(
 				status: 'ok' as const,
 			});
 		}
+
+		await trx
+			.insertInto(TABLE_NAME_MAP.backupImportRecord)
+			.values({
+				code,
+				created_at: Date.now(),
+				results: JSON.stringify(results),
+				state_epoch: expectedStateEpoch,
+				user_id: userId,
+			})
+			.execute();
 
 		return { results, status: 'ok' as const };
 	});
@@ -636,6 +727,11 @@ export async function POST(request: NextRequest) {
 					state_epoch: importResult.state_epoch,
 				});
 			}
+			if (importResult.status === 'already-imported') {
+				return createNoStoreJsonResponse({
+					results: importResult.results,
+				});
+			}
 
 			markBackupCodeLockCommitted(signal);
 			try {
@@ -644,7 +740,7 @@ export async function POST(request: NextRequest) {
 			} catch (error) {
 				console.warn('Failed to delete imported backup file', {
 					codeHash: maskBackupCode(code),
-					error,
+					errorCode: getLogSafeErrorCode(error),
 				});
 			}
 

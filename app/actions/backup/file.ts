@@ -2,10 +2,12 @@ import {
 	mkdir,
 	readFile,
 	readdir,
+	rename,
 	stat,
 	unlink,
 	writeFile,
 } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { cwd } from 'node:process';
 import { validate as validateUuid } from 'uuid';
@@ -69,10 +71,81 @@ export async function getBackupFileCodes() {
 	}
 }
 
+function checkTemporaryBackupFileName(fileName: string) {
+	const [code, id, extension, ...rest] = fileName.split('.');
+
+	return (
+		rest.length === 0 &&
+		extension === 'tmp' &&
+		validateUuid(code) &&
+		validateUuid(id)
+	);
+}
+
+export async function getExpiredTemporaryBackupFileNames(
+	expiredBefore: number
+) {
+	try {
+		const entries = await readdir(dir, { withFileTypes: true });
+		const fileNames: string[] = [];
+
+		await Promise.all(
+			entries
+				.filter(
+					(entry) =>
+						entry.isFile() &&
+						checkTemporaryBackupFileName(entry.name)
+				)
+				.map(async (entry) => {
+					const fileStat = await stat(join(dir, entry.name));
+					if (fileStat.mtimeMs < expiredBefore) {
+						fileNames.push(entry.name);
+					}
+				})
+		);
+
+		return fileNames;
+	} catch (error) {
+		if (checkBackupFileNotFoundError(error)) {
+			return [];
+		}
+
+		throw error;
+	}
+}
+
+export async function deleteTemporaryBackupFile(fileName: string) {
+	if (!checkTemporaryBackupFileName(fileName)) {
+		throw new Error('invalid-temporary-backup-file');
+	}
+
+	await unlink(join(dir, fileName));
+}
+
 export async function saveFile(
 	code: TBackupFileRecord['code'],
 	content: string
 ) {
 	await mkdir(dir, { recursive: true });
-	await writeFile(generateFilePath(code), content, encoding);
+	const filePath = generateFilePath(code);
+	const tempFilePath = join(dir, `${code}.${randomUUID()}.tmp`);
+
+	try {
+		await writeFile(tempFilePath, content, encoding);
+		await rename(tempFilePath, filePath);
+	} catch (error) {
+		try {
+			await unlink(tempFilePath);
+		} catch (cleanupError) {
+			if (!checkBackupFileNotFoundError(cleanupError)) {
+				console.warn('Failed to clean up temporary backup file.', {
+					errorCode:
+						(cleanupError as NodeJS.ErrnoException).code ??
+						'unknown',
+				});
+			}
+		}
+
+		throw error;
+	}
 }

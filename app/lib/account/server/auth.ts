@@ -3,6 +3,7 @@ import { type NextRequest, type NextResponse } from 'next/server';
 
 import {
 	createSession,
+	createSessionForActiveUser as createSessionForActiveUserRecord,
 	deleteSessionById,
 	getSessionByTokenHash,
 	updateSessionAndDeleteOtherSessions,
@@ -18,6 +19,7 @@ import {
 	type TUser,
 	type TUserCredential,
 	type TUserCredentialUpdate,
+	type TUserUpdate,
 } from '@/lib/db/types';
 
 import { USER_STATUS_MAP } from '../shared/constants';
@@ -81,6 +83,41 @@ export async function createAccountSession(
 		user_agent: getRequestUserAgent(request),
 		user_id: userId,
 	});
+
+	return {
+		cookieOptions: getAccountSessionCookieOptions(request),
+		csrfToken: createCsrfToken(tokenHash),
+		token,
+		tokenHash,
+	};
+}
+
+export async function createAccountSessionForActiveUser(
+	userId: TUser['id'],
+	request: NextRequest,
+	user: TUserUpdate
+) {
+	const now = Date.now();
+	const token = createSessionToken();
+	const tokenHash = hashSessionToken(token);
+	const session = {
+		created_at: now,
+		id: randomUUID(),
+		ip_address: getRequestIp(request),
+		last_seen_at: now,
+		token_hash: tokenHash,
+		user_agent: getRequestUserAgent(request),
+		user_id: userId,
+	};
+
+	const didCreate = await createSessionForActiveUserRecord({
+		session,
+		user,
+		userId,
+	});
+	if (!didCreate) {
+		return null;
+	}
 
 	return {
 		cookieOptions: getAccountSessionCookieOptions(request),

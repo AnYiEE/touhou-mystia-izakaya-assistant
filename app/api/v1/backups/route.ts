@@ -25,7 +25,7 @@ import {
 import { FILE_TYPE_JSON } from '@/utilities';
 import { FREQUENCY_TTL, MAX_DATA_SIZE } from './constants';
 import type { IBackupUploadBody, IBackupUploadSuccessResponse } from './types';
-import { getRequestMeta, maskBackupCode } from './utils';
+import { getLogSafeErrorCode, getRequestMeta, maskBackupCode } from './utils';
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
 	return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -50,7 +50,7 @@ async function restoreBackupFile({
 		if (!checkBackupFileNotFoundError(restoreError)) {
 			console.warn('Failed to restore backup file', {
 				codeHash,
-				error: restoreError,
+				errorCode: getLogSafeErrorCode(restoreError),
 			});
 		}
 	}
@@ -214,7 +214,7 @@ export async function POST(request: NextRequest) {
 				});
 				console.warn('Failed to identify backup file', {
 					codeHash,
-					error,
+					errorCode: getLogSafeErrorCode(error),
 				});
 
 				return createNoStoreErrorResponse('Failed to save file', 500);
@@ -238,7 +238,7 @@ export async function POST(request: NextRequest) {
 						if (!checkBackupFileNotFoundError(restoreError)) {
 							console.warn('Failed to restore backup file', {
 								codeHash,
-								error: restoreError,
+								errorCode: getLogSafeErrorCode(restoreError),
 							});
 						}
 					}
@@ -286,14 +286,14 @@ export async function POST(request: NextRequest) {
 					if (!checkBackupFileNotFoundError(restoreError)) {
 						console.warn('Failed to restore backup file', {
 							codeHash,
-							error: restoreError,
+							errorCode: getLogSafeErrorCode(restoreError),
 						});
 					}
 				}
 
 				console.warn('Failed to save backup record', {
 					codeHash,
-					error,
+					errorCode: getLogSafeErrorCode(error),
 				});
 
 				return createNoStoreErrorResponse('Failed to save record', 500);

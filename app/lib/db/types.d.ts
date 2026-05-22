@@ -17,6 +17,14 @@ interface ITableBackupCodeLock {
 	owner_id: string;
 }
 
+interface ITableBackupImportRecord {
+	code: string;
+	created_at: number;
+	results: string;
+	state_epoch: number;
+	user_id: string;
+}
+
 interface ITableUser {
 	created_at: number;
 	deleted_at: number | null;
@@ -65,6 +73,10 @@ export type TBackupCodeLock = Selectable<ITableBackupCodeLock>;
 export type TBackupCodeLockNew = Insertable<ITableBackupCodeLock>;
 export type TBackupCodeLockUpdate = Updateable<ITableBackupCodeLock>;
 
+export type TBackupImportRecord = Selectable<ITableBackupImportRecord>;
+export type TBackupImportRecordNew = Insertable<ITableBackupImportRecord>;
+export type TBackupImportRecordUpdate = Updateable<ITableBackupImportRecord>;
+
 export type TUser = Selectable<ITableUser>;
 export type TUserNew = Insertable<ITableUser>;
 export type TUserUpdate = Updateable<ITableUser>;
@@ -84,6 +96,7 @@ export type TUserStateUpdate = Updateable<ITableUserState>;
 export interface TDatabase {
 	backup_code_locks: ITableBackupCodeLock;
 	backup_files: ITableBackupFileRecord;
+	backup_imports: ITableBackupImportRecord;
 	sessions: ITableSession;
 	users: ITableUser;
 	user_credentials: ITableUserCredential;

@@ -41,6 +41,10 @@ export function validateMealRecipe(data: unknown): data is IMealRecipe {
 	);
 }
 
+export function normalizeMealRecipe(data: IMealRecipe): IMealRecipe {
+	return { extraIngredients: [...data.extraIngredients], name: data.name };
+}
+
 export function validateMealSnapshot<TMeal>(
 	data: unknown,
 	{
@@ -63,6 +67,23 @@ export function validateMealSnapshot<TMeal>(
 			customerNames.has(customerName) &&
 			Array.isArray(meals) &&
 			meals.every(validateMeal)
+	);
+}
+
+export function normalizeMealSnapshot<TMeal, TNormalizedMeal>(
+	data: TMealSnapshot<TMeal>,
+	normalizeMeal: (meal: TMeal) => TNormalizedMeal
+) {
+	return Object.entries(data).reduce<TMealSnapshot<TNormalizedMeal>>(
+		(result, [customerName, meals]) => {
+			if (meals === undefined) {
+				return result;
+			}
+
+			result[customerName] = meals.map(normalizeMeal);
+			return result;
+		},
+		{}
 	);
 }
 
@@ -181,6 +202,9 @@ export function mergeMealSnapshot<TMeal>({
 		});
 	}
 	if (base === null) {
+		if (checkSnapshotEqual(local, cloud)) {
+			return createMergeResult({ data: cloud, shouldUpload: false });
+		}
 		if (checkSnapshotEqual(local, {})) {
 			return createMergeResult({ data: cloud, shouldUpload: false });
 		}

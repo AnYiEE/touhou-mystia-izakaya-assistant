@@ -4,11 +4,14 @@ import type {
 	TSessionNew,
 	TSessionUpdate,
 	TUser,
+	TUserUpdate,
 } from '@/lib/db/types';
 
 import { getAccountDatabase } from '@/lib/account/server/db';
+import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 
 const TABLE_NAME = TABLE_NAME_MAP.session;
+const USER_TABLE_NAME = TABLE_NAME_MAP.user;
 
 export type TSessionMutablePatch = Pick<
 	TSessionUpdate,
@@ -19,6 +22,34 @@ export async function createSession(session: TSessionNew) {
 	const db = await getAccountDatabase();
 
 	await db.insertInto(TABLE_NAME).values(session).execute();
+}
+
+export async function createSessionForActiveUser({
+	session,
+	user,
+	userId,
+}: {
+	session: TSessionNew;
+	user: TUserUpdate;
+	userId: TUser['id'];
+}) {
+	const db = await getAccountDatabase();
+
+	return db.transaction().execute(async (trx) => {
+		const updateResult = await trx
+			.updateTable(USER_TABLE_NAME)
+			.set(user)
+			.where('id', '=', userId)
+			.where('status', '=', USER_STATUS_MAP.active)
+			.executeTakeFirst();
+		if (updateResult.numUpdatedRows !== 1n) {
+			return false;
+		}
+
+		await trx.insertInto(TABLE_NAME).values(session).execute();
+
+		return true;
+	});
 }
 
 export async function getSessionByTokenHash(tokenHash: TSession['token_hash']) {

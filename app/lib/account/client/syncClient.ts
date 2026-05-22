@@ -17,6 +17,7 @@ import {
 import {
 	acquireAccountSyncLease,
 	createAccountTabId,
+	readAccountSyncLease,
 	releaseAccountSyncLease,
 	renewAccountSyncLease,
 } from './lease';
@@ -25,6 +26,7 @@ import {
 	createSnapshotHash,
 	markAccountSyncDirty,
 	readDirtyQueueEntries,
+	readDirtyQueueEntry,
 	removeDirtyQueueEntries,
 	removeDirtyQueueEntry,
 	writeDirtyQueueEntry,
@@ -308,21 +310,52 @@ function pauseDirtyEntryWithConflict({
 	conflict,
 	entry,
 	incrementAttempts = false,
+	requireCurrentMatch = false,
 	userId,
 }: {
 	conflict: ISyncConflictItem;
 	entry: IDirtyQueueEntry;
 	incrementAttempts?: boolean;
+	requireCurrentMatch?: boolean;
 	userId: string;
 }) {
+	const currentEntry = readDirtyQueueEntry(userId, entry.namespace);
+	const isCurrentEntryMatch =
+		currentEntry?.clientMutationId === entry.clientMutationId &&
+		currentEntry.snapshotHash === entry.snapshotHash;
+	if (requireCurrentMatch && !isCurrentEntryMatch) {
+		return false;
+	}
+
+	const entryToPause = currentEntry ?? entry;
 	writeDirtyQueueEntry(userId, {
-		...entry,
-		attempts: entry.attempts + (incrementAttempts ? 1 : 0),
+		...entryToPause,
+		attempts: entryToPause.attempts + (incrementAttempts ? 1 : 0),
 		conflict,
 		lastError: 'conflict',
 		paused: 'conflict',
 	});
 	setAccountSyncConflict(conflict);
+
+	return true;
+}
+
+function checkRemoteStateCleared({
+	records,
+	stateEpoch,
+	userId,
+}: {
+	records: ISyncStateRecord[];
+	stateEpoch: number;
+	userId: string;
+}) {
+	const currentMeta = readAccountSyncMeta(userId);
+
+	return (
+		records.length === 0 &&
+		(currentMeta?.clearedStateEpoch === stateEpoch ||
+			stateEpoch > (currentMeta?.state_epoch ?? 0))
+	);
 }
 
 function applyRemoteStatePreservingDirty({
@@ -525,10 +558,10 @@ function handleConflictUpload({
 			stateEpoch,
 			userId,
 		});
-		return true;
+		return 'confirmed' as const;
 	}
 
-	pauseDirtyEntryWithConflict({
+	const didPause = pauseDirtyEntryWithConflict({
 		conflict: createConflictFromDirtyEntry({
 			entry,
 			record:
@@ -545,9 +578,11 @@ function handleConflictUpload({
 		}),
 		entry,
 		incrementAttempts: true,
+		requireCurrentMatch: true,
 		userId,
 	});
-	return false;
+
+	return didPause ? ('paused' as const) : ('stale' as const);
 }
 
 async function handleStateEpochMismatch(
@@ -560,6 +595,20 @@ async function handleStateEpochMismatch(
 	}
 	if (!checkCurrentAccountUser(userId)) {
 		return false;
+	}
+	if (
+		checkRemoteStateCleared({
+			records: remoteState.records,
+			stateEpoch: remoteState.state_epoch,
+			userId,
+		})
+	) {
+		resetAccountSyncCloudStateAfterDelete({
+			stateEpoch: remoteState.state_epoch,
+			userId,
+		});
+		setCurrentAccountUserStateEpoch(userId, remoteState.state_epoch);
+		return true;
 	}
 
 	const recordsToApply = applyRemoteStatePreservingDirty({
@@ -667,14 +716,17 @@ export async function flushAccountSyncQueue() {
 					return;
 				}
 				if (result.status === 'conflict') {
-					const isConfirmed = handleConflictUpload({
+					const conflictResult = handleConflictUpload({
 						entry,
 						result,
 						stateEpoch: response.state_epoch,
 						userId: context.user.id,
 					});
-					if (isConfirmed) {
+					if (conflictResult === 'confirmed') {
 						uploadedNamespaces.push(result.namespace);
+					}
+					if (conflictResult === 'stale') {
+						shouldScheduleRetryAfterFlush = true;
 					}
 				}
 			});
@@ -855,12 +907,13 @@ export async function takeOverLocalAccountData() {
 		return;
 	}
 
-	const currentMeta = readAccountSyncMeta(context.user.id);
-	const hasRemoteClearedState =
-		remoteState.records.length === 0 &&
-		(currentMeta?.clearedStateEpoch === remoteState.state_epoch ||
-			remoteState.state_epoch > (currentMeta?.state_epoch ?? 0));
-	if (hasRemoteClearedState) {
+	if (
+		checkRemoteStateCleared({
+			records: remoteState.records,
+			stateEpoch: remoteState.state_epoch,
+			userId: context.user.id,
+		})
+	) {
 		resetAccountSyncCloudStateAfterDelete({
 			stateEpoch: remoteState.state_epoch,
 			userId: context.user.id,
@@ -985,6 +1038,12 @@ export function flushAccountSyncQueueWithBeacon() {
 
 	const entries = getFlushableEntries(context.user.id);
 	if (entries.length === 0) {
+		return;
+	}
+
+	const lease = readAccountSyncLease(context.user.id);
+	const now = Date.now();
+	if (lease !== null && lease.expiresAt > now && lease.ownerTabId !== tabId) {
 		return;
 	}
 

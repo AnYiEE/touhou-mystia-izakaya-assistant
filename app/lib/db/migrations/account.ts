@@ -73,6 +73,13 @@ const ACCOUNT_TABLE_COLUMNS_MAP = {
 		'revision',
 		'updated_at',
 	],
+	[TABLE_NAME_MAP.backupImportRecord]: [
+		'code',
+		'user_id',
+		'results',
+		'state_epoch',
+		'created_at',
+	],
 } as const;
 
 const ACCOUNT_TABLE_COLUMN_DEFINITION_MAP = {
@@ -116,10 +123,23 @@ const ACCOUNT_TABLE_COLUMN_DEFINITION_MAP = {
 		updated_at: { dataType: 'integer', defaultTo: 0, notNull: true },
 		user_id: { dataType: 'text', structural: true },
 	},
+	[TABLE_NAME_MAP.backupImportRecord]: {
+		code: { dataType: 'text', structural: true },
+		created_at: { dataType: 'integer', defaultTo: 0, notNull: true },
+		results: { dataType: 'text', defaultTo: '[]', notNull: true },
+		state_epoch: { dataType: 'integer', defaultTo: 0, notNull: true },
+		user_id: { dataType: 'text', structural: true },
+	},
 } as const satisfies Record<
 	keyof typeof ACCOUNT_TABLE_COLUMNS_MAP,
 	Record<string, IColumnDefinition>
 >;
+
+function checkDuplicateColumnError(error: unknown) {
+	return (
+		error instanceof Error && /duplicate column name/iu.test(error.message)
+	);
+}
 
 async function addMissingColumn(
 	database: Kysely<TDatabase>,
@@ -127,18 +147,26 @@ async function addMissingColumn(
 	columnName: string,
 	definition: IColumnDefinition
 ) {
-	await database.schema
-		.alterTable(tableName)
-		.addColumn(columnName, definition.dataType, (col) => {
-			let builder = definition.notNull === true ? col.notNull() : col;
+	try {
+		await database.schema
+			.alterTable(tableName)
+			.addColumn(columnName, definition.dataType, (col) => {
+				let builder = definition.notNull === true ? col.notNull() : col;
 
-			if (definition.defaultTo !== undefined) {
-				builder = builder.defaultTo(definition.defaultTo);
-			}
+				if (definition.defaultTo !== undefined) {
+					builder = builder.defaultTo(definition.defaultTo);
+				}
 
-			return builder;
-		})
-		.execute();
+				return builder;
+			})
+			.execute();
+	} catch (error) {
+		if (checkDuplicateColumnError(error)) {
+			return;
+		}
+
+		throw error;
+	}
 }
 
 async function ensureTableColumns(
@@ -172,6 +200,16 @@ async function ensureTableColumns(
 		}
 
 		await addMissingColumn(database, tableName, column, definition);
+	}
+
+	const finalColumns = await getTableColumns(database, tableName);
+	const stillMissingColumns = ACCOUNT_TABLE_COLUMNS_MAP[tableName].filter(
+		(column) => !finalColumns.includes(column)
+	);
+	if (stillMissingColumns.length > 0) {
+		throw new Error(
+			`${SERVER_MISCONFIGURED_MESSAGE}: account table ${tableName} is missing columns after migration: ${stillMissingColumns.join(', ')}`
+		);
 	}
 }
 
@@ -286,11 +324,17 @@ async function ensureAccountTableStructure(database: Kysely<TDatabase>) {
 		await getPrimaryKeyColumns(database, TABLE_NAME_MAP.userState),
 		['user_id', 'namespace']
 	);
+	assertPrimaryKeyColumns(
+		TABLE_NAME_MAP.backupImportRecord,
+		await getPrimaryKeyColumns(database, TABLE_NAME_MAP.backupImportRecord),
+		['code']
+	);
 
 	await Promise.all([
 		assertForeignKeyToUsers(database, TABLE_NAME_MAP.userCredential),
 		assertForeignKeyToUsers(database, TABLE_NAME_MAP.session),
 		assertForeignKeyToUsers(database, TABLE_NAME_MAP.userState),
+		assertForeignKeyToUsers(database, TABLE_NAME_MAP.backupImportRecord),
 	]);
 
 	const hasUsernameUniqueIndex = await hasUniqueIndex(
@@ -347,6 +391,28 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 		.ifNotExists()
 		.on(TABLE_NAME_MAP.user)
 		.column('status')
+		.execute();
+
+	await database.schema
+		.createTable(TABLE_NAME_MAP.backupImportRecord)
+		.ifNotExists()
+		.addColumn('code', 'text', (col) => col.primaryKey())
+		.addColumn('user_id', 'text', (col) =>
+			col
+				.notNull()
+				.references(`${TABLE_NAME_MAP.user}.id`)
+				.onDelete('cascade')
+		)
+		.addColumn('results', 'text', (col) => col.notNull())
+		.addColumn('state_epoch', 'integer', (col) => col.notNull())
+		.addColumn('created_at', 'integer', (col) => col.notNull())
+		.execute();
+
+	await database.schema
+		.createIndex('backup_imports_user_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.backupImportRecord)
+		.column('user_id')
 		.execute();
 
 	await database.schema

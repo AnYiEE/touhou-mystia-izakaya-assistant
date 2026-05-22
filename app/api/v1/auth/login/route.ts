@@ -139,13 +139,17 @@ export async function POST(request: NextRequest) {
 		return createInvalidLoginResponse();
 	}
 
-	await usersModule.updateUser(user.id, {
-		last_login_at: now,
-		updated_at: now,
-	});
+	const userUpdate = { last_login_at: now, updated_at: now };
 
 	const currentUser = { ...user, last_login_at: now, updated_at: now };
-	const session = await authModule.createAccountSession(user.id, request);
+	const session = await authModule.createAccountSessionForActiveUser(
+		user.id,
+		request,
+		userUpdate
+	);
+	if (session === null) {
+		return createInvalidLoginResponse();
+	}
 	const response = createNoStoreJsonResponse({
 		csrf_token: session.csrfToken,
 		password_must_change: credential.password_must_change === 1,

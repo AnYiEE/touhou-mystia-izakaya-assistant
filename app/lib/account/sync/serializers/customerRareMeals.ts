@@ -10,6 +10,8 @@ import {
 	type TMealSnapshot,
 	checkBeverageName,
 	mergeMealSnapshot,
+	normalizeMealRecipe,
+	normalizeMealSnapshot,
 	validateMealRecipe,
 	validateMealSnapshot,
 } from './meals';
@@ -39,6 +41,22 @@ function validateCustomerRareMeal(data: unknown): data is ICustomerRareMeal {
 	);
 }
 
+function normalizeCustomerRareMeal(data: ICustomerRareMeal): ICustomerRareMeal {
+	return {
+		beverage: data.beverage,
+		hasMystiaCooker: data.hasMystiaCooker,
+		order: {
+			beverageTag: data.order.beverageTag,
+			recipeTag: data.order.recipeTag,
+		},
+		recipe: normalizeMealRecipe(data.recipe),
+	};
+}
+
+function normalizeCustomerRareMealsSnapshot(data: TCustomerRareMealsSnapshot) {
+	return normalizeMealSnapshot(data, normalizeCustomerRareMeal);
+}
+
 export const customerRareMealsSerializer = {
 	deserialize(data) {
 		return this.migrate(data, 1);
@@ -47,7 +65,9 @@ export const customerRareMealsSerializer = {
 		return {};
 	},
 	getLocalSnapshot() {
-		return cloneJsonObject(customerRareStore.persistence.meals.get());
+		return normalizeCustomerRareMealsSnapshot(
+			cloneJsonObject(customerRareStore.persistence.meals.get())
+		);
 	},
 	merge(params) {
 		return mergeMealSnapshot({
@@ -64,10 +84,10 @@ export const customerRareMealsSerializer = {
 			throw new Error('invalid-customer-rare-meals');
 		}
 
-		return data;
+		return normalizeCustomerRareMealsSnapshot(data);
 	},
 	serialize(data) {
-		return data;
+		return normalizeCustomerRareMealsSnapshot(data);
 	},
 	setLocalSnapshot(data) {
 		customerRareStore.persistence.meals.set(data);

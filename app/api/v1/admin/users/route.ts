@@ -16,7 +16,32 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const DEFAULT_PAGE_SIZE = 20;
+const MAX_PAGE = 10_000;
 const MAX_PAGE_SIZE = 100;
+
+function parsePositiveIntegerParam(
+	value: string | null,
+	defaultValue: number,
+	maxValue: number
+) {
+	if (value === null) {
+		return defaultValue;
+	}
+	if (!/^\d+$/u.test(value)) {
+		return null;
+	}
+
+	const parsedValue = Number.parseInt(value, 10);
+	if (
+		!Number.isSafeInteger(parsedValue) ||
+		parsedValue < 1 ||
+		parsedValue > maxValue
+	) {
+		return null;
+	}
+
+	return parsedValue;
+}
 
 export async function GET(request: NextRequest) {
 	const featureResponse = await checkAccountFeatureResponse();
@@ -56,20 +81,19 @@ export async function GET(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-user-status', 400);
 	}
 
-	const page = Math.max(
+	const page = parsePositiveIntegerParam(
+		request.nextUrl.searchParams.get('page'),
 		1,
-		Number.parseInt(request.nextUrl.searchParams.get('page') ?? '1') || 1
+		MAX_PAGE
 	);
-	const pageSize = Math.min(
-		MAX_PAGE_SIZE,
-		Math.max(
-			1,
-			Number.parseInt(
-				request.nextUrl.searchParams.get('page_size') ??
-					String(DEFAULT_PAGE_SIZE)
-			) || DEFAULT_PAGE_SIZE
-		)
+	const pageSize = parsePositiveIntegerParam(
+		request.nextUrl.searchParams.get('page_size'),
+		DEFAULT_PAGE_SIZE,
+		MAX_PAGE_SIZE
 	);
+	if (page === null || pageSize === null) {
+		return createNoStoreErrorResponse('invalid-pagination', 400);
+	}
 	const query = userModule.normalizeUsername(
 		request.nextUrl.searchParams.get('query') ?? ''
 	);

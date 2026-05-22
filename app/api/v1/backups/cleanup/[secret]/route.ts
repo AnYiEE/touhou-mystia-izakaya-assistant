@@ -3,10 +3,13 @@ import { env } from 'node:process';
 
 import {
 	checkBackupCodeLockLostError,
+	deleteExpiredBackupImportRecords,
 	deleteFile,
 	deleteRecord,
+	deleteTemporaryBackupFile,
 	getBackupFileCodes,
 	getExpiredRecords,
+	getExpiredTemporaryBackupFileNames,
 	getRecord,
 	getRecordCodes,
 	markBackupCodeLockCommitted,
@@ -18,7 +21,7 @@ import {
 	createNoStoreJsonResponse,
 	handleOptionsRequest,
 } from '@/api/v1/utils';
-import { maskBackupCode } from '../../utils';
+import { getLogSafeErrorCode, maskBackupCode } from '../../utils';
 
 function isExpiredBackupRecord(
 	record: { created_at: number; last_accessed: number },
@@ -80,22 +83,45 @@ export async function DELETE(
 	}
 
 	const now = Date.now();
+	const oneHourAgo = now - 60 * 60 * 1000;
 	const sixMonthsAgo = now - 181 * 24 * 60 * 60 * 1000;
 
 	const records = await getExpiredRecords(sixMonthsAgo);
 	const recordCodeSet = new Set(await getRecordCodes());
 	const backupFileCodes = await getBackupFileCodes();
+	const temporaryFileNames =
+		await getExpiredTemporaryBackupFileNames(oneHourAgo);
 	const orphanCodes = backupFileCodes.filter(
 		(code) => !recordCodeSet.has(code)
 	);
 
 	let deletedFileCount = 0;
+	let deletedImportRecordCount = 0;
 	let deletedRecordCount = 0;
 	let failedFileCount = 0;
 	let failedRecordCount = 0;
 	let orphanDeletedCount = 0;
+	let temporaryDeletedCount = 0;
 
 	try {
+		deletedImportRecordCount =
+			await deleteExpiredBackupImportRecords(sixMonthsAgo);
+		await runWithConcurrencyLimit(
+			temporaryFileNames,
+			8,
+			async (fileName) => {
+				try {
+					await deleteTemporaryBackupFile(fileName);
+					temporaryDeletedCount++;
+				} catch (error) {
+					failedFileCount++;
+					console.warn('Failed to delete temporary backup file', {
+						codeHash: maskBackupCode(fileName.split('.')[0] ?? ''),
+						errorCode: getLogSafeErrorCode(error),
+					});
+				}
+			}
+		);
 		await runWithConcurrencyLimit(records, 8, async ({ code }) => {
 			await withBackupCodeLock(code, async (signal) => {
 				const record = await getRecord(code);
@@ -124,7 +150,7 @@ export async function DELETE(
 					failedFileCount++;
 					console.warn('Failed to delete expired backup file', {
 						codeHash: maskBackupCode(code),
-						error,
+						errorCode: getLogSafeErrorCode(error),
 					});
 				}
 
@@ -143,7 +169,7 @@ export async function DELETE(
 					failedRecordCount++;
 					console.warn('Failed to delete expired backup record', {
 						codeHash: maskBackupCode(code),
-						error,
+						errorCode: getLogSafeErrorCode(error),
 					});
 				}
 			});
@@ -173,7 +199,7 @@ export async function DELETE(
 					failedFileCount++;
 					console.warn('Failed to delete orphan backup file', {
 						codeHash: maskBackupCode(code),
-						error,
+						errorCode: getLogSafeErrorCode(error),
 					});
 				}
 			});
@@ -188,11 +214,14 @@ export async function DELETE(
 
 	return createNoStoreJsonResponse({
 		deletedFileCount,
+		deletedImportRecordCount,
 		deletedRecordCount,
 		failedFileCount,
 		failedRecordCount,
 		orphanDeletedCount,
 		orphanFoundCount: orphanCodes.length,
+		temporaryDeletedCount,
+		temporaryFoundCount: temporaryFileNames.length,
 	});
 }
 

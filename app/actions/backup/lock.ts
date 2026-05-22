@@ -26,6 +26,15 @@ function maskBackupCodeForLog(code: string) {
 	return `sha256:${createHash('sha256').update(code).digest('hex').slice(0, 12)}`;
 }
 
+function getLogSafeErrorCode(error: unknown) {
+	return error !== null &&
+		typeof error === 'object' &&
+		'code' in error &&
+		typeof error.code === 'string'
+		? error.code
+		: 'unknown';
+}
+
 async function waitForPreviousBackupCodeLock(
 	code: string,
 	previousLock: Promise<void>
@@ -174,7 +183,9 @@ export async function withBackupCodeLock<T>(
 			}
 			console.warn(message, {
 				codeHash: maskBackupCodeForLog(code),
-				error,
+				...(error === undefined
+					? {}
+					: { errorCode: getLogSafeErrorCode(error) }),
 				ownerId,
 			});
 		};
@@ -208,7 +219,11 @@ export async function withBackupCodeLock<T>(
 			try {
 				await releaseSharedBackupCodeLock(code, ownerId);
 			} catch (error) {
-				console.warn('Failed to release backup code lock.', error);
+				console.warn('Failed to release backup code lock.', {
+					codeHash: maskBackupCodeForLog(code),
+					errorCode: getLogSafeErrorCode(error),
+					ownerId,
+				});
 			}
 		}
 	} finally {
