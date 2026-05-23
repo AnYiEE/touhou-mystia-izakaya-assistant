@@ -26,6 +26,12 @@ const statusOptions: Array<{ label: string; value: TUserStatus | '' }> = [
 	{ label: '已删除', value: 'deleted' },
 ];
 
+type TAdminAuthStatus =
+	| 'authenticated'
+	| 'checking'
+	| 'error'
+	| 'unauthenticated';
+
 function clearAdminSession() {
 	accountStore.shared.adminCsrfToken.set(null);
 }
@@ -36,6 +42,8 @@ function checkAdminSessionUnauthorized(error: unknown) {
 
 export default function AdminPage() {
 	const [admin, setAdmin] = useState<IAdminMeData | null>(null);
+	const [adminAuthStatus, setAdminAuthStatus] =
+		useState<TAdminAuthStatus>('checking');
 	const [users, setUsers] = useState<IAdminUserListData | null>(null);
 	const [message, setMessage] = useState<string | null>(null);
 	const [page, setPage] = useState(1);
@@ -69,6 +77,7 @@ export default function AdminPage() {
 				if (checkAdminSessionUnauthorized(error)) {
 					clearAdminSession();
 					setAdmin(null);
+					setAdminAuthStatus('unauthenticated');
 					setUsers(null);
 				}
 				setMessage(
@@ -84,9 +93,11 @@ export default function AdminPage() {
 			});
 	}, [page, query, status]);
 
-	useEffect(() => {
+	const checkAdminAuth = useCallback(() => {
 		const requestId = adminAuthRequestIdRef.current + 1;
 		adminAuthRequestIdRef.current = requestId;
+		setAdminAuthStatus('checking');
+		setMessage(null);
 		void fetchAdminMe()
 			.then((data) => {
 				if (adminAuthRequestIdRef.current !== requestId) {
@@ -95,16 +106,33 @@ export default function AdminPage() {
 
 				accountStore.shared.adminCsrfToken.set(data.csrf_token);
 				setAdmin(data);
+				setAdminAuthStatus('authenticated');
 			})
-			.catch(() => {
+			.catch((error: unknown) => {
 				if (adminAuthRequestIdRef.current !== requestId) {
 					return;
 				}
 
-				clearAdminSession();
+				if (checkAdminSessionUnauthorized(error)) {
+					clearAdminSession();
+					setAdmin(null);
+					setAdminAuthStatus('unauthenticated');
+					return;
+				}
+
 				setAdmin(null);
+				setAdminAuthStatus('error');
+				setMessage(
+					error instanceof Error
+						? error.message
+						: '检查管理员登录状态失败'
+				);
 			});
 	}, []);
+
+	useEffect(() => {
+		checkAdminAuth();
+	}, [checkAdminAuth]);
 
 	useEffect(() => {
 		if (admin !== null) {
@@ -113,6 +141,31 @@ export default function AdminPage() {
 	}, [admin, refreshUsers]);
 
 	if (admin === null) {
+		if (adminAuthStatus === 'checking') {
+			return (
+				<div className="min-h-main-content space-y-4">
+					<Heading isFirst>管理员</Heading>
+					<p className="text-sm text-foreground-500">
+						正在检查管理员登录状态
+					</p>
+				</div>
+			);
+		}
+
+		if (adminAuthStatus === 'error') {
+			return (
+				<div className="min-h-main-content space-y-4">
+					<Heading isFirst>管理员</Heading>
+					{message !== null && (
+						<p className="text-sm text-foreground-500">{message}</p>
+					)}
+					<Button variant="flat" onPress={checkAdminAuth}>
+						重试
+					</Button>
+				</div>
+			);
+		}
+
 		return (
 			<div className="min-h-main-content space-y-4">
 				<Heading isFirst>管理员</Heading>
@@ -153,6 +206,7 @@ export default function AdminPage() {
 										data.csrf_token
 									);
 									setAdmin(data);
+									setAdminAuthStatus('authenticated');
 									setPassword('');
 								})
 								.catch((error: unknown) => {
@@ -213,6 +267,7 @@ export default function AdminPage() {
 
 								clearAdminSession();
 								setAdmin(null);
+								setAdminAuthStatus('unauthenticated');
 								setUsers(null);
 							})
 							.catch((error: unknown) => {
@@ -225,6 +280,7 @@ export default function AdminPage() {
 								if (checkAdminSessionUnauthorized(error)) {
 									clearAdminSession();
 									setAdmin(null);
+									setAdminAuthStatus('unauthenticated');
 									setUsers(null);
 									return;
 								}

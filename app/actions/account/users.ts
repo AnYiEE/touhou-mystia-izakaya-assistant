@@ -118,7 +118,14 @@ export async function createUserWithCredential(
 export async function updateUser(id: TUser['id'], user: TUserUpdate) {
 	const db = await getAccountDatabase();
 
-	await db.updateTable(TABLE_NAME).set(user).where('id', '=', id).execute();
+	const result = await db
+		.updateTable(TABLE_NAME)
+		.set(user)
+		.where('id', '=', id)
+		.executeTakeFirst();
+	if (result.numUpdatedRows !== 1n) {
+		throw new Error('user-not-found');
+	}
 }
 
 export async function setUserStatus(id: TUser['id'], status: TUserStatus) {
@@ -183,7 +190,7 @@ export async function setUserStatusAndDeleteSessions(
 	const now = Date.now();
 
 	await db.transaction().execute(async (trx) => {
-		await trx
+		const result = await trx
 			.updateTable(TABLE_NAME)
 			.set({
 				deleted_at: status === 'deleted' ? now : null,
@@ -191,7 +198,10 @@ export async function setUserStatusAndDeleteSessions(
 				updated_at: now,
 			})
 			.where('id', '=', id)
-			.execute();
+			.executeTakeFirst();
+		if (result.numUpdatedRows !== 1n) {
+			throw new Error('user-not-found');
+		}
 
 		await trx
 			.deleteFrom(SESSION_TABLE_NAME)

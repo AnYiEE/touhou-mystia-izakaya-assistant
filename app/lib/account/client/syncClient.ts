@@ -1032,7 +1032,11 @@ export async function takeOverLocalAccountData() {
 
 export function flushAccountSyncQueueWithBeacon() {
 	const context = getLoggedInAccountContext();
-	if (context === null || visibilityOperationId !== null) {
+	if (
+		context === null ||
+		visibilityOperationId !== null ||
+		activeFlushRunId !== null
+	) {
 		return;
 	}
 
@@ -1071,8 +1075,6 @@ export function flushAccountSyncQueueWithBeacon() {
 
 export function startAccountSyncClient() {
 	syncClientGeneration += 1;
-	activeFlushRunId = null;
-	activeFlushPromise = null;
 	clearSyncTimers();
 	stopLeaseRenewal();
 	accountStore.shared.sync.isSyncing.set(false);

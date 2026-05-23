@@ -157,9 +157,12 @@ export interface ISyncConflictItem<T = unknown> {
 	local: T;
 	merged: T | null;
 	namespace: TSyncNamespace;
+	userId?: string;
 	revision: number;
 }
 ```
+
+客户端持久化和展示冲突时必须补齐 `userId`，用于按账号隔离冲突记录；serializer 产出的原始冲突对象可先不带该字段。
 
 窗口按钮：
 

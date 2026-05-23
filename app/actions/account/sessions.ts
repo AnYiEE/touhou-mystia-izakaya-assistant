@@ -17,6 +17,10 @@ export type TSessionMutablePatch = Pick<
 	TSessionUpdate,
 	'ip_address' | 'last_seen_at' | 'token_hash' | 'user_agent'
 >;
+export type TActiveUserSessionPatch = Pick<
+	TUserUpdate,
+	'last_login_at' | 'updated_at'
+>;
 
 export async function createSession(session: TSessionNew) {
 	const db = await getAccountDatabase();
@@ -30,7 +34,7 @@ export async function createSessionForActiveUser({
 	userId,
 }: {
 	session: TSessionNew;
-	user: TUserUpdate;
+	user: TActiveUserSessionPatch;
 	userId: TUser['id'];
 }) {
 	const db = await getAccountDatabase();

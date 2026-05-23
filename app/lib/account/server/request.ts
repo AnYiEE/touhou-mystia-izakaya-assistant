@@ -54,6 +54,16 @@ function normalizeRequestHost(host: string | null) {
 	return normalizedHost;
 }
 
+function getHostnameFromHost(host: string) {
+	try {
+		return new URL(`http://${host}`).hostname
+			.toLowerCase()
+			.replace(/^\[(.*)\]$/u, '$1');
+	} catch {
+		return null;
+	}
+}
+
 export function getExpectedRequestOrigin(request: NextRequest) {
 	const trustProxy = env.TRUST_PROXY === 'true';
 	const host = normalizeRequestHost(
@@ -118,7 +128,16 @@ export function checkSecureRequest(request: NextRequest) {
 }
 
 function checkLocalRequestHost(request: NextRequest) {
-	const hostname = request.nextUrl.hostname.toLowerCase();
+	const host = normalizeRequestHost(
+		env.TRUST_PROXY === 'true'
+			? getFirstHeaderValue(request.headers.get('x-forwarded-host'))
+			: (request.headers.get('host') ?? request.nextUrl.host)
+	);
+	if (host === null) {
+		return false;
+	}
+
+	const hostname = getHostnameFromHost(host);
 
 	return (
 		hostname === 'localhost' ||

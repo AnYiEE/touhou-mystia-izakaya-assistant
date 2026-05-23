@@ -274,6 +274,29 @@ export async function listUserState(userId: TUser['id']) {
 		.execute();
 }
 
+export async function getUserStateSnapshot(userId: TUser['id']) {
+	const db = await getAccountDatabase();
+
+	return db.transaction().execute(async (trx) => {
+		const user = await trx
+			.selectFrom(USER_TABLE_NAME)
+			.selectAll()
+			.where('id', '=', userId)
+			.executeTakeFirst();
+		if (user === undefined) {
+			return null;
+		}
+
+		const state = await trx
+			.selectFrom(TABLE_NAME)
+			.selectAll()
+			.where('user_id', '=', userId)
+			.execute();
+
+		return { state, user };
+	});
+}
+
 export async function listUserStateByNamespaces(
 	userId: TUser['id'],
 	namespaces: Array<TUserState['namespace']>

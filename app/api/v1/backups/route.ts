@@ -31,6 +31,10 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 	return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
+function normalizeMediaType(contentType: string | null) {
+	return contentType?.split(';', 1).at(0)?.trim().toLowerCase() ?? null;
+}
+
 async function restoreBackupFile({
 	code,
 	codeHash,
@@ -59,7 +63,7 @@ async function restoreBackupFile({
 export async function POST(request: NextRequest) {
 	const { contentType, ip, ua } = getRequestMeta(request);
 
-	if (contentType !== FILE_TYPE_JSON) {
+	if (normalizeMediaType(contentType) !== FILE_TYPE_JSON) {
 		return createNoStoreErrorResponse('Invalid content type', 400);
 	}
 	if (ip === null) {

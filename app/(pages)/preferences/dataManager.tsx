@@ -64,8 +64,7 @@ import {
 	toggleBoolean,
 } from '@/utilities';
 
-const { isAccountFeatureClientEnabled, isOffline, isSelfHosted, isVercel } =
-	siteConfig;
+const { isOffline, isSelfHosted, isVercel } = siteConfig;
 
 const cloudDeleteButtonLabelMap = {
 	delete: '删除云备份',
@@ -246,7 +245,6 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		isSelfHosted &&
 		!isOffline &&
 		!isVercel &&
-		!isAccountFeatureClientEnabled &&
 		accountBootstrapStatus === 'disabled';
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 	const userId = globalStore.persistence.userId.use();

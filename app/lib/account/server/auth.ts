@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { type NextRequest, type NextResponse } from 'next/server';
 
 import {
+	type TActiveUserSessionPatch,
 	createSession,
 	createSessionForActiveUser as createSessionForActiveUserRecord,
 	deleteSessionById,
@@ -19,7 +20,6 @@ import {
 	type TUser,
 	type TUserCredential,
 	type TUserCredentialUpdate,
-	type TUserUpdate,
 } from '@/lib/db/types';
 
 import { USER_STATUS_MAP } from '../shared/constants';
@@ -95,7 +95,7 @@ export async function createAccountSession(
 export async function createAccountSessionForActiveUser(
 	userId: TUser['id'],
 	request: NextRequest,
-	user: TUserUpdate
+	user: TActiveUserSessionPatch
 ) {
 	const now = Date.now();
 	const token = createSessionToken();

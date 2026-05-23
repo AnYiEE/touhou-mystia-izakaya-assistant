@@ -36,6 +36,7 @@ import {
 	SYNC_SCHEMA_VERSION_MAP,
 	type TSyncNamespace,
 } from '@/lib/account/sync';
+import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import {
 	checkBeverageName,
 	validateMealRecipe,
@@ -406,11 +407,11 @@ async function checkImportBackupDataPreconditions(
 
 	const user = await database
 		.selectFrom(TABLE_NAME_MAP.user)
-		.select('state_epoch')
+		.select(['state_epoch', 'status'])
 		.where('id', '=', userId)
 		.executeTakeFirst();
 	throwIfBackupCodeLockLost(signal);
-	if (user === undefined) {
+	if (user?.status !== USER_STATUS_MAP.active) {
 		throw new Error('unauthorized');
 	}
 
@@ -509,11 +510,11 @@ async function importBackupData(
 
 		const user = await trx
 			.selectFrom(TABLE_NAME_MAP.user)
-			.select('state_epoch')
+			.select(['state_epoch', 'status'])
 			.where('id', '=', userId)
 			.executeTakeFirst();
 		throwIfBackupCodeLockLost(signal);
-		if (user === undefined) {
+		if (user?.status !== USER_STATUS_MAP.active) {
 			throw new Error('unauthorized');
 		}
 

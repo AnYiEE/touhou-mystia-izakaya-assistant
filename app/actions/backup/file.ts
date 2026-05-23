@@ -97,7 +97,17 @@ export async function getExpiredTemporaryBackupFileNames(
 						checkTemporaryBackupFileName(entry.name)
 				)
 				.map(async (entry) => {
-					const fileStat = await stat(join(dir, entry.name));
+					let fileStat;
+					try {
+						fileStat = await stat(join(dir, entry.name));
+					} catch (error) {
+						if (checkBackupFileNotFoundError(error)) {
+							return;
+						}
+
+						throw error;
+					}
+
 					if (fileStat.mtimeMs < expiredBefore) {
 						fileNames.push(entry.name);
 					}
