@@ -197,9 +197,7 @@ export default function Providers({
 			console.error('Account bootstrap failed.', error);
 			accountStore.shared.bootstrapStatus.set('error');
 			accountStore.shared.isBootstrapped.set(true);
-			accountStore.shared.sync.lastError.set(
-				error instanceof Error ? error.message : 'bootstrap-failed'
-			);
+			accountStore.shared.sync.lastError.set('bootstrap-failed');
 		});
 		const stopAccountSyncClient = startAccountSyncClient();
 

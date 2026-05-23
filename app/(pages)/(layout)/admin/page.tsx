@@ -184,11 +184,17 @@ export default function AdminPage() {
 					<Button
 						color="primary"
 						isDisabled={
-							username.length === 0 || password.length === 0
+							isLoading ||
+							username.length === 0 ||
+							password.length === 0
 						}
 						isLoading={isLoading}
 						variant="flat"
 						onPress={() => {
+							if (isLoading) {
+								return;
+							}
+
 							const requestId = adminAuthRequestIdRef.current + 1;
 							adminAuthRequestIdRef.current = requestId;
 							setIsLoading(true);
@@ -250,8 +256,14 @@ export default function AdminPage() {
 			<div className="flex flex-wrap items-center justify-between gap-2">
 				<Heading isFirst>管理员</Heading>
 				<Button
+					isDisabled={isLoading}
+					isLoading={isLoading}
 					variant="flat"
 					onPress={() => {
+						if (isLoading) {
+							return;
+						}
+
 						const requestId = adminAuthRequestIdRef.current + 1;
 						adminAuthRequestIdRef.current = requestId;
 						refreshUsersRequestIdRef.current += 1;

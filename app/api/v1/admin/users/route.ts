@@ -76,7 +76,9 @@ export async function GET(request: NextRequest) {
 		import('@/actions/account/users'),
 		import('@/lib/account/server/user'),
 	]);
-	const status = request.nextUrl.searchParams.get('status');
+	const rawStatus = request.nextUrl.searchParams.get('status');
+	const status =
+		rawStatus === null || rawStatus.trim() === '' ? null : rawStatus.trim();
 	if (status !== null && !userModule.checkUserStatus(status)) {
 		return createNoStoreErrorResponse('invalid-user-status', 400);
 	}

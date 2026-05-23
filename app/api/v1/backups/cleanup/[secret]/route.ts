@@ -3,6 +3,7 @@ import { env } from 'node:process';
 
 import {
 	checkBackupCodeLockLostError,
+	checkBackupFileNotFoundError,
 	deleteExpiredBackupImportRecords,
 	deleteFile,
 	deleteRecord,
@@ -146,12 +147,14 @@ export async function DELETE(
 					) {
 						throw error;
 					}
-
-					failedFileCount++;
-					console.warn('Failed to delete expired backup file', {
-						codeHash: maskBackupCode(code),
-						errorCode: getLogSafeErrorCode(error),
-					});
+					if (!checkBackupFileNotFoundError(error)) {
+						failedFileCount++;
+						console.warn('Failed to delete expired backup file', {
+							codeHash: maskBackupCode(code),
+							errorCode: getLogSafeErrorCode(error),
+						});
+						return;
+					}
 				}
 
 				try {

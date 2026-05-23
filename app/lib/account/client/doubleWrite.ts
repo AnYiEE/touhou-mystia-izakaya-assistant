@@ -1,4 +1,4 @@
-import { addThemeChangeListener } from '@/design/hooks';
+import { STORAGE_KEY, addThemeChangeListener } from '@/design/hooks';
 import { SYNC_NAMESPACE_MAP, type TSyncNamespace } from '@/lib/account/sync';
 import { accountStore } from '@/stores/account';
 import { customerNormalStore } from '@/stores/customer-normal';
@@ -208,6 +208,17 @@ export function startAccountStoreSyncWatchers() {
 			markNamespaceDirty(SYNC_NAMESPACE_MAP.theme);
 		})
 	);
+	const handleThemeStorageChange = (event: StorageEvent) => {
+		if (event.key !== STORAGE_KEY || event.oldValue === event.newValue) {
+			return;
+		}
+
+		markNamespaceDirty(SYNC_NAMESPACE_MAP.theme);
+	};
+	globalThis.addEventListener('storage', handleThemeStorageChange);
+	watch(() => {
+		globalThis.removeEventListener('storage', handleThemeStorageChange);
+	});
 
 	const cleanup = () => {
 		if (stopWatchers !== cleanup) {

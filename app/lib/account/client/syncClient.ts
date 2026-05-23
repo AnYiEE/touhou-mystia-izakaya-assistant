@@ -50,8 +50,14 @@ const FORCE_FLUSH_DELAY = 30 * 1000;
 const QUIET_FLUSH_DELAY = 2 * 1000;
 const SEND_BEACON_BYTE_LIMIT = 48 * 1024;
 
-let activeFlushRunId: string | null = null;
-let activeFlushPromise: Promise<boolean> | null = null;
+interface IActiveFlushRun {
+	generation: number;
+	promise: Promise<boolean>;
+	runId: string;
+	userId: string;
+}
+
+let activeFlushRun: IActiveFlushRun | null = null;
 let forceFlushTimer: ReturnType<typeof setTimeout> | null = null;
 let leaseTimer: ReturnType<typeof setInterval> | null = null;
 let leaseTimerGeneration: number | null = null;
@@ -80,6 +86,25 @@ function checkCurrentSyncRun(generation: number, userId: string) {
 	return (
 		syncClientGeneration === generation && checkCurrentAccountUser(userId)
 	);
+}
+
+function clearActiveFlushRun({
+	generation,
+	runId,
+	userId,
+}: {
+	generation: number;
+	runId: string;
+	userId: string;
+}) {
+	const activeRun = activeFlushRun;
+	if (
+		activeRun?.runId === runId &&
+		activeRun.generation === generation &&
+		activeRun.userId === userId
+	) {
+		activeFlushRun = null;
+	}
 }
 
 function setCurrentAccountUserStateEpoch(userId: string, stateEpoch: number) {
@@ -148,6 +173,7 @@ function stopLeaseRenewal(generation?: number) {
 
 export function stopAccountSyncClient() {
 	syncClientGeneration += 1;
+	activeFlushRun = null;
 	clearSyncTimers();
 	stopLeaseRenewal();
 	accountStore.shared.sync.isSyncing.set(false);
@@ -662,10 +688,16 @@ export async function flushAccountSyncQueue() {
 	}
 
 	const flushRunId = createAccountClientId();
-	if (activeFlushRunId !== null) {
-		return activeFlushPromise ?? false;
+	if (activeFlushRun !== null) {
+		if (
+			activeFlushRun.generation === generation &&
+			activeFlushRun.userId === context.user.id
+		) {
+			return activeFlushRun.promise;
+		}
+
+		activeFlushRun = null;
 	}
-	activeFlushRunId = flushRunId;
 
 	const flushPromise = (async () => {
 		let didAcquireLease = false;
@@ -776,6 +808,7 @@ export async function flushAccountSyncQueue() {
 		} catch (error) {
 			if (error instanceof AccountApiError && error.status === 401) {
 				if (checkCurrentSyncRun(generation, context.user.id)) {
+					stopAccountSyncClient();
 					resetExpiredAccountSession();
 				}
 				return false;
@@ -855,10 +888,11 @@ export async function flushAccountSyncQueue() {
 					);
 				}
 			}
-			if (activeFlushRunId === flushRunId) {
-				activeFlushRunId = null;
-				activeFlushPromise = null;
-			}
+			clearActiveFlushRun({
+				generation,
+				runId: flushRunId,
+				userId: context.user.id,
+			});
 			if (didAcquireLease && isCurrentRun) {
 				void postAccountSyncBroadcastMessage({
 					namespaces: [],
@@ -877,7 +911,12 @@ export async function flushAccountSyncQueue() {
 			}
 		}
 	})();
-	activeFlushPromise = flushPromise;
+	activeFlushRun = {
+		generation,
+		promise: flushPromise,
+		runId: flushRunId,
+		userId: context.user.id,
+	};
 	return flushPromise;
 }
 
@@ -1053,7 +1092,7 @@ export function flushAccountSyncQueueWithBeacon() {
 	if (
 		context === null ||
 		visibilityOperationId !== null ||
-		activeFlushRunId !== null
+		activeFlushRun !== null
 	) {
 		return;
 	}

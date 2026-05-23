@@ -161,6 +161,9 @@ class SafeStorage implements Storage {
 			sessionStorage.setItem(testKey, '');
 			sessionStorage.removeItem(testKey);
 			this._mode = 'session';
+			this._staleStorage = this.getLocalStorageReference();
+			this.persistFallbackMode('session');
+			this.invalidateStorageKeys(this._staleStorage);
 			return sessionStorage;
 		} catch {
 			/* empty */

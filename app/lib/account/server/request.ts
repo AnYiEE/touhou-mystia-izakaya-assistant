@@ -5,9 +5,9 @@ import { checkEnvFlag } from '@/lib/environment';
 
 import { SERVER_MISCONFIGURED_MESSAGE } from './environment';
 
-export function getRequestIp(request: NextRequest) {
+export function getTrustedRequestIp(request: NextRequest) {
 	if (env.TRUST_PROXY !== 'true') {
-		return 'direct';
+		return null;
 	}
 
 	const forwardedFor = request.headers
@@ -20,7 +20,13 @@ export function getRequestIp(request: NextRequest) {
 		return forwardedFor;
 	}
 
-	return request.headers.get('x-real-ip') ?? 'unknown';
+	const realIp = request.headers.get('x-real-ip')?.trim() ?? '';
+
+	return realIp === '' ? null : realIp;
+}
+
+export function getRequestIp(request: NextRequest) {
+	return getTrustedRequestIp(request) ?? 'direct';
 }
 
 export function getRequestUserAgent(request: NextRequest) {

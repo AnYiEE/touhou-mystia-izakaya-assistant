@@ -128,6 +128,10 @@ export function applyRemoteAccountRecords({
 		}
 	});
 
+	if (accountStore.shared.user.get()?.id !== userId) {
+		return meta;
+	}
+
 	const preparedRecords = records.map((record) => {
 		const serializer = getAccountSyncSerializer(record.namespace);
 		const data = serializer.migrate(record.data, record.schema_version);

@@ -10,8 +10,8 @@ import {
 	checkInsecureAccountCookiesAllowed,
 	checkSameOriginRequest,
 	checkSecureRequest,
-	getRequestIp,
 	getRequestUserAgent,
+	getTrustedRequestIp,
 } from '@/lib/account/server/request';
 import { createNoStoreErrorResponse } from './utils';
 
@@ -65,14 +65,18 @@ export function checkAccountRateLimitResponse(
 	scope: string,
 	usernameNormalized = ''
 ) {
-	const keys = [
-		createAccountRateLimitKey([
-			scope,
-			'request',
-			getRequestIp(request),
-			getRequestUserAgent(request),
-		]),
-	];
+	const keys: string[] = [];
+	const requestIp = getTrustedRequestIp(request);
+	if (requestIp !== null) {
+		keys.push(
+			createAccountRateLimitKey([
+				scope,
+				'request',
+				requestIp,
+				getRequestUserAgent(request),
+			])
+		);
+	}
 
 	if (usernameNormalized !== '') {
 		keys.push(
@@ -121,18 +125,23 @@ export async function readJsonBody<T>(
 		const decoder = new TextDecoder();
 		let receivedBytes = 0;
 		let text = '';
-		let readResult = await reader.read();
-		while (!readResult.done) {
-			const { value } = readResult;
-			receivedBytes += value.byteLength;
-			if (receivedBytes > maxBytes) {
-				return null;
-			}
+		try {
+			let readResult = await reader.read();
+			while (!readResult.done) {
+				const { value } = readResult;
+				receivedBytes += value.byteLength;
+				if (receivedBytes > maxBytes) {
+					await reader.cancel('payload-too-large');
+					return null;
+				}
 
-			text += decoder.decode(value, { stream: true });
-			readResult = await reader.read();
+				text += decoder.decode(value, { stream: true });
+				readResult = await reader.read();
+			}
+			text += decoder.decode();
+		} finally {
+			reader.releaseLock();
 		}
-		text += decoder.decode();
 
 		const data: unknown = JSON.parse(text);
 		if (data === null || Array.isArray(data) || typeof data !== 'object') {

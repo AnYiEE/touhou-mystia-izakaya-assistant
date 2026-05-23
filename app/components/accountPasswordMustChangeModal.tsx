@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Input } from '@heroui/input';
 
@@ -25,7 +25,14 @@ export default function AccountPasswordMustChangeModal() {
 	const [message, setMessage] = useState<string | null>(null);
 	const [newPassword, setNewPassword] = useState('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [portalContainer, setPortalContainer] = useState<Element | null>(
+		null
+	);
 	const isOpen = isLoggedIn && passwordMustChange;
+
+	useEffect(() => {
+		setPortalContainer(document.querySelector('#modal-portal-container'));
+	}, []);
 
 	const handlePasswordChange = useCallback(() => {
 		if (isSubmitting || csrfToken === null) {
@@ -87,7 +94,7 @@ export default function AccountPasswordMustChangeModal() {
 	return (
 		<Modal
 			isOpen
-			portalContainer={document.querySelector('#modal-portal-container')}
+			{...(portalContainer === null ? {} : { portalContainer })}
 		>
 			<div className="w-full max-w-md space-y-4">
 				<Heading as="h2" isFirst>

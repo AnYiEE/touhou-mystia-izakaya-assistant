@@ -36,12 +36,12 @@ export async function bootstrapAccount() {
 				return;
 			}
 
-			failAccountBootstrap(error.message);
+			console.error('Account bootstrap failed.', error);
+			failAccountBootstrap('bootstrap-failed');
 			return;
 		}
 
-		failAccountBootstrap(
-			error instanceof Error ? error.message : 'bootstrap-failed'
-		);
+		console.error('Account bootstrap failed.', error);
+		failAccountBootstrap('bootstrap-failed');
 	}
 }

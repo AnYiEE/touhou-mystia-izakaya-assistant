@@ -432,6 +432,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	const handleCloudUploadButtonPress = useCallback(() => {
 		setIsCloudUploadButtonDisabled(true);
 		setCloudUploadButtonLabel(cloudUploadButtonLabelMap.uploading);
+		let cloudCodeToRefresh = currentCloudCode;
 		fetch('/api/v1/backups', {
 			body: JSON.stringify({
 				code: currentCloudCode?.trim() ?? null,
@@ -443,6 +444,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		})
 			.then(checkResponse<IBackupUploadSuccessResponse>)
 			.then(({ code }) => {
+				cloudCodeToRefresh = code;
 				setCloudUploadState('success');
 				setCloudUploadButtonLabel(cloudUploadButtonLabelMap.success);
 				globalStore.persistence.cloudCode.set(code);
@@ -462,7 +464,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				});
 			})
 			.finally(() => {
-				updateCloudCodeInfo(currentCloudCode);
+				updateCloudCodeInfo(cloudCodeToRefresh);
 				cloudTimers.current.push(
 					setTimeout(() => {
 						setCloudUploadState('default');

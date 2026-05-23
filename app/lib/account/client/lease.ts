@@ -12,7 +12,7 @@ export const ACCOUNT_SYNC_LEASE_RENEW_INTERVAL = 5 * 1000;
 
 export interface IAccountSyncLease {
 	expiresAt: number;
-	ownerRunId?: string;
+	ownerRunId: string;
 	ownerTabId: string;
 	renewedAt: number;
 }
@@ -51,12 +51,12 @@ export function readAccountSyncLease(userId: string) {
 function writeAccountSyncLease(
 	userId: string,
 	ownerTabId: string,
-	ownerRunId: string | undefined,
+	ownerRunId: string,
 	now: number
 ) {
 	writeAccountJsonStorage(createAccountSyncLeaseKey(userId), {
 		expiresAt: now + ACCOUNT_SYNC_LEASE_TTL,
-		...(ownerRunId === undefined ? {} : { ownerRunId }),
+		ownerRunId,
 		ownerTabId,
 		renewedAt: now,
 	} satisfies IAccountSyncLease);
@@ -65,7 +65,7 @@ function writeAccountSyncLease(
 function tryAcquireAccountSyncLease(
 	userId: string,
 	ownerTabId: string,
-	ownerRunId: string | undefined,
+	ownerRunId: string,
 	now: number
 ) {
 	const lease = readAccountSyncLease(userId);
@@ -89,7 +89,7 @@ function tryAcquireAccountSyncLease(
 function tryRenewAccountSyncLease(
 	userId: string,
 	ownerTabId: string,
-	ownerRunId: string | undefined,
+	ownerRunId: string,
 	now: number
 ) {
 	const lease = readAccountSyncLease(userId);
@@ -105,7 +105,7 @@ function tryRenewAccountSyncLease(
 function tryReleaseAccountSyncLease(
 	userId: string,
 	ownerTabId: string,
-	ownerRunId: string | undefined
+	ownerRunId: string
 ) {
 	const lease = readAccountSyncLease(userId);
 	if (lease?.ownerTabId === ownerTabId && lease.ownerRunId === ownerRunId) {
@@ -116,7 +116,7 @@ function tryReleaseAccountSyncLease(
 export async function acquireAccountSyncLease(
 	userId: string,
 	ownerTabId: string,
-	ownerRunId?: string,
+	ownerRunId: string,
 	now = Date.now()
 ) {
 	const lockManager = getAccountLockManager();
@@ -140,7 +140,7 @@ export async function acquireAccountSyncLease(
 export async function renewAccountSyncLease(
 	userId: string,
 	ownerTabId: string,
-	ownerRunId?: string,
+	ownerRunId: string,
 	now = Date.now()
 ) {
 	const lockManager = getAccountLockManager();
@@ -159,7 +159,7 @@ export async function renewAccountSyncLease(
 export async function releaseAccountSyncLease(
 	userId: string,
 	ownerTabId: string,
-	ownerRunId?: string
+	ownerRunId: string
 ) {
 	const lockManager = getAccountLockManager();
 	if (lockManager === null) {
