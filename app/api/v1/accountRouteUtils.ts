@@ -18,6 +18,10 @@ import { createNoStoreErrorResponse } from './utils';
 const ACCOUNT_RATE_LIMIT_OPTIONS = { limit: 20, windowMs: 60 * 1000 } as const;
 const MAX_ACCOUNT_JSON_BODY_BYTES = 8 * 1024 * 1024;
 
+function createAccountRateLimitKey(parts: ReadonlyArray<string>) {
+	return JSON.stringify(parts);
+}
+
 export async function checkAccountFeatureResponse() {
 	const status = await getAccountFeatureStatus();
 
@@ -62,16 +66,18 @@ export function checkAccountRateLimitResponse(
 	usernameNormalized = ''
 ) {
 	const keys = [
-		[
+		createAccountRateLimitKey([
 			scope,
 			'request',
 			getRequestIp(request),
 			getRequestUserAgent(request),
-		].join(':'),
+		]),
 	];
 
 	if (usernameNormalized !== '') {
-		keys.push([scope, 'username', usernameNormalized].join(':'));
+		keys.push(
+			createAccountRateLimitKey([scope, 'username', usernameNormalized])
+		);
 	}
 
 	const result = keys

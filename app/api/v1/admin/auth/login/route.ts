@@ -47,6 +47,10 @@ export async function POST(request: NextRequest) {
 	}
 
 	const username = body.username.trim();
+	if (username === '' || body.password === '') {
+		return createNoStoreErrorResponse('invalid-object-structure', 400);
+	}
+
 	const usernameRateLimitKey = username.toLowerCase();
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,

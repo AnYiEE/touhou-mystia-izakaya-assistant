@@ -1,9 +1,30 @@
 let clientIdCounter = 0;
-const fallbackInstanceSeed = Math.random().toString(36).slice(2);
+let fallbackInstanceSeed: string | null = null;
 
 interface IAccountClientCrypto {
 	getRandomValues?: Crypto['getRandomValues'];
 	randomUUID?: Crypto['randomUUID'];
+}
+
+function createFallbackInstanceSeed() {
+	const timestamp = Date.now().toString(36);
+	const performanceComponent = (() => {
+		const { performance } = globalThis;
+		const timeOrigin = Number.isFinite(performance.timeOrigin)
+			? Math.floor(performance.timeOrigin * 1000)
+			: 0;
+		const now = Math.floor(performance.now() * 1000);
+
+		return `${timeOrigin.toString(36)}-${now.toString(36)}`;
+	})();
+
+	return `${timestamp}-${performanceComponent}`;
+}
+
+function getFallbackInstanceSeed() {
+	fallbackInstanceSeed ??= createFallbackInstanceSeed();
+
+	return fallbackInstanceSeed;
 }
 
 export function createAccountClientId() {
@@ -25,5 +46,5 @@ export function createAccountClientId() {
 
 	clientIdCounter = (clientIdCounter + 1) % Number.MAX_SAFE_INTEGER;
 
-	return `${Date.now().toString(36)}-${fallbackInstanceSeed}-${clientIdCounter.toString(36)}`;
+	return `${Date.now().toString(36)}-${getFallbackInstanceSeed()}-${clientIdCounter.toString(36)}`;
 }
