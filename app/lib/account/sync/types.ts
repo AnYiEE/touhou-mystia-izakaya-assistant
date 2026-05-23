@@ -109,7 +109,11 @@ export interface ISyncStatePutResponse {
 }
 
 export interface ISyncImportBackupCodeResponse {
-	results: Array<{ namespace: string; revision: number; status: 'ok' }>;
+	results: Array<{
+		namespace: TSyncNamespace;
+		revision: number;
+		status: 'ok';
+	}>;
 }
 
 export interface ISyncMergeParams<T> {

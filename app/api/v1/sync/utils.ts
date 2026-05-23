@@ -257,7 +257,7 @@ function validateSyncStateData(change: ISyncStateChange) {
 
 	return (
 		isPlainObject(change.data) &&
-		hasExactKeys(change.data, ['completed']) &&
+		'completed' in change.data &&
 		typeof change.data['completed'] === 'boolean'
 	);
 }

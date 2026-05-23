@@ -1,6 +1,10 @@
 /* eslint-disable sort-keys */
 import PACKAGE from '@/../package.json';
-import { checkEnvFlag, checkVercelEnv } from '@/lib/environment';
+import {
+	checkEnvFlag,
+	checkOfflineEnv,
+	checkVercelEnv,
+} from '@/lib/environment';
 import type { ILink, ISiteConfig, TNavItem } from './types';
 
 function getShortUrl(key: string) {
@@ -8,7 +12,7 @@ function getShortUrl(key: string) {
 }
 
 const { host: baseURL } = new URL(process.env.BASE_URL ?? PACKAGE.homepage);
-const isOffline = checkEnvFlag(process.env.OFFLINE);
+const isOffline = checkOfflineEnv(process.env.OFFLINE);
 const isSelfHosted = checkEnvFlag(process.env.SELF_HOSTED);
 const isVercel = checkVercelEnv(process.env.VERCEL);
 

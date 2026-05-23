@@ -56,36 +56,24 @@ export async function importPendingLegacyBackupCode(csrfToken: string) {
 export async function refreshAccountState() {
 	const previousUser = accountStore.shared.user.get();
 	const result = await fetchAccountMe();
-	const response = result as {
-		csrf_token?: string | null;
-		isLoggedIn?: boolean;
-		password_must_change?: boolean;
-		syncMeta?: typeof result.syncMeta;
-		user?: typeof result.user;
-	};
 	const {
 		csrf_token: csrfToken,
 		isLoggedIn: responseIsLoggedIn,
 		password_must_change: passwordMustChange,
 		syncMeta,
 		user,
-	} = response;
+	} = result;
 	let accountUser: NonNullable<typeof result.user> | null = null;
 	let accountCsrfToken: string | null = null;
 	let accountPasswordMustChange = false;
-	if (
-		responseIsLoggedIn === true &&
-		user !== null &&
-		user !== undefined &&
-		typeof csrfToken === 'string'
-	) {
+	if (responseIsLoggedIn) {
 		accountUser = user;
 		accountCsrfToken = csrfToken;
-		accountPasswordMustChange = passwordMustChange === true;
+		accountPasswordMustChange = passwordMustChange;
 	}
 
 	const isLoggedIn = accountUser !== null;
-	const accountSyncMeta = syncMeta ?? null;
+	const accountSyncMeta = syncMeta;
 	if (previousUser?.id !== accountUser?.id) {
 		resetAccountSyncRuntime();
 	}

@@ -103,6 +103,7 @@ export default function AdminUserDetailPage() {
 		if (admin !== null) {
 			setDetail(null);
 			setMessage(null);
+			setPassword('');
 			refreshDetail();
 		}
 	}, [admin, id, refreshDetail]);

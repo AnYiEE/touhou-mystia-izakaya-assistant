@@ -3,7 +3,11 @@ import { constants } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
-import { checkEnvFlag, checkVercelEnv } from '@/lib/environment';
+import {
+	checkEnvFlag,
+	checkOfflineEnv,
+	checkVercelEnv,
+} from '@/lib/environment';
 import { getSqliteDatabasePath } from '@/lib/db/constant';
 
 export const FEATURE_DISABLED_MESSAGE = 'feature-disabled';
@@ -22,7 +26,7 @@ export function checkAccountRuntimeEnabled() {
 	return (
 		checkEnvFlag(process.env.SELF_HOSTED) &&
 		!checkVercelEnv(process.env.VERCEL) &&
-		!checkEnvFlag(process.env.OFFLINE)
+		!checkOfflineEnv(process.env.OFFLINE)
 	);
 }
 

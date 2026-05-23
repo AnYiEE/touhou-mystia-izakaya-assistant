@@ -59,7 +59,7 @@ export const tutorialCustomerRareSerializer = {
 	validate(data): data is ITutorialCustomerRareSnapshot {
 		return (
 			isPlainObject(data) &&
-			Object.keys(data).length === 1 &&
+			'completed' in data &&
 			typeof data['completed'] === 'boolean'
 		);
 	},
