@@ -350,12 +350,19 @@ function checkRemoteStateCleared({
 	userId: string;
 }) {
 	const currentMeta = readAccountSyncMeta(userId);
+	if (records.length > 0) {
+		return false;
+	}
 
-	return (
-		records.length === 0 &&
-		(currentMeta?.clearedStateEpoch === stateEpoch ||
-			stateEpoch > (currentMeta?.state_epoch ?? 0))
-	);
+	if (stateEpoch > (currentMeta?.state_epoch ?? 0)) {
+		return true;
+	}
+
+	if (currentMeta?.clearedStateEpoch !== stateEpoch) {
+		return false;
+	}
+
+	return readDirtyQueueEntries(userId).length === 0;
 }
 
 function applyRemoteStatePreservingDirty({
@@ -493,6 +500,20 @@ export function resetAccountSyncCloudStateAfterDelete({
 	stateEpoch: number;
 	userId: string;
 }) {
+	const currentMeta = readAccountSyncMeta(userId);
+	const currentUser = accountStore.shared.user.get();
+	const latestKnownEpoch = Math.max(
+		currentMeta?.state_epoch ?? 0,
+		currentUser?.id === userId ? currentUser.state_epoch : 0
+	);
+	if (
+		stateEpoch < latestKnownEpoch ||
+		(currentMeta?.clearedStateEpoch !== undefined &&
+			stateEpoch <= currentMeta.clearedStateEpoch)
+	) {
+		return;
+	}
+
 	removeDirtyQueueEntries(userId);
 	writeAccountSyncMeta(userId, {
 		clearedStateEpoch: stateEpoch,
@@ -504,10 +525,7 @@ export function resetAccountSyncCloudStateAfterDelete({
 		conflicts.filter((conflict) => conflict.userId !== userId)
 	);
 	accountStore.shared.sync.pendingCount.set(0);
-	const user = accountStore.shared.user.get();
-	if (user?.id === userId) {
-		accountStore.shared.user.set({ ...user, state_epoch: stateEpoch });
-	}
+	setCurrentAccountUserStateEpoch(userId, stateEpoch);
 }
 
 function handleSuccessfulUpload({

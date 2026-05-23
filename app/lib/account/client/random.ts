@@ -1,4 +1,5 @@
 let clientIdCounter = 0;
+const fallbackInstanceSeed = Math.random().toString(36).slice(2);
 
 interface IAccountClientCrypto {
 	getRandomValues?: Crypto['getRandomValues'];
@@ -24,5 +25,5 @@ export function createAccountClientId() {
 
 	clientIdCounter = (clientIdCounter + 1) % Number.MAX_SAFE_INTEGER;
 
-	return `${Date.now().toString(36)}-${clientIdCounter.toString(36)}`;
+	return `${Date.now().toString(36)}-${fallbackInstanceSeed}-${clientIdCounter.toString(36)}`;
 }

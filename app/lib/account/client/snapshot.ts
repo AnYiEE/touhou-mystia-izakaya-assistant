@@ -114,6 +114,8 @@ export function applyRemoteAccountRecords({
 				};
 	if (records.length > 0) {
 		delete meta.clearedStateEpoch;
+	} else if (previousMeta?.clearedStateEpoch !== undefined) {
+		meta.clearedStateEpoch = previousMeta.clearedStateEpoch;
 	}
 
 	preserveNamespaces.forEach((namespace) => {
@@ -138,6 +140,9 @@ export function applyRemoteAccountRecords({
 		};
 	});
 	let appliedRecordCount = 0;
+	if (accountStore.shared.user.get()?.id !== userId) {
+		return meta;
+	}
 
 	try {
 		runWithApplyingRemoteState(() => {
