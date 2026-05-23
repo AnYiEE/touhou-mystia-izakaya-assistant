@@ -31,7 +31,11 @@ export const themeSerializer = {
 
 		return createMergeResult({ data: cloud, shouldUpload: false });
 	},
-	migrate(data) {
+	migrate(data, version) {
+		if (version !== 1) {
+			throw new Error('unsupported-theme-schema-version');
+		}
+
 		if (!this.validate(data)) {
 			throw new Error('invalid-theme');
 		}

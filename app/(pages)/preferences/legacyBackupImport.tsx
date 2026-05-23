@@ -53,6 +53,7 @@ export default function LegacyBackupImport() {
 								await takeOverLocalAccountData();
 							})
 								.then(() => {
+									setCode('');
 									setMessage('导入成功');
 								})
 								.catch((error: unknown) => {

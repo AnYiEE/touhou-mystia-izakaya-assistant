@@ -2,6 +2,7 @@ import { type NextRequest } from 'next/server';
 
 import {
 	checkAccountFeatureResponse,
+	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
 } from '@/api/v1/accountRouteUtils';
 import {
@@ -33,6 +34,14 @@ export async function GET(
 	const sameOriginResponse = checkSameOriginResponse(request);
 	if (sameOriginResponse !== null) {
 		return sameOriginResponse;
+	}
+
+	const rateLimitResponse = checkAccountRateLimitResponse(
+		request,
+		'admin-user-detail'
+	);
+	if (rateLimitResponse !== null) {
+		return rateLimitResponse;
 	}
 
 	const auth = authenticateAdminRequest(request);

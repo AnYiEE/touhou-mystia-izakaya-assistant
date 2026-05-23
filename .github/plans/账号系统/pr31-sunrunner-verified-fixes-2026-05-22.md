@@ -2,7 +2,7 @@
 
 - PR: https://github.com/AnYiEE/touhou-mystia-izakaya-assistant/pull/31
 - 范围：当前分支 `dev/account` 相对 `origin/master` 的差异
-- 原始审计记录：`.github/plans/pr31-sunrunner-raw-audit-2026-05-22.md`
+- 原始审计记录：`.github/plans/账号系统/pr31-sunrunner-raw-audit-2026-05-22.md`
 - 时间：2026-05-22
 
 ## 复核结论
