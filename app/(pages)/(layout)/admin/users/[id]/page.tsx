@@ -124,7 +124,7 @@ export default function AdminUserDetailPage() {
 			<div className="min-h-main-content space-y-4">
 				<Heading isFirst>用户管理</Heading>
 				<p className="text-sm text-foreground-500">
-					请先返回管理员页登录。
+					{message ?? '请先返回管理员页登录。'}
 				</p>
 				<Link href="/admin">返回管理员页</Link>
 			</div>
@@ -170,6 +170,7 @@ export default function AdminUserDetailPage() {
 		onSuccess?: () => void
 	) => {
 		const requestId = createDetailRequestId();
+		let requestSucceeded = false;
 		setIsLoading(true);
 		setMessage(null);
 		void action()
@@ -179,6 +180,7 @@ export default function AdminUserDetailPage() {
 				}
 				setMessage(success);
 				onSuccess?.();
+				requestSucceeded = true;
 				const data = await fetchAdminUser(id);
 				if (checkDetailRequestId(requestId)) {
 					setDetail(data);
@@ -192,6 +194,10 @@ export default function AdminUserDetailPage() {
 					clearAdminSession();
 					setAdmin(null);
 					setDetail(null);
+					if (requestSucceeded) {
+						setMessage(`${success}，管理员会话已失效`);
+						return;
+					}
 				}
 				setMessage(error instanceof Error ? error.message : '操作失败');
 			})

@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+
 import { Button, Modal } from '@/design/ui/components';
 import { accountStore } from '@/stores/account';
 import { resolveAccountSyncConflict } from '@/lib/account/client/conflict';
@@ -26,9 +28,16 @@ function ConflictPreview({ label, value }: { label: string; value: unknown }) {
 }
 
 export default function AccountConflictModal() {
+	const [portalContainer, setPortalContainer] = useState<Element | null>(
+		null
+	);
 	const conflicts = accountStore.shared.sync.conflicts.use();
 	const user = accountStore.shared.user.use();
 	const conflict = conflicts.find((item) => item.userId === user?.id);
+
+	useEffect(() => {
+		setPortalContainer(document.querySelector('#modal-portal-container'));
+	}, []);
 
 	if (conflict === undefined || user === null) {
 		return null;
@@ -42,7 +51,7 @@ export default function AccountConflictModal() {
 	return (
 		<Modal
 			isOpen
-			portalContainer={document.querySelector('#modal-portal-container')}
+			{...(portalContainer === null ? {} : { portalContainer })}
 		>
 			<div className="w-full max-w-3xl space-y-4">
 				<Heading as="h2" isFirst>

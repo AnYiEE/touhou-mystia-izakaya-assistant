@@ -9,7 +9,7 @@ import TimeAgo from '@/components/timeAgo';
 export default function AccountSyncStatus() {
 	const sync = accountStore.shared.sync.use();
 	const storageMode = getSafeStorageMode();
-	const canRetry = sync.canRetry || sync.failedAttempts >= 3;
+	const shouldEnableManualRetry = sync.canRetry || sync.failedAttempts >= 3;
 
 	return (
 		<div className="space-y-2 text-sm text-foreground-600">
@@ -39,7 +39,8 @@ export default function AccountSyncStatus() {
 			<Button
 				color="primary"
 				isDisabled={
-					sync.isSyncing || (sync.pendingCount === 0 && !canRetry)
+					sync.isSyncing ||
+					(sync.pendingCount === 0 && !shouldEnableManualRetry)
 				}
 				isLoading={sync.isSyncing}
 				variant="flat"

@@ -67,13 +67,23 @@ export function checkAccountRateLimitResponse(
 ) {
 	const keys: string[] = [];
 	const requestIp = getTrustedRequestIp(request);
+	const requestUserAgent = getRequestUserAgent(request);
 	if (requestIp !== null) {
 		keys.push(
 			createAccountRateLimitKey([
 				scope,
 				'request',
 				requestIp,
-				getRequestUserAgent(request),
+				requestUserAgent,
+			])
+		);
+	} else if (usernameNormalized === '') {
+		keys.push(
+			createAccountRateLimitKey([
+				scope,
+				'request',
+				'untrusted',
+				requestUserAgent,
 			])
 		);
 	}

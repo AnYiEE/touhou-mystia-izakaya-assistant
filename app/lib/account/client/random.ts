@@ -9,11 +9,16 @@ interface IAccountClientCrypto {
 function createFallbackInstanceSeed() {
 	const timestamp = Date.now().toString(36);
 	const performanceComponent = (() => {
-		const { performance } = globalThis;
-		const timeOrigin = Number.isFinite(performance.timeOrigin)
-			? Math.floor(performance.timeOrigin * 1000)
-			: 0;
-		const now = Math.floor(performance.now() * 1000);
+		const { performance } = globalThis as { performance?: Performance };
+		const rawTimeOrigin = performance?.timeOrigin;
+		const timeOrigin =
+			typeof rawTimeOrigin === 'number' && Number.isFinite(rawTimeOrigin)
+				? Math.floor(rawTimeOrigin * 1000)
+				: 0;
+		const now =
+			typeof performance?.now === 'function'
+				? Math.floor(performance.now() * 1000)
+				: 0;
 
 		return `${timeOrigin.toString(36)}-${now.toString(36)}`;
 	})();
