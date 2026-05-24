@@ -74,8 +74,8 @@ export async function POST(
 		return createNoStoreErrorResponse('user-deleted', 403);
 	}
 	if (user.status !== USER_STATUS_MAP.disabled) {
-		return createNoStoreErrorResponse('invalid-user-status', 400);
+		return createNoStoreErrorResponse('update-not-applied', 409);
 	}
 
-	return createNoStoreErrorResponse('invalid-user-status', 400);
+	return createNoStoreErrorResponse('update-not-applied', 409);
 }

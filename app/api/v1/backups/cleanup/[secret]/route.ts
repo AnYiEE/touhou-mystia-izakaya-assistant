@@ -141,10 +141,7 @@ export async function DELETE(
 					await deleteFile(code);
 					deletedFileCount++;
 				} catch (error) {
-					if (
-						error instanceof Error &&
-						error.message === 'backup-code-lock-lost'
-					) {
+					if (checkBackupCodeLockLostError(error)) {
 						throw error;
 					}
 					if (!checkBackupFileNotFoundError(error)) {
@@ -162,10 +159,7 @@ export async function DELETE(
 					await deleteRecord(code);
 					deletedRecordCount++;
 				} catch (error) {
-					if (
-						error instanceof Error &&
-						error.message === 'backup-code-lock-lost'
-					) {
+					if (checkBackupCodeLockLostError(error)) {
 						throw error;
 					}
 
@@ -192,10 +186,7 @@ export async function DELETE(
 					await deleteFile(code);
 					orphanDeletedCount++;
 				} catch (error) {
-					if (
-						error instanceof Error &&
-						error.message === 'backup-code-lock-lost'
-					) {
+					if (checkBackupCodeLockLostError(error)) {
 						throw error;
 					}
 

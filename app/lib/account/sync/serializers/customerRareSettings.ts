@@ -33,7 +33,13 @@ export const customerRareSettingsSerializer = {
 			}),
 		};
 	},
-	migrate(data) {
+	migrate(data, version) {
+		if (version !== 1) {
+			throw new Error(
+				'unsupported-customer-rare-settings-schema-version'
+			);
+		}
+
 		if (!this.validate(data)) {
 			throw new Error('invalid-customer-rare-settings');
 		}
