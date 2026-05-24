@@ -45,16 +45,9 @@ export function createNoStoreErrorResponse<T>(
 	status: number,
 	data?: T
 ) {
-	return NextResponse.json(
-		data === undefined
-			? ({ message, status: 'error' } satisfies IApiErrorResponse)
-			: ({
-					data,
-					message,
-					status: 'error',
-				} satisfies IApiErrorResponse<T>),
-		{ headers: NO_STORE_HEADERS, status }
-	);
+	return createErrorResponse(message, status, data, {
+		headers: NO_STORE_HEADERS,
+	});
 }
 
 export function handleOptionsRequest() {
