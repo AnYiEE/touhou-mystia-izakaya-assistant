@@ -78,5 +78,6 @@ export async function POST(
 		return createNoStoreErrorResponse('update-not-applied', 409);
 	}
 
+	// isUpdated === false 时 user.status 不可能为 active，此分支仅为类型完备性保留。
 	return createNoStoreErrorResponse('update-not-applied', 409);
 }

@@ -199,7 +199,11 @@ export default function AdminUserDetailPage() {
 						return;
 					}
 				}
-				setMessage(error instanceof Error ? error.message : '操作失败');
+				if (!requestSucceeded) {
+					setMessage(
+						error instanceof Error ? error.message : '操作失败'
+					);
+				}
 			})
 			.finally(() => {
 				if (checkDetailRequestId(requestId)) {
