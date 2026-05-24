@@ -14,7 +14,11 @@ interface IRateLimitBucket {
 	resetAt: number;
 }
 
+const MAX_RATE_LIMIT_BUCKETS = 10_000;
+const RATE_LIMIT_CLEANUP_INTERVAL_MS = 60 * 1000;
+
 const rateLimitBucketMap = new Map<string, IRateLimitBucket>();
+let lastRateLimitCleanupAt = 0;
 
 export function clearExpiredRateLimitBuckets(now = Date.now()) {
 	rateLimitBucketMap.forEach((bucket, key) => {
@@ -24,15 +28,62 @@ export function clearExpiredRateLimitBuckets(now = Date.now()) {
 	});
 }
 
+function ensureRateLimitBucketCapacity(now: number) {
+	if (now - lastRateLimitCleanupAt >= RATE_LIMIT_CLEANUP_INTERVAL_MS) {
+		clearExpiredRateLimitBuckets(now);
+		lastRateLimitCleanupAt = now;
+	}
+
+	if (rateLimitBucketMap.size < MAX_RATE_LIMIT_BUCKETS) {
+		return true;
+	}
+
+	clearExpiredRateLimitBuckets(now);
+	lastRateLimitCleanupAt = now;
+
+	return rateLimitBucketMap.size < MAX_RATE_LIMIT_BUCKETS;
+}
+
+function getNextRateLimitBucketResetAfter(now: number) {
+	let resetAt = Number.POSITIVE_INFINITY;
+	rateLimitBucketMap.forEach((bucket) => {
+		if (bucket.resetAt < resetAt) {
+			resetAt = bucket.resetAt;
+		}
+	});
+
+	return Number.isFinite(resetAt)
+		? Math.max(1, Math.ceil((resetAt - now) / 1000))
+		: 1;
+}
+
 export function checkRateLimit(
 	key: string,
 	{ limit, windowMs }: IRateLimitOptions,
 	now = Date.now()
 ): IRateLimitResult {
-	clearExpiredRateLimitBuckets(now);
+	if (!Number.isInteger(limit) || limit <= 0) {
+		throw new Error(
+			'Invalid rate limit option: limit must be a positive integer'
+		);
+	}
+	if (!Number.isInteger(windowMs) || windowMs <= 0) {
+		throw new Error(
+			'Invalid rate limit option: windowMs must be a positive integer'
+		);
+	}
+
 	const bucket = rateLimitBucketMap.get(key);
 
 	if (!bucket || bucket.resetAt <= now) {
+		if (!ensureRateLimitBucketCapacity(now)) {
+			return {
+				allowed: false,
+				remaining: 0,
+				retryAfter: getNextRateLimitBucketResetAfter(now),
+			};
+		}
+
 		rateLimitBucketMap.set(key, { count: 1, resetAt: now + windowMs });
 		return { allowed: true, remaining: limit - 1, retryAfter: 0 };
 	}

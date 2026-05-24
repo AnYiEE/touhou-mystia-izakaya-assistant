@@ -8,6 +8,7 @@ import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 } from '@/api/v1/utils';
+import { clearAdminSessionCookie } from '@/lib/account/server/admin';
 import { authenticateAdminRequest, checkAdminFeatureResponse } from '../utils';
 
 export const runtime = 'nodejs';
@@ -31,7 +32,12 @@ export async function GET(request: NextRequest) {
 
 	const auth = authenticateAdminRequest(request);
 	if (auth.status === 'error') {
-		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
+		const response = createNoStoreErrorResponse(
+			auth.message,
+			auth.httpStatus
+		);
+		clearAdminSessionCookie(response, request);
+		return response;
 	}
 
 	const adminModule = await import('@/lib/account/server/admin');

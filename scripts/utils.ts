@@ -2,11 +2,15 @@ import { exec } from 'node:child_process';
 import { env } from 'node:process';
 import { promisify } from 'node:util';
 
-import { checkEnvFlag, checkVercelEnv } from '../app/lib/environment';
+import {
+	checkEnvFlag,
+	checkOfflineEnv,
+	checkVercelEnv,
+} from '../app/lib/environment';
 
 const execAsync = promisify(exec);
 
-export const IS_OFFLINE = checkEnvFlag(env.OFFLINE);
+export const IS_OFFLINE = checkOfflineEnv(env.OFFLINE);
 export const IS_PRODUCTION = env.NODE_ENV === 'production';
 export const IS_SELF_HOSTED = checkEnvFlag(env.SELF_HOSTED);
 export const IS_VERCEL = checkVercelEnv(env.VERCEL);

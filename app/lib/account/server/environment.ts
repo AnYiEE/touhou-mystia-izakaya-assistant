@@ -1,10 +1,14 @@
-import { access, rm, writeFile } from 'node:fs/promises';
+import { access, rm, stat, writeFile } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
-import { checkEnvFlag, checkVercelEnv } from '@/lib/environment';
-import { DEFAULT_SQLITE_DATABASE_PATH } from '@/lib/db/constant';
+import {
+	checkEnvFlag,
+	checkOfflineEnv,
+	checkVercelEnv,
+} from '@/lib/environment';
+import { getSqliteDatabasePath } from '@/lib/db/constant';
 
 export const FEATURE_DISABLED_MESSAGE = 'feature-disabled';
 export const SERVER_MISCONFIGURED_MESSAGE = 'server-misconfigured';
@@ -22,7 +26,7 @@ export function checkAccountRuntimeEnabled() {
 	return (
 		checkEnvFlag(process.env.SELF_HOSTED) &&
 		!checkVercelEnv(process.env.VERCEL) &&
-		!checkEnvFlag(process.env.OFFLINE)
+		!checkOfflineEnv(process.env.OFFLINE)
 	);
 }
 
@@ -36,18 +40,32 @@ export function checkSessionSecret(
 }
 
 export async function checkSqliteDirectoryWritable(
-	databasePath = process.env.SQLITE_DATABASE_PATH ??
-		DEFAULT_SQLITE_DATABASE_PATH
+	databasePath = process.env.SQLITE_DATABASE_PATH
 ) {
-	const directory = dirname(resolve(databasePath));
+	const sqlitePath = resolve(getSqliteDatabasePath(databasePath));
+	const directory = dirname(sqlitePath);
 	const probePath = resolve(directory, `.sqlite-write-probe-${randomUUID()}`);
 
 	await access(directory, constants.R_OK | constants.W_OK);
+	try {
+		const sqliteStat = await stat(sqlitePath);
+		if (!sqliteStat.isFile()) {
+			throw new Error('sqlite-database-path-is-not-file');
+		}
+		await access(sqlitePath, constants.R_OK | constants.W_OK);
+		return;
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+			throw error;
+		}
+	}
 	await writeFile(probePath, 'ok');
 	await rm(probePath, { force: true });
 }
 
-export async function getAccountFeatureStatus(): Promise<IAccountFeatureStatus> {
+let accountFeatureStatusPromise: Promise<IAccountFeatureStatus> | null = null;
+
+async function resolveAccountFeatureStatus(): Promise<IAccountFeatureStatus> {
 	if (!checkAccountRuntimeEnabled()) {
 		return { enabled: false, reason: FEATURE_DISABLED_MESSAGE };
 	}
@@ -63,4 +81,14 @@ export async function getAccountFeatureStatus(): Promise<IAccountFeatureStatus> 
 	}
 
 	return { enabled: true, reason: null };
+}
+
+export function resetAccountFeatureStatusCache() {
+	accountFeatureStatusPromise = null;
+}
+
+export async function getAccountFeatureStatus(): Promise<IAccountFeatureStatus> {
+	accountFeatureStatusPromise ??= resolveAccountFeatureStatus();
+
+	return accountFeatureStatusPromise;
 }

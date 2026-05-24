@@ -17,7 +17,8 @@ export function readAccountJsonStorage<T>(key: string, fallback: T): T {
 	}
 
 	try {
-		return JSON.parse(value) as T;
+		const parsed = JSON.parse(value) as T | null;
+		return parsed ?? fallback;
 	} catch {
 		return fallback;
 	}

@@ -56,10 +56,17 @@ export async function POST(
 	}
 
 	const { id } = await params;
-	const [usersModule, sessionsModule] = await Promise.all([
-		import('@/actions/account/users'),
-		import('@/actions/account/sessions'),
-	]);
+	const usersModule = await import('@/actions/account/users');
+	const isUpdated = await usersModule.setUserStatusIfCurrentStatus(
+		id,
+		USER_STATUS_MAP.active,
+		USER_STATUS_MAP.disabled,
+		true
+	);
+	if (isUpdated) {
+		return createNoStoreJsonResponse({ message: 'user-disabled' });
+	}
+
 	const user = await usersModule.findUserById(id);
 	if (user === null) {
 		return createNoStoreErrorResponse('target-user-not-found', 404);
@@ -68,11 +75,9 @@ export async function POST(
 		return createNoStoreErrorResponse('user-deleted', 403);
 	}
 	if (user.status !== USER_STATUS_MAP.active) {
-		return createNoStoreErrorResponse('invalid-user-status', 400);
+		return createNoStoreErrorResponse('update-not-applied', 409);
 	}
 
-	await usersModule.setUserStatus(id, USER_STATUS_MAP.disabled);
-	await sessionsModule.deleteSessionsByUserId(id);
-
-	return createNoStoreJsonResponse({ message: 'user-disabled' });
+	// isUpdated === false 时 user.status 不可能为 active，此分支仅为类型完备性保留。
+	return createNoStoreErrorResponse('update-not-applied', 409);
 }

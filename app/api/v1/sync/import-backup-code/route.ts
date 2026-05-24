@@ -6,8 +6,19 @@ import {
 	compatibilityCustomerRareData,
 	deleteIndexProperty,
 } from '@/actions/backup/compatibility';
-import { deleteFile, getFile, getFileSize } from '@/actions/backup/file';
-import { withBackupCodeLock } from '@/actions/backup/lock';
+import {
+	checkBackupFileNotFoundError,
+	deleteFile,
+	getFile,
+	getFileSize,
+} from '@/actions/backup/file';
+import {
+	type IBackupCodeLockSignal,
+	checkBackupCodeLockLostError,
+	markBackupCodeLockCommitted,
+	throwIfBackupCodeLockLost,
+	withBackupCodeLock,
+} from '@/actions/backup/lock';
 import {
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
@@ -19,12 +30,22 @@ import {
 	createNoStoreJsonResponse,
 } from '@/api/v1/utils';
 import { MAX_DATA_SIZE } from '@/api/v1/backups/constants';
-import { SYNC_NAMESPACE_MAP } from '@/lib/account/sync';
+import { getLogSafeErrorCode, maskBackupCode } from '@/api/v1/backups/utils';
+import {
+	SYNC_NAMESPACE_MAP,
+	SYNC_SCHEMA_VERSION_MAP,
+	type TSyncNamespace,
+} from '@/lib/account/sync';
+import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import {
 	checkBeverageName,
 	validateMealRecipe,
 	validateMealSnapshot,
 } from '@/lib/account/sync/serializers/meals';
+import {
+	checkBeverageTag,
+	checkRecipeTag,
+} from '@/lib/account/sync/serializers/tags';
 import { isPlainObject } from '@/lib/account/sync/serializers/utils';
 import { TABLE_NAME_MAP } from '@/lib/db';
 import { type TDatabase, type TUserState } from '@/lib/db/types';
@@ -38,7 +59,75 @@ interface IImportBackupCodeBody {
 
 interface IImportNamespaceData {
 	data: Record<string, object[]>;
-	namespace: string;
+	namespace: TSyncNamespace;
+}
+
+interface IImportBackupResult {
+	namespace: TSyncNamespace;
+	revision: number;
+	status: 'ok';
+}
+
+const syncNamespaceSet = new Set<TSyncNamespace>(
+	Object.values(SYNC_NAMESPACE_MAP)
+);
+
+function checkSyncNamespaceValue(value: unknown): value is TSyncNamespace {
+	return (
+		typeof value === 'string' &&
+		syncNamespaceSet.has(value as TSyncNamespace)
+	);
+}
+
+function parseImportBackupResults(data: string) {
+	let parsedData: unknown;
+	try {
+		parsedData = JSON.parse(data);
+	} catch {
+		return null;
+	}
+
+	if (
+		!Array.isArray(parsedData) ||
+		!parsedData.every(
+			(item): item is IImportBackupResult =>
+				isPlainObject(item) &&
+				item['status'] === 'ok' &&
+				checkSyncNamespaceValue(item['namespace']) &&
+				typeof item['revision'] === 'number' &&
+				Number.isInteger(item['revision']) &&
+				item['revision'] >= 0
+		)
+	) {
+		return null;
+	}
+
+	return parsedData;
+}
+
+async function getBackupImportResult(
+	database: Kysely<TDatabase>,
+	userId: string,
+	code: string,
+	expectedStateEpoch: number
+) {
+	const record = await database
+		.selectFrom(TABLE_NAME_MAP.backupImportRecord)
+		.select(['results'])
+		.where('code', '=', code)
+		.where('user_id', '=', userId)
+		.where('state_epoch', '=', expectedStateEpoch)
+		.executeTakeFirst();
+	if (record === undefined) {
+		return null;
+	}
+
+	const results = parseImportBackupResults(record.results);
+	if (results === null) {
+		throw new Error('server-misconfigured');
+	}
+
+	return { results, status: 'already-imported' as const };
 }
 
 function normalizeMealRecipe(data: unknown) {
@@ -93,9 +182,9 @@ function validateCustomerRareMeal(
 		typeof data['hasMystiaCooker'] === 'boolean' &&
 		isPlainObject(data['order']) &&
 		(data['order']['beverageTag'] === null ||
-			typeof data['order']['beverageTag'] === 'string') &&
+			checkBeverageTag(data['order']['beverageTag'])) &&
 		(data['order']['recipeTag'] === null ||
-			typeof data['order']['recipeTag'] === 'string') &&
+			checkRecipeTag(data['order']['recipeTag'])) &&
 		validateMealRecipe(data['recipe'])
 	);
 }
@@ -238,8 +327,13 @@ function createMealSignature(meal: object) {
 	return JSON.stringify(sortJsonValue(meal));
 }
 
-function maskBackupCode(code: string) {
-	return `${code.slice(0, 8)}...${code.slice(-4)}`;
+function createMealSignatureCountMap(meals: object[]) {
+	return meals.reduce<Map<string, number>>((result, meal) => {
+		const signature = createMealSignature(meal);
+		result.set(signature, (result.get(signature) ?? 0) + 1);
+
+		return result;
+	}, new Map());
 }
 
 function mergeMealRecord(
@@ -250,14 +344,20 @@ function mergeMealRecord(
 
 	Object.entries(imported).forEach(([customerName, importedMeals]) => {
 		const cloudMeals = result[customerName] ?? [];
-		const signatureSet = new Set(cloudMeals.map(createMealSignature));
+		const signatureCountMap = createMealSignatureCountMap(cloudMeals);
 		const additions = importedMeals.filter((meal) => {
 			const signature = createMealSignature(meal);
-			if (signatureSet.has(signature)) {
+			const remainingCount = signatureCountMap.get(signature) ?? 0;
+			if (remainingCount > 0) {
+				if (remainingCount === 1) {
+					signatureCountMap.delete(signature);
+				} else {
+					signatureCountMap.set(signature, remainingCount - 1);
+				}
+
 				return false;
 			}
 
-			signatureSet.add(signature);
 			return true;
 		});
 
@@ -267,31 +367,157 @@ function mergeMealRecord(
 	return result;
 }
 
-function parseCloudMealRecord(record: TUserState | null) {
+function parseCloudMealRecord(
+	record: TUserState | null,
+	namespace: TSyncNamespace
+) {
 	if (record === null) {
 		return null;
 	}
+	if (record.schema_version !== SYNC_SCHEMA_VERSION_MAP[namespace]) {
+		throw new Error('server-misconfigured');
+	}
 
-	const data = JSON.parse(record.data);
+	let data: unknown;
+	try {
+		data = JSON.parse(record.data);
+	} catch {
+		throw new Error('server-misconfigured');
+	}
 	if (!checkMealRecord(data)) {
 		throw new Error('server-misconfigured');
 	}
 
-	return data;
+	const normalized = normalizeImportNamespaceData({ data, namespace });
+	if (normalized === null) {
+		throw new Error('server-misconfigured');
+	}
+
+	return normalized.data;
+}
+
+async function checkImportBackupDataPreconditions(
+	database: Kysely<TDatabase>,
+	userId: string,
+	code: string,
+	expectedStateEpoch: number,
+	signal: IBackupCodeLockSignal
+) {
+	throwIfBackupCodeLockLost(signal);
+
+	const user = await database
+		.selectFrom(TABLE_NAME_MAP.user)
+		.select(['state_epoch', 'status'])
+		.where('id', '=', userId)
+		.executeTakeFirst();
+	throwIfBackupCodeLockLost(signal);
+	if (user?.status !== USER_STATUS_MAP.active) {
+		throw new Error('unauthorized');
+	}
+
+	if (user.state_epoch !== expectedStateEpoch) {
+		return {
+			state_epoch: user.state_epoch,
+			status: 'state-epoch-mismatch' as const,
+		};
+	}
+
+	const backupRecord = await database
+		.selectFrom(TABLE_NAME_MAP.backupFileRecord)
+		.select('code')
+		.where('code', '=', code)
+		.executeTakeFirst();
+	throwIfBackupCodeLockLost(signal);
+
+	return backupRecord === undefined
+		? ((await getBackupImportResult(
+				database,
+				userId,
+				code,
+				expectedStateEpoch
+			)) ?? { status: 'not-found' as const })
+		: { status: 'ok' as const };
+}
+
+async function readImportBackupFile(
+	code: string,
+	signal: IBackupCodeLockSignal
+) {
+	let fileContent: string;
+	try {
+		if ((await getFileSize(code)) > MAX_DATA_SIZE) {
+			throw new Error('invalid-backup-file');
+		}
+		throwIfBackupCodeLockLost(signal);
+
+		fileContent = await getFile(code);
+		throwIfBackupCodeLockLost(signal);
+	} catch (error) {
+		if (
+			error instanceof Error &&
+			(error.message === 'invalid-backup-file' ||
+				error.message === 'backup-code-lock-lost')
+		) {
+			throw error;
+		}
+		if (checkBackupFileNotFoundError(error)) {
+			throw new Error('backup-code-not-found');
+		}
+		throw new Error('server-misconfigured');
+	}
+
+	let fileData: unknown;
+	try {
+		fileData = JSON.parse(fileContent);
+	} catch {
+		throw new Error('invalid-backup-file');
+	}
+
+	const namespaceData = normalizeBackupData(fileData)?.map(
+		normalizeImportNamespaceData
+	);
+	if (namespaceData === undefined || namespaceData.includes(null)) {
+		throw new Error('invalid-backup-file');
+	}
+
+	return namespaceData.filter(
+		(item): item is IImportNamespaceData => item !== null
+	);
 }
 
 async function importBackupData(
 	database: Kysely<TDatabase>,
 	userId: string,
 	code: string,
-	expectedStateEpoch: number
+	expectedStateEpoch: number,
+	signal: IBackupCodeLockSignal
 ) {
+	const preflightResult = await checkImportBackupDataPreconditions(
+		database,
+		userId,
+		code,
+		expectedStateEpoch,
+		signal
+	);
+	if (preflightResult.status !== 'ok') {
+		return preflightResult;
+	}
+
+	const importNamespaceData = await readImportBackupFile(code, signal);
+
 	return database.transaction().execute(async (trx) => {
+		throwIfBackupCodeLockLost(signal);
+
 		const user = await trx
 			.selectFrom(TABLE_NAME_MAP.user)
-			.select('state_epoch')
+			.select(['state_epoch', 'status'])
 			.where('id', '=', userId)
-			.executeTakeFirstOrThrow();
+			.executeTakeFirst();
+		throwIfBackupCodeLockLost(signal);
+		if (user?.status !== USER_STATUS_MAP.active) {
+			throw new Error('unauthorized');
+		}
+
 		if (user.state_epoch !== expectedStateEpoch) {
 			return {
 				state_epoch: user.state_epoch,
@@ -304,46 +530,23 @@ async function importBackupData(
 			.where('code', '=', code)
 			.returning('code')
 			.executeTakeFirst();
+		throwIfBackupCodeLockLost(signal);
+
 		if (backupRecord === undefined) {
-			return { status: 'not-found' as const };
+			return (
+				(await getBackupImportResult(
+					trx,
+					userId,
+					code,
+					expectedStateEpoch
+				)) ?? { status: 'not-found' as const }
+			);
 		}
 
-		let fileContent: string;
-		try {
-			if ((await getFileSize(code)) > MAX_DATA_SIZE) {
-				throw new Error('invalid-backup-file');
-			}
-
-			fileContent = await getFile(code);
-		} catch (error) {
-			if (
-				error instanceof Error &&
-				error.message === 'invalid-backup-file'
-			) {
-				throw error;
-			}
-			throw new Error('backup-code-not-found');
-		}
-
-		let fileData: unknown;
-		try {
-			fileData = JSON.parse(fileContent);
-		} catch {
-			throw new Error('invalid-backup-file');
-		}
-
-		const namespaceData = normalizeBackupData(fileData)?.map(
-			normalizeImportNamespaceData
-		);
-		if (namespaceData === undefined || namespaceData.includes(null)) {
-			throw new Error('invalid-backup-file');
-		}
-		const importNamespaceData = namespaceData.filter(
-			(item): item is IImportNamespaceData => item !== null
-		);
-
-		const results = [];
+		const results: IImportBackupResult[] = [];
 		for (const item of importNamespaceData) {
+			throwIfBackupCodeLockLost(signal);
+
 			const current = await trx
 				.selectFrom(TABLE_NAME_MAP.userState)
 				.selectAll()
@@ -353,7 +556,7 @@ async function importBackupData(
 			const revision = (current?.revision ?? 0) + 1;
 			const updatedAt = Date.now();
 			const mergedData = mergeMealRecord(
-				parseCloudMealRecord(current ?? null),
+				parseCloudMealRecord(current ?? null, item.namespace),
 				item.data
 			);
 
@@ -364,7 +567,7 @@ async function importBackupData(
 						data: JSON.stringify(mergedData),
 						namespace: item.namespace,
 						revision,
-						schema_version: 1,
+						schema_version: SYNC_SCHEMA_VERSION_MAP[item.namespace],
 						updated_at: updatedAt,
 						user_id: userId,
 					})
@@ -382,7 +585,7 @@ async function importBackupData(
 					.set({
 						data: JSON.stringify(mergedData),
 						revision,
-						schema_version: 1,
+						schema_version: SYNC_SCHEMA_VERSION_MAP[item.namespace],
 						updated_at: updatedAt,
 					})
 					.where('user_id', '=', userId)
@@ -401,6 +604,17 @@ async function importBackupData(
 				status: 'ok' as const,
 			});
 		}
+
+		await trx
+			.insertInto(TABLE_NAME_MAP.backupImportRecord)
+			.values({
+				code,
+				created_at: Date.now(),
+				results: JSON.stringify(results),
+				state_epoch: expectedStateEpoch,
+				user_id: userId,
+			})
+			.execute();
 
 		return { results, status: 'ok' as const };
 	});
@@ -443,52 +657,101 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
-	return withBackupCodeLock(code, async () => {
-		const database = await dbModule.getAccountDatabase();
-		let importResult;
-		try {
-			importResult = await importBackupData(
-				database,
-				auth.data.user.id,
-				code,
-				auth.data.user.state_epoch
-			);
-		} catch (error) {
-			if (
-				error instanceof Error &&
-				error.message === 'backup-code-not-found'
-			) {
+	try {
+		return await withBackupCodeLock(code, async (signal) => {
+			const database = await dbModule.getAccountDatabase();
+			let importResult;
+			try {
+				importResult = await importBackupData(
+					database,
+					auth.data.user.id,
+					code,
+					auth.data.user.state_epoch,
+					signal
+				);
+			} catch (error) {
+				if (
+					error instanceof Error &&
+					error.message === 'unauthorized'
+				) {
+					return createNoStoreErrorResponse('unauthorized', 401);
+				}
+				if (
+					error instanceof Error &&
+					error.message === 'backup-code-not-found'
+				) {
+					return createNoStoreErrorResponse(
+						'backup-code-not-found',
+						404
+					);
+				}
+				if (
+					error instanceof Error &&
+					error.message === 'invalid-backup-file'
+				) {
+					return createNoStoreErrorResponse(
+						'invalid-backup-file',
+						400
+					);
+				}
+				if (
+					error instanceof Error &&
+					error.message === 'server-misconfigured'
+				) {
+					return createNoStoreErrorResponse(
+						'server-misconfigured',
+						500
+					);
+				}
+				if (
+					error instanceof Error &&
+					error.message === 'sync-conflict'
+				) {
+					return createNoStoreErrorResponse('sync-conflict', 409);
+				}
+				if (
+					error instanceof Error &&
+					error.message === 'backup-code-lock-lost'
+				) {
+					return createNoStoreErrorResponse(
+						'backup-code-lock-lost',
+						409
+					);
+				}
+				throw error;
+			}
+			if (importResult.status === 'not-found') {
 				return createNoStoreErrorResponse('backup-code-not-found', 404);
 			}
-			if (
-				error instanceof Error &&
-				error.message === 'invalid-backup-file'
-			) {
-				return createNoStoreErrorResponse('invalid-backup-file', 400);
+			if (importResult.status === 'state-epoch-mismatch') {
+				return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
+					state_epoch: importResult.state_epoch,
+				});
 			}
-			if (error instanceof Error && error.message === 'sync-conflict') {
-				return createNoStoreErrorResponse('sync-conflict', 409);
+			if (importResult.status === 'already-imported') {
+				return createNoStoreJsonResponse({
+					results: importResult.results,
+				});
 			}
-			throw error;
-		}
-		if (importResult.status === 'not-found') {
-			return createNoStoreErrorResponse('backup-code-not-found', 404);
-		}
-		if (importResult.status === 'state-epoch-mismatch') {
-			return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
-				state_epoch: importResult.state_epoch,
-			});
+
+			markBackupCodeLockCommitted(signal);
+			try {
+				throwIfBackupCodeLockLost(signal);
+				await deleteFile(code);
+			} catch (error) {
+				console.warn('Failed to delete imported backup file', {
+					codeHash: maskBackupCode(code),
+					errorCode: getLogSafeErrorCode(error),
+				});
+			}
+
+			return createNoStoreJsonResponse({ results: importResult.results });
+		});
+	} catch (error) {
+		if (checkBackupCodeLockLostError(error)) {
+			return createNoStoreErrorResponse('backup-code-lock-lost', 409);
 		}
 
-		try {
-			await deleteFile(code);
-		} catch (error) {
-			console.warn('Failed to delete imported backup file', {
-				code: maskBackupCode(code),
-				error,
-			});
-		}
-
-		return createNoStoreJsonResponse({ results: importResult.results });
-	});
+		throw error;
+	}
 }

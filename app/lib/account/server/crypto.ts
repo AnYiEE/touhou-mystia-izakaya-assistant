@@ -25,6 +25,10 @@ export function createAccountHmac(domain: TAccountSecretDomain, value: string) {
 }
 
 export function checkFixedLengthEqual(left: string, right: string) {
+	if (left.length !== right.length) {
+		return false;
+	}
+
 	const leftBuffer = Buffer.from(left);
 	const rightBuffer = Buffer.from(right);
 

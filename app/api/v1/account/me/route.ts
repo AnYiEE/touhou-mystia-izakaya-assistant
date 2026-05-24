@@ -45,10 +45,14 @@ export async function GET(request: NextRequest) {
 
 		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
 	}
-	const namespaces = await userStateModule.listUserNamespaces(
+	const stateSnapshot = await userStateModule.getUserStateSnapshot(
 		auth.data.user.id
 	);
-	const revisions = namespaces.reduce<Record<string, number>>(
+	if (stateSnapshot === null) {
+		return createNoStoreErrorResponse('unauthorized', 401);
+	}
+
+	const revisions = stateSnapshot.state.reduce<Record<string, number>>(
 		(result, namespace) => {
 			result[namespace.namespace] = namespace.revision;
 			return result;
@@ -63,12 +67,12 @@ export async function GET(request: NextRequest) {
 		featureEnabled: true,
 		isLoggedIn: true,
 		password_must_change: auth.data.credential.password_must_change === 1,
-		state_epoch: auth.data.user.state_epoch,
+		state_epoch: stateSnapshot.user.state_epoch,
 		syncMeta: {
 			lastAppliedRemoteHash: {},
 			revisions,
-			state_epoch: auth.data.user.state_epoch,
+			state_epoch: stateSnapshot.user.state_epoch,
 		},
-		user: userModule.createAccountUserProfile(auth.data.user),
+		user: userModule.createAccountUserProfile(stateSnapshot.user),
 	} satisfies TAccountMeSuccessResponse);
 }

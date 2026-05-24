@@ -4,7 +4,9 @@ import { ACCOUNT_COOKIE_NAME_MAP } from '../shared/constants';
 import { createAccountHmac } from './crypto';
 
 export const SESSION_TOKEN_BYTE_LENGTH = 32;
-export const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 * 5;
+export const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 90;
+export const SESSION_ABSOLUTE_TIMEOUT_MS = SESSION_COOKIE_MAX_AGE * 1000;
+export const SESSION_IDLE_TIMEOUT_MS = 60 * 60 * 24 * 30 * 1000;
 export const ACCOUNT_SESSION_COOKIE_NAME = ACCOUNT_COOKIE_NAME_MAP.session;
 export const ADMIN_SESSION_COOKIE_NAME = ACCOUNT_COOKIE_NAME_MAP.adminSession;
 

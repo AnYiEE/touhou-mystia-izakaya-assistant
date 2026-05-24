@@ -18,6 +18,7 @@ import {
 	registerAccount,
 } from '@/lib/account/client/api';
 import { postAccountSyncBroadcastMessage } from '@/lib/account/client/broadcast';
+import { createAccountClientId } from '@/lib/account/client/random';
 import {
 	refreshAccountState,
 	resetAccountState,
@@ -32,6 +33,15 @@ import AccountSyncStatus from './accountSyncStatus';
 import LegacyBackupImport from './legacyBackupImport';
 
 type TAuthMode = 'login' | 'register';
+
+function handleUnauthorizedAccountError(error: unknown) {
+	if (error instanceof AccountApiError && error.status === 401) {
+		resetAccountState();
+		return true;
+	}
+
+	return false;
+}
 
 export default function AccountManager() {
 	const bootstrapStatus = accountStore.shared.bootstrapStatus.use();
@@ -48,6 +58,10 @@ export default function AccountManager() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const handleAuth = useCallback(() => {
+		if (isSubmitting) {
+			return;
+		}
+
 		setIsSubmitting(true);
 		setMessage(null);
 		const request = authMode === 'login' ? loginAccount : registerAccount;
@@ -63,10 +77,10 @@ export default function AccountManager() {
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [authMode, password, username]);
+	}, [authMode, isSubmitting, password, username]);
 
 	const handlePasswordChange = useCallback(() => {
-		if (csrfToken === null) {
+		if (csrfToken === null || isSubmitting) {
 			return;
 		}
 		setIsSubmitting(true);
@@ -82,18 +96,19 @@ export default function AccountManager() {
 				setMessage('密码已更新');
 			})
 			.catch((error: unknown) => {
+				if (handleUnauthorizedAccountError(error)) {
+					return;
+				}
+
 				setMessage(error instanceof Error ? error.message : '改密失败');
 			})
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [csrfToken, currentPassword, newPassword]);
-	const createClientOperationId = () =>
-		`${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-
+	}, [csrfToken, currentPassword, isSubmitting, newPassword]);
 	const logoutAfterFlush = useCallback(
 		(action: (csrfToken: string) => Promise<unknown>) => {
-			if (csrfToken === null) {
+			if (csrfToken === null || isSubmitting) {
 				return;
 			}
 
@@ -102,6 +117,11 @@ export default function AccountManager() {
 			void flushAccountSyncQueue()
 				.then((isFlushed) => {
 					if (!isFlushed) {
+						if (accountStore.shared.user.get() === null) {
+							resetAccountState();
+							return null;
+						}
+
 						const syncLastError =
 							accountStore.shared.sync.lastError.get();
 						if (syncLastError === 'unauthorized') {
@@ -136,8 +156,34 @@ export default function AccountManager() {
 					setIsSubmitting(false);
 				});
 		},
-		[csrfToken]
+		[csrfToken, isSubmitting]
 	);
+	const handleExport = useCallback(() => {
+		if (isSubmitting || user === null) {
+			return;
+		}
+
+		setIsSubmitting(true);
+		setMessage(null);
+		void exportAccountData()
+			.then((data) => {
+				downloadJson(
+					`mystia-account-${user.username}`,
+					JSON.stringify(data, null, 2)
+				);
+				setMessage('账号数据已导出');
+			})
+			.catch((error: unknown) => {
+				if (handleUnauthorizedAccountError(error)) {
+					return;
+				}
+
+				setMessage(error instanceof Error ? error.message : '导出失败');
+			})
+			.finally(() => {
+				setIsSubmitting(false);
+			});
+	}, [isSubmitting, user]);
 
 	if (bootstrapStatus === 'error') {
 		return (
@@ -243,28 +289,10 @@ export default function AccountManager() {
 							<LegacyBackupImport />
 							<div className="flex flex-wrap gap-2">
 								<Button
+									isDisabled={isSubmitting}
+									isLoading={isSubmitting}
 									variant="flat"
-									onPress={() => {
-										void exportAccountData()
-											.then((data) => {
-												downloadJson(
-													`mystia-account-${user.username}`,
-													JSON.stringify(
-														data,
-														null,
-														2
-													)
-												);
-												setMessage('账号数据已导出');
-											})
-											.catch((error: unknown) => {
-												setMessage(
-													error instanceof Error
-														? error.message
-														: '导出失败'
-												);
-											});
-									}}
+									onPress={handleExport}
 								>
 									导出账号数据
 								</Button>
@@ -288,9 +316,14 @@ export default function AccountManager() {
 								</Button>
 								<Button
 									color="warning"
+									isDisabled={isSubmitting}
+									isLoading={isSubmitting}
 									variant="flat"
 									onPress={() => {
-										if (csrfToken === null) {
+										if (
+											csrfToken === null ||
+											isSubmitting
+										) {
 											return;
 										}
 										if (
@@ -300,6 +333,8 @@ export default function AccountManager() {
 										) {
 											return;
 										}
+										setIsSubmitting(true);
+										setMessage(null);
 										void deleteAccountData(csrfToken)
 											.then(({ state_epoch }) => {
 												resetAccountSyncCloudStateAfterDelete(
@@ -312,13 +347,14 @@ export default function AccountManager() {
 													{
 														namespaces: [],
 														operationId:
-															createClientOperationId(),
+															createAccountClientId(),
 														state_epoch,
 														tabId: 'local',
 														type: 'data-deleted',
 														userId: user.id,
 													}
 												);
+												setMessage('云端数据已清空');
 											})
 											.catch((error: unknown) => {
 												if (
@@ -334,6 +370,9 @@ export default function AccountManager() {
 														? error.message
 														: '清空云端数据失败'
 												);
+											})
+											.finally(() => {
+												setIsSubmitting(false);
 											});
 									}}
 								>
@@ -341,9 +380,14 @@ export default function AccountManager() {
 								</Button>
 								<Button
 									color="danger"
+									isDisabled={isSubmitting}
+									isLoading={isSubmitting}
 									variant="flat"
 									onPress={() => {
-										if (csrfToken === null) {
+										if (
+											csrfToken === null ||
+											isSubmitting
+										) {
 											return;
 										}
 										if (
@@ -353,6 +397,8 @@ export default function AccountManager() {
 										) {
 											return;
 										}
+										setIsSubmitting(true);
+										setMessage(null);
 										void deleteAccount(csrfToken)
 											.then(resetAccountState)
 											.catch((error: unknown) => {
@@ -369,6 +415,9 @@ export default function AccountManager() {
 														? error.message
 														: '删除账号失败'
 												);
+											})
+											.finally(() => {
+												setIsSubmitting(false);
 											});
 									}}
 								>

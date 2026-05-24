@@ -2,10 +2,17 @@ import { type NextRequest } from 'next/server';
 import { v7 as uuid, validate } from 'uuid';
 
 import {
+	checkBackupCodeLockLostError,
+	checkBackupFileNotFoundError,
 	checkIpFrequency,
+	deleteFile,
+	getFile,
+	getFileIdentity,
 	getRecord,
+	markBackupCodeLockCommitted,
 	saveFile,
 	setRecord,
+	throwIfBackupCodeLockLost,
 	updateRecord,
 	withBackupCodeLock,
 } from '@/actions/backup';
@@ -18,16 +25,45 @@ import {
 import { FILE_TYPE_JSON } from '@/utilities';
 import { FREQUENCY_TTL, MAX_DATA_SIZE } from './constants';
 import type { IBackupUploadBody, IBackupUploadSuccessResponse } from './types';
-import { getRequestMeta } from './utils';
+import { getLogSafeErrorCode, getRequestMeta, maskBackupCode } from './utils';
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
 	return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
+function normalizeMediaType(contentType: string | null) {
+	return contentType?.split(';', 1).at(0)?.trim().toLowerCase() ?? null;
+}
+
+async function restoreBackupFile({
+	code,
+	codeHash,
+	hadPreviousFile,
+	previousFileContent,
+}: {
+	code: string;
+	codeHash: string;
+	hadPreviousFile: boolean;
+	previousFileContent: string | null;
+}) {
+	try {
+		await (hadPreviousFile && previousFileContent !== null
+			? saveFile(code, previousFileContent)
+			: deleteFile(code));
+	} catch (restoreError) {
+		if (!checkBackupFileNotFoundError(restoreError)) {
+			console.warn('Failed to restore backup file', {
+				codeHash,
+				errorCode: getLogSafeErrorCode(restoreError),
+			});
+		}
+	}
+}
+
 export async function POST(request: NextRequest) {
 	const { contentType, ip, ua } = getRequestMeta(request);
 
-	if (contentType !== FILE_TYPE_JSON) {
+	if (normalizeMediaType(contentType) !== FILE_TYPE_JSON) {
 		return createNoStoreErrorResponse('Invalid content type', 400);
 	}
 	if (ip === null) {
@@ -48,8 +84,11 @@ export async function POST(request: NextRequest) {
 		!isPlainObject(backupData) ||
 		!('customer_normal' in backupData) ||
 		!('customer_rare' in backupData) ||
+		!isPlainObject(backupData.customer_normal) ||
+		!isPlainObject(backupData.customer_rare) ||
 		!('user_id' in json) ||
-		(typeof rawUserId !== 'string' && rawUserId !== null)
+		(typeof rawUserId !== 'string' && rawUserId !== null) ||
+		('code' in json && json.code !== null && typeof json.code !== 'string')
 	) {
 		return createNoStoreErrorResponse('Invalid object structure', 400);
 	}
@@ -86,36 +125,195 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('Requests are too frequent', 429);
 	}
 
-	return withBackupCodeLock(code, async () => {
-		try {
-			await saveFile(code, jsonString);
-		} catch {
-			return createNoStoreErrorResponse('Failed to save file', 500);
+	try {
+		return await withBackupCodeLock(code, async (signal) => {
+			const codeHash = maskBackupCode(code);
+			const record = await getRecord(code);
+			throwIfBackupCodeLockLost(signal);
+
+			let previousFileContent: string | null = null;
+			let hadPreviousFile = false;
+
+			if (record.status === 200) {
+				try {
+					previousFileContent = await getFile(code);
+					throwIfBackupCodeLockLost(signal);
+					hadPreviousFile = true;
+				} catch (error) {
+					if (checkBackupCodeLockLostError(error)) {
+						return createNoStoreErrorResponse(
+							'backup-code-lock-lost',
+							409
+						);
+					}
+
+					if (!checkBackupFileNotFoundError(error)) {
+						return createNoStoreErrorResponse(
+							'Failed to read file',
+							500
+						);
+					}
+				}
+			}
+
+			let writtenFileIdentity: string;
+			try {
+				throwIfBackupCodeLockLost(signal);
+			} catch (error) {
+				if (checkBackupCodeLockLostError(error)) {
+					return createNoStoreErrorResponse(
+						'backup-code-lock-lost',
+						409
+					);
+				}
+
+				throw error;
+			}
+			try {
+				await saveFile(code, jsonString);
+			} catch {
+				return createNoStoreErrorResponse('Failed to save file', 500);
+			}
+			try {
+				throwIfBackupCodeLockLost(signal);
+			} catch (error) {
+				if (checkBackupCodeLockLostError(error)) {
+					await restoreBackupFile({
+						code,
+						codeHash,
+						hadPreviousFile,
+						previousFileContent,
+					});
+					return createNoStoreErrorResponse(
+						'backup-code-lock-lost',
+						409
+					);
+				}
+
+				throw error;
+			}
+
+			try {
+				writtenFileIdentity = await getFileIdentity(code);
+				throwIfBackupCodeLockLost(signal);
+			} catch (error) {
+				if (checkBackupCodeLockLostError(error)) {
+					await restoreBackupFile({
+						code,
+						codeHash,
+						hadPreviousFile,
+						previousFileContent,
+					});
+					return createNoStoreErrorResponse(
+						'backup-code-lock-lost',
+						409
+					);
+				}
+
+				await restoreBackupFile({
+					code,
+					codeHash,
+					hadPreviousFile,
+					previousFileContent,
+				});
+				console.warn('Failed to identify backup file', {
+					codeHash,
+					errorCode: getLogSafeErrorCode(error),
+				});
+
+				return createNoStoreErrorResponse('Failed to save file', 500);
+			}
+
+			try {
+				throwIfBackupCodeLockLost(signal);
+			} catch (error) {
+				if (checkBackupCodeLockLostError(error)) {
+					try {
+						const currentFileIdentity = await getFileIdentity(code);
+						if (currentFileIdentity === writtenFileIdentity) {
+							await restoreBackupFile({
+								code,
+								codeHash,
+								hadPreviousFile,
+								previousFileContent,
+							});
+						}
+					} catch (restoreError) {
+						if (!checkBackupFileNotFoundError(restoreError)) {
+							console.warn('Failed to restore backup file', {
+								codeHash,
+								errorCode: getLogSafeErrorCode(restoreError),
+							});
+						}
+					}
+
+					return createNoStoreErrorResponse(
+						'backup-code-lock-lost',
+						409
+					);
+				}
+
+				throw error;
+			}
+
+			try {
+				const nextRecord = await (record.status === 404
+					? setRecord({
+							code,
+							created_at: now,
+							ip_address: ip,
+							last_accessed: -1,
+							user_agent: ua,
+							user_id: userId,
+						})
+					: updateRecord(code, {
+							created_at: now,
+							ip_address: ip,
+							last_accessed: -1,
+							user_agent: ua,
+							user_id: userId,
+						}));
+
+				if (nextRecord.status !== 200) {
+					throw new Error('Failed to save record');
+				}
+				markBackupCodeLockCommitted(signal);
+			} catch (error) {
+				try {
+					const currentFileIdentity = await getFileIdentity(code);
+					if (currentFileIdentity === writtenFileIdentity) {
+						await (hadPreviousFile && previousFileContent !== null
+							? saveFile(code, previousFileContent)
+							: deleteFile(code));
+					}
+				} catch (restoreError) {
+					if (!checkBackupFileNotFoundError(restoreError)) {
+						console.warn('Failed to restore backup file', {
+							codeHash,
+							errorCode: getLogSafeErrorCode(restoreError),
+						});
+					}
+				}
+
+				console.warn('Failed to save backup record', {
+					codeHash,
+					errorCode: getLogSafeErrorCode(error),
+				});
+
+				return createNoStoreErrorResponse('Failed to save record', 500);
+			}
+
+			return createNoStoreJsonResponse({
+				code,
+			} satisfies IBackupUploadSuccessResponse);
+		});
+	} catch (error) {
+		if (checkBackupCodeLockLostError(error)) {
+			return createNoStoreErrorResponse('backup-code-lock-lost', 409);
 		}
 
-		const record = await getRecord(code);
-
-		await (record.status === 404
-			? setRecord({
-					code,
-					created_at: now,
-					ip_address: ip,
-					last_accessed: -1,
-					user_agent: ua,
-					user_id: userId,
-				})
-			: updateRecord(code, {
-					created_at: now,
-					ip_address: ip,
-					last_accessed: -1,
-					user_agent: ua,
-					user_id: userId,
-				}));
-
-		return createNoStoreJsonResponse({
-			code,
-		} satisfies IBackupUploadSuccessResponse);
-	});
+		throw error;
+	}
 }
 
 export function OPTIONS() {

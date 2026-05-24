@@ -32,10 +32,16 @@ const serializers = {
 	[SYNC_NAMESPACE_MAP.tutorialCustomerRare]: tutorialCustomerRareSerializer,
 } as const satisfies Record<TSyncNamespace, ISyncNamespaceSerializer<unknown>>;
 
-export function getAccountSyncSerializer(namespace: TSyncNamespace) {
-	return serializers[
-		namespace
-	] as unknown as ISyncNamespaceSerializer<unknown>;
+export function getAccountSyncSerializer(namespace: string) {
+	const serializerMap: Partial<
+		Record<string, ISyncNamespaceSerializer<unknown>>
+	> = serializers;
+	const serializer = serializerMap[namespace];
+	if (serializer === undefined) {
+		throw new Error(`unsupported-sync-namespace:${namespace}`);
+	}
+
+	return serializer;
 }
 
 export function getAccountSyncSerializers() {
@@ -72,7 +78,9 @@ export function readAccountSyncMeta(userId: string) {
 
 export function writeAccountSyncMeta(userId: string, meta: IAccountSyncMeta) {
 	writeAccountJsonStorage(createAccountSyncMetaStorageKey(userId), meta);
-	accountStore.shared.sync.meta.set(meta);
+	if (accountStore.shared.user.get()?.id === userId) {
+		accountStore.shared.sync.meta.set(meta);
+	}
 }
 
 export function applyRemoteAccountRecords({
@@ -106,6 +114,8 @@ export function applyRemoteAccountRecords({
 				};
 	if (records.length > 0) {
 		delete meta.clearedStateEpoch;
+	} else if (previousMeta?.clearedStateEpoch !== undefined) {
+		meta.clearedStateEpoch = previousMeta.clearedStateEpoch;
 	}
 
 	preserveNamespaces.forEach((namespace) => {
@@ -118,17 +128,59 @@ export function applyRemoteAccountRecords({
 		}
 	});
 
-	runWithApplyingRemoteState(() => {
-		records.forEach((record) => {
-			const serializer = getAccountSyncSerializer(record.namespace);
-			const data = serializer.migrate(record.data, record.schema_version);
+	if (accountStore.shared.user.get()?.id !== userId) {
+		return meta;
+	}
 
-			serializer.setLocalSnapshot(data);
-			meta.lastAppliedRemoteHash[record.namespace] =
-				createSnapshotHash(data);
-			meta.revisions[record.namespace] = record.revision;
-		});
+	const preparedRecords = records.map((record) => {
+		const serializer = getAccountSyncSerializer(record.namespace);
+		const data = serializer.migrate(record.data, record.schema_version);
+
+		return {
+			data,
+			namespace: record.namespace,
+			revision: record.revision,
+			serializer,
+		};
 	});
+	let appliedRecordCount = 0;
+	if (accountStore.shared.user.get()?.id !== userId) {
+		return meta;
+	}
+
+	try {
+		runWithApplyingRemoteState(() => {
+			preparedRecords.forEach((record) => {
+				record.serializer.setLocalSnapshot(record.data);
+				meta.lastAppliedRemoteHash[record.namespace] =
+					createSnapshotHash(record.serializer.getLocalSnapshot());
+				meta.revisions[record.namespace] = record.revision;
+				appliedRecordCount += 1;
+			});
+		});
+	} catch (error) {
+		if (appliedRecordCount > 0) {
+			const partialMeta: IAccountSyncMeta = {
+				...meta,
+				lastAppliedRemoteHash: { ...meta.lastAppliedRemoteHash },
+				revisions: { ...meta.revisions },
+				state_epoch: previousMeta?.state_epoch ?? 0,
+			};
+			if (previousMeta?.clearedStateEpoch !== undefined) {
+				partialMeta.clearedStateEpoch = previousMeta.clearedStateEpoch;
+			}
+			try {
+				writeAccountSyncMeta(userId, partialMeta);
+			} catch (writeError) {
+				console.warn(
+					'Failed to persist partially applied account sync meta.',
+					writeError
+				);
+			}
+		}
+
+		throw error;
+	}
 
 	writeAccountSyncMeta(userId, meta);
 

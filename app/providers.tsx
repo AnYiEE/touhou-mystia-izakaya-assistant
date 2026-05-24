@@ -22,6 +22,7 @@ import { bootstrapAccount } from '@/lib/account/client/bootstrap';
 import { startAccountStoreSyncWatchers } from '@/lib/account/client/doubleWrite';
 import { startAccountSyncClient } from '@/lib/account/client/syncClient';
 import {
+	accountStore,
 	beveragesStore,
 	clothesStore,
 	cookersStore,
@@ -191,11 +192,19 @@ export default function Providers({
 			toSet(globalHiddenRecipes)
 		);
 
-		startAccountStoreSyncWatchers();
-		void bootstrapAccount();
+		const stopAccountStoreSyncWatchers = startAccountStoreSyncWatchers();
+		void bootstrapAccount().catch((error: unknown) => {
+			console.error('Account bootstrap failed.', error);
+			accountStore.shared.bootstrapStatus.set('error');
+			accountStore.shared.isBootstrapped.set(true);
+			accountStore.shared.sync.lastError.set('bootstrap-failed');
+		});
 		const stopAccountSyncClient = startAccountSyncClient();
 
-		return stopAccountSyncClient;
+		return () => {
+			stopAccountStoreSyncWatchers();
+			stopAccountSyncClient();
+		};
 	}, []);
 
 	const router = useRouter();

@@ -63,6 +63,7 @@ export default function CustomerRareTutorial() {
 	const RECIPE_POSITION =
 		'[role="tabpanel"] tbody>tr[data-key="香炸蝉蜕"]>:last-child button';
 
+	const shouldSkipCompletionOnDestroy = useRef(false);
 	const driverRef = useRef(
 		driver({
 			allowClose: false,
@@ -72,6 +73,11 @@ export default function CustomerRareTutorial() {
 			showProgress: true,
 
 			onDestroyed() {
+				if (shouldSkipCompletionOnDestroy.current) {
+					shouldSkipCompletionOnDestroy.current = false;
+					return;
+				}
+
 				if (location.pathname.startsWith(pathname)) {
 					globalStore.persistence.dirver.set((prev) => {
 						prev.push(key);
@@ -320,9 +326,19 @@ export default function CustomerRareTutorial() {
 	useEffect(() => {
 		let handler: ReturnType<typeof setTimeout> | undefined;
 
+		if (hasBlockingAccountModal) {
+			if (driverRef.current.isActive()) {
+				shouldSkipCompletionOnDestroy.current = true;
+				driverRef.current.destroy();
+			}
+
+			return () => {
+				clearTimeout(handler);
+			};
+		}
+
 		if (
 			accountBootstrapStatus !== 'unknown' &&
-			!hasBlockingAccountModal &&
 			isTargetPage &&
 			!isCompleted &&
 			!driverRef.current.isActive()

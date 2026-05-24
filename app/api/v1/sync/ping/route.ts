@@ -75,31 +75,63 @@ export async function POST(request: NextRequest) {
 	}
 
 	const results: TSyncStatePutResult[] = [];
-	for (const change of parsedBody.changes) {
+	const preparedChanges = parsedBody.changes.map((change) => {
+		const nextRevision = change.revision + 1;
 		const record = createUserStateRecord(
 			auth.data.user.id,
 			change,
-			change.revision + 1,
+			nextRevision,
 			Date.now()
 		);
 		if (record === null) {
-			results.push({
-				message: 'invalid-json-data',
-				namespace: change.namespace,
-				status: 'error',
-			});
+			return {
+				result: {
+					message: 'invalid-json-data',
+					namespace: change.namespace,
+					status: 'error',
+				} satisfies TSyncStatePutResult,
+				status: 'error' as const,
+			};
+		}
+
+		return { change, record, status: 'ready' as const };
+	});
+	const readyChanges = preparedChanges.filter(
+		(
+			change
+		): change is Extract<
+			(typeof preparedChanges)[number],
+			{ status: 'ready' }
+		> => change.status === 'ready'
+	);
+	const writeResult = await userStateModule.putUserStateEntriesIfRevision(
+		readyChanges.map((change) => ({
+			entry: change.record,
+			expectedRevision: change.change.revision,
+		})),
+		parsedBody.state_epoch
+	);
+	if (writeResult.status === 'state-epoch-mismatch') {
+		return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
+			state_epoch: writeResult.state_epoch,
+		});
+	}
+
+	let writeResultIndex = 0;
+	for (const preparedChange of preparedChanges) {
+		if (preparedChange.status === 'error') {
+			results.push(preparedChange.result);
 			continue;
 		}
 
-		const result = await userStateModule.putUserStateEntryIfRevision(
-			record,
-			change.revision,
-			parsedBody.state_epoch
-		);
-		if (result.status === 'state-epoch-mismatch') {
-			return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
-				state_epoch: result.state_epoch,
+		const result = writeResult.results[writeResultIndex++];
+		if (result === undefined) {
+			results.push({
+				message: 'invalid-json-data',
+				namespace: preparedChange.change.namespace,
+				status: 'error',
 			});
+			continue;
 		}
 		if (result.status === 'conflict') {
 			results.push({
@@ -107,7 +139,7 @@ export async function POST(request: NextRequest) {
 					result.current === null
 						? null
 						: parseUserStateData(result.current.data),
-				namespace: change.namespace,
+				namespace: preparedChange.change.namespace,
 				revision: result.current?.revision ?? 0,
 				status: 'conflict',
 				updated_at: result.current?.updated_at ?? 0,
@@ -116,10 +148,10 @@ export async function POST(request: NextRequest) {
 		}
 
 		results.push({
-			namespace: change.namespace,
-			revision: change.revision + 1,
+			namespace: preparedChange.change.namespace,
+			revision: result.entry.revision,
 			status: 'ok',
-			updated_at: record.updated_at,
+			updated_at: result.entry.updated_at,
 		});
 	}
 

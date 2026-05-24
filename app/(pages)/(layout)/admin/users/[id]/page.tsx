@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Input } from '@heroui/input';
 import { useParams } from 'next/navigation';
@@ -35,13 +35,32 @@ export default function AdminUserDetailPage() {
 	const [detail, setDetail] = useState<IAdminUserDetailData | null>(null);
 	const [message, setMessage] = useState<string | null>(null);
 	const [password, setPassword] = useState('');
+	const [isAuthLoading, setIsAuthLoading] = useState(true);
 	const [isLoading, setIsLoading] = useState(false);
+	const detailRequestIdRef = useRef(0);
+
+	const createDetailRequestId = useCallback(() => {
+		detailRequestIdRef.current += 1;
+		return detailRequestIdRef.current;
+	}, []);
+	const checkDetailRequestId = useCallback(
+		(requestId: number) => detailRequestIdRef.current === requestId,
+		[]
+	);
 
 	const refreshDetail = useCallback(() => {
+		const requestId = createDetailRequestId();
 		setIsLoading(true);
 		void fetchAdminUser(id)
-			.then(setDetail)
+			.then((data) => {
+				if (checkDetailRequestId(requestId)) {
+					setDetail(data);
+				}
+			})
 			.catch((error: unknown) => {
+				if (!checkDetailRequestId(requestId)) {
+					return;
+				}
 				if (checkAdminSessionUnauthorized(error)) {
 					clearAdminSession();
 					setAdmin(null);
@@ -52,9 +71,18 @@ export default function AdminUserDetailPage() {
 				);
 			})
 			.finally(() => {
-				setIsLoading(false);
+				if (checkDetailRequestId(requestId)) {
+					setIsLoading(false);
+				}
 			});
-	}, [id]);
+	}, [checkDetailRequestId, createDetailRequestId, id]);
+
+	useEffect(
+		() => () => {
+			detailRequestIdRef.current += 1;
+		},
+		[]
+	);
 
 	useEffect(() => {
 		void fetchAdminMe()
@@ -65,21 +93,38 @@ export default function AdminUserDetailPage() {
 			.catch(() => {
 				clearAdminSession();
 				setAdmin(null);
+			})
+			.finally(() => {
+				setIsAuthLoading(false);
 			});
 	}, []);
 
 	useEffect(() => {
 		if (admin !== null) {
+			setDetail(null);
+			setMessage(null);
+			setPassword('');
 			refreshDetail();
 		}
-	}, [admin, refreshDetail]);
+	}, [admin, id, refreshDetail]);
+
+	if (isAuthLoading) {
+		return (
+			<div className="min-h-main-content space-y-4">
+				<Heading isFirst>用户管理</Heading>
+				<Button isLoading variant="flat">
+					加载中
+				</Button>
+			</div>
+		);
+	}
 
 	if (admin === null) {
 		return (
 			<div className="min-h-main-content space-y-4">
 				<Heading isFirst>用户管理</Heading>
 				<p className="text-sm text-foreground-500">
-					请先返回管理员页登录。
+					{message ?? '请先返回管理员页登录。'}
 				</p>
 				<Link href="/admin">返回管理员页</Link>
 			</div>
@@ -104,6 +149,17 @@ export default function AdminUserDetailPage() {
 		);
 	}
 
+	if (detail.user.id !== id) {
+		return (
+			<div className="min-h-main-content space-y-4">
+				<Heading isFirst>用户管理</Heading>
+				<Button isLoading={isLoading} variant="flat">
+					加载中
+				</Button>
+			</div>
+		);
+	}
+
 	const { namespaces, session_count: sessionCount, user } = detail;
 	const { csrf_token: adminCsrfToken } = admin;
 	const canDisableUser = user.status === 'active';
@@ -113,24 +169,46 @@ export default function AdminUserDetailPage() {
 		success: string,
 		onSuccess?: () => void
 	) => {
+		const requestId = createDetailRequestId();
+		let requestSucceeded = false;
 		setIsLoading(true);
 		setMessage(null);
 		void action()
 			.then(async () => {
+				if (!checkDetailRequestId(requestId)) {
+					return;
+				}
 				setMessage(success);
 				onSuccess?.();
-				await fetchAdminUser(id).then(setDetail);
+				requestSucceeded = true;
+				const data = await fetchAdminUser(id);
+				if (checkDetailRequestId(requestId)) {
+					setDetail(data);
+				}
 			})
 			.catch((error: unknown) => {
+				if (!checkDetailRequestId(requestId)) {
+					return;
+				}
 				if (checkAdminSessionUnauthorized(error)) {
 					clearAdminSession();
 					setAdmin(null);
 					setDetail(null);
+					if (requestSucceeded) {
+						setMessage(`${success}，管理员会话已失效`);
+						return;
+					}
 				}
-				setMessage(error instanceof Error ? error.message : '操作失败');
+				if (!requestSucceeded) {
+					setMessage(
+						error instanceof Error ? error.message : '操作失败'
+					);
+				}
 			})
 			.finally(() => {
-				setIsLoading(false);
+				if (checkDetailRequestId(requestId)) {
+					setIsLoading(false);
+				}
 			});
 	};
 

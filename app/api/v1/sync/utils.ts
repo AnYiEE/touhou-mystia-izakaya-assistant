@@ -1,3 +1,4 @@
+import { DLC_LABEL_MAP } from '@/data';
 import { type TUserStateNew } from '@/lib/db/types';
 import {
 	type ISyncStateChange,
@@ -13,6 +14,10 @@ import {
 	Ingredient,
 	Recipe,
 } from '@/utils';
+import {
+	checkBeverageTag,
+	checkRecipeTag,
+} from '@/lib/account/sync/serializers/tags';
 
 const SYNC_NAMESPACE_SET = new Set<TSyncNamespace>(
 	Object.values(SYNC_NAMESPACE_MAP)
@@ -27,6 +32,7 @@ const customerRareNames = new Set<string>(
 );
 const ingredientNames = new Set<string>(Ingredient.getInstance().getNames());
 const recipeNames = new Set<string>(Recipe.getInstance().getNames());
+const dlcKeys = new Set<string>(Object.keys(DLC_LABEL_MAP));
 const beverageColumnKeys = new Set([
 	'beverage',
 	'price',
@@ -60,6 +66,19 @@ function hasExactKeys(data: Record<string, unknown>, keys: string[]) {
 function isStringArray(data: unknown): data is string[] {
 	return (
 		Array.isArray(data) && data.every((item) => typeof item === 'string')
+	);
+}
+
+function isAllowedStringArray(data: unknown, values: Set<string>) {
+	return isStringArray(data) && data.every((item) => values.has(item));
+}
+
+function isIntegerInRange(data: unknown, min: number, max: number) {
+	return (
+		typeof data === 'number' &&
+		Number.isInteger(data) &&
+		data >= min &&
+		data <= max
 	);
 }
 
@@ -104,9 +123,9 @@ function validateCustomerRareMeal(data: unknown) {
 		isPlainObject(data['order']) &&
 		hasExactKeys(data['order'], ['beverageTag', 'recipeTag']) &&
 		(data['order']['beverageTag'] === null ||
-			typeof data['order']['beverageTag'] === 'string') &&
+			checkBeverageTag(data['order']['beverageTag'])) &&
 		(data['order']['recipeTag'] === null ||
-			typeof data['order']['recipeTag'] === 'string') &&
+			checkRecipeTag(data['order']['recipeTag'])) &&
 		validateMealRecipe(data['recipe'])
 	);
 }
@@ -177,26 +196,29 @@ function validateGlobalPreferences(data: unknown) {
 		]) &&
 		typeof data['customerCardTagsTooltip'] === 'boolean' &&
 		typeof data['famousShop'] === 'boolean' &&
-		isStringArray(hiddenItems['dlcs']) &&
+		isAllowedStringArray(hiddenItems['dlcs'], dlcKeys) &&
 		typeof data['highAppearance'] === 'boolean' &&
 		typeof popularTrend['isNegative'] === 'boolean' &&
 		(popularTrend['tag'] === null ||
 			typeof popularTrend['tag'] === 'string') &&
 		typeof suggestMeals['enabled'] === 'boolean' &&
 		(suggestMeals['maxExtraIngredients'] === null ||
-			typeof suggestMeals['maxExtraIngredients'] === 'number') &&
-		typeof suggestMeals['maxRating'] === 'number' &&
-		typeof suggestMeals['maxResults'] === 'number' &&
+			isIntegerInRange(suggestMeals['maxExtraIngredients'], 0, 4)) &&
+		isIntegerInRange(suggestMeals['maxRating'], 0, 4) &&
+		isIntegerInRange(suggestMeals['maxResults'], 1, 10) &&
 		isStringArray(tableColumns['beverage']) &&
 		tableColumns['beverage'].every((item) =>
 			beverageColumnKeys.has(item)
 		) &&
 		isStringArray(tableColumns['recipe']) &&
 		tableColumns['recipe'].every((item) => recipeColumnKeys.has(item)) &&
-		isStringArray(tableHiddenItems['beverages']) &&
-		isStringArray(tableHiddenItems['ingredients']) &&
-		isStringArray(tableHiddenItems['recipes']) &&
-		typeof table['row'] === 'number' &&
+		isAllowedStringArray(tableHiddenItems['beverages'], beverageNames) &&
+		isAllowedStringArray(
+			tableHiddenItems['ingredients'],
+			ingredientNames
+		) &&
+		isAllowedStringArray(tableHiddenItems['recipes'], recipeNames) &&
+		isIntegerInRange(table['row'], 5, 20) &&
 		typeof data['tachie'] === 'boolean' &&
 		typeof data['vibrate'] === 'boolean'
 	);
@@ -235,7 +257,7 @@ function validateSyncStateData(change: ISyncStateChange) {
 
 	return (
 		isPlainObject(change.data) &&
-		hasExactKeys(change.data, ['completed']) &&
+		'completed' in change.data &&
 		typeof change.data['completed'] === 'boolean'
 	);
 }
@@ -258,6 +280,7 @@ export function parseSyncStatePutBody(
 		!('state_epoch' in body) ||
 		typeof body['state_epoch'] !== 'number' ||
 		!Number.isInteger(body['state_epoch']) ||
+		body['state_epoch'] < 0 ||
 		!('changes' in body) ||
 		!Array.isArray(body['changes'])
 	) {

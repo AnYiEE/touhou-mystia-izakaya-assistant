@@ -37,6 +37,10 @@ export function resolveAccountSyncConflict({
 	resolution: TSyncConflictResolution;
 	userId: string;
 }) {
+	if (conflict.userId !== userId) {
+		return;
+	}
+
 	const data = getConflictResolutionData(conflict, resolution);
 	const serializer = getAccountSyncSerializer(conflict.namespace);
 

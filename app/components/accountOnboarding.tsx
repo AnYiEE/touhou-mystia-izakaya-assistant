@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Input } from '@heroui/input';
 
@@ -21,10 +21,21 @@ export default function AccountOnboarding() {
 	const [password, setPassword] = useState('');
 	const [username, setUsername] = useState('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [portalContainer, setPortalContainer] = useState<Element | null>(
+		null
+	);
 	const cloudCode = globalStore.persistence.cloudCode.use();
 	const isOpen = bootstrapStatus === 'anonymous' && !hasSkippedOnboarding;
 
+	useEffect(() => {
+		setPortalContainer(document.querySelector('#modal-portal-container'));
+	}, []);
+
 	const handleAuth = useCallback(() => {
+		if (isSubmitting) {
+			return;
+		}
+
 		setIsSubmitting(true);
 		setMessage(null);
 		const request = authMode === 'login' ? loginAccount : registerAccount;
@@ -39,7 +50,7 @@ export default function AccountOnboarding() {
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [authMode, password, username]);
+	}, [authMode, isSubmitting, password, username]);
 
 	if (!isOpen) {
 		return null;
@@ -48,7 +59,7 @@ export default function AccountOnboarding() {
 	return (
 		<Modal
 			isOpen
-			portalContainer={document.querySelector('#modal-portal-container')}
+			{...(portalContainer === null ? {} : { portalContainer })}
 			onClose={() => {
 				accountStore.persistence.hasSkippedOnboarding.set(true);
 			}}
@@ -113,7 +124,9 @@ export default function AccountOnboarding() {
 					<Button
 						color="primary"
 						isDisabled={
-							username.length === 0 || password.length === 0
+							isSubmitting ||
+							username.length === 0 ||
+							password.length === 0
 						}
 						isLoading={isSubmitting}
 						variant="solid"

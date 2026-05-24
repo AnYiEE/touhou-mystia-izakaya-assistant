@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server';
 
 import {
+	checkAccountCookieSecurityResponse,
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
@@ -32,6 +33,11 @@ export async function POST(request: NextRequest) {
 		return sameOriginResponse;
 	}
 
+	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	if (cookieSecurityResponse !== null) {
+		return cookieSecurityResponse;
+	}
+
 	const body = await readJsonBody<IAdminLoginBody>(request);
 	if (
 		typeof body?.username !== 'string' ||
@@ -40,24 +46,30 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
+	const username = body.username.trim();
+	if (username === '' || body.password === '') {
+		return createNoStoreErrorResponse('invalid-object-structure', 400);
+	}
+
+	const usernameRateLimitKey = username.toLowerCase();
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
 		'admin-login',
-		body.username
+		usernameRateLimitKey
 	);
 	if (rateLimitResponse !== null) {
 		return rateLimitResponse;
 	}
 
 	const adminModule = await import('@/lib/account/server/admin');
-	if (!adminModule.checkAdminCredentials(body.username, body.password)) {
+	if (!adminModule.checkAdminCredentials(username, body.password)) {
 		return createNoStoreErrorResponse('unauthorized', 401);
 	}
 
-	const token = adminModule.createAdminSessionToken(body.username);
+	const token = adminModule.createAdminSessionToken(username);
 	const response = createNoStoreJsonResponse({
 		csrf_token: adminModule.createAdminCsrfToken(token),
-		username: body.username,
+		username,
 	});
 	adminModule.setAdminSessionCookie(response, token, request);
 

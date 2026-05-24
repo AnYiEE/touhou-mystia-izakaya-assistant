@@ -5,18 +5,36 @@ import {
 	removeAccountStorage,
 	writeAccountJsonStorage,
 } from './storage';
+import { createAccountClientId } from './random';
 
 export const ACCOUNT_SYNC_LEASE_TTL = 15 * 1000;
 export const ACCOUNT_SYNC_LEASE_RENEW_INTERVAL = 5 * 1000;
 
 export interface IAccountSyncLease {
 	expiresAt: number;
+	ownerRunId: string;
 	ownerTabId: string;
 	renewedAt: number;
 }
 
+interface IAccountLockManager {
+	request<T>(
+		name: string,
+		options: { mode: 'exclusive' },
+		callback: () => Promise<T> | T
+	): Promise<T>;
+}
+
+function getAccountLockManager() {
+	const navigatorValue = Reflect.get(globalThis, 'navigator') as
+		| { locks?: IAccountLockManager }
+		| undefined;
+
+	return navigatorValue?.locks ?? null;
+}
+
 export function createAccountTabId() {
-	return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+	return createAccountClientId();
 }
 
 export function createAccountSyncLeaseKey(userId: string) {
@@ -30,50 +48,130 @@ export function readAccountSyncLease(userId: string) {
 	);
 }
 
-export function acquireAccountSyncLease(
+function writeAccountSyncLease(
 	userId: string,
 	ownerTabId: string,
-	now = Date.now()
+	ownerRunId: string,
+	now: number
+) {
+	writeAccountJsonStorage(createAccountSyncLeaseKey(userId), {
+		expiresAt: now + ACCOUNT_SYNC_LEASE_TTL,
+		ownerRunId,
+		ownerTabId,
+		renewedAt: now,
+	} satisfies IAccountSyncLease);
+}
+
+function tryAcquireAccountSyncLease(
+	userId: string,
+	ownerTabId: string,
+	ownerRunId: string,
+	now: number
 ) {
 	const lease = readAccountSyncLease(userId);
 	if (
 		lease !== null &&
 		lease.expiresAt > now &&
-		lease.ownerTabId !== ownerTabId
+		(lease.ownerTabId !== ownerTabId || lease.ownerRunId !== ownerRunId)
 	) {
 		return false;
 	}
 
-	writeAccountJsonStorage(createAccountSyncLeaseKey(userId), {
-		expiresAt: now + ACCOUNT_SYNC_LEASE_TTL,
-		ownerTabId,
-		renewedAt: now,
-	} satisfies IAccountSyncLease);
+	writeAccountSyncLease(userId, ownerTabId, ownerRunId, now);
 
-	return readAccountSyncLease(userId)?.ownerTabId === ownerTabId;
+	const nextLease = readAccountSyncLease(userId);
+	return (
+		nextLease?.ownerTabId === ownerTabId &&
+		nextLease.ownerRunId === ownerRunId
+	);
 }
 
-export function renewAccountSyncLease(
+function tryRenewAccountSyncLease(
 	userId: string,
 	ownerTabId: string,
-	now = Date.now()
+	ownerRunId: string,
+	now: number
 ) {
 	const lease = readAccountSyncLease(userId);
-	if (lease?.ownerTabId !== ownerTabId) {
+	if (lease?.ownerTabId !== ownerTabId || lease.ownerRunId !== ownerRunId) {
 		return false;
 	}
 
-	writeAccountJsonStorage(createAccountSyncLeaseKey(userId), {
-		expiresAt: now + ACCOUNT_SYNC_LEASE_TTL,
-		ownerTabId,
-		renewedAt: now,
-	} satisfies IAccountSyncLease);
+	writeAccountSyncLease(userId, ownerTabId, ownerRunId, now);
 
 	return true;
 }
 
-export function releaseAccountSyncLease(userId: string, ownerTabId: string) {
-	if (readAccountSyncLease(userId)?.ownerTabId === ownerTabId) {
+function tryReleaseAccountSyncLease(
+	userId: string,
+	ownerTabId: string,
+	ownerRunId: string
+) {
+	const lease = readAccountSyncLease(userId);
+	if (lease?.ownerTabId === ownerTabId && lease.ownerRunId === ownerRunId) {
 		removeAccountStorage(createAccountSyncLeaseKey(userId));
 	}
+}
+
+export async function acquireAccountSyncLease(
+	userId: string,
+	ownerTabId: string,
+	ownerRunId: string,
+	now = Date.now()
+) {
+	const lockManager = getAccountLockManager();
+	if (lockManager === null) {
+		return tryAcquireAccountSyncLease(userId, ownerTabId, ownerRunId, now);
+	}
+
+	return lockManager.request(
+		createAccountSyncLeaseKey(userId),
+		{ mode: 'exclusive' },
+		() =>
+			tryAcquireAccountSyncLease(
+				userId,
+				ownerTabId,
+				ownerRunId,
+				Date.now()
+			)
+	);
+}
+
+export async function renewAccountSyncLease(
+	userId: string,
+	ownerTabId: string,
+	ownerRunId: string,
+	now = Date.now()
+) {
+	const lockManager = getAccountLockManager();
+	if (lockManager === null) {
+		return tryRenewAccountSyncLease(userId, ownerTabId, ownerRunId, now);
+	}
+
+	return lockManager.request(
+		createAccountSyncLeaseKey(userId),
+		{ mode: 'exclusive' },
+		() =>
+			tryRenewAccountSyncLease(userId, ownerTabId, ownerRunId, Date.now())
+	);
+}
+
+export async function releaseAccountSyncLease(
+	userId: string,
+	ownerTabId: string,
+	ownerRunId: string
+) {
+	const lockManager = getAccountLockManager();
+	if (lockManager === null) {
+		tryReleaseAccountSyncLease(userId, ownerTabId, ownerRunId);
+		return;
+	}
+
+	await lockManager.request(
+		createAccountSyncLeaseKey(userId),
+		{ mode: 'exclusive' },
+		() => {
+			tryReleaseAccountSyncLease(userId, ownerTabId, ownerRunId);
+		}
+	);
 }

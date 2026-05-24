@@ -57,6 +57,15 @@ export async function POST(
 
 	const { id } = await params;
 	const usersModule = await import('@/actions/account/users');
+	const isUpdated = await usersModule.setUserStatusIfCurrentStatus(
+		id,
+		USER_STATUS_MAP.disabled,
+		USER_STATUS_MAP.active
+	);
+	if (isUpdated) {
+		return createNoStoreJsonResponse({ message: 'user-enabled' });
+	}
+
 	const user = await usersModule.findUserById(id);
 	if (user === null) {
 		return createNoStoreErrorResponse('target-user-not-found', 404);
@@ -65,10 +74,9 @@ export async function POST(
 		return createNoStoreErrorResponse('user-deleted', 403);
 	}
 	if (user.status !== USER_STATUS_MAP.disabled) {
-		return createNoStoreErrorResponse('invalid-user-status', 400);
+		return createNoStoreErrorResponse('update-not-applied', 409);
 	}
 
-	await usersModule.setUserStatus(id, USER_STATUS_MAP.active);
-
-	return createNoStoreJsonResponse({ message: 'user-enabled' });
+	// isUpdated === false 时 user.status 不可能为 disabled，此分支仅为类型完备性保留。
+	return createNoStoreErrorResponse('update-not-applied', 409);
 }

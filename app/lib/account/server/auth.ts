@@ -2,29 +2,37 @@ import { randomUUID } from 'node:crypto';
 import { type NextRequest, type NextResponse } from 'next/server';
 
 import {
+	type TActiveUserSessionPatch,
 	createSession,
-	deleteOtherSessions,
+	createSessionForActiveUser as createSessionForActiveUserRecord,
+	deleteSessionById,
 	getSessionByTokenHash,
-	updateSession,
+	updateSessionAndDeleteOtherSessions,
 	updateSessionLastSeen,
 } from '@/actions/account/sessions';
 import { findUserById } from '@/actions/account/users';
-import { getCredentialByUserId } from '@/actions/account/credentials';
+import {
+	getCredentialByUserId,
+	updateCredentialAndRotateSession,
+} from '@/actions/account/credentials';
 import {
 	type TSession,
 	type TUser,
 	type TUserCredential,
+	type TUserCredentialUpdate,
 } from '@/lib/db/types';
 
 import { USER_STATUS_MAP } from '../shared/constants';
 import { createCsrfToken, verifyCsrfToken } from './csrf';
 import {
-	checkSecureRequest,
+	getAccountCookieSecureFlag,
 	getRequestIp,
 	getRequestUserAgent,
 } from './request';
 import {
 	ACCOUNT_SESSION_COOKIE_NAME,
+	SESSION_ABSOLUTE_TIMEOUT_MS,
+	SESSION_IDLE_TIMEOUT_MS,
 	createSessionCookieOptions,
 	createSessionToken,
 	hashSessionToken,
@@ -55,9 +63,7 @@ export type TAccountAuthResult =
 	  };
 
 export function getAccountSessionCookieOptions(request: NextRequest) {
-	return createSessionCookieOptions(
-		checkSecureRequest(request) || process.env.NODE_ENV === 'production'
-	);
+	return createSessionCookieOptions(getAccountCookieSecureFlag(request));
 }
 
 export async function createAccountSession(
@@ -77,6 +83,41 @@ export async function createAccountSession(
 		user_agent: getRequestUserAgent(request),
 		user_id: userId,
 	});
+
+	return {
+		cookieOptions: getAccountSessionCookieOptions(request),
+		csrfToken: createCsrfToken(tokenHash),
+		token,
+		tokenHash,
+	};
+}
+
+export async function createAccountSessionForActiveUser(
+	userId: TUser['id'],
+	request: NextRequest,
+	user: TActiveUserSessionPatch
+) {
+	const now = Date.now();
+	const token = createSessionToken();
+	const tokenHash = hashSessionToken(token);
+	const session = {
+		created_at: now,
+		id: randomUUID(),
+		ip_address: getRequestIp(request),
+		last_seen_at: now,
+		token_hash: tokenHash,
+		user_agent: getRequestUserAgent(request),
+		user_id: userId,
+	};
+
+	const didCreate = await createSessionForActiveUserRecord({
+		session,
+		user,
+		userId,
+	});
+	if (!didCreate) {
+		return null;
+	}
 
 	return {
 		cookieOptions: getAccountSessionCookieOptions(request),
@@ -123,6 +164,20 @@ export async function authenticateAccountRequest(
 		return { httpStatus: 401, message: 'unauthorized', status: 'error' };
 	}
 
+	const now = Date.now();
+	const isSessionExpired =
+		session.created_at + SESSION_ABSOLUTE_TIMEOUT_MS <= now ||
+		session.last_seen_at + SESSION_IDLE_TIMEOUT_MS <= now;
+	if (isSessionExpired) {
+		try {
+			await deleteSessionById(session.id);
+		} catch (error) {
+			console.warn('Failed to delete expired account session.', error);
+		}
+
+		return { httpStatus: 401, message: 'unauthorized', status: 'error' };
+	}
+
 	const [user, credential] = await Promise.all([
 		findUserById(session.user_id),
 		getCredentialByUserId(session.user_id),
@@ -150,9 +205,12 @@ export async function authenticateAccountRequest(
 		};
 	}
 
-	const now = Date.now();
 	if (session.last_seen_at + SESSION_LAST_SEEN_UPDATE_INTERVAL < now) {
-		await updateSessionLastSeen(session.id, now);
+		try {
+			await updateSessionLastSeen(session.id, now);
+		} catch (error) {
+			console.error('Failed to update account session last seen.', error);
+		}
 	}
 
 	return {
@@ -188,13 +246,40 @@ export async function rotateAccountSession(
 	const tokenHash = hashSessionToken(token);
 	const now = Date.now();
 
-	await updateSession(session.id, {
-		ip_address: getRequestIp(request),
-		last_seen_at: now,
-		token_hash: tokenHash,
-		user_agent: getRequestUserAgent(request),
+	await updateSessionAndDeleteOtherSessions({
+		session: {
+			ip_address: getRequestIp(request),
+			last_seen_at: now,
+			token_hash: tokenHash,
+			user_agent: getRequestUserAgent(request),
+		},
+		sessionId: session.id,
+		userId: session.user_id,
 	});
-	await deleteOtherSessions(session.user_id, session.id);
+
+	return { csrfToken: createCsrfToken(tokenHash), token, tokenHash };
+}
+
+export async function rotateAccountSessionWithCredentialUpdate(
+	session: TSession,
+	request: NextRequest,
+	credential: TUserCredentialUpdate
+) {
+	const token = createSessionToken();
+	const tokenHash = hashSessionToken(token);
+	const now = Date.now();
+
+	await updateCredentialAndRotateSession({
+		credential,
+		session: {
+			ip_address: getRequestIp(request),
+			last_seen_at: now,
+			token_hash: tokenHash,
+			user_agent: getRequestUserAgent(request),
+		},
+		sessionId: session.id,
+		userId: session.user_id,
+	});
 
 	return { csrfToken: createCsrfToken(tokenHash), token, tokenHash };
 }

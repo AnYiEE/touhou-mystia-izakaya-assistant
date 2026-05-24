@@ -7,14 +7,20 @@ import {
 } from '@/lib/account/server/environment';
 import { checkRateLimit } from '@/lib/account/server/rateLimit';
 import {
+	checkInsecureAccountCookiesAllowed,
 	checkSameOriginRequest,
-	getRequestIp,
+	checkSecureRequest,
 	getRequestUserAgent,
+	getTrustedRequestIp,
 } from '@/lib/account/server/request';
 import { createNoStoreErrorResponse } from './utils';
 
 const ACCOUNT_RATE_LIMIT_OPTIONS = { limit: 20, windowMs: 60 * 1000 } as const;
 const MAX_ACCOUNT_JSON_BODY_BYTES = 8 * 1024 * 1024;
+
+function createAccountRateLimitKey(parts: ReadonlyArray<string>) {
+	return JSON.stringify(parts);
+}
 
 export async function checkAccountFeatureResponse() {
 	const status = await getAccountFeatureStatus();
@@ -43,22 +49,49 @@ export function checkSameOriginResponse(request: NextRequest) {
 	return createNoStoreErrorResponse('forbidden', 403);
 }
 
+export function checkAccountCookieSecurityResponse(request: NextRequest) {
+	if (
+		checkSecureRequest(request) ||
+		checkInsecureAccountCookiesAllowed(request)
+	) {
+		return null;
+	}
+
+	return createNoStoreErrorResponse(SERVER_MISCONFIGURED_MESSAGE, 500);
+}
+
 export function checkAccountRateLimitResponse(
 	request: NextRequest,
 	scope: string,
 	usernameNormalized = ''
 ) {
-	const keys = [
-		[
-			scope,
-			'request',
-			getRequestIp(request),
-			getRequestUserAgent(request),
-		].join(':'),
-	];
+	const keys: string[] = [];
+	const requestIp = getTrustedRequestIp(request);
+	const requestUserAgent = getRequestUserAgent(request);
+	if (requestIp === null) {
+		keys.push(
+			createAccountRateLimitKey([
+				scope,
+				'request',
+				'untrusted',
+				requestUserAgent,
+			])
+		);
+	} else {
+		keys.push(
+			createAccountRateLimitKey([
+				scope,
+				'request',
+				requestIp,
+				requestUserAgent,
+			])
+		);
+	}
 
 	if (usernameNormalized !== '') {
-		keys.push([scope, 'username', usernameNormalized].join(':'));
+		keys.push(
+			createAccountRateLimitKey([scope, 'username', usernameNormalized])
+		);
 	}
 
 	const result = keys
@@ -102,20 +135,30 @@ export async function readJsonBody<T>(
 		const decoder = new TextDecoder();
 		let receivedBytes = 0;
 		let text = '';
-		let readResult = await reader.read();
-		while (!readResult.done) {
-			const { value } = readResult;
-			receivedBytes += value.byteLength;
-			if (receivedBytes > maxBytes) {
-				return null;
+		try {
+			let readResult = await reader.read();
+			while (!readResult.done) {
+				const { value } = readResult;
+				receivedBytes += value.byteLength;
+				if (receivedBytes > maxBytes) {
+					await reader.cancel('payload-too-large');
+					return null;
+				}
+
+				text += decoder.decode(value, { stream: true });
+				readResult = await reader.read();
 			}
-
-			text += decoder.decode(value, { stream: true });
-			readResult = await reader.read();
+			text += decoder.decode();
+		} finally {
+			reader.releaseLock();
 		}
-		text += decoder.decode();
 
-		return JSON.parse(text) as Partial<T>;
+		const data: unknown = JSON.parse(text);
+		if (data === null || Array.isArray(data) || typeof data !== 'object') {
+			return null;
+		}
+
+		return data as Partial<T>;
 	} catch {
 		return null;
 	}

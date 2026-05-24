@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Input } from '@heroui/input';
 
@@ -25,10 +25,17 @@ export default function AccountPasswordMustChangeModal() {
 	const [message, setMessage] = useState<string | null>(null);
 	const [newPassword, setNewPassword] = useState('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [portalContainer, setPortalContainer] = useState<Element | null>(
+		null
+	);
 	const isOpen = isLoggedIn && passwordMustChange;
 
+	useEffect(() => {
+		setPortalContainer(document.querySelector('#modal-portal-container'));
+	}, []);
+
 	const handlePasswordChange = useCallback(() => {
-		if (csrfToken === null) {
+		if (isSubmitting || csrfToken === null) {
 			return;
 		}
 
@@ -49,10 +56,16 @@ export default function AccountPasswordMustChangeModal() {
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [csrfToken, currentPassword, newPassword]);
+	}, [csrfToken, currentPassword, isSubmitting, newPassword]);
 
 	const handleLogout = useCallback(() => {
+		if (isSubmitting) {
+			return;
+		}
+
 		if (csrfToken === null) {
+			setMessage(null);
+			resetAccountState();
 			return;
 		}
 
@@ -72,7 +85,7 @@ export default function AccountPasswordMustChangeModal() {
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [csrfToken]);
+	}, [csrfToken, isSubmitting]);
 
 	if (!isOpen) {
 		return null;
@@ -81,7 +94,7 @@ export default function AccountPasswordMustChangeModal() {
 	return (
 		<Modal
 			isOpen
-			portalContainer={document.querySelector('#modal-portal-container')}
+			{...(portalContainer === null ? {} : { portalContainer })}
 		>
 			<div className="w-full max-w-md space-y-4">
 				<Heading as="h2" isFirst>
@@ -107,6 +120,7 @@ export default function AccountPasswordMustChangeModal() {
 				)}
 				<div className="flex flex-wrap justify-end gap-2">
 					<Button
+						isDisabled={isSubmitting}
 						isLoading={isSubmitting}
 						variant="flat"
 						onPress={handleLogout}
@@ -116,6 +130,7 @@ export default function AccountPasswordMustChangeModal() {
 					<Button
 						color="primary"
 						isDisabled={
+							isSubmitting ||
 							csrfToken === null ||
 							currentPassword.length === 0 ||
 							newPassword.length === 0

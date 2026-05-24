@@ -89,11 +89,14 @@
 		}
 	}
 
-	async function networkFirst(/** @type {Request} */ request) {
+	async function networkFirst(
+		/** @type {Request} */ request,
+		/** @type {FetchEvent} */ event
+	) {
 		const responseFromCache = await caches.match(request);
 
 		if (responseFromCache !== undefined) {
-			fetchWithRetry(request, 3).catch(() => {});
+			event.waitUntil(fetchWithRetry(request, 3).catch(() => {}));
 			return responseFromCache;
 		}
 
@@ -134,7 +137,7 @@
 		if (!(isCdnServer || isSelfHost) || protocol !== 'https:') {
 			return;
 		}
-		if (pathname.startsWith('/api/')) {
+		if (pathname === '/api' || pathname.startsWith('/api/')) {
 			return;
 		}
 
@@ -143,7 +146,7 @@
 			event.respondWith(cacheFirst(event.request));
 		} else {
 			// Cache all routes (file has no extension).
-			event.respondWith(networkFirst(event.request));
+			event.respondWith(networkFirst(event.request, event));
 		}
 	});
 })();

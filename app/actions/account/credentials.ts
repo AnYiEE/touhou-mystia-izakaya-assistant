@@ -1,14 +1,45 @@
+import { sql } from 'kysely';
+
 import { TABLE_NAME_MAP } from '@/lib/db';
 import type {
+	TSession,
 	TUser,
 	TUserCredential,
 	TUserCredentialNew,
 	TUserCredentialUpdate,
 } from '@/lib/db/types';
+import { type TSessionMutablePatch } from './sessions';
 
 import { getAccountDatabase } from '@/lib/account/server/db';
 
 const TABLE_NAME = TABLE_NAME_MAP.userCredential;
+const SESSION_TABLE_NAME = TABLE_NAME_MAP.session;
+export const CREDENTIAL_FAILED_ATTEMPT_LIMIT = 5;
+export const CREDENTIAL_LOCK_MS = 15 * 60 * 1000;
+
+export type TCredentialAttemptState =
+	| { status: 'failed' }
+	| { retryAfter: number; status: 'locked' }
+	| { status: 'ok' }
+	| { status: 'stale' };
+
+function getCredentialRetryAfter(lockedUntil: number, now: number) {
+	return Math.ceil((lockedUntil - now) / 1000);
+}
+
+export function getCredentialLockState(
+	credential: Pick<TUserCredential, 'locked_until'>,
+	now = Date.now()
+): Extract<TCredentialAttemptState, { status: 'locked' }> | { status: 'ok' } {
+	if (credential.locked_until !== null && credential.locked_until > now) {
+		return {
+			retryAfter: getCredentialRetryAfter(credential.locked_until, now),
+			status: 'locked',
+		};
+	}
+
+	return { status: 'ok' };
+}
 
 export async function createCredential(credential: TUserCredentialNew) {
 	const db = await getAccountDatabase();
@@ -34,11 +65,82 @@ export async function updateCredential(
 ) {
 	const db = await getAccountDatabase();
 
-	await db
+	const result = await db
 		.updateTable(TABLE_NAME)
 		.set(credential)
 		.where('user_id', '=', userId)
-		.execute();
+		.executeTakeFirst();
+
+	if (result.numUpdatedRows !== 1n) {
+		throw new Error('credential-not-found');
+	}
+}
+
+export async function updateCredentialAndDeleteSessions(
+	userId: TUser['id'],
+	credential: TUserCredentialUpdate
+) {
+	const db = await getAccountDatabase();
+
+	await db.transaction().execute(async (trx) => {
+		const updateCredentialResult = await trx
+			.updateTable(TABLE_NAME)
+			.set(credential)
+			.where('user_id', '=', userId)
+			.executeTakeFirst();
+
+		if (updateCredentialResult.numUpdatedRows !== 1n) {
+			throw new Error('credential-not-found');
+		}
+
+		await trx
+			.deleteFrom(SESSION_TABLE_NAME)
+			.where('user_id', '=', userId)
+			.execute();
+	});
+}
+
+export async function updateCredentialAndRotateSession({
+	credential,
+	session,
+	sessionId,
+	userId,
+}: {
+	credential: TUserCredentialUpdate;
+	session: TSessionMutablePatch;
+	sessionId: TSession['id'];
+	userId: TUser['id'];
+}) {
+	const db = await getAccountDatabase();
+
+	await db.transaction().execute(async (trx) => {
+		const updateCredentialResult = await trx
+			.updateTable(TABLE_NAME)
+			.set(credential)
+			.where('user_id', '=', userId)
+			.executeTakeFirst();
+
+		if (updateCredentialResult.numUpdatedRows !== 1n) {
+			throw new Error('credential-not-found');
+		}
+
+		const updateSessionResult = await trx
+			.updateTable(SESSION_TABLE_NAME)
+			.set(session)
+			.where('id', '=', sessionId)
+			.where('user_id', '=', userId)
+			.executeTakeFirst();
+
+		if (updateSessionResult.numUpdatedRows !== 1n) {
+			throw new Error('session-not-found');
+		}
+
+		await trx
+			.deleteFrom(SESSION_TABLE_NAME)
+			.where('user_id', '=', userId)
+			.where('id', '!=', sessionId)
+			.execute();
+	});
 }
 
 export async function incrementFailedAttempts(userId: TUser['id']) {
@@ -54,6 +156,102 @@ export async function incrementFailedAttempts(userId: TUser['id']) {
 		.executeTakeFirstOrThrow();
 
 	return record.failed_attempts;
+}
+
+export async function recordFailedCredentialAttempt(
+	userId: TUser['id'],
+	now = Date.now()
+): Promise<Extract<TCredentialAttemptState, { status: 'failed' | 'locked' }>> {
+	const db = await getAccountDatabase();
+	const lockedUntil = now + CREDENTIAL_LOCK_MS;
+	const record = await db
+		.updateTable(TABLE_NAME)
+		.set(({ ref }) => {
+			const nextFailedAttempts = sql<
+				TUserCredential['failed_attempts']
+			>`case when ${ref('locked_until')} is not null and ${ref('locked_until')} <= ${now} then 1 else ${ref('failed_attempts')} + 1 end`;
+
+			return {
+				failed_attempts: nextFailedAttempts,
+				locked_until: sql<
+					TUserCredential['locked_until']
+				>`case when ${nextFailedAttempts} >= ${CREDENTIAL_FAILED_ATTEMPT_LIMIT} then ${lockedUntil} else null end`,
+				updated_at: now,
+			};
+		})
+		.where('user_id', '=', userId)
+		.where((eb) =>
+			eb.or([
+				eb('locked_until', 'is', null),
+				eb('locked_until', '<=', now),
+			])
+		)
+		.returning(['failed_attempts', 'locked_until'])
+		.executeTakeFirst();
+
+	if (record === undefined) {
+		const credential = await getCredentialByUserId(userId);
+		if (credential === null) {
+			throw new Error('credential-not-found');
+		}
+
+		const lockState = getCredentialLockState(credential, now);
+		if (lockState.status === 'locked') {
+			return lockState;
+		}
+
+		throw new Error('credential-update-conflict');
+	}
+
+	const lockState = getCredentialLockState(record, now);
+	if (lockState.status === 'locked') {
+		return lockState;
+	}
+
+	return { status: 'failed' };
+}
+
+export async function resetFailedAttemptsForCredential({
+	now = Date.now(),
+	passwordHash,
+	userId,
+}: {
+	now?: number;
+	passwordHash: TUserCredential['password_hash'];
+	userId: TUser['id'];
+}): Promise<
+	Extract<TCredentialAttemptState, { status: 'locked' | 'ok' | 'stale' }>
+> {
+	const db = await getAccountDatabase();
+	const record = await db
+		.updateTable(TABLE_NAME)
+		.set({ failed_attempts: 0, locked_until: null, updated_at: now })
+		.where('user_id', '=', userId)
+		.where('password_hash', '=', passwordHash)
+		.where((eb) =>
+			eb.or([
+				eb('locked_until', 'is', null),
+				eb('locked_until', '<=', now),
+			])
+		)
+		.returning('user_id')
+		.executeTakeFirst();
+
+	if (record !== undefined) {
+		return { status: 'ok' };
+	}
+
+	const credential = await getCredentialByUserId(userId);
+	if (credential === null) {
+		throw new Error('credential-not-found');
+	}
+
+	const lockState = getCredentialLockState(credential, now);
+	if (lockState.status === 'locked') {
+		return lockState;
+	}
+
+	return { status: 'stale' };
 }
 
 export async function resetFailedAttempts(userId: TUser['id']) {

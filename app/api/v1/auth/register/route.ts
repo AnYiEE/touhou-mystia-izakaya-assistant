@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { type NextRequest } from 'next/server';
 
 import {
+	checkAccountCookieSecurityResponse,
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
@@ -31,6 +32,11 @@ export async function POST(request: NextRequest) {
 		return sameOriginResponse;
 	}
 
+	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	if (cookieSecurityResponse !== null) {
+		return cookieSecurityResponse;
+	}
+
 	const body = await readJsonBody<IAuthRegisterBody>(request);
 	if (
 		typeof body?.username !== 'string' ||
@@ -47,14 +53,14 @@ export async function POST(request: NextRequest) {
 			import('@/lib/account/server/user'),
 		]);
 
-	if (!userModule.checkUsernamePolicy(body.username)) {
+	const username = body.username.trim();
+	if (!userModule.checkUsernamePolicy(username)) {
 		return createNoStoreErrorResponse('invalid-username', 400);
 	}
 	if (!passwordModule.checkPasswordPolicy(body.password)) {
 		return createNoStoreErrorResponse('invalid-password-rule', 400);
 	}
 
-	const username = body.username.trim();
 	const usernameNormalized = userModule.normalizeUsername(username);
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
@@ -95,6 +101,10 @@ export async function POST(request: NextRequest) {
 			user_id: userId,
 		}
 	);
+	if (user === null) {
+		return createNoStoreErrorResponse('username-conflict', 409);
+	}
+
 	const session = await authModule.createAccountSession(user.id, request);
 	const response = createNoStoreJsonResponse({
 		csrf_token: session.csrfToken,
