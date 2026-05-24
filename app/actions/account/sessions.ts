@@ -50,7 +50,10 @@ export async function createSessionForActiveUser({
 			return false;
 		}
 
-		await trx.insertInto(TABLE_NAME).values(session).execute();
+		await trx
+			.insertInto(TABLE_NAME)
+			.values({ ...session, user_id: userId })
+			.execute();
 
 		return true;
 	});

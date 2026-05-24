@@ -433,9 +433,10 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		setIsCloudUploadButtonDisabled(true);
 		setCloudUploadButtonLabel(cloudUploadButtonLabelMap.uploading);
 		let cloudCodeToRefresh = currentCloudCode;
+		const cloudCode = currentCloudCode?.trim();
 		fetch('/api/v1/backups', {
 			body: JSON.stringify({
-				code: currentCloudCode?.trim() ?? null,
+				code: cloudCode === '' ? null : (cloudCode ?? null),
 				data: currentMealData,
 				user_id: userId,
 			} satisfies IBackupUploadBody),

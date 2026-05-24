@@ -284,8 +284,15 @@ class SafeStorage implements Storage {
 
 	public clear() {
 		if (this._storage !== null) {
+			const storage = this._storage;
 			try {
-				this._storage.clear();
+				this._managedKeys.forEach((key) => {
+					try {
+						storage.removeItem(key);
+					} catch {
+						/* empty */
+					}
+				});
 			} catch {
 				this.switchToMemoryStorage();
 			}
