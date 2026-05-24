@@ -7,6 +7,7 @@ import type {
 } from '@/lib/db/types';
 
 const TABLE_NAME = TABLE_NAME_MAP.backupFileRecord;
+const IMPORT_TABLE_NAME = TABLE_NAME_MAP.backupImportRecord;
 
 type TFileRecordWithStatus = Prettify<TBackupFileRecord & { status: 200 }>;
 
@@ -109,11 +110,21 @@ export async function getRecordCodes() {
 }
 
 export async function setRecord(backupFileRecord: TBackupFileRecordNew) {
-	const record = await db
-		.insertInto(TABLE_NAME)
-		.values(backupFileRecord)
-		.returningAll()
-		.executeTakeFirst();
+	const record = await db.transaction().execute(async (trx) => {
+		const nextRecord = await trx
+			.insertInto(TABLE_NAME)
+			.values(backupFileRecord)
+			.returningAll()
+			.executeTakeFirst();
+		if (nextRecord !== undefined) {
+			await trx
+				.deleteFrom(IMPORT_TABLE_NAME)
+				.where('code', '=', backupFileRecord.code)
+				.execute();
+		}
+
+		return nextRecord;
+	});
 
 	return generateResponse(record);
 }
@@ -122,14 +133,33 @@ export async function updateRecord(
 	code: TBackupFileRecord['code'],
 	backupFileRecord: TBackupFileRecordUpdate
 ) {
-	const record = await db
-		.updateTable(TABLE_NAME)
-		.set(backupFileRecord)
-		.where('code', '=', code)
-		.returningAll()
-		.executeTakeFirst();
+	const record = await db.transaction().execute(async (trx) => {
+		const nextRecord = await trx
+			.updateTable(TABLE_NAME)
+			.set(backupFileRecord)
+			.where('code', '=', code)
+			.returningAll()
+			.executeTakeFirst();
+		if (nextRecord !== undefined) {
+			await trx
+				.deleteFrom(IMPORT_TABLE_NAME)
+				.where('code', '=', code)
+				.execute();
+		}
+
+		return nextRecord;
+	});
 
 	return generateResponse(record, 404);
+}
+
+export async function deleteExpiredBackupImportRecords(createdBefore: number) {
+	const result = await db
+		.deleteFrom(IMPORT_TABLE_NAME)
+		.where('created_at', '<', createdBefore)
+		.executeTakeFirst();
+
+	return Number(result.numDeletedRows);
 }
 
 export async function updateRecordTimeout(

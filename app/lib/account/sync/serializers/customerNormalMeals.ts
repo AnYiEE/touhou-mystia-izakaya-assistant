@@ -10,6 +10,8 @@ import {
 	type TMealSnapshot,
 	checkBeverageName,
 	mergeMealSnapshot,
+	normalizeMealRecipe,
+	normalizeMealSnapshot,
 	validateMealRecipe,
 	validateMealSnapshot,
 } from './meals';
@@ -32,6 +34,21 @@ function validateCustomerNormalMeal(
 	);
 }
 
+function normalizeCustomerNormalMeal(
+	data: ICustomerNormalMeal
+): ICustomerNormalMeal {
+	return {
+		beverage: data.beverage,
+		recipe: normalizeMealRecipe(data.recipe),
+	};
+}
+
+function normalizeCustomerNormalMealsSnapshot(
+	data: TCustomerNormalMealsSnapshot
+) {
+	return normalizeMealSnapshot(data, normalizeCustomerNormalMeal);
+}
+
 export const customerNormalMealsSerializer = {
 	deserialize(data) {
 		return this.migrate(data, 1);
@@ -40,7 +57,9 @@ export const customerNormalMealsSerializer = {
 		return {};
 	},
 	getLocalSnapshot() {
-		return cloneJsonObject(customerNormalStore.persistence.meals.get());
+		return normalizeCustomerNormalMealsSnapshot(
+			cloneJsonObject(customerNormalStore.persistence.meals.get())
+		);
 	},
 	merge(params) {
 		return mergeMealSnapshot({
@@ -48,15 +67,19 @@ export const customerNormalMealsSerializer = {
 			namespace: SYNC_NAMESPACE_MAP.customerNormalMeals,
 		});
 	},
-	migrate(data) {
+	migrate(data, version) {
+		if (version !== 1) {
+			throw new Error('unsupported-customer-normal-meals-schema-version');
+		}
+
 		if (!this.validate(data)) {
 			throw new Error('invalid-customer-normal-meals');
 		}
 
-		return data;
+		return normalizeCustomerNormalMealsSnapshot(data);
 	},
 	serialize(data) {
-		return data;
+		return normalizeCustomerNormalMealsSnapshot(data);
 	},
 	setLocalSnapshot(data) {
 		customerNormalStore.persistence.meals.set(data);

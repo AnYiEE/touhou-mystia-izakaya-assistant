@@ -2,6 +2,7 @@ import { type NextRequest } from 'next/server';
 
 import {
 	checkAccountFeatureResponse,
+	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
 } from '@/api/v1/accountRouteUtils';
 import {
@@ -15,7 +16,32 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const DEFAULT_PAGE_SIZE = 20;
+const MAX_PAGE = 10_000;
 const MAX_PAGE_SIZE = 100;
+
+function parsePositiveIntegerParam(
+	value: string | null,
+	defaultValue: number,
+	maxValue: number
+) {
+	if (value === null) {
+		return defaultValue;
+	}
+	if (!/^\d+$/u.test(value)) {
+		return null;
+	}
+
+	const parsedValue = Number.parseInt(value, 10);
+	if (
+		!Number.isSafeInteger(parsedValue) ||
+		parsedValue < 1 ||
+		parsedValue > maxValue
+	) {
+		return null;
+	}
+
+	return parsedValue;
+}
 
 export async function GET(request: NextRequest) {
 	const featureResponse = await checkAccountFeatureResponse();
@@ -33,6 +59,14 @@ export async function GET(request: NextRequest) {
 		return sameOriginResponse;
 	}
 
+	const rateLimitResponse = checkAccountRateLimitResponse(
+		request,
+		'admin-list-users'
+	);
+	if (rateLimitResponse !== null) {
+		return rateLimitResponse;
+	}
+
 	const auth = authenticateAdminRequest(request);
 	if (auth.status === 'error') {
 		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
@@ -42,25 +76,26 @@ export async function GET(request: NextRequest) {
 		import('@/actions/account/users'),
 		import('@/lib/account/server/user'),
 	]);
-	const status = request.nextUrl.searchParams.get('status');
+	const rawStatus = request.nextUrl.searchParams.get('status');
+	const status =
+		rawStatus === null || rawStatus.trim() === '' ? null : rawStatus.trim();
 	if (status !== null && !userModule.checkUserStatus(status)) {
 		return createNoStoreErrorResponse('invalid-user-status', 400);
 	}
 
-	const page = Math.max(
+	const page = parsePositiveIntegerParam(
+		request.nextUrl.searchParams.get('page'),
 		1,
-		Number.parseInt(request.nextUrl.searchParams.get('page') ?? '1') || 1
+		MAX_PAGE
 	);
-	const pageSize = Math.min(
-		MAX_PAGE_SIZE,
-		Math.max(
-			1,
-			Number.parseInt(
-				request.nextUrl.searchParams.get('page_size') ??
-					String(DEFAULT_PAGE_SIZE)
-			) || DEFAULT_PAGE_SIZE
-		)
+	const pageSize = parsePositiveIntegerParam(
+		request.nextUrl.searchParams.get('page_size'),
+		DEFAULT_PAGE_SIZE,
+		MAX_PAGE_SIZE
 	);
+	if (page === null || pageSize === null) {
+		return createNoStoreErrorResponse('invalid-pagination', 400);
+	}
 	const query = userModule.normalizeUsername(
 		request.nextUrl.searchParams.get('query') ?? ''
 	);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useMounted } from '@/hooks';
 
@@ -13,6 +13,13 @@ import { safeStorage } from '@/utilities';
 const isServer = typeof window === 'undefined';
 
 const themeListeners = new Set<(theme: TTheme) => void>();
+const themeValues = new Set<string>(Object.values(THEME_MAP));
+
+export function parseTheme(value: unknown): TTheme {
+	return typeof value === 'string' && themeValues.has(value)
+		? (value as TTheme)
+		: THEME_MAP.SYSTEM;
+}
 
 function getSystemTheme(mediaQueryList?: MediaQueryListEvent) {
 	const queryList = mediaQueryList ?? globalThis.matchMedia(MEDIA);
@@ -25,7 +32,9 @@ export function getStoredTheme() {
 		return;
 	}
 
-	return safeStorage.getItem<TTheme>(STORAGE_KEY);
+	const storedTheme = safeStorage.getItem(STORAGE_KEY);
+
+	return storedTheme === null ? null : parseTheme(storedTheme);
 }
 
 export function applyTheme(selectedTheme: TTheme, isFromEvent?: boolean) {
@@ -74,23 +83,21 @@ export function addThemeChangeListener(listener: (theme: TTheme) => void) {
 }
 
 export function useTheme() {
-	const [theme, setThemeState] = useState<TTheme>(() => {
-		const storedTheme = getStoredTheme();
-
-		if (storedTheme === null) {
-			applyTheme(THEME_MAP.SYSTEM);
-			return THEME_MAP.SYSTEM;
-		}
-		if (storedTheme === undefined) {
-			return THEME_MAP.SYSTEM;
-		}
-
-		applyTheme(storedTheme, true);
-		return storedTheme;
-	});
+	const [theme, setThemeState] = useState<TTheme>(
+		() => getStoredTheme() ?? THEME_MAP.SYSTEM
+	);
 
 	const setTheme = useCallback((newTheme: typeof theme) => {
 		applyTheme(newTheme);
+	}, []);
+
+	useEffect(() => {
+		const storedTheme = getStoredTheme();
+		if (storedTheme === undefined) {
+			return;
+		}
+
+		applyTheme(storedTheme ?? THEME_MAP.SYSTEM, storedTheme !== null);
 	}, []);
 
 	useMounted(() => {
@@ -98,7 +105,7 @@ export function useTheme() {
 
 		return addSafeMediaQueryEventListener(mediaQueryList, (event) => {
 			const storedTheme = getStoredTheme();
-			if (storedTheme === THEME_MAP.SYSTEM) {
+			if (storedTheme === null || storedTheme === THEME_MAP.SYSTEM) {
 				applyTheme(getSystemTheme(event), true);
 			}
 		});
@@ -114,11 +121,12 @@ export function useTheme() {
 				return;
 			}
 
-			const newTheme = event.newValue as TTheme | null;
-			if (newTheme !== null) {
-				applyTheme(newTheme, true);
-				setThemeState(newTheme);
-			}
+			const newTheme =
+				event.newValue === null
+					? THEME_MAP.SYSTEM
+					: parseTheme(event.newValue);
+			applyTheme(newTheme, true);
+			setThemeState(newTheme);
 		};
 
 		globalThis.addEventListener(EVENT_TYPE, handleStorage);

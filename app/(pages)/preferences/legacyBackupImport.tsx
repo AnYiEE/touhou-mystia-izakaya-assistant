@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { Input } from '@heroui/input';
 
@@ -17,6 +17,7 @@ export default function LegacyBackupImport() {
 	const [code, setCode] = useState(cloudCode ?? '');
 	const [message, setMessage] = useState<string | null>(null);
 	const [isImporting, setIsImporting] = useState(false);
+	const isImportingRef = useRef(false);
 	const normalizedCode = code.trim();
 
 	return (
@@ -27,14 +28,19 @@ export default function LegacyBackupImport() {
 					<Button
 						color="primary"
 						isDisabled={
-							csrfToken === null || normalizedCode.length === 0
+							isImporting ||
+							csrfToken === null ||
+							normalizedCode.length === 0
 						}
 						isLoading={isImporting}
 						variant="flat"
 						onPress={() => {
-							if (csrfToken === null) {
+							if (isImportingRef.current || csrfToken === null) {
 								return;
 							}
+
+							isImportingRef.current = true;
+							setMessage(null);
 							setIsImporting(true);
 							let hasImportedBackup = false;
 							void withAccountSyncPaused(async () => {
@@ -47,6 +53,7 @@ export default function LegacyBackupImport() {
 								await takeOverLocalAccountData();
 							})
 								.then(() => {
+									setCode('');
 									setMessage('导入成功');
 								})
 								.catch((error: unknown) => {
@@ -62,6 +69,7 @@ export default function LegacyBackupImport() {
 									);
 								})
 								.finally(() => {
+									isImportingRef.current = false;
 									setIsImporting(false);
 								});
 						}}

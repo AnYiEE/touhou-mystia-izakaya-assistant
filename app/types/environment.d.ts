@@ -16,6 +16,7 @@ declare global {
 
 			ICP_FILING?: string;
 
+			ALLOW_INSECURE_COOKIES?: string;
 			OFFLINE?: string;
 			SELF_HOSTED?: string;
 			SESSION_SECRET?: string;

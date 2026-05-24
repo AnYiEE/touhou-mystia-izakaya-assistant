@@ -64,7 +64,7 @@ import {
 	toggleBoolean,
 } from '@/utilities';
 
-const { isAccountFeatureClientEnabled, isSelfHosted, isVercel } = siteConfig;
+const { isOffline, isSelfHosted, isVercel } = siteConfig;
 
 const cloudDeleteButtonLabelMap = {
 	delete: '删除云备份',
@@ -243,8 +243,8 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const shouldShowLegacyCloud =
 		isSelfHosted &&
+		!isOffline &&
 		!isVercel &&
-		!isAccountFeatureClientEnabled &&
 		accountBootstrapStatus === 'disabled';
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 	const userId = globalStore.persistence.userId.use();
@@ -341,7 +341,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				trackEvent(
 					trackEvent.category.click,
 					'Cloud Delete Button',
-					normalizedCode
+					'redacted'
 				);
 			})
 			.catch((error: unknown) => {
@@ -401,7 +401,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				trackEvent(
 					trackEvent.category.click,
 					'Cloud Download Button',
-					normalizedCode
+					'redacted'
 				);
 			})
 			.catch((error: unknown) => {
@@ -432,9 +432,11 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	const handleCloudUploadButtonPress = useCallback(() => {
 		setIsCloudUploadButtonDisabled(true);
 		setCloudUploadButtonLabel(cloudUploadButtonLabelMap.uploading);
+		let cloudCodeToRefresh = currentCloudCode;
+		const cloudCode = currentCloudCode?.trim();
 		fetch('/api/v1/backups', {
 			body: JSON.stringify({
-				code: currentCloudCode?.trim() ?? null,
+				code: cloudCode === '' ? null : (cloudCode ?? null),
 				data: currentMealData,
 				user_id: userId,
 			} satisfies IBackupUploadBody),
@@ -443,13 +445,14 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		})
 			.then(checkResponse<IBackupUploadSuccessResponse>)
 			.then(({ code }) => {
+				cloudCodeToRefresh = code;
 				setCloudUploadState('success');
 				setCloudUploadButtonLabel(cloudUploadButtonLabelMap.success);
 				globalStore.persistence.cloudCode.set(code);
 				trackEvent(
 					trackEvent.category.click,
 					'Cloud Upload Button',
-					code
+					'redacted'
 				);
 			})
 			.catch((error: unknown) => {
@@ -462,7 +465,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				});
 			})
 			.finally(() => {
-				updateCloudCodeInfo(currentCloudCode);
+				updateCloudCodeInfo(cloudCodeToRefresh);
 				cloudTimers.current.push(
 					setTimeout(() => {
 						setCloudUploadState('default');

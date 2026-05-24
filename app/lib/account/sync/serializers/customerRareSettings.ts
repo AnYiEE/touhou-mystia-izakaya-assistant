@@ -1,6 +1,6 @@
 import { type ISyncNamespaceSerializer } from '@/lib/account/sync';
 import { customerRareStore } from '@/stores/customer-rare';
-import { mergeFieldMap } from './utils';
+import { isPlainObject, mergeFieldMap } from './utils';
 
 export interface ICustomerRareSettingsSnapshot {
 	orderLinkedFilter: boolean;
@@ -33,7 +33,13 @@ export const customerRareSettingsSerializer = {
 			}),
 		};
 	},
-	migrate(data) {
+	migrate(data, version) {
+		if (version !== 1) {
+			throw new Error(
+				'unsupported-customer-rare-settings-schema-version'
+			);
+		}
+
 		if (!this.validate(data)) {
 			throw new Error('invalid-customer-rare-settings');
 		}
@@ -53,12 +59,10 @@ export const customerRareSettingsSerializer = {
 	},
 	validate(data): data is ICustomerRareSettingsSnapshot {
 		return (
-			data !== null &&
-			typeof data === 'object' &&
-			'orderLinkedFilter' in data &&
-			'showTagDescription' in data &&
-			typeof data.orderLinkedFilter === 'boolean' &&
-			typeof data.showTagDescription === 'boolean'
+			isPlainObject(data) &&
+			Object.keys(data).length === 2 &&
+			typeof data['orderLinkedFilter'] === 'boolean' &&
+			typeof data['showTagDescription'] === 'boolean'
 		);
 	},
 } satisfies ISyncNamespaceSerializer<ICustomerRareSettingsSnapshot>;

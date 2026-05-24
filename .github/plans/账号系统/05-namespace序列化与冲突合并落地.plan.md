@@ -36,7 +36,7 @@ isProject: false
 | `customer_rare.settings` | `orderLinkedFilter`、`showTagDescription` | 同左               | 字段级合并，冲突字段后提交服务端胜出               |
 | `global.preferences`     | `globalStore.persistence` 白名单          | 同左               | 字段级合并，未改字段不覆盖云端                     |
 | `theme`                  | `theme` localStorage                      | theme apply helper | 后提交服务端的快照胜出                             |
-| `tutorial.customer_rare` | legacy `dirver` 映射                      | `dirver` 映射      | 只同步完成状态，账号级已完成优先，不同步设备级重置 |
+| `tutorial.customer_rare` | legacy `dirver`（历史拼写）映射           | `dirver` 映射      | 只同步完成状态，账号级已完成优先，不同步设备级重置 |
 
 ## 四、global.preferences 白名单
 
@@ -66,13 +66,14 @@ isProject: false
 - `userId`
 - `cloudCode`
 - `donationModal`
-- 原始 `dirver`
+- 原始 `dirver`（历史拼写，勿改为 `driver`）
 
 ## 五、serializer 形状
 
 ```ts
 export interface ISyncNamespaceSerializer<T> {
 	deserialize(data: unknown): T;
+	getDefaultSnapshot(): T;
 	getLocalSnapshot(): T;
 	merge(params: ISyncMergeParams<T>): ISyncMergeResult<T>;
 	migrate(data: unknown, version: number): T;
@@ -82,6 +83,7 @@ export interface ISyncNamespaceSerializer<T> {
 }
 
 export interface ISyncMergeParams<T> {
+	allowBaseNullAutoMerge?: boolean;
 	base: T | null;
 	cloud: T | null;
 	local: T;
@@ -120,7 +122,7 @@ export type TSyncNamespace =
 1. 对对象 key 排序。
 2. 去掉临时字段和 undefined。
 3. `JSON.stringify`。
-4. 用 `Set` 去重。
+4. 按签名计数形成 multiset，用计数消耗比较重复套餐。
 
 自动合并只处理纯新增：
 
@@ -128,7 +130,7 @@ export type TSyncNamespace =
 - cloud 和 local 都没有删除 base 中已有套餐。
 - cloud 和 local 都没有改变 base 中已有套餐顺序。
 - local 没有保存与 cloud 相同签名但位置不同的重复套餐。
-- 登录或注册后的本地接管是特例：当缺少 base、云端已有套餐且本地只有可按稳定签名去重的新增套餐时，允许把本地新增追加到云端快照并按云端 revision 入队；item-level revision conflict 仍只生成合并预览，不静默覆盖云端。
+- 登录或注册后的本地接管是特例：当缺少 base、云端已有套餐且本地只有可按稳定签名计数消耗后确认的新增套餐时，允许把本地新增追加到云端快照并按云端 revision 入队；item-level revision conflict 仍只生成合并预览，不静默覆盖云端。
 
 不满足以上条件时进入人工冲突，避免删除、排序或用户有意重复保存被自动吞掉。
 
@@ -155,9 +157,12 @@ export interface ISyncConflictItem<T = unknown> {
 	local: T;
 	merged: T | null;
 	namespace: TSyncNamespace;
+	userId?: string;
 	revision: number;
 }
 ```
+
+客户端持久化和展示冲突时必须补齐 `userId`，用于按账号隔离冲突记录；serializer 产出的原始冲突对象可先不带该字段。
 
 窗口按钮：
 

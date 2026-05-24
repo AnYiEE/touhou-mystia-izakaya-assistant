@@ -41,10 +41,16 @@ export async function GET(request: NextRequest) {
 	if (auth.status === 'error') {
 		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
 	}
+	const snapshot = await userStateModule.getUserStateSnapshot(
+		auth.data.user.id
+	);
+	if (snapshot === null) {
+		return createNoStoreErrorResponse('unauthorized', 401);
+	}
 
 	return createNoStoreJsonResponse({
-		state: await userStateModule.listUserState(auth.data.user.id),
-		state_epoch: auth.data.user.state_epoch,
-		user: userModule.createAccountUserProfile(auth.data.user),
+		state: snapshot.state,
+		state_epoch: snapshot.user.state_epoch,
+		user: userModule.createAccountUserProfile(snapshot.user),
 	});
 }

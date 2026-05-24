@@ -62,13 +62,11 @@ export async function POST(
 	}
 
 	const { id } = await params;
-	const [passwordModule, usersModule, credentialsModule, sessionsModule] =
-		await Promise.all([
-			import('@/lib/account/server/password'),
-			import('@/actions/account/users'),
-			import('@/actions/account/credentials'),
-			import('@/actions/account/sessions'),
-		]);
+	const [passwordModule, usersModule, credentialsModule] = await Promise.all([
+		import('@/lib/account/server/password'),
+		import('@/actions/account/users'),
+		import('@/actions/account/credentials'),
+	]);
 	if (!passwordModule.checkPasswordPolicy(body.password)) {
 		return createNoStoreErrorResponse('invalid-password-rule', 400);
 	}
@@ -80,14 +78,13 @@ export async function POST(
 		return createNoStoreErrorResponse('invalid-user-status', 403);
 	}
 
-	await credentialsModule.updateCredential(id, {
+	await credentialsModule.updateCredentialAndDeleteSessions(id, {
 		failed_attempts: 0,
 		locked_until: null,
 		password_hash: await passwordModule.hashPassword(body.password),
 		password_must_change: 1,
 		updated_at: Date.now(),
 	});
-	await sessionsModule.deleteSessionsByUserId(id);
 
 	return createNoStoreJsonResponse({ message: 'password-reset' });
 }

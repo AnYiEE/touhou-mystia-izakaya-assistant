@@ -8,6 +8,7 @@ function disableAccountBootstrap() {
 	accountStore.shared.csrfToken.set(null);
 	accountStore.shared.isBootstrapped.set(true);
 	accountStore.shared.isLoggedIn.set(false);
+	accountStore.shared.sync.lastError.set(null);
 	accountStore.shared.user.set(null);
 }
 
@@ -29,15 +30,18 @@ export async function bootstrapAccount() {
 	try {
 		await refreshAccountState();
 	} catch (error) {
-		if (
-			error instanceof AccountApiError &&
-			error.status !== 404 &&
-			error.message !== 'feature-disabled'
-		) {
-			failAccountBootstrap(error.message);
+		if (error instanceof AccountApiError) {
+			if (error.status === 404 || error.message === 'feature-disabled') {
+				disableAccountBootstrap();
+				return;
+			}
+
+			console.error('Account bootstrap failed.', error);
+			failAccountBootstrap('bootstrap-failed');
 			return;
 		}
 
-		disableAccountBootstrap();
+		console.error('Account bootstrap failed.', error);
+		failAccountBootstrap('bootstrap-failed');
 	}
 }

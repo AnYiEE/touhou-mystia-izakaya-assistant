@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server';
 
 import {
+	checkAccountCookieSecurityResponse,
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
@@ -19,8 +20,17 @@ import {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const LOGIN_FAILED_ATTEMPT_LIMIT = 5;
-const LOGIN_LOCK_MS = 15 * 60 * 1000;
+const INVALID_LOGIN_MESSAGE = 'invalid-credentials';
+
+function createInvalidLoginResponse() {
+	return createNoStoreErrorResponse(INVALID_LOGIN_MESSAGE, 401);
+}
+
+function createCredentialLockedResponse(retryAfter: number) {
+	return createNoStoreErrorResponse('too-many-requests', 429, {
+		retry_after: retryAfter,
+	});
+}
 
 export async function POST(request: NextRequest) {
 	const featureResponse = await checkAccountFeatureResponse();
@@ -31,6 +41,11 @@ export async function POST(request: NextRequest) {
 	const sameOriginResponse = checkSameOriginResponse(request);
 	if (sameOriginResponse !== null) {
 		return sameOriginResponse;
+	}
+
+	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	if (cookieSecurityResponse !== null) {
+		return cookieSecurityResponse;
 	}
 
 	const body = await readJsonBody<IAuthLoginBody>(request);
@@ -55,11 +70,12 @@ export async function POST(request: NextRequest) {
 		import('@/lib/account/server/user'),
 	]);
 
-	if (!userModule.checkUsernamePolicy(body.username)) {
+	const username = body.username.trim();
+	if (!userModule.checkUsernamePolicy(username)) {
 		return createNoStoreErrorResponse('invalid-username', 400);
 	}
 
-	const usernameNormalized = userModule.normalizeUsername(body.username);
+	const usernameNormalized = userModule.normalizeUsername(username);
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
 		'login',
@@ -72,25 +88,31 @@ export async function POST(request: NextRequest) {
 	const user =
 		await usersModule.findUserByUsernameNormalized(usernameNormalized);
 	if (user === null) {
-		return createNoStoreErrorResponse('user-not-found', 404);
+		await passwordModule.consumePasswordVerificationCost(body.password);
+		return createInvalidLoginResponse();
 	}
 	if (user.status === USER_STATUS_MAP.disabled) {
-		return createNoStoreErrorResponse('user-disabled', 403);
+		await passwordModule.consumePasswordVerificationCost(body.password);
+		return createInvalidLoginResponse();
 	}
 	if (user.status === USER_STATUS_MAP.deleted) {
-		return createNoStoreErrorResponse('user-deleted', 403);
+		await passwordModule.consumePasswordVerificationCost(body.password);
+		return createInvalidLoginResponse();
 	}
 
 	const credential = await credentialsModule.getCredentialByUserId(user.id);
 	if (credential === null) {
-		return createNoStoreErrorResponse('server-misconfigured', 500);
+		await passwordModule.consumePasswordVerificationCost(body.password);
+		console.warn('Account credential is missing during login.', {
+			userId: user.id,
+		});
+		return createInvalidLoginResponse();
 	}
 
 	const now = Date.now();
-	if (credential.locked_until !== null && credential.locked_until > now) {
-		return createNoStoreErrorResponse('too-many-requests', 429, {
-			retry_after: Math.ceil((credential.locked_until - now) / 1000),
-		});
+	const lockState = credentialsModule.getCredentialLockState(credential, now);
+	if (lockState.status === 'locked') {
+		return createCredentialLockedResponse(lockState.retryAfter);
 	}
 
 	const isValidPassword = await passwordModule.verifyPassword(
@@ -98,33 +120,36 @@ export async function POST(request: NextRequest) {
 		body.password
 	);
 	if (!isValidPassword) {
-		const failedAttempts = await credentialsModule.incrementFailedAttempts(
-			user.id
-		);
-
-		if (failedAttempts >= LOGIN_FAILED_ATTEMPT_LIMIT) {
-			await credentialsModule.setLockedUntil(
-				user.id,
-				now + LOGIN_LOCK_MS
-			);
-			return createNoStoreErrorResponse('too-many-requests', 429, {
-				retry_after: Math.ceil(LOGIN_LOCK_MS / 1000),
-			});
+		const failureState =
+			await credentialsModule.recordFailedCredentialAttempt(user.id, now);
+		if (failureState.status === 'locked') {
+			return createCredentialLockedResponse(failureState.retryAfter);
 		}
 
-		return createNoStoreErrorResponse('invalid-password', 401);
+		return createInvalidLoginResponse();
 	}
 
-	await Promise.all([
-		credentialsModule.resetFailedAttempts(user.id),
-		usersModule.updateUser(user.id, {
-			last_login_at: now,
-			updated_at: now,
-		}),
-	]);
+	const resetState = await credentialsModule.resetFailedAttemptsForCredential(
+		{ now, passwordHash: credential.password_hash, userId: user.id }
+	);
+	if (resetState.status === 'locked') {
+		return createCredentialLockedResponse(resetState.retryAfter);
+	}
+	if (resetState.status === 'stale') {
+		return createInvalidLoginResponse();
+	}
+
+	const userUpdate = { last_login_at: now, updated_at: now };
 
 	const currentUser = { ...user, last_login_at: now, updated_at: now };
-	const session = await authModule.createAccountSession(user.id, request);
+	const session = await authModule.createAccountSessionForActiveUser(
+		user.id,
+		request,
+		userUpdate
+	);
+	if (session === null) {
+		return createInvalidLoginResponse();
+	}
 	const response = createNoStoreJsonResponse({
 		csrf_token: session.csrfToken,
 		password_must_change: credential.password_must_change === 1,

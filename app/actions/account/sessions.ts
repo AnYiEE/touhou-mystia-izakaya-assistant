@@ -4,16 +4,59 @@ import type {
 	TSessionNew,
 	TSessionUpdate,
 	TUser,
+	TUserUpdate,
 } from '@/lib/db/types';
 
 import { getAccountDatabase } from '@/lib/account/server/db';
+import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 
 const TABLE_NAME = TABLE_NAME_MAP.session;
+const USER_TABLE_NAME = TABLE_NAME_MAP.user;
+
+export type TSessionMutablePatch = Pick<
+	TSessionUpdate,
+	'ip_address' | 'last_seen_at' | 'token_hash' | 'user_agent'
+>;
+export type TActiveUserSessionPatch = Pick<
+	TUserUpdate,
+	'last_login_at' | 'updated_at'
+>;
 
 export async function createSession(session: TSessionNew) {
 	const db = await getAccountDatabase();
 
 	await db.insertInto(TABLE_NAME).values(session).execute();
+}
+
+export async function createSessionForActiveUser({
+	session,
+	user,
+	userId,
+}: {
+	session: TSessionNew;
+	user: TActiveUserSessionPatch;
+	userId: TUser['id'];
+}) {
+	const db = await getAccountDatabase();
+
+	return db.transaction().execute(async (trx) => {
+		const updateResult = await trx
+			.updateTable(USER_TABLE_NAME)
+			.set(user)
+			.where('id', '=', userId)
+			.where('status', '=', USER_STATUS_MAP.active)
+			.executeTakeFirst();
+		if (updateResult.numUpdatedRows !== 1n) {
+			return false;
+		}
+
+		await trx
+			.insertInto(TABLE_NAME)
+			.values({ ...session, user_id: userId })
+			.execute();
+
+		return true;
+	});
 }
 
 export async function getSessionByTokenHash(tokenHash: TSession['token_hash']) {
@@ -53,9 +96,40 @@ export async function deleteOtherSessions(
 		.execute();
 }
 
+export async function updateSessionAndDeleteOtherSessions({
+	session,
+	sessionId,
+	userId,
+}: {
+	session: TSessionMutablePatch;
+	sessionId: TSession['id'];
+	userId: TUser['id'];
+}) {
+	const db = await getAccountDatabase();
+
+	await db.transaction().execute(async (trx) => {
+		const updateSessionResult = await trx
+			.updateTable(TABLE_NAME)
+			.set(session)
+			.where('id', '=', sessionId)
+			.where('user_id', '=', userId)
+			.executeTakeFirst();
+
+		if (updateSessionResult.numUpdatedRows !== 1n) {
+			throw new Error('session-not-found');
+		}
+
+		await trx
+			.deleteFrom(TABLE_NAME)
+			.where('user_id', '=', userId)
+			.where('id', '!=', sessionId)
+			.execute();
+	});
+}
+
 export async function updateSession(
 	id: TSession['id'],
-	session: TSessionUpdate
+	session: TSessionMutablePatch
 ) {
 	const db = await getAccountDatabase();
 

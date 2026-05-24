@@ -13,7 +13,7 @@
 
 # server-side files
 /upload
-/sqlite.db
+/sqlite.db*
 
 # local env files
 .env*.local

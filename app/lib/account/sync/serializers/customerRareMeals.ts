@@ -10,9 +10,12 @@ import {
 	type TMealSnapshot,
 	checkBeverageName,
 	mergeMealSnapshot,
+	normalizeMealRecipe,
+	normalizeMealSnapshot,
 	validateMealRecipe,
 	validateMealSnapshot,
 } from './meals';
+import { checkBeverageTag, checkRecipeTag } from './tags';
 import { isPlainObject } from './utils';
 
 export interface ICustomerRareMeal {
@@ -31,11 +34,27 @@ function validateCustomerRareMeal(data: unknown): data is ICustomerRareMeal {
 		typeof data['hasMystiaCooker'] === 'boolean' &&
 		isPlainObject(data['order']) &&
 		(data['order']['beverageTag'] === null ||
-			typeof data['order']['beverageTag'] === 'string') &&
+			checkBeverageTag(data['order']['beverageTag'])) &&
 		(data['order']['recipeTag'] === null ||
-			typeof data['order']['recipeTag'] === 'string') &&
+			checkRecipeTag(data['order']['recipeTag'])) &&
 		validateMealRecipe(data['recipe'])
 	);
+}
+
+function normalizeCustomerRareMeal(data: ICustomerRareMeal): ICustomerRareMeal {
+	return {
+		beverage: data.beverage,
+		hasMystiaCooker: data.hasMystiaCooker,
+		order: {
+			beverageTag: data.order.beverageTag,
+			recipeTag: data.order.recipeTag,
+		},
+		recipe: normalizeMealRecipe(data.recipe),
+	};
+}
+
+function normalizeCustomerRareMealsSnapshot(data: TCustomerRareMealsSnapshot) {
+	return normalizeMealSnapshot(data, normalizeCustomerRareMeal);
 }
 
 export const customerRareMealsSerializer = {
@@ -46,7 +65,9 @@ export const customerRareMealsSerializer = {
 		return {};
 	},
 	getLocalSnapshot() {
-		return cloneJsonObject(customerRareStore.persistence.meals.get());
+		return normalizeCustomerRareMealsSnapshot(
+			cloneJsonObject(customerRareStore.persistence.meals.get())
+		);
 	},
 	merge(params) {
 		return mergeMealSnapshot({
@@ -54,15 +75,19 @@ export const customerRareMealsSerializer = {
 			namespace: SYNC_NAMESPACE_MAP.customerRareMeals,
 		});
 	},
-	migrate(data) {
+	migrate(data, version) {
+		if (version !== 1) {
+			throw new Error('unsupported-customer-rare-meals-schema-version');
+		}
+
 		if (!this.validate(data)) {
 			throw new Error('invalid-customer-rare-meals');
 		}
 
-		return data;
+		return normalizeCustomerRareMealsSnapshot(data);
 	},
 	serialize(data) {
-		return data;
+		return normalizeCustomerRareMealsSnapshot(data);
 	},
 	setLocalSnapshot(data) {
 		customerRareStore.persistence.meals.set(data);

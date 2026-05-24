@@ -1,4 +1,4 @@
-import { addThemeChangeListener } from '@/design/hooks';
+import { STORAGE_KEY, addThemeChangeListener } from '@/design/hooks';
 import { SYNC_NAMESPACE_MAP, type TSyncNamespace } from '@/lib/account/sync';
 import { accountStore } from '@/stores/account';
 import { customerNormalStore } from '@/stores/customer-normal';
@@ -6,14 +6,13 @@ import { customerRareStore } from '@/stores/customer-rare';
 import { globalStore } from '@/stores/global';
 import { postAccountSyncBroadcastMessage } from './broadcast';
 import { createSnapshotHash, markAccountSyncDirty } from './queue';
+import { createAccountClientId } from './random';
 import { getAccountSyncSerializer } from './snapshot';
 import { scheduleAccountSyncFlush } from './syncClient';
 
-let hasStarted = false;
+type TUnsubscribe = () => void;
 
-function createClientOperationId() {
-	return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-}
+let stopWatchers: TUnsubscribe | null = null;
 
 function getLoggedInContext() {
 	const meta = accountStore.shared.sync.meta.get();
@@ -67,7 +66,7 @@ function markNamespaceDirty(namespace: TSyncNamespace) {
 
 	void postAccountSyncBroadcastMessage({
 		namespaces: [namespace],
-		operationId: createClientOperationId(),
+		operationId: createAccountClientId(),
 		state_epoch: context.meta.state_epoch,
 		tabId: 'local',
 		type: 'dirty',
@@ -77,80 +76,163 @@ function markNamespaceDirty(namespace: TSyncNamespace) {
 }
 
 export function startAccountStoreSyncWatchers() {
-	if (hasStarted) {
-		return;
+	if (stopWatchers !== null) {
+		return stopWatchers;
 	}
-	hasStarted = true;
 
-	customerNormalStore.persistence.meals.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.customerNormalMeals);
-	});
-	customerRareStore.persistence.meals.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.customerRareMeals);
-	});
-	customerRareStore.persistence.customer.orderLinkedFilter.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.customerRareSettings);
-	});
-	customerRareStore.persistence.customer.showTagDescription.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.customerRareSettings);
-	});
+	const unsubscribers: TUnsubscribe[] = [];
+	const watch = (unsubscribe: TUnsubscribe) => {
+		unsubscribers.push(unsubscribe);
+	};
 
-	globalStore.persistence.customerCardTagsTooltip.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
-	});
-	globalStore.persistence.hiddenItems.dlcs.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
-	});
-	globalStore.persistence.suggestMeals.enabled.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
-	});
-	globalStore.persistence.suggestMeals.maxExtraIngredients.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
-	});
-	globalStore.persistence.suggestMeals.maxRating.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
-	});
-	globalStore.persistence.suggestMeals.maxResults.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
-	});
-	globalStore.persistence.table.columns.beverage.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
-	});
-	globalStore.persistence.table.columns.recipe.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
-	});
-	globalStore.persistence.table.hiddenItems.beverages.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
-	});
-	globalStore.persistence.table.hiddenItems.ingredients.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
-	});
-	globalStore.persistence.table.hiddenItems.recipes.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
-	});
-	globalStore.persistence.table.row.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
-	});
-	globalStore.persistence.famousShop.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
-	});
-	globalStore.persistence.popularTrend.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
-	});
-	globalStore.persistence.highAppearance.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
-	});
-	globalStore.persistence.tachie.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
-	});
-	globalStore.persistence.vibrate.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
-	});
-	globalStore.persistence.dirver.onChange(() => {
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.tutorialCustomerRare);
-	});
+	watch(
+		customerNormalStore.persistence.meals.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.customerNormalMeals);
+		})
+	);
+	watch(
+		customerRareStore.persistence.meals.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.customerRareMeals);
+		})
+	);
+	watch(
+		customerRareStore.persistence.customer.orderLinkedFilter.onChange(
+			() => {
+				markNamespaceDirty(SYNC_NAMESPACE_MAP.customerRareSettings);
+			}
+		)
+	);
+	watch(
+		customerRareStore.persistence.customer.showTagDescription.onChange(
+			() => {
+				markNamespaceDirty(SYNC_NAMESPACE_MAP.customerRareSettings);
+			}
+		)
+	);
 
-	addThemeChangeListener(() => {
+	watch(
+		globalStore.persistence.customerCardTagsTooltip.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.hiddenItems.dlcs.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.suggestMeals.enabled.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.suggestMeals.maxExtraIngredients.onChange(
+			() => {
+				markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+			}
+		)
+	);
+	watch(
+		globalStore.persistence.suggestMeals.maxRating.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.suggestMeals.maxResults.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.table.columns.beverage.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.table.columns.recipe.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.table.hiddenItems.beverages.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.table.hiddenItems.ingredients.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.table.hiddenItems.recipes.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.table.row.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.famousShop.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.popularTrend.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.highAppearance.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.tachie.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.vibrate.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.dirver.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.tutorialCustomerRare);
+		})
+	);
+
+	watch(
+		addThemeChangeListener(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.theme);
+		})
+	);
+	const handleThemeStorageChange = (event: StorageEvent) => {
+		if (event.key !== STORAGE_KEY || event.oldValue === event.newValue) {
+			return;
+		}
+
 		markNamespaceDirty(SYNC_NAMESPACE_MAP.theme);
+	};
+	globalThis.addEventListener('storage', handleThemeStorageChange);
+	watch(() => {
+		globalThis.removeEventListener('storage', handleThemeStorageChange);
 	});
+
+	const cleanup = () => {
+		if (stopWatchers !== cleanup) {
+			return;
+		}
+
+		const currentUnsubscribers = [...unsubscribers];
+		unsubscribers.length = 0;
+		stopWatchers = null;
+		currentUnsubscribers.forEach((unsubscribe) => {
+			unsubscribe();
+		});
+	};
+	stopWatchers = cleanup;
+
+	return stopWatchers;
 }

@@ -127,7 +127,7 @@ export async function PUT(request: NextRequest) {
 	}
 
 	const results: TSyncStatePutResult[] = [];
-	for (const change of body.changes) {
+	const preparedChanges = body.changes.map((change) => {
 		const updatedAt = Date.now();
 		const nextRevision = change.revision + 1;
 		const record = createUserStateRecord(
@@ -137,36 +137,76 @@ export async function PUT(request: NextRequest) {
 			updatedAt
 		);
 		if (record === null) {
+			return {
+				result: {
+					message: 'invalid-json-data',
+					namespace: change.namespace,
+					status: 'error',
+				} satisfies TSyncStatePutResult,
+				status: 'error' as const,
+			};
+		}
+
+		return {
+			change,
+			nextRevision,
+			record,
+			status: 'ready' as const,
+			updatedAt,
+		};
+	});
+	const readyChanges = preparedChanges.filter(
+		(
+			change
+		): change is Extract<
+			(typeof preparedChanges)[number],
+			{ status: 'ready' }
+		> => change.status === 'ready'
+	);
+	const writeResult = await userStateModule.putUserStateEntriesIfRevision(
+		readyChanges.map((change) => ({
+			entry: change.record,
+			expectedRevision: change.change.revision,
+		})),
+		body.state_epoch
+	);
+	if (writeResult.status === 'state-epoch-mismatch') {
+		return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
+			state_epoch: writeResult.state_epoch,
+		});
+	}
+
+	let writeResultIndex = 0;
+	for (const preparedChange of preparedChanges) {
+		if (preparedChange.status === 'error') {
+			results.push(preparedChange.result);
+			continue;
+		}
+
+		const result = writeResult.results[writeResultIndex++];
+		if (result === undefined) {
 			results.push({
 				message: 'invalid-json-data',
-				namespace: change.namespace,
+				namespace: preparedChange.change.namespace,
 				status: 'error',
 			});
 			continue;
 		}
-
-		const result = await userStateModule.putUserStateEntryIfRevision(
-			record,
-			change.revision,
-			body.state_epoch
-		);
-		if (result.status === 'state-epoch-mismatch') {
-			return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
-				state_epoch: result.state_epoch,
-			});
-		}
 		if (result.status === 'conflict') {
 			results.push(
-				createConflictResult(change.namespace, result.current)
+				createConflictResult(
+					preparedChange.change.namespace,
+					result.current
+				)
 			);
 			continue;
 		}
 
 		results.push({
-			namespace: change.namespace,
-			revision: nextRevision,
+			namespace: preparedChange.change.namespace,
+			revision: result.entry.revision,
 			status: 'ok',
-			updated_at: updatedAt,
+			updated_at: result.entry.updated_at,
 		});
 	}
 

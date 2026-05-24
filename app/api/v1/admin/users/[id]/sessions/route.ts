@@ -14,6 +14,7 @@ import {
 	checkAdminCsrfResponse,
 	checkAdminFeatureResponse,
 } from '../../../utils';
+import { clearAdminSessionCookie } from '@/lib/account/server/admin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -47,7 +48,13 @@ export async function DELETE(
 
 	const auth = authenticateAdminRequest(request);
 	if (auth.status === 'error') {
-		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
+		const response = createNoStoreErrorResponse(
+			auth.message,
+			auth.httpStatus
+		);
+		clearAdminSessionCookie(response, request);
+
+		return response;
 	}
 	const csrfResponse = checkAdminCsrfResponse(request, auth.token);
 	if (csrfResponse !== null) {

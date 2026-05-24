@@ -13,6 +13,25 @@ type TPutUserStateEntryIfRevisionResult =
 	| { status: 'ok' }
 	| { state_epoch: number; status: 'state-epoch-mismatch' };
 
+interface IPutUserStateEntryIfRevisionChange {
+	entry: TUserStateNew;
+	expectedRevision: number;
+}
+
+type TPutUserStateEntriesIfRevisionResult =
+	| {
+			results: Array<
+				| { entry: TUserStateNew; status: 'ok' }
+				| {
+						current: TUserState | null;
+						entry: TUserStateNew;
+						status: 'conflict';
+				  }
+			>;
+			status: 'ok';
+	  }
+	| { state_epoch: number; status: 'state-epoch-mismatch' };
+
 export async function getUserState(
 	userId: TUser['id'],
 	namespace: TUserState['namespace']
@@ -56,18 +75,26 @@ export async function putUserStateEntries(entries: TUserStateNew[]) {
 		.execute();
 }
 
-export async function putUserStateEntryIfRevision(
-	entry: TUserStateNew,
-	expectedRevision: number,
+export async function putUserStateEntriesIfRevision(
+	changes: IPutUserStateEntryIfRevisionChange[],
 	expectedStateEpoch: number
-): Promise<TPutUserStateEntryIfRevisionResult> {
+): Promise<TPutUserStateEntriesIfRevisionResult> {
+	const [firstChange] = changes;
+	if (firstChange === undefined) {
+		return { results: [], status: 'ok' };
+	}
+
 	const db = await getAccountDatabase();
+	const userId = firstChange.entry.user_id;
+	if (changes.some((change) => change.entry.user_id !== userId)) {
+		throw new Error('mixed-user-state-entries');
+	}
 
 	return db.transaction().execute(async (trx) => {
 		const user = await trx
 			.selectFrom(USER_TABLE_NAME)
 			.select('state_epoch')
-			.where('id', '=', entry.user_id)
+			.where('id', '=', userId)
 			.executeTakeFirstOrThrow();
 		if (user.state_epoch !== expectedStateEpoch) {
 			return {
@@ -76,61 +103,125 @@ export async function putUserStateEntryIfRevision(
 			};
 		}
 
-		const current =
-			(await trx
-				.selectFrom(TABLE_NAME)
-				.selectAll()
-				.where('user_id', '=', entry.user_id)
-				.where('namespace', '=', entry.namespace)
-				.executeTakeFirst()) ?? null;
-		const currentRevision = current?.revision ?? 0;
+		const stateEpochLockResult = await trx
+			.updateTable(USER_TABLE_NAME)
+			.set({ updated_at: sql<TUser['updated_at']>`updated_at` })
+			.where('id', '=', userId)
+			.where('state_epoch', '=', expectedStateEpoch)
+			.executeTakeFirst();
+		if (stateEpochLockResult.numUpdatedRows !== 1n) {
+			const currentUser = await trx
+				.selectFrom(USER_TABLE_NAME)
+				.select('state_epoch')
+				.where('id', '=', userId)
+				.executeTakeFirstOrThrow();
 
-		if (currentRevision !== expectedRevision) {
-			return { current, status: 'conflict' };
+			return {
+				state_epoch: currentUser.state_epoch,
+				status: 'state-epoch-mismatch',
+			};
 		}
 
-		if (current === null) {
-			const insertResult = await trx
-				.insertInto(TABLE_NAME)
-				.values(entry)
-				.onConflict((oc) =>
-					oc.columns(['user_id', 'namespace']).doNothing()
-				)
-				.executeTakeFirst();
+		const results: Extract<
+			TPutUserStateEntriesIfRevisionResult,
+			{ status: 'ok' }
+		>['results'] = [];
 
-			if (insertResult.numInsertedOrUpdatedRows === 1n) {
-				return { status: 'ok' };
-			}
-		} else {
-			const updateResult = await trx
-				.updateTable(TABLE_NAME)
-				.set({
-					data: entry.data,
-					revision: entry.revision,
-					schema_version: entry.schema_version,
-					updated_at: entry.updated_at,
-				})
-				.where('user_id', '=', entry.user_id)
-				.where('namespace', '=', entry.namespace)
-				.where('revision', '=', expectedRevision)
-				.executeTakeFirst();
-
-			if (updateResult.numUpdatedRows === 1n) {
-				return { status: 'ok' };
-			}
-		}
-
-		return {
-			current:
+		for (const { entry, expectedRevision } of changes) {
+			const current =
 				(await trx
 					.selectFrom(TABLE_NAME)
 					.selectAll()
 					.where('user_id', '=', entry.user_id)
 					.where('namespace', '=', entry.namespace)
-					.executeTakeFirst()) ?? null,
-			status: 'conflict',
-		};
+					.executeTakeFirst()) ?? null;
+			const currentRevision = current?.revision ?? 0;
+
+			if (
+				currentRevision !== expectedRevision ||
+				entry.revision !== expectedRevision + 1
+			) {
+				results.push({ current, entry, status: 'conflict' });
+				continue;
+			}
+
+			const nextEntry = {
+				...entry,
+				updated_at: Math.max(
+					entry.updated_at,
+					(current?.updated_at ?? 0) + 1
+				),
+			} satisfies TUserStateNew;
+
+			if (current === null) {
+				const insertResult = await trx
+					.insertInto(TABLE_NAME)
+					.values(nextEntry)
+					.onConflict((oc) =>
+						oc.columns(['user_id', 'namespace']).doNothing()
+					)
+					.executeTakeFirst();
+
+				if (insertResult.numInsertedOrUpdatedRows === 1n) {
+					results.push({ entry: nextEntry, status: 'ok' });
+					continue;
+				}
+			} else {
+				const updateResult = await trx
+					.updateTable(TABLE_NAME)
+					.set({
+						data: nextEntry.data,
+						revision: nextEntry.revision,
+						schema_version: nextEntry.schema_version,
+						updated_at: nextEntry.updated_at,
+					})
+					.where('user_id', '=', nextEntry.user_id)
+					.where('namespace', '=', nextEntry.namespace)
+					.where('revision', '=', expectedRevision)
+					.executeTakeFirst();
+
+				if (updateResult.numUpdatedRows === 1n) {
+					results.push({ entry: nextEntry, status: 'ok' });
+					continue;
+				}
+			}
+
+			results.push({
+				current:
+					(await trx
+						.selectFrom(TABLE_NAME)
+						.selectAll()
+						.where('user_id', '=', nextEntry.user_id)
+						.where('namespace', '=', nextEntry.namespace)
+						.executeTakeFirst()) ?? null,
+				entry: nextEntry,
+				status: 'conflict',
+			});
+		}
+
+		return { results, status: 'ok' };
 	});
+}
+
+export async function putUserStateEntryIfRevision(
+	entry: TUserStateNew,
+	expectedRevision: number,
+	expectedStateEpoch: number
+): Promise<TPutUserStateEntryIfRevisionResult> {
+	const result = await putUserStateEntriesIfRevision(
+		[{ entry, expectedRevision }],
+		expectedStateEpoch
+	);
+	if (result.status === 'state-epoch-mismatch') {
+		return result;
+	}
+
+	const [entryResult] = result.results;
+	if (entryResult === undefined || entryResult.status === 'ok') {
+		return { status: 'ok' };
+	}
+
+	return { current: entryResult.current, status: 'conflict' };
 }
 
 export async function clearUserState(userId: TUser['id']) {
@@ -181,6 +272,29 @@ export async function listUserState(userId: TUser['id']) {
 		.selectAll()
 		.where('user_id', '=', userId)
 		.execute();
+}
+
+export async function getUserStateSnapshot(userId: TUser['id']) {
+	const db = await getAccountDatabase();
+
+	return db.transaction().execute(async (trx) => {
+		const user = await trx
+			.selectFrom(USER_TABLE_NAME)
+			.selectAll()
+			.where('id', '=', userId)
+			.executeTakeFirst();
+		if (user === undefined) {
+			return null;
+		}
+
+		const state = await trx
+			.selectFrom(TABLE_NAME)
+			.selectAll()
+			.where('user_id', '=', userId)
+			.execute();
+
+		return { state, user };
+	});
 }
 
 export async function listUserStateByNamespaces(

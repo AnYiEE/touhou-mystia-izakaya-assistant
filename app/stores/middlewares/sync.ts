@@ -8,6 +8,7 @@ import {
 	copyArray,
 	memoize,
 } from '@/utilities';
+import { checkApplyingRemoteState } from '@/lib/account/client/stateGuards';
 
 type TPlainObject = Record<string, unknown>;
 
@@ -212,7 +213,7 @@ export function sync<T>(options: ISyncOptions<T>) {
 					return acc;
 				}, {} as T);
 
-				if (hasChanges) {
+				if (hasChanges && !checkApplyingRemoteState()) {
 					void channel.postMessage(watchedState);
 				}
 			};

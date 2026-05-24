@@ -29,7 +29,13 @@ export const tutorialCustomerRareSerializer = {
 			shouldUpload: completed && cloud?.completed !== true,
 		});
 	},
-	migrate(data) {
+	migrate(data, version) {
+		if (version !== 1) {
+			throw new Error(
+				'unsupported-tutorial-customer-rare-schema-version'
+			);
+		}
+
 		if (!this.validate(data)) {
 			throw new Error('invalid-tutorial-customer-rare');
 		}
@@ -51,6 +57,10 @@ export const tutorialCustomerRareSerializer = {
 		});
 	},
 	validate(data): data is ITutorialCustomerRareSnapshot {
-		return isPlainObject(data) && typeof data['completed'] === 'boolean';
+		return (
+			isPlainObject(data) &&
+			'completed' in data &&
+			typeof data['completed'] === 'boolean'
+		);
 	},
 } satisfies ISyncNamespaceSerializer<ITutorialCustomerRareSnapshot>;

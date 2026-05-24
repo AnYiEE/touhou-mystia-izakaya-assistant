@@ -17,6 +17,7 @@ import {
 import {
 	acquireAccountSyncLease,
 	createAccountTabId,
+	readAccountSyncLease,
 	releaseAccountSyncLease,
 	renewAccountSyncLease,
 } from './lease';
@@ -25,13 +26,16 @@ import {
 	createSnapshotHash,
 	markAccountSyncDirty,
 	readDirtyQueueEntries,
+	readDirtyQueueEntry,
 	removeDirtyQueueEntries,
+	removeDirtyQueueEntry,
 	writeDirtyQueueEntry,
 } from './queue';
 import {
 	postAccountSyncBroadcastMessage,
 	subscribeAccountSyncBroadcastMessage,
 } from './broadcast';
+import { createAccountClientId } from './random';
 import {
 	applyRemoteAccountRecords,
 	createLocalAccountSnapshot,
@@ -46,16 +50,22 @@ const FORCE_FLUSH_DELAY = 30 * 1000;
 const QUIET_FLUSH_DELAY = 2 * 1000;
 const SEND_BEACON_BYTE_LIMIT = 48 * 1024;
 
+interface IActiveFlushRun {
+	generation: number;
+	promise: Promise<boolean>;
+	runId: string;
+	userId: string;
+}
+
+let activeFlushRun: IActiveFlushRun | null = null;
 let forceFlushTimer: ReturnType<typeof setTimeout> | null = null;
 let leaseTimer: ReturnType<typeof setInterval> | null = null;
+let leaseTimerGeneration: number | null = null;
 let quietFlushTimer: ReturnType<typeof setTimeout> | null = null;
+let syncClientGeneration = 0;
 let visibilityOperationId: string | null = null;
 
 const tabId = createAccountTabId();
-
-function createClientOperationId() {
-	return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-}
 
 function getLoggedInAccountContext() {
 	const csrfToken = accountStore.shared.csrfToken.get();
@@ -66,6 +76,51 @@ function getLoggedInAccountContext() {
 	}
 
 	return { csrfToken, user };
+}
+
+function checkCurrentAccountUser(userId: string) {
+	return accountStore.shared.user.get()?.id === userId;
+}
+
+function checkCurrentSyncRun(generation: number, userId: string) {
+	return (
+		syncClientGeneration === generation && checkCurrentAccountUser(userId)
+	);
+}
+
+function clearActiveFlushRun({
+	generation,
+	runId,
+	userId,
+}: {
+	generation: number;
+	runId: string;
+	userId: string;
+}) {
+	const activeRun = activeFlushRun;
+	if (
+		activeRun?.runId === runId &&
+		activeRun.generation === generation &&
+		activeRun.userId === userId
+	) {
+		activeFlushRun = null;
+	}
+}
+
+function setCurrentAccountUserStateEpoch(userId: string, stateEpoch: number) {
+	const user = accountStore.shared.user.get();
+	if (user?.id !== userId) {
+		return false;
+	}
+	if (stateEpoch < user.state_epoch) {
+		return false;
+	}
+
+	if (user.state_epoch !== stateEpoch) {
+		accountStore.shared.user.set({ ...user, state_epoch: stateEpoch });
+	}
+
+	return true;
 }
 
 function updatePendingCount(entries?: IDirtyQueueEntry[]) {
@@ -92,33 +147,106 @@ function resetExpiredAccountSession() {
 	accountStore.shared.csrfToken.set(null);
 	accountStore.shared.isLoggedIn.set(false);
 	accountStore.shared.passwordMustChange.set(false);
+	accountStore.shared.sync.canRetry.set(false);
 	accountStore.shared.sync.conflicts.set([]);
+	accountStore.shared.sync.failedAttempts.set(0);
 	accountStore.shared.sync.isSyncing.set(false);
+	accountStore.shared.sync.lastError.set(null);
+	accountStore.shared.sync.lastResult.set(null);
+	accountStore.shared.sync.lastSyncedAt.set(null);
 	accountStore.shared.sync.meta.set(null);
+	accountStore.shared.sync.pendingCount.set(0);
 	accountStore.shared.user.set(null);
 }
 
-function stopLeaseRenewal() {
+function stopLeaseRenewal(generation?: number) {
+	if (generation !== undefined && leaseTimerGeneration !== generation) {
+		return;
+	}
+
 	if (leaseTimer !== null) {
 		clearInterval(leaseTimer);
 		leaseTimer = null;
 	}
+	leaseTimerGeneration = null;
 }
 
 export function stopAccountSyncClient() {
+	syncClientGeneration += 1;
+	activeFlushRun = null;
 	clearSyncTimers();
 	stopLeaseRenewal();
+	accountStore.shared.sync.isSyncing.set(false);
 }
 
-function startLeaseRenewal(userId: string) {
+function handlePassiveSyncRefreshError(error: unknown, expectedUserId: string) {
+	if (!checkCurrentAccountUser(expectedUserId)) {
+		return;
+	}
+
+	if (error instanceof AccountApiError && error.status === 401) {
+		stopAccountSyncClient();
+		resetExpiredAccountSession();
+		return;
+	}
+
+	accountStore.shared.sync.canRetry.set(true);
+	accountStore.shared.sync.lastError.set(
+		error instanceof Error ? error.message : 'sync-refresh-failed'
+	);
+}
+
+function handleActiveSyncRefreshUnauthorized(
+	error: unknown,
+	expectedUserId: string
+) {
+	if (
+		!(error instanceof AccountApiError) ||
+		error.status !== 401 ||
+		!checkCurrentAccountUser(expectedUserId)
+	) {
+		return false;
+	}
+
+	stopAccountSyncClient();
+	resetExpiredAccountSession();
+	return true;
+}
+
+async function fetchSyncStateForCurrentUser(userId: string) {
+	try {
+		return await fetchSyncState();
+	} catch (error) {
+		if (handleActiveSyncRefreshUnauthorized(error, userId)) {
+			return null;
+		}
+
+		throw error;
+	}
+}
+
+function startLeaseRenewal(
+	userId: string,
+	generation: number,
+	leaseRunId: string
+) {
 	if (leaseTimer !== null) {
 		return;
 	}
 
+	leaseTimerGeneration = generation;
 	leaseTimer = setInterval(() => {
-		if (!renewAccountSyncLease(userId, tabId)) {
-			stopAccountSyncClient();
-		}
+		void renewAccountSyncLease(userId, tabId, leaseRunId)
+			.then((isRenewed) => {
+				if (!isRenewed && checkCurrentSyncRun(generation, userId)) {
+					stopAccountSyncClient();
+				}
+			})
+			.catch(() => {
+				if (checkCurrentSyncRun(generation, userId)) {
+					stopAccountSyncClient();
+				}
+			});
 	}, 5 * 1000);
 }
 
@@ -147,7 +275,7 @@ function postRemoteAppliedBroadcast({
 
 	void postAccountSyncBroadcastMessage({
 		namespaces: records.map((record) => record.namespace),
-		operationId: createClientOperationId(),
+		operationId: createAccountClientId(),
 		state_epoch: stateEpoch,
 		tabId,
 		type: 'remote-applied',
@@ -208,21 +336,59 @@ function pauseDirtyEntryWithConflict({
 	conflict,
 	entry,
 	incrementAttempts = false,
+	requireCurrentMatch = false,
 	userId,
 }: {
 	conflict: ISyncConflictItem;
 	entry: IDirtyQueueEntry;
 	incrementAttempts?: boolean;
+	requireCurrentMatch?: boolean;
 	userId: string;
 }) {
+	const currentEntry = readDirtyQueueEntry(userId, entry.namespace);
+	const isCurrentEntryMatch =
+		currentEntry?.clientMutationId === entry.clientMutationId &&
+		currentEntry.snapshotHash === entry.snapshotHash;
+	if (requireCurrentMatch && !isCurrentEntryMatch) {
+		return false;
+	}
+
+	const entryToPause = currentEntry ?? entry;
 	writeDirtyQueueEntry(userId, {
-		...entry,
-		attempts: entry.attempts + (incrementAttempts ? 1 : 0),
+		...entryToPause,
+		attempts: entryToPause.attempts + (incrementAttempts ? 1 : 0),
 		conflict,
 		lastError: 'conflict',
 		paused: 'conflict',
 	});
 	setAccountSyncConflict(conflict);
+
+	return true;
+}
+
+function checkRemoteStateCleared({
+	records,
+	stateEpoch,
+	userId,
+}: {
+	records: ISyncStateRecord[];
+	stateEpoch: number;
+	userId: string;
+}) {
+	const currentMeta = readAccountSyncMeta(userId);
+	if (records.length > 0) {
+		return false;
+	}
+
+	if (stateEpoch > (currentMeta?.state_epoch ?? 0)) {
+		return true;
+	}
+
+	if (currentMeta?.clearedStateEpoch !== stateEpoch) {
+		return false;
+	}
+
+	return readDirtyQueueEntries(userId).length === 0;
 }
 
 function applyRemoteStatePreservingDirty({
@@ -245,38 +411,96 @@ function applyRemoteStatePreservingDirty({
 			targetNamespaceSet === null ||
 			targetNamespaceSet.has(entry.namespace)
 	);
-	const dirtyNamespaceSet = new Set(
-		dirtyEntries.map((entry) => entry.namespace)
-	);
+	const preserveNamespaceSet = new Set<TSyncNamespace>();
+	const dirtyRemoteRecords: ISyncStateRecord[] = [];
 	const recordMap = getRecordMap(records);
 
 	dirtyEntries.forEach((entry) => {
 		if (entry.paused === 'conflict' && entry.conflict !== null) {
 			setAccountSyncConflict(entry.conflict);
+			preserveNamespaceSet.add(entry.namespace);
+			return;
+		}
+
+		const serializer = getAccountSyncSerializer(entry.namespace);
+		const record = recordMap[entry.namespace];
+		const cloud =
+			record === undefined
+				? null
+				: serializer.migrate(record.data, record.schema_version);
+		const local = serializer.deserialize(entry.data);
+		const mergeResult = serializer.merge({
+			base: null,
+			cloud,
+			local,
+			namespace: entry.namespace,
+		});
+
+		if (mergeResult.conflict === null) {
+			if (mergeResult.shouldUpload) {
+				withApplyingRemoteState(() => {
+					serializer.setLocalSnapshot(mergeResult.data);
+				});
+				writeDirtyQueueEntry(userId, {
+					...entry,
+					baseRevision: record?.revision ?? 0,
+					clientMutationId: createAccountClientId(),
+					conflict: null,
+					data: mergeResult.data,
+					dirtyAt: Date.now(),
+					lastError: null,
+					paused: null,
+					schema_version: SYNC_SCHEMA_VERSION_MAP[entry.namespace],
+					snapshotHash: createSnapshotHash(mergeResult.data),
+				});
+				if (record !== undefined) {
+					dirtyRemoteRecords.push(record);
+				}
+				preserveNamespaceSet.add(entry.namespace);
+				return;
+			}
+
+			removeDirtyQueueEntry(userId, entry.namespace);
+			if (record === undefined) {
+				withApplyingRemoteState(() => {
+					serializer.setLocalSnapshot(mergeResult.data);
+				});
+			}
 			return;
 		}
 
 		pauseDirtyEntryWithConflict({
-			conflict: createConflictFromDirtyEntry({
-				entry,
-				record: recordMap[entry.namespace] ?? null,
+			conflict: {
+				...mergeResult.conflict,
+				revision: record?.revision ?? 0,
 				userId,
-			}),
+			},
 			entry,
 			userId,
 		});
+		preserveNamespaceSet.add(entry.namespace);
 	});
 
 	const recordsToApply = records.filter(
-		(record) => !dirtyNamespaceSet.has(record.namespace)
+		(record) => !preserveNamespaceSet.has(record.namespace)
 	);
-	applyRemoteAccountRecords({
-		preserveNamespaces: [...dirtyNamespaceSet],
+	const meta = applyRemoteAccountRecords({
+		preserveNamespaces: [...preserveNamespaceSet],
 		records: recordsToApply,
 		replaceMeta,
 		stateEpoch,
 		userId,
 	});
+	dirtyRemoteRecords.forEach((record) => {
+		const serializer = getAccountSyncSerializer(record.namespace);
+		const data = serializer.migrate(record.data, record.schema_version);
+		meta.lastAppliedRemoteHash[record.namespace] = createSnapshotHash(data);
+		meta.revisions[record.namespace] = record.revision;
+	});
+	if (dirtyRemoteRecords.length > 0) {
+		writeAccountSyncMeta(userId, meta);
+	}
+	updatePendingCount();
 
 	return recordsToApply;
 }
@@ -302,6 +526,20 @@ export function resetAccountSyncCloudStateAfterDelete({
 	stateEpoch: number;
 	userId: string;
 }) {
+	const currentMeta = readAccountSyncMeta(userId);
+	const currentUser = accountStore.shared.user.get();
+	const latestKnownEpoch = Math.max(
+		currentMeta?.state_epoch ?? 0,
+		currentUser?.id === userId ? currentUser.state_epoch : 0
+	);
+	if (
+		stateEpoch < latestKnownEpoch ||
+		(currentMeta?.clearedStateEpoch !== undefined &&
+			stateEpoch <= currentMeta.clearedStateEpoch)
+	) {
+		return;
+	}
+
 	removeDirtyQueueEntries(userId);
 	writeAccountSyncMeta(userId, {
 		clearedStateEpoch: stateEpoch,
@@ -313,10 +551,7 @@ export function resetAccountSyncCloudStateAfterDelete({
 		conflicts.filter((conflict) => conflict.userId !== userId)
 	);
 	accountStore.shared.sync.pendingCount.set(0);
-	const user = accountStore.shared.user.get();
-	if (user?.id === userId) {
-		accountStore.shared.user.set({ ...user, state_epoch: stateEpoch });
-	}
+	setCurrentAccountUserStateEpoch(userId, stateEpoch);
 }
 
 function handleSuccessfulUpload({
@@ -367,10 +602,10 @@ function handleConflictUpload({
 			stateEpoch,
 			userId,
 		});
-		return true;
+		return 'confirmed' as const;
 	}
 
-	pauseDirtyEntryWithConflict({
+	const didPause = pauseDirtyEntryWithConflict({
 		conflict: createConflictFromDirtyEntry({
 			entry,
 			record:
@@ -387,16 +622,39 @@ function handleConflictUpload({
 		}),
 		entry,
 		incrementAttempts: true,
+		requireCurrentMatch: true,
 		userId,
 	});
-	return false;
+
+	return didPause ? ('paused' as const) : ('stale' as const);
 }
 
 async function handleStateEpochMismatch(
 	userId: string,
 	shouldBroadcast = true
 ) {
-	const remoteState = await fetchSyncState();
+	const remoteState = await fetchSyncStateForCurrentUser(userId);
+	if (remoteState === null) {
+		return false;
+	}
+	if (!checkCurrentAccountUser(userId)) {
+		return false;
+	}
+	if (
+		checkRemoteStateCleared({
+			records: remoteState.records,
+			stateEpoch: remoteState.state_epoch,
+			userId,
+		})
+	) {
+		resetAccountSyncCloudStateAfterDelete({
+			stateEpoch: remoteState.state_epoch,
+			userId,
+		});
+		setCurrentAccountUserStateEpoch(userId, remoteState.state_epoch);
+		return true;
+	}
+
 	const recordsToApply = applyRemoteStatePreservingDirty({
 		records: remoteState.records,
 		stateEpoch: remoteState.state_epoch,
@@ -410,16 +668,13 @@ async function handleStateEpochMismatch(
 		});
 	}
 
-	const user = accountStore.shared.user.get();
-	if (user !== null) {
-		accountStore.shared.user.set({
-			...user,
-			state_epoch: remoteState.state_epoch,
-		});
-	}
+	setCurrentAccountUserStateEpoch(userId, remoteState.state_epoch);
+
+	return true;
 }
 
 export async function flushAccountSyncQueue() {
+	const generation = syncClientGeneration;
 	const context = getLoggedInAccountContext();
 	if (context === null) {
 		return true;
@@ -432,128 +687,237 @@ export async function flushAccountSyncQueue() {
 		return true;
 	}
 
-	if (!acquireAccountSyncLease(context.user.id, tabId)) {
-		return false;
+	const flushRunId = createAccountClientId();
+	if (activeFlushRun !== null) {
+		if (
+			activeFlushRun.generation === generation &&
+			activeFlushRun.userId === context.user.id
+		) {
+			return activeFlushRun.promise;
+		}
+
+		activeFlushRun = null;
 	}
 
-	clearSyncTimers();
-	startLeaseRenewal(context.user.id);
-	accountStore.shared.sync.isSyncing.set(true);
+	const flushPromise = (async () => {
+		let didAcquireLease = false;
+		let shouldScheduleRetryAfterFlush = false;
 
-	try {
-		const response = await putSyncState(
-			{
-				changes: entries.map((entry) => ({
-					data: entry.data,
-					namespace: entry.namespace,
-					revision: entry.baseRevision,
-					schema_version: entry.schema_version,
-				})),
-				state_epoch: context.user.state_epoch,
-			},
-			context.csrfToken
-		);
+		try {
+			if (
+				!(await acquireAccountSyncLease(
+					context.user.id,
+					tabId,
+					flushRunId
+				))
+			) {
+				return false;
+			}
+			didAcquireLease = true;
 
-		const entryMap = new Map(
-			entries.map((entry) => [entry.namespace, entry] as const)
-		);
-		const uploadedNamespaces: TSyncNamespace[] = [];
-		response.results.forEach((result) => {
-			const entry = entryMap.get(result.namespace);
-			if (entry === undefined) {
-				return;
+			if (!checkCurrentSyncRun(generation, context.user.id)) {
+				return false;
 			}
-			if (result.status === 'ok') {
-				handleSuccessfulUpload({
-					entry,
-					revision: result.revision,
-					stateEpoch: response.state_epoch,
-					userId: context.user.id,
-				});
-				uploadedNamespaces.push(result.namespace);
-				return;
+
+			clearSyncTimers();
+			startLeaseRenewal(context.user.id, generation, flushRunId);
+			accountStore.shared.sync.isSyncing.set(true);
+
+			const response = await putSyncState(
+				{
+					changes: entries.map((entry) => ({
+						data: entry.data,
+						namespace: entry.namespace,
+						revision: entry.baseRevision,
+						schema_version: entry.schema_version,
+					})),
+					state_epoch: context.user.state_epoch,
+				},
+				context.csrfToken
+			);
+			if (!checkCurrentSyncRun(generation, context.user.id)) {
+				return false;
 			}
-			if (result.status === 'conflict') {
-				const isConfirmed = handleConflictUpload({
-					entry,
-					result,
-					stateEpoch: response.state_epoch,
-					userId: context.user.id,
-				});
-				if (isConfirmed) {
+			const currentUser = accountStore.shared.user.get();
+			if (
+				currentUser?.id !== context.user.id ||
+				response.state_epoch < currentUser.state_epoch
+			) {
+				return false;
+			}
+
+			const entryMap = new Map(
+				entries.map((entry) => [entry.namespace, entry] as const)
+			);
+			const uploadedNamespaces: TSyncNamespace[] = [];
+			response.results.forEach((result) => {
+				const entry = entryMap.get(result.namespace);
+				if (entry === undefined) {
+					return;
+				}
+				if (result.status === 'ok') {
+					handleSuccessfulUpload({
+						entry,
+						revision: result.revision,
+						stateEpoch: response.state_epoch,
+						userId: context.user.id,
+					});
 					uploadedNamespaces.push(result.namespace);
+					return;
+				}
+				if (result.status === 'conflict') {
+					const conflictResult = handleConflictUpload({
+						entry,
+						result,
+						stateEpoch: response.state_epoch,
+						userId: context.user.id,
+					});
+					if (conflictResult === 'confirmed') {
+						uploadedNamespaces.push(result.namespace);
+					}
+					if (conflictResult === 'stale') {
+						shouldScheduleRetryAfterFlush = true;
+					}
+				}
+			});
+			setCurrentAccountUserStateEpoch(
+				context.user.id,
+				response.state_epoch
+			);
+
+			accountStore.shared.sync.failedAttempts.set(0);
+			accountStore.shared.sync.lastError.set(null);
+			accountStore.shared.sync.lastResult.set(
+				response.results.some((result) => result.status !== 'ok')
+					? 'partial'
+					: 'success'
+			);
+			accountStore.shared.sync.lastSyncedAt.set(Date.now());
+			if (uploadedNamespaces.length > 0) {
+				void postAccountSyncBroadcastMessage({
+					namespaces: uploadedNamespaces,
+					operationId: createAccountClientId(),
+					state_epoch: response.state_epoch,
+					tabId,
+					type: 'uploaded',
+					userId: context.user.id,
+				});
+			}
+
+			return response.results.every((result) => result.status === 'ok');
+		} catch (error) {
+			if (error instanceof AccountApiError && error.status === 401) {
+				if (checkCurrentSyncRun(generation, context.user.id)) {
+					stopAccountSyncClient();
+					resetExpiredAccountSession();
+				}
+				return false;
+			}
+			if (
+				error instanceof Error &&
+				error.message === 'state-epoch-mismatch'
+			) {
+				try {
+					const didRefresh = await handleStateEpochMismatch(
+						context.user.id
+					);
+					if (
+						!didRefresh ||
+						!checkCurrentSyncRun(generation, context.user.id)
+					) {
+						return false;
+					}
+
+					shouldScheduleRetryAfterFlush =
+						getFlushableEntries(context.user.id).length > 0;
+					accountStore.shared.sync.canRetry.set(false);
+					accountStore.shared.sync.failedAttempts.set(0);
+					accountStore.shared.sync.lastError.set(
+						accountStore.shared.sync.conflicts.get().length > 0
+							? 'conflict'
+							: null
+					);
+					accountStore.shared.sync.lastResult.set('partial');
+					return false;
+				} catch (refreshError) {
+					if (!checkCurrentSyncRun(generation, context.user.id)) {
+						return false;
+					}
+
+					accountStore.shared.sync.lastError.set(
+						refreshError instanceof Error
+							? refreshError.message
+							: 'sync-refresh-failed'
+					);
 				}
 			}
-		});
+			if (!checkCurrentSyncRun(generation, context.user.id)) {
+				return false;
+			}
 
-		accountStore.shared.sync.failedAttempts.set(0);
-		accountStore.shared.sync.lastError.set(null);
-		accountStore.shared.sync.lastResult.set(
-			response.results.some((result) => result.status !== 'ok')
-				? 'partial'
-				: 'success'
-		);
-		accountStore.shared.sync.lastSyncedAt.set(Date.now());
-		if (uploadedNamespaces.length > 0) {
-			void postAccountSyncBroadcastMessage({
-				namespaces: uploadedNamespaces,
-				operationId: createClientOperationId(),
-				state_epoch: response.state_epoch,
-				tabId,
-				type: 'uploaded',
+			accountStore.shared.sync.canRetry.set(true);
+			accountStore.shared.sync.failedAttempts.set(
+				(attempts) => attempts + 1
+			);
+			accountStore.shared.sync.lastError.set(
+				error instanceof Error ? error.message : 'sync-failed'
+			);
+			accountStore.shared.sync.lastResult.set('failed');
+			return false;
+		} finally {
+			const isCurrentRun = checkCurrentSyncRun(
+				generation,
+				context.user.id
+			);
+			if (isCurrentRun) {
+				accountStore.shared.sync.isSyncing.set(false);
+				updatePendingCount();
+			}
+			if (didAcquireLease) {
+				stopLeaseRenewal(generation);
+				try {
+					await releaseAccountSyncLease(
+						context.user.id,
+						tabId,
+						flushRunId
+					);
+				} catch (error) {
+					console.warn(
+						'Failed to release account sync lease.',
+						error
+					);
+				}
+			}
+			clearActiveFlushRun({
+				generation,
+				runId: flushRunId,
 				userId: context.user.id,
 			});
-		}
-
-		return response.results.every((result) => result.status === 'ok');
-	} catch (error) {
-		if (error instanceof AccountApiError && error.status === 401) {
-			resetExpiredAccountSession();
-		}
-		if (
-			error instanceof Error &&
-			error.message === 'state-epoch-mismatch'
-		) {
-			try {
-				await handleStateEpochMismatch(context.user.id);
-				accountStore.shared.sync.canRetry.set(false);
-				accountStore.shared.sync.failedAttempts.set(0);
-				accountStore.shared.sync.lastError.set(
-					accountStore.shared.sync.conflicts.get().length > 0
-						? 'conflict'
-						: null
-				);
-				accountStore.shared.sync.lastResult.set('partial');
-				return false;
-			} catch (refreshError) {
-				accountStore.shared.sync.lastError.set(
-					refreshError instanceof Error
-						? refreshError.message
-						: 'sync-refresh-failed'
-				);
+			if (didAcquireLease && isCurrentRun) {
+				void postAccountSyncBroadcastMessage({
+					namespaces: [],
+					operationId: createAccountClientId(),
+					state_epoch: context.user.state_epoch,
+					tabId,
+					type: 'lease-changed',
+					userId: context.user.id,
+				});
+			}
+			if (isCurrentRun && shouldScheduleRetryAfterFlush) {
+				quietFlushTimer ??= setTimeout(() => {
+					quietFlushTimer = null;
+					void flushAccountSyncQueue();
+				}, 0);
 			}
 		}
-		accountStore.shared.sync.canRetry.set(true);
-		accountStore.shared.sync.failedAttempts.set((attempts) => attempts + 1);
-		accountStore.shared.sync.lastError.set(
-			error instanceof Error ? error.message : 'sync-failed'
-		);
-		accountStore.shared.sync.lastResult.set('failed');
-		return false;
-	} finally {
-		accountStore.shared.sync.isSyncing.set(false);
-		updatePendingCount();
-		stopLeaseRenewal();
-		releaseAccountSyncLease(context.user.id, tabId);
-		void postAccountSyncBroadcastMessage({
-			namespaces: [],
-			operationId: createClientOperationId(),
-			state_epoch: context.user.state_epoch,
-			tabId,
-			type: 'lease-changed',
-			userId: context.user.id,
-		});
-	}
+	})();
+	activeFlushRun = {
+		generation,
+		promise: flushPromise,
+		runId: flushRunId,
+		userId: context.user.id,
+	};
+	return flushPromise;
 }
 
 export function scheduleAccountSyncFlush() {
@@ -592,18 +956,24 @@ export async function takeOverLocalAccountData() {
 	}
 
 	const localSnapshot = createLocalAccountSnapshot();
-	const remoteState = await fetchSyncState();
-	const currentMeta = readAccountSyncMeta(context.user.id);
-	const hasRemoteClearedState =
-		remoteState.records.length === 0 &&
-		(currentMeta?.clearedStateEpoch === remoteState.state_epoch ||
-			remoteState.state_epoch > (currentMeta?.state_epoch ?? 0));
-	if (hasRemoteClearedState) {
-		writeAccountSyncMeta(context.user.id, {
-			clearedStateEpoch: remoteState.state_epoch,
-			lastAppliedRemoteHash: {},
-			revisions: {},
-			state_epoch: remoteState.state_epoch,
+	const remoteState = await fetchSyncStateForCurrentUser(context.user.id);
+	if (remoteState === null) {
+		return;
+	}
+	if (!checkCurrentAccountUser(context.user.id)) {
+		return;
+	}
+
+	if (
+		checkRemoteStateCleared({
+			records: remoteState.records,
+			stateEpoch: remoteState.state_epoch,
+			userId: context.user.id,
+		})
+	) {
+		resetAccountSyncCloudStateAfterDelete({
+			stateEpoch: remoteState.state_epoch,
+			userId: context.user.id,
 		});
 		return;
 	}
@@ -637,6 +1007,7 @@ export async function takeOverLocalAccountData() {
 				? null
 				: serializer.migrate(record.data, record.schema_version);
 		const mergeResult = serializer.merge({
+			allowBaseNullAutoMerge: true,
 			base: null,
 			cloud,
 			local,
@@ -655,7 +1026,7 @@ export async function takeOverLocalAccountData() {
 				entry: {
 					attempts: 0,
 					baseRevision: conflict.revision,
-					clientMutationId: createClientOperationId(),
+					clientMutationId: createAccountClientId(),
 					conflict,
 					data: conflict.local,
 					dirtyAt: now,
@@ -712,17 +1083,28 @@ export async function takeOverLocalAccountData() {
 		stateEpoch: remoteState.state_epoch,
 		userId: context.user.id,
 	});
+	setCurrentAccountUserStateEpoch(context.user.id, remoteState.state_epoch);
 	scheduleAccountSyncFlush();
 }
 
 export function flushAccountSyncQueueWithBeacon() {
 	const context = getLoggedInAccountContext();
-	if (context === null || visibilityOperationId !== null) {
+	if (
+		context === null ||
+		visibilityOperationId !== null ||
+		activeFlushRun !== null
+	) {
 		return;
 	}
 
 	const entries = getFlushableEntries(context.user.id);
 	if (entries.length === 0) {
+		return;
+	}
+
+	const lease = readAccountSyncLease(context.user.id);
+	const now = Date.now();
+	if (lease !== null && lease.expiresAt > now && lease.ownerTabId !== tabId) {
 		return;
 	}
 
@@ -742,13 +1124,17 @@ export function flushAccountSyncQueueWithBeacon() {
 		return;
 	}
 
-	const operationId = createClientOperationId();
+	const operationId = createAccountClientId();
 	if (sendSyncPing(body)) {
 		visibilityOperationId = operationId;
 	}
 }
 
 export function startAccountSyncClient() {
+	syncClientGeneration += 1;
+	clearSyncTimers();
+	stopLeaseRenewal();
+	accountStore.shared.sync.isSyncing.set(false);
 	const unsubscribeBroadcast = subscribeAccountSyncBroadcastMessage(
 		(message) => {
 			const context = getLoggedInAccountContext();
@@ -765,31 +1151,28 @@ export function startAccountSyncClient() {
 			}
 
 			if (message.type === 'uploaded') {
+				const expectedUserId = context.user.id;
 				updatePendingCount();
 				void fetchSyncState(message.namespaces)
 					.then((remoteState) => {
+						if (!checkCurrentAccountUser(expectedUserId)) {
+							return;
+						}
+
 						applyRemoteStatePreservingDirty({
 							records: remoteState.records,
 							replaceMeta: false,
 							stateEpoch: remoteState.state_epoch,
 							targetNamespaces: message.namespaces,
-							userId: context.user.id,
+							userId: expectedUserId,
 						});
-						const user = accountStore.shared.user.get();
-						if (user !== null) {
-							accountStore.shared.user.set({
-								...user,
-								state_epoch: remoteState.state_epoch,
-							});
-						}
+						setCurrentAccountUserStateEpoch(
+							expectedUserId,
+							remoteState.state_epoch
+						);
 					})
 					.catch((error: unknown) => {
-						accountStore.shared.sync.canRetry.set(true);
-						accountStore.shared.sync.lastError.set(
-							error instanceof Error
-								? error.message
-								: 'sync-refresh-failed'
-						);
+						handlePassiveSyncRefreshError(error, expectedUserId);
 					});
 				return;
 			}
@@ -802,23 +1185,27 @@ export function startAccountSyncClient() {
 				return;
 			}
 
+			const expectedUserId = context.user.id;
 			void fetchSyncState(message.namespaces)
 				.then((remoteState) => {
+					if (!checkCurrentAccountUser(expectedUserId)) {
+						return;
+					}
+
 					applyRemoteStatePreservingDirty({
 						records: remoteState.records,
 						replaceMeta: false,
 						stateEpoch: remoteState.state_epoch,
 						targetNamespaces: message.namespaces,
-						userId: context.user.id,
+						userId: expectedUserId,
 					});
+					setCurrentAccountUserStateEpoch(
+						expectedUserId,
+						remoteState.state_epoch
+					);
 				})
 				.catch((error: unknown) => {
-					accountStore.shared.sync.canRetry.set(true);
-					accountStore.shared.sync.lastError.set(
-						error instanceof Error
-							? error.message
-							: 'sync-refresh-failed'
-					);
+					handlePassiveSyncRefreshError(error, expectedUserId);
 				});
 		}
 	);
@@ -843,6 +1230,8 @@ export function startAccountSyncClient() {
 	globalThis.addEventListener('pagehide', onPageHide);
 
 	return () => {
+		stopAccountSyncClient();
+		visibilityOperationId = null;
 		unsubscribeBroadcast();
 		document.removeEventListener('visibilitychange', onVisibilityChange);
 		globalThis.removeEventListener('focus', onRetrySignal);
