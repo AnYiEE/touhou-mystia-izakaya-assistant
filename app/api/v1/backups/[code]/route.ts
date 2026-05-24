@@ -140,6 +140,7 @@ export async function DELETE(
 			try {
 				throwIfBackupCodeLockLost(signal);
 				markBackupCodeLockCommitted(signal);
+				await deleteRecord(code);
 				await deleteFile(code);
 			} catch (error) {
 				if (checkBackupCodeLockLostError(error)) {
@@ -163,7 +164,6 @@ export async function DELETE(
 
 				deletedFile = false;
 			}
-			await deleteRecord(code);
 
 			return createNoStoreJsonResponse({
 				deletedFile,

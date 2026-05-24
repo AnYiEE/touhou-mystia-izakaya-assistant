@@ -282,7 +282,11 @@ export const globalPreferencesSerializer = {
 			}),
 		};
 	},
-	migrate(data) {
+	migrate(data, version) {
+		if (version !== 1) {
+			throw new Error('unsupported-global-preferences-schema-version');
+		}
+
 		if (!checkGlobalPreferencesExactKeyShape(data)) {
 			throw new Error('invalid-global-preferences');
 		}

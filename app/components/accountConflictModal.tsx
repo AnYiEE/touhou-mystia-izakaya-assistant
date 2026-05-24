@@ -32,6 +32,7 @@ export default function AccountConflictModal() {
 		null
 	);
 	const conflicts = accountStore.shared.sync.conflicts.use();
+	const passwordMustChange = accountStore.shared.passwordMustChange.use();
 	const user = accountStore.shared.user.use();
 	const conflict = conflicts.find((item) => item.userId === user?.id);
 
@@ -39,7 +40,7 @@ export default function AccountConflictModal() {
 		setPortalContainer(document.querySelector('#modal-portal-container'));
 	}, []);
 
-	if (conflict === undefined || user === null) {
+	if (conflict === undefined || user === null || passwordMustChange) {
 		return null;
 	}
 
