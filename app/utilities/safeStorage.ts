@@ -40,36 +40,59 @@ class SafeStorage implements Storage {
 	private readFallbackMode(): TSafeStorageFallbackMode | null {
 		try {
 			const mode = sessionStorage.getItem(fallbackModeKey);
-			return mode === 'session' || mode === 'memory' ? mode : null;
+			if (mode === 'memory') {
+				sessionStorage.removeItem(fallbackModeKey);
+				return null;
+			}
+
+			return mode === 'session' ? mode : null;
 		} catch {
 			return null;
 		}
 	}
 
 	private readStoredManagedKeys() {
-		try {
-			const value = sessionStorage.getItem(managedKeysKey);
+		const keys = new Set<string>();
+		const addStoredKeys = (value: string | null) => {
 			const parsed: unknown = value === null ? [] : JSON.parse(value);
 			if (!Array.isArray(parsed)) {
-				return new Set<string>();
+				return;
 			}
 
-			return new Set(
-				parsed.filter(
-					(key): key is string =>
-						typeof key === 'string' && !internalKeys.has(key)
-				)
+			parsed.forEach((key) => {
+				if (typeof key === 'string' && !internalKeys.has(key)) {
+					keys.add(key);
+				}
+			});
+		};
+
+		try {
+			addStoredKeys(sessionStorage.getItem(managedKeysKey));
+		} catch {
+			/* empty */
+		}
+		try {
+			addStoredKeys(
+				this.getLocalStorageReference()?.getItem(managedKeysKey) ?? null
 			);
 		} catch {
-			return new Set<string>();
+			/* empty */
 		}
+
+		return keys;
 	}
 
 	private persistManagedKeys() {
+		const serialized = JSON.stringify([...this._managedKeys]);
 		try {
-			sessionStorage.setItem(
+			sessionStorage.setItem(managedKeysKey, serialized);
+		} catch {
+			/* empty */
+		}
+		try {
+			this.getLocalStorageReference()?.setItem(
 				managedKeysKey,
-				JSON.stringify([...this._managedKeys])
+				serialized
 			);
 		} catch {
 			/* empty */
@@ -86,14 +109,12 @@ class SafeStorage implements Storage {
 	}
 
 	private markManagedKey(key: string) {
-		if (internalKeys.has(key)) {
+		if (internalKeys.has(key) || this._managedKeys.has(key)) {
 			return;
 		}
 
 		this._managedKeys.add(key);
-		if (this._mode !== 'local') {
-			this.persistManagedKeys();
-		}
+		this.persistManagedKeys();
 	}
 
 	private invalidateStorageKeys(storage: Storage | null) {
@@ -194,11 +215,47 @@ class SafeStorage implements Storage {
 
 	private switchToMemoryStorage() {
 		const previousStorage = this._storage;
-		this.persistFallbackMode('memory');
-		this.invalidateStorageKeys(previousStorage);
 		this._staleStorage = previousStorage ?? this._staleStorage;
 		this._storage = null;
 		this._mode = 'memory';
+	}
+
+	private restoreAvailableStorage() {
+		if (this._storage !== null) {
+			return;
+		}
+
+		const storage = this.getAvailableStorage();
+		if (storage === null) {
+			return;
+		}
+
+		try {
+			this._managedKeys.forEach((key) => {
+				if (internalKeys.has(key)) {
+					return;
+				}
+
+				const value = this._memoryStorage.get(key);
+				if (value === undefined) {
+					storage.removeItem(key);
+				} else {
+					storage.setItem(key, value);
+				}
+			});
+			this._memoryStorage.forEach((value, key) => {
+				if (!internalKeys.has(key)) {
+					storage.setItem(key, value);
+				}
+			});
+			this._storage = storage;
+			this.persistManagedKeys();
+			this._staleStorage = null;
+		} catch {
+			this._staleStorage = storage;
+			this._storage = null;
+			this._mode = 'memory';
+		}
 	}
 
 	private switchToFallbackStorage(key: string, value: string) {
@@ -283,6 +340,7 @@ class SafeStorage implements Storage {
 	}
 
 	public clear() {
+		this.restoreAvailableStorage();
 		if (this._storage !== null) {
 			const storage = this._storage;
 			try {
@@ -306,6 +364,7 @@ class SafeStorage implements Storage {
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 	public getItem<T extends string = string>(key: string): T | null {
 		this.markManagedKey(key);
+		this.restoreAvailableStorage();
 		if (this._storage !== null) {
 			try {
 				const value = this._storage.getItem(key);
@@ -328,6 +387,7 @@ class SafeStorage implements Storage {
 
 	public removeItem(key: string) {
 		this.markManagedKey(key);
+		this.restoreAvailableStorage();
 		if (this._storage !== null) {
 			try {
 				this._storage.removeItem(key);
@@ -341,6 +401,7 @@ class SafeStorage implements Storage {
 
 	public setItem(key: string, value: string) {
 		this.markManagedKey(key);
+		this.restoreAvailableStorage();
 		if (this._storage !== null) {
 			try {
 				this._storage.setItem(key, value);

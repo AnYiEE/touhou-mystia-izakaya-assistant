@@ -2,7 +2,11 @@ import { STORAGE_KEY, THEME_MAP, applyTheme, parseTheme } from '@/design/hooks';
 import { type TTheme } from '@/design/hooks/use-theme/types';
 import { type ISyncNamespaceSerializer } from '@/lib/account/sync';
 import { safeStorage } from '@/utilities';
-import { checkSnapshotEqual, createMergeResult } from './utils';
+import {
+	checkSnapshotEqual,
+	createMergeResult,
+	createSerializerConflict,
+} from './utils';
 
 export type TThemeSnapshot = TTheme;
 
@@ -18,18 +22,65 @@ export const themeSerializer = {
 	getLocalSnapshot() {
 		return parseTheme(safeStorage.getItem(STORAGE_KEY));
 	},
-	merge({ cloud, local }) {
+	merge({ allowBaseNullAutoMerge = false, base, cloud, local, namespace }) {
+		const defaultSnapshot = this.getDefaultSnapshot();
+
 		if (cloud === null) {
 			return createMergeResult({
 				data: local,
-				shouldUpload: !checkSnapshotEqual(
-					local,
-					this.getDefaultSnapshot()
-				),
+				shouldUpload: !checkSnapshotEqual(local, defaultSnapshot),
+			});
+		}
+		if (checkSnapshotEqual(local, cloud)) {
+			return createMergeResult({ data: cloud, shouldUpload: false });
+		}
+		if (base === null) {
+			if (checkSnapshotEqual(local, defaultSnapshot)) {
+				if (allowBaseNullAutoMerge) {
+					return createMergeResult({
+						data: cloud,
+						shouldUpload: false,
+					});
+				}
+
+				return createMergeResult({
+					conflict: createSerializerConflict({
+						cloud,
+						local,
+						namespace,
+					}),
+					data: cloud,
+					shouldUpload: false,
+				});
+			}
+			if (checkSnapshotEqual(cloud, defaultSnapshot)) {
+				return createMergeResult({ data: local, shouldUpload: true });
+			}
+			if (allowBaseNullAutoMerge) {
+				return createMergeResult({ data: cloud, shouldUpload: false });
+			}
+
+			return createMergeResult({
+				conflict: createSerializerConflict({ cloud, local, namespace }),
+				data: cloud,
+				shouldUpload: false,
 			});
 		}
 
-		return createMergeResult({ data: cloud, shouldUpload: false });
+		const hasLocalChange = !checkSnapshotEqual(local, base);
+		const hasCloudChange = !checkSnapshotEqual(cloud, base);
+		if (!hasLocalChange) {
+			return createMergeResult({ data: cloud, shouldUpload: false });
+		}
+		if (!hasCloudChange) {
+			return createMergeResult({ data: local, shouldUpload: true });
+		}
+
+		return createMergeResult({
+			conflict: createSerializerConflict({ cloud, local, namespace }),
+			data: cloud,
+			shouldUpload: false,
+		});
 	},
 	migrate(data, version) {
 		if (version !== 1) {

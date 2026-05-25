@@ -3,6 +3,7 @@ import { v7 as uuid, validate } from 'uuid';
 
 import {
 	checkBackupCodeLockLostError,
+	checkBackupCodeLockTimeoutError,
 	checkBackupFileNotFoundError,
 	checkIpFrequency,
 	deleteFile,
@@ -119,7 +120,7 @@ export async function POST(request: NextRequest) {
 	const recentRecord = await checkIpFrequency(
 		'created_at',
 		now - FREQUENCY_TTL,
-		{ ip, ua, userId }
+		{ ip }
 	);
 	if (recentRecord.status === 429) {
 		return createNoStoreErrorResponse('Requests are too frequent', 429);
@@ -178,12 +179,6 @@ export async function POST(request: NextRequest) {
 				throwIfBackupCodeLockLost(signal);
 			} catch (error) {
 				if (checkBackupCodeLockLostError(error)) {
-					await restoreBackupFile({
-						code,
-						codeHash,
-						hadPreviousFile,
-						previousFileContent,
-					});
 					return createNoStoreErrorResponse(
 						'backup-code-lock-lost',
 						409
@@ -310,6 +305,9 @@ export async function POST(request: NextRequest) {
 	} catch (error) {
 		if (checkBackupCodeLockLostError(error)) {
 			return createNoStoreErrorResponse('backup-code-lock-lost', 409);
+		}
+		if (checkBackupCodeLockTimeoutError(error)) {
+			return createNoStoreErrorResponse('backup-code-lock-timeout', 409);
 		}
 
 		throw error;

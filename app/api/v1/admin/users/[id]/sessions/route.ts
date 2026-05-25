@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server';
 
 import {
+	checkAccountCookieSecurityResponse,
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
@@ -13,8 +14,8 @@ import {
 	authenticateAdminRequest,
 	checkAdminCsrfResponse,
 	checkAdminFeatureResponse,
+	createAdminAuthErrorResponse,
 } from '../../../utils';
-import { clearAdminSessionCookie } from '@/lib/account/server/admin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -38,6 +39,11 @@ export async function DELETE(
 		return sameOriginResponse;
 	}
 
+	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	if (cookieSecurityResponse !== null) {
+		return cookieSecurityResponse;
+	}
+
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
 		'admin-delete-user-sessions'
@@ -48,13 +54,11 @@ export async function DELETE(
 
 	const auth = authenticateAdminRequest(request);
 	if (auth.status === 'error') {
-		const response = createNoStoreErrorResponse(
+		return createAdminAuthErrorResponse(
+			request,
 			auth.message,
 			auth.httpStatus
 		);
-		clearAdminSessionCookie(response, request);
-
-		return response;
 	}
 	const csrfResponse = checkAdminCsrfResponse(request, auth.token);
 	if (csrfResponse !== null) {

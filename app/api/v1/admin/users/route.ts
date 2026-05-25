@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server';
 
 import {
+	checkAccountCookieSecurityResponse,
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
@@ -10,7 +11,11 @@ import {
 	createNoStoreJsonResponse,
 } from '@/api/v1/utils';
 import { type IListUsersOptions } from '@/actions/account/users';
-import { authenticateAdminRequest, checkAdminFeatureResponse } from '../utils';
+import {
+	authenticateAdminRequest,
+	checkAdminFeatureResponse,
+	createAdminAuthErrorResponse,
+} from '../utils';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -59,6 +64,11 @@ export async function GET(request: NextRequest) {
 		return sameOriginResponse;
 	}
 
+	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	if (cookieSecurityResponse !== null) {
+		return cookieSecurityResponse;
+	}
+
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
 		'admin-list-users'
@@ -69,7 +79,11 @@ export async function GET(request: NextRequest) {
 
 	const auth = authenticateAdminRequest(request);
 	if (auth.status === 'error') {
-		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
+		return createAdminAuthErrorResponse(
+			request,
+			auth.message,
+			auth.httpStatus
+		);
 	}
 
 	const [usersModule, userModule] = await Promise.all([

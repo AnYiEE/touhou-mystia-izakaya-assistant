@@ -3,6 +3,7 @@ import { env } from 'node:process';
 
 import {
 	checkBackupCodeLockLostError,
+	checkBackupCodeLockTimeoutError,
 	checkBackupFileNotFoundError,
 	deleteExpiredBackupImportRecords,
 	deleteFile,
@@ -137,8 +138,8 @@ export async function DELETE(
 
 				try {
 					throwIfBackupCodeLockLost(signal);
-					markBackupCodeLockCommitted(signal);
 					await deleteFile(code);
+					throwIfBackupCodeLockLost(signal);
 					deletedFileCount++;
 				} catch (error) {
 					if (checkBackupCodeLockLostError(error)) {
@@ -157,6 +158,8 @@ export async function DELETE(
 				try {
 					throwIfBackupCodeLockLost(signal);
 					await deleteRecord(code);
+					throwIfBackupCodeLockLost(signal);
+					markBackupCodeLockCommitted(signal);
 					deletedRecordCount++;
 				} catch (error) {
 					if (checkBackupCodeLockLostError(error)) {
@@ -182,8 +185,9 @@ export async function DELETE(
 
 				try {
 					throwIfBackupCodeLockLost(signal);
-					markBackupCodeLockCommitted(signal);
 					await deleteFile(code);
+					throwIfBackupCodeLockLost(signal);
+					markBackupCodeLockCommitted(signal);
 					orphanDeletedCount++;
 				} catch (error) {
 					if (checkBackupCodeLockLostError(error)) {
@@ -201,6 +205,9 @@ export async function DELETE(
 	} catch (error) {
 		if (checkBackupCodeLockLostError(error)) {
 			return createNoStoreErrorResponse('backup-code-lock-lost', 409);
+		}
+		if (checkBackupCodeLockTimeoutError(error)) {
+			return createNoStoreErrorResponse('backup-code-lock-timeout', 409);
 		}
 
 		throw error;

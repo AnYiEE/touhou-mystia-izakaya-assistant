@@ -106,17 +106,19 @@ export default function AccountPasswordMustChangeModal() {
 				<Input
 					label="当前密码"
 					type="password"
+					autoComplete="current-password"
 					value={currentPassword}
 					onValueChange={setCurrentPassword}
 				/>
 				<Input
 					label="新密码"
 					type="password"
+					autoComplete="new-password"
 					value={newPassword}
 					onValueChange={setNewPassword}
 				/>
 				{message !== null && (
-					<p className="text-sm text-foreground-500">{message}</p>
+					<p className="text-sm text-danger">{message}</p>
 				)}
 				<div className="flex flex-wrap justify-end gap-2">
 					<Button

@@ -35,11 +35,16 @@ export default function AccountOnboarding() {
 		if (isSubmitting) {
 			return;
 		}
+		const normalizedUsername = username.trim();
+		if (normalizedUsername.length === 0 || password.length === 0) {
+			setMessage('请输入用户名和密码');
+			return;
+		}
 
 		setIsSubmitting(true);
 		setMessage(null);
 		const request = authMode === 'login' ? loginAccount : registerAccount;
-		void request({ password, username })
+		void request({ password, username: normalizedUsername })
 			.then(refreshAccountState)
 			.then(() => {
 				accountStore.persistence.hasSkippedOnboarding.set(true);
@@ -97,18 +102,24 @@ export default function AccountOnboarding() {
 					</Button>
 				</div>
 				<Input
+					autoComplete="username"
 					label="用户名"
 					value={username}
 					onValueChange={setUsername}
 				/>
 				<Input
+					autoComplete={
+						authMode === 'login'
+							? 'current-password'
+							: 'new-password'
+					}
 					label="密码"
 					type="password"
 					value={password}
 					onValueChange={setPassword}
 				/>
 				{message !== null && (
-					<p className="text-sm text-foreground-500">{message}</p>
+					<p className="text-sm text-danger">{message}</p>
 				)}
 				<div className="flex justify-end gap-2">
 					<Button
@@ -125,7 +136,7 @@ export default function AccountOnboarding() {
 						color="primary"
 						isDisabled={
 							isSubmitting ||
-							username.length === 0 ||
+							username.trim().length === 0 ||
 							password.length === 0
 						}
 						isLoading={isSubmitting}

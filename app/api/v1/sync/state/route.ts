@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server';
 
 import {
+	checkAccountCookieSecurityResponse,
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
@@ -51,6 +52,11 @@ export async function GET(request: NextRequest) {
 		return sameOriginResponse;
 	}
 
+	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	if (cookieSecurityResponse !== null) {
+		return cookieSecurityResponse;
+	}
+
 	const [authModule, userStateModule] = await Promise.all([
 		import('@/lib/account/server/auth'),
 		import('@/actions/account/userState'),
@@ -94,6 +100,11 @@ export async function PUT(request: NextRequest) {
 		return sameOriginResponse;
 	}
 
+	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	if (cookieSecurityResponse !== null) {
+		return cookieSecurityResponse;
+	}
+
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
 		'sync-state-put'
@@ -127,8 +138,9 @@ export async function PUT(request: NextRequest) {
 	}
 
 	const results: TSyncStatePutResult[] = [];
+	const batchUpdatedAt = Date.now();
 	const preparedChanges = body.changes.map((change) => {
-		const updatedAt = Date.now();
+		const updatedAt = batchUpdatedAt;
 		const nextRevision = change.revision + 1;
 		const record = createUserStateRecord(
 			auth.data.user.id,

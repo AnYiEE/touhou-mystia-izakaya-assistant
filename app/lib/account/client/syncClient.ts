@@ -22,6 +22,7 @@ import {
 	renewAccountSyncLease,
 } from './lease';
 import {
+	checkSnapshotHashMatches,
 	completeDirtyQueueEntryUpload,
 	createSnapshotHash,
 	markAccountSyncDirty,
@@ -128,7 +129,9 @@ function updatePendingCount(entries?: IDirtyQueueEntry[]) {
 	const pendingEntries =
 		entries ?? (user === null ? [] : readDirtyQueueEntries(user.id));
 
-	accountStore.shared.sync.pendingCount.set(pendingEntries.length);
+	accountStore.shared.sync.pendingCount.set(
+		pendingEntries.filter((e) => e.paused === null).length
+	);
 }
 
 function clearSyncTimers() {
@@ -595,7 +598,7 @@ function handleConflictUpload({
 	stateEpoch: number;
 	userId: string;
 }) {
-	if (createSnapshotHash(result.data) === entry.snapshotHash) {
+	if (checkSnapshotHashMatches(result.data, entry.snapshotHash)) {
 		handleSuccessfulUpload({
 			entry,
 			revision: result.revision,
@@ -693,6 +696,16 @@ export async function flushAccountSyncQueue() {
 			activeFlushRun.generation === generation &&
 			activeFlushRun.userId === context.user.id
 		) {
+			void activeFlushRun.promise.then((isFlushed) => {
+				if (
+					checkCurrentSyncRun(generation, context.user.id) &&
+					!isFlushed
+				) {
+					// eslint-disable-next-line @typescript-eslint/no-use-before-define
+					scheduleAccountSyncFlush();
+				}
+			});
+
 			return activeFlushRun.promise;
 		}
 
@@ -749,11 +762,16 @@ export async function flushAccountSyncQueue() {
 			const entryMap = new Map(
 				entries.map((entry) => [entry.namespace, entry] as const)
 			);
+			let hasUnresolvedResult = false;
 			const uploadedNamespaces: TSyncNamespace[] = [];
-			response.results.forEach((result) => {
+			for (const result of response.results) {
 				const entry = entryMap.get(result.namespace);
 				if (entry === undefined) {
-					return;
+					if (result.status !== 'ok') {
+						hasUnresolvedResult = true;
+					}
+
+					continue;
 				}
 				if (result.status === 'ok') {
 					handleSuccessfulUpload({
@@ -763,7 +781,7 @@ export async function flushAccountSyncQueue() {
 						userId: context.user.id,
 					});
 					uploadedNamespaces.push(result.namespace);
-					return;
+					continue;
 				}
 				if (result.status === 'conflict') {
 					const conflictResult = handleConflictUpload({
@@ -774,12 +792,17 @@ export async function flushAccountSyncQueue() {
 					});
 					if (conflictResult === 'confirmed') {
 						uploadedNamespaces.push(result.namespace);
+						continue;
 					}
 					if (conflictResult === 'stale') {
 						shouldScheduleRetryAfterFlush = true;
 					}
+					hasUnresolvedResult = true;
+					continue;
 				}
-			});
+
+				hasUnresolvedResult = true;
+			}
 			setCurrentAccountUserStateEpoch(
 				context.user.id,
 				response.state_epoch
@@ -788,9 +811,7 @@ export async function flushAccountSyncQueue() {
 			accountStore.shared.sync.failedAttempts.set(0);
 			accountStore.shared.sync.lastError.set(null);
 			accountStore.shared.sync.lastResult.set(
-				response.results.some((result) => result.status !== 'ok')
-					? 'partial'
-					: 'success'
+				hasUnresolvedResult ? 'partial' : 'success'
 			);
 			accountStore.shared.sync.lastSyncedAt.set(Date.now());
 			if (uploadedNamespaces.length > 0) {
@@ -804,7 +825,7 @@ export async function flushAccountSyncQueue() {
 				});
 			}
 
-			return response.results.every((result) => result.status === 'ok');
+			return !hasUnresolvedResult;
 		} catch (error) {
 			if (error instanceof AccountApiError && error.status === 401) {
 				if (checkCurrentSyncRun(generation, context.user.id)) {

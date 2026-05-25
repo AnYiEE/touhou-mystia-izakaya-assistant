@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server';
 
 import {
+	checkAccountCookieSecurityResponse,
 	checkAccountFeatureResponse,
 	checkSameOriginResponse,
 } from '@/api/v1/accountRouteUtils';
@@ -22,6 +23,11 @@ export async function GET(request: NextRequest) {
 	const sameOriginResponse = checkSameOriginResponse(request);
 	if (sameOriginResponse !== null) {
 		return sameOriginResponse;
+	}
+
+	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	if (cookieSecurityResponse !== null) {
+		return cookieSecurityResponse;
 	}
 
 	const [authModule, userModule, userStateModule] = await Promise.all([

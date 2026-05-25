@@ -164,7 +164,7 @@ export function applyRemoteAccountRecords({
 				...meta,
 				lastAppliedRemoteHash: { ...meta.lastAppliedRemoteHash },
 				revisions: { ...meta.revisions },
-				state_epoch: previousMeta?.state_epoch ?? 0,
+				state_epoch: meta.state_epoch,
 			};
 			if (previousMeta?.clearedStateEpoch !== undefined) {
 				partialMeta.clearedStateEpoch = previousMeta.clearedStateEpoch;

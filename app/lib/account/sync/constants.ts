@@ -7,6 +7,9 @@ export const SYNC_NAMESPACE_MAP = {
 	tutorialCustomerRare: 'tutorial.customer_rare',
 } as const;
 
+type TSyncNamespace =
+	(typeof SYNC_NAMESPACE_MAP)[keyof typeof SYNC_NAMESPACE_MAP];
+
 export const SYNC_SCHEMA_VERSION_MAP = {
 	[SYNC_NAMESPACE_MAP.customerNormalMeals]: 1,
 	[SYNC_NAMESPACE_MAP.customerRareMeals]: 1,
@@ -14,4 +17,4 @@ export const SYNC_SCHEMA_VERSION_MAP = {
 	[SYNC_NAMESPACE_MAP.globalPreferences]: 1,
 	[SYNC_NAMESPACE_MAP.theme]: 1,
 	[SYNC_NAMESPACE_MAP.tutorialCustomerRare]: 1,
-} as const;
+} as const satisfies Record<TSyncNamespace, number>;

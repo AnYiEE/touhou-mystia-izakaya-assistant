@@ -103,9 +103,7 @@ export async function POST(request: NextRequest) {
 	const credential = await credentialsModule.getCredentialByUserId(user.id);
 	if (credential === null) {
 		await passwordModule.consumePasswordVerificationCost(body.password);
-		console.warn('Account credential is missing during login.', {
-			userId: user.id,
-		});
+		console.warn('Account credential is missing during login.');
 		return createInvalidLoginResponse();
 	}
 

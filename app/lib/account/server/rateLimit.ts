@@ -11,6 +11,7 @@ export interface IRateLimitResult {
 
 interface IRateLimitBucket {
 	count: number;
+	lastAccessedAt: number;
 	resetAt: number;
 }
 
@@ -35,26 +36,28 @@ function ensureRateLimitBucketCapacity(now: number) {
 	}
 
 	if (rateLimitBucketMap.size < MAX_RATE_LIMIT_BUCKETS) {
-		return true;
+		return;
 	}
 
 	clearExpiredRateLimitBuckets(now);
 	lastRateLimitCleanupAt = now;
 
-	return rateLimitBucketMap.size < MAX_RATE_LIMIT_BUCKETS;
-}
+	if (rateLimitBucketMap.size < MAX_RATE_LIMIT_BUCKETS) {
+		return;
+	}
 
-function getNextRateLimitBucketResetAfter(now: number) {
-	let resetAt = Number.POSITIVE_INFINITY;
-	rateLimitBucketMap.forEach((bucket) => {
-		if (bucket.resetAt < resetAt) {
-			resetAt = bucket.resetAt;
+	let oldestKey: string | null = null;
+	let oldestAccessedAt = Number.POSITIVE_INFINITY;
+	for (const [key, bucket] of rateLimitBucketMap) {
+		if (bucket.lastAccessedAt < oldestAccessedAt) {
+			oldestAccessedAt = bucket.lastAccessedAt;
+			oldestKey = key;
 		}
-	});
+	}
 
-	return Number.isFinite(resetAt)
-		? Math.max(1, Math.ceil((resetAt - now) / 1000))
-		: 1;
+	if (oldestKey !== null) {
+		rateLimitBucketMap.delete(oldestKey);
+	}
 }
 
 export function checkRateLimit(
@@ -76,17 +79,16 @@ export function checkRateLimit(
 	const bucket = rateLimitBucketMap.get(key);
 
 	if (!bucket || bucket.resetAt <= now) {
-		if (!ensureRateLimitBucketCapacity(now)) {
-			return {
-				allowed: false,
-				remaining: 0,
-				retryAfter: getNextRateLimitBucketResetAfter(now),
-			};
-		}
+		ensureRateLimitBucketCapacity(now);
 
-		rateLimitBucketMap.set(key, { count: 1, resetAt: now + windowMs });
+		rateLimitBucketMap.set(key, {
+			count: 1,
+			lastAccessedAt: now,
+			resetAt: now + windowMs,
+		});
 		return { allowed: true, remaining: limit - 1, retryAfter: 0 };
 	}
+	bucket.lastAccessedAt = now;
 
 	if (bucket.count >= limit) {
 		return {

@@ -49,11 +49,13 @@ export default function AdminPage() {
 	const [page, setPage] = useState(1);
 	const [password, setPassword] = useState('');
 	const [query, setQuery] = useState('');
+	const [queryInput, setQueryInput] = useState('');
 	const [status, setStatus] = useState<TUserStatus | ''>('');
 	const [username, setUsername] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
 	const adminAuthRequestIdRef = useRef(0);
 	const refreshUsersRequestIdRef = useRef(0);
+	const trimmedUsername = username.trim();
 
 	const refreshUsers = useCallback(() => {
 		const requestId = refreshUsersRequestIdRef.current + 1;
@@ -131,6 +133,17 @@ export default function AdminPage() {
 	}, []);
 
 	useEffect(() => {
+		const timeoutId = globalThis.setTimeout(() => {
+			setPage(1);
+			setQuery(queryInput);
+		}, 300);
+
+		return () => {
+			globalThis.clearTimeout(timeoutId);
+		};
+	}, [queryInput]);
+
+	useEffect(() => {
 		checkAdminAuth();
 	}, [checkAdminAuth]);
 
@@ -185,7 +198,7 @@ export default function AdminPage() {
 						color="primary"
 						isDisabled={
 							isLoading ||
-							username.length === 0 ||
+							trimmedUsername.length === 0 ||
 							password.length === 0
 						}
 						isLoading={isLoading}
@@ -194,12 +207,18 @@ export default function AdminPage() {
 							if (isLoading) {
 								return;
 							}
+							if (trimmedUsername.length === 0) {
+								return;
+							}
 
 							const requestId = adminAuthRequestIdRef.current + 1;
 							adminAuthRequestIdRef.current = requestId;
 							setIsLoading(true);
 							setMessage(null);
-							void loginAdmin({ password, username })
+							void loginAdmin({
+								password,
+								username: trimmedUsername,
+							})
 								.then((data) => {
 									if (
 										adminAuthRequestIdRef.current !==
@@ -320,10 +339,9 @@ export default function AdminPage() {
 			<div className="grid w-full gap-2 lg:w-2/3 lg:grid-cols-[1fr_12rem_auto]">
 				<Input
 					label="搜索用户名"
-					value={query}
+					value={queryInput}
 					onValueChange={(value) => {
-						setPage(1);
-						setQuery(value);
+						setQueryInput(value);
 					}}
 				/>
 				<label className="flex flex-col gap-1 text-sm text-foreground-500">

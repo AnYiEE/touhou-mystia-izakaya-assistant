@@ -43,7 +43,10 @@
 		await cache.put(request, response);
 	}
 
-	async function fetchAndCache(/** @type {Request} */ request) {
+	async function fetchAndCache(
+		/** @type {Request} */ request,
+		/** @type {FetchEvent} */ event
+	) {
 		const response = await fetch(request, {
 			cache: 'no-cache',
 			// When caching cross-origin resources, the mode must be set to `cors`,
@@ -55,7 +58,9 @@
 		});
 
 		if (response.ok) {
-			void putInCache(request, response.clone(), VERSION);
+			event.waitUntil(
+				putInCache(request, response.clone(), VERSION).catch(() => {})
+			);
 		}
 
 		return response;
@@ -63,27 +68,31 @@
 
 	async function fetchWithRetry(
 		/** @type {Request} */ request,
-		/** @type {number} */ retries
+		/** @type {number} */ retries,
+		/** @type {FetchEvent} */ event
 	) {
 		try {
-			return await fetchAndCache(request);
+			return await fetchAndCache(request, event);
 		} catch (error) {
 			if (retries > 1) {
 				await delay(1000);
-				return fetchWithRetry(request, retries - 1);
+				return fetchWithRetry(request, retries - 1, event);
 			}
 			throw error;
 		}
 	}
 
-	async function cacheFirst(/** @type {Request} */ request) {
+	async function cacheFirst(
+		/** @type {Request} */ request,
+		/** @type {FetchEvent} */ event
+	) {
 		const responseFromCache = await caches.match(request);
 		if (responseFromCache !== undefined) {
 			return responseFromCache;
 		}
 
 		try {
-			return await fetchWithRetry(request, 3);
+			return await fetchWithRetry(request, 3, event);
 		} catch {
 			return networkErrorResponse.clone();
 		}
@@ -96,12 +105,12 @@
 		const responseFromCache = await caches.match(request);
 
 		if (responseFromCache !== undefined) {
-			event.waitUntil(fetchWithRetry(request, 3).catch(() => {}));
+			event.waitUntil(fetchWithRetry(request, 3, event).catch(() => {}));
 			return responseFromCache;
 		}
 
 		try {
-			return await fetchWithRetry(request, 3);
+			return await fetchWithRetry(request, 3, event);
 		} catch {
 			return networkErrorResponse.clone();
 		}
@@ -134,7 +143,15 @@
 		const isCdnServer = host === CDN_HOST;
 		const isSelfHost = host === location.host;
 
-		if (!(isCdnServer || isSelfHost) || protocol !== 'https:') {
+		const isLocalhost =
+			host === 'localhost' ||
+			host === '127.0.0.1' ||
+			host.includes('localhost:');
+
+		if (
+			!(isCdnServer || isSelfHost) ||
+			(protocol !== 'https:' && !isLocalhost)
+		) {
 			return;
 		}
 		if (pathname === '/api' || pathname.startsWith('/api/')) {
@@ -143,7 +160,7 @@
 
 		if (pathname.includes('.')) {
 			// Cache all static assets (file has extension).
-			event.respondWith(cacheFirst(event.request));
+			event.respondWith(cacheFirst(event.request, event));
 		} else {
 			// Cache all routes (file has no extension).
 			event.respondWith(networkFirst(event.request, event));

@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server';
 
 import {
+	checkAccountCookieSecurityResponse,
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
@@ -24,6 +25,11 @@ export async function GET(request: NextRequest) {
 		return sameOriginResponse;
 	}
 
+	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	if (cookieSecurityResponse !== null) {
+		return cookieSecurityResponse;
+	}
+
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
 		'account-export'
@@ -39,13 +45,22 @@ export async function GET(request: NextRequest) {
 	]);
 	const auth = await authModule.authenticateAccountRequest(request);
 	if (auth.status === 'error') {
-		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
+		const response = createNoStoreErrorResponse(
+			auth.message,
+			auth.httpStatus
+		);
+		authModule.clearAccountSessionCookie(response, request);
+
+		return response;
 	}
 	const snapshot = await userStateModule.getUserStateSnapshot(
 		auth.data.user.id
 	);
 	if (snapshot === null) {
-		return createNoStoreErrorResponse('unauthorized', 401);
+		const response = createNoStoreErrorResponse('unauthorized', 401);
+		authModule.clearAccountSessionCookie(response, request);
+
+		return response;
 	}
 
 	return createNoStoreJsonResponse({

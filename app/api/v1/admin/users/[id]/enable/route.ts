@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server';
 
 import {
+	checkAccountCookieSecurityResponse,
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
@@ -14,6 +15,7 @@ import {
 	authenticateAdminRequest,
 	checkAdminCsrfResponse,
 	checkAdminFeatureResponse,
+	createAdminAuthErrorResponse,
 } from '../../../utils';
 
 export const runtime = 'nodejs';
@@ -38,6 +40,11 @@ export async function POST(
 		return sameOriginResponse;
 	}
 
+	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	if (cookieSecurityResponse !== null) {
+		return cookieSecurityResponse;
+	}
+
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
 		'admin-enable-user'
@@ -48,7 +55,11 @@ export async function POST(
 
 	const auth = authenticateAdminRequest(request);
 	if (auth.status === 'error') {
-		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
+		return createAdminAuthErrorResponse(
+			request,
+			auth.message,
+			auth.httpStatus
+		);
 	}
 	const csrfResponse = checkAdminCsrfResponse(request, auth.token);
 	if (csrfResponse !== null) {

@@ -2,6 +2,7 @@ import { type NextRequest } from 'next/server';
 
 import {
 	checkAdminFeatureEnabled,
+	clearAdminSessionCookie,
 	getAdminSessionToken,
 	verifyAdminCsrfToken,
 	verifyAdminSessionToken,
@@ -36,6 +37,17 @@ export function authenticateAdminRequest(request: NextRequest) {
 	}
 
 	return { payload, status: 'ok' as const, token };
+}
+
+export function createAdminAuthErrorResponse(
+	request: NextRequest,
+	message: string,
+	httpStatus: number
+) {
+	const response = createNoStoreErrorResponse(message, httpStatus);
+	clearAdminSessionCookie(response, request);
+
+	return response;
 }
 
 export function checkAdminCsrfResponse(request: NextRequest, token: string) {

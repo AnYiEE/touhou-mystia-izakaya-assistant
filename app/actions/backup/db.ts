@@ -40,18 +40,25 @@ export async function checkIpFrequency(
 		userId,
 	}: {
 		ip: TBackupFileRecord['ip_address'];
-		ua: TBackupFileRecord['user_agent'];
-		userId: TBackupFileRecord['user_id'];
+		ua?: TBackupFileRecord['user_agent'];
+		userId?: TBackupFileRecord['user_id'];
 	}
 ) {
-	const record = await db
+	let query = db
 		.selectFrom(TABLE_NAME)
 		.select('code')
 		.where(column, '>', time)
-		.where('ip_address', '=', ip)
-		.where('user_agent', '=', ua)
-		.where('user_id', '=', userId)
-		.executeTakeFirst();
+		.where('ip_address', '=', ip);
+
+	if (ua !== undefined) {
+		query = query.where('user_agent', '=', ua);
+	}
+
+	if (userId !== undefined) {
+		query = query.where('user_id', '=', userId);
+	}
+
+	const record = await query.executeTakeFirst();
 
 	if (record === undefined) {
 		return generateResponse(undefined, 201);
@@ -116,12 +123,6 @@ export async function setRecord(backupFileRecord: TBackupFileRecordNew) {
 			.values(backupFileRecord)
 			.returningAll()
 			.executeTakeFirst();
-		if (nextRecord !== undefined) {
-			await trx
-				.deleteFrom(IMPORT_TABLE_NAME)
-				.where('code', '=', backupFileRecord.code)
-				.execute();
-		}
 
 		return nextRecord;
 	});
@@ -140,12 +141,6 @@ export async function updateRecord(
 			.where('code', '=', code)
 			.returningAll()
 			.executeTakeFirst();
-		if (nextRecord !== undefined) {
-			await trx
-				.deleteFrom(IMPORT_TABLE_NAME)
-				.where('code', '=', code)
-				.execute();
-		}
 
 		return nextRecord;
 	});

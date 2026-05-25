@@ -97,7 +97,7 @@ export function useTheme() {
 			return;
 		}
 
-		applyTheme(storedTheme ?? THEME_MAP.SYSTEM, storedTheme !== null);
+		applyTheme(storedTheme ?? THEME_MAP.SYSTEM, true);
 	}, []);
 
 	useMounted(() => {

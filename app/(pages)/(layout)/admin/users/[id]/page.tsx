@@ -19,10 +19,21 @@ import {
 	fetchAdminUser,
 	resetAdminUserPassword,
 } from '@/lib/account/client/api';
+import {
+	PASSWORD_MAX_LENGTH,
+	PASSWORD_MIN_LENGTH,
+} from '@/lib/account/shared/constants';
 import { accountStore } from '@/stores/account';
 
 function clearAdminSession() {
 	accountStore.shared.adminCsrfToken.set(null);
+}
+
+function checkPasswordLength(password: string) {
+	return (
+		password.length >= PASSWORD_MIN_LENGTH &&
+		password.length <= PASSWORD_MAX_LENGTH
+	);
 }
 
 function checkAdminSessionUnauthorized(error: unknown) {
@@ -85,18 +96,31 @@ export default function AdminUserDetailPage() {
 	);
 
 	useEffect(() => {
+		let isMounted = true;
 		void fetchAdminMe()
 			.then((data) => {
+				if (!isMounted) {
+					return;
+				}
 				accountStore.shared.adminCsrfToken.set(data.csrf_token);
 				setAdmin(data);
 			})
 			.catch(() => {
+				if (!isMounted) {
+					return;
+				}
 				clearAdminSession();
 				setAdmin(null);
 			})
 			.finally(() => {
-				setIsAuthLoading(false);
+				if (isMounted) {
+					setIsAuthLoading(false);
+				}
 			});
+
+		return () => {
+			isMounted = false;
+		};
 	}, []);
 
 	useEffect(() => {
@@ -164,6 +188,7 @@ export default function AdminUserDetailPage() {
 	const { csrf_token: adminCsrfToken } = admin;
 	const canDisableUser = user.status === 'active';
 	const canEnableUser = user.status === 'disabled';
+	const isPasswordValid = checkPasswordLength(password);
 	const runAction = (
 		action: () => Promise<unknown>,
 		success: string,
@@ -178,12 +203,12 @@ export default function AdminUserDetailPage() {
 				if (!checkDetailRequestId(requestId)) {
 					return;
 				}
-				setMessage(success);
-				onSuccess?.();
-				requestSucceeded = true;
 				const data = await fetchAdminUser(id);
 				if (checkDetailRequestId(requestId)) {
+					onSuccess?.();
 					setDetail(data);
+					setMessage(success);
+					requestSucceeded = true;
 				}
 			})
 			.catch((error: unknown) => {
@@ -243,10 +268,15 @@ export default function AdminUserDetailPage() {
 				<div className="flex flex-wrap gap-2">
 					<Button
 						color="warning"
-						isDisabled={password.length === 0}
+						isDisabled={!isPasswordValid}
 						isLoading={isLoading}
 						variant="flat"
 						onPress={() => {
+							if (!isPasswordValid) {
+								setMessage('密码长度需为 8 到 128 个字符');
+								return;
+							}
+
 							runAction(
 								() =>
 									resetAdminUserPassword(
