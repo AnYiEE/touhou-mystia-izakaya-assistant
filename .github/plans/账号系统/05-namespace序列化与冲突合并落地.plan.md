@@ -11,6 +11,7 @@ isProject: false
 - 只同步最终方案声明的字段。
 - 每个 namespace 有 serializer、validator、migration、merge。
 - 不直接上传完整 store `persistence`。
+- `globalStore.persistence.donationModal` 作为账号级交互节奏同步，避免多设备重复触发捐赠提示。
 - 合并优先无感，无法安全合并时进入冲突窗口。
 
 ## 二、新增文件
@@ -43,6 +44,9 @@ isProject: false
 同步字段：
 
 - `customerCardTagsTooltip`
+- `donationModal.interactionCount`
+- `donationModal.lastMilestoneShown`
+- `donationModal.lastShown`
 - `hiddenItems.dlcs`
 - `suggestMeals.enabled`
 - `suggestMeals.maxExtraIngredients`
@@ -65,7 +69,6 @@ isProject: false
 - `version`
 - `userId`
 - `cloudCode`
-- `donationModal`
 - 原始 `dirver`（历史拼写，勿改为 `driver`）
 
 ## 五、serializer 形状
@@ -174,7 +177,8 @@ export interface ISyncConflictItem<T = unknown> {
 
 ## 十、验证点
 
-- `global.preferences` 不包含 `userId`、`cloudCode`、`donationModal`。
+- `global.preferences` 不包含 `userId`、`cloudCode`、`version` 和原始 `dirver`。
+- `global.preferences` 包含 `donationModal.interactionCount`、`donationModal.lastMilestoneShown`、`donationModal.lastShown`，不包含 `shared.donationModal.isOpen`。
 - 服务端同步写入和旧备份码导入均拒绝或清洗 namespace 白名单外字段。
 - 普客/稀客套餐合并不产生重复套餐。
 - 普客/稀客套餐删除或排序冲突会进入人工冲突，不自动复活已删除套餐。

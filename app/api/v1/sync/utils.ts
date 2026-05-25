@@ -56,11 +56,13 @@ function isPlainObject(data: unknown): data is Record<string, unknown> {
 
 function hasExactKeys(data: Record<string, unknown>, keys: string[]) {
 	const actualKeys = Object.keys(data);
+	if (actualKeys.length !== keys.length) {
+		return false;
+	}
 
-	return (
-		actualKeys.length === keys.length &&
-		keys.every((key) => actualKeys.includes(key))
-	);
+	const actualKeySet = new Set(actualKeys);
+
+	return keys.every((key) => actualKeySet.has(key));
 }
 
 function isStringArray(data: unknown): data is string[] {
@@ -153,8 +155,10 @@ function validateGlobalPreferences(data: unknown) {
 		return false;
 	}
 
-	const { hiddenItems, popularTrend, suggestMeals, table } = data;
+	const { donationModal, hiddenItems, popularTrend, suggestMeals, table } =
+		data;
 	if (
+		!isPlainObject(donationModal) ||
 		!isPlainObject(hiddenItems) ||
 		!isPlainObject(popularTrend) ||
 		!isPlainObject(suggestMeals) ||
@@ -168,6 +172,7 @@ function validateGlobalPreferences(data: unknown) {
 	return (
 		hasExactKeys(data, [
 			'customerCardTagsTooltip',
+			'donationModal',
 			'famousShop',
 			'hiddenItems',
 			'highAppearance',
@@ -176,6 +181,11 @@ function validateGlobalPreferences(data: unknown) {
 			'table',
 			'tachie',
 			'vibrate',
+		]) &&
+		hasExactKeys(donationModal, [
+			'interactionCount',
+			'lastMilestoneShown',
+			'lastShown',
 		]) &&
 		hasExactKeys(hiddenItems, ['dlcs']) &&
 		hasExactKeys(popularTrend, ['isNegative', 'tag']) &&
@@ -195,6 +205,22 @@ function validateGlobalPreferences(data: unknown) {
 			'recipes',
 		]) &&
 		typeof data['customerCardTagsTooltip'] === 'boolean' &&
+		isIntegerInRange(
+			donationModal['interactionCount'],
+			0,
+			Number.MAX_SAFE_INTEGER
+		) &&
+		isIntegerInRange(
+			donationModal['lastMilestoneShown'],
+			0,
+			Number.MAX_SAFE_INTEGER
+		) &&
+		(donationModal['lastShown'] === null ||
+			isIntegerInRange(
+				donationModal['lastShown'],
+				0,
+				Number.MAX_SAFE_INTEGER
+			)) &&
 		typeof data['famousShop'] === 'boolean' &&
 		isAllowedStringArray(hiddenItems['dlcs'], dlcKeys) &&
 		typeof data['highAppearance'] === 'boolean' &&
@@ -257,7 +283,7 @@ function validateSyncStateData(change: ISyncStateChange) {
 
 	return (
 		isPlainObject(change.data) &&
-		'completed' in change.data &&
+		hasExactKeys(change.data, ['completed']) &&
 		typeof change.data['completed'] === 'boolean'
 	);
 }

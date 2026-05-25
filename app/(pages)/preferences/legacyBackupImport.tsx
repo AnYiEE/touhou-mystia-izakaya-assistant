@@ -42,6 +42,8 @@ export default function LegacyBackupImport() {
 							isImportingRef.current = true;
 							setMessage(null);
 							setIsImporting(true);
+							const previousCloudCode =
+								globalStore.persistence.cloudCode.get();
 							let hasImportedBackup = false;
 							void withAccountSyncPaused(async () => {
 								await importBackupCode(
@@ -59,7 +61,7 @@ export default function LegacyBackupImport() {
 								.catch((error: unknown) => {
 									if (!hasImportedBackup) {
 										globalStore.persistence.cloudCode.set(
-											normalizedCode
+											previousCloudCode
 										);
 									}
 									setMessage(

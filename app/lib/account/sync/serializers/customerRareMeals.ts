@@ -90,7 +90,9 @@ export const customerRareMealsSerializer = {
 		return normalizeCustomerRareMealsSnapshot(data);
 	},
 	setLocalSnapshot(data) {
-		customerRareStore.persistence.meals.set(data);
+		customerRareStore.persistence.meals.set(
+			normalizeCustomerRareMealsSnapshot(data)
+		);
 	},
 	validate(data): data is TCustomerRareMealsSnapshot {
 		return validateMealSnapshot(data, {

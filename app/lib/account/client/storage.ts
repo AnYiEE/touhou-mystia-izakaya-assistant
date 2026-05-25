@@ -20,12 +20,17 @@ export function readAccountJsonStorage<T>(key: string, fallback: T): T {
 		const parsed = JSON.parse(value) as T | null;
 		return parsed ?? fallback;
 	} catch {
+		safeStorage.removeItem(key);
 		return fallback;
 	}
 }
 
 export function writeAccountJsonStorage(key: string, value: unknown) {
-	safeStorage.setItem(key, JSON.stringify(value));
+	try {
+		safeStorage.setItem(key, JSON.stringify(value));
+	} catch {
+		// Ignore unexpected non-JSON values so sync callers keep running.
+	}
 }
 
 export function removeAccountStorage(key: string) {

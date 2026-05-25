@@ -65,28 +65,6 @@ await db.schema
 	.addColumn('expires_at', 'integer', (col) => col.notNull())
 	.execute();
 
-await db.schema
-	.createTable(TABLE_NAME_MAP.backupImportRecord)
-	.ifNotExists()
-	.addColumn('code', 'text', (col) => col.primaryKey())
-	.addColumn('user_id', 'text', (col) =>
-		col
-			.notNull()
-			.references(`${TABLE_NAME_MAP.user}.id`)
-			.onDelete('cascade')
-	)
-	.addColumn('results', 'text', (col) => col.notNull())
-	.addColumn('state_epoch', 'integer', (col) => col.notNull())
-	.addColumn('created_at', 'integer', (col) => col.notNull())
-	.execute();
-
-await db.schema
-	.createIndex('backup_imports_user_id_index')
-	.ifNotExists()
-	.on(TABLE_NAME_MAP.backupImportRecord)
-	.column('user_id')
-	.execute();
-
 const backupFileRecordTableColumns = await getTableColumns(
 	db,
 	TABLE_NAME_MAP.backupFileRecord

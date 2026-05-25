@@ -5,7 +5,7 @@ import { useEffect, useRef } from 'react';
 import { useMounted, usePathname } from '@/hooks';
 
 import { siteConfig } from '@/configs';
-import { accountStore, globalStore as store } from '@/stores';
+import { accountStore, globalStore } from '@/stores';
 import { setScriptUrlTag } from '@/utilities';
 
 const { analyticsApiUrl, analyticsScriptUrl, analyticsSiteId, baseURL } =
@@ -18,12 +18,10 @@ function push(...args: unknown[][]) {
 
 function getAnalyticsUserId() {
 	if (accountStore.shared.isLoggedIn.get()) {
-		return (
-			accountStore.shared.user.get()?.id ?? store.persistence.userId.get()
-		);
+		return accountStore.shared.user.get()?.id ?? null;
 	}
 
-	return store.persistence.userId.get();
+	return globalStore.persistence.userId.get();
 }
 
 function setAnalyticsUserId() {
@@ -117,7 +115,7 @@ function trackEventFunction(
 		['setDocumentTitle', document.title],
 		['trackEvent', category, action, name, value]
 	);
-	store.persistence.donationModal.interactionCount.set((count) => {
+	globalStore.persistence.donationModal.interactionCount.set((count) => {
 		if (count === Number.MAX_SAFE_INTEGER) {
 			return count;
 		}
@@ -179,10 +177,8 @@ export default function Analytics() {
 	const { pathname } = usePathname();
 	const isLoggedIn = accountStore.shared.isLoggedIn.use();
 	const user = accountStore.shared.user.use();
-	const fingerprintUserId = store.persistence.userId.use();
-	const analyticsUserId = isLoggedIn
-		? (user?.id ?? fingerprintUserId)
-		: fingerprintUserId;
+	const fingerprintUserId = globalStore.persistence.userId.use();
+	const analyticsUserId = isLoggedIn ? (user?.id ?? null) : fingerprintUserId;
 
 	useEffect(() => {
 		if (globalThis._paq === undefined) {

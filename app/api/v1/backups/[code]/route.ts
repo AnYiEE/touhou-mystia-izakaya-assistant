@@ -3,6 +3,7 @@ import { validate } from 'uuid';
 
 import {
 	checkBackupCodeLockLostError,
+	checkBackupCodeLockTimeoutError,
 	checkBackupFileNotFoundError,
 	checkIpFrequency,
 	deleteFile,
@@ -42,17 +43,12 @@ export async function GET(
 		return createNoStoreErrorResponse('Invalid user agent', 400);
 	}
 
-	let userId = request.nextUrl.searchParams.get('user_id') ?? '';
-	if (userId === 'null') {
-		userId = '';
-	}
-
 	const now = Date.now();
 
 	const recentRecord = await checkIpFrequency(
 		'last_accessed',
 		now - FREQUENCY_TTL,
-		{ ip, ua, userId }
+		{ ip }
 	);
 	if (recentRecord.status === 429) {
 		return createNoStoreErrorResponse('Requests are too frequent', 429);
@@ -109,6 +105,9 @@ export async function GET(
 		if (checkBackupCodeLockLostError(error)) {
 			return createNoStoreErrorResponse('backup-code-lock-lost', 409);
 		}
+		if (checkBackupCodeLockTimeoutError(error)) {
+			return createNoStoreErrorResponse('backup-code-lock-timeout', 409);
+		}
 
 		throw error;
 	}
@@ -139,9 +138,10 @@ export async function DELETE(
 			let deletedFile = true;
 			try {
 				throwIfBackupCodeLockLost(signal);
-				markBackupCodeLockCommitted(signal);
 				await deleteRecord(code);
+				throwIfBackupCodeLockLost(signal);
 				await deleteFile(code);
+				throwIfBackupCodeLockLost(signal);
 			} catch (error) {
 				if (checkBackupCodeLockLostError(error)) {
 					return createNoStoreErrorResponse(
@@ -149,6 +149,7 @@ export async function DELETE(
 						409
 					);
 				}
+				throwIfBackupCodeLockLost(signal);
 
 				if (!checkBackupFileNotFoundError(error)) {
 					console.warn('Failed to delete backup file', {
@@ -165,6 +166,8 @@ export async function DELETE(
 				deletedFile = false;
 			}
 
+			markBackupCodeLockCommitted(signal);
+
 			return createNoStoreJsonResponse({
 				deletedFile,
 				message: 'The file record has been deleted',
@@ -173,6 +176,9 @@ export async function DELETE(
 	} catch (error) {
 		if (checkBackupCodeLockLostError(error)) {
 			return createNoStoreErrorResponse('backup-code-lock-lost', 409);
+		}
+		if (checkBackupCodeLockTimeoutError(error)) {
+			return createNoStoreErrorResponse('backup-code-lock-timeout', 409);
 		}
 
 		throw error;

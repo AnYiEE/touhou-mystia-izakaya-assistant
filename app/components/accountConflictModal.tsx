@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Button, Modal } from '@/design/ui/components';
 import { accountStore } from '@/stores/account';
@@ -28,6 +28,8 @@ function ConflictPreview({ label, value }: { label: string; value: unknown }) {
 }
 
 export default function AccountConflictModal() {
+	const [isResolving, setIsResolving] = useState(false);
+	const isResolvingRef = useRef(false);
 	const [portalContainer, setPortalContainer] = useState<Element | null>(
 		null
 	);
@@ -39,12 +41,22 @@ export default function AccountConflictModal() {
 	useEffect(() => {
 		setPortalContainer(document.querySelector('#modal-portal-container'));
 	}, []);
+	useEffect(() => {
+		isResolvingRef.current = false;
+		setIsResolving(false);
+	}, [conflict]);
 
 	if (conflict === undefined || user === null || passwordMustChange) {
 		return null;
 	}
 
 	const resolveConflict = (resolution: 'cloud' | 'local' | 'merged') => {
+		if (isResolvingRef.current) {
+			return;
+		}
+
+		isResolvingRef.current = true;
+		setIsResolving(true);
 		resolveAccountSyncConflict({ conflict, resolution, userId: user.id });
 		scheduleAccountSyncFlush();
 	};
@@ -71,6 +83,7 @@ export default function AccountConflictModal() {
 				</div>
 				<div className="flex flex-wrap justify-end gap-2">
 					<Button
+						isDisabled={isResolving}
 						variant="flat"
 						onPress={() => {
 							resolveConflict('cloud');
@@ -79,6 +92,7 @@ export default function AccountConflictModal() {
 						使用云端
 					</Button>
 					<Button
+						isDisabled={isResolving}
 						variant="flat"
 						onPress={() => {
 							resolveConflict('local');
@@ -89,6 +103,7 @@ export default function AccountConflictModal() {
 					{conflict.merged !== null && (
 						<Button
 							color="primary"
+							isDisabled={isResolving}
 							variant="solid"
 							onPress={() => {
 								resolveConflict('merged');

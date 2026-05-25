@@ -82,7 +82,9 @@ export const customerNormalMealsSerializer = {
 		return normalizeCustomerNormalMealsSnapshot(data);
 	},
 	setLocalSnapshot(data) {
-		customerNormalStore.persistence.meals.set(data);
+		customerNormalStore.persistence.meals.set(
+			normalizeCustomerNormalMealsSnapshot(data)
+		);
 	},
 	validate(data): data is TCustomerNormalMealsSnapshot {
 		return validateMealSnapshot(data, {

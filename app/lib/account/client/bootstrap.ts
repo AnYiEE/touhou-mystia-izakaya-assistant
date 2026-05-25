@@ -8,6 +8,7 @@ function disableAccountBootstrap() {
 	accountStore.shared.csrfToken.set(null);
 	accountStore.shared.isBootstrapped.set(true);
 	accountStore.shared.isLoggedIn.set(false);
+	accountStore.shared.passwordMustChange.set(false);
 	accountStore.shared.sync.lastError.set(null);
 	accountStore.shared.user.set(null);
 }
@@ -17,6 +18,7 @@ function failAccountBootstrap(message: string) {
 	accountStore.shared.csrfToken.set(null);
 	accountStore.shared.isBootstrapped.set(true);
 	accountStore.shared.isLoggedIn.set(false);
+	accountStore.shared.passwordMustChange.set(false);
 	accountStore.shared.sync.lastError.set(message);
 	accountStore.shared.user.set(null);
 }

@@ -1,15 +1,16 @@
 import { type NextRequest } from 'next/server';
 
 import {
+	checkAccountCookieSecurityResponse,
 	checkAccountFeatureResponse,
 	checkSameOriginResponse,
 } from '@/api/v1/accountRouteUtils';
+import { createNoStoreJsonResponse } from '@/api/v1/utils';
 import {
-	createNoStoreErrorResponse,
-	createNoStoreJsonResponse,
-} from '@/api/v1/utils';
-import { clearAdminSessionCookie } from '@/lib/account/server/admin';
-import { authenticateAdminRequest, checkAdminFeatureResponse } from '../utils';
+	authenticateAdminRequest,
+	checkAdminFeatureResponse,
+	createAdminAuthErrorResponse,
+} from '../utils';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -30,14 +31,18 @@ export async function GET(request: NextRequest) {
 		return sameOriginResponse;
 	}
 
+	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	if (cookieSecurityResponse !== null) {
+		return cookieSecurityResponse;
+	}
+
 	const auth = authenticateAdminRequest(request);
 	if (auth.status === 'error') {
-		const response = createNoStoreErrorResponse(
+		return createAdminAuthErrorResponse(
+			request,
 			auth.message,
 			auth.httpStatus
 		);
-		clearAdminSessionCookie(response, request);
-		return response;
 	}
 
 	const adminModule = await import('@/lib/account/server/admin');

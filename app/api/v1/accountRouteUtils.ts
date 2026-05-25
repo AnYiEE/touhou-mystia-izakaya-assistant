@@ -10,7 +10,6 @@ import {
 	checkInsecureAccountCookiesAllowed,
 	checkSameOriginRequest,
 	checkSecureRequest,
-	getRequestUserAgent,
 	getTrustedRequestIp,
 } from '@/lib/account/server/request';
 import { createNoStoreErrorResponse } from './utils';
@@ -67,25 +66,10 @@ export function checkAccountRateLimitResponse(
 ) {
 	const keys: string[] = [];
 	const requestIp = getTrustedRequestIp(request);
-	const requestUserAgent = getRequestUserAgent(request);
 	if (requestIp === null) {
-		keys.push(
-			createAccountRateLimitKey([
-				scope,
-				'request',
-				'untrusted',
-				requestUserAgent,
-			])
-		);
+		keys.push(createAccountRateLimitKey([scope, 'request', 'untrusted']));
 	} else {
-		keys.push(
-			createAccountRateLimitKey([
-				scope,
-				'request',
-				requestIp,
-				requestUserAgent,
-			])
-		);
+		keys.push(createAccountRateLimitKey([scope, 'request', requestIp]));
 	}
 
 	if (usernameNormalized !== '') {

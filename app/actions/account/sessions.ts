@@ -145,7 +145,14 @@ export async function listSessionsByUserId(userId: TUser['id']) {
 
 	return db
 		.selectFrom(TABLE_NAME)
-		.selectAll()
+		.select([
+			'created_at',
+			'id',
+			'ip_address',
+			'last_seen_at',
+			'user_agent',
+			'user_id',
+		])
 		.where('user_id', '=', userId)
 		.execute();
 }

@@ -45,7 +45,7 @@ export default function AccountSyncStatus() {
 				isLoading={sync.isSyncing}
 				variant="flat"
 				onPress={() => {
-					void flushAccountSyncQueue();
+					void flushAccountSyncQueue().catch(() => false);
 				}}
 			>
 				立即同步

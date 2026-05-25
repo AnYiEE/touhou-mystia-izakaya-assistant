@@ -136,7 +136,9 @@ export function checkSecureRequest(request: NextRequest) {
 function checkLocalRequestHost(request: NextRequest) {
 	const host = normalizeRequestHost(
 		env.TRUST_PROXY === 'true'
-			? getFirstHeaderValue(request.headers.get('x-forwarded-host'))
+			? (getFirstHeaderValue(request.headers.get('x-forwarded-host')) ??
+					request.headers.get('host') ??
+					request.nextUrl.host)
 			: (request.headers.get('host') ?? request.nextUrl.host)
 	);
 	if (host === null) {

@@ -61,11 +61,16 @@ export default function AccountManager() {
 		if (isSubmitting) {
 			return;
 		}
+		const normalizedUsername = username.trim();
+		if (normalizedUsername.length === 0 || password.length === 0) {
+			setMessage('请输入用户名和密码');
+			return;
+		}
 
 		setIsSubmitting(true);
 		setMessage(null);
 		const request = authMode === 'login' ? loginAccount : registerAccount;
-		void request({ password, username })
+		void request({ password, username: normalizedUsername })
 			.then(refreshAccountState)
 			.then(() => {
 				setPassword('');
@@ -128,7 +133,10 @@ export default function AccountManager() {
 							resetAccountState();
 							return null;
 						}
-						throw new Error(syncLastError ?? '退出前同步失败');
+						console.warn(
+							'退出前同步未完成，未保存的数据可能丢失',
+							syncLastError
+						);
 					}
 
 					return action(csrfToken);
@@ -241,7 +249,8 @@ export default function AccountManager() {
 					<Button
 						color="primary"
 						isDisabled={
-							username.length === 0 || password.length === 0
+							username.trim().length === 0 ||
+							password.length === 0
 						}
 						isLoading={isSubmitting}
 						variant="flat"
@@ -297,6 +306,9 @@ export default function AccountManager() {
 									导出账号数据
 								</Button>
 								<Button
+									isDisabled={
+										isSubmitting || csrfToken === null
+									}
 									isLoading={isSubmitting}
 									variant="flat"
 									onPress={() => {
@@ -306,6 +318,9 @@ export default function AccountManager() {
 									退出登录
 								</Button>
 								<Button
+									isDisabled={
+										isSubmitting || csrfToken === null
+									}
 									isLoading={isSubmitting}
 									variant="flat"
 									onPress={() => {
@@ -316,7 +331,9 @@ export default function AccountManager() {
 								</Button>
 								<Button
 									color="warning"
-									isDisabled={isSubmitting}
+									isDisabled={
+										isSubmitting || csrfToken === null
+									}
 									isLoading={isSubmitting}
 									variant="flat"
 									onPress={() => {
@@ -380,7 +397,9 @@ export default function AccountManager() {
 								</Button>
 								<Button
 									color="danger"
-									isDisabled={isSubmitting}
+									isDisabled={
+										isSubmitting || csrfToken === null
+									}
 									isLoading={isSubmitting}
 									variant="flat"
 									onPress={() => {

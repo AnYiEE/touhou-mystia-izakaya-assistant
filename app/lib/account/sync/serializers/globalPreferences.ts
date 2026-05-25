@@ -19,6 +19,11 @@ import { isPlainObject, isStringArray, mergeFieldMap } from './utils';
 
 export interface IGlobalPreferencesSnapshot {
 	customerCardTagsTooltip: boolean;
+	donationModal: {
+		interactionCount: number;
+		lastMilestoneShown: number;
+		lastShown: number | null;
+	};
 	famousShop: boolean;
 	hiddenItems: { dlcs: string[] };
 	highAppearance: boolean;
@@ -62,6 +67,7 @@ const recipeColumnKeys = new Set<string>([
 ]);
 const rootKeys = new Set([
 	'customerCardTagsTooltip',
+	'donationModal',
 	'famousShop',
 	'hiddenItems',
 	'highAppearance',
@@ -70,6 +76,11 @@ const rootKeys = new Set([
 	'table',
 	'tachie',
 	'vibrate',
+]);
+const donationModalKeys = new Set([
+	'interactionCount',
+	'lastMilestoneShown',
+	'lastShown',
 ]);
 const hiddenItemKeys = new Set(['dlcs']);
 const popularTrendKeys = new Set(['isNegative', 'tag']);
@@ -102,8 +113,10 @@ function checkGlobalPreferencesExactKeyShape(data: unknown) {
 		return false;
 	}
 
-	const { hiddenItems, popularTrend, suggestMeals, table } = data;
+	const { donationModal, hiddenItems, popularTrend, suggestMeals, table } =
+		data;
 	if (
+		!isPlainObject(donationModal) ||
 		!isPlainObject(hiddenItems) ||
 		!isPlainObject(popularTrend) ||
 		!isPlainObject(suggestMeals) ||
@@ -117,6 +130,7 @@ function checkGlobalPreferencesExactKeyShape(data: unknown) {
 
 	return (
 		checkExactKeys(data, rootKeys) &&
+		checkExactKeys(donationModal, donationModalKeys) &&
 		checkExactKeys(hiddenItems, hiddenItemKeys) &&
 		checkExactKeys(popularTrend, popularTrendKeys) &&
 		checkExactKeys(suggestMeals, suggestMealsKeys) &&
@@ -145,12 +159,17 @@ function filterAllowedStringArray(data: unknown, values: Set<string>) {
 	return isStringArray(data) ? data.filter((item) => values.has(item)) : data;
 }
 
+function isNonNegativeSafeInteger(data: unknown) {
+	return isIntegerInRange(data, 0, Number.MAX_SAFE_INTEGER);
+}
+
 function sanitizeGlobalPreferences(data: unknown) {
 	if (!isPlainObject(data)) {
 		return data;
 	}
 
 	const { hiddenItems, table } = data;
+	const tableColumns = isPlainObject(table) ? table['columns'] : null;
 	const tableHiddenItems = isPlainObject(table) ? table['hiddenItems'] : null;
 
 	return {
@@ -161,6 +180,18 @@ function sanitizeGlobalPreferences(data: unknown) {
 		table: isPlainObject(table)
 			? {
 					...table,
+					columns: isPlainObject(tableColumns)
+						? {
+								beverage: filterAllowedStringArray(
+									tableColumns['beverage'],
+									beverageColumnKeys
+								),
+								recipe: filterAllowedStringArray(
+									tableColumns['recipe'],
+									recipeColumnKeys
+								),
+							}
+						: tableColumns,
 					hiddenItems: isPlainObject(tableHiddenItems)
 						? {
 								beverages: filterAllowedStringArray(
@@ -204,6 +235,11 @@ export const globalPreferencesSerializer = {
 	getDefaultSnapshot() {
 		return {
 			customerCardTagsTooltip: true,
+			donationModal: {
+				interactionCount: 0,
+				lastMilestoneShown: 0,
+				lastShown: null,
+			},
 			famousShop: false,
 			hiddenItems: { dlcs: [] },
 			highAppearance: true,
@@ -237,6 +273,14 @@ export const globalPreferencesSerializer = {
 		return cloneJsonObject({
 			customerCardTagsTooltip:
 				globalStore.persistence.customerCardTagsTooltip.get(),
+			donationModal: {
+				interactionCount:
+					globalStore.persistence.donationModal.interactionCount.get(),
+				lastMilestoneShown:
+					globalStore.persistence.donationModal.lastMilestoneShown.get(),
+				lastShown:
+					globalStore.persistence.donationModal.lastShown.get(),
+			},
 			famousShop: globalStore.persistence.famousShop.get(),
 			hiddenItems: {
 				dlcs: globalStore.persistence.hiddenItems.dlcs.get(),
@@ -305,6 +349,15 @@ export const globalPreferencesSerializer = {
 		globalStore.persistence.customerCardTagsTooltip.set(
 			data.customerCardTagsTooltip
 		);
+		globalStore.persistence.donationModal.interactionCount.set(
+			data.donationModal.interactionCount
+		);
+		globalStore.persistence.donationModal.lastMilestoneShown.set(
+			data.donationModal.lastMilestoneShown
+		);
+		globalStore.persistence.donationModal.lastShown.set(
+			data.donationModal.lastShown
+		);
 		globalStore.persistence.hiddenItems.dlcs.set(data.hiddenItems.dlcs);
 		globalStore.persistence.suggestMeals.enabled.set(
 			data.suggestMeals.enabled
@@ -345,8 +398,15 @@ export const globalPreferencesSerializer = {
 			return false;
 		}
 
-		const { hiddenItems, popularTrend, suggestMeals, table } = data;
+		const {
+			donationModal,
+			hiddenItems,
+			popularTrend,
+			suggestMeals,
+			table,
+		} = data;
 		if (
+			!isPlainObject(donationModal) ||
 			!isPlainObject(hiddenItems) ||
 			!isPlainObject(popularTrend) ||
 			!isPlainObject(suggestMeals) ||
@@ -364,6 +424,10 @@ export const globalPreferencesSerializer = {
 		return (
 			checkGlobalPreferencesExactKeyShape(data) &&
 			typeof data['customerCardTagsTooltip'] === 'boolean' &&
+			isNonNegativeSafeInteger(donationModal['interactionCount']) &&
+			isNonNegativeSafeInteger(donationModal['lastMilestoneShown']) &&
+			(donationModal['lastShown'] === null ||
+				isNonNegativeSafeInteger(donationModal['lastShown'])) &&
 			typeof data['famousShop'] === 'boolean' &&
 			isAllowedStringArray(hiddenItems['dlcs'], dlcKeys) &&
 			typeof data['highAppearance'] === 'boolean' &&

@@ -5,7 +5,7 @@ import { customerNormalStore } from '@/stores/customer-normal';
 import { customerRareStore } from '@/stores/customer-rare';
 import { globalStore } from '@/stores/global';
 import { postAccountSyncBroadcastMessage } from './broadcast';
-import { createSnapshotHash, markAccountSyncDirty } from './queue';
+import { checkSnapshotHashMatches, markAccountSyncDirty } from './queue';
 import { createAccountClientId } from './random';
 import { getAccountSyncSerializer } from './snapshot';
 import { scheduleAccountSyncFlush } from './syncClient';
@@ -38,8 +38,10 @@ function markNamespaceDirty(namespace: TSyncNamespace) {
 	const serializer = getAccountSyncSerializer(namespace);
 	const data = serializer.getLocalSnapshot();
 	if (
-		context.meta.lastAppliedRemoteHash[namespace] ===
-		createSnapshotHash(data)
+		checkSnapshotHashMatches(
+			data,
+			context.meta.lastAppliedRemoteHash[namespace]
+		)
 	) {
 		return;
 	}
@@ -112,6 +114,23 @@ export function startAccountStoreSyncWatchers() {
 
 	watch(
 		globalStore.persistence.customerCardTagsTooltip.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.donationModal.interactionCount.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.donationModal.lastMilestoneShown.onChange(
+			() => {
+				markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+			}
+		)
+	);
+	watch(
+		globalStore.persistence.donationModal.lastShown.onChange(() => {
 			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
 		})
 	);

@@ -1,7 +1,9 @@
 declare global {
 	namespace NodeJS {
 		interface ProcessEnv {
+			/** Security-critical admin secret; see README self-hosted account guidance. */
 			ADMIN_PASSWORD?: string;
+			/** Security-critical admin identity; see README self-hosted account guidance. */
 			ADMIN_USERNAME?: string;
 
 			ANALYTICS_API_ENDPOINT?: string;
@@ -19,6 +21,7 @@ declare global {
 			ALLOW_INSECURE_COOKIES?: string;
 			OFFLINE?: string;
 			SELF_HOSTED?: string;
+			/** Security-critical session signing secret; see README self-hosted account guidance. */
 			SESSION_SECRET?: string;
 			SQLITE_DATABASE_PATH?: string;
 			SKIP_LINT?: string;

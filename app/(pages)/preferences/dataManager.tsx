@@ -242,14 +242,15 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	const currentCloudCode = globalStore.persistence.cloudCode.use();
 	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const shouldShowLegacyCloud =
-		isSelfHosted &&
-		!isOffline &&
-		!isVercel &&
-		accountBootstrapStatus === 'disabled';
+		(isSelfHosted &&
+			!isOffline &&
+			!isVercel &&
+			accountBootstrapStatus === 'disabled') ||
+		accountBootstrapStatus === 'error';
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 	const userId = globalStore.persistence.userId.use();
 
-	const isCloudCodeValid = currentCloudCode !== null;
+	const isCloudCodeValid = (currentCloudCode?.trim() ?? '').length > 0;
 
 	const [cloudCodeInfo, setCloudCodeInfo] =
 		useState<ReactNodeWithoutBoolean>(null);
@@ -321,10 +322,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	}, [currentCloudCode, shouldShowLegacyCloud, updateCloudCodeInfo]);
 
 	const handleCloudDeleteButtonPress = useCallback(() => {
-		if (!isCloudCodeValid) {
-			return;
-		}
-		const normalizedCode = currentCloudCode.trim();
+		const normalizedCode = currentCloudCode?.trim() ?? '';
 		if (normalizedCode === '') {
 			return;
 		}
@@ -364,7 +362,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				}, 3000);
 				cloudTimers.current.push(timerId);
 			});
-	}, [currentCloudCode, isCloudCodeValid]);
+	}, [currentCloudCode]);
 
 	const handleCloudDownloadButtonPress = useCallback(() => {
 		let code = currentCloudCode;

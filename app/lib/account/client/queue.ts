@@ -3,6 +3,7 @@ import {
 	SYNC_SCHEMA_VERSION_MAP,
 	type TSyncNamespace,
 } from '@/lib/account/sync';
+import { sha1 } from 'js-sha1';
 import {
 	ACCOUNT_STORAGE_KEY_MAP,
 	createAccountStorageKey,
@@ -36,7 +37,7 @@ function sortJsonValue(value: unknown): unknown {
 	return value;
 }
 
-export function createSnapshotHash(data: unknown): string {
+function createSnapshotStableJson(data: unknown) {
 	const sortedData = sortJsonValue(data);
 	if (
 		sortedData === undefined ||
@@ -47,6 +48,30 @@ export function createSnapshotHash(data: unknown): string {
 	}
 
 	return JSON.stringify(sortedData);
+}
+
+function createSnapshotDigest(stableJson: string) {
+	return `sha1:${sha1(stableJson)}`;
+}
+
+export function createSnapshotHash(data: unknown): string {
+	return createSnapshotDigest(createSnapshotStableJson(data));
+}
+
+export function checkSnapshotHashMatches(
+	data: unknown,
+	snapshotHash: string | undefined
+) {
+	if (snapshotHash === undefined) {
+		return false;
+	}
+
+	const stableJson = createSnapshotStableJson(data);
+
+	return (
+		snapshotHash === createSnapshotDigest(stableJson) ||
+		snapshotHash === stableJson
+	);
 }
 
 export function createDirtyQueueKey(userId: string, namespace: TSyncNamespace) {
@@ -76,17 +101,17 @@ function mergeDirtyQueueEntry(
 	entry: IDirtyQueueEntry
 ): IDirtyQueueEntry {
 	const currentEntry = readDirtyQueueEntry(userId, entry.namespace);
-	if (currentEntry?.paused !== null) {
-		return entry;
+	if (currentEntry?.paused === null) {
+		return {
+			...entry,
+			attempts: currentEntry.attempts,
+			baseRevision: currentEntry.baseRevision,
+			clientMutationId: currentEntry.clientMutationId,
+			dirtyAt: Math.max(currentEntry.dirtyAt, entry.dirtyAt),
+		};
 	}
 
-	return {
-		...entry,
-		attempts: currentEntry.attempts,
-		baseRevision: currentEntry.baseRevision,
-		clientMutationId: currentEntry.clientMutationId,
-		dirtyAt: Math.max(currentEntry.dirtyAt, entry.dirtyAt),
-	};
+	return entry;
 }
 
 export function removeDirtyQueueEntry(

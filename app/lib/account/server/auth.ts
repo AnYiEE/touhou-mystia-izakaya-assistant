@@ -17,6 +17,7 @@ import {
 } from '@/actions/account/credentials';
 import {
 	type TSession,
+	type TSessionNew,
 	type TUser,
 	type TUserCredential,
 	type TUserCredentialUpdate,
@@ -66,15 +67,14 @@ export function getAccountSessionCookieOptions(request: NextRequest) {
 	return createSessionCookieOptions(getAccountCookieSecureFlag(request));
 }
 
-export async function createAccountSession(
+export function createAccountSessionDraft(
 	userId: TUser['id'],
-	request: NextRequest
+	request: NextRequest,
+	now = Date.now()
 ) {
-	const now = Date.now();
 	const token = createSessionToken();
 	const tokenHash = hashSessionToken(token);
-
-	await createSession({
+	const record = {
 		created_at: now,
 		id: randomUUID(),
 		ip_address: getRequestIp(request),
@@ -82,14 +82,26 @@ export async function createAccountSession(
 		token_hash: tokenHash,
 		user_agent: getRequestUserAgent(request),
 		user_id: userId,
-	});
+	} satisfies TSessionNew;
 
 	return {
 		cookieOptions: getAccountSessionCookieOptions(request),
 		csrfToken: createCsrfToken(tokenHash),
+		record,
 		token,
 		tokenHash,
 	};
+}
+
+export async function createAccountSession(
+	userId: TUser['id'],
+	request: NextRequest
+) {
+	const { record, ...session } = createAccountSessionDraft(userId, request);
+
+	await createSession(record);
+
+	return session;
 }
 
 export async function createAccountSessionForActiveUser(

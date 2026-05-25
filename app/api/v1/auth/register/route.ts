@@ -80,7 +80,8 @@ export async function POST(request: NextRequest) {
 	const now = Date.now();
 	const userId = randomUUID();
 	const passwordHash = await passwordModule.hashPassword(body.password);
-	const user = await usersModule.createUserWithCredential(
+	const session = authModule.createAccountSessionDraft(userId, request, now);
+	const user = await usersModule.createUserWithCredentialAndSession(
 		{
 			created_at: now,
 			deleted_at: null,
@@ -99,13 +100,13 @@ export async function POST(request: NextRequest) {
 			password_must_change: 0,
 			updated_at: now,
 			user_id: userId,
-		}
+		},
+		session.record
 	);
 	if (user === null) {
 		return createNoStoreErrorResponse('username-conflict', 409);
 	}
 
-	const session = await authModule.createAccountSession(user.id, request);
 	const response = createNoStoreJsonResponse({
 		csrf_token: session.csrfToken,
 		password_must_change: false,

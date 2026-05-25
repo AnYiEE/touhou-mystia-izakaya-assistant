@@ -2,12 +2,14 @@ import { createHash, randomUUID } from 'node:crypto';
 
 import { TABLE_NAME_MAP } from '@/lib/db';
 import { db } from '@/lib/db/db';
+import { getLogSafeErrorCode } from '@/lib/logging';
 
 const backupCodeLocks = new Map<string, Promise<void>>();
 const BACKUP_CODE_LOCK_RETRY_MS = 50;
 const BACKUP_CODE_LOCK_TIMEOUT_MS = 10 * 1000;
 const BACKUP_CODE_LOCK_TTL_MS = 60 * 1000;
 const BACKUP_CODE_LOCK_LOST_MESSAGE = 'backup-code-lock-lost';
+const BACKUP_CODE_LOCK_TIMEOUT_MESSAGE = 'backup-code-lock-timeout';
 const TABLE_NAME = TABLE_NAME_MAP.backupCodeLock;
 
 export interface IBackupCodeLockSignal {
@@ -24,15 +26,6 @@ function delay(ms: number) {
 
 function maskBackupCodeForLog(code: string) {
 	return `sha256:${createHash('sha256').update(code).digest('hex').slice(0, 12)}`;
-}
-
-function getLogSafeErrorCode(error: unknown) {
-	return error !== null &&
-		typeof error === 'object' &&
-		'code' in error &&
-		typeof error.code === 'string'
-		? error.code
-		: 'unknown';
 }
 
 async function waitForPreviousBackupCodeLock(
@@ -95,7 +88,7 @@ async function acquireSharedBackupCodeLock(code: string, ownerId: string) {
 
 		const remainingMs = deadline - Date.now();
 		if (remainingMs <= 0) {
-			throw new Error('backup-code-lock-timeout');
+			throw new Error(BACKUP_CODE_LOCK_TIMEOUT_MESSAGE);
 		}
 
 		await delay(Math.min(BACKUP_CODE_LOCK_RETRY_MS, remainingMs));
@@ -129,6 +122,13 @@ export function checkBackupCodeLockLostError(error: unknown) {
 	return (
 		error instanceof Error &&
 		error.message === BACKUP_CODE_LOCK_LOST_MESSAGE
+	);
+}
+
+export function checkBackupCodeLockTimeoutError(error: unknown) {
+	return (
+		error instanceof Error &&
+		error.message === BACKUP_CODE_LOCK_TIMEOUT_MESSAGE
 	);
 }
 

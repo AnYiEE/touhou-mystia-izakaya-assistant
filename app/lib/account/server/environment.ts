@@ -53,7 +53,6 @@ export async function checkSqliteDirectoryWritable(
 			throw new Error('sqlite-database-path-is-not-file');
 		}
 		await access(sqlitePath, constants.R_OK | constants.W_OK);
-		return;
 	} catch (error) {
 		if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
 			throw error;

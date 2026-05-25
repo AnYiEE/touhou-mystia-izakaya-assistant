@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server';
 
 import {
+	checkAccountCookieSecurityResponse,
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
@@ -10,11 +11,13 @@ import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 } from '@/api/v1/utils';
+import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import { type IAdminResetPasswordBody } from '@/lib/account/shared/types';
 import {
 	authenticateAdminRequest,
 	checkAdminCsrfResponse,
 	checkAdminFeatureResponse,
+	createAdminAuthErrorResponse,
 } from '../../../utils';
 
 export const runtime = 'nodejs';
@@ -39,6 +42,11 @@ export async function POST(
 		return sameOriginResponse;
 	}
 
+	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	if (cookieSecurityResponse !== null) {
+		return cookieSecurityResponse;
+	}
+
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
 		'admin-reset-password'
@@ -49,7 +57,11 @@ export async function POST(
 
 	const auth = authenticateAdminRequest(request);
 	if (auth.status === 'error') {
-		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
+		return createAdminAuthErrorResponse(
+			request,
+			auth.message,
+			auth.httpStatus
+		);
 	}
 	const csrfResponse = checkAdminCsrfResponse(request, auth.token);
 	if (csrfResponse !== null) {
@@ -74,7 +86,7 @@ export async function POST(
 	if (user === null) {
 		return createNoStoreErrorResponse('target-user-not-found', 404);
 	}
-	if (user.status === 'deleted') {
+	if (user.status === USER_STATUS_MAP.deleted) {
 		return createNoStoreErrorResponse('invalid-user-status', 403);
 	}
 

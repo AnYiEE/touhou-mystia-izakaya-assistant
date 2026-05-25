@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server';
 
 import {
+	checkAccountCookieSecurityResponse,
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
@@ -25,6 +26,11 @@ export async function DELETE(request: NextRequest) {
 		return sameOriginResponse;
 	}
 
+	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	if (cookieSecurityResponse !== null) {
+		return cookieSecurityResponse;
+	}
+
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
 		'account-delete'
@@ -39,7 +45,13 @@ export async function DELETE(request: NextRequest) {
 	]);
 	const auth = await authModule.authenticateAccountRequest(request);
 	if (auth.status === 'error') {
-		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
+		const response = createNoStoreErrorResponse(
+			auth.message,
+			auth.httpStatus
+		);
+		authModule.clearAccountSessionCookie(response, request);
+
+		return response;
 	}
 	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);

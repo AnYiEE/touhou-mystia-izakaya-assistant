@@ -168,6 +168,9 @@ function mergeMealList<TMeal>({
 	cloudMeals: TMeal[];
 	localMeals: TMeal[];
 }) {
+	if (stableJson(cloudMeals) === stableJson(localMeals)) {
+		return [...cloudMeals];
+	}
 	if (
 		hasDeletedBaseMeal(baseMeals, cloudMeals) ||
 		hasDeletedBaseMeal(baseMeals, localMeals) ||

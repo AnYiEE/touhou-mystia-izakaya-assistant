@@ -1,5 +1,8 @@
+import { sql } from 'kysely';
+
 import { TABLE_NAME_MAP } from '@/lib/db';
 import type {
+	TSessionNew,
 	TUser,
 	TUserCredentialNew,
 	TUserNew,
@@ -12,6 +15,10 @@ import { type TUserStatus } from '@/lib/account/shared/types';
 const TABLE_NAME = TABLE_NAME_MAP.user;
 const CREDENTIAL_TABLE_NAME = TABLE_NAME_MAP.userCredential;
 const SESSION_TABLE_NAME = TABLE_NAME_MAP.session;
+
+function escapeLikePattern(pattern: string) {
+	return pattern.replaceAll(/[\\%_]/gu, (character) => `\\${character}`);
+}
 
 export interface IListUsersOptions {
 	limit: number;
@@ -60,10 +67,9 @@ export async function listUsers({
 		normalizedUsernameQuery !== undefined &&
 		normalizedUsernameQuery !== ''
 	) {
+		const escapedUsernameQuery = escapeLikePattern(normalizedUsernameQuery);
 		query = query.where(
-			'username_normalized',
-			'like',
-			`%${normalizedUsernameQuery}%`
+			sql<boolean>`${sql.ref('username_normalized')} like ${`%${escapedUsernameQuery}%`} escape '\\'`
 		);
 	}
 	if (status !== undefined) {
@@ -109,6 +115,38 @@ export async function createUserWithCredential(
 		await trx
 			.insertInto(CREDENTIAL_TABLE_NAME)
 			.values({ ...credential, user_id: record.id })
+			.execute();
+
+		return record;
+	});
+}
+
+export async function createUserWithCredentialAndSession(
+	user: TUserNew,
+	credential: TUserCredentialNew,
+	session: TSessionNew
+) {
+	const db = await getAccountDatabase();
+
+	return db.transaction().execute(async (trx) => {
+		const record = await trx
+			.insertInto(TABLE_NAME)
+			.values(user)
+			.onConflict((oc) => oc.column('username_normalized').doNothing())
+			.returningAll()
+			.executeTakeFirst();
+
+		if (record === undefined) {
+			return null;
+		}
+
+		await trx
+			.insertInto(CREDENTIAL_TABLE_NAME)
+			.values({ ...credential, user_id: record.id })
+			.execute();
+		await trx
+			.insertInto(SESSION_TABLE_NAME)
+			.values({ ...session, user_id: record.id })
 			.execute();
 
 		return record;
