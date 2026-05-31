@@ -28,8 +28,12 @@ export function readAccountJsonStorage<T>(key: string, fallback: T): T {
 export function writeAccountJsonStorage(key: string, value: unknown) {
 	try {
 		safeStorage.setItem(key, JSON.stringify(value));
-	} catch {
-		// Ignore unexpected non-JSON values so sync callers keep running.
+	} catch (error) {
+		console.warn('Failed to persist account storage value.', {
+			error,
+			key,
+		});
+		throw error;
 	}
 }
 

@@ -74,9 +74,13 @@ export function normalizeMealSnapshot<TMeal, TNormalizedMeal>(
 	data: TMealSnapshot<TMeal>,
 	normalizeMeal: (meal: TMeal) => TNormalizedMeal
 ) {
+	if (!isPlainObject(data)) {
+		return {};
+	}
+
 	return Object.entries(data).reduce<TMealSnapshot<TNormalizedMeal>>(
 		(result, [customerName, meals]) => {
-			if (meals === undefined) {
+			if (!Array.isArray(meals)) {
 				return result;
 			}
 
@@ -213,7 +217,12 @@ export function mergeMealSnapshot<TMeal>({
 		}
 		if (!allowBaseNullAutoMerge) {
 			return createMergeResult({
-				conflict: createSerializerConflict({ cloud, local, namespace }),
+				conflict: createSerializerConflict({
+					cloud,
+					local,
+					namespace,
+					userId: '',
+				}),
 				data: cloud,
 				shouldUpload: false,
 			});
@@ -272,7 +281,12 @@ export function mergeMealSnapshot<TMeal>({
 
 	if (hasConflict) {
 		return createMergeResult({
-			conflict: createSerializerConflict({ cloud, local, namespace }),
+			conflict: createSerializerConflict({
+				cloud,
+				local,
+				namespace,
+				userId: '',
+			}),
 			data: cloud,
 			shouldUpload: false,
 		});

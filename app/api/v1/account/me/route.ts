@@ -9,7 +9,7 @@ import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 } from '@/api/v1/utils';
-import { type TAccountMeSuccessResponse } from '@/lib/account/shared/types';
+import { type TAccountMeResponse } from '@/lib/account/shared/types';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -46,16 +46,33 @@ export async function GET(request: NextRequest) {
 				state_epoch: null,
 				syncMeta: null,
 				user: null,
-			} satisfies TAccountMeSuccessResponse);
+			} satisfies TAccountMeResponse);
 		}
 
-		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
+		const response = createNoStoreErrorResponse(
+			auth.message,
+			auth.httpStatus
+		);
+		authModule.clearAccountSessionCookie(response, request);
+
+		return response;
 	}
 	const stateSnapshot = await userStateModule.getUserStateSnapshot(
 		auth.data.user.id
 	);
 	if (stateSnapshot === null) {
-		return createNoStoreErrorResponse('unauthorized', 401);
+		const response = createNoStoreJsonResponse({
+			csrf_token: null,
+			featureEnabled: true,
+			isLoggedIn: false,
+			password_must_change: false,
+			state_epoch: null,
+			syncMeta: null,
+			user: null,
+		} satisfies TAccountMeResponse);
+		authModule.clearAccountSessionCookie(response, request);
+
+		return response;
 	}
 
 	const revisions = stateSnapshot.state.reduce<Record<string, number>>(
@@ -80,5 +97,5 @@ export async function GET(request: NextRequest) {
 			state_epoch: stateSnapshot.user.state_epoch,
 		},
 		user: userModule.createAccountUserProfile(stateSnapshot.user),
-	} satisfies TAccountMeSuccessResponse);
+	} satisfies TAccountMeResponse);
 }

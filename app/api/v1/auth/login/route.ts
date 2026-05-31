@@ -50,7 +50,8 @@ export async function POST(request: NextRequest) {
 
 	const body = await readJsonBody<IAuthLoginBody>(request);
 	if (
-		typeof body?.username !== 'string' ||
+		body === null ||
+		typeof body.username !== 'string' ||
 		typeof body.password !== 'string'
 	) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
@@ -93,11 +94,11 @@ export async function POST(request: NextRequest) {
 	}
 	if (user.status === USER_STATUS_MAP.disabled) {
 		await passwordModule.consumePasswordVerificationCost(body.password);
-		return createInvalidLoginResponse();
+		return createNoStoreErrorResponse('account-disabled', 403);
 	}
 	if (user.status === USER_STATUS_MAP.deleted) {
 		await passwordModule.consumePasswordVerificationCost(body.password);
-		return createInvalidLoginResponse();
+		return createNoStoreErrorResponse('account-deleted', 403);
 	}
 
 	const credential = await credentialsModule.getCredentialByUserId(user.id);

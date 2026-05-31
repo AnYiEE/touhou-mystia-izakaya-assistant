@@ -318,7 +318,6 @@ export function parseSyncStatePutBody(
 	}
 
 	const changes: ISyncStateChange[] = [];
-	const namespaceSet = new Set<TSyncNamespace>();
 	for (const change of body['changes']) {
 		if (
 			!isPlainObject(change) ||
@@ -341,10 +340,6 @@ export function parseSyncStatePutBody(
 		) {
 			return null;
 		}
-		if (namespaceSet.has(change['namespace'])) {
-			return null;
-		}
-		namespaceSet.add(change['namespace']);
 
 		const parsedChange = {
 			data: change['data'],

@@ -1,6 +1,7 @@
 import { type Insertable, type Selectable, type Updateable } from 'kysely';
 
 import { type TUserStatus } from '@/lib/account/shared/types';
+import { type TSyncNamespace } from '@/lib/account/sync';
 
 interface ITableBackupFileRecord {
 	code: string;
@@ -58,7 +59,7 @@ interface ITableSession {
 
 interface ITableUserState {
 	data: string;
-	namespace: string;
+	namespace: TSyncNamespace;
 	revision: number;
 	schema_version: number;
 	updated_at: number;

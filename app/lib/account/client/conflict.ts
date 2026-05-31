@@ -50,13 +50,21 @@ export function resolveAccountSyncConflict({
 
 	if (resolution === 'cloud') {
 		removeDirtyQueueEntry(userId, conflict.namespace);
-		const meta = readAccountSyncMeta(userId);
-		if (meta !== null) {
-			meta.lastAppliedRemoteHash[conflict.namespace] =
-				createSnapshotHash(data);
-			meta.revisions[conflict.namespace] = conflict.revision;
-			writeAccountSyncMeta(userId, meta);
+		let meta = readAccountSyncMeta(userId);
+		if (meta === null) {
+			// Defensive: construct minimal meta so the applied revision
+			// is recorded even when the sync meta store is unexpectedly
+			// empty.  state_epoch will be corrected on the next sync pull.
+			console.warn(
+				'Account sync meta missing during conflict resolution, creating minimal meta.'
+			);
+			meta = { lastAppliedRemoteHash: {}, revisions: {}, state_epoch: 0 };
 		}
+		meta.lastAppliedRemoteHash[conflict.namespace] = createSnapshotHash(
+			serializer.getLocalSnapshot()
+		);
+		meta.revisions[conflict.namespace] = conflict.revision;
+		writeAccountSyncMeta(userId, meta);
 		accountStore.shared.sync.conflicts.set((conflicts) =>
 			conflicts.filter(
 				(item) =>
@@ -67,17 +75,20 @@ export function resolveAccountSyncConflict({
 		return;
 	}
 
-	markAccountSyncDirty({
+	const entry = markAccountSyncDirty({
 		baseRevision: conflict.revision,
 		data,
 		namespace: conflict.namespace,
 		userId,
 	});
 
-	accountStore.shared.sync.conflicts.set((conflicts) =>
-		conflicts.filter(
-			(item) =>
-				item.userId !== userId || item.namespace !== conflict.namespace
-		)
-	);
+	if (entry !== null) {
+		accountStore.shared.sync.conflicts.set((conflicts) =>
+			conflicts.filter(
+				(item) =>
+					item.userId !== userId ||
+					item.namespace !== conflict.namespace
+			)
+		);
+	}
 }

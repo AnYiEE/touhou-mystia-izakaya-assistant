@@ -124,7 +124,8 @@ export function removeDirtyQueueEntry(
 export function removeDirtyQueueEntries(userId: string) {
 	const prefix = createAccountStorageKey(
 		ACCOUNT_STORAGE_KEY_MAP.dirtyQueue,
-		userId
+		userId,
+		''
 	);
 
 	getAccountStorageKeys(prefix).forEach(removeAccountStorage);
@@ -133,7 +134,8 @@ export function removeDirtyQueueEntries(userId: string) {
 export function readDirtyQueueEntries(userId: string) {
 	const prefix = createAccountStorageKey(
 		ACCOUNT_STORAGE_KEY_MAP.dirtyQueue,
-		userId
+		userId,
+		''
 	);
 
 	return getAccountStorageKeys(prefix)

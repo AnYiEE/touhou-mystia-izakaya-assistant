@@ -62,10 +62,12 @@ export default function AdminUserDetailPage() {
 	const refreshDetail = useCallback(() => {
 		const requestId = createDetailRequestId();
 		setIsLoading(true);
+		setMessage(null);
 		void fetchAdminUser(id)
 			.then((data) => {
 				if (checkDetailRequestId(requestId)) {
 					setDetail(data);
+					setMessage(null);
 				}
 			})
 			.catch((error: unknown) => {
@@ -188,6 +190,7 @@ export default function AdminUserDetailPage() {
 	const { csrf_token: adminCsrfToken } = admin;
 	const canDisableUser = user.status === 'active';
 	const canEnableUser = user.status === 'disabled';
+	const canResetPassword = user.status !== 'deleted';
 	const isPasswordValid = checkPasswordLength(password);
 	const runAction = (
 		action: () => Promise<unknown>,
@@ -203,12 +206,23 @@ export default function AdminUserDetailPage() {
 				if (!checkDetailRequestId(requestId)) {
 					return;
 				}
-				const data = await fetchAdminUser(id);
-				if (checkDetailRequestId(requestId)) {
-					onSuccess?.();
-					setDetail(data);
-					setMessage(success);
-					requestSucceeded = true;
+				requestSucceeded = true;
+				onSuccess?.();
+				try {
+					const data = await fetchAdminUser(id);
+					if (checkDetailRequestId(requestId)) {
+						setDetail(data);
+						setMessage(success);
+					}
+				} catch (error: unknown) {
+					if (checkDetailRequestId(requestId)) {
+						if (checkAdminSessionUnauthorized(error)) {
+							clearAdminSession();
+							setAdmin(null);
+						}
+						setDetail(null);
+						setMessage('操作已提交，但详情刷新失败，请手动刷新');
+					}
 				}
 			})
 			.catch((error: unknown) => {
@@ -268,7 +282,7 @@ export default function AdminUserDetailPage() {
 				<div className="flex flex-wrap gap-2">
 					<Button
 						color="warning"
-						isDisabled={!isPasswordValid}
+						isDisabled={!canResetPassword || !isPasswordValid}
 						isLoading={isLoading}
 						variant="flat"
 						onPress={() => {

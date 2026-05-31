@@ -51,8 +51,8 @@ export default function LegacyBackupImport() {
 									csrfToken
 								);
 								hasImportedBackup = true;
-								globalStore.persistence.cloudCode.set(null);
 								await takeOverLocalAccountData();
+								globalStore.persistence.cloudCode.set(null);
 							})
 								.then(() => {
 									setCode('');
@@ -93,11 +93,14 @@ export default function LegacyBackupImport() {
 						保存旧备份码
 					</Button>
 				)}
-				{message !== null && (
-					<span className="text-sm text-foreground-500">
-						{message}
-					</span>
-				)}
+				<span
+					aria-atomic="true"
+					aria-live="polite"
+					className="text-sm text-foreground-500"
+					role="status"
+				>
+					{message ?? ''}
+				</span>
 			</div>
 		</div>
 	);

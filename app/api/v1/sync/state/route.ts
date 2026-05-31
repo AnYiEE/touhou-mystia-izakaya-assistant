@@ -36,6 +36,7 @@ function createConflictResult(
 		data: current === null ? null : parseUserStateData(current.data),
 		namespace,
 		revision: current?.revision ?? 0,
+		schema_version: current?.schema_version ?? 0,
 		status: 'conflict',
 		updated_at: current?.updated_at ?? 0,
 	};
@@ -137,6 +138,16 @@ export async function PUT(request: NextRequest) {
 		});
 	}
 
+	const seenNamespaces = new Set<string>();
+	for (const change of body.changes) {
+		if (seenNamespaces.has(change.namespace)) {
+			return createNoStoreErrorResponse('duplicate-namespace', 400, {
+				namespace: change.namespace,
+			});
+		}
+		seenNamespaces.add(change.namespace);
+	}
+
 	const results: TSyncStatePutResult[] = [];
 	const batchUpdatedAt = Date.now();
 	const preparedChanges = body.changes.map((change) => {
@@ -151,7 +162,7 @@ export async function PUT(request: NextRequest) {
 		if (record === null) {
 			return {
 				result: {
-					message: 'invalid-json-data',
+					message: 'internal-write-error',
 					namespace: change.namespace,
 					status: 'error',
 				} satisfies TSyncStatePutResult,
@@ -198,7 +209,7 @@ export async function PUT(request: NextRequest) {
 		const result = writeResult.results[writeResultIndex++];
 		if (result === undefined) {
 			results.push({
-				message: 'invalid-json-data',
+				message: 'internal-write-error',
 				namespace: preparedChange.change.namespace,
 				status: 'error',
 			});

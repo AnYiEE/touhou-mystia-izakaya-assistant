@@ -84,6 +84,7 @@ export async function refreshAccountState() {
 	accountStore.shared.isBootstrapped.set(true);
 	accountStore.shared.isLoggedIn.set(isLoggedIn);
 	accountStore.shared.passwordMustChange.set(accountPasswordMustChange);
+	accountStore.shared.sync.lastError.set(null);
 	accountStore.shared.sync.meta.set(
 		accountUser === null
 			? accountSyncMeta

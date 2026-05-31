@@ -117,15 +117,11 @@ export async function getRecordCodes() {
 }
 
 export async function setRecord(backupFileRecord: TBackupFileRecordNew) {
-	const record = await db.transaction().execute(async (trx) => {
-		const nextRecord = await trx
-			.insertInto(TABLE_NAME)
-			.values(backupFileRecord)
-			.returningAll()
-			.executeTakeFirst();
-
-		return nextRecord;
-	});
+	const record = await db
+		.insertInto(TABLE_NAME)
+		.values(backupFileRecord)
+		.returningAll()
+		.executeTakeFirst();
 
 	return generateResponse(record);
 }
@@ -134,16 +130,12 @@ export async function updateRecord(
 	code: TBackupFileRecord['code'],
 	backupFileRecord: TBackupFileRecordUpdate
 ) {
-	const record = await db.transaction().execute(async (trx) => {
-		const nextRecord = await trx
-			.updateTable(TABLE_NAME)
-			.set(backupFileRecord)
-			.where('code', '=', code)
-			.returningAll()
-			.executeTakeFirst();
-
-		return nextRecord;
-	});
+	const record = await db
+		.updateTable(TABLE_NAME)
+		.set(backupFileRecord)
+		.where('code', '=', code)
+		.returningAll()
+		.executeTakeFirst();
 
 	return generateResponse(record, 404);
 }

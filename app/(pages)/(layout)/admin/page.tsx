@@ -57,43 +57,53 @@ export default function AdminPage() {
 	const refreshUsersRequestIdRef = useRef(0);
 	const trimmedUsername = username.trim();
 
-	const refreshUsers = useCallback(() => {
-		const requestId = refreshUsersRequestIdRef.current + 1;
-		refreshUsersRequestIdRef.current = requestId;
-		setIsLoading(true);
-		setMessage(null);
-		void listAdminUsers({ page, query, status })
-			.then((data) => {
-				if (refreshUsersRequestIdRef.current !== requestId) {
-					return;
-				}
-
-				setUsers(data);
-				setMessage(null);
+	const refreshUsers = useCallback(
+		(overrideQuery?: string, overridePage?: number) => {
+			const requestId = refreshUsersRequestIdRef.current + 1;
+			refreshUsersRequestIdRef.current = requestId;
+			setIsLoading(true);
+			setMessage(null);
+			void listAdminUsers({
+				page: overridePage ?? page,
+				query: overrideQuery ?? query,
+				status,
 			})
-			.catch((error: unknown) => {
-				if (refreshUsersRequestIdRef.current !== requestId) {
-					return;
-				}
+				.then((data) => {
+					if (refreshUsersRequestIdRef.current !== requestId) {
+						return;
+					}
 
-				if (checkAdminSessionUnauthorized(error)) {
-					clearAdminSession();
-					setAdmin(null);
-					setAdminAuthStatus('unauthenticated');
-					setUsers(null);
-				}
-				setMessage(
-					error instanceof Error ? error.message : '读取用户列表失败'
-				);
-			})
-			.finally(() => {
-				if (refreshUsersRequestIdRef.current !== requestId) {
-					return;
-				}
+					setUsers(data);
+					setMessage(null);
+				})
+				.catch((error: unknown) => {
+					if (refreshUsersRequestIdRef.current !== requestId) {
+						return;
+					}
 
-				setIsLoading(false);
-			});
-	}, [page, query, status]);
+					if (checkAdminSessionUnauthorized(error)) {
+						clearAdminSession();
+						setAdmin(null);
+						setAdminAuthStatus('unauthenticated');
+						setUsers(null);
+						return;
+					}
+					setMessage(
+						error instanceof Error
+							? error.message
+							: '读取用户列表失败'
+					);
+				})
+				.finally(() => {
+					if (refreshUsersRequestIdRef.current !== requestId) {
+						return;
+					}
+
+					setIsLoading(false);
+				});
+		},
+		[page, query, status]
+	);
 
 	const checkAdminAuth = useCallback(() => {
 		const requestId = adminAuthRequestIdRef.current + 1;
@@ -365,7 +375,11 @@ export default function AdminPage() {
 					color="primary"
 					isLoading={isLoading}
 					variant="flat"
-					onPress={refreshUsers}
+					onPress={() => {
+						setQuery(queryInput);
+						setPage(1);
+						refreshUsers(queryInput, 1);
+					}}
 				>
 					刷新
 				</Button>

@@ -104,15 +104,19 @@
 	) {
 		const responseFromCache = await caches.match(request);
 
-		if (responseFromCache !== undefined) {
-			event.waitUntil(fetchWithRetry(request, 3, event).catch(() => {}));
-			return responseFromCache;
-		}
-
 		try {
-			return await fetchWithRetry(request, 3, event);
+			const response = await fetchWithRetry(request, 3, event);
+			// Update cache in background for offline fallback.
+			if (responseFromCache === undefined) {
+				event.waitUntil(
+					putInCache(request, response.clone(), VERSION).catch(
+						() => {}
+					)
+				);
+			}
+			return response;
 		} catch {
-			return networkErrorResponse.clone();
+			return responseFromCache ?? networkErrorResponse.clone();
 		}
 	}
 
@@ -161,8 +165,15 @@
 		if (pathname.includes('.')) {
 			// Cache all static assets (file has extension).
 			event.respondWith(cacheFirst(event.request, event));
+		} else if (
+			pathname.startsWith('/admin') ||
+			pathname.startsWith('/account') ||
+			pathname.startsWith('/preferences')
+		) {
+			// Never cache protected routes that may contain
+			// user-specific data or session-dependent content.
 		} else {
-			// Cache all routes (file has no extension).
+			// Cache public routes (file has no extension).
 			event.respondWith(networkFirst(event.request, event));
 		}
 	});

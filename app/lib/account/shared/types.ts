@@ -45,7 +45,7 @@ export interface IAccountMeAnonymousResponse {
 	user: null;
 }
 
-export type TAccountMeSuccessResponse =
+export type TAccountMeResponse =
 	| IAccountMeAnonymousResponse
 	| IAccountMeSuccessResponse;
 

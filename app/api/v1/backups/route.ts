@@ -179,6 +179,12 @@ export async function POST(request: NextRequest) {
 				throwIfBackupCodeLockLost(signal);
 			} catch (error) {
 				if (checkBackupCodeLockLostError(error)) {
+					await restoreBackupFile({
+						code,
+						codeHash,
+						hadPreviousFile,
+						previousFileContent,
+					});
 					return createNoStoreErrorResponse(
 						'backup-code-lock-lost',
 						409
@@ -272,22 +278,28 @@ export async function POST(request: NextRequest) {
 				if (nextRecord.status !== 200) {
 					throw new Error('Failed to save record');
 				}
+				throwIfBackupCodeLockLost(signal);
 				markBackupCodeLockCommitted(signal);
 			} catch (error) {
+				if (checkBackupCodeLockLostError(error)) {
+					return createNoStoreErrorResponse(
+						'backup-code-lock-lost',
+						409
+					);
+				}
+
 				try {
 					const currentFileIdentity = await getFileIdentity(code);
 					if (currentFileIdentity === writtenFileIdentity) {
-						await (hadPreviousFile && previousFileContent !== null
-							? saveFile(code, previousFileContent)
-							: deleteFile(code));
-					}
-				} catch (restoreError) {
-					if (!checkBackupFileNotFoundError(restoreError)) {
-						console.warn('Failed to restore backup file', {
+						await restoreBackupFile({
+							code,
 							codeHash,
-							errorCode: getLogSafeErrorCode(restoreError),
+							hadPreviousFile,
+							previousFileContent,
 						});
 					}
+				} catch {
+					// restoreBackupFile handles its own error logging.
 				}
 
 				console.warn('Failed to save backup record', {

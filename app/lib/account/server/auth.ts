@@ -109,21 +109,10 @@ export async function createAccountSessionForActiveUser(
 	request: NextRequest,
 	user: TActiveUserSessionPatch
 ) {
-	const now = Date.now();
-	const token = createSessionToken();
-	const tokenHash = hashSessionToken(token);
-	const session = {
-		created_at: now,
-		id: randomUUID(),
-		ip_address: getRequestIp(request),
-		last_seen_at: now,
-		token_hash: tokenHash,
-		user_agent: getRequestUserAgent(request),
-		user_id: userId,
-	};
+	const draft = createAccountSessionDraft(userId, request);
 
 	const didCreate = await createSessionForActiveUserRecord({
-		session,
+		session: draft.record,
 		user,
 		userId,
 	});
@@ -132,10 +121,10 @@ export async function createAccountSessionForActiveUser(
 	}
 
 	return {
-		cookieOptions: getAccountSessionCookieOptions(request),
-		csrfToken: createCsrfToken(tokenHash),
-		token,
-		tokenHash,
+		cookieOptions: draft.cookieOptions,
+		csrfToken: draft.csrfToken,
+		token: draft.token,
+		tokenHash: draft.tokenHash,
 	};
 }
 
@@ -161,12 +150,22 @@ export function clearAccountSessionCookie(
 	});
 }
 
+function isValidSessionTokenFormat(token: string) {
+	// Session tokens are 32-byte random base64url (typically 43 chars).
+	// Reject malformed tokens early to avoid unnecessary HMAC computation.
+	return (
+		token.length >= 40 &&
+		token.length <= 50 &&
+		/^[A-Za-z0-9_-]+$/u.test(token)
+	);
+}
+
 export async function authenticateAccountRequest(
 	request: NextRequest,
 	allowPasswordMustChange = false
 ): Promise<TAccountAuthResult> {
 	const token = request.cookies.get(ACCOUNT_SESSION_COOKIE_NAME)?.value;
-	if (!token) {
+	if (!token || !isValidSessionTokenFormat(token)) {
 		return { httpStatus: 401, message: 'unauthorized', status: 'error' };
 	}
 

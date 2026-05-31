@@ -40,14 +40,15 @@ export async function POST(request: NextRequest) {
 
 	const body = await readJsonBody<IAdminLoginBody>(request);
 	if (
-		typeof body?.username !== 'string' ||
+		body === null ||
+		typeof body.username !== 'string' ||
 		typeof body.password !== 'string'
 	) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
 	const username = body.username.trim();
-	if (username === '' || body.password === '') {
+	if (username === '' || username.length > 128 || body.password === '') {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 

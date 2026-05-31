@@ -48,14 +48,21 @@ export function checkAdminCredentials(username: string, password: string) {
 	const adminUsername = process.env.ADMIN_USERNAME;
 	const adminPassword = process.env.ADMIN_PASSWORD;
 
-	if (!adminUsername || !adminPassword || username !== adminUsername) {
+	if (!adminUsername || !adminPassword) {
 		return false;
 	}
 
-	return checkFixedLengthEqual(
+	// Constant-time comparison for both username and password.
+	const usernameMatches = checkFixedLengthEqual(
+		createAccountHmac('admin:v1', username),
+		createAccountHmac('admin:v1', adminUsername)
+	);
+	const passwordMatches = checkFixedLengthEqual(
 		createAccountHmac('admin:v1', password),
 		createAccountHmac('admin:v1', adminPassword)
 	);
+
+	return usernameMatches && passwordMatches;
 }
 
 function getAdminCredentialBinding() {
@@ -82,6 +89,11 @@ function createAdminSessionSignature(payload: string) {
 }
 
 export function createAdminSessionToken(username: string, now = Date.now()) {
+	const adminUsername = process.env.ADMIN_USERNAME;
+	if (!adminUsername || username !== adminUsername) {
+		throw new Error('feature-disabled');
+	}
+
 	const payload = encodeAdminPayload({
 		expires_at: now + ADMIN_SESSION_MAX_AGE * 1000,
 		issued_at: now,

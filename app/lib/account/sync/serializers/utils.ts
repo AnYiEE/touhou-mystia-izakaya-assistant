@@ -44,12 +44,14 @@ export function createSerializerConflict<T>({
 	cloud,
 	local,
 	namespace,
+	userId,
 }: {
 	cloud: T;
 	local: T;
 	namespace: TSyncNamespace;
+	userId: string;
 }): ISyncConflictItem<T> {
-	return { cloud, local, merged: null, namespace, revision: 0 };
+	return { cloud, local, merged: null, namespace, revision: 0, userId };
 }
 
 export function createMergeResult<T>({
@@ -122,9 +124,8 @@ function mergeFieldValue({
 
 	const hasLocalChange = !checkSnapshotEqual(normalizedLocal, normalizedBase);
 	const hasCloudChange = !checkSnapshotEqual(normalizedCloud, normalizedBase);
-	const isLocalDefault = checkSnapshotEqual(normalizedLocal, defaults);
 
-	if (!hasLocalChange || isLocalDefault || hasCloudChange) {
+	if (!hasLocalChange || hasCloudChange) {
 		return { data: normalizedCloud, shouldUpload: false };
 	}
 

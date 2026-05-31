@@ -45,11 +45,12 @@ export default function AccountPasswordMustChangeModal() {
 			{ current_password: currentPassword, new_password: newPassword },
 			csrfToken
 		)
-			.then(refreshAccountState)
 			.then(() => {
 				setCurrentPassword('');
 				setNewPassword('');
+				setMessage(null);
 			})
+			.then(() => refreshAccountState())
 			.catch((error: unknown) => {
 				setMessage(error instanceof Error ? error.message : '改密失败');
 			})

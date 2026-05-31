@@ -108,6 +108,18 @@ class SafeStorage implements Storage {
 		}
 	}
 
+	private clearFallbackMode() {
+		try {
+			sessionStorage.removeItem(fallbackModeKey);
+		} catch {
+			/* empty */
+		}
+		// PERSIST MANAGED KEYS HERE: when recovering from fallback,
+		// the managed-keys registry should be written to localStorage
+		// so future reads see the complete key set.
+		this.persistManagedKeys();
+	}
+
 	private markManagedKey(key: string) {
 		if (internalKeys.has(key) || this._managedKeys.has(key)) {
 			return;
@@ -158,6 +170,23 @@ class SafeStorage implements Storage {
 			return null;
 		}
 
+		const testKey = '__test__';
+
+		// Always probe localStorage first, even when a previous
+		// write failure caused a sessionStorage fallback.  A single
+		// transient error should not permanently degrade persistence.
+		try {
+			localStorage.setItem(testKey, '');
+			localStorage.removeItem(testKey);
+			this._mode = 'local';
+			if (fallbackMode === 'session') {
+				this.clearFallbackMode();
+			}
+			return localStorage;
+		} catch {
+			/* empty */
+		}
+
 		if (
 			fallbackMode === 'session' &&
 			this.checkStorageAvailable(sessionStorage)
@@ -165,17 +194,6 @@ class SafeStorage implements Storage {
 			this._mode = 'session';
 			this._staleStorage = this.getLocalStorageReference();
 			return sessionStorage;
-		}
-
-		const testKey = '__test__';
-
-		try {
-			localStorage.setItem(testKey, '');
-			localStorage.removeItem(testKey);
-			this._mode = 'local';
-			return localStorage;
-		} catch {
-			/* empty */
 		}
 
 		try {
@@ -344,7 +362,8 @@ class SafeStorage implements Storage {
 		if (this._storage !== null) {
 			const storage = this._storage;
 			try {
-				this._managedKeys.forEach((key) => {
+				const visibleKeys = this.getStorageKeys();
+				visibleKeys.forEach((key) => {
 					try {
 						storage.removeItem(key);
 					} catch {
@@ -363,7 +382,6 @@ class SafeStorage implements Storage {
 
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 	public getItem<T extends string = string>(key: string): T | null {
-		this.markManagedKey(key);
 		this.restoreAvailableStorage();
 		if (this._storage !== null) {
 			try {

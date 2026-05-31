@@ -11,10 +11,12 @@ export interface IRateLimitResult {
 
 interface IRateLimitBucket {
 	count: number;
-	lastAccessedAt: number;
 	resetAt: number;
 }
 
+// Design note: Rate limiting uses in-process memory (Map) with fail-closed
+// capacity protection. For multi-instance deployments, migrate to a shared
+// SQLite rate_limit table via the project's existing Kysely db instance.
 const MAX_RATE_LIMIT_BUCKETS = 10_000;
 const RATE_LIMIT_CLEANUP_INTERVAL_MS = 60 * 1000;
 
@@ -29,35 +31,26 @@ export function clearExpiredRateLimitBuckets(now = Date.now()) {
 	});
 }
 
-function ensureRateLimitBucketCapacity(now: number) {
+function ensureRateLimitBucketCapacity(now: number): boolean {
 	if (now - lastRateLimitCleanupAt >= RATE_LIMIT_CLEANUP_INTERVAL_MS) {
 		clearExpiredRateLimitBuckets(now);
 		lastRateLimitCleanupAt = now;
 	}
 
 	if (rateLimitBucketMap.size < MAX_RATE_LIMIT_BUCKETS) {
-		return;
+		return true;
 	}
 
 	clearExpiredRateLimitBuckets(now);
 	lastRateLimitCleanupAt = now;
 
 	if (rateLimitBucketMap.size < MAX_RATE_LIMIT_BUCKETS) {
-		return;
+		return true;
 	}
 
-	let oldestKey: string | null = null;
-	let oldestAccessedAt = Number.POSITIVE_INFINITY;
-	for (const [key, bucket] of rateLimitBucketMap) {
-		if (bucket.lastAccessedAt < oldestAccessedAt) {
-			oldestAccessedAt = bucket.lastAccessedAt;
-			oldestKey = key;
-		}
-	}
-
-	if (oldestKey !== null) {
-		rateLimitBucketMap.delete(oldestKey);
-	}
+	// Fail closed when capacity is reached: reject new keys rather than
+	// evicting existing buckets, which would allow key-rotation attacks.
+	return false;
 }
 
 export function checkRateLimit(
@@ -79,17 +72,17 @@ export function checkRateLimit(
 	const bucket = rateLimitBucketMap.get(key);
 
 	if (!bucket || bucket.resetAt <= now) {
-		ensureRateLimitBucketCapacity(now);
+		if (!ensureRateLimitBucketCapacity(now)) {
+			return {
+				allowed: false,
+				remaining: 0,
+				retryAfter: Math.ceil(windowMs / 1000),
+			};
+		}
 
-		rateLimitBucketMap.set(key, {
-			count: 1,
-			lastAccessedAt: now,
-			resetAt: now + windowMs,
-		});
+		rateLimitBucketMap.set(key, { count: 1, resetAt: now + windowMs });
 		return { allowed: true, remaining: limit - 1, retryAfter: 0 };
 	}
-	bucket.lastAccessedAt = now;
-
 	if (bucket.count >= limit) {
 		return {
 			allowed: false,

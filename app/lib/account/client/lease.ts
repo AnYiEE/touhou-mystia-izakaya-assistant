@@ -93,7 +93,12 @@ function tryRenewAccountSyncLease(
 	now: number
 ) {
 	const lease = readAccountSyncLease(userId);
-	if (lease?.ownerTabId !== ownerTabId || lease.ownerRunId !== ownerRunId) {
+	if (
+		lease === null ||
+		lease.expiresAt <= now ||
+		lease.ownerTabId !== ownerTabId ||
+		lease.ownerRunId !== ownerRunId
+	) {
 		return false;
 	}
 

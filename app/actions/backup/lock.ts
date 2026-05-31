@@ -7,7 +7,7 @@ import { getLogSafeErrorCode } from '@/lib/logging';
 const backupCodeLocks = new Map<string, Promise<void>>();
 const BACKUP_CODE_LOCK_RETRY_MS = 50;
 const BACKUP_CODE_LOCK_TIMEOUT_MS = 10 * 1000;
-const BACKUP_CODE_LOCK_TTL_MS = 60 * 1000;
+const BACKUP_CODE_LOCK_TTL_MS = 15 * 1000;
 const BACKUP_CODE_LOCK_LOST_MESSAGE = 'backup-code-lock-lost';
 const BACKUP_CODE_LOCK_TIMEOUT_MESSAGE = 'backup-code-lock-timeout';
 const TABLE_NAME = TABLE_NAME_MAP.backupCodeLock;

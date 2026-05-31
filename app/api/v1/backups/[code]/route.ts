@@ -35,12 +35,9 @@ export async function GET(
 		return createNoStoreErrorResponse('Invalid code', 400);
 	}
 
-	const { ip, ua } = getRequestMeta(request);
+	const { ip } = getRequestMeta(request);
 	if (ip === null) {
 		return createNoStoreErrorResponse('Invalid IP address', 400);
-	}
-	if (ua === null) {
-		return createNoStoreErrorResponse('Invalid user agent', 400);
 	}
 
 	const now = Date.now();
@@ -66,8 +63,14 @@ export async function GET(
 				);
 			}
 
-			await updateRecordTimeout(code, now);
+			const timeoutResult = await updateRecordTimeout(code, now);
 			throwIfBackupCodeLockLost(signal);
+			if (timeoutResult.status !== 200) {
+				return createNoStoreErrorResponse(
+					'Failed to update record timeout',
+					500
+				);
+			}
 
 			let fileContent: string;
 			try {
@@ -136,9 +139,9 @@ export async function DELETE(
 			}
 
 			let deletedFile = true;
+
+			// Phase 1: Delete the file (best-effort).
 			try {
-				throwIfBackupCodeLockLost(signal);
-				await deleteRecord(code);
 				throwIfBackupCodeLockLost(signal);
 				await deleteFile(code);
 				throwIfBackupCodeLockLost(signal);
@@ -151,7 +154,9 @@ export async function DELETE(
 				}
 				throwIfBackupCodeLockLost(signal);
 
-				if (!checkBackupFileNotFoundError(error)) {
+				if (checkBackupFileNotFoundError(error)) {
+					deletedFile = false;
+				} else {
 					console.warn('Failed to delete backup file', {
 						codeHash: maskBackupCode(code),
 						errorCode: getLogSafeErrorCode(error),
@@ -162,8 +167,37 @@ export async function DELETE(
 						500
 					);
 				}
+			}
 
-				deletedFile = false;
+			// Phase 2: Delete the database record (must succeed).
+			try {
+				throwIfBackupCodeLockLost(signal);
+				const deleteResult = await deleteRecord(code);
+				throwIfBackupCodeLockLost(signal);
+				if (deleteResult.status !== 200) {
+					return createNoStoreErrorResponse(
+						'Failed to delete record',
+						500
+					);
+				}
+			} catch (error) {
+				if (checkBackupCodeLockLostError(error)) {
+					return createNoStoreErrorResponse(
+						'backup-code-lock-lost',
+						409
+					);
+				}
+				throwIfBackupCodeLockLost(signal);
+
+				console.warn('Failed to delete backup record', {
+					codeHash: maskBackupCode(code),
+					errorCode: getLogSafeErrorCode(error),
+				});
+
+				return createNoStoreErrorResponse(
+					'Failed to delete record',
+					500
+				);
 			}
 
 			markBackupCodeLockCommitted(signal);

@@ -1,19 +1,22 @@
 import { siteConfig } from '@/configs';
 import { accountStore } from '@/stores/account';
 import { AccountApiError } from './api';
-import { refreshAccountState } from './session';
+import { refreshAccountState, resetAccountSyncRuntime } from './session';
 
 function disableAccountBootstrap() {
+	resetAccountSyncRuntime();
+	accountStore.shared.sync.meta.set(null);
 	accountStore.shared.bootstrapStatus.set('disabled');
 	accountStore.shared.csrfToken.set(null);
 	accountStore.shared.isBootstrapped.set(true);
 	accountStore.shared.isLoggedIn.set(false);
 	accountStore.shared.passwordMustChange.set(false);
-	accountStore.shared.sync.lastError.set(null);
 	accountStore.shared.user.set(null);
 }
 
 function failAccountBootstrap(message: string) {
+	resetAccountSyncRuntime();
+	accountStore.shared.sync.meta.set(null);
 	accountStore.shared.bootstrapStatus.set('error');
 	accountStore.shared.csrfToken.set(null);
 	accountStore.shared.isBootstrapped.set(true);

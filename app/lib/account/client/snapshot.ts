@@ -148,6 +148,15 @@ export function applyRemoteAccountRecords({
 		return meta;
 	}
 
+	// Capture previous snapshots so we can roll back if meta persistence
+	// fails after local stores have already been updated.
+	const previousSnapshots = new Map(
+		preparedRecords.map((record) => [
+			record.namespace,
+			record.serializer.getLocalSnapshot(),
+		])
+	);
+
 	try {
 		runWithApplyingRemoteState(() => {
 			preparedRecords.forEach((record) => {
@@ -158,31 +167,41 @@ export function applyRemoteAccountRecords({
 				appliedRecordCount += 1;
 			});
 		});
+
+		writeAccountSyncMeta(userId, meta);
 	} catch (error) {
+		// Roll back any applied snapshots to keep local stores and
+		// sync meta consistent.  Wrap in runWithApplyingRemoteState so
+		// store subscriptions triggered by setLocalSnapshot do not
+		// spuriously create dirty queue entries for the old data.
 		if (appliedRecordCount > 0) {
-			const partialMeta: IAccountSyncMeta = {
-				...meta,
-				lastAppliedRemoteHash: { ...meta.lastAppliedRemoteHash },
-				revisions: { ...meta.revisions },
-				state_epoch: meta.state_epoch,
-			};
-			if (previousMeta?.clearedStateEpoch !== undefined) {
-				partialMeta.clearedStateEpoch = previousMeta.clearedStateEpoch;
-			}
-			try {
-				writeAccountSyncMeta(userId, partialMeta);
-			} catch (writeError) {
-				console.warn(
-					'Failed to persist partially applied account sync meta.',
-					writeError
-				);
+			runWithApplyingRemoteState(() => {
+				preparedRecords.forEach((record) => {
+					const previous = previousSnapshots.get(record.namespace);
+					if (previous !== undefined) {
+						try {
+							record.serializer.setLocalSnapshot(previous);
+						} catch {
+							/* best-effort rollback */
+						}
+					}
+				});
+			});
+
+			if (previousMeta !== null) {
+				try {
+					writeAccountSyncMeta(userId, previousMeta);
+				} catch (writeError) {
+					console.warn(
+						'Failed to restore account sync meta after rollback.',
+						writeError
+					);
+				}
 			}
 		}
 
 		throw error;
 	}
-
-	writeAccountSyncMeta(userId, meta);
 
 	return meta;
 }

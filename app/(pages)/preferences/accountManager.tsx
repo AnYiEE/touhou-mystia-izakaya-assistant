@@ -43,6 +43,20 @@ function handleUnauthorizedAccountError(error: unknown) {
 	return false;
 }
 
+const LOGOUT_SKIPPED = Symbol('logout-skipped');
+
+const BOOTSTRAP_ERROR_MESSAGE_MAP: Record<string, string> = {
+	'bootstrap-failed': '账号服务初始化失败，请刷新页面重试',
+	'server-misconfigured': '服务器配置异常',
+};
+
+function getBootstrapErrorMessage(errorCode: string | null) {
+	if (errorCode === null) {
+		return '账号功能暂不可用：服务器配置异常';
+	}
+	return `账号功能暂不可用：${BOOTSTRAP_ERROR_MESSAGE_MAP[errorCode] ?? errorCode}`;
+}
+
 export default function AccountManager() {
 	const bootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const csrfToken = accountStore.shared.csrfToken.use();
@@ -71,10 +85,15 @@ export default function AccountManager() {
 		setMessage(null);
 		const request = authMode === 'login' ? loginAccount : registerAccount;
 		void request({ password, username: normalizedUsername })
-			.then(refreshAccountState)
 			.then(() => {
 				setPassword('');
 				setMessage(authMode === 'login' ? '登录成功' : '注册成功');
+				refreshAccountState().catch((error: unknown) => {
+					console.warn(
+						'Account state refresh failed after successful authentication.',
+						error
+					);
+				});
 			})
 			.catch((error: unknown) => {
 				setMessage(error instanceof Error ? error.message : '认证失败');
@@ -94,11 +113,19 @@ export default function AccountManager() {
 			{ current_password: currentPassword, new_password: newPassword },
 			csrfToken
 		)
-			.then(refreshAccountState)
 			.then(() => {
 				setCurrentPassword('');
 				setNewPassword('');
 				setMessage('密码已更新');
+				refreshAccountState().catch((error: unknown) => {
+					if (handleUnauthorizedAccountError(error)) {
+						return;
+					}
+					console.warn(
+						'Account state refresh failed after successful password change.',
+						error
+					);
+				});
 			})
 			.catch((error: unknown) => {
 				if (handleUnauthorizedAccountError(error)) {
@@ -111,6 +138,7 @@ export default function AccountManager() {
 				setIsSubmitting(false);
 			});
 	}, [csrfToken, currentPassword, isSubmitting, newPassword]);
+
 	const logoutAfterFlush = useCallback(
 		(action: (csrfToken: string) => Promise<unknown>) => {
 			if (csrfToken === null || isSubmitting) {
@@ -124,25 +152,23 @@ export default function AccountManager() {
 					if (!isFlushed) {
 						if (accountStore.shared.user.get() === null) {
 							resetAccountState();
-							return null;
+							return LOGOUT_SKIPPED;
 						}
 
 						const syncLastError =
 							accountStore.shared.sync.lastError.get();
 						if (syncLastError === 'unauthorized') {
 							resetAccountState();
-							return null;
+							return LOGOUT_SKIPPED;
 						}
-						console.warn(
-							'退出前同步未完成，未保存的数据可能丢失',
-							syncLastError
-						);
+						setMessage('同步尚未完成，请先重试同步后再退出');
+						return LOGOUT_SKIPPED;
 					}
 
 					return action(csrfToken);
 				})
 				.then((result) => {
-					if (result !== null) {
+					if (result !== LOGOUT_SKIPPED) {
 						resetAccountState();
 					}
 				})
@@ -198,7 +224,7 @@ export default function AccountManager() {
 			<div className="space-y-4">
 				<Heading as="h3">账号</Heading>
 				<p className="text-sm text-foreground-500">
-					账号功能暂不可用：{lastError ?? 'server-misconfigured'}
+					{getBootstrapErrorMessage(lastError)}
 				</p>
 			</div>
 		);

@@ -15,6 +15,7 @@ import {
 	sendSyncPing,
 } from './api';
 import {
+	ACCOUNT_SYNC_LEASE_RENEW_INTERVAL,
 	acquireAccountSyncLease,
 	createAccountTabId,
 	readAccountSyncLease,
@@ -177,6 +178,7 @@ function stopLeaseRenewal(generation?: number) {
 export function stopAccountSyncClient() {
 	syncClientGeneration += 1;
 	activeFlushRun = null;
+	visibilityOperationId = null;
 	clearSyncTimers();
 	stopLeaseRenewal();
 	accountStore.shared.sync.isSyncing.set(false);
@@ -250,7 +252,7 @@ function startLeaseRenewal(
 					stopAccountSyncClient();
 				}
 			});
-	}, 5 * 1000);
+	}, ACCOUNT_SYNC_LEASE_RENEW_INTERVAL);
 }
 
 function getRecordMap(records: ISyncStateRecord[]) {
@@ -383,7 +385,7 @@ function checkRemoteStateCleared({
 		return false;
 	}
 
-	if (stateEpoch > (currentMeta?.state_epoch ?? 0)) {
+	if (currentMeta !== null && stateEpoch > currentMeta.state_epoch) {
 		return true;
 	}
 
@@ -553,6 +555,7 @@ export function resetAccountSyncCloudStateAfterDelete({
 	accountStore.shared.sync.conflicts.set((conflicts) =>
 		conflicts.filter((conflict) => conflict.userId !== userId)
 	);
+	accountStore.shared.sync.lastError.set(null);
 	accountStore.shared.sync.pendingCount.set(0);
 	setCurrentAccountUserStateEpoch(userId, stateEpoch);
 }
@@ -618,7 +621,7 @@ function handleConflictUpload({
 							data: result.data,
 							namespace: result.namespace,
 							revision: result.revision,
-							schema_version: entry.schema_version,
+							schema_version: result.schema_version,
 							updated_at: result.updated_at,
 						},
 			userId,
@@ -870,6 +873,8 @@ export async function flushAccountSyncQueue() {
 							? refreshError.message
 							: 'sync-refresh-failed'
 					);
+					accountStore.shared.sync.lastResult.set('failed');
+					return false;
 				}
 			}
 			if (!checkCurrentSyncRun(generation, context.user.id)) {

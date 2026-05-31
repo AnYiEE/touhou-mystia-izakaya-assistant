@@ -616,6 +616,7 @@ async function importBackupData(
 				user_id: userId,
 			})
 			.execute();
+		throwIfBackupCodeLockLost(signal);
 
 		return { results, status: 'ok' as const };
 	});

@@ -117,11 +117,10 @@ export function startAccountStoreSyncWatchers() {
 			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
 		})
 	);
-	watch(
-		globalStore.persistence.donationModal.interactionCount.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
-		})
-	);
+	// interactionCount is incremented on every analytics event (trackEvent),
+	// so watching it directly amplifies analytics traffic into sync flushes.
+	// The count is still synced opportunistically with other
+	// globalPreferences changes (e.g., donation milestone updates).
 	watch(
 		globalStore.persistence.donationModal.lastMilestoneShown.onChange(
 			() => {

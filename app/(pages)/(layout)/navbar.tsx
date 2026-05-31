@@ -375,7 +375,15 @@ export default function Navbar() {
 				className="hidden basis-full md:flex md:basis-1/5"
 			>
 				<NavbarItem>
-					<AccountMenu />
+					<AccountMenu
+						{...(shouldShowPreferences
+							? {
+									onPress: () => {
+										handlePress('/preferences', true);
+									},
+								}
+							: {})}
+					/>
 				</NavbarItem>
 				<NavbarItem>
 					<GitHubLink showTooltip />
@@ -412,9 +420,13 @@ export default function Navbar() {
 			<NavbarMenu className="px-10 pt-4">
 				<NavbarMenuItem>
 					<AccountMenu
-						onPress={() => {
-							handlePress('/preferences', true);
-						}}
+						{...(shouldShowPreferences
+							? {
+									onPress: () => {
+										handlePress('/preferences', true);
+									},
+								}
+							: {})}
 					/>
 				</NavbarMenuItem>
 				{navMenuItems.map(({ href, label }, index) => {

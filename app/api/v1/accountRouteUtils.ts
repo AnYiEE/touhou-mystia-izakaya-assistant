@@ -10,12 +10,13 @@ import {
 	checkInsecureAccountCookiesAllowed,
 	checkSameOriginRequest,
 	checkSecureRequest,
+	getRequestIp,
 	getTrustedRequestIp,
 } from '@/lib/account/server/request';
 import { createNoStoreErrorResponse } from './utils';
 
 const ACCOUNT_RATE_LIMIT_OPTIONS = { limit: 20, windowMs: 60 * 1000 } as const;
-const MAX_ACCOUNT_JSON_BODY_BYTES = 8 * 1024 * 1024;
+const MAX_ACCOUNT_JSON_BODY_BYTES = 16 * 1024;
 
 function createAccountRateLimitKey(parts: ReadonlyArray<string>) {
 	return JSON.stringify(parts);
@@ -66,11 +67,13 @@ export function checkAccountRateLimitResponse(
 ) {
 	const keys: string[] = [];
 	const requestIp = getTrustedRequestIp(request);
-	if (requestIp === null) {
-		keys.push(createAccountRateLimitKey([scope, 'request', 'untrusted']));
-	} else {
-		keys.push(createAccountRateLimitKey([scope, 'request', requestIp]));
-	}
+	keys.push(
+		createAccountRateLimitKey([
+			scope,
+			'request',
+			requestIp ?? getRequestIp(request),
+		])
+	);
 
 	if (usernameNormalized !== '') {
 		keys.push(
@@ -78,9 +81,14 @@ export function checkAccountRateLimitResponse(
 		);
 	}
 
-	const result = keys
-		.map((key) => checkRateLimit(key, ACCOUNT_RATE_LIMIT_OPTIONS))
-		.find((item) => !item.allowed);
+	let result: ReturnType<typeof checkRateLimit> | undefined;
+	for (const key of keys) {
+		const check = checkRateLimit(key, ACCOUNT_RATE_LIMIT_OPTIONS);
+		if (!check.allowed) {
+			result = check;
+			break;
+		}
+	}
 
 	if (result === undefined) {
 		return null;

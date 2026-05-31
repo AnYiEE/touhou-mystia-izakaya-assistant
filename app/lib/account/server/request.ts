@@ -6,7 +6,7 @@ import { checkEnvFlag } from '@/lib/environment';
 import { SERVER_MISCONFIGURED_MESSAGE } from './environment';
 
 export function getTrustedRequestIp(request: NextRequest) {
-	if (env.TRUST_PROXY !== 'true') {
+	if (!checkEnvFlag(env.TRUST_PROXY)) {
 		return null;
 	}
 
@@ -71,7 +71,7 @@ function getHostnameFromHost(host: string) {
 }
 
 export function getExpectedRequestOrigin(request: NextRequest) {
-	const trustProxy = env.TRUST_PROXY === 'true';
+	const trustProxy = checkEnvFlag(env.TRUST_PROXY);
 	const host = normalizeRequestHost(
 		trustProxy
 			? (getFirstHeaderValue(request.headers.get('x-forwarded-host')) ??
@@ -129,13 +129,13 @@ export function checkSecureRequest(request: NextRequest) {
 
 	return (
 		request.nextUrl.protocol === 'https:' ||
-		(env.TRUST_PROXY === 'true' && forwardedProtocol === 'https:')
+		(checkEnvFlag(env.TRUST_PROXY) && forwardedProtocol === 'https:')
 	);
 }
 
 function checkLocalRequestHost(request: NextRequest) {
 	const host = normalizeRequestHost(
-		env.TRUST_PROXY === 'true'
+		checkEnvFlag(env.TRUST_PROXY)
 			? (getFirstHeaderValue(request.headers.get('x-forwarded-host')) ??
 					request.headers.get('host') ??
 					request.nextUrl.host)
@@ -156,7 +156,6 @@ function checkLocalRequestHost(request: NextRequest) {
 
 export function checkInsecureAccountCookiesAllowed(request: NextRequest) {
 	return (
-		env.NODE_ENV !== 'production' ||
 		checkLocalRequestHost(request) ||
 		checkEnvFlag(env.ALLOW_INSECURE_COOKIES)
 	);

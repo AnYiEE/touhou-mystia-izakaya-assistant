@@ -67,7 +67,7 @@ export interface ISyncConflictItem<T = unknown> {
 	merged: T | null;
 	namespace: TSyncNamespace;
 	revision: number;
-	userId?: string;
+	userId: string;
 }
 
 export interface ISyncStateItemSuccess {
@@ -81,6 +81,7 @@ export interface ISyncStateItemConflict {
 	data: unknown;
 	namespace: TSyncNamespace;
 	revision: number;
+	schema_version: number;
 	status: 'conflict';
 	updated_at: number;
 }

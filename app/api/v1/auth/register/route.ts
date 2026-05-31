@@ -39,7 +39,8 @@ export async function POST(request: NextRequest) {
 
 	const body = await readJsonBody<IAuthRegisterBody>(request);
 	if (
-		typeof body?.username !== 'string' ||
+		body === null ||
+		typeof body.username !== 'string' ||
 		typeof body.password !== 'string'
 	) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);

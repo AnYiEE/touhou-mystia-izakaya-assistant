@@ -26,7 +26,11 @@ function generateFilePath(code: TBackupFileRecord['code']) {
 }
 
 export function checkBackupFileNotFoundError(error: unknown) {
-	return (error as NodeJS.ErrnoException).code === 'ENOENT';
+	return (
+		error !== null &&
+		typeof error === 'object' &&
+		(error as NodeJS.ErrnoException).code === 'ENOENT'
+	);
 }
 
 export async function deleteFile(code: TBackupFileRecord['code']) {
@@ -148,10 +152,13 @@ export async function saveFile(
 			await unlink(tempFilePath);
 		} catch (cleanupError) {
 			if (!checkBackupFileNotFoundError(cleanupError)) {
+				const errCode =
+					cleanupError !== null && typeof cleanupError === 'object'
+						? ((cleanupError as NodeJS.ErrnoException).code ??
+							'unknown')
+						: 'unknown';
 				console.warn('Failed to clean up temporary backup file.', {
-					errorCode:
-						(cleanupError as NodeJS.ErrnoException).code ??
-						'unknown',
+					errorCode: errCode,
 				});
 			}
 		}

@@ -48,6 +48,7 @@ export const themeSerializer = {
 						cloud,
 						local,
 						namespace,
+						userId: '',
 					}),
 					data: cloud,
 					shouldUpload: false,
@@ -61,7 +62,12 @@ export const themeSerializer = {
 			}
 
 			return createMergeResult({
-				conflict: createSerializerConflict({ cloud, local, namespace }),
+				conflict: createSerializerConflict({
+					cloud,
+					local,
+					namespace,
+					userId: '',
+				}),
 				data: cloud,
 				shouldUpload: false,
 			});
@@ -77,7 +83,12 @@ export const themeSerializer = {
 		}
 
 		return createMergeResult({
-			conflict: createSerializerConflict({ cloud, local, namespace }),
+			conflict: createSerializerConflict({
+				cloud,
+				local,
+				namespace,
+				userId: '',
+			}),
 			data: cloud,
 			shouldUpload: false,
 		});

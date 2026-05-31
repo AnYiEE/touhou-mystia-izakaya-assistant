@@ -153,6 +153,7 @@ export async function POST(request: NextRequest) {
 						: parseUserStateData(result.current.data),
 				namespace: preparedChange.change.namespace,
 				revision: result.current?.revision ?? 0,
+				schema_version: result.current?.schema_version ?? 0,
 				status: 'conflict',
 				updated_at: result.current?.updated_at ?? 0,
 			});

@@ -45,14 +45,23 @@ export default function AccountOnboarding() {
 		setMessage(null);
 		const request = authMode === 'login' ? loginAccount : registerAccount;
 		void request({ password, username: normalizedUsername })
-			.then(refreshAccountState)
 			.then(() => {
+				// Treat auth success and state refresh as separate
+				// concerns: close the modal immediately on successful
+				// authentication so the user is never blocked by a
+				// transient /me failure.
 				accountStore.persistence.hasSkippedOnboarding.set(true);
+				setIsSubmitting(false);
+				// Refresh state in the background; degrade gracefully.
+				refreshAccountState().catch((error: unknown) => {
+					console.warn(
+						'Account state refresh failed after successful authentication.',
+						error
+					);
+				});
 			})
 			.catch((error: unknown) => {
 				setMessage(error instanceof Error ? error.message : '认证失败');
-			})
-			.finally(() => {
 				setIsSubmitting(false);
 			});
 	}, [authMode, isSubmitting, password, username]);
@@ -87,6 +96,7 @@ export default function AccountOnboarding() {
 						variant="flat"
 						onPress={() => {
 							setAuthMode('login');
+							setMessage(null);
 						}}
 					>
 						登录
@@ -96,6 +106,7 @@ export default function AccountOnboarding() {
 						variant="flat"
 						onPress={() => {
 							setAuthMode('register');
+							setMessage(null);
 						}}
 					>
 						注册

@@ -3,7 +3,6 @@ import { type NextRequest } from 'next/server';
 import {
 	checkAccountCookieSecurityResponse,
 	checkAccountFeatureResponse,
-	checkSameOriginResponse,
 } from '@/api/v1/accountRouteUtils';
 import { createNoStoreJsonResponse } from '@/api/v1/utils';
 import {
@@ -24,11 +23,6 @@ export async function GET(request: NextRequest) {
 	const adminFeatureResponse = checkAdminFeatureResponse();
 	if (adminFeatureResponse !== null) {
 		return adminFeatureResponse;
-	}
-
-	const sameOriginResponse = checkSameOriginResponse(request);
-	if (sameOriginResponse !== null) {
-		return sameOriginResponse;
 	}
 
 	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);

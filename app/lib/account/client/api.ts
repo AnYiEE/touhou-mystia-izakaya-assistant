@@ -6,7 +6,7 @@ import {
 	type IAuthLoginBody,
 	type IAuthLoginSuccessResponse,
 	type IAuthRegisterBody,
-	type TAccountMeSuccessResponse,
+	type TAccountMeResponse,
 	type TUserStatus,
 } from '@/lib/account/shared/types';
 import {
@@ -107,7 +107,7 @@ function createAccountRequestInit(init: RequestInit = {}) {
 }
 
 export async function fetchAccountMe() {
-	return readAccountApiResponse<TAccountMeSuccessResponse>(
+	return readAccountApiResponse<TAccountMeResponse>(
 		await fetch('/api/v1/account/me', createAccountRequestInit())
 	);
 }

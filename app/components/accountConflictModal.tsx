@@ -57,8 +57,18 @@ export default function AccountConflictModal() {
 
 		isResolvingRef.current = true;
 		setIsResolving(true);
-		resolveAccountSyncConflict({ conflict, resolution, userId: user.id });
-		scheduleAccountSyncFlush();
+		try {
+			resolveAccountSyncConflict({
+				conflict,
+				resolution,
+				userId: user.id,
+			});
+			scheduleAccountSyncFlush();
+		} catch (error) {
+			console.error('Failed to resolve conflict:', error);
+			isResolvingRef.current = false;
+			setIsResolving(false);
+		}
 	};
 
 	return (

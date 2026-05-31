@@ -37,6 +37,12 @@ export function getStoredTheme() {
 	return storedTheme === null ? null : parseTheme(storedTheme);
 }
 
+/**
+ * Apply a theme to the document. When isFromEvent is true, this function
+ * only persists to storage and updates the DOM; it does NOT notify
+ * themeListeners or update React state. Callers (e.g., storage event
+ * handlers) must call setThemeState(newTheme) explicitly in that case.
+ */
 export function applyTheme(selectedTheme: TTheme, isFromEvent?: boolean) {
 	if (isServer) {
 		return;

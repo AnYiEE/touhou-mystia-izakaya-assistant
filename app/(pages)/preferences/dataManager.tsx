@@ -242,11 +242,11 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	const currentCloudCode = globalStore.persistence.cloudCode.use();
 	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const shouldShowLegacyCloud =
-		(isSelfHosted &&
-			!isOffline &&
-			!isVercel &&
-			accountBootstrapStatus === 'disabled') ||
-		accountBootstrapStatus === 'error';
+		isSelfHosted &&
+		!isOffline &&
+		!isVercel &&
+		(accountBootstrapStatus === 'disabled' ||
+			accountBootstrapStatus === 'error');
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 	const userId = globalStore.persistence.userId.use();
 
@@ -365,16 +365,19 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	}, [currentCloudCode]);
 
 	const handleCloudDownloadButtonPress = useCallback(() => {
-		let code = currentCloudCode;
-		code ??= prompt('请输入已有备份码');
-		const normalizedCode = code?.trim() ?? '';
-		if (normalizedCode === '') {
+		const currentNormalizedCode = currentCloudCode?.trim() ?? '';
+		const code =
+			(currentNormalizedCode === ''
+				? prompt('请输入已有备份码')
+				: currentNormalizedCode
+			)?.trim() ?? '';
+		if (code === '') {
 			return;
 		}
 		setIsCloudDownloadButtonDisabled(true);
 		setCloudDownloadButtonLabel(cloudDownloadButtonLabelMap.downloading);
 		fetch(
-			`/api/v1/backups/${encodeURIComponent(normalizedCode)}?user_id=${encodeURIComponent(userId ?? '')}`,
+			`/api/v1/backups/${encodeURIComponent(code)}?user_id=${encodeURIComponent(userId ?? '')}`,
 			{ cache: 'no-cache' }
 		)
 			.then(checkResponse<TMealData>)
@@ -395,7 +398,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 					compatibilityCustomerRareData(data);
 					customerRareStore.persistence.meals.set(data);
 				}
-				globalStore.persistence.cloudCode.set(normalizedCode);
+				globalStore.persistence.cloudCode.set(code);
 				trackEvent(
 					trackEvent.category.click,
 					'Cloud Download Button',
@@ -412,7 +415,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				});
 			})
 			.finally(() => {
-				updateCloudCodeInfo(normalizedCode);
+				updateCloudCodeInfo(code);
 				const timerId = setTimeout(() => {
 					setCloudDownloadState('default');
 					setIsCloudDownloadButtonDisabled(false);

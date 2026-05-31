@@ -6,10 +6,23 @@ import { accountStore } from '@/stores/account';
 import { getSafeStorageMode } from '@/utilities';
 import TimeAgo from '@/components/timeAgo';
 
+const SYNC_ERROR_MESSAGE_MAP: Record<string, string> = {
+	'bootstrap-failed': '账号初始化失败，请刷新页面重试',
+	conflict: '数据冲突，请在冲突解决面板中处理',
+	'legacy-import-failed': '旧版数据导入失败',
+	'sync-failed': '同步失败，请稍后重试',
+	'sync-refresh-failed': '刷新同步状态失败，请稍后重试',
+};
+
+function getSyncErrorMessage(errorCode: string) {
+	return SYNC_ERROR_MESSAGE_MAP[errorCode] ?? `同步异常：${errorCode}`;
+}
+
 export default function AccountSyncStatus() {
 	const sync = accountStore.shared.sync.use();
 	const storageMode = getSafeStorageMode();
-	const shouldEnableManualRetry = sync.canRetry || sync.failedAttempts >= 3;
+	const shouldEnableManualRetry =
+		sync.pendingCount > 0 && (sync.canRetry || sync.failedAttempts >= 3);
 
 	return (
 		<div className="space-y-2 text-sm text-foreground-600">
@@ -30,7 +43,7 @@ export default function AccountSyncStatus() {
 			)}
 			{sync.lastError !== null && (
 				<p>
-					同步失败：{sync.lastError}
+					{getSyncErrorMessage(sync.lastError)}
 					{sync.failedAttempts > 0
 						? `（已失败 ${sync.failedAttempts} 次）`
 						: ''}
