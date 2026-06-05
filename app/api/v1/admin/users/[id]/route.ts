@@ -74,8 +74,8 @@ export async function GET(
 	}
 
 	const [sessions, namespaces] = await Promise.all([
-		sessionsModule.listSessionsByUserId(id),
-		userStateModule.listUserNamespaces(id),
+		sessionsModule.listSessionsByUserId(user.id),
+		userStateModule.listUserNamespaces(user.id),
 	]);
 
 	return createNoStoreJsonResponse({

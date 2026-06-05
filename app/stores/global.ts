@@ -42,13 +42,13 @@ import {
 	generateRange,
 	numberSort,
 	pinyinSort,
-	safeStorage,
 	toArray,
 	toGetItemWithKey,
 	toGetValueCollection,
 	toSet,
 	union,
 } from '@/utilities';
+import { safeStorage } from '@/utilities/safeStorage';
 import {
 	Beverage,
 	Clothes,

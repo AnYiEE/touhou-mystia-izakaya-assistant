@@ -6,13 +6,8 @@ import { useVibrate } from '@/hooks';
 
 import { Select, SelectItem } from '@heroui/select';
 
-import {
-	Button,
-	Switch,
-	cn,
-	useMotionProps,
-	useReducedMotion,
-} from '@/design/ui/components';
+import { Button, Switch, cn } from '@/design/ui/components';
+import { useMotionProps, useReducedMotion } from '@/design/ui/hooks';
 
 import AccountManager from './accountManager';
 import DataManager, { type IDataManagerProps } from './dataManager';

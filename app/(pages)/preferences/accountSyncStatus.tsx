@@ -3,7 +3,7 @@
 import { Button } from '@/design/ui/components';
 import { flushAccountSyncQueue } from '@/lib/account/client/syncClient';
 import { accountStore } from '@/stores/account';
-import { getSafeStorageMode } from '@/utilities';
+import { getSafeStorageMode } from '@/utilities/safeStorage';
 import TimeAgo from '@/components/timeAgo';
 
 const SYNC_ERROR_MESSAGE_MAP: Record<string, string> = {
@@ -51,10 +51,7 @@ export default function AccountSyncStatus() {
 			)}
 			<Button
 				color="primary"
-				isDisabled={
-					sync.isSyncing ||
-					(sync.pendingCount === 0 && !shouldEnableManualRetry)
-				}
+				isDisabled={sync.isSyncing || !shouldEnableManualRetry}
 				isLoading={sync.isSyncing}
 				variant="flat"
 				onPress={() => {

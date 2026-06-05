@@ -5,6 +5,7 @@ import {
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
+	createAccountAuthErrorResponse,
 } from '@/api/v1/accountRouteUtils';
 import {
 	createNoStoreErrorResponse,
@@ -45,13 +46,7 @@ export async function GET(request: NextRequest) {
 	]);
 	const auth = await authModule.authenticateAccountRequest(request);
 	if (auth.status === 'error') {
-		const response = createNoStoreErrorResponse(
-			auth.message,
-			auth.httpStatus
-		);
-		authModule.clearAccountSessionCookie(response, request);
-
-		return response;
+		return createAccountAuthErrorResponse(authModule, auth, request);
 	}
 	const snapshot = await userStateModule.getUserStateSnapshot(
 		auth.data.user.id

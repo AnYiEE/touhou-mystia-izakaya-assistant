@@ -6,7 +6,6 @@ import {
 	checkBackupCodeLockTimeoutError,
 	checkBackupFileNotFoundError,
 	checkIpFrequency,
-	deleteFile,
 	deleteRecord,
 	getFile,
 	getRecord,
@@ -14,6 +13,7 @@ import {
 	throwIfBackupCodeLockLost,
 	updateRecordTimeout,
 	withBackupCodeLock,
+	withFreshBackupCodeLock,
 } from '@/actions/backup';
 import {
 	NO_STORE_HEADERS,
@@ -30,12 +30,17 @@ export async function GET(
 	{ params }: { params: Promise<{ code: string }> }
 ) {
 	const { code: rawCode } = await params;
-	const code = rawCode.trim();
-	if (!validate(code)) {
+	const normalizedCode = rawCode.trim();
+	if (!validate(normalizedCode)) {
 		return createNoStoreErrorResponse('Invalid code', 400);
 	}
+	const code = normalizedCode.toLowerCase();
 
-	const { ip } = getRequestMeta(request);
+	const requestMeta = getRequestMeta(request);
+	if (requestMeta === null) {
+		return createNoStoreErrorResponse('server-misconfigured', 500);
+	}
+	const { ip } = requestMeta;
 	if (ip === null) {
 		return createNoStoreErrorResponse('Invalid IP address', 400);
 	}
@@ -53,28 +58,19 @@ export async function GET(
 
 	try {
 		return await withBackupCodeLock(code, async (signal) => {
-			const { status } = await getRecord(code);
+			const record = await getRecord(code);
 			throwIfBackupCodeLockLost(signal);
 
-			if (status === 404) {
+			if (record.status === 404) {
 				return createNoStoreErrorResponse(
 					'The file record does not exist or has been deleted',
 					404
 				);
 			}
 
-			const timeoutResult = await updateRecordTimeout(code, now);
-			throwIfBackupCodeLockLost(signal);
-			if (timeoutResult.status !== 200) {
-				return createNoStoreErrorResponse(
-					'Failed to update record timeout',
-					500
-				);
-			}
-
 			let fileContent: string;
 			try {
-				fileContent = await getFile(code);
+				fileContent = await getFile(code, record.file_name);
 				throwIfBackupCodeLockLost(signal);
 			} catch (error) {
 				if (checkBackupCodeLockLostError(error)) {
@@ -95,6 +91,17 @@ export async function GET(
 					errorCode: getLogSafeErrorCode(error),
 				});
 				return createNoStoreErrorResponse('Failed to read file', 500);
+			}
+
+			const timeoutResult = await withFreshBackupCodeLock(
+				signal,
+				async (trx) => updateRecordTimeout(code, now, trx)
+			);
+			if (timeoutResult.status !== 200) {
+				return createNoStoreErrorResponse(
+					'Failed to update record timeout',
+					500
+				);
 			}
 
 			return new NextResponse(fileContent, {
@@ -121,10 +128,11 @@ export async function DELETE(
 	{ params }: { params: Promise<{ code: string }> }
 ) {
 	const { code: rawCode } = await params;
-	const code = rawCode.trim();
-	if (!validate(code)) {
+	const normalizedCode = rawCode.trim();
+	if (!validate(normalizedCode)) {
 		return createNoStoreErrorResponse('Invalid code', 400);
 	}
+	const code = normalizedCode.toLowerCase();
 
 	try {
 		return await withBackupCodeLock(code, async (signal) => {
@@ -138,13 +146,14 @@ export async function DELETE(
 				);
 			}
 
-			let deletedFile = true;
-
-			// Phase 1: Delete the file (best-effort).
 			try {
-				throwIfBackupCodeLockLost(signal);
-				await deleteFile(code);
-				throwIfBackupCodeLockLost(signal);
+				await withFreshBackupCodeLock(signal, async (trx) => {
+					const deleteResult = await deleteRecord(code, trx);
+					if (deleteResult.status !== 200) {
+						throw new Error('Failed to delete record');
+					}
+				});
+				markBackupCodeLockCommitted(signal);
 			} catch (error) {
 				if (checkBackupCodeLockLostError(error)) {
 					return createNoStoreErrorResponse(
@@ -152,42 +161,12 @@ export async function DELETE(
 						409
 					);
 				}
-				throwIfBackupCodeLockLost(signal);
-
-				if (checkBackupFileNotFoundError(error)) {
-					deletedFile = false;
-				} else {
-					console.warn('Failed to delete backup file', {
-						codeHash: maskBackupCode(code),
-						errorCode: getLogSafeErrorCode(error),
-					});
-
+				if (checkBackupCodeLockTimeoutError(error)) {
 					return createNoStoreErrorResponse(
-						'Failed to delete file',
-						500
-					);
-				}
-			}
-
-			// Phase 2: Delete the database record (must succeed).
-			try {
-				throwIfBackupCodeLockLost(signal);
-				const deleteResult = await deleteRecord(code);
-				throwIfBackupCodeLockLost(signal);
-				if (deleteResult.status !== 200) {
-					return createNoStoreErrorResponse(
-						'Failed to delete record',
-						500
-					);
-				}
-			} catch (error) {
-				if (checkBackupCodeLockLostError(error)) {
-					return createNoStoreErrorResponse(
-						'backup-code-lock-lost',
+						'backup-code-lock-timeout',
 						409
 					);
 				}
-				throwIfBackupCodeLockLost(signal);
 
 				console.warn('Failed to delete backup record', {
 					codeHash: maskBackupCode(code),
@@ -200,10 +179,8 @@ export async function DELETE(
 				);
 			}
 
-			markBackupCodeLockCommitted(signal);
-
 			return createNoStoreJsonResponse({
-				deletedFile,
+				deletedFile: false,
 				message: 'The file record has been deleted',
 			});
 		});

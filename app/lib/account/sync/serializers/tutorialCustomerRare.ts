@@ -7,6 +7,12 @@ export interface ITutorialCustomerRareSnapshot {
 	completed: boolean;
 }
 
+function toDirverArray(value: unknown) {
+	return Array.isArray(value)
+		? value.filter((item): item is string => typeof item === 'string')
+		: [];
+}
+
 export const tutorialCustomerRareSerializer = {
 	deserialize(data) {
 		return this.migrate(data, 1);
@@ -15,14 +21,15 @@ export const tutorialCustomerRareSerializer = {
 		return { completed: false };
 	},
 	getLocalSnapshot() {
-		return {
-			completed: globalStore.persistence.dirver
-				.get()
-				.includes(customerRareTutorialStoreKey),
-		};
+		const dirver = toDirverArray(globalStore.persistence.dirver.get());
+
+		return { completed: dirver.includes(customerRareTutorialStoreKey) };
 	},
-	merge({ cloud, local }) {
-		const completed = (cloud?.completed ?? false) || local.completed;
+	merge({ base, cloud, local }) {
+		const completed =
+			(base?.completed ?? false) ||
+			(cloud?.completed ?? false) ||
+			local.completed;
 
 		return createMergeResult({
 			data: { completed },
@@ -47,7 +54,7 @@ export const tutorialCustomerRareSerializer = {
 	},
 	setLocalSnapshot(data) {
 		globalStore.persistence.dirver.set((previous) => {
-			const next = previous.filter(
+			const next = toDirverArray(previous).filter(
 				(item) => item !== customerRareTutorialStoreKey
 			);
 

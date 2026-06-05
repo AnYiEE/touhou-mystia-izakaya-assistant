@@ -17,6 +17,10 @@ export interface IAccountSyncLease {
 	renewedAt: number;
 }
 
+type TAccountSyncLeaseAcquireResult =
+	| { acquired: true; status: 'acquired' }
+	| { acquired: false; status: 'busy' };
+
 interface IAccountLockManager {
 	request<T>(
 		name: string,
@@ -31,6 +35,10 @@ function getAccountLockManager() {
 		| undefined;
 
 	return navigatorValue?.locks ?? null;
+}
+
+export function checkAccountSyncLeaseSupported() {
+	return getAccountLockManager() !== null;
 }
 
 export function createAccountTabId() {
@@ -126,20 +134,32 @@ export async function acquireAccountSyncLease(
 ) {
 	const lockManager = getAccountLockManager();
 	if (lockManager === null) {
-		return tryAcquireAccountSyncLease(userId, ownerTabId, ownerRunId, now);
+		return tryAcquireAccountSyncLease(userId, ownerTabId, ownerRunId, now)
+			? ({
+					acquired: true,
+					status: 'acquired',
+				} satisfies TAccountSyncLeaseAcquireResult)
+			: ({
+					acquired: false,
+					status: 'busy',
+				} satisfies TAccountSyncLeaseAcquireResult);
 	}
 
-	return lockManager.request(
+	const acquired = await lockManager.request(
 		createAccountSyncLeaseKey(userId),
 		{ mode: 'exclusive' },
-		() =>
-			tryAcquireAccountSyncLease(
-				userId,
-				ownerTabId,
-				ownerRunId,
-				Date.now()
-			)
+		() => tryAcquireAccountSyncLease(userId, ownerTabId, ownerRunId, now)
 	);
+
+	return acquired
+		? ({
+				acquired: true,
+				status: 'acquired',
+			} satisfies TAccountSyncLeaseAcquireResult)
+		: ({
+				acquired: false,
+				status: 'busy',
+			} satisfies TAccountSyncLeaseAcquireResult);
 }
 
 export async function renewAccountSyncLease(
@@ -156,8 +176,7 @@ export async function renewAccountSyncLease(
 	return lockManager.request(
 		createAccountSyncLeaseKey(userId),
 		{ mode: 'exclusive' },
-		() =>
-			tryRenewAccountSyncLease(userId, ownerTabId, ownerRunId, Date.now())
+		() => tryRenewAccountSyncLease(userId, ownerTabId, ownerRunId, now)
 	);
 }
 

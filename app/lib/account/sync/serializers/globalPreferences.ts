@@ -15,6 +15,7 @@ import { type ISyncNamespaceSerializer } from '@/lib/account/sync';
 import { globalStore } from '@/stores/global';
 import { type IPopularTrend } from '@/types';
 import { cloneJsonObject } from '@/utilities';
+import { checkPopularTag } from './tags';
 import { isPlainObject, isStringArray, mergeFieldMap } from './utils';
 
 export interface IGlobalPreferencesSnapshot {
@@ -168,7 +169,7 @@ function sanitizeGlobalPreferences(data: unknown) {
 		return data;
 	}
 
-	const { hiddenItems, table } = data;
+	const { hiddenItems, popularTrend, table } = data;
 	const tableColumns = isPlainObject(table) ? table['columns'] : null;
 	const tableHiddenItems = isPlainObject(table) ? table['hiddenItems'] : null;
 
@@ -177,6 +178,14 @@ function sanitizeGlobalPreferences(data: unknown) {
 		hiddenItems: isPlainObject(hiddenItems)
 			? { dlcs: filterAllowedStringArray(hiddenItems['dlcs'], dlcKeys) }
 			: hiddenItems,
+		popularTrend: isPlainObject(popularTrend)
+			? {
+					...popularTrend,
+					tag: checkPopularTag(popularTrend['tag'])
+						? popularTrend['tag']
+						: null,
+				}
+			: popularTrend,
 		table: isPlainObject(table)
 			? {
 					...table,
@@ -270,49 +279,41 @@ export const globalPreferencesSerializer = {
 		};
 	},
 	getLocalSnapshot() {
+		const persistence = globalStore.persistence.get();
+
 		return cloneJsonObject({
-			customerCardTagsTooltip:
-				globalStore.persistence.customerCardTagsTooltip.get(),
+			customerCardTagsTooltip: persistence.customerCardTagsTooltip,
 			donationModal: {
-				interactionCount:
-					globalStore.persistence.donationModal.interactionCount.get(),
+				interactionCount: persistence.donationModal.interactionCount,
 				lastMilestoneShown:
-					globalStore.persistence.donationModal.lastMilestoneShown.get(),
-				lastShown:
-					globalStore.persistence.donationModal.lastShown.get(),
+					persistence.donationModal.lastMilestoneShown,
+				lastShown: persistence.donationModal.lastShown,
 			},
-			famousShop: globalStore.persistence.famousShop.get(),
-			hiddenItems: {
-				dlcs: globalStore.persistence.hiddenItems.dlcs.get(),
-			},
-			highAppearance: globalStore.persistence.highAppearance.get(),
-			popularTrend: globalStore.persistence.popularTrend.get(),
+			famousShop: persistence.famousShop,
+			hiddenItems: { dlcs: persistence.hiddenItems.dlcs },
+			highAppearance: persistence.highAppearance,
+			popularTrend: persistence.popularTrend,
 			suggestMeals: {
-				enabled: globalStore.persistence.suggestMeals.enabled.get(),
+				enabled: persistence.suggestMeals.enabled,
 				maxExtraIngredients:
-					globalStore.persistence.suggestMeals.maxExtraIngredients.get(),
-				maxRating: globalStore.persistence.suggestMeals.maxRating.get(),
-				maxResults:
-					globalStore.persistence.suggestMeals.maxResults.get(),
+					persistence.suggestMeals.maxExtraIngredients,
+				maxRating: persistence.suggestMeals.maxRating,
+				maxResults: persistence.suggestMeals.maxResults,
 			},
 			table: {
 				columns: {
-					beverage:
-						globalStore.persistence.table.columns.beverage.get(),
-					recipe: globalStore.persistence.table.columns.recipe.get(),
+					beverage: persistence.table.columns.beverage,
+					recipe: persistence.table.columns.recipe,
 				},
 				hiddenItems: {
-					beverages:
-						globalStore.persistence.table.hiddenItems.beverages.get(),
-					ingredients:
-						globalStore.persistence.table.hiddenItems.ingredients.get(),
-					recipes:
-						globalStore.persistence.table.hiddenItems.recipes.get(),
+					beverages: persistence.table.hiddenItems.beverages,
+					ingredients: persistence.table.hiddenItems.ingredients,
+					recipes: persistence.table.hiddenItems.recipes,
 				},
-				row: globalStore.persistence.table.row.get(),
+				row: persistence.table.row,
 			},
-			tachie: globalStore.persistence.tachie.get(),
-			vibrate: globalStore.persistence.vibrate.get(),
+			tachie: persistence.tachie,
+			vibrate: persistence.vibrate,
 		});
 	},
 	merge({ base, cloud, local }) {
@@ -346,52 +347,18 @@ export const globalPreferencesSerializer = {
 		return data;
 	},
 	setLocalSnapshot(data) {
-		globalStore.persistence.customerCardTagsTooltip.set(
-			data.customerCardTagsTooltip
-		);
-		globalStore.persistence.donationModal.interactionCount.set(
-			data.donationModal.interactionCount
-		);
-		globalStore.persistence.donationModal.lastMilestoneShown.set(
-			data.donationModal.lastMilestoneShown
-		);
-		globalStore.persistence.donationModal.lastShown.set(
-			data.donationModal.lastShown
-		);
-		globalStore.persistence.hiddenItems.dlcs.set(data.hiddenItems.dlcs);
-		globalStore.persistence.suggestMeals.enabled.set(
-			data.suggestMeals.enabled
-		);
-		globalStore.persistence.suggestMeals.maxExtraIngredients.set(
-			data.suggestMeals.maxExtraIngredients
-		);
-		globalStore.persistence.suggestMeals.maxRating.set(
-			data.suggestMeals.maxRating
-		);
-		globalStore.persistence.suggestMeals.maxResults.set(
-			data.suggestMeals.maxResults
-		);
-		globalStore.persistence.table.columns.beverage.set(
-			data.table.columns.beverage
-		);
-		globalStore.persistence.table.columns.recipe.set(
-			data.table.columns.recipe
-		);
-		globalStore.persistence.table.hiddenItems.beverages.set(
-			data.table.hiddenItems.beverages
-		);
-		globalStore.persistence.table.hiddenItems.ingredients.set(
-			data.table.hiddenItems.ingredients
-		);
-		globalStore.persistence.table.hiddenItems.recipes.set(
-			data.table.hiddenItems.recipes
-		);
-		globalStore.persistence.table.row.set(data.table.row);
-		globalStore.persistence.famousShop.set(data.famousShop);
-		globalStore.persistence.popularTrend.set(data.popularTrend);
-		globalStore.persistence.highAppearance.set(data.highAppearance);
-		globalStore.persistence.tachie.set(data.tachie);
-		globalStore.persistence.vibrate.set(data.vibrate);
+		globalStore.persistence.assign({
+			customerCardTagsTooltip: data.customerCardTagsTooltip,
+			donationModal: data.donationModal,
+			famousShop: data.famousShop,
+			hiddenItems: data.hiddenItems,
+			highAppearance: data.highAppearance,
+			popularTrend: data.popularTrend,
+			suggestMeals: data.suggestMeals,
+			table: data.table,
+			tachie: data.tachie,
+			vibrate: data.vibrate,
+		});
 	},
 	validate(data): data is IGlobalPreferencesSnapshot {
 		if (!isPlainObject(data)) {
@@ -433,7 +400,7 @@ export const globalPreferencesSerializer = {
 			typeof data['highAppearance'] === 'boolean' &&
 			typeof popularTrend['isNegative'] === 'boolean' &&
 			(popularTrend['tag'] === null ||
-				typeof popularTrend['tag'] === 'string') &&
+				checkPopularTag(popularTrend['tag'])) &&
 			typeof suggestMeals['enabled'] === 'boolean' &&
 			(suggestMeals['maxExtraIngredients'] === null ||
 				isIntegerInRange(suggestMeals['maxExtraIngredients'], 0, 4)) &&

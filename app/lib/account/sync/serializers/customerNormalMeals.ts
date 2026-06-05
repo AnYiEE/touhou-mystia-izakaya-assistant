@@ -46,7 +46,31 @@ function normalizeCustomerNormalMeal(
 function normalizeCustomerNormalMealsSnapshot(
 	data: TCustomerNormalMealsSnapshot
 ) {
-	return normalizeMealSnapshot(data, normalizeCustomerNormalMeal);
+	return normalizeMealSnapshot(data, normalizeCustomerNormalMeal, 'normal');
+}
+
+function getLocalCustomerNormalMealsSnapshot(data: unknown) {
+	if (!isPlainObject(data)) {
+		return {};
+	}
+
+	const snapshot = Object.entries(data).reduce<TCustomerNormalMealsSnapshot>(
+		(result, [customerName, meals]) => {
+			if (!Array.isArray(meals)) {
+				return result;
+			}
+
+			const validMeals = meals.filter(validateCustomerNormalMeal);
+			if (validMeals.length > 0) {
+				result[customerName] = validMeals;
+			}
+
+			return result;
+		},
+		{}
+	);
+
+	return normalizeCustomerNormalMealsSnapshot(snapshot);
 }
 
 export const customerNormalMealsSerializer = {
@@ -57,7 +81,7 @@ export const customerNormalMealsSerializer = {
 		return {};
 	},
 	getLocalSnapshot() {
-		return normalizeCustomerNormalMealsSnapshot(
+		return getLocalCustomerNormalMealsSnapshot(
 			cloneJsonObject(customerNormalStore.persistence.meals.get())
 		);
 	},

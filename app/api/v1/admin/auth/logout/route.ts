@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
 
 	const csrfResponse = checkAdminCsrfResponse(request, auth.token);
 	if (csrfResponse !== null) {
+		adminModule.clearAdminSessionCookie(csrfResponse, request);
 		return csrfResponse;
 	}
 

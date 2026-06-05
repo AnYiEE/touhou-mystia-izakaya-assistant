@@ -11,6 +11,7 @@ import {
 	logoutAccount,
 } from '@/lib/account/client/api';
 import {
+	applyAccountAuthSuccessResponse,
 	refreshAccountState,
 	resetAccountState,
 } from '@/lib/account/client/session';
@@ -34,6 +35,11 @@ export default function AccountPasswordMustChangeModal() {
 		setPortalContainer(document.querySelector('#modal-portal-container'));
 	}, []);
 
+	const clearPasswordFields = useCallback(() => {
+		setCurrentPassword('');
+		setNewPassword('');
+	}, []);
+
 	const handlePasswordChange = useCallback(() => {
 		if (isSubmitting || csrfToken === null) {
 			return;
@@ -45,19 +51,39 @@ export default function AccountPasswordMustChangeModal() {
 			{ current_password: currentPassword, new_password: newPassword },
 			csrfToken
 		)
-			.then(() => {
-				setCurrentPassword('');
-				setNewPassword('');
+			.then((data) => {
+				applyAccountAuthSuccessResponse(data);
+				clearPasswordFields();
 				setMessage(null);
+				refreshAccountState().catch((error: unknown) => {
+					console.warn(
+						'Account state refresh failed after successful password change.',
+						error
+					);
+				});
 			})
-			.then(() => refreshAccountState())
 			.catch((error: unknown) => {
+				if (
+					error instanceof AccountApiError &&
+					error.status === 401 &&
+					error.message !== 'invalid-password'
+				) {
+					clearPasswordFields();
+					resetAccountState();
+					return;
+				}
 				setMessage(error instanceof Error ? error.message : '改密失败');
 			})
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [csrfToken, currentPassword, isSubmitting, newPassword]);
+	}, [
+		clearPasswordFields,
+		csrfToken,
+		currentPassword,
+		isSubmitting,
+		newPassword,
+	]);
 
 	const handleLogout = useCallback(() => {
 		if (isSubmitting) {
@@ -65,6 +91,7 @@ export default function AccountPasswordMustChangeModal() {
 		}
 
 		if (csrfToken === null) {
+			clearPasswordFields();
 			setMessage(null);
 			resetAccountState();
 			return;
@@ -74,10 +101,12 @@ export default function AccountPasswordMustChangeModal() {
 		setMessage(null);
 		void logoutAccount(csrfToken)
 			.then(() => {
+				clearPasswordFields();
 				resetAccountState();
 			})
 			.catch((error: unknown) => {
 				if (error instanceof AccountApiError && error.status === 401) {
+					clearPasswordFields();
 					resetAccountState();
 					return;
 				}
@@ -86,7 +115,7 @@ export default function AccountPasswordMustChangeModal() {
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [csrfToken, isSubmitting]);
+	}, [clearPasswordFields, csrfToken, isSubmitting]);
 
 	if (!isOpen) {
 		return null;
@@ -119,7 +148,13 @@ export default function AccountPasswordMustChangeModal() {
 					onValueChange={setNewPassword}
 				/>
 				{message !== null && (
-					<p className="text-sm text-danger">{message}</p>
+					<p
+						aria-live="assertive"
+						className="text-sm text-danger"
+						role="alert"
+					>
+						{message}
+					</p>
 				)}
 				<div className="flex flex-wrap justify-end gap-2">
 					<Button

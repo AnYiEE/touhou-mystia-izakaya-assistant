@@ -6,6 +6,7 @@ import { type TSyncNamespace } from '@/lib/account/sync';
 interface ITableBackupFileRecord {
 	code: string;
 	created_at: number;
+	file_name: string | null;
 	last_accessed: number;
 	ip_address: string;
 	user_agent: string;
@@ -21,6 +22,7 @@ interface ITableBackupCodeLock {
 interface ITableBackupImportRecord {
 	code: string;
 	created_at: number;
+	file_name: string | null;
 	results: string;
 	state_epoch: number;
 	user_id: string;

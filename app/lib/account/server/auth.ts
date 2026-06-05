@@ -34,6 +34,7 @@ import {
 	ACCOUNT_SESSION_COOKIE_NAME,
 	SESSION_ABSOLUTE_TIMEOUT_MS,
 	SESSION_IDLE_TIMEOUT_MS,
+	SESSION_TOKEN_BYTE_LENGTH,
 	createSessionCookieOptions,
 	createSessionToken,
 	hashSessionToken,
@@ -151,13 +152,11 @@ export function clearAccountSessionCookie(
 }
 
 function isValidSessionTokenFormat(token: string) {
-	// Session tokens are 32-byte random base64url (typically 43 chars).
+	const expectedLength = Math.ceil((SESSION_TOKEN_BYTE_LENGTH * 8) / 6);
+
+	// Session tokens are fixed-length random base64url strings.
 	// Reject malformed tokens early to avoid unnecessary HMAC computation.
-	return (
-		token.length >= 40 &&
-		token.length <= 50 &&
-		/^[A-Za-z0-9_-]+$/u.test(token)
-	);
+	return token.length === expectedLength && /^[A-Za-z0-9_-]+$/u.test(token);
 }
 
 export async function authenticateAccountRequest(
@@ -202,11 +201,19 @@ export async function authenticateAccountRequest(
 		};
 	}
 
-	if (user.status === USER_STATUS_MAP.disabled) {
+	const userStatus: string = user.status;
+	if (userStatus === USER_STATUS_MAP.disabled) {
 		return { httpStatus: 403, message: 'user-disabled', status: 'error' };
 	}
-	if (user.status === USER_STATUS_MAP.deleted) {
+	if (userStatus === USER_STATUS_MAP.deleted) {
 		return { httpStatus: 403, message: 'user-deleted', status: 'error' };
+	}
+	if (userStatus !== USER_STATUS_MAP.active) {
+		return {
+			httpStatus: 500,
+			message: 'server-misconfigured',
+			status: 'error',
+		};
 	}
 	if (credential.password_must_change === 1 && !allowPasswordMustChange) {
 		return {

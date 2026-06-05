@@ -26,8 +26,8 @@ import {
 	Snippet,
 	Tooltip,
 	cn,
-	useReducedMotion,
 } from '@/design/ui/components';
+import { useReducedMotion } from '@/design/ui/hooks';
 
 import { showProgress } from '@/(pages)/(layout)/navbar';
 import { trackEvent } from '@/components/analytics';
@@ -254,9 +254,12 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 
 	const [cloudCodeInfo, setCloudCodeInfo] =
 		useState<ReactNodeWithoutBoolean>(null);
+	const cloudCodeInfoRequestIdRef = useRef(0);
 
 	const updateCloudCodeInfo = useCallback(
 		(cloudCode: typeof currentCloudCode) => {
+			cloudCodeInfoRequestIdRef.current += 1;
+			const requestId = cloudCodeInfoRequestIdRef.current;
 			const normalizedCode = cloudCode?.trim() ?? null;
 			if (normalizedCode === null || normalizedCode === '') {
 				setCloudCodeInfo(
@@ -274,6 +277,10 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 			)
 				.then(checkResponse<IBackupCheckSuccessResponse>)
 				.then(({ created_at, last_accessed }) => {
+					if (cloudCodeInfoRequestIdRef.current !== requestId) {
+						return;
+					}
+
 					setCloudCodeInfo(
 						<span className="text-tiny">
 							（更新于
@@ -291,6 +298,10 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 					);
 				})
 				.catch((error: unknown) => {
+					if (cloudCodeInfoRequestIdRef.current !== requestId) {
+						return;
+					}
+
 					if (isObject(error) && 'status' in error) {
 						setCloudCodeInfo(
 							<span className="text-tiny">
@@ -315,6 +326,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 
 	useEffect(() => {
 		if (!shouldShowLegacyCloud) {
+			cloudCodeInfoRequestIdRef.current += 1;
 			setCloudCodeInfo(null);
 			return;
 		}
@@ -376,10 +388,10 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		}
 		setIsCloudDownloadButtonDisabled(true);
 		setCloudDownloadButtonLabel(cloudDownloadButtonLabelMap.downloading);
-		fetch(
-			`/api/v1/backups/${encodeURIComponent(code)}?user_id=${encodeURIComponent(userId ?? '')}`,
-			{ cache: 'no-cache' }
-		)
+		let didDownload = false;
+		fetch(`/api/v1/backups/${encodeURIComponent(code)}`, {
+			cache: 'no-cache',
+		})
 			.then(checkResponse<TMealData>)
 			.then((data) => {
 				setCloudDownloadState('success');
@@ -399,6 +411,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 					customerRareStore.persistence.meals.set(data);
 				}
 				globalStore.persistence.cloudCode.set(code);
+				didDownload = true;
 				trackEvent(
 					trackEvent.category.click,
 					'Cloud Download Button',
@@ -415,7 +428,9 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				});
 			})
 			.finally(() => {
-				updateCloudCodeInfo(code);
+				if (didDownload) {
+					updateCloudCodeInfo(code);
+				}
 				const timerId = setTimeout(() => {
 					setCloudDownloadState('default');
 					setIsCloudDownloadButtonDisabled(false);
@@ -428,7 +443,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				}, 3000);
 				cloudTimers.current.push(timerId);
 			});
-	}, [currentCloudCode, updateCloudCodeInfo, userId]);
+	}, [currentCloudCode, updateCloudCodeInfo]);
 
 	const handleCloudUploadButtonPress = useCallback(() => {
 		setIsCloudUploadButtonDisabled(true);

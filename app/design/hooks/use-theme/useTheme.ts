@@ -7,7 +7,7 @@ import { useMounted } from '@/hooks';
 import { COLOR_MAP, MEDIA, STORAGE_KEY, THEME_MAP } from './constants';
 import type { TTheme } from './types';
 import { addSafeMediaQueryEventListener } from '@/design/utils';
-import { safeStorage } from '@/utilities';
+import { safeStorage } from '@/utilities/safeStorage';
 
 // eslint-disable-next-line unicorn/prefer-global-this
 const isServer = typeof window === 'undefined';
@@ -39,9 +39,9 @@ export function getStoredTheme() {
 
 /**
  * Apply a theme to the document. When isFromEvent is true, this function
- * only persists to storage and updates the DOM; it does NOT notify
- * themeListeners or update React state. Callers (e.g., storage event
- * handlers) must call setThemeState(newTheme) explicitly in that case.
+ * only updates the DOM and meta theme color; it does NOT persist to storage,
+ * notify themeListeners, or update React state. Callers (e.g., storage event
+ * handlers) must update React state explicitly in that case.
  */
 export function applyTheme(selectedTheme: TTheme, isFromEvent?: boolean) {
 	if (isServer) {

@@ -1,11 +1,28 @@
 import { accountStore, globalStore } from '@/stores';
 import { fetchAccountMe, importBackupCode } from './api';
+import { type IAuthLoginSuccessResponse } from '../shared/types';
 import { readAccountSyncMeta } from './snapshot';
 import {
 	restoreAccountSyncRuntimeState,
 	takeOverLocalAccountData,
 } from './syncClient';
 import { withAccountSyncPaused } from './stateGuards';
+
+let accountStateRequestGeneration = 0;
+
+function advanceAccountStateRequestGeneration() {
+	accountStateRequestGeneration += 1;
+
+	return accountStateRequestGeneration;
+}
+
+function checkCurrentAccountStateRequest(generation: number) {
+	return generation === accountStateRequestGeneration;
+}
+
+export function invalidateAccountStateRequests() {
+	advanceAccountStateRequestGeneration();
+}
 
 export function resetAccountSyncRuntime() {
 	accountStore.shared.sync.canRetry.set(false);
@@ -19,6 +36,7 @@ export function resetAccountSyncRuntime() {
 }
 
 export function resetAccountState() {
+	invalidateAccountStateRequests();
 	resetAccountSyncRuntime();
 	accountStore.shared.bootstrapStatus.set('anonymous');
 	accountStore.shared.csrfToken.set(null);
@@ -28,11 +46,34 @@ export function resetAccountState() {
 	accountStore.shared.user.set(null);
 }
 
-export async function importPendingLegacyBackupCode(csrfToken: string) {
+export function applyAccountAuthSuccessResponse(
+	data: IAuthLoginSuccessResponse
+) {
+	advanceAccountStateRequestGeneration();
+	const previousUser = accountStore.shared.user.get();
+	if (previousUser?.id !== data.user.id) {
+		resetAccountSyncRuntime();
+	}
+
+	accountStore.shared.bootstrapStatus.set('loggedIn');
+	accountStore.shared.csrfToken.set(data.csrf_token);
+	accountStore.shared.isBootstrapped.set(true);
+	accountStore.shared.isLoggedIn.set(true);
+	accountStore.shared.passwordMustChange.set(data.password_must_change);
+	accountStore.shared.sync.lastError.set(null);
+	accountStore.shared.sync.meta.set(readAccountSyncMeta(data.user.id));
+	accountStore.shared.user.set(data.user);
+	restoreAccountSyncRuntimeState(data.user.id);
+}
+
+export async function importPendingLegacyBackupCode(
+	csrfToken: string,
+	checkCurrentRequest = () => true
+) {
 	const cloudCode = globalStore.persistence.cloudCode.get();
 	const normalizedCode = cloudCode?.trim() ?? '';
 	if (normalizedCode === '') {
-		if (cloudCode !== null) {
+		if (cloudCode !== null && checkCurrentRequest()) {
 			globalStore.persistence.cloudCode.set(null);
 		}
 
@@ -40,10 +81,22 @@ export async function importPendingLegacyBackupCode(csrfToken: string) {
 	}
 
 	try {
+		if (!checkCurrentRequest()) {
+			return false;
+		}
+
 		await importBackupCode(normalizedCode, csrfToken);
+		if (!checkCurrentRequest()) {
+			return false;
+		}
+
 		globalStore.persistence.cloudCode.set(null);
 		accountStore.shared.sync.lastError.set(null);
 	} catch (error) {
+		if (!checkCurrentRequest()) {
+			return false;
+		}
+
 		accountStore.shared.sync.lastError.set(
 			error instanceof Error ? error.message : 'legacy-import-failed'
 		);
@@ -54,8 +107,21 @@ export async function importPendingLegacyBackupCode(csrfToken: string) {
 }
 
 export async function refreshAccountState() {
+	const generation = advanceAccountStateRequestGeneration();
 	const previousUser = accountStore.shared.user.get();
-	const result = await fetchAccountMe();
+	let result: Awaited<ReturnType<typeof fetchAccountMe>>;
+	try {
+		result = await fetchAccountMe();
+	} catch (error) {
+		if (!checkCurrentAccountStateRequest(generation)) {
+			return null;
+		}
+
+		throw error;
+	}
+	if (!checkCurrentAccountStateRequest(generation)) {
+		return null;
+	}
 	const {
 		csrf_token: csrfToken,
 		isLoggedIn: responseIsLoggedIn,
@@ -101,8 +167,38 @@ export async function refreshAccountState() {
 		!accountPasswordMustChange
 	) {
 		await withAccountSyncPaused(async () => {
-			await importPendingLegacyBackupCode(accountCsrfToken);
-			await takeOverLocalAccountData();
+			if (!checkCurrentAccountStateRequest(generation)) {
+				return;
+			}
+
+			try {
+				await importPendingLegacyBackupCode(accountCsrfToken, () =>
+					checkCurrentAccountStateRequest(generation)
+				);
+			} catch (error) {
+				if (checkCurrentAccountStateRequest(generation)) {
+					accountStore.shared.sync.lastError.set(
+						error instanceof Error
+							? error.message
+							: 'legacy-import-failed'
+					);
+				}
+			}
+			try {
+				if (!checkCurrentAccountStateRequest(generation)) {
+					return;
+				}
+
+				await takeOverLocalAccountData();
+			} catch (error) {
+				if (checkCurrentAccountStateRequest(generation)) {
+					accountStore.shared.sync.lastError.set(
+						error instanceof Error
+							? error.message
+							: 'local-takeover-failed'
+					);
+				}
+			}
 		});
 	}
 

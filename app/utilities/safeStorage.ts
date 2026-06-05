@@ -1,3 +1,5 @@
+import 'client-only';
+
 type TSafeStorageFallbackMode = 'memory' | 'session';
 type TSafeStorageMode = TSafeStorageFallbackMode | 'local';
 
@@ -155,6 +157,47 @@ class SafeStorage implements Storage {
 		}
 	}
 
+	private checkStorageHasKey(storage: Storage | null, key: string) {
+		if (storage === null || internalKeys.has(key)) {
+			return false;
+		}
+
+		try {
+			return storage.getItem(key) !== null;
+		} catch {
+			return false;
+		}
+	}
+
+	private checkShouldManageRemovedKey(key: string) {
+		return (
+			this._managedKeys.has(key) ||
+			this._memoryStorage.has(key) ||
+			this.checkStorageHasKey(this._storage, key) ||
+			this.checkStorageHasKey(this._staleStorage, key)
+		);
+	}
+
+	private migrateFallbackStorageToLocalStorage(
+		fallbackStorage: Storage,
+		localStorageValue: Storage
+	) {
+		this._managedKeys.forEach((key) => {
+			if (internalKeys.has(key)) {
+				return;
+			}
+
+			const value = fallbackStorage.getItem(key);
+			if (value === null) {
+				localStorageValue.removeItem(key);
+				this._memoryStorage.delete(key);
+			} else {
+				localStorageValue.setItem(key, value);
+				this._memoryStorage.set(key, value);
+			}
+		});
+	}
+
 	private getLocalStorageReference() {
 		try {
 			return localStorage;
@@ -180,6 +223,11 @@ class SafeStorage implements Storage {
 			localStorage.removeItem(testKey);
 			this._mode = 'local';
 			if (fallbackMode === 'session') {
+				this.migrateFallbackStorageToLocalStorage(
+					sessionStorage,
+					localStorage
+				);
+				this._staleStorage = sessionStorage;
 				this.clearFallbackMode();
 			}
 			return localStorage;
@@ -202,7 +250,6 @@ class SafeStorage implements Storage {
 			this._mode = 'session';
 			this._staleStorage = this.getLocalStorageReference();
 			this.persistFallbackMode('session');
-			this.invalidateStorageKeys(this._staleStorage);
 			return sessionStorage;
 		} catch {
 			/* empty */
@@ -239,12 +286,12 @@ class SafeStorage implements Storage {
 	}
 
 	private restoreAvailableStorage() {
-		if (this._storage !== null) {
+		if (this._storage !== null && this._mode !== 'session') {
 			return;
 		}
 
 		const storage = this.getAvailableStorage();
-		if (storage === null) {
+		if (storage === null || storage === this._storage) {
 			return;
 		}
 
@@ -268,7 +315,12 @@ class SafeStorage implements Storage {
 			});
 			this._storage = storage;
 			this.persistManagedKeys();
-			this._staleStorage = null;
+			if (this._mode === 'local' && this._staleStorage !== storage) {
+				this.invalidateStorageKeys(this._staleStorage);
+			}
+			if (this._mode === 'local' || this._staleStorage === storage) {
+				this._staleStorage = null;
+			}
 		} catch {
 			this._staleStorage = storage;
 			this._storage = null;
@@ -305,7 +357,6 @@ class SafeStorage implements Storage {
 				this._staleStorage = previousStorage;
 				this._mode = 'session';
 				this.persistFallbackMode('session');
-				this.invalidateStorageKeys(previousStorage);
 				return;
 			} catch {
 				previousValues.forEach((previousValue, previousKey) => {
@@ -382,6 +433,10 @@ class SafeStorage implements Storage {
 
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 	public getItem<T extends string = string>(key: string): T | null {
+		if (internalKeys.has(key)) {
+			return null;
+		}
+
 		this.restoreAvailableStorage();
 		if (this._storage !== null) {
 			try {
@@ -404,8 +459,14 @@ class SafeStorage implements Storage {
 	}
 
 	public removeItem(key: string) {
-		this.markManagedKey(key);
+		if (internalKeys.has(key)) {
+			return;
+		}
+
 		this.restoreAvailableStorage();
+		if (this.checkShouldManageRemovedKey(key)) {
+			this.markManagedKey(key);
+		}
 		if (this._storage !== null) {
 			try {
 				this._storage.removeItem(key);
@@ -418,6 +479,10 @@ class SafeStorage implements Storage {
 	}
 
 	public setItem(key: string, value: string) {
+		if (internalKeys.has(key)) {
+			return;
+		}
+
 		this.markManagedKey(key);
 		this.restoreAvailableStorage();
 		if (this._storage !== null) {

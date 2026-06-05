@@ -12,13 +12,7 @@ import {
 	getFile,
 	getFileSize,
 } from '@/actions/backup/file';
-import {
-	type IBackupCodeLockSignal,
-	checkBackupCodeLockLostError,
-	markBackupCodeLockCommitted,
-	throwIfBackupCodeLockLost,
-	withBackupCodeLock,
-} from '@/actions/backup/lock';
+import { type IBackupCodeLockSignal } from '@/actions/backup/lock';
 import {
 	checkAccountCookieSecurityResponse,
 	checkAccountFeatureResponse,
@@ -30,8 +24,8 @@ import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 } from '@/api/v1/utils';
-import { MAX_DATA_SIZE } from '@/api/v1/backups/constants';
 import { getLogSafeErrorCode, maskBackupCode } from '@/api/v1/backups/utils';
+import { MAX_DATA_SIZE } from '@/api/v1/backups/constants';
 import {
 	SYNC_NAMESPACE_MAP,
 	SYNC_SCHEMA_VERSION_MAP,
@@ -68,6 +62,8 @@ interface IImportBackupResult {
 	revision: number;
 	status: 'ok';
 }
+
+type TBackupLockModule = typeof import('@/actions/backup/lock');
 
 const syncNamespaceSet = new Set<TSyncNamespace>(
 	Object.values(SYNC_NAMESPACE_MAP)
@@ -114,7 +110,7 @@ async function getBackupImportResult(
 ) {
 	const record = await database
 		.selectFrom(TABLE_NAME_MAP.backupImportRecord)
-		.select(['results'])
+		.select(['file_name', 'results'])
 		.where('code', '=', code)
 		.where('user_id', '=', userId)
 		.where('state_epoch', '=', expectedStateEpoch)
@@ -128,7 +124,11 @@ async function getBackupImportResult(
 		throw new Error('server-misconfigured');
 	}
 
-	return { results, status: 'already-imported' as const };
+	return {
+		fileName: record.file_name,
+		results,
+		status: 'already-imported' as const,
+	};
 }
 
 function normalizeMealRecipe(data: unknown) {
@@ -402,16 +402,17 @@ async function checkImportBackupDataPreconditions(
 	userId: string,
 	code: string,
 	expectedStateEpoch: number,
-	signal: IBackupCodeLockSignal
+	signal: IBackupCodeLockSignal,
+	lockModule: TBackupLockModule
 ) {
-	throwIfBackupCodeLockLost(signal);
+	lockModule.throwIfBackupCodeLockLost(signal);
 
 	const user = await database
 		.selectFrom(TABLE_NAME_MAP.user)
 		.select(['state_epoch', 'status'])
 		.where('id', '=', userId)
 		.executeTakeFirst();
-	throwIfBackupCodeLockLost(signal);
+	lockModule.throwIfBackupCodeLockLost(signal);
 	if (user?.status !== USER_STATUS_MAP.active) {
 		throw new Error('unauthorized');
 	}
@@ -425,10 +426,10 @@ async function checkImportBackupDataPreconditions(
 
 	const backupRecord = await database
 		.selectFrom(TABLE_NAME_MAP.backupFileRecord)
-		.select('code')
+		.select(['code', 'file_name'])
 		.where('code', '=', code)
 		.executeTakeFirst();
-	throwIfBackupCodeLockLost(signal);
+	lockModule.throwIfBackupCodeLockLost(signal);
 
 	return backupRecord === undefined
 		? ((await getBackupImportResult(
@@ -437,22 +438,24 @@ async function checkImportBackupDataPreconditions(
 				code,
 				expectedStateEpoch
 			)) ?? { status: 'not-found' as const })
-		: { status: 'ok' as const };
+		: { fileName: backupRecord.file_name, status: 'ok' as const };
 }
 
 async function readImportBackupFile(
 	code: string,
-	signal: IBackupCodeLockSignal
+	fileName: string | null,
+	signal: IBackupCodeLockSignal,
+	lockModule: TBackupLockModule
 ) {
 	let fileContent: string;
 	try {
-		if ((await getFileSize(code)) > MAX_DATA_SIZE) {
+		if ((await getFileSize(code, fileName)) > MAX_DATA_SIZE) {
 			throw new Error('invalid-backup-file');
 		}
-		throwIfBackupCodeLockLost(signal);
+		lockModule.throwIfBackupCodeLockLost(signal);
 
-		fileContent = await getFile(code);
-		throwIfBackupCodeLockLost(signal);
+		fileContent = await getFile(code, fileName);
+		lockModule.throwIfBackupCodeLockLost(signal);
 	} catch (error) {
 		if (
 			error instanceof Error &&
@@ -491,30 +494,37 @@ async function importBackupData(
 	userId: string,
 	code: string,
 	expectedStateEpoch: number,
-	signal: IBackupCodeLockSignal
+	signal: IBackupCodeLockSignal,
+	lockModule: TBackupLockModule
 ) {
 	const preflightResult = await checkImportBackupDataPreconditions(
 		database,
 		userId,
 		code,
 		expectedStateEpoch,
-		signal
+		signal,
+		lockModule
 	);
 	if (preflightResult.status !== 'ok') {
 		return preflightResult;
 	}
 
-	const importNamespaceData = await readImportBackupFile(code, signal);
+	const importNamespaceData = await readImportBackupFile(
+		code,
+		preflightResult.fileName,
+		signal,
+		lockModule
+	);
 
-	return database.transaction().execute(async (trx) => {
-		throwIfBackupCodeLockLost(signal);
+	return lockModule.withFreshBackupCodeLock(signal, async (trx) => {
+		lockModule.throwIfBackupCodeLockLost(signal);
 
 		const user = await trx
 			.selectFrom(TABLE_NAME_MAP.user)
 			.select(['state_epoch', 'status'])
 			.where('id', '=', userId)
 			.executeTakeFirst();
-		throwIfBackupCodeLockLost(signal);
+		lockModule.throwIfBackupCodeLockLost(signal);
 		if (user?.status !== USER_STATUS_MAP.active) {
 			throw new Error('unauthorized');
 		}
@@ -526,14 +536,34 @@ async function importBackupData(
 			};
 		}
 
-		const backupRecord = await trx
+		const backupRecordDeleteQuery = trx
 			.deleteFrom(TABLE_NAME_MAP.backupFileRecord)
-			.where('code', '=', code)
+			.where('code', '=', code);
+		const backupRecord = await (
+			preflightResult.fileName === null
+				? backupRecordDeleteQuery.where('file_name', 'is', null)
+				: backupRecordDeleteQuery.where(
+						'file_name',
+						'=',
+						preflightResult.fileName
+					)
+		)
 			.returning('code')
 			.executeTakeFirst();
-		throwIfBackupCodeLockLost(signal);
+		lockModule.throwIfBackupCodeLockLost(signal);
 
 		if (backupRecord === undefined) {
+			const currentBackupRecord = await trx
+				.selectFrom(TABLE_NAME_MAP.backupFileRecord)
+				.select('code')
+				.where('code', '=', code)
+				.executeTakeFirst();
+			lockModule.throwIfBackupCodeLockLost(signal);
+
+			if (currentBackupRecord !== undefined) {
+				throw new Error('backup-code-lock-lost');
+			}
+
 			return (
 				(await getBackupImportResult(
 					trx,
@@ -546,7 +576,7 @@ async function importBackupData(
 
 		const results: IImportBackupResult[] = [];
 		for (const item of importNamespaceData) {
-			throwIfBackupCodeLockLost(signal);
+			lockModule.throwIfBackupCodeLockLost(signal);
 
 			const current = await trx
 				.selectFrom(TABLE_NAME_MAP.userState)
@@ -611,15 +641,36 @@ async function importBackupData(
 			.values({
 				code,
 				created_at: Date.now(),
+				file_name: preflightResult.fileName,
 				results: JSON.stringify(results),
 				state_epoch: expectedStateEpoch,
 				user_id: userId,
 			})
 			.execute();
-		throwIfBackupCodeLockLost(signal);
+		lockModule.throwIfBackupCodeLockLost(signal);
 
-		return { results, status: 'ok' as const };
+		return {
+			fileName: preflightResult.fileName,
+			results,
+			status: 'ok' as const,
+		};
 	});
+}
+
+async function cleanupImportedBackupFile(
+	code: string,
+	fileName: string | null
+) {
+	try {
+		await deleteFile(code, fileName);
+	} catch (error) {
+		if (!checkBackupFileNotFoundError(error)) {
+			console.warn('Failed to delete imported backup file.', {
+				codeHash: maskBackupCode(code),
+				errorCode: getLogSafeErrorCode(error),
+			});
+		}
+	}
 }
 
 export async function POST(request: NextRequest) {
@@ -647,14 +698,16 @@ export async function POST(request: NextRequest) {
 	}
 
 	const body = await readJsonBody<IImportBackupCodeBody>(request);
-	const code = typeof body?.code === 'string' ? body.code.trim() : '';
-	if (code === '' || !validate(code)) {
+	const rawCode = typeof body?.code === 'string' ? body.code.trim() : '';
+	if (rawCode === '' || !validate(rawCode)) {
 		return createNoStoreErrorResponse('invalid-backup-code', 400);
 	}
+	const code = rawCode.toLowerCase();
 
-	const [authModule, dbModule] = await Promise.all([
+	const [authModule, dbModule, lockModule] = await Promise.all([
 		import('@/lib/account/server/auth'),
 		import('@/lib/account/server/db'),
+		import('@/actions/backup/lock'),
 	]);
 	const auth = await authModule.authenticateAccountRequest(request);
 	if (auth.status === 'error') {
@@ -665,98 +718,112 @@ export async function POST(request: NextRequest) {
 	}
 
 	try {
-		return await withBackupCodeLock(code, async (signal) => {
-			const database = await dbModule.getAccountDatabase();
-			let importResult;
-			try {
-				importResult = await importBackupData(
-					database,
-					auth.data.user.id,
-					code,
-					auth.data.user.state_epoch,
-					signal
-				);
-			} catch (error) {
-				if (
-					error instanceof Error &&
-					error.message === 'unauthorized'
-				) {
-					return createNoStoreErrorResponse('unauthorized', 401);
+		let importedBackupFileName: string | null | undefined;
+		const response = await lockModule.withBackupCodeLock(
+			code,
+			async (signal) => {
+				const database = await dbModule.getAccountDatabase();
+				let importResult;
+				try {
+					importResult = await importBackupData(
+						database,
+						auth.data.user.id,
+						code,
+						auth.data.user.state_epoch,
+						signal,
+						lockModule
+					);
+				} catch (error) {
+					if (
+						error instanceof Error &&
+						error.message === 'unauthorized'
+					) {
+						return createNoStoreErrorResponse('unauthorized', 401);
+					}
+					if (
+						error instanceof Error &&
+						error.message === 'backup-code-not-found'
+					) {
+						return createNoStoreErrorResponse(
+							'backup-code-not-found',
+							404
+						);
+					}
+					if (
+						error instanceof Error &&
+						error.message === 'invalid-backup-file'
+					) {
+						return createNoStoreErrorResponse(
+							'invalid-backup-file',
+							400
+						);
+					}
+					if (
+						error instanceof Error &&
+						error.message === 'server-misconfigured'
+					) {
+						return createNoStoreErrorResponse(
+							'server-misconfigured',
+							500
+						);
+					}
+					if (
+						error instanceof Error &&
+						error.message === 'sync-conflict'
+					) {
+						return createNoStoreErrorResponse('sync-conflict', 409);
+					}
+					if (
+						error instanceof Error &&
+						error.message === 'backup-code-lock-lost'
+					) {
+						return createNoStoreErrorResponse(
+							'backup-code-lock-lost',
+							409
+						);
+					}
+					throw error;
 				}
-				if (
-					error instanceof Error &&
-					error.message === 'backup-code-not-found'
-				) {
+				if (importResult.status === 'not-found') {
 					return createNoStoreErrorResponse(
 						'backup-code-not-found',
 						404
 					);
 				}
-				if (
-					error instanceof Error &&
-					error.message === 'invalid-backup-file'
-				) {
+				if (importResult.status === 'state-epoch-mismatch') {
 					return createNoStoreErrorResponse(
-						'invalid-backup-file',
-						400
+						'state-epoch-mismatch',
+						409,
+						{ state_epoch: importResult.state_epoch }
 					);
 				}
-				if (
-					error instanceof Error &&
-					error.message === 'server-misconfigured'
-				) {
-					return createNoStoreErrorResponse(
-						'server-misconfigured',
-						500
-					);
+				if (importResult.status === 'already-imported') {
+					importedBackupFileName = importResult.fileName;
+
+					return createNoStoreJsonResponse({
+						results: importResult.results,
+					});
 				}
-				if (
-					error instanceof Error &&
-					error.message === 'sync-conflict'
-				) {
-					return createNoStoreErrorResponse('sync-conflict', 409);
-				}
-				if (
-					error instanceof Error &&
-					error.message === 'backup-code-lock-lost'
-				) {
-					return createNoStoreErrorResponse(
-						'backup-code-lock-lost',
-						409
-					);
-				}
-				throw error;
-			}
-			if (importResult.status === 'not-found') {
-				return createNoStoreErrorResponse('backup-code-not-found', 404);
-			}
-			if (importResult.status === 'state-epoch-mismatch') {
-				return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
-					state_epoch: importResult.state_epoch,
-				});
-			}
-			if (importResult.status === 'already-imported') {
+
+				lockModule.markBackupCodeLockCommitted(signal);
+				importedBackupFileName = importResult.fileName;
+
 				return createNoStoreJsonResponse({
 					results: importResult.results,
 				});
 			}
+		);
+		if (importedBackupFileName !== undefined) {
+			await cleanupImportedBackupFile(code, importedBackupFileName);
+		}
 
-			markBackupCodeLockCommitted(signal);
-			try {
-				throwIfBackupCodeLockLost(signal);
-				await deleteFile(code);
-			} catch (error) {
-				console.warn('Failed to delete imported backup file', {
-					codeHash: maskBackupCode(code),
-					errorCode: getLogSafeErrorCode(error),
-				});
-			}
-
-			return createNoStoreJsonResponse({ results: importResult.results });
-		});
+		return response;
 	} catch (error) {
-		if (checkBackupCodeLockLostError(error)) {
+		if (lockModule.checkBackupCodeLockLostError(error)) {
 			return createNoStoreErrorResponse('backup-code-lock-lost', 409);
+		}
+		if (lockModule.checkBackupCodeLockTimeoutError(error)) {
+			return createNoStoreErrorResponse('backup-code-lock-timeout', 409);
 		}
 
 		throw error;

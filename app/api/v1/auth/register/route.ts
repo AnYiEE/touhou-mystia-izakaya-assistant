@@ -17,6 +17,7 @@ import {
 	type IAuthLoginSuccessResponse,
 	type IAuthRegisterBody,
 } from '@/lib/account/shared/types';
+import { getLogSafeErrorCode } from '@/lib/logging';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -46,13 +47,25 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	const [passwordModule, usersModule, authModule, userModule] =
-		await Promise.all([
-			import('@/lib/account/server/password'),
-			import('@/actions/account/users'),
-			import('@/lib/account/server/auth'),
-			import('@/lib/account/server/user'),
-		]);
+	let passwordModule: typeof import('@/lib/account/server/password');
+	let usersModule: typeof import('@/actions/account/users');
+	let authModule: typeof import('@/lib/account/server/auth');
+	let userModule: typeof import('@/lib/account/server/user');
+	try {
+		[passwordModule, usersModule, authModule, userModule] =
+			await Promise.all([
+				import('@/lib/account/server/password'),
+				import('@/actions/account/users'),
+				import('@/lib/account/server/auth'),
+				import('@/lib/account/server/user'),
+			]);
+	} catch (error) {
+		console.warn('Failed to load account registration modules.', {
+			errorCode: getLogSafeErrorCode(error),
+		});
+
+		return createNoStoreErrorResponse('server-misconfigured', 500);
+	}
 
 	const username = body.username.trim();
 	if (!userModule.checkUsernamePolicy(username)) {
@@ -80,30 +93,42 @@ export async function POST(request: NextRequest) {
 
 	const now = Date.now();
 	const userId = randomUUID();
-	const passwordHash = await passwordModule.hashPassword(body.password);
-	const session = authModule.createAccountSessionDraft(userId, request, now);
-	const user = await usersModule.createUserWithCredentialAndSession(
-		{
-			created_at: now,
-			deleted_at: null,
-			id: userId,
-			last_login_at: now,
-			state_epoch: 0,
-			status: USER_STATUS_MAP.active,
-			updated_at: now,
-			username,
-			username_normalized: usernameNormalized,
-		},
-		{
-			failed_attempts: 0,
-			locked_until: null,
-			password_hash: passwordHash,
-			password_must_change: 0,
-			updated_at: now,
-			user_id: userId,
-		},
-		session.record
-	);
+	let session: ReturnType<typeof authModule.createAccountSessionDraft>;
+	let user: Awaited<
+		ReturnType<typeof usersModule.createUserWithCredentialAndSession>
+	>;
+	try {
+		const passwordHash = await passwordModule.hashPassword(body.password);
+		session = authModule.createAccountSessionDraft(userId, request, now);
+		user = await usersModule.createUserWithCredentialAndSession(
+			{
+				created_at: now,
+				deleted_at: null,
+				id: userId,
+				last_login_at: now,
+				state_epoch: 0,
+				status: USER_STATUS_MAP.active,
+				updated_at: now,
+				username,
+				username_normalized: usernameNormalized,
+			},
+			{
+				failed_attempts: 0,
+				locked_until: null,
+				password_hash: passwordHash,
+				password_must_change: 0,
+				updated_at: now,
+				user_id: userId,
+			},
+			session.record
+		);
+	} catch (error) {
+		console.warn('Failed to create account registration records.', {
+			errorCode: getLogSafeErrorCode(error),
+		});
+
+		return createNoStoreErrorResponse('server-misconfigured', 500);
+	}
 	if (user === null) {
 		return createNoStoreErrorResponse('username-conflict', 409);
 	}

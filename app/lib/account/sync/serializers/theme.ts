@@ -1,7 +1,7 @@
 import { STORAGE_KEY, THEME_MAP, applyTheme, parseTheme } from '@/design/hooks';
 import { type TTheme } from '@/design/hooks/use-theme/types';
 import { type ISyncNamespaceSerializer } from '@/lib/account/sync';
-import { safeStorage } from '@/utilities';
+import { safeStorage } from '@/utilities/safeStorage';
 import {
 	checkSnapshotEqual,
 	createMergeResult,

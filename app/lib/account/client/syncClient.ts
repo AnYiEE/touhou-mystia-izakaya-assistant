@@ -6,6 +6,7 @@ import {
 	SYNC_NAMESPACE_MAP,
 	SYNC_SCHEMA_VERSION_MAP,
 	type TSyncNamespace,
+	type TSyncStatePutResult,
 } from '@/lib/account/sync';
 import { accountStore } from '@/stores/account';
 import {
@@ -17,6 +18,7 @@ import {
 import {
 	ACCOUNT_SYNC_LEASE_RENEW_INTERVAL,
 	acquireAccountSyncLease,
+	checkAccountSyncLeaseSupported,
 	createAccountTabId,
 	readAccountSyncLease,
 	releaseAccountSyncLease,
@@ -50,6 +52,7 @@ import {
 const DIRTY_COUNT_FLUSH_THRESHOLD = 10;
 const FORCE_FLUSH_DELAY = 30 * 1000;
 const QUIET_FLUSH_DELAY = 2 * 1000;
+const LEASE_BUSY_RETRY_DELAY = QUIET_FLUSH_DELAY;
 const SEND_BEACON_BYTE_LIMIT = 48 * 1024;
 
 interface IActiveFlushRun {
@@ -443,9 +446,6 @@ function applyRemoteStatePreservingDirty({
 
 		if (mergeResult.conflict === null) {
 			if (mergeResult.shouldUpload) {
-				withApplyingRemoteState(() => {
-					serializer.setLocalSnapshot(mergeResult.data);
-				});
 				writeDirtyQueueEntry(userId, {
 					...entry,
 					baseRevision: record?.revision ?? 0,
@@ -457,6 +457,9 @@ function applyRemoteStatePreservingDirty({
 					paused: null,
 					schema_version: SYNC_SCHEMA_VERSION_MAP[entry.namespace],
 					snapshotHash: createSnapshotHash(mergeResult.data),
+				});
+				withApplyingRemoteState(() => {
+					serializer.setLocalSnapshot(mergeResult.data);
 				});
 				if (record !== undefined) {
 					dirtyRemoteRecords.push(record);
@@ -571,11 +574,6 @@ function handleSuccessfulUpload({
 	stateEpoch: number;
 	userId: string;
 }) {
-	completeDirtyQueueEntryUpload({
-		entry,
-		nextBaseRevision: revision,
-		userId,
-	});
 	const meta = readAccountSyncMeta(userId) ?? {
 		lastAppliedRemoteHash: {},
 		revisions: {},
@@ -588,6 +586,11 @@ function handleSuccessfulUpload({
 	meta.revisions[entry.namespace] = revision;
 	meta.state_epoch = stateEpoch;
 	writeAccountSyncMeta(userId, meta);
+	completeDirtyQueueEntryUpload({
+		entry,
+		nextBaseRevision: revision,
+		userId,
+	});
 }
 
 function handleConflictUpload({
@@ -633,6 +636,30 @@ function handleConflictUpload({
 	});
 
 	return didPause ? ('paused' as const) : ('stale' as const);
+}
+
+function createFlushResultMap({
+	entries,
+	results,
+}: {
+	entries: IDirtyQueueEntry[];
+	results: TSyncStatePutResult[];
+}) {
+	const entryNamespaceSet = new Set(entries.map((entry) => entry.namespace));
+	const resultMap = new Map<TSyncNamespace, TSyncStatePutResult>();
+
+	for (const result of results) {
+		if (
+			!entryNamespaceSet.has(result.namespace) ||
+			resultMap.has(result.namespace)
+		) {
+			return null;
+		}
+
+		resultMap.set(result.namespace, result);
+	}
+
+	return resultMap.size === entryNamespaceSet.size ? resultMap : null;
 }
 
 async function handleStateEpochMismatch(
@@ -702,7 +729,8 @@ export async function flushAccountSyncQueue() {
 			void activeFlushRun.promise.then((isFlushed) => {
 				if (
 					checkCurrentSyncRun(generation, context.user.id) &&
-					!isFlushed
+					(!isFlushed ||
+						getFlushableEntries(context.user.id).length > 0)
 				) {
 					// eslint-disable-next-line @typescript-eslint/no-use-before-define
 					scheduleAccountSyncFlush();
@@ -720,13 +748,13 @@ export async function flushAccountSyncQueue() {
 		let shouldScheduleRetryAfterFlush = false;
 
 		try {
-			if (
-				!(await acquireAccountSyncLease(
-					context.user.id,
-					tabId,
-					flushRunId
-				))
-			) {
+			const leaseResult = await acquireAccountSyncLease(
+				context.user.id,
+				tabId,
+				flushRunId
+			);
+			if (!leaseResult.acquired) {
+				shouldScheduleRetryAfterFlush = true;
 				return false;
 			}
 			didAcquireLease = true;
@@ -762,19 +790,20 @@ export async function flushAccountSyncQueue() {
 				return false;
 			}
 
-			const entryMap = new Map(
-				entries.map((entry) => [entry.namespace, entry] as const)
-			);
+			const resultMap = createFlushResultMap({
+				entries,
+				results: response.results,
+			});
+			if (resultMap === null) {
+				throw new Error('invalid-sync-result');
+			}
+
 			let hasUnresolvedResult = false;
 			const uploadedNamespaces: TSyncNamespace[] = [];
-			for (const result of response.results) {
-				const entry = entryMap.get(result.namespace);
-				if (entry === undefined) {
-					if (result.status !== 'ok') {
-						hasUnresolvedResult = true;
-					}
-
-					continue;
+			for (const entry of entries) {
+				const result = resultMap.get(entry.namespace);
+				if (result === undefined) {
+					throw new Error('invalid-sync-result');
 				}
 				if (result.status === 'ok') {
 					handleSuccessfulUpload({
@@ -813,6 +842,7 @@ export async function flushAccountSyncQueue() {
 
 			accountStore.shared.sync.failedAttempts.set(0);
 			accountStore.shared.sync.lastError.set(null);
+			accountStore.shared.sync.canRetry.set(false);
 			accountStore.shared.sync.lastResult.set(
 				hasUnresolvedResult ? 'partial' : 'success'
 			);
@@ -933,7 +963,7 @@ export async function flushAccountSyncQueue() {
 				quietFlushTimer ??= setTimeout(() => {
 					quietFlushTimer = null;
 					void flushAccountSyncQueue();
-				}, 0);
+				}, LEASE_BUSY_RETRY_DELAY);
 			}
 		}
 	})();
@@ -1071,15 +1101,15 @@ export async function takeOverLocalAccountData() {
 			if (record !== undefined) {
 				dirtyRemoteRecords.push(record);
 			}
-			withApplyingRemoteState(() => {
-				serializer.setLocalSnapshot(mergeResult.data);
-			});
 			markAccountSyncDirty({
 				baseRevision: record?.revision ?? 0,
 				data: mergeResult.data,
 				ignorePause: true,
 				namespace,
 				userId: context.user.id,
+			});
+			withApplyingRemoteState(() => {
+				serializer.setLocalSnapshot(mergeResult.data);
 			});
 			return;
 		}
@@ -1117,6 +1147,7 @@ export function flushAccountSyncQueueWithBeacon() {
 	const context = getLoggedInAccountContext();
 	if (
 		context === null ||
+		!checkAccountSyncLeaseSupported() ||
 		visibilityOperationId !== null ||
 		activeFlushRun !== null
 	) {

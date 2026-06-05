@@ -1,4 +1,4 @@
-import { type TSyncNamespace } from '@/lib/account/sync';
+import { SYNC_NAMESPACE_MAP, type TSyncNamespace } from '@/lib/account/sync';
 import { type IMealRecipe } from '@/types';
 import {
 	Beverage,
@@ -26,6 +26,32 @@ const ingredientNames = new Set<string>(Ingredient.getInstance().getNames());
 const recipeNames = new Set<string>(Recipe.getInstance().getNames());
 
 export type TMealSnapshot<TMeal> = Partial<Record<string, TMeal[]>>;
+
+function getCustomerNamesForType(customerType: 'normal' | 'rare') {
+	return customerType === 'normal' ? customerNormalNames : customerRareNames;
+}
+
+function getCustomerNamesForNamespace(namespace: TSyncNamespace) {
+	return namespace === SYNC_NAMESPACE_MAP.customerNormalMeals
+		? customerNormalNames
+		: customerRareNames;
+}
+
+function sanitizeMealSnapshot<TMeal>(
+	data: TMealSnapshot<TMeal>,
+	customerNames: Set<string>
+) {
+	return Object.entries(data).reduce<TMealSnapshot<TMeal>>(
+		(result, [customerName, meals]) => {
+			if (customerNames.has(customerName) && Array.isArray(meals)) {
+				result[customerName] = meals;
+			}
+
+			return result;
+		},
+		{}
+	);
+}
 
 export function validateMealRecipe(data: unknown): data is IMealRecipe {
 	return (
@@ -59,8 +85,7 @@ export function validateMealSnapshot<TMeal>(
 		return false;
 	}
 
-	const customerNames =
-		customerType === 'normal' ? customerNormalNames : customerRareNames;
+	const customerNames = getCustomerNamesForType(customerType);
 
 	return Object.entries(data).every(
 		([customerName, meals]) =>
@@ -72,13 +97,18 @@ export function validateMealSnapshot<TMeal>(
 
 export function normalizeMealSnapshot<TMeal, TNormalizedMeal>(
 	data: TMealSnapshot<TMeal>,
-	normalizeMeal: (meal: TMeal) => TNormalizedMeal
+	normalizeMeal: (meal: TMeal) => TNormalizedMeal,
+	customerType?: 'normal' | 'rare'
 ) {
 	if (!isPlainObject(data)) {
 		return {};
 	}
+	const snapshot =
+		customerType === undefined
+			? data
+			: sanitizeMealSnapshot(data, getCustomerNamesForType(customerType));
 
-	return Object.entries(data).reduce<TMealSnapshot<TNormalizedMeal>>(
+	return Object.entries(snapshot).reduce<TMealSnapshot<TNormalizedMeal>>(
 		(result, [customerName, meals]) => {
 			if (!Array.isArray(meals)) {
 				return result;
@@ -202,45 +232,60 @@ export function mergeMealSnapshot<TMeal>({
 	local: TMealSnapshot<TMeal>;
 	namespace: TSyncNamespace;
 }) {
-	if (cloud === null) {
+	const allowedCustomerNames = getCustomerNamesForNamespace(namespace);
+	const baseSnapshot =
+		base === null ? null : sanitizeMealSnapshot(base, allowedCustomerNames);
+	const cloudSnapshot =
+		cloud === null
+			? null
+			: sanitizeMealSnapshot(cloud, allowedCustomerNames);
+	const localSnapshot = sanitizeMealSnapshot(local, allowedCustomerNames);
+
+	if (cloudSnapshot === null) {
 		return createMergeResult({
-			data: local,
-			shouldUpload: !checkSnapshotEqual(local, {}),
+			data: localSnapshot,
+			shouldUpload: !checkSnapshotEqual(localSnapshot, {}),
 		});
 	}
-	if (base === null) {
-		if (checkSnapshotEqual(local, cloud)) {
-			return createMergeResult({ data: cloud, shouldUpload: false });
+	if (baseSnapshot === null) {
+		if (checkSnapshotEqual(localSnapshot, cloudSnapshot)) {
+			return createMergeResult({
+				data: cloudSnapshot,
+				shouldUpload: false,
+			});
 		}
-		if (checkSnapshotEqual(local, {})) {
-			return createMergeResult({ data: cloud, shouldUpload: false });
+		if (checkSnapshotEqual(localSnapshot, {})) {
+			return createMergeResult({
+				data: cloudSnapshot,
+				shouldUpload: false,
+			});
 		}
 		if (!allowBaseNullAutoMerge) {
 			return createMergeResult({
 				conflict: createSerializerConflict({
-					cloud,
-					local,
+					cloud: cloudSnapshot,
+					local: localSnapshot,
 					namespace,
 					userId: '',
 				}),
-				data: cloud,
+				data: cloudSnapshot,
 				shouldUpload: false,
 			});
 		}
 
 		const customerNames = new Set([
-			...Object.keys(cloud),
-			...Object.keys(local),
+			...Object.keys(cloudSnapshot),
+			...Object.keys(localSnapshot),
 		]);
 		const data: TMealSnapshot<TMeal> = {};
 
 		customerNames.forEach((customerName) => {
 			const localAdditions = getMealAdditions(
-				local[customerName] ?? [],
-				cloud[customerName] ?? []
+				localSnapshot[customerName] ?? [],
+				cloudSnapshot[customerName] ?? []
 			);
 			const mergedMeals = [
-				...(cloud[customerName] ?? []),
+				...(cloudSnapshot[customerName] ?? []),
 				...localAdditions,
 			];
 
@@ -251,22 +296,22 @@ export function mergeMealSnapshot<TMeal>({
 
 		return createMergeResult({
 			data,
-			shouldUpload: !checkSnapshotEqual(data, cloud),
+			shouldUpload: !checkSnapshotEqual(data, cloudSnapshot),
 		});
 	}
 
 	const customerNames = new Set([
-		...Object.keys(base),
-		...Object.keys(cloud),
-		...Object.keys(local),
+		...Object.keys(baseSnapshot),
+		...Object.keys(cloudSnapshot),
+		...Object.keys(localSnapshot),
 	]);
 	const data: TMealSnapshot<TMeal> = {};
 
 	const hasConflict = [...customerNames].some((customerName) => {
 		const mergedMeals = mergeMealList({
-			baseMeals: base[customerName] ?? [],
-			cloudMeals: cloud[customerName] ?? [],
-			localMeals: local[customerName] ?? [],
+			baseMeals: baseSnapshot[customerName] ?? [],
+			cloudMeals: cloudSnapshot[customerName] ?? [],
+			localMeals: localSnapshot[customerName] ?? [],
 		});
 
 		if (mergedMeals === null) {
@@ -282,18 +327,18 @@ export function mergeMealSnapshot<TMeal>({
 	if (hasConflict) {
 		return createMergeResult({
 			conflict: createSerializerConflict({
-				cloud,
-				local,
+				cloud: cloudSnapshot,
+				local: localSnapshot,
 				namespace,
 				userId: '',
 			}),
-			data: cloud,
+			data: cloudSnapshot,
 			shouldUpload: false,
 		});
 	}
 
 	return createMergeResult({
 		data,
-		shouldUpload: !checkSnapshotEqual(data, cloud),
+		shouldUpload: !checkSnapshotEqual(data, cloudSnapshot),
 	});
 }

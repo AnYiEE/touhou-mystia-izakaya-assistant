@@ -1,4 +1,5 @@
 export interface IRateLimitOptions {
+	capacityGroup: string;
 	limit: number;
 	windowMs: number;
 }
@@ -10,6 +11,7 @@ export interface IRateLimitResult {
 }
 
 interface IRateLimitBucket {
+	capacityGroup: string;
 	count: number;
 	resetAt: number;
 }
@@ -31,20 +33,40 @@ export function clearExpiredRateLimitBuckets(now = Date.now()) {
 	});
 }
 
-function ensureRateLimitBucketCapacity(now: number): boolean {
+function countRateLimitBucketsByCapacityGroup(capacityGroup: string) {
+	let count = 0;
+	for (const bucket of rateLimitBucketMap.values()) {
+		if (bucket.capacityGroup === capacityGroup) {
+			count += 1;
+		}
+	}
+
+	return count;
+}
+
+function ensureRateLimitBucketCapacity(
+	now: number,
+	capacityGroup: string
+): boolean {
 	if (now - lastRateLimitCleanupAt >= RATE_LIMIT_CLEANUP_INTERVAL_MS) {
 		clearExpiredRateLimitBuckets(now);
 		lastRateLimitCleanupAt = now;
 	}
 
-	if (rateLimitBucketMap.size < MAX_RATE_LIMIT_BUCKETS) {
+	if (
+		countRateLimitBucketsByCapacityGroup(capacityGroup) <
+		MAX_RATE_LIMIT_BUCKETS
+	) {
 		return true;
 	}
 
 	clearExpiredRateLimitBuckets(now);
 	lastRateLimitCleanupAt = now;
 
-	if (rateLimitBucketMap.size < MAX_RATE_LIMIT_BUCKETS) {
+	if (
+		countRateLimitBucketsByCapacityGroup(capacityGroup) <
+		MAX_RATE_LIMIT_BUCKETS
+	) {
 		return true;
 	}
 
@@ -53,11 +75,18 @@ function ensureRateLimitBucketCapacity(now: number): boolean {
 	return false;
 }
 
+function createRateLimitBucketMapKey(capacityGroup: string, key: string) {
+	return JSON.stringify([capacityGroup, key]);
+}
+
 export function checkRateLimit(
 	key: string,
-	{ limit, windowMs }: IRateLimitOptions,
+	{ capacityGroup, limit, windowMs }: IRateLimitOptions,
 	now = Date.now()
 ): IRateLimitResult {
+	if (capacityGroup === '') {
+		throw new Error('Invalid rate limit option: capacityGroup is required');
+	}
 	if (!Number.isInteger(limit) || limit <= 0) {
 		throw new Error(
 			'Invalid rate limit option: limit must be a positive integer'
@@ -69,10 +98,11 @@ export function checkRateLimit(
 		);
 	}
 
-	const bucket = rateLimitBucketMap.get(key);
+	const bucketMapKey = createRateLimitBucketMapKey(capacityGroup, key);
+	const bucket = rateLimitBucketMap.get(bucketMapKey);
 
 	if (!bucket || bucket.resetAt <= now) {
-		if (!ensureRateLimitBucketCapacity(now)) {
+		if (!ensureRateLimitBucketCapacity(now, capacityGroup)) {
 			return {
 				allowed: false,
 				remaining: 0,
@@ -80,7 +110,11 @@ export function checkRateLimit(
 			};
 		}
 
-		rateLimitBucketMap.set(key, { count: 1, resetAt: now + windowMs });
+		rateLimitBucketMap.set(bucketMapKey, {
+			capacityGroup,
+			count: 1,
+			resetAt: now + windowMs,
+		});
 		return { allowed: true, remaining: limit - 1, retryAfter: 0 };
 	}
 	if (bucket.count >= limit) {

@@ -16,6 +16,7 @@ import {
 } from '@/utils';
 import {
 	checkBeverageTag,
+	checkPopularTag,
 	checkRecipeTag,
 } from '@/lib/account/sync/serializers/tags';
 
@@ -82,6 +83,10 @@ function isIntegerInRange(data: unknown, min: number, max: number) {
 		data >= min &&
 		data <= max
 	);
+}
+
+function isNonNegativeSafeInteger(data: unknown): data is number {
+	return typeof data === 'number' && Number.isSafeInteger(data) && data >= 0;
 }
 
 function validateMealRecipe(data: unknown) {
@@ -226,7 +231,7 @@ function validateGlobalPreferences(data: unknown) {
 		typeof data['highAppearance'] === 'boolean' &&
 		typeof popularTrend['isNegative'] === 'boolean' &&
 		(popularTrend['tag'] === null ||
-			typeof popularTrend['tag'] === 'string') &&
+			checkPopularTag(popularTrend['tag'])) &&
 		typeof suggestMeals['enabled'] === 'boolean' &&
 		(suggestMeals['maxExtraIngredients'] === null ||
 			isIntegerInRange(suggestMeals['maxExtraIngredients'], 0, 4)) &&
@@ -304,9 +309,7 @@ export function parseSyncStatePutBody(
 		!isPlainObject(body) ||
 		!hasExactKeys(body, rootKeys) ||
 		!('state_epoch' in body) ||
-		typeof body['state_epoch'] !== 'number' ||
-		!Number.isInteger(body['state_epoch']) ||
-		body['state_epoch'] < 0 ||
+		!isNonNegativeSafeInteger(body['state_epoch']) ||
 		!('changes' in body) ||
 		!Array.isArray(body['changes'])
 	) {
@@ -331,9 +334,7 @@ export function parseSyncStatePutBody(
 			!('namespace' in change) ||
 			!checkSyncNamespace(change['namespace']) ||
 			!('revision' in change) ||
-			typeof change['revision'] !== 'number' ||
-			!Number.isInteger(change['revision']) ||
-			change['revision'] < 0 ||
+			!isNonNegativeSafeInteger(change['revision']) ||
 			!('schema_version' in change) ||
 			change['schema_version'] !==
 				SYNC_SCHEMA_VERSION_MAP[change['namespace']]
@@ -392,9 +393,5 @@ export function createUserStateRecord(
 }
 
 export function parseUserStateData(data: string) {
-	try {
-		return JSON.parse(data);
-	} catch {
-		return null;
-	}
+	return JSON.parse(data);
 }

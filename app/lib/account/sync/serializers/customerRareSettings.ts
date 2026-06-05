@@ -7,6 +7,10 @@ export interface ICustomerRareSettingsSnapshot {
 	showTagDescription: boolean;
 }
 
+function getBooleanSetting(value: unknown, fallback: boolean) {
+	return typeof value === 'boolean' ? value : fallback;
+}
+
 export const customerRareSettingsSerializer = {
 	deserialize(data) {
 		return this.migrate(data, 1);
@@ -15,11 +19,17 @@ export const customerRareSettingsSerializer = {
 		return { orderLinkedFilter: true, showTagDescription: true };
 	},
 	getLocalSnapshot() {
+		const defaults = this.getDefaultSnapshot();
+
 		return {
-			orderLinkedFilter:
+			orderLinkedFilter: getBooleanSetting(
 				customerRareStore.persistence.customer.orderLinkedFilter.get(),
-			showTagDescription:
+				defaults.orderLinkedFilter
+			),
+			showTagDescription: getBooleanSetting(
 				customerRareStore.persistence.customer.showTagDescription.get(),
+				defaults.showTagDescription
+			),
 		};
 	},
 	merge({ base, cloud, local }) {
@@ -50,12 +60,10 @@ export const customerRareSettingsSerializer = {
 		return data;
 	},
 	setLocalSnapshot(data) {
-		customerRareStore.persistence.customer.orderLinkedFilter.set(
-			data.orderLinkedFilter
-		);
-		customerRareStore.persistence.customer.showTagDescription.set(
-			data.showTagDescription
-		);
+		customerRareStore.persistence.customer.assign({
+			orderLinkedFilter: data.orderLinkedFilter,
+			showTagDescription: data.showTagDescription,
+		});
 	},
 	validate(data): data is ICustomerRareSettingsSnapshot {
 		return (

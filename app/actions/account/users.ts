@@ -258,7 +258,11 @@ export async function incrementStateEpoch(id: TUser['id']) {
 		}))
 		.where('id', '=', id)
 		.returning('state_epoch')
-		.executeTakeFirstOrThrow();
+		.executeTakeFirst();
+
+	if (record === undefined) {
+		throw new Error('user-not-found');
+	}
 
 	return record.state_epoch;
 }

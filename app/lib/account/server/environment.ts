@@ -8,7 +8,7 @@ import {
 	checkOfflineEnv,
 	checkVercelEnv,
 } from '@/lib/environment';
-import { getSqliteDatabasePath } from '@/lib/db/constant';
+import { getConfiguredSqliteDatabasePath } from '@/lib/db/constant';
 
 export const FEATURE_DISABLED_MESSAGE = 'feature-disabled';
 export const SERVER_MISCONFIGURED_MESSAGE = 'server-misconfigured';
@@ -42,7 +42,7 @@ export function checkSessionSecret(
 export async function checkSqliteDirectoryWritable(
 	databasePath = process.env.SQLITE_DATABASE_PATH
 ) {
-	const sqlitePath = resolve(getSqliteDatabasePath(databasePath));
+	const sqlitePath = getConfiguredSqliteDatabasePath(databasePath);
 	const directory = dirname(sqlitePath);
 	const probePath = resolve(directory, `.sqlite-write-probe-${randomUUID()}`);
 

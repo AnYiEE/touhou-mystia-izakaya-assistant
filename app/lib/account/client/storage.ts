@@ -1,4 +1,4 @@
-import { safeStorage } from '@/utilities';
+import { safeStorage } from '@/utilities/safeStorage';
 
 export const ACCOUNT_STORAGE_KEY_MAP = {
 	dirtyQueue: 'account-sync-dirty',

@@ -90,13 +90,29 @@ export async function POST(
 		return createNoStoreErrorResponse('invalid-user-status', 403);
 	}
 
-	await credentialsModule.updateCredentialAndDeleteSessions(id, {
-		failed_attempts: 0,
-		locked_until: null,
-		password_hash: await passwordModule.hashPassword(body.password),
-		password_must_change: 1,
-		updated_at: Date.now(),
-	});
+	try {
+		await credentialsModule.updateCredentialAndDeleteSessions(id, {
+			failed_attempts: 0,
+			locked_until: null,
+			password_hash: await passwordModule.hashPassword(body.password),
+			password_must_change: 1,
+			updated_at: Date.now(),
+		});
+	} catch (error) {
+		if (error instanceof Error) {
+			if (error.message === 'user-not-found') {
+				return createNoStoreErrorResponse('target-user-not-found', 404);
+			}
+			if (error.message === 'invalid-user-status') {
+				return createNoStoreErrorResponse('invalid-user-status', 403);
+			}
+			if (error.message === 'credential-not-found') {
+				return createNoStoreErrorResponse('credential-not-found', 500);
+			}
+		}
+
+		throw error;
+	}
 
 	return createNoStoreJsonResponse({ message: 'password-reset' });
 }

@@ -9,21 +9,23 @@ import {
 	deleteFile,
 	deleteRecord,
 	deleteTemporaryBackupFile,
-	getBackupFileCodes,
+	getBackupFileName,
+	getBackupFiles,
 	getExpiredRecords,
 	getExpiredTemporaryBackupFileNames,
 	getRecord,
-	getRecordCodes,
+	getRecordFileReferences,
 	markBackupCodeLockCommitted,
 	throwIfBackupCodeLockLost,
 	withBackupCodeLock,
+	withFreshBackupCodeLock,
 } from '@/actions/backup';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 	handleOptionsRequest,
 } from '@/api/v1/utils';
-import { getLogSafeErrorCode, maskBackupCode } from '../../utils';
+import { getLogSafeErrorCode, maskBackupCode } from '../utils';
 
 function isExpiredBackupRecord(
 	record: { created_at: number; last_accessed: number },
@@ -33,6 +35,22 @@ function isExpiredBackupRecord(
 		record.last_accessed < 0 ? record.created_at : record.last_accessed;
 
 	return expirationBase < expiredBefore;
+}
+
+function getSafeRecordFileName(record: {
+	code: string;
+	file_name: string | null;
+}) {
+	try {
+		return getBackupFileName(record.code, record.file_name);
+	} catch (error) {
+		console.warn('Invalid backup record file name during cleanup', {
+			codeHash: maskBackupCode(record.code),
+			errorCode: getLogSafeErrorCode(error),
+		});
+
+		return null;
+	}
 }
 
 async function runWithConcurrencyLimit<T>(
@@ -74,13 +92,15 @@ async function runWithConcurrencyLimit<T>(
 	}
 }
 
-export async function DELETE(
-	_request: NextRequest,
-	{ params }: { params: Promise<{ secret: string }> }
-) {
-	const { secret } = await params;
+export async function DELETE(request: NextRequest) {
+	const secret = request.headers.get('x-cleanup-secret');
+	const configuredSecret = env.CLEANUP_SECRET;
 
-	if (secret !== env.CLEANUP_SECRET) {
+	if (typeof configuredSecret !== 'string' || configuredSecret.length === 0) {
+		return createNoStoreErrorResponse('server-misconfigured', 500);
+	}
+
+	if (secret !== configuredSecret) {
 		return createNoStoreErrorResponse('Invalid secret', 401);
 	}
 
@@ -89,12 +109,19 @@ export async function DELETE(
 	const sixMonthsAgo = now - 181 * 24 * 60 * 60 * 1000;
 
 	const records = await getExpiredRecords(sixMonthsAgo);
-	const recordCodeSet = new Set(await getRecordCodes());
-	const backupFileCodes = await getBackupFileCodes();
+	const recordFileReferences = await getRecordFileReferences();
+	const recordFileNameSet = new Set(
+		recordFileReferences.flatMap((record) => {
+			const fileName = getSafeRecordFileName(record);
+
+			return fileName === null ? [] : [fileName];
+		})
+	);
+	const backupFiles = await getBackupFiles();
 	const temporaryFileNames =
 		await getExpiredTemporaryBackupFileNames(oneHourAgo);
-	const orphanCodes = backupFileCodes.filter(
-		(code) => !recordCodeSet.has(code)
+	const orphanFiles = backupFiles.filter(
+		(file) => !recordFileNameSet.has(file.fileName)
 	);
 
 	let deletedFileCount = 0;
@@ -136,29 +163,15 @@ export async function DELETE(
 					return;
 				}
 
-				try {
-					throwIfBackupCodeLockLost(signal);
-					await deleteFile(code);
-					throwIfBackupCodeLockLost(signal);
-					deletedFileCount++;
-				} catch (error) {
-					if (checkBackupCodeLockLostError(error)) {
-						throw error;
-					}
-					if (!checkBackupFileNotFoundError(error)) {
-						failedFileCount++;
-						console.warn('Failed to delete expired backup file', {
-							codeHash: maskBackupCode(code),
-							errorCode: getLogSafeErrorCode(error),
-						});
-						return;
-					}
-				}
+				const fileName = getSafeRecordFileName(record);
 
 				try {
-					throwIfBackupCodeLockLost(signal);
-					await deleteRecord(code);
-					throwIfBackupCodeLockLost(signal);
+					await withFreshBackupCodeLock(signal, async (trx) => {
+						const deleteResult = await deleteRecord(code, trx);
+						if (deleteResult.status !== 200) {
+							throw new Error('Failed to delete record');
+						}
+					});
 					markBackupCodeLockCommitted(signal);
 					deletedRecordCount++;
 				} catch (error) {
@@ -171,21 +184,45 @@ export async function DELETE(
 						codeHash: maskBackupCode(code),
 						errorCode: getLogSafeErrorCode(error),
 					});
+					return;
+				}
+
+				if (fileName === null) {
+					failedFileCount++;
+					return;
+				}
+
+				try {
+					await deleteFile(code, fileName);
+					deletedFileCount++;
+				} catch (error) {
+					if (!checkBackupFileNotFoundError(error)) {
+						failedFileCount++;
+						console.warn('Failed to delete expired backup file', {
+							codeHash: maskBackupCode(code),
+							errorCode: getLogSafeErrorCode(error),
+						});
+					}
 				}
 			});
 		});
-		await runWithConcurrencyLimit(orphanCodes, 8, async (code) => {
-			await withBackupCodeLock(code, async (signal) => {
-				const record = await getRecord(code);
+		await runWithConcurrencyLimit(orphanFiles, 8, async (file) => {
+			await withBackupCodeLock(file.code, async (signal) => {
+				const record = await getRecord(file.code);
 				throwIfBackupCodeLockLost(signal);
 
-				if (record.status !== 404) {
+				const recordFileName =
+					record.status === 404
+						? null
+						: getSafeRecordFileName(record);
+
+				if (recordFileName === file.fileName) {
 					return;
 				}
 
 				try {
 					throwIfBackupCodeLockLost(signal);
-					await deleteFile(code);
+					await deleteFile(file.code, file.fileName);
 					throwIfBackupCodeLockLost(signal);
 					markBackupCodeLockCommitted(signal);
 					orphanDeletedCount++;
@@ -196,7 +233,7 @@ export async function DELETE(
 
 					failedFileCount++;
 					console.warn('Failed to delete orphan backup file', {
-						codeHash: maskBackupCode(code),
+						codeHash: maskBackupCode(file.code),
 						errorCode: getLogSafeErrorCode(error),
 					});
 				}
@@ -220,7 +257,7 @@ export async function DELETE(
 		failedFileCount,
 		failedRecordCount,
 		orphanDeletedCount,
-		orphanFoundCount: orphanCodes.length,
+		orphanFoundCount: orphanFiles.length,
 		temporaryDeletedCount,
 		temporaryFoundCount: temporaryFileNames.length,
 	});

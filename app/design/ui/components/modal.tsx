@@ -10,7 +10,9 @@ import {
 } from '@heroui/modal';
 import { type InternalForwardRefRenderFunction } from '@heroui/system';
 
-import { ScrollShadow, cn, useReducedMotion } from '@/design/ui/components';
+import { useReducedMotion } from '@/design/ui/hooks';
+import { cn } from '@/design/ui/utils';
+import ScrollShadow from './scrollShadow';
 
 import { globalStore as store } from '@/stores';
 

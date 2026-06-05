@@ -38,33 +38,68 @@ export function resolveAccountSyncConflict({
 	userId: string;
 }) {
 	if (conflict.userId !== userId) {
-		return;
+		return false;
+	}
+	if (resolution === 'merged' && conflict.merged === null) {
+		return false;
 	}
 
 	const data = getConflictResolutionData(conflict, resolution);
 	const serializer = getAccountSyncSerializer(conflict.namespace);
+	const previousSnapshot = serializer.getLocalSnapshot();
 
 	withApplyingRemoteState(() => {
 		serializer.setLocalSnapshot(data);
 	});
 
 	if (resolution === 'cloud') {
-		removeDirtyQueueEntry(userId, conflict.namespace);
-		let meta = readAccountSyncMeta(userId);
-		if (meta === null) {
-			// Defensive: construct minimal meta so the applied revision
-			// is recorded even when the sync meta store is unexpectedly
-			// empty.  state_epoch will be corrected on the next sync pull.
-			console.warn(
-				'Account sync meta missing during conflict resolution, creating minimal meta.'
-			);
-			meta = { lastAppliedRemoteHash: {}, revisions: {}, state_epoch: 0 };
+		const previousMeta = readAccountSyncMeta(userId);
+		const currentMeta = accountStore.shared.sync.meta.get();
+		const metaSource =
+			accountStore.shared.user.get()?.id === userId &&
+			currentMeta !== null
+				? currentMeta
+				: previousMeta;
+		if (metaSource === null) {
+			withApplyingRemoteState(() => {
+				serializer.setLocalSnapshot(previousSnapshot);
+			});
+
+			return false;
 		}
-		meta.lastAppliedRemoteHash[conflict.namespace] = createSnapshotHash(
-			serializer.getLocalSnapshot()
-		);
-		meta.revisions[conflict.namespace] = conflict.revision;
-		writeAccountSyncMeta(userId, meta);
+		const meta = {
+			...metaSource,
+			lastAppliedRemoteHash: { ...metaSource.lastAppliedRemoteHash },
+			revisions: { ...metaSource.revisions },
+		};
+		try {
+			meta.lastAppliedRemoteHash[conflict.namespace] = createSnapshotHash(
+				serializer.getLocalSnapshot()
+			);
+			meta.revisions[conflict.namespace] = conflict.revision;
+			writeAccountSyncMeta(userId, meta);
+		} catch (error) {
+			withApplyingRemoteState(() => {
+				try {
+					serializer.setLocalSnapshot(previousSnapshot);
+				} catch {
+					/* best-effort rollback */
+				}
+			});
+			if (previousMeta !== null) {
+				try {
+					writeAccountSyncMeta(userId, previousMeta);
+				} catch (writeError) {
+					console.warn(
+						'Failed to restore account sync meta after conflict rollback.',
+						writeError
+					);
+				}
+			}
+
+			throw error;
+		}
+		removeDirtyQueueEntry(userId, conflict.namespace);
 		accountStore.shared.sync.conflicts.set((conflicts) =>
 			conflicts.filter(
 				(item) =>
@@ -72,23 +107,37 @@ export function resolveAccountSyncConflict({
 					item.namespace !== conflict.namespace
 			)
 		);
-		return;
+		return true;
 	}
 
-	const entry = markAccountSyncDirty({
-		baseRevision: conflict.revision,
-		data,
-		namespace: conflict.namespace,
-		userId,
-	});
-
-	if (entry !== null) {
-		accountStore.shared.sync.conflicts.set((conflicts) =>
-			conflicts.filter(
-				(item) =>
-					item.userId !== userId ||
-					item.namespace !== conflict.namespace
-			)
-		);
+	let entry;
+	try {
+		entry = markAccountSyncDirty({
+			baseRevision: conflict.revision,
+			data,
+			namespace: conflict.namespace,
+			userId,
+		});
+	} catch (error) {
+		withApplyingRemoteState(() => {
+			serializer.setLocalSnapshot(previousSnapshot);
+		});
+		throw error;
 	}
+
+	if (entry === null) {
+		withApplyingRemoteState(() => {
+			serializer.setLocalSnapshot(previousSnapshot);
+		});
+		return false;
+	}
+
+	accountStore.shared.sync.conflicts.set((conflicts) =>
+		conflicts.filter(
+			(item) =>
+				item.userId !== userId || item.namespace !== conflict.namespace
+		)
+	);
+
+	return true;
 }

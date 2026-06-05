@@ -1,12 +1,20 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Input } from '@heroui/input';
 
 import { Button, Modal } from '@/design/ui/components';
-import { loginAccount, registerAccount } from '@/lib/account/client/api';
-import { refreshAccountState } from '@/lib/account/client/session';
+import {
+	AccountApiError,
+	loginAccount,
+	registerAccount,
+} from '@/lib/account/client/api';
+import {
+	applyAccountAuthSuccessResponse,
+	refreshAccountState,
+	resetAccountState,
+} from '@/lib/account/client/session';
 import { accountStore, globalStore } from '@/stores';
 import Heading from './heading';
 
@@ -20,19 +28,23 @@ export default function AccountOnboarding() {
 	const [message, setMessage] = useState<string | null>(null);
 	const [password, setPassword] = useState('');
 	const [username, setUsername] = useState('');
+	const [isAuthRefreshFailed, setIsAuthRefreshFailed] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const isSubmittingRef = useRef(false);
 	const [portalContainer, setPortalContainer] = useState<Element | null>(
 		null
 	);
 	const cloudCode = globalStore.persistence.cloudCode.use();
-	const isOpen = bootstrapStatus === 'anonymous' && !hasSkippedOnboarding;
+	const isOpen =
+		(bootstrapStatus === 'anonymous' || isAuthRefreshFailed) &&
+		!hasSkippedOnboarding;
 
 	useEffect(() => {
 		setPortalContainer(document.querySelector('#modal-portal-container'));
 	}, []);
 
 	const handleAuth = useCallback(() => {
-		if (isSubmitting) {
+		if (isSubmittingRef.current) {
 			return;
 		}
 		const normalizedUsername = username.trim();
@@ -41,30 +53,52 @@ export default function AccountOnboarding() {
 			return;
 		}
 
+		isSubmittingRef.current = true;
 		setIsSubmitting(true);
 		setMessage(null);
 		const request = authMode === 'login' ? loginAccount : registerAccount;
 		void request({ password, username: normalizedUsername })
-			.then(() => {
-				// Treat auth success and state refresh as separate
-				// concerns: close the modal immediately on successful
-				// authentication so the user is never blocked by a
-				// transient /me failure.
-				accountStore.persistence.hasSkippedOnboarding.set(true);
-				setIsSubmitting(false);
-				// Refresh state in the background; degrade gracefully.
-				refreshAccountState().catch((error: unknown) => {
+			.then(async (data) => {
+				applyAccountAuthSuccessResponse(data);
+				try {
+					const refreshResult = await refreshAccountState();
+					if (refreshResult === null) {
+						return;
+					}
+
+					setIsAuthRefreshFailed(false);
+					accountStore.persistence.hasSkippedOnboarding.set(true);
+					setPassword('');
+				} catch (error) {
 					console.warn(
 						'Account state refresh failed after successful authentication.',
 						error
 					);
-				});
+					if (
+						error instanceof AccountApiError &&
+						error.status === 401
+					) {
+						setPassword('');
+						setMessage('账号状态已失效，请重新登录');
+						resetAccountState();
+						setIsAuthRefreshFailed(false);
+						return;
+					}
+					setIsAuthRefreshFailed(true);
+					setMessage('账号状态刷新失败，请稍后重试');
+				}
 			})
 			.catch((error: unknown) => {
 				setMessage(error instanceof Error ? error.message : '认证失败');
+				if (accountStore.shared.bootstrapStatus.get() === 'anonymous') {
+					setIsAuthRefreshFailed(false);
+				}
+			})
+			.finally(() => {
+				isSubmittingRef.current = false;
 				setIsSubmitting(false);
 			});
-	}, [authMode, isSubmitting, password, username]);
+	}, [authMode, password, username]);
 
 	if (!isOpen) {
 		return null;
@@ -130,7 +164,9 @@ export default function AccountOnboarding() {
 					onValueChange={setPassword}
 				/>
 				{message !== null && (
-					<p className="text-sm text-danger">{message}</p>
+					<p className="text-sm text-danger" role="alert">
+						{message}
+					</p>
 				)}
 				<div className="flex justify-end gap-2">
 					<Button

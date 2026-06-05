@@ -36,8 +36,8 @@ import {
 	Link,
 	Tooltip,
 	cn,
-	useReducedMotion,
 } from '@/design/ui/components';
+import { useReducedMotion } from '@/design/ui/hooks';
 
 import { trackEvent } from '@/components/analytics';
 import AccountMenu from '@/components/accountMenu';
@@ -379,7 +379,7 @@ export default function Navbar() {
 						{...(shouldShowPreferences
 							? {
 									onPress: () => {
-										handlePress('/preferences', true);
+										handlePress('/preferences');
 									},
 								}
 							: {})}

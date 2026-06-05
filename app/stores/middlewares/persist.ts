@@ -7,7 +7,7 @@ import {
 	persist as persistMiddleware,
 } from 'zustand/middleware';
 
-import { safeStorage } from '@/utilities';
+import { safeStorage } from '@/utilities/safeStorage';
 
 const COMPRESS_PREFIX = '__LZ__';
 
@@ -33,13 +33,15 @@ const lZLocalStorage = {
 // eslint-disable-next-line unicorn/prefer-global-this
 const isServer = typeof window === 'undefined';
 
-export function persist<T>(options: Omit<PersistOptions<T>, 'storage'>) {
+export function persist<T, TPersistedState = T>(
+	options: Omit<PersistOptions<T, TPersistedState>, 'storage'>
+) {
 	return (initializer: StateCreator<T>) => {
 		if (isServer) {
 			return initializer;
 		}
 
-		return persistMiddleware<T>(initializer, {
+		return persistMiddleware<T, [], [], TPersistedState>(initializer, {
 			storage: createJSONStorage(() => lZLocalStorage),
 			...options,
 		});

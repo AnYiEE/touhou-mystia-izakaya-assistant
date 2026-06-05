@@ -5,6 +5,7 @@ import {
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
+	createRetryAfterHeaders,
 	readJsonBody,
 } from '@/api/v1/accountRouteUtils';
 import {
@@ -27,9 +28,16 @@ function createInvalidLoginResponse() {
 }
 
 function createCredentialLockedResponse(retryAfter: number) {
-	return createNoStoreErrorResponse('too-many-requests', 429, {
-		retry_after: retryAfter,
-	});
+	return createNoStoreErrorResponse(
+		'too-many-requests',
+		429,
+		{ retry_after: retryAfter },
+		{ headers: createRetryAfterHeaders(retryAfter) }
+	);
+}
+
+function createCredentialStateStaleResponse() {
+	return createNoStoreErrorResponse('credential-state-stale', 409);
 }
 
 export async function POST(request: NextRequest) {
@@ -135,7 +143,7 @@ export async function POST(request: NextRequest) {
 		return createCredentialLockedResponse(resetState.retryAfter);
 	}
 	if (resetState.status === 'stale') {
-		return createInvalidLoginResponse();
+		return createCredentialStateStaleResponse();
 	}
 
 	const userUpdate = { last_login_at: now, updated_at: now };

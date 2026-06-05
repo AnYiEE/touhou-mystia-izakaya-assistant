@@ -30,6 +30,7 @@ function ConflictPreview({ label, value }: { label: string; value: unknown }) {
 export default function AccountConflictModal() {
 	const [isResolving, setIsResolving] = useState(false);
 	const isResolvingRef = useRef(false);
+	const [message, setMessage] = useState<string | null>(null);
 	const [portalContainer, setPortalContainer] = useState<Element | null>(
 		null
 	);
@@ -44,6 +45,7 @@ export default function AccountConflictModal() {
 	useEffect(() => {
 		isResolvingRef.current = false;
 		setIsResolving(false);
+		setMessage(null);
 	}, [conflict]);
 
 	if (conflict === undefined || user === null || passwordMustChange) {
@@ -57,15 +59,23 @@ export default function AccountConflictModal() {
 
 		isResolvingRef.current = true;
 		setIsResolving(true);
+		setMessage(null);
 		try {
-			resolveAccountSyncConflict({
+			const didResolve = resolveAccountSyncConflict({
 				conflict,
 				resolution,
 				userId: user.id,
 			});
+			if (!didResolve) {
+				setMessage('冲突暂时无法保存，请稍后重试');
+				isResolvingRef.current = false;
+				setIsResolving(false);
+				return;
+			}
 			scheduleAccountSyncFlush();
 		} catch (error) {
 			console.error('Failed to resolve conflict:', error);
+			setMessage(error instanceof Error ? error.message : '冲突保存失败');
 			isResolvingRef.current = false;
 			setIsResolving(false);
 		}
@@ -91,6 +101,15 @@ export default function AccountConflictModal() {
 						value={conflict.merged ?? '无法自动合并'}
 					/>
 				</div>
+				{message !== null && (
+					<p
+						aria-live="assertive"
+						className="text-sm text-danger"
+						role="alert"
+					>
+						{message}
+					</p>
+				)}
 				<div className="flex flex-wrap justify-end gap-2">
 					<Button
 						isDisabled={isResolving}

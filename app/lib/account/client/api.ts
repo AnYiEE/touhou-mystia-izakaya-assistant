@@ -247,7 +247,10 @@ export async function importBackupCode(code: string, csrfToken: string) {
 }
 
 export function sendSyncPing(body: ISyncStatePingBody) {
-	if (typeof navigator.sendBeacon !== 'function') {
+	if (
+		typeof navigator === 'undefined' ||
+		typeof navigator.sendBeacon !== 'function'
+	) {
 		return false;
 	}
 

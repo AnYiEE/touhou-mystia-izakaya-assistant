@@ -2,7 +2,9 @@ import { createHash, randomUUID } from 'node:crypto';
 
 import { TABLE_NAME_MAP } from '@/lib/db';
 import { db } from '@/lib/db/db';
+import type { TDatabase } from '@/lib/db/types';
 import { getLogSafeErrorCode } from '@/lib/logging';
+import type { Transaction } from 'kysely';
 
 const backupCodeLocks = new Map<string, Promise<void>>();
 const BACKUP_CODE_LOCK_RETRY_MS = 50;
@@ -14,9 +16,15 @@ const TABLE_NAME = TABLE_NAME_MAP.backupCodeLock;
 
 export interface IBackupCodeLockSignal {
 	readonly aborted: boolean;
+	readonly code: string;
 	readonly committed: boolean;
+	readonly ownerId: string;
 	readonly reason?: unknown;
 }
+
+type TMutableBackupCodeLockSignal = IBackupCodeLockSignal & {
+	renewedAt: number;
+};
 
 function delay(ms: number) {
 	return new Promise((resolve) => {
@@ -51,6 +59,7 @@ async function waitForPreviousBackupCodeLock(
 		console.warn('Timed out waiting for backup code in-process queue.', {
 			codeHash: maskBackupCodeForLog(code),
 		});
+		throw new Error(BACKUP_CODE_LOCK_TIMEOUT_MESSAGE);
 	}
 }
 
@@ -96,14 +105,15 @@ async function acquireSharedBackupCodeLock(code: string, ownerId: string) {
 }
 
 async function renewSharedBackupCodeLock(code: string, ownerId: string) {
+	const now = Date.now();
 	const updateResult = await db
 		.updateTable(TABLE_NAME)
-		.set({ expires_at: Date.now() + BACKUP_CODE_LOCK_TTL_MS })
+		.set({ expires_at: now + BACKUP_CODE_LOCK_TTL_MS })
 		.where('code', '=', code)
 		.where('owner_id', '=', ownerId)
 		.executeTakeFirst();
 
-	return updateResult.numUpdatedRows === 1n;
+	return updateResult.numUpdatedRows === 1n ? now : null;
 }
 
 async function releaseSharedBackupCodeLock(code: string, ownerId: string) {
@@ -148,6 +158,58 @@ export function markBackupCodeLockCommitted(signal: IBackupCodeLockSignal) {
 	(signal as { committed: boolean }).committed = true;
 }
 
+function markBackupCodeLockLost(signal: IBackupCodeLockSignal) {
+	const lockLostError = createBackupCodeLockLostError();
+	(signal as { aborted: boolean; reason?: unknown }).aborted = true;
+	(signal as { reason?: unknown }).reason = lockLostError;
+	throw lockLostError;
+}
+
+function markBackupCodeLockRenewed(
+	signal: IBackupCodeLockSignal,
+	renewedAt: number
+) {
+	(signal as TMutableBackupCodeLockSignal).renewedAt = renewedAt;
+}
+
+function getBackupCodeLockRenewDeadline(signal: IBackupCodeLockSignal) {
+	return (
+		(signal as TMutableBackupCodeLockSignal).renewedAt +
+		BACKUP_CODE_LOCK_TTL_MS
+	);
+}
+
+function checkBackupCodeLockRenewDeadline(signal: IBackupCodeLockSignal) {
+	if (Date.now() > getBackupCodeLockRenewDeadline(signal)) {
+		markBackupCodeLockLost(signal);
+	}
+}
+
+export async function withFreshBackupCodeLock<T>(
+	signal: IBackupCodeLockSignal,
+	task: (trx: Transaction<TDatabase>) => Promise<T>
+) {
+	throwIfBackupCodeLockLost(signal);
+	checkBackupCodeLockRenewDeadline(signal);
+
+	return await db.transaction().execute(async (trx) => {
+		const now = Date.now();
+		const updateResult = await trx
+			.updateTable(TABLE_NAME)
+			.set({ expires_at: now + BACKUP_CODE_LOCK_TTL_MS })
+			.where('code', '=', signal.code)
+			.where('owner_id', '=', signal.ownerId)
+			.executeTakeFirst();
+
+		if (updateResult.numUpdatedRows !== 1n) {
+			markBackupCodeLockLost(signal);
+		}
+		markBackupCodeLockRenewed(signal, now);
+
+		return await task(trx);
+	});
+}
+
 export async function withBackupCodeLock<T>(
 	code: string,
 	task: (signal: IBackupCodeLockSignal) => Promise<T>
@@ -158,17 +220,36 @@ export async function withBackupCodeLock<T>(
 		releaseCurrentLock = resolve;
 	});
 	backupCodeLocks.set(code, currentLock);
+	let acquiredTurn = false;
 
 	try {
 		await waitForPreviousBackupCodeLock(code, previousLock);
+		acquiredTurn = true;
 
 		const ownerId = randomUUID();
 		const lockSignal: {
 			aborted: boolean;
+			code: string;
 			committed: boolean;
+			ownerId: string;
+			renewedAt: number;
 			reason?: unknown;
-		} = { aborted: false, committed: false };
-		let renewalTimer: ReturnType<typeof setInterval> | null = null;
+		} = {
+			aborted: false,
+			code,
+			committed: false,
+			ownerId,
+			renewedAt: Date.now(),
+		};
+		let isRenewalActive = false;
+		let renewalTimer: ReturnType<typeof setTimeout> | null = null;
+		const clearRenewalTimer = () => {
+			isRenewalActive = false;
+			if (renewalTimer !== null) {
+				clearTimeout(renewalTimer);
+				renewalTimer = null;
+			}
+		};
 		const abortTask = (message: string, error?: unknown) => {
 			if (lockSignal.aborted) {
 				return;
@@ -177,10 +258,7 @@ export async function withBackupCodeLock<T>(
 			const lockLostError = createBackupCodeLockLostError();
 			lockSignal.aborted = true;
 			lockSignal.reason = lockLostError;
-			if (renewalTimer !== null) {
-				clearInterval(renewalTimer);
-				renewalTimer = null;
-			}
+			clearRenewalTimer();
 			console.warn(message, {
 				codeHash: maskBackupCodeForLog(code),
 				...(error === undefined
@@ -189,22 +267,62 @@ export async function withBackupCodeLock<T>(
 				ownerId,
 			});
 		};
+		let scheduleRenewal: (delayMs: number) => void = () => {};
+		const renewLock = async () => {
+			if (!isRenewalActive || lockSignal.aborted) {
+				return;
+			}
+			if (Date.now() > getBackupCodeLockRenewDeadline(lockSignal)) {
+				abortTask('Backup code lock renewal expired.');
+				return;
+			}
+
+			try {
+				const renewedAt = await renewSharedBackupCodeLock(
+					code,
+					ownerId
+				);
+				if (renewedAt === null) {
+					abortTask('Backup code lock renewal lost ownership.');
+					return;
+				}
+
+				markBackupCodeLockRenewed(lockSignal, renewedAt);
+				scheduleRenewal(BACKUP_CODE_LOCK_TTL_MS / 3);
+			} catch (error: unknown) {
+				const remainingMs =
+					getBackupCodeLockRenewDeadline(lockSignal) - Date.now();
+				if (remainingMs <= 0) {
+					abortTask('Failed to renew backup code lock.', error);
+					return;
+				}
+
+				console.warn('Backup code lock renewal temporarily failed.', {
+					codeHash: maskBackupCodeForLog(code),
+					errorCode: getLogSafeErrorCode(error),
+					ownerId,
+				});
+				scheduleRenewal(
+					Math.min(BACKUP_CODE_LOCK_RETRY_MS, remainingMs)
+				);
+			}
+		};
+		scheduleRenewal = (delayMs) => {
+			if (!isRenewalActive || lockSignal.aborted) {
+				return;
+			}
+
+			renewalTimer = setTimeout(() => {
+				renewalTimer = null;
+				void renewLock();
+			}, delayMs);
+		};
 
 		try {
 			await acquireSharedBackupCodeLock(code, ownerId);
-			renewalTimer = setInterval(() => {
-				void renewSharedBackupCodeLock(code, ownerId)
-					.then((isRenewed) => {
-						if (!isRenewed) {
-							abortTask(
-								'Backup code lock renewal lost ownership.'
-							);
-						}
-					})
-					.catch((error: unknown) => {
-						abortTask('Failed to renew backup code lock.', error);
-					});
-			}, BACKUP_CODE_LOCK_TTL_MS / 3);
+			markBackupCodeLockRenewed(lockSignal, Date.now());
+			isRenewalActive = true;
+			scheduleRenewal(BACKUP_CODE_LOCK_TTL_MS / 3);
 
 			const result = await task(lockSignal);
 			if (!lockSignal.committed) {
@@ -212,9 +330,7 @@ export async function withBackupCodeLock<T>(
 			}
 			return result;
 		} finally {
-			if (renewalTimer !== null) {
-				clearInterval(renewalTimer);
-			}
+			clearRenewalTimer();
 
 			try {
 				await releaseSharedBackupCodeLock(code, ownerId);
@@ -227,9 +343,18 @@ export async function withBackupCodeLock<T>(
 			}
 		}
 	} finally {
-		releaseCurrentLock();
-		if (backupCodeLocks.get(code) === currentLock) {
-			backupCodeLocks.delete(code);
+		if (acquiredTurn) {
+			releaseCurrentLock();
+			if (backupCodeLocks.get(code) === currentLock) {
+				backupCodeLocks.delete(code);
+			}
+		} else {
+			void previousLock.finally(() => {
+				releaseCurrentLock();
+				if (backupCodeLocks.get(code) === currentLock) {
+					backupCodeLocks.delete(code);
+				}
+			});
 		}
 	}
 }

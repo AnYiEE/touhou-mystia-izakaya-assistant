@@ -60,16 +60,6 @@ function normalizeRequestHost(host: string | null) {
 	return normalizedHost;
 }
 
-function getHostnameFromHost(host: string) {
-	try {
-		return new URL(`http://${host}`).hostname
-			.toLowerCase()
-			.replace(/^\[(.*)\]$/u, '$1');
-	} catch {
-		return null;
-	}
-}
-
 export function getExpectedRequestOrigin(request: NextRequest) {
 	const trustProxy = checkEnvFlag(env.TRUST_PROXY);
 	const host = normalizeRequestHost(
@@ -133,30 +123,9 @@ export function checkSecureRequest(request: NextRequest) {
 	);
 }
 
-function checkLocalRequestHost(request: NextRequest) {
-	const host = normalizeRequestHost(
-		checkEnvFlag(env.TRUST_PROXY)
-			? (getFirstHeaderValue(request.headers.get('x-forwarded-host')) ??
-					request.headers.get('host') ??
-					request.nextUrl.host)
-			: (request.headers.get('host') ?? request.nextUrl.host)
-	);
-	if (host === null) {
-		return false;
-	}
-
-	const hostname = getHostnameFromHost(host);
-
+export function checkInsecureAccountCookiesAllowed() {
 	return (
-		hostname === 'localhost' ||
-		hostname === '127.0.0.1' ||
-		hostname === '::1'
-	);
-}
-
-export function checkInsecureAccountCookiesAllowed(request: NextRequest) {
-	return (
-		checkLocalRequestHost(request) ||
+		env.NODE_ENV !== 'production' ||
 		checkEnvFlag(env.ALLOW_INSECURE_COOKIES)
 	);
 }
@@ -165,7 +134,7 @@ export function getAccountCookieSecureFlag(request: NextRequest) {
 	if (checkSecureRequest(request)) {
 		return true;
 	}
-	if (checkInsecureAccountCookiesAllowed(request)) {
+	if (checkInsecureAccountCookiesAllowed()) {
 		return false;
 	}
 

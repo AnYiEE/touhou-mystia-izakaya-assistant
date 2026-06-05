@@ -37,9 +37,4 @@ export { default as Switch, type ISwitchProps } from './switch';
 export { default as Tooltip, type ITooltipProps } from './tooltip';
 
 export * from './constant';
-export {
-	getMotionProps,
-	useMotionProps,
-	useReducedMotion,
-} from '@/design/ui/hooks';
 export { cn } from '@/design/ui/utils';

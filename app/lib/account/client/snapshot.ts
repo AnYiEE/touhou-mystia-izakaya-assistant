@@ -23,6 +23,11 @@ import { withApplyingRemoteState as runWithApplyingRemoteState } from './stateGu
 
 export type TAccountSnapshot = Partial<Record<TSyncNamespace, unknown>>;
 
+type TStoredAccountSyncMeta = Omit<
+	Partial<IAccountSyncMeta>,
+	'lastAppliedRemoteHash' | 'revisions'
+> & { lastAppliedRemoteHash?: unknown; revisions?: unknown };
+
 const serializers = {
 	[SYNC_NAMESPACE_MAP.customerNormalMeals]: customerNormalMealsSerializer,
 	[SYNC_NAMESPACE_MAP.customerRareMeals]: customerRareMealsSerializer,
@@ -83,6 +88,38 @@ export function writeAccountSyncMeta(userId: string, meta: IAccountSyncMeta) {
 	}
 }
 
+function readStoredSyncMetaMap<T>(
+	value: unknown,
+	validateValue: (item: unknown) => item is T
+) {
+	if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+		return {};
+	}
+
+	return Object.values(SYNC_NAMESPACE_MAP).reduce<
+		Partial<Record<TSyncNamespace, T>>
+	>((result, namespace) => {
+		const item = (value as Record<string, unknown>)[namespace];
+		if (validateValue(item)) {
+			result[namespace] = item;
+		}
+
+		return result;
+	}, {});
+}
+
+function checkStoredSyncHash(value: unknown): value is string {
+	return typeof value === 'string';
+}
+
+function checkStoredSyncRevision(value: unknown): value is number {
+	return typeof value === 'number' && Number.isInteger(value) && value >= 0;
+}
+
+function checkStoredClearedStateEpoch(value: unknown): value is number {
+	return typeof value === 'number' && Number.isInteger(value) && value >= 0;
+}
+
 export function applyRemoteAccountRecords({
 	preserveNamespaces = [],
 	records,
@@ -97,14 +134,27 @@ export function applyRemoteAccountRecords({
 	userId: string;
 }) {
 	const previousMeta = readAccountSyncMeta(userId);
+	const previousStoredMeta = previousMeta as TStoredAccountSyncMeta | null;
+	const previousLastAppliedRemoteHash = readStoredSyncMetaMap<string>(
+		previousStoredMeta?.lastAppliedRemoteHash,
+		checkStoredSyncHash
+	);
+	const previousRevisions = readStoredSyncMetaMap<number>(
+		previousStoredMeta?.revisions,
+		checkStoredSyncRevision
+	);
+	const previousClearedStateEpochCandidate =
+		previousStoredMeta?.clearedStateEpoch;
+	const previousClearedStateEpoch = checkStoredClearedStateEpoch(
+		previousClearedStateEpochCandidate
+	)
+		? previousClearedStateEpochCandidate
+		: undefined;
 	const meta: IAccountSyncMeta =
 		!replaceMeta && previousMeta !== null
 			? {
-					...previousMeta,
-					lastAppliedRemoteHash: {
-						...previousMeta.lastAppliedRemoteHash,
-					},
-					revisions: { ...previousMeta.revisions },
+					lastAppliedRemoteHash: { ...previousLastAppliedRemoteHash },
+					revisions: { ...previousRevisions },
 					state_epoch: stateEpoch,
 				}
 			: {
@@ -114,17 +164,18 @@ export function applyRemoteAccountRecords({
 				};
 	if (records.length > 0) {
 		delete meta.clearedStateEpoch;
-	} else if (previousMeta?.clearedStateEpoch !== undefined) {
-		meta.clearedStateEpoch = previousMeta.clearedStateEpoch;
+	} else if (previousClearedStateEpoch !== undefined) {
+		meta.clearedStateEpoch = previousClearedStateEpoch;
 	}
 
 	preserveNamespaces.forEach((namespace) => {
-		if (previousMeta?.lastAppliedRemoteHash[namespace] !== undefined) {
-			meta.lastAppliedRemoteHash[namespace] =
-				previousMeta.lastAppliedRemoteHash[namespace];
+		const lastAppliedRemoteHash = previousLastAppliedRemoteHash[namespace];
+		if (lastAppliedRemoteHash !== undefined) {
+			meta.lastAppliedRemoteHash[namespace] = lastAppliedRemoteHash;
 		}
-		if (previousMeta?.revisions[namespace] !== undefined) {
-			meta.revisions[namespace] = previousMeta.revisions[namespace];
+		const revision = previousRevisions[namespace];
+		if (revision !== undefined) {
+			meta.revisions[namespace] = revision;
 		}
 	});
 

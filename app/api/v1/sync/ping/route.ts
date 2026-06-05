@@ -86,6 +86,16 @@ export async function POST(request: NextRequest) {
 		});
 	}
 
+	const seenNamespaces = new Set<string>();
+	for (const change of parsedBody.changes) {
+		if (seenNamespaces.has(change.namespace)) {
+			return createNoStoreErrorResponse('duplicate-namespace', 400, {
+				namespace: change.namespace,
+			});
+		}
+		seenNamespaces.add(change.namespace);
+	}
+
 	const results: TSyncStatePutResult[] = [];
 	const preparedChanges = parsedBody.changes.map((change) => {
 		const nextRevision = change.revision + 1;
@@ -146,17 +156,26 @@ export async function POST(request: NextRequest) {
 			continue;
 		}
 		if (result.status === 'conflict') {
-			results.push({
-				data:
-					result.current === null
-						? null
-						: parseUserStateData(result.current.data),
-				namespace: preparedChange.change.namespace,
-				revision: result.current?.revision ?? 0,
-				schema_version: result.current?.schema_version ?? 0,
-				status: 'conflict',
-				updated_at: result.current?.updated_at ?? 0,
-			});
+			try {
+				results.push({
+					data:
+						result.current === null
+							? null
+							: parseUserStateData(result.current.data),
+					namespace: preparedChange.change.namespace,
+					revision: result.current?.revision ?? 0,
+					schema_version: result.current?.schema_version ?? 0,
+					status: 'conflict',
+					updated_at: result.current?.updated_at ?? 0,
+				});
+			} catch (error) {
+				console.warn('Failed to parse conflicting sync state.', error);
+				results.push({
+					message: 'corrupt-user-state',
+					namespace: preparedChange.change.namespace,
+					status: 'error',
+				});
+			}
 			continue;
 		}
 

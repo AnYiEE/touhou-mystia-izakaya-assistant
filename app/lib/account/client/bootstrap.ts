@@ -1,9 +1,14 @@
 import { siteConfig } from '@/configs';
 import { accountStore } from '@/stores/account';
 import { AccountApiError } from './api';
-import { refreshAccountState, resetAccountSyncRuntime } from './session';
+import {
+	invalidateAccountStateRequests,
+	refreshAccountState,
+	resetAccountSyncRuntime,
+} from './session';
 
 function disableAccountBootstrap() {
+	invalidateAccountStateRequests();
 	resetAccountSyncRuntime();
 	accountStore.shared.sync.meta.set(null);
 	accountStore.shared.bootstrapStatus.set('disabled');
@@ -15,6 +20,7 @@ function disableAccountBootstrap() {
 }
 
 function failAccountBootstrap(message: string) {
+	invalidateAccountStateRequests();
 	resetAccountSyncRuntime();
 	accountStore.shared.sync.meta.set(null);
 	accountStore.shared.bootstrapStatus.set('error');
@@ -42,7 +48,7 @@ export async function bootstrapAccount() {
 			}
 
 			console.error('Account bootstrap failed.', error);
-			failAccountBootstrap('bootstrap-failed');
+			failAccountBootstrap(error.message || 'bootstrap-failed');
 			return;
 		}
 

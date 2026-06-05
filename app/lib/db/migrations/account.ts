@@ -76,6 +76,7 @@ const ACCOUNT_TABLE_COLUMNS_MAP = {
 	[TABLE_NAME_MAP.backupImportRecord]: [
 		'code',
 		'user_id',
+		'file_name',
 		'results',
 		'state_epoch',
 		'created_at',
@@ -126,6 +127,7 @@ const ACCOUNT_TABLE_COLUMN_DEFINITION_MAP = {
 	[TABLE_NAME_MAP.backupImportRecord]: {
 		code: { dataType: 'text', structural: true },
 		created_at: { dataType: 'integer', defaultTo: 0, notNull: true },
+		file_name: { dataType: 'text' },
 		results: { dataType: 'text', defaultTo: '[]', notNull: true },
 		state_epoch: { dataType: 'integer', defaultTo: 0, notNull: true },
 		user_id: { dataType: 'text', structural: true },
@@ -379,21 +381,6 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 		.execute();
 
 	await database.schema
-		.createIndex('users_username_normalized_unique_index')
-		.ifNotExists()
-		.unique()
-		.on(TABLE_NAME_MAP.user)
-		.column('username_normalized')
-		.execute();
-
-	await database.schema
-		.createIndex('users_status_index')
-		.ifNotExists()
-		.on(TABLE_NAME_MAP.user)
-		.column('status')
-		.execute();
-
-	await database.schema
 		.createTable(TABLE_NAME_MAP.backupImportRecord)
 		.ifNotExists()
 		.addColumn('code', 'text', (col) => col.primaryKey())
@@ -403,16 +390,10 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 				.references(`${TABLE_NAME_MAP.user}.id`)
 				.onDelete('cascade')
 		)
+		.addColumn('file_name', 'text')
 		.addColumn('results', 'text', (col) => col.notNull())
 		.addColumn('state_epoch', 'integer', (col) => col.notNull())
 		.addColumn('created_at', 'integer', (col) => col.notNull())
-		.execute();
-
-	await database.schema
-		.createIndex('backup_imports_user_id_index')
-		.ifNotExists()
-		.on(TABLE_NAME_MAP.backupImportRecord)
-		.column('user_id')
 		.execute();
 
 	await database.schema
@@ -453,21 +434,6 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 		.execute();
 
 	await database.schema
-		.createIndex('sessions_token_hash_unique_index')
-		.ifNotExists()
-		.unique()
-		.on(TABLE_NAME_MAP.session)
-		.column('token_hash')
-		.execute();
-
-	await database.schema
-		.createIndex('sessions_user_id_index')
-		.ifNotExists()
-		.on(TABLE_NAME_MAP.session)
-		.column('user_id')
-		.execute();
-
-	await database.schema
 		.createTable(TABLE_NAME_MAP.userState)
 		.ifNotExists()
 		.addColumn('user_id', 'text', (col) =>
@@ -495,6 +461,43 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 			tableName as keyof typeof ACCOUNT_TABLE_COLUMNS_MAP
 		);
 	}
+
+	await database.schema
+		.createIndex('users_username_normalized_unique_index')
+		.ifNotExists()
+		.unique()
+		.on(TABLE_NAME_MAP.user)
+		.column('username_normalized')
+		.execute();
+
+	await database.schema
+		.createIndex('users_status_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.user)
+		.column('status')
+		.execute();
+
+	await database.schema
+		.createIndex('backup_imports_user_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.backupImportRecord)
+		.column('user_id')
+		.execute();
+
+	await database.schema
+		.createIndex('sessions_token_hash_unique_index')
+		.ifNotExists()
+		.unique()
+		.on(TABLE_NAME_MAP.session)
+		.column('token_hash')
+		.execute();
+
+	await database.schema
+		.createIndex('sessions_user_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.session)
+		.column('user_id')
+		.execute();
 
 	await ensureAccountTableStructure(database);
 }

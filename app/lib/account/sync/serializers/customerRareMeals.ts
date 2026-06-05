@@ -54,7 +54,31 @@ function normalizeCustomerRareMeal(data: ICustomerRareMeal): ICustomerRareMeal {
 }
 
 function normalizeCustomerRareMealsSnapshot(data: TCustomerRareMealsSnapshot) {
-	return normalizeMealSnapshot(data, normalizeCustomerRareMeal);
+	return normalizeMealSnapshot(data, normalizeCustomerRareMeal, 'rare');
+}
+
+function getLocalCustomerRareMealsSnapshot(data: unknown) {
+	if (!isPlainObject(data)) {
+		return {};
+	}
+
+	const snapshot = Object.entries(data).reduce<TCustomerRareMealsSnapshot>(
+		(result, [customerName, meals]) => {
+			if (!Array.isArray(meals)) {
+				return result;
+			}
+
+			const validMeals = meals.filter(validateCustomerRareMeal);
+			if (validMeals.length > 0) {
+				result[customerName] = validMeals;
+			}
+
+			return result;
+		},
+		{}
+	);
+
+	return normalizeCustomerRareMealsSnapshot(snapshot);
 }
 
 export const customerRareMealsSerializer = {
@@ -65,7 +89,7 @@ export const customerRareMealsSerializer = {
 		return {};
 	},
 	getLocalSnapshot() {
-		return normalizeCustomerRareMealsSnapshot(
+		return getLocalCustomerRareMealsSnapshot(
 			cloneJsonObject(customerRareStore.persistence.meals.get())
 		);
 	},

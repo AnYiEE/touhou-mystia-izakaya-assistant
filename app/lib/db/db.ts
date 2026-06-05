@@ -25,17 +25,25 @@ function checkDuplicateColumnError(error: unknown) {
 
 async function addBackupFileRecordColumnIfMissing(
 	columns: string[],
-	columnName: 'user_agent' | 'user_id'
+	columnName: 'file_name' | 'user_agent' | 'user_id'
 ) {
 	if (columns.includes(columnName)) {
 		return;
 	}
 
 	try {
-		await db.schema
-			.alterTable(TABLE_NAME_MAP.backupFileRecord)
-			.addColumn(columnName, 'text', (col) => col.notNull().defaultTo(''))
-			.execute();
+		const alterTable = db.schema.alterTable(
+			TABLE_NAME_MAP.backupFileRecord
+		);
+
+		const addColumn =
+			columnName === 'file_name'
+				? alterTable.addColumn(columnName, 'text')
+				: alterTable.addColumn(columnName, 'text', (col) =>
+						col.notNull().defaultTo('')
+					);
+
+		await addColumn.execute();
 	} catch (error) {
 		if (checkDuplicateColumnError(error)) {
 			return;
@@ -51,6 +59,7 @@ await db.schema
 	.ifNotExists()
 	.addColumn('code', 'text', (col) => col.primaryKey())
 	.addColumn('created_at', 'integer', (col) => col.notNull())
+	.addColumn('file_name', 'text')
 	.addColumn('last_accessed', 'integer', (col) => col.notNull())
 	.addColumn('ip_address', 'text', (col) => col.notNull())
 	.addColumn('user_agent', 'text', (col) => col.notNull())
@@ -68,6 +77,12 @@ await db.schema
 const backupFileRecordTableColumns = await getTableColumns(
 	db,
 	TABLE_NAME_MAP.backupFileRecord
+);
+
+// Add file_name column to old backup_files table if it doesn't exist.
+await addBackupFileRecordColumnIfMissing(
+	backupFileRecordTableColumns,
+	'file_name'
 );
 
 // Add user_agent column to old backup_files table if it doesn't exist.

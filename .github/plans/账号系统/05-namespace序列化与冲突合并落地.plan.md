@@ -26,7 +26,7 @@ isProject: false
 | `app/lib/account/sync/serializers/globalPreferences.ts`    | 全局设置白名单                                  |
 | `app/lib/account/sync/serializers/theme.ts`                | 主题                                            |
 | `app/lib/account/sync/serializers/tutorialCustomerRare.ts` | 稀客教程                                        |
-| `app/lib/account/sync/index.ts`                            | serializer registry                             |
+| `app/lib/account/sync/index.ts`                            | 同步常量与类型统一导出（不导出 serializer）     |
 
 ## 三、namespace 清单
 

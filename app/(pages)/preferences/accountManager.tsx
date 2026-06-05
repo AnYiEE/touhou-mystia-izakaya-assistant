@@ -20,6 +20,7 @@ import {
 import { postAccountSyncBroadcastMessage } from '@/lib/account/client/broadcast';
 import { createAccountClientId } from '@/lib/account/client/random';
 import {
+	applyAccountAuthSuccessResponse,
 	refreshAccountState,
 	resetAccountState,
 } from '@/lib/account/client/session';
@@ -85,10 +86,14 @@ export default function AccountManager() {
 		setMessage(null);
 		const request = authMode === 'login' ? loginAccount : registerAccount;
 		void request({ password, username: normalizedUsername })
-			.then(() => {
+			.then((data) => {
+				applyAccountAuthSuccessResponse(data);
 				setPassword('');
 				setMessage(authMode === 'login' ? '登录成功' : '注册成功');
 				refreshAccountState().catch((error: unknown) => {
+					if (handleUnauthorizedAccountError(error)) {
+						return;
+					}
 					console.warn(
 						'Account state refresh failed after successful authentication.',
 						error
@@ -113,7 +118,8 @@ export default function AccountManager() {
 			{ current_password: currentPassword, new_password: newPassword },
 			csrfToken
 		)
-			.then(() => {
+			.then((data) => {
+				applyAccountAuthSuccessResponse(data);
 				setCurrentPassword('');
 				setNewPassword('');
 				setMessage('密码已更新');
@@ -474,7 +480,14 @@ export default function AccountManager() {
 				</div>
 			)}
 			{message !== null && (
-				<p className="text-sm text-foreground-500">{message}</p>
+				<p
+					aria-atomic="true"
+					aria-live="polite"
+					className="text-sm text-foreground-500"
+					role="status"
+				>
+					{message}
+				</p>
 			)}
 		</div>
 	);

@@ -376,9 +376,15 @@ export default function AdminPage() {
 					isLoading={isLoading}
 					variant="flat"
 					onPress={() => {
+						const nextQuery = queryInput;
+						const shouldRefreshImmediately =
+							nextQuery === query && page === 1;
+
 						setQuery(queryInput);
 						setPage(1);
-						refreshUsers(queryInput, 1);
+						if (shouldRefreshImmediately) {
+							refreshUsers(nextQuery, 1);
+						}
 					}}
 				>
 					刷新

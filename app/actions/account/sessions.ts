@@ -159,7 +159,7 @@ export async function listSessionsByUserId(userId: TUser['id']) {
 
 export async function updateSessionLastSeen(
 	id: TSession['id'],
-	lastSeenAt: TSessionUpdate['last_seen_at']
+	lastSeenAt: TSession['last_seen_at']
 ) {
 	const db = await getAccountDatabase();
 
@@ -167,5 +167,6 @@ export async function updateSessionLastSeen(
 		.updateTable(TABLE_NAME)
 		.set({ last_seen_at: lastSeenAt })
 		.where('id', '=', id)
+		.where('last_seen_at', '<', lastSeenAt)
 		.execute();
 }

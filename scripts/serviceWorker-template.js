@@ -3,7 +3,8 @@
 'use strict';
 
 (() => {
-	const VERSION = 'offline/{{version}}';
+	const CACHE_NAMESPACE = 'offline/';
+	const VERSION = `${CACHE_NAMESPACE}{{version}}`;
 
 	const CDN_URL = '{{cdnUrl}}';
 	const FAKE_URL = 'https://url.internal';
@@ -28,7 +29,9 @@
 
 	async function deleteOldCaches() {
 		const keyArray = await caches.keys();
-		const cachesToDelete = keyArray.filter((key) => key !== VERSION);
+		const cachesToDelete = keyArray.filter(
+			(key) => key.startsWith(CACHE_NAMESPACE) && key !== VERSION
+		);
 
 		await Promise.all(cachesToDelete.map(deleteCache));
 	}
@@ -86,7 +89,8 @@
 		/** @type {Request} */ request,
 		/** @type {FetchEvent} */ event
 	) {
-		const responseFromCache = await caches.match(request);
+		const cache = await caches.open(VERSION);
+		const responseFromCache = await cache.match(request);
 		if (responseFromCache !== undefined) {
 			return responseFromCache;
 		}
@@ -102,19 +106,11 @@
 		/** @type {Request} */ request,
 		/** @type {FetchEvent} */ event
 	) {
-		const responseFromCache = await caches.match(request);
+		const cache = await caches.open(VERSION);
+		const responseFromCache = await cache.match(request);
 
 		try {
-			const response = await fetchWithRetry(request, 3, event);
-			// Update cache in background for offline fallback.
-			if (responseFromCache === undefined) {
-				event.waitUntil(
-					putInCache(request, response.clone(), VERSION).catch(
-						() => {}
-					)
-				);
-			}
-			return response;
+			return await fetchWithRetry(request, 3, event);
 		} catch {
 			return responseFromCache ?? networkErrorResponse.clone();
 		}
@@ -142,15 +138,16 @@
 		}
 
 		const urlObject = new URL(event.request.url, FAKE_URL);
-		const { host, pathname, protocol } = urlObject;
+		const { host, hostname, pathname, protocol } = urlObject;
 
 		const isCdnServer = host === CDN_HOST;
 		const isSelfHost = host === location.host;
 
 		const isLocalhost =
-			host === 'localhost' ||
-			host === '127.0.0.1' ||
-			host.includes('localhost:');
+			hostname === 'localhost' ||
+			hostname === '127.0.0.1' ||
+			hostname === '::1' ||
+			hostname === '[::1]';
 
 		if (
 			!(isCdnServer || isSelfHost) ||

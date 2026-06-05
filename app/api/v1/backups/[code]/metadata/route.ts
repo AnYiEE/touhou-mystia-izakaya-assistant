@@ -14,10 +14,11 @@ export async function GET(
 	{ params }: { params: Promise<{ code: string }> }
 ) {
 	const { code: rawCode } = await params;
-	const code = rawCode.trim();
-	if (!validate(code)) {
+	const normalizedCode = rawCode.trim();
+	if (!validate(normalizedCode)) {
 		return createNoStoreErrorResponse('Invalid code', 400);
 	}
+	const code = normalizedCode.toLowerCase();
 
 	const record = await getRecord(code);
 	if (record.status === 404) {

@@ -42,6 +42,10 @@ function createConflictResult(
 	};
 }
 
+function createCorruptUserStateResponse() {
+	return createNoStoreErrorResponse('corrupt-user-state', 500);
+}
+
 export async function GET(request: NextRequest) {
 	const featureResponse = await checkAccountFeatureResponse();
 	if (featureResponse !== null) {
@@ -78,16 +82,21 @@ export async function GET(request: NextRequest) {
 		namespaces
 	);
 
-	return createNoStoreJsonResponse({
-		records: records.map((record) => ({
-			data: parseUserStateData(record.data),
-			namespace: record.namespace,
-			revision: record.revision,
-			schema_version: record.schema_version,
-			updated_at: record.updated_at,
-		})),
-		state_epoch: auth.data.user.state_epoch,
-	});
+	try {
+		return createNoStoreJsonResponse({
+			records: records.map((record) => ({
+				data: parseUserStateData(record.data),
+				namespace: record.namespace,
+				revision: record.revision,
+				schema_version: record.schema_version,
+				updated_at: record.updated_at,
+			})),
+			state_epoch: auth.data.user.state_epoch,
+		});
+	} catch (error) {
+		console.warn('Failed to parse stored sync state.', error);
+		return createCorruptUserStateResponse();
+	}
 }
 
 export async function PUT(request: NextRequest) {
@@ -216,12 +225,17 @@ export async function PUT(request: NextRequest) {
 			continue;
 		}
 		if (result.status === 'conflict') {
-			results.push(
-				createConflictResult(
-					preparedChange.change.namespace,
-					result.current
-				)
-			);
+			try {
+				results.push(
+					createConflictResult(
+						preparedChange.change.namespace,
+						result.current
+					)
+				);
+			} catch (error) {
+				console.warn('Failed to parse conflicting sync state.', error);
+				return createCorruptUserStateResponse();
+			}
 			continue;
 		}
 

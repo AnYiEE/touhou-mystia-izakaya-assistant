@@ -5,7 +5,8 @@ import { useRef, useState } from 'react';
 import { Input } from '@heroui/input';
 
 import { Button } from '@/design/ui/components';
-import { importBackupCode } from '@/lib/account/client/api';
+import { AccountApiError, importBackupCode } from '@/lib/account/client/api';
+import { resetAccountState } from '@/lib/account/client/session';
 import { withAccountSyncPaused } from '@/lib/account/client/stateGuards';
 import { takeOverLocalAccountData } from '@/lib/account/client/syncClient';
 import { accountStore, globalStore } from '@/stores';
@@ -51,11 +52,11 @@ export default function LegacyBackupImport() {
 									csrfToken
 								);
 								hasImportedBackup = true;
-								await takeOverLocalAccountData();
 								globalStore.persistence.cloudCode.set(null);
+								setCode('');
+								await takeOverLocalAccountData();
 							})
 								.then(() => {
-									setCode('');
 									setMessage('导入成功');
 								})
 								.catch((error: unknown) => {
@@ -69,6 +70,12 @@ export default function LegacyBackupImport() {
 											? error.message
 											: '导入失败'
 									);
+									if (
+										error instanceof AccountApiError &&
+										error.status === 401
+									) {
+										resetAccountState();
+									}
 								})
 								.finally(() => {
 									isImportingRef.current = false;

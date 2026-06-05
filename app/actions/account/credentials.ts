@@ -11,9 +11,11 @@ import type {
 import { type TSessionMutablePatch } from './sessions';
 
 import { getAccountDatabase } from '@/lib/account/server/db';
+import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 
 const TABLE_NAME = TABLE_NAME_MAP.userCredential;
 const SESSION_TABLE_NAME = TABLE_NAME_MAP.session;
+const USER_TABLE_NAME = TABLE_NAME_MAP.user;
 export const CREDENTIAL_FAILED_ATTEMPT_LIMIT = 5;
 export const CREDENTIAL_LOCK_MS = 15 * 60 * 1000;
 
@@ -87,9 +89,31 @@ export async function updateCredentialAndDeleteSessions(
 			.updateTable(TABLE_NAME)
 			.set(credential)
 			.where('user_id', '=', userId)
+			.where(
+				'user_id',
+				'in',
+				trx
+					.selectFrom(USER_TABLE_NAME)
+					.select('id')
+					.where('id', '=', userId)
+					.where('status', '!=', USER_STATUS_MAP.deleted)
+			)
 			.executeTakeFirst();
 
 		if (updateCredentialResult.numUpdatedRows !== 1n) {
+			const user = await trx
+				.selectFrom(USER_TABLE_NAME)
+				.select('status')
+				.where('id', '=', userId)
+				.executeTakeFirst();
+
+			if (user === undefined) {
+				throw new Error('user-not-found');
+			}
+			if (user.status === USER_STATUS_MAP.deleted) {
+				throw new Error('invalid-user-status');
+			}
+
 			throw new Error('credential-not-found');
 		}
 
@@ -118,9 +142,31 @@ export async function updateCredentialAndRotateSession({
 			.updateTable(TABLE_NAME)
 			.set(credential)
 			.where('user_id', '=', userId)
+			.where(
+				'user_id',
+				'in',
+				trx
+					.selectFrom(USER_TABLE_NAME)
+					.select('id')
+					.where('id', '=', userId)
+					.where('status', '=', USER_STATUS_MAP.active)
+			)
 			.executeTakeFirst();
 
 		if (updateCredentialResult.numUpdatedRows !== 1n) {
+			const user = await trx
+				.selectFrom(USER_TABLE_NAME)
+				.select('status')
+				.where('id', '=', userId)
+				.executeTakeFirst();
+
+			if (user === undefined) {
+				throw new Error('user-not-found');
+			}
+			if (user.status !== USER_STATUS_MAP.active) {
+				throw new Error('invalid-user-status');
+			}
+
 			throw new Error('credential-not-found');
 		}
 
@@ -153,7 +199,11 @@ export async function incrementFailedAttempts(userId: TUser['id']) {
 		}))
 		.where('user_id', '=', userId)
 		.returning('failed_attempts')
-		.executeTakeFirstOrThrow();
+		.executeTakeFirst();
+
+	if (record === undefined) {
+		throw new Error('credential-not-found');
+	}
 
 	return record.failed_attempts;
 }

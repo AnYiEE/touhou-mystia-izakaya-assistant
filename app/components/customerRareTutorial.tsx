@@ -23,6 +23,7 @@ const resetLabel = '重新进入稀客套餐搭配教程';
 export default function CustomerRareTutorial() {
 	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const accountConflicts = accountStore.shared.sync.conflicts.use();
+	const accountUser = accountStore.shared.user.use();
 	const hasSkippedAccountOnboarding =
 		accountStore.persistence.hasSkippedOnboarding.use();
 	const passwordMustChange = accountStore.shared.passwordMustChange.use();
@@ -49,9 +50,12 @@ export default function CustomerRareTutorial() {
 
 	const dirverState = globalStore.persistence.dirver.use();
 	const isCompleted = dirverState.includes(key);
+	const hasCurrentUserConflict = accountConflicts.some(
+		(conflict) => conflict.userId === accountUser?.id
+	);
 	const hasBlockingAccountModal =
 		passwordMustChange ||
-		accountConflicts.length > 0 ||
+		hasCurrentUserConflict ||
 		(accountBootstrapStatus === 'anonymous' &&
 			!hasSkippedAccountOnboarding);
 

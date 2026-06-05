@@ -105,6 +105,8 @@ export async function putUserStateEntriesIfRevision(
 
 		const stateEpochLockResult = await trx
 			.updateTable(USER_TABLE_NAME)
+			// SQLite takes the write lock for this no-op update, so the
+			// following namespace writes share one state_epoch check.
 			.set({ updated_at: sql<TUser['updated_at']>`updated_at` })
 			.where('id', '=', userId)
 			.where('state_epoch', '=', expectedStateEpoch)
@@ -302,7 +304,7 @@ export async function listUserStateByNamespaces(
 	namespaces: Array<TUserState['namespace']>
 ) {
 	if (namespaces.length === 0) {
-		return listUserState(userId);
+		return [];
 	}
 
 	const db = await getAccountDatabase();

@@ -107,12 +107,20 @@ export default function AdminUserDetailPage() {
 				accountStore.shared.adminCsrfToken.set(data.csrf_token);
 				setAdmin(data);
 			})
-			.catch(() => {
+			.catch((error: unknown) => {
 				if (!isMounted) {
 					return;
 				}
-				clearAdminSession();
-				setAdmin(null);
+				if (checkAdminSessionUnauthorized(error)) {
+					clearAdminSession();
+					setAdmin(null);
+				} else {
+					setMessage(
+						error instanceof Error
+							? error.message
+							: '读取管理员状态失败'
+					);
+				}
 			})
 			.finally(() => {
 				if (isMounted) {
@@ -198,7 +206,6 @@ export default function AdminUserDetailPage() {
 		onSuccess?: () => void
 	) => {
 		const requestId = createDetailRequestId();
-		let requestSucceeded = false;
 		setIsLoading(true);
 		setMessage(null);
 		void action()
@@ -206,7 +213,6 @@ export default function AdminUserDetailPage() {
 				if (!checkDetailRequestId(requestId)) {
 					return;
 				}
-				requestSucceeded = true;
 				onSuccess?.();
 				try {
 					const data = await fetchAdminUser(id);
@@ -233,16 +239,8 @@ export default function AdminUserDetailPage() {
 					clearAdminSession();
 					setAdmin(null);
 					setDetail(null);
-					if (requestSucceeded) {
-						setMessage(`${success}，管理员会话已失效`);
-						return;
-					}
 				}
-				if (!requestSucceeded) {
-					setMessage(
-						error instanceof Error ? error.message : '操作失败'
-					);
-				}
+				setMessage(error instanceof Error ? error.message : '操作失败');
 			})
 			.finally(() => {
 				if (checkDetailRequestId(requestId)) {
@@ -286,11 +284,6 @@ export default function AdminUserDetailPage() {
 						isLoading={isLoading}
 						variant="flat"
 						onPress={() => {
-							if (!isPasswordValid) {
-								setMessage('密码长度需为 8 到 128 个字符');
-								return;
-							}
-
 							runAction(
 								() =>
 									resetAdminUserPassword(

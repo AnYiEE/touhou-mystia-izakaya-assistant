@@ -42,14 +42,15 @@ const state = {
 	},
 };
 
+type TAccountPersistedState = Pick<typeof state, 'persistence'>;
+
 export const accountStore = store(state, {
 	middlewares: [
-		persistMiddleware<typeof state>({
+		persistMiddleware<typeof state, TAccountPersistedState>({
 			name: 'account-storage',
-			partialize: (currentStore) =>
-				({
-					persistence: currentStore.persistence,
-				}) as typeof currentStore,
+			partialize: (currentStore): TAccountPersistedState => ({
+				persistence: currentStore.persistence,
+			}),
 			version: storeVersion.initial,
 		}),
 	],

@@ -7,6 +7,16 @@ export const NO_STORE_HEADERS = {
 	Vary: 'Cookie',
 } as const;
 
+function createNoStoreInit(init?: ResponseInit) {
+	const headers = new Headers(init?.headers);
+
+	Object.entries(NO_STORE_HEADERS).forEach(([key, value]) => {
+		headers.set(key, value);
+	});
+
+	return { ...init, headers };
+}
+
 export function createJsonResponse<T>(
 	data: T,
 	status = 200,
@@ -36,18 +46,21 @@ export function createErrorResponse<T>(
 	return NextResponse.json(body, { ...init, status });
 }
 
-export function createNoStoreJsonResponse<T>(data: T, status = 200) {
-	return createJsonResponse(data, status, { headers: NO_STORE_HEADERS });
+export function createNoStoreJsonResponse<T>(
+	data: T,
+	status = 200,
+	init?: ResponseInit
+) {
+	return createJsonResponse(data, status, createNoStoreInit(init));
 }
 
 export function createNoStoreErrorResponse<T>(
 	message: string,
 	status: number,
-	data?: T
+	data?: T,
+	init?: ResponseInit
 ) {
-	return createErrorResponse(message, status, data, {
-		headers: NO_STORE_HEADERS,
-	});
+	return createErrorResponse(message, status, data, createNoStoreInit(init));
 }
 
 export function handleOptionsRequest() {

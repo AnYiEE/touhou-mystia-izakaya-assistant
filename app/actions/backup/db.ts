@@ -4,12 +4,15 @@ import type {
 	TBackupFileRecord,
 	TBackupFileRecordNew,
 	TBackupFileRecordUpdate,
+	TDatabase,
 } from '@/lib/db/types';
+import type { Transaction } from 'kysely';
 
 const TABLE_NAME = TABLE_NAME_MAP.backupFileRecord;
 const IMPORT_TABLE_NAME = TABLE_NAME_MAP.backupImportRecord;
 
 type TFileRecordWithStatus = Prettify<TBackupFileRecord & { status: 200 }>;
+type TBackupRecordDatabase = typeof db | Transaction<TDatabase>;
 
 type TOtherStatus = 201 | 404 | 429 | 500;
 interface IOtherStatus<T extends TOtherStatus> {
@@ -29,6 +32,13 @@ function generateResponse<
 	}
 
 	return { ...record, status: 200 } as TResponse<T, U>;
+}
+
+function checkMissingBackupImportTableError(error: unknown) {
+	return (
+		error instanceof Error &&
+		/no such table:\s*backup_imports/iu.test(error.message)
+	);
 }
 
 export async function checkIpFrequency(
@@ -67,8 +77,11 @@ export async function checkIpFrequency(
 	return generateResponse(undefined, 429);
 }
 
-export async function deleteRecord(code: TBackupFileRecord['code']) {
-	const record = await db
+export async function deleteRecord(
+	code: TBackupFileRecord['code'],
+	database: TBackupRecordDatabase = db
+) {
+	const record = await database
 		.deleteFrom(TABLE_NAME)
 		.where('code', '=', code)
 		.returningAll()
@@ -116,8 +129,18 @@ export async function getRecordCodes() {
 	return records.map((record) => record.code);
 }
 
-export async function setRecord(backupFileRecord: TBackupFileRecordNew) {
-	const record = await db
+export async function getRecordFileReferences() {
+	return await db
+		.selectFrom(TABLE_NAME)
+		.select(['code', 'file_name'])
+		.execute();
+}
+
+export async function setRecord(
+	backupFileRecord: TBackupFileRecordNew,
+	database: TBackupRecordDatabase = db
+) {
+	const record = await database
 		.insertInto(TABLE_NAME)
 		.values(backupFileRecord)
 		.returningAll()
@@ -128,9 +151,10 @@ export async function setRecord(backupFileRecord: TBackupFileRecordNew) {
 
 export async function updateRecord(
 	code: TBackupFileRecord['code'],
-	backupFileRecord: TBackupFileRecordUpdate
+	backupFileRecord: TBackupFileRecordUpdate,
+	database: TBackupRecordDatabase = db
 ) {
-	const record = await db
+	const record = await database
 		.updateTable(TABLE_NAME)
 		.set(backupFileRecord)
 		.where('code', '=', code)
@@ -141,19 +165,29 @@ export async function updateRecord(
 }
 
 export async function deleteExpiredBackupImportRecords(createdBefore: number) {
-	const result = await db
-		.deleteFrom(IMPORT_TABLE_NAME)
-		.where('created_at', '<', createdBefore)
-		.executeTakeFirst();
+	let result;
+	try {
+		result = await db
+			.deleteFrom(IMPORT_TABLE_NAME)
+			.where('created_at', '<', createdBefore)
+			.executeTakeFirst();
+	} catch (error) {
+		if (checkMissingBackupImportTableError(error)) {
+			return 0;
+		}
+
+		throw error;
+	}
 
 	return Number(result.numDeletedRows);
 }
 
 export async function updateRecordTimeout(
 	code: TBackupFileRecord['code'],
-	time: TBackupFileRecord['last_accessed']
+	time: TBackupFileRecord['last_accessed'],
+	database: TBackupRecordDatabase = db
 ) {
-	const record = await db
+	const record = await database
 		.updateTable(TABLE_NAME)
 		.set({ last_accessed: time })
 		.where('code', '=', code)

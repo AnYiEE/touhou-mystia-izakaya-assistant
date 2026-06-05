@@ -16,7 +16,7 @@ import QRCode from '@/components/qrCode';
 
 import { siteConfig } from '@/configs';
 import { globalStore as store } from '@/stores';
-import { safeStorage } from '@/utilities';
+import { safeStorage } from '@/utilities/safeStorage';
 
 const LOCK_KEY = 'sync_lock-donation_modal_trigger';
 const LOCK_VERIFY_DELAY = 150;
