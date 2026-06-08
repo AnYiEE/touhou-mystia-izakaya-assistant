@@ -1,14 +1,15 @@
 import { hash, verify } from '@node-rs/argon2';
 
 import {
-	PASSWORD_MAX_LENGTH,
-	PASSWORD_MIN_LENGTH,
+	checkPasswordLengthPolicy,
+	checkPasswordPolicy,
 } from '@/lib/account/shared/constants';
 import { getLogSafeErrorCode } from '@/lib/logging';
 
 export {
 	PASSWORD_MAX_LENGTH,
 	PASSWORD_MIN_LENGTH,
+	checkPasswordPolicy,
 } from '@/lib/account/shared/constants';
 
 export const ARGON2_OPTIONS = {
@@ -30,13 +31,6 @@ export class PasswordPolicyError extends Error {
 	}
 }
 
-export function checkPasswordPolicy(password: string) {
-	return (
-		password.length >= PASSWORD_MIN_LENGTH &&
-		password.length <= PASSWORD_MAX_LENGTH
-	);
-}
-
 export async function hashPassword(password: string) {
 	if (!checkPasswordPolicy(password)) {
 		throw new PasswordPolicyError();
@@ -46,15 +40,22 @@ export async function hashPassword(password: string) {
 }
 
 export async function consumePasswordVerificationCost(password: string) {
-	await verify(
-		DUMMY_PASSWORD_HASH,
-		checkPasswordPolicy(password) ? password : DUMMY_PASSWORD,
-		ARGON2_OPTIONS
-	);
+	try {
+		await verify(
+			DUMMY_PASSWORD_HASH,
+			checkPasswordLengthPolicy(password) ? password : DUMMY_PASSWORD,
+			ARGON2_OPTIONS
+		);
+	} catch (error) {
+		console.warn(
+			'Dummy password verification failed with argon2 error:',
+			getLogSafeErrorCode(error)
+		);
+	}
 }
 
 export async function verifyPassword(passwordHash: string, password: string) {
-	if (!checkPasswordPolicy(password)) {
+	if (!checkPasswordLengthPolicy(password)) {
 		await consumePasswordVerificationCost(password);
 		return false;
 	}

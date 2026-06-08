@@ -99,9 +99,9 @@ function createAccountRequestInit(init: RequestInit = {}) {
 	}
 
 	return {
+		...init,
 		cache: 'no-store',
 		credentials: 'same-origin',
-		...init,
 		headers,
 	} satisfies RequestInit;
 }
@@ -211,10 +211,11 @@ export async function fetchSyncState(namespaces: string[] = []) {
 	namespaces.forEach((namespace) => {
 		searchParams.append('namespace', namespace);
 	});
+	const query = searchParams.toString();
 
 	return readAccountApiResponse<ISyncStateGetResponse>(
 		await fetch(
-			`/api/v1/sync/state${searchParams.size > 0 ? `?${searchParams}` : ''}`,
+			`/api/v1/sync/state${query.length > 0 ? `?${query}` : ''}`,
 			createAccountRequestInit()
 		)
 	);
@@ -304,8 +305,9 @@ export async function listAdminUsers({
 	status?: TUserStatus | '';
 }) {
 	const searchParams = new URLSearchParams({ page: String(page) });
-	if (query.trim() !== '') {
-		searchParams.set('query', query.trim());
+	const trimmedQuery = query.trim();
+	if (trimmedQuery !== '') {
+		searchParams.set('query', trimmedQuery);
 	}
 	if (status !== undefined && status !== '') {
 		searchParams.set('status', status);
@@ -373,6 +375,34 @@ export async function enableAdminUser(id: string, csrfToken: string) {
 			createAccountRequestInit({
 				headers: { 'x-csrf-token': csrfToken },
 				method: 'POST',
+			})
+		)
+	);
+}
+
+export async function restoreAdminUser(id: string, csrfToken: string) {
+	const path = createAdminUserPath(id);
+
+	return readAccountApiResponse(
+		await fetch(
+			`${path}/restore`,
+			createAccountRequestInit({
+				headers: { 'x-csrf-token': csrfToken },
+				method: 'POST',
+			})
+		)
+	);
+}
+
+export async function clearAdminUserData(id: string, csrfToken: string) {
+	const path = createAdminUserPath(id);
+
+	return readAccountApiResponse<{ state_epoch: number }>(
+		await fetch(
+			`${path}/data`,
+			createAccountRequestInit({
+				headers: { 'x-csrf-token': csrfToken },
+				method: 'DELETE',
 			})
 		)
 	);

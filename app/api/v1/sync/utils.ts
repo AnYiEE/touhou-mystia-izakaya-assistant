@@ -1,8 +1,10 @@
 import { DLC_LABEL_MAP } from '@/data';
-import { type TUserStateNew } from '@/lib/db/types';
+import { THEME_MAP } from '@/design/hooks/use-theme/constants';
+import { type TUserState, type TUserStateNew } from '@/lib/db/types';
 import {
 	type ISyncStateChange,
 	type ISyncStatePutBody,
+	type ISyncStateRecord,
 	SYNC_NAMESPACE_MAP,
 	SYNC_SCHEMA_VERSION_MAP,
 	type TSyncNamespace,
@@ -24,6 +26,8 @@ const SYNC_NAMESPACE_SET = new Set<TSyncNamespace>(
 	Object.values(SYNC_NAMESPACE_MAP)
 );
 const MAX_SYNC_CHANGE_BYTES = 1024 * 1024;
+export const MAX_SYNC_JSON_BODY_BYTES =
+	MAX_SYNC_CHANGE_BYTES * SYNC_NAMESPACE_SET.size + 16 * 1024;
 const beverageNames = new Set<string>(Beverage.getInstance().getNames());
 const customerNormalNames = new Set<string>(
 	CustomerNormal.getInstance().getNames()
@@ -49,7 +53,7 @@ const recipeColumnKeys = new Set([
 	'action',
 	'time',
 ]);
-const themeValues = new Set(['light', 'dark', 'system']);
+const themeValues = new Set<string>(Object.values(THEME_MAP));
 
 function isPlainObject(data: unknown): data is Record<string, unknown> {
 	return data !== null && !Array.isArray(data) && typeof data === 'object';
@@ -321,6 +325,7 @@ export function parseSyncStatePutBody(
 	}
 
 	const changes: ISyncStateChange[] = [];
+	const seenNamespaces = new Set<TSyncNamespace>();
 	for (const change of body['changes']) {
 		if (
 			!isPlainObject(change) ||
@@ -335,12 +340,17 @@ export function parseSyncStatePutBody(
 			!checkSyncNamespace(change['namespace']) ||
 			!('revision' in change) ||
 			!isNonNegativeSafeInteger(change['revision']) ||
+			change['revision'] >= Number.MAX_SAFE_INTEGER ||
 			!('schema_version' in change) ||
 			change['schema_version'] !==
 				SYNC_SCHEMA_VERSION_MAP[change['namespace']]
 		) {
 			return null;
 		}
+		if (seenNamespaces.has(change['namespace'])) {
+			return null;
+		}
+		seenNamespaces.add(change['namespace']);
 
 		const parsedChange = {
 			data: change['data'],
@@ -392,6 +402,44 @@ export function createUserStateRecord(
 	}
 }
 
-export function parseUserStateData(data: string) {
-	return JSON.parse(data);
+export function parseUserStateData(
+	record: Pick<TUserState, 'data' | 'namespace' | 'schema_version'>
+) {
+	if (
+		!checkSyncNamespace(record.namespace) ||
+		record.schema_version !== SYNC_SCHEMA_VERSION_MAP[record.namespace]
+	) {
+		throw new Error('invalid-user-state-data');
+	}
+
+	const data: unknown = JSON.parse(record.data);
+	const change = {
+		data,
+		namespace: record.namespace,
+		revision: 0,
+		schema_version: record.schema_version,
+	} satisfies ISyncStateChange;
+	if (!validateSyncStateData(change)) {
+		throw new Error('invalid-user-state-data');
+	}
+
+	return data;
+}
+
+export function parseUserStateRecord(record: TUserState): ISyncStateRecord {
+	if (
+		!isNonNegativeSafeInteger(record.revision) ||
+		record.revision >= Number.MAX_SAFE_INTEGER ||
+		!isNonNegativeSafeInteger(record.updated_at)
+	) {
+		throw new Error('invalid-user-state-data');
+	}
+
+	return {
+		data: parseUserStateData(record),
+		namespace: record.namespace,
+		revision: record.revision,
+		schema_version: record.schema_version,
+		updated_at: record.updated_at,
+	};
 }

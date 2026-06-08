@@ -74,20 +74,6 @@ export function createAccountSyncMetaStorageKey(userId: string) {
 	return createAccountStorageKey(ACCOUNT_STORAGE_KEY_MAP.syncMeta, userId);
 }
 
-export function readAccountSyncMeta(userId: string) {
-	return readAccountJsonStorage<IAccountSyncMeta | null>(
-		createAccountSyncMetaStorageKey(userId),
-		null
-	);
-}
-
-export function writeAccountSyncMeta(userId: string, meta: IAccountSyncMeta) {
-	writeAccountJsonStorage(createAccountSyncMetaStorageKey(userId), meta);
-	if (accountStore.shared.user.get()?.id === userId) {
-		accountStore.shared.sync.meta.set(meta);
-	}
-}
-
 function readStoredSyncMetaMap<T>(
 	value: unknown,
 	validateValue: (item: unknown) => item is T
@@ -112,12 +98,62 @@ function checkStoredSyncHash(value: unknown): value is string {
 	return typeof value === 'string';
 }
 
+function checkNonNegativeSafeInteger(value: unknown): value is number {
+	return (
+		typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+	);
+}
+
 function checkStoredSyncRevision(value: unknown): value is number {
-	return typeof value === 'number' && Number.isInteger(value) && value >= 0;
+	return (
+		checkNonNegativeSafeInteger(value) && value < Number.MAX_SAFE_INTEGER
+	);
 }
 
 function checkStoredClearedStateEpoch(value: unknown): value is number {
-	return typeof value === 'number' && Number.isInteger(value) && value >= 0;
+	return checkNonNegativeSafeInteger(value);
+}
+
+export function readAccountSyncMeta(userId: string) {
+	const meta = readAccountJsonStorage<TStoredAccountSyncMeta | null>(
+		createAccountSyncMetaStorageKey(userId),
+		null
+	);
+	if (meta === null) {
+		return null;
+	}
+
+	const stateEpoch = checkNonNegativeSafeInteger(meta.state_epoch)
+		? meta.state_epoch
+		: 0;
+	const clearedStateEpoch = checkStoredClearedStateEpoch(
+		meta.clearedStateEpoch
+	)
+		? meta.clearedStateEpoch
+		: undefined;
+	const sanitizedMeta: IAccountSyncMeta = {
+		lastAppliedRemoteHash: readStoredSyncMetaMap<string>(
+			meta.lastAppliedRemoteHash,
+			checkStoredSyncHash
+		),
+		revisions: readStoredSyncMetaMap<number>(
+			meta.revisions,
+			checkStoredSyncRevision
+		),
+		state_epoch: stateEpoch,
+	};
+	if (clearedStateEpoch !== undefined) {
+		sanitizedMeta.clearedStateEpoch = clearedStateEpoch;
+	}
+
+	return sanitizedMeta;
+}
+
+export function writeAccountSyncMeta(userId: string, meta: IAccountSyncMeta) {
+	writeAccountJsonStorage(createAccountSyncMetaStorageKey(userId), meta);
+	if (accountStore.shared.user.get()?.id === userId) {
+		accountStore.shared.sync.meta.set(meta);
+	}
 }
 
 export function applyRemoteAccountRecords({
@@ -133,6 +169,11 @@ export function applyRemoteAccountRecords({
 	stateEpoch: number;
 	userId: string;
 }) {
+	if (!checkNonNegativeSafeInteger(stateEpoch)) {
+		throw new Error('invalid-sync-state-epoch');
+	}
+
+	const currentUser = accountStore.shared.user.get();
 	const previousMeta = readAccountSyncMeta(userId);
 	const previousStoredMeta = previousMeta as TStoredAccountSyncMeta | null;
 	const previousLastAppliedRemoteHash = readStoredSyncMetaMap<string>(
@@ -179,11 +220,15 @@ export function applyRemoteAccountRecords({
 		}
 	});
 
-	if (accountStore.shared.user.get()?.id !== userId) {
+	if (currentUser?.id !== userId) {
 		return meta;
 	}
 
 	const preparedRecords = records.map((record) => {
+		if (!checkNonNegativeSafeInteger(record.revision)) {
+			throw new Error(`invalid-sync-revision:${record.namespace}`);
+		}
+
 		const serializer = getAccountSyncSerializer(record.namespace);
 		const data = serializer.migrate(record.data, record.schema_version);
 
@@ -195,7 +240,7 @@ export function applyRemoteAccountRecords({
 		};
 	});
 	let appliedRecordCount = 0;
-	if (accountStore.shared.user.get()?.id !== userId) {
+	if (accountStore.shared.user.get()?.id !== currentUser.id) {
 		return meta;
 	}
 
@@ -207,6 +252,34 @@ export function applyRemoteAccountRecords({
 			record.serializer.getLocalSnapshot(),
 		])
 	);
+	function rollbackAppliedRecords() {
+		runWithApplyingRemoteState(() => {
+			preparedRecords.forEach((record) => {
+				const previous = previousSnapshots.get(record.namespace);
+				if (previous !== undefined) {
+					try {
+						record.serializer.setLocalSnapshot(previous);
+					} catch {
+						/* best-effort rollback */
+					}
+				}
+			});
+		});
+
+		if (previousMeta !== null) {
+			try {
+				writeAccountSyncMeta(userId, previousMeta);
+			} catch (writeError) {
+				console.warn(
+					'Failed to restore account sync meta after rollback.',
+					writeError
+				);
+			}
+		}
+	}
+	if (accountStore.shared.user.get()?.id !== currentUser.id) {
+		return meta;
+	}
 
 	try {
 		runWithApplyingRemoteState(() => {
@@ -218,6 +291,12 @@ export function applyRemoteAccountRecords({
 				appliedRecordCount += 1;
 			});
 		});
+		if (accountStore.shared.user.get()?.id !== currentUser.id) {
+			if (appliedRecordCount > 0) {
+				rollbackAppliedRecords();
+			}
+			return meta;
+		}
 
 		writeAccountSyncMeta(userId, meta);
 	} catch (error) {
@@ -226,29 +305,7 @@ export function applyRemoteAccountRecords({
 		// store subscriptions triggered by setLocalSnapshot do not
 		// spuriously create dirty queue entries for the old data.
 		if (appliedRecordCount > 0) {
-			runWithApplyingRemoteState(() => {
-				preparedRecords.forEach((record) => {
-					const previous = previousSnapshots.get(record.namespace);
-					if (previous !== undefined) {
-						try {
-							record.serializer.setLocalSnapshot(previous);
-						} catch {
-							/* best-effort rollback */
-						}
-					}
-				});
-			});
-
-			if (previousMeta !== null) {
-				try {
-					writeAccountSyncMeta(userId, previousMeta);
-				} catch (writeError) {
-					console.warn(
-						'Failed to restore account sync meta after rollback.',
-						writeError
-					);
-				}
-			}
+			rollbackAppliedRecords();
 		}
 
 		throw error;

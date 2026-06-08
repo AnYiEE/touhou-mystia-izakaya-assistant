@@ -1,23 +1,20 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
-import {
-	SERVER_MISCONFIGURED_MESSAGE,
-	checkSessionSecret,
-} from './environment';
+import { SERVER_MISCONFIGURED_MESSAGE, checkAppSecret } from './environment';
 
 export type TAccountSecretDomain = 'admin:v1' | 'csrf:v1' | 'session:v1';
 
-function getSessionSecret() {
-	const secret = process.env.SESSION_SECRET;
+function getAppSecret() {
+	const secret = process.env.APP_SECRET;
 
-	if (!checkSessionSecret(secret)) {
+	if (!checkAppSecret(secret)) {
 		throw new Error(SERVER_MISCONFIGURED_MESSAGE);
 	}
 	return secret;
 }
 
 export function createAccountHmac(domain: TAccountSecretDomain, value: string) {
-	return createHmac('sha256', getSessionSecret())
+	return createHmac('sha256', getAppSecret())
 		.update(domain)
 		.update('\0')
 		.update(value)

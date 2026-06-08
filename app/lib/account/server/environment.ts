@@ -9,10 +9,11 @@ import {
 	checkVercelEnv,
 } from '@/lib/environment';
 import { getConfiguredSqliteDatabasePath } from '@/lib/db/constant';
+import { getLogSafeErrorCode } from '@/lib/logging';
 
 export const FEATURE_DISABLED_MESSAGE = 'feature-disabled';
 export const SERVER_MISCONFIGURED_MESSAGE = 'server-misconfigured';
-export const SESSION_SECRET_MIN_BYTE_LENGTH = 32;
+export const APP_SECRET_MIN_BYTE_LENGTH = 32;
 
 export type TAccountFeatureDisabledReason =
 	| typeof FEATURE_DISABLED_MESSAGE
@@ -30,12 +31,10 @@ export function checkAccountRuntimeEnabled() {
 	);
 }
 
-export function checkSessionSecret(
-	secret: string | undefined
-): secret is string {
+export function checkAppSecret(secret: string | undefined): secret is string {
 	return (
 		typeof secret === 'string' &&
-		Buffer.byteLength(secret, 'utf8') >= SESSION_SECRET_MIN_BYTE_LENGTH
+		Buffer.byteLength(secret, 'utf8') >= APP_SECRET_MIN_BYTE_LENGTH
 	);
 }
 
@@ -59,7 +58,14 @@ export async function checkSqliteDirectoryWritable(
 		}
 	}
 	await writeFile(probePath, 'ok');
-	await rm(probePath, { force: true });
+	try {
+		await rm(probePath);
+	} catch (error) {
+		console.warn('SQLite write probe cleanup failed.', {
+			errorCode: getLogSafeErrorCode(error),
+			probePath,
+		});
+	}
 }
 
 let accountFeatureStatusPromise: Promise<IAccountFeatureStatus> | null = null;
@@ -69,13 +75,16 @@ async function resolveAccountFeatureStatus(): Promise<IAccountFeatureStatus> {
 		return { enabled: false, reason: FEATURE_DISABLED_MESSAGE };
 	}
 
-	if (!checkSessionSecret(process.env.SESSION_SECRET)) {
+	if (!checkAppSecret(process.env.APP_SECRET)) {
 		return { enabled: false, reason: SERVER_MISCONFIGURED_MESSAGE };
 	}
 
 	try {
 		await checkSqliteDirectoryWritable();
-	} catch {
+	} catch (error) {
+		console.warn('SQLite directory writability check failed.', {
+			errorCode: getLogSafeErrorCode(error),
+		});
 		return { enabled: false, reason: SERVER_MISCONFIGURED_MESSAGE };
 	}
 

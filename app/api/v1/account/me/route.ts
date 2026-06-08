@@ -9,7 +9,6 @@ import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 } from '@/api/v1/utils';
-import { ACCOUNT_SESSION_COOKIE_NAME } from '@/lib/account/server/session';
 import { type TAccountMeResponse } from '@/lib/account/shared/types';
 
 export const runtime = 'nodejs';
@@ -39,7 +38,7 @@ export async function GET(request: NextRequest) {
 	const auth = await authModule.authenticateAccountRequest(request, true);
 	if (auth.status === 'error') {
 		if (auth.message === 'unauthorized') {
-			const response = createNoStoreJsonResponse({
+			return createNoStoreJsonResponse({
 				csrf_token: null,
 				featureEnabled: true,
 				isLoggedIn: false,
@@ -48,37 +47,15 @@ export async function GET(request: NextRequest) {
 				syncMeta: null,
 				user: null,
 			} satisfies TAccountMeResponse);
-			if (request.cookies.has(ACCOUNT_SESSION_COOKIE_NAME)) {
-				authModule.clearAccountSessionCookie(response, request);
-			}
-
-			return response;
 		}
 
-		const response = createNoStoreErrorResponse(
-			auth.message,
-			auth.httpStatus
-		);
-		authModule.clearAccountSessionCookie(response, request);
-
-		return response;
+		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
 	}
 	const stateSnapshot = await userStateModule.getUserStateSnapshot(
 		auth.data.user.id
 	);
 	if (stateSnapshot === null) {
-		const response = createNoStoreJsonResponse({
-			csrf_token: null,
-			featureEnabled: true,
-			isLoggedIn: false,
-			password_must_change: false,
-			state_epoch: null,
-			syncMeta: null,
-			user: null,
-		} satisfies TAccountMeResponse);
-		authModule.clearAccountSessionCookie(response, request);
-
-		return response;
+		return createNoStoreErrorResponse('unauthorized', 401);
 	}
 
 	const revisions = stateSnapshot.state.reduce<Record<string, number>>(

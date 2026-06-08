@@ -7,7 +7,7 @@
 	"scripts": {
 		"dev": "next dev --turbopack",
 		"build": "tsx scripts/generateServiceWorker.ts && next build && tsx scripts/babelTransformFile.ts",
-		"build:offline": "cross-env-shell OFFLINE=true \"tsx scripts/generateOfflineZip.ts --prepare && next build && tsx scripts/babelTransformFile.ts && tsx scripts/generateOfflineZip.ts\"",
+		"build:offline": "tsx scripts/buildOffline.ts",
 		"sprites": "tsx scripts/generateSprites.ts",
 		"start": "next start",
 		"serve": "pnpx serve out",
@@ -144,7 +144,6 @@
 		"@types/serviceworker": "^0.0.197",
 		"@types/ua-parser-js": "^0.7.39",
 		"adm-zip": "^0.5.17",
-		"cross-env": "^10.1.0",
 		"eslint": "^9.39.4",
 		"eslint-config-next": "^15.5.18",
 		"eslint-config-prettier": "^10.1.8",

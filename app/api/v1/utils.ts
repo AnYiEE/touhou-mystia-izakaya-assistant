@@ -11,6 +11,25 @@ function createNoStoreInit(init?: ResponseInit) {
 	const headers = new Headers(init?.headers);
 
 	Object.entries(NO_STORE_HEADERS).forEach(([key, value]) => {
+		if (key.toLowerCase() === 'vary') {
+			const varyValues = new Map<string, string>();
+			const current = headers.get(key);
+			if (current !== null) {
+				current.split(',').forEach((item) => {
+					const normalizedItem = item.trim();
+					if (normalizedItem !== '') {
+						varyValues.set(
+							normalizedItem.toLowerCase(),
+							normalizedItem
+						);
+					}
+				});
+			}
+			varyValues.set(value.toLowerCase(), value);
+			headers.set(key, [...varyValues.values()].join(', '));
+			return;
+		}
+
 		headers.set(key, value);
 	});
 

@@ -24,8 +24,6 @@ export default function CustomerRareTutorial() {
 	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const accountConflicts = accountStore.shared.sync.conflicts.use();
 	const accountUser = accountStore.shared.user.use();
-	const hasSkippedAccountOnboarding =
-		accountStore.persistence.hasSkippedOnboarding.use();
 	const passwordMustChange = accountStore.shared.passwordMustChange.use();
 	const { pathname: currentPathname } = usePathname();
 	const isTargetPage = currentPathname.startsWith(pathname);
@@ -54,10 +52,7 @@ export default function CustomerRareTutorial() {
 		(conflict) => conflict.userId === accountUser?.id
 	);
 	const hasBlockingAccountModal =
-		passwordMustChange ||
-		hasCurrentUserConflict ||
-		(accountBootstrapStatus === 'anonymous' &&
-			!hasSkippedAccountOnboarding);
+		passwordMustChange || hasCurrentUserConflict;
 
 	const BEVERAGE_POSITION =
 		'[role="tabpanel"] tbody>tr[data-key="水獭祭"]>:last-child button';

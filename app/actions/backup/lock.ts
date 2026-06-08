@@ -6,10 +6,15 @@ import type { TDatabase } from '@/lib/db/types';
 import { getLogSafeErrorCode } from '@/lib/logging';
 import type { Transaction } from 'kysely';
 
-const backupCodeLocks = new Map<string, Promise<void>>();
+const BACKUP_CODE_LOCK_QUEUE_RELEASED = Symbol(
+	'backup-code-lock-queue-released'
+);
+type TBackupCodeQueuedLock = Promise<typeof BACKUP_CODE_LOCK_QUEUE_RELEASED>;
+const backupCodeLocks = new Map<string, TBackupCodeQueuedLock>();
 const BACKUP_CODE_LOCK_RETRY_MS = 50;
-const BACKUP_CODE_LOCK_TIMEOUT_MS = 10 * 1000;
 const BACKUP_CODE_LOCK_TTL_MS = 15 * 1000;
+const BACKUP_CODE_LOCK_TIMEOUT_MS =
+	BACKUP_CODE_LOCK_TTL_MS + BACKUP_CODE_LOCK_RETRY_MS * 2;
 const BACKUP_CODE_LOCK_LOST_MESSAGE = 'backup-code-lock-lost';
 const BACKUP_CODE_LOCK_TIMEOUT_MESSAGE = 'backup-code-lock-timeout';
 const TABLE_NAME = TABLE_NAME_MAP.backupCodeLock;
@@ -38,7 +43,7 @@ function maskBackupCodeForLog(code: string) {
 
 async function waitForPreviousBackupCodeLock(
 	code: string,
-	previousLock: Promise<void>
+	previousLock: TBackupCodeQueuedLock
 ) {
 	let timeoutId!: ReturnType<typeof setTimeout>;
 	const timeout = new Promise<'timeout'>((resolve) => {
@@ -214,17 +219,15 @@ export async function withBackupCodeLock<T>(
 	code: string,
 	task: (signal: IBackupCodeLockSignal) => Promise<T>
 ) {
-	const previousLock = backupCodeLocks.get(code) ?? Promise.resolve();
-	let releaseCurrentLock!: () => void;
-	const currentLock = new Promise<void>((resolve) => {
-		releaseCurrentLock = resolve;
-	});
+	const previousLock =
+		backupCodeLocks.get(code) ??
+		Promise.resolve(BACKUP_CODE_LOCK_QUEUE_RELEASED);
+	const { promise: currentLock, resolve: releaseCurrentLock } =
+		Promise.withResolvers<typeof BACKUP_CODE_LOCK_QUEUE_RELEASED>();
 	backupCodeLocks.set(code, currentLock);
-	let acquiredTurn = false;
 
 	try {
 		await waitForPreviousBackupCodeLock(code, previousLock);
-		acquiredTurn = true;
 
 		const ownerId = randomUUID();
 		const lockSignal: {
@@ -343,18 +346,9 @@ export async function withBackupCodeLock<T>(
 			}
 		}
 	} finally {
-		if (acquiredTurn) {
-			releaseCurrentLock();
-			if (backupCodeLocks.get(code) === currentLock) {
-				backupCodeLocks.delete(code);
-			}
-		} else {
-			void previousLock.finally(() => {
-				releaseCurrentLock();
-				if (backupCodeLocks.get(code) === currentLock) {
-					backupCodeLocks.delete(code);
-				}
-			});
+		releaseCurrentLock(BACKUP_CODE_LOCK_QUEUE_RELEASED);
+		if (backupCodeLocks.get(code) === currentLock) {
+			backupCodeLocks.delete(code);
 		}
 	}
 }

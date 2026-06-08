@@ -1,12 +1,14 @@
 import { type TUser } from '@/lib/db/types';
 
-import { USER_STATUS_MAP } from '../shared/constants';
+import {
+	USERNAME_MAX_LENGTH,
+	USERNAME_MIN_LENGTH,
+	USER_STATUS_MAP,
+} from '../shared/constants';
 import { type IAccountUserProfile, type TUserStatus } from '../shared/types';
 
-export const USERNAME_MIN_LENGTH = 3;
-export const USERNAME_MAX_LENGTH = 32;
-
 const USERNAME_REGEXP = /^[\p{Script=Han}A-Za-z0-9_.-]+$/u;
+const NEW_USERNAME_SEPARATOR_REGEXP = /(^[.-]|[.-]$|[.-]{2,})/u;
 
 export function normalizeUsername(username: string) {
 	return username.trim().toLowerCase();
@@ -19,6 +21,15 @@ export function checkUsernamePolicy(username: string) {
 		trimmedUsername.length >= USERNAME_MIN_LENGTH &&
 		trimmedUsername.length <= USERNAME_MAX_LENGTH &&
 		USERNAME_REGEXP.test(trimmedUsername)
+	);
+}
+
+export function checkNewUsernamePolicy(username: string) {
+	const trimmedUsername = username.trim();
+
+	return (
+		checkUsernamePolicy(trimmedUsername) &&
+		!NEW_USERNAME_SEPARATOR_REGEXP.test(trimmedUsername)
 	);
 }
 

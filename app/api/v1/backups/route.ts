@@ -6,6 +6,7 @@ import {
 	checkBackupCodeLockTimeoutError,
 	checkBackupFileNotFoundError,
 	checkIpFrequency,
+	deleteBackupImportRecordByCode,
 	deleteFile,
 	getRecord,
 	markBackupCodeLockCommitted,
@@ -18,7 +19,7 @@ import {
 } from '@/actions/backup';
 import {
 	createRetryAfterHeaders,
-	readJsonBody,
+	readJsonBodyResult,
 } from '@/api/v1/accountRouteUtils';
 import {
 	createNoStoreErrorResponse,
@@ -30,6 +31,9 @@ import { FREQUENCY_TTL, MAX_DATA_SIZE } from './constants';
 import type { IBackupUploadBody, IBackupUploadSuccessResponse } from './types';
 import { getLogSafeErrorCode, getRequestMeta, maskBackupCode } from './utils';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 function isPlainObject(value: unknown): value is Record<string, unknown> {
 	return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
@@ -40,7 +44,7 @@ function normalizeMediaType(contentType: string | null) {
 
 async function cleanupSavedBackupFile(
 	code: string,
-	fileName: string,
+	fileName: Parameters<typeof deleteFile>[1],
 	codeHash: string
 ) {
 	try {
@@ -57,9 +61,6 @@ async function cleanupSavedBackupFile(
 
 export async function POST(request: NextRequest) {
 	const requestMeta = getRequestMeta(request);
-	if (requestMeta === null) {
-		return createNoStoreErrorResponse('server-misconfigured', 500);
-	}
 	const { contentType, ip, ua } = requestMeta;
 
 	if (normalizeMediaType(contentType) !== FILE_TYPE_JSON) {
@@ -72,10 +73,14 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('Invalid user agent', 400);
 	}
 
-	const json = await readJsonBody<IBackupUploadBody>(
+	const jsonResult = await readJsonBodyResult<IBackupUploadBody>(
 		request,
 		MAX_DATA_SIZE + 64 * 1024
 	);
+	if (jsonResult.status === 'payload-too-large') {
+		return createNoStoreErrorResponse('The data is too large', 413);
+	}
+	const json = jsonResult.status === 'ok' ? jsonResult.data : null;
 	const backupData = isPlainObject(json) ? json.data : null;
 	const rawUserId = isPlainObject(json) ? json.user_id : null;
 	if (
@@ -98,7 +103,10 @@ export async function POST(request: NextRequest) {
 		const isValid = validate(normalizedCode);
 		if (isValid) {
 			code = normalizedCode.toLowerCase();
-		} else if (normalizedCode !== 'null') {
+		} else if (normalizedCode === 'null') {
+			// Legacy clients may have persisted the literal string "null".
+			// Keep treating it like a missing code so uploads can recover.
+		} else {
 			return createNoStoreErrorResponse('Invalid code', 400);
 		}
 	}
@@ -134,6 +142,8 @@ export async function POST(request: NextRequest) {
 			const codeHash = maskBackupCode(code);
 			const record = await getRecord(code);
 			throwIfBackupCodeLockLost(signal);
+			const oldFileName =
+				record.status === 200 ? record.file_name : undefined;
 
 			let savedFile: Awaited<ReturnType<typeof saveFile>>;
 			try {
@@ -173,6 +183,8 @@ export async function POST(request: NextRequest) {
 					if (nextRecord.status !== 200) {
 						throw new Error('Failed to save record');
 					}
+
+					await deleteBackupImportRecordByCode(code, trx);
 				});
 				markBackupCodeLockCommitted(signal);
 			} catch (error) {
@@ -197,6 +209,13 @@ export async function POST(request: NextRequest) {
 				});
 
 				return createNoStoreErrorResponse('Failed to save record', 500);
+			}
+
+			if (
+				oldFileName !== undefined &&
+				oldFileName !== savedFile.fileName
+			) {
+				await cleanupSavedBackupFile(code, oldFileName, codeHash);
 			}
 
 			return createNoStoreJsonResponse({

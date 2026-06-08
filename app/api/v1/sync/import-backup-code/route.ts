@@ -18,7 +18,8 @@ import {
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
-	readJsonBody,
+	createAccountAuthErrorResponse,
+	readJsonBodyResult,
 } from '@/api/v1/accountRouteUtils';
 import {
 	createNoStoreErrorResponse,
@@ -43,7 +44,7 @@ import {
 } from '@/lib/account/sync/serializers/tags';
 import { isPlainObject } from '@/lib/account/sync/serializers/utils';
 import { TABLE_NAME_MAP } from '@/lib/db';
-import { type TDatabase, type TUserState } from '@/lib/db/types';
+import { type TDatabase, type TSession, type TUserState } from '@/lib/db/types';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -76,6 +77,18 @@ function checkSyncNamespaceValue(value: unknown): value is TSyncNamespace {
 	);
 }
 
+function isNonNegativeSafeInteger(value: unknown): value is number {
+	return (
+		typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+	);
+}
+
+function canIncrementSyncRevision(value: unknown): value is number {
+	return (
+		isNonNegativeSafeInteger(value) && value < Number.MAX_SAFE_INTEGER - 1
+	);
+}
+
 function parseImportBackupResults(data: string) {
 	let parsedData: unknown;
 	try {
@@ -91,9 +104,8 @@ function parseImportBackupResults(data: string) {
 				isPlainObject(item) &&
 				item['status'] === 'ok' &&
 				checkSyncNamespaceValue(item['namespace']) &&
-				typeof item['revision'] === 'number' &&
-				Number.isInteger(item['revision']) &&
-				item['revision'] >= 0
+				isNonNegativeSafeInteger(item['revision']) &&
+				item['revision'] < Number.MAX_SAFE_INTEGER
 		)
 	) {
 		return null;
@@ -402,6 +414,7 @@ async function checkImportBackupDataPreconditions(
 	userId: string,
 	code: string,
 	expectedStateEpoch: number,
+	session: Pick<TSession, 'id' | 'token_hash'>,
 	signal: IBackupCodeLockSignal,
 	lockModule: TBackupLockModule
 ) {
@@ -422,6 +435,18 @@ async function checkImportBackupDataPreconditions(
 			state_epoch: user.state_epoch,
 			status: 'state-epoch-mismatch' as const,
 		};
+	}
+
+	const currentSession = await database
+		.selectFrom(TABLE_NAME_MAP.session)
+		.select('id')
+		.where('id', '=', session.id)
+		.where('user_id', '=', userId)
+		.where('token_hash', '=', session.token_hash)
+		.executeTakeFirst();
+	lockModule.throwIfBackupCodeLockLost(signal);
+	if (currentSession === undefined) {
+		throw new Error('unauthorized');
 	}
 
 	const backupRecord = await database
@@ -449,7 +474,7 @@ async function readImportBackupFile(
 ) {
 	let fileContent: string;
 	try {
-		if ((await getFileSize(code, fileName)) > MAX_DATA_SIZE) {
+		if ((await getFileSize(code, fileName)) > BigInt(MAX_DATA_SIZE)) {
 			throw new Error('invalid-backup-file');
 		}
 		lockModule.throwIfBackupCodeLockLost(signal);
@@ -494,6 +519,7 @@ async function importBackupData(
 	userId: string,
 	code: string,
 	expectedStateEpoch: number,
+	session: Pick<TSession, 'id' | 'token_hash'>,
 	signal: IBackupCodeLockSignal,
 	lockModule: TBackupLockModule
 ) {
@@ -502,6 +528,7 @@ async function importBackupData(
 		userId,
 		code,
 		expectedStateEpoch,
+		session,
 		signal,
 		lockModule
 	);
@@ -534,6 +561,18 @@ async function importBackupData(
 				state_epoch: user.state_epoch,
 				status: 'state-epoch-mismatch' as const,
 			};
+		}
+
+		const currentSession = await trx
+			.selectFrom(TABLE_NAME_MAP.session)
+			.select('id')
+			.where('id', '=', session.id)
+			.where('user_id', '=', userId)
+			.where('token_hash', '=', session.token_hash)
+			.executeTakeFirst();
+		lockModule.throwIfBackupCodeLockLost(signal);
+		if (currentSession === undefined) {
+			throw new Error('unauthorized');
 		}
 
 		const backupRecordDeleteQuery = trx
@@ -584,6 +623,13 @@ async function importBackupData(
 				.where('user_id', '=', userId)
 				.where('namespace', '=', item.namespace)
 				.executeTakeFirst();
+			if (
+				current !== undefined &&
+				!canIncrementSyncRevision(current.revision)
+			) {
+				throw new Error('server-misconfigured');
+			}
+
 			const revision = (current?.revision ?? 0) + 1;
 			const updatedAt = Date.now();
 			const mergedData = mergeMealRecord(
@@ -697,7 +743,11 @@ export async function POST(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	const body = await readJsonBody<IImportBackupCodeBody>(request);
+	const bodyResult = await readJsonBodyResult<IImportBackupCodeBody>(request);
+	if (bodyResult.status === 'payload-too-large') {
+		return createNoStoreErrorResponse('payload-too-large', 413);
+	}
+	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	const rawCode = typeof body?.code === 'string' ? body.code.trim() : '';
 	if (rawCode === '' || !validate(rawCode)) {
 		return createNoStoreErrorResponse('invalid-backup-code', 400);
@@ -711,7 +761,7 @@ export async function POST(request: NextRequest) {
 	]);
 	const auth = await authModule.authenticateAccountRequest(request);
 	if (auth.status === 'error') {
-		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
+		return createAccountAuthErrorResponse(auth, request);
 	}
 	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
@@ -730,6 +780,7 @@ export async function POST(request: NextRequest) {
 						auth.data.user.id,
 						code,
 						auth.data.user.state_epoch,
+						auth.data.session,
 						signal,
 						lockModule
 					);
@@ -798,11 +849,10 @@ export async function POST(request: NextRequest) {
 					);
 				}
 				if (importResult.status === 'already-imported') {
-					importedBackupFileName = importResult.fileName;
-
-					return createNoStoreJsonResponse({
-						results: importResult.results,
-					});
+					return createNoStoreErrorResponse(
+						'backup-code-already-imported',
+						409
+					);
 				}
 
 				lockModule.markBackupCodeLockCommitted(signal);
@@ -814,7 +864,7 @@ export async function POST(request: NextRequest) {
 			}
 		);
 		if (importedBackupFileName !== undefined) {
-			await cleanupImportedBackupFile(code, importedBackupFileName);
+			void cleanupImportedBackupFile(code, importedBackupFileName);
 		}
 
 		return response;

@@ -8,7 +8,7 @@ export function getSqliteDatabasePath(databasePath: string | undefined) {
 
 	return trimmedDatabasePath === undefined || trimmedDatabasePath === ''
 		? resolve(DEFAULT_SQLITE_DATABASE_PATH)
-		: trimmedDatabasePath;
+		: resolve(trimmedDatabasePath);
 }
 
 export function getConfiguredSqliteDatabasePath(

@@ -9,6 +9,8 @@ export {
 	type DropdownItemProps,
 	DropdownMenu,
 	type DropdownMenuProps,
+	DropdownSection,
+	type DropdownSectionProps,
 	DropdownTrigger,
 	type DropdownTriggerProps,
 } from './dropdown';
@@ -16,6 +18,7 @@ export {
 	default as FadeMotionDiv,
 	type IFadeMotionDivProps,
 } from './fadeMotionDiv';
+export { default as Input, type IInputProps } from './input';
 export { default as Link, type ILinkProps } from './link';
 export { default as Modal, type IModalProps } from './modal';
 export { default as Pagination, type IPaginationProps } from './pagination';

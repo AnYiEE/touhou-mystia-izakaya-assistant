@@ -53,9 +53,15 @@ export default memo<IProps>(function Dropdown({
 
 export type { IProps as IDropdownProps };
 
-export { DropdownItem, DropdownMenu, DropdownTrigger } from '@heroui/dropdown';
+export {
+	DropdownItem,
+	DropdownMenu,
+	DropdownSection,
+	DropdownTrigger,
+} from '@heroui/dropdown';
 export type {
 	DropdownItemProps,
 	DropdownMenuProps,
+	DropdownSectionProps,
 	DropdownTriggerProps,
 } from '@heroui/dropdown';

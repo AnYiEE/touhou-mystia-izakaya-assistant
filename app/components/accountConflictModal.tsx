@@ -3,9 +3,15 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { Button, Modal } from '@/design/ui/components';
+import { createSnapshotHash } from '@/lib/account/client/queue';
+import { type ISyncConflictItem } from '@/lib/account/sync';
 import { accountStore } from '@/stores/account';
-import { resolveAccountSyncConflict } from '@/lib/account/client/conflict';
+import {
+	type TSyncConflictResolution,
+	resolveAccountSyncConflict,
+} from '@/lib/account/client/conflict';
 import { scheduleAccountSyncFlush } from '@/lib/account/client/syncClient';
+import { getLogSafeErrorCode } from '@/lib/logging';
 import Heading from './heading';
 
 function formatConflictData(data: unknown) {
@@ -27,8 +33,42 @@ function ConflictPreview({ label, value }: { label: string; value: unknown }) {
 	);
 }
 
+function checkConflictSnapshotUnchanged(
+	currentConflict: ISyncConflictItem,
+	conflict: ISyncConflictItem
+) {
+	return (
+		currentConflict.userId === conflict.userId &&
+		currentConflict.namespace === conflict.namespace &&
+		currentConflict.revision === conflict.revision &&
+		createSnapshotHash(currentConflict.cloud) ===
+			createSnapshotHash(conflict.cloud) &&
+		createSnapshotHash(currentConflict.local) ===
+			createSnapshotHash(conflict.local) &&
+		createSnapshotHash(currentConflict.merged) ===
+			createSnapshotHash(conflict.merged)
+	);
+}
+
+function createConflictSnapshotKey(conflict: ISyncConflictItem) {
+	return JSON.stringify([
+		conflict.userId,
+		conflict.namespace,
+		conflict.revision,
+		createSnapshotHash(conflict.cloud),
+		createSnapshotHash(conflict.local),
+		createSnapshotHash(conflict.merged),
+	]);
+}
+
 export default function AccountConflictModal() {
-	const [isResolving, setIsResolving] = useState(false);
+	const [resolvingResolution, setResolvingResolution] =
+		useState<TSyncConflictResolution | null>(null);
+	const [resolvedConflictKeys, setResolvedConflictKeys] = useState<
+		ReadonlySet<string>
+	>(() => new Set());
+	const [displayedConflict, setDisplayedConflict] =
+		useState<ISyncConflictItem | null>(null);
 	const isResolvingRef = useRef(false);
 	const [message, setMessage] = useState<string | null>(null);
 	const [portalContainer, setPortalContainer] = useState<Element | null>(
@@ -37,53 +77,114 @@ export default function AccountConflictModal() {
 	const conflicts = accountStore.shared.sync.conflicts.use();
 	const passwordMustChange = accountStore.shared.passwordMustChange.use();
 	const user = accountStore.shared.user.use();
-	const conflict = conflicts.find((item) => item.userId === user?.id);
+	const conflict = conflicts.find(
+		(item) =>
+			item.userId === user?.id &&
+			!resolvedConflictKeys.has(createConflictSnapshotKey(item))
+	);
+	const isModalOpen =
+		conflict !== undefined && user !== null && !passwordMustChange;
+	const visibleConflict = conflict ?? displayedConflict;
 
 	useEffect(() => {
 		setPortalContainer(document.querySelector('#modal-portal-container'));
 	}, []);
 	useEffect(() => {
+		setResolvedConflictKeys(new Set());
+	}, [user?.id]);
+	useEffect(() => {
+		if (isModalOpen) {
+			setDisplayedConflict(conflict);
+		}
+	}, [conflict, isModalOpen]);
+	useEffect(() => {
+		setResolvedConflictKeys((currentKeys) => {
+			if (currentKeys.size === 0) {
+				return currentKeys;
+			}
+			const activeKeys = new Set(
+				conflicts.map(createConflictSnapshotKey)
+			);
+			const nextKeys = new Set<string>();
+			let didChange = false;
+			for (const key of currentKeys) {
+				if (activeKeys.has(key)) {
+					nextKeys.add(key);
+				} else {
+					didChange = true;
+				}
+			}
+
+			return didChange ? nextKeys : currentKeys;
+		});
+	}, [conflicts]);
+	useEffect(() => {
 		isResolvingRef.current = false;
-		setIsResolving(false);
+		setResolvingResolution(null);
 		setMessage(null);
 	}, [conflict]);
 
-	if (conflict === undefined || user === null || passwordMustChange) {
+	if (visibleConflict === null) {
 		return null;
 	}
 
-	const resolveConflict = (resolution: 'cloud' | 'local' | 'merged') => {
-		if (isResolvingRef.current) {
+	const resolveConflict = (resolution: TSyncConflictResolution) => {
+		if (isResolvingRef.current || conflict === undefined || user === null) {
 			return;
 		}
 
 		isResolvingRef.current = true;
-		setIsResolving(true);
+		setResolvingResolution(resolution);
 		setMessage(null);
 		try {
+			const conflictKey = createConflictSnapshotKey(conflict);
+			const currentConflict = accountStore.shared.sync.conflicts
+				.get()
+				.find(
+					(item) => createConflictSnapshotKey(item) === conflictKey
+				);
+			if (
+				currentConflict === undefined ||
+				!checkConflictSnapshotUnchanged(currentConflict, conflict)
+			) {
+				setMessage('冲突状态已变化，请重新选择');
+				return;
+			}
+
 			const didResolve = resolveAccountSyncConflict({
-				conflict,
+				conflict: currentConflict,
 				resolution,
 				userId: user.id,
 			});
 			if (!didResolve) {
 				setMessage('冲突暂时无法保存，请稍后重试');
-				isResolvingRef.current = false;
-				setIsResolving(false);
 				return;
 			}
+			setResolvedConflictKeys((currentKeys) => {
+				if (currentKeys.has(conflictKey)) {
+					return currentKeys;
+				}
+
+				const nextKeys = new Set(currentKeys);
+				nextKeys.add(conflictKey);
+
+				return nextKeys;
+			});
 			scheduleAccountSyncFlush();
 		} catch (error) {
-			console.error('Failed to resolve conflict:', error);
-			setMessage(error instanceof Error ? error.message : '冲突保存失败');
+			console.error('Failed to resolve conflict.', {
+				errorCode: getLogSafeErrorCode(error),
+			});
+			setMessage('冲突保存失败，请稍后重试');
+		} finally {
 			isResolvingRef.current = false;
-			setIsResolving(false);
+			setResolvingResolution(null);
 		}
 	};
 
 	return (
 		<Modal
-			isOpen
+			isOpen={isModalOpen}
 			{...(portalContainer === null ? {} : { portalContainer })}
 		>
 			<div className="w-full max-w-3xl space-y-4">
@@ -91,14 +192,20 @@ export default function AccountConflictModal() {
 					同步冲突
 				</Heading>
 				<p className="text-sm text-foreground-600">
-					{conflict.namespace} 需要选择保留的数据版本。
+					{visibleConflict.namespace}需要选择保留的数据版本。
 				</p>
 				<div className="grid gap-3 lg:grid-cols-3">
-					<ConflictPreview label="云端" value={conflict.cloud} />
-					<ConflictPreview label="本地" value={conflict.local} />
+					<ConflictPreview
+						label="云端"
+						value={visibleConflict.cloud}
+					/>
+					<ConflictPreview
+						label="本地"
+						value={visibleConflict.local}
+					/>
 					<ConflictPreview
 						label="合并结果"
-						value={conflict.merged ?? '无法自动合并'}
+						value={visibleConflict.merged ?? '无法自动合并'}
 					/>
 				</div>
 				{message !== null && (
@@ -112,7 +219,8 @@ export default function AccountConflictModal() {
 				)}
 				<div className="flex flex-wrap justify-end gap-2">
 					<Button
-						isDisabled={isResolving}
+						isDisabled={resolvingResolution !== null}
+						isLoading={resolvingResolution === 'cloud'}
 						variant="flat"
 						onPress={() => {
 							resolveConflict('cloud');
@@ -121,7 +229,8 @@ export default function AccountConflictModal() {
 						使用云端
 					</Button>
 					<Button
-						isDisabled={isResolving}
+						isDisabled={resolvingResolution !== null}
+						isLoading={resolvingResolution === 'local'}
 						variant="flat"
 						onPress={() => {
 							resolveConflict('local');
@@ -129,10 +238,11 @@ export default function AccountConflictModal() {
 					>
 						使用本地
 					</Button>
-					{conflict.merged !== null && (
+					{visibleConflict.merged !== null && (
 						<Button
 							color="primary"
-							isDisabled={isResolving}
+							isDisabled={resolvingResolution !== null}
+							isLoading={resolvingResolution === 'merged'}
 							variant="solid"
 							onPress={() => {
 								resolveConflict('merged');

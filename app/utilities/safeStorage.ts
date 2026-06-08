@@ -132,13 +132,14 @@ class SafeStorage implements Storage {
 	}
 
 	private invalidateStorageKeys(storage: Storage | null) {
-		if (storage === null) {
+		if (!this.checkCanInvalidateStorage(storage)) {
 			return;
 		}
+		const storageToInvalidate = storage;
 
 		this._managedKeys.forEach((key) => {
 			try {
-				storage.removeItem(key);
+				storageToInvalidate.removeItem(key);
 			} catch {
 				/* empty */
 			}
@@ -146,14 +147,32 @@ class SafeStorage implements Storage {
 	}
 
 	private invalidateStaleStorageKey(key: string) {
-		if (this._staleStorage === null || internalKeys.has(key)) {
+		const staleStorage = this._staleStorage;
+		if (
+			!this.checkCanInvalidateStorage(staleStorage) ||
+			internalKeys.has(key)
+		) {
 			return;
 		}
 
 		try {
-			this._staleStorage.removeItem(key);
+			staleStorage.removeItem(key);
 		} catch {
 			/* empty */
+		}
+	}
+
+	private checkCanInvalidateStorage(
+		storage: Storage | null
+	): storage is Storage {
+		if (storage === null) {
+			return false;
+		}
+
+		try {
+			return storage === sessionStorage;
+		} catch {
+			return false;
 		}
 	}
 
@@ -182,17 +201,44 @@ class SafeStorage implements Storage {
 		fallbackStorage: Storage,
 		localStorageValue: Storage
 	) {
-		this._managedKeys.forEach((key) => {
+		const migrationValues = new Map<string, string | null>();
+		for (const key of this._managedKeys) {
 			if (internalKeys.has(key)) {
-				return;
+				continue;
 			}
 
-			const value = fallbackStorage.getItem(key);
+			migrationValues.set(key, fallbackStorage.getItem(key));
+		}
+
+		const previousValues = new Map<string, string | null>();
+		try {
+			for (const [key, value] of migrationValues) {
+				previousValues.set(key, localStorageValue.getItem(key));
+				if (value === null) {
+					localStorageValue.removeItem(key);
+				} else {
+					localStorageValue.setItem(key, value);
+				}
+			}
+		} catch (error) {
+			previousValues.forEach((previousValue, previousKey) => {
+				try {
+					if (previousValue === null) {
+						localStorageValue.removeItem(previousKey);
+					} else {
+						localStorageValue.setItem(previousKey, previousValue);
+					}
+				} catch {
+					/* empty */
+				}
+			});
+			throw error;
+		}
+
+		migrationValues.forEach((value, key) => {
 			if (value === null) {
-				localStorageValue.removeItem(key);
 				this._memoryStorage.delete(key);
 			} else {
-				localStorageValue.setItem(key, value);
 				this._memoryStorage.set(key, value);
 			}
 		});
@@ -296,23 +342,46 @@ class SafeStorage implements Storage {
 		}
 
 		try {
-			this._managedKeys.forEach((key) => {
+			const restoreValues = new Map<string, string | null>();
+			for (const key of this._managedKeys) {
 				if (internalKeys.has(key)) {
-					return;
+					continue;
 				}
 
 				const value = this._memoryStorage.get(key);
-				if (value === undefined) {
-					storage.removeItem(key);
-				} else {
-					storage.setItem(key, value);
-				}
-			});
+				restoreValues.set(key, value ?? null);
+			}
 			this._memoryStorage.forEach((value, key) => {
 				if (!internalKeys.has(key)) {
-					storage.setItem(key, value);
+					restoreValues.set(key, value);
 				}
 			});
+
+			const previousValues = new Map<string, string | null>();
+			try {
+				restoreValues.forEach((value, key) => {
+					previousValues.set(key, storage.getItem(key));
+					if (value === null) {
+						storage.removeItem(key);
+					} else {
+						storage.setItem(key, value);
+					}
+				});
+			} catch (error) {
+				previousValues.forEach((previousValue, previousKey) => {
+					try {
+						if (previousValue === null) {
+							storage.removeItem(previousKey);
+						} else {
+							storage.setItem(previousKey, previousValue);
+						}
+					} catch {
+						/* empty */
+					}
+				});
+				throw error;
+			}
+
 			this._storage = storage;
 			this.persistManagedKeys();
 			if (this._mode === 'local' && this._staleStorage !== storage) {

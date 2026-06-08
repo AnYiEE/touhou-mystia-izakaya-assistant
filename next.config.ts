@@ -26,8 +26,8 @@ const legacyApiCorsHeaders = [
 
 const legacyApiCorsSources = [
 	'/api/v1/backups',
-	'/api/v1/backups/:code',
-	'/api/v1/backups/:code/metadata',
+	'/api/v1/backups/:code([0-9a-fA-F-]{36})',
+	'/api/v1/backups/:code([0-9a-fA-F-]{36})/metadata',
 	'/api/v1/analytics/:path*',
 ] as const;
 

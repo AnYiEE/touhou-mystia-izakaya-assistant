@@ -49,11 +49,40 @@ export function createAccountSyncLeaseKey(userId: string) {
 	return createAccountStorageKey(ACCOUNT_STORAGE_KEY_MAP.lease, userId);
 }
 
-export function readAccountSyncLease(userId: string) {
-	return readAccountJsonStorage<IAccountSyncLease | null>(
-		createAccountSyncLeaseKey(userId),
-		null
+function checkAccountSyncLease(value: unknown): value is IAccountSyncLease {
+	return (
+		value !== null &&
+		!Array.isArray(value) &&
+		typeof value === 'object' &&
+		'expiresAt' in value &&
+		typeof value.expiresAt === 'number' &&
+		Number.isFinite(value.expiresAt) &&
+		value.expiresAt >= 0 &&
+		'renewedAt' in value &&
+		typeof value.renewedAt === 'number' &&
+		Number.isFinite(value.renewedAt) &&
+		value.renewedAt >= 0 &&
+		'ownerRunId' in value &&
+		typeof value.ownerRunId === 'string' &&
+		value.ownerRunId !== '' &&
+		'ownerTabId' in value &&
+		typeof value.ownerTabId === 'string' &&
+		value.ownerTabId !== ''
 	);
+}
+
+export function readAccountSyncLease(userId: string) {
+	const key = createAccountSyncLeaseKey(userId);
+	const lease = readAccountJsonStorage<unknown>(key, null);
+	if (lease === null) {
+		return null;
+	}
+	if (!checkAccountSyncLease(lease)) {
+		removeAccountStorage(key);
+		return null;
+	}
+
+	return lease;
 }
 
 function writeAccountSyncLease(
@@ -130,11 +159,17 @@ export async function acquireAccountSyncLease(
 	userId: string,
 	ownerTabId: string,
 	ownerRunId: string,
-	now = Date.now()
+	now?: number
 ) {
 	const lockManager = getAccountLockManager();
+	const nowValue = now ?? Date.now();
 	if (lockManager === null) {
-		return tryAcquireAccountSyncLease(userId, ownerTabId, ownerRunId, now)
+		return tryAcquireAccountSyncLease(
+			userId,
+			ownerTabId,
+			ownerRunId,
+			nowValue
+		)
 			? ({
 					acquired: true,
 					status: 'acquired',
@@ -148,7 +183,13 @@ export async function acquireAccountSyncLease(
 	const acquired = await lockManager.request(
 		createAccountSyncLeaseKey(userId),
 		{ mode: 'exclusive' },
-		() => tryAcquireAccountSyncLease(userId, ownerTabId, ownerRunId, now)
+		() =>
+			tryAcquireAccountSyncLease(
+				userId,
+				ownerTabId,
+				ownerRunId,
+				now ?? Date.now()
+			)
 	);
 
 	return acquired
@@ -166,17 +207,29 @@ export async function renewAccountSyncLease(
 	userId: string,
 	ownerTabId: string,
 	ownerRunId: string,
-	now = Date.now()
+	now?: number
 ) {
 	const lockManager = getAccountLockManager();
+	const nowValue = now ?? Date.now();
 	if (lockManager === null) {
-		return tryRenewAccountSyncLease(userId, ownerTabId, ownerRunId, now);
+		return tryRenewAccountSyncLease(
+			userId,
+			ownerTabId,
+			ownerRunId,
+			nowValue
+		);
 	}
 
 	return lockManager.request(
 		createAccountSyncLeaseKey(userId),
 		{ mode: 'exclusive' },
-		() => tryRenewAccountSyncLease(userId, ownerTabId, ownerRunId, now)
+		() =>
+			tryRenewAccountSyncLease(
+				userId,
+				ownerTabId,
+				ownerRunId,
+				now ?? Date.now()
+			)
 	);
 }
 

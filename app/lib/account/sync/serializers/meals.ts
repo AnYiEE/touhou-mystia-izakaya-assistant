@@ -1,4 +1,4 @@
-import { SYNC_NAMESPACE_MAP, type TSyncNamespace } from '@/lib/account/sync';
+import { SYNC_NAMESPACE_MAP } from '@/lib/account/sync';
 import { type IMealRecipe } from '@/types';
 import {
 	Beverage,
@@ -14,6 +14,10 @@ import {
 	isPlainObject,
 	stableJson,
 } from './utils';
+
+type TMealSyncNamespace =
+	| typeof SYNC_NAMESPACE_MAP.customerNormalMeals
+	| typeof SYNC_NAMESPACE_MAP.customerRareMeals;
 
 const beverageNames = new Set<string>(Beverage.getInstance().getNames());
 const customerNormalNames = new Set<string>(
@@ -31,10 +35,13 @@ function getCustomerNamesForType(customerType: 'normal' | 'rare') {
 	return customerType === 'normal' ? customerNormalNames : customerRareNames;
 }
 
-function getCustomerNamesForNamespace(namespace: TSyncNamespace) {
-	return namespace === SYNC_NAMESPACE_MAP.customerNormalMeals
-		? customerNormalNames
-		: customerRareNames;
+function getCustomerNamesForNamespace(namespace: TMealSyncNamespace) {
+	switch (namespace) {
+		case SYNC_NAMESPACE_MAP.customerNormalMeals:
+			return customerNormalNames;
+		case SYNC_NAMESPACE_MAP.customerRareMeals:
+			return customerRareNames;
+	}
 }
 
 function sanitizeMealSnapshot<TMeal>(
@@ -114,7 +121,10 @@ export function normalizeMealSnapshot<TMeal, TNormalizedMeal>(
 				return result;
 			}
 
-			result[customerName] = meals.map(normalizeMeal);
+			const normalizedMeals = meals.map(normalizeMeal);
+			if (normalizedMeals.length > 0) {
+				result[customerName] = normalizedMeals;
+			}
 			return result;
 		},
 		{}
@@ -230,7 +240,7 @@ export function mergeMealSnapshot<TMeal>({
 	base: TMealSnapshot<TMeal> | null;
 	cloud: TMealSnapshot<TMeal> | null;
 	local: TMealSnapshot<TMeal>;
-	namespace: TSyncNamespace;
+	namespace: TMealSyncNamespace;
 }) {
 	const allowedCustomerNames = getCustomerNamesForNamespace(namespace);
 	const baseSnapshot =

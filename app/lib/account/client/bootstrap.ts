@@ -1,44 +1,33 @@
 import { siteConfig } from '@/configs';
 import { accountStore } from '@/stores/account';
 import { AccountApiError } from './api';
-import {
-	invalidateAccountStateRequests,
-	refreshAccountState,
-	resetAccountSyncRuntime,
-} from './session';
+import { refreshAccountState, resetAccountState } from './session';
+
+function resetAccountBootstrapState(status: 'disabled' | 'error') {
+	resetAccountState();
+	accountStore.shared.bootstrapStatus.set(status);
+	accountStore.shared.isBootstrapped.set(true);
+}
 
 function disableAccountBootstrap() {
-	invalidateAccountStateRequests();
-	resetAccountSyncRuntime();
-	accountStore.shared.sync.meta.set(null);
-	accountStore.shared.bootstrapStatus.set('disabled');
-	accountStore.shared.csrfToken.set(null);
-	accountStore.shared.isBootstrapped.set(true);
-	accountStore.shared.isLoggedIn.set(false);
-	accountStore.shared.passwordMustChange.set(false);
-	accountStore.shared.user.set(null);
+	resetAccountBootstrapState('disabled');
+	accountStore.shared.adminCsrfToken.set(null);
 }
 
 function failAccountBootstrap(message: string) {
-	invalidateAccountStateRequests();
-	resetAccountSyncRuntime();
-	accountStore.shared.sync.meta.set(null);
-	accountStore.shared.bootstrapStatus.set('error');
-	accountStore.shared.csrfToken.set(null);
-	accountStore.shared.isBootstrapped.set(true);
-	accountStore.shared.isLoggedIn.set(false);
-	accountStore.shared.passwordMustChange.set(false);
+	resetAccountBootstrapState('error');
 	accountStore.shared.sync.lastError.set(message);
-	accountStore.shared.user.set(null);
 }
 
-export async function bootstrapAccount() {
-	if (!siteConfig.isAccountFeatureClientEnabled) {
-		disableAccountBootstrap();
-		return;
-	}
+let bootstrapInFlight: Promise<void> | null = null;
 
+async function runBootstrapAccount() {
 	try {
+		if (!siteConfig.isAccountFeatureClientEnabled) {
+			disableAccountBootstrap();
+			return;
+		}
+
 		await refreshAccountState();
 	} catch (error) {
 		if (error instanceof AccountApiError) {
@@ -55,4 +44,50 @@ export async function bootstrapAccount() {
 		console.error('Account bootstrap failed.', error);
 		failAccountBootstrap('bootstrap-failed');
 	}
+}
+
+export function bootstrapAccount() {
+	if (bootstrapInFlight !== null) {
+		return bootstrapInFlight;
+	}
+
+	bootstrapInFlight = runBootstrapAccount()
+		.catch((error: unknown) => {
+			console.error('Account bootstrap failed unexpectedly.', error);
+			try {
+				failAccountBootstrap('bootstrap-failed');
+			} catch (bootstrapError) {
+				console.error(
+					'Failed to record account bootstrap failure.',
+					bootstrapError
+				);
+			}
+		})
+		.finally(() => {
+			bootstrapInFlight = null;
+		});
+
+	return bootstrapInFlight;
+}
+
+export function startAccountBootstrapRetryClient() {
+	if (!siteConfig.isAccountFeatureClientEnabled) {
+		return () => {};
+	}
+
+	const retryBootstrap = () => {
+		if (accountStore.shared.bootstrapStatus.get() !== 'error') {
+			return;
+		}
+
+		void bootstrapAccount();
+	};
+
+	globalThis.addEventListener('online', retryBootstrap);
+	globalThis.addEventListener('focus', retryBootstrap);
+
+	return () => {
+		globalThis.removeEventListener('online', retryBootstrap);
+		globalThis.removeEventListener('focus', retryBootstrap);
+	};
 }

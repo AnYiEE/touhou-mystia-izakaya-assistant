@@ -108,12 +108,17 @@ export async function createAccountSession(
 export async function createAccountSessionForActiveUser(
 	userId: TUser['id'],
 	request: NextRequest,
-	user: TActiveUserSessionPatch
+	user: TActiveUserSessionPatch,
+	credentialPasswordHash?: TUserCredential['password_hash']
 ) {
 	const draft = createAccountSessionDraft(userId, request);
+	const { user_id: _userId, ...session } = draft.record;
 
 	const didCreate = await createSessionForActiveUserRecord({
-		session: draft.record,
+		...(credentialPasswordHash === undefined
+			? {}
+			: { credentialPasswordHash }),
+		session,
 		user,
 		userId,
 	});
@@ -194,6 +199,12 @@ export async function authenticateAccountRequest(
 	]);
 
 	if (user === null || credential === null) {
+		try {
+			await deleteSessionById(session.id);
+		} catch (error) {
+			console.warn('Failed to delete orphaned account session.', error);
+		}
+
 		return {
 			httpStatus: 500,
 			message: 'server-misconfigured',
@@ -203,9 +214,21 @@ export async function authenticateAccountRequest(
 
 	const userStatus: string = user.status;
 	if (userStatus === USER_STATUS_MAP.disabled) {
+		try {
+			await deleteSessionById(session.id);
+		} catch (error) {
+			console.warn('Failed to delete disabled account session.', error);
+		}
+
 		return { httpStatus: 403, message: 'user-disabled', status: 'error' };
 	}
 	if (userStatus === USER_STATUS_MAP.deleted) {
+		try {
+			await deleteSessionById(session.id);
+		} catch (error) {
+			console.warn('Failed to delete deleted account session.', error);
+		}
+
 		return { httpStatus: 403, message: 'user-deleted', status: 'error' };
 	}
 	if (userStatus !== USER_STATUS_MAP.active) {

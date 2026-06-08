@@ -1,22 +1,12 @@
 'use client';
 
 import { Button } from '@/design/ui/components';
+import { getAccountClientErrorMessage } from '@/lib/account/client/errorMessage';
 import { flushAccountSyncQueue } from '@/lib/account/client/syncClient';
+import { getLogSafeErrorCode } from '@/lib/logging';
 import { accountStore } from '@/stores/account';
 import { getSafeStorageMode } from '@/utilities/safeStorage';
 import TimeAgo from '@/components/timeAgo';
-
-const SYNC_ERROR_MESSAGE_MAP: Record<string, string> = {
-	'bootstrap-failed': '账号初始化失败，请刷新页面重试',
-	conflict: '数据冲突，请在冲突解决面板中处理',
-	'legacy-import-failed': '旧版数据导入失败',
-	'sync-failed': '同步失败，请稍后重试',
-	'sync-refresh-failed': '刷新同步状态失败，请稍后重试',
-};
-
-function getSyncErrorMessage(errorCode: string) {
-	return SYNC_ERROR_MESSAGE_MAP[errorCode] ?? `同步异常：${errorCode}`;
-}
 
 export default function AccountSyncStatus() {
 	const sync = accountStore.shared.sync.use();
@@ -43,7 +33,10 @@ export default function AccountSyncStatus() {
 			)}
 			{sync.lastError !== null && (
 				<p>
-					{getSyncErrorMessage(sync.lastError)}
+					{getAccountClientErrorMessage(
+						sync.lastError,
+						'同步异常，请稍后重试'
+					)}
 					{sync.failedAttempts > 0
 						? `（已失败 ${sync.failedAttempts} 次）`
 						: ''}
@@ -55,7 +48,11 @@ export default function AccountSyncStatus() {
 				isLoading={sync.isSyncing}
 				variant="flat"
 				onPress={() => {
-					void flushAccountSyncQueue().catch(() => false);
+					void flushAccountSyncQueue().catch((error: unknown) => {
+						console.warn('Manual account sync failed.', {
+							errorCode: getLogSafeErrorCode(error),
+						});
+					});
 				}}
 			>
 				立即同步

@@ -45,23 +45,17 @@ export async function POST(request: NextRequest) {
 		'admin-logout'
 	);
 	if (rateLimitResponse !== null) {
-		return rateLimitResponse;
+		console.warn('Admin logout rate limit exceeded; continuing logout.');
 	}
 
 	const adminModule = await import('@/lib/account/server/admin');
 	const auth = authenticateAdminRequest(request);
 	if (auth.status === 'error') {
-		const response = createNoStoreErrorResponse(
-			auth.message,
-			auth.httpStatus
-		);
-		adminModule.clearAdminSessionCookie(response, request);
-		return response;
+		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
 	}
 
 	const csrfResponse = checkAdminCsrfResponse(request, auth.token);
 	if (csrfResponse !== null) {
-		adminModule.clearAdminSessionCookie(csrfResponse, request);
 		return csrfResponse;
 	}
 

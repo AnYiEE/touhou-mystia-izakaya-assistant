@@ -1,36 +1,62 @@
 'use client';
 
-import { Button, Link } from '@/design/ui/components';
-import { accountStore } from '@/stores/account';
+import { memo } from 'react';
+import { debounce } from 'lodash';
 
-interface IAccountMenuProps {
-	onPress?: () => void;
+import { Button } from '@/design/ui/components';
+import { accountStore } from '@/stores/account';
+import { checkA11yConfirmKey } from '@/utilities';
+
+interface IAccountButtonProps {
+	isDisabled?: boolean;
+	label: string;
+	onClick?: (() => void) | undefined;
 }
 
-function AccountButton({
+function openAccountModal() {
+	accountStore.shared.accountModal.isOpen.set(true);
+}
+
+const AccountButton = memo<IAccountButtonProps>(function AccountButton({
+	isDisabled,
 	label,
-	onPress,
-}: {
-	label: string;
-	onPress?: (() => void) | undefined;
+	onClick,
 }) {
-	return onPress === undefined ? (
-		<Button as={Link} href="/preferences" size="sm" variant="flat">
-			{label}
-		</Button>
-	) : (
-		<Button size="sm" variant="flat" onPress={onPress}>
+	const handleClick = onClick ?? openAccountModal;
+
+	return (
+		<Button
+			isDisabled={isDisabled}
+			size="sm"
+			variant="flat"
+			onClick={() => {
+				handleClick();
+			}}
+			onKeyDown={debounce(
+				checkA11yConfirmKey(() => {
+					handleClick();
+				})
+			)}
+		>
 			{label}
 		</Button>
 	);
+});
+
+interface IAccountMenuProps {
+	onClick?: () => void;
 }
 
-export default function AccountMenu({ onPress }: IAccountMenuProps) {
+export default memo<IAccountMenuProps>(function AccountMenu({ onClick }) {
 	const bootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const user = accountStore.shared.user.use();
 
 	if (bootstrapStatus === 'error') {
-		return <AccountButton label="账号不可用" onPress={onPress} />;
+		return <AccountButton label="账号不可用" onClick={onClick} />;
+	}
+
+	if (bootstrapStatus === 'unknown') {
+		return <AccountButton isDisabled label="欢迎您" />;
 	}
 
 	if (bootstrapStatus !== 'anonymous' && bootstrapStatus !== 'loggedIn') {
@@ -40,7 +66,7 @@ export default function AccountMenu({ onPress }: IAccountMenuProps) {
 	return (
 		<AccountButton
 			label={user === null ? '未登录' : user.username}
-			onPress={onPress}
+			onClick={onClick}
 		/>
 	);
-}
+});

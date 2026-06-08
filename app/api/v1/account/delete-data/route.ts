@@ -45,16 +45,24 @@ export async function DELETE(request: NextRequest) {
 	]);
 	const auth = await authModule.authenticateAccountRequest(request);
 	if (auth.status === 'error') {
-		return createAccountAuthErrorResponse(authModule, auth, request);
+		return createAccountAuthErrorResponse(auth, request);
 	}
 	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
-	const stateEpoch =
-		await userStateModule.clearUserStateAndIncrementStateEpoch(
+	let stateEpoch: number;
+	try {
+		stateEpoch = await userStateModule.clearUserStateAndIncrementStateEpoch(
 			auth.data.user.id
 		);
+	} catch (error) {
+		if (error instanceof Error && error.message === 'user-not-found') {
+			return createNoStoreErrorResponse('unauthorized', 401);
+		}
+
+		throw error;
+	}
 
 	return createNoStoreJsonResponse({ state_epoch: stateEpoch });
 }

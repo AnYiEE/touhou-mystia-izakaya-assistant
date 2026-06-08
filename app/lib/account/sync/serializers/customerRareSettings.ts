@@ -11,6 +11,29 @@ function getBooleanSetting(value: unknown, fallback: boolean) {
 	return typeof value === 'boolean' ? value : fallback;
 }
 
+function applyCustomerRareSettingsDefaults(
+	data: unknown,
+	defaults: ICustomerRareSettingsSnapshot
+) {
+	if (data === null) {
+		return defaults;
+	}
+
+	if (!isPlainObject(data)) {
+		return data;
+	}
+
+	return {
+		...data,
+		orderLinkedFilter: Object.hasOwn(data, 'orderLinkedFilter')
+			? data['orderLinkedFilter']
+			: defaults.orderLinkedFilter,
+		showTagDescription: Object.hasOwn(data, 'showTagDescription')
+			? data['showTagDescription']
+			: defaults.showTagDescription,
+	};
+}
+
 export const customerRareSettingsSerializer = {
 	deserialize(data) {
 		return this.migrate(data, 1);
@@ -32,16 +55,15 @@ export const customerRareSettingsSerializer = {
 			),
 		};
 	},
-	merge({ base, cloud, local }) {
-		return {
-			conflict: null,
-			...mergeFieldMap({
-				base,
-				cloud,
-				defaults: this.getDefaultSnapshot(),
-				local,
-			}),
-		};
+	merge({ allowBaseNullAutoMerge, base, cloud, local, namespace }) {
+		return mergeFieldMap({
+			allowBaseNullAutoMerge,
+			base,
+			cloud,
+			defaults: this.getDefaultSnapshot(),
+			local,
+			namespace,
+		});
 	},
 	migrate(data, version) {
 		if (version !== 1) {
@@ -50,11 +72,15 @@ export const customerRareSettingsSerializer = {
 			);
 		}
 
-		if (!this.validate(data)) {
+		const dataWithDefaults = applyCustomerRareSettingsDefaults(
+			data,
+			this.getDefaultSnapshot()
+		);
+		if (!this.validate(dataWithDefaults)) {
 			throw new Error('invalid-customer-rare-settings');
 		}
 
-		return data;
+		return dataWithDefaults;
 	},
 	serialize(data) {
 		return data;

@@ -19,10 +19,12 @@ declare global {
 			ICP_FILING?: string;
 
 			ALLOW_INSECURE_COOKIES?: string;
+			/** Security-critical server-side root secret; see README self-hosted account guidance. */
+			APP_SECRET?: string;
+			/** Optional secret for legacy anonymous backup metadata hashing. */
+			LEGACY_BACKUP_SECRET?: string;
 			OFFLINE?: string;
 			SELF_HOSTED?: string;
-			/** Security-critical session signing secret; see README self-hosted account guidance. */
-			SESSION_SECRET?: string;
 			SQLITE_DATABASE_PATH?: string;
 			SKIP_LINT?: string;
 			TRUST_PROXY?: string;

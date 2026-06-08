@@ -102,7 +102,7 @@ export async function getFileSize(
 	fileName?: TBackupFileRecord['file_name']
 ) {
 	const filePath = generateFilePath(code, fileName);
-	const fileStat = await stat(filePath);
+	const fileStat = await stat(filePath, { bigint: true });
 
 	return fileStat.size;
 }

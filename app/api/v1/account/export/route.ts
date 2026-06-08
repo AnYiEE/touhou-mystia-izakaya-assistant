@@ -46,16 +46,13 @@ export async function GET(request: NextRequest) {
 	]);
 	const auth = await authModule.authenticateAccountRequest(request);
 	if (auth.status === 'error') {
-		return createAccountAuthErrorResponse(authModule, auth, request);
+		return createAccountAuthErrorResponse(auth, request);
 	}
 	const snapshot = await userStateModule.getUserStateSnapshot(
 		auth.data.user.id
 	);
 	if (snapshot === null) {
-		const response = createNoStoreErrorResponse('unauthorized', 401);
-		authModule.clearAccountSessionCookie(response, request);
-
-		return response;
+		return createNoStoreErrorResponse('unauthorized', 401);
 	}
 
 	return createNoStoreJsonResponse({

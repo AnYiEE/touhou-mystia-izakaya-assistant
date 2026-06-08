@@ -136,6 +136,7 @@ export async function updateCredentialAndRotateSession({
 	userId: TUser['id'];
 }) {
 	const db = await getAccountDatabase();
+	const { last_seen_at: lastSeenAt, ...sessionPatch } = session;
 
 	await db.transaction().execute(async (trx) => {
 		const updateCredentialResult = await trx
@@ -172,7 +173,16 @@ export async function updateCredentialAndRotateSession({
 
 		const updateSessionResult = await trx
 			.updateTable(SESSION_TABLE_NAME)
-			.set(session)
+			.set(({ ref }) => ({
+				...sessionPatch,
+				...(lastSeenAt === undefined
+					? {}
+					: {
+							last_seen_at: sql<
+								TSession['last_seen_at']
+							>`max(${ref('last_seen_at')}, ${lastSeenAt})`,
+						}),
+			}))
 			.where('id', '=', sessionId)
 			.where('user_id', '=', userId)
 			.executeTakeFirst();
@@ -185,6 +195,77 @@ export async function updateCredentialAndRotateSession({
 			.deleteFrom(SESSION_TABLE_NAME)
 			.where('user_id', '=', userId)
 			.where('id', '!=', sessionId)
+			.execute();
+	});
+}
+
+export async function updateCredentialAndKeepCurrentSession({
+	credential,
+	lastSeenAt,
+	sessionId,
+	userId,
+}: {
+	credential: TUserCredentialUpdate;
+	lastSeenAt: TSession['last_seen_at'];
+	sessionId: TSession['id'];
+	userId: TUser['id'];
+}) {
+	const db = await getAccountDatabase();
+
+	await db.transaction().execute(async (trx) => {
+		const updateCredentialResult = await trx
+			.updateTable(TABLE_NAME)
+			.set(credential)
+			.where('user_id', '=', userId)
+			.where(
+				'user_id',
+				'in',
+				trx
+					.selectFrom(USER_TABLE_NAME)
+					.select('id')
+					.where('id', '=', userId)
+					.where('status', '=', USER_STATUS_MAP.active)
+			)
+			.executeTakeFirst();
+
+		if (updateCredentialResult.numUpdatedRows !== 1n) {
+			const user = await trx
+				.selectFrom(USER_TABLE_NAME)
+				.select('status')
+				.where('id', '=', userId)
+				.executeTakeFirst();
+
+			if (user === undefined) {
+				throw new Error('user-not-found');
+			}
+			if (user.status !== USER_STATUS_MAP.active) {
+				throw new Error('invalid-user-status');
+			}
+
+			throw new Error('credential-not-found');
+		}
+
+		const deleteOtherSessionsCreatedBefore = Date.now() + 1;
+		const updateSessionResult = await trx
+			.updateTable(SESSION_TABLE_NAME)
+			.set(({ ref }) => ({
+				last_seen_at: sql<
+					TSession['last_seen_at']
+				>`max(${ref('last_seen_at')}, ${lastSeenAt})`,
+			}))
+			.where('id', '=', sessionId)
+			.where('user_id', '=', userId)
+			.executeTakeFirst();
+
+		if (updateSessionResult.numUpdatedRows !== 1n) {
+			throw new Error('session-not-found');
+		}
+
+		await trx
+			.deleteFrom(SESSION_TABLE_NAME)
+			.where('user_id', '=', userId)
+			.where('id', '!=', sessionId)
+			.where('created_at', '<', deleteOtherSessionsCreatedBefore)
 			.execute();
 	});
 }

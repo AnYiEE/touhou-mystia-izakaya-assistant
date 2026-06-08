@@ -46,7 +46,7 @@ export async function DELETE(request: NextRequest) {
 	]);
 	const auth = await authModule.authenticateAccountRequest(request);
 	if (auth.status === 'error') {
-		return createAccountAuthErrorResponse(authModule, auth, request);
+		return createAccountAuthErrorResponse(auth, request);
 	}
 	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
@@ -56,8 +56,6 @@ export async function DELETE(request: NextRequest) {
 		auth.data.user.id,
 		USER_STATUS_MAP.deleted
 	);
-	const response = createNoStoreJsonResponse({ message: 'account-deleted' });
-	authModule.clearAccountSessionCookie(response, request);
 
-	return response;
+	return createNoStoreJsonResponse({ message: 'account-deleted' });
 }

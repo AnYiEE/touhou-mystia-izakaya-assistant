@@ -28,6 +28,36 @@ function getConflictResolutionData(
 	return conflict.local;
 }
 
+function clearResolvedConflict(userId: string, namespace: string) {
+	accountStore.shared.sync.conflicts.set((conflicts) =>
+		conflicts.filter(
+			(item) => item.userId !== userId || item.namespace !== namespace
+		)
+	);
+	const hasRemainingConflict = accountStore.shared.sync.conflicts
+		.get()
+		.some((item) => item.userId === userId);
+	if (
+		!hasRemainingConflict &&
+		accountStore.shared.sync.lastError.get() === 'conflict'
+	) {
+		accountStore.shared.sync.lastError.set(null);
+	}
+}
+
+function rollbackConflictSnapshot(
+	serializer: ReturnType<typeof getAccountSyncSerializer>,
+	previousSnapshot: unknown
+) {
+	withApplyingRemoteState(() => {
+		serializer.setLocalSnapshot(previousSnapshot);
+	});
+}
+
+function checkActiveConflictUser(userId: string) {
+	return accountStore.shared.user.get()?.id === userId;
+}
+
 export function resolveAccountSyncConflict({
 	conflict,
 	resolution,
@@ -43,6 +73,9 @@ export function resolveAccountSyncConflict({
 	if (resolution === 'merged' && conflict.merged === null) {
 		return false;
 	}
+	if (!checkActiveConflictUser(userId)) {
+		return false;
+	}
 
 	const data = getConflictResolutionData(conflict, resolution);
 	const serializer = getAccountSyncSerializer(conflict.namespace);
@@ -51,6 +84,11 @@ export function resolveAccountSyncConflict({
 	withApplyingRemoteState(() => {
 		serializer.setLocalSnapshot(data);
 	});
+	if (!checkActiveConflictUser(userId)) {
+		rollbackConflictSnapshot(serializer, previousSnapshot);
+
+		return false;
+	}
 
 	if (resolution === 'cloud') {
 		const previousMeta = readAccountSyncMeta(userId);
@@ -72,6 +110,11 @@ export function resolveAccountSyncConflict({
 			lastAppliedRemoteHash: { ...metaSource.lastAppliedRemoteHash },
 			revisions: { ...metaSource.revisions },
 		};
+		if (!checkActiveConflictUser(userId)) {
+			rollbackConflictSnapshot(serializer, previousSnapshot);
+
+			return false;
+		}
 		try {
 			meta.lastAppliedRemoteHash[conflict.namespace] = createSnapshotHash(
 				serializer.getLocalSnapshot()
@@ -100,18 +143,17 @@ export function resolveAccountSyncConflict({
 			throw error;
 		}
 		removeDirtyQueueEntry(userId, conflict.namespace);
-		accountStore.shared.sync.conflicts.set((conflicts) =>
-			conflicts.filter(
-				(item) =>
-					item.userId !== userId ||
-					item.namespace !== conflict.namespace
-			)
-		);
+		clearResolvedConflict(userId, conflict.namespace);
 		return true;
 	}
 
 	let entry;
 	try {
+		if (!checkActiveConflictUser(userId)) {
+			rollbackConflictSnapshot(serializer, previousSnapshot);
+
+			return false;
+		}
 		entry = markAccountSyncDirty({
 			baseRevision: conflict.revision,
 			data,
@@ -132,12 +174,7 @@ export function resolveAccountSyncConflict({
 		return false;
 	}
 
-	accountStore.shared.sync.conflicts.set((conflicts) =>
-		conflicts.filter(
-			(item) =>
-				item.userId !== userId || item.namespace !== conflict.namespace
-		)
-	);
+	clearResolvedConflict(userId, conflict.namespace);
 
 	return true;
 }

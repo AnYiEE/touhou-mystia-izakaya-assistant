@@ -1,16 +1,26 @@
 import { sql } from 'kysely';
 
 import { TABLE_NAME_MAP } from '@/lib/db';
-import type { TUser, TUserState, TUserStateNew } from '@/lib/db/types';
+import type {
+	TSession,
+	TUser,
+	TUserState,
+	TUserStateNew,
+} from '@/lib/db/types';
 
 import { getAccountDatabase } from '@/lib/account/server/db';
+import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 
 const TABLE_NAME = TABLE_NAME_MAP.userState;
 const USER_TABLE_NAME = TABLE_NAME_MAP.user;
+const SESSION_TABLE_NAME = TABLE_NAME_MAP.session;
+const BACKUP_IMPORT_TABLE_NAME = TABLE_NAME_MAP.backupImportRecord;
 
 type TPutUserStateEntryIfRevisionResult =
+	| { status: 'corrupt-user-state' }
 	| { status: 'conflict'; current: TUserState | null }
 	| { status: 'ok' }
+	| { status: 'unauthorized' }
 	| { state_epoch: number; status: 'state-epoch-mismatch' };
 
 interface IPutUserStateEntryIfRevisionChange {
@@ -18,7 +28,32 @@ interface IPutUserStateEntryIfRevisionChange {
 	expectedRevision: number;
 }
 
+function isNonNegativeSafeInteger(value: unknown): value is number {
+	return (
+		typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+	);
+}
+
+function canIncrementSyncRevision(value: unknown): value is number {
+	return (
+		isNonNegativeSafeInteger(value) && value < Number.MAX_SAFE_INTEGER - 1
+	);
+}
+
+function canIncrementSyncTimestamp(value: unknown): value is number {
+	return isNonNegativeSafeInteger(value) && value < Number.MAX_SAFE_INTEGER;
+}
+
+function checkNewUserStateEntryCounters(entry: TUserStateNew) {
+	return (
+		isNonNegativeSafeInteger(entry.revision) &&
+		entry.revision < Number.MAX_SAFE_INTEGER &&
+		isNonNegativeSafeInteger(entry.updated_at)
+	);
+}
+
 type TPutUserStateEntriesIfRevisionResult =
+	| { status: 'corrupt-user-state' }
 	| {
 			results: Array<
 				| { entry: TUserStateNew; status: 'ok' }
@@ -30,6 +65,7 @@ type TPutUserStateEntriesIfRevisionResult =
 			>;
 			status: 'ok';
 	  }
+	| { status: 'unauthorized' }
 	| { state_epoch: number; status: 'state-epoch-mismatch' };
 
 export async function getUserState(
@@ -77,15 +113,11 @@ export async function putUserStateEntries(entries: TUserStateNew[]) {
 
 export async function putUserStateEntriesIfRevision(
 	changes: IPutUserStateEntryIfRevisionChange[],
-	expectedStateEpoch: number
+	expectedStateEpoch: number,
+	session: Pick<TSession, 'id' | 'token_hash'>,
+	userId: TUser['id']
 ): Promise<TPutUserStateEntriesIfRevisionResult> {
-	const [firstChange] = changes;
-	if (firstChange === undefined) {
-		return { results: [], status: 'ok' };
-	}
-
 	const db = await getAccountDatabase();
-	const userId = firstChange.entry.user_id;
 	if (changes.some((change) => change.entry.user_id !== userId)) {
 		throw new Error('mixed-user-state-entries');
 	}
@@ -93,9 +125,15 @@ export async function putUserStateEntriesIfRevision(
 	return db.transaction().execute(async (trx) => {
 		const user = await trx
 			.selectFrom(USER_TABLE_NAME)
-			.select('state_epoch')
+			.select(['state_epoch', 'status'])
 			.where('id', '=', userId)
-			.executeTakeFirstOrThrow();
+			.executeTakeFirst();
+		if (user === undefined) {
+			return { status: 'unauthorized' };
+		}
+		if (user.status !== USER_STATUS_MAP.active) {
+			return { status: 'unauthorized' };
+		}
 		if (user.state_epoch !== expectedStateEpoch) {
 			return {
 				state_epoch: user.state_epoch,
@@ -109,19 +147,37 @@ export async function putUserStateEntriesIfRevision(
 			// following namespace writes share one state_epoch check.
 			.set({ updated_at: sql<TUser['updated_at']>`updated_at` })
 			.where('id', '=', userId)
+			.where('status', '=', USER_STATUS_MAP.active)
 			.where('state_epoch', '=', expectedStateEpoch)
 			.executeTakeFirst();
 		if (stateEpochLockResult.numUpdatedRows !== 1n) {
 			const currentUser = await trx
 				.selectFrom(USER_TABLE_NAME)
-				.select('state_epoch')
+				.select(['state_epoch', 'status'])
 				.where('id', '=', userId)
-				.executeTakeFirstOrThrow();
+				.executeTakeFirst();
+			if (currentUser === undefined) {
+				return { status: 'unauthorized' };
+			}
+			if (currentUser.status !== USER_STATUS_MAP.active) {
+				return { status: 'unauthorized' };
+			}
 
 			return {
 				state_epoch: currentUser.state_epoch,
 				status: 'state-epoch-mismatch',
 			};
+		}
+
+		const currentSession = await trx
+			.selectFrom(SESSION_TABLE_NAME)
+			.select('id')
+			.where('id', '=', session.id)
+			.where('user_id', '=', userId)
+			.where('token_hash', '=', session.token_hash)
+			.executeTakeFirst();
+		if (currentSession === undefined) {
+			return { status: 'unauthorized' };
 		}
 
 		const results: Extract<
@@ -130,6 +186,10 @@ export async function putUserStateEntriesIfRevision(
 		>['results'] = [];
 
 		for (const { entry, expectedRevision } of changes) {
+			if (!checkNewUserStateEntryCounters(entry)) {
+				return { status: 'corrupt-user-state' };
+			}
+
 			const current =
 				(await trx
 					.selectFrom(TABLE_NAME)
@@ -137,6 +197,14 @@ export async function putUserStateEntriesIfRevision(
 					.where('user_id', '=', entry.user_id)
 					.where('namespace', '=', entry.namespace)
 					.executeTakeFirst()) ?? null;
+			if (
+				current !== null &&
+				(!canIncrementSyncRevision(current.revision) ||
+					!canIncrementSyncTimestamp(current.updated_at))
+			) {
+				return { status: 'corrupt-user-state' };
+			}
+
 			const currentRevision = current?.revision ?? 0;
 
 			if (
@@ -208,13 +276,22 @@ export async function putUserStateEntriesIfRevision(
 export async function putUserStateEntryIfRevision(
 	entry: TUserStateNew,
 	expectedRevision: number,
-	expectedStateEpoch: number
+	expectedStateEpoch: number,
+	session: Pick<TSession, 'id' | 'token_hash'>
 ): Promise<TPutUserStateEntryIfRevisionResult> {
 	const result = await putUserStateEntriesIfRevision(
 		[{ entry, expectedRevision }],
-		expectedStateEpoch
+		expectedStateEpoch,
+		session,
+		entry.user_id
 	);
+	if (result.status === 'unauthorized') {
+		return { status: 'unauthorized' };
+	}
 	if (result.status === 'state-epoch-mismatch') {
+		return result;
+	}
+	if (result.status === 'corrupt-user-state') {
 		return result;
 	}
 
@@ -242,6 +319,10 @@ export async function clearUserStateAndIncrementStateEpoch(
 			.deleteFrom(TABLE_NAME)
 			.where('user_id', '=', userId)
 			.execute();
+		await trx
+			.deleteFrom(BACKUP_IMPORT_TABLE_NAME)
+			.where('user_id', '=', userId)
+			.execute();
 		const record = await trx
 			.updateTable(USER_TABLE_NAME)
 			.set(({ eb, ref }) => ({
@@ -250,7 +331,62 @@ export async function clearUserStateAndIncrementStateEpoch(
 			}))
 			.where('id', '=', userId)
 			.returning('state_epoch')
-			.executeTakeFirstOrThrow();
+			.executeTakeFirst();
+
+		if (record === undefined) {
+			throw new Error('user-not-found');
+		}
+
+		return record.state_epoch;
+	});
+}
+
+export async function clearUserDataAndDeleteSessionsAndIncrementStateEpoch(
+	userId: TUser['id']
+) {
+	const db = await getAccountDatabase();
+
+	return db.transaction().execute(async (trx) => {
+		const now = Date.now();
+		const record = await trx
+			.updateTable(USER_TABLE_NAME)
+			.set(({ eb, ref }) => ({
+				state_epoch: eb(ref('state_epoch'), '+', 1),
+				updated_at: now,
+			}))
+			.where('id', '=', userId)
+			.where('status', '!=', USER_STATUS_MAP.deleted)
+			.returning('state_epoch')
+			.executeTakeFirst();
+
+		if (record === undefined) {
+			const user = await trx
+				.selectFrom(USER_TABLE_NAME)
+				.select('status')
+				.where('id', '=', userId)
+				.executeTakeFirst();
+			if (user === undefined) {
+				throw new Error('user-not-found');
+			}
+			if (user.status === USER_STATUS_MAP.deleted) {
+				throw new Error('invalid-user-status');
+			}
+
+			throw new Error('update-not-applied');
+		}
+
+		await trx
+			.deleteFrom(TABLE_NAME)
+			.where('user_id', '=', userId)
+			.execute();
+		await trx
+			.deleteFrom(BACKUP_IMPORT_TABLE_NAME)
+			.where('user_id', '=', userId)
+			.execute();
+		await trx
+			.deleteFrom(SESSION_TABLE_NAME)
+			.where('user_id', '=', userId)
+			.execute();
 
 		return record.state_epoch;
 	});

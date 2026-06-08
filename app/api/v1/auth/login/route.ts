@@ -6,7 +6,7 @@ import {
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
 	createRetryAfterHeaders,
-	readJsonBody,
+	readJsonBodyResult,
 } from '@/api/v1/accountRouteUtils';
 import {
 	createNoStoreErrorResponse,
@@ -56,7 +56,11 @@ export async function POST(request: NextRequest) {
 		return cookieSecurityResponse;
 	}
 
-	const body = await readJsonBody<IAuthLoginBody>(request);
+	const bodyResult = await readJsonBodyResult<IAuthLoginBody>(request);
+	if (bodyResult.status === 'payload-too-large') {
+		return createNoStoreErrorResponse('payload-too-large', 413);
+	}
+	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	if (
 		body === null ||
 		typeof body.username !== 'string' ||
@@ -88,7 +92,8 @@ export async function POST(request: NextRequest) {
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
 		'login',
-		usernameNormalized
+		usernameNormalized,
+		{ noTrustedIpGate: true }
 	);
 	if (rateLimitResponse !== null) {
 		return rateLimitResponse;
@@ -152,7 +157,8 @@ export async function POST(request: NextRequest) {
 	const session = await authModule.createAccountSessionForActiveUser(
 		user.id,
 		request,
-		userUpdate
+		userUpdate,
+		credential.password_hash
 	);
 	if (session === null) {
 		return createInvalidLoginResponse();

@@ -33,7 +33,13 @@ interface IPragmaIndexListRow {
 
 interface IPragmaTableInfoRow {
 	name: string;
+	notnull: number;
 	pk: number;
+}
+
+interface IPrimaryKeyColumnInfo {
+	name: string;
+	notNull: boolean;
 }
 
 const ACCOUNT_TABLE_COLUMNS_MAP = {
@@ -220,14 +226,14 @@ async function getPrimaryKeyColumns(
 	tableName: TAccountTableName
 ) {
 	const { rows } = await sql<IPragmaTableInfoRow>`
-		select name, pk
+		select name, "notnull", pk
 		from pragma_table_info(${tableName})
 	`.execute(database);
 
 	return rows
 		.filter((row) => row.pk > 0)
 		.sort((left, right) => left.pk - right.pk)
-		.map((row) => row.name);
+		.map((row) => ({ name: row.name, notNull: row.notnull === 1 }));
 }
 
 async function getForeignKeys(
@@ -272,15 +278,25 @@ async function hasUniqueIndex(
 
 function assertPrimaryKeyColumns(
 	tableName: TAccountTableName,
-	actualColumns: string[],
+	actualColumns: IPrimaryKeyColumnInfo[],
 	expectedColumns: string[]
 ) {
+	const actualColumnNames = actualColumns.map((column) => column.name);
 	if (
-		actualColumns.length !== expectedColumns.length ||
-		actualColumns.some((column, index) => column !== expectedColumns[index])
+		actualColumnNames.length !== expectedColumns.length ||
+		actualColumnNames.some(
+			(column, index) => column !== expectedColumns[index]
+		)
 	) {
 		throw new Error(
 			`${SERVER_MISCONFIGURED_MESSAGE}: account table ${tableName} primary key must be ${expectedColumns.join(', ')}`
+		);
+	}
+
+	const nullableColumn = actualColumns.find((column) => !column.notNull);
+	if (nullableColumn !== undefined) {
+		throw new Error(
+			`${SERVER_MISCONFIGURED_MESSAGE}: account table ${tableName} primary key column ${nullableColumn.name} must be not null`
 		);
 	}
 }
@@ -367,7 +383,7 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 	await database.schema
 		.createTable(TABLE_NAME_MAP.user)
 		.ifNotExists()
-		.addColumn('id', 'text', (col) => col.primaryKey())
+		.addColumn('id', 'text', (col) => col.notNull().primaryKey())
 		.addColumn('username', 'text', (col) => col.notNull())
 		.addColumn('username_normalized', 'text', (col) => col.notNull())
 		.addColumn('status', 'text', (col) => col.notNull().defaultTo('active'))
@@ -383,7 +399,7 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 	await database.schema
 		.createTable(TABLE_NAME_MAP.backupImportRecord)
 		.ifNotExists()
-		.addColumn('code', 'text', (col) => col.primaryKey())
+		.addColumn('code', 'text', (col) => col.notNull().primaryKey())
 		.addColumn('user_id', 'text', (col) =>
 			col
 				.notNull()
@@ -401,6 +417,7 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 		.ifNotExists()
 		.addColumn('user_id', 'text', (col) =>
 			col
+				.notNull()
 				.primaryKey()
 				.references(`${TABLE_NAME_MAP.user}.id`)
 				.onDelete('cascade')
@@ -419,7 +436,7 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 	await database.schema
 		.createTable(TABLE_NAME_MAP.session)
 		.ifNotExists()
-		.addColumn('id', 'text', (col) => col.primaryKey())
+		.addColumn('id', 'text', (col) => col.notNull().primaryKey())
 		.addColumn('user_id', 'text', (col) =>
 			col
 				.notNull()

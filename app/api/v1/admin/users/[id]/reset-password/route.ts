@@ -5,7 +5,7 @@ import {
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
-	readJsonBody,
+	readJsonBodyResult,
 } from '@/api/v1/accountRouteUtils';
 import {
 	createNoStoreErrorResponse,
@@ -68,7 +68,12 @@ export async function POST(
 		return csrfResponse;
 	}
 
-	const body = await readJsonBody<IAdminResetPasswordBody>(request);
+	const bodyResult =
+		await readJsonBodyResult<IAdminResetPasswordBody>(request);
+	if (bodyResult.status === 'payload-too-large') {
+		return createNoStoreErrorResponse('payload-too-large', 413);
+	}
+	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	if (typeof body?.password !== 'string') {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}

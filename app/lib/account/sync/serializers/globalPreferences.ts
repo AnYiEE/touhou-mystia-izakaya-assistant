@@ -222,6 +222,34 @@ function sanitizeGlobalPreferences(data: unknown) {
 	};
 }
 
+function applyGlobalPreferencesDefaults(
+	data: unknown,
+	defaults: unknown
+): unknown {
+	if (data === undefined) {
+		return defaults;
+	}
+
+	if (!isPlainObject(defaults)) {
+		return data;
+	}
+
+	if (!isPlainObject(data)) {
+		return data;
+	}
+
+	const result = { ...data };
+	Object.keys(defaults).forEach((key) => {
+		result[key] = applyGlobalPreferencesDefaults(data[key], defaults[key]);
+	});
+
+	return result;
+}
+
+function getPlainObjectOrEmpty(data: unknown): Record<string, unknown> {
+	return isPlainObject(data) ? data : {};
+}
+
 function isBeverageColumnArray(
 	data: unknown
 ): data is TBeverageTableColumnKey[] {
@@ -235,6 +263,23 @@ function isRecipeColumnArray(data: unknown): data is TRecipeTableColumnKey[] {
 	return (
 		isStringArray(data) && data.every((item) => recipeColumnKeys.has(item))
 	);
+}
+
+function normalizeInteractionCountToCloud(
+	data: IGlobalPreferencesSnapshot,
+	cloud: IGlobalPreferencesSnapshot | null
+) {
+	if (cloud === null) {
+		return data;
+	}
+
+	return {
+		...data,
+		donationModal: {
+			...data.donationModal,
+			interactionCount: cloud.donationModal.interactionCount,
+		},
+	};
 }
 
 export const globalPreferencesSerializer = {
@@ -280,63 +325,80 @@ export const globalPreferencesSerializer = {
 	},
 	getLocalSnapshot() {
 		const persistence = globalStore.persistence.get();
+		const donationModal = getPlainObjectOrEmpty(persistence.donationModal);
+		const hiddenItems = getPlainObjectOrEmpty(persistence.hiddenItems);
+		const suggestMeals = getPlainObjectOrEmpty(persistence.suggestMeals);
+		const table = getPlainObjectOrEmpty(persistence.table);
+		const tableColumns = getPlainObjectOrEmpty(table['columns']);
+		const tableHiddenItems = getPlainObjectOrEmpty(table['hiddenItems']);
 
-		return cloneJsonObject({
-			customerCardTagsTooltip: persistence.customerCardTagsTooltip,
-			donationModal: {
-				interactionCount: persistence.donationModal.interactionCount,
-				lastMilestoneShown:
-					persistence.donationModal.lastMilestoneShown,
-				lastShown: persistence.donationModal.lastShown,
-			},
-			famousShop: persistence.famousShop,
-			hiddenItems: { dlcs: persistence.hiddenItems.dlcs },
-			highAppearance: persistence.highAppearance,
-			popularTrend: persistence.popularTrend,
-			suggestMeals: {
-				enabled: persistence.suggestMeals.enabled,
-				maxExtraIngredients:
-					persistence.suggestMeals.maxExtraIngredients,
-				maxRating: persistence.suggestMeals.maxRating,
-				maxResults: persistence.suggestMeals.maxResults,
-			},
-			table: {
-				columns: {
-					beverage: persistence.table.columns.beverage,
-					recipe: persistence.table.columns.recipe,
+		const snapshot = sanitizeGlobalPreferences(
+			cloneJsonObject({
+				customerCardTagsTooltip: persistence.customerCardTagsTooltip,
+				donationModal: {
+					interactionCount: donationModal['interactionCount'],
+					lastMilestoneShown: donationModal['lastMilestoneShown'],
+					lastShown: donationModal['lastShown'],
 				},
-				hiddenItems: {
-					beverages: persistence.table.hiddenItems.beverages,
-					ingredients: persistence.table.hiddenItems.ingredients,
-					recipes: persistence.table.hiddenItems.recipes,
+				famousShop: persistence.famousShop,
+				hiddenItems: { dlcs: hiddenItems['dlcs'] },
+				highAppearance: persistence.highAppearance,
+				popularTrend: persistence.popularTrend,
+				suggestMeals: {
+					enabled: suggestMeals['enabled'],
+					maxExtraIngredients: suggestMeals['maxExtraIngredients'],
+					maxRating: suggestMeals['maxRating'],
+					maxResults: suggestMeals['maxResults'],
 				},
-				row: persistence.table.row,
-			},
-			tachie: persistence.tachie,
-			vibrate: persistence.vibrate,
-		});
+				table: {
+					columns: {
+						beverage: tableColumns['beverage'],
+						recipe: tableColumns['recipe'],
+					},
+					hiddenItems: {
+						beverages: tableHiddenItems['beverages'],
+						ingredients: tableHiddenItems['ingredients'],
+						recipes: tableHiddenItems['recipes'],
+					},
+					row: table['row'],
+				},
+				tachie: persistence.tachie,
+				vibrate: persistence.vibrate,
+			})
+		);
+
+		return this.validate(snapshot) ? snapshot : this.getDefaultSnapshot();
 	},
-	merge({ base, cloud, local }) {
-		return {
-			conflict: null,
-			...mergeFieldMap({
-				base,
-				cloud,
-				defaults: this.getDefaultSnapshot(),
-				local,
-			}),
-		};
+	merge({ allowBaseNullAutoMerge, base, cloud, local, namespace }) {
+		const normalizedBase =
+			base === null
+				? null
+				: normalizeInteractionCountToCloud(base, cloud);
+		const normalizedLocal = normalizeInteractionCountToCloud(local, cloud);
+
+		return mergeFieldMap<IGlobalPreferencesSnapshot>({
+			allowBaseNullAutoMerge,
+			base: normalizedBase,
+			cloud,
+			defaults: this.getDefaultSnapshot(),
+			local: normalizedLocal,
+			namespace,
+		});
 	},
 	migrate(data, version) {
 		if (version !== 1) {
 			throw new Error('unsupported-global-preferences-schema-version');
 		}
 
-		if (!checkGlobalPreferencesExactKeyShape(data)) {
+		const dataWithDefaults = applyGlobalPreferencesDefaults(
+			data,
+			this.getDefaultSnapshot()
+		);
+		if (!checkGlobalPreferencesExactKeyShape(dataWithDefaults)) {
 			throw new Error('invalid-global-preferences');
 		}
 
-		const sanitizedData = sanitizeGlobalPreferences(data);
+		const sanitizedData = sanitizeGlobalPreferences(dataWithDefaults);
 		if (!this.validate(sanitizedData)) {
 			throw new Error('invalid-global-preferences');
 		}

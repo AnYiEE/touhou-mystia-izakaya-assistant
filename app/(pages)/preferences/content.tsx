@@ -9,7 +9,6 @@ import { Select, SelectItem } from '@heroui/select';
 import { Button, Switch, cn } from '@/design/ui/components';
 import { useMotionProps, useReducedMotion } from '@/design/ui/hooks';
 
-import AccountManager from './accountManager';
 import DataManager, { type IDataManagerProps } from './dataManager';
 import HiddenItems from './hiddenItems';
 import SwitchItem from './switchItem';
@@ -97,7 +96,6 @@ export default memo<IProps>(function Content({ onModalClose }) {
 			<Heading as="h2" className="mt-0">
 				全局设置
 			</Heading>
-			<AccountManager />
 			<Heading
 				as="h3"
 				subTitle="已关闭的数据集所对应的物品将在各个页面中被隐藏"
@@ -252,7 +250,7 @@ export default memo<IProps>(function Content({ onModalClose }) {
 				<SwitchItem
 					isSelected={isShowTachie}
 					onValueChange={globalStore.persistence.tachie.set}
-					aria-label={`${isShowTagDescription ? '隐藏' : '显示'}顾客页面立绘`}
+					aria-label={`${isShowTachie ? '隐藏' : '显示'}顾客页面立绘`}
 				>
 					顾客页面右下角的立绘
 					<span className="text-tiny text-foreground-500">

@@ -6,6 +6,7 @@ import {
 	checkBackupCodeLockTimeoutError,
 	checkBackupFileNotFoundError,
 	checkIpFrequency,
+	deleteFile,
 	deleteRecord,
 	getFile,
 	getRecord,
@@ -25,6 +26,9 @@ import { FILE_TYPE_JSON } from '@/utilities';
 import { FREQUENCY_TTL } from '../constants';
 import { getLogSafeErrorCode, getRequestMeta, maskBackupCode } from '../utils';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function GET(
 	request: NextRequest,
 	{ params }: { params: Promise<{ code: string }> }
@@ -37,9 +41,6 @@ export async function GET(
 	const code = normalizedCode.toLowerCase();
 
 	const requestMeta = getRequestMeta(request);
-	if (requestMeta === null) {
-		return createNoStoreErrorResponse('server-misconfigured', 500);
-	}
 	const { ip } = requestMeta;
 	if (ip === null) {
 		return createNoStoreErrorResponse('Invalid IP address', 400);
@@ -136,16 +137,17 @@ export async function DELETE(
 
 	try {
 		return await withBackupCodeLock(code, async (signal) => {
-			const { status } = await getRecord(code);
+			const record = await getRecord(code);
 			throwIfBackupCodeLockLost(signal);
 
-			if (status === 404) {
+			if (record.status === 404) {
 				return createNoStoreErrorResponse(
 					'The file record does not exist or has been deleted',
 					404
 				);
 			}
 
+			let deletedFile = false;
 			try {
 				await withFreshBackupCodeLock(signal, async (trx) => {
 					const deleteResult = await deleteRecord(code, trx);
@@ -179,8 +181,20 @@ export async function DELETE(
 				);
 			}
 
+			try {
+				await deleteFile(code, record.file_name);
+				deletedFile = true;
+			} catch (error) {
+				if (!checkBackupFileNotFoundError(error)) {
+					console.warn('Failed to delete backup file', {
+						codeHash: maskBackupCode(code),
+						errorCode: getLogSafeErrorCode(error),
+					});
+				}
+			}
+
 			return createNoStoreJsonResponse({
-				deletedFile: false,
+				deletedFile,
 				message: 'The file record has been deleted',
 			});
 		});

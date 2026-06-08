@@ -62,17 +62,21 @@ function normalizeRequestHost(host: string | null) {
 
 export function getExpectedRequestOrigin(request: NextRequest) {
 	const trustProxy = checkEnvFlag(env.TRUST_PROXY);
+	const forwardedHost = getFirstHeaderValue(
+		request.headers.get('x-forwarded-host')
+	);
+	const forwardedProtocol = getFirstHeaderValue(
+		request.headers.get('x-forwarded-proto')
+	);
+	if (trustProxy && (forwardedHost === null || forwardedProtocol === null)) {
+		return null;
+	}
+
 	const host = normalizeRequestHost(
-		trustProxy
-			? (getFirstHeaderValue(request.headers.get('x-forwarded-host')) ??
-					request.headers.get('host'))
-			: request.headers.get('host')
+		trustProxy ? forwardedHost : request.headers.get('host')
 	);
 	const protocol = normalizeRequestProtocol(
-		trustProxy
-			? (getFirstHeaderValue(request.headers.get('x-forwarded-proto')) ??
-					request.nextUrl.protocol)
-			: request.nextUrl.protocol
+		trustProxy ? forwardedProtocol : request.nextUrl.protocol
 	);
 
 	if (host === null || protocol === null) {
@@ -116,6 +120,9 @@ export function checkSecureRequest(request: NextRequest) {
 	const forwardedProtocol = normalizeRequestProtocol(
 		getFirstHeaderValue(request.headers.get('x-forwarded-proto'))
 	);
+	if (checkEnvFlag(env.TRUST_PROXY) && forwardedProtocol === null) {
+		return false;
+	}
 
 	return (
 		request.nextUrl.protocol === 'https:' ||

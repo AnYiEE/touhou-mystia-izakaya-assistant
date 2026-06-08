@@ -5,7 +5,8 @@ import {
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
-	readJsonBody,
+	createAccountAuthErrorResponse,
+	readJsonBodyResult,
 } from '@/api/v1/accountRouteUtils';
 import {
 	createNoStoreErrorResponse,
@@ -16,11 +17,13 @@ import {
 	type ISyncStatePutBody,
 	type TSyncStatePutResult,
 } from '@/lib/account/sync';
+import { getLogSafeErrorCode } from '@/lib/logging';
 import {
+	MAX_SYNC_JSON_BODY_BYTES,
 	checkSyncNamespace,
 	createUserStateRecord,
 	parseSyncStatePutBody,
-	parseUserStateData,
+	parseUserStateRecord,
 } from '../utils';
 
 export const runtime = 'nodejs';
@@ -32,13 +35,15 @@ function createConflictResult(
 		ReturnType<typeof import('@/actions/account/userState').getUserState>
 	>
 ): ISyncStateItemConflict {
+	const record = current === null ? null : parseUserStateRecord(current);
+
 	return {
-		data: current === null ? null : parseUserStateData(current.data),
+		data: record?.data ?? null,
 		namespace,
-		revision: current?.revision ?? 0,
-		schema_version: current?.schema_version ?? 0,
+		revision: record?.revision ?? 0,
+		schema_version: record?.schema_version ?? 0,
 		status: 'conflict',
-		updated_at: current?.updated_at ?? 0,
+		updated_at: record?.updated_at ?? 0,
 	};
 }
 
@@ -68,7 +73,7 @@ export async function GET(request: NextRequest) {
 	]);
 	const auth = await authModule.authenticateAccountRequest(request);
 	if (auth.status === 'error') {
-		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
+		return createAccountAuthErrorResponse(auth, request);
 	}
 
 	const namespaceParams = request.nextUrl.searchParams.getAll('namespace');
@@ -77,24 +82,23 @@ export async function GET(request: NextRequest) {
 		return createNoStoreErrorResponse('unknown-namespace', 400);
 	}
 
-	const records = await userStateModule.listUserStateByNamespaces(
-		auth.data.user.id,
-		namespaces
-	);
+	const records =
+		namespaces.length === 0
+			? await userStateModule.listUserState(auth.data.user.id)
+			: await userStateModule.listUserStateByNamespaces(
+					auth.data.user.id,
+					namespaces
+				);
 
 	try {
 		return createNoStoreJsonResponse({
-			records: records.map((record) => ({
-				data: parseUserStateData(record.data),
-				namespace: record.namespace,
-				revision: record.revision,
-				schema_version: record.schema_version,
-				updated_at: record.updated_at,
-			})),
+			records: records.map(parseUserStateRecord),
 			state_epoch: auth.data.user.state_epoch,
 		});
 	} catch (error) {
-		console.warn('Failed to parse stored sync state.', error);
+		console.warn('Failed to parse stored sync state.', {
+			errorCode: getLogSafeErrorCode(error),
+		});
 		return createCorruptUserStateResponse();
 	}
 }
@@ -129,14 +133,21 @@ export async function PUT(request: NextRequest) {
 	]);
 	const auth = await authModule.authenticateAccountRequest(request);
 	if (auth.status === 'error') {
-		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
+		return createAccountAuthErrorResponse(auth, request);
 	}
 	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
+	const bodyResult = await readJsonBodyResult<ISyncStatePutBody>(
+		request,
+		MAX_SYNC_JSON_BODY_BYTES
+	);
+	if (bodyResult.status === 'payload-too-large') {
+		return createNoStoreErrorResponse('payload-too-large', 413);
+	}
 	const body = parseSyncStatePutBody(
-		await readJsonBody<ISyncStatePutBody>(request)
+		bodyResult.status === 'ok' ? bodyResult.data : null
 	);
 	if (body === null) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
@@ -145,16 +156,6 @@ export async function PUT(request: NextRequest) {
 		return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
 			state_epoch: auth.data.user.state_epoch,
 		});
-	}
-
-	const seenNamespaces = new Set<string>();
-	for (const change of body.changes) {
-		if (seenNamespaces.has(change.namespace)) {
-			return createNoStoreErrorResponse('duplicate-namespace', 400, {
-				namespace: change.namespace,
-			});
-		}
-		seenNamespaces.add(change.namespace);
 	}
 
 	const results: TSyncStatePutResult[] = [];
@@ -200,14 +201,23 @@ export async function PUT(request: NextRequest) {
 			entry: change.record,
 			expectedRevision: change.change.revision,
 		})),
-		body.state_epoch
+		body.state_epoch,
+		auth.data.session,
+		auth.data.user.id
 	);
+	if (writeResult.status === 'unauthorized') {
+		return createNoStoreErrorResponse('unauthorized', 401);
+	}
 	if (writeResult.status === 'state-epoch-mismatch') {
 		return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
 			state_epoch: writeResult.state_epoch,
 		});
 	}
+	if (writeResult.status === 'corrupt-user-state') {
+		return createCorruptUserStateResponse();
+	}
 
+	// writeResult.results only covers readyChanges, so consume it in preparedChanges order.
 	let writeResultIndex = 0;
 	for (const preparedChange of preparedChanges) {
 		if (preparedChange.status === 'error') {
@@ -233,7 +243,9 @@ export async function PUT(request: NextRequest) {
 					)
 				);
 			} catch (error) {
-				console.warn('Failed to parse conflicting sync state.', error);
+				console.warn('Failed to parse conflicting sync state.', {
+					errorCode: getLogSafeErrorCode(error),
+				});
 				return createCorruptUserStateResponse();
 			}
 			continue;

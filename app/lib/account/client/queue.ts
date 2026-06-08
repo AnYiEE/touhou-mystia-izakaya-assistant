@@ -1,7 +1,10 @@
 import {
 	type IDirtyQueueEntry,
+	type ISyncConflictItem,
+	SYNC_NAMESPACE_MAP,
 	SYNC_SCHEMA_VERSION_MAP,
 	type TSyncNamespace,
+	type TSyncPausedReason,
 } from '@/lib/account/sync';
 import { sha1 } from 'js-sha1';
 import {
@@ -12,11 +15,66 @@ import {
 	removeAccountStorage,
 	writeAccountJsonStorage,
 } from './storage';
-import {
-	checkAccountSyncPaused,
-	checkApplyingRemoteState,
-} from './stateGuards';
+import { checkApplyingRemoteState } from './stateGuards';
 import { createAccountClientId } from './random';
+
+const SYNC_NAMESPACE_SET = new Set<TSyncNamespace>(
+	Object.values(SYNC_NAMESPACE_MAP)
+);
+const SYNC_PAUSED_REASON_SET = new Set<TSyncPausedReason | null>([
+	null,
+	'applying-remote',
+	'bootstrap',
+	'conflict',
+	'delete-data',
+	'importing-backup',
+]);
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+	return value !== null && !Array.isArray(value) && typeof value === 'object';
+}
+
+function isNonNegativeSafeInteger(value: unknown): value is number {
+	return (
+		typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+	);
+}
+
+function checkSyncRevision(value: unknown): value is number {
+	return isNonNegativeSafeInteger(value) && value < Number.MAX_SAFE_INTEGER;
+}
+
+function checkSyncNamespace(value: unknown): value is TSyncNamespace {
+	return (
+		typeof value === 'string' &&
+		SYNC_NAMESPACE_SET.has(value as TSyncNamespace)
+	);
+}
+
+function checkDirtyQueueConflict(
+	value: unknown,
+	namespace: TSyncNamespace,
+	userId: string
+): value is ISyncConflictItem {
+	return (
+		isPlainObject(value) &&
+		'cloud' in value &&
+		'local' in value &&
+		'merged' in value &&
+		value['namespace'] === namespace &&
+		checkSyncRevision(value['revision']) &&
+		value['userId'] === userId
+	);
+}
+
+function readDirtyQueueNamespaceFromKey(
+	key: string,
+	prefix: string
+): TSyncNamespace | null {
+	const namespace = key.slice(prefix.length);
+
+	return checkSyncNamespace(namespace) ? namespace : null;
+}
 
 function sortJsonValue(value: unknown): unknown {
 	if (Array.isArray(value)) {
@@ -51,6 +109,7 @@ function createSnapshotStableJson(data: unknown) {
 }
 
 function createSnapshotDigest(stableJson: string) {
+	// Non-security digest for local snapshot equality; not used for auth.
 	return `sha1:${sha1(stableJson)}`;
 }
 
@@ -74,6 +133,64 @@ export function checkSnapshotHashMatches(
 	);
 }
 
+export function checkSnapshotHashesEquivalent(
+	currentEntry: IDirtyQueueEntry,
+	entry: IDirtyQueueEntry
+) {
+	return (
+		checkSnapshotHashMatches(currentEntry.data, entry.snapshotHash) &&
+		checkSnapshotHashMatches(entry.data, currentEntry.snapshotHash)
+	);
+}
+
+function sanitizeDirtyQueueEntry({
+	entry,
+	key,
+	namespace,
+	userId,
+}: {
+	entry: unknown;
+	key: string;
+	namespace: TSyncNamespace;
+	userId: string;
+}) {
+	if (
+		!isPlainObject(entry) ||
+		!('data' in entry) ||
+		entry['namespace'] !== namespace ||
+		entry['schema_version'] !== SYNC_SCHEMA_VERSION_MAP[namespace] ||
+		!isNonNegativeSafeInteger(entry['attempts']) ||
+		!checkSyncRevision(entry['baseRevision']) ||
+		!isNonNegativeSafeInteger(entry['dirtyAt']) ||
+		typeof entry['clientMutationId'] !== 'string' ||
+		entry['clientMutationId'] === '' ||
+		typeof entry['snapshotHash'] !== 'string' ||
+		entry['snapshotHash'] === '' ||
+		(entry['lastError'] !== null &&
+			typeof entry['lastError'] !== 'string') ||
+		!SYNC_PAUSED_REASON_SET.has(entry['paused'] as TSyncPausedReason | null)
+	) {
+		removeAccountStorage(key);
+		return null;
+	}
+	if (!checkSnapshotHashMatches(entry['data'], entry['snapshotHash'])) {
+		removeAccountStorage(key);
+		return null;
+	}
+
+	if (entry['paused'] === 'conflict') {
+		if (!checkDirtyQueueConflict(entry['conflict'], namespace, userId)) {
+			removeAccountStorage(key);
+			return null;
+		}
+	} else if (entry['conflict'] !== null) {
+		removeAccountStorage(key);
+		return null;
+	}
+
+	return entry as unknown as IDirtyQueueEntry;
+}
+
 export function createDirtyQueueKey(userId: string, namespace: TSyncNamespace) {
 	return createAccountStorageKey(
 		ACCOUNT_STORAGE_KEY_MAP.dirtyQueue,
@@ -83,10 +200,10 @@ export function createDirtyQueueKey(userId: string, namespace: TSyncNamespace) {
 }
 
 export function readDirtyQueueEntry(userId: string, namespace: TSyncNamespace) {
-	return readAccountJsonStorage<IDirtyQueueEntry | null>(
-		createDirtyQueueKey(userId, namespace),
-		null
-	);
+	const key = createDirtyQueueKey(userId, namespace);
+	const entry = readAccountJsonStorage<unknown>(key, null);
+
+	return sanitizeDirtyQueueEntry({ entry, key, namespace, userId });
 }
 
 export function writeDirtyQueueEntry(userId: string, entry: IDirtyQueueEntry) {
@@ -139,29 +256,38 @@ export function readDirtyQueueEntries(userId: string) {
 	);
 
 	return getAccountStorageKeys(prefix)
-		.map((key) =>
-			readAccountJsonStorage<IDirtyQueueEntry | null>(key, null)
-		)
+		.map((key) => {
+			const namespace = readDirtyQueueNamespaceFromKey(key, prefix);
+			if (namespace === null) {
+				removeAccountStorage(key);
+				return null;
+			}
+
+			return sanitizeDirtyQueueEntry({
+				entry: readAccountJsonStorage<unknown>(key, null),
+				key,
+				namespace,
+				userId,
+			});
+		})
 		.filter((entry): entry is IDirtyQueueEntry => entry !== null);
 }
 
 export function markAccountSyncDirty({
 	baseRevision,
 	data,
-	ignorePause = false,
 	namespace,
 	userId,
 }: {
 	baseRevision: number;
 	data: unknown;
-	ignorePause?: boolean;
 	namespace: TSyncNamespace;
 	userId: string;
 }) {
-	if (
-		checkApplyingRemoteState() ||
-		(!ignorePause && checkAccountSyncPaused())
-	) {
+	if (!checkSyncRevision(baseRevision)) {
+		throw new Error('invalid-base-revision');
+	}
+	if (checkApplyingRemoteState()) {
 		return null;
 	}
 
@@ -194,6 +320,10 @@ export function completeDirtyQueueEntryUpload({
 	nextBaseRevision: number;
 	userId: string;
 }) {
+	if (!checkSyncRevision(nextBaseRevision)) {
+		throw new Error('invalid-next-base-revision');
+	}
+
 	const currentEntry = readDirtyQueueEntry(userId, entry.namespace);
 
 	if (currentEntry === null) {
@@ -202,7 +332,7 @@ export function completeDirtyQueueEntryUpload({
 
 	if (
 		currentEntry.clientMutationId === entry.clientMutationId &&
-		currentEntry.snapshotHash === entry.snapshotHash
+		checkSnapshotHashesEquivalent(currentEntry, entry)
 	) {
 		removeDirtyQueueEntry(userId, entry.namespace);
 		return 'removed' as const;

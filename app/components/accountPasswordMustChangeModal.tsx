@@ -2,26 +2,93 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import { Input } from '@heroui/input';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+	faArrowRightFromBracket,
+	faCheck,
+	faKey,
+	faShieldHalved,
+	faTriangleExclamation,
+	faUser,
+} from '@fortawesome/free-solid-svg-icons';
 
-import { Button, Modal } from '@/design/ui/components';
+import { Button, Input, Modal, cn } from '@/design/ui/components';
 import {
 	AccountApiError,
 	changeAccountPassword,
 	logoutAccount,
 } from '@/lib/account/client/api';
+import { getAccountClientErrorMessage } from '@/lib/account/client/errorMessage';
 import {
 	applyAccountAuthSuccessResponse,
+	checkCurrentAccountAuthContext,
 	refreshAccountState,
-	resetAccountState,
+	resetAccountStateIfCurrent,
 } from '@/lib/account/client/session';
+import {
+	PASSWORD_RULE_DESCRIPTION,
+	checkPasswordPolicy,
+} from '@/lib/account/shared/constants';
+import { getLogSafeErrorCode } from '@/lib/logging';
 import { accountStore } from '@/stores/account';
 import Heading from './heading';
+
+function PasswordChangePanel({
+	children,
+	className,
+}: {
+	children: ReactNodeWithoutBoolean;
+	className?: string;
+}) {
+	return (
+		<section
+			className={cn(
+				'rounded-small border border-default-200/80 bg-default-50/60 p-4 shadow-sm shadow-default-200/30 dark:bg-default-100/20 dark:shadow-none',
+				className
+			)}
+		>
+			{children}
+		</section>
+	);
+}
+
+function PasswordChangePanelTitle({
+	children,
+	icon,
+	iconClassName,
+}: {
+	children: ReactNodeWithoutBoolean;
+	icon: Parameters<typeof FontAwesomeIcon>[0]['icon'];
+	iconClassName?: string;
+}) {
+	return (
+		<div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground-700">
+			<FontAwesomeIcon
+				icon={icon}
+				className={cn('w-4 text-primary-600', iconClassName)}
+			/>
+			<span>{children}</span>
+		</div>
+	);
+}
+
+function PasswordChangeInputIcon({
+	icon,
+}: {
+	icon: Parameters<typeof FontAwesomeIcon>[0]['icon'];
+}) {
+	return (
+		<span className="pointer-events-none inline-flex -translate-y-px items-center text-default-400">
+			<FontAwesomeIcon icon={icon} className="block w-3.5" />
+		</span>
+	);
+}
 
 export default function AccountPasswordMustChangeModal() {
 	const csrfToken = accountStore.shared.csrfToken.use();
 	const isLoggedIn = accountStore.shared.isLoggedIn.use();
 	const passwordMustChange = accountStore.shared.passwordMustChange.use();
+	const user = accountStore.shared.user.use();
 	const [currentPassword, setCurrentPassword] = useState('');
 	const [message, setMessage] = useState<string | null>(null);
 	const [newPassword, setNewPassword] = useState('');
@@ -30,6 +97,8 @@ export default function AccountPasswordMustChangeModal() {
 		null
 	);
 	const isOpen = isLoggedIn && passwordMustChange;
+	const isNewPasswordInvalid =
+		newPassword.length > 0 && !checkPasswordPolicy(newPassword);
 
 	useEffect(() => {
 		setPortalContainer(document.querySelector('#modal-portal-container'));
@@ -41,24 +110,38 @@ export default function AccountPasswordMustChangeModal() {
 	}, []);
 
 	const handlePasswordChange = useCallback(() => {
-		if (isSubmitting || csrfToken === null) {
+		if (isSubmitting || csrfToken === null || user === null) {
+			return;
+		}
+		if (!checkPasswordPolicy(newPassword)) {
+			setMessage(PASSWORD_RULE_DESCRIPTION);
 			return;
 		}
 
 		setIsSubmitting(true);
 		setMessage(null);
+		const expectedAuthContext = {
+			expectedCsrfToken: csrfToken,
+			expectedUserId: user.id,
+		};
 		void changeAccountPassword(
 			{ current_password: currentPassword, new_password: newPassword },
 			csrfToken
 		)
 			.then((data) => {
-				applyAccountAuthSuccessResponse(data);
+				if (
+					!applyAccountAuthSuccessResponse(data, {
+						...expectedAuthContext,
+					})
+				) {
+					return;
+				}
 				clearPasswordFields();
 				setMessage(null);
 				refreshAccountState().catch((error: unknown) => {
 					console.warn(
 						'Account state refresh failed after successful password change.',
-						error
+						{ errorCode: getLogSafeErrorCode(error) }
 					);
 				});
 			})
@@ -68,8 +151,12 @@ export default function AccountPasswordMustChangeModal() {
 					error.status === 401 &&
 					error.message !== 'invalid-password'
 				) {
-					clearPasswordFields();
-					resetAccountState();
+					if (resetAccountStateIfCurrent(expectedAuthContext)) {
+						clearPasswordFields();
+					}
+					return;
+				}
+				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
 					return;
 				}
 				setMessage(error instanceof Error ? error.message : '改密失败');
@@ -83,17 +170,23 @@ export default function AccountPasswordMustChangeModal() {
 		currentPassword,
 		isSubmitting,
 		newPassword,
+		user,
 	]);
 
 	const handleLogout = useCallback(() => {
-		if (isSubmitting) {
+		if (isSubmitting || user === null) {
 			return;
 		}
+		const expectedAuthContext = {
+			expectedCsrfToken: csrfToken,
+			expectedUserId: user.id,
+		};
 
 		if (csrfToken === null) {
-			clearPasswordFields();
 			setMessage(null);
-			resetAccountState();
+			if (resetAccountStateIfCurrent(expectedAuthContext)) {
+				clearPasswordFields();
+			}
 			return;
 		}
 
@@ -101,13 +194,18 @@ export default function AccountPasswordMustChangeModal() {
 		setMessage(null);
 		void logoutAccount(csrfToken)
 			.then(() => {
-				clearPasswordFields();
-				resetAccountState();
+				if (resetAccountStateIfCurrent(expectedAuthContext)) {
+					clearPasswordFields();
+				}
 			})
 			.catch((error: unknown) => {
 				if (error instanceof AccountApiError && error.status === 401) {
-					clearPasswordFields();
-					resetAccountState();
+					if (resetAccountStateIfCurrent(expectedAuthContext)) {
+						clearPasswordFields();
+					}
+					return;
+				}
+				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
 					return;
 				}
 				setMessage(error instanceof Error ? error.message : '退出失败');
@@ -115,70 +213,169 @@ export default function AccountPasswordMustChangeModal() {
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [clearPasswordFields, csrfToken, isSubmitting]);
+	}, [clearPasswordFields, csrfToken, isSubmitting, user]);
 
 	if (!isOpen) {
 		return null;
 	}
 
+	const messageText =
+		message === null ? null : getAccountClientErrorMessage(message);
+	const isPasswordReady =
+		csrfToken !== null &&
+		currentPassword.length > 0 &&
+		newPassword.length > 0 &&
+		!isNewPasswordInvalid;
+
 	return (
 		<Modal
+			hideCloseButton
 			isOpen
+			isDismissable={false}
+			isKeyboardDismissDisabled
 			{...(portalContainer === null ? {} : { portalContainer })}
 		>
-			<div className="w-full max-w-md space-y-4">
-				<Heading as="h2" isFirst>
-					更新密码
-				</Heading>
-				<p className="text-sm text-foreground-600">
-					管理员已重置密码，请更新密码后继续使用账号同步。
-				</p>
-				<Input
-					label="当前密码"
-					type="password"
-					autoComplete="current-password"
-					value={currentPassword}
-					onValueChange={setCurrentPassword}
-				/>
-				<Input
-					label="新密码"
-					type="password"
-					autoComplete="new-password"
-					value={newPassword}
-					onValueChange={setNewPassword}
-				/>
-				{message !== null && (
-					<p
-						aria-live="assertive"
-						className="text-sm text-danger"
-						role="alert"
-					>
-						{message}
+			<div className="w-full max-w-2xl space-y-4">
+				<div className="space-y-2">
+					<Heading as="h2" isFirst>
+						更新账号密码
+					</Heading>
+					<p className="text-sm leading-6 text-foreground-600">
+						管理员已重置此账号的登录凭据。完成密码更新后，账号同步和数据操作会恢复可用。
 					</p>
-				)}
-				<div className="flex flex-wrap justify-end gap-2">
-					<Button
-						isDisabled={isSubmitting}
-						isLoading={isSubmitting}
-						variant="flat"
-						onPress={handleLogout}
-					>
-						退出登录
-					</Button>
-					<Button
-						color="primary"
-						isDisabled={
-							isSubmitting ||
-							csrfToken === null ||
-							currentPassword.length === 0 ||
-							newPassword.length === 0
-						}
-						isLoading={isSubmitting}
-						variant="solid"
-						onPress={handlePasswordChange}
-					>
-						更新密码
-					</Button>
+				</div>
+
+				<div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
+					<div className="space-y-4">
+						<PasswordChangePanel>
+							<PasswordChangePanelTitle icon={faUser}>
+								当前账号
+							</PasswordChangePanelTitle>
+							<div className="flex flex-wrap items-center gap-3">
+								<div className="flex h-10 w-10 items-center justify-center rounded-full bg-danger/15 text-danger-600 dark:text-danger">
+									<FontAwesomeIcon
+										icon={faUser}
+										className="w-4"
+									/>
+								</div>
+								<div className="min-w-0">
+									<p className="truncate text-base font-medium">
+										{user?.username ?? '当前账号'}
+									</p>
+									<p className="truncate text-xs text-danger-600 dark:text-danger">
+										需要更新密码后继续使用
+									</p>
+								</div>
+							</div>
+						</PasswordChangePanel>
+
+						<PasswordChangePanel className="space-y-3">
+							<PasswordChangePanelTitle icon={faKey}>
+								设置新密码
+							</PasswordChangePanelTitle>
+							<Input
+								autoComplete="current-password"
+								label="当前临时密码"
+								placeholder="输入管理员提供或刚登录使用的密码"
+								startContent={
+									<PasswordChangeInputIcon
+										icon={faShieldHalved}
+									/>
+								}
+								type="password"
+								value={currentPassword}
+								onValueChange={setCurrentPassword}
+							/>
+							<Input
+								autoComplete="new-password"
+								description={PASSWORD_RULE_DESCRIPTION}
+								errorMessage={
+									isNewPasswordInvalid
+										? PASSWORD_RULE_DESCRIPTION
+										: undefined
+								}
+								isInvalid={isNewPasswordInvalid}
+								label="新密码"
+								placeholder="输入之后要长期使用的新密码"
+								startContent={
+									<PasswordChangeInputIcon icon={faKey} />
+								}
+								type="password"
+								value={newPassword}
+								onValueChange={setNewPassword}
+							/>
+							{messageText !== null && (
+								<p
+									aria-live="assertive"
+									className="rounded-small bg-danger/10 px-3 py-2 text-sm text-danger-700 dark:text-danger"
+									role="alert"
+								>
+									{messageText}
+								</p>
+							)}
+							<Button
+								fullWidth
+								color="danger"
+								isDisabled={isSubmitting || !isPasswordReady}
+								isLoading={isSubmitting}
+								startContent={
+									isSubmitting ? null : (
+										<FontAwesomeIcon
+											icon={faCheck}
+											className="w-4"
+										/>
+									)
+								}
+								variant="flat"
+								onPress={handlePasswordChange}
+							>
+								更新密码后继续
+							</Button>
+						</PasswordChangePanel>
+					</div>
+
+					<PasswordChangePanel className="space-y-4">
+						<div>
+							<PasswordChangePanelTitle
+								icon={faShieldHalved}
+								iconClassName="text-default-500"
+							>
+								受限状态
+							</PasswordChangePanelTitle>
+							<div className="space-y-3 text-sm leading-6 text-foreground-600">
+								<div className="flex items-start gap-2 rounded-small bg-warning/10 px-3 py-2 text-warning-700 dark:text-warning-600">
+									<FontAwesomeIcon
+										icon={faTriangleExclamation}
+										className="mt-1 w-4 shrink-0"
+									/>
+									<p>
+										密码更新前，账号同步、云端数据操作和冲突处理会暂时暂停。
+									</p>
+								</div>
+								<p>
+									如果暂时不处理，可以退出当前账号；本机未完成的同步队列会留在本地，之后重新登录再继续。
+								</p>
+							</div>
+						</div>
+						<Button
+							fullWidth
+							className="justify-start"
+							isDisabled={isSubmitting}
+							isLoading={isSubmitting}
+							startContent={
+								isSubmitting ? null : (
+									<FontAwesomeIcon
+										icon={faArrowRightFromBracket}
+										className="w-4"
+									/>
+								)
+							}
+							variant="flat"
+							onPress={handleLogout}
+						>
+							退出登录
+						</Button>
+					</PasswordChangePanel>
 				</div>
 			</div>
 		</Modal>

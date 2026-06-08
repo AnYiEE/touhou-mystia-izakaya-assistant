@@ -5,7 +5,7 @@ import {
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
-	readJsonBody,
+	readJsonBodyResult,
 } from '@/api/v1/accountRouteUtils';
 import {
 	createNoStoreErrorResponse,
@@ -38,7 +38,11 @@ export async function POST(request: NextRequest) {
 		return cookieSecurityResponse;
 	}
 
-	const body = await readJsonBody<IAdminLoginBody>(request);
+	const bodyResult = await readJsonBodyResult<IAdminLoginBody>(request);
+	if (bodyResult.status === 'payload-too-large') {
+		return createNoStoreErrorResponse('payload-too-large', 413);
+	}
+	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	if (
 		body === null ||
 		typeof body.username !== 'string' ||
@@ -56,7 +60,8 @@ export async function POST(request: NextRequest) {
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
 		'admin-login',
-		usernameRateLimitKey
+		usernameRateLimitKey,
+		{ noTrustedIpGate: true }
 	);
 	if (rateLimitResponse !== null) {
 		return rateLimitResponse;

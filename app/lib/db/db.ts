@@ -2,17 +2,28 @@ import Database from 'better-sqlite3';
 import { Kysely, SqliteDialect } from 'kysely';
 import { env } from 'node:process';
 
-import { TABLE_NAME_MAP, getSqliteDatabasePath } from './constant';
+import { TABLE_NAME_MAP, getConfiguredSqliteDatabasePath } from './constant';
 import type { TDatabase } from './types';
 import { getTableColumns } from './utils';
+import { getLogSafeErrorCode } from '../logging';
 
-// Create and export database instance.
-const nativeDatabase = new Database(
-	getSqliteDatabasePath(env.SQLITE_DATABASE_PATH)
-);
-nativeDatabase.pragma('foreign_keys = ON');
-nativeDatabase.pragma('busy_timeout = 5000');
-nativeDatabase.pragma('journal_mode = WAL');
+let nativeDatabase: Database.Database;
+let sqliteDatabasePath = '';
+try {
+	sqliteDatabasePath = getConfiguredSqliteDatabasePath(
+		env.SQLITE_DATABASE_PATH
+	);
+	nativeDatabase = new Database(sqliteDatabasePath);
+	nativeDatabase.pragma('foreign_keys = ON');
+	nativeDatabase.pragma('busy_timeout = 5000');
+	nativeDatabase.pragma('journal_mode = WAL');
+} catch (error) {
+	console.warn('SQLite database initialization failed.', {
+		errorCode: getLogSafeErrorCode(error),
+		sqliteDatabasePath,
+	});
+	throw error;
+}
 
 const dialect = new SqliteDialect({ database: nativeDatabase });
 export const db = new Kysely<TDatabase>({ dialect });

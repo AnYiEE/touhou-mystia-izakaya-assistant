@@ -164,10 +164,34 @@ export async function updateRecord(
 	return generateResponse(record, 404);
 }
 
-export async function deleteExpiredBackupImportRecords(createdBefore: number) {
+export async function deleteBackupImportRecordByCode(
+	code: TBackupFileRecord['code'],
+	database: TBackupRecordDatabase = db
+) {
 	let result;
 	try {
-		result = await db
+		result = await database
+			.deleteFrom(IMPORT_TABLE_NAME)
+			.where('code', '=', code)
+			.executeTakeFirst();
+	} catch (error) {
+		if (checkMissingBackupImportTableError(error)) {
+			return 0;
+		}
+
+		throw error;
+	}
+
+	return Number(result.numDeletedRows);
+}
+
+export async function deleteExpiredBackupImportRecords(
+	createdBefore: number,
+	database: TBackupRecordDatabase = db
+) {
+	let result;
+	try {
+		result = await database
 			.deleteFrom(IMPORT_TABLE_NAME)
 			.where('created_at', '<', createdBefore)
 			.executeTakeFirst();

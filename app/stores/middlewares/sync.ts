@@ -158,6 +158,47 @@ interface ISyncOptions<T> {
 	watch: Array<Extract<TNestedKeys<T>, `persistence${string}`>>;
 }
 
+function createStoreBroadcastChannel(name: string) {
+	try {
+		return new BroadcastChannel<unknown>(name, { webWorkerSupport: false });
+	} catch (error) {
+		console.warn('Store broadcast channel is unavailable.', error);
+		return null;
+	}
+}
+
+function postStoreBroadcastMessage(
+	channel: BroadcastChannel<unknown> | null,
+	message: unknown
+) {
+	if (channel === null) {
+		return;
+	}
+
+	try {
+		void channel.postMessage(message).catch((error: unknown) => {
+			console.warn('Store broadcast failed.', error);
+		});
+	} catch (error) {
+		console.warn('Store broadcast failed.', error);
+	}
+}
+
+function subscribeStoreBroadcastMessage(
+	channel: BroadcastChannel<unknown> | null,
+	callback: (message: unknown) => void
+) {
+	if (channel === null) {
+		return;
+	}
+
+	try {
+		channel.addEventListener('message', callback);
+	} catch (error) {
+		console.warn('Store broadcast subscription failed.', error);
+	}
+}
+
 export function sync<T>(options: ISyncOptions<T>) {
 	return (initializer: StateCreator<T>): StateCreator<T> => {
 		if (isServer) {
@@ -166,12 +207,10 @@ export function sync<T>(options: ISyncOptions<T>) {
 
 		return (set, get, api) => {
 			const { name, watch } = options;
-			const channel = new BroadcastChannel(name, {
-				webWorkerSupport: false,
-			});
+			const channel = createStoreBroadcastChannel(name);
 
-			void channel.postMessage(LOADED_SIGNAL);
-			channel.addEventListener('message', (data) => {
+			postStoreBroadcastMessage(channel, LOADED_SIGNAL);
+			subscribeStoreBroadcastMessage(channel, (data) => {
 				if (data === LOADED_SIGNAL) {
 					if (checkLengthEmpty(watch)) {
 						return;
@@ -185,7 +224,7 @@ export function sync<T>(options: ISyncOptions<T>) {
 						return acc;
 					}, {} as T);
 
-					void channel.postMessage(watchedState);
+					postStoreBroadcastMessage(channel, watchedState);
 				} else {
 					set((state) => merge(state, data as Partial<T>));
 				}
@@ -214,7 +253,7 @@ export function sync<T>(options: ISyncOptions<T>) {
 				}, {} as T);
 
 				if (hasChanges && !checkApplyingRemoteState()) {
-					void channel.postMessage(watchedState);
+					postStoreBroadcastMessage(channel, watchedState);
 				}
 			};
 

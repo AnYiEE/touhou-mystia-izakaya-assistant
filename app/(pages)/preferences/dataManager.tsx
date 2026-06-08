@@ -15,6 +15,13 @@ import { usePathname, useThrottle } from '@/hooks';
 
 import { Textarea } from '@heroui/input';
 import { Tab, Tabs } from '@heroui/tabs';
+import {
+	LEGACY_BACKUP_FREQUENCY_TTL,
+	deleteLegacyBackup,
+	downloadLegacyBackup,
+	fetchLegacyBackupMetadata,
+	uploadLegacyBackup,
+} from '@/(pages)/preferences/legacyCloudBackupClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faKey } from '@fortawesome/free-solid-svg-icons';
 
@@ -38,17 +45,12 @@ import {
 } from '@/components/customerRareTutorial';
 import Heading from '@/components/heading';
 import TimeAgo from '@/components/timeAgo';
+import LegacyBackupImport from './legacyBackupImport';
 
 import {
 	compatibilityCustomerRareData,
 	deleteIndexProperty,
 } from '@/actions/backup/compatibility';
-import { FREQUENCY_TTL } from '@/api/v1/backups/constants';
-import type {
-	IBackupCheckSuccessResponse,
-	IBackupUploadBody,
-	IBackupUploadSuccessResponse,
-} from '@/api/v1/backups/types';
 import { siteConfig } from '@/configs';
 import {
 	accountStore,
@@ -64,7 +66,7 @@ import {
 	toggleBoolean,
 } from '@/utilities';
 
-const { isOffline, isSelfHosted, isVercel } = siteConfig;
+const { isAccountFeatureClientEnabled } = siteConfig;
 
 const cloudDeleteButtonLabelMap = {
 	delete: '删除云备份',
@@ -96,28 +98,6 @@ const exportButtonLabelMap = {
 type TCloudState = 'danger' | 'default' | 'success';
 type TExportButtonLabel = ExtractCollectionValue<typeof exportButtonLabelMap>;
 
-function checkResponse<T>(response: Response) {
-	if (!response.ok) {
-		return response.json().then((error) => {
-			// eslint-disable-next-line @typescript-eslint/only-throw-error
-			throw { data: error as object, status: response.status };
-		});
-	}
-
-	return response.json().then((json) => {
-		if (
-			json !== null &&
-			typeof json === 'object' &&
-			'data' in json &&
-			'status' in json &&
-			json.status === 'ok'
-		) {
-			return json.data as T;
-		}
-		return json as T;
-	});
-}
-
 function setErrorState({
 	error,
 	label,
@@ -142,9 +122,17 @@ function setErrorState({
 			status,
 		} = error as { data: { message: string }; status: number };
 		console.error({ message, status });
-		setLabel(
-			`${label}（${status === 400 ? '无效的备份码' : status === 404 ? '目标文件不存在' : status === 429 ? `请${FREQUENCY_TTL / 1000 / 60}分钟后再试` : status}）`
-		);
+		const errorMessage =
+			status === 400
+				? '无效的备份码'
+				: status === 404
+					? '目标文件不存在'
+					: status === 409
+						? '备份正在处理中，请稍后重试'
+						: status === 429
+							? `请${LEGACY_BACKUP_FREQUENCY_TTL / 1000 / 60}分钟后再试`
+							: status;
+		setLabel(`${label}（${errorMessage}）`);
 		if (type === 'Delete' && status === 404) {
 			globalStore.persistence.cloudCode.set(null);
 		}
@@ -242,11 +230,13 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	const currentCloudCode = globalStore.persistence.cloudCode.use();
 	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const shouldShowLegacyCloud =
-		isSelfHosted &&
-		!isOffline &&
-		!isVercel &&
+		isAccountFeatureClientEnabled &&
 		(accountBootstrapStatus === 'disabled' ||
 			accountBootstrapStatus === 'error');
+	const shouldShowLegacyBackupImport =
+		isAccountFeatureClientEnabled &&
+		(accountBootstrapStatus === 'anonymous' ||
+			accountBootstrapStatus === 'loggedIn');
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 	const userId = globalStore.persistence.userId.use();
 
@@ -272,10 +262,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				);
 				return;
 			}
-			fetch(
-				`/api/v1/backups/${encodeURIComponent(normalizedCode)}/metadata`
-			)
-				.then(checkResponse<IBackupCheckSuccessResponse>)
+			fetchLegacyBackupMetadata(normalizedCode)
 				.then(({ created_at, last_accessed }) => {
 					if (cloudCodeInfoRequestIdRef.current !== requestId) {
 						return;
@@ -303,14 +290,16 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 					}
 
 					if (isObject(error) && 'status' in error) {
+						const message =
+							error.status === 404
+								? '云端未记录此备份码，可能已于他处删除？'
+								: error.status === 409
+									? '备份正在处理中，请稍后重试'
+									: error.status === 429
+										? `请${LEGACY_BACKUP_FREQUENCY_TTL / 1000 / 60}分钟后再试`
+										: '无效的备份码';
 						setCloudCodeInfo(
-							<span className="text-tiny">
-								（
-								{error.status === 404
-									? '云端未记录此备份码，可能已于他处删除？'
-									: '无效的备份码'}
-								）
-							</span>
+							<span className="text-tiny">（{message}）</span>
 						);
 					} else {
 						setCloudCodeInfo(
@@ -340,10 +329,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		}
 		setIsCloudDeleteButtonDisabled(true);
 		setCloudDeleteButtonLabel(cloudDeleteButtonLabelMap.deleting);
-		fetch(`/api/v1/backups/${encodeURIComponent(normalizedCode)}`, {
-			method: 'DELETE',
-		})
-			.then(checkResponse)
+		deleteLegacyBackup(normalizedCode)
 			.then(() => {
 				setCloudDeleteState('success');
 				setCloudDeleteButtonLabel(cloudDeleteButtonLabelMap.success);
@@ -389,10 +375,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		setIsCloudDownloadButtonDisabled(true);
 		setCloudDownloadButtonLabel(cloudDownloadButtonLabelMap.downloading);
 		let didDownload = false;
-		fetch(`/api/v1/backups/${encodeURIComponent(code)}`, {
-			cache: 'no-cache',
-		})
-			.then(checkResponse<TMealData>)
+		downloadLegacyBackup<TMealData>(code)
 			.then((data) => {
 				setCloudDownloadState('success');
 				setCloudDownloadButtonLabel(
@@ -428,7 +411,9 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				});
 			})
 			.finally(() => {
-				if (didDownload) {
+				const latestCloudCode =
+					globalStore.persistence.cloudCode.get()?.trim() ?? '';
+				if (didDownload || code === latestCloudCode) {
 					updateCloudCodeInfo(code);
 				}
 				const timerId = setTimeout(() => {
@@ -450,16 +435,11 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		setCloudUploadButtonLabel(cloudUploadButtonLabelMap.uploading);
 		let cloudCodeToRefresh = currentCloudCode;
 		const cloudCode = currentCloudCode?.trim();
-		fetch('/api/v1/backups', {
-			body: JSON.stringify({
-				code: cloudCode === '' ? null : (cloudCode ?? null),
-				data: currentMealData,
-				user_id: userId,
-			} satisfies IBackupUploadBody),
-			headers: { 'Content-Type': FILE_TYPE_JSON },
-			method: 'POST',
+		uploadLegacyBackup({
+			code: cloudCode === '' ? null : (cloudCode ?? null),
+			data: currentMealData,
+			user_id: userId,
 		})
-			.then(checkResponse<IBackupUploadSuccessResponse>)
 			.then(({ code }) => {
 				cloudCodeToRefresh = code;
 				setCloudUploadState('success');
@@ -743,6 +723,13 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 							</div>
 						</div>
 					</Tab>
+					{shouldShowLegacyBackupImport && (
+						<Tab key="legacy-backup-import" title="旧备份码导入">
+							<div className="w-full space-y-2 lg:w-1/2">
+								<LegacyBackupImport />
+							</div>
+						</Tab>
+					)}
 					{shouldShowLegacyCloud && (
 						<Tab key="backup-cloud" title="云端备份/还原">
 							<p className="-mt-1 text-small text-foreground-500">

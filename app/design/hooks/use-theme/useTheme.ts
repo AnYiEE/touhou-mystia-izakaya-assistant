@@ -93,20 +93,11 @@ export function useTheme() {
 		() => getStoredTheme() ?? THEME_MAP.SYSTEM
 	);
 
-	const setTheme = useCallback((newTheme: typeof theme) => {
+	const setTheme = useCallback((newTheme: TTheme) => {
 		applyTheme(newTheme);
+		setThemeState(newTheme);
 	}, []);
-
-	useEffect(() => {
-		const storedTheme = getStoredTheme();
-		if (storedTheme === undefined) {
-			return;
-		}
-
-		applyTheme(storedTheme ?? THEME_MAP.SYSTEM, true);
-	}, []);
-
-	useMounted(() => {
+	const syncSystemTheme = useCallback(() => {
 		const mediaQueryList = globalThis.matchMedia(MEDIA);
 
 		return addSafeMediaQueryEventListener(mediaQueryList, (event) => {
@@ -115,11 +106,12 @@ export function useTheme() {
 				applyTheme(getSystemTheme(event), true);
 			}
 		});
-	});
-
-	useMounted(() => addThemeChangeListener(setThemeState));
-
-	useMounted(() => {
+	}, []);
+	const syncThemeState = useCallback(
+		() => addThemeChangeListener(setThemeState),
+		[]
+	);
+	const syncStorageTheme = useCallback(() => {
 		const EVENT_TYPE = 'storage';
 
 		const handleStorage = (event: StorageEvent) => {
@@ -140,7 +132,20 @@ export function useTheme() {
 		return () => {
 			globalThis.removeEventListener(EVENT_TYPE, handleStorage);
 		};
-	});
+	}, []);
+
+	useEffect(() => {
+		const storedTheme = getStoredTheme();
+		if (storedTheme === undefined) {
+			return;
+		}
+
+		applyTheme(storedTheme ?? THEME_MAP.SYSTEM, true);
+	}, []);
+
+	useMounted(syncSystemTheme);
+	useMounted(syncThemeState);
+	useMounted(syncStorageTheme);
 
 	return [theme, setTheme] as const;
 }

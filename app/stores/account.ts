@@ -19,11 +19,13 @@ export type TAccountSyncResult = 'failed' | 'idle' | 'partial' | 'success';
 const storeVersion = { initial: 0 } as const;
 
 const state = {
-	persistence: { hasSkippedOnboarding: false },
+	persistence: {},
 	shared: {
+		accountModal: { isOpen: false },
 		adminCsrfToken: null as string | null,
 		bootstrapStatus: 'unknown' as TAccountBootstrapStatus,
 		csrfToken: null as string | null,
+		// Tracks whether bootstrap has reached a first result; use bootstrapStatus for success or failure.
 		isBootstrapped: false,
 		isLoggedIn: false,
 		passwordMustChange: false,

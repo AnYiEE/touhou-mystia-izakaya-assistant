@@ -5,9 +5,18 @@ import { customerNormalStore } from '@/stores/customer-normal';
 import { customerRareStore } from '@/stores/customer-rare';
 import { globalStore } from '@/stores/global';
 import { postAccountSyncBroadcastMessage } from './broadcast';
-import { checkSnapshotHashMatches, markAccountSyncDirty } from './queue';
+import {
+	checkSnapshotHashMatches,
+	markAccountSyncDirty,
+	removeDirtyQueueEntry,
+} from './queue';
 import { createAccountClientId } from './random';
 import { getAccountSyncSerializer } from './snapshot';
+import {
+	checkAccountSyncPaused,
+	recordPausedAccountSyncDirtyNamespace,
+	subscribeAccountSyncResume,
+} from './stateGuards';
 import { scheduleAccountSyncFlush } from './syncClient';
 
 type TUnsubscribe = () => void;
@@ -34,6 +43,10 @@ function markNamespaceDirty(namespace: TSyncNamespace) {
 	if (context === null) {
 		return;
 	}
+	if (checkAccountSyncPaused()) {
+		recordPausedAccountSyncDirtyNamespace(namespace);
+		return;
+	}
 
 	const serializer = getAccountSyncSerializer(namespace);
 	const data = serializer.getLocalSnapshot();
@@ -43,6 +56,7 @@ function markNamespaceDirty(namespace: TSyncNamespace) {
 			context.meta.lastAppliedRemoteHash[namespace]
 		)
 	) {
+		removeDirtyQueueEntry(context.user.id, namespace);
 		return;
 	}
 	if (
@@ -86,6 +100,11 @@ export function startAccountStoreSyncWatchers() {
 	const watch = (unsubscribe: TUnsubscribe) => {
 		unsubscribers.push(unsubscribe);
 	};
+	watch(
+		subscribeAccountSyncResume((namespaces) => {
+			namespaces.forEach(markNamespaceDirty);
+		})
+	);
 
 	watch(
 		customerNormalStore.persistence.meals.onChange(() => {

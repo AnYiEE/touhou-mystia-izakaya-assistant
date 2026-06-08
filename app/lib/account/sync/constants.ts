@@ -7,7 +7,7 @@ export const SYNC_NAMESPACE_MAP = {
 	tutorialCustomerRare: 'tutorial.customer_rare',
 } as const;
 
-type TSyncNamespace =
+export type TSyncNamespace =
 	(typeof SYNC_NAMESPACE_MAP)[keyof typeof SYNC_NAMESPACE_MAP];
 
 export const SYNC_SCHEMA_VERSION_MAP = {

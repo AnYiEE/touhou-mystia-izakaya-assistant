@@ -4,6 +4,7 @@ import type {
 	TSessionNew,
 	TSessionUpdate,
 	TUser,
+	TUserCredential,
 	TUserUpdate,
 } from '@/lib/db/types';
 
@@ -12,6 +13,7 @@ import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 
 const TABLE_NAME = TABLE_NAME_MAP.session;
 const USER_TABLE_NAME = TABLE_NAME_MAP.user;
+const USER_CREDENTIAL_TABLE_NAME = TABLE_NAME_MAP.userCredential;
 
 export type TSessionMutablePatch = Pick<
 	TSessionUpdate,
@@ -29,23 +31,36 @@ export async function createSession(session: TSessionNew) {
 }
 
 export async function createSessionForActiveUser({
+	credentialPasswordHash,
 	session,
 	user,
 	userId,
 }: {
-	session: TSessionNew;
+	credentialPasswordHash?: TUserCredential['password_hash'];
+	session: Omit<TSessionNew, 'user_id'>;
 	user: TActiveUserSessionPatch;
 	userId: TUser['id'];
 }) {
 	const db = await getAccountDatabase();
 
 	return db.transaction().execute(async (trx) => {
-		const updateResult = await trx
+		let updateQuery = trx
 			.updateTable(USER_TABLE_NAME)
 			.set(user)
 			.where('id', '=', userId)
-			.where('status', '=', USER_STATUS_MAP.active)
-			.executeTakeFirst();
+			.where('status', '=', USER_STATUS_MAP.active);
+		if (credentialPasswordHash !== undefined) {
+			updateQuery = updateQuery.where(
+				'id',
+				'in',
+				trx
+					.selectFrom(USER_CREDENTIAL_TABLE_NAME)
+					.select('user_id')
+					.where('user_id', '=', userId)
+					.where('password_hash', '=', credentialPasswordHash)
+			);
+		}
+		const updateResult = await updateQuery.executeTakeFirst();
 		if (updateResult.numUpdatedRows !== 1n) {
 			return false;
 		}
@@ -77,10 +92,18 @@ export async function deleteSessionById(id: TSession['id']) {
 	await db.deleteFrom(TABLE_NAME).where('id', '=', id).execute();
 }
 
-export async function deleteSessionsByUserId(userId: TUser['id']) {
+export async function deleteSessionsByUserId(
+	userId: TUser['id'],
+	options: { createdBefore?: TSession['created_at'] } = {}
+) {
 	const db = await getAccountDatabase();
+	const query = db.deleteFrom(TABLE_NAME).where('user_id', '=', userId);
+	if (options.createdBefore === undefined) {
+		await query.execute();
+		return;
+	}
 
-	await db.deleteFrom(TABLE_NAME).where('user_id', '=', userId).execute();
+	await query.where('created_at', '<', options.createdBefore).execute();
 }
 
 export async function deleteOtherSessions(

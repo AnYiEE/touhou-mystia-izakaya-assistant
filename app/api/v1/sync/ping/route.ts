@@ -5,7 +5,8 @@ import {
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
-	readJsonBody,
+	createAccountAuthErrorResponse,
+	readJsonBodyResult,
 } from '@/api/v1/accountRouteUtils';
 import {
 	createNoStoreErrorResponse,
@@ -15,10 +16,12 @@ import {
 	type ISyncStatePingBody,
 	type TSyncStatePutResult,
 } from '@/lib/account/sync';
+import { getLogSafeErrorCode } from '@/lib/logging';
 import {
+	MAX_SYNC_JSON_BODY_BYTES,
 	createUserStateRecord,
 	parseSyncStatePutBody,
-	parseUserStateData,
+	parseUserStateRecord,
 } from '../utils';
 
 export const runtime = 'nodejs';
@@ -48,7 +51,14 @@ export async function POST(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	const body = await readJsonBody<ISyncStatePingBody>(request);
+	const bodyResult = await readJsonBodyResult<ISyncStatePingBody>(
+		request,
+		MAX_SYNC_JSON_BODY_BYTES
+	);
+	if (bodyResult.status === 'payload-too-large') {
+		return createNoStoreErrorResponse('payload-too-large', 413);
+	}
+	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	if (typeof body?.csrf_token !== 'string') {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
@@ -64,13 +74,7 @@ export async function POST(request: NextRequest) {
 	]);
 	const auth = await authModule.authenticateAccountRequest(request);
 	if (auth.status === 'error') {
-		const response = createNoStoreErrorResponse(
-			auth.message,
-			auth.httpStatus
-		);
-		authModule.clearAccountSessionCookie(response, request);
-
-		return response;
+		return createAccountAuthErrorResponse(auth, request);
 	}
 	if (
 		!authModule.verifyAccountCsrfToken(
@@ -86,29 +90,20 @@ export async function POST(request: NextRequest) {
 		});
 	}
 
-	const seenNamespaces = new Set<string>();
-	for (const change of parsedBody.changes) {
-		if (seenNamespaces.has(change.namespace)) {
-			return createNoStoreErrorResponse('duplicate-namespace', 400, {
-				namespace: change.namespace,
-			});
-		}
-		seenNamespaces.add(change.namespace);
-	}
-
 	const results: TSyncStatePutResult[] = [];
+	const batchUpdatedAt = Date.now();
 	const preparedChanges = parsedBody.changes.map((change) => {
 		const nextRevision = change.revision + 1;
 		const record = createUserStateRecord(
 			auth.data.user.id,
 			change,
 			nextRevision,
-			Date.now()
+			batchUpdatedAt
 		);
 		if (record === null) {
 			return {
 				result: {
-					message: 'invalid-json-data',
+					message: 'internal-write-error',
 					namespace: change.namespace,
 					status: 'error',
 				} satisfies TSyncStatePutResult,
@@ -131,12 +126,20 @@ export async function POST(request: NextRequest) {
 			entry: change.record,
 			expectedRevision: change.change.revision,
 		})),
-		parsedBody.state_epoch
+		parsedBody.state_epoch,
+		auth.data.session,
+		auth.data.user.id
 	);
+	if (writeResult.status === 'unauthorized') {
+		return createNoStoreErrorResponse('unauthorized', 401);
+	}
 	if (writeResult.status === 'state-epoch-mismatch') {
 		return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
 			state_epoch: writeResult.state_epoch,
 		});
+	}
+	if (writeResult.status === 'corrupt-user-state') {
+		return createNoStoreErrorResponse('corrupt-user-state', 500);
 	}
 
 	let writeResultIndex = 0;
@@ -149,7 +152,7 @@ export async function POST(request: NextRequest) {
 		const result = writeResult.results[writeResultIndex++];
 		if (result === undefined) {
 			results.push({
-				message: 'invalid-json-data',
+				message: 'internal-write-error',
 				namespace: preparedChange.change.namespace,
 				status: 'error',
 			});
@@ -157,19 +160,25 @@ export async function POST(request: NextRequest) {
 		}
 		if (result.status === 'conflict') {
 			try {
+				const record =
+					result.current === null
+						? null
+						: parseUserStateRecord(result.current);
+
+				// Null current means the server has no row; zero fields keep the
+				// conflict payload record-shaped for the client protocol.
 				results.push({
-					data:
-						result.current === null
-							? null
-							: parseUserStateData(result.current.data),
+					data: record?.data ?? null,
 					namespace: preparedChange.change.namespace,
-					revision: result.current?.revision ?? 0,
-					schema_version: result.current?.schema_version ?? 0,
+					revision: record?.revision ?? 0,
+					schema_version: record?.schema_version ?? 0,
 					status: 'conflict',
-					updated_at: result.current?.updated_at ?? 0,
+					updated_at: record?.updated_at ?? 0,
 				});
 			} catch (error) {
-				console.warn('Failed to parse conflicting sync state.', error);
+				console.warn('Failed to parse conflicting sync state.', {
+					errorCode: getLogSafeErrorCode(error),
+				});
 				results.push({
 					message: 'corrupt-user-state',
 					namespace: preparedChange.change.namespace,

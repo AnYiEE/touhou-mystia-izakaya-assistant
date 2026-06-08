@@ -15,6 +15,8 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
+	const requestStartedAt = Date.now();
+
 	const featureResponse = await checkAccountFeatureResponse();
 	if (featureResponse !== null) {
 		return featureResponse;
@@ -44,21 +46,15 @@ export async function POST(request: NextRequest) {
 	]);
 	const auth = await authModule.authenticateAccountRequest(request, true);
 	if (auth.status === 'error') {
-		const response = createNoStoreErrorResponse(
-			auth.message,
-			auth.httpStatus
-		);
-		authModule.clearAccountSessionCookie(response, request);
-
-		return response;
+		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
 	}
 	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
-	await sessionsModule.deleteSessionsByUserId(auth.data.user.id);
-	const response = createNoStoreJsonResponse({ message: 'logged-out-all' });
-	authModule.clearAccountSessionCookie(response, request);
+	await sessionsModule.deleteSessionsByUserId(auth.data.user.id, {
+		createdBefore: requestStartedAt,
+	});
 
-	return response;
+	return createNoStoreJsonResponse({ message: 'logged-out-all' });
 }

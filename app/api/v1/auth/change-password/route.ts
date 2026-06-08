@@ -5,8 +5,9 @@ import {
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
+	createAccountAuthErrorResponse,
 	createRetryAfterHeaders,
-	readJsonBody,
+	readJsonBodyResult,
 } from '@/api/v1/accountRouteUtils';
 import { getLogSafeErrorCode } from '@/lib/logging';
 import {
@@ -37,14 +38,18 @@ export async function POST(request: NextRequest) {
 		return cookieSecurityResponse;
 	}
 
-	const body = await readJsonBody<IAuthChangePasswordBody>(request);
+	const bodyResult =
+		await readJsonBodyResult<IAuthChangePasswordBody>(request);
+	if (bodyResult.status === 'payload-too-large') {
+		return createNoStoreErrorResponse('payload-too-large', 413);
+	}
+	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	if (
 		typeof body?.current_password !== 'string' ||
 		typeof body.new_password !== 'string'
 	) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
-
 	let authModule: typeof import('@/lib/account/server/auth');
 	let credentialsModule: typeof import('@/actions/account/credentials');
 	let passwordModule: typeof import('@/lib/account/server/password');
@@ -66,13 +71,7 @@ export async function POST(request: NextRequest) {
 	}
 	const auth = await authModule.authenticateAccountRequest(request, true);
 	if (auth.status === 'error') {
-		const response = createNoStoreErrorResponse(
-			auth.message,
-			auth.httpStatus
-		);
-		authModule.clearAccountSessionCookie(response, request);
-
-		return response;
+		return createAccountAuthErrorResponse(auth, request);
 	}
 	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
@@ -126,14 +125,9 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-password', 401);
 	}
 
-	let session: Awaited<
-		ReturnType<typeof authModule.rotateAccountSessionWithCredentialUpdate>
-	>;
 	try {
-		session = await authModule.rotateAccountSessionWithCredentialUpdate(
-			auth.data.session,
-			request,
-			{
+		await credentialsModule.updateCredentialAndKeepCurrentSession({
+			credential: {
 				failed_attempts: 0,
 				locked_until: null,
 				password_hash: await passwordModule.hashPassword(
@@ -141,39 +135,24 @@ export async function POST(request: NextRequest) {
 				),
 				password_must_change: 0,
 				updated_at: now,
-			}
-		);
+			},
+			lastSeenAt: now,
+			sessionId: auth.data.session.id,
+			userId: auth.data.user.id,
+		});
 	} catch (error) {
 		if (error instanceof Error) {
 			if (error.message === 'invalid-user-status') {
-				const response = createNoStoreErrorResponse(
-					'invalid-user-status',
-					403
-				);
-				authModule.clearAccountSessionCookie(response, request);
-
-				return response;
+				return createNoStoreErrorResponse('invalid-user-status', 403);
 			}
 			if (
 				error.message === 'user-not-found' ||
 				error.message === 'session-not-found'
 			) {
-				const response = createNoStoreErrorResponse(
-					'unauthorized',
-					401
-				);
-				authModule.clearAccountSessionCookie(response, request);
-
-				return response;
+				return createNoStoreErrorResponse('unauthorized', 401);
 			}
 			if (error.message === 'credential-not-found') {
-				const response = createNoStoreErrorResponse(
-					'server-misconfigured',
-					500
-				);
-				authModule.clearAccountSessionCookie(response, request);
-
-				return response;
+				return createNoStoreErrorResponse('server-misconfigured', 500);
 			}
 		}
 
@@ -181,21 +160,14 @@ export async function POST(request: NextRequest) {
 			errorCode: getLogSafeErrorCode(error),
 		});
 
-		const response = createNoStoreErrorResponse(
-			'server-misconfigured',
-			500
-		);
-		authModule.clearAccountSessionCookie(response, request);
-
-		return response;
+		return createNoStoreErrorResponse('server-misconfigured', 500);
 	}
-	const response = createNoStoreJsonResponse({
-		csrf_token: session.csrfToken,
+
+	return createNoStoreJsonResponse({
+		csrf_token: authModule.createAccountCsrfToken(
+			auth.data.sessionTokenHash
+		),
 		password_must_change: false,
 		user: userModule.createAccountUserProfile(auth.data.user),
 	} satisfies IAuthLoginSuccessResponse);
-
-	authModule.setAccountSessionCookie(response, session.token, request);
-
-	return response;
 }

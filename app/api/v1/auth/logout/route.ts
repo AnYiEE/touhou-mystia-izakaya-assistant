@@ -44,20 +44,13 @@ export async function POST(request: NextRequest) {
 	]);
 	const auth = await authModule.authenticateAccountRequest(request, true);
 	if (auth.status === 'error') {
-		const response = createNoStoreErrorResponse(
-			auth.message,
-			auth.httpStatus
-		);
-		authModule.clearAccountSessionCookie(response, request);
-		return response;
+		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
 	}
 	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
 	await sessionsModule.deleteSessionById(auth.data.session.id);
-	const response = createNoStoreJsonResponse({ message: 'logged-out' });
-	authModule.clearAccountSessionCookie(response, request);
 
-	return response;
+	return createNoStoreJsonResponse({ message: 'logged-out' });
 }

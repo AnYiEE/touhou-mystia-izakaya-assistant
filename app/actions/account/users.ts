@@ -16,6 +16,12 @@ const TABLE_NAME = TABLE_NAME_MAP.user;
 const CREDENTIAL_TABLE_NAME = TABLE_NAME_MAP.userCredential;
 const SESSION_TABLE_NAME = TABLE_NAME_MAP.session;
 
+function assertStatusCanBeSetDirectly(status: TUserStatus) {
+	if (status === 'deleted') {
+		throw new Error('deleted-status-requires-delete-flow');
+	}
+}
+
 function escapeLikePattern(pattern: string) {
 	return pattern.replaceAll(/[\\%_]/gu, (character) => `\\${character}`);
 }
@@ -167,12 +173,10 @@ export async function updateUser(id: TUser['id'], user: TUserUpdate) {
 }
 
 export async function setUserStatus(id: TUser['id'], status: TUserStatus) {
+	assertStatusCanBeSetDirectly(status);
+
 	const now = Date.now();
-	await updateUser(id, {
-		deleted_at: status === 'deleted' ? now : null,
-		status,
-		updated_at: now,
-	});
+	await updateUser(id, { deleted_at: null, status, updated_at: now });
 }
 
 export async function setUserStatusIfCurrentStatus(
@@ -181,10 +185,12 @@ export async function setUserStatusIfCurrentStatus(
 	nextStatus: TUserStatus,
 	deleteSessions = false
 ) {
+	assertStatusCanBeSetDirectly(nextStatus);
+
 	const db = await getAccountDatabase();
 	const now = Date.now();
 	const userUpdate = {
-		deleted_at: nextStatus === 'deleted' ? now : null,
+		deleted_at: null,
 		status: nextStatus,
 		updated_at: now,
 	} satisfies TUserUpdate;
@@ -232,6 +238,10 @@ export async function setUserStatusAndDeleteSessions(
 			.updateTable(TABLE_NAME)
 			.set({
 				deleted_at: status === 'deleted' ? now : null,
+				state_epoch:
+					status === 'deleted'
+						? sql<TUser['state_epoch']>`state_epoch + 1`
+						: sql<TUser['state_epoch']>`state_epoch`,
 				status,
 				updated_at: now,
 			})

@@ -10,19 +10,16 @@ import { HeroUIProvider } from '@heroui/system';
 import { ProgressBar, ProgressBarProvider } from 'react-transition-progress';
 
 import CompatibleBrowser from '@/components/compatibleBrowser';
-import AccountConflictModal from '@/components/accountConflictModal';
-import AccountOnboarding from '@/components/accountOnboarding';
-import AccountPasswordMustChangeModal from '@/components/accountPasswordMustChangeModal';
 import CustomerRareTutorial from '@/components/customerRareTutorial';
 import DonationModal from '@/components/donationModal';
 
 import { siteConfig } from '@/configs';
 import { type TDlc } from '@/data';
-import { bootstrapAccount } from '@/lib/account/client/bootstrap';
-import { startAccountStoreSyncWatchers } from '@/lib/account/client/doubleWrite';
-import { startAccountSyncClient } from '@/lib/account/client/syncClient';
 import {
-	accountStore,
+	AccountFeatureModals,
+	startAccountFeatureClients,
+} from '@/lib/account/client/featureClient';
+import {
 	beveragesStore,
 	clothesStore,
 	cookersStore,
@@ -192,18 +189,10 @@ export default function Providers({
 			toSet(globalHiddenRecipes)
 		);
 
-		const stopAccountStoreSyncWatchers = startAccountStoreSyncWatchers();
-		void bootstrapAccount().catch((error: unknown) => {
-			console.error('Account bootstrap failed.', error);
-			accountStore.shared.bootstrapStatus.set('error');
-			accountStore.shared.isBootstrapped.set(true);
-			accountStore.shared.sync.lastError.set('bootstrap-failed');
-		});
-		const stopAccountSyncClient = startAccountSyncClient();
+		const stopAccountFeatureClients = startAccountFeatureClients();
 
 		return () => {
-			stopAccountStoreSyncWatchers();
-			stopAccountSyncClient();
+			stopAccountFeatureClients();
 		};
 	}, []);
 
@@ -215,9 +204,7 @@ export default function Providers({
 				{children}
 				<ProgressBar className="fixed top-0 z-60 h-1 rounded-2xl bg-primary dark:lg:h-0.5" />
 				<CompatibleBrowser />
-				<AccountPasswordMustChangeModal />
-				<AccountConflictModal />
-				<AccountOnboarding />
+				<AccountFeatureModals />
 				<CustomerRareTutorial />
 				<DonationModal />
 			</ProgressBarProvider>

@@ -18,13 +18,22 @@ import { getLogSafeErrorCode } from '@/lib/logging';
 import { createNoStoreErrorResponse } from './utils';
 
 const ACCOUNT_RATE_LIMIT_OPTIONS = { limit: 20, windowMs: 60 * 1000 } as const;
+const NO_STABLE_RATE_LIMIT_KEY_WARN_INTERVAL_MS = 60 * 1000;
 const MAX_ACCOUNT_JSON_BODY_BYTES = 16 * 1024;
 
-type TAccountAuthModule = typeof import('@/lib/account/server/auth');
+const noStableRateLimitKeyWarnAtMap = new Map<string, number>();
+
 type TAccountAuthError = Extract<
-	Awaited<ReturnType<TAccountAuthModule['authenticateAccountRequest']>>,
+	Awaited<
+		ReturnType<
+			(typeof import('@/lib/account/server/auth'))['authenticateAccountRequest']
+		>
+	>,
 	{ status: 'error' }
 >;
+type TJsonBodyReadResult<T extends object> =
+	| { data: Partial<T>; status: 'ok' }
+	| { status: 'invalid' | 'payload-too-large' };
 
 function createAccountRateLimitKey(parts: ReadonlyArray<string>) {
 	return JSON.stringify(parts);
@@ -36,6 +45,18 @@ function createAccountRateLimitCapacityGroup(scope: string, dimension: string) {
 
 function createAccountRateLimitCookieHash(value: string) {
 	return createHash('sha256').update(value).digest('base64url');
+}
+
+function warnNoStableRateLimitKey(scope: string, now = Date.now()) {
+	const lastWarnAt = noStableRateLimitKeyWarnAtMap.get(scope) ?? 0;
+	if (now - lastWarnAt < NO_STABLE_RATE_LIMIT_KEY_WARN_INTERVAL_MS) {
+		return;
+	}
+
+	noStableRateLimitKeyWarnAtMap.set(scope, now);
+	console.warn('Account rate limit rejected request without stable key.', {
+		scope,
+	});
 }
 
 export function createRetryAfterHeaders(retryAfter: number) {
@@ -84,19 +105,12 @@ export function checkAccountCookieSecurityResponse(request: NextRequest) {
 export function checkAccountRateLimitResponse(
 	request: NextRequest,
 	scope: string,
-	usernameNormalized = ''
+	usernameNormalized = '',
+	options: { noTrustedIpGate?: boolean } = {}
 ) {
 	const keys: Array<{ capacityGroup: string; key: string }> = [];
 	const trustedRequestIp = getTrustedRequestIp(request);
-	if (trustedRequestIp === null) {
-		keys.push({
-			capacityGroup: createAccountRateLimitCapacityGroup(
-				scope,
-				'anonymous'
-			),
-			key: createAccountRateLimitKey([scope, 'anonymous']),
-		});
-	} else {
+	if (trustedRequestIp !== null) {
 		keys.push({
 			capacityGroup: createAccountRateLimitCapacityGroup(
 				scope,
@@ -107,6 +121,15 @@ export function checkAccountRateLimitResponse(
 				'request',
 				trustedRequestIp,
 			]),
+		});
+	}
+	if (trustedRequestIp === null && options.noTrustedIpGate === true) {
+		keys.push({
+			capacityGroup: createAccountRateLimitCapacityGroup(
+				scope,
+				'no-trusted-ip-gate'
+			),
+			key: createAccountRateLimitKey([scope, 'no-trusted-ip-gate']),
 		});
 	}
 
@@ -124,40 +147,52 @@ export function checkAccountRateLimitResponse(
 		});
 	}
 
-	if (trustedRequestIp !== null) {
-		const accountSession = request.cookies.get(
-			ACCOUNT_COOKIE_NAME_MAP.session
-		)?.value;
-		if (accountSession !== undefined && accountSession !== '') {
-			keys.push({
-				capacityGroup: createAccountRateLimitCapacityGroup(
-					scope,
-					'session'
-				),
-				key: createAccountRateLimitKey([
-					scope,
-					'session',
-					createAccountRateLimitCookieHash(accountSession),
-				]),
-			});
-		}
+	const accountSession = request.cookies.get(
+		ACCOUNT_COOKIE_NAME_MAP.session
+	)?.value;
+	if (accountSession !== undefined && accountSession !== '') {
+		keys.push({
+			capacityGroup: createAccountRateLimitCapacityGroup(
+				scope,
+				'session'
+			),
+			key: createAccountRateLimitKey([
+				scope,
+				'session',
+				createAccountRateLimitCookieHash(accountSession),
+			]),
+		});
+	}
 
-		const adminSession = request.cookies.get(
-			ACCOUNT_COOKIE_NAME_MAP.adminSession
-		)?.value;
-		if (adminSession !== undefined && adminSession !== '') {
-			keys.push({
-				capacityGroup: createAccountRateLimitCapacityGroup(
-					scope,
-					'admin-session'
+	const adminSession = request.cookies.get(
+		ACCOUNT_COOKIE_NAME_MAP.adminSession
+	)?.value;
+	if (adminSession !== undefined && adminSession !== '') {
+		keys.push({
+			capacityGroup: createAccountRateLimitCapacityGroup(
+				scope,
+				'admin-session'
+			),
+			key: createAccountRateLimitKey([
+				scope,
+				'admin-session',
+				createAccountRateLimitCookieHash(adminSession),
+			]),
+		});
+	}
+
+	if (keys.length === 0) {
+		warnNoStableRateLimitKey(scope);
+		return createNoStoreErrorResponse(
+			'too-many-requests',
+			429,
+			{ retry_after: ACCOUNT_RATE_LIMIT_OPTIONS.windowMs / 1000 },
+			{
+				headers: createRetryAfterHeaders(
+					ACCOUNT_RATE_LIMIT_OPTIONS.windowMs / 1000
 				),
-				key: createAccountRateLimitKey([
-					scope,
-					'admin-session',
-					createAccountRateLimitCookieHash(adminSession),
-				]),
-			});
-		}
+			}
+		);
 	}
 
 	let result: ReturnType<typeof checkRateLimit> | undefined;
@@ -184,28 +219,31 @@ export function checkAccountRateLimitResponse(
 	);
 }
 
-export async function readJsonBody<T>(
+export async function readJsonBodyResult<T extends object>(
 	request: NextRequest,
 	maxBytes = MAX_ACCOUNT_JSON_BODY_BYTES
-) {
+): Promise<TJsonBodyReadResult<T>> {
 	const contentLength = request.headers.get('content-length');
 	const parsedContentLength =
 		contentLength === null || !/^\d+$/u.test(contentLength)
 			? null
 			: Number.parseInt(contentLength, 10);
-	if (
-		contentLength !== null &&
-		(parsedContentLength === null ||
+	if (contentLength !== null) {
+		if (parsedContentLength === null) {
+			return { status: 'invalid' };
+		}
+		if (
 			!Number.isFinite(parsedContentLength) ||
-			parsedContentLength > maxBytes)
-	) {
-		return null;
+			parsedContentLength > maxBytes
+		) {
+			return { status: 'payload-too-large' };
+		}
 	}
 
 	try {
 		const requestBody = request.body;
 		if (requestBody === null) {
-			return null;
+			return { status: 'invalid' };
 		}
 
 		const reader = requestBody.getReader();
@@ -219,7 +257,7 @@ export async function readJsonBody<T>(
 				receivedBytes += value.byteLength;
 				if (receivedBytes > maxBytes) {
 					await reader.cancel('payload-too-large');
-					return null;
+					return { status: 'payload-too-large' };
 				}
 
 				text += decoder.decode(value, { stream: true });
@@ -232,13 +270,22 @@ export async function readJsonBody<T>(
 
 		const data: unknown = JSON.parse(text);
 		if (data === null || Array.isArray(data) || typeof data !== 'object') {
-			return null;
+			return { status: 'invalid' };
 		}
 
-		return data as Partial<T>;
+		return { data, status: 'ok' };
 	} catch {
-		return null;
+		return { status: 'invalid' };
 	}
+}
+
+export async function readJsonBody<T extends object>(
+	request: NextRequest,
+	maxBytes = MAX_ACCOUNT_JSON_BODY_BYTES
+) {
+	const result = await readJsonBodyResult<T>(request, maxBytes);
+
+	return result.status === 'ok' ? result.data : null;
 }
 
 export function createServerMisconfiguredResponse() {
@@ -246,14 +293,10 @@ export function createServerMisconfiguredResponse() {
 }
 
 export function createAccountAuthErrorResponse(
-	authModule: TAccountAuthModule,
 	auth: TAccountAuthError,
 	request: NextRequest
 ) {
-	const response = createNoStoreErrorResponse(auth.message, auth.httpStatus);
-	if (auth.message !== 'password-must-change') {
-		authModule.clearAccountSessionCookie(response, request);
-	}
+	void request;
 
-	return response;
+	return createNoStoreErrorResponse(auth.message, auth.httpStatus);
 }

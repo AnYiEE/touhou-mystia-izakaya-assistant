@@ -9,6 +9,9 @@ import {
 	handleOptionsRequest,
 } from '@/api/v1/utils';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function GET(
 	_request: NextRequest,
 	{ params }: { params: Promise<{ code: string }> }

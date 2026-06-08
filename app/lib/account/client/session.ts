@@ -3,7 +3,9 @@ import { fetchAccountMe, importBackupCode } from './api';
 import { type IAuthLoginSuccessResponse } from '../shared/types';
 import { readAccountSyncMeta } from './snapshot';
 import {
+	invalidateAccountSyncClientRuns,
 	restoreAccountSyncRuntimeState,
+	scheduleAccountSyncFlush,
 	takeOverLocalAccountData,
 } from './syncClient';
 import { withAccountSyncPaused } from './stateGuards';
@@ -37,6 +39,7 @@ export function resetAccountSyncRuntime() {
 
 export function resetAccountState() {
 	invalidateAccountStateRequests();
+	invalidateAccountSyncClientRuns();
 	resetAccountSyncRuntime();
 	accountStore.shared.bootstrapStatus.set('anonymous');
 	accountStore.shared.csrfToken.set(null);
@@ -46,11 +49,52 @@ export function resetAccountState() {
 	accountStore.shared.user.set(null);
 }
 
-export function applyAccountAuthSuccessResponse(
-	data: IAuthLoginSuccessResponse
+export function checkCurrentAccountAuthContext({
+	expectedCsrfToken,
+	expectedUserId,
+}: { expectedCsrfToken?: string | null; expectedUserId?: string | null } = {}) {
+	const currentUser = accountStore.shared.user.get();
+	const currentUserId = currentUser?.id ?? null;
+	if (expectedUserId !== undefined && currentUserId !== expectedUserId) {
+		return false;
+	}
+	if (
+		expectedCsrfToken !== undefined &&
+		accountStore.shared.csrfToken.get() !== expectedCsrfToken
+	) {
+		return false;
+	}
+
+	return true;
+}
+
+export function resetAccountStateIfCurrent(
+	options: Parameters<typeof checkCurrentAccountAuthContext>[0] = {}
 ) {
+	if (!checkCurrentAccountAuthContext(options)) {
+		return false;
+	}
+
+	resetAccountState();
+
+	return true;
+}
+
+export function applyAccountAuthSuccessResponse(
+	data: IAuthLoginSuccessResponse,
+	options: {
+		expectedCsrfToken?: string | null;
+		expectedUserId?: string | null;
+	} = {}
+) {
+	const currentUser = accountStore.shared.user.get();
+	if (!checkCurrentAccountAuthContext(options)) {
+		return false;
+	}
+
 	advanceAccountStateRequestGeneration();
-	const previousUser = accountStore.shared.user.get();
+	invalidateAccountSyncClientRuns();
+	const previousUser = currentUser;
 	if (previousUser?.id !== data.user.id) {
 		resetAccountSyncRuntime();
 	}
@@ -64,6 +108,8 @@ export function applyAccountAuthSuccessResponse(
 	accountStore.shared.sync.meta.set(readAccountSyncMeta(data.user.id));
 	accountStore.shared.user.set(data.user);
 	restoreAccountSyncRuntimeState(data.user.id);
+
+	return true;
 }
 
 export async function importPendingLegacyBackupCode(
@@ -90,7 +136,6 @@ export async function importPendingLegacyBackupCode(
 			return false;
 		}
 
-		globalStore.persistence.cloudCode.set(null);
 		accountStore.shared.sync.lastError.set(null);
 	} catch (error) {
 		if (!checkCurrentRequest()) {
@@ -109,6 +154,7 @@ export async function importPendingLegacyBackupCode(
 export async function refreshAccountState() {
 	const generation = advanceAccountStateRequestGeneration();
 	const previousUser = accountStore.shared.user.get();
+	const previousCsrfToken = accountStore.shared.csrfToken.get();
 	let result: Awaited<ReturnType<typeof fetchAccountMe>>;
 	try {
 		result = await fetchAccountMe();
@@ -140,6 +186,12 @@ export async function refreshAccountState() {
 
 	const isLoggedIn = accountUser !== null;
 	const accountSyncMeta = syncMeta;
+	if (
+		previousUser?.id !== accountUser?.id ||
+		previousCsrfToken !== accountCsrfToken
+	) {
+		invalidateAccountSyncClientRuns();
+	}
 	if (previousUser?.id !== accountUser?.id) {
 		resetAccountSyncRuntime();
 	}
@@ -166,15 +218,18 @@ export async function refreshAccountState() {
 		accountCsrfToken !== null &&
 		!accountPasswordMustChange
 	) {
+		let didImportPendingLegacyBackupCode = false;
+		let didTakeOverLocalAccountData = false;
 		await withAccountSyncPaused(async () => {
 			if (!checkCurrentAccountStateRequest(generation)) {
 				return;
 			}
 
 			try {
-				await importPendingLegacyBackupCode(accountCsrfToken, () =>
-					checkCurrentAccountStateRequest(generation)
-				);
+				didImportPendingLegacyBackupCode =
+					await importPendingLegacyBackupCode(accountCsrfToken, () =>
+						checkCurrentAccountStateRequest(generation)
+					);
 			} catch (error) {
 				if (checkCurrentAccountStateRequest(generation)) {
 					accountStore.shared.sync.lastError.set(
@@ -188,8 +243,17 @@ export async function refreshAccountState() {
 				if (!checkCurrentAccountStateRequest(generation)) {
 					return;
 				}
+				if (
+					didImportPendingLegacyBackupCode &&
+					checkCurrentAccountStateRequest(generation)
+				) {
+					globalStore.persistence.cloudCode.set(null);
+				}
 
-				await takeOverLocalAccountData();
+				didTakeOverLocalAccountData = await takeOverLocalAccountData();
+				if (!didTakeOverLocalAccountData) {
+					throw new Error('local-takeover-failed');
+				}
 			} catch (error) {
 				if (checkCurrentAccountStateRequest(generation)) {
 					accountStore.shared.sync.lastError.set(
@@ -200,6 +264,9 @@ export async function refreshAccountState() {
 				}
 			}
 		});
+		if (checkCurrentAccountStateRequest(generation)) {
+			scheduleAccountSyncFlush();
+		}
 	}
 
 	return result;

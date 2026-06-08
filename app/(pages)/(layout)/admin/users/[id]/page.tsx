@@ -2,42 +2,144 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Input } from '@heroui/input';
 import { useParams } from 'next/navigation';
-
-import Heading from '@/components/heading';
-import TimeAgo from '@/components/timeAgo';
-import { Button, Link } from '@/design/ui/components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-	AccountApiError,
+	faArrowLeft,
+	faBan,
+	faClock,
+	faDatabase,
+	faKey,
+	faRotate,
+	faServer,
+	faShieldHalved,
+	faTrash,
+	faUser,
+	faUserCheck,
+	faUserClock,
+} from '@fortawesome/free-solid-svg-icons';
+
+import TimeAgo from '@/components/timeAgo';
+import {
+	Button,
+	type IButtonProps,
+	Input,
+	Link,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	cn,
+} from '@/design/ui/components';
+import {
 	type IAdminMeData,
 	type IAdminUserDetailData,
+	clearAdminUserData,
 	deleteAdminUserSessions,
 	disableAdminUser,
 	enableAdminUser,
 	fetchAdminMe,
 	fetchAdminUser,
 	resetAdminUserPassword,
+	restoreAdminUser,
 } from '@/lib/account/client/api';
 import {
-	PASSWORD_MAX_LENGTH,
-	PASSWORD_MIN_LENGTH,
+	checkAdminSessionUnauthorized,
+	clearAdminSession,
+} from '@/lib/account/client/adminSession';
+import {
+	PASSWORD_RULE_DESCRIPTION,
+	checkPasswordPolicy,
 } from '@/lib/account/shared/constants';
 import { accountStore } from '@/stores/account';
+import {
+	AdminEmptyState,
+	AdminHeader,
+	AdminInputIcon,
+	AdminMessage,
+	AdminMetric,
+	AdminPanel,
+	AdminPanelTitle,
+	AdminShell,
+	AdminStatusBadge,
+	AdminTable,
+	AdminTableHeader,
+	AdminTableRow,
+} from '../../components';
 
-function clearAdminSession() {
-	accountStore.shared.adminCsrfToken.set(null);
-}
+type TConfirmAction = 'clear-data' | 'delete-sessions' | 'disable' | null;
 
-function checkPasswordLength(password: string) {
+const tableHeadCellClassName = 'px-4 py-3 font-medium';
+const tableCellClassName = 'px-4 py-3 align-middle';
+const tableNowrapCellClassName = `${tableCellClassName} whitespace-nowrap`;
+
+function AdminConfirmButton({
+	children,
+	color,
+	confirmAction,
+	confirmLabel,
+	isDisabled,
+	isLoading,
+	onConfirm,
+	onOpenChange,
+	openAction,
+}: {
+	children: ReactNodeWithoutBoolean;
+	color: IButtonProps['color'];
+	confirmAction: Exclude<TConfirmAction, null>;
+	confirmLabel: string;
+	isDisabled?: boolean;
+	isLoading: boolean;
+	onConfirm: () => void;
+	onOpenChange: (action: TConfirmAction) => void;
+	openAction: TConfirmAction;
+}) {
 	return (
-		password.length >= PASSWORD_MIN_LENGTH &&
-		password.length <= PASSWORD_MAX_LENGTH
+		<Popover
+			shouldBlockScroll
+			showArrow
+			isOpen={openAction === confirmAction}
+			onOpenChange={(isOpen) => {
+				onOpenChange(isOpen ? confirmAction : null);
+			}}
+		>
+			<PopoverTrigger>
+				<Button
+					color={color}
+					isDisabled={isDisabled}
+					isLoading={isLoading}
+					variant="flat"
+				>
+					{children}
+				</Button>
+			</PopoverTrigger>
+			<PopoverContent className="w-44 space-y-2 p-2">
+				<p className="px-1 text-xs leading-5 text-foreground-500">
+					此操作会立即写入账号后台。
+				</p>
+				<Button
+					fullWidth
+					color="danger"
+					isDisabled={isLoading}
+					size="sm"
+					variant="flat"
+					onPress={onConfirm}
+				>
+					{confirmLabel}
+				</Button>
+				<Button
+					fullWidth
+					color="primary"
+					size="sm"
+					variant="light"
+					onPress={() => {
+						onOpenChange(null);
+					}}
+				>
+					取消
+				</Button>
+			</PopoverContent>
+		</Popover>
 	);
-}
-
-function checkAdminSessionUnauthorized(error: unknown) {
-	return error instanceof AccountApiError && error.status === 401;
 }
 
 export default function AdminUserDetailPage() {
@@ -46,6 +148,7 @@ export default function AdminUserDetailPage() {
 	const [detail, setDetail] = useState<IAdminUserDetailData | null>(null);
 	const [message, setMessage] = useState<string | null>(null);
 	const [password, setPassword] = useState('');
+	const [confirmAction, setConfirmAction] = useState<TConfirmAction>(null);
 	const [isAuthLoading, setIsAuthLoading] = useState(true);
 	const [isLoading, setIsLoading] = useState(false);
 	const detailRequestIdRef = useRef(0);
@@ -62,6 +165,7 @@ export default function AdminUserDetailPage() {
 	const refreshDetail = useCallback(() => {
 		const requestId = createDetailRequestId();
 		setIsLoading(true);
+		setConfirmAction(null);
 		setMessage(null);
 		void fetchAdminUser(id)
 			.then((data) => {
@@ -144,62 +248,131 @@ export default function AdminUserDetailPage() {
 
 	if (isAuthLoading) {
 		return (
-			<div className="min-h-main-content space-y-4">
-				<Heading isFirst>用户管理</Heading>
-				<Button isLoading variant="flat">
-					加载中
-				</Button>
-			</div>
+			<AdminShell>
+				<AdminHeader
+					icon={faShieldHalved}
+					subtitle="正在读取管理员会话"
+					title="用户详情"
+				/>
+				<AdminPanel className="flex items-center gap-3 text-sm text-foreground-500">
+					<Button isLoading variant="flat">
+						加载中
+					</Button>
+					<span>校验后台访问权限</span>
+				</AdminPanel>
+			</AdminShell>
 		);
 	}
 
 	if (admin === null) {
 		return (
-			<div className="min-h-main-content space-y-4">
-				<Heading isFirst>用户管理</Heading>
-				<p className="text-sm text-foreground-500">
-					{message ?? '请先返回管理员页登录。'}
-				</p>
-				<Link href="/admin">返回管理员页</Link>
-			</div>
+			<AdminShell>
+				<AdminHeader
+					actions={
+						<Button
+							as={Link}
+							animationUnderline={false}
+							href="/admin"
+							startContent={
+								<FontAwesomeIcon
+									icon={faArrowLeft}
+									className="w-3.5"
+								/>
+							}
+							variant="flat"
+						>
+							返回管理员页
+						</Button>
+					}
+					icon={faShieldHalved}
+					subtitle={message ?? '请先返回管理员页登录'}
+					title="用户详情"
+				/>
+			</AdminShell>
 		);
 	}
 
 	if (detail === null) {
 		return (
-			<div className="min-h-main-content space-y-4">
-				<Heading isFirst>用户管理</Heading>
-				<Button
-					isLoading={isLoading}
-					variant="flat"
-					onPress={refreshDetail}
-				>
-					刷新
-				</Button>
-				{message !== null && (
-					<p className="text-sm text-foreground-500">{message}</p>
-				)}
-			</div>
+			<AdminShell>
+				<AdminHeader
+					actions={
+						<>
+							<Button
+								as={Link}
+								animationUnderline={false}
+								href="/admin"
+								startContent={
+									<FontAwesomeIcon
+										icon={faArrowLeft}
+										className="w-3.5"
+									/>
+								}
+								variant="flat"
+							>
+								返回列表
+							</Button>
+							<Button
+								isLoading={isLoading}
+								startContent={
+									isLoading ? null : (
+										<FontAwesomeIcon
+											icon={faRotate}
+											className="w-3.5"
+										/>
+									)
+								}
+								variant="flat"
+								onPress={refreshDetail}
+							>
+								刷新
+							</Button>
+						</>
+					}
+					icon={faUser}
+					subtitle="正在读取账号资料"
+					title="用户详情"
+				/>
+				{message !== null && <AdminMessage message={message} />}
+				<AdminEmptyState icon={faClock}>等待详情数据</AdminEmptyState>
+			</AdminShell>
 		);
 	}
 
 	if (detail.user.id !== id) {
 		return (
-			<div className="min-h-main-content space-y-4">
-				<Heading isFirst>用户管理</Heading>
-				<Button isLoading={isLoading} variant="flat">
-					加载中
-				</Button>
-			</div>
+			<AdminShell>
+				<AdminHeader
+					icon={faUser}
+					subtitle="正在切换目标用户"
+					title="用户详情"
+				/>
+				<AdminPanel className="flex items-center gap-3 text-sm text-foreground-500">
+					<Button isLoading={isLoading} variant="flat">
+						加载中
+					</Button>
+					<span>同步目标用户资料</span>
+				</AdminPanel>
+			</AdminShell>
 		);
 	}
 
 	const { namespaces, session_count: sessionCount, user } = detail;
+	const {
+		created_at: createdAt,
+		id: userId,
+		last_login_at: lastLoginAt,
+		state_epoch: stateEpoch,
+		status: userStatus,
+		username,
+	} = user;
 	const { csrf_token: adminCsrfToken } = admin;
-	const canDisableUser = user.status === 'active';
-	const canEnableUser = user.status === 'disabled';
-	const canResetPassword = user.status !== 'deleted';
-	const isPasswordValid = checkPasswordLength(password);
+	const canDisableUser = userStatus === 'active';
+	const canEnableUser = userStatus === 'disabled';
+	const canRestoreUser = userStatus === 'deleted';
+	const canResetPassword = userStatus !== 'deleted';
+	const canClearUserData = userStatus !== 'deleted';
+	const isPasswordValid = checkPasswordPolicy(password);
 	const runAction = (
 		action: () => Promise<unknown>,
 		success: string,
@@ -250,38 +423,79 @@ export default function AdminUserDetailPage() {
 	};
 
 	return (
-		<div className="min-h-main-content space-y-4">
-			<Heading isFirst>用户管理</Heading>
-			<Link href="/admin">返回用户列表</Link>
-			<div className="space-y-1 text-sm">
-				<p>用户名：{user.username}</p>
-				<p>状态：{user.status}</p>
-				<p>
-					创建时间：
-					<TimeAgo timestamp={user.created_at} />
-				</p>
-				<p>
-					最近登录：
-					{user.last_login_at === null ? (
-						'无'
-					) : (
-						<TimeAgo timestamp={user.last_login_at} />
-					)}
-				</p>
-				<p>活跃 session：{sessionCount}</p>
-			</div>
-			<div className="w-full space-y-2 lg:w-1/2">
-				<Input
-					label="新临时密码"
-					type="password"
-					value={password}
-					onValueChange={setPassword}
+		<AdminShell>
+			<AdminHeader
+				actions={
+					<>
+						<Button
+							as={Link}
+							animationUnderline={false}
+							href="/admin"
+							startContent={
+								<FontAwesomeIcon
+									icon={faArrowLeft}
+									className="w-3.5"
+								/>
+							}
+							variant="flat"
+						>
+							返回列表
+						</Button>
+						<Button
+							isLoading={isLoading}
+							startContent={
+								isLoading ? null : (
+									<FontAwesomeIcon
+										icon={faRotate}
+										className="w-3.5"
+									/>
+								)
+							}
+							variant="flat"
+							onPress={refreshDetail}
+						>
+							刷新
+						</Button>
+					</>
+				}
+				icon={faUser}
+				title={username}
+			/>
+
+			<AdminPanel className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+				<AdminMetric
+					label="状态"
+					value={<AdminStatusBadge status={userStatus} />}
 				/>
-				<div className="flex flex-wrap gap-2">
+				<AdminMetric label="活跃 Session" value={sessionCount} />
+				<AdminMetric label="State Epoch" value={stateEpoch} />
+				<AdminMetric label="同步命名空间" value={namespaces.length} />
+			</AdminPanel>
+
+			<div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,26rem)]">
+				<AdminPanel className="space-y-4">
+					<AdminPanelTitle icon={faKey}>重置登录密码</AdminPanelTitle>
+					<Input
+						description={PASSWORD_RULE_DESCRIPTION}
+						errorMessage={
+							password.length > 0 && !isPasswordValid
+								? PASSWORD_RULE_DESCRIPTION
+								: undefined
+						}
+						isInvalid={password.length > 0 && !isPasswordValid}
+						label="新临时密码"
+						startContent={<AdminInputIcon icon={faKey} />}
+						type="password"
+						value={password}
+						onValueChange={setPassword}
+					/>
 					<Button
 						color="warning"
 						isDisabled={!canResetPassword || !isPasswordValid}
 						isLoading={isLoading}
+						startContent={
+							<FontAwesomeIcon icon={faKey} className="w-3.5" />
+						}
 						variant="flat"
 						onPress={() => {
 							runAction(
@@ -300,85 +514,206 @@ export default function AdminUserDetailPage() {
 					>
 						重置密码
 					</Button>
-					<Button
-						isDisabled={!canEnableUser}
-						isLoading={isLoading}
-						variant="flat"
-						onPress={() => {
-							runAction(
-								() => enableAdminUser(id, adminCsrfToken),
-								'用户已启用'
-							);
-						}}
-					>
-						启用用户
-					</Button>
-					<Button
-						color="warning"
-						isDisabled={!canDisableUser}
-						isLoading={isLoading}
-						variant="flat"
-						onPress={() => {
-							runAction(
-								() => disableAdminUser(id, adminCsrfToken),
-								'用户已禁用'
-							);
-						}}
-					>
-						禁用用户
-					</Button>
-					<Button
-						color="danger"
-						isLoading={isLoading}
-						variant="flat"
-						onPress={() => {
-							runAction(
-								() =>
-									deleteAdminUserSessions(id, adminCsrfToken),
-								'已踢出全部设备'
-							);
-						}}
-					>
-						踢出全部设备
-					</Button>
-				</div>
+				</AdminPanel>
+
+				<AdminPanel className="space-y-4">
+					<AdminPanelTitle icon={faUserClock}>
+						账号操作
+					</AdminPanelTitle>
+					<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+						<Button
+							color="success"
+							isDisabled={!canEnableUser}
+							isLoading={isLoading}
+							startContent={
+								<FontAwesomeIcon
+									icon={faUserCheck}
+									className="w-3.5"
+								/>
+							}
+							variant="flat"
+							onPress={() => {
+								runAction(
+									() => enableAdminUser(id, adminCsrfToken),
+									'用户已启用'
+								);
+							}}
+						>
+							启用用户
+						</Button>
+						<Button
+							color="primary"
+							isDisabled={!canRestoreUser}
+							isLoading={isLoading}
+							startContent={
+								<FontAwesomeIcon
+									icon={faUserCheck}
+									className="w-3.5"
+								/>
+							}
+							variant="flat"
+							onPress={() => {
+								runAction(
+									() => restoreAdminUser(id, adminCsrfToken),
+									'账号已恢复为禁用状态'
+								);
+							}}
+						>
+							恢复账号
+						</Button>
+						<AdminConfirmButton
+							color="warning"
+							confirmAction="disable"
+							confirmLabel="确认禁用"
+							isDisabled={!canDisableUser}
+							isLoading={isLoading}
+							openAction={confirmAction}
+							onOpenChange={setConfirmAction}
+							onConfirm={() => {
+								runAction(
+									() => disableAdminUser(id, adminCsrfToken),
+									'用户已禁用'
+								);
+							}}
+						>
+							<span className="inline-flex items-center gap-2">
+								<FontAwesomeIcon
+									icon={faBan}
+									className="w-3.5"
+								/>
+								禁用用户
+							</span>
+						</AdminConfirmButton>
+						<AdminConfirmButton
+							color="danger"
+							confirmAction="delete-sessions"
+							confirmLabel="确认踢出"
+							isLoading={isLoading}
+							openAction={confirmAction}
+							onOpenChange={setConfirmAction}
+							onConfirm={() => {
+								runAction(
+									() =>
+										deleteAdminUserSessions(
+											id,
+											adminCsrfToken
+										),
+									'已踢出全部设备'
+								);
+							}}
+						>
+							<span className="inline-flex items-center gap-2">
+								<FontAwesomeIcon
+									icon={faShieldHalved}
+									className="w-3.5"
+								/>
+								踢出全部设备
+							</span>
+						</AdminConfirmButton>
+						<AdminConfirmButton
+							color="danger"
+							confirmAction="clear-data"
+							confirmLabel="确认清空"
+							isDisabled={!canClearUserData}
+							isLoading={isLoading}
+							openAction={confirmAction}
+							onOpenChange={setConfirmAction}
+							onConfirm={() => {
+								runAction(
+									() =>
+										clearAdminUserData(id, adminCsrfToken),
+									'账号数据已清空'
+								);
+							}}
+						>
+							<span className="inline-flex items-center gap-2">
+								<FontAwesomeIcon
+									icon={faTrash}
+									className="w-3.5"
+								/>
+								清空账号数据
+							</span>
+						</AdminConfirmButton>
+					</div>
+				</AdminPanel>
 			</div>
-			{message !== null && (
-				<p className="text-sm text-foreground-500">{message}</p>
-			)}
-			<div className="overflow-x-auto">
-				<table className="min-w-full text-left text-sm">
-					<thead className="text-foreground-500">
+
+			{message !== null && <AdminMessage message={message} />}
+
+			<AdminPanel className="grid gap-4 sm:grid-cols-3">
+				<AdminMetric
+					label="创建时间"
+					value={<TimeAgo timestamp={createdAt} />}
+				/>
+				<AdminMetric
+					label="最近登录"
+					value={
+						lastLoginAt === null ? (
+							<span className="text-foreground-400">无</span>
+						) : (
+							<TimeAgo timestamp={lastLoginAt} />
+						)
+					}
+				/>
+				<AdminMetric
+					label="用户 ID"
+					value={
+						<span className="block break-all font-mono text-xs leading-5 text-foreground-600">
+							{userId}
+						</span>
+					}
+				/>
+			</AdminPanel>
+
+			{namespaces.length === 0 ? (
+				<AdminEmptyState icon={faDatabase}>
+					暂无同步数据
+				</AdminEmptyState>
+			) : (
+				<AdminTable>
+					<AdminTableHeader>
 						<tr>
-							<th className="py-2 pr-4">Namespace</th>
-							<th className="py-2 pr-4">Revision</th>
-							<th className="py-2 pr-4">Schema</th>
-							<th className="py-2 pr-4">更新时间</th>
+							<th className={tableHeadCellClassName}>
+								Namespace
+							</th>
+							<th className={tableHeadCellClassName}>Revision</th>
+							<th className={tableHeadCellClassName}>Schema</th>
+							<th className={tableHeadCellClassName}>更新时间</th>
 						</tr>
-					</thead>
+					</AdminTableHeader>
 					<tbody>
 						{namespaces.map((namespace) => (
-							<tr
-								key={namespace.namespace}
-								className="border-t border-default-200"
-							>
-								<td className="py-2 pr-4">
-									{namespace.namespace}
+							<AdminTableRow key={namespace.namespace}>
+								<td
+									className={cn(
+										tableCellClassName,
+										'w-72 max-w-72'
+									)}
+								>
+									<span className="flex min-w-0 items-center gap-2 font-mono text-xs leading-5 text-foreground-700">
+										<FontAwesomeIcon
+											icon={faServer}
+											className="w-3 text-default-400"
+										/>
+										<span className="truncate">
+											{namespace.namespace}
+										</span>
+									</span>
 								</td>
-								<td className="py-2 pr-4">
+								<td className={tableNowrapCellClassName}>
 									{namespace.revision}
 								</td>
-								<td className="py-2 pr-4">
+								<td className={tableNowrapCellClassName}>
 									{namespace.schema_version}
 								</td>
-								<td className="py-2 pr-4">
+								<td className={tableNowrapCellClassName}>
 									<TimeAgo timestamp={namespace.updated_at} />
 								</td>
-							</tr>
+							</AdminTableRow>
 						))}
 					</tbody>
-				</table>
-			</div>
-		</div>
+				</AdminTable>
+			)}
+		</AdminShell>
 	);
 }

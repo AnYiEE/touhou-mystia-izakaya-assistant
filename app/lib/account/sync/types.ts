@@ -1,7 +1,4 @@
-import { type SYNC_NAMESPACE_MAP } from './constants';
-
-export type TSyncNamespace =
-	(typeof SYNC_NAMESPACE_MAP)[keyof typeof SYNC_NAMESPACE_MAP];
+import { type TSyncNamespace } from './constants';
 
 export interface ISyncStateChange {
 	data: unknown;
@@ -48,6 +45,7 @@ export interface IDirtyQueueEntry {
 }
 
 export interface IAccountSyncBroadcastMessage {
+	deleteStartedAt?: number;
 	namespaces: TSyncNamespace[];
 	operationId: string;
 	state_epoch: number;

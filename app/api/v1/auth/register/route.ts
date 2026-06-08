@@ -6,7 +6,7 @@ import {
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
-	readJsonBody,
+	readJsonBodyResult,
 } from '@/api/v1/accountRouteUtils';
 import {
 	createNoStoreErrorResponse,
@@ -21,6 +21,21 @@ import { getLogSafeErrorCode } from '@/lib/logging';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+async function importRegistrationModule<T>(
+	moduleName: string,
+	loader: () => Promise<T>
+) {
+	try {
+		return await loader();
+	} catch (error) {
+		console.warn('Failed to load account registration module.', {
+			errorCode: getLogSafeErrorCode(error),
+			moduleName,
+		});
+		throw error;
+	}
+}
 
 export async function POST(request: NextRequest) {
 	const featureResponse = await checkAccountFeatureResponse();
@@ -38,7 +53,11 @@ export async function POST(request: NextRequest) {
 		return cookieSecurityResponse;
 	}
 
-	const body = await readJsonBody<IAuthRegisterBody>(request);
+	const bodyResult = await readJsonBodyResult<IAuthRegisterBody>(request);
+	if (bodyResult.status === 'payload-too-large') {
+		return createNoStoreErrorResponse('payload-too-large', 413);
+	}
+	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	if (
 		body === null ||
 		typeof body.username !== 'string' ||
@@ -54,21 +73,29 @@ export async function POST(request: NextRequest) {
 	try {
 		[passwordModule, usersModule, authModule, userModule] =
 			await Promise.all([
-				import('@/lib/account/server/password'),
-				import('@/actions/account/users'),
-				import('@/lib/account/server/auth'),
-				import('@/lib/account/server/user'),
+				importRegistrationModule(
+					'password',
+					() => import('@/lib/account/server/password')
+				),
+				importRegistrationModule(
+					'users',
+					() => import('@/actions/account/users')
+				),
+				importRegistrationModule(
+					'auth',
+					() => import('@/lib/account/server/auth')
+				),
+				importRegistrationModule(
+					'user',
+					() => import('@/lib/account/server/user')
+				),
 			]);
-	} catch (error) {
-		console.warn('Failed to load account registration modules.', {
-			errorCode: getLogSafeErrorCode(error),
-		});
-
+	} catch {
 		return createNoStoreErrorResponse('server-misconfigured', 500);
 	}
 
 	const username = body.username.trim();
-	if (!userModule.checkUsernamePolicy(username)) {
+	if (!userModule.checkNewUsernamePolicy(username)) {
 		return createNoStoreErrorResponse('invalid-username', 400);
 	}
 	if (!passwordModule.checkPasswordPolicy(body.password)) {
@@ -79,7 +106,8 @@ export async function POST(request: NextRequest) {
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
 		'register',
-		usernameNormalized
+		usernameNormalized,
+		{ noTrustedIpGate: true }
 	);
 	if (rateLimitResponse !== null) {
 		return rateLimitResponse;

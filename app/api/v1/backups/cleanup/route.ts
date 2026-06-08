@@ -1,4 +1,5 @@
 import { type NextRequest } from 'next/server';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { env } from 'node:process';
 
 import {
@@ -27,6 +28,9 @@ import {
 } from '@/api/v1/utils';
 import { getLogSafeErrorCode, maskBackupCode } from '../utils';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 function isExpiredBackupRecord(
 	record: { created_at: number; last_accessed: number },
 	expiredBefore: number
@@ -51,6 +55,20 @@ function getSafeRecordFileName(record: {
 
 		return null;
 	}
+}
+
+function createSecretDigest(secret: string) {
+	return createHash('sha256').update(secret).digest();
+}
+
+function checkCleanupSecret(secret: string | null, configuredSecret: string) {
+	return (
+		secret !== null &&
+		timingSafeEqual(
+			createSecretDigest(secret),
+			createSecretDigest(configuredSecret)
+		)
+	);
 }
 
 async function runWithConcurrencyLimit<T>(
@@ -100,7 +118,7 @@ export async function DELETE(request: NextRequest) {
 		return createNoStoreErrorResponse('server-misconfigured', 500);
 	}
 
-	if (secret !== configuredSecret) {
+	if (!checkCleanupSecret(secret, configuredSecret)) {
 		return createNoStoreErrorResponse('Invalid secret', 401);
 	}
 
@@ -110,13 +128,17 @@ export async function DELETE(request: NextRequest) {
 
 	const records = await getExpiredRecords(sixMonthsAgo);
 	const recordFileReferences = await getRecordFileReferences();
-	const recordFileNameSet = new Set(
-		recordFileReferences.flatMap((record) => {
-			const fileName = getSafeRecordFileName(record);
+	const invalidRecordCodeSet = new Set<string>();
+	const recordFileNameSet = new Set<string>();
+	for (const record of recordFileReferences) {
+		const fileName = getSafeRecordFileName(record);
+		if (fileName === null) {
+			invalidRecordCodeSet.add(record.code);
+			continue;
+		}
 
-			return fileName === null ? [] : [fileName];
-		})
-	);
+		recordFileNameSet.add(fileName);
+	}
 	const backupFiles = await getBackupFiles();
 	const temporaryFileNames =
 		await getExpiredTemporaryBackupFileNames(oneHourAgo);
@@ -143,6 +165,10 @@ export async function DELETE(request: NextRequest) {
 					await deleteTemporaryBackupFile(fileName);
 					temporaryDeletedCount++;
 				} catch (error) {
+					if (checkBackupFileNotFoundError(error)) {
+						return;
+					}
+
 					failedFileCount++;
 					console.warn('Failed to delete temporary backup file', {
 						codeHash: maskBackupCode(fileName.split('.')[0] ?? ''),
@@ -208,6 +234,18 @@ export async function DELETE(request: NextRequest) {
 		});
 		await runWithConcurrencyLimit(orphanFiles, 8, async (file) => {
 			await withBackupCodeLock(file.code, async (signal) => {
+				if (invalidRecordCodeSet.has(file.code)) {
+					failedFileCount++;
+					console.warn(
+						'Skipped orphan backup file cleanup because an invalid record file name existed when cleanup started.',
+						{
+							codeHash: maskBackupCode(file.code),
+							fileName: file.fileName,
+						}
+					);
+					return;
+				}
+
 				const record = await getRecord(file.code);
 				throwIfBackupCodeLockLost(signal);
 
@@ -215,6 +253,18 @@ export async function DELETE(request: NextRequest) {
 					record.status === 404
 						? null
 						: getSafeRecordFileName(record);
+
+				if (record.status !== 404 && recordFileName === null) {
+					failedFileCount++;
+					console.warn(
+						'Skipped orphan backup file cleanup because the record file name is invalid.',
+						{
+							codeHash: maskBackupCode(file.code),
+							fileName: file.fileName,
+						}
+					);
+					return;
+				}
 
 				if (recordFileName === file.fileName) {
 					return;
@@ -229,6 +279,10 @@ export async function DELETE(request: NextRequest) {
 				} catch (error) {
 					if (checkBackupCodeLockLostError(error)) {
 						throw error;
+					}
+					if (checkBackupFileNotFoundError(error)) {
+						markBackupCodeLockCommitted(signal);
+						return;
 					}
 
 					failedFileCount++;

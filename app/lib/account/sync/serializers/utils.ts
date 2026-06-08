@@ -51,6 +51,8 @@ export function createSerializerConflict<T>({
 	namespace: TSyncNamespace;
 	userId: string;
 }): ISyncConflictItem<T> {
+	// Serializers are context-free; syncClient overwrites placeholder userId
+	// before persisted conflicts reach UI resolution flows.
 	return { cloud, local, merged: null, namespace, revision: 0, userId };
 }
 
@@ -76,7 +78,7 @@ function mergeFieldValue({
 	cloud: unknown;
 	defaults: unknown;
 	local: unknown;
-}): { data: unknown; shouldUpload: boolean } {
+}): { data: unknown; hasConflict: boolean; shouldUpload: boolean } {
 	const normalizedBase = base === undefined ? defaults : base;
 	const normalizedCloud = cloud === undefined ? defaults : cloud;
 	const normalizedLocal = local === undefined ? defaults : local;
@@ -88,6 +90,7 @@ function mergeFieldValue({
 		(normalizedBase === null || isPlainObject(normalizedBase))
 	) {
 		const data: Record<string, unknown> = {};
+		let hasConflict = false;
 		let shouldUpload = false;
 
 		Object.keys(defaults).forEach((key) => {
@@ -99,25 +102,35 @@ function mergeFieldValue({
 			});
 
 			data[key] = merged.data;
+			hasConflict ||= merged.hasConflict;
 			shouldUpload ||= merged.shouldUpload;
 		});
 
-		return { data, shouldUpload };
+		return { data, hasConflict, shouldUpload };
 	}
 
 	if (normalizedBase === null) {
 		if (checkSnapshotEqual(normalizedLocal, defaults)) {
-			return { data: normalizedCloud, shouldUpload: false };
+			return {
+				data: normalizedCloud,
+				hasConflict: false,
+				shouldUpload: false,
+			};
 		}
 		if (
 			!checkSnapshotEqual(normalizedCloud, defaults) &&
 			!checkSnapshotEqual(normalizedCloud, normalizedLocal)
 		) {
-			return { data: normalizedCloud, shouldUpload: false };
+			return {
+				data: normalizedCloud,
+				hasConflict: true,
+				shouldUpload: false,
+			};
 		}
 
 		return {
 			data: normalizedLocal,
+			hasConflict: false,
 			shouldUpload: !checkSnapshotEqual(normalizedLocal, normalizedCloud),
 		};
 	}
@@ -125,26 +138,45 @@ function mergeFieldValue({
 	const hasLocalChange = !checkSnapshotEqual(normalizedLocal, normalizedBase);
 	const hasCloudChange = !checkSnapshotEqual(normalizedCloud, normalizedBase);
 
-	if (!hasLocalChange || hasCloudChange) {
-		return { data: normalizedCloud, shouldUpload: false };
+	if (!hasLocalChange) {
+		return {
+			data: normalizedCloud,
+			hasConflict: false,
+			shouldUpload: false,
+		};
+	}
+	if (!hasCloudChange) {
+		return {
+			data: normalizedLocal,
+			hasConflict: false,
+			shouldUpload: !checkSnapshotEqual(normalizedLocal, normalizedCloud),
+		};
+	}
+	if (!checkSnapshotEqual(normalizedLocal, normalizedCloud)) {
+		return {
+			data: normalizedCloud,
+			hasConflict: true,
+			shouldUpload: false,
+		};
 	}
 
-	return {
-		data: normalizedLocal,
-		shouldUpload: !checkSnapshotEqual(normalizedLocal, normalizedCloud),
-	};
+	return { data: normalizedLocal, hasConflict: false, shouldUpload: false };
 }
 
 export function mergeFieldMap<T extends object>({
+	allowBaseNullAutoMerge = false,
 	base,
 	cloud,
 	defaults,
 	local,
+	namespace,
 }: {
+	allowBaseNullAutoMerge?: boolean | undefined;
 	base: T | null;
 	cloud: T | null;
 	defaults: T;
 	local: T;
+	namespace: TSyncNamespace;
 }) {
 	if (cloud === null) {
 		const sanitizedLocal = mergeFieldValue({
@@ -152,16 +184,55 @@ export function mergeFieldMap<T extends object>({
 			cloud: defaults,
 			defaults,
 			local,
-		}) as { data: T; shouldUpload: boolean };
+		}) as { data: T; hasConflict: boolean; shouldUpload: boolean };
 
 		return {
+			conflict: null,
 			data: sanitizedLocal.data,
 			shouldUpload: !checkSnapshotEqual(sanitizedLocal.data, defaults),
 		};
 	}
 
-	return mergeFieldValue({ base, cloud, defaults, local }) as {
+	if (
+		base === null &&
+		!allowBaseNullAutoMerge &&
+		!checkSnapshotEqual(local, cloud) &&
+		!checkSnapshotEqual(cloud, defaults) &&
+		!checkSnapshotEqual(local, defaults)
+	) {
+		return {
+			conflict: createSerializerConflict({
+				cloud,
+				local,
+				namespace,
+				userId: '',
+			}),
+			data: cloud,
+			shouldUpload: false,
+		};
+	}
+
+	const merged = mergeFieldValue({ base, cloud, defaults, local }) as {
 		data: T;
+		hasConflict: boolean;
 		shouldUpload: boolean;
+	};
+	if (merged.hasConflict) {
+		return {
+			conflict: createSerializerConflict({
+				cloud,
+				local,
+				namespace,
+				userId: '',
+			}),
+			data: cloud,
+			shouldUpload: false,
+		};
+	}
+
+	return {
+		conflict: null,
+		data: merged.data,
+		shouldUpload: merged.shouldUpload,
 	};
 }

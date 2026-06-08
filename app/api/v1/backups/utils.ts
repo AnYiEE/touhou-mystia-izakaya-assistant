@@ -5,15 +5,24 @@ import {
 	getRequestIp,
 	getRequestUserAgent,
 } from '@/lib/account/server/request';
+import { checkAppSecret } from '@/lib/account/server/environment';
 export { getLogSafeErrorCode } from '@/lib/logging';
 
-function getBackupMetaSecret() {
-	const secret = [
-		process.env.SESSION_SECRET,
-		process.env.CLEANUP_SECRET,
-	].find((value) => typeof value === 'string' && value !== '');
+const LEGACY_BACKUP_META_FALLBACK_SECRET =
+	'touhou-mystia-izakaya-assistant:legacy-backup-meta:v1';
 
-	return secret ?? null;
+function getBackupMetaSecret() {
+	const legacySecret = process.env.LEGACY_BACKUP_SECRET;
+	if (checkAppSecret(legacySecret)) {
+		return legacySecret;
+	}
+
+	const appSecret = process.env.APP_SECRET;
+	if (checkAppSecret(appSecret)) {
+		return appSecret;
+	}
+
+	return LEGACY_BACKUP_META_FALLBACK_SECRET;
 }
 
 function createBackupMetaHmac(value: string, secret: string) {
@@ -30,10 +39,6 @@ export function maskBackupCode(code: string) {
 
 export function getRequestMeta(request: NextRequest) {
 	const secret = getBackupMetaSecret();
-	if (secret === null) {
-		return null;
-	}
-
 	const contentType = request.headers.get('content-type') ?? null;
 
 	const requestIp = getRequestIp(request).trim();
