@@ -16,7 +16,14 @@ import { globalStore } from '@/stores/global';
 import { type IPopularTrend } from '@/types';
 import { cloneJsonObject } from '@/utilities';
 import { checkPopularTag } from './tags';
-import { isPlainObject, isStringArray, mergeFieldMap } from './utils';
+import {
+	isAllowedStringArray,
+	isIntegerInRange,
+	isNonNegativeSafeInteger,
+	isPlainObject,
+	isStringArray,
+	mergeFieldMap,
+} from './utils';
 
 export interface IGlobalPreferencesSnapshot {
 	customerCardTagsTooltip: boolean;
@@ -143,25 +150,8 @@ function checkGlobalPreferencesExactKeyShape(data: unknown) {
 	);
 }
 
-function isAllowedStringArray(data: unknown, values: Set<string>) {
-	return isStringArray(data) && data.every((item) => values.has(item));
-}
-
-function isIntegerInRange(data: unknown, min: number, max: number) {
-	return (
-		typeof data === 'number' &&
-		Number.isInteger(data) &&
-		data >= min &&
-		data <= max
-	);
-}
-
 function filterAllowedStringArray(data: unknown, values: Set<string>) {
 	return isStringArray(data) ? data.filter((item) => values.has(item)) : data;
-}
-
-function isNonNegativeSafeInteger(data: unknown) {
-	return isIntegerInRange(data, 0, Number.MAX_SAFE_INTEGER);
 }
 
 function sanitizeGlobalPreferences(data: unknown) {

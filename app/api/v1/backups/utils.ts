@@ -1,28 +1,24 @@
-import { createHash, createHmac } from 'node:crypto';
 import { type NextRequest } from 'next/server';
+import { createHash, createHmac } from 'node:crypto';
+import { env } from 'node:process';
 
 import {
 	getRequestIp,
 	getRequestUserAgent,
 } from '@/lib/account/server/request';
-import { checkAppSecret } from '@/lib/account/server/environment';
+import {
+	SERVER_MISCONFIGURED_MESSAGE,
+	checkAppSecret,
+} from '@/lib/account/server/environment';
 export { getLogSafeErrorCode } from '@/lib/logging';
 
-const LEGACY_BACKUP_META_FALLBACK_SECRET =
-	'touhou-mystia-izakaya-assistant:legacy-backup-meta:v1';
-
 function getBackupMetaSecret() {
-	const legacySecret = process.env.LEGACY_BACKUP_SECRET;
-	if (checkAppSecret(legacySecret)) {
-		return legacySecret;
-	}
-
-	const appSecret = process.env.APP_SECRET;
+	const appSecret = env.APP_SECRET;
 	if (checkAppSecret(appSecret)) {
 		return appSecret;
 	}
 
-	return LEGACY_BACKUP_META_FALLBACK_SECRET;
+	throw new Error(SERVER_MISCONFIGURED_MESSAGE);
 }
 
 function createBackupMetaHmac(value: string, secret: string) {

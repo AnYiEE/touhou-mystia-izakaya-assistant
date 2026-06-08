@@ -11,7 +11,7 @@ import {
 	authenticateAdminRequest,
 	checkAdminFeatureResponse,
 	createAdminAuthErrorResponse,
-} from '../utils';
+} from '@/api/v1/admin/utils';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -37,14 +37,6 @@ export async function GET(request: NextRequest) {
 		return cookieSecurityResponse;
 	}
 
-	const rateLimitResponse = checkAccountRateLimitResponse(
-		request,
-		'admin-me'
-	);
-	if (rateLimitResponse !== null) {
-		return rateLimitResponse;
-	}
-
 	const auth = authenticateAdminRequest(request);
 	if (auth.status === 'error') {
 		return createAdminAuthErrorResponse(
@@ -52,6 +44,14 @@ export async function GET(request: NextRequest) {
 			auth.message,
 			auth.httpStatus
 		);
+	}
+
+	const rateLimitResponse = checkAccountRateLimitResponse(
+		request,
+		'admin-me'
+	);
+	if (rateLimitResponse !== null) {
+		return rateLimitResponse;
 	}
 
 	const adminModule = await import('@/lib/account/server/admin');

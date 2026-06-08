@@ -15,7 +15,7 @@ import {
 	checkAdminCsrfResponse,
 	checkAdminFeatureResponse,
 	createAdminAuthErrorResponse,
-} from '../../../utils';
+} from '@/api/v1/admin/utils';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -60,6 +60,7 @@ export async function DELETE(
 			auth.httpStatus
 		);
 	}
+
 	const csrfResponse = checkAdminCsrfResponse(request, auth.token);
 	if (csrfResponse !== null) {
 		return csrfResponse;
@@ -67,6 +68,7 @@ export async function DELETE(
 
 	const { id } = await params;
 	const userStateModule = await import('@/actions/account/userState');
+
 	try {
 		const stateEpoch =
 			await userStateModule.clearUserDataAndDeleteSessionsAndIncrementStateEpoch(

@@ -1,5 +1,7 @@
 import { sql } from 'kysely';
 
+import { getAccountDatabase } from '@/lib/account/server/db';
+import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import { TABLE_NAME_MAP } from '@/lib/db';
 import type {
 	TSession,
@@ -7,9 +9,7 @@ import type {
 	TUserState,
 	TUserStateNew,
 } from '@/lib/db/types';
-
-import { getAccountDatabase } from '@/lib/account/server/db';
-import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
+import { isNonNegativeSafeInteger } from '@/lib/account/sync/serializers/utils';
 
 const TABLE_NAME = TABLE_NAME_MAP.userState;
 const USER_TABLE_NAME = TABLE_NAME_MAP.user;
@@ -26,12 +26,6 @@ type TPutUserStateEntryIfRevisionResult =
 interface IPutUserStateEntryIfRevisionChange {
 	entry: TUserStateNew;
 	expectedRevision: number;
-}
-
-function isNonNegativeSafeInteger(value: unknown): value is number {
-	return (
-		typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
-	);
 }
 
 function canIncrementSyncRevision(value: unknown): value is number {
@@ -143,8 +137,6 @@ export async function putUserStateEntriesIfRevision(
 
 		const stateEpochLockResult = await trx
 			.updateTable(USER_TABLE_NAME)
-			// SQLite takes the write lock for this no-op update, so the
-			// following namespace writes share one state_epoch check.
 			.set({ updated_at: sql<TUser['updated_at']>`updated_at` })
 			.where('id', '=', userId)
 			.where('status', '=', USER_STATUS_MAP.active)

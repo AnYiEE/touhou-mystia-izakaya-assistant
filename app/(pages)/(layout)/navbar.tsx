@@ -35,6 +35,7 @@ import {
 	faUser,
 } from '@fortawesome/free-solid-svg-icons';
 
+import { THEME_MAP, type TTheme, useTheme } from '@/design/hooks';
 import {
 	Button,
 	Dropdown,
@@ -47,7 +48,6 @@ import {
 	Tooltip,
 	cn,
 } from '@/design/ui/components';
-import { THEME_MAP, type TTheme, useTheme } from '@/design/hooks';
 import { useReducedMotion } from '@/design/ui/hooks';
 
 import AccountMenu from '@/components/accountMenu';
@@ -157,13 +157,12 @@ export default function Navbar() {
 	const [theme, setTheme] = useTheme();
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
+
 	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const accountUser = accountStore.shared.user.use();
-	const shouldShowAccountMenu = isAccountFeatureClientEnabled;
+
 	const shouldShowDesktopAccountAction =
-		shouldShowAccountMenu &&
-		accountBootstrapStatus !== 'disabled' &&
-		accountBootstrapStatus !== 'error';
+		isAccountFeatureClientEnabled && accountBootstrapStatus !== 'disabled';
 	const accountActionLabel =
 		accountBootstrapStatus === 'error'
 			? '账号不可用'
@@ -203,9 +202,15 @@ export default function Navbar() {
 		},
 		[basePathname, isReducedMotion, router, startProgress, vibrate]
 	);
+
 	const handleAccountMenuClick = useCallback(
 		(isInNavbarMenu?: boolean) => {
 			vibrate();
+			trackEvent(
+				trackEvent.category.click,
+				'Account Button',
+				isInNavbarMenu ? 'Open Modal From Menu' : 'Open Modal'
+			);
 			const openAccountModal = () => {
 				accountStore.shared.accountModal.isOpen.set(true);
 			};
@@ -219,6 +224,7 @@ export default function Navbar() {
 		},
 		[isReducedMotion, vibrate]
 	);
+
 	const handleDesktopActionMenu = useCallback(
 		(key: Key) => {
 			const actionKey = String(key);
@@ -444,7 +450,7 @@ export default function Navbar() {
 										icon={faUser}
 										className="w-3.5"
 									/>
-									<span>账号</span>
+									<span className="mr-1">账号</span>
 									<FontAwesomeIcon
 										icon={faChevronDown}
 										size="sm"
@@ -530,24 +536,14 @@ export default function Navbar() {
 			<NavbarContent
 				as="div"
 				justify="end"
-				className="basis-1 gap-3 pl-4 md:hidden"
+				className="basis-1 !gap-3 pl-4 md:hidden"
 			>
-				{shouldShowAccountMenu && (
-					<div
-						className={cn('flex', {
-							'pointer-events-none h-0 w-0 opacity-0':
-								!isMenuOpened,
-						})}
-					>
+				{isMenuOpened && isAccountFeatureClientEnabled && (
+					<div className="flex">
 						<AccountMenu onClick={handleAccountMenuClick} />
 					</div>
 				)}
-				<ThemeSwitcher
-					isMenu
-					className={cn({
-						'pointer-events-none h-0 w-0 opacity-0': !isMenuOpened,
-					})}
-				/>
+				{isMenuOpened && <ThemeSwitcher isMenu />}
 				<Tooltip
 					showArrow
 					content={isMenuOpened ? '收起菜单' : '打开菜单'}

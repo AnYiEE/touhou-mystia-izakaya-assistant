@@ -7,8 +7,12 @@ import {
 	type FontAwesomeIconProps,
 } from '@fortawesome/react-fontawesome';
 
-import { cn } from '@/design/ui/components';
+import { Card, cn } from '@/design/ui/components';
+
+import Placeholder from '@/components/placeholder';
+
 import { type TUserStatus } from '@/lib/account/shared/types';
+import { globalStore as store } from '@/stores';
 
 const STATUS_META_MAP = {
 	active: {
@@ -28,28 +32,95 @@ const STATUS_META_MAP = {
 	},
 } as const satisfies Record<TUserStatus, { className: string; label: string }>;
 
-export function AdminShell({
+export interface IAdminListLocationState {
+	page: number;
+	query: string;
+	status: TUserStatus | '';
+}
+
+export function getAdminListPageFromSearchValue(value: string | null) {
+	const page = Number.parseInt(value ?? '', 10);
+
+	return Number.isSafeInteger(page) && page > 0 ? page : 1;
+}
+
+export function getAdminListStatusFromSearchValue(
+	value: string | null
+): TUserStatus | '' {
+	switch (value) {
+		case 'active':
+		case 'deleted':
+		case 'disabled':
+			return value;
+		default:
+			return '';
+	}
+}
+
+function createAdminListSearchParams({
+	page,
+	query,
+	status,
+}: IAdminListLocationState) {
+	const params = new URLSearchParams();
+
+	if (page > 1) {
+		params.set('page', String(page));
+	}
+	if (query.length > 0) {
+		params.set('query', query);
+	}
+	if (status !== '') {
+		params.set('status', status);
+	}
+
+	return params;
+}
+
+export function getAdminListHref(state: IAdminListLocationState) {
+	const search = createAdminListSearchParams(state).toString();
+
+	return search.length === 0 ? '/admin' : `/admin?${search}`;
+}
+
+export function getAdminUserDetailHref(
+	userId: string,
+	state: IAdminListLocationState
+) {
+	const search = createAdminListSearchParams(state).toString();
+	const pathname = `/admin/users/${encodeURIComponent(userId)}`;
+
+	return search.length === 0 ? pathname : `${pathname}?${search}`;
+}
+
+interface IAdminShellProps extends PropsWithChildren<
+	Pick<HTMLDivElementAttributes, 'className'>
+> {}
+
+export const AdminShell = memo<IAdminShellProps>(function AdminShell({
 	children,
 	className,
-}: PropsWithChildren<{ className?: string }>) {
+}) {
 	return (
 		<div
 			className={cn(
-				'min-h-main-content space-y-5 pb-8 text-foreground',
+				'min-h-main-content space-y-5 text-foreground',
 				className
 			)}
 		>
 			{children}
 		</div>
 	);
-}
+});
 
-export function AdminIcon({
+interface IAdminIconProps
+	extends
+		Pick<HTMLSpanElementAttributes, 'className'>,
+		Pick<FontAwesomeIconProps, 'icon'> {}
+
+export const AdminIcon = memo<IAdminIconProps>(function AdminIcon({
 	className,
 	icon,
-}: {
-	className?: string;
-	icon: FontAwesomeIconProps['icon'];
 }) {
 	return (
 		<span
@@ -61,34 +132,37 @@ export function AdminIcon({
 			<FontAwesomeIcon icon={icon} className="w-4" />
 		</span>
 	);
-}
+});
 
-export function AdminHeader({
-	actions,
-	icon,
-	subtitle,
-	title,
-}: {
+interface IAdminHeaderProps {
 	actions?: ReactNodeWithoutBoolean;
 	icon: FontAwesomeIconProps['icon'];
 	subtitle?: ReactNodeWithoutBoolean;
 	title: ReactNodeWithoutBoolean;
+}
+
+export const AdminHeader = memo<IAdminHeaderProps>(function AdminHeader({
+	actions,
+	icon,
+	subtitle,
+	title,
 }) {
 	const hasSubtitle = subtitle !== undefined;
+	const isHighAppearance = store.persistence.highAppearance.use();
 
 	return (
-		<header
-			className={cn(
-				'flex flex-col gap-3 border-b border-default-200/70 pb-4 lg:flex-row lg:justify-between',
-				hasSubtitle ? 'lg:items-start' : 'lg:items-center'
-			)}
+		<Card
+			as="header"
+			fullWidth
+			shadow="sm"
+			classNames={{
+				base: cn(
+					'flex flex-col gap-3 space-y-0 p-4 lg:flex-row lg:items-center lg:justify-between',
+					{ 'bg-content1/40 backdrop-blur': isHighAppearance }
+				),
+			}}
 		>
-			<div
-				className={cn(
-					'flex min-w-0 flex-1 gap-3',
-					hasSubtitle ? 'items-start' : 'items-center'
-				)}
-			>
+			<div className="flex min-w-0 flex-1 items-center gap-3">
 				<AdminIcon
 					icon={icon}
 					className={cn(hasSubtitle && 'mt-0.5')}
@@ -98,94 +172,115 @@ export function AdminHeader({
 						{title}
 					</h1>
 					{subtitle !== undefined && (
-						<p className="break-words text-sm leading-5 text-foreground-500">
+						<p className="break-words text-small leading-5 text-foreground-500">
 							{subtitle}
 						</p>
 					)}
 				</div>
 			</div>
 			{actions !== undefined && (
-				<div
-					className={cn(
-						'flex shrink-0 flex-wrap items-center gap-2',
-						hasSubtitle && 'lg:pt-1'
-					)}
-				>
+				<div className="flex shrink-0 flex-wrap items-center gap-2">
 					{actions}
 				</div>
 			)}
-		</header>
+		</Card>
 	);
-}
+});
 
-export function AdminPanel({
+interface IAdminPanelProps extends PropsWithChildren<
+	Pick<HTMLDivElementAttributes, 'className'>
+> {}
+
+export const AdminPanel = memo<IAdminPanelProps>(function AdminPanel({
 	children,
 	className,
-}: PropsWithChildren<{ className?: string }>) {
+}) {
+	const isHighAppearance = store.persistence.highAppearance.use();
+
 	return (
-		<section
+		<Card
+			as="section"
+			fullWidth
+			shadow="sm"
+			classNames={{
+				base: cn('p-4', className, {
+					'bg-content1/40 backdrop-blur': isHighAppearance,
+				}),
+			}}
+		>
+			{children}
+		</Card>
+	);
+});
+
+interface IAdminPanelTitleProps {
+	children: ReactNodeWithoutBoolean;
+	icon: FontAwesomeIconProps['icon'];
+}
+
+export const AdminPanelTitle = memo<IAdminPanelTitleProps>(
+	function AdminPanelTitle({ children, icon }) {
+		return (
+			<div className="mb-3 flex items-center gap-2 text-small font-medium text-foreground-700">
+				<FontAwesomeIcon icon={icon} className="w-4" />
+				<span>{children}</span>
+			</div>
+		);
+	}
+);
+
+interface IAdminInputIconProps extends Pick<FontAwesomeIconProps, 'icon'> {}
+
+export const AdminInputIcon = memo<IAdminInputIconProps>(
+	function AdminInputIcon({ icon }) {
+		return (
+			<span className="pointer-events-none inline-flex -translate-y-px items-center text-default-400">
+				<FontAwesomeIcon icon={icon} className="block w-3.5" />
+			</span>
+		);
+	}
+);
+
+interface IAdminStatusBadgeProps {
+	status: TUserStatus;
+}
+
+export const AdminStatusBadge = memo<IAdminStatusBadgeProps>(
+	function AdminStatusBadge({ status }) {
+		const meta = STATUS_META_MAP[status];
+
+		return (
+			<span
+				className={cn(
+					'inline-flex h-7 items-center rounded-small border px-2 text-tiny font-medium',
+					meta.className
+				)}
+			>
+				{meta.label}
+			</span>
+		);
+	}
+);
+
+interface IAdminMetricProps {
+	className?: string;
+	label: ReactNodeWithoutBoolean;
+	value: ReactNodeWithoutBoolean;
+}
+
+export const AdminMetric = memo<IAdminMetricProps>(function AdminMetric({
+	className,
+	label,
+	value,
+}) {
+	return (
+		<div
 			className={cn(
-				'rounded-small border border-default-200/80 bg-default-50/70 p-4 shadow-sm shadow-default-200/30 dark:bg-default-100/20 dark:shadow-none',
+				'flex min-h-12 min-w-0 flex-col justify-center sm:border-l sm:border-default-200/80 sm:pl-3 sm:first:border-l-0 sm:first:pl-0',
 				className
 			)}
 		>
-			{children}
-		</section>
-	);
-}
-
-export function AdminPanelTitle({
-	children,
-	icon,
-}: {
-	children: ReactNodeWithoutBoolean;
-	icon: FontAwesomeIconProps['icon'];
-}) {
-	return (
-		<div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground-700">
-			<FontAwesomeIcon icon={icon} className="w-4 text-primary-600" />
-			<span>{children}</span>
-		</div>
-	);
-}
-
-export function AdminInputIcon({
-	icon,
-}: {
-	icon: FontAwesomeIconProps['icon'];
-}) {
-	return (
-		<span className="pointer-events-none inline-flex -translate-y-px items-center text-default-400">
-			<FontAwesomeIcon icon={icon} className="block w-3.5" />
-		</span>
-	);
-}
-
-export function AdminStatusBadge({ status }: { status: TUserStatus }) {
-	const meta = STATUS_META_MAP[status];
-
-	return (
-		<span
-			className={cn(
-				'inline-flex h-7 items-center rounded-small border px-2 text-xs font-medium',
-				meta.className
-			)}
-		>
-			{meta.label}
-		</span>
-	);
-}
-
-export function AdminMetric({
-	label,
-	value,
-}: {
-	label: ReactNodeWithoutBoolean;
-	value: ReactNodeWithoutBoolean;
-}) {
-	return (
-		<div className="flex min-h-12 min-w-0 flex-col justify-center border-l border-default-200/80 pl-3 first:border-l-0 first:pl-0">
-			<div className="truncate text-xs leading-5 text-foreground-500">
+			<div className="truncate text-tiny leading-5 text-foreground-500">
 				{label}
 			</div>
 			<div className="min-w-0 break-words text-base font-semibold leading-6 text-foreground-800">
@@ -193,69 +288,105 @@ export function AdminMetric({
 			</div>
 		</div>
 	);
+});
+
+interface IAdminMessageProps {
+	message: string;
 }
 
-export function AdminMessage({ message }: { message: string }) {
+export const AdminMessage = memo<IAdminMessageProps>(function AdminMessage({
+	message,
+}) {
 	return (
-		<div className="rounded-small border border-default-200/80 bg-default/30 px-3 py-2 text-sm leading-6 text-foreground-600">
+		<div className="rounded-small border border-default-200/80 bg-default/30 px-3 py-2 text-small leading-6 text-foreground-600">
 			{message}
 		</div>
 	);
-}
+});
 
-export function AdminTable({
+interface IAdminTableProps extends PropsWithChildren<
+	Pick<HTMLDivElementAttributes, 'className'>
+> {}
+
+export const AdminTable = memo<IAdminTableProps>(function AdminTable({
 	children,
 	className,
-}: PropsWithChildren<{ className?: string }>) {
+}) {
+	const isHighAppearance = store.persistence.highAppearance.use();
+
 	return (
 		<div
 			className={cn(
-				'overflow-x-auto rounded-small border border-default-200/80 bg-default-50/50 dark:bg-default-100/10',
+				'overflow-x-auto rounded-small border border-default-200/80',
+				isHighAppearance
+					? 'bg-content1/40 backdrop-blur'
+					: 'bg-default-50/50 dark:bg-default-100/10',
 				className
 			)}
 		>
-			<table className="min-w-full text-left text-sm">{children}</table>
+			<table className="min-w-full text-left text-small">
+				{children}
+			</table>
 		</div>
 	);
-}
+});
 
-export function AdminTableHeader({ children }: PropsWithChildren) {
-	return (
-		<thead className="bg-default-100/70 text-xs font-medium uppercase text-foreground-500 dark:bg-default-50/10">
-			{children}
-		</thead>
-	);
-}
+interface IAdminTableHeaderProps extends PropsWithChildren<object> {}
 
-export const AdminTableRow = memo<PropsWithChildren<{ className?: string }>>(
-	function AdminTableRow({ children, className }) {
+export const AdminTableHeader = memo<IAdminTableHeaderProps>(
+	function AdminTableHeader({ children }) {
 		return (
-			<tr
-				className={cn(
-					'border-t border-default-200/70 transition-colors hover:bg-default-100/60 motion-reduce:transition-none dark:hover:bg-default-50/10',
-					className
-				)}
-			>
+			<thead className="bg-default-100/70 text-tiny font-medium uppercase text-foreground-500 dark:bg-default-50/10">
 				{children}
-			</tr>
+			</thead>
 		);
 	}
 );
 
-export function AdminEmptyState({
+interface IAdminTableRowProps extends PropsWithChildren<object> {
+	className?: string;
+}
+
+export const AdminTableRow = memo<IAdminTableRowProps>(function AdminTableRow({
 	children,
-	icon,
-}: {
-	children: ReactNodeWithoutBoolean;
-	icon: FontAwesomeIconProps['icon'];
+	className,
 }) {
 	return (
-		<div className="flex min-h-32 flex-col items-center justify-center gap-2 rounded-small border border-dashed border-default-300/80 bg-default-50/30 px-4 py-8 text-center text-sm text-foreground-500 dark:bg-default-100/10">
-			<FontAwesomeIcon icon={icon} className="w-5 text-default-400" />
-			<span>{children}</span>
-		</div>
+		<tr
+			className={cn(
+				'border-t border-default-200/70 transition-colors hover:bg-default-100/60 motion-reduce:transition-none dark:hover:bg-default-50/10',
+				className
+			)}
+		>
+			{children}
+		</tr>
 	);
+});
+
+interface IAdminEmptyStateProps {
+	children: ReactNodeWithoutBoolean;
+	icon: FontAwesomeIconProps['icon'];
 }
+
+export const AdminEmptyState = memo<IAdminEmptyStateProps>(
+	function AdminEmptyState({ children, icon }) {
+		const isHighAppearance = store.persistence.highAppearance.use();
+
+		return (
+			<Placeholder
+				className={cn(
+					'min-h-32 gap-2 space-y-0 rounded-small border border-dashed border-default-300/80 px-4 py-8',
+					isHighAppearance
+						? 'bg-content1/40 backdrop-blur'
+						: 'bg-default-50/30 dark:bg-default-100/10'
+				)}
+			>
+				<FontAwesomeIcon icon={icon} size="lg" />
+				<span>{children}</span>
+			</Placeholder>
+		);
+	}
+);
 
 export function getAdminStatusLabel(status: TUserStatus) {
 	return STATUS_META_MAP[status].label;

@@ -32,6 +32,12 @@ export async function DELETE(request: NextRequest) {
 		return cookieSecurityResponse;
 	}
 
+	const authModule = await import('@/lib/account/server/auth');
+	const auth = await authModule.authenticateAccountRequest(request);
+	if (auth.status === 'error') {
+		return createAccountAuthErrorResponse(auth, request);
+	}
+
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
 		'account-delete'
@@ -40,18 +46,11 @@ export async function DELETE(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	const [authModule, usersModule] = await Promise.all([
-		import('@/lib/account/server/auth'),
-		import('@/actions/account/users'),
-	]);
-	const auth = await authModule.authenticateAccountRequest(request);
-	if (auth.status === 'error') {
-		return createAccountAuthErrorResponse(auth, request);
-	}
 	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
+	const usersModule = await import('@/actions/account/users');
 	await usersModule.setUserStatusAndDeleteSessions(
 		auth.data.user.id,
 		USER_STATUS_MAP.deleted

@@ -1,18 +1,21 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button, Modal } from '@/design/ui/components';
-import { createSnapshotHash } from '@/lib/account/client/queue';
-import { type ISyncConflictItem } from '@/lib/account/sync';
-import { accountStore } from '@/stores/account';
+
+import { trackEvent } from '@/components/analytics';
+import Heading from '@/components/heading';
+
 import {
 	type TSyncConflictResolution,
 	resolveAccountSyncConflict,
 } from '@/lib/account/client/conflict';
+import { createSnapshotHash } from '@/lib/account/client/queue';
+import { type ISyncConflictItem } from '@/lib/account/sync';
 import { scheduleAccountSyncFlush } from '@/lib/account/client/syncClient';
 import { getLogSafeErrorCode } from '@/lib/logging';
-import Heading from './heading';
+import { accountStore as store } from '@/stores';
 
 function formatConflictData(data: unknown) {
 	try {
@@ -22,16 +25,24 @@ function formatConflictData(data: unknown) {
 	}
 }
 
-function ConflictPreview({ label, value }: { label: string; value: unknown }) {
+interface IConflictPreviewProps {
+	label: string;
+	value: unknown;
+}
+
+const ConflictPreview = memo<IConflictPreviewProps>(function ConflictPreview({
+	label,
+	value,
+}) {
 	return (
 		<div className="space-y-1">
-			<p className="text-xs font-medium text-foreground-500">{label}</p>
-			<pre className="max-h-52 overflow-auto rounded-small bg-default-100 p-2 text-xs text-foreground-700">
+			<p className="text-tiny font-medium text-foreground-500">{label}</p>
+			<pre className="max-h-52 overflow-auto rounded-small bg-default-100 p-2 text-tiny text-foreground-700">
 				{formatConflictData(value)}
 			</pre>
 		</div>
 	);
-}
+});
 
 function checkConflictSnapshotUnchanged(
 	currentConflict: ISyncConflictItem,
@@ -61,7 +72,19 @@ function createConflictSnapshotKey(conflict: ISyncConflictItem) {
 	]);
 }
 
-export default function AccountConflictModal() {
+const CONFLICT_RESOLUTION_TRACK_NAME_MAP = {
+	cloud: 'Use Cloud',
+	local: 'Use Local',
+	merged: 'Use Merged',
+} as const satisfies Record<TSyncConflictResolution, string>;
+
+interface IProps {}
+
+export default memo<IProps>(function AccountConflictModal() {
+	const conflicts = store.shared.sync.conflicts.use();
+	const passwordMustChange = store.shared.passwordMustChange.use();
+	const user = store.shared.user.use();
+
 	const [resolvingResolution, setResolvingResolution] =
 		useState<TSyncConflictResolution | null>(null);
 	const [resolvedConflictKeys, setResolvedConflictKeys] = useState<
@@ -69,14 +92,10 @@ export default function AccountConflictModal() {
 	>(() => new Set());
 	const [displayedConflict, setDisplayedConflict] =
 		useState<ISyncConflictItem | null>(null);
-	const isResolvingRef = useRef(false);
 	const [message, setMessage] = useState<string | null>(null);
-	const [portalContainer, setPortalContainer] = useState<Element | null>(
-		null
-	);
-	const conflicts = accountStore.shared.sync.conflicts.use();
-	const passwordMustChange = accountStore.shared.passwordMustChange.use();
-	const user = accountStore.shared.user.use();
+
+	const isResolvingRef = useRef(false);
+
 	const conflict = conflicts.find(
 		(item) =>
 			item.userId === user?.id &&
@@ -85,28 +104,33 @@ export default function AccountConflictModal() {
 	const isModalOpen =
 		conflict !== undefined && user !== null && !passwordMustChange;
 	const visibleConflict = conflict ?? displayedConflict;
+	const visibleConflictKey =
+		visibleConflict === null
+			? null
+			: createConflictSnapshotKey(visibleConflict);
 
-	useEffect(() => {
-		setPortalContainer(document.querySelector('#modal-portal-container'));
-	}, []);
 	useEffect(() => {
 		setResolvedConflictKeys(new Set());
 	}, [user?.id]);
+
 	useEffect(() => {
 		if (isModalOpen) {
 			setDisplayedConflict(conflict);
 		}
 	}, [conflict, isModalOpen]);
+
 	useEffect(() => {
 		setResolvedConflictKeys((currentKeys) => {
 			if (currentKeys.size === 0) {
 				return currentKeys;
 			}
+
 			const activeKeys = new Set(
 				conflicts.map(createConflictSnapshotKey)
 			);
 			const nextKeys = new Set<string>();
 			let didChange = false;
+
 			for (const key of currentKeys) {
 				if (activeKeys.has(key)) {
 					nextKeys.add(key);
@@ -118,80 +142,115 @@ export default function AccountConflictModal() {
 			return didChange ? nextKeys : currentKeys;
 		});
 	}, [conflicts]);
+
 	useEffect(() => {
 		isResolvingRef.current = false;
 		setResolvingResolution(null);
 		setMessage(null);
 	}, [conflict]);
 
+	useEffect(() => {
+		if (isModalOpen && visibleConflictKey !== null) {
+			trackEvent(trackEvent.category.show, 'Modal', 'Account Conflict');
+		}
+	}, [isModalOpen, visibleConflictKey]);
+
+	const resolveConflict = useCallback(
+		(resolution: TSyncConflictResolution) => {
+			if (
+				isResolvingRef.current ||
+				conflict === undefined ||
+				user === null
+			) {
+				return;
+			}
+
+			trackEvent(
+				trackEvent.category.click,
+				'Account Conflict Button',
+				CONFLICT_RESOLUTION_TRACK_NAME_MAP[resolution]
+			);
+
+			isResolvingRef.current = true;
+			setResolvingResolution(resolution);
+			setMessage(null);
+
+			try {
+				const conflictKey = createConflictSnapshotKey(conflict);
+				const currentConflict = store.shared.sync.conflicts
+					.get()
+					.find(
+						(item) =>
+							createConflictSnapshotKey(item) === conflictKey
+					);
+
+				if (
+					currentConflict === undefined ||
+					!checkConflictSnapshotUnchanged(currentConflict, conflict)
+				) {
+					setMessage('冲突状态已变化，请重新选择');
+					return;
+				}
+
+				const didResolve = resolveAccountSyncConflict({
+					conflict: currentConflict,
+					resolution,
+					userId: user.id,
+				});
+
+				if (!didResolve) {
+					setMessage('冲突暂时无法保存，请稍后重试');
+					return;
+				}
+
+				setResolvedConflictKeys((currentKeys) => {
+					if (currentKeys.has(conflictKey)) {
+						return currentKeys;
+					}
+
+					const nextKeys = new Set(currentKeys);
+					nextKeys.add(conflictKey);
+
+					return nextKeys;
+				});
+
+				scheduleAccountSyncFlush();
+			} catch (error) {
+				console.error('Failed to resolve conflict.', {
+					errorCode: getLogSafeErrorCode(error),
+				});
+				setMessage('冲突保存失败，请稍后重试');
+			} finally {
+				isResolvingRef.current = false;
+				setResolvingResolution(null);
+			}
+		},
+		[conflict, user]
+	);
+
+	const handleUseCloud = useCallback(() => {
+		resolveConflict('cloud');
+	}, [resolveConflict]);
+
+	const handleUseLocal = useCallback(() => {
+		resolveConflict('local');
+	}, [resolveConflict]);
+
+	const handleUseMerged = useCallback(() => {
+		resolveConflict('merged');
+	}, [resolveConflict]);
+
 	if (visibleConflict === null) {
 		return null;
 	}
 
-	const resolveConflict = (resolution: TSyncConflictResolution) => {
-		if (isResolvingRef.current || conflict === undefined || user === null) {
-			return;
-		}
-
-		isResolvingRef.current = true;
-		setResolvingResolution(resolution);
-		setMessage(null);
-		try {
-			const conflictKey = createConflictSnapshotKey(conflict);
-			const currentConflict = accountStore.shared.sync.conflicts
-				.get()
-				.find(
-					(item) => createConflictSnapshotKey(item) === conflictKey
-				);
-			if (
-				currentConflict === undefined ||
-				!checkConflictSnapshotUnchanged(currentConflict, conflict)
-			) {
-				setMessage('冲突状态已变化，请重新选择');
-				return;
-			}
-
-			const didResolve = resolveAccountSyncConflict({
-				conflict: currentConflict,
-				resolution,
-				userId: user.id,
-			});
-			if (!didResolve) {
-				setMessage('冲突暂时无法保存，请稍后重试');
-				return;
-			}
-			setResolvedConflictKeys((currentKeys) => {
-				if (currentKeys.has(conflictKey)) {
-					return currentKeys;
-				}
-
-				const nextKeys = new Set(currentKeys);
-				nextKeys.add(conflictKey);
-
-				return nextKeys;
-			});
-			scheduleAccountSyncFlush();
-		} catch (error) {
-			console.error('Failed to resolve conflict.', {
-				errorCode: getLogSafeErrorCode(error),
-			});
-			setMessage('冲突保存失败，请稍后重试');
-		} finally {
-			isResolvingRef.current = false;
-			setResolvingResolution(null);
-		}
-	};
-
 	return (
-		<Modal
-			isOpen={isModalOpen}
-			{...(portalContainer === null ? {} : { portalContainer })}
-		>
+		<Modal isOpen={isModalOpen}>
 			<div className="w-full max-w-3xl space-y-4">
 				<Heading as="h2" isFirst>
 					同步冲突
 				</Heading>
-				<p className="text-sm text-foreground-600">
+				<p className="text-small text-foreground-600">
 					{visibleConflict.namespace}需要选择保留的数据版本。
 				</p>
 				<div className="grid gap-3 lg:grid-cols-3">
@@ -211,7 +270,7 @@ export default function AccountConflictModal() {
 				{message !== null && (
 					<p
 						aria-live="assertive"
-						className="text-sm text-danger"
+						className="text-small text-danger"
 						role="alert"
 					>
 						{message}
@@ -222,9 +281,7 @@ export default function AccountConflictModal() {
 						isDisabled={resolvingResolution !== null}
 						isLoading={resolvingResolution === 'cloud'}
 						variant="flat"
-						onPress={() => {
-							resolveConflict('cloud');
-						}}
+						onPress={handleUseCloud}
 					>
 						使用云端
 					</Button>
@@ -232,9 +289,7 @@ export default function AccountConflictModal() {
 						isDisabled={resolvingResolution !== null}
 						isLoading={resolvingResolution === 'local'}
 						variant="flat"
-						onPress={() => {
-							resolveConflict('local');
-						}}
+						onPress={handleUseLocal}
 					>
 						使用本地
 					</Button>
@@ -244,9 +299,7 @@ export default function AccountConflictModal() {
 							isDisabled={resolvingResolution !== null}
 							isLoading={resolvingResolution === 'merged'}
 							variant="solid"
-							onPress={() => {
-								resolveConflict('merged');
-							}}
+							onPress={handleUseMerged}
 						>
 							使用合并结果
 						</Button>
@@ -255,4 +308,4 @@ export default function AccountConflictModal() {
 			</div>
 		</Modal>
 	);
-}
+});

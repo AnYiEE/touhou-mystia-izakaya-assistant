@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 
-import { ACCOUNT_COOKIE_NAME_MAP } from '../shared/constants';
 import { createAccountHmac } from './crypto';
+import { ACCOUNT_COOKIE_NAME_MAP } from '../shared/constants';
 
 export const SESSION_TOKEN_BYTE_LENGTH = 32;
 export const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 90;

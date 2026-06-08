@@ -1,7 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+	type Key,
+	memo,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from 'react';
 
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
 	faArrowRightFromBracket,
@@ -15,7 +23,6 @@ import {
 	faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 
-import TimeAgo from '@/components/timeAgo';
 import {
 	Button,
 	Dropdown,
@@ -26,20 +33,9 @@ import {
 	Link,
 	cn,
 } from '@/design/ui/components';
-import {
-	type IAdminMeData,
-	type IAdminUserListData,
-	fetchAdminMe,
-	listAdminUsers,
-	loginAdmin,
-	logoutAdmin,
-} from '@/lib/account/client/api';
-import {
-	checkAdminSessionUnauthorized,
-	clearAdminSession,
-} from '@/lib/account/client/adminSession';
-import { type TUserStatus } from '@/lib/account/shared/types';
-import { accountStore } from '@/stores/account';
+
+import { trackEvent } from '@/components/analytics';
+import TimeAgo from '@/components/timeAgo';
 import {
 	AdminEmptyState,
 	AdminHeader,
@@ -53,8 +49,28 @@ import {
 	AdminTable,
 	AdminTableHeader,
 	AdminTableRow,
+	type IAdminListLocationState,
+	getAdminListHref,
+	getAdminListPageFromSearchValue,
+	getAdminListStatusFromSearchValue,
 	getAdminStatusLabel,
+	getAdminUserDetailHref,
 } from './components';
+
+import {
+	type IAdminMeData,
+	type IAdminUserListData,
+	fetchAdminMe,
+	listAdminUsers,
+	loginAdmin,
+	logoutAdmin,
+} from '@/lib/account/client/api';
+import {
+	checkAdminSessionUnauthorized,
+	clearAdminSession,
+} from '@/lib/account/client/adminSession';
+import { type TUserStatus } from '@/lib/account/shared/types';
+import { accountStore, globalStore } from '@/stores';
 
 const statusOptions: Array<{ label: string; value: TUserStatus | 'all' }> = [
 	{ label: '全部状态', value: 'all' },
@@ -81,21 +97,408 @@ function getStatusFilterKey(status: TUserStatus | '') {
 	return status === '' ? 'all' : status;
 }
 
+interface IAdminLoginPanelProps {
+	isAdminActionLoading: boolean;
+	message: string | null;
+	onLogin: () => void;
+	onPasswordChange: (value: string) => void;
+	onUsernameChange: (value: string) => void;
+	password: string;
+	trimmedUsername: string;
+	username: string;
+}
+
+const AdminLoginPanel = memo<IAdminLoginPanelProps>(function AdminLoginPanel({
+	isAdminActionLoading,
+	message,
+	onLogin,
+	onPasswordChange,
+	onUsernameChange,
+	password,
+	trimmedUsername,
+	username,
+}) {
+	return (
+		<AdminPanel className="space-y-4">
+			<AdminPanelTitle icon={faUser}>管理员凭据</AdminPanelTitle>
+			<Input
+				autoComplete="username"
+				label="管理员用户名"
+				startContent={<AdminInputIcon icon={faUser} />}
+				value={username}
+				onValueChange={onUsernameChange}
+			/>
+			<Input
+				autoComplete="current-password"
+				label="管理员密码"
+				startContent={<AdminInputIcon icon={faKey} />}
+				type="password"
+				value={password}
+				onValueChange={onPasswordChange}
+			/>
+			<Button
+				fullWidth
+				color="primary"
+				isDisabled={
+					isAdminActionLoading ||
+					trimmedUsername.length === 0 ||
+					password.length === 0
+				}
+				isLoading={isAdminActionLoading}
+				startContent={
+					isAdminActionLoading ? null : (
+						<FontAwesomeIcon
+							icon={faShieldHalved}
+							className="w-3.5"
+						/>
+					)
+				}
+				variant="flat"
+				onPress={onLogin}
+			>
+				登录
+			</Button>
+			{message !== null && <AdminMessage message={message} />}
+		</AdminPanel>
+	);
+});
+
+interface IAdminUserMetricsProps {
+	page: number;
+	pageSize: number;
+	statusFilterLabel: string;
+	userCount: number;
+	users: IAdminUserListData | null;
+}
+
+const AdminUserMetrics = memo<IAdminUserMetricsProps>(
+	function AdminUserMetrics({
+		page,
+		pageSize,
+		statusFilterLabel,
+		userCount,
+		users,
+	}) {
+		return (
+			<AdminPanel className="grid gap-4 sm:grid-cols-3">
+				<AdminMetric
+					label="本页用户"
+					value={
+						users === null ? '读取中' : `${userCount} / ${pageSize}`
+					}
+				/>
+				<AdminMetric
+					label="页码"
+					value={`第${users?.page ?? page}页`}
+				/>
+				<AdminMetric label="筛选状态" value={statusFilterLabel} />
+			</AdminPanel>
+		);
+	}
+);
+
+interface IAdminUserFilterPanelProps {
+	isUsersLoading: boolean;
+	onQueryInputChange: (value: string) => void;
+	onRefresh: () => void;
+	onStatusAction: (key: Key) => void;
+	queryInput: string;
+	statusFilterKey: string;
+	statusFilterLabel: string;
+}
+
+const AdminUserFilterPanel = memo<IAdminUserFilterPanelProps>(
+	function AdminUserFilterPanel({
+		isUsersLoading,
+		onQueryInputChange,
+		onRefresh,
+		onStatusAction,
+		queryInput,
+		statusFilterKey,
+		statusFilterLabel,
+	}) {
+		return (
+			<AdminPanel>
+				<AdminPanelTitle icon={faMagnifyingGlass}>筛选</AdminPanelTitle>
+				<div className="grid w-full items-center gap-3 md:grid-cols-[minmax(0,1fr)_auto_6.5rem]">
+					<Input
+						aria-label="搜索用户名"
+						classNames={{ inputWrapper: 'h-12 min-h-12' }}
+						placeholder="搜索用户名"
+						startContent={
+							<AdminInputIcon icon={faMagnifyingGlass} />
+						}
+						value={queryInput}
+						onValueChange={onQueryInputChange}
+					/>
+					<Dropdown showArrow>
+						<DropdownTrigger>
+							<Button
+								className="h-12 min-h-12 min-w-0 gap-2 px-3"
+								endContent={
+									<FontAwesomeIcon
+										icon={faChevronDown}
+										className="w-3 text-default-500"
+									/>
+								}
+								variant="flat"
+							>
+								<span className="text-small">
+									{statusFilterLabel}
+								</span>
+							</Button>
+						</DropdownTrigger>
+						<DropdownMenu
+							disallowEmptySelection
+							aria-label="筛选用户状态"
+							selectedKeys={[statusFilterKey]}
+							selectionMode="single"
+							variant="flat"
+							itemClasses={{
+								base: 'transition-background motion-reduce:transition-none',
+							}}
+							onAction={onStatusAction}
+						>
+							{statusOptions.map((option) => (
+								<DropdownItem
+									key={option.value}
+									textValue={option.label}
+								>
+									{option.label}
+								</DropdownItem>
+							))}
+						</DropdownMenu>
+					</Dropdown>
+					<Button
+						className="h-12 min-h-12 w-full"
+						color="primary"
+						isLoading={isUsersLoading}
+						startContent={
+							isUsersLoading ? null : (
+								<FontAwesomeIcon
+									icon={faRotate}
+									className="w-3.5"
+								/>
+							)
+						}
+						variant="flat"
+						onPress={onRefresh}
+					>
+						刷新
+					</Button>
+				</div>
+			</AdminPanel>
+		);
+	}
+);
+
+interface IAdminUserListRowProps {
+	listLocationState: IAdminListLocationState;
+	onOpenUserDetail: () => void;
+	user: IAdminUserListData['users'][number];
+}
+
+const AdminUserListRow = memo<IAdminUserListRowProps>(
+	function AdminUserListRow({ listLocationState, onOpenUserDetail, user }) {
+		return (
+			<AdminTableRow>
+				<td className={cn(tableCellClassName, 'w-72 max-w-72')}>
+					<div className="min-w-0 max-w-64">
+						<p className="truncate text-small font-medium leading-5 text-foreground-800">
+							{user.username}
+						</p>
+						<p className="truncate font-mono text-[0.7rem] leading-4 text-foreground-400">
+							{user.id}
+						</p>
+					</div>
+				</td>
+				<td className={tableNowrapCellClassName}>
+					<AdminStatusBadge status={user.status} />
+				</td>
+				<td className={tableNowrapCellClassName}>
+					<TimeAgo timestamp={user.created_at} />
+				</td>
+				<td className={tableNowrapCellClassName}>
+					{user.last_login_at === null ? (
+						<span className="text-foreground-400">无</span>
+					) : (
+						<TimeAgo timestamp={user.last_login_at} />
+					)}
+				</td>
+				<td className={cn(tableNowrapCellClassName, 'text-right')}>
+					<Link
+						animationUnderline={false}
+						href={getAdminUserDetailHref(
+							user.id,
+							listLocationState
+						)}
+						className="rounded-small px-2 py-1 text-small text-primary-600 transition-background hover:bg-primary/15 motion-reduce:transition-none dark:text-primary"
+						onPress={onOpenUserDetail}
+					>
+						详情
+					</Link>
+				</td>
+			</AdminTableRow>
+		);
+	}
+);
+
+interface IAdminUserTableProps {
+	listLocationState: IAdminListLocationState;
+	onOpenUserDetail: () => void;
+	users: IAdminUserListData;
+}
+
+const AdminUserTable = memo<IAdminUserTableProps>(function AdminUserTable({
+	listLocationState,
+	onOpenUserDetail,
+	users,
+}) {
+	return (
+		<AdminTable>
+			<AdminTableHeader>
+				<tr>
+					<th className={tableHeadCellClassName}>用户名</th>
+					<th className={tableHeadCellClassName}>状态</th>
+					<th className={tableHeadCellClassName}>创建时间</th>
+					<th className={tableHeadCellClassName}>最近登录</th>
+					<th className={cn(tableHeadCellClassName, 'text-right')}>
+						操作
+					</th>
+				</tr>
+			</AdminTableHeader>
+			<tbody>
+				{users.users.map((user) => (
+					<AdminUserListRow
+						key={user.id}
+						listLocationState={listLocationState}
+						onOpenUserDetail={onOpenUserDetail}
+						user={user}
+					/>
+				))}
+			</tbody>
+		</AdminTable>
+	);
+});
+
+interface IAdminUserListContentProps {
+	listLocationState: IAdminListLocationState;
+	onOpenUserDetail: () => void;
+	users: IAdminUserListData | null;
+}
+
+const AdminUserListContent = memo<IAdminUserListContentProps>(
+	function AdminUserListContent({
+		listLocationState,
+		onOpenUserDetail,
+		users,
+	}) {
+		if (users === null) {
+			return (
+				<AdminEmptyState icon={faClock}>
+					正在读取用户列表
+				</AdminEmptyState>
+			);
+		}
+
+		if (users.users.length === 0) {
+			return (
+				<AdminEmptyState icon={faUsers}>没有匹配的用户</AdminEmptyState>
+			);
+		}
+
+		return (
+			<AdminUserTable
+				listLocationState={listLocationState}
+				onOpenUserDetail={onOpenUserDetail}
+				users={users}
+			/>
+		);
+	}
+);
+
+interface IAdminPaginationProps {
+	canGoNext: boolean;
+	isUsersLoading: boolean;
+	onNextPage: () => void;
+	onPreviousPage: () => void;
+	page: number;
+	users: IAdminUserListData | null;
+}
+
+const AdminPagination = memo<IAdminPaginationProps>(function AdminPagination({
+	canGoNext,
+	isUsersLoading,
+	onNextPage,
+	onPreviousPage,
+	page,
+	users,
+}) {
+	const isHighAppearance = globalStore.persistence.highAppearance.use();
+
+	return (
+		<div
+			className={cn(
+				'flex flex-wrap items-center justify-between gap-3 rounded-small border border-default-200/80 px-3 py-2 text-small text-foreground-500',
+				isHighAppearance
+					? 'bg-content1/40 backdrop-blur'
+					: 'bg-default-50/50 dark:bg-default-100/10'
+			)}
+		>
+			<span>
+				第{users?.page ?? page}页
+				{users !== null && ` · 每页${users.page_size}`}
+			</span>
+			<div className="flex items-center gap-2">
+				<Button
+					isDisabled={page <= 1 || isUsersLoading}
+					size="sm"
+					variant="flat"
+					onPress={onPreviousPage}
+				>
+					上一页
+				</Button>
+				<Button
+					isDisabled={isUsersLoading || !canGoNext}
+					size="sm"
+					variant="flat"
+					onPress={onNextPage}
+				>
+					下一页
+				</Button>
+			</div>
+		</div>
+	);
+});
+
 export default function AdminPage() {
+	const router = useRouter();
+	const searchParams = useSearchParams();
+
+	const initialPage = getAdminListPageFromSearchValue(
+		searchParams.get('page')
+	);
+	const initialQuery = searchParams.get('query') ?? '';
+	const initialStatus = getAdminListStatusFromSearchValue(
+		searchParams.get('status')
+	);
+
 	const [admin, setAdmin] = useState<IAdminMeData | null>(null);
 	const [adminAuthStatus, setAdminAuthStatus] =
 		useState<TAdminAuthStatus>('checking');
 	const [users, setUsers] = useState<IAdminUserListData | null>(null);
 	const [message, setMessage] = useState<string | null>(null);
-	const [page, setPage] = useState(1);
+	const [page, setPage] = useState(initialPage);
 	const [password, setPassword] = useState('');
-	const [query, setQuery] = useState('');
-	const [queryInput, setQueryInput] = useState('');
-	const [status, setStatus] = useState<TUserStatus | ''>('');
+	const [query, setQuery] = useState(initialQuery);
+	const [queryInput, setQueryInput] = useState(initialQuery);
+	const [status, setStatus] = useState<TUserStatus | ''>(initialStatus);
 	const [username, setUsername] = useState('');
 	const [isAdminActionLoading, setIsAdminActionLoading] = useState(false);
 	const [isUsersLoading, setIsUsersLoading] = useState(false);
+
 	const adminAuthRequestIdRef = useRef(0);
+	const isListStateInitializedRef = useRef(false);
 	const refreshUsersRequestIdRef = useRef(0);
 	const trimmedUsername = username.trim();
 
@@ -103,8 +506,10 @@ export default function AdminPage() {
 		(overrideQuery?: string, overridePage?: number) => {
 			const requestId = refreshUsersRequestIdRef.current + 1;
 			refreshUsersRequestIdRef.current = requestId;
+
 			setIsUsersLoading(true);
 			setMessage(null);
+
 			void listAdminUsers({
 				page: overridePage ?? page,
 				query: overrideQuery ?? query,
@@ -122,7 +527,6 @@ export default function AdminPage() {
 					if (refreshUsersRequestIdRef.current !== requestId) {
 						return;
 					}
-
 					if (checkAdminSessionUnauthorized(error)) {
 						clearAdminSession();
 						setAdmin(null);
@@ -130,6 +534,7 @@ export default function AdminPage() {
 						setUsers(null);
 						return;
 					}
+
 					setMessage(
 						error instanceof Error
 							? error.message
@@ -150,8 +555,10 @@ export default function AdminPage() {
 	const checkAdminAuth = useCallback(() => {
 		const requestId = adminAuthRequestIdRef.current + 1;
 		adminAuthRequestIdRef.current = requestId;
+
 		setAdminAuthStatus('checking');
 		setMessage(null);
+
 		void fetchAdminMe()
 			.then((data) => {
 				if (adminAuthRequestIdRef.current !== requestId) {
@@ -166,7 +573,6 @@ export default function AdminPage() {
 				if (adminAuthRequestIdRef.current !== requestId) {
 					return;
 				}
-
 				if (checkAdminSessionUnauthorized(error)) {
 					clearAdminSession();
 					setAdmin(null);
@@ -184,7 +590,149 @@ export default function AdminPage() {
 			});
 	}, []);
 
+	const handleLogin = useCallback(() => {
+		if (isAdminActionLoading) {
+			return;
+		}
+		if (trimmedUsername.length === 0) {
+			return;
+		}
+
+		trackEvent(trackEvent.category.click, 'Admin Auth Button', 'Login');
+
+		const requestId = adminAuthRequestIdRef.current + 1;
+		adminAuthRequestIdRef.current = requestId;
+
+		setIsAdminActionLoading(true);
+		setMessage(null);
+
+		void loginAdmin({ password, username: trimmedUsername })
+			.then((data) => {
+				if (adminAuthRequestIdRef.current !== requestId) {
+					return;
+				}
+
+				accountStore.shared.adminCsrfToken.set(data.csrf_token);
+				setAdmin(data);
+				setAdminAuthStatus('authenticated');
+				setPassword('');
+			})
+			.catch((error: unknown) => {
+				if (adminAuthRequestIdRef.current !== requestId) {
+					return;
+				}
+
+				setMessage(
+					error instanceof Error ? error.message : '管理员登录失败'
+				);
+			})
+			.finally(() => {
+				if (adminAuthRequestIdRef.current !== requestId) {
+					return;
+				}
+
+				setIsAdminActionLoading(false);
+			});
+	}, [isAdminActionLoading, password, trimmedUsername]);
+
+	const handleLogout = useCallback(() => {
+		if (admin === null) {
+			return;
+		}
+		if (isAdminActionLoading) {
+			return;
+		}
+
+		trackEvent(trackEvent.category.click, 'Admin Auth Button', 'Logout');
+
+		const requestId = adminAuthRequestIdRef.current + 1;
+		adminAuthRequestIdRef.current = requestId;
+		refreshUsersRequestIdRef.current += 1;
+
+		setIsUsersLoading(false);
+		setIsAdminActionLoading(true);
+		setMessage(null);
+
+		void logoutAdmin(admin.csrf_token)
+			.then(() => {
+				if (adminAuthRequestIdRef.current !== requestId) {
+					return;
+				}
+
+				clearAdminSession();
+				setAdmin(null);
+				setAdminAuthStatus('unauthenticated');
+				setUsers(null);
+			})
+			.catch((error: unknown) => {
+				if (adminAuthRequestIdRef.current !== requestId) {
+					return;
+				}
+
+				if (checkAdminSessionUnauthorized(error)) {
+					clearAdminSession();
+					setAdmin(null);
+					setAdminAuthStatus('unauthenticated');
+					setUsers(null);
+					return;
+				}
+
+				setMessage(
+					error instanceof Error ? error.message : '退出管理员失败'
+				);
+			})
+			.finally(() => {
+				if (adminAuthRequestIdRef.current !== requestId) {
+					return;
+				}
+
+				setIsAdminActionLoading(false);
+			});
+	}, [admin, isAdminActionLoading]);
+
+	const handleQueryInputChange = useCallback((value: string) => {
+		setQueryInput(value);
+	}, []);
+
+	const handleStatusAction = useCallback((key: Key) => {
+		setPage(1);
+		setStatus(key === 'all' ? '' : (key as TUserStatus));
+	}, []);
+
+	const handleRefreshPress = useCallback(() => {
+		const nextQuery = queryInput;
+		const shouldRefreshImmediately = nextQuery === query && page === 1;
+
+		setQuery(queryInput);
+		setPage(1);
+
+		if (shouldRefreshImmediately) {
+			refreshUsers(nextQuery, 1);
+		}
+	}, [page, query, queryInput, refreshUsers]);
+
+	const handleOpenUserDetail = useCallback(() => {
+		trackEvent(
+			trackEvent.category.click,
+			'Admin User Detail Button',
+			'Open Detail'
+		);
+	}, []);
+
+	const handlePreviousPage = useCallback(() => {
+		setPage((current) => Math.max(1, current - 1));
+	}, []);
+
+	const handleNextPage = useCallback(() => {
+		setPage((current) => current + 1);
+	}, []);
+
 	useEffect(() => {
+		if (!isListStateInitializedRef.current) {
+			isListStateInitializedRef.current = true;
+			return;
+		}
+
 		const timeoutId = globalThis.setTimeout(() => {
 			setPage(1);
 			setQuery(queryInput);
@@ -194,6 +742,12 @@ export default function AdminPage() {
 			globalThis.clearTimeout(timeoutId);
 		};
 	}, [queryInput]);
+
+	useEffect(() => {
+		router.replace(getAdminListHref({ page, query, status }), {
+			scroll: false,
+		});
+	}, [page, query, router, status]);
 
 	useEffect(() => {
 		checkAdminAuth();
@@ -214,7 +768,7 @@ export default function AdminPage() {
 						subtitle="正在校验管理员会话"
 						title="管理员"
 					/>
-					<AdminPanel className="flex items-center gap-3 text-sm text-foreground-500">
+					<AdminPanel className="flex items-center gap-3 text-small text-foreground-500">
 						<Button isLoading variant="flat">
 							加载中
 						</Button>
@@ -259,113 +813,16 @@ export default function AdminPage() {
 					subtitle="账号后台控制台"
 					title="管理员登录"
 				/>
-				<div className="grid gap-4 lg:grid-cols-[minmax(0,32rem)_minmax(18rem,1fr)]">
-					<AdminPanel className="space-y-4">
-						<AdminPanelTitle icon={faUser}>
-							管理员凭据
-						</AdminPanelTitle>
-						<Input
-							autoComplete="username"
-							label="管理员用户名"
-							startContent={<AdminInputIcon icon={faUser} />}
-							value={username}
-							onValueChange={setUsername}
-						/>
-						<Input
-							autoComplete="current-password"
-							label="管理员密码"
-							startContent={<AdminInputIcon icon={faKey} />}
-							type="password"
-							value={password}
-							onValueChange={setPassword}
-						/>
-						<Button
-							fullWidth
-							color="primary"
-							isDisabled={
-								isAdminActionLoading ||
-								trimmedUsername.length === 0 ||
-								password.length === 0
-							}
-							isLoading={isAdminActionLoading}
-							startContent={
-								isAdminActionLoading ? null : (
-									<FontAwesomeIcon
-										icon={faShieldHalved}
-										className="w-3.5"
-									/>
-								)
-							}
-							variant="flat"
-							onPress={() => {
-								if (isAdminActionLoading) {
-									return;
-								}
-								if (trimmedUsername.length === 0) {
-									return;
-								}
-
-								const requestId =
-									adminAuthRequestIdRef.current + 1;
-								adminAuthRequestIdRef.current = requestId;
-								setIsAdminActionLoading(true);
-								setMessage(null);
-								void loginAdmin({
-									password,
-									username: trimmedUsername,
-								})
-									.then((data) => {
-										if (
-											adminAuthRequestIdRef.current !==
-											requestId
-										) {
-											return;
-										}
-
-										accountStore.shared.adminCsrfToken.set(
-											data.csrf_token
-										);
-										setAdmin(data);
-										setAdminAuthStatus('authenticated');
-										setPassword('');
-									})
-									.catch((error: unknown) => {
-										if (
-											adminAuthRequestIdRef.current !==
-											requestId
-										) {
-											return;
-										}
-
-										setMessage(
-											error instanceof Error
-												? error.message
-												: '管理员登录失败'
-										);
-									})
-									.finally(() => {
-										if (
-											adminAuthRequestIdRef.current !==
-											requestId
-										) {
-											return;
-										}
-
-										setIsAdminActionLoading(false);
-									});
-							}}
-						>
-							登录
-						</Button>
-						{message !== null && <AdminMessage message={message} />}
-					</AdminPanel>
-
-					<AdminPanel className="grid content-start gap-4 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-						<AdminMetric label="会话" value="受保护" />
-						<AdminMetric label="入口" value="账号后台" />
-						<AdminMetric label="范围" value="用户数据" />
-					</AdminPanel>
-				</div>
+				<AdminLoginPanel
+					isAdminActionLoading={isAdminActionLoading}
+					message={message}
+					password={password}
+					trimmedUsername={trimmedUsername}
+					username={username}
+					onLogin={handleLogin}
+					onPasswordChange={setPassword}
+					onUsernameChange={setUsername}
+				/>
 			</AdminShell>
 		);
 	}
@@ -373,6 +830,7 @@ export default function AdminPage() {
 	const userCount = users?.users.length ?? 0;
 	const pageSize = users?.page_size ?? 0;
 	const canGoNext = users !== null && users.users.length >= users.page_size;
+	const listLocationState = { page, query, status };
 	const statusFilterKey = getStatusFilterKey(status);
 	const statusFilterLabel = getFilterStatusLabel(status);
 
@@ -392,64 +850,7 @@ export default function AdminPage() {
 							)
 						}
 						variant="flat"
-						onPress={() => {
-							if (isAdminActionLoading) {
-								return;
-							}
-
-							const requestId = adminAuthRequestIdRef.current + 1;
-							adminAuthRequestIdRef.current = requestId;
-							refreshUsersRequestIdRef.current += 1;
-							setIsUsersLoading(false);
-							setIsAdminActionLoading(true);
-							setMessage(null);
-							void logoutAdmin(admin.csrf_token)
-								.then(() => {
-									if (
-										adminAuthRequestIdRef.current !==
-										requestId
-									) {
-										return;
-									}
-
-									clearAdminSession();
-									setAdmin(null);
-									setAdminAuthStatus('unauthenticated');
-									setUsers(null);
-								})
-								.catch((error: unknown) => {
-									if (
-										adminAuthRequestIdRef.current !==
-										requestId
-									) {
-										return;
-									}
-
-									if (checkAdminSessionUnauthorized(error)) {
-										clearAdminSession();
-										setAdmin(null);
-										setAdminAuthStatus('unauthenticated');
-										setUsers(null);
-										return;
-									}
-
-									setMessage(
-										error instanceof Error
-											? error.message
-											: '退出管理员失败'
-									);
-								})
-								.finally(() => {
-									if (
-										adminAuthRequestIdRef.current !==
-										requestId
-									) {
-										return;
-									}
-
-									setIsAdminActionLoading(false);
-								});
-						}}
+						onPress={handleLogout}
 					>
 						退出管理员
 					</Button>
@@ -458,217 +859,40 @@ export default function AdminPage() {
 				title="用户管理"
 			/>
 
-			<AdminPanel className="grid gap-4 sm:grid-cols-3">
-				<AdminMetric
-					label="本页用户"
-					value={
-						users === null ? '读取中' : `${userCount} / ${pageSize}`
-					}
-				/>
-				<AdminMetric
-					label="页码"
-					value={`第 ${users?.page ?? page} 页`}
-				/>
-				<AdminMetric label="筛选状态" value={statusFilterLabel} />
-			</AdminPanel>
+			<AdminUserMetrics
+				page={page}
+				pageSize={pageSize}
+				statusFilterLabel={statusFilterLabel}
+				userCount={userCount}
+				users={users}
+			/>
 
-			<AdminPanel className="space-y-4">
-				<AdminPanelTitle icon={faMagnifyingGlass}>筛选</AdminPanelTitle>
-				<div className="grid w-full items-center gap-3 md:grid-cols-[minmax(0,1fr)_auto_6.5rem]">
-					<Input
-						aria-label="搜索用户名"
-						classNames={{ inputWrapper: 'h-12 min-h-12' }}
-						placeholder="搜索用户名"
-						startContent={
-							<AdminInputIcon icon={faMagnifyingGlass} />
-						}
-						value={queryInput}
-						onValueChange={(value) => {
-							setQueryInput(value);
-						}}
-					/>
-					<Dropdown showArrow>
-						<DropdownTrigger>
-							<Button
-								className="h-12 min-h-12 min-w-0 gap-2 px-3"
-								endContent={
-									<FontAwesomeIcon
-										icon={faChevronDown}
-										className="w-3 text-default-500"
-									/>
-								}
-								variant="flat"
-							>
-								<span className="text-sm">
-									{statusFilterLabel}
-								</span>
-							</Button>
-						</DropdownTrigger>
-						<DropdownMenu
-							disallowEmptySelection
-							aria-label="筛选用户状态"
-							selectedKeys={[statusFilterKey]}
-							selectionMode="single"
-							variant="flat"
-							itemClasses={{
-								base: 'transition-background motion-reduce:transition-none',
-							}}
-							onAction={(key) => {
-								setPage(1);
-								setStatus(
-									key === 'all' ? '' : (key as TUserStatus)
-								);
-							}}
-						>
-							{statusOptions.map((option) => (
-								<DropdownItem
-									key={option.value}
-									textValue={option.label}
-								>
-									{option.label}
-								</DropdownItem>
-							))}
-						</DropdownMenu>
-					</Dropdown>
-					<Button
-						className="h-12 min-h-12 w-full"
-						color="primary"
-						isLoading={isUsersLoading}
-						startContent={
-							isUsersLoading ? null : (
-								<FontAwesomeIcon
-									icon={faRotate}
-									className="w-3.5"
-								/>
-							)
-						}
-						variant="flat"
-						onPress={() => {
-							const nextQuery = queryInput;
-							const shouldRefreshImmediately =
-								nextQuery === query && page === 1;
-
-							setQuery(queryInput);
-							setPage(1);
-							if (shouldRefreshImmediately) {
-								refreshUsers(nextQuery, 1);
-							}
-						}}
-					>
-						刷新
-					</Button>
-				</div>
-			</AdminPanel>
+			<AdminUserFilterPanel
+				isUsersLoading={isUsersLoading}
+				queryInput={queryInput}
+				statusFilterKey={statusFilterKey}
+				statusFilterLabel={statusFilterLabel}
+				onQueryInputChange={handleQueryInputChange}
+				onRefresh={handleRefreshPress}
+				onStatusAction={handleStatusAction}
+			/>
 
 			{message !== null && <AdminMessage message={message} />}
 
-			{users === null ? (
-				<AdminEmptyState icon={faClock}>
-					正在读取用户列表
-				</AdminEmptyState>
-			) : users.users.length === 0 ? (
-				<AdminEmptyState icon={faUsers}>没有匹配的用户</AdminEmptyState>
-			) : (
-				<AdminTable>
-					<AdminTableHeader>
-						<tr>
-							<th className={tableHeadCellClassName}>用户名</th>
-							<th className={tableHeadCellClassName}>状态</th>
-							<th className={tableHeadCellClassName}>创建时间</th>
-							<th className={tableHeadCellClassName}>最近登录</th>
-							<th
-								className={cn(
-									tableHeadCellClassName,
-									'text-right'
-								)}
-							>
-								操作
-							</th>
-						</tr>
-					</AdminTableHeader>
-					<tbody>
-						{users.users.map((user) => (
-							<AdminTableRow key={user.id}>
-								<td
-									className={cn(
-										tableCellClassName,
-										'w-72 max-w-72'
-									)}
-								>
-									<div className="min-w-0 max-w-64">
-										<p className="truncate text-sm font-medium leading-5 text-foreground-800">
-											{user.username}
-										</p>
-										<p className="truncate font-mono text-[0.7rem] leading-4 text-foreground-400">
-											{user.id}
-										</p>
-									</div>
-								</td>
-								<td className={tableNowrapCellClassName}>
-									<AdminStatusBadge status={user.status} />
-								</td>
-								<td className={tableNowrapCellClassName}>
-									<TimeAgo timestamp={user.created_at} />
-								</td>
-								<td className={tableNowrapCellClassName}>
-									{user.last_login_at === null ? (
-										<span className="text-foreground-400">
-											无
-										</span>
-									) : (
-										<TimeAgo
-											timestamp={user.last_login_at}
-										/>
-									)}
-								</td>
-								<td
-									className={cn(
-										tableNowrapCellClassName,
-										'text-right'
-									)}
-								>
-									<Link
-										animationUnderline={false}
-										href={`/admin/users/${encodeURIComponent(user.id)}`}
-										className="rounded-small px-2 py-1 text-sm text-primary-600 transition-background hover:bg-primary/15 motion-reduce:transition-none dark:text-primary"
-									>
-										详情
-									</Link>
-								</td>
-							</AdminTableRow>
-						))}
-					</tbody>
-				</AdminTable>
-			)}
+			<AdminUserListContent
+				listLocationState={listLocationState}
+				onOpenUserDetail={handleOpenUserDetail}
+				users={users}
+			/>
 
-			<div className="flex flex-wrap items-center justify-between gap-3 rounded-small border border-default-200/80 bg-default-50/50 px-3 py-2 text-sm text-foreground-500 dark:bg-default-100/10">
-				<span>
-					第 {users?.page ?? page} 页
-					{users !== null && ` · 每页 ${users.page_size}`}
-				</span>
-				<div className="flex items-center gap-2">
-					<Button
-						isDisabled={page <= 1 || isUsersLoading}
-						size="sm"
-						variant="flat"
-						onPress={() => {
-							setPage((current) => Math.max(1, current - 1));
-						}}
-					>
-						上一页
-					</Button>
-					<Button
-						isDisabled={isUsersLoading || !canGoNext}
-						size="sm"
-						variant="flat"
-						onPress={() => {
-							setPage((current) => current + 1);
-						}}
-					>
-						下一页
-					</Button>
-				</div>
-			</div>
+			<AdminPagination
+				canGoNext={canGoNext}
+				isUsersLoading={isUsersLoading}
+				page={page}
+				users={users}
+				onNextPage={handleNextPage}
+				onPreviousPage={handlePreviousPage}
+			/>
 		</AdminShell>
 	);
 }

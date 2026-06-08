@@ -1,3 +1,4 @@
+import { validate as validateUuid } from 'uuid';
 import {
 	mkdir,
 	readFile,
@@ -10,7 +11,6 @@ import {
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { cwd } from 'node:process';
-import { validate as validateUuid } from 'uuid';
 
 import type { TBackupFileRecord } from '@/lib/db/types';
 

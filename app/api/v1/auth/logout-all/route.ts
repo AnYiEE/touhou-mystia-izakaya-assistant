@@ -32,6 +32,12 @@ export async function POST(request: NextRequest) {
 		return cookieSecurityResponse;
 	}
 
+	const authModule = await import('@/lib/account/server/auth');
+	const auth = await authModule.authenticateAccountRequest(request, true);
+	if (auth.status === 'error') {
+		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
+	}
+
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
 		'auth-logout-all'
@@ -40,18 +46,11 @@ export async function POST(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	const [authModule, sessionsModule] = await Promise.all([
-		import('@/lib/account/server/auth'),
-		import('@/actions/account/sessions'),
-	]);
-	const auth = await authModule.authenticateAccountRequest(request, true);
-	if (auth.status === 'error') {
-		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
-	}
 	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
+	const sessionsModule = await import('@/actions/account/sessions');
 	await sessionsModule.deleteSessionsByUserId(auth.data.user.id, {
 		createdBefore: requestStartedAt,
 	});

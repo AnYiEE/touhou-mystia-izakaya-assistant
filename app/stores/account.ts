@@ -25,7 +25,6 @@ const state = {
 		adminCsrfToken: null as string | null,
 		bootstrapStatus: 'unknown' as TAccountBootstrapStatus,
 		csrfToken: null as string | null,
-		// Tracks whether bootstrap has reached a first result; use bootstrapStatus for success or failure.
 		isBootstrapped: false,
 		isLoggedIn: false,
 		passwordMustChange: false,

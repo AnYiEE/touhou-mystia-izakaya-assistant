@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, memo } from 'react';
+import { type ReactNode, memo, useEffect, useState } from 'react';
 
 import {
 	Modal as HeroUIModal,
@@ -28,6 +28,7 @@ export default memo<IProps>(function Modal({
 	children,
 	classNames,
 	disableAnimation,
+	portalContainer,
 	scrollBehavior = 'inside',
 	scrollShadow = true,
 	scrollShadowSize = 16,
@@ -37,6 +38,22 @@ export default memo<IProps>(function Modal({
 	const isReducedMotion = useReducedMotion();
 
 	const isHighAppearance = store.persistence.highAppearance.use();
+
+	const [defaultPortalContainer, setDefaultPortalContainer] =
+		useState<HTMLElement | null>(null);
+	const resolvedPortalContainer =
+		portalContainer ?? defaultPortalContainer ?? null;
+
+	const portalContainerProps =
+		resolvedPortalContainer === null
+			? {}
+			: { portalContainer: resolvedPortalContainer };
+
+	useEffect(() => {
+		setDefaultPortalContainer(
+			document.querySelector<HTMLElement>('#modal-portal-container')
+		);
+	}, []);
 
 	return (
 		<HeroUIModal
@@ -60,6 +77,7 @@ export default memo<IProps>(function Modal({
 					classNames?.closeButton
 				),
 			}}
+			{...portalContainerProps}
 			{...props}
 		>
 			<ModalContent className={cn('py-3', classNames?.content)}>

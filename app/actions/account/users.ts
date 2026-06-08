@@ -1,5 +1,7 @@
 import { sql } from 'kysely';
 
+import { getAccountDatabase } from '@/lib/account/server/db';
+import { type TUserStatus } from '@/lib/account/shared/types';
 import { TABLE_NAME_MAP } from '@/lib/db';
 import type {
 	TSessionNew,
@@ -8,9 +10,6 @@ import type {
 	TUserNew,
 	TUserUpdate,
 } from '@/lib/db/types';
-
-import { getAccountDatabase } from '@/lib/account/server/db';
-import { type TUserStatus } from '@/lib/account/shared/types';
 
 const TABLE_NAME = TABLE_NAME_MAP.user;
 const CREDENTIAL_TABLE_NAME = TABLE_NAME_MAP.userCredential;

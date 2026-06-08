@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
 	if (bodyResult.status === 'payload-too-large') {
 		return createNoStoreErrorResponse('payload-too-large', 413);
 	}
+
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	if (
 		body === null ||

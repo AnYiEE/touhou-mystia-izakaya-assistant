@@ -1,8 +1,7 @@
 import { type Kysely } from 'kysely';
 
-import { type TDatabase } from '@/lib/db/types';
-
 import { getAccountFeatureStatus } from './environment';
+import { type TDatabase } from '@/lib/db/types';
 
 type TAccountDatabase = Kysely<TDatabase>;
 

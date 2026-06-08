@@ -1,10 +1,10 @@
+import type { Transaction } from 'kysely';
 import { createHash, randomUUID } from 'node:crypto';
 
 import { TABLE_NAME_MAP } from '@/lib/db';
 import { db } from '@/lib/db/db';
 import type { TDatabase } from '@/lib/db/types';
 import { getLogSafeErrorCode } from '@/lib/logging';
-import type { Transaction } from 'kysely';
 
 const BACKUP_CODE_LOCK_QUEUE_RELEASED = Symbol(
 	'backup-code-lock-queue-released'
@@ -46,6 +46,7 @@ async function waitForPreviousBackupCodeLock(
 	previousLock: TBackupCodeQueuedLock
 ) {
 	let timeoutId!: ReturnType<typeof setTimeout>;
+
 	const timeout = new Promise<'timeout'>((resolve) => {
 		timeoutId = setTimeout(() => {
 			resolve('timeout');
@@ -60,6 +61,7 @@ async function waitForPreviousBackupCodeLock(
 	]);
 
 	clearTimeout(timeoutId);
+
 	if (result === 'timeout') {
 		console.warn('Timed out waiting for backup code in-process queue.', {
 			codeHash: maskBackupCodeForLog(code),
@@ -246,6 +248,7 @@ export async function withBackupCodeLock<T>(
 		};
 		let isRenewalActive = false;
 		let renewalTimer: ReturnType<typeof setTimeout> | null = null;
+
 		const clearRenewalTimer = () => {
 			isRenewalActive = false;
 			if (renewalTimer !== null) {
@@ -253,15 +256,18 @@ export async function withBackupCodeLock<T>(
 				renewalTimer = null;
 			}
 		};
+
 		const abortTask = (message: string, error?: unknown) => {
 			if (lockSignal.aborted) {
 				return;
 			}
 
 			const lockLostError = createBackupCodeLockLostError();
+
 			lockSignal.aborted = true;
 			lockSignal.reason = lockLostError;
 			clearRenewalTimer();
+
 			console.warn(message, {
 				codeHash: maskBackupCodeForLog(code),
 				...(error === undefined
@@ -270,7 +276,9 @@ export async function withBackupCodeLock<T>(
 				ownerId,
 			});
 		};
+
 		let scheduleRenewal: (delayMs: number) => void = () => {};
+
 		const renewLock = async () => {
 			if (!isRenewalActive || lockSignal.aborted) {
 				return;
@@ -295,6 +303,7 @@ export async function withBackupCodeLock<T>(
 			} catch (error: unknown) {
 				const remainingMs =
 					getBackupCodeLockRenewDeadline(lockSignal) - Date.now();
+
 				if (remainingMs <= 0) {
 					abortTask('Failed to renew backup code lock.', error);
 					return;
@@ -305,6 +314,7 @@ export async function withBackupCodeLock<T>(
 					errorCode: getLogSafeErrorCode(error),
 					ownerId,
 				});
+
 				scheduleRenewal(
 					Math.min(BACKUP_CODE_LOCK_RETRY_MS, remainingMs)
 				);
@@ -324,13 +334,16 @@ export async function withBackupCodeLock<T>(
 		try {
 			await acquireSharedBackupCodeLock(code, ownerId);
 			markBackupCodeLockRenewed(lockSignal, Date.now());
+
 			isRenewalActive = true;
 			scheduleRenewal(BACKUP_CODE_LOCK_TTL_MS / 3);
 
 			const result = await task(lockSignal);
+
 			if (!lockSignal.committed) {
 				throwIfBackupCodeLockLost(lockSignal);
 			}
+
 			return result;
 		} finally {
 			clearRenewalTimer();

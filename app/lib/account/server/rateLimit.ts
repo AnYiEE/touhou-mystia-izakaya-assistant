@@ -16,9 +16,6 @@ interface IRateLimitBucket {
 	resetAt: number;
 }
 
-// Design note: Rate limiting uses in-process memory (Map) with an overflow
-// bucket for capacity protection. For multi-instance deployments, migrate to a
-// shared SQLite rate_limit table via the project's existing Kysely db instance.
 const MAX_RATE_LIMIT_BUCKETS = 10_000;
 const RESERVED_OVERFLOW_RATE_LIMIT_BUCKETS = 1;
 const MAX_NORMAL_RATE_LIMIT_BUCKETS =
@@ -87,8 +84,6 @@ function ensureRateLimitBucketCapacity(
 		return true;
 	}
 
-	// Capacity is reached. New keys should share an overflow bucket rather than
-	// evicting existing buckets, which would allow key-rotation attacks.
 	return false;
 }
 

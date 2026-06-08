@@ -26,7 +26,7 @@ import {
 	createNoStoreJsonResponse,
 	handleOptionsRequest,
 } from '@/api/v1/utils';
-import { getLogSafeErrorCode, maskBackupCode } from '../utils';
+import { getLogSafeErrorCode, maskBackupCode } from '@/api/v1/backups/utils';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

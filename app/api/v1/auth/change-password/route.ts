@@ -9,11 +9,11 @@ import {
 	createRetryAfterHeaders,
 	readJsonBodyResult,
 } from '@/api/v1/accountRouteUtils';
-import { getLogSafeErrorCode } from '@/lib/logging';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 } from '@/api/v1/utils';
+import { getLogSafeErrorCode } from '@/lib/logging';
 import {
 	type IAuthChangePasswordBody,
 	type IAuthLoginSuccessResponse,
@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
 	if (bodyResult.status === 'payload-too-large') {
 		return createNoStoreErrorResponse('payload-too-large', 413);
 	}
+
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	if (
 		typeof body?.current_password !== 'string' ||
@@ -50,25 +51,15 @@ export async function POST(request: NextRequest) {
 	) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
-	let authModule: typeof import('@/lib/account/server/auth');
-	let credentialsModule: typeof import('@/actions/account/credentials');
-	let passwordModule: typeof import('@/lib/account/server/password');
-	let userModule: typeof import('@/lib/account/server/user');
-	try {
-		[authModule, credentialsModule, passwordModule, userModule] =
-			await Promise.all([
-				import('@/lib/account/server/auth'),
-				import('@/actions/account/credentials'),
-				import('@/lib/account/server/password'),
-				import('@/lib/account/server/user'),
-			]);
-	} catch (error) {
-		console.warn('Failed to load account password change modules.', {
-			errorCode: getLogSafeErrorCode(error),
-		});
 
-		return createNoStoreErrorResponse('server-misconfigured', 500);
-	}
+	const [passwordModule, credentialsModule, authModule, userModule] =
+		await Promise.all([
+			import('@/lib/account/server/password'),
+			import('@/actions/account/credentials'),
+			import('@/lib/account/server/auth'),
+			import('@/lib/account/server/user'),
+		]);
+
 	const auth = await authModule.authenticateAccountRequest(request, true);
 	if (auth.status === 'error') {
 		return createAccountAuthErrorResponse(auth, request);

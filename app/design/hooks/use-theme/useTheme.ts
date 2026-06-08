@@ -37,12 +37,6 @@ export function getStoredTheme() {
 	return storedTheme === null ? null : parseTheme(storedTheme);
 }
 
-/**
- * Apply a theme to the document. When isFromEvent is true, this function
- * only updates the DOM and meta theme color; it does NOT persist to storage,
- * notify themeListeners, or update React state. Callers (e.g., storage event
- * handlers) must update React state explicitly in that case.
- */
 export function applyTheme(selectedTheme: TTheme, isFromEvent?: boolean) {
 	if (isServer) {
 		return;
@@ -75,6 +69,7 @@ export function applyTheme(selectedTheme: TTheme, isFromEvent?: boolean) {
 	}
 
 	safeStorage.setItem(STORAGE_KEY, selectedTheme);
+
 	themeListeners.forEach((listener) => {
 		listener(selectedTheme);
 	});
@@ -97,6 +92,7 @@ export function useTheme() {
 		applyTheme(newTheme);
 		setThemeState(newTheme);
 	}, []);
+
 	const syncSystemTheme = useCallback(() => {
 		const mediaQueryList = globalThis.matchMedia(MEDIA);
 
@@ -107,10 +103,12 @@ export function useTheme() {
 			}
 		});
 	}, []);
+
 	const syncThemeState = useCallback(
 		() => addThemeChangeListener(setThemeState),
 		[]
 	);
+
 	const syncStorageTheme = useCallback(() => {
 		const EVENT_TYPE = 'storage';
 

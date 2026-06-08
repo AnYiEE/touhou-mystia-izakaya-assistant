@@ -1,6 +1,22 @@
 import { randomUUID } from 'node:crypto';
 import { type NextRequest, type NextResponse } from 'next/server';
 
+import { createCsrfToken, verifyCsrfToken } from './csrf';
+import {
+	getAccountCookieSecureFlag,
+	getRequestIp,
+	getRequestUserAgent,
+} from './request';
+import {
+	ACCOUNT_SESSION_COOKIE_NAME,
+	SESSION_ABSOLUTE_TIMEOUT_MS,
+	SESSION_IDLE_TIMEOUT_MS,
+	SESSION_TOKEN_BYTE_LENGTH,
+	createSessionCookieOptions,
+	createSessionToken,
+	hashSessionToken,
+} from './session';
+import { USER_STATUS_MAP } from '../shared/constants';
 import {
 	type TActiveUserSessionPatch,
 	createSession,
@@ -22,23 +38,6 @@ import {
 	type TUserCredential,
 	type TUserCredentialUpdate,
 } from '@/lib/db/types';
-
-import { USER_STATUS_MAP } from '../shared/constants';
-import { createCsrfToken, verifyCsrfToken } from './csrf';
-import {
-	getAccountCookieSecureFlag,
-	getRequestIp,
-	getRequestUserAgent,
-} from './request';
-import {
-	ACCOUNT_SESSION_COOKIE_NAME,
-	SESSION_ABSOLUTE_TIMEOUT_MS,
-	SESSION_IDLE_TIMEOUT_MS,
-	SESSION_TOKEN_BYTE_LENGTH,
-	createSessionCookieOptions,
-	createSessionToken,
-	hashSessionToken,
-} from './session';
 
 export const SESSION_LAST_SEEN_UPDATE_INTERVAL = 10 * 60 * 1000;
 
@@ -159,8 +158,6 @@ export function clearAccountSessionCookie(
 function isValidSessionTokenFormat(token: string) {
 	const expectedLength = Math.ceil((SESSION_TOKEN_BYTE_LENGTH * 8) / 6);
 
-	// Session tokens are fixed-length random base64url strings.
-	// Reject malformed tokens early to avoid unnecessary HMAC computation.
 	return token.length === expectedLength && /^[A-Za-z0-9_-]+$/u.test(token);
 }
 

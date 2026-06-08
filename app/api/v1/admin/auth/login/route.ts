@@ -11,8 +11,8 @@ import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 } from '@/api/v1/utils';
+import { checkAdminFeatureResponse } from '@/api/v1/admin/utils';
 import { type IAdminLoginBody } from '@/lib/account/shared/types';
-import { checkAdminFeatureResponse } from '../../utils';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
 	if (bodyResult.status === 'payload-too-large') {
 		return createNoStoreErrorResponse('payload-too-large', 413);
 	}
+
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	if (
 		body === null ||

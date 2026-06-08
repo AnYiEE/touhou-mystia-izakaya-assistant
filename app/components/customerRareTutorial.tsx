@@ -331,8 +331,6 @@ export default function CustomerRareTutorial() {
 				driverRef.current.destroy();
 			}
 
-			// Reset all tutorial progress refs so a subsequent restart
-			// begins from a clean state rather than resuming mid-step.
 			isCustomerSelected.current = false;
 			isBeverageSelected.current = false;
 			isBeverageTableSorted.current = false;

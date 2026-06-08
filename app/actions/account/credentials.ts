@@ -1,5 +1,7 @@
 import { sql } from 'kysely';
 
+import { getAccountDatabase } from '@/lib/account/server/db';
+import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import { TABLE_NAME_MAP } from '@/lib/db';
 import type {
 	TSession,
@@ -9,9 +11,6 @@ import type {
 	TUserCredentialUpdate,
 } from '@/lib/db/types';
 import { type TSessionMutablePatch } from './sessions';
-
-import { getAccountDatabase } from '@/lib/account/server/db';
-import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 
 const TABLE_NAME = TABLE_NAME_MAP.userCredential;
 const SESSION_TABLE_NAME = TABLE_NAME_MAP.session;

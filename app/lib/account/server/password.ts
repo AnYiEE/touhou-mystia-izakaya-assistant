@@ -61,7 +61,6 @@ export async function verifyPassword(passwordHash: string, password: string) {
 	}
 
 	try {
-		// verify reads the PHC parameters embedded in passwordHash.
 		return await verify(passwordHash, password, ARGON2_OPTIONS);
 	} catch (error) {
 		console.warn(

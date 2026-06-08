@@ -164,7 +164,6 @@
 			event.respondWith(cacheFirst(event.request, event));
 		} else if (
 			pathname.startsWith('/admin') ||
-			pathname.startsWith('/account') ||
 			pathname.startsWith('/preferences')
 		) {
 			// Never cache protected routes that may contain

@@ -1,29 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback } from 'react';
+
+import { Modal } from '@/design/ui/components';
 
 import AccountManager from '@/(pages)/preferences/accountManager';
-import { Modal } from '@/design/ui/components';
-import { accountStore } from '@/stores';
+
+import { accountStore as store } from '@/stores';
 
 export default function AccountModal() {
-	const isOpen = accountStore.shared.accountModal.isOpen.use();
-	const [portalContainer, setPortalContainer] = useState<Element | null>(
-		null
-	);
+	const isOpen = store.shared.accountModal.isOpen.use();
 
-	useEffect(() => {
-		setPortalContainer(document.querySelector('#modal-portal-container'));
+	const handleClose = useCallback(() => {
+		store.shared.accountModal.isOpen.set(false);
 	}, []);
 
 	return (
-		<Modal
-			isOpen={isOpen}
-			{...(portalContainer === null ? {} : { portalContainer })}
-			onClose={() => {
-				accountStore.shared.accountModal.isOpen.set(false);
-			}}
-		>
+		<Modal isOpen={isOpen} onClose={handleClose}>
 			<AccountManager />
 		</Modal>
 	);

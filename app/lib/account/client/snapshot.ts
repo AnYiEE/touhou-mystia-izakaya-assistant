@@ -1,4 +1,12 @@
 import {
+	ACCOUNT_STORAGE_KEY_MAP,
+	createAccountStorageKey,
+	readAccountJsonStorage,
+	writeAccountJsonStorage,
+} from './storage';
+import { createSnapshotHash } from './queue';
+import { withApplyingRemoteState as runWithApplyingRemoteState } from './stateGuards';
+import {
 	type IAccountSyncMeta,
 	type ISyncNamespaceSerializer,
 	type ISyncStateRecord,
@@ -12,14 +20,6 @@ import { customerRareSettingsSerializer } from '@/lib/account/sync/serializers/c
 import { globalPreferencesSerializer } from '@/lib/account/sync/serializers/globalPreferences';
 import { themeSerializer } from '@/lib/account/sync/serializers/theme';
 import { tutorialCustomerRareSerializer } from '@/lib/account/sync/serializers/tutorialCustomerRare';
-import {
-	ACCOUNT_STORAGE_KEY_MAP,
-	createAccountStorageKey,
-	readAccountJsonStorage,
-	writeAccountJsonStorage,
-} from './storage';
-import { createSnapshotHash } from './queue';
-import { withApplyingRemoteState as runWithApplyingRemoteState } from './stateGuards';
 
 export type TAccountSnapshot = Partial<Record<TSyncNamespace, unknown>>;
 
@@ -244,8 +244,6 @@ export function applyRemoteAccountRecords({
 		return meta;
 	}
 
-	// Capture previous snapshots so we can roll back if meta persistence
-	// fails after local stores have already been updated.
 	const previousSnapshots = new Map(
 		preparedRecords.map((record) => [
 			record.namespace,
@@ -300,10 +298,6 @@ export function applyRemoteAccountRecords({
 
 		writeAccountSyncMeta(userId, meta);
 	} catch (error) {
-		// Roll back any applied snapshots to keep local stores and
-		// sync meta consistent.  Wrap in runWithApplyingRemoteState so
-		// store subscriptions triggered by setLocalSnapshot do not
-		// spuriously create dirty queue entries for the old data.
 		if (appliedRecordCount > 0) {
 			rollbackAppliedRecords();
 		}

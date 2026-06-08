@@ -92,13 +92,7 @@ export default memo<IProps>(function InfoButtonBase({
 					transform: `rotate(-90deg) translateX(${fontSize * name.length - 17}px) translateY(20px)`,
 				})}
 			/>
-			<Modal
-				isOpen={isOpened}
-				portalContainer={document.querySelector(
-					'#modal-portal-container'
-				)}
-				onClose={handleClose}
-			>
+			<Modal isOpen={isOpened} onClose={handleClose}>
 				<Accordion
 					isCompact
 					defaultExpandedKeys={defaultExpandedKeys ?? []}

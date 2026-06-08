@@ -1,5 +1,3 @@
-import { type ISyncConflictItem } from '@/lib/account/sync';
-import { accountStore } from '@/stores/account';
 import {
 	createSnapshotHash,
 	markAccountSyncDirty,
@@ -11,6 +9,8 @@ import {
 	withApplyingRemoteState,
 	writeAccountSyncMeta,
 } from './snapshot';
+import { type ISyncConflictItem } from '@/lib/account/sync';
+import { accountStore } from '@/stores/account';
 
 export type TSyncConflictResolution = 'cloud' | 'local' | 'merged';
 

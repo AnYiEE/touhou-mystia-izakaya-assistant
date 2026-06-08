@@ -1,3 +1,5 @@
+import { getAccountDatabase } from '@/lib/account/server/db';
+import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import { TABLE_NAME_MAP } from '@/lib/db';
 import type {
 	TSession,
@@ -7,9 +9,6 @@ import type {
 	TUserCredential,
 	TUserUpdate,
 } from '@/lib/db/types';
-
-import { getAccountDatabase } from '@/lib/account/server/db';
-import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 
 const TABLE_NAME = TABLE_NAME_MAP.session;
 const USER_TABLE_NAME = TABLE_NAME_MAP.user;

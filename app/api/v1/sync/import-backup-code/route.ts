@@ -42,7 +42,10 @@ import {
 	checkBeverageTag,
 	checkRecipeTag,
 } from '@/lib/account/sync/serializers/tags';
-import { isPlainObject } from '@/lib/account/sync/serializers/utils';
+import {
+	isNonNegativeSafeInteger,
+	isPlainObject,
+} from '@/lib/account/sync/serializers/utils';
 import { TABLE_NAME_MAP } from '@/lib/db';
 import { type TDatabase, type TSession, type TUserState } from '@/lib/db/types';
 
@@ -74,12 +77,6 @@ function checkSyncNamespaceValue(value: unknown): value is TSyncNamespace {
 	return (
 		typeof value === 'string' &&
 		syncNamespaceSet.has(value as TSyncNamespace)
-	);
-}
-
-function isNonNegativeSafeInteger(value: unknown): value is number {
-	return (
-		typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
 	);
 }
 
@@ -631,7 +628,10 @@ async function importBackupData(
 			}
 
 			const revision = (current?.revision ?? 0) + 1;
-			const updatedAt = Date.now();
+			const updatedAt = Math.max(
+				Date.now(),
+				(current?.updated_at ?? 0) + 1
+			);
 			const mergedData = mergeMealRecord(
 				parseCloudMealRecord(current ?? null, item.namespace),
 				item.data
@@ -735,14 +735,6 @@ export async function POST(request: NextRequest) {
 		return cookieSecurityResponse;
 	}
 
-	const rateLimitResponse = checkAccountRateLimitResponse(
-		request,
-		'import-backup-code'
-	);
-	if (rateLimitResponse !== null) {
-		return rateLimitResponse;
-	}
-
 	const bodyResult = await readJsonBodyResult<IImportBackupCodeBody>(request);
 	if (bodyResult.status === 'payload-too-large') {
 		return createNoStoreErrorResponse('payload-too-large', 413);
@@ -763,6 +755,15 @@ export async function POST(request: NextRequest) {
 	if (auth.status === 'error') {
 		return createAccountAuthErrorResponse(auth, request);
 	}
+
+	const rateLimitResponse = checkAccountRateLimitResponse(
+		request,
+		'import-backup-code'
+	);
+	if (rateLimitResponse !== null) {
+		return rateLimitResponse;
+	}
+
 	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}

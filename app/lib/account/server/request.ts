@@ -1,9 +1,8 @@
 import { type NextRequest } from 'next/server';
 import { env } from 'node:process';
 
-import { checkEnvFlag } from '@/lib/environment';
-
 import { SERVER_MISCONFIGURED_MESSAGE } from './environment';
+import { checkEnvFlag } from '@/lib/environment';
 
 export function getTrustedRequestIp(request: NextRequest) {
 	if (!checkEnvFlag(env.TRUST_PROXY)) {

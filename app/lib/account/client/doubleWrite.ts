@@ -1,9 +1,3 @@
-import { STORAGE_KEY, addThemeChangeListener } from '@/design/hooks';
-import { SYNC_NAMESPACE_MAP, type TSyncNamespace } from '@/lib/account/sync';
-import { accountStore } from '@/stores/account';
-import { customerNormalStore } from '@/stores/customer-normal';
-import { customerRareStore } from '@/stores/customer-rare';
-import { globalStore } from '@/stores/global';
 import { postAccountSyncBroadcastMessage } from './broadcast';
 import {
 	checkSnapshotHashMatches,
@@ -18,6 +12,12 @@ import {
 	subscribeAccountSyncResume,
 } from './stateGuards';
 import { scheduleAccountSyncFlush } from './syncClient';
+import { STORAGE_KEY, addThemeChangeListener } from '@/design/hooks';
+import { SYNC_NAMESPACE_MAP, type TSyncNamespace } from '@/lib/account/sync';
+import { accountStore } from '@/stores/account';
+import { customerNormalStore } from '@/stores/customer-normal';
+import { customerRareStore } from '@/stores/customer-rare';
+import { globalStore } from '@/stores/global';
 
 type TUnsubscribe = () => void;
 
@@ -100,6 +100,7 @@ export function startAccountStoreSyncWatchers() {
 	const watch = (unsubscribe: TUnsubscribe) => {
 		unsubscribers.push(unsubscribe);
 	};
+
 	watch(
 		subscribeAccountSyncResume((namespaces) => {
 			namespaces.forEach(markNamespaceDirty);
@@ -136,10 +137,6 @@ export function startAccountStoreSyncWatchers() {
 			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
 		})
 	);
-	// interactionCount is incremented on every analytics event (trackEvent),
-	// so watching it directly amplifies analytics traffic into sync flushes.
-	// The count is still synced opportunistically with other
-	// globalPreferences changes (e.g., donation milestone updates).
 	watch(
 		globalStore.persistence.donationModal.lastMilestoneShown.onChange(
 			() => {
@@ -245,6 +242,7 @@ export function startAccountStoreSyncWatchers() {
 			markNamespaceDirty(SYNC_NAMESPACE_MAP.theme);
 		})
 	);
+
 	const handleThemeStorageChange = (event: StorageEvent) => {
 		if (event.key !== STORAGE_KEY || event.oldValue === event.newValue) {
 			return;
@@ -252,7 +250,9 @@ export function startAccountStoreSyncWatchers() {
 
 		markNamespaceDirty(SYNC_NAMESPACE_MAP.theme);
 	};
+
 	globalThis.addEventListener('storage', handleThemeStorageChange);
+
 	watch(() => {
 		globalThis.removeEventListener('storage', handleThemeStorageChange);
 	});
@@ -269,6 +269,7 @@ export function startAccountStoreSyncWatchers() {
 			unsubscribe();
 		});
 	};
+
 	stopWatchers = cleanup;
 
 	return stopWatchers;

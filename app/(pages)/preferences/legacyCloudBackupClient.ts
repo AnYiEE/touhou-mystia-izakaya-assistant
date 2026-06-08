@@ -1,10 +1,9 @@
+export { FREQUENCY_TTL as LEGACY_BACKUP_FREQUENCY_TTL } from '@/api/v1/backups/constants';
 import type {
 	IBackupCheckSuccessResponse,
 	IBackupUploadSuccessResponse,
 } from '@/api/v1/backups/types';
 import { FILE_TYPE_JSON } from '@/utilities';
-
-export { FREQUENCY_TTL as LEGACY_BACKUP_FREQUENCY_TTL } from '@/api/v1/backups/constants';
 
 interface ILegacyBackupUploadBody {
 	code: string | null;

@@ -1,7 +1,7 @@
-import { siteConfig } from '@/configs';
-import { accountStore } from '@/stores/account';
 import { AccountApiError } from './api';
 import { refreshAccountState, resetAccountState } from './session';
+import { siteConfig } from '@/configs';
+import { accountStore } from '@/stores/account';
 
 function resetAccountBootstrapState(status: 'disabled' | 'error') {
 	resetAccountState();

@@ -9,6 +9,13 @@ import {
 	readJsonBodyResult,
 } from '@/api/v1/accountRouteUtils';
 import {
+	MAX_SYNC_JSON_BODY_BYTES,
+	checkSyncNamespace,
+	createUserStateRecord,
+	parseSyncStatePutBody,
+	parseUserStateRecord,
+} from '@/api/v1/sync/utils';
+import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 } from '@/api/v1/utils';
@@ -18,13 +25,6 @@ import {
 	type TSyncStatePutResult,
 } from '@/lib/account/sync';
 import { getLogSafeErrorCode } from '@/lib/logging';
-import {
-	MAX_SYNC_JSON_BODY_BYTES,
-	checkSyncNamespace,
-	createUserStateRecord,
-	parseSyncStatePutBody,
-	parseUserStateRecord,
-} from '../utils';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -119,6 +119,12 @@ export async function PUT(request: NextRequest) {
 		return cookieSecurityResponse;
 	}
 
+	const authModule = await import('@/lib/account/server/auth');
+	const auth = await authModule.authenticateAccountRequest(request);
+	if (auth.status === 'error') {
+		return createAccountAuthErrorResponse(auth, request);
+	}
+
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
 		'sync-state-put'
@@ -127,14 +133,6 @@ export async function PUT(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	const [authModule, userStateModule] = await Promise.all([
-		import('@/lib/account/server/auth'),
-		import('@/actions/account/userState'),
-	]);
-	const auth = await authModule.authenticateAccountRequest(request);
-	if (auth.status === 'error') {
-		return createAccountAuthErrorResponse(auth, request);
-	}
 	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
@@ -146,6 +144,7 @@ export async function PUT(request: NextRequest) {
 	if (bodyResult.status === 'payload-too-large') {
 		return createNoStoreErrorResponse('payload-too-large', 413);
 	}
+
 	const body = parseSyncStatePutBody(
 		bodyResult.status === 'ok' ? bodyResult.data : null
 	);
@@ -157,6 +156,8 @@ export async function PUT(request: NextRequest) {
 			state_epoch: auth.data.user.state_epoch,
 		});
 	}
+
+	const userStateModule = await import('@/actions/account/userState');
 
 	const results: TSyncStatePutResult[] = [];
 	const batchUpdatedAt = Date.now();
@@ -217,7 +218,6 @@ export async function PUT(request: NextRequest) {
 		return createCorruptUserStateResponse();
 	}
 
-	// writeResult.results only covers readyChanges, so consume it in preparedChanges order.
 	let writeResultIndex = 0;
 	for (const preparedChange of preparedChanges) {
 		if (preparedChange.status === 'error') {

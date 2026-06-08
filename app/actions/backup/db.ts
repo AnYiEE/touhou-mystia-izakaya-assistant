@@ -1,3 +1,5 @@
+import type { Transaction } from 'kysely';
+
 import { TABLE_NAME_MAP } from '@/lib/db';
 import { db } from '@/lib/db/db';
 import type {
@@ -6,7 +8,6 @@ import type {
 	TBackupFileRecordUpdate,
 	TDatabase,
 } from '@/lib/db/types';
-import type { Transaction } from 'kysely';
 
 const TABLE_NAME = TABLE_NAME_MAP.backupFileRecord;
 const IMPORT_TABLE_NAME = TABLE_NAME_MAP.backupImportRecord;
@@ -63,7 +64,6 @@ export async function checkIpFrequency(
 	if (ua !== undefined) {
 		query = query.where('user_agent', '=', ua);
 	}
-
 	if (userId !== undefined) {
 		query = query.where('user_id', '=', userId);
 	}
@@ -169,6 +169,7 @@ export async function deleteBackupImportRecordByCode(
 	database: TBackupRecordDatabase = db
 ) {
 	let result;
+
 	try {
 		result = await database
 			.deleteFrom(IMPORT_TABLE_NAME)
@@ -190,6 +191,7 @@ export async function deleteExpiredBackupImportRecords(
 	database: TBackupRecordDatabase = db
 ) {
 	let result;
+
 	try {
 		result = await database
 			.deleteFrom(IMPORT_TABLE_NAME)

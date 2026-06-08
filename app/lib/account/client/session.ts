@@ -1,4 +1,3 @@
-import { accountStore, globalStore } from '@/stores';
 import { fetchAccountMe, importBackupCode } from './api';
 import { type IAuthLoginSuccessResponse } from '../shared/types';
 import { readAccountSyncMeta } from './snapshot';
@@ -9,6 +8,7 @@ import {
 	takeOverLocalAccountData,
 } from './syncClient';
 import { withAccountSyncPaused } from './stateGuards';
+import { accountStore, globalStore } from '@/stores';
 
 let accountStateRequestGeneration = 0;
 

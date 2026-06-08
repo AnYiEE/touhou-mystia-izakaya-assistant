@@ -162,11 +162,7 @@ export default function DonationModal() {
 	}
 
 	return (
-		<Modal
-			isOpen={isOpen}
-			portalContainer={document.querySelector('#modal-portal-container')}
-			onClose={handleClose}
-		>
+		<Modal isOpen={isOpen} onClose={handleClose}>
 			<div className="space-y-4">
 				<Heading as="h2" isFirst>
 					感谢您使用{name}！

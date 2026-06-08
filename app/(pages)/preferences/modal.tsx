@@ -8,18 +8,19 @@ import { Modal } from '@/design/ui/components';
 
 import Content from './content';
 
-import { accountStore, globalStore as store } from '@/stores';
+import { accountStore, globalStore } from '@/stores';
 
 export default function PreferencesModal() {
 	const isMounted = useMounted();
 	const vibrate = useVibrate();
 
-	const isOpen = store.shared.preferencesModal.isOpen.use();
+	const isPreferencesModalOpen =
+		globalStore.shared.preferencesModal.isOpen.use();
 	const isAccountModalOpen = accountStore.shared.accountModal.isOpen.use();
 
 	const handleClose = useCallback(() => {
 		vibrate();
-		store.setPreferencesModalIsOpen(false);
+		globalStore.setPreferencesModalIsOpen(false);
 	}, [vibrate]);
 
 	if (!isMounted) {
@@ -29,8 +30,7 @@ export default function PreferencesModal() {
 	return (
 		<Modal
 			isDismissable={!isAccountModalOpen}
-			isOpen={isOpen}
-			portalContainer={document.querySelector('#modal-portal-container')}
+			isOpen={isPreferencesModalOpen}
 			onClose={handleClose}
 		>
 			{(onModalClose) => <Content onModalClose={onModalClose} />}

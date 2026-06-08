@@ -1,21 +1,42 @@
 'use client';
 
+import { memo, useCallback } from 'react';
+
 import { Button } from '@/design/ui/components';
+
+import { trackEvent } from '@/components/analytics';
+import TimeAgo from '@/components/timeAgo';
+
 import { getAccountClientErrorMessage } from '@/lib/account/client/errorMessage';
 import { flushAccountSyncQueue } from '@/lib/account/client/syncClient';
 import { getLogSafeErrorCode } from '@/lib/logging';
-import { accountStore } from '@/stores/account';
+import { accountStore as store } from '@/stores/account';
 import { getSafeStorageMode } from '@/utilities/safeStorage';
-import TimeAgo from '@/components/timeAgo';
 
-export default function AccountSyncStatus() {
-	const sync = accountStore.shared.sync.use();
+interface IProps {}
+
+export default memo<IProps>(function AccountSyncStatus() {
+	const sync = store.shared.sync.use();
+
 	const storageMode = getSafeStorageMode();
 	const shouldEnableManualRetry =
 		sync.pendingCount > 0 && (sync.canRetry || sync.failedAttempts >= 3);
 
+	const handleManualSyncPress = useCallback(() => {
+		trackEvent(
+			trackEvent.category.click,
+			'Account Sync Button',
+			'Manual Sync'
+		);
+		void flushAccountSyncQueue().catch((error: unknown) => {
+			console.warn('Manual account sync failed.', {
+				errorCode: getLogSafeErrorCode(error),
+			});
+		});
+	}, []);
+
 	return (
-		<div className="space-y-2 text-sm text-foreground-600">
+		<div className="space-y-2 text-small text-foreground-600">
 			<div className="flex flex-wrap gap-x-4 gap-y-1">
 				<span>待上传：{sync.pendingCount}</span>
 				<span>冲突：{sync.conflicts.length}</span>
@@ -47,16 +68,10 @@ export default function AccountSyncStatus() {
 				isDisabled={sync.isSyncing || !shouldEnableManualRetry}
 				isLoading={sync.isSyncing}
 				variant="flat"
-				onPress={() => {
-					void flushAccountSyncQueue().catch((error: unknown) => {
-						console.warn('Manual account sync failed.', {
-							errorCode: getLogSafeErrorCode(error),
-						});
-					});
-				}}
+				onPress={handleManualSyncPress}
 			>
 				立即同步
 			</Button>
 		</div>
 	);
-}
+});

@@ -21,22 +21,26 @@ import {
 	createRetryAfterHeaders,
 	readJsonBodyResult,
 } from '@/api/v1/accountRouteUtils';
+import { FREQUENCY_TTL, MAX_DATA_SIZE } from '@/api/v1/backups/constants';
+import type {
+	IBackupUploadBody,
+	IBackupUploadSuccessResponse,
+} from '@/api/v1/backups/types';
+import {
+	getLogSafeErrorCode,
+	getRequestMeta,
+	maskBackupCode,
+} from '@/api/v1/backups/utils';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 	handleOptionsRequest,
 } from '@/api/v1/utils';
+import { isPlainObject } from '@/lib/account/sync/serializers/utils';
 import { FILE_TYPE_JSON } from '@/utilities';
-import { FREQUENCY_TTL, MAX_DATA_SIZE } from './constants';
-import type { IBackupUploadBody, IBackupUploadSuccessResponse } from './types';
-import { getLogSafeErrorCode, getRequestMeta, maskBackupCode } from './utils';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-	return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
 
 function normalizeMediaType(contentType: string | null) {
 	return contentType?.split(';', 1).at(0)?.trim().toLowerCase() ?? null;

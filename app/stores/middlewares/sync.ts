@@ -2,13 +2,13 @@ import { BroadcastChannel } from 'broadcast-channel';
 import { isObject } from 'lodash';
 import { type StateCreator } from 'zustand';
 
+import { checkApplyingRemoteState } from '@/lib/account/client/stateGuards';
 import {
 	checkLengthEmpty,
 	checkLengthEqualOf,
 	copyArray,
 	memoize,
 } from '@/utilities';
-import { checkApplyingRemoteState } from '@/lib/account/client/stateGuards';
 
 type TPlainObject = Record<string, unknown>;
 

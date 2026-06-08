@@ -45,6 +45,14 @@ const trackCategoryMap = {
 type TTrackCategory = ExtractCollectionValue<typeof trackCategoryMap>;
 
 type TAction =
+	| 'Account'
+	| 'Account Auth'
+	| 'Account Conflict'
+	| 'Account Password'
+	| 'Account Sync'
+	| 'Admin Auth'
+	| 'Admin User Action'
+	| 'Admin User Detail'
 	| 'Cloud Delete'
 	| 'Cloud Download'
 	| 'Cloud Upload'
@@ -75,9 +83,10 @@ type TItem =
 	| 'Recipe';
 type TItemAlone = 'Customer' | 'Customer Tag' | 'MystiaCooker';
 type TItemCard = `${TItem} Card`;
+type TAdminSelect = 'Admin User Status';
 
 type TError = 'Cloud' | 'Global' | 'Update';
-type TShow = 'Popover' | 'Tooltip';
+type TShow = 'Modal' | 'Popover' | 'Tooltip';
 
 function trackEventFunction(
 	category: typeof trackCategoryMap.click,
@@ -93,7 +102,7 @@ function trackEventFunction(
 ): void;
 function trackEventFunction(
 	category: typeof trackCategoryMap.select | typeof trackCategoryMap.unselect,
-	action: TItem | TItemAlone,
+	action: TAdminSelect | TItem | TItemAlone,
 	name: string,
 	value?: number | string
 ): void;
@@ -105,7 +114,14 @@ function trackEventFunction(
 ): void;
 function trackEventFunction(
 	category: TTrackCategory,
-	action: TActions | TError | TItem | TItemAlone | TItemCard | TShow,
+	action:
+		| TActions
+		| TAdminSelect
+		| TError
+		| TItem
+		| TItemAlone
+		| TItemCard
+		| TShow,
 	name: string,
 	value?: number | string
 ) {
@@ -175,6 +191,7 @@ export default function Analytics() {
 	// It has already been tracked once when entering the page for the first time.
 	const isLoaded = useRef(true);
 	const { pathname } = usePathname();
+
 	const isLoggedIn = accountStore.shared.isLoggedIn.use();
 	const user = accountStore.shared.user.use();
 	const fingerprintUserId = globalStore.persistence.userId.use();

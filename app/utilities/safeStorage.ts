@@ -116,9 +116,6 @@ class SafeStorage implements Storage {
 		} catch {
 			/* empty */
 		}
-		// PERSIST MANAGED KEYS HERE: when recovering from fallback,
-		// the managed-keys registry should be written to localStorage
-		// so future reads see the complete key set.
 		this.persistManagedKeys();
 	}
 
@@ -261,9 +258,6 @@ class SafeStorage implements Storage {
 
 		const testKey = '__test__';
 
-		// Always probe localStorage first, even when a previous
-		// write failure caused a sessionStorage fallback.  A single
-		// transient error should not permanently degrade persistence.
 		try {
 			localStorage.setItem(testKey, '');
 			localStorage.removeItem(testKey);

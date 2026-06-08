@@ -9,6 +9,12 @@ import {
 	readJsonBodyResult,
 } from '@/api/v1/accountRouteUtils';
 import {
+	MAX_SYNC_JSON_BODY_BYTES,
+	createUserStateRecord,
+	parseSyncStatePutBody,
+	parseUserStateRecord,
+} from '@/api/v1/sync/utils';
+import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 } from '@/api/v1/utils';
@@ -17,12 +23,6 @@ import {
 	type TSyncStatePutResult,
 } from '@/lib/account/sync';
 import { getLogSafeErrorCode } from '@/lib/logging';
-import {
-	MAX_SYNC_JSON_BODY_BYTES,
-	createUserStateRecord,
-	parseSyncStatePutBody,
-	parseUserStateRecord,
-} from '../utils';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -43,6 +43,12 @@ export async function POST(request: NextRequest) {
 		return cookieSecurityResponse;
 	}
 
+	const authModule = await import('@/lib/account/server/auth');
+	const auth = await authModule.authenticateAccountRequest(request);
+	if (auth.status === 'error') {
+		return createAccountAuthErrorResponse(auth, request);
+	}
+
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
 		'sync-ping'
@@ -58,6 +64,7 @@ export async function POST(request: NextRequest) {
 	if (bodyResult.status === 'payload-too-large') {
 		return createNoStoreErrorResponse('payload-too-large', 413);
 	}
+
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	if (typeof body?.csrf_token !== 'string') {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
@@ -68,14 +75,6 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	const [authModule, userStateModule] = await Promise.all([
-		import('@/lib/account/server/auth'),
-		import('@/actions/account/userState'),
-	]);
-	const auth = await authModule.authenticateAccountRequest(request);
-	if (auth.status === 'error') {
-		return createAccountAuthErrorResponse(auth, request);
-	}
 	if (
 		!authModule.verifyAccountCsrfToken(
 			body.csrf_token,
@@ -89,6 +88,8 @@ export async function POST(request: NextRequest) {
 			state_epoch: auth.data.user.state_epoch,
 		});
 	}
+
+	const userStateModule = await import('@/actions/account/userState');
 
 	const results: TSyncStatePutResult[] = [];
 	const batchUpdatedAt = Date.now();
@@ -164,9 +165,6 @@ export async function POST(request: NextRequest) {
 					result.current === null
 						? null
 						: parseUserStateRecord(result.current);
-
-				// Null current means the server has no row; zero fields keep the
-				// conflict payload record-shaped for the client protocol.
 				results.push({
 					data: record?.data ?? null,
 					namespace: preparedChange.change.namespace,

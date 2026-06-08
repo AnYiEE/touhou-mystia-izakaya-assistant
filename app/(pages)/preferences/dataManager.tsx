@@ -15,13 +15,7 @@ import { usePathname, useThrottle } from '@/hooks';
 
 import { Textarea } from '@heroui/input';
 import { Tab, Tabs } from '@heroui/tabs';
-import {
-	LEGACY_BACKUP_FREQUENCY_TTL,
-	deleteLegacyBackup,
-	downloadLegacyBackup,
-	fetchLegacyBackupMetadata,
-	uploadLegacyBackup,
-} from '@/(pages)/preferences/legacyCloudBackupClient';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faKey } from '@fortawesome/free-solid-svg-icons';
 
@@ -46,6 +40,13 @@ import {
 import Heading from '@/components/heading';
 import TimeAgo from '@/components/timeAgo';
 import LegacyBackupImport from './legacyBackupImport';
+import {
+	LEGACY_BACKUP_FREQUENCY_TTL,
+	deleteLegacyBackup,
+	downloadLegacyBackup,
+	fetchLegacyBackupMetadata,
+	uploadLegacyBackup,
+} from './legacyCloudBackupClient';
 
 import {
 	compatibilityCustomerRareData,
@@ -228,7 +229,13 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	);
 
 	const currentCloudCode = globalStore.persistence.cloudCode.use();
+	const isHighAppearance = globalStore.persistence.highAppearance.use();
+	const userId = globalStore.persistence.userId.use();
+
+	const isCloudCodeValid = (currentCloudCode?.trim() ?? '').length > 0;
+
 	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
+
 	const shouldShowLegacyCloud =
 		isAccountFeatureClientEnabled &&
 		(accountBootstrapStatus === 'disabled' ||
@@ -237,10 +244,6 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		isAccountFeatureClientEnabled &&
 		(accountBootstrapStatus === 'anonymous' ||
 			accountBootstrapStatus === 'loggedIn');
-	const isHighAppearance = globalStore.persistence.highAppearance.use();
-	const userId = globalStore.persistence.userId.use();
-
-	const isCloudCodeValid = (currentCloudCode?.trim() ?? '').length > 0;
 
 	const [cloudCodeInfo, setCloudCodeInfo] =
 		useState<ReactNodeWithoutBoolean>(null);
@@ -249,8 +252,10 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	const updateCloudCodeInfo = useCallback(
 		(cloudCode: typeof currentCloudCode) => {
 			cloudCodeInfoRequestIdRef.current += 1;
+
 			const requestId = cloudCodeInfoRequestIdRef.current;
 			const normalizedCode = cloudCode?.trim() ?? null;
+
 			if (normalizedCode === null || normalizedCode === '') {
 				setCloudCodeInfo(
 					<>
@@ -319,6 +324,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 			setCloudCodeInfo(null);
 			return;
 		}
+
 		updateCloudCodeInfo(currentCloudCode);
 	}, [currentCloudCode, shouldShowLegacyCloud, updateCloudCodeInfo]);
 
@@ -327,8 +333,10 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		if (normalizedCode === '') {
 			return;
 		}
+
 		setIsCloudDeleteButtonDisabled(true);
 		setCloudDeleteButtonLabel(cloudDeleteButtonLabelMap.deleting);
+
 		deleteLegacyBackup(normalizedCode)
 			.then(() => {
 				setCloudDeleteState('success');
@@ -337,7 +345,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				trackEvent(
 					trackEvent.category.click,
 					'Cloud Delete Button',
-					'redacted'
+					normalizedCode
 				);
 			})
 			.catch((error: unknown) => {
@@ -369,12 +377,15 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				? prompt('请输入已有备份码')
 				: currentNormalizedCode
 			)?.trim() ?? '';
+
 		if (code === '') {
 			return;
 		}
+
 		setIsCloudDownloadButtonDisabled(true);
 		setCloudDownloadButtonLabel(cloudDownloadButtonLabelMap.downloading);
 		let didDownload = false;
+
 		downloadLegacyBackup<TMealData>(code)
 			.then((data) => {
 				setCloudDownloadState('success');
@@ -398,7 +409,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				trackEvent(
 					trackEvent.category.click,
 					'Cloud Download Button',
-					'redacted'
+					code
 				);
 			})
 			.catch((error: unknown) => {
@@ -433,8 +444,10 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	const handleCloudUploadButtonPress = useCallback(() => {
 		setIsCloudUploadButtonDisabled(true);
 		setCloudUploadButtonLabel(cloudUploadButtonLabelMap.uploading);
+
 		let cloudCodeToRefresh = currentCloudCode;
 		const cloudCode = currentCloudCode?.trim();
+
 		uploadLegacyBackup({
 			code: cloudCode === '' ? null : (cloudCode ?? null),
 			data: currentMealData,
@@ -448,7 +461,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				trackEvent(
 					trackEvent.category.click,
 					'Cloud Upload Button',
-					'redacted'
+					code
 				);
 			})
 			.catch((error: unknown) => {
@@ -462,15 +475,15 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 			})
 			.finally(() => {
 				updateCloudCodeInfo(cloudCodeToRefresh);
-				cloudTimers.current.push(
-					setTimeout(() => {
-						setCloudUploadState('default');
-						setIsCloudUploadButtonDisabled(false);
-						setCloudUploadButtonLabel(
-							cloudUploadButtonLabelMap.upload
-						);
-					}, 3000)
-				);
+				const timerId = setTimeout(() => {
+					setCloudUploadState('default');
+					setIsCloudUploadButtonDisabled(false);
+					setCloudUploadButtonLabel(cloudUploadButtonLabelMap.upload);
+					cloudTimers.current = cloudTimers.current.filter(
+						(id) => id !== timerId
+					);
+				}, 3000);
+				cloudTimers.current.push(timerId);
 			});
 	}, [currentCloudCode, currentMealData, updateCloudCodeInfo, userId]);
 
@@ -528,6 +541,11 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	}, []);
 
 	const handleImportButtonPress = useCallback(() => {
+		trackEvent(
+			trackEvent.category.click,
+			'Import Button',
+			'Select Customer Data File'
+		);
 		importInputRef.current?.click();
 	}, []);
 

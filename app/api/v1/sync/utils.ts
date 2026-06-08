@@ -10,17 +10,25 @@ import {
 	type TSyncNamespace,
 } from '@/lib/account/sync';
 import {
+	checkBeverageTag,
+	checkPopularTag,
+	checkRecipeTag,
+} from '@/lib/account/sync/serializers/tags';
+import {
+	hasExactKeys,
+	isAllowedStringArray,
+	isIntegerInRange,
+	isNonNegativeSafeInteger,
+	isPlainObject,
+	isStringArray,
+} from '@/lib/account/sync/serializers/utils';
+import {
 	Beverage,
 	CustomerNormal,
 	CustomerRare,
 	Ingredient,
 	Recipe,
 } from '@/utils';
-import {
-	checkBeverageTag,
-	checkPopularTag,
-	checkRecipeTag,
-} from '@/lib/account/sync/serializers/tags';
 
 const SYNC_NAMESPACE_SET = new Set<TSyncNamespace>(
 	Object.values(SYNC_NAMESPACE_MAP)
@@ -54,44 +62,6 @@ const recipeColumnKeys = new Set([
 	'time',
 ]);
 const themeValues = new Set<string>(Object.values(THEME_MAP));
-
-function isPlainObject(data: unknown): data is Record<string, unknown> {
-	return data !== null && !Array.isArray(data) && typeof data === 'object';
-}
-
-function hasExactKeys(data: Record<string, unknown>, keys: string[]) {
-	const actualKeys = Object.keys(data);
-	if (actualKeys.length !== keys.length) {
-		return false;
-	}
-
-	const actualKeySet = new Set(actualKeys);
-
-	return keys.every((key) => actualKeySet.has(key));
-}
-
-function isStringArray(data: unknown): data is string[] {
-	return (
-		Array.isArray(data) && data.every((item) => typeof item === 'string')
-	);
-}
-
-function isAllowedStringArray(data: unknown, values: Set<string>) {
-	return isStringArray(data) && data.every((item) => values.has(item));
-}
-
-function isIntegerInRange(data: unknown, min: number, max: number) {
-	return (
-		typeof data === 'number' &&
-		Number.isInteger(data) &&
-		data >= min &&
-		data <= max
-	);
-}
-
-function isNonNegativeSafeInteger(data: unknown): data is number {
-	return typeof data === 'number' && Number.isSafeInteger(data) && data >= 0;
-}
 
 function validateMealRecipe(data: unknown) {
 	return (

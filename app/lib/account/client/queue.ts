@@ -1,12 +1,5 @@
-import {
-	type IDirtyQueueEntry,
-	type ISyncConflictItem,
-	SYNC_NAMESPACE_MAP,
-	SYNC_SCHEMA_VERSION_MAP,
-	type TSyncNamespace,
-	type TSyncPausedReason,
-} from '@/lib/account/sync';
 import { sha1 } from 'js-sha1';
+
 import {
 	ACCOUNT_STORAGE_KEY_MAP,
 	createAccountStorageKey,
@@ -17,6 +10,18 @@ import {
 } from './storage';
 import { checkApplyingRemoteState } from './stateGuards';
 import { createAccountClientId } from './random';
+import {
+	type IDirtyQueueEntry,
+	type ISyncConflictItem,
+	SYNC_NAMESPACE_MAP,
+	SYNC_SCHEMA_VERSION_MAP,
+	type TSyncNamespace,
+	type TSyncPausedReason,
+} from '@/lib/account/sync';
+import {
+	isNonNegativeSafeInteger,
+	isPlainObject,
+} from '@/lib/account/sync/serializers/utils';
 
 const SYNC_NAMESPACE_SET = new Set<TSyncNamespace>(
 	Object.values(SYNC_NAMESPACE_MAP)
@@ -29,16 +34,6 @@ const SYNC_PAUSED_REASON_SET = new Set<TSyncPausedReason | null>([
 	'delete-data',
 	'importing-backup',
 ]);
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-	return value !== null && !Array.isArray(value) && typeof value === 'object';
-}
-
-function isNonNegativeSafeInteger(value: unknown): value is number {
-	return (
-		typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
-	);
-}
 
 function checkSyncRevision(value: unknown): value is number {
 	return isNonNegativeSafeInteger(value) && value < Number.MAX_SAFE_INTEGER;
@@ -109,7 +104,6 @@ function createSnapshotStableJson(data: unknown) {
 }
 
 function createSnapshotDigest(stableJson: string) {
-	// Non-security digest for local snapshot equality; not used for auth.
 	return `sha1:${sha1(stableJson)}`;
 }
 

@@ -1,23 +1,4 @@
 import {
-	type IAccountSyncBroadcastMessage,
-	type IDirtyQueueEntry,
-	type ISyncConflictItem,
-	type ISyncStateGetResponse,
-	type ISyncStateItemConflict,
-	type ISyncStatePutResponse,
-	type ISyncStateRecord,
-	SYNC_NAMESPACE_MAP,
-	SYNC_SCHEMA_VERSION_MAP,
-	type TSyncNamespace,
-	type TSyncStatePutResult,
-} from '@/lib/account/sync';
-import {
-	type IGlobalPreferencesSnapshot,
-	globalPreferencesSerializer,
-} from '@/lib/account/sync/serializers/globalPreferences';
-import { getLogSafeErrorCode } from '@/lib/logging';
-import { accountStore } from '@/stores/account';
-import {
 	AccountApiError,
 	fetchSyncState,
 	putSyncState,
@@ -59,6 +40,25 @@ import {
 	withApplyingRemoteState,
 	writeAccountSyncMeta,
 } from './snapshot';
+import {
+	type IAccountSyncBroadcastMessage,
+	type IDirtyQueueEntry,
+	type ISyncConflictItem,
+	type ISyncStateGetResponse,
+	type ISyncStateItemConflict,
+	type ISyncStatePutResponse,
+	type ISyncStateRecord,
+	SYNC_NAMESPACE_MAP,
+	SYNC_SCHEMA_VERSION_MAP,
+	type TSyncNamespace,
+	type TSyncStatePutResult,
+} from '@/lib/account/sync';
+import {
+	type IGlobalPreferencesSnapshot,
+	globalPreferencesSerializer,
+} from '@/lib/account/sync/serializers/globalPreferences';
+import { getLogSafeErrorCode } from '@/lib/logging';
+import { accountStore } from '@/stores/account';
 
 const DIRTY_COUNT_FLUSH_THRESHOLD = 10;
 const FORCE_FLUSH_DELAY = 30 * 1000;

@@ -1,17 +1,49 @@
+import { isObject } from 'lodash';
+
 import {
 	type ISyncConflictItem,
 	type ISyncMergeResult,
 	type TSyncNamespace,
 } from '@/lib/account/sync';
+import { checkArrayEqualOf } from '@/utilities';
 
-export function isPlainObject(data: unknown): data is Record<string, unknown> {
-	return data !== null && !Array.isArray(data) && typeof data === 'object';
+export function hasExactKeys(data: Record<string, unknown>, keys: string[]) {
+	const actualKeys = Object.keys(data);
+
+	return checkArrayEqualOf(keys, actualKeys);
 }
 
 export function isStringArray(data: unknown): data is string[] {
 	return (
 		Array.isArray(data) && data.every((item) => typeof item === 'string')
 	);
+}
+
+export function isAllowedStringArray(data: unknown, values: Set<string>) {
+	return isStringArray(data) && data.every((item) => values.has(item));
+}
+
+export function isIntegerInRange(data: unknown, min: number, max: number) {
+	return (
+		typeof data === 'number' &&
+		Number.isInteger(data) &&
+		data >= min &&
+		data <= max
+	);
+}
+
+export function isNonNegativeSafeInteger(data: unknown): data is number {
+	return isIntegerInRange(data, 0, Number.MAX_SAFE_INTEGER);
+}
+
+export function isPlainObject(
+	value: unknown
+): value is Record<string, unknown> {
+	if (Array.isArray(value) || !isObject(value)) {
+		return false;
+	}
+
+	return Object.prototype.toString.call(value) === '[object Object]';
 }
 
 export function stableJson(data: unknown): string {
@@ -51,8 +83,6 @@ export function createSerializerConflict<T>({
 	namespace: TSyncNamespace;
 	userId: string;
 }): ISyncConflictItem<T> {
-	// Serializers are context-free; syncClient overwrites placeholder userId
-	// before persisted conflicts reach UI resolution flows.
 	return { cloud, local, merged: null, namespace, revision: 0, userId };
 }
 

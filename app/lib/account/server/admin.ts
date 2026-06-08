@@ -52,7 +52,6 @@ export function checkAdminCredentials(username: string, password: string) {
 		return false;
 	}
 
-	// Constant-time comparison for both username and password.
 	const usernameMatches = checkFixedLengthEqual(
 		createAccountHmac('admin:v1', username),
 		createAccountHmac('admin:v1', adminUsername)

@@ -10,12 +10,12 @@ import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 } from '@/api/v1/utils';
-import { type IListUsersOptions } from '@/actions/account/users';
 import {
 	authenticateAdminRequest,
 	checkAdminFeatureResponse,
 	createAdminAuthErrorResponse,
-} from '../utils';
+} from '@/api/v1/admin/utils';
+import { type IListUsersOptions } from '@/actions/account/users';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -90,6 +90,7 @@ export async function GET(request: NextRequest) {
 		import('@/actions/account/users'),
 		import('@/lib/account/server/user'),
 	]);
+
 	const rawStatus = request.nextUrl.searchParams.get('status');
 	const status =
 		rawStatus === null || rawStatus.trim() === '' ? null : rawStatus.trim();
@@ -110,6 +111,7 @@ export async function GET(request: NextRequest) {
 	if (page === null || pageSize === null) {
 		return createNoStoreErrorResponse('invalid-pagination', 400);
 	}
+
 	const query = userModule.normalizeUsername(
 		request.nextUrl.searchParams.get('query') ?? ''
 	);
@@ -118,6 +120,7 @@ export async function GET(request: NextRequest) {
 		offset: (page - 1) * pageSize,
 		query,
 	};
+
 	if (status !== null) {
 		listUsersOptions.status = status;
 	}

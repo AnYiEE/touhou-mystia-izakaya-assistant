@@ -1,5 +1,5 @@
-import { randomUUID } from 'node:crypto';
 import { type NextRequest } from 'next/server';
+import { randomUUID } from 'node:crypto';
 
 import {
 	checkAccountCookieSecurityResponse,
@@ -21,21 +21,6 @@ import { getLogSafeErrorCode } from '@/lib/logging';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-async function importRegistrationModule<T>(
-	moduleName: string,
-	loader: () => Promise<T>
-) {
-	try {
-		return await loader();
-	} catch (error) {
-		console.warn('Failed to load account registration module.', {
-			errorCode: getLogSafeErrorCode(error),
-			moduleName,
-		});
-		throw error;
-	}
-}
 
 export async function POST(request: NextRequest) {
 	const featureResponse = await checkAccountFeatureResponse();
@@ -66,33 +51,13 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	let passwordModule: typeof import('@/lib/account/server/password');
-	let usersModule: typeof import('@/actions/account/users');
-	let authModule: typeof import('@/lib/account/server/auth');
-	let userModule: typeof import('@/lib/account/server/user');
-	try {
-		[passwordModule, usersModule, authModule, userModule] =
-			await Promise.all([
-				importRegistrationModule(
-					'password',
-					() => import('@/lib/account/server/password')
-				),
-				importRegistrationModule(
-					'users',
-					() => import('@/actions/account/users')
-				),
-				importRegistrationModule(
-					'auth',
-					() => import('@/lib/account/server/auth')
-				),
-				importRegistrationModule(
-					'user',
-					() => import('@/lib/account/server/user')
-				),
-			]);
-	} catch {
-		return createNoStoreErrorResponse('server-misconfigured', 500);
-	}
+	const [passwordModule, usersModule, authModule, userModule] =
+		await Promise.all([
+			import('@/lib/account/server/password'),
+			import('@/actions/account/users'),
+			import('@/lib/account/server/auth'),
+			import('@/lib/account/server/user'),
+		]);
 
 	const username = body.username.trim();
 	if (!userModule.checkNewUsernamePolicy(username)) {
@@ -121,10 +86,12 @@ export async function POST(request: NextRequest) {
 
 	const now = Date.now();
 	const userId = randomUUID();
+
 	let session: ReturnType<typeof authModule.createAccountSessionDraft>;
 	let user: Awaited<
 		ReturnType<typeof usersModule.createUserWithCredentialAndSession>
 	>;
+
 	try {
 		const passwordHash = await passwordModule.hashPassword(body.password);
 		session = authModule.createAccountSessionDraft(userId, request, now);

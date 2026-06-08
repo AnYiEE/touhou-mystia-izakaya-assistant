@@ -1,8 +1,11 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { type PropsWithChildren, memo, useCallback, useState } from 'react';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+	FontAwesomeIcon,
+	type FontAwesomeIconProps,
+} from '@fortawesome/react-fontawesome';
 import {
 	faArrowRightFromBracket,
 	faCloudArrowUp,
@@ -17,15 +20,21 @@ import {
 	faUserPlus,
 } from '@fortawesome/free-solid-svg-icons';
 
-import Heading from '@/components/heading';
 import {
 	Button,
+	Card,
+	type IButtonProps,
 	Input,
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 	cn,
 } from '@/design/ui/components';
+
+import { trackEvent } from '@/components/analytics';
+import Heading from '@/components/heading';
+import AccountSyncStatus from './accountSyncStatus';
+
 import {
 	AccountApiError,
 	changeAccountPassword,
@@ -57,63 +66,144 @@ import {
 	checkPasswordPolicy,
 } from '@/lib/account/shared/constants';
 import { getLogSafeErrorCode } from '@/lib/logging';
-import { accountStore } from '@/stores/account';
+import { accountStore, globalStore } from '@/stores';
 import { downloadJson } from '@/utilities';
-import AccountSyncStatus from './accountSyncStatus';
 
 type TAuthMode = 'login' | 'register';
 type TAccountAuthContext = Parameters<typeof resetAccountStateIfCurrent>[0];
 
-function AccountPanel({
+interface IAccountPanelProps extends PropsWithChildren<
+	Pick<HTMLDivElementAttributes, 'className'>
+> {}
+
+const AccountPanel = memo<IAccountPanelProps>(function AccountPanel({
 	children,
 	className,
-}: {
-	children: ReactNodeWithoutBoolean;
-	className?: string;
 }) {
+	const isHighAppearance = globalStore.persistence.highAppearance.use();
+
 	return (
-		<section
-			className={cn(
-				'rounded-small border border-default-200/80 bg-default-50/60 p-4 shadow-sm shadow-default-200/30 dark:bg-default-100/20 dark:shadow-none',
-				className
-			)}
+		<Card
+			as="section"
+			fullWidth
+			shadow="sm"
+			classNames={{
+				base: cn('p-4', className, {
+					'bg-content1/40 backdrop-blur': isHighAppearance,
+				}),
+			}}
 		>
 			{children}
-		</section>
+		</Card>
 	);
-}
+});
 
-function AccountPanelTitle({
-	children,
-	icon,
-	iconClassName,
-}: {
+interface IAccountPanelTitleProps {
 	children: ReactNodeWithoutBoolean;
-	icon: Parameters<typeof FontAwesomeIcon>[0]['icon'];
+	icon: FontAwesomeIconProps['icon'];
 	iconClassName?: string;
-}) {
-	return (
-		<div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground-700">
-			<FontAwesomeIcon
-				icon={icon}
-				className={cn('w-4 text-primary-600', iconClassName)}
-			/>
-			<span>{children}</span>
-		</div>
-	);
 }
 
-function AccountInputIcon({
-	icon,
-}: {
-	icon: Parameters<typeof FontAwesomeIcon>[0]['icon'];
-}) {
-	return (
-		<span className="pointer-events-none inline-flex -translate-y-px items-center text-default-400">
-			<FontAwesomeIcon icon={icon} className="block w-3.5" />
-		</span>
-	);
+const AccountPanelTitle = memo<IAccountPanelTitleProps>(
+	function AccountPanelTitle({ children, icon, iconClassName }) {
+		return (
+			<div className="mb-3 flex items-center gap-2 text-small font-medium text-foreground-700">
+				<FontAwesomeIcon
+					icon={icon}
+					className={cn('w-4 text-primary-600', iconClassName)}
+				/>
+				<span>{children}</span>
+			</div>
+		);
+	}
+);
+
+interface IAccountInputIconProps extends Pick<FontAwesomeIconProps, 'icon'> {}
+
+const AccountInputIcon = memo<IAccountInputIconProps>(
+	function AccountInputIcon({ icon }) {
+		return (
+			<span className="pointer-events-none inline-flex -translate-y-px items-center text-default-400">
+				<FontAwesomeIcon icon={icon} className="block w-3.5" />
+			</span>
+		);
+	}
+);
+
+interface IAccountConfirmButtonProps {
+	buttonLabel: ReactNodeWithoutBoolean;
+	color: IButtonProps['color'];
+	confirmLabel: ReactNodeWithoutBoolean;
+	icon: FontAwesomeIconProps['icon'];
+	isDisabled: boolean;
+	isLoading: boolean;
+	isOpen: boolean;
+	onCancel: () => void;
+	onConfirm: () => void;
+	onOpenChange: (isOpen: boolean) => void;
 }
+
+const AccountConfirmButton = memo<IAccountConfirmButtonProps>(
+	function AccountConfirmButton({
+		buttonLabel,
+		color,
+		confirmLabel,
+		icon,
+		isDisabled,
+		isLoading,
+		isOpen,
+		onCancel,
+		onConfirm,
+		onOpenChange,
+	}) {
+		return (
+			<Popover
+				shouldBlockScroll
+				showArrow
+				isOpen={isOpen}
+				onOpenChange={onOpenChange}
+			>
+				<PopoverTrigger>
+					<Button
+						fullWidth
+						className="justify-start"
+						color={color}
+						isDisabled={isDisabled}
+						isLoading={isLoading}
+						startContent={
+							isLoading ? null : (
+								<FontAwesomeIcon icon={icon} className="w-4" />
+							)
+						}
+						variant="flat"
+					>
+						{buttonLabel}
+					</Button>
+				</PopoverTrigger>
+				<PopoverContent className="space-y-1 p-1">
+					<Button
+						fullWidth
+						color="danger"
+						size="sm"
+						variant="ghost"
+						onPress={onConfirm}
+					>
+						{confirmLabel}
+					</Button>
+					<Button
+						fullWidth
+						color="primary"
+						size="sm"
+						variant="ghost"
+						onPress={onCancel}
+					>
+						取消
+					</Button>
+				</PopoverContent>
+			</Popover>
+		);
+	}
+);
 
 function handleUnauthorizedAccountError(
 	error: unknown,
@@ -141,16 +231,22 @@ function getBootstrapErrorMessage(errorCode: string | null) {
 	return `账号功能暂不可用：${BOOTSTRAP_ERROR_MESSAGE_MAP[errorCode] ?? errorCode}`;
 }
 
-export default function AccountManager() {
+interface IProps {}
+
+export default memo<IProps>(function AccountManager() {
 	const bootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const csrfToken = accountStore.shared.csrfToken.use();
 	const lastError = accountStore.shared.sync.lastError.use();
 	const passwordMustChange = accountStore.shared.passwordMustChange.use();
 	const user = accountStore.shared.user.use();
+
 	const [authMode, setAuthMode] = useState<TAuthMode>('login');
 	const [currentPassword, setCurrentPassword] = useState('');
 	const [message, setMessage] = useState<string | null>(null);
 	const [newPassword, setNewPassword] = useState('');
+	const [passwordChangeError, setPasswordChangeError] = useState<
+		string | null
+	>(null);
 	const [password, setPassword] = useState('');
 	const [username, setUsername] = useState('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -158,6 +254,7 @@ export default function AccountManager() {
 		useState(false);
 	const [isDeleteAccountPopoverOpen, setIsDeleteAccountPopoverOpen] =
 		useState(false);
+
 	const isRegistrationPasswordInvalid =
 		authMode === 'register' &&
 		password.length > 0 &&
@@ -169,10 +266,12 @@ export default function AccountManager() {
 		if (isSubmitting) {
 			return;
 		}
+
 		const normalizedUsername = username.trim();
 		if (normalizedUsername !== username) {
 			setUsername(normalizedUsername);
 		}
+
 		if (normalizedUsername.length === 0 || password.length === 0) {
 			setMessage('请输入用户名和密码');
 			return;
@@ -182,12 +281,20 @@ export default function AccountManager() {
 			return;
 		}
 
+		trackEvent(
+			trackEvent.category.click,
+			'Account Auth Button',
+			authMode === 'login' ? 'Login' : 'Register'
+		);
+
 		setIsSubmitting(true);
 		setMessage(null);
+
 		const expectedAuthContext = {
 			expectedCsrfToken: accountStore.shared.csrfToken.get(),
 			expectedUserId: accountStore.shared.user.get()?.id ?? null,
 		};
+
 		const request = authMode === 'login' ? loginAccount : registerAccount;
 		void request({ password, username: normalizedUsername })
 			.then((data) => {
@@ -196,8 +303,10 @@ export default function AccountManager() {
 				) {
 					return;
 				}
+
 				setPassword('');
 				setMessage(authMode === 'login' ? '登录成功' : '注册成功');
+
 				refreshAccountState().catch((error: unknown) => {
 					if (
 						handleUnauthorizedAccountError(error, {
@@ -221,20 +330,47 @@ export default function AccountManager() {
 			});
 	}, [authMode, isSubmitting, password, username]);
 
+	const handleLoginModePress = useCallback(() => {
+		setAuthMode('login');
+		setMessage(null);
+	}, []);
+
+	const handleRegisterModePress = useCallback(() => {
+		setAuthMode('register');
+		setMessage(null);
+	}, []);
+
+	const handleCurrentPasswordChange = useCallback((value: string) => {
+		setCurrentPassword(value);
+		setPasswordChangeError(null);
+	}, []);
+
 	const handlePasswordChange = useCallback(() => {
 		if (csrfToken === null || isSubmitting || user === null) {
 			return;
 		}
+
+		trackEvent(
+			trackEvent.category.click,
+			'Account Password Button',
+			passwordMustChange ? 'Force Change' : 'Change'
+		);
+
 		if (!checkPasswordPolicy(newPassword)) {
+			setPasswordChangeError(null);
 			setMessage(PASSWORD_RULE_DESCRIPTION);
 			return;
 		}
+
 		setIsSubmitting(true);
 		setMessage(null);
+		setPasswordChangeError(null);
+
 		const expectedAuthContext = {
 			expectedCsrfToken: csrfToken,
 			expectedUserId: user.id,
 		};
+
 		void changeAccountPassword(
 			{ current_password: currentPassword, new_password: newPassword },
 			csrfToken
@@ -247,9 +383,12 @@ export default function AccountManager() {
 				) {
 					return;
 				}
+
 				setCurrentPassword('');
 				setNewPassword('');
+				setPasswordChangeError(null);
 				setMessage('密码已更新');
+
 				refreshAccountState().catch((error: unknown) => {
 					if (
 						handleUnauthorizedAccountError(error, {
@@ -274,26 +413,56 @@ export default function AccountManager() {
 					resetAccountStateIfCurrent(expectedAuthContext);
 					return;
 				}
+				if (
+					error instanceof AccountApiError &&
+					error.message === 'invalid-password'
+				) {
+					if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
+						return;
+					}
+
+					setPasswordChangeError(error.message);
+					setMessage(null);
+					return;
+				}
 
 				setMessage(error instanceof Error ? error.message : '改密失败');
 			})
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [csrfToken, currentPassword, isSubmitting, newPassword, user]);
+	}, [
+		csrfToken,
+		currentPassword,
+		isSubmitting,
+		newPassword,
+		passwordMustChange,
+		user,
+	]);
 
 	const logoutAfterFlush = useCallback(
-		(action: (csrfToken: string) => Promise<unknown>) => {
+		(
+			action: (csrfToken: string) => Promise<unknown>,
+			trackName: string
+		) => {
 			if (csrfToken === null || isSubmitting || user === null) {
 				return;
 			}
+
+			trackEvent(
+				trackEvent.category.click,
+				'Account Auth Button',
+				trackName
+			);
+
+			setIsSubmitting(true);
+			setMessage(null);
+
 			const expectedAuthContext = {
 				expectedCsrfToken: csrfToken,
 				expectedUserId: user.id,
 			};
 
-			setIsSubmitting(true);
-			setMessage(null);
 			void flushAccountSyncQueueUntilIdle()
 				.then((isFlushed) => {
 					if (!isFlushed) {
@@ -313,7 +482,9 @@ export default function AccountManager() {
 							resetAccountStateIfCurrent(expectedAuthContext);
 							return LOGOUT_SKIPPED;
 						}
+
 						setMessage('同步尚未完成，请先重试同步后再退出');
+
 						return LOGOUT_SKIPPED;
 					}
 
@@ -332,6 +503,7 @@ export default function AccountManager() {
 						resetAccountStateIfCurrent(expectedAuthContext);
 						return;
 					}
+
 					setMessage(
 						error instanceof Error
 							? error.message
@@ -344,17 +516,34 @@ export default function AccountManager() {
 		},
 		[csrfToken, isSubmitting, user]
 	);
+
+	const handleLogout = useCallback(() => {
+		logoutAfterFlush(logoutAccount, 'Logout');
+	}, [logoutAfterFlush]);
+
+	const handleLogoutAll = useCallback(() => {
+		logoutAfterFlush(logoutAllAccount, 'Logout All');
+	}, [logoutAfterFlush]);
+
 	const handleExport = useCallback(() => {
 		if (isSubmitting || user === null) {
 			return;
 		}
+
+		trackEvent(
+			trackEvent.category.click,
+			'Account Sync Button',
+			'Export Data'
+		);
+
+		setIsSubmitting(true);
+		setMessage(null);
+
 		const expectedAuthContext = {
 			expectedCsrfToken: csrfToken,
 			expectedUserId: user.id,
 		};
 
-		setIsSubmitting(true);
-		setMessage(null);
 		void flushAccountSyncQueueUntilIdle()
 			.then((isFlushed) => {
 				if (!isFlushed) {
@@ -374,6 +563,7 @@ export default function AccountManager() {
 					}
 
 					setMessage('同步尚未完成，请先重试同步后再导出');
+
 					return null;
 				}
 
@@ -413,29 +603,42 @@ export default function AccountManager() {
 		if (csrfToken === null || isSubmitting || user === null) {
 			return;
 		}
+
+		trackEvent(
+			trackEvent.category.click,
+			'Account Sync Button',
+			'Delete Data'
+		);
+
 		setIsDeleteDataPopoverOpen(false);
 		setIsSubmitting(true);
 		setMessage(null);
+
 		const deleteStartedAt = Date.now();
+
 		const expectedSessionContext = {
 			expectedCsrfToken: csrfToken,
 			expectedUserId: user.id,
 		};
 		const expectedUserContext = { expectedUserId: user.id };
+
 		void deleteAccountData(csrfToken)
 			.then(({ state_epoch }) => {
 				if (!checkCurrentAccountAuthContext(expectedUserContext)) {
 					return;
 				}
+
 				const shouldFlushPreservedDirty =
 					resetAccountSyncCloudStateAfterDelete({
 						deleteStartedAt,
 						stateEpoch: state_epoch,
 						userId: user.id,
 					});
+
 				if (shouldFlushPreservedDirty) {
 					scheduleAccountSyncFlush();
 				}
+
 				return postAccountSyncBroadcastMessage({
 					deleteStartedAt,
 					namespaces: [],
@@ -451,6 +654,7 @@ export default function AccountManager() {
 						) {
 							return;
 						}
+
 						setMessage(
 							didBroadcast
 								? '云端数据已清空'
@@ -467,6 +671,7 @@ export default function AccountManager() {
 						) {
 							return;
 						}
+
 						setMessage(
 							'云端数据已清空，其他标签页可能需要手动刷新'
 						);
@@ -480,6 +685,7 @@ export default function AccountManager() {
 				if (!checkCurrentAccountAuthContext(expectedSessionContext)) {
 					return;
 				}
+
 				setMessage(
 					error instanceof Error ? error.message : '清空云端数据失败'
 				);
@@ -492,14 +698,23 @@ export default function AccountManager() {
 		if (csrfToken === null || isSubmitting || user === null) {
 			return;
 		}
+
+		trackEvent(
+			trackEvent.category.click,
+			'Account Auth Button',
+			'Delete Account'
+		);
+
 		setIsDeleteAccountPopoverOpen(false);
 		setIsSubmitting(true);
 		setMessage(null);
+
 		const expectedSessionContext = {
 			expectedCsrfToken: csrfToken,
 			expectedUserId: user.id,
 		};
 		const expectedUserContext = { expectedUserId: user.id };
+
 		void deleteAccount(csrfToken)
 			.then(() => {
 				resetAccountStateIfCurrent(expectedUserContext);
@@ -512,6 +727,7 @@ export default function AccountManager() {
 				if (!checkCurrentAccountAuthContext(expectedSessionContext)) {
 					return;
 				}
+
 				setMessage(
 					error instanceof Error ? error.message : '删除账号失败'
 				);
@@ -535,6 +751,13 @@ export default function AccountManager() {
 		},
 		[]
 	);
+	const handleDeleteDataCancel = useCallback(() => {
+		setIsDeleteDataPopoverOpen(false);
+	}, []);
+
+	const handleDeleteAccountCancel = useCallback(() => {
+		setIsDeleteAccountPopoverOpen(false);
+	}, []);
 
 	if (bootstrapStatus === 'error') {
 		return (
@@ -542,7 +765,7 @@ export default function AccountManager() {
 				<Heading as="h2" isFirst>
 					账号
 				</Heading>
-				<p className="text-sm text-foreground-500">
+				<p className="text-small text-foreground-500">
 					{getBootstrapErrorMessage(lastError)}
 				</p>
 			</div>
@@ -575,9 +798,13 @@ export default function AccountManager() {
 				? PASSWORD_RULE_DESCRIPTION
 				: '使用账号密码登录'
 			: undefined;
+	const passwordChangeErrorMessage =
+		passwordChangeError === null
+			? null
+			: getAccountClientErrorMessage(passwordChangeError);
 
 	return (
-		<div className="space-y-4">
+		<div className="space-y-4 p-1.5">
 			<Heading
 				as="h2"
 				isFirst
@@ -586,6 +813,7 @@ export default function AccountManager() {
 						? '登录后可在不同设备间同步此浏览器保存的数据'
 						: '管理当前账号、同步状态和云端数据'
 				}
+				classNames={{ subTitle: '!-mt-3' }}
 			>
 				账号
 			</Heading>
@@ -607,10 +835,7 @@ export default function AccountManager() {
 								variant={
 									authMode === 'login' ? 'flat' : 'light'
 								}
-								onPress={() => {
-									setAuthMode('login');
-									setMessage(null);
-								}}
+								onPress={handleLoginModePress}
 							>
 								登录
 							</Button>
@@ -630,10 +855,7 @@ export default function AccountManager() {
 								variant={
 									authMode === 'register' ? 'flat' : 'light'
 								}
-								onPress={() => {
-									setAuthMode('register');
-									setMessage(null);
-								}}
+								onPress={handleRegisterModePress}
 							>
 								注册
 							</Button>
@@ -706,7 +928,7 @@ export default function AccountManager() {
 							{authMode === 'login' ? '登录账号' : '创建账号'}
 						</Button>
 					</AccountPanel>
-					<AccountPanel className="space-y-3 text-sm leading-6 text-foreground-600">
+					<AccountPanel className="space-y-3 text-small leading-6 text-foreground-600">
 						<AccountPanelTitle
 							icon={faShieldHalved}
 							iconClassName="text-default-500"
@@ -735,15 +957,15 @@ export default function AccountManager() {
 										className="w-4"
 									/>
 								</div>
-								<div className="min-w-0">
-									<p className="truncate text-base font-medium">
+								<div className="min-w-0 space-y-1">
+									<p className="truncate text-base font-medium leading-none">
 										{user.username}
 									</p>
 									<p
 										aria-atomic="true"
 										aria-live="polite"
 										className={cn(
-											'truncate text-xs',
+											'truncate text-tiny',
 											accountStatusMessage === null
 												? 'text-foreground-500'
 												: isMessageSuccess
@@ -767,17 +989,21 @@ export default function AccountManager() {
 								{passwordMustChange ? '更新密码' : '修改密码'}
 							</AccountPanelTitle>
 							{passwordMustChange && (
-								<p className="text-sm text-danger-600">
+								<p className="text-small text-danger-600">
 									管理员已要求更新密码，完成后才能继续同步。
 								</p>
 							)}
 							<Input
 								autoComplete="current-password"
+								errorMessage={
+									passwordChangeErrorMessage ?? undefined
+								}
+								isInvalid={passwordChangeErrorMessage !== null}
 								label="当前密码"
 								placeholder="输入当前密码"
 								type="password"
 								value={currentPassword}
-								onValueChange={setCurrentPassword}
+								onValueChange={handleCurrentPasswordChange}
 							/>
 							<Input
 								autoComplete="new-password"
@@ -874,9 +1100,7 @@ export default function AccountManager() {
 											)
 										}
 										variant="flat"
-										onPress={() => {
-											logoutAfterFlush(logoutAccount);
-										}}
+										onPress={handleLogout}
 									>
 										退出登录
 									</Button>
@@ -896,16 +1120,14 @@ export default function AccountManager() {
 											)
 										}
 										variant="flat"
-										onPress={() => {
-											logoutAfterFlush(logoutAllAccount);
-										}}
+										onPress={handleLogoutAll}
 									>
 										退出全部设备
 									</Button>
 								</div>
 							</div>
 							<div className="space-y-3 border-t border-default-200/80 pt-4">
-								<div className="flex items-start gap-2 rounded-small bg-warning/10 px-3 py-2 text-sm leading-5 text-warning-700 dark:text-warning-600">
+								<div className="flex items-start gap-2 rounded-small bg-warning/10 px-3 py-2 text-small leading-5 text-warning-700 dark:text-warning-600">
 									<FontAwesomeIcon
 										icon={faTriangleExclamation}
 										className="mt-1 w-4 shrink-0"
@@ -915,120 +1137,38 @@ export default function AccountManager() {
 									</p>
 								</div>
 								<div className="flex flex-col gap-2">
-									<Popover
-										shouldBlockScroll
-										showArrow
+									<AccountConfirmButton
+										buttonLabel="清空云端数据"
+										color="warning"
+										confirmLabel="确认清空"
+										icon={faCloudArrowUp}
+										isDisabled={
+											isSubmitting || csrfToken === null
+										}
+										isLoading={isSubmitting}
 										isOpen={isDeleteDataPopoverOpen}
 										onOpenChange={
 											handleDeleteDataPopoverOpenChange
 										}
-									>
-										<PopoverTrigger>
-											<Button
-												fullWidth
-												className="justify-start"
-												color="warning"
-												isDisabled={
-													isSubmitting ||
-													csrfToken === null
-												}
-												isLoading={isSubmitting}
-												startContent={
-													isSubmitting ? null : (
-														<FontAwesomeIcon
-															icon={
-																faCloudArrowUp
-															}
-															className="w-4"
-														/>
-													)
-												}
-												variant="flat"
-											>
-												清空云端数据
-											</Button>
-										</PopoverTrigger>
-										<PopoverContent className="space-y-1 p-1">
-											<Button
-												fullWidth
-												color="danger"
-												size="sm"
-												variant="ghost"
-												onPress={handleDeleteData}
-											>
-												确认清空
-											</Button>
-											<Button
-												fullWidth
-												color="primary"
-												size="sm"
-												variant="ghost"
-												onPress={() => {
-													setIsDeleteDataPopoverOpen(
-														false
-													);
-												}}
-											>
-												取消清空
-											</Button>
-										</PopoverContent>
-									</Popover>
-									<Popover
-										shouldBlockScroll
-										showArrow
+										onConfirm={handleDeleteData}
+										onCancel={handleDeleteDataCancel}
+									/>
+									<AccountConfirmButton
+										buttonLabel="删除账号"
+										color="danger"
+										confirmLabel="确认删除"
+										icon={faTrash}
+										isDisabled={
+											isSubmitting || csrfToken === null
+										}
+										isLoading={isSubmitting}
 										isOpen={isDeleteAccountPopoverOpen}
 										onOpenChange={
 											handleDeleteAccountPopoverOpenChange
 										}
-									>
-										<PopoverTrigger>
-											<Button
-												fullWidth
-												className="justify-start"
-												color="danger"
-												isDisabled={
-													isSubmitting ||
-													csrfToken === null
-												}
-												isLoading={isSubmitting}
-												startContent={
-													isSubmitting ? null : (
-														<FontAwesomeIcon
-															icon={faTrash}
-															className="w-4"
-														/>
-													)
-												}
-												variant="flat"
-											>
-												删除账号
-											</Button>
-										</PopoverTrigger>
-										<PopoverContent className="space-y-1 p-1">
-											<Button
-												fullWidth
-												color="danger"
-												size="sm"
-												variant="ghost"
-												onPress={handleDeleteAccount}
-											>
-												确认删除
-											</Button>
-											<Button
-												fullWidth
-												color="primary"
-												size="sm"
-												variant="ghost"
-												onPress={() => {
-													setIsDeleteAccountPopoverOpen(
-														false
-													);
-												}}
-											>
-												取消删除
-											</Button>
-										</PopoverContent>
-									</Popover>
+										onConfirm={handleDeleteAccount}
+										onCancel={handleDeleteAccountCancel}
+									/>
 								</div>
 							</div>
 						</AccountPanel>
@@ -1037,4 +1177,4 @@ export default function AccountManager() {
 			)}
 		</div>
 	);
-}
+});

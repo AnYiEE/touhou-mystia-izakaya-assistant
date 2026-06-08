@@ -10,13 +10,13 @@ import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 } from '@/api/v1/utils';
-import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import {
 	authenticateAdminRequest,
 	checkAdminCsrfResponse,
 	checkAdminFeatureResponse,
 	createAdminAuthErrorResponse,
-} from '../../../utils';
+} from '@/api/v1/admin/utils';
+import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -61,6 +61,7 @@ export async function POST(
 			auth.httpStatus
 		);
 	}
+
 	const csrfResponse = checkAdminCsrfResponse(request, auth.token);
 	if (csrfResponse !== null) {
 		return csrfResponse;
@@ -88,6 +89,5 @@ export async function POST(
 		return createNoStoreErrorResponse('update-not-applied', 409);
 	}
 
-	// isUpdated === false 时 user.status 不可能为 disabled，此分支仅为类型完备性保留。
 	return createNoStoreErrorResponse('update-not-applied', 409);
 }

@@ -1,8 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import {
+	type PropsWithChildren,
+	memo,
+	useCallback,
+	useEffect,
+	useState,
+} from 'react';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+	FontAwesomeIcon,
+	type FontAwesomeIconProps,
+} from '@fortawesome/react-fontawesome';
 import {
 	faArrowRightFromBracket,
 	faCheck,
@@ -12,7 +21,11 @@ import {
 	faUser,
 } from '@fortawesome/free-solid-svg-icons';
 
-import { Button, Input, Modal, cn } from '@/design/ui/components';
+import { Button, Card, Input, Modal, cn } from '@/design/ui/components';
+
+import { trackEvent } from '@/components/analytics';
+import Heading from '@/components/heading';
+
 import {
 	AccountApiError,
 	changeAccountPassword,
@@ -30,100 +43,134 @@ import {
 	checkPasswordPolicy,
 } from '@/lib/account/shared/constants';
 import { getLogSafeErrorCode } from '@/lib/logging';
-import { accountStore } from '@/stores/account';
-import Heading from './heading';
+import { accountStore, globalStore } from '@/stores';
 
-function PasswordChangePanel({
-	children,
-	className,
-}: {
-	children: ReactNodeWithoutBoolean;
-	className?: string;
-}) {
-	return (
-		<section
-			className={cn(
-				'rounded-small border border-default-200/80 bg-default-50/60 p-4 shadow-sm shadow-default-200/30 dark:bg-default-100/20 dark:shadow-none',
-				className
-			)}
-		>
-			{children}
-		</section>
-	);
-}
+interface IPasswordChangePanelProps extends PropsWithChildren<
+	Pick<HTMLDivElementAttributes, 'className'>
+> {}
 
-function PasswordChangePanelTitle({
-	children,
-	icon,
-	iconClassName,
-}: {
+const PasswordChangePanel = memo<IPasswordChangePanelProps>(
+	function PasswordChangePanel({ children, className }) {
+		const isHighAppearance = globalStore.persistence.highAppearance.use();
+
+		return (
+			<Card
+				as="section"
+				fullWidth
+				shadow="sm"
+				classNames={{
+					base: cn('p-4', className, {
+						'bg-content1/40 backdrop-blur': isHighAppearance,
+					}),
+				}}
+			>
+				{children}
+			</Card>
+		);
+	}
+);
+
+interface IPasswordChangePanelTitleProps {
 	children: ReactNodeWithoutBoolean;
-	icon: Parameters<typeof FontAwesomeIcon>[0]['icon'];
+	icon: FontAwesomeIconProps['icon'];
 	iconClassName?: string;
-}) {
-	return (
-		<div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground-700">
-			<FontAwesomeIcon
-				icon={icon}
-				className={cn('w-4 text-primary-600', iconClassName)}
-			/>
-			<span>{children}</span>
-		</div>
-	);
 }
 
-function PasswordChangeInputIcon({
-	icon,
-}: {
-	icon: Parameters<typeof FontAwesomeIcon>[0]['icon'];
-}) {
-	return (
-		<span className="pointer-events-none inline-flex -translate-y-px items-center text-default-400">
-			<FontAwesomeIcon icon={icon} className="block w-3.5" />
-		</span>
-	);
+const PasswordChangePanelTitle = memo<IPasswordChangePanelTitleProps>(
+	function PasswordChangePanelTitle({ children, icon, iconClassName }) {
+		return (
+			<div className="mb-3 flex items-center gap-2 text-small font-medium text-foreground-700">
+				<FontAwesomeIcon
+					icon={icon}
+					className={cn('w-4 text-primary-600', iconClassName)}
+				/>
+				<span>{children}</span>
+			</div>
+		);
+	}
+);
+
+interface IPasswordChangeInputIconProps {
+	icon: FontAwesomeIconProps['icon'];
 }
 
-export default function AccountPasswordMustChangeModal() {
+const PasswordChangeInputIcon = memo<IPasswordChangeInputIconProps>(
+	function PasswordChangeInputIcon({ icon }) {
+		return (
+			<span className="pointer-events-none inline-flex -translate-y-px items-center text-default-400">
+				<FontAwesomeIcon icon={icon} className="block w-3.5" />
+			</span>
+		);
+	}
+);
+
+interface IProps {}
+
+export default memo<IProps>(function AccountPasswordMustChangeModal() {
 	const csrfToken = accountStore.shared.csrfToken.use();
 	const isLoggedIn = accountStore.shared.isLoggedIn.use();
 	const passwordMustChange = accountStore.shared.passwordMustChange.use();
 	const user = accountStore.shared.user.use();
+
 	const [currentPassword, setCurrentPassword] = useState('');
 	const [message, setMessage] = useState<string | null>(null);
 	const [newPassword, setNewPassword] = useState('');
+	const [passwordChangeError, setPasswordChangeError] = useState<
+		string | null
+	>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [portalContainer, setPortalContainer] = useState<Element | null>(
-		null
-	);
+
 	const isOpen = isLoggedIn && passwordMustChange;
 	const isNewPasswordInvalid =
 		newPassword.length > 0 && !checkPasswordPolicy(newPassword);
 
 	useEffect(() => {
-		setPortalContainer(document.querySelector('#modal-portal-container'));
-	}, []);
+		if (isOpen) {
+			trackEvent(
+				trackEvent.category.show,
+				'Modal',
+				'Account Password Must Change'
+			);
+		}
+	}, [isOpen]);
 
 	const clearPasswordFields = useCallback(() => {
 		setCurrentPassword('');
 		setNewPassword('');
+		setPasswordChangeError(null);
+	}, []);
+
+	const handleCurrentPasswordChange = useCallback((value: string) => {
+		setCurrentPassword(value);
+		setPasswordChangeError(null);
 	}, []);
 
 	const handlePasswordChange = useCallback(() => {
 		if (isSubmitting || csrfToken === null || user === null) {
 			return;
 		}
+
+		trackEvent(
+			trackEvent.category.click,
+			'Account Password Button',
+			'Force Change'
+		);
+
 		if (!checkPasswordPolicy(newPassword)) {
+			setPasswordChangeError(null);
 			setMessage(PASSWORD_RULE_DESCRIPTION);
 			return;
 		}
 
 		setIsSubmitting(true);
 		setMessage(null);
+		setPasswordChangeError(null);
+
 		const expectedAuthContext = {
 			expectedCsrfToken: csrfToken,
 			expectedUserId: user.id,
 		};
+
 		void changeAccountPassword(
 			{ current_password: currentPassword, new_password: newPassword },
 			csrfToken
@@ -136,8 +183,10 @@ export default function AccountPasswordMustChangeModal() {
 				) {
 					return;
 				}
+
 				clearPasswordFields();
 				setMessage(null);
+
 				refreshAccountState().catch((error: unknown) => {
 					console.warn(
 						'Account state refresh failed after successful password change.',
@@ -159,6 +208,15 @@ export default function AccountPasswordMustChangeModal() {
 				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
 					return;
 				}
+				if (
+					error instanceof AccountApiError &&
+					error.message === 'invalid-password'
+				) {
+					setPasswordChangeError(error.message);
+					setMessage(null);
+					return;
+				}
+
 				setMessage(error instanceof Error ? error.message : '改密失败');
 			})
 			.finally(() => {
@@ -177,6 +235,13 @@ export default function AccountPasswordMustChangeModal() {
 		if (isSubmitting || user === null) {
 			return;
 		}
+
+		trackEvent(
+			trackEvent.category.click,
+			'Account Auth Button',
+			'Force Logout'
+		);
+
 		const expectedAuthContext = {
 			expectedCsrfToken: csrfToken,
 			expectedUserId: user.id,
@@ -192,6 +257,7 @@ export default function AccountPasswordMustChangeModal() {
 
 		setIsSubmitting(true);
 		setMessage(null);
+
 		void logoutAccount(csrfToken)
 			.then(() => {
 				if (resetAccountStateIfCurrent(expectedAuthContext)) {
@@ -208,6 +274,7 @@ export default function AccountPasswordMustChangeModal() {
 				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
 					return;
 				}
+
 				setMessage(error instanceof Error ? error.message : '退出失败');
 			})
 			.finally(() => {
@@ -221,6 +288,10 @@ export default function AccountPasswordMustChangeModal() {
 
 	const messageText =
 		message === null ? null : getAccountClientErrorMessage(message);
+	const passwordChangeErrorMessage =
+		passwordChangeError === null
+			? null
+			: getAccountClientErrorMessage(passwordChangeError);
 	const isPasswordReady =
 		csrfToken !== null &&
 		currentPassword.length > 0 &&
@@ -230,22 +301,21 @@ export default function AccountPasswordMustChangeModal() {
 	return (
 		<Modal
 			hideCloseButton
+			isKeyboardDismissDisabled
 			isOpen
 			isDismissable={false}
-			isKeyboardDismissDisabled
-			{...(portalContainer === null ? {} : { portalContainer })}
 		>
-			<div className="w-full max-w-2xl space-y-4">
-				<div className="space-y-2">
-					<Heading as="h2" isFirst>
-						更新账号密码
-					</Heading>
-					<p className="text-sm leading-6 text-foreground-600">
-						管理员已重置此账号的登录凭据。完成密码更新后，账号同步和数据操作会恢复可用。
-					</p>
-				</div>
+			<div className="w-full space-y-4">
+				<Heading
+					as="h2"
+					isFirst
+					subTitle="管理员已重置此账号的登录凭据。完成密码更新后，账号同步和数据操作会恢复可用。"
+					classNames={{ subTitle: '!-mt-3' }}
+				>
+					更新账号密码
+				</Heading>
 
-				<div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
+				<div className="grid gap-4 p-1.5 lg:grid-cols-[minmax(0,1fr)_18rem]">
 					<div className="space-y-4">
 						<PasswordChangePanel>
 							<PasswordChangePanelTitle icon={faUser}>
@@ -258,11 +328,11 @@ export default function AccountPasswordMustChangeModal() {
 										className="w-4"
 									/>
 								</div>
-								<div className="min-w-0">
-									<p className="truncate text-base font-medium">
+								<div className="min-w-0 space-y-1">
+									<p className="truncate text-base font-medium leading-none">
 										{user?.username ?? '当前账号'}
 									</p>
-									<p className="truncate text-xs text-danger-600 dark:text-danger">
+									<p className="truncate text-tiny text-danger-600 dark:text-danger">
 										需要更新密码后继续使用
 									</p>
 								</div>
@@ -275,6 +345,10 @@ export default function AccountPasswordMustChangeModal() {
 							</PasswordChangePanelTitle>
 							<Input
 								autoComplete="current-password"
+								errorMessage={
+									passwordChangeErrorMessage ?? undefined
+								}
+								isInvalid={passwordChangeErrorMessage !== null}
 								label="当前临时密码"
 								placeholder="输入管理员提供或刚登录使用的密码"
 								startContent={
@@ -284,7 +358,7 @@ export default function AccountPasswordMustChangeModal() {
 								}
 								type="password"
 								value={currentPassword}
-								onValueChange={setCurrentPassword}
+								onValueChange={handleCurrentPasswordChange}
 							/>
 							<Input
 								autoComplete="new-password"
@@ -307,7 +381,7 @@ export default function AccountPasswordMustChangeModal() {
 							{messageText !== null && (
 								<p
 									aria-live="assertive"
-									className="rounded-small bg-danger/10 px-3 py-2 text-sm text-danger-700 dark:text-danger"
+									className="rounded-small bg-danger/10 px-3 py-2 text-small text-danger-700 dark:text-danger"
 									role="alert"
 								>
 									{messageText}
@@ -342,7 +416,7 @@ export default function AccountPasswordMustChangeModal() {
 							>
 								受限状态
 							</PasswordChangePanelTitle>
-							<div className="space-y-3 text-sm leading-6 text-foreground-600">
+							<div className="space-y-3 text-small leading-6 text-foreground-600">
 								<div className="flex items-start gap-2 rounded-small bg-warning/10 px-3 py-2 text-warning-700 dark:text-warning-600">
 									<FontAwesomeIcon
 										icon={faTriangleExclamation}
@@ -380,4 +454,4 @@ export default function AccountPasswordMustChangeModal() {
 			</div>
 		</Modal>
 	);
-}
+});

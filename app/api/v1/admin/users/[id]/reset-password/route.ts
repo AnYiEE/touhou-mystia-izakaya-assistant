@@ -11,14 +11,14 @@ import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 } from '@/api/v1/utils';
-import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
-import { type IAdminResetPasswordBody } from '@/lib/account/shared/types';
 import {
 	authenticateAdminRequest,
 	checkAdminCsrfResponse,
 	checkAdminFeatureResponse,
 	createAdminAuthErrorResponse,
-} from '../../../utils';
+} from '@/api/v1/admin/utils';
+import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
+import { type IAdminResetPasswordBody } from '@/lib/account/shared/types';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -73,6 +73,7 @@ export async function POST(
 	if (bodyResult.status === 'payload-too-large') {
 		return createNoStoreErrorResponse('payload-too-large', 413);
 	}
+
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	if (typeof body?.password !== 'string') {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
@@ -84,6 +85,7 @@ export async function POST(
 		import('@/actions/account/users'),
 		import('@/actions/account/credentials'),
 	]);
+
 	if (!passwordModule.checkPasswordPolicy(body.password)) {
 		return createNoStoreErrorResponse('invalid-password-rule', 400);
 	}

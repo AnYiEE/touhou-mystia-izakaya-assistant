@@ -1,6 +1,7 @@
-import { createHash } from 'node:crypto';
 import { type NextRequest } from 'next/server';
+import { createHash } from 'node:crypto';
 
+import { createNoStoreErrorResponse } from '@/api/v1/utils';
 import {
 	FEATURE_DISABLED_MESSAGE,
 	SERVER_MISCONFIGURED_MESSAGE,
@@ -15,7 +16,6 @@ import {
 } from '@/lib/account/server/request';
 import { ACCOUNT_COOKIE_NAME_MAP } from '@/lib/account/shared/constants';
 import { getLogSafeErrorCode } from '@/lib/logging';
-import { createNoStoreErrorResponse } from './utils';
 
 const ACCOUNT_RATE_LIMIT_OPTIONS = { limit: 20, windowMs: 60 * 1000 } as const;
 const NO_STABLE_RATE_LIMIT_KEY_WARN_INTERVAL_MS = 60 * 1000;

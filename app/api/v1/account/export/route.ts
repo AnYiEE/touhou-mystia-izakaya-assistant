@@ -31,6 +31,12 @@ export async function GET(request: NextRequest) {
 		return cookieSecurityResponse;
 	}
 
+	const authModule = await import('@/lib/account/server/auth');
+	const auth = await authModule.authenticateAccountRequest(request);
+	if (auth.status === 'error') {
+		return createAccountAuthErrorResponse(auth, request);
+	}
+
 	const rateLimitResponse = checkAccountRateLimitResponse(
 		request,
 		'account-export'
@@ -39,15 +45,10 @@ export async function GET(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	const [authModule, userStateModule, userModule] = await Promise.all([
-		import('@/lib/account/server/auth'),
+	const [userStateModule, userModule] = await Promise.all([
 		import('@/actions/account/userState'),
 		import('@/lib/account/server/user'),
 	]);
-	const auth = await authModule.authenticateAccountRequest(request);
-	if (auth.status === 'error') {
-		return createAccountAuthErrorResponse(auth, request);
-	}
 	const snapshot = await userStateModule.getUserStateSnapshot(
 		auth.data.user.id
 	);

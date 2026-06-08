@@ -3,6 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button, Input } from '@/design/ui/components';
+
+import { trackEvent } from '@/components/analytics';
+
 import { AccountApiError, importBackupCode } from '@/lib/account/client/api';
 import {
 	getAccountClientErrorMessage,
@@ -33,14 +36,18 @@ function clearPendingLegacyBackupImportError() {
 
 export default function LegacyBackupImport() {
 	const cloudCode = globalStore.persistence.cloudCode.use();
+
 	const csrfToken = accountStore.shared.csrfToken.use();
 	const isLoggedIn = accountStore.shared.isLoggedIn.use();
 	const user = accountStore.shared.user.use();
+
 	const [code, setCode] = useState(cloudCode ?? '');
 	const [message, setMessage] = useState<string | null>(null);
 	const [isImporting, setIsImporting] = useState(false);
+
 	const isImportingRef = useRef(false);
 	const previousCloudCodeRef = useRef(cloudCode ?? '');
+
 	const normalizedCode = code.trim();
 	const isSuccessMessage = message === '导入成功，可继续导入下一个旧备份码';
 	const importErrorMessage =
@@ -55,18 +62,27 @@ export default function LegacyBackupImport() {
 		) {
 			return;
 		}
-		const expectedAuthContext = {
-			expectedCsrfToken: csrfToken,
-			expectedUserId: user.id,
-		};
+
+		trackEvent(
+			trackEvent.category.click,
+			'Account Sync Button',
+			'Import Legacy Backup'
+		);
 
 		isImportingRef.current = true;
 		setMessage(null);
 		clearPendingLegacyBackupImportError();
 		setIsImporting(true);
+
 		const previousCloudCode = globalStore.persistence.cloudCode.get();
 		let hasCompletedImport = false;
 		let hasTakenOverLocalData = false;
+
+		const expectedAuthContext = {
+			expectedCsrfToken: csrfToken,
+			expectedUserId: user.id,
+		};
+
 		void flushAccountSyncQueueUntilIdle()
 			.then(async (isFlushed) => {
 				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
@@ -78,16 +94,20 @@ export default function LegacyBackupImport() {
 
 				await withAccountSyncPaused(async () => {
 					await importBackupCode(normalizedCode, csrfToken);
+
 					if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
 						return;
 					}
+
 					hasTakenOverLocalData = await takeOverLocalAccountData();
+
 					if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
 						return;
 					}
 					if (!hasTakenOverLocalData) {
 						throw new Error('本地数据接管失败，请刷新页面后重试');
 					}
+
 					globalStore.persistence.cloudCode.set(null);
 					setCode('');
 					hasCompletedImport = true;
@@ -157,7 +177,7 @@ export default function LegacyBackupImport() {
 	if (!isLoggedIn) {
 		return (
 			<div className="space-y-2">
-				<p className="text-sm text-foreground-600">
+				<p className="text-small text-foreground-600">
 					旧备份码只能导入到已登录账号。请先登录或注册。
 				</p>
 				<Button
@@ -173,7 +193,7 @@ export default function LegacyBackupImport() {
 
 	return (
 		<div className="space-y-3">
-			<p className="text-sm text-foreground-600">
+			<p className="text-small text-foreground-600">
 				输入旧版云端备份码并点击导入，其中保存的套餐数据将被合并到当前账号。导入成功后，该备份码将自动失效。
 			</p>
 			<Input
@@ -183,6 +203,7 @@ export default function LegacyBackupImport() {
 						: undefined
 				}
 				errorMessage={importErrorMessage ?? undefined}
+				isDisabled={isImporting}
 				isInvalid={importErrorMessage !== null}
 				label="旧备份码"
 				placeholder="粘贴旧备份码"
@@ -215,7 +236,7 @@ export default function LegacyBackupImport() {
 					<span
 						aria-atomic="true"
 						aria-live="polite"
-						className="text-sm text-success-700 dark:text-success"
+						className="text-small text-success-700 dark:text-success"
 						role="status"
 					>
 						{message}
