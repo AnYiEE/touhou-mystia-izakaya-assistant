@@ -365,6 +365,7 @@ export function createSsoClientPublicProfile(client: ISsoClient) {
 		cancel_redirect_uri: client.cancel_redirect_uri,
 		created_at: client.created_at,
 		custom_scheme_redirect_uris: client.custom_scheme_redirect_uris,
+		disabled_at: client.disabled_at,
 		https_redirect_uris: client.https_redirect_uris,
 		id: client.id,
 		loopback_redirect_paths: client.loopback_redirect_paths,
@@ -411,6 +412,10 @@ function parseSsoClient(record: TSsoClient): ISsoClient {
 	}
 
 	return client;
+}
+
+export function checkSsoClientEnabled(client: ISsoClient) {
+	return client.disabled_at === null;
 }
 
 export async function getSsoClientById(id: string) {
@@ -842,6 +847,9 @@ async function dispatchSsoCallback(record: TSsoCallbackQueue) {
 
 	const client = await getSsoClientById(record.client_id);
 	if (client === null) {
+		return { status: 'delete' as const };
+	}
+	if (!checkSsoClientEnabled(client)) {
 		return { status: 'delete' as const };
 	}
 

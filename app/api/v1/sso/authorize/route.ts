@@ -11,6 +11,7 @@ import {
 	createNoStoreRedirectResponse,
 } from '../utils';
 import {
+	checkSsoClientEnabled,
 	checkSsoClientId,
 	checkSsoCodeChallenge,
 	checkSsoRedirectUriFormat,
@@ -81,6 +82,9 @@ export async function GET(request: NextRequest) {
 		const client = await getSsoClientById(clientId);
 		if (client === null) {
 			return createNoStoreErrorResponse('feature-disabled', 404);
+		}
+		if (!checkSsoClientEnabled(client)) {
+			return createNoStoreErrorResponse('client-disabled', 403);
 		}
 		if (!validateSsoRedirectUri(client, redirectUri)) {
 			return createNoStoreErrorResponse('invalid-redirect-uri', 400);

@@ -10,6 +10,7 @@ import {
 } from '@/api/v1/utils';
 import { checkSsoRateLimitResponse } from '../utils';
 import {
+	checkSsoClientEnabled,
 	checkSsoClientId,
 	checkSsoClientSecret,
 	getSsoClientById,
@@ -72,6 +73,9 @@ export async function POST(request: NextRequest) {
 		const client = await getSsoClientById(clientId);
 		if (client === null || !verifySsoClientSecret(client, clientSecret)) {
 			return createNoStoreErrorResponse('invalid-client', 401);
+		}
+		if (!checkSsoClientEnabled(client)) {
+			return createNoStoreErrorResponse('client-disabled', 403);
 		}
 
 		const user = await getSsoUserById(userId);

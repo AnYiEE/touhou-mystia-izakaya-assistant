@@ -45,8 +45,10 @@ const tableNowrapCellClassName = `${tableCellClassName} whitespace-nowrap`;
 const AdminSsoClientRow = memo<{
 	client: IAdminSsoClientListData['clients'][number];
 }>(function AdminSsoClientRow({ client }) {
+	const isDisabled = client.disabled_at !== null;
+
 	return (
-		<AdminTableRow>
+		<AdminTableRow className={cn(isDisabled && 'opacity-75')}>
 			<td className={cn(tableCellClassName, 'w-80 max-w-80')}>
 				<div className="min-w-0 max-w-72">
 					<p className="truncate text-small font-medium leading-5 text-foreground-800">
@@ -58,13 +60,26 @@ const AdminSsoClientRow = memo<{
 				</div>
 			</td>
 			<td className={tableNowrapCellClassName}>
-				{client.https_redirect_uris.length}
+				<span
+					className={cn(
+						'inline-flex h-7 items-center rounded-small border px-2 text-tiny font-medium',
+						isDisabled
+							? 'border-warning/30 bg-warning/15 text-warning-700 dark:text-warning-600'
+							: 'border-success/30 bg-success/15 text-success-700 dark:text-success'
+					)}
+				>
+					{isDisabled ? '已禁用' : '已启用'}
+				</span>
 			</td>
 			<td className={tableNowrapCellClassName}>
 				{client.secret_hashes.length}
 			</td>
 			<td className={tableNowrapCellClassName}>
-				{client.status_callback_url === null ? '无' : '已配置'}
+				{client.status_callback_url === null
+					? '无'
+					: isDisabled
+						? '已暂停'
+						: '已配置'}
 			</td>
 			<td className={tableNowrapCellClassName}>
 				<TimeAgo timestamp={client.created_at} />
@@ -219,6 +234,9 @@ export default function AdminSsoClientsPage() {
 	}
 
 	const clientCount = clients?.clients.length ?? 0;
+	const disabledClientCount =
+		clients?.clients.filter((client) => client.disabled_at !== null)
+			.length ?? 0;
 
 	return (
 		<AdminShell>
@@ -281,16 +299,8 @@ export default function AdminSsoClientsPage() {
 					value={clients === null ? '读取中' : clientCount}
 				/>
 				<AdminMetric
-					label="网页登录回调"
-					value={
-						clients === null
-							? '读取中'
-							: clients.clients.reduce(
-									(sum, client) =>
-										sum + client.https_redirect_uris.length,
-									0
-								)
-					}
+					label="已禁用"
+					value={clients === null ? '读取中' : disabledClientCount}
 				/>
 				<AdminMetric
 					label="状态回调"
@@ -330,7 +340,7 @@ export default function AdminSsoClientsPage() {
 					<AdminTableHeader>
 						<tr>
 							<th className={tableHeadCellClassName}>客户端</th>
-							<th className={tableHeadCellClassName}>网页登录</th>
+							<th className={tableHeadCellClassName}>状态</th>
 							<th className={tableHeadCellClassName}>
 								Secret Hashes
 							</th>

@@ -147,6 +147,16 @@ function parseBaseClientBody(data: Partial<IAdminSsoClientCreateBody> | null) {
 	} satisfies IAdminSsoClientCreateBody;
 }
 
+function parseDisabledAt(value: unknown) {
+	if (value === null) {
+		return null;
+	}
+
+	return typeof value === 'number' && Number.isSafeInteger(value) && value > 0
+		? value
+		: undefined;
+}
+
 export function parseAdminSsoClientCreateBody(
 	data: Partial<IAdminSsoClientCreateBody> | null
 ) {
@@ -168,7 +178,8 @@ export function parseAdminSsoClientUpdateBody(
 ) {
 	const body = parseBaseClientBody(data);
 	const secretHashes = normalizeStringArray(data?.secret_hashes);
-	if (body === null || secretHashes === null) {
+	const disabledAt = parseDisabledAt(data?.disabled_at);
+	if (body === null || secretHashes === null || disabledAt === undefined) {
 		return null;
 	}
 	if (secretHashes.some((secretHash) => !checkSsoSecretHash(secretHash))) {
@@ -190,6 +201,7 @@ export function parseAdminSsoClientUpdateBody(
 
 	return {
 		...body,
+		disabled_at: disabledAt,
 		generate_secret: generateSecret,
 		secret_hashes: secretHashes,
 	} satisfies IAdminSsoClientUpdateBody;

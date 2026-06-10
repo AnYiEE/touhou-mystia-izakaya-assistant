@@ -22,6 +22,7 @@ export const SSO_CLIENT_SECRET_BYTE_LENGTH = 32;
 export interface ISsoClientInput {
 	cancel_redirect_uri: string | null;
 	custom_scheme_redirect_uris: string[];
+	disabled_at: number | null;
 	https_redirect_uris: string[];
 	id: string;
 	loopback_redirect_paths: string[];
@@ -32,7 +33,7 @@ export interface ISsoClientInput {
 
 export interface ISsoClientCreateInput extends Omit<
 	ISsoClientInput,
-	'secret_hashes'
+	'disabled_at' | 'secret_hashes'
 > {}
 
 export interface ISsoClientCreateResult {
@@ -69,6 +70,7 @@ function createSsoClientRecord(
 		custom_scheme_redirect_uris: serializeStringArray(
 			input.custom_scheme_redirect_uris
 		),
+		disabled_at: input.disabled_at,
 		https_redirect_uris: serializeStringArray(input.https_redirect_uris),
 		id: input.id,
 		loopback_redirect_paths: serializeStringArray(
@@ -87,6 +89,7 @@ function createSsoClientUpdate(input: ISsoClientInput, now: number) {
 		custom_scheme_redirect_uris: serializeStringArray(
 			input.custom_scheme_redirect_uris
 		),
+		disabled_at: input.disabled_at,
 		https_redirect_uris: serializeStringArray(input.https_redirect_uris),
 		loopback_redirect_paths: serializeStringArray(
 			input.loopback_redirect_paths
@@ -105,7 +108,7 @@ export async function createSsoClient(
 	const now = Date.now();
 	const secret = createSsoClientSecret();
 	const record = createSsoClientRecord(
-		{ ...input, secret_hashes: [secret.secret_hash] },
+		{ ...input, disabled_at: null, secret_hashes: [secret.secret_hash] },
 		now
 	);
 
@@ -220,6 +223,7 @@ export async function enqueueSsoCallbacksForUserEventInTransaction(
 		)
 		.select([`${CLIENT_TABLE_NAME}.id as id`])
 		.where(`${GRANT_TABLE_NAME}.user_id`, '=', userId)
+		.where(`${CLIENT_TABLE_NAME}.disabled_at`, 'is', null)
 		.where(`${CLIENT_TABLE_NAME}.status_callback_url`, 'is not', null)
 		.execute();
 

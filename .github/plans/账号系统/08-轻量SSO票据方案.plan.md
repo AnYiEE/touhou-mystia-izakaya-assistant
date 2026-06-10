@@ -131,6 +131,7 @@ SSO 授权上下文通过以下机制保持：authorize 路由在发起登录前
 
 - `400 invalid-object-structure`：参数缺失或格式错误。
 - `400 invalid-redirect-uri`：redirect URI 不在白名单。
+- `403 client-disabled`：SSO client 已被管理员禁用。
 - `404 feature-disabled`：账号或 SSO 功能未启用。
 - `500 server-misconfigured`：SSO client 配置、密钥或 SQLite 状态异常。
 
@@ -171,6 +172,7 @@ interface ISsoValidateBody {
 - `400 invalid-object-structure`：请求体格式错误。
 - `401 invalid-client`：client_id 不存在或所有 active secret 均校验失败。
 - `401 invalid-ticket`：ticket 不存在、已过期、已使用或 PKCE 校验失败。
+- `403 client-disabled`：SSO client 已被管理员禁用。
 - `403 user-disabled`：用户已禁用。
 - `403 user-deleted`：用户已删除。
 - `429 too-many-requests`：限流。
@@ -207,6 +209,7 @@ interface ISsoStatusBody {
 
 - `400 invalid-object-structure`：请求体格式错误。
 - `401 invalid-client`：client_id 不存在或所有 active secret 均校验失败。
+- `403 client-disabled`：SSO client 已被管理员禁用。
 - `403 user-disabled`：用户已禁用。
 - `403 user-deleted`：用户已删除。
 - `404 user-not-found`：用户不存在。
@@ -354,11 +357,12 @@ CREATE INDEX sso_callback_queue_next_retry_at_index
 
 流程：
 
-1. 管理员禁用用户或用户自删时，向 `sso_callback_queue` 插入一条记录，`next_retry_at` 设为当前时间（立即重试）。此操作为同步写入，但和用户状态变更为同一数据库事务即可，不影响 API 响应时间。
+1. 管理员禁用用户或用户自删时，向仍启用且配置了 `status_callback_url` 的 client 插入一条 `sso_callback_queue` 记录，`next_retry_at` 设为当前时间（立即重试）。此操作为同步写入，但和用户状态变更为同一数据库事务即可，不影响 API 响应时间。
 2. 定时调度器通过外部 cron 调用内部端点 `POST /api/v1/sso/dispatch-callbacks` 触发。该端点使用与 `/api/v1/backups/cleanup` 相同的鉴权模式：请求头 `x-dispatch-secret` 与环境变量 `DISPATCH_SECRET` 做 timing-safe 比对，不匹配则返回 401。每次调用处理一批到期回调（建议单次最多 20 条，避免单次调用耗时过长），外部 cron 间隔建议 30 秒。
-3. 回调成功（外部服务返回 `2xx`）：删除该队列记录
-4. 回调失败：递增 `attempts`，记录 `last_error`，将 `next_retry_at` 推迟。退避策略：前 3 次为 1s、5s、25s；之后每次 +60s，最多重试 100 次（约 100 分钟覆盖）。超过最大重试次数后标记为最终失败，仅记录告警日志，不再重试。
-5. 同一 `(client_id, user_id, event)` 的去重：数据库层设置唯一索引。若已存在同 client、同用户、同事件且尚未成功的记录，新的状态事件刷新该记录的 `timestamp`、`attempts`、`last_error` 和 `next_retry_at`，避免真实后续状态变化被旧 pending 记录吞掉。
+3. 派发时如果 client 已删除、已禁用或已清空 `status_callback_url`：直接删除该队列记录，不再投递。
+4. 回调成功（外部服务返回 `2xx`）：删除该队列记录
+5. 回调失败：递增 `attempts`，记录 `last_error`，将 `next_retry_at` 推迟。退避策略：前 3 次为 1s、5s、25s；之后每次 +60s，最多重试 100 次（约 100 分钟覆盖）。超过最大重试次数后标记为最终失败，仅记录告警日志，不再重试。
+6. 同一 `(client_id, user_id, event)` 的去重：数据库层设置唯一索引。若已存在同 client、同用户、同事件且尚未成功的记录，新的状态事件刷新该记录的 `timestamp`、`attempts`、`last_error` 和 `next_retry_at`，避免真实后续状态变化被旧 pending 记录吞掉。
 
 回调请求本身的要求不变：超时 5 秒、`User-Agent: Mystia-SSO/1.0`、HMAC 签名头。签名头中的 `t` 使用每次投递的当前时间；请求 body 中的 `timestamp` 使用回调记录中的事件发生时间，确保外部服务既能做新鲜度校验，也能幂等处理事件。
 
@@ -474,6 +478,7 @@ CREATE TABLE sso_clients (
     loopback_redirect_paths text NOT NULL DEFAULT '[]',
 	custom_scheme_redirect_uris text NOT NULL DEFAULT '[]',
 	https_redirect_uris text NOT NULL DEFAULT '[]',
+    disabled_at integer,
     status_callback_url text,
     cancel_redirect_uri text,
     created_at integer NOT NULL,
@@ -483,10 +488,11 @@ CREATE TABLE sso_clients (
 
 - `secret_hashes`：JSON 字符串数组，保存 `SHA-256(client_secret)` 的 hex 值。所有 hash 均为 active；`validate` 和 `status` 校验时对请求中的原始 `client_secret` 做同算法 hash 后遍历比对，首个匹配成功即通过；状态回调 HMAC 的 `signing_secret` 使用当前首位 active secret hash。
 - `loopback_redirect_paths`、`custom_scheme_redirect_uris` 和 `https_redirect_uris`：JSON 字符串数组，存储 redirect URI 白名单；三者可同时配置，至少需要有一种非空。
+- `disabled_at`：可选禁用时间戳。为 `NULL` 时 client 启用；非空时 client 保留配置和历史授权记录，但 `authorize`、`validate`、`status` 均返回 `client-disabled`，状态变更回调也暂停投递。
 - `status_callback_url`：可选，配置后用户状态变更时本项目主动回调。
 - `cancel_redirect_uri`：可选，用户在授权确认页点击取消后跳转的地址。
 
-SSO 功能不设独立环境变量开关。SSO 跟随账号功能启用：当 `SELF_HOSTED` 满足且 `APP_SECRET` 有效时，SSO 接口即可用。SSO client 的创建、编辑和删除均通过管理员页面操作，若无已注册 client 则 authorize 返回 `feature-disabled`。
+SSO 功能不设独立环境变量开关。SSO 跟随账号功能启用：当 `SELF_HOSTED` 满足且 `APP_SECRET` 有效时，SSO 接口即可用。SSO client 的创建、编辑、禁用、启用和删除均通过管理员页面操作，若无已注册 client 则 authorize 返回 `feature-disabled`。
 
 ### 管理员页面
 
@@ -494,8 +500,9 @@ SSO 功能不设独立环境变量开关。SSO 跟随账号功能启用：当 `S
 
 - 查看已注册 client 列表，显示名称、ID、创建时间、是否有 status callback。
 - 新建 client，输入名称后自动生成 client ID 和初始 secret；原始 secret 只在生成响应中展示，右侧 Secrets 区域展示 active secret hash。
-- 管理 secret：添加新 secret、删除旧 secret（至少保留一个）。
+- 管理 secret：添加新 secret、删除旧 secret（至少保留一个）；client 禁用期间不可新增或删除 secret。
 - 编辑 HTTPS、loopback、custom scheme redirect URI 白名单、status callback URL、cancel redirect URI。
+- 禁用或启用 client。禁用不删除配置、secret hash 或历史授权记录，用于临时暂停外部服务接入。
 - 删除 client（需确认）。
 
 ## 十、PKCE-like 校验

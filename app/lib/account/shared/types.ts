@@ -67,6 +67,7 @@ export interface IAdminSsoClientProfile {
 	cancel_redirect_uri: string | null;
 	created_at: number;
 	custom_scheme_redirect_uris: string[];
+	disabled_at: number | null;
 	https_redirect_uris: string[];
 	id: string;
 	loopback_redirect_paths: string[];
@@ -95,6 +96,7 @@ export interface IAdminSsoClientCreateBody {
 }
 
 export interface IAdminSsoClientUpdateBody extends IAdminSsoClientCreateBody {
+	disabled_at: number | null;
 	generate_secret?: boolean;
 	secret_hashes: string[];
 }

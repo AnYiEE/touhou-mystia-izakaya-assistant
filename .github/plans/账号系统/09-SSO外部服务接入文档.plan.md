@@ -83,6 +83,8 @@ isProject: false
 | `status_callback_url`         | 可选，用户禁用或删除时夜雀助手主动通知外部服务的 HTTPS URL。                           |
 | `cancel_redirect_uri`         | 可选，用户取消授权后跳转的地址。                                                       |
 
+管理员也可以在后台禁用或重新启用某个 SSO client。禁用不会删除配置、secret hash 或历史授权记录，但会暂停该 client 的授权、换票、状态查询和状态回调投递；禁用期间不能新增或删除 secret hash。外部服务会在公开接口中收到 `client-disabled`。
+
 外部服务接入方应在创建 SSO client 前，向夜雀助手管理员提供以下配置单：
 
 | 提供项              | 必填     | 管理员配置字段                | 说明                                                                                                                 |
@@ -312,6 +314,7 @@ https://online.example.com/auth/mystia/callback?ticket=TICKET&state=STATE
 | ---- | -------------------------- | --------------------------------------- |
 | 400  | `invalid-object-structure` | 参数缺失或格式错误。                    |
 | 400  | `invalid-redirect-uri`     | `redirect_uri` 不在白名单内。           |
+| 403  | `client-disabled`          | 该 SSO client 已被管理员禁用。          |
 | 404  | `feature-disabled`         | 账号功能未启用，或没有可用 SSO client。 |
 | 429  | `too-many-requests`        | 请求被限流。                            |
 | 500  | `server-misconfigured`     | 服务端账号或数据库配置异常。            |
@@ -436,6 +439,7 @@ Content-Type: application/json
 | 400  | `invalid-object-structure` | 请求体格式错误，或字段不符合格式要求。                                   |
 | 401  | `invalid-client`           | `client_id` 不存在，或 `client_secret` 与所有 active secret 都不匹配。   |
 | 401  | `invalid-ticket`           | ticket 不存在、过期、已使用、client 不匹配、用户不存在或 PKCE 校验失败。 |
+| 403  | `client-disabled`          | 该 SSO client 已被管理员禁用。                                           |
 | 403  | `user-disabled`            | 小助手账号已禁用。                                                       |
 | 403  | `user-deleted`             | 小助手账号已删除。                                                       |
 | 413  | `payload-too-large`        | 请求体过大。                                                             |
@@ -491,6 +495,7 @@ Content-Type: application/json
 | ---- | -------------------------- | ---------------------------------------------------------------------- |
 | 400  | `invalid-object-structure` | 请求体格式错误，或字段不符合格式要求。                                 |
 | 401  | `invalid-client`           | `client_id` 不存在，或 `client_secret` 与所有 active secret 都不匹配。 |
+| 403  | `client-disabled`          | 该 SSO client 已被管理员禁用。                                         |
 | 403  | `user-disabled`            | 小助手账号已禁用。                                                     |
 | 403  | `user-deleted`             | 小助手账号已删除。                                                     |
 | 404  | `user-not-found`           | 用户不存在。                                                           |
@@ -507,7 +512,7 @@ Content-Type: application/json
 
 ## 十一、API 参考：状态变更回调
 
-若管理员配置了 `status_callback_url`，夜雀助手会在已授权过该 client 的用户被禁用或删除时，向外部服务后端发送状态回调。
+若管理员配置了 `status_callback_url`，夜雀助手会在已授权过该 client 的用户被禁用或删除时，向外部服务后端发送状态回调。client 被管理员禁用后，夜雀助手会暂停向该 client 投递状态回调；重新启用后，后续新产生的用户状态事件会继续投递。
 
 触发事件：
 
@@ -672,15 +677,16 @@ CREATE TABLE external_users (
 
 ## 十四、建议错误处理
 
-| 场景                                                            | 外部服务建议行为                                                       |
-| --------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| authorize 返回 `invalid-redirect-uri`                           | 检查管理员后台 redirect URI 白名单。                                   |
-| validate 返回 `invalid-client`                                  | 检查 `client_id` 和后端保存的 `client_secret`，必要时重新生成 secret。 |
-| validate 返回 `invalid-ticket`                                  | 让用户重新发起登录；不要重试同一个 ticket。                            |
-| validate 返回 `user-disabled` 或 `user-deleted`                 | 拒绝登录，并撤销该用户已有外部 token。                                 |
-| status 返回 `user-disabled`、`user-deleted` 或 `user-not-found` | 撤销该用户已有外部 token，要求重新授权或联系管理员。                   |
-| 返回 `too-many-requests`                                        | 遵守 `Retry-After`，降低重试频率。                                     |
-| 返回 `server-misconfigured`                                     | 记录错误并联系夜雀助手维护者，不要自动放行。                           |
+| 场景                                                            | 外部服务建议行为                                                        |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| authorize 返回 `invalid-redirect-uri`                           | 检查管理员后台 redirect URI 白名单。                                    |
+| authorize、validate 或 status 返回 `client-disabled`            | 暂停登录入口或后端重试，联系夜雀助手管理员确认是否需要重新启用 client。 |
+| validate 返回 `invalid-client`                                  | 检查 `client_id` 和后端保存的 `client_secret`，必要时重新生成 secret。  |
+| validate 返回 `invalid-ticket`                                  | 让用户重新发起登录；不要重试同一个 ticket。                             |
+| validate 返回 `user-disabled` 或 `user-deleted`                 | 拒绝登录，并撤销该用户已有外部 token。                                  |
+| status 返回 `user-disabled`、`user-deleted` 或 `user-not-found` | 撤销该用户已有外部 token，要求重新授权或联系管理员。                    |
+| 返回 `too-many-requests`                                        | 遵守 `Retry-After`，降低重试频率。                                      |
+| 返回 `server-misconfigured`                                     | 记录错误并联系夜雀助手维护者，不要自动放行。                            |
 
 所有 API 响应均为 `no-store`，成功响应形如：
 
@@ -727,9 +733,10 @@ CREATE TABLE external_users (
 8. 重复使用同一 ticket，确认返回 `invalid-ticket`。
 9. 使用错误 `code_verifier`，确认返回 `invalid-ticket`。
 10. 使用错误 `client_secret`，确认返回 `invalid-client`。
-11. 外部服务签发自己的业务 token，并确认后续业务 API 不再依赖夜雀助手 Cookie。
-12. 配置 `status_callback_url`，禁用测试用户，确认外部服务收到并验签回调。
-13. 外部服务调用 status，确认 active 用户返回 ok，禁用或删除用户返回 403。
+11. 管理员禁用 SSO client，确认 authorize、validate 或 status 返回 `client-disabled`；重新启用后再继续后续联调。
+12. 外部服务签发自己的业务 token，并确认后续业务 API 不再依赖夜雀助手 Cookie。
+13. 配置 `status_callback_url`，禁用测试用户，确认外部服务收到并验签回调。
+14. 外部服务调用 status，确认 active 用户返回 ok，禁用或删除用户返回 403。
 
 ## 十七、最小接入示例
 

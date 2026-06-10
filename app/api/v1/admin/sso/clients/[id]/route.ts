@@ -13,6 +13,13 @@ import {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+function checkStringArrayEqual(left: string[], right: string[]) {
+	return (
+		left.length === right.length &&
+		left.every((value, index) => value === right[index])
+	);
+}
+
 export async function GET(
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> }
@@ -66,6 +73,21 @@ export async function PUT(
 		import('@/actions/account/sso'),
 		import('@/lib/account/server/sso'),
 	]);
+	const currentClient = await ssoModule.getSsoClientById(id);
+	if (currentClient === null) {
+		return createNoStoreErrorResponse('sso-client-not-found', 404);
+	}
+
+	const isSecretMutation =
+		body.generate_secret ||
+		!checkStringArrayEqual(body.secret_hashes, currentClient.secret_hashes);
+	if (
+		(currentClient.disabled_at !== null || body.disabled_at !== null) &&
+		isSecretMutation
+	) {
+		return createNoStoreErrorResponse('client-disabled', 403);
+	}
+
 	const secret = body.generate_secret
 		? actionsModule.createSsoClientSecret()
 		: null;
