@@ -99,13 +99,14 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 	const [isDeletePopoverOpen, setIsDeletePopoverOpen] = useState(false);
 	const [loadError, setLoadError] = useState<string | null>(null);
 	const [message, setMessage] = useState<string | null>(null);
-	const [oneTimeSecret, setOneTimeSecret] = useState<string | null>(null);
+	const [generatedSecret, setGeneratedSecret] = useState<string | null>(null);
 
 	const [id, setId] = useState(clientId ?? '');
 	const [name, setName] = useState('');
 	const [loopbackRedirectPaths, setLoopbackRedirectPaths] = useState('');
 	const [customSchemeRedirectUris, setCustomSchemeRedirectUris] =
 		useState('');
+	const [httpsRedirectUris, setHttpsRedirectUris] = useState('');
 	const [statusCallbackUrl, setStatusCallbackUrl] = useState('');
 	const [cancelRedirectUri, setCancelRedirectUri] = useState('');
 	const [secretHashes, setSecretHashes] = useState<string[]>([]);
@@ -124,6 +125,7 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 		(): IAdminSsoClientCreateBody => ({
 			cancel_redirect_uri: normalizeOptionalUri(cancelRedirectUri),
 			custom_scheme_redirect_uris: parseLines(customSchemeRedirectUris),
+			https_redirect_uris: parseLines(httpsRedirectUris),
 			id: id.trim(),
 			loopback_redirect_paths: parseLines(loopbackRedirectPaths),
 			name: name.trim(),
@@ -132,6 +134,7 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 		[
 			cancelRedirectUri,
 			customSchemeRedirectUris,
+			httpsRedirectUris,
 			id,
 			loopbackRedirectPaths,
 			name,
@@ -147,6 +150,7 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 		setCustomSchemeRedirectUris(
 			joinLines(value.custom_scheme_redirect_uris)
 		);
+		setHttpsRedirectUris(joinLines(value.https_redirect_uris));
 		setStatusCallbackUrl(value.status_callback_url ?? '');
 		setCancelRedirectUri(value.cancel_redirect_uri ?? '');
 		setSecretHashes(value.secret_hashes);
@@ -234,7 +238,7 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 
 		setIsSaving(true);
 		setMessage(null);
-		setOneTimeSecret(null);
+		setGeneratedSecret(null);
 		setIsDeletePopoverOpen(false);
 
 		const body = createBody();
@@ -253,11 +257,11 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 		void request
 			.then((data) => {
 				applyClient(data.client);
-				setOneTimeSecret(data.client_secret ?? null);
+				setGeneratedSecret(data.client_secret ?? null);
 				setMessage(
 					isEditMode
 						? 'SSO客户端已保存'
-						: 'SSO客户端已创建，请先保存客户端secret'
+						: 'SSO客户端已创建，请保存本次显示的客户端secret'
 				);
 			})
 			.catch((error: unknown) => {
@@ -290,7 +294,7 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 
 		setIsSaving(true);
 		setMessage(null);
-		setOneTimeSecret(null);
+		setGeneratedSecret(null);
 		setIsDeletePopoverOpen(false);
 
 		const body = createBody();
@@ -307,7 +311,7 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 		)
 			.then((data) => {
 				applyClient(data.client);
-				setOneTimeSecret(data.client_secret ?? null);
+				setGeneratedSecret(data.client_secret ?? null);
 				setMessage('新客户端secret已生成');
 			})
 			.catch((error: unknown) => {
@@ -349,7 +353,7 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 				? current
 				: current.filter((item) => item !== secretHash)
 		);
-		setMessage('SSO客户端secret已从表单移除，保存后生效');
+		setMessage('SSO客户端secret hash已从表单移除，保存后生效');
 	}, []);
 
 	const handleDeleteClient = useCallback(() => {
@@ -411,7 +415,7 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 					</span>
 					<Button
 						isIconOnly
-						aria-label="复制SSO客户端secret"
+						aria-label="复制SSO客户端secret hash"
 						isDisabled={isSaving}
 						size="sm"
 						variant="flat"
@@ -423,7 +427,7 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 					</Button>
 					<Button
 						isIconOnly
-						aria-label="删除SSO客户端secret"
+						aria-label="删除SSO客户端secret hash"
 						color="danger"
 						isDisabled={secretHashes.length <= 1 || isSaving}
 						size="sm"
@@ -582,8 +586,10 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 			/>
 
 			{message !== null && <AdminMessage message={message} />}
-			{oneTimeSecret !== null && (
-				<AdminMessage message={`新客户端secret：${oneTimeSecret}`} />
+			{generatedSecret !== null && (
+				<AdminMessage
+					message={`本次生成的客户端secret：${generatedSecret}`}
+				/>
 			)}
 			{isCreatedClient && (
 				<Button
@@ -637,6 +643,17 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 					/>
 					<Textarea
 						isDisabled={isCreatedClient || isSaving}
+						label="HTTPS Redirect URIs"
+						value={httpsRedirectUris}
+						onValueChange={setHttpsRedirectUris}
+						classNames={{
+							inputWrapper: cn(
+								'bg-default/40 transition-background data-[hover=true]:bg-default-400/40 group-data-[focus=true]:bg-default/70 motion-reduce:transition-none'
+							),
+						}}
+					/>
+					<Textarea
+						isDisabled={isCreatedClient || isSaving}
 						label="Custom Scheme Redirect URIs"
 						value={customSchemeRedirectUris}
 						onValueChange={setCustomSchemeRedirectUris}
@@ -649,7 +666,9 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 				</AdminPanel>
 
 				<AdminPanel className="space-y-4">
-					<AdminPanelTitle icon={faKey}>Secrets</AdminPanelTitle>
+					<AdminPanelTitle icon={faKey}>
+						Secret Hashes
+					</AdminPanelTitle>
 					{isEditMode ? (
 						<>
 							<div className="space-y-2">{secretRows}</div>
@@ -668,7 +687,7 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 								variant="flat"
 								onPress={handleGenerateSecret}
 							>
-								新增客户端secret
+								生成新客户端secret
 							</Button>
 							<Popover
 								shouldBlockScroll
@@ -717,7 +736,7 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 							</Popover>
 						</>
 					) : (
-						<AdminMessage message="创建后会显示一次客户端secret" />
+						<AdminMessage message="创建后会显示一次客户端secret，右侧列表仅保存secret hash" />
 					)}
 				</AdminPanel>
 			</div>

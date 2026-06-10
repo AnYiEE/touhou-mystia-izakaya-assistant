@@ -82,6 +82,7 @@ interface ITableSsoClient {
 	cancel_redirect_uri: string | null;
 	created_at: number;
 	custom_scheme_redirect_uris: string;
+	https_redirect_uris: string;
 	id: string;
 	loopback_redirect_paths: string;
 	name: string;

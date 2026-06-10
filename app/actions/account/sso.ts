@@ -22,6 +22,7 @@ export const SSO_CLIENT_SECRET_BYTE_LENGTH = 32;
 export interface ISsoClientInput {
 	cancel_redirect_uri: string | null;
 	custom_scheme_redirect_uris: string[];
+	https_redirect_uris: string[];
 	id: string;
 	loopback_redirect_paths: string[];
 	name: string;
@@ -68,6 +69,7 @@ function createSsoClientRecord(
 		custom_scheme_redirect_uris: serializeStringArray(
 			input.custom_scheme_redirect_uris
 		),
+		https_redirect_uris: serializeStringArray(input.https_redirect_uris),
 		id: input.id,
 		loopback_redirect_paths: serializeStringArray(
 			input.loopback_redirect_paths
@@ -85,6 +87,7 @@ function createSsoClientUpdate(input: ISsoClientInput, now: number) {
 		custom_scheme_redirect_uris: serializeStringArray(
 			input.custom_scheme_redirect_uris
 		),
+		https_redirect_uris: serializeStringArray(input.https_redirect_uris),
 		loopback_redirect_paths: serializeStringArray(
 			input.loopback_redirect_paths
 		),

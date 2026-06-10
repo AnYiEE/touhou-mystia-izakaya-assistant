@@ -123,11 +123,13 @@ function parseBaseClientBody(data: Partial<IAdminSsoClientCreateBody> | null) {
 	const customSchemeRedirectUris = normalizeStringArray(
 		data.custom_scheme_redirect_uris
 	);
+	const httpsRedirectUris = normalizeStringArray(data.https_redirect_uris);
 	const statusCallbackUrl = normalizeOptionalUri(data.status_callback_url);
 	const cancelRedirectUri = normalizeOptionalUri(data.cancel_redirect_uri);
 	if (
 		loopbackRedirectPaths === null ||
 		customSchemeRedirectUris === null ||
+		httpsRedirectUris === null ||
 		statusCallbackUrl === undefined ||
 		cancelRedirectUri === undefined
 	) {
@@ -137,6 +139,7 @@ function parseBaseClientBody(data: Partial<IAdminSsoClientCreateBody> | null) {
 	return {
 		cancel_redirect_uri: cancelRedirectUri,
 		custom_scheme_redirect_uris: customSchemeRedirectUris,
+		https_redirect_uris: httpsRedirectUris,
 		id: normalizeString(data.id),
 		loopback_redirect_paths: loopbackRedirectPaths,
 		name: normalizeString(data.name),

@@ -58,6 +58,9 @@ const AdminSsoClientRow = memo<{
 				</div>
 			</td>
 			<td className={tableNowrapCellClassName}>
+				{client.https_redirect_uris.length}
+			</td>
+			<td className={tableNowrapCellClassName}>
 				{client.secret_hashes.length}
 			</td>
 			<td className={tableNowrapCellClassName}>
@@ -272,13 +275,25 @@ export default function AdminSsoClientsPage() {
 				title="SSO客户端"
 			/>
 
-			<AdminPanel className="grid gap-4 sm:grid-cols-3">
+			<AdminPanel className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 				<AdminMetric
 					label="客户端数量"
 					value={clients === null ? '读取中' : clientCount}
 				/>
 				<AdminMetric
-					label="回调配置"
+					label="网页登录回调"
+					value={
+						clients === null
+							? '读取中'
+							: clients.clients.reduce(
+									(sum, client) =>
+										sum + client.https_redirect_uris.length,
+									0
+								)
+					}
+				/>
+				<AdminMetric
+					label="状态回调"
 					value={
 						clients === null
 							? '读取中'
@@ -289,7 +304,7 @@ export default function AdminSsoClientsPage() {
 					}
 				/>
 				<AdminMetric
-					label="secret总数"
+					label="secret hash总数"
 					value={
 						clients === null
 							? '读取中'
@@ -315,7 +330,10 @@ export default function AdminSsoClientsPage() {
 					<AdminTableHeader>
 						<tr>
 							<th className={tableHeadCellClassName}>客户端</th>
-							<th className={tableHeadCellClassName}>Secrets</th>
+							<th className={tableHeadCellClassName}>网页登录</th>
+							<th className={tableHeadCellClassName}>
+								Secret Hashes
+							</th>
 							<th className={tableHeadCellClassName}>状态回调</th>
 							<th className={tableHeadCellClassName}>创建时间</th>
 							<th

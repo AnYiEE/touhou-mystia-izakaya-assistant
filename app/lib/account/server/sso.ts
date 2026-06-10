@@ -64,9 +64,13 @@ interface ISsoCallbackBody {
 
 export interface ISsoClient extends Omit<
 	TSsoClient,
-	'custom_scheme_redirect_uris' | 'loopback_redirect_paths' | 'secret_hashes'
+	| 'custom_scheme_redirect_uris'
+	| 'https_redirect_uris'
+	| 'loopback_redirect_paths'
+	| 'secret_hashes'
 > {
 	custom_scheme_redirect_uris: string[];
+	https_redirect_uris: string[];
 	loopback_redirect_paths: string[];
 	secret_hashes: string[];
 }
@@ -253,6 +257,25 @@ export function checkSsoStatusCallbackUrl(value: string | null) {
 	}
 }
 
+export function checkSsoHttpsRedirectUri(value: string) {
+	if (value.length === 0 || value.length > SSO_FIELD_MAX_LENGTH) {
+		return false;
+	}
+
+	try {
+		const url = new URL(value);
+		return (
+			url.protocol === 'https:' &&
+			url.hostname !== '' &&
+			url.username === '' &&
+			url.password === '' &&
+			url.hash === ''
+		);
+	} catch {
+		return false;
+	}
+}
+
 export function checkSsoRedirectUriFormat(value: string) {
 	if (value.length === 0 || value.length > SSO_FIELD_MAX_LENGTH) {
 		return false;
@@ -271,6 +294,9 @@ export function checkSsoRedirectUriFormat(value: string) {
 				checkSsoLoopbackRedirectPath(url.pathname)
 			);
 		}
+		if (url.protocol === 'https:') {
+			return checkSsoHttpsRedirectUri(value);
+		}
 
 		return checkSsoCustomSchemeRedirectUri(value);
 	} catch {
@@ -285,6 +311,7 @@ export function normalizeSsoOptionalUri(value: string | null | undefined) {
 export function validateSsoClientConfig(input: {
 	cancel_redirect_uri: string | null;
 	custom_scheme_redirect_uris: string[];
+	https_redirect_uris: string[];
 	id: string;
 	loopback_redirect_paths: string[];
 	name: string;
@@ -308,13 +335,15 @@ export function validateSsoClientConfig(input: {
 		) ||
 		input.custom_scheme_redirect_uris.some(
 			(uri) => !checkSsoCustomSchemeRedirectUri(uri)
-		)
+		) ||
+		input.https_redirect_uris.some((uri) => !checkSsoHttpsRedirectUri(uri))
 	) {
 		return false;
 	}
 	if (
 		input.loopback_redirect_paths.length === 0 &&
-		input.custom_scheme_redirect_uris.length === 0
+		input.custom_scheme_redirect_uris.length === 0 &&
+		input.https_redirect_uris.length === 0
 	) {
 		return false;
 	}
@@ -336,6 +365,7 @@ export function createSsoClientPublicProfile(client: ISsoClient) {
 		cancel_redirect_uri: client.cancel_redirect_uri,
 		created_at: client.created_at,
 		custom_scheme_redirect_uris: client.custom_scheme_redirect_uris,
+		https_redirect_uris: client.https_redirect_uris,
 		id: client.id,
 		loopback_redirect_paths: client.loopback_redirect_paths,
 		name: client.name,
@@ -358,12 +388,17 @@ function parseSsoClient(record: TSsoClient): ISsoClient {
 		record.custom_scheme_redirect_uris,
 		'custom_scheme_redirect_uris'
 	);
+	const httpsRedirectUris = parseJsonStringArray(
+		record.https_redirect_uris,
+		'https_redirect_uris'
+	);
 	const client = {
 		...record,
 		cancel_redirect_uri: normalizeNullableString(
 			record.cancel_redirect_uri
 		),
 		custom_scheme_redirect_uris: customSchemeRedirectUris,
+		https_redirect_uris: httpsRedirectUris,
 		loopback_redirect_paths: loopbackRedirectPaths,
 		secret_hashes: secretHashes,
 		status_callback_url: normalizeNullableString(
@@ -444,6 +479,9 @@ export function validateSsoRedirectUri(
 			isLoopbackHost &&
 			client.loopback_redirect_paths.includes(url.pathname)
 		);
+	}
+	if (url.protocol === 'https:') {
+		return client.https_redirect_uris.includes(redirectUri);
 	}
 
 	return client.custom_scheme_redirect_uris.includes(redirectUri);

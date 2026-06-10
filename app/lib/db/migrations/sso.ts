@@ -65,6 +65,7 @@ const SSO_TABLE_COLUMNS_MAP = {
 		'secret_hashes',
 		'loopback_redirect_paths',
 		'custom_scheme_redirect_uris',
+		'https_redirect_uris',
 		'status_callback_url',
 		'cancel_redirect_uri',
 		'created_at',
@@ -104,6 +105,11 @@ const SSO_TABLE_COLUMN_DEFINITION_MAP = {
 		cancel_redirect_uri: { dataType: 'text' },
 		created_at: { dataType: 'integer', defaultTo: 0, notNull: true },
 		custom_scheme_redirect_uris: {
+			dataType: 'text',
+			defaultTo: '[]',
+			notNull: true,
+		},
+		https_redirect_uris: {
 			dataType: 'text',
 			defaultTo: '[]',
 			notNull: true,
@@ -685,6 +691,9 @@ export async function migrateSsoTables(database: Kysely<TDatabase>) {
 			col.notNull().defaultTo('[]')
 		)
 		.addColumn('custom_scheme_redirect_uris', 'text', (col) =>
+			col.notNull().defaultTo('[]')
+		)
+		.addColumn('https_redirect_uris', 'text', (col) =>
 			col.notNull().defaultTo('[]')
 		)
 		.addColumn('status_callback_url', 'text')

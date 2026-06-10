@@ -14,10 +14,10 @@ isProject: false
 
 - 本项目作为身份提供方，只负责确认浏览器当前登录的小助手用户身份。
 - 外部服务作为业务方，负责将小助手用户映射到自己的业务用户，并签发自己的联机或皮肤服务凭证。
-- 外部服务前端和本地客户端不直接调用本项目 API；本项目不增加 CORS 支持，不共享账号 Cookie，不暴露 `mystia-session`。
+- 外部服务浏览器前端和本地客户端不直接调用本项目服务端 API；授权入口只使用顶层导航跳转，本项目不增加 CORS 支持，不共享账号 Cookie，不暴露 `mystia-session`。
 - 支持外部服务部署在不同服务器上，不依赖同一 nginx、同一 CDN 或同一父域 Cookie。
 - 复用现有小助手账号、普通 session、用户状态、禁用/删除、Cookie 安全、同源校验和 SQLite 迁移体系。
-- 采用一次性短期 ticket，避免本地客户端保存跨系统长期密钥。
+- 采用一次性短期 ticket，避免外部网站前端或本地客户端保存跨系统长期密钥。
 - 保持实现小于完整 OAuth2/OIDC；后续如需开放给不完全可信第三方，再升级为标准 OAuth2/OIDC。
 
 ## 二、非目标
@@ -32,22 +32,22 @@ isProject: false
 
 ## 三、参与方与职责
 
-| 参与方         | 职责                                                                                                               |
-| -------------- | ------------------------------------------------------------------------------------------------------------------ |
-| 本项目         | 提供现有账号登录、注册和 session；签发一次性 SSO ticket；校验 ticket 并返回小助手用户资料                          |
-| 外部客户端     | 打开浏览器发起授权；接收 loopback 或自定义协议回调；把 ticket 交给外部服务后端                                     |
-| 外部服务后端   | 保存 SSO client secret；调用本项目 validate 接口换取小助手用户资料；维护自己的业务用户和权限；签发自己的业务 token |
-| 外部服务数据库 | 保存小助手用户 ID 与外部业务用户的映射、皮肤数据、联机权限、封禁状态等业务数据                                     |
-| 外部皮肤网站   | 使用外部服务后端签发的业务 session 或 token，不直接调用本项目 API                                                  |
+| 参与方         | 职责                                                                                                                 |
+| -------------- | -------------------------------------------------------------------------------------------------------------------- |
+| 本项目         | 提供现有账号登录、注册和 session；签发一次性 SSO ticket；校验 ticket 并返回小助手用户资料。                          |
+| 外部网站       | 使用 HTTPS redirect 接收授权回调；校验网站自己的登录会话 state；由后端换票并建立网站自己的登录态。                   |
+| 外部客户端     | 打开浏览器发起授权；接收 loopback 或自定义协议回调；把 ticket 交给外部服务后端。                                     |
+| 外部服务后端   | 保存 SSO client secret；调用本项目 validate 接口换取小助手用户资料；维护自己的业务用户和权限；签发自己的业务 token。 |
+| 外部服务数据库 | 保存小助手用户 ID 与外部业务用户的映射、皮肤数据、联机权限、封禁状态等业务数据。                                     |
 
 ## 四、总体流程
 
 ```text
-本地客户端 -> 浏览器打开小助手 authorize
+外部网站或本地客户端 -> 浏览器打开小助手 authorize
 浏览器 -> 小助手登录或复用已有登录态
 小助手 -> 展示授权确认页
-用户同意授权 -> 小助手回调本地客户端一次性 ticket
-本地客户端 -> 外部服务后端提交 ticket
+用户同意授权 -> 小助手通过 HTTPS、loopback 或 custom scheme 回调一次性 ticket
+外部网站后端或本地客户端 -> 外部服务后端提交 ticket
 外部服务后端 -> 小助手 validate 换取用户资料
 外部服务后端 -> 建立或更新自己的业务用户
 外部服务后端 -> 签发外部服务自己的业务 token
@@ -60,26 +60,26 @@ isProject: false
 
 ### 未登录小助手账号
 
-1. 用户在本地游戏联机客户端点击“使用小助手账号登录”。
-2. 客户端生成 `state`、`code_verifier`，计算 `code_challenge`。
-3. 客户端打开系统浏览器，访问本项目 `GET /api/v1/sso/authorize`。
+1. 用户在外部网站或本地游戏联机客户端点击“使用小助手账号登录”。
+2. 外部网站后端或本地客户端生成 `state`、`code_verifier`，计算 `code_challenge`。
+3. 浏览器访问本项目 `GET /api/v1/sso/authorize`。
 4. 本项目校验 SSO client、redirect URI 和授权参数。
 5. 本项目发现用户没有有效 `mystia-session`，展示现有登录或注册界面。
 6. 用户完成登录或注册。
 7. 本项目继续当前 SSO 流程，展示授权确认页。
 8. 用户同意授权后，本项目生成一次性 ticket。
-9. 本项目通过 redirect URI 回调本地客户端。
-10. 客户端把 ticket、state、code verifier 交给外部服务后端。
-11. 外部服务后端完成换票和业务登录，客户端进入已登录状态。
+9. 本项目通过 redirect URI 回调外部网站 HTTPS 地址、本地 loopback 地址或 custom scheme。
+10. 外部网站后端直接处理回调；本地客户端把 ticket、state、code verifier 交给外部服务后端。
+11. 外部服务后端完成换票和业务登录，外部网站或客户端进入已登录状态。
 
 ### 已登录小助手账号
 
-1. 用户在本地客户端点击登录。
+1. 用户在外部网站或本地客户端点击登录。
 2. 浏览器打开 `authorize`。
 3. 本项目识别已有有效登录态，不再要求输入密码。
 4. 本项目展示授权确认页。
 5. 用户同意授权后，本项目生成 ticket 并回调客户端。
-6. 客户端通过外部服务后端完成业务登录。
+6. 外部网站或客户端通过外部服务后端完成业务登录。
 
 ### 退出
 
@@ -256,7 +256,7 @@ interface ISsoStatusBody {
 X-Sso-Signature: t=1710000000000,v1=base64url(HMAC-SHA256(signing_secret, "{t}.{body}"))
 ```
 
-其中签名头中的 `t` 是本次投递时间；`body.timestamp` 是用户状态事件发生时间。`signing_secret` 为创建 SSO client 时返回的一次性 `client_secret` 经 `SHA-256` 后得到的 64 位 hex 字符串，与本项目 `secret_hashes` 中的 active hash 一致。外部服务收到回调后必须使用该派生签名密钥重新计算 HMAC 并与请求头比对。签名有效且投递时间 `t` 在允许的时间偏差内（建议 ±5 分钟），方可采信回调内容。
+其中签名头中的 `t` 是本次投递时间；`body.timestamp` 是用户状态事件发生时间。`signing_secret` 为当前首位 active secret hash，也就是原始 `client_secret` 经 `SHA-256` 后得到的 64 位 hex 字符串，与本项目 `secret_hashes` 中的首位 active 值一致。外部服务收到回调后必须使用该派生签名密钥重新计算 HMAC 并与请求头比对。签名有效且投递时间 `t` 在允许的时间偏差内（建议 ±5 分钟），方可采信回调内容。
 
 TypeScript/JavaScript 校验示例：
 
@@ -377,7 +377,25 @@ CREATE INDEX sso_callback_queue_next_retry_at_index
 
 ## 七、Redirect URI 策略
 
-MVP 推荐支持两类 redirect URI。
+SSO client 可同时配置多种 redirect 白名单。同一个 client 既可以服务外部网站，也可以服务同一外部服务的桌面客户端；每次授权请求实际使用哪一种，由本次 `redirect_uri` 决定。
+
+当前支持三类 redirect URI。
+
+### HTTPS Website Redirect
+
+```text
+https://online.example.com/auth/mystia/callback
+```
+
+限制：
+
+- scheme 必须为 `https`。
+- URI 必须精确匹配 `https_redirect_uris` 白名单。
+- 必须是外部网站后端可处理的登录回调地址。
+- 不允许用户名、密码和 hash fragment。
+- 可以包含固定 query，但白名单和请求中的完整 URI 必须一致；本项目回调时会追加或覆盖 `ticket` 和 `state` query 参数。白名单不应预置 `ticket`、`state` 或 `code_verifier`。
+
+外部网站统一登录应优先使用 HTTPS website redirect：外部网站后端生成 `state` 和 `code_verifier`，浏览器跳转到本项目授权入口，回调落到外部网站后端后再换票建立网站自己的登录态。
 
 ### Loopback Redirect
 
@@ -389,9 +407,9 @@ http://[::1]:{port}/callback
 限制：
 
 - scheme 必须为 `http`。
-- host 只能是 `127.0.0.1` 或 `[::1]`。
+- host 只能是 `127.0.0.1`、`[::1]` 或 `::1`。
 - path 必须在 client 配置白名单内。
-- port 可由客户端动态选择，也可限制在配置范围内。
+- port 可由客户端动态选择。
 - 不允许普通公网 `http://` redirect URI。
 
 本地客户端应临时启动 loopback HTTP server，收到回调后立即关闭。
@@ -408,7 +426,7 @@ mystia-game://sso/callback
 - 需要客户端在操作系统注册自定义协议。
 - 自定义协议存在同机程序抢占风险，因此仍必须使用 `code_challenge` / `code_verifier`。
 
-如果只能选择一种，优先实现 loopback redirect。
+本地客户端通常优先实现 loopback redirect；无法稳定监听本地端口或需要更深系统集成时，再补 custom scheme redirect。两者可以和 HTTPS website redirect 配在同一个 client 中。
 
 ## 八、Ticket 数据结构
 
@@ -454,7 +472,8 @@ CREATE TABLE sso_clients (
     name text NOT NULL,
     secret_hashes text NOT NULL,
     loopback_redirect_paths text NOT NULL DEFAULT '[]',
-    custom_scheme_redirect_uris text NOT NULL DEFAULT '[]',
+	custom_scheme_redirect_uris text NOT NULL DEFAULT '[]',
+	https_redirect_uris text NOT NULL DEFAULT '[]',
     status_callback_url text,
     cancel_redirect_uri text,
     created_at integer NOT NULL,
@@ -462,8 +481,8 @@ CREATE TABLE sso_clients (
 );
 ```
 
-- `secret_hashes`：JSON 字符串数组，保存 `SHA-256(client_secret)` 的 hex 值。所有 hash 均为 active，`validate` 和 `status` 校验时对请求中的 `client_secret` 做同算法 hash 后遍历比对，首个匹配成功即通过；状态回调 HMAC 的 `signing_secret` 同样使用当前 active secret hash。
-- `loopback_redirect_paths` 和 `custom_scheme_redirect_uris`：JSON 字符串数组，存储 redirect URI 白名单。
+- `secret_hashes`：JSON 字符串数组，保存 `SHA-256(client_secret)` 的 hex 值。所有 hash 均为 active；`validate` 和 `status` 校验时对请求中的原始 `client_secret` 做同算法 hash 后遍历比对，首个匹配成功即通过；状态回调 HMAC 的 `signing_secret` 使用当前首位 active secret hash。
+- `loopback_redirect_paths`、`custom_scheme_redirect_uris` 和 `https_redirect_uris`：JSON 字符串数组，存储 redirect URI 白名单；三者可同时配置，至少需要有一种非空。
 - `status_callback_url`：可选，配置后用户状态变更时本项目主动回调。
 - `cancel_redirect_uri`：可选，用户在授权确认页点击取消后跳转的地址。
 
@@ -474,36 +493,37 @@ SSO 功能不设独立环境变量开关。SSO 跟随账号功能启用：当 `S
 在现有管理员后台新增"SSO 客户端"管理页，提供：
 
 - 查看已注册 client 列表，显示名称、ID、创建时间、是否有 status callback。
-- 新建 client，输入名称后自动生成 client ID 和初始 secret，展示一次明文 secret 后仅保存 hash。
+- 新建 client，输入名称后自动生成 client ID 和初始 secret；原始 secret 只在生成响应中展示，右侧 Secrets 区域展示 active secret hash。
 - 管理 secret：添加新 secret、删除旧 secret（至少保留一个）。
-- 编辑 redirect URI 白名单、status callback URL、cancel redirect URI。
+- 编辑 HTTPS、loopback、custom scheme redirect URI 白名单、status callback URL、cancel redirect URI。
 - 删除 client（需确认）。
 
 ## 十、PKCE-like 校验
 
-本地客户端是 public client，不能安全保存 `client_secret`。为降低 ticket 被同机其它程序截获后的风险，本方案要求使用 PKCE-like 校验。
+外部网站前端和本地客户端都不能安全保存 `client_secret`。为降低 ticket 被浏览器历史、日志、同机程序或错误跳转截获后的风险，本方案要求所有接入形态都使用 PKCE-like 校验。
 
 流程：
 
-1. 客户端生成随机 `code_verifier`。
-2. 客户端计算 `code_challenge = base64url(sha256(code_verifier))`。
+1. 外部网站后端或本地客户端生成随机 `code_verifier`。
+2. 发起方计算 `code_challenge = base64url(sha256(code_verifier))`。
 3. `authorize` 保存 `code_challenge`。
 4. `validate` 要求外部服务后端提交 `code_verifier`。
 5. 本项目重新计算 challenge 并比对。
 
-即使其它程序截获 redirect URI 中的 ticket，没有 `code_verifier` 也无法完成 validate。
+即使其它程序或错误页面截获 redirect URI 中的 ticket，没有 `code_verifier` 也无法完成 validate。
 
 ## 十一、外部服务后端职责
 
 外部服务后端必须实现自己的业务登录接口，例如：
 
 ```text
+GET /auth/mystia/callback
 POST /api/auth/mystia/callback
 ```
 
 职责：
 
-- 接收本地客户端提交的 `ticket`、`state`、`code_verifier`。
+- 外部网站接收 HTTPS callback 中的 `ticket` 和 `state`；本地客户端接收 loopback 或 custom scheme callback 后提交 `ticket`、`state`、`code_verifier`。
 - 校验 `state` 是否与本次客户端登录流程匹配。
 - 使用 `client_id` 和 `client_secret` 调用本项目 `/api/v1/sso/validate`。
 - 读取返回的小助手 `user.id`。
@@ -556,6 +576,8 @@ CREATE TABLE external_users (
 
 - `authorize` 只能跳转到已配置的 redirect URI。
 - `validate` 必须校验 client secret，不接受浏览器端无密钥调用。
+- client secret 是外部服务后端凭证，`validate` 和 `status` 通过 HTTPS server-to-server 请求提交原始 secret；本项目数据库只保存 `SHA-256(client_secret).hex()`，用于降低数据库或管理页泄露后的直接可用性风险。
+- hash 存库不等于请求体不出现 secret；若未来需要避免原始 secret 出现在请求体，应改为请求签名、mTLS 或公私钥认证等更强协议。
 - ticket 必须短期、一次性、只存 hash。
 - ticket 必须绑定 client、redirect URI 和 PKCE challenge。
 - `state` 由外部客户端或外部服务生成，本项目原样带回，不负责解释其内容。
@@ -646,14 +668,15 @@ Content-Type: application/json
 
 ## 十六、风险
 
-| 风险                                | 说明                                             | 缓解                                                                                                          |
-| ----------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| 回调被同机程序截获                  | loopback 或自定义协议存在本地竞争                | 使用 PKCE-like `code_challenge` / `code_verifier`                                                             |
-| 外部服务 token 无法被本项目撤销     | 外部 token 属于外部服务                          | 外部服务使用短过期 token，并通过 `/api/v1/sso/status` 定期复核；重新登录需发起新的 authorize -> validate 流程 |
-| redirect URI 开放跳转               | 未严格校验 redirect URI 会造成钓鱼或 ticket 泄露 | 精确白名单；loopback 仅允许固定 path 与本地 host                                                              |
-| client secret 泄露                  | 外部后端密钥泄露可换票                           | 外部服务保存密钥在后端；支持多 active secret 无缝轮换                                                         |
-| 用户被禁用后外部 token 仍可短期使用 | 外部 token 已签发后由外部服务控制                | 外部服务使用短过期；通过 `/api/v1/sso/status` 定期复核或接收状态变更回调即时撤销                              |
-| 方案非标准协议                      | 不适合开放平台生态                               | 仅用于可信合作服务；开放第三方前升级 OAuth2/OIDC                                                              |
+| 风险                                | 说明                                             | 缓解                                                                                                                          |
+| ----------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| 回调被同机程序截获                  | loopback 或自定义协议存在本地竞争                | 使用 PKCE-like `code_challenge` / `code_verifier`                                                                             |
+| 外部服务 token 无法被本项目撤销     | 外部 token 属于外部服务                          | 外部服务使用短过期 token，并通过 `/api/v1/sso/status` 定期复核；重新登录需发起新的 authorize -> validate 流程                 |
+| redirect URI 开放跳转               | 未严格校验 redirect URI 会造成钓鱼或 ticket 泄露 | 精确白名单；HTTPS URI 精确匹配；loopback 仅允许固定 path 与本地 host                                                          |
+| client secret 泄露                  | 外部后端密钥泄露可换票                           | 外部服务保存密钥在后端和密钥管理系统；server-to-server 调用必须走 HTTPS；请求日志不记录 secret；支持多 active secret 无缝轮换 |
+| 数据库或管理页 hash 泄露            | 攻击者拿到 secret hash                           | validate/status 只接受原始 client secret，不接受 hash；泄露 hash 后仍应尽快轮换对应 secret                                    |
+| 用户被禁用后外部 token 仍可短期使用 | 外部 token 已签发后由外部服务控制                | 外部服务使用短过期；通过 `/api/v1/sso/status` 定期复核或接收状态变更回调即时撤销                                              |
+| 方案非标准协议                      | 不适合开放平台生态                               | 仅用于可信合作服务；开放第三方前升级 OAuth2/OIDC                                                                              |
 
 ## 十七、后续扩展
 
