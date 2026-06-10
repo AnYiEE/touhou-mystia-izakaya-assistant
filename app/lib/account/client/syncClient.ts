@@ -1537,6 +1537,8 @@ export async function takeOverLocalAccountData() {
 		if (shouldFlushPreservedDirty) {
 			scheduleAccountSyncFlush();
 		}
+
+		return true;
 	}
 	const recordMap = getRecordMap(remoteState.records);
 	const dirtyEntries = readDirtyQueueEntries(context.user.id);
