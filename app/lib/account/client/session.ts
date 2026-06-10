@@ -261,6 +261,9 @@ export async function refreshAccountState() {
 							? error.message
 							: 'local-takeover-failed'
 					);
+					accountStore.shared.bootstrapStatus.set('error');
+					accountStore.shared.isLoggedIn.set(false);
+					accountStore.shared.sync.meta.set(null);
 				}
 			}
 		});
