@@ -1,5 +1,6 @@
 import { type ColumnDataType, type Kysely, sql } from 'kysely';
 
+import { migrateSsoTables } from './sso';
 import { TABLE_NAME_MAP } from '../constant';
 import { type TDatabase } from '../types';
 import { getTableColumns } from '../utils';
@@ -517,4 +518,5 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 		.execute();
 
 	await ensureAccountTableStructure(database);
+	await migrateSsoTables(database);
 }

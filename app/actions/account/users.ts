@@ -1,5 +1,6 @@
 import { sql } from 'kysely';
 
+import { enqueueSsoCallbacksForUserEventInTransaction } from './sso';
 import { getAccountDatabase } from '@/lib/account/server/db';
 import { type TUserStatus } from '@/lib/account/shared/types';
 import { TABLE_NAME_MAP } from '@/lib/db';
@@ -254,6 +255,52 @@ export async function setUserStatusAndDeleteSessions(
 			.deleteFrom(SESSION_TABLE_NAME)
 			.where('user_id', '=', id)
 			.execute();
+
+		if (status === 'deleted') {
+			await enqueueSsoCallbacksForUserEventInTransaction(
+				trx,
+				id,
+				'user_deleted',
+				now
+			);
+		}
+	});
+}
+
+export async function disableUserAndDeleteSessionsWithSsoCallbacks(
+	id: TUser['id']
+) {
+	const db = await getAccountDatabase();
+	const now = Date.now();
+	const userUpdate = {
+		deleted_at: null,
+		status: 'disabled',
+		updated_at: now,
+	} satisfies TUserUpdate;
+
+	return db.transaction().execute(async (trx) => {
+		const result = await trx
+			.updateTable(TABLE_NAME)
+			.set(userUpdate)
+			.where('id', '=', id)
+			.where('status', '=', 'active')
+			.executeTakeFirst();
+		if (result.numUpdatedRows !== 1n) {
+			return false;
+		}
+
+		await trx
+			.deleteFrom(SESSION_TABLE_NAME)
+			.where('user_id', '=', id)
+			.execute();
+		await enqueueSsoCallbacksForUserEventInTransaction(
+			trx,
+			id,
+			'user_disabled',
+			now
+		);
+
+		return true;
 	});
 }
 

@@ -2,6 +2,8 @@
 
 import { type PropsWithChildren, memo, useCallback, useState } from 'react';
 
+import { usePathname, useRouter } from 'next/navigation';
+
 import {
 	FontAwesomeIcon,
 	type FontAwesomeIconProps,
@@ -234,6 +236,8 @@ function getBootstrapErrorMessage(errorCode: string | null) {
 interface IProps {}
 
 export default memo<IProps>(function AccountManager() {
+	const pathname = usePathname();
+	const router = useRouter();
 	const bootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const csrfToken = accountStore.shared.csrfToken.use();
 	const lastError = accountStore.shared.sync.lastError.use();
@@ -261,6 +265,7 @@ export default memo<IProps>(function AccountManager() {
 		!checkPasswordPolicy(password);
 	const isNewPasswordInvalid =
 		newPassword.length > 0 && !checkPasswordPolicy(newPassword);
+	const isSsoContext = pathname === '/sso/authorize';
 
 	const handleAuth = useCallback(() => {
 		if (isSubmitting) {
@@ -306,6 +311,9 @@ export default memo<IProps>(function AccountManager() {
 
 				setPassword('');
 				setMessage(authMode === 'login' ? '登录成功' : '注册成功');
+				if (isSsoContext) {
+					router.refresh();
+				}
 
 				refreshAccountState().catch((error: unknown) => {
 					if (
@@ -328,7 +336,7 @@ export default memo<IProps>(function AccountManager() {
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [authMode, isSubmitting, password, username]);
+	}, [authMode, isSsoContext, isSubmitting, password, router, username]);
 
 	const handleLoginModePress = useCallback(() => {
 		setAuthMode('login');
@@ -810,12 +818,14 @@ export default memo<IProps>(function AccountManager() {
 				isFirst
 				subTitle={
 					user === null
-						? '登录后可在不同设备间同步此浏览器保存的数据'
+						? isSsoContext
+							? '登录小助手账号以授权给外部应用'
+							: '登录后可在不同设备间同步此浏览器保存的数据'
 						: '管理当前账号、同步状态和云端数据'
 				}
 				classNames={{ subTitle: '!-mt-3' }}
 			>
-				账号
+				{isSsoContext && user === null ? 'SSO登录' : '账号'}
 			</Heading>
 			{user === null ? (
 				<div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
@@ -933,14 +943,27 @@ export default memo<IProps>(function AccountManager() {
 							icon={faShieldHalved}
 							iconClassName="text-default-500"
 						>
-							账号同步
+							{isSsoContext ? 'SSO授权' : '账号同步'}
 						</AccountPanelTitle>
-						<p>
-							账号会同步此浏览器保存的数据，让其他设备继续使用相同配置。
-						</p>
-						<p>
-							注册后会自动登录；登录后，本机尚未上传的更改会自动继续同步。
-						</p>
+						{isSsoContext ? (
+							<>
+								<p>
+									登录后，你可以授权外部应用获取你的小助手账号身份。
+								</p>
+								<p>
+									注册后会自动登录；登录后即可在授权页面完成确认。
+								</p>
+							</>
+						) : (
+							<>
+								<p>
+									账号会同步此浏览器保存的数据，让其他设备继续使用相同配置。
+								</p>
+								<p>
+									注册后会自动登录；登录后，本机尚未上传的更改会自动继续同步。
+								</p>
+							</>
+						)}
 					</AccountPanel>
 				</div>
 			) : (

@@ -7,6 +7,7 @@ export const USER_STATUS_MAP = {
 export const ACCOUNT_COOKIE_NAME_MAP = {
 	adminSession: 'mystia-admin-session',
 	session: 'mystia-session',
+	ssoContext: 'mystia-sso-context',
 } as const;
 
 export const USERNAME_MIN_LENGTH = 3;

@@ -8,6 +8,8 @@ import {
 	useState,
 } from 'react';
 
+import { usePathname } from 'next/navigation';
+
 import {
 	FontAwesomeIcon,
 	type FontAwesomeIconProps,
@@ -107,6 +109,7 @@ const PasswordChangeInputIcon = memo<IPasswordChangeInputIconProps>(
 interface IProps {}
 
 export default memo<IProps>(function AccountPasswordMustChangeModal() {
+	const pathname = usePathname();
 	const csrfToken = accountStore.shared.csrfToken.use();
 	const isLoggedIn = accountStore.shared.isLoggedIn.use();
 	const passwordMustChange = accountStore.shared.passwordMustChange.use();
@@ -123,6 +126,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 	const isOpen = isLoggedIn && passwordMustChange;
 	const isNewPasswordInvalid =
 		newPassword.length > 0 && !checkPasswordPolicy(newPassword);
+	const shouldResumeSso = pathname === '/sso/authorize';
 
 	useEffect(() => {
 		if (isOpen) {
@@ -186,6 +190,10 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 
 				clearPasswordFields();
 				setMessage(null);
+				if (shouldResumeSso) {
+					globalThis.location.assign('/sso/authorize');
+					return;
+				}
 
 				refreshAccountState().catch((error: unknown) => {
 					console.warn(
@@ -228,6 +236,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 		currentPassword,
 		isSubmitting,
 		newPassword,
+		shouldResumeSso,
 		user,
 	]);
 
@@ -262,12 +271,18 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 			.then(() => {
 				if (resetAccountStateIfCurrent(expectedAuthContext)) {
 					clearPasswordFields();
+					if (shouldResumeSso) {
+						accountStore.shared.accountModal.isOpen.set(true);
+					}
 				}
 			})
 			.catch((error: unknown) => {
 				if (error instanceof AccountApiError && error.status === 401) {
 					if (resetAccountStateIfCurrent(expectedAuthContext)) {
 						clearPasswordFields();
+						if (shouldResumeSso) {
+							accountStore.shared.accountModal.isOpen.set(true);
+						}
 					}
 					return;
 				}
@@ -280,7 +295,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [clearPasswordFields, csrfToken, isSubmitting, user]);
+	}, [clearPasswordFields, csrfToken, isSubmitting, shouldResumeSso, user]);
 
 	if (!isOpen) {
 		return null;
@@ -309,10 +324,16 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 				<Heading
 					as="h2"
 					isFirst
-					subTitle="管理员已重置此账号的登录凭据。完成密码更新后，账号同步和数据操作会恢复可用。"
+					subTitle={
+						shouldResumeSso
+							? '管理员已重置此账号的登录凭据。请更新密码后继续授权给外部应用。'
+							: '管理员已重置此账号的登录凭据。完成密码更新后，账号同步和数据操作会恢复可用。'
+					}
 					classNames={{ subTitle: '!-mt-3' }}
 				>
-					更新账号密码
+					{shouldResumeSso
+						? 'SSO授权 - 更新账号密码'
+						: '更新账号密码'}
 				</Heading>
 
 				<div className="grid gap-4 p-1.5 lg:grid-cols-[minmax(0,1fr)_18rem]">
@@ -414,7 +435,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 								icon={faShieldHalved}
 								iconClassName="text-default-500"
 							>
-								受限状态
+								{shouldResumeSso ? 'SSO受限状态' : '受限状态'}
 							</PasswordChangePanelTitle>
 							<div className="space-y-3 text-small leading-6 text-foreground-600">
 								<div className="flex items-start gap-2 rounded-small bg-warning/10 px-3 py-2 text-warning-700 dark:text-warning-600">
@@ -423,11 +444,15 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 										className="mt-1 w-4 shrink-0"
 									/>
 									<p>
-										密码更新前，账号同步、云端数据操作和冲突处理会暂时暂停。
+										{shouldResumeSso
+											? '密码更新前无法完成SSO授权，也不会签发登录票据。'
+											: '密码更新前，账号同步、云端数据操作和冲突处理会暂时暂停。'}
 									</p>
 								</div>
 								<p>
-									如果暂时不处理，可以退出当前账号；本机未完成的同步队列会留在本地，之后重新登录再继续。
+									{shouldResumeSso
+										? '如果暂时不处理，可以退出当前账号返回首页。'
+										: '如果暂时不处理，可以退出当前账号；本机未完成的同步队列会留在本地，之后重新登录再继续。'}
 								</p>
 							</div>
 						</div>
@@ -447,7 +472,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 							variant="flat"
 							onPress={handleLogout}
 						>
-							退出登录
+							{shouldResumeSso ? '切换账号' : '退出登录'}
 						</Button>
 					</PasswordChangePanel>
 				</div>

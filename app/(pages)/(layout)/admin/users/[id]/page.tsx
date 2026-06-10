@@ -242,6 +242,7 @@ export default function AdminUserDetailPage() {
 			onSuccess?: () => void
 		) => {
 			setIsLoading(true);
+			setConfirmAction(null);
 			setMessage(null);
 
 			const requestId = createDetailRequestId();

@@ -18,6 +18,7 @@ import {
 	faKey,
 	faMagnifyingGlass,
 	faRotate,
+	faServer,
 	faShieldHalved,
 	faUser,
 	faUsers,
@@ -838,22 +839,38 @@ export default function AdminPage() {
 		<AdminShell>
 			<AdminHeader
 				actions={
-					<Button
-						isDisabled={isAdminActionLoading}
-						isLoading={isAdminActionLoading}
-						startContent={
-							isAdminActionLoading ? null : (
+					<>
+						<Button
+							as={Link}
+							animationUnderline={false}
+							href="/admin/sso"
+							startContent={
 								<FontAwesomeIcon
-									icon={faArrowRightFromBracket}
+									icon={faServer}
 									className="w-3.5"
 								/>
-							)
-						}
-						variant="flat"
-						onPress={handleLogout}
-					>
-						退出管理员
-					</Button>
+							}
+							variant="flat"
+						>
+							SSO客户端
+						</Button>
+						<Button
+							isDisabled={isAdminActionLoading}
+							isLoading={isAdminActionLoading}
+							startContent={
+								isAdminActionLoading ? null : (
+									<FontAwesomeIcon
+										icon={faArrowRightFromBracket}
+										className="w-3.5"
+									/>
+								)
+							}
+							variant="flat"
+							onPress={handleLogout}
+						>
+							退出管理员
+						</Button>
+					</>
 				}
 				icon={faUsers}
 				title="用户管理"

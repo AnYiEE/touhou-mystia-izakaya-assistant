@@ -2,6 +2,11 @@ import {
 	type IAccountUserProfile,
 	type IAdminLoginBody,
 	type IAdminResetPasswordBody,
+	type IAdminSsoClientCreateBody,
+	type IAdminSsoClientDetailData,
+	type IAdminSsoClientListData,
+	type IAdminSsoClientMutationData,
+	type IAdminSsoClientUpdateBody,
 	type IAuthChangePasswordBody,
 	type IAuthLoginBody,
 	type IAuthLoginSuccessResponse,
@@ -28,6 +33,11 @@ export class AccountApiError extends Error {
 }
 
 async function readAccountApiResponse<T>(response: Response) {
+	if (response.redirected) {
+		globalThis.location.assign(response.url);
+		return new Promise<T>(() => {});
+	}
+
 	let json: unknown;
 	try {
 		json = await response.json();
@@ -295,6 +305,10 @@ export async function fetchAdminMe() {
 	);
 }
 
+function createAdminSsoClientPath(id: string) {
+	return `/api/v1/admin/sso/clients/${encodeURIComponent(id)}`;
+}
+
 export async function listAdminUsers({
 	page = 1,
 	query = '',
@@ -317,6 +331,63 @@ export async function listAdminUsers({
 		await fetch(
 			`/api/v1/admin/users?${searchParams}`,
 			createAccountRequestInit()
+		)
+	);
+}
+
+export async function listAdminSsoClients() {
+	return readAccountApiResponse<IAdminSsoClientListData>(
+		await fetch('/api/v1/admin/sso/clients', createAccountRequestInit())
+	);
+}
+
+export async function createAdminSsoClient(
+	body: IAdminSsoClientCreateBody,
+	csrfToken: string
+) {
+	return readAccountApiResponse<IAdminSsoClientMutationData>(
+		await fetch(
+			'/api/v1/admin/sso/clients',
+			createAccountRequestInit({
+				body: JSON.stringify(body),
+				headers: { 'x-csrf-token': csrfToken },
+				method: 'POST',
+			})
+		)
+	);
+}
+
+export async function fetchAdminSsoClient(id: string) {
+	return readAccountApiResponse<IAdminSsoClientDetailData>(
+		await fetch(createAdminSsoClientPath(id), createAccountRequestInit())
+	);
+}
+
+export async function updateAdminSsoClient(
+	id: string,
+	body: IAdminSsoClientUpdateBody,
+	csrfToken: string
+) {
+	return readAccountApiResponse<IAdminSsoClientMutationData>(
+		await fetch(
+			createAdminSsoClientPath(id),
+			createAccountRequestInit({
+				body: JSON.stringify(body),
+				headers: { 'x-csrf-token': csrfToken },
+				method: 'PUT',
+			})
+		)
+	);
+}
+
+export async function deleteAdminSsoClient(id: string, csrfToken: string) {
+	return readAccountApiResponse(
+		await fetch(
+			createAdminSsoClientPath(id),
+			createAccountRequestInit({
+				headers: { 'x-csrf-token': csrfToken },
+				method: 'DELETE',
+			})
 		)
 	);
 }

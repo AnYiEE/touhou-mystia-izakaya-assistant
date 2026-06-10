@@ -1,11 +1,24 @@
 import { spawn } from 'node:child_process';
-import { env } from 'node:process';
+import { env, execPath } from 'node:process';
 
 const offlineEnv = { ...env, OFFLINE: 'true' };
+const packageManagerExecPath = env['npm_execpath'];
+
+function createLocalBinCommand(command: string, args: string[]) {
+	if (packageManagerExecPath === undefined) {
+		return { args, command };
+	}
+
+	return {
+		args: [packageManagerExecPath, 'exec', command, ...args],
+		command: execPath,
+	};
+}
 
 function run(command: string, args: string[]) {
 	return new Promise<void>((resolve, reject) => {
-		const child = spawn(command, args, {
+		const localBinCommand = createLocalBinCommand(command, args);
+		const child = spawn(localBinCommand.command, localBinCommand.args, {
 			env: offlineEnv,
 			stdio: 'inherit',
 		});

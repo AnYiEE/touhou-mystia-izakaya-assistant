@@ -2,7 +2,12 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 
 import { SERVER_MISCONFIGURED_MESSAGE, checkAppSecret } from './environment';
 
-export type TAccountSecretDomain = 'admin:v1' | 'csrf:v1' | 'session:v1';
+export type TAccountSecretDomain =
+	| 'admin:v1'
+	| 'csrf:v1'
+	| 'session:v1'
+	| 'sso-context:v1'
+	| 'sso-ticket:v1';
 
 function getAppSecret() {
 	const secret = process.env.APP_SECRET;
