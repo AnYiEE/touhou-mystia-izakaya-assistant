@@ -55,5 +55,8 @@ export async function POST(request: NextRequest) {
 		createdBefore: requestStartedAt,
 	});
 
-	return createNoStoreJsonResponse({ message: 'logged-out-all' });
+	const response = createNoStoreJsonResponse({ message: 'logged-out-all' });
+	authModule.clearAccountSessionCookie(response, request);
+
+	return response;
 }

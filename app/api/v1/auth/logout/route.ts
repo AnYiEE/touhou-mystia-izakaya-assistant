@@ -51,5 +51,8 @@ export async function POST(request: NextRequest) {
 	const sessionsModule = await import('@/actions/account/sessions');
 	await sessionsModule.deleteSessionById(auth.data.session.id);
 
-	return createNoStoreJsonResponse({ message: 'logged-out' });
+	const response = createNoStoreJsonResponse({ message: 'logged-out' });
+	authModule.clearAccountSessionCookie(response, request);
+
+	return response;
 }
