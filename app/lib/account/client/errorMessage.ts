@@ -1,8 +1,6 @@
 import { PASSWORD_RULE_DESCRIPTION } from '@/lib/account/shared/constants';
 
 const ACCOUNT_CLIENT_ERROR_MESSAGE_MAP: Record<string, string> = {
-	'account-deleted': '账号已删除',
-	'account-disabled': '账号已停用',
 	'backup-code-already-imported': '这个旧备份码已被导入',
 	'backup-code-lock-lost': '旧备份码正在被处理，请稍后重试',
 	'backup-code-lock-timeout': '旧备份码处理超时，请稍后重试',
@@ -31,6 +29,8 @@ const ACCOUNT_CLIENT_ERROR_MESSAGE_MAP: Record<string, string> = {
 	'sync-refresh-failed': '刷新同步状态失败，请稍后重试',
 	'too-many-requests': '尝试次数过多，请稍后再试',
 	unauthorized: '登录已过期，请重新登录',
+	'user-deleted': '账号已删除',
+	'user-disabled': '账号已停用',
 	'username-conflict': '用户名已被使用',
 };
 

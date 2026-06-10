@@ -56,7 +56,7 @@ export async function DELETE(request: NextRequest) {
 		USER_STATUS_MAP.deleted
 	);
 
-	const response = createNoStoreJsonResponse({ message: 'account-deleted' });
+	const response = createNoStoreJsonResponse({ message: 'user-deleted' });
 	authModule.clearAccountSessionCookie(response, request);
 
 	return response;

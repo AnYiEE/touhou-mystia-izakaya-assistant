@@ -108,11 +108,11 @@ export async function POST(request: NextRequest) {
 	}
 	if (user.status === USER_STATUS_MAP.disabled) {
 		await passwordModule.consumePasswordVerificationCost(body.password);
-		return createNoStoreErrorResponse('account-disabled', 403);
+		return createNoStoreErrorResponse('user-disabled', 403);
 	}
 	if (user.status === USER_STATUS_MAP.deleted) {
 		await passwordModule.consumePasswordVerificationCost(body.password);
-		return createNoStoreErrorResponse('account-deleted', 403);
+		return createNoStoreErrorResponse('user-deleted', 403);
 	}
 
 	const credential = await credentialsModule.getCredentialByUserId(user.id);
