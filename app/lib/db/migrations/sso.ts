@@ -375,52 +375,54 @@ async function rebuildSsoTicketTable(database: Kysely<TDatabase>) {
 	const clientTableName = sql.raw(TABLE_NAME_MAP.ssoClient);
 	const userTableName = sql.raw(TABLE_NAME_MAP.user);
 
-	await sql`drop table if exists ${nextTableName}`.execute(database);
-	await sql`
-		create table ${nextTableName} (
-			ticket_hash text not null primary key,
-			client_id text not null references ${clientTableName}(id) on delete cascade,
-			user_id text not null references ${userTableName}(id) on delete cascade,
-			redirect_uri text not null,
-			code_challenge text not null,
-			created_at integer not null,
-			expires_at integer not null,
-			used_at integer
-		)
-	`.execute(database);
-	await sql`
-		insert into ${nextTableName} (
-			ticket_hash,
-			client_id,
-			user_id,
-			redirect_uri,
-			code_challenge,
-			created_at,
-			expires_at,
-			used_at
-		)
-		select
-			ticket_hash,
-			client_id,
-			user_id,
-			redirect_uri,
-			code_challenge,
-			created_at,
-			expires_at,
-			used_at
-		from ${oldTableName}
-		where exists (
-			select 1 from ${clientTableName}
-			where ${clientTableName}.id = ${oldTableName}.client_id
-		) and exists (
-			select 1 from ${userTableName}
-			where ${userTableName}.id = ${oldTableName}.user_id
-		)
-	`.execute(database);
-	await sql`drop table ${oldTableName}`.execute(database);
-	await sql`alter table ${nextTableName} rename to ${oldTableName}`.execute(
-		database
-	);
+	await database.transaction().execute(async (transaction) => {
+		await sql`drop table if exists ${nextTableName}`.execute(transaction);
+		await sql`
+			create table ${nextTableName} (
+				ticket_hash text not null primary key,
+				client_id text not null references ${clientTableName}(id) on delete cascade,
+				user_id text not null references ${userTableName}(id) on delete cascade,
+				redirect_uri text not null,
+				code_challenge text not null,
+				created_at integer not null,
+				expires_at integer not null,
+				used_at integer
+			)
+		`.execute(transaction);
+		await sql`
+			insert into ${nextTableName} (
+				ticket_hash,
+				client_id,
+				user_id,
+				redirect_uri,
+				code_challenge,
+				created_at,
+				expires_at,
+				used_at
+			)
+			select
+				ticket_hash,
+				client_id,
+				user_id,
+				redirect_uri,
+				code_challenge,
+				created_at,
+				expires_at,
+				used_at
+			from ${oldTableName}
+			where exists (
+				select 1 from ${clientTableName}
+				where ${clientTableName}.id = ${oldTableName}.client_id
+			) and exists (
+				select 1 from ${userTableName}
+				where ${userTableName}.id = ${oldTableName}.user_id
+			)
+		`.execute(transaction);
+		await sql`drop table ${oldTableName}`.execute(transaction);
+		await sql`alter table ${nextTableName} rename to ${oldTableName}`.execute(
+			transaction
+		);
+	});
 }
 
 async function rebuildSsoCallbackQueueTable(database: Kysely<TDatabase>) {
@@ -429,63 +431,65 @@ async function rebuildSsoCallbackQueueTable(database: Kysely<TDatabase>) {
 	const clientTableName = sql.raw(TABLE_NAME_MAP.ssoClient);
 	const userTableName = sql.raw(TABLE_NAME_MAP.user);
 
-	await sql`drop table if exists ${nextTableName}`.execute(database);
-	await sql`
-		create table ${nextTableName} (
-			id integer not null primary key autoincrement,
-			client_id text not null references ${clientTableName}(id) on delete cascade,
-			user_id text not null references ${userTableName}(id) on delete cascade,
-			event text not null check(event in ('user_deleted', 'user_disabled')),
-			timestamp integer not null,
-			attempts integer not null default 0,
-			last_error text,
-			next_retry_at integer not null,
-			created_at integer not null
-		)
-	`.execute(database);
-	await sql`
-		insert into ${nextTableName} (
-			id,
-			client_id,
-			user_id,
-			event,
-			timestamp,
-			attempts,
-			last_error,
-			next_retry_at,
-			created_at
-		)
-		select
-			id,
-			client_id,
-			user_id,
-			event,
-			timestamp,
-			attempts,
-			last_error,
-			next_retry_at,
-			created_at
-		from ${oldTableName}
-		where event in ('user_deleted', 'user_disabled')
-			and exists (
-				select 1 from ${clientTableName}
-				where ${clientTableName}.id = ${oldTableName}.client_id
+	await database.transaction().execute(async (transaction) => {
+		await sql`drop table if exists ${nextTableName}`.execute(transaction);
+		await sql`
+			create table ${nextTableName} (
+				id integer not null primary key autoincrement,
+				client_id text not null references ${clientTableName}(id) on delete cascade,
+				user_id text not null references ${userTableName}(id) on delete cascade,
+				event text not null check(event in ('user_deleted', 'user_disabled')),
+				timestamp integer not null,
+				attempts integer not null default 0,
+				last_error text,
+				next_retry_at integer not null,
+				created_at integer not null
 			)
-			and exists (
-				select 1 from ${userTableName}
-				where ${userTableName}.id = ${oldTableName}.user_id
+		`.execute(transaction);
+		await sql`
+			insert into ${nextTableName} (
+				id,
+				client_id,
+				user_id,
+				event,
+				timestamp,
+				attempts,
+				last_error,
+				next_retry_at,
+				created_at
 			)
-			and id in (
-				select max(id)
-				from ${oldTableName}
-				where event in ('user_deleted', 'user_disabled')
-				group by client_id, user_id, event
-			)
-	`.execute(database);
-	await sql`drop table ${oldTableName}`.execute(database);
-	await sql`alter table ${nextTableName} rename to ${oldTableName}`.execute(
-		database
-	);
+			select
+				id,
+				client_id,
+				user_id,
+				event,
+				timestamp,
+				attempts,
+				last_error,
+				next_retry_at,
+				created_at
+			from ${oldTableName}
+			where event in ('user_deleted', 'user_disabled')
+				and exists (
+					select 1 from ${clientTableName}
+					where ${clientTableName}.id = ${oldTableName}.client_id
+				)
+				and exists (
+					select 1 from ${userTableName}
+					where ${userTableName}.id = ${oldTableName}.user_id
+				)
+				and id in (
+					select max(id)
+					from ${oldTableName}
+					where event in ('user_deleted', 'user_disabled')
+					group by client_id, user_id, event
+				)
+		`.execute(transaction);
+		await sql`drop table ${oldTableName}`.execute(transaction);
+		await sql`alter table ${nextTableName} rename to ${oldTableName}`.execute(
+			transaction
+		);
+	});
 }
 
 async function rebuildSsoUserClientGrantTable(database: Kysely<TDatabase>) {
@@ -494,42 +498,44 @@ async function rebuildSsoUserClientGrantTable(database: Kysely<TDatabase>) {
 	const clientTableName = sql.raw(TABLE_NAME_MAP.ssoClient);
 	const userTableName = sql.raw(TABLE_NAME_MAP.user);
 
-	await sql`drop table if exists ${nextTableName}`.execute(database);
-	await sql`
-		create table ${nextTableName} (
-			client_id text not null references ${clientTableName}(id) on delete cascade,
-			user_id text not null references ${userTableName}(id) on delete cascade,
-			created_at integer not null,
-			updated_at integer not null,
-			primary key (client_id, user_id)
-		)
-	`.execute(database);
-	await sql`
-		insert into ${nextTableName} (
-			client_id,
-			user_id,
-			created_at,
-			updated_at
-		)
-		select
-			client_id,
-			user_id,
-			min(created_at),
-			max(updated_at)
-		from ${oldTableName}
-		where exists (
-			select 1 from ${clientTableName}
-			where ${clientTableName}.id = ${oldTableName}.client_id
-		) and exists (
-			select 1 from ${userTableName}
-			where ${userTableName}.id = ${oldTableName}.user_id
-		)
-		group by client_id, user_id
-	`.execute(database);
-	await sql`drop table ${oldTableName}`.execute(database);
-	await sql`alter table ${nextTableName} rename to ${oldTableName}`.execute(
-		database
-	);
+	await database.transaction().execute(async (transaction) => {
+		await sql`drop table if exists ${nextTableName}`.execute(transaction);
+		await sql`
+			create table ${nextTableName} (
+				client_id text not null references ${clientTableName}(id) on delete cascade,
+				user_id text not null references ${userTableName}(id) on delete cascade,
+				created_at integer not null,
+				updated_at integer not null,
+				primary key (client_id, user_id)
+			)
+		`.execute(transaction);
+		await sql`
+			insert into ${nextTableName} (
+				client_id,
+				user_id,
+				created_at,
+				updated_at
+			)
+			select
+				client_id,
+				user_id,
+				min(created_at),
+				max(updated_at)
+			from ${oldTableName}
+			where exists (
+				select 1 from ${clientTableName}
+				where ${clientTableName}.id = ${oldTableName}.client_id
+			) and exists (
+				select 1 from ${userTableName}
+				where ${userTableName}.id = ${oldTableName}.user_id
+			)
+			group by client_id, user_id
+		`.execute(transaction);
+		await sql`drop table ${oldTableName}`.execute(transaction);
+		await sql`alter table ${nextTableName} rename to ${oldTableName}`.execute(
+			transaction
+		);
+	});
 }
 
 async function rebuildSsoTablesIfNeeded(database: Kysely<TDatabase>) {

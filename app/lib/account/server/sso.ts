@@ -497,21 +497,19 @@ export async function createSsoTicket(
 	const ticket = createSsoTicketToken();
 	const ticketHash = hashSsoTicket(ticket);
 
-	await db.transaction().execute(async (trx) => {
-		await trx
-			.insertInto(TICKET_TABLE_NAME)
-			.values({
-				client_id: clientId,
-				code_challenge: codeChallenge,
-				created_at: now,
-				expires_at: now + SSO_TICKET_TTL_MS,
-				redirect_uri: redirectUri,
-				ticket_hash: ticketHash,
-				used_at: null,
-				user_id: userId,
-			})
-			.execute();
-	});
+	await db
+		.insertInto(TICKET_TABLE_NAME)
+		.values({
+			client_id: clientId,
+			code_challenge: codeChallenge,
+			created_at: now,
+			expires_at: now + SSO_TICKET_TTL_MS,
+			redirect_uri: redirectUri,
+			ticket_hash: ticketHash,
+			used_at: null,
+			user_id: userId,
+		})
+		.execute();
 
 	return ticket;
 }
@@ -617,7 +615,7 @@ export function createSsoCallbackSignature(
 		.digest('base64url');
 }
 
-function getSsoContextCookieOptions(request?: NextRequest) {
+export function getSsoContextCookieOptions(request?: NextRequest) {
 	return {
 		httpOnly: true,
 		maxAge: SSO_CONTEXT_COOKIE_MAX_AGE,
@@ -814,6 +812,7 @@ async function dispatchSsoCallback(record: TSsoCallbackQueue) {
 		return { status: 'delete' as const };
 	}
 
+	// The first active secret is the callback signing key; remaining active secrets keep client-secret rotation compatible.
 	const [signingSecret] = client.secret_hashes;
 	if (signingSecret === undefined) {
 		return { message: 'server-misconfigured', status: 'failed' as const };
@@ -924,7 +923,8 @@ export async function dispatchSsoCallbacks(
 	let succeeded = 0;
 
 	for (const record of records) {
-		if (!(await claimSsoCallbackQueueRecord(record, Date.now()))) {
+		const claimNow = Date.now();
+		if (!(await claimSsoCallbackQueueRecord(record, claimNow))) {
 			continue;
 		}
 

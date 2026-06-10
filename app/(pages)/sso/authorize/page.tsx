@@ -14,6 +14,7 @@ import {
 	createSsoRedirectUrl,
 	createSsoTicket,
 	getSsoClientById,
+	getSsoContextCookieOptions,
 	getSsoContextCookieValue,
 	validateSsoRedirectUri,
 } from '@/lib/account/server/sso';
@@ -40,11 +41,8 @@ async function clearSsoCookieForRedirect(request: NextRequest) {
 	const setCookieHeader = response.headers.get('set-cookie');
 	if (setCookieHeader !== null) {
 		cookieStore.set(SSO_CONTEXT_COOKIE_NAME, '', {
-			httpOnly: true,
+			...getSsoContextCookieOptions(request),
 			maxAge: 0,
-			path: '/',
-			sameSite: 'lax',
-			secure: request.nextUrl.protocol === 'https:',
 		});
 	}
 }

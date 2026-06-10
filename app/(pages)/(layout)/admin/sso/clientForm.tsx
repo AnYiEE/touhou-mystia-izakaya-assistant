@@ -4,9 +4,6 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-
-import { Textarea } from '@heroui/input';
-
 import {
 	faArrowLeft,
 	faClipboard,
@@ -17,6 +14,7 @@ import {
 	faServer,
 	faTrash,
 } from '@fortawesome/free-solid-svg-icons';
+import { Textarea } from '@heroui/input';
 
 import {
 	Button,
