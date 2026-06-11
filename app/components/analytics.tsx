@@ -125,7 +125,6 @@ function trackEventFunction(
 	name: string,
 	value?: number | string
 ) {
-	setAnalyticsUserId();
 	push(
 		['setCustomUrl', location.href],
 		['setDocumentTitle', document.title],
@@ -146,7 +145,6 @@ export const trackEvent = trackEventFunction as typeof trackEventFunction & {
 trackEvent.category = trackCategoryMap;
 
 function trackPageView() {
-	setAnalyticsUserId();
 	push(
 		['setCustomUrl', location.href],
 		['setDocumentTitle', document.title],
@@ -155,7 +153,6 @@ function trackPageView() {
 }
 
 export function ping() {
-	setAnalyticsUserId();
 	push(['ping']);
 }
 
@@ -197,8 +194,15 @@ export default function Analytics() {
 	const fingerprintUserId = globalStore.persistence.userId.use();
 	const analyticsUserId = isLoggedIn ? (user?.id ?? null) : fingerprintUserId;
 
+	const isUserIdInitialized = useRef(false);
+
 	useEffect(() => {
 		if (globalThis._paq === undefined) {
+			return;
+		}
+
+		if (!isUserIdInitialized.current) {
+			isUserIdInitialized.current = true;
 			return;
 		}
 
