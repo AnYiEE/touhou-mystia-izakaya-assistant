@@ -13,6 +13,19 @@ import {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+function checkSsoClientConflictError(error: unknown) {
+	if (error === null || typeof error !== 'object') {
+		return false;
+	}
+
+	const code = Object.getOwnPropertyDescriptor(error, 'code')
+		?.value as unknown;
+	return (
+		code === 'SQLITE_CONSTRAINT_PRIMARYKEY' ||
+		code === 'SQLITE_CONSTRAINT_UNIQUE'
+	);
+}
+
 export async function GET(request: NextRequest) {
 	const check = await checkAdminSsoClientRequest(
 		request,
@@ -74,10 +87,7 @@ export async function POST(request: NextRequest) {
 			201
 		);
 	} catch (error) {
-		if (
-			error instanceof Error &&
-			/unique|constraint/iu.test(error.message)
-		) {
+		if (checkSsoClientConflictError(error)) {
 			return createNoStoreErrorResponse('sso-client-conflict', 409);
 		}
 		throw error;

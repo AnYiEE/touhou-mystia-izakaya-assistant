@@ -1,6 +1,6 @@
 import { redirect, unstable_rethrow } from 'next/navigation';
 import { cookies, headers } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
 import { Button, Card } from '@/design/ui/components';
 
@@ -9,8 +9,8 @@ import Heading from '@/components/heading';
 
 import {
 	SSO_CONTEXT_COOKIE_NAME,
+	checkSsoClientEnabled,
 	checkSsoRedirectUriFormat,
-	clearSsoContextCookie,
 	createSsoRedirectUrl,
 	createSsoTicket,
 	getSsoClientById,
@@ -35,16 +35,11 @@ async function createRequestFromHeaders() {
 }
 
 async function clearSsoCookieForRedirect(request: NextRequest) {
-	const response = new NextResponse(null);
-	clearSsoContextCookie(response, request);
 	const cookieStore = await cookies();
-	const setCookieHeader = response.headers.get('set-cookie');
-	if (setCookieHeader !== null) {
-		cookieStore.set(SSO_CONTEXT_COOKIE_NAME, '', {
-			...getSsoContextCookieOptions(request),
-			maxAge: 0,
-		});
-	}
+	cookieStore.set(SSO_CONTEXT_COOKIE_NAME, '', {
+		...getSsoContextCookieOptions(request),
+		maxAge: 0,
+	});
 }
 
 async function agreeSsoAuthorize(formData: FormData) {
@@ -75,6 +70,7 @@ async function agreeSsoAuthorize(formData: FormData) {
 		}
 		if (
 			client === null ||
+			!checkSsoClientEnabled(client) ||
 			!validateSsoRedirectUri(client, context.redirect_uri)
 		) {
 			redirect('/sso/authorize?status=invalid');
@@ -219,6 +215,7 @@ export default async function SsoAuthorizePage({
 		const client = await getSsoClientById(context.client_id);
 		if (
 			client === null ||
+			!checkSsoClientEnabled(client) ||
 			!validateSsoRedirectUri(client, context.redirect_uri)
 		) {
 			return <SsoAuthorizeMessage status="invalid" />;

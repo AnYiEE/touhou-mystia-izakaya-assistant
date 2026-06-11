@@ -578,7 +578,7 @@ X-Sso-Signature: t=1710000000000,v1=base64url(HMAC-SHA256(signing_secret, "{t}.{
 2. 解析 `t` 和 `v1`。
 3. 检查 `t` 与当前时间的偏差，建议允许 ±5 分钟。
 4. 使用所有仍被外部服务接受的原始 `client_secret` 计算 `SHA-256(client_secret).hex()`。
-5. 对每个派生出的 signing secret 计算 `HMAC-SHA256(signing_secret, `${t}.${rawBody}`)`。
+5. 对每个派生出的 signing secret 计算 `HMAC-SHA256(signing_secret, "${t}.${rawBody}")`。
 6. 使用 timing-safe compare 比对签名。
 7. 验签成功后再解析 JSON body 并处理业务撤销。
 

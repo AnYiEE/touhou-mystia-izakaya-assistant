@@ -85,12 +85,12 @@ function normalizeOptionalUri(value: string) {
 
 function createUpdateBodyFromClient(
 	client: IAdminSsoClientProfile,
-	disabledAt: number | null
+	disabledAtIntent: number | null
 ): IAdminSsoClientUpdateBody {
 	return {
 		cancel_redirect_uri: client.cancel_redirect_uri,
 		custom_scheme_redirect_uris: client.custom_scheme_redirect_uris,
-		disabled_at: disabledAt,
+		disabled_at: disabledAtIntent,
 		generate_secret: false,
 		https_redirect_uris: client.https_redirect_uris,
 		id: client.id,
@@ -405,7 +405,8 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 			return;
 		}
 
-		const nextDisabledAt = client.disabled_at === null ? Date.now() : null;
+		const shouldDisableClient = client.disabled_at === null;
+		const nextDisabledAtIntent = shouldDisableClient ? 1 : null;
 		setIsToggleClientPopoverOpen(false);
 		setIsDeletePopoverOpen(false);
 		setIsSaving(true);
@@ -414,16 +415,14 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 
 		void updateAdminSsoClient(
 			client.id,
-			createUpdateBodyFromClient(client, nextDisabledAt),
+			createUpdateBodyFromClient(client, nextDisabledAtIntent),
 			admin.csrf_token
 		)
 			.then((data) => {
 				setClient(data.client);
 				setSecretHashes(data.client.secret_hashes);
 				setMessage(
-					nextDisabledAt === null
-						? 'SSO客户端已启用'
-						: 'SSO客户端已禁用'
+					shouldDisableClient ? 'SSO客户端已禁用' : 'SSO客户端已启用'
 				);
 			})
 			.catch((error: unknown) => {

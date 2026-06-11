@@ -87,6 +87,10 @@ export async function PUT(
 	) {
 		return createNoStoreErrorResponse('client-disabled', 403);
 	}
+	const nextDisabledAt =
+		body.disabled_at === null
+			? null
+			: (currentClient.disabled_at ?? Date.now());
 
 	const secret = body.generate_secret
 		? actionsModule.createSsoClientSecret()
@@ -97,6 +101,7 @@ export async function PUT(
 			: [...body.secret_hashes, secret.secret_hash];
 	const updated = await actionsModule.updateSsoClient({
 		...body,
+		disabled_at: nextDisabledAt,
 		secret_hashes: secretHashes,
 	});
 	if (updated === null) {
