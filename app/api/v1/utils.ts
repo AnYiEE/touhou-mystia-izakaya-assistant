@@ -74,7 +74,7 @@ export function createNoStoreJsonResponse<T>(
 }
 
 export function createNoStoreRedirectResponse(url: URL | string) {
-	const response = NextResponse.redirect(url, 302);
+	const response = NextResponse.redirect(url, 303);
 	const noStoreInit = createNoStoreInit();
 
 	noStoreInit.headers.forEach((value, key) => {

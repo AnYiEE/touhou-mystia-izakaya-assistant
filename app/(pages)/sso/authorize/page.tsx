@@ -27,7 +27,9 @@ export const dynamic = 'force-dynamic';
 async function createRequestFromHeaders() {
 	const requestHeaders = await headers();
 	const host = requestHeaders.get('host') ?? 'localhost';
-	const protocol = requestHeaders.get('x-forwarded-proto') ?? 'https';
+	const defaultProtocol =
+		process.env.NODE_ENV === 'production' ? 'https' : 'http';
+	const protocol = requestHeaders.get('x-forwarded-proto') ?? defaultProtocol;
 
 	return new NextRequest(`${protocol}://${host}/sso/authorize`, {
 		headers: requestHeaders,

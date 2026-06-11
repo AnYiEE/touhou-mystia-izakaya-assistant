@@ -8,6 +8,7 @@ import {
 import { checkDispatchSecret, checkSsoRateLimitResponse } from '../utils';
 import {
 	SSO_CALLBACK_DISPATCH_LIMIT,
+	deleteExpiredSsoTickets,
 	dispatchSsoCallbacks,
 } from '@/lib/account/server/sso';
 import { getLogSafeErrorCode } from '@/lib/logging';
@@ -41,9 +42,15 @@ export async function POST(request: NextRequest) {
 	}
 
 	try {
-		const result = await dispatchSsoCallbacks(SSO_CALLBACK_DISPATCH_LIMIT);
+		const [ticketsDeleted, result] = await Promise.all([
+			deleteExpiredSsoTickets(),
+			dispatchSsoCallbacks(SSO_CALLBACK_DISPATCH_LIMIT),
+		]);
 
-		return createNoStoreJsonResponse(result);
+		return createNoStoreJsonResponse({
+			...result,
+			deleted_expired_tickets: ticketsDeleted,
+		});
 	} catch (error) {
 		console.warn('SSO callback dispatch failed.', {
 			errorCode: getLogSafeErrorCode(error),
