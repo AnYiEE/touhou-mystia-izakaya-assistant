@@ -621,7 +621,7 @@ export async function validateSsoTicket(
 				.where('id', '=', record.user_id)
 				.executeTakeFirst()) ?? null;
 		if (user === null) {
-			return { ticket: record, user, user_error: null };
+			return { ticket: record, user, user_error: 'user-deleted' };
 		}
 
 		const userError = getSsoUserStatusError(user);
@@ -924,17 +924,15 @@ async function markSsoCallbackFailed(
 		? CALLBACK_FINAL_FAILURE_NEXT_RETRY_AT
 		: now + getSsoCallbackRetryDelayMs(nextAttempts);
 
-	await db.transaction().execute(async (trx) => {
-		await trx
-			.updateTable(CALLBACK_QUEUE_TABLE_NAME)
-			.set({
-				attempts: nextAttempts,
-				last_error: errorMessage,
-				next_retry_at: nextRetryAt,
-			})
-			.where('id', '=', record.id)
-			.execute();
-	});
+	await db
+		.updateTable(CALLBACK_QUEUE_TABLE_NAME)
+		.set({
+			attempts: nextAttempts,
+			last_error: errorMessage,
+			next_retry_at: nextRetryAt,
+		})
+		.where('id', '=', record.id)
+		.execute();
 
 	return isFinalFailed;
 }
@@ -942,12 +940,10 @@ async function markSsoCallbackFailed(
 async function deleteSsoCallbackQueueRecord(id: TSsoCallbackQueue['id']) {
 	const db = await getAccountDatabase();
 
-	await db.transaction().execute(async (trx) => {
-		await trx
-			.deleteFrom(CALLBACK_QUEUE_TABLE_NAME)
-			.where('id', '=', id)
-			.execute();
-	});
+	await db
+		.deleteFrom(CALLBACK_QUEUE_TABLE_NAME)
+		.where('id', '=', id)
+		.execute();
 }
 
 export async function dispatchSsoCallbacks(

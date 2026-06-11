@@ -1,25 +1,46 @@
 import { spawn } from 'node:child_process';
-import { env, execPath } from 'node:process';
+import { extname } from 'node:path';
+import { env, execPath, platform } from 'node:process';
 
 const offlineEnv = { ...env, OFFLINE: 'true' };
 const packageManagerExecPath = env['npm_execpath'];
 
+function checkNodeScriptPath(filePath: string) {
+	const extension = extname(filePath).toLowerCase();
+
+	return extension === '.cjs' || extension === '.js' || extension === '.mjs';
+}
+
 function createLocalBinCommand(command: string, args: string[]) {
 	if (packageManagerExecPath === undefined) {
-		return { args, command };
+		return { args, command, shell: false };
+	}
+
+	if (checkNodeScriptPath(packageManagerExecPath)) {
+		return {
+			args: [packageManagerExecPath, 'exec', command, ...args],
+			command: execPath,
+			shell: false,
+		};
 	}
 
 	return {
-		args: [packageManagerExecPath, 'exec', command, ...args],
-		command: execPath,
+		args: ['exec', command, ...args],
+		command: packageManagerExecPath,
+		shell: platform === 'win32',
 	};
 }
 
 function run(command: string, args: string[]) {
 	return new Promise<void>((resolve, reject) => {
 		const localBinCommand = createLocalBinCommand(command, args);
+		const executedCommand = [
+			localBinCommand.command,
+			...localBinCommand.args,
+		].join(' ');
 		const child = spawn(localBinCommand.command, localBinCommand.args, {
 			env: offlineEnv,
+			shell: localBinCommand.shell,
 			stdio: 'inherit',
 		});
 
@@ -32,7 +53,7 @@ function run(command: string, args: string[]) {
 
 			reject(
 				new Error(
-					`${command} ${args.join(' ')} failed${
+					`${executedCommand} failed${
 						code === null ? '' : ` with exit code ${code}`
 					}${signal === null ? '' : ` after signal ${signal}`}`
 				)

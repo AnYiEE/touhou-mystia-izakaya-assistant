@@ -95,11 +95,11 @@ export async function POST(request: NextRequest) {
 		if (validation === null) {
 			return createNoStoreErrorResponse('invalid-ticket', 401);
 		}
-		if (validation.user === null) {
-			return createNoStoreErrorResponse('invalid-ticket', 401);
-		}
 		if (validation.user_error !== null) {
 			return createNoStoreErrorResponse(validation.user_error, 403);
+		}
+		if (validation.user === null) {
+			return createNoStoreErrorResponse('invalid-ticket', 401);
 		}
 
 		const profile = createAccountUserProfile(validation.user);

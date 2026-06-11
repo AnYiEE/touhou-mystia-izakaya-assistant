@@ -368,7 +368,15 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 			});
 	}, [admin, applyClient, client, createBody, isEditMode, secretHashes]);
 
-	const handleCopySecret = useCallback((secretHash: string) => {
+	const handleCopySecret = useCallback(async (secretHash: string) => {
+		try {
+			// eslint-disable-next-line compat/compat -- Prefer the modern Clipboard API and keep execCommand as a fallback.
+			await navigator.clipboard.writeText(secretHash);
+			return;
+		} catch {
+			// Fall back to the legacy textarea copy path below.
+		}
+
 		const textarea = document.createElement('textarea');
 		textarea.value = secretHash;
 		textarea.style.position = 'fixed';
@@ -507,7 +515,7 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 						size="sm"
 						variant="flat"
 						onPress={() => {
-							handleCopySecret(secretHash);
+							void handleCopySecret(secretHash);
 						}}
 					>
 						<FontAwesomeIcon icon={faClipboard} className="w-3" />

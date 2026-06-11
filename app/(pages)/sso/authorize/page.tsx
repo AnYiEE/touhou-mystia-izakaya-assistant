@@ -111,8 +111,8 @@ async function cancelSsoAuthorize() {
 	}
 
 	try {
-		const client = await getSsoClientById(context.client_id);
 		await clearSsoCookieForRedirect(request);
+		const client = await getSsoClientById(context.client_id);
 		if (
 			client?.cancel_redirect_uri !== undefined &&
 			client.cancel_redirect_uri !== null &&
@@ -210,6 +210,9 @@ export default async function SsoAuthorizePage({
 		}
 		if (auth.data.credential.password_must_change === 1) {
 			return <SsoAuthorizePasswordChangeRequired />;
+		}
+		if (auth.data.user.status !== USER_STATUS_MAP.active) {
+			return <SsoAuthorizeMessage status="invalid" />;
 		}
 
 		const client = await getSsoClientById(context.client_id);

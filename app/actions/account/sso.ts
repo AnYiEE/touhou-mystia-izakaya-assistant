@@ -101,6 +101,24 @@ function createSsoClientUpdate(input: ISsoClientInput, now: number) {
 	} satisfies TSsoClientUpdate;
 }
 
+function createSsoCallbackQueueRecord(
+	clientId: TSsoClient['id'],
+	userId: TUser['id'],
+	event: TSsoCallbackEvent,
+	timestamp: number
+) {
+	return {
+		attempts: 0,
+		client_id: clientId,
+		created_at: timestamp,
+		event,
+		last_error: null,
+		next_retry_at: timestamp,
+		timestamp,
+		user_id: userId,
+	} satisfies TSsoCallbackQueueNew;
+}
+
 export async function createSsoClient(
 	input: ISsoClientCreateInput
 ): Promise<ISsoClientCreateResult> {
@@ -161,16 +179,12 @@ export async function enqueueSsoCallbackInTransaction(
 	event: TSsoCallbackEvent,
 	timestamp: number
 ) {
-	const record = {
-		attempts: 0,
-		client_id: clientId,
-		created_at: timestamp,
+	const record = createSsoCallbackQueueRecord(
+		clientId,
+		userId,
 		event,
-		last_error: null,
-		next_retry_at: timestamp,
-		timestamp,
-		user_id: userId,
-	} satisfies TSsoCallbackQueueNew;
+		timestamp
+	);
 
 	await trx
 		.insertInto(CALLBACK_QUEUE_TABLE_NAME)
@@ -227,13 +241,27 @@ export async function enqueueSsoCallbacksForUserEventInTransaction(
 		.where(`${CLIENT_TABLE_NAME}.status_callback_url`, 'is not', null)
 		.execute();
 
-	for (const client of clients) {
-		await enqueueSsoCallbackInTransaction(
-			trx,
-			client.id,
-			userId,
-			event,
-			timestamp
-		);
+	if (clients.length === 0) {
+		return;
 	}
+
+	const records = clients.map((client) =>
+		createSsoCallbackQueueRecord(client.id, userId, event, timestamp)
+	);
+
+	await trx
+		.insertInto(CALLBACK_QUEUE_TABLE_NAME)
+		.values(records)
+		.onConflict((oc) =>
+			oc
+				.columns(['client_id', 'user_id', 'event'])
+				.doUpdateSet({
+					attempts: 0,
+					created_at: timestamp,
+					last_error: null,
+					next_retry_at: timestamp,
+					timestamp,
+				})
+		)
+		.execute();
 }
