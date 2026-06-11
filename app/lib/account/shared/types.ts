@@ -63,6 +63,49 @@ export interface IAdminResetPasswordBody {
 	password: string;
 }
 
+export interface IAdminSsoClientProfile {
+	cancel_redirect_uri: string | null;
+	created_at: number;
+	custom_scheme_redirect_uris: string[];
+	disabled_at: number | null;
+	https_redirect_uris: string[];
+	id: string;
+	loopback_redirect_paths: string[];
+	name: string;
+	secret_hashes: string[];
+	status_callback_url: string | null;
+	updated_at: number;
+}
+
+export interface IAdminSsoClientListData {
+	clients: IAdminSsoClientProfile[];
+}
+
+export interface IAdminSsoClientDetailData {
+	client: IAdminSsoClientProfile;
+}
+
+export interface IAdminSsoClientCreateBody {
+	cancel_redirect_uri: string | null;
+	custom_scheme_redirect_uris: string[];
+	https_redirect_uris: string[];
+	id: string;
+	loopback_redirect_paths: string[];
+	name: string;
+	status_callback_url: string | null;
+}
+
+export interface IAdminSsoClientUpdateBody extends IAdminSsoClientCreateBody {
+	disabled_at: number | null;
+	generate_secret?: boolean;
+	secret_hashes: string[];
+}
+
+export interface IAdminSsoClientMutationData {
+	client: IAdminSsoClientProfile;
+	client_secret?: string;
+}
+
 export interface IAccountUserProfile {
 	created_at: number;
 	id: string;

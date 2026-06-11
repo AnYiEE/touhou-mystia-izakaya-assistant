@@ -11,6 +11,7 @@ import {
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
+	createNoStoreRedirectResponse,
 } from '@/api/v1/utils';
 import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import {
@@ -164,6 +165,17 @@ export async function POST(request: NextRequest) {
 	if (session === null) {
 		return createInvalidLoginResponse();
 	}
+
+	const ssoModule = await import('@/lib/account/server/sso');
+	const ssoContext = ssoModule.getSsoContextCookie(request);
+	if (ssoContext !== null) {
+		const redirectUrl = new URL('/sso/authorize', request.nextUrl.origin);
+		const response = createNoStoreRedirectResponse(redirectUrl);
+		authModule.setAccountSessionCookie(response, session.token, request);
+
+		return response;
+	}
+
 	const response = createNoStoreJsonResponse({
 		csrf_token: session.csrfToken,
 		password_must_change: credential.password_must_change === 1,

@@ -29,6 +29,7 @@ declare global {
 			VERCEL_GIT_COMMIT_SHA?: string;
 
 			CLEANUP_SECRET?: string;
+			DISPATCH_SECRET?: string;
 		}
 	}
 

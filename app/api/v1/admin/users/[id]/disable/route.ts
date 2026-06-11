@@ -69,12 +69,8 @@ export async function POST(
 
 	const { id } = await params;
 	const usersModule = await import('@/actions/account/users');
-	const isUpdated = await usersModule.setUserStatusIfCurrentStatus(
-		id,
-		USER_STATUS_MAP.active,
-		USER_STATUS_MAP.disabled,
-		true
-	);
+	const isUpdated =
+		await usersModule.disableUserAndDeleteSessionsWithSsoCallbacks(id);
 	if (isUpdated) {
 		return createNoStoreJsonResponse({ message: 'user-disabled' });
 	}

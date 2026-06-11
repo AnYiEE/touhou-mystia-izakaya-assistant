@@ -73,6 +73,17 @@ export function createNoStoreJsonResponse<T>(
 	return createJsonResponse(data, status, createNoStoreInit(init));
 }
 
+export function createNoStoreRedirectResponse(url: URL | string) {
+	const response = NextResponse.redirect(url, 303);
+	const noStoreInit = createNoStoreInit();
+
+	noStoreInit.headers.forEach((value, key) => {
+		response.headers.set(key, value);
+	});
+
+	return response;
+}
+
 export function createNoStoreErrorResponse<T>(
 	message: string,
 	status: number,
