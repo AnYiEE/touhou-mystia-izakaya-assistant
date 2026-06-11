@@ -285,9 +285,7 @@ export function checkSsoRedirectUriFormat(value: string) {
 		const url = new URL(value);
 		if (url.protocol === 'http:') {
 			return (
-				(url.hostname === '127.0.0.1' ||
-					url.hostname === '[::1]' ||
-					url.hostname === '::1') &&
+				['127.0.0.1', '[::1]', '::1'].includes(url.hostname) &&
 				url.username === '' &&
 				url.password === '' &&
 				url.hash === '' &&
@@ -475,10 +473,9 @@ export function validateSsoRedirectUri(
 
 	const url = new URL(redirectUri);
 	if (url.protocol === 'http:') {
-		const isLoopbackHost =
-			url.hostname === '127.0.0.1' ||
-			url.hostname === '[::1]' ||
-			url.hostname === '::1';
+		const isLoopbackHost = ['127.0.0.1', '[::1]', '::1'].includes(
+			url.hostname
+		);
 
 		return (
 			isLoopbackHost &&

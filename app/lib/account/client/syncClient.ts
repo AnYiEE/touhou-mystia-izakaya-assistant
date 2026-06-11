@@ -868,10 +868,10 @@ export function restoreAccountSyncRuntimeState(userId: string) {
 	accountStore.shared.sync.conflicts.set(
 		entries
 			.map((entry) =>
-				entry.paused === 'conflict' && entry.conflict !== null
-					? restoreAccountSyncConflict(entry.conflict, userId)
-						? entry.conflict
-						: null
+				entry.paused === 'conflict' &&
+				entry.conflict !== null &&
+				restoreAccountSyncConflict(entry.conflict, userId)
+					? entry.conflict
 					: null
 			)
 			.filter(

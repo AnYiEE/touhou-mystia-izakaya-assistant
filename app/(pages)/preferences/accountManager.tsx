@@ -875,13 +875,16 @@ export default memo<IProps>(function AccountManager() {
 	}
 
 	const isMessageSuccess =
-		message === '登录成功' ||
-		message === '注册成功' ||
-		message === '密码已更新' ||
-		message === '已撤销授权' ||
-		message === '账号数据已导出' ||
-		message === '云端数据已清空' ||
-		message === '云端数据已清空，其他标签页可能需要手动刷新';
+		message !== null &&
+		[
+			'登录成功',
+			'注册成功',
+			'密码已更新',
+			'已撤销授权',
+			'账号数据已导出',
+			'云端数据已清空',
+			'云端数据已清空，其他标签页可能需要手动刷新',
+		].includes(message);
 	const messageText =
 		message === null ? null : getAccountClientErrorMessage(message);
 	const authErrorMessage =

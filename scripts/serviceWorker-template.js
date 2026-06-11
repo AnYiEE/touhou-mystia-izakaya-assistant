@@ -143,11 +143,9 @@
 		const isCdnServer = host === CDN_HOST;
 		const isSelfHost = host === location.host;
 
-		const isLocalhost =
-			hostname === 'localhost' ||
-			hostname === '127.0.0.1' ||
-			hostname === '::1' ||
-			hostname === '[::1]';
+		const isLocalhost = ['localhost', '127.0.0.1', '::1', '[::1]'].includes(
+			hostname
+		);
 
 		if (
 			!(isCdnServer || isSelfHost) ||

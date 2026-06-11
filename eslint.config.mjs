@@ -155,7 +155,7 @@ export default defineConfig(
 				{ ignoreIIFE: true },
 			],
 			'@typescript-eslint/no-loop-func': 'error',
-			'@typescript-eslint/no-shadow': 'error',
+			'@typescript-eslint/no-shadow': 'off',
 			'@typescript-eslint/no-unsafe-argument': 'warn',
 			'@typescript-eslint/no-unsafe-assignment': 'warn',
 			'@typescript-eslint/no-unsafe-call': 'warn',
@@ -192,6 +192,7 @@ export default defineConfig(
 
 			'sort-destructure-keys/sort-destructure-keys': 'error',
 
+			'unicorn/consistent-compound-words': 'off',
 			'unicorn/consistent-destructuring': 'error',
 			'unicorn/consistent-function-scoping': 'off',
 			'unicorn/custom-error-definition': 'error',
@@ -210,6 +211,7 @@ export default defineConfig(
 			'unicorn/no-new-array': 'off',
 			'unicorn/no-null': 'off',
 			'unicorn/no-this-assignment': 'off',
+			'unicorn/no-this-outside-of-class': 'off',
 			'unicorn/no-unreadable-array-destructuring': 'off',
 			'unicorn/no-unused-properties': 'error',
 			'unicorn/numeric-separators-style': [

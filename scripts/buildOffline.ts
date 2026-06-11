@@ -8,7 +8,7 @@ const packageManagerExecPath = env['npm_execpath'];
 function checkNodeScriptPath(filePath: string) {
 	const extension = extname(filePath).toLowerCase();
 
-	return extension === '.cjs' || extension === '.js' || extension === '.mjs';
+	return ['.cjs', '.js', '.mjs'].includes(extension);
 }
 
 function createLocalBinCommand(command: string, args: string[]) {

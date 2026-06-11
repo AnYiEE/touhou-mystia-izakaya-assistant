@@ -11,7 +11,7 @@ export function getTrustedRequestIp(request: NextRequest) {
 
 	const forwardedFor = request.headers
 		.get('x-forwarded-for')
-		?.split(',')
+		?.split(',', 1)
 		.at(0)
 		?.trim();
 
@@ -33,7 +33,7 @@ export function getRequestUserAgent(request: NextRequest) {
 }
 
 function getFirstHeaderValue(value: string | null) {
-	const firstValue = value?.split(',').at(0)?.trim();
+	const firstValue = value?.split(',', 1).at(0)?.trim();
 
 	return firstValue === undefined || firstValue === '' ? null : firstValue;
 }

@@ -171,7 +171,9 @@ export async function DELETE(request: NextRequest) {
 
 					failedFileCount++;
 					console.warn('Failed to delete temporary backup file', {
-						codeHash: maskBackupCode(fileName.split('.')[0] ?? ''),
+						codeHash: maskBackupCode(
+							fileName.split('.', 1)[0] ?? ''
+						),
 						errorCode: getLogSafeErrorCode(error),
 					});
 				}

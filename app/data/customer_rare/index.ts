@@ -45,13 +45,7 @@ export const CUSTOMER_RATING_MAP = Object.entries(
 	CUSTOMER_EVALUATION_MAP
 ).reduce<Partial<TEvaluationMap>>((acc, [key, value]) => {
 	const ratingKey = key as TEvaluationKey;
-	if (
-		ratingKey === 'exbad' ||
-		ratingKey === 'bad' ||
-		ratingKey === 'norm' ||
-		ratingKey === 'good' ||
-		ratingKey === 'exgood'
-	) {
+	if (['exbad', 'bad', 'norm', 'good', 'exgood'].includes(ratingKey)) {
 		acc[ratingKey] = value;
 	}
 	return acc;

@@ -97,8 +97,8 @@ export default function InfoButton() {
 						'grid grid-cols-3 content-start break-all pt-2 text-justify text-small text-default-900',
 				}}
 			>
-				{CUSTOMER_RATING_KEY.filter(
-					(key) => key === 'exbad' || key === 'norm' || key === 'good'
+				{CUSTOMER_RATING_KEY.filter((key) =>
+					['exbad', 'norm', 'good'].includes(key)
 				).map((ratingKey, index) => (
 					<div key={index} className="flex items-center gap-3 px-1">
 						<Avatar

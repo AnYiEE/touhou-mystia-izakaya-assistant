@@ -72,16 +72,18 @@ export default memo<IProps>(function Content({ data }) {
 									'-translate-x-0.5 scale-85':
 										name === '夜雀服',
 									'scale-90': name === '雀酒屋工作装',
-									'translate-x-px':
-										name === '中华风校服' ||
-										name === '锦绣中国娃娃' ||
-										name === '圣诞节特典晚装' ||
-										name === '魔女服' ||
-										name === '仙女服',
-									'translate-y-px':
-										name === '冬季水手服' ||
-										name === '魔女服' ||
-										name === '朋克演出服',
+									'translate-x-px': [
+										'中华风校服',
+										'锦绣中国娃娃',
+										'圣诞节特典晚装',
+										'魔女服',
+										'仙女服',
+									].includes(name),
+									'translate-y-px': [
+										'冬季水手服',
+										'魔女服',
+										'朋克演出服',
+									].includes(name),
 								})}
 							/>
 						}

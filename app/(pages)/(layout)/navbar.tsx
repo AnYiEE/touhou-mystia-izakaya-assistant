@@ -148,7 +148,7 @@ const NavbarButtonLink = memo<PropsWithChildren<INavbarButtonLinkProps>>(
 
 export default function Navbar() {
 	const { pathname } = usePathname();
-	const basePathname = `/${pathname.split('/')[1]}`;
+	const basePathname = `/${pathname.split('/', 2)[1]}`;
 	const router = useRouter();
 	const startProgress = useProgress();
 	const vibrate = useVibrate();

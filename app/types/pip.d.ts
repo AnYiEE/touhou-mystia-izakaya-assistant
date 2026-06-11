@@ -13,5 +13,4 @@ declare global {
 	var documentPictureInPicture: DocumentPictureInPicture | undefined;
 }
 
-// eslint-disable-next-line unicorn/require-module-specifiers
 export {};
