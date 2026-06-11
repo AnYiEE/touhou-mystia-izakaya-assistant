@@ -222,6 +222,30 @@ export async function enqueueSsoCallback(
 	});
 }
 
+export async function deleteSsoUserClientGrant(
+	userId: TUser['id'],
+	clientId: TSsoClient['id']
+) {
+	const db = await getAccountDatabase();
+
+	return db.transaction().execute(async (trx) => {
+		const grantResult = await trx
+			.deleteFrom(GRANT_TABLE_NAME)
+			.where('client_id', '=', clientId)
+			.where('user_id', '=', userId)
+			.executeTakeFirst();
+
+		await trx
+			.deleteFrom(TABLE_NAME_MAP.ssoTicket)
+			.where('client_id', '=', clientId)
+			.where('user_id', '=', userId)
+			.where('used_at', 'is', null)
+			.execute();
+
+		return grantResult.numDeletedRows === 1n;
+	});
+}
+
 export async function enqueueSsoCallbacksForUserEventInTransaction(
 	trx: Transaction<TDatabase>,
 	userId: TUser['id'],

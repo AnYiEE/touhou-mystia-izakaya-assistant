@@ -568,6 +568,48 @@ export function getSsoUserStatusError(user: TUser) {
 	return null;
 }
 
+export async function hasSsoUserClientGrant(
+	clientId: TSsoClient['id'],
+	userId: TUser['id']
+) {
+	const db = await getAccountDatabase();
+	const record = await db
+		.selectFrom(GRANT_TABLE_NAME)
+		.select('client_id')
+		.where('client_id', '=', clientId)
+		.where('user_id', '=', userId)
+		.executeTakeFirst();
+
+	return record !== undefined;
+}
+
+export async function listSsoUserClientGrantsForUser(userId: TUser['id']) {
+	const db = await getAccountDatabase();
+	const records = await db
+		.selectFrom(GRANT_TABLE_NAME)
+		.innerJoin(
+			CLIENT_TABLE_NAME,
+			`${GRANT_TABLE_NAME}.client_id`,
+			`${CLIENT_TABLE_NAME}.id`
+		)
+		.select([
+			`${CLIENT_TABLE_NAME}.id as client_id`,
+			`${CLIENT_TABLE_NAME}.name as client_name`,
+			`${GRANT_TABLE_NAME}.created_at`,
+			`${GRANT_TABLE_NAME}.updated_at`,
+		])
+		.where(`${GRANT_TABLE_NAME}.user_id`, '=', userId)
+		.orderBy(`${GRANT_TABLE_NAME}.updated_at`, 'desc')
+		.orderBy(`${CLIENT_TABLE_NAME}.id`, 'asc')
+		.execute();
+
+	return records.map((record) => ({
+		client: { id: record.client_id, name: record.client_name },
+		created_at: record.created_at,
+		updated_at: record.updated_at,
+	}));
+}
+
 export async function validateSsoTicket(
 	clientId: string,
 	ticket: string,

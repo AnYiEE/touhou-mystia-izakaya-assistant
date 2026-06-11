@@ -276,7 +276,7 @@ export const AdminMetric = memo<IAdminMetricProps>(function AdminMetric({
 	return (
 		<div
 			className={cn(
-				'flex min-h-12 min-w-0 flex-col justify-center sm:border-l sm:border-default-200/80 sm:pl-3 sm:first:border-l-0 sm:first:pl-0',
+				'flex min-h-12 min-w-0 flex-col justify-center',
 				className
 			)}
 		>

@@ -1,6 +1,12 @@
 'use client';
 
-import { type PropsWithChildren, memo, useCallback, useState } from 'react';
+import {
+	type PropsWithChildren,
+	memo,
+	useCallback,
+	useEffect,
+	useState,
+} from 'react';
 
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -13,6 +19,7 @@ import {
 	faCloudArrowUp,
 	faDownload,
 	faKey,
+	faPlug,
 	faRightToBracket,
 	faRotate,
 	faShieldHalved,
@@ -43,10 +50,12 @@ import {
 	deleteAccount,
 	deleteAccountData,
 	exportAccountData,
+	listAccountSsoGrants,
 	loginAccount,
 	logoutAccount,
 	logoutAllAccount,
 	registerAccount,
+	revokeAccountSsoGrant,
 } from '@/lib/account/client/api';
 import { postAccountSyncBroadcastMessage } from '@/lib/account/client/broadcast';
 import { getAccountClientErrorMessage } from '@/lib/account/client/errorMessage';
@@ -68,6 +77,7 @@ import {
 	checkPasswordPolicy,
 } from '@/lib/account/shared/constants';
 import { getLogSafeErrorCode } from '@/lib/logging';
+import type { IAccountSsoGrant } from '@/lib/account/shared/types';
 import { accountStore, globalStore } from '@/stores';
 import { downloadJson } from '@/utilities';
 
@@ -136,6 +146,7 @@ interface IAccountConfirmButtonProps {
 	buttonLabel: ReactNodeWithoutBoolean;
 	color: IButtonProps['color'];
 	confirmLabel: ReactNodeWithoutBoolean;
+	fullWidth?: boolean;
 	icon: FontAwesomeIconProps['icon'];
 	isDisabled: boolean;
 	isLoading: boolean;
@@ -150,6 +161,7 @@ const AccountConfirmButton = memo<IAccountConfirmButtonProps>(
 		buttonLabel,
 		color,
 		confirmLabel,
+		fullWidth = true,
 		icon,
 		isDisabled,
 		isLoading,
@@ -167,7 +179,7 @@ const AccountConfirmButton = memo<IAccountConfirmButtonProps>(
 			>
 				<PopoverTrigger>
 					<Button
-						fullWidth
+						fullWidth={fullWidth}
 						className="justify-start"
 						color={color}
 						isDisabled={isDisabled}
@@ -258,6 +270,10 @@ export default memo<IProps>(function AccountManager() {
 		useState(false);
 	const [isDeleteAccountPopoverOpen, setIsDeleteAccountPopoverOpen] =
 		useState(false);
+	const [ssoGrants, setSsoGrants] = useState<IAccountSsoGrant[]>([]);
+	const [revokeTargetClientId, setRevokeTargetClientId] = useState<
+		string | null
+	>(null);
 
 	const isRegistrationPasswordInvalid =
 		authMode === 'register' &&
@@ -767,6 +783,80 @@ export default memo<IProps>(function AccountManager() {
 		setIsDeleteAccountPopoverOpen(false);
 	}, []);
 
+	useEffect(() => {
+		if (user === null || csrfToken === null || passwordMustChange) {
+			setSsoGrants([]);
+			return;
+		}
+
+		let cancelled = false;
+		listAccountSsoGrants()
+			.then((data) => {
+				if (!cancelled) {
+					setSsoGrants(data.grants);
+				}
+			})
+			.catch((error: unknown) => {
+				if (cancelled) {
+					return;
+				}
+				console.warn('Failed to list SSO grants.', {
+					errorCode: getLogSafeErrorCode(error),
+				});
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, [csrfToken, passwordMustChange, user]);
+
+	const handleRevokeSsoGrantOpen = useCallback((clientId: string) => {
+		setRevokeTargetClientId(clientId);
+	}, []);
+
+	const handleRevokeSsoGrantCancel = useCallback(() => {
+		setRevokeTargetClientId(null);
+	}, []);
+
+	const handleRevokeSsoGrant = useCallback(() => {
+		if (
+			csrfToken === null ||
+			revokeTargetClientId === null ||
+			isSubmitting
+		) {
+			return;
+		}
+
+		const clientId = revokeTargetClientId;
+		setRevokeTargetClientId(null);
+		setIsSubmitting(true);
+
+		revokeAccountSsoGrant(clientId, csrfToken)
+			.then(() => {
+				setSsoGrants((prev) =>
+					prev.filter((grant) => grant.client.id !== clientId)
+				);
+				setMessage('已撤销授权');
+			})
+			.catch((error: unknown) => {
+				if (
+					handleUnauthorizedAccountError(error, {
+						expectedCsrfToken: csrfToken,
+						expectedUserId: user?.id ?? null,
+					})
+				) {
+					return;
+				}
+
+				setMessage(
+					error instanceof Error ? error.message : '撤销授权失败'
+				);
+			})
+			.finally(() => {
+				setIsSubmitting(false);
+			});
+	}, [csrfToken, isSubmitting, revokeTargetClientId, user]);
+
 	if (bootstrapStatus === 'error') {
 		return (
 			<div className="space-y-4">
@@ -788,6 +878,7 @@ export default memo<IProps>(function AccountManager() {
 		message === '登录成功' ||
 		message === '注册成功' ||
 		message === '密码已更新' ||
+		message === '已撤销授权' ||
 		message === '账号数据已导出' ||
 		message === '云端数据已清空' ||
 		message === '云端数据已清空，其他标签页可能需要手动刷新';
@@ -948,7 +1039,7 @@ export default memo<IProps>(function AccountManager() {
 						{isSsoContext ? (
 							<>
 								<p>
-									登录后，你可以授权外部应用获取你的小助手账号身份。
+									登录后，您可以授权外部应用获取您的小助手账号身份。
 								</p>
 								<p>
 									注册后会自动登录；登录后即可在授权页面完成确认。
@@ -1193,6 +1284,61 @@ export default memo<IProps>(function AccountManager() {
 										onCancel={handleDeleteAccountCancel}
 									/>
 								</div>
+							</div>
+						</AccountPanel>
+					)}
+					{!passwordMustChange && ssoGrants.length > 0 && (
+						<AccountPanel className="space-y-3">
+							<AccountPanelTitle icon={faPlug}>
+								已授权应用
+							</AccountPanelTitle>
+							<div className="flex flex-col gap-1">
+								{ssoGrants.map((grant) => (
+									<div
+										key={grant.client.id}
+										className="flex items-center justify-between gap-2"
+									>
+										<span
+											className="truncate text-small text-foreground-600"
+											title={grant.client.id}
+										>
+											{grant.client.name}
+										</span>
+										<AccountConfirmButton
+											buttonLabel="撤销"
+											color="warning"
+											confirmLabel="确认撤销"
+											fullWidth={false}
+											icon={faPlug}
+											isDisabled={
+												isSubmitting ||
+												csrfToken === null
+											}
+											isLoading={
+												isSubmitting &&
+												revokeTargetClientId ===
+													grant.client.id
+											}
+											isOpen={
+												revokeTargetClientId ===
+												grant.client.id
+											}
+											onCancel={
+												handleRevokeSsoGrantCancel
+											}
+											onConfirm={handleRevokeSsoGrant}
+											onOpenChange={(isOpen) => {
+												if (isOpen) {
+													handleRevokeSsoGrantOpen(
+														grant.client.id
+													);
+												} else {
+													handleRevokeSsoGrantCancel();
+												}
+											}}
+										/>
+									</div>
+								))}
 							</div>
 						</AccountPanel>
 					)}

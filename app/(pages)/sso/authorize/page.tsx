@@ -234,7 +234,7 @@ export default async function SsoAuthorizePage({
 					</Heading>
 					<div className="space-y-2 text-small leading-6 text-foreground-600">
 						<p className="text-base font-medium text-foreground-800">
-							{client.name}将获取你的小助手账号身份
+							{client.name}将获取您的小助手账号身份
 						</p>
 						<p>当前账号：{auth.data.user.username}</p>
 					</div>

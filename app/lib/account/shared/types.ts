@@ -114,3 +114,18 @@ export interface IAccountUserProfile {
 	status: TUserStatus;
 	username: string;
 }
+
+export interface IAccountSsoGrantClient {
+	id: string;
+	name: string;
+}
+
+export interface IAccountSsoGrant {
+	client: IAccountSsoGrantClient;
+	created_at: number;
+	updated_at: number;
+}
+
+export interface IAccountSsoGrantListData {
+	grants: IAccountSsoGrant[];
+}

@@ -16,6 +16,7 @@ import {
 	getSsoClientById,
 	getSsoUserById,
 	getSsoUserStatusError,
+	hasSsoUserClientGrant,
 	verifySsoClientSecret,
 } from '@/lib/account/server/sso';
 import { getLogSafeErrorCode } from '@/lib/logging';
@@ -86,6 +87,11 @@ export async function POST(request: NextRequest) {
 		const statusError = getSsoUserStatusError(user);
 		if (statusError !== null) {
 			return createNoStoreErrorResponse(statusError, 403);
+		}
+
+		const hasGrant = await hasSsoUserClientGrant(clientId, userId);
+		if (!hasGrant) {
+			return createNoStoreErrorResponse('grant-revoked', 403);
 		}
 
 		return createNoStoreJsonResponse({

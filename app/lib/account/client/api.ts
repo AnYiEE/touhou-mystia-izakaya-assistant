@@ -1,4 +1,5 @@
 import {
+	type IAccountSsoGrantListData,
 	type IAccountUserProfile,
 	type IAdminLoginBody,
 	type IAdminResetPasswordBody,
@@ -208,6 +209,27 @@ export async function deleteAccount(csrfToken: string) {
 	return readAccountApiResponse(
 		await fetch(
 			'/api/v1/account/delete',
+			createAccountRequestInit({
+				headers: { 'x-csrf-token': csrfToken },
+				method: 'DELETE',
+			})
+		)
+	);
+}
+
+export async function listAccountSsoGrants() {
+	return readAccountApiResponse<IAccountSsoGrantListData>(
+		await fetch('/api/v1/account/sso/grants', createAccountRequestInit())
+	);
+}
+
+export async function revokeAccountSsoGrant(
+	clientId: string,
+	csrfToken: string
+) {
+	return readAccountApiResponse(
+		await fetch(
+			`/api/v1/account/sso/grants/${encodeURIComponent(clientId)}`,
 			createAccountRequestInit({
 				headers: { 'x-csrf-token': csrfToken },
 				method: 'DELETE',
