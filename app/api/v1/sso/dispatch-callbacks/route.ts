@@ -22,6 +22,15 @@ export async function POST(request: NextRequest) {
 		return featureResponse;
 	}
 
+	const rateLimitResponse = checkSsoRateLimitResponse(
+		request,
+		'sso-dispatch-callbacks',
+		[]
+	);
+	if (rateLimitResponse !== null) {
+		return rateLimitResponse;
+	}
+
 	const secretStatus = checkDispatchSecret(
 		request.headers.get('x-dispatch-secret')
 	);
@@ -32,20 +41,16 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-secret', 401);
 	}
 
-	const rateLimitResponse = checkSsoRateLimitResponse(
-		request,
-		'sso-dispatch-callbacks',
-		[]
-	);
-	if (rateLimitResponse !== null) {
-		return rateLimitResponse;
-	}
-
 	try {
-		const [ticketsDeleted, result] = await Promise.all([
-			deleteExpiredSsoTickets(),
-			dispatchSsoCallbacks(SSO_CALLBACK_DISPATCH_LIMIT),
-		]);
+		const result = await dispatchSsoCallbacks(SSO_CALLBACK_DISPATCH_LIMIT);
+		let ticketsDeleted = 0;
+		try {
+			ticketsDeleted = await deleteExpiredSsoTickets();
+		} catch (error) {
+			console.warn('SSO expired ticket cleanup failed after dispatch.', {
+				errorCode: getLogSafeErrorCode(error),
+			});
+		}
 
 		return createNoStoreJsonResponse({
 			...result,

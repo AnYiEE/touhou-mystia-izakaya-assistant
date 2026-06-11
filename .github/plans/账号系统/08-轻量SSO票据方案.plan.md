@@ -105,7 +105,7 @@ isProject: false
 
 #### 成功响应
 
-用户已登录时，`authorize` 路由返回 `302` 到本项目授权确认页：
+用户已登录时，`authorize` 路由返回 `303` 到本项目授权确认页：
 
 ```text
 /sso/authorize

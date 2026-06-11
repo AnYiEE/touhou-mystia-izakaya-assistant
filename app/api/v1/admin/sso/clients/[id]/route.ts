@@ -20,6 +20,10 @@ function checkStringArrayEqual(left: string[], right: string[]) {
 	);
 }
 
+function mergeStringArrays(...arrays: string[][]) {
+	return [...new Set(arrays.flat())];
+}
+
 export async function GET(
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> }
@@ -82,15 +86,14 @@ export async function PUT(
 		body.generate_secret ||
 		!checkStringArrayEqual(body.secret_hashes, currentClient.secret_hashes);
 	if (
-		(currentClient.disabled_at !== null || body.disabled_at !== null) &&
+		(currentClient.disabled_at !== null || body.disabled) &&
 		isSecretMutation
 	) {
 		return createNoStoreErrorResponse('client-disabled', 403);
 	}
-	const nextDisabledAt =
-		body.disabled_at === null
-			? null
-			: (currentClient.disabled_at ?? Date.now());
+	const nextDisabledAt = body.disabled
+		? (currentClient.disabled_at ?? Date.now())
+		: null;
 
 	const secret = body.generate_secret
 		? actionsModule.createSsoClientSecret()
@@ -98,11 +101,21 @@ export async function PUT(
 	const secretHashes =
 		secret === null
 			? body.secret_hashes
-			: [...body.secret_hashes, secret.secret_hash];
+			: mergeStringArrays(
+					currentClient.secret_hashes,
+					body.secret_hashes,
+					[secret.secret_hash]
+				);
 	const updated = await actionsModule.updateSsoClient({
-		...body,
+		cancel_redirect_uri: body.cancel_redirect_uri,
+		custom_scheme_redirect_uris: body.custom_scheme_redirect_uris,
 		disabled_at: nextDisabledAt,
+		https_redirect_uris: body.https_redirect_uris,
+		id: body.id,
+		loopback_redirect_paths: body.loopback_redirect_paths,
+		name: body.name,
 		secret_hashes: secretHashes,
+		status_callback_url: body.status_callback_url,
 	});
 	if (updated === null) {
 		return createNoStoreErrorResponse('sso-client-not-found', 404);

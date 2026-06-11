@@ -84,14 +84,14 @@ export async function POST(request: NextRequest) {
 			return createNoStoreErrorResponse('user-not-found', 404);
 		}
 
+		const hasGrant = await hasSsoUserClientGrant(clientId, userId);
+		if (!hasGrant) {
+			return createNoStoreErrorResponse('user-not-found', 404);
+		}
+
 		const statusError = getSsoUserStatusError(user);
 		if (statusError !== null) {
 			return createNoStoreErrorResponse(statusError, 403);
-		}
-
-		const hasGrant = await hasSsoUserClientGrant(clientId, userId);
-		if (!hasGrant) {
-			return createNoStoreErrorResponse('grant-revoked', 403);
 		}
 
 		return createNoStoreJsonResponse({

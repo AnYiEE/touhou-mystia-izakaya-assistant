@@ -4,7 +4,9 @@ import { NextRequest } from 'next/server';
 
 import { Button, Card } from '@/design/ui/components';
 
-import SsoAuthorizeAccountGate from './accountGate';
+import SsoAuthorizeAccountGate, {
+	SsoAuthorizeAccountGateButton,
+} from './accountGate';
 import Heading from '@/components/heading';
 
 import {
@@ -165,6 +167,7 @@ function SsoAuthorizeLoginRequired() {
 				<p className="text-small leading-6 text-foreground-600">
 					请先登录小助手账号以继续授权。
 				</p>
+				<SsoAuthorizeAccountGateButton />
 			</Card>
 		</div>
 	);
@@ -180,6 +183,7 @@ function SsoAuthorizePasswordChangeRequired() {
 				<p className="text-small leading-6 text-foreground-600">
 					请先在弹窗中更新账号密码，完成后会继续授权。
 				</p>
+				<SsoAuthorizeAccountGateButton />
 			</Card>
 		</div>
 	);

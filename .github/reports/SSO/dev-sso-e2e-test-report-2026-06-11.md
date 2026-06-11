@@ -1,4 +1,4 @@
-# dev/sso E2E 测试报告（2026-06-11）
+# dev/account E2E 测试报告（2026-06-11）
 
 ## 结论
 
@@ -8,7 +8,7 @@
 
 | 项目              | 值                                       |
 | ----------------- | ---------------------------------------- |
-| 分支              | `dev/sso`                                |
+| 分支              | `dev/account`                            |
 | Provider          | `http://localhost:3000`                  |
 | Mock client HTTP  | `http://127.0.0.1:4000`                  |
 | Mock client HTTPS | `https://127.0.0.1:4443`                 |

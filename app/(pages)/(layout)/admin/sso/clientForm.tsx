@@ -85,12 +85,12 @@ function normalizeOptionalUri(value: string) {
 
 function createUpdateBodyFromClient(
 	client: IAdminSsoClientProfile,
-	disabledAtIntent: number | null
+	disabled: boolean
 ): IAdminSsoClientUpdateBody {
 	return {
 		cancel_redirect_uri: client.cancel_redirect_uri,
 		custom_scheme_redirect_uris: client.custom_scheme_redirect_uris,
-		disabled_at: disabledAtIntent,
+		disabled,
 		generate_secret: false,
 		https_redirect_uris: client.https_redirect_uris,
 		id: client.id,
@@ -273,7 +273,7 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 					body.id,
 					{
 						...body,
-						disabled_at: client?.disabled_at ?? null,
+						disabled: client?.disabled_at !== null,
 						generate_secret: false,
 						secret_hashes: secretHashes,
 					} satisfies IAdminSsoClientUpdateBody,
@@ -339,7 +339,7 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 			client.id,
 			{
 				...body,
-				disabled_at: client.disabled_at,
+				disabled: false,
 				generate_secret: true,
 				id: client.id,
 				secret_hashes: secretHashes,
@@ -414,7 +414,6 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 		}
 
 		const shouldDisableClient = client.disabled_at === null;
-		const nextDisabledAtIntent = shouldDisableClient ? 1 : null;
 		setIsToggleClientPopoverOpen(false);
 		setIsDeletePopoverOpen(false);
 		setIsSaving(true);
@@ -423,7 +422,7 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 
 		void updateAdminSsoClient(
 			client.id,
-			createUpdateBodyFromClient(client, nextDisabledAtIntent),
+			createUpdateBodyFromClient(client, shouldDisableClient),
 			admin.csrf_token
 		)
 			.then((data) => {

@@ -96,7 +96,7 @@ export interface IAdminSsoClientCreateBody {
 }
 
 export interface IAdminSsoClientUpdateBody extends IAdminSsoClientCreateBody {
-	disabled_at: number | null;
+	disabled: boolean;
 	generate_secret?: boolean;
 	secret_hashes: string[];
 }
