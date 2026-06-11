@@ -2,61 +2,125 @@ import { type NextRequest } from 'next/server';
 import { v7 as uuid, validate } from 'uuid';
 
 import {
+	checkBackupCodeLockLostError,
+	checkBackupCodeLockTimeoutError,
+	checkBackupFileNotFoundError,
 	checkIpFrequency,
+	deleteBackupImportRecordByCode,
+	deleteFile,
 	getRecord,
+	markBackupCodeLockCommitted,
 	saveFile,
 	setRecord,
+	throwIfBackupCodeLockLost,
 	updateRecord,
+	withBackupCodeLock,
+	withFreshBackupCodeLock,
 } from '@/actions/backup';
 import {
-	createErrorResponse,
-	createJsonResponse,
+	createRetryAfterHeaders,
+	readJsonBodyResult,
+} from '@/api/v1/accountRouteUtils';
+import { FREQUENCY_TTL, MAX_DATA_SIZE } from '@/api/v1/backups/constants';
+import type {
+	IBackupUploadBody,
+	IBackupUploadSuccessResponse,
+} from '@/api/v1/backups/types';
+import {
+	getLogSafeErrorCode,
+	getRequestMeta,
+	maskBackupCode,
+} from '@/api/v1/backups/utils';
+import {
+	createNoStoreErrorResponse,
+	createNoStoreJsonResponse,
 	handleOptionsRequest,
 } from '@/api/v1/utils';
+import { isPlainObject } from '@/lib/account/sync/serializers/utils';
 import { FILE_TYPE_JSON } from '@/utilities';
-import { FREQUENCY_TTL, MAX_DATA_SIZE } from './constants';
-import type { IBackupUploadBody, IBackupUploadSuccessResponse } from './types';
-import { getRequestMeta } from './utils';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+function normalizeMediaType(contentType: string | null) {
+	return contentType?.split(';', 1).at(0)?.trim().toLowerCase() ?? null;
+}
+
+async function cleanupSavedBackupFile(
+	code: string,
+	fileName: Parameters<typeof deleteFile>[1],
+	codeHash: string
+) {
+	try {
+		await deleteFile(code, fileName);
+	} catch (error) {
+		if (!checkBackupFileNotFoundError(error)) {
+			console.warn('Failed to clean up uncommitted backup file.', {
+				codeHash,
+				errorCode: getLogSafeErrorCode(error),
+			});
+		}
+	}
+}
 
 export async function POST(request: NextRequest) {
-	const { contentType, ip, ua } = getRequestMeta(request);
+	const requestMeta = getRequestMeta(request);
+	const { contentType, ip, ua } = requestMeta;
 
-	if (contentType !== FILE_TYPE_JSON) {
-		return createErrorResponse('Invalid content type', 400);
+	if (normalizeMediaType(contentType) !== FILE_TYPE_JSON) {
+		return createNoStoreErrorResponse('Invalid content type', 400);
 	}
 	if (ip === null) {
-		return createErrorResponse('Invalid IP address', 400);
+		return createNoStoreErrorResponse('Invalid IP address', 400);
 	}
 	if (ua === null) {
-		return createErrorResponse('Invalid user agent', 400);
+		return createNoStoreErrorResponse('Invalid user agent', 400);
 	}
 
-	const json = (await request.json()) as Partial<IBackupUploadBody>;
+	const jsonResult = await readJsonBodyResult<IBackupUploadBody>(
+		request,
+		MAX_DATA_SIZE + 64 * 1024
+	);
+	if (jsonResult.status === 'payload-too-large') {
+		return createNoStoreErrorResponse('The data is too large', 413);
+	}
+	const json = jsonResult.status === 'ok' ? jsonResult.data : null;
+	const backupData = isPlainObject(json) ? json.data : null;
+	const rawUserId = isPlainObject(json) ? json.user_id : null;
 	if (
-		!('data' in json) ||
-		!('customer_normal' in json.data) ||
-		!('customer_rare' in json.data) ||
-		!('user_id' in json)
+		!isPlainObject(json) ||
+		!isPlainObject(backupData) ||
+		!('customer_normal' in backupData) ||
+		!('customer_rare' in backupData) ||
+		!isPlainObject(backupData.customer_normal) ||
+		!isPlainObject(backupData.customer_rare) ||
+		!('user_id' in json) ||
+		(typeof rawUserId !== 'string' && rawUserId !== null) ||
+		('code' in json && json.code !== null && typeof json.code !== 'string')
 	) {
-		return createErrorResponse('Invalid object structure', 400);
+		return createNoStoreErrorResponse('Invalid object structure', 400);
 	}
 
 	let code = uuid();
 	if ('code' in json && typeof json.code === 'string') {
-		const isValid = validate(json.code);
+		const normalizedCode = json.code.trim();
+		const isValid = validate(normalizedCode);
 		if (isValid) {
-			code = json.code;
-		} else if (json.code !== 'null') {
-			return createErrorResponse('Invalid code', 400);
+			code = normalizedCode.toLowerCase();
+		} else if (normalizedCode === 'null') {
+			// Legacy clients may have persisted the literal string "null".
+			// Keep treating it like a missing code so uploads can recover.
+		} else {
+			return createNoStoreErrorResponse('Invalid code', 400);
 		}
 	}
 
-	const jsonString = JSON.stringify(json.data);
-	if (jsonString.length > MAX_DATA_SIZE) {
-		return createErrorResponse('The data is too large', 413);
+	const jsonString = JSON.stringify(backupData);
+	if (new Blob([jsonString]).size > MAX_DATA_SIZE) {
+		return createNoStoreErrorResponse('The data is too large', 413);
 	}
 
-	let userId = json.user_id ?? '';
+	let userId = rawUserId ?? '';
 	if (userId === 'null') {
 		userId = '';
 	}
@@ -69,34 +133,109 @@ export async function POST(request: NextRequest) {
 		{ ip, ua, userId }
 	);
 	if (recentRecord.status === 429) {
-		return createErrorResponse('Requests are too frequent', 429);
+		return createNoStoreErrorResponse(
+			'Requests are too frequent',
+			429,
+			undefined,
+			{ headers: createRetryAfterHeaders(FREQUENCY_TTL / 1000) }
+		);
 	}
 
 	try {
-		await saveFile(code, jsonString);
-	} catch {
-		return createErrorResponse('Failed to save file', 500);
-	}
+		return await withBackupCodeLock(code, async (signal) => {
+			const codeHash = maskBackupCode(code);
+			const record = await getRecord(code);
+			throwIfBackupCodeLockLost(signal);
+			const oldFileName =
+				record.status === 200 ? record.file_name : undefined;
 
-	const record = await getRecord(code);
+			let savedFile: Awaited<ReturnType<typeof saveFile>>;
+			try {
+				savedFile = await saveFile(code, jsonString);
+			} catch {
+				return createNoStoreErrorResponse('Failed to save file', 500);
+			}
 
-	await (record.status === 404
-		? setRecord({
+			try {
+				await withFreshBackupCodeLock(signal, async (trx) => {
+					const nextRecord = await (record.status === 404
+						? setRecord(
+								{
+									code,
+									created_at: now,
+									file_name: savedFile.fileName,
+									ip_address: ip,
+									last_accessed: -1,
+									user_agent: ua,
+									user_id: userId,
+								},
+								trx
+							)
+						: updateRecord(
+								code,
+								{
+									created_at: now,
+									file_name: savedFile.fileName,
+									ip_address: ip,
+									last_accessed: -1,
+									user_agent: ua,
+									user_id: userId,
+								},
+								trx
+							));
+
+					if (nextRecord.status !== 200) {
+						throw new Error('Failed to save record');
+					}
+
+					await deleteBackupImportRecordByCode(code, trx);
+				});
+				markBackupCodeLockCommitted(signal);
+			} catch (error) {
+				if (!signal.committed) {
+					await cleanupSavedBackupFile(
+						code,
+						savedFile.fileName,
+						codeHash
+					);
+				}
+
+				if (checkBackupCodeLockLostError(error)) {
+					return createNoStoreErrorResponse(
+						'backup-code-lock-lost',
+						409
+					);
+				}
+
+				console.warn('Failed to save backup record', {
+					codeHash,
+					errorCode: getLogSafeErrorCode(error),
+				});
+
+				return createNoStoreErrorResponse('Failed to save record', 500);
+			}
+
+			if (
+				oldFileName !== undefined &&
+				oldFileName !== savedFile.fileName
+			) {
+				await cleanupSavedBackupFile(code, oldFileName, codeHash);
+			}
+
+			return createNoStoreJsonResponse({
 				code,
-				created_at: now,
-				ip_address: ip,
-				last_accessed: -1,
-				user_agent: ua,
-				user_id: userId,
-			})
-		: updateRecord(code, {
-				created_at: now,
-				ip_address: ip,
-				user_agent: ua,
-				user_id: userId,
-			}));
+			} satisfies IBackupUploadSuccessResponse);
+		});
+	} catch (error) {
+		if (checkBackupCodeLockLostError(error)) {
+			return createNoStoreErrorResponse('backup-code-lock-lost', 409);
+		}
+		if (checkBackupCodeLockTimeoutError(error)) {
+			return createNoStoreErrorResponse('backup-code-lock-timeout', 409);
+		}
 
-	return createJsonResponse({ code } satisfies IBackupUploadSuccessResponse);
+		throw error;
+	}
 }
 
 export function OPTIONS() {

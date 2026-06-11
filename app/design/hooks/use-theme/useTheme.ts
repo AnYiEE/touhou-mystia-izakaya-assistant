@@ -1,16 +1,25 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useMounted } from '@/hooks';
 
 import { COLOR_MAP, MEDIA, STORAGE_KEY, THEME_MAP } from './constants';
 import type { TTheme } from './types';
 import { addSafeMediaQueryEventListener } from '@/design/utils';
-import { safeStorage } from '@/utilities';
+import { safeStorage } from '@/utilities/safeStorage';
 
 // eslint-disable-next-line unicorn/prefer-global-this
 const isServer = typeof window === 'undefined';
+
+const themeListeners = new Set<(theme: TTheme) => void>();
+const themeValues = new Set<string>(Object.values(THEME_MAP));
+
+export function parseTheme(value: unknown): TTheme {
+	return typeof value === 'string' && themeValues.has(value)
+		? (value as TTheme)
+		: THEME_MAP.SYSTEM;
+}
 
 function getSystemTheme(mediaQueryList?: MediaQueryListEvent) {
 	const queryList = mediaQueryList ?? globalThis.matchMedia(MEDIA);
@@ -18,15 +27,17 @@ function getSystemTheme(mediaQueryList?: MediaQueryListEvent) {
 	return queryList.matches ? THEME_MAP.DARK : THEME_MAP.LIGHT;
 }
 
-function getThemeCallback() {
+export function getStoredTheme() {
 	if (isServer) {
 		return;
 	}
 
-	return safeStorage.getItem<TTheme>(STORAGE_KEY);
+	const storedTheme = safeStorage.getItem(STORAGE_KEY);
+
+	return storedTheme === null ? null : parseTheme(storedTheme);
 }
 
-function setThemeCallback(selectedTheme: TTheme, isFromEvent?: boolean) {
+export function applyTheme(selectedTheme: TTheme, isFromEvent?: boolean) {
 	if (isServer) {
 		return;
 	}
@@ -58,40 +69,47 @@ function setThemeCallback(selectedTheme: TTheme, isFromEvent?: boolean) {
 	}
 
 	safeStorage.setItem(STORAGE_KEY, selectedTheme);
+
+	themeListeners.forEach((listener) => {
+		listener(selectedTheme);
+	});
+}
+
+export function addThemeChangeListener(listener: (theme: TTheme) => void) {
+	themeListeners.add(listener);
+
+	return () => {
+		themeListeners.delete(listener);
+	};
 }
 
 export function useTheme() {
-	const [theme, setThemeState] = useState<TTheme>(() => {
-		const storedTheme = getThemeCallback();
+	const [theme, setThemeState] = useState<TTheme>(
+		() => getStoredTheme() ?? THEME_MAP.SYSTEM
+	);
 
-		if (storedTheme === null) {
-			setThemeCallback(THEME_MAP.SYSTEM);
-			return THEME_MAP.SYSTEM;
-		}
-		if (storedTheme === undefined) {
-			return THEME_MAP.SYSTEM;
-		}
-
-		return storedTheme;
-	});
-
-	const setTheme = useCallback((newTheme: typeof theme) => {
-		setThemeCallback(newTheme);
+	const setTheme = useCallback((newTheme: TTheme) => {
+		applyTheme(newTheme);
 		setThemeState(newTheme);
 	}, []);
 
-	useMounted(() => {
+	const syncSystemTheme = useCallback(() => {
 		const mediaQueryList = globalThis.matchMedia(MEDIA);
 
 		return addSafeMediaQueryEventListener(mediaQueryList, (event) => {
-			const storedTheme = getThemeCallback();
-			if (storedTheme === THEME_MAP.SYSTEM) {
-				setThemeCallback(getSystemTheme(event), true);
+			const storedTheme = getStoredTheme();
+			if (storedTheme === null || storedTheme === THEME_MAP.SYSTEM) {
+				applyTheme(getSystemTheme(event), true);
 			}
 		});
-	});
+	}, []);
 
-	useMounted(() => {
+	const syncThemeState = useCallback(
+		() => addThemeChangeListener(setThemeState),
+		[]
+	);
+
+	const syncStorageTheme = useCallback(() => {
 		const EVENT_TYPE = 'storage';
 
 		const handleStorage = (event: StorageEvent) => {
@@ -99,11 +117,12 @@ export function useTheme() {
 				return;
 			}
 
-			const newTheme = event.newValue as TTheme | null;
-			if (newTheme !== null) {
-				setThemeCallback(newTheme, true);
-				setThemeState(newTheme);
-			}
+			const newTheme =
+				event.newValue === null
+					? THEME_MAP.SYSTEM
+					: parseTheme(event.newValue);
+			applyTheme(newTheme, true);
+			setThemeState(newTheme);
 		};
 
 		globalThis.addEventListener(EVENT_TYPE, handleStorage);
@@ -111,7 +130,20 @@ export function useTheme() {
 		return () => {
 			globalThis.removeEventListener(EVENT_TYPE, handleStorage);
 		};
-	});
+	}, []);
+
+	useEffect(() => {
+		const storedTheme = getStoredTheme();
+		if (storedTheme === undefined) {
+			return;
+		}
+
+		applyTheme(storedTheme ?? THEME_MAP.SYSTEM, true);
+	}, []);
+
+	useMounted(syncSystemTheme);
+	useMounted(syncThemeState);
+	useMounted(syncStorageTheme);
 
 	return [theme, setTheme] as const;
 }

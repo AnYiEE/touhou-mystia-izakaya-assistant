@@ -1,5 +1,10 @@
 /* eslint-disable sort-keys */
 import PACKAGE from '@/../package.json';
+import {
+	checkEnvFlag,
+	checkOfflineEnv,
+	checkVercelEnv,
+} from '@/lib/environment';
 import type { ILink, ISiteConfig, TNavItem } from './types';
 
 function getShortUrl(key: string) {
@@ -7,7 +12,9 @@ function getShortUrl(key: string) {
 }
 
 const { host: baseURL } = new URL(process.env.BASE_URL ?? PACKAGE.homepage);
-const isOffline = Boolean(process.env.OFFLINE);
+const isOffline = checkOfflineEnv(process.env.OFFLINE);
+const isSelfHosted = checkEnvFlag(process.env.SELF_HOSTED);
+const isVercel = checkVercelEnv(process.env.VERCEL);
 
 const navItems = [
 	{ label: '首页', href: '/' },
@@ -124,6 +131,7 @@ export const siteConfig = {
 	analyticsApiUrl: process.env.ANALYTICS_API_URL ?? '',
 	analyticsScriptUrl: process.env.ANALYTICS_SCRIPT_URL ?? '',
 	analyticsSiteId: process.env.ANALYTICS_SITE_ID ?? '',
+	isAccountFeatureClientEnabled: isSelfHosted && !isOffline && !isVercel,
 	isAnalytics: Boolean(process.env.ANALYTICS_SITE_ID) && !isOffline,
 	isIcpFiling: Boolean(process.env.ICP_FILING) && !isOffline,
 	nodeEnv: process.env.NODE_ENV,
@@ -131,8 +139,8 @@ export const siteConfig = {
 	vercelSha: process.env.VERCEL_GIT_COMMIT_SHA,
 	isOffline,
 	isProduction: process.env.NODE_ENV === 'production',
-	isSelfHosted: Boolean(process.env.SELF_HOSTED) && !isOffline,
-	isVercel: Boolean(process.env.VERCEL),
+	isSelfHosted,
+	isVercel,
 } as const satisfies ISiteConfig;
 
 export type { TSitePath } from './types';

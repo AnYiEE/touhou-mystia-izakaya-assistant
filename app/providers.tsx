@@ -16,6 +16,10 @@ import DonationModal from '@/components/donationModal';
 import { siteConfig } from '@/configs';
 import { type TDlc } from '@/data';
 import {
+	AccountFeatureModals,
+	startAccountFeatureClients,
+} from '@/lib/account/client/featureClient';
+import {
 	beveragesStore,
 	clothesStore,
 	cookersStore,
@@ -184,6 +188,12 @@ export default function Providers({
 		customerRareStore.shared.recipe.table.hiddenRecipes.set(
 			toSet(globalHiddenRecipes)
 		);
+
+		const stopAccountFeatureClients = startAccountFeatureClients();
+
+		return () => {
+			stopAccountFeatureClients();
+		};
 	}, []);
 
 	const router = useRouter();
@@ -194,6 +204,7 @@ export default function Providers({
 				{children}
 				<ProgressBar className="fixed top-0 z-60 h-1 rounded-2xl bg-primary dark:lg:h-0.5" />
 				<CompatibleBrowser />
+				<AccountFeatureModals />
 				<CustomerRareTutorial />
 				<DonationModal />
 			</ProgressBarProvider>

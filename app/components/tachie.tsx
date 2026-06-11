@@ -4,7 +4,8 @@ import { memo } from 'react';
 
 import { Image, type ImageProps } from '@heroui/image';
 
-import { cn, useReducedMotion } from '@/design/ui/components';
+import { cn } from '@/design/ui/components';
+import { useReducedMotion } from '@/design/ui/hooks';
 
 interface IProps extends Pick<
 	ImageProps,

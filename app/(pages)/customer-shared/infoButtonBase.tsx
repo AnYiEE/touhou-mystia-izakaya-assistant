@@ -5,7 +5,8 @@ import { useParams, useVibrate } from '@/hooks';
 import { Accordion, type AccordionProps } from '@heroui/accordion';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
-import { Modal, Tooltip, useReducedMotion } from '@/design/ui/components';
+import { Modal, Tooltip } from '@/design/ui/components';
+import { useReducedMotion } from '@/design/ui/hooks';
 
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import { default as SiteInfoBase } from '@/components/siteInfo';
@@ -91,13 +92,7 @@ export default memo<IProps>(function InfoButtonBase({
 					transform: `rotate(-90deg) translateX(${fontSize * name.length - 17}px) translateY(20px)`,
 				})}
 			/>
-			<Modal
-				isOpen={isOpened}
-				portalContainer={document.querySelector(
-					'#modal-portal-container'
-				)}
-				onClose={handleClose}
-			>
+			<Modal isOpen={isOpened} onClose={handleClose}>
 				<Accordion
 					isCompact
 					defaultExpandedKeys={defaultExpandedKeys ?? []}

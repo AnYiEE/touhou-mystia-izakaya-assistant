@@ -154,6 +154,15 @@ const changelog = [
 		],
 	},
 	{ version: 'v1.16', changes: ['新增：更新数据至游戏版本4.4.0。'] },
+	{
+		version: 'v2.0',
+		changes: [
+			'新增：账号系统，支持注册、登录、密码修改、会话管理和账号注销。',
+			'新增：云备份套餐搭配数据，支持多设备同步。',
+			'新增：SSO单点登录，支持外部应用获取用户授权，支持用户自主撤销已授权的SSO外部应用。',
+			'新增：更新法律声明。',
+		],
+	},
 ] as const satisfies Array<{
 	version: `v${string}`;
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;

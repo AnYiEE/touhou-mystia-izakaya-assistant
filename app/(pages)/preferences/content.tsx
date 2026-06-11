@@ -6,13 +6,8 @@ import { useVibrate } from '@/hooks';
 
 import { Select, SelectItem } from '@heroui/select';
 
-import {
-	Button,
-	Switch,
-	cn,
-	useMotionProps,
-	useReducedMotion,
-} from '@/design/ui/components';
+import { Button, Switch, cn } from '@/design/ui/components';
+import { useMotionProps, useReducedMotion } from '@/design/ui/hooks';
 
 import DataManager, { type IDataManagerProps } from './dataManager';
 import HiddenItems from './hiddenItems';
@@ -255,7 +250,7 @@ export default memo<IProps>(function Content({ onModalClose }) {
 				<SwitchItem
 					isSelected={isShowTachie}
 					onValueChange={globalStore.persistence.tachie.set}
-					aria-label={`${isShowTagDescription ? '隐藏' : '显示'}顾客页面立绘`}
+					aria-label={`${isShowTachie ? '隐藏' : '显示'}顾客页面立绘`}
 				>
 					顾客页面右下角的立绘
 					<span className="text-tiny text-foreground-500">

@@ -23,9 +23,8 @@ import {
 	PopoverTrigger,
 	Tooltip,
 	cn,
-	useMotionProps,
-	useReducedMotion,
 } from '@/design/ui/components';
+import { useMotionProps, useReducedMotion } from '@/design/ui/hooks';
 
 import { Plus } from '@/(pages)/customer-shared/resultCardAtoms';
 import TagGroup from '@/(pages)/customer-shared/tagGroup';

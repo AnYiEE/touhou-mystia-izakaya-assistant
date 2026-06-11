@@ -4,23 +4,28 @@ import { validate } from 'uuid';
 import { getRecord } from '@/actions/backup';
 import type { IBackupCheckSuccessResponse } from '../../types';
 import {
-	createErrorResponse,
-	createJsonResponse,
+	createNoStoreErrorResponse,
+	createNoStoreJsonResponse,
 	handleOptionsRequest,
 } from '@/api/v1/utils';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function GET(
 	_request: NextRequest,
 	{ params }: { params: Promise<{ code: string }> }
 ) {
-	const { code } = await params;
-	if (!validate(code)) {
-		return createErrorResponse('Invalid code', 400);
+	const { code: rawCode } = await params;
+	const normalizedCode = rawCode.trim();
+	if (!validate(normalizedCode)) {
+		return createNoStoreErrorResponse('Invalid code', 400);
 	}
+	const code = normalizedCode.toLowerCase();
 
 	const record = await getRecord(code);
 	if (record.status === 404) {
-		return createErrorResponse(
+		return createNoStoreErrorResponse(
 			'The file record does not exist or has been deleted',
 			404
 		);
@@ -28,7 +33,7 @@ export async function GET(
 
 	const { created_at, last_accessed } = record;
 
-	return createJsonResponse({
+	return createNoStoreJsonResponse({
 		created_at,
 		last_accessed,
 	} satisfies IBackupCheckSuccessResponse);

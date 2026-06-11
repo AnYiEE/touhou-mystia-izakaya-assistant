@@ -15,7 +15,8 @@ import {
 
 import { Tab, Tabs } from '@heroui/tabs';
 
-import { FadeMotionDiv, cn, useReducedMotion } from '@/design/ui/components';
+import { FadeMotionDiv, cn } from '@/design/ui/components';
+import { useReducedMotion } from '@/design/ui/hooks';
 
 import BeverageTabContent from '../beverageTabContent';
 import CustomerCard from '../customerCard';

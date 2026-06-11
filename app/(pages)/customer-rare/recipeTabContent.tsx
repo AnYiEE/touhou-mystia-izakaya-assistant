@@ -24,9 +24,8 @@ import {
 	PopoverTrigger,
 	Tooltip,
 	cn,
-	useMotionProps,
-	useReducedMotion,
 } from '@/design/ui/components';
+import { useMotionProps, useReducedMotion } from '@/design/ui/hooks';
 
 import RecipeTableShell from '@/(pages)/customer-shared/recipeTableShell';
 import TagGroup from '@/(pages)/customer-shared/tagGroup';

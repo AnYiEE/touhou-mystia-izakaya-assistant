@@ -152,7 +152,7 @@ export default function Home() {
 												icon={faQq}
 												variant="light"
 												aria-label="夜雀助手QQ群加群链接和二维码"
-												className="h-auto w-auto min-w-0 rounded-sm text-base text-qq-blue data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
+												className="h-auto w-auto min-w-0 rounded-small text-base text-qq-blue data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
 											/>
 										</PopoverTrigger>
 									</span>

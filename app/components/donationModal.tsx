@@ -16,7 +16,7 @@ import QRCode from '@/components/qrCode';
 
 import { siteConfig } from '@/configs';
 import { globalStore as store } from '@/stores';
-import { safeStorage } from '@/utilities';
+import { safeStorage } from '@/utilities/safeStorage';
 
 const LOCK_KEY = 'sync_lock-donation_modal_trigger';
 const LOCK_VERIFY_DELAY = 150;
@@ -162,11 +162,7 @@ export default function DonationModal() {
 	}
 
 	return (
-		<Modal
-			isOpen={isOpen}
-			portalContainer={document.querySelector('#modal-portal-container')}
-			onClose={handleClose}
-		>
+		<Modal isOpen={isOpen} onClose={handleClose}>
 			<div className="space-y-4">
 				<Heading as="h2" isFirst>
 					感谢您使用{name}！

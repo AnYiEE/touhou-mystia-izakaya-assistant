@@ -2,6 +2,7 @@
 
 import {
 	type JSX,
+	type Key,
 	type PropsWithChildren,
 	memo,
 	startTransition,
@@ -22,36 +23,88 @@ import {
 	NavbarMenuItem,
 	NavbarMenuToggle,
 } from '@heroui/navbar';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGithub } from '@fortawesome/free-brands-svg-icons';
-import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import {
+	FontAwesomeIcon,
+	type FontAwesomeIconProps,
+} from '@fortawesome/react-fontawesome';
+import {
+	faChevronDown,
+	faDesktop,
+	faMoon,
+	faSun,
+	faUser,
+} from '@fortawesome/free-solid-svg-icons';
 
+import { THEME_MAP, type TTheme, useTheme } from '@/design/hooks';
 import {
 	Button,
 	Dropdown,
 	DropdownItem,
 	DropdownMenu,
+	DropdownSection,
 	DropdownTrigger,
 	type IButtonProps,
 	Link,
 	Tooltip,
 	cn,
-	useReducedMotion,
 } from '@/design/ui/components';
+import { useReducedMotion } from '@/design/ui/hooks';
 
+import AccountMenu from '@/components/accountMenu';
 import { trackEvent } from '@/components/analytics';
-import FontAwesomeIconLink, {
-	type IFontAwesomeIconLinkProps,
-} from '@/components/fontAwesomeIconLink';
 import SiteInfo from '@/components/siteInfo';
 import Sprite from '@/components/sprite';
 import ThemeSwitcher from '@/components/themeSwitcher';
 
 import { siteConfig } from '@/configs';
-import { globalStore as store } from '@/stores';
+import { accountStore, globalStore } from '@/stores';
 import { checkA11yConfirmKey } from '@/utilities';
 
-const { links, name, navItems, navMenuItems, shortName } = siteConfig;
+const {
+	isAccountFeatureClientEnabled,
+	links,
+	name,
+	navItems,
+	navMenuItems,
+	shortName,
+} = siteConfig;
+
+const DESKTOP_THEME_MENU_ITEMS = [
+	{
+		icon: faDesktop,
+		key: 'theme:system',
+		label: '跟随系统',
+		theme: THEME_MAP.SYSTEM,
+	},
+	{
+		icon: faSun,
+		key: 'theme:light',
+		label: '浅色主题',
+		theme: THEME_MAP.LIGHT,
+	},
+	{
+		icon: faMoon,
+		key: 'theme:dark',
+		label: '深色主题',
+		theme: THEME_MAP.DARK,
+	},
+] as const satisfies ReadonlyArray<{
+	icon: FontAwesomeIconProps['icon'];
+	key: string;
+	label: string;
+	theme: TTheme;
+}>;
+
+const DESKTOP_ACTION_MENU_ITEM_CLASS_NAME =
+	'flex min-w-0 items-center gap-1 py-0.5 text-small';
+
+const DESKTOP_ACTION_MENU_SECTION_CLASS_NAMES = {
+	base: 'mb-0',
+	divider: 'mx-1 my-1 bg-default-200/70',
+	group: 'space-y-1',
+	heading:
+		'px-2 pb-0.5 pt-2.5 text-tiny font-medium uppercase text-default-500',
+};
 
 export function showProgress(startProgress: () => void) {
 	startTransition(async () => {
@@ -93,69 +146,6 @@ const NavbarButtonLink = memo<PropsWithChildren<INavbarButtonLinkProps>>(
 	}
 );
 
-interface IGitHubIconLinkProps extends Pick<
-	IFontAwesomeIconLinkProps,
-	'className' | 'tabIndex'
-> {}
-
-const GitHubIconLink = memo<IGitHubIconLinkProps>(function IconLink({
-	className,
-	tabIndex,
-}) {
-	const handlePress = useCallback(() => {
-		trackEvent(trackEvent.category.click, 'Link', 'navbar:GitHub');
-	}, []);
-
-	return (
-		<FontAwesomeIconLink
-			isExternal
-			icon={faGithub}
-			size="lg"
-			href={links.github.href}
-			aria-label={links.github.label}
-			aria-hidden={tabIndex === -1}
-			role="button"
-			tabIndex={tabIndex}
-			onClick={handlePress}
-			className={cn('h-5 w-5 rounded-full', className)}
-		/>
-	);
-});
-
-interface IGitHubLinkProps {
-	showTooltip?: boolean;
-}
-
-const GitHubLink = memo<IGitHubLinkProps>(function GitHubLink({ showTooltip }) {
-	const handlePress = useCallback(() => {
-		trackEvent(trackEvent.category.click, 'Link', 'navbar:GitHub');
-	}, []);
-
-	if (showTooltip) {
-		return (
-			<Tooltip showArrow content={links.github.label} placement="bottom">
-				<span className="flex">
-					<GitHubIconLink className="text-primary-600 dark:text-default-foreground" />
-				</span>
-			</Tooltip>
-		);
-	}
-
-	return (
-		<span className="flex gap-1">
-			<GitHubIconLink tabIndex={-1} />
-			<Link
-				isExternal
-				color="foreground"
-				href={links.github.href}
-				onClick={handlePress}
-			>
-				{links.github.label}
-			</Link>
-		</span>
-	);
-});
-
 export default function Navbar() {
 	const { pathname } = usePathname();
 	const basePathname = `/${pathname.split('/')[1]}`;
@@ -164,8 +154,26 @@ export default function Navbar() {
 	const vibrate = useVibrate();
 	const [isMenuOpened, setIsMenuOpened] = useState(false);
 	const isReducedMotion = useReducedMotion();
+	const [theme, setTheme] = useTheme();
 
-	const isHighAppearance = store.persistence.highAppearance.use();
+	const isHighAppearance = globalStore.persistence.highAppearance.use();
+
+	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
+	const accountUser = accountStore.shared.user.use();
+
+	const shouldShowDesktopAccountAction =
+		isAccountFeatureClientEnabled && accountBootstrapStatus !== 'disabled';
+	const accountActionLabel =
+		accountBootstrapStatus === 'error'
+			? '账号不可用'
+			: accountBootstrapStatus === 'unknown'
+				? '欢迎您'
+				: accountUser === null
+					? '未登录'
+					: accountUser.username;
+	const desktopAccountMenuDisabledKeys =
+		accountBootstrapStatus === 'unknown' ? ['account'] : [];
+	const desktopSelectedThemeKeys = [`theme:${theme}`];
 
 	const handlePress = useCallback(
 		(href?: string, isInNavbarMenu?: boolean) => {
@@ -176,7 +184,7 @@ export default function Navbar() {
 						href === '/preferences' &&
 						basePathname !== '/preferences'
 					) {
-						store.setPreferencesModalIsOpen(true);
+						globalStore.setPreferencesModalIsOpen(true);
 					} else {
 						showProgress(startProgress);
 						router.push(href);
@@ -193,6 +201,51 @@ export default function Navbar() {
 			}
 		},
 		[basePathname, isReducedMotion, router, startProgress, vibrate]
+	);
+
+	const handleAccountMenuClick = useCallback(
+		(isInNavbarMenu?: boolean) => {
+			vibrate();
+			trackEvent(
+				trackEvent.category.click,
+				'Account Button',
+				isInNavbarMenu ? 'Open Modal From Menu' : 'Open Modal'
+			);
+			const openAccountModal = () => {
+				accountStore.shared.accountModal.isOpen.set(true);
+			};
+			if (isInNavbarMenu) {
+				setIsMenuOpened(false);
+				setTimeout(openAccountModal, isReducedMotion ? 0 : 300);
+			} else {
+				setIsMenuOpened(false);
+				openAccountModal();
+			}
+		},
+		[isReducedMotion, vibrate]
+	);
+
+	const handleDesktopActionMenu = useCallback(
+		(key: Key) => {
+			const actionKey = String(key);
+			if (actionKey === 'account') {
+				handleAccountMenuClick();
+				return;
+			}
+			const themeItem = DESKTOP_THEME_MENU_ITEMS.find(
+				({ key: themeKey }) => themeKey === actionKey
+			);
+			if (themeItem === undefined) {
+				return;
+			}
+			setTheme(themeItem.theme);
+			trackEvent(
+				trackEvent.category.click,
+				'Theme Button',
+				themeItem.theme
+			);
+		},
+		[handleAccountMenuClick, setTheme]
 	);
 
 	// Support parallel routing pages.
@@ -373,25 +426,124 @@ export default function Navbar() {
 				justify="end"
 				className="hidden basis-full md:flex md:basis-1/5"
 			>
-				<NavbarItem>
-					<GitHubLink showTooltip />
-				</NavbarItem>
-				<NavbarItem>
-					<ThemeSwitcher />
-				</NavbarItem>
+				{shouldShowDesktopAccountAction ? (
+					<NavbarItem>
+						<Dropdown
+							shouldCloseOnScroll
+							onOpenChange={vibrate}
+							classNames={{
+								content: cn('m-1 min-w-36 max-w-36 p-1', {
+									'bg-background/70 backdrop-saturate-150':
+										isHighAppearance,
+								}),
+							}}
+						>
+							<DropdownTrigger>
+								<Button
+									size="sm"
+									variant="light"
+									aria-label="账号和主题"
+									title="账号和主题"
+									className="gap-1 text-base"
+								>
+									<FontAwesomeIcon
+										icon={faUser}
+										className="w-3.5"
+									/>
+									<span className="mr-1">账号</span>
+									<FontAwesomeIcon
+										icon={faChevronDown}
+										size="sm"
+										className="w-3 opacity-70"
+									/>
+								</Button>
+							</DropdownTrigger>
+							<DropdownMenu
+								disabledKeys={desktopAccountMenuDisabledKeys}
+								disallowEmptySelection
+								onAction={handleDesktopActionMenu}
+								selectedKeys={desktopSelectedThemeKeys}
+								selectionMode="single"
+								aria-label="账号和主题"
+								itemClasses={{
+									base: 'my-px transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40 motion-reduce:transition-none',
+								}}
+							>
+								<DropdownSection
+									title="账号"
+									hideSelectedIcon
+									showDivider
+									classNames={
+										DESKTOP_ACTION_MENU_SECTION_CLASS_NAMES
+									}
+								>
+									<DropdownItem
+										key="account"
+										textValue={accountActionLabel}
+									>
+										<div
+											className={
+												DESKTOP_ACTION_MENU_ITEM_CLASS_NAME
+											}
+										>
+											<FontAwesomeIcon
+												icon={faUser}
+												className="w-4 shrink-0"
+											/>
+											<span className="min-w-0 truncate">
+												{accountActionLabel}
+											</span>
+										</div>
+									</DropdownItem>
+								</DropdownSection>
+								<DropdownSection
+									title="主题"
+									classNames={
+										DESKTOP_ACTION_MENU_SECTION_CLASS_NAMES
+									}
+								>
+									{DESKTOP_THEME_MENU_ITEMS.map(
+										({ icon, key, label }) => (
+											<DropdownItem
+												key={key}
+												textValue={label}
+											>
+												<div
+													className={
+														DESKTOP_ACTION_MENU_ITEM_CLASS_NAME
+													}
+												>
+													<FontAwesomeIcon
+														icon={icon}
+														className="w-4"
+													/>
+													{label}
+												</div>
+											</DropdownItem>
+										)
+									)}
+								</DropdownSection>
+							</DropdownMenu>
+						</Dropdown>
+					</NavbarItem>
+				) : (
+					<NavbarItem>
+						<ThemeSwitcher />
+					</NavbarItem>
+				)}
 			</NavbarContent>
 
 			<NavbarContent
 				as="div"
 				justify="end"
-				className="basis-1 pl-4 md:hidden"
+				className="basis-1 !gap-3 pl-4 md:hidden"
 			>
-				<ThemeSwitcher
-					isMenu
-					className={cn({
-						'pointer-events-none h-0 w-0 opacity-0': !isMenuOpened,
-					})}
-				/>
+				{isMenuOpened && isAccountFeatureClientEnabled && (
+					<div className="flex">
+						<AccountMenu onClick={handleAccountMenuClick} />
+					</div>
+				)}
+				{isMenuOpened && <ThemeSwitcher isMenu />}
 				<Tooltip
 					showArrow
 					content={isMenuOpened ? '收起菜单' : '打开菜单'}
@@ -428,9 +580,6 @@ export default function Navbar() {
 						</NavbarMenuItem>
 					);
 				})}
-				<NavbarMenuItem>
-					<GitHubLink />
-				</NavbarMenuItem>
 			</NavbarMenu>
 		</HeroUINavbar>
 	);
