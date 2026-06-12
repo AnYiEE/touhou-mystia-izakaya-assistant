@@ -50,7 +50,8 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
-	const sessionsModule = await import('@/actions/account/sessions');
+	const sessionsModule =
+		await import('@/lib/account/server/repositories/sessions');
 	await sessionsModule.deleteSessionsByUserId(auth.data.user.id, {
 		createdBefore: requestStartedAt,
 	});

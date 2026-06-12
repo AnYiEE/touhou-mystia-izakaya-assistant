@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
 	}
 
 	const [userStateModule, userModule] = await Promise.all([
-		import('@/actions/account/userState'),
+		import('@/lib/account/server/repositories/userState'),
 		import('@/lib/account/server/user'),
 	]);
 	const snapshot = await userStateModule.getUserStateSnapshot(

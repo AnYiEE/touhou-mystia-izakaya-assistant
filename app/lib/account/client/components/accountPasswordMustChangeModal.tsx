@@ -29,10 +29,9 @@ import { trackEvent } from '@/components/analytics';
 import Heading from '@/components/heading';
 
 import {
-	AccountApiError,
-	changeAccountPassword,
-	logoutAccount,
-} from '@/lib/account/client/api';
+	changeAccountPasswordAction,
+	logoutAccountAction,
+} from '@/lib/account/actions/auth';
 import { getAccountClientErrorMessage } from '@/lib/account/client/errorMessage';
 import {
 	applyAccountAuthSuccessResponse,
@@ -175,11 +174,35 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 			expectedUserId: user.id,
 		};
 
-		void changeAccountPassword(
+		void changeAccountPasswordAction(
 			{ current_password: currentPassword, new_password: newPassword },
 			csrfToken
 		)
-			.then((data) => {
+			.then((result) => {
+				if (result.status === 'error') {
+					if (
+						result.httpStatus === 401 &&
+						result.message !== 'invalid-password'
+					) {
+						if (resetAccountStateIfCurrent(expectedAuthContext)) {
+							clearPasswordFields();
+						}
+						return;
+					}
+					if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
+						return;
+					}
+					if (result.message === 'invalid-password') {
+						setPasswordChangeError(result.message);
+						setMessage(null);
+						return;
+					}
+
+					setMessage(result.message);
+					return;
+				}
+
+				const { data } = result;
 				if (
 					!applyAccountAuthSuccessResponse(data, {
 						...expectedAuthContext,
@@ -203,28 +226,6 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 				});
 			})
 			.catch((error: unknown) => {
-				if (
-					error instanceof AccountApiError &&
-					error.status === 401 &&
-					error.message !== 'invalid-password'
-				) {
-					if (resetAccountStateIfCurrent(expectedAuthContext)) {
-						clearPasswordFields();
-					}
-					return;
-				}
-				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
-					return;
-				}
-				if (
-					error instanceof AccountApiError &&
-					error.message === 'invalid-password'
-				) {
-					setPasswordChangeError(error.message);
-					setMessage(null);
-					return;
-				}
-
 				setMessage(error instanceof Error ? error.message : '改密失败');
 			})
 			.finally(() => {
@@ -267,8 +268,28 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 		setIsSubmitting(true);
 		setMessage(null);
 
-		void logoutAccount(csrfToken)
-			.then(() => {
+		void logoutAccountAction(csrfToken)
+			.then((result) => {
+				if (result.status === 'error') {
+					if (result.httpStatus === 401) {
+						if (resetAccountStateIfCurrent(expectedAuthContext)) {
+							clearPasswordFields();
+							if (shouldResumeSso) {
+								accountStore.shared.accountModal.isOpen.set(
+									true
+								);
+							}
+						}
+						return;
+					}
+					if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
+						return;
+					}
+
+					setMessage(result.message);
+					return;
+				}
+
 				if (resetAccountStateIfCurrent(expectedAuthContext)) {
 					clearPasswordFields();
 					if (shouldResumeSso) {
@@ -277,19 +298,6 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 				}
 			})
 			.catch((error: unknown) => {
-				if (error instanceof AccountApiError && error.status === 401) {
-					if (resetAccountStateIfCurrent(expectedAuthContext)) {
-						clearPasswordFields();
-						if (shouldResumeSso) {
-							accountStore.shared.accountModal.isOpen.set(true);
-						}
-					}
-					return;
-				}
-				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
-					return;
-				}
-
 				setMessage(error instanceof Error ? error.message : '退出失败');
 			})
 			.finally(() => {

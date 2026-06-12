@@ -50,7 +50,7 @@ export async function DELETE(request: NextRequest) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
-	const usersModule = await import('@/actions/account/users');
+	const usersModule = await import('@/lib/account/server/repositories/users');
 	await usersModule.setUserStatusAndDeleteSessions(
 		auth.data.user.id,
 		USER_STATUS_MAP.deleted

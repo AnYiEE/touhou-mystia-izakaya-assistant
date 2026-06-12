@@ -49,7 +49,8 @@ export async function DELETE(request: NextRequest) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
-	const userStateModule = await import('@/actions/account/userState');
+	const userStateModule =
+		await import('@/lib/account/server/repositories/userState');
 	let stateEpoch: number;
 	try {
 		stateEpoch = await userStateModule.clearUserStateAndIncrementStateEpoch(

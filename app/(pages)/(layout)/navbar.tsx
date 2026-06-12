@@ -50,11 +50,11 @@ import {
 } from '@/design/ui/components';
 import { useReducedMotion } from '@/design/ui/hooks';
 
-import AccountMenu from '@/components/accountMenu';
 import { trackEvent } from '@/components/analytics';
 import SiteInfo from '@/components/siteInfo';
 import Sprite from '@/components/sprite';
 import ThemeSwitcher from '@/components/themeSwitcher';
+import AccountMenu from '@/lib/account/client/components/accountMenu';
 
 import { siteConfig } from '@/configs';
 import { accountStore, globalStore } from '@/stores';

@@ -11,8 +11,6 @@ import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 } from '@/api/v1/utils';
-import { deleteSsoUserClientGrant } from '@/actions/account/sso';
-import { checkSsoClientId } from '@/lib/account/server/sso';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -52,6 +50,7 @@ export async function DELETE(
 		return rateLimitResponse;
 	}
 
+	const { checkSsoClientId } = await import('@/lib/account/server/sso');
 	if (!checkSsoClientId(clientId)) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
@@ -60,6 +59,8 @@ export async function DELETE(
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
+	const { deleteSsoUserClientGrant } =
+		await import('@/lib/account/server/repositories/sso');
 	const deleted = await deleteSsoUserClientGrant(auth.data.user.id, clientId);
 	if (!deleted) {
 		return createNoStoreErrorResponse('sso-grant-not-found', 404);

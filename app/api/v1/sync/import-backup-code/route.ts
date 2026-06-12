@@ -26,13 +26,13 @@ import {
 	createNoStoreJsonResponse,
 } from '@/api/v1/utils';
 import { getLogSafeErrorCode, maskBackupCode } from '@/api/v1/backups/utils';
-import { MAX_DATA_SIZE } from '@/api/v1/backups/constants';
 import {
 	SYNC_NAMESPACE_MAP,
 	SYNC_SCHEMA_VERSION_MAP,
 	type TSyncNamespace,
 } from '@/lib/account/sync';
 import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
+import { MAX_BACKUP_DATA_BYTES } from '@/lib/account/shared/requestLimits';
 import {
 	checkBeverageName,
 	validateMealRecipe,
@@ -471,7 +471,9 @@ async function readImportBackupFile(
 ) {
 	let fileContent: string;
 	try {
-		if ((await getFileSize(code, fileName)) > BigInt(MAX_DATA_SIZE)) {
+		if (
+			(await getFileSize(code, fileName)) > BigInt(MAX_BACKUP_DATA_BYTES)
+		) {
 			throw new Error('invalid-backup-file');
 		}
 		lockModule.throwIfBackupCodeLockLost(signal);

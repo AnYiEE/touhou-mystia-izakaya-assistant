@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	const [actionsModule, ssoModule] = await Promise.all([
-		import('@/actions/account/sso'),
+		import('@/lib/account/server/repositories/sso'),
 		import('@/lib/account/server/sso'),
 	]);
 	try {

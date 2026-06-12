@@ -21,7 +21,7 @@ import {
 	createRetryAfterHeaders,
 	readJsonBodyResult,
 } from '@/api/v1/accountRouteUtils';
-import { FREQUENCY_TTL, MAX_DATA_SIZE } from '@/api/v1/backups/constants';
+import { FREQUENCY_TTL } from '@/api/v1/backups/constants';
 import type {
 	IBackupUploadBody,
 	IBackupUploadSuccessResponse,
@@ -37,6 +37,10 @@ import {
 	handleOptionsRequest,
 } from '@/api/v1/utils';
 import { isPlainObject } from '@/lib/account/sync/serializers/utils';
+import {
+	MAX_BACKUP_DATA_BYTES,
+	MAX_BACKUP_UPLOAD_JSON_BODY_BYTES,
+} from '@/lib/account/shared/requestLimits';
 import { FILE_TYPE_JSON } from '@/utilities';
 
 export const runtime = 'nodejs';
@@ -79,7 +83,7 @@ export async function POST(request: NextRequest) {
 
 	const jsonResult = await readJsonBodyResult<IBackupUploadBody>(
 		request,
-		MAX_DATA_SIZE + 64 * 1024
+		MAX_BACKUP_UPLOAD_JSON_BODY_BYTES
 	);
 	if (jsonResult.status === 'payload-too-large') {
 		return createNoStoreErrorResponse('The data is too large', 413);
@@ -116,7 +120,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	const jsonString = JSON.stringify(backupData);
-	if (new Blob([jsonString]).size > MAX_DATA_SIZE) {
+	if (new Blob([jsonString]).size > MAX_BACKUP_DATA_BYTES) {
 		return createNoStoreErrorResponse('The data is too large', 413);
 	}
 

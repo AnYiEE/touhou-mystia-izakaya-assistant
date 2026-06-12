@@ -1,41 +1,27 @@
 import { type NextRequest } from 'next/server';
 
 import { createNoStoreErrorResponse } from '@/api/v1/utils';
+import { getAdminSessionToken } from '@/lib/account/server/admin';
 import {
-	checkAdminFeatureEnabled,
-	getAdminSessionToken,
-	verifyAdminCsrfToken,
-	verifyAdminSessionToken,
-} from '@/lib/account/server/admin';
+	authenticateAdminSession,
+	checkAdminCsrf,
+	checkAdminFeature,
+} from '@/lib/account/server/guards';
 
 export function checkAdminFeatureResponse() {
-	if (checkAdminFeatureEnabled()) {
+	const result = checkAdminFeature();
+	if (result.status === 'ok') {
 		return null;
 	}
 
-	return createNoStoreErrorResponse('feature-disabled', 404);
+	return createNoStoreErrorResponse(result.message, result.httpStatus);
 }
 
 export function authenticateAdminRequest(request: NextRequest) {
-	const token = getAdminSessionToken(request);
-	if (token === null) {
-		return {
-			httpStatus: 401,
-			message: 'unauthorized',
-			status: 'error' as const,
-		};
-	}
-
-	const payload = verifyAdminSessionToken(token);
-	if (payload === null) {
-		return {
-			httpStatus: 401,
-			message: 'admin-session-expired',
-			status: 'error' as const,
-		};
-	}
-
-	return { payload, status: 'ok' as const, token };
+	const result = authenticateAdminSession(getAdminSessionToken(request));
+	return result.status === 'ok'
+		? { ...result.data, status: 'ok' as const }
+		: result;
 }
 
 export function createAdminAuthErrorResponse(
@@ -49,9 +35,10 @@ export function createAdminAuthErrorResponse(
 }
 
 export function checkAdminCsrfResponse(request: NextRequest, token: string) {
-	if (verifyAdminCsrfToken(request, token)) {
+	const result = checkAdminCsrf(request.headers.get('x-csrf-token'), token);
+	if (result.status === 'ok') {
 		return null;
 	}
 
-	return createNoStoreErrorResponse('forbidden', 403);
+	return createNoStoreErrorResponse(result.message, result.httpStatus);
 }

@@ -138,7 +138,7 @@
 		}
 
 		const urlObject = new URL(event.request.url, FAKE_URL);
-		const { host, hostname, pathname, protocol } = urlObject;
+		const { host, hostname, pathname, protocol, searchParams } = urlObject;
 
 		const isCdnServer = host === CDN_HOST;
 		const isSelfHost = host === location.host;
@@ -156,13 +156,22 @@
 		if (pathname === '/api' || pathname.startsWith('/api/')) {
 			return;
 		}
+		if (
+			searchParams.has('_rsc') ||
+			event.request.headers.get('rsc') === '1' ||
+			event.request.headers.has('next-router-prefetch') ||
+			event.request.headers.has('next-router-state-tree')
+		) {
+			return;
+		}
 
 		if (pathname.includes('.')) {
 			// Cache all static assets (file has extension).
 			event.respondWith(cacheFirst(event.request, event));
 		} else if (
 			pathname.startsWith('/admin') ||
-			pathname.startsWith('/preferences')
+			pathname.startsWith('/preferences') ||
+			pathname.startsWith('/sso')
 		) {
 			// Never cache protected routes that may contain
 			// user-specific data or session-dependent content.

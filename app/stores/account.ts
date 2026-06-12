@@ -4,7 +4,10 @@ import {
 	type IAccountSyncMeta,
 	type ISyncConflictItem,
 } from '@/lib/account/sync';
-import { type IAccountUserProfile } from '@/lib/account/shared/types';
+import {
+	type IAccountSsoGrantInitialData,
+	type IAccountUserProfile,
+} from '@/lib/account/shared/types';
 import { persist as persistMiddleware } from '@/stores/middlewares';
 
 export type TAccountBootstrapStatus =
@@ -28,6 +31,7 @@ const state = {
 		isBootstrapped: false,
 		isLoggedIn: false,
 		passwordMustChange: false,
+		ssoGrantInitialData: null as IAccountSsoGrantInitialData | null,
 		sync: {
 			canRetry: false,
 			conflicts: [] as ISyncConflictItem[],

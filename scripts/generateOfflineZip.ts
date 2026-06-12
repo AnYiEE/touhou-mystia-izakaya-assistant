@@ -52,7 +52,7 @@ const scriptPath = resolve(import.meta.dirname);
 
 const apiPath = resolve(appPath, 'api');
 const fakeApiPath = resolve(appPath, '_api');
-const adminPath = resolve(appPath, '(pages)/(layout)/admin');
+const adminPath = resolve(appPath, '(pages)/admin');
 const offlinePagesPath = resolve(appPath, '_offline_pages');
 const offlineAdminPath = resolve(offlinePagesPath, 'admin');
 const offlineSourceFilesPath = resolve(appPath, '_offline_source_files');
@@ -111,6 +111,26 @@ async function movePathIfExists(currentPath: string, targetPath: string) {
 
 	await mkdir(dirname(targetPath), { recursive: true });
 	await rename(currentPath, targetPath);
+}
+
+async function moveTreeIfExists(currentPath: string, targetPath: string) {
+	if (!(await checkPathExists(currentPath))) {
+		return;
+	}
+
+	await mkdir(targetPath, { recursive: true });
+
+	const entries = await readdir(currentPath, { withFileTypes: true });
+	for (const entry of entries) {
+		const fromPath = join(currentPath, entry.name);
+		const toPath = join(targetPath, entry.name);
+
+		await (entry.isDirectory()
+			? moveTreeIfExists(fromPath, toPath)
+			: movePathIfExists(fromPath, toPath));
+	}
+
+	await rm(currentPath, { force: true, recursive: true });
 }
 
 async function copyPathIfExists(currentPath: string, targetPath: string) {
@@ -396,9 +416,7 @@ async function restoreAdminPages() {
 		return;
 	}
 
-	if (!(await checkPathExists(adminPath))) {
-		await movePathIfExists(offlineAdminPath, adminPath);
-	}
+	await moveTreeIfExists(offlineAdminPath, adminPath);
 }
 
 async function restoreOfflineFiles() {
@@ -413,7 +431,7 @@ async function prepareOfflineFiles() {
 	await rm(nextBuildPath, { force: true, recursive: true });
 	await rm(outputPath, { force: true, recursive: true });
 	await moveRouterFiles(apiPath, fakeApiPath);
-	await movePathIfExists(adminPath, offlineAdminPath);
+	await moveTreeIfExists(adminPath, offlineAdminPath);
 	await replaceWithOfflineSourceFiles();
 }
 

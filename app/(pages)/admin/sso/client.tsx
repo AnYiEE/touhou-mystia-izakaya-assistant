@@ -28,23 +28,46 @@ import {
 import TimeAgo from '@/components/timeAgo';
 
 import {
-	type IAdminMeData,
-	fetchAdminMe,
-	listAdminSsoClients,
-} from '@/lib/account/client/api';
-import { type IAdminSsoClientListData } from '@/lib/account/shared/types';
+	type TAdminActionResult,
+	checkAdminAction,
+	listAdminSsoClientsAction,
+} from '../actions';
 import {
-	checkAdminSessionUnauthorized,
-	clearAdminSession,
-} from '@/lib/account/client/adminSession';
+	type IAdminMeData,
+	type IAdminSsoClientListData,
+} from '@/lib/account/shared/types';
+import { clearAdminSession } from '@/lib/account/client/adminSession';
 
 const tableHeadCellClassName = 'px-4 py-3 font-medium';
 const tableCellClassName = 'px-4 py-3 align-middle';
 const tableNowrapCellClassName = `${tableCellClassName} whitespace-nowrap`;
 
+function checkAdminUnauthorizedActionResult(
+	result: Extract<TAdminActionResult, { status: 'error' }>
+) {
+	return (
+		result.httpStatus === 401 &&
+		(result.message === 'unauthorized' ||
+			result.message === 'admin-session-expired')
+	);
+}
+
+export interface IAdminSsoClientsInitialData {
+	admin: IAdminMeData | null;
+	clients: IAdminSsoClientListData | null;
+	isAuthLoading: boolean;
+	message: string | null;
+	renderedAt: number;
+}
+
+interface IAdminSsoClientsClientProps {
+	initialData: IAdminSsoClientsInitialData;
+}
+
 const AdminSsoClientRow = memo<{
 	client: IAdminSsoClientListData['clients'][number];
-}>(function AdminSsoClientRow({ client }) {
+	initialNowTimestamp: number;
+}>(function AdminSsoClientRow({ client, initialNowTimestamp }) {
 	const isDisabled = client.disabled_at !== null;
 
 	return (
@@ -82,7 +105,10 @@ const AdminSsoClientRow = memo<{
 						: '已配置'}
 			</td>
 			<td className={tableNowrapCellClassName}>
-				<TimeAgo timestamp={client.created_at} />
+				<TimeAgo
+					initialNowTimestamp={initialNowTimestamp}
+					timestamp={client.created_at}
+				/>
 			</td>
 			<td className={cn(tableNowrapCellClassName, 'text-right')}>
 				<Link
@@ -97,15 +123,20 @@ const AdminSsoClientRow = memo<{
 	);
 });
 
-export default function AdminSsoClientsPage() {
+export default function AdminSsoClientsClient({
+	initialData,
+}: IAdminSsoClientsClientProps) {
 	const requestIdRef = useRef(0);
-	const [admin, setAdmin] = useState<IAdminMeData | null>(null);
+	const isServerInitialClientsRef = useRef(initialData.clients !== null);
+	const [admin, setAdmin] = useState<IAdminMeData | null>(initialData.admin);
 	const [clients, setClients] = useState<IAdminSsoClientListData | null>(
-		null
+		initialData.clients
 	);
-	const [isAuthLoading, setIsAuthLoading] = useState(true);
+	const [isAuthLoading, setIsAuthLoading] = useState(
+		initialData.isAuthLoading
+	);
 	const [isLoading, setIsLoading] = useState(false);
-	const [message, setMessage] = useState<string | null>(null);
+	const [message, setMessage] = useState<string | null>(initialData.message);
 
 	const refreshClients = useCallback(() => {
 		requestIdRef.current += 1;
@@ -113,21 +144,27 @@ export default function AdminSsoClientsPage() {
 		setIsLoading(true);
 		setMessage(null);
 
-		void listAdminSsoClients()
-			.then((data) => {
+		void listAdminSsoClientsAction()
+			.then((result) => {
 				if (requestIdRef.current !== requestId) {
 					return;
 				}
-				setClients(data);
+				if (result.status === 'error') {
+					if (checkAdminUnauthorizedActionResult(result)) {
+						clearAdminSession();
+						setAdmin(null);
+						setClients(null);
+						return;
+					}
+
+					setMessage(result.message);
+					return;
+				}
+
+				setClients(result.data);
 			})
 			.catch((error: unknown) => {
 				if (requestIdRef.current !== requestId) {
-					return;
-				}
-				if (checkAdminSessionUnauthorized(error)) {
-					clearAdminSession();
-					setAdmin(null);
-					setClients(null);
 					return;
 				}
 				setMessage(
@@ -147,20 +184,26 @@ export default function AdminSsoClientsPage() {
 		setIsAuthLoading(true);
 		setMessage(null);
 
-		void fetchAdminMe()
-			.then((data) => {
+		void checkAdminAction()
+			.then((result) => {
 				if (requestIdRef.current !== requestId) {
 					return;
 				}
-				setAdmin(data);
+				if (result.status === 'error') {
+					if (checkAdminUnauthorizedActionResult(result)) {
+						clearAdminSession();
+						setAdmin(null);
+						return;
+					}
+
+					setMessage(result.message);
+					return;
+				}
+
+				setAdmin(result.data);
 			})
 			.catch((error: unknown) => {
 				if (requestIdRef.current !== requestId) {
-					return;
-				}
-				if (checkAdminSessionUnauthorized(error)) {
-					clearAdminSession();
-					setAdmin(null);
 					return;
 				}
 				setMessage(
@@ -184,11 +227,21 @@ export default function AdminSsoClientsPage() {
 	);
 
 	useEffect(() => {
+		if (initialData.admin !== null) {
+			setIsAuthLoading(false);
+			return;
+		}
+
 		checkAdmin();
-	}, [checkAdmin]);
+	}, [checkAdmin, initialData.admin]);
 
 	useEffect(() => {
 		if (admin !== null) {
+			if (isServerInitialClientsRef.current) {
+				isServerInitialClientsRef.current = false;
+				return;
+			}
+
 			refreshClients();
 		}
 	}, [admin, refreshClients]);
@@ -237,6 +290,7 @@ export default function AdminSsoClientsPage() {
 	const disabledClientCount =
 		clients?.clients.filter((client) => client.disabled_at !== null)
 			.length ?? 0;
+	const initialNowTimestamp = initialData.renderedAt;
 
 	return (
 		<AdminShell>
@@ -361,6 +415,7 @@ export default function AdminSsoClientsPage() {
 							<AdminSsoClientRow
 								key={client.id}
 								client={client}
+								initialNowTimestamp={initialNowTimestamp}
 							/>
 						))}
 					</tbody>

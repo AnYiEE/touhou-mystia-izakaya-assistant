@@ -8,6 +8,8 @@ import SsoAuthorizeAccountGate, {
 	SsoAuthorizeAccountGateButton,
 } from './accountGate';
 import Heading from '@/components/heading';
+import AccountInitialStateHydrator from '@/lib/account/client/components/accountInitialStateHydrator';
+import AccountSsoGrantInitialDataHydrator from '@/lib/account/client/components/accountSsoGrantInitialDataHydrator';
 
 import {
 	SSO_CONTEXT_COOKIE_NAME,
@@ -21,6 +23,10 @@ import {
 	validateSsoRedirectUri,
 } from '@/lib/account/server/sso';
 import { authenticateAccountRequest } from '@/lib/account/server/auth';
+import {
+	createAccountMeInitialDataForAuthenticatedRequest,
+	createAccountSsoGrantInitialDataForUser,
+} from '@/lib/account/server/initialData';
 import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import { getLogSafeErrorCode } from '@/lib/logging';
 
@@ -159,6 +165,17 @@ function SsoAuthorizeMessage({ status }: { status: string | null }) {
 function SsoAuthorizeLoginRequired() {
 	return (
 		<div className="min-h-main-content py-6 text-foreground">
+			<AccountInitialStateHydrator
+				data={{
+					csrf_token: null,
+					featureEnabled: true,
+					isLoggedIn: false,
+					password_must_change: false,
+					state_epoch: null,
+					syncMeta: null,
+					user: null,
+				}}
+			/>
 			<SsoAuthorizeAccountGate />
 			<Card fullWidth shadow="sm" className="space-y-4 p-4">
 				<Heading as="h1" isFirst>
@@ -215,7 +232,26 @@ export default async function SsoAuthorizePage({
 			return <SsoAuthorizeMessage status="invalid" />;
 		}
 		if (auth.data.credential.password_must_change === 1) {
-			return <SsoAuthorizePasswordChangeRequired />;
+			const accountInitialData =
+				await createAccountMeInitialDataForAuthenticatedRequest({
+					sessionTokenHash: auth.data.sessionTokenHash,
+					userId: auth.data.user.id,
+				});
+			if (accountInitialData === null) {
+				return <SsoAuthorizeMessage status="invalid" />;
+			}
+
+			return (
+				<>
+					<AccountInitialStateHydrator
+						data={{
+							...accountInitialData,
+							password_must_change: true,
+						}}
+					/>
+					<SsoAuthorizePasswordChangeRequired />
+				</>
+			);
 		}
 		if (auth.data.user.status !== USER_STATUS_MAP.active) {
 			return <SsoAuthorizeMessage status="invalid" />;
@@ -230,8 +266,23 @@ export default async function SsoAuthorizePage({
 			return <SsoAuthorizeMessage status="invalid" />;
 		}
 
+		const accountSsoGrantInitialData =
+			await createAccountSsoGrantInitialDataForUser(auth.data.user.id);
+		const accountInitialData =
+			await createAccountMeInitialDataForAuthenticatedRequest({
+				sessionTokenHash: auth.data.sessionTokenHash,
+				userId: auth.data.user.id,
+			});
+		if (accountInitialData === null) {
+			return <SsoAuthorizeMessage status="invalid" />;
+		}
+
 		return (
 			<div className="min-h-main-content py-6 text-foreground">
+				<AccountInitialStateHydrator data={accountInitialData} />
+				<AccountSsoGrantInitialDataHydrator
+					data={accountSsoGrantInitialData}
+				/>
 				<Card fullWidth shadow="sm" className="space-y-5 p-4">
 					<Heading as="h1" isFirst>
 						SSO授权

@@ -2,8 +2,6 @@
 
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
-import { useParams, useSearchParams } from 'next/navigation';
-
 import {
 	FontAwesomeIcon,
 	type FontAwesomeIconProps,
@@ -48,32 +46,28 @@ import {
 	AdminStatusBadge,
 	AdminTable,
 	AdminTableHeader,
-	AdminTableRow,
-	getAdminListHref,
-	getAdminListPageFromSearchValue,
-	getAdminListStatusFromSearchValue,
 } from '../../components';
+import {
+	type TAdminUserDetailActionResult,
+	clearAdminUserDataAction,
+	deleteAdminUserSessionsAction,
+	disableAdminUserAction,
+	enableAdminUserAction,
+	refreshAdminUserDetailAction,
+	resetAdminUserPasswordAction,
+	restoreAdminUserAction,
+} from './actions';
 
-import {
-	type IAdminMeData,
-	type IAdminUserDetailData,
-	clearAdminUserData,
-	deleteAdminUserSessions,
-	disableAdminUser,
-	enableAdminUser,
-	fetchAdminMe,
-	fetchAdminUser,
-	resetAdminUserPassword,
-	restoreAdminUser,
-} from '@/lib/account/client/api';
-import {
-	checkAdminSessionUnauthorized,
-	clearAdminSession,
-} from '@/lib/account/client/adminSession';
+import { checkAdminAction } from '../../actions';
+import { clearAdminSession } from '@/lib/account/client/adminSession';
 import {
 	PASSWORD_RULE_DESCRIPTION,
 	checkPasswordPolicy,
 } from '@/lib/account/shared/constants';
+import {
+	type IAdminMeData,
+	type IAdminUserDetailData,
+} from '@/lib/account/shared/types';
 import { accountStore as store } from '@/stores/account';
 
 type TConfirmAction = 'clear-data' | 'delete-sessions' | 'disable' | null;
@@ -93,6 +87,21 @@ interface IAdminConfirmButtonProps {
 	onConfirm: () => void;
 	onOpenChange: (action: TConfirmAction) => void;
 	openAction: TConfirmAction;
+}
+
+export interface IAdminUserDetailInitialData {
+	admin: IAdminMeData | null;
+	detail: IAdminUserDetailData | null;
+	isAuthLoading: boolean;
+	isDetailServerLoaded: boolean;
+	listHref: string;
+	message: string | null;
+	renderedAt: number;
+	userId: string;
+}
+
+interface IAdminUserDetailClientProps {
+	initialData: IAdminUserDetailInitialData;
 }
 
 const AdminConfirmButton = memo<IAdminConfirmButtonProps>(
@@ -170,25 +179,25 @@ const AdminConfirmButton = memo<IAdminConfirmButtonProps>(
 	}
 );
 
-export default function AdminUserDetailPage() {
-	const { id } = useParams<{ id: string }>();
-	const searchParams = useSearchParams();
-
-	const adminListHref = getAdminListHref({
-		page: getAdminListPageFromSearchValue(searchParams.get('page')),
-		query: searchParams.get('query') ?? '',
-		status: getAdminListStatusFromSearchValue(searchParams.get('status')),
-	});
-
-	const [admin, setAdmin] = useState<IAdminMeData | null>(null);
-	const [detail, setDetail] = useState<IAdminUserDetailData | null>(null);
-	const [message, setMessage] = useState<string | null>(null);
+export default function AdminUserDetailClient({
+	initialData,
+}: IAdminUserDetailClientProps) {
+	const id = initialData.userId;
+	const adminListHref = initialData.listHref;
+	const [admin, setAdmin] = useState<IAdminMeData | null>(initialData.admin);
+	const [detail, setDetail] = useState<IAdminUserDetailData | null>(
+		initialData.detail
+	);
+	const [message, setMessage] = useState<string | null>(initialData.message);
 	const [password, setPassword] = useState('');
 	const [confirmAction, setConfirmAction] = useState<TConfirmAction>(null);
-	const [isAuthLoading, setIsAuthLoading] = useState(true);
+	const [isAuthLoading, setIsAuthLoading] = useState(
+		initialData.isAuthLoading
+	);
 	const [isLoading, setIsLoading] = useState(false);
 
 	const detailRequestIdRef = useRef(0);
+	const isServerInitialDetailRef = useRef(initialData.isDetailServerLoaded);
 
 	const adminCsrfToken = admin?.csrf_token;
 
@@ -202,27 +211,45 @@ export default function AdminUserDetailPage() {
 		[]
 	);
 
+	const handleActionError = useCallback(
+		(error: Extract<TAdminUserDetailActionResult, { status: 'error' }>) => {
+			if (
+				error.httpStatus === 401 &&
+				(error.message === 'unauthorized' ||
+					error.message === 'admin-session-expired')
+			) {
+				clearAdminSession();
+				setAdmin(null);
+				setDetail(null);
+			}
+
+			setMessage(error.message);
+		},
+		[]
+	);
+
 	const refreshDetail = useCallback(() => {
 		setIsLoading(true);
 		setConfirmAction(null);
 		setMessage(null);
 
 		const requestId = createDetailRequestId();
-		void fetchAdminUser(id)
-			.then((data) => {
-				if (checkDetailRequestId(requestId)) {
-					setDetail(data);
-					setMessage(null);
+		void refreshAdminUserDetailAction(id)
+			.then((result) => {
+				if (!checkDetailRequestId(requestId)) {
+					return;
 				}
+				if (result.status === 'ok') {
+					setDetail(result.detail);
+					setMessage(null);
+					return;
+				}
+
+				handleActionError(result);
 			})
 			.catch((error: unknown) => {
 				if (!checkDetailRequestId(requestId)) {
 					return;
-				}
-				if (checkAdminSessionUnauthorized(error)) {
-					clearAdminSession();
-					setAdmin(null);
-					setDetail(null);
 				}
 				setMessage(
 					error instanceof Error ? error.message : '读取用户详情失败'
@@ -233,11 +260,11 @@ export default function AdminUserDetailPage() {
 					setIsLoading(false);
 				}
 			});
-	}, [checkDetailRequestId, createDetailRequestId, id]);
+	}, [checkDetailRequestId, createDetailRequestId, handleActionError, id]);
 
 	const runAction = useCallback(
 		(
-			action: () => Promise<unknown>,
+			action: () => Promise<TAdminUserDetailActionResult>,
 			success: string,
 			onSuccess?: () => void
 		) => {
@@ -247,38 +274,22 @@ export default function AdminUserDetailPage() {
 
 			const requestId = createDetailRequestId();
 			void action()
-				.then(async () => {
+				.then((result) => {
 					if (!checkDetailRequestId(requestId)) {
 						return;
 					}
-					onSuccess?.();
-					try {
-						const data = await fetchAdminUser(id);
-						if (checkDetailRequestId(requestId)) {
-							setDetail(data);
-							setMessage(success);
-						}
-					} catch (error: unknown) {
-						if (checkDetailRequestId(requestId)) {
-							if (checkAdminSessionUnauthorized(error)) {
-								clearAdminSession();
-								setAdmin(null);
-							}
-							setDetail(null);
-							setMessage(
-								'操作已提交，但详情刷新失败，请手动刷新'
-							);
-						}
+					if (result.status === 'error') {
+						handleActionError(result);
+						return;
 					}
+
+					onSuccess?.();
+					setDetail(result.detail);
+					setMessage(success);
 				})
 				.catch((error: unknown) => {
 					if (!checkDetailRequestId(requestId)) {
 						return;
-					}
-					if (checkAdminSessionUnauthorized(error)) {
-						clearAdminSession();
-						setAdmin(null);
-						setDetail(null);
 					}
 					setMessage(
 						error instanceof Error ? error.message : '操作失败'
@@ -290,7 +301,7 @@ export default function AdminUserDetailPage() {
 					}
 				});
 		},
-		[checkDetailRequestId, createDetailRequestId, id]
+		[checkDetailRequestId, createDetailRequestId, handleActionError]
 	);
 
 	const handleResetPassword = useCallback(() => {
@@ -305,7 +316,8 @@ export default function AdminUserDetailPage() {
 		);
 
 		runAction(
-			() => resetAdminUserPassword(id, { password }, adminCsrfToken),
+			() =>
+				resetAdminUserPasswordAction(id, { password }, adminCsrfToken),
 			'密码已重置',
 			() => {
 				setPassword('');
@@ -324,7 +336,10 @@ export default function AdminUserDetailPage() {
 			'Enable User'
 		);
 
-		runAction(() => enableAdminUser(id, adminCsrfToken), '用户已启用');
+		runAction(
+			() => enableAdminUserAction(id, adminCsrfToken),
+			'用户已启用'
+		);
 	}, [adminCsrfToken, id, runAction]);
 
 	const handleRestoreUser = useCallback(() => {
@@ -339,7 +354,7 @@ export default function AdminUserDetailPage() {
 		);
 
 		runAction(
-			() => restoreAdminUser(id, adminCsrfToken),
+			() => restoreAdminUserAction(id, adminCsrfToken),
 			'账号已恢复为禁用状态'
 		);
 	}, [adminCsrfToken, id, runAction]);
@@ -355,7 +370,10 @@ export default function AdminUserDetailPage() {
 			'Disable User'
 		);
 
-		runAction(() => disableAdminUser(id, adminCsrfToken), '用户已禁用');
+		runAction(
+			() => disableAdminUserAction(id, adminCsrfToken),
+			'用户已禁用'
+		);
 	}, [adminCsrfToken, id, runAction]);
 
 	const handleDeleteUserSessions = useCallback(() => {
@@ -370,7 +388,7 @@ export default function AdminUserDetailPage() {
 		);
 
 		runAction(
-			() => deleteAdminUserSessions(id, adminCsrfToken),
+			() => deleteAdminUserSessionsAction(id, adminCsrfToken),
 			'已踢出全部设备'
 		);
 	}, [adminCsrfToken, id, runAction]);
@@ -387,7 +405,7 @@ export default function AdminUserDetailPage() {
 		);
 
 		runAction(
-			() => clearAdminUserData(id, adminCsrfToken),
+			() => clearAdminUserDataAction(id, adminCsrfToken),
 			'账号数据已清空'
 		);
 	}, [adminCsrfToken, id, runAction]);
@@ -400,29 +418,44 @@ export default function AdminUserDetailPage() {
 	);
 
 	useEffect(() => {
+		if (initialData.admin !== null) {
+			store.shared.adminCsrfToken.set(initialData.admin.csrf_token);
+			setIsAuthLoading(false);
+			return;
+		}
+
 		let isMounted = true;
-		void fetchAdminMe()
-			.then((data) => {
+		void checkAdminAction()
+			.then((result) => {
 				if (!isMounted) {
 					return;
 				}
-				store.shared.adminCsrfToken.set(data.csrf_token);
-				setAdmin(data);
+				if (result.status === 'error') {
+					if (
+						result.httpStatus === 401 &&
+						(result.message === 'unauthorized' ||
+							result.message === 'admin-session-expired')
+					) {
+						clearAdminSession();
+						setAdmin(null);
+					} else {
+						setMessage(result.message);
+					}
+					return;
+				}
+
+				store.shared.adminCsrfToken.set(result.data.csrf_token);
+				setAdmin(result.data);
 			})
 			.catch((error: unknown) => {
 				if (!isMounted) {
 					return;
 				}
-				if (checkAdminSessionUnauthorized(error)) {
-					clearAdminSession();
-					setAdmin(null);
-				} else {
-					setMessage(
-						error instanceof Error
-							? error.message
-							: '读取管理员状态失败'
-					);
-				}
+				setMessage(
+					error instanceof Error
+						? error.message
+						: '读取管理员状态失败'
+				);
 			})
 			.finally(() => {
 				if (isMounted) {
@@ -433,10 +466,15 @@ export default function AdminUserDetailPage() {
 		return () => {
 			isMounted = false;
 		};
-	}, []);
+	}, [initialData.admin]);
 
 	useEffect(() => {
 		if (admin !== null) {
+			if (isServerInitialDetailRef.current) {
+				isServerInitialDetailRef.current = false;
+				return;
+			}
+
 			setDetail(null);
 			setMessage(null);
 			setPassword('');
@@ -570,6 +608,7 @@ export default function AdminUserDetailPage() {
 	const canResetPassword = userStatus !== 'deleted';
 	const canClearUserData = userStatus !== 'deleted';
 	const isPasswordValid = checkPasswordPolicy(password);
+	const initialNowTimestamp = initialData.renderedAt;
 
 	return (
 		<AdminShell>
@@ -747,7 +786,12 @@ export default function AdminUserDetailPage() {
 			<AdminPanel className="grid gap-4 sm:grid-cols-3">
 				<AdminMetric
 					label="创建时间"
-					value={<TimeAgo timestamp={createdAt} />}
+					value={
+						<TimeAgo
+							initialNowTimestamp={initialNowTimestamp}
+							timestamp={createdAt}
+						/>
+					}
 				/>
 				<AdminMetric
 					label="最近登录"
@@ -755,69 +799,81 @@ export default function AdminUserDetailPage() {
 						lastLoginAt === null ? (
 							<span className="text-foreground-400">无</span>
 						) : (
-							<TimeAgo timestamp={lastLoginAt} />
+							<TimeAgo
+								initialNowTimestamp={initialNowTimestamp}
+								timestamp={lastLoginAt}
+							/>
 						)
 					}
 				/>
 				<AdminMetric
 					label="用户ID"
 					value={
-						<span className="block break-all font-mono text-tiny leading-5 text-foreground-600">
+						<span className="break-all font-mono text-small">
 							{userId}
 						</span>
 					}
 				/>
 			</AdminPanel>
 
-			{namespaces.length === 0 ? (
-				<AdminEmptyState icon={faDatabase}>
-					暂无同步数据
-				</AdminEmptyState>
-			) : (
-				<AdminTable>
-					<AdminTableHeader>
-						<tr>
-							<th className={tableHeadCellClassName}>
-								Namespace
-							</th>
-							<th className={tableHeadCellClassName}>Revision</th>
-							<th className={tableHeadCellClassName}>Schema</th>
-							<th className={tableHeadCellClassName}>更新时间</th>
-						</tr>
-					</AdminTableHeader>
-					<tbody>
-						{namespaces.map((namespace) => (
-							<AdminTableRow key={namespace.namespace}>
-								<td
-									className={cn(
-										tableCellClassName,
-										'w-72 max-w-72'
-									)}
+			<AdminPanel>
+				<AdminPanelTitle icon={faDatabase}>
+					同步命名空间
+				</AdminPanelTitle>
+				{namespaces.length === 0 ? (
+					<AdminEmptyState icon={faServer}>
+						暂无云端状态数据
+					</AdminEmptyState>
+				) : (
+					<AdminTable>
+						<AdminTableHeader>
+							<tr>
+								<th className={tableHeadCellClassName}>
+									命名空间
+								</th>
+								<th className={tableHeadCellClassName}>版本</th>
+								<th className={tableHeadCellClassName}>
+									Schema
+								</th>
+								<th className={tableHeadCellClassName}>
+									更新时间
+								</th>
+							</tr>
+						</AdminTableHeader>
+						<tbody>
+							{namespaces.map((namespace) => (
+								<tr
+									key={namespace.namespace}
+									className="border-t border-default-200/70"
 								>
-									<span className="flex min-w-0 items-center gap-2 font-mono text-tiny leading-5 text-foreground-700">
-										<FontAwesomeIcon
-											icon={faServer}
-											className="w-3 text-default-400"
+									<td
+										className={cn(
+											tableCellClassName,
+											'font-mono text-small'
+										)}
+									>
+										{namespace.namespace}
+									</td>
+									<td className={tableNowrapCellClassName}>
+										{namespace.revision}
+									</td>
+									<td className={tableNowrapCellClassName}>
+										{namespace.schema_version}
+									</td>
+									<td className={tableNowrapCellClassName}>
+										<TimeAgo
+											initialNowTimestamp={
+												initialNowTimestamp
+											}
+											timestamp={namespace.updated_at}
 										/>
-										<span className="truncate">
-											{namespace.namespace}
-										</span>
-									</span>
-								</td>
-								<td className={tableNowrapCellClassName}>
-									{namespace.revision}
-								</td>
-								<td className={tableNowrapCellClassName}>
-									{namespace.schema_version}
-								</td>
-								<td className={tableNowrapCellClassName}>
-									<TimeAgo timestamp={namespace.updated_at} />
-								</td>
-							</AdminTableRow>
-						))}
-					</tbody>
-				</AdminTable>
-			)}
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</AdminTable>
+				)}
+			</AdminPanel>
 		</AdminShell>
 	);
 }

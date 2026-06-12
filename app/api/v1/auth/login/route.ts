@@ -79,8 +79,8 @@ export async function POST(request: NextRequest) {
 		userModule,
 	] = await Promise.all([
 		import('@/lib/account/server/password'),
-		import('@/actions/account/users'),
-		import('@/actions/account/credentials'),
+		import('@/lib/account/server/repositories/users'),
+		import('@/lib/account/server/repositories/credentials'),
 		import('@/lib/account/server/auth'),
 		import('@/lib/account/server/user'),
 	]);

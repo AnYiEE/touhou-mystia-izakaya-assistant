@@ -1,5 +1,6 @@
-import { fetchAccountMe, importBackupCode } from './api';
+import { AccountApiError, importBackupCode } from './api';
 import { type IAuthLoginSuccessResponse } from '../shared/types';
+import { fetchAccountMeAction } from '@/lib/account/actions/auth';
 import { readAccountSyncMeta } from './snapshot';
 import {
 	invalidateAccountSyncClientRuns,
@@ -45,6 +46,7 @@ export function resetAccountState() {
 	accountStore.shared.csrfToken.set(null);
 	accountStore.shared.isLoggedIn.set(false);
 	accountStore.shared.passwordMustChange.set(false);
+	accountStore.shared.ssoGrantInitialData.set(null);
 	accountStore.shared.sync.meta.set(null);
 	accountStore.shared.user.set(null);
 }
@@ -155,9 +157,17 @@ export async function refreshAccountState() {
 	const generation = advanceAccountStateRequestGeneration();
 	const previousUser = accountStore.shared.user.get();
 	const previousCsrfToken = accountStore.shared.csrfToken.get();
-	let result: Awaited<ReturnType<typeof fetchAccountMe>>;
+	let result: Awaited<ReturnType<typeof fetchAccountMeAction>>['data'];
 	try {
-		result = await fetchAccountMe();
+		const actionResult = await fetchAccountMeAction();
+		if (actionResult.status === 'error') {
+			throw new AccountApiError(
+				actionResult.message,
+				actionResult.httpStatus
+			);
+		}
+
+		result = actionResult.data;
 	} catch (error) {
 		if (!checkCurrentAccountStateRequest(generation)) {
 			return null;

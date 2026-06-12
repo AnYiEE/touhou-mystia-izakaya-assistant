@@ -25,12 +25,12 @@ import {
 	getSessionByTokenHash,
 	updateSessionAndDeleteOtherSessions,
 	updateSessionLastSeen,
-} from '@/actions/account/sessions';
-import { findUserById } from '@/actions/account/users';
+} from '@/lib/account/server/repositories/sessions';
+import { findUserById } from '@/lib/account/server/repositories/users';
 import {
 	getCredentialByUserId,
 	updateCredentialAndRotateSession,
-} from '@/actions/account/credentials';
+} from '@/lib/account/server/repositories/credentials';
 import {
 	type TSession,
 	type TSessionNew,

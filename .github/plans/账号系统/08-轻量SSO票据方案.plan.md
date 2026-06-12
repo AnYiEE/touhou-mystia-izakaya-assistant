@@ -604,15 +604,15 @@ CREATE TABLE external_users (
 - `app/api/v1/sso/validate/route.ts`
 - `app/api/v1/sso/status/route.ts`
 - `app/api/v1/sso/dispatch-callbacks/route.ts`：回调队列调度端点，由外部 cron 定时触发。
-- `app/actions/account/sso.ts`：client CRUD、secret 生成、回调队列写入与幂等刷新。
+- `app/lib/account/server/repositories/sso.ts`：client CRUD、secret 生成、回调队列写入与幂等刷新。
 - `app/lib/account/server/sso.ts`：redirect URI 校验、PKCE 校验、ticket 签发/校验、回调 HMAC 签名与调度。
 - `app/lib/db/migrations/sso.ts`：SSO 表、索引、外键、约束和旧表结构升级。
 - `app/(pages)/sso/authorize/page.tsx`：授权确认页。
 - `app/(pages)/sso/authorize/page.offline.tsx`：离线授权提示页。
-- `app/(pages)/(layout)/admin/sso/page.tsx`：SSO client 列表页。
-- `app/(pages)/(layout)/admin/sso/new/page.tsx`：SSO client 新建页。
-- `app/(pages)/(layout)/admin/sso/[id]/page.tsx`：SSO client 编辑页。
-- `app/(pages)/(layout)/admin/sso/clientForm.tsx`：SSO client 表单。
+- `app/(pages)/admin/sso/page.tsx`：SSO client 列表页。
+- `app/(pages)/admin/sso/new/page.tsx`：SSO client 新建页。
+- `app/(pages)/admin/sso/[id]/page.tsx`：SSO client 编辑页。
+- `app/(pages)/admin/sso/clientForm.tsx`：SSO client 表单。
 - `app/api/v1/admin/sso/clients/route.ts`、`app/api/v1/admin/sso/clients/[id]/route.ts`、`app/api/v1/admin/sso/clients/utils.ts`：管理员 SSO client CRUD API。
 
 修改文件：
@@ -621,7 +621,7 @@ CREATE TABLE external_users (
 - [app/lib/db/types.d.ts](../../../app/lib/db/types.d.ts)：新增 `ITableSsoTicket`、`ITableSsoClient`、`ITableSsoCallback` 等类型。
 - [app/lib/db/migrations/account.ts](../../../app/lib/db/migrations/account.ts)：接入 SSO 表迁移。
 - [app/api/v1/auth/login/route.ts](../../../app/api/v1/auth/login/route.ts) 与 [app/api/v1/auth/register/route.ts](../../../app/api/v1/auth/register/route.ts)：登录/注册完成后如存在 SSO 授权上下文，则跳转到授权确认页。
-- [app/(pages)/(layout)/admin/page.tsx](<../../../app/(pages)/(layout)/admin/page.tsx>)：新增 SSO 客户端管理入口。
+- [app/(pages)/admin/page.tsx](<../../../app/(pages)/admin/page.tsx>)：新增 SSO 客户端管理入口。
 - [app/lib/account/client/api.ts](../../../app/lib/account/client/api.ts)：新增管理员 SSO client API 调用封装。
 - [app/lib/account/shared/constants.ts](../../../app/lib/account/shared/constants.ts) 与 [app/lib/account/shared/types.ts](../../../app/lib/account/shared/types.ts)：新增 SSO cookie 名称与 API 类型。
 - [app/api/v1/admin/users/[id]/disable/route.ts](../../../app/api/v1/admin/users/[id]/disable/route.ts) 等管理员用户操作路由：用户状态变更后触发 SSO 回调。

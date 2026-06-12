@@ -67,7 +67,8 @@ export async function DELETE(
 	}
 
 	const { id } = await params;
-	const userStateModule = await import('@/actions/account/userState');
+	const userStateModule =
+		await import('@/lib/account/server/repositories/userState');
 
 	try {
 		const stateEpoch =

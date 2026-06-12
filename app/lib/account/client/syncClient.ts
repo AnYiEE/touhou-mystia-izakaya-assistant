@@ -53,6 +53,7 @@ import {
 	type TSyncNamespace,
 	type TSyncStatePutResult,
 } from '@/lib/account/sync';
+import { SEND_BEACON_SYNC_BODY_BYTES } from '@/lib/account/shared/requestLimits';
 import {
 	type IGlobalPreferencesSnapshot,
 	globalPreferencesSerializer,
@@ -64,7 +65,6 @@ const DIRTY_COUNT_FLUSH_THRESHOLD = 10;
 const FORCE_FLUSH_DELAY = 30 * 1000;
 const QUIET_FLUSH_DELAY = 2 * 1000;
 const LEASE_BUSY_RETRY_DELAY = QUIET_FLUSH_DELAY;
-const SEND_BEACON_BYTE_LIMIT = 48 * 1024;
 const EXPLICIT_FLUSH_MAX_PASSES = 8;
 const SYNC_NAMESPACE_SET = new Set<TSyncNamespace>(
 	Object.values(SYNC_NAMESPACE_MAP)
@@ -1693,7 +1693,7 @@ export function flushAccountSyncQueueWithBeacon() {
 	};
 	const payload = JSON.stringify(body);
 
-	if (new Blob([payload]).size > SEND_BEACON_BYTE_LIMIT) {
+	if (new Blob([payload]).size > SEND_BEACON_SYNC_BODY_BYTES) {
 		return;
 	}
 

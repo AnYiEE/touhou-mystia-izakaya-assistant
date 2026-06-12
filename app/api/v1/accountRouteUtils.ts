@@ -1,27 +1,16 @@
 import { type NextRequest } from 'next/server';
-import { createHash } from 'node:crypto';
 
 import { createNoStoreErrorResponse } from '@/api/v1/utils';
 import {
-	FEATURE_DISABLED_MESSAGE,
-	SERVER_MISCONFIGURED_MESSAGE,
-	getAccountFeatureStatus,
-} from '@/lib/account/server/environment';
-import { checkRateLimit } from '@/lib/account/server/rateLimit';
-import {
-	checkInsecureAccountCookiesAllowed,
-	checkSameOriginRequest,
-	checkSecureRequest,
-	getTrustedRequestIp,
-} from '@/lib/account/server/request';
-import { ACCOUNT_COOKIE_NAME_MAP } from '@/lib/account/shared/constants';
-import { getLogSafeErrorCode } from '@/lib/logging';
-
-const ACCOUNT_RATE_LIMIT_OPTIONS = { limit: 20, windowMs: 60 * 1000 } as const;
-const NO_STABLE_RATE_LIMIT_KEY_WARN_INTERVAL_MS = 60 * 1000;
-const MAX_ACCOUNT_JSON_BODY_BYTES = 16 * 1024;
-
-const noStableRateLimitKeyWarnAtMap = new Map<string, number>();
+	type TAccountGuardResult,
+	checkAccountCookieSecurity,
+	checkAccountFeature,
+	checkAccountRateLimit,
+	checkSameOrigin,
+	createRetryAfterHeaders as createGuardRetryAfterHeaders,
+} from '@/lib/account/server/guards';
+import { SERVER_MISCONFIGURED_MESSAGE } from '@/lib/account/server/environment';
+import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
 
 type TAccountAuthError = Extract<
 	Awaited<
@@ -35,71 +24,37 @@ type TJsonBodyReadResult<T extends object> =
 	| { data: Partial<T>; status: 'ok' }
 	| { status: 'invalid' | 'payload-too-large' };
 
-function createAccountRateLimitKey(parts: ReadonlyArray<string>) {
-	return JSON.stringify(parts);
-}
+type TAccountGuardError = Extract<TAccountGuardResult, { status: 'error' }>;
 
-function createAccountRateLimitCapacityGroup(scope: string, dimension: string) {
-	return createAccountRateLimitKey([scope, dimension]);
-}
-
-function createAccountRateLimitCookieHash(value: string) {
-	return createHash('sha256').update(value).digest('base64url');
-}
-
-function warnNoStableRateLimitKey(scope: string, now = Date.now()) {
-	const lastWarnAt = noStableRateLimitKeyWarnAtMap.get(scope) ?? 0;
-	if (now - lastWarnAt < NO_STABLE_RATE_LIMIT_KEY_WARN_INTERVAL_MS) {
-		return;
-	}
-
-	noStableRateLimitKeyWarnAtMap.set(scope, now);
-	console.warn('Account rate limit rejected request without stable key.', {
-		scope,
-	});
+function createGuardErrorResponse(error: TAccountGuardError) {
+	return createNoStoreErrorResponse(
+		error.message,
+		error.httpStatus,
+		error.data,
+		error.headers === undefined ? undefined : { headers: error.headers }
+	);
 }
 
 export function createRetryAfterHeaders(retryAfter: number) {
-	return { 'Retry-After': String(Math.max(0, retryAfter)) };
+	return createGuardRetryAfterHeaders(retryAfter);
 }
 
 export async function checkAccountFeatureResponse() {
-	const status = await getAccountFeatureStatus();
+	const result = await checkAccountFeature();
 
-	if (!status.enabled) {
-		return createNoStoreErrorResponse(
-			status.reason,
-			status.reason === FEATURE_DISABLED_MESSAGE ? 404 : 500
-		);
-	}
-
-	try {
-		const dbModule = await import('@/lib/account/server/db');
-		await dbModule.getAccountDatabase();
-		return null;
-	} catch (error) {
-		console.warn('Account database initialization failed.', {
-			errorCode: getLogSafeErrorCode(error),
-		});
-
-		return createNoStoreErrorResponse(SERVER_MISCONFIGURED_MESSAGE, 500);
-	}
+	return result.status === 'ok' ? null : createGuardErrorResponse(result);
 }
 
 export function checkSameOriginResponse(request: NextRequest) {
-	if (checkSameOriginRequest(request)) {
-		return null;
-	}
+	const result = checkSameOrigin(request);
 
-	return createNoStoreErrorResponse('forbidden', 403);
+	return result.status === 'ok' ? null : createGuardErrorResponse(result);
 }
 
 export function checkAccountCookieSecurityResponse(request: NextRequest) {
-	if (checkSecureRequest(request) || checkInsecureAccountCookiesAllowed()) {
-		return null;
-	}
+	const result = checkAccountCookieSecurity(request);
 
-	return createNoStoreErrorResponse(SERVER_MISCONFIGURED_MESSAGE, 500);
+	return result.status === 'ok' ? null : createGuardErrorResponse(result);
 }
 
 export function checkAccountRateLimitResponse(
@@ -108,115 +63,14 @@ export function checkAccountRateLimitResponse(
 	usernameNormalized = '',
 	options: { noTrustedIpGate?: boolean } = {}
 ) {
-	const keys: Array<{ capacityGroup: string; key: string }> = [];
-	const trustedRequestIp = getTrustedRequestIp(request);
-	if (trustedRequestIp !== null) {
-		keys.push({
-			capacityGroup: createAccountRateLimitCapacityGroup(
-				scope,
-				'request'
-			),
-			key: createAccountRateLimitKey([
-				scope,
-				'request',
-				trustedRequestIp,
-			]),
-		});
-	}
-	if (trustedRequestIp === null && options.noTrustedIpGate === true) {
-		keys.push({
-			capacityGroup: createAccountRateLimitCapacityGroup(
-				scope,
-				'no-trusted-ip-gate'
-			),
-			key: createAccountRateLimitKey([scope, 'no-trusted-ip-gate']),
-		});
-	}
-
-	if (usernameNormalized !== '') {
-		keys.push({
-			capacityGroup: createAccountRateLimitCapacityGroup(
-				scope,
-				'username'
-			),
-			key: createAccountRateLimitKey([
-				scope,
-				'username',
-				usernameNormalized,
-			]),
-		});
-	}
-
-	const accountSession = request.cookies.get(
-		ACCOUNT_COOKIE_NAME_MAP.session
-	)?.value;
-	if (accountSession !== undefined && accountSession !== '') {
-		keys.push({
-			capacityGroup: createAccountRateLimitCapacityGroup(
-				scope,
-				'session'
-			),
-			key: createAccountRateLimitKey([
-				scope,
-				'session',
-				createAccountRateLimitCookieHash(accountSession),
-			]),
-		});
-	}
-
-	const adminSession = request.cookies.get(
-		ACCOUNT_COOKIE_NAME_MAP.adminSession
-	)?.value;
-	if (adminSession !== undefined && adminSession !== '') {
-		keys.push({
-			capacityGroup: createAccountRateLimitCapacityGroup(
-				scope,
-				'admin-session'
-			),
-			key: createAccountRateLimitKey([
-				scope,
-				'admin-session',
-				createAccountRateLimitCookieHash(adminSession),
-			]),
-		});
-	}
-
-	if (keys.length === 0) {
-		warnNoStableRateLimitKey(scope);
-		return createNoStoreErrorResponse(
-			'too-many-requests',
-			429,
-			{ retry_after: ACCOUNT_RATE_LIMIT_OPTIONS.windowMs / 1000 },
-			{
-				headers: createRetryAfterHeaders(
-					ACCOUNT_RATE_LIMIT_OPTIONS.windowMs / 1000
-				),
-			}
-		);
-	}
-
-	let result: ReturnType<typeof checkRateLimit> | undefined;
-	for (const { capacityGroup, key } of keys) {
-		const check = checkRateLimit(key, {
-			...ACCOUNT_RATE_LIMIT_OPTIONS,
-			capacityGroup,
-		});
-		if (!check.allowed) {
-			result = check;
-			break;
-		}
-	}
-
-	if (result === undefined) {
-		return null;
-	}
-
-	return createNoStoreErrorResponse(
-		'too-many-requests',
-		429,
-		{ retry_after: result.retryAfter },
-		{ headers: createRetryAfterHeaders(result.retryAfter) }
+	const result = checkAccountRateLimit(
+		request,
+		scope,
+		usernameNormalized,
+		options
 	);
+
+	return result.status === 'ok' ? null : createGuardErrorResponse(result);
 }
 
 export async function readJsonBodyResult<T extends object>(

@@ -19,11 +19,20 @@ function formatTimeAgo(pastTimestamp: number, nowTimestamp = Date.now()) {
 }
 
 interface IProps extends HTMLSpanElementAttributes, RefProps<HTMLSpanElement> {
+	initialNowTimestamp?: number;
 	timestamp: number;
 }
 
-export default memo<IProps>(function TimeAgo({ timestamp, ...props }) {
-	const [timeAgo, setTimeAgo] = useState('');
+export default memo<IProps>(function TimeAgo({
+	initialNowTimestamp,
+	timestamp,
+	...props
+}) {
+	const [timeAgo, setTimeAgo] = useState(() =>
+		initialNowTimestamp === undefined
+			? ''
+			: formatTimeAgo(timestamp, initialNowTimestamp)
+	);
 
 	useEffect(() => {
 		const update = () => {

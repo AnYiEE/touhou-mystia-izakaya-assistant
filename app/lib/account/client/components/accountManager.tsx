@@ -44,19 +44,7 @@ import { trackEvent } from '@/components/analytics';
 import Heading from '@/components/heading';
 import AccountSyncStatus from './accountSyncStatus';
 
-import {
-	AccountApiError,
-	changeAccountPassword,
-	deleteAccount,
-	deleteAccountData,
-	exportAccountData,
-	listAccountSsoGrants,
-	loginAccount,
-	logoutAccount,
-	logoutAllAccount,
-	registerAccount,
-	revokeAccountSsoGrant,
-} from '@/lib/account/client/api';
+import { AccountApiError } from '@/lib/account/client/api';
 import { postAccountSyncBroadcastMessage } from '@/lib/account/client/broadcast';
 import { getAccountClientErrorMessage } from '@/lib/account/client/errorMessage';
 import { createAccountClientId } from '@/lib/account/client/random';
@@ -71,6 +59,22 @@ import {
 	resetAccountSyncCloudStateAfterDelete,
 	scheduleAccountSyncFlush,
 } from '@/lib/account/client/syncClient';
+import {
+	type TAccountAuthActionResult,
+	changeAccountPasswordAction,
+	deleteAccountAction,
+	deleteAccountDataAction,
+	exportAccountDataAction,
+	loginAccountAction,
+	logoutAccountAction,
+	logoutAllAccountAction,
+	registerAccountAction,
+} from '@/lib/account/actions/auth';
+import {
+	type TAccountSsoGrantActionResult,
+	refreshAccountSsoGrantsAction,
+	revokeAccountSsoGrantAction,
+} from '@/lib/account/actions/ssoGrants';
 import {
 	PASSWORD_RULE_DESCRIPTION,
 	USERNAME_RULE_DESCRIPTION,
@@ -231,7 +235,25 @@ function handleUnauthorizedAccountError(
 	return false;
 }
 
+function handleUnauthorizedAccountActionError(
+	error: Extract<
+		TAccountAuthActionResult | TAccountSsoGrantActionResult,
+		{ status: 'error' }
+	>,
+	context: TAccountAuthContext = {}
+) {
+	if (error.httpStatus === 401) {
+		resetAccountStateIfCurrent(context);
+		return true;
+	}
+
+	return false;
+}
+
 const LOGOUT_SKIPPED = Symbol('logout-skipped');
+type TLogoutAfterFlushResult =
+	| TAccountAuthActionResult<unknown>
+	| typeof LOGOUT_SKIPPED;
 
 const BOOTSTRAP_ERROR_MESSAGE_MAP: Record<string, string> = {
 	'bootstrap-failed': '账号服务初始化失败，请刷新页面重试',
@@ -254,6 +276,7 @@ export default memo<IProps>(function AccountManager() {
 	const csrfToken = accountStore.shared.csrfToken.use();
 	const lastError = accountStore.shared.sync.lastError.use();
 	const passwordMustChange = accountStore.shared.passwordMustChange.use();
+	const ssoGrantInitialData = accountStore.shared.ssoGrantInitialData.use();
 	const user = accountStore.shared.user.use();
 
 	const [authMode, setAuthMode] = useState<TAuthMode>('login');
@@ -271,6 +294,7 @@ export default memo<IProps>(function AccountManager() {
 	const [isDeleteAccountPopoverOpen, setIsDeleteAccountPopoverOpen] =
 		useState(false);
 	const [ssoGrants, setSsoGrants] = useState<IAccountSsoGrant[]>([]);
+	const [ssoGrantsUserId, setSsoGrantsUserId] = useState<string | null>(null);
 	const [revokeTargetClientId, setRevokeTargetClientId] = useState<
 		string | null
 	>(null);
@@ -316,9 +340,16 @@ export default memo<IProps>(function AccountManager() {
 			expectedUserId: accountStore.shared.user.get()?.id ?? null,
 		};
 
-		const request = authMode === 'login' ? loginAccount : registerAccount;
+		const request =
+			authMode === 'login' ? loginAccountAction : registerAccountAction;
 		void request({ password, username: normalizedUsername })
-			.then((data) => {
+			.then((result) => {
+				if (result.status === 'error') {
+					setMessage(result.message);
+					return;
+				}
+
+				const { redirect_to: redirectTo, ...data } = result.data;
 				if (
 					!applyAccountAuthSuccessResponse(data, expectedAuthContext)
 				) {
@@ -327,6 +358,10 @@ export default memo<IProps>(function AccountManager() {
 
 				setPassword('');
 				setMessage(authMode === 'login' ? '登录成功' : '注册成功');
+				if (redirectTo !== undefined) {
+					globalThis.location.assign(redirectTo);
+					return;
+				}
 				if (isSsoContext) {
 					router.refresh();
 				}
@@ -395,11 +430,37 @@ export default memo<IProps>(function AccountManager() {
 			expectedUserId: user.id,
 		};
 
-		void changeAccountPassword(
+		void changeAccountPasswordAction(
 			{ current_password: currentPassword, new_password: newPassword },
 			csrfToken
 		)
-			.then((data) => {
+			.then((result) => {
+				if (result.status === 'error') {
+					if (result.message === 'invalid-password') {
+						if (
+							!checkCurrentAccountAuthContext(expectedAuthContext)
+						) {
+							return;
+						}
+
+						setPasswordChangeError(result.message);
+						setMessage(null);
+						return;
+					}
+					if (
+						handleUnauthorizedAccountActionError(
+							result,
+							expectedAuthContext
+						)
+					) {
+						return;
+					}
+
+					setMessage(result.message);
+					return;
+				}
+
+				const { data } = result;
 				if (
 					!applyAccountAuthSuccessResponse(data, {
 						...expectedAuthContext,
@@ -429,27 +490,6 @@ export default memo<IProps>(function AccountManager() {
 				});
 			})
 			.catch((error: unknown) => {
-				if (
-					error instanceof AccountApiError &&
-					error.status === 401 &&
-					error.message !== 'invalid-password'
-				) {
-					resetAccountStateIfCurrent(expectedAuthContext);
-					return;
-				}
-				if (
-					error instanceof AccountApiError &&
-					error.message === 'invalid-password'
-				) {
-					if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
-						return;
-					}
-
-					setPasswordChangeError(error.message);
-					setMessage(null);
-					return;
-				}
-
 				setMessage(error instanceof Error ? error.message : '改密失败');
 			})
 			.finally(() => {
@@ -466,7 +506,9 @@ export default memo<IProps>(function AccountManager() {
 
 	const logoutAfterFlush = useCallback(
 		(
-			action: (csrfToken: string) => Promise<unknown>,
+			action: (
+				csrfToken: string
+			) => Promise<TAccountAuthActionResult<unknown>>,
 			trackName: string
 		) => {
 			if (csrfToken === null || isSubmitting || user === null) {
@@ -488,7 +530,7 @@ export default memo<IProps>(function AccountManager() {
 			};
 
 			void flushAccountSyncQueueUntilIdle()
-				.then((isFlushed) => {
+				.then(async (isFlushed): Promise<TLogoutAfterFlushResult> => {
 					if (!isFlushed) {
 						if (
 							!checkCurrentAccountAuthContext(expectedAuthContext)
@@ -512,12 +554,26 @@ export default memo<IProps>(function AccountManager() {
 						return LOGOUT_SKIPPED;
 					}
 
-					return action(csrfToken);
+					return await action(csrfToken);
 				})
 				.then((result) => {
-					if (result !== LOGOUT_SKIPPED) {
-						resetAccountStateIfCurrent(expectedAuthContext);
+					if (result === LOGOUT_SKIPPED) {
+						return;
 					}
+					if (result.status === 'error') {
+						if (
+							handleUnauthorizedAccountActionError(
+								result,
+								expectedAuthContext
+							)
+						) {
+							return;
+						}
+						setMessage(result.message);
+						return;
+					}
+
+					resetAccountStateIfCurrent(expectedAuthContext);
 				})
 				.catch((error: unknown) => {
 					if (
@@ -542,11 +598,11 @@ export default memo<IProps>(function AccountManager() {
 	);
 
 	const handleLogout = useCallback(() => {
-		logoutAfterFlush(logoutAccount, 'Logout');
+		logoutAfterFlush(logoutAccountAction, 'Logout');
 	}, [logoutAfterFlush]);
 
 	const handleLogoutAll = useCallback(() => {
-		logoutAfterFlush(logoutAllAccount, 'Logout All');
+		logoutAfterFlush(logoutAllAccountAction, 'Logout All');
 	}, [logoutAfterFlush]);
 
 	const handleExport = useCallback(() => {
@@ -591,15 +647,33 @@ export default memo<IProps>(function AccountManager() {
 					return null;
 				}
 
-				return exportAccountData();
+				return exportAccountDataAction();
 			})
-			.then((data) => {
-				if (data === null) {
+			.then((result) => {
+				if (result === null) {
+					return;
+				}
+				if (result.status === 'error') {
+					if (
+						handleUnauthorizedAccountActionError(
+							result,
+							expectedAuthContext
+						)
+					) {
+						return;
+					}
+					if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
+						return;
+					}
+
+					setMessage(result.message);
 					return;
 				}
 				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
 					return;
 				}
+
+				const { data } = result;
 
 				downloadJson(
 					`mystia-account-${user.username}`,
@@ -646,11 +720,31 @@ export default memo<IProps>(function AccountManager() {
 		};
 		const expectedUserContext = { expectedUserId: user.id };
 
-		void deleteAccountData(csrfToken)
-			.then(({ state_epoch }) => {
+		void deleteAccountDataAction(csrfToken)
+			.then((result) => {
+				if (result.status === 'error') {
+					if (
+						handleUnauthorizedAccountActionError(
+							result,
+							expectedSessionContext
+						)
+					) {
+						return;
+					}
+					if (
+						!checkCurrentAccountAuthContext(expectedSessionContext)
+					) {
+						return;
+					}
+
+					setMessage(result.message);
+					return;
+				}
 				if (!checkCurrentAccountAuthContext(expectedUserContext)) {
 					return;
 				}
+
+				const { state_epoch } = result.data;
 
 				const shouldFlushPreservedDirty =
 					resetAccountSyncCloudStateAfterDelete({
@@ -702,10 +796,6 @@ export default memo<IProps>(function AccountManager() {
 					});
 			})
 			.catch((error: unknown) => {
-				if (error instanceof AccountApiError && error.status === 401) {
-					resetAccountStateIfCurrent(expectedSessionContext);
-					return;
-				}
 				if (!checkCurrentAccountAuthContext(expectedSessionContext)) {
 					return;
 				}
@@ -739,15 +829,30 @@ export default memo<IProps>(function AccountManager() {
 		};
 		const expectedUserContext = { expectedUserId: user.id };
 
-		void deleteAccount(csrfToken)
-			.then(() => {
+		void deleteAccountAction(csrfToken)
+			.then((result) => {
+				if (result.status === 'error') {
+					if (
+						handleUnauthorizedAccountActionError(
+							result,
+							expectedSessionContext
+						)
+					) {
+						return;
+					}
+					if (
+						!checkCurrentAccountAuthContext(expectedSessionContext)
+					) {
+						return;
+					}
+
+					setMessage(result.message);
+					return;
+				}
+
 				resetAccountStateIfCurrent(expectedUserContext);
 			})
 			.catch((error: unknown) => {
-				if (error instanceof AccountApiError && error.status === 401) {
-					resetAccountStateIfCurrent(expectedSessionContext);
-					return;
-				}
 				if (!checkCurrentAccountAuthContext(expectedSessionContext)) {
 					return;
 				}
@@ -785,19 +890,71 @@ export default memo<IProps>(function AccountManager() {
 
 	useEffect(() => {
 		if (user === null || csrfToken === null || passwordMustChange) {
+			if (
+				bootstrapStatus === 'anonymous' ||
+				bootstrapStatus === 'loggedIn' ||
+				passwordMustChange
+			) {
+				accountStore.shared.ssoGrantInitialData.set(null);
+				setSsoGrants([]);
+				setSsoGrantsUserId(null);
+			}
+			return;
+		}
+
+		if (ssoGrantInitialData?.user_id === user.id) {
+			accountStore.shared.ssoGrantInitialData.set(null);
+			setSsoGrants(ssoGrantInitialData.grants);
+			setSsoGrantsUserId(user.id);
+			return;
+		}
+		if (ssoGrantInitialData !== null) {
+			accountStore.shared.ssoGrantInitialData.set(null);
 			setSsoGrants([]);
+			setSsoGrantsUserId(null);
+		}
+		if (ssoGrantsUserId === user.id) {
 			return;
 		}
 
 		let cancelled = false;
-		listAccountSsoGrants()
-			.then((data) => {
-				if (!cancelled) {
-					setSsoGrants(data.grants);
+		const expectedAuthContext = {
+			expectedCsrfToken: csrfToken,
+			expectedUserId: user.id,
+		};
+
+		refreshAccountSsoGrantsAction()
+			.then((result) => {
+				if (
+					cancelled ||
+					!checkCurrentAccountAuthContext(expectedAuthContext)
+				) {
+					return;
 				}
+
+				if (result.status === 'error') {
+					if (
+						handleUnauthorizedAccountActionError(
+							result,
+							expectedAuthContext
+						)
+					) {
+						return;
+					}
+					console.warn('Failed to list SSO grants.', {
+						errorCode: result.message,
+					});
+					return;
+				}
+
+				setSsoGrants(result.data.grants);
+				setSsoGrantsUserId(user.id);
 			})
 			.catch((error: unknown) => {
-				if (cancelled) {
+				if (
+					cancelled ||
+					!checkCurrentAccountAuthContext(expectedAuthContext)
+				) {
 					return;
 				}
 				console.warn('Failed to list SSO grants.', {
@@ -808,7 +965,14 @@ export default memo<IProps>(function AccountManager() {
 		return () => {
 			cancelled = true;
 		};
-	}, [csrfToken, passwordMustChange, user]);
+	}, [
+		bootstrapStatus,
+		csrfToken,
+		passwordMustChange,
+		ssoGrantInitialData,
+		ssoGrantsUserId,
+		user,
+	]);
 
 	const handleRevokeSsoGrantOpen = useCallback((clientId: string) => {
 		setRevokeTargetClientId(clientId);
@@ -821,6 +985,7 @@ export default memo<IProps>(function AccountManager() {
 	const handleRevokeSsoGrant = useCallback(() => {
 		if (
 			csrfToken === null ||
+			user === null ||
 			revokeTargetClientId === null ||
 			isSubmitting
 		) {
@@ -828,22 +993,45 @@ export default memo<IProps>(function AccountManager() {
 		}
 
 		const clientId = revokeTargetClientId;
+		const expectedAuthContext = {
+			expectedCsrfToken: csrfToken,
+			expectedUserId: user.id,
+		};
 		setRevokeTargetClientId(null);
 		setIsSubmitting(true);
 
-		revokeAccountSsoGrant(clientId, csrfToken)
-			.then(() => {
+		revokeAccountSsoGrantAction(clientId, csrfToken)
+			.then((result) => {
+				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
+					return;
+				}
+
+				if (result.status === 'error') {
+					if (
+						handleUnauthorizedAccountActionError(
+							result,
+							expectedAuthContext
+						)
+					) {
+						return;
+					}
+
+					setMessage(result.message);
+					return;
+				}
+
 				setSsoGrants((prev) =>
 					prev.filter((grant) => grant.client.id !== clientId)
 				);
 				setMessage('已撤销授权');
 			})
 			.catch((error: unknown) => {
+				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
+					return;
+				}
+
 				if (
-					handleUnauthorizedAccountError(error, {
-						expectedCsrfToken: csrfToken,
-						expectedUserId: user?.id ?? null,
-					})
+					handleUnauthorizedAccountError(error, expectedAuthContext)
 				) {
 					return;
 				}
@@ -904,6 +1092,7 @@ export default memo<IProps>(function AccountManager() {
 		passwordChangeError === null
 			? null
 			: getAccountClientErrorMessage(passwordChangeError);
+	const visibleSsoGrants = user?.id === ssoGrantsUserId ? ssoGrants : [];
 
 	return (
 		<div className="space-y-4 p-1.5">
@@ -1290,13 +1479,13 @@ export default memo<IProps>(function AccountManager() {
 							</div>
 						</AccountPanel>
 					)}
-					{!passwordMustChange && ssoGrants.length > 0 && (
+					{!passwordMustChange && visibleSsoGrants.length > 0 && (
 						<AccountPanel className="space-y-3">
 							<AccountPanelTitle icon={faPlug}>
 								已授权应用
 							</AccountPanelTitle>
 							<div className="flex flex-col gap-1">
-								{ssoGrants.map((grant) => (
+								{visibleSsoGrants.map((grant) => (
 									<div
 										key={grant.client.id}
 										className="flex items-center justify-between gap-2"

@@ -9,7 +9,6 @@ import {
 	readJsonBodyResult,
 } from '@/api/v1/accountRouteUtils';
 import {
-	MAX_SYNC_JSON_BODY_BYTES,
 	createUserStateRecord,
 	parseSyncStatePutBody,
 	parseUserStateRecord,
@@ -22,6 +21,7 @@ import {
 	type ISyncStatePingBody,
 	type TSyncStatePutResult,
 } from '@/lib/account/sync';
+import { MAX_SYNC_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
 import { getLogSafeErrorCode } from '@/lib/logging';
 
 export const runtime = 'nodejs';
@@ -89,7 +89,8 @@ export async function POST(request: NextRequest) {
 		});
 	}
 
-	const userStateModule = await import('@/actions/account/userState');
+	const userStateModule =
+		await import('@/lib/account/server/repositories/userState');
 
 	const results: TSyncStatePutResult[] = [];
 	const batchUpdatedAt = Date.now();

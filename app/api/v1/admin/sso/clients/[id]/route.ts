@@ -74,7 +74,7 @@ export async function PUT(
 	}
 
 	const [actionsModule, ssoModule] = await Promise.all([
-		import('@/actions/account/sso'),
+		import('@/lib/account/server/repositories/sso'),
 		import('@/lib/account/server/sso'),
 	]);
 	const currentClient = await ssoModule.getSsoClientById(id);
@@ -145,7 +145,7 @@ export async function DELETE(
 	}
 
 	const { id } = await params;
-	const actionsModule = await import('@/actions/account/sso');
+	const actionsModule = await import('@/lib/account/server/repositories/sso');
 	const isDeleted = await actionsModule.deleteSsoClient(id);
 	if (!isDeleted) {
 		return createNoStoreErrorResponse('sso-client-not-found', 404);

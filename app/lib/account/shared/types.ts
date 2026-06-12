@@ -115,6 +115,43 @@ export interface IAccountUserProfile {
 	username: string;
 }
 
+export interface IAccountExportData {
+	state: Array<{
+		data: string;
+		namespace: string;
+		revision: number;
+		schema_version: number;
+		updated_at: number;
+		user_id: string;
+	}>;
+	state_epoch: number;
+	user: IAccountUserProfile;
+}
+
+export interface IAdminMeData {
+	csrf_token: string;
+	username: string;
+}
+
+export interface IAdminUserListData {
+	page: number;
+	page_size: number;
+	total_count: number;
+	total_pages: number;
+	users: IAccountUserProfile[];
+}
+
+export interface IAdminUserDetailData {
+	namespaces: Array<{
+		namespace: string;
+		revision: number;
+		schema_version: number;
+		updated_at: number;
+	}>;
+	session_count: number;
+	user: IAccountUserProfile;
+}
+
 export interface IAccountSsoGrantClient {
 	id: string;
 	name: string;
@@ -128,4 +165,8 @@ export interface IAccountSsoGrant {
 
 export interface IAccountSsoGrantListData {
 	grants: IAccountSsoGrant[];
+}
+
+export interface IAccountSsoGrantInitialData extends IAccountSsoGrantListData {
+	user_id: string;
 }

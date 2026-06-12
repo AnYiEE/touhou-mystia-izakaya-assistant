@@ -8,7 +8,6 @@ import {
 	createAccountAuthErrorResponse,
 } from '@/api/v1/accountRouteUtils';
 import { createNoStoreJsonResponse } from '@/api/v1/utils';
-import { listSsoUserClientGrantsForUser } from '@/lib/account/server/sso';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -43,6 +42,8 @@ export async function GET(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
+	const { listSsoUserClientGrantsForUser } =
+		await import('@/lib/account/server/sso');
 	const grants = await listSsoUserClientGrantsForUser(auth.data.user.id);
 
 	return createNoStoreJsonResponse({ grants });

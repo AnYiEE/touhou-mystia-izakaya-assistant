@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
 	const [passwordModule, usersModule, authModule, userModule] =
 		await Promise.all([
 			import('@/lib/account/server/password'),
-			import('@/actions/account/users'),
+			import('@/lib/account/server/repositories/users'),
 			import('@/lib/account/server/auth'),
 			import('@/lib/account/server/user'),
 		]);

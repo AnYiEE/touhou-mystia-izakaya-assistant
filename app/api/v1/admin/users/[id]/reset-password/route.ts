@@ -82,8 +82,8 @@ export async function POST(
 	const { id } = await params;
 	const [passwordModule, usersModule, credentialsModule] = await Promise.all([
 		import('@/lib/account/server/password'),
-		import('@/actions/account/users'),
-		import('@/actions/account/credentials'),
+		import('@/lib/account/server/repositories/users'),
+		import('@/lib/account/server/repositories/credentials'),
 	]);
 
 	if (!passwordModule.checkPasswordPolicy(body.password)) {

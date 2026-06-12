@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 	const [authModule, userModule, userStateModule] = await Promise.all([
 		import('@/lib/account/server/auth'),
 		import('@/lib/account/server/user'),
-		import('@/actions/account/userState'),
+		import('@/lib/account/server/repositories/userState'),
 	]);
 	const auth = await authModule.authenticateAccountRequest(request, true);
 	if (auth.status === 'error') {

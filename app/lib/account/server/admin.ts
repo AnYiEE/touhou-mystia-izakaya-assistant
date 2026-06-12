@@ -179,11 +179,13 @@ export function createAdminCsrfToken(token: string) {
 	return createCsrfToken(getAdminCsrfBinding(token));
 }
 
-export function verifyAdminCsrfToken(request: NextRequest, token: string) {
-	const csrfToken = request.headers.get('x-csrf-token');
-
+export function verifyAdminCsrfToken(csrfToken: string | null, token: string) {
 	return (
 		csrfToken !== null &&
 		verifyCsrfToken(csrfToken, getAdminCsrfBinding(token))
 	);
+}
+
+export function verifyAdminCsrfRequest(request: NextRequest, token: string) {
+	return verifyAdminCsrfToken(request.headers.get('x-csrf-token'), token);
 }

@@ -39,14 +39,14 @@ import {
 } from '@/components/customerRareTutorial';
 import Heading from '@/components/heading';
 import TimeAgo from '@/components/timeAgo';
-import LegacyBackupImport from './legacyBackupImport';
+import LegacyBackupImport from '@/lib/account/client/components/legacyBackupImport';
 import {
 	LEGACY_BACKUP_FREQUENCY_TTL,
 	deleteLegacyBackup,
 	downloadLegacyBackup,
 	fetchLegacyBackupMetadata,
 	uploadLegacyBackup,
-} from './legacyCloudBackupClient';
+} from '@/lib/account/client/legacyBackups';
 
 import {
 	compatibilityCustomerRareData,

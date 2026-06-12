@@ -29,13 +29,11 @@ import {
 	Ingredient,
 	Recipe,
 } from '@/utils';
+import { MAX_SYNC_CHANGE_BYTES } from '@/lib/account/shared/requestLimits';
 
 const SYNC_NAMESPACE_SET = new Set<TSyncNamespace>(
 	Object.values(SYNC_NAMESPACE_MAP)
 );
-const MAX_SYNC_CHANGE_BYTES = 1024 * 1024;
-export const MAX_SYNC_JSON_BODY_BYTES =
-	MAX_SYNC_CHANGE_BYTES * SYNC_NAMESPACE_SET.size + 16 * 1024;
 const beverageNames = new Set<string>(Beverage.getInstance().getNames());
 const customerNormalNames = new Set<string>(
 	CustomerNormal.getInstance().getNames()

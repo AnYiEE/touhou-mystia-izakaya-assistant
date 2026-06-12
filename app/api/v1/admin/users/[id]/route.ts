@@ -63,9 +63,9 @@ export async function GET(
 	const { id } = await params;
 	const [usersModule, sessionsModule, userStateModule, userModule] =
 		await Promise.all([
-			import('@/actions/account/users'),
-			import('@/actions/account/sessions'),
-			import('@/actions/account/userState'),
+			import('@/lib/account/server/repositories/users'),
+			import('@/lib/account/server/repositories/sessions'),
+			import('@/lib/account/server/repositories/userState'),
 			import('@/lib/account/server/user'),
 		]);
 	const user = await usersModule.findUserById(id);

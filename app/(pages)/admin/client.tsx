@@ -10,7 +10,7 @@ import {
 	useState,
 } from 'react';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
 	faArrowRightFromBracket,
@@ -51,27 +51,27 @@ import {
 	AdminTable,
 	AdminTableHeader,
 	AdminTableRow,
+	getAdminStatusLabel,
+} from './components';
+import {
 	type IAdminListLocationState,
 	getAdminListHref,
-	getAdminListPageFromSearchValue,
-	getAdminListStatusFromSearchValue,
-	getAdminStatusLabel,
 	getAdminUserDetailHref,
-} from './components';
+} from './listState';
 
+import {
+	type TAdminActionResult,
+	checkAdminAction,
+	listAdminUsersAction,
+	loginAdminAction,
+	logoutAdminAction,
+} from './actions';
+import { clearAdminSession } from '@/lib/account/client/adminSession';
 import {
 	type IAdminMeData,
 	type IAdminUserListData,
-	fetchAdminMe,
-	listAdminUsers,
-	loginAdmin,
-	logoutAdmin,
-} from '@/lib/account/client/api';
-import {
-	checkAdminSessionUnauthorized,
-	clearAdminSession,
-} from '@/lib/account/client/adminSession';
-import { type TUserStatus } from '@/lib/account/shared/types';
+	type TUserStatus,
+} from '@/lib/account/shared/types';
 import { accountStore, globalStore } from '@/stores';
 
 const statusOptions: Array<{ label: string; value: TUserStatus | 'all' }> = [
@@ -86,11 +86,32 @@ const tableCellClassName = 'px-4 py-3 align-middle';
 const tableNowrapCellClassName = `${tableCellClassName} whitespace-nowrap`;
 const pageInputRegexp = /^\d*$/u;
 
-type TAdminAuthStatus =
+function checkAdminUnauthorizedActionResult(
+	result: Extract<TAdminActionResult, { status: 'error' }>
+) {
+	return (
+		result.httpStatus === 401 &&
+		(result.message === 'unauthorized' ||
+			result.message === 'admin-session-expired')
+	);
+}
+
+export type TAdminAuthStatus =
 	| 'authenticated'
 	| 'checking'
 	| 'error'
 	| 'unauthenticated';
+
+export interface IAdminPageInitialData {
+	admin: IAdminMeData | null;
+	authStatus: TAdminAuthStatus;
+	message: string | null;
+	page: number;
+	query: string;
+	renderedAt: number;
+	status: TUserStatus | '';
+	users: IAdminUserListData | null;
+}
 
 function getFilterStatusLabel(status: TUserStatus | '') {
 	return status === '' ? '全部状态' : getAdminStatusLabel(status);
@@ -310,13 +331,19 @@ const AdminUserFilterPanel = memo<IAdminUserFilterPanelProps>(
 );
 
 interface IAdminUserListRowProps {
+	initialNowTimestamp: number;
 	listLocationState: IAdminListLocationState;
 	onOpenUserDetail: () => void;
 	user: IAdminUserListData['users'][number];
 }
 
 const AdminUserListRow = memo<IAdminUserListRowProps>(
-	function AdminUserListRow({ listLocationState, onOpenUserDetail, user }) {
+	function AdminUserListRow({
+		initialNowTimestamp,
+		listLocationState,
+		onOpenUserDetail,
+		user,
+	}) {
 		return (
 			<AdminTableRow>
 				<td className={cn(tableCellClassName, 'w-72 max-w-72')}>
@@ -333,13 +360,19 @@ const AdminUserListRow = memo<IAdminUserListRowProps>(
 					<AdminStatusBadge status={user.status} />
 				</td>
 				<td className={tableNowrapCellClassName}>
-					<TimeAgo timestamp={user.created_at} />
+					<TimeAgo
+						initialNowTimestamp={initialNowTimestamp}
+						timestamp={user.created_at}
+					/>
 				</td>
 				<td className={tableNowrapCellClassName}>
 					{user.last_login_at === null ? (
 						<span className="text-foreground-400">无</span>
 					) : (
-						<TimeAgo timestamp={user.last_login_at} />
+						<TimeAgo
+							initialNowTimestamp={initialNowTimestamp}
+							timestamp={user.last_login_at}
+						/>
 					)}
 				</td>
 				<td className={cn(tableNowrapCellClassName, 'text-right')}>
@@ -361,12 +394,14 @@ const AdminUserListRow = memo<IAdminUserListRowProps>(
 );
 
 interface IAdminUserTableProps {
+	initialNowTimestamp: number;
 	listLocationState: IAdminListLocationState;
 	onOpenUserDetail: () => void;
 	users: IAdminUserListData;
 }
 
 const AdminUserTable = memo<IAdminUserTableProps>(function AdminUserTable({
+	initialNowTimestamp,
 	listLocationState,
 	onOpenUserDetail,
 	users,
@@ -388,6 +423,7 @@ const AdminUserTable = memo<IAdminUserTableProps>(function AdminUserTable({
 				{users.users.map((user) => (
 					<AdminUserListRow
 						key={user.id}
+						initialNowTimestamp={initialNowTimestamp}
 						listLocationState={listLocationState}
 						onOpenUserDetail={onOpenUserDetail}
 						user={user}
@@ -399,6 +435,7 @@ const AdminUserTable = memo<IAdminUserTableProps>(function AdminUserTable({
 });
 
 interface IAdminUserListContentProps {
+	initialNowTimestamp: number;
 	listLocationState: IAdminListLocationState;
 	onOpenUserDetail: () => void;
 	users: IAdminUserListData | null;
@@ -406,6 +443,7 @@ interface IAdminUserListContentProps {
 
 const AdminUserListContent = memo<IAdminUserListContentProps>(
 	function AdminUserListContent({
+		initialNowTimestamp,
 		listLocationState,
 		onOpenUserDetail,
 		users,
@@ -426,6 +464,7 @@ const AdminUserListContent = memo<IAdminUserListContentProps>(
 
 		return (
 			<AdminUserTable
+				initialNowTimestamp={initialNowTimestamp}
 				listLocationState={listLocationState}
 				onOpenUserDetail={onOpenUserDetail}
 				users={users}
@@ -522,35 +561,34 @@ const AdminPagination = memo<IAdminPaginationProps>(function AdminPagination({
 	);
 });
 
-export default function AdminPage() {
+export default function AdminPageClient({
+	initialData,
+}: {
+	initialData: IAdminPageInitialData;
+}) {
 	const router = useRouter();
-	const searchParams = useSearchParams();
 
-	const initialPage = getAdminListPageFromSearchValue(
-		searchParams.get('page')
+	const [admin, setAdmin] = useState<IAdminMeData | null>(initialData.admin);
+	const [adminAuthStatus, setAdminAuthStatus] = useState<TAdminAuthStatus>(
+		initialData.authStatus
 	);
-	const initialQuery = searchParams.get('query') ?? '';
-	const initialStatus = getAdminListStatusFromSearchValue(
-		searchParams.get('status')
+	const [users, setUsers] = useState<IAdminUserListData | null>(
+		initialData.users
 	);
-
-	const [admin, setAdmin] = useState<IAdminMeData | null>(null);
-	const [adminAuthStatus, setAdminAuthStatus] =
-		useState<TAdminAuthStatus>('checking');
-	const [users, setUsers] = useState<IAdminUserListData | null>(null);
-	const [message, setMessage] = useState<string | null>(null);
-	const [page, setPage] = useState(initialPage);
-	const [pageInput, setPageInput] = useState(String(initialPage));
+	const [message, setMessage] = useState<string | null>(initialData.message);
+	const [page, setPage] = useState(initialData.page);
+	const [pageInput, setPageInput] = useState(String(initialData.page));
 	const [password, setPassword] = useState('');
-	const [query, setQuery] = useState(initialQuery);
-	const [queryInput, setQueryInput] = useState(initialQuery);
-	const [status, setStatus] = useState<TUserStatus | ''>(initialStatus);
+	const [query, setQuery] = useState(initialData.query);
+	const [queryInput, setQueryInput] = useState(initialData.query);
+	const [status, setStatus] = useState<TUserStatus | ''>(initialData.status);
 	const [username, setUsername] = useState('');
 	const [isAdminActionLoading, setIsAdminActionLoading] = useState(false);
 	const [isUsersLoading, setIsUsersLoading] = useState(false);
 
 	const adminAuthRequestIdRef = useRef(0);
 	const isListStateInitializedRef = useRef(false);
+	const isServerInitialUsersRef = useRef(initialData.users !== null);
 	const refreshUsersRequestIdRef = useRef(0);
 	const trimmedUsername = username.trim();
 
@@ -562,28 +600,33 @@ export default function AdminPage() {
 			setIsUsersLoading(true);
 			setMessage(null);
 
-			void listAdminUsers({
+			void listAdminUsersAction({
 				page: overridePage ?? page,
 				query: overrideQuery ?? query,
 				status,
 			})
-				.then((data) => {
+				.then((result) => {
 					if (refreshUsersRequestIdRef.current !== requestId) {
 						return;
 					}
+					if (result.status === 'error') {
+						if (checkAdminUnauthorizedActionResult(result)) {
+							clearAdminSession();
+							setAdmin(null);
+							setAdminAuthStatus('unauthenticated');
+							setUsers(null);
+							return;
+						}
 
-					setUsers(data);
+						setMessage(result.message);
+						return;
+					}
+
+					setUsers(result.data);
 					setMessage(null);
 				})
 				.catch((error: unknown) => {
 					if (refreshUsersRequestIdRef.current !== requestId) {
-						return;
-					}
-					if (checkAdminSessionUnauthorized(error)) {
-						clearAdminSession();
-						setAdmin(null);
-						setAdminAuthStatus('unauthenticated');
-						setUsers(null);
 						return;
 					}
 
@@ -611,24 +654,31 @@ export default function AdminPage() {
 		setAdminAuthStatus('checking');
 		setMessage(null);
 
-		void fetchAdminMe()
-			.then((data) => {
+		void checkAdminAction()
+			.then((result) => {
 				if (adminAuthRequestIdRef.current !== requestId) {
 					return;
 				}
+				if (result.status === 'error') {
+					if (checkAdminUnauthorizedActionResult(result)) {
+						clearAdminSession();
+						setAdmin(null);
+						setAdminAuthStatus('unauthenticated');
+						return;
+					}
 
-				accountStore.shared.adminCsrfToken.set(data.csrf_token);
-				setAdmin(data);
+					setAdmin(null);
+					setAdminAuthStatus('error');
+					setMessage(result.message);
+					return;
+				}
+
+				accountStore.shared.adminCsrfToken.set(result.data.csrf_token);
+				setAdmin(result.data);
 				setAdminAuthStatus('authenticated');
 			})
 			.catch((error: unknown) => {
 				if (adminAuthRequestIdRef.current !== requestId) {
-					return;
-				}
-				if (checkAdminSessionUnauthorized(error)) {
-					clearAdminSession();
-					setAdmin(null);
-					setAdminAuthStatus('unauthenticated');
 					return;
 				}
 
@@ -658,14 +708,18 @@ export default function AdminPage() {
 		setIsAdminActionLoading(true);
 		setMessage(null);
 
-		void loginAdmin({ password, username: trimmedUsername })
-			.then((data) => {
+		void loginAdminAction({ password, username: trimmedUsername })
+			.then((result) => {
 				if (adminAuthRequestIdRef.current !== requestId) {
 					return;
 				}
+				if (result.status === 'error') {
+					setMessage(result.message);
+					return;
+				}
 
-				accountStore.shared.adminCsrfToken.set(data.csrf_token);
-				setAdmin(data);
+				accountStore.shared.adminCsrfToken.set(result.data.csrf_token);
+				setAdmin(result.data);
 				setAdminAuthStatus('authenticated');
 				setPassword('');
 			})
@@ -705,9 +759,21 @@ export default function AdminPage() {
 		setIsAdminActionLoading(true);
 		setMessage(null);
 
-		void logoutAdmin(admin.csrf_token)
-			.then(() => {
+		void logoutAdminAction(admin.csrf_token)
+			.then((result) => {
 				if (adminAuthRequestIdRef.current !== requestId) {
+					return;
+				}
+				if (result.status === 'error') {
+					if (checkAdminUnauthorizedActionResult(result)) {
+						clearAdminSession();
+						setAdmin(null);
+						setAdminAuthStatus('unauthenticated');
+						setUsers(null);
+						return;
+					}
+
+					setMessage(result.message);
 					return;
 				}
 
@@ -718,14 +784,6 @@ export default function AdminPage() {
 			})
 			.catch((error: unknown) => {
 				if (adminAuthRequestIdRef.current !== requestId) {
-					return;
-				}
-
-				if (checkAdminSessionUnauthorized(error)) {
-					clearAdminSession();
-					setAdmin(null);
-					setAdminAuthStatus('unauthenticated');
-					setUsers(null);
 					return;
 				}
 
@@ -839,11 +897,25 @@ export default function AdminPage() {
 	}, [page, users]);
 
 	useEffect(() => {
+		if (initialData.authStatus !== 'checking') {
+			if (initialData.admin !== null) {
+				accountStore.shared.adminCsrfToken.set(
+					initialData.admin.csrf_token
+				);
+			}
+			return;
+		}
+
 		checkAdminAuth();
-	}, [checkAdminAuth]);
+	}, [checkAdminAuth, initialData.admin, initialData.authStatus]);
 
 	useEffect(() => {
 		if (admin !== null) {
+			if (isServerInitialUsersRef.current) {
+				isServerInitialUsersRef.current = false;
+				return;
+			}
+
 			refreshUsers();
 		}
 	}, [admin, refreshUsers]);
@@ -988,6 +1060,7 @@ export default function AdminPage() {
 			{message !== null && <AdminMessage message={message} />}
 
 			<AdminUserListContent
+				initialNowTimestamp={initialData.renderedAt}
 				listLocationState={listLocationState}
 				onOpenUserDetail={handleOpenUserDetail}
 				users={users}

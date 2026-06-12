@@ -15,7 +15,7 @@ import {
 	checkAdminFeatureResponse,
 	createAdminAuthErrorResponse,
 } from '@/api/v1/admin/utils';
-import { type IListUsersOptions } from '@/actions/account/users';
+import { type IListUsersOptions } from '@/lib/account/server/repositories/users';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
 	}
 
 	const [usersModule, userModule] = await Promise.all([
-		import('@/actions/account/users'),
+		import('@/lib/account/server/repositories/users'),
 		import('@/lib/account/server/user'),
 	]);
 

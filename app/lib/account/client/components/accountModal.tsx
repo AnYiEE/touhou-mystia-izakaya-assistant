@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 
 import { Modal } from '@/design/ui/components';
 
-import AccountManager from '@/(pages)/preferences/accountManager';
+import AccountManager from './accountManager';
 
 import { accountStore as store } from '@/stores';
 

@@ -39,23 +39,27 @@ import {
 } from '../components';
 
 import {
-	AccountApiError,
-	type IAdminMeData,
-	createAdminSsoClient,
-	deleteAdminSsoClient,
-	fetchAdminMe,
-	fetchAdminSsoClient,
-	updateAdminSsoClient,
-} from '@/lib/account/client/api';
+	type TAdminActionResult,
+	checkAdminAction,
+	fetchAdminSsoClientAction,
+} from '../actions';
 import {
+	type TAdminSsoClientActionResult,
+	createAdminSsoClientAction,
+	deleteAdminSsoClientAction,
+	generateAdminSsoClientSecretAction,
+	toggleAdminSsoClientDisabledAction,
+	updateAdminSsoClientAction,
+} from './actions';
+import {
+	type IAdminMeData,
 	type IAdminSsoClientCreateBody,
+	type IAdminSsoClientMutationData,
 	type IAdminSsoClientProfile,
 	type IAdminSsoClientUpdateBody,
 } from '@/lib/account/shared/types';
-import {
-	checkAdminSessionUnauthorized,
-	clearAdminSession,
-} from '@/lib/account/client/adminSession';
+import { clearAdminSession } from '@/lib/account/client/adminSession';
+import { accountStore as store } from '@/stores/account';
 
 function joinLines(values: string[]) {
 	return values.join('\n');
@@ -101,37 +105,89 @@ function createUpdateBodyFromClient(
 	};
 }
 
+function checkAdminUnauthorizedActionResult(
+	result: Extract<TAdminActionResult, { status: 'error' }>
+) {
+	return (
+		result.httpStatus === 401 &&
+		(result.message === 'unauthorized' ||
+			result.message === 'admin-session-expired')
+	);
+}
+
+export interface IAdminSsoClientFormInitialData {
+	admin: IAdminMeData | null;
+	client: IAdminSsoClientProfile | null;
+	isAuthLoading: boolean;
+	isClientServerLoaded: boolean;
+	loadError: string | null;
+	message: string | null;
+}
+
 interface IProps {
 	clientId?: string;
+	initialData: IAdminSsoClientFormInitialData;
 	mode: 'create' | 'edit';
 }
 
-export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
+export default memo<IProps>(function AdminSsoClientForm({
+	clientId,
+	initialData,
+	mode,
+}) {
 	const router = useRouter();
 
 	const requestIdRef = useRef(0);
+	const isServerInitialClientRef = useRef(initialData.isClientServerLoaded);
 
-	const [admin, setAdmin] = useState<IAdminMeData | null>(null);
-	const [client, setClient] = useState<IAdminSsoClientProfile | null>(null);
-	const [isAuthLoading, setIsAuthLoading] = useState(true);
-	const [isLoading, setIsLoading] = useState(mode === 'edit');
+	const [admin, setAdmin] = useState<IAdminMeData | null>(initialData.admin);
+	const [client, setClient] = useState<IAdminSsoClientProfile | null>(
+		initialData.client
+	);
+	const [isAuthLoading, setIsAuthLoading] = useState(
+		initialData.isAuthLoading
+	);
+	const [isLoading, setIsLoading] = useState(
+		mode === 'edit' &&
+			initialData.client === null &&
+			initialData.loadError === null
+	);
 	const [isSaving, setIsSaving] = useState(false);
 	const [isDeletePopoverOpen, setIsDeletePopoverOpen] = useState(false);
 	const [isToggleClientPopoverOpen, setIsToggleClientPopoverOpen] =
 		useState(false);
-	const [loadError, setLoadError] = useState<string | null>(null);
-	const [message, setMessage] = useState<string | null>(null);
+	const [loadError, setLoadError] = useState<string | null>(
+		initialData.loadError
+	);
+	const [message, setMessage] = useState<string | null>(initialData.message);
 	const [generatedSecret, setGeneratedSecret] = useState<string | null>(null);
 
-	const [id, setId] = useState(clientId ?? '');
-	const [name, setName] = useState('');
-	const [loopbackRedirectPaths, setLoopbackRedirectPaths] = useState('');
-	const [customSchemeRedirectUris, setCustomSchemeRedirectUris] =
-		useState('');
-	const [httpsRedirectUris, setHttpsRedirectUris] = useState('');
-	const [statusCallbackUrl, setStatusCallbackUrl] = useState('');
-	const [cancelRedirectUri, setCancelRedirectUri] = useState('');
-	const [secretHashes, setSecretHashes] = useState<string[]>([]);
+	const [id, setId] = useState(initialData.client?.id ?? clientId ?? '');
+	const [name, setName] = useState(initialData.client?.name ?? '');
+	const [loopbackRedirectPaths, setLoopbackRedirectPaths] = useState(
+		initialData.client === null
+			? ''
+			: joinLines(initialData.client.loopback_redirect_paths)
+	);
+	const [customSchemeRedirectUris, setCustomSchemeRedirectUris] = useState(
+		initialData.client === null
+			? ''
+			: joinLines(initialData.client.custom_scheme_redirect_uris)
+	);
+	const [httpsRedirectUris, setHttpsRedirectUris] = useState(
+		initialData.client === null
+			? ''
+			: joinLines(initialData.client.https_redirect_uris)
+	);
+	const [statusCallbackUrl, setStatusCallbackUrl] = useState(
+		initialData.client?.status_callback_url ?? ''
+	);
+	const [cancelRedirectUri, setCancelRedirectUri] = useState(
+		initialData.client?.cancel_redirect_uri ?? ''
+	);
+	const [secretHashes, setSecretHashes] = useState<string[]>(
+		initialData.client?.secret_hashes ?? []
+	);
 
 	const isEditMode = mode === 'edit';
 	const isCreatedClient = !isEditMode && client !== null;
@@ -181,6 +237,40 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 		setSecretHashes(value.secret_hashes);
 	}, []);
 
+	const handleActionError = useCallback(
+		(error: Extract<TAdminSsoClientActionResult, { status: 'error' }>) => {
+			if (
+				error.httpStatus === 401 &&
+				(error.message === 'unauthorized' ||
+					error.message === 'admin-session-expired')
+			) {
+				clearAdminSession();
+				setAdmin(null);
+				setClient(null);
+			}
+
+			setMessage(error.message);
+		},
+		[]
+	);
+
+	const applyMutationResult = useCallback(
+		(
+			result: TAdminSsoClientActionResult<IAdminSsoClientMutationData>,
+			successMessage: string
+		) => {
+			if (result.status === 'error') {
+				handleActionError(result);
+				return;
+			}
+
+			applyClient(result.data.client);
+			setGeneratedSecret(result.data.client_secret ?? null);
+			setMessage(successMessage);
+		},
+		[applyClient, handleActionError]
+	);
+
 	const refreshClient = useCallback(() => {
 		if (!isEditMode || clientId === undefined) {
 			return;
@@ -193,21 +283,27 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 
 		const requestId = requestIdRef.current;
 
-		void fetchAdminSsoClient(clientId)
-			.then((data) => {
+		void fetchAdminSsoClientAction(clientId)
+			.then((result) => {
 				if (requestIdRef.current !== requestId) {
 					return;
 				}
+				if (result.status === 'error') {
+					if (checkAdminUnauthorizedActionResult(result)) {
+						clearAdminSession();
+						setAdmin(null);
+						return;
+					}
+
+					setLoadError(result.message);
+					return;
+				}
+
 				setLoadError(null);
-				applyClient(data.client);
+				applyClient(result.data.client);
 			})
 			.catch((error: unknown) => {
 				if (requestIdRef.current !== requestId) {
-					return;
-				}
-				if (checkAdminSessionUnauthorized(error)) {
-					clearAdminSession();
-					setAdmin(null);
 					return;
 				}
 				setLoadError(
@@ -227,20 +323,26 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 		setIsAuthLoading(true);
 		setMessage(null);
 
-		void fetchAdminMe()
-			.then((data) => {
+		void checkAdminAction()
+			.then((result) => {
 				if (requestIdRef.current !== requestId) {
 					return;
 				}
-				setAdmin(data);
+				if (result.status === 'error') {
+					if (checkAdminUnauthorizedActionResult(result)) {
+						clearAdminSession();
+						setAdmin(null);
+						return;
+					}
+
+					setMessage(result.message);
+					return;
+				}
+
+				setAdmin(result.data);
 			})
 			.catch((error: unknown) => {
 				if (requestIdRef.current !== requestId) {
-					return;
-				}
-				if (checkAdminSessionUnauthorized(error)) {
-					clearAdminSession();
-					setAdmin(null);
 					return;
 				}
 				setMessage(
@@ -269,7 +371,7 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 
 		const body = createBody();
 		const request = isEditMode
-			? updateAdminSsoClient(
+			? updateAdminSsoClientAction(
 					body.id,
 					{
 						...body,
@@ -279,24 +381,18 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 					} satisfies IAdminSsoClientUpdateBody,
 					admin.csrf_token
 				)
-			: createAdminSsoClient(body, admin.csrf_token);
+			: createAdminSsoClientAction(body, admin.csrf_token);
 
 		void request
-			.then((data) => {
-				applyClient(data.client);
-				setGeneratedSecret(data.client_secret ?? null);
-				setMessage(
+			.then((result) => {
+				applyMutationResult(
+					result,
 					isEditMode
 						? 'SSO客户端已保存'
 						: 'SSO客户端已创建，请保存本次显示的客户端secret'
 				);
 			})
 			.catch((error: unknown) => {
-				if (checkAdminSessionUnauthorized(error)) {
-					clearAdminSession();
-					setAdmin(null);
-					return;
-				}
 				setMessage(
 					error instanceof Error ? error.message : '保存SSO客户端失败'
 				);
@@ -306,7 +402,7 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 			});
 	}, [
 		admin,
-		applyClient,
+		applyMutationResult,
 		canSave,
 		client,
 		createBody,
@@ -335,7 +431,7 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 
 		const body = createBody();
 
-		void updateAdminSsoClient(
+		void generateAdminSsoClientSecretAction(
 			client.id,
 			{
 				...body,
@@ -346,17 +442,10 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 			},
 			admin.csrf_token
 		)
-			.then((data) => {
-				applyClient(data.client);
-				setGeneratedSecret(data.client_secret ?? null);
-				setMessage('新客户端secret已生成');
+			.then((result) => {
+				applyMutationResult(result, '新客户端secret已生成');
 			})
 			.catch((error: unknown) => {
-				if (checkAdminSessionUnauthorized(error)) {
-					clearAdminSession();
-					setAdmin(null);
-					return;
-				}
 				setMessage(
 					error instanceof Error
 						? error.message
@@ -366,7 +455,14 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 			.finally(() => {
 				setIsSaving(false);
 			});
-	}, [admin, applyClient, client, createBody, isEditMode, secretHashes]);
+	}, [
+		admin,
+		applyMutationResult,
+		client,
+		createBody,
+		isEditMode,
+		secretHashes,
+	]);
 
 	const handleCopySecret = useCallback(async (secretHash: string) => {
 		try {
@@ -420,24 +516,19 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 		setMessage(null);
 		setGeneratedSecret(null);
 
-		void updateAdminSsoClient(
+		void toggleAdminSsoClientDisabledAction(
 			client.id,
 			createUpdateBodyFromClient(client, shouldDisableClient),
+			shouldDisableClient,
 			admin.csrf_token
 		)
-			.then((data) => {
-				setClient(data.client);
-				setSecretHashes(data.client.secret_hashes);
-				setMessage(
+			.then((result) => {
+				applyMutationResult(
+					result,
 					shouldDisableClient ? 'SSO客户端已禁用' : 'SSO客户端已启用'
 				);
 			})
 			.catch((error: unknown) => {
-				if (checkAdminSessionUnauthorized(error)) {
-					clearAdminSession();
-					setAdmin(null);
-					return;
-				}
 				setMessage(
 					error instanceof Error
 						? error.message
@@ -447,7 +538,7 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 			.finally(() => {
 				setIsSaving(false);
 			});
-	}, [admin, client]);
+	}, [admin, applyMutationResult, client]);
 
 	const handleDeleteClient = useCallback(() => {
 		if (admin === null || client === null) {
@@ -459,26 +550,24 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 		setIsSaving(true);
 		setMessage(null);
 
-		void deleteAdminSsoClient(client.id, admin.csrf_token)
-			.then(() => {
+		void deleteAdminSsoClientAction(client.id, admin.csrf_token)
+			.then((result) => {
+				if (result.status === 'error') {
+					handleActionError(result);
+					return;
+				}
+
 				router.replace('/admin/sso');
 			})
 			.catch((error: unknown) => {
-				if (checkAdminSessionUnauthorized(error)) {
-					clearAdminSession();
-					setAdmin(null);
-					return;
-				}
 				setMessage(
-					error instanceof AccountApiError
-						? error.message
-						: '删除SSO客户端失败'
+					error instanceof Error ? error.message : '删除SSO客户端失败'
 				);
 			})
 			.finally(() => {
 				setIsSaving(false);
 			});
-	}, [admin, client, router]);
+	}, [admin, client, handleActionError, router]);
 
 	useEffect(
 		() => () => {
@@ -488,11 +577,22 @@ export default memo<IProps>(function AdminSsoClientForm({ clientId, mode }) {
 	);
 
 	useEffect(() => {
+		if (initialData.admin !== null) {
+			store.shared.adminCsrfToken.set(initialData.admin.csrf_token);
+			setIsAuthLoading(false);
+			return;
+		}
+
 		checkAdmin();
-	}, [checkAdmin]);
+	}, [checkAdmin, initialData.admin]);
 
 	useEffect(() => {
 		if (admin !== null) {
+			if (isServerInitialClientRef.current) {
+				isServerInitialClientRef.current = false;
+				return;
+			}
+
 			refreshClient();
 		}
 	}, [admin, refreshClient]);

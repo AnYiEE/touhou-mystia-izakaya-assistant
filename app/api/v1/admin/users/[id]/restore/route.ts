@@ -68,7 +68,7 @@ export async function POST(
 	}
 
 	const { id } = await params;
-	const usersModule = await import('@/actions/account/users');
+	const usersModule = await import('@/lib/account/server/repositories/users');
 	const isUpdated = await usersModule.setUserStatusIfCurrentStatus(
 		id,
 		USER_STATUS_MAP.deleted,

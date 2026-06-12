@@ -9,7 +9,6 @@ import {
 	readJsonBodyResult,
 } from '@/api/v1/accountRouteUtils';
 import {
-	MAX_SYNC_JSON_BODY_BYTES,
 	checkSyncNamespace,
 	createUserStateRecord,
 	parseSyncStatePutBody,
@@ -24,6 +23,7 @@ import {
 	type ISyncStatePutBody,
 	type TSyncStatePutResult,
 } from '@/lib/account/sync';
+import { MAX_SYNC_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
 import { getLogSafeErrorCode } from '@/lib/logging';
 
 export const runtime = 'nodejs';
@@ -32,7 +32,9 @@ export const dynamic = 'force-dynamic';
 function createConflictResult(
 	namespace: ISyncStateItemConflict['namespace'],
 	current: Awaited<
-		ReturnType<typeof import('@/actions/account/userState').getUserState>
+		ReturnType<
+			typeof import('@/lib/account/server/repositories/userState').getUserState
+		>
 	>
 ): ISyncStateItemConflict {
 	const record = current === null ? null : parseUserStateRecord(current);
@@ -69,7 +71,7 @@ export async function GET(request: NextRequest) {
 
 	const [authModule, userStateModule] = await Promise.all([
 		import('@/lib/account/server/auth'),
-		import('@/actions/account/userState'),
+		import('@/lib/account/server/repositories/userState'),
 	]);
 	const auth = await authModule.authenticateAccountRequest(request);
 	if (auth.status === 'error') {
@@ -157,7 +159,8 @@ export async function PUT(request: NextRequest) {
 		});
 	}
 
-	const userStateModule = await import('@/actions/account/userState');
+	const userStateModule =
+		await import('@/lib/account/server/repositories/userState');
 
 	const results: TSyncStatePutResult[] = [];
 	const batchUpdatedAt = Date.now();

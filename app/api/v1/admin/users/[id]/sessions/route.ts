@@ -68,8 +68,8 @@ export async function DELETE(
 
 	const { id } = await params;
 	const [usersModule, sessionsModule] = await Promise.all([
-		import('@/actions/account/users'),
-		import('@/actions/account/sessions'),
+		import('@/lib/account/server/repositories/users'),
+		import('@/lib/account/server/repositories/sessions'),
 	]);
 	const user = await usersModule.findUserById(id);
 	if (user === null) {

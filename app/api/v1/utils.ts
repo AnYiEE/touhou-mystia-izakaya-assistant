@@ -93,6 +93,10 @@ export function createNoStoreErrorResponse<T>(
 	return createErrorResponse(message, status, data, createNoStoreInit(init));
 }
 
+export function createRetryAfterHeaders(retryAfter: number) {
+	return { 'Retry-After': String(Math.max(0, retryAfter)) };
+}
+
 export function handleOptionsRequest() {
 	return new NextResponse(null, { status: 204 });
 }
