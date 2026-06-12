@@ -78,7 +78,10 @@ export default function robots(): MetadataRoute.Robots {
 
 	return {
 		rules: [
+			{ disallow: '/admin', userAgent: '*' },
+			{ disallow: '/api', userAgent: '*' },
 			{ disallow: '/preferences', userAgent: '*' },
+			{ disallow: '/sso', userAgent: '*' },
 			{ disallow: '/', userAgent: disallowBots },
 		],
 		sitemap: `https://${baseURL}/sitemap.xml`,
