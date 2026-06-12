@@ -2,6 +2,7 @@
 
 import {
 	type Key,
+	type SyntheticEvent,
 	memo,
 	useCallback,
 	useEffect,
@@ -83,6 +84,7 @@ const statusOptions: Array<{ label: string; value: TUserStatus | 'all' }> = [
 const tableHeadCellClassName = 'px-4 py-3 font-medium';
 const tableCellClassName = 'px-4 py-3 align-middle';
 const tableNowrapCellClassName = `${tableCellClassName} whitespace-nowrap`;
+const pageInputRegexp = /^\d*$/u;
 
 type TAdminAuthStatus =
 	| 'authenticated'
@@ -168,6 +170,8 @@ interface IAdminUserMetricsProps {
 	page: number;
 	pageSize: number;
 	statusFilterLabel: string;
+	totalCount: number | null;
+	totalPages: number | null;
 	userCount: number;
 	users: IAdminUserListData | null;
 }
@@ -177,20 +181,32 @@ const AdminUserMetrics = memo<IAdminUserMetricsProps>(
 		page,
 		pageSize,
 		statusFilterLabel,
+		totalCount,
+		totalPages,
 		userCount,
 		users,
 	}) {
 		return (
-			<AdminPanel className="grid gap-4 sm:grid-cols-3">
+			<AdminPanel className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+				<AdminMetric
+					label="用户总数"
+					value={
+						users === null ? '读取中' : `${totalCount ?? userCount}`
+					}
+				/>
+				<AdminMetric
+					label="页码"
+					value={
+						users === null
+							? `第${page}页`
+							: `第${users.page} / ${Math.max(1, totalPages ?? 0)}页`
+					}
+				/>
 				<AdminMetric
 					label="本页用户"
 					value={
 						users === null ? '读取中' : `${userCount} / ${pageSize}`
 					}
-				/>
-				<AdminMetric
-					label="页码"
-					value={`第${users?.page ?? page}页`}
 				/>
 				<AdminMetric label="筛选状态" value={statusFilterLabel} />
 			</AdminPanel>
@@ -223,9 +239,9 @@ const AdminUserFilterPanel = memo<IAdminUserFilterPanelProps>(
 				<AdminPanelTitle icon={faMagnifyingGlass}>筛选</AdminPanelTitle>
 				<div className="grid w-full items-center gap-3 md:grid-cols-[minmax(0,1fr)_auto_6.5rem]">
 					<Input
-						aria-label="搜索用户名"
+						aria-label="搜索用户名或用户ID"
 						classNames={{ inputWrapper: 'h-12 min-h-12' }}
-						placeholder="搜索用户名"
+						placeholder="搜索用户名或用户ID"
 						startContent={
 							<AdminInputIcon icon={faMagnifyingGlass} />
 						}
@@ -419,23 +435,30 @@ const AdminUserListContent = memo<IAdminUserListContentProps>(
 );
 
 interface IAdminPaginationProps {
-	canGoNext: boolean;
 	isUsersLoading: boolean;
 	onNextPage: () => void;
+	onPageInputChange: (value: string) => void;
+	onPageJumpSubmit: (event: SyntheticEvent<HTMLFormElement>) => void;
 	onPreviousPage: () => void;
 	page: number;
+	pageInput: string;
 	users: IAdminUserListData | null;
 }
 
 const AdminPagination = memo<IAdminPaginationProps>(function AdminPagination({
-	canGoNext,
 	isUsersLoading,
 	onNextPage,
+	onPageInputChange,
+	onPageJumpSubmit,
 	onPreviousPage,
 	page,
+	pageInput,
 	users,
 }) {
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
+	const currentPage = users?.page ?? page;
+	const totalPages = Math.max(1, users?.total_pages ?? page);
+	const totalCount = users?.total_count ?? null;
 
 	return (
 		<div
@@ -447,10 +470,11 @@ const AdminPagination = memo<IAdminPaginationProps>(function AdminPagination({
 			)}
 		>
 			<span>
-				第{users?.page ?? page}页
-				{users !== null && ` · 每页${users.page_size}`}
+				第{currentPage} / {totalPages}页
+				{users !== null &&
+					` · 每页${users.page_size} · 共${totalCount ?? 0}个用户`}
 			</span>
-			<div className="flex items-center gap-2">
+			<div className="flex flex-wrap items-center gap-2">
 				<Button
 					isDisabled={page <= 1 || isUsersLoading}
 					size="sm"
@@ -460,13 +484,39 @@ const AdminPagination = memo<IAdminPaginationProps>(function AdminPagination({
 					上一页
 				</Button>
 				<Button
-					isDisabled={isUsersLoading || !canGoNext}
+					isDisabled={isUsersLoading || currentPage >= totalPages}
 					size="sm"
 					variant="flat"
 					onPress={onNextPage}
 				>
 					下一页
 				</Button>
+				<form
+					className="flex items-center gap-2"
+					onSubmit={onPageJumpSubmit}
+				>
+					<Input
+						aria-label="跳转页码"
+						className="w-20"
+						classNames={{
+							input: 'text-center',
+							inputWrapper: 'h-8 min-h-8',
+						}}
+						inputMode="numeric"
+						placeholder="页码"
+						size="sm"
+						value={pageInput}
+						onValueChange={onPageInputChange}
+					/>
+					<Button
+						isDisabled={isUsersLoading || pageInput.length === 0}
+						size="sm"
+						type="submit"
+						variant="light"
+					>
+						跳转
+					</Button>
+				</form>
 			</div>
 		</div>
 	);
@@ -490,6 +540,7 @@ export default function AdminPage() {
 	const [users, setUsers] = useState<IAdminUserListData | null>(null);
 	const [message, setMessage] = useState<string | null>(null);
 	const [page, setPage] = useState(initialPage);
+	const [pageInput, setPageInput] = useState(String(initialPage));
 	const [password, setPassword] = useState('');
 	const [query, setQuery] = useState(initialQuery);
 	const [queryInput, setQueryInput] = useState(initialQuery);
@@ -728,6 +779,28 @@ export default function AdminPage() {
 		setPage((current) => current + 1);
 	}, []);
 
+	const handlePageInputChange = useCallback((value: string) => {
+		if (pageInputRegexp.test(value)) {
+			setPageInput(value);
+		}
+	}, []);
+
+	const handlePageJumpSubmit = useCallback(
+		(event: SyntheticEvent<HTMLFormElement>) => {
+			event.preventDefault();
+
+			const targetPage = Number.parseInt(pageInput, 10);
+			if (!Number.isSafeInteger(targetPage) || targetPage < 1) {
+				setPageInput(String(page));
+				return;
+			}
+
+			const maxPage = Math.max(1, users?.total_pages ?? targetPage);
+			setPage(Math.min(targetPage, maxPage));
+		},
+		[page, pageInput, users?.total_pages]
+	);
+
 	useEffect(() => {
 		if (!isListStateInitializedRef.current) {
 			isListStateInitializedRef.current = true;
@@ -749,6 +822,21 @@ export default function AdminPage() {
 			scroll: false,
 		});
 	}, [page, query, router, status]);
+
+	useEffect(() => {
+		setPageInput(String(page));
+	}, [page]);
+
+	useEffect(() => {
+		if (users === null) {
+			return;
+		}
+
+		const totalPages = Math.max(1, users.total_pages);
+		if (page > totalPages) {
+			setPage(totalPages);
+		}
+	}, [page, users]);
 
 	useEffect(() => {
 		checkAdminAuth();
@@ -830,7 +918,8 @@ export default function AdminPage() {
 
 	const userCount = users?.users.length ?? 0;
 	const pageSize = users?.page_size ?? 0;
-	const canGoNext = users !== null && users.users.length >= users.page_size;
+	const totalCount = users?.total_count ?? null;
+	const totalPages = users?.total_pages ?? null;
 	const listLocationState = { page, query, status };
 	const statusFilterKey = getStatusFilterKey(status);
 	const statusFilterLabel = getFilterStatusLabel(status);
@@ -880,6 +969,8 @@ export default function AdminPage() {
 				page={page}
 				pageSize={pageSize}
 				statusFilterLabel={statusFilterLabel}
+				totalCount={totalCount}
+				totalPages={totalPages}
 				userCount={userCount}
 				users={users}
 			/>
@@ -903,11 +994,13 @@ export default function AdminPage() {
 			/>
 
 			<AdminPagination
-				canGoNext={canGoNext}
 				isUsersLoading={isUsersLoading}
 				page={page}
+				pageInput={pageInput}
 				users={users}
 				onNextPage={handleNextPage}
+				onPageInputChange={handlePageInputChange}
+				onPageJumpSubmit={handlePageJumpSubmit}
 				onPreviousPage={handlePreviousPage}
 			/>
 		</AdminShell>

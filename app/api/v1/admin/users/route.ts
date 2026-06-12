@@ -125,11 +125,13 @@ export async function GET(request: NextRequest) {
 		listUsersOptions.status = status;
 	}
 
-	const users = await usersModule.listUsers(listUsersOptions);
+	const { totalCount, users } = await usersModule.listUsers(listUsersOptions);
 
 	return createNoStoreJsonResponse({
 		page,
 		page_size: pageSize,
+		total_count: totalCount,
+		total_pages: Math.ceil(totalCount / pageSize),
 		users: users.map(userModule.createAccountUserProfile),
 	});
 }

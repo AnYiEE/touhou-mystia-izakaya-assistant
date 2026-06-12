@@ -26,11 +26,26 @@ function escapeLikePattern(pattern: string) {
 	return pattern.replaceAll(/[\\%_]/gu, (character) => `\\${character}`);
 }
 
+function normalizeTotalCount(value: number | string | bigint) {
+	const totalCount = Number(value);
+
+	if (!Number.isSafeInteger(totalCount) || totalCount < 0) {
+		throw new Error('invalid-user-count');
+	}
+
+	return totalCount;
+}
+
 export interface IListUsersOptions {
 	limit: number;
 	offset: number;
 	query?: string;
 	status?: TUserStatus;
+}
+
+export interface IListUsersResult {
+	totalCount: number;
+	users: TUser[];
 }
 
 export async function findUserById(id: TUser['id']) {
@@ -62,32 +77,51 @@ export async function findUserByUsernameNormalized(
 export async function listUsers({
 	limit,
 	offset,
-	query: usernameQuery,
+	query: searchQuery,
 	status,
-}: IListUsersOptions) {
+}: IListUsersOptions): Promise<IListUsersResult> {
 	const db = await getAccountDatabase();
-	const normalizedUsernameQuery = usernameQuery?.trim().toLowerCase();
-	let query = db.selectFrom(TABLE_NAME).selectAll();
+	const normalizedSearchQuery = searchQuery?.trim().toLowerCase();
+	let usersQuery = db.selectFrom(TABLE_NAME).selectAll();
+	let totalCountQuery = db
+		.selectFrom(TABLE_NAME)
+		.select((eb) => eb.fn.countAll<number>().as('total_count'));
 
-	if (
-		normalizedUsernameQuery !== undefined &&
-		normalizedUsernameQuery !== ''
-	) {
-		const escapedUsernameQuery = escapeLikePattern(normalizedUsernameQuery);
-		query = query.where(
-			sql<boolean>`${sql.ref('username_normalized')} like ${`%${escapedUsernameQuery}%`} escape '\\'`
+	if (normalizedSearchQuery !== undefined && normalizedSearchQuery !== '') {
+		const escapedSearchQuery = escapeLikePattern(normalizedSearchQuery);
+		const likePattern = `%${escapedSearchQuery}%`;
+		usersQuery = usersQuery.where((eb) =>
+			eb.or([
+				sql<boolean>`${sql.ref('username_normalized')} like ${likePattern} escape '\\'`,
+				sql<boolean>`${sql.ref('id')} like ${likePattern} escape '\\'`,
+			])
+		);
+		totalCountQuery = totalCountQuery.where((eb) =>
+			eb.or([
+				sql<boolean>`${sql.ref('username_normalized')} like ${likePattern} escape '\\'`,
+				sql<boolean>`${sql.ref('id')} like ${likePattern} escape '\\'`,
+			])
 		);
 	}
 	if (status !== undefined) {
-		query = query.where('status', '=', status);
+		usersQuery = usersQuery.where('status', '=', status);
+		totalCountQuery = totalCountQuery.where('status', '=', status);
 	}
 
-	return query
-		.orderBy('updated_at', 'desc')
-		.orderBy('id', 'desc')
-		.limit(limit)
-		.offset(offset)
-		.execute();
+	const [users, totalCountRecord] = await Promise.all([
+		usersQuery
+			.orderBy('updated_at', 'desc')
+			.orderBy('id', 'desc')
+			.limit(limit)
+			.offset(offset)
+			.execute(),
+		totalCountQuery.executeTakeFirstOrThrow(),
+	]);
+
+	return {
+		totalCount: normalizeTotalCount(totalCountRecord.total_count),
+		users,
+	};
 }
 
 export async function createUser(user: TUserNew) {
