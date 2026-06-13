@@ -20,7 +20,7 @@ import {
 	ACCOUNT_COOKIE_NAME_MAP,
 	USER_STATUS_MAP,
 } from '@/lib/account/shared/constants';
-import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
+import { MAX_ACCOUNT_SMALL_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
 import {
 	type IAccountExportData,
 	type IAuthChangePasswordBody,
@@ -68,7 +68,7 @@ function createAnonymousAccountMeData(): TAccountMeResponse {
 function checkActionBodySize(body: unknown) {
 	const bodyResult = stringifyActionJsonBody(
 		body,
-		MAX_ACCOUNT_JSON_BODY_BYTES
+		MAX_ACCOUNT_SMALL_JSON_BODY_BYTES
 	);
 
 	return bodyResult.status === 'ok' ? { status: 'ok' as const } : bodyResult;

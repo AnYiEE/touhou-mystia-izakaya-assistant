@@ -6,12 +6,12 @@ import {
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
 	createAccountAuthErrorResponse,
-} from '@/api/v1/accountRouteUtils';
+} from '@/lib/account/server/routeResponses';
+import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/api/v1/utils';
-import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
+} from '@/lib/api/routeResponses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

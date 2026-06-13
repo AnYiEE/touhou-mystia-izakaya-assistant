@@ -6,8 +6,8 @@ import {
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
 	createAccountAuthErrorResponse,
-} from '@/api/v1/accountRouteUtils';
-import { createNoStoreJsonResponse } from '@/api/v1/utils';
+} from '@/lib/account/server/routeResponses';
+import { createNoStoreJsonResponse } from '@/lib/api/routeResponses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

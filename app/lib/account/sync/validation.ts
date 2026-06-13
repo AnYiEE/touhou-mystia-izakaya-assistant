@@ -1,14 +1,13 @@
 import { DLC_LABEL_MAP } from '@/data';
 import { THEME_MAP } from '@/design/hooks/use-theme/constants';
-import { type TUserState, type TUserStateNew } from '@/lib/db/types';
 import {
 	type ISyncStateChange,
 	type ISyncStatePutBody,
-	type ISyncStateRecord,
 	SYNC_NAMESPACE_MAP,
 	SYNC_SCHEMA_VERSION_MAP,
 	type TSyncNamespace,
 } from '@/lib/account/sync';
+import { MAX_SYNC_CHANGE_BYTES } from '@/lib/account/shared/requestLimits';
 import {
 	checkBeverageTag,
 	checkPopularTag,
@@ -29,7 +28,6 @@ import {
 	Ingredient,
 	Recipe,
 } from '@/utils';
-import { MAX_SYNC_CHANGE_BYTES } from '@/lib/account/shared/requestLimits';
 
 const SYNC_NAMESPACE_SET = new Set<TSyncNamespace>(
 	Object.values(SYNC_NAMESPACE_MAP)
@@ -227,7 +225,7 @@ function validateGlobalPreferences(data: unknown) {
 	);
 }
 
-function validateSyncStateData(change: ISyncStateChange) {
+export function validateSyncStateData(change: ISyncStateChange) {
 	if (change.namespace === SYNC_NAMESPACE_MAP.customerNormalMeals) {
 		return validateMealSnapshot(change.data, {
 			customerNames: customerNormalNames,
@@ -348,66 +346,4 @@ export function parseSyncStatePutBody(
 		changes,
 		state_epoch: body['state_epoch'],
 	} satisfies ISyncStatePutBody;
-}
-
-export function createUserStateRecord(
-	userId: string,
-	change: ISyncStateChange,
-	revision: number,
-	updatedAt: number
-): TUserStateNew | null {
-	try {
-		return {
-			data: JSON.stringify(change.data),
-			namespace: change.namespace,
-			revision,
-			schema_version: change.schema_version,
-			updated_at: updatedAt,
-			user_id: userId,
-		};
-	} catch {
-		return null;
-	}
-}
-
-export function parseUserStateData(
-	record: Pick<TUserState, 'data' | 'namespace' | 'schema_version'>
-) {
-	if (
-		!checkSyncNamespace(record.namespace) ||
-		record.schema_version !== SYNC_SCHEMA_VERSION_MAP[record.namespace]
-	) {
-		throw new Error('invalid-user-state-data');
-	}
-
-	const data: unknown = JSON.parse(record.data);
-	const change = {
-		data,
-		namespace: record.namespace,
-		revision: 0,
-		schema_version: record.schema_version,
-	} satisfies ISyncStateChange;
-	if (!validateSyncStateData(change)) {
-		throw new Error('invalid-user-state-data');
-	}
-
-	return data;
-}
-
-export function parseUserStateRecord(record: TUserState): ISyncStateRecord {
-	if (
-		!isNonNegativeSafeInteger(record.revision) ||
-		record.revision >= Number.MAX_SAFE_INTEGER ||
-		!isNonNegativeSafeInteger(record.updated_at)
-	) {
-		throw new Error('invalid-user-state-data');
-	}
-
-	return {
-		data: parseUserStateData(record),
-		namespace: record.namespace,
-		revision: record.revision,
-		schema_version: record.schema_version,
-		updated_at: record.updated_at,
-	};
 }

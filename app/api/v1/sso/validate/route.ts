@@ -1,14 +1,8 @@
 import { type NextRequest } from 'next/server';
 
-import {
-	checkAccountFeatureResponse,
-	readJsonBodyResult,
-} from '@/api/v1/accountRouteUtils';
-import {
-	createNoStoreErrorResponse,
-	createNoStoreJsonResponse,
-} from '@/api/v1/utils';
-import { checkSsoRateLimitResponse } from '../utils';
+import { checkAccountFeatureResponse } from '@/lib/account/server/routeResponses';
+import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
+import { checkSsoRateLimitResponse } from '@/lib/account/server/ssoRouteResponses';
 import {
 	checkSsoClientEnabled,
 	checkSsoClientId,
@@ -20,6 +14,11 @@ import {
 	verifySsoClientSecret,
 } from '@/lib/account/server/sso';
 import { createAccountUserProfile } from '@/lib/account/server/user';
+import {
+	createNoStoreErrorResponse,
+	createNoStoreJsonResponse,
+	readJsonBodyResult,
+} from '@/lib/api/routeResponses';
 import { getLogSafeErrorCode } from '@/lib/logging';
 
 export const runtime = 'nodejs';
@@ -38,7 +37,10 @@ export async function POST(request: NextRequest) {
 		return featureResponse;
 	}
 
-	const bodyResult = await readJsonBodyResult<ISsoValidateBody>(request);
+	const bodyResult = await readJsonBodyResult<ISsoValidateBody>(
+		request,
+		MAX_ACCOUNT_JSON_BODY_BYTES
+	);
 	if (bodyResult.status === 'payload-too-large') {
 		return createNoStoreErrorResponse('payload-too-large', 413);
 	}

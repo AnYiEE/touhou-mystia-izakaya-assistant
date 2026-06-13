@@ -1,159 +1,445 @@
 'use server';
 
-import { POST as importBackupCodeRoute } from '@/api/v1/sync/import-backup-code/route';
-import {
-	GET as getSyncStateRoute,
-	PUT as putSyncStateRoute,
-} from '@/api/v1/sync/state/route';
+import { validate } from 'uuid';
+
 import {
 	type TAccountActionResult,
 	createAccountActionError as createActionError,
-	isRecord,
-	stringifyActionJsonBody,
 } from '@/lib/account/actions/utils';
 import { createCurrentRequest } from '@/lib/account/server/currentRequest';
 import {
+	checkAccountCookieSecurity,
+	checkAccountFeature,
+	checkAccountRateLimit,
+	checkSameOrigin,
+} from '@/lib/account/server/guards';
+import {
+	authenticateAccountRequest,
+	verifyAccountCsrf,
+} from '@/lib/account/server/auth';
+import {
+	parseUserStateRecord,
+	putSyncStateChanges,
+} from '@/lib/account/server/syncState';
+import {
+	checkSyncNamespace,
+	parseSyncStatePutBody,
+} from '@/lib/account/sync/validation';
+import {
+	listUserState,
+	listUserStateByNamespaces,
+} from '@/lib/account/server/repositories/userState';
+import {
 	type ISyncImportBackupCodeResponse,
 	type ISyncStateGetResponse,
+	type ISyncStatePutBody,
 	type ISyncStatePutResponse,
 } from '@/lib/account/sync';
 import {
-	MAX_ACCOUNT_JSON_BODY_BYTES,
+	MAX_ACCOUNT_SMALL_JSON_BODY_BYTES,
 	MAX_SYNC_JSON_BODY_BYTES,
 } from '@/lib/account/shared/requestLimits';
+import { getLogSafeErrorCode } from '@/lib/logging';
+
 export type TAccountSyncActionResult<TData = Record<string, unknown>> =
 	TAccountActionResult<TData>;
 
-async function createJsonRequest(
-	pathname: string,
-	method: 'POST' | 'PUT',
-	body: unknown,
-	maxBytes: number,
-	headers?: HeadersInit
+function createGuardActionError(result: {
+	data?: Record<string, unknown>;
+	httpStatus: number;
+	message: string;
+	status: string;
+}): Extract<TAccountSyncActionResult, { status: 'error' }> {
+	return createActionError(result.message, result.httpStatus, result.data);
+}
+
+function createSyncActionError(
+	message: string,
+	httpStatus: number,
+	data?: Record<string, unknown>
+): Extract<TAccountSyncActionResult, { status: 'error' }> {
+	return createActionError(message, httpStatus, data);
+}
+
+async function checkSyncActionGuards(
+	request: ReturnType<typeof createCurrentRequest> extends Promise<infer R>
+		? R
+		: never
 ) {
-	const bodyResult = stringifyActionJsonBody(body, maxBytes);
-	if (bodyResult.status !== 'ok') {
-		return {
-			message:
-				bodyResult.status === 'payload-too-large'
-					? 'payload-too-large'
-					: 'invalid-object-structure',
-			status: 'error' as const,
-		};
+	const featureResult = await checkAccountFeature();
+	if (featureResult.status === 'error') {
+		return createGuardActionError(featureResult);
 	}
-	const requestHeaders = new Headers(headers);
-	requestHeaders.set('Content-Type', 'application/json');
+
+	const sameOriginResult = checkSameOrigin(request);
+	if (sameOriginResult.status === 'error') {
+		return createGuardActionError(sameOriginResult);
+	}
+
+	const cookieSecurityResult = checkAccountCookieSecurity(request);
+	if (cookieSecurityResult.status === 'error') {
+		return createGuardActionError(cookieSecurityResult);
+	}
+
+	const auth = await authenticateAccountRequest(request);
+	if (auth.status === 'error') {
+		return createGuardActionError(auth);
+	}
 
 	return {
-		request: await createCurrentRequest(pathname, {
-			body: bodyResult.text,
-			headers: requestHeaders,
-			method,
-		}),
+		resolvedRequest: request,
+		session: auth.data.session,
+		sessionTokenHash: auth.data.sessionTokenHash,
 		status: 'ok' as const,
+		user: auth.data.user,
 	};
 }
 
-async function readRouteActionResult<TData>(
-	response: Response
-): Promise<TAccountSyncActionResult<TData>> {
-	let json: unknown;
+function checkSyncActionRateLimit(
+	request: ReturnType<typeof createCurrentRequest> extends Promise<infer R>
+		? R
+		: never,
+	scope: string
+) {
+	const rateLimitResult = checkAccountRateLimit(request, scope);
+	if (rateLimitResult.status === 'error') {
+		return createGuardActionError(rateLimitResult);
+	}
+
+	return null;
+}
+
+function checkSyncActionCsrf(
+	request: ReturnType<typeof createCurrentRequest> extends Promise<infer R>
+		? R
+		: never,
+	sessionTokenHash: string
+) {
+	if (!verifyAccountCsrf(request, sessionTokenHash || '')) {
+		return createSyncActionError('forbidden', 403);
+	}
+
+	return null;
+}
+
+function stringifyActionJsonBodySafe(body: unknown, maxBytes: number) {
 	try {
-		json = await response.json();
+		const text = JSON.stringify(body);
+		if (new TextEncoder().encode(text).byteLength > maxBytes) {
+			return { status: 'payload-too-large' as const };
+		}
+		return { status: 'ok' as const, text };
 	} catch {
-		return createActionError(
-			response.statusText || 'invalid-api-response',
-			response.status
-		);
+		return { status: 'invalid' as const };
+	}
+}
+
+function mapSyncWriteResult(
+	writeResult: Awaited<ReturnType<typeof putSyncStateChanges>>
+) {
+	if (writeResult.status === 'unauthorized') {
+		return createSyncActionError('unauthorized', 401);
+	}
+	if (writeResult.status === 'state-epoch-mismatch') {
+		return createSyncActionError('state-epoch-mismatch', 409, {
+			state_epoch: writeResult.state_epoch,
+		});
+	}
+	if (writeResult.status === 'corrupt-user-state') {
+		return createSyncActionError('corrupt-user-state', 500);
 	}
 
-	if (!isRecord(json)) {
-		return createActionError('invalid-api-response', response.status);
-	}
-	if (json['status'] === 'error') {
-		return createActionError(
-			typeof json['message'] === 'string'
-				? json['message']
-				: 'invalid-api-response',
-			response.status,
-			isRecord(json['data']) ? json['data'] : undefined
-		);
-	}
-	if (json['status'] === 'ok' && 'data' in json) {
-		return { data: json['data'] as TData, status: 'ok' };
-	}
-
-	return createActionError('invalid-api-response', response.status);
+	return { data: writeResult, status: 'ok' as const };
 }
 
 export async function fetchSyncStateAction(
 	namespaces: unknown = []
 ): Promise<TAccountSyncActionResult<ISyncStateGetResponse>> {
 	if (!Array.isArray(namespaces)) {
-		return createActionError('unknown-namespace', 400);
+		return createSyncActionError('unknown-namespace', 400);
 	}
 
 	const searchParams = new URLSearchParams();
 	for (const namespace of namespaces) {
 		if (typeof namespace !== 'string') {
-			return createActionError('unknown-namespace', 400);
+			return createSyncActionError('unknown-namespace', 400);
 		}
 		searchParams.append('namespace', namespace);
 	}
+
 	const query = searchParams.toString();
 	const request = await createCurrentRequest(
 		`/api/v1/sync/state${query.length > 0 ? `?${query}` : ''}`
 	);
+	const guardResult = await checkSyncActionGuards(request);
+	if (guardResult.status === 'error') {
+		return guardResult;
+	}
 
-	return readRouteActionResult(await getSyncStateRoute(request));
+	const namespaceParams =
+		guardResult.resolvedRequest.nextUrl.searchParams.getAll('namespace');
+	const resolvedNamespaces = namespaceParams.filter(checkSyncNamespace);
+	if (resolvedNamespaces.length !== namespaceParams.length) {
+		return createSyncActionError('unknown-namespace', 400);
+	}
+
+	const records =
+		resolvedNamespaces.length === 0
+			? await listUserState(guardResult.user.id)
+			: await listUserStateByNamespaces(
+					guardResult.user.id,
+					resolvedNamespaces
+				);
+
+	try {
+		return {
+			data: {
+				records: records.map(parseUserStateRecord),
+				state_epoch: guardResult.user.state_epoch,
+			} satisfies ISyncStateGetResponse,
+			status: 'ok',
+		};
+	} catch (error) {
+		console.warn('Failed to parse stored sync state.', {
+			errorCode: getLogSafeErrorCode(error),
+		});
+		return createSyncActionError('corrupt-user-state', 500);
+	}
 }
 
 export async function putSyncStateAction(
-	body: unknown,
+	body: ISyncStatePutBody,
 	csrfToken: unknown
 ): Promise<TAccountSyncActionResult<ISyncStatePutResponse>> {
-	const requestResult = await createJsonRequest(
-		'/api/v1/sync/state',
-		'PUT',
-		body,
-		MAX_SYNC_JSON_BODY_BYTES,
-		typeof csrfToken === 'string'
-			? { 'x-csrf-token': csrfToken }
-			: undefined
-	);
-	if (requestResult.status === 'error') {
-		return createActionError(
-			requestResult.message,
-			requestResult.message === 'payload-too-large' ? 413 : 400
-		);
+	const request = await createCurrentRequest('/api/v1/sync/state', {
+		headers: {
+			...(typeof csrfToken === 'string'
+				? { 'x-csrf-token': csrfToken }
+				: {}),
+		},
+		method: 'PUT',
+	});
+
+	const guardResult = await checkSyncActionGuards(request);
+	if (guardResult.status === 'error') {
+		return guardResult;
 	}
 
-	return readRouteActionResult(
-		await putSyncStateRoute(requestResult.request)
+	const rlResult = checkSyncActionRateLimit(request, 'sync-state-put');
+	if (rlResult !== null) {
+		return rlResult;
+	}
+
+	const csrfError = checkSyncActionCsrf(
+		request,
+		guardResult.sessionTokenHash
 	);
+	if (csrfError !== null) {
+		return csrfError;
+	}
+
+	const bodyResult = stringifyActionJsonBodySafe(
+		body,
+		MAX_SYNC_JSON_BODY_BYTES
+	);
+	if (bodyResult.status === 'payload-too-large') {
+		return createSyncActionError('payload-too-large', 413);
+	}
+	if (bodyResult.status === 'invalid') {
+		return createSyncActionError('invalid-object-structure', 400);
+	}
+
+	const parsed = parseSyncStatePutBody(body);
+	if (parsed === null) {
+		return createSyncActionError('invalid-object-structure', 400);
+	}
+	if (parsed.state_epoch !== guardResult.user.state_epoch) {
+		return createSyncActionError('state-epoch-mismatch', 409, {
+			state_epoch: guardResult.user.state_epoch,
+		});
+	}
+
+	const writeResult = await putSyncStateChanges({
+		body: parsed,
+		conflictParseMode: 'fail',
+		session: guardResult.session,
+		userId: guardResult.user.id,
+	});
+
+	const mappedResult = mapSyncWriteResult(writeResult);
+	if (mappedResult.status === 'error') {
+		return mappedResult;
+	}
+	if (writeResult.status !== 'ok') {
+		return createSyncActionError('internal-write-error', 500);
+	}
+
+	return {
+		data: {
+			results: writeResult.results,
+			state_epoch: guardResult.user.state_epoch,
+		} satisfies ISyncStatePutResponse,
+		status: 'ok',
+	};
 }
 
 export async function importBackupCodeAction(
 	code: unknown,
 	csrfToken: unknown
 ): Promise<TAccountSyncActionResult<ISyncImportBackupCodeResponse>> {
-	const requestResult = await createJsonRequest(
-		'/api/v1/sync/import-backup-code',
-		'POST',
+	const bodyResult = stringifyActionJsonBodySafe(
 		{ code },
-		MAX_ACCOUNT_JSON_BODY_BYTES,
-		typeof csrfToken === 'string'
-			? { 'x-csrf-token': csrfToken }
-			: undefined
+		MAX_ACCOUNT_SMALL_JSON_BODY_BYTES
 	);
-	if (requestResult.status === 'error') {
-		return createActionError(
-			requestResult.message,
-			requestResult.message === 'payload-too-large' ? 413 : 400
-		);
+	if (bodyResult.status === 'payload-too-large') {
+		return createSyncActionError('payload-too-large', 413);
+	}
+	if (bodyResult.status === 'invalid') {
+		return createSyncActionError('invalid-backup-code', 400);
 	}
 
-	return readRouteActionResult(
-		await importBackupCodeRoute(requestResult.request)
+	const rawCode = typeof code === 'string' ? code.trim() : '';
+	if (rawCode === '' || !validate(rawCode)) {
+		return createSyncActionError('invalid-backup-code', 400);
+	}
+	const normalizedCode = rawCode.toLowerCase();
+
+	const request = await createCurrentRequest(
+		'/api/v1/sync/import-backup-code',
+		{
+			body: bodyResult.text,
+			headers: {
+				'Content-Type': 'application/json',
+				...(typeof csrfToken === 'string'
+					? { 'x-csrf-token': csrfToken }
+					: {}),
+			},
+			method: 'POST',
+		}
 	);
+
+	const guardResult = await checkSyncActionGuards(request);
+	if (guardResult.status === 'error') {
+		return guardResult;
+	}
+
+	const rlResult = checkSyncActionRateLimit(request, 'import-backup-code');
+	if (rlResult !== null) {
+		return rlResult;
+	}
+
+	const csrfError = checkSyncActionCsrf(
+		request,
+		guardResult.sessionTokenHash
+	);
+	if (csrfError !== null) {
+		return csrfError;
+	}
+
+	const [lockModule, backupImportModule] = await Promise.all([
+		import('@/actions/backup/lock'),
+		import('@/lib/account/server/backupImport'),
+	]);
+
+	let importedBackupFileName: string | null | undefined;
+	try {
+		const response = await lockModule.withBackupCodeLock(
+			normalizedCode,
+			async (signal: unknown) => {
+				let importResult;
+				try {
+					importResult = await backupImportModule.importBackupData({
+						code: normalizedCode,
+						expectedStateEpoch: guardResult.user.state_epoch,
+						lockModule,
+						session: guardResult.session,
+						signal: signal as Parameters<
+							typeof backupImportModule.importBackupData
+						>[0]['signal'],
+						userId: guardResult.user.id,
+					});
+				} catch (error) {
+					if (error instanceof Error) {
+						if (error.message === 'unauthorized') {
+							return createSyncActionError('unauthorized', 401);
+						}
+						if (error.message === 'backup-code-not-found') {
+							return createSyncActionError(
+								'backup-code-not-found',
+								404
+							);
+						}
+						if (error.message === 'invalid-backup-file') {
+							return createSyncActionError(
+								'invalid-backup-file',
+								400
+							);
+						}
+						if (error.message === 'server-misconfigured') {
+							return createSyncActionError(
+								'server-misconfigured',
+								500
+							);
+						}
+						if (error.message === 'sync-conflict') {
+							return createSyncActionError('sync-conflict', 409);
+						}
+						if (error.message === 'backup-code-lock-lost') {
+							return createSyncActionError(
+								'backup-code-lock-lost',
+								409
+							);
+						}
+					}
+					throw error;
+				}
+
+				if (importResult.status === 'not-found') {
+					return createSyncActionError('backup-code-not-found', 404);
+				}
+				if (importResult.status === 'state-epoch-mismatch') {
+					return createSyncActionError('state-epoch-mismatch', 409, {
+						state_epoch: importResult.state_epoch,
+					});
+				}
+				if (importResult.status === 'already-imported') {
+					return createSyncActionError(
+						'backup-code-already-imported',
+						409
+					);
+				}
+
+				lockModule.markBackupCodeLockCommitted(
+					signal as Parameters<
+						typeof lockModule.markBackupCodeLockCommitted
+					>[0]
+				);
+				importedBackupFileName = importResult.fileName;
+				return {
+					data: {
+						results: importResult.results,
+					} satisfies ISyncImportBackupCodeResponse,
+					status: 'ok' as const,
+				};
+			}
+		);
+
+		if (importedBackupFileName !== undefined) {
+			void backupImportModule.cleanupImportedBackupFile(
+				normalizedCode,
+				importedBackupFileName
+			);
+		}
+
+		return response;
+	} catch (error) {
+		if (lockModule.checkBackupCodeLockLostError(error)) {
+			return createSyncActionError('backup-code-lock-lost', 409);
+		}
+		if (lockModule.checkBackupCodeLockTimeoutError(error)) {
+			return createSyncActionError('backup-code-lock-timeout', 409);
+		}
+
+		throw error;
+	}
 }

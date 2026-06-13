@@ -4,12 +4,8 @@ import {
 	checkAccountCookieSecurityResponse,
 	checkAccountFeatureResponse,
 	createAccountAuthErrorResponse,
-} from '@/api/v1/accountRouteUtils';
-import { createNoStoreErrorResponse } from '@/api/v1/utils';
-import {
-	checkSsoRateLimitResponse,
-	createNoStoreRedirectResponse,
-} from '../utils';
+} from '@/lib/account/server/routeResponses';
+import { checkSsoRateLimitResponse } from '@/lib/account/server/ssoRouteResponses';
 import {
 	checkSsoClientEnabled,
 	checkSsoClientId,
@@ -22,6 +18,10 @@ import {
 	setSsoContextCookie,
 	validateSsoRedirectUri,
 } from '@/lib/account/server/sso';
+import {
+	createNoStoreErrorResponse,
+	createNoStoreRedirectResponse,
+} from '@/lib/api/routeResponses';
 import { getLogSafeErrorCode } from '@/lib/logging';
 
 export const runtime = 'nodejs';

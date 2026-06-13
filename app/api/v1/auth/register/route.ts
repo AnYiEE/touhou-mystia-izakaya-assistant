@@ -7,17 +7,17 @@ import {
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
 	readJsonBodyResult,
-} from '@/api/v1/accountRouteUtils';
-import {
-	createNoStoreErrorResponse,
-	createNoStoreJsonResponse,
-	createNoStoreRedirectResponse,
-} from '@/api/v1/utils';
+} from '@/lib/account/server/routeResponses';
 import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import {
 	type IAuthLoginSuccessResponse,
 	type IAuthRegisterBody,
 } from '@/lib/account/shared/types';
+import {
+	createNoStoreErrorResponse,
+	createNoStoreJsonResponse,
+	createNoStoreRedirectResponse,
+} from '@/lib/api/routeResponses';
 import { getLogSafeErrorCode } from '@/lib/logging';
 
 export const runtime = 'nodejs';

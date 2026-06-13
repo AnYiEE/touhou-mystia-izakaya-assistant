@@ -1,12 +1,12 @@
 import { type NextRequest } from 'next/server';
 
-import { createNoStoreErrorResponse } from '@/api/v1/utils';
 import { getAdminSessionToken } from '@/lib/account/server/admin';
 import {
 	authenticateAdminSession,
 	checkAdminCsrf,
 	checkAdminFeature,
 } from '@/lib/account/server/guards';
+import { createNoStoreErrorResponse } from '@/lib/api/routeResponses';
 
 export function checkAdminFeatureResponse() {
 	const result = checkAdminFeature();

@@ -40,15 +40,15 @@ isProject: false
 
 ## 四、继续保留 API 或客户端运行时
 
-| 范围                                                                                                    | 保留原因                                                                          |
-| ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `GET/PUT /api/v1/sync/state`                                                                            | 浏览器 dirty queue、lease、跨标签页同步需要持续拉取和上传远端状态                 |
-| `POST /api/v1/sync/ping`                                                                                | 页面隐藏或关闭时通过 `sendBeacon` 上报同步状态                                    |
-| `/api/v1/sso/authorize`、`/api/v1/sso/validate`、`/api/v1/sso/status`、`/api/v1/sso/dispatch-callbacks` | 面向外部 SSO 客户端或调度器，是协议端点，不是内部页面首载数据接口                 |
-| `app/(pages)/sso/authorize/accountGate.tsx`                                                             | 需要打开全局账号弹窗并读取浏览器账号 store                                        |
-| `app/lib/account/client/featureClient.tsx`                                                              | 启动双写 watcher、bootstrap、同步客户端和账号弹窗，属于浏览器运行时能力           |
-| `app/lib/account/client/syncClient.ts`                                                                  | 管理本地快照、dirty queue、租约、BroadcastChannel、sendBeacon，不能整体迁到服务端 |
-| SSO 客户端 secret 复制                                                                                  | Clipboard API 和 fallback 复制能力只能在浏览器侧执行                              |
+| 范围                                                                                                    | 保留原因                                                                                                                      |
+| ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `GET/PUT /api/v1/sync/state`                                                                            | 兼容 API 继续保留给外部或旧入口；站内同步客户端已通过 Server Action 拉取和上传，浏览器仍保留 dirty queue、lease、跨标签页协调 |
+| `POST /api/v1/sync/ping`                                                                                | 页面隐藏或关闭时通过 `sendBeacon` 上报同步状态                                                                                |
+| `/api/v1/sso/authorize`、`/api/v1/sso/validate`、`/api/v1/sso/status`、`/api/v1/sso/dispatch-callbacks` | 面向外部 SSO 客户端或调度器，是协议端点，不是内部页面首载数据接口                                                             |
+| `app/(pages)/sso/authorize/accountGate.tsx`                                                             | 需要打开全局账号弹窗并读取浏览器账号 store                                                                                    |
+| `app/lib/account/client/featureClient.tsx`                                                              | 启动双写 watcher、bootstrap、同步客户端和账号弹窗，属于浏览器运行时能力                                                       |
+| `app/lib/account/client/syncClient.ts`                                                                  | 管理本地快照、dirty queue、租约、BroadcastChannel、sendBeacon，不能整体迁到服务端                                             |
+| SSO 客户端 secret 复制                                                                                  | Clipboard API 和 fallback 复制能力只能在浏览器侧执行                                                                          |
 
 ## 五、API 覆盖矩阵
 
@@ -67,8 +67,8 @@ isProject: false
 | `DELETE /api/v1/account/delete`                | 删除账号                                                        | 可抽 Server Action；本地状态清理仍需客户端                          |
 | `GET /api/v1/account/sso/grants`               | 读取当前账号授权过的 SSO 客户端                                 | 可服务端首载或 Server Action 读取                                   |
 | `DELETE /api/v1/account/sso/grants/[clientId]` | 撤销某个 SSO 授权                                               | 可 Server Action 化，保留 CSRF、限流和账号鉴权                      |
-| `GET /api/v1/sync/state`                       | 同步客户端拉取远端 state                                        | 必须保留 API                                                        |
-| `PUT /api/v1/sync/state`                       | 同步客户端上传 dirty queue 变更                                 | 必须保留 API                                                        |
+| `GET /api/v1/sync/state`                       | 兼容端点拉取远端 state；站内客户端使用 Server Action            | 兼容 API 保留；站内路径已 action 化                                 |
+| `PUT /api/v1/sync/state`                       | 兼容端点上传 dirty queue 变更；站内客户端使用 Server Action     | 兼容 API 保留；站内路径已 action 化                                 |
 | `POST /api/v1/sync/ping`                       | 页面隐藏或关闭时 `sendBeacon` 上报                              | 必须保留 API                                                        |
 | `POST /api/v1/sync/import-backup-code`         | 旧备份码一次性导入账号同步 state                                | 可抽服务端 mutation，但客户端合并、本地状态修正和后续同步仍必须保留 |
 | `POST /api/v1/admin/auth/login`                | 管理员登录，写管理员 session cookie                             | 优先改 Server Action                                                |

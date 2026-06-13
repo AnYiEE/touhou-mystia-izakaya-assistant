@@ -5,19 +5,19 @@ import {
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
-	createRetryAfterHeaders,
 	readJsonBodyResult,
-} from '@/api/v1/accountRouteUtils';
-import {
-	createNoStoreErrorResponse,
-	createNoStoreJsonResponse,
-	createNoStoreRedirectResponse,
-} from '@/api/v1/utils';
+} from '@/lib/account/server/routeResponses';
 import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import {
 	type IAuthLoginBody,
 	type IAuthLoginSuccessResponse,
 } from '@/lib/account/shared/types';
+import { createRetryAfterHeaders } from '@/lib/api/http';
+import {
+	createNoStoreErrorResponse,
+	createNoStoreJsonResponse,
+	createNoStoreRedirectResponse,
+} from '@/lib/api/routeResponses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

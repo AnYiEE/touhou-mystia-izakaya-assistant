@@ -3,7 +3,7 @@ import type {
 	IBackupCheckSuccessResponse,
 	IBackupUploadBody,
 	IBackupUploadSuccessResponse,
-} from '@/api/v1/backups/types';
+} from '@/lib/account/legacyBackup/shared';
 
 export type TLegacyBackupActionResult<TData = Record<string, unknown>> =
 	TAccountActionResult<TData>;

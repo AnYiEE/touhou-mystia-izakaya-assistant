@@ -5,17 +5,17 @@ import {
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
-} from '@/api/v1/accountRouteUtils';
-import {
-	createNoStoreErrorResponse,
-	createNoStoreJsonResponse,
-} from '@/api/v1/utils';
+} from '@/lib/account/server/routeResponses';
 import {
 	authenticateAdminRequest,
 	checkAdminFeatureResponse,
 	createAdminAuthErrorResponse,
-} from '@/api/v1/admin/utils';
+} from '@/lib/account/server/adminRouteResponses';
 import { type IListUsersOptions } from '@/lib/account/server/repositories/users';
+import {
+	createNoStoreErrorResponse,
+	createNoStoreJsonResponse,
+} from '@/lib/api/routeResponses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

@@ -4,12 +4,12 @@ import {
 	checkAccountCookieSecurityResponse,
 	checkAccountFeatureResponse,
 	checkSameOriginResponse,
-} from '@/api/v1/accountRouteUtils';
+} from '@/lib/account/server/routeResponses';
+import { type TAccountMeResponse } from '@/lib/account/shared/types';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/api/v1/utils';
-import { type TAccountMeResponse } from '@/lib/account/shared/types';
+} from '@/lib/api/routeResponses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

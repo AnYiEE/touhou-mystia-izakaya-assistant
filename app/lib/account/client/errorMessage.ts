@@ -1,6 +1,7 @@
 import { PASSWORD_RULE_DESCRIPTION } from '@/lib/account/shared/constants';
 
 const ACCOUNT_CLIENT_ERROR_MESSAGE_MAP: Record<string, string> = {
+	'account-disabled-offline': '离线包不支持账号功能',
 	'backup-code-already-imported': '这个旧备份码已被导入',
 	'backup-code-lock-lost': '旧备份码正在被处理，请稍后重试',
 	'backup-code-lock-timeout': '旧备份码处理超时，请稍后重试',
@@ -18,6 +19,7 @@ const ACCOUNT_CLIENT_ERROR_MESSAGE_MAP: Record<string, string> = {
 	'invalid-password': '当前密码不正确',
 	'invalid-password-rule': PASSWORD_RULE_DESCRIPTION,
 	'invalid-username': '用户名格式不符合要求',
+	'legacy-backup-disabled-offline': '离线包不支持旧云备份功能',
 	'legacy-import-failed': '旧备份码导入失败，请稍后重试',
 	'local-takeover-failed': '本地数据接管失败，请刷新页面后重试',
 	'password-must-change': '需要先更新密码后才能继续同步',

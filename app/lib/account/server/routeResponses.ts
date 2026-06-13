@@ -1,16 +1,18 @@
 import { type NextRequest } from 'next/server';
 
-import { createNoStoreErrorResponse } from '@/api/v1/utils';
 import {
 	type TAccountGuardResult,
 	checkAccountCookieSecurity,
 	checkAccountFeature,
 	checkAccountRateLimit,
 	checkSameOrigin,
-	createRetryAfterHeaders as createGuardRetryAfterHeaders,
 } from '@/lib/account/server/guards';
 import { SERVER_MISCONFIGURED_MESSAGE } from '@/lib/account/server/environment';
-import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
+import { MAX_ACCOUNT_SMALL_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
+import {
+	createNoStoreErrorResponse,
+	readJsonBodyResult as readApiJsonBodyResult,
+} from '@/lib/api/routeResponses';
 
 type TAccountAuthError = Extract<
 	Awaited<
@@ -20,10 +22,6 @@ type TAccountAuthError = Extract<
 	>,
 	{ status: 'error' }
 >;
-type TJsonBodyReadResult<T extends object> =
-	| { data: Partial<T>; status: 'ok' }
-	| { status: 'invalid' | 'payload-too-large' };
-
 type TAccountGuardError = Extract<TAccountGuardResult, { status: 'error' }>;
 
 function createGuardErrorResponse(error: TAccountGuardError) {
@@ -33,10 +31,6 @@ function createGuardErrorResponse(error: TAccountGuardError) {
 		error.data,
 		error.headers === undefined ? undefined : { headers: error.headers }
 	);
-}
-
-export function createRetryAfterHeaders(retryAfter: number) {
-	return createGuardRetryAfterHeaders(retryAfter);
 }
 
 export async function checkAccountFeatureResponse() {
@@ -75,67 +69,14 @@ export function checkAccountRateLimitResponse(
 
 export async function readJsonBodyResult<T extends object>(
 	request: NextRequest,
-	maxBytes = MAX_ACCOUNT_JSON_BODY_BYTES
-): Promise<TJsonBodyReadResult<T>> {
-	const contentLength = request.headers.get('content-length');
-	const parsedContentLength =
-		contentLength === null || !/^\d+$/u.test(contentLength)
-			? null
-			: Number.parseInt(contentLength, 10);
-	if (contentLength !== null) {
-		if (parsedContentLength === null) {
-			return { status: 'invalid' };
-		}
-		if (
-			!Number.isFinite(parsedContentLength) ||
-			parsedContentLength > maxBytes
-		) {
-			return { status: 'payload-too-large' };
-		}
-	}
-
-	try {
-		const requestBody = request.body;
-		if (requestBody === null) {
-			return { status: 'invalid' };
-		}
-
-		const reader = requestBody.getReader();
-		const decoder = new TextDecoder();
-		let receivedBytes = 0;
-		let text = '';
-		try {
-			let readResult = await reader.read();
-			while (!readResult.done) {
-				const { value } = readResult;
-				receivedBytes += value.byteLength;
-				if (receivedBytes > maxBytes) {
-					await reader.cancel('payload-too-large');
-					return { status: 'payload-too-large' };
-				}
-
-				text += decoder.decode(value, { stream: true });
-				readResult = await reader.read();
-			}
-			text += decoder.decode();
-		} finally {
-			reader.releaseLock();
-		}
-
-		const data: unknown = JSON.parse(text);
-		if (data === null || Array.isArray(data) || typeof data !== 'object') {
-			return { status: 'invalid' };
-		}
-
-		return { data, status: 'ok' };
-	} catch {
-		return { status: 'invalid' };
-	}
+	maxBytes = MAX_ACCOUNT_SMALL_JSON_BODY_BYTES
+) {
+	return readApiJsonBodyResult<T>(request, maxBytes);
 }
 
 export async function readJsonBody<T extends object>(
 	request: NextRequest,
-	maxBytes = MAX_ACCOUNT_JSON_BODY_BYTES
+	maxBytes = MAX_ACCOUNT_SMALL_JSON_BODY_BYTES
 ) {
 	const result = await readJsonBodyResult<T>(request, maxBytes);
 

@@ -6,18 +6,18 @@ import {
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
 	createAccountAuthErrorResponse,
-	createRetryAfterHeaders,
 	readJsonBodyResult,
-} from '@/api/v1/accountRouteUtils';
-import {
-	createNoStoreErrorResponse,
-	createNoStoreJsonResponse,
-} from '@/api/v1/utils';
-import { getLogSafeErrorCode } from '@/lib/logging';
+} from '@/lib/account/server/routeResponses';
 import {
 	type IAuthChangePasswordBody,
 	type IAuthLoginSuccessResponse,
 } from '@/lib/account/shared/types';
+import { createRetryAfterHeaders } from '@/lib/api/http';
+import {
+	createNoStoreErrorResponse,
+	createNoStoreJsonResponse,
+} from '@/lib/api/routeResponses';
+import { getLogSafeErrorCode } from '@/lib/logging';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

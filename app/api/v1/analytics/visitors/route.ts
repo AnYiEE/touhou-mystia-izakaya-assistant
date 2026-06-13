@@ -1,6 +1,9 @@
 import { env } from 'node:process';
 
-import { createJsonResponse, handleOptionsRequest } from '@/api/v1/utils';
+import {
+	createJsonResponse,
+	handleOptionsRequest,
+} from '@/lib/api/routeResponses';
 
 type TVisitorCountResponse = [
 	{

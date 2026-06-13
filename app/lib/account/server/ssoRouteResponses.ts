@@ -2,12 +2,10 @@ import { type NextRequest } from 'next/server';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { env } from 'node:process';
 
-import {
-	createNoStoreErrorResponse,
-	createRetryAfterHeaders,
-} from '@/api/v1/utils';
 import { checkRateLimit } from '@/lib/account/server/rateLimit';
 import { getTrustedRequestIp } from '@/lib/account/server/request';
+import { createRetryAfterHeaders } from '@/lib/api/http';
+import { createNoStoreErrorResponse } from '@/lib/api/routeResponses';
 
 const SSO_RATE_LIMIT_OPTIONS = { limit: 20, windowMs: 60 * 1000 } as const;
 
@@ -22,8 +20,6 @@ function createRateLimitHash(value: string) {
 function createRateLimitCapacityGroup(scope: string, dimension: string) {
 	return createRateLimitKey([scope, dimension]);
 }
-
-export { createNoStoreRedirectResponse } from '@/api/v1/utils';
 
 export function checkSsoRateLimitResponse(
 	request: NextRequest,

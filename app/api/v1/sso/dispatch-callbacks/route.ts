@@ -1,16 +1,19 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAccountFeatureResponse } from '@/api/v1/accountRouteUtils';
+import { checkAccountFeatureResponse } from '@/lib/account/server/routeResponses';
 import {
-	createNoStoreErrorResponse,
-	createNoStoreJsonResponse,
-} from '@/api/v1/utils';
-import { checkDispatchSecret, checkSsoRateLimitResponse } from '../utils';
+	checkDispatchSecret,
+	checkSsoRateLimitResponse,
+} from '@/lib/account/server/ssoRouteResponses';
 import {
 	SSO_CALLBACK_DISPATCH_LIMIT,
 	deleteExpiredSsoTickets,
 	dispatchSsoCallbacks,
 } from '@/lib/account/server/sso';
+import {
+	createNoStoreErrorResponse,
+	createNoStoreJsonResponse,
+} from '@/lib/api/routeResponses';
 import { getLogSafeErrorCode } from '@/lib/logging';
 
 export const runtime = 'nodejs';

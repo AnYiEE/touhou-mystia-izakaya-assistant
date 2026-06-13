@@ -1,13 +1,14 @@
 import { type NextRequest } from 'next/server';
-import { validate } from 'uuid';
 
-import { getRecord } from '@/actions/backup';
-import type { IBackupCheckSuccessResponse } from '../../types';
+import {
+	fetchLegacyBackupMetadata,
+	parseLegacyBackupCode,
+} from '@/lib/account/server/legacyBackup';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 	handleOptionsRequest,
-} from '@/api/v1/utils';
+} from '@/lib/api/routeResponses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -17,26 +18,20 @@ export async function GET(
 	{ params }: { params: Promise<{ code: string }> }
 ) {
 	const { code: rawCode } = await params;
-	const normalizedCode = rawCode.trim();
-	if (!validate(normalizedCode)) {
+	const code = parseLegacyBackupCode(rawCode);
+	if (code === null) {
 		return createNoStoreErrorResponse('Invalid code', 400);
 	}
-	const code = normalizedCode.toLowerCase();
 
-	const record = await getRecord(code);
-	if (record.status === 404) {
+	const metadataResult = await fetchLegacyBackupMetadata(code);
+	if (metadataResult.status === 'error') {
 		return createNoStoreErrorResponse(
-			'The file record does not exist or has been deleted',
-			404
+			metadataResult.message,
+			metadataResult.httpStatus
 		);
 	}
 
-	const { created_at, last_accessed } = record;
-
-	return createNoStoreJsonResponse({
-		created_at,
-		last_accessed,
-	} satisfies IBackupCheckSuccessResponse);
+	return createNoStoreJsonResponse(metadataResult.data);
 }
 
 export function OPTIONS() {

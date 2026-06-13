@@ -7,47 +7,25 @@ import {
 	checkSameOriginResponse,
 	createAccountAuthErrorResponse,
 	readJsonBodyResult,
-} from '@/api/v1/accountRouteUtils';
+} from '@/lib/account/server/routeResponses';
 import {
 	checkSyncNamespace,
-	createUserStateRecord,
 	parseSyncStatePutBody,
+} from '@/lib/account/sync/validation';
+import {
 	parseUserStateRecord,
-} from '@/api/v1/sync/utils';
+	putSyncStateChanges,
+} from '@/lib/account/server/syncState';
+import { type ISyncStatePutBody } from '@/lib/account/sync';
+import { MAX_SYNC_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/api/v1/utils';
-import {
-	type ISyncStateItemConflict,
-	type ISyncStatePutBody,
-	type TSyncStatePutResult,
-} from '@/lib/account/sync';
-import { MAX_SYNC_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
+} from '@/lib/api/routeResponses';
 import { getLogSafeErrorCode } from '@/lib/logging';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-function createConflictResult(
-	namespace: ISyncStateItemConflict['namespace'],
-	current: Awaited<
-		ReturnType<
-			typeof import('@/lib/account/server/repositories/userState').getUserState
-		>
-	>
-): ISyncStateItemConflict {
-	const record = current === null ? null : parseUserStateRecord(current);
-
-	return {
-		data: record?.data ?? null,
-		namespace,
-		revision: record?.revision ?? 0,
-		schema_version: record?.schema_version ?? 0,
-		status: 'conflict',
-		updated_at: record?.updated_at ?? 0,
-	};
-}
 
 function createCorruptUserStateResponse() {
 	return createNoStoreErrorResponse('corrupt-user-state', 500);
@@ -159,56 +137,12 @@ export async function PUT(request: NextRequest) {
 		});
 	}
 
-	const userStateModule =
-		await import('@/lib/account/server/repositories/userState');
-
-	const results: TSyncStatePutResult[] = [];
-	const batchUpdatedAt = Date.now();
-	const preparedChanges = body.changes.map((change) => {
-		const updatedAt = batchUpdatedAt;
-		const nextRevision = change.revision + 1;
-		const record = createUserStateRecord(
-			auth.data.user.id,
-			change,
-			nextRevision,
-			updatedAt
-		);
-		if (record === null) {
-			return {
-				result: {
-					message: 'internal-write-error',
-					namespace: change.namespace,
-					status: 'error',
-				} satisfies TSyncStatePutResult,
-				status: 'error' as const,
-			};
-		}
-
-		return {
-			change,
-			nextRevision,
-			record,
-			status: 'ready' as const,
-			updatedAt,
-		};
+	const writeResult = await putSyncStateChanges({
+		body,
+		conflictParseMode: 'fail',
+		session: auth.data.session,
+		userId: auth.data.user.id,
 	});
-	const readyChanges = preparedChanges.filter(
-		(
-			change
-		): change is Extract<
-			(typeof preparedChanges)[number],
-			{ status: 'ready' }
-		> => change.status === 'ready'
-	);
-	const writeResult = await userStateModule.putUserStateEntriesIfRevision(
-		readyChanges.map((change) => ({
-			entry: change.record,
-			expectedRevision: change.change.revision,
-		})),
-		body.state_epoch,
-		auth.data.session,
-		auth.data.user.id
-	);
 	if (writeResult.status === 'unauthorized') {
 		return createNoStoreErrorResponse('unauthorized', 401);
 	}
@@ -221,49 +155,8 @@ export async function PUT(request: NextRequest) {
 		return createCorruptUserStateResponse();
 	}
 
-	let writeResultIndex = 0;
-	for (const preparedChange of preparedChanges) {
-		if (preparedChange.status === 'error') {
-			results.push(preparedChange.result);
-			continue;
-		}
-
-		const result = writeResult.results[writeResultIndex++];
-		if (result === undefined) {
-			results.push({
-				message: 'internal-write-error',
-				namespace: preparedChange.change.namespace,
-				status: 'error',
-			});
-			continue;
-		}
-		if (result.status === 'conflict') {
-			try {
-				results.push(
-					createConflictResult(
-						preparedChange.change.namespace,
-						result.current
-					)
-				);
-			} catch (error) {
-				console.warn('Failed to parse conflicting sync state.', {
-					errorCode: getLogSafeErrorCode(error),
-				});
-				return createCorruptUserStateResponse();
-			}
-			continue;
-		}
-
-		results.push({
-			namespace: preparedChange.change.namespace,
-			revision: result.entry.revision,
-			status: 'ok',
-			updated_at: result.entry.updated_at,
-		});
-	}
-
 	return createNoStoreJsonResponse({
-		results,
+		results: writeResult.results,
 		state_epoch: auth.data.user.state_epoch,
 	});
 }

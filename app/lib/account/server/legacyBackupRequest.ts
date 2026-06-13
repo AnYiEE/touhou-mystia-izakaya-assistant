@@ -1,5 +1,5 @@
 import { type NextRequest } from 'next/server';
-import { createHash, createHmac } from 'node:crypto';
+import { createHmac } from 'node:crypto';
 import { env } from 'node:process';
 
 import {
@@ -10,7 +10,6 @@ import {
 	SERVER_MISCONFIGURED_MESSAGE,
 	checkAppSecret,
 } from '@/lib/account/server/environment';
-export { getLogSafeErrorCode } from '@/lib/logging';
 
 function getBackupMetaSecret() {
 	const appSecret = env.APP_SECRET;
@@ -29,11 +28,7 @@ function createBackupMetaHmac(value: string, secret: string) {
 		.digest('base64url');
 }
 
-export function maskBackupCode(code: string) {
-	return `sha256:${createHash('sha256').update(code).digest('hex').slice(0, 12)}`;
-}
-
-export function getRequestMeta(request: NextRequest) {
+export function getLegacyBackupRequestMeta(request: NextRequest) {
 	const secret = getBackupMetaSecret();
 	const contentType = request.headers.get('content-type') ?? null;
 

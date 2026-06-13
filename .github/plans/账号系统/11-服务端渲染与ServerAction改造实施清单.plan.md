@@ -42,13 +42,13 @@ isProject: false
 
 ### 需要复用的现有能力
 
-| 能力                     | 现有位置                                                                                                  | 使用要求                                                        |
-| ------------------------ | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| 账号功能门禁和 DB 懒加载 | `app/lib/account/server/environment.ts`、`app/lib/account/server/db.ts`                                   | Server Action 也必须先检查账号功能状态和 DB 可用性              |
-| 普通账号 session/CSRF    | `app/lib/account/server/auth.ts`                                                                          | 迁移普通账号流程时继续使用 session token hash 绑定 CSRF         |
-| 管理员 session/CSRF      | `app/lib/account/server/admin.ts`                                                                         | 后台 action 继续使用管理员 session token 绑定 CSRF              |
-| route 安全语义           | `app/api/v1/accountRouteUtils.ts`、`app/api/v1/admin/utils.ts`                                            | action helper 要保留等价语义，不直接调用数据访问函数后返回      |
-| 数据访问                 | `app/lib/account/server/repositories/users.ts`、`sessions.ts`、`credentials.ts`、`userState.ts`、`sso.ts` | 服务器组件和 action 优先复用这些模块，不从客户端 API 反向 fetch |
+| 能力                     | 现有位置                                                                                                                                   | 使用要求                                                        |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| 账号功能门禁和 DB 懒加载 | `app/lib/account/server/environment.ts`、`app/lib/account/server/db.ts`                                                                    | Server Action 也必须先检查账号功能状态和 DB 可用性              |
+| 普通账号 session/CSRF    | `app/lib/account/server/auth.ts`                                                                                                           | 迁移普通账号流程时继续使用 session token hash 绑定 CSRF         |
+| 管理员 session/CSRF      | `app/lib/account/server/admin.ts`                                                                                                          | 后台 action 继续使用管理员 session token 绑定 CSRF              |
+| route 安全语义           | `app/lib/account/server/routeResponses.ts`、`app/lib/account/server/adminRouteResponses.ts`、`app/lib/account/server/ssoRouteResponses.ts` | action helper 要保留等价语义，不直接调用数据访问函数后返回      |
+| 数据访问                 | `app/lib/account/server/repositories/users.ts`、`sessions.ts`、`credentials.ts`、`userState.ts`、`sso.ts`                                  | 服务器组件和 action 优先复用这些模块，不从客户端 API 反向 fetch |
 
 ### 验收
 
@@ -174,7 +174,7 @@ isProject: false
 - 已在同一 action 模块中提供账号数据导出、清空云端数据和删除账号 Server Actions；客户端下载 JSON、本地 sync 状态修正和 BroadcastChannel 广播仍保留在 `AccountManager`。
 - 已在同一 action 模块中提供 `fetchAccountMeAction`，让 `refreshAccountState` 和 bootstrap 状态刷新不再浏览器 fetch `/api/v1/account/me`；旧备份码导入和本地数据接管仍保留在客户端 session 流程中。
 - 已新增 `app/lib/account/actions/sync.ts`，让站内主动 `fetchSyncState`、`putSyncState` 和 `importBackupCode` 客户端 helper 走 Server Actions，并复用现有 `/api/v1/sync/state` 与 `/api/v1/sync/import-backup-code` route handler 响应语义。
-- 已在 `next.config.ts` 配置 `serverActions.bodySizeLimit = SERVER_ACTION_BODY_SIZE_LIMIT`，避免主动同步 state 上传在进入原 `/api/v1/sync/state` route 校验前被 Next 默认 Server Action body 上限提前拦截；具体值由 `app/lib/account/shared/requestLimits.ts` 基于 `MAX_SYNC_JSON_BODY_BYTES + 2MiB` 余量推导，当前为 `9mb`。
+- 已在 `next.config.ts` 配置 `serverActions.bodySizeLimit = SERVER_ACTION_BODY_SIZE_LIMIT`，避免主动同步 state 上传和站内 legacy 备份上传在进入业务层 byte limit 校验前被 Next 默认 Server Action body 上限提前拦截；具体值由 `app/lib/account/shared/requestLimits.ts` 基于 `max(MAX_BACKUP_UPLOAD_JSON_BODY_BYTES, MAX_SYNC_JSON_BODY_BYTES) + 2MiB` 余量推导，当前为 `13mb`。
 - 已新增 `app/lib/account/server/initialData.ts` 和 `app/lib/account/client/components/accountSsoGrantInitialDataHydrator.tsx`，让动态账号页面可服务端预读 grants，再由客户端账号弹窗按当前 `user.id` 消费。
 - 已新增 `app/lib/account/client/components/accountInitialStateHydrator.tsx`，让动态 `/sso/authorize` 页面可服务端注入当前账号首态；登录要求、强制改密和已登录确认页不再完全等待全局客户端 bootstrap 才更新账号弹窗状态。
 - 同步运行时、旧备份码导入后的本地接管、dirty queue、lease、BroadcastChannel、sendBeacon 仍保留浏览器协调层；本批只迁移可由服务端承接的账号数据读写边界。
@@ -194,7 +194,7 @@ isProject: false
 11. 已完成：`account/me` action 保留普通账号功能门禁、same-origin、cookie security、允许强制改密状态读取、未登录返回匿名状态的语义；客户端 `refreshAccountState` 继续负责 legacy code 自动导入、本地数据接管和 sync flush 调度。
 12. 已完成：主动同步 state 读取和上传改走 `fetchSyncStateAction`、`putSyncStateAction`，客户端 helper 继续抛出 `AccountApiError`，让 dirty queue、冲突处理和 `state_epoch` mismatch 分支保持原有行为。
 13. 已完成：旧备份码导入网络层改走 `importBackupCodeAction`，但导入后的本地 `cloudCode` 清理、本地数据接管、sync meta 修正和后续同步仍由客户端流程完成。
-14. 已完成：Server Action body 上限显式提升到 `SERVER_ACTION_BODY_SIZE_LIMIT`（当前 `9mb`），覆盖现有 `MAX_SYNC_JSON_BODY_BYTES` 协议体和 action 传输开销；超出业务上限仍由 sync route 返回 `payload-too-large`。
+14. 已完成：Server Action body 上限显式提升到 `SERVER_ACTION_BODY_SIZE_LIMIT`（当前 `13mb`），覆盖现有 `MAX_SYNC_JSON_BODY_BYTES`、`MAX_BACKUP_UPLOAD_JSON_BODY_BYTES` 和 action 传输开销；超出业务上限仍由对应业务层返回 `payload-too-large`。
 15. 已完成：`/sso/authorize` 在未登录、强制改密和已登录授权确认分支中注入账号首态；该注入只作用于动态授权页，不放入根 layout，避免首页、资料页、设置页等静态页面退化为动态渲染。
 
 ### 保留点
@@ -235,13 +235,13 @@ isProject: false
 - 已清理 `app/lib/account/client/api.ts` 中已经没有调用方的 `fetchAccountMe` fetch 封装。
 - 已将 `app/lib/account/client/api.ts` 中保留给 sync runtime 使用的 `fetchSyncState`、`putSyncState` 和 `importBackupCode` helper 改为调用 `app/lib/account/actions/sync.ts`，只保留 `sendSyncPing` 的浏览器 `sendBeacon` 协议实现。
 - 已将站内 legacy 云备份客户端 facade 收口到 `app/lib/account/client/legacyBackups.ts`，`app/(pages)/preferences/dataManager.tsx` 只作为设置页消费者引用账号客户端 facade。
-- 已将 `app/api/v1/sso/utils.ts` 的 `Retry-After` header helper 改为引用通用 `app/api/v1/utils.ts`，减少 SSO route helper 对账号 route helper 的横向依赖。
+- 已将 `Retry-After` header helper 移到通用 [app/lib/api/http.ts](../../../app/lib/api/http.ts)，SSO route helper、账号 guard 和 API route 调用点均直接引用该中性 helper，避免通用 API helper 与账号领域模块相互 re-export。
 - 已将原 `app/actions/account/*` 账号 DB repository/service 文件迁移到 `app/lib/account/server/repositories/*`，API routes、admin SSR、Server Actions 和账号 server helpers 均改为引用账号 server 域路径；不再让全局 `actions` 目录承载账号仓储层。
 - 已新增 `app/(pages)/admin/actions.ts`，承接管理员登录、退出、状态检查、用户列表、SSO 列表和 SSO 详情的页面内部 Server Actions。
 - 已新增 `app/lib/account/actions/auth.ts`，承接普通账号登录、注册、改密、退出当前设备、退出全部设备的账号共享 Server Actions。
 - 已新增 `app/lib/account/actions/ssoGrants.ts`，承接普通账号 SSO 授权列表刷新和撤销授权 Server Actions；设置页不再保留页面局部 action 模块。
 - 已新增 `app/lib/account/actions/sync.ts`，承接普通账号主动同步 state 读取、上传和旧备份码导入的账号共享 Server Actions。
-- 已新增 `app/lib/account/actions/legacyBackups.ts`，承接站内 legacy 云备份设置页的元数据读取、下载、上传和删除动作，并复用原 `/api/v1/backups*` route handler。
+- 已新增 `app/lib/account/actions/legacyBackups.ts`，承接站内 legacy 云备份设置页的元数据读取、下载、上传和删除动作，并复用 [app/lib/account/server/legacyBackup.ts](../../../app/lib/account/server/legacyBackup.ts) 的共享服务能力；外部 `/api/v1/backups*` route 继续作为兼容 API 保留。
 - 已新增 `app/lib/account/actions/utils.ts`，让普通账号 auth/sync actions 复用相同的 action result 和 JSON body 处理工具，减少 route-action 包装逻辑漂移。
 - 已将管理员首页、用户详情、SSO 列表和 SSO 表单的客户端 fallback 从后台 fetch helper 改为 Server Actions。
 - 已将 `app/lib/account/client/legacyBackups.ts` 的站内 legacy 云备份 facade 改为调用 `legacyBackups.ts` Server Actions；设置页错误处理仍保留原有 `status/data` 分支。
@@ -300,23 +300,23 @@ isProject: false
 
 ## 九、跨批次风险清单
 
-| 风险                           | 防护要求                                                                                                                                                                                  |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Server Action 静态缓存敏感数据 | 后台页面和 action 使用请求期 cookie/header，不缓存管理员数据或 SSO secret                                                                                                                 |
-| CSRF 被弱化                    | 所有写 action 校验 session token 绑定的 CSRF，不能只依赖表单来源                                                                                                                          |
-| cookie secure 计算错误         | 先抽 request context helper，明确 `TRUST_PROXY`、`ALLOW_INSECURE_COOKIES` 和生产环境行为                                                                                                  |
-| rate limit 丢失                | 登录、改密、管理员写操作和账号写操作保留等价限流                                                                                                                                          |
-| SSO secret 泄露                | secret 只在创建/生成 action 响应中一次性返回，不进入 URL、日志、缓存或可重放页面                                                                                                          |
-| 同步状态错乱                   | 普通账号、清空云端、导入旧备份、退出流程不得跳过本地 store、dirty queue、BroadcastChannel                                                                                                 |
-| Server Action body 上限过小    | 同步上传 action 需要覆盖 `MAX_SYNC_JSON_BODY_BYTES`，当前通过 `SERVER_ACTION_BODY_SIZE_LIMIT`（`MAX_SYNC_JSON_BODY_BYTES + 2MiB` 后向上取整到 MiB，当前 `9mb`）防止 Next 默认上限提前拦截 |
-| API 误删                       | `sync`、外部 `sso`、legacy `backups` API 只有在另行专项评估后才能改动                                                                                                                     |
-| 禁用环境破坏                   | 禁用账号功能时不静态加载账号 DB/Argon2，不显示账号入口，不请求账号 API                                                                                                                    |
+| 风险                           | 防护要求                                                                                                                                                                                                                                          |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Server Action 静态缓存敏感数据 | 后台页面和 action 使用请求期 cookie/header，不缓存管理员数据或 SSO secret                                                                                                                                                                         |
+| CSRF 被弱化                    | 所有写 action 校验 session token 绑定的 CSRF，不能只依赖表单来源                                                                                                                                                                                  |
+| cookie secure 计算错误         | 先抽 request context helper，明确 `TRUST_PROXY`、`ALLOW_INSECURE_COOKIES` 和生产环境行为                                                                                                                                                          |
+| rate limit 丢失                | 登录、改密、管理员写操作和账号写操作保留等价限流                                                                                                                                                                                                  |
+| SSO secret 泄露                | secret 只在创建/生成 action 响应中一次性返回，不进入 URL、日志、缓存或可重放页面                                                                                                                                                                  |
+| 同步状态错乱                   | 普通账号、清空云端、导入旧备份、退出流程不得跳过本地 store、dirty queue、BroadcastChannel                                                                                                                                                         |
+| Server Action body 上限过小    | 同步上传 action 和站内 legacy 备份上传 action 需要覆盖各自业务上限，当前通过 `SERVER_ACTION_BODY_SIZE_LIMIT`（`max(MAX_BACKUP_UPLOAD_JSON_BODY_BYTES, MAX_SYNC_JSON_BODY_BYTES) + 2MiB` 后向上取整到 MiB，当前 `13mb`）防止 Next 默认上限提前拦截 |
+| API 误删                       | `sync`、外部 `sso`、legacy `backups` API 只有在另行专项评估后才能改动                                                                                                                                                                             |
+| 禁用环境破坏                   | 禁用账号功能时不静态加载账号 DB/Argon2，不显示账号入口，不请求账号 API                                                                                                                                                                            |
 
 ### 后续边界收口暂缓项
 
 - `app/lib/account/server/repositories/*` 现在承载账号 DB repository/service 层；后续如果继续细分 repository 与 service，应按业务模块拆分 transaction/查询职责，不要回迁到 `app/actions/account/`。
-- `app/api/v1/accountRouteUtils.ts` 当前仍混合账号 route guard response adapter、账号 JSON body 读取和少量 response helper；可后续拆成 route 层小 helper，但必须保留 `/api/v1/*` 外部协议语义，不能复活未使用的半成品通用 `requestBody.ts`/`routeResponses.ts`。
-- `app/api/v1/sync/utils.ts` 包含同步 namespace、payload schema、stored state parse 和 legacy 兼容校验，领域属性强于 route 属性；后续可评估迁入 `app/lib/account/sync` 或 server sync payload helper，但风险高于 facade/import 收口，应单独验证同步兼容性。
+- 账号 route guard response adapter、账号 JSON body 读取和少量 response helper 已迁入 `app/lib/account/server/routeResponses.ts`；后续若继续细分 route adapter，也必须保留 `/api/v1/*` 外部协议语义，不能复活未使用的半成品通用 `requestBody.ts`/`routeResponses.ts`。
+- 同步 namespace、payload schema、stored state parse 和 legacy 兼容校验已迁入 `app/lib/account/sync/validation.ts`；后续如果继续拆 server sync payload helper，应单独验证同步兼容性。
 
 ## 十、最终验收顺序
 

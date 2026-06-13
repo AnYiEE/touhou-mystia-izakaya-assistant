@@ -21,12 +21,13 @@ import {
 	withBackupCodeLock,
 	withFreshBackupCodeLock,
 } from '@/actions/backup';
+import { maskBackupCode } from '@/lib/account/server/backupCode';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 	handleOptionsRequest,
-} from '@/api/v1/utils';
-import { getLogSafeErrorCode, maskBackupCode } from '@/api/v1/backups/utils';
+} from '@/lib/api/routeResponses';
+import { getLogSafeErrorCode } from '@/lib/logging';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

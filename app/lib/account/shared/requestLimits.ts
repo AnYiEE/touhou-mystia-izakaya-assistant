@@ -3,6 +3,7 @@ import { SYNC_NAMESPACE_MAP } from '../sync/constants';
 export const KIBIBYTE = 1024;
 export const MEBIBYTE = 1024 * KIBIBYTE;
 
+export const MAX_ACCOUNT_SMALL_JSON_BODY_BYTES = 16 * KIBIBYTE;
 export const MAX_ACCOUNT_JSON_BODY_BYTES = 128 * KIBIBYTE;
 
 export const MAX_BACKUP_DATA_BYTES = 10 * MEBIBYTE;

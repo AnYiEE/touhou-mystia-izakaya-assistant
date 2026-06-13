@@ -1,119 +1,118 @@
 'use server';
 
-import { DELETE, GET } from '@/api/v1/backups/[code]/route';
-import { GET as getMetadata } from '@/api/v1/backups/[code]/metadata/route';
-import { POST } from '@/api/v1/backups/route';
 import type {
 	IBackupCheckSuccessResponse,
 	IBackupUploadBody,
 	IBackupUploadSuccessResponse,
-} from '@/api/v1/backups/types';
+	TLegacyBackupResult,
+} from '@/lib/account/legacyBackup/shared';
 import { type TAccountActionResult } from '@/lib/account/actions/utils';
 import { createCurrentRequest } from '@/lib/account/server/currentRequest';
-import { FILE_TYPE_JSON } from '@/utilities';
+import {
+	deleteLegacyBackupData,
+	downloadLegacyBackupData,
+	fetchLegacyBackupMetadata,
+	parseLegacyBackupCode,
+	uploadLegacyBackupData,
+} from '@/lib/account/server/legacyBackup';
+import { getLegacyBackupRequestMeta } from '@/lib/account/server/legacyBackupRequest';
 
 export type TLegacyBackupActionResult<TData = Record<string, unknown>> =
 	TAccountActionResult<TData>;
 
-async function readLegacyBackupActionResult(response: Response) {
-	if (!response.ok) {
-		return response
-			.text()
-			.catch(() => '')
-			.then((text) => {
-				let message = response.statusText || 'Unknown error';
-				let data: Record<string, unknown> | undefined;
+function createLegacyBackupActionError(
+	message: string,
+	httpStatus: number,
+	data?: Record<string, unknown>
+): Extract<TLegacyBackupActionResult, { status: 'error' }> {
+	return data === undefined
+		? { httpStatus, message, status: 'error' }
+		: { data, httpStatus, message, status: 'error' };
+}
 
-				try {
-					const json: unknown = JSON.parse(text);
-					if (
-						json !== null &&
-						!Array.isArray(json) &&
-						typeof json === 'object'
-					) {
-						const record = json as Record<string, unknown>;
-						if (typeof record['message'] === 'string') {
-							message = record['message'];
-						}
-						data = record;
-					}
-				} catch {
-					const trimmedText = text.trim();
-					if (trimmedText.length > 0) {
-						message = trimmedText;
-					}
-				}
-
-				return {
-					...(data === undefined ? {} : { data }),
-					httpStatus: response.status,
-					message,
-					status: 'error' as const,
-				};
-			});
+function readLegacyBackupResult<TData>(
+	result: TLegacyBackupResult<TData>
+): TLegacyBackupActionResult<TData> {
+	if (result.status === 'error') {
+		return createLegacyBackupActionError(
+			result.message,
+			result.httpStatus,
+			result.data
+		);
 	}
 
-	return response
-		.json()
-		.catch(() => null)
-		.then((json: unknown): TLegacyBackupActionResult<unknown> => {
-			if (
-				json !== null &&
-				!Array.isArray(json) &&
-				typeof json === 'object' &&
-				'data' in json &&
-				'status' in json &&
-				json.status === 'ok'
-			) {
-				return { data: json.data, status: 'ok' };
-			}
+	return result;
+}
 
-			return { data: json, status: 'ok' };
-		});
+function readLegacyBackupDownloadResult<TData>(
+	result: Awaited<ReturnType<typeof downloadLegacyBackupData>>
+): TLegacyBackupActionResult<TData> {
+	if (result.status === 'error') {
+		return createLegacyBackupActionError(
+			result.message,
+			result.httpStatus,
+			result.data
+		);
+	}
+
+	try {
+		return { data: JSON.parse(result.content) as TData, status: 'ok' };
+	} catch {
+		return createLegacyBackupActionError(
+			'Invalid legacy backup response',
+			500
+		);
+	}
+}
+
+function validateLegacyBackupActionCode(code: string) {
+	const parsedCode = parseLegacyBackupCode(code);
+	return parsedCode === null
+		? createLegacyBackupActionError('Invalid code', 400)
+		: { code: parsedCode, status: 'ok' as const };
 }
 
 export async function fetchLegacyBackupMetadataAction(
 	code: string
 ): Promise<TLegacyBackupActionResult<IBackupCheckSuccessResponse>> {
-	const request = await createCurrentRequest(
-		`/api/v1/backups/${encodeURIComponent(code)}/metadata`
-	);
-	const response = await getMetadata(request, {
-		params: Promise.resolve({ code }),
-	});
+	const codeResult = validateLegacyBackupActionCode(code);
+	if (codeResult.status === 'error') {
+		return codeResult;
+	}
+	const result = await fetchLegacyBackupMetadata(codeResult.code);
 
-	return readLegacyBackupActionResult(response) as Promise<
-		TLegacyBackupActionResult<IBackupCheckSuccessResponse>
-	>;
+	return readLegacyBackupResult<IBackupCheckSuccessResponse>(result);
 }
 
 export async function deleteLegacyBackupAction(
 	code: string
 ): Promise<TLegacyBackupActionResult> {
-	const request = await createCurrentRequest(
-		`/api/v1/backups/${encodeURIComponent(code)}`,
-		{ method: 'DELETE' }
-	);
-	const response = await DELETE(request, {
-		params: Promise.resolve({ code }),
-	});
+	const codeResult = validateLegacyBackupActionCode(code);
+	if (codeResult.status === 'error') {
+		return codeResult;
+	}
+	const result = await deleteLegacyBackupData(codeResult.code);
 
-	return readLegacyBackupActionResult(
-		response
-	) as Promise<TLegacyBackupActionResult>;
+	return readLegacyBackupResult(result);
 }
 
 export async function downloadLegacyBackupAction<TData>(
 	code: string
 ): Promise<TLegacyBackupActionResult<TData>> {
+	const codeResult = validateLegacyBackupActionCode(code);
+	if (codeResult.status === 'error') {
+		return codeResult;
+	}
 	const request = await createCurrentRequest(
 		`/api/v1/backups/${encodeURIComponent(code)}`
 	);
-	const response = await GET(request, { params: Promise.resolve({ code }) });
+	const { ip } = getLegacyBackupRequestMeta(request);
+	const result = await downloadLegacyBackupData({
+		code: codeResult.code,
+		ip,
+	});
 
-	return readLegacyBackupActionResult(response) as Promise<
-		TLegacyBackupActionResult<TData>
-	>;
+	return readLegacyBackupDownloadResult<TData>(result);
 }
 
 export async function uploadLegacyBackupAction(
@@ -121,12 +120,13 @@ export async function uploadLegacyBackupAction(
 ): Promise<TLegacyBackupActionResult<IBackupUploadSuccessResponse>> {
 	const request = await createCurrentRequest('/api/v1/backups', {
 		body: JSON.stringify(body),
-		headers: { 'Content-Type': FILE_TYPE_JSON },
+		headers: { 'Content-Type': 'application/json' },
 		method: 'POST',
 	});
-	const response = await POST(request);
+	const result = await uploadLegacyBackupData({
+		body,
+		meta: getLegacyBackupRequestMeta(request),
+	});
 
-	return readLegacyBackupActionResult(response) as Promise<
-		TLegacyBackupActionResult<IBackupUploadSuccessResponse>
-	>;
+	return readLegacyBackupResult<IBackupUploadSuccessResponse>(result);
 }

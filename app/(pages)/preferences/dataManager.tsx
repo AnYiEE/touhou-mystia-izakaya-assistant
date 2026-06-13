@@ -15,7 +15,6 @@ import { usePathname, useThrottle } from '@/hooks';
 
 import { Textarea } from '@heroui/input';
 import { Tab, Tabs } from '@heroui/tabs';
-
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faKey } from '@fortawesome/free-solid-svg-icons';
 
@@ -39,6 +38,7 @@ import {
 } from '@/components/customerRareTutorial';
 import Heading from '@/components/heading';
 import TimeAgo from '@/components/timeAgo';
+
 import LegacyBackupImport from '@/lib/account/client/components/legacyBackupImport';
 import {
 	LEGACY_BACKUP_FREQUENCY_TTL,

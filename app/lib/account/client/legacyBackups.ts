@@ -1,9 +1,10 @@
-export { FREQUENCY_TTL as LEGACY_BACKUP_FREQUENCY_TTL } from '@/api/v1/backups/constants';
+export { LEGACY_BACKUP_FREQUENCY_TTL } from '@/lib/account/legacyBackup/shared';
 import type {
 	IBackupCheckSuccessResponse,
 	IBackupUploadBody,
 	IBackupUploadSuccessResponse,
-} from '@/api/v1/backups/types';
+	ILegacyBackupErrorPayload,
+} from '@/lib/account/legacyBackup/shared';
 import {
 	type TLegacyBackupActionResult,
 	deleteLegacyBackupAction,
@@ -12,33 +13,14 @@ import {
 	uploadLegacyBackupAction,
 } from '@/lib/account/actions/legacyBackups';
 
-class LegacyBackupClientError extends Error {
-	readonly data: Record<string, unknown>;
-	readonly status: number;
-
-	constructor({
-		data,
-		message,
-		status,
-	}: {
-		data: Record<string, unknown>;
-		message: string;
-		status: number;
-	}) {
-		super(message);
-		this.name = 'LegacyBackupClientError';
-		this.data = data;
-		this.status = status;
-	}
-}
-
 function readLegacyBackupActionResult<T>(result: TLegacyBackupActionResult<T>) {
 	if (result.status === 'error') {
-		throw new LegacyBackupClientError({
-			data: result.data ?? { message: result.message },
+		// eslint-disable-next-line @typescript-eslint/only-throw-error
+		throw {
+			data: { message: result.message, status: 'error', ...result.data },
 			message: result.message,
 			status: result.httpStatus,
-		});
+		} satisfies ILegacyBackupErrorPayload;
 	}
 
 	return result.data;

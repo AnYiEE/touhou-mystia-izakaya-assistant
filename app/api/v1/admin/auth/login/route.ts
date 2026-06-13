@@ -6,13 +6,13 @@ import {
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
 	readJsonBodyResult,
-} from '@/api/v1/accountRouteUtils';
+} from '@/lib/account/server/routeResponses';
+import { checkAdminFeatureResponse } from '@/lib/account/server/adminRouteResponses';
+import { type IAdminLoginBody } from '@/lib/account/shared/types';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/api/v1/utils';
-import { checkAdminFeatureResponse } from '@/api/v1/admin/utils';
-import { type IAdminLoginBody } from '@/lib/account/shared/types';
+} from '@/lib/api/routeResponses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

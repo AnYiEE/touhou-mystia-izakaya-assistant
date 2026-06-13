@@ -5,18 +5,13 @@ import {
 	checkAccountFeatureResponse,
 	checkAccountRateLimitResponse,
 	checkSameOriginResponse,
-} from '@/api/v1/accountRouteUtils';
+} from '@/lib/account/server/routeResponses';
 import {
 	authenticateAdminRequest,
 	checkAdminCsrfResponse,
 	checkAdminFeatureResponse,
 	createAdminAuthErrorResponse,
-} from '@/api/v1/admin/utils';
-
-export {
-	parseAdminSsoClientCreateBody,
-	parseAdminSsoClientUpdateBody,
-} from '@/lib/account/server/adminSsoClientPayload';
+} from '@/lib/account/server/adminRouteResponses';
 
 export async function checkAdminSsoClientRequest(
 	request: NextRequest,

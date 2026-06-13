@@ -19,6 +19,7 @@ import {
 	getTrustedRequestIp,
 } from './request';
 import { ACCOUNT_COOKIE_NAME_MAP } from '../shared/constants';
+import { createRetryAfterHeaders } from '@/lib/api/http';
 import { getLogSafeErrorCode } from '@/lib/logging';
 
 const ACCOUNT_RATE_LIMIT_OPTIONS = { limit: 20, windowMs: 60 * 1000 } as const;
@@ -60,10 +61,6 @@ function warnNoStableRateLimitKey(scope: string, now = Date.now()) {
 	console.warn('Account rate limit rejected request without stable key.', {
 		scope,
 	});
-}
-
-export function createRetryAfterHeaders(retryAfter: number) {
-	return { 'Retry-After': String(Math.max(0, retryAfter)) };
 }
 
 export async function checkAccountFeature(): Promise<TAccountGuardResult> {
