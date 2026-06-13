@@ -63,7 +63,7 @@ patchedDependencies:
     hash: dc11e42f0dbfe946ad562dc95a7c746324ea42f4b6b5bc8346f524dfed49c758
     path: patches/@heroui__use-image.patch
   next:
-    hash: 4e0ac9eb29367220beda91bd94165f283f5cb61385cb84adfa0493e620938aa7
+    hash: 2136f4944a02d5f9d6708276c096cbd28684ad461b2c60b38b17b94a94b49ae3
     path: patches/next.patch
 
 importers:
@@ -195,7 +195,7 @@ importers:
         version: 1.5.0
       next:
         specifier: ^15.5.19
-        version: 15.5.19(patch_hash=4e0ac9eb29367220beda91bd94165f283f5cb61385cb84adfa0493e620938aa7)(@babel/core@7.29.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.100.0)
+        version: 15.5.19(patch_hash=2136f4944a02d5f9d6708276c096cbd28684ad461b2c60b38b17b94a94b49ae3)(@babel/core@7.29.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.100.0)
       next-qrcode:
         specifier: ^2.5.1
         version: 2.5.1(react@19.2.7)
@@ -210,7 +210,7 @@ importers:
         version: 19.2.7(react@19.2.7)
       react-transition-progress:
         specifier: github:AnYiEE/react-transition-progress
-        version: https://codeload.github.com/AnYiEE/react-transition-progress/tar.gz/dc17185bdfd2b0453ea9da9293e9cdef0e57ecda(framer-motion@12.17.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(next@15.5.19(patch_hash=4e0ac9eb29367220beda91bd94165f283f5cb61385cb84adfa0493e620938aa7)(@babel/core@7.29.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.100.0))(react@19.2.7)
+        version: https://codeload.github.com/AnYiEE/react-transition-progress/tar.gz/dc17185bdfd2b0453ea9da9293e9cdef0e57ecda(framer-motion@12.17.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(next@15.5.19(patch_hash=2136f4944a02d5f9d6708276c096cbd28684ad461b2c60b38b17b94a94b49ae3)(@babel/core@7.29.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.100.0))(react@19.2.7)
       ua-parser-js:
         specifier: ^2.0.10
         version: 2.0.10
@@ -10722,7 +10722,7 @@ snapshots:
       qrcode: 1.5.4
       react: 19.2.7
 
-  next@15.5.19(patch_hash=4e0ac9eb29367220beda91bd94165f283f5cb61385cb84adfa0493e620938aa7)(@babel/core@7.29.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.100.0):
+  next@15.5.19(patch_hash=2136f4944a02d5f9d6708276c096cbd28684ad461b2c60b38b17b94a94b49ae3)(@babel/core@7.29.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.100.0):
     dependencies:
       '@next/env': 15.5.19
       '@swc/helpers': 0.5.15
@@ -11262,12 +11262,12 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  react-transition-progress@https://codeload.github.com/AnYiEE/react-transition-progress/tar.gz/dc17185bdfd2b0453ea9da9293e9cdef0e57ecda(framer-motion@12.17.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(next@15.5.19(patch_hash=4e0ac9eb29367220beda91bd94165f283f5cb61385cb84adfa0493e620938aa7)(@babel/core@7.29.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.100.0))(react@19.2.7):
+  react-transition-progress@https://codeload.github.com/AnYiEE/react-transition-progress/tar.gz/dc17185bdfd2b0453ea9da9293e9cdef0e57ecda(framer-motion@12.17.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(next@15.5.19(patch_hash=2136f4944a02d5f9d6708276c096cbd28684ad461b2c60b38b17b94a94b49ae3)(@babel/core@7.29.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.100.0))(react@19.2.7):
     dependencies:
       framer-motion: 12.17.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       react: 19.2.7
     optionalDependencies:
-      next: 15.5.19(patch_hash=4e0ac9eb29367220beda91bd94165f283f5cb61385cb84adfa0493e620938aa7)(@babel/core@7.29.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.100.0)
+      next: 15.5.19(patch_hash=2136f4944a02d5f9d6708276c096cbd28684ad461b2c60b38b17b94a94b49ae3)(@babel/core@7.29.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.100.0)
 
   react@19.2.7: {}
 
