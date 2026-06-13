@@ -41,6 +41,7 @@ export interface ISiteConfig {
 	isAccountFeatureClientEnabled: boolean;
 	isAnalytics: boolean;
 	isIcpFiling: boolean;
+	isExportMode: boolean;
 	nodeEnv: NodeJS.ProcessEnv['NODE_ENV'];
 	vercelEnv: NodeJS.ProcessEnv['NODE_ENV'] | undefined;
 	vercelSha: string | undefined;

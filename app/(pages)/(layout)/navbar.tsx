@@ -557,7 +557,13 @@ export default function Navbar() {
 				</Tooltip>
 			</NavbarContent>
 
-			<NavbarMenu className="px-10 pt-4">
+			<NavbarMenu
+				className={cn(
+					'top-[calc(var(--navbar-height)_+_var(--announcement-bar-offset))]',
+					'h-[calc(var(--safe-h-dvh)_-_var(--navbar-height)_-_var(--announcement-bar-offset))]',
+					'px-10 pt-4'
+				)}
+			>
 				{navMenuItems.map(({ href, label }, index) => {
 					const isActivated = href === basePathname;
 					return href === '/preferences' &&

@@ -15,6 +15,7 @@ const { host: baseURL } = new URL(process.env.BASE_URL ?? PACKAGE.homepage);
 const isOffline = checkOfflineEnv(process.env.OFFLINE);
 const isSelfHosted = checkEnvFlag(process.env.SELF_HOSTED);
 const isVercel = checkVercelEnv(process.env.VERCEL);
+const isExportMode = isOffline || (!isSelfHosted && !isVercel);
 
 const navItems = [
 	{ label: '首页', href: '/' },
@@ -133,6 +134,7 @@ export const siteConfig = {
 	analyticsSiteId: process.env.ANALYTICS_SITE_ID ?? '',
 	isAccountFeatureClientEnabled: isSelfHosted && !isOffline && !isVercel,
 	isAnalytics: Boolean(process.env.ANALYTICS_SITE_ID) && !isOffline,
+	isExportMode,
 	isIcpFiling: Boolean(process.env.ICP_FILING) && !isOffline,
 	nodeEnv: process.env.NODE_ENV,
 	vercelEnv: process.env.VERCEL_ENV,

@@ -120,6 +120,7 @@
 		"react": "^19.2.7",
 		"react-dom": "^19.2.7",
 		"react-transition-progress": "github:AnYiEE/react-transition-progress",
+		"sanitize-html": "^2.17.5",
 		"ua-parser-js": "^2.0.10",
 		"use-breakpoint": "^4.0.10",
 		"uuid": "^14.0.0"
@@ -141,6 +142,7 @@
 		"@types/node": "^24.13.2",
 		"@types/react": "^19.2.17",
 		"@types/react-dom": "^19.2.3",
+		"@types/sanitize-html": "^2.16.1",
 		"@types/serviceworker": "^0.0.197",
 		"@types/ua-parser-js": "^0.7.39",
 		"adm-zip": "^0.5.17",

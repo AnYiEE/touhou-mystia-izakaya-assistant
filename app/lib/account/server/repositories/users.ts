@@ -74,6 +74,28 @@ export async function findUserByUsernameNormalized(
 	);
 }
 
+export async function listUsersByIds(ids: Array<TUser['id']>) {
+	const uniqueIds = [...new Set(ids)];
+	if (uniqueIds.length === 0) {
+		return [];
+	}
+
+	const db = await getAccountDatabase();
+	const chunkSize = 500;
+	const users: TUser[] = [];
+	for (let index = 0; index < uniqueIds.length; index += chunkSize) {
+		users.push(
+			...(await db
+				.selectFrom(TABLE_NAME)
+				.selectAll()
+				.where('id', 'in', uniqueIds.slice(index, index + chunkSize))
+				.execute())
+		);
+	}
+
+	return users;
+}
+
 export async function listUsers({
 	limit,
 	offset,

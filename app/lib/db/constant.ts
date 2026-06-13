@@ -26,6 +26,9 @@ export function getConfiguredSqliteDatabasePath(
 }
 
 export const TABLE_NAME_MAP = {
+	announcement: 'announcements',
+	announcementDismissal: 'announcement_dismissals',
+	announcementVersion: 'announcement_versions',
 	backupCodeLock: 'backup_code_locks',
 	backupFileRecord: 'backup_files',
 	backupImportRecord: 'backup_imports',

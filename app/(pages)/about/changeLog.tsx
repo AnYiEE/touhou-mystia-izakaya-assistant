@@ -163,6 +163,7 @@ const changelog = [
 			'新增：更新法律声明。',
 		],
 	},
+	{ version: 'v2.1', changes: ['新增：全站顶部通知功能。'] },
 ] as const satisfies Array<{
 	version: `v${string}`;
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;

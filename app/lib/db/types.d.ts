@@ -6,9 +6,50 @@ import {
 } from 'kysely';
 
 import { type TUserStatus } from '@/lib/account/shared/types';
+import {
+	type TAnnouncementAudience,
+	type TAnnouncementLevel,
+	type TAnnouncementVersionAction,
+} from '@/lib/announcements/shared/types';
 import { type TSyncNamespace } from '@/lib/account/sync';
 
 export type TSsoCallbackEvent = 'user_deleted' | 'user_disabled';
+
+interface ITableAnnouncement {
+	audience: TAnnouncementAudience;
+	created_at: number;
+	deleted_at: number | null;
+	dismissible: number;
+	enabled: number;
+	ends_at: number | null;
+	html: string;
+	id: string;
+	level: TAnnouncementLevel;
+	priority: number;
+	revision: number;
+	starts_at: number | null;
+	target_user_ids_json: string;
+	title: string;
+	updated_at: number;
+}
+
+interface ITableAnnouncementDismissal {
+	announcement_id: string;
+	announcement_updated_at: number;
+	dismissed_at: number;
+	user_id: string;
+}
+
+interface ITableAnnouncementVersion {
+	action: TAnnouncementVersionAction;
+	announcement_id: string;
+	changed_at: number;
+	changed_by: string | null;
+	changed_fields_json: string;
+	id: Generated<number>;
+	revision: number;
+	snapshot_json: string;
+}
 
 interface ITableBackupFileRecord {
 	code: string;
@@ -147,6 +188,19 @@ export type TSsoCallbackQueue = Selectable<ITableSsoCallbackQueue>;
 export type TSsoCallbackQueueNew = Insertable<ITableSsoCallbackQueue>;
 export type TSsoCallbackQueueUpdate = Updateable<ITableSsoCallbackQueue>;
 
+export type TAnnouncement = Selectable<ITableAnnouncement>;
+export type TAnnouncementNew = Insertable<ITableAnnouncement>;
+export type TAnnouncementUpdate = Updateable<ITableAnnouncement>;
+
+export type TAnnouncementDismissal = Selectable<ITableAnnouncementDismissal>;
+export type TAnnouncementDismissalNew = Insertable<ITableAnnouncementDismissal>;
+export type TAnnouncementDismissalUpdate =
+	Updateable<ITableAnnouncementDismissal>;
+
+export type TAnnouncementVersion = Selectable<ITableAnnouncementVersion>;
+export type TAnnouncementVersionNew = Insertable<ITableAnnouncementVersion>;
+export type TAnnouncementVersionUpdate = Updateable<ITableAnnouncementVersion>;
+
 export type TSsoClient = Selectable<ITableSsoClient>;
 export type TSsoClientNew = Insertable<ITableSsoClient>;
 export type TSsoClientUpdate = Updateable<ITableSsoClient>;
@@ -164,6 +218,9 @@ export type TUserStateNew = Insertable<ITableUserState>;
 export type TUserStateUpdate = Updateable<ITableUserState>;
 
 export interface TDatabase {
+	announcement_dismissals: ITableAnnouncementDismissal;
+	announcement_versions: ITableAnnouncementVersion;
+	announcements: ITableAnnouncement;
 	backup_code_locks: ITableBackupCodeLock;
 	backup_files: ITableBackupFileRecord;
 	backup_imports: ITableBackupImportRecord;

@@ -1,0 +1,331 @@
+'use server';
+
+import { cookies } from 'next/headers';
+
+import { createCurrentRequest } from '@/lib/account/server/currentRequest';
+import {
+	type TAccountGuardResult,
+	authenticateAdminSession,
+	checkAccountCookieSecurity,
+	checkAccountFeature,
+	checkAccountRateLimit,
+	checkAdminCsrf,
+	checkAdminFeature,
+	checkSameOrigin,
+} from '@/lib/account/server/guards';
+import { ACCOUNT_COOKIE_NAME_MAP } from '@/lib/account/shared/constants';
+import { parseAdminAnnouncementBody } from '@/lib/announcements/server/adminPayload';
+import {
+	ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP,
+	type TAnnouncementServiceError,
+	archiveAdminAnnouncement,
+	createAdminAnnouncement,
+	getAdminAnnouncement,
+	listAdminAnnouncementVersions,
+	listAdminAnnouncements,
+	previewAnnouncement,
+	restoreAdminAnnouncement,
+	updateAdminAnnouncement,
+} from '@/lib/announcements/server/service';
+import type {
+	IAdminAnnouncementListData,
+	IAdminAnnouncementMutationData,
+	IAdminAnnouncementPreviewData,
+	IAdminAnnouncementVersionListData,
+} from '@/lib/announcements/shared/types';
+
+export type TAdminAnnouncementActionResult<TData = Record<string, unknown>> =
+	| { data: TData; status: 'ok' }
+	| {
+			data?: Record<string, unknown>;
+			httpStatus: number;
+			message: string;
+			status: 'error';
+	  };
+
+type TAdminAnnouncementActionScope =
+	| 'admin-archive-announcement'
+	| 'admin-create-announcement'
+	| 'admin-list-announcement-versions'
+	| 'admin-list-announcements'
+	| 'admin-preview-announcement'
+	| 'admin-restore-announcement'
+	| 'admin-update-announcement';
+
+interface IAdminAnnouncementAuthContext {
+	username: string;
+}
+
+function createActionError(
+	message: string,
+	httpStatus: number,
+	data?: Record<string, unknown>
+): Extract<TAdminAnnouncementActionResult, { status: 'error' }> {
+	return data === undefined
+		? { httpStatus, message, status: 'error' }
+		: { data, httpStatus, message, status: 'error' };
+}
+
+function createGuardActionError(
+	result: Extract<TAccountGuardResult, { status: 'error' }>
+) {
+	return createActionError(result.message, result.httpStatus, result.data);
+}
+
+function createServiceActionError(error: TAnnouncementServiceError) {
+	return createActionError(
+		error,
+		ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[error]
+	);
+}
+
+async function readAdminSessionToken() {
+	const cookieStore = await cookies();
+
+	return cookieStore.get(ACCOUNT_COOKIE_NAME_MAP.adminSession)?.value ?? null;
+}
+
+async function checkAdminAnnouncementActionRequest(
+	scope: TAdminAnnouncementActionScope,
+	csrfToken?: unknown
+): Promise<
+	| ({ status: 'ok' } & IAdminAnnouncementAuthContext)
+	| Extract<TAdminAnnouncementActionResult, { status: 'error' }>
+> {
+	const accountFeatureResult = await checkAccountFeature();
+	if (accountFeatureResult.status === 'error') {
+		return createGuardActionError(accountFeatureResult);
+	}
+
+	const adminFeatureResult = checkAdminFeature();
+	if (adminFeatureResult.status === 'error') {
+		return createGuardActionError(adminFeatureResult);
+	}
+
+	const request = await createCurrentRequest('/admin/announcements/action');
+	const sameOriginResult = checkSameOrigin(request);
+	if (sameOriginResult.status === 'error') {
+		return createGuardActionError(sameOriginResult);
+	}
+
+	const cookieSecurityResult = checkAccountCookieSecurity(request);
+	if (cookieSecurityResult.status === 'error') {
+		return createGuardActionError(cookieSecurityResult);
+	}
+
+	const rateLimitResult = checkAccountRateLimit(request, scope);
+	if (rateLimitResult.status === 'error') {
+		return createGuardActionError(rateLimitResult);
+	}
+
+	const adminSessionToken = await readAdminSessionToken();
+	const adminAuthResult = authenticateAdminSession(adminSessionToken);
+	if (adminAuthResult.status === 'error') {
+		return createGuardActionError(adminAuthResult);
+	}
+
+	if (csrfToken !== undefined) {
+		if (typeof csrfToken !== 'string') {
+			return createActionError('forbidden', 403);
+		}
+
+		const csrfResult = checkAdminCsrf(
+			csrfToken,
+			adminAuthResult.data.token
+		);
+		if (csrfResult.status === 'error') {
+			return createGuardActionError(csrfResult);
+		}
+	}
+
+	return { status: 'ok', username: adminAuthResult.data.payload.username };
+}
+
+export async function listAdminAnnouncementsAction(
+	options: {
+		includeArchived?: boolean;
+		page?: number;
+		pageSize?: number;
+		query?: string;
+	} = {}
+): Promise<TAdminAnnouncementActionResult<IAdminAnnouncementListData>> {
+	const guard = await checkAdminAnnouncementActionRequest(
+		'admin-list-announcements'
+	);
+	if (guard.status === 'error') {
+		return guard;
+	}
+
+	return { data: await listAdminAnnouncements(options), status: 'ok' };
+}
+
+export async function getAdminAnnouncementAction(
+	id: unknown
+): Promise<TAdminAnnouncementActionResult<IAdminAnnouncementMutationData>> {
+	const guard = await checkAdminAnnouncementActionRequest(
+		'admin-list-announcements'
+	);
+	if (guard.status === 'error') {
+		return guard;
+	}
+	if (typeof id !== 'string') {
+		return createActionError('invalid-object-structure', 400);
+	}
+
+	const result = await getAdminAnnouncement(id);
+	if (result.status === 'error') {
+		return createServiceActionError(result.error);
+	}
+
+	return { data: result.data, status: 'ok' };
+}
+
+export async function previewAnnouncementAction(
+	body: unknown,
+	csrfToken: unknown
+): Promise<TAdminAnnouncementActionResult<IAdminAnnouncementPreviewData>> {
+	const guard = await checkAdminAnnouncementActionRequest(
+		'admin-preview-announcement',
+		csrfToken
+	);
+	if (guard.status === 'error') {
+		return guard;
+	}
+
+	const parsedBody = parseAdminAnnouncementBody(body);
+	if (parsedBody === null) {
+		return createActionError('invalid-object-structure', 400);
+	}
+
+	const result = previewAnnouncement(parsedBody);
+	if (result.status === 'error') {
+		return createServiceActionError(result.error);
+	}
+
+	return { data: result.data, status: 'ok' };
+}
+
+export async function createAnnouncementAction(
+	body: unknown,
+	csrfToken: unknown
+): Promise<TAdminAnnouncementActionResult<IAdminAnnouncementMutationData>> {
+	const guard = await checkAdminAnnouncementActionRequest(
+		'admin-create-announcement',
+		csrfToken
+	);
+	if (guard.status === 'error') {
+		return guard;
+	}
+
+	const parsedBody = parseAdminAnnouncementBody(body);
+	if (parsedBody === null) {
+		return createActionError('invalid-object-structure', 400);
+	}
+
+	const result = await createAdminAnnouncement(parsedBody, guard.username);
+	if (result.status === 'error') {
+		return createServiceActionError(result.error);
+	}
+
+	return { data: result.data, status: 'ok' };
+}
+
+export async function updateAnnouncementAction(
+	id: unknown,
+	body: unknown,
+	csrfToken: unknown
+): Promise<TAdminAnnouncementActionResult<IAdminAnnouncementMutationData>> {
+	const guard = await checkAdminAnnouncementActionRequest(
+		'admin-update-announcement',
+		csrfToken
+	);
+	if (guard.status === 'error') {
+		return guard;
+	}
+	if (typeof id !== 'string') {
+		return createActionError('invalid-object-structure', 400);
+	}
+
+	const parsedBody = parseAdminAnnouncementBody(body);
+	if (parsedBody?.id !== id) {
+		return createActionError('invalid-object-structure', 400);
+	}
+
+	const result = await updateAdminAnnouncement(
+		id,
+		parsedBody,
+		guard.username
+	);
+	if (result.status === 'error') {
+		return createServiceActionError(result.error);
+	}
+
+	return { data: result.data, status: 'ok' };
+}
+
+export async function archiveAnnouncementAction(
+	id: unknown,
+	csrfToken: unknown
+): Promise<TAdminAnnouncementActionResult<IAdminAnnouncementMutationData>> {
+	const guard = await checkAdminAnnouncementActionRequest(
+		'admin-archive-announcement',
+		csrfToken
+	);
+	if (guard.status === 'error') {
+		return guard;
+	}
+	if (typeof id !== 'string') {
+		return createActionError('invalid-object-structure', 400);
+	}
+
+	const result = await archiveAdminAnnouncement(id, guard.username);
+	if (result.status === 'error') {
+		return createServiceActionError(result.error);
+	}
+
+	return { data: result.data, status: 'ok' };
+}
+
+export async function restoreAnnouncementAction(
+	id: unknown,
+	csrfToken: unknown
+): Promise<TAdminAnnouncementActionResult<IAdminAnnouncementMutationData>> {
+	const guard = await checkAdminAnnouncementActionRequest(
+		'admin-restore-announcement',
+		csrfToken
+	);
+	if (guard.status === 'error') {
+		return guard;
+	}
+	if (typeof id !== 'string') {
+		return createActionError('invalid-object-structure', 400);
+	}
+
+	const result = await restoreAdminAnnouncement(id, guard.username);
+	if (result.status === 'error') {
+		return createServiceActionError(result.error);
+	}
+
+	return { data: result.data, status: 'ok' };
+}
+
+export async function listAnnouncementVersionsAction(
+	id: unknown
+): Promise<TAdminAnnouncementActionResult<IAdminAnnouncementVersionListData>> {
+	const guard = await checkAdminAnnouncementActionRequest(
+		'admin-list-announcement-versions'
+	);
+	if (guard.status === 'error') {
+		return guard;
+	}
+	if (typeof id !== 'string') {
+		return createActionError('invalid-object-structure', 400);
+	}
+
+	const result = await listAdminAnnouncementVersions(id);
+	if (result.status === 'error') {
+		return createServiceActionError(result.error);
+	}
+
+	return { data: result.data, status: 'ok' };
+}

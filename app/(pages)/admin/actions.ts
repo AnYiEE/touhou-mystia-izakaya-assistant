@@ -25,6 +25,7 @@ import {
 	USER_STATUS_MAP,
 } from '@/lib/account/shared/constants';
 import {
+	type IAccountUserProfile,
 	type IAdminLoginBody,
 	type IAdminMeData,
 	type IAdminSsoClientDetailData,
@@ -50,6 +51,7 @@ type TAdminActionScope =
 	| 'admin-logout'
 	| 'admin-me'
 	| 'admin-list-users'
+	| 'admin-get-users-by-ids'
 	| 'admin-list-sso-clients'
 	| 'admin-sso-client-detail';
 
@@ -354,6 +356,34 @@ export async function listAdminUsersAction({
 			total_pages: Math.ceil(totalCount / DEFAULT_PAGE_SIZE),
 			users: users.map(userModule.createAccountUserProfile),
 		},
+		status: 'ok',
+	};
+}
+
+export async function getAdminUsersByIdsAction(
+	ids: unknown
+): Promise<TAdminActionResult<{ users: IAccountUserProfile[] }>> {
+	if (!Array.isArray(ids) || ids.some((id) => typeof id !== 'string')) {
+		return createActionError('invalid-object-structure', 400);
+	}
+	const userIds = ids as string[];
+
+	const context = await checkAdminAuthenticatedActionRequest(
+		'admin-get-users-by-ids',
+		'/admin/action'
+	);
+	if (context.status === 'error') {
+		return context;
+	}
+
+	const [usersModule, userModule] = await Promise.all([
+		import('@/lib/account/server/repositories/users'),
+		import('@/lib/account/server/user'),
+	]);
+	const users = await usersModule.listUsersByIds(userIds);
+
+	return {
+		data: { users: users.map(userModule.createAccountUserProfile) },
 		status: 'ok',
 	};
 }

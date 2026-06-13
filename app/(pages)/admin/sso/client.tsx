@@ -4,6 +4,7 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+	faBullhorn,
 	faClock,
 	faPlus,
 	faRotate,
@@ -246,6 +247,11 @@ export default function AdminSsoClientsClient({
 		}
 	}, [admin, refreshClients]);
 
+	const handleLeaveSsoClientList = useCallback(() => {
+		requestIdRef.current += 1;
+		setIsLoading(false);
+	}, []);
+
 	if (isAuthLoading) {
 		return (
 			<AdminShell>
@@ -308,8 +314,24 @@ export default function AdminSsoClientsClient({
 								/>
 							}
 							variant="flat"
+							onPress={handleLeaveSsoClientList}
 						>
 							用户管理
+						</Button>
+						<Button
+							as={Link}
+							animationUnderline={false}
+							href="/admin/announcements"
+							startContent={
+								<FontAwesomeIcon
+									icon={faBullhorn}
+									className="w-3.5"
+								/>
+							}
+							variant="flat"
+							onPress={handleLeaveSsoClientList}
+						>
+							站点通知
 						</Button>
 						<Button
 							isLoading={isLoading}

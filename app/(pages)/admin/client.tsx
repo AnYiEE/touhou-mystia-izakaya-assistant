@@ -10,10 +10,11 @@ import {
 	useState,
 } from 'react';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
 	faArrowRightFromBracket,
+	faBullhorn,
 	faChevronDown,
 	faClock,
 	faKey,
@@ -567,6 +568,8 @@ export default function AdminPageClient({
 	initialData: IAdminPageInitialData;
 }) {
 	const router = useRouter();
+	const pathname = usePathname();
+	const isAdminListPath = pathname === '/admin';
 
 	const [admin, setAdmin] = useState<IAdminMeData | null>(initialData.admin);
 	const [adminAuthStatus, setAdminAuthStatus] = useState<TAdminAuthStatus>(
@@ -587,13 +590,34 @@ export default function AdminPageClient({
 	const [isUsersLoading, setIsUsersLoading] = useState(false);
 
 	const adminAuthRequestIdRef = useRef(0);
+	const isAdminListPathRef = useRef(isAdminListPath);
 	const isListStateInitializedRef = useRef(false);
 	const isServerInitialUsersRef = useRef(initialData.users !== null);
+	const lastServerRenderedAtRef = useRef(initialData.renderedAt);
+	const queryInputTimeoutRef = useRef<ReturnType<
+		typeof globalThis.setTimeout
+	> | null>(null);
+	const syncedServerQueryInputRef = useRef<string | null>(null);
 	const refreshUsersRequestIdRef = useRef(0);
 	const trimmedUsername = username.trim();
 
+	const cancelPendingQuerySync = useCallback(() => {
+		if (queryInputTimeoutRef.current === null) {
+			return;
+		}
+
+		globalThis.clearTimeout(queryInputTimeoutRef.current);
+		queryInputTimeoutRef.current = null;
+	}, []);
+
 	const refreshUsers = useCallback(
 		(overrideQuery?: string, overridePage?: number) => {
+			if (!isAdminListPathRef.current) {
+				refreshUsersRequestIdRef.current += 1;
+				setIsUsersLoading(false);
+				return;
+			}
+
 			const requestId = refreshUsersRequestIdRef.current + 1;
 			refreshUsersRequestIdRef.current = requestId;
 
@@ -821,6 +845,11 @@ export default function AdminPageClient({
 		}
 	}, [page, query, queryInput, refreshUsers]);
 
+	const handleLeaveUserList = useCallback(() => {
+		refreshUsersRequestIdRef.current += 1;
+		setIsUsersLoading(false);
+	}, []);
+
 	const handleOpenUserDetail = useCallback(() => {
 		trackEvent(
 			trackEvent.category.click,
@@ -859,26 +888,107 @@ export default function AdminPageClient({
 		[page, pageInput, users?.total_pages]
 	);
 
+	useEffect(
+		() => () => {
+			cancelPendingQuerySync();
+			refreshUsersRequestIdRef.current += 1;
+		},
+		[cancelPendingQuerySync]
+	);
+
 	useEffect(() => {
+		if (lastServerRenderedAtRef.current !== initialData.renderedAt) {
+			lastServerRenderedAtRef.current = initialData.renderedAt;
+			isServerInitialUsersRef.current = initialData.users !== null;
+			syncedServerQueryInputRef.current = initialData.query;
+			refreshUsersRequestIdRef.current += 1;
+
+			cancelPendingQuerySync();
+			setAdmin(initialData.admin);
+			setAdminAuthStatus(initialData.authStatus);
+			setUsers(initialData.users);
+			setMessage(initialData.message);
+			setPage(initialData.page);
+			setPageInput(String(initialData.page));
+			setQuery(initialData.query);
+			setQueryInput(initialData.query);
+			setStatus(initialData.status);
+			setIsUsersLoading(false);
+
+			if (initialData.admin !== null) {
+				accountStore.shared.adminCsrfToken.set(
+					initialData.admin.csrf_token
+				);
+			}
+		}
+	}, [
+		cancelPendingQuerySync,
+		initialData.admin,
+		initialData.authStatus,
+		initialData.message,
+		initialData.page,
+		initialData.query,
+		initialData.renderedAt,
+		initialData.status,
+		initialData.users,
+	]);
+
+	useEffect(() => {
+		isAdminListPathRef.current = isAdminListPath;
+
+		if (!isAdminListPath) {
+			cancelPendingQuerySync();
+			refreshUsersRequestIdRef.current += 1;
+			setIsUsersLoading(false);
+			return;
+		}
+
+		setIsUsersLoading(false);
+	}, [cancelPendingQuerySync, isAdminListPath]);
+
+	useEffect(() => {
+		if (!isAdminListPathRef.current) {
+			return;
+		}
+		if (syncedServerQueryInputRef.current === queryInput) {
+			syncedServerQueryInputRef.current = null;
+			return;
+		}
+		syncedServerQueryInputRef.current = null;
+
 		if (!isListStateInitializedRef.current) {
 			isListStateInitializedRef.current = true;
 			return;
 		}
 
-		const timeoutId = globalThis.setTimeout(() => {
+		queryInputTimeoutRef.current = globalThis.setTimeout(() => {
+			queryInputTimeoutRef.current = null;
+			if (!isAdminListPathRef.current) {
+				return;
+			}
+
 			setPage(1);
 			setQuery(queryInput);
 		}, 300);
 
 		return () => {
-			globalThis.clearTimeout(timeoutId);
+			cancelPendingQuerySync();
 		};
-	}, [queryInput]);
+	}, [cancelPendingQuerySync, queryInput]);
 
 	useEffect(() => {
-		router.replace(getAdminListHref({ page, query, status }), {
-			scroll: false,
-		});
+		if (!isAdminListPathRef.current) {
+			return;
+		}
+
+		const nextHref = getAdminListHref({ page, query, status });
+		const currentHref = `${globalThis.location.pathname}${globalThis.location.search}`;
+
+		if (currentHref === nextHref) {
+			return;
+		}
+
+		router.replace(nextHref, { scroll: false });
 	}, [page, query, router, status]);
 
 	useEffect(() => {
@@ -1004,6 +1114,21 @@ export default function AdminPageClient({
 						<Button
 							as={Link}
 							animationUnderline={false}
+							href="/admin/announcements"
+							startContent={
+								<FontAwesomeIcon
+									icon={faBullhorn}
+									className="w-3.5"
+								/>
+							}
+							variant="flat"
+							onPress={handleLeaveUserList}
+						>
+							站点通知
+						</Button>
+						<Button
+							as={Link}
+							animationUnderline={false}
 							href="/admin/sso"
 							startContent={
 								<FontAwesomeIcon
@@ -1012,6 +1137,7 @@ export default function AdminPageClient({
 								/>
 							}
 							variant="flat"
+							onPress={handleLeaveUserList}
 						>
 							SSO客户端
 						</Button>

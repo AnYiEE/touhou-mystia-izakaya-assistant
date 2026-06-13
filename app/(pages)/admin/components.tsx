@@ -105,7 +105,9 @@ export const AdminHeader = memo<IAdminHeaderProps>(function AdminHeader({
 			classNames={{
 				base: cn(
 					'flex flex-col gap-3 space-y-0 p-4 lg:flex-row lg:items-center lg:justify-between',
-					{ 'bg-content1/40 backdrop-blur': isHighAppearance }
+					isHighAppearance
+						? 'bg-content1/40 backdrop-blur'
+						: 'bg-content1/60 dark:bg-content1/50'
 				),
 			}}
 		>
@@ -150,9 +152,13 @@ export const AdminPanel = memo<IAdminPanelProps>(function AdminPanel({
 			fullWidth
 			shadow="sm"
 			classNames={{
-				base: cn('p-4', className, {
-					'bg-content1/40 backdrop-blur': isHighAppearance,
-				}),
+				base: cn(
+					'p-4',
+					isHighAppearance
+						? 'bg-content1/40 backdrop-blur'
+						: 'bg-content1/60 dark:bg-content1/50',
+					className
+				),
 			}}
 		>
 			{children}

@@ -12,6 +12,7 @@ import Providers, { AddHighAppearance } from '@/providers';
 import Footer from '@/(pages)/(layout)/footer';
 import Navbar from '@/(pages)/(layout)/navbar';
 import Analytics from '@/components/analytics';
+import AnnouncementBar from '@/components/announcementBar';
 import ErrorBoundary from '@/components/errorBoundary';
 
 import { config as fontawesomeConfig } from '@fortawesome/fontawesome-svg-core';
@@ -140,6 +141,7 @@ export default function RootLayout({ children }: PropsWithChildren<IProps>) {
 				<ErrorBoundary>
 					<Providers locale={locale}>
 						<div className="flex min-h-dvh-safe flex-col">
+							<AnnouncementBar />
 							<Navbar />
 							<main className="container mx-auto grid max-w-7xl grow px-6 py-8 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
 								<div id="modal-portal-container" />
