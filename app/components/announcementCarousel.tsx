@@ -2,6 +2,8 @@
 
 import {
 	type CSSProperties,
+	type FocusEvent as ReactFocusEvent,
+	type PointerEvent as ReactPointerEvent,
 	memo,
 	useCallback,
 	useEffect,
@@ -51,6 +53,7 @@ interface IAnnouncementProgressStyle extends CSSProperties {
 
 interface IAnnouncementContentProps {
 	className?: string;
+	isMarqueeDisabled?: boolean;
 	isPaused?: boolean;
 	item: IAnnouncementPublicItem;
 	isMarqueeLooping?: boolean;
@@ -61,6 +64,7 @@ interface IAnnouncementContentProps {
 const AnnouncementContent = memo<IAnnouncementContentProps>(
 	function AnnouncementContent({
 		className,
+		isMarqueeDisabled,
 		isMarqueeLooping,
 		isPaused,
 		item,
@@ -88,6 +92,9 @@ const AnnouncementContent = memo<IAnnouncementContentProps>(
 				<div className="min-w-0 flex-1 overflow-hidden">
 					<AnnouncementHtml
 						html={item.html}
+						{...(isMarqueeDisabled === undefined
+							? null
+							: { isMarqueeDisabled })}
 						{...(isMarqueeLooping === undefined
 							? null
 							: { isLooping: isMarqueeLooping })}
@@ -148,6 +155,7 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 	const csrfToken = accountStore.shared.csrfToken.use();
 	const accountUser = accountStore.shared.user.use();
 	const rootRef = useRef<HTMLElement>(null);
+	const lastPointerInteractionAtRef = useRef(0);
 	const autoRotateTimerRef = useRef<ReturnType<
 		typeof globalThis.setTimeout
 	> | null>(null);
@@ -295,7 +303,7 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 
 	useEffect(() => {
 		setDisplayedMarqueeMetrics(null);
-	}, [displayedToken]);
+	}, [displayedToken, itemCount]);
 
 	useEffect(() => {
 		if (itemCount === 0) {
@@ -425,7 +433,6 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 			}
 
 			clearAutoRotateTimer();
-			setIsPaused(true);
 			setTransitionDirection(direction);
 
 			const sourceIndex = transitionIndexes?.toIndex ?? displayIndex;
@@ -473,6 +480,9 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 		}
 
 		const dismissedItem = visualItem;
+		clearAutoRotateTimer();
+		setIsPaused(false);
+		setDisplayedMarqueeMetrics(null);
 		writeDismissedCookie(dismissedItem.dismissed_token);
 		setItems((currentItems) => {
 			const nextItems = currentItems.filter(
@@ -516,24 +526,58 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 					console.warn('dismiss announcement failed', error);
 				});
 		}
-	}, [accountUser, csrfToken, visualItem, writeDismissedCookie]);
+	}, [
+		accountUser,
+		clearAutoRotateTimer,
+		csrfToken,
+		visualItem,
+		writeDismissedCookie,
+	]);
+
+	const markPointerInteraction = useCallback(
+		(event: ReactPointerEvent<HTMLElement>) => {
+			lastPointerInteractionAtRef.current = Date.now();
+			if (event.pointerType !== 'mouse') {
+				setIsPaused(false);
+			}
+		},
+		[]
+	);
+
+	const handleFocus = useCallback((event: ReactFocusEvent<HTMLElement>) => {
+		const targetElement = event.target;
+		if (
+			Date.now() - lastPointerInteractionAtRef.current < 2000 ||
+			!(targetElement instanceof Element) ||
+			!targetElement.matches(':focus-visible')
+		) {
+			return;
+		}
+
+		setIsPaused(true);
+	}, []);
 
 	const rootHandlers = useMemo(
 		() => ({
 			onBlur: () => {
 				setIsPaused(false);
 			},
-			onFocus: () => {
-				setIsPaused(true);
+			onFocus: handleFocus,
+			onPointerCancel: markPointerInteraction,
+			onPointerDown: markPointerInteraction,
+			onPointerEnter: (event: ReactPointerEvent<HTMLElement>) => {
+				if (event.pointerType === 'mouse') {
+					setIsPaused(true);
+				}
 			},
-			onMouseEnter: () => {
-				setIsPaused(true);
+			onPointerLeave: (event: ReactPointerEvent<HTMLElement>) => {
+				if (event.pointerType === 'mouse') {
+					setIsPaused(false);
+				}
 			},
-			onMouseLeave: () => {
-				setIsPaused(false);
-			},
+			onPointerUp: markPointerInteraction,
 		}),
-		[]
+		[handleFocus, markPointerInteraction]
 	);
 
 	if (displayedItem === null || visualItem === null || levelMeta === null) {
@@ -550,6 +594,9 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 		transitionIndexes?.direction === 'previous'
 			? 'announcement-slide-out-to-bottom'
 			: 'announcement-slide-out-to-top';
+	const displayedMarqueeMode =
+		itemCount === 1 ? 'single-loop' : 'rotating-loop';
+	const displayedContentKey = `${displayedToken ?? 'empty'}:${displayedMarqueeMode}`;
 
 	return (
 		<section
@@ -561,7 +608,6 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 				levelMeta.rootClassName,
 				isHighAppearance && 'backdrop-saturate-125 backdrop-blur-sm'
 			)}
-			{...rootHandlers}
 		>
 			{shouldTransitionBackground ? (
 				<>
@@ -578,11 +624,15 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 				<AnnouncementBackgroundLayer item={visualItem} />
 			)}
 			<div className="relative z-10 mx-auto flex max-w-7xl items-center gap-2.5 py-1.5 pl-6 pr-4 sm:pr-6 md:pl-10 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
-				<div className="grid min-w-0 flex-1 overflow-hidden">
+				<div
+					className="grid min-w-0 flex-1 overflow-hidden"
+					{...rootHandlers}
+				>
 					{isTransitioning ? (
 						<>
 							<AnnouncementContent
 								item={transitionFromItem}
+								isMarqueeDisabled
 								className={cn(
 									slideOutClassName,
 									'col-start-1 row-start-1'
@@ -590,6 +640,7 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 							/>
 							<AnnouncementContent
 								item={transitionToItem}
+								isMarqueeDisabled
 								className={cn(
 									slideInClassName,
 									'col-start-1 row-start-1'
@@ -598,9 +649,10 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 						</>
 					) : (
 						<AnnouncementContent
+							key={displayedContentKey}
 							item={displayedItem}
 							className="col-start-1 row-start-1"
-							isMarqueeLooping={itemCount === 1}
+							isMarqueeLooping
 							isPaused={isPaused}
 							onMarqueeComplete={handleDisplayedMarqueeComplete}
 							onMarqueeMetricsChange={

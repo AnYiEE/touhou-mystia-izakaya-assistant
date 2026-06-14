@@ -37,6 +37,7 @@ interface IAnnouncementMarqueeStyle extends CSSProperties {
 interface IAnnouncementHtmlProps {
 	className?: string;
 	html: string;
+	isMarqueeDisabled?: boolean;
 	isPaused?: boolean;
 	isLooping?: boolean;
 	onMarqueeComplete?: () => void;
@@ -56,6 +57,7 @@ export const AnnouncementHtml = memo<IAnnouncementHtmlProps>(
 		className,
 		html,
 		isLooping,
+		isMarqueeDisabled,
 		isPaused,
 		onMarqueeComplete,
 		onMetricsChange,
@@ -79,6 +81,11 @@ export const AnnouncementHtml = memo<IAnnouncementHtmlProps>(
 		}, [isLooping, metrics.isOverflowing, onMarqueeComplete]);
 
 		useEffect(() => {
+			if (isMarqueeDisabled) {
+				setMetrics(emptyMarqueeMetrics);
+				return;
+			}
+
 			const contentElement = contentRef.current;
 			const trackElement = trackRef.current;
 			const viewportElement = viewportRef.current;
@@ -183,7 +190,7 @@ export const AnnouncementHtml = memo<IAnnouncementHtmlProps>(
 				globalThis.removeEventListener('resize', measureOverflow);
 				resizeObserver?.disconnect();
 			};
-		}, [html, isLooping]);
+		}, [html, isLooping, isMarqueeDisabled]);
 
 		const marqueeStyle: IAnnouncementMarqueeStyle | undefined =
 			metrics.isOverflowing
@@ -211,6 +218,7 @@ export const AnnouncementHtml = memo<IAnnouncementHtmlProps>(
 					ref={trackRef}
 					className={cn(
 						'announcement-marquee-track',
+						isMarqueeDisabled && 'max-w-full overflow-hidden',
 						metrics.isOverflowing &&
 							'announcement-marquee-track-running',
 						metrics.isOverflowing &&

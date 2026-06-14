@@ -178,17 +178,6 @@
 	.announcement-progress-paused {
 		animation-play-state: paused;
 	}
-
-	.announcement-marquee-viewport:focus-within,
-	.announcement-marquee-viewport:hover {
-		overflow: visible;
-	}
-
-	.announcement-marquee-viewport:focus-within
-		.announcement-marquee-track-running,
-	.announcement-marquee-viewport:hover .announcement-marquee-track-running {
-		animation-play-state: paused;
-	}
 }
 
 @keyframes announcement-marquee {
