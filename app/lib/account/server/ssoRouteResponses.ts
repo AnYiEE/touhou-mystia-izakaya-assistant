@@ -21,7 +21,7 @@ function createRateLimitCapacityGroup(scope: string, dimension: string) {
 	return createRateLimitKey([scope, dimension]);
 }
 
-export function checkSsoRateLimitResponse(
+export function checkSsoRateLimitRouteResponse(
 	request: NextRequest,
 	scope: string,
 	parts: ReadonlyArray<{ name: string; value: string }>
@@ -75,7 +75,7 @@ function createSecretDigest(secret: string) {
 	return createHash('sha256').update(secret).digest();
 }
 
-export function checkDispatchSecret(secret: string | null) {
+export function checkDispatchSecretStatus(secret: string | null) {
 	const configuredSecret = env.DISPATCH_SECRET;
 	if (typeof configuredSecret !== 'string' || configuredSecret.length === 0) {
 		return 'misconfigured';

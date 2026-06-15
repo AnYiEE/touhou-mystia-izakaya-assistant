@@ -5,17 +5,17 @@ import {
 	createAccountActionError as createActionError,
 } from '@/lib/account/actions/utils';
 import {
-	authenticateAccountRequest,
+	authenticateAccountFromRequest,
 	verifyAccountCsrfToken,
 } from '@/lib/account/server/auth';
 import { createCurrentRequest } from '@/lib/account/server/currentRequest';
 import { deleteSsoUserClientGrant } from '@/lib/account/server/repositories/sso';
 import {
 	type TAccountGuardResult,
-	checkAccountCookieSecurity,
-	checkAccountFeature,
-	checkAccountRateLimit,
-	checkSameOrigin,
+	checkAccountCookieSecurityGuard,
+	checkAccountFeatureGuard,
+	checkAccountRateLimitGuard,
+	checkSameOriginGuard,
 } from '@/lib/account/server/guards';
 import {
 	checkSsoClientId,
@@ -42,28 +42,28 @@ async function authenticateAccountSsoGrantActionRequest(
 	| { sessionTokenHash: string; status: 'ok'; userId: string }
 	| Extract<TAccountSsoGrantActionResult, { status: 'error' }>
 > {
-	const accountFeatureResult = await checkAccountFeature();
+	const accountFeatureResult = await checkAccountFeatureGuard();
 	if (accountFeatureResult.status === 'error') {
 		return createGuardActionError(accountFeatureResult);
 	}
 
 	const request = await createCurrentRequest('/account/sso/grants/action');
-	const sameOriginResult = checkSameOrigin(request);
+	const sameOriginResult = checkSameOriginGuard(request);
 	if (sameOriginResult.status === 'error') {
 		return createGuardActionError(sameOriginResult);
 	}
 
-	const cookieSecurityResult = checkAccountCookieSecurity(request);
+	const cookieSecurityResult = checkAccountCookieSecurityGuard(request);
 	if (cookieSecurityResult.status === 'error') {
 		return createGuardActionError(cookieSecurityResult);
 	}
 
-	const auth = await authenticateAccountRequest(request);
+	const auth = await authenticateAccountFromRequest(request);
 	if (auth.status === 'error') {
 		return createActionError(auth.message, auth.httpStatus);
 	}
 
-	const rateLimitResult = checkAccountRateLimit(request, scope);
+	const rateLimitResult = checkAccountRateLimitGuard(request, scope);
 	if (rateLimitResult.status === 'error') {
 		return createGuardActionError(rateLimitResult);
 	}

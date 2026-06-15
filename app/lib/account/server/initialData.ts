@@ -1,6 +1,9 @@
-import { authenticateAccountRequest, createAccountCsrfToken } from './auth';
+import { authenticateAccountFromRequest, createAccountCsrfToken } from './auth';
 import { createCurrentRequest } from './currentRequest';
-import { checkAccountCookieSecurity, checkAccountFeature } from './guards';
+import {
+	checkAccountCookieSecurityGuard,
+	checkAccountFeatureGuard,
+} from './guards';
 import { listSsoUserClientGrantsForUser } from './sso';
 import { createAccountUserProfile } from './user';
 import {
@@ -22,18 +25,18 @@ export async function readAccountSsoGrantInitialData(
 	pathname = '/account/sso/grants/initial'
 ): Promise<IAccountSsoGrantInitialData | null> {
 	try {
-		const accountFeatureResult = await checkAccountFeature();
+		const accountFeatureResult = await checkAccountFeatureGuard();
 		if (accountFeatureResult.status === 'error') {
 			return null;
 		}
 
 		const request = await createCurrentRequest(pathname);
-		const cookieSecurityResult = checkAccountCookieSecurity(request);
+		const cookieSecurityResult = checkAccountCookieSecurityGuard(request);
 		if (cookieSecurityResult.status === 'error') {
 			return null;
 		}
 
-		const auth = await authenticateAccountRequest(request);
+		const auth = await authenticateAccountFromRequest(request);
 		if (auth.status === 'error') {
 			return null;
 		}

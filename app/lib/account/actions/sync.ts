@@ -8,13 +8,13 @@ import {
 } from '@/lib/account/actions/utils';
 import { createCurrentRequest } from '@/lib/account/server/currentRequest';
 import {
-	checkAccountCookieSecurity,
-	checkAccountFeature,
-	checkAccountRateLimit,
-	checkSameOrigin,
+	checkAccountCookieSecurityGuard,
+	checkAccountFeatureGuard,
+	checkAccountRateLimitGuard,
+	checkSameOriginGuard,
 } from '@/lib/account/server/guards';
 import {
-	authenticateAccountRequest,
+	authenticateAccountFromRequest,
 	verifyAccountCsrf,
 } from '@/lib/account/server/auth';
 import {
@@ -66,22 +66,22 @@ async function checkSyncActionGuards(
 		? R
 		: never
 ) {
-	const featureResult = await checkAccountFeature();
+	const featureResult = await checkAccountFeatureGuard();
 	if (featureResult.status === 'error') {
 		return createGuardActionError(featureResult);
 	}
 
-	const sameOriginResult = checkSameOrigin(request);
+	const sameOriginResult = checkSameOriginGuard(request);
 	if (sameOriginResult.status === 'error') {
 		return createGuardActionError(sameOriginResult);
 	}
 
-	const cookieSecurityResult = checkAccountCookieSecurity(request);
+	const cookieSecurityResult = checkAccountCookieSecurityGuard(request);
 	if (cookieSecurityResult.status === 'error') {
 		return createGuardActionError(cookieSecurityResult);
 	}
 
-	const auth = await authenticateAccountRequest(request);
+	const auth = await authenticateAccountFromRequest(request);
 	if (auth.status === 'error') {
 		return createGuardActionError(auth);
 	}
@@ -101,7 +101,7 @@ function checkSyncActionRateLimit(
 		: never,
 	scope: string
 ) {
-	const rateLimitResult = checkAccountRateLimit(request, scope);
+	const rateLimitResult = checkAccountRateLimitGuard(request, scope);
 	if (rateLimitResult.status === 'error') {
 		return createGuardActionError(rateLimitResult);
 	}

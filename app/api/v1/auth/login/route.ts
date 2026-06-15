@@ -1,10 +1,10 @@
 import { type NextRequest } from 'next/server';
 
 import {
-	checkAccountCookieSecurityResponse,
-	checkAccountFeatureResponse,
-	checkAccountRateLimitResponse,
-	checkSameOriginResponse,
+	checkAccountCookieSecurityRouteResponse,
+	checkAccountFeatureRouteResponse,
+	checkAccountRateLimitRouteResponse,
+	checkSameOriginRouteResponse,
 	readJsonBodyResult,
 } from '@/lib/account/server/routeResponses';
 import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
@@ -42,17 +42,18 @@ function createCredentialStateStaleResponse() {
 }
 
 export async function POST(request: NextRequest) {
-	const featureResponse = await checkAccountFeatureResponse();
+	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
 		return featureResponse;
 	}
 
-	const sameOriginResponse = checkSameOriginResponse(request);
+	const sameOriginResponse = checkSameOriginRouteResponse(request);
 	if (sameOriginResponse !== null) {
 		return sameOriginResponse;
 	}
 
-	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	const cookieSecurityResponse =
+		checkAccountCookieSecurityRouteResponse(request);
 	if (cookieSecurityResponse !== null) {
 		return cookieSecurityResponse;
 	}
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	const usernameNormalized = userModule.normalizeUsername(username);
-	const rateLimitResponse = checkAccountRateLimitResponse(
+	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
 		'login',
 		usernameNormalized,

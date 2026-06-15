@@ -1,9 +1,9 @@
 import { type NextRequest } from 'next/server';
 
 import {
-	checkAccountCookieSecurityResponse,
-	checkAccountFeatureResponse,
-	checkSameOriginResponse,
+	checkAccountCookieSecurityRouteResponse,
+	checkAccountFeatureRouteResponse,
+	checkSameOriginRouteResponse,
 } from '@/lib/account/server/routeResponses';
 import { type TAccountMeResponse } from '@/lib/account/shared/types';
 import {
@@ -15,17 +15,18 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-	const featureResponse = await checkAccountFeatureResponse();
+	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
 		return featureResponse;
 	}
 
-	const sameOriginResponse = checkSameOriginResponse(request);
+	const sameOriginResponse = checkSameOriginRouteResponse(request);
 	if (sameOriginResponse !== null) {
 		return sameOriginResponse;
 	}
 
-	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	const cookieSecurityResponse =
+		checkAccountCookieSecurityRouteResponse(request);
 	if (cookieSecurityResponse !== null) {
 		return cookieSecurityResponse;
 	}
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
 		import('@/lib/account/server/user'),
 		import('@/lib/account/server/repositories/userState'),
 	]);
-	const auth = await authModule.authenticateAccountRequest(request, true);
+	const auth = await authModule.authenticateAccountFromRequest(request, true);
 	if (auth.status === 'error') {
 		if (auth.message === 'unauthorized') {
 			return createNoStoreJsonResponse({

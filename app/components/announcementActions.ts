@@ -5,13 +5,13 @@ import { type NextRequest } from 'next/server';
 import { createCurrentRequest } from '@/lib/account/server/currentRequest';
 import {
 	type TAccountGuardResult,
-	checkAccountCookieSecurity,
-	checkAccountFeature,
-	checkAccountRateLimit,
-	checkSameOrigin,
+	checkAccountCookieSecurityGuard,
+	checkAccountFeatureGuard,
+	checkAccountRateLimitGuard,
+	checkSameOriginGuard,
 } from '@/lib/account/server/guards';
 import {
-	authenticateAccountRequest,
+	authenticateAccountFromRequest,
 	verifyAccountCsrf,
 } from '@/lib/account/server/auth';
 import {
@@ -58,23 +58,23 @@ async function checkDismissAnnouncementActionRequest(
 	| { request: NextRequest; status: 'ok' }
 	| Extract<TAnnouncementActionResult, { status: 'error' }>
 > {
-	const accountFeatureResult = await checkAccountFeature();
+	const accountFeatureResult = await checkAccountFeatureGuard();
 	if (accountFeatureResult.status === 'error') {
 		return createGuardActionError(accountFeatureResult);
 	}
 
 	const request = await createCurrentRequest('/announcements/action');
-	const sameOriginResult = checkSameOrigin(request);
+	const sameOriginResult = checkSameOriginGuard(request);
 	if (sameOriginResult.status === 'error') {
 		return createGuardActionError(sameOriginResult);
 	}
 
-	const cookieSecurityResult = checkAccountCookieSecurity(request);
+	const cookieSecurityResult = checkAccountCookieSecurityGuard(request);
 	if (cookieSecurityResult.status === 'error') {
 		return createGuardActionError(cookieSecurityResult);
 	}
 
-	const rateLimitResult = checkAccountRateLimit(
+	const rateLimitResult = checkAccountRateLimitGuard(
 		request,
 		'announcement-dismiss'
 	);
@@ -111,7 +111,7 @@ export async function dismissAnnouncementAction(
 		return guard;
 	}
 
-	const auth = await authenticateAccountRequest(guard.request);
+	const auth = await authenticateAccountFromRequest(guard.request);
 	if (auth.status === 'error') {
 		return { data: { message: 'announcement-dismissed' }, status: 'ok' };
 	}

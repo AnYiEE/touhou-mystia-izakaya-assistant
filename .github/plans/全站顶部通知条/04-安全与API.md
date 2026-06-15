@@ -93,13 +93,13 @@
 
 鉴权顺序参考 `app/lib/account/server/adminRouteResponses.ts` 与 `app/lib/account/server/routeResponses.ts`：
 
-1. `checkAccountFeatureResponse()`。
-2. `checkAdminFeatureResponse()`。
-3. `checkSameOriginResponse(request)`。
-4. `checkAccountCookieSecurityResponse(request)`。
-5. `checkAccountRateLimitResponse(request, scope)`。
-6. `authenticateAdminRequest(request)`。
-7. 修改类请求再做 `checkAdminCsrfResponse(request, token)`。
+1. `checkAccountFeatureRouteResponse()`。
+2. `checkAdminFeatureRouteResponse()`。
+3. `checkSameOriginRouteResponse(request)`。
+4. `checkAccountCookieSecurityRouteResponse(request)`。
+5. `checkAccountRateLimitRouteResponse(request, scope)`。
+6. `authenticateAdminFromRequest(request)`。
+7. 修改类请求再做 `checkAdminCsrfRouteResponse(request, token)`。
 
 ## 后台 API 路由
 

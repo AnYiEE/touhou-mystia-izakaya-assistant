@@ -2,11 +2,11 @@ import { type NextRequest } from 'next/server';
 import { validate } from 'uuid';
 
 import {
-	checkAccountCookieSecurityResponse,
-	checkAccountFeatureResponse,
-	checkAccountRateLimitResponse,
-	checkSameOriginResponse,
-	createAccountAuthErrorResponse,
+	checkAccountCookieSecurityRouteResponse,
+	checkAccountFeatureRouteResponse,
+	checkAccountRateLimitRouteResponse,
+	checkSameOriginRouteResponse,
+	createAccountAuthErrorRouteResponse,
 	readJsonBodyResult,
 } from '@/lib/account/server/routeResponses';
 import {
@@ -49,17 +49,18 @@ function createImportBackupErrorResponse(error: unknown) {
 }
 
 export async function POST(request: NextRequest) {
-	const featureResponse = await checkAccountFeatureResponse();
+	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
 		return featureResponse;
 	}
 
-	const sameOriginResponse = checkSameOriginResponse(request);
+	const sameOriginResponse = checkSameOriginRouteResponse(request);
 	if (sameOriginResponse !== null) {
 		return sameOriginResponse;
 	}
 
-	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	const cookieSecurityResponse =
+		checkAccountCookieSecurityRouteResponse(request);
 	if (cookieSecurityResponse !== null) {
 		return cookieSecurityResponse;
 	}
@@ -80,12 +81,12 @@ export async function POST(request: NextRequest) {
 		import('@/actions/backup/lock'),
 		import('@/lib/account/server/backupImport'),
 	]);
-	const auth = await authModule.authenticateAccountRequest(request);
+	const auth = await authModule.authenticateAccountFromRequest(request);
 	if (auth.status === 'error') {
-		return createAccountAuthErrorResponse(auth, request);
+		return createAccountAuthErrorRouteResponse(auth, request);
 	}
 
-	const rateLimitResponse = checkAccountRateLimitResponse(
+	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
 		'import-backup-code'
 	);

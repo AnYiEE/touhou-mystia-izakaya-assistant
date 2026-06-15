@@ -1,15 +1,15 @@
 import { type NextRequest } from 'next/server';
 
 import {
-	checkAccountCookieSecurityResponse,
-	checkAccountFeatureResponse,
-	checkAccountRateLimitResponse,
-	checkSameOriginResponse,
+	checkAccountCookieSecurityRouteResponse,
+	checkAccountFeatureRouteResponse,
+	checkAccountRateLimitRouteResponse,
+	checkSameOriginRouteResponse,
 } from '@/lib/account/server/routeResponses';
 import {
-	authenticateAdminRequest,
-	checkAdminFeatureResponse,
-	createAdminAuthErrorResponse,
+	authenticateAdminFromRequest,
+	checkAdminFeatureRouteResponse,
+	createAdminAuthErrorRouteResponse,
 } from '@/lib/account/server/adminRouteResponses';
 import { type IListUsersOptions } from '@/lib/account/server/repositories/users';
 import {
@@ -49,27 +49,28 @@ function parsePositiveIntegerParam(
 }
 
 export async function GET(request: NextRequest) {
-	const featureResponse = await checkAccountFeatureResponse();
+	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
 		return featureResponse;
 	}
 
-	const adminFeatureResponse = checkAdminFeatureResponse();
+	const adminFeatureResponse = checkAdminFeatureRouteResponse();
 	if (adminFeatureResponse !== null) {
 		return adminFeatureResponse;
 	}
 
-	const sameOriginResponse = checkSameOriginResponse(request);
+	const sameOriginResponse = checkSameOriginRouteResponse(request);
 	if (sameOriginResponse !== null) {
 		return sameOriginResponse;
 	}
 
-	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	const cookieSecurityResponse =
+		checkAccountCookieSecurityRouteResponse(request);
 	if (cookieSecurityResponse !== null) {
 		return cookieSecurityResponse;
 	}
 
-	const rateLimitResponse = checkAccountRateLimitResponse(
+	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
 		'admin-list-users'
 	);
@@ -77,9 +78,9 @@ export async function GET(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	const auth = authenticateAdminRequest(request);
+	const auth = authenticateAdminFromRequest(request);
 	if (auth.status === 'error') {
-		return createAdminAuthErrorResponse(
+		return createAdminAuthErrorRouteResponse(
 			request,
 			auth.message,
 			auth.httpStatus

@@ -32,7 +32,10 @@ export async function GET(request: NextRequest) {
 			request.cookies.get(ANNOUNCEMENT_DISMISSED_COOKIE_NAME)?.value ??
 				null
 		);
-		const auth = await authModule.authenticateAccountRequest(request, true);
+		const auth = await authModule.authenticateAccountFromRequest(
+			request,
+			true
+		);
 		const data =
 			auth.status === 'ok'
 				? await serviceModule.getVisibleAnnouncementsForRequestContext({

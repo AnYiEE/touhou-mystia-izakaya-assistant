@@ -161,7 +161,7 @@ function isValidSessionTokenFormat(token: string) {
 	return token.length === expectedLength && /^[A-Za-z0-9_-]+$/u.test(token);
 }
 
-export async function authenticateAccountRequest(
+export async function authenticateAccountFromRequest(
 	request: NextRequest,
 	allowPasswordMustChange = false
 ): Promise<TAccountAuthResult> {

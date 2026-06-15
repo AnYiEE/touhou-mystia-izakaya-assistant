@@ -5,13 +5,13 @@ import { cookies } from 'next/headers';
 import { createCurrentRequest } from '@/lib/account/server/currentRequest';
 import {
 	type TAccountGuardResult,
-	authenticateAdminSession,
-	checkAccountCookieSecurity,
-	checkAccountFeature,
-	checkAccountRateLimit,
-	checkAdminCsrf,
-	checkAdminFeature,
-	checkSameOrigin,
+	authenticateAdminSessionToken,
+	checkAccountCookieSecurityGuard,
+	checkAccountFeatureGuard,
+	checkAccountRateLimitGuard,
+	checkAdminCsrfGuard,
+	checkAdminFeatureGuard,
+	checkSameOriginGuard,
 } from '@/lib/account/server/guards';
 import {
 	parseAdminSsoClientCreateBody,
@@ -76,34 +76,34 @@ async function checkAdminSsoClientActionRequest(
 ): Promise<
 	{ status: 'ok' } | Extract<TAdminSsoClientActionResult, { status: 'error' }>
 > {
-	const accountFeatureResult = await checkAccountFeature();
+	const accountFeatureResult = await checkAccountFeatureGuard();
 	if (accountFeatureResult.status === 'error') {
 		return createGuardActionError(accountFeatureResult);
 	}
 
-	const adminFeatureResult = checkAdminFeature();
+	const adminFeatureResult = checkAdminFeatureGuard();
 	if (adminFeatureResult.status === 'error') {
 		return createGuardActionError(adminFeatureResult);
 	}
 
 	const request = await createCurrentRequest('/admin/sso/action');
-	const sameOriginResult = checkSameOrigin(request);
+	const sameOriginResult = checkSameOriginGuard(request);
 	if (sameOriginResult.status === 'error') {
 		return createGuardActionError(sameOriginResult);
 	}
 
-	const cookieSecurityResult = checkAccountCookieSecurity(request);
+	const cookieSecurityResult = checkAccountCookieSecurityGuard(request);
 	if (cookieSecurityResult.status === 'error') {
 		return createGuardActionError(cookieSecurityResult);
 	}
 
-	const rateLimitResult = checkAccountRateLimit(request, scope);
+	const rateLimitResult = checkAccountRateLimitGuard(request, scope);
 	if (rateLimitResult.status === 'error') {
 		return createGuardActionError(rateLimitResult);
 	}
 
 	const adminSessionToken = await readAdminSessionToken();
-	const adminAuthResult = authenticateAdminSession(adminSessionToken);
+	const adminAuthResult = authenticateAdminSessionToken(adminSessionToken);
 	if (adminAuthResult.status === 'error') {
 		return createGuardActionError(adminAuthResult);
 	}
@@ -111,7 +111,10 @@ async function checkAdminSsoClientActionRequest(
 		return createActionError('forbidden', 403);
 	}
 
-	const csrfResult = checkAdminCsrf(csrfToken, adminAuthResult.data.token);
+	const csrfResult = checkAdminCsrfGuard(
+		csrfToken,
+		adminAuthResult.data.token
+	);
 	if (csrfResult.status === 'error') {
 		return createGuardActionError(csrfResult);
 	}

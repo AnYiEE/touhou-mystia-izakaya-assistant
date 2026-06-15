@@ -2,14 +2,14 @@ import { type NextRequest } from 'next/server';
 
 import { getAdminSessionToken } from '@/lib/account/server/admin';
 import {
-	authenticateAdminSession,
-	checkAdminCsrf,
-	checkAdminFeature,
+	authenticateAdminSessionToken,
+	checkAdminCsrfGuard,
+	checkAdminFeatureGuard,
 } from '@/lib/account/server/guards';
 import { createNoStoreErrorResponse } from '@/lib/api/routeResponses';
 
-export function checkAdminFeatureResponse() {
-	const result = checkAdminFeature();
+export function checkAdminFeatureRouteResponse() {
+	const result = checkAdminFeatureGuard();
 	if (result.status === 'ok') {
 		return null;
 	}
@@ -17,14 +17,14 @@ export function checkAdminFeatureResponse() {
 	return createNoStoreErrorResponse(result.message, result.httpStatus);
 }
 
-export function authenticateAdminRequest(request: NextRequest) {
-	const result = authenticateAdminSession(getAdminSessionToken(request));
+export function authenticateAdminFromRequest(request: NextRequest) {
+	const result = authenticateAdminSessionToken(getAdminSessionToken(request));
 	return result.status === 'ok'
 		? { ...result.data, status: 'ok' as const }
 		: result;
 }
 
-export function createAdminAuthErrorResponse(
+export function createAdminAuthErrorRouteResponse(
 	request: NextRequest,
 	message: string,
 	httpStatus: number
@@ -34,8 +34,14 @@ export function createAdminAuthErrorResponse(
 	return createNoStoreErrorResponse(message, httpStatus);
 }
 
-export function checkAdminCsrfResponse(request: NextRequest, token: string) {
-	const result = checkAdminCsrf(request.headers.get('x-csrf-token'), token);
+export function checkAdminCsrfRouteResponse(
+	request: NextRequest,
+	token: string
+) {
+	const result = checkAdminCsrfGuard(
+		request.headers.get('x-csrf-token'),
+		token
+	);
 	if (result.status === 'ok') {
 		return null;
 	}

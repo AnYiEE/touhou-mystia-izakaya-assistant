@@ -1,11 +1,11 @@
 import { type NextRequest } from 'next/server';
 
 import {
-	checkAccountCookieSecurityResponse,
-	checkAccountFeatureResponse,
-	createAccountAuthErrorResponse,
+	checkAccountCookieSecurityRouteResponse,
+	checkAccountFeatureRouteResponse,
+	createAccountAuthErrorRouteResponse,
 } from '@/lib/account/server/routeResponses';
-import { checkSsoRateLimitResponse } from '@/lib/account/server/ssoRouteResponses';
+import { checkSsoRateLimitRouteResponse } from '@/lib/account/server/ssoRouteResponses';
 import {
 	checkSsoClientEnabled,
 	checkSsoClientId,
@@ -38,12 +38,13 @@ function createAuthorizeRedirectUrl(request: NextRequest, pathname: string) {
 }
 
 export async function GET(request: NextRequest) {
-	const featureResponse = await checkAccountFeatureResponse();
+	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
 		return featureResponse;
 	}
 
-	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	const cookieSecurityResponse =
+		checkAccountCookieSecurityRouteResponse(request);
 	if (cookieSecurityResponse !== null) {
 		return cookieSecurityResponse;
 	}
@@ -65,7 +66,7 @@ export async function GET(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	const rateLimitResponse = checkSsoRateLimitResponse(
+	const rateLimitResponse = checkSsoRateLimitRouteResponse(
 		request,
 		'sso-authorize',
 		[{ name: 'client', value: clientId }]
@@ -91,9 +92,12 @@ export async function GET(request: NextRequest) {
 		}
 
 		const authModule = await import('@/lib/account/server/auth');
-		const auth = await authModule.authenticateAccountRequest(request, true);
+		const auth = await authModule.authenticateAccountFromRequest(
+			request,
+			true
+		);
 		if (auth.status === 'error' && auth.message !== 'unauthorized') {
-			return createAccountAuthErrorResponse(auth, request);
+			return createAccountAuthErrorRouteResponse(auth, request);
 		}
 
 		const redirectUrl = createAuthorizeRedirectUrl(

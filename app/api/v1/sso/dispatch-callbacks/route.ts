@@ -1,9 +1,9 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAccountFeatureResponse } from '@/lib/account/server/routeResponses';
+import { checkAccountFeatureRouteResponse } from '@/lib/account/server/routeResponses';
 import {
-	checkDispatchSecret,
-	checkSsoRateLimitResponse,
+	checkDispatchSecretStatus,
+	checkSsoRateLimitRouteResponse,
 } from '@/lib/account/server/ssoRouteResponses';
 import {
 	SSO_CALLBACK_DISPATCH_LIMIT,
@@ -20,12 +20,12 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
-	const featureResponse = await checkAccountFeatureResponse();
+	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
 		return featureResponse;
 	}
 
-	const rateLimitResponse = checkSsoRateLimitResponse(
+	const rateLimitResponse = checkSsoRateLimitRouteResponse(
 		request,
 		'sso-dispatch-callbacks',
 		[]
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	const secretStatus = checkDispatchSecret(
+	const secretStatus = checkDispatchSecretStatus(
 		request.headers.get('x-dispatch-secret')
 	);
 	if (secretStatus === 'misconfigured') {

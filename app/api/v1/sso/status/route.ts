@@ -1,8 +1,8 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAccountFeatureResponse } from '@/lib/account/server/routeResponses';
+import { checkAccountFeatureRouteResponse } from '@/lib/account/server/routeResponses';
 import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
-import { checkSsoRateLimitResponse } from '@/lib/account/server/ssoRouteResponses';
+import { checkSsoRateLimitRouteResponse } from '@/lib/account/server/ssoRouteResponses';
 import {
 	checkSsoClientEnabled,
 	checkSsoClientId,
@@ -30,7 +30,7 @@ interface ISsoStatusBody {
 }
 
 export async function POST(request: NextRequest) {
-	const featureResponse = await checkAccountFeatureResponse();
+	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
 		return featureResponse;
 	}
@@ -64,10 +64,14 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	const rateLimitResponse = checkSsoRateLimitResponse(request, 'sso-status', [
-		{ name: 'client', value: clientId },
-		{ name: 'user', value: userId },
-	]);
+	const rateLimitResponse = checkSsoRateLimitRouteResponse(
+		request,
+		'sso-status',
+		[
+			{ name: 'client', value: clientId },
+			{ name: 'user', value: userId },
+		]
+	);
 	if (rateLimitResponse !== null) {
 		return rateLimitResponse;
 	}

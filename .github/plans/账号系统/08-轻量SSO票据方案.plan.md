@@ -113,7 +113,7 @@ isProject: false
 
 用户未登录时，展示或跳转到现有账号登录/注册 UI。登录成功后继续原授权上下文。
 
-SSO 授权上下文通过以下机制保持：authorize 路由在发起登录前，将 `client_id`、`redirect_uri`、`state`、`code_challenge` 存入短期 HttpOnly Cookie（`mystia-sso-context`，有效期 10 分钟）。登录或注册接口在处理完成后检查该 Cookie：若存在，不返回 JSON 登录成功响应，改为跳转到授权确认页。登录接口在 SSO 上下文中调用 `authenticateAccountRequest` 时传入 `allowPasswordMustChange=true`，允许管理员重置密码后尚未改密的用户进入 SSO 授权确认流程。
+SSO 授权上下文通过以下机制保持：authorize 路由在发起登录前，将 `client_id`、`redirect_uri`、`state`、`code_challenge` 存入短期 HttpOnly Cookie（`mystia-sso-context`，有效期 10 分钟）。登录或注册接口在处理完成后检查该 Cookie：若存在，不返回 JSON 登录成功响应，改为跳转到授权确认页。登录接口在 SSO 上下文中调用 `authenticateAccountFromRequest` 时传入 `allowPasswordMustChange=true`，允许管理员重置密码后尚未改密的用户进入 SSO 授权确认流程。
 
 #### 授权确认页
 

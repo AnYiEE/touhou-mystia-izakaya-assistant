@@ -31,7 +31,10 @@ export default async function AnnouncementBar() {
 		const { createCurrentRequest } =
 			await import('@/lib/account/server/currentRequest');
 		const request = await createCurrentRequest('/');
-		const auth = await authModule.authenticateAccountRequest(request, true);
+		const auth = await authModule.authenticateAccountFromRequest(
+			request,
+			true
+		);
 		const visible =
 			auth.status === 'ok'
 				? await serviceModule.getVisibleAnnouncementsForRequestContext({

@@ -1,10 +1,10 @@
 import { type NextRequest } from 'next/server';
 
 import {
-	checkAccountCookieSecurityResponse,
-	checkAccountFeatureResponse,
-	checkAccountRateLimitResponse,
-	checkSameOriginResponse,
+	checkAccountCookieSecurityRouteResponse,
+	checkAccountFeatureRouteResponse,
+	checkAccountRateLimitRouteResponse,
+	checkSameOriginRouteResponse,
 } from '@/lib/account/server/routeResponses';
 import {
 	createNoStoreErrorResponse,
@@ -17,28 +17,29 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
 	const requestStartedAt = Date.now();
 
-	const featureResponse = await checkAccountFeatureResponse();
+	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
 		return featureResponse;
 	}
 
-	const sameOriginResponse = checkSameOriginResponse(request);
+	const sameOriginResponse = checkSameOriginRouteResponse(request);
 	if (sameOriginResponse !== null) {
 		return sameOriginResponse;
 	}
 
-	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	const cookieSecurityResponse =
+		checkAccountCookieSecurityRouteResponse(request);
 	if (cookieSecurityResponse !== null) {
 		return cookieSecurityResponse;
 	}
 
 	const authModule = await import('@/lib/account/server/auth');
-	const auth = await authModule.authenticateAccountRequest(request, true);
+	const auth = await authModule.authenticateAccountFromRequest(request, true);
 	if (auth.status === 'error') {
 		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
 	}
 
-	const rateLimitResponse = checkAccountRateLimitResponse(
+	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
 		'auth-logout-all'
 	);

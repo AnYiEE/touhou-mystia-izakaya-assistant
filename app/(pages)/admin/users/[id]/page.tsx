@@ -12,10 +12,10 @@ import {
 import { createAdminCsrfToken } from '@/lib/account/server/admin';
 import { createCurrentRequest } from '@/lib/account/server/currentRequest';
 import {
-	authenticateAdminSession,
-	checkAccountCookieSecurity,
-	checkAccountFeature,
-	checkAdminFeature,
+	authenticateAdminSessionToken,
+	checkAccountCookieSecurityGuard,
+	checkAccountFeatureGuard,
+	checkAdminFeatureGuard,
 } from '@/lib/account/server/guards';
 import { ACCOUNT_COOKIE_NAME_MAP } from '@/lib/account/shared/constants';
 
@@ -86,7 +86,7 @@ export default async function AdminUserDetailPage({
 		userId: id,
 	};
 
-	const accountFeatureResult = await checkAccountFeature();
+	const accountFeatureResult = await checkAccountFeatureGuard();
 	if (accountFeatureResult.status === 'error') {
 		return renderClient({
 			...initialData,
@@ -94,7 +94,7 @@ export default async function AdminUserDetailPage({
 		});
 	}
 
-	const adminFeatureResult = checkAdminFeature();
+	const adminFeatureResult = checkAdminFeatureGuard();
 	if (adminFeatureResult.status === 'error') {
 		return renderClient({
 			...initialData,
@@ -105,7 +105,7 @@ export default async function AdminUserDetailPage({
 	const request = await createCurrentRequest(
 		`/admin/users/${encodeURIComponent(id)}`
 	);
-	const cookieSecurityResult = checkAccountCookieSecurity(request);
+	const cookieSecurityResult = checkAccountCookieSecurityGuard(request);
 	if (cookieSecurityResult.status === 'error') {
 		return renderClient({
 			...initialData,
@@ -116,7 +116,7 @@ export default async function AdminUserDetailPage({
 	const cookieStore = await cookies();
 	const adminSessionToken =
 		cookieStore.get(ACCOUNT_COOKIE_NAME_MAP.adminSession)?.value ?? null;
-	const adminAuthResult = authenticateAdminSession(adminSessionToken);
+	const adminAuthResult = authenticateAdminSessionToken(adminSessionToken);
 	if (adminAuthResult.status === 'error') {
 		return renderClient({
 			...initialData,

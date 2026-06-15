@@ -12,13 +12,13 @@ import {
 import { createCurrentRequest } from '@/lib/account/server/currentRequest';
 import {
 	type TAccountGuardResult,
-	authenticateAdminSession,
-	checkAccountCookieSecurity,
-	checkAccountFeature,
-	checkAccountRateLimit,
-	checkAdminCsrf,
-	checkAdminFeature,
-	checkSameOrigin,
+	authenticateAdminSessionToken,
+	checkAccountCookieSecurityGuard,
+	checkAccountFeatureGuard,
+	checkAccountRateLimitGuard,
+	checkAdminCsrfGuard,
+	checkAdminFeatureGuard,
+	checkSameOriginGuard,
 } from '@/lib/account/server/guards';
 import {
 	ACCOUNT_COOKIE_NAME_MAP,
@@ -117,23 +117,23 @@ async function checkAdminBaseActionRequest(
 	| { request: NextRequest; status: 'ok' }
 	| Extract<TAdminActionResult, { status: 'error' }>
 > {
-	const accountFeatureResult = await checkAccountFeature();
+	const accountFeatureResult = await checkAccountFeatureGuard();
 	if (accountFeatureResult.status === 'error') {
 		return createGuardActionError(accountFeatureResult);
 	}
 
-	const adminFeatureResult = checkAdminFeature();
+	const adminFeatureResult = checkAdminFeatureGuard();
 	if (adminFeatureResult.status === 'error') {
 		return createGuardActionError(adminFeatureResult);
 	}
 
 	const request = await createCurrentRequest(pathname);
-	const sameOriginResult = checkSameOrigin(request);
+	const sameOriginResult = checkSameOriginGuard(request);
 	if (sameOriginResult.status === 'error') {
 		return createGuardActionError(sameOriginResult);
 	}
 
-	const cookieSecurityResult = checkAccountCookieSecurity(request);
+	const cookieSecurityResult = checkAccountCookieSecurityGuard(request);
 	if (cookieSecurityResult.status === 'error') {
 		return createGuardActionError(cookieSecurityResult);
 	}
@@ -159,7 +159,7 @@ async function checkAdminAuthenticatedActionRequest(
 	}
 
 	if (options.rateLimitAfterAuth !== true) {
-		const rateLimitResult = checkAccountRateLimit(base.request, scope);
+		const rateLimitResult = checkAccountRateLimitGuard(base.request, scope);
 		if (rateLimitResult.status === 'error') {
 			if (options.continueOnRateLimit === true) {
 				console.warn('Admin action rate limit exceeded; continuing.', {
@@ -172,13 +172,13 @@ async function checkAdminAuthenticatedActionRequest(
 	}
 
 	const adminSessionToken = await readAdminSessionToken();
-	const adminAuthResult = authenticateAdminSession(adminSessionToken);
+	const adminAuthResult = authenticateAdminSessionToken(adminSessionToken);
 	if (adminAuthResult.status === 'error') {
 		return createGuardActionError(adminAuthResult);
 	}
 
 	if (options.rateLimitAfterAuth === true) {
-		const rateLimitResult = checkAccountRateLimit(base.request, scope);
+		const rateLimitResult = checkAccountRateLimitGuard(base.request, scope);
 		if (rateLimitResult.status === 'error') {
 			if (options.continueOnRateLimit === true) {
 				console.warn('Admin action rate limit exceeded; continuing.', {
@@ -195,7 +195,7 @@ async function checkAdminAuthenticatedActionRequest(
 			return createActionError('forbidden', 403);
 		}
 
-		const csrfResult = checkAdminCsrf(
+		const csrfResult = checkAdminCsrfGuard(
 			csrfToken,
 			adminAuthResult.data.token
 		);
@@ -253,7 +253,7 @@ export async function loginAdminAction(
 		return base;
 	}
 
-	const rateLimitResult = checkAccountRateLimit(
+	const rateLimitResult = checkAccountRateLimitGuard(
 		base.request,
 		'admin-login',
 		username.toLowerCase(),

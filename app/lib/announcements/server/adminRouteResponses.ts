@@ -1,16 +1,16 @@
 import { type NextRequest } from 'next/server';
 
 import {
-	checkAccountCookieSecurityResponse,
-	checkAccountFeatureResponse,
-	checkAccountRateLimitResponse,
-	checkSameOriginResponse,
+	checkAccountCookieSecurityRouteResponse,
+	checkAccountFeatureRouteResponse,
+	checkAccountRateLimitRouteResponse,
+	checkSameOriginRouteResponse,
 } from '@/lib/account/server/routeResponses';
 import {
-	authenticateAdminRequest,
-	checkAdminCsrfResponse,
-	checkAdminFeatureResponse,
-	createAdminAuthErrorResponse,
+	authenticateAdminFromRequest,
+	checkAdminCsrfRouteResponse,
+	checkAdminFeatureRouteResponse,
+	createAdminAuthErrorRouteResponse,
 } from '@/lib/account/server/adminRouteResponses';
 
 export async function checkAdminAnnouncementRequest(
@@ -18,35 +18,39 @@ export async function checkAdminAnnouncementRequest(
 	scope: string,
 	options: { csrf?: boolean } = {}
 ) {
-	const featureResponse = await checkAccountFeatureResponse();
+	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
 		return { response: featureResponse, status: 'error' as const };
 	}
 
-	const adminFeatureResponse = checkAdminFeatureResponse();
+	const adminFeatureResponse = checkAdminFeatureRouteResponse();
 	if (adminFeatureResponse !== null) {
 		return { response: adminFeatureResponse, status: 'error' as const };
 	}
 
-	const sameOriginResponse = checkSameOriginResponse(request);
+	const sameOriginResponse = checkSameOriginRouteResponse(request);
 	if (sameOriginResponse !== null) {
 		return { response: sameOriginResponse, status: 'error' as const };
 	}
 
-	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	const cookieSecurityResponse =
+		checkAccountCookieSecurityRouteResponse(request);
 	if (cookieSecurityResponse !== null) {
 		return { response: cookieSecurityResponse, status: 'error' as const };
 	}
 
-	const rateLimitResponse = checkAccountRateLimitResponse(request, scope);
+	const rateLimitResponse = checkAccountRateLimitRouteResponse(
+		request,
+		scope
+	);
 	if (rateLimitResponse !== null) {
 		return { response: rateLimitResponse, status: 'error' as const };
 	}
 
-	const auth = authenticateAdminRequest(request);
+	const auth = authenticateAdminFromRequest(request);
 	if (auth.status === 'error') {
 		return {
-			response: createAdminAuthErrorResponse(
+			response: createAdminAuthErrorRouteResponse(
 				request,
 				auth.message,
 				auth.httpStatus
@@ -56,7 +60,7 @@ export async function checkAdminAnnouncementRequest(
 	}
 
 	if (options.csrf === true) {
-		const csrfResponse = checkAdminCsrfResponse(request, auth.token);
+		const csrfResponse = checkAdminCsrfRouteResponse(request, auth.token);
 		if (csrfResponse !== null) {
 			return { response: csrfResponse, status: 'error' as const };
 		}

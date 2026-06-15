@@ -1,16 +1,16 @@
 import { type NextRequest } from 'next/server';
 
 import {
-	checkAccountCookieSecurityResponse,
-	checkAccountFeatureResponse,
-	checkAccountRateLimitResponse,
-	checkSameOriginResponse,
+	checkAccountCookieSecurityRouteResponse,
+	checkAccountFeatureRouteResponse,
+	checkAccountRateLimitRouteResponse,
+	checkSameOriginRouteResponse,
 } from '@/lib/account/server/routeResponses';
 import {
-	authenticateAdminRequest,
-	checkAdminCsrfResponse,
-	checkAdminFeatureResponse,
-	createAdminAuthErrorResponse,
+	authenticateAdminFromRequest,
+	checkAdminCsrfRouteResponse,
+	checkAdminFeatureRouteResponse,
+	createAdminAuthErrorRouteResponse,
 } from '@/lib/account/server/adminRouteResponses';
 import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import {
@@ -25,27 +25,28 @@ export async function POST(
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> }
 ) {
-	const featureResponse = await checkAccountFeatureResponse();
+	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
 		return featureResponse;
 	}
 
-	const adminFeatureResponse = checkAdminFeatureResponse();
+	const adminFeatureResponse = checkAdminFeatureRouteResponse();
 	if (adminFeatureResponse !== null) {
 		return adminFeatureResponse;
 	}
 
-	const sameOriginResponse = checkSameOriginResponse(request);
+	const sameOriginResponse = checkSameOriginRouteResponse(request);
 	if (sameOriginResponse !== null) {
 		return sameOriginResponse;
 	}
 
-	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	const cookieSecurityResponse =
+		checkAccountCookieSecurityRouteResponse(request);
 	if (cookieSecurityResponse !== null) {
 		return cookieSecurityResponse;
 	}
 
-	const rateLimitResponse = checkAccountRateLimitResponse(
+	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
 		'admin-disable-user'
 	);
@@ -53,16 +54,16 @@ export async function POST(
 		return rateLimitResponse;
 	}
 
-	const auth = authenticateAdminRequest(request);
+	const auth = authenticateAdminFromRequest(request);
 	if (auth.status === 'error') {
-		return createAdminAuthErrorResponse(
+		return createAdminAuthErrorRouteResponse(
 			request,
 			auth.message,
 			auth.httpStatus
 		);
 	}
 
-	const csrfResponse = checkAdminCsrfResponse(request, auth.token);
+	const csrfResponse = checkAdminCsrfRouteResponse(request, auth.token);
 	if (csrfResponse !== null) {
 		return csrfResponse;
 	}

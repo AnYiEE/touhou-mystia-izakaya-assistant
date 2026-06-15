@@ -11,10 +11,10 @@ import {
 import { createCurrentRequest } from '@/lib/account/server/currentRequest';
 import {
 	type TAccountGuardResult,
-	checkAccountCookieSecurity,
-	checkAccountFeature,
-	checkAccountRateLimit,
-	checkSameOrigin,
+	checkAccountCookieSecurityGuard,
+	checkAccountFeatureGuard,
+	checkAccountRateLimitGuard,
+	checkSameOriginGuard,
 } from '@/lib/account/server/guards';
 import {
 	ACCOUNT_COOKIE_NAME_MAP,
@@ -75,18 +75,18 @@ function checkActionBodySize(body: unknown) {
 }
 
 async function checkAccountAuthActionRequest(pathname: string) {
-	const accountFeatureResult = await checkAccountFeature();
+	const accountFeatureResult = await checkAccountFeatureGuard();
 	if (accountFeatureResult.status === 'error') {
 		return createGuardActionError(accountFeatureResult);
 	}
 
 	const request = await createCurrentRequest(pathname);
-	const sameOriginResult = checkSameOrigin(request);
+	const sameOriginResult = checkSameOriginGuard(request);
 	if (sameOriginResult.status === 'error') {
 		return createGuardActionError(sameOriginResult);
 	}
 
-	const cookieSecurityResult = checkAccountCookieSecurity(request);
+	const cookieSecurityResult = checkAccountCookieSecurityGuard(request);
 	if (cookieSecurityResult.status === 'error') {
 		return createGuardActionError(cookieSecurityResult);
 	}
@@ -105,12 +105,12 @@ async function authenticateAccountDataActionRequest(
 	}
 
 	const authModule = await import('@/lib/account/server/auth');
-	const auth = await authModule.authenticateAccountRequest(base.request);
+	const auth = await authModule.authenticateAccountFromRequest(base.request);
 	if (auth.status === 'error') {
 		return createActionError(auth.message, auth.httpStatus);
 	}
 
-	const rateLimitResult = checkAccountRateLimit(base.request, scope);
+	const rateLimitResult = checkAccountRateLimitGuard(base.request, scope);
 	if (rateLimitResult.status === 'error') {
 		return createGuardActionError(rateLimitResult);
 	}
@@ -211,7 +211,7 @@ export async function loginAccountAction(
 	}
 
 	const usernameNormalized = userModule.normalizeUsername(username);
-	const rateLimitResult = checkAccountRateLimit(
+	const rateLimitResult = checkAccountRateLimitGuard(
 		base.request,
 		'login',
 		usernameNormalized,
@@ -322,7 +322,7 @@ export async function fetchAccountMeAction(): Promise<
 		import('@/lib/account/server/user'),
 		import('@/lib/account/server/repositories/userState'),
 	]);
-	const auth = await authModule.authenticateAccountRequest(
+	const auth = await authModule.authenticateAccountFromRequest(
 		base.request,
 		true
 	);
@@ -413,7 +413,7 @@ export async function registerAccountAction(
 	}
 
 	const usernameNormalized = userModule.normalizeUsername(username);
-	const rateLimitResult = checkAccountRateLimit(
+	const rateLimitResult = checkAccountRateLimitGuard(
 		base.request,
 		'register',
 		usernameNormalized,
@@ -535,7 +535,7 @@ export async function changeAccountPasswordAction(
 			import('@/lib/account/server/user'),
 		]);
 
-	const auth = await authModule.authenticateAccountRequest(
+	const auth = await authModule.authenticateAccountFromRequest(
 		base.request,
 		true
 	);
@@ -554,7 +554,7 @@ export async function changeAccountPasswordAction(
 		return createActionError('invalid-password-rule', 400);
 	}
 
-	const rateLimitResult = checkAccountRateLimit(
+	const rateLimitResult = checkAccountRateLimitGuard(
 		base.request,
 		'change-password',
 		auth.data.user.username_normalized
@@ -652,7 +652,7 @@ export async function logoutAccountAction(
 	}
 
 	const authModule = await import('@/lib/account/server/auth');
-	const auth = await authModule.authenticateAccountRequest(
+	const auth = await authModule.authenticateAccountFromRequest(
 		base.request,
 		true
 	);
@@ -660,7 +660,10 @@ export async function logoutAccountAction(
 		return createActionError(auth.message, auth.httpStatus);
 	}
 
-	const rateLimitResult = checkAccountRateLimit(base.request, 'auth-logout');
+	const rateLimitResult = checkAccountRateLimitGuard(
+		base.request,
+		'auth-logout'
+	);
 	if (rateLimitResult.status === 'error') {
 		return createGuardActionError(rateLimitResult);
 	}
@@ -698,7 +701,7 @@ export async function logoutAllAccountAction(
 	}
 
 	const authModule = await import('@/lib/account/server/auth');
-	const auth = await authModule.authenticateAccountRequest(
+	const auth = await authModule.authenticateAccountFromRequest(
 		base.request,
 		true
 	);
@@ -706,7 +709,7 @@ export async function logoutAllAccountAction(
 		return createActionError(auth.message, auth.httpStatus);
 	}
 
-	const rateLimitResult = checkAccountRateLimit(
+	const rateLimitResult = checkAccountRateLimitGuard(
 		base.request,
 		'auth-logout-all'
 	);

@@ -22,7 +22,7 @@ import {
 	getSsoContextCookieValue,
 	validateSsoRedirectUri,
 } from '@/lib/account/server/sso';
-import { authenticateAccountRequest } from '@/lib/account/server/auth';
+import { authenticateAccountFromRequest } from '@/lib/account/server/auth';
 import {
 	createAccountMeInitialDataForAuthenticatedRequest,
 	createAccountSsoGrantInitialDataForUser,
@@ -69,7 +69,7 @@ async function agreeSsoAuthorize(formData: FormData) {
 
 	try {
 		const [auth, client] = await Promise.all([
-			authenticateAccountRequest(request, true),
+			authenticateAccountFromRequest(request, true),
 			getSsoClientById(context.client_id),
 		]);
 		if (auth.status === 'error') {
@@ -223,7 +223,7 @@ export default async function SsoAuthorizePage({
 
 	try {
 		const request = await createRequestFromHeaders();
-		const auth = await authenticateAccountRequest(request, true);
+		const auth = await authenticateAccountFromRequest(request, true);
 		if (auth.status === 'error') {
 			if (auth.message === 'unauthorized') {
 				return <SsoAuthorizeLoginRequired />;

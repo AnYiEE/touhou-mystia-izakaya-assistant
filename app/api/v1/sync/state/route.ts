@@ -1,11 +1,11 @@
 import { type NextRequest } from 'next/server';
 
 import {
-	checkAccountCookieSecurityResponse,
-	checkAccountFeatureResponse,
-	checkAccountRateLimitResponse,
-	checkSameOriginResponse,
-	createAccountAuthErrorResponse,
+	checkAccountCookieSecurityRouteResponse,
+	checkAccountFeatureRouteResponse,
+	checkAccountRateLimitRouteResponse,
+	checkSameOriginRouteResponse,
+	createAccountAuthErrorRouteResponse,
 	readJsonBodyResult,
 } from '@/lib/account/server/routeResponses';
 import {
@@ -32,17 +32,18 @@ function createCorruptUserStateResponse() {
 }
 
 export async function GET(request: NextRequest) {
-	const featureResponse = await checkAccountFeatureResponse();
+	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
 		return featureResponse;
 	}
 
-	const sameOriginResponse = checkSameOriginResponse(request);
+	const sameOriginResponse = checkSameOriginRouteResponse(request);
 	if (sameOriginResponse !== null) {
 		return sameOriginResponse;
 	}
 
-	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	const cookieSecurityResponse =
+		checkAccountCookieSecurityRouteResponse(request);
 	if (cookieSecurityResponse !== null) {
 		return cookieSecurityResponse;
 	}
@@ -51,9 +52,9 @@ export async function GET(request: NextRequest) {
 		import('@/lib/account/server/auth'),
 		import('@/lib/account/server/repositories/userState'),
 	]);
-	const auth = await authModule.authenticateAccountRequest(request);
+	const auth = await authModule.authenticateAccountFromRequest(request);
 	if (auth.status === 'error') {
-		return createAccountAuthErrorResponse(auth, request);
+		return createAccountAuthErrorRouteResponse(auth, request);
 	}
 
 	const namespaceParams = request.nextUrl.searchParams.getAll('namespace');
@@ -84,28 +85,29 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-	const featureResponse = await checkAccountFeatureResponse();
+	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
 		return featureResponse;
 	}
 
-	const sameOriginResponse = checkSameOriginResponse(request);
+	const sameOriginResponse = checkSameOriginRouteResponse(request);
 	if (sameOriginResponse !== null) {
 		return sameOriginResponse;
 	}
 
-	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	const cookieSecurityResponse =
+		checkAccountCookieSecurityRouteResponse(request);
 	if (cookieSecurityResponse !== null) {
 		return cookieSecurityResponse;
 	}
 
 	const authModule = await import('@/lib/account/server/auth');
-	const auth = await authModule.authenticateAccountRequest(request);
+	const auth = await authModule.authenticateAccountFromRequest(request);
 	if (auth.status === 'error') {
-		return createAccountAuthErrorResponse(auth, request);
+		return createAccountAuthErrorRouteResponse(auth, request);
 	}
 
-	const rateLimitResponse = checkAccountRateLimitResponse(
+	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
 		'sync-state-put'
 	);

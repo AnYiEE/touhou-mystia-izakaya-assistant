@@ -2,10 +2,10 @@ import { type NextRequest } from 'next/server';
 
 import {
 	type TAccountGuardResult,
-	checkAccountCookieSecurity,
-	checkAccountFeature,
-	checkAccountRateLimit,
-	checkSameOrigin,
+	checkAccountCookieSecurityGuard,
+	checkAccountFeatureGuard,
+	checkAccountRateLimitGuard,
+	checkSameOriginGuard,
 } from '@/lib/account/server/guards';
 import { SERVER_MISCONFIGURED_MESSAGE } from '@/lib/account/server/environment';
 import { MAX_ACCOUNT_SMALL_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
@@ -17,7 +17,7 @@ import {
 type TAccountAuthError = Extract<
 	Awaited<
 		ReturnType<
-			(typeof import('@/lib/account/server/auth'))['authenticateAccountRequest']
+			(typeof import('@/lib/account/server/auth'))['authenticateAccountFromRequest']
 		>
 	>,
 	{ status: 'error' }
@@ -33,31 +33,31 @@ function createGuardErrorResponse(error: TAccountGuardError) {
 	);
 }
 
-export async function checkAccountFeatureResponse() {
-	const result = await checkAccountFeature();
+export async function checkAccountFeatureRouteResponse() {
+	const result = await checkAccountFeatureGuard();
 
 	return result.status === 'ok' ? null : createGuardErrorResponse(result);
 }
 
-export function checkSameOriginResponse(request: NextRequest) {
-	const result = checkSameOrigin(request);
+export function checkSameOriginRouteResponse(request: NextRequest) {
+	const result = checkSameOriginGuard(request);
 
 	return result.status === 'ok' ? null : createGuardErrorResponse(result);
 }
 
-export function checkAccountCookieSecurityResponse(request: NextRequest) {
-	const result = checkAccountCookieSecurity(request);
+export function checkAccountCookieSecurityRouteResponse(request: NextRequest) {
+	const result = checkAccountCookieSecurityGuard(request);
 
 	return result.status === 'ok' ? null : createGuardErrorResponse(result);
 }
 
-export function checkAccountRateLimitResponse(
+export function checkAccountRateLimitRouteResponse(
 	request: NextRequest,
 	scope: string,
 	usernameNormalized = '',
 	options: { noTrustedIpGate?: boolean } = {}
 ) {
-	const result = checkAccountRateLimit(
+	const result = checkAccountRateLimitGuard(
 		request,
 		scope,
 		usernameNormalized,
@@ -87,7 +87,7 @@ export function createServerMisconfiguredResponse() {
 	return createNoStoreErrorResponse(SERVER_MISCONFIGURED_MESSAGE, 500);
 }
 
-export function createAccountAuthErrorResponse(
+export function createAccountAuthErrorRouteResponse(
 	auth: TAccountAuthError,
 	request: NextRequest
 ) {

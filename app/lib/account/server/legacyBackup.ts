@@ -4,7 +4,7 @@ import {
 	checkBackupCodeLockLostError,
 	checkBackupCodeLockTimeoutError,
 	checkBackupFileNotFoundError,
-	checkIpFrequency,
+	checkRecentBackupAccessByIp,
 	deleteBackupImportRecordByCode,
 	deleteFile,
 	deleteRecord,
@@ -151,7 +151,7 @@ export async function uploadLegacyBackupData({
 
 	const userId = normalizeBackupUserId(rawUserId);
 	const now = Date.now();
-	const recentRecord = await checkIpFrequency(
+	const recentRecord = await checkRecentBackupAccessByIp(
 		'created_at',
 		now - LEGACY_BACKUP_FREQUENCY_TTL,
 		{ ip, ua, userId }
@@ -292,7 +292,7 @@ export async function downloadLegacyBackupData({
 	}
 
 	const now = Date.now();
-	const recentRecord = await checkIpFrequency(
+	const recentRecord = await checkRecentBackupAccessByIp(
 		'last_accessed',
 		now - LEGACY_BACKUP_FREQUENCY_TTL,
 		{ ip }

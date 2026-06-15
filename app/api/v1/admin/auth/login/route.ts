@@ -1,13 +1,13 @@
 import { type NextRequest } from 'next/server';
 
 import {
-	checkAccountCookieSecurityResponse,
-	checkAccountFeatureResponse,
-	checkAccountRateLimitResponse,
-	checkSameOriginResponse,
+	checkAccountCookieSecurityRouteResponse,
+	checkAccountFeatureRouteResponse,
+	checkAccountRateLimitRouteResponse,
+	checkSameOriginRouteResponse,
 	readJsonBodyResult,
 } from '@/lib/account/server/routeResponses';
-import { checkAdminFeatureResponse } from '@/lib/account/server/adminRouteResponses';
+import { checkAdminFeatureRouteResponse } from '@/lib/account/server/adminRouteResponses';
 import { type IAdminLoginBody } from '@/lib/account/shared/types';
 import {
 	createNoStoreErrorResponse,
@@ -18,22 +18,23 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
-	const featureResponse = await checkAccountFeatureResponse();
+	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
 		return featureResponse;
 	}
 
-	const adminFeatureResponse = checkAdminFeatureResponse();
+	const adminFeatureResponse = checkAdminFeatureRouteResponse();
 	if (adminFeatureResponse !== null) {
 		return adminFeatureResponse;
 	}
 
-	const sameOriginResponse = checkSameOriginResponse(request);
+	const sameOriginResponse = checkSameOriginRouteResponse(request);
 	if (sameOriginResponse !== null) {
 		return sameOriginResponse;
 	}
 
-	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	const cookieSecurityResponse =
+		checkAccountCookieSecurityRouteResponse(request);
 	if (cookieSecurityResponse !== null) {
 		return cookieSecurityResponse;
 	}
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	const usernameRateLimitKey = username.toLowerCase();
-	const rateLimitResponse = checkAccountRateLimitResponse(
+	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
 		'admin-login',
 		usernameRateLimitKey,

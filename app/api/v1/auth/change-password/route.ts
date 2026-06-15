@@ -1,11 +1,11 @@
 import { type NextRequest } from 'next/server';
 
 import {
-	checkAccountCookieSecurityResponse,
-	checkAccountFeatureResponse,
-	checkAccountRateLimitResponse,
-	checkSameOriginResponse,
-	createAccountAuthErrorResponse,
+	checkAccountCookieSecurityRouteResponse,
+	checkAccountFeatureRouteResponse,
+	checkAccountRateLimitRouteResponse,
+	checkSameOriginRouteResponse,
+	createAccountAuthErrorRouteResponse,
 	readJsonBodyResult,
 } from '@/lib/account/server/routeResponses';
 import {
@@ -23,17 +23,18 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
-	const featureResponse = await checkAccountFeatureResponse();
+	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
 		return featureResponse;
 	}
 
-	const sameOriginResponse = checkSameOriginResponse(request);
+	const sameOriginResponse = checkSameOriginRouteResponse(request);
 	if (sameOriginResponse !== null) {
 		return sameOriginResponse;
 	}
 
-	const cookieSecurityResponse = checkAccountCookieSecurityResponse(request);
+	const cookieSecurityResponse =
+		checkAccountCookieSecurityRouteResponse(request);
 	if (cookieSecurityResponse !== null) {
 		return cookieSecurityResponse;
 	}
@@ -60,9 +61,9 @@ export async function POST(request: NextRequest) {
 			import('@/lib/account/server/user'),
 		]);
 
-	const auth = await authModule.authenticateAccountRequest(request, true);
+	const auth = await authModule.authenticateAccountFromRequest(request, true);
 	if (auth.status === 'error') {
-		return createAccountAuthErrorResponse(auth, request);
+		return createAccountAuthErrorRouteResponse(auth, request);
 	}
 	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-password-rule', 400);
 	}
 
-	const rateLimitResponse = checkAccountRateLimitResponse(
+	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
 		'change-password',
 		auth.data.user.username_normalized

@@ -63,7 +63,7 @@ function warnNoStableRateLimitKey(scope: string, now = Date.now()) {
 	});
 }
 
-export async function checkAccountFeature(): Promise<TAccountGuardResult> {
+export async function checkAccountFeatureGuard(): Promise<TAccountGuardResult> {
 	const status = await getAccountFeatureStatus();
 
 	if (!status.enabled) {
@@ -91,7 +91,7 @@ export async function checkAccountFeature(): Promise<TAccountGuardResult> {
 	}
 }
 
-export function checkAdminFeature(): TAccountGuardResult {
+export function checkAdminFeatureGuard(): TAccountGuardResult {
 	if (checkAdminFeatureEnabled()) {
 		return { status: 'ok' };
 	}
@@ -99,7 +99,9 @@ export function checkAdminFeature(): TAccountGuardResult {
 	return { httpStatus: 404, message: 'feature-disabled', status: 'error' };
 }
 
-export function checkSameOrigin(request: NextRequest): TAccountGuardResult {
+export function checkSameOriginGuard(
+	request: NextRequest
+): TAccountGuardResult {
 	if (checkSameOriginRequest(request)) {
 		return { status: 'ok' };
 	}
@@ -107,7 +109,7 @@ export function checkSameOrigin(request: NextRequest): TAccountGuardResult {
 	return { httpStatus: 403, message: 'forbidden', status: 'error' };
 }
 
-export function checkAccountCookieSecurity(
+export function checkAccountCookieSecurityGuard(
 	request: NextRequest
 ): TAccountGuardResult {
 	if (checkSecureRequest(request) || checkInsecureAccountCookiesAllowed()) {
@@ -121,7 +123,7 @@ export function checkAccountCookieSecurity(
 	};
 }
 
-export function checkAccountRateLimit(
+export function checkAccountRateLimitGuard(
 	request: NextRequest,
 	scope: string,
 	usernameNormalized = '',
@@ -237,7 +239,7 @@ export function checkAccountRateLimit(
 	};
 }
 
-export function authenticateAdminSession(
+export function authenticateAdminSessionToken(
 	token: string | null
 ): TAccountGuardResult<{
 	payload: NonNullable<ReturnType<typeof verifyAdminSessionToken>>;
@@ -259,7 +261,7 @@ export function authenticateAdminSession(
 	return { data: { payload, token }, status: 'ok' };
 }
 
-export function checkAdminCsrf(
+export function checkAdminCsrfGuard(
 	csrfToken: string | null,
 	sessionToken: string
 ): TAccountGuardResult {

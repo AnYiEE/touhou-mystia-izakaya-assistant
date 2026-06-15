@@ -42,7 +42,7 @@ function checkMissingBackupImportTableError(error: unknown) {
 	);
 }
 
-export async function checkIpFrequency(
+export async function checkRecentBackupAccessByIp(
 	column: 'created_at' | 'last_accessed',
 	time: TBackupFileRecord[typeof column],
 	{
