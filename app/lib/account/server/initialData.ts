@@ -4,7 +4,6 @@ import {
 	checkAccountCookieSecurityGuard,
 	checkAccountFeatureGuard,
 } from './guards';
-import { listSsoUserClientGrantsForUser } from './sso';
 import { createAccountUserProfile } from './user';
 import {
 	type IAccountMeSuccessResponse,
@@ -16,7 +15,8 @@ import { getUserStateSnapshot } from '@/lib/account/server/repositories/userStat
 export async function createAccountSsoGrantInitialDataForUser(
 	userId: string
 ): Promise<IAccountSsoGrantInitialData> {
-	const grants = await listSsoUserClientGrantsForUser(userId);
+	const ssoModule = await import('./sso');
+	const grants = await ssoModule.listSsoUserClientGrantsForUser(userId);
 
 	return { grants, user_id: userId };
 }

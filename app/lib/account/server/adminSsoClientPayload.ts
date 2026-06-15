@@ -6,7 +6,7 @@ import {
 	checkSsoSecretHash,
 	normalizeSsoOptionalUri,
 	validateSsoClientConfig,
-} from '@/lib/account/server/sso';
+} from '@/lib/account/server/ssoValidation';
 
 const DUMMY_SECRET_HASH = '0'.repeat(64);
 const MAX_SSO_CLIENT_ARRAY_ITEMS = 20;

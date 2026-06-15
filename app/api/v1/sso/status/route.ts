@@ -7,12 +7,7 @@ import {
 	checkSsoClientEnabled,
 	checkSsoClientId,
 	checkSsoClientSecret,
-	getSsoClientById,
-	getSsoUserById,
-	getSsoUserStatusError,
-	hasSsoUserClientGrant,
-	verifySsoClientSecret,
-} from '@/lib/account/server/sso';
+} from '@/lib/account/server/ssoValidation';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -77,25 +72,32 @@ export async function POST(request: NextRequest) {
 	}
 
 	try {
-		const client = await getSsoClientById(clientId);
-		if (client === null || !verifySsoClientSecret(client, clientSecret)) {
+		const ssoModule = await import('@/lib/account/server/sso');
+		const client = await ssoModule.getSsoClientById(clientId);
+		if (
+			client === null ||
+			!ssoModule.verifySsoClientSecret(client, clientSecret)
+		) {
 			return createNoStoreErrorResponse('invalid-client', 401);
 		}
 		if (!checkSsoClientEnabled(client)) {
 			return createNoStoreErrorResponse('client-disabled', 403);
 		}
 
-		const user = await getSsoUserById(userId);
+		const user = await ssoModule.getSsoUserById(userId);
 		if (user === null) {
 			return createNoStoreErrorResponse('user-not-found', 404);
 		}
 
-		const hasGrant = await hasSsoUserClientGrant(clientId, userId);
+		const hasGrant = await ssoModule.hasSsoUserClientGrant(
+			clientId,
+			userId
+		);
 		if (!hasGrant) {
 			return createNoStoreErrorResponse('user-not-found', 404);
 		}
 
-		const statusError = getSsoUserStatusError(user);
+		const statusError = ssoModule.getSsoUserStatusError(user);
 		if (statusError !== null) {
 			return createNoStoreErrorResponse(statusError, 403);
 		}

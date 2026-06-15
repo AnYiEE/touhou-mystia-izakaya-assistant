@@ -2,13 +2,6 @@ import { type NextRequest } from 'next/server';
 
 import { checkAdminAnnouncementRequest } from '@/lib/announcements/server/adminRouteResponses';
 import { parseAdminAnnouncementBody } from '@/lib/announcements/server/adminPayload';
-import {
-	ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP,
-	archiveAdminAnnouncement,
-	getAdminAnnouncement,
-	restoreAdminAnnouncement,
-	updateAdminAnnouncement,
-} from '@/lib/announcements/server/service';
 import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
 import {
 	createNoStoreErrorResponse,
@@ -32,11 +25,15 @@ export async function GET(
 	}
 
 	const { id } = await params;
-	const result = await getAdminAnnouncement(id);
+	const announcementModule =
+		await import('@/lib/announcements/server/service');
+	const result = await announcementModule.getAdminAnnouncement(id);
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,
-			ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[result.error]
+			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
+				result.error
+			]
 		);
 	}
 
@@ -71,11 +68,19 @@ export async function PUT(
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	const result = await updateAdminAnnouncement(id, body, check.username);
+	const announcementModule =
+		await import('@/lib/announcements/server/service');
+	const result = await announcementModule.updateAdminAnnouncement(
+		id,
+		body,
+		check.username
+	);
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,
-			ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[result.error]
+			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
+				result.error
+			]
 		);
 	}
 
@@ -96,11 +101,18 @@ export async function DELETE(
 	}
 
 	const { id } = await params;
-	const result = await archiveAdminAnnouncement(id, check.username);
+	const announcementModule =
+		await import('@/lib/announcements/server/service');
+	const result = await announcementModule.archiveAdminAnnouncement(
+		id,
+		check.username
+	);
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,
-			ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[result.error]
+			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
+				result.error
+			]
 		);
 	}
 
@@ -121,11 +133,18 @@ export async function PATCH(
 	}
 
 	const { id } = await params;
-	const result = await restoreAdminAnnouncement(id, check.username);
+	const announcementModule =
+		await import('@/lib/announcements/server/service');
+	const result = await announcementModule.restoreAdminAnnouncement(
+		id,
+		check.username
+	);
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,
-			ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[result.error]
+			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
+				result.error
+			]
 		);
 	}
 

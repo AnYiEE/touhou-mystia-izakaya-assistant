@@ -1,12 +1,6 @@
 import { type NextRequest } from 'next/server';
 
 import { checkAdminSsoClientRequest } from '@/lib/account/server/adminSsoClientRouteResponses';
-import { parseAdminSsoClientUpdateBody } from '@/lib/account/server/adminSsoClientPayload';
-import {
-	ADMIN_SSO_CLIENT_SERVICE_ERROR_STATUS_MAP,
-	deleteAdminSsoClient,
-	updateAdminSsoClient,
-} from '@/lib/account/server/adminSsoClientService';
 import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
 import {
 	createNoStoreErrorResponse,
@@ -62,18 +56,24 @@ export async function PUT(
 	if (bodyResult.status === 'payload-too-large') {
 		return createNoStoreErrorResponse('payload-too-large', 413);
 	}
-	const body = parseAdminSsoClientUpdateBody(
+	const payloadModule =
+		await import('@/lib/account/server/adminSsoClientPayload');
+	const body = payloadModule.parseAdminSsoClientUpdateBody(
 		bodyResult.status === 'ok' ? bodyResult.data : null
 	);
 	if (body?.id !== id) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	const result = await updateAdminSsoClient(id, body);
+	const serviceModule =
+		await import('@/lib/account/server/adminSsoClientService');
+	const result = await serviceModule.updateAdminSsoClient(id, body);
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,
-			ADMIN_SSO_CLIENT_SERVICE_ERROR_STATUS_MAP[result.error]
+			serviceModule.ADMIN_SSO_CLIENT_SERVICE_ERROR_STATUS_MAP[
+				result.error
+			]
 		);
 	}
 
@@ -94,11 +94,15 @@ export async function DELETE(
 	}
 
 	const { id } = await params;
-	const result = await deleteAdminSsoClient(id);
+	const serviceModule =
+		await import('@/lib/account/server/adminSsoClientService');
+	const result = await serviceModule.deleteAdminSsoClient(id);
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,
-			ADMIN_SSO_CLIENT_SERVICE_ERROR_STATUS_MAP[result.error]
+			serviceModule.ADMIN_SSO_CLIENT_SERVICE_ERROR_STATUS_MAP[
+				result.error
+			]
 		);
 	}
 

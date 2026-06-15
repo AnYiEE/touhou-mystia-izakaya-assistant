@@ -8,13 +8,7 @@ import type {
 } from '@/lib/account/legacyBackup/shared';
 import { type TAccountActionResult } from '@/lib/account/actions/utils';
 import { createCurrentRequest } from '@/lib/account/server/currentRequest';
-import {
-	deleteLegacyBackupData,
-	downloadLegacyBackupData,
-	fetchLegacyBackupMetadata,
-	parseLegacyBackupCode,
-	uploadLegacyBackupData,
-} from '@/lib/account/server/legacyBackup';
+import { parseLegacyBackupCode } from '@/lib/account/server/legacyBackupCode';
 import { getLegacyBackupRequestMeta } from '@/lib/account/server/legacyBackupRequest';
 
 export type TLegacyBackupActionResult<TData = Record<string, unknown>> =
@@ -45,7 +39,11 @@ function readLegacyBackupResult<TData>(
 }
 
 function readLegacyBackupDownloadResult<TData>(
-	result: Awaited<ReturnType<typeof downloadLegacyBackupData>>
+	result: Awaited<
+		ReturnType<
+			(typeof import('@/lib/account/server/legacyBackup'))['downloadLegacyBackupData']
+		>
+	>
 ): TLegacyBackupActionResult<TData> {
 	if (result.status === 'error') {
 		return createLegacyBackupActionError(
@@ -79,7 +77,11 @@ export async function fetchLegacyBackupMetadataAction(
 	if (codeResult.status === 'error') {
 		return codeResult;
 	}
-	const result = await fetchLegacyBackupMetadata(codeResult.code);
+	const legacyBackupModule =
+		await import('@/lib/account/server/legacyBackup');
+	const result = await legacyBackupModule.fetchLegacyBackupMetadata(
+		codeResult.code
+	);
 
 	return readLegacyBackupResult<IBackupCheckSuccessResponse>(result);
 }
@@ -91,7 +93,11 @@ export async function deleteLegacyBackupAction(
 	if (codeResult.status === 'error') {
 		return codeResult;
 	}
-	const result = await deleteLegacyBackupData(codeResult.code);
+	const legacyBackupModule =
+		await import('@/lib/account/server/legacyBackup');
+	const result = await legacyBackupModule.deleteLegacyBackupData(
+		codeResult.code
+	);
 
 	return readLegacyBackupResult(result);
 }
@@ -107,7 +113,9 @@ export async function downloadLegacyBackupAction<TData>(
 		`/api/v1/backups/${encodeURIComponent(code)}`
 	);
 	const { ip } = getLegacyBackupRequestMeta(request);
-	const result = await downloadLegacyBackupData({
+	const legacyBackupModule =
+		await import('@/lib/account/server/legacyBackup');
+	const result = await legacyBackupModule.downloadLegacyBackupData({
 		code: codeResult.code,
 		ip,
 	});
@@ -123,7 +131,9 @@ export async function uploadLegacyBackupAction(
 		headers: { 'Content-Type': 'application/json' },
 		method: 'POST',
 	});
-	const result = await uploadLegacyBackupData({
+	const legacyBackupModule =
+		await import('@/lib/account/server/legacyBackup');
+	const result = await legacyBackupModule.uploadLegacyBackupData({
 		body,
 		meta: getLegacyBackupRequestMeta(request),
 	});

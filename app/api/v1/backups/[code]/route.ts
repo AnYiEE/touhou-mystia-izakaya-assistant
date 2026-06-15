@@ -1,10 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import {
-	deleteLegacyBackupData,
-	downloadLegacyBackupData,
-	parseLegacyBackupCode,
-} from '@/lib/account/server/legacyBackup';
+import { parseLegacyBackupCode } from '@/lib/account/server/legacyBackupCode';
 import { getLegacyBackupRequestMeta as getRequestMeta } from '@/lib/account/server/legacyBackupRequest';
 import {
 	NO_STORE_HEADERS,
@@ -28,7 +24,9 @@ export async function GET(
 	}
 
 	const requestMeta = getRequestMeta(request);
-	const downloadResult = await downloadLegacyBackupData({
+	const legacyBackupModule =
+		await import('@/lib/account/server/legacyBackup');
+	const downloadResult = await legacyBackupModule.downloadLegacyBackupData({
 		code,
 		ip: requestMeta.ip,
 	});
@@ -54,7 +52,9 @@ export async function DELETE(
 		return createNoStoreErrorResponse('Invalid code', 400);
 	}
 
-	const deleteResult = await deleteLegacyBackupData(code);
+	const legacyBackupModule =
+		await import('@/lib/account/server/legacyBackup');
+	const deleteResult = await legacyBackupModule.deleteLegacyBackupData(code);
 	if (deleteResult.status === 'error') {
 		return createNoStoreErrorResponse(
 			deleteResult.message,

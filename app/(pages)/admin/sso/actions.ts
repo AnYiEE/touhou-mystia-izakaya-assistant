@@ -13,17 +13,6 @@ import {
 	checkAdminFeatureGuard,
 	checkSameOriginGuard,
 } from '@/lib/account/server/guards';
-import {
-	parseAdminSsoClientCreateBody,
-	parseAdminSsoClientUpdateBody,
-} from '@/lib/account/server/adminSsoClientPayload';
-import {
-	ADMIN_SSO_CLIENT_SERVICE_ERROR_STATUS_MAP,
-	type TAdminSsoClientServiceError,
-	createAdminSsoClient as createAdminSsoClientRecord,
-	deleteAdminSsoClient as deleteAdminSsoClientRecord,
-	updateAdminSsoClient as updateAdminSsoClientRecord,
-} from '@/lib/account/server/adminSsoClientService';
 import { ACCOUNT_COOKIE_NAME_MAP } from '@/lib/account/shared/constants';
 import { type IAdminSsoClientMutationData } from '@/lib/account/shared/types';
 
@@ -41,6 +30,12 @@ type TAdminSsoClientActionScope =
 	| 'admin-delete-sso-client'
 	| 'admin-update-sso-client';
 
+type TAdminSsoClientServiceError =
+	| 'client-disabled'
+	| 'invalid-object-structure'
+	| 'sso-client-conflict'
+	| 'sso-client-not-found';
+
 function createActionError(
 	message: string,
 	httpStatus: number,
@@ -57,10 +52,13 @@ function createGuardActionError(
 	return createActionError(result.message, result.httpStatus, result.data);
 }
 
-function createServiceActionError(error: TAdminSsoClientServiceError) {
+async function createServiceActionError(error: TAdminSsoClientServiceError) {
+	const serviceModule =
+		await import('@/lib/account/server/adminSsoClientService');
+
 	return createActionError(
 		error,
-		ADMIN_SSO_CLIENT_SERVICE_ERROR_STATUS_MAP[error]
+		serviceModule.ADMIN_SSO_CLIENT_SERVICE_ERROR_STATUS_MAP[error]
 	);
 }
 
@@ -134,12 +132,16 @@ export async function createAdminSsoClientAction(
 		return guard;
 	}
 
-	const parsedBody = parseAdminSsoClientCreateBody(body);
+	const payloadModule =
+		await import('@/lib/account/server/adminSsoClientPayload');
+	const parsedBody = payloadModule.parseAdminSsoClientCreateBody(body);
 	if (parsedBody === null) {
 		return createActionError('invalid-object-structure', 400);
 	}
 
-	const result = await createAdminSsoClientRecord(parsedBody);
+	const serviceModule =
+		await import('@/lib/account/server/adminSsoClientService');
+	const result = await serviceModule.createAdminSsoClient(parsedBody);
 	if (result.status === 'error') {
 		return createServiceActionError(result.error);
 	}
@@ -165,12 +167,20 @@ async function updateAdminSsoClient(
 		return createActionError('invalid-object-structure', 400);
 	}
 
-	const parsedBody = parseAdminSsoClientUpdateBody(body);
+	const payloadModule =
+		await import('@/lib/account/server/adminSsoClientPayload');
+	const parsedBody = payloadModule.parseAdminSsoClientUpdateBody(body);
 	if (parsedBody?.id !== id) {
 		return createActionError('invalid-object-structure', 400);
 	}
 
-	const result = await updateAdminSsoClientRecord(id, parsedBody, overrides);
+	const serviceModule =
+		await import('@/lib/account/server/adminSsoClientService');
+	const result = await serviceModule.updateAdminSsoClient(
+		id,
+		parsedBody,
+		overrides
+	);
 	if (result.status === 'error') {
 		return createServiceActionError(result.error);
 	}
@@ -228,7 +238,9 @@ export async function deleteAdminSsoClientAction(
 		return createActionError('invalid-object-structure', 400);
 	}
 
-	const result = await deleteAdminSsoClientRecord(id);
+	const serviceModule =
+		await import('@/lib/account/server/adminSsoClientService');
+	const result = await serviceModule.deleteAdminSsoClient(id);
 	if (result.status === 'error') {
 		return createServiceActionError(result.error);
 	}

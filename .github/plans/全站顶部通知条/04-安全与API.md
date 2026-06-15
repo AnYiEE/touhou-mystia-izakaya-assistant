@@ -65,6 +65,8 @@
 
 页面渲染和公开 API 必须复用同一个 `getVisibleAnnouncementsForRequestContext` 之类的 service。这个 service 统一处理：运行时边界、可选用户 session、受众过滤、cookie 关闭 token、数据库关闭记录、排序、数量限制和 sanitizer。`AnnouncementBar` 负责把 DTO 渲染成 HTML，`GET /api/v1/announcements` 负责把同一个 DTO 序列化为 JSON。
 
+已落地的运行时加载边界：后台公告 API routes、后台公告 Server Actions 和前台 `dismissAnnouncementAction` 均先执行对应 guard、body/payload 校验，再动态加载 `app/lib/announcements/server/service.ts`。这样未通过鉴权、同源、CSRF 或限流的请求不会提前拉起公告 service 及其 DB/净化/历史记录依赖链。
+
 ## 站内 Server Actions
 
 站内后台页面优先使用 Server Actions，而不是浏览器 fetch 后台 API。

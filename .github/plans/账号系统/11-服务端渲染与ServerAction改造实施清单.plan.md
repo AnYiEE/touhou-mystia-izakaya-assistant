@@ -141,6 +141,7 @@ isProject: false
 6. 已完成：复制 secret 继续保留浏览器 Clipboard API 和 fallback。
 7. 已完成：Server Action guard 覆盖 feature gate、管理员开关、same-origin、cookie security、rate limit、管理员 session 和 CSRF。
 8. 已完成：复审后加固 action 直接调用边界，payload parser 接收 `unknown` 并对非对象返回 `invalid-object-structure`；update/toggle 在应用 override 后重新用最终 `secret_hashes` 校验配置，避免 `generate_secret` 与空 secret hash 组合写坏客户端配置。
+9. 已完成：运行时加载边界收敛，SSO client API routes 和 Server Actions 先完成管理员 guard，再动态加载 payload parser 与 `adminSsoClientService`；`adminSsoClientService` 静态依赖轻量 `ssoValidation.ts`，读取具体 client 时再动态加载 `sso.ts`。
 
 ### 保留点
 
@@ -196,6 +197,8 @@ isProject: false
 13. 已完成：旧备份码导入网络层改走 `importBackupCodeAction`，但导入后的本地 `cloudCode` 清理、本地数据接管、sync meta 修正和后续同步仍由客户端流程完成。
 14. 已完成：Server Action body 上限显式提升到 `SERVER_ACTION_BODY_SIZE_LIMIT`（当前 `13mb`），覆盖现有 `MAX_SYNC_JSON_BODY_BYTES`、`MAX_BACKUP_UPLOAD_JSON_BODY_BYTES` 和 action 传输开销；超出业务上限仍由对应业务层返回 `payload-too-large`。
 15. 已完成：`/sso/authorize` 在未登录、强制改密和已登录授权确认分支中注入账号首态；该注入只作用于动态授权页，不放入根 layout，避免首页、资料页、设置页等静态页面退化为动态渲染。
+16. 已完成：普通账号 SSO grants initial data、授权应用 action 和外部 grants routes 不再顶层静态加载 `app/lib/account/server/sso.ts`；client id 格式校验改走轻量 `ssoValidation.ts`，列表读取在 guard 通过后动态加载 `sso.ts`。
+17. 已完成：legacy backup route/action 先用轻量 `legacyBackupCode.ts` 校验 UUID code，再动态加载 `legacyBackup.ts` 执行上传、下载、metadata 和删除逻辑。
 
 ### 保留点
 

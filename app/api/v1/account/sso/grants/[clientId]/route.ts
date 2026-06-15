@@ -7,6 +7,7 @@ import {
 	checkSameOriginRouteResponse,
 	createAccountAuthErrorRouteResponse,
 } from '@/lib/account/server/routeResponses';
+import { checkSsoClientId } from '@/lib/account/server/ssoValidation';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -51,7 +52,6 @@ export async function DELETE(
 		return rateLimitResponse;
 	}
 
-	const { checkSsoClientId } = await import('@/lib/account/server/sso');
 	if (!checkSsoClientId(clientId)) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}

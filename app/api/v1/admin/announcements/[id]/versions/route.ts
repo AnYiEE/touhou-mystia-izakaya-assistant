@@ -2,10 +2,6 @@ import { type NextRequest } from 'next/server';
 
 import { checkAdminAnnouncementRequest } from '@/lib/announcements/server/adminRouteResponses';
 import {
-	ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP,
-	listAdminAnnouncementVersions,
-} from '@/lib/announcements/server/service';
-import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 } from '@/lib/api/routeResponses';
@@ -26,11 +22,15 @@ export async function GET(
 	}
 
 	const { id } = await params;
-	const result = await listAdminAnnouncementVersions(id);
+	const announcementModule =
+		await import('@/lib/announcements/server/service');
+	const result = await announcementModule.listAdminAnnouncementVersions(id);
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,
-			ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[result.error]
+			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
+				result.error
+			]
 		);
 	}
 

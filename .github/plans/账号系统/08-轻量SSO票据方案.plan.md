@@ -115,6 +115,8 @@ isProject: false
 
 SSO 授权上下文通过以下机制保持：authorize 路由在发起登录前，将 `client_id`、`redirect_uri`、`state`、`code_challenge` 存入短期 HttpOnly Cookie（`mystia-sso-context`，有效期 10 分钟）。登录或注册接口在处理完成后检查该 Cookie：若存在，不返回 JSON 登录成功响应，改为跳转到授权确认页。登录接口在 SSO 上下文中调用 `authenticateAccountFromRequest` 时传入 `allowPasswordMustChange=true`，允许管理员重置密码后尚未改密的用户进入 SSO 授权确认流程。
 
+运行时加载边界已拆分：`ssoValidation.ts` 承载 client id、redirect URI、state、PKCE、ticket、client 配置等纯校验；`ssoContext.ts` 承载短期 SSO context cookie、transaction id 和 redirect URL 工具；`sso.ts` 保留 DB、ticket、grant、callback dispatch 等重逻辑。`authorize`、`validate`、`status`、`dispatch-callbacks` 路由和 `/sso/authorize` 页面均先静态使用轻量模块完成参数、cookie context、限流和账号状态校验，再动态加载 `sso.ts`。
+
 #### 授权确认页
 
 用户已登录时，本项目展示授权确认页而非直接发 ticket。无论是本次会话已登录还是刚刚完成登录，均展示确认页。页面包含：

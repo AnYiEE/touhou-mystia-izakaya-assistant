@@ -15,18 +15,6 @@ import {
 } from '@/lib/account/server/guards';
 import { ACCOUNT_COOKIE_NAME_MAP } from '@/lib/account/shared/constants';
 import { parseAdminAnnouncementBody } from '@/lib/announcements/server/adminPayload';
-import {
-	ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP,
-	type TAnnouncementServiceError,
-	archiveAdminAnnouncement,
-	createAdminAnnouncement,
-	getAdminAnnouncement,
-	listAdminAnnouncementVersions,
-	listAdminAnnouncements,
-	previewAnnouncement,
-	restoreAdminAnnouncement,
-	updateAdminAnnouncement,
-} from '@/lib/announcements/server/service';
 import type {
 	IAdminAnnouncementListData,
 	IAdminAnnouncementMutationData,
@@ -70,13 +58,6 @@ function createGuardActionError(
 	result: Extract<TAccountGuardResult, { status: 'error' }>
 ) {
 	return createActionError(result.message, result.httpStatus, result.data);
-}
-
-function createServiceActionError(error: TAnnouncementServiceError) {
-	return createActionError(
-		error,
-		ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[error]
-	);
 }
 
 async function readAdminSessionToken() {
@@ -156,7 +137,12 @@ export async function listAdminAnnouncementsAction(
 		return guard;
 	}
 
-	return { data: await listAdminAnnouncements(options), status: 'ok' };
+	const announcementModule =
+		await import('@/lib/announcements/server/service');
+	return {
+		data: await announcementModule.listAdminAnnouncements(options),
+		status: 'ok',
+	};
 }
 
 export async function getAdminAnnouncementAction(
@@ -172,9 +158,16 @@ export async function getAdminAnnouncementAction(
 		return createActionError('invalid-object-structure', 400);
 	}
 
-	const result = await getAdminAnnouncement(id);
+	const announcementModule =
+		await import('@/lib/announcements/server/service');
+	const result = await announcementModule.getAdminAnnouncement(id);
 	if (result.status === 'error') {
-		return createServiceActionError(result.error);
+		return createActionError(
+			result.error,
+			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
+				result.error
+			]
+		);
 	}
 
 	return { data: result.data, status: 'ok' };
@@ -197,9 +190,16 @@ export async function previewAnnouncementAction(
 		return createActionError('invalid-object-structure', 400);
 	}
 
-	const result = previewAnnouncement(parsedBody);
+	const announcementModule =
+		await import('@/lib/announcements/server/service');
+	const result = announcementModule.previewAnnouncement(parsedBody);
 	if (result.status === 'error') {
-		return createServiceActionError(result.error);
+		return createActionError(
+			result.error,
+			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
+				result.error
+			]
+		);
 	}
 
 	return { data: result.data, status: 'ok' };
@@ -222,9 +222,19 @@ export async function createAnnouncementAction(
 		return createActionError('invalid-object-structure', 400);
 	}
 
-	const result = await createAdminAnnouncement(parsedBody, guard.username);
+	const announcementModule =
+		await import('@/lib/announcements/server/service');
+	const result = await announcementModule.createAdminAnnouncement(
+		parsedBody,
+		guard.username
+	);
 	if (result.status === 'error') {
-		return createServiceActionError(result.error);
+		return createActionError(
+			result.error,
+			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
+				result.error
+			]
+		);
 	}
 
 	return { data: result.data, status: 'ok' };
@@ -251,13 +261,20 @@ export async function updateAnnouncementAction(
 		return createActionError('invalid-object-structure', 400);
 	}
 
-	const result = await updateAdminAnnouncement(
+	const announcementModule =
+		await import('@/lib/announcements/server/service');
+	const result = await announcementModule.updateAdminAnnouncement(
 		id,
 		parsedBody,
 		guard.username
 	);
 	if (result.status === 'error') {
-		return createServiceActionError(result.error);
+		return createActionError(
+			result.error,
+			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
+				result.error
+			]
+		);
 	}
 
 	return { data: result.data, status: 'ok' };
@@ -278,9 +295,19 @@ export async function archiveAnnouncementAction(
 		return createActionError('invalid-object-structure', 400);
 	}
 
-	const result = await archiveAdminAnnouncement(id, guard.username);
+	const announcementModule =
+		await import('@/lib/announcements/server/service');
+	const result = await announcementModule.archiveAdminAnnouncement(
+		id,
+		guard.username
+	);
 	if (result.status === 'error') {
-		return createServiceActionError(result.error);
+		return createActionError(
+			result.error,
+			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
+				result.error
+			]
+		);
 	}
 
 	return { data: result.data, status: 'ok' };
@@ -301,9 +328,19 @@ export async function restoreAnnouncementAction(
 		return createActionError('invalid-object-structure', 400);
 	}
 
-	const result = await restoreAdminAnnouncement(id, guard.username);
+	const announcementModule =
+		await import('@/lib/announcements/server/service');
+	const result = await announcementModule.restoreAdminAnnouncement(
+		id,
+		guard.username
+	);
 	if (result.status === 'error') {
-		return createServiceActionError(result.error);
+		return createActionError(
+			result.error,
+			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
+				result.error
+			]
+		);
 	}
 
 	return { data: result.data, status: 'ok' };
@@ -322,9 +359,16 @@ export async function listAnnouncementVersionsAction(
 		return createActionError('invalid-object-structure', 400);
 	}
 
-	const result = await listAdminAnnouncementVersions(id);
+	const announcementModule =
+		await import('@/lib/announcements/server/service');
+	const result = await announcementModule.listAdminAnnouncementVersions(id);
 	if (result.status === 'error') {
-		return createServiceActionError(result.error);
+		return createActionError(
+			result.error,
+			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
+				result.error
+			]
+		);
 	}
 
 	return { data: result.data, status: 'ok' };

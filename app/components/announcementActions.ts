@@ -2,6 +2,10 @@
 
 import { type NextRequest } from 'next/server';
 
+import {
+	authenticateAccountFromRequest,
+	verifyAccountCsrf,
+} from '@/lib/account/server/auth';
 import { createCurrentRequest } from '@/lib/account/server/currentRequest';
 import {
 	type TAccountGuardResult,
@@ -10,15 +14,6 @@ import {
 	checkAccountRateLimitGuard,
 	checkSameOriginGuard,
 } from '@/lib/account/server/guards';
-import {
-	authenticateAccountFromRequest,
-	verifyAccountCsrf,
-} from '@/lib/account/server/auth';
-import {
-	ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP,
-	type TAnnouncementServiceError,
-	dismissAnnouncementForUser,
-} from '@/lib/announcements/server/service';
 
 export type TAnnouncementActionResult<TData = Record<string, unknown>> =
 	| { data: TData; status: 'ok' }
@@ -43,13 +38,6 @@ function createGuardActionError(
 	result: Extract<TAccountGuardResult, { status: 'error' }>
 ) {
 	return createActionError(result.message, result.httpStatus, result.data);
-}
-
-function createServiceActionError(error: TAnnouncementServiceError) {
-	return createActionError(
-		error,
-		ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[error]
-	);
 }
 
 async function checkDismissAnnouncementActionRequest(
@@ -119,13 +107,20 @@ export async function dismissAnnouncementAction(
 		return createActionError('forbidden', 403);
 	}
 
-	const result = await dismissAnnouncementForUser(
+	const announcementModule =
+		await import('@/lib/announcements/server/service');
+	const result = await announcementModule.dismissAnnouncementForUser(
 		candidate.id,
 		candidate.updatedAt,
 		auth.data.user.id
 	);
 	if (result.status === 'error') {
-		return createServiceActionError(result.error);
+		return createActionError(
+			result.error,
+			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
+				result.error
+			]
+		);
 	}
 
 	return { data: result.data, status: 'ok' };

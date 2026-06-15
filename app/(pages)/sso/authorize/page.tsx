@@ -13,20 +13,19 @@ import AccountSsoGrantInitialDataHydrator from '@/lib/account/client/components/
 
 import {
 	SSO_CONTEXT_COOKIE_NAME,
-	checkSsoClientEnabled,
-	checkSsoRedirectUriFormat,
 	createSsoRedirectUrl,
-	createSsoTicket,
-	getSsoClientById,
 	getSsoContextCookieOptions,
 	getSsoContextCookieValue,
-	validateSsoRedirectUri,
-} from '@/lib/account/server/sso';
+} from '@/lib/account/server/ssoContext';
 import { authenticateAccountFromRequest } from '@/lib/account/server/auth';
 import {
 	createAccountMeInitialDataForAuthenticatedRequest,
 	createAccountSsoGrantInitialDataForUser,
 } from '@/lib/account/server/initialData';
+import {
+	checkSsoClientEnabled,
+	checkSsoRedirectUriFormat,
+} from '@/lib/account/server/ssoValidation';
 import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import { getLogSafeErrorCode } from '@/lib/logging';
 
@@ -68,9 +67,10 @@ async function agreeSsoAuthorize(formData: FormData) {
 	}
 
 	try {
+		const ssoModule = await import('@/lib/account/server/sso');
 		const [auth, client] = await Promise.all([
 			authenticateAccountFromRequest(request, true),
-			getSsoClientById(context.client_id),
+			ssoModule.getSsoClientById(context.client_id),
 		]);
 		if (auth.status === 'error') {
 			redirect('/sso/authorize');
@@ -81,7 +81,7 @@ async function agreeSsoAuthorize(formData: FormData) {
 		if (
 			client === null ||
 			!checkSsoClientEnabled(client) ||
-			!validateSsoRedirectUri(client, context.redirect_uri)
+			!ssoModule.validateSsoRedirectUri(client, context.redirect_uri)
 		) {
 			redirect('/sso/authorize?status=invalid');
 		}
@@ -89,7 +89,7 @@ async function agreeSsoAuthorize(formData: FormData) {
 			redirect('/sso/authorize?status=invalid');
 		}
 
-		const ticket = await createSsoTicket(
+		const ticket = await ssoModule.createSsoTicket(
 			context.client_id,
 			auth.data.user.id,
 			context.redirect_uri,
@@ -122,7 +122,8 @@ async function cancelSsoAuthorize() {
 
 	try {
 		await clearSsoCookieForRedirect(request);
-		const client = await getSsoClientById(context.client_id);
+		const ssoModule = await import('@/lib/account/server/sso');
+		const client = await ssoModule.getSsoClientById(context.client_id);
 		if (
 			client?.cancel_redirect_uri !== undefined &&
 			client.cancel_redirect_uri !== null &&
@@ -257,11 +258,12 @@ export default async function SsoAuthorizePage({
 			return <SsoAuthorizeMessage status="invalid" />;
 		}
 
-		const client = await getSsoClientById(context.client_id);
+		const ssoModule = await import('@/lib/account/server/sso');
+		const client = await ssoModule.getSsoClientById(context.client_id);
 		if (
 			client === null ||
 			!checkSsoClientEnabled(client) ||
-			!validateSsoRedirectUri(client, context.redirect_uri)
+			!ssoModule.validateSsoRedirectUri(client, context.redirect_uri)
 		) {
 			return <SsoAuthorizeMessage status="invalid" />;
 		}

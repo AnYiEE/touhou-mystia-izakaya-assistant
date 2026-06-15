@@ -1,9 +1,6 @@
 import { type NextRequest } from 'next/server';
 
-import {
-	fetchLegacyBackupMetadata,
-	parseLegacyBackupCode,
-} from '@/lib/account/server/legacyBackup';
+import { parseLegacyBackupCode } from '@/lib/account/server/legacyBackupCode';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -23,7 +20,10 @@ export async function GET(
 		return createNoStoreErrorResponse('Invalid code', 400);
 	}
 
-	const metadataResult = await fetchLegacyBackupMetadata(code);
+	const legacyBackupModule =
+		await import('@/lib/account/server/legacyBackup');
+	const metadataResult =
+		await legacyBackupModule.fetchLegacyBackupMetadata(code);
 	if (metadataResult.status === 'error') {
 		return createNoStoreErrorResponse(
 			metadataResult.message,

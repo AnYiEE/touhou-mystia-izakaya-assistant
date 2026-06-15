@@ -11,9 +11,8 @@ import {
 } from '@/lib/account/server/repositories/sso';
 import {
 	createSsoClientPublicProfile,
-	getSsoClientById,
 	validateSsoClientConfig,
-} from '@/lib/account/server/sso';
+} from '@/lib/account/server/ssoValidation';
 
 export type TAdminSsoClientServiceError =
 	| 'client-disabled'
@@ -65,7 +64,8 @@ function mergeStringArrays(...arrays: string[][]) {
 }
 
 async function readPublicClientProfile(id: string) {
-	const client = await getSsoClientById(id);
+	const ssoModule = await import('@/lib/account/server/sso');
+	const client = await ssoModule.getSsoClientById(id);
 
 	return client === null ? null : createSsoClientPublicProfile(client);
 }
@@ -118,7 +118,8 @@ export async function updateAdminSsoClient(
 		return { error: 'invalid-object-structure', status: 'error' };
 	}
 
-	const currentClient = await getSsoClientById(id);
+	const ssoModule = await import('@/lib/account/server/sso');
+	const currentClient = await ssoModule.getSsoClientById(id);
 	if (currentClient === null) {
 		return { error: 'sso-client-not-found', status: 'error' };
 	}

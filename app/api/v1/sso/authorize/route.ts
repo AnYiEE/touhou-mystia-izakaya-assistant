@@ -12,12 +12,7 @@ import {
 	checkSsoCodeChallenge,
 	checkSsoRedirectUriFormat,
 	checkSsoState,
-	createSsoContextTransactionId,
-	getSsoClientById,
-	hasAnySsoClient,
-	setSsoContextCookie,
-	validateSsoRedirectUri,
-} from '@/lib/account/server/sso';
+} from '@/lib/account/server/ssoValidation';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreRedirectResponse,
@@ -76,18 +71,19 @@ export async function GET(request: NextRequest) {
 	}
 
 	try {
-		if (!(await hasAnySsoClient())) {
+		const ssoModule = await import('@/lib/account/server/sso');
+		if (!(await ssoModule.hasAnySsoClient())) {
 			return createNoStoreErrorResponse('feature-disabled', 404);
 		}
 
-		const client = await getSsoClientById(clientId);
+		const client = await ssoModule.getSsoClientById(clientId);
 		if (client === null) {
 			return createNoStoreErrorResponse('feature-disabled', 404);
 		}
 		if (!checkSsoClientEnabled(client)) {
 			return createNoStoreErrorResponse('client-disabled', 403);
 		}
-		if (!validateSsoRedirectUri(client, redirectUri)) {
+		if (!ssoModule.validateSsoRedirectUri(client, redirectUri)) {
 			return createNoStoreErrorResponse('invalid-redirect-uri', 400);
 		}
 
@@ -106,14 +102,14 @@ export async function GET(request: NextRequest) {
 		);
 
 		const response = createNoStoreRedirectResponse(redirectUrl);
-		setSsoContextCookie(
+		ssoModule.setSsoContextCookie(
 			response,
 			{
 				client_id: clientId,
 				code_challenge: codeChallenge,
 				redirect_uri: redirectUri,
 				state,
-				transaction_id: createSsoContextTransactionId(),
+				transaction_id: ssoModule.createSsoContextTransactionId(),
 			},
 			request
 		);

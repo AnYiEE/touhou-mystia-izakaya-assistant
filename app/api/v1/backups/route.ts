@@ -7,7 +7,6 @@ import {
 	LEGACY_BACKUP_FREQUENCY_TTL,
 } from '@/lib/account/legacyBackup/shared';
 import { getLegacyBackupRequestMeta as getRequestMeta } from '@/lib/account/server/legacyBackupRequest';
-import { uploadLegacyBackupData } from '@/lib/account/server/legacyBackup';
 import { MAX_BACKUP_UPLOAD_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
 import { createRetryAfterHeaders } from '@/lib/api/http';
 import {
@@ -76,7 +75,9 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('The data is too large', 413);
 	}
 
-	const uploadResult = await uploadLegacyBackupData({
+	const legacyBackupModule =
+		await import('@/lib/account/server/legacyBackup');
+	const uploadResult = await legacyBackupModule.uploadLegacyBackupData({
 		body: jsonResult.status === 'ok' ? jsonResult.data : null,
 		meta: requestMeta,
 	});

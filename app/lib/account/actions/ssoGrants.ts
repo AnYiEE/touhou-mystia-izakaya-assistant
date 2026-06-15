@@ -9,7 +9,6 @@ import {
 	verifyAccountCsrfToken,
 } from '@/lib/account/server/auth';
 import { createCurrentRequest } from '@/lib/account/server/currentRequest';
-import { deleteSsoUserClientGrant } from '@/lib/account/server/repositories/sso';
 import {
 	type TAccountGuardResult,
 	checkAccountCookieSecurityGuard,
@@ -17,10 +16,7 @@ import {
 	checkAccountRateLimitGuard,
 	checkSameOriginGuard,
 } from '@/lib/account/server/guards';
-import {
-	checkSsoClientId,
-	listSsoUserClientGrantsForUser,
-} from '@/lib/account/server/sso';
+import { checkSsoClientId } from '@/lib/account/server/ssoValidation';
 import { type IAccountSsoGrantListData } from '@/lib/account/shared/types';
 
 export type TAccountSsoGrantActionResult<TData = Record<string, unknown>> =
@@ -85,7 +81,8 @@ export async function refreshAccountSsoGrantsAction(): Promise<
 		return auth;
 	}
 
-	const grants = await listSsoUserClientGrantsForUser(auth.userId);
+	const ssoModule = await import('@/lib/account/server/sso');
+	const grants = await ssoModule.listSsoUserClientGrantsForUser(auth.userId);
 
 	return { data: { grants }, status: 'ok' };
 }
@@ -116,7 +113,12 @@ export async function revokeAccountSsoGrantAction(
 		return createActionError('forbidden', 403);
 	}
 
-	const deleted = await deleteSsoUserClientGrant(auth.userId, clientId);
+	const repositoryModule =
+		await import('@/lib/account/server/repositories/sso');
+	const deleted = await repositoryModule.deleteSsoUserClientGrant(
+		auth.userId,
+		clientId
+	);
 	if (!deleted) {
 		return createActionError('sso-grant-not-found', 404);
 	}

@@ -2,11 +2,6 @@ import { type NextRequest } from 'next/server';
 
 import { checkAdminAnnouncementRequest } from '@/lib/announcements/server/adminRouteResponses';
 import { parseAdminAnnouncementBody } from '@/lib/announcements/server/adminPayload';
-import {
-	ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP,
-	createAdminAnnouncement,
-	listAdminAnnouncements,
-} from '@/lib/announcements/server/service';
 import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
 import {
 	createNoStoreErrorResponse,
@@ -72,8 +67,15 @@ export async function GET(request: NextRequest) {
 		request.nextUrl.searchParams.get('include_archived') === '1';
 	const query = request.nextUrl.searchParams.get('query') ?? '';
 
+	const announcementModule =
+		await import('@/lib/announcements/server/service');
 	return createNoStoreJsonResponse(
-		await listAdminAnnouncements({ includeArchived, page, pageSize, query })
+		await announcementModule.listAdminAnnouncements({
+			includeArchived,
+			page,
+			pageSize,
+			query,
+		})
 	);
 }
 
@@ -102,11 +104,18 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	const result = await createAdminAnnouncement(body, check.username);
+	const announcementModule =
+		await import('@/lib/announcements/server/service');
+	const result = await announcementModule.createAdminAnnouncement(
+		body,
+		check.username
+	);
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,
-			ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[result.error]
+			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
+				result.error
+			]
 		);
 	}
 

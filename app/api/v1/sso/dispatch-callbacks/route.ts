@@ -6,11 +6,6 @@ import {
 	checkSsoRateLimitRouteResponse,
 } from '@/lib/account/server/ssoRouteResponses';
 import {
-	SSO_CALLBACK_DISPATCH_LIMIT,
-	deleteExpiredSsoTickets,
-	dispatchSsoCallbacks,
-} from '@/lib/account/server/sso';
-import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 } from '@/lib/api/routeResponses';
@@ -45,10 +40,13 @@ export async function POST(request: NextRequest) {
 	}
 
 	try {
-		const result = await dispatchSsoCallbacks(SSO_CALLBACK_DISPATCH_LIMIT);
+		const ssoModule = await import('@/lib/account/server/sso');
+		const result = await ssoModule.dispatchSsoCallbacks(
+			ssoModule.SSO_CALLBACK_DISPATCH_LIMIT
+		);
 		let ticketsDeleted = 0;
 		try {
-			ticketsDeleted = await deleteExpiredSsoTickets();
+			ticketsDeleted = await ssoModule.deleteExpiredSsoTickets();
 		} catch (error) {
 			console.warn('SSO expired ticket cleanup failed after dispatch.', {
 				errorCode: getLogSafeErrorCode(error),

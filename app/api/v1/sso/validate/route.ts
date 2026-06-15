@@ -9,10 +9,7 @@ import {
 	checkSsoClientSecret,
 	checkSsoCodeVerifier,
 	checkSsoTicketFormat,
-	getSsoClientById,
-	validateSsoTicket,
-	verifySsoClientSecret,
-} from '@/lib/account/server/sso';
+} from '@/lib/account/server/ssoValidation';
 import { createAccountUserProfile } from '@/lib/account/server/user';
 import {
 	createNoStoreErrorResponse,
@@ -81,15 +78,19 @@ export async function POST(request: NextRequest) {
 	}
 
 	try {
-		const client = await getSsoClientById(clientId);
-		if (client === null || !verifySsoClientSecret(client, clientSecret)) {
+		const ssoModule = await import('@/lib/account/server/sso');
+		const client = await ssoModule.getSsoClientById(clientId);
+		if (
+			client === null ||
+			!ssoModule.verifySsoClientSecret(client, clientSecret)
+		) {
 			return createNoStoreErrorResponse('invalid-client', 401);
 		}
 		if (!checkSsoClientEnabled(client)) {
 			return createNoStoreErrorResponse('client-disabled', 403);
 		}
 
-		const validation = await validateSsoTicket(
+		const validation = await ssoModule.validateSsoTicket(
 			clientId,
 			ticket,
 			codeVerifier

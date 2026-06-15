@@ -1,11 +1,6 @@
 import { type NextRequest } from 'next/server';
 
 import { checkAdminSsoClientRequest } from '@/lib/account/server/adminSsoClientRouteResponses';
-import { parseAdminSsoClientCreateBody } from '@/lib/account/server/adminSsoClientPayload';
-import {
-	ADMIN_SSO_CLIENT_SERVICE_ERROR_STATUS_MAP,
-	createAdminSsoClient,
-} from '@/lib/account/server/adminSsoClientService';
 import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
 import {
 	createNoStoreErrorResponse,
@@ -51,18 +46,24 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('payload-too-large', 413);
 	}
 
-	const body = parseAdminSsoClientCreateBody(
+	const payloadModule =
+		await import('@/lib/account/server/adminSsoClientPayload');
+	const body = payloadModule.parseAdminSsoClientCreateBody(
 		bodyResult.status === 'ok' ? bodyResult.data : null
 	);
 	if (body === null) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	const result = await createAdminSsoClient(body);
+	const serviceModule =
+		await import('@/lib/account/server/adminSsoClientService');
+	const result = await serviceModule.createAdminSsoClient(body);
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,
-			ADMIN_SSO_CLIENT_SERVICE_ERROR_STATUS_MAP[result.error]
+			serviceModule.ADMIN_SSO_CLIENT_SERVICE_ERROR_STATUS_MAP[
+				result.error
+			]
 		);
 	}
 

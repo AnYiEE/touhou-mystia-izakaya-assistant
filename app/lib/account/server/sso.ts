@@ -1,10 +1,62 @@
-import { type NextRequest, type NextResponse } from 'next/server';
 import { createHash, createHmac, randomBytes } from 'node:crypto';
 
 import { checkFixedLengthEqual, createAccountHmac } from './crypto';
 import { getAccountDatabase } from './db';
-import { getAccountCookieSecureFlag } from './request';
-import { ACCOUNT_COOKIE_NAME_MAP, USER_STATUS_MAP } from '../shared/constants';
+import { SSO_TICKET_BYTE_LENGTH, SSO_TICKET_TTL_MS } from './ssoContext';
+export {
+	SSO_CONTEXT_COOKIE_MAX_AGE,
+	SSO_CONTEXT_COOKIE_NAME,
+	SSO_CONTEXT_TRANSACTION_ID_BYTE_LENGTH,
+	SSO_TICKET_BYTE_LENGTH,
+	SSO_TICKET_TTL_MS,
+	clearSsoContextCookie,
+	createSsoContextTransactionId,
+	createSsoRedirectUrl,
+	getSsoContextCookie,
+	getSsoContextCookieOptions,
+	getSsoContextCookieValue,
+	setSsoContextCookie,
+} from './ssoContext';
+export {
+	SSO_CODE_CHALLENGE_LENGTH,
+	SSO_CLIENT_ID_MAX_LENGTH,
+	SSO_CODE_VERIFIER_MAX_LENGTH,
+	SSO_FIELD_MAX_LENGTH,
+	SSO_STATE_MAX_LENGTH,
+	SSO_TICKET_LENGTH,
+	checkSsoCallbackEvent,
+	checkSsoClientEnabled,
+	checkSsoClientId,
+	checkSsoClientName,
+	checkSsoClientSecret,
+	checkSsoCodeChallenge,
+	checkSsoCodeVerifier,
+	checkSsoContextTransactionId,
+	checkSsoCustomSchemeRedirectUri,
+	checkSsoHttpsRedirectUri,
+	checkSsoLoopbackRedirectPath,
+	checkSsoRedirectUriFormat,
+	checkSsoSecretHash,
+	checkSsoState,
+	checkSsoStatusCallbackUrl,
+	checkSsoTicketFormat,
+	createSsoClientPublicProfile,
+	normalizeSsoOptionalUri,
+	validateSsoClientConfig,
+} from './ssoValidation';
+import {
+	checkSsoCallbackEvent,
+	checkSsoClientEnabled,
+	checkSsoClientId,
+	checkSsoClientSecret,
+	checkSsoCodeChallenge,
+	checkSsoCodeVerifier,
+	checkSsoRedirectUriFormat,
+	checkSsoTicketFormat,
+	normalizeNullableString,
+	validateSsoClientConfig,
+} from './ssoValidation';
+import { USER_STATUS_MAP } from '../shared/constants';
 import { TABLE_NAME_MAP } from '@/lib/db';
 import type {
 	TSsoCallbackEvent,
@@ -15,15 +67,10 @@ import type {
 } from '@/lib/db/types';
 import { getLogSafeErrorCode } from '@/lib/logging';
 
-export const SSO_CONTEXT_COOKIE_MAX_AGE = 10 * 60;
-export const SSO_CONTEXT_COOKIE_NAME = ACCOUNT_COOKIE_NAME_MAP.ssoContext;
-export const SSO_TICKET_BYTE_LENGTH = 32;
-export const SSO_TICKET_TTL_MS = 60 * 1000;
 export const SSO_CALLBACK_DISPATCH_LIMIT = 20;
 export const SSO_CALLBACK_MAX_ATTEMPTS = 100;
 export const SSO_CALLBACK_USER_AGENT = 'Mystia-SSO/1.0';
 export const SSO_CALLBACK_TIMEOUT_MS = 5000;
-export const SSO_CONTEXT_TRANSACTION_ID_BYTE_LENGTH = 16;
 
 const CLIENT_TABLE_NAME = TABLE_NAME_MAP.ssoClient;
 const TICKET_TABLE_NAME = TABLE_NAME_MAP.ssoTicket;
@@ -31,29 +78,8 @@ const CALLBACK_QUEUE_TABLE_NAME = TABLE_NAME_MAP.ssoCallbackQueue;
 const GRANT_TABLE_NAME = TABLE_NAME_MAP.ssoUserClientGrant;
 const USER_TABLE_NAME = TABLE_NAME_MAP.user;
 
-const SSO_CONTEXT_VERSION = 1;
-const SSO_CONTEXT_MAX_JSON_BYTES = 4096;
-const SSO_FIELD_MAX_LENGTH = 2048;
-const SSO_CLIENT_ID_MAX_LENGTH = 128;
-const SSO_STATE_MAX_LENGTH = 1024;
-const SSO_CODE_VERIFIER_MAX_LENGTH = 256;
-const SSO_CODE_CHALLENGE_LENGTH = 43;
-const SSO_TICKET_LENGTH = Math.ceil((SSO_TICKET_BYTE_LENGTH * 8) / 6);
 const CALLBACK_FINAL_FAILURE_NEXT_RETRY_AT = Number.MAX_SAFE_INTEGER;
 const SSO_CALLBACK_CLAIM_LEASE_MS = SSO_CALLBACK_TIMEOUT_MS + 60_000;
-const DANGEROUS_CUSTOM_REDIRECT_SCHEME_SET = new Set([
-	'about',
-	'blob',
-	'data',
-	'file',
-	'javascript',
-	'vbscript',
-]);
-
-interface ISsoContextPayload extends ISsoContext {
-	expires_at: number;
-	version: typeof SSO_CONTEXT_VERSION;
-}
 
 interface ISsoCallbackBody {
 	client_id: string;
@@ -73,14 +99,6 @@ export interface ISsoClient extends Omit<
 	https_redirect_uris: string[];
 	loopback_redirect_paths: string[];
 	secret_hashes: string[];
-}
-
-export interface ISsoContext {
-	client_id: string;
-	code_challenge: string;
-	redirect_uri: string;
-	state: string;
-	transaction_id: string;
 }
 
 export type TSsoTicketValidationUserError = 'user-deleted' | 'user-disabled';
@@ -115,263 +133,8 @@ function parseJsonStringArray(value: string, fieldName: string): string[] {
 	return parsed as string[];
 }
 
-function normalizeNullableString(value: string | null) {
-	const trimmed = value?.trim() ?? '';
-
-	return trimmed === '' ? null : trimmed;
-}
-
 function createSha256Hex(value: string) {
 	return createHash('sha256').update(value).digest('hex');
-}
-
-function checkBase64Url(value: string) {
-	return /^[A-Za-z0-9_-]+$/u.test(value);
-}
-
-export function checkSsoCallbackEvent(
-	value: string
-): value is TSsoCallbackEvent {
-	return value === 'user_deleted' || value === 'user_disabled';
-}
-
-function hasControlCharacter(value: string) {
-	for (let index = 0; index < value.length; index++) {
-		const codePoint = value.codePointAt(index);
-		if (
-			codePoint !== undefined &&
-			((codePoint >= 0 && codePoint <= 0x1f) || codePoint === 0x7f)
-		) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
-export function checkSsoClientId(value: string) {
-	return (
-		value.length > 0 &&
-		value.length <= SSO_CLIENT_ID_MAX_LENGTH &&
-		/^[A-Za-z0-9._:-]+$/u.test(value)
-	);
-}
-
-export function checkSsoClientName(value: string) {
-	return value.trim().length > 0 && value.length <= 80;
-}
-
-export function checkSsoSecretHash(value: string) {
-	return /^[a-f0-9]{64}$/u.test(value);
-}
-
-export function checkSsoClientSecret(value: string) {
-	return value.length > 0 && value.length <= SSO_FIELD_MAX_LENGTH;
-}
-
-export function checkSsoState(value: string) {
-	return (
-		value.length > 0 &&
-		value.length <= SSO_STATE_MAX_LENGTH &&
-		!hasControlCharacter(value)
-	);
-}
-
-export function checkSsoCodeChallenge(value: string) {
-	return value.length === SSO_CODE_CHALLENGE_LENGTH && checkBase64Url(value);
-}
-
-export function checkSsoCodeVerifier(value: string) {
-	return (
-		value.length > 0 &&
-		value.length <= SSO_CODE_VERIFIER_MAX_LENGTH &&
-		checkBase64Url(value)
-	);
-}
-
-export function checkSsoContextTransactionId(value: string) {
-	return (
-		value.length ===
-			Math.ceil((SSO_CONTEXT_TRANSACTION_ID_BYTE_LENGTH * 8) / 6) &&
-		checkBase64Url(value)
-	);
-}
-
-export function checkSsoTicketFormat(value: string) {
-	return value.length === SSO_TICKET_LENGTH && checkBase64Url(value);
-}
-
-export function checkSsoLoopbackRedirectPath(value: string) {
-	return (
-		value.length > 0 &&
-		value.length <= 256 &&
-		value.startsWith('/') &&
-		!value.startsWith('//') &&
-		!hasControlCharacter(value) &&
-		!/[?#]/u.test(value)
-	);
-}
-
-export function checkSsoCustomSchemeRedirectUri(value: string) {
-	if (value.length === 0 || value.length > SSO_FIELD_MAX_LENGTH) {
-		return false;
-	}
-
-	try {
-		const url = new URL(value);
-		const scheme = url.protocol.slice(0, -1).toLowerCase();
-		const protocolPrefix = `${url.protocol}//`;
-
-		return (
-			/^[a-z][a-z0-9+.-]{1,63}$/u.test(scheme) &&
-			!DANGEROUS_CUSTOM_REDIRECT_SCHEME_SET.has(scheme) &&
-			url.protocol !== 'http:' &&
-			url.protocol !== 'https:' &&
-			value.toLowerCase().startsWith(protocolPrefix) &&
-			url.hostname !== '' &&
-			url.username === '' &&
-			url.password === '' &&
-			url.hash === ''
-		);
-	} catch {
-		return false;
-	}
-}
-
-export function checkSsoStatusCallbackUrl(value: string | null) {
-	if (value === null) {
-		return true;
-	}
-
-	try {
-		const url = new URL(value);
-		return (
-			value.length <= SSO_FIELD_MAX_LENGTH &&
-			url.protocol === 'https:' &&
-			url.username === '' &&
-			url.password === '' &&
-			url.hash === ''
-		);
-	} catch {
-		return false;
-	}
-}
-
-export function checkSsoHttpsRedirectUri(value: string) {
-	if (value.length === 0 || value.length > SSO_FIELD_MAX_LENGTH) {
-		return false;
-	}
-
-	try {
-		const url = new URL(value);
-		return (
-			url.protocol === 'https:' &&
-			url.hostname !== '' &&
-			url.username === '' &&
-			url.password === '' &&
-			url.hash === ''
-		);
-	} catch {
-		return false;
-	}
-}
-
-export function checkSsoRedirectUriFormat(value: string) {
-	if (value.length === 0 || value.length > SSO_FIELD_MAX_LENGTH) {
-		return false;
-	}
-
-	try {
-		const url = new URL(value);
-		if (url.protocol === 'http:') {
-			return (
-				['127.0.0.1', '[::1]', '::1'].includes(url.hostname) &&
-				url.username === '' &&
-				url.password === '' &&
-				url.hash === '' &&
-				checkSsoLoopbackRedirectPath(url.pathname)
-			);
-		}
-		if (url.protocol === 'https:') {
-			return checkSsoHttpsRedirectUri(value);
-		}
-
-		return checkSsoCustomSchemeRedirectUri(value);
-	} catch {
-		return false;
-	}
-}
-
-export function normalizeSsoOptionalUri(value: string | null | undefined) {
-	return normalizeNullableString(value ?? null);
-}
-
-export function validateSsoClientConfig(input: {
-	cancel_redirect_uri: string | null;
-	custom_scheme_redirect_uris: string[];
-	https_redirect_uris: string[];
-	id: string;
-	loopback_redirect_paths: string[];
-	name: string;
-	secret_hashes: string[];
-	status_callback_url: string | null;
-}) {
-	if (!checkSsoClientId(input.id) || !checkSsoClientName(input.name)) {
-		return false;
-	}
-	if (
-		input.secret_hashes.length === 0 ||
-		input.secret_hashes.some(
-			(secretHash) => !checkSsoSecretHash(secretHash)
-		)
-	) {
-		return false;
-	}
-	if (
-		input.loopback_redirect_paths.some(
-			(path) => !checkSsoLoopbackRedirectPath(path)
-		) ||
-		input.custom_scheme_redirect_uris.some(
-			(uri) => !checkSsoCustomSchemeRedirectUri(uri)
-		) ||
-		input.https_redirect_uris.some((uri) => !checkSsoHttpsRedirectUri(uri))
-	) {
-		return false;
-	}
-	if (
-		input.loopback_redirect_paths.length === 0 &&
-		input.custom_scheme_redirect_uris.length === 0 &&
-		input.https_redirect_uris.length === 0
-	) {
-		return false;
-	}
-	if (!checkSsoStatusCallbackUrl(input.status_callback_url)) {
-		return false;
-	}
-	if (
-		input.cancel_redirect_uri !== null &&
-		!checkSsoRedirectUriFormat(input.cancel_redirect_uri)
-	) {
-		return false;
-	}
-
-	return true;
-}
-
-export function createSsoClientPublicProfile(client: ISsoClient) {
-	return {
-		cancel_redirect_uri: client.cancel_redirect_uri,
-		created_at: client.created_at,
-		custom_scheme_redirect_uris: client.custom_scheme_redirect_uris,
-		disabled_at: client.disabled_at,
-		https_redirect_uris: client.https_redirect_uris,
-		id: client.id,
-		loopback_redirect_paths: client.loopback_redirect_paths,
-		name: client.name,
-		secret_hashes: client.secret_hashes,
-		status_callback_url: client.status_callback_url,
-		updated_at: client.updated_at,
-	};
 }
 
 function parseSsoClient(record: TSsoClient): ISsoClient {
@@ -410,10 +173,6 @@ function parseSsoClient(record: TSsoClient): ISsoClient {
 	}
 
 	return client;
-}
-
-export function checkSsoClientEnabled(client: ISsoClient) {
-	return client.disabled_at === null;
 }
 
 export async function getSsoClientById(id: string) {
@@ -506,12 +265,6 @@ export function verifyPkce(codeChallenge: string, codeVerifier: string) {
 
 function createSsoTicketToken() {
 	return randomBytes(SSO_TICKET_BYTE_LENGTH).toString('base64url');
-}
-
-export function createSsoContextTransactionId() {
-	return randomBytes(SSO_CONTEXT_TRANSACTION_ID_BYTE_LENGTH).toString(
-		'base64url'
-	);
 }
 
 function hashSsoTicket(ticket: string) {
@@ -695,155 +448,6 @@ export function createSsoCallbackSignature(
 	return createHmac('sha256', signingSecret)
 		.update(`${timestamp}.${body}`)
 		.digest('base64url');
-}
-
-export function getSsoContextCookieOptions(request?: NextRequest) {
-	return {
-		httpOnly: true,
-		maxAge: SSO_CONTEXT_COOKIE_MAX_AGE,
-		path: '/',
-		sameSite: 'lax',
-		secure:
-			request === undefined
-				? process.env.NODE_ENV === 'production'
-				: getAccountCookieSecureFlag(request),
-	} as const;
-}
-
-function createSsoContextCookieValue(context: ISsoContext, now = Date.now()) {
-	const payload = {
-		...context,
-		expires_at: now + SSO_CONTEXT_COOKIE_MAX_AGE * 1000,
-		version: SSO_CONTEXT_VERSION,
-	} satisfies ISsoContextPayload;
-	const encodedPayload = Buffer.from(
-		JSON.stringify(payload),
-		'utf8'
-	).toString('base64url');
-	const signature = createAccountHmac('sso-context:v1', encodedPayload);
-
-	return `${encodedPayload}.${signature}`;
-}
-
-function parseSsoContextCookieValue(value: string, now = Date.now()) {
-	const [encodedPayload, signature, extra] = value.split('.');
-	if (
-		extra !== undefined ||
-		encodedPayload === undefined ||
-		signature === undefined ||
-		!checkBase64Url(encodedPayload) ||
-		!checkBase64Url(signature)
-	) {
-		return null;
-	}
-
-	const expectedSignature = createAccountHmac(
-		'sso-context:v1',
-		encodedPayload
-	);
-	if (!checkFixedLengthEqual(signature, expectedSignature)) {
-		return null;
-	}
-
-	const json = Buffer.from(encodedPayload, 'base64url').toString('utf8');
-	if (Buffer.byteLength(json, 'utf8') > SSO_CONTEXT_MAX_JSON_BYTES) {
-		return null;
-	}
-
-	let payload: unknown;
-	try {
-		payload = JSON.parse(json);
-	} catch {
-		return null;
-	}
-
-	if (
-		payload === null ||
-		Array.isArray(payload) ||
-		typeof payload !== 'object'
-	) {
-		return null;
-	}
-	if (
-		!('client_id' in payload) ||
-		!('redirect_uri' in payload) ||
-		!('state' in payload) ||
-		!('code_challenge' in payload) ||
-		!('transaction_id' in payload) ||
-		!('expires_at' in payload) ||
-		!('version' in payload) ||
-		payload.version !== SSO_CONTEXT_VERSION ||
-		typeof payload.client_id !== 'string' ||
-		typeof payload.redirect_uri !== 'string' ||
-		typeof payload.state !== 'string' ||
-		typeof payload.code_challenge !== 'string' ||
-		typeof payload.transaction_id !== 'string' ||
-		typeof payload.expires_at !== 'number' ||
-		!Number.isSafeInteger(payload.expires_at) ||
-		payload.expires_at <= now
-	) {
-		return null;
-	}
-
-	const context = {
-		client_id: payload.client_id,
-		code_challenge: payload.code_challenge,
-		redirect_uri: payload.redirect_uri,
-		state: payload.state,
-		transaction_id: payload.transaction_id,
-	} satisfies ISsoContext;
-
-	return checkSsoClientId(context.client_id) &&
-		checkSsoRedirectUriFormat(context.redirect_uri) &&
-		checkSsoState(context.state) &&
-		checkSsoCodeChallenge(context.code_challenge) &&
-		checkSsoContextTransactionId(context.transaction_id)
-		? context
-		: null;
-}
-
-export function setSsoContextCookie(
-	response: NextResponse,
-	context: ISsoContext,
-	request?: NextRequest
-) {
-	response.cookies.set(
-		SSO_CONTEXT_COOKIE_NAME,
-		createSsoContextCookieValue(context),
-		getSsoContextCookieOptions(request)
-	);
-}
-
-export function getSsoContextCookie(request: NextRequest) {
-	const value = request.cookies.get(SSO_CONTEXT_COOKIE_NAME)?.value;
-
-	return value === undefined ? null : parseSsoContextCookieValue(value);
-}
-
-export function getSsoContextCookieValue(value: string | undefined) {
-	return value === undefined ? null : parseSsoContextCookieValue(value);
-}
-
-export function clearSsoContextCookie(
-	response: NextResponse,
-	request?: NextRequest
-) {
-	response.cookies.set(SSO_CONTEXT_COOKIE_NAME, '', {
-		...getSsoContextCookieOptions(request),
-		maxAge: 0,
-	});
-}
-
-export function createSsoRedirectUrl(
-	redirectUri: string,
-	ticket: string,
-	state: string
-) {
-	const url = new URL(redirectUri);
-	url.searchParams.set('ticket', ticket);
-	url.searchParams.set('state', state);
-
-	return url.toString();
 }
 
 function getSsoCallbackRetryDelayMs(nextAttempts: number) {
