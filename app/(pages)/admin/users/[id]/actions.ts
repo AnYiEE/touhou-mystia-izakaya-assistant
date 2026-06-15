@@ -65,7 +65,8 @@ async function readAdminSessionToken() {
 
 async function checkAdminUserActionRequest(
 	scope: TAdminUserDetailActionScope,
-	csrfToken?: string
+	csrfToken?: string,
+	parts: ReadonlyArray<{ name: string; value: string }> = []
 ): Promise<
 	| { status: 'ok' }
 	| Extract<TAdminUserDetailActionResult, { status: 'error' }>
@@ -91,7 +92,9 @@ async function checkAdminUserActionRequest(
 		return createGuardActionError(cookieSecurityResult);
 	}
 
-	const rateLimitResult = checkAccountRateLimitGuard(request, scope);
+	const rateLimitResult = checkAccountRateLimitGuard(request, scope, '', {
+		parts,
+	});
 	if (rateLimitResult.status === 'error') {
 		return createGuardActionError(rateLimitResult);
 	}
@@ -159,7 +162,11 @@ async function createSuccessResult<TData>(
 export async function refreshAdminUserDetailAction(
 	id: string
 ): Promise<TAdminUserDetailActionResult> {
-	const guard = await checkAdminUserActionRequest('admin-user-detail');
+	const guard = await checkAdminUserActionRequest(
+		'admin-user-detail',
+		undefined,
+		[{ name: 'target-user', value: id }]
+	);
 	if (guard.status === 'error') {
 		return guard;
 	}
@@ -179,7 +186,8 @@ export async function resetAdminUserPasswordAction(
 ): Promise<TAdminUserDetailActionResult<{ message: 'password-reset' }>> {
 	const guard = await checkAdminUserActionRequest(
 		'admin-reset-password',
-		csrfToken
+		csrfToken,
+		[{ name: 'target-user', value: id }]
 	);
 	if (guard.status === 'error') {
 		return guard;
@@ -239,7 +247,8 @@ export async function disableAdminUserAction(
 ): Promise<TAdminUserDetailActionResult<{ message: 'user-disabled' }>> {
 	const guard = await checkAdminUserActionRequest(
 		'admin-disable-user',
-		csrfToken
+		csrfToken,
+		[{ name: 'target-user', value: id }]
 	);
 	if (guard.status === 'error') {
 		return guard;
@@ -272,7 +281,8 @@ export async function enableAdminUserAction(
 ): Promise<TAdminUserDetailActionResult<{ message: 'user-enabled' }>> {
 	const guard = await checkAdminUserActionRequest(
 		'admin-enable-user',
-		csrfToken
+		csrfToken,
+		[{ name: 'target-user', value: id }]
 	);
 	if (guard.status === 'error') {
 		return guard;
@@ -308,7 +318,8 @@ export async function restoreAdminUserAction(
 ): Promise<TAdminUserDetailActionResult<{ message: 'user-restored' }>> {
 	const guard = await checkAdminUserActionRequest(
 		'admin-restore-user',
-		csrfToken
+		csrfToken,
+		[{ name: 'target-user', value: id }]
 	);
 	if (guard.status === 'error') {
 		return guard;
@@ -342,7 +353,8 @@ export async function deleteAdminUserSessionsAction(
 ): Promise<TAdminUserDetailActionResult<{ message: 'sessions-deleted' }>> {
 	const guard = await checkAdminUserActionRequest(
 		'admin-delete-user-sessions',
-		csrfToken
+		csrfToken,
+		[{ name: 'target-user', value: id }]
 	);
 	if (guard.status === 'error') {
 		return guard;
@@ -368,7 +380,8 @@ export async function clearAdminUserDataAction(
 ): Promise<TAdminUserDetailActionResult<{ state_epoch: number }>> {
 	const guard = await checkAdminUserActionRequest(
 		'admin-clear-user-data',
-		csrfToken
+		csrfToken,
+		[{ name: 'target-user', value: id }]
 	);
 	if (guard.status === 'error') {
 		return guard;

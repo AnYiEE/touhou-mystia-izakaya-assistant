@@ -33,7 +33,8 @@ function createGuardActionError(
 }
 
 async function authenticateAccountSsoGrantActionRequest(
-	scope: TAccountSsoGrantActionScope
+	scope: TAccountSsoGrantActionScope,
+	parts: ReadonlyArray<{ name: string; value: string }> = []
 ): Promise<
 	| { sessionTokenHash: string; status: 'ok'; userId: string }
 	| Extract<TAccountSsoGrantActionResult, { status: 'error' }>
@@ -59,7 +60,9 @@ async function authenticateAccountSsoGrantActionRequest(
 		return createActionError(auth.message, auth.httpStatus);
 	}
 
-	const rateLimitResult = checkAccountRateLimitGuard(request, scope);
+	const rateLimitResult = checkAccountRateLimitGuard(request, scope, '', {
+		parts,
+	});
 	if (rateLimitResult.status === 'error') {
 		return createGuardActionError(rateLimitResult);
 	}
@@ -96,15 +99,16 @@ export async function revokeAccountSsoGrantAction(
 		message: 'sso-grant-revoked';
 	}>
 > {
+	if (typeof clientId !== 'string' || !checkSsoClientId(clientId)) {
+		return createActionError('invalid-object-structure', 400);
+	}
+
 	const auth = await authenticateAccountSsoGrantActionRequest(
-		'account-revoke-sso-grant'
+		'account-revoke-sso-grant',
+		[{ name: 'client', value: clientId }]
 	);
 	if (auth.status === 'error') {
 		return auth;
-	}
-
-	if (typeof clientId !== 'string' || !checkSsoClientId(clientId)) {
-		return createActionError('invalid-object-structure', 400);
 	}
 	if (
 		typeof csrfToken !== 'string' ||

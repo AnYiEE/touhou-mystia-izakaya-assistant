@@ -13,18 +13,36 @@ import {
 } from '@/lib/account/sync';
 
 export class AccountApiError extends Error {
+	readonly retryAfter: number | null;
 	readonly status: number;
 
-	constructor(message: string, status: number) {
+	constructor(
+		message: string,
+		status: number,
+		retryAfter: number | null = null
+	) {
 		super(message);
 		this.name = 'AccountApiError';
+		this.retryAfter = retryAfter;
 		this.status = status;
 	}
 }
 
+function readRetryAfter(data: Record<string, unknown> | undefined) {
+	const retryAfter = data?.['retry_after'];
+
+	return typeof retryAfter === 'number' && Number.isFinite(retryAfter)
+		? retryAfter
+		: null;
+}
+
 function readAccountActionResult<T>(result: TAccountSyncActionResult<T>) {
 	if (result.status === 'error') {
-		throw new AccountApiError(result.message, result.httpStatus);
+		throw new AccountApiError(
+			result.message,
+			result.httpStatus,
+			readRetryAfter(result.data)
+		);
 	}
 
 	return result.data;

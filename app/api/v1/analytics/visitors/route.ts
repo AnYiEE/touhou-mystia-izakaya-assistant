@@ -1,5 +1,7 @@
+import { type NextRequest } from 'next/server';
 import { env } from 'node:process';
 
+import { checkAccountRateLimitRouteResponse } from '@/lib/account/server/routeResponses';
 import {
 	createJsonResponse,
 	handleOptionsRequest,
@@ -72,7 +74,17 @@ if (!globalThis.__visitorCountCacheInitialized) {
 	}, cache.refreshTtl);
 }
 
-export function GET() {
+export function GET(request: NextRequest) {
+	const rateLimitResponse = checkAccountRateLimitRouteResponse(
+		request,
+		'analytics-visitors-public-read',
+		'',
+		{ noTrustedIpGate: true }
+	);
+	if (rateLimitResponse !== null) {
+		return rateLimitResponse;
+	}
+
 	if (cache.data === null) {
 		return createJsonResponse({ visitors: -1 });
 	}

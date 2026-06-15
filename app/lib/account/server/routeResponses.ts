@@ -55,7 +55,7 @@ export function checkAccountRateLimitRouteResponse(
 	request: NextRequest,
 	scope: string,
 	usernameNormalized = '',
-	options: { noTrustedIpGate?: boolean } = {}
+	options: Parameters<typeof checkAccountRateLimitGuard>[3] = {}
 ) {
 	const result = checkAccountRateLimitGuard(
 		request,

@@ -1,5 +1,6 @@
 import { type NextRequest } from 'next/server';
 
+import { checkAccountRateLimitRouteResponse } from '@/lib/account/server/routeResponses';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -14,6 +15,16 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
 	try {
+		const rateLimitResponse = checkAccountRateLimitRouteResponse(
+			request,
+			'announcements-public-read',
+			'',
+			{ noTrustedIpGate: true }
+		);
+		if (rateLimitResponse !== null) {
+			return rateLimitResponse;
+		}
+
 		const [environmentModule, serviceModule, authModule] =
 			await Promise.all([
 				import('@/lib/announcements/server/environment'),

@@ -41,7 +41,8 @@ function createGuardActionError(
 }
 
 async function checkDismissAnnouncementActionRequest(
-	csrfToken: unknown
+	csrfToken: unknown,
+	parts: ReadonlyArray<{ name: string; value: string }> = []
 ): Promise<
 	| { request: NextRequest; status: 'ok' }
 	| Extract<TAnnouncementActionResult, { status: 'error' }>
@@ -64,7 +65,9 @@ async function checkDismissAnnouncementActionRequest(
 
 	const rateLimitResult = checkAccountRateLimitGuard(
 		request,
-		'announcement-dismiss'
+		'announcement-dismiss',
+		'',
+		{ parts }
 	);
 	if (rateLimitResult.status === 'error') {
 		return createGuardActionError(rateLimitResult);
@@ -94,7 +97,9 @@ export async function dismissAnnouncementAction(
 		return createActionError('invalid-object-structure', 400);
 	}
 
-	const guard = await checkDismissAnnouncementActionRequest(csrfToken);
+	const guard = await checkDismissAnnouncementActionRequest(csrfToken, [
+		{ name: 'announcement', value: candidate.id },
+	]);
 	if (guard.status === 'error') {
 		return guard;
 	}

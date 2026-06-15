@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { parseLegacyBackupCode } from '@/lib/account/server/legacyBackupCode';
 import { getLegacyBackupRequestMeta as getRequestMeta } from '@/lib/account/server/legacyBackupRequest';
+import { createRetryAfterHeaders } from '@/lib/api/http';
 import {
 	NO_STORE_HEADERS,
 	createNoStoreErrorResponse,
@@ -43,7 +44,7 @@ export async function GET(
 }
 
 export async function DELETE(
-	_request: NextRequest,
+	request: NextRequest,
 	{ params }: { params: Promise<{ code: string }> }
 ) {
 	const { code: rawCode } = await params;
@@ -52,13 +53,22 @@ export async function DELETE(
 		return createNoStoreErrorResponse('Invalid code', 400);
 	}
 
+	const requestMeta = getRequestMeta(request);
 	const legacyBackupModule =
 		await import('@/lib/account/server/legacyBackup');
-	const deleteResult = await legacyBackupModule.deleteLegacyBackupData(code);
+	const deleteResult = await legacyBackupModule.deleteLegacyBackupData({
+		code,
+		ip: requestMeta.ip,
+	});
 	if (deleteResult.status === 'error') {
+		const retryAfter = deleteResult.data?.['retry_after'];
 		return createNoStoreErrorResponse(
 			deleteResult.message,
-			deleteResult.httpStatus
+			deleteResult.httpStatus,
+			deleteResult.data,
+			deleteResult.httpStatus === 429 && typeof retryAfter === 'number'
+				? { headers: createRetryAfterHeaders(retryAfter) }
+				: undefined
 		);
 	}
 

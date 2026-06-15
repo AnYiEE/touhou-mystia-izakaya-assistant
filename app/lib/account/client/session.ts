@@ -163,7 +163,11 @@ export async function refreshAccountState() {
 		if (actionResult.status === 'error') {
 			throw new AccountApiError(
 				actionResult.message,
-				actionResult.httpStatus
+				actionResult.httpStatus,
+				typeof actionResult.data?.['retry_after'] === 'number' &&
+					Number.isFinite(actionResult.data['retry_after'])
+					? actionResult.data['retry_after']
+					: null
 			);
 		}
 

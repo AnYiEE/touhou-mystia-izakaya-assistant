@@ -57,6 +57,14 @@ export async function GET(request: NextRequest) {
 		return createAccountAuthErrorRouteResponse(auth, request);
 	}
 
+	const rateLimitResponse = checkAccountRateLimitRouteResponse(
+		request,
+		'sync-state-get'
+	);
+	if (rateLimitResponse !== null) {
+		return rateLimitResponse;
+	}
+
 	const namespaceParams = request.nextUrl.searchParams.getAll('namespace');
 	const namespaces = namespaceParams.filter(checkSyncNamespace);
 	if (namespaces.length !== namespaceParams.length) {

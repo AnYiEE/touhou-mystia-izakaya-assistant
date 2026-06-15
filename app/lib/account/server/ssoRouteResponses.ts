@@ -47,10 +47,25 @@ export function checkSsoRateLimitRouteResponse(
 		if (value === '') {
 			return;
 		}
+		const hashedValue = createRateLimitHash(value);
 		keys.push({
 			capacityGroup: createRateLimitCapacityGroup(scope, name),
-			key: createRateLimitKey([scope, name, createRateLimitHash(value)]),
+			key: createRateLimitKey([scope, name, hashedValue]),
 		});
+		if (trustedRequestIp !== null) {
+			keys.push({
+				capacityGroup: createRateLimitCapacityGroup(
+					scope,
+					`${name}-request`
+				),
+				key: createRateLimitKey([
+					scope,
+					`${name}-request`,
+					hashedValue,
+					trustedRequestIp,
+				]),
+			});
+		}
 	});
 
 	for (const { capacityGroup, key } of keys) {

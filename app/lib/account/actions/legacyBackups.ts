@@ -77,11 +77,16 @@ export async function fetchLegacyBackupMetadataAction(
 	if (codeResult.status === 'error') {
 		return codeResult;
 	}
+	const request = await createCurrentRequest(
+		`/api/v1/backups/${encodeURIComponent(code)}/metadata`
+	);
+	const { ip } = getLegacyBackupRequestMeta(request);
 	const legacyBackupModule =
 		await import('@/lib/account/server/legacyBackup');
-	const result = await legacyBackupModule.fetchLegacyBackupMetadata(
-		codeResult.code
-	);
+	const result = await legacyBackupModule.fetchLegacyBackupMetadata({
+		code: codeResult.code,
+		ip,
+	});
 
 	return readLegacyBackupResult<IBackupCheckSuccessResponse>(result);
 }
@@ -93,11 +98,17 @@ export async function deleteLegacyBackupAction(
 	if (codeResult.status === 'error') {
 		return codeResult;
 	}
+	const request = await createCurrentRequest(
+		`/api/v1/backups/${encodeURIComponent(code)}`,
+		{ method: 'DELETE' }
+	);
+	const { ip } = getLegacyBackupRequestMeta(request);
 	const legacyBackupModule =
 		await import('@/lib/account/server/legacyBackup');
-	const result = await legacyBackupModule.deleteLegacyBackupData(
-		codeResult.code
-	);
+	const result = await legacyBackupModule.deleteLegacyBackupData({
+		code: codeResult.code,
+		ip,
+	});
 
 	return readLegacyBackupResult(result);
 }

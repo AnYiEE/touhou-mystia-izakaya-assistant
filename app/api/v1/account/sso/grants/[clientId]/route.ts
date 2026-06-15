@@ -44,16 +44,18 @@ export async function DELETE(
 		return createAccountAuthErrorRouteResponse(auth, request);
 	}
 
+	if (!checkSsoClientId(clientId)) {
+		return createNoStoreErrorResponse('invalid-object-structure', 400);
+	}
+
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
-		'account-revoke-sso-grant'
+		'account-revoke-sso-grant',
+		'',
+		{ parts: [{ name: 'client', value: clientId }] }
 	);
 	if (rateLimitResponse !== null) {
 		return rateLimitResponse;
-	}
-
-	if (!checkSsoClientId(clientId)) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
 	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {

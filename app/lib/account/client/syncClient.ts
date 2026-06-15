@@ -66,6 +66,7 @@ const FORCE_FLUSH_DELAY = 30 * 1000;
 const QUIET_FLUSH_DELAY = 2 * 1000;
 const LEASE_BUSY_RETRY_DELAY = QUIET_FLUSH_DELAY;
 const EXPLICIT_FLUSH_MAX_PASSES = 8;
+const MAX_RATE_LIMIT_RETRY_DELAY = 5 * 60 * 1000;
 const SYNC_NAMESPACE_SET = new Set<TSyncNamespace>(
 	Object.values(SYNC_NAMESPACE_MAP)
 );
@@ -331,6 +332,27 @@ function clearSyncTimers() {
 	}
 }
 
+function getRateLimitRetryDelay(error: AccountApiError) {
+	if (error.status !== 429 || error.retryAfter === null) {
+		return null;
+	}
+
+	return Math.min(
+		MAX_RATE_LIMIT_RETRY_DELAY,
+		Math.max(QUIET_FLUSH_DELAY, Math.ceil(error.retryAfter * 1000))
+	);
+}
+
+function scheduleAccountSyncFlushAfter(delay: number, flush: () => void) {
+	if (quietFlushTimer !== null) {
+		clearTimeout(quietFlushTimer);
+	}
+	quietFlushTimer = setTimeout(() => {
+		quietFlushTimer = null;
+		flush();
+	}, delay);
+}
+
 function resetExpiredAccountSession() {
 	accountStore.shared.bootstrapStatus.set('anonymous');
 	accountStore.shared.csrfToken.set(null);
@@ -408,6 +430,18 @@ function handlePassiveSyncRefreshError(
 	}
 	if (error instanceof AccountApiError && error.status === 403) {
 		handleForbiddenSyncError(error);
+		return;
+	}
+	if (error instanceof AccountApiError && error.status === 429) {
+		accountStore.shared.sync.canRetry.set(false);
+		accountStore.shared.sync.lastError.set(error.message);
+		scheduleAccountSyncFlushAfter(
+			getRateLimitRetryDelay(error) ?? LEASE_BUSY_RETRY_DELAY,
+			() => {
+				// eslint-disable-next-line @typescript-eslint/no-use-before-define
+				scheduleAccountSyncFlush();
+			}
+		);
 		return;
 	}
 
@@ -1186,6 +1220,7 @@ export async function flushAccountSyncQueue() {
 
 	const flushPromise = (async () => {
 		let didAcquireLease = false;
+		let retryAfterFlushDelay = LEASE_BUSY_RETRY_DELAY;
 		let shouldScheduleRetryAfterFlush = false;
 		let shouldCheckLeaseBeforeWrite = false;
 
@@ -1322,6 +1357,20 @@ export async function flushAccountSyncQueue() {
 
 			return !hasUnresolvedResult;
 		} catch (error) {
+			if (error instanceof AccountApiError && error.status === 429) {
+				if (!checkCurrentSyncRun(generation, context.user.id)) {
+					return false;
+				}
+
+				shouldScheduleRetryAfterFlush =
+					getFlushableEntries(context.user.id).length > 0;
+				retryAfterFlushDelay =
+					getRateLimitRetryDelay(error) ?? retryAfterFlushDelay;
+				accountStore.shared.sync.canRetry.set(false);
+				accountStore.shared.sync.lastError.set(error.message);
+				accountStore.shared.sync.lastResult.set('failed');
+				return false;
+			}
 			if (error instanceof AccountApiError && error.status === 401) {
 				if (checkCurrentSyncRun(generation, context.user.id)) {
 					stopAccountSyncClient();
@@ -1364,6 +1413,22 @@ export async function flushAccountSyncQueue() {
 					return false;
 				} catch (refreshError) {
 					if (!checkCurrentSyncRun(generation, context.user.id)) {
+						return false;
+					}
+					if (
+						refreshError instanceof AccountApiError &&
+						refreshError.status === 429
+					) {
+						shouldScheduleRetryAfterFlush =
+							getFlushableEntries(context.user.id).length > 0;
+						retryAfterFlushDelay =
+							getRateLimitRetryDelay(refreshError) ??
+							retryAfterFlushDelay;
+						accountStore.shared.sync.canRetry.set(false);
+						accountStore.shared.sync.lastError.set(
+							refreshError.message
+						);
+						accountStore.shared.sync.lastResult.set('failed');
 						return false;
 					}
 
@@ -1429,10 +1494,9 @@ export async function flushAccountSyncQueue() {
 				});
 			}
 			if (isCurrentRun && shouldScheduleRetryAfterFlush) {
-				quietFlushTimer ??= setTimeout(() => {
-					quietFlushTimer = null;
+				scheduleAccountSyncFlushAfter(retryAfterFlushDelay, () => {
 					void flushAccountSyncQueue();
-				}, LEASE_BUSY_RETRY_DELAY);
+				});
 			}
 		}
 	})();

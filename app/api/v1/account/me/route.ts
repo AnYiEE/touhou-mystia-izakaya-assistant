@@ -3,6 +3,7 @@ import { type NextRequest } from 'next/server';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
+	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
 } from '@/lib/account/server/routeResponses';
 import { type TAccountMeResponse } from '@/lib/account/shared/types';
@@ -29,6 +30,16 @@ export async function GET(request: NextRequest) {
 		checkAccountCookieSecurityRouteResponse(request);
 	if (cookieSecurityResponse !== null) {
 		return cookieSecurityResponse;
+	}
+
+	const rateLimitResponse = checkAccountRateLimitRouteResponse(
+		request,
+		'account-me',
+		'',
+		{ noTrustedIpGate: true }
+	);
+	if (rateLimitResponse !== null) {
+		return rateLimitResponse;
 	}
 
 	const [authModule, userModule, userStateModule] = await Promise.all([

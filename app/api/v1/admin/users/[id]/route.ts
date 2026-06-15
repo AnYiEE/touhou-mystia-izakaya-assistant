@@ -23,6 +23,7 @@ export async function GET(
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> }
 ) {
+	const { id } = await params;
 	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
 		return featureResponse;
@@ -46,7 +47,9 @@ export async function GET(
 
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
-		'admin-user-detail'
+		'admin-user-detail',
+		'',
+		{ parts: [{ name: 'target-user', value: id }] }
 	);
 	if (rateLimitResponse !== null) {
 		return rateLimitResponse;
@@ -61,7 +64,6 @@ export async function GET(
 		);
 	}
 
-	const { id } = await params;
 	const [usersModule, sessionsModule, userStateModule, userModule] =
 		await Promise.all([
 			import('@/lib/account/server/repositories/users'),

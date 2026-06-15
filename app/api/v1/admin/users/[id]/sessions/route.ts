@@ -24,6 +24,7 @@ export async function DELETE(
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> }
 ) {
+	const { id } = await params;
 	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
 		return featureResponse;
@@ -47,7 +48,9 @@ export async function DELETE(
 
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
-		'admin-delete-user-sessions'
+		'admin-delete-user-sessions',
+		'',
+		{ parts: [{ name: 'target-user', value: id }] }
 	);
 	if (rateLimitResponse !== null) {
 		return rateLimitResponse;
@@ -67,7 +70,6 @@ export async function DELETE(
 		return csrfResponse;
 	}
 
-	const { id } = await params;
 	const [usersModule, sessionsModule] = await Promise.all([
 		import('@/lib/account/server/repositories/users'),
 		import('@/lib/account/server/repositories/sessions'),

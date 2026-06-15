@@ -22,6 +22,9 @@ import {
 	withFreshBackupCodeLock,
 } from '@/actions/backup';
 import { maskBackupCode } from '@/lib/account/server/backupCode';
+import { getRequestIp } from '@/lib/account/server/request';
+import { checkRateLimit } from '@/lib/account/server/rateLimit';
+import { createRetryAfterHeaders } from '@/lib/api/http';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -72,6 +75,21 @@ function checkCleanupSecret(secret: string | null, configuredSecret: string) {
 	);
 }
 
+function checkCleanupSecretFailureRateLimit(request: NextRequest) {
+	const requestIp = getRequestIp(request).trim();
+	const key = requestIp === '' ? 'no-ip' : requestIp;
+	const result = checkRateLimit(
+		JSON.stringify(['backup-cleanup-secret', key]),
+		{
+			capacityGroup: 'backup-cleanup-secret',
+			limit: 20,
+			windowMs: 60 * 1000,
+		}
+	);
+
+	return result.allowed ? null : result.retryAfter;
+}
+
 async function runWithConcurrencyLimit<T>(
 	items: T[],
 	limit: number,
@@ -120,7 +138,15 @@ export async function DELETE(request: NextRequest) {
 	}
 
 	if (!checkCleanupSecret(secret, configuredSecret)) {
-		return createNoStoreErrorResponse('Invalid secret', 401);
+		const retryAfter = checkCleanupSecretFailureRateLimit(request);
+		return createNoStoreErrorResponse(
+			'Invalid secret',
+			retryAfter === null ? 401 : 429,
+			retryAfter === null ? undefined : { retry_after: retryAfter },
+			retryAfter === null
+				? undefined
+				: { headers: createRetryAfterHeaders(retryAfter) }
+		);
 	}
 
 	const now = Date.now();

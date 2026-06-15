@@ -15,15 +15,16 @@ export async function GET(
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> }
 ) {
+	const { id } = await params;
 	const check = await checkAdminSsoClientRequest(
 		request,
-		'admin-sso-client-detail'
+		'admin-sso-client-detail',
+		{ parts: [{ name: 'client', value: id }] }
 	);
 	if (check.status === 'error') {
 		return check.response;
 	}
 
-	const { id } = await params;
 	const ssoModule = await import('@/lib/account/server/sso');
 	const client = await ssoModule.getSsoClientById(id);
 	if (client === null) {
@@ -39,16 +40,16 @@ export async function PUT(
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> }
 ) {
+	const { id } = await params;
 	const check = await checkAdminSsoClientRequest(
 		request,
 		'admin-update-sso-client',
-		{ csrf: true }
+		{ csrf: true, parts: [{ name: 'client', value: id }] }
 	);
 	if (check.status === 'error') {
 		return check.response;
 	}
 
-	const { id } = await params;
 	const bodyResult = await readJsonBodyResult(
 		request,
 		MAX_ACCOUNT_JSON_BODY_BYTES
@@ -84,16 +85,16 @@ export async function DELETE(
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> }
 ) {
+	const { id } = await params;
 	const check = await checkAdminSsoClientRequest(
 		request,
 		'admin-delete-sso-client',
-		{ csrf: true }
+		{ csrf: true, parts: [{ name: 'client', value: id }] }
 	);
 	if (check.status === 'error') {
 		return check.response;
 	}
 
-	const { id } = await params;
 	const serviceModule =
 		await import('@/lib/account/server/adminSsoClientService');
 	const result = await serviceModule.deleteAdminSsoClient(id);

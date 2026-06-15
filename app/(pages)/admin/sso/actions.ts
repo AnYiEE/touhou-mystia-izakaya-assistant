@@ -70,7 +70,8 @@ async function readAdminSessionToken() {
 
 async function checkAdminSsoClientActionRequest(
 	scope: TAdminSsoClientActionScope,
-	csrfToken: unknown
+	csrfToken: unknown,
+	parts: ReadonlyArray<{ name: string; value: string }> = []
 ): Promise<
 	{ status: 'ok' } | Extract<TAdminSsoClientActionResult, { status: 'error' }>
 > {
@@ -95,7 +96,9 @@ async function checkAdminSsoClientActionRequest(
 		return createGuardActionError(cookieSecurityResult);
 	}
 
-	const rateLimitResult = checkAccountRateLimitGuard(request, scope);
+	const rateLimitResult = checkAccountRateLimitGuard(request, scope, '', {
+		parts,
+	});
 	if (rateLimitResult.status === 'error') {
 		return createGuardActionError(rateLimitResult);
 	}
@@ -157,7 +160,8 @@ async function updateAdminSsoClient(
 ): Promise<TAdminSsoClientActionResult<IAdminSsoClientMutationData>> {
 	const guard = await checkAdminSsoClientActionRequest(
 		'admin-update-sso-client',
-		csrfToken
+		csrfToken,
+		typeof id === 'string' ? [{ name: 'client', value: id }] : []
 	);
 	if (guard.status === 'error') {
 		return guard;
@@ -229,7 +233,8 @@ export async function deleteAdminSsoClientAction(
 ): Promise<TAdminSsoClientActionResult<{ message: 'sso-client-deleted' }>> {
 	const guard = await checkAdminSsoClientActionRequest(
 		'admin-delete-sso-client',
-		csrfToken
+		csrfToken,
+		typeof id === 'string' ? [{ name: 'client', value: id }] : []
 	);
 	if (guard.status === 'error') {
 		return guard;

@@ -26,6 +26,10 @@ import {
 	checkSsoClientEnabled,
 	checkSsoRedirectUriFormat,
 } from '@/lib/account/server/ssoValidation';
+import {
+	checkAccountRateLimitGuard,
+	checkSameOriginGuard,
+} from '@/lib/account/server/guards';
 import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import { getLogSafeErrorCode } from '@/lib/logging';
 
@@ -51,10 +55,26 @@ async function clearSsoCookieForRedirect(request: NextRequest) {
 	});
 }
 
+function redirectOnSsoAuthorizeActionGuardError(
+	request: NextRequest,
+	scope: string
+) {
+	const sameOriginResult = checkSameOriginGuard(request);
+	if (sameOriginResult.status === 'error') {
+		redirect('/sso/authorize?status=invalid');
+	}
+
+	const rateLimitResult = checkAccountRateLimitGuard(request, scope);
+	if (rateLimitResult.status === 'error') {
+		redirect('/sso/authorize?status=invalid');
+	}
+}
+
 async function agreeSsoAuthorize(formData: FormData) {
 	'use server';
 
 	const request = await createRequestFromHeaders();
+	redirectOnSsoAuthorizeActionGuardError(request, 'sso-authorize-agree');
 	const cookieStore = await cookies();
 	const context = getSsoContextCookieValue(
 		cookieStore.get(SSO_CONTEXT_COOKIE_NAME)?.value
@@ -112,6 +132,7 @@ async function cancelSsoAuthorize() {
 	'use server';
 
 	const request = await createRequestFromHeaders();
+	redirectOnSsoAuthorizeActionGuardError(request, 'sso-authorize-cancel');
 	const cookieStore = await cookies();
 	const context = getSsoContextCookieValue(
 		cookieStore.get(SSO_CONTEXT_COOKIE_NAME)?.value

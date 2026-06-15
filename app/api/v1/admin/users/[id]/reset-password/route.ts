@@ -27,6 +27,7 @@ export async function POST(
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> }
 ) {
+	const { id } = await params;
 	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
 		return featureResponse;
@@ -50,7 +51,9 @@ export async function POST(
 
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
-		'admin-reset-password'
+		'admin-reset-password',
+		'',
+		{ parts: [{ name: 'target-user', value: id }] }
 	);
 	if (rateLimitResponse !== null) {
 		return rateLimitResponse;
@@ -80,7 +83,6 @@ export async function POST(
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	const { id } = await params;
 	const [passwordModule, usersModule, credentialsModule] = await Promise.all([
 		import('@/lib/account/server/password'),
 		import('@/lib/account/server/repositories/users'),

@@ -36,6 +36,15 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('server-misconfigured', 500);
 	}
 	if (secretStatus === 'invalid') {
+		const invalidSecretRateLimitResponse = checkSsoRateLimitRouteResponse(
+			request,
+			'sso-dispatch-callbacks-invalid-secret',
+			[]
+		);
+		if (invalidSecretRateLimitResponse !== null) {
+			return invalidSecretRateLimitResponse;
+		}
+
 		return createNoStoreErrorResponse('invalid-secret', 401);
 	}
 

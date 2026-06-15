@@ -10,11 +10,21 @@ const { isAnalytics, isOffline, isSelfHosted } = siteConfig;
 
 const shouldSkip = isOffline || !isAnalytics || !isSelfHosted;
 
+function readRetryAfter(response: Response) {
+	const retryAfter = Number(response.headers.get('Retry-After'));
+
+	return Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : null;
+}
+
 export default function FooterVisitors() {
 	const [visitors, setVisitors] = useState<number | null>(null);
+	const [retryAt, setRetryAt] = useState(0);
 
 	const fetchVisitors = useCallback(() => {
 		if (shouldSkip) {
+			return;
+		}
+		if (Date.now() < retryAt) {
 			return;
 		}
 
@@ -25,17 +35,23 @@ export default function FooterVisitors() {
 		fetch('/api/v1/analytics/visitors', { cache: 'no-cache' })
 			.then((response) => {
 				if (response.ok) {
+					setRetryAt(0);
 					void response
 						.json()
 						.then((json: { data: { visitors: number } }) => {
 							setVisitors(json.data.visitors);
 						});
+				} else if (response.status === 429) {
+					const retryAfter = readRetryAfter(response);
+					if (retryAfter !== null) {
+						setRetryAt(Date.now() + retryAfter * 1000);
+					}
 				} else {
 					setFailed();
 				}
 			})
 			.catch(setFailed);
-	}, []);
+	}, [retryAt]);
 
 	useEffect(() => {
 		fetchVisitors();

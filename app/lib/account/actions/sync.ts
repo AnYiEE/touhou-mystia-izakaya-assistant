@@ -176,6 +176,11 @@ export async function fetchSyncStateAction(
 		return guardResult;
 	}
 
+	const rlResult = checkSyncActionRateLimit(request, 'sync-state-get');
+	if (rlResult !== null) {
+		return rlResult;
+	}
+
 	const namespaceParams =
 		guardResult.resolvedRequest.nextUrl.searchParams.getAll('namespace');
 	const resolvedNamespaces = namespaceParams.filter(checkSyncNamespace);
@@ -323,9 +328,14 @@ export async function importBackupCodeAction(
 		return guardResult;
 	}
 
-	const rlResult = checkSyncActionRateLimit(request, 'import-backup-code');
-	if (rlResult !== null) {
-		return rlResult;
+	const rlResult = checkAccountRateLimitGuard(
+		request,
+		'import-backup-code',
+		'',
+		{ parts: [{ name: 'backup-code', value: normalizedCode }] }
+	);
+	if (rlResult.status === 'error') {
+		return createGuardActionError(rlResult);
 	}
 
 	const csrfError = checkSyncActionCsrf(

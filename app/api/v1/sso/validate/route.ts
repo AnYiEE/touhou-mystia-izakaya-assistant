@@ -84,6 +84,16 @@ export async function POST(request: NextRequest) {
 			client === null ||
 			!ssoModule.verifySsoClientSecret(client, clientSecret)
 		) {
+			const invalidClientRateLimitResponse =
+				checkSsoRateLimitRouteResponse(
+					request,
+					'sso-validate-invalid-client',
+					[{ name: 'client', value: clientId }]
+				);
+			if (invalidClientRateLimitResponse !== null) {
+				return invalidClientRateLimitResponse;
+			}
+
 			return createNoStoreErrorResponse('invalid-client', 401);
 		}
 		if (!checkSsoClientEnabled(client)) {
@@ -96,12 +106,38 @@ export async function POST(request: NextRequest) {
 			codeVerifier
 		);
 		if (validation === null) {
+			const invalidTicketRateLimitResponse =
+				checkSsoRateLimitRouteResponse(
+					request,
+					'sso-validate-invalid-ticket',
+					[
+						{ name: 'client', value: clientId },
+						{ name: 'ticket', value: ticket },
+					]
+				);
+			if (invalidTicketRateLimitResponse !== null) {
+				return invalidTicketRateLimitResponse;
+			}
+
 			return createNoStoreErrorResponse('invalid-ticket', 401);
 		}
 		if (validation.user_error !== null) {
 			return createNoStoreErrorResponse(validation.user_error, 403);
 		}
 		if (validation.user === null) {
+			const invalidTicketRateLimitResponse =
+				checkSsoRateLimitRouteResponse(
+					request,
+					'sso-validate-invalid-ticket',
+					[
+						{ name: 'client', value: clientId },
+						{ name: 'ticket', value: ticket },
+					]
+				);
+			if (invalidTicketRateLimitResponse !== null) {
+				return invalidTicketRateLimitResponse;
+			}
+
 			return createNoStoreErrorResponse('invalid-ticket', 401);
 		}
 

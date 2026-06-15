@@ -28,6 +28,7 @@ import {
 	createLegacyBackupErrorResult,
 } from '@/lib/account/legacyBackup/shared';
 import { maskBackupCode } from '@/lib/account/server/backupCode';
+import { checkRateLimit } from '@/lib/account/server/rateLimit';
 import { isPlainObject } from '@/lib/account/sync/serializers/utils';
 import { MAX_BACKUP_DATA_BYTES } from '@/lib/account/shared/requestLimits';
 import { getLogSafeErrorCode } from '@/lib/logging';
@@ -42,8 +43,57 @@ export type TLegacyBackupDownloadResult =
 	| { content: string; status: 'ok' }
 	| Extract<TLegacyBackupResult, { status: 'error' }>;
 
+const LEGACY_BACKUP_CODE_RATE_LIMIT_OPTIONS = {
+	limit: 20,
+	windowMs: LEGACY_BACKUP_FREQUENCY_TTL,
+} as const;
+
 function createLegacyBackupServerError(message: string, status: number) {
 	return createLegacyBackupErrorResult(message, status);
+}
+
+function createLegacyBackupRateLimitError(retryAfter: number) {
+	return createLegacyBackupErrorResult('Requests are too frequent', 429, {
+		retry_after: retryAfter,
+	});
+}
+
+function checkLegacyBackupCodeRateLimit({
+	code,
+	ip,
+	scope,
+}: {
+	code: string;
+	ip: string | null;
+	scope: string;
+}) {
+	if (ip === null) {
+		return createLegacyBackupServerError('Invalid IP address', 400);
+	}
+
+	const result = checkRateLimit(JSON.stringify([scope, code, ip]), {
+		...LEGACY_BACKUP_CODE_RATE_LIMIT_OPTIONS,
+		capacityGroup: `legacy-backup:${scope}`,
+	});
+
+	return result.allowed
+		? null
+		: createLegacyBackupRateLimitError(result.retryAfter);
+}
+
+function checkLegacyBackupUploadRateLimit(ip: string | null) {
+	if (ip === null) {
+		return createLegacyBackupServerError('Invalid IP address', 400);
+	}
+
+	const result = checkRateLimit(JSON.stringify(['upload', ip]), {
+		...LEGACY_BACKUP_CODE_RATE_LIMIT_OPTIONS,
+		capacityGroup: 'legacy-backup:upload',
+	});
+
+	return result.allowed
+		? null
+		: createLegacyBackupRateLimitError(result.retryAfter);
 }
 
 function normalizeMediaType(contentType: string | null | undefined) {
@@ -120,6 +170,10 @@ export async function uploadLegacyBackupData({
 	}
 	if (ua === null || ua === undefined) {
 		return createLegacyBackupServerError('Invalid user agent', 400);
+	}
+	const uploadRateLimitError = checkLegacyBackupUploadRateLimit(ip);
+	if (uploadRateLimitError !== null) {
+		return uploadRateLimitError;
 	}
 
 	const backupData = isPlainObject(body) ? body.data : null;
@@ -264,9 +318,22 @@ export async function uploadLegacyBackupData({
 	}
 }
 
-export async function fetchLegacyBackupMetadata(
-	code: string
-): Promise<TLegacyBackupResult<IBackupCheckSuccessResponse>> {
+export async function fetchLegacyBackupMetadata({
+	code,
+	ip,
+}: {
+	code: string;
+	ip: string | null;
+}): Promise<TLegacyBackupResult<IBackupCheckSuccessResponse>> {
+	const rateLimitError = checkLegacyBackupCodeRateLimit({
+		code,
+		ip,
+		scope: 'metadata',
+	});
+	if (rateLimitError !== null) {
+		return rateLimitError;
+	}
+
 	const record = await getRecord(code);
 	if (record.status === 404) {
 		return createLegacyBackupServerError(
@@ -369,9 +436,22 @@ export async function downloadLegacyBackupData({
 	}
 }
 
-export async function deleteLegacyBackupData(
-	code: string
-): Promise<TLegacyBackupResult<{ deletedFile: boolean; message: string }>> {
+export async function deleteLegacyBackupData({
+	code,
+	ip,
+}: {
+	code: string;
+	ip: string | null;
+}): Promise<TLegacyBackupResult<{ deletedFile: boolean; message: string }>> {
+	const rateLimitError = checkLegacyBackupCodeRateLimit({
+		code,
+		ip,
+		scope: 'delete',
+	});
+	if (rateLimitError !== null) {
+		return rateLimitError;
+	}
+
 	try {
 		return await withBackupCodeLock(code, async (signal) => {
 			const record = await getRecord(code);

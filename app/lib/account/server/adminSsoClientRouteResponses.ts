@@ -16,7 +16,10 @@ import {
 export async function checkAdminSsoClientRequest(
 	request: NextRequest,
 	scope: string,
-	options: { csrf?: boolean } = {}
+	options: {
+		csrf?: boolean;
+		parts?: ReadonlyArray<{ name: string; value: string }>;
+	} = {}
 ) {
 	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
@@ -41,7 +44,9 @@ export async function checkAdminSsoClientRequest(
 
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
-		scope
+		scope,
+		'',
+		options.parts === undefined ? {} : { parts: options.parts }
 	);
 	if (rateLimitResponse !== null) {
 		return { response: rateLimitResponse, status: 'error' as const };

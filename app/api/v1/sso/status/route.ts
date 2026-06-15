@@ -78,6 +78,16 @@ export async function POST(request: NextRequest) {
 			client === null ||
 			!ssoModule.verifySsoClientSecret(client, clientSecret)
 		) {
+			const invalidClientRateLimitResponse =
+				checkSsoRateLimitRouteResponse(
+					request,
+					'sso-status-invalid-client',
+					[{ name: 'client', value: clientId }]
+				);
+			if (invalidClientRateLimitResponse !== null) {
+				return invalidClientRateLimitResponse;
+			}
+
 			return createNoStoreErrorResponse('invalid-client', 401);
 		}
 		if (!checkSsoClientEnabled(client)) {

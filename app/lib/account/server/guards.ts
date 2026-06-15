@@ -127,7 +127,10 @@ export function checkAccountRateLimitGuard(
 	request: NextRequest,
 	scope: string,
 	usernameNormalized = '',
-	options: { noTrustedIpGate?: boolean } = {}
+	options: {
+		noTrustedIpGate?: boolean;
+		parts?: ReadonlyArray<{ name: string; value: string }>;
+	} = {}
 ): TAccountGuardResult {
 	const keys: Array<{ capacityGroup: string; key: string }> = [];
 	const trustedRequestIp = getTrustedRequestIp(request);
@@ -166,7 +169,46 @@ export function checkAccountRateLimitGuard(
 				usernameNormalized,
 			]),
 		});
+		if (trustedRequestIp !== null) {
+			keys.push({
+				capacityGroup: createAccountRateLimitCapacityGroup(
+					scope,
+					'username-request'
+				),
+				key: createAccountRateLimitKey([
+					scope,
+					'username-request',
+					usernameNormalized,
+					trustedRequestIp,
+				]),
+			});
+		}
 	}
+
+	options.parts?.forEach(({ name, value }) => {
+		if (value === '') {
+			return;
+		}
+		const hashedValue = createAccountRateLimitCookieHash(value);
+		keys.push({
+			capacityGroup: createAccountRateLimitCapacityGroup(scope, name),
+			key: createAccountRateLimitKey([scope, name, hashedValue]),
+		});
+		if (trustedRequestIp !== null) {
+			keys.push({
+				capacityGroup: createAccountRateLimitCapacityGroup(
+					scope,
+					`${name}-request`
+				),
+				key: createAccountRateLimitKey([
+					scope,
+					`${name}-request`,
+					hashedValue,
+					trustedRequestIp,
+				]),
+			});
+		}
+	});
 
 	const accountSession = request.cookies.get(
 		ACCOUNT_COOKIE_NAME_MAP.session

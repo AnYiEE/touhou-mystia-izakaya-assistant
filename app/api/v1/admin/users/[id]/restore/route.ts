@@ -25,6 +25,7 @@ export async function POST(
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> }
 ) {
+	const { id } = await params;
 	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
 		return featureResponse;
@@ -48,7 +49,9 @@ export async function POST(
 
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
-		'admin-restore-user'
+		'admin-restore-user',
+		'',
+		{ parts: [{ name: 'target-user', value: id }] }
 	);
 	if (rateLimitResponse !== null) {
 		return rateLimitResponse;
@@ -68,7 +71,6 @@ export async function POST(
 		return csrfResponse;
 	}
 
-	const { id } = await params;
 	const usersModule = await import('@/lib/account/server/repositories/users');
 	const isUpdated = await usersModule.setUserStatusIfCurrentStatus(
 		id,

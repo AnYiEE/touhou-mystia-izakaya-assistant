@@ -88,7 +88,9 @@ export async function POST(request: NextRequest) {
 
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
-		'import-backup-code'
+		'import-backup-code',
+		'',
+		{ parts: [{ name: 'backup-code', value: code }] }
 	);
 	if (rateLimitResponse !== null) {
 		return rateLimitResponse;

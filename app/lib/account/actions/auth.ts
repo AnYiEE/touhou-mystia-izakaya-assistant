@@ -317,6 +317,16 @@ export async function fetchAccountMeAction(): Promise<
 		return base;
 	}
 
+	const rateLimitResult = checkAccountRateLimitGuard(
+		base.request,
+		'account-me',
+		'',
+		{ noTrustedIpGate: true }
+	);
+	if (rateLimitResult.status === 'error') {
+		return createGuardActionError(rateLimitResult);
+	}
+
 	const [authModule, userModule, userStateModule] = await Promise.all([
 		import('@/lib/account/server/auth'),
 		import('@/lib/account/server/user'),
