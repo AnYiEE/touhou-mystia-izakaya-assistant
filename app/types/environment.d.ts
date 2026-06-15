@@ -30,6 +30,10 @@ declare global {
 
 			CLEANUP_SECRET?: string;
 			DISPATCH_SECRET?: string;
+
+			ACCOUNT_COOKIE_DOMAIN?: string;
+			SERVICE_API_ORIGIN?: string;
+			SERVICE_ALLOWED_ORIGINS?: string;
 		}
 	}
 

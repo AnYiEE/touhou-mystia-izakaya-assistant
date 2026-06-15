@@ -39,18 +39,16 @@ import {
 } from '../components';
 
 import {
-	type TAdminActionResult,
-	checkAdminAction,
-	fetchAdminSsoClientAction,
-} from '../actions';
-import {
-	type TAdminSsoClientActionResult,
-	createAdminSsoClientAction,
-	deleteAdminSsoClientAction,
-	generateAdminSsoClientSecretAction,
-	toggleAdminSsoClientDisabledAction,
-	updateAdminSsoClientAction,
-} from './actions';
+	type TAdminApiResult,
+	type TAdminSsoClientApiResult,
+	createAdminSsoClient,
+	deleteAdminSsoClient,
+	fetchAdminMe,
+	fetchAdminSsoClient,
+	generateAdminSsoClientSecret,
+	toggleAdminSsoClientDisabled,
+	updateAdminSsoClient,
+} from '../api';
 import {
 	type IAdminMeData,
 	type IAdminSsoClientCreateBody,
@@ -106,7 +104,7 @@ function createUpdateBodyFromClient(
 }
 
 function checkAdminUnauthorizedActionResult(
-	result: Extract<TAdminActionResult, { status: 'error' }>
+	result: Extract<TAdminApiResult, { status: 'error' }>
 ) {
 	return (
 		result.httpStatus === 401 &&
@@ -238,7 +236,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 	}, []);
 
 	const handleActionError = useCallback(
-		(error: Extract<TAdminSsoClientActionResult, { status: 'error' }>) => {
+		(error: Extract<TAdminSsoClientApiResult, { status: 'error' }>) => {
 			if (
 				error.httpStatus === 401 &&
 				(error.message === 'unauthorized' ||
@@ -256,7 +254,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 
 	const applyMutationResult = useCallback(
 		(
-			result: TAdminSsoClientActionResult<IAdminSsoClientMutationData>,
+			result: TAdminSsoClientApiResult<IAdminSsoClientMutationData>,
 			successMessage: string
 		) => {
 			if (result.status === 'error') {
@@ -283,7 +281,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 
 		const requestId = requestIdRef.current;
 
-		void fetchAdminSsoClientAction(clientId)
+		void fetchAdminSsoClient(clientId)
 			.then((result) => {
 				if (requestIdRef.current !== requestId) {
 					return;
@@ -323,7 +321,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 		setIsAuthLoading(true);
 		setMessage(null);
 
-		void checkAdminAction()
+		void fetchAdminMe()
 			.then((result) => {
 				if (requestIdRef.current !== requestId) {
 					return;
@@ -371,7 +369,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 
 		const body = createBody();
 		const request = isEditMode
-			? updateAdminSsoClientAction(
+			? updateAdminSsoClient(
 					body.id,
 					{
 						...body,
@@ -381,7 +379,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 					} satisfies IAdminSsoClientUpdateBody,
 					admin.csrf_token
 				)
-			: createAdminSsoClientAction(body, admin.csrf_token);
+			: createAdminSsoClient(body, admin.csrf_token);
 
 		void request
 			.then((result) => {
@@ -431,7 +429,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 
 		const body = createBody();
 
-		void generateAdminSsoClientSecretAction(
+		void generateAdminSsoClientSecret(
 			client.id,
 			{
 				...body,
@@ -516,7 +514,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 		setMessage(null);
 		setGeneratedSecret(null);
 
-		void toggleAdminSsoClientDisabledAction(
+		void toggleAdminSsoClientDisabled(
 			client.id,
 			createUpdateBodyFromClient(client, shouldDisableClient),
 			shouldDisableClient,
@@ -550,7 +548,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 		setIsSaving(true);
 		setMessage(null);
 
-		void deleteAdminSsoClientAction(client.id, admin.csrf_token)
+		void deleteAdminSsoClient(client.id, admin.csrf_token)
 			.then((result) => {
 				if (result.status === 'error') {
 					handleActionError(result);

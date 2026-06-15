@@ -2,10 +2,7 @@ import { type NextRequest } from 'next/server';
 import { env } from 'node:process';
 
 import { checkAccountRateLimitRouteResponse } from '@/lib/account/server/routeResponses';
-import {
-	createJsonResponse,
-	handleOptionsRequest,
-} from '@/lib/api/routeResponses';
+import { createJsonResponse } from '@/lib/api/routeResponses';
 
 type TVisitorCountResponse = [
 	{
@@ -90,8 +87,4 @@ export function GET(request: NextRequest) {
 	}
 
 	return createJsonResponse(cache.data);
-}
-
-export function OPTIONS() {
-	return handleOptionsRequest();
 }

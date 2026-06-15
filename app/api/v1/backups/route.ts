@@ -12,7 +12,6 @@ import { createRetryAfterHeaders } from '@/lib/api/http';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-	handleOptionsRequest,
 	readJsonBodyResult,
 } from '@/lib/api/routeResponses';
 import { FILE_TYPE_JSON } from '@/utilities';
@@ -91,8 +90,4 @@ export async function POST(request: NextRequest) {
 	return createNoStoreJsonResponse(
 		uploadResult.data satisfies IBackupUploadSuccessResponse
 	);
-}
-
-export function OPTIONS() {
-	return handleOptionsRequest();
 }

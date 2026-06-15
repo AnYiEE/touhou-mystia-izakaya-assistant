@@ -34,6 +34,7 @@ import {
 	serializeAnnouncementDismissedCookieTokens,
 } from '@/lib/announcements/shared/dismissals';
 import { type IAnnouncementPublicItem } from '@/lib/announcements/shared/types';
+import { fetchServiceApi } from '@/lib/api/serviceClient';
 import { accountStore, globalStore } from '@/stores';
 
 const ANNOUNCEMENT_ROTATE_INTERVAL = 5000;
@@ -504,27 +505,19 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 		});
 
 		if (accountUser !== null && csrfToken !== null) {
-			void import('./announcementActions')
-				.then(({ dismissAnnouncementAction }) =>
-					dismissAnnouncementAction(
-						{
-							id: dismissedItem.id,
-							updatedAt: dismissedItem.updated_at,
-						},
-						csrfToken
-					)
-				)
-				.then((result) => {
-					if (result.status === 'error') {
-						console.warn(
-							'dismiss announcement failed',
-							result.message
-						);
-					}
-				})
-				.catch((error: unknown) => {
-					console.warn('dismiss announcement failed', error);
-				});
+			void fetchServiceApi('/api/v1/announcements', {
+				body: JSON.stringify({
+					id: dismissedItem.id,
+					updatedAt: dismissedItem.updated_at,
+				}),
+				headers: {
+					'Content-Type': 'application/json',
+					'X-CSRF-Token': csrfToken,
+				},
+				method: 'POST',
+			}).catch((error: unknown) => {
+				console.warn('dismiss announcement failed', error);
+			});
 		}
 	}, [
 		accountUser,

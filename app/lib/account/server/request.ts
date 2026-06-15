@@ -2,6 +2,7 @@ import { type NextRequest } from 'next/server';
 import { env } from 'node:process';
 
 import { SERVER_MISCONFIGURED_MESSAGE } from './environment';
+import { checkServiceAllowedOrigin } from '@/lib/api/cors';
 import { checkEnvFlag } from '@/lib/environment';
 
 export function getTrustedRequestIp(request: NextRequest) {
@@ -109,10 +110,20 @@ export function checkSameOriginRequest(request: NextRequest) {
 
 	const origin = request.headers.get('origin');
 	if (origin !== null) {
-		return getHeaderOrigin(origin) === expectedOrigin;
+		const headerOrigin = getHeaderOrigin(origin);
+
+		return (
+			headerOrigin === expectedOrigin ||
+			checkServiceAllowedOrigin(headerOrigin)
+		);
 	}
 
-	return getHeaderOrigin(request.headers.get('referer')) === expectedOrigin;
+	const refererOrigin = getHeaderOrigin(request.headers.get('referer'));
+
+	return (
+		refererOrigin === expectedOrigin ||
+		checkServiceAllowedOrigin(refererOrigin)
+	);
 }
 
 export function checkSecureRequest(request: NextRequest) {

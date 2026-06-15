@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ping } from '@/components/analytics';
 
 import { siteConfig } from '@/configs';
+import { createServiceApiUrl } from '@/lib/api/serviceClient';
 
 const { isAnalytics, isOffline, isSelfHosted } = siteConfig;
 
@@ -32,7 +33,10 @@ export default function FooterVisitors() {
 			setVisitors(-1);
 		};
 
-		fetch('/api/v1/analytics/visitors', { cache: 'no-cache' })
+		fetch(createServiceApiUrl('/api/v1/analytics/visitors'), {
+			cache: 'no-cache',
+			credentials: 'include',
+		})
 			.then((response) => {
 				if (response.ok) {
 					setRetryAt(0);

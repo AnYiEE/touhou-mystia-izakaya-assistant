@@ -16,22 +16,6 @@ import { SERVER_ACTION_BODY_SIZE_LIMIT } from './app/lib/account/shared/requestL
 const exportMode = IS_OFFLINE || (!IS_SELF_HOSTED && !IS_VERCEL);
 const skipLint = IS_OFFLINE || (IS_PRODUCTION && Boolean(env.SKIP_LINT));
 
-const legacyApiCorsHeaders = [
-	{ key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
-	{
-		key: 'Access-Control-Allow-Methods',
-		value: 'DELETE, GET, OPTIONS, POST',
-	},
-	{ key: 'Access-Control-Allow-Origin', value: '*' },
-] as const;
-
-const legacyApiCorsSources = [
-	'/api/v1/backups',
-	'/api/v1/backups/:code([0-9a-fA-F-]{36})',
-	'/api/v1/backups/:code([0-9a-fA-F-]{36})/metadata',
-	'/api/v1/analytics/:path*',
-] as const;
-
 const nextConfig: NextConfig = {
 	env: {
 		ANALYTICS_API_URL: env.ANALYTICS_API_URL,
@@ -42,6 +26,7 @@ const nextConfig: NextConfig = {
 		ICP_FILING: env.ICP_FILING,
 		OFFLINE: env.OFFLINE,
 		SELF_HOSTED: env.SELF_HOSTED,
+		SERVICE_API_ORIGIN: env.SERVICE_API_ORIGIN,
 		SHORT_LINK_URL: env.SHORT_LINK_URL,
 		VERCEL: env.VERCEL,
 		VERCEL_ENV: env.VERCEL_ENV,
@@ -80,13 +65,6 @@ if (exportMode) {
 				headers: [{ key: 'Cache-Control', value: 'no-cache' }],
 			});
 		}
-
-		headers.push(
-			...legacyApiCorsSources.map((source) => ({
-				source,
-				headers: [...legacyApiCorsHeaders],
-			}))
-		);
 
 		return headers;
 	};

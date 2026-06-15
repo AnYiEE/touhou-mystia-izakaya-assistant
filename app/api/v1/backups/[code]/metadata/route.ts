@@ -6,7 +6,6 @@ import { createRetryAfterHeaders } from '@/lib/api/http';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-	handleOptionsRequest,
 } from '@/lib/api/routeResponses';
 
 export const runtime = 'nodejs';
@@ -42,8 +41,4 @@ export async function GET(
 	}
 
 	return createNoStoreJsonResponse(metadataResult.data);
-}
-
-export function OPTIONS() {
-	return handleOptionsRequest();
 }

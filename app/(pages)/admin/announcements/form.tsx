@@ -56,20 +56,18 @@ import {
 import { ANNOUNCEMENT_LEVEL_PRESENTATION } from '@/components/announcementPresentation';
 import { AnnouncementHtml } from '@/components/announcementHtml';
 import {
-	type TAdminActionResult,
-	checkAdminAction,
-	getAdminUsersByIdsAction,
-	listAdminUsersAction,
-} from '../actions';
-import {
-	archiveAnnouncementAction,
-	createAnnouncementAction,
-	getAdminAnnouncementAction,
-	listAnnouncementVersionsAction,
-	previewAnnouncementAction,
-	restoreAnnouncementAction,
-	updateAnnouncementAction,
-} from './actions';
+	type TAdminApiResult,
+	archiveAnnouncement,
+	createAnnouncement,
+	fetchAdminMe,
+	getAdminAnnouncement,
+	getAdminUsersByIds,
+	listAdminUsers,
+	listAnnouncementVersions,
+	previewAnnouncement,
+	restoreAnnouncement,
+	updateAnnouncement,
+} from '../api';
 import { clearAdminSession } from '@/lib/account/client/adminSession';
 import type {
 	IAccountUserProfile,
@@ -263,7 +261,7 @@ function createAnnouncementSelectClassNames(
 }
 
 function checkAdminUnauthorizedActionResult(
-	result: Extract<TAdminActionResult, { status: 'error' }>
+	result: Extract<TAdminApiResult, { status: 'error' }>
 ) {
 	return (
 		result.httpStatus === 401 &&
@@ -570,7 +568,7 @@ export default function AdminAnnouncementForm({
 	);
 
 	const handleActionError = useCallback(
-		(result: Extract<TAdminActionResult, { status: 'error' }>) => {
+		(result: Extract<TAdminApiResult, { status: 'error' }>) => {
 			if (checkAdminUnauthorizedActionResult(result)) {
 				clearAdminSession();
 				setAdmin(null);
@@ -583,15 +581,13 @@ export default function AdminAnnouncementForm({
 	);
 
 	const refreshVersions = useCallback((nextAnnouncementId: string) => {
-		void listAnnouncementVersionsAction(nextAnnouncementId).then(
-			(result) => {
-				if (result.status === 'error') {
-					return;
-				}
-
-				setVersions(result.data);
+		void listAnnouncementVersions(nextAnnouncementId).then((result) => {
+			if (result.status === 'error') {
+				return;
 			}
-		);
+
+			setVersions(result.data);
+		});
 	}, []);
 
 	const refreshAnnouncement = useCallback(() => {
@@ -606,8 +602,8 @@ export default function AdminAnnouncementForm({
 		setMessage(null);
 
 		void Promise.all([
-			getAdminAnnouncementAction(announcementId),
-			listAnnouncementVersionsAction(announcementId),
+			getAdminAnnouncement(announcementId),
+			listAnnouncementVersions(announcementId),
 		])
 			.then(([announcementResult, versionsResult]) => {
 				if (requestIdRef.current !== requestId) {
@@ -653,7 +649,7 @@ export default function AdminAnnouncementForm({
 		setIsAuthLoading(true);
 		setMessage(null);
 
-		void checkAdminAction()
+		void fetchAdminMe()
 			.then((result) => {
 				if (requestIdRef.current !== requestId) {
 					return;
@@ -698,7 +694,7 @@ export default function AdminAnnouncementForm({
 		setPreview(null);
 		setMessage(null);
 
-		void previewAnnouncementAction(formBody, csrfToken)
+		void previewAnnouncement(formBody, csrfToken)
 			.then((result) => {
 				if (result.status === 'error') {
 					handleActionError(result);
@@ -719,14 +715,19 @@ export default function AdminAnnouncementForm({
 		if (formBody === null || csrfToken === null) {
 			return;
 		}
+		if (isEditMode && formBody.id === undefined) {
+			setMessage('invalid-object-structure');
+			return;
+		}
 
 		setIsSaving(true);
 		setMessage(null);
 		setPreview(null);
 
-		const request = isEditMode
-			? updateAnnouncementAction(formBody.id, formBody, csrfToken)
-			: createAnnouncementAction(formBody, csrfToken);
+		const request =
+			isEditMode && formBody.id !== undefined
+				? updateAnnouncement(formBody.id, formBody, csrfToken)
+				: createAnnouncement(formBody, csrfToken);
 
 		void request
 			.then((result) => {
@@ -772,7 +773,7 @@ export default function AdminAnnouncementForm({
 		setMessage(null);
 		setIsArchivePopoverOpen(false);
 
-		void archiveAnnouncementAction(targetId, csrfToken)
+		void archiveAnnouncement(targetId, csrfToken)
 			.then((result) => {
 				if (result.status === 'error') {
 					handleActionError(result);
@@ -807,7 +808,7 @@ export default function AdminAnnouncementForm({
 		setIsSaving(true);
 		setMessage(null);
 
-		void restoreAnnouncementAction(targetId, csrfToken)
+		void restoreAnnouncement(targetId, csrfToken)
 			.then((result) => {
 				if (result.status === 'error') {
 					handleActionError(result);
@@ -870,7 +871,7 @@ export default function AdminAnnouncementForm({
 		const requestId = targetUserRequestIdRef.current + 1;
 		targetUserRequestIdRef.current = requestId;
 
-		void getAdminUsersByIdsAction(missingTargetUserIds)
+		void getAdminUsersByIds(missingTargetUserIds)
 			.then((result) => {
 				if (targetUserRequestIdRef.current !== requestId) {
 					return;
@@ -931,7 +932,7 @@ export default function AdminAnnouncementForm({
 		setIsTargetUsersLoading(true);
 
 		const timeoutId = globalThis.setTimeout(() => {
-			void listAdminUsersAction({ page: 1, query })
+			void listAdminUsers({ page: 1, query })
 				.then((result) => {
 					if (targetUserRequestIdRef.current !== requestId) {
 						return;

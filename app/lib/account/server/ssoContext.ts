@@ -3,6 +3,7 @@ import { randomBytes } from 'node:crypto';
 
 import { checkFixedLengthEqual, createAccountHmac } from './crypto';
 import { getAccountCookieSecureFlag } from './request';
+import { createAccountCookieDomainOptions } from './session';
 import {
 	checkSsoClientId,
 	checkSsoCodeChallenge,
@@ -51,6 +52,7 @@ export function createSsoContextTransactionId() {
 
 export function getSsoContextCookieOptions(request?: NextRequest) {
 	return {
+		...createAccountCookieDomainOptions(),
 		httpOnly: true,
 		maxAge: SSO_CONTEXT_COOKIE_MAX_AGE,
 		path: '/',

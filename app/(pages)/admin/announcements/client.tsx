@@ -38,8 +38,11 @@ import {
 } from '../components';
 import TimeAgo from '@/components/timeAgo';
 
-import { type TAdminActionResult, checkAdminAction } from '../actions';
-import { listAdminAnnouncementsAction } from './actions';
+import {
+	type TAdminApiResult,
+	fetchAdminMe,
+	listAdminAnnouncements,
+} from '../api';
 import { clearAdminSession } from '@/lib/account/client/adminSession';
 import type { IAdminMeData } from '@/lib/account/shared/types';
 import { globalStore } from '@/stores';
@@ -121,7 +124,7 @@ const AUDIENCE_LABEL_MAP = {
 } as const satisfies Record<TAnnouncementAudience, string>;
 
 function checkAdminUnauthorizedActionResult(
-	result: Extract<TAdminActionResult, { status: 'error' }>
+	result: Extract<TAdminApiResult, { status: 'error' }>
 ) {
 	return (
 		result.httpStatus === 401 &&
@@ -278,7 +281,7 @@ export default function AdminAnnouncementsClient({
 			setIsLoading(true);
 			setMessage(null);
 
-			void listAdminAnnouncementsAction({
+			void listAdminAnnouncements({
 				includeArchived,
 				page: overridePage ?? page,
 				query: overrideQuery ?? query,
@@ -326,7 +329,7 @@ export default function AdminAnnouncementsClient({
 		setIsAuthLoading(true);
 		setMessage(null);
 
-		void checkAdminAction()
+		void fetchAdminMe()
 			.then((result) => {
 				if (requestIdRef.current !== requestId) {
 					return;

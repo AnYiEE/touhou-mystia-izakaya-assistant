@@ -21,6 +21,7 @@ export type TNavItem<T extends string = string> =
 
 export interface ISiteConfig {
 	baseURL: string;
+	baseOrigin: string;
 	id: string;
 	name: string;
 	enName: string;
@@ -35,6 +36,7 @@ export interface ISiteConfig {
 	navMenuItems: ILink[];
 	links: Record<string, ILink>;
 	cdnUrl: string;
+	serviceApiOrigin: string;
 	analyticsApiUrl: string;
 	analyticsScriptUrl: string;
 	analyticsSiteId: string;

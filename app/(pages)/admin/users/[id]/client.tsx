@@ -48,17 +48,16 @@ import {
 	AdminTableHeader,
 } from '../../components';
 import {
-	type TAdminUserDetailActionResult,
-	clearAdminUserDataAction,
-	deleteAdminUserSessionsAction,
-	disableAdminUserAction,
-	enableAdminUserAction,
-	refreshAdminUserDetailAction,
-	resetAdminUserPasswordAction,
-	restoreAdminUserAction,
-} from './actions';
-
-import { checkAdminAction } from '../../actions';
+	type TAdminUserDetailApiResult,
+	clearAdminUserData,
+	deleteAdminUserSessions,
+	disableAdminUser,
+	enableAdminUser,
+	fetchAdminMe,
+	refreshAdminUserDetail,
+	resetAdminUserPassword,
+	restoreAdminUser,
+} from '../../api';
 import { clearAdminSession } from '@/lib/account/client/adminSession';
 import {
 	PASSWORD_RULE_DESCRIPTION,
@@ -212,7 +211,7 @@ export default function AdminUserDetailClient({
 	);
 
 	const handleActionError = useCallback(
-		(error: Extract<TAdminUserDetailActionResult, { status: 'error' }>) => {
+		(error: Extract<TAdminUserDetailApiResult, { status: 'error' }>) => {
 			if (
 				error.httpStatus === 401 &&
 				(error.message === 'unauthorized' ||
@@ -234,7 +233,7 @@ export default function AdminUserDetailClient({
 		setMessage(null);
 
 		const requestId = createDetailRequestId();
-		void refreshAdminUserDetailAction(id)
+		void refreshAdminUserDetail(id)
 			.then((result) => {
 				if (!checkDetailRequestId(requestId)) {
 					return;
@@ -264,7 +263,7 @@ export default function AdminUserDetailClient({
 
 	const runAction = useCallback(
 		(
-			action: () => Promise<TAdminUserDetailActionResult>,
+			action: () => Promise<TAdminUserDetailApiResult>,
 			success: string,
 			onSuccess?: () => void
 		) => {
@@ -316,8 +315,7 @@ export default function AdminUserDetailClient({
 		);
 
 		runAction(
-			() =>
-				resetAdminUserPasswordAction(id, { password }, adminCsrfToken),
+			() => resetAdminUserPassword(id, { password }, adminCsrfToken),
 			'密码已重置',
 			() => {
 				setPassword('');
@@ -336,10 +334,7 @@ export default function AdminUserDetailClient({
 			'Enable User'
 		);
 
-		runAction(
-			() => enableAdminUserAction(id, adminCsrfToken),
-			'用户已启用'
-		);
+		runAction(() => enableAdminUser(id, adminCsrfToken), '用户已启用');
 	}, [adminCsrfToken, id, runAction]);
 
 	const handleRestoreUser = useCallback(() => {
@@ -354,7 +349,7 @@ export default function AdminUserDetailClient({
 		);
 
 		runAction(
-			() => restoreAdminUserAction(id, adminCsrfToken),
+			() => restoreAdminUser(id, adminCsrfToken),
 			'账号已恢复为禁用状态'
 		);
 	}, [adminCsrfToken, id, runAction]);
@@ -370,10 +365,7 @@ export default function AdminUserDetailClient({
 			'Disable User'
 		);
 
-		runAction(
-			() => disableAdminUserAction(id, adminCsrfToken),
-			'用户已禁用'
-		);
+		runAction(() => disableAdminUser(id, adminCsrfToken), '用户已禁用');
 	}, [adminCsrfToken, id, runAction]);
 
 	const handleDeleteUserSessions = useCallback(() => {
@@ -388,7 +380,7 @@ export default function AdminUserDetailClient({
 		);
 
 		runAction(
-			() => deleteAdminUserSessionsAction(id, adminCsrfToken),
+			() => deleteAdminUserSessions(id, adminCsrfToken),
 			'已踢出全部设备'
 		);
 	}, [adminCsrfToken, id, runAction]);
@@ -405,7 +397,7 @@ export default function AdminUserDetailClient({
 		);
 
 		runAction(
-			() => clearAdminUserDataAction(id, adminCsrfToken),
+			() => clearAdminUserData(id, adminCsrfToken),
 			'账号数据已清空'
 		);
 	}, [adminCsrfToken, id, runAction]);
@@ -425,7 +417,7 @@ export default function AdminUserDetailClient({
 		}
 
 		let isMounted = true;
-		void checkAdminAction()
+		void fetchAdminMe()
 			.then((result) => {
 				if (!isMounted) {
 					return;

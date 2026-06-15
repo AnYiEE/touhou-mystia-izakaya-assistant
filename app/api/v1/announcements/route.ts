@@ -1,6 +1,12 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAccountRateLimitRouteResponse } from '@/lib/account/server/routeResponses';
+import {
+	checkAccountCookieSecurityRouteResponse,
+	checkAccountFeatureRouteResponse,
+	checkAccountRateLimitRouteResponse,
+	checkSameOriginRouteResponse,
+	readJsonBodyResult,
+} from '@/lib/account/server/routeResponses';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -12,6 +18,11 @@ import {
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+interface IAnnouncementDismissBody {
+	id: string;
+	updatedAt: number;
+}
 
 export async function GET(request: NextRequest) {
 	try {
@@ -65,4 +76,70 @@ export async function GET(request: NextRequest) {
 		console.warn('Failed to read announcements API.', error);
 		return createNoStoreErrorResponse('server-misconfigured', 500);
 	}
+}
+
+export async function POST(request: NextRequest) {
+	const featureResponse = await checkAccountFeatureRouteResponse();
+	if (featureResponse !== null) {
+		return featureResponse;
+	}
+
+	const sameOriginResponse = checkSameOriginRouteResponse(request);
+	if (sameOriginResponse !== null) {
+		return sameOriginResponse;
+	}
+
+	const cookieSecurityResponse =
+		checkAccountCookieSecurityRouteResponse(request);
+	if (cookieSecurityResponse !== null) {
+		return cookieSecurityResponse;
+	}
+
+	const bodyResult =
+		await readJsonBodyResult<IAnnouncementDismissBody>(request);
+	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
+	if (
+		typeof body?.id !== 'string' ||
+		typeof body.updatedAt !== 'number' ||
+		!Number.isSafeInteger(body.updatedAt)
+	) {
+		return createNoStoreErrorResponse('invalid-object-structure', 400);
+	}
+
+	const rateLimitResponse = checkAccountRateLimitRouteResponse(
+		request,
+		'announcement-dismiss',
+		'',
+		{ parts: [{ name: 'announcement', value: body.id }] }
+	);
+	if (rateLimitResponse !== null) {
+		return rateLimitResponse;
+	}
+
+	const authModule = await import('@/lib/account/server/auth');
+	const auth = await authModule.authenticateAccountFromRequest(request);
+	if (auth.status === 'error') {
+		return createNoStoreJsonResponse({ message: 'announcement-dismissed' });
+	}
+	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
+		return createNoStoreErrorResponse('forbidden', 403);
+	}
+
+	const announcementModule =
+		await import('@/lib/announcements/server/service');
+	const result = await announcementModule.dismissAnnouncementForUser(
+		body.id,
+		body.updatedAt,
+		auth.data.user.id
+	);
+	if (result.status === 'error') {
+		return createNoStoreErrorResponse(
+			result.error,
+			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
+				result.error
+			]
+		);
+	}
+
+	return createNoStoreJsonResponse(result.data);
 }

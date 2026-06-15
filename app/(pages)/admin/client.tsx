@@ -61,12 +61,12 @@ import {
 } from './listState';
 
 import {
-	type TAdminActionResult,
-	checkAdminAction,
-	listAdminUsersAction,
-	loginAdminAction,
-	logoutAdminAction,
-} from './actions';
+	type TAdminApiResult,
+	fetchAdminMe,
+	listAdminUsers,
+	loginAdmin,
+	logoutAdmin,
+} from './api';
 import { clearAdminSession } from '@/lib/account/client/adminSession';
 import {
 	type IAdminMeData,
@@ -88,7 +88,7 @@ const tableNowrapCellClassName = `${tableCellClassName} whitespace-nowrap`;
 const pageInputRegexp = /^\d*$/u;
 
 function checkAdminUnauthorizedActionResult(
-	result: Extract<TAdminActionResult, { status: 'error' }>
+	result: Extract<TAdminApiResult, { status: 'error' }>
 ) {
 	return (
 		result.httpStatus === 401 &&
@@ -624,7 +624,7 @@ export default function AdminPageClient({
 			setIsUsersLoading(true);
 			setMessage(null);
 
-			void listAdminUsersAction({
+			void listAdminUsers({
 				page: overridePage ?? page,
 				query: overrideQuery ?? query,
 				status,
@@ -678,7 +678,7 @@ export default function AdminPageClient({
 		setAdminAuthStatus('checking');
 		setMessage(null);
 
-		void checkAdminAction()
+		void fetchAdminMe()
 			.then((result) => {
 				if (adminAuthRequestIdRef.current !== requestId) {
 					return;
@@ -732,7 +732,7 @@ export default function AdminPageClient({
 		setIsAdminActionLoading(true);
 		setMessage(null);
 
-		void loginAdminAction({ password, username: trimmedUsername })
+		void loginAdmin({ password, username: trimmedUsername })
 			.then((result) => {
 				if (adminAuthRequestIdRef.current !== requestId) {
 					return;
@@ -783,7 +783,7 @@ export default function AdminPageClient({
 		setIsAdminActionLoading(true);
 		setMessage(null);
 
-		void logoutAdminAction(admin.csrf_token)
+		void logoutAdmin(admin.csrf_token)
 			.then((result) => {
 				if (adminAuthRequestIdRef.current !== requestId) {
 					return;

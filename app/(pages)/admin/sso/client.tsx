@@ -29,10 +29,10 @@ import {
 import TimeAgo from '@/components/timeAgo';
 
 import {
-	type TAdminActionResult,
-	checkAdminAction,
-	listAdminSsoClientsAction,
-} from '../actions';
+	type TAdminApiResult,
+	fetchAdminMe,
+	listAdminSsoClients,
+} from '../api';
 import {
 	type IAdminMeData,
 	type IAdminSsoClientListData,
@@ -44,7 +44,7 @@ const tableCellClassName = 'px-4 py-3 align-middle';
 const tableNowrapCellClassName = `${tableCellClassName} whitespace-nowrap`;
 
 function checkAdminUnauthorizedActionResult(
-	result: Extract<TAdminActionResult, { status: 'error' }>
+	result: Extract<TAdminApiResult, { status: 'error' }>
 ) {
 	return (
 		result.httpStatus === 401 &&
@@ -145,7 +145,7 @@ export default function AdminSsoClientsClient({
 		setIsLoading(true);
 		setMessage(null);
 
-		void listAdminSsoClientsAction()
+		void listAdminSsoClients()
 			.then((result) => {
 				if (requestIdRef.current !== requestId) {
 					return;
@@ -185,7 +185,7 @@ export default function AdminSsoClientsClient({
 		setIsAuthLoading(true);
 		setMessage(null);
 
-		void checkAdminAction()
+		void fetchAdminMe()
 			.then((result) => {
 				if (requestIdRef.current !== requestId) {
 					return;

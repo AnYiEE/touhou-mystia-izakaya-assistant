@@ -1,6 +1,8 @@
-import { AccountApiError, importBackupCode } from './api';
-import { type IAuthLoginSuccessResponse } from '../shared/types';
-import { fetchAccountMeAction } from '@/lib/account/actions/auth';
+import { AccountApiError, fetchAccountMe, importBackupCode } from './api';
+import {
+	type IAuthLoginSuccessResponse,
+	type TAccountMeResponse,
+} from '../shared/types';
 import { readAccountSyncMeta } from './snapshot';
 import {
 	invalidateAccountSyncClientRuns,
@@ -157,21 +159,21 @@ export async function refreshAccountState() {
 	const generation = advanceAccountStateRequestGeneration();
 	const previousUser = accountStore.shared.user.get();
 	const previousCsrfToken = accountStore.shared.csrfToken.get();
-	let result: Awaited<ReturnType<typeof fetchAccountMeAction>>['data'];
+	let result: TAccountMeResponse;
 	try {
-		const actionResult = await fetchAccountMeAction();
-		if (actionResult.status === 'error') {
+		const accountMeResult = await fetchAccountMe();
+		if (accountMeResult.status === 'error') {
 			throw new AccountApiError(
-				actionResult.message,
-				actionResult.httpStatus,
-				typeof actionResult.data?.['retry_after'] === 'number' &&
-					Number.isFinite(actionResult.data['retry_after'])
-					? actionResult.data['retry_after']
+				accountMeResult.message,
+				accountMeResult.httpStatus,
+				typeof accountMeResult.data?.['retry_after'] === 'number' &&
+					Number.isFinite(accountMeResult.data['retry_after'])
+					? accountMeResult.data['retry_after']
 					: null
 			);
 		}
 
-		result = actionResult.data;
+		result = accountMeResult.data;
 	} catch (error) {
 		if (!checkCurrentAccountStateRequest(generation)) {
 			return null;

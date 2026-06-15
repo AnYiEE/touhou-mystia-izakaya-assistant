@@ -7,7 +7,6 @@ import {
 	NO_STORE_HEADERS,
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-	handleOptionsRequest,
 } from '@/lib/api/routeResponses';
 import { FILE_TYPE_JSON } from '@/utilities';
 
@@ -73,8 +72,4 @@ export async function DELETE(
 	}
 
 	return createNoStoreJsonResponse(deleteResult.data);
-}
-
-export function OPTIONS() {
-	return handleOptionsRequest();
 }

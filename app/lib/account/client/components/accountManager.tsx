@@ -44,7 +44,20 @@ import { trackEvent } from '@/components/analytics';
 import Heading from '@/components/heading';
 import AccountSyncStatus from './accountSyncStatus';
 
-import { AccountApiError } from '@/lib/account/client/api';
+import {
+	AccountApiError,
+	type TAccountApiResult,
+	changeAccountPassword,
+	deleteAccount,
+	deleteAccountData,
+	exportAccountData,
+	loginAccount,
+	logoutAccount,
+	logoutAllAccount,
+	refreshAccountSsoGrants,
+	registerAccount,
+	revokeAccountSsoGrant,
+} from '@/lib/account/client/api';
 import { postAccountSyncBroadcastMessage } from '@/lib/account/client/broadcast';
 import { getAccountClientErrorMessage } from '@/lib/account/client/errorMessage';
 import { createAccountClientId } from '@/lib/account/client/random';
@@ -60,28 +73,15 @@ import {
 	scheduleAccountSyncFlush,
 } from '@/lib/account/client/syncClient';
 import {
-	type TAccountAuthActionResult,
-	changeAccountPasswordAction,
-	deleteAccountAction,
-	deleteAccountDataAction,
-	exportAccountDataAction,
-	loginAccountAction,
-	logoutAccountAction,
-	logoutAllAccountAction,
-	registerAccountAction,
-} from '@/lib/account/actions/auth';
-import {
-	type TAccountSsoGrantActionResult,
-	refreshAccountSsoGrantsAction,
-	revokeAccountSsoGrantAction,
-} from '@/lib/account/actions/ssoGrants';
-import {
 	PASSWORD_RULE_DESCRIPTION,
 	USERNAME_RULE_DESCRIPTION,
 	checkPasswordPolicy,
 } from '@/lib/account/shared/constants';
 import { getLogSafeErrorCode } from '@/lib/logging';
-import type { IAccountSsoGrant } from '@/lib/account/shared/types';
+import type {
+	IAccountSsoGrant,
+	IAccountSsoGrantListData,
+} from '@/lib/account/shared/types';
 import { accountStore, globalStore } from '@/stores';
 import { downloadJson } from '@/utilities';
 
@@ -236,10 +236,7 @@ function handleUnauthorizedAccountError(
 }
 
 function handleUnauthorizedAccountActionError(
-	error: Extract<
-		TAccountAuthActionResult | TAccountSsoGrantActionResult,
-		{ status: 'error' }
-	>,
+	error: Extract<TAccountApiResult, { status: 'error' }>,
 	context: TAccountAuthContext = {}
 ) {
 	if (error.httpStatus === 401) {
@@ -252,8 +249,12 @@ function handleUnauthorizedAccountActionError(
 
 const LOGOUT_SKIPPED = Symbol('logout-skipped');
 type TLogoutAfterFlushResult =
-	| TAccountAuthActionResult<unknown>
+	| TAccountApiResult<unknown>
 	| typeof LOGOUT_SKIPPED;
+const accountSsoGrantsRequestMap = new Map<
+	string,
+	Promise<TAccountApiResult<IAccountSsoGrantListData>>
+>();
 
 const BOOTSTRAP_ERROR_MESSAGE_MAP: Record<string, string> = {
 	'bootstrap-failed': '账号服务初始化失败，请刷新页面重试',
@@ -265,6 +266,22 @@ function getBootstrapErrorMessage(errorCode: string | null) {
 		return '账号功能暂不可用：服务器配置异常';
 	}
 	return `账号功能暂不可用：${BOOTSTRAP_ERROR_MESSAGE_MAP[errorCode] ?? errorCode}`;
+}
+
+function refreshAccountSsoGrantsOnce(userId: string) {
+	const currentRequest = accountSsoGrantsRequestMap.get(userId);
+	if (currentRequest !== undefined) {
+		return currentRequest;
+	}
+
+	const nextRequest = refreshAccountSsoGrants().finally(() => {
+		if (accountSsoGrantsRequestMap.get(userId) === nextRequest) {
+			accountSsoGrantsRequestMap.delete(userId);
+		}
+	});
+	accountSsoGrantsRequestMap.set(userId, nextRequest);
+
+	return nextRequest;
 }
 
 interface IProps {}
@@ -340,8 +357,7 @@ export default memo<IProps>(function AccountManager() {
 			expectedUserId: accountStore.shared.user.get()?.id ?? null,
 		};
 
-		const request =
-			authMode === 'login' ? loginAccountAction : registerAccountAction;
+		const request = authMode === 'login' ? loginAccount : registerAccount;
 		void request({ password, username: normalizedUsername })
 			.then((result) => {
 				if (result.status === 'error') {
@@ -430,7 +446,7 @@ export default memo<IProps>(function AccountManager() {
 			expectedUserId: user.id,
 		};
 
-		void changeAccountPasswordAction(
+		void changeAccountPassword(
 			{ current_password: currentPassword, new_password: newPassword },
 			csrfToken
 		)
@@ -506,9 +522,7 @@ export default memo<IProps>(function AccountManager() {
 
 	const logoutAfterFlush = useCallback(
 		(
-			action: (
-				csrfToken: string
-			) => Promise<TAccountAuthActionResult<unknown>>,
+			action: (csrfToken: string) => Promise<TAccountApiResult<unknown>>,
 			trackName: string
 		) => {
 			if (csrfToken === null || isSubmitting || user === null) {
@@ -598,11 +612,11 @@ export default memo<IProps>(function AccountManager() {
 	);
 
 	const handleLogout = useCallback(() => {
-		logoutAfterFlush(logoutAccountAction, 'Logout');
+		logoutAfterFlush(logoutAccount, 'Logout');
 	}, [logoutAfterFlush]);
 
 	const handleLogoutAll = useCallback(() => {
-		logoutAfterFlush(logoutAllAccountAction, 'Logout All');
+		logoutAfterFlush(logoutAllAccount, 'Logout All');
 	}, [logoutAfterFlush]);
 
 	const handleExport = useCallback(() => {
@@ -647,7 +661,7 @@ export default memo<IProps>(function AccountManager() {
 					return null;
 				}
 
-				return exportAccountDataAction();
+				return exportAccountData();
 			})
 			.then((result) => {
 				if (result === null) {
@@ -720,7 +734,7 @@ export default memo<IProps>(function AccountManager() {
 		};
 		const expectedUserContext = { expectedUserId: user.id };
 
-		void deleteAccountDataAction(csrfToken)
+		void deleteAccountData(csrfToken)
 			.then((result) => {
 				if (result.status === 'error') {
 					if (
@@ -829,7 +843,7 @@ export default memo<IProps>(function AccountManager() {
 		};
 		const expectedUserContext = { expectedUserId: user.id };
 
-		void deleteAccountAction(csrfToken)
+		void deleteAccount(csrfToken)
 			.then((result) => {
 				if (result.status === 'error') {
 					if (
@@ -923,7 +937,7 @@ export default memo<IProps>(function AccountManager() {
 			expectedUserId: user.id,
 		};
 
-		refreshAccountSsoGrantsAction()
+		refreshAccountSsoGrantsOnce(user.id)
 			.then((result) => {
 				if (
 					cancelled ||
@@ -1000,7 +1014,7 @@ export default memo<IProps>(function AccountManager() {
 		setRevokeTargetClientId(null);
 		setIsSubmitting(true);
 
-		revokeAccountSsoGrantAction(clientId, csrfToken)
+		revokeAccountSsoGrant(clientId, csrfToken)
 			.then((result) => {
 				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
 					return;

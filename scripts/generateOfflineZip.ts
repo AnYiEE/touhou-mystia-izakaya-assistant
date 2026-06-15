@@ -52,6 +52,8 @@ const scriptPath = resolve(import.meta.dirname);
 
 const apiPath = resolve(appPath, 'api');
 const fakeApiPath = resolve(appPath, '_api');
+const middlewarePath = resolve(rootPath, 'middleware.ts');
+const offlineMiddlewarePath = resolve(rootPath, '_offline_middleware.ts');
 const adminPath = resolve(appPath, '(pages)/admin');
 const offlinePagesPath = resolve(appPath, '_offline_pages');
 const offlineAdminPath = resolve(offlinePagesPath, 'admin');
@@ -219,6 +221,34 @@ async function replaceWithOfflineSourceFiles() {
 		await movePathIfExists(sourceFilePath, backupPath);
 		await copyPathIfExists(offlineFilePath, sourceFilePath);
 	}
+}
+
+async function moveRootMiddlewareForOffline() {
+	if (!(await checkPathExists(middlewarePath))) {
+		return;
+	}
+
+	if (await checkPathExists(offlineMiddlewarePath)) {
+		throw new Error(
+			`Offline middleware backup already exists: ${offlineMiddlewarePath}`
+		);
+	}
+
+	await movePathIfExists(middlewarePath, offlineMiddlewarePath);
+}
+
+async function restoreRootMiddleware() {
+	if (!(await checkPathExists(offlineMiddlewarePath))) {
+		return;
+	}
+
+	if (await checkPathExists(middlewarePath)) {
+		throw new Error(
+			`Offline middleware restore target already exists: ${middlewarePath}`
+		);
+	}
+
+	await movePathIfExists(offlineMiddlewarePath, middlewarePath);
 }
 
 async function removeIgnoredOutputFiles(path: string) {
@@ -420,6 +450,7 @@ async function restoreAdminPages() {
 }
 
 async function restoreOfflineFiles() {
+	await restoreRootMiddleware();
 	await restoreOfflineSourceFiles();
 	await restoreRouterFiles();
 	await restoreAdminPages();
@@ -430,6 +461,7 @@ async function prepareOfflineFiles() {
 	await restoreOfflineFiles();
 	await rm(nextBuildPath, { force: true, recursive: true });
 	await rm(outputPath, { force: true, recursive: true });
+	await moveRootMiddlewareForOffline();
 	await moveRouterFiles(apiPath, fakeApiPath);
 	await moveTreeIfExists(adminPath, offlineAdminPath);
 	await replaceWithOfflineSourceFiles();

@@ -3,8 +3,16 @@ import { type NextRequest } from 'next/server';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
+	checkAccountRateLimitRouteResponse,
+	checkSameOriginRouteResponse,
 	createAccountAuthErrorRouteResponse,
+	readJsonBodyResult,
 } from '@/lib/account/server/routeResponses';
+import {
+	clearSsoContextCookie,
+	createSsoRedirectUrl,
+	getSsoContextCookie,
+} from '@/lib/account/server/ssoContext';
 import { checkSsoRateLimitRouteResponse } from '@/lib/account/server/ssoRouteResponses';
 import {
 	checkSsoClientEnabled,
@@ -13,14 +21,24 @@ import {
 	checkSsoRedirectUriFormat,
 	checkSsoState,
 } from '@/lib/account/server/ssoValidation';
+import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import {
 	createNoStoreErrorResponse,
+	createNoStoreJsonResponse,
 	createNoStoreRedirectResponse,
 } from '@/lib/api/routeResponses';
 import { getLogSafeErrorCode } from '@/lib/logging';
+import { createMainSiteUrl } from '@/lib/siteUrl';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+type TSsoAuthorizeSubmitIntent = 'agree' | 'cancel';
+
+interface ISsoAuthorizeSubmitBody {
+	intent: TSsoAuthorizeSubmitIntent;
+	transaction_id?: string;
+}
 
 function getRequiredQueryParam(request: NextRequest, name: string) {
 	const value = request.nextUrl.searchParams.get(name)?.trim() ?? '';
@@ -28,8 +46,108 @@ function getRequiredQueryParam(request: NextRequest, name: string) {
 	return value === '' ? null : value;
 }
 
-function createAuthorizeRedirectUrl(request: NextRequest, pathname: string) {
-	return new URL(pathname, request.nextUrl.origin);
+function getSsoAuthorizeSubmitIntent(value: unknown) {
+	return value === 'agree' || value === 'cancel' ? value : null;
+}
+
+function createAuthorizePageUrl(status?: string) {
+	const url = createMainSiteUrl('/sso/authorize');
+	if (status !== undefined) {
+		url.searchParams.set('status', status);
+	}
+
+	return url.toString();
+}
+
+function createAuthorizePageJsonResponse(status?: string) {
+	return createNoStoreJsonResponse({
+		redirect_url: createAuthorizePageUrl(status),
+	});
+}
+
+async function submitSsoAuthorizeAgree(
+	request: NextRequest,
+	transactionId: unknown
+) {
+	const context = getSsoContextCookie(request);
+	if (context === null || transactionId !== context.transaction_id) {
+		return createAuthorizePageJsonResponse('expired');
+	}
+
+	try {
+		const [authModule, ssoModule] = await Promise.all([
+			import('@/lib/account/server/auth'),
+			import('@/lib/account/server/sso'),
+		]);
+		const [auth, client] = await Promise.all([
+			authModule.authenticateAccountFromRequest(request, true),
+			ssoModule.getSsoClientById(context.client_id),
+		]);
+		if (auth.status === 'error') {
+			return createAuthorizePageJsonResponse();
+		}
+		if (auth.data.credential.password_must_change === 1) {
+			return createAuthorizePageJsonResponse();
+		}
+		if (
+			client === null ||
+			!checkSsoClientEnabled(client) ||
+			!ssoModule.validateSsoRedirectUri(client, context.redirect_uri) ||
+			auth.data.user.status !== USER_STATUS_MAP.active
+		) {
+			return createAuthorizePageJsonResponse('invalid');
+		}
+
+		const ticket = await ssoModule.createSsoTicket(
+			context.client_id,
+			auth.data.user.id,
+			context.redirect_uri,
+			context.code_challenge
+		);
+		const response = createNoStoreJsonResponse({
+			redirect_url: createSsoRedirectUrl(
+				context.redirect_uri,
+				ticket,
+				context.state
+			),
+		});
+		clearSsoContextCookie(response, request);
+
+		return response;
+	} catch (error) {
+		console.warn('SSO authorize confirmation failed.', {
+			errorCode: getLogSafeErrorCode(error),
+		});
+
+		return createAuthorizePageJsonResponse('invalid');
+	}
+}
+
+async function submitSsoAuthorizeCancel(request: NextRequest) {
+	const context = getSsoContextCookie(request);
+	let redirectUrl = createAuthorizePageUrl('cancelled');
+	if (context !== null) {
+		try {
+			const ssoModule = await import('@/lib/account/server/sso');
+			const client = await ssoModule.getSsoClientById(context.client_id);
+			if (
+				client?.cancel_redirect_uri !== undefined &&
+				client.cancel_redirect_uri !== null &&
+				checkSsoRedirectUriFormat(client.cancel_redirect_uri)
+			) {
+				redirectUrl = client.cancel_redirect_uri;
+			}
+		} catch (error) {
+			console.warn('SSO authorize cancellation failed.', {
+				errorCode: getLogSafeErrorCode(error),
+			});
+		}
+	}
+
+	const response = createNoStoreJsonResponse({ redirect_url: redirectUrl });
+	clearSsoContextCookie(response, request);
+
+	return response;
 }
 
 export async function GET(request: NextRequest) {
@@ -96,10 +214,7 @@ export async function GET(request: NextRequest) {
 			return createAccountAuthErrorRouteResponse(auth, request);
 		}
 
-		const redirectUrl = createAuthorizeRedirectUrl(
-			request,
-			'/sso/authorize'
-		);
+		const redirectUrl = createMainSiteUrl('/sso/authorize');
 
 		const response = createNoStoreRedirectResponse(redirectUrl);
 		ssoModule.setSsoContextCookie(
@@ -122,4 +237,45 @@ export async function GET(request: NextRequest) {
 
 		return createNoStoreErrorResponse('server-misconfigured', 500);
 	}
+}
+
+export async function POST(request: NextRequest) {
+	const featureResponse = await checkAccountFeatureRouteResponse();
+	if (featureResponse !== null) {
+		return featureResponse;
+	}
+
+	const sameOriginResponse = checkSameOriginRouteResponse(request);
+	if (sameOriginResponse !== null) {
+		return sameOriginResponse;
+	}
+
+	const cookieSecurityResponse =
+		checkAccountCookieSecurityRouteResponse(request);
+	if (cookieSecurityResponse !== null) {
+		return cookieSecurityResponse;
+	}
+
+	const bodyResult =
+		await readJsonBodyResult<ISsoAuthorizeSubmitBody>(request);
+	if (bodyResult.status === 'payload-too-large') {
+		return createNoStoreErrorResponse('payload-too-large', 413);
+	}
+	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
+	const intent = getSsoAuthorizeSubmitIntent(body?.intent);
+	if (intent === null) {
+		return createNoStoreErrorResponse('invalid-object-structure', 400);
+	}
+
+	const rateLimitResponse = checkAccountRateLimitRouteResponse(
+		request,
+		`sso-authorize-${intent}`
+	);
+	if (rateLimitResponse !== null) {
+		return rateLimitResponse;
+	}
+
+	return intent === 'agree'
+		? submitSsoAuthorizeAgree(request, body?.transaction_id)
+		: submitSsoAuthorizeCancel(request);
 }

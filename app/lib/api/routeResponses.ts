@@ -156,7 +156,3 @@ export async function readJsonBodyResult<T extends object>(
 		return { status: 'invalid' };
 	}
 }
-
-export function handleOptionsRequest() {
-	return new NextResponse(null, { status: 204 });
-}

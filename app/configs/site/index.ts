@@ -11,7 +11,8 @@ function getShortUrl(key: string) {
 	return `${process.env.SHORT_LINK_URL ?? '/#'}/${key}`;
 }
 
-const { host: baseURL } = new URL(process.env.BASE_URL ?? PACKAGE.homepage);
+const baseUrl = new URL(process.env.BASE_URL ?? PACKAGE.homepage);
+const { host: baseURL, origin: baseOrigin } = baseUrl;
 const isOffline = checkOfflineEnv(process.env.OFFLINE);
 const isSelfHosted = checkEnvFlag(process.env.SELF_HOSTED);
 const isVercel = checkVercelEnv(process.env.VERCEL);
@@ -79,6 +80,7 @@ const navItems = [
 
 export const siteConfig = {
 	baseURL,
+	baseOrigin,
 	id: PACKAGE.name,
 	name: '东方夜雀食堂小助手',
 	enName: "Touhou Mystia's Izakaya Assistant",
@@ -129,6 +131,7 @@ export const siteConfig = {
 		},
 	},
 	cdnUrl: isOffline ? '' : (process.env.CDN_URL ?? ''),
+	serviceApiOrigin: isOffline ? '' : (process.env.SERVICE_API_ORIGIN ?? ''),
 	analyticsApiUrl: process.env.ANALYTICS_API_URL ?? '',
 	analyticsScriptUrl: process.env.ANALYTICS_SCRIPT_URL ?? '',
 	analyticsSiteId: process.env.ANALYTICS_SITE_ID ?? '',

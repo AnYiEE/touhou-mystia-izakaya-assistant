@@ -18,11 +18,28 @@ import {
 	createNoStoreJsonResponse,
 	createNoStoreRedirectResponse,
 } from '@/lib/api/routeResponses';
+import { createMainSiteUrl } from '@/lib/siteUrl';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const INVALID_LOGIN_MESSAGE = 'invalid-credentials';
+const SSO_AUTHORIZE_PATH = '/sso/authorize';
+
+type TAuthLoginRouteSuccessResponse = IAuthLoginSuccessResponse & {
+	redirect_to?: string;
+};
+
+function checkJsonResponseRequest(request: NextRequest) {
+	return (
+		request.headers
+			.get('accept')
+			?.split(',')
+			.some(
+				(item) => item.trim().split(';', 1)[0] === 'application/json'
+			) === true
+	);
+}
 
 function createInvalidLoginResponse() {
 	return createNoStoreErrorResponse(INVALID_LOGIN_MESSAGE, 401);
@@ -169,9 +186,9 @@ export async function POST(request: NextRequest) {
 
 	const ssoModule = await import('@/lib/account/server/sso');
 	const ssoContext = ssoModule.getSsoContextCookie(request);
-	if (ssoContext !== null) {
-		const redirectUrl = new URL('/sso/authorize', request.nextUrl.origin);
-		const response = createNoStoreRedirectResponse(redirectUrl);
+	const ssoAuthorizeUrl = createMainSiteUrl(SSO_AUTHORIZE_PATH);
+	if (ssoContext !== null && !checkJsonResponseRequest(request)) {
+		const response = createNoStoreRedirectResponse(ssoAuthorizeUrl);
 		authModule.setAccountSessionCookie(response, session.token, request);
 
 		return response;
@@ -180,8 +197,11 @@ export async function POST(request: NextRequest) {
 	const response = createNoStoreJsonResponse({
 		csrf_token: session.csrfToken,
 		password_must_change: credential.password_must_change === 1,
+		...(ssoContext === null
+			? {}
+			: { redirect_to: ssoAuthorizeUrl.toString() }),
 		user: userModule.createAccountUserProfile(currentUser),
-	} satisfies IAuthLoginSuccessResponse);
+	} satisfies TAuthLoginRouteSuccessResponse);
 
 	authModule.setAccountSessionCookie(response, session.token, request);
 

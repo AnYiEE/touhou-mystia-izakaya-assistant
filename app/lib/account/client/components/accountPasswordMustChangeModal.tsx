@@ -28,10 +28,7 @@ import { Button, Card, Input, Modal, cn } from '@/design/ui/components';
 import { trackEvent } from '@/components/analytics';
 import Heading from '@/components/heading';
 
-import {
-	changeAccountPasswordAction,
-	logoutAccountAction,
-} from '@/lib/account/actions/auth';
+import { changeAccountPassword, logoutAccount } from '@/lib/account/client/api';
 import { getAccountClientErrorMessage } from '@/lib/account/client/errorMessage';
 import {
 	applyAccountAuthSuccessResponse,
@@ -44,6 +41,7 @@ import {
 	checkPasswordPolicy,
 } from '@/lib/account/shared/constants';
 import { getLogSafeErrorCode } from '@/lib/logging';
+import { createMainSiteUrl } from '@/lib/siteUrl';
 import { accountStore, globalStore } from '@/stores';
 
 interface IPasswordChangePanelProps extends PropsWithChildren<
@@ -174,7 +172,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 			expectedUserId: user.id,
 		};
 
-		void changeAccountPasswordAction(
+		void changeAccountPassword(
 			{ current_password: currentPassword, new_password: newPassword },
 			csrfToken
 		)
@@ -214,7 +212,9 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 				clearPasswordFields();
 				setMessage(null);
 				if (shouldResumeSso) {
-					globalThis.location.assign('/sso/authorize');
+					globalThis.location.assign(
+						createMainSiteUrl('/sso/authorize').toString()
+					);
 					return;
 				}
 
@@ -268,7 +268,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 		setIsSubmitting(true);
 		setMessage(null);
 
-		void logoutAccountAction(csrfToken)
+		void logoutAccount(csrfToken)
 			.then((result) => {
 				if (result.status === 'error') {
 					if (result.httpStatus === 401) {

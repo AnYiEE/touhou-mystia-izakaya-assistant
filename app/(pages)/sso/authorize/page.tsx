@@ -1,20 +1,19 @@
-import { redirect, unstable_rethrow } from 'next/navigation';
+import { unstable_rethrow } from 'next/navigation';
 import { cookies, headers } from 'next/headers';
 import { NextRequest } from 'next/server';
 
-import { Button, Card } from '@/design/ui/components';
+import { Card } from '@/design/ui/components';
 
 import SsoAuthorizeAccountGate, {
 	SsoAuthorizeAccountGateButton,
 } from './accountGate';
+import SsoAuthorizeControls from './authorizeControls';
 import Heading from '@/components/heading';
 import AccountInitialStateHydrator from '@/lib/account/client/components/accountInitialStateHydrator';
 import AccountSsoGrantInitialDataHydrator from '@/lib/account/client/components/accountSsoGrantInitialDataHydrator';
 
 import {
 	SSO_CONTEXT_COOKIE_NAME,
-	createSsoRedirectUrl,
-	getSsoContextCookieOptions,
 	getSsoContextCookieValue,
 } from '@/lib/account/server/ssoContext';
 import { authenticateAccountFromRequest } from '@/lib/account/server/auth';
@@ -22,14 +21,7 @@ import {
 	createAccountMeInitialDataForAuthenticatedRequest,
 	createAccountSsoGrantInitialDataForUser,
 } from '@/lib/account/server/initialData';
-import {
-	checkSsoClientEnabled,
-	checkSsoRedirectUriFormat,
-} from '@/lib/account/server/ssoValidation';
-import {
-	checkAccountRateLimitGuard,
-	checkSameOriginGuard,
-} from '@/lib/account/server/guards';
+import { checkSsoClientEnabled } from '@/lib/account/server/ssoValidation';
 import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import { getLogSafeErrorCode } from '@/lib/logging';
 
@@ -45,121 +37,6 @@ async function createRequestFromHeaders() {
 	return new NextRequest(`${protocol}://${host}/sso/authorize`, {
 		headers: requestHeaders,
 	});
-}
-
-async function clearSsoCookieForRedirect(request: NextRequest) {
-	const cookieStore = await cookies();
-	cookieStore.set(SSO_CONTEXT_COOKIE_NAME, '', {
-		...getSsoContextCookieOptions(request),
-		maxAge: 0,
-	});
-}
-
-function redirectOnSsoAuthorizeActionGuardError(
-	request: NextRequest,
-	scope: string
-) {
-	const sameOriginResult = checkSameOriginGuard(request);
-	if (sameOriginResult.status === 'error') {
-		redirect('/sso/authorize?status=invalid');
-	}
-
-	const rateLimitResult = checkAccountRateLimitGuard(request, scope);
-	if (rateLimitResult.status === 'error') {
-		redirect('/sso/authorize?status=invalid');
-	}
-}
-
-async function agreeSsoAuthorize(formData: FormData) {
-	'use server';
-
-	const request = await createRequestFromHeaders();
-	redirectOnSsoAuthorizeActionGuardError(request, 'sso-authorize-agree');
-	const cookieStore = await cookies();
-	const context = getSsoContextCookieValue(
-		cookieStore.get(SSO_CONTEXT_COOKIE_NAME)?.value
-	);
-	if (context === null) {
-		redirect('/sso/authorize?status=expired');
-	}
-	if (formData.get('transaction_id') !== context.transaction_id) {
-		redirect('/sso/authorize?status=expired');
-	}
-
-	try {
-		const ssoModule = await import('@/lib/account/server/sso');
-		const [auth, client] = await Promise.all([
-			authenticateAccountFromRequest(request, true),
-			ssoModule.getSsoClientById(context.client_id),
-		]);
-		if (auth.status === 'error') {
-			redirect('/sso/authorize');
-		}
-		if (auth.data.credential.password_must_change === 1) {
-			redirect('/sso/authorize');
-		}
-		if (
-			client === null ||
-			!checkSsoClientEnabled(client) ||
-			!ssoModule.validateSsoRedirectUri(client, context.redirect_uri)
-		) {
-			redirect('/sso/authorize?status=invalid');
-		}
-		if (auth.data.user.status !== USER_STATUS_MAP.active) {
-			redirect('/sso/authorize?status=invalid');
-		}
-
-		const ticket = await ssoModule.createSsoTicket(
-			context.client_id,
-			auth.data.user.id,
-			context.redirect_uri,
-			context.code_challenge
-		);
-		await clearSsoCookieForRedirect(request);
-		redirect(
-			createSsoRedirectUrl(context.redirect_uri, ticket, context.state)
-		);
-	} catch (error) {
-		unstable_rethrow(error);
-		console.warn('SSO authorize confirmation failed.', {
-			errorCode: getLogSafeErrorCode(error),
-		});
-		redirect('/sso/authorize?status=invalid');
-	}
-}
-
-async function cancelSsoAuthorize() {
-	'use server';
-
-	const request = await createRequestFromHeaders();
-	redirectOnSsoAuthorizeActionGuardError(request, 'sso-authorize-cancel');
-	const cookieStore = await cookies();
-	const context = getSsoContextCookieValue(
-		cookieStore.get(SSO_CONTEXT_COOKIE_NAME)?.value
-	);
-	if (context === null) {
-		redirect('/sso/authorize?status=cancelled');
-	}
-
-	try {
-		await clearSsoCookieForRedirect(request);
-		const ssoModule = await import('@/lib/account/server/sso');
-		const client = await ssoModule.getSsoClientById(context.client_id);
-		if (
-			client?.cancel_redirect_uri !== undefined &&
-			client.cancel_redirect_uri !== null &&
-			checkSsoRedirectUriFormat(client.cancel_redirect_uri)
-		) {
-			redirect(client.cancel_redirect_uri);
-		}
-	} catch (error) {
-		unstable_rethrow(error);
-		console.warn('SSO authorize cancellation failed.', {
-			errorCode: getLogSafeErrorCode(error),
-		});
-	}
-
-	redirect('/sso/authorize?status=cancelled');
 }
 
 function SsoAuthorizeMessage({ status }: { status: string | null }) {
@@ -316,27 +193,9 @@ export default async function SsoAuthorizePage({
 						</p>
 						<p>当前账号：{auth.data.user.username}</p>
 					</div>
-					<div className="flex flex-wrap gap-2">
-						<form action={agreeSsoAuthorize}>
-							<input
-								name="transaction_id"
-								type="hidden"
-								value={context.transaction_id}
-							/>
-							<Button
-								color="primary"
-								type="submit"
-								variant="flat"
-							>
-								同意并继续
-							</Button>
-						</form>
-						<form action={cancelSsoAuthorize}>
-							<Button type="submit" variant="flat">
-								取消
-							</Button>
-						</form>
-					</div>
+					<SsoAuthorizeControls
+						transactionId={context.transaction_id}
+					/>
 				</Card>
 			</div>
 		);

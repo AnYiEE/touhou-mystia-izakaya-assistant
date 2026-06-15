@@ -28,7 +28,6 @@ import { createRetryAfterHeaders } from '@/lib/api/http';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-	handleOptionsRequest,
 } from '@/lib/api/routeResponses';
 import { getLogSafeErrorCode } from '@/lib/logging';
 
@@ -344,8 +343,4 @@ export async function DELETE(request: NextRequest) {
 		temporaryDeletedCount,
 		temporaryFoundCount: temporaryFileNames.length,
 	});
-}
-
-export function OPTIONS() {
-	return handleOptionsRequest();
 }
