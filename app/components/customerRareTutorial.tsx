@@ -23,6 +23,8 @@ const resetLabel = '重新进入稀客套餐搭配教程';
 export default function CustomerRareTutorial() {
 	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const accountConflicts = accountStore.shared.sync.conflicts.use();
+	const accountIsLoggedIn = accountStore.shared.isLoggedIn.use();
+	const accountLastSyncedAt = accountStore.shared.sync.lastSyncedAt.use();
 	const accountUser = accountStore.shared.user.use();
 	const passwordMustChange = accountStore.shared.passwordMustChange.use();
 	const { pathname: currentPathname } = usePathname();
@@ -53,6 +55,8 @@ export default function CustomerRareTutorial() {
 	);
 	const hasBlockingAccountModal =
 		passwordMustChange || hasCurrentUserConflict;
+	const isAccountSyncReady =
+		!accountIsLoggedIn || accountLastSyncedAt !== null;
 
 	const BEVERAGE_POSITION =
 		'[role="tabpanel"] tbody>tr[data-key="水獭祭"]>:last-child button';
@@ -325,7 +329,12 @@ export default function CustomerRareTutorial() {
 	useEffect(() => {
 		let handler: ReturnType<typeof setTimeout> | undefined;
 
-		if (hasBlockingAccountModal) {
+		if (isCompleted && driverRef.current.isActive()) {
+			shouldSkipCompletionOnDestroy.current = true;
+			driverRef.current.destroy();
+		}
+
+		if (!isAccountSyncReady || hasBlockingAccountModal) {
 			if (driverRef.current.isActive()) {
 				shouldSkipCompletionOnDestroy.current = true;
 				driverRef.current.destroy();
@@ -376,6 +385,7 @@ export default function CustomerRareTutorial() {
 		accountBootstrapStatus,
 		currentPathname,
 		hasBlockingAccountModal,
+		isAccountSyncReady,
 		isCompleted,
 		isTargetPage,
 	]);

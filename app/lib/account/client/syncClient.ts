@@ -572,6 +572,36 @@ function getFlushableEntries(userId: string) {
 	);
 }
 
+function recordAccountSyncRefreshSuccess({
+	hasUnresolvedResult = false,
+	userId,
+}: {
+	hasUnresolvedResult?: boolean;
+	userId: string;
+}) {
+	if (!checkCurrentAccountUser(userId)) {
+		return false;
+	}
+	const hasPendingUploads = getFlushableEntries(userId).length > 0;
+	const hasCurrentUserConflict = accountStore.shared.sync.conflicts
+		.get()
+		.some((conflict) => conflict.userId === userId);
+	const hasPartialResult =
+		hasUnresolvedResult || hasPendingUploads || hasCurrentUserConflict;
+
+	accountStore.shared.sync.canRetry.set(false);
+	accountStore.shared.sync.failedAttempts.set(0);
+	accountStore.shared.sync.lastError.set(
+		hasCurrentUserConflict || hasUnresolvedResult ? 'conflict' : null
+	);
+	accountStore.shared.sync.lastResult.set(
+		hasPartialResult ? 'partial' : 'success'
+	);
+	accountStore.shared.sync.lastSyncedAt.set(Date.now());
+
+	return true;
+}
+
 function checkFlushEntriesStillCurrent(
 	userId: string,
 	entries: IDirtyQueueEntry[]
@@ -1337,13 +1367,10 @@ export async function flushAccountSyncQueue() {
 				response.state_epoch
 			);
 
-			accountStore.shared.sync.failedAttempts.set(0);
-			accountStore.shared.sync.lastError.set(null);
-			accountStore.shared.sync.canRetry.set(false);
-			accountStore.shared.sync.lastResult.set(
-				hasUnresolvedResult ? 'partial' : 'success'
-			);
-			accountStore.shared.sync.lastSyncedAt.set(Date.now());
+			recordAccountSyncRefreshSuccess({
+				hasUnresolvedResult,
+				userId: context.user.id,
+			});
 			if (uploadedNamespaces.length > 0) {
 				void postAccountSyncBroadcastMessage({
 					namespaces: uploadedNamespaces,
@@ -1601,6 +1628,7 @@ export async function takeOverLocalAccountData() {
 		if (shouldFlushPreservedDirty) {
 			scheduleAccountSyncFlush();
 		}
+		recordAccountSyncRefreshSuccess({ userId: context.user.id });
 
 		return true;
 	}
@@ -1612,6 +1640,7 @@ export async function takeOverLocalAccountData() {
 	const dirtyRemoteRecords: ISyncStateRecord[] = [];
 	const recordsToApply: ISyncStateRecord[] = [];
 
+	let hasUnresolvedResult = false;
 	Object.values(SYNC_NAMESPACE_MAP).forEach((namespace) => {
 		if (dirtyNamespaceSet.has(namespace)) {
 			const dirtyEntry = dirtyEntries.find(
@@ -1650,6 +1679,7 @@ export async function takeOverLocalAccountData() {
 		});
 
 		if (mergeResult.conflict !== null) {
+			hasUnresolvedResult = true;
 			const now = Date.now();
 			const conflict = {
 				...mergeResult.conflict,
@@ -1719,6 +1749,10 @@ export async function takeOverLocalAccountData() {
 	});
 	setCurrentAccountUserStateEpoch(context.user.id, remoteState.state_epoch);
 	scheduleAccountSyncFlush();
+	recordAccountSyncRefreshSuccess({
+		hasUnresolvedResult,
+		userId: context.user.id,
+	});
 
 	return true;
 }

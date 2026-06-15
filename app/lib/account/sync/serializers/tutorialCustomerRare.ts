@@ -53,15 +53,13 @@ export const tutorialCustomerRareSerializer = {
 		return data;
 	},
 	setLocalSnapshot(data) {
-		globalStore.persistence.dirver.set((previous) => {
-			const next = toDirverArray(previous).filter(
-				(item) => item !== customerRareTutorialStoreKey
-			);
+		const next = toDirverArray(globalStore.persistence.dirver.get()).filter(
+			(item) => item !== customerRareTutorialStoreKey
+		);
 
-			return data.completed
-				? [...next, customerRareTutorialStoreKey]
-				: next;
-		});
+		globalStore.persistence.dirver.set(
+			data.completed ? [...next, customerRareTutorialStoreKey] : next
+		);
 	},
 	validate(data): data is ITutorialCustomerRareSnapshot {
 		return (
