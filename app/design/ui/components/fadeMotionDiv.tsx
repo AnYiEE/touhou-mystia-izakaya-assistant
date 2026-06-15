@@ -1,10 +1,9 @@
 'use client';
 
 import { type HTMLAttributes, type PropsWithChildren, memo } from 'react';
+import { AnimatePresence, type Variants, motion } from 'framer-motion';
 
 import { useReducedMotion } from '@/design/ui/hooks';
-
-import { AnimatePresence, type Variants, motion } from 'framer-motion';
 
 type TVariant = 'content' | 'placeholder';
 

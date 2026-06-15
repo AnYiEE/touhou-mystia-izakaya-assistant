@@ -19,11 +19,11 @@ import {
 
 import InfoButton from './infoButton';
 import RatingAvatarShell from '@/(pages)/customer-shared/ratingAvatarShell';
+import SlidingSprite from '@/(pages)/customer-shared/slidingSprite';
 import TagGroup from '@/(pages)/customer-shared/tagGroup';
 import { trackEvent } from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Price from '@/components/price';
-import Sprite from '@/components/sprite';
 import Tags from '@/components/tags';
 
 import {
@@ -260,7 +260,7 @@ export default function CustomerCard() {
 											color={avatarRatingColor}
 											radius="full"
 											icon={
-												<Sprite
+												<SlidingSprite
 													target="customer_rare"
 													name={currentCustomerName}
 													size={4}

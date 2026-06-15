@@ -19,6 +19,7 @@ import {
 
 import InfoButton from './infoButton';
 import RatingAvatarShell from '@/(pages)/customer-shared/ratingAvatarShell';
+import SlidingSprite from '@/(pages)/customer-shared/slidingSprite';
 import TagGroup from '@/(pages)/customer-shared/tagGroup';
 import { trackEvent } from '@/components/analytics';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
@@ -184,7 +185,7 @@ export default function CustomerCard() {
 											radius="full"
 											icon={
 												<div className="h-16 w-16 overflow-hidden rounded-full">
-													<Sprite
+													<SlidingSprite
 														target="customer_normal"
 														name={
 															currentCustomerName

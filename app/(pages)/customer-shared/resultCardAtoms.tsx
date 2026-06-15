@@ -22,23 +22,21 @@ export const Plus = memo<IPlusProps>(function Plus({ className, size = 1 }) {
 	);
 });
 
-interface IUnknownItemProps extends Pick<
+interface IUnknownItemIconProps extends Pick<
 	HTMLSpanElementAttributes,
 	'className'
 > {
+	iconSize?: number;
 	size?: number;
-	title: string;
+	title?: string;
 }
 
-export const UnknownItem = memo<IUnknownItemProps>(function UnknownItem({
-	className,
-	size = 2,
-	title,
-}) {
-	const remString = `${size}rem`;
+export const UnknownItemIcon = memo<IUnknownItemIconProps>(
+	function UnknownItemIcon({ className, iconSize, size = 2, title }) {
+		const remString = `${size}rem`;
+		const iconRemString = `${iconSize ?? size}rem`;
 
-	return (
-		<Tooltip showArrow content={title} offset={7 + -8 * (size - 2)}>
+		return (
 			<span
 				role="img"
 				title={title}
@@ -47,16 +45,38 @@ export const UnknownItem = memo<IUnknownItemProps>(function UnknownItem({
 					className
 				)}
 				style={{
-					fontSize: remString,
 					height: remString,
+					outlineOffset: '-3px',
 					width: remString,
 				}}
 			>
-				<FontAwesomeIcon
-					icon={faQuestion}
-					className="!h-full rotate-12"
-				/>
+				<span
+					className="inline-flex items-center justify-center leading-none"
+					style={{
+						fontSize: iconRemString,
+						height: iconRemString,
+						width: iconRemString,
+					}}
+				>
+					<FontAwesomeIcon icon={faQuestion} className="rotate-12" />
+				</span>
 			</span>
+		);
+	}
+);
+
+interface IUnknownItemProps extends IUnknownItemIconProps {
+	title: string;
+}
+
+export const UnknownItem = memo<IUnknownItemProps>(function UnknownItem({
+	size = 2,
+	title,
+	...props
+}) {
+	return (
+		<Tooltip showArrow content={title} offset={7 + -8 * (size - 2)}>
+			<UnknownItemIcon title={title} size={size} {...props} />
 		</Tooltip>
 	);
 });

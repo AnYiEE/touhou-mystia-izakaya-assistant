@@ -26,6 +26,7 @@ import RecipeTabContent from '../recipeTabContent';
 import ResultCard from '../resultCard';
 import SavedMealCard from '../savedMealCard';
 import SuggestedMealCard from '../suggestedMealCard';
+import CustomerTabSlider from '@/(pages)/customer-shared/customerTabSlider';
 import Loading from '@/loading';
 import Placeholder from '@/components/placeholder';
 import SideButtonGroup from '@/components/sideButtonGroup';
@@ -45,6 +46,7 @@ import {
 	ingredientTabStyleMap,
 	tachieBreakPointMap,
 } from '@/(pages)/customer-shared/constants';
+import type { TTab } from '@/(pages)/customer-shared/types';
 import { siteConfig } from '@/configs';
 import { type TCustomerRareName } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
@@ -297,8 +299,9 @@ export default function Content() {
 
 	const onTabSelectionChange = useCallback(
 		(key: Key) => {
+			const nextTabKey = key as TTab;
 			vibrate(key !== selectedTabKey);
-			customerStore.onTabSelectionChange(key);
+			customerStore.onTabSelectionChange(nextTabKey);
 		},
 		[selectedTabKey, vibrate]
 	);
@@ -321,7 +324,7 @@ export default function Content() {
 			<div className="px-2 xl:w-full xl:px-0 xl:pt-2">
 				<Tabs
 					fullWidth
-					destroyInactiveTabPanel={false}
+					destroyInactiveTabPanel
 					disableAnimation={isReducedMotion}
 					size="sm"
 					selectedKey={selectedTabKey}
@@ -341,30 +344,17 @@ export default function Content() {
 						}),
 					}}
 				>
-					<Tab
-						key="customer"
-						title="稀客"
-						className="relative flex flex-col"
-					>
-						<CustomerTabContent
-							customerTabStyle={customerTabStyle}
-							sortedData={customerSortedData}
-						/>
-					</Tab>
+					<Tab key="customer" title="稀客" />
 					<Tab
 						isDisabled={currentCustomerName === null}
 						key="recipe"
 						title="料理"
-					>
-						<RecipeTabContent />
-					</Tab>
+					/>
 					<Tab
 						isDisabled={currentCustomerName === null}
 						key="beverage"
 						title="酒水"
-					>
-						<BeverageTabContent />
-					</Tab>
+					/>
 					<Tab
 						isDisabled={
 							currentCustomerName === null ||
@@ -372,14 +362,28 @@ export default function Content() {
 						}
 						key="ingredient"
 						title="食材"
-						className="px-0"
-					>
+					/>
+				</Tabs>
+				<CustomerTabSlider selectedTabKey={selectedTabKey}>
+					<div className="relative flex flex-col px-1 py-3">
+						<CustomerTabContent
+							customerTabStyle={customerTabStyle}
+							sortedData={customerSortedData}
+						/>
+					</div>
+					<div className="px-1 py-3">
+						<RecipeTabContent />
+					</div>
+					<div className="px-1 py-3">
+						<BeverageTabContent />
+					</div>
+					<div className="px-0 py-3">
 						<IngredientTabContent
 							ingredientTabStyle={ingredientTabStyle}
 							sortedData={ingredientSortedData}
 						/>
-					</Tab>
-				</Tabs>
+					</div>
+				</CustomerTabSlider>
 			</div>
 
 			<FadeMotionDiv

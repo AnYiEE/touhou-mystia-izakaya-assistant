@@ -13,10 +13,13 @@ import {
 } from '@/design/ui/components';
 
 import CurrentMealIngredientsList from '@/(pages)/customer-shared/currentMealIngredientsList';
-import { Plus, UnknownItem } from '@/(pages)/customer-shared/resultCardAtoms';
+import {
+	Plus,
+	UnknownItemIcon,
+} from '@/(pages)/customer-shared/resultCardAtoms';
+import SlidingSprite from '@/(pages)/customer-shared/slidingSprite';
 import Placeholder from '@/components/placeholder';
 import Price from '@/components/price';
-import Sprite from '@/components/sprite';
 
 import {
 	CUSTOMER_RATING_MAP,
@@ -162,7 +165,7 @@ export default function ResultCard() {
 									return (
 										<>
 											<Tooltip showArrow content={label}>
-												<Sprite
+												<SlidingSprite
 													target="cooker"
 													name={cooker}
 													size={2}
@@ -178,21 +181,14 @@ export default function ResultCard() {
 															: 0
 													}
 													aria-label={label}
-													className={cn(
-														'!duration-500 ease-out transition-background motion-reduce:transition-none',
-														{
-															'cursor-pointer':
-																!isDarkMatter,
-														}
-													)}
 												/>
 											</Tooltip>
 											<Tooltip
 												showArrow
 												content={recipeName}
-												offset={4}
+												offset={3}
 											>
-												<Sprite
+												<SlidingSprite
 													target="recipe"
 													name={recipeName}
 													size={2.5}
@@ -203,11 +199,44 @@ export default function ResultCard() {
 								})()
 							) : (
 								<>
-									<UnknownItem
-										title="请选择料理"
-										size={1.5}
-									/>
-									<UnknownItem title="请选择料理" />
+									<Tooltip
+										showArrow
+										content="请选择料理"
+										offset={7}
+									>
+										<SlidingSprite
+											target="cooker"
+											isFallback
+											fallbackKey="empty-recipe-cooker"
+											fallback={
+												<UnknownItemIcon
+													title="请选择料理"
+													iconSize={1.5}
+													size={2}
+												/>
+											}
+											size={2}
+										/>
+									</Tooltip>
+									<Tooltip
+										showArrow
+										content="请选择料理"
+										offset={3}
+									>
+										<SlidingSprite
+											target="recipe"
+											isFallback
+											fallbackKey="empty-recipe"
+											fallback={
+												<UnknownItemIcon
+													title="请选择料理"
+													iconSize={2}
+													size={2.5}
+												/>
+											}
+											size={2.5}
+										/>
+									</Tooltip>
 								</>
 							)}
 							<Plus />
@@ -215,16 +244,34 @@ export default function ResultCard() {
 								<Tooltip
 									showArrow
 									content={currentBeverageName}
-									offset={4}
+									offset={3}
 								>
-									<Sprite
+									<SlidingSprite
 										target="beverage"
 										name={currentBeverageName}
 										size={2.5}
 									/>
 								</Tooltip>
 							) : (
-								<UnknownItem title="请选择酒水" />
+								<Tooltip
+									showArrow
+									content="请选择酒水"
+									offset={3}
+								>
+									<SlidingSprite
+										target="beverage"
+										isFallback
+										fallbackKey="empty-beverage"
+										fallback={
+											<UnknownItemIcon
+												title="请选择酒水"
+												iconSize={2}
+												size={2.5}
+											/>
+										}
+										size={2.5}
+									/>
+								</Tooltip>
 							)}
 						</div>
 						<Plus />
