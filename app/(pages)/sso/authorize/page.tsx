@@ -2,13 +2,16 @@ import { unstable_rethrow } from 'next/navigation';
 import { cookies, headers } from 'next/headers';
 import { NextRequest } from 'next/server';
 
-import { Card } from '@/design/ui/components';
-
 import SsoAuthorizeAccountGate, {
 	SsoAuthorizeAccountGateButton,
 } from './accountGate';
 import SsoAuthorizeControls from './authorizeControls';
-import Heading from '@/components/heading';
+import SsoAuthorizePanel, {
+	SsoAuthorizeDetailList,
+	SsoAuthorizeDetailRow,
+	SsoAuthorizeNotice,
+	authorizePanelIcons,
+} from './authorizePanel';
 import AccountInitialStateHydrator from '@/lib/account/client/components/accountInitialStateHydrator';
 import AccountSsoGrantInitialDataHydrator from '@/lib/account/client/components/accountSsoGrantInitialDataHydrator';
 
@@ -48,22 +51,26 @@ function SsoAuthorizeMessage({ status }: { status: string | null }) {
 				: '授权请求无效或已失效，请从外部服务重新发起登录。';
 
 	return (
-		<div className="min-h-main-content py-6 text-foreground">
-			<Card fullWidth shadow="sm" className="space-y-4 p-4">
-				<Heading as="h1" isFirst>
-					SSO授权
-				</Heading>
-				<p className="text-small leading-6 text-foreground-600">
+		<div className="min-h-main-content text-foreground">
+			<SsoAuthorizePanel
+				icon={authorizePanelIcons.error}
+				subtitle="无法继续当前授权流程"
+				tone="warning"
+			>
+				<SsoAuthorizeNotice
+					icon={authorizePanelIcons.error}
+					tone="warning"
+				>
 					{message}
-				</p>
-			</Card>
+				</SsoAuthorizeNotice>
+			</SsoAuthorizePanel>
 		</div>
 	);
 }
 
 function SsoAuthorizeLoginRequired() {
 	return (
-		<div className="min-h-main-content py-6 text-foreground">
+		<div className="min-h-main-content text-foreground">
 			<AccountInitialStateHydrator
 				data={{
 					csrf_token: null,
@@ -76,31 +83,32 @@ function SsoAuthorizeLoginRequired() {
 				}}
 			/>
 			<SsoAuthorizeAccountGate />
-			<Card fullWidth shadow="sm" className="space-y-4 p-4">
-				<Heading as="h1" isFirst>
-					SSO授权
-				</Heading>
-				<p className="text-small leading-6 text-foreground-600">
-					请先登录小助手账号以继续授权。
-				</p>
+			<SsoAuthorizePanel
+				icon={authorizePanelIcons.login}
+				subtitle="需要确认您的小助手账号身份"
+			>
+				<SsoAuthorizeNotice>
+					请先登录小助手账号，登录完成后会回到当前授权流程。
+				</SsoAuthorizeNotice>
 				<SsoAuthorizeAccountGateButton />
-			</Card>
+			</SsoAuthorizePanel>
 		</div>
 	);
 }
 
 function SsoAuthorizePasswordChangeRequired() {
 	return (
-		<div className="min-h-main-content py-6 text-foreground">
-			<Card fullWidth shadow="sm" className="space-y-4 p-4">
-				<Heading as="h1" isFirst>
-					SSO授权
-				</Heading>
-				<p className="text-small leading-6 text-foreground-600">
+		<div className="min-h-main-content text-foreground">
+			<SsoAuthorizePanel
+				icon={authorizePanelIcons.password}
+				subtitle="账号需要先完成安全更新"
+				tone="warning"
+			>
+				<SsoAuthorizeNotice tone="warning">
 					请先在弹窗中更新账号密码，完成后会继续授权。
-				</p>
+				</SsoAuthorizeNotice>
 				<SsoAuthorizeAccountGateButton />
-			</Card>
+			</SsoAuthorizePanel>
 		</div>
 	);
 }
@@ -178,25 +186,29 @@ export default async function SsoAuthorizePage({
 		}
 
 		return (
-			<div className="min-h-main-content py-6 text-foreground">
+			<div className="min-h-main-content text-foreground">
 				<AccountInitialStateHydrator data={accountInitialData} />
 				<AccountSsoGrantInitialDataHydrator
 					data={accountSsoGrantInitialData}
 				/>
-				<Card fullWidth shadow="sm" className="space-y-5 p-4">
-					<Heading as="h1" isFirst>
-						SSO授权
-					</Heading>
-					<div className="space-y-2 text-small leading-6 text-foreground-600">
-						<p className="text-base font-medium text-foreground-800">
-							{client.name}将获取您的小助手账号身份
-						</p>
-						<p>当前账号：{auth.data.user.username}</p>
-					</div>
+				<SsoAuthorizePanel subtitle="确认后将返回发起登录的外部服务">
+					<SsoAuthorizeNotice>
+						{client.name}将获取您的小助手账号身份。
+					</SsoAuthorizeNotice>
+					<SsoAuthorizeDetailList>
+						<SsoAuthorizeDetailRow
+							label="授权服务"
+							value={client.name}
+						/>
+						<SsoAuthorizeDetailRow
+							label="当前账号"
+							value={auth.data.user.username}
+						/>
+					</SsoAuthorizeDetailList>
 					<SsoAuthorizeControls
 						transactionId={context.transaction_id}
 					/>
-				</Card>
+				</SsoAuthorizePanel>
 			</div>
 		);
 	} catch (error) {

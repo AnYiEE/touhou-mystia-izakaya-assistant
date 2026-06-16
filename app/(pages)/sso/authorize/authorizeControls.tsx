@@ -68,10 +68,11 @@ export default function SsoAuthorizeControls({
 	);
 
 	return (
-		<div className="space-y-3">
-			<div className="flex flex-wrap gap-2">
+		<div className="space-y-3 border-t border-default-200/80 pt-4">
+			<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
 				<Button
 					color="primary"
+					className="sm:min-w-32"
 					isDisabled={submittingIntent !== null}
 					isLoading={submittingIntent === 'agree'}
 					type="button"
@@ -83,6 +84,7 @@ export default function SsoAuthorizeControls({
 					同意并继续
 				</Button>
 				<Button
+					className="sm:min-w-24"
 					isDisabled={submittingIntent !== null}
 					isLoading={submittingIntent === 'cancel'}
 					type="button"
@@ -95,7 +97,9 @@ export default function SsoAuthorizeControls({
 				</Button>
 			</div>
 			{message === null ? null : (
-				<p className="text-small leading-6 text-danger">{message}</p>
+				<p className="rounded-small bg-danger/10 px-3 py-2 text-small leading-6 text-danger-700 dark:text-danger">
+					{message}
+				</p>
 			)}
 		</div>
 	);
