@@ -310,6 +310,7 @@ export default memo<IProps>(function AccountManager() {
 		useState(false);
 	const [isDeleteAccountPopoverOpen, setIsDeleteAccountPopoverOpen] =
 		useState(false);
+	const [shouldHideAfterSsoAuth, setShouldHideAfterSsoAuth] = useState(false);
 	const [ssoGrants, setSsoGrants] = useState<IAccountSsoGrant[]>([]);
 	const [ssoGrantsUserId, setSsoGrantsUserId] = useState<string | null>(null);
 	const [revokeTargetClientId, setRevokeTargetClientId] = useState<
@@ -323,6 +324,10 @@ export default memo<IProps>(function AccountManager() {
 	const isNewPasswordInvalid =
 		newPassword.length > 0 && !checkPasswordPolicy(newPassword);
 	const isSsoContext = pathname === '/sso/authorize';
+
+	useEffect(() => {
+		setShouldHideAfterSsoAuth(false);
+	}, [pathname]);
 
 	const handleAuth = useCallback(() => {
 		if (isSubmitting) {
@@ -379,7 +384,10 @@ export default memo<IProps>(function AccountManager() {
 					return;
 				}
 				if (isSsoContext) {
+					setShouldHideAfterSsoAuth(true);
+					accountStore.shared.accountModal.isOpen.set(false);
 					router.refresh();
+					return;
 				}
 
 				refreshAccountState().catch((error: unknown) => {
@@ -1073,6 +1081,10 @@ export default memo<IProps>(function AccountManager() {
 	}
 
 	if (bootstrapStatus !== 'anonymous' && bootstrapStatus !== 'loggedIn') {
+		return null;
+	}
+
+	if (shouldHideAfterSsoAuth) {
 		return null;
 	}
 
