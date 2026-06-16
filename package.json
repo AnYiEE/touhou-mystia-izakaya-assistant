@@ -105,7 +105,7 @@
 		"@heroui/theme": "2.4.6",
 		"@heroui/tooltip": "2.2.8",
 		"@node-rs/argon2": "^2.0.2",
-		"better-sqlite3": "^12.10.0",
+		"better-sqlite3": "^12.11.1",
 		"broadcast-channel": "^7.3.0",
 		"compare-versions": "^6.1.1",
 		"driver.js": "^1.4.0",
@@ -159,7 +159,7 @@
 		"only-allow": "^1.2.2",
 		"postcss": "^8.5.15",
 		"postcss-flexbugs-fixes": "^5.0.2",
-		"postcss-preset-env": "^11.3.0",
+		"postcss-preset-env": "^11.3.1",
 		"prettier": "^3.8.4",
 		"prettier-plugin-tailwindcss": "^0.8.0",
 		"sass": "^1.101.0",
@@ -170,7 +170,7 @@
 		"tailwindcss": "^3.4.19",
 		"tsx": "^4.22.4",
 		"typescript": "^6.0.3",
-		"typescript-eslint": "^8.61.0"
+		"typescript-eslint": "^8.61.1"
 	},
 	"packageManager": "pnpm@10.33.4",
 	"pnpm": {
