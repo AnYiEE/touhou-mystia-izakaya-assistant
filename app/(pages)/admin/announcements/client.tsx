@@ -36,6 +36,7 @@ import {
 	AdminTableHeader,
 	AdminTableRow,
 } from '../components';
+import { trackEvent } from '@/components/analytics';
 import TimeAgo from '@/components/timeAgo';
 
 import {
@@ -385,6 +386,15 @@ export default function AdminAnnouncementsClient({
 		setIsLoading(false);
 	}, []);
 
+	const handleOpenSsoClientList = useCallback(() => {
+		trackEvent(
+			trackEvent.category.click,
+			'Admin SSO Client Button',
+			'Open List From Announcements'
+		);
+		handleLeaveAnnouncementList();
+	}, [handleLeaveAnnouncementList]);
+
 	const handlePreviousPage = useCallback(() => {
 		setPage((current) => Math.max(1, current - 1));
 	}, []);
@@ -546,7 +556,7 @@ export default function AdminAnnouncementsClient({
 								/>
 							}
 							variant="flat"
-							onPress={handleLeaveAnnouncementList}
+							onPress={handleOpenSsoClientList}
 						>
 							SSO客户端
 						</Button>

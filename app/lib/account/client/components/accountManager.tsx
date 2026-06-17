@@ -414,11 +414,21 @@ export default memo<IProps>(function AccountManager() {
 	}, [authMode, isSsoContext, isSubmitting, password, router, username]);
 
 	const handleLoginModePress = useCallback(() => {
+		trackEvent(
+			trackEvent.category.click,
+			'Account Auth Button',
+			'Switch Login'
+		);
 		setAuthMode('login');
 		setMessage(null);
 	}, []);
 
 	const handleRegisterModePress = useCallback(() => {
+		trackEvent(
+			trackEvent.category.click,
+			'Account Auth Button',
+			'Switch Register'
+		);
 		setAuthMode('register');
 		setMessage(null);
 	}, []);
@@ -1015,6 +1025,14 @@ export default memo<IProps>(function AccountManager() {
 		}
 
 		const clientId = revokeTargetClientId;
+
+		trackEvent(
+			trackEvent.category.click,
+			'Account SSO Button',
+			'Revoke Grant',
+			clientId
+		);
+
 		const expectedAuthContext = {
 			expectedCsrfToken: csrfToken,
 			expectedUserId: user.id,

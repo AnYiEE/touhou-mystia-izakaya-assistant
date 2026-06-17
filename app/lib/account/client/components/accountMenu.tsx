@@ -4,6 +4,9 @@ import { memo } from 'react';
 import { debounce } from 'lodash';
 
 import { Button } from '@/design/ui/components';
+
+import { trackEvent } from '@/components/analytics';
+
 import { accountStore } from '@/stores/account';
 import { checkA11yConfirmKey } from '@/utilities';
 
@@ -14,6 +17,7 @@ interface IAccountButtonProps {
 }
 
 function openAccountModal() {
+	trackEvent(trackEvent.category.click, 'Account Button', 'Open Modal');
 	accountStore.shared.accountModal.isOpen.set(true);
 }
 

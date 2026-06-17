@@ -850,6 +850,15 @@ export default function AdminPageClient({
 		setIsUsersLoading(false);
 	}, []);
 
+	const handleOpenSsoClientList = useCallback(() => {
+		trackEvent(
+			trackEvent.category.click,
+			'Admin SSO Client Button',
+			'Open List From Users'
+		);
+		handleLeaveUserList();
+	}, [handleLeaveUserList]);
+
 	const handleOpenUserDetail = useCallback(() => {
 		trackEvent(
 			trackEvent.category.click,
@@ -1137,7 +1146,7 @@ export default function AdminPageClient({
 								/>
 							}
 							variant="flat"
-							onPress={handleLeaveUserList}
+							onPress={handleOpenSsoClientList}
 						>
 							SSO客户端
 						</Button>

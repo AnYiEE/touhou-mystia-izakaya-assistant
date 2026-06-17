@@ -4,6 +4,8 @@ import { useCallback, useState } from 'react';
 
 import { Button } from '@/design/ui/components';
 
+import { trackEvent } from '@/components/analytics';
+
 import { ServiceApiError, fetchServiceApi } from '@/lib/api/serviceClient';
 
 type TSsoAuthorizeIntent = 'agree' | 'cancel';
@@ -40,6 +42,12 @@ export default function SsoAuthorizeControls({
 
 	const submit = useCallback(
 		(intent: TSsoAuthorizeIntent) => {
+			trackEvent(
+				trackEvent.category.click,
+				'SSO Authorize Button',
+				intent === 'agree' ? 'Agree' : 'Cancel'
+			);
+
 			setMessage(null);
 			setSubmittingIntent(intent);
 
@@ -58,6 +66,14 @@ export default function SsoAuthorizeControls({
 					globalThis.location.assign(result.redirect_url);
 				})
 				.catch((error: unknown) => {
+					trackEvent(
+						trackEvent.category.error,
+						'SSO',
+						'Authorize Submit',
+						error instanceof ServiceApiError
+							? error.status
+							: undefined
+					);
 					setMessage(createSubmitErrorMessage(error));
 				})
 				.finally(() => {

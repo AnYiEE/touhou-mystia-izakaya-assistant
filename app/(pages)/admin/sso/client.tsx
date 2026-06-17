@@ -26,6 +26,7 @@ import {
 	AdminTableHeader,
 	AdminTableRow,
 } from '../components';
+import { trackEvent } from '@/components/analytics';
 import TimeAgo from '@/components/timeAgo';
 
 import {
@@ -116,6 +117,14 @@ const AdminSsoClientRow = memo<{
 					animationUnderline={false}
 					className="rounded-small px-2 py-1 text-small text-primary-600 transition-background hover:bg-primary/15 motion-reduce:transition-none dark:text-primary"
 					href={`/admin/sso/${encodeURIComponent(client.id)}`}
+					onPress={() => {
+						trackEvent(
+							trackEvent.category.click,
+							'Admin SSO Client Button',
+							'Edit',
+							client.id
+						);
+					}}
 				>
 					编辑
 				</Link>
@@ -252,6 +261,19 @@ export default function AdminSsoClientsClient({
 		setIsLoading(false);
 	}, []);
 
+	const handleRefreshClients = useCallback(() => {
+		trackEvent(
+			trackEvent.category.click,
+			'Admin SSO Client Button',
+			'Refresh'
+		);
+		refreshClients();
+	}, [refreshClients]);
+
+	const handleNewSsoClient = useCallback(() => {
+		trackEvent(trackEvent.category.click, 'Admin SSO Client Button', 'New');
+	}, []);
+
 	if (isAuthLoading) {
 		return (
 			<AdminShell>
@@ -344,7 +366,7 @@ export default function AdminSsoClientsClient({
 								)
 							}
 							variant="flat"
-							onPress={refreshClients}
+							onPress={handleRefreshClients}
 						>
 							刷新
 						</Button>
@@ -360,6 +382,7 @@ export default function AdminSsoClientsClient({
 								/>
 							}
 							variant="flat"
+							onPress={handleNewSsoClient}
 						>
 							新建
 						</Button>

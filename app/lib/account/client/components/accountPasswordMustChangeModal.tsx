@@ -275,6 +275,11 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 						if (resetAccountStateIfCurrent(expectedAuthContext)) {
 							clearPasswordFields();
 							if (shouldResumeSso) {
+								trackEvent(
+									trackEvent.category.show,
+									'Modal',
+									'Account From SSO Force Logout'
+								);
 								accountStore.shared.accountModal.isOpen.set(
 									true
 								);
@@ -293,6 +298,11 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 				if (resetAccountStateIfCurrent(expectedAuthContext)) {
 					clearPasswordFields();
 					if (shouldResumeSso) {
+						trackEvent(
+							trackEvent.category.show,
+							'Modal',
+							'Account From SSO Force Logout'
+						);
 						accountStore.shared.accountModal.isOpen.set(true);
 					}
 				}

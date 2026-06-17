@@ -37,6 +37,7 @@ import {
 	AdminPanelTitle,
 	AdminShell,
 } from '../components';
+import { trackEvent } from '@/components/analytics';
 
 import {
 	type TAdminApiResult,
@@ -361,6 +362,12 @@ export default memo<IProps>(function AdminSsoClientForm({
 			return;
 		}
 
+		trackEvent(
+			trackEvent.category.click,
+			'Admin SSO Client Button',
+			isEditMode ? 'Save' : 'Create',
+			id.trim()
+		);
 		setIsSaving(true);
 		setMessage(null);
 		setGeneratedSecret(null);
@@ -404,6 +411,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 		canSave,
 		client,
 		createBody,
+		id,
 		isEditMode,
 		secretHashes,
 	]);
@@ -413,6 +421,13 @@ export default memo<IProps>(function AdminSsoClientForm({
 			return;
 		}
 
+		trackEvent(
+			trackEvent.category.click,
+			'Admin SSO Client Button',
+			'Continue Edit',
+			client.id
+		);
+
 		router.replace(`/admin/sso/${encodeURIComponent(client.id)}`);
 	}, [client, router]);
 
@@ -420,6 +435,13 @@ export default memo<IProps>(function AdminSsoClientForm({
 		if (admin === null || !isEditMode || client?.disabled_at !== null) {
 			return;
 		}
+
+		trackEvent(
+			trackEvent.category.click,
+			'Admin SSO Client Button',
+			'Generate Secret',
+			client.id
+		);
 
 		setIsSaving(true);
 		setMessage(null);
@@ -463,6 +485,12 @@ export default memo<IProps>(function AdminSsoClientForm({
 	]);
 
 	const handleCopySecret = useCallback(async (secretHash: string) => {
+		trackEvent(
+			trackEvent.category.click,
+			'Admin SSO Client Button',
+			'Copy Secret Hash'
+		);
+
 		try {
 			// eslint-disable-next-line compat/compat -- Prefer the modern Clipboard API and keep execCommand as a fallback.
 			await navigator.clipboard.writeText(secretHash);
@@ -492,6 +520,12 @@ export default memo<IProps>(function AdminSsoClientForm({
 				return;
 			}
 
+			trackEvent(
+				trackEvent.category.click,
+				'Admin SSO Client Button',
+				'Remove Secret Hash'
+			);
+
 			setSecretHashes((current) =>
 				current.length <= 1
 					? current
@@ -508,6 +542,14 @@ export default memo<IProps>(function AdminSsoClientForm({
 		}
 
 		const shouldDisableClient = client.disabled_at === null;
+
+		trackEvent(
+			trackEvent.category.click,
+			'Admin SSO Client Button',
+			shouldDisableClient ? 'Disable' : 'Enable',
+			client.id
+		);
+
 		setIsToggleClientPopoverOpen(false);
 		setIsDeletePopoverOpen(false);
 		setIsSaving(true);
@@ -542,6 +584,13 @@ export default memo<IProps>(function AdminSsoClientForm({
 		if (admin === null || client === null) {
 			return;
 		}
+
+		trackEvent(
+			trackEvent.category.click,
+			'Admin SSO Client Button',
+			'Delete',
+			client.id
+		);
 
 		setIsDeletePopoverOpen(false);
 		setIsToggleClientPopoverOpen(false);

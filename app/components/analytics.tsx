@@ -85,8 +85,10 @@ type TAction =
 	| 'Account Auth'
 	| 'Account Conflict'
 	| 'Account Password'
+	| 'Account SSO'
 	| 'Account Sync'
 	| 'Admin Auth'
+	| 'Admin SSO Client'
 	| 'Admin User Action'
 	| 'Admin User Detail'
 	| 'Cloud Delete'
@@ -104,6 +106,7 @@ type TAction =
 	| 'Save'
 	| 'Share'
 	| 'Select'
+	| 'SSO Authorize'
 	| 'Theme'
 	| 'Tutorial';
 type TActions = `${TAction} Button` | 'Link';
@@ -121,7 +124,7 @@ type TItemAlone = 'Customer' | 'Customer Tag' | 'MystiaCooker';
 type TItemCard = `${TItem} Card`;
 type TAdminSelect = 'Admin User Status';
 
-type TError = 'Cloud' | 'Global' | 'Update';
+type TError = 'Cloud' | 'Global' | 'SSO' | 'Update';
 type TShow = 'Modal' | 'Popover' | 'Tooltip';
 
 function trackEventFunction(

@@ -24,6 +24,11 @@ import {
 import { accountStore, globalStore } from '@/stores';
 
 function openAccountModal() {
+	trackEvent(
+		trackEvent.category.click,
+		'Account Button',
+		'Open Modal From Legacy Backup Import'
+	);
 	accountStore.shared.accountModal.isOpen.set(true);
 }
 
