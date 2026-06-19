@@ -16,11 +16,11 @@ import QRCode from '@/components/qrCode';
 
 import { siteConfig } from '@/configs';
 import { globalStore as store } from '@/stores';
-import { safeStorage } from '@/utilities/safeStorage';
+import { withCrossTabLock } from '@/utilities/crossTabLock';
 
-const LOCK_KEY = 'sync_lock-donation_modal_trigger';
-const LOCK_VERIFY_DELAY = 150;
-const LOCK_EXPIRE_TIME = 3000;
+const DONATION_MODAL_LOCK_NAME = 'donation-modal-trigger';
+const DONATION_MODAL_LOCK_TTL = 3000;
+const DONATION_MODAL_LOCK_VERIFY_DELAY = 150;
 const REMIND_LATER_DAYS = 7;
 
 const { links, name, shortName } = siteConfig;
@@ -35,30 +35,10 @@ function getCurrentMilestone(count: number) {
 	return 2000 + Math.floor((count - 2000) / 1000) * 1000;
 }
 
-function tryAcquireLockAndExecute(onSuccess: () => void) {
-	const now = Date.now();
-
-	const existingLock = safeStorage.getItem(LOCK_KEY);
-	if (existingLock !== null) {
-		const lockTimestamp = Number.parseInt(existingLock, 10);
-		if (now - lockTimestamp < LOCK_EXPIRE_TIME) {
-			return;
-		}
-	}
-
-	safeStorage.setItem(LOCK_KEY, now.toString());
-
-	const handler = setTimeout(() => {
-		const currentLock = safeStorage.getItem(LOCK_KEY);
-		if (currentLock === now.toString()) {
-			onSuccess();
-			safeStorage.removeItem(LOCK_KEY);
-		}
-	}, LOCK_VERIFY_DELAY);
-
-	return () => {
-		clearTimeout(handler);
-	};
+function delayDonationModalLockVerify() {
+	return new Promise((resolve) => {
+		setTimeout(resolve, DONATION_MODAL_LOCK_VERIFY_DELAY);
+	});
 }
 
 function useDonationModalTrigger() {
@@ -94,15 +74,29 @@ function useDonationModalTrigger() {
 			}
 		}
 
-		return tryAcquireLockAndExecute(() => {
-			store.setDonationModalIsOpen(true);
-			trackEvent(
-				trackEvent.category.show,
-				'Popover',
-				'Donation Modal',
-				currentMilestone
-			);
-		});
+		let isEffectActive = true;
+		void withCrossTabLock(
+			DONATION_MODAL_LOCK_NAME,
+			async () => {
+				await delayDonationModalLockVerify();
+				if (!isEffectActive) {
+					return;
+				}
+
+				store.setDonationModalIsOpen(true);
+				trackEvent(
+					trackEvent.category.show,
+					'Popover',
+					'Donation Modal',
+					currentMilestone
+				);
+			},
+			{ fallbackTtl: DONATION_MODAL_LOCK_TTL, ifAvailable: true }
+		);
+
+		return () => {
+			isEffectActive = false;
+		};
 	}, [
 		currentMilestone,
 		isMounted,

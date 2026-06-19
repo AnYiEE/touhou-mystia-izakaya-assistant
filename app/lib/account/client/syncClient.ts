@@ -7,7 +7,6 @@ import {
 import {
 	ACCOUNT_SYNC_LEASE_RENEW_INTERVAL,
 	acquireAccountSyncLease,
-	checkAccountSyncLeaseSupported,
 	createAccountTabId,
 	readAccountSyncLease,
 	releaseAccountSyncLease,
@@ -60,6 +59,7 @@ import {
 } from '@/lib/account/sync/serializers/globalPreferences';
 import { getLogSafeErrorCode } from '@/lib/logging';
 import { accountStore } from '@/stores/account';
+import { checkCrossTabNativeLockSupported } from '@/utilities/crossTabLock';
 
 const DIRTY_COUNT_FLUSH_THRESHOLD = 10;
 const FORCE_FLUSH_DELAY = 30 * 1000;
@@ -1265,7 +1265,7 @@ export async function flushAccountSyncQueue() {
 				return false;
 			}
 			didAcquireLease = true;
-			shouldCheckLeaseBeforeWrite = !checkAccountSyncLeaseSupported();
+			shouldCheckLeaseBeforeWrite = !checkCrossTabNativeLockSupported();
 
 			if (!checkCurrentSyncRun(generation, context.user.id)) {
 				return false;

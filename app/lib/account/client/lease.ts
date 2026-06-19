@@ -7,8 +7,12 @@ import {
 } from './storage';
 import { createAccountClientId } from './random';
 
+import { withCrossTabLock } from '@/utilities/crossTabLock';
+
 export const ACCOUNT_SYNC_LEASE_TTL = 15 * 1000;
 export const ACCOUNT_SYNC_LEASE_RENEW_INTERVAL = 5 * 1000;
+
+const ACCOUNT_SYNC_LEASE_LOCK_TTL = 3000;
 
 export interface IAccountSyncLease {
 	expiresAt: number;
@@ -20,26 +24,6 @@ export interface IAccountSyncLease {
 type TAccountSyncLeaseAcquireResult =
 	| { acquired: true; status: 'acquired' }
 	| { acquired: false; status: 'busy' };
-
-interface IAccountLockManager {
-	request<T>(
-		name: string,
-		options: { mode: 'exclusive' },
-		callback: () => Promise<T> | T
-	): Promise<T>;
-}
-
-function getAccountLockManager() {
-	const navigatorValue = Reflect.get(globalThis, 'navigator') as
-		| { locks?: IAccountLockManager }
-		| undefined;
-
-	return navigatorValue?.locks ?? null;
-}
-
-export function checkAccountSyncLeaseSupported() {
-	return getAccountLockManager() !== null;
-}
 
 export function createAccountTabId() {
 	return createAccountClientId();
@@ -161,35 +145,16 @@ export async function acquireAccountSyncLease(
 	ownerRunId: string,
 	now?: number
 ) {
-	const lockManager = getAccountLockManager();
-	const nowValue = now ?? Date.now();
-	if (lockManager === null) {
-		return tryAcquireAccountSyncLease(
-			userId,
-			ownerTabId,
-			ownerRunId,
-			nowValue
-		)
-			? ({
-					acquired: true,
-					status: 'acquired',
-				} satisfies TAccountSyncLeaseAcquireResult)
-			: ({
-					acquired: false,
-					status: 'busy',
-				} satisfies TAccountSyncLeaseAcquireResult);
-	}
-
-	const acquired = await lockManager.request(
+	const acquired = await withCrossTabLock(
 		createAccountSyncLeaseKey(userId),
-		{ mode: 'exclusive' },
 		() =>
 			tryAcquireAccountSyncLease(
 				userId,
 				ownerTabId,
 				ownerRunId,
 				now ?? Date.now()
-			)
+			),
+		{ fallbackTtl: ACCOUNT_SYNC_LEASE_LOCK_TTL }
 	);
 
 	return acquired
@@ -203,34 +168,23 @@ export async function acquireAccountSyncLease(
 			} satisfies TAccountSyncLeaseAcquireResult);
 }
 
-export async function renewAccountSyncLease(
+export function renewAccountSyncLease(
 	userId: string,
 	ownerTabId: string,
 	ownerRunId: string,
 	now?: number
 ) {
-	const lockManager = getAccountLockManager();
-	const nowValue = now ?? Date.now();
-	if (lockManager === null) {
-		return tryRenewAccountSyncLease(
-			userId,
-			ownerTabId,
-			ownerRunId,
-			nowValue
-		);
-	}
-
-	return lockManager.request(
+	return withCrossTabLock(
 		createAccountSyncLeaseKey(userId),
-		{ mode: 'exclusive' },
 		() =>
 			tryRenewAccountSyncLease(
 				userId,
 				ownerTabId,
 				ownerRunId,
 				now ?? Date.now()
-			)
-	);
+			),
+		{ fallbackTtl: ACCOUNT_SYNC_LEASE_LOCK_TTL }
+	).then((isRenewed) => isRenewed === true);
 }
 
 export async function releaseAccountSyncLease(
@@ -238,17 +192,11 @@ export async function releaseAccountSyncLease(
 	ownerTabId: string,
 	ownerRunId: string
 ) {
-	const lockManager = getAccountLockManager();
-	if (lockManager === null) {
-		tryReleaseAccountSyncLease(userId, ownerTabId, ownerRunId);
-		return;
-	}
-
-	await lockManager.request(
+	await withCrossTabLock(
 		createAccountSyncLeaseKey(userId),
-		{ mode: 'exclusive' },
 		() => {
 			tryReleaseAccountSyncLease(userId, ownerTabId, ownerRunId);
-		}
+		},
+		{ fallbackTtl: ACCOUNT_SYNC_LEASE_LOCK_TTL }
 	);
 }

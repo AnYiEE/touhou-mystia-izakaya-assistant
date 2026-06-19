@@ -18,12 +18,12 @@ import TimeAgo from '@/components/timeAgo';
 
 import { checkAccountSyncBroadcastSupported } from '@/lib/account/client/broadcast';
 import { getAccountClientErrorMessage } from '@/lib/account/client/errorMessage';
-import { checkAccountSyncLeaseSupported } from '@/lib/account/client/lease';
 import { readDirtyQueueEntries } from '@/lib/account/client/queue';
 import { flushAccountSyncQueue } from '@/lib/account/client/syncClient';
 import { SYNC_NAMESPACE_MAP, type TSyncNamespace } from '@/lib/account/sync';
 import { getLogSafeErrorCode } from '@/lib/logging';
 import { accountStore as store } from '@/stores/account';
+import { checkCrossTabNativeLockSupported } from '@/utilities/crossTabLock';
 import { getSafeStorageMode } from '@/utilities/safeStorage';
 
 interface IProps {}
@@ -56,7 +56,7 @@ export default memo<IProps>(function AccountSyncStatus() {
 	const isReducedMotion = useReducedMotion();
 
 	const storageMode = getSafeStorageMode();
-	const supportsNativeLease = checkAccountSyncLeaseSupported();
+	const supportsNativeLock = checkCrossTabNativeLockSupported();
 	const supportsBroadcast = checkAccountSyncBroadcastSupported();
 	const dirtyEntries = useMemo(
 		() => (user === null ? [] : readDirtyQueueEntries(user.id)),
@@ -255,10 +255,12 @@ export default memo<IProps>(function AccountSyncStatus() {
 						</div>
 						<div className="rounded-medium border border-default-200 bg-default-50/40 px-3 py-2">
 							<p className="text-tiny text-foreground-500">
-								原生锁
+								跨标签互斥
 							</p>
 							<p className="text-small font-medium text-foreground-700">
-								{supportsNativeLease ? '可用' : '本地租约兜底'}
+								{supportsNativeLock
+									? '浏览器原生'
+									: '本地租约兜底'}
 							</p>
 						</div>
 						<div className="rounded-medium border border-default-200 bg-default-50/40 px-3 py-2">
