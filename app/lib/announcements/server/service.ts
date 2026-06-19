@@ -48,6 +48,7 @@ import type {
 	TAnnouncementVersionNew,
 	TUser,
 } from '@/lib/db/types';
+import { getLogSafeErrorCode } from '@/lib/logging';
 
 const DEFAULT_ANNOUNCEMENT_LIST_PAGE_SIZE = 20;
 const DEFAULT_VISIBLE_ANNOUNCEMENT_LIMIT = 5;
@@ -56,6 +57,9 @@ const ACTIVE_CANDIDATE_CACHE_TTL_MS = 15 * 1000;
 const ANNOUNCEMENT_DISMISSAL_RETENTION_MS = 180 * 24 * 60 * 60 * 1000;
 const ANNOUNCEMENT_VERSION_RETENTION_MS = 365 * 24 * 60 * 60 * 1000;
 const ANNOUNCEMENT_VERSION_KEEP_LATEST = 20;
+const ANNOUNCEMENT_RECORD_CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
+
+let lastAnnouncementRecordCleanupAt = 0;
 
 const activeCandidateCache = new Map<
 	string,
@@ -590,6 +594,34 @@ export function previewAnnouncement(
 	};
 }
 
+function createAnnouncementRecordCleanupOptions(now: number) {
+	return {
+		dismissalBefore: now - ANNOUNCEMENT_DISMISSAL_RETENTION_MS,
+		versionBefore: now - ANNOUNCEMENT_VERSION_RETENTION_MS,
+		versionKeepLatest: ANNOUNCEMENT_VERSION_KEEP_LATEST,
+	};
+}
+
+async function cleanupAnnouncementRecordsBestEffort(now = Date.now()) {
+	if (
+		now - lastAnnouncementRecordCleanupAt <
+		ANNOUNCEMENT_RECORD_CLEANUP_INTERVAL_MS
+	) {
+		return;
+	}
+
+	lastAnnouncementRecordCleanupAt = now;
+	try {
+		await cleanupAnnouncementRecords(
+			createAnnouncementRecordCleanupOptions(now)
+		);
+	} catch (error) {
+		console.warn('Failed to clean up announcement records.', {
+			errorCode: getLogSafeErrorCode(error),
+		});
+	}
+}
+
 export async function createAdminAnnouncement(
 	body: IAdminAnnouncementBody,
 	changedBy: string | null
@@ -627,6 +659,7 @@ export async function createAdminAnnouncement(
 		});
 
 		invalidateActiveAnnouncementCandidateCache();
+		void cleanupAnnouncementRecordsBestEffort();
 
 		return { data: { announcement: profile }, status: 'ok' };
 	} catch (error) {
@@ -726,6 +759,7 @@ export async function updateAdminAnnouncement(
 		}
 
 		invalidateActiveAnnouncementCandidateCache();
+		void cleanupAnnouncementRecordsBestEffort();
 
 		return { data: { announcement: profile }, status: 'ok' };
 	} catch (error) {
@@ -796,6 +830,7 @@ export async function archiveAdminAnnouncement(
 		}
 
 		invalidateActiveAnnouncementCandidateCache();
+		void cleanupAnnouncementRecordsBestEffort();
 
 		return { data: { announcement: profile }, status: 'ok' };
 	} catch (error) {
@@ -869,6 +904,7 @@ export async function restoreAdminAnnouncement(
 		}
 
 		invalidateActiveAnnouncementCandidateCache();
+		void cleanupAnnouncementRecordsBestEffort();
 
 		return { data: { announcement: profile }, status: 'ok' };
 	} catch (error) {
@@ -980,11 +1016,7 @@ export async function cleanupAdminAnnouncementRecords({
 		);
 	};
 	const result = await cleanupAnnouncementRecords(
-		{
-			dismissalBefore: now - ANNOUNCEMENT_DISMISSAL_RETENTION_MS,
-			versionBefore: now - ANNOUNCEMENT_VERSION_RETENTION_MS,
-			versionKeepLatest: ANNOUNCEMENT_VERSION_KEEP_LATEST,
-		},
+		createAnnouncementRecordCleanupOptions(now),
 		writeCleanupAuditLog
 	);
 
