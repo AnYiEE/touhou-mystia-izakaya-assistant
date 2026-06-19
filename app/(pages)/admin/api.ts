@@ -777,6 +777,7 @@ export function discardAdminSsoCallback(callbackId: number, csrfToken: string) {
 export function dispatchAdminSsoCallbacks(csrfToken: string) {
 	return fetchAdminApiResult<{
 		deleted_expired_tickets: number;
+		deleted_final_failed_callbacks: number;
 		failed: number;
 		final_failed: number;
 		message: string;

@@ -528,6 +528,20 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 		.columns(['user_id', 'last_seen_at', 'created_at'])
 		.execute();
 
+	await database.schema
+		.createIndex('sessions_last_seen_created_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.session)
+		.columns(['last_seen_at', 'created_at', 'id'])
+		.execute();
+
+	await database.schema
+		.createIndex('sessions_created_last_seen_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.session)
+		.columns(['created_at', 'last_seen_at', 'id'])
+		.execute();
+
 	await ensureAccountTableStructure(database);
 	await migrateAnnouncementTables(database);
 	await migrateSsoTables(database);

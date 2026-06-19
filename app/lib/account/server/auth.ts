@@ -20,6 +20,7 @@ import {
 import { USER_STATUS_MAP } from '../shared/constants';
 import {
 	type TActiveUserSessionPatch,
+	cleanupExpiredSessions,
 	createSession,
 	createSessionForActiveUser as createSessionForActiveUserRecord,
 	deleteSessionById,
@@ -40,8 +41,13 @@ import {
 	type TUserCredential,
 	type TUserCredentialUpdate,
 } from '@/lib/db/types';
+import { getLogSafeErrorCode } from '@/lib/logging';
 
+export const ACCOUNT_SESSION_CLEANUP_BATCH_LIMIT = 1000;
+export const ACCOUNT_SESSION_CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
 export const SESSION_LAST_SEEN_UPDATE_INTERVAL = 10 * 60 * 1000;
+
+let lastAccountSessionCleanupAt = 0;
 
 export type TAccountAuthErrorMessage =
 	| 'password-must-change'
@@ -95,6 +101,30 @@ export function createAccountSessionDraft(
 	};
 }
 
+export async function cleanupExpiredAccountSessionsBestEffort(
+	now = Date.now()
+) {
+	if (
+		now - lastAccountSessionCleanupAt <
+		ACCOUNT_SESSION_CLEANUP_INTERVAL_MS
+	) {
+		return;
+	}
+
+	lastAccountSessionCleanupAt = now;
+	try {
+		await cleanupExpiredSessions({
+			absoluteBefore: now - SESSION_ABSOLUTE_TIMEOUT_MS,
+			idleBefore: now - SESSION_IDLE_TIMEOUT_MS,
+			limit: ACCOUNT_SESSION_CLEANUP_BATCH_LIMIT,
+		});
+	} catch (error) {
+		console.warn('Failed to clean up expired account sessions.', {
+			errorCode: getLogSafeErrorCode(error),
+		});
+	}
+}
+
 export async function createAccountSession(
 	userId: TUser['id'],
 	request: NextRequest
@@ -102,6 +132,7 @@ export async function createAccountSession(
 	const { record, ...session } = createAccountSessionDraft(userId, request);
 
 	await createSession(record);
+	void cleanupExpiredAccountSessionsBestEffort();
 
 	return session;
 }
@@ -128,6 +159,7 @@ export async function createAccountSessionForActiveUser(
 	if (!didCreate) {
 		return null;
 	}
+	void cleanupExpiredAccountSessionsBestEffort();
 
 	return {
 		cookieOptions: draft.cookieOptions,
@@ -181,6 +213,7 @@ export async function authenticateAccountFromRequest(
 	}
 
 	const now = Date.now();
+	void cleanupExpiredAccountSessionsBestEffort(now);
 	const isSessionExpired =
 		session.created_at + SESSION_ABSOLUTE_TIMEOUT_MS <= now ||
 		session.last_seen_at + SESSION_IDLE_TIMEOUT_MS <= now;

@@ -92,6 +92,53 @@ export async function getSessionByTokenHash(tokenHash: TSession['token_hash']) {
 	);
 }
 
+export async function cleanupExpiredSessions({
+	absoluteBefore,
+	idleBefore,
+	limit,
+}: {
+	absoluteBefore: TSession['created_at'];
+	idleBefore: TSession['last_seen_at'];
+	limit?: number;
+}) {
+	const db = await getAccountDatabase();
+
+	return db.transaction().execute(async (trx) => {
+		let expiredSessionsQuery = trx
+			.selectFrom(TABLE_NAME)
+			.select('id')
+			.where((eb) =>
+				eb.or([
+					eb('created_at', '<=', absoluteBefore),
+					eb('last_seen_at', '<=', idleBefore),
+				])
+			)
+			.orderBy('last_seen_at', 'asc')
+			.orderBy('created_at', 'asc')
+			.orderBy('id', 'asc');
+
+		if (limit !== undefined) {
+			expiredSessionsQuery = expiredSessionsQuery.limit(limit);
+		}
+
+		const expiredSessions = await expiredSessionsQuery.execute();
+		if (expiredSessions.length === 0) {
+			return 0;
+		}
+
+		const result = await trx
+			.deleteFrom(TABLE_NAME)
+			.where(
+				'id',
+				'in',
+				expiredSessions.map((session) => session.id)
+			)
+			.executeTakeFirst();
+
+		return Number(result.numDeletedRows);
+	});
+}
+
 export async function deleteSessionById(id: TSession['id']) {
 	const db = await getAccountDatabase();
 

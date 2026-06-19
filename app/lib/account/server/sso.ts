@@ -6,12 +6,17 @@ import { getAccountDatabase } from './db';
 import {
 	ADMIN_SSO_CALLBACK_DELIVERY_MAX_ROWS,
 	ADMIN_SSO_CALLBACK_DELIVERY_RETENTION_MS,
+	ADMIN_SSO_CALLBACK_FAILED_QUEUE_MAX_ROWS,
+	ADMIN_SSO_CALLBACK_FAILED_QUEUE_RETENTION_MS,
 } from './adminSsoCallbackService';
 import {
 	cleanupSsoCallbackDeliveries,
 	writeSsoCallbackDelivery,
 } from './repositories/ssoCallbackDeliveries';
-import { SSO_CALLBACK_FINAL_FAILURE_NEXT_RETRY_AT } from './repositories/sso';
+import {
+	SSO_CALLBACK_FINAL_FAILURE_NEXT_RETRY_AT,
+	cleanupFinalFailedSsoCallbackQueue,
+} from './repositories/sso';
 import { SSO_TICKET_BYTE_LENGTH, SSO_TICKET_TTL_MS } from './ssoContext';
 export {
 	SSO_CONTEXT_COOKIE_MAX_AGE,
@@ -88,6 +93,10 @@ export const SSO_CALLBACK_DELIVERY_MAX_ROWS =
 	ADMIN_SSO_CALLBACK_DELIVERY_MAX_ROWS;
 export const SSO_CALLBACK_DELIVERY_RETENTION_MS =
 	ADMIN_SSO_CALLBACK_DELIVERY_RETENTION_MS;
+export const SSO_CALLBACK_FAILED_QUEUE_MAX_ROWS =
+	ADMIN_SSO_CALLBACK_FAILED_QUEUE_MAX_ROWS;
+export const SSO_CALLBACK_FAILED_QUEUE_RETENTION_MS =
+	ADMIN_SSO_CALLBACK_FAILED_QUEUE_RETENTION_MS;
 
 const CLIENT_TABLE_NAME = TABLE_NAME_MAP.ssoClient;
 const CLIENT_SECRET_TABLE_NAME = TABLE_NAME_MAP.ssoClientSecret;
@@ -99,8 +108,10 @@ const USER_TABLE_NAME = TABLE_NAME_MAP.user;
 
 const SSO_CALLBACK_CLAIM_LEASE_MS = SSO_CALLBACK_TIMEOUT_MS + 60_000;
 const SSO_CALLBACK_DELIVERY_CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
+const SSO_CALLBACK_FAILED_QUEUE_CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
 
 let lastSsoCallbackDeliveryCleanupAt = 0;
+let lastSsoCallbackFailedQueueCleanupAt = 0;
 
 interface ISsoCallbackBody {
 	client_id: string;
@@ -138,6 +149,7 @@ export type TSsoTicketWithClientSecretValidationResult =
 	| { status: 'validated'; validation: ISsoTicketValidationResult };
 
 export interface ISsoCallbackDispatchResult {
+	deleted_final_failed_callbacks: number;
 	failed: number;
 	final_failed: number;
 	succeeded: number;
@@ -1028,6 +1040,31 @@ async function cleanupSsoCallbackDeliveriesBestEffort(now = Date.now()) {
 	}
 }
 
+async function cleanupSsoCallbackFailedQueueBestEffort(now = Date.now()) {
+	if (
+		now - lastSsoCallbackFailedQueueCleanupAt <
+		SSO_CALLBACK_FAILED_QUEUE_CLEANUP_INTERVAL_MS
+	) {
+		return 0;
+	}
+
+	lastSsoCallbackFailedQueueCleanupAt = now;
+	try {
+		const result = await cleanupFinalFailedSsoCallbackQueue({
+			before: now - SSO_CALLBACK_FAILED_QUEUE_RETENTION_MS,
+			maxRows: SSO_CALLBACK_FAILED_QUEUE_MAX_ROWS,
+		});
+
+		return result.deletedByAge + result.deletedByCap;
+	} catch (error) {
+		console.warn('Failed to clean up final failed SSO callbacks.', {
+			errorCode: getLogSafeErrorCode(error),
+		});
+
+		return 0;
+	}
+}
+
 async function claimSsoCallbackQueueRecord(
 	record: TSsoCallbackQueue,
 	now: number
@@ -1217,8 +1254,15 @@ export async function dispatchSsoCallbacks(
 	if (records.length > 0) {
 		await cleanupSsoCallbackDeliveriesBestEffort(Date.now());
 	}
+	const deletedFinalFailedCallbacks =
+		await cleanupSsoCallbackFailedQueueBestEffort(Date.now());
 
-	return { failed, final_failed: finalFailed, succeeded };
+	return {
+		deleted_final_failed_callbacks: deletedFinalFailedCallbacks,
+		failed,
+		final_failed: finalFailed,
+		succeeded,
+	};
 }
 
 export async function getSsoUserById(userId: TUser['id']) {

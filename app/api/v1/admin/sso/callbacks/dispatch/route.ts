@@ -44,6 +44,8 @@ export async function POST(request: NextRequest) {
 			actorType: 'admin',
 			metadata: {
 				deleted_expired_tickets: ticketsDeleted,
+				deleted_final_failed_callbacks:
+					result.deleted_final_failed_callbacks,
 				failed: result.failed,
 				final_failed: result.final_failed,
 				succeeded: result.succeeded,

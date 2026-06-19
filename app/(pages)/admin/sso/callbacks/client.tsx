@@ -617,7 +617,7 @@ export default function AdminSsoCallbacksClient({
 				}
 
 				setMessage(
-					`已投递${result.data.succeeded}条，失败${result.data.failed}条，最终失败${result.data.final_failed}条，清理过期Ticket${result.data.deleted_expired_tickets}条`
+					`已投递${result.data.succeeded}条，失败${result.data.failed}条，最终失败${result.data.final_failed}条，清理过期Ticket${result.data.deleted_expired_tickets}条，清理最终失败Callback${result.data.deleted_final_failed_callbacks}条`
 				);
 				refreshCurrentCallbacks();
 			})

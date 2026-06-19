@@ -276,6 +276,16 @@ export interface ISsoGrantEventCleanupResult {
 	deletedByCap: number;
 }
 
+export interface ISsoFinalFailedCallbackQueueCleanupOptions {
+	before?: number;
+	maxRows?: number;
+}
+
+export interface ISsoFinalFailedCallbackQueueCleanupResult {
+	deletedByAge: number;
+	deletedByCap: number;
+}
+
 export type TSsoCallbackQueueMutationError =
 	| 'sso-callback-queue-busy'
 	| 'sso-callback-queue-not-found';
@@ -2044,6 +2054,67 @@ export async function cleanupSsoGrantEvents({
 		if (cutoff !== undefined) {
 			const result = await db
 				.deleteFrom(GRANT_EVENT_TABLE_NAME)
+				.where((eb) =>
+					eb.or([
+						eb('created_at', '<', cutoff.created_at),
+						eb.and([
+							eb('created_at', '=', cutoff.created_at),
+							eb('id', '<=', cutoff.id),
+						]),
+					])
+				)
+				.executeTakeFirst();
+			deletedByCap = Number(result.numDeletedRows);
+		}
+	}
+
+	return { deletedByAge, deletedByCap };
+}
+
+export async function cleanupFinalFailedSsoCallbackQueue({
+	before,
+	maxRows,
+}: ISsoFinalFailedCallbackQueueCleanupOptions): Promise<ISsoFinalFailedCallbackQueueCleanupResult> {
+	const db = await getAccountDatabase();
+	let deletedByAge = 0;
+	let deletedByCap = 0;
+
+	if (before !== undefined) {
+		const result = await db
+			.deleteFrom(CALLBACK_QUEUE_TABLE_NAME)
+			.where(
+				'next_retry_at',
+				'=',
+				SSO_CALLBACK_FINAL_FAILURE_NEXT_RETRY_AT
+			)
+			.where('created_at', '<', before)
+			.executeTakeFirst();
+		deletedByAge = Number(result.numDeletedRows);
+	}
+
+	if (maxRows !== undefined && maxRows >= 0) {
+		const cutoff = await db
+			.selectFrom(CALLBACK_QUEUE_TABLE_NAME)
+			.select(['created_at', 'id'])
+			.where(
+				'next_retry_at',
+				'=',
+				SSO_CALLBACK_FINAL_FAILURE_NEXT_RETRY_AT
+			)
+			.orderBy('created_at', 'desc')
+			.orderBy('id', 'desc')
+			.offset(maxRows)
+			.limit(1)
+			.executeTakeFirst();
+
+		if (cutoff !== undefined) {
+			const result = await db
+				.deleteFrom(CALLBACK_QUEUE_TABLE_NAME)
+				.where(
+					'next_retry_at',
+					'=',
+					SSO_CALLBACK_FINAL_FAILURE_NEXT_RETRY_AT
+				)
 				.where((eb) =>
 					eb.or([
 						eb('created_at', '<', cutoff.created_at),

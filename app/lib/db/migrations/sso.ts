@@ -1510,6 +1510,13 @@ export async function migrateSsoTables(database: Kysely<TDatabase>) {
 		.columns(['user_id', 'event', 'next_retry_at', 'id'])
 		.execute();
 
+	await database.schema
+		.createIndex('sso_callback_queue_retry_created_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.ssoCallbackQueue)
+		.columns(['next_retry_at', 'created_at', 'id'])
+		.execute();
+
 	await ensureSsoCallbackQueueIndexes(database);
 
 	await database.schema
