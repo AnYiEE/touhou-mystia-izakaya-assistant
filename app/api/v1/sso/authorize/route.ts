@@ -84,9 +84,10 @@ async function submitSsoAuthorizeAgree(
 	}
 
 	try {
-		const [authModule, ssoModule] = await Promise.all([
+		const [authModule, ssoModule, accountAuditModule] = await Promise.all([
 			import('@/lib/account/server/auth'),
 			import('@/lib/account/server/sso'),
+			import('@/lib/account/server/accountAuditService'),
 		]);
 		const [auth, client] = await Promise.all([
 			authModule.authenticateAccountFromRequest(request, true),
@@ -111,7 +112,25 @@ async function submitSsoAuthorizeAgree(
 			context.client_id,
 			auth.data.user.id,
 			context.redirect_uri,
-			context.code_challenge
+			context.code_challenge,
+			(trx, auditNow) =>
+				accountAuditModule.writeAccountAuditLogInTransaction(
+					trx,
+					accountAuditModule.createAccountUserAuditLogInput({
+						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+							.authorizeSsoClient,
+						metadata: {
+							client_id: context.client_id,
+							redirect_uri_digest:
+								accountAuditModule.createAccountAuditValueDigest(
+									context.redirect_uri
+								),
+						},
+						request,
+						userId: auth.data.user.id,
+					}),
+					auditNow
+				)
 		);
 		const response = createNoStoreJsonResponse({
 			redirect_url: createSsoRedirectUrl(

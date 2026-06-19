@@ -98,6 +98,28 @@ export async function deleteSessionById(id: TSession['id']) {
 	await db.deleteFrom(TABLE_NAME).where('id', '=', id).execute();
 }
 
+export async function deleteSessionByIdWithAudit(
+	id: TSession['id'],
+	writeAuditLog: (trx: Transaction<TDatabase>, now: number) => Promise<void>
+) {
+	const db = await getAccountDatabase();
+	const now = Date.now();
+
+	return db.transaction().execute(async (trx) => {
+		const result = await trx
+			.deleteFrom(TABLE_NAME)
+			.where('id', '=', id)
+			.executeTakeFirst();
+		if (result.numDeletedRows !== 1n) {
+			return false;
+		}
+
+		await writeAuditLog(trx, now);
+
+		return true;
+	});
+}
+
 export async function deleteOtherSessionByUserId({
 	currentSessionId,
 	sessionId,

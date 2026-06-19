@@ -29,13 +29,16 @@ export const ACCOUNT_AUDIT_ACTION_MAP = {
 	adminEnableUser: 'admin-enable-user',
 	adminResetPassword: 'admin-reset-user-password',
 	adminRestoreUser: 'admin-restore-user',
+	authorizeSsoClient: 'user-authorize-sso-client',
 	loginFailed: 'user-login-failed',
 	loginSucceeded: 'user-login-succeeded',
+	logout: 'user-logout-session',
 	logoutAll: 'user-logout-all-sessions',
 	nicknameChanged: 'user-change-nickname',
 	passwordChanged: 'user-change-password',
 	registered: 'user-register-account',
 	sessionRevoked: 'user-revoke-session',
+	ssoGrantRevoked: 'user-revoke-sso-grant',
 	usernameChanged: 'user-change-username',
 } as const;
 

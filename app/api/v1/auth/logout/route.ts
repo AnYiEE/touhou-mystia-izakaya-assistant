@@ -58,9 +58,29 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
-	const sessionsModule =
-		await import('@/lib/account/server/repositories/sessions');
-	await sessionsModule.deleteSessionById(auth.data.session.id);
+	const [sessionsModule, accountAuditModule] = await Promise.all([
+		import('@/lib/account/server/repositories/sessions'),
+		import('@/lib/account/server/accountAuditService'),
+	]);
+	await sessionsModule.deleteSessionByIdWithAudit(
+		auth.data.session.id,
+		(trx, auditNow) =>
+			accountAuditModule.writeAccountAuditLogInTransaction(
+				trx,
+				accountAuditModule.createAccountUserAuditLogInput({
+					action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.logout,
+					metadata: {
+						auth_record_digest:
+							accountAuditModule.createAccountAuditValueDigest(
+								auth.data.session.id
+							),
+					},
+					request,
+					userId: auth.data.user.id,
+				}),
+				auditNow
+			)
+	);
 
 	const response = createNoStoreJsonResponse({ message: 'logged-out' });
 	authModule.clearAccountSessionCookie(response, request);

@@ -499,7 +499,8 @@ export async function createSsoTicket(
 	clientId: string,
 	userId: string,
 	redirectUri: string,
-	codeChallenge: string
+	codeChallenge: string,
+	writeAuditLog?: (trx: Transaction<TDatabase>, now: number) => Promise<void>
 ) {
 	if (
 		!checkSsoClientId(clientId) ||
@@ -514,19 +515,23 @@ export async function createSsoTicket(
 	const ticket = createSsoTicketToken();
 	const ticketHash = hashSsoTicket(ticket);
 
-	await db
-		.insertInto(TICKET_TABLE_NAME)
-		.values({
-			client_id: clientId,
-			code_challenge: codeChallenge,
-			created_at: now,
-			expires_at: now + SSO_TICKET_TTL_MS,
-			redirect_uri: redirectUri,
-			ticket_hash: ticketHash,
-			used_at: null,
-			user_id: userId,
-		})
-		.execute();
+	await db.transaction().execute(async (trx) => {
+		await trx
+			.insertInto(TICKET_TABLE_NAME)
+			.values({
+				client_id: clientId,
+				code_challenge: codeChallenge,
+				created_at: now,
+				expires_at: now + SSO_TICKET_TTL_MS,
+				redirect_uri: redirectUri,
+				ticket_hash: ticketHash,
+				used_at: null,
+				user_id: userId,
+			})
+			.execute();
+
+		await writeAuditLog?.(trx, now);
+	});
 
 	return ticket;
 }
