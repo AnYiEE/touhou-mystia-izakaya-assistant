@@ -4,7 +4,6 @@ import { checkAccountFeatureRouteResponse } from '@/lib/account/server/routeResp
 import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
 import { checkSsoRateLimitRouteResponse } from '@/lib/account/server/ssoRouteResponses';
 import {
-	checkSsoClientEnabled,
 	checkSsoClientId,
 	checkSsoClientSecret,
 	checkSsoCodeVerifier,
@@ -79,77 +78,81 @@ export async function POST(request: NextRequest) {
 
 	try {
 		const ssoModule = await import('@/lib/account/server/sso');
-		const client = await ssoModule.getSsoClientById(clientId);
-		if (
-			client === null ||
-			!ssoModule.verifySsoClientSecret(client, clientSecret)
-		) {
-			const invalidClientRateLimitResponse =
-				checkSsoRateLimitRouteResponse(
-					request,
-					'sso-validate-invalid-client',
-					[{ name: 'client', value: clientId }]
-				);
-			if (invalidClientRateLimitResponse !== null) {
-				return invalidClientRateLimitResponse;
-			}
-
-			return createNoStoreErrorResponse('invalid-client', 401);
-		}
-		if (!checkSsoClientEnabled(client)) {
-			return createNoStoreErrorResponse('client-disabled', 403);
-		}
-
-		const validation = await ssoModule.validateSsoTicket(
+		const validation = await ssoModule.validateSsoTicketWithClientSecret(
 			clientId,
+			clientSecret,
 			ticket,
 			codeVerifier
 		);
-		if (validation === null) {
-			const invalidTicketRateLimitResponse =
-				checkSsoRateLimitRouteResponse(
-					request,
-					'sso-validate-invalid-ticket',
-					[
-						{ name: 'client', value: clientId },
-						{ name: 'ticket', value: ticket },
-					]
-				);
-			if (invalidTicketRateLimitResponse !== null) {
-				return invalidTicketRateLimitResponse;
+		switch (validation.status) {
+			case 'client-disabled':
+				return createNoStoreErrorResponse('client-disabled', 403);
+			case 'invalid-client': {
+				const invalidClientRateLimitResponse =
+					checkSsoRateLimitRouteResponse(
+						request,
+						'sso-validate-invalid-client',
+						[{ name: 'client', value: clientId }]
+					);
+				if (invalidClientRateLimitResponse !== null) {
+					return invalidClientRateLimitResponse;
+				}
+
+				return createNoStoreErrorResponse('invalid-client', 401);
 			}
+			case 'invalid-ticket': {
+				const invalidTicketRateLimitResponse =
+					checkSsoRateLimitRouteResponse(
+						request,
+						'sso-validate-invalid-ticket',
+						[
+							{ name: 'client', value: clientId },
+							{ name: 'ticket', value: ticket },
+						]
+					);
+				if (invalidTicketRateLimitResponse !== null) {
+					return invalidTicketRateLimitResponse;
+				}
 
-			return createNoStoreErrorResponse('invalid-ticket', 401);
-		}
-		if (validation.user_error !== null) {
-			return createNoStoreErrorResponse(validation.user_error, 403);
-		}
-		if (validation.user === null) {
-			const invalidTicketRateLimitResponse =
-				checkSsoRateLimitRouteResponse(
-					request,
-					'sso-validate-invalid-ticket',
-					[
-						{ name: 'client', value: clientId },
-						{ name: 'ticket', value: ticket },
-					]
-				);
-			if (invalidTicketRateLimitResponse !== null) {
-				return invalidTicketRateLimitResponse;
+				return createNoStoreErrorResponse('invalid-ticket', 401);
 			}
+			case 'validated': {
+				const validationResult = validation.validation;
+				if (validationResult.user_error !== null) {
+					return createNoStoreErrorResponse(
+						validationResult.user_error,
+						403
+					);
+				}
+				if (validationResult.user === null) {
+					const invalidTicketRateLimitResponse =
+						checkSsoRateLimitRouteResponse(
+							request,
+							'sso-validate-invalid-ticket',
+							[
+								{ name: 'client', value: clientId },
+								{ name: 'ticket', value: ticket },
+							]
+						);
+					if (invalidTicketRateLimitResponse !== null) {
+						return invalidTicketRateLimitResponse;
+					}
 
-			return createNoStoreErrorResponse('invalid-ticket', 401);
+					return createNoStoreErrorResponse('invalid-ticket', 401);
+				}
+
+				const profile = createAccountUserProfile(validationResult.user);
+
+				return createNoStoreJsonResponse({
+					user: {
+						id: profile.id,
+						nickname: profile.nickname,
+						status: profile.status,
+						username: profile.username,
+					},
+				});
+			}
 		}
-
-		const profile = createAccountUserProfile(validation.user);
-
-		return createNoStoreJsonResponse({
-			user: {
-				id: profile.id,
-				status: profile.status,
-				username: profile.username,
-			},
-		});
 	} catch (error) {
 		console.warn('SSO validate failed.', {
 			errorCode: getLogSafeErrorCode(error),

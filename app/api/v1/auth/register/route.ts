@@ -71,16 +71,22 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	const [passwordModule, usersModule, authModule, userModule] =
-		await Promise.all([
-			import('@/lib/account/server/password'),
-			import('@/lib/account/server/repositories/users'),
-			import('@/lib/account/server/auth'),
-			import('@/lib/account/server/user'),
-		]);
+	const [
+		passwordModule,
+		usersModule,
+		authModule,
+		userModule,
+		accountAuditModule,
+	] = await Promise.all([
+		import('@/lib/account/server/password'),
+		import('@/lib/account/server/repositories/users'),
+		import('@/lib/account/server/auth'),
+		import('@/lib/account/server/user'),
+		import('@/lib/account/server/accountAuditService'),
+	]);
 
 	const username = body.username.trim();
-	if (!userModule.checkNewUsernamePolicy(username)) {
+	if (!userModule.checkUsernamePolicy(username)) {
 		return createNoStoreErrorResponse('invalid-username', 400);
 	}
 	if (!passwordModule.checkPasswordPolicy(body.password)) {
@@ -121,6 +127,7 @@ export async function POST(request: NextRequest) {
 				deleted_at: null,
 				id: userId,
 				last_login_at: now,
+				nickname: null,
 				state_epoch: 0,
 				status: USER_STATUS_MAP.active,
 				updated_at: now,
@@ -135,7 +142,24 @@ export async function POST(request: NextRequest) {
 				updated_at: now,
 				user_id: userId,
 			},
-			session.record
+			session.record,
+			(trx, auditNow, createdUser) =>
+				accountAuditModule.writeAccountAuditLogInTransaction(
+					trx,
+					accountAuditModule.createAccountUserAuditLogInput({
+						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+							.registered,
+						metadata: {
+							auth_record_digest:
+								accountAuditModule.createAccountAuditValueDigest(
+									session.record.id
+								),
+						},
+						request,
+						userId: createdUser.id,
+					}),
+					auditNow
+				)
 		);
 	} catch (error) {
 		console.warn('Failed to create account registration records.', {

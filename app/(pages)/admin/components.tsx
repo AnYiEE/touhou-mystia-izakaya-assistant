@@ -1,36 +1,84 @@
 'use client';
 
-import { type PropsWithChildren, memo } from 'react';
+import {
+	type ComponentProps,
+	type PropsWithChildren,
+	type SyntheticEvent,
+	memo,
+} from 'react';
 
+import { faClipboard, faRotate } from '@fortawesome/free-solid-svg-icons';
 import {
 	FontAwesomeIcon,
 	type FontAwesomeIconProps,
 } from '@fortawesome/react-fontawesome';
 
-import { Card, cn } from '@/design/ui/components';
+import {
+	Button,
+	Card,
+	type IButtonProps,
+	Input,
+	Link,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	cn,
+} from '@/design/ui/components';
 
 import Placeholder from '@/components/placeholder';
 
 import { type TUserStatus } from '@/lib/account/shared/types';
+import type {
+	TAnnouncementComputedStatus,
+	TAnnouncementLevel,
+} from '@/lib/announcements/shared/types';
 import { globalStore as store } from '@/stores';
 
 const STATUS_META_MAP = {
-	active: {
-		className:
-			'border-success/30 bg-success/15 text-success-700 dark:text-success',
-		label: '正常',
-	},
-	deleted: {
-		className:
-			'border-danger/30 bg-danger/15 text-danger-700 dark:text-danger-600',
-		label: '已删除',
-	},
-	disabled: {
-		className:
-			'border-warning/30 bg-warning/20 text-warning-700 dark:text-warning-600',
-		label: '禁用',
-	},
-} as const satisfies Record<TUserStatus, { className: string; label: string }>;
+	active: { label: '正常', tone: 'success' },
+	deleted: { label: '已删除', tone: 'danger' },
+	disabled: { label: '已禁用', tone: 'warning' },
+} as const satisfies Record<
+	TUserStatus,
+	{ label: string; tone: TAdminBadgeTone }
+>;
+
+const ANNOUNCEMENT_STATUS_META_MAP = {
+	active: { label: '展示中', tone: 'success' },
+	archived: { label: '已归档', tone: 'default' },
+	disabled: { label: '已停用', tone: 'warning' },
+	ended: { label: '已结束', tone: 'default' },
+	scheduled: { label: '待开始', tone: 'primary' },
+} as const satisfies Record<
+	TAnnouncementComputedStatus,
+	{ label: string; tone: TAdminBadgeTone }
+>;
+
+const ANNOUNCEMENT_LEVEL_META_MAP = {
+	critical: { label: '重要', tone: 'primary' },
+	danger: { label: '危险', tone: 'danger' },
+	info: { label: '信息', tone: 'default' },
+	success: { label: '成功', tone: 'success' },
+	warning: { label: '警告', tone: 'warning' },
+} as const satisfies Record<
+	TAnnouncementLevel,
+	{ label: string; tone: TAdminBadgeTone }
+>;
+
+const BADGE_TONE_CLASS_NAME_MAP = {
+	danger: 'border-danger/30 bg-danger/15 text-danger-700 dark:text-danger-600',
+	default: 'border-default-300 bg-default/30 text-foreground-500',
+	primary:
+		'border-primary/30 bg-primary/15 text-primary-700 dark:text-primary',
+	success:
+		'border-success/30 bg-success/15 text-success-700 dark:text-success',
+	warning:
+		'border-warning/30 bg-warning/20 text-warning-700 dark:text-warning-600',
+} as const;
+
+export const ADMIN_LIST_DEBOUNCE_MS = 300;
+
+type TAdminBadgeTone = keyof typeof BADGE_TONE_CLASS_NAME_MAP;
 
 export type { IAdminListLocationState } from './listState';
 export {
@@ -136,6 +184,72 @@ export const AdminHeader = memo<IAdminHeaderProps>(function AdminHeader({
 	);
 });
 
+interface IAdminHeaderActionLinkProps extends PropsWithChildren<object> {
+	color?: IButtonProps['color'];
+	href: string;
+	icon?: FontAwesomeIconProps['icon'];
+	onPress?: ComponentProps<typeof Link>['onPress'] | undefined;
+}
+
+export const AdminHeaderActionLink = memo<IAdminHeaderActionLinkProps>(
+	function AdminHeaderActionLink({ children, color, href, icon, onPress }) {
+		return (
+			<Button
+				as={Link}
+				animationUnderline={false}
+				href={href}
+				startContent={
+					icon === undefined ? undefined : (
+						<FontAwesomeIcon icon={icon} className="w-3.5" />
+					)
+				}
+				variant="flat"
+				{...(color === undefined ? {} : { color })}
+				{...(onPress === undefined ? {} : { onPress })}
+			>
+				{children}
+			</Button>
+		);
+	}
+);
+
+interface IAdminHeaderActionButtonProps extends PropsWithChildren<object> {
+	color?: IButtonProps['color'];
+	icon?: FontAwesomeIconProps['icon'];
+	isDisabled?: boolean;
+	isLoading?: boolean;
+	onPress: NonNullable<IButtonProps['onPress']>;
+}
+
+export const AdminHeaderActionButton = memo<IAdminHeaderActionButtonProps>(
+	function AdminHeaderActionButton({
+		children,
+		color,
+		icon,
+		isDisabled = false,
+		isLoading = false,
+		onPress,
+	}) {
+		const startContent =
+			isLoading || icon === undefined ? undefined : (
+				<FontAwesomeIcon icon={icon} className="w-3.5" />
+			);
+
+		return (
+			<Button
+				isDisabled={isDisabled}
+				isLoading={isLoading}
+				variant="flat"
+				onPress={onPress}
+				{...(color === undefined ? {} : { color })}
+				{...(startContent === undefined ? {} : { startContent })}
+			>
+				{children}
+			</Button>
+		);
+	}
+);
+
 interface IAdminPanelProps extends PropsWithChildren<
 	Pick<HTMLDivElementAttributes, 'className'>
 > {}
@@ -168,16 +282,62 @@ export const AdminPanel = memo<IAdminPanelProps>(function AdminPanel({
 
 interface IAdminPanelTitleProps {
 	children: ReactNodeWithoutBoolean;
+	className?: string;
 	icon: FontAwesomeIconProps['icon'];
 }
 
 export const AdminPanelTitle = memo<IAdminPanelTitleProps>(
-	function AdminPanelTitle({ children, icon }) {
+	function AdminPanelTitle({ children, className, icon }) {
 		return (
-			<div className="mb-3 flex items-center gap-2 text-small font-medium text-foreground-700">
+			<div
+				className={cn(
+					'mb-3 flex items-center gap-2 text-small font-medium text-foreground-700',
+					className
+				)}
+			>
 				<FontAwesomeIcon icon={icon} className="w-4" />
 				<span>{children}</span>
 			</div>
+		);
+	}
+);
+
+interface IAdminPanelToolbarProps {
+	actions?: ReactNodeWithoutBoolean;
+	children: ReactNodeWithoutBoolean;
+	icon: FontAwesomeIconProps['icon'];
+}
+
+export const AdminPanelToolbar = memo<IAdminPanelToolbarProps>(
+	function AdminPanelToolbar({ actions, children, icon }) {
+		return (
+			<div className="mb-4 flex min-w-0 flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between">
+				<AdminPanelTitle className="mb-0" icon={icon}>
+					{children}
+				</AdminPanelTitle>
+				{actions !== undefined && (
+					<div className="flex w-full min-w-0 flex-col items-stretch gap-2 md:w-auto md:flex-row md:flex-wrap md:items-center md:justify-end">
+						{actions}
+					</div>
+				)}
+			</div>
+		);
+	}
+);
+
+interface IAdminFilterPanelProps extends PropsWithChildren<object> {
+	icon: FontAwesomeIconProps['icon'];
+}
+
+export const AdminFilterPanel = memo<IAdminFilterPanelProps>(
+	function AdminFilterPanel({ children, icon }) {
+		return (
+			<AdminPanel>
+				<AdminPanelTitle icon={icon}>筛选</AdminPanelTitle>
+				<div className="flex w-full flex-col items-stretch gap-3 md:flex-row md:flex-wrap md:items-center">
+					{children}
+				</div>
+			</AdminPanel>
 		);
 	}
 );
@@ -194,6 +354,70 @@ export const AdminInputIcon = memo<IAdminInputIconProps>(
 	}
 );
 
+interface IAdminSearchInputProps {
+	ariaLabel: string;
+	className?: string;
+	icon: FontAwesomeIconProps['icon'];
+	onValueChange: (value: string) => void;
+	placeholder: string;
+	value: string;
+}
+
+export const AdminSearchInput = memo<IAdminSearchInputProps>(
+	function AdminSearchInput({
+		ariaLabel,
+		className,
+		icon,
+		onValueChange,
+		placeholder,
+		value,
+	}) {
+		return (
+			<Input
+				aria-label={ariaLabel}
+				className={cn(
+					'w-full min-w-0 md:min-w-80 md:flex-[1_1_20rem]',
+					className
+				)}
+				classNames={{ inputWrapper: 'h-12 min-h-12' }}
+				placeholder={placeholder}
+				startContent={<AdminInputIcon icon={icon} />}
+				value={value}
+				onValueChange={onValueChange}
+			/>
+		);
+	}
+);
+
+export const adminTextareaClassNames = {
+	inputWrapper:
+		'bg-default/40 transition-background data-[hover=true]:bg-default-400/40 group-data-[focus=true]:bg-default/70 motion-reduce:transition-none',
+} as const;
+
+interface IAdminBadgeProps extends PropsWithChildren<
+	Pick<HTMLSpanElementAttributes, 'className'>
+> {
+	tone?: TAdminBadgeTone;
+}
+
+export const AdminBadge = memo<IAdminBadgeProps>(function AdminBadge({
+	children,
+	className,
+	tone = 'default',
+}) {
+	return (
+		<span
+			className={cn(
+				'inline-flex h-7 items-center rounded-small border px-2 text-tiny font-medium',
+				BADGE_TONE_CLASS_NAME_MAP[tone],
+				className
+			)}
+		>
+			{children}
+		</span>
+	);
+});
+
 interface IAdminStatusBadgeProps {
 	status: TUserStatus;
 }
@@ -202,15 +426,89 @@ export const AdminStatusBadge = memo<IAdminStatusBadgeProps>(
 	function AdminStatusBadge({ status }) {
 		const meta = STATUS_META_MAP[status];
 
+		return <AdminBadge tone={meta.tone}>{meta.label}</AdminBadge>;
+	}
+);
+
+interface IAdminSsoClientStatusBadgeProps {
+	disabledAt: number | null;
+}
+
+export const AdminSsoClientStatusBadge = memo<IAdminSsoClientStatusBadgeProps>(
+	function AdminSsoClientStatusBadge({ disabledAt }) {
+		const isDisabled = disabledAt !== null;
+
 		return (
-			<span
-				className={cn(
-					'inline-flex h-7 items-center rounded-small border px-2 text-tiny font-medium',
-					meta.className
-				)}
+			<AdminBadge tone={isDisabled ? 'warning' : 'success'}>
+				{isDisabled ? '已禁用' : '已启用'}
+			</AdminBadge>
+		);
+	}
+);
+
+interface IAdminAnnouncementStatusBadgeProps {
+	status: TAnnouncementComputedStatus;
+}
+
+export const AdminAnnouncementStatusBadge =
+	memo<IAdminAnnouncementStatusBadgeProps>(
+		function AdminAnnouncementStatusBadge({ status }) {
+			const meta = ANNOUNCEMENT_STATUS_META_MAP[status];
+
+			return <AdminBadge tone={meta.tone}>{meta.label}</AdminBadge>;
+		}
+	);
+
+interface IAdminAnnouncementLevelBadgeProps {
+	level: TAnnouncementLevel;
+}
+
+export const AdminAnnouncementLevelBadge =
+	memo<IAdminAnnouncementLevelBadgeProps>(
+		function AdminAnnouncementLevelBadge({ level }) {
+			const meta = ANNOUNCEMENT_LEVEL_META_MAP[level];
+
+			return <AdminBadge tone={meta.tone}>{meta.label}</AdminBadge>;
+		}
+	);
+
+interface IAdminEntityCellProps {
+	className?: string;
+	id: ReactNodeWithoutBoolean;
+	title: ReactNodeWithoutBoolean;
+}
+
+export const AdminEntityCell = memo<IAdminEntityCellProps>(
+	function AdminEntityCell({ className, id, title }) {
+		return (
+			<div className={cn('min-w-0 max-w-80', className)}>
+				<p className="truncate text-small font-medium leading-5 text-foreground-800">
+					{title}
+				</p>
+				<p className="truncate font-mono text-[0.7rem] leading-4 text-foreground-400">
+					{id}
+				</p>
+			</div>
+		);
+	}
+);
+
+interface IAdminTableActionLinkProps extends PropsWithChildren<object> {
+	href: string;
+	onPress?: ComponentProps<typeof Link>['onPress'] | undefined;
+}
+
+export const AdminTableActionLink = memo<IAdminTableActionLinkProps>(
+	function AdminTableActionLink({ children, href, onPress }) {
+		return (
+			<Link
+				animationUnderline={false}
+				className="rounded-small px-2 py-1 text-small text-primary-600 transition-background hover:bg-primary/15 motion-reduce:transition-none dark:text-primary"
+				href={href}
+				{...(onPress === undefined ? {} : { onPress })}
 			>
-				{meta.label}
-			</span>
+				{children}
+			</Link>
 		);
 	}
 );
@@ -243,6 +541,28 @@ export const AdminMetric = memo<IAdminMetricProps>(function AdminMetric({
 	);
 });
 
+interface IAdminMetricPanelProps extends PropsWithChildren<
+	Pick<HTMLDivElementAttributes, 'className'>
+> {}
+
+export const AdminMetricPanel = memo<IAdminMetricPanelProps>(
+	function AdminMetricPanel({ children, className }) {
+		return (
+			<AdminPanel className={cn('grid gap-4', className)}>
+				{children}
+			</AdminPanel>
+		);
+	}
+);
+
+interface IAdminMutedTextProps extends PropsWithChildren<object> {}
+
+export const AdminMutedText = memo<IAdminMutedTextProps>(
+	function AdminMutedText({ children }) {
+		return <span className="text-foreground-400">{children}</span>;
+	}
+);
+
 interface IAdminMessageProps {
 	message: string;
 }
@@ -256,6 +576,105 @@ export const AdminMessage = memo<IAdminMessageProps>(function AdminMessage({
 		</div>
 	);
 });
+
+interface IAdminCodeBlockProps {
+	actions?: ReactNodeWithoutBoolean;
+	ariaLabel?: string;
+	copyLabel?: string;
+	isCopyDisabled?: boolean;
+	onCopy?: () => void;
+	value: string;
+}
+
+export const AdminCodeBlock = memo<IAdminCodeBlockProps>(
+	function AdminCodeBlock({
+		actions,
+		ariaLabel,
+		copyLabel = '复制内容',
+		isCopyDisabled,
+		onCopy,
+		value,
+	}) {
+		return (
+			<div className="flex min-w-0 items-center gap-2 rounded-small border border-default-200/80 bg-default/30 px-3 py-2">
+				<span
+					aria-label={ariaLabel}
+					className="min-w-0 flex-1 break-all font-mono text-tiny leading-5 text-foreground-600"
+				>
+					{value}
+				</span>
+				{onCopy !== undefined && (
+					<Button
+						isIconOnly
+						aria-label={copyLabel}
+						isDisabled={isCopyDisabled}
+						size="sm"
+						variant="flat"
+						onPress={onCopy}
+					>
+						<FontAwesomeIcon icon={faClipboard} className="w-3" />
+					</Button>
+				)}
+				{actions}
+			</div>
+		);
+	}
+);
+
+interface IAdminLoadingStateProps {
+	icon: FontAwesomeIconProps['icon'];
+	label: ReactNodeWithoutBoolean;
+	subtitle: ReactNodeWithoutBoolean;
+	title: ReactNodeWithoutBoolean;
+}
+
+export const AdminLoadingState = memo<IAdminLoadingStateProps>(
+	function AdminLoadingState({ icon, label, subtitle, title }) {
+		return (
+			<AdminShell>
+				<AdminHeader icon={icon} subtitle={subtitle} title={title} />
+				<AdminPanel className="flex items-center gap-3 text-small text-foreground-500">
+					<Button isLoading variant="flat">
+						加载中
+					</Button>
+					<span>{label}</span>
+				</AdminPanel>
+			</AdminShell>
+		);
+	}
+);
+
+interface IAdminErrorRetryStateProps {
+	icon: FontAwesomeIconProps['icon'];
+	message: string | null;
+	onRetry: NonNullable<IButtonProps['onPress']>;
+	subtitle: ReactNodeWithoutBoolean;
+	title: ReactNodeWithoutBoolean;
+}
+
+export const AdminErrorRetryState = memo<IAdminErrorRetryStateProps>(
+	function AdminErrorRetryState({ icon, message, onRetry, subtitle, title }) {
+		return (
+			<AdminShell>
+				<AdminHeader
+					actions={
+						<AdminHeaderActionButton
+							color="primary"
+							icon={faRotate}
+							onPress={onRetry}
+						>
+							重试
+						</AdminHeaderActionButton>
+					}
+					icon={icon}
+					subtitle={subtitle}
+					title={title}
+				/>
+				{message !== null && <AdminMessage message={message} />}
+			</AdminShell>
+		);
+	}
+);
 
 interface IAdminTableProps extends PropsWithChildren<
 	Pick<HTMLDivElementAttributes, 'className'>
@@ -315,6 +734,236 @@ export const AdminTableRow = memo<IAdminTableRowProps>(function AdminTableRow({
 		</tr>
 	);
 });
+
+interface IAdminTableCellProps extends PropsWithChildren<object> {
+	align?: 'middle' | 'top';
+	className?: string;
+	isNowrap?: boolean;
+}
+
+export const AdminTableHeadCell = memo<IAdminTableCellProps>(
+	function AdminTableHeadCell({ children, className }) {
+		return (
+			<th
+				className={cn(
+					'whitespace-nowrap px-4 py-3 font-medium',
+					className
+				)}
+			>
+				{children}
+			</th>
+		);
+	}
+);
+
+export const AdminTableCell = memo<IAdminTableCellProps>(
+	function AdminTableCell({
+		align = 'middle',
+		children,
+		className,
+		isNowrap,
+	}) {
+		return (
+			<td
+				className={cn(
+					'px-4 py-3',
+					align === 'top' ? 'align-top' : 'align-middle',
+					isNowrap && 'whitespace-nowrap',
+					className
+				)}
+			>
+				{children}
+			</td>
+		);
+	}
+);
+
+interface IAdminConfirmButtonProps<TConfirmAction extends string> {
+	children: ReactNodeWithoutBoolean;
+	className?: IButtonProps['className'];
+	color: IButtonProps['color'];
+	confirmAction: TConfirmAction;
+	confirmColor?: IButtonProps['color'];
+	confirmLabel: string;
+	icon: FontAwesomeIconProps['icon'];
+	isDisabled?: boolean;
+	isLoading: boolean;
+	onConfirm: () => void;
+	onOpenChange: (action: TConfirmAction | null) => void;
+	openAction: TConfirmAction | null;
+	size?: IButtonProps['size'];
+}
+
+function AdminConfirmButtonBase<TConfirmAction extends string>({
+	children,
+	className,
+	color,
+	confirmAction,
+	confirmColor = 'danger',
+	confirmLabel,
+	icon,
+	isDisabled,
+	isLoading,
+	onConfirm,
+	onOpenChange,
+	openAction,
+	size,
+}: IAdminConfirmButtonProps<TConfirmAction>) {
+	const handleOpenChange = (isOpen: boolean) => {
+		onOpenChange(isOpen ? confirmAction : null);
+	};
+
+	const handleCancelPress = () => {
+		onOpenChange(null);
+	};
+
+	return (
+		<Popover
+			shouldBlockScroll
+			showArrow
+			isOpen={openAction === confirmAction}
+			onOpenChange={handleOpenChange}
+		>
+			<PopoverTrigger>
+				<Button
+					className={className}
+					color={color}
+					isDisabled={isDisabled}
+					isLoading={isLoading}
+					size={size}
+					startContent={
+						isLoading ? null : (
+							<FontAwesomeIcon icon={icon} className="w-3.5" />
+						)
+					}
+					variant="flat"
+				>
+					{children}
+				</Button>
+			</PopoverTrigger>
+			<PopoverContent className="space-y-1 p-1">
+				<Button
+					fullWidth
+					color={confirmColor}
+					isDisabled={isLoading}
+					size="sm"
+					variant="ghost"
+					onPress={onConfirm}
+				>
+					{confirmLabel}
+				</Button>
+				<Button
+					fullWidth
+					color="primary"
+					size="sm"
+					variant="ghost"
+					onPress={handleCancelPress}
+				>
+					取消
+				</Button>
+			</PopoverContent>
+		</Popover>
+	);
+}
+
+export const AdminConfirmButton = memo(
+	AdminConfirmButtonBase
+) as typeof AdminConfirmButtonBase;
+
+interface IAdminPaginationProps {
+	currentPage: number;
+	isLoading: boolean;
+	onNextPage: () => void;
+	onPageInputChange: (value: string) => void;
+	onPageJumpSubmit: (event: SyntheticEvent<HTMLFormElement>) => void;
+	onPreviousPage: () => void;
+	pageInput: string;
+	pageSize?: number | undefined;
+	totalCount?: number | undefined;
+	totalLabel: string;
+	totalPages: number;
+}
+
+export const AdminPagination = memo<IAdminPaginationProps>(
+	function AdminPagination({
+		currentPage,
+		isLoading,
+		onNextPage,
+		onPageInputChange,
+		onPageJumpSubmit,
+		onPreviousPage,
+		pageInput,
+		pageSize,
+		totalCount,
+		totalLabel,
+		totalPages,
+	}) {
+		const isHighAppearance = store.persistence.highAppearance.use();
+		const safeTotalPages = Math.max(1, totalPages);
+
+		return (
+			<div
+				className={cn(
+					'flex flex-wrap items-center justify-between gap-3 rounded-small border border-default-200/80 px-3 py-2 text-small text-foreground-500',
+					isHighAppearance
+						? 'bg-content1/40 backdrop-blur'
+						: 'bg-default-50/50 dark:bg-default-100/10'
+				)}
+			>
+				<span>
+					第{currentPage} / {safeTotalPages}页
+					{pageSize !== undefined && ` · 每页${pageSize}`}
+					{totalCount !== undefined &&
+						` · 共${totalCount}${totalLabel}`}
+				</span>
+				<div className="flex flex-wrap items-center gap-2">
+					<Button
+						isDisabled={currentPage <= 1 || isLoading}
+						size="sm"
+						variant="flat"
+						onPress={onPreviousPage}
+					>
+						上一页
+					</Button>
+					<Button
+						isDisabled={isLoading || currentPage >= safeTotalPages}
+						size="sm"
+						variant="flat"
+						onPress={onNextPage}
+					>
+						下一页
+					</Button>
+					<form
+						className="flex items-center gap-2"
+						onSubmit={onPageJumpSubmit}
+					>
+						<Input
+							aria-label="跳转页码"
+							className="w-20"
+							classNames={{
+								input: 'text-center',
+								inputWrapper: 'h-8 min-h-8',
+							}}
+							inputMode="numeric"
+							placeholder="页码"
+							size="sm"
+							value={pageInput}
+							onValueChange={onPageInputChange}
+						/>
+						<Button
+							isDisabled={isLoading || pageInput.length === 0}
+							size="sm"
+							type="submit"
+							variant="light"
+						>
+							跳转
+						</Button>
+					</form>
+				</div>
+			</div>
+		);
+	}
+);
 
 interface IAdminEmptyStateProps {
 	children: ReactNodeWithoutBoolean;

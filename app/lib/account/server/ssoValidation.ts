@@ -1,3 +1,5 @@
+import { SSO_CALLBACK_EVENT_LIST } from '../shared/constants';
+
 export const SSO_FIELD_MAX_LENGTH = 2048;
 export const SSO_CLIENT_ID_MAX_LENGTH = 128;
 export const SSO_STATE_MAX_LENGTH = 1024;
@@ -58,8 +60,10 @@ function hasControlCharacter(value: string) {
 
 export function checkSsoCallbackEvent(
 	value: string
-): value is 'user_deleted' | 'user_disabled' {
-	return value === 'user_deleted' || value === 'user_disabled';
+): value is (typeof SSO_CALLBACK_EVENT_LIST)[number] {
+	return SSO_CALLBACK_EVENT_LIST.includes(
+		value as (typeof SSO_CALLBACK_EVENT_LIST)[number]
+	);
 }
 
 export function checkSsoClientId(value: string) {
@@ -278,6 +282,7 @@ export function createSsoClientPublicProfile(
 	client: ISsoClientPublicProfileInput
 ) {
 	return {
+		active_secret_count: client.secret_hashes.length,
 		cancel_redirect_uri: client.cancel_redirect_uri,
 		created_at: client.created_at,
 		custom_scheme_redirect_uris: client.custom_scheme_redirect_uris,
@@ -286,7 +291,6 @@ export function createSsoClientPublicProfile(
 		id: client.id,
 		loopback_redirect_paths: client.loopback_redirect_paths,
 		name: client.name,
-		secret_hashes: client.secret_hashes,
 		status_callback_url: client.status_callback_url,
 		updated_at: client.updated_at,
 	};

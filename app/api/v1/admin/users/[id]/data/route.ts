@@ -70,13 +70,32 @@ export async function DELETE(
 		return csrfResponse;
 	}
 
-	const userStateModule =
-		await import('@/lib/account/server/repositories/userState');
+	const [userStateModule, accountAuditModule] = await Promise.all([
+		import('@/lib/account/server/repositories/userState'),
+		import('@/lib/account/server/accountAuditService'),
+	]);
 
 	try {
 		const stateEpoch =
-			await userStateModule.clearUserDataAndDeleteSessionsAndIncrementStateEpoch(
-				id
+			await userStateModule.clearUserDataAndDeleteSessionsAndIncrementStateEpochWithAudit(
+				id,
+				(trx, auditNow, nextStateEpoch) =>
+					accountAuditModule.writeAccountAuditLogInTransaction(
+						trx,
+						accountAuditModule.createAccountAdminAuditLogInput({
+							action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+								.adminClearUserData,
+							adminId: auth.payload.username,
+							metadata: {
+								state_epoch: nextStateEpoch,
+								target_user_id: id,
+							},
+							request,
+							targetId: id,
+							targetType: 'user',
+						}),
+						auditNow
+					)
 			);
 
 		return createNoStoreJsonResponse({ state_epoch: stateEpoch });

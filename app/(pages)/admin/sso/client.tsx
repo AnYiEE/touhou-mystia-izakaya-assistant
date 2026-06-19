@@ -1,11 +1,22 @@
 'use client';
 
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import {
+	type Key,
+	type SyntheticEvent,
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
 	faBullhorn,
 	faClock,
+	faMagnifyingGlass,
 	faPlus,
 	faRotate,
 	faServer,
@@ -13,16 +24,41 @@ import {
 	faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 
-import { Button, Link, cn } from '@/design/ui/components';
+import { Button, cn } from '@/design/ui/components';
 
 import {
+	ADMIN_SSO_LIST_DEBOUNCE_MS,
+	AdminSsoDropdownFilter,
+	AdminSsoFilterButton,
+	AdminSsoOperationNav,
+	createAdminSsoDateTimeText,
+	createAdminSsoPageInputValue,
+	parseAdminSsoPageInput,
+} from './components';
+import {
+	type IAdminSsoLocationState,
+	createAdminSsoClientDetailHref,
+	createAdminSsoHref,
+} from './locationState';
+import {
 	AdminEmptyState,
+	AdminEntityCell,
+	AdminFilterPanel,
 	AdminHeader,
+	AdminHeaderActionLink,
+	AdminLoadingState,
 	AdminMessage,
 	AdminMetric,
-	AdminPanel,
+	AdminMetricPanel,
+	AdminMutedText,
+	AdminPagination,
+	AdminSearchInput,
 	AdminShell,
+	AdminSsoClientStatusBadge,
 	AdminTable,
+	AdminTableActionLink,
+	AdminTableCell,
+	AdminTableHeadCell,
 	AdminTableHeader,
 	AdminTableRow,
 } from '../components';
@@ -40,9 +76,29 @@ import {
 } from '@/lib/account/shared/types';
 import { clearAdminSession } from '@/lib/account/client/adminSession';
 
-const tableHeadCellClassName = 'px-4 py-3 font-medium';
-const tableCellClassName = 'px-4 py-3 align-middle';
-const tableNowrapCellClassName = `${tableCellClassName} whitespace-nowrap`;
+type TClientStatusFilter = '' | 'active' | 'disabled';
+type TCallbackFilter = '' | 'configured' | 'missing';
+type TGrantFilter = '' | 'has' | 'none';
+
+const pageInputRegexp = /^\d*$/u;
+
+const clientStatusOptions = [
+	{ label: '全部状态', value: '' },
+	{ label: '已启用', value: 'active' },
+	{ label: '已禁用', value: 'disabled' },
+] as const;
+
+const callbackOptions = [
+	{ label: '全部Callback', value: '' },
+	{ label: '已配置Callback', value: 'configured' },
+	{ label: '未配置Callback', value: 'missing' },
+] as const;
+
+const grantOptions = [
+	{ label: '全部授权', value: '' },
+	{ label: '已有授权', value: 'has' },
+	{ label: '暂无授权', value: 'none' },
+] as const;
 
 function checkAdminUnauthorizedActionResult(
 	result: Extract<TAdminApiResult, { status: 'error' }>
@@ -56,10 +112,14 @@ function checkAdminUnauthorizedActionResult(
 
 export interface IAdminSsoClientsInitialData {
 	admin: IAdminMeData | null;
+	callback: TCallbackFilter;
 	clients: IAdminSsoClientListData | null;
+	grant: TGrantFilter;
 	isAuthLoading: boolean;
 	message: string | null;
+	query: string;
 	renderedAt: number;
+	status: TClientStatusFilter;
 }
 
 interface IAdminSsoClientsClientProps {
@@ -69,54 +129,79 @@ interface IAdminSsoClientsClientProps {
 const AdminSsoClientRow = memo<{
 	client: IAdminSsoClientListData['clients'][number];
 	initialNowTimestamp: number;
-}>(function AdminSsoClientRow({ client, initialNowTimestamp }) {
+	listLocationState: IAdminSsoLocationState;
+}>(function AdminSsoClientRow({
+	client,
+	initialNowTimestamp,
+	listLocationState,
+}) {
 	const isDisabled = client.disabled_at !== null;
 
 	return (
 		<AdminTableRow className={cn(isDisabled && 'opacity-75')}>
-			<td className={cn(tableCellClassName, 'w-80 max-w-80')}>
-				<div className="min-w-0 max-w-72">
-					<p className="truncate text-small font-medium leading-5 text-foreground-800">
-						{client.name}
-					</p>
-					<p className="truncate font-mono text-[0.7rem] leading-4 text-foreground-400">
-						{client.id}
-					</p>
-				</div>
-			</td>
-			<td className={tableNowrapCellClassName}>
-				<span
-					className={cn(
-						'inline-flex h-7 items-center rounded-small border px-2 text-tiny font-medium',
-						isDisabled
-							? 'border-warning/30 bg-warning/15 text-warning-700 dark:text-warning-600'
-							: 'border-success/30 bg-success/15 text-success-700 dark:text-success'
-					)}
-				>
-					{isDisabled ? '已禁用' : '已启用'}
-				</span>
-			</td>
-			<td className={tableNowrapCellClassName}>
-				{client.secret_hashes.length}
-			</td>
-			<td className={tableNowrapCellClassName}>
+			<AdminTableCell className="w-80 max-w-80">
+				<AdminEntityCell
+					className="max-w-72"
+					id={client.id}
+					title={client.name}
+				/>
+			</AdminTableCell>
+			<AdminTableCell isNowrap>
+				<AdminSsoClientStatusBadge disabledAt={client.disabled_at} />
+			</AdminTableCell>
+			<AdminTableCell isNowrap>
+				{client.active_secret_count}
+			</AdminTableCell>
+			<AdminTableCell isNowrap>{client.grant_count}</AdminTableCell>
+			<AdminTableCell isNowrap>
+				{client.pending_callback_count}
+				{client.failed_callback_count > 0 && (
+					<AdminMutedText>
+						{' / '}
+						{client.failed_callback_count}失败
+					</AdminMutedText>
+				)}
+			</AdminTableCell>
+			<AdminTableCell isNowrap>
+				{client.pending_ticket_count}
+			</AdminTableCell>
+			<AdminTableCell isNowrap>
 				{client.status_callback_url === null
 					? '无'
 					: isDisabled
 						? '已暂停'
 						: '已配置'}
-			</td>
-			<td className={tableNowrapCellClassName}>
+			</AdminTableCell>
+			<AdminTableCell isNowrap>
+				{createAdminSsoDateTimeText(client.last_secret_used_at)}
+			</AdminTableCell>
+			<AdminTableCell isNowrap>
 				<TimeAgo
 					initialNowTimestamp={initialNowTimestamp}
 					timestamp={client.created_at}
 				/>
-			</td>
-			<td className={cn(tableNowrapCellClassName, 'text-right')}>
-				<Link
-					animationUnderline={false}
-					className="rounded-small px-2 py-1 text-small text-primary-600 transition-background hover:bg-primary/15 motion-reduce:transition-none dark:text-primary"
-					href={`/admin/sso/${encodeURIComponent(client.id)}`}
+			</AdminTableCell>
+			<AdminTableCell isNowrap className="text-right">
+				<AdminTableActionLink
+					href={createAdminSsoHref('/admin/sso/grants', {
+						clientId: client.id,
+					})}
+					onPress={() => {
+						trackEvent(
+							trackEvent.category.click,
+							'Admin SSO Client Button',
+							'Open Grants',
+							client.id
+						);
+					}}
+				>
+					授权
+				</AdminTableActionLink>
+				<AdminTableActionLink
+					href={createAdminSsoClientDetailHref(
+						client.id,
+						listLocationState
+					)}
 					onPress={() => {
 						trackEvent(
 							trackEvent.category.click,
@@ -127,8 +212,8 @@ const AdminSsoClientRow = memo<{
 					}}
 				>
 					编辑
-				</Link>
-			</td>
+				</AdminTableActionLink>
+			</AdminTableCell>
 		</AdminTableRow>
 	);
 });
@@ -136,6 +221,8 @@ const AdminSsoClientRow = memo<{
 export default function AdminSsoClientsClient({
 	initialData,
 }: IAdminSsoClientsClientProps) {
+	const pathname = usePathname();
+	const router = useRouter();
 	const requestIdRef = useRef(0);
 	const isServerInitialClientsRef = useRef(initialData.clients !== null);
 	const [admin, setAdmin] = useState<IAdminMeData | null>(initialData.admin);
@@ -147,46 +234,96 @@ export default function AdminSsoClientsClient({
 	);
 	const [isLoading, setIsLoading] = useState(false);
 	const [message, setMessage] = useState<string | null>(initialData.message);
+	const [page, setPage] = useState(initialData.clients?.page ?? 1);
+	const [pageInput, setPageInput] = useState(
+		createAdminSsoPageInputValue(initialData.clients?.page ?? 1)
+	);
+	const [queryInput, setQueryInput] = useState(initialData.query);
+	const [statusFilter, setStatusFilter] = useState<TClientStatusFilter>(
+		initialData.status
+	);
+	const [callbackFilter, setCallbackFilter] = useState<TCallbackFilter>(
+		initialData.callback
+	);
+	const [grantFilter, setGrantFilter] = useState<TGrantFilter>(
+		initialData.grant
+	);
 
-	const refreshClients = useCallback(() => {
-		requestIdRef.current += 1;
-		const requestId = requestIdRef.current;
-		setIsLoading(true);
-		setMessage(null);
+	const listLocationState = useMemo<IAdminSsoLocationState>(
+		() => ({
+			callback: callbackFilter,
+			grant: grantFilter,
+			page,
+			query: queryInput,
+			status: statusFilter,
+		}),
+		[callbackFilter, grantFilter, page, queryInput, statusFilter]
+	);
 
-		void listAdminSsoClients()
-			.then((result) => {
-				if (requestIdRef.current !== requestId) {
-					return;
-				}
-				if (result.status === 'error') {
-					if (checkAdminUnauthorizedActionResult(result)) {
-						clearAdminSession();
-						setAdmin(null);
-						setClients(null);
+	const createListOptions = useCallback(
+		(nextPage = page) => ({
+			page: nextPage,
+			pageSize: clients?.page_size ?? 20,
+			...(callbackFilter === '' ? {} : { callback: callbackFilter }),
+			...(grantFilter === '' ? {} : { hasGrants: grantFilter === 'has' }),
+			...(queryInput.trim() === '' ? {} : { query: queryInput.trim() }),
+			...(statusFilter === '' ? {} : { status: statusFilter }),
+		}),
+		[
+			callbackFilter,
+			clients?.page_size,
+			grantFilter,
+			page,
+			queryInput,
+			statusFilter,
+		]
+	);
+
+	const refreshClients = useCallback(
+		(nextPage = page) => {
+			requestIdRef.current += 1;
+			const requestId = requestIdRef.current;
+			setIsLoading(true);
+			setMessage(null);
+
+			void listAdminSsoClients(createListOptions(nextPage))
+				.then((result) => {
+					if (requestIdRef.current !== requestId) {
+						return;
+					}
+					if (result.status === 'error') {
+						if (checkAdminUnauthorizedActionResult(result)) {
+							clearAdminSession();
+							setAdmin(null);
+							setClients(null);
+							return;
+						}
+
+						setMessage(result.displayMessage);
 						return;
 					}
 
-					setMessage(result.message);
-					return;
-				}
-
-				setClients(result.data);
-			})
-			.catch((error: unknown) => {
-				if (requestIdRef.current !== requestId) {
-					return;
-				}
-				setMessage(
-					error instanceof Error ? error.message : '读取SSO客户端失败'
-				);
-			})
-			.finally(() => {
-				if (requestIdRef.current === requestId) {
-					setIsLoading(false);
-				}
-			});
-	}, []);
+					setClients(result.data);
+					setPage(result.data.page);
+				})
+				.catch((error: unknown) => {
+					if (requestIdRef.current !== requestId) {
+						return;
+					}
+					setMessage(
+						error instanceof Error
+							? error.message
+							: '读取SSO客户端失败'
+					);
+				})
+				.finally(() => {
+					if (requestIdRef.current === requestId) {
+						setIsLoading(false);
+					}
+				});
+		},
+		[createListOptions, page]
+	);
 
 	const checkAdmin = useCallback(() => {
 		requestIdRef.current += 1;
@@ -206,7 +343,7 @@ export default function AdminSsoClientsClient({
 						return;
 					}
 
-					setMessage(result.message);
+					setMessage(result.displayMessage);
 					return;
 				}
 
@@ -246,15 +383,49 @@ export default function AdminSsoClientsClient({
 	}, [checkAdmin, initialData.admin]);
 
 	useEffect(() => {
+		let timeoutId: ReturnType<typeof globalThis.setTimeout> | null = null;
+
 		if (admin !== null) {
 			if (isServerInitialClientsRef.current) {
 				isServerInitialClientsRef.current = false;
-				return;
+			} else {
+				timeoutId = globalThis.setTimeout(() => {
+					refreshClients(page);
+				}, ADMIN_SSO_LIST_DEBOUNCE_MS);
 			}
-
-			refreshClients();
 		}
-	}, [admin, refreshClients]);
+
+		return () => {
+			if (timeoutId !== null) {
+				globalThis.clearTimeout(timeoutId);
+			}
+		};
+	}, [admin, page, refreshClients]);
+
+	useEffect(() => {
+		setPageInput(createAdminSsoPageInputValue(page));
+	}, [page]);
+
+	useEffect(() => {
+		if (pathname !== '/admin/sso') {
+			return;
+		}
+
+		const nextHref = createAdminSsoHref('/admin/sso', listLocationState);
+		const currentHref = `${globalThis.location.pathname}${globalThis.location.search}`;
+
+		if (currentHref === nextHref) {
+			return;
+		}
+
+		const timeoutId = globalThis.setTimeout(() => {
+			router.replace(nextHref, { scroll: false });
+		}, ADMIN_SSO_LIST_DEBOUNCE_MS);
+
+		return () => {
+			globalThis.clearTimeout(timeoutId);
+		};
+	}, [listLocationState, pathname, router]);
 
 	const handleLeaveSsoClientList = useCallback(() => {
 		requestIdRef.current += 1;
@@ -267,28 +438,70 @@ export default function AdminSsoClientsClient({
 			'Admin SSO Client Button',
 			'Refresh'
 		);
-		refreshClients();
-	}, [refreshClients]);
+		refreshClients(page);
+	}, [page, refreshClients]);
 
 	const handleNewSsoClient = useCallback(() => {
 		trackEvent(trackEvent.category.click, 'Admin SSO Client Button', 'New');
 	}, []);
 
+	const handleQueryInputChange = useCallback((value: string) => {
+		setPage(1);
+		setQueryInput(value);
+	}, []);
+
+	const handleStatusAction = useCallback((key: Key) => {
+		setPage(1);
+		setStatusFilter(String(key) as TClientStatusFilter);
+	}, []);
+
+	const handleCallbackAction = useCallback((key: Key) => {
+		setPage(1);
+		setCallbackFilter(String(key) as TCallbackFilter);
+	}, []);
+
+	const handleGrantAction = useCallback((key: Key) => {
+		setPage(1);
+		setGrantFilter(String(key) as TGrantFilter);
+	}, []);
+
+	const handlePreviousPage = useCallback(() => {
+		setPage((currentPage) => Math.max(1, currentPage - 1));
+	}, []);
+
+	const handleNextPage = useCallback(() => {
+		setPage((currentPage) =>
+			Math.min(
+				Math.max(1, clients?.total_pages ?? currentPage + 1),
+				currentPage + 1
+			)
+		);
+	}, [clients?.total_pages]);
+
+	const handlePageInputChange = useCallback((value: string) => {
+		if (pageInputRegexp.test(value)) {
+			setPageInput(value);
+		}
+	}, []);
+
+	const handlePageJumpSubmit = useCallback(
+		(event: SyntheticEvent<HTMLFormElement>) => {
+			event.preventDefault();
+			setPage(
+				parseAdminSsoPageInput(pageInput, clients?.total_pages ?? 1)
+			);
+		},
+		[clients?.total_pages, pageInput]
+	);
+
 	if (isAuthLoading) {
 		return (
-			<AdminShell>
-				<AdminHeader
-					icon={faShieldHalved}
-					subtitle="正在校验管理员会话"
-					title="SSO客户端"
-				/>
-				<AdminPanel className="flex items-center gap-3 text-small text-foreground-500">
-					<Button isLoading variant="flat">
-						加载中
-					</Button>
-					<span>读取会话状态</span>
-				</AdminPanel>
-			</AdminShell>
+			<AdminLoadingState
+				icon={faShieldHalved}
+				label="读取会话状态"
+				subtitle="正在校验管理员会话"
+				title="SSO客户端"
+			/>
 		);
 	}
 
@@ -297,14 +510,9 @@ export default function AdminSsoClientsClient({
 			<AdminShell>
 				<AdminHeader
 					actions={
-						<Button
-							as={Link}
-							animationUnderline={false}
-							href="/admin"
-							variant="flat"
-						>
+						<AdminHeaderActionLink href="/admin">
 							返回管理员页
-						</Button>
+						</AdminHeaderActionLink>
 					}
 					icon={faShieldHalved}
 					subtitle={message ?? '请先返回管理员页登录'}
@@ -314,10 +522,6 @@ export default function AdminSsoClientsClient({
 		);
 	}
 
-	const clientCount = clients?.clients.length ?? 0;
-	const disabledClientCount =
-		clients?.clients.filter((client) => client.disabled_at !== null)
-			.length ?? 0;
 	const initialNowTimestamp = initialData.renderedAt;
 
 	return (
@@ -325,36 +529,20 @@ export default function AdminSsoClientsClient({
 			<AdminHeader
 				actions={
 					<>
-						<Button
-							as={Link}
-							animationUnderline={false}
+						<AdminHeaderActionLink
 							href="/admin"
-							startContent={
-								<FontAwesomeIcon
-									icon={faUsers}
-									className="w-3.5"
-								/>
-							}
-							variant="flat"
+							icon={faUsers}
 							onPress={handleLeaveSsoClientList}
 						>
 							用户管理
-						</Button>
-						<Button
-							as={Link}
-							animationUnderline={false}
+						</AdminHeaderActionLink>
+						<AdminHeaderActionLink
 							href="/admin/announcements"
-							startContent={
-								<FontAwesomeIcon
-									icon={faBullhorn}
-									className="w-3.5"
-								/>
-							}
-							variant="flat"
+							icon={faBullhorn}
 							onPress={handleLeaveSsoClientList}
 						>
 							站点通知
-						</Button>
+						</AdminHeaderActionLink>
 						<Button
 							isLoading={isLoading}
 							startContent={
@@ -370,61 +558,106 @@ export default function AdminSsoClientsClient({
 						>
 							刷新
 						</Button>
-						<Button
-							as={Link}
-							animationUnderline={false}
+						<AdminHeaderActionLink
 							color="primary"
 							href="/admin/sso/new"
-							startContent={
-								<FontAwesomeIcon
-									icon={faPlus}
-									className="w-3.5"
-								/>
-							}
-							variant="flat"
+							icon={faPlus}
 							onPress={handleNewSsoClient}
 						>
 							新建
-						</Button>
+						</AdminHeaderActionLink>
 					</>
 				}
 				icon={faServer}
 				title="SSO客户端"
 			/>
 
-			<AdminPanel className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+			<AdminSsoOperationNav activeHref="/admin/sso" />
+
+			<AdminMetricPanel className="sm:grid-cols-2 xl:grid-cols-6">
 				<AdminMetric
-					label="客户端数量"
-					value={clients === null ? '读取中' : clientCount}
+					label="启用客户端"
+					value={
+						clients === null
+							? '读取中'
+							: clients.metrics.active_client_count
+					}
 				/>
 				<AdminMetric
 					label="已禁用"
-					value={clients === null ? '读取中' : disabledClientCount}
-				/>
-				<AdminMetric
-					label="状态回调"
 					value={
 						clients === null
 							? '读取中'
-							: clients.clients.filter(
-									(client) =>
-										client.status_callback_url !== null
-								).length
+							: clients.metrics.disabled_client_count
 					}
 				/>
 				<AdminMetric
-					label="secret hash总数"
+					label="有效授权"
 					value={
 						clients === null
 							? '读取中'
-							: clients.clients.reduce(
-									(sum, client) =>
-										sum + client.secret_hashes.length,
-									0
-								)
+							: clients.metrics.active_grant_count
 					}
 				/>
-			</AdminPanel>
+				<AdminMetric
+					label="待投递Callback"
+					value={
+						clients === null
+							? '读取中'
+							: clients.metrics.pending_callback_count
+					}
+				/>
+				<AdminMetric
+					label="失败Callback"
+					value={
+						clients === null
+							? '读取中'
+							: clients.metrics.failed_callback_count
+					}
+				/>
+				<AdminMetric
+					label="未消费Ticket"
+					value={
+						clients === null
+							? '读取中'
+							: clients.metrics.pending_ticket_count
+					}
+				/>
+			</AdminMetricPanel>
+
+			<AdminFilterPanel icon={faMagnifyingGlass}>
+				<AdminSearchInput
+					ariaLabel="搜索SSO客户端"
+					icon={faMagnifyingGlass}
+					placeholder="搜索客户端名称或ID"
+					value={queryInput}
+					onValueChange={handleQueryInputChange}
+				/>
+				<AdminSsoDropdownFilter
+					ariaLabel="筛选客户端状态"
+					options={clientStatusOptions}
+					value={statusFilter}
+					onAction={handleStatusAction}
+				/>
+				<AdminSsoDropdownFilter
+					ariaLabel="筛选Callback配置"
+					options={callbackOptions}
+					value={callbackFilter}
+					onAction={handleCallbackAction}
+				/>
+				<AdminSsoDropdownFilter
+					ariaLabel="筛选授权状态"
+					options={grantOptions}
+					value={grantFilter}
+					onAction={handleGrantAction}
+				/>
+				<AdminSsoFilterButton
+					isLoading={isLoading}
+					onPress={handleRefreshClients}
+				>
+					刷新
+				</AdminSsoFilterButton>
+			</AdminFilterPanel>
 
 			{message !== null && <AdminMessage message={message} />}
 
@@ -438,21 +671,20 @@ export default function AdminSsoClientsClient({
 				<AdminTable>
 					<AdminTableHeader>
 						<tr>
-							<th className={tableHeadCellClassName}>客户端</th>
-							<th className={tableHeadCellClassName}>状态</th>
-							<th className={tableHeadCellClassName}>
-								Secret Hashes
-							</th>
-							<th className={tableHeadCellClassName}>状态回调</th>
-							<th className={tableHeadCellClassName}>创建时间</th>
-							<th
-								className={cn(
-									tableHeadCellClassName,
-									'text-right'
-								)}
-							>
+							<AdminTableHeadCell>SSO客户端</AdminTableHeadCell>
+							<AdminTableHeadCell>状态</AdminTableHeadCell>
+							<AdminTableHeadCell>
+								Active Secret
+							</AdminTableHeadCell>
+							<AdminTableHeadCell>授权</AdminTableHeadCell>
+							<AdminTableHeadCell>Callback</AdminTableHeadCell>
+							<AdminTableHeadCell>Tickets</AdminTableHeadCell>
+							<AdminTableHeadCell>状态回调</AdminTableHeadCell>
+							<AdminTableHeadCell>最后使用</AdminTableHeadCell>
+							<AdminTableHeadCell>创建时间</AdminTableHeadCell>
+							<AdminTableHeadCell className="text-right">
 								操作
-							</th>
+							</AdminTableHeadCell>
 						</tr>
 					</AdminTableHeader>
 					<tbody>
@@ -461,11 +693,26 @@ export default function AdminSsoClientsClient({
 								key={client.id}
 								client={client}
 								initialNowTimestamp={initialNowTimestamp}
+								listLocationState={listLocationState}
 							/>
 						))}
 					</tbody>
 				</AdminTable>
 			)}
+
+			<AdminPagination
+				currentPage={clients?.page ?? page}
+				isLoading={isLoading}
+				pageInput={pageInput}
+				pageSize={clients?.page_size}
+				totalCount={clients?.total_count}
+				totalLabel="个客户端"
+				totalPages={Math.max(1, clients?.total_pages ?? page)}
+				onNextPage={handleNextPage}
+				onPageInputChange={handlePageInputChange}
+				onPageJumpSubmit={handlePageJumpSubmit}
+				onPreviousPage={handlePreviousPage}
+			/>
 		</AdminShell>
 	);
 }

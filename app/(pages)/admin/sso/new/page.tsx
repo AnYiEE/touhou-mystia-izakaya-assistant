@@ -11,6 +11,7 @@ export default async function AdminSsoClientCreatePage() {
 	const initialData: IAdminSsoClientFormInitialData = {
 		admin: auth.admin,
 		client: null,
+		clientUsers: null,
 		isAuthLoading: false,
 		isClientServerLoaded: false,
 		loadError: null,

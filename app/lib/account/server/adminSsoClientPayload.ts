@@ -1,9 +1,8 @@
-import {
-	type IAdminSsoClientCreateBody,
-	type IAdminSsoClientUpdateBody,
+import type {
+	IAdminSsoClientCreateBody,
+	IAdminSsoClientUpdateBody,
 } from '@/lib/account/shared/types';
 import {
-	checkSsoSecretHash,
 	normalizeSsoOptionalUri,
 	validateSsoClientConfig,
 } from '@/lib/account/server/ssoValidation';
@@ -111,36 +110,18 @@ export function parseAdminSsoClientCreateBody(data: unknown) {
 export function parseAdminSsoClientUpdateBody(data: unknown) {
 	const body = parseBaseClientBody(data);
 	const input = normalizeInputObject(data);
-	const secretHashes = normalizeStringArray(input?.['secret_hashes']);
 	const disabled = input?.['disabled'];
-	if (
-		body === null ||
-		secretHashes === null ||
-		typeof disabled !== 'boolean'
-	) {
+	if (body === null || typeof disabled !== 'boolean') {
 		return null;
 	}
-	if (secretHashes.some((secretHash) => !checkSsoSecretHash(secretHash))) {
-		return null;
-	}
-
-	const generateSecret = input?.['generate_secret'] === true;
-	const candidateSecretHashes = generateSecret
-		? [...secretHashes, DUMMY_SECRET_HASH]
-		: secretHashes;
 	if (
 		!validateSsoClientConfig({
 			...body,
-			secret_hashes: candidateSecretHashes,
+			secret_hashes: [DUMMY_SECRET_HASH],
 		})
 	) {
 		return null;
 	}
 
-	return {
-		...body,
-		disabled,
-		generate_secret: generateSecret,
-		secret_hashes: secretHashes,
-	} satisfies IAdminSsoClientUpdateBody;
+	return { ...body, disabled } satisfies IAdminSsoClientUpdateBody;
 }

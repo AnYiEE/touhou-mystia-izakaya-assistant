@@ -11,9 +11,17 @@ import {
 import { startAccountStoreSyncWatchers } from './doubleWrite';
 import { startAccountSyncClient } from './syncClient';
 
-export function startAccountFeatureClients() {
+interface IStartAccountFeatureClientsOptions {
+	skipInitialBootstrap?: boolean;
+}
+
+export function startAccountFeatureClients({
+	skipInitialBootstrap = false,
+}: IStartAccountFeatureClientsOptions = {}) {
 	const stopAccountStoreSyncWatchers = startAccountStoreSyncWatchers();
-	void bootstrapAccount();
+	if (!skipInitialBootstrap) {
+		void bootstrapAccount();
+	}
 	const stopAccountBootstrapRetryClient = startAccountBootstrapRetryClient();
 	const stopAccountSyncClient = startAccountSyncClient();
 

@@ -3,6 +3,7 @@ import { type NextRequest } from 'next/server';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
+	checkAccountPreAuthRateLimitRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
 	createAccountAuthErrorRouteResponse,
@@ -46,6 +47,14 @@ export async function GET(request: NextRequest) {
 		checkAccountCookieSecurityRouteResponse(request);
 	if (cookieSecurityResponse !== null) {
 		return cookieSecurityResponse;
+	}
+
+	const preAuthRateLimitResponse = checkAccountPreAuthRateLimitRouteResponse(
+		request,
+		'sync-state-get'
+	);
+	if (preAuthRateLimitResponse !== null) {
+		return preAuthRateLimitResponse;
 	}
 
 	const [authModule, userStateModule] = await Promise.all([
@@ -107,6 +116,14 @@ export async function PUT(request: NextRequest) {
 		checkAccountCookieSecurityRouteResponse(request);
 	if (cookieSecurityResponse !== null) {
 		return cookieSecurityResponse;
+	}
+
+	const preAuthRateLimitResponse = checkAccountPreAuthRateLimitRouteResponse(
+		request,
+		'sync-state-put'
+	);
+	if (preAuthRateLimitResponse !== null) {
+		return preAuthRateLimitResponse;
 	}
 
 	const authModule = await import('@/lib/account/server/auth');

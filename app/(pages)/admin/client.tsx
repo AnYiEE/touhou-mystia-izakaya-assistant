@@ -9,8 +9,8 @@ import {
 	useRef,
 	useState,
 } from 'react';
-
 import { usePathname, useRouter } from 'next/navigation';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
 	faArrowRightFromBracket,
@@ -33,23 +33,34 @@ import {
 	DropdownMenu,
 	DropdownTrigger,
 	Input,
-	Link,
-	cn,
 } from '@/design/ui/components';
 
 import { trackEvent } from '@/components/analytics';
 import TimeAgo from '@/components/timeAgo';
 import {
+	ADMIN_LIST_DEBOUNCE_MS,
 	AdminEmptyState,
+	AdminEntityCell,
+	AdminErrorRetryState,
+	AdminFilterPanel,
 	AdminHeader,
+	AdminHeaderActionLink,
 	AdminInputIcon,
+	AdminLoadingState,
 	AdminMessage,
 	AdminMetric,
+	AdminMetricPanel,
+	AdminMutedText,
+	AdminPagination,
 	AdminPanel,
 	AdminPanelTitle,
+	AdminSearchInput,
 	AdminShell,
 	AdminStatusBadge,
 	AdminTable,
+	AdminTableActionLink,
+	AdminTableCell,
+	AdminTableHeadCell,
 	AdminTableHeader,
 	AdminTableRow,
 	getAdminStatusLabel,
@@ -73,18 +84,15 @@ import {
 	type IAdminUserListData,
 	type TUserStatus,
 } from '@/lib/account/shared/types';
-import { accountStore, globalStore } from '@/stores';
+import { accountStore as store } from '@/stores';
 
 const statusOptions: Array<{ label: string; value: TUserStatus | 'all' }> = [
 	{ label: '全部状态', value: 'all' },
 	{ label: '正常', value: 'active' },
-	{ label: '禁用', value: 'disabled' },
+	{ label: '已禁用', value: 'disabled' },
 	{ label: '已删除', value: 'deleted' },
 ];
 
-const tableHeadCellClassName = 'px-4 py-3 font-medium';
-const tableCellClassName = 'px-4 py-3 align-middle';
-const tableNowrapCellClassName = `${tableCellClassName} whitespace-nowrap`;
 const pageInputRegexp = /^\d*$/u;
 
 function checkAdminUnauthorizedActionResult(
@@ -209,7 +217,7 @@ const AdminUserMetrics = memo<IAdminUserMetricsProps>(
 		users,
 	}) {
 		return (
-			<AdminPanel className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+			<AdminMetricPanel className="sm:grid-cols-2 lg:grid-cols-4">
 				<AdminMetric
 					label="用户总数"
 					value={
@@ -231,7 +239,7 @@ const AdminUserMetrics = memo<IAdminUserMetricsProps>(
 					}
 				/>
 				<AdminMetric label="筛选状态" value={statusFilterLabel} />
-			</AdminPanel>
+			</AdminMetricPanel>
 		);
 	}
 );
@@ -257,76 +265,70 @@ const AdminUserFilterPanel = memo<IAdminUserFilterPanelProps>(
 		statusFilterLabel,
 	}) {
 		return (
-			<AdminPanel>
-				<AdminPanelTitle icon={faMagnifyingGlass}>筛选</AdminPanelTitle>
-				<div className="grid w-full items-center gap-3 md:grid-cols-[minmax(0,1fr)_auto_6.5rem]">
-					<Input
-						aria-label="搜索用户名或用户ID"
-						classNames={{ inputWrapper: 'h-12 min-h-12' }}
-						placeholder="搜索用户名或用户ID"
-						startContent={
-							<AdminInputIcon icon={faMagnifyingGlass} />
-						}
-						value={queryInput}
-						onValueChange={onQueryInputChange}
-					/>
-					<Dropdown showArrow>
-						<DropdownTrigger>
-							<Button
-								className="h-12 min-h-12 min-w-0 gap-2 px-3"
-								endContent={
-									<FontAwesomeIcon
-										icon={faChevronDown}
-										className="w-3 text-default-500"
-									/>
-								}
-								variant="flat"
-							>
-								<span className="text-small">
-									{statusFilterLabel}
-								</span>
-							</Button>
-						</DropdownTrigger>
-						<DropdownMenu
-							disallowEmptySelection
-							aria-label="筛选用户状态"
-							selectedKeys={[statusFilterKey]}
-							selectionMode="single"
-							variant="flat"
-							itemClasses={{
-								base: 'transition-background motion-reduce:transition-none',
-							}}
-							onAction={onStatusAction}
-						>
-							{statusOptions.map((option) => (
-								<DropdownItem
-									key={option.value}
-									textValue={option.label}
-								>
-									{option.label}
-								</DropdownItem>
-							))}
-						</DropdownMenu>
-					</Dropdown>
-					<Button
-						className="h-12 min-h-12 w-full"
-						color="primary"
-						isLoading={isUsersLoading}
-						startContent={
-							isUsersLoading ? null : (
+			<AdminFilterPanel icon={faMagnifyingGlass}>
+				<AdminSearchInput
+					ariaLabel="搜索用户名或用户ID"
+					icon={faMagnifyingGlass}
+					placeholder="搜索用户名或用户ID"
+					value={queryInput}
+					onValueChange={onQueryInputChange}
+				/>
+				<Dropdown showArrow>
+					<DropdownTrigger>
+						<Button
+							className="h-12 min-h-12 w-full min-w-0 gap-2 px-3 md:w-auto md:flex-none"
+							endContent={
 								<FontAwesomeIcon
-									icon={faRotate}
-									className="w-3.5"
+									icon={faChevronDown}
+									className="w-3 text-default-500"
 								/>
-							)
-						}
+							}
+							variant="flat"
+						>
+							<span className="text-small">
+								{statusFilterLabel}
+							</span>
+						</Button>
+					</DropdownTrigger>
+					<DropdownMenu
+						disallowEmptySelection
+						aria-label="筛选用户状态"
+						selectedKeys={[statusFilterKey]}
+						selectionMode="single"
 						variant="flat"
-						onPress={onRefresh}
+						itemClasses={{
+							base: 'transition-background motion-reduce:transition-none',
+						}}
+						onAction={onStatusAction}
 					>
-						刷新
-					</Button>
-				</div>
-			</AdminPanel>
+						{statusOptions.map((option) => (
+							<DropdownItem
+								key={option.value}
+								textValue={option.label}
+							>
+								{option.label}
+							</DropdownItem>
+						))}
+					</DropdownMenu>
+				</Dropdown>
+				<Button
+					className="h-12 min-h-12 w-full md:w-auto md:flex-none"
+					color="primary"
+					isLoading={isUsersLoading}
+					startContent={
+						isUsersLoading ? null : (
+							<FontAwesomeIcon
+								icon={faRotate}
+								className="w-3.5"
+							/>
+						)
+					}
+					variant="flat"
+					onPress={onRefresh}
+				>
+					刷新
+				</Button>
+			</AdminFilterPanel>
 		);
 	}
 );
@@ -347,48 +349,43 @@ const AdminUserListRow = memo<IAdminUserListRowProps>(
 	}) {
 		return (
 			<AdminTableRow>
-				<td className={cn(tableCellClassName, 'w-72 max-w-72')}>
-					<div className="min-w-0 max-w-64">
-						<p className="truncate text-small font-medium leading-5 text-foreground-800">
-							{user.username}
-						</p>
-						<p className="truncate font-mono text-[0.7rem] leading-4 text-foreground-400">
-							{user.id}
-						</p>
-					</div>
-				</td>
-				<td className={tableNowrapCellClassName}>
+				<AdminTableCell className="w-72 max-w-72">
+					<AdminEntityCell
+						className="max-w-64"
+						id={user.id}
+						title={user.nickname ?? user.username}
+					/>
+				</AdminTableCell>
+				<AdminTableCell isNowrap>
 					<AdminStatusBadge status={user.status} />
-				</td>
-				<td className={tableNowrapCellClassName}>
+				</AdminTableCell>
+				<AdminTableCell isNowrap>
 					<TimeAgo
 						initialNowTimestamp={initialNowTimestamp}
 						timestamp={user.created_at}
 					/>
-				</td>
-				<td className={tableNowrapCellClassName}>
+				</AdminTableCell>
+				<AdminTableCell isNowrap>
 					{user.last_login_at === null ? (
-						<span className="text-foreground-400">无</span>
+						<AdminMutedText>无</AdminMutedText>
 					) : (
 						<TimeAgo
 							initialNowTimestamp={initialNowTimestamp}
 							timestamp={user.last_login_at}
 						/>
 					)}
-				</td>
-				<td className={cn(tableNowrapCellClassName, 'text-right')}>
-					<Link
-						animationUnderline={false}
+				</AdminTableCell>
+				<AdminTableCell isNowrap className="text-right">
+					<AdminTableActionLink
 						href={getAdminUserDetailHref(
 							user.id,
 							listLocationState
 						)}
-						className="rounded-small px-2 py-1 text-small text-primary-600 transition-background hover:bg-primary/15 motion-reduce:transition-none dark:text-primary"
 						onPress={onOpenUserDetail}
 					>
 						详情
-					</Link>
-				</td>
+					</AdminTableActionLink>
+				</AdminTableCell>
 			</AdminTableRow>
 		);
 	}
@@ -411,13 +408,13 @@ const AdminUserTable = memo<IAdminUserTableProps>(function AdminUserTable({
 		<AdminTable>
 			<AdminTableHeader>
 				<tr>
-					<th className={tableHeadCellClassName}>用户名</th>
-					<th className={tableHeadCellClassName}>状态</th>
-					<th className={tableHeadCellClassName}>创建时间</th>
-					<th className={tableHeadCellClassName}>最近登录</th>
-					<th className={cn(tableHeadCellClassName, 'text-right')}>
+					<AdminTableHeadCell>用户名</AdminTableHeadCell>
+					<AdminTableHeadCell>状态</AdminTableHeadCell>
+					<AdminTableHeadCell>创建时间</AdminTableHeadCell>
+					<AdminTableHeadCell>最近登录</AdminTableHeadCell>
+					<AdminTableHeadCell className="text-right">
 						操作
-					</th>
+					</AdminTableHeadCell>
 				</tr>
 			</AdminTableHeader>
 			<tbody>
@@ -474,94 +471,6 @@ const AdminUserListContent = memo<IAdminUserListContentProps>(
 	}
 );
 
-interface IAdminPaginationProps {
-	isUsersLoading: boolean;
-	onNextPage: () => void;
-	onPageInputChange: (value: string) => void;
-	onPageJumpSubmit: (event: SyntheticEvent<HTMLFormElement>) => void;
-	onPreviousPage: () => void;
-	page: number;
-	pageInput: string;
-	users: IAdminUserListData | null;
-}
-
-const AdminPagination = memo<IAdminPaginationProps>(function AdminPagination({
-	isUsersLoading,
-	onNextPage,
-	onPageInputChange,
-	onPageJumpSubmit,
-	onPreviousPage,
-	page,
-	pageInput,
-	users,
-}) {
-	const isHighAppearance = globalStore.persistence.highAppearance.use();
-	const currentPage = users?.page ?? page;
-	const totalPages = Math.max(1, users?.total_pages ?? page);
-	const totalCount = users?.total_count ?? null;
-
-	return (
-		<div
-			className={cn(
-				'flex flex-wrap items-center justify-between gap-3 rounded-small border border-default-200/80 px-3 py-2 text-small text-foreground-500',
-				isHighAppearance
-					? 'bg-content1/40 backdrop-blur'
-					: 'bg-default-50/50 dark:bg-default-100/10'
-			)}
-		>
-			<span>
-				第{currentPage} / {totalPages}页
-				{users !== null &&
-					` · 每页${users.page_size} · 共${totalCount ?? 0}个用户`}
-			</span>
-			<div className="flex flex-wrap items-center gap-2">
-				<Button
-					isDisabled={page <= 1 || isUsersLoading}
-					size="sm"
-					variant="flat"
-					onPress={onPreviousPage}
-				>
-					上一页
-				</Button>
-				<Button
-					isDisabled={isUsersLoading || currentPage >= totalPages}
-					size="sm"
-					variant="flat"
-					onPress={onNextPage}
-				>
-					下一页
-				</Button>
-				<form
-					className="flex items-center gap-2"
-					onSubmit={onPageJumpSubmit}
-				>
-					<Input
-						aria-label="跳转页码"
-						className="w-20"
-						classNames={{
-							input: 'text-center',
-							inputWrapper: 'h-8 min-h-8',
-						}}
-						inputMode="numeric"
-						placeholder="页码"
-						size="sm"
-						value={pageInput}
-						onValueChange={onPageInputChange}
-					/>
-					<Button
-						isDisabled={isUsersLoading || pageInput.length === 0}
-						size="sm"
-						type="submit"
-						variant="light"
-					>
-						跳转
-					</Button>
-				</form>
-			</div>
-		</div>
-	);
-});
-
 export default function AdminPageClient({
 	initialData,
 }: {
@@ -599,6 +508,7 @@ export default function AdminPageClient({
 	> | null>(null);
 	const syncedServerQueryInputRef = useRef<string | null>(null);
 	const refreshUsersRequestIdRef = useRef(0);
+	const skipNextAutoRefreshRef = useRef(false);
 	const trimmedUsername = username.trim();
 
 	const cancelPendingQuerySync = useCallback(() => {
@@ -642,7 +552,7 @@ export default function AdminPageClient({
 							return;
 						}
 
-						setMessage(result.message);
+						setMessage(result.displayMessage);
 						return;
 					}
 
@@ -693,11 +603,11 @@ export default function AdminPageClient({
 
 					setAdmin(null);
 					setAdminAuthStatus('error');
-					setMessage(result.message);
+					setMessage(result.displayMessage);
 					return;
 				}
 
-				accountStore.shared.adminCsrfToken.set(result.data.csrf_token);
+				store.shared.adminCsrfToken.set(result.data.csrf_token);
 				setAdmin(result.data);
 				setAdminAuthStatus('authenticated');
 			})
@@ -738,11 +648,11 @@ export default function AdminPageClient({
 					return;
 				}
 				if (result.status === 'error') {
-					setMessage(result.message);
+					setMessage(result.displayMessage);
 					return;
 				}
 
-				accountStore.shared.adminCsrfToken.set(result.data.csrf_token);
+				store.shared.adminCsrfToken.set(result.data.csrf_token);
 				setAdmin(result.data);
 				setAdminAuthStatus('authenticated');
 				setPassword('');
@@ -797,7 +707,7 @@ export default function AdminPageClient({
 						return;
 					}
 
-					setMessage(result.message);
+					setMessage(result.displayMessage);
 					return;
 				}
 
@@ -835,15 +745,13 @@ export default function AdminPageClient({
 
 	const handleRefreshPress = useCallback(() => {
 		const nextQuery = queryInput;
-		const shouldRefreshImmediately = nextQuery === query && page === 1;
 
+		cancelPendingQuerySync();
+		skipNextAutoRefreshRef.current = nextQuery !== query || page !== 1;
 		setQuery(queryInput);
 		setPage(1);
-
-		if (shouldRefreshImmediately) {
-			refreshUsers(nextQuery, 1);
-		}
-	}, [page, query, queryInput, refreshUsers]);
+		refreshUsers(nextQuery, 1);
+	}, [cancelPendingQuerySync, page, query, queryInput, refreshUsers]);
 
 	const handleLeaveUserList = useCallback(() => {
 		refreshUsersRequestIdRef.current += 1;
@@ -925,9 +833,7 @@ export default function AdminPageClient({
 			setIsUsersLoading(false);
 
 			if (initialData.admin !== null) {
-				accountStore.shared.adminCsrfToken.set(
-					initialData.admin.csrf_token
-				);
+				store.shared.adminCsrfToken.set(initialData.admin.csrf_token);
 			}
 		}
 	}, [
@@ -978,7 +884,7 @@ export default function AdminPageClient({
 
 			setPage(1);
 			setQuery(queryInput);
-		}, 300);
+		}, ADMIN_LIST_DEBOUNCE_MS);
 
 		return () => {
 			cancelPendingQuerySync();
@@ -986,7 +892,7 @@ export default function AdminPageClient({
 	}, [cancelPendingQuerySync, queryInput]);
 
 	useEffect(() => {
-		if (!isAdminListPathRef.current) {
+		if (!isAdminListPath) {
 			return;
 		}
 
@@ -997,8 +903,14 @@ export default function AdminPageClient({
 			return;
 		}
 
-		router.replace(nextHref, { scroll: false });
-	}, [page, query, router, status]);
+		const timeoutId = globalThis.setTimeout(() => {
+			router.replace(nextHref, { scroll: false });
+		}, ADMIN_LIST_DEBOUNCE_MS);
+
+		return () => {
+			globalThis.clearTimeout(timeoutId);
+		};
+	}, [isAdminListPath, page, query, router, status]);
 
 	useEffect(() => {
 		setPageInput(String(page));
@@ -1018,9 +930,7 @@ export default function AdminPageClient({
 	useEffect(() => {
 		if (initialData.authStatus !== 'checking') {
 			if (initialData.admin !== null) {
-				accountStore.shared.adminCsrfToken.set(
-					initialData.admin.csrf_token
-				);
+				store.shared.adminCsrfToken.set(initialData.admin.csrf_token);
 			}
 			return;
 		}
@@ -1029,60 +939,48 @@ export default function AdminPageClient({
 	}, [checkAdminAuth, initialData.admin, initialData.authStatus]);
 
 	useEffect(() => {
+		let timeoutId: ReturnType<typeof globalThis.setTimeout> | null = null;
+
 		if (admin !== null) {
 			if (isServerInitialUsersRef.current) {
 				isServerInitialUsersRef.current = false;
-				return;
+			} else if (skipNextAutoRefreshRef.current) {
+				skipNextAutoRefreshRef.current = false;
+			} else {
+				timeoutId = globalThis.setTimeout(() => {
+					refreshUsers();
+				}, ADMIN_LIST_DEBOUNCE_MS);
 			}
-
-			refreshUsers();
 		}
+
+		return () => {
+			if (timeoutId !== null) {
+				globalThis.clearTimeout(timeoutId);
+			}
+		};
 	}, [admin, refreshUsers]);
 
 	if (admin === null) {
 		if (adminAuthStatus === 'checking') {
 			return (
-				<AdminShell>
-					<AdminHeader
-						icon={faShieldHalved}
-						subtitle="正在校验管理员会话"
-						title="管理员"
-					/>
-					<AdminPanel className="flex items-center gap-3 text-small text-foreground-500">
-						<Button isLoading variant="flat">
-							加载中
-						</Button>
-						<span>读取会话状态</span>
-					</AdminPanel>
-				</AdminShell>
+				<AdminLoadingState
+					icon={faShieldHalved}
+					label="读取会话状态"
+					subtitle="正在校验管理员会话"
+					title="管理员"
+				/>
 			);
 		}
 
 		if (adminAuthStatus === 'error') {
 			return (
-				<AdminShell>
-					<AdminHeader
-						actions={
-							<Button
-								color="primary"
-								startContent={
-									<FontAwesomeIcon
-										icon={faRotate}
-										className="w-3.5"
-									/>
-								}
-								variant="flat"
-								onPress={checkAdminAuth}
-							>
-								重试
-							</Button>
-						}
-						icon={faShieldHalved}
-						subtitle="管理员会话检查失败"
-						title="管理员"
-					/>
-					{message !== null && <AdminMessage message={message} />}
-				</AdminShell>
+				<AdminErrorRetryState
+					icon={faShieldHalved}
+					message={message}
+					subtitle="管理员会话检查失败"
+					title="管理员"
+					onRetry={checkAdminAuth}
+				/>
 			);
 		}
 
@@ -1120,36 +1018,20 @@ export default function AdminPageClient({
 			<AdminHeader
 				actions={
 					<>
-						<Button
-							as={Link}
-							animationUnderline={false}
+						<AdminHeaderActionLink
 							href="/admin/announcements"
-							startContent={
-								<FontAwesomeIcon
-									icon={faBullhorn}
-									className="w-3.5"
-								/>
-							}
-							variant="flat"
+							icon={faBullhorn}
 							onPress={handleLeaveUserList}
 						>
 							站点通知
-						</Button>
-						<Button
-							as={Link}
-							animationUnderline={false}
+						</AdminHeaderActionLink>
+						<AdminHeaderActionLink
 							href="/admin/sso"
-							startContent={
-								<FontAwesomeIcon
-									icon={faServer}
-									className="w-3.5"
-								/>
-							}
-							variant="flat"
+							icon={faServer}
 							onPress={handleOpenSsoClientList}
 						>
 							SSO客户端
-						</Button>
+						</AdminHeaderActionLink>
 						<Button
 							isDisabled={isAdminActionLoading}
 							isLoading={isAdminActionLoading}
@@ -1202,10 +1084,13 @@ export default function AdminPageClient({
 			/>
 
 			<AdminPagination
-				isUsersLoading={isUsersLoading}
-				page={page}
+				currentPage={users?.page ?? page}
+				isLoading={isUsersLoading}
 				pageInput={pageInput}
-				users={users}
+				pageSize={users?.page_size}
+				totalCount={users?.total_count}
+				totalLabel="个用户"
+				totalPages={Math.max(1, users?.total_pages ?? page)}
 				onNextPage={handleNextPage}
 				onPageInputChange={handlePageInputChange}
 				onPageJumpSubmit={handlePageJumpSubmit}

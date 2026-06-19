@@ -33,6 +33,13 @@ export function getRequestUserAgent(request: NextRequest) {
 	return request.headers.get('user-agent') ?? '';
 }
 
+export function getRequestAuditContext(request: NextRequest) {
+	return {
+		ipAddress: getRequestIp(request),
+		userAgent: getRequestUserAgent(request),
+	};
+}
+
 function getFirstHeaderValue(value: string | null) {
 	const firstValue = value?.split(',', 1).at(0)?.trim();
 

@@ -28,29 +28,27 @@ import {
 	faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 
-import {
-	Button,
-	Input,
-	Link,
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-	Switch,
-	cn,
-} from '@/design/ui/components';
+import { Button, Input, Switch, cn } from '@/design/ui/components';
 
 import {
+	AdminConfirmButton,
 	AdminEmptyState,
 	AdminHeader,
+	AdminHeaderActionLink,
 	AdminInputIcon,
+	AdminLoadingState,
 	AdminMessage,
 	AdminMetric,
+	AdminMetricPanel,
 	AdminPanel,
 	AdminPanelTitle,
 	AdminShell,
 	AdminTable,
+	AdminTableCell,
+	AdminTableHeadCell,
 	AdminTableHeader,
 	AdminTableRow,
+	adminTextareaClassNames,
 } from '../components';
 
 import { ANNOUNCEMENT_LEVEL_PRESENTATION } from '@/components/announcementPresentation';
@@ -86,13 +84,6 @@ import type {
 	TAnnouncementVersionAction,
 } from '@/lib/announcements/shared/types';
 
-const textareaClassNames = {
-	inputWrapper:
-		'bg-default/40 transition-background data-[hover=true]:bg-default-400/40 group-data-[focus=true]:bg-default/70 motion-reduce:transition-none',
-};
-
-const tableHeadCellClassName = 'px-4 py-3 font-medium';
-const tableCellClassName = 'px-4 py-3 align-top';
 const emptyBody = '<p>您好，{{user.username}}</p>';
 
 interface ITargetUserOption {
@@ -391,6 +382,8 @@ interface IAdminAnnouncementFormProps {
 	mode: 'create' | 'edit';
 }
 
+type TConfirmAction = 'archive' | null;
+
 export default function AdminAnnouncementForm({
 	announcementId,
 	initialData,
@@ -398,7 +391,8 @@ export default function AdminAnnouncementForm({
 }: IAdminAnnouncementFormProps) {
 	const router = useRouter();
 	const requestIdRef = useRef(0);
-	const targetUserRequestIdRef = useRef(0);
+	const targetUserBackfillRequestIdRef = useRef(0);
+	const targetUserSearchRequestIdRef = useRef(0);
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 	const isEditMode = mode === 'edit';
 	const initialAnnouncement = initialData.announcement;
@@ -419,7 +413,7 @@ export default function AdminAnnouncementForm({
 	);
 	const [html, setHtml] = useState(initialAnnouncement?.html ?? emptyBody);
 	const [id, setId] = useState(initialAnnouncement?.id ?? '');
-	const [isArchivePopoverOpen, setIsArchivePopoverOpen] = useState(false);
+	const [confirmAction, setConfirmAction] = useState<TConfirmAction>(null);
 	const [isAuthLoading, setIsAuthLoading] = useState(
 		initialData.isAuthLoading
 	);
@@ -575,7 +569,7 @@ export default function AdminAnnouncementForm({
 				return;
 			}
 
-			setMessage(result.message);
+			setMessage(result.displayMessage);
 		},
 		[]
 	);
@@ -618,7 +612,7 @@ export default function AdminAnnouncementForm({
 						return;
 					}
 
-					setLoadError(announcementResult.message);
+					setLoadError(announcementResult.displayMessage);
 					return;
 				}
 
@@ -661,7 +655,7 @@ export default function AdminAnnouncementForm({
 						return;
 					}
 
-					setMessage(result.message);
+					setMessage(result.displayMessage);
 					return;
 				}
 
@@ -771,7 +765,7 @@ export default function AdminAnnouncementForm({
 
 		setIsSaving(true);
 		setMessage(null);
-		setIsArchivePopoverOpen(false);
+		setConfirmAction(null);
 
 		void archiveAnnouncement(targetId, csrfToken)
 			.then((result) => {
@@ -868,12 +862,12 @@ export default function AdminAnnouncementForm({
 			return;
 		}
 
-		const requestId = targetUserRequestIdRef.current + 1;
-		targetUserRequestIdRef.current = requestId;
+		const requestId = targetUserBackfillRequestIdRef.current + 1;
+		targetUserBackfillRequestIdRef.current = requestId;
 
 		void getAdminUsersByIds(missingTargetUserIds)
 			.then((result) => {
-				if (targetUserRequestIdRef.current !== requestId) {
+				if (targetUserBackfillRequestIdRef.current !== requestId) {
 					return;
 				}
 				if (result.status === 'error') {
@@ -883,7 +877,7 @@ export default function AdminAnnouncementForm({
 						return;
 					}
 
-					setMessage(result.message);
+					setMessage(result.displayMessage);
 					return;
 				}
 
@@ -892,7 +886,7 @@ export default function AdminAnnouncementForm({
 				);
 			})
 			.catch((error: unknown) => {
-				if (targetUserRequestIdRef.current !== requestId) {
+				if (targetUserBackfillRequestIdRef.current !== requestId) {
 					return;
 				}
 
@@ -905,14 +899,15 @@ export default function AdminAnnouncementForm({
 	useEffect(
 		() => () => {
 			requestIdRef.current += 1;
-			targetUserRequestIdRef.current += 1;
+			targetUserBackfillRequestIdRef.current += 1;
+			targetUserSearchRequestIdRef.current += 1;
 		},
 		[]
 	);
 
 	useEffect(() => {
 		if (audience !== 'targeted') {
-			targetUserRequestIdRef.current += 1;
+			targetUserSearchRequestIdRef.current += 1;
 			setIsTargetUsersLoading(false);
 			setTargetUserOptions([]);
 			setTargetUserQuery('');
@@ -921,20 +916,20 @@ export default function AdminAnnouncementForm({
 
 		const query = targetUserQuery.trim();
 		if (query.length === 0) {
-			targetUserRequestIdRef.current += 1;
+			targetUserSearchRequestIdRef.current += 1;
 			setIsTargetUsersLoading(false);
 			setTargetUserOptions([]);
 			return;
 		}
 
-		const requestId = targetUserRequestIdRef.current + 1;
-		targetUserRequestIdRef.current = requestId;
+		const requestId = targetUserSearchRequestIdRef.current + 1;
+		targetUserSearchRequestIdRef.current = requestId;
 		setIsTargetUsersLoading(true);
 
 		const timeoutId = globalThis.setTimeout(() => {
 			void listAdminUsers({ page: 1, query })
 				.then((result) => {
-					if (targetUserRequestIdRef.current !== requestId) {
+					if (targetUserSearchRequestIdRef.current !== requestId) {
 						return;
 					}
 					if (result.status === 'error') {
@@ -944,7 +939,7 @@ export default function AdminAnnouncementForm({
 							return;
 						}
 
-						setMessage(result.message);
+						setMessage(result.displayMessage);
 						setTargetUserOptions([]);
 						return;
 					}
@@ -961,7 +956,7 @@ export default function AdminAnnouncementForm({
 					);
 				})
 				.catch((error: unknown) => {
-					if (targetUserRequestIdRef.current !== requestId) {
+					if (targetUserSearchRequestIdRef.current !== requestId) {
 						return;
 					}
 
@@ -970,7 +965,7 @@ export default function AdminAnnouncementForm({
 					);
 				})
 				.finally(() => {
-					if (targetUserRequestIdRef.current === requestId) {
+					if (targetUserSearchRequestIdRef.current === requestId) {
 						setIsTargetUsersLoading(false);
 					}
 				});
@@ -1008,19 +1003,12 @@ export default function AdminAnnouncementForm({
 
 	if (isAuthLoading) {
 		return (
-			<AdminShell>
-				<AdminHeader
-					icon={faShieldHalved}
-					subtitle="正在校验管理员会话"
-					title="站点通知"
-				/>
-				<AdminPanel className="flex items-center gap-3 text-small text-foreground-500">
-					<Button isLoading variant="flat">
-						加载中
-					</Button>
-					<span>读取会话状态</span>
-				</AdminPanel>
-			</AdminShell>
+			<AdminLoadingState
+				icon={faShieldHalved}
+				label="读取会话状态"
+				subtitle="正在校验管理员会话"
+				title="站点通知"
+			/>
 		);
 	}
 
@@ -1029,14 +1017,9 @@ export default function AdminAnnouncementForm({
 			<AdminShell>
 				<AdminHeader
 					actions={
-						<Button
-							as={Link}
-							animationUnderline={false}
-							href="/admin"
-							variant="flat"
-						>
+						<AdminHeaderActionLink href="/admin">
 							返回管理员页
-						</Button>
+						</AdminHeaderActionLink>
 					}
 					icon={faShieldHalved}
 					subtitle={message ?? '请先返回管理员页登录'}
@@ -1052,20 +1035,12 @@ export default function AdminAnnouncementForm({
 				<AdminHeader
 					actions={
 						<>
-							<Button
-								as={Link}
-								animationUnderline={false}
+							<AdminHeaderActionLink
 								href="/admin/announcements"
-								startContent={
-									<FontAwesomeIcon
-										icon={faArrowLeft}
-										className="w-3.5"
-									/>
-								}
-								variant="flat"
+								icon={faArrowLeft}
 							>
 								返回列表
-							</Button>
+							</AdminHeaderActionLink>
 							<Button
 								isLoading={isLoading}
 								startContent={
@@ -1102,20 +1077,12 @@ export default function AdminAnnouncementForm({
 			<AdminHeader
 				actions={
 					<>
-						<Button
-							as={Link}
-							animationUnderline={false}
+						<AdminHeaderActionLink
 							href="/admin/announcements"
-							startContent={
-								<FontAwesomeIcon
-									icon={faArrowLeft}
-									className="w-3.5"
-								/>
-							}
-							variant="flat"
+							icon={faArrowLeft}
 						>
 							返回列表
-						</Button>
+						</AdminHeaderActionLink>
 						<Button
 							isDisabled={formBody === null || csrfToken === null}
 							isLoading={isSaving}
@@ -1169,52 +1136,20 @@ export default function AdminAnnouncementForm({
 							</Button>
 						)}
 						{isEditMode && !isArchived && (
-							<Popover
-								showArrow
-								isOpen={isArchivePopoverOpen}
-								onOpenChange={setIsArchivePopoverOpen}
+							<AdminConfirmButton
+								color="warning"
+								confirmAction="archive"
+								confirmColor="warning"
+								confirmLabel="确认归档"
+								icon={faFileArchive}
+								isDisabled={csrfToken === null || isSaving}
+								isLoading={isSaving}
+								openAction={confirmAction}
+								onOpenChange={setConfirmAction}
+								onConfirm={handleArchive}
 							>
-								<PopoverTrigger>
-									<Button
-										color="warning"
-										isDisabled={
-											csrfToken === null || isSaving
-										}
-										startContent={
-											<FontAwesomeIcon
-												icon={faFileArchive}
-												className="w-3.5"
-											/>
-										}
-										variant="flat"
-									>
-										归档
-									</Button>
-								</PopoverTrigger>
-								<PopoverContent className="space-y-1 p-1">
-									<Button
-										fullWidth
-										color="warning"
-										isDisabled={isSaving}
-										size="sm"
-										variant="ghost"
-										onPress={handleArchive}
-									>
-										确认归档
-									</Button>
-									<Button
-										fullWidth
-										color="primary"
-										size="sm"
-										variant="ghost"
-										onPress={() => {
-											setIsArchivePopoverOpen(false);
-										}}
-									>
-										取消
-									</Button>
-								</PopoverContent>
-							</Popover>
+								归档
+							</AdminConfirmButton>
 						)}
 					</>
 				}
@@ -1225,7 +1160,7 @@ export default function AdminAnnouncementForm({
 
 			{message !== null && <AdminMessage message={message} />}
 
-			<AdminPanel className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+			<AdminMetricPanel className="sm:grid-cols-2 xl:grid-cols-4">
 				<AdminMetric
 					label="状态"
 					value={
@@ -1256,7 +1191,7 @@ export default function AdminAnnouncementForm({
 							: createDateTimeLabel(endsAt)
 					}
 				/>
-			</AdminPanel>
+			</AdminMetricPanel>
 
 			<AdminAnnouncementUserPreview
 				dismissible={dismissible}
@@ -1289,7 +1224,7 @@ export default function AdminAnnouncementForm({
 						label="HTML内容"
 						minRows={8}
 						value={html}
-						classNames={textareaClassNames}
+						classNames={adminTextareaClassNames}
 						onValueChange={setHtml}
 					/>
 					<div className="grid gap-3 md:grid-cols-2">
@@ -1377,7 +1312,7 @@ export default function AdminAnnouncementForm({
 									指定用户
 								</span>
 								<span className="text-tiny text-foreground-500">
-									已选择 {targetUsers.length} 个用户
+									已选择{targetUsers.length}个用户
 								</span>
 							</div>
 							<Autocomplete
@@ -1524,21 +1459,21 @@ export default function AdminAnnouncementForm({
 							<AdminTable>
 								<AdminTableHeader>
 									<tr>
-										<th className={tableHeadCellClassName}>
+										<AdminTableHeadCell>
 											版本
-										</th>
-										<th className={tableHeadCellClassName}>
+										</AdminTableHeadCell>
+										<AdminTableHeadCell>
 											动作
-										</th>
-										<th className={tableHeadCellClassName}>
+										</AdminTableHeadCell>
+										<AdminTableHeadCell>
 											变更
-										</th>
+										</AdminTableHeadCell>
 									</tr>
 								</AdminTableHeader>
 								<tbody>
 									{versions.versions.map((version) => (
 										<AdminTableRow key={version.id}>
-											<td className={tableCellClassName}>
+											<AdminTableCell align="top">
 												<div className="whitespace-nowrap font-medium">
 													#{version.revision}
 												</div>
@@ -1547,8 +1482,8 @@ export default function AdminAnnouncementForm({
 														version.changed_at
 													).toLocaleString('zh-CN')}
 												</div>
-											</td>
-											<td className={tableCellClassName}>
+											</AdminTableCell>
+											<AdminTableCell align="top">
 												{
 													VERSION_ACTION_LABEL_MAP[
 														version.action
@@ -1558,8 +1493,8 @@ export default function AdminAnnouncementForm({
 													{version.changed_by ??
 														'系统'}
 												</div>
-											</td>
-											<td className={tableCellClassName}>
+											</AdminTableCell>
+											<AdminTableCell align="top">
 												{version.changed_fields
 													.length === 0 ? (
 													<span className="text-foreground-400">
@@ -1597,7 +1532,7 @@ export default function AdminAnnouncementForm({
 														)}
 													</div>
 												)}
-											</td>
+											</AdminTableCell>
 										</AdminTableRow>
 									))}
 								</tbody>

@@ -70,16 +70,39 @@ export async function DELETE(
 		return csrfResponse;
 	}
 
-	const [usersModule, sessionsModule] = await Promise.all([
-		import('@/lib/account/server/repositories/users'),
-		import('@/lib/account/server/repositories/sessions'),
-	]);
+	const [usersModule, sessionsModule, accountAuditModule] = await Promise.all(
+		[
+			import('@/lib/account/server/repositories/users'),
+			import('@/lib/account/server/repositories/sessions'),
+			import('@/lib/account/server/accountAuditService'),
+		]
+	);
 	const user = await usersModule.findUserById(id);
 	if (user === null) {
 		return createNoStoreErrorResponse('target-user-not-found', 404);
 	}
 
-	await sessionsModule.deleteSessionsByUserId(id);
+	await sessionsModule.deleteSessionsByUserIdWithAudit(
+		id,
+		{},
+		(trx, auditNow, deletedSessionCount) =>
+			accountAuditModule.writeAccountAuditLogInTransaction(
+				trx,
+				accountAuditModule.createAccountAdminAuditLogInput({
+					action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+						.adminDeleteUserSessions,
+					adminId: auth.payload.username,
+					metadata: {
+						deleted_record_count: deletedSessionCount,
+						target_user_id: id,
+					},
+					request,
+					targetId: id,
+					targetType: 'user',
+				}),
+				auditNow
+			)
+	);
 
 	return createNoStoreJsonResponse({ message: 'sessions-deleted' });
 }

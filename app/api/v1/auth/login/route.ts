@@ -58,6 +58,10 @@ function createCredentialStateStaleResponse() {
 	return createNoStoreErrorResponse('credential-state-stale', 409);
 }
 
+function createLoginFailureMetadata(reason: string, username: string) {
+	return { reason, username_digest: username };
+}
+
 export async function POST(request: NextRequest) {
 	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
@@ -95,12 +99,14 @@ export async function POST(request: NextRequest) {
 		credentialsModule,
 		authModule,
 		userModule,
+		accountAuditModule,
 	] = await Promise.all([
 		import('@/lib/account/server/password'),
 		import('@/lib/account/server/repositories/users'),
 		import('@/lib/account/server/repositories/credentials'),
 		import('@/lib/account/server/auth'),
 		import('@/lib/account/server/user'),
+		import('@/lib/account/server/accountAuditService'),
 	]);
 
 	const username = body.username.trim();
@@ -109,6 +115,8 @@ export async function POST(request: NextRequest) {
 	}
 
 	const usernameNormalized = userModule.normalizeUsername(username);
+	const usernameDigest =
+		accountAuditModule.createAccountAuditValueDigest(usernameNormalized);
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
 		'login',
@@ -123,14 +131,47 @@ export async function POST(request: NextRequest) {
 		await usersModule.findUserByUsernameNormalized(usernameNormalized);
 	if (user === null) {
 		await passwordModule.consumePasswordVerificationCost(body.password);
+		await accountAuditModule.writeAccountAuditLogBestEffort(
+			accountAuditModule.createAccountSystemAuditLogInput({
+				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.loginFailed,
+				metadata: createLoginFailureMetadata(
+					'user-not-found',
+					usernameDigest
+				),
+				request,
+				targetId: null,
+			})
+		);
 		return createInvalidLoginResponse();
 	}
 	if (user.status === USER_STATUS_MAP.disabled) {
 		await passwordModule.consumePasswordVerificationCost(body.password);
+		await accountAuditModule.writeAccountAuditLogBestEffort(
+			accountAuditModule.createAccountSystemAuditLogInput({
+				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.loginFailed,
+				metadata: createLoginFailureMetadata(
+					'user-disabled',
+					usernameDigest
+				),
+				request,
+				targetId: user.id,
+			})
+		);
 		return createNoStoreErrorResponse('user-disabled', 403);
 	}
 	if (user.status === USER_STATUS_MAP.deleted) {
 		await passwordModule.consumePasswordVerificationCost(body.password);
+		await accountAuditModule.writeAccountAuditLogBestEffort(
+			accountAuditModule.createAccountSystemAuditLogInput({
+				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.loginFailed,
+				metadata: createLoginFailureMetadata(
+					'user-deleted',
+					usernameDigest
+				),
+				request,
+				targetId: user.id,
+			})
+		);
 		return createNoStoreErrorResponse('user-deleted', 403);
 	}
 
@@ -138,12 +179,37 @@ export async function POST(request: NextRequest) {
 	if (credential === null) {
 		await passwordModule.consumePasswordVerificationCost(body.password);
 		console.warn('Account credential is missing during login.');
+		await accountAuditModule.writeAccountAuditLogBestEffort(
+			accountAuditModule.createAccountSystemAuditLogInput({
+				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.loginFailed,
+				metadata: createLoginFailureMetadata(
+					'credential-missing',
+					usernameDigest
+				),
+				request,
+				targetId: user.id,
+			})
+		);
 		return createInvalidLoginResponse();
 	}
 
 	const now = Date.now();
 	const lockState = credentialsModule.getCredentialLockState(credential, now);
 	if (lockState.status === 'locked') {
+		await accountAuditModule.writeAccountAuditLogBestEffort(
+			accountAuditModule.createAccountSystemAuditLogInput({
+				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.loginFailed,
+				metadata: {
+					...createLoginFailureMetadata(
+						'credential-locked',
+						usernameDigest
+					),
+					retry_after: lockState.retryAfter,
+				},
+				request,
+				targetId: user.id,
+			})
+		);
 		return createCredentialLockedResponse(lockState.retryAfter);
 	}
 
@@ -155,9 +221,35 @@ export async function POST(request: NextRequest) {
 		const failureState =
 			await credentialsModule.recordFailedCredentialAttempt(user.id, now);
 		if (failureState.status === 'locked') {
+			await accountAuditModule.writeAccountAuditLogBestEffort(
+				accountAuditModule.createAccountSystemAuditLogInput({
+					action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+						.loginFailed,
+					metadata: {
+						...createLoginFailureMetadata(
+							'password-invalid-locked',
+							usernameDigest
+						),
+						retry_after: failureState.retryAfter,
+					},
+					request,
+					targetId: user.id,
+				})
+			);
 			return createCredentialLockedResponse(failureState.retryAfter);
 		}
 
+		await accountAuditModule.writeAccountAuditLogBestEffort(
+			accountAuditModule.createAccountSystemAuditLogInput({
+				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.loginFailed,
+				metadata: createLoginFailureMetadata(
+					'password-invalid',
+					usernameDigest
+				),
+				request,
+				targetId: user.id,
+			})
+		);
 		return createInvalidLoginResponse();
 	}
 
@@ -178,9 +270,35 @@ export async function POST(request: NextRequest) {
 		user.id,
 		request,
 		userUpdate,
-		credential.password_hash
+		credential.password_hash,
+		(trx, auditNow) =>
+			accountAuditModule.writeAccountAuditLogInTransaction(
+				trx,
+				accountAuditModule.createAccountUserAuditLogInput({
+					action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+						.loginSucceeded,
+					metadata: {
+						must_change_on_next_login:
+							credential.password_must_change === 1,
+					},
+					request,
+					userId: user.id,
+				}),
+				auditNow
+			)
 	);
 	if (session === null) {
+		await accountAuditModule.writeAccountAuditLogBestEffort(
+			accountAuditModule.createAccountSystemAuditLogInput({
+				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.loginFailed,
+				metadata: createLoginFailureMetadata(
+					'session-create-failed',
+					usernameDigest
+				),
+				request,
+				targetId: user.id,
+			})
+		);
 		return createInvalidLoginResponse();
 	}
 

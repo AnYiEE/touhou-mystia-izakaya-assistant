@@ -3,6 +3,7 @@ import { type NextRequest } from 'next/server';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
+	checkAccountPreAuthRateLimitRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
 	createAccountAuthErrorRouteResponse,
@@ -35,6 +36,14 @@ export async function POST(request: NextRequest) {
 		checkAccountCookieSecurityRouteResponse(request);
 	if (cookieSecurityResponse !== null) {
 		return cookieSecurityResponse;
+	}
+
+	const preAuthRateLimitResponse = checkAccountPreAuthRateLimitRouteResponse(
+		request,
+		'sync-ping'
+	);
+	if (preAuthRateLimitResponse !== null) {
+		return preAuthRateLimitResponse;
 	}
 
 	const authModule = await import('@/lib/account/server/auth');

@@ -105,7 +105,7 @@
 
 ## 后台 API 路由
 
-项目现有 SSO 后台更新接口使用 `PUT`。通知后台也建议沿用 `PUT`，避免混入 `PATCH` 新约定。
+项目现有 SSO 后台更新接口使用 `PUT`。通知后台内容更新也沿用 `PUT`；恢复归档记录已使用 `PATCH` 表达局部状态恢复。
 
 | 方法     | 路径                                        | 作用                                 |
 | -------- | ------------------------------------------- | ------------------------------------ |
@@ -114,6 +114,7 @@
 | `POST`   | `/api/v1/admin/announcements/preview`       | 返回服务端净化后的预览，不写数据库   |
 | `GET`    | `/api/v1/admin/announcements/[id]`          | 详情                                 |
 | `PUT`    | `/api/v1/admin/announcements/[id]`          | 更新通知                             |
+| `PATCH`  | `/api/v1/admin/announcements/[id]`          | 恢复归档通知，清空 `deleted_at`      |
 | `DELETE` | `/api/v1/admin/announcements/[id]`          | 归档通知，设置 `deleted_at`          |
 | `GET`    | `/api/v1/admin/announcements/[id]/versions` | 查看版本历史和字段 diff              |
 

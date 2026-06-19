@@ -1,18 +1,28 @@
 import {
 	type IAdminSsoClientCreateBody,
+	type IAdminSsoClientDetailData,
+	type IAdminSsoClientListData,
+	type IAdminSsoClientListRecord,
 	type IAdminSsoClientMutationData,
 	type IAdminSsoClientUpdateBody,
 } from '@/lib/account/shared/types';
 import {
 	createSsoClient,
-	createSsoClientSecret,
 	deleteSsoClient,
-	updateSsoClient,
+	listAdminSsoClientSummaries,
+	updateSsoClientConfig,
+	updateSsoClientConfigWithCallback,
 } from '@/lib/account/server/repositories/sso';
+import {
+	checkAdminSsoPagination,
+	getReachableAdminSsoTotalCount,
+} from '@/lib/account/server/adminSsoPagination';
 import {
 	createSsoClientPublicProfile,
 	validateSsoClientConfig,
 } from '@/lib/account/server/ssoValidation';
+
+const DUMMY_SECRET_HASH = '0'.repeat(64);
 
 export type TAdminSsoClientServiceError =
 	| 'client-disabled'
@@ -24,6 +34,30 @@ export type TAdminSsoClientServiceResult<TData> =
 	| { data: TData; status: 'ok' }
 	| { error: TAdminSsoClientServiceError; status: 'error' };
 
+export type TAdminSsoClientStatusFilter = 'active' | 'disabled';
+export type TAdminSsoClientCallbackFilter = 'configured' | 'missing';
+
+export interface IAdminSsoClientListOptions {
+	callback?: TAdminSsoClientCallbackFilter;
+	hasGrants?: boolean;
+	page: number;
+	pageSize: number;
+	query?: string;
+	status?: TAdminSsoClientStatusFilter;
+}
+
+export interface IAdminSsoClientMutationInput {
+	adminId?: string | null;
+	ipAddress?: string | null;
+	userAgent?: string | null;
+}
+
+type TAdminSsoClientListInputOptions = Omit<
+	IAdminSsoClientListOptions,
+	'page' | 'pageSize'
+> &
+	Partial<Pick<IAdminSsoClientListOptions, 'page' | 'pageSize'>>;
+
 export const ADMIN_SSO_CLIENT_SERVICE_ERROR_STATUS_MAP: Record<
 	TAdminSsoClientServiceError,
 	number
@@ -33,11 +67,6 @@ export const ADMIN_SSO_CLIENT_SERVICE_ERROR_STATUS_MAP: Record<
 	'sso-client-conflict': 409,
 	'sso-client-not-found': 404,
 };
-
-export interface IAdminSsoClientUpdateOverrides {
-	disabled?: boolean;
-	generateSecret?: boolean;
-}
 
 function checkSsoClientConflictError(error: unknown) {
 	if (error === null || typeof error !== 'object') {
@@ -52,15 +81,16 @@ function checkSsoClientConflictError(error: unknown) {
 	);
 }
 
-function checkStringArrayEqual(left: string[], right: string[]) {
-	return (
-		left.length === right.length &&
-		left.every((value, index) => value === right[index])
-	);
+function checkPagination(options: IAdminSsoClientListOptions) {
+	return checkAdminSsoPagination(options);
 }
 
-function mergeStringArrays(...arrays: string[][]) {
-	return [...new Set(arrays.flat())];
+function checkListOptions(options: IAdminSsoClientListOptions) {
+	return (
+		checkPagination(options) &&
+		[undefined, 'active', 'disabled'].includes(options.status) &&
+		[undefined, 'configured', 'missing'].includes(options.callback)
+	);
 }
 
 async function readPublicClientProfile(id: string) {
@@ -68,6 +98,83 @@ async function readPublicClientProfile(id: string) {
 	const client = await ssoModule.getSsoClientById(id);
 
 	return client === null ? null : createSsoClientPublicProfile(client);
+}
+
+export async function listAdminSsoClients(
+	options: TAdminSsoClientListInputOptions = {}
+): Promise<TAdminSsoClientServiceResult<IAdminSsoClientListData>> {
+	const resolvedOptions: IAdminSsoClientListOptions = {
+		...options,
+		page: options.page ?? 1,
+		pageSize: options.pageSize ?? 20,
+	};
+	if (!checkListOptions(resolvedOptions)) {
+		return { error: 'invalid-object-structure', status: 'error' };
+	}
+
+	const { callback, hasGrants, page, pageSize, query, status } =
+		resolvedOptions;
+	const result = await listAdminSsoClientSummaries({
+		limit: pageSize,
+		offset: (page - 1) * pageSize,
+		...(callback === undefined ? {} : { callback }),
+		...(hasGrants === undefined ? {} : { hasGrants }),
+		...(query === undefined ? {} : { query }),
+		...(status === undefined ? {} : { status }),
+	});
+	const records: IAdminSsoClientListRecord[] = result.clients.map(
+		(client) => ({
+			active_secret_count: client.active_secret_count,
+			cancel_redirect_uri: client.cancel_redirect_uri,
+			created_at: client.created_at,
+			custom_scheme_redirect_uris: JSON.parse(
+				client.custom_scheme_redirect_uris
+			) as string[],
+			disabled_at: client.disabled_at,
+			failed_callback_count: client.failed_callback_count,
+			grant_count: client.grant_count,
+			https_redirect_uris: JSON.parse(
+				client.https_redirect_uris
+			) as string[],
+			id: client.id,
+			last_secret_used_at: client.last_secret_used_at,
+			loopback_redirect_paths: JSON.parse(
+				client.loopback_redirect_paths
+			) as string[],
+			name: client.name,
+			pending_callback_count: client.pending_callback_count,
+			pending_ticket_count: client.pending_ticket_count,
+			status_callback_url: client.status_callback_url,
+			updated_at: client.updated_at,
+		})
+	);
+	const reachableTotalCount = getReachableAdminSsoTotalCount(
+		result.totalCount,
+		pageSize
+	);
+
+	return {
+		data: {
+			clients: records,
+			metrics: result.metrics,
+			page,
+			page_size: pageSize,
+			total_count: reachableTotalCount,
+			total_pages: Math.ceil(reachableTotalCount / pageSize),
+		},
+		status: 'ok',
+	};
+}
+
+export async function getAdminSsoClient(
+	id: string
+): Promise<TAdminSsoClientServiceResult<IAdminSsoClientDetailData>> {
+	const client = await readPublicClientProfile(id);
+	if (client === null) {
+		return { error: 'sso-client-not-found', status: 'error' };
+	}
+
+	return { data: { client }, status: 'ok' };
 }
 
 async function createMutationSuccessResult(
@@ -90,11 +197,57 @@ async function createMutationSuccessResult(
 	};
 }
 
+function createClientAuditLogInput(
+	auditModule: typeof import('@/lib/account/server/adminAuditService'),
+	action: string,
+	targetId: string,
+	input: IAdminSsoClientMutationInput | undefined,
+	metadata: Record<string, unknown> = {}
+) {
+	return {
+		action,
+		actorId: input?.adminId ?? null,
+		actorType: 'admin',
+		metadata,
+		scope: 'sso',
+		targetId,
+		targetType: 'sso_client',
+		...(input?.ipAddress === undefined
+			? {}
+			: { ipAddress: input.ipAddress }),
+		...(input?.userAgent === undefined
+			? {}
+			: { userAgent: input.userAgent }),
+	} satisfies Parameters<typeof auditModule.writeAdminAuditLog>[0];
+}
+
 export async function createAdminSsoClient(
-	body: IAdminSsoClientCreateBody
+	body: IAdminSsoClientCreateBody,
+	input: IAdminSsoClientMutationInput = {}
 ): Promise<TAdminSsoClientServiceResult<IAdminSsoClientMutationData>> {
 	try {
-		const result = await createSsoClient(body);
+		const auditModule =
+			await import('@/lib/account/server/adminAuditService');
+		const result = await createSsoClient(
+			body,
+			(trx, auditNow, createdResult) =>
+				auditModule.writeAdminAuditLogInTransaction(
+					trx,
+					createClientAuditLogInput(
+						auditModule,
+						'admin-create-sso-client',
+						createdResult.client.id,
+						input,
+						{
+							callback_configured:
+								body.status_callback_url !== null,
+							client_id: createdResult.client.id,
+							client_name: body.name,
+						}
+					),
+					auditNow
+				)
+		);
 
 		return await createMutationSuccessResult(
 			result.client.id,
@@ -112,7 +265,7 @@ export async function createAdminSsoClient(
 export async function updateAdminSsoClient(
 	id: string,
 	body: IAdminSsoClientUpdateBody,
-	overrides: IAdminSsoClientUpdateOverrides = {}
+	input: IAdminSsoClientMutationInput = {}
 ): Promise<TAdminSsoClientServiceResult<IAdminSsoClientMutationData>> {
 	if (body.id !== id) {
 		return { error: 'invalid-object-structure', status: 'error' };
@@ -124,31 +277,9 @@ export async function updateAdminSsoClient(
 		return { error: 'sso-client-not-found', status: 'error' };
 	}
 
-	const shouldGenerateSecret =
-		overrides.generateSecret ?? body.generate_secret;
-	const shouldDisableClient = overrides.disabled ?? body.disabled;
-	const isSecretMutation =
-		(shouldGenerateSecret ?? false) ||
-		!checkStringArrayEqual(body.secret_hashes, currentClient.secret_hashes);
-	if (
-		(currentClient.disabled_at !== null || shouldDisableClient) &&
-		isSecretMutation
-	) {
-		return { error: 'client-disabled', status: 'error' };
-	}
-
-	const nextDisabledAt = shouldDisableClient
+	const nextDisabledAt = body.disabled
 		? (currentClient.disabled_at ?? Date.now())
 		: null;
-	const secret = shouldGenerateSecret ? createSsoClientSecret() : null;
-	const secretHashes =
-		secret === null
-			? body.secret_hashes
-			: mergeStringArrays(
-					currentClient.secret_hashes,
-					body.secret_hashes,
-					[secret.secret_hash]
-				);
 	if (
 		!validateSsoClientConfig({
 			cancel_redirect_uri: body.cancel_redirect_uri,
@@ -157,14 +288,14 @@ export async function updateAdminSsoClient(
 			id: body.id,
 			loopback_redirect_paths: body.loopback_redirect_paths,
 			name: body.name,
-			secret_hashes: secretHashes,
+			secret_hashes: [DUMMY_SECRET_HASH],
 			status_callback_url: body.status_callback_url,
 		})
 	) {
 		return { error: 'invalid-object-structure', status: 'error' };
 	}
 
-	const updated = await updateSsoClient({
+	const updateInput = {
 		cancel_redirect_uri: body.cancel_redirect_uri,
 		custom_scheme_redirect_uris: body.custom_scheme_redirect_uris,
 		disabled_at: nextDisabledAt,
@@ -172,20 +303,86 @@ export async function updateAdminSsoClient(
 		id: body.id,
 		loopback_redirect_paths: body.loopback_redirect_paths,
 		name: body.name,
-		secret_hashes: secretHashes,
 		status_callback_url: body.status_callback_url,
-	});
+	};
+	const auditModule = await import('@/lib/account/server/adminAuditService');
+	const writeUpdateAuditLog = (
+		trx: Parameters<typeof auditModule.writeAdminAuditLogInTransaction>[0],
+		auditNow: number,
+		updatedClient: NonNullable<
+			Awaited<ReturnType<typeof updateSsoClientConfig>>
+		>
+	) =>
+		auditModule.writeAdminAuditLogInTransaction(
+			trx,
+			createClientAuditLogInput(
+				auditModule,
+				'admin-update-sso-client',
+				id,
+				input,
+				{
+					callback_configured: body.status_callback_url !== null,
+					client_id: id,
+					client_name: body.name,
+					disabled: updatedClient.disabled_at !== null,
+				}
+			),
+			auditNow
+		);
+	const updated =
+		currentClient.disabled_at === null && nextDisabledAt !== null
+			? await updateSsoClientConfigWithCallback(
+					{
+						...updateInput,
+						callback: {
+							event: 'client_disabled',
+							metadata: { reason: 'admin-disable-client' },
+							timestamp: nextDisabledAt,
+						},
+					},
+					writeUpdateAuditLog
+				)
+			: await updateSsoClientConfig(updateInput, writeUpdateAuditLog);
 	if (updated === null) {
 		return { error: 'sso-client-not-found', status: 'error' };
 	}
 
-	return createMutationSuccessResult(id, secret?.client_secret);
+	return createMutationSuccessResult(id);
 }
 
-export async function deleteAdminSsoClient(id: string) {
-	const isDeleted = await deleteSsoClient(id);
+export async function deleteAdminSsoClient(
+	id: string,
+	input: IAdminSsoClientMutationInput = {}
+) {
+	const auditModule = await import('@/lib/account/server/adminAuditService');
+	const result = await deleteSsoClient(
+		id,
+		{
+			actor: {
+				actorId: input.adminId ?? null,
+				actorType: 'admin',
+				reason: 'admin-delete-client',
+			},
+		},
+		(trx, auditNow, deleteResult) =>
+			auditModule.writeAdminAuditLogInTransaction(
+				trx,
+				createClientAuditLogInput(
+					auditModule,
+					'admin-delete-sso-client',
+					id,
+					input,
+					{
+						client_id: id,
+						revoked_grant_count: deleteResult.revokedGrantCount,
+						revoked_ticket_count: deleteResult.revokedTicketCount,
+					}
+				),
+				auditNow
+			)
+	);
 
-	return isDeleted
-		? ({ data: { message: 'sso-client-deleted' }, status: 'ok' } as const)
-		: ({ error: 'sso-client-not-found', status: 'error' } as const);
+	return result === null
+		? ({ error: 'sso-client-not-found', status: 'error' } as const)
+		: ({ data: { message: 'sso-client-deleted' }, status: 'ok' } as const);
 }

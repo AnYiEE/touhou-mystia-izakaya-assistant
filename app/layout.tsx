@@ -30,6 +30,7 @@ const {
 	cdnUrl,
 	description,
 	enName,
+	isAccountFeatureClientEnabled,
 	isAnalytics,
 	isOffline,
 	isProduction,
@@ -108,7 +109,21 @@ const notoSansSC = Noto_Sans_SC({
 
 interface IProps {}
 
-export default function RootLayout({ children }: PropsWithChildren<IProps>) {
+async function readRootAccountFeatureInitialData() {
+	if (!isAccountFeatureClientEnabled) {
+		return null;
+	}
+
+	const initialDataModule = await import('@/lib/account/server/initialData');
+
+	return initialDataModule.readAccountFeatureInitialData('/');
+}
+
+export default async function RootLayout({
+	children,
+}: PropsWithChildren<IProps>) {
+	const accountFeatureInitialData = await readRootAccountFeatureInitialData();
+
 	return (
 		<html
 			suppressHydrationWarning
@@ -139,7 +154,18 @@ export default function RootLayout({ children }: PropsWithChildren<IProps>) {
 			>
 				<AddHighAppearance />
 				<ErrorBoundary>
-					<Providers locale={locale}>
+					<Providers
+						accountInitialData={
+							accountFeatureInitialData?.account ?? null
+						}
+						accountSessionInitialData={
+							accountFeatureInitialData?.sessions ?? null
+						}
+						accountSsoGrantInitialData={
+							accountFeatureInitialData?.ssoGrants ?? null
+						}
+						locale={locale}
+					>
 						<div className="flex min-h-dvh-safe flex-col">
 							<AnnouncementBar />
 							<Navbar />

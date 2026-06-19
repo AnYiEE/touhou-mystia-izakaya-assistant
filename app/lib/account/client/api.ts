@@ -1,5 +1,7 @@
 import {
 	type IAccountExportData,
+	type IAccountProfileUpdateBody,
+	type IAccountSessionListData,
 	type IAccountSsoGrantListData,
 	type IAuthChangePasswordBody,
 	type IAuthLoginBody,
@@ -22,7 +24,9 @@ import {
 
 export type {
 	IAccountExportData,
+	IAccountSessionListData,
 	IAccountSsoGrantListData,
+	IAccountProfileUpdateBody,
 	IAuthChangePasswordBody,
 	IAuthLoginBody,
 	IAuthLoginSuccessResponse,
@@ -165,6 +169,16 @@ export function changeAccountPassword(
 	);
 }
 
+export function changeAccountProfile(
+	body: IAccountProfileUpdateBody,
+	csrfToken: string
+) {
+	return fetchAccountApiResult<IAuthLoginSuccessResponse>(
+		'/api/v1/account/profile',
+		createJsonRequestInit('POST', body, csrfToken)
+	);
+}
+
 export function logoutAccount(csrfToken: string) {
 	return fetchAccountApiResult<{ message: 'logged-out' }>(
 		'/api/v1/auth/logout',
@@ -173,10 +187,34 @@ export function logoutAccount(csrfToken: string) {
 }
 
 export function logoutAllAccount(csrfToken: string) {
-	return fetchAccountApiResult<{ message: 'logged-out-all' }>(
-		'/api/v1/auth/logout-all',
-		createCsrfRequestInit('POST', csrfToken)
+	return fetchAccountApiResult<{
+		deleted_current_session: boolean;
+		message: 'logged-out-all';
+	}>('/api/v1/auth/logout-all', createCsrfRequestInit('POST', csrfToken));
+}
+
+export function refreshAccountSessions() {
+	return fetchAccountApiResult<IAccountSessionListData>(
+		'/api/v1/account/sessions'
 	);
+}
+
+export async function revokeAccountSession(
+	sessionId: string,
+	csrfToken: string
+) {
+	const result = await fetchAccountApiResult<{ message: 'session-revoked' }>(
+		`/api/v1/account/sessions/${encodeURIComponent(sessionId)}`,
+		createCsrfRequestInit('DELETE', csrfToken)
+	);
+	if (result.status === 'error') {
+		return result;
+	}
+
+	return {
+		data: { message: result.data.message, session_id: sessionId },
+		status: 'ok' as const,
+	};
 }
 
 export function exportAccountData() {

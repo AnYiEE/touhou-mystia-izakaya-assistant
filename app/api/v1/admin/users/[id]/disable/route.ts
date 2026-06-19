@@ -71,9 +71,32 @@ export async function POST(
 		return csrfResponse;
 	}
 
-	const usersModule = await import('@/lib/account/server/repositories/users');
+	const [usersModule, accountAuditModule] = await Promise.all([
+		import('@/lib/account/server/repositories/users'),
+		import('@/lib/account/server/accountAuditService'),
+	]);
 	const isUpdated =
-		await usersModule.disableUserAndDeleteSessionsWithSsoCallbacks(id);
+		await usersModule.disableUserAndDeleteSessionsWithSsoCallbacksAndAudit(
+			id,
+			(trx, auditNow) =>
+				accountAuditModule.writeAccountAuditLogInTransaction(
+					trx,
+					accountAuditModule.createAccountAdminAuditLogInput({
+						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+							.adminDisableUser,
+						adminId: auth.payload.username,
+						metadata: {
+							next_status: USER_STATUS_MAP.disabled,
+							previous_status: USER_STATUS_MAP.active,
+							target_user_id: id,
+						},
+						request,
+						targetId: id,
+						targetType: 'user',
+					}),
+					auditNow
+				)
+		);
 	if (isUpdated) {
 		return createNoStoreJsonResponse({ message: 'user-disabled' });
 	}

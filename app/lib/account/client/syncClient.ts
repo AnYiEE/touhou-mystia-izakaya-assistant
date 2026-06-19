@@ -1878,6 +1878,25 @@ export function startAccountSyncClient() {
 				return;
 			}
 
+			if (message.type === 'profile-updated') {
+				if (!checkBroadcastStateEpoch(message)) {
+					return;
+				}
+
+				const expectedUserId = context.user.id;
+				const generation = syncClientGeneration;
+				void import('./session')
+					.then(({ refreshAccountState }) => refreshAccountState())
+					.catch((error: unknown) => {
+						handlePassiveSyncRefreshError(
+							error,
+							expectedUserId,
+							generation
+						);
+					});
+				return;
+			}
+
 			const expectedUserId = context.user.id;
 			const generation = syncClientGeneration;
 			void fetchValidatedSyncState(message.namespaces)

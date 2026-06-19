@@ -71,11 +71,33 @@ export async function POST(
 		return csrfResponse;
 	}
 
-	const usersModule = await import('@/lib/account/server/repositories/users');
-	const isUpdated = await usersModule.setUserStatusIfCurrentStatus(
+	const [usersModule, accountAuditModule] = await Promise.all([
+		import('@/lib/account/server/repositories/users'),
+		import('@/lib/account/server/accountAuditService'),
+	]);
+	const isUpdated = await usersModule.setUserStatusIfCurrentStatusWithAudit(
 		id,
 		USER_STATUS_MAP.disabled,
-		USER_STATUS_MAP.active
+		USER_STATUS_MAP.active,
+		false,
+		(trx, auditNow) =>
+			accountAuditModule.writeAccountAuditLogInTransaction(
+				trx,
+				accountAuditModule.createAccountAdminAuditLogInput({
+					action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+						.adminEnableUser,
+					adminId: auth.payload.username,
+					metadata: {
+						next_status: USER_STATUS_MAP.active,
+						previous_status: USER_STATUS_MAP.disabled,
+						target_user_id: id,
+					},
+					request,
+					targetId: id,
+					targetType: 'user',
+				}),
+				auditNow
+			)
 	);
 	if (isUpdated) {
 		return createNoStoreJsonResponse({ message: 'user-enabled' });

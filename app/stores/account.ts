@@ -5,6 +5,7 @@ import {
 	type ISyncConflictItem,
 } from '@/lib/account/sync';
 import {
+	type IAccountSessionInitialData,
 	type IAccountSsoGrantInitialData,
 	type IAccountUserProfile,
 } from '@/lib/account/shared/types';
@@ -31,6 +32,7 @@ const state = {
 		isBootstrapped: false,
 		isLoggedIn: false,
 		passwordMustChange: false,
+		sessionInitialData: null as IAccountSessionInitialData | null,
 		ssoGrantInitialData: null as IAccountSsoGrantInitialData | null,
 		sync: {
 			canRetry: false,

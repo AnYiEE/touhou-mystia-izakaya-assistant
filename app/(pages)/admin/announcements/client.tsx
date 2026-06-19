@@ -21,18 +21,28 @@ import {
 	faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 
-import { Button, Input, Link, Switch, cn } from '@/design/ui/components';
+import { Button, Switch, cn } from '@/design/ui/components';
 
 import {
+	ADMIN_LIST_DEBOUNCE_MS,
+	AdminAnnouncementLevelBadge,
+	AdminAnnouncementStatusBadge,
 	AdminEmptyState,
+	AdminEntityCell,
+	AdminFilterPanel,
 	AdminHeader,
-	AdminInputIcon,
+	AdminHeaderActionLink,
+	AdminLoadingState,
 	AdminMessage,
 	AdminMetric,
-	AdminPanel,
-	AdminPanelTitle,
+	AdminMetricPanel,
+	AdminPagination,
+	AdminSearchInput,
 	AdminShell,
 	AdminTable,
+	AdminTableActionLink,
+	AdminTableCell,
+	AdminTableHeadCell,
 	AdminTableHeader,
 	AdminTableRow,
 } from '../components';
@@ -46,76 +56,13 @@ import {
 } from '../api';
 import { clearAdminSession } from '@/lib/account/client/adminSession';
 import type { IAdminMeData } from '@/lib/account/shared/types';
-import { globalStore } from '@/stores';
 import type {
 	IAdminAnnouncementListData,
 	IAdminAnnouncementProfile,
 	TAnnouncementAudience,
-	TAnnouncementComputedStatus,
-	TAnnouncementLevel,
 } from '@/lib/announcements/shared/types';
 
-const tableHeadCellClassName = 'px-4 py-3 font-medium';
-const tableCellClassName = 'px-4 py-3 align-middle';
-const tableNowrapCellClassName = `${tableCellClassName} whitespace-nowrap`;
 const pageInputRegexp = /^\d*$/u;
-
-const STATUS_META_MAP = {
-	active: {
-		className:
-			'border-success/30 bg-success/15 text-success-700 dark:text-success',
-		label: '展示中',
-	},
-	archived: {
-		className: 'border-default-300 bg-default/30 text-foreground-500',
-		label: '已归档',
-	},
-	disabled: {
-		className:
-			'border-warning/30 bg-warning/20 text-warning-700 dark:text-warning-600',
-		label: '已停用',
-	},
-	ended: {
-		className: 'border-default-300 bg-default/30 text-foreground-500',
-		label: '已结束',
-	},
-	scheduled: {
-		className:
-			'border-primary/30 bg-primary/15 text-primary-700 dark:text-primary',
-		label: '待开始',
-	},
-} as const satisfies Record<
-	TAnnouncementComputedStatus,
-	{ className: string; label: string }
->;
-
-const LEVEL_LABEL_MAP = {
-	critical: '重要',
-	danger: '危险',
-	info: '信息',
-	success: '成功',
-	warning: '警告',
-} as const satisfies Record<TAnnouncementLevel, string>;
-
-const LEVEL_META_MAP = {
-	critical: {
-		className:
-			'border-primary/30 bg-primary/15 text-primary-700 dark:text-primary',
-	},
-	danger: {
-		className:
-			'border-danger/30 bg-danger/15 text-danger-700 dark:text-danger',
-	},
-	info: { className: 'border-default-300 bg-default/30 text-foreground-600' },
-	success: {
-		className:
-			'border-success/30 bg-success/15 text-success-700 dark:text-success',
-	},
-	warning: {
-		className:
-			'border-warning/30 bg-warning/20 text-warning-700 dark:text-warning-600',
-	},
-} as const satisfies Record<TAnnouncementLevel, { className: string }>;
 
 const AUDIENCE_LABEL_MAP = {
 	all: '全部',
@@ -140,36 +87,6 @@ function createDateTimeLabel(timestamp: number | null) {
 		: new Date(timestamp).toLocaleString('zh-CN');
 }
 
-function getStatusBadge(status: TAnnouncementComputedStatus) {
-	const meta = STATUS_META_MAP[status];
-
-	return (
-		<span
-			className={cn(
-				'inline-flex h-7 items-center rounded-small border px-2 text-tiny font-medium',
-				meta.className
-			)}
-		>
-			{meta.label}
-		</span>
-	);
-}
-
-function getLevelBadge(level: TAnnouncementLevel) {
-	const meta = LEVEL_META_MAP[level];
-
-	return (
-		<span
-			className={cn(
-				'inline-flex h-7 items-center rounded-small border px-2 text-tiny font-medium',
-				meta.className
-			)}
-		>
-			{LEVEL_LABEL_MAP[level]}
-		</span>
-	);
-}
-
 interface IAdminAnnouncementRowProps {
 	announcement: IAdminAnnouncementProfile;
 	initialNowTimestamp: number;
@@ -183,58 +100,57 @@ const AdminAnnouncementRow = memo<IAdminAnnouncementRowProps>(
 					announcement.computed_status === 'archived' && 'opacity-70'
 				)}
 			>
-				<td className={cn(tableCellClassName, 'w-96 max-w-96')}>
-					<div className="min-w-0 max-w-96">
-						<p className="truncate text-small font-medium leading-5 text-foreground-800">
-							{announcement.title}
-						</p>
-						<p className="truncate font-mono text-[0.7rem] leading-4 text-foreground-400">
-							{announcement.id}
-						</p>
+				<AdminTableCell className="w-96 max-w-96">
+					<AdminEntityCell
+						className="max-w-96"
+						id={announcement.id}
+						title={announcement.title}
+					/>
+				</AdminTableCell>
+				<AdminTableCell>
+					<div className="flex flex-wrap gap-2">
+						<AdminAnnouncementStatusBadge
+							status={announcement.computed_status}
+						/>
+						<AdminAnnouncementLevelBadge
+							level={announcement.level}
+						/>
 					</div>
-				</td>
-				<td className={tableNowrapCellClassName}>
-					{getStatusBadge(announcement.computed_status)}
-				</td>
-				<td className={tableNowrapCellClassName}>
-					{getLevelBadge(announcement.level)}
-				</td>
-				<td className={tableNowrapCellClassName}>
+				</AdminTableCell>
+				<AdminTableCell isNowrap>
 					{AUDIENCE_LABEL_MAP[announcement.audience]}
 					{announcement.audience === 'targeted' && (
 						<span className="ml-1 text-foreground-400">
 							({announcement.target_user_ids.length})
 						</span>
 					)}
-				</td>
-				<td className={tableNowrapCellClassName}>
+				</AdminTableCell>
+				<AdminTableCell isNowrap>
 					{announcement.priority}
-				</td>
-				<td className={tableNowrapCellClassName}>
+				</AdminTableCell>
+				<AdminTableCell isNowrap>
 					{announcement.dismissible ? '可关闭' : '不可关闭'}
-				</td>
-				<td className={tableNowrapCellClassName}>
+				</AdminTableCell>
+				<AdminTableCell isNowrap>
 					{createDateTimeLabel(announcement.starts_at)}
 					<span className="mx-1 text-foreground-400">/</span>
 					{createDateTimeLabel(announcement.ends_at)}
-				</td>
-				<td className={tableNowrapCellClassName}>
+				</AdminTableCell>
+				<AdminTableCell isNowrap>
 					<TimeAgo
 						initialNowTimestamp={initialNowTimestamp}
 						timestamp={announcement.updated_at}
 					/>
-				</td>
-				<td className={cn(tableNowrapCellClassName, 'text-right')}>
-					<Link
-						animationUnderline={false}
-						className="rounded-small px-2 py-1 text-small text-primary-600 transition-background hover:bg-primary/15 motion-reduce:transition-none dark:text-primary"
+				</AdminTableCell>
+				<AdminTableCell isNowrap className="text-right">
+					<AdminTableActionLink
 						href={`/admin/announcements/${encodeURIComponent(
 							announcement.id
 						)}`}
 					>
 						编辑
-					</Link>
-				</td>
+					</AdminTableActionLink>
+				</AdminTableCell>
 			</AdminTableRow>
 		);
 	}
@@ -260,7 +176,7 @@ export default function AdminAnnouncementsClient({
 	const isServerInitialAnnouncementsRef = useRef(
 		initialData.announcements !== null
 	);
-	const isHighAppearance = globalStore.persistence.highAppearance.use();
+	const skipNextAutoRefreshRef = useRef(false);
 	const [admin, setAdmin] = useState<IAdminMeData | null>(initialData.admin);
 	const [announcements, setAnnouncements] =
 		useState<IAdminAnnouncementListData | null>(initialData.announcements);
@@ -299,7 +215,7 @@ export default function AdminAnnouncementsClient({
 							return;
 						}
 
-						setMessage(result.message);
+						setMessage(result.displayMessage);
 						return;
 					}
 
@@ -342,7 +258,7 @@ export default function AdminAnnouncementsClient({
 						return;
 					}
 
-					setMessage(result.message);
+					setMessage(result.displayMessage);
 					return;
 				}
 
@@ -371,14 +287,11 @@ export default function AdminAnnouncementsClient({
 
 	const handleRefreshPress = useCallback(() => {
 		const nextQuery = queryInput;
-		const shouldRefreshImmediately = page === 1 && query === nextQuery;
 
+		skipNextAutoRefreshRef.current = nextQuery !== query || page !== 1;
 		setPage(1);
 		setQuery(nextQuery);
-
-		if (shouldRefreshImmediately) {
-			refreshAnnouncements(1, nextQuery);
-		}
+		refreshAnnouncements(1, nextQuery);
 	}, [page, query, queryInput, refreshAnnouncements]);
 
 	const handleLeaveAnnouncementList = useCallback(() => {
@@ -445,14 +358,25 @@ export default function AdminAnnouncementsClient({
 	}, [checkAdmin, initialData.admin]);
 
 	useEffect(() => {
+		let timeoutId: ReturnType<typeof globalThis.setTimeout> | null = null;
+
 		if (admin !== null) {
 			if (isServerInitialAnnouncementsRef.current) {
 				isServerInitialAnnouncementsRef.current = false;
-				return;
+			} else if (skipNextAutoRefreshRef.current) {
+				skipNextAutoRefreshRef.current = false;
+			} else {
+				timeoutId = globalThis.setTimeout(() => {
+					refreshAnnouncements();
+				}, ADMIN_LIST_DEBOUNCE_MS);
 			}
-
-			refreshAnnouncements();
 		}
+
+		return () => {
+			if (timeoutId !== null) {
+				globalThis.clearTimeout(timeoutId);
+			}
+		};
 	}, [admin, includeArchived, page, query, refreshAnnouncements]);
 
 	useEffect(() => {
@@ -464,7 +388,7 @@ export default function AdminAnnouncementsClient({
 		const timeoutId = globalThis.setTimeout(() => {
 			setPage(1);
 			setQuery(queryInput);
-		}, 300);
+		}, ADMIN_LIST_DEBOUNCE_MS);
 
 		return () => {
 			globalThis.clearTimeout(timeoutId);
@@ -477,19 +401,12 @@ export default function AdminAnnouncementsClient({
 
 	if (isAuthLoading) {
 		return (
-			<AdminShell>
-				<AdminHeader
-					icon={faShieldHalved}
-					subtitle="正在校验管理员会话"
-					title="站点通知"
-				/>
-				<AdminPanel className="flex items-center gap-3 text-small text-foreground-500">
-					<Button isLoading variant="flat">
-						加载中
-					</Button>
-					<span>读取会话状态</span>
-				</AdminPanel>
-			</AdminShell>
+			<AdminLoadingState
+				icon={faShieldHalved}
+				label="读取会话状态"
+				subtitle="正在校验管理员会话"
+				title="站点通知"
+			/>
 		);
 	}
 
@@ -498,14 +415,9 @@ export default function AdminAnnouncementsClient({
 			<AdminShell>
 				<AdminHeader
 					actions={
-						<Button
-							as={Link}
-							animationUnderline={false}
-							href="/admin"
-							variant="flat"
-						>
+						<AdminHeaderActionLink href="/admin">
 							返回管理员页
-						</Button>
+						</AdminHeaderActionLink>
 					}
 					icon={faShieldHalved}
 					subtitle={message ?? '请先返回管理员页登录'}
@@ -530,58 +442,34 @@ export default function AdminAnnouncementsClient({
 			<AdminHeader
 				actions={
 					<>
-						<Button
-							as={Link}
-							animationUnderline={false}
+						<AdminHeaderActionLink
 							href="/admin"
-							startContent={
-								<FontAwesomeIcon
-									icon={faUsers}
-									className="w-3.5"
-								/>
-							}
-							variant="flat"
+							icon={faUsers}
 							onPress={handleLeaveAnnouncementList}
 						>
 							用户管理
-						</Button>
-						<Button
-							as={Link}
-							animationUnderline={false}
+						</AdminHeaderActionLink>
+						<AdminHeaderActionLink
 							href="/admin/sso"
-							startContent={
-								<FontAwesomeIcon
-									icon={faServer}
-									className="w-3.5"
-								/>
-							}
-							variant="flat"
+							icon={faServer}
 							onPress={handleOpenSsoClientList}
 						>
 							SSO客户端
-						</Button>
-						<Button
-							as={Link}
-							animationUnderline={false}
+						</AdminHeaderActionLink>
+						<AdminHeaderActionLink
 							color="primary"
 							href="/admin/announcements/new"
-							startContent={
-								<FontAwesomeIcon
-									icon={faPlus}
-									className="w-3.5"
-								/>
-							}
-							variant="flat"
+							icon={faPlus}
 						>
 							新建
-						</Button>
+						</AdminHeaderActionLink>
 					</>
 				}
 				icon={faBullhorn}
 				title="站点通知"
 			/>
 
-			<AdminPanel className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+			<AdminMetricPanel className="sm:grid-cols-2 xl:grid-cols-4">
 				<AdminMetric
 					label="当前页通知"
 					value={
@@ -599,47 +487,43 @@ export default function AdminAnnouncementsClient({
 					value={announcements === null ? '读取中' : archivedCount}
 				/>
 				<AdminMetric label="总数" value={totalCount ?? '读取中'} />
-			</AdminPanel>
+			</AdminMetricPanel>
 
-			<AdminPanel>
-				<AdminPanelTitle icon={faSearch}>筛选</AdminPanelTitle>
-				<div className="grid w-full items-center gap-3 md:grid-cols-[minmax(0,1fr)_auto_6.5rem]">
-					<Input
-						aria-label="搜索通知标题或ID"
-						classNames={{ inputWrapper: 'h-12 min-h-12' }}
-						placeholder="搜索通知标题或ID"
-						startContent={<AdminInputIcon icon={faSearch} />}
-						value={queryInput}
-						onValueChange={handleQueryInputChange}
-					/>
-					<Switch
-						isSelected={includeArchived}
-						onValueChange={(value) => {
-							setPage(1);
-							setIncludeArchived(value);
-						}}
-					>
-						包含归档
-					</Switch>
-					<Button
-						className="h-12 min-h-12 w-full"
-						color="primary"
-						isLoading={isLoading}
-						startContent={
-							isLoading ? null : (
-								<FontAwesomeIcon
-									icon={faRotate}
-									className="w-3.5"
-								/>
-							)
-						}
-						variant="flat"
-						onPress={handleRefreshPress}
-					>
-						刷新
-					</Button>
-				</div>
-			</AdminPanel>
+			<AdminFilterPanel icon={faSearch}>
+				<AdminSearchInput
+					ariaLabel="搜索通知标题或ID"
+					icon={faSearch}
+					placeholder="搜索通知标题或ID"
+					value={queryInput}
+					onValueChange={handleQueryInputChange}
+				/>
+				<Switch
+					isSelected={includeArchived}
+					onValueChange={(value) => {
+						setPage(1);
+						setIncludeArchived(value);
+					}}
+				>
+					包含归档
+				</Switch>
+				<Button
+					className="h-12 min-h-12 w-full md:w-auto md:flex-none"
+					color="primary"
+					isLoading={isLoading}
+					startContent={
+						isLoading ? null : (
+							<FontAwesomeIcon
+								icon={faRotate}
+								className="w-3.5"
+							/>
+						)
+					}
+					variant="flat"
+					onPress={handleRefreshPress}
+				>
+					刷新
+				</Button>
+			</AdminFilterPanel>
 
 			{message !== null && <AdminMessage message={message} />}
 
@@ -655,22 +539,17 @@ export default function AdminAnnouncementsClient({
 				<AdminTable>
 					<AdminTableHeader>
 						<tr>
-							<th className={tableHeadCellClassName}>通知</th>
-							<th className={tableHeadCellClassName}>状态</th>
-							<th className={tableHeadCellClassName}>等级</th>
-							<th className={tableHeadCellClassName}>受众</th>
-							<th className={tableHeadCellClassName}>优先级</th>
-							<th className={tableHeadCellClassName}>关闭</th>
-							<th className={tableHeadCellClassName}>时间</th>
-							<th className={tableHeadCellClassName}>更新</th>
-							<th
-								className={cn(
-									tableHeadCellClassName,
-									'text-right'
-								)}
-							>
+							<AdminTableHeadCell>通知</AdminTableHeadCell>
+							<AdminTableHeadCell>状态</AdminTableHeadCell>
+							<AdminTableHeadCell>等级</AdminTableHeadCell>
+							<AdminTableHeadCell>受众</AdminTableHeadCell>
+							<AdminTableHeadCell>优先级</AdminTableHeadCell>
+							<AdminTableHeadCell>关闭</AdminTableHeadCell>
+							<AdminTableHeadCell>时间</AdminTableHeadCell>
+							<AdminTableHeadCell>更新</AdminTableHeadCell>
+							<AdminTableHeadCell className="text-right">
 								操作
-							</th>
+							</AdminTableHeadCell>
 						</tr>
 					</AdminTableHeader>
 					<tbody>
@@ -685,66 +564,19 @@ export default function AdminAnnouncementsClient({
 				</AdminTable>
 			)}
 
-			<div
-				className={cn(
-					'flex flex-wrap items-center justify-between gap-3 rounded-small border border-default-200/80 px-3 py-2 text-small text-foreground-500',
-					isHighAppearance
-						? 'bg-content1/40 backdrop-blur'
-						: 'bg-default-50/50 dark:bg-default-100/10'
-				)}
-			>
-				<span>
-					第{currentPage} / {totalPages}页
-					{announcements !== null &&
-						filteredCount !== null &&
-						` · 每页${announcements.page_size} · 当前筛选共${filteredCount}条`}
-					{totalCount !== null && ` · 总计${totalCount}条`}
-				</span>
-				<div className="flex flex-wrap items-center gap-2">
-					<Button
-						isDisabled={page <= 1 || isLoading}
-						size="sm"
-						variant="flat"
-						onPress={handlePreviousPage}
-					>
-						上一页
-					</Button>
-					<Button
-						isDisabled={isLoading || currentPage >= totalPages}
-						size="sm"
-						variant="flat"
-						onPress={handleNextPage}
-					>
-						下一页
-					</Button>
-					<form
-						className="flex items-center gap-2"
-						onSubmit={handlePageJumpSubmit}
-					>
-						<Input
-							aria-label="跳转页码"
-							className="w-20"
-							classNames={{
-								input: 'text-center',
-								inputWrapper: 'h-8 min-h-8',
-							}}
-							inputMode="numeric"
-							placeholder="页码"
-							size="sm"
-							value={pageInput}
-							onValueChange={handlePageInputChange}
-						/>
-						<Button
-							isDisabled={isLoading || pageInput.length === 0}
-							size="sm"
-							type="submit"
-							variant="light"
-						>
-							跳转
-						</Button>
-					</form>
-				</div>
-			</div>
+			<AdminPagination
+				currentPage={currentPage}
+				isLoading={isLoading}
+				pageInput={pageInput}
+				pageSize={announcements?.page_size}
+				totalCount={filteredCount ?? totalCount ?? undefined}
+				totalLabel="条通知"
+				totalPages={totalPages}
+				onNextPage={handleNextPage}
+				onPageInputChange={handlePageInputChange}
+				onPageJumpSubmit={handlePageJumpSubmit}
+				onPreviousPage={handlePreviousPage}
+			/>
 		</AdminShell>
 	);
 }

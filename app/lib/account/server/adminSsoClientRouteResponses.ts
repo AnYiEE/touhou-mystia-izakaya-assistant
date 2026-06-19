@@ -71,5 +71,5 @@ export async function checkAdminSsoClientRequest(
 		}
 	}
 
-	return { status: 'ok' as const };
+	return { auth, status: 'ok' as const };
 }

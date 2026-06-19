@@ -1,7 +1,10 @@
+import { type Transaction } from 'kysely';
+
 import { getAccountDatabase } from '@/lib/account/server/db';
 import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import { TABLE_NAME_MAP } from '@/lib/db';
 import type {
+	TDatabase,
 	TSession,
 	TSessionNew,
 	TSessionUpdate,
@@ -34,13 +37,16 @@ export async function createSessionForActiveUser({
 	session,
 	user,
 	userId,
+	writeAuditLog,
 }: {
 	credentialPasswordHash?: TUserCredential['password_hash'];
 	session: Omit<TSessionNew, 'user_id'>;
 	user: TActiveUserSessionPatch;
 	userId: TUser['id'];
+	writeAuditLog?: (trx: Transaction<TDatabase>, now: number) => Promise<void>;
 }) {
 	const db = await getAccountDatabase();
+	const now = Date.now();
 
 	return db.transaction().execute(async (trx) => {
 		let updateQuery = trx
@@ -68,6 +74,7 @@ export async function createSessionForActiveUser({
 			.insertInto(TABLE_NAME)
 			.values({ ...session, user_id: userId })
 			.execute();
+		await writeAuditLog?.(trx, now);
 
 		return true;
 	});
@@ -91,6 +98,58 @@ export async function deleteSessionById(id: TSession['id']) {
 	await db.deleteFrom(TABLE_NAME).where('id', '=', id).execute();
 }
 
+export async function deleteOtherSessionByUserId({
+	currentSessionId,
+	sessionId,
+	userId,
+}: {
+	currentSessionId: TSession['id'];
+	sessionId: TSession['id'];
+	userId: TUser['id'];
+}) {
+	const db = await getAccountDatabase();
+	const result = await db
+		.deleteFrom(TABLE_NAME)
+		.where('user_id', '=', userId)
+		.where('id', '=', sessionId)
+		.where('id', '!=', currentSessionId)
+		.executeTakeFirst();
+
+	return result.numDeletedRows === 1n;
+}
+
+export async function deleteOtherSessionByUserIdWithAudit(
+	{
+		currentSessionId,
+		sessionId,
+		userId,
+	}: {
+		currentSessionId: TSession['id'];
+		sessionId: TSession['id'];
+		userId: TUser['id'];
+	},
+	writeAuditLog: (trx: Transaction<TDatabase>, now: number) => Promise<void>
+) {
+	const db = await getAccountDatabase();
+	const now = Date.now();
+
+	return db.transaction().execute(async (trx) => {
+		const result = await trx
+			.deleteFrom(TABLE_NAME)
+			.where('user_id', '=', userId)
+			.where('id', '=', sessionId)
+			.where('id', '!=', currentSessionId)
+			.executeTakeFirst();
+		if (result.numDeletedRows !== 1n) {
+			return false;
+		}
+
+		await writeAuditLog(trx, now);
+
+		return true;
+	});
+}
+
 export async function deleteSessionsByUserId(
 	userId: TUser['id'],
 	options: { createdBefore?: TSession['created_at'] } = {}
@@ -98,11 +157,41 @@ export async function deleteSessionsByUserId(
 	const db = await getAccountDatabase();
 	const query = db.deleteFrom(TABLE_NAME).where('user_id', '=', userId);
 	if (options.createdBefore === undefined) {
-		await query.execute();
-		return;
+		const result = await query.executeTakeFirst();
+		return Number(result.numDeletedRows);
 	}
 
-	await query.where('created_at', '<', options.createdBefore).execute();
+	const result = await query
+		.where('created_at', '<', options.createdBefore)
+		.executeTakeFirst();
+
+	return Number(result.numDeletedRows);
+}
+
+export async function deleteSessionsByUserIdWithAudit(
+	userId: TUser['id'],
+	options: { createdBefore?: TSession['created_at'] } = {},
+	writeAuditLog: (
+		trx: Transaction<TDatabase>,
+		now: number,
+		deletedSessionCount: number
+	) => Promise<void>
+) {
+	const db = await getAccountDatabase();
+	const now = Date.now();
+
+	return db.transaction().execute(async (trx) => {
+		let query = trx.deleteFrom(TABLE_NAME).where('user_id', '=', userId);
+		if (options.createdBefore !== undefined) {
+			query = query.where('created_at', '<', options.createdBefore);
+		}
+
+		const result = await query.executeTakeFirst();
+		const deletedSessionCount = Number(result.numDeletedRows);
+		await writeAuditLog(trx, now, deletedSessionCount);
+
+		return deletedSessionCount;
+	});
 }
 
 export async function deleteOtherSessions(
@@ -176,6 +265,8 @@ export async function listSessionsByUserId(userId: TUser['id']) {
 			'user_id',
 		])
 		.where('user_id', '=', userId)
+		.orderBy('last_seen_at', 'desc')
+		.orderBy('created_at', 'desc')
 		.execute();
 }
 

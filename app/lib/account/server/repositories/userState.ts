@@ -1,9 +1,10 @@
-import { sql } from 'kysely';
+import { type Transaction, sql } from 'kysely';
 
 import { getAccountDatabase } from '@/lib/account/server/db';
 import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import { TABLE_NAME_MAP } from '@/lib/db';
 import type {
+	TDatabase,
 	TSession,
 	TUser,
 	TUserState,
@@ -333,6 +334,46 @@ export async function clearUserStateAndIncrementStateEpoch(
 	});
 }
 
+export async function clearUserStateAndIncrementStateEpochWithAudit(
+	userId: TUser['id'],
+	writeAuditLog: (
+		trx: Transaction<TDatabase>,
+		now: number,
+		stateEpoch: TUser['state_epoch']
+	) => Promise<void>
+) {
+	const db = await getAccountDatabase();
+
+	return db.transaction().execute(async (trx) => {
+		const now = Date.now();
+		await trx
+			.deleteFrom(TABLE_NAME)
+			.where('user_id', '=', userId)
+			.execute();
+		await trx
+			.deleteFrom(BACKUP_IMPORT_TABLE_NAME)
+			.where('user_id', '=', userId)
+			.execute();
+		const record = await trx
+			.updateTable(USER_TABLE_NAME)
+			.set(({ eb, ref }) => ({
+				state_epoch: eb(ref('state_epoch'), '+', 1),
+				updated_at: now,
+			}))
+			.where('id', '=', userId)
+			.returning('state_epoch')
+			.executeTakeFirst();
+
+		if (record === undefined) {
+			throw new Error('user-not-found');
+		}
+
+		await writeAuditLog(trx, now, record.state_epoch);
+
+		return record.state_epoch;
+	});
+}
+
 export async function clearUserDataAndDeleteSessionsAndIncrementStateEpoch(
 	userId: TUser['id']
 ) {
@@ -379,6 +420,63 @@ export async function clearUserDataAndDeleteSessionsAndIncrementStateEpoch(
 			.deleteFrom(SESSION_TABLE_NAME)
 			.where('user_id', '=', userId)
 			.execute();
+
+		return record.state_epoch;
+	});
+}
+
+export async function clearUserDataAndDeleteSessionsAndIncrementStateEpochWithAudit(
+	userId: TUser['id'],
+	writeAuditLog: (
+		trx: Transaction<TDatabase>,
+		now: number,
+		stateEpoch: TUser['state_epoch']
+	) => Promise<void>
+) {
+	const db = await getAccountDatabase();
+
+	return db.transaction().execute(async (trx) => {
+		const now = Date.now();
+		const record = await trx
+			.updateTable(USER_TABLE_NAME)
+			.set(({ eb, ref }) => ({
+				state_epoch: eb(ref('state_epoch'), '+', 1),
+				updated_at: now,
+			}))
+			.where('id', '=', userId)
+			.where('status', '!=', USER_STATUS_MAP.deleted)
+			.returning('state_epoch')
+			.executeTakeFirst();
+
+		if (record === undefined) {
+			const user = await trx
+				.selectFrom(USER_TABLE_NAME)
+				.select('status')
+				.where('id', '=', userId)
+				.executeTakeFirst();
+			if (user === undefined) {
+				throw new Error('user-not-found');
+			}
+			if (user.status === USER_STATUS_MAP.deleted) {
+				throw new Error('invalid-user-status');
+			}
+
+			throw new Error('update-not-applied');
+		}
+
+		await trx
+			.deleteFrom(TABLE_NAME)
+			.where('user_id', '=', userId)
+			.execute();
+		await trx
+			.deleteFrom(BACKUP_IMPORT_TABLE_NAME)
+			.where('user_id', '=', userId)
+			.execute();
+		await trx
+			.deleteFrom(SESSION_TABLE_NAME)
+			.where('user_id', '=', userId)
+			.execute();
+		await writeAuditLog(trx, now, record.state_epoch);
 
 		return record.state_epoch;
 	});

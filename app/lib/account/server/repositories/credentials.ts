@@ -1,9 +1,10 @@
-import { sql } from 'kysely';
+import { type Transaction, sql } from 'kysely';
 
 import { getAccountDatabase } from '@/lib/account/server/db';
 import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import { TABLE_NAME_MAP } from '@/lib/db';
 import type {
+	TDatabase,
 	TSession,
 	TUser,
 	TUserCredential,
@@ -123,19 +124,71 @@ export async function updateCredentialAndDeleteSessions(
 	});
 }
 
+export async function updateCredentialAndDeleteSessionsWithAudit(
+	userId: TUser['id'],
+	credential: TUserCredentialUpdate,
+	writeAuditLog: (trx: Transaction<TDatabase>, now: number) => Promise<void>
+) {
+	const db = await getAccountDatabase();
+
+	await db.transaction().execute(async (trx) => {
+		const now = Date.now();
+		const updateCredentialResult = await trx
+			.updateTable(TABLE_NAME)
+			.set(credential)
+			.where('user_id', '=', userId)
+			.where(
+				'user_id',
+				'in',
+				trx
+					.selectFrom(USER_TABLE_NAME)
+					.select('id')
+					.where('id', '=', userId)
+					.where('status', '!=', USER_STATUS_MAP.deleted)
+			)
+			.executeTakeFirst();
+
+		if (updateCredentialResult.numUpdatedRows !== 1n) {
+			const user = await trx
+				.selectFrom(USER_TABLE_NAME)
+				.select('status')
+				.where('id', '=', userId)
+				.executeTakeFirst();
+
+			if (user === undefined) {
+				throw new Error('user-not-found');
+			}
+			if (user.status === USER_STATUS_MAP.deleted) {
+				throw new Error('invalid-user-status');
+			}
+
+			throw new Error('credential-not-found');
+		}
+
+		await trx
+			.deleteFrom(SESSION_TABLE_NAME)
+			.where('user_id', '=', userId)
+			.execute();
+		await writeAuditLog(trx, now);
+	});
+}
+
 export async function updateCredentialAndRotateSession({
 	credential,
 	session,
 	sessionId,
 	userId,
+	writeAuditLog,
 }: {
 	credential: TUserCredentialUpdate;
 	session: TSessionMutablePatch;
 	sessionId: TSession['id'];
 	userId: TUser['id'];
+	writeAuditLog?: (trx: Transaction<TDatabase>, now: number) => Promise<void>;
 }) {
 	const db = await getAccountDatabase();
 	const { last_seen_at: lastSeenAt, ...sessionPatch } = session;
+	const now = Date.now();
 
 	await db.transaction().execute(async (trx) => {
 		const updateCredentialResult = await trx
@@ -195,6 +248,7 @@ export async function updateCredentialAndRotateSession({
 			.where('user_id', '=', userId)
 			.where('id', '!=', sessionId)
 			.execute();
+		await writeAuditLog?.(trx, now);
 	});
 }
 
@@ -203,13 +257,16 @@ export async function updateCredentialAndKeepCurrentSession({
 	lastSeenAt,
 	sessionId,
 	userId,
+	writeAuditLog,
 }: {
 	credential: TUserCredentialUpdate;
 	lastSeenAt: TSession['last_seen_at'];
 	sessionId: TSession['id'];
 	userId: TUser['id'];
+	writeAuditLog?: (trx: Transaction<TDatabase>, now: number) => Promise<void>;
 }) {
 	const db = await getAccountDatabase();
+	const now = Date.now();
 
 	await db.transaction().execute(async (trx) => {
 		const updateCredentialResult = await trx
@@ -266,6 +323,7 @@ export async function updateCredentialAndKeepCurrentSession({
 			.where('id', '!=', sessionId)
 			.where('created_at', '<', deleteOtherSessionsCreatedBefore)
 			.execute();
+		await writeAuditLog?.(trx, now);
 	});
 }
 

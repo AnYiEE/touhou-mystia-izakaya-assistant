@@ -15,7 +15,7 @@ import { accountStore, globalStore } from '@/stores';
 
 let accountStateRequestGeneration = 0;
 
-function advanceAccountStateRequestGeneration() {
+export function advanceAccountStateRequestGeneration() {
 	accountStateRequestGeneration += 1;
 
 	return accountStateRequestGeneration;
@@ -48,6 +48,7 @@ export function resetAccountState() {
 	accountStore.shared.csrfToken.set(null);
 	accountStore.shared.isLoggedIn.set(false);
 	accountStore.shared.passwordMustChange.set(false);
+	accountStore.shared.sessionInitialData.set(null);
 	accountStore.shared.ssoGrantInitialData.set(null);
 	accountStore.shared.sync.meta.set(null);
 	accountStore.shared.user.set(null);
@@ -155,6 +156,79 @@ export async function importPendingLegacyBackupCode(
 	return true;
 }
 
+export async function completeAccountPostLoginBootstrap({
+	csrfToken,
+	generation,
+	passwordMustChange,
+	userId,
+}: {
+	csrfToken: string | null;
+	generation: number;
+	passwordMustChange: boolean;
+	userId: string | null;
+}) {
+	if (userId === null || csrfToken === null || passwordMustChange) {
+		return;
+	}
+
+	const checkCurrentRequest = () =>
+		checkCurrentAccountStateRequest(generation) &&
+		checkCurrentAccountAuthContext({
+			expectedCsrfToken: csrfToken,
+			expectedUserId: userId,
+		});
+	let didImportPendingLegacyBackupCode = false;
+	let didTakeOverLocalAccountData = false;
+	await withAccountSyncPaused(async () => {
+		if (!checkCurrentRequest()) {
+			return;
+		}
+
+		try {
+			didImportPendingLegacyBackupCode =
+				await importPendingLegacyBackupCode(
+					csrfToken,
+					checkCurrentRequest
+				);
+		} catch (error) {
+			if (checkCurrentRequest()) {
+				accountStore.shared.sync.lastError.set(
+					error instanceof Error
+						? error.message
+						: 'legacy-import-failed'
+				);
+			}
+		}
+		try {
+			if (!checkCurrentRequest()) {
+				return;
+			}
+			if (didImportPendingLegacyBackupCode && checkCurrentRequest()) {
+				globalStore.persistence.cloudCode.set(null);
+			}
+
+			didTakeOverLocalAccountData = await takeOverLocalAccountData();
+			if (!didTakeOverLocalAccountData) {
+				throw new Error('local-takeover-failed');
+			}
+		} catch (error) {
+			if (checkCurrentRequest()) {
+				accountStore.shared.sync.lastError.set(
+					error instanceof Error
+						? error.message
+						: 'local-takeover-failed'
+				);
+				accountStore.shared.bootstrapStatus.set('error');
+				accountStore.shared.isLoggedIn.set(false);
+				accountStore.shared.sync.meta.set(null);
+			}
+		}
+	});
+	if (checkCurrentRequest()) {
+		scheduleAccountSyncFlush();
+	}
+}
+
 export async function refreshAccountState() {
 	const generation = advanceAccountStateRequestGeneration();
 	const previousUser = accountStore.shared.user.get();
@@ -229,64 +303,12 @@ export async function refreshAccountState() {
 		restoreAccountSyncRuntimeState(accountUser.id);
 	}
 
-	if (
-		accountUser !== null &&
-		accountCsrfToken !== null &&
-		!accountPasswordMustChange
-	) {
-		let didImportPendingLegacyBackupCode = false;
-		let didTakeOverLocalAccountData = false;
-		await withAccountSyncPaused(async () => {
-			if (!checkCurrentAccountStateRequest(generation)) {
-				return;
-			}
-
-			try {
-				didImportPendingLegacyBackupCode =
-					await importPendingLegacyBackupCode(accountCsrfToken, () =>
-						checkCurrentAccountStateRequest(generation)
-					);
-			} catch (error) {
-				if (checkCurrentAccountStateRequest(generation)) {
-					accountStore.shared.sync.lastError.set(
-						error instanceof Error
-							? error.message
-							: 'legacy-import-failed'
-					);
-				}
-			}
-			try {
-				if (!checkCurrentAccountStateRequest(generation)) {
-					return;
-				}
-				if (
-					didImportPendingLegacyBackupCode &&
-					checkCurrentAccountStateRequest(generation)
-				) {
-					globalStore.persistence.cloudCode.set(null);
-				}
-
-				didTakeOverLocalAccountData = await takeOverLocalAccountData();
-				if (!didTakeOverLocalAccountData) {
-					throw new Error('local-takeover-failed');
-				}
-			} catch (error) {
-				if (checkCurrentAccountStateRequest(generation)) {
-					accountStore.shared.sync.lastError.set(
-						error instanceof Error
-							? error.message
-							: 'local-takeover-failed'
-					);
-					accountStore.shared.bootstrapStatus.set('error');
-					accountStore.shared.isLoggedIn.set(false);
-					accountStore.shared.sync.meta.set(null);
-				}
-			}
-		});
-		if (checkCurrentAccountStateRequest(generation)) {
-			scheduleAccountSyncFlush();
-		}
-	}
+	await completeAccountPostLoginBootstrap({
+		csrfToken: accountCsrfToken,
+		generation,
+		passwordMustChange: accountPasswordMustChange,
+		userId: accountUser?.id ?? null,
+	});
 
 	return result;
 }

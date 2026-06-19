@@ -3,7 +3,11 @@
 import { memo, useEffect } from 'react';
 
 import { readAccountSyncMeta } from '@/lib/account/client/snapshot';
-import { resetAccountSyncRuntime } from '@/lib/account/client/session';
+import {
+	advanceAccountStateRequestGeneration,
+	completeAccountPostLoginBootstrap,
+	resetAccountSyncRuntime,
+} from '@/lib/account/client/session';
 import {
 	invalidateAccountSyncClientRuns,
 	restoreAccountSyncRuntimeState,
@@ -33,6 +37,7 @@ export default memo<IProps>(function AccountInitialStateHydrator({ data }) {
 			accountStore.shared.isBootstrapped.set(true);
 			accountStore.shared.isLoggedIn.set(false);
 			accountStore.shared.passwordMustChange.set(false);
+			accountStore.shared.sessionInitialData.set(null);
 			accountStore.shared.sync.lastError.set(null);
 			accountStore.shared.sync.meta.set(data.syncMeta);
 			accountStore.shared.user.set(null);
@@ -61,6 +66,14 @@ export default memo<IProps>(function AccountInitialStateHydrator({ data }) {
 		);
 		accountStore.shared.user.set(data.user);
 		restoreAccountSyncRuntimeState(data.user.id);
+		const generation = advanceAccountStateRequestGeneration();
+
+		void completeAccountPostLoginBootstrap({
+			csrfToken: data.csrf_token,
+			generation,
+			passwordMustChange: data.password_must_change,
+			userId: data.user.id,
+		});
 	}, [data]);
 
 	return null;

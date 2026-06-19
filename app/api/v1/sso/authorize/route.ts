@@ -65,12 +65,21 @@ function createAuthorizePageJsonResponse(status?: string) {
 	});
 }
 
+function readSsoAuthorizeContext(request: NextRequest, transactionId: unknown) {
+	const context = getSsoContextCookie(request);
+	if (context === null || transactionId !== context.transaction_id) {
+		return null;
+	}
+
+	return context;
+}
+
 async function submitSsoAuthorizeAgree(
 	request: NextRequest,
 	transactionId: unknown
 ) {
-	const context = getSsoContextCookie(request);
-	if (context === null || transactionId !== context.transaction_id) {
+	const context = readSsoAuthorizeContext(request, transactionId);
+	if (context === null) {
 		return createAuthorizePageJsonResponse('expired');
 	}
 
@@ -123,25 +132,30 @@ async function submitSsoAuthorizeAgree(
 	}
 }
 
-async function submitSsoAuthorizeCancel(request: NextRequest) {
-	const context = getSsoContextCookie(request);
+async function submitSsoAuthorizeCancel(
+	request: NextRequest,
+	transactionId: unknown
+) {
+	const context = readSsoAuthorizeContext(request, transactionId);
+	if (context === null) {
+		return createAuthorizePageJsonResponse('expired');
+	}
+
 	let redirectUrl = createAuthorizePageUrl('cancelled');
-	if (context !== null) {
-		try {
-			const ssoModule = await import('@/lib/account/server/sso');
-			const client = await ssoModule.getSsoClientById(context.client_id);
-			if (
-				client?.cancel_redirect_uri !== undefined &&
-				client.cancel_redirect_uri !== null &&
-				checkSsoRedirectUriFormat(client.cancel_redirect_uri)
-			) {
-				redirectUrl = client.cancel_redirect_uri;
-			}
-		} catch (error) {
-			console.warn('SSO authorize cancellation failed.', {
-				errorCode: getLogSafeErrorCode(error),
-			});
+	try {
+		const ssoModule = await import('@/lib/account/server/sso');
+		const client = await ssoModule.getSsoClientById(context.client_id);
+		if (
+			client?.cancel_redirect_uri !== undefined &&
+			client.cancel_redirect_uri !== null &&
+			checkSsoRedirectUriFormat(client.cancel_redirect_uri)
+		) {
+			redirectUrl = client.cancel_redirect_uri;
 		}
+	} catch (error) {
+		console.warn('SSO authorize cancellation failed.', {
+			errorCode: getLogSafeErrorCode(error),
+		});
 	}
 
 	const response = createNoStoreJsonResponse({ redirect_url: redirectUrl });
@@ -277,5 +291,5 @@ export async function POST(request: NextRequest) {
 
 	return intent === 'agree'
 		? submitSsoAuthorizeAgree(request, body?.transaction_id)
-		: submitSsoAuthorizeCancel(request);
+		: submitSsoAuthorizeCancel(request, body?.transaction_id);
 }

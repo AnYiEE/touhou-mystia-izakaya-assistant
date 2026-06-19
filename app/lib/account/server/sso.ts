@@ -1,7 +1,17 @@
+import { type Transaction } from 'kysely';
 import { createHash, createHmac, randomBytes } from 'node:crypto';
 
 import { checkFixedLengthEqual, createAccountHmac } from './crypto';
 import { getAccountDatabase } from './db';
+import {
+	ADMIN_SSO_CALLBACK_DELIVERY_MAX_ROWS,
+	ADMIN_SSO_CALLBACK_DELIVERY_RETENTION_MS,
+} from './adminSsoCallbackService';
+import {
+	cleanupSsoCallbackDeliveries,
+	writeSsoCallbackDelivery,
+} from './repositories/ssoCallbackDeliveries';
+import { SSO_CALLBACK_FINAL_FAILURE_NEXT_RETRY_AT } from './repositories/sso';
 import { SSO_TICKET_BYTE_LENGTH, SSO_TICKET_TTL_MS } from './ssoContext';
 export {
 	SSO_CONTEXT_COOKIE_MAX_AGE,
@@ -59,9 +69,12 @@ import {
 import { USER_STATUS_MAP } from '../shared/constants';
 import { TABLE_NAME_MAP } from '@/lib/db';
 import type {
+	TDatabase,
+	TSsoCallbackDeliveryStatus,
 	TSsoCallbackEvent,
 	TSsoCallbackQueue,
 	TSsoClient,
+	TSsoGrantEventNew,
 	TSsoTicket,
 	TUser,
 } from '@/lib/db/types';
@@ -71,21 +84,30 @@ export const SSO_CALLBACK_DISPATCH_LIMIT = 20;
 export const SSO_CALLBACK_MAX_ATTEMPTS = 100;
 export const SSO_CALLBACK_USER_AGENT = 'Mystia-SSO/1.0';
 export const SSO_CALLBACK_TIMEOUT_MS = 5000;
+export const SSO_CALLBACK_DELIVERY_MAX_ROWS =
+	ADMIN_SSO_CALLBACK_DELIVERY_MAX_ROWS;
+export const SSO_CALLBACK_DELIVERY_RETENTION_MS =
+	ADMIN_SSO_CALLBACK_DELIVERY_RETENTION_MS;
 
 const CLIENT_TABLE_NAME = TABLE_NAME_MAP.ssoClient;
+const CLIENT_SECRET_TABLE_NAME = TABLE_NAME_MAP.ssoClientSecret;
 const TICKET_TABLE_NAME = TABLE_NAME_MAP.ssoTicket;
 const CALLBACK_QUEUE_TABLE_NAME = TABLE_NAME_MAP.ssoCallbackQueue;
 const GRANT_TABLE_NAME = TABLE_NAME_MAP.ssoUserClientGrant;
+const GRANT_EVENT_TABLE_NAME = TABLE_NAME_MAP.ssoGrantEvent;
 const USER_TABLE_NAME = TABLE_NAME_MAP.user;
 
-const CALLBACK_FINAL_FAILURE_NEXT_RETRY_AT = Number.MAX_SAFE_INTEGER;
 const SSO_CALLBACK_CLAIM_LEASE_MS = SSO_CALLBACK_TIMEOUT_MS + 60_000;
+const SSO_CALLBACK_DELIVERY_CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
+
+let lastSsoCallbackDeliveryCleanupAt = 0;
 
 interface ISsoCallbackBody {
 	client_id: string;
 	event: TSsoCallbackEvent;
+	metadata: Record<string, boolean | null | number | string>;
 	timestamp: number;
-	user_id: string;
+	user_id: string | null;
 }
 
 export interface ISsoClient extends Omit<
@@ -109,10 +131,35 @@ export interface ISsoTicketValidationResult {
 	user_error: TSsoTicketValidationUserError | null;
 }
 
+export type TSsoTicketWithClientSecretValidationResult =
+	| { status: 'client-disabled' }
+	| { status: 'invalid-client' }
+	| { status: 'invalid-ticket' }
+	| { status: 'validated'; validation: ISsoTicketValidationResult };
+
 export interface ISsoCallbackDispatchResult {
 	failed: number;
 	final_failed: number;
 	succeeded: number;
+}
+
+interface ISsoCallbackDeliveryAttempt {
+	durationMs: number | null;
+	error: string | null;
+	httpStatus: number | null;
+}
+
+type TSsoCallbackAttemptResult =
+	| { delivery: ISsoCallbackDeliveryAttempt | null; status: 'delete' }
+	| {
+			delivery: ISsoCallbackDeliveryAttempt;
+			message: string;
+			status: 'failed';
+	  };
+
+interface ISsoClientSecretHashList {
+	hasSecretRecords: boolean;
+	secretHashes: string[];
 }
 
 function parseJsonStringArray(value: string, fieldName: string): string[] {
@@ -137,11 +184,18 @@ function createSha256Hex(value: string) {
 	return createHash('sha256').update(value).digest('hex');
 }
 
-function parseSsoClient(record: TSsoClient): ISsoClient {
-	const secretHashes = parseJsonStringArray(
+function parseSsoClient(
+	record: TSsoClient,
+	secretHashList?: ISsoClientSecretHashList
+): ISsoClient {
+	const legacySecretHashes = parseJsonStringArray(
 		record.secret_hashes,
 		'secret_hashes'
 	);
+	const secretHashes =
+		secretHashList?.hasSecretRecords === true
+			? secretHashList.secretHashes
+			: legacySecretHashes;
 	const loopbackRedirectPaths = parseJsonStringArray(
 		record.loopback_redirect_paths,
 		'loopback_redirect_paths'
@@ -175,7 +229,105 @@ function parseSsoClient(record: TSsoClient): ISsoClient {
 	return client;
 }
 
+async function listActiveSsoClientSecretHashes(clientId: TSsoClient['id']) {
+	const db = await getAccountDatabase();
+	const records = await db
+		.selectFrom(CLIENT_SECRET_TABLE_NAME)
+		.select(['disabled_at', 'revoked_at', 'secret_hash'])
+		.where('client_id', '=', clientId)
+		.orderBy('position', 'asc')
+		.orderBy('created_at', 'asc')
+		.orderBy('id', 'asc')
+		.execute();
+
+	return {
+		hasSecretRecords: records.length > 0,
+		secretHashes: records
+			.filter(
+				(record) =>
+					record.disabled_at === null && record.revoked_at === null
+			)
+			.map((record) => record.secret_hash),
+	} satisfies ISsoClientSecretHashList;
+}
+
+async function listActiveSsoClientSecretHashesInTransaction(
+	trx: Transaction<TDatabase>,
+	clientId: TSsoClient['id']
+) {
+	const records = await trx
+		.selectFrom(CLIENT_SECRET_TABLE_NAME)
+		.select(['disabled_at', 'revoked_at', 'secret_hash'])
+		.where('client_id', '=', clientId)
+		.orderBy('position', 'asc')
+		.orderBy('created_at', 'asc')
+		.orderBy('id', 'asc')
+		.execute();
+
+	return {
+		hasSecretRecords: records.length > 0,
+		secretHashes: records
+			.filter(
+				(record) =>
+					record.disabled_at === null && record.revoked_at === null
+			)
+			.map((record) => record.secret_hash),
+	} satisfies ISsoClientSecretHashList;
+}
+
+async function readSsoClientActiveSecretHashMap(
+	clientIds: Array<TSsoClient['id']>
+) {
+	const db = await getAccountDatabase();
+	if (clientIds.length === 0) {
+		return new Map<TSsoClient['id'], ISsoClientSecretHashList>();
+	}
+
+	const records = await db
+		.selectFrom(CLIENT_SECRET_TABLE_NAME)
+		.select(['client_id', 'disabled_at', 'revoked_at', 'secret_hash'])
+		.where('client_id', 'in', clientIds)
+		.orderBy('client_id', 'asc')
+		.orderBy('position', 'asc')
+		.orderBy('created_at', 'asc')
+		.orderBy('id', 'asc')
+		.execute();
+
+	const secretHashMap = new Map<TSsoClient['id'], ISsoClientSecretHashList>();
+	for (const record of records) {
+		const secretHashList = secretHashMap.get(record.client_id) ?? {
+			hasSecretRecords: false,
+			secretHashes: [],
+		};
+		secretHashList.hasSecretRecords = true;
+		if (record.disabled_at === null && record.revoked_at === null) {
+			secretHashList.secretHashes.push(record.secret_hash);
+		}
+		secretHashMap.set(record.client_id, secretHashList);
+	}
+
+	return secretHashMap;
+}
+
 export async function getSsoClientById(id: string) {
+	const db = await getAccountDatabase();
+	const record =
+		(await db
+			.selectFrom(CLIENT_TABLE_NAME)
+			.selectAll()
+			.where('id', '=', id)
+			.where('deleted_at', 'is', null)
+			.executeTakeFirst()) ?? null;
+
+	return record === null
+		? null
+		: parseSsoClient(
+				record,
+				await listActiveSsoClientSecretHashes(record.id)
+			);
+}
+
+async function getSsoClientByIdForCallback(id: string) {
 	const db = await getAccountDatabase();
 	const record =
 		(await db
@@ -184,7 +336,12 @@ export async function getSsoClientById(id: string) {
 			.where('id', '=', id)
 			.executeTakeFirst()) ?? null;
 
-	return record === null ? null : parseSsoClient(record);
+	return record === null
+		? null
+		: parseSsoClient(
+				record,
+				await listActiveSsoClientSecretHashes(record.id)
+			);
 }
 
 export async function listSsoClients() {
@@ -192,11 +349,18 @@ export async function listSsoClients() {
 	const records = await db
 		.selectFrom(CLIENT_TABLE_NAME)
 		.selectAll()
+		.where('deleted_at', 'is', null)
 		.orderBy('updated_at', 'desc')
 		.orderBy('id', 'asc')
 		.execute();
 
-	return records.map(parseSsoClient);
+	const secretHashMap = await readSsoClientActiveSecretHashMap(
+		records.map((record) => record.id)
+	);
+
+	return records.map((record) =>
+		parseSsoClient(record, secretHashMap.get(record.id))
+	);
 }
 
 export async function hasAnySsoClient() {
@@ -220,6 +384,66 @@ export function verifySsoClientSecret(client: ISsoClient, secret: string) {
 	return client.secret_hashes.some((activeSecretHash) =>
 		checkFixedLengthEqual(activeSecretHash, secretHash)
 	);
+}
+
+export async function verifyAndTouchSsoClientSecret(
+	client: ISsoClient,
+	secret: string,
+	now = Date.now()
+) {
+	if (!checkSsoClientSecret(secret)) {
+		return false;
+	}
+
+	const secretHash = createSha256Hex(secret);
+	const matched = client.secret_hashes.some((activeSecretHash) =>
+		checkFixedLengthEqual(activeSecretHash, secretHash)
+	);
+	if (!matched) {
+		return false;
+	}
+
+	const db = await getAccountDatabase();
+	const result = await db
+		.updateTable(CLIENT_SECRET_TABLE_NAME)
+		.set({ last_used_at: now })
+		.where('client_id', '=', client.id)
+		.where('secret_hash', '=', secretHash)
+		.where('disabled_at', 'is', null)
+		.where('revoked_at', 'is', null)
+		.executeTakeFirst();
+
+	return result.numUpdatedRows === 1n;
+}
+
+async function verifyAndTouchSsoClientSecretInTransaction(
+	trx: Transaction<TDatabase>,
+	client: ISsoClient,
+	secret: string,
+	now: number
+) {
+	if (!checkSsoClientSecret(secret)) {
+		return false;
+	}
+
+	const secretHash = createSha256Hex(secret);
+	const matched = client.secret_hashes.some((activeSecretHash) =>
+		checkFixedLengthEqual(activeSecretHash, secretHash)
+	);
+	if (!matched) {
+		return false;
+	}
+
+	const result = await trx
+		.updateTable(CLIENT_SECRET_TABLE_NAME)
+		.set({ last_used_at: now })
+		.where('client_id', '=', client.id)
+		.where('secret_hash', '=', secretHash)
+		.where('disabled_at', 'is', null)
+		.where('revoked_at', 'is', null)
+		.executeTakeFirst();
+
+	return result.numUpdatedRows === 1n;
 }
 
 export function validateSsoRedirectUri(
@@ -360,6 +584,102 @@ export async function listSsoUserClientGrantsForUser(userId: TUser['id']) {
 	}));
 }
 
+async function validateSsoTicketInTransaction(
+	trx: Transaction<TDatabase>,
+	clientId: string,
+	ticket: string,
+	codeVerifier: string,
+	now: number
+): Promise<ISsoTicketValidationResult | null> {
+	const ticketHash = hashSsoTicket(ticket);
+	const record =
+		(await trx
+			.selectFrom(TICKET_TABLE_NAME)
+			.selectAll()
+			.where('ticket_hash', '=', ticketHash)
+			.executeTakeFirst()) ?? null;
+	if (record === null) {
+		return null;
+	}
+	if (
+		record.client_id !== clientId ||
+		record.used_at !== null ||
+		record.revoked_at !== null ||
+		record.expires_at <= now ||
+		!verifyPkce(record.code_challenge, codeVerifier)
+	) {
+		return null;
+	}
+
+	const result = await trx
+		.updateTable(TICKET_TABLE_NAME)
+		.set({ used_at: now })
+		.where('ticket_hash', '=', ticketHash)
+		.where('client_id', '=', clientId)
+		.where('used_at', 'is', null)
+		.where('revoked_at', 'is', null)
+		.where('expires_at', '>', now)
+		.executeTakeFirst();
+	if (result.numUpdatedRows !== 1n) {
+		return null;
+	}
+
+	const user =
+		(await trx
+			.selectFrom(USER_TABLE_NAME)
+			.selectAll()
+			.where('id', '=', record.user_id)
+			.executeTakeFirst()) ?? null;
+	if (user === null) {
+		return { ticket: record, user, user_error: 'user-deleted' };
+	}
+
+	const userError = getSsoUserStatusError(user);
+	if (userError !== null) {
+		return { ticket: record, user, user_error: userError };
+	}
+
+	const existingGrant = await trx
+		.selectFrom(GRANT_TABLE_NAME)
+		.select('client_id')
+		.where('client_id', '=', clientId)
+		.where('user_id', '=', user.id)
+		.executeTakeFirst();
+
+	await trx
+		.insertInto(GRANT_TABLE_NAME)
+		.values({
+			client_id: clientId,
+			created_at: now,
+			updated_at: now,
+			user_id: user.id,
+		})
+		.onConflict((oc) =>
+			oc
+				.columns(['client_id', 'user_id'])
+				.doUpdateSet({ updated_at: now })
+		)
+		.execute();
+
+	await trx
+		.insertInto(GRANT_EVENT_TABLE_NAME)
+		.values({
+			actor_id: clientId,
+			actor_type: 'client',
+			client_id: clientId,
+			created_at: now,
+			event:
+				existingGrant === undefined
+					? 'grant_created'
+					: 'grant_refreshed',
+			reason: null,
+			user_id: user.id,
+		} satisfies TSsoGrantEventNew)
+		.execute();
+
+	return { ticket: record, user, user_error: null };
+}
+
 export async function validateSsoTicket(
 	clientId: string,
 	ticket: string,
@@ -375,68 +695,76 @@ export async function validateSsoTicket(
 
 	const db = await getAccountDatabase();
 	const now = Date.now();
-	const ticketHash = hashSsoTicket(ticket);
+
+	return db
+		.transaction()
+		.execute((trx) =>
+			validateSsoTicketInTransaction(
+				trx,
+				clientId,
+				ticket,
+				codeVerifier,
+				now
+			)
+		);
+}
+
+export async function validateSsoTicketWithClientSecret(
+	clientId: string,
+	clientSecret: string,
+	ticket: string,
+	codeVerifier: string
+): Promise<TSsoTicketWithClientSecretValidationResult> {
+	if (!checkSsoClientId(clientId) || !checkSsoClientSecret(clientSecret)) {
+		return { status: 'invalid-client' };
+	}
+	if (!checkSsoTicketFormat(ticket) || !checkSsoCodeVerifier(codeVerifier)) {
+		return { status: 'invalid-ticket' };
+	}
+
+	const db = await getAccountDatabase();
+	const now = Date.now();
 
 	return db.transaction().execute(async (trx) => {
 		const record =
 			(await trx
-				.selectFrom(TICKET_TABLE_NAME)
+				.selectFrom(CLIENT_TABLE_NAME)
 				.selectAll()
-				.where('ticket_hash', '=', ticketHash)
+				.where('id', '=', clientId)
+				.where('deleted_at', 'is', null)
 				.executeTakeFirst()) ?? null;
 		if (record === null) {
-			return null;
-		}
-		if (
-			record.client_id !== clientId ||
-			record.used_at !== null ||
-			record.expires_at <= now ||
-			!verifyPkce(record.code_challenge, codeVerifier)
-		) {
-			return null;
+			return { status: 'invalid-client' };
 		}
 
-		const result = await trx
-			.updateTable(TICKET_TABLE_NAME)
-			.set({ used_at: now })
-			.where('ticket_hash', '=', ticketHash)
-			.where('used_at', 'is', null)
-			.executeTakeFirst();
-		if (result.numUpdatedRows !== 1n) {
-			return null;
+		const client = parseSsoClient(
+			record,
+			await listActiveSsoClientSecretHashesInTransaction(trx, record.id)
+		);
+		const isSecretValid = await verifyAndTouchSsoClientSecretInTransaction(
+			trx,
+			client,
+			clientSecret,
+			now
+		);
+		if (!isSecretValid) {
+			return { status: 'invalid-client' };
+		}
+		if (!checkSsoClientEnabled(client)) {
+			return { status: 'client-disabled' };
 		}
 
-		const user =
-			(await trx
-				.selectFrom(USER_TABLE_NAME)
-				.selectAll()
-				.where('id', '=', record.user_id)
-				.executeTakeFirst()) ?? null;
-		if (user === null) {
-			return { ticket: record, user, user_error: 'user-deleted' };
-		}
+		const validation = await validateSsoTicketInTransaction(
+			trx,
+			clientId,
+			ticket,
+			codeVerifier,
+			now
+		);
 
-		const userError = getSsoUserStatusError(user);
-		if (userError !== null) {
-			return { ticket: record, user, user_error: userError };
-		}
-
-		await trx
-			.insertInto(GRANT_TABLE_NAME)
-			.values({
-				client_id: clientId,
-				created_at: now,
-				updated_at: now,
-				user_id: user.id,
-			})
-			.onConflict((oc) =>
-				oc
-					.columns(['client_id', 'user_id'])
-					.doUpdateSet({ updated_at: now })
-			)
-			.execute();
-
-		return { ticket: record, user, user_error: null };
+		return validation === null
+			? { status: 'invalid-ticket' }
+			: { status: 'validated', validation };
 	});
 }
 
@@ -463,13 +791,54 @@ function getSsoCallbackRetryDelayMs(nextAttempts: number) {
 	}
 }
 
+function parseSsoCallbackMetadata(
+	value: string
+): Record<string, boolean | null | number | string> {
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(value);
+	} catch {
+		return {};
+	}
+
+	if (
+		parsed === null ||
+		typeof parsed !== 'object' ||
+		Array.isArray(parsed)
+	) {
+		return {};
+	}
+
+	const parsedRecord = parsed as Record<string, unknown>;
+	const metadata: Record<string, boolean | null | number | string> = {};
+	for (const [key, metadataValue] of Object.entries(parsedRecord)) {
+		if (
+			metadataValue === null ||
+			typeof metadataValue === 'boolean' ||
+			typeof metadataValue === 'number' ||
+			typeof metadataValue === 'string'
+		) {
+			metadata[key] = metadataValue;
+		}
+	}
+
+	return metadata;
+}
+
 function createSsoCallbackBody(record: TSsoCallbackQueue): ISsoCallbackBody {
 	return {
 		client_id: record.client_id,
 		event: record.event,
+		metadata: parseSsoCallbackMetadata(record.metadata_json),
 		timestamp: record.timestamp,
 		user_id: record.user_id,
 	};
+}
+
+function isSsoClientEvent(event: TSsoCallbackEvent) {
+	return ['client_deleted', 'client_disabled', 'secret_rotated'].includes(
+		event
+	);
 }
 
 function createSsoCallbackErrorMessage(error: unknown) {
@@ -483,28 +852,66 @@ function createSsoCallbackErrorMessage(error: unknown) {
 	return getLogSafeErrorCode(error);
 }
 
-async function dispatchSsoCallback(record: TSsoCallbackQueue) {
+function checkSsoCallbackDispatchUrl(value: string) {
+	try {
+		const url = new URL(value);
+		return (
+			url.protocol === 'https:' &&
+			url.username === '' &&
+			url.password === '' &&
+			url.hash === ''
+		);
+	} catch {
+		return false;
+	}
+}
+
+async function dispatchSsoCallback(
+	record: TSsoCallbackQueue
+): Promise<TSsoCallbackAttemptResult> {
 	if (!checkSsoCallbackEvent(record.event)) {
-		return { status: 'delete' as const };
+		return { delivery: null, status: 'delete' };
 	}
 
-	const client = await getSsoClientById(record.client_id);
+	const client = await getSsoClientByIdForCallback(record.client_id);
 	if (client === null) {
-		return { status: 'delete' as const };
+		return { delivery: null, status: 'delete' };
 	}
-	if (!checkSsoClientEnabled(client)) {
-		return { status: 'delete' as const };
+	if (
+		!isSsoClientEvent(record.event) &&
+		(!checkSsoClientEnabled(client) || client.deleted_at !== null)
+	) {
+		return { delivery: null, status: 'delete' };
 	}
 
 	const statusCallbackUrl = client.status_callback_url;
 	if (statusCallbackUrl === null) {
-		return { status: 'delete' as const };
+		return { delivery: null, status: 'delete' };
+	}
+	if (!checkSsoCallbackDispatchUrl(statusCallbackUrl)) {
+		return {
+			delivery: {
+				durationMs: null,
+				error: 'blocked-callback-url',
+				httpStatus: null,
+			},
+			message: 'blocked-callback-url',
+			status: 'failed',
+		};
 	}
 
 	// The first active secret is the callback signing key; remaining active secrets keep client-secret rotation compatible.
 	const [signingSecret] = client.secret_hashes;
 	if (signingSecret === undefined) {
-		return { message: 'server-misconfigured', status: 'failed' as const };
+		return {
+			delivery: {
+				durationMs: null,
+				error: 'server-misconfigured',
+				httpStatus: null,
+			},
+			message: 'server-misconfigured',
+			status: 'failed',
+		};
 	}
 
 	const body = JSON.stringify(createSsoCallbackBody(record));
@@ -519,6 +926,7 @@ async function dispatchSsoCallback(record: TSsoCallbackQueue) {
 	const timeoutId = globalThis.setTimeout(() => {
 		abortController.abort();
 	}, SSO_CALLBACK_TIMEOUT_MS);
+	const startedAt = Date.now();
 	let response: Response;
 	try {
 		response = await fetch(statusCallbackUrl, {
@@ -529,15 +937,90 @@ async function dispatchSsoCallback(record: TSsoCallbackQueue) {
 				'X-Sso-Signature': `t=${signingTimestamp},v1=${signature}`,
 			},
 			method: 'POST',
+			redirect: 'manual',
 			signal: abortController.signal,
 		});
+	} catch (error) {
+		const message = createSsoCallbackErrorMessage(error);
+
+		return {
+			delivery: {
+				durationMs: Date.now() - startedAt,
+				error: message,
+				httpStatus: null,
+			},
+			message,
+			status: 'failed',
+		};
 	} finally {
 		globalThis.clearTimeout(timeoutId);
 	}
+	const durationMs = Date.now() - startedAt;
 
 	return response.ok
-		? { status: 'delete' as const }
-		: { message: `http-${response.status}`, status: 'failed' as const };
+		? {
+				delivery: {
+					durationMs,
+					error: null,
+					httpStatus: response.status,
+				},
+				status: 'delete',
+			}
+		: {
+				delivery: {
+					durationMs,
+					error: `http-${response.status}`,
+					httpStatus: response.status,
+				},
+				message: `http-${response.status}`,
+				status: 'failed',
+			};
+}
+
+async function writeSsoCallbackDeliveryBestEffort(
+	record: TSsoCallbackQueue,
+	status: TSsoCallbackDeliveryStatus,
+	attempt: ISsoCallbackDeliveryAttempt,
+	now = Date.now()
+) {
+	try {
+		await writeSsoCallbackDelivery(
+			record,
+			{
+				attempt: record.attempts + 1,
+				durationMs: attempt.durationMs,
+				error: attempt.error,
+				httpStatus: attempt.httpStatus,
+				status,
+			},
+			now
+		);
+	} catch (error) {
+		console.warn('Failed to write SSO callback delivery history.', {
+			errorCode: getLogSafeErrorCode(error),
+		});
+	}
+}
+
+async function cleanupSsoCallbackDeliveriesBestEffort(now = Date.now()) {
+	if (
+		now - lastSsoCallbackDeliveryCleanupAt <
+		SSO_CALLBACK_DELIVERY_CLEANUP_INTERVAL_MS
+	) {
+		return;
+	}
+
+	lastSsoCallbackDeliveryCleanupAt = now;
+	try {
+		await cleanupSsoCallbackDeliveries({
+			before: now - SSO_CALLBACK_DELIVERY_RETENTION_MS,
+			maxRows: SSO_CALLBACK_DELIVERY_MAX_ROWS,
+		});
+	} catch (error) {
+		console.warn('Failed to clean up SSO callback delivery history.', {
+			errorCode: getLogSafeErrorCode(error),
+		});
+	}
 }
 
 async function claimSsoCallbackQueueRecord(
@@ -545,48 +1028,77 @@ async function claimSsoCallbackQueueRecord(
 	now: number
 ) {
 	const db = await getAccountDatabase();
+	const leaseExpiresAt = now + SSO_CALLBACK_CLAIM_LEASE_MS;
+	const leaseToken = randomBytes(16).toString('base64url');
 	const result = await db
 		.updateTable(CALLBACK_QUEUE_TABLE_NAME)
-		.set({ next_retry_at: now + SSO_CALLBACK_CLAIM_LEASE_MS })
+		.set({ lease_expires_at: leaseExpiresAt, lease_token: leaseToken })
 		.where('id', '=', record.id)
+		.where('generation', '=', record.generation)
 		.where('next_retry_at', '=', record.next_retry_at)
+		.where((eb) =>
+			eb.or([
+				eb('lease_expires_at', 'is', null),
+				eb('lease_expires_at', '<=', now),
+			])
+		)
 		.executeTakeFirst();
 
-	return result.numUpdatedRows === 1n;
+	return result.numUpdatedRows === 1n ? { leaseExpiresAt, leaseToken } : null;
 }
 
 async function markSsoCallbackFailed(
 	record: TSsoCallbackQueue,
 	errorMessage: string,
-	now: number
+	now: number,
+	leaseToken: string,
+	leaseExpiresAt: number
 ) {
 	const db = await getAccountDatabase();
 	const nextAttempts = record.attempts + 1;
-	const isFinalFailed = nextAttempts > SSO_CALLBACK_MAX_ATTEMPTS;
+	const isFinalFailed = nextAttempts >= SSO_CALLBACK_MAX_ATTEMPTS;
 	const nextRetryAt = isFinalFailed
-		? CALLBACK_FINAL_FAILURE_NEXT_RETRY_AT
+		? SSO_CALLBACK_FINAL_FAILURE_NEXT_RETRY_AT
 		: now + getSsoCallbackRetryDelayMs(nextAttempts);
 
-	await db
+	const result = await db
 		.updateTable(CALLBACK_QUEUE_TABLE_NAME)
 		.set({
 			attempts: nextAttempts,
 			last_error: errorMessage,
+			lease_expires_at: null,
+			lease_token: null,
 			next_retry_at: nextRetryAt,
 		})
 		.where('id', '=', record.id)
-		.execute();
+		.where('generation', '=', record.generation)
+		.where('lease_token', '=', leaseToken)
+		.where('lease_expires_at', '=', leaseExpiresAt)
+		.executeTakeFirst();
+	if (result.numUpdatedRows !== 1n) {
+		return null;
+	}
 
 	return isFinalFailed;
 }
 
-async function deleteSsoCallbackQueueRecord(id: TSsoCallbackQueue['id']) {
+async function deleteSsoCallbackQueueRecord(
+	id: TSsoCallbackQueue['id'],
+	generation: TSsoCallbackQueue['generation'],
+	leaseToken: string,
+	leaseExpiresAt: number
+) {
 	const db = await getAccountDatabase();
 
-	await db
+	const result = await db
 		.deleteFrom(CALLBACK_QUEUE_TABLE_NAME)
 		.where('id', '=', id)
-		.execute();
+		.where('generation', '=', generation)
+		.where('lease_token', '=', leaseToken)
+		.where('lease_expires_at', '=', leaseExpiresAt)
+		.executeTakeFirst();
+
+	return result.numDeletedRows === 1n;
 }
 
 export async function dispatchSsoCallbacks(
@@ -598,6 +1110,12 @@ export async function dispatchSsoCallbacks(
 		.selectFrom(CALLBACK_QUEUE_TABLE_NAME)
 		.selectAll()
 		.where('next_retry_at', '<=', now)
+		.where((eb) =>
+			eb.or([
+				eb('lease_expires_at', 'is', null),
+				eb('lease_expires_at', '<=', now),
+			])
+		)
 		.orderBy('next_retry_at', 'asc')
 		.orderBy('id', 'asc')
 		.limit(Math.min(Math.max(1, limit), SSO_CALLBACK_DISPATCH_LIMIT))
@@ -609,40 +1127,90 @@ export async function dispatchSsoCallbacks(
 
 	for (const record of records) {
 		const claimNow = Date.now();
-		if (!(await claimSsoCallbackQueueRecord(record, claimNow))) {
+		const lease = await claimSsoCallbackQueueRecord(record, claimNow);
+		if (lease === null) {
 			continue;
 		}
 
 		try {
 			const result = await dispatchSsoCallback(record);
 			if (result.status === 'delete') {
-				await deleteSsoCallbackQueueRecord(record.id);
+				if (result.delivery !== null) {
+					await writeSsoCallbackDeliveryBestEffort(
+						record,
+						'succeeded',
+						result.delivery
+					);
+				}
+				if (
+					!(await deleteSsoCallbackQueueRecord(
+						record.id,
+						record.generation,
+						lease.leaseToken,
+						lease.leaseExpiresAt
+					))
+				) {
+					continue;
+				}
 				succeeded++;
 				continue;
 			}
 
+			const failedAt = Date.now();
+			await writeSsoCallbackDeliveryBestEffort(
+				record,
+				record.attempts + 1 >= SSO_CALLBACK_MAX_ATTEMPTS
+					? 'final_failed'
+					: 'failed',
+				result.delivery,
+				failedAt
+			);
 			const isFinalFailed = await markSsoCallbackFailed(
 				record,
 				result.message,
-				Date.now()
+				failedAt,
+				lease.leaseToken,
+				lease.leaseExpiresAt
 			);
+			if (isFinalFailed === null) {
+				continue;
+			}
 			if (isFinalFailed) {
 				finalFailed++;
 			} else {
 				failed++;
 			}
 		} catch (error) {
+			const errorMessage = createSsoCallbackErrorMessage(error);
+			const failedAt = Date.now();
+			await writeSsoCallbackDeliveryBestEffort(
+				record,
+				record.attempts + 1 >= SSO_CALLBACK_MAX_ATTEMPTS
+					? 'final_failed'
+					: 'failed',
+				{ durationMs: null, error: errorMessage, httpStatus: null },
+				failedAt
+			);
 			const isFinalFailed = await markSsoCallbackFailed(
 				record,
-				createSsoCallbackErrorMessage(error),
-				Date.now()
+				errorMessage,
+				failedAt,
+				lease.leaseToken,
+				lease.leaseExpiresAt
 			);
+			if (isFinalFailed === null) {
+				continue;
+			}
 			if (isFinalFailed) {
 				finalFailed++;
 			} else {
 				failed++;
 			}
 		}
+	}
+
+	if (records.length > 0) {
+		await cleanupSsoCallbackDeliveriesBestEffort(Date.now());
 	}
 
 	return { failed, final_failed: finalFailed, succeeded };

@@ -4,6 +4,7 @@ import { SERVER_MISCONFIGURED_MESSAGE, checkAppSecret } from './environment';
 
 export type TAccountSecretDomain =
 	| 'admin:v1'
+	| 'audit-value:v1'
 	| 'csrf:v1'
 	| 'session:v1'
 	| 'sso-context:v1'

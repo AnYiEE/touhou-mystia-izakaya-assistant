@@ -3,6 +3,7 @@ import { type NextRequest } from 'next/server';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
+	checkAccountPreAuthRateLimitRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
 	createAccountAuthErrorRouteResponse,
@@ -39,6 +40,14 @@ export async function POST(request: NextRequest) {
 		return cookieSecurityResponse;
 	}
 
+	const preAuthRateLimitResponse = checkAccountPreAuthRateLimitRouteResponse(
+		request,
+		'change-password'
+	);
+	if (preAuthRateLimitResponse !== null) {
+		return preAuthRateLimitResponse;
+	}
+
 	const bodyResult =
 		await readJsonBodyResult<IAuthChangePasswordBody>(request);
 	if (bodyResult.status === 'payload-too-large') {
@@ -53,13 +62,19 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	const [passwordModule, credentialsModule, authModule, userModule] =
-		await Promise.all([
-			import('@/lib/account/server/password'),
-			import('@/lib/account/server/repositories/credentials'),
-			import('@/lib/account/server/auth'),
-			import('@/lib/account/server/user'),
-		]);
+	const [
+		passwordModule,
+		credentialsModule,
+		authModule,
+		userModule,
+		accountAuditModule,
+	] = await Promise.all([
+		import('@/lib/account/server/password'),
+		import('@/lib/account/server/repositories/credentials'),
+		import('@/lib/account/server/auth'),
+		import('@/lib/account/server/user'),
+		import('@/lib/account/server/accountAuditService'),
+	]);
 
 	const auth = await authModule.authenticateAccountFromRequest(request, true);
 	if (auth.status === 'error') {
@@ -114,6 +129,16 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
+		await accountAuditModule.writeAccountAuditLogBestEffort(
+			accountAuditModule.createAccountUserAuditLogInput({
+				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+					.passwordChanged,
+				metadata: { result: 'invalid-current-password' },
+				request,
+				userId: auth.data.user.id,
+			})
+		);
+
 		return createNoStoreErrorResponse('invalid-password', 401);
 	}
 
@@ -131,6 +156,18 @@ export async function POST(request: NextRequest) {
 			lastSeenAt: now,
 			sessionId: auth.data.session.id,
 			userId: auth.data.user.id,
+			writeAuditLog: (trx, auditNow) =>
+				accountAuditModule.writeAccountAuditLogInTransaction(
+					trx,
+					accountAuditModule.createAccountUserAuditLogInput({
+						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+							.passwordChanged,
+						metadata: { result: 'ok' },
+						request,
+						userId: auth.data.user.id,
+					}),
+					auditNow
+				),
 		});
 	} catch (error) {
 		if (error instanceof Error) {

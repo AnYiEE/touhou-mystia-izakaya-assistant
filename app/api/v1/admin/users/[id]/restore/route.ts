@@ -71,12 +71,33 @@ export async function POST(
 		return csrfResponse;
 	}
 
-	const usersModule = await import('@/lib/account/server/repositories/users');
-	const isUpdated = await usersModule.setUserStatusIfCurrentStatus(
+	const [usersModule, accountAuditModule] = await Promise.all([
+		import('@/lib/account/server/repositories/users'),
+		import('@/lib/account/server/accountAuditService'),
+	]);
+	const isUpdated = await usersModule.setUserStatusIfCurrentStatusWithAudit(
 		id,
 		USER_STATUS_MAP.deleted,
 		USER_STATUS_MAP.disabled,
-		true
+		true,
+		(trx, auditNow) =>
+			accountAuditModule.writeAccountAuditLogInTransaction(
+				trx,
+				accountAuditModule.createAccountAdminAuditLogInput({
+					action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+						.adminRestoreUser,
+					adminId: auth.payload.username,
+					metadata: {
+						next_status: USER_STATUS_MAP.disabled,
+						previous_status: USER_STATUS_MAP.deleted,
+						target_user_id: id,
+					},
+					request,
+					targetId: id,
+					targetType: 'user',
+				}),
+				auditNow
+			)
 	);
 	if (isUpdated) {
 		return createNoStoreJsonResponse({ message: 'user-restored' });

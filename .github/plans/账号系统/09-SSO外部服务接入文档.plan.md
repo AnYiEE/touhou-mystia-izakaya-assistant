@@ -20,8 +20,8 @@ isProject: false
 - 一次性短期 SSO ticket 签发。
 - 服务端到服务端 ticket 校验接口。
 - 服务端到服务端用户状态查询接口。
-- 用户禁用或删除后的状态变更回调。
-- 管理员后台配置 SSO client、redirect URI、client secret 和状态回调地址。
+- 授权撤销、用户禁用/删除、client 禁用/删除和 secret 轮换后的状态变更回调。
+- 管理员后台配置 SSO client、redirect URI、client secret、授权关系、ticket、审计和状态回调地址。
 
 外部服务仍需自行负责：
 
@@ -35,14 +35,35 @@ isProject: false
 
 同一个 SSO client 可以同时配置外部网站 HTTPS 回调、本地 loopback 回调和 custom scheme 回调。管理员不需要为“同一外部服务的网站端”和“同一外部服务的桌面端”拆成两个 client；每次授权请求会按本次传入的 `redirect_uri` 匹配对应白名单。
 
-| 接入形态             | 适用场景                         | 管理员配置                    | 回调落点                             | 谁保存 `code_verifier` 和校验 `state`               |
-| -------------------- | -------------------------------- | ----------------------------- | ------------------------------------ | --------------------------------------------------- |
-| 外部网站统一登录     | 皮肤站、联机官网、Web 管理后台   | `https_redirect_uris`         | 外部网站后端 HTTPS callback          | 外部网站后端                                        |
-| 本地客户端 loopback  | 桌面启动器、游戏客户端           | `loopback_redirect_paths`     | 本机 `127.0.0.1` 或 `[::1]` 临时端口 | 本地客户端生成，外部服务后端换票时提交并最终校验    |
-| 本地客户端自定义协议 | 无法稳定监听本地端口的桌面客户端 | `custom_scheme_redirect_uris` | 操作系统注册的 custom scheme         | 本地客户端生成，外部服务后端换票时提交并最终校验    |
-| 状态变更通知         | 用户禁用或删除后的近即时撤销     | `status_callback_url`         | 外部服务后端状态回调接口             | 不参与登录；用于撤销外部服务自己的 session 或 token |
+| 接入形态             | 适用场景                                                              | 管理员配置                    | 回调落点                             | 谁保存 `code_verifier` 和校验 `state`                                            |
+| -------------------- | --------------------------------------------------------------------- | ----------------------------- | ------------------------------------ | -------------------------------------------------------------------------------- |
+| 外部网站统一登录     | 皮肤站、联机官网、Web 管理后台                                        | `https_redirect_uris`         | 外部网站后端 HTTPS callback          | 外部网站后端                                                                     |
+| 本地客户端 loopback  | 桌面启动器、游戏客户端                                                | `loopback_redirect_paths`     | 本机 `127.0.0.1` 或 `[::1]` 临时端口 | 本地客户端生成，外部服务后端换票时提交并最终校验                                 |
+| 本地客户端自定义协议 | 无法稳定监听本地端口的桌面客户端                                      | `custom_scheme_redirect_uris` | 操作系统注册的 custom scheme         | 本地客户端生成，外部服务后端换票时提交并最终校验                                 |
+| 状态变更通知         | 授权撤销、用户状态、用户资料、client 状态和 secret 变化后的近即时通知 | `status_callback_url`         | 外部服务后端状态回调接口             | 不参与登录；用于撤销外部服务自己的 session/token、更新展示资料或收敛 client 配置 |
 
 浏览器、小助手账号 Cookie、`client_secret` 三者不要混用：外部前端和本地客户端不得保存 `client_secret`，也不得尝试读取或转发夜雀助手账号 Cookie。
+
+### 域名与请求链路
+
+接入方应把浏览器授权入口和服务端 API origin 拆开配置，避免把所有请求都塞进一个“基础 URL”：
+
+| 配置项                | 当前生产示例                       | 谁调用         | 用途                                                                      |
+| --------------------- | ---------------------------------- | -------------- | ------------------------------------------------------------------------- |
+| `sso_browser_origin`  | `https://izakaya.cc`               | 用户浏览器     | 顶层导航访问 `/api/v1/sso/authorize`，让用户登录小助手并确认授权。        |
+| `sso_api_origin`      | `https://assistant-bff.izakaya.cc` | 外部服务后端   | 调用 `/api/v1/sso/validate` 和 `/api/v1/sso/status`，提交后端密钥或状态。 |
+| `status_callback_url` | 外部服务自己的 HTTPS URL           | 夜雀助手服务端 | 投递授权撤销、用户状态、用户资料、client 状态和 secret 事件。             |
+
+请求链路固定为：浏览器只跳转到 `sso_browser_origin` 的 `authorize`；外部网站后端或本地客户端后端代理只调用 `sso_api_origin` 的 `validate/status`；夜雀助手只向外部服务配置的 `status_callback_url` 投递 callback。`validate` 和 `status` 不读取夜雀助手账号 Cookie，不要求 `Origin`、`Referer` 或 CSRF token，也不因为 API Host 与浏览器授权 Host 不同而改变协议语义。
+
+外部服务调用 `validate/status` 时建议发送：
+
+- `Host`：由请求 URL 自动生成，生产中应落到 `assistant-bff.izakaya.cc` 或管理员提供的 API origin。
+- `Content-Type: application/json`。
+- `Accept: application/json`。
+- 明确的 `User-Agent`，例如 `mystia-online/1.0`，便于日志排查。
+
+外部服务不应发送：`Cookie`、`Origin`、`Referer`、`X-CSRF-Token`。如果请求经过自己的反向代理，应由可信代理覆盖或清洗 `X-Forwarded-For`、`X-Real-IP` 等来源头，不要把用户可控来源头原样透传给夜雀助手 API。JSON 请求体上限为 128 KiB；如果发送 `Content-Length`，必须是合法数字且不超过上限。
 
 ## 三、接入流程总览
 
@@ -65,6 +86,8 @@ isProject: false
 6. 本地客户端校验 `state`，再把 `ticket` 与 `code_verifier` 交给外部服务后端。
 7. 外部服务后端调用 `/api/v1/sso/validate`，建立自己的业务登录态或返回自己的业务 token。
 
+loopback 和 custom scheme 客户端属于 public client：同一台机器上的其它进程理论上也可能监听相同 path、注册相同 scheme 或抢先接收回调。外部服务不得把“客户端收到了 ticket”当作客户端可信证明；后端必须用自己的登录事务 state、`code_verifier` 和服务端保存的 `client_secret` 完成校验，且所有业务权限仍以后端签发的外部服务 token 为准。
+
 夜雀助手只在 `validate` 成功时证明小助手账号身份。是否允许进入联机服务器、是否允许上传皮肤、是否需要封禁或限流，均由外部服务自己的数据库和规则决定。
 
 ## 四、管理员配置
@@ -73,29 +96,29 @@ isProject: false
 
 需要配置：
 
-| 字段                          | 说明                                                                                   |
-| ----------------------------- | -------------------------------------------------------------------------------------- |
-| `id`                          | 外部服务的 client ID，最长 128 字符，可使用英文字母、数字、点、下划线、冒号和短横线。  |
-| `name`                        | 授权确认页展示给用户看的外部服务名称。                                                 |
-| `loopback_redirect_paths`     | 允许的本地 loopback 回调 path 列表，例如 `/callback`。                                 |
-| `custom_scheme_redirect_uris` | 允许的自定义协议回调 URI 列表，例如 `mystia-game://sso/callback`。                     |
-| `https_redirect_uris`         | 允许的外部网站 HTTPS 登录回调 URI 列表，例如 `https://game.example.com/sso/callback`。 |
-| `status_callback_url`         | 可选，用户禁用或删除时夜雀助手主动通知外部服务的 HTTPS URL。                           |
-| `cancel_redirect_uri`         | 可选，用户取消授权后跳转的地址。                                                       |
+| 字段                          | 说明                                                                                                                                                                                       |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `id`                          | 外部服务的 client ID，最长 128 字符，可使用英文字母、数字、点、下划线、冒号和短横线。                                                                                                      |
+| `name`                        | 授权确认页展示给用户看的外部服务名称。                                                                                                                                                     |
+| `loopback_redirect_paths`     | 允许的本地 loopback 回调 path 列表，例如 `/callback`。                                                                                                                                     |
+| `custom_scheme_redirect_uris` | 允许的自定义协议回调 URI 列表，例如 `mystia-game://sso/callback`。                                                                                                                         |
+| `https_redirect_uris`         | 允许的外部网站 HTTPS 登录回调 URI 列表，例如 `https://game.example.com/sso/callback`。                                                                                                     |
+| `status_callback_url`         | 可选，授权撤销、用户状态、用户资料、client 状态或 secret 变化时夜雀助手主动通知外部服务的 HTTPS URL。URL 不得包含用户名、密码或 fragment；生产中可以按自托管网络拓扑解析到同机或内网服务。 |
+| `cancel_redirect_uri`         | 可选，用户取消授权后跳转的地址。                                                                                                                                                           |
 
-管理员也可以在后台禁用或重新启用某个 SSO client。禁用不会删除配置、secret hash 或历史授权记录，但会暂停该 client 的授权、换票、状态查询和状态回调投递；禁用期间不能新增或删除 secret hash。外部服务会在公开接口中收到 `client-disabled`。
+管理员也可以在后台禁用或重新启用某个 SSO client。禁用不会删除配置、secret hash 或历史授权记录，但会暂停该 client 的授权、换票和状态查询；禁用动作本身会尽量投递 `client_disabled` callback，让外部服务暂停入口或新会话。外部服务会在公开接口中收到 `client-disabled`。
 
 外部服务接入方应在创建 SSO client 前，向夜雀助手管理员提供以下配置单：
 
-| 提供项              | 必填     | 管理员配置字段                | 说明                                                                                                                 |
-| ------------------- | -------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| 服务展示名称        | 是       | `name`                        | 授权确认页展示给用户看的名称，应能让用户识别正在授权给哪个服务。                                                     |
-| 稳定 client ID      | 是       | `id`                          | 建议使用服务级稳定 ID，例如 `mystia-online-client`；创建后不应频繁变更。                                             |
-| loopback 回调 path  | 条件必填 | `loopback_redirect_paths`     | 使用本地 HTTP 回调时提供 path 列表，只填 path，不填 host 和 port，例如 `/sso/callback`。动态端口由客户端运行时选择。 |
-| 自定义协议回调 URI  | 条件必填 | `custom_scheme_redirect_uris` | 使用 custom scheme 时提供完整 URI，例如 `mystia-online://sso/callback`。必须精确匹配。                               |
-| 网站 HTTPS 回调 URI | 条件必填 | `https_redirect_uris`         | 外部网站统一登录时提供完整 HTTPS URI，例如 `https://game.example.com/auth/mystia/callback`。必须精确匹配。           |
-| 状态回调 URL        | 推荐     | `status_callback_url`         | 外部服务后端接收用户禁用/删除事件的 HTTPS URL，例如 `https://api.example.com/mystia/sso/status-callback`。           |
-| 取消授权跳转 URI    | 可选     | `cancel_redirect_uri`         | 用户点取消后的跳转地址。必须是合法 SSO redirect URI；如果桌面客户端使用动态 loopback 且没有稳定取消 URI，可以留空。  |
+| 提供项              | 必填     | 管理员配置字段                | 说明                                                                                                                                                 |
+| ------------------- | -------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 服务展示名称        | 是       | `name`                        | 授权确认页展示给用户看的名称，应能让用户识别正在授权给哪个服务。                                                                                     |
+| 稳定 client ID      | 是       | `id`                          | 建议使用服务级稳定 ID，例如 `mystia-online-client`；创建后不应频繁变更。                                                                             |
+| loopback 回调 path  | 条件必填 | `loopback_redirect_paths`     | 使用本地 HTTP 回调时提供 path 列表，只填 path，不填 host 和 port，例如 `/sso/callback`。动态端口由客户端运行时选择。                                 |
+| 自定义协议回调 URI  | 条件必填 | `custom_scheme_redirect_uris` | 使用 custom scheme 时提供完整 URI，例如 `mystia-online://sso/callback`。必须精确匹配。                                                               |
+| 网站 HTTPS 回调 URI | 条件必填 | `https_redirect_uris`         | 外部网站统一登录时提供完整 HTTPS URI，例如 `https://game.example.com/auth/mystia/callback`。必须精确匹配。                                           |
+| 状态回调 URL        | 推荐     | `status_callback_url`         | 外部服务后端接收授权撤销、用户状态、用户资料、client 状态和 secret 变化事件的 HTTPS URL，例如 `https://api.example.com/mystia/sso/status-callback`。 |
+| 取消授权跳转 URI    | 可选     | `cancel_redirect_uri`         | 用户点取消后的跳转地址。必须是合法 SSO redirect URI；如果桌面客户端使用动态 loopback 且没有稳定取消 URI，可以留空。                                  |
 
 `loopback_redirect_paths`、`custom_scheme_redirect_uris` 和 `https_redirect_uris` 至少需要提供一种，否则 client 配置无效。三者可以同时配置在同一个 client 中：例如同一个“夜雀联机服务”既有网页登录页，又有桌面启动器，就可以共用同一个 `client_id` 和 `client_secret`，分别把网站 HTTPS callback、本地 loopback path 和 custom scheme URI 加入白名单。
 
@@ -104,7 +127,7 @@ isProject: false
 - `client_id`。
 - 创建 client 或生成新 secret 时返回的原始 `client_secret`。
 - 已保存的 redirect 白名单，便于接入方和线上配置核对。
-- 如已配置 `status_callback_url`，还应告知接入方状态回调会使用当前首位 active secret hash 作为 HMAC key。
+- 如已配置 `status_callback_url`，还应告知接入方状态回调会使用当前首位 active secret 派生出的 hash 作为 HMAC key。
 
 登录回调配置只写“回调入口本身”，不要预先填写 `ticket`、`state` 或 `code_verifier` 参数：
 
@@ -215,11 +238,13 @@ cancel_redirect_uri: mystia-skin://auth/cancel
 redirect_uri=mystia-skin://auth/callback
 ```
 
-如果外部服务暂时没有状态回调接口，可以先将 `status_callback_url` 留空，但仍建议尽快补齐；否则用户被禁用或删除后，只能依赖外部服务主动调用 `/api/v1/sso/status` 兜底发现。
+如果外部服务暂时没有状态回调接口，可以先将 `status_callback_url` 留空，但仍建议尽快补齐；否则授权被撤销、用户被禁用/删除、client 被禁用/删除或 secret 被轮换后，只能依赖外部服务主动调用 `/api/v1/sso/status`、后台运维流程或人工配置同步兜底发现。
 
-创建 client 或生成新 secret 后，接口会返回一次原始 `client_secret`。外部服务调用 `/api/v1/sso/validate` 和 `/api/v1/sso/status` 时提交的就是这个原始 secret。后台右侧 Secrets 区域展示的是 `SHA-256(client_secret).hex()` 后的 secret hash，用于识别、复制 hash 和删除 active secret，不能把右侧 hash 当作 `client_secret` 交给外部服务调用接口。
+状态回调由夜雀助手服务端主动发起，运行期使用手动重定向策略，不跟随302/301等跳转；请求带5秒超时、固定`User-Agent`和`X-Sso-Signature`签名头。为了兼容自托管生产中SSO服务器和外部服务同机、同内网或通过`hosts`映射到`127.0.0.1`的部署，当前实现不会按DNS解析结果、私网地址或回环地址阻断`status_callback_url`，管理员应只为可信外部服务配置该URL。
 
-如果原始 `client_secret` 丢失，管理员不能从右侧 hash 还原，只能生成新 secret，把新原始 secret 交给外部服务后端；确认外部服务切换完成后，再删除旧 hash。
+创建 client 或生成新 secret 后，接口会返回一次原始 `client_secret`。外部服务调用 `/api/v1/sso/validate` 和 `/api/v1/sso/status` 时提交的就是这个原始 secret。后台 Secrets 区域只展示 secret hash 前缀和标签、创建人、最后使用时间、禁用/撤销状态等元数据，用于识别 secret 记录；不能把后台展示的 hash 前缀当作 `client_secret` 交给外部服务调用接口。
+
+如果原始 `client_secret` 丢失，管理员不能从 hash 前缀或数据库 hash 还原，只能生成新 secret，把新原始 secret 交给外部服务后端；确认外部服务切换完成后，再禁用或撤销旧 secret 记录。
 
 这套轻量 SSO 的密钥安全边界是：
 
@@ -232,9 +257,9 @@ secret 轮换规则：
 
 - 一个 client 可同时保留多个 active secret hash。
 - `validate` 和 `status` 会用请求中的原始 `client_secret` 计算 SHA-256 hex，并遍历所有 active hash。
-- 状态回调签名使用第一个 active secret hash 作为 HMAC key。
-- 新生成 secret 会追加到列表末尾，不会立即改变状态回调签名 key。
-- 若要切换回调签名 key，管理员需要在确认外部服务已接受新 secret 后，移除旧的首位 secret 并保存。
+- 状态回调签名使用当前首位 active secret hash 作为 HMAC key；该 hash 由外部服务持有的原始 `client_secret` 通过 `SHA-256(client_secret).hex()` 派生。
+- 新生成 secret 会追加为新的 active secret 记录，不一定立即改变状态回调签名 key。
+- 若要切换回调签名 key，管理员需要在确认外部服务已接受新 secret 后，禁用或撤销旧的首位 active secret。
 
 ## 五、外部开发实施步骤
 
@@ -242,7 +267,7 @@ secret 轮换规则：
 
 ### 外部网站接入步骤
 
-1. 在后端配置 `client_id`、`client_secret`、夜雀助手基础 URL 和网站 HTTPS callback URI。
+1. 在后端配置 `client_id`、`client_secret`、`sso_browser_origin`、`sso_api_origin` 和网站 HTTPS callback URI。
 2. 用户点击“使用夜雀助手登录”时，由网站后端生成 `state` 和 `code_verifier`，保存到网站自己的登录会话。
 3. 网站后端计算 `code_challenge`，把浏览器重定向到 `/api/v1/sso/authorize`。
 4. HTTPS callback 收到 `ticket` 和 `state` 后，先校验 `state` 是否属于当前登录会话。
@@ -264,8 +289,11 @@ secret 轮换规则：
 
 1. 外部服务提供 `status_callback_url`，并在管理员后台配置。
 2. 回调接口读取原始 body 和 `X-Sso-Signature`，先验签再解析 JSON。
-3. 收到 `user_disabled` 或 `user_deleted` 后，按 `user_id` 撤销该用户在外部服务内的所有 session 或 token。
-4. 外部服务定期调用 `/api/v1/sso/status` 作为回调投递失败时的兜底。
+3. 收到 `grant_revoked`、`user_disabled` 或 `user_deleted` 后，按 `user_id` 撤销该用户在外部服务内的所有 session 或 token。
+4. 收到 `user_profile_updated` 后，按 `user_id` 更新本地保存的 `username`、`nickname` 等展示缓存；不撤销 token、不重新授权、不更改外部业务用户绑定。
+5. 收到 `client_disabled` 或 `client_deleted` 后，暂停登录入口、拒绝新建会话，并按业务需要清理该 client 的映射和外部 token。
+6. 收到 `secret_rotated` 后，拉取或切换外部服务保存的 secret 配置；轮换期间同时接受新旧 secret 派生出的 callback signing secret。
+7. 外部服务定期调用 `/api/v1/sso/status` 作为用户状态回调投递失败时的兜底。
 
 ## 六、API 参考：授权入口
 
@@ -401,13 +429,17 @@ mystia-game://sso/callback
 
 ### `POST /api/v1/sso/validate`
 
-服务端到服务端接口。仅供外部服务后端调用，不依赖浏览器 Cookie，不提供 CORS。
+服务端到服务端接口。仅供外部服务后端调用，不依赖浏览器 Cookie，不提供给外部前端跨域 AJAX 使用。如果管理员提供了独立的 `sso_api_origin`，生产环境应使用该 API origin，而不是默认沿用浏览器授权入口的 `sso_browser_origin`。
+
+请求应使用 JSON body，推荐带 `Accept: application/json` 和明确的 `User-Agent`；不要发送 `Cookie`、`Origin`、`Referer` 或 `X-CSRF-Token`。请求体最大 128 KiB。
 
 请求：
 
 ```http
-POST https://izakaya.cc/api/v1/sso/validate
+POST https://assistant-bff.izakaya.cc/api/v1/sso/validate
 Content-Type: application/json
+Accept: application/json
+User-Agent: mystia-online/1.0
 
 {
   "client_id": "game-client",
@@ -425,12 +457,15 @@ Content-Type: application/json
 	"data": {
 		"user": {
 			"id": "mystia-user-id",
+			"nickname": "夜雀",
 			"status": "active",
 			"username": "Mystia"
 		}
 	}
 }
 ```
+
+`nickname` 是夜雀助手账号的展示名，可为 `null`，仅供外部服务界面展示。外部服务不得使用 `nickname` 绑定、合并或查找业务账号；账号映射必须继续以 `data.user.id` 为唯一稳定标识。`username` 是登录名，也不应替代 `user.id` 作为跨系统绑定键。
 
 错误响应：
 
@@ -457,7 +492,7 @@ ticket 规则：
 外部服务后端在 validate 成功后应：
 
 1. 使用 `data.user.id` 查找或创建外部业务用户。
-2. 更新外部业务用户保存的 `username` 和小助手账号状态。
+2. 更新外部业务用户保存的 `username`、`nickname` 和小助手账号状态；`nickname` 可为空，只用于展示。
 3. 根据外部服务自己的封禁、权限、白名单等规则决定是否签发业务 token。
 4. 向外部客户端返回外部服务自己的 token 或 session 信息。
 
@@ -465,13 +500,15 @@ ticket 规则：
 
 ### `POST /api/v1/sso/status`
 
-服务端到服务端接口。用于外部服务定期复核小助手账号是否仍为 active。
+服务端到服务端接口。用于外部服务定期复核小助手账号是否仍为 active。请求边界与 `validate` 一致：由外部服务后端调用 `sso_api_origin`，不依赖浏览器 Cookie、Origin、Referer 或 CSRF token。
 
 请求：
 
 ```http
-POST https://izakaya.cc/api/v1/sso/status
+POST https://assistant-bff.izakaya.cc/api/v1/sso/status
 Content-Type: application/json
+Accept: application/json
+User-Agent: mystia-online/1.0
 
 {
   "client_id": "game-client",
@@ -491,17 +528,17 @@ Content-Type: application/json
 
 错误响应：
 
-| HTTP | `message`                  | 说明                                                                   |
-| ---- | -------------------------- | ---------------------------------------------------------------------- |
-| 400  | `invalid-object-structure` | 请求体格式错误，或字段不符合格式要求。                                 |
-| 401  | `invalid-client`           | `client_id` 不存在，或 `client_secret` 与所有 active secret 都不匹配。 |
-| 403  | `client-disabled`          | 该 SSO client 已被管理员禁用。                                         |
-| 403  | `user-disabled`            | 小助手账号已禁用。                                                     |
-| 403  | `user-deleted`             | 小助手账号已删除。                                                     |
-| 404  | `user-not-found`           | 用户不存在。                                                           |
-| 413  | `payload-too-large`        | 请求体过大。                                                           |
-| 429  | `too-many-requests`        | 请求被限流。                                                           |
-| 500  | `server-misconfigured`     | 服务端账号或数据库配置异常。                                           |
+| HTTP | `message`                  | 说明                                                                                          |
+| ---- | -------------------------- | --------------------------------------------------------------------------------------------- |
+| 400  | `invalid-object-structure` | 请求体格式错误，或字段不符合格式要求。                                                        |
+| 401  | `invalid-client`           | `client_id` 不存在，或 `client_secret` 与所有 active secret 都不匹配。                        |
+| 403  | `client-disabled`          | 该 SSO client 已被管理员禁用。                                                                |
+| 403  | `user-disabled`            | 小助手账号已禁用。                                                                            |
+| 403  | `user-deleted`             | 小助手账号已删除。                                                                            |
+| 404  | `user-not-found`           | 用户不存在、该 client 对此用户无授权、或授权已被撤销/从未授予；外部服务应按不可继续访问处理。 |
+| 413  | `payload-too-large`        | 请求体过大。                                                                                  |
+| 429  | `too-many-requests`        | 请求被限流。                                                                                  |
+| 500  | `server-misconfigured`     | 服务端账号或数据库配置异常。                                                                  |
 
 建议外部服务：
 
@@ -512,14 +549,19 @@ Content-Type: application/json
 
 ## 十一、API 参考：状态变更回调
 
-若管理员配置了 `status_callback_url`，夜雀助手会在已授权过该 client 的用户被禁用或删除时，向外部服务后端发送状态回调。client 被管理员禁用后，夜雀助手会暂停向该 client 投递状态回调；重新启用后，后续新产生的用户状态事件会继续投递。
+若管理员配置了 `status_callback_url`，夜雀助手会在用户授权被撤销、用户状态变化、用户资料变化、client 被禁用或删除、secret 发生轮换时，向外部服务后端发送状态回调。用户级事件只会投递给该用户已授权、client 仍启用且配置了 callback 的 client；client 级事件会在 client 被禁用或软删除后继续尝试投递，以便外部服务完成收敛。
 
 触发事件：
 
-| `event`         | 说明                   |
-| --------------- | ---------------------- |
-| `user_disabled` | 管理员禁用用户。       |
-| `user_deleted`  | 用户自行逻辑删除账号。 |
+| `event`                | 说明                                                    |
+| ---------------------- | ------------------------------------------------------- |
+| `grant_revoked`        | 用户自助或管理员撤销该用户对该 client 的授权。          |
+| `user_disabled`        | 管理员禁用用户。                                        |
+| `user_deleted`         | 用户自行逻辑删除账号。                                  |
+| `user_profile_updated` | 用户修改用户名或昵称；外部服务应只更新展示缓存。        |
+| `client_disabled`      | 管理员禁用 client，外部服务应暂停登录入口或新会话。     |
+| `client_deleted`       | 管理员删除 client，外部服务应清理映射或进入停用状态。   |
+| `secret_rotated`       | client secret 创建、启用/禁用或撤销后通知外部服务轮换。 |
 
 回调请求：
 
@@ -532,6 +574,7 @@ X-Sso-Signature: t=1710000000000,v1=BASE64URL_SIGNATURE
 {
   "client_id": "game-client",
   "event": "user_disabled",
+	"metadata": {},
   "timestamp": 1710000000000,
   "user_id": "mystia-user-id"
 }
@@ -539,12 +582,33 @@ X-Sso-Signature: t=1710000000000,v1=BASE64URL_SIGNATURE
 
 字段说明：
 
-| 字段        | 说明                                |
-| ----------- | ----------------------------------- |
-| `client_id` | 对应的 SSO client ID。              |
-| `event`     | `user_disabled` 或 `user_deleted`。 |
-| `timestamp` | 状态事件发生时的毫秒时间戳。        |
-| `user_id`   | 小助手用户 ID。                     |
+| 字段        | 说明                                                                                         |
+| ----------- | -------------------------------------------------------------------------------------------- |
+| `client_id` | 对应的 SSO client ID。                                                                       |
+| `event`     | 上表中的 callback event。                                                                    |
+| `metadata`  | 事件附加信息，只包含安全的 string/number/boolean/null 字段；未知字段应忽略。                 |
+| `timestamp` | 状态事件发生时的毫秒时间戳。                                                                 |
+| `user_id`   | 用户级事件为小助手用户 ID；`client_disabled`、`client_deleted`、`secret_rotated` 为 `null`。 |
+
+`user_profile_updated` 的 `metadata` 应包含最新展示资料快照，例如：
+
+```json
+{ "nickname": "夜雀", "username": "Mystia" }
+```
+
+其中 `nickname` 可为 `null`；外部服务应使用该事件更新展示缓存，但账号绑定仍只能使用 `user_id` / `mystia_user_id`。
+
+client 级事件示例：
+
+```json
+{
+	"client_id": "game-client",
+	"event": "secret_rotated",
+	"metadata": { "action": "revoked", "secret_id": "secret-record-id" },
+	"timestamp": 1710000000000,
+	"user_id": null
+}
+```
 
 投递行为：
 
@@ -553,7 +617,9 @@ X-Sso-Signature: t=1710000000000,v1=BASE64URL_SIGNATURE
 - 非 2xx、超时或网络错误会进入重试。
 - 重试退避为 1 秒、5 秒、25 秒，之后每次 60 秒。
 - 最多重试 100 次；最终失败后只记录，不再重试。
-- 同一 `(client_id, user_id, event)` 的待处理记录会幂等刷新。
+- 同一 `(client_id, user_id, event)` 的用户级待处理记录会幂等刷新；client 级事件按 `(client_id, event)` 保留最新待处理记录。
+- 外部服务处理回调必须幂等。建议以 `client_id + event + (user_id ?? "client") + timestamp` 作为事件键，或保存已处理的较新 `timestamp`，避免重试、手动重投和网络抖动导致重复撤销、重复封禁或重复轮换。
+- 对 `user_profile_updated`，如果收到比本地已处理时间戳更旧的事件，应忽略，避免旧昵称或旧用户名覆盖新资料；该事件不要求撤销已有外部 token。
 
 ## 十二、回调签名验证
 
@@ -569,7 +635,7 @@ X-Sso-Signature: t=1710000000000,v1=base64url(HMAC-SHA256(signing_secret, "{t}.{
 
 - `t` 是本次投递时间的毫秒时间戳。
 - `rawBody` 是 HTTP 请求收到的原始 body 字符串。
-- `signing_secret` 是当前首位 active secret hash，也就是后台 Secrets 区域展示的首个值。
+- `signing_secret` 是当前首位 active client secret 的完整 `SHA-256(client_secret).hex()` 派生值，长度为 64 位；它不是后台 Secrets 列表中的短摘要、前缀或 label。接入方通常使用自己保存的原始 `client_secret` 按下方第 4 步派生。
 - `v1` 是 HMAC digest 的 Base64URL 字符串。
 
 外部服务验签要求：
@@ -652,15 +718,19 @@ export function verifySsoCallbackSignature({
 
 | 模块             | 必须完成的内容                                                                                          |
 | ---------------- | ------------------------------------------------------------------------------------------------------- |
-| 后端配置         | 保存 `client_id`、后端专用 `client_secret`、夜雀助手基础 URL，以及本服务实际使用的 redirect URI。       |
+| 后端配置         | 保存 `client_id`、后端专用 `client_secret`、双 origin 配置，以及本服务实际使用的 redirect URI。         |
 | 网站登录入口     | 由外部网站后端创建登录会话，保存 `state` 与 `code_verifier`，再把浏览器跳转到 `/api/v1/sso/authorize`。 |
 | 本地客户端登录   | 由客户端生成 `state` 与 `code_verifier`，启动 loopback server 或准备 custom scheme，再打开系统浏览器。  |
 | 授权回调处理     | 回调后先校验 `state`，再把 `ticket` 和 `code_verifier` 交给外部服务后端换票。                           |
-| 后端换票         | 调用 `/api/v1/sso/validate`，用返回的 `user.id` 查找或创建外部业务用户。                                |
+| 后端换票         | 调用 `sso_api_origin` 下的 `/api/v1/sso/validate`，用返回的 `user.id` 查找或创建外部业务用户。          |
 | 外部登录态       | 签发外部服务自己的 session、JWT 或 access token；后续业务请求不依赖夜雀助手 Cookie。                    |
-| 状态撤销         | 接收并验签 `status_callback_url` 回调，撤销被禁用或删除用户的外部 token。                               |
-| 主动状态复核     | 定期调用 `/api/v1/sso/status`，作为状态回调延迟或失败时的兜底。                                         |
+| 状态撤销         | 接收并验签 `status_callback_url` 回调，按事件撤销用户 token、暂停 client 或处理 secret 轮换。           |
+| 主动状态复核     | 定期调用 `sso_api_origin` 下的 `/api/v1/sso/status`，作为状态回调延迟或失败时的兜底。                   |
 | 外部业务权限判断 | 联机权限、皮肤权限、封禁、会员、限流等都由外部服务自己的数据库决定。                                    |
+
+本地登录事务建议至少保存：`state`、`code_verifier`、redirect URI、创建时间、过期时间和一次性消费状态。HTTPS 网站 callback 收到 `ticket` 后，应在数据库或事务存储中原子校验并消费 `state/code_verifier`，避免同一回调被并发重复换票。本地客户端场景也应由外部服务后端最终消费这组事务，而不是只信任客户端上报的 state。
+
+状态复核和回调失败策略建议：`user-disabled`、`user-deleted`、`user-not-found`、验签失败和 client 停用应 fail closed，撤销或拒绝新会话；夜雀助手暂时不可用、网络超时或 `server-misconfigured` 可按外部服务风险偏好短暂 fail soft，但必须记录告警、限制宽限时间，并避免无限期放行旧 token。
 
 推荐用户映射表：
 
@@ -669,6 +739,7 @@ CREATE TABLE external_users (
     id text PRIMARY KEY,
     mystia_user_id text NOT NULL UNIQUE,
     username text NOT NULL,
+	nickname text,
     mystia_status text NOT NULL,
     created_at integer NOT NULL,
     updated_at integer NOT NULL
@@ -729,14 +800,21 @@ CREATE TABLE external_users (
 4. 登录后确认授权页展示正确 client name。
 5. 点击同意，确认回调包含 `ticket` 和原始 `state`。
 6. 外部网站接入时，确认 HTTPS callback 能校验 `state` 并读取 `ticket`。
-7. 外部后端调用 validate，确认返回用户 `id`、`username`、`status`。
+7. 外部后端调用 validate，确认返回用户 `id`、`username`、`nickname`、`status`；`nickname` 仅用于展示，账号绑定仍使用 `id`。
 8. 重复使用同一 ticket，确认返回 `invalid-ticket`。
 9. 使用错误 `code_verifier`，确认返回 `invalid-ticket`。
 10. 使用错误 `client_secret`，确认返回 `invalid-client`。
 11. 管理员禁用 SSO client，确认 authorize、validate 或 status 返回 `client-disabled`；重新启用后再继续后续联调。
 12. 外部服务签发自己的业务 token，并确认后续业务 API 不再依赖夜雀助手 Cookie。
-13. 配置 `status_callback_url`，禁用测试用户，确认外部服务收到并验签回调。
-14. 外部服务调用 status，确认 active 用户返回 ok，禁用或删除用户返回 403。
+13. 配置 `status_callback_url`，禁用或删除测试用户，确认外部服务收到 `user_disabled` / `user_deleted` 并验签回调。
+14. 普通用户自助撤销或管理员撤销授权，确认外部服务收到 `grant_revoked`，并按 `user_id` 清理本 client 下的业务 token。
+15. 普通用户修改用户名或昵称，确认外部服务收到 `user_profile_updated`，按 `user_id` 更新展示缓存且不撤销 token。
+16. 管理员禁用 SSO client，确认外部服务收到 `client_disabled`，公开 authorize、validate 或 status 返回 `client-disabled`。
+17. 管理员软删除 SSO client，确认外部服务收到 `client_deleted`，公开协议不可再使用该 client。
+18. 创建、启用/禁用或撤销 secret，确认外部服务收到 `secret_rotated`，并完成新旧 secret 轮换窗口验证。
+19. 检查 client 级 callback 的 `user_id` 为 `null`，`metadata` 只包含安全字段，callback 队列和投递历史能展示该 metadata。
+20. 外部服务调用 status，确认 active 且仍有授权的用户返回 ok；用户不存在、已撤销授权或从未授权返回 404 `user-not-found`。
+21. 外部服务调用 status，确认用户被禁用或删除返回 403 `user-disabled` / `user-deleted`。
 
 ## 十七、最小接入示例
 
@@ -759,19 +837,19 @@ export function createPkcePair() {
 
 ```ts
 export function createMystiaAuthorizeUrl({
-	baseUrl,
 	clientId,
 	codeChallenge,
 	redirectUri,
+	ssoBrowserOrigin,
 	state,
 }: {
-	baseUrl: string;
 	clientId: string;
 	codeChallenge: string;
 	redirectUri: string;
+	ssoBrowserOrigin: string;
 	state: string;
 }) {
-	const url = new URL('/api/v1/sso/authorize', baseUrl);
+	const url = new URL('/api/v1/sso/authorize', ssoBrowserOrigin);
 	url.searchParams.set('client_id', clientId);
 	url.searchParams.set('redirect_uri', redirectUri);
 	url.searchParams.set('state', state);
@@ -785,28 +863,35 @@ export function createMystiaAuthorizeUrl({
 
 ```ts
 export async function validateMystiaTicket({
-	baseUrl,
 	clientId,
 	clientSecret,
 	codeVerifier,
+	ssoApiOrigin,
 	ticket,
 }: {
-	baseUrl: string;
 	clientId: string;
 	clientSecret: string;
 	codeVerifier: string;
+	ssoApiOrigin: string;
 	ticket: string;
 }) {
-	const response = await fetch(new URL('/api/v1/sso/validate', baseUrl), {
-		body: JSON.stringify({
-			client_id: clientId,
-			client_secret: clientSecret,
-			code_verifier: codeVerifier,
-			ticket,
-		}),
-		headers: { 'Content-Type': 'application/json' },
-		method: 'POST',
-	});
+	const response = await fetch(
+		new URL('/api/v1/sso/validate', ssoApiOrigin),
+		{
+			body: JSON.stringify({
+				client_id: clientId,
+				client_secret: clientSecret,
+				code_verifier: codeVerifier,
+				ticket,
+			}),
+			headers: {
+				Accept: 'application/json',
+				'Content-Type': 'application/json',
+				'User-Agent': 'mystia-online/1.0',
+			},
+			method: 'POST',
+		}
+	);
 
 	const json = (await response.json()) as unknown;
 	if (!response.ok) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { Button } from '@/design/ui/components';
 
@@ -23,7 +23,7 @@ function createSubmitErrorMessage(error: unknown) {
 		if (error.status === 429) {
 			return error.retryAfter === null
 				? '操作过于频繁，请稍后再试。'
-				: `操作过于频繁，请 ${Math.ceil(error.retryAfter)} 秒后再试。`;
+				: `操作过于频繁，请${Math.ceil(error.retryAfter)}秒后再试。`;
 		}
 		if (error.status === 0) {
 			return '网络连接失败，请稍后重试。';
@@ -39,9 +39,15 @@ export default function SsoAuthorizeControls({
 	const [message, setMessage] = useState<string | null>(null);
 	const [submittingIntent, setSubmittingIntent] =
 		useState<TSsoAuthorizeIntent | null>(null);
+	const submitInFlightRef = useRef(false);
 
 	const submit = useCallback(
 		(intent: TSsoAuthorizeIntent) => {
+			if (submitInFlightRef.current) {
+				return;
+			}
+			submitInFlightRef.current = true;
+
 			trackEvent(
 				trackEvent.category.click,
 				'SSO Authorize Button',
@@ -77,6 +83,7 @@ export default function SsoAuthorizeControls({
 					setMessage(createSubmitErrorMessage(error));
 				})
 				.finally(() => {
+					submitInFlightRef.current = false;
 					setSubmittingIntent(null);
 				});
 		},

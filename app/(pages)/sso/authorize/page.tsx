@@ -193,7 +193,8 @@ export default async function SsoAuthorizePage({
 				/>
 				<SsoAuthorizePanel subtitle="确认后将返回发起登录的外部服务">
 					<SsoAuthorizeNotice>
-						{client.name}将获取您的小助手账号身份。
+						{client.name}
+						将获取您的小助手账号身份、用户名和昵称。
 					</SsoAuthorizeNotice>
 					<SsoAuthorizeDetailList>
 						<SsoAuthorizeDetailRow
@@ -202,7 +203,11 @@ export default async function SsoAuthorizePage({
 						/>
 						<SsoAuthorizeDetailRow
 							label="当前账号"
-							value={auth.data.user.username}
+							value={
+								auth.data.user.nickname === null
+									? `用户名：${auth.data.user.username}`
+									: `用户名：${auth.data.user.username}，昵称：${auth.data.user.nickname}`
+							}
 						/>
 					</SsoAuthorizeDetailList>
 					<SsoAuthorizeControls

@@ -1,5 +1,6 @@
-import { randomUUID } from 'node:crypto';
 import { type NextRequest, type NextResponse } from 'next/server';
+import { type Transaction } from 'kysely';
+import { randomUUID } from 'node:crypto';
 
 import { createCsrfToken, verifyCsrfToken } from './csrf';
 import {
@@ -32,6 +33,7 @@ import {
 	updateCredentialAndRotateSession,
 } from '@/lib/account/server/repositories/credentials';
 import {
+	type TDatabase,
 	type TSession,
 	type TSessionNew,
 	type TUser,
@@ -108,7 +110,8 @@ export async function createAccountSessionForActiveUser(
 	userId: TUser['id'],
 	request: NextRequest,
 	user: TActiveUserSessionPatch,
-	credentialPasswordHash?: TUserCredential['password_hash']
+	credentialPasswordHash?: TUserCredential['password_hash'],
+	writeAuditLog?: (trx: Transaction<TDatabase>, now: number) => Promise<void>
 ) {
 	const draft = createAccountSessionDraft(userId, request);
 	const { user_id: _userId, ...session } = draft.record;
@@ -120,6 +123,7 @@ export async function createAccountSessionForActiveUser(
 		session,
 		user,
 		userId,
+		...(writeAuditLog === undefined ? {} : { writeAuditLog }),
 	});
 	if (!didCreate) {
 		return null;
@@ -301,7 +305,8 @@ export async function rotateAccountSession(
 export async function rotateAccountSessionWithCredentialUpdate(
 	session: TSession,
 	request: NextRequest,
-	credential: TUserCredentialUpdate
+	credential: TUserCredentialUpdate,
+	writeAuditLog?: (trx: Transaction<TDatabase>, now: number) => Promise<void>
 ) {
 	const token = createSessionToken();
 	const tokenHash = hashSessionToken(token);
@@ -317,6 +322,7 @@ export async function rotateAccountSessionWithCredentialUpdate(
 		},
 		sessionId: session.id,
 		userId: session.user_id,
+		...(writeAuditLog === undefined ? {} : { writeAuditLog }),
 	});
 
 	return { csrfToken: createCsrfToken(tokenHash), token, tokenHash };

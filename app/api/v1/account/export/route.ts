@@ -3,6 +3,7 @@ import { type NextRequest } from 'next/server';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
+	checkAccountPreAuthRateLimitRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
 	createAccountAuthErrorRouteResponse,
@@ -32,6 +33,14 @@ export async function GET(request: NextRequest) {
 		return cookieSecurityResponse;
 	}
 
+	const preAuthRateLimitResponse = checkAccountPreAuthRateLimitRouteResponse(
+		request,
+		'account-export'
+	);
+	if (preAuthRateLimitResponse !== null) {
+		return preAuthRateLimitResponse;
+	}
+
 	const authModule = await import('@/lib/account/server/auth');
 	const auth = await authModule.authenticateAccountFromRequest(request);
 	if (auth.status === 'error') {
@@ -46,16 +55,32 @@ export async function GET(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	const [userStateModule, userModule] = await Promise.all([
-		import('@/lib/account/server/repositories/userState'),
-		import('@/lib/account/server/user'),
-	]);
+	const [userStateModule, userModule, accountAuditModule] = await Promise.all(
+		[
+			import('@/lib/account/server/repositories/userState'),
+			import('@/lib/account/server/user'),
+			import('@/lib/account/server/accountAuditService'),
+		]
+	);
 	const snapshot = await userStateModule.getUserStateSnapshot(
 		auth.data.user.id
 	);
 	if (snapshot === null) {
 		return createNoStoreErrorResponse('unauthorized', 401);
 	}
+
+	await accountAuditModule.writeAccountAuditLogBestEffort(
+		accountAuditModule.createAccountUserAuditLogInput({
+			action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+				.accountDataExported,
+			metadata: {
+				namespace_count: snapshot.state.length,
+				state_epoch: snapshot.user.state_epoch,
+			},
+			request,
+			userId: auth.data.user.id,
+		})
+	);
 
 	return createNoStoreJsonResponse({
 		state: snapshot.state,

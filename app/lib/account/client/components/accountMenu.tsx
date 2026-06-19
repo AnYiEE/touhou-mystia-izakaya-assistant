@@ -69,7 +69,7 @@ export default memo<IAccountMenuProps>(function AccountMenu({ onClick }) {
 
 	return (
 		<AccountButton
-			label={user === null ? '未登录' : user.username}
+			label={user === null ? '未登录' : (user.nickname ?? user.username)}
 			onClick={onClick}
 		/>
 	);

@@ -3,6 +3,7 @@ import { type NextRequest } from 'next/server';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
+	checkAccountPreAuthRateLimitRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
 	createAccountAuthErrorRouteResponse,
@@ -33,6 +34,14 @@ export async function DELETE(request: NextRequest) {
 		return cookieSecurityResponse;
 	}
 
+	const preAuthRateLimitResponse = checkAccountPreAuthRateLimitRouteResponse(
+		request,
+		'account-delete'
+	);
+	if (preAuthRateLimitResponse !== null) {
+		return preAuthRateLimitResponse;
+	}
+
 	const authModule = await import('@/lib/account/server/auth');
 	const auth = await authModule.authenticateAccountFromRequest(request);
 	if (auth.status === 'error') {
@@ -51,10 +60,30 @@ export async function DELETE(request: NextRequest) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
-	const usersModule = await import('@/lib/account/server/repositories/users');
-	await usersModule.setUserStatusAndDeleteSessions(
+	const [usersModule, accountAuditModule] = await Promise.all([
+		import('@/lib/account/server/repositories/users'),
+		import('@/lib/account/server/accountAuditService'),
+	]);
+	await usersModule.setUserStatusAndDeleteSessionsWithAudit(
 		auth.data.user.id,
-		USER_STATUS_MAP.deleted
+		USER_STATUS_MAP.deleted,
+		(trx, auditNow) =>
+			accountAuditModule.writeAccountAuditLogInTransaction(
+				trx,
+				accountAuditModule.createAccountUserAuditLogInput({
+					action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+						.accountDeleted,
+					metadata: {
+						auth_record_digest:
+							accountAuditModule.createAccountAuditValueDigest(
+								auth.data.session.id
+							),
+					},
+					request,
+					userId: auth.data.user.id,
+				}),
+				auditNow
+			)
 	);
 
 	const response = createNoStoreJsonResponse({ message: 'user-deleted' });

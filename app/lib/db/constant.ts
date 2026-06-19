@@ -26,6 +26,7 @@ export function getConfiguredSqliteDatabasePath(
 }
 
 export const TABLE_NAME_MAP = {
+	accountAuditLog: 'account_audit_logs',
 	announcement: 'announcements',
 	announcementDismissal: 'announcement_dismissals',
 	announcementVersion: 'announcement_versions',
@@ -33,8 +34,11 @@ export const TABLE_NAME_MAP = {
 	backupFileRecord: 'backup_files',
 	backupImportRecord: 'backup_imports',
 	session: 'sessions',
+	ssoCallbackDelivery: 'sso_callback_deliveries',
 	ssoCallbackQueue: 'sso_callback_queue',
 	ssoClient: 'sso_clients',
+	ssoClientSecret: 'sso_client_secrets',
+	ssoGrantEvent: 'sso_grant_events',
 	ssoTicket: 'sso_tickets',
 	ssoUserClientGrant: 'sso_user_client_grants',
 	user: 'users',

@@ -67,6 +67,18 @@ export function checkAccountRateLimitRouteResponse(
 	return result.status === 'ok' ? null : createGuardErrorResponse(result);
 }
 
+export function checkAccountPreAuthRateLimitRouteResponse(
+	request: NextRequest,
+	scope: string
+) {
+	return checkAccountRateLimitRouteResponse(
+		request,
+		`pre-auth:${scope}`,
+		'',
+		{ noTrustedIpGate: true }
+	);
+}
+
 export async function readJsonBodyResult<T extends object>(
 	request: NextRequest,
 	maxBytes = MAX_ACCOUNT_SMALL_JSON_BODY_BYTES

@@ -83,11 +83,13 @@ export async function POST(
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	const [passwordModule, usersModule, credentialsModule] = await Promise.all([
-		import('@/lib/account/server/password'),
-		import('@/lib/account/server/repositories/users'),
-		import('@/lib/account/server/repositories/credentials'),
-	]);
+	const [passwordModule, usersModule, credentialsModule, accountAuditModule] =
+		await Promise.all([
+			import('@/lib/account/server/password'),
+			import('@/lib/account/server/repositories/users'),
+			import('@/lib/account/server/repositories/credentials'),
+			import('@/lib/account/server/accountAuditService'),
+		]);
 
 	if (!passwordModule.checkPasswordPolicy(body.password)) {
 		return createNoStoreErrorResponse('invalid-password-rule', 400);
@@ -101,13 +103,34 @@ export async function POST(
 	}
 
 	try {
-		await credentialsModule.updateCredentialAndDeleteSessions(id, {
-			failed_attempts: 0,
-			locked_until: null,
-			password_hash: await passwordModule.hashPassword(body.password),
-			password_must_change: 1,
-			updated_at: Date.now(),
-		});
+		const now = Date.now();
+		await credentialsModule.updateCredentialAndDeleteSessionsWithAudit(
+			id,
+			{
+				failed_attempts: 0,
+				locked_until: null,
+				password_hash: await passwordModule.hashPassword(body.password),
+				password_must_change: 1,
+				updated_at: now,
+			},
+			(trx, auditNow) =>
+				accountAuditModule.writeAccountAuditLogInTransaction(
+					trx,
+					accountAuditModule.createAccountAdminAuditLogInput({
+						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+							.adminResetPassword,
+						adminId: auth.payload.username,
+						metadata: {
+							must_change_on_next_login: true,
+							target_user_id: id,
+						},
+						request,
+						targetId: id,
+						targetType: 'user',
+					}),
+					auditNow
+				)
+		);
 	} catch (error) {
 		if (error instanceof Error) {
 			if (error.message === 'user-not-found') {
@@ -117,12 +140,15 @@ export async function POST(
 				return createNoStoreErrorResponse('invalid-user-status', 403);
 			}
 			if (error.message === 'credential-not-found') {
-				return createNoStoreErrorResponse('credential-not-found', 500);
+				console.warn(
+					'Account credential is missing during password reset.'
+				);
+
+				return createNoStoreErrorResponse('server-misconfigured', 500);
 			}
 		}
 
 		throw error;
 	}
-
 	return createNoStoreJsonResponse({ message: 'password-reset' });
 }

@@ -12,6 +12,9 @@ import { ProgressBar, ProgressBarProvider } from 'react-transition-progress';
 import CompatibleBrowser from '@/components/compatibleBrowser';
 import CustomerRareTutorial from '@/components/customerRareTutorial';
 import DonationModal from '@/components/donationModal';
+import AccountInitialStateHydrator from '@/lib/account/client/components/accountInitialStateHydrator';
+import AccountSessionInitialDataHydrator from '@/lib/account/client/components/accountSessionInitialDataHydrator';
+import AccountSsoGrantInitialDataHydrator from '@/lib/account/client/components/accountSsoGrantInitialDataHydrator';
 
 import { siteConfig } from '@/configs';
 import { type TDlc } from '@/data';
@@ -19,6 +22,11 @@ import {
 	AccountFeatureModals,
 	startAccountFeatureClients,
 } from '@/lib/account/client/featureClient';
+import {
+	type IAccountSessionInitialData,
+	type IAccountSsoGrantInitialData,
+	type TAccountMeResponse,
+} from '@/lib/account/shared/types';
 import {
 	beveragesStore,
 	clothesStore,
@@ -38,13 +46,21 @@ import { toSet } from '@/utilities';
 const { cdnUrl, version } = siteConfig;
 
 interface IProps {
+	accountInitialData: TAccountMeResponse | null;
+	accountSessionInitialData: IAccountSessionInitialData | null;
+	accountSsoGrantInitialData: IAccountSsoGrantInitialData | null;
 	locale: string;
 }
 
 export default function Providers({
+	accountInitialData,
+	accountSessionInitialData,
+	accountSsoGrantInitialData,
 	children,
 	locale,
 }: PropsWithChildren<IProps>) {
+	const shouldSkipInitialAccountBootstrap = accountInitialData !== null;
+
 	useEffect(() => {
 		// If the saved version is not set or outdated, initialize it with the current version.
 		// When an outdated version is detected, the current tab will update the saved version in local storage.
@@ -189,12 +205,14 @@ export default function Providers({
 			toSet(globalHiddenRecipes)
 		);
 
-		const stopAccountFeatureClients = startAccountFeatureClients();
+		const stopAccountFeatureClients = startAccountFeatureClients({
+			skipInitialBootstrap: shouldSkipInitialAccountBootstrap,
+		});
 
 		return () => {
 			stopAccountFeatureClients();
 		};
-	}, []);
+	}, [shouldSkipInitialAccountBootstrap]);
 
 	const router = useRouter();
 
@@ -204,6 +222,15 @@ export default function Providers({
 				{children}
 				<ProgressBar className="fixed top-0 z-60 h-1 rounded-2xl bg-primary dark:lg:h-0.5" />
 				<CompatibleBrowser />
+				{accountInitialData !== null && (
+					<AccountInitialStateHydrator data={accountInitialData} />
+				)}
+				<AccountSessionInitialDataHydrator
+					data={accountSessionInitialData}
+				/>
+				<AccountSsoGrantInitialDataHydrator
+					data={accountSsoGrantInitialData}
+				/>
 				<AccountFeatureModals />
 				<CustomerRareTutorial />
 				<DonationModal />

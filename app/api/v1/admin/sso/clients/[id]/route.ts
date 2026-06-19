@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server';
 
 import { checkAdminSsoClientRequest } from '@/lib/account/server/adminSsoClientRouteResponses';
+import { getRequestAuditContext } from '@/lib/account/server/request';
 import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
 import {
 	createNoStoreErrorResponse,
@@ -25,15 +26,19 @@ export async function GET(
 		return check.response;
 	}
 
-	const ssoModule = await import('@/lib/account/server/sso');
-	const client = await ssoModule.getSsoClientById(id);
-	if (client === null) {
-		return createNoStoreErrorResponse('sso-client-not-found', 404);
+	const serviceModule =
+		await import('@/lib/account/server/adminSsoClientService');
+	const result = await serviceModule.getAdminSsoClient(id);
+	if (result.status === 'error') {
+		return createNoStoreErrorResponse(
+			result.error,
+			serviceModule.ADMIN_SSO_CLIENT_SERVICE_ERROR_STATUS_MAP[
+				result.error
+			]
+		);
 	}
 
-	return createNoStoreJsonResponse({
-		client: ssoModule.createSsoClientPublicProfile(client),
-	});
+	return createNoStoreJsonResponse(result.data);
 }
 
 export async function PUT(
@@ -68,7 +73,10 @@ export async function PUT(
 
 	const serviceModule =
 		await import('@/lib/account/server/adminSsoClientService');
-	const result = await serviceModule.updateAdminSsoClient(id, body);
+	const result = await serviceModule.updateAdminSsoClient(id, body, {
+		adminId: check.auth.payload.username,
+		...getRequestAuditContext(request),
+	});
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,
@@ -97,7 +105,10 @@ export async function DELETE(
 
 	const serviceModule =
 		await import('@/lib/account/server/adminSsoClientService');
-	const result = await serviceModule.deleteAdminSsoClient(id);
+	const result = await serviceModule.deleteAdminSsoClient(id, {
+		adminId: check.auth.payload.username,
+		...getRequestAuditContext(request),
+	});
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,

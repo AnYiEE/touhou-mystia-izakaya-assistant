@@ -9,6 +9,7 @@ export function startAccountFeatureClients() {
 	accountStore.shared.isBootstrapped.set(true);
 	accountStore.shared.isLoggedIn.set(false);
 	accountStore.shared.passwordMustChange.set(false);
+	accountStore.shared.sessionInitialData.set(null);
 	accountStore.shared.ssoGrantInitialData.set(null);
 	accountStore.shared.sync.canRetry.set(false);
 	accountStore.shared.sync.conflicts.set([]);

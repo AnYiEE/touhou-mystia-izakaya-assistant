@@ -54,6 +54,7 @@ export interface IAccountSyncBroadcastMessage {
 		| 'data-deleted'
 		| 'dirty'
 		| 'lease-changed'
+		| 'profile-updated'
 		| 'remote-applied'
 		| 'uploaded';
 	userId: string;

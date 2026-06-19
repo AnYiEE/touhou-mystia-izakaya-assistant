@@ -1,3 +1,5 @@
+import { unstable_rethrow } from 'next/navigation';
+
 import { authenticateAccountFromRequest, createAccountCsrfToken } from './auth';
 import { createCurrentRequest } from './currentRequest';
 import {
@@ -7,10 +9,31 @@ import {
 import { createAccountUserProfile } from './user';
 import {
 	type IAccountMeSuccessResponse,
+	type IAccountSessionInitialData,
 	type IAccountSsoGrantInitialData,
+	type TAccountMeResponse,
 } from '../shared/types';
 import { getLogSafeErrorCode } from '@/lib/logging';
 import { getUserStateSnapshot } from '@/lib/account/server/repositories/userState';
+import { createAccountSessionRecord } from '@/lib/account/server/sessionPresentation';
+
+export interface IAccountFeatureInitialData {
+	account: TAccountMeResponse;
+	ssoGrants: IAccountSsoGrantInitialData | null;
+	sessions: IAccountSessionInitialData | null;
+}
+
+function createAccountAnonymousInitialData(): TAccountMeResponse {
+	return {
+		csrf_token: null,
+		featureEnabled: true,
+		isLoggedIn: false,
+		password_must_change: false,
+		state_epoch: null,
+		syncMeta: null,
+		user: null,
+	};
+}
 
 export async function createAccountSsoGrantInitialDataForUser(
 	userId: string
@@ -18,37 +41,27 @@ export async function createAccountSsoGrantInitialDataForUser(
 	const ssoModule = await import('./sso');
 	const grants = await ssoModule.listSsoUserClientGrantsForUser(userId);
 
-	return { grants, user_id: userId };
+	return { grants, rendered_at: Date.now(), user_id: userId };
 }
 
-export async function readAccountSsoGrantInitialData(
-	pathname = '/account/sso/grants/initial'
-): Promise<IAccountSsoGrantInitialData | null> {
-	try {
-		const accountFeatureResult = await checkAccountFeatureGuard();
-		if (accountFeatureResult.status === 'error') {
-			return null;
-		}
+export async function createAccountSessionInitialDataForAuthenticatedRequest({
+	sessionId,
+	userId,
+}: {
+	sessionId: string;
+	userId: string;
+}): Promise<IAccountSessionInitialData> {
+	const sessionsModule =
+		await import('@/lib/account/server/repositories/sessions');
+	const sessions = await sessionsModule.listSessionsByUserId(userId);
 
-		const request = await createCurrentRequest(pathname);
-		const cookieSecurityResult = checkAccountCookieSecurityGuard(request);
-		if (cookieSecurityResult.status === 'error') {
-			return null;
-		}
-
-		const auth = await authenticateAccountFromRequest(request);
-		if (auth.status === 'error') {
-			return null;
-		}
-
-		return await createAccountSsoGrantInitialDataForUser(auth.data.user.id);
-	} catch (error) {
-		console.warn('Account SSO grant initial data read failed.', {
-			errorCode: getLogSafeErrorCode(error),
-		});
-
-		return null;
-	}
+	return {
+		rendered_at: Date.now(),
+		sessions: sessions.map((session) =>
+			createAccountSessionRecord(session, sessionId)
+		),
+		user_id: userId,
+	};
 }
 
 export async function createAccountMeInitialDataForAuthenticatedRequest({
@@ -84,4 +97,100 @@ export async function createAccountMeInitialDataForAuthenticatedRequest({
 		},
 		user: createAccountUserProfile(stateSnapshot.user),
 	};
+}
+
+export async function readAccountSsoGrantInitialData(
+	pathname = '/account/sso/grants/initial'
+): Promise<IAccountSsoGrantInitialData | null> {
+	try {
+		const accountFeatureResult = await checkAccountFeatureGuard();
+		if (accountFeatureResult.status === 'error') {
+			return null;
+		}
+
+		const request = await createCurrentRequest(pathname);
+		const cookieSecurityResult = checkAccountCookieSecurityGuard(request);
+		if (cookieSecurityResult.status === 'error') {
+			return null;
+		}
+
+		const auth = await authenticateAccountFromRequest(request);
+		if (auth.status === 'error') {
+			return null;
+		}
+
+		return await createAccountSsoGrantInitialDataForUser(auth.data.user.id);
+	} catch (error) {
+		unstable_rethrow(error);
+
+		console.warn('Account SSO grant initial data read failed.', {
+			errorCode: getLogSafeErrorCode(error),
+		});
+
+		return null;
+	}
+}
+
+export async function readAccountFeatureInitialData(
+	pathname = '/account/initial'
+): Promise<IAccountFeatureInitialData | null> {
+	try {
+		const accountFeatureResult = await checkAccountFeatureGuard();
+		if (accountFeatureResult.status === 'error') {
+			return null;
+		}
+
+		const request = await createCurrentRequest(pathname);
+		const cookieSecurityResult = checkAccountCookieSecurityGuard(request);
+		if (cookieSecurityResult.status === 'error') {
+			return null;
+		}
+
+		const auth = await authenticateAccountFromRequest(request, true);
+		if (auth.status === 'error') {
+			return auth.message === 'unauthorized'
+				? {
+						account: createAccountAnonymousInitialData(),
+						sessions: null,
+						ssoGrants: null,
+					}
+				: null;
+		}
+
+		const account = await createAccountMeInitialDataForAuthenticatedRequest(
+			{
+				sessionTokenHash: auth.data.sessionTokenHash,
+				userId: auth.data.user.id,
+			}
+		);
+		if (account === null) {
+			return null;
+		}
+
+		const passwordMustChange =
+			auth.data.credential.password_must_change === 1;
+		const sessions = passwordMustChange
+			? null
+			: await createAccountSessionInitialDataForAuthenticatedRequest({
+					sessionId: auth.data.session.id,
+					userId: auth.data.user.id,
+				});
+		const ssoGrants = passwordMustChange
+			? null
+			: await createAccountSsoGrantInitialDataForUser(auth.data.user.id);
+
+		return {
+			account: { ...account, password_must_change: passwordMustChange },
+			sessions,
+			ssoGrants,
+		};
+	} catch (error) {
+		unstable_rethrow(error);
+
+		console.warn('Account feature initial data read failed.', {
+			errorCode: getLogSafeErrorCode(error),
+		});
+
+		return null;
+	}
 }

@@ -76,7 +76,10 @@ export async function POST(request: NextRequest) {
 		const client = await ssoModule.getSsoClientById(clientId);
 		if (
 			client === null ||
-			!ssoModule.verifySsoClientSecret(client, clientSecret)
+			!(await ssoModule.verifyAndTouchSsoClientSecret(
+				client,
+				clientSecret
+			))
 		) {
 			const invalidClientRateLimitResponse =
 				checkSsoRateLimitRouteResponse(

@@ -58,6 +58,7 @@ const ACCOUNT_TABLE_COLUMNS_MAP = {
 		'id',
 		'username',
 		'username_normalized',
+		'nickname',
 		'status',
 		'state_epoch',
 		'created_at',
@@ -106,6 +107,7 @@ const ACCOUNT_TABLE_COLUMN_DEFINITION_MAP = {
 		deleted_at: { dataType: 'integer' },
 		id: { dataType: 'text', structural: true },
 		last_login_at: { dataType: 'integer' },
+		nickname: { dataType: 'text' },
 		state_epoch: { dataType: 'integer', defaultTo: 0, notNull: true },
 		status: { dataType: 'text', defaultTo: 'active', notNull: true },
 		updated_at: { dataType: 'integer', defaultTo: 0, notNull: true },
@@ -388,6 +390,7 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 		.addColumn('id', 'text', (col) => col.notNull().primaryKey())
 		.addColumn('username', 'text', (col) => col.notNull())
 		.addColumn('username_normalized', 'text', (col) => col.notNull())
+		.addColumn('nickname', 'text')
 		.addColumn('status', 'text', (col) => col.notNull().defaultTo('active'))
 		.addColumn('state_epoch', 'integer', (col) =>
 			col.notNull().defaultTo(0)
@@ -516,6 +519,13 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 		.ifNotExists()
 		.on(TABLE_NAME_MAP.session)
 		.column('user_id')
+		.execute();
+
+	await database.schema
+		.createIndex('sessions_user_last_seen_created_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.session)
+		.columns(['user_id', 'last_seen_at', 'created_at'])
 		.execute();
 
 	await ensureAccountTableStructure(database);

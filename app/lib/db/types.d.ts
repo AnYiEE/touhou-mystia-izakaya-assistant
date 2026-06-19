@@ -6,6 +6,7 @@ import {
 } from 'kysely';
 
 import { type TUserStatus } from '@/lib/account/shared/types';
+import { type SSO_CALLBACK_EVENT_LIST } from '@/lib/account/shared/constants';
 import {
 	type TAnnouncementAudience,
 	type TAnnouncementLevel,
@@ -13,7 +14,21 @@ import {
 } from '@/lib/announcements/shared/types';
 import { type TSyncNamespace } from '@/lib/account/sync';
 
-export type TSsoCallbackEvent = 'user_deleted' | 'user_disabled';
+export type TSsoCallbackEvent = (typeof SSO_CALLBACK_EVENT_LIST)[number];
+
+export type TSsoGrantEvent =
+	| 'admin_revoked'
+	| 'client_deleted'
+	| 'grant_created'
+	| 'grant_refreshed'
+	| 'user_revoked';
+
+export type TSsoActorType = 'admin' | 'client' | 'system' | 'user';
+
+export type TSsoCallbackDeliveryStatus =
+	| 'failed'
+	| 'final_failed'
+	| 'succeeded';
 
 interface ITableAnnouncement {
 	audience: TAnnouncementAudience;
@@ -81,6 +96,7 @@ interface ITableUser {
 	deleted_at: number | null;
 	id: string;
 	last_login_at: number | null;
+	nickname: string | null;
 	state_epoch: number;
 	status: TUserStatus;
 	updated_at: number;
@@ -112,17 +128,23 @@ interface ITableSsoCallbackQueue {
 	client_id: string;
 	created_at: number;
 	event: TSsoCallbackEvent;
+	generation: number;
 	id: Generated<number>;
 	last_error: string | null;
+	lease_expires_at: number | null;
+	lease_token: string | null;
+	metadata_json: string;
 	next_retry_at: number;
 	timestamp: number;
-	user_id: string;
+	user_id: string | null;
 }
 
 interface ITableSsoClient {
 	cancel_redirect_uri: string | null;
 	created_at: number;
 	custom_scheme_redirect_uris: string;
+	deleted_at: number | null;
+	deleted_by_admin: string | null;
 	disabled_at: number | null;
 	https_redirect_uris: string;
 	id: string;
@@ -133,12 +155,67 @@ interface ITableSsoClient {
 	updated_at: number;
 }
 
+interface ITableSsoClientSecret {
+	client_id: string;
+	created_at: number;
+	created_by_admin: string | null;
+	disabled_at: number | null;
+	id: string;
+	label: string | null;
+	last_used_at: number | null;
+	position: number;
+	revoked_at: number | null;
+	secret_hash: string;
+}
+
+interface ITableSsoGrantEvent {
+	actor_id: string | null;
+	actor_type: TSsoActorType;
+	client_id: string;
+	created_at: number;
+	event: TSsoGrantEvent;
+	id: Generated<number>;
+	reason: string | null;
+	user_id: string;
+}
+
+interface ITableSsoCallbackDelivery {
+	attempt: number;
+	client_id: string;
+	created_at: number;
+	duration_ms: number | null;
+	error: string | null;
+	event: TSsoCallbackEvent;
+	http_status: number | null;
+	id: Generated<number>;
+	metadata_json: string;
+	queue_key: string;
+	status: TSsoCallbackDeliveryStatus;
+	user_id: string | null;
+}
+
+interface ITableAccountAuditLog {
+	action: string;
+	actor_id: string | null;
+	actor_type: TSsoActorType;
+	created_at: number;
+	id: Generated<number>;
+	ip_hash: string | null;
+	metadata_json: string;
+	scope: string;
+	target_id: string | null;
+	target_type: string;
+	user_agent_hash: string | null;
+}
+
 interface ITableSsoTicket {
 	client_id: string;
 	code_challenge: string;
 	created_at: number;
 	expires_at: number;
 	redirect_uri: string;
+	revoked_at: number | null;
+	revoked_reason: string | null;
 	ticket_hash: string;
 	used_at: number | null;
 	user_id: string;
@@ -205,6 +282,22 @@ export type TSsoClient = Selectable<ITableSsoClient>;
 export type TSsoClientNew = Insertable<ITableSsoClient>;
 export type TSsoClientUpdate = Updateable<ITableSsoClient>;
 
+export type TSsoClientSecret = Selectable<ITableSsoClientSecret>;
+export type TSsoClientSecretNew = Insertable<ITableSsoClientSecret>;
+export type TSsoClientSecretUpdate = Updateable<ITableSsoClientSecret>;
+
+export type TSsoGrantEventRecord = Selectable<ITableSsoGrantEvent>;
+export type TSsoGrantEventNew = Insertable<ITableSsoGrantEvent>;
+export type TSsoGrantEventUpdate = Updateable<ITableSsoGrantEvent>;
+
+export type TSsoCallbackDelivery = Selectable<ITableSsoCallbackDelivery>;
+export type TSsoCallbackDeliveryNew = Insertable<ITableSsoCallbackDelivery>;
+export type TSsoCallbackDeliveryUpdate = Updateable<ITableSsoCallbackDelivery>;
+
+export type TAccountAuditLog = Selectable<ITableAccountAuditLog>;
+export type TAccountAuditLogNew = Insertable<ITableAccountAuditLog>;
+export type TAccountAuditLogUpdate = Updateable<ITableAccountAuditLog>;
+
 export type TSsoTicket = Selectable<ITableSsoTicket>;
 export type TSsoTicketNew = Insertable<ITableSsoTicket>;
 export type TSsoTicketUpdate = Updateable<ITableSsoTicket>;
@@ -218,6 +311,7 @@ export type TUserStateNew = Insertable<ITableUserState>;
 export type TUserStateUpdate = Updateable<ITableUserState>;
 
 export interface TDatabase {
+	account_audit_logs: ITableAccountAuditLog;
 	announcement_dismissals: ITableAnnouncementDismissal;
 	announcement_versions: ITableAnnouncementVersion;
 	announcements: ITableAnnouncement;
@@ -225,8 +319,11 @@ export interface TDatabase {
 	backup_files: ITableBackupFileRecord;
 	backup_imports: ITableBackupImportRecord;
 	sessions: ITableSession;
+	sso_callback_deliveries: ITableSsoCallbackDelivery;
 	sso_callback_queue: ITableSsoCallbackQueue;
 	sso_clients: ITableSsoClient;
+	sso_client_secrets: ITableSsoClientSecret;
+	sso_grant_events: ITableSsoGrantEvent;
 	sso_tickets: ITableSsoTicket;
 	sso_user_client_grants: ITableSsoUserClientGrant;
 	users: ITableUser;

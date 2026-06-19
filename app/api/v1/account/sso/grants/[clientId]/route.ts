@@ -3,10 +3,12 @@ import { type NextRequest } from 'next/server';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
+	checkAccountPreAuthRateLimitRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
 	createAccountAuthErrorRouteResponse,
 } from '@/lib/account/server/routeResponses';
+import { getRequestAuditContext } from '@/lib/account/server/request';
 import { checkSsoClientId } from '@/lib/account/server/ssoValidation';
 import {
 	createNoStoreErrorResponse,
@@ -36,6 +38,14 @@ export async function DELETE(
 		checkAccountCookieSecurityRouteResponse(request);
 	if (cookieSecurityResponse !== null) {
 		return cookieSecurityResponse;
+	}
+
+	const preAuthRateLimitResponse = checkAccountPreAuthRateLimitRouteResponse(
+		request,
+		'account-revoke-sso-grant'
+	);
+	if (preAuthRateLimitResponse !== null) {
+		return preAuthRateLimitResponse;
 	}
 
 	const authModule = await import('@/lib/account/server/auth');
@@ -68,6 +78,22 @@ export async function DELETE(
 	if (!deleted) {
 		return createNoStoreErrorResponse('sso-grant-not-found', 404);
 	}
+
+	const auditModule = await import('@/lib/account/server/adminAuditService');
+	await auditModule.writeAdminAuditLogBestEffort({
+		action: 'user-revoke-sso-grant',
+		actorId: auth.data.user.id,
+		actorType: 'user',
+		metadata: {
+			client_id: clientId,
+			reason: 'user-revoke-grant',
+			user_id: auth.data.user.id,
+		},
+		scope: 'sso',
+		targetId: `${clientId}:${auth.data.user.id}`,
+		targetType: 'sso_grant',
+		...getRequestAuditContext(request),
+	});
 
 	return createNoStoreJsonResponse({ message: 'sso-grant-revoked' });
 }

@@ -170,7 +170,7 @@ export default function Navbar() {
 				? '欢迎您'
 				: accountUser === null
 					? '未登录'
-					: accountUser.username;
+					: (accountUser.nickname ?? accountUser.username);
 	const desktopAccountMenuDisabledKeys =
 		accountBootstrapStatus === 'unknown' ? ['account'] : [];
 	const desktopSelectedThemeKeys = [`theme:${theme}`];

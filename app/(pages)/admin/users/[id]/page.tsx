@@ -18,6 +18,7 @@ import {
 	checkAdminFeatureGuard,
 } from '@/lib/account/server/guards';
 import { ACCOUNT_COOKIE_NAME_MAP } from '@/lib/account/shared/constants';
+import { type IAdminSsoUserGrantsData } from '@/lib/account/shared/types';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -54,6 +55,22 @@ async function readInitialDetail(
 	};
 }
 
+async function readInitialSsoGrants(
+	id: string
+): Promise<IAdminSsoUserGrantsData> {
+	const serviceModule =
+		await import('@/lib/account/server/adminSsoGrantService');
+	const result = await serviceModule.listAdminSsoUserGrants(id, {
+		page: 1,
+		pageSize: 20,
+	});
+	if (result.status === 'error') {
+		throw new Error(result.error);
+	}
+
+	return result.data;
+}
+
 function renderClient(initialData: IAdminUserDetailInitialData) {
 	return <AdminUserDetailClient initialData={initialData} />;
 }
@@ -83,6 +100,7 @@ export default async function AdminUserDetailPage({
 		listHref,
 		message: null,
 		renderedAt: Date.now(),
+		ssoGrants: null,
 		userId: id,
 	};
 
@@ -133,13 +151,24 @@ export default async function AdminUserDetailPage({
 	};
 	try {
 		const detail = await readInitialDetail(id);
+		let ssoGrants: IAdminUserDetailInitialData['ssoGrants'] = null;
+		let message = detail === null ? 'target-user-not-found' : null;
+		if (detail !== null) {
+			try {
+				ssoGrants = await readInitialSsoGrants(id);
+			} catch (error) {
+				message =
+					error instanceof Error ? error.message : '读取SSO授权失败';
+			}
+		}
 
 		return renderClient({
 			...initialData,
 			admin,
 			detail,
 			isDetailServerLoaded: true,
-			message: detail === null ? 'target-user-not-found' : null,
+			message,
+			ssoGrants,
 		});
 	} catch (error) {
 		return renderClient({
