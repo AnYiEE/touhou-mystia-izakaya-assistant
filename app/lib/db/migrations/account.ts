@@ -4,7 +4,7 @@ import { migrateAnnouncementTables } from './announcements';
 import { migrateSsoTables } from './sso';
 import { TABLE_NAME_MAP } from '../constant';
 import { type TDatabase } from '../types';
-import { getTableColumns } from '../utils';
+import { dropMismatchedSqliteIndexes, getTableColumns } from '../utils';
 
 const SERVER_MISCONFIGURED_MESSAGE = 'server-misconfigured';
 
@@ -483,6 +483,71 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 			tableName as keyof typeof ACCOUNT_TABLE_COLUMNS_MAP
 		);
 	}
+
+	await dropMismatchedSqliteIndexes(database, [
+		{
+			columns: ['username_normalized'],
+			indexName: 'users_username_normalized_unique_index',
+			tableName: TABLE_NAME_MAP.user,
+			unique: true,
+		},
+		{
+			columns: ['status'],
+			indexName: 'users_status_index',
+			tableName: TABLE_NAME_MAP.user,
+		},
+		{
+			columns: ['updated_at', 'id'],
+			indexName: 'users_updated_id_index',
+			tableName: TABLE_NAME_MAP.user,
+		},
+		{
+			columns: ['status', 'updated_at', 'id'],
+			indexName: 'users_status_updated_id_index',
+			tableName: TABLE_NAME_MAP.user,
+		},
+		{
+			columns: ['user_id'],
+			indexName: 'backup_imports_user_id_index',
+			tableName: TABLE_NAME_MAP.backupImportRecord,
+		},
+		{
+			columns: ['created_at'],
+			indexName: 'backup_imports_created_at_index',
+			tableName: TABLE_NAME_MAP.backupImportRecord,
+		},
+		{
+			columns: ['user_id', 'created_at'],
+			indexName: 'backup_imports_user_created_at_index',
+			tableName: TABLE_NAME_MAP.backupImportRecord,
+		},
+		{
+			columns: ['token_hash'],
+			indexName: 'sessions_token_hash_unique_index',
+			tableName: TABLE_NAME_MAP.session,
+			unique: true,
+		},
+		{
+			columns: ['user_id'],
+			indexName: 'sessions_user_id_index',
+			tableName: TABLE_NAME_MAP.session,
+		},
+		{
+			columns: ['user_id', 'last_seen_at', 'created_at'],
+			indexName: 'sessions_user_last_seen_created_index',
+			tableName: TABLE_NAME_MAP.session,
+		},
+		{
+			columns: ['last_seen_at', 'created_at', 'id'],
+			indexName: 'sessions_last_seen_created_id_index',
+			tableName: TABLE_NAME_MAP.session,
+		},
+		{
+			columns: ['created_at', 'last_seen_at', 'id'],
+			indexName: 'sessions_created_last_seen_id_index',
+			tableName: TABLE_NAME_MAP.session,
+		},
+	]);
 
 	await database.schema
 		.createIndex('users_username_normalized_unique_index')

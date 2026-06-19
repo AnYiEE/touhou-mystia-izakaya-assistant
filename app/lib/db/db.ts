@@ -4,7 +4,7 @@ import { env } from 'node:process';
 
 import { TABLE_NAME_MAP, getConfiguredSqliteDatabasePath } from './constant';
 import type { TDatabase } from './types';
-import { getTableColumns } from './utils';
+import { dropMismatchedSqliteIndexes, getTableColumns } from './utils';
 import { getLogSafeErrorCode } from '../logging';
 
 let nativeDatabase: Database.Database;
@@ -85,6 +85,29 @@ await db.schema
 	.addColumn('expires_at', 'integer', (col) => col.notNull())
 	.execute();
 
+await dropMismatchedSqliteIndexes(db, [
+	{
+		columns: ['ip_address', 'created_at'],
+		indexName: 'backup_files_ip_created_index',
+		tableName: TABLE_NAME_MAP.backupFileRecord,
+	},
+	{
+		columns: ['ip_address', 'last_accessed'],
+		indexName: 'backup_files_ip_last_accessed_index',
+		tableName: TABLE_NAME_MAP.backupFileRecord,
+	},
+	{
+		columns: ['last_accessed'],
+		indexName: 'backup_files_last_accessed_index',
+		tableName: TABLE_NAME_MAP.backupFileRecord,
+	},
+	{
+		columns: ['created_at'],
+		indexName: 'backup_files_created_at_index',
+		tableName: TABLE_NAME_MAP.backupFileRecord,
+	},
+]);
+
 await db.schema
 	.createIndex('backup_files_ip_created_index')
 	.ifNotExists()
@@ -135,6 +158,14 @@ await addBackupFileRecordColumnIfMissing(
 	backupFileRecordTableColumns,
 	'user_id'
 );
+
+await dropMismatchedSqliteIndexes(db, [
+	{
+		columns: ['ip_address', 'user_agent', 'user_id', 'created_at'],
+		indexName: 'backup_files_ip_ua_user_created_index',
+		tableName: TABLE_NAME_MAP.backupFileRecord,
+	},
+]);
 
 await db.schema
 	.createIndex('backup_files_ip_ua_user_created_index')

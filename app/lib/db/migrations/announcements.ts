@@ -2,7 +2,7 @@ import { type ColumnDataType, type Kysely, sql } from 'kysely';
 
 import { TABLE_NAME_MAP } from '../constant';
 import { type TDatabase } from '../types';
-import { getTableColumns } from '../utils';
+import { dropMismatchedSqliteIndexes, getTableColumns } from '../utils';
 
 const SERVER_MISCONFIGURED_MESSAGE = 'server-misconfigured';
 
@@ -478,6 +478,68 @@ export async function migrateAnnouncementTables(database: Kysely<TDatabase>) {
 			tableName as keyof typeof ANNOUNCEMENT_TABLE_COLUMNS_MAP
 		);
 	}
+
+	await dropMismatchedSqliteIndexes(database, [
+		{
+			columns: [
+				'enabled',
+				'deleted_at',
+				'audience',
+				'starts_at',
+				'ends_at',
+				'priority',
+				'updated_at',
+			],
+			indexName: 'announcements_active_index',
+			tableName: TABLE_NAME_MAP.announcement,
+		},
+		{
+			columns: ['updated_at'],
+			indexName: 'announcements_updated_at_index',
+			tableName: TABLE_NAME_MAP.announcement,
+		},
+		{
+			columns: ['updated_at', 'created_at', 'id'],
+			indexName: 'announcements_updated_created_id_index',
+			tableName: TABLE_NAME_MAP.announcement,
+		},
+		{
+			columns: ['id', 'revision'],
+			indexName: 'announcements_revision_index',
+			tableName: TABLE_NAME_MAP.announcement,
+		},
+		{
+			columns: ['user_id', 'announcement_id', 'announcement_updated_at'],
+			indexName: 'announcement_dismissals_user_index',
+			tableName: TABLE_NAME_MAP.announcementDismissal,
+		},
+		{
+			columns: ['dismissed_at'],
+			indexName: 'announcement_dismissals_dismissed_index',
+			tableName: TABLE_NAME_MAP.announcementDismissal,
+		},
+		{
+			columns: ['announcement_id', 'revision'],
+			indexName: 'announcement_versions_revision_unique_index',
+			tableName: TABLE_NAME_MAP.announcementVersion,
+			unique: true,
+		},
+		{
+			columns: ['announcement_id', 'revision'],
+			indexName: 'announcement_versions_list_index',
+			tableName: TABLE_NAME_MAP.announcementVersion,
+		},
+		{
+			columns: ['changed_at'],
+			indexName: 'announcement_versions_changed_index',
+			tableName: TABLE_NAME_MAP.announcementVersion,
+		},
+		{
+			columns: ['announcement_id', 'revision', 'changed_at', 'id'],
+			indexName: 'announcement_versions_cleanup_index',
+			tableName: TABLE_NAME_MAP.announcementVersion,
+		},
+	]);
 
 	await database.schema
 		.createIndex('announcements_active_index')

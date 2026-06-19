@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 
 import { TABLE_NAME_MAP } from '../constant';
 import { type TDatabase } from '../types';
-import { getTableColumns } from '../utils';
+import { dropMismatchedSqliteIndexes, getTableColumns } from '../utils';
 
 const SERVER_MISCONFIGURED_MESSAGE = 'server-misconfigured';
 
@@ -654,6 +654,27 @@ async function backfillSsoClientSecrets(database: Kysely<TDatabase>) {
 	}
 }
 
+async function deduplicateSsoClientSecrets(database: Kysely<TDatabase>) {
+	const secretTableName = sql.raw(TABLE_NAME_MAP.ssoClientSecret);
+
+	await sql`
+		delete from ${secretTableName}
+		where id not in (
+			select id
+			from ${secretTableName} as kept
+			where kept.client_id = ${secretTableName}.client_id
+				and kept.secret_hash = ${secretTableName}.secret_hash
+			order by
+				case when kept.revoked_at is null then 0 else 1 end,
+				case when kept.disabled_at is null then 0 else 1 end,
+				kept.position asc,
+				kept.created_at asc,
+				kept.id asc
+			limit 1
+		)
+	`.execute(database);
+}
+
 async function rebuildSsoTicketTable(database: Kysely<TDatabase>) {
 	const oldTableName = sql.raw(TABLE_NAME_MAP.ssoTicket);
 	const nextTableName = sql.raw(`${TABLE_NAME_MAP.ssoTicket}_next`);
@@ -986,6 +1007,14 @@ async function ensureSsoCallbackQueueIndexes(database: Kysely<TDatabase>) {
 		on ${callbackQueueTableName} (client_id, event)
 		where user_id is null
 	`.execute(database);
+
+	await dropMismatchedSqliteIndexes(database, [
+		{
+			columns: ['client_id', 'event'],
+			indexName: 'sso_callback_queue_client_event_index',
+			tableName: TABLE_NAME_MAP.ssoCallbackQueue,
+		},
+	]);
 
 	await database.schema
 		.createIndex('sso_callback_queue_client_event_index')
@@ -1423,6 +1452,255 @@ export async function migrateSsoTables(database: Kysely<TDatabase>) {
 	}
 
 	await rebuildSsoTablesIfNeeded(database);
+
+	await deduplicateSsoClientSecrets(database);
+
+	await dropMismatchedSqliteIndexes(database, [
+		{
+			columns: ['client_id', 'secret_hash'],
+			indexName: 'sso_client_secrets_client_hash_unique_index',
+			tableName: TABLE_NAME_MAP.ssoClientSecret,
+			unique: true,
+		},
+		{
+			columns: ['expires_at'],
+			indexName: 'sso_tickets_expires_at_index',
+			tableName: TABLE_NAME_MAP.ssoTicket,
+		},
+		{
+			columns: ['user_id'],
+			indexName: 'sso_tickets_user_id_index',
+			tableName: TABLE_NAME_MAP.ssoTicket,
+		},
+		{
+			columns: ['client_id', 'created_at'],
+			indexName: 'sso_tickets_client_created_index',
+			tableName: TABLE_NAME_MAP.ssoTicket,
+		},
+		{
+			columns: ['client_id', 'used_at', 'revoked_at', 'expires_at'],
+			indexName: 'sso_tickets_client_state_index',
+			tableName: TABLE_NAME_MAP.ssoTicket,
+		},
+		{
+			columns: [
+				'used_at',
+				'revoked_at',
+				'expires_at',
+				'created_at',
+				'ticket_hash',
+			],
+			indexName: 'sso_tickets_state_created_hash_index',
+			tableName: TABLE_NAME_MAP.ssoTicket,
+		},
+		{
+			columns: [
+				'user_id',
+				'used_at',
+				'revoked_at',
+				'expires_at',
+				'created_at',
+				'ticket_hash',
+			],
+			indexName: 'sso_tickets_user_state_created_hash_index',
+			tableName: TABLE_NAME_MAP.ssoTicket,
+		},
+		{
+			columns: ['created_at', 'ticket_hash'],
+			indexName: 'sso_tickets_created_hash_index',
+			tableName: TABLE_NAME_MAP.ssoTicket,
+		},
+		{
+			columns: ['user_id', 'created_at', 'ticket_hash'],
+			indexName: 'sso_tickets_user_created_hash_index',
+			tableName: TABLE_NAME_MAP.ssoTicket,
+		},
+		{
+			columns: ['next_retry_at'],
+			indexName: 'sso_callback_queue_next_retry_at_index',
+			tableName: TABLE_NAME_MAP.ssoCallbackQueue,
+		},
+		{
+			columns: ['attempts', 'next_retry_at', 'id'],
+			indexName: 'sso_callback_queue_attempts_retry_id_index',
+			tableName: TABLE_NAME_MAP.ssoCallbackQueue,
+		},
+		{
+			columns: ['user_id', 'event', 'next_retry_at', 'id'],
+			indexName: 'sso_callback_queue_user_event_retry_id_index',
+			tableName: TABLE_NAME_MAP.ssoCallbackQueue,
+		},
+		{
+			columns: ['next_retry_at', 'created_at', 'id'],
+			indexName: 'sso_callback_queue_retry_created_id_index',
+			tableName: TABLE_NAME_MAP.ssoCallbackQueue,
+		},
+		{
+			columns: ['client_id', 'next_retry_at', 'id'],
+			indexName: 'sso_callback_queue_client_retry_id_index',
+			tableName: TABLE_NAME_MAP.ssoCallbackQueue,
+		},
+		{
+			columns: ['user_id', 'next_retry_at', 'id'],
+			indexName: 'sso_callback_queue_user_retry_id_index',
+			tableName: TABLE_NAME_MAP.ssoCallbackQueue,
+		},
+		{
+			columns: ['event', 'next_retry_at', 'id'],
+			indexName: 'sso_callback_queue_event_retry_id_index',
+			tableName: TABLE_NAME_MAP.ssoCallbackQueue,
+		},
+		{
+			columns: ['client_id', 'updated_at'],
+			indexName: 'sso_user_client_grants_client_updated_index',
+			tableName: TABLE_NAME_MAP.ssoUserClientGrant,
+		},
+		{
+			columns: ['user_id'],
+			indexName: 'sso_user_client_grants_user_id_index',
+			tableName: TABLE_NAME_MAP.ssoUserClientGrant,
+		},
+		{
+			columns: ['user_id', 'updated_at'],
+			indexName: 'sso_user_client_grants_user_updated_index',
+			tableName: TABLE_NAME_MAP.ssoUserClientGrant,
+		},
+		{
+			columns: ['updated_at', 'client_id', 'user_id'],
+			indexName: 'sso_user_client_grants_updated_index',
+			tableName: TABLE_NAME_MAP.ssoUserClientGrant,
+		},
+		{
+			columns: ['client_id', 'created_at'],
+			indexName: 'sso_grant_events_client_created_index',
+			tableName: TABLE_NAME_MAP.ssoGrantEvent,
+		},
+		{
+			columns: ['user_id', 'created_at'],
+			indexName: 'sso_grant_events_user_created_index',
+			tableName: TABLE_NAME_MAP.ssoGrantEvent,
+		},
+		{
+			columns: ['created_at', 'id'],
+			indexName: 'sso_grant_events_created_id_index',
+			tableName: TABLE_NAME_MAP.ssoGrantEvent,
+		},
+		{
+			columns: ['event', 'created_at', 'id'],
+			indexName: 'sso_grant_events_event_created_id_index',
+			tableName: TABLE_NAME_MAP.ssoGrantEvent,
+		},
+		{
+			columns: ['actor_type', 'actor_id', 'created_at', 'id'],
+			indexName: 'sso_grant_events_actor_created_id_index',
+			tableName: TABLE_NAME_MAP.ssoGrantEvent,
+		},
+		{
+			columns: ['actor_id', 'created_at', 'id'],
+			indexName: 'sso_grant_events_actor_id_created_id_index',
+			tableName: TABLE_NAME_MAP.ssoGrantEvent,
+		},
+		{
+			columns: ['actor_type', 'created_at', 'id'],
+			indexName: 'sso_grant_events_actor_type_created_id_index',
+			tableName: TABLE_NAME_MAP.ssoGrantEvent,
+		},
+		{
+			columns: ['client_id', 'revoked_at', 'disabled_at'],
+			indexName: 'sso_client_secrets_client_status_index',
+			tableName: TABLE_NAME_MAP.ssoClientSecret,
+		},
+		{
+			columns: ['client_id', 'position', 'created_at', 'id'],
+			indexName: 'sso_client_secrets_client_position_created_id_index',
+			tableName: TABLE_NAME_MAP.ssoClientSecret,
+		},
+		{
+			columns: ['deleted_at', 'updated_at', 'id'],
+			indexName: 'sso_clients_deleted_updated_id_index',
+			tableName: TABLE_NAME_MAP.ssoClient,
+		},
+		{
+			columns: ['deleted_at', 'disabled_at', 'updated_at', 'id'],
+			indexName: 'sso_clients_deleted_disabled_updated_id_index',
+			tableName: TABLE_NAME_MAP.ssoClient,
+		},
+		{
+			columns: ['deleted_at', 'status_callback_url', 'updated_at', 'id'],
+			indexName: 'sso_clients_deleted_status_callback_updated_id_index',
+			tableName: TABLE_NAME_MAP.ssoClient,
+		},
+		{
+			columns: ['client_id', 'created_at'],
+			indexName: 'sso_callback_deliveries_client_created_index',
+			tableName: TABLE_NAME_MAP.ssoCallbackDelivery,
+		},
+		{
+			columns: ['status', 'created_at'],
+			indexName: 'sso_callback_deliveries_status_created_index',
+			tableName: TABLE_NAME_MAP.ssoCallbackDelivery,
+		},
+		{
+			columns: ['created_at', 'id'],
+			indexName: 'sso_callback_deliveries_created_id_index',
+			tableName: TABLE_NAME_MAP.ssoCallbackDelivery,
+		},
+		{
+			columns: ['user_id', 'event', 'created_at', 'id'],
+			indexName: 'sso_callback_deliveries_user_event_created_id_index',
+			tableName: TABLE_NAME_MAP.ssoCallbackDelivery,
+		},
+		{
+			columns: ['event', 'created_at', 'id'],
+			indexName: 'sso_callback_deliveries_event_created_id_index',
+			tableName: TABLE_NAME_MAP.ssoCallbackDelivery,
+		},
+		{
+			columns: ['user_id', 'created_at', 'id'],
+			indexName: 'sso_callback_deliveries_user_created_id_index',
+			tableName: TABLE_NAME_MAP.ssoCallbackDelivery,
+		},
+		{
+			columns: ['scope', 'created_at'],
+			indexName: 'account_audit_logs_scope_created_index',
+			tableName: TABLE_NAME_MAP.accountAuditLog,
+		},
+		{
+			columns: ['target_type', 'target_id', 'created_at'],
+			indexName: 'account_audit_logs_target_created_index',
+			tableName: TABLE_NAME_MAP.accountAuditLog,
+		},
+		{
+			columns: ['created_at', 'id'],
+			indexName: 'account_audit_logs_created_id_index',
+			tableName: TABLE_NAME_MAP.accountAuditLog,
+		},
+		{
+			columns: ['action', 'created_at', 'id'],
+			indexName: 'account_audit_logs_action_created_id_index',
+			tableName: TABLE_NAME_MAP.accountAuditLog,
+		},
+		{
+			columns: ['actor_type', 'actor_id', 'created_at', 'id'],
+			indexName: 'account_audit_logs_actor_created_id_index',
+			tableName: TABLE_NAME_MAP.accountAuditLog,
+		},
+		{
+			columns: ['target_id', 'created_at', 'id'],
+			indexName: 'account_audit_logs_target_id_created_id_index',
+			tableName: TABLE_NAME_MAP.accountAuditLog,
+		},
+		{
+			columns: ['scope', 'action', 'created_at', 'id'],
+			indexName: 'account_audit_logs_scope_action_created_id_index',
+			tableName: TABLE_NAME_MAP.accountAuditLog,
+		},
+		{
+			columns: ['target_type', 'created_at', 'id'],
+			indexName: 'account_audit_logs_target_type_created_id_index',
+			tableName: TABLE_NAME_MAP.accountAuditLog,
+		},
+	]);
 
 	await database.schema
 		.createIndex('sso_client_secrets_client_hash_unique_index')
