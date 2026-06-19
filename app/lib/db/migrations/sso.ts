@@ -1490,6 +1490,20 @@ export async function migrateSsoTables(database: Kysely<TDatabase>) {
 		.execute();
 
 	await database.schema
+		.createIndex('sso_tickets_created_hash_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.ssoTicket)
+		.columns(['created_at', 'ticket_hash'])
+		.execute();
+
+	await database.schema
+		.createIndex('sso_tickets_user_created_hash_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.ssoTicket)
+		.columns(['user_id', 'created_at', 'ticket_hash'])
+		.execute();
+
+	await database.schema
 		.createIndex('sso_callback_queue_next_retry_at_index')
 		.ifNotExists()
 		.on(TABLE_NAME_MAP.ssoCallbackQueue)
@@ -1515,6 +1529,27 @@ export async function migrateSsoTables(database: Kysely<TDatabase>) {
 		.ifNotExists()
 		.on(TABLE_NAME_MAP.ssoCallbackQueue)
 		.columns(['next_retry_at', 'created_at', 'id'])
+		.execute();
+
+	await database.schema
+		.createIndex('sso_callback_queue_client_retry_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.ssoCallbackQueue)
+		.columns(['client_id', 'next_retry_at', 'id'])
+		.execute();
+
+	await database.schema
+		.createIndex('sso_callback_queue_user_retry_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.ssoCallbackQueue)
+		.columns(['user_id', 'next_retry_at', 'id'])
+		.execute();
+
+	await database.schema
+		.createIndex('sso_callback_queue_event_retry_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.ssoCallbackQueue)
+		.columns(['event', 'next_retry_at', 'id'])
 		.execute();
 
 	await ensureSsoCallbackQueueIndexes(database);
@@ -1583,10 +1618,52 @@ export async function migrateSsoTables(database: Kysely<TDatabase>) {
 		.execute();
 
 	await database.schema
+		.createIndex('sso_grant_events_actor_id_created_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.ssoGrantEvent)
+		.columns(['actor_id', 'created_at', 'id'])
+		.execute();
+
+	await database.schema
+		.createIndex('sso_grant_events_actor_type_created_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.ssoGrantEvent)
+		.columns(['actor_type', 'created_at', 'id'])
+		.execute();
+
+	await database.schema
 		.createIndex('sso_client_secrets_client_status_index')
 		.ifNotExists()
 		.on(TABLE_NAME_MAP.ssoClientSecret)
 		.columns(['client_id', 'revoked_at', 'disabled_at'])
+		.execute();
+
+	await database.schema
+		.createIndex('sso_client_secrets_client_position_created_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.ssoClientSecret)
+		.columns(['client_id', 'position', 'created_at', 'id'])
+		.execute();
+
+	await database.schema
+		.createIndex('sso_clients_deleted_updated_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.ssoClient)
+		.columns(['deleted_at', 'updated_at', 'id'])
+		.execute();
+
+	await database.schema
+		.createIndex('sso_clients_deleted_disabled_updated_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.ssoClient)
+		.columns(['deleted_at', 'disabled_at', 'updated_at', 'id'])
+		.execute();
+
+	await database.schema
+		.createIndex('sso_clients_deleted_status_callback_updated_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.ssoClient)
+		.columns(['deleted_at', 'status_callback_url', 'updated_at', 'id'])
 		.execute();
 
 	await database.schema
@@ -1615,6 +1692,20 @@ export async function migrateSsoTables(database: Kysely<TDatabase>) {
 		.ifNotExists()
 		.on(TABLE_NAME_MAP.ssoCallbackDelivery)
 		.columns(['user_id', 'event', 'created_at', 'id'])
+		.execute();
+
+	await database.schema
+		.createIndex('sso_callback_deliveries_event_created_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.ssoCallbackDelivery)
+		.columns(['event', 'created_at', 'id'])
+		.execute();
+
+	await database.schema
+		.createIndex('sso_callback_deliveries_user_created_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.ssoCallbackDelivery)
+		.columns(['user_id', 'created_at', 'id'])
 		.execute();
 
 	await database.schema
@@ -1657,6 +1748,20 @@ export async function migrateSsoTables(database: Kysely<TDatabase>) {
 		.ifNotExists()
 		.on(TABLE_NAME_MAP.accountAuditLog)
 		.columns(['target_id', 'created_at', 'id'])
+		.execute();
+
+	await database.schema
+		.createIndex('account_audit_logs_scope_action_created_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.accountAuditLog)
+		.columns(['scope', 'action', 'created_at', 'id'])
+		.execute();
+
+	await database.schema
+		.createIndex('account_audit_logs_target_type_created_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.accountAuditLog)
+		.columns(['target_type', 'created_at', 'id'])
 		.execute();
 
 	await ensureSsoTableStructure(database);

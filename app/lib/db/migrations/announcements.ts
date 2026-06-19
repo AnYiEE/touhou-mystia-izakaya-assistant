@@ -502,6 +502,13 @@ export async function migrateAnnouncementTables(database: Kysely<TDatabase>) {
 		.execute();
 
 	await database.schema
+		.createIndex('announcements_updated_created_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.announcement)
+		.columns(['updated_at', 'created_at', 'id'])
+		.execute();
+
+	await database.schema
 		.createIndex('announcements_revision_index')
 		.ifNotExists()
 		.on(TABLE_NAME_MAP.announcement)
@@ -542,6 +549,13 @@ export async function migrateAnnouncementTables(database: Kysely<TDatabase>) {
 		.ifNotExists()
 		.on(TABLE_NAME_MAP.announcementVersion)
 		.column('changed_at')
+		.execute();
+
+	await database.schema
+		.createIndex('announcement_versions_cleanup_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.announcementVersion)
+		.columns(['announcement_id', 'revision', 'changed_at', 'id'])
 		.execute();
 
 	await ensureAnnouncementTableStructure(database);

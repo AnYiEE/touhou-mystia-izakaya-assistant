@@ -500,10 +500,38 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 		.execute();
 
 	await database.schema
+		.createIndex('users_updated_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.user)
+		.columns(['updated_at', 'id'])
+		.execute();
+
+	await database.schema
+		.createIndex('users_status_updated_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.user)
+		.columns(['status', 'updated_at', 'id'])
+		.execute();
+
+	await database.schema
 		.createIndex('backup_imports_user_id_index')
 		.ifNotExists()
 		.on(TABLE_NAME_MAP.backupImportRecord)
 		.column('user_id')
+		.execute();
+
+	await database.schema
+		.createIndex('backup_imports_created_at_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.backupImportRecord)
+		.column('created_at')
+		.execute();
+
+	await database.schema
+		.createIndex('backup_imports_user_created_at_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.backupImportRecord)
+		.columns(['user_id', 'created_at'])
 		.execute();
 
 	await database.schema

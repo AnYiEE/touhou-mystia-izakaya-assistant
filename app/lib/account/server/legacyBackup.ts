@@ -1,24 +1,11 @@
 import { v7 as uuid, validate } from 'uuid';
 
 import {
-	checkBackupCodeLockLostError,
-	checkBackupCodeLockTimeoutError,
 	checkBackupFileNotFoundError,
-	checkRecentBackupAccessByIp,
-	deleteBackupImportRecordByCode,
 	deleteFile,
-	deleteRecord,
 	getFile,
-	getRecord,
-	markBackupCodeLockCommitted,
 	saveFile,
-	setRecord,
-	throwIfBackupCodeLockLost,
-	updateRecord,
-	updateRecordTimeout,
-	withBackupCodeLock,
-	withFreshBackupCodeLock,
-} from '@/actions/backup';
+} from '@/actions/backup/file';
 import {
 	type IBackupCheckSuccessResponse,
 	type IBackupUploadBody,
@@ -47,6 +34,24 @@ const LEGACY_BACKUP_CODE_RATE_LIMIT_OPTIONS = {
 	limit: 20,
 	windowMs: LEGACY_BACKUP_FREQUENCY_TTL,
 } as const;
+
+type TBackupDbModule = typeof import('@/actions/backup/db');
+type TBackupLockModule = typeof import('@/actions/backup/lock');
+
+let backupDbModulePromise: Promise<TBackupDbModule> | undefined;
+let backupLockModulePromise: Promise<TBackupLockModule> | undefined;
+
+function loadBackupDbModule() {
+	backupDbModulePromise ??= import('@/actions/backup/db');
+
+	return backupDbModulePromise;
+}
+
+function loadBackupLockModule() {
+	backupLockModulePromise ??= import('@/actions/backup/lock');
+
+	return backupLockModulePromise;
+}
 
 function createLegacyBackupServerError(message: string, status: number) {
 	return createLegacyBackupErrorResult(message, status);
@@ -205,6 +210,25 @@ export async function uploadLegacyBackupData({
 
 	const userId = normalizeBackupUserId(rawUserId);
 	const now = Date.now();
+	const [backupDbModule, backupLockModule] = await Promise.all([
+		loadBackupDbModule(),
+		loadBackupLockModule(),
+	]);
+	const {
+		checkRecentBackupAccessByIp,
+		deleteBackupImportRecordByCode,
+		getRecord,
+		setRecord,
+		updateRecord,
+	} = backupDbModule;
+	const {
+		checkBackupCodeLockLostError,
+		checkBackupCodeLockTimeoutError,
+		markBackupCodeLockCommitted,
+		throwIfBackupCodeLockLost,
+		withBackupCodeLock,
+		withFreshBackupCodeLock,
+	} = backupLockModule;
 	const recentRecord = await checkRecentBackupAccessByIp(
 		'created_at',
 		now - LEGACY_BACKUP_FREQUENCY_TTL,
@@ -334,6 +358,7 @@ export async function fetchLegacyBackupMetadata({
 		return rateLimitError;
 	}
 
+	const { getRecord } = await loadBackupDbModule();
 	const record = await getRecord(code);
 	if (record.status === 404) {
 		return createLegacyBackupServerError(
@@ -359,6 +384,19 @@ export async function downloadLegacyBackupData({
 	}
 
 	const now = Date.now();
+	const [backupDbModule, backupLockModule] = await Promise.all([
+		loadBackupDbModule(),
+		loadBackupLockModule(),
+	]);
+	const { checkRecentBackupAccessByIp, getRecord, updateRecordTimeout } =
+		backupDbModule;
+	const {
+		checkBackupCodeLockLostError,
+		checkBackupCodeLockTimeoutError,
+		throwIfBackupCodeLockLost,
+		withBackupCodeLock,
+		withFreshBackupCodeLock,
+	} = backupLockModule;
 	const recentRecord = await checkRecentBackupAccessByIp(
 		'last_accessed',
 		now - LEGACY_BACKUP_FREQUENCY_TTL,
@@ -451,6 +489,20 @@ export async function deleteLegacyBackupData({
 	if (rateLimitError !== null) {
 		return rateLimitError;
 	}
+
+	const [backupDbModule, backupLockModule] = await Promise.all([
+		loadBackupDbModule(),
+		loadBackupLockModule(),
+	]);
+	const { deleteRecord, getRecord } = backupDbModule;
+	const {
+		checkBackupCodeLockLostError,
+		checkBackupCodeLockTimeoutError,
+		markBackupCodeLockCommitted,
+		throwIfBackupCodeLockLost,
+		withBackupCodeLock,
+		withFreshBackupCodeLock,
+	} = backupLockModule;
 
 	try {
 		return await withBackupCodeLock(code, async (signal) => {

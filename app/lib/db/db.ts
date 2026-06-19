@@ -85,6 +85,34 @@ await db.schema
 	.addColumn('expires_at', 'integer', (col) => col.notNull())
 	.execute();
 
+await db.schema
+	.createIndex('backup_files_ip_created_index')
+	.ifNotExists()
+	.on(TABLE_NAME_MAP.backupFileRecord)
+	.columns(['ip_address', 'created_at'])
+	.execute();
+
+await db.schema
+	.createIndex('backup_files_ip_last_accessed_index')
+	.ifNotExists()
+	.on(TABLE_NAME_MAP.backupFileRecord)
+	.columns(['ip_address', 'last_accessed'])
+	.execute();
+
+await db.schema
+	.createIndex('backup_files_last_accessed_index')
+	.ifNotExists()
+	.on(TABLE_NAME_MAP.backupFileRecord)
+	.column('last_accessed')
+	.execute();
+
+await db.schema
+	.createIndex('backup_files_created_at_index')
+	.ifNotExists()
+	.on(TABLE_NAME_MAP.backupFileRecord)
+	.column('created_at')
+	.execute();
+
 const backupFileRecordTableColumns = await getTableColumns(
 	db,
 	TABLE_NAME_MAP.backupFileRecord
@@ -107,3 +135,10 @@ await addBackupFileRecordColumnIfMissing(
 	backupFileRecordTableColumns,
 	'user_id'
 );
+
+await db.schema
+	.createIndex('backup_files_ip_ua_user_created_index')
+	.ifNotExists()
+	.on(TABLE_NAME_MAP.backupFileRecord)
+	.columns(['ip_address', 'user_agent', 'user_id', 'created_at'])
+	.execute();

@@ -2,25 +2,6 @@ import { type NextRequest } from 'next/server';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { env } from 'node:process';
 
-import {
-	checkBackupCodeLockLostError,
-	checkBackupCodeLockTimeoutError,
-	checkBackupFileNotFoundError,
-	deleteExpiredBackupImportRecords,
-	deleteFile,
-	deleteRecord,
-	deleteTemporaryBackupFile,
-	getBackupFileName,
-	getBackupFiles,
-	getExpiredRecords,
-	getExpiredTemporaryBackupFileNames,
-	getRecord,
-	getRecordFileReferences,
-	markBackupCodeLockCommitted,
-	throwIfBackupCodeLockLost,
-	withBackupCodeLock,
-	withFreshBackupCodeLock,
-} from '@/actions/backup';
 import { maskBackupCode } from '@/lib/account/server/backupCode';
 import { getRequestIp } from '@/lib/account/server/request';
 import { checkRateLimit } from '@/lib/account/server/rateLimit';
@@ -44,10 +25,10 @@ function isExpiredBackupRecord(
 	return expirationBase < expiredBefore;
 }
 
-function getSafeRecordFileName(record: {
-	code: string;
-	file_name: string | null;
-}) {
+function getSafeRecordFileName(
+	record: { code: string; file_name: string | null },
+	getBackupFileName: (code: string, fileName?: string | null) => string
+) {
 	try {
 		return getBackupFileName(record.code, record.file_name);
 	} catch (error) {
@@ -151,13 +132,42 @@ export async function DELETE(request: NextRequest) {
 	const now = Date.now();
 	const oneHourAgo = now - 60 * 60 * 1000;
 	const sixMonthsAgo = now - 181 * 24 * 60 * 60 * 1000;
+	const [backupDbModule, backupFileModule, backupLockModule] =
+		await Promise.all([
+			import('@/actions/backup/db'),
+			import('@/actions/backup/file'),
+			import('@/actions/backup/lock'),
+		]);
+	const {
+		deleteExpiredBackupImportRecords,
+		deleteRecord,
+		getExpiredRecords,
+		getRecord,
+		getRecordFileReferences,
+	} = backupDbModule;
+	const {
+		checkBackupFileNotFoundError,
+		deleteFile,
+		deleteTemporaryBackupFile,
+		getBackupFileName,
+		getBackupFiles,
+		getExpiredTemporaryBackupFileNames,
+	} = backupFileModule;
+	const {
+		checkBackupCodeLockLostError,
+		checkBackupCodeLockTimeoutError,
+		markBackupCodeLockCommitted,
+		throwIfBackupCodeLockLost,
+		withBackupCodeLock,
+		withFreshBackupCodeLock,
+	} = backupLockModule;
 
 	const records = await getExpiredRecords(sixMonthsAgo);
 	const recordFileReferences = await getRecordFileReferences();
 	const invalidRecordCodeSet = new Set<string>();
 	const recordFileNameSet = new Set<string>();
 	for (const record of recordFileReferences) {
-		const fileName = getSafeRecordFileName(record);
+		const fileName = getSafeRecordFileName(record, getBackupFileName);
 		if (fileName === null) {
 			invalidRecordCodeSet.add(record.code);
 			continue;
@@ -217,7 +227,10 @@ export async function DELETE(request: NextRequest) {
 					return;
 				}
 
-				const fileName = getSafeRecordFileName(record);
+				const fileName = getSafeRecordFileName(
+					record,
+					getBackupFileName
+				);
 
 				try {
 					await withFreshBackupCodeLock(signal, async (trx) => {
@@ -280,7 +293,7 @@ export async function DELETE(request: NextRequest) {
 				const recordFileName =
 					record.status === 404
 						? null
-						: getSafeRecordFileName(record);
+						: getSafeRecordFileName(record, getBackupFileName);
 
 				if (record.status !== 404 && recordFileName === null) {
 					failedFileCount++;
