@@ -24,18 +24,17 @@ import { Input } from '@/design/ui/components';
 
 import {
 	ADMIN_SSO_LIST_DEBOUNCE_MS,
-	AdminSsoAdvancedFilterPopover,
-	AdminSsoDropdownFilter,
-	AdminSsoFilterButton,
 	AdminSsoOperationNav,
-	adminSsoAdvancedFilterInputClassNames,
 	createAdminSsoPageInputValue,
 	parseAdminSsoPageInput,
 } from '../components';
 import {
+	AdminAdvancedFilterPopover,
 	AdminConfirmButton,
+	AdminDropdownFilter,
 	AdminEmptyState,
 	AdminEntityCell,
+	AdminFilterActionButton,
 	AdminFilterPanel,
 	AdminHeader,
 	AdminHeaderActionLink,
@@ -54,6 +53,7 @@ import {
 	AdminTableHeadCell,
 	AdminTableHeader,
 	AdminTableRow,
+	adminAdvancedFilterInputClassNames,
 } from '../../components';
 import { trackEvent } from '@/components/analytics';
 import TimeAgo from '@/components/timeAgo';
@@ -806,7 +806,7 @@ export default function AdminSsoGrantsClient({
 					value={queryInput}
 					onValueChange={handleQueryInputChange}
 				/>
-				<AdminSsoAdvancedFilterPopover
+				<AdminAdvancedFilterPopover
 					activeCount={
 						[clientIdFilter, userIdFilter].filter(Boolean).length
 					}
@@ -814,7 +814,7 @@ export default function AdminSsoGrantsClient({
 					<Input
 						aria-label="精确客户端ID"
 						className="w-full"
-						classNames={adminSsoAdvancedFilterInputClassNames}
+						classNames={adminAdvancedFilterInputClassNames}
 						placeholder="客户端ID"
 						value={clientIdInput}
 						onValueChange={handleClientIdInputChange}
@@ -822,30 +822,30 @@ export default function AdminSsoGrantsClient({
 					<Input
 						aria-label="精确用户ID"
 						className="w-full"
-						classNames={adminSsoAdvancedFilterInputClassNames}
+						classNames={adminAdvancedFilterInputClassNames}
 						placeholder="用户ID"
 						value={userIdInput}
 						onValueChange={handleUserIdInputChange}
 					/>
-				</AdminSsoAdvancedFilterPopover>
-				<AdminSsoDropdownFilter
+				</AdminAdvancedFilterPopover>
+				<AdminDropdownFilter
 					ariaLabel="筛选客户端状态"
 					options={clientStatusOptions}
 					value={clientStatus}
 					onAction={handleClientStatusAction}
 				/>
-				<AdminSsoDropdownFilter
+				<AdminDropdownFilter
 					ariaLabel="筛选用户状态"
 					options={userStatusOptions}
 					value={userStatus}
 					onAction={handleUserStatusAction}
 				/>
-				<AdminSsoFilterButton
+				<AdminFilterActionButton
 					isLoading={isLoading}
 					onPress={handleRefresh}
 				>
 					刷新
-				</AdminSsoFilterButton>
+				</AdminFilterActionButton>
 			</AdminFilterPanel>
 
 			{message !== null && <AdminMessage message={message} />}

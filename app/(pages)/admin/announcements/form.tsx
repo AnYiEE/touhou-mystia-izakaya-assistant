@@ -84,7 +84,7 @@ import type {
 	TAnnouncementVersionAction,
 } from '@/lib/announcements/shared/types';
 
-const emptyBody = '<p>您好，{{user.username}}</p>';
+const emptyBody = '<p>您好，{{user.display_name}}</p>';
 
 interface ITargetUserOption {
 	id: string;
@@ -494,7 +494,7 @@ export default function AdminAnnouncementForm({
 		endsAt !== undefined &&
 		(startsAt === null || endsAt === null || endsAt > startsAt) &&
 		(audience !== 'targeted' || targetUsers.length > 0) &&
-		(!isEditMode || announcement !== null || announcementId !== undefined);
+		(!isEditMode || announcement !== null);
 
 	const formBody = useMemo<IAdminAnnouncementBody | null>(() => {
 		if (!canSave) {
@@ -507,6 +507,9 @@ export default function AdminAnnouncementForm({
 				: id.trim().length > 0
 					? { id: id.trim() }
 					: {}),
+			...(isEditMode && announcement !== null
+				? { expected_revision: announcement.revision }
+				: {}),
 			audience,
 			dismissible,
 			enabled,
@@ -522,9 +525,9 @@ export default function AdminAnnouncementForm({
 			title: title.trim(),
 		};
 	}, [
-		announcement?.id,
-		audience,
+		announcement,
 		announcementId,
+		audience,
 		canSave,
 		dismissible,
 		enabled,
@@ -1070,6 +1073,8 @@ export default function AdminAnnouncementForm({
 	const statusLabel =
 		preview?.computed_status ?? announcement?.computed_status ?? null;
 	const isArchived = announcement?.computed_status === 'archived';
+	const isConflictMessage =
+		message === '通知已被其他管理员更新，请刷新后再编辑。';
 	const hasVersionRows = versions !== null && versions.versions.length > 0;
 
 	return (
@@ -1083,6 +1088,24 @@ export default function AdminAnnouncementForm({
 						>
 							返回列表
 						</AdminHeaderActionLink>
+						{isEditMode && isConflictMessage && (
+							<Button
+								color="primary"
+								isLoading={isLoading}
+								startContent={
+									isLoading ? null : (
+										<FontAwesomeIcon
+											icon={faRotate}
+											className="w-3.5"
+										/>
+									)
+								}
+								variant="flat"
+								onPress={refreshAnnouncement}
+							>
+								刷新通知
+							</Button>
+						)}
 						<Button
 							isDisabled={formBody === null || csrfToken === null}
 							isLoading={isSaving}
@@ -1219,7 +1242,7 @@ export default function AdminAnnouncementForm({
 						onValueChange={setTitle}
 					/>
 					<Textarea
-						description="支持常见文字style；用户变量：{{user.username}}、{{user.id}}"
+						description="支持常见文字style；用户变量：{{user.display_name}}、{{user.nickname}}、{{user.username}}、{{user.id}}"
 						isDisabled={isSaving}
 						label="HTML内容"
 						minRows={8}

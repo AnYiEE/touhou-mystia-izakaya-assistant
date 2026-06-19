@@ -36,10 +36,14 @@ import type {
 } from '@/lib/account/shared/types';
 import type {
 	IAdminAnnouncementBody,
+	IAdminAnnouncementCleanupData,
 	IAdminAnnouncementListData,
 	IAdminAnnouncementMutationData,
 	IAdminAnnouncementPreviewData,
 	IAdminAnnouncementVersionListData,
+	TAnnouncementAudience,
+	TAnnouncementComputedStatus,
+	TAnnouncementLevel,
 } from '@/lib/announcements/shared/types';
 
 export type TAdminApiResult<TData = Record<string, unknown>> =
@@ -71,6 +75,10 @@ function readServiceErrorData(error: ServiceApiError) {
 
 const ADMIN_ERROR_MESSAGE_MAP: Record<string, string> = {
 	'admin-session-expired': '管理员登录已失效，请重新登录。',
+	'announcement-conflict': '通知已被其他管理员更新，请刷新后再编辑。',
+	'announcement-not-found': '通知不存在或已被删除。',
+	'announcement-not-visible':
+		'通知当前不可见，请检查启用状态、时间和受众设置。',
 	'client-disabled': 'SSO客户端已禁用。',
 	'feature-disabled': '功能暂不可用。',
 	'invalid-object-structure': '提交内容格式无效，请检查后重试。',
@@ -309,7 +317,10 @@ export function clearAdminUserData(id: string, csrfToken: string) {
 
 export function listAdminAnnouncements(
 	options: {
+		audience?: TAnnouncementAudience | '';
+		computedStatus?: TAnnouncementComputedStatus | '';
 		includeArchived?: boolean;
+		level?: TAnnouncementLevel | '';
 		page?: number;
 		pageSize?: number;
 		query?: string;
@@ -318,6 +329,15 @@ export function listAdminAnnouncements(
 	const searchParams = new URLSearchParams();
 	if (options.includeArchived === true) {
 		searchParams.set('include_archived', '1');
+	}
+	if (options.audience !== undefined && options.audience !== '') {
+		searchParams.set('audience', options.audience);
+	}
+	if (options.computedStatus !== undefined && options.computedStatus !== '') {
+		searchParams.set('status', options.computedStatus);
+	}
+	if (options.level !== undefined && options.level !== '') {
+		searchParams.set('level', options.level);
 	}
 	if (typeof options.page === 'number') {
 		searchParams.set('page', String(options.page));
@@ -386,6 +406,13 @@ export function restoreAnnouncement(id: string, csrfToken: string) {
 	return fetchAdminApiResult<IAdminAnnouncementMutationData>(
 		`/api/v1/admin/announcements/${encodeURIComponent(id)}`,
 		createAdminCsrfRequestInit('PATCH', csrfToken)
+	);
+}
+
+export function cleanupAdminAnnouncementRecords(csrfToken: string) {
+	return fetchAdminApiResult<IAdminAnnouncementCleanupData>(
+		'/api/v1/admin/announcements/cleanup',
+		createAdminCsrfRequestInit('DELETE', csrfToken)
 	);
 }
 

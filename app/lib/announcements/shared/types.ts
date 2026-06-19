@@ -22,17 +22,21 @@ export const ANNOUNCEMENT_VERSION_ACTIONS = [
 	'restore',
 ] as const;
 
+export const ANNOUNCEMENT_COMPUTED_STATUSES = [
+	'active',
+	'archived',
+	'disabled',
+	'ended',
+	'scheduled',
+] as const;
+
 export type TAnnouncementLevel = (typeof ANNOUNCEMENT_LEVELS)[number];
 export type TAnnouncementAudience = (typeof ANNOUNCEMENT_AUDIENCES)[number];
 export type TAnnouncementVersionAction =
 	(typeof ANNOUNCEMENT_VERSION_ACTIONS)[number];
 
 export type TAnnouncementComputedStatus =
-	| 'active'
-	| 'archived'
-	| 'disabled'
-	| 'ended'
-	| 'scheduled';
+	(typeof ANNOUNCEMENT_COMPUTED_STATUSES)[number];
 
 export interface IAnnouncementPublicItem {
 	audience: TAnnouncementAudience;
@@ -74,6 +78,7 @@ export interface IAdminAnnouncementProfile {
 }
 
 export interface IAdminAnnouncementListData {
+	active_count: number;
 	announcements: IAdminAnnouncementProfile[];
 	archived_count: number;
 	filtered_count: number;
@@ -85,6 +90,12 @@ export interface IAdminAnnouncementListData {
 
 export interface IAdminAnnouncementMutationData {
 	announcement: IAdminAnnouncementProfile;
+}
+
+export interface IAdminAnnouncementCleanupData {
+	deleted_dismissals: number;
+	deleted_versions: number;
+	message: 'announcement-records-cleaned';
 }
 
 export interface IAnnouncementChangedField {
@@ -119,6 +130,7 @@ export interface IAdminAnnouncementBody {
 	dismissible: boolean;
 	enabled: boolean;
 	ends_at: number | null;
+	expected_revision?: number;
 	html: string;
 	id?: string;
 	level: TAnnouncementLevel;
@@ -145,5 +157,13 @@ export function checkAnnouncementVersionAction(
 ): value is TAnnouncementVersionAction {
 	return ANNOUNCEMENT_VERSION_ACTIONS.includes(
 		value as TAnnouncementVersionAction
+	);
+}
+
+export function checkAnnouncementComputedStatus(
+	value: string
+): value is TAnnouncementComputedStatus {
+	return ANNOUNCEMENT_COMPUTED_STATUSES.includes(
+		value as TAnnouncementComputedStatus
 	);
 }

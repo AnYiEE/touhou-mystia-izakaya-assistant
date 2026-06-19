@@ -2,12 +2,18 @@
 
 import {
 	type ComponentProps,
+	type Key,
 	type PropsWithChildren,
 	type SyntheticEvent,
 	memo,
 } from 'react';
 
-import { faClipboard, faRotate } from '@fortawesome/free-solid-svg-icons';
+import {
+	faChevronDown,
+	faClipboard,
+	faFilter,
+	faRotate,
+} from '@fortawesome/free-solid-svg-icons';
 import {
 	FontAwesomeIcon,
 	type FontAwesomeIconProps,
@@ -16,6 +22,10 @@ import {
 import {
 	Button,
 	Card,
+	Dropdown,
+	DropdownItem,
+	DropdownMenu,
+	DropdownTrigger,
 	type IButtonProps,
 	Input,
 	Link,
@@ -388,6 +398,149 @@ export const AdminSearchInput = memo<IAdminSearchInputProps>(
 		);
 	}
 );
+
+export const adminFilterInputClassName =
+	'w-full min-w-0 md:min-w-56 md:flex-[1_1_16rem]';
+
+export const adminAdvancedFilterInputClassNames = {
+	inputWrapper: 'h-10 min-h-10',
+} as const;
+
+interface IAdminFilterActionButtonProps extends PropsWithChildren<object> {
+	icon?: FontAwesomeIconProps['icon'];
+	isLoading: boolean;
+	onPress: NonNullable<IButtonProps['onPress']>;
+}
+
+export const AdminFilterActionButton = memo<IAdminFilterActionButtonProps>(
+	function AdminFilterActionButton({
+		children,
+		icon = faRotate,
+		isLoading,
+		onPress,
+	}) {
+		return (
+			<Button
+				className="h-12 min-h-12 w-full shrink-0 px-4 md:w-auto md:flex-none"
+				color="primary"
+				isLoading={isLoading}
+				startContent={
+					isLoading ? null : (
+						<FontAwesomeIcon icon={icon} className="w-3.5" />
+					)
+				}
+				variant="flat"
+				onPress={onPress}
+			>
+				{children}
+			</Button>
+		);
+	}
+);
+
+interface IAdminAdvancedFilterPopoverProps {
+	activeCount?: number;
+	children: ReactNodeWithoutBoolean;
+	label?: ReactNodeWithoutBoolean;
+}
+
+export const AdminAdvancedFilterPopover =
+	memo<IAdminAdvancedFilterPopoverProps>(function AdminAdvancedFilterPopover({
+		activeCount = 0,
+		children,
+		label = '更多筛选',
+	}) {
+		const hasActiveFilter = activeCount > 0;
+
+		return (
+			<Popover placement="bottom-start" showArrow>
+				<PopoverTrigger>
+					<Button
+						className="h-12 min-h-12 w-full shrink-0 gap-2 px-4 md:w-auto md:min-w-32 md:flex-none"
+						color={hasActiveFilter ? 'primary' : 'default'}
+						startContent={
+							<FontAwesomeIcon
+								icon={faFilter}
+								className="w-3.5"
+							/>
+						}
+						variant={hasActiveFilter ? 'flat' : 'light'}
+					>
+						<span>{label}</span>
+						{hasActiveFilter && (
+							<span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/15 px-1.5 text-tiny font-medium text-primary">
+								{activeCount}
+							</span>
+						)}
+					</Button>
+				</PopoverTrigger>
+				<PopoverContent className="w-auto max-w-[calc(100vw-2rem)] p-3">
+					<div className="grid w-72 max-w-full gap-3">{children}</div>
+				</PopoverContent>
+			</Popover>
+		);
+	});
+
+interface IAdminDropdownFilterProps<TValue extends string> {
+	ariaLabel: string;
+	onAction: (key: Key) => void;
+	options: ReadonlyArray<{ label: string; value: TValue }>;
+	value: TValue;
+}
+
+function getAdminDropdownFilterLabel<TValue extends string>(
+	options: ReadonlyArray<{ label: string; value: TValue }>,
+	value: TValue
+) {
+	return options.find((option) => option.value === value)?.label ?? '';
+}
+
+function AdminDropdownFilterBase<TValue extends string>({
+	ariaLabel,
+	onAction,
+	options,
+	value,
+}: IAdminDropdownFilterProps<TValue>) {
+	return (
+		<Dropdown className="w-full shrink-0 md:w-auto md:flex-none" showArrow>
+			<DropdownTrigger>
+				<Button
+					aria-label={ariaLabel}
+					className="h-12 min-h-12 w-full min-w-0 shrink-0 gap-2 px-3 md:w-auto md:flex-none"
+					endContent={
+						<FontAwesomeIcon
+							icon={faChevronDown}
+							className="w-3 text-default-500"
+						/>
+					}
+					variant="flat"
+				>
+					<span className="truncate text-small">
+						{getAdminDropdownFilterLabel(options, value)}
+					</span>
+				</Button>
+			</DropdownTrigger>
+			<DropdownMenu
+				disallowEmptySelection
+				aria-label={ariaLabel}
+				selectedKeys={[value]}
+				selectionMode="single"
+				variant="flat"
+				onAction={onAction}
+			>
+				{options.map((option) => (
+					<DropdownItem key={option.value} textValue={option.label}>
+						{option.label}
+					</DropdownItem>
+				))}
+			</DropdownMenu>
+		</Dropdown>
+	);
+}
+
+export const AdminDropdownFilter = memo(
+	AdminDropdownFilterBase
+) as typeof AdminDropdownFilterBase;
 
 export const adminTextareaClassNames = {
 	inputWrapper:

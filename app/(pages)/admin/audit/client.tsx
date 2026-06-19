@@ -13,21 +13,20 @@ import {
 import { usePathname, useRouter } from 'next/navigation';
 
 import {
+	faBullhorn,
 	faClipboardList,
 	faClock,
 	faMagnifyingGlass,
+	faPlug,
 	faShieldHalved,
+	faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 
 import { Input } from '@/design/ui/components';
 
 import {
 	ADMIN_SSO_LIST_DEBOUNCE_MS,
-	AdminSsoAdvancedFilterPopover,
-	AdminSsoDropdownFilter,
-	AdminSsoFilterButton,
 	AdminSsoMetadata,
-	adminSsoAdvancedFilterInputClassNames,
 	createAdminSsoDateTimeText,
 	createAdminSsoPageInputValue,
 	createAdminSsoTimeInputValue,
@@ -35,7 +34,10 @@ import {
 	parseAdminSsoTimeInputValue,
 } from '../sso/components';
 import {
+	AdminAdvancedFilterPopover,
+	AdminDropdownFilter,
 	AdminEmptyState,
+	AdminFilterActionButton,
 	AdminFilterPanel,
 	AdminHeader,
 	AdminHeaderActionLink,
@@ -51,6 +53,7 @@ import {
 	AdminTableHeadCell,
 	AdminTableHeader,
 	AdminTableRow,
+	adminAdvancedFilterInputClassNames,
 } from '../components';
 import { trackEvent } from '@/components/analytics';
 
@@ -94,6 +97,7 @@ const auditActorTypeLabelMap = {
 } as const;
 
 const auditTargetTypeLabelMap: Record<string, string> = {
+	announcement_records: '通知维护记录',
 	sso_callback_queue: 'SSO Callback 队列',
 	sso_client: 'SSO 客户端',
 	sso_client_secret: 'SSO 客户端密钥',
@@ -103,6 +107,7 @@ const auditTargetTypeLabelMap: Record<string, string> = {
 };
 
 const auditActionLabelMap: Record<string, string> = {
+	'admin-cleanup-announcement-records': '管理员清理通知历史',
 	'admin-cleanup-expired-sso-tickets': '管理员清理过期SSO Ticket',
 	'admin-cleanup-sso-callback-deliveries': '管理员清理SSO Callback历史',
 	'admin-clear-user-data': '管理员清空用户云端数据',
@@ -594,11 +599,17 @@ export default function AdminAuditClient({
 			<AdminHeader
 				actions={
 					<>
-						<AdminHeaderActionLink href="/admin">
+						<AdminHeaderActionLink href="/admin" icon={faUsers}>
 							用户管理
 						</AdminHeaderActionLink>
-						<AdminHeaderActionLink href="/admin/sso">
+						<AdminHeaderActionLink href="/admin/sso" icon={faPlug}>
 							SSO客户端
+						</AdminHeaderActionLink>
+						<AdminHeaderActionLink
+							href="/admin/announcements"
+							icon={faBullhorn}
+						>
+							站点通知
 						</AdminHeaderActionLink>
 					</>
 				}
@@ -630,13 +641,11 @@ export default function AdminAuditClient({
 					value={queryInput}
 					onValueChange={handleTextFilterChange(setQueryInput)}
 				/>
-				<AdminSsoAdvancedFilterPopover
-					activeCount={advancedFilterCount}
-				>
+				<AdminAdvancedFilterPopover activeCount={advancedFilterCount}>
 					<Input
 						aria-label="按动作过滤"
 						className="w-full"
-						classNames={adminSsoAdvancedFilterInputClassNames}
+						classNames={adminAdvancedFilterInputClassNames}
 						placeholder="动作"
 						value={actionInput}
 						onValueChange={handleTextFilterChange(setActionInput)}
@@ -644,7 +653,7 @@ export default function AdminAuditClient({
 					<Input
 						aria-label="按操作者ID过滤"
 						className="w-full"
-						classNames={adminSsoAdvancedFilterInputClassNames}
+						classNames={adminAdvancedFilterInputClassNames}
 						placeholder="操作者ID"
 						value={actorIdInput}
 						onValueChange={handleTextFilterChange(setActorIdInput)}
@@ -652,7 +661,7 @@ export default function AdminAuditClient({
 					<Input
 						aria-label="按目标类型过滤"
 						className="w-full"
-						classNames={adminSsoAdvancedFilterInputClassNames}
+						classNames={adminAdvancedFilterInputClassNames}
 						placeholder="目标类型"
 						value={targetTypeInput}
 						onValueChange={handleTextFilterChange(
@@ -662,7 +671,7 @@ export default function AdminAuditClient({
 					<Input
 						aria-label="按目标ID过滤"
 						className="w-full"
-						classNames={adminSsoAdvancedFilterInputClassNames}
+						classNames={adminAdvancedFilterInputClassNames}
 						placeholder="目标ID"
 						value={targetIdInput}
 						onValueChange={handleTextFilterChange(setTargetIdInput)}
@@ -670,7 +679,7 @@ export default function AdminAuditClient({
 					<Input
 						aria-label="开始时间"
 						className="w-full"
-						classNames={adminSsoAdvancedFilterInputClassNames}
+						classNames={adminAdvancedFilterInputClassNames}
 						placeholder="开始时间"
 						type="datetime-local"
 						value={startTimeInput}
@@ -681,31 +690,31 @@ export default function AdminAuditClient({
 					<Input
 						aria-label="结束时间"
 						className="w-full"
-						classNames={adminSsoAdvancedFilterInputClassNames}
+						classNames={adminAdvancedFilterInputClassNames}
 						placeholder="结束时间"
 						type="datetime-local"
 						value={endTimeInput}
 						onValueChange={handleTextFilterChange(setEndTimeInput)}
 					/>
-				</AdminSsoAdvancedFilterPopover>
-				<AdminSsoDropdownFilter
+				</AdminAdvancedFilterPopover>
+				<AdminDropdownFilter
 					ariaLabel="筛选审计范围"
 					options={scopeOptions}
 					value={scope}
 					onAction={handleScopeAction}
 				/>
-				<AdminSsoDropdownFilter
+				<AdminDropdownFilter
 					ariaLabel="筛选操作者类型"
 					options={actorTypeOptions}
 					value={actorType}
 					onAction={handleActorTypeAction}
 				/>
-				<AdminSsoFilterButton
+				<AdminFilterActionButton
 					isLoading={isLoading}
 					onPress={handleRefresh}
 				>
 					刷新
-				</AdminSsoFilterButton>
+				</AdminFilterActionButton>
 			</AdminFilterPanel>
 
 			{message !== null && <AdminMessage message={message} />}

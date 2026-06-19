@@ -25,20 +25,19 @@ import { Input } from '@/design/ui/components';
 
 import {
 	ADMIN_SSO_LIST_DEBOUNCE_MS,
-	AdminSsoAdvancedFilterPopover,
-	AdminSsoDropdownFilter,
-	AdminSsoFilterButton,
 	AdminSsoOperationNav,
 	AdminSsoTicketStatusBadge,
-	adminSsoAdvancedFilterInputClassNames,
 	createAdminSsoDateTimeText,
 	createAdminSsoPageInputValue,
 	parseAdminSsoPageInput,
 } from '../components';
 import {
+	AdminAdvancedFilterPopover,
 	AdminConfirmButton,
+	AdminDropdownFilter,
 	AdminEmptyState,
 	AdminEntityCell,
+	AdminFilterActionButton,
 	AdminFilterPanel,
 	AdminHeader,
 	AdminHeaderActionLink,
@@ -57,6 +56,7 @@ import {
 	AdminTableHeadCell,
 	AdminTableHeader,
 	AdminTableRow,
+	adminAdvancedFilterInputClassNames,
 } from '../../components';
 import { trackEvent } from '@/components/analytics';
 
@@ -656,13 +656,11 @@ export default function AdminSsoTicketsClient({
 					value={queryInput}
 					onValueChange={handleQueryInputChange}
 				/>
-				<AdminSsoAdvancedFilterPopover
-					activeCount={advancedFilterCount}
-				>
+				<AdminAdvancedFilterPopover activeCount={advancedFilterCount}>
 					<Input
 						aria-label="按客户端ID过滤"
 						className="w-full"
-						classNames={adminSsoAdvancedFilterInputClassNames}
+						classNames={adminAdvancedFilterInputClassNames}
 						placeholder="客户端ID"
 						value={clientIdInput}
 						onValueChange={handleClientIdInputChange}
@@ -670,24 +668,24 @@ export default function AdminSsoTicketsClient({
 					<Input
 						aria-label="按用户ID过滤"
 						className="w-full"
-						classNames={adminSsoAdvancedFilterInputClassNames}
+						classNames={adminAdvancedFilterInputClassNames}
 						placeholder="用户ID"
 						value={userIdInput}
 						onValueChange={handleUserIdInputChange}
 					/>
-				</AdminSsoAdvancedFilterPopover>
-				<AdminSsoDropdownFilter
+				</AdminAdvancedFilterPopover>
+				<AdminDropdownFilter
 					ariaLabel="筛选Ticket状态"
 					options={statusOptions}
 					value={statusFilter}
 					onAction={handleStatusAction}
 				/>
-				<AdminSsoFilterButton
+				<AdminFilterActionButton
 					isLoading={isLoading}
 					onPress={handleRefresh}
 				>
 					刷新
-				</AdminSsoFilterButton>
+				</AdminFilterActionButton>
 			</AdminFilterPanel>
 
 			{message !== null && <AdminMessage message={message} />}

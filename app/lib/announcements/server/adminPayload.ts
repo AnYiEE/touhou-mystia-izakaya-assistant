@@ -8,6 +8,7 @@ const MAX_ANNOUNCEMENT_HTML_LENGTH = 4000;
 const MAX_ANNOUNCEMENT_ID_LENGTH = 80;
 const MAX_ANNOUNCEMENT_PRIORITY = 1_000_000;
 const MAX_ANNOUNCEMENT_TITLE_LENGTH = 80;
+const RESERVED_ANNOUNCEMENT_IDS = new Set(['cleanup', 'new', 'preview']);
 
 function normalizeInputObject(value: unknown) {
 	return value !== null && typeof value === 'object'
@@ -23,6 +24,14 @@ function normalizeString(value: unknown, maxLength: number) {
 	const trimmed = value.trim();
 
 	return trimmed.length > 0 && trimmed.length <= maxLength ? trimmed : null;
+}
+
+function normalizeAnnouncementId(value: unknown) {
+	const id = normalizeString(value, MAX_ANNOUNCEMENT_ID_LENGTH);
+
+	return id === null || RESERVED_ANNOUNCEMENT_IDS.has(id.toLowerCase())
+		? null
+		: id;
 }
 
 function normalizeOptionalTimestamp(value: unknown) {
@@ -46,6 +55,21 @@ function normalizePriority(value: unknown) {
 		typeof value !== 'number' ||
 		!Number.isSafeInteger(value) ||
 		Math.abs(value) > MAX_ANNOUNCEMENT_PRIORITY
+	) {
+		return null;
+	}
+
+	return value;
+}
+
+function normalizeExpectedRevision(value: unknown) {
+	if (value === undefined) {
+		return;
+	}
+	if (
+		typeof value !== 'number' ||
+		!Number.isSafeInteger(value) ||
+		value < 1
 	) {
 		return null;
 	}
@@ -97,13 +121,16 @@ export function parseAdminAnnouncementBody(data: unknown) {
 	const rawLevel = input['level'];
 	const rawAudience = input['audience'];
 	const priority = normalizePriority(input['priority']);
+	const expectedRevision = normalizeExpectedRevision(
+		input['expected_revision']
+	);
 	const startsAt = normalizeOptionalTimestamp(input['starts_at']);
 	const endsAt = normalizeOptionalTimestamp(input['ends_at']);
 	const targetUserIds = normalizeTargetUserIds(input['target_user_ids']);
 	const id =
 		input['id'] === undefined
 			? undefined
-			: normalizeString(input['id'], MAX_ANNOUNCEMENT_ID_LENGTH);
+			: normalizeAnnouncementId(input['id']);
 
 	if (
 		title === null ||
@@ -115,6 +142,7 @@ export function parseAdminAnnouncementBody(data: unknown) {
 		typeof input['enabled'] !== 'boolean' ||
 		typeof input['dismissible'] !== 'boolean' ||
 		priority === null ||
+		expectedRevision === null ||
 		startsAt === undefined ||
 		endsAt === undefined ||
 		targetUserIds === null ||
@@ -132,6 +160,9 @@ export function parseAdminAnnouncementBody(data: unknown) {
 
 	return {
 		...(id === undefined ? {} : { id }),
+		...(expectedRevision === undefined
+			? {}
+			: { expected_revision: expectedRevision }),
 		audience: rawAudience,
 		dismissible: input['dismissible'],
 		enabled: input['enabled'],

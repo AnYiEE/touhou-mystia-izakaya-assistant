@@ -2,6 +2,11 @@ import { type NextRequest } from 'next/server';
 
 import { checkAdminAnnouncementRequest } from '@/lib/announcements/server/adminRouteResponses';
 import { parseAdminAnnouncementBody } from '@/lib/announcements/server/adminPayload';
+import {
+	checkAnnouncementAudience,
+	checkAnnouncementComputedStatus,
+	checkAnnouncementLevel,
+} from '@/lib/announcements/shared/types';
 import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
 import {
 	createNoStoreErrorResponse,
@@ -65,17 +70,36 @@ export async function GET(request: NextRequest) {
 
 	const includeArchived =
 		request.nextUrl.searchParams.get('include_archived') === '1';
+	const rawAudience = request.nextUrl.searchParams.get('audience') ?? '';
+	const rawComputedStatus = request.nextUrl.searchParams.get('status') ?? '';
+	const rawLevel = request.nextUrl.searchParams.get('level') ?? '';
 	const query = request.nextUrl.searchParams.get('query') ?? '';
+	if (
+		(rawAudience !== '' && !checkAnnouncementAudience(rawAudience)) ||
+		(rawComputedStatus !== '' &&
+			!checkAnnouncementComputedStatus(rawComputedStatus)) ||
+		(rawLevel !== '' && !checkAnnouncementLevel(rawLevel))
+	) {
+		return createNoStoreErrorResponse('invalid-object-structure', 400);
+	}
 
 	const announcementModule =
 		await import('@/lib/announcements/server/service');
+	const options: Parameters<
+		typeof announcementModule.listAdminAnnouncements
+	>[0] = { includeArchived, page, pageSize, query };
+	if (rawAudience !== '') {
+		options.audience = rawAudience;
+	}
+	if (rawComputedStatus !== '') {
+		options.computedStatus = rawComputedStatus;
+	}
+	if (rawLevel !== '') {
+		options.level = rawLevel;
+	}
+
 	return createNoStoreJsonResponse(
-		await announcementModule.listAdminAnnouncements({
-			includeArchived,
-			page,
-			pageSize,
-			query,
-		})
+		await announcementModule.listAdminAnnouncements(options)
 	);
 }
 

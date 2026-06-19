@@ -2233,7 +2233,7 @@ export default memo<IProps>(function AccountManager() {
 																		</p>
 																	</div>
 																	{isCurrentSession ? (
-																		<span className="inline-flex h-8 min-w-8 shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-primary/10 px-2 text-tiny leading-none text-primary-700">
+																		<span className="my-1.5 inline-flex min-w-8 shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-primary/10 px-2 py-1 text-tiny leading-none text-primary-700">
 																			本设备
 																		</span>
 																	) : (

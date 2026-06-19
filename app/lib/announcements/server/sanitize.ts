@@ -1,6 +1,10 @@
 import sanitizeHtml from 'sanitize-html';
 
 const ANNOUNCEMENT_USER_ID_TEMPLATE_REGEXP = /\{\{\s*user\.id\s*\}\}/gu;
+const ANNOUNCEMENT_USER_DISPLAY_NAME_TEMPLATE_REGEXP =
+	/\{\{\s*user\.display_name\s*\}\}/gu;
+const ANNOUNCEMENT_USER_NICKNAME_TEMPLATE_REGEXP =
+	/\{\{\s*user\.nickname\s*\}\}/gu;
 const ANNOUNCEMENT_USERNAME_TEMPLATE_REGEXP = /\{\{\s*user\.username\s*\}\}/gu;
 
 const ANNOUNCEMENT_SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
@@ -99,9 +103,23 @@ export function sanitizeAnnouncementHtml(html: string) {
 
 export function renderAnnouncementHtmlTemplate(
 	html: string,
-	context: { userId: string | null; username: string | null }
+	context: {
+		nickname: string | null;
+		userId: string | null;
+		username: string | null;
+	}
 ) {
+	const displayName = context.nickname ?? context.username ?? '游客';
+
 	return html
+		.replaceAll(
+			ANNOUNCEMENT_USER_DISPLAY_NAME_TEMPLATE_REGEXP,
+			escapeHtmlText(displayName)
+		)
+		.replaceAll(
+			ANNOUNCEMENT_USER_NICKNAME_TEMPLATE_REGEXP,
+			escapeHtmlText(context.nickname ?? '')
+		)
 		.replaceAll(
 			ANNOUNCEMENT_USERNAME_TEMPLATE_REGEXP,
 			escapeHtmlText(context.username ?? '游客')

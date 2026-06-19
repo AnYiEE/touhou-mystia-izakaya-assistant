@@ -63,6 +63,7 @@ export async function GET(request: NextRequest) {
 				? await serviceModule.getVisibleAnnouncementsForRequestContext({
 						dismissedTokens,
 						isAuthenticated: true,
+						nickname: auth.data.user.nickname,
 						userId: auth.data.user.id,
 						username: auth.data.user.username,
 					})

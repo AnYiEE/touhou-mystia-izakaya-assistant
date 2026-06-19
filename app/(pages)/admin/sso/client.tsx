@@ -28,8 +28,6 @@ import { Button, cn } from '@/design/ui/components';
 
 import {
 	ADMIN_SSO_LIST_DEBOUNCE_MS,
-	AdminSsoDropdownFilter,
-	AdminSsoFilterButton,
 	AdminSsoOperationNav,
 	createAdminSsoDateTimeText,
 	createAdminSsoPageInputValue,
@@ -41,8 +39,10 @@ import {
 	createAdminSsoHref,
 } from './locationState';
 import {
+	AdminDropdownFilter,
 	AdminEmptyState,
 	AdminEntityCell,
+	AdminFilterActionButton,
 	AdminFilterPanel,
 	AdminHeader,
 	AdminHeaderActionLink,
@@ -633,30 +633,30 @@ export default function AdminSsoClientsClient({
 					value={queryInput}
 					onValueChange={handleQueryInputChange}
 				/>
-				<AdminSsoDropdownFilter
+				<AdminDropdownFilter
 					ariaLabel="筛选客户端状态"
 					options={clientStatusOptions}
 					value={statusFilter}
 					onAction={handleStatusAction}
 				/>
-				<AdminSsoDropdownFilter
+				<AdminDropdownFilter
 					ariaLabel="筛选Callback配置"
 					options={callbackOptions}
 					value={callbackFilter}
 					onAction={handleCallbackAction}
 				/>
-				<AdminSsoDropdownFilter
+				<AdminDropdownFilter
 					ariaLabel="筛选授权状态"
 					options={grantOptions}
 					value={grantFilter}
 					onAction={handleGrantAction}
 				/>
-				<AdminSsoFilterButton
+				<AdminFilterActionButton
 					isLoading={isLoading}
 					onPress={handleRefreshClients}
 				>
 					刷新
-				</AdminSsoFilterButton>
+				</AdminFilterActionButton>
 			</AdminFilterPanel>
 
 			{message !== null && <AdminMessage message={message} />}

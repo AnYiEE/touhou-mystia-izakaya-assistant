@@ -1,6 +1,7 @@
 'use client';
 
 import {
+	type Key,
 	type SyntheticEvent,
 	memo,
 	useCallback,
@@ -9,26 +10,28 @@ import {
 	useState,
 } from 'react';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
 	faBullhorn,
 	faClock,
 	faPlus,
-	faRotate,
 	faSearch,
 	faServer,
 	faShieldHalved,
+	faTrash,
 	faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 
-import { Button, Switch, cn } from '@/design/ui/components';
+import { Switch, cn } from '@/design/ui/components';
 
 import {
 	ADMIN_LIST_DEBOUNCE_MS,
 	AdminAnnouncementLevelBadge,
 	AdminAnnouncementStatusBadge,
+	AdminConfirmButton,
+	AdminDropdownFilter,
 	AdminEmptyState,
 	AdminEntityCell,
+	AdminFilterActionButton,
 	AdminFilterPanel,
 	AdminHeader,
 	AdminHeaderActionLink,
@@ -51,6 +54,7 @@ import TimeAgo from '@/components/timeAgo';
 
 import {
 	type TAdminApiResult,
+	cleanupAdminAnnouncementRecords,
 	fetchAdminMe,
 	listAdminAnnouncements,
 } from '../api';
@@ -60,6 +64,8 @@ import type {
 	IAdminAnnouncementListData,
 	IAdminAnnouncementProfile,
 	TAnnouncementAudience,
+	TAnnouncementComputedStatus,
+	TAnnouncementLevel,
 } from '@/lib/announcements/shared/types';
 
 const pageInputRegexp = /^\d*$/u;
@@ -70,6 +76,40 @@ const AUDIENCE_LABEL_MAP = {
 	authenticated: '已登录',
 	targeted: '指定用户',
 } as const satisfies Record<TAnnouncementAudience, string>;
+
+const STATUS_FILTER_OPTIONS = [
+	{ label: '全部状态', value: '' },
+	{ label: '展示中', value: 'active' },
+	{ label: '待开始', value: 'scheduled' },
+	{ label: '已结束', value: 'ended' },
+	{ label: '已停用', value: 'disabled' },
+	{ label: '已归档', value: 'archived' },
+] as const satisfies Array<{
+	label: string;
+	value: TAnnouncementComputedStatus | '';
+}>;
+
+const LEVEL_FILTER_OPTIONS = [
+	{ label: '全部等级', value: '' },
+	{ label: '信息', value: 'info' },
+	{ label: '成功', value: 'success' },
+	{ label: '警告', value: 'warning' },
+	{ label: '危险', value: 'danger' },
+	{ label: '重要', value: 'critical' },
+] as const satisfies Array<{ label: string; value: TAnnouncementLevel | '' }>;
+
+const AUDIENCE_FILTER_OPTIONS = [
+	{ label: '全部受众', value: '' },
+	{ label: '全部用户', value: 'all' },
+	{ label: '未登录', value: 'anonymous' },
+	{ label: '已登录', value: 'authenticated' },
+	{ label: '指定用户', value: 'targeted' },
+] as const satisfies Array<{
+	label: string;
+	value: TAnnouncementAudience | '';
+}>;
+
+type TConfirmAction = 'cleanup' | null;
 
 function checkAdminUnauthorizedActionResult(
 	result: Extract<TAdminApiResult, { status: 'error' }>
@@ -108,14 +148,12 @@ const AdminAnnouncementRow = memo<IAdminAnnouncementRowProps>(
 					/>
 				</AdminTableCell>
 				<AdminTableCell>
-					<div className="flex flex-wrap gap-2">
-						<AdminAnnouncementStatusBadge
-							status={announcement.computed_status}
-						/>
-						<AdminAnnouncementLevelBadge
-							level={announcement.level}
-						/>
-					</div>
+					<AdminAnnouncementStatusBadge
+						status={announcement.computed_status}
+					/>
+				</AdminTableCell>
+				<AdminTableCell>
+					<AdminAnnouncementLevelBadge level={announcement.level} />
 				</AdminTableCell>
 				<AdminTableCell isNowrap>
 					{AUDIENCE_LABEL_MAP[announcement.audience]}
@@ -184,12 +222,21 @@ export default function AdminAnnouncementsClient({
 	const [isAuthLoading, setIsAuthLoading] = useState(
 		initialData.isAuthLoading
 	);
+	const [confirmAction, setConfirmAction] = useState<TConfirmAction>(null);
+	const [isCleaning, setIsCleaning] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [message, setMessage] = useState<string | null>(initialData.message);
 	const [page, setPage] = useState(1);
 	const [pageInput, setPageInput] = useState('1');
 	const [query, setQuery] = useState('');
 	const [queryInput, setQueryInput] = useState('');
+	const [statusFilter, setStatusFilter] = useState<
+		TAnnouncementComputedStatus | ''
+	>('');
+	const [levelFilter, setLevelFilter] = useState<TAnnouncementLevel | ''>('');
+	const [audienceFilter, setAudienceFilter] = useState<
+		TAnnouncementAudience | ''
+	>('');
 
 	const refreshAnnouncements = useCallback(
 		(overridePage?: number, overrideQuery?: string) => {
@@ -199,7 +246,10 @@ export default function AdminAnnouncementsClient({
 			setMessage(null);
 
 			void listAdminAnnouncements({
+				audience: audienceFilter,
+				computedStatus: statusFilter,
 				includeArchived,
+				level: levelFilter,
 				page: overridePage ?? page,
 				query: overrideQuery ?? query,
 			})
@@ -237,7 +287,14 @@ export default function AdminAnnouncementsClient({
 					}
 				});
 		},
-		[includeArchived, page, query]
+		[
+			audienceFilter,
+			includeArchived,
+			levelFilter,
+			page,
+			query,
+			statusFilter,
+		]
 	);
 
 	const checkAdmin = useCallback(() => {
@@ -281,8 +338,36 @@ export default function AdminAnnouncementsClient({
 			});
 	}, []);
 
+	const handleActionError = useCallback(
+		(result: Extract<TAdminApiResult, { status: 'error' }>) => {
+			if (checkAdminUnauthorizedActionResult(result)) {
+				clearAdminSession();
+				setAdmin(null);
+				return;
+			}
+
+			setMessage(result.displayMessage);
+		},
+		[]
+	);
+
 	const handleQueryInputChange = useCallback((value: string) => {
 		setQueryInput(value);
+	}, []);
+
+	const handleStatusFilterAction = useCallback((key: Key) => {
+		setPage(1);
+		setStatusFilter(String(key) as TAnnouncementComputedStatus | '');
+	}, []);
+
+	const handleLevelFilterAction = useCallback((key: Key) => {
+		setPage(1);
+		setLevelFilter(String(key) as TAnnouncementLevel | '');
+	}, []);
+
+	const handleAudienceFilterAction = useCallback((key: Key) => {
+		setPage(1);
+		setAudienceFilter(String(key) as TAnnouncementAudience | '');
 	}, []);
 
 	const handleRefreshPress = useCallback(() => {
@@ -294,6 +379,52 @@ export default function AdminAnnouncementsClient({
 		refreshAnnouncements(1, nextQuery);
 	}, [page, query, queryInput, refreshAnnouncements]);
 
+	const handleCleanup = useCallback(() => {
+		if (isCleaning) {
+			return;
+		}
+
+		const csrfToken = admin?.csrf_token;
+		if (csrfToken === undefined) {
+			setMessage('管理员登录已失效，请重新登录。');
+			return;
+		}
+		trackEvent(
+			trackEvent.category.click,
+			'Remove Button',
+			'Cleanup Records'
+		);
+
+		setIsCleaning(true);
+		setConfirmAction(null);
+		setMessage(null);
+		void cleanupAdminAnnouncementRecords(csrfToken)
+			.then((result) => {
+				if (result.status === 'error') {
+					handleActionError(result);
+					return;
+				}
+
+				setMessage(
+					`已清理${result.data.deleted_dismissals}条关闭记录、${result.data.deleted_versions}条历史版本`
+				);
+				refreshAnnouncements();
+			})
+			.catch((error: unknown) => {
+				setMessage(
+					error instanceof Error ? error.message : '清理通知记录失败'
+				);
+			})
+			.finally(() => {
+				setIsCleaning(false);
+			});
+	}, [
+		admin?.csrf_token,
+		handleActionError,
+		isCleaning,
+		refreshAnnouncements,
+	]);
+
 	const handleLeaveAnnouncementList = useCallback(() => {
 		requestIdRef.current += 1;
 		setIsLoading(false);
@@ -302,7 +433,7 @@ export default function AdminAnnouncementsClient({
 	const handleOpenSsoClientList = useCallback(() => {
 		trackEvent(
 			trackEvent.category.click,
-			'Admin SSO Client Button',
+			'Link',
 			'Open List From Announcements'
 		);
 		handleLeaveAnnouncementList();
@@ -377,7 +508,16 @@ export default function AdminAnnouncementsClient({
 				globalThis.clearTimeout(timeoutId);
 			}
 		};
-	}, [admin, includeArchived, page, query, refreshAnnouncements]);
+	}, [
+		admin,
+		audienceFilter,
+		includeArchived,
+		levelFilter,
+		page,
+		query,
+		refreshAnnouncements,
+		statusFilter,
+	]);
 
 	useEffect(() => {
 		if (!isQueryInputInitializedRef.current) {
@@ -427,11 +567,8 @@ export default function AdminAnnouncementsClient({
 		);
 	}
 
-	const visibleCount =
-		announcements?.announcements.filter(
-			(announcement) => announcement.computed_status === 'active'
-		).length ?? 0;
 	const archivedCount = announcements?.archived_count ?? 0;
+	const activeCount = announcements?.active_count ?? null;
 	const currentPage = announcements?.page ?? page;
 	const filteredCount = announcements?.filtered_count ?? null;
 	const totalCount = announcements?.total_count ?? null;
@@ -442,6 +579,18 @@ export default function AdminAnnouncementsClient({
 			<AdminHeader
 				actions={
 					<>
+						<AdminConfirmButton
+							color="danger"
+							confirmAction="cleanup"
+							confirmLabel="确认清理"
+							icon={faTrash}
+							isLoading={isCleaning}
+							onConfirm={handleCleanup}
+							onOpenChange={setConfirmAction}
+							openAction={confirmAction}
+						>
+							清理历史
+						</AdminConfirmButton>
 						<AdminHeaderActionLink
 							href="/admin"
 							icon={faUsers}
@@ -479,14 +628,14 @@ export default function AdminAnnouncementsClient({
 					}
 				/>
 				<AdminMetric
-					label="展示中"
-					value={announcements === null ? '读取中' : visibleCount}
+					label="全局展示中"
+					value={activeCount ?? '读取中'}
 				/>
 				<AdminMetric
-					label="已归档"
+					label="全局已归档"
 					value={announcements === null ? '读取中' : archivedCount}
 				/>
-				<AdminMetric label="总数" value={totalCount ?? '读取中'} />
+				<AdminMetric label="全局总数" value={totalCount ?? '读取中'} />
 			</AdminMetricPanel>
 
 			<AdminFilterPanel icon={faSearch}>
@@ -506,23 +655,30 @@ export default function AdminAnnouncementsClient({
 				>
 					包含归档
 				</Switch>
-				<Button
-					className="h-12 min-h-12 w-full md:w-auto md:flex-none"
-					color="primary"
+				<AdminDropdownFilter
+					ariaLabel="筛选通知状态"
+					onAction={handleStatusFilterAction}
+					options={STATUS_FILTER_OPTIONS}
+					value={statusFilter}
+				/>
+				<AdminDropdownFilter
+					ariaLabel="筛选通知等级"
+					onAction={handleLevelFilterAction}
+					options={LEVEL_FILTER_OPTIONS}
+					value={levelFilter}
+				/>
+				<AdminDropdownFilter
+					ariaLabel="筛选通知受众"
+					onAction={handleAudienceFilterAction}
+					options={AUDIENCE_FILTER_OPTIONS}
+					value={audienceFilter}
+				/>
+				<AdminFilterActionButton
 					isLoading={isLoading}
-					startContent={
-						isLoading ? null : (
-							<FontAwesomeIcon
-								icon={faRotate}
-								className="w-3.5"
-							/>
-						)
-					}
-					variant="flat"
 					onPress={handleRefreshPress}
 				>
 					刷新
-				</Button>
+				</AdminFilterActionButton>
 			</AdminFilterPanel>
 
 			{message !== null && <AdminMessage message={message} />}

@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import {
 	type IAdminAnnouncementBody,
+	type IAdminAnnouncementCleanupData,
 	type IAdminAnnouncementListData,
 	type IAdminAnnouncementMutationData,
 	type IAdminAnnouncementPreviewData,
@@ -9,6 +10,9 @@ import {
 	type IAdminAnnouncementVersionListData,
 	type IAnnouncementPublicItem,
 	type IAnnouncementVisibleListData,
+	type TAnnouncementAudience,
+	type TAnnouncementComputedStatus,
+	type TAnnouncementLevel,
 	type TAnnouncementVersionAction,
 	checkAnnouncementAudience,
 	checkAnnouncementLevel,
@@ -19,6 +23,8 @@ import {
 	createAnnouncementVersionProfile,
 } from './history';
 import {
+	type TCleanupAnnouncementRecordsAuditWriter,
+	cleanupAnnouncementRecords,
 	createAnnouncementRecord,
 	getAnnouncementById,
 	insertAnnouncementVersion,
@@ -35,6 +41,7 @@ import {
 	renderAnnouncementHtmlTemplate,
 	sanitizeAnnouncementHtml,
 } from './sanitize';
+import type { IAuditLogWriteInput } from '@/lib/account/server/repositories/auditLogs';
 import type {
 	TAnnouncement,
 	TAnnouncementNew,
@@ -45,6 +52,15 @@ import type {
 const DEFAULT_ANNOUNCEMENT_LIST_PAGE_SIZE = 20;
 const DEFAULT_VISIBLE_ANNOUNCEMENT_LIMIT = 5;
 const ACTIVE_CANDIDATE_BATCH_SIZE = 50;
+const ACTIVE_CANDIDATE_CACHE_TTL_MS = 15 * 1000;
+const ANNOUNCEMENT_DISMISSAL_RETENTION_MS = 180 * 24 * 60 * 60 * 1000;
+const ANNOUNCEMENT_VERSION_RETENTION_MS = 365 * 24 * 60 * 60 * 1000;
+const ANNOUNCEMENT_VERSION_KEEP_LATEST = 20;
+
+const activeCandidateCache = new Map<
+	string,
+	{ expiresAt: number; records: TAnnouncement[] }
+>();
 
 export type TAnnouncementServiceError =
 	| 'announcement-conflict'
@@ -69,16 +85,26 @@ export const ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP: Record<
 export interface IAnnouncementRequestContext {
 	dismissedTokens: string[];
 	isAuthenticated: boolean;
+	nickname?: TUser['nickname'];
 	now?: number;
 	userId?: TUser['id'];
 	username?: TUser['username'];
 }
 
 export interface IListAdminAnnouncementsOptions {
+	audience?: TAnnouncementAudience;
+	computedStatus?: TAnnouncementComputedStatus;
 	includeArchived?: boolean;
+	level?: TAnnouncementLevel;
 	page?: number;
 	pageSize?: number;
 	query?: string;
+}
+
+export interface ICleanupAdminAnnouncementRecordsOptions {
+	adminId: string | null;
+	ipAddress?: string | null;
+	userAgent?: string | null;
 }
 
 function checkAnnouncementConflictError(error: unknown) {
@@ -110,6 +136,70 @@ function createVisibleAudienceList(isAuthenticated: boolean) {
 	return isAuthenticated
 		? (['all', 'authenticated', 'targeted'] as const)
 		: (['all', 'anonymous'] as const);
+}
+
+function createActiveCandidateCacheKey({
+	audiences,
+	limit,
+	offset = 0,
+}: {
+	audiences: ReadonlyArray<TAnnouncementAudience>;
+	limit: number;
+	offset?: number;
+}) {
+	return `${[...new Set(audiences)].sort().join(',')}:${limit}:${offset}`;
+}
+
+function checkAnnouncementIsActive(
+	announcement: Pick<
+		TAnnouncement,
+		'deleted_at' | 'enabled' | 'ends_at' | 'starts_at'
+	>,
+	now: number
+) {
+	return (
+		announcement.deleted_at === null &&
+		announcement.enabled === 1 &&
+		(announcement.starts_at === null || announcement.starts_at <= now) &&
+		(announcement.ends_at === null || announcement.ends_at > now)
+	);
+}
+
+function invalidateActiveAnnouncementCandidateCache() {
+	activeCandidateCache.clear();
+}
+
+async function listCachedActiveAnnouncementCandidates({
+	audiences,
+	limit,
+	now,
+	offset = 0,
+}: {
+	audiences: TAnnouncementAudience[];
+	limit: number;
+	now: number;
+	offset?: number;
+}) {
+	const key = createActiveCandidateCacheKey({ audiences, limit, offset });
+	const cached = activeCandidateCache.get(key);
+	if (cached !== undefined && cached.expiresAt > Date.now()) {
+		return cached.records.filter((record) =>
+			checkAnnouncementIsActive(record, now)
+		);
+	}
+
+	const records = await listActiveAnnouncementCandidates({
+		audiences,
+		limit,
+		now,
+		offset,
+	});
+	activeCandidateCache.set(key, {
+		expiresAt: Date.now() + ACTIVE_CANDIDATE_CACHE_TTL_MS,
+		records,
+	});
+
+	return records;
 }
 
 function parseTargetUserIdsJson(value: string) {
@@ -320,6 +410,7 @@ function createPreviewProfile(body: IAdminAnnouncementBody) {
 		{
 			...body,
 			html: renderAnnouncementHtmlTemplate(body.html, {
+				nickname: '夜雀',
 				userId: '00000000-0000-0000-0000-000000000000',
 				username: '米斯蒂娅',
 			}),
@@ -333,6 +424,7 @@ function createPreviewProfile(body: IAdminAnnouncementBody) {
 export async function getVisibleAnnouncementsForRequestContext({
 	dismissedTokens,
 	isAuthenticated,
+	nickname,
 	now = Date.now(),
 	userId,
 	username,
@@ -343,7 +435,7 @@ export async function getVisibleAnnouncementsForRequestContext({
 	let offset = 0;
 
 	while (announcements.length < DEFAULT_VISIBLE_ANNOUNCEMENT_LIMIT) {
-		const batch = await listActiveAnnouncementCandidates({
+		const batch = await listCachedActiveAnnouncementCandidates({
 			audiences: [...audiences],
 			limit: ACTIVE_CANDIDATE_BATCH_SIZE,
 			now,
@@ -378,6 +470,7 @@ export async function getVisibleAnnouncementsForRequestContext({
 		for (const announcement of visibleCandidates) {
 			const sanitizedHtml = sanitizeAnnouncementHtml(
 				renderAnnouncementHtmlTemplate(announcement.html, {
+					nickname: nickname ?? null,
 					userId: userId ?? null,
 					username: username ?? null,
 				})
@@ -415,26 +508,41 @@ export async function getVisibleAnnouncementsForRequestContext({
 }
 
 export async function listAdminAnnouncements({
+	audience,
+	computedStatus,
 	includeArchived = false,
+	level,
 	page = 1,
 	pageSize = DEFAULT_ANNOUNCEMENT_LIST_PAGE_SIZE,
 	query = '',
 }: IListAdminAnnouncementsOptions = {}): Promise<IAdminAnnouncementListData> {
 	const safePage = Math.max(1, page);
 	const safePageSize = Math.max(1, pageSize);
-	const { announcements, archivedCount, filteredCount, totalCount } =
-		await listAnnouncements({
-			includeArchived,
-			limit: safePageSize,
-			offset: (safePage - 1) * safePageSize,
-			query,
-		});
-	return {
-		announcements: announcements.flatMap((announcement) => {
-			const profile = createAdminAnnouncementProfile(announcement);
+	const now = Date.now();
+	const {
+		activeCount,
+		announcements,
+		archivedCount,
+		filteredCount,
+		totalCount,
+	} = await listAnnouncements({
+		...(audience === undefined ? {} : { audience }),
+		...(computedStatus === undefined ? {} : { computedStatus }),
+		...(level === undefined ? {} : { level }),
+		includeArchived,
+		limit: safePageSize,
+		now,
+		offset: (safePage - 1) * safePageSize,
+		query,
+	});
+	const profiles = announcements.flatMap((announcement) => {
+		const profile = createAdminAnnouncementProfile(announcement, now);
 
-			return profile === null ? [] : [profile];
-		}),
+		return profile === null ? [] : [profile];
+	});
+	return {
+		active_count: activeCount,
+		announcements: profiles,
 		archived_count: archivedCount,
 		filtered_count: filteredCount,
 		page: safePage,
@@ -518,6 +626,8 @@ export async function createAdminAnnouncement(
 			return nextProfile;
 		});
 
+		invalidateActiveAnnouncementCandidateCache();
+
 		return { data: { announcement: profile }, status: 'ok' };
 	} catch (error) {
 		if (checkAnnouncementConflictError(error)) {
@@ -544,6 +654,9 @@ export async function updateAdminAnnouncement(
 	if (getAnnouncementVisibleText(sanitizedHtml).length === 0) {
 		return { error: 'announcement-not-visible', status: 'error' };
 	}
+	if (body.expected_revision === undefined) {
+		return { error: 'invalid-object-structure', status: 'error' };
+	}
 
 	try {
 		const profile = await runAnnouncementTransaction(async (database) => {
@@ -555,6 +668,9 @@ export async function updateAdminAnnouncement(
 			const previousProfile = createAdminAnnouncementProfile(current);
 			if (previousProfile === null) {
 				return 'invalid-object-structure';
+			}
+			if (body.expected_revision !== current.revision) {
+				return 'announcement-conflict';
 			}
 
 			const now = createMonotonicTimestamp(current.updated_at);
@@ -575,7 +691,7 @@ export async function updateAdminAnnouncement(
 					title: body.title,
 					updated_at: now,
 				},
-				{ database, expectedRevision: current.revision }
+				{ database, expectedRevision: body.expected_revision }
 			);
 			if (updated === null) {
 				return 'announcement-conflict';
@@ -608,6 +724,8 @@ export async function updateAdminAnnouncement(
 		if (profile === 'invalid-object-structure') {
 			return { error: 'invalid-object-structure', status: 'error' };
 		}
+
+		invalidateActiveAnnouncementCandidateCache();
 
 		return { data: { announcement: profile }, status: 'ok' };
 	} catch (error) {
@@ -676,6 +794,8 @@ export async function archiveAdminAnnouncement(
 		if (profile === 'invalid-object-structure') {
 			return { error: 'invalid-object-structure', status: 'error' };
 		}
+
+		invalidateActiveAnnouncementCandidateCache();
 
 		return { data: { announcement: profile }, status: 'ok' };
 	} catch (error) {
@@ -748,6 +868,8 @@ export async function restoreAdminAnnouncement(
 			return { error: 'invalid-object-structure', status: 'error' };
 		}
 
+		invalidateActiveAnnouncementCandidateCache();
+
 		return { data: { announcement: profile }, status: 'ok' };
 	} catch (error) {
 		if (checkAnnouncementConflictError(error)) {
@@ -810,6 +932,67 @@ export async function listAdminAnnouncementVersions(
 
 				return profile === null ? [] : [profile];
 			}),
+		},
+		status: 'ok',
+	};
+}
+
+export async function cleanupAdminAnnouncementRecords({
+	adminId,
+	ipAddress,
+	userAgent,
+}: ICleanupAdminAnnouncementRecordsOptions): Promise<
+	TAnnouncementServiceResult<IAdminAnnouncementCleanupData>
+> {
+	const now = Date.now();
+	const auditModule = await import('@/lib/account/server/adminAuditService');
+	const writeCleanupAuditLog: TCleanupAnnouncementRecordsAuditWriter = (
+		database,
+		auditNow,
+		cleanupResult
+	) => {
+		const auditInput: IAuditLogWriteInput = {
+			action: 'admin-cleanup-announcement-records',
+			actorId: adminId,
+			actorType: 'admin',
+			metadata: {
+				deleted_dismissals: cleanupResult.deletedDismissals,
+				deleted_versions: cleanupResult.deletedVersions,
+				dismissal_retention_ms: ANNOUNCEMENT_DISMISSAL_RETENTION_MS,
+				version_keep_latest: ANNOUNCEMENT_VERSION_KEEP_LATEST,
+				version_retention_ms: ANNOUNCEMENT_VERSION_RETENTION_MS,
+			},
+			scope: 'account',
+			targetId: null,
+			targetType: 'announcement_records',
+		};
+		if (ipAddress !== undefined) {
+			auditInput.ipAddress = ipAddress;
+		}
+		if (userAgent !== undefined) {
+			auditInput.userAgent = userAgent;
+		}
+
+		return auditModule.writeAdminAuditLogInTransaction(
+			database,
+			auditInput,
+			auditNow
+		);
+	};
+	const result = await cleanupAnnouncementRecords(
+		{
+			dismissalBefore: now - ANNOUNCEMENT_DISMISSAL_RETENTION_MS,
+			versionBefore: now - ANNOUNCEMENT_VERSION_RETENTION_MS,
+			versionKeepLatest: ANNOUNCEMENT_VERSION_KEEP_LATEST,
+		},
+		writeCleanupAuditLog
+	);
+
+	return {
+		data: {
+			deleted_dismissals: result.deletedDismissals,
+			deleted_versions: result.deletedVersions,
+			message: 'announcement-records-cleaned',
 		},
 		status: 'ok',
 	};
