@@ -146,10 +146,9 @@ export async function POST(request: NextRequest) {
 					);
 				}
 				if (importResult.status === 'already-imported') {
-					return createNoStoreErrorResponse(
-						'backup-code-already-imported',
-						409
-					);
+					return createNoStoreJsonResponse({
+						results: importResult.results,
+					});
 				}
 
 				lockModule.markBackupCodeLockCommitted(signal);

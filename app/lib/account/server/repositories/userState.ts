@@ -1,9 +1,11 @@
 import { type Transaction, sql } from 'kysely';
 
+import { maskBackupCode } from '@/lib/account/server/backupCode';
 import { getAccountDatabase } from '@/lib/account/server/db';
 import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import { TABLE_NAME_MAP } from '@/lib/db';
 import type {
+	TBackupImportRecord,
 	TDatabase,
 	TSession,
 	TUser,
@@ -11,6 +13,7 @@ import type {
 	TUserStateNew,
 } from '@/lib/db/types';
 import { isNonNegativeSafeInteger } from '@/lib/account/sync/serializers/utils';
+import { checkSyncNamespace } from '@/lib/account/sync/validation';
 
 const TABLE_NAME = TABLE_NAME_MAP.userState;
 const USER_TABLE_NAME = TABLE_NAME_MAP.user;
@@ -27,6 +30,37 @@ type TPutUserStateEntryIfRevisionResult =
 interface IPutUserStateEntryIfRevisionChange {
 	entry: TUserStateNew;
 	expectedRevision: number;
+}
+
+function parseBackupImportResults(value: TBackupImportRecord['results']) {
+	let parsedValue: unknown;
+	try {
+		parsedValue = JSON.parse(value);
+	} catch {
+		return [];
+	}
+
+	if (!Array.isArray(parsedValue)) {
+		return [];
+	}
+
+	return parsedValue.flatMap((item) => {
+		if (item === null || typeof item !== 'object' || Array.isArray(item)) {
+			return [];
+		}
+		const record = item as Record<string, unknown>;
+		const { namespace, revision, status } = record;
+		if (
+			status !== 'ok' ||
+			!checkSyncNamespace(namespace) ||
+			!isNonNegativeSafeInteger(revision) ||
+			revision >= Number.MAX_SAFE_INTEGER
+		) {
+			return [];
+		}
+
+		return [{ namespace, revision, status: 'ok' as const }];
+	});
 }
 
 function canIncrementSyncRevision(value: unknown): value is number {
@@ -490,6 +524,28 @@ export async function listUserNamespaces(userId: TUser['id']) {
 		.select(['namespace', 'revision', 'schema_version', 'updated_at'])
 		.where('user_id', '=', userId)
 		.execute();
+}
+
+export async function listRecentBackupImportRecordsByUserId(
+	userId: TUser['id'],
+	limit = 5
+) {
+	const db = await getAccountDatabase();
+	const rows = await db
+		.selectFrom(BACKUP_IMPORT_TABLE_NAME)
+		.select(['code', 'created_at', 'file_name', 'results', 'state_epoch'])
+		.where('user_id', '=', userId)
+		.orderBy('created_at', 'desc')
+		.limit(limit)
+		.execute();
+
+	return rows.map((row) => ({
+		code_hash: maskBackupCode(row.code),
+		created_at: row.created_at,
+		file_name: row.file_name,
+		results: parseBackupImportResults(row.results),
+		state_epoch: row.state_epoch,
+	}));
 }
 
 export async function listUserState(userId: TUser['id']) {

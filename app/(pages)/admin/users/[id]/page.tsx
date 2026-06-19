@@ -43,12 +43,14 @@ async function readInitialDetail(
 		return null;
 	}
 
-	const [sessions, namespaces] = await Promise.all([
+	const [backupImports, sessions, namespaces] = await Promise.all([
+		userStateModule.listRecentBackupImportRecordsByUserId(user.id),
 		sessionsModule.listSessionsByUserId(user.id),
 		userStateModule.listUserNamespaces(user.id),
 	]);
 
 	return {
+		backup_imports: backupImports,
 		namespaces,
 		session_count: sessions.length,
 		user: userModule.createAccountUserProfile(user),

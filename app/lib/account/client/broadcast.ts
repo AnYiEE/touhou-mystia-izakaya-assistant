@@ -18,6 +18,10 @@ export function getAccountSyncBroadcastChannel() {
 	}
 }
 
+export function checkAccountSyncBroadcastSupported() {
+	return getAccountSyncBroadcastChannel() !== null;
+}
+
 export function postAccountSyncBroadcastMessage(
 	message: IAccountSyncBroadcastMessage
 ) {

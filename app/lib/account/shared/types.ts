@@ -443,6 +443,13 @@ export interface IAdminUserListData {
 }
 
 export interface IAdminUserDetailData {
+	backup_imports: Array<{
+		code_hash: string;
+		created_at: number;
+		file_name: string | null;
+		results: Array<{ namespace: string; revision: number; status: 'ok' }>;
+		state_epoch: number;
+	}>;
 	namespaces: Array<{
 		namespace: string;
 		revision: number;

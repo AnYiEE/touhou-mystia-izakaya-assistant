@@ -8,8 +8,10 @@ import {
 	useRef,
 	useState,
 } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { usePathname, useRouter } from 'next/navigation';
+import { useReducedMotion } from '@/design/ui/hooks';
 
 import {
 	FontAwesomeIcon,
@@ -101,6 +103,11 @@ import { downloadJson } from '@/utilities';
 type TAuthMode = 'login' | 'register';
 type TAccountAuthContext = Parameters<typeof resetAccountStateIfCurrent>[0];
 
+const ACCOUNT_COLLAPSE_MOTION_TRANSITION = {
+	duration: 0.18,
+	ease: 'easeInOut',
+} as const;
+
 interface IAccountPanelProps extends PropsWithChildren<
 	Pick<HTMLDivElementAttributes, 'className'>
 > {}
@@ -149,6 +156,93 @@ const AccountPanelTitle = memo<IAccountPanelTitleProps>(
 				/>
 				<span>{children}</span>
 			</div>
+		);
+	}
+);
+
+interface IAccountCollapseMotionProps extends PropsWithChildren<object> {
+	className?: string;
+	motionKey: number | string;
+}
+
+const AccountCollapseMotion = memo<IAccountCollapseMotionProps>(
+	function AccountCollapseMotion({ children, className, motionKey }) {
+		const isReducedMotion = useReducedMotion();
+		const shouldRender = children !== null && children !== undefined;
+
+		return (
+			<AnimatePresence initial={false}>
+				{shouldRender ? (
+					isReducedMotion ? (
+						<div key={motionKey} className={className}>
+							<div className="flow-root">{children}</div>
+						</div>
+					) : (
+						<motion.div
+							key={motionKey}
+							animate={{ height: 'auto', opacity: 1 }}
+							exit={{ height: 0, opacity: 0 }}
+							initial={{ height: 0, opacity: 0 }}
+							style={{ overflow: 'hidden' }}
+							transition={ACCOUNT_COLLAPSE_MOTION_TRANSITION}
+							className={className}
+						>
+							<div className="flow-root">{children}</div>
+						</motion.div>
+					)
+				) : null}
+			</AnimatePresence>
+		);
+	}
+);
+
+interface IAccountAnimatedListProps extends PropsWithChildren<object> {
+	className?: string;
+}
+
+const AccountAnimatedList = memo<IAccountAnimatedListProps>(
+	function AccountAnimatedList({ children, className }) {
+		const isReducedMotion = useReducedMotion();
+
+		if (isReducedMotion) {
+			return <div className={cn('-mt-2', className)}>{children}</div>;
+		}
+
+		return (
+			<motion.div
+				layout
+				transition={ACCOUNT_COLLAPSE_MOTION_TRANSITION}
+				className={cn('-mt-2', className)}
+			>
+				<AnimatePresence initial={false}>{children}</AnimatePresence>
+			</motion.div>
+		);
+	}
+);
+
+const AccountAnimatedListItem = memo<PropsWithChildren<object>>(
+	function AccountAnimatedListItem({ children }) {
+		const isReducedMotion = useReducedMotion();
+
+		if (isReducedMotion) {
+			return (
+				<div>
+					<div className="flow-root pt-2">{children}</div>
+				</div>
+			);
+		}
+
+		return (
+			<motion.div
+				layout
+				animate={{ height: 'auto', opacity: 1 }}
+				exit={{ height: 0, opacity: 0 }}
+				initial={{ height: 0, opacity: 0 }}
+				style={{ overflow: 'hidden' }}
+				transition={ACCOUNT_COLLAPSE_MOTION_TRANSITION}
+			>
+				<div className="flow-root pt-2">{children}</div>
+			</motion.div>
 		);
 	}
 );
@@ -1865,15 +1959,19 @@ export default memo<IProps>(function AccountManager() {
 										className="w-4"
 									/>
 								</div>
-								<div className="min-w-0 flex-1 space-y-1">
+								<div className="min-w-0 flex-1">
 									<p className="truncate text-base font-medium leading-none">
 										{user.nickname ?? user.username}
 									</p>
-									{user.nickname !== null && (
-										<p className="truncate text-tiny text-foreground-500">
-											用户名：{user.username}
-										</p>
-									)}
+									<AccountCollapseMotion motionKey="account-username-subtitle">
+										{user.nickname === null ? null : (
+											<div className="pt-1">
+												<p className="truncate text-tiny text-foreground-500">
+													用户名：{user.username}
+												</p>
+											</div>
+										)}
+									</AccountCollapseMotion>
 								</div>
 								<span
 									aria-atomic="true"
@@ -1907,80 +2005,99 @@ export default memo<IProps>(function AccountManager() {
 								{passwordMustChange ? '更新密码' : '账号设置'}
 							</AccountPanelTitle>
 							{!passwordMustChange && (
-								<div className="space-y-3">
-									<Input
-										autoComplete="nickname"
-										description={NICKNAME_RULE_DESCRIPTION}
-										errorMessage={
-											isProfileNicknameInvalid
-												? NICKNAME_RULE_DESCRIPTION
-												: (profileNicknameErrorMessage ??
-													undefined)
-										}
-										isInvalid={
-											isProfileNicknameInvalid ||
-											profileNicknameErrorMessage !== null
-										}
-										label="昵称"
-										placeholder="显示名称"
-										startContent={
-											<AccountInputIcon icon={faUser} />
-										}
-										value={profileNickname}
-										onValueChange={
-											handleProfileNicknameChange
-										}
-									/>
-									<Input
-										autoComplete="username"
-										description={USERNAME_RULE_DESCRIPTION}
-										errorMessage={
-											isProfileUsernameInvalid
-												? USERNAME_RULE_DESCRIPTION
-												: (profileUsernameErrorMessage ??
-													undefined)
-										}
-										isInvalid={
-											isProfileUsernameInvalid ||
-											profileUsernameErrorMessage !== null
-										}
-										label="用户名"
-										placeholder="输入新用户名"
-										startContent={
-											<AccountInputIcon icon={faUser} />
-										}
-										value={profileUsername}
-										onValueChange={
-											handleProfileUsernameChange
-										}
-									/>
-									{isProfileCurrentPasswordRequired && (
+								<div>
+									<div className="space-y-3">
 										<Input
-											autoComplete="current-password"
-											description="修改用户名需要确认当前密码"
+											autoComplete="nickname"
+											description={
+												NICKNAME_RULE_DESCRIPTION
+											}
 											errorMessage={
-												profileCurrentPasswordErrorMessage ??
-												undefined
+												isProfileNicknameInvalid
+													? NICKNAME_RULE_DESCRIPTION
+													: (profileNicknameErrorMessage ??
+														undefined)
 											}
 											isInvalid={
-												profileCurrentPasswordErrorMessage !==
-												null
+												isProfileNicknameInvalid ||
+												profileNicknameErrorMessage !==
+													null
 											}
-											label="当前密码"
-											placeholder="确认当前密码"
+											label="昵称"
+											placeholder="显示名称"
 											startContent={
 												<AccountInputIcon
-													icon={faKey}
+													icon={faUser}
 												/>
 											}
-											type="password"
-											value={profileCurrentPassword}
+											value={profileNickname}
 											onValueChange={
-												handleProfileCurrentPasswordChange
+												handleProfileNicknameChange
 											}
 										/>
-									)}
+										<Input
+											autoComplete="username"
+											description={
+												USERNAME_RULE_DESCRIPTION
+											}
+											errorMessage={
+												isProfileUsernameInvalid
+													? USERNAME_RULE_DESCRIPTION
+													: (profileUsernameErrorMessage ??
+														undefined)
+											}
+											isInvalid={
+												isProfileUsernameInvalid ||
+												profileUsernameErrorMessage !==
+													null
+											}
+											label="用户名"
+											placeholder="输入新用户名"
+											startContent={
+												<AccountInputIcon
+													icon={faUser}
+												/>
+											}
+											value={profileUsername}
+											onValueChange={
+												handleProfileUsernameChange
+											}
+										/>
+									</div>
+									<AccountCollapseMotion motionKey="profile-current-password">
+										{isProfileCurrentPasswordRequired ? (
+											<div className="pt-3">
+												<Input
+													autoComplete="current-password"
+													description="修改用户名需要确认当前密码"
+													errorMessage={
+														profileCurrentPasswordErrorMessage ??
+														undefined
+													}
+													isInvalid={
+														profileCurrentPasswordErrorMessage !==
+														null
+													}
+													label="当前密码"
+													placeholder="确认当前密码"
+													startContent={
+														<AccountInputIcon
+															icon={faKey}
+														/>
+													}
+													type="password"
+													value={
+														profileCurrentPassword
+													}
+													onValueChange={
+														handleProfileCurrentPasswordChange
+													}
+												/>
+											</div>
+										) : null}
+									</AccountCollapseMotion>
 									<Button
+										className="mt-3"
 										fullWidth
 										color="primary"
 										isDisabled={
@@ -2197,143 +2314,151 @@ export default memo<IProps>(function AccountManager() {
 											</span>
 										</Tooltip>
 									</div>
-									{isSessionListLoading &&
-									!isAccountSessionsReady ? (
-										<p className="text-small leading-5 text-foreground-500">
-											正在读取登录设备
-										</p>
-									) : visibleAccountSessions.length === 0 ? (
-										<p className="text-small leading-5 text-foreground-500">
-											暂无可见会话
-										</p>
-									) : (
-										<div className="space-y-2">
-											{visibleAccountSessions.map(
+									<AccountAnimatedList>
+										{isSessionListLoading &&
+										!isAccountSessionsReady ? (
+											<AccountAnimatedListItem key="loading">
+												<p className="text-small leading-5 text-foreground-500">
+													正在读取登录设备
+												</p>
+											</AccountAnimatedListItem>
+										) : visibleAccountSessions.length ===
+										  0 ? (
+											<AccountAnimatedListItem key="empty">
+												<p className="text-small leading-5 text-foreground-500">
+													暂无可见会话
+												</p>
+											</AccountAnimatedListItem>
+										) : (
+											visibleAccountSessions.map(
 												(session) => {
 													const isCurrentSession =
 														session.is_current;
 
 													return (
-														<div
+														<AccountAnimatedListItem
 															key={session.id}
-															className={cn(
-																'rounded-medium border px-3 py-2',
-																isCurrentSession
-																	? 'border-primary/30 bg-primary/5'
-																	: 'border-default-200 bg-default-50/40'
-															)}
 														>
-															<div className="space-y-1">
-																<div className="flex items-center justify-between gap-3">
-																	<div className="flex min-w-0 flex-wrap items-center gap-2">
-																		<p className="min-w-0 truncate text-small font-medium text-foreground-700">
-																			{isCurrentSession
-																				? '当前会话'
-																				: '其他会话'}
+															<div
+																className={cn(
+																	'rounded-medium border px-3 py-2',
+																	isCurrentSession
+																		? 'border-primary/30 bg-primary/5'
+																		: 'border-default-200 bg-default-50/40'
+																)}
+															>
+																<div className="space-y-1">
+																	<div className="flex items-center justify-between gap-3">
+																		<div className="flex min-w-0 flex-wrap items-center gap-2">
+																			<p className="min-w-0 truncate text-small font-medium text-foreground-700">
+																				{isCurrentSession
+																					? '当前会话'
+																					: '其他会话'}
+																			</p>
+																		</div>
+																		{isCurrentSession ? (
+																			<span className="my-1.5 inline-flex min-w-8 shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-primary/10 px-2 py-1 text-tiny leading-none text-primary-700">
+																				本设备
+																			</span>
+																		) : (
+																			<Tooltip
+																				showArrow
+																				content="下线设备"
+																				placement="left"
+																			>
+																				<span className="inline-flex shrink-0">
+																					<AccountConfirmButton
+																						ariaLabel="下线设备"
+																						buttonLabel="下线设备"
+																						className="h-8 w-8 min-w-8 justify-center text-warning-600"
+																						color="warning"
+																						confirmLabel="确认下线"
+																						fullWidth={
+																							false
+																						}
+																						icon={
+																							faArrowRightFromBracket
+																						}
+																						isDisabled={
+																							isSubmitting
+																						}
+																						isIconOnly
+																						isLoading={
+																							isSubmitting &&
+																							revokingSessionId ===
+																								session.id
+																						}
+																						isOpen={
+																							revokeTargetSessionId ===
+																							session.id
+																						}
+																						radius="full"
+																						size="sm"
+																						onCancel={
+																							handleRevokeSessionCancel
+																						}
+																						onConfirm={
+																							handleRevokeSession
+																						}
+																						onOpenChange={(
+																							isOpen
+																						) => {
+																							if (
+																								isOpen
+																							) {
+																								handleRevokeSessionOpen(
+																									session.id
+																								);
+																							} else {
+																								handleRevokeSessionCancel();
+																							}
+																						}}
+																					/>
+																				</span>
+																			</Tooltip>
+																		)}
+																	</div>
+																	<div className="min-w-0 space-y-1">
+																		<p className="break-words text-tiny text-foreground-500">
+																			{
+																				session.user_agent_summary
+																			}
+																		</p>
+																		<p
+																			className="break-words text-tiny text-foreground-500"
+																			title={formatSessionTimestamp(
+																				session.last_seen_at
+																			)}
+																		>
+																			最近活动：
+																			<TimeAgo
+																				timestamp={
+																					session.last_seen_at
+																				}
+																			/>
+																			<span className="mx-1 text-default-300">
+																				·
+																			</span>
+																			来源：
+																			{
+																				session.ip_summary
+																			}
+																		</p>
+																		<p className="break-words text-tiny text-foreground-500">
+																			创建于
+																			{formatSessionTimestamp(
+																				session.created_at
+																			)}
 																		</p>
 																	</div>
-																	{isCurrentSession ? (
-																		<span className="my-1.5 inline-flex min-w-8 shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-primary/10 px-2 py-1 text-tiny leading-none text-primary-700">
-																			本设备
-																		</span>
-																	) : (
-																		<Tooltip
-																			showArrow
-																			content="下线设备"
-																			placement="left"
-																		>
-																			<span className="inline-flex shrink-0">
-																				<AccountConfirmButton
-																					ariaLabel="下线设备"
-																					buttonLabel="下线设备"
-																					className="h-8 w-8 min-w-8 justify-center text-warning-600"
-																					color="warning"
-																					confirmLabel="确认下线"
-																					fullWidth={
-																						false
-																					}
-																					icon={
-																						faArrowRightFromBracket
-																					}
-																					isDisabled={
-																						isSubmitting
-																					}
-																					isIconOnly
-																					isLoading={
-																						isSubmitting &&
-																						revokingSessionId ===
-																							session.id
-																					}
-																					isOpen={
-																						revokeTargetSessionId ===
-																						session.id
-																					}
-																					radius="full"
-																					size="sm"
-																					onCancel={
-																						handleRevokeSessionCancel
-																					}
-																					onConfirm={
-																						handleRevokeSession
-																					}
-																					onOpenChange={(
-																						isOpen
-																					) => {
-																						if (
-																							isOpen
-																						) {
-																							handleRevokeSessionOpen(
-																								session.id
-																							);
-																						} else {
-																							handleRevokeSessionCancel();
-																						}
-																					}}
-																				/>
-																			</span>
-																		</Tooltip>
-																	)}
-																</div>
-																<div className="min-w-0 space-y-1">
-																	<p className="break-words text-tiny text-foreground-500">
-																		{
-																			session.user_agent_summary
-																		}
-																	</p>
-																	<p
-																		className="break-words text-tiny text-foreground-500"
-																		title={formatSessionTimestamp(
-																			session.last_seen_at
-																		)}
-																	>
-																		最近活动：
-																		<TimeAgo
-																			timestamp={
-																				session.last_seen_at
-																			}
-																		/>
-																		<span className="mx-1 text-default-300">
-																			·
-																		</span>
-																		来源：
-																		{
-																			session.ip_summary
-																		}
-																	</p>
-																	<p className="break-words text-tiny text-foreground-500">
-																		创建于
-																		{formatSessionTimestamp(
-																			session.created_at
-																		)}
-																	</p>
 																</div>
 															</div>
-														</div>
+														</AccountAnimatedListItem>
 													);
 												}
-											)}
-										</div>
-									)}
+											)
+										)}
+									</AccountAnimatedList>
 								</div>
 								<div className="mt-4 space-y-2 border-t border-default-200/80 pt-4">
 									<div className="flex min-h-8 items-center justify-between gap-3">
@@ -2381,99 +2506,114 @@ export default memo<IProps>(function AccountManager() {
 											</span>
 										</Tooltip>
 									</div>
-									<div className="space-y-2">
+									<AccountAnimatedList>
 										{isSsoGrantListLoading &&
 										!isSsoGrantsReady ? (
-											<p className="text-small leading-5 text-foreground-500">
-												正在读取已授权应用
-											</p>
+											<AccountAnimatedListItem key="loading">
+												<p className="text-small leading-5 text-foreground-500">
+													正在读取已授权应用
+												</p>
+											</AccountAnimatedListItem>
 										) : visibleSsoGrants.length === 0 ? (
-											<p className="text-small leading-5 text-foreground-500">
-												暂无已授权应用
-											</p>
+											<AccountAnimatedListItem key="empty">
+												<p className="text-small leading-5 text-foreground-500">
+													暂无已授权应用
+												</p>
+											</AccountAnimatedListItem>
 										) : (
 											visibleSsoGrants.map((grant) => (
-												<div
+												<AccountAnimatedListItem
 													key={grant.client.id}
-													className="flex items-center justify-between gap-2 rounded-medium border border-default-200 bg-default-50/40 px-3 py-2"
 												>
-													<div className="min-w-0 flex-1 space-y-1">
-														<p className="break-words text-small font-medium text-foreground-700">
-															{grant.client.name}
-														</p>
-														<p
-															className="break-words text-tiny text-foreground-500"
-															title={
-																grant.client.id
-															}
-														>
-															{grant.client.id}
-														</p>
-													</div>
-													<Tooltip
-														showArrow
-														content="撤销授权"
-														placement="left"
-													>
-														<span className="inline-flex shrink-0">
-															<AccountConfirmButton
-																ariaLabel="撤销授权"
-																buttonLabel="撤销授权"
-																className="h-8 w-8 min-w-8 justify-center text-warning-600"
-																color="warning"
-																confirmLabel="确认撤销"
-																fullWidth={
-																	false
+													<div className="flex items-center justify-between gap-2 rounded-medium border border-default-200 bg-default-50/40 px-3 py-2">
+														<div className="min-w-0 flex-1 space-y-1">
+															<p className="break-words text-small font-medium text-foreground-700">
+																{
+																	grant.client
+																		.name
 																}
-																icon={faPlug}
-																isDisabled={
-																	isSubmitting ||
-																	csrfToken ===
-																		null
-																}
-																isIconOnly
-																isLoading={
-																	isSubmitting &&
-																	revokingClientId ===
-																		grant
-																			.client
-																			.id
-																}
-																isOpen={
-																	revokeTargetClientId ===
+															</p>
+															<p
+																className="break-words text-tiny text-foreground-500"
+																title={
 																	grant.client
 																		.id
 																}
-																radius="full"
-																size="sm"
-																onCancel={
-																	handleRevokeSsoGrantCancel
+															>
+																{
+																	grant.client
+																		.id
 																}
-																onConfirm={
-																	handleRevokeSsoGrant
-																}
-																onOpenChange={(
-																	isOpen
-																) => {
-																	if (
-																		isOpen
-																	) {
-																		handleRevokeSsoGrantOpen(
+															</p>
+														</div>
+														<Tooltip
+															showArrow
+															content="撤销授权"
+															placement="left"
+														>
+															<span className="inline-flex shrink-0">
+																<AccountConfirmButton
+																	ariaLabel="撤销授权"
+																	buttonLabel="撤销授权"
+																	className="h-8 w-8 min-w-8 justify-center text-warning-600"
+																	color="warning"
+																	confirmLabel="确认撤销"
+																	fullWidth={
+																		false
+																	}
+																	icon={
+																		faPlug
+																	}
+																	isDisabled={
+																		isSubmitting ||
+																		csrfToken ===
+																			null
+																	}
+																	isIconOnly
+																	isLoading={
+																		isSubmitting &&
+																		revokingClientId ===
 																			grant
 																				.client
 																				.id
-																		);
-																	} else {
-																		handleRevokeSsoGrantCancel();
 																	}
-																}}
-															/>
-														</span>
-													</Tooltip>
-												</div>
+																	isOpen={
+																		revokeTargetClientId ===
+																		grant
+																			.client
+																			.id
+																	}
+																	radius="full"
+																	size="sm"
+																	onCancel={
+																		handleRevokeSsoGrantCancel
+																	}
+																	onConfirm={
+																		handleRevokeSsoGrant
+																	}
+																	onOpenChange={(
+																		isOpen
+																	) => {
+																		if (
+																			isOpen
+																		) {
+																			handleRevokeSsoGrantOpen(
+																				grant
+																					.client
+																					.id
+																			);
+																		} else {
+																			handleRevokeSsoGrantCancel();
+																		}
+																	}}
+																/>
+															</span>
+														</Tooltip>
+													</div>
+												</AccountAnimatedListItem>
 											))
 										)}
-									</div>
+									</AccountAnimatedList>
 								</div>
 							</div>
 							<div className="space-y-3 border-t border-default-200/80 pt-4">

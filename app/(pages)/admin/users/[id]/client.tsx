@@ -15,6 +15,7 @@ import {
 	faClipboardList,
 	faClock,
 	faDatabase,
+	faFileArchive,
 	faKey,
 	faRotate,
 	faSearch,
@@ -876,7 +877,12 @@ export default function AdminUserDetailClient({
 		);
 	}
 
-	const { namespaces, session_count: sessionCount, user } = detail;
+	const {
+		backup_imports: backupImports,
+		namespaces,
+		session_count: sessionCount,
+		user,
+	} = detail;
 	const {
 		created_at: createdAt,
 		id: userId,
@@ -907,6 +913,13 @@ export default function AdminUserDetailClient({
 		ssoGrantTotalCount > 0;
 	const isPasswordValid = checkPasswordPolicy(password);
 	const initialNowTimestamp = initialData.renderedAt;
+	const latestNamespaceUpdatedAt = namespaces.reduce<number | null>(
+		(latest, namespace) =>
+			latest === null
+				? namespace.updated_at
+				: Math.max(latest, namespace.updated_at),
+		null
+	);
 	const userAuditHref = `/admin/audit?scope=account&target_type=user&target_id=${encodeURIComponent(userId)}`;
 	const ssoGrantRows = ssoGrants.map((grant) => (
 		<AdminTableRow key={grant.client.id}>
@@ -1002,7 +1015,7 @@ export default function AdminUserDetailClient({
 				title={username}
 			/>
 
-			<AdminMetricPanel className="sm:grid-cols-2 xl:grid-cols-4">
+			<AdminMetricPanel className="sm:grid-cols-2 xl:grid-cols-5">
 				<AdminMetric
 					label="状态"
 					value={<AdminStatusBadge status={userStatus} />}
@@ -1014,6 +1027,19 @@ export default function AdminUserDetailClient({
 					value={stateEpoch}
 				/>
 				<AdminMetric label="同步命名空间" value={namespaces.length} />
+				<AdminMetric
+					label="最近同步更新"
+					value={
+						latestNamespaceUpdatedAt === null ? (
+							<AdminMutedText>无</AdminMutedText>
+						) : (
+							<TimeAgo
+								initialNowTimestamp={initialNowTimestamp}
+								timestamp={latestNamespaceUpdatedAt}
+							/>
+						)
+					}
+				/>
 			</AdminMetricPanel>
 
 			<div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,26rem)]">
@@ -1212,6 +1238,80 @@ export default function AdminUserDetailClient({
 											}
 											timestamp={namespace.updated_at}
 										/>
+									</AdminTableCell>
+								</AdminTableRow>
+							))}
+						</tbody>
+					</AdminTable>
+				)}
+			</AdminPanel>
+
+			<AdminPanel>
+				<AdminPanelTitle icon={faFileArchive}>
+					旧备份导入记录
+				</AdminPanelTitle>
+				{backupImports.length === 0 ? (
+					<AdminEmptyState icon={faFileArchive}>
+						暂无旧备份导入记录
+					</AdminEmptyState>
+				) : (
+					<AdminTable>
+						<AdminTableHeader>
+							<tr>
+								<AdminTableHeadCell>
+									导入时间
+								</AdminTableHeadCell>
+								<AdminTableHeadCell>备份码</AdminTableHeadCell>
+								<AdminTableHeadCell>
+									State Epoch
+								</AdminTableHeadCell>
+								<AdminTableHeadCell>
+									导入结果
+								</AdminTableHeadCell>
+								<AdminTableHeadCell>文件名</AdminTableHeadCell>
+							</tr>
+						</AdminTableHeader>
+						<tbody>
+							{backupImports.map((record) => (
+								<AdminTableRow
+									key={`${record.code_hash}:${record.created_at}`}
+								>
+									<AdminTableCell isNowrap>
+										<TimeAgo
+											initialNowTimestamp={
+												initialNowTimestamp
+											}
+											timestamp={record.created_at}
+										/>
+									</AdminTableCell>
+									<AdminTableCell className="font-mono text-small">
+										{record.code_hash}
+									</AdminTableCell>
+									<AdminTableCell isNowrap>
+										{record.state_epoch}
+									</AdminTableCell>
+									<AdminTableCell>
+										{record.results.length === 0 ? (
+											<AdminMutedText>无</AdminMutedText>
+										) : (
+											<div className="space-y-1 font-mono text-tiny">
+												{record.results.map(
+													(result) => (
+														<div
+															key={`${record.code_hash}:${record.created_at}:${result.namespace}`}
+														>
+															{result.namespace} r
+															{result.revision}
+														</div>
+													)
+												)}
+											</div>
+										)}
+									</AdminTableCell>
+									<AdminTableCell className="break-all font-mono text-small">
+										{record.file_name ?? (
+											<AdminMutedText>无</AdminMutedText>
+										)}
 									</AdminTableCell>
 								</AdminTableRow>
 							))}
