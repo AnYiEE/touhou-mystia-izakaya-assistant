@@ -2627,6 +2627,17 @@ export async function revokeUnusedSsoTicketsForUser(
 	});
 }
 
+export async function countExpiredSsoTickets(expiredAt = Date.now()) {
+	const db = await getAccountDatabase();
+	const countRecord = await db
+		.selectFrom(TICKET_TABLE_NAME)
+		.select((eb) => eb.fn.countAll<number>().as('total_count'))
+		.where('expires_at', '<=', expiredAt)
+		.executeTakeFirstOrThrow();
+
+	return normalizeTotalCount(countRecord.total_count);
+}
+
 export async function cleanupExpiredSsoTickets(
 	expiredAt = Date.now(),
 	writeAuditLog?: (

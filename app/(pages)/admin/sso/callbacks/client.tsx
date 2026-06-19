@@ -13,11 +13,13 @@ import {
 import { usePathname, useRouter } from 'next/navigation';
 
 import {
+	faBullhorn,
 	faClock,
 	faMagnifyingGlass,
 	faRotate,
 	faShieldHalved,
 	faTrash,
+	faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 
 import { Input } from '@/design/ui/components';
@@ -217,39 +219,41 @@ const AdminSsoCallbackRow = memo<IAdminSsoCallbackRowProps>(
 					</span>
 				</AdminTableCell>
 				<AdminTableCell isNowrap className="text-right">
-					<AdminConfirmButton
-						color="primary"
-						confirmAction={`retry:${callback.id}`}
-						confirmColor="primary"
-						confirmLabel="确认重试"
-						icon={faRotate}
-						isDisabled={isMutating && !isMutatingCurrentRow}
-						isLoading={isMutatingCurrentRow}
-						openAction={confirmAction}
-						size="sm"
-						onOpenChange={onOpenChange}
-						onConfirm={() => {
-							onRetry(callback.id);
-						}}
-					>
-						重试
-					</AdminConfirmButton>
-					<AdminConfirmButton
-						color="danger"
-						confirmAction={`discard:${callback.id}`}
-						confirmLabel="确认丢弃"
-						icon={faTrash}
-						isDisabled={isMutating && !isMutatingCurrentRow}
-						isLoading={isMutatingCurrentRow}
-						openAction={confirmAction}
-						size="sm"
-						onOpenChange={onOpenChange}
-						onConfirm={() => {
-							onDiscard(callback.id);
-						}}
-					>
-						丢弃
-					</AdminConfirmButton>
+					<div className="flex flex-nowrap items-center justify-end gap-2">
+						<AdminConfirmButton
+							color="primary"
+							confirmAction={`retry:${callback.id}`}
+							confirmColor="primary"
+							confirmLabel="确认重试"
+							icon={faRotate}
+							isDisabled={isMutating && !isMutatingCurrentRow}
+							isLoading={isMutatingCurrentRow}
+							openAction={confirmAction}
+							size="sm"
+							onOpenChange={onOpenChange}
+							onConfirm={() => {
+								onRetry(callback.id);
+							}}
+						>
+							重试
+						</AdminConfirmButton>
+						<AdminConfirmButton
+							color="danger"
+							confirmAction={`discard:${callback.id}`}
+							confirmLabel="确认丢弃"
+							icon={faTrash}
+							isDisabled={isMutating && !isMutatingCurrentRow}
+							isLoading={isMutatingCurrentRow}
+							openAction={confirmAction}
+							size="sm"
+							onOpenChange={onOpenChange}
+							onConfirm={() => {
+								onDiscard(callback.id);
+							}}
+						>
+							丢弃
+						</AdminConfirmButton>
+					</div>
 				</AdminTableCell>
 			</AdminTableRow>
 		);
@@ -743,9 +747,17 @@ export default function AdminSsoCallbacksClient({
 			<AdminShell>
 				<AdminHeader
 					actions={
-						<AdminHeaderActionLink href="/admin/sso">
-							返回SSO客户端
-						</AdminHeaderActionLink>
+						<>
+							<AdminHeaderActionLink href="/admin" icon={faUsers}>
+								用户管理
+							</AdminHeaderActionLink>
+							<AdminHeaderActionLink
+								href="/admin/announcements"
+								icon={faBullhorn}
+							>
+								站点通知
+							</AdminHeaderActionLink>
+						</>
 					}
 					icon={faShieldHalved}
 					subtitle={message ?? '请先返回管理员页登录'}
@@ -758,6 +770,8 @@ export default function AdminSsoCallbacksClient({
 	const pendingCount =
 		callbacks?.callbacks.filter((callback) => callback.status === 'pending')
 			.length ?? 0;
+	const hasCallbackRows =
+		callbacks !== null && callbacks.callbacks.length > 0;
 	const finalFailedCount =
 		callbacks?.callbacks.filter(
 			(callback) => callback.status === 'final_failed'
@@ -774,11 +788,14 @@ export default function AdminSsoCallbacksClient({
 			<AdminHeader
 				actions={
 					<>
-						<AdminHeaderActionLink href="/admin/sso/callbacks/history">
-							投递历史
+						<AdminHeaderActionLink href="/admin" icon={faUsers}>
+							用户管理
 						</AdminHeaderActionLink>
-						<AdminHeaderActionLink href="/admin/sso">
-							返回SSO客户端
+						<AdminHeaderActionLink
+							href="/admin/announcements"
+							icon={faBullhorn}
+						>
+							站点通知
 						</AdminHeaderActionLink>
 					</>
 				}
@@ -889,7 +906,7 @@ export default function AdminSsoCallbacksClient({
 						confirmColor="primary"
 						confirmLabel="确认投递"
 						icon={faRotate}
-						isDisabled={isMutatingCallback}
+						isDisabled={isMutatingCallback || !hasCallbackRows}
 						isLoading={isDispatching}
 						openAction={confirmAction}
 						onOpenChange={setConfirmAction}
@@ -937,7 +954,7 @@ export default function AdminSsoCallbacksClient({
 				pageInput={pageInput}
 				pageSize={callbacks?.page_size}
 				totalCount={callbacks?.total_count}
-				totalLabel="条callback"
+				totalLabel="条Callback"
 				totalPages={Math.max(1, callbacks?.total_pages ?? page)}
 				onNextPage={handleNextPage}
 				onPageInputChange={handlePageInputChange}

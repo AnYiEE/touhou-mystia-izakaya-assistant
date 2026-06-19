@@ -13,12 +13,14 @@ import {
 import { usePathname, useRouter } from 'next/navigation';
 
 import {
+	faBullhorn,
 	faClock,
 	faKey,
 	faMagnifyingGlass,
 	faShieldHalved,
 	faTrash,
 	faUserSlash,
+	faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 
 import { Input } from '@/design/ui/components';
@@ -57,6 +59,7 @@ import {
 	AdminTableHeader,
 	AdminTableRow,
 	adminAdvancedFilterInputClassNames,
+	createAdminUserDisplayName,
 } from '../../components';
 import { trackEvent } from '@/components/analytics';
 
@@ -142,7 +145,7 @@ const AdminSsoTicketRow = memo<{
 			<AdminTableCell>
 				<AdminEntityCell
 					id={ticket.user.id}
-					title={ticket.user.nickname ?? ticket.user.username}
+					title={createAdminUserDisplayName(ticket.user)}
 				/>
 			</AdminTableCell>
 			<AdminTableCell isNowrap>
@@ -597,9 +600,17 @@ export default function AdminSsoTicketsClient({
 			<AdminShell>
 				<AdminHeader
 					actions={
-						<AdminHeaderActionLink href="/admin/sso">
-							返回SSO客户端
-						</AdminHeaderActionLink>
+						<>
+							<AdminHeaderActionLink href="/admin" icon={faUsers}>
+								用户管理
+							</AdminHeaderActionLink>
+							<AdminHeaderActionLink
+								href="/admin/announcements"
+								icon={faBullhorn}
+							>
+								站点通知
+							</AdminHeaderActionLink>
+						</>
 					}
 					icon={faShieldHalved}
 					subtitle={message ?? '请先返回管理员页登录'}
@@ -612,6 +623,8 @@ export default function AdminSsoTicketsClient({
 	const pendingCount =
 		tickets?.tickets.filter((ticket) => ticket.status === 'pending')
 			.length ?? 0;
+	const canCleanupTickets =
+		tickets !== null && tickets.cleanup_count > 0 && !isMutating;
 	const advancedFilterCount = [clientIdInput, userIdInput].filter(
 		(value) => value.trim() !== ''
 	).length;
@@ -620,9 +633,17 @@ export default function AdminSsoTicketsClient({
 		<AdminShell>
 			<AdminHeader
 				actions={
-					<AdminHeaderActionLink href="/admin/sso">
-						返回SSO客户端
-					</AdminHeaderActionLink>
+					<>
+						<AdminHeaderActionLink href="/admin" icon={faUsers}>
+							用户管理
+						</AdminHeaderActionLink>
+						<AdminHeaderActionLink
+							href="/admin/announcements"
+							icon={faBullhorn}
+						>
+							站点通知
+						</AdminHeaderActionLink>
+					</>
 				}
 				icon={faKey}
 				title="SSO Tickets"
@@ -693,8 +714,7 @@ export default function AdminSsoTicketsClient({
 			<AdminMetricPanel className="grid-cols-1">
 				<div className="flex flex-wrap items-center justify-between gap-3">
 					<span className="text-small text-foreground-500">
-						撤销操作只影响未消费Ticket；按客户端/用户
-						撤销会使用筛选条件
+						撤销操作只影响未消费Ticket；按客户端/用户撤销会使用筛选条件
 					</span>
 					<div className="flex flex-wrap gap-2">
 						<AdminConfirmButton
@@ -702,6 +722,7 @@ export default function AdminSsoTicketsClient({
 							confirmAction="cleanup"
 							confirmLabel="确认清理"
 							icon={faTrash}
+							isDisabled={!canCleanupTickets}
 							isLoading={isMutating}
 							openAction={confirmAction}
 							onOpenChange={setConfirmAction}
@@ -780,7 +801,7 @@ export default function AdminSsoTicketsClient({
 				pageInput={pageInput}
 				pageSize={tickets?.page_size}
 				totalCount={tickets?.total_count}
-				totalLabel="条Ticket"
+				totalLabel="条Tickets"
 				totalPages={Math.max(1, tickets?.total_pages ?? page)}
 				onNextPage={handleNextPage}
 				onPageInputChange={handlePageInputChange}

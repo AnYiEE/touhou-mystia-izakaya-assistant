@@ -18,6 +18,7 @@ import {
 } from '@/lib/account/server/repositories/sso';
 import {
 	cleanupSsoCallbackDeliveries,
+	countCleanableSsoCallbackDeliveries,
 	listSsoCallbackDeliveries,
 } from '@/lib/account/server/repositories/ssoCallbackDeliveries';
 import {
@@ -415,21 +416,28 @@ export async function listAdminSsoCallbackDeliveries(
 		return { error: 'invalid-object-structure', status: 'error' };
 	}
 
-	const { deliveries, totalCount } = await listSsoCallbackDeliveries({
-		limit: options.pageSize,
-		offset: (options.page - 1) * options.pageSize,
-		...(options.clientId === undefined
-			? {}
-			: { clientId: options.clientId }),
-		...(options.endTime === undefined ? {} : { endTime: options.endTime }),
-		...(options.event === undefined ? {} : { event: options.event }),
-		...(options.query === undefined ? {} : { query: options.query }),
-		...(options.startTime === undefined
-			? {}
-			: { startTime: options.startTime }),
-		...(options.status === undefined ? {} : { status: options.status }),
-		...(options.userId === undefined ? {} : { userId: options.userId }),
-	});
+	const cleanupOptions = createDefaultCleanupOptions();
+	const [deliveryListResult, cleanupCount] = await Promise.all([
+		listSsoCallbackDeliveries({
+			limit: options.pageSize,
+			offset: (options.page - 1) * options.pageSize,
+			...(options.clientId === undefined
+				? {}
+				: { clientId: options.clientId }),
+			...(options.endTime === undefined
+				? {}
+				: { endTime: options.endTime }),
+			...(options.event === undefined ? {} : { event: options.event }),
+			...(options.query === undefined ? {} : { query: options.query }),
+			...(options.startTime === undefined
+				? {}
+				: { startTime: options.startTime }),
+			...(options.status === undefined ? {} : { status: options.status }),
+			...(options.userId === undefined ? {} : { userId: options.userId }),
+		}),
+		countCleanableSsoCallbackDeliveries(cleanupOptions),
+	]);
+	const { deliveries, totalCount } = deliveryListResult;
 	const reachableTotalCount = getReachableAdminSsoTotalCount(
 		totalCount,
 		options.pageSize
@@ -437,6 +445,7 @@ export async function listAdminSsoCallbackDeliveries(
 
 	return {
 		data: {
+			cleanup_count: cleanupCount,
 			deliveries: deliveries.map((delivery) => {
 				const { metadata_json: metadataJson, ...deliveryRecord } =
 					delivery;

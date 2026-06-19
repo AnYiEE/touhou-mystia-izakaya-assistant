@@ -34,11 +34,6 @@ import {
 	AdminPanelTitle,
 	AdminPanelToolbar,
 	AdminShell,
-	AdminTable,
-	AdminTableCell,
-	AdminTableHeadCell,
-	AdminTableHeader,
-	AdminTableRow,
 	adminTextareaClassNames,
 } from '../components';
 import { trackEvent } from '@/components/analytics';
@@ -111,6 +106,38 @@ function createUpdateBodyFromClient(
 		name: client.name,
 		status_callback_url: client.status_callback_url,
 	};
+}
+
+function checkStringListEqual(left: string[], right: string[]) {
+	return (
+		left.length === right.length &&
+		left.every((value, index) => value === right[index])
+	);
+}
+
+function checkClientBodyMatchesClient(
+	body: IAdminSsoClientCreateBody,
+	client: IAdminSsoClientProfile | null
+) {
+	return (
+		client !== null &&
+		body.cancel_redirect_uri === client.cancel_redirect_uri &&
+		checkStringListEqual(
+			body.custom_scheme_redirect_uris,
+			client.custom_scheme_redirect_uris
+		) &&
+		checkStringListEqual(
+			body.https_redirect_uris,
+			client.https_redirect_uris
+		) &&
+		body.id === client.id &&
+		checkStringListEqual(
+			body.loopback_redirect_paths,
+			client.loopback_redirect_paths
+		) &&
+		body.name === client.name &&
+		body.status_callback_url === client.status_callback_url
+	);
 }
 
 function checkAdminUnauthorizedActionResult(
@@ -212,6 +239,9 @@ export default memo<IProps>(function AdminSsoClientForm({
 	const [message, setMessage] = useState<string | null>(initialData.message);
 	const [generatedSecret, setGeneratedSecret] = useState<string | null>(null);
 	const [secretLabel, setSecretLabel] = useState('');
+	const [secretLabelDrafts, setSecretLabelDrafts] = useState<
+		Record<string, string>
+	>({});
 	const [secrets, setSecrets] = useState<IAdminSsoClientSecretRecord[]>([]);
 	const [isSecretLoading, setIsSecretLoading] = useState(false);
 	const [mutatingSecretId, setMutatingSecretId] = useState<string | null>(
@@ -245,22 +275,8 @@ export default memo<IProps>(function AdminSsoClientForm({
 	const isCreatedClient = !isEditMode && client !== null;
 	const title = isEditMode ? '编辑SSO客户端' : '新建SSO客户端';
 	const isClientDisabled = client !== null && client.disabled_at !== null;
-	const canSave =
-		admin !== null &&
-		(!isEditMode || client !== null) &&
-		!isCreatedClient &&
-		!isSaving &&
-		id.trim().length > 0 &&
-		name.trim().length > 0;
-	const canMutateSecrets =
-		!isClientDisabled &&
-		!isSaving &&
-		!isSecretLoading &&
-		mutatingSecretId === null &&
-		admin !== null;
-
-	const createBody = useCallback(
-		(): IAdminSsoClientCreateBody => ({
+	const currentBody = useMemo<IAdminSsoClientCreateBody>(
+		() => ({
 			cancel_redirect_uri: normalizeOptionalUri(cancelRedirectUri),
 			custom_scheme_redirect_uris: parseLines(customSchemeRedirectUris),
 			https_redirect_uris: parseLines(httpsRedirectUris),
@@ -279,6 +295,26 @@ export default memo<IProps>(function AdminSsoClientForm({
 			statusCallbackUrl,
 		]
 	);
+	const hasClientChanges = !checkClientBodyMatchesClient(currentBody, client);
+	const hasSecretLabelChanges = secrets.some(
+		(secret) =>
+			secret.status !== 'revoked' &&
+			(secretLabelDrafts[secret.id] ?? '').trim() !== (secret.label ?? '')
+	);
+	const canSave =
+		admin !== null &&
+		(!isEditMode || client !== null) &&
+		!isCreatedClient &&
+		!isSaving &&
+		(!isEditMode || hasClientChanges || hasSecretLabelChanges) &&
+		id.trim().length > 0 &&
+		name.trim().length > 0;
+	const canMutateSecrets =
+		!isClientDisabled &&
+		!isSaving &&
+		!isSecretLoading &&
+		mutatingSecretId === null &&
+		admin !== null;
 
 	const applyClient = useCallback((value: IAdminSsoClientProfile) => {
 		setClient(value);
@@ -344,6 +380,10 @@ export default memo<IProps>(function AdminSsoClientForm({
 			}
 
 			applyClient(result.data.client);
+			setSecretLabelDrafts((current) => ({
+				...current,
+				[result.data.secret.id]: result.data.secret.label ?? '',
+			}));
 			setSecrets((current) => {
 				const nextSecret = result.data.secret;
 				const index = current.findIndex(
@@ -453,6 +493,15 @@ export default memo<IProps>(function AdminSsoClientForm({
 				}
 
 				setSecrets(result.data.secrets);
+				setSecretLabelDrafts(
+					result.data.secrets.reduce<Record<string, string>>(
+						(drafts, secret) => {
+							drafts[secret.id] = secret.label ?? '';
+							return drafts;
+						},
+						{}
+					)
+				);
 			})
 			.catch((error: unknown) => {
 				if (secretRequestIdRef.current !== requestId) {
@@ -529,7 +578,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 		setGeneratedSecret(null);
 		setConfirmAction(null);
 
-		const body = createBody();
+		const body = currentBody;
 		const request = isEditMode
 			? updateAdminSsoClient(
 					body.id,
@@ -542,17 +591,78 @@ export default memo<IProps>(function AdminSsoClientForm({
 			: createAdminSsoClient(body, admin.csrf_token);
 
 		void request
-			.then((result) => {
+			.then(async (result) => {
+				if (result.status === 'error') {
+					applyMutationResult(
+						result,
+						isEditMode
+							? 'SSO客户端已保存'
+							: 'SSO客户端已创建，请保存本次显示的客户端Secret'
+					);
+					return;
+				}
+
+				const changedSecretLabels = isEditMode
+					? secrets
+							.map((secret) => ({
+								label: secretLabelDrafts[secret.id] ?? '',
+								secret,
+							}))
+							.filter(
+								({ label, secret }) =>
+									secret.status !== 'revoked' &&
+									label.trim() !== (secret.label ?? '')
+							)
+					: [];
+
 				applyMutationResult(
 					result,
-					isEditMode
-						? 'SSO客户端已保存'
-						: 'SSO客户端已创建，请保存本次显示的客户端Secret'
+					changedSecretLabels.length === 0
+						? isEditMode
+							? 'SSO客户端已保存'
+							: 'SSO客户端已创建，请保存本次显示的客户端Secret'
+						: 'SSO客户端已保存，正在保存Secret备注'
 				);
+
+				if (changedSecretLabels.length === 0) {
+					return;
+				}
+
+				for (const { label, secret } of changedSecretLabels) {
+					const secretResult = await updateAdminSsoClientSecret(
+						body.id,
+						secret.id,
+						{ label: label.trim() === '' ? null : label.trim() },
+						admin.csrf_token
+					);
+
+					if (secretResult.status === 'error') {
+						handleActionError(secretResult);
+						return;
+					}
+
+					applyClient(secretResult.data.client);
+					setSecrets((current) =>
+						current.map((currentSecret) =>
+							currentSecret.id === secretResult.data.secret.id
+								? secretResult.data.secret
+								: currentSecret
+						)
+					);
+					setSecretLabelDrafts((current) => ({
+						...current,
+						[secretResult.data.secret.id]:
+							secretResult.data.secret.label ?? '',
+					}));
+				}
+
+				setMessage('SSO客户端和Secret备注已保存');
 			})
 			.catch((error: unknown) => {
 				setMessage(
-					error instanceof Error ? error.message : '保存SSO客户端失败'
+					error instanceof Error
+						? error.message
+						: '保存SSO客户端或Secret备注失败'
 				);
 			})
 			.finally(() => {
@@ -561,12 +671,16 @@ export default memo<IProps>(function AdminSsoClientForm({
 			});
 	}, [
 		admin,
+		applyClient,
 		applyMutationResult,
 		canSave,
 		client,
-		createBody,
+		currentBody,
+		handleActionError,
 		id,
 		isEditMode,
+		secretLabelDrafts,
+		secrets,
 	]);
 
 	const handleContinueEdit = useCallback(() => {
@@ -672,60 +786,6 @@ export default memo<IProps>(function AdminSsoClientForm({
 		}
 		textarea.remove();
 	}, []);
-
-	const handleRenameSecret = useCallback(
-		(secret: IAdminSsoClientSecretRecord, label: string) => {
-			if (
-				admin === null ||
-				client === null ||
-				isClientDisabled ||
-				!tryStartSecretMutation(secret.id)
-			) {
-				return;
-			}
-
-			trackEvent(
-				trackEvent.category.click,
-				'Admin SSO Client Button',
-				'Rename Secret',
-				`${client.id}:${secret.id}`
-			);
-
-			setMessage(null);
-			setGeneratedSecret(null);
-
-			void updateAdminSsoClientSecret(
-				client.id,
-				secret.id,
-				{ label: label.trim() === '' ? null : label.trim() },
-				admin.csrf_token
-			)
-				.then((result) => {
-					applySecretMutationResult(
-						result,
-						'SSO客户端Secret备注已更新'
-					);
-				})
-				.catch((error: unknown) => {
-					setMessage(
-						error instanceof Error
-							? error.message
-							: '更新SSO客户端Secret备注失败'
-					);
-				})
-				.finally(() => {
-					finishSecretMutation();
-				});
-		},
-		[
-			admin,
-			applySecretMutationResult,
-			client,
-			finishSecretMutation,
-			isClientDisabled,
-			tryStartSecretMutation,
-		]
-	);
 
 	const handleToggleSecretDisabled = useCallback(
 		(secret: IAdminSsoClientSecretRecord, disabled: boolean) => {
@@ -959,96 +1019,104 @@ export default memo<IProps>(function AdminSsoClientForm({
 		}
 	}, [admin, clientId, isEditMode, refreshSecrets]);
 
-	const secretRows = useMemo(
+	const secretCards = useMemo(
 		() =>
 			secrets.map((secret) => (
-				<AdminTableRow key={secret.id}>
-					<AdminTableCell>
-						<Input
-							aria-label={`${createSecretDisplayName(secret)} ${secret.secret_hash_prefix}备注`}
+				<div
+					key={secret.id}
+					className={cn(
+						'grid min-w-0 gap-3 rounded-small border border-default-200/80 bg-default/30 p-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center',
+						secret.status === 'revoked' && 'opacity-75'
+					)}
+				>
+					<div className="grid min-w-0 gap-2">
+						<div className="flex min-w-0 flex-wrap items-center gap-2">
+							<AdminSecretStatusBadge secret={secret} />
+							<code className="rounded-small bg-default/40 px-2 py-1.5 text-tiny text-foreground-600">
+								{secret.secret_hash_prefix}
+							</code>
+						</div>
+						<div className="min-w-0 max-w-xl">
+							<Input
+								aria-label={`${createSecretDisplayName(secret)} ${secret.secret_hash_prefix}备注`}
+								classNames={{ inputWrapper: 'h-10 min-h-10' }}
+								isDisabled={
+									!canMutateSecrets ||
+									secret.status === 'revoked'
+								}
+								placeholder={createSecretDisplayName(secret)}
+								size="sm"
+								value={secretLabelDrafts[secret.id] ?? ''}
+								onValueChange={(value) => {
+									setSecretLabelDrafts((current) => ({
+										...current,
+										[secret.id]: value,
+									}));
+								}}
+							/>
+						</div>
+						<div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 text-small text-foreground-600">
+							<span className="whitespace-nowrap">
+								<span className="mr-1 text-tiny font-medium text-foreground-500">
+									最近使用
+								</span>
+								{secret.last_used_at === null ? (
+									<span className="text-foreground-500">
+										未使用
+									</span>
+								) : (
+									<TimeAgo timestamp={secret.last_used_at} />
+								)}
+							</span>
+							<span className="whitespace-nowrap">
+								<span className="mr-1 text-tiny font-medium text-foreground-500">
+									创建
+								</span>
+								<TimeAgo timestamp={secret.created_at} />
+							</span>
+						</div>
+					</div>
+					<div className="flex min-w-0 flex-wrap items-center justify-end gap-2 lg:pl-2">
+						<Switch
+							aria-label={`${createSecretDisplayName(secret)} ${secret.secret_hash_prefix}启用状态`}
+							classNames={{ base: 'shrink-0' }}
 							isDisabled={
 								!canMutateSecrets || secret.status === 'revoked'
 							}
-							placeholder={createSecretDisplayName(secret)}
+							isSelected={secret.status === 'active'}
 							size="sm"
-							defaultValue={secret.label ?? ''}
-							key={`${secret.id}:${secret.label ?? ''}`}
-							onBlur={(event) => {
-								const nextLabel =
-									event.currentTarget.value.trim();
-								if (nextLabel !== (secret.label ?? '')) {
-									handleRenameSecret(secret, nextLabel);
-								}
+							onValueChange={(isSelected) => {
+								handleToggleSecretDisabled(secret, !isSelected);
 							}}
 						/>
-					</AdminTableCell>
-					<AdminTableCell isNowrap>
-						<code className="rounded-small bg-default/30 px-2 py-1 text-tiny text-foreground-600">
-							{secret.secret_hash_prefix}
-						</code>
-					</AdminTableCell>
-					<AdminTableCell isNowrap>
-						<AdminSecretStatusBadge secret={secret} />
-					</AdminTableCell>
-					<AdminTableCell isNowrap>
-						{secret.last_used_at === null ? (
-							<span className="text-foreground-500">未使用</span>
-						) : (
-							<TimeAgo timestamp={secret.last_used_at} />
-						)}
-					</AdminTableCell>
-					<AdminTableCell isNowrap>
-						<TimeAgo timestamp={secret.created_at} />
-					</AdminTableCell>
-					<AdminTableCell className="text-right">
-						<div className="flex flex-wrap justify-end gap-2">
-							<Switch
-								aria-label={`${createSecretDisplayName(secret)} ${secret.secret_hash_prefix}启用状态`}
-								isDisabled={
-									!canMutateSecrets ||
-									secret.status === 'revoked'
-								}
-								isSelected={secret.status === 'active'}
-								size="sm"
-								onValueChange={(isSelected) => {
-									handleToggleSecretDisabled(
-										secret,
-										!isSelected
-									);
-								}}
-							>
-								{createSecretStatusText(secret)}
-							</Switch>
-							<AdminConfirmButton
-								color="danger"
-								confirmAction={`revoke-secret:${secret.id}`}
-								confirmLabel="确认撤销"
-								icon={faTrash}
-								isDisabled={
-									!canMutateSecrets ||
-									secret.status === 'revoked'
-								}
-								isLoading={mutatingSecretId === secret.id}
-								openAction={confirmAction}
-								size="sm"
-								onOpenChange={setConfirmAction}
-								onConfirm={() => {
-									handleRevokeSecret(secret);
-								}}
-							>
-								撤销
-							</AdminConfirmButton>
-						</div>
-					</AdminTableCell>
-				</AdminTableRow>
+						<AdminConfirmButton
+							color="danger"
+							confirmAction={`revoke-secret:${secret.id}`}
+							confirmLabel="确认撤销"
+							icon={faTrash}
+							isDisabled={
+								!canMutateSecrets || secret.status === 'revoked'
+							}
+							isLoading={mutatingSecretId === secret.id}
+							openAction={confirmAction}
+							size="sm"
+							onOpenChange={setConfirmAction}
+							onConfirm={() => {
+								handleRevokeSecret(secret);
+							}}
+						>
+							撤销
+						</AdminConfirmButton>
+					</div>
+				</div>
 			)),
 		[
 			canMutateSecrets,
 			confirmAction,
-			handleRenameSecret,
 			handleRevokeSecret,
 			handleToggleSecretDisabled,
 			mutatingSecretId,
+			secretLabelDrafts,
 			secrets,
 		]
 	);
@@ -1144,6 +1212,46 @@ export default memo<IProps>(function AdminSsoClientForm({
 						>
 							返回列表
 						</AdminHeaderActionLink>
+						{isEditMode && client !== null && (
+							<>
+								<AdminConfirmButton
+									color={
+										isClientDisabled ? 'primary' : 'warning'
+									}
+									confirmAction="toggle-client"
+									confirmLabel={
+										isClientDisabled
+											? '确认启用'
+											: '确认禁用'
+									}
+									icon={
+										isClientDisabled ? faCircleCheck : faBan
+									}
+									isDisabled={isSaving}
+									isLoading={isSaving}
+									openAction={confirmAction}
+									onOpenChange={setConfirmAction}
+									onConfirm={handleToggleClientDisabled}
+								>
+									{isClientDisabled
+										? '启用客户端'
+										: '禁用客户端'}
+								</AdminConfirmButton>
+								<AdminConfirmButton
+									color="danger"
+									confirmAction="delete-client"
+									confirmLabel="确认删除"
+									icon={faTrash}
+									isDisabled={isSaving}
+									isLoading={isSaving}
+									openAction={confirmAction}
+									onOpenChange={setConfirmAction}
+									onConfirm={handleDeleteClient}
+								>
+									删除客户端
+								</AdminConfirmButton>
+							</>
+						)}
 						<Button
 							color="primary"
 							isDisabled={!canSave}
@@ -1189,7 +1297,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 				</Button>
 			)}
 
-			<div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,24rem)]">
+			<div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,26rem)]">
 				<AdminPanel className="space-y-4">
 					<AdminPanelTitle icon={faServer}>基础配置</AdminPanelTitle>
 					{isEditMode && client !== null && (
@@ -1262,24 +1370,27 @@ export default memo<IProps>(function AdminSsoClientForm({
 					/>
 				</AdminPanel>
 
-				<AdminPanel>
+				<AdminPanel className="min-w-0">
 					{isEditMode ? (
 						<>
 							<AdminPanelToolbar
+								actionClassName="flex-row flex-nowrap items-center"
 								icon={faKey}
 								actions={
 									<>
 										<Input
 											aria-label="新SSO客户端Secret备注"
-											className="min-w-0 md:min-w-48 md:flex-1"
+											className="min-w-0 flex-1"
+											classNames={{
+												inputWrapper: 'h-10 min-h-10',
+											}}
 											isDisabled={!canMutateSecrets}
 											placeholder="备注"
-											size="sm"
 											value={secretLabel}
 											onValueChange={setSecretLabel}
 										/>
 										<Button
-											className="w-full md:w-auto"
+											className="h-10 min-h-10 shrink-0"
 											color="primary"
 											isDisabled={!canMutateSecrets}
 											isLoading={isSaving}
@@ -1297,7 +1408,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 											生成secret
 										</Button>
 										<Button
-											className="w-full md:w-auto"
+											className="h-10 min-h-10 shrink-0"
 											color="primary"
 											isLoading={isSecretLoading}
 											startContent={
@@ -1325,70 +1436,10 @@ export default memo<IProps>(function AdminSsoClientForm({
 										: '暂无客户端Secret'}
 								</AdminEmptyState>
 							) : (
-								<AdminTable>
-									<AdminTableHeader>
-										<tr>
-											<AdminTableHeadCell>
-												备注
-											</AdminTableHeadCell>
-											<AdminTableHeadCell>
-												Hash前缀
-											</AdminTableHeadCell>
-											<AdminTableHeadCell>
-												状态
-											</AdminTableHeadCell>
-											<AdminTableHeadCell>
-												最近使用
-											</AdminTableHeadCell>
-											<AdminTableHeadCell>
-												创建时间
-											</AdminTableHeadCell>
-											<AdminTableHeadCell className="text-right">
-												操作
-											</AdminTableHeadCell>
-										</tr>
-									</AdminTableHeader>
-									<tbody>{secretRows}</tbody>
-								</AdminTable>
+								<div className="grid min-w-0 gap-3">
+									{secretCards}
+								</div>
 							)}
-							<div className="mt-4 flex flex-wrap gap-2">
-								<AdminConfirmButton
-									color={
-										isClientDisabled ? 'primary' : 'warning'
-									}
-									confirmAction="toggle-client"
-									confirmLabel={
-										isClientDisabled
-											? '确认启用'
-											: '确认禁用'
-									}
-									icon={
-										isClientDisabled ? faCircleCheck : faBan
-									}
-									isDisabled={isSaving}
-									isLoading={isSaving}
-									openAction={confirmAction}
-									onOpenChange={setConfirmAction}
-									onConfirm={handleToggleClientDisabled}
-								>
-									{isClientDisabled
-										? '启用客户端'
-										: '禁用客户端'}
-								</AdminConfirmButton>
-								<AdminConfirmButton
-									color="danger"
-									confirmAction="delete-client"
-									confirmLabel="确认删除"
-									icon={faTrash}
-									isDisabled={isSaving}
-									isLoading={isSaving}
-									openAction={confirmAction}
-									onOpenChange={setConfirmAction}
-									onConfirm={handleDeleteClient}
-								>
-									删除客户端
-								</AdminConfirmButton>
-							</div>
 						</>
 					) : (
 						<>

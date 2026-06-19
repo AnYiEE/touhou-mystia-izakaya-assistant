@@ -211,6 +211,32 @@ export async function listSsoCallbackDeliveries({
 	};
 }
 
+export async function countCleanableSsoCallbackDeliveries({
+	before,
+	maxRows,
+}: ISsoCallbackDeliveryCleanupOptions) {
+	const db = await getAccountDatabase();
+	const totalCountRecord = await db
+		.selectFrom(CALLBACK_DELIVERY_TABLE_NAME)
+		.select((eb) => eb.fn.countAll<number>().as('total_count'))
+		.executeTakeFirstOrThrow();
+	const totalCount = normalizeTotalCount(totalCountRecord.total_count);
+	const deletedByAge =
+		before === undefined
+			? 0
+			: await db
+					.selectFrom(CALLBACK_DELIVERY_TABLE_NAME)
+					.select((eb) => eb.fn.countAll<number>().as('total_count'))
+					.where('created_at', '<', before)
+					.executeTakeFirstOrThrow()
+					.then((record) => normalizeTotalCount(record.total_count));
+	const remainingCount = Math.max(0, totalCount - deletedByAge);
+	const deletedByCap =
+		maxRows === undefined ? 0 : Math.max(0, remainingCount - maxRows);
+
+	return deletedByAge + deletedByCap;
+}
+
 export async function cleanupSsoCallbackDeliveries(
 	{ before, maxRows }: ISsoCallbackDeliveryCleanupOptions,
 	writeAuditLog?: (

@@ -302,6 +302,7 @@ export interface IAdminSsoTicketRecord {
 }
 
 export interface IAdminSsoTicketListData {
+	cleanup_count: number;
 	page: number;
 	page_size: number;
 	tickets: IAdminSsoTicketRecord[];
@@ -392,6 +393,7 @@ export interface IAdminSsoCallbackDeliveryRecord {
 }
 
 export interface IAdminSsoCallbackDeliveryListData {
+	cleanup_count: number;
 	deliveries: IAdminSsoCallbackDeliveryRecord[];
 	page: number;
 	page_size: number;

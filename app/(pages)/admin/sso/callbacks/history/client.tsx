@@ -13,11 +13,13 @@ import {
 import { usePathname, useRouter } from 'next/navigation';
 
 import {
+	faBullhorn,
 	faClock,
 	faClockRotateLeft,
 	faMagnifyingGlass,
 	faShieldHalved,
 	faTrash,
+	faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 
 import { Input } from '@/design/ui/components';
@@ -588,9 +590,17 @@ export default function AdminSsoCallbackHistoryClient({
 			<AdminShell>
 				<AdminHeader
 					actions={
-						<AdminHeaderActionLink href="/admin/sso/callbacks">
-							返回Callback队列
-						</AdminHeaderActionLink>
+						<>
+							<AdminHeaderActionLink href="/admin" icon={faUsers}>
+								用户管理
+							</AdminHeaderActionLink>
+							<AdminHeaderActionLink
+								href="/admin/announcements"
+								icon={faBullhorn}
+							>
+								站点通知
+							</AdminHeaderActionLink>
+						</>
 					}
 					icon={faShieldHalved}
 					subtitle={message ?? '请先返回管理员页登录'}
@@ -604,6 +614,8 @@ export default function AdminSsoCallbackHistoryClient({
 		deliveries?.deliveries.filter(
 			(delivery) => delivery.status !== 'succeeded'
 		).length ?? 0;
+	const canCleanupHistory =
+		deliveries !== null && deliveries.cleanup_count > 0 && !isCleaning;
 	const advancedFilterCount = [
 		clientIdInput,
 		userIdInput,
@@ -616,11 +628,14 @@ export default function AdminSsoCallbackHistoryClient({
 			<AdminHeader
 				actions={
 					<>
-						<AdminHeaderActionLink href="/admin/sso/callbacks">
-							Callback队列
+						<AdminHeaderActionLink href="/admin" icon={faUsers}>
+							用户管理
 						</AdminHeaderActionLink>
-						<AdminHeaderActionLink href="/admin/sso">
-							返回SSO客户端
+						<AdminHeaderActionLink
+							href="/admin/announcements"
+							icon={faBullhorn}
+						>
+							站点通知
 						</AdminHeaderActionLink>
 					</>
 				}
@@ -730,6 +745,7 @@ export default function AdminSsoCallbackHistoryClient({
 						confirmAction="cleanup"
 						confirmLabel="确认清理"
 						icon={faTrash}
+						isDisabled={!canCleanupHistory}
 						isLoading={isCleaning}
 						openAction={confirmAction}
 						onOpenChange={setConfirmAction}

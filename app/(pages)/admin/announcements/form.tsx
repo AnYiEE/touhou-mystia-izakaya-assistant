@@ -341,6 +341,41 @@ function checkSameTargetUser(
 	return left.id === right.id;
 }
 
+function checkStringListEqual(left: string[], right: string[]) {
+	return (
+		left.length === right.length &&
+		left.every((value, index) => value === right[index])
+	);
+}
+
+function checkAnnouncementBodyMatchesProfile(
+	body: IAdminAnnouncementBody | null,
+	announcement: IAdminAnnouncementProfile | null,
+	isEditMode: boolean
+) {
+	if (!isEditMode) {
+		return false;
+	}
+
+	return (
+		body !== null &&
+		announcement !== null &&
+		body.audience === announcement.audience &&
+		body.dismissible === announcement.dismissible &&
+		body.enabled === announcement.enabled &&
+		body.ends_at === announcement.ends_at &&
+		body.html === announcement.html &&
+		body.level === announcement.level &&
+		body.priority === announcement.priority &&
+		body.starts_at === announcement.starts_at &&
+		checkStringListEqual(
+			body.target_user_ids,
+			announcement.target_user_ids
+		) &&
+		body.title === announcement.title
+	);
+}
+
 function createTargetUserOptionsFromIds(ids: string[]): ITargetUserOption[] {
 	return ids.map((id) => ({ id, username: null }));
 }
@@ -541,6 +576,11 @@ export default function AdminAnnouncementForm({
 		targetUsers,
 		title,
 	]);
+	const hasFormChanges = !checkAnnouncementBodyMatchesProfile(
+		formBody,
+		announcement,
+		isEditMode
+	);
 
 	const applyAnnouncement = useCallback(
 		(nextAnnouncement: IAdminAnnouncementProfile) => {
@@ -1106,6 +1146,22 @@ export default function AdminAnnouncementForm({
 								刷新通知
 							</Button>
 						)}
+						{isEditMode && !isArchived && (
+							<AdminConfirmButton
+								color="warning"
+								confirmAction="archive"
+								confirmColor="warning"
+								confirmLabel="确认归档"
+								icon={faFileArchive}
+								isDisabled={csrfToken === null || isSaving}
+								isLoading={isSaving}
+								openAction={confirmAction}
+								onOpenChange={setConfirmAction}
+								onConfirm={handleArchive}
+							>
+								归档
+							</AdminConfirmButton>
+						)}
 						<Button
 							isDisabled={formBody === null || csrfToken === null}
 							isLoading={isSaving}
@@ -1124,7 +1180,11 @@ export default function AdminAnnouncementForm({
 						</Button>
 						<Button
 							color="primary"
-							isDisabled={formBody === null || csrfToken === null}
+							isDisabled={
+								formBody === null ||
+								csrfToken === null ||
+								!hasFormChanges
+							}
 							isLoading={isSaving}
 							startContent={
 								isSaving ? null : (
@@ -1157,22 +1217,6 @@ export default function AdminAnnouncementForm({
 							>
 								恢复归档
 							</Button>
-						)}
-						{isEditMode && !isArchived && (
-							<AdminConfirmButton
-								color="warning"
-								confirmAction="archive"
-								confirmColor="warning"
-								confirmLabel="确认归档"
-								icon={faFileArchive}
-								isDisabled={csrfToken === null || isSaving}
-								isLoading={isSaving}
-								openAction={confirmAction}
-								onOpenChange={setConfirmAction}
-								onConfirm={handleArchive}
-							>
-								归档
-							</AdminConfirmButton>
 						)}
 					</>
 				}
@@ -1222,7 +1266,7 @@ export default function AdminAnnouncementForm({
 				preview={preview}
 			/>
 
-			<div className="grid gap-4">
+			<div className="grid min-w-0 gap-4">
 				<AdminPanel className="space-y-4">
 					<AdminPanelTitle icon={faBullhorn}>
 						通知内容
@@ -1473,8 +1517,8 @@ export default function AdminAnnouncementForm({
 					</div>
 				</AdminPanel>
 
-				<div className="space-y-4">
-					<AdminPanel className="space-y-3">
+				<div className="min-w-0 space-y-4">
+					<AdminPanel className="min-w-0 space-y-3">
 						<AdminPanelTitle icon={faClockRotateLeft}>
 							版本历史
 						</AdminPanelTitle>
@@ -1517,39 +1561,46 @@ export default function AdminAnnouncementForm({
 														'系统'}
 												</div>
 											</AdminTableCell>
-											<AdminTableCell align="top">
+											<AdminTableCell
+												align="top"
+												className="min-w-80 max-w-[36rem]"
+											>
 												{version.changed_fields
 													.length === 0 ? (
 													<span className="text-foreground-400">
 														无字段变化
 													</span>
 												) : (
-													<div className="space-y-1">
+													<div className="min-w-0 space-y-1">
 														{version.changed_fields.map(
 															(field) => (
 																<div
 																	key={
 																		field.field
 																	}
-																	className="break-words text-tiny leading-5"
+																	className="flex min-w-0 flex-wrap items-baseline gap-x-1 text-tiny leading-5"
 																>
-																	<span className="font-medium">
+																	<span className="shrink-0 font-medium">
 																		{getChangedFieldLabel(
 																			field.field
 																		)}
 																	</span>
-																	<span className="text-foreground-400">
+																	<span className="shrink-0 text-foreground-400">
 																		：
 																	</span>
-																	{getChangedFieldValue(
-																		field.previous
-																	)}
-																	<span className="mx-1 text-foreground-400">
+																	<span className="min-w-0 max-w-full text-foreground-600 [overflow-wrap:anywhere]">
+																		{getChangedFieldValue(
+																			field.previous
+																		)}
+																	</span>
+																	<span className="shrink-0 text-foreground-400">
 																		→
 																	</span>
-																	{getChangedFieldValue(
-																		field.next
-																	)}
+																	<span className="min-w-0 max-w-full text-foreground-600 [overflow-wrap:anywhere]">
+																		{getChangedFieldValue(
+																			field.next
+																		)}
+																	</span>
 																</div>
 															)
 														)}

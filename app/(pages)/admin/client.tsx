@@ -63,6 +63,7 @@ import {
 	AdminTableHeadCell,
 	AdminTableHeader,
 	AdminTableRow,
+	createAdminUserDisplayName,
 	getAdminStatusLabel,
 } from './components';
 import {
@@ -353,7 +354,7 @@ const AdminUserListRow = memo<IAdminUserListRowProps>(
 					<AdminEntityCell
 						className="max-w-64"
 						id={user.id}
-						title={user.nickname ?? user.username}
+						title={createAdminUserDisplayName(user)}
 					/>
 				</AdminTableCell>
 				<AdminTableCell isNowrap>
@@ -815,12 +816,18 @@ export default function AdminPageClient({
 
 	useEffect(() => {
 		if (lastServerRenderedAtRef.current !== initialData.renderedAt) {
+			const shouldSyncQueryInput =
+				queryInput === query || queryInput === initialData.query;
+
 			lastServerRenderedAtRef.current = initialData.renderedAt;
 			isServerInitialUsersRef.current = initialData.users !== null;
-			syncedServerQueryInputRef.current = initialData.query;
 			refreshUsersRequestIdRef.current += 1;
 
-			cancelPendingQuerySync();
+			if (shouldSyncQueryInput) {
+				cancelPendingQuerySync();
+				syncedServerQueryInputRef.current = initialData.query;
+			}
+
 			setAdmin(initialData.admin);
 			setAdminAuthStatus(initialData.authStatus);
 			setUsers(initialData.users);
@@ -828,7 +835,9 @@ export default function AdminPageClient({
 			setPage(initialData.page);
 			setPageInput(String(initialData.page));
 			setQuery(initialData.query);
-			setQueryInput(initialData.query);
+			if (shouldSyncQueryInput) {
+				setQueryInput(initialData.query);
+			}
 			setStatus(initialData.status);
 			setIsUsersLoading(false);
 
@@ -846,6 +855,8 @@ export default function AdminPageClient({
 		initialData.renderedAt,
 		initialData.status,
 		initialData.users,
+		query,
+		queryInput,
 	]);
 
 	useEffect(() => {

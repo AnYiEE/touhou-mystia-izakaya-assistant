@@ -259,6 +259,8 @@ export async function updateActiveUserProfile({
 	credentialPasswordHash,
 	nickname,
 	now = Date.now(),
+	oldNickname,
+	oldUsername,
 	userId,
 	username,
 	usernameNormalized,
@@ -267,6 +269,8 @@ export async function updateActiveUserProfile({
 	credentialPasswordHash?: TUserCredential['password_hash'];
 	nickname?: TUser['nickname'];
 	now?: number;
+	oldNickname?: TUser['nickname'];
+	oldUsername?: TUser['username'];
 	userId: TUser['id'];
 	writeAuditLog?: (
 		trx: Transaction<TDatabase>,
@@ -384,7 +388,16 @@ export async function updateActiveUserProfile({
 			userId,
 			'user_profile_updated',
 			now,
-			{ nickname: updatedUser.nickname, username: updatedUser.username }
+			{
+				new_nickname: updatedUser.nickname,
+				new_username: updatedUser.username,
+				...(oldNickname === undefined
+					? {}
+					: { old_nickname: oldNickname }),
+				...(oldUsername === undefined
+					? {}
+					: { old_username: oldUsername }),
+			}
 		);
 		await writeAuditLog?.(trx, now, updatedUser);
 

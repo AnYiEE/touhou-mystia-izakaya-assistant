@@ -8,6 +8,7 @@ import { findUserById } from '@/lib/account/server/repositories/users';
 import {
 	type IAdminSsoTicketListOptions as IRepositoryAdminSsoTicketListOptions,
 	cleanupExpiredSsoTickets,
+	countExpiredSsoTickets,
 	listAdminSsoTickets,
 	revokeUnusedSsoTicketsForClient,
 	revokeUnusedSsoTicketsForUser,
@@ -141,9 +142,11 @@ export async function listAdminSsoTicketRecords(
 
 	const now = Date.now();
 	const { page, pageSize } = options;
-	const { tickets, totalCount } = await listAdminSsoTickets(
-		createRepositoryListOptions(options, now)
-	);
+	const [ticketListResult, cleanupCount] = await Promise.all([
+		listAdminSsoTickets(createRepositoryListOptions(options, now)),
+		countExpiredSsoTickets(now - ADMIN_SSO_TICKET_CLEANUP_RETENTION_MS),
+	]);
+	const { tickets, totalCount } = ticketListResult;
 	const reachableTotalCount = getReachableAdminSsoTotalCount(
 		totalCount,
 		pageSize
@@ -151,6 +154,7 @@ export async function listAdminSsoTicketRecords(
 
 	return {
 		data: {
+			cleanup_count: cleanupCount,
 			page,
 			page_size: pageSize,
 			tickets: tickets.map((ticket) => ({

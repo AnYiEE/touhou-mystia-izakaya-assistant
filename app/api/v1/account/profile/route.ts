@@ -26,57 +26,41 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 function createNicknameAuditMetadata({
-	accountAuditModule,
 	newNickname,
 	oldNickname,
 	result,
 }: {
-	accountAuditModule: typeof import('@/lib/account/server/accountAuditService');
 	newNickname: string | null;
 	oldNickname: string | null;
 	result: string;
 }) {
 	return {
+		new_nickname: newNickname,
 		new_nickname_empty: newNickname === null,
-		...(newNickname === null
-			? {}
-			: {
-					new_nickname_digest:
-						accountAuditModule.createAccountAuditValueDigest(
-							newNickname
-						),
-				}),
+		old_nickname: oldNickname,
 		old_nickname_empty: oldNickname === null,
-		...(oldNickname === null
-			? {}
-			: {
-					old_nickname_digest:
-						accountAuditModule.createAccountAuditValueDigest(
-							oldNickname
-						),
-				}),
 		result,
 	};
 }
 
 function createUsernameAuditMetadata({
-	accountAuditModule,
+	newUsername,
 	newUsernameNormalized,
+	oldUsername,
 	oldUsernameNormalized,
 	result,
 }: {
-	accountAuditModule: typeof import('@/lib/account/server/accountAuditService');
+	newUsername: string;
 	newUsernameNormalized: string;
+	oldUsername: string;
 	oldUsernameNormalized: string;
 	result: string;
 }) {
 	return {
-		new_username_digest: accountAuditModule.createAccountAuditValueDigest(
-			newUsernameNormalized
-		),
-		old_username_digest: accountAuditModule.createAccountAuditValueDigest(
-			oldUsernameNormalized
-		),
+		new_username: newUsername,
+		new_username_normalized: newUsernameNormalized,
+		old_username: oldUsername,
+		old_username_normalized: oldUsernameNormalized,
 		result,
 	};
 }
@@ -250,6 +234,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	const oldUsernameNormalized = auth.data.user.username_normalized;
+	const oldUsername = auth.data.user.username;
 	const oldNickname = auth.data.user.nickname;
 	const username =
 		typeof bodyRecord['username'] === 'string'
@@ -303,19 +288,25 @@ export async function POST(request: NextRequest) {
 	let usernameMetadata: Record<string, unknown> | undefined;
 	const nicknameMetadata = willChangeNickname
 		? createNicknameAuditMetadata({
-				accountAuditModule,
 				newNickname: nickname ?? null,
 				oldNickname,
 				result: 'ok',
 			})
 		: undefined;
 	if (willChangeUsername) {
+		const nextUsername = username;
+		const nextUsernameNormalized = usernameNormalized;
+		if (nextUsername === undefined) {
+			return createNoStoreErrorResponse('invalid-object-structure', 400);
+		}
+
 		if (typeof bodyRecord['current_password'] !== 'string') {
 			return createNoStoreErrorResponse('invalid-password', 401);
 		}
 		usernameMetadata = createUsernameAuditMetadata({
-			accountAuditModule,
-			newUsernameNormalized: usernameNormalized,
+			newUsername: nextUsername,
+			newUsernameNormalized: nextUsernameNormalized,
+			oldUsername,
 			oldUsernameNormalized,
 			result: 'ok',
 		});
@@ -330,8 +321,9 @@ export async function POST(request: NextRequest) {
 				request,
 				userId: auth.data.user.id,
 				usernameMetadata: createUsernameAuditMetadata({
-					accountAuditModule,
-					newUsernameNormalized: usernameNormalized,
+					newUsername: nextUsername,
+					newUsernameNormalized: nextUsernameNormalized,
+					oldUsername,
 					oldUsernameNormalized,
 					result: 'credential-locked',
 				}),
@@ -361,8 +353,9 @@ export async function POST(request: NextRequest) {
 					request,
 					userId: auth.data.user.id,
 					usernameMetadata: createUsernameAuditMetadata({
-						accountAuditModule,
-						newUsernameNormalized: usernameNormalized,
+						newUsername: nextUsername,
+						newUsernameNormalized: nextUsernameNormalized,
+						oldUsername,
 						oldUsernameNormalized,
 						result: 'credential-locked-after-failure',
 					}),
@@ -385,8 +378,9 @@ export async function POST(request: NextRequest) {
 				request,
 				userId: auth.data.user.id,
 				usernameMetadata: createUsernameAuditMetadata({
-					accountAuditModule,
-					newUsernameNormalized: usernameNormalized,
+					newUsername: nextUsername,
+					newUsernameNormalized: nextUsernameNormalized,
+					oldUsername,
 					oldUsernameNormalized,
 					result: 'invalid-current-password',
 				}),
@@ -399,7 +393,7 @@ export async function POST(request: NextRequest) {
 	try {
 		const profileUpdateInput: Parameters<
 			typeof usersModule.updateActiveUserProfile
-		>[0] = { now, userId: auth.data.user.id };
+		>[0] = { now, oldNickname, oldUsername, userId: auth.data.user.id };
 		if (willChangeUsername) {
 			profileUpdateInput.credentialPasswordHash =
 				auth.data.credential.password_hash;

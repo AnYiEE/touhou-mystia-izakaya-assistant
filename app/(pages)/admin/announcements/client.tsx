@@ -579,18 +579,6 @@ export default function AdminAnnouncementsClient({
 			<AdminHeader
 				actions={
 					<>
-						<AdminConfirmButton
-							color="danger"
-							confirmAction="cleanup"
-							confirmLabel="确认清理"
-							icon={faTrash}
-							isLoading={isCleaning}
-							onConfirm={handleCleanup}
-							onOpenChange={setConfirmAction}
-							openAction={confirmAction}
-						>
-							清理历史
-						</AdminConfirmButton>
 						<AdminHeaderActionLink
 							href="/admin"
 							icon={faUsers}
@@ -605,6 +593,18 @@ export default function AdminAnnouncementsClient({
 						>
 							SSO客户端
 						</AdminHeaderActionLink>
+						<AdminConfirmButton
+							color="danger"
+							confirmAction="cleanup"
+							confirmLabel="确认清理"
+							icon={faTrash}
+							isLoading={isCleaning}
+							onConfirm={handleCleanup}
+							onOpenChange={setConfirmAction}
+							openAction={confirmAction}
+						>
+							清理历史
+						</AdminConfirmButton>
 						<AdminHeaderActionLink
 							color="primary"
 							href="/admin/announcements/new"

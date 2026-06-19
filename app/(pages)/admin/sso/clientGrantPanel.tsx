@@ -35,6 +35,7 @@ import {
 	AdminTableHeadCell,
 	AdminTableHeader,
 	AdminTableRow,
+	createAdminUserDisplayName,
 } from '../components';
 import { trackEvent } from '@/components/analytics';
 import TimeAgo from '@/components/timeAgo';
@@ -460,7 +461,7 @@ export default memo<IProps>(function AdminSsoClientGrantPanel({
 					<AdminTableCell>
 						<AdminEntityCell
 							id={grant.user.id}
-							title={grant.user.nickname ?? grant.user.username}
+							title={createAdminUserDisplayName(grant.user)}
 						/>
 					</AdminTableCell>
 					<AdminTableCell isNowrap>
@@ -527,9 +528,10 @@ export default memo<IProps>(function AdminSsoClientGrantPanel({
 							onValueChange={setGrantQuery}
 						/>
 						<AdminConfirmButton
+							className="h-12 min-h-12"
 							color="danger"
 							confirmAction="revoke-client-grants"
-							confirmLabel="确认撤销全部"
+							confirmLabel="确认撤销"
 							icon={faUserSlash}
 							isDisabled={!canRevokeAll}
 							isLoading={isRevokingAll}

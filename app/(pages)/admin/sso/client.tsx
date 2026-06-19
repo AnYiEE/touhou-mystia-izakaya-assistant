@@ -12,19 +12,17 @@ import {
 } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
 	faBullhorn,
 	faClock,
 	faMagnifyingGlass,
 	faPlus,
-	faRotate,
 	faServer,
 	faShieldHalved,
 	faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 
-import { Button, cn } from '@/design/ui/components';
+import { cn } from '@/design/ui/components';
 
 import {
 	ADMIN_SSO_LIST_DEBOUNCE_MS,
@@ -543,21 +541,6 @@ export default function AdminSsoClientsClient({
 						>
 							站点通知
 						</AdminHeaderActionLink>
-						<Button
-							isLoading={isLoading}
-							startContent={
-								isLoading ? null : (
-									<FontAwesomeIcon
-										icon={faRotate}
-										className="w-3.5"
-									/>
-								)
-							}
-							variant="flat"
-							onPress={handleRefreshClients}
-						>
-							刷新
-						</Button>
 						<AdminHeaderActionLink
 							color="primary"
 							href="/admin/sso/new"

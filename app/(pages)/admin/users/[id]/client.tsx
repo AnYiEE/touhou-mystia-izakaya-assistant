@@ -58,6 +58,7 @@ import {
 	AdminTableHeadCell,
 	AdminTableHeader,
 	AdminTableRow,
+	createAdminUserDisplayName,
 } from '../../components';
 import {
 	type TAdminUserDetailApiResult,
@@ -889,8 +890,8 @@ export default function AdminUserDetailClient({
 		last_login_at: lastLoginAt,
 		state_epoch: stateEpoch,
 		status: userStatus,
-		username,
 	} = user;
+	const userDisplayName = createAdminUserDisplayName(user);
 	const canDisableUser = userStatus === 'active';
 	const canEnableUser = userStatus === 'disabled';
 	const canRestoreUser = userStatus === 'deleted';
@@ -1012,7 +1013,7 @@ export default function AdminUserDetailClient({
 					</>
 				}
 				icon={faUser}
-				title={username}
+				title={userDisplayName}
 			/>
 
 			<AdminMetricPanel className="sm:grid-cols-2 xl:grid-cols-5">
@@ -1246,6 +1247,86 @@ export default function AdminUserDetailClient({
 				)}
 			</AdminPanel>
 
+			{shouldShowSsoGrantPanel && (
+				<AdminPanel>
+					<AdminPanelToolbar
+						icon={faServer}
+						actions={
+							<>
+								<AdminSearchInput
+									ariaLabel="搜索SSO客户端"
+									icon={faSearch}
+									placeholder="客户端名称或客户端ID"
+									value={ssoGrantQuery}
+									onValueChange={handleSsoGrantQueryChange}
+								/>
+								<AdminConfirmButton
+									className="h-12 min-h-12"
+									color="danger"
+									confirmAction="revoke-all-sso"
+									confirmLabel="确认撤销"
+									icon={faUserSlash}
+									isDisabled={!canRevokeAllSsoGrants}
+									isLoading={isRevokingAllSsoGrants}
+									openAction={confirmAction}
+									onOpenChange={setConfirmAction}
+									onConfirm={handleRevokeAllSsoGrants}
+								>
+									撤销全部授权
+								</AdminConfirmButton>
+							</>
+						}
+					>
+						SSO授权
+					</AdminPanelToolbar>
+					{ssoGrants.length === 0 ? (
+						<AdminEmptyState icon={faServer}>
+							{isSsoGrantLoading ? '读取中' : '暂无SSO授权'}
+						</AdminEmptyState>
+					) : (
+						<AdminTable>
+							<AdminTableHeader>
+								<tr>
+									<AdminTableHeadCell>
+										客户端
+									</AdminTableHeadCell>
+									<AdminTableHeadCell>
+										状态
+									</AdminTableHeadCell>
+									<AdminTableHeadCell>
+										授权时间
+									</AdminTableHeadCell>
+									<AdminTableHeadCell>
+										最近刷新
+									</AdminTableHeadCell>
+									<AdminTableHeadCell className="text-right">
+										操作
+									</AdminTableHeadCell>
+								</tr>
+							</AdminTableHeader>
+							<tbody>{ssoGrantRows}</tbody>
+						</AdminTable>
+					)}
+					<AdminPagination
+						currentPage={ssoGrantPage}
+						isLoading={isSsoGrantLoading}
+						pageInput={ssoGrantPageInput}
+						totalLabel="个SSO授权"
+						totalPages={ssoGrantTotalPages}
+						{...(ssoGrantPageSize === undefined
+							? {}
+							: { pageSize: ssoGrantPageSize })}
+						{...(ssoGrantTotalCount === undefined
+							? {}
+							: { totalCount: ssoGrantTotalCount })}
+						onNextPage={handleNextSsoGrantPage}
+						onPageInputChange={handleSsoGrantPageInputChange}
+						onPageJumpSubmit={handleSsoGrantPageJumpSubmit}
+						onPreviousPage={handlePreviousSsoGrantPage}
+					/>
+				</AdminPanel>
+			)}
+
 			<AdminPanel>
 				<AdminPanelTitle icon={faFileArchive}>
 					旧备份导入记录
@@ -1319,86 +1400,6 @@ export default function AdminUserDetailClient({
 					</AdminTable>
 				)}
 			</AdminPanel>
-
-			{shouldShowSsoGrantPanel && (
-				<AdminPanel>
-					<AdminPanelToolbar
-						icon={faServer}
-						actions={
-							<>
-								<AdminSearchInput
-									ariaLabel="搜索SSO客户端"
-									icon={faSearch}
-									placeholder="客户端名称或客户端ID"
-									value={ssoGrantQuery}
-									onValueChange={handleSsoGrantQueryChange}
-								/>
-								<AdminConfirmButton
-									className="h-12 min-h-12"
-									color="danger"
-									confirmAction="revoke-all-sso"
-									confirmLabel="确认撤销全部"
-									icon={faUserSlash}
-									isDisabled={!canRevokeAllSsoGrants}
-									isLoading={isRevokingAllSsoGrants}
-									openAction={confirmAction}
-									onOpenChange={setConfirmAction}
-									onConfirm={handleRevokeAllSsoGrants}
-								>
-									撤销全部授权
-								</AdminConfirmButton>
-							</>
-						}
-					>
-						SSO授权
-					</AdminPanelToolbar>
-					{ssoGrants.length === 0 ? (
-						<AdminEmptyState icon={faServer}>
-							{isSsoGrantLoading ? '读取中' : '暂无SSO授权'}
-						</AdminEmptyState>
-					) : (
-						<AdminTable>
-							<AdminTableHeader>
-								<tr>
-									<AdminTableHeadCell>
-										客户端
-									</AdminTableHeadCell>
-									<AdminTableHeadCell>
-										状态
-									</AdminTableHeadCell>
-									<AdminTableHeadCell>
-										授权时间
-									</AdminTableHeadCell>
-									<AdminTableHeadCell>
-										最近刷新
-									</AdminTableHeadCell>
-									<AdminTableHeadCell className="text-right">
-										操作
-									</AdminTableHeadCell>
-								</tr>
-							</AdminTableHeader>
-							<tbody>{ssoGrantRows}</tbody>
-						</AdminTable>
-					)}
-					<AdminPagination
-						currentPage={ssoGrantPage}
-						isLoading={isSsoGrantLoading}
-						pageInput={ssoGrantPageInput}
-						totalLabel="个SSO授权"
-						totalPages={ssoGrantTotalPages}
-						{...(ssoGrantPageSize === undefined
-							? {}
-							: { pageSize: ssoGrantPageSize })}
-						{...(ssoGrantTotalCount === undefined
-							? {}
-							: { totalCount: ssoGrantTotalCount })}
-						onNextPage={handleNextSsoGrantPage}
-						onPageInputChange={handleSsoGrantPageInputChange}
-						onPageJumpSubmit={handleSsoGrantPageJumpSubmit}
-						onPreviousPage={handlePreviousSsoGrantPage}
-					/>
-				</AdminPanel>
-			)}
 		</AdminShell>
 	);
 }

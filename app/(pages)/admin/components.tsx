@@ -37,7 +37,10 @@ import {
 
 import Placeholder from '@/components/placeholder';
 
-import { type TUserStatus } from '@/lib/account/shared/types';
+import {
+	type IAccountUserProfile,
+	type TUserStatus,
+} from '@/lib/account/shared/types';
 import type {
 	TAnnouncementComputedStatus,
 	TAnnouncementLevel,
@@ -109,7 +112,7 @@ export const AdminShell = memo<IAdminShellProps>(function AdminShell({
 	return (
 		<div
 			className={cn(
-				'min-h-main-content space-y-5 text-foreground',
+				'min-h-main-content min-w-0 space-y-5 text-foreground',
 				className
 			)}
 		>
@@ -117,6 +120,14 @@ export const AdminShell = memo<IAdminShellProps>(function AdminShell({
 		</div>
 	);
 });
+
+export function createAdminUserDisplayName(
+	user: Pick<IAccountUserProfile, 'nickname' | 'username'>
+) {
+	return user.nickname === null
+		? user.username
+		: `${user.username}（${user.nickname}）`;
+}
 
 interface IAdminIconProps
 	extends
@@ -277,7 +288,7 @@ export const AdminPanel = memo<IAdminPanelProps>(function AdminPanel({
 			shadow="sm"
 			classNames={{
 				base: cn(
-					'p-4',
+					'overflow-hidden p-4',
 					isHighAppearance
 						? 'bg-content1/40 backdrop-blur'
 						: 'bg-content1/60 dark:bg-content1/50',
@@ -313,20 +324,26 @@ export const AdminPanelTitle = memo<IAdminPanelTitleProps>(
 );
 
 interface IAdminPanelToolbarProps {
+	actionClassName?: string;
 	actions?: ReactNodeWithoutBoolean;
 	children: ReactNodeWithoutBoolean;
 	icon: FontAwesomeIconProps['icon'];
 }
 
 export const AdminPanelToolbar = memo<IAdminPanelToolbarProps>(
-	function AdminPanelToolbar({ actions, children, icon }) {
+	function AdminPanelToolbar({ actionClassName, actions, children, icon }) {
 		return (
 			<div className="mb-4 flex min-w-0 flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between">
 				<AdminPanelTitle className="mb-0" icon={icon}>
 					{children}
 				</AdminPanelTitle>
 				{actions !== undefined && (
-					<div className="flex w-full min-w-0 flex-col items-stretch gap-2 md:w-auto md:flex-row md:flex-wrap md:items-center md:justify-end">
+					<div
+						className={cn(
+							'flex w-full min-w-0 flex-col items-stretch gap-2 md:w-auto md:flex-row md:flex-wrap md:items-center md:justify-end',
+							actionClassName
+						)}
+					>
 						{actions}
 					</div>
 				)}
@@ -842,14 +859,14 @@ export const AdminTable = memo<IAdminTableProps>(function AdminTable({
 	return (
 		<div
 			className={cn(
-				'overflow-x-auto rounded-small border border-default-200/80',
+				'min-w-0 max-w-full overflow-x-auto rounded-small border border-default-200/80',
 				isHighAppearance
 					? 'bg-content1/40 backdrop-blur'
 					: 'bg-default-50/50 dark:bg-default-100/10',
 				className
 			)}
 		>
-			<table className="min-w-full text-left text-small">
+			<table className="w-max min-w-full text-left text-small">
 				{children}
 			</table>
 		</div>

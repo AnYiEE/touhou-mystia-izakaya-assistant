@@ -2,6 +2,10 @@ import { type Transaction, sql } from 'kysely';
 
 import { createAccountHmac } from '@/lib/account/server/crypto';
 import { getAccountDatabase } from '@/lib/account/server/db';
+import {
+	createIpSummary,
+	createUserAgentSummary,
+} from '@/lib/account/server/requestPresentation';
 import { TABLE_NAME_MAP } from '@/lib/db';
 import {
 	type TAccountAuditLog,
@@ -121,6 +125,18 @@ function serializeAuditMetadata(metadata: Record<string, unknown> | undefined) {
 	return serializedValue;
 }
 
+function createAuditMetadata(input: IAuditLogWriteInput) {
+	return {
+		...(input.ipAddress === undefined || input.ipAddress === null
+			? {}
+			: { ip_summary: createIpSummary(input.ipAddress) }),
+		...(input.userAgent === undefined || input.userAgent === null
+			? {}
+			: { user_agent_summary: createUserAgentSummary(input.userAgent) }),
+		...input.metadata,
+	};
+}
+
 function createAuditLogRecord(
 	input: IAuditLogWriteInput,
 	now: number
@@ -131,7 +147,7 @@ function createAuditLogRecord(
 		actor_type: input.actorType,
 		created_at: now,
 		ip_hash: createAuditHash(input.ipAddress),
-		metadata_json: serializeAuditMetadata(input.metadata),
+		metadata_json: serializeAuditMetadata(createAuditMetadata(input)),
 		scope: input.scope,
 		target_id: input.targetId,
 		target_type: input.targetType,

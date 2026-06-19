@@ -58,8 +58,12 @@ function createCredentialStateStaleResponse() {
 	return createNoStoreErrorResponse('credential-state-stale', 409);
 }
 
-function createLoginFailureMetadata(reason: string, username: string) {
-	return { reason, username_digest: username };
+function createLoginFailureMetadata(
+	reason: string,
+	username: string,
+	usernameNormalized: string
+) {
+	return { reason, username, username_normalized: usernameNormalized };
 }
 
 export async function POST(request: NextRequest) {
@@ -115,8 +119,6 @@ export async function POST(request: NextRequest) {
 	}
 
 	const usernameNormalized = userModule.normalizeUsername(username);
-	const usernameDigest =
-		accountAuditModule.createAccountAuditValueDigest(usernameNormalized);
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
 		'login',
@@ -136,7 +138,8 @@ export async function POST(request: NextRequest) {
 				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.loginFailed,
 				metadata: createLoginFailureMetadata(
 					'user-not-found',
-					usernameDigest
+					username,
+					usernameNormalized
 				),
 				request,
 				targetId: null,
@@ -151,7 +154,8 @@ export async function POST(request: NextRequest) {
 				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.loginFailed,
 				metadata: createLoginFailureMetadata(
 					'user-disabled',
-					usernameDigest
+					username,
+					usernameNormalized
 				),
 				request,
 				targetId: user.id,
@@ -166,7 +170,8 @@ export async function POST(request: NextRequest) {
 				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.loginFailed,
 				metadata: createLoginFailureMetadata(
 					'user-deleted',
-					usernameDigest
+					username,
+					usernameNormalized
 				),
 				request,
 				targetId: user.id,
@@ -184,7 +189,8 @@ export async function POST(request: NextRequest) {
 				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.loginFailed,
 				metadata: createLoginFailureMetadata(
 					'credential-missing',
-					usernameDigest
+					username,
+					usernameNormalized
 				),
 				request,
 				targetId: user.id,
@@ -202,7 +208,8 @@ export async function POST(request: NextRequest) {
 				metadata: {
 					...createLoginFailureMetadata(
 						'credential-locked',
-						usernameDigest
+						username,
+						usernameNormalized
 					),
 					retry_after: lockState.retryAfter,
 				},
@@ -228,7 +235,8 @@ export async function POST(request: NextRequest) {
 					metadata: {
 						...createLoginFailureMetadata(
 							'password-invalid-locked',
-							usernameDigest
+							username,
+							usernameNormalized
 						),
 						retry_after: failureState.retryAfter,
 					},
@@ -244,7 +252,8 @@ export async function POST(request: NextRequest) {
 				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.loginFailed,
 				metadata: createLoginFailureMetadata(
 					'password-invalid',
-					usernameDigest
+					username,
+					usernameNormalized
 				),
 				request,
 				targetId: user.id,
@@ -293,7 +302,8 @@ export async function POST(request: NextRequest) {
 				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.loginFailed,
 				metadata: createLoginFailureMetadata(
 					'session-create-failed',
-					usernameDigest
+					username,
+					usernameNormalized
 				),
 				request,
 				targetId: user.id,

@@ -13,11 +13,13 @@ import {
 import { usePathname, useRouter } from 'next/navigation';
 
 import {
+	faBullhorn,
 	faClock,
 	faListCheck,
 	faMagnifyingGlass,
 	faShieldHalved,
 	faUserSlash,
+	faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 
 import { Input } from '@/design/ui/components';
@@ -54,6 +56,7 @@ import {
 	AdminTableHeader,
 	AdminTableRow,
 	adminAdvancedFilterInputClassNames,
+	createAdminUserDisplayName,
 } from '../../components';
 import { trackEvent } from '@/components/analytics';
 import TimeAgo from '@/components/timeAgo';
@@ -196,7 +199,7 @@ const AdminSsoGrantRow = memo<IAdminSsoGrantRowProps>(
 				<AdminTableCell>
 					<AdminEntityCell
 						id={grant.user.id}
-						title={grant.user.nickname ?? grant.user.username}
+						title={createAdminUserDisplayName(grant.user)}
 					/>
 				</AdminTableCell>
 				<AdminTableCell isNowrap>
@@ -215,48 +218,50 @@ const AdminSsoGrantRow = memo<IAdminSsoGrantRowProps>(
 					/>
 				</AdminTableCell>
 				<AdminTableCell isNowrap className="text-right">
-					<AdminTableActionLink
-						href={`/admin/users/${encodeURIComponent(grant.user.id)}`}
-						onPress={() => {
-							trackEvent(
-								trackEvent.category.click,
-								'Admin SSO Grant Button',
-								'Open User',
-								grant.user.id
-							);
-						}}
-					>
-						用户
-					</AdminTableActionLink>
-					<AdminTableActionLink
-						href={`/admin/sso/${encodeURIComponent(grant.client.id)}`}
-						onPress={() => {
-							trackEvent(
-								trackEvent.category.click,
-								'Admin SSO Grant Button',
-								'Open Client',
-								grant.client.id
-							);
-						}}
-					>
-						客户端
-					</AdminTableActionLink>
-					<AdminConfirmButton
-						color="danger"
-						confirmAction={confirmActionKey}
-						confirmLabel="确认撤销"
-						icon={faUserSlash}
-						isDisabled={isMutating && !isRevokingCurrentRow}
-						isLoading={isRevokingCurrentRow}
-						openAction={confirmAction}
-						size="sm"
-						onOpenChange={onOpenChange}
-						onConfirm={() => {
-							onRevoke(grant.client.id, grant.user.id);
-						}}
-					>
-						撤销
-					</AdminConfirmButton>
+					<div className="flex flex-nowrap items-center justify-end gap-2">
+						<AdminTableActionLink
+							href={`/admin/users/${encodeURIComponent(grant.user.id)}`}
+							onPress={() => {
+								trackEvent(
+									trackEvent.category.click,
+									'Admin SSO Grant Button',
+									'Open User',
+									grant.user.id
+								);
+							}}
+						>
+							用户
+						</AdminTableActionLink>
+						<AdminTableActionLink
+							href={`/admin/sso/${encodeURIComponent(grant.client.id)}`}
+							onPress={() => {
+								trackEvent(
+									trackEvent.category.click,
+									'Admin SSO Grant Button',
+									'Open Client',
+									grant.client.id
+								);
+							}}
+						>
+							客户端
+						</AdminTableActionLink>
+						<AdminConfirmButton
+							color="danger"
+							confirmAction={confirmActionKey}
+							confirmLabel="确认撤销"
+							icon={faUserSlash}
+							isDisabled={isMutating && !isRevokingCurrentRow}
+							isLoading={isRevokingCurrentRow}
+							openAction={confirmAction}
+							size="sm"
+							onOpenChange={onOpenChange}
+							onConfirm={() => {
+								onRevoke(grant.client.id, grant.user.id);
+							}}
+						>
+							撤销
+						</AdminConfirmButton>
+					</div>
 				</AdminTableCell>
 			</AdminTableRow>
 		);
@@ -755,9 +760,17 @@ export default function AdminSsoGrantsClient({
 			<AdminShell>
 				<AdminHeader
 					actions={
-						<AdminHeaderActionLink href="/admin/sso">
-							返回SSO客户端
-						</AdminHeaderActionLink>
+						<>
+							<AdminHeaderActionLink href="/admin" icon={faUsers}>
+								用户管理
+							</AdminHeaderActionLink>
+							<AdminHeaderActionLink
+								href="/admin/announcements"
+								icon={faBullhorn}
+							>
+								站点通知
+							</AdminHeaderActionLink>
+						</>
 					}
 					icon={faShieldHalved}
 					subtitle={message ?? '请先返回管理员页登录'}
@@ -773,9 +786,17 @@ export default function AdminSsoGrantsClient({
 		<AdminShell>
 			<AdminHeader
 				actions={
-					<AdminHeaderActionLink href="/admin/sso">
-						返回SSO客户端
-					</AdminHeaderActionLink>
+					<>
+						<AdminHeaderActionLink href="/admin" icon={faUsers}>
+							用户管理
+						</AdminHeaderActionLink>
+						<AdminHeaderActionLink
+							href="/admin/announcements"
+							icon={faBullhorn}
+						>
+							站点通知
+						</AdminHeaderActionLink>
+					</>
 				}
 				icon={faListCheck}
 				title="SSO授权关系"
