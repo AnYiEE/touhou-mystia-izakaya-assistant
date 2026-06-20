@@ -9,10 +9,7 @@ import {
 	readJsonBodyResult,
 } from '@/lib/account/server/routeResponses';
 import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
-import {
-	type IAuthLoginSuccessResponse,
-	type IAuthRegisterBody,
-} from '@/lib/account/shared/types';
+import { type IAuthLoginSuccessResponse } from '@/lib/account/shared/types';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -58,15 +55,21 @@ export async function POST(request: NextRequest) {
 		return cookieSecurityResponse;
 	}
 
-	const bodyResult = await readJsonBodyResult<IAuthRegisterBody>(request);
+	const bodyResult =
+		await readJsonBodyResult<Record<string, unknown>>(request);
 	if (bodyResult.status === 'payload-too-large') {
 		return createNoStoreErrorResponse('payload-too-large', 413);
 	}
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
+	const usernameValue = body?.['username'];
+	const passwordValue = body?.['password'];
+	const nicknameValue = body?.['nickname'];
 	if (
-		body === null ||
-		typeof body.username !== 'string' ||
-		typeof body.password !== 'string'
+		typeof usernameValue !== 'string' ||
+		typeof passwordValue !== 'string' ||
+		(nicknameValue !== undefined &&
+			typeof nicknameValue !== 'string' &&
+			nicknameValue !== null)
 	) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
@@ -85,12 +88,19 @@ export async function POST(request: NextRequest) {
 		import('@/lib/account/server/accountAuditService'),
 	]);
 
-	const username = body.username.trim();
+	const username = usernameValue.trim();
 	if (!userModule.checkUsernamePolicy(username)) {
 		return createNoStoreErrorResponse('invalid-username', 400);
 	}
-	if (!passwordModule.checkPasswordPolicy(body.password)) {
+	if (!passwordModule.checkPasswordPolicy(passwordValue)) {
 		return createNoStoreErrorResponse('invalid-password-rule', 400);
+	}
+	const nickname =
+		nicknameValue === undefined || nicknameValue === null
+			? null
+			: userModule.normalizeNickname(nicknameValue);
+	if (!userModule.checkNicknamePolicy(nickname)) {
+		return createNoStoreErrorResponse('invalid-nickname', 400);
 	}
 
 	const usernameNormalized = userModule.normalizeUsername(username);
@@ -119,7 +129,7 @@ export async function POST(request: NextRequest) {
 	>;
 
 	try {
-		const passwordHash = await passwordModule.hashPassword(body.password);
+		const passwordHash = await passwordModule.hashPassword(passwordValue);
 		session = authModule.createAccountSessionDraft(userId, request, now);
 		user = await usersModule.createUserWithCredentialAndSession(
 			{
@@ -127,7 +137,7 @@ export async function POST(request: NextRequest) {
 				deleted_at: null,
 				id: userId,
 				last_login_at: now,
-				nickname: null,
+				nickname,
 				state_epoch: 0,
 				status: USER_STATUS_MAP.active,
 				updated_at: now,
@@ -154,6 +164,8 @@ export async function POST(request: NextRequest) {
 								accountAuditModule.createAccountAuditValueDigest(
 									session.record.id
 								),
+							nickname,
+							username,
 						},
 						request,
 						userId: createdUser.id,

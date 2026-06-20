@@ -43,6 +43,7 @@ import {
 	AdminEmptyState,
 	AdminFilterActionButton,
 	AdminFilterPanel,
+	AdminFilterReferencePanel,
 	AdminHeader,
 	AdminHeaderActionLink,
 	AdminLoadingState,
@@ -105,6 +106,21 @@ const statusOptions = [
 	{ label: '待投递', value: 'pending' },
 	{ label: '重试中', value: 'retrying' },
 	{ label: '最终失败', value: 'final_failed' },
+] as const;
+
+const callbackFilterReferenceGroups = [
+	{
+		label: '事件',
+		values: eventOptions
+			.filter((option) => option.value !== '')
+			.map((option) => ({ label: option.label, value: option.value })),
+	},
+	{
+		label: '状态',
+		values: statusOptions
+			.filter((option) => option.value !== '')
+			.map((option) => ({ label: option.label, value: option.value })),
+	},
 ] as const;
 
 function checkAdminUnauthorizedActionResult(
@@ -837,7 +853,14 @@ export default function AdminSsoCallbacksClient({
 					value={queryInput}
 					onValueChange={handleQueryInputChange}
 				/>
-				<AdminAdvancedFilterPopover activeCount={advancedFilterCount}>
+				<AdminAdvancedFilterPopover
+					activeCount={advancedFilterCount}
+					reference={
+						<AdminFilterReferencePanel
+							groups={callbackFilterReferenceGroups}
+						/>
+					}
+				>
 					<Input
 						aria-label="按客户端ID过滤"
 						className="w-full"

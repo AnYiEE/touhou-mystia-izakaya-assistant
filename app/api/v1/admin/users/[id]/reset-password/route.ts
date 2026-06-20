@@ -122,7 +122,9 @@ export async function POST(
 						adminId: auth.payload.username,
 						metadata: {
 							must_change_on_next_login: true,
+							target_nickname: user.nickname,
 							target_user_id: id,
+							target_username: user.username,
 						},
 						request,
 						targetId: id,

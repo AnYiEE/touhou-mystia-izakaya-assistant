@@ -41,6 +41,7 @@ import {
 	AdminEntityCell,
 	AdminFilterActionButton,
 	AdminFilterPanel,
+	AdminFilterReferencePanel,
 	AdminHeader,
 	AdminHeaderActionLink,
 	AdminLoadingState,
@@ -90,6 +91,15 @@ const statusOptions = [
 	{ label: '已消费', value: 'used' },
 	{ label: '已撤销', value: 'revoked' },
 	{ label: '已过期', value: 'expired' },
+] as const;
+
+const ticketFilterReferenceGroups = [
+	{
+		label: 'Ticket状态',
+		values: statusOptions
+			.filter((option) => option.value !== '')
+			.map((option) => ({ label: option.label, value: option.value })),
+	},
 ] as const;
 
 function checkAdminUnauthorizedActionResult(
@@ -677,7 +687,14 @@ export default function AdminSsoTicketsClient({
 					value={queryInput}
 					onValueChange={handleQueryInputChange}
 				/>
-				<AdminAdvancedFilterPopover activeCount={advancedFilterCount}>
+				<AdminAdvancedFilterPopover
+					activeCount={advancedFilterCount}
+					reference={
+						<AdminFilterReferencePanel
+							groups={ticketFilterReferenceGroups}
+						/>
+					}
+				>
 					<Input
 						aria-label="按客户端ID过滤"
 						className="w-full"

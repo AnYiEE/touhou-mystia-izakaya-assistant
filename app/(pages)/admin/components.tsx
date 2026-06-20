@@ -459,6 +459,7 @@ interface IAdminAdvancedFilterPopoverProps {
 	activeCount?: number;
 	children: ReactNodeWithoutBoolean;
 	label?: ReactNodeWithoutBoolean;
+	reference?: ReactNodeWithoutBoolean;
 }
 
 export const AdminAdvancedFilterPopover =
@@ -466,6 +467,7 @@ export const AdminAdvancedFilterPopover =
 		activeCount = 0,
 		children,
 		label = '更多筛选',
+		reference,
 	}) {
 		const hasActiveFilter = activeCount > 0;
 
@@ -492,11 +494,76 @@ export const AdminAdvancedFilterPopover =
 					</Button>
 				</PopoverTrigger>
 				<PopoverContent className="w-auto max-w-[calc(100vw-2rem)] p-3">
-					<div className="grid w-72 max-w-full gap-3">{children}</div>
+					<div
+						className={cn(
+							'grid max-w-full gap-3',
+							reference === undefined
+								? 'w-72'
+								: 'w-[min(42rem,calc(100vw-2rem))]'
+						)}
+					>
+						<div
+							className={cn(
+								'grid gap-3',
+								reference !== undefined && 'sm:grid-cols-2'
+							)}
+						>
+							{children}
+						</div>
+						{reference}
+					</div>
 				</PopoverContent>
 			</Popover>
 		);
 	});
+
+interface IAdminFilterReferenceValue {
+	label: string;
+	value: string;
+}
+
+interface IAdminFilterReferenceGroup {
+	label: string;
+	values: ReadonlyArray<IAdminFilterReferenceValue>;
+}
+
+interface IAdminFilterReferencePanelProps {
+	groups: ReadonlyArray<IAdminFilterReferenceGroup>;
+}
+
+export const AdminFilterReferencePanel = memo<IAdminFilterReferencePanelProps>(
+	function AdminFilterReferencePanel({ groups }) {
+		return (
+			<div className="space-y-3 rounded-small border border-default-200 bg-default/20 p-3">
+				<p className="text-small font-medium text-foreground-700">
+					可用值参考
+				</p>
+				{groups.map((group) => (
+					<section key={group.label} className="space-y-1.5">
+						<p className="text-tiny font-medium text-foreground-500">
+							{group.label}
+						</p>
+						<div className="flex flex-wrap gap-1.5">
+							{group.values.map((item) => (
+								<span
+									key={item.value}
+									className="inline-flex min-w-0 items-center gap-1 rounded-small border border-default-200 bg-content1 px-2 py-1 text-tiny"
+								>
+									<code className="break-all font-mono text-foreground-700">
+										{item.value}
+									</code>
+									<span className="text-foreground-500">
+										{item.label}
+									</span>
+								</span>
+							))}
+						</div>
+					</section>
+				))}
+			</div>
+		);
+	}
+);
 
 interface IAdminDropdownFilterProps<TValue extends string> {
 	ariaLabel: string;

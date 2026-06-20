@@ -1,6 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+	type SyntheticEvent,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from 'react';
 
 import { Button, Input } from '@/design/ui/components';
 
@@ -154,6 +160,14 @@ export default function LegacyBackupImport() {
 			});
 	}, [csrfToken, normalizedCode, user]);
 
+	const handleImportSubmit = useCallback(
+		(event: SyntheticEvent<HTMLFormElement>) => {
+			event.preventDefault();
+			handleImport();
+		},
+		[handleImport]
+	);
+
 	const handleCodeChange = useCallback((value: string) => {
 		setCode(value);
 		setMessage(null);
@@ -197,7 +211,7 @@ export default function LegacyBackupImport() {
 	}
 
 	return (
-		<div className="space-y-3">
+		<form className="space-y-3" onSubmit={handleImportSubmit}>
 			<p className="text-small text-foreground-600">
 				输入旧版云端备份码并点击导入，其中保存的套餐数据将被合并到当前账号。导入成功后，该备份码将自动失效。
 			</p>
@@ -224,14 +238,15 @@ export default function LegacyBackupImport() {
 						normalizedCode.length === 0
 					}
 					isLoading={isImporting}
+					type="submit"
 					variant="flat"
-					onPress={handleImport}
 				>
 					导入到账号
 				</Button>
 				<Button
 					color="danger"
 					isDisabled={isImporting || normalizedCode.length === 0}
+					type="button"
 					variant="light"
 					onPress={handleClearCode}
 				>
@@ -248,6 +263,6 @@ export default function LegacyBackupImport() {
 					</span>
 				)}
 			</div>
-		</div>
+		</form>
 	);
 }

@@ -16,6 +16,7 @@ import {
 	faArrowRightFromBracket,
 	faBullhorn,
 	faChevronDown,
+	faClipboardList,
 	faClock,
 	faKey,
 	faMagnifyingGlass,
@@ -152,46 +153,56 @@ const AdminLoginPanel = memo<IAdminLoginPanelProps>(function AdminLoginPanel({
 	trimmedUsername,
 	username,
 }) {
+	const handleSubmit = useCallback(
+		(event: SyntheticEvent<HTMLFormElement>) => {
+			event.preventDefault();
+			onLogin();
+		},
+		[onLogin]
+	);
+
 	return (
 		<AdminPanel className="space-y-4">
 			<AdminPanelTitle icon={faUser}>管理员凭据</AdminPanelTitle>
-			<Input
-				autoComplete="username"
-				label="管理员用户名"
-				startContent={<AdminInputIcon icon={faUser} />}
-				value={username}
-				onValueChange={onUsernameChange}
-			/>
-			<Input
-				autoComplete="current-password"
-				label="管理员密码"
-				startContent={<AdminInputIcon icon={faKey} />}
-				type="password"
-				value={password}
-				onValueChange={onPasswordChange}
-			/>
-			<Button
-				fullWidth
-				color="primary"
-				isDisabled={
-					isAdminActionLoading ||
-					trimmedUsername.length === 0 ||
-					password.length === 0
-				}
-				isLoading={isAdminActionLoading}
-				startContent={
-					isAdminActionLoading ? null : (
-						<FontAwesomeIcon
-							icon={faShieldHalved}
-							className="w-3.5"
-						/>
-					)
-				}
-				variant="flat"
-				onPress={onLogin}
-			>
-				登录
-			</Button>
+			<form className="space-y-4" onSubmit={handleSubmit}>
+				<Input
+					autoComplete="username"
+					label="管理员用户名"
+					startContent={<AdminInputIcon icon={faUser} />}
+					value={username}
+					onValueChange={onUsernameChange}
+				/>
+				<Input
+					autoComplete="current-password"
+					label="管理员密码"
+					startContent={<AdminInputIcon icon={faKey} />}
+					type="password"
+					value={password}
+					onValueChange={onPasswordChange}
+				/>
+				<Button
+					fullWidth
+					color="primary"
+					isDisabled={
+						isAdminActionLoading ||
+						trimmedUsername.length === 0 ||
+						password.length === 0
+					}
+					isLoading={isAdminActionLoading}
+					startContent={
+						isAdminActionLoading ? null : (
+							<FontAwesomeIcon
+								icon={faShieldHalved}
+								className="w-3.5"
+							/>
+						)
+					}
+					type="submit"
+					variant="flat"
+				>
+					登录
+				</Button>
+			</form>
 			{message !== null && <AdminMessage message={message} />}
 		</AdminPanel>
 	);
@@ -1042,6 +1053,19 @@ export default function AdminPageClient({
 							onPress={handleOpenSsoClientList}
 						>
 							SSO客户端
+						</AdminHeaderActionLink>
+						<AdminHeaderActionLink
+							href="/admin/audit?scope=account"
+							icon={faClipboardList}
+							onPress={() => {
+								trackEvent(
+									trackEvent.category.click,
+									'Admin Audit Button',
+									'Open Account Audit'
+								);
+							}}
+						>
+							审计日志
 						</AdminHeaderActionLink>
 						<Button
 							isDisabled={isAdminActionLoading}

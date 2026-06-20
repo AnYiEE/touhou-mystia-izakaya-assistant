@@ -75,6 +75,17 @@ export async function POST(
 		import('@/lib/account/server/repositories/users'),
 		import('@/lib/account/server/accountAuditService'),
 	]);
+	const user = await usersModule.findUserById(id);
+	if (user === null) {
+		return createNoStoreErrorResponse('target-user-not-found', 404);
+	}
+	if (user.status === USER_STATUS_MAP.deleted) {
+		return createNoStoreErrorResponse('user-deleted', 403);
+	}
+	if (user.status !== USER_STATUS_MAP.disabled) {
+		return createNoStoreErrorResponse('update-not-applied', 409);
+	}
+
 	const isUpdated = await usersModule.setUserStatusIfCurrentStatusWithAudit(
 		id,
 		USER_STATUS_MAP.disabled,
@@ -90,7 +101,9 @@ export async function POST(
 					metadata: {
 						next_status: USER_STATUS_MAP.active,
 						previous_status: USER_STATUS_MAP.disabled,
+						target_nickname: user.nickname,
 						target_user_id: id,
+						target_username: user.username,
 					},
 					request,
 					targetId: id,
@@ -101,17 +114,6 @@ export async function POST(
 	);
 	if (isUpdated) {
 		return createNoStoreJsonResponse({ message: 'user-enabled' });
-	}
-
-	const user = await usersModule.findUserById(id);
-	if (user === null) {
-		return createNoStoreErrorResponse('target-user-not-found', 404);
-	}
-	if (user.status === USER_STATUS_MAP.deleted) {
-		return createNoStoreErrorResponse('user-deleted', 403);
-	}
-	if (user.status !== USER_STATUS_MAP.disabled) {
-		return createNoStoreErrorResponse('update-not-applied', 409);
 	}
 
 	return createNoStoreErrorResponse('update-not-applied', 409);

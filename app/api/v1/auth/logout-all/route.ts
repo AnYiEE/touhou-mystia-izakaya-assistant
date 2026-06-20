@@ -80,6 +80,8 @@ export async function POST(request: NextRequest) {
 									auth.data.session.id
 								),
 							deleted_record_count: deletedSessionCount,
+							nickname: auth.data.user.nickname,
+							username: auth.data.user.username,
 						},
 						request,
 						userId: auth.data.user.id,

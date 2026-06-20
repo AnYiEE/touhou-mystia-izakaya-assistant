@@ -121,10 +121,12 @@ async function submitSsoAuthorizeAgree(
 							.authorizeSsoClient,
 						metadata: {
 							client_id: context.client_id,
+							nickname: auth.data.user.nickname,
 							redirect_uri_digest:
 								accountAuditModule.createAccountAuditValueDigest(
 									context.redirect_uri
 								),
+							username: auth.data.user.username,
 						},
 						request,
 						userId: auth.data.user.id,

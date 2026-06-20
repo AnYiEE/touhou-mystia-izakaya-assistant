@@ -2,6 +2,7 @@
 
 import {
 	type PropsWithChildren,
+	type SyntheticEvent,
 	memo,
 	useCallback,
 	useEffect,
@@ -241,6 +242,14 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 		user,
 	]);
 
+	const handlePasswordChangeSubmit = useCallback(
+		(event: SyntheticEvent<HTMLFormElement>) => {
+			event.preventDefault();
+			handlePasswordChange();
+		},
+		[handlePasswordChange]
+	);
+
 	const handleLogout = useCallback(() => {
 		if (isSubmitting || user === null) {
 			return;
@@ -378,72 +387,81 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 							</div>
 						</PasswordChangePanel>
 
-						<PasswordChangePanel className="space-y-3">
+						<PasswordChangePanel>
 							<PasswordChangePanelTitle icon={faKey}>
 								设置新密码
 							</PasswordChangePanelTitle>
-							<Input
-								autoComplete="current-password"
-								errorMessage={
-									passwordChangeErrorMessage ?? undefined
-								}
-								isInvalid={passwordChangeErrorMessage !== null}
-								label="当前临时密码"
-								placeholder="输入管理员提供或刚登录使用的密码"
-								startContent={
-									<PasswordChangeInputIcon
-										icon={faShieldHalved}
-									/>
-								}
-								type="password"
-								value={currentPassword}
-								onValueChange={handleCurrentPasswordChange}
-							/>
-							<Input
-								autoComplete="new-password"
-								description={PASSWORD_RULE_DESCRIPTION}
-								errorMessage={
-									isNewPasswordInvalid
-										? PASSWORD_RULE_DESCRIPTION
-										: undefined
-								}
-								isInvalid={isNewPasswordInvalid}
-								label="新密码"
-								placeholder="输入之后要长期使用的新密码"
-								startContent={
-									<PasswordChangeInputIcon icon={faKey} />
-								}
-								type="password"
-								value={newPassword}
-								onValueChange={setNewPassword}
-							/>
-							{messageText !== null && (
-								<p
-									aria-live="assertive"
-									className="rounded-small bg-danger/10 px-3 py-2 text-small text-danger-700 dark:text-danger"
-									role="alert"
-								>
-									{messageText}
-								</p>
-							)}
-							<Button
-								fullWidth
-								color="danger"
-								isDisabled={isSubmitting || !isPasswordReady}
-								isLoading={isSubmitting}
-								startContent={
-									isSubmitting ? null : (
-										<FontAwesomeIcon
-											icon={faCheck}
-											className="w-4"
-										/>
-									)
-								}
-								variant="flat"
-								onPress={handlePasswordChange}
+							<form
+								className="space-y-3"
+								onSubmit={handlePasswordChangeSubmit}
 							>
-								更新密码后继续
-							</Button>
+								<Input
+									autoComplete="current-password"
+									errorMessage={
+										passwordChangeErrorMessage ?? undefined
+									}
+									isInvalid={
+										passwordChangeErrorMessage !== null
+									}
+									label="当前临时密码"
+									placeholder="输入管理员提供或刚登录使用的密码"
+									startContent={
+										<PasswordChangeInputIcon
+											icon={faShieldHalved}
+										/>
+									}
+									type="password"
+									value={currentPassword}
+									onValueChange={handleCurrentPasswordChange}
+								/>
+								<Input
+									autoComplete="new-password"
+									description={PASSWORD_RULE_DESCRIPTION}
+									errorMessage={
+										isNewPasswordInvalid
+											? PASSWORD_RULE_DESCRIPTION
+											: undefined
+									}
+									isInvalid={isNewPasswordInvalid}
+									label="新密码"
+									placeholder="输入之后要长期使用的新密码"
+									startContent={
+										<PasswordChangeInputIcon icon={faKey} />
+									}
+									type="password"
+									value={newPassword}
+									onValueChange={setNewPassword}
+								/>
+								{messageText !== null && (
+									<p
+										aria-live="assertive"
+										className="rounded-small bg-danger/10 px-3 py-2 text-small text-danger-700 dark:text-danger"
+										role="alert"
+									>
+										{messageText}
+									</p>
+								)}
+								<Button
+									fullWidth
+									color="danger"
+									isDisabled={
+										isSubmitting || !isPasswordReady
+									}
+									isLoading={isSubmitting}
+									startContent={
+										isSubmitting ? null : (
+											<FontAwesomeIcon
+												icon={faCheck}
+												className="w-4"
+											/>
+										)
+									}
+									type="submit"
+									variant="flat"
+								>
+									更新密码后继续
+								</Button>
+							</form>
 						</PasswordChangePanel>
 					</div>
 

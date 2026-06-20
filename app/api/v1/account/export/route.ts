@@ -75,7 +75,9 @@ export async function GET(request: NextRequest) {
 				.accountDataExported,
 			metadata: {
 				namespace_count: snapshot.state.length,
+				nickname: snapshot.user.nickname,
 				state_epoch: snapshot.user.state_epoch,
+				username: snapshot.user.username,
 			},
 			request,
 			userId: auth.data.user.id,

@@ -289,6 +289,8 @@ export async function POST(request: NextRequest) {
 					metadata: {
 						must_change_on_next_login:
 							credential.password_must_change === 1,
+						nickname: user.nickname,
+						username: user.username,
 					},
 					request,
 					userId: user.id,

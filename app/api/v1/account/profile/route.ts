@@ -28,30 +28,36 @@ export const dynamic = 'force-dynamic';
 function createNicknameAuditMetadata({
 	newNickname,
 	oldNickname,
+	oldUsername,
 	result,
 }: {
 	newNickname: string | null;
 	oldNickname: string | null;
+	oldUsername: string;
 	result: string;
 }) {
 	return {
 		new_nickname: newNickname,
 		new_nickname_empty: newNickname === null,
+		nickname: oldNickname,
 		old_nickname: oldNickname,
 		old_nickname_empty: oldNickname === null,
 		result,
+		username: oldUsername,
 	};
 }
 
 function createUsernameAuditMetadata({
 	newUsername,
 	newUsernameNormalized,
+	oldNickname,
 	oldUsername,
 	oldUsernameNormalized,
 	result,
 }: {
 	newUsername: string;
 	newUsernameNormalized: string;
+	oldNickname: string | null;
 	oldUsername: string;
 	oldUsernameNormalized: string;
 	result: string;
@@ -59,9 +65,11 @@ function createUsernameAuditMetadata({
 	return {
 		new_username: newUsername,
 		new_username_normalized: newUsernameNormalized,
+		nickname: oldNickname,
 		old_username: oldUsername,
 		old_username_normalized: oldUsernameNormalized,
 		result,
+		username: oldUsername,
 	};
 }
 
@@ -290,6 +298,7 @@ export async function POST(request: NextRequest) {
 		? createNicknameAuditMetadata({
 				newNickname: nickname ?? null,
 				oldNickname,
+				oldUsername,
 				result: 'ok',
 			})
 		: undefined;
@@ -306,6 +315,7 @@ export async function POST(request: NextRequest) {
 		usernameMetadata = createUsernameAuditMetadata({
 			newUsername: nextUsername,
 			newUsernameNormalized: nextUsernameNormalized,
+			oldNickname,
 			oldUsername,
 			oldUsernameNormalized,
 			result: 'ok',
@@ -323,6 +333,7 @@ export async function POST(request: NextRequest) {
 				usernameMetadata: createUsernameAuditMetadata({
 					newUsername: nextUsername,
 					newUsernameNormalized: nextUsernameNormalized,
+					oldNickname,
 					oldUsername,
 					oldUsernameNormalized,
 					result: 'credential-locked',
@@ -355,6 +366,7 @@ export async function POST(request: NextRequest) {
 					usernameMetadata: createUsernameAuditMetadata({
 						newUsername: nextUsername,
 						newUsernameNormalized: nextUsernameNormalized,
+						oldNickname,
 						oldUsername,
 						oldUsernameNormalized,
 						result: 'credential-locked-after-failure',
@@ -380,6 +392,7 @@ export async function POST(request: NextRequest) {
 				usernameMetadata: createUsernameAuditMetadata({
 					newUsername: nextUsername,
 					newUsernameNormalized: nextUsernameNormalized,
+					oldNickname,
 					oldUsername,
 					oldUsernameNormalized,
 					result: 'invalid-current-password',

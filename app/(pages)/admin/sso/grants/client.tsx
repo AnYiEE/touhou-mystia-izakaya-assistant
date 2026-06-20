@@ -38,6 +38,7 @@ import {
 	AdminEntityCell,
 	AdminFilterActionButton,
 	AdminFilterPanel,
+	AdminFilterReferencePanel,
 	AdminHeader,
 	AdminHeaderActionLink,
 	AdminLoadingState,
@@ -114,6 +115,21 @@ const userStatusOptions = [
 	{ label: '正常用户', value: 'active' },
 	{ label: '已禁用用户', value: 'disabled' },
 	{ label: '已删除用户', value: 'deleted' },
+] as const;
+
+const grantFilterReferenceGroups = [
+	{
+		label: '客户端状态',
+		values: clientStatusOptions
+			.filter((option) => option.value !== '')
+			.map((option) => ({ label: option.label, value: option.value })),
+	},
+	{
+		label: '用户状态',
+		values: userStatusOptions
+			.filter((option) => option.value !== '')
+			.map((option) => ({ label: option.label, value: option.value })),
+	},
 ] as const;
 
 function checkAdminUnauthorizedActionResult(
@@ -830,6 +846,11 @@ export default function AdminSsoGrantsClient({
 				<AdminAdvancedFilterPopover
 					activeCount={
 						[clientIdFilter, userIdFilter].filter(Boolean).length
+					}
+					reference={
+						<AdminFilterReferencePanel
+							groups={grantFilterReferenceGroups}
+						/>
 					}
 				>
 					<Input

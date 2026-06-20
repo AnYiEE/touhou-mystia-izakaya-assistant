@@ -85,10 +85,12 @@ export async function DELETE(
 					action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
 						.sessionRevoked,
 					metadata: {
+						nickname: auth.data.user.nickname,
 						target_record_digest:
 							accountAuditModule.createAccountAuditValueDigest(
 								sessionId
 							),
+						username: auth.data.user.username,
 					},
 					request,
 					userId: auth.data.user.id,

@@ -78,6 +78,8 @@ export async function DELETE(request: NextRequest) {
 							accountAuditModule.createAccountAuditValueDigest(
 								auth.data.session.id
 							),
+						nickname: auth.data.user.nickname,
+						username: auth.data.user.username,
 					},
 					request,
 					userId: auth.data.user.id,

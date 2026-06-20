@@ -74,7 +74,11 @@ export async function DELETE(request: NextRequest) {
 						accountAuditModule.createAccountUserAuditLogInput({
 							action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
 								.accountDataCleared,
-							metadata: { state_epoch: nextStateEpoch },
+							metadata: {
+								nickname: auth.data.user.nickname,
+								state_epoch: nextStateEpoch,
+								username: auth.data.user.username,
+							},
 							request,
 							userId: auth.data.user.id,
 						}),

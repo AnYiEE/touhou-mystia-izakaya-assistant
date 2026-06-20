@@ -1,7 +1,9 @@
 'use client';
 
 import {
+	type ChangeEvent,
 	type PropsWithChildren,
+	type SyntheticEvent,
 	memo,
 	useCallback,
 	useEffect,
@@ -19,6 +21,7 @@ import {
 } from '@fortawesome/react-fontawesome';
 import {
 	faArrowRightFromBracket,
+	faCheck,
 	faCloudArrowUp,
 	faDesktop,
 	faDownload,
@@ -39,6 +42,8 @@ import {
 	Card,
 	type IButtonProps,
 	Input,
+	Link,
+	Modal,
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
@@ -46,10 +51,11 @@ import {
 	cn,
 } from '@/design/ui/components';
 
+import AccountSyncStatus from './accountSyncStatus';
+import LegalStatement from '@/(pages)/about/legalStatement';
 import { trackEvent } from '@/components/analytics';
 import Heading from '@/components/heading';
 import TimeAgo from '@/components/timeAgo';
-import AccountSyncStatus from './accountSyncStatus';
 
 import {
 	AccountApiError,
@@ -450,6 +456,9 @@ export default memo<IProps>(function AccountManager() {
 		string | null
 	>(null);
 	const [password, setPassword] = useState('');
+	const [hasAcceptedAuthTerms, setHasAcceptedAuthTerms] = useState(false);
+	const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
+	const [registrationNickname, setRegistrationNickname] = useState('');
 	const [username, setUsername] = useState('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isSessionListLoading, setIsSessionListLoading] = useState(false);
@@ -492,6 +501,12 @@ export default memo<IProps>(function AccountManager() {
 		authMode === 'register' &&
 		password.length > 0 &&
 		!checkPasswordPolicy(password);
+	const normalizedRegistrationNickname =
+		normalizeNickname(registrationNickname);
+	const isRegistrationNicknameInvalid =
+		authMode === 'register' &&
+		normalizedRegistrationNickname !== null &&
+		!checkNicknamePolicy(normalizedRegistrationNickname);
 	const isNewPasswordInvalid =
 		newPassword.length > 0 && !checkPasswordPolicy(newPassword);
 	const normalizedProfileUsername = profileUsername.trim();
@@ -532,13 +547,27 @@ export default memo<IProps>(function AccountManager() {
 		if (normalizedUsername !== username) {
 			setUsername(normalizedUsername);
 		}
+		if (authMode === 'register') {
+			const normalizedNicknameText = normalizedRegistrationNickname ?? '';
+			if (normalizedNicknameText !== registrationNickname) {
+				setRegistrationNickname(normalizedNicknameText);
+			}
+		}
 
 		if (normalizedUsername.length === 0 || password.length === 0) {
 			setMessage('请输入用户名和密码');
 			return;
 		}
+		if (!hasAcceptedAuthTerms) {
+			setMessage('请先阅读并同意法律声明');
+			return;
+		}
 		if (authMode === 'register' && !checkPasswordPolicy(password)) {
 			setMessage(PASSWORD_RULE_DESCRIPTION);
+			return;
+		}
+		if (isRegistrationNicknameInvalid) {
+			setMessage('invalid-nickname');
 			return;
 		}
 
@@ -556,8 +585,15 @@ export default memo<IProps>(function AccountManager() {
 			expectedUserId: accountStore.shared.user.get()?.id ?? null,
 		};
 
-		const request = authMode === 'login' ? loginAccount : registerAccount;
-		void request({ password, username: normalizedUsername })
+		const request =
+			authMode === 'login'
+				? loginAccount({ password, username: normalizedUsername })
+				: registerAccount({
+						nickname: normalizedRegistrationNickname,
+						password,
+						username: normalizedUsername,
+					});
+		void request
 			.then((result) => {
 				if (result.status === 'error') {
 					setMessage(result.message);
@@ -605,7 +641,26 @@ export default memo<IProps>(function AccountManager() {
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [authMode, isSsoContext, isSubmitting, password, router, username]);
+	}, [
+		authMode,
+		hasAcceptedAuthTerms,
+		isRegistrationNicknameInvalid,
+		isSsoContext,
+		isSubmitting,
+		normalizedRegistrationNickname,
+		password,
+		registrationNickname,
+		router,
+		username,
+	]);
+
+	const handleAuthSubmit = useCallback(
+		(event: SyntheticEvent<HTMLFormElement>) => {
+			event.preventDefault();
+			handleAuth();
+		},
+		[handleAuth]
+	);
 
 	const handleLoginModePress = useCallback(() => {
 		trackEvent(
@@ -626,6 +681,13 @@ export default memo<IProps>(function AccountManager() {
 		setAuthMode('register');
 		setMessage(null);
 	}, []);
+
+	const handleAuthTermsAcceptedChange = useCallback(
+		(event: ChangeEvent<HTMLInputElement>) => {
+			setHasAcceptedAuthTerms(event.currentTarget.checked);
+		},
+		[]
+	);
 
 	const handleCurrentPasswordChange = useCallback((value: string) => {
 		setCurrentPassword(value);
@@ -731,6 +793,14 @@ export default memo<IProps>(function AccountManager() {
 		passwordMustChange,
 		user,
 	]);
+
+	const handlePasswordChangeSubmit = useCallback(
+		(event: SyntheticEvent<HTMLFormElement>) => {
+			event.preventDefault();
+			handlePasswordChange();
+		},
+		[handlePasswordChange]
+	);
 
 	const handleProfileUsernameChange = useCallback((value: string) => {
 		setProfileUsername(value);
@@ -888,6 +958,14 @@ export default memo<IProps>(function AccountManager() {
 		router,
 		user,
 	]);
+
+	const handleProfileChangeSubmit = useCallback(
+		(event: SyntheticEvent<HTMLFormElement>) => {
+			event.preventDefault();
+			handleProfileChange();
+		},
+		[handleProfileChange]
+	);
 
 	const logoutAfterFlush = useCallback(
 		(
@@ -1756,11 +1834,17 @@ export default memo<IProps>(function AccountManager() {
 		user === null && messageText !== null && !isMessageSuccess
 			? messageText
 			: null;
+	const registrationNicknameErrorMessage =
+		authMode === 'register' && message === 'invalid-nickname'
+			? authErrorMessage
+			: null;
+	const authCredentialErrorMessage =
+		registrationNicknameErrorMessage === null ? authErrorMessage : null;
 	const accountStatusMessage =
 		messageText !== null && authErrorMessage === null ? messageText : null;
 	const accountStatusDescription = accountStatusMessage ?? '账号同步已连接';
 	const passwordDescription =
-		authErrorMessage === null
+		authCredentialErrorMessage === null
 			? authMode === 'register'
 				? PASSWORD_RULE_DESCRIPTION
 				: '使用账号密码登录'
@@ -1849,11 +1933,11 @@ export default memo<IProps>(function AccountManager() {
 								注册
 							</Button>
 						</div>
-						<div className="space-y-3">
+						<form onSubmit={handleAuthSubmit}>
 							<Input
 								autoComplete="username"
 								description={USERNAME_RULE_DESCRIPTION}
-								isInvalid={authErrorMessage !== null}
+								isInvalid={authCredentialErrorMessage !== null}
 								label="用户名"
 								placeholder="输入账号用户名"
 								startContent={
@@ -1862,60 +1946,151 @@ export default memo<IProps>(function AccountManager() {
 								value={username}
 								onValueChange={setUsername}
 							/>
-							<Input
-								autoComplete={
-									authMode === 'login'
-										? 'current-password'
-										: 'new-password'
-								}
-								description={passwordDescription}
-								errorMessage={
-									isRegistrationPasswordInvalid
-										? PASSWORD_RULE_DESCRIPTION
-										: (authErrorMessage ?? undefined)
-								}
-								isInvalid={
+							<AccountCollapseMotion motionKey="registration-nickname">
+								{authMode === 'register' ? (
+									<div className="pt-3">
+										<Input
+											autoComplete="nickname"
+											description={
+												NICKNAME_RULE_DESCRIPTION
+											}
+											errorMessage={
+												isRegistrationNicknameInvalid
+													? NICKNAME_RULE_DESCRIPTION
+													: (registrationNicknameErrorMessage ??
+														undefined)
+											}
+											isInvalid={
+												isRegistrationNicknameInvalid ||
+												registrationNicknameErrorMessage !==
+													null
+											}
+											label="昵称（可选）"
+											placeholder="设置显示名称"
+											startContent={
+												<AccountInputIcon
+													icon={faUser}
+												/>
+											}
+											value={registrationNickname}
+											onValueChange={
+												setRegistrationNickname
+											}
+										/>
+									</div>
+								) : null}
+							</AccountCollapseMotion>
+							<div className="mt-3">
+								<Input
+									autoComplete={
+										authMode === 'login'
+											? 'current-password'
+											: 'new-password'
+									}
+									description={passwordDescription}
+									errorMessage={
+										isRegistrationPasswordInvalid
+											? PASSWORD_RULE_DESCRIPTION
+											: (authCredentialErrorMessage ??
+												undefined)
+									}
+									isInvalid={
+										isRegistrationPasswordInvalid ||
+										authCredentialErrorMessage !== null
+									}
+									label="密码"
+									placeholder={
+										authMode === 'login'
+											? '输入密码'
+											: '设置登录密码'
+									}
+									startContent={
+										<AccountInputIcon icon={faKey} />
+									}
+									type="password"
+									value={password}
+									onValueChange={setPassword}
+								/>
+							</div>
+							<div className="mt-2 flex flex-wrap items-center gap-y-1 px-1 text-tiny leading-5 text-foreground-500">
+								<input
+									id="account-auth-terms-confirmation"
+									checked={hasAcceptedAuthTerms}
+									className="peer sr-only"
+									type="checkbox"
+									onChange={handleAuthTermsAcceptedChange}
+								/>
+								<label
+									htmlFor="account-auth-terms-confirmation"
+									className="group inline-flex min-w-0 cursor-pointer items-center gap-1.5 rounded-small outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-focus peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background"
+								>
+									<span
+										aria-hidden
+										className={cn(
+											'flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-small border transition-all duration-200 ease-out active:scale-90 motion-reduce:transition-none',
+											hasAcceptedAuthTerms
+												? 'border-primary bg-primary text-primary-foreground'
+												: 'border-default-300 bg-transparent text-transparent group-hover:border-primary-400'
+										)}
+									>
+										<FontAwesomeIcon
+											icon={faCheck}
+											className={cn(
+												'!h-2 !w-2 transition-transform duration-200 ease-out motion-reduce:transition-none',
+												hasAcceptedAuthTerms
+													? 'scale-100'
+													: 'scale-0'
+											)}
+										/>
+									</span>
+									<span>我已阅读并同意</span>
+								</label>
+								<Link
+									color="primary"
+									className="cursor-pointer rounded-small text-tiny"
+									classNames={{ underline: 'bottom-0' }}
+									onPress={() => {
+										trackEvent(
+											trackEvent.category.click,
+											'Account Auth Button',
+											'Open Legal Statement'
+										);
+										setIsLegalModalOpen(true);
+									}}
+								>
+									法律声明
+								</Link>
+							</div>
+							<Button
+								fullWidth
+								className="mt-4"
+								color="primary"
+								isDisabled={
+									username.trim().length === 0 ||
+									password.length === 0 ||
+									!hasAcceptedAuthTerms ||
 									isRegistrationPasswordInvalid ||
-									authErrorMessage !== null
+									isRegistrationNicknameInvalid
 								}
-								label="密码"
-								placeholder={
-									authMode === 'login'
-										? '输入密码'
-										: '设置登录密码'
+								isLoading={isSubmitting}
+								startContent={
+									isSubmitting ? null : (
+										<FontAwesomeIcon
+											icon={
+												authMode === 'login'
+													? faRightToBracket
+													: faUserPlus
+											}
+											className="w-4"
+										/>
+									)
 								}
-								startContent={<AccountInputIcon icon={faKey} />}
-								type="password"
-								value={password}
-								onValueChange={setPassword}
-							/>
-						</div>
-						<Button
-							fullWidth
-							color="primary"
-							isDisabled={
-								username.trim().length === 0 ||
-								password.length === 0 ||
-								isRegistrationPasswordInvalid
-							}
-							isLoading={isSubmitting}
-							startContent={
-								isSubmitting ? null : (
-									<FontAwesomeIcon
-										icon={
-											authMode === 'login'
-												? faRightToBracket
-												: faUserPlus
-										}
-										className="w-4"
-									/>
-								)
-							}
-							variant="flat"
-							onPress={handleAuth}
-						>
-							{authMode === 'login' ? '登录账号' : '创建账号'}
-						</Button>
+								type="submit"
+								variant="flat"
+							>
+								{authMode === 'login' ? '登录账号' : '创建账号'}
+							</Button>
+						</form>
 					</AccountPanel>
 					<AccountPanel className="space-y-3 text-small leading-6 text-foreground-600">
 						<AccountPanelTitle
@@ -2005,65 +2180,30 @@ export default memo<IProps>(function AccountManager() {
 								{passwordMustChange ? '更新密码' : '账号设置'}
 							</AccountPanelTitle>
 							{!passwordMustChange && (
-								<div>
-									<div className="space-y-3">
-										<Input
-											autoComplete="nickname"
-											description={
-												NICKNAME_RULE_DESCRIPTION
-											}
-											errorMessage={
-												isProfileNicknameInvalid
-													? NICKNAME_RULE_DESCRIPTION
-													: (profileNicknameErrorMessage ??
-														undefined)
-											}
-											isInvalid={
-												isProfileNicknameInvalid ||
-												profileNicknameErrorMessage !==
-													null
-											}
-											label="昵称"
-											placeholder="显示名称"
-											startContent={
-												<AccountInputIcon
-													icon={faUser}
-												/>
-											}
-											value={profileNickname}
-											onValueChange={
-												handleProfileNicknameChange
-											}
-										/>
-										<Input
-											autoComplete="username"
-											description={
-												USERNAME_RULE_DESCRIPTION
-											}
-											errorMessage={
-												isProfileUsernameInvalid
-													? USERNAME_RULE_DESCRIPTION
-													: (profileUsernameErrorMessage ??
-														undefined)
-											}
-											isInvalid={
-												isProfileUsernameInvalid ||
-												profileUsernameErrorMessage !==
-													null
-											}
-											label="用户名"
-											placeholder="输入新用户名"
-											startContent={
-												<AccountInputIcon
-													icon={faUser}
-												/>
-											}
-											value={profileUsername}
-											onValueChange={
-												handleProfileUsernameChange
-											}
-										/>
-									</div>
+								<form onSubmit={handleProfileChangeSubmit}>
+									<Input
+										autoComplete="username"
+										description={USERNAME_RULE_DESCRIPTION}
+										errorMessage={
+											isProfileUsernameInvalid
+												? USERNAME_RULE_DESCRIPTION
+												: (profileUsernameErrorMessage ??
+													undefined)
+										}
+										isInvalid={
+											isProfileUsernameInvalid ||
+											profileUsernameErrorMessage !== null
+										}
+										label="用户名"
+										placeholder="输入新用户名"
+										startContent={
+											<AccountInputIcon icon={faUser} />
+										}
+										value={profileUsername}
+										onValueChange={
+											handleProfileUsernameChange
+										}
+									/>
 									<AccountCollapseMotion motionKey="profile-current-password">
 										{isProfileCurrentPasswordRequired ? (
 											<div className="pt-3">
@@ -2096,6 +2236,36 @@ export default memo<IProps>(function AccountManager() {
 											</div>
 										) : null}
 									</AccountCollapseMotion>
+									<div className="mt-3">
+										<Input
+											autoComplete="nickname"
+											description={
+												NICKNAME_RULE_DESCRIPTION
+											}
+											errorMessage={
+												isProfileNicknameInvalid
+													? NICKNAME_RULE_DESCRIPTION
+													: (profileNicknameErrorMessage ??
+														undefined)
+											}
+											isInvalid={
+												isProfileNicknameInvalid ||
+												profileNicknameErrorMessage !==
+													null
+											}
+											label="昵称"
+											placeholder="显示名称"
+											startContent={
+												<AccountInputIcon
+													icon={faUser}
+												/>
+											}
+											value={profileNickname}
+											onValueChange={
+												handleProfileNicknameChange
+											}
+										/>
+									</div>
 									<Button
 										className="mt-3"
 										fullWidth
@@ -2120,19 +2290,20 @@ export default memo<IProps>(function AccountManager() {
 												/>
 											)
 										}
+										type="submit"
 										variant="flat"
-										onPress={handleProfileChange}
 									>
 										保存资料
 									</Button>
-								</div>
+								</form>
 							)}
-							<div
+							<form
 								className={cn(
 									'space-y-3',
 									!passwordMustChange &&
 										'border-t border-default-200/80 pt-4'
 								)}
+								onSubmit={handlePasswordChangeSubmit}
 							>
 								{passwordMustChange && (
 									<p className="text-small leading-5 text-danger-600 dark:text-danger">
@@ -2190,14 +2361,14 @@ export default memo<IProps>(function AccountManager() {
 											/>
 										)
 									}
+									type="submit"
 									variant="flat"
-									onPress={handlePasswordChange}
 								>
 									{passwordMustChange
 										? '更新密码后继续'
 										: '修改密码'}
 								</Button>
-							</div>
+							</form>
 						</AccountPanel>
 					</div>
 					{!passwordMustChange && (
@@ -2665,6 +2836,15 @@ export default memo<IProps>(function AccountManager() {
 					)}
 				</div>
 			)}
+			<Modal
+				isOpen={isLegalModalOpen}
+				size="2xl"
+				onClose={() => {
+					setIsLegalModalOpen(false);
+				}}
+			>
+				<LegalStatement />
+			</Modal>
 		</div>
 	);
 });

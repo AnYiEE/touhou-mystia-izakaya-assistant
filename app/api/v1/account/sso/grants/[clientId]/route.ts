@@ -90,8 +90,10 @@ export async function DELETE(
 			actorType: 'user',
 			metadata: {
 				client_id: clientId,
+				nickname: auth.data.user.nickname,
 				reason: 'user-revoke-grant',
 				user_id: auth.data.user.id,
+				username: auth.data.user.username,
 			},
 			scope: 'sso',
 			targetId: `${clientId}:${auth.data.user.id}`,
@@ -102,7 +104,11 @@ export async function DELETE(
 			accountAuditModule.createAccountUserAuditLogInput({
 				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
 					.ssoGrantRevoked,
-				metadata: { client_id: clientId },
+				metadata: {
+					client_id: clientId,
+					nickname: auth.data.user.nickname,
+					username: auth.data.user.username,
+				},
 				request,
 				userId: auth.data.user.id,
 			})

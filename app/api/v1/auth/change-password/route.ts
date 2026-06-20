@@ -133,7 +133,11 @@ export async function POST(request: NextRequest) {
 			accountAuditModule.createAccountUserAuditLogInput({
 				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
 					.passwordChanged,
-				metadata: { result: 'invalid-current-password' },
+				metadata: {
+					nickname: auth.data.user.nickname,
+					result: 'invalid-current-password',
+					username: auth.data.user.username,
+				},
 				request,
 				userId: auth.data.user.id,
 			})
@@ -162,7 +166,11 @@ export async function POST(request: NextRequest) {
 					accountAuditModule.createAccountUserAuditLogInput({
 						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
 							.passwordChanged,
-						metadata: { result: 'ok' },
+						metadata: {
+							nickname: auth.data.user.nickname,
+							result: 'ok',
+							username: auth.data.user.username,
+						},
 						request,
 						userId: auth.data.user.id,
 					}),

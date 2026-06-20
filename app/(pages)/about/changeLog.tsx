@@ -164,6 +164,14 @@ const changelog = [
 		],
 	},
 	{ version: 'v2.1', changes: ['新增：全站顶部通知功能。'] },
+	{
+		version: 'v2.2',
+		changes: [
+			'新增：支持设置账号昵称。',
+			'新增：支持修改账号用户名。',
+			'新增：更新法律声明。',
+		],
+	},
 ] as const satisfies Array<{
 	version: `v${string}`;
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;

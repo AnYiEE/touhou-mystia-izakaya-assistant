@@ -39,6 +39,7 @@ import {
 	AdminEmptyState,
 	AdminFilterActionButton,
 	AdminFilterPanel,
+	AdminFilterReferencePanel,
 	AdminHeader,
 	AdminHeaderActionLink,
 	AdminLoadingState,
@@ -49,6 +50,7 @@ import {
 	AdminSearchInput,
 	AdminShell,
 	AdminTable,
+	AdminTableActionLink,
 	AdminTableCell,
 	AdminTableHeadCell,
 	AdminTableHeader,
@@ -146,6 +148,34 @@ const auditActionLabelMap: Record<string, string> = {
 	'user-revoke-sso-grant': '用户撤销SSO授权',
 };
 
+const auditFilterReferenceGroups = [
+	{
+		label: '范围',
+		values: scopeOptions
+			.filter((option) => option.value !== '')
+			.map((option) => ({ label: option.label, value: option.value })),
+	},
+	{
+		label: '动作',
+		values: Object.entries(auditActionLabelMap).map(([value, label]) => ({
+			label,
+			value,
+		})),
+	},
+	{
+		label: '操作者类型',
+		values: actorTypeOptions
+			.filter((option) => option.value !== '')
+			.map((option) => ({ label: option.label, value: option.value })),
+	},
+	{
+		label: '目标类型',
+		values: Object.entries(auditTargetTypeLabelMap).map(
+			([value, label]) => ({ label, value })
+		),
+	},
+] as const;
+
 function getScopeLabel(scope: TScopeFilter) {
 	return (
 		scopeOptions.find((option) => option.value === scope)?.label ?? scope
@@ -169,6 +199,52 @@ function getAuditTargetTypeLabel(targetType: string) {
 function getAuditActionLabel(action: string) {
 	return auditActionLabelMap[action] ?? action;
 }
+
+function createAdminAuditUserHref(userId: string) {
+	return `/admin/users/${encodeURIComponent(userId)}`;
+}
+
+interface IAdminAuditIdCellProps {
+	id: string | null;
+	isUserId: boolean;
+	trackingAction: string;
+}
+
+const AdminAuditIdCell = memo<IAdminAuditIdCellProps>(
+	function AdminAuditIdCell({ id, isUserId, trackingAction }) {
+		if (id === null) {
+			return (
+				<span className="break-all font-mono text-tiny text-foreground-500">
+					无
+				</span>
+			);
+		}
+
+		if (!isUserId) {
+			return (
+				<span className="break-all font-mono text-tiny text-foreground-500">
+					{id}
+				</span>
+			);
+		}
+
+		return (
+			<AdminTableActionLink
+				href={createAdminAuditUserHref(id)}
+				onPress={() => {
+					trackEvent(
+						trackEvent.category.click,
+						'Admin Audit Button',
+						trackingAction,
+						id
+					);
+				}}
+			>
+				{id}
+			</AdminTableActionLink>
+		);
+	}
+);
 
 function checkAdminUnauthorizedActionResult(
 	result: Extract<TAdminApiResult, { status: 'error' }>
@@ -216,17 +292,21 @@ const AdminAuditRow = memo<{ log: IAdminAuditLogListData['logs'][number] }>(
 					{getAuditActorTypeLabel(log.actor_type)}
 				</AdminTableCell>
 				<AdminTableCell>
-					<span className="break-all font-mono text-tiny text-foreground-500">
-						{log.actor_id ?? '无'}
-					</span>
+					<AdminAuditIdCell
+						id={log.actor_id}
+						isUserId={log.actor_type === 'user'}
+						trackingAction="Open Actor User"
+					/>
 				</AdminTableCell>
 				<AdminTableCell isNowrap>
 					{getAuditTargetTypeLabel(log.target_type)}
 				</AdminTableCell>
 				<AdminTableCell>
-					<span className="break-all font-mono text-tiny text-foreground-500">
-						{log.target_id ?? '无'}
-					</span>
+					<AdminAuditIdCell
+						id={log.target_id}
+						isUserId={log.target_type === 'user'}
+						trackingAction="Open Target User"
+					/>
 				</AdminTableCell>
 				<AdminTableCell isNowrap>
 					{createAdminSsoDateTimeText(log.created_at)}
@@ -643,7 +723,14 @@ export default function AdminAuditClient({
 					value={queryInput}
 					onValueChange={handleTextFilterChange(setQueryInput)}
 				/>
-				<AdminAdvancedFilterPopover activeCount={advancedFilterCount}>
+				<AdminAdvancedFilterPopover
+					activeCount={advancedFilterCount}
+					reference={
+						<AdminFilterReferencePanel
+							groups={auditFilterReferenceGroups}
+						/>
+					}
+				>
 					<Input
 						aria-label="按动作过滤"
 						className="w-full"

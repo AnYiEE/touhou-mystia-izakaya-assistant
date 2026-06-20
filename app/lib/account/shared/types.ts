@@ -11,6 +11,7 @@ export type TUserStatus =
 export type TAccountCookieNameMap = typeof ACCOUNT_COOKIE_NAME_MAP;
 
 export interface IAuthRegisterBody {
+	nickname?: string | null;
 	password: string;
 	username: string;
 }

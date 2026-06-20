@@ -70,10 +70,19 @@ export async function DELETE(
 		return csrfResponse;
 	}
 
-	const [userStateModule, accountAuditModule] = await Promise.all([
-		import('@/lib/account/server/repositories/userState'),
-		import('@/lib/account/server/accountAuditService'),
-	]);
+	const [userStateModule, usersModule, accountAuditModule] =
+		await Promise.all([
+			import('@/lib/account/server/repositories/userState'),
+			import('@/lib/account/server/repositories/users'),
+			import('@/lib/account/server/accountAuditService'),
+		]);
+	const user = await usersModule.findUserById(id);
+	if (user === null) {
+		return createNoStoreErrorResponse('target-user-not-found', 404);
+	}
+	if (user.status === 'deleted') {
+		return createNoStoreErrorResponse('invalid-user-status', 403);
+	}
 
 	try {
 		const stateEpoch =
@@ -88,7 +97,9 @@ export async function DELETE(
 							adminId: auth.payload.username,
 							metadata: {
 								state_epoch: nextStateEpoch,
+								target_nickname: user.nickname,
 								target_user_id: id,
+								target_username: user.username,
 							},
 							request,
 							targetId: id,

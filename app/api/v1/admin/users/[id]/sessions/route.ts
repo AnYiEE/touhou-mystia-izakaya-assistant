@@ -94,7 +94,9 @@ export async function DELETE(
 					adminId: auth.payload.username,
 					metadata: {
 						deleted_record_count: deletedSessionCount,
+						target_nickname: user.nickname,
 						target_user_id: id,
+						target_username: user.username,
 					},
 					request,
 					targetId: id,
