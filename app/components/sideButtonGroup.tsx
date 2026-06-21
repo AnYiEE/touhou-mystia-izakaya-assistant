@@ -22,7 +22,7 @@ export default memo<PropsWithChildren<IProps>>(function SideButtonGroup({
 
 	const handlePress = useCallback(() => {
 		vibrate();
-		store.setPreferencesModalIsOpen(true);
+		store.setPreferencesModalIsOpen(true, 'sideButton');
 	}, [vibrate]);
 
 	const preferencesLabel = '设置';

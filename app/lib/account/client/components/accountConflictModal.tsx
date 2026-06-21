@@ -2,6 +2,8 @@
 
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
+import { useVibrate } from '@/hooks';
+
 import { Button, Modal } from '@/design/ui/components';
 
 import { trackEvent } from '@/components/analytics';
@@ -81,6 +83,8 @@ const CONFLICT_RESOLUTION_TRACK_NAME_MAP = {
 interface IProps {}
 
 export default memo<IProps>(function AccountConflictModal() {
+	const vibrate = useVibrate();
+
 	const conflicts = store.shared.sync.conflicts.use();
 	const passwordMustChange = store.shared.passwordMustChange.use();
 	const user = store.shared.user.use();
@@ -165,6 +169,8 @@ export default memo<IProps>(function AccountConflictModal() {
 				return;
 			}
 
+			vibrate();
+
 			trackEvent(
 				trackEvent.category.click,
 				'Account Conflict Button',
@@ -225,7 +231,7 @@ export default memo<IProps>(function AccountConflictModal() {
 				setResolvingResolution(null);
 			}
 		},
-		[conflict, user]
+		[conflict, user, vibrate]
 	);
 
 	const handleUseCloud = useCallback(() => {

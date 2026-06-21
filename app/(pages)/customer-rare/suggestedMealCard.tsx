@@ -89,6 +89,8 @@ export default function SuggestedMealCard() {
 		const maxRatingLabel =
 			selectableMaxRatings.find((item) => item.value === suggestMaxRating)
 				?.label ?? '完美';
+		const hasSuggestedMealRows =
+			suggestedMealRows !== null && !checkLengthEmpty(suggestedMealRows);
 
 		const cookerSelect = (
 			<div className="flex flex-col gap-x-2 md:flex-row md:items-center md:justify-between xl:flex-col xl:items-start xl:justify-start 3xl:flex-row 3xl:items-center 3xl:justify-between">
@@ -286,11 +288,7 @@ export default function SuggestedMealCard() {
 							<p>选定的点单需求包含流行趋势标签</p>
 							<p>请您先在设置中指定「流行趋势」</p>
 						</Placeholder>
-					) : suggestedMealRows === null ? (
-						<Placeholder className="py-4">
-							未找到匹配的推荐套餐
-						</Placeholder>
-					) : (
+					) : hasSuggestedMealRows ? (
 						suggestedMealRows.map(
 							(
 								{
@@ -671,6 +669,10 @@ export default function SuggestedMealCard() {
 								);
 							}
 						)
+					) : (
+						<Placeholder className="py-4">
+							未找到匹配的推荐套餐
+						</Placeholder>
 					)}
 				</div>
 			</Card>

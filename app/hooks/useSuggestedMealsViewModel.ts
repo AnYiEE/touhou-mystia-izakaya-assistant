@@ -192,7 +192,7 @@ export function useSuggestedMealsViewModel() {
 			popularTrend: currentCustomerPopularTrend,
 		});
 
-		return checkLengthEmpty(results) ? null : results;
+		return results;
 	}, [
 		currentBeverageName,
 		currentCustomerName,
@@ -211,13 +211,7 @@ export function useSuggestedMealsViewModel() {
 		suggestMaxResults,
 	]);
 
-	const isVisible =
-		isActive &&
-		!(
-			suggestions === null &&
-			currentRecipeData !== null &&
-			currentBeverageName !== null
-		);
+	const isVisible = isActive && suggestions !== null;
 	const alternativesMap =
 		alternativesState.suggestions === suggestions
 			? alternativesState.map

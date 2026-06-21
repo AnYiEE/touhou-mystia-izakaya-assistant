@@ -1,6 +1,8 @@
 'use client';
 
-import { memo, useEffect } from 'react';
+import { memo, useCallback, useEffect } from 'react';
+
+import { useVibrate } from '@/hooks';
 
 import { Button } from '@/design/ui/components';
 
@@ -9,15 +11,6 @@ import { trackEvent } from '@/components/analytics';
 import { accountStore as store } from '@/stores';
 
 interface IProps {}
-
-function openAccountModal() {
-	trackEvent(
-		trackEvent.category.click,
-		'Account Button',
-		'Open Modal From SSO Authorize'
-	);
-	store.shared.accountModal.isOpen.set(true);
-}
 
 export default memo<IProps>(function SsoAuthorizeAccountGate() {
 	const bootstrapStatus = store.shared.bootstrapStatus.use();
@@ -43,8 +36,24 @@ export default memo<IProps>(function SsoAuthorizeAccountGate() {
 
 export const SsoAuthorizeAccountGateButton = memo(
 	function SsoAuthorizeAccountGateButton() {
+		const vibrate = useVibrate();
+
+		const handleOpenAccountModal = useCallback(() => {
+			vibrate();
+			trackEvent(
+				trackEvent.category.click,
+				'Account Button',
+				'Open Modal From SSO Authorize'
+			);
+			store.shared.accountModal.isOpen.set(true);
+		}, [vibrate]);
+
 		return (
-			<Button color="primary" variant="flat" onPress={openAccountModal}>
+			<Button
+				color="primary"
+				variant="flat"
+				onPress={handleOpenAccountModal}
+			>
 				打开账号流程
 			</Button>
 		);

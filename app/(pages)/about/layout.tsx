@@ -4,4 +4,4 @@ import { getPageTitle } from '@/utilities';
 
 export const metadata: Metadata = { title: getPageTitle('/about') };
 
-export { default } from '@/(pages)/layouts';
+export { WithPreference as default } from '@/(pages)/layouts';

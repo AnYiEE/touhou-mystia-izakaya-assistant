@@ -14,6 +14,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useReducedMotion } from '@/design/ui/hooks';
+import { useVibrate } from '@/hooks';
 
 import {
 	FontAwesomeIcon,
@@ -42,7 +43,6 @@ import {
 	Card,
 	type IButtonProps,
 	Input,
-	Link,
 	Modal,
 	Popover,
 	PopoverContent,
@@ -440,6 +440,8 @@ interface IProps {}
 export default memo<IProps>(function AccountManager() {
 	const pathname = usePathname();
 	const router = useRouter();
+	const vibrate = useVibrate();
+
 	const bootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const csrfToken = accountStore.shared.csrfToken.use();
 	const lastError = accountStore.shared.sync.lastError.use();
@@ -542,6 +544,8 @@ export default memo<IProps>(function AccountManager() {
 		if (isSubmitting) {
 			return;
 		}
+
+		vibrate();
 
 		const normalizedUsername = username.trim();
 		if (normalizedUsername !== username) {
@@ -652,6 +656,7 @@ export default memo<IProps>(function AccountManager() {
 		registrationNickname,
 		router,
 		username,
+		vibrate,
 	]);
 
 	const handleAuthSubmit = useCallback(
@@ -663,6 +668,7 @@ export default memo<IProps>(function AccountManager() {
 	);
 
 	const handleLoginModePress = useCallback(() => {
+		vibrate();
 		trackEvent(
 			trackEvent.category.click,
 			'Account Auth Button',
@@ -670,9 +676,10 @@ export default memo<IProps>(function AccountManager() {
 		);
 		setAuthMode('login');
 		setMessage(null);
-	}, []);
+	}, [vibrate]);
 
 	const handleRegisterModePress = useCallback(() => {
+		vibrate();
 		trackEvent(
 			trackEvent.category.click,
 			'Account Auth Button',
@@ -680,7 +687,7 @@ export default memo<IProps>(function AccountManager() {
 		);
 		setAuthMode('register');
 		setMessage(null);
-	}, []);
+	}, [vibrate]);
 
 	const handleAuthTermsAcceptedChange = useCallback(
 		(event: ChangeEvent<HTMLInputElement>) => {
@@ -698,6 +705,8 @@ export default memo<IProps>(function AccountManager() {
 		if (csrfToken === null || isSubmitting || user === null) {
 			return;
 		}
+
+		vibrate();
 
 		trackEvent(
 			trackEvent.category.click,
@@ -792,6 +801,7 @@ export default memo<IProps>(function AccountManager() {
 		newPassword,
 		passwordMustChange,
 		user,
+		vibrate,
 	]);
 
 	const handlePasswordChangeSubmit = useCallback(
@@ -821,6 +831,8 @@ export default memo<IProps>(function AccountManager() {
 		if (csrfToken === null || isSubmitting || user === null) {
 			return;
 		}
+
+		vibrate();
 
 		const usernameNext = profileUsername.trim();
 		if (usernameNext !== profileUsername) {
@@ -957,6 +969,7 @@ export default memo<IProps>(function AccountManager() {
 		normalizedProfileNickname,
 		router,
 		user,
+		vibrate,
 	]);
 
 	const handleProfileChangeSubmit = useCallback(
@@ -975,6 +988,8 @@ export default memo<IProps>(function AccountManager() {
 			if (csrfToken === null || isSubmitting || user === null) {
 				return;
 			}
+
+			vibrate();
 
 			trackEvent(
 				trackEvent.category.click,
@@ -1055,7 +1070,7 @@ export default memo<IProps>(function AccountManager() {
 					setIsSubmitting(false);
 				});
 		},
-		[csrfToken, isSubmitting, user]
+		[csrfToken, isSubmitting, user, vibrate]
 	);
 
 	const handleLogout = useCallback(() => {
@@ -1066,6 +1081,8 @@ export default memo<IProps>(function AccountManager() {
 		if (isSubmitting || user === null) {
 			return;
 		}
+
+		vibrate();
 
 		trackEvent(
 			trackEvent.category.click,
@@ -1153,7 +1170,7 @@ export default memo<IProps>(function AccountManager() {
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [csrfToken, isSubmitting, user]);
+	}, [csrfToken, isSubmitting, user, vibrate]);
 
 	const handleLogoutAll = useCallback(() => {
 		logoutAfterFlush(logoutAllAccount, 'Logout All');
@@ -1163,6 +1180,8 @@ export default memo<IProps>(function AccountManager() {
 		if (csrfToken === null || isSubmitting || user === null) {
 			return;
 		}
+
+		vibrate();
 
 		trackEvent(
 			trackEvent.category.click,
@@ -1269,11 +1288,13 @@ export default memo<IProps>(function AccountManager() {
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [csrfToken, isSubmitting, user]);
+	}, [csrfToken, isSubmitting, user, vibrate]);
 	const handleDeleteAccount = useCallback(() => {
 		if (csrfToken === null || isSubmitting || user === null) {
 			return;
 		}
+
+		vibrate();
 
 		trackEvent(
 			trackEvent.category.click,
@@ -1326,7 +1347,7 @@ export default memo<IProps>(function AccountManager() {
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [csrfToken, isSubmitting, user]);
+	}, [csrfToken, isSubmitting, user, vibrate]);
 	const handleDeleteDataPopoverOpenChange = useCallback((isOpen: boolean) => {
 		setIsDeleteDataPopoverOpen(isOpen);
 		if (isOpen) {
@@ -1485,13 +1506,14 @@ export default memo<IProps>(function AccountManager() {
 	]);
 
 	const handleRefreshSsoGrants = useCallback(() => {
+		vibrate();
 		trackEvent(
 			trackEvent.category.click,
 			'Account SSO Button',
 			'Refresh Grants'
 		);
 		void refreshAccountSsoGrantsForCurrentUser();
-	}, [refreshAccountSsoGrantsForCurrentUser]);
+	}, [refreshAccountSsoGrantsForCurrentUser, vibrate]);
 
 	const refreshAccountSessionsForCurrentUser = useCallback(
 		({ silent = false }: { silent?: boolean } = {}) => {
@@ -1624,13 +1646,14 @@ export default memo<IProps>(function AccountManager() {
 	]);
 
 	const handleRefreshSessions = useCallback(() => {
+		vibrate();
 		trackEvent(
 			trackEvent.category.click,
 			'Account Auth Button',
 			'Refresh Sessions'
 		);
 		void refreshAccountSessionsForCurrentUser();
-	}, [refreshAccountSessionsForCurrentUser]);
+	}, [refreshAccountSessionsForCurrentUser, vibrate]);
 
 	const handleRevokeSsoGrantOpen = useCallback((clientId: string) => {
 		setRevokeTargetClientId(clientId);
@@ -1649,6 +1672,8 @@ export default memo<IProps>(function AccountManager() {
 		) {
 			return;
 		}
+
+		vibrate();
 
 		const clientId = revokeTargetClientId;
 
@@ -1712,7 +1737,7 @@ export default memo<IProps>(function AccountManager() {
 				setRevokingClientId(null);
 				setIsSubmitting(false);
 			});
-	}, [csrfToken, isSubmitting, revokeTargetClientId, user]);
+	}, [csrfToken, isSubmitting, revokeTargetClientId, user, vibrate]);
 
 	const handleRevokeSessionOpen = useCallback((sessionId: string) => {
 		setRevokeTargetSessionId(sessionId);
@@ -1731,6 +1756,8 @@ export default memo<IProps>(function AccountManager() {
 		) {
 			return;
 		}
+
+		vibrate();
 
 		const sessionId = revokeTargetSessionId;
 		trackEvent(
@@ -1792,7 +1819,7 @@ export default memo<IProps>(function AccountManager() {
 				setRevokingSessionId(null);
 				setIsSubmitting(false);
 			});
-	}, [csrfToken, isSubmitting, revokeTargetSessionId, user]);
+	}, [csrfToken, isSubmitting, revokeTargetSessionId, user, vibrate]);
 
 	if (bootstrapStatus === 'error') {
 		return (
@@ -2012,7 +2039,7 @@ export default memo<IProps>(function AccountManager() {
 									onValueChange={setPassword}
 								/>
 							</div>
-							<div className="mt-2 flex flex-wrap items-center gap-y-1 px-1 text-tiny leading-5 text-foreground-500">
+							<div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 px-1 text-tiny leading-5 text-foreground-500">
 								<input
 									id="account-auth-terms-confirmation"
 									checked={hasAcceptedAuthTerms}
@@ -2022,7 +2049,7 @@ export default memo<IProps>(function AccountManager() {
 								/>
 								<label
 									htmlFor="account-auth-terms-confirmation"
-									className="group inline-flex min-w-0 cursor-pointer items-center gap-1.5 rounded-small outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-focus peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background"
+									className="group inline-flex shrink-0 cursor-pointer items-center rounded-small outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-focus peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background"
 								>
 									<span
 										aria-hidden
@@ -2043,23 +2070,35 @@ export default memo<IProps>(function AccountManager() {
 											)}
 										/>
 									</span>
-									<span>我已阅读并同意</span>
 								</label>
-								<Link
-									color="primary"
-									className="cursor-pointer rounded-small text-tiny"
-									classNames={{ underline: 'bottom-0' }}
-									onPress={() => {
-										trackEvent(
-											trackEvent.category.click,
-											'Account Auth Button',
-											'Open Legal Statement'
-										);
-										setIsLegalModalOpen(true);
-									}}
-								>
-									法律声明
-								</Link>
+								<span className="inline-flex min-w-0 flex-wrap items-baseline leading-5">
+									<label
+										htmlFor="account-auth-terms-confirmation"
+										className="cursor-pointer rounded-small outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-focus peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background"
+									>
+										我已阅读并同意
+									</label>
+									<Button
+										disableRipple
+										radius="none"
+										size="sm"
+										variant="light"
+										className="h-auto min-h-0 min-w-0 overflow-visible p-0 align-baseline text-tiny leading-5 text-primary-600 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent"
+										onPress={() => {
+											trackEvent(
+												trackEvent.category.click,
+												'Account Auth Button',
+												'Open Legal Statement'
+											);
+											setIsLegalModalOpen(true);
+										}}
+									>
+										<span className="group relative inline-block leading-5">
+											法律声明
+											<span className="absolute bottom-0.5 left-1/2 h-px w-0 -translate-x-1/2 bg-current transition-width group-data-[focus-visible=true]:w-full group-data-[hover=true]:w-full motion-reduce:transition-none" />
+										</span>
+									</Button>
+								</span>
 							</div>
 							<Button
 								fullWidth

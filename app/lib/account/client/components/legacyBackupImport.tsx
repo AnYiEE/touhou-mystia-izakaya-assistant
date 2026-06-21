@@ -8,6 +8,8 @@ import {
 	useState,
 } from 'react';
 
+import { useVibrate } from '@/hooks';
+
 import { Button, Input } from '@/design/ui/components';
 
 import { trackEvent } from '@/components/analytics';
@@ -29,15 +31,6 @@ import {
 } from '@/lib/account/client/syncClient';
 import { accountStore, globalStore } from '@/stores';
 
-function openAccountModal() {
-	trackEvent(
-		trackEvent.category.click,
-		'Account Button',
-		'Open Modal From Legacy Backup Import'
-	);
-	accountStore.shared.accountModal.isOpen.set(true);
-}
-
 function clearPendingLegacyBackupImportError() {
 	const lastError = accountStore.shared.sync.lastError.get();
 	if (lastError !== null && isLegacyBackupImportErrorMessage(lastError)) {
@@ -46,6 +39,8 @@ function clearPendingLegacyBackupImportError() {
 }
 
 export default function LegacyBackupImport() {
+	const vibrate = useVibrate();
+
 	const cloudCode = globalStore.persistence.cloudCode.use();
 
 	const csrfToken = accountStore.shared.csrfToken.use();
@@ -73,6 +68,8 @@ export default function LegacyBackupImport() {
 		) {
 			return;
 		}
+
+		vibrate();
 
 		trackEvent(
 			trackEvent.category.click,
@@ -158,7 +155,7 @@ export default function LegacyBackupImport() {
 					scheduleAccountSyncFlush();
 				}
 			});
-	}, [csrfToken, normalizedCode, user]);
+	}, [csrfToken, normalizedCode, user, vibrate]);
 
 	const handleImportSubmit = useCallback(
 		(event: SyntheticEvent<HTMLFormElement>) => {
@@ -178,11 +175,22 @@ export default function LegacyBackupImport() {
 	}, []);
 
 	const handleClearCode = useCallback(() => {
+		vibrate();
 		setCode('');
 		setMessage(null);
 		globalStore.persistence.cloudCode.set(null);
 		clearPendingLegacyBackupImportError();
-	}, []);
+	}, [vibrate]);
+
+	const handleOpenAccountModal = useCallback(() => {
+		vibrate();
+		trackEvent(
+			trackEvent.category.click,
+			'Account Button',
+			'Open Modal From Legacy Backup Import'
+		);
+		accountStore.shared.accountModal.isOpen.set(true);
+	}, [vibrate]);
 
 	useEffect(() => {
 		const previousCloudCode = previousCloudCodeRef.current;
@@ -202,7 +210,7 @@ export default function LegacyBackupImport() {
 				<Button
 					color="primary"
 					variant="flat"
-					onPress={openAccountModal}
+					onPress={handleOpenAccountModal}
 				>
 					登录或注册
 				</Button>

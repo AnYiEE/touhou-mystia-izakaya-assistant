@@ -2,6 +2,8 @@
 
 import { useCallback, useRef, useState } from 'react';
 
+import { useVibrate } from '@/hooks';
+
 import { Button } from '@/design/ui/components';
 
 import { trackEvent } from '@/components/analytics';
@@ -36,6 +38,8 @@ function createSubmitErrorMessage(error: unknown) {
 export default function SsoAuthorizeControls({
 	transactionId,
 }: ISsoAuthorizeControlsProps) {
+	const vibrate = useVibrate();
+
 	const [message, setMessage] = useState<string | null>(null);
 	const [submittingIntent, setSubmittingIntent] =
 		useState<TSsoAuthorizeIntent | null>(null);
@@ -46,6 +50,8 @@ export default function SsoAuthorizeControls({
 			if (submitInFlightRef.current) {
 				return;
 			}
+
+			vibrate();
 			submitInFlightRef.current = true;
 
 			trackEvent(
@@ -87,7 +93,7 @@ export default function SsoAuthorizeControls({
 					setSubmittingIntent(null);
 				});
 		},
-		[transactionId]
+		[transactionId, vibrate]
 	);
 
 	return (

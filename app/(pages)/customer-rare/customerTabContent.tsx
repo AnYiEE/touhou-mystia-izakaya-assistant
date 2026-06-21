@@ -15,11 +15,13 @@ import type { TItemData } from '@/utils/types';
 
 interface IProps {
 	customerTabStyle: ICustomerTabStyle;
+	isVisible: boolean;
 	sortedData: TItemData<CustomerRare>;
 }
 
 export default memo<IProps>(function CustomerTabContent({
 	customerTabStyle,
+	isVisible,
 	sortedData,
 }) {
 	const { pushState } = usePathname();
@@ -71,6 +73,7 @@ export default memo<IProps>(function CustomerTabContent({
 		<CustomerTabShell
 			currentCustomerName={currentCustomerName}
 			customerTabStyle={customerTabStyle}
+			isVisible={isVisible}
 			onSelect={handleCustomerSelect}
 			onToggleVisibility={handleButtonPress}
 			renderAvatar={renderAvatar}

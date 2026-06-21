@@ -364,10 +364,14 @@ export default function Content() {
 						title="食材"
 					/>
 				</Tabs>
-				<CustomerTabSlider selectedTabKey={selectedTabKey}>
+				<CustomerTabSlider
+					heightKey={`${customerTabVisibilityState}:${ingredientTabVisibilityState}`}
+					selectedTabKey={selectedTabKey}
+				>
 					<div className="relative flex flex-col px-1 py-3">
 						<CustomerTabContent
 							customerTabStyle={customerTabStyle}
+							isVisible={selectedTabKey === 'customer'}
 							sortedData={customerSortedData}
 						/>
 					</div>

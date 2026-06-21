@@ -2,6 +2,9 @@
 
 import { memo, useCallback, useMemo, useState } from 'react';
 
+import { useReducedMotion } from '@/design/ui/hooks';
+import { useVibrate } from '@/hooks';
+
 import { Accordion, AccordionItem } from '@heroui/accordion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -11,7 +14,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 import { Button, Tooltip } from '@/design/ui/components';
-import { useReducedMotion } from '@/design/ui/hooks';
 
 import { trackEvent } from '@/components/analytics';
 import TimeAgo from '@/components/timeAgo';
@@ -50,10 +52,12 @@ function getNamespaceLabel(namespace: TSyncNamespace) {
 }
 
 export default memo<IProps>(function AccountSyncStatus() {
+	const isReducedMotion = useReducedMotion();
+	const vibrate = useVibrate();
+
 	const sync = store.shared.sync.use();
 	const user = store.shared.user.use();
 	const [isDetailOpen, setIsDetailOpen] = useState(false);
-	const isReducedMotion = useReducedMotion();
 
 	const storageMode = getSafeStorageMode();
 	const supportsNativeLock = checkCrossTabNativeLockSupported();
@@ -96,6 +100,7 @@ export default memo<IProps>(function AccountSyncStatus() {
 		sync.isSyncing || shouldEnableManualRetry;
 
 	const handleManualSyncPress = useCallback(() => {
+		vibrate();
 		trackEvent(
 			trackEvent.category.click,
 			'Account Sync Button',
@@ -106,7 +111,7 @@ export default memo<IProps>(function AccountSyncStatus() {
 				errorCode: getLogSafeErrorCode(error),
 			});
 		});
-	}, []);
+	}, [vibrate]);
 
 	const handleDetailToggle = useCallback(() => {
 		setIsDetailOpen((value) => !value);

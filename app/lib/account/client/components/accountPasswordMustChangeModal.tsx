@@ -10,6 +10,7 @@ import {
 } from 'react';
 
 import { usePathname } from 'next/navigation';
+import { useVibrate } from '@/hooks';
 
 import {
 	FontAwesomeIcon,
@@ -108,6 +109,8 @@ interface IProps {}
 
 export default memo<IProps>(function AccountPasswordMustChangeModal() {
 	const pathname = usePathname();
+	const vibrate = useVibrate();
+
 	const csrfToken = accountStore.shared.csrfToken.use();
 	const isLoggedIn = accountStore.shared.isLoggedIn.use();
 	const passwordMustChange = accountStore.shared.passwordMustChange.use();
@@ -151,6 +154,8 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 		if (isSubmitting || csrfToken === null || user === null) {
 			return;
 		}
+
+		vibrate();
 
 		trackEvent(
 			trackEvent.category.click,
@@ -240,6 +245,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 		newPassword,
 		shouldResumeSso,
 		user,
+		vibrate,
 	]);
 
 	const handlePasswordChangeSubmit = useCallback(
@@ -254,6 +260,8 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 		if (isSubmitting || user === null) {
 			return;
 		}
+
+		vibrate();
 
 		trackEvent(
 			trackEvent.category.click,
@@ -322,7 +330,14 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [clearPasswordFields, csrfToken, isSubmitting, shouldResumeSso, user]);
+	}, [
+		clearPasswordFields,
+		csrfToken,
+		isSubmitting,
+		shouldResumeSso,
+		user,
+		vibrate,
+	]);
 
 	if (!isOpen) {
 		return null;

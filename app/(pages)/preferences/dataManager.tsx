@@ -96,6 +96,31 @@ const exportButtonLabelMap = {
 	downloadingTip: '如无响应，请检查浏览器权限、设置和浏览器扩展程序',
 } as const;
 
+function getClosestModalScrollContainer(element: HTMLElement | null) {
+	const dialogElement = element?.closest('[role="dialog"]');
+
+	if (element === null || dialogElement === null) {
+		return null;
+	}
+
+	let currentElement = element.parentElement;
+
+	while (currentElement !== null && currentElement !== dialogElement) {
+		const { overflowY } = globalThis.getComputedStyle(currentElement);
+
+		if (
+			['auto', 'overlay', 'scroll'].includes(overflowY) &&
+			currentElement.scrollHeight > currentElement.clientHeight
+		) {
+			return currentElement;
+		}
+
+		currentElement = currentElement.parentElement;
+	}
+
+	return null;
+}
+
 type TCloudState = 'danger' | 'default' | 'success';
 type TExportButtonLabel = ExtractCollectionValue<typeof exportButtonLabelMap>;
 
@@ -189,6 +214,10 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		toggleBoolean,
 		false
 	);
+
+	const shouldLockDataManagerScroll =
+		isSavePopoverOpened || isResetPopoverOpened;
+	const dataManagerRef = useRef<HTMLDivElement | null>(null);
 
 	const [isCloudDeleteButtonDisabled, setIsCloudDeleteButtonDisabled] =
 		useState(false);
@@ -586,24 +615,35 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	}, [throttledImportValue]);
 
 	useEffect(() => {
-		const container = document.querySelector<HTMLDivElement>(
-			'#modal-portal-container [data-orientation="vertical"]'
+		if (!shouldLockDataManagerScroll) {
+			return;
+		}
+
+		const container = getClosestModalScrollContainer(
+			dataManagerRef.current
 		);
+
 		if (container === null) {
 			return;
 		}
-		container.style.overflowY =
-			isSavePopoverOpened || isResetPopoverOpened ? 'hidden' : 'auto';
-	}, [isSavePopoverOpened, isResetPopoverOpened]);
+
+		const previousOverflowY = container.style.overflowY;
+		container.style.overflowY = 'hidden';
+
+		return () => {
+			container.style.overflowY = previousOverflowY;
+		};
+	}, [shouldLockDataManagerScroll]);
 
 	return (
-		<>
+		<div ref={dataManagerRef}>
 			<Heading subTitle="备份/还原/重置顾客套餐数据">数据管理</Heading>
 			<div className="-mt-2">
 				<Tabs
 					defaultSelectedKey="reset"
 					destroyInactiveTabPanel={false}
 					disableAnimation={isReducedMotion}
+					isDisabled={isResetPopoverOpened}
 					variant="underlined"
 					onSelectionChange={() => {
 						setImportValue('');
@@ -966,7 +1006,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 					</Tab>
 				</Tabs>
 			</div>
-		</>
+		</div>
 	);
 });
 

@@ -281,7 +281,10 @@ const state = {
 		},
 
 		donationModal: { isOpen: false },
-		preferencesModal: { isOpen: false },
+		preferencesModal: {
+			isOpen: false,
+			openSource: null as null | 'sideButton',
+		},
 	},
 };
 
@@ -556,8 +559,14 @@ export const globalStore = store(state, {
 			currentStore.persistence.donationModal.lastShown.set(timestamp);
 		},
 
-		setPreferencesModalIsOpen(isOpen: boolean) {
+		setPreferencesModalIsOpen(
+			isOpen: boolean,
+			openSource: null | 'sideButton' = null
+		) {
 			currentStore.shared.preferencesModal.isOpen.set(isOpen);
+			currentStore.shared.preferencesModal.openSource.set(
+				isOpen ? openSource : null
+			);
 		},
 
 		onTableRowsPerPageChange(rows: Selection) {

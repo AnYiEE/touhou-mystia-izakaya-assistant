@@ -12,12 +12,17 @@ import { useMotionProps, useReducedMotion } from '@/design/ui/hooks';
 import DataManager, { type IDataManagerProps } from './dataManager';
 import HiddenItems from './hiddenItems';
 import SwitchItem from './switchItem';
+import { trackEvent } from '@/components/analytics';
 import Heading from '@/components/heading';
+import MobileAccountActionButton from '@/components/mobileAccountActionButton';
 import Sprite from '@/components/sprite';
 
+import { siteConfig } from '@/configs';
 import { DLC_LABEL_MAP, DYNAMIC_TAG_MAP } from '@/data';
-import { customerRareStore, globalStore } from '@/stores';
+import { accountStore, customerRareStore, globalStore } from '@/stores';
 import { toSet } from '@/utilities';
+
+const { isAccountFeatureClientEnabled } = siteConfig;
 
 interface IProps extends IDataManagerProps {}
 
@@ -28,6 +33,25 @@ export default memo<IProps>(function Content({ onModalClose }) {
 
 	const isPreferencesModalOpen =
 		globalStore.shared.preferencesModal.isOpen.use();
+	const preferencesModalOpenSource =
+		globalStore.shared.preferencesModal.openSource.use();
+
+	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
+	const accountUser = accountStore.shared.user.use();
+
+	const shouldShowMobileAccountEntry =
+		isPreferencesModalOpen &&
+		preferencesModalOpenSource === 'sideButton' &&
+		isAccountFeatureClientEnabled &&
+		accountBootstrapStatus !== 'disabled';
+	const accountActionLabel =
+		accountBootstrapStatus === 'error'
+			? '账号不可用'
+			: accountBootstrapStatus === 'unknown'
+				? '欢迎您'
+				: accountUser === null
+					? '未登录'
+					: (accountUser.nickname ?? accountUser.username);
 
 	const isOrderLinkedFilter =
 		customerRareStore.persistence.customer.orderLinkedFilter.use();
@@ -67,6 +91,16 @@ export default memo<IProps>(function Content({ onModalClose }) {
 		globalStore.selectedPopularTag.set(toSet());
 	}, [vibrate]);
 
+	const handleAccountButtonPress = useCallback(() => {
+		vibrate();
+		trackEvent(
+			trackEvent.category.click,
+			'Account Button',
+			'Open Modal From Preferences Modal'
+		);
+		accountStore.shared.accountModal.isOpen.set(true);
+	}, [vibrate]);
+
 	const handleIsHighAppearanceChange = useCallback(
 		(value: boolean) => {
 			globalStore.persistence.highAppearance.set(value);
@@ -93,6 +127,14 @@ export default memo<IProps>(function Content({ onModalClose }) {
 			<Heading isFirst subTitle="以下所有的更改都会即时生效">
 				设置
 			</Heading>
+			{shouldShowMobileAccountEntry && (
+				<MobileAccountActionButton
+					isDisabled={accountBootstrapStatus === 'unknown'}
+					label={accountActionLabel}
+					onPress={handleAccountButtonPress}
+					className="mb-5"
+				/>
+			)}
 			<Heading as="h2" className="mt-0">
 				全局设置
 			</Heading>

@@ -21,6 +21,16 @@
 		image-rendering: pixelated;
 	}
 
+	.mobile-navbar-menu-scroll {
+		overscroll-behavior: contain;
+		scrollbar-gutter: stable;
+		scrollbar-width: none;
+	}
+
+	.mobile-navbar-menu-scroll::-webkit-scrollbar {
+		display: none;
+	}
+
 	.text-autospace {
 		text-autospace: normal;
 		text-spacing-trim: normal;
