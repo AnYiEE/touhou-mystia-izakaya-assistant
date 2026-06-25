@@ -1,7 +1,8 @@
 ---
 name: SubRunner
 description: 'Use when: a complex task needs a stronger, slower model; a delegated subtask requires deeper reasoning; or a larger task should be split into substantial parallel work streams. Best for bounded but difficult analysis, implementation, debugging, and verification that exceed lightweight agent scope.'
-model: GPT-5.5 (heilovehei) (customendpoint)
+argument-hint: A bounded but complex subtask that needs stronger reasoning, deeper investigation, or a substantial parallel work stream.
+model: GPT-5.5 (customendpoint) (customendpoint)
 tools:
     [
         vscode/memory,
@@ -13,8 +14,8 @@ tools:
         edit,
         search,
         web,
-        browser,
         'cognitionai/deepwiki/*',
+        'microsoftdocs/mcp/*',
         'gitkraken/*',
         github.vscode-pull-request-github/issue_fetch,
         github.vscode-pull-request-github/labels_fetch,
@@ -22,12 +23,8 @@ tools:
         github.vscode-pull-request-github/doSearch,
         github.vscode-pull-request-github/activePullRequest,
         github.vscode-pull-request-github/pullRequestStatusChecks,
-        github.vscode-pull-request-github/openPullRequest,
-        github.vscode-pull-request-github/create_pull_request,
-        github.vscode-pull-request-github/resolveReviewThread,
         todo,
     ]
-argument-hint: A bounded but complex subtask that needs stronger reasoning, deeper investigation, or a substantial parallel work stream.
 user-invocable: false
 ---
 
