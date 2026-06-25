@@ -108,7 +108,7 @@
 		"better-sqlite3": "^12.11.1",
 		"broadcast-channel": "^7.3.0",
 		"compare-versions": "^6.1.1",
-		"driver.js": "^1.4.0",
+		"driver.js": "^1.5.0",
 		"framer-motion": "12.17.2",
 		"js-sha1": "^0.7.0",
 		"kysely": "^0.29.2",
@@ -128,8 +128,8 @@
 	"devDependencies": {
 		"@babel/core": "^7.29.7",
 		"@babel/preset-env": "^7.29.7",
-		"@commitlint/cli": "^21.0.2",
-		"@commitlint/config-conventional": "^21.0.2",
+		"@commitlint/cli": "^21.1.0",
+		"@commitlint/config-conventional": "^21.1.0",
 		"@eslint-community/eslint-plugin-eslint-comments": "^4.7.2",
 		"@eslint/eslintrc": "^3.3.5",
 		"@eslint/js": "^9.39.4",
@@ -152,7 +152,7 @@
 		"eslint-plugin-compat": "^7.0.2",
 		"eslint-plugin-sort-destructure-keys": "^3.0.0",
 		"eslint-plugin-unicorn": "65.0.1",
-		"globals": "^17.6.0",
+		"globals": "^17.7.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^17.0.8",
 		"minimist": "^1.2.8",
@@ -170,7 +170,7 @@
 		"tailwindcss": "^3.4.19",
 		"tsx": "^4.22.4",
 		"typescript": "^6.0.3",
-		"typescript-eslint": "^8.61.1"
+		"typescript-eslint": "^8.62.0"
 	},
 	"packageManager": "pnpm@10.33.4",
 	"pnpm": {
