@@ -39,10 +39,17 @@ interface ISuggestedMeal {
 	recipe: IMealRecipe;
 }
 
+interface IPlanWeightMetrics {
+	readonly acquisitionWeight: number;
+	readonly budgetPenalty: number;
+	readonly ingredientPenalty: number;
+	readonly score: number;
+}
+
 interface IScoredResult {
 	meal: ISuggestedMeal;
+	metrics: IPlanWeightMetrics;
 	score: number;
-	weight: number;
 }
 
 interface ISuggestParams {
@@ -482,12 +489,94 @@ function buildBeverageTagGroups(beverages: TItemData<Beverage>) {
 	return groups;
 }
 
+type TMetricDirection = 'asc' | 'desc';
+
+interface IMetricRange {
+	readonly max: number;
+	readonly min: number;
+}
+
+interface ISoftSortRanges {
+	readonly acquisition: IMetricRange;
+	readonly ingredient: IMetricRange;
+}
+
+const SOFT_SORT_WEIGHTS = {
+	acquisition: 50,
+	budget: 1000,
+	ingredient: 50,
+} as const;
+
+function computeMetricRange(values: ReadonlyArray<number>) {
+	return values.reduce<IMetricRange>(
+		(range, value) => ({
+			max: Math.max(range.max, value),
+			min: Math.min(range.min, value),
+		}),
+		{ max: -Infinity, min: Infinity }
+	);
+}
+
+function normalizeMetric(
+	value: number,
+	{ max, min }: IMetricRange,
+	direction: TMetricDirection
+) {
+	if (max <= min) {
+		return 0;
+	}
+
+	const ratio = (value - min) / (max - min);
+
+	return direction === 'desc' ? ratio : 1 - ratio;
+}
+
+function buildSoftSortRanges(
+	metricsList: ReadonlyArray<IPlanWeightMetrics>
+): ISoftSortRanges {
+	return {
+		acquisition: computeMetricRange(
+			metricsList.map((metrics) => metrics.acquisitionWeight)
+		),
+		ingredient: computeMetricRange(
+			metricsList.map((metrics) => metrics.ingredientPenalty)
+		),
+	};
+}
+
+function computeSoftSortScore(
+	metrics: IPlanWeightMetrics,
+	ranges: ISoftSortRanges
+) {
+	return (
+		normalizeMetric(metrics.acquisitionWeight, ranges.acquisition, 'desc') *
+			SOFT_SORT_WEIGHTS.acquisition +
+		normalizeMetric(metrics.ingredientPenalty, ranges.ingredient, 'asc') *
+			SOFT_SORT_WEIGHTS.ingredient -
+		(metrics.budgetPenalty > 0 ? SOFT_SORT_WEIGHTS.budget : 0)
+	);
+}
+
+function compareByNormalizedWeight(
+	a: IPlanWeightMetrics,
+	b: IPlanWeightMetrics,
+	ranges: ISoftSortRanges
+) {
+	return (
+		b.score - a.score ||
+		computeSoftSortScore(b, ranges) - computeSoftSortScore(a, ranges)
+	);
+}
+
 function dedupeScoredResults(
 	results: IScoredResult[],
 	maxResults: number,
 	keyFn: (meal: ISuggestedMeal) => string
 ) {
-	results.sort((a, b) => b.weight - a.weight);
+	const ranges = buildSoftSortRanges(results.map((result) => result.metrics));
+	results.sort((a, b) =>
+		compareByNormalizedWeight(a.metrics, b.metrics, ranges)
+	);
 
 	const seen = new Set<string>();
 	const out: ISuggestedMeal[] = [];
@@ -867,12 +956,13 @@ function computeSuggestions(
 								name: recipeName,
 							},
 						},
-						score: finalScore,
-						weight:
-							finalScore * 10000 +
-							acquisitionWeight -
-							ingredientPenalty -
+						metrics: {
+							acquisitionWeight,
 							budgetPenalty,
+							ingredientPenalty,
+							score: finalScore,
+						},
+						score: finalScore,
 					});
 				}
 				if (finalScore >= 4) {
@@ -1566,12 +1656,13 @@ function suggestForBeverage(
 
 			results.push({
 				meal: bestMeal,
-				score,
-				weight:
-					score * 10000 +
-					acquisitionWeight -
-					ingredientPenalty -
+				metrics: {
+					acquisitionWeight,
 					budgetPenalty,
+					ingredientPenalty,
+					score,
+				},
+				score,
 			});
 			if (score >= 4) {
 				exgoodCount++;
@@ -1789,12 +1880,13 @@ function suggestForRecipe(
 
 				results.push({
 					meal: bestMeal,
-					score: finalScore,
-					weight:
-						finalScore * 10000 +
-						acquisitionWeight -
-						ingredientPenalty -
+					metrics: {
+						acquisitionWeight,
 						budgetPenalty,
+						ingredientPenalty,
+						score: finalScore,
+					},
+					score: finalScore,
 				});
 			}
 			if (finalScore >= 4) {
