@@ -1,6 +1,5 @@
 import Database from 'better-sqlite3';
 import { Kysely, SqliteDialect } from 'kysely';
-import { env } from 'node:process';
 
 import { TABLE_NAME_MAP, getConfiguredSqliteDatabasePath } from './constant';
 import type { TDatabase } from './types';
@@ -11,7 +10,7 @@ let nativeDatabase: Database.Database;
 let sqliteDatabasePath = '';
 try {
 	sqliteDatabasePath = getConfiguredSqliteDatabasePath(
-		env.SQLITE_DATABASE_PATH
+		process.env.SQLITE_DATABASE_PATH
 	);
 	nativeDatabase = new Database(sqliteDatabasePath);
 	nativeDatabase.pragma('foreign_keys = ON');

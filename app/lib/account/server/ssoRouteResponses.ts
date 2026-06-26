@@ -1,6 +1,5 @@
 import { type NextRequest } from 'next/server';
 import { createHash, timingSafeEqual } from 'node:crypto';
-import { env } from 'node:process';
 
 import { checkRateLimit } from '@/lib/account/server/rateLimit';
 import { getTrustedRequestIp } from '@/lib/account/server/request';
@@ -91,7 +90,7 @@ function createSecretDigest(secret: string) {
 }
 
 export function checkDispatchSecretStatus(secret: string | null) {
-	const configuredSecret = env.DISPATCH_SECRET;
+	const configuredSecret = process.env.DISPATCH_SECRET;
 	if (typeof configuredSecret !== 'string' || configuredSecret.length === 0) {
 		return 'misconfigured';
 	}

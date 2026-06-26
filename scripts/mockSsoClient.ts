@@ -11,7 +11,7 @@ import {
 	createServer,
 } from 'node:http';
 import { createServer as createHttpsServer } from 'node:https';
-import { env, exit } from 'node:process';
+import { exit } from 'node:process';
 
 type THttpMethod = 'GET' | 'POST';
 type TStartMode = 'bad-pkce' | 'normal';
@@ -95,7 +95,7 @@ function normalizeOrigin(value: string) {
 }
 
 function readRequiredEnv(name: string) {
-	const value = env[name]?.trim() ?? '';
+	const value = process.env[name]?.trim() ?? '';
 	if (value.length === 0) {
 		console.error(`Missing ${name}.`);
 		console.error(
@@ -111,10 +111,10 @@ function readConfig(): IConfig {
 	const clientId = readRequiredEnv('SSO_CLIENT_ID');
 	const clientSecret = readRequiredEnv('SSO_CLIENT_SECRET');
 	const mystiaOrigin = normalizeOrigin(
-		env['MYSTIA_ORIGIN'] ?? 'http://localhost:3000'
+		process.env['MYSTIA_ORIGIN'] ?? 'http://localhost:3000'
 	);
 	const mockOrigin = normalizeOrigin(
-		env['SSO_MOCK_ORIGIN'] ?? 'http://127.0.0.1:4000'
+		process.env['SSO_MOCK_ORIGIN'] ?? 'http://127.0.0.1:4000'
 	);
 	const mockUrl = new URL(mockOrigin);
 	const host = mockUrl.hostname;
@@ -132,8 +132,8 @@ function readConfig(): IConfig {
 		exit(1);
 	}
 
-	const httpsKeyPath = env['SSO_MOCK_HTTPS_KEY']?.trim() ?? '';
-	const httpsCertPath = env['SSO_MOCK_HTTPS_CERT']?.trim() ?? '';
+	const httpsKeyPath = process.env['SSO_MOCK_HTTPS_KEY']?.trim() ?? '';
+	const httpsCertPath = process.env['SSO_MOCK_HTTPS_CERT']?.trim() ?? '';
 	const hasHttps = httpsKeyPath.length > 0 && httpsCertPath.length > 0;
 	let httpsKey: string | null = null;
 	let httpsCert: string | null = null;
@@ -148,7 +148,7 @@ function readConfig(): IConfig {
 			exit(1);
 		}
 
-		httpsPort = Number(env['SSO_MOCK_HTTPS_PORT'] ?? 4443);
+		httpsPort = Number(process.env['SSO_MOCK_HTTPS_PORT'] ?? 4443);
 		if (
 			!Number.isSafeInteger(httpsPort) ||
 			httpsPort <= 0 ||

@@ -1,5 +1,4 @@
 import { exec } from 'node:child_process';
-import { env } from 'node:process';
 import { promisify } from 'node:util';
 
 import {
@@ -10,16 +9,16 @@ import {
 
 const execAsync = promisify(exec);
 
-export const IS_OFFLINE = checkOfflineEnv(env.OFFLINE);
-export const IS_PRODUCTION = env.NODE_ENV === 'production';
-export const IS_SELF_HOSTED = checkEnvFlag(env.SELF_HOSTED);
-export const IS_VERCEL = checkVercelEnv(env.VERCEL);
+export const IS_OFFLINE = checkOfflineEnv(process.env.OFFLINE);
+export const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+export const IS_SELF_HOSTED = checkEnvFlag(process.env.SELF_HOSTED);
+export const IS_VERCEL = checkVercelEnv(process.env.VERCEL);
 
-export const CDN_URL = IS_OFFLINE ? '' : (env.CDN_URL ?? '');
+export const CDN_URL = IS_OFFLINE ? '' : (process.env.CDN_URL ?? '');
 
 export async function getSha() {
-	if (env.VERCEL_GIT_COMMIT_SHA) {
-		return env.VERCEL_GIT_COMMIT_SHA.slice(0, 7);
+	if (process.env.VERCEL_GIT_COMMIT_SHA) {
+		return process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7);
 	}
 
 	try {

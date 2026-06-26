@@ -1,7 +1,6 @@
 /* eslint-disable sort-keys, @typescript-eslint/require-await */
 
 import { type NextConfig } from 'next';
-import { env } from 'node:process';
 
 import {
 	CDN_URL,
@@ -14,23 +13,24 @@ import {
 import { SERVER_ACTION_BODY_SIZE_LIMIT } from './app/lib/account/shared/requestLimits';
 
 const exportMode = IS_OFFLINE || (!IS_SELF_HOSTED && !IS_VERCEL);
-const skipLint = IS_OFFLINE || (IS_PRODUCTION && Boolean(env.SKIP_LINT));
+const skipLint =
+	IS_OFFLINE || (IS_PRODUCTION && Boolean(process.env.SKIP_LINT));
 
 const nextConfig: NextConfig = {
 	env: {
-		ANALYTICS_API_URL: env.ANALYTICS_API_URL,
-		ANALYTICS_SCRIPT_URL: env.ANALYTICS_SCRIPT_URL,
-		ANALYTICS_SITE_ID: env.ANALYTICS_SITE_ID,
-		BASE_URL: env.BASE_URL,
-		CDN_URL: env.CDN_URL,
-		ICP_FILING: env.ICP_FILING,
-		OFFLINE: env.OFFLINE,
-		SELF_HOSTED: env.SELF_HOSTED,
-		SERVICE_API_ORIGIN: env.SERVICE_API_ORIGIN,
-		SHORT_LINK_URL: env.SHORT_LINK_URL,
-		VERCEL: env.VERCEL,
-		VERCEL_ENV: env.VERCEL_ENV,
-		VERCEL_GIT_COMMIT_SHA: env.VERCEL_GIT_COMMIT_SHA,
+		ANALYTICS_API_URL: process.env.ANALYTICS_API_URL,
+		ANALYTICS_SCRIPT_URL: process.env.ANALYTICS_SCRIPT_URL,
+		ANALYTICS_SITE_ID: process.env.ANALYTICS_SITE_ID,
+		BASE_URL: process.env.BASE_URL,
+		CDN_URL: process.env.CDN_URL,
+		ICP_FILING: process.env.ICP_FILING,
+		OFFLINE: process.env.OFFLINE,
+		SELF_HOSTED: process.env.SELF_HOSTED,
+		SERVICE_API_ORIGIN: process.env.SERVICE_API_ORIGIN,
+		SHORT_LINK_URL: process.env.SHORT_LINK_URL,
+		VERCEL: process.env.VERCEL,
+		VERCEL_ENV: process.env.VERCEL_ENV,
+		VERCEL_GIT_COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA,
 	},
 
 	// Hand over to Nginx and other web servers for reverse proxy and compression.

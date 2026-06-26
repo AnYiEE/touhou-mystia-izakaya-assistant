@@ -1,6 +1,5 @@
 import { type NextRequest } from 'next/server';
 import { createHash, timingSafeEqual } from 'node:crypto';
-import { env } from 'node:process';
 
 import { maskBackupCode } from '@/lib/account/server/backupCode';
 import { getRequestIp } from '@/lib/account/server/request';
@@ -111,7 +110,7 @@ async function runWithConcurrencyLimit<T>(
 
 export async function DELETE(request: NextRequest) {
 	const secret = request.headers.get('x-cleanup-secret');
-	const configuredSecret = env.CLEANUP_SECRET;
+	const configuredSecret = process.env.CLEANUP_SECRET;
 
 	if (typeof configuredSecret !== 'string' || configuredSecret.length === 0) {
 		return createNoStoreErrorResponse('server-misconfigured', 500);

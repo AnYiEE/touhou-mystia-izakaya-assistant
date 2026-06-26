@@ -1,6 +1,5 @@
 import { headers } from 'next/headers';
 import { NextRequest } from 'next/server';
-import { env } from 'node:process';
 
 import { checkEnvFlag } from '@/lib/environment';
 
@@ -24,7 +23,7 @@ export async function createCurrentRequest(
 		mergedHeaders.delete('content-length');
 	}
 
-	const trustProxy = checkEnvFlag(env.TRUST_PROXY);
+	const trustProxy = checkEnvFlag(process.env.TRUST_PROXY);
 	const host =
 		(trustProxy
 			? getFirstHeaderValue(mergedHeaders.get('x-forwarded-host'))

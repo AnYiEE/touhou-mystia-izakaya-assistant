@@ -1,5 +1,4 @@
 import { type NextRequest } from 'next/server';
-import { env } from 'node:process';
 
 import { checkAccountRateLimitRouteResponse } from '@/lib/account/server/routeResponses';
 import { createJsonResponse } from '@/lib/api/routeResponses';
@@ -27,19 +26,19 @@ const cache: IVisitorCountCache = {
 
 async function refreshCache() {
 	if (
-		!env.ANALYTICS_API_ENDPOINT ||
-		!env.ANALYTICS_SITE_ID ||
-		!env.ANALYTICS_TOKEN
+		!process.env.ANALYTICS_API_ENDPOINT ||
+		!process.env.ANALYTICS_SITE_ID ||
+		!process.env.ANALYTICS_TOKEN
 	) {
 		return;
 	}
 
 	try {
 		const response = await fetch(
-			`${env.ANALYTICS_API_ENDPOINT}?module=API&method=Live.getCounters&format=json&lastMinutes=3&idSite=${env.ANALYTICS_SITE_ID}&date=today&period=day`,
+			`${process.env.ANALYTICS_API_ENDPOINT}?module=API&method=Live.getCounters&format=json&lastMinutes=3&idSite=${process.env.ANALYTICS_SITE_ID}&date=today&period=day`,
 			{
 				body: new URLSearchParams({
-					token_auth: env.ANALYTICS_TOKEN,
+					token_auth: process.env.ANALYTICS_TOKEN,
 				}).toString(),
 				headers: {
 					'Content-Type': 'application/x-www-form-urlencoded',

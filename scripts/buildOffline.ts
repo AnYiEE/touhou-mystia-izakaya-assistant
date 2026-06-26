@@ -1,9 +1,9 @@
 import { spawn } from 'node:child_process';
 import { extname } from 'node:path';
-import { env, execPath, platform } from 'node:process';
+import { execPath, platform } from 'node:process';
 
-const offlineEnv = { ...env, OFFLINE: 'true' };
-const packageManagerExecPath = env['npm_execpath'];
+const offlineEnv = { ...process.env, OFFLINE: 'true' };
+const packageManagerExecPath = process.env['npm_execpath'];
 
 function checkNodeScriptPath(filePath: string) {
 	const extension = extname(filePath).toLowerCase();

@@ -1,6 +1,5 @@
 import { type NextRequest } from 'next/server';
 import { createHmac } from 'node:crypto';
-import { env } from 'node:process';
 
 import {
 	getRequestIp,
@@ -12,7 +11,7 @@ import {
 } from '@/lib/account/server/environment';
 
 function getBackupMetaSecret() {
-	const appSecret = env.APP_SECRET;
+	const appSecret = process.env.APP_SECRET;
 	if (checkAppSecret(appSecret)) {
 		return appSecret;
 	}

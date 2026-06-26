@@ -1,12 +1,11 @@
 import { type NextRequest } from 'next/server';
-import { env } from 'node:process';
 
 import { SERVER_MISCONFIGURED_MESSAGE } from './environment';
 import { checkServiceAllowedOrigin } from '@/lib/api/cors';
 import { checkEnvFlag } from '@/lib/environment';
 
 export function getTrustedRequestIp(request: NextRequest) {
-	if (!checkEnvFlag(env.TRUST_PROXY)) {
+	if (!checkEnvFlag(process.env.TRUST_PROXY)) {
 		return null;
 	}
 
@@ -68,7 +67,7 @@ function normalizeRequestHost(host: string | null) {
 }
 
 export function getExpectedRequestOrigin(request: NextRequest) {
-	const trustProxy = checkEnvFlag(env.TRUST_PROXY);
+	const trustProxy = checkEnvFlag(process.env.TRUST_PROXY);
 	const forwardedHost = getFirstHeaderValue(
 		request.headers.get('x-forwarded-host')
 	);
@@ -137,20 +136,21 @@ export function checkSecureRequest(request: NextRequest) {
 	const forwardedProtocol = normalizeRequestProtocol(
 		getFirstHeaderValue(request.headers.get('x-forwarded-proto'))
 	);
-	if (checkEnvFlag(env.TRUST_PROXY) && forwardedProtocol === null) {
+	if (checkEnvFlag(process.env.TRUST_PROXY) && forwardedProtocol === null) {
 		return false;
 	}
 
 	return (
 		request.nextUrl.protocol === 'https:' ||
-		(checkEnvFlag(env.TRUST_PROXY) && forwardedProtocol === 'https:')
+		(checkEnvFlag(process.env.TRUST_PROXY) &&
+			forwardedProtocol === 'https:')
 	);
 }
 
 export function checkInsecureAccountCookiesAllowed() {
 	return (
-		env.NODE_ENV !== 'production' ||
-		checkEnvFlag(env.ALLOW_INSECURE_COOKIES)
+		process.env.NODE_ENV !== 'production' ||
+		checkEnvFlag(process.env.ALLOW_INSECURE_COOKIES)
 	);
 }
 
