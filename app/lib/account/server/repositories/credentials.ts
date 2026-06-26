@@ -1,5 +1,6 @@
 import { type Transaction, sql } from 'kysely';
 
+import { deleteCredentialsByUserIdInTransaction } from './webauthnCredentials';
 import { getAccountDatabase } from '@/lib/account/server/db';
 import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import { TABLE_NAME_MAP } from '@/lib/db';
@@ -169,6 +170,7 @@ export async function updateCredentialAndDeleteSessionsWithAudit(
 			.deleteFrom(SESSION_TABLE_NAME)
 			.where('user_id', '=', userId)
 			.execute();
+		await deleteCredentialsByUserIdInTransaction(trx, userId);
 		await writeAuditLog(trx, now);
 	});
 }

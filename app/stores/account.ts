@@ -8,6 +8,7 @@ import {
 	type IAccountSessionInitialData,
 	type IAccountSsoGrantInitialData,
 	type IAccountUserProfile,
+	type IAccountWebauthnInitialData,
 } from '@/lib/account/shared/types';
 import { persist as persistMiddleware } from '@/stores/middlewares';
 
@@ -46,6 +47,7 @@ const state = {
 			pendingCount: 0,
 		},
 		user: null as IAccountUserProfile | null,
+		webauthnInitialData: null as IAccountWebauthnInitialData | null,
 	},
 };
 

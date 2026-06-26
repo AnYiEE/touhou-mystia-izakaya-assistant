@@ -105,6 +105,8 @@
 		"@heroui/theme": "2.4.6",
 		"@heroui/tooltip": "2.2.8",
 		"@node-rs/argon2": "^2.0.2",
+		"@simplewebauthn/browser": "^13.3.0",
+		"@simplewebauthn/server": "^13.3.2",
 		"better-sqlite3": "^12.11.1",
 		"broadcast-channel": "^7.3.0",
 		"compare-versions": "^6.1.1",

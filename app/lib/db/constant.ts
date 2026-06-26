@@ -44,4 +44,6 @@ export const TABLE_NAME_MAP = {
 	user: 'users',
 	userCredential: 'user_credentials',
 	userState: 'user_state',
+	userWebauthnCredential: 'user_webauthn_credentials',
+	webauthnChallenge: 'webauthn_challenges',
 } as const;

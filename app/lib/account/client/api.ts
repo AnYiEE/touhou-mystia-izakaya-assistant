@@ -1,4 +1,11 @@
 import {
+	type PublicKeyCredentialCreationOptionsJSON,
+	type PublicKeyCredentialRequestOptionsJSON,
+	startAuthentication,
+	startRegistration,
+} from '@simplewebauthn/browser';
+
+import {
 	type IAccountExportData,
 	type IAccountProfileUpdateBody,
 	type IAccountSessionListData,
@@ -7,6 +14,7 @@ import {
 	type IAuthLoginBody,
 	type IAuthLoginSuccessResponse,
 	type IAuthRegisterBody,
+	type IWebauthnCredentialListData,
 	type TAccountMeResponse,
 } from '@/lib/account/shared/types';
 import {
@@ -31,6 +39,8 @@ export type {
 	IAuthLoginBody,
 	IAuthLoginSuccessResponse,
 	IAuthRegisterBody,
+	IWebauthnCredentialListData,
+	IWebauthnCredentialSummary,
 	TAccountMeResponse,
 } from '@/lib/account/shared/types';
 
@@ -215,6 +225,110 @@ export async function revokeAccountSession(
 		data: { message: result.data.message, session_id: sessionId },
 		status: 'ok' as const,
 	};
+}
+
+function createWebAuthnCanceledResult(
+	error: unknown
+): Extract<TAccountApiResult, { status: 'error' }> {
+	const message =
+		error instanceof Error && error.name === 'NotAllowedError'
+			? 'webauthn-canceled'
+			: 'webauthn-failed';
+
+	return { httpStatus: 0, message, status: 'error' };
+}
+
+export async function startWebAuthnRegistration(
+	name: string,
+	csrfToken: string
+): Promise<TAccountApiResult<IWebauthnCredentialListData>> {
+	const optionsResult = await fetchAccountApiResult<{
+		options: PublicKeyCredentialCreationOptionsJSON;
+	}>(
+		'/api/v1/account/webauthn/registration/options',
+		createJsonRequestInit('POST', undefined, csrfToken)
+	);
+	if (optionsResult.status === 'error') {
+		return optionsResult;
+	}
+
+	let attestationResponse;
+	try {
+		attestationResponse = await startRegistration({
+			optionsJSON: optionsResult.data.options,
+		});
+	} catch (error) {
+		return createWebAuthnCanceledResult(error);
+	}
+
+	return fetchAccountApiResult<IWebauthnCredentialListData>(
+		'/api/v1/account/webauthn/registration/verify',
+		createJsonRequestInit(
+			'POST',
+			{ name, response: attestationResponse },
+			csrfToken
+		)
+	);
+}
+
+export function listWebAuthnCredentials() {
+	return fetchAccountApiResult<IWebauthnCredentialListData>(
+		'/api/v1/account/webauthn/credentials'
+	);
+}
+
+export async function deleteWebAuthnCredential(id: string, csrfToken: string) {
+	const result = await fetchAccountApiResult<{ message: 'passkey-deleted' }>(
+		`/api/v1/account/webauthn/credentials/${encodeURIComponent(id)}`,
+		createCsrfRequestInit('DELETE', csrfToken)
+	);
+	if (result.status === 'error') {
+		return result;
+	}
+
+	return {
+		data: { id, message: result.data.message },
+		status: 'ok' as const,
+	};
+}
+
+export function renameWebAuthnCredential(
+	id: string,
+	name: string,
+	csrfToken: string
+) {
+	return fetchAccountApiResult<IWebauthnCredentialListData>(
+		`/api/v1/account/webauthn/credentials/${encodeURIComponent(id)}`,
+		createJsonRequestInit('PATCH', { name }, csrfToken)
+	);
+}
+
+export async function startWebAuthnLogin(): Promise<
+	TAccountApiResult<TAuthLoginSuccessData>
+> {
+	const optionsResult = await fetchAccountApiResult<{
+		options: PublicKeyCredentialRequestOptionsJSON;
+	}>(
+		'/api/v1/auth/webauthn/authentication/options',
+		createJsonRequestInit('POST')
+	);
+	if (optionsResult.status === 'error') {
+		return optionsResult;
+	}
+
+	let assertionResponse;
+	try {
+		assertionResponse = await startAuthentication({
+			optionsJSON: optionsResult.data.options,
+		});
+	} catch (error) {
+		return createWebAuthnCanceledResult(error);
+	}
+
+	return fetchAccountApiResult<TAuthLoginSuccessData>(
+		'/api/v1/auth/webauthn/authentication/verify',
+		createJsonRequestInit('POST', { response: assertionResponse })
+	);
 }
 
 export function exportAccountData() {

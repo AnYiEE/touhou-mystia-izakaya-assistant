@@ -11,6 +11,7 @@ import {
 	useState,
 } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { browserSupportsWebAuthn } from '@simplewebauthn/browser';
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useReducedMotion } from '@/design/ui/hooks';
@@ -26,7 +27,9 @@ import {
 	faCloudArrowUp,
 	faDesktop,
 	faDownload,
+	faFingerprint,
 	faKey,
+	faPen,
 	faPlug,
 	faPowerOff,
 	faRightToBracket,
@@ -36,6 +39,7 @@ import {
 	faTriangleExclamation,
 	faUser,
 	faUserPlus,
+	faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 
 import {
@@ -59,22 +63,32 @@ import TimeAgo from '@/components/timeAgo';
 
 import {
 	AccountApiError,
+	type IWebauthnCredentialSummary,
 	type TAccountApiResult,
 	changeAccountPassword,
 	changeAccountProfile,
 	deleteAccount,
 	deleteAccountData,
+	deleteWebAuthnCredential,
 	exportAccountData,
+	listWebAuthnCredentials,
 	loginAccount,
 	logoutAccount,
 	logoutAllAccount,
 	refreshAccountSessions,
 	refreshAccountSsoGrants,
 	registerAccount,
+	renameWebAuthnCredential,
 	revokeAccountSession,
 	revokeAccountSsoGrant,
+	startWebAuthnLogin,
+	startWebAuthnRegistration,
 } from '@/lib/account/client/api';
-import { postAccountSyncBroadcastMessage } from '@/lib/account/client/broadcast';
+import {
+	postAccountSyncBroadcastMessage,
+	postAccountWebauthnBroadcastMessage,
+	subscribeAccountWebauthnBroadcastMessage,
+} from '@/lib/account/client/broadcast';
 import { getAccountClientErrorMessage } from '@/lib/account/client/errorMessage';
 import { createAccountClientId } from '@/lib/account/client/random';
 import {
@@ -92,10 +106,14 @@ import {
 	NICKNAME_RULE_DESCRIPTION,
 	PASSWORD_RULE_DESCRIPTION,
 	USERNAME_RULE_DESCRIPTION,
+	WEBAUTHN_CREDENTIAL_NAME_MAX_LENGTH,
+	WEBAUTHN_CREDENTIAL_NAME_RULE_DESCRIPTION,
 	checkNicknamePolicy,
 	checkPasswordPolicy,
 	checkUsernamePolicy,
+	checkWebauthnCredentialNamePolicy,
 	normalizeNickname,
+	normalizeWebauthnCredentialName,
 } from '@/lib/account/shared/constants';
 import { getLogSafeErrorCode } from '@/lib/logging';
 import type {
@@ -449,6 +467,7 @@ export default memo<IProps>(function AccountManager() {
 	const sessionInitialData = accountStore.shared.sessionInitialData.use();
 	const ssoGrantInitialData = accountStore.shared.ssoGrantInitialData.use();
 	const user = accountStore.shared.user.use();
+	const webauthnInitialData = accountStore.shared.webauthnInitialData.use();
 
 	const [authMode, setAuthMode] = useState<TAuthMode>('login');
 	const [currentPassword, setCurrentPassword] = useState('');
@@ -459,6 +478,8 @@ export default memo<IProps>(function AccountManager() {
 	>(null);
 	const [password, setPassword] = useState('');
 	const [hasAcceptedAuthTerms, setHasAcceptedAuthTerms] = useState(false);
+	const [shouldHighlightAuthTerms, setShouldHighlightAuthTerms] =
+		useState(false);
 	const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
 	const [registrationNickname, setRegistrationNickname] = useState('');
 	const [username, setUsername] = useState('');
@@ -494,10 +515,35 @@ export default memo<IProps>(function AccountManager() {
 	const [revokingSessionId, setRevokingSessionId] = useState<string | null>(
 		null
 	);
+	const [isWebauthnSupported, setIsWebauthnSupported] = useState(false);
+	const [isWebauthnLoginPending, setIsWebauthnLoginPending] = useState(false);
+	const [passkeys, setPasskeys] = useState<IWebauthnCredentialSummary[]>([]);
+	const [isPasskeyListLoading, setIsPasskeyListLoading] = useState(false);
+	const [isAddingPasskey, setIsAddingPasskey] = useState(false);
+	const [deleteTargetPasskeyId, setDeleteTargetPasskeyId] = useState<
+		string | null
+	>(null);
+	const [deletingPasskeyId, setDeletingPasskeyId] = useState<string | null>(
+		null
+	);
+	const [newPasskeyName, setNewPasskeyName] = useState('');
+	const [isAddPasskeyFormOpen, setIsAddPasskeyFormOpen] = useState(false);
+	const [editingPasskeyId, setEditingPasskeyId] = useState<string | null>(
+		null
+	);
+	const [editingPasskeyName, setEditingPasskeyName] = useState('');
+	const [renamingPasskeyId, setRenamingPasskeyId] = useState<string | null>(
+		null
+	);
+	const webauthnBroadcastTabIdRef = useRef<string | null>(null);
+	const authTermsCheckboxRef = useRef<HTMLInputElement>(null);
+	const passkeysLoadedUserIdRef = useRef<string | null>(null);
 	const sessionListUpdatedAtRef = useRef(0);
 	const sessionListRequestIdRef = useRef(0);
+	const sessionsFetchRequestedUserIdRef = useRef<string | null>(null);
 	const ssoGrantListUpdatedAtRef = useRef(0);
 	const ssoGrantListRequestIdRef = useRef(0);
+	const ssoGrantsFetchRequestedUserIdRef = useRef<string | null>(null);
 
 	const isRegistrationPasswordInvalid =
 		authMode === 'register' &&
@@ -676,6 +722,7 @@ export default memo<IProps>(function AccountManager() {
 		);
 		setAuthMode('login');
 		setMessage(null);
+		setShouldHighlightAuthTerms(false);
 	}, [vibrate]);
 
 	const handleRegisterModePress = useCallback(() => {
@@ -687,14 +734,37 @@ export default memo<IProps>(function AccountManager() {
 		);
 		setAuthMode('register');
 		setMessage(null);
+		setShouldHighlightAuthTerms(false);
 	}, [vibrate]);
 
 	const handleAuthTermsAcceptedChange = useCallback(
 		(event: ChangeEvent<HTMLInputElement>) => {
-			setHasAcceptedAuthTerms(event.currentTarget.checked);
+			const { checked } = event.currentTarget;
+			setHasAcceptedAuthTerms(checked);
+			if (checked) {
+				setShouldHighlightAuthTerms(false);
+			}
 		},
 		[]
 	);
+
+	const handleAuthTermsLabelPointerDown = useCallback(() => {
+		authTermsCheckboxRef.current?.focus();
+	}, []);
+
+	const handleAuthUsernameChange = useCallback((value: string) => {
+		setUsername(value);
+		setMessage((currentMessage) =>
+			currentMessage === 'invalid-credentials' ? null : currentMessage
+		);
+	}, []);
+
+	const handleAuthPasswordChange = useCallback((value: string) => {
+		setPassword(value);
+		setMessage((currentMessage) =>
+			currentMessage === 'invalid-credentials' ? null : currentMessage
+		);
+	}, []);
 
 	const handleCurrentPasswordChange = useCallback((value: string) => {
 		setCurrentPassword(value);
@@ -1453,6 +1523,7 @@ export default memo<IProps>(function AccountManager() {
 
 	useEffect(() => {
 		if (user === null || csrfToken === null || passwordMustChange) {
+			ssoGrantsFetchRequestedUserIdRef.current = null;
 			if (
 				bootstrapStatus === 'anonymous' ||
 				bootstrapStatus === 'loggedIn' ||
@@ -1472,6 +1543,7 @@ export default memo<IProps>(function AccountManager() {
 
 		if (ssoGrantInitialData?.user_id === user.id) {
 			accountStore.shared.ssoGrantInitialData.set(null);
+			ssoGrantsFetchRequestedUserIdRef.current = user.id;
 			if (
 				ssoGrantInitialData.rendered_at <
 				ssoGrantListUpdatedAtRef.current
@@ -1488,11 +1560,16 @@ export default memo<IProps>(function AccountManager() {
 			setSsoGrants([]);
 			ssoGrantListUpdatedAtRef.current = Date.now();
 			setSsoGrantsUserId(null);
+			ssoGrantsFetchRequestedUserIdRef.current = null;
 		}
-		if (ssoGrantsUserId === user.id) {
+		if (
+			ssoGrantsUserId === user.id ||
+			ssoGrantsFetchRequestedUserIdRef.current === user.id
+		) {
 			return;
 		}
 
+		ssoGrantsFetchRequestedUserIdRef.current = user.id;
 		ssoGrantListUpdatedAtRef.current = Date.now();
 		void refreshAccountSsoGrantsForCurrentUser({ silent: true });
 	}, [
@@ -1599,6 +1676,7 @@ export default memo<IProps>(function AccountManager() {
 
 	useEffect(() => {
 		if (user === null || csrfToken === null || passwordMustChange) {
+			sessionsFetchRequestedUserIdRef.current = null;
 			if (
 				bootstrapStatus === 'anonymous' ||
 				bootstrapStatus === 'loggedIn' ||
@@ -1613,6 +1691,7 @@ export default memo<IProps>(function AccountManager() {
 		}
 		if (sessionInitialData?.user_id === user.id) {
 			accountStore.shared.sessionInitialData.set(null);
+			sessionsFetchRequestedUserIdRef.current = user.id;
 			if (
 				sessionInitialData.rendered_at < sessionListUpdatedAtRef.current
 			) {
@@ -1628,11 +1707,16 @@ export default memo<IProps>(function AccountManager() {
 			setAccountSessions([]);
 			sessionListUpdatedAtRef.current = Date.now();
 			setAccountSessionsUserId(null);
+			sessionsFetchRequestedUserIdRef.current = null;
 		}
-		if (accountSessionsUserId === user.id) {
+		if (
+			accountSessionsUserId === user.id ||
+			sessionsFetchRequestedUserIdRef.current === user.id
+		) {
 			return;
 		}
 
+		sessionsFetchRequestedUserIdRef.current = user.id;
 		sessionListUpdatedAtRef.current = Date.now();
 		void refreshAccountSessionsForCurrentUser({ silent: true });
 	}, [
@@ -1821,6 +1905,437 @@ export default memo<IProps>(function AccountManager() {
 			});
 	}, [csrfToken, isSubmitting, revokeTargetSessionId, user, vibrate]);
 
+	useEffect(() => {
+		setIsWebauthnSupported(browserSupportsWebAuthn());
+		webauthnBroadcastTabIdRef.current ??= createAccountClientId();
+	}, []);
+
+	const refreshPasskeys = useCallback(() => {
+		const currentUser = accountStore.shared.user.get();
+		if (
+			currentUser === null ||
+			accountStore.shared.csrfToken.get() === null ||
+			accountStore.shared.passwordMustChange.get()
+		) {
+			setPasskeys([]);
+			return;
+		}
+
+		const userId = currentUser.id;
+		setIsPasskeyListLoading(true);
+		void listWebAuthnCredentials()
+			.then((result) => {
+				if (accountStore.shared.user.get()?.id !== userId) {
+					return;
+				}
+				if (result.status === 'error') {
+					return;
+				}
+
+				setPasskeys(result.data.credentials);
+			})
+			.catch(() => {
+				// Passkey list refresh is best-effort; ignore transient errors.
+			})
+			.finally(() => {
+				if (accountStore.shared.user.get()?.id === userId) {
+					setIsPasskeyListLoading(false);
+				}
+			});
+	}, []);
+
+	useEffect(() => {
+		if (!isWebauthnSupported) {
+			return;
+		}
+		if (user === null || csrfToken === null || passwordMustChange) {
+			setPasskeys([]);
+			passkeysLoadedUserIdRef.current = null;
+			accountStore.shared.webauthnInitialData.set(null);
+			return;
+		}
+		if (webauthnInitialData?.user_id === user.id) {
+			accountStore.shared.webauthnInitialData.set(null);
+			setPasskeys(webauthnInitialData.credentials);
+			passkeysLoadedUserIdRef.current = user.id;
+			return;
+		}
+		if (webauthnInitialData !== null) {
+			accountStore.shared.webauthnInitialData.set(null);
+		}
+		if (passkeysLoadedUserIdRef.current === user.id) {
+			return;
+		}
+
+		passkeysLoadedUserIdRef.current = user.id;
+		refreshPasskeys();
+	}, [
+		csrfToken,
+		isWebauthnSupported,
+		passwordMustChange,
+		refreshPasskeys,
+		user,
+		webauthnInitialData,
+	]);
+
+	useEffect(() => {
+		if (!isWebauthnSupported) {
+			return;
+		}
+
+		return subscribeAccountWebauthnBroadcastMessage((message) => {
+			if (
+				message.userId !== accountStore.shared.user.get()?.id ||
+				message.tabId === webauthnBroadcastTabIdRef.current
+			) {
+				return;
+			}
+
+			refreshPasskeys();
+		});
+	}, [isWebauthnSupported, refreshPasskeys]);
+
+	const broadcastPasskeyChange = useCallback((userId: string) => {
+		void postAccountWebauthnBroadcastMessage({
+			tabId: webauthnBroadcastTabIdRef.current ?? '',
+			userId,
+		});
+	}, []);
+
+	const handleWebAuthnLogin = useCallback(() => {
+		if (isWebauthnLoginPending) {
+			return;
+		}
+		if (!hasAcceptedAuthTerms) {
+			setShouldHighlightAuthTerms(true);
+			return;
+		}
+
+		vibrate();
+		trackEvent(
+			trackEvent.category.click,
+			'Account Auth Button',
+			'WebAuthn Login'
+		);
+		setIsWebauthnLoginPending(true);
+		setMessage(null);
+
+		const expectedAuthContext = {
+			expectedCsrfToken: accountStore.shared.csrfToken.get(),
+			expectedUserId: accountStore.shared.user.get()?.id ?? null,
+		};
+
+		void startWebAuthnLogin()
+			.then((result) => {
+				if (result.status === 'error') {
+					if (result.message !== 'webauthn-canceled') {
+						setMessage(result.message);
+					}
+					return;
+				}
+
+				const { redirect_to: redirectTo, ...data } = result.data;
+				if (
+					!applyAccountAuthSuccessResponse(data, expectedAuthContext)
+				) {
+					return;
+				}
+
+				setMessage('登录成功');
+				if (redirectTo !== undefined) {
+					globalThis.location.assign(redirectTo);
+					return;
+				}
+				if (isSsoContext) {
+					setShouldHideAfterSsoAuth(true);
+					accountStore.shared.accountModal.isOpen.set(false);
+					router.refresh();
+					return;
+				}
+
+				refreshAccountState().catch((error: unknown) => {
+					if (
+						handleUnauthorizedAccountError(error, {
+							expectedCsrfToken: data.csrf_token,
+							expectedUserId: data.user.id,
+						})
+					) {
+						return;
+					}
+					console.warn(
+						'Account state refresh failed after successful authentication.',
+						{ errorCode: getLogSafeErrorCode(error) }
+					);
+				});
+			})
+			.catch((error: unknown) => {
+				setMessage(error instanceof Error ? error.message : '认证失败');
+			})
+			.finally(() => {
+				setIsWebauthnLoginPending(false);
+			});
+	}, [
+		hasAcceptedAuthTerms,
+		isSsoContext,
+		isWebauthnLoginPending,
+		router,
+		vibrate,
+	]);
+
+	const handleAddPasskey = useCallback(() => {
+		const currentCsrfToken = accountStore.shared.csrfToken.get();
+		if (currentCsrfToken === null || isAddingPasskey) {
+			return;
+		}
+
+		const passkeyName = normalizeWebauthnCredentialName(newPasskeyName);
+		if (!checkWebauthnCredentialNamePolicy(passkeyName)) {
+			setMessage('invalid-passkey-name');
+			return;
+		}
+
+		vibrate();
+		trackEvent(
+			trackEvent.category.click,
+			'Account Auth Button',
+			'Add Passkey'
+		);
+		setIsAddingPasskey(true);
+		setMessage(null);
+
+		const expectedAuthContext = {
+			expectedCsrfToken: currentCsrfToken,
+			expectedUserId: accountStore.shared.user.get()?.id ?? null,
+		};
+
+		void startWebAuthnRegistration(passkeyName ?? '', currentCsrfToken)
+			.then((result) => {
+				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
+					return;
+				}
+				if (result.status === 'error') {
+					if (
+						handleUnauthorizedAccountActionError(
+							result,
+							expectedAuthContext
+						)
+					) {
+						return;
+					}
+					if (result.message !== 'webauthn-canceled') {
+						setMessage(result.message);
+					}
+					return;
+				}
+
+				setPasskeys(result.data.credentials);
+				setNewPasskeyName('');
+				setIsAddPasskeyFormOpen(false);
+				setMessage('通行密钥已添加');
+				if (expectedAuthContext.expectedUserId !== null) {
+					broadcastPasskeyChange(expectedAuthContext.expectedUserId);
+				}
+			})
+			.catch((error: unknown) => {
+				if (
+					handleUnauthorizedAccountError(error, expectedAuthContext)
+				) {
+					return;
+				}
+				setMessage(
+					error instanceof Error ? error.message : '通行密钥添加失败'
+				);
+			})
+			.finally(() => {
+				setIsAddingPasskey(false);
+			});
+	}, [broadcastPasskeyChange, isAddingPasskey, newPasskeyName, vibrate]);
+
+	const handleOpenAddPasskeyForm = useCallback(() => {
+		setNewPasskeyName('');
+		setIsAddPasskeyFormOpen(true);
+		setMessage(null);
+	}, []);
+
+	const handleCancelAddPasskey = useCallback(() => {
+		setNewPasskeyName('');
+		setIsAddPasskeyFormOpen(false);
+	}, []);
+
+	const handleDeletePasskeyOpen = useCallback((id: string) => {
+		setDeleteTargetPasskeyId(id);
+	}, []);
+
+	const handleDeletePasskeyCancel = useCallback(() => {
+		setDeleteTargetPasskeyId(null);
+	}, []);
+
+	const handleDeletePasskey = useCallback(() => {
+		const currentCsrfToken = accountStore.shared.csrfToken.get();
+		if (
+			deleteTargetPasskeyId === null ||
+			currentCsrfToken === null ||
+			deletingPasskeyId !== null
+		) {
+			return;
+		}
+
+		vibrate();
+		const id = deleteTargetPasskeyId;
+		trackEvent(
+			trackEvent.category.click,
+			'Account Auth Button',
+			'Delete Passkey'
+		);
+
+		const expectedAuthContext = {
+			expectedCsrfToken: currentCsrfToken,
+			expectedUserId: accountStore.shared.user.get()?.id ?? null,
+		};
+		setDeleteTargetPasskeyId(null);
+		setDeletingPasskeyId(id);
+		setMessage(null);
+
+		void deleteWebAuthnCredential(id, currentCsrfToken)
+			.then((result) => {
+				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
+					return;
+				}
+				if (result.status === 'error') {
+					if (
+						handleUnauthorizedAccountActionError(
+							result,
+							expectedAuthContext
+						)
+					) {
+						return;
+					}
+					setMessage(result.message);
+					return;
+				}
+
+				setPasskeys((prev) =>
+					prev.filter((credential) => credential.id !== id)
+				);
+				setMessage('通行密钥已删除');
+				if (expectedAuthContext.expectedUserId !== null) {
+					broadcastPasskeyChange(expectedAuthContext.expectedUserId);
+				}
+			})
+			.catch((error: unknown) => {
+				if (
+					handleUnauthorizedAccountError(error, expectedAuthContext)
+				) {
+					return;
+				}
+				setMessage(
+					error instanceof Error ? error.message : '通行密钥删除失败'
+				);
+			})
+			.finally(() => {
+				setDeletingPasskeyId(null);
+			});
+	}, [
+		broadcastPasskeyChange,
+		deleteTargetPasskeyId,
+		deletingPasskeyId,
+		vibrate,
+	]);
+
+	const handleRenamePasskeyOpen = useCallback(
+		(id: string, currentName: string | null) => {
+			setEditingPasskeyId(id);
+			setEditingPasskeyName(currentName ?? '');
+			setMessage(null);
+		},
+		[]
+	);
+
+	const handleRenamePasskeyCancel = useCallback(() => {
+		setEditingPasskeyId(null);
+		setEditingPasskeyName('');
+	}, []);
+
+	const handleRenamePasskeySave = useCallback(() => {
+		const currentCsrfToken = accountStore.shared.csrfToken.get();
+		if (
+			editingPasskeyId === null ||
+			currentCsrfToken === null ||
+			renamingPasskeyId !== null
+		) {
+			return;
+		}
+
+		const passkeyName = normalizeWebauthnCredentialName(editingPasskeyName);
+		if (!checkWebauthnCredentialNamePolicy(passkeyName)) {
+			setMessage('invalid-passkey-name');
+			return;
+		}
+
+		vibrate();
+		const id = editingPasskeyId;
+		trackEvent(
+			trackEvent.category.click,
+			'Account Auth Button',
+			'Rename Passkey'
+		);
+
+		const expectedAuthContext = {
+			expectedCsrfToken: currentCsrfToken,
+			expectedUserId: accountStore.shared.user.get()?.id ?? null,
+		};
+		setRenamingPasskeyId(id);
+		setMessage(null);
+
+		void renameWebAuthnCredential(id, passkeyName ?? '', currentCsrfToken)
+			.then((result) => {
+				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
+					return;
+				}
+				if (result.status === 'error') {
+					if (
+						handleUnauthorizedAccountActionError(
+							result,
+							expectedAuthContext
+						)
+					) {
+						return;
+					}
+					setMessage(result.message);
+					return;
+				}
+
+				setPasskeys(result.data.credentials);
+				setEditingPasskeyId(null);
+				setEditingPasskeyName('');
+				setMessage('通行密钥已重命名');
+				if (expectedAuthContext.expectedUserId !== null) {
+					broadcastPasskeyChange(expectedAuthContext.expectedUserId);
+				}
+			})
+			.catch((error: unknown) => {
+				if (
+					handleUnauthorizedAccountError(error, expectedAuthContext)
+				) {
+					return;
+				}
+				setMessage(
+					error instanceof Error
+						? error.message
+						: '通行密钥重命名失败'
+				);
+			})
+			.finally(() => {
+				setRenamingPasskeyId(null);
+			});
+	}, [
+		broadcastPasskeyChange,
+		editingPasskeyId,
+		editingPasskeyName,
+		renamingPasskeyId,
+		vibrate,
+	]);
+
 	if (bootstrapStatus === 'error') {
 		return (
 			<div className="space-y-4">
@@ -1851,6 +2366,9 @@ export default memo<IProps>(function AccountManager() {
 			'资料已更新',
 			'已撤销授权',
 			'已下线登录设备',
+			'通行密钥已添加',
+			'通行密钥已删除',
+			'通行密钥已重命名',
 			'账号数据已导出',
 			'云端数据已清空',
 			'云端数据已清空，其他标签页可能需要手动刷新',
@@ -1971,7 +2489,8 @@ export default memo<IProps>(function AccountManager() {
 									<AccountInputIcon icon={faUser} />
 								}
 								value={username}
-								onValueChange={setUsername}
+								validationBehavior="aria"
+								onValueChange={handleAuthUsernameChange}
 							/>
 							<AccountCollapseMotion motionKey="registration-nickname">
 								{authMode === 'register' ? (
@@ -2036,12 +2555,22 @@ export default memo<IProps>(function AccountManager() {
 									}
 									type="password"
 									value={password}
-									onValueChange={setPassword}
+									validationBehavior="aria"
+									onValueChange={handleAuthPasswordChange}
 								/>
 							</div>
-							<div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 px-1 text-tiny leading-5 text-foreground-500">
+							<div
+								className={cn(
+									'mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-medium px-1 text-tiny leading-5 text-foreground-500 transition-colors duration-200 motion-reduce:transition-none',
+									{
+										'bg-warning/10 ring-1 ring-inset ring-warning/20 dark:bg-warning/20 dark:ring-warning/40':
+											shouldHighlightAuthTerms,
+									}
+								)}
+							>
 								<input
 									id="account-auth-terms-confirmation"
+									ref={authTermsCheckboxRef}
 									checked={hasAcceptedAuthTerms}
 									className="peer sr-only"
 									type="checkbox"
@@ -2050,6 +2579,9 @@ export default memo<IProps>(function AccountManager() {
 								<label
 									htmlFor="account-auth-terms-confirmation"
 									className="group inline-flex shrink-0 cursor-pointer items-center rounded-small outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-focus peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background"
+									onPointerDown={
+										handleAuthTermsLabelPointerDown
+									}
 								>
 									<span
 										aria-hidden
@@ -2075,6 +2607,9 @@ export default memo<IProps>(function AccountManager() {
 									<label
 										htmlFor="account-auth-terms-confirmation"
 										className="cursor-pointer rounded-small outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-focus peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background"
+										onPointerDown={
+											handleAuthTermsLabelPointerDown
+										}
 									>
 										我已阅读并同意
 									</label>
@@ -2129,6 +2664,32 @@ export default memo<IProps>(function AccountManager() {
 							>
 								{authMode === 'login' ? '登录账号' : '创建账号'}
 							</Button>
+							{isWebauthnSupported ? (
+								<AccountCollapseMotion motionKey="webauthn-login">
+									{authMode === 'login' ? (
+										<div className="pt-3">
+											<Button
+												fullWidth
+												isLoading={
+													isWebauthnLoginPending
+												}
+												startContent={
+													isWebauthnLoginPending ? null : (
+														<FontAwesomeIcon
+															icon={faFingerprint}
+															className="w-4"
+														/>
+													)
+												}
+												variant="flat"
+												onPress={handleWebAuthnLogin}
+											>
+												使用通行密钥登录
+											</Button>
+										</div>
+									) : null}
+								</AccountCollapseMotion>
+							) : null}
 						</form>
 					</AccountPanel>
 					<AccountPanel className="space-y-3 text-small leading-6 text-foreground-600">
@@ -2214,6 +2775,338 @@ export default memo<IProps>(function AccountManager() {
 								</div>
 							)}
 						</AccountPanel>
+						{!passwordMustChange && (
+							<AccountPanel className="space-y-4">
+								<div className="space-y-2">
+									<div>
+										<div className="flex min-h-8 items-center justify-between gap-3">
+											<div className="flex min-w-0 items-center gap-2">
+												<FontAwesomeIcon
+													icon={faFingerprint}
+													className="w-4 text-primary-600"
+												/>
+												<span className="text-small font-medium text-foreground-700">
+													通行密钥
+												</span>
+											</div>
+											{isWebauthnSupported &&
+											!isAddPasskeyFormOpen ? (
+												<Button
+													className="h-8 text-primary-600"
+													isDisabled={isSubmitting}
+													radius="full"
+													size="sm"
+													startContent={
+														<FontAwesomeIcon
+															icon={faKey}
+															className="h-3.5 w-3.5"
+														/>
+													}
+													variant="light"
+													onPress={
+														handleOpenAddPasskeyForm
+													}
+												>
+													添加
+												</Button>
+											) : null}
+										</div>
+										{isWebauthnSupported ? (
+											<AccountCollapseMotion motionKey="webauthn-add-form">
+												{isAddPasskeyFormOpen ? (
+													<div className="pt-2">
+														<div className="space-y-2 rounded-medium border border-default-200 bg-default-50/40 p-3">
+															<Input
+																description={
+																	WEBAUTHN_CREDENTIAL_NAME_RULE_DESCRIPTION
+																}
+																isDisabled={
+																	isAddingPasskey
+																}
+																label="通行密钥名称（可选）"
+																maxLength={
+																	WEBAUTHN_CREDENTIAL_NAME_MAX_LENGTH
+																}
+																placeholder="例如：我的手机、YubiKey"
+																size="sm"
+																value={
+																	newPasskeyName
+																}
+																onValueChange={
+																	setNewPasskeyName
+																}
+															/>
+															<div className="flex items-center justify-end gap-2">
+																<Button
+																	isDisabled={
+																		isAddingPasskey
+																	}
+																	radius="full"
+																	size="sm"
+																	variant="light"
+																	onPress={
+																		handleCancelAddPasskey
+																	}
+																>
+																	取消
+																</Button>
+																<Button
+																	color="primary"
+																	isLoading={
+																		isAddingPasskey
+																	}
+																	radius="full"
+																	size="sm"
+																	startContent={
+																		isAddingPasskey ? null : (
+																			<FontAwesomeIcon
+																				icon={
+																					faFingerprint
+																				}
+																				className="h-3.5 w-3.5"
+																			/>
+																		)
+																	}
+																	variant="flat"
+																	onPress={
+																		handleAddPasskey
+																	}
+																>
+																	确认添加
+																</Button>
+															</div>
+														</div>
+													</div>
+												) : null}
+											</AccountCollapseMotion>
+										) : null}
+									</div>
+									<AccountAnimatedList>
+										{isWebauthnSupported ? (
+											isPasskeyListLoading &&
+											passkeys.length === 0 ? (
+												<AccountAnimatedListItem key="loading">
+													<p className="text-small leading-5 text-foreground-500">
+														正在读取通行密钥
+													</p>
+												</AccountAnimatedListItem>
+											) : passkeys.length === 0 ? (
+												<AccountAnimatedListItem key="empty">
+													<p className="text-small leading-5 text-foreground-500">
+														暂无通行密钥
+													</p>
+												</AccountAnimatedListItem>
+											) : (
+												passkeys.map((passkey) => (
+													<AccountAnimatedListItem
+														key={passkey.id}
+													>
+														<div className="rounded-medium border border-default-200 bg-default-50/40 px-3 py-2">
+															<div className="space-y-1">
+																<div className="flex items-center justify-between gap-3">
+																	{editingPasskeyId ===
+																	passkey.id ? (
+																		<div className="flex min-w-0 flex-1 items-center gap-2">
+																			<Input
+																				autoFocus
+																				isDisabled={
+																					renamingPasskeyId ===
+																					passkey.id
+																				}
+																				maxLength={
+																					WEBAUTHN_CREDENTIAL_NAME_MAX_LENGTH
+																				}
+																				placeholder="通行密钥名称"
+																				size="sm"
+																				value={
+																					editingPasskeyName
+																				}
+																				onValueChange={
+																					setEditingPasskeyName
+																				}
+																			/>
+																			<Button
+																				isIconOnly
+																				aria-label="保存名称"
+																				className="h-8 w-8 min-w-8 text-primary-600"
+																				isLoading={
+																					renamingPasskeyId ===
+																					passkey.id
+																				}
+																				radius="full"
+																				size="sm"
+																				variant="light"
+																				onPress={
+																					handleRenamePasskeySave
+																				}
+																			>
+																				<FontAwesomeIcon
+																					icon={
+																						faCheck
+																					}
+																					className="h-3.5 w-3.5"
+																				/>
+																			</Button>
+																			<Button
+																				isIconOnly
+																				aria-label="取消重命名"
+																				className="h-8 w-8 min-w-8 text-foreground-500"
+																				isDisabled={
+																					renamingPasskeyId ===
+																					passkey.id
+																				}
+																				radius="full"
+																				size="sm"
+																				variant="light"
+																				onPress={
+																					handleRenamePasskeyCancel
+																				}
+																			>
+																				<FontAwesomeIcon
+																					icon={
+																						faXmark
+																					}
+																					className="h-3.5 w-3.5"
+																				/>
+																			</Button>
+																		</div>
+																	) : (
+																		<div className="flex min-w-0 flex-1 items-center gap-1">
+																			<p className="min-w-0 truncate text-small font-medium text-foreground-700">
+																				{passkey.name ??
+																					'通行密钥'}
+																			</p>
+																			<Tooltip
+																				showArrow
+																				content="重命名"
+																				placement="left"
+																			>
+																				<span className="inline-flex shrink-0">
+																					<Button
+																						isIconOnly
+																						aria-label="重命名通行密钥"
+																						className="h-7 w-7 min-w-7 shrink-0 text-primary-600"
+																						isDisabled={
+																							isSubmitting
+																						}
+																						radius="full"
+																						size="sm"
+																						variant="light"
+																						onPress={() => {
+																							handleRenamePasskeyOpen(
+																								passkey.id,
+																								passkey.name
+																							);
+																						}}
+																					>
+																						<FontAwesomeIcon
+																							icon={
+																								faPen
+																							}
+																							className="h-3 w-3"
+																						/>
+																					</Button>
+																				</span>
+																			</Tooltip>
+																		</div>
+																	)}
+																	<Tooltip
+																		showArrow
+																		content="删除通行密钥"
+																		placement="left"
+																	>
+																		<span className="inline-flex shrink-0">
+																			<AccountConfirmButton
+																				ariaLabel="删除通行密钥"
+																				buttonLabel="删除通行密钥"
+																				className="h-8 w-8 min-w-8 justify-center text-warning-600"
+																				color="warning"
+																				confirmLabel="确认删除"
+																				fullWidth={
+																					false
+																				}
+																				icon={
+																					faTrash
+																				}
+																				isDisabled={
+																					isSubmitting
+																				}
+																				isIconOnly
+																				isLoading={
+																					deletingPasskeyId ===
+																					passkey.id
+																				}
+																				isOpen={
+																					deleteTargetPasskeyId ===
+																					passkey.id
+																				}
+																				radius="full"
+																				size="sm"
+																				onCancel={
+																					handleDeletePasskeyCancel
+																				}
+																				onConfirm={
+																					handleDeletePasskey
+																				}
+																				onOpenChange={(
+																					isOpen
+																				) => {
+																					if (
+																						isOpen
+																					) {
+																						handleDeletePasskeyOpen(
+																							passkey.id
+																						);
+																					} else {
+																						handleDeletePasskeyCancel();
+																					}
+																				}}
+																			/>
+																		</span>
+																	</Tooltip>
+																</div>
+																<div className="min-w-0 space-y-1">
+																	<p
+																		className="break-words text-tiny text-foreground-500"
+																		title={formatSessionTimestamp(
+																			passkey.created_at
+																		)}
+																	>
+																		添加于
+																		{formatSessionTimestamp(
+																			passkey.created_at
+																		)}
+																	</p>
+																	<p className="break-words text-tiny text-foreground-500">
+																		最近使用：
+																		{passkey.last_used_at ===
+																		null ? (
+																			'从未使用'
+																		) : (
+																			<TimeAgo
+																				timestamp={
+																					passkey.last_used_at
+																				}
+																			/>
+																		)}
+																	</p>
+																</div>
+															</div>
+														</div>
+													</AccountAnimatedListItem>
+												))
+											)
+										) : (
+											<AccountAnimatedListItem key="unsupported">
+												<p className="text-small leading-5 text-foreground-500">
+													当前环境不支持通行密钥
+												</p>
+											</AccountAnimatedListItem>
+										)}
+									</AccountAnimatedList>
+								</div>
+							</AccountPanel>
+						)}
 						<AccountPanel className="space-y-4">
 							<AccountPanelTitle icon={faKey}>
 								{passwordMustChange ? '更新密码' : '账号设置'}
@@ -2337,11 +3230,7 @@ export default memo<IProps>(function AccountManager() {
 								</form>
 							)}
 							<form
-								className={cn(
-									'space-y-3',
-									!passwordMustChange &&
-										'border-t border-default-200/80 pt-4'
-								)}
+								className="space-y-3"
 								onSubmit={handlePasswordChangeSubmit}
 							>
 								{passwordMustChange && (

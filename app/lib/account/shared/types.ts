@@ -80,6 +80,24 @@ export interface IAccountSessionInitialData extends IAccountSessionListData {
 	user_id: string;
 }
 
+export interface IWebauthnCredentialSummary {
+	backed_up: boolean;
+	created_at: number;
+	device_type: string;
+	id: string;
+	last_used_at: number | null;
+	name: string | null;
+}
+
+export interface IWebauthnCredentialListData {
+	credentials: IWebauthnCredentialSummary[];
+}
+
+export interface IAccountWebauthnInitialData extends IWebauthnCredentialListData {
+	rendered_at: number;
+	user_id: string;
+}
+
 export interface IAdminLoginBody {
 	password: string;
 	username: string;
@@ -459,6 +477,7 @@ export interface IAdminUserDetailData {
 		schema_version: number;
 		updated_at: number;
 	}>;
+	passkeys: IWebauthnCredentialSummary[];
 	session_count: number;
 	user: IAccountUserProfile;
 }

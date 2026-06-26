@@ -8,38 +8,14 @@ import {
 	readJsonBodyResult,
 } from '@/lib/account/server/routeResponses';
 import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
-import {
-	type IAuthLoginBody,
-	type IAuthLoginSuccessResponse,
-} from '@/lib/account/shared/types';
+import { type IAuthLoginBody } from '@/lib/account/shared/types';
 import { createRetryAfterHeaders } from '@/lib/api/http';
-import {
-	createNoStoreErrorResponse,
-	createNoStoreJsonResponse,
-	createNoStoreRedirectResponse,
-} from '@/lib/api/routeResponses';
-import { createMainSiteUrl } from '@/lib/siteUrl';
+import { createNoStoreErrorResponse } from '@/lib/api/routeResponses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const INVALID_LOGIN_MESSAGE = 'invalid-credentials';
-const SSO_AUTHORIZE_PATH = '/sso/authorize';
-
-type TAuthLoginRouteSuccessResponse = IAuthLoginSuccessResponse & {
-	redirect_to?: string;
-};
-
-function checkJsonResponseRequest(request: NextRequest) {
-	return (
-		request.headers
-			.get('accept')
-			?.split(',')
-			.some(
-				(item) => item.trim().split(';', 1)[0] === 'application/json'
-			) === true
-	);
-}
 
 function createInvalidLoginResponse() {
 	return createNoStoreErrorResponse(INVALID_LOGIN_MESSAGE, 401);
@@ -287,6 +263,7 @@ export async function POST(request: NextRequest) {
 					action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
 						.loginSucceeded,
 					metadata: {
+						method: 'password',
 						must_change_on_next_login:
 							credential.password_must_change === 1,
 						nickname: user.nickname,
@@ -314,26 +291,13 @@ export async function POST(request: NextRequest) {
 		return createInvalidLoginResponse();
 	}
 
-	const ssoModule = await import('@/lib/account/server/sso');
-	const ssoContext = ssoModule.getSsoContextCookie(request);
-	const ssoAuthorizeUrl = createMainSiteUrl(SSO_AUTHORIZE_PATH);
-	if (ssoContext !== null && !checkJsonResponseRequest(request)) {
-		const response = createNoStoreRedirectResponse(ssoAuthorizeUrl);
-		authModule.setAccountSessionCookie(response, session.token, request);
+	const loginResponseModule =
+		await import('@/lib/account/server/loginResponse');
 
-		return response;
-	}
-
-	const response = createNoStoreJsonResponse({
-		csrf_token: session.csrfToken,
-		password_must_change: credential.password_must_change === 1,
-		...(ssoContext === null
-			? {}
-			: { redirect_to: ssoAuthorizeUrl.toString() }),
+	return loginResponseModule.createAccountLoginSuccessResponse({
+		passwordMustChange: credential.password_must_change === 1,
+		request,
+		session,
 		user: userModule.createAccountUserProfile(currentUser),
-	} satisfies TAuthLoginRouteSuccessResponse);
-
-	authModule.setAccountSessionCookie(response, session.token, request);
-
-	return response;
+	});
 }

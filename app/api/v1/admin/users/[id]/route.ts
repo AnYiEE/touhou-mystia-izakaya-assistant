@@ -64,27 +64,39 @@ export async function GET(
 		);
 	}
 
-	const [usersModule, sessionsModule, userStateModule, userModule] =
-		await Promise.all([
-			import('@/lib/account/server/repositories/users'),
-			import('@/lib/account/server/repositories/sessions'),
-			import('@/lib/account/server/repositories/userState'),
-			import('@/lib/account/server/user'),
-		]);
+	const [
+		usersModule,
+		sessionsModule,
+		userStateModule,
+		webauthnCredentialsModule,
+		presentationModule,
+		userModule,
+	] = await Promise.all([
+		import('@/lib/account/server/repositories/users'),
+		import('@/lib/account/server/repositories/sessions'),
+		import('@/lib/account/server/repositories/userState'),
+		import('@/lib/account/server/repositories/webauthnCredentials'),
+		import('@/lib/account/server/webauthnPresentation'),
+		import('@/lib/account/server/user'),
+	]);
 	const user = await usersModule.findUserById(id);
 	if (user === null) {
 		return createNoStoreErrorResponse('target-user-not-found', 404);
 	}
 
-	const [backupImports, sessions, namespaces] = await Promise.all([
+	const [backupImports, sessions, namespaces, passkeys] = await Promise.all([
 		userStateModule.listRecentBackupImportRecordsByUserId(user.id),
 		sessionsModule.listSessionsByUserId(user.id),
 		userStateModule.listUserNamespaces(user.id),
+		webauthnCredentialsModule.listCredentialsByUserId(user.id),
 	]);
 
 	return createNoStoreJsonResponse({
 		backup_imports: backupImports,
 		namespaces,
+		passkeys: passkeys.map((passkey) =>
+			presentationModule.createWebauthnCredentialSummary(passkey)
+		),
 		session_count: sessions.length,
 		user: userModule.createAccountUserProfile(user),
 	});

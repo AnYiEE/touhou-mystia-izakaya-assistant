@@ -34,6 +34,7 @@ declare global {
 			ACCOUNT_COOKIE_DOMAIN?: string;
 			SERVICE_API_ORIGIN?: string;
 			SERVICE_ALLOWED_ORIGINS?: string;
+			WEBAUTHN_RP_ID?: string;
 		}
 	}
 

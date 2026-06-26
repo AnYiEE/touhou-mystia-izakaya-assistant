@@ -11,6 +11,7 @@ import {
 	type IAccountMeSuccessResponse,
 	type IAccountSessionInitialData,
 	type IAccountSsoGrantInitialData,
+	type IAccountWebauthnInitialData,
 	type TAccountMeResponse,
 } from '../shared/types';
 import { getLogSafeErrorCode } from '@/lib/logging';
@@ -21,6 +22,7 @@ export interface IAccountFeatureInitialData {
 	account: TAccountMeResponse;
 	ssoGrants: IAccountSsoGrantInitialData | null;
 	sessions: IAccountSessionInitialData | null;
+	webauthn: IAccountWebauthnInitialData | null;
 }
 
 function createAccountAnonymousInitialData(): TAccountMeResponse {
@@ -60,6 +62,24 @@ export async function createAccountSessionInitialDataForAuthenticatedRequest({
 		sessions: sessions.map((session) =>
 			createAccountSessionRecord(session, sessionId)
 		),
+		user_id: userId,
+	};
+}
+
+export async function createAccountWebauthnInitialDataForUser(
+	userId: string
+): Promise<IAccountWebauthnInitialData> {
+	const [credentialsModule, presentationModule] = await Promise.all([
+		import('@/lib/account/server/repositories/webauthnCredentials'),
+		import('@/lib/account/server/webauthnPresentation'),
+	]);
+	const credentials = await credentialsModule.listCredentialsByUserId(userId);
+
+	return {
+		credentials: credentials.map((credential) =>
+			presentationModule.createWebauthnCredentialSummary(credential)
+		),
+		rendered_at: Date.now(),
 		user_id: userId,
 	};
 }
@@ -153,6 +173,7 @@ export async function readAccountFeatureInitialData(
 						account: createAccountAnonymousInitialData(),
 						sessions: null,
 						ssoGrants: null,
+						webauthn: null,
 					}
 				: null;
 		}
@@ -178,11 +199,15 @@ export async function readAccountFeatureInitialData(
 		const ssoGrants = passwordMustChange
 			? null
 			: await createAccountSsoGrantInitialDataForUser(auth.data.user.id);
+		const webauthn = passwordMustChange
+			? null
+			: await createAccountWebauthnInitialDataForUser(auth.data.user.id);
 
 		return {
 			account: { ...account, password_must_change: passwordMustChange },
 			sessions,
 			ssoGrants,
+			webauthn,
 		};
 	} catch (error) {
 		unstable_rethrow(error);

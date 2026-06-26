@@ -237,6 +237,30 @@ interface ITableUserState {
 	user_id: string;
 }
 
+interface ITableUserWebauthnCredential {
+	aaguid: string | null;
+	backed_up: number;
+	counter: number;
+	created_at: number;
+	credential_id: string;
+	device_type: string;
+	id: string;
+	last_used_at: number | null;
+	name: string | null;
+	public_key: string;
+	transports: string;
+	user_id: string;
+}
+
+interface ITableWebauthnChallenge {
+	challenge: string;
+	created_at: number;
+	expires_at: number;
+	id: string;
+	purpose: string;
+	user_id: string | null;
+}
+
 export type TBackupFileRecord = Selectable<ITableBackupFileRecord>;
 export type TBackupFileRecordNew = Insertable<ITableBackupFileRecord>;
 export type TBackupFileRecordUpdate = Updateable<ITableBackupFileRecord>;
@@ -310,6 +334,16 @@ export type TUserState = Selectable<ITableUserState>;
 export type TUserStateNew = Insertable<ITableUserState>;
 export type TUserStateUpdate = Updateable<ITableUserState>;
 
+export type TUserWebauthnCredential = Selectable<ITableUserWebauthnCredential>;
+export type TUserWebauthnCredentialNew =
+	Insertable<ITableUserWebauthnCredential>;
+export type TUserWebauthnCredentialUpdate =
+	Updateable<ITableUserWebauthnCredential>;
+
+export type TWebauthnChallenge = Selectable<ITableWebauthnChallenge>;
+export type TWebauthnChallengeNew = Insertable<ITableWebauthnChallenge>;
+export type TWebauthnChallengeUpdate = Updateable<ITableWebauthnChallenge>;
+
 export interface TDatabase {
 	account_audit_logs: ITableAccountAuditLog;
 	announcement_dismissals: ITableAnnouncementDismissal;
@@ -329,4 +363,6 @@ export interface TDatabase {
 	users: ITableUser;
 	user_credentials: ITableUserCredential;
 	user_state: ITableUserState;
+	user_webauthn_credentials: ITableUserWebauthnCredential;
+	webauthn_challenges: ITableWebauthnChallenge;
 }

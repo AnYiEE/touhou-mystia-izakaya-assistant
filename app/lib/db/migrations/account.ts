@@ -82,6 +82,28 @@ const ACCOUNT_TABLE_COLUMNS_MAP = {
 		'revision',
 		'updated_at',
 	],
+	[TABLE_NAME_MAP.userWebauthnCredential]: [
+		'id',
+		'user_id',
+		'credential_id',
+		'public_key',
+		'counter',
+		'transports',
+		'device_type',
+		'backed_up',
+		'aaguid',
+		'name',
+		'created_at',
+		'last_used_at',
+	],
+	[TABLE_NAME_MAP.webauthnChallenge]: [
+		'id',
+		'user_id',
+		'challenge',
+		'purpose',
+		'created_at',
+		'expires_at',
+	],
 	[TABLE_NAME_MAP.backupImportRecord]: [
 		'code',
 		'user_id',
@@ -132,6 +154,32 @@ const ACCOUNT_TABLE_COLUMN_DEFINITION_MAP = {
 		revision: { dataType: 'integer', defaultTo: 0, notNull: true },
 		schema_version: { dataType: 'integer', defaultTo: 1, notNull: true },
 		updated_at: { dataType: 'integer', defaultTo: 0, notNull: true },
+		user_id: { dataType: 'text', structural: true },
+	},
+	[TABLE_NAME_MAP.userWebauthnCredential]: {
+		aaguid: { dataType: 'text' },
+		backed_up: { dataType: 'integer', defaultTo: 0, notNull: true },
+		counter: { dataType: 'integer', defaultTo: 0, notNull: true },
+		created_at: { dataType: 'integer', defaultTo: 0, notNull: true },
+		credential_id: { dataType: 'text', defaultTo: '', notNull: true },
+		device_type: {
+			dataType: 'text',
+			defaultTo: 'singleDevice',
+			notNull: true,
+		},
+		id: { dataType: 'text', structural: true },
+		last_used_at: { dataType: 'integer' },
+		name: { dataType: 'text' },
+		public_key: { dataType: 'text', defaultTo: '', notNull: true },
+		transports: { dataType: 'text', defaultTo: '[]', notNull: true },
+		user_id: { dataType: 'text', structural: true },
+	},
+	[TABLE_NAME_MAP.webauthnChallenge]: {
+		challenge: { dataType: 'text', defaultTo: '', notNull: true },
+		created_at: { dataType: 'integer', defaultTo: 0, notNull: true },
+		expires_at: { dataType: 'integer', defaultTo: 0, notNull: true },
+		id: { dataType: 'text', structural: true },
+		purpose: { dataType: 'text', defaultTo: 'registration', notNull: true },
 		user_id: { dataType: 'text', structural: true },
 	},
 	[TABLE_NAME_MAP.backupImportRecord]: {
@@ -351,12 +399,30 @@ async function ensureAccountTableStructure(database: Kysely<TDatabase>) {
 		await getPrimaryKeyColumns(database, TABLE_NAME_MAP.backupImportRecord),
 		['code']
 	);
+	assertPrimaryKeyColumns(
+		TABLE_NAME_MAP.userWebauthnCredential,
+		await getPrimaryKeyColumns(
+			database,
+			TABLE_NAME_MAP.userWebauthnCredential
+		),
+		['id']
+	);
+	assertPrimaryKeyColumns(
+		TABLE_NAME_MAP.webauthnChallenge,
+		await getPrimaryKeyColumns(database, TABLE_NAME_MAP.webauthnChallenge),
+		['id']
+	);
 
 	await Promise.all([
 		assertForeignKeyToUsers(database, TABLE_NAME_MAP.userCredential),
 		assertForeignKeyToUsers(database, TABLE_NAME_MAP.session),
 		assertForeignKeyToUsers(database, TABLE_NAME_MAP.userState),
 		assertForeignKeyToUsers(database, TABLE_NAME_MAP.backupImportRecord),
+		assertForeignKeyToUsers(
+			database,
+			TABLE_NAME_MAP.userWebauthnCredential
+		),
+		assertForeignKeyToUsers(database, TABLE_NAME_MAP.webauthnChallenge),
 	]);
 
 	const hasUsernameUniqueIndex = await hasUniqueIndex(
@@ -369,6 +435,11 @@ async function ensureAccountTableStructure(database: Kysely<TDatabase>) {
 		TABLE_NAME_MAP.session,
 		'token_hash'
 	);
+	const hasWebauthnCredentialUniqueIndex = await hasUniqueIndex(
+		database,
+		TABLE_NAME_MAP.userWebauthnCredential,
+		'credential_id'
+	);
 
 	if (!hasUsernameUniqueIndex) {
 		throw new Error(
@@ -379,6 +450,12 @@ async function ensureAccountTableStructure(database: Kysely<TDatabase>) {
 	if (!hasSessionTokenUniqueIndex) {
 		throw new Error(
 			`${SERVER_MISCONFIGURED_MESSAGE}: sessions.token_hash must have a unique index`
+		);
+	}
+
+	if (!hasWebauthnCredentialUniqueIndex) {
+		throw new Error(
+			`${SERVER_MISCONFIGURED_MESSAGE}: user_webauthn_credentials.credential_id must have a unique index`
 		);
 	}
 }
@@ -477,6 +554,43 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 		])
 		.execute();
 
+	await database.schema
+		.createTable(TABLE_NAME_MAP.userWebauthnCredential)
+		.ifNotExists()
+		.addColumn('id', 'text', (col) => col.notNull().primaryKey())
+		.addColumn('user_id', 'text', (col) =>
+			col
+				.notNull()
+				.references(`${TABLE_NAME_MAP.user}.id`)
+				.onDelete('cascade')
+		)
+		.addColumn('credential_id', 'text', (col) => col.notNull())
+		.addColumn('public_key', 'text', (col) => col.notNull())
+		.addColumn('counter', 'integer', (col) => col.notNull().defaultTo(0))
+		.addColumn('transports', 'text', (col) => col.notNull().defaultTo('[]'))
+		.addColumn('device_type', 'text', (col) =>
+			col.notNull().defaultTo('singleDevice')
+		)
+		.addColumn('backed_up', 'integer', (col) => col.notNull().defaultTo(0))
+		.addColumn('aaguid', 'text')
+		.addColumn('name', 'text')
+		.addColumn('created_at', 'integer', (col) => col.notNull())
+		.addColumn('last_used_at', 'integer')
+		.execute();
+
+	await database.schema
+		.createTable(TABLE_NAME_MAP.webauthnChallenge)
+		.ifNotExists()
+		.addColumn('id', 'text', (col) => col.notNull().primaryKey())
+		.addColumn('user_id', 'text', (col) =>
+			col.references(`${TABLE_NAME_MAP.user}.id`).onDelete('cascade')
+		)
+		.addColumn('challenge', 'text', (col) => col.notNull())
+		.addColumn('purpose', 'text', (col) => col.notNull())
+		.addColumn('created_at', 'integer', (col) => col.notNull())
+		.addColumn('expires_at', 'integer', (col) => col.notNull())
+		.execute();
+
 	for (const tableName of Object.keys(ACCOUNT_TABLE_COLUMNS_MAP)) {
 		await ensureTableColumns(
 			database,
@@ -546,6 +660,22 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 			columns: ['created_at', 'last_seen_at', 'id'],
 			indexName: 'sessions_created_last_seen_id_index',
 			tableName: TABLE_NAME_MAP.session,
+		},
+		{
+			columns: ['credential_id'],
+			indexName: 'user_webauthn_credentials_credential_id_unique_index',
+			tableName: TABLE_NAME_MAP.userWebauthnCredential,
+			unique: true,
+		},
+		{
+			columns: ['user_id'],
+			indexName: 'user_webauthn_credentials_user_id_index',
+			tableName: TABLE_NAME_MAP.userWebauthnCredential,
+		},
+		{
+			columns: ['expires_at'],
+			indexName: 'webauthn_challenges_expires_at_index',
+			tableName: TABLE_NAME_MAP.webauthnChallenge,
 		},
 	]);
 
@@ -633,6 +763,28 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 		.ifNotExists()
 		.on(TABLE_NAME_MAP.session)
 		.columns(['created_at', 'last_seen_at', 'id'])
+		.execute();
+
+	await database.schema
+		.createIndex('user_webauthn_credentials_credential_id_unique_index')
+		.ifNotExists()
+		.unique()
+		.on(TABLE_NAME_MAP.userWebauthnCredential)
+		.column('credential_id')
+		.execute();
+
+	await database.schema
+		.createIndex('user_webauthn_credentials_user_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.userWebauthnCredential)
+		.column('user_id')
+		.execute();
+
+	await database.schema
+		.createIndex('webauthn_challenges_expires_at_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.webauthnChallenge)
+		.column('expires_at')
 		.execute();
 
 	await ensureAccountTableStructure(database);

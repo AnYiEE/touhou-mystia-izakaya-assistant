@@ -164,6 +164,9 @@ export default async function RootLayout({
 						accountSsoGrantInitialData={
 							accountFeatureInitialData?.ssoGrants ?? null
 						}
+						accountWebauthnInitialData={
+							accountFeatureInitialData?.webauthn ?? null
+						}
 						locale={locale}
 					>
 						<div className="flex min-h-dvh-safe flex-col">

@@ -35,6 +35,8 @@ export const ACCOUNT_AUDIT_ACTION_MAP = {
 	logout: 'user-logout-session',
 	logoutAll: 'user-logout-all-sessions',
 	nicknameChanged: 'user-change-nickname',
+	passkeyDeleted: 'user-delete-passkey',
+	passkeyRegistered: 'user-register-passkey',
 	passwordChanged: 'user-change-password',
 	registered: 'user-register-account',
 	sessionRevoked: 'user-revoke-session',

@@ -15,6 +15,7 @@ import DonationModal from '@/components/donationModal';
 import AccountInitialStateHydrator from '@/lib/account/client/components/accountInitialStateHydrator';
 import AccountSessionInitialDataHydrator from '@/lib/account/client/components/accountSessionInitialDataHydrator';
 import AccountSsoGrantInitialDataHydrator from '@/lib/account/client/components/accountSsoGrantInitialDataHydrator';
+import AccountWebauthnInitialDataHydrator from '@/lib/account/client/components/accountWebauthnInitialDataHydrator';
 
 import { siteConfig } from '@/configs';
 import { type TDlc } from '@/data';
@@ -25,6 +26,7 @@ import {
 import {
 	type IAccountSessionInitialData,
 	type IAccountSsoGrantInitialData,
+	type IAccountWebauthnInitialData,
 	type TAccountMeResponse,
 } from '@/lib/account/shared/types';
 import {
@@ -49,6 +51,7 @@ interface IProps {
 	accountInitialData: TAccountMeResponse | null;
 	accountSessionInitialData: IAccountSessionInitialData | null;
 	accountSsoGrantInitialData: IAccountSsoGrantInitialData | null;
+	accountWebauthnInitialData: IAccountWebauthnInitialData | null;
 	locale: string;
 }
 
@@ -56,6 +59,7 @@ export default function Providers({
 	accountInitialData,
 	accountSessionInitialData,
 	accountSsoGrantInitialData,
+	accountWebauthnInitialData,
 	children,
 	locale,
 }: PropsWithChildren<IProps>) {
@@ -230,6 +234,9 @@ export default function Providers({
 				/>
 				<AccountSsoGrantInitialDataHydrator
 					data={accountSsoGrantInitialData}
+				/>
+				<AccountWebauthnInitialDataHydrator
+					data={accountWebauthnInitialData}
 				/>
 				<AccountFeatureModals />
 				<CustomerRareTutorial />

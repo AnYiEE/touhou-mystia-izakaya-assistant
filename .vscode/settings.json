@@ -88,6 +88,7 @@
 		"sameorigin",
 		"seqno",
 		"serviceworker",
+		"simplewebauthn",
 		"stylelint",
 		"tachie",
 		"tachies",
@@ -101,6 +102,7 @@
 		"Updateable",
 		"vercel",
 		"vmax",
+		"webauthn",
 		"writability",
 		"Xmark",
 		"zustand"

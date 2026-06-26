@@ -1,6 +1,7 @@
 import { type Transaction, sql } from 'kysely';
 
 import { enqueueSsoCallbacksForUserEventInTransaction } from './sso';
+import { deleteCredentialsByUserIdInTransaction } from './webauthnCredentials';
 import { getAccountDatabase } from '@/lib/account/server/db';
 import { type TUserStatus } from '@/lib/account/shared/types';
 import { TABLE_NAME_MAP } from '@/lib/db';
@@ -572,6 +573,7 @@ export async function setUserStatusAndDeleteSessionsWithAudit(
 			.execute();
 
 		if (status === 'deleted') {
+			await deleteCredentialsByUserIdInTransaction(trx, id);
 			await enqueueSsoCallbacksForUserEventInTransaction(
 				trx,
 				id,

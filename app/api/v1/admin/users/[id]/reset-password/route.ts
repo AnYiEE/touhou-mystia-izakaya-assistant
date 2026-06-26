@@ -83,13 +83,19 @@ export async function POST(
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	const [passwordModule, usersModule, credentialsModule, accountAuditModule] =
-		await Promise.all([
-			import('@/lib/account/server/password'),
-			import('@/lib/account/server/repositories/users'),
-			import('@/lib/account/server/repositories/credentials'),
-			import('@/lib/account/server/accountAuditService'),
-		]);
+	const [
+		passwordModule,
+		usersModule,
+		credentialsModule,
+		webauthnCredentialsModule,
+		accountAuditModule,
+	] = await Promise.all([
+		import('@/lib/account/server/password'),
+		import('@/lib/account/server/repositories/users'),
+		import('@/lib/account/server/repositories/credentials'),
+		import('@/lib/account/server/repositories/webauthnCredentials'),
+		import('@/lib/account/server/accountAuditService'),
+	]);
 
 	if (!passwordModule.checkPasswordPolicy(body.password)) {
 		return createNoStoreErrorResponse('invalid-password-rule', 400);
@@ -101,6 +107,9 @@ export async function POST(
 	if (user.status === USER_STATUS_MAP.deleted) {
 		return createNoStoreErrorResponse('invalid-user-status', 403);
 	}
+
+	const revokedPasskeys =
+		await webauthnCredentialsModule.countCredentialsByUserId(id);
 
 	try {
 		const now = Date.now();
@@ -122,6 +131,7 @@ export async function POST(
 						adminId: auth.payload.username,
 						metadata: {
 							must_change_on_next_login: true,
+							revoked_passkeys: revokedPasskeys,
 							target_nickname: user.nickname,
 							target_user_id: id,
 							target_username: user.username,
