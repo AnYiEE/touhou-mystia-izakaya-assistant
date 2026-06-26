@@ -519,6 +519,7 @@ export default memo<IProps>(function AccountManager() {
 	const [isWebauthnLoginPending, setIsWebauthnLoginPending] = useState(false);
 	const [passkeys, setPasskeys] = useState<IWebauthnCredentialSummary[]>([]);
 	const [isPasskeyListLoading, setIsPasskeyListLoading] = useState(false);
+	const [passkeysUserId, setPasskeysUserId] = useState<string | null>(null);
 	const [isAddingPasskey, setIsAddingPasskey] = useState(false);
 	const [deleteTargetPasskeyId, setDeleteTargetPasskeyId] = useState<
 		string | null
@@ -537,7 +538,9 @@ export default memo<IProps>(function AccountManager() {
 	);
 	const webauthnBroadcastTabIdRef = useRef<string | null>(null);
 	const authTermsCheckboxRef = useRef<HTMLInputElement>(null);
-	const passkeysLoadedUserIdRef = useRef<string | null>(null);
+	const passkeyListRequestIdRef = useRef(0);
+	const passkeyListUpdatedAtRef = useRef(0);
+	const passkeysFetchRequestedUserIdRef = useRef<string | null>(null);
 	const sessionListUpdatedAtRef = useRef(0);
 	const sessionListRequestIdRef = useRef(0);
 	const sessionsFetchRequestedUserIdRef = useRef<string | null>(null);
@@ -1444,25 +1447,28 @@ export default memo<IProps>(function AccountManager() {
 	const refreshAccountSsoGrantsForCurrentUser = useCallback(
 		({ silent = false }: { silent?: boolean } = {}) => {
 			if (user === null || csrfToken === null || passwordMustChange) {
+				ssoGrantListRequestIdRef.current += 1;
+				setIsSsoGrantListLoading(false);
 				setSsoGrants([]);
 				setSsoGrantsUserId(null);
 				return Promise.resolve(false);
 			}
 
-			const expectedAuthContext = {
-				expectedCsrfToken: csrfToken,
-				expectedUserId: user.id,
-			};
+			const userId = user.id;
+			const expectedUserContext = { expectedUserId: userId };
 			const requestId = ssoGrantListRequestIdRef.current + 1;
 			ssoGrantListRequestIdRef.current = requestId;
 			setIsSsoGrantListLoading(true);
-			const isCurrentRequest = () =>
-				ssoGrantListRequestIdRef.current === requestId &&
-				checkCurrentAccountAuthContext(expectedAuthContext);
+			const isLatestRequest = () =>
+				ssoGrantListRequestIdRef.current === requestId;
+			const isCurrentUserRequest = () =>
+				isLatestRequest() &&
+				accountStore.shared.user.get()?.id === userId &&
+				!accountStore.shared.passwordMustChange.get();
 
-			return refreshAccountSsoGrantsOnce(user.id, csrfToken)
+			return refreshAccountSsoGrantsOnce(userId, csrfToken)
 				.then((result) => {
-					if (!isCurrentRequest()) {
+					if (!isCurrentUserRequest()) {
 						return false;
 					}
 
@@ -1470,7 +1476,7 @@ export default memo<IProps>(function AccountManager() {
 						if (
 							handleUnauthorizedAccountActionError(
 								result,
-								expectedAuthContext
+								expectedUserContext
 							)
 						) {
 							return false;
@@ -1483,17 +1489,17 @@ export default memo<IProps>(function AccountManager() {
 					}
 
 					setSsoGrants(result.data.grants);
-					setSsoGrantsUserId(user.id);
+					setSsoGrantsUserId(userId);
 					return true;
 				})
 				.catch((error: unknown) => {
-					if (!isCurrentRequest()) {
+					if (!isCurrentUserRequest()) {
 						return false;
 					}
 					if (
 						handleUnauthorizedAccountError(
 							error,
-							expectedAuthContext
+							expectedUserContext
 						)
 					) {
 						return false;
@@ -1513,7 +1519,7 @@ export default memo<IProps>(function AccountManager() {
 					return false;
 				})
 				.finally(() => {
-					if (isCurrentRequest()) {
+					if (isLatestRequest()) {
 						setIsSsoGrantListLoading(false);
 					}
 				});
@@ -1524,6 +1530,8 @@ export default memo<IProps>(function AccountManager() {
 	useEffect(() => {
 		if (user === null || csrfToken === null || passwordMustChange) {
 			ssoGrantsFetchRequestedUserIdRef.current = null;
+			ssoGrantListRequestIdRef.current += 1;
+			setIsSsoGrantListLoading(false);
 			if (
 				bootstrapStatus === 'anonymous' ||
 				bootstrapStatus === 'loggedIn' ||
@@ -1595,26 +1603,29 @@ export default memo<IProps>(function AccountManager() {
 	const refreshAccountSessionsForCurrentUser = useCallback(
 		({ silent = false }: { silent?: boolean } = {}) => {
 			if (user === null || csrfToken === null || passwordMustChange) {
+				sessionListRequestIdRef.current += 1;
+				setIsSessionListLoading(false);
 				setAccountSessions([]);
 				sessionListUpdatedAtRef.current = Date.now();
 				setAccountSessionsUserId(null);
 				return Promise.resolve(false);
 			}
 
-			const expectedAuthContext = {
-				expectedCsrfToken: csrfToken,
-				expectedUserId: user.id,
-			};
+			const userId = user.id;
+			const expectedUserContext = { expectedUserId: userId };
 			const requestId = sessionListRequestIdRef.current + 1;
 			sessionListRequestIdRef.current = requestId;
 			setIsSessionListLoading(true);
-			const isCurrentRequest = () =>
-				sessionListRequestIdRef.current === requestId &&
-				checkCurrentAccountAuthContext(expectedAuthContext);
+			const isLatestRequest = () =>
+				sessionListRequestIdRef.current === requestId;
+			const isCurrentUserRequest = () =>
+				isLatestRequest() &&
+				accountStore.shared.user.get()?.id === userId &&
+				!accountStore.shared.passwordMustChange.get();
 
 			return refreshAccountSessions()
 				.then((result) => {
-					if (!isCurrentRequest()) {
+					if (!isCurrentUserRequest()) {
 						return false;
 					}
 
@@ -1622,7 +1633,7 @@ export default memo<IProps>(function AccountManager() {
 						if (
 							handleUnauthorizedAccountActionError(
 								result,
-								expectedAuthContext
+								expectedUserContext
 							)
 						) {
 							return false;
@@ -1636,17 +1647,17 @@ export default memo<IProps>(function AccountManager() {
 
 					setAccountSessions(result.data.sessions);
 					sessionListUpdatedAtRef.current = Date.now();
-					setAccountSessionsUserId(user.id);
+					setAccountSessionsUserId(userId);
 					return true;
 				})
 				.catch((error: unknown) => {
-					if (!isCurrentRequest()) {
+					if (!isCurrentUserRequest()) {
 						return false;
 					}
 					if (
 						handleUnauthorizedAccountError(
 							error,
-							expectedAuthContext
+							expectedUserContext
 						)
 					) {
 						return false;
@@ -1666,7 +1677,7 @@ export default memo<IProps>(function AccountManager() {
 					return false;
 				})
 				.finally(() => {
-					if (isCurrentRequest()) {
+					if (isLatestRequest()) {
 						setIsSessionListLoading(false);
 					}
 				});
@@ -1677,6 +1688,8 @@ export default memo<IProps>(function AccountManager() {
 	useEffect(() => {
 		if (user === null || csrfToken === null || passwordMustChange) {
 			sessionsFetchRequestedUserIdRef.current = null;
+			sessionListRequestIdRef.current += 1;
+			setIsSessionListLoading(false);
 			if (
 				bootstrapStatus === 'anonymous' ||
 				bootstrapStatus === 'loggedIn' ||
@@ -1910,70 +1923,145 @@ export default memo<IProps>(function AccountManager() {
 		webauthnBroadcastTabIdRef.current ??= createAccountClientId();
 	}, []);
 
-	const refreshPasskeys = useCallback(() => {
-		const currentUser = accountStore.shared.user.get();
-		if (
-			currentUser === null ||
-			accountStore.shared.csrfToken.get() === null ||
-			accountStore.shared.passwordMustChange.get()
-		) {
-			setPasskeys([]);
-			return;
-		}
+	const refreshPasskeysForCurrentUser = useCallback(
+		({ silent = false }: { silent?: boolean } = {}) => {
+			if (
+				!isWebauthnSupported ||
+				user === null ||
+				csrfToken === null ||
+				passwordMustChange
+			) {
+				passkeyListRequestIdRef.current += 1;
+				setIsPasskeyListLoading(false);
+				setPasskeys([]);
+				passkeyListUpdatedAtRef.current = Date.now();
+				setPasskeysUserId(null);
+				return Promise.resolve(false);
+			}
 
-		const userId = currentUser.id;
-		setIsPasskeyListLoading(true);
-		void listWebAuthnCredentials()
-			.then((result) => {
-				if (accountStore.shared.user.get()?.id !== userId) {
-					return;
-				}
-				if (result.status === 'error') {
-					return;
-				}
+			const userId = user.id;
+			const expectedUserContext = { expectedUserId: userId };
+			const requestId = passkeyListRequestIdRef.current + 1;
+			passkeyListRequestIdRef.current = requestId;
+			setIsPasskeyListLoading(true);
+			const isLatestRequest = () =>
+				passkeyListRequestIdRef.current === requestId;
+			const isCurrentUserRequest = () =>
+				isLatestRequest() &&
+				accountStore.shared.user.get()?.id === userId &&
+				!accountStore.shared.passwordMustChange.get();
 
-				setPasskeys(result.data.credentials);
-			})
-			.catch(() => {
-				// Passkey list refresh is best-effort; ignore transient errors.
-			})
-			.finally(() => {
-				if (accountStore.shared.user.get()?.id === userId) {
-					setIsPasskeyListLoading(false);
-				}
-			});
-	}, []);
+			return listWebAuthnCredentials()
+				.then((result) => {
+					if (!isCurrentUserRequest()) {
+						return false;
+					}
+					if (result.status === 'error') {
+						if (
+							handleUnauthorizedAccountActionError(
+								result,
+								expectedUserContext
+							)
+						) {
+							return false;
+						}
+
+						if (!silent) {
+							setMessage(result.message);
+						}
+						return false;
+					}
+
+					setPasskeys(result.data.credentials);
+					passkeyListUpdatedAtRef.current = Date.now();
+					setPasskeysUserId(userId);
+					return true;
+				})
+				.catch((error: unknown) => {
+					if (!isCurrentUserRequest()) {
+						return false;
+					}
+					if (
+						handleUnauthorizedAccountError(
+							error,
+							expectedUserContext
+						)
+					) {
+						return false;
+					}
+
+					if (!silent) {
+						setMessage(
+							error instanceof Error
+								? error.message
+								: '通行密钥刷新失败'
+						);
+					}
+
+					return false;
+				})
+				.finally(() => {
+					if (isLatestRequest()) {
+						setIsPasskeyListLoading(false);
+					}
+				});
+		},
+		[csrfToken, isWebauthnSupported, passwordMustChange, user]
+	);
 
 	useEffect(() => {
-		if (!isWebauthnSupported) {
-			return;
-		}
-		if (user === null || csrfToken === null || passwordMustChange) {
+		if (
+			!isWebauthnSupported ||
+			user === null ||
+			csrfToken === null ||
+			passwordMustChange
+		) {
+			passkeysFetchRequestedUserIdRef.current = null;
 			setPasskeys([]);
-			passkeysLoadedUserIdRef.current = null;
+			passkeyListRequestIdRef.current += 1;
+			setIsPasskeyListLoading(false);
+			passkeyListUpdatedAtRef.current = Date.now();
+			setPasskeysUserId(null);
 			accountStore.shared.webauthnInitialData.set(null);
 			return;
 		}
 		if (webauthnInitialData?.user_id === user.id) {
 			accountStore.shared.webauthnInitialData.set(null);
+			passkeysFetchRequestedUserIdRef.current = user.id;
+			if (
+				webauthnInitialData.rendered_at <
+				passkeyListUpdatedAtRef.current
+			) {
+				return;
+			}
 			setPasskeys(webauthnInitialData.credentials);
-			passkeysLoadedUserIdRef.current = user.id;
+			passkeyListUpdatedAtRef.current = webauthnInitialData.rendered_at;
+			setPasskeysUserId(user.id);
 			return;
 		}
 		if (webauthnInitialData !== null) {
 			accountStore.shared.webauthnInitialData.set(null);
+			setPasskeys([]);
+			passkeyListUpdatedAtRef.current = Date.now();
+			setPasskeysUserId(null);
+			passkeysFetchRequestedUserIdRef.current = null;
 		}
-		if (passkeysLoadedUserIdRef.current === user.id) {
+		if (
+			passkeysUserId === user.id ||
+			passkeysFetchRequestedUserIdRef.current === user.id
+		) {
 			return;
 		}
 
-		passkeysLoadedUserIdRef.current = user.id;
-		refreshPasskeys();
+		passkeysFetchRequestedUserIdRef.current = user.id;
+		passkeyListUpdatedAtRef.current = Date.now();
+		void refreshPasskeysForCurrentUser({ silent: true });
 	}, [
 		csrfToken,
 		isWebauthnSupported,
+		passkeysUserId,
 		passwordMustChange,
-		refreshPasskeys,
+		refreshPasskeysForCurrentUser,
 		user,
 		webauthnInitialData,
 	]);
@@ -1991,9 +2079,9 @@ export default memo<IProps>(function AccountManager() {
 				return;
 			}
 
-			refreshPasskeys();
+			void refreshPasskeysForCurrentUser({ silent: true });
 		});
-	}, [isWebauthnSupported, refreshPasskeys]);
+	}, [isWebauthnSupported, refreshPasskeysForCurrentUser]);
 
 	const broadcastPasskeyChange = useCallback((userId: string) => {
 		void postAccountWebauthnBroadcastMessage({
@@ -2129,6 +2217,8 @@ export default memo<IProps>(function AccountManager() {
 				}
 
 				setPasskeys(result.data.credentials);
+				setPasskeysUserId(expectedAuthContext.expectedUserId);
+				passkeyListUpdatedAtRef.current = Date.now();
 				setNewPasskeyName('');
 				setIsAddPasskeyFormOpen(false);
 				setMessage('通行密钥已添加');
@@ -2217,6 +2307,8 @@ export default memo<IProps>(function AccountManager() {
 				setPasskeys((prev) =>
 					prev.filter((credential) => credential.id !== id)
 				);
+				setPasskeysUserId(expectedAuthContext.expectedUserId);
+				passkeyListUpdatedAtRef.current = Date.now();
 				setMessage('通行密钥已删除');
 				if (expectedAuthContext.expectedUserId !== null) {
 					broadcastPasskeyChange(expectedAuthContext.expectedUserId);
@@ -2306,6 +2398,8 @@ export default memo<IProps>(function AccountManager() {
 				}
 
 				setPasskeys(result.data.credentials);
+				setPasskeysUserId(expectedAuthContext.expectedUserId);
+				passkeyListUpdatedAtRef.current = Date.now();
 				setEditingPasskeyId(null);
 				setEditingPasskeyName('');
 				setMessage('通行密钥已重命名');
@@ -2418,6 +2512,8 @@ export default memo<IProps>(function AccountManager() {
 		user?.id === accountSessionsUserId ? accountSessions : [];
 	const isAccountSessionsReady =
 		user !== null && accountSessionsUserId === user.id;
+	const visiblePasskeys = user?.id === passkeysUserId ? passkeys : [];
+	const isPasskeyListReady = user !== null && passkeysUserId === user.id;
 
 	return (
 		<div className="space-y-4 p-1.5">
@@ -2884,217 +2980,219 @@ export default memo<IProps>(function AccountManager() {
 									<AccountAnimatedList>
 										{isWebauthnSupported ? (
 											isPasskeyListLoading &&
-											passkeys.length === 0 ? (
+											!isPasskeyListReady ? (
 												<AccountAnimatedListItem key="loading">
 													<p className="text-small leading-5 text-foreground-500">
 														正在读取通行密钥
 													</p>
 												</AccountAnimatedListItem>
-											) : passkeys.length === 0 ? (
+											) : visiblePasskeys.length === 0 ? (
 												<AccountAnimatedListItem key="empty">
 													<p className="text-small leading-5 text-foreground-500">
 														暂无通行密钥
 													</p>
 												</AccountAnimatedListItem>
 											) : (
-												passkeys.map((passkey) => (
-													<AccountAnimatedListItem
-														key={passkey.id}
-													>
-														<div className="rounded-medium border border-default-200 bg-default-50/40 px-3 py-2">
-															<div className="space-y-1">
-																<div className="flex items-center justify-between gap-3">
-																	{editingPasskeyId ===
-																	passkey.id ? (
-																		<div className="flex min-w-0 flex-1 items-center gap-2">
-																			<Input
-																				autoFocus
-																				isDisabled={
-																					renamingPasskeyId ===
-																					passkey.id
-																				}
-																				maxLength={
-																					WEBAUTHN_CREDENTIAL_NAME_MAX_LENGTH
-																				}
-																				placeholder="通行密钥名称"
-																				size="sm"
-																				value={
-																					editingPasskeyName
-																				}
-																				onValueChange={
-																					setEditingPasskeyName
-																				}
-																			/>
-																			<Button
-																				isIconOnly
-																				aria-label="保存名称"
-																				className="h-8 w-8 min-w-8 text-primary-600"
-																				isLoading={
-																					renamingPasskeyId ===
-																					passkey.id
-																				}
-																				radius="full"
-																				size="sm"
-																				variant="light"
-																				onPress={
-																					handleRenamePasskeySave
-																				}
-																			>
-																				<FontAwesomeIcon
-																					icon={
-																						faCheck
+												visiblePasskeys.map(
+													(passkey) => (
+														<AccountAnimatedListItem
+															key={passkey.id}
+														>
+															<div className="rounded-medium border border-default-200 bg-default-50/40 px-3 py-2">
+																<div className="space-y-1">
+																	<div className="flex items-center justify-between gap-3">
+																		{editingPasskeyId ===
+																		passkey.id ? (
+																			<div className="flex min-w-0 flex-1 items-center gap-2">
+																				<Input
+																					autoFocus
+																					isDisabled={
+																						renamingPasskeyId ===
+																						passkey.id
 																					}
-																					className="h-3.5 w-3.5"
-																				/>
-																			</Button>
-																			<Button
-																				isIconOnly
-																				aria-label="取消重命名"
-																				className="h-8 w-8 min-w-8 text-foreground-500"
-																				isDisabled={
-																					renamingPasskeyId ===
-																					passkey.id
-																				}
-																				radius="full"
-																				size="sm"
-																				variant="light"
-																				onPress={
-																					handleRenamePasskeyCancel
-																				}
-																			>
-																				<FontAwesomeIcon
-																					icon={
-																						faXmark
+																					maxLength={
+																						WEBAUTHN_CREDENTIAL_NAME_MAX_LENGTH
 																					}
-																					className="h-3.5 w-3.5"
+																					placeholder="通行密钥名称"
+																					size="sm"
+																					value={
+																						editingPasskeyName
+																					}
+																					onValueChange={
+																						setEditingPasskeyName
+																					}
 																				/>
-																			</Button>
-																		</div>
-																	) : (
-																		<div className="flex min-w-0 flex-1 items-center gap-1">
-																			<p className="min-w-0 truncate text-small font-medium text-foreground-700">
-																				{passkey.name ??
-																					'通行密钥'}
-																			</p>
-																			<Tooltip
-																				showArrow
-																				content="重命名"
-																				placement="left"
-																			>
-																				<span className="inline-flex shrink-0">
-																					<Button
-																						isIconOnly
-																						aria-label="重命名通行密钥"
-																						className="h-7 w-7 min-w-7 shrink-0 text-primary-600"
-																						isDisabled={
-																							isSubmitting
+																				<Button
+																					isIconOnly
+																					aria-label="保存名称"
+																					className="h-8 w-8 min-w-8 text-primary-600"
+																					isLoading={
+																						renamingPasskeyId ===
+																						passkey.id
+																					}
+																					radius="full"
+																					size="sm"
+																					variant="light"
+																					onPress={
+																						handleRenamePasskeySave
+																					}
+																				>
+																					<FontAwesomeIcon
+																						icon={
+																							faCheck
 																						}
-																						radius="full"
-																						size="sm"
-																						variant="light"
-																						onPress={() => {
-																							handleRenamePasskeyOpen(
-																								passkey.id,
-																								passkey.name
-																							);
-																						}}
-																					>
-																						<FontAwesomeIcon
-																							icon={
-																								faPen
-																							}
-																							className="h-3 w-3"
-																						/>
-																					</Button>
-																				</span>
-																			</Tooltip>
-																		</div>
-																	)}
-																	<Tooltip
-																		showArrow
-																		content="删除通行密钥"
-																		placement="left"
-																	>
-																		<span className="inline-flex shrink-0">
-																			<AccountConfirmButton
-																				ariaLabel="删除通行密钥"
-																				buttonLabel="删除通行密钥"
-																				className="h-8 w-8 min-w-8 justify-center text-warning-600"
-																				color="warning"
-																				confirmLabel="确认删除"
-																				fullWidth={
-																					false
-																				}
-																				icon={
-																					faTrash
-																				}
-																				isDisabled={
-																					isSubmitting
-																				}
-																				isIconOnly
-																				isLoading={
-																					deletingPasskeyId ===
-																					passkey.id
-																				}
-																				isOpen={
-																					deleteTargetPasskeyId ===
-																					passkey.id
-																				}
-																				radius="full"
-																				size="sm"
-																				onCancel={
-																					handleDeletePasskeyCancel
-																				}
-																				onConfirm={
-																					handleDeletePasskey
-																				}
-																				onOpenChange={(
-																					isOpen
-																				) => {
-																					if (
-																						isOpen
-																					) {
-																						handleDeletePasskeyOpen(
-																							passkey.id
-																						);
-																					} else {
-																						handleDeletePasskeyCancel();
+																						className="h-3.5 w-3.5"
+																					/>
+																				</Button>
+																				<Button
+																					isIconOnly
+																					aria-label="取消重命名"
+																					className="h-8 w-8 min-w-8 text-foreground-500"
+																					isDisabled={
+																						renamingPasskeyId ===
+																						passkey.id
 																					}
-																				}}
-																			/>
-																		</span>
-																	</Tooltip>
-																</div>
-																<div className="min-w-0 space-y-1">
-																	<p
-																		className="break-words text-tiny text-foreground-500"
-																		title={formatSessionTimestamp(
-																			passkey.created_at
-																		)}
-																	>
-																		添加于
-																		{formatSessionTimestamp(
-																			passkey.created_at
-																		)}
-																	</p>
-																	<p className="break-words text-tiny text-foreground-500">
-																		最近使用：
-																		{passkey.last_used_at ===
-																		null ? (
-																			'从未使用'
+																					radius="full"
+																					size="sm"
+																					variant="light"
+																					onPress={
+																						handleRenamePasskeyCancel
+																					}
+																				>
+																					<FontAwesomeIcon
+																						icon={
+																							faXmark
+																						}
+																						className="h-3.5 w-3.5"
+																					/>
+																				</Button>
+																			</div>
 																		) : (
-																			<TimeAgo
-																				timestamp={
-																					passkey.last_used_at
-																				}
-																			/>
+																			<div className="flex min-w-0 flex-1 items-center gap-1">
+																				<p className="min-w-0 truncate text-small font-medium text-foreground-700">
+																					{passkey.name ??
+																						'通行密钥'}
+																				</p>
+																				<Tooltip
+																					showArrow
+																					content="重命名"
+																					placement="left"
+																				>
+																					<span className="inline-flex shrink-0">
+																						<Button
+																							isIconOnly
+																							aria-label="重命名通行密钥"
+																							className="h-7 w-7 min-w-7 shrink-0 text-primary-600"
+																							isDisabled={
+																								isSubmitting
+																							}
+																							radius="full"
+																							size="sm"
+																							variant="light"
+																							onPress={() => {
+																								handleRenamePasskeyOpen(
+																									passkey.id,
+																									passkey.name
+																								);
+																							}}
+																						>
+																							<FontAwesomeIcon
+																								icon={
+																									faPen
+																								}
+																								className="h-3 w-3"
+																							/>
+																						</Button>
+																					</span>
+																				</Tooltip>
+																			</div>
 																		)}
-																	</p>
+																		<Tooltip
+																			showArrow
+																			content="删除通行密钥"
+																			placement="left"
+																		>
+																			<span className="inline-flex shrink-0">
+																				<AccountConfirmButton
+																					ariaLabel="删除通行密钥"
+																					buttonLabel="删除通行密钥"
+																					className="h-8 w-8 min-w-8 justify-center text-warning-600"
+																					color="warning"
+																					confirmLabel="确认删除"
+																					fullWidth={
+																						false
+																					}
+																					icon={
+																						faTrash
+																					}
+																					isDisabled={
+																						isSubmitting
+																					}
+																					isIconOnly
+																					isLoading={
+																						deletingPasskeyId ===
+																						passkey.id
+																					}
+																					isOpen={
+																						deleteTargetPasskeyId ===
+																						passkey.id
+																					}
+																					radius="full"
+																					size="sm"
+																					onCancel={
+																						handleDeletePasskeyCancel
+																					}
+																					onConfirm={
+																						handleDeletePasskey
+																					}
+																					onOpenChange={(
+																						isOpen
+																					) => {
+																						if (
+																							isOpen
+																						) {
+																							handleDeletePasskeyOpen(
+																								passkey.id
+																							);
+																						} else {
+																							handleDeletePasskeyCancel();
+																						}
+																					}}
+																				/>
+																			</span>
+																		</Tooltip>
+																	</div>
+																	<div className="min-w-0 space-y-1">
+																		<p
+																			className="break-words text-tiny text-foreground-500"
+																			title={formatSessionTimestamp(
+																				passkey.created_at
+																			)}
+																		>
+																			添加于
+																			{formatSessionTimestamp(
+																				passkey.created_at
+																			)}
+																		</p>
+																		<p className="break-words text-tiny text-foreground-500">
+																			最近使用：
+																			{passkey.last_used_at ===
+																			null ? (
+																				'从未使用'
+																			) : (
+																				<TimeAgo
+																					timestamp={
+																						passkey.last_used_at
+																					}
+																				/>
+																			)}
+																		</p>
+																	</div>
 																</div>
 															</div>
-														</div>
-													</AccountAnimatedListItem>
-												))
+														</AccountAnimatedListItem>
+													)
+												)
 											)
 										) : (
 											<AccountAnimatedListItem key="unsupported">
