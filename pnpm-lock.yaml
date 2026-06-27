@@ -182,8 +182,8 @@ importers:
         specifier: ^6.1.1
         version: 6.1.1
       driver.js:
-        specifier: ^1.6.0
-        version: 1.6.0
+        specifier: 1.5.0
+        version: 1.5.0
       framer-motion:
         specifier: 12.17.2
         version: 12.17.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -3713,8 +3713,8 @@ packages:
     resolution: {integrity: sha512-QM8q3zDe58hqUqjraQOmzZ1LIH9SWQJTlEKCH4kJ2oQvLZk7RbQXvtDM2XEq3fwkV9CCvvH4LA0AV+ogFsBM2Q==}
     engines: {node: '>=8'}
 
-  driver.js@1.6.0:
-    resolution: {integrity: sha512-gryo9QS7AZhz8J0bmdf42dwaTzcd1BgSJLnaSM7cPJbu8bTW8wIEuiGDy4MoCvB4Sr8wA9g5o2G9EFNVYZGeVQ==}
+  driver.js@1.5.0:
+    resolution: {integrity: sha512-j31Yi1V3/fTCI6+JmS6Z30bHE3YbpT5+UlrsN0o5aswCuZVDwfaZKsMSN0tMCQbWk99RNXxEyAhALC1otj31/w==}
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -5170,7 +5170,7 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   react-transition-progress@https://codeload.github.com/AnYiEE/react-transition-progress/tar.gz/dc17185bdfd2b0453ea9da9293e9cdef0e57ecda:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/AnYiEE/react-transition-progress/tar.gz/dc17185bdfd2b0453ea9da9293e9cdef0e57ecda}
+    resolution: {gitHosted: true, integrity: sha512-TL+JqXDZCpf0PcusGL/y11pMGmqESXQ/0FFJddSeN+4pdVBjXuM24Sqy+9YE2YH+N4cj7auU+HqKpDirMuPt7g==, tarball: https://codeload.github.com/AnYiEE/react-transition-progress/tar.gz/dc17185bdfd2b0453ea9da9293e9cdef0e57ecda}
     version: 0.0.4
     peerDependencies:
       framer-motion: '*'
@@ -9991,7 +9991,7 @@ snapshots:
     dependencies:
       is-obj: 2.0.0
 
-  driver.js@1.6.0: {}
+  driver.js@1.5.0: {}
 
   dunder-proto@1.0.1:
     dependencies:

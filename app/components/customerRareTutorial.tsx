@@ -38,8 +38,11 @@ export default function CustomerRareTutorial() {
 	} = currentCustomerOrder;
 
 	const currentBeverageName = customerStore.shared.beverage.name.use();
-	const currentBeverageTableDirection =
-		customerStore.persistence.beverage.table.sortDescriptor.use().direction;
+	const currentBeverageTableSortDescriptor =
+		customerStore.persistence.beverage.table.sortDescriptor.use();
+	const isBeverageTableSortedByPriceAscending =
+		currentBeverageTableSortDescriptor.column === 'price' &&
+		currentBeverageTableSortDescriptor.direction === 'descending';
 
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 	const currentRecipeName = currentRecipeData?.name;
@@ -59,12 +62,17 @@ export default function CustomerRareTutorial() {
 		!accountIsLoggedIn || accountLastSyncedAt !== null;
 
 	const BEVERAGE_POSITION =
-		'[role="tabpanel"] tbody>tr[data-key="水獭祭"]>:last-child button';
+		'[aria-label="酒水选择表格"] tbody>tr[data-key="水獭祭"]>:last-child button';
+	const BEVERAGE_STEP_INDEX = 4;
 	const EGG_POSITION = '[aria-label="点击：加入额外食材【鸡蛋】，匹配度+1"]';
 	const HONEY_POSITION =
 		'[aria-label="点击：加入额外食材【蜂蜜】，匹配度+1"]';
 	const RECIPE_POSITION =
-		'[role="tabpanel"] tbody>tr[data-key="香炸蝉蜕"]>:last-child button';
+		'[aria-label="料理选择表格"] tbody>tr[data-key="香炸蝉蜕"]>:last-child button';
+
+	const delayedMoveNextHandler = useRef<
+		ReturnType<typeof setTimeout> | undefined
+	>(undefined);
 
 	const shouldSkipCompletionOnDestroy = useRef(false);
 	const driverRef = useRef(
@@ -76,6 +84,9 @@ export default function CustomerRareTutorial() {
 			showProgress: true,
 
 			onDestroyed() {
+				clearTimeout(delayedMoveNextHandler.current);
+				delayedMoveNextHandler.current = undefined;
+
 				if (shouldSkipCompletionOnDestroy.current) {
 					shouldSkipCompletionOnDestroy.current = false;
 					return;
@@ -137,10 +148,10 @@ export default function CustomerRareTutorial() {
 					},
 				},
 				{
-					element: '[role="tabpanel"] [data-key="price"]',
+					element: '[aria-label="酒水选择表格"] [data-key="price"]',
 					popover: {
 						title: '按售价排序', // eslint-disable-next-line sort-keys
-						description: '点击以按售价升序排序酒水。',
+						description: '点击以按售价降序排序酒水。',
 					},
 				},
 				{
@@ -229,6 +240,17 @@ export default function CustomerRareTutorial() {
 
 	const isInIngredientTab = useRef(false);
 
+	const delayedMoveNext = useCallback((callback: () => void) => {
+		clearTimeout(delayedMoveNextHandler.current);
+		delayedMoveNextHandler.current = setTimeout(() => {
+			delayedMoveNextHandler.current = undefined;
+
+			if (driverRef.current.isActive()) {
+				callback();
+			}
+		}, 500);
+	}, []);
+
 	const moveNext = useCallback(
 		(selectors: string, position?: ScrollLogicalPosition) => {
 			// The `xl` breakpoint is 1280px.
@@ -255,6 +277,36 @@ export default function CustomerRareTutorial() {
 		[]
 	);
 
+	const moveTo = useCallback(
+		(
+			index: number,
+			selectors: string,
+			position?: ScrollLogicalPosition
+		) => {
+			// The `xl` breakpoint is 1280px.
+			if (globalThis.innerWidth >= 1280) {
+				driverRef.current.moveTo(index);
+			} else {
+				const element = document.querySelector(selectors);
+				// Some browsers don't support scrollIntoViewOptions
+				try {
+					element?.scrollIntoView({
+						behavior: 'smooth',
+						block: position ?? 'start',
+					});
+				} catch {
+					element?.scrollIntoView(true);
+				}
+				// Delay focusing to allow time for scroll animation.
+				setTimeout(() => {
+					document.querySelector('main').scrollIntoView(true);
+					driverRef.current.moveTo(index);
+				}, 1000);
+			}
+		},
+		[]
+	);
+
 	useEffect(() => {
 		if (!driverRef.current.isActive()) {
 			return;
@@ -270,17 +322,27 @@ export default function CustomerRareTutorial() {
 			isBeverageSelected.current = true;
 			driverRef.current.moveNext();
 		} else if (
-			currentBeverageTableDirection === 'descending' &&
-			!isBeverageTableSorted.current
-		) {
-			isBeverageTableSorted.current = true;
-			moveNext(BEVERAGE_POSITION, 'nearest');
-		} else if (
 			currentOrderedBeverageTag !== null &&
 			!hasOrderedBeverageTag.current
 		) {
 			hasOrderedBeverageTag.current = true;
-			driverRef.current.moveNext();
+
+			if (isBeverageTableSortedByPriceAscending) {
+				isBeverageTableSorted.current = true;
+				delayedMoveNext(() => {
+					moveTo(BEVERAGE_STEP_INDEX, BEVERAGE_POSITION, 'nearest');
+				});
+			} else {
+				delayedMoveNext(() => {
+					driverRef.current.moveNext();
+				});
+			}
+		} else if (
+			isBeverageTableSortedByPriceAscending &&
+			!isBeverageTableSorted.current
+		) {
+			isBeverageTableSorted.current = true;
+			moveNext(BEVERAGE_POSITION, 'nearest');
 		} else if (
 			currentRecipeName !== undefined &&
 			!isRecipeSelected.current
@@ -309,22 +371,35 @@ export default function CustomerRareTutorial() {
 			!hasOrderedRecipeTag.current
 		) {
 			hasOrderedRecipeTag.current = true;
-			moveNext(RECIPE_POSITION, 'nearest');
+			delayedMoveNext(() => {
+				moveNext(RECIPE_POSITION, 'nearest');
+			});
 		} else if (isIngredientTabSelected && !isInIngredientTab.current) {
 			isInIngredientTab.current = true;
-			moveNext(EGG_POSITION);
+			delayedMoveNext(() => {
+				moveNext(EGG_POSITION);
+			});
 		}
 	}, [
 		currentBeverageName,
-		currentBeverageTableDirection,
 		currentCustomerName,
 		currentExtraIngredients,
 		currentOrderedBeverageTag,
 		currentOrderedRecipeTag,
 		currentRecipeName,
+		delayedMoveNext,
+		isBeverageTableSortedByPriceAscending,
 		isIngredientTabSelected,
 		moveNext,
+		moveTo,
 	]);
+
+	useEffect(
+		() => () => {
+			clearTimeout(delayedMoveNextHandler.current);
+		},
+		[]
+	);
 
 	useEffect(() => {
 		let handler: ReturnType<typeof setTimeout> | undefined;
