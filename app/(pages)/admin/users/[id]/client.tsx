@@ -881,6 +881,7 @@ export default function AdminUserDetailClient({
 
 	const {
 		backup_imports: backupImports,
+		has_password: hasPassword,
 		namespaces,
 		passkeys,
 		session_count: sessionCount,
@@ -1018,10 +1019,14 @@ export default function AdminUserDetailClient({
 				title={userDisplayName}
 			/>
 
-			<AdminMetricPanel className="sm:grid-cols-2 xl:grid-cols-6">
+			<AdminMetricPanel className="sm:grid-cols-2 xl:grid-cols-7">
 				<AdminMetric
 					label="状态"
 					value={<AdminStatusBadge status={userStatus} />}
+				/>
+				<AdminMetric
+					label="登录密码"
+					value={hasPassword ? '已设置' : '未设置'}
 				/>
 				<AdminMetric label="活跃Session" value={sessionCount} />
 				<AdminMetric

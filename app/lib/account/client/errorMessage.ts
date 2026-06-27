@@ -29,7 +29,9 @@ const ACCOUNT_CLIENT_ERROR_MESSAGE_MAP: Record<string, string> = {
 	'legacy-import-failed': '旧备份码导入失败，请稍后重试',
 	'local-takeover-failed': '本地数据接管失败，请刷新页面后重试',
 	'passkey-not-found': '这个通行密钥已不存在，请刷新后重试',
+	'password-already-set': '已设置登录密码，请使用修改密码',
 	'password-must-change': '需要先更新密码后才能继续同步',
+	'password-not-set': '请先设置登录密码',
 	'payload-too-large': '提交内容过大，请检查输入',
 	'server-misconfigured': '服务器账号配置异常',
 	'session-not-found': '这个登录设备已失效，请刷新后重试',
@@ -44,6 +46,7 @@ const ACCOUNT_CLIENT_ERROR_MESSAGE_MAP: Record<string, string> = {
 	'user-deleted': '账号已删除',
 	'user-disabled': '账号已停用',
 	'username-conflict': '用户名已被使用',
+	'webauthn-canceled': '通行密钥操作已取消',
 	'webauthn-failed': '通行密钥操作失败，请重试',
 	'webauthn-verification-failed': '通行密钥验证失败，请重试',
 };

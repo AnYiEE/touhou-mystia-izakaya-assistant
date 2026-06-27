@@ -11,6 +11,7 @@ import {
 	type IAccountSessionListData,
 	type IAccountSsoGrantListData,
 	type IAuthChangePasswordBody,
+	type IAuthInitialPasswordBody,
 	type IAuthLoginBody,
 	type IAuthLoginSuccessResponse,
 	type IAuthRegisterBody,
@@ -36,6 +37,7 @@ export type {
 	IAccountSsoGrantListData,
 	IAccountProfileUpdateBody,
 	IAuthChangePasswordBody,
+	IAuthInitialPasswordBody,
 	IAuthLoginBody,
 	IAuthLoginSuccessResponse,
 	IAuthRegisterBody,
@@ -179,6 +181,16 @@ export function changeAccountPassword(
 	);
 }
 
+export function setInitialAccountPassword(
+	body: IAuthInitialPasswordBody,
+	csrfToken: string
+) {
+	return fetchAccountApiResult<IAuthLoginSuccessResponse>(
+		'/api/v1/account/password/initial',
+		createJsonRequestInit('POST', body, csrfToken)
+	);
+}
+
 export function changeAccountProfile(
 	body: IAccountProfileUpdateBody,
 	csrfToken: string
@@ -269,6 +281,34 @@ export async function startWebAuthnRegistration(
 			{ name, response: attestationResponse },
 			csrfToken
 		)
+	);
+}
+
+export async function startWebAuthnAccountRegistration(
+	name = ''
+): Promise<TAccountApiResult<TAuthLoginSuccessData>> {
+	const optionsResult = await fetchAccountApiResult<{
+		options: PublicKeyCredentialCreationOptionsJSON;
+	}>(
+		'/api/v1/auth/webauthn/registration/options',
+		createJsonRequestInit('POST')
+	);
+	if (optionsResult.status === 'error') {
+		return optionsResult;
+	}
+
+	let attestationResponse;
+	try {
+		attestationResponse = await startRegistration({
+			optionsJSON: optionsResult.data.options,
+		});
+	} catch (error) {
+		return createWebAuthnCanceledResult(error);
+	}
+
+	return fetchAccountApiResult<TAuthLoginSuccessData>(
+		'/api/v1/auth/webauthn/registration/verify',
+		createJsonRequestInit('POST', { name, response: attestationResponse })
 	);
 }
 

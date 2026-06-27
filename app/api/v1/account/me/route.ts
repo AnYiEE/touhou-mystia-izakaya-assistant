@@ -53,6 +53,7 @@ export async function GET(request: NextRequest) {
 			return createNoStoreJsonResponse({
 				csrf_token: null,
 				featureEnabled: true,
+				has_password: false,
 				isLoggedIn: false,
 				password_must_change: false,
 				state_epoch: null,
@@ -83,6 +84,7 @@ export async function GET(request: NextRequest) {
 			auth.data.sessionTokenHash
 		),
 		featureEnabled: true,
+		has_password: auth.data.credential.password_set === 1,
 		isLoggedIn: true,
 		password_must_change: auth.data.credential.password_must_change === 1,
 		state_epoch: stateSnapshot.user.state_epoch,

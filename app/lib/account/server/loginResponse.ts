@@ -29,11 +29,13 @@ export function checkJsonResponseRequest(request: NextRequest) {
 }
 
 export async function createAccountLoginSuccessResponse({
+	hasPassword,
 	passwordMustChange,
 	request,
 	session,
 	user,
 }: {
+	hasPassword: boolean;
 	passwordMustChange: boolean;
 	request: NextRequest;
 	session: { csrfToken: string; token: string };
@@ -51,6 +53,7 @@ export async function createAccountLoginSuccessResponse({
 
 	const response = createNoStoreJsonResponse({
 		csrf_token: session.csrfToken,
+		has_password: hasPassword,
 		password_must_change: passwordMustChange,
 		...(ssoContext === null
 			? {}

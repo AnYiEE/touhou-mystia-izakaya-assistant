@@ -172,7 +172,7 @@ const changelog = [
 			'新增：更新法律声明。',
 		],
 	},
-	{ version: 'v2.3', changes: ['新增：支持使用通行密钥登录账号。'] },
+	{ version: 'v2.3', changes: ['新增：支持通行密钥创建和登录账号。'] },
 ] as const satisfies Array<{
 	version: `v${string}`;
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;

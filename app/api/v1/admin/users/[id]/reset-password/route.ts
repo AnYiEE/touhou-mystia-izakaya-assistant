@@ -120,6 +120,7 @@ export async function POST(
 				locked_until: null,
 				password_hash: await passwordModule.hashPassword(body.password),
 				password_must_change: 1,
+				password_set: 1,
 				updated_at: now,
 			},
 			(trx, auditNow) =>

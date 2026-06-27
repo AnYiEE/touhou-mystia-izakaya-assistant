@@ -160,6 +160,7 @@ export async function POST(request: NextRequest) {
 	const passwordCredential = await credentialsModule.getCredentialByUserId(
 		user.id
 	);
+	const hasPassword = passwordCredential?.password_set === 1;
 	const passwordMustChange = passwordCredential?.password_must_change === 1;
 
 	const session = await authModule.createAccountSessionForActiveUser(
@@ -191,6 +192,7 @@ export async function POST(request: NextRequest) {
 
 	const response =
 		await loginResponseModule.createAccountLoginSuccessResponse({
+			hasPassword,
 			passwordMustChange,
 			request,
 			session,

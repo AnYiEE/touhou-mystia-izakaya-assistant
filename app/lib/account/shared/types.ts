@@ -23,6 +23,7 @@ export interface IAuthLoginBody {
 
 export interface IAuthLoginSuccessResponse {
 	csrf_token: string;
+	has_password: boolean;
 	password_must_change: boolean;
 	user: IAccountUserProfile;
 }
@@ -30,6 +31,7 @@ export interface IAuthLoginSuccessResponse {
 export interface IAccountMeSuccessResponse {
 	csrf_token: string;
 	featureEnabled: true;
+	has_password: boolean;
 	isLoggedIn: true;
 	password_must_change: boolean;
 	state_epoch: number;
@@ -40,6 +42,7 @@ export interface IAccountMeSuccessResponse {
 export interface IAccountMeAnonymousResponse {
 	csrf_token: null;
 	featureEnabled: true;
+	has_password: false;
 	isLoggedIn: false;
 	password_must_change: false;
 	state_epoch: null;
@@ -53,6 +56,10 @@ export type TAccountMeResponse =
 
 export interface IAuthChangePasswordBody {
 	current_password: string;
+	new_password: string;
+}
+
+export interface IAuthInitialPasswordBody {
 	new_password: string;
 }
 
@@ -91,6 +98,7 @@ export interface IWebauthnCredentialSummary {
 
 export interface IWebauthnCredentialListData {
 	credentials: IWebauthnCredentialSummary[];
+	rp_id: string;
 }
 
 export interface IAccountWebauthnInitialData extends IWebauthnCredentialListData {
@@ -471,6 +479,7 @@ export interface IAdminUserDetailData {
 		results: Array<{ namespace: string; revision: number; status: 'ok' }>;
 		state_epoch: number;
 	}>;
+	has_password: boolean;
 	namespaces: Array<{
 		namespace: string;
 		revision: number;

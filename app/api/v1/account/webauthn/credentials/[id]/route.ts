@@ -170,10 +170,12 @@ export async function PATCH(
 		return createNoStoreErrorResponse('invalid-passkey-name', 400);
 	}
 
-	const [credentialsModule, presentationModule] = await Promise.all([
-		import('@/lib/account/server/repositories/webauthnCredentials'),
-		import('@/lib/account/server/webauthnPresentation'),
-	]);
+	const [credentialsModule, presentationModule, webauthnModule] =
+		await Promise.all([
+			import('@/lib/account/server/repositories/webauthnCredentials'),
+			import('@/lib/account/server/webauthnPresentation'),
+			import('@/lib/account/server/webauthn'),
+		]);
 	const didRename = await credentialsModule.renameCredentialForUser(
 		id,
 		auth.data.user.id,
@@ -186,10 +188,12 @@ export async function PATCH(
 	const credentials = await credentialsModule.listCredentialsByUserId(
 		auth.data.user.id
 	);
+	const { rpID } = webauthnModule.getWebAuthnRelyingParty();
 
 	return createNoStoreJsonResponse({
 		credentials: credentials.map((credential) =>
 			presentationModule.createWebauthnCredentialSummary(credential)
 		),
+		rp_id: rpID,
 	} satisfies IWebauthnCredentialListData);
 }

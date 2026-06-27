@@ -109,6 +109,7 @@ interface ITableUserCredential {
 	locked_until: number | null;
 	password_hash: string;
 	password_must_change: number;
+	password_set: number;
 	updated_at: number;
 	user_id: string;
 }

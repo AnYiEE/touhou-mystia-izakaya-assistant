@@ -72,6 +72,7 @@ const ACCOUNT_TABLE_COLUMNS_MAP = {
 		'failed_attempts',
 		'locked_until',
 		'password_must_change',
+		'password_set',
 		'updated_at',
 	],
 	[TABLE_NAME_MAP.userState]: [
@@ -145,6 +146,7 @@ const ACCOUNT_TABLE_COLUMN_DEFINITION_MAP = {
 			defaultTo: 0,
 			notNull: true,
 		},
+		password_set: { dataType: 'integer', defaultTo: 1, notNull: true },
 		updated_at: { dataType: 'integer', defaultTo: 0, notNull: true },
 		user_id: { dataType: 'text', structural: true },
 	},
@@ -511,6 +513,9 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 		.addColumn('locked_until', 'integer')
 		.addColumn('password_must_change', 'integer', (col) =>
 			col.notNull().defaultTo(0)
+		)
+		.addColumn('password_set', 'integer', (col) =>
+			col.notNull().defaultTo(1)
 		)
 		.addColumn('updated_at', 'integer', (col) => col.notNull())
 		.execute();

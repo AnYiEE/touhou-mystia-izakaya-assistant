@@ -6,6 +6,7 @@ export function startAccountFeatureClients() {
 	accountStore.shared.bootstrapStatus.set('disabled');
 	accountStore.shared.adminCsrfToken.set(null);
 	accountStore.shared.csrfToken.set(null);
+	accountStore.shared.hasPassword.set(false);
 	accountStore.shared.isBootstrapped.set(true);
 	accountStore.shared.isLoggedIn.set(false);
 	accountStore.shared.passwordMustChange.set(false);

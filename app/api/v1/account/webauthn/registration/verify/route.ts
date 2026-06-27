@@ -203,10 +203,12 @@ export async function POST(request: NextRequest) {
 	const credentials = await credentialsModule.listCredentialsByUserId(
 		auth.data.user.id
 	);
+	const { rpID } = webauthnModule.getWebAuthnRelyingParty();
 	const response = createNoStoreJsonResponse({
 		credentials: credentials.map((credential) =>
 			presentationModule.createWebauthnCredentialSummary(credential)
 		),
+		rp_id: rpID,
 	} satisfies IWebauthnCredentialListData);
 	webauthnModule.clearWebauthnChallengeCookie(response, request);
 

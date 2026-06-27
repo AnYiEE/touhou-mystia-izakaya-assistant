@@ -30,6 +30,7 @@ const state = {
 		adminCsrfToken: null as string | null,
 		bootstrapStatus: 'unknown' as TAccountBootstrapStatus,
 		csrfToken: null as string | null,
+		hasPassword: false,
 		isBootstrapped: false,
 		isLoggedIn: false,
 		passwordMustChange: false,

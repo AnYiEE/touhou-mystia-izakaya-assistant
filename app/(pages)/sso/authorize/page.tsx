@@ -75,6 +75,7 @@ function SsoAuthorizeLoginRequired() {
 				data={{
 					csrf_token: null,
 					featureEnabled: true,
+					has_password: false,
 					isLoggedIn: false,
 					password_must_change: false,
 					state_epoch: null,
@@ -141,6 +142,7 @@ export default async function SsoAuthorizePage({
 		if (auth.data.credential.password_must_change === 1) {
 			const accountInitialData =
 				await createAccountMeInitialDataForAuthenticatedRequest({
+					hasPassword: auth.data.credential.password_set === 1,
 					sessionTokenHash: auth.data.sessionTokenHash,
 					userId: auth.data.user.id,
 				});
@@ -178,6 +180,7 @@ export default async function SsoAuthorizePage({
 			await createAccountSsoGrantInitialDataForUser(auth.data.user.id);
 		const accountInitialData =
 			await createAccountMeInitialDataForAuthenticatedRequest({
+				hasPassword: auth.data.credential.password_set === 1,
 				sessionTokenHash: auth.data.sessionTokenHash,
 				userId: auth.data.user.id,
 			});

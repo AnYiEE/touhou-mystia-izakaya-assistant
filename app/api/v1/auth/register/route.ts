@@ -149,6 +149,7 @@ export async function POST(request: NextRequest) {
 				locked_until: null,
 				password_hash: passwordHash,
 				password_must_change: 0,
+				password_set: 1,
 				updated_at: now,
 				user_id: userId,
 			},
@@ -196,6 +197,7 @@ export async function POST(request: NextRequest) {
 
 	const response = createNoStoreJsonResponse({
 		csrf_token: session.csrfToken,
+		has_password: true,
 		password_must_change: false,
 		...(ssoContext === null
 			? {}

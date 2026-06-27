@@ -55,17 +55,21 @@ export async function GET(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	const [credentialsModule, presentationModule] = await Promise.all([
-		import('@/lib/account/server/repositories/webauthnCredentials'),
-		import('@/lib/account/server/webauthnPresentation'),
-	]);
+	const [credentialsModule, presentationModule, webauthnModule] =
+		await Promise.all([
+			import('@/lib/account/server/repositories/webauthnCredentials'),
+			import('@/lib/account/server/webauthnPresentation'),
+			import('@/lib/account/server/webauthn'),
+		]);
 	const credentials = await credentialsModule.listCredentialsByUserId(
 		auth.data.user.id
 	);
+	const { rpID } = webauthnModule.getWebAuthnRelyingParty();
 
 	return createNoStoreJsonResponse({
 		credentials: credentials.map((credential) =>
 			presentationModule.createWebauthnCredentialSummary(credential)
 		),
+		rp_id: rpID,
 	} satisfies IWebauthnCredentialListData);
 }

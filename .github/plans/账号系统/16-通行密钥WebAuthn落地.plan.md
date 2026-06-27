@@ -371,17 +371,17 @@ isProject: false
 
 ### 15.7 增量任务清单
 
-| 状态 | 编号 | 任务                         | 验收标准                                                                                  |
-| ---- | ---- | ---------------------------- | ----------------------------------------------------------------------------------------- |
-| 待做 | R-A1 | 自动用户名 helper            | 生成值满足用户名规则；归一化唯一；冲突重试有上限                                          |
-| 待做 | R-B1 | 匿名通行密钥注册 options API | 生成 `account_registration` challenge；不创建用户；不清除 SSO context                     |
-| 待做 | R-A2 | 密码设置状态迁移             | `user_credentials.password_set` 默认 1；共享响应暴露 `has_password`；既有账号行为不变     |
-| 待做 | R-B2 | 匿名通行密钥注册 verify API  | 同事务创建用户、`password_set=0` 临时口令凭据、通行密钥、会话和审计；返回统一登录成功响应 |
-| 待做 | R-B3 | 设置初始密码 API             | `password_set=0` 时可用；只要求登录态、CSRF 和新密码；成功后 `password_set=1`             |
-| 待做 | R-B4 | 注册审计与限流               | 新增审计动作或 metadata；匿名 options/verify 与设置初始密码接入请求维度限流               |
-| 待做 | R-C1 | 客户端注册 API               | `startWebAuthnAccountRegistration()` 封装 options/startRegistration/verify                |
-| 待做 | R-C2 | 登录弹窗通行密钥优先入口     | 支持设备默认主按钮；传统表单可切换；失败不自动注册                                        |
-| 待做 | R-C3 | 注册确认区                   | 无凭证/取消/失败后显示明确创建按钮与已有账号提示；点击后才创建账号                        |
-| 待做 | R-C4 | 初始密码设置 UI              | `has_password=false` 时显示免当前密码的“设置登录密码”；设置后切回现有“修改密码”           |
-| 待做 | R-V1 | 自动验证                     | `tsc --noEmit` 与 `pnpm lint` 通过                                                        |
-| 待做 | R-V2 | 手测回归                     | 通行密钥登录、取消后确认注册、自动用户名、昵称为空、设置密码、传统表单、SSO 流程逐项通过  |
+| 状态   | 编号 | 任务                         | 验收标准                                                                                  |
+| ------ | ---- | ---------------------------- | ----------------------------------------------------------------------------------------- |
+| 完成   | R-A1 | 自动用户名 helper            | 生成值满足用户名规则；归一化唯一；冲突重试有上限                                          |
+| 完成   | R-B1 | 匿名通行密钥注册 options API | 生成 `account_registration` challenge；不创建用户；不清除 SSO context                     |
+| 完成   | R-A2 | 密码设置状态迁移             | `user_credentials.password_set` 默认 1；共享响应暴露 `has_password`；既有账号行为不变     |
+| 完成   | R-B2 | 匿名通行密钥注册 verify API  | 同事务创建用户、`password_set=0` 临时口令凭据、通行密钥、会话和审计；返回统一登录成功响应 |
+| 完成   | R-B3 | 设置初始密码 API             | `password_set=0` 时可用；只要求登录态、CSRF 和新密码；成功后 `password_set=1`             |
+| 完成   | R-B4 | 注册审计与限流               | 新增审计动作或 metadata；匿名 options/verify 与设置初始密码接入请求维度限流               |
+| 完成   | R-C1 | 客户端注册 API               | `startWebAuthnAccountRegistration()` 封装 options/startRegistration/verify                |
+| 完成   | R-C2 | 登录弹窗通行密钥优先入口     | 支持设备默认主按钮；传统表单可切换；失败不自动注册                                        |
+| 完成   | R-C3 | 注册确认区                   | 无凭证/取消/失败后显示明确创建按钮与已有账号提示；点击后才创建账号                        |
+| 完成   | R-C4 | 初始密码设置 UI              | `has_password=false` 时显示免当前密码的“设置登录密码”；设置后切回现有“修改密码”           |
+| 完成   | R-V1 | 自动验证                     | `tsc --noEmit` 与 `pnpm lint` 通过                                                        |
+| 待手测 | R-V2 | 手测回归                     | 通行密钥登录、取消后确认注册、自动用户名、昵称为空、设置密码、传统表单、SSO 流程逐项通过  |

@@ -1878,7 +1878,10 @@ export function startAccountSyncClient() {
 				return;
 			}
 
-			if (message.type === 'profile-updated') {
+			if (
+				message.type === 'account-updated' ||
+				message.type === 'profile-updated'
+			) {
 				if (!checkBroadcastStateEpoch(message)) {
 					return;
 				}

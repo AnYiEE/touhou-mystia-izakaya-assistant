@@ -9,11 +9,7 @@ import {
 	createAccountAuthErrorRouteResponse,
 	readJsonBodyResult,
 } from '@/lib/account/server/routeResponses';
-import {
-	type IAuthChangePasswordBody,
-	type IAuthLoginSuccessResponse,
-} from '@/lib/account/shared/types';
-import { createRetryAfterHeaders } from '@/lib/api/http';
+import { type IAuthInitialPasswordBody } from '@/lib/account/shared/types';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -22,6 +18,8 @@ import { getLogSafeErrorCode } from '@/lib/logging';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+const SCOPE = 'set-initial-password';
 
 export async function POST(request: NextRequest) {
 	const featureResponse = await checkAccountFeatureRouteResponse();
@@ -42,23 +40,20 @@ export async function POST(request: NextRequest) {
 
 	const preAuthRateLimitResponse = checkAccountPreAuthRateLimitRouteResponse(
 		request,
-		'change-password'
+		SCOPE
 	);
 	if (preAuthRateLimitResponse !== null) {
 		return preAuthRateLimitResponse;
 	}
 
 	const bodyResult =
-		await readJsonBodyResult<IAuthChangePasswordBody>(request);
+		await readJsonBodyResult<IAuthInitialPasswordBody>(request);
 	if (bodyResult.status === 'payload-too-large') {
 		return createNoStoreErrorResponse('payload-too-large', 413);
 	}
 
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
-	if (
-		typeof body?.current_password !== 'string' ||
-		typeof body.new_password !== 'string'
-	) {
+	if (typeof body?.new_password !== 'string') {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
@@ -76,15 +71,15 @@ export async function POST(request: NextRequest) {
 		import('@/lib/account/server/accountAuditService'),
 	]);
 
-	const auth = await authModule.authenticateAccountFromRequest(request, true);
+	const auth = await authModule.authenticateAccountFromRequest(request);
 	if (auth.status === 'error') {
 		return createAccountAuthErrorRouteResponse(auth, request);
 	}
 	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
-	if (auth.data.credential.password_set !== 1) {
-		return createNoStoreErrorResponse('password-not-set', 409);
+	if (auth.data.credential.password_set === 1) {
+		return createNoStoreErrorResponse('password-already-set', 409);
 	}
 	if (!passwordModule.checkPasswordPolicy(body.new_password)) {
 		return createNoStoreErrorResponse('invalid-password-rule', 400);
@@ -92,7 +87,7 @@ export async function POST(request: NextRequest) {
 
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
-		'change-password',
+		SCOPE,
 		auth.data.user.username_normalized
 	);
 	if (rateLimitResponse !== null) {
@@ -100,55 +95,6 @@ export async function POST(request: NextRequest) {
 	}
 
 	const now = Date.now();
-	const lockState = credentialsModule.getCredentialLockState(
-		auth.data.credential,
-		now
-	);
-	if (lockState.status === 'locked') {
-		return createNoStoreErrorResponse(
-			'too-many-requests',
-			429,
-			{ retry_after: lockState.retryAfter },
-			{ headers: createRetryAfterHeaders(lockState.retryAfter) }
-		);
-	}
-
-	const isValidPassword = await passwordModule.verifyPassword(
-		auth.data.credential.password_hash,
-		body.current_password
-	);
-	if (!isValidPassword) {
-		const failureState =
-			await credentialsModule.recordFailedCredentialAttempt(
-				auth.data.user.id,
-				now
-			);
-		if (failureState.status === 'locked') {
-			return createNoStoreErrorResponse(
-				'too-many-requests',
-				429,
-				{ retry_after: failureState.retryAfter },
-				{ headers: createRetryAfterHeaders(failureState.retryAfter) }
-			);
-		}
-
-		await accountAuditModule.writeAccountAuditLogBestEffort(
-			accountAuditModule.createAccountUserAuditLogInput({
-				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
-					.passwordChanged,
-				metadata: {
-					nickname: auth.data.user.nickname,
-					result: 'invalid-current-password',
-					username: auth.data.user.username,
-				},
-				request,
-				userId: auth.data.user.id,
-			})
-		);
-
-		return createNoStoreErrorResponse('invalid-password', 401);
-	}
-
 	try {
 		await credentialsModule.updateCredentialAndKeepCurrentSession({
 			credential: {
@@ -169,8 +115,9 @@ export async function POST(request: NextRequest) {
 					trx,
 					accountAuditModule.createAccountUserAuditLogInput({
 						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
-							.passwordChanged,
+							.passwordInitialized,
 						metadata: {
+							method: 'passkey',
 							nickname: auth.data.user.nickname,
 							result: 'ok',
 							username: auth.data.user.username,
@@ -197,7 +144,7 @@ export async function POST(request: NextRequest) {
 			}
 		}
 
-		console.warn('Failed to change account password.', {
+		console.warn('Failed to set initial account password.', {
 			errorCode: getLogSafeErrorCode(error),
 		});
 
@@ -211,5 +158,5 @@ export async function POST(request: NextRequest) {
 		has_password: true,
 		password_must_change: false,
 		user: userModule.createAccountUserProfile(auth.data.user),
-	} satisfies IAuthLoginSuccessResponse);
+	});
 }

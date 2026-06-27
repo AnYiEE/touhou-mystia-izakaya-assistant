@@ -277,6 +277,7 @@ export async function POST(request: NextRequest) {
 			csrf_token: authModule.createAccountCsrfToken(
 				auth.data.sessionTokenHash
 			),
+			has_password: auth.data.credential.password_set === 1,
 			password_must_change:
 				auth.data.credential.password_must_change === 1,
 			user: userModule.createAccountUserProfile(auth.data.user),
@@ -309,6 +310,9 @@ export async function POST(request: NextRequest) {
 			return createNoStoreErrorResponse('invalid-object-structure', 400);
 		}
 
+		if (auth.data.credential.password_set !== 1) {
+			return createNoStoreErrorResponse('password-not-set', 409);
+		}
 		if (typeof bodyRecord['current_password'] !== 'string') {
 			return createNoStoreErrorResponse('invalid-password', 401);
 		}
@@ -486,6 +490,7 @@ export async function POST(request: NextRequest) {
 			csrf_token: authModule.createAccountCsrfToken(
 				auth.data.sessionTokenHash
 			),
+			has_password: auth.data.credential.password_set === 1,
 			password_must_change:
 				auth.data.credential.password_must_change === 1,
 			user: userModule.createAccountUserProfile(user.user),

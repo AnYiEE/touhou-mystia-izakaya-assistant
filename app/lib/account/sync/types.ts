@@ -51,6 +51,7 @@ export interface IAccountSyncBroadcastMessage {
 	state_epoch: number;
 	tabId: string;
 	type:
+		| 'account-updated'
 		| 'data-deleted'
 		| 'dirty'
 		| 'lease-changed'

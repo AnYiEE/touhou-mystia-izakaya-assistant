@@ -145,9 +145,11 @@ const auditActionLabelMap: Record<string, string> = {
 	'user-logout-all-sessions': '用户退出全部设备',
 	'user-logout-session': '用户退出登录',
 	'user-register-account': '用户注册账号',
+	'user-register-account-with-passkey': '用户使用通行密钥注册账号',
 	'user-register-passkey': '用户添加通行密钥',
 	'user-revoke-session': '用户撤销登录设备',
 	'user-revoke-sso-grant': '用户撤销SSO授权',
+	'user-set-initial-password': '用户设置初始密码',
 };
 
 const auditFilterReferenceGroups = [

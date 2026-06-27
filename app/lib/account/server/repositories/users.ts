@@ -13,11 +13,13 @@ import type {
 	TUserCredentialNew,
 	TUserNew,
 	TUserUpdate,
+	TUserWebauthnCredentialNew,
 } from '@/lib/db/types';
 
 const TABLE_NAME = TABLE_NAME_MAP.user;
 const CREDENTIAL_TABLE_NAME = TABLE_NAME_MAP.userCredential;
 const SESSION_TABLE_NAME = TABLE_NAME_MAP.session;
+const WEBAUTHN_CREDENTIAL_TABLE_NAME = TABLE_NAME_MAP.userWebauthnCredential;
 
 type TUpdateActiveUserProfileResult =
 	| { retryAfter: number; status: 'credential-locked' }
@@ -232,6 +234,50 @@ export async function createUserWithCredentialAndSession(
 		await trx
 			.insertInto(CREDENTIAL_TABLE_NAME)
 			.values({ ...credential, user_id: record.id })
+			.execute();
+		await trx
+			.insertInto(SESSION_TABLE_NAME)
+			.values({ ...session, user_id: record.id })
+			.execute();
+		await writeAuditLog?.(trx, now, record);
+
+		return record;
+	});
+}
+
+export async function createUserWithCredentialWebauthnAndSession(
+	user: TUserNew,
+	credential: TUserCredentialNew,
+	webauthnCredential: TUserWebauthnCredentialNew,
+	session: TSessionNew,
+	writeAuditLog?: (
+		trx: Transaction<TDatabase>,
+		now: number,
+		user: TUser
+	) => Promise<void>
+) {
+	const db = await getAccountDatabase();
+	const now = Date.now();
+
+	return db.transaction().execute(async (trx) => {
+		const record = await trx
+			.insertInto(TABLE_NAME)
+			.values(user)
+			.onConflict((oc) => oc.column('username_normalized').doNothing())
+			.returningAll()
+			.executeTakeFirst();
+
+		if (record === undefined) {
+			return null;
+		}
+
+		await trx
+			.insertInto(CREDENTIAL_TABLE_NAME)
+			.values({ ...credential, user_id: record.id })
+			.execute();
+		await trx
+			.insertInto(WEBAUTHN_CREDENTIAL_TABLE_NAME)
+			.values({ ...webauthnCredential, user_id: record.id })
 			.execute();
 		await trx
 			.insertInto(SESSION_TABLE_NAME)

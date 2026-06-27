@@ -29,6 +29,7 @@ function createAccountAnonymousInitialData(): TAccountMeResponse {
 	return {
 		csrf_token: null,
 		featureEnabled: true,
+		has_password: false,
 		isLoggedIn: false,
 		password_must_change: false,
 		state_epoch: null,
@@ -73,21 +74,26 @@ export async function createAccountWebauthnInitialDataForUser(
 		import('@/lib/account/server/repositories/webauthnCredentials'),
 		import('@/lib/account/server/webauthnPresentation'),
 	]);
+	const webauthnModule = await import('@/lib/account/server/webauthn');
 	const credentials = await credentialsModule.listCredentialsByUserId(userId);
+	const { rpID } = webauthnModule.getWebAuthnRelyingParty();
 
 	return {
 		credentials: credentials.map((credential) =>
 			presentationModule.createWebauthnCredentialSummary(credential)
 		),
 		rendered_at: Date.now(),
+		rp_id: rpID,
 		user_id: userId,
 	};
 }
 
 export async function createAccountMeInitialDataForAuthenticatedRequest({
+	hasPassword = true,
 	sessionTokenHash,
 	userId,
 }: {
+	hasPassword?: boolean;
 	sessionTokenHash: string;
 	userId: string;
 }): Promise<IAccountMeSuccessResponse | null> {
@@ -107,6 +113,7 @@ export async function createAccountMeInitialDataForAuthenticatedRequest({
 	return {
 		csrf_token: createAccountCsrfToken(sessionTokenHash),
 		featureEnabled: true,
+		has_password: hasPassword,
 		isLoggedIn: true,
 		password_must_change: false,
 		state_epoch: stateSnapshot.user.state_epoch,
@@ -180,6 +187,7 @@ export async function readAccountFeatureInitialData(
 
 		const account = await createAccountMeInitialDataForAuthenticatedRequest(
 			{
+				hasPassword: auth.data.credential.password_set === 1,
 				sessionTokenHash: auth.data.sessionTokenHash,
 				userId: auth.data.user.id,
 			}

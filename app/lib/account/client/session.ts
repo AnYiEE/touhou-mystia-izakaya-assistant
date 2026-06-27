@@ -46,6 +46,7 @@ export function resetAccountState() {
 	resetAccountSyncRuntime();
 	accountStore.shared.bootstrapStatus.set('anonymous');
 	accountStore.shared.csrfToken.set(null);
+	accountStore.shared.hasPassword.set(false);
 	accountStore.shared.isLoggedIn.set(false);
 	accountStore.shared.passwordMustChange.set(false);
 	accountStore.shared.sessionInitialData.set(null);
@@ -106,6 +107,7 @@ export function applyAccountAuthSuccessResponse(
 
 	accountStore.shared.bootstrapStatus.set('loggedIn');
 	accountStore.shared.csrfToken.set(data.csrf_token);
+	accountStore.shared.hasPassword.set(data.has_password);
 	accountStore.shared.isBootstrapped.set(true);
 	accountStore.shared.isLoggedIn.set(true);
 	accountStore.shared.passwordMustChange.set(data.password_must_change);
@@ -260,6 +262,7 @@ export async function refreshAccountState() {
 	}
 	const {
 		csrf_token: csrfToken,
+		has_password: hasPassword,
 		isLoggedIn: responseIsLoggedIn,
 		password_must_change: passwordMustChange,
 		syncMeta,
@@ -268,10 +271,12 @@ export async function refreshAccountState() {
 	let accountUser: NonNullable<typeof result.user> | null = null;
 	let accountCsrfToken: string | null = null;
 	let accountPasswordMustChange = false;
+	let accountHasPassword = false;
 	if (responseIsLoggedIn) {
 		accountUser = user;
 		accountCsrfToken = csrfToken;
 		accountPasswordMustChange = passwordMustChange;
+		accountHasPassword = hasPassword;
 	}
 
 	const isLoggedIn = accountUser !== null;
@@ -289,6 +294,7 @@ export async function refreshAccountState() {
 		isLoggedIn ? 'loggedIn' : 'anonymous'
 	);
 	accountStore.shared.csrfToken.set(accountCsrfToken);
+	accountStore.shared.hasPassword.set(accountHasPassword);
 	accountStore.shared.isBootstrapped.set(true);
 	accountStore.shared.isLoggedIn.set(isLoggedIn);
 	accountStore.shared.passwordMustChange.set(accountPasswordMustChange);

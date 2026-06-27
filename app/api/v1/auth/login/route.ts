@@ -174,6 +174,22 @@ export async function POST(request: NextRequest) {
 		);
 		return createInvalidLoginResponse();
 	}
+	if (credential.password_set !== 1) {
+		await passwordModule.consumePasswordVerificationCost(body.password);
+		await accountAuditModule.writeAccountAuditLogBestEffort(
+			accountAuditModule.createAccountSystemAuditLogInput({
+				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.loginFailed,
+				metadata: createLoginFailureMetadata(
+					'password-not-set',
+					username,
+					usernameNormalized
+				),
+				request,
+				targetId: user.id,
+			})
+		);
+		return createInvalidLoginResponse();
+	}
 
 	const now = Date.now();
 	const lockState = credentialsModule.getCredentialLockState(credential, now);
@@ -295,6 +311,7 @@ export async function POST(request: NextRequest) {
 		await import('@/lib/account/server/loginResponse');
 
 	return loginResponseModule.createAccountLoginSuccessResponse({
+		hasPassword: true,
 		passwordMustChange: credential.password_must_change === 1,
 		request,
 		session,
