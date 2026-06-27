@@ -11,7 +11,11 @@ import {
 	useState,
 } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { browserSupportsWebAuthn } from '@simplewebauthn/browser';
+import {
+	WebAuthnAbortService,
+	browserSupportsWebAuthn,
+	browserSupportsWebAuthnAutofill,
+} from '@simplewebauthn/browser';
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useReducedMotion } from '@/design/ui/hooks';
@@ -65,6 +69,7 @@ import {
 	AccountApiError,
 	type IWebauthnCredentialSummary,
 	type TAccountApiResult,
+	type TAuthLoginSuccessData,
 	changeAccountPassword,
 	changeAccountProfile,
 	deleteAccount,
@@ -131,6 +136,8 @@ const ACCOUNT_COLLAPSE_MOTION_TRANSITION = {
 	duration: 0.18,
 	ease: 'easeInOut',
 } as const;
+
+const AUTH_TERMS_REQUIRED_MESSAGE = '请先阅读并同意法律声明';
 
 interface IAccountPanelProps extends PropsWithChildren<
 	Pick<HTMLDivElementAttributes, 'className'>
@@ -468,6 +475,7 @@ export default memo<IProps>(function AccountManager() {
 	const ssoGrantInitialData = accountStore.shared.ssoGrantInitialData.use();
 	const user = accountStore.shared.user.use();
 	const webauthnInitialData = accountStore.shared.webauthnInitialData.use();
+	const isAccountModalOpen = accountStore.shared.accountModal.isOpen.use();
 
 	const [authMode, setAuthMode] = useState<TAuthMode>('login');
 	const [currentPassword, setCurrentPassword] = useState('');
@@ -516,6 +524,8 @@ export default memo<IProps>(function AccountManager() {
 		null
 	);
 	const [isWebauthnSupported, setIsWebauthnSupported] = useState(false);
+	const [isWebauthnAutofillSupported, setIsWebauthnAutofillSupported] =
+		useState(false);
 	const [isWebauthnLoginPending, setIsWebauthnLoginPending] = useState(false);
 	const [passkeys, setPasskeys] = useState<IWebauthnCredentialSummary[]>([]);
 	const [isPasskeyListLoading, setIsPasskeyListLoading] = useState(false);
@@ -538,6 +548,8 @@ export default memo<IProps>(function AccountManager() {
 	);
 	const webauthnBroadcastTabIdRef = useRef<string | null>(null);
 	const authTermsCheckboxRef = useRef<HTMLInputElement>(null);
+	const isWebauthnAutofillRequestActiveRef = useRef(false);
+	const webauthnAutofillRequestIdRef = useRef(0);
 	const passkeyListRequestIdRef = useRef(0);
 	const passkeyListUpdatedAtRef = useRef(0);
 	const passkeysFetchRequestedUserIdRef = useRef<string | null>(null);
@@ -577,6 +589,16 @@ export default memo<IProps>(function AccountManager() {
 		isProfileUsernameUnchanged && isProfileNicknameUnchanged;
 	const isProfileCurrentPasswordRequired = !isProfileUsernameUnchanged;
 	const isSsoContext = pathname === '/sso/authorize';
+	const areAuthCredentialInputsLocked =
+		authMode === 'login' && !hasAcceptedAuthTerms;
+	const isWebauthnAutofillLoginReady =
+		isAccountModalOpen &&
+		bootstrapStatus === 'anonymous' &&
+		authMode === 'login' &&
+		hasAcceptedAuthTerms &&
+		isWebauthnAutofillSupported &&
+		user === null &&
+		!shouldHideAfterSsoAuth;
 
 	useEffect(() => {
 		setShouldHideAfterSsoAuth(false);
@@ -588,6 +610,15 @@ export default memo<IProps>(function AccountManager() {
 		setProfileCurrentPassword('');
 		setProfileError(null);
 	}, [user?.id, user?.nickname, user?.username]);
+
+	useEffect(() => {
+		if (user?.id === undefined) {
+			return;
+		}
+
+		setHasAcceptedAuthTerms(false);
+		setShouldHighlightAuthTerms(false);
+	}, [user?.id]);
 
 	const handleAuth = useCallback(() => {
 		if (isSubmitting) {
@@ -612,7 +643,8 @@ export default memo<IProps>(function AccountManager() {
 			return;
 		}
 		if (!hasAcceptedAuthTerms) {
-			setMessage('请先阅读并同意法律声明');
+			setShouldHighlightAuthTerms(true);
+			setMessage(AUTH_TERMS_REQUIRED_MESSAGE);
 			return;
 		}
 		if (authMode === 'register' && !checkPasswordPolicy(password)) {
@@ -724,6 +756,9 @@ export default memo<IProps>(function AccountManager() {
 			'Switch Login'
 		);
 		setAuthMode('login');
+		setUsername('');
+		setPassword('');
+		setRegistrationNickname('');
 		setMessage(null);
 		setShouldHighlightAuthTerms(false);
 	}, [vibrate]);
@@ -736,6 +771,9 @@ export default memo<IProps>(function AccountManager() {
 			'Switch Register'
 		);
 		setAuthMode('register');
+		setUsername('');
+		setPassword('');
+		setRegistrationNickname('');
 		setMessage(null);
 		setShouldHighlightAuthTerms(false);
 	}, [vibrate]);
@@ -746,6 +784,11 @@ export default memo<IProps>(function AccountManager() {
 			setHasAcceptedAuthTerms(checked);
 			if (checked) {
 				setShouldHighlightAuthTerms(false);
+				setMessage((currentMessage) =>
+					currentMessage === AUTH_TERMS_REQUIRED_MESSAGE
+						? null
+						: currentMessage
+				);
 			}
 		},
 		[]
@@ -755,19 +798,37 @@ export default memo<IProps>(function AccountManager() {
 		authTermsCheckboxRef.current?.focus();
 	}, []);
 
-	const handleAuthUsernameChange = useCallback((value: string) => {
-		setUsername(value);
-		setMessage((currentMessage) =>
-			currentMessage === 'invalid-credentials' ? null : currentMessage
-		);
-	}, []);
+	const handleAuthUsernameChange = useCallback(
+		(value: string) => {
+			if (authMode === 'login' && !hasAcceptedAuthTerms) {
+				setShouldHighlightAuthTerms(true);
+				setMessage(AUTH_TERMS_REQUIRED_MESSAGE);
+				return;
+			}
 
-	const handleAuthPasswordChange = useCallback((value: string) => {
-		setPassword(value);
-		setMessage((currentMessage) =>
-			currentMessage === 'invalid-credentials' ? null : currentMessage
-		);
-	}, []);
+			setUsername(value);
+			setMessage((currentMessage) =>
+				currentMessage === 'invalid-credentials' ? null : currentMessage
+			);
+		},
+		[authMode, hasAcceptedAuthTerms]
+	);
+
+	const handleAuthPasswordChange = useCallback(
+		(value: string) => {
+			if (authMode === 'login' && !hasAcceptedAuthTerms) {
+				setShouldHighlightAuthTerms(true);
+				setMessage(AUTH_TERMS_REQUIRED_MESSAGE);
+				return;
+			}
+
+			setPassword(value);
+			setMessage((currentMessage) =>
+				currentMessage === 'invalid-credentials' ? null : currentMessage
+			);
+		},
+		[authMode, hasAcceptedAuthTerms]
+	);
 
 	const handleCurrentPasswordChange = useCallback((value: string) => {
 		setCurrentPassword(value);
@@ -1919,8 +1980,30 @@ export default memo<IProps>(function AccountManager() {
 	}, [csrfToken, isSubmitting, revokeTargetSessionId, user, vibrate]);
 
 	useEffect(() => {
-		setIsWebauthnSupported(browserSupportsWebAuthn());
+		const isSupported = browserSupportsWebAuthn();
+		let isCanceled = false;
+
+		setIsWebauthnSupported(isSupported);
+		if (isSupported) {
+			void browserSupportsWebAuthnAutofill()
+				.then((isAutofillSupported) => {
+					if (!isCanceled) {
+						setIsWebauthnAutofillSupported(isAutofillSupported);
+					}
+				})
+				.catch(() => {
+					if (!isCanceled) {
+						setIsWebauthnAutofillSupported(false);
+					}
+				});
+		} else {
+			setIsWebauthnAutofillSupported(false);
+		}
 		webauthnBroadcastTabIdRef.current ??= createAccountClientId();
+
+		return () => {
+			isCanceled = true;
+		};
 	}, []);
 
 	const refreshPasskeysForCurrentUser = useCallback(
@@ -2090,12 +2173,166 @@ export default memo<IProps>(function AccountManager() {
 		});
 	}, []);
 
+	const cancelWebAuthnAutofillLogin = useCallback(() => {
+		if (!isWebauthnAutofillRequestActiveRef.current) {
+			return;
+		}
+
+		webauthnAutofillRequestIdRef.current += 1;
+		isWebauthnAutofillRequestActiveRef.current = false;
+		WebAuthnAbortService.cancelCeremony();
+	}, []);
+
+	const handleWebAuthnLoginResult = useCallback(
+		(
+			result: TAccountApiResult<TAuthLoginSuccessData>,
+			expectedAuthContext: TAccountAuthContext
+		) => {
+			if (result.status === 'error') {
+				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
+					return;
+				}
+				if (result.message !== 'webauthn-canceled') {
+					setMessage(result.message);
+				}
+				return;
+			}
+
+			const { redirect_to: redirectTo, ...data } = result.data;
+			if (!applyAccountAuthSuccessResponse(data, expectedAuthContext)) {
+				return;
+			}
+
+			setMessage('登录成功');
+			if (redirectTo !== undefined) {
+				globalThis.location.assign(redirectTo);
+				return;
+			}
+			if (isSsoContext) {
+				setShouldHideAfterSsoAuth(true);
+				accountStore.shared.accountModal.isOpen.set(false);
+				router.refresh();
+				return;
+			}
+
+			refreshAccountState().catch((error: unknown) => {
+				if (
+					handleUnauthorizedAccountError(error, {
+						expectedCsrfToken: data.csrf_token,
+						expectedUserId: data.user.id,
+					})
+				) {
+					return;
+				}
+				console.warn(
+					'Account state refresh failed after successful authentication.',
+					{ errorCode: getLogSafeErrorCode(error) }
+				);
+			});
+		},
+		[isSsoContext, router]
+	);
+
+	const startWebAuthnAutofillLogin = useCallback(() => {
+		if (
+			!isWebauthnAutofillLoginReady ||
+			isWebauthnAutofillRequestActiveRef.current
+		) {
+			return;
+		}
+
+		const requestId = webauthnAutofillRequestIdRef.current + 1;
+		webauthnAutofillRequestIdRef.current = requestId;
+		isWebauthnAutofillRequestActiveRef.current = true;
+
+		const expectedAuthContext = {
+			expectedCsrfToken: accountStore.shared.csrfToken.get(),
+			expectedUserId: accountStore.shared.user.get()?.id ?? null,
+		};
+
+		void startWebAuthnLogin({ useBrowserAutofill: true })
+			.then((result) => {
+				if (webauthnAutofillRequestIdRef.current !== requestId) {
+					return;
+				}
+				isWebauthnAutofillRequestActiveRef.current = false;
+
+				if (
+					result.status === 'error' &&
+					result.message === 'webauthn-canceled'
+				) {
+					return;
+				}
+				if (result.status !== 'error') {
+					trackEvent(
+						trackEvent.category.click,
+						'Account Auth Button',
+						'WebAuthn Autofill Login'
+					);
+				}
+
+				handleWebAuthnLoginResult(result, expectedAuthContext);
+			})
+			.catch((error: unknown) => {
+				if (webauthnAutofillRequestIdRef.current !== requestId) {
+					return;
+				}
+				isWebauthnAutofillRequestActiveRef.current = false;
+				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
+					return;
+				}
+
+				setMessage(error instanceof Error ? error.message : '认证失败');
+			});
+	}, [handleWebAuthnLoginResult, isWebauthnAutofillLoginReady]);
+
+	useEffect(() => {
+		if (!isWebauthnAutofillLoginReady) {
+			cancelWebAuthnAutofillLogin();
+			return;
+		}
+
+		startWebAuthnAutofillLogin();
+
+		return cancelWebAuthnAutofillLogin;
+	}, [
+		cancelWebAuthnAutofillLogin,
+		isWebauthnAutofillLoginReady,
+		startWebAuthnAutofillLogin,
+	]);
+
+	const handleAuthCredentialInputFocus = useCallback(() => {
+		if (user !== null) {
+			return;
+		}
+		if (authMode !== 'login') {
+			return;
+		}
+		if (!hasAcceptedAuthTerms) {
+			setShouldHighlightAuthTerms(true);
+			setMessage(AUTH_TERMS_REQUIRED_MESSAGE);
+			return;
+		}
+		if (!isWebauthnAutofillSupported) {
+			return;
+		}
+
+		startWebAuthnAutofillLogin();
+	}, [
+		authMode,
+		hasAcceptedAuthTerms,
+		isWebauthnAutofillSupported,
+		startWebAuthnAutofillLogin,
+		user,
+	]);
+
 	const handleWebAuthnLogin = useCallback(() => {
 		if (isWebauthnLoginPending) {
 			return;
 		}
 		if (!hasAcceptedAuthTerms) {
 			setShouldHighlightAuthTerms(true);
+			setMessage(AUTH_TERMS_REQUIRED_MESSAGE);
 			return;
 		}
 
@@ -2105,6 +2342,7 @@ export default memo<IProps>(function AccountManager() {
 			'Account Auth Button',
 			'WebAuthn Login'
 		);
+		cancelWebAuthnAutofillLogin();
 		setIsWebauthnLoginPending(true);
 		setMessage(null);
 
@@ -2115,58 +2353,23 @@ export default memo<IProps>(function AccountManager() {
 
 		void startWebAuthnLogin()
 			.then((result) => {
-				if (result.status === 'error') {
-					if (result.message !== 'webauthn-canceled') {
-						setMessage(result.message);
-					}
-					return;
-				}
-
-				const { redirect_to: redirectTo, ...data } = result.data;
-				if (
-					!applyAccountAuthSuccessResponse(data, expectedAuthContext)
-				) {
-					return;
-				}
-
-				setMessage('登录成功');
-				if (redirectTo !== undefined) {
-					globalThis.location.assign(redirectTo);
-					return;
-				}
-				if (isSsoContext) {
-					setShouldHideAfterSsoAuth(true);
-					accountStore.shared.accountModal.isOpen.set(false);
-					router.refresh();
-					return;
-				}
-
-				refreshAccountState().catch((error: unknown) => {
-					if (
-						handleUnauthorizedAccountError(error, {
-							expectedCsrfToken: data.csrf_token,
-							expectedUserId: data.user.id,
-						})
-					) {
-						return;
-					}
-					console.warn(
-						'Account state refresh failed after successful authentication.',
-						{ errorCode: getLogSafeErrorCode(error) }
-					);
-				});
+				handleWebAuthnLoginResult(result, expectedAuthContext);
 			})
 			.catch((error: unknown) => {
+				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
+					return;
+				}
+
 				setMessage(error instanceof Error ? error.message : '认证失败');
 			})
 			.finally(() => {
 				setIsWebauthnLoginPending(false);
 			});
 	}, [
+		cancelWebAuthnAutofillLogin,
+		handleWebAuthnLoginResult,
 		hasAcceptedAuthTerms,
-		isSsoContext,
 		isWebauthnLoginPending,
-		router,
 		vibrate,
 	]);
 
@@ -2576,9 +2779,14 @@ export default memo<IProps>(function AccountManager() {
 						</div>
 						<form onSubmit={handleAuthSubmit}>
 							<Input
-								autoComplete="username"
+								autoComplete={
+									authMode === 'login'
+										? 'username webauthn'
+										: 'username'
+								}
 								description={USERNAME_RULE_DESCRIPTION}
 								isInvalid={authCredentialErrorMessage !== null}
+								isReadOnly={areAuthCredentialInputsLocked}
 								label="用户名"
 								placeholder="输入账号用户名"
 								startContent={
@@ -2586,6 +2794,7 @@ export default memo<IProps>(function AccountManager() {
 								}
 								value={username}
 								validationBehavior="aria"
+								onFocus={handleAuthCredentialInputFocus}
 								onValueChange={handleAuthUsernameChange}
 							/>
 							<AccountCollapseMotion motionKey="registration-nickname">
@@ -2626,7 +2835,7 @@ export default memo<IProps>(function AccountManager() {
 								<Input
 									autoComplete={
 										authMode === 'login'
-											? 'current-password'
+											? 'current-password webauthn'
 											: 'new-password'
 									}
 									description={passwordDescription}
@@ -2640,6 +2849,7 @@ export default memo<IProps>(function AccountManager() {
 										isRegistrationPasswordInvalid ||
 										authCredentialErrorMessage !== null
 									}
+									isReadOnly={areAuthCredentialInputsLocked}
 									label="密码"
 									placeholder={
 										authMode === 'login'
@@ -2652,6 +2862,7 @@ export default memo<IProps>(function AccountManager() {
 									type="password"
 									value={password}
 									validationBehavior="aria"
+									onFocus={handleAuthCredentialInputFocus}
 									onValueChange={handleAuthPasswordChange}
 								/>
 							</div>

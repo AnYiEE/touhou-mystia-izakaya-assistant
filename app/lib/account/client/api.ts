@@ -230,8 +230,9 @@ export async function revokeAccountSession(
 function createWebAuthnCanceledResult(
 	error: unknown
 ): Extract<TAccountApiResult, { status: 'error' }> {
+	const errorName = error instanceof Error ? error.name : null;
 	const message =
-		error instanceof Error && error.name === 'NotAllowedError'
+		errorName === 'AbortError' || errorName === 'NotAllowedError'
 			? 'webauthn-canceled'
 			: 'webauthn-failed';
 
@@ -303,7 +304,13 @@ export function renameWebAuthnCredential(
 	);
 }
 
-export async function startWebAuthnLogin(): Promise<
+interface IStartWebAuthnLoginOptions {
+	useBrowserAutofill?: boolean;
+}
+
+export async function startWebAuthnLogin({
+	useBrowserAutofill = false,
+}: IStartWebAuthnLoginOptions = {}): Promise<
 	TAccountApiResult<TAuthLoginSuccessData>
 > {
 	const optionsResult = await fetchAccountApiResult<{
@@ -320,6 +327,7 @@ export async function startWebAuthnLogin(): Promise<
 	try {
 		assertionResponse = await startAuthentication({
 			optionsJSON: optionsResult.data.options,
+			useBrowserAutofill,
 		});
 	} catch (error) {
 		return createWebAuthnCanceledResult(error);
