@@ -118,6 +118,7 @@ import {
 	NICKNAME_RULE_DESCRIPTION,
 	PASSWORD_RULE_DESCRIPTION,
 	USERNAME_RULE_DESCRIPTION,
+	WEBAUTHN_BROWSER_CEREMONY_TIMEOUT_MS,
 	WEBAUTHN_CREDENTIAL_NAME_MAX_LENGTH,
 	WEBAUTHN_CREDENTIAL_NAME_RULE_DESCRIPTION,
 	checkNicknamePolicy,
@@ -575,6 +576,7 @@ export default memo<IProps>(function AccountManager() {
 	const [isWebauthnAutofillSupported, setIsWebauthnAutofillSupported] =
 		useState(false);
 	const [isWebauthnLoginPending, setIsWebauthnLoginPending] = useState(false);
+	const [isWebauthnSlow, setIsWebauthnSlow] = useState(false);
 	const [
 		isPasskeyRegistrationPromptVisible,
 		setIsPasskeyRegistrationPromptVisible,
@@ -910,6 +912,7 @@ export default memo<IProps>(function AccountManager() {
 
 	const handlePasswordAuthEntryPress = useCallback(() => {
 		vibrate();
+
 		if (!hasAcceptedAuthTerms) {
 			setShouldHighlightAuthTerms(true);
 			setMessage(AUTH_TERMS_REQUIRED_MESSAGE);
@@ -2103,6 +2106,7 @@ export default memo<IProps>(function AccountManager() {
 		vibrate();
 
 		const sessionId = revokeTargetSessionId;
+
 		trackEvent(
 			trackEvent.category.click,
 			'Account Auth Button',
@@ -2529,22 +2533,30 @@ export default memo<IProps>(function AccountManager() {
 		if (isWebauthnLoginPending) {
 			return;
 		}
+
+		vibrate();
+
 		if (!hasAcceptedAuthTerms) {
 			setShouldHighlightAuthTerms(true);
 			setMessage(AUTH_TERMS_REQUIRED_MESSAGE);
 			return;
 		}
 
-		vibrate();
 		trackEvent(
 			trackEvent.category.click,
 			'Account Auth Button',
 			'WebAuthn Login'
 		);
+
 		cancelWebAuthnAutofillLogin();
 		setIsWebauthnLoginPending(true);
+		setIsWebauthnSlow(false);
 		setIsPasskeyRegistrationPromptVisible(false);
 		setMessage(null);
+
+		const slowTimerId = setTimeout(() => {
+			setIsWebauthnSlow(true);
+		}, WEBAUTHN_BROWSER_CEREMONY_TIMEOUT_MS);
 
 		const expectedAuthContext = {
 			expectedCsrfToken: accountStore.shared.csrfToken.get(),
@@ -2575,7 +2587,9 @@ export default memo<IProps>(function AccountManager() {
 				setMessage(error instanceof Error ? error.message : '认证失败');
 			})
 			.finally(() => {
+				clearTimeout(slowTimerId);
 				setIsWebauthnLoginPending(false);
+				setIsWebauthnSlow(false);
 			});
 	}, [
 		cancelWebAuthnAutofillLogin,
@@ -2589,21 +2603,29 @@ export default memo<IProps>(function AccountManager() {
 		if (isWebauthnAccountRegistrationPending || isWebauthnLoginPending) {
 			return;
 		}
+
+		vibrate();
+
 		if (!hasAcceptedAuthTerms) {
 			setShouldHighlightAuthTerms(true);
 			setMessage(AUTH_TERMS_REQUIRED_MESSAGE);
 			return;
 		}
 
-		vibrate();
 		trackEvent(
 			trackEvent.category.click,
 			'Account Auth Button',
 			'WebAuthn Account Registration'
 		);
+
 		cancelWebAuthnAutofillLogin();
 		setIsWebauthnAccountRegistrationPending(true);
+		setIsWebauthnSlow(false);
 		setMessage(null);
+
+		const slowTimerId = setTimeout(() => {
+			setIsWebauthnSlow(true);
+		}, WEBAUTHN_BROWSER_CEREMONY_TIMEOUT_MS);
 
 		const expectedAuthContext = {
 			expectedCsrfToken: accountStore.shared.csrfToken.get(),
@@ -2667,7 +2689,9 @@ export default memo<IProps>(function AccountManager() {
 				setMessage(error instanceof Error ? error.message : '注册失败');
 			})
 			.finally(() => {
+				clearTimeout(slowTimerId);
 				setIsWebauthnAccountRegistrationPending(false);
+				setIsWebauthnSlow(false);
 			});
 	}, [
 		cancelWebAuthnAutofillLogin,
@@ -2685,18 +2709,20 @@ export default memo<IProps>(function AccountManager() {
 			return;
 		}
 
+		vibrate();
+
 		const passkeyName = normalizeWebauthnCredentialName(newPasskeyName);
 		if (!checkWebauthnCredentialNamePolicy(passkeyName)) {
 			setMessage('invalid-passkey-name');
 			return;
 		}
 
-		vibrate();
 		trackEvent(
 			trackEvent.category.click,
 			'Account Auth Button',
 			'Add Passkey'
 		);
+
 		setIsAddingPasskey(true);
 		setMessage(null);
 
@@ -2779,9 +2805,10 @@ export default memo<IProps>(function AccountManager() {
 		) {
 			return;
 		}
-
 		vibrate();
+
 		const id = deleteTargetPasskeyId;
+
 		trackEvent(
 			trackEvent.category.click,
 			'Account Auth Button',
@@ -2868,14 +2895,16 @@ export default memo<IProps>(function AccountManager() {
 			return;
 		}
 
+		vibrate();
+
 		const passkeyName = normalizeWebauthnCredentialName(editingPasskeyName);
 		if (!checkWebauthnCredentialNamePolicy(passkeyName)) {
 			setMessage('invalid-passkey-name');
 			return;
 		}
 
-		vibrate();
 		const id = editingPasskeyId;
+
 		trackEvent(
 			trackEvent.category.click,
 			'Account Auth Button',
@@ -3143,8 +3172,24 @@ export default memo<IProps>(function AccountManager() {
 												<p className="text-small font-medium leading-5 text-foreground-700">
 													通行密钥
 												</p>
-												<p className="text-tiny leading-5 text-foreground-500">
-													无需输入密码，按系统提示确认即可
+												<p
+													className={cn(
+														'text-tiny leading-5',
+														authCredentialErrorMessage ===
+															null
+															? 'text-foreground-500'
+															: 'text-danger-600 dark:text-danger'
+													)}
+												>
+													{authCredentialErrorMessage ??
+														(isWebauthnSlow
+															? getAccountClientErrorMessage(
+																	'webauthn-timeout'
+																)
+															: isWebauthnLoginPending ||
+																  isWebauthnAccountRegistrationPending
+																? '正在等待系统验证…'
+																: '无需输入密码，按系统提示确认即可')}
 												</p>
 											</div>
 										</div>

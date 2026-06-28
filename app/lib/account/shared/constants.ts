@@ -86,6 +86,7 @@ export function checkPasswordPolicy(password: string) {
 }
 
 export const WEBAUTHN_CHALLENGE_TTL_MS = 5 * 60 * 1000;
+export const WEBAUTHN_BROWSER_CEREMONY_TIMEOUT_MS = 15 * 1000;
 export const WEBAUTHN_MAX_CREDENTIALS_PER_USER = 20;
 export const WEBAUTHN_CREDENTIAL_NAME_MAX_LENGTH = 50;
 export const WEBAUTHN_CREDENTIAL_NAME_RULE_DESCRIPTION = `通行密钥名称最多${WEBAUTHN_CREDENTIAL_NAME_MAX_LENGTH}个字符，不能包含换行或控制字符`;
