@@ -52,7 +52,7 @@ export async function checkAdminSsoClientRequest(
 		return { response: rateLimitResponse, status: 'error' as const };
 	}
 
-	const auth = authenticateAdminFromRequest(request);
+	const auth = await authenticateAdminFromRequest(request);
 	if (auth.status === 'error') {
 		return {
 			response: createAdminAuthErrorRouteResponse(

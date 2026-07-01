@@ -1,5 +1,3 @@
-import { cookies } from 'next/headers';
-
 import AdminUserDetailClient, {
 	type IAdminUserDetailInitialData,
 } from './client';
@@ -9,15 +7,14 @@ import {
 	getAdminListStatusFromSearchValue,
 } from '../../listState';
 
+import { authenticateAdminFromRequest } from '@/lib/account/server/adminRouteResponses';
 import { createAdminCsrfToken } from '@/lib/account/server/admin';
 import { createCurrentRequest } from '@/lib/account/server/currentRequest';
 import {
-	authenticateAdminSessionToken,
 	checkAccountCookieSecurityGuard,
 	checkAccountFeatureGuard,
 	checkAdminFeatureGuard,
 } from '@/lib/account/server/guards';
-import { ACCOUNT_COOKIE_NAME_MAP } from '@/lib/account/shared/constants';
 import { type IAdminSsoUserGrantsData } from '@/lib/account/shared/types';
 
 export const runtime = 'nodejs';
@@ -150,10 +147,7 @@ export default async function AdminUserDetailPage({
 		});
 	}
 
-	const cookieStore = await cookies();
-	const adminSessionToken =
-		cookieStore.get(ACCOUNT_COOKIE_NAME_MAP.adminSession)?.value ?? null;
-	const adminAuthResult = authenticateAdminSessionToken(adminSessionToken);
+	const adminAuthResult = await authenticateAdminFromRequest(request);
 	if (adminAuthResult.status === 'error') {
 		return renderClient({
 			...initialData,
@@ -165,8 +159,9 @@ export default async function AdminUserDetailPage({
 	}
 
 	const admin = {
-		csrf_token: createAdminCsrfToken(adminAuthResult.data.token),
-		username: adminAuthResult.data.payload.username,
+		auth_source: adminAuthResult.source,
+		csrf_token: createAdminCsrfToken(adminAuthResult.token),
+		username: adminAuthResult.payload.username,
 	};
 	try {
 		const detail = await readInitialDetail(id);

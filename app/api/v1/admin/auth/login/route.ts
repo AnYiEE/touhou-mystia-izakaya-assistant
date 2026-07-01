@@ -7,6 +7,7 @@ import {
 	checkSameOriginRouteResponse,
 	readJsonBodyResult,
 } from '@/lib/account/server/routeResponses';
+import { checkAdminCredentialLoginEnabled } from '@/lib/account/server/admin';
 import { checkAdminFeatureRouteResponse } from '@/lib/account/server/adminRouteResponses';
 import { type IAdminLoginBody } from '@/lib/account/shared/types';
 import {
@@ -26,6 +27,9 @@ export async function POST(request: NextRequest) {
 	const adminFeatureResponse = checkAdminFeatureRouteResponse();
 	if (adminFeatureResponse !== null) {
 		return adminFeatureResponse;
+	}
+	if (!checkAdminCredentialLoginEnabled()) {
+		return createNoStoreErrorResponse('feature-disabled', 404);
 	}
 
 	const sameOriginResponse = checkSameOriginRouteResponse(request);
@@ -76,6 +80,7 @@ export async function POST(request: NextRequest) {
 
 	const token = adminModule.createAdminSessionToken(username);
 	const response = createNoStoreJsonResponse({
+		auth_source: 'credentials',
 		csrf_token: adminModule.createAdminCsrfToken(token),
 		username,
 	});

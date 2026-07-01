@@ -56,7 +56,7 @@ export async function DELETE(
 		return rateLimitResponse;
 	}
 
-	const auth = authenticateAdminFromRequest(request);
+	const auth = await authenticateAdminFromRequest(request);
 	if (auth.status === 'error') {
 		return createAdminAuthErrorRouteResponse(
 			request,
@@ -91,7 +91,7 @@ export async function DELETE(
 				accountAuditModule.createAccountAdminAuditLogInput({
 					action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
 						.adminDeleteUserSessions,
-					adminId: auth.payload.username,
+					adminId: auth.actorId,
 					metadata: {
 						deleted_record_count: deletedSessionCount,
 						target_nickname: user.nickname,

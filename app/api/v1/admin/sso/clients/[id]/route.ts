@@ -74,7 +74,7 @@ export async function PUT(
 	const serviceModule =
 		await import('@/lib/account/server/adminSsoClientService');
 	const result = await serviceModule.updateAdminSsoClient(id, body, {
-		adminId: check.auth.payload.username,
+		adminId: check.auth.actorId,
 		...getRequestAuditContext(request),
 	});
 	if (result.status === 'error') {
@@ -106,7 +106,7 @@ export async function DELETE(
 	const serviceModule =
 		await import('@/lib/account/server/adminSsoClientService');
 	const result = await serviceModule.deleteAdminSsoClient(id, {
-		adminId: check.auth.payload.username,
+		adminId: check.auth.actorId,
 		...getRequestAuditContext(request),
 	});
 	if (result.status === 'error') {

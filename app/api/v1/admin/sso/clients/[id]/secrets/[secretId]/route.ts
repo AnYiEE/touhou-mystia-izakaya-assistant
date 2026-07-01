@@ -82,7 +82,7 @@ export async function PATCH(
 		id,
 		secretId,
 		{
-			adminId: check.auth.payload.username,
+			adminId: check.auth.actorId,
 			...body,
 			...getRequestAuditContext(request),
 		}
@@ -124,10 +124,7 @@ export async function DELETE(
 	const result = await serviceModule.revokeAdminSsoClientSecret(
 		id,
 		secretId,
-		{
-			adminId: check.auth.payload.username,
-			...getRequestAuditContext(request),
-		}
+		{ adminId: check.auth.actorId, ...getRequestAuditContext(request) }
 	);
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(

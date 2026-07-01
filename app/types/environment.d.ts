@@ -2,6 +2,7 @@ declare global {
 	namespace NodeJS {
 		interface ProcessEnv {
 			ADMIN_PASSWORD?: string;
+			ADMIN_USER_IDS?: string;
 			ADMIN_USERNAME?: string;
 
 			ANALYTICS_API_ENDPOINT?: string;

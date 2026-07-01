@@ -47,7 +47,7 @@ export async function checkAdminAnnouncementRequest(
 		return { response: rateLimitResponse, status: 'error' as const };
 	}
 
-	const auth = authenticateAdminFromRequest(request);
+	const auth = await authenticateAdminFromRequest(request);
 	if (auth.status === 'error') {
 		return {
 			response: createAdminAuthErrorRouteResponse(
@@ -66,5 +66,5 @@ export async function checkAdminAnnouncementRequest(
 		}
 	}
 
-	return { status: 'ok' as const, username: auth.payload.username };
+	return { actorId: auth.actorId, status: 'ok' as const };
 }

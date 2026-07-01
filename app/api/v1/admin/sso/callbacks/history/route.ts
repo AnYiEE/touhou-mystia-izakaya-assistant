@@ -175,7 +175,7 @@ export async function DELETE(request: NextRequest) {
 	const serviceModule =
 		await import('@/lib/account/server/adminSsoCallbackService');
 	const result = await serviceModule.cleanupAdminSsoCallbackDeliveries({
-		adminId: check.auth.payload.username,
+		adminId: check.auth.actorId,
 		...(before === undefined ? {} : { before }),
 		...getRequestAuditContext(request),
 		...(maxRows === undefined ? {} : { maxRows }),

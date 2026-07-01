@@ -45,10 +45,7 @@ export async function POST(
 		await import('@/lib/account/server/adminSsoCallbackService');
 	const result = await serviceModule.retryAdminSsoCallbackQueueItem(
 		callbackId,
-		{
-			adminId: check.auth.payload.username,
-			...getRequestAuditContext(request),
-		}
+		{ adminId: check.auth.actorId, ...getRequestAuditContext(request) }
 	);
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(

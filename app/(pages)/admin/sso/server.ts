@@ -1,14 +1,11 @@
-import { cookies } from 'next/headers';
-
 import { createAdminCsrfToken } from '@/lib/account/server/admin';
+import { authenticateAdminFromRequest } from '@/lib/account/server/adminRouteResponses';
 import { createCurrentRequest } from '@/lib/account/server/currentRequest';
 import {
-	authenticateAdminSessionToken,
 	checkAccountCookieSecurityGuard,
 	checkAccountFeatureGuard,
 	checkAdminFeatureGuard,
 } from '@/lib/account/server/guards';
-import { ACCOUNT_COOKIE_NAME_MAP } from '@/lib/account/shared/constants';
 import {
 	type IAdminAuditLogListData,
 	type IAdminMeData,
@@ -118,10 +115,7 @@ export async function readAdminSsoAuthInitialData(
 		return { admin: null, message: cookieSecurityResult.message };
 	}
 
-	const cookieStore = await cookies();
-	const adminSessionToken =
-		cookieStore.get(ACCOUNT_COOKIE_NAME_MAP.adminSession)?.value ?? null;
-	const adminAuthResult = authenticateAdminSessionToken(adminSessionToken);
+	const adminAuthResult = await authenticateAdminFromRequest(request);
 	if (adminAuthResult.status === 'error') {
 		return {
 			admin: null,
@@ -134,8 +128,9 @@ export async function readAdminSsoAuthInitialData(
 
 	return {
 		admin: {
-			csrf_token: createAdminCsrfToken(adminAuthResult.data.token),
-			username: adminAuthResult.data.payload.username,
+			auth_source: adminAuthResult.source,
+			csrf_token: createAdminCsrfToken(adminAuthResult.token),
+			username: adminAuthResult.payload.username,
 		},
 		message: null,
 	};

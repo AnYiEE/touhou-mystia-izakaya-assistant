@@ -25,7 +25,7 @@ export async function DELETE(request: NextRequest) {
 		const announcementModule =
 			await import('@/lib/announcements/server/service');
 		const result = await announcementModule.cleanupAdminAnnouncementRecords(
-			{ adminId: check.username, ...getRequestAuditContext(request) }
+			{ adminId: check.actorId, ...getRequestAuditContext(request) }
 		);
 		if (result.status === 'error') {
 			return createNoStoreErrorResponse(

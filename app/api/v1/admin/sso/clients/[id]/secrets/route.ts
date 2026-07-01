@@ -93,7 +93,7 @@ export async function POST(
 	const serviceModule =
 		await import('@/lib/account/server/adminSsoClientSecretService');
 	const result = await serviceModule.createAdminSsoClientSecret(id, {
-		adminId: check.auth.payload.username,
+		adminId: check.auth.actorId,
 		...getRequestAuditContext(request),
 		...(body.label === undefined ? {} : { label: body.label }),
 	});

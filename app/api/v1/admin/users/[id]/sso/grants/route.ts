@@ -138,7 +138,7 @@ export async function DELETE(
 	const serviceModule =
 		await import('@/lib/account/server/adminSsoGrantService');
 	const result = await serviceModule.revokeAdminSsoGrantsForUser(id, {
-		adminId: check.auth.payload.username,
+		adminId: check.auth.actorId,
 		...(body.reason === undefined ? {} : { reason: body.reason }),
 		...getRequestAuditContext(request),
 	});

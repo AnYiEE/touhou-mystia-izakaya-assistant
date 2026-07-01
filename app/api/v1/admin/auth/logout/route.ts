@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	const adminModule = await import('@/lib/account/server/admin');
-	const auth = authenticateAdminFromRequest(request);
+	const auth = await authenticateAdminFromRequest(request);
 	if (auth.status === 'error') {
 		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
 	}
