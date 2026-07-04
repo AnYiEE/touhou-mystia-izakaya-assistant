@@ -1,5 +1,3 @@
-import { cookies } from 'next/headers';
-
 import AdminPageClient, {
 	type IAdminPageInitialData,
 	type TAdminAuthStatus,
@@ -9,15 +7,17 @@ import {
 	getAdminListStatusFromSearchValue,
 } from './listState';
 
-import { createAdminCsrfToken } from '@/lib/account/server/admin';
+import {
+	checkAdminCredentialLoginEnabled,
+	createAdminCsrfToken,
+} from '@/lib/account/server/admin';
+import { authenticateAdminFromRequest } from '@/lib/account/server/adminRouteResponses';
 import { createCurrentRequest } from '@/lib/account/server/currentRequest';
 import {
-	authenticateAdminSessionToken,
 	checkAccountCookieSecurityGuard,
 	checkAccountFeatureGuard,
 	checkAdminFeatureGuard,
 } from '@/lib/account/server/guards';
-import { ACCOUNT_COOKIE_NAME_MAP } from '@/lib/account/shared/constants';
 import { type TUserStatus } from '@/lib/account/shared/types';
 
 export const runtime = 'nodejs';
@@ -84,6 +84,7 @@ export default async function AdminPage({ searchParams }: IAdminPageProps) {
 	const initialData: IAdminPageInitialData = {
 		admin: null,
 		authStatus: 'unauthenticated',
+		credentialLoginEnabled: checkAdminCredentialLoginEnabled(),
 		message: null,
 		page: initialPage,
 		query: initialQuery,
@@ -120,10 +121,7 @@ export default async function AdminPage({ searchParams }: IAdminPageProps) {
 		});
 	}
 
-	const cookieStore = await cookies();
-	const adminSessionToken =
-		cookieStore.get(ACCOUNT_COOKIE_NAME_MAP.adminSession)?.value ?? null;
-	const adminAuthResult = authenticateAdminSessionToken(adminSessionToken);
+	const adminAuthResult = await authenticateAdminFromRequest(request);
 	if (adminAuthResult.status === 'error') {
 		const authStatus: TAdminAuthStatus =
 			adminAuthResult.httpStatus === 401 ? 'unauthenticated' : 'error';
@@ -139,8 +137,9 @@ export default async function AdminPage({ searchParams }: IAdminPageProps) {
 	}
 
 	const admin = {
-		csrf_token: createAdminCsrfToken(adminAuthResult.data.token),
-		username: adminAuthResult.data.payload.username,
+		auth_source: adminAuthResult.source,
+		csrf_token: createAdminCsrfToken(adminAuthResult.token),
+		username: adminAuthResult.payload.username,
 	};
 	let users: IAdminPageInitialData['users'] = null;
 	let message: string | null = null;

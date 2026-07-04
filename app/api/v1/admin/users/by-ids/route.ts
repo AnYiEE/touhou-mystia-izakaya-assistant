@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	const auth = authenticateAdminFromRequest(request);
+	const auth = await authenticateAdminFromRequest(request);
 	if (auth.status === 'error') {
 		return createAdminAuthErrorRouteResponse(
 			request,

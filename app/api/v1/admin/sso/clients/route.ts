@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
 	const serviceModule =
 		await import('@/lib/account/server/adminSsoClientService');
 	const result = await serviceModule.createAdminSsoClient(body, {
-		adminId: check.auth.payload.username,
+		adminId: check.auth.actorId,
 		...getRequestAuditContext(request),
 	});
 	if (result.status === 'error') {

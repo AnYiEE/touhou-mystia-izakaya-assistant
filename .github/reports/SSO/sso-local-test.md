@@ -14,6 +14,17 @@ ADMIN_PASSWORD=admin-password
 DISPATCH_SECRET=local-dispatch-secret
 ```
 
+如果你希望使用普通账号直接进入管理员后台，也可以改用：
+
+```env
+SELF_HOSTED=1
+APP_SECRET=replace-with-at-least-32-bytes-secret
+ADMIN_USER_IDS=填入普通账号 user.id
+DISPATCH_SECRET=local-dispatch-secret
+```
+
+此时 `ADMIN_USERNAME` / `ADMIN_PASSWORD` 可留空；登录该普通账号后访问 `/admin` 或 `/admin/sso` 会直接进入后台，不会再出现管理员登录表单。
+
 启动开发服务：
 
 ```powershell
@@ -52,6 +63,8 @@ $cert | Export-Certificate -FilePath scripts\certs\mock-cert.cer -Type CERT
 ```text
 http://localhost:3000/admin/sso
 ```
+
+如果当前使用的是 `ADMIN_USER_IDS` 白名单模式，请先登录命中的普通账号，再访问该地址。
 
 新建 client 时建议填写：
 

@@ -459,6 +459,7 @@ export interface IAccountExportData {
 }
 
 export interface IAdminMeData {
+	auth_source: 'credentials' | 'user';
 	csrf_token: string;
 	username: string;
 }

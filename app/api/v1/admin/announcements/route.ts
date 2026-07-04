@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
 		await import('@/lib/announcements/server/service');
 	const result = await announcementModule.createAdminAnnouncement(
 		body,
-		check.username
+		check.actorId
 	);
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(

@@ -116,6 +116,7 @@ export type TAdminAuthStatus =
 export interface IAdminPageInitialData {
 	admin: IAdminMeData | null;
 	authStatus: TAdminAuthStatus;
+	credentialLoginEnabled: boolean;
 	message: string | null;
 	page: number;
 	query: string;
@@ -492,6 +493,10 @@ export default function AdminPageClient({
 	const pathname = usePathname();
 	const isAdminListPath = pathname === '/admin';
 
+	const accountBootstrapStatus = store.shared.bootstrapStatus.use();
+	const accountUser = store.shared.user.use();
+	const accountUserId = accountUser?.id ?? null;
+
 	const [admin, setAdmin] = useState<IAdminMeData | null>(initialData.admin);
 	const [adminAuthStatus, setAdminAuthStatus] = useState<TAdminAuthStatus>(
 		initialData.authStatus
@@ -521,6 +526,7 @@ export default function AdminPageClient({
 	const syncedServerQueryInputRef = useRef<string | null>(null);
 	const refreshUsersRequestIdRef = useRef(0);
 	const skipNextAutoRefreshRef = useRef(false);
+	const lastCheckedAccountUserIdRef = useRef<string | null>(accountUserId);
 	const trimmedUsername = username.trim();
 
 	const cancelPendingQuerySync = useCallback(() => {
@@ -961,6 +967,82 @@ export default function AdminPageClient({
 	}, [checkAdminAuth, initialData.admin, initialData.authStatus]);
 
 	useEffect(() => {
+		if (
+			accountBootstrapStatus !== 'loggedIn' ||
+			accountUser === null ||
+			accountUserId === null
+		) {
+			lastCheckedAccountUserIdRef.current = null;
+			if (
+				admin?.auth_source === 'user' &&
+				adminAuthStatus !== 'checking'
+			) {
+				checkAdminAuth();
+			}
+			return;
+		}
+		if (
+			adminAuthStatus === 'checking' ||
+			lastCheckedAccountUserIdRef.current === accountUserId ||
+			admin?.auth_source === 'credentials'
+		) {
+			return;
+		}
+		if (
+			admin?.auth_source === 'user' &&
+			admin.username === accountUser.username
+		) {
+			lastCheckedAccountUserIdRef.current = accountUserId;
+			return;
+		}
+
+		lastCheckedAccountUserIdRef.current = accountUserId;
+		checkAdminAuth();
+	}, [
+		accountBootstrapStatus,
+		accountUser,
+		accountUserId,
+		admin,
+		adminAuthStatus,
+		checkAdminAuth,
+	]);
+
+	useEffect(() => {
+		if (admin !== null) {
+			return;
+		}
+
+		const handleWindowFocus = () => {
+			if (adminAuthStatus === 'checking') {
+				return;
+			}
+
+			checkAdminAuth();
+		};
+		const handleVisibilityChange = () => {
+			if (
+				document.visibilityState !== 'visible' ||
+				adminAuthStatus === 'checking'
+			) {
+				return;
+			}
+
+			checkAdminAuth();
+		};
+
+		globalThis.addEventListener('focus', handleWindowFocus);
+		document.addEventListener('visibilitychange', handleVisibilityChange);
+
+		return () => {
+			globalThis.removeEventListener('focus', handleWindowFocus);
+			document.removeEventListener(
+				'visibilitychange',
+				handleVisibilityChange
+			);
+		};
+	}, [admin, adminAuthStatus, checkAdminAuth]);
+
+	useEffect(() => {
 		let timeoutId: ReturnType<typeof globalThis.setTimeout> | null = null;
 
 		if (admin !== null) {
@@ -1011,18 +1093,34 @@ export default function AdminPageClient({
 				<AdminHeader
 					icon={faShieldHalved}
 					subtitle="账号后台控制台"
-					title="管理员登录"
+					title={
+						initialData.credentialLoginEnabled
+							? '管理员登录'
+							: '管理员入口'
+					}
 				/>
-				<AdminLoginPanel
-					isAdminActionLoading={isAdminActionLoading}
-					message={message}
-					password={password}
-					trimmedUsername={trimmedUsername}
-					username={username}
-					onLogin={handleLogin}
-					onPasswordChange={setPassword}
-					onUsernameChange={setUsername}
-				/>
+				{initialData.credentialLoginEnabled ? (
+					<AdminLoginPanel
+						isAdminActionLoading={isAdminActionLoading}
+						message={message}
+						password={password}
+						trimmedUsername={trimmedUsername}
+						username={username}
+						onLogin={handleLogin}
+						onPasswordChange={setPassword}
+						onUsernameChange={setUsername}
+					/>
+				) : (
+					<AdminPanel>
+						<AdminPanelTitle icon={faUser}>
+							管理员用户ID
+						</AdminPanelTitle>
+						<p className="text-small">
+							请先登录已加入管理员用户ID白名单的普通账号，然后重新访问当前页面。
+						</p>
+						{message !== null && <AdminMessage message={message} />}
+					</AdminPanel>
+				)}
 			</AdminShell>
 		);
 	}
@@ -1067,22 +1165,24 @@ export default function AdminPageClient({
 						>
 							审计日志
 						</AdminHeaderActionLink>
-						<Button
-							isDisabled={isAdminActionLoading}
-							isLoading={isAdminActionLoading}
-							startContent={
-								isAdminActionLoading ? null : (
-									<FontAwesomeIcon
-										icon={faArrowRightFromBracket}
-										className="w-3.5"
-									/>
-								)
-							}
-							variant="flat"
-							onPress={handleLogout}
-						>
-							退出管理员
-						</Button>
+						{admin.auth_source === 'credentials' && (
+							<Button
+								isDisabled={isAdminActionLoading}
+								isLoading={isAdminActionLoading}
+								startContent={
+									isAdminActionLoading ? null : (
+										<FontAwesomeIcon
+											icon={faArrowRightFromBracket}
+											className="w-3.5"
+										/>
+									)
+								}
+								variant="flat"
+								onPress={handleLogout}
+							>
+								退出管理员
+							</Button>
+						)}
 					</>
 				}
 				icon={faUsers}

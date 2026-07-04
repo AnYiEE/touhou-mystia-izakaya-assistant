@@ -8,6 +8,7 @@ import { createAccountCookieDomainOptions } from './session';
 import { ACCOUNT_COOKIE_NAME_MAP } from '../shared/constants';
 
 export const ADMIN_SESSION_MAX_AGE = 60 * 60 * 12;
+export type TAdminAuthSource = 'credentials' | 'user';
 
 interface IAdminSessionPayload {
 	expires_at: number;
@@ -41,8 +42,29 @@ function decodeAdminPayload(value: string): IAdminSessionPayload | null {
 	}
 }
 
-export function checkAdminFeatureEnabled() {
+export function checkAdminCredentialLoginEnabled() {
 	return Boolean(process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD);
+}
+
+export function getConfiguredAdminUserIds() {
+	return (process.env.ADMIN_USER_IDS ?? '')
+		.split(',')
+		.map((value) => value.trim())
+		.filter((value) => value !== '');
+}
+
+export function checkAdminUserIdAccessEnabled() {
+	return getConfiguredAdminUserIds().length > 0;
+}
+
+export function checkAdminUserIdAuthorized(userId: string) {
+	return getConfiguredAdminUserIds().includes(userId);
+}
+
+export function checkAdminFeatureEnabled() {
+	return (
+		checkAdminCredentialLoginEnabled() || checkAdminUserIdAccessEnabled()
+	);
 }
 
 export function checkAdminCredentials(username: string, password: string) {
@@ -90,7 +112,7 @@ function createAdminSessionSignature(payload: string) {
 
 export function createAdminSessionToken(username: string, now = Date.now()) {
 	const adminUsername = process.env.ADMIN_USERNAME;
-	if (!adminUsername || username !== adminUsername) {
+	if (!checkAdminCredentialLoginEnabled() || username !== adminUsername) {
 		throw new Error('feature-disabled');
 	}
 

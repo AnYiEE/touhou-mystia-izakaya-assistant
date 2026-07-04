@@ -73,7 +73,7 @@ export async function PUT(
 	const result = await announcementModule.updateAdminAnnouncement(
 		id,
 		body,
-		check.username
+		check.actorId
 	);
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
@@ -105,7 +105,7 @@ export async function DELETE(
 		await import('@/lib/announcements/server/service');
 	const result = await announcementModule.archiveAdminAnnouncement(
 		id,
-		check.username
+		check.actorId
 	);
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
@@ -137,7 +137,7 @@ export async function PATCH(
 		await import('@/lib/announcements/server/service');
 	const result = await announcementModule.restoreAdminAnnouncement(
 		id,
-		check.username
+		check.actorId
 	);
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(

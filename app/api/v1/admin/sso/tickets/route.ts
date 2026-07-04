@@ -184,7 +184,7 @@ export async function DELETE(request: NextRequest) {
 	const clientId = getTrimmedSearchParam(request, 'client_id');
 	const userId = getTrimmedSearchParam(request, 'user_id');
 	const auditContext = {
-		adminId: check.auth.payload.username,
+		adminId: check.auth.actorId,
 		...getRequestAuditContext(request),
 	};
 	const result =

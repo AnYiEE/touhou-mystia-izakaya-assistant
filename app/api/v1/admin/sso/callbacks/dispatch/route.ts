@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 			await import('@/lib/account/server/adminAuditService');
 		const auditResult = await auditModule.writeAdminAuditLog({
 			action: 'admin-dispatch-sso-callbacks',
-			actorId: check.auth.payload.username,
+			actorId: check.auth.actorId,
 			actorType: 'admin',
 			metadata: {
 				deleted_expired_tickets: ticketsDeleted,

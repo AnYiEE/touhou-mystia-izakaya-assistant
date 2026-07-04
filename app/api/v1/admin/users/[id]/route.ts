@@ -55,7 +55,7 @@ export async function GET(
 		return rateLimitResponse;
 	}
 
-	const auth = authenticateAdminFromRequest(request);
+	const auth = await authenticateAdminFromRequest(request);
 	if (auth.status === 'error') {
 		return createAdminAuthErrorRouteResponse(
 			request,

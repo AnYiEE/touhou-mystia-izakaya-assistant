@@ -57,7 +57,7 @@ export async function POST(
 		return rateLimitResponse;
 	}
 
-	const auth = authenticateAdminFromRequest(request);
+	const auth = await authenticateAdminFromRequest(request);
 	if (auth.status === 'error') {
 		return createAdminAuthErrorRouteResponse(
 			request,
@@ -95,7 +95,7 @@ export async function POST(
 					accountAuditModule.createAccountAdminAuditLogInput({
 						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
 							.adminDisableUser,
-						adminId: auth.payload.username,
+						adminId: auth.actorId,
 						metadata: {
 							next_status: USER_STATUS_MAP.disabled,
 							previous_status: USER_STATUS_MAP.active,

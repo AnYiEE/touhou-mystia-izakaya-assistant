@@ -59,7 +59,7 @@ export async function POST(
 		return rateLimitResponse;
 	}
 
-	const auth = authenticateAdminFromRequest(request);
+	const auth = await authenticateAdminFromRequest(request);
 	if (auth.status === 'error') {
 		return createAdminAuthErrorRouteResponse(
 			request,
@@ -129,7 +129,7 @@ export async function POST(
 					accountAuditModule.createAccountAdminAuditLogInput({
 						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
 							.adminResetPassword,
-						adminId: auth.payload.username,
+						adminId: auth.actorId,
 						metadata: {
 							must_change_on_next_login: true,
 							revoked_passkeys: revokedPasskeys,

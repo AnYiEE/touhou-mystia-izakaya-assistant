@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 		return cookieSecurityResponse;
 	}
 
-	const auth = authenticateAdminFromRequest(request);
+	const auth = await authenticateAdminFromRequest(request);
 	if (auth.status === 'error') {
 		return createAdminAuthErrorRouteResponse(
 			request,
@@ -58,6 +58,7 @@ export async function GET(request: NextRequest) {
 	const adminModule = await import('@/lib/account/server/admin');
 
 	return createNoStoreJsonResponse({
+		auth_source: auth.source,
 		csrf_token: adminModule.createAdminCsrfToken(auth.token),
 		username: auth.payload.username,
 	});
