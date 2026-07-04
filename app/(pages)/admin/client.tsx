@@ -18,6 +18,7 @@ import {
 	faChevronDown,
 	faClipboardList,
 	faClock,
+	faComments,
 	faKey,
 	faMagnifyingGlass,
 	faRotate,
@@ -1144,6 +1145,13 @@ export default function AdminPageClient({
 							onPress={handleLeaveUserList}
 						>
 							站点通知
+						</AdminHeaderActionLink>
+						<AdminHeaderActionLink
+							href="/admin/chat"
+							icon={faComments}
+							onPress={handleLeaveUserList}
+						>
+							聊天管理
 						</AdminHeaderActionLink>
 						<AdminHeaderActionLink
 							href="/admin/sso"

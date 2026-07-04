@@ -1,6 +1,7 @@
 import { type ColumnDataType, type Kysely, sql } from 'kysely';
 
 import { migrateAnnouncementTables } from './announcements';
+import { migrateChatTables } from './chat';
 import { migrateSsoTables } from './sso';
 import { TABLE_NAME_MAP } from '../constant';
 import { type TDatabase } from '../types';
@@ -794,5 +795,6 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 
 	await ensureAccountTableStructure(database);
 	await migrateAnnouncementTables(database);
+	await migrateChatTables(database);
 	await migrateSsoTables(database);
 }

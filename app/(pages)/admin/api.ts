@@ -45,6 +45,13 @@ import type {
 	TAnnouncementComputedStatus,
 	TAnnouncementLevel,
 } from '@/lib/announcements/shared/types';
+import type {
+	IAdminChatConversationBody,
+	IAdminChatConversationListData,
+	IAdminChatConversationRecord,
+	IAdminChatConversationUpdateBody,
+	IAdminChatMessageListData,
+} from '@/lib/chat/shared/types';
 
 export type TAdminApiResult<TData = Record<string, unknown>> =
 	| { data: TData; status: 'ok' }
@@ -79,10 +86,17 @@ const ADMIN_ERROR_MESSAGE_MAP: Record<string, string> = {
 	'announcement-not-found': '通知不存在或已被删除',
 	'announcement-not-visible':
 		'通知当前不可见，请检查启用状态、时间和受众设置',
+	'chat-conversation-conflict': '频道标识已存在，请更换后重试',
+	'chat-not-found': '目标频道或消息不存在',
 	'client-disabled': 'SSO客户端已禁用',
 	'feature-disabled': '功能暂不可用',
+	'invalid-chat-description': '频道简介过长，请缩短后重试',
+	'invalid-chat-slug':
+		'频道标识只能包含小写字母、数字和短横线，且长度不能超过32位',
+	'invalid-chat-title': '频道名称不能为空，且长度不能超过64位',
 	'invalid-object-structure': '提交内容格式无效，请检查后重试',
 	'invalid-password-rule': '新密码不符合密码规则',
+	'invalid-query': '查询条件无效，请检查后重试',
 	'invalid-user-status': '用户状态无效，无法完成操作',
 	'last-active-secret': '至少需要保留一个可用的客户端Secret',
 	'payload-too-large': '提交内容过大',
@@ -353,6 +367,78 @@ export function listAdminAnnouncements(
 
 	return fetchAdminApiResult<IAdminAnnouncementListData>(
 		`/api/v1/admin/announcements${
+			queryString === '' ? '' : `?${queryString}`
+		}`
+	);
+}
+
+export function listAdminChatConversations() {
+	return fetchAdminApiResult<IAdminChatConversationListData>(
+		'/api/v1/admin/chat/conversations'
+	);
+}
+
+export function createAdminChatConversation(
+	body: IAdminChatConversationBody,
+	csrfToken: string
+) {
+	return fetchAdminApiResult<IAdminChatConversationRecord>(
+		'/api/v1/admin/chat/conversations',
+		createAdminJsonRequestInit('POST', body, csrfToken)
+	);
+}
+
+export function updateAdminChatConversation(
+	id: string,
+	body: IAdminChatConversationUpdateBody,
+	csrfToken: string
+) {
+	return fetchAdminApiResult<IAdminChatConversationRecord>(
+		`/api/v1/admin/chat/conversations/${encodeURIComponent(id)}`,
+		createAdminJsonRequestInit('PATCH', body, csrfToken)
+	);
+}
+
+export function archiveAdminChatConversation(id: string, csrfToken: string) {
+	return fetchAdminApiResult<{ conversation_id: string; status: 'archived' }>(
+		`/api/v1/admin/chat/conversations/${encodeURIComponent(id)}/archive`,
+		createAdminCsrfRequestInit('POST', csrfToken)
+	);
+}
+
+export function restoreAdminChatConversation(id: string, csrfToken: string) {
+	return fetchAdminApiResult<{ conversation_id: string; status: 'restored' }>(
+		`/api/v1/admin/chat/conversations/${encodeURIComponent(id)}/restore`,
+		createAdminCsrfRequestInit('POST', csrfToken)
+	);
+}
+
+export function deleteAdminChatMessage(messageId: number, csrfToken: string) {
+	return fetchAdminApiResult<{ message_id: number; status: 'deleted' }>(
+		`/api/v1/admin/chat/messages/${encodeURIComponent(String(messageId))}`,
+		createAdminCsrfRequestInit('DELETE', csrfToken)
+	);
+}
+
+export function listAdminChatConversationMessages(
+	id: string,
+	options: { before?: number; limit?: number; query?: string } = {}
+) {
+	const searchParams = new URLSearchParams();
+	if (typeof options.before === 'number') {
+		searchParams.set('before', String(options.before));
+	}
+	if (typeof options.limit === 'number') {
+		searchParams.set('limit', String(options.limit));
+	}
+	if (typeof options.query === 'string' && options.query.trim() !== '') {
+		searchParams.set('query', options.query.trim());
+	}
+
+	const queryString = searchParams.toString();
+
+	return fetchAdminApiResult<IAdminChatMessageListData>(
+		`/api/v1/admin/chat/conversations/${encodeURIComponent(id)}/messages${
 			queryString === '' ? '' : `?${queryString}`
 		}`
 	);

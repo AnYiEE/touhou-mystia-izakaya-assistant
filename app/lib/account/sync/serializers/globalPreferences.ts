@@ -26,6 +26,11 @@ import {
 } from './utils';
 
 export interface IGlobalPreferencesSnapshot {
+	chat: {
+		enabled: boolean;
+		nativeNotifications: boolean;
+		pageNotifications: boolean;
+	};
 	customerCardTagsTooltip: boolean;
 	donationModal: {
 		interactionCount: number;
@@ -74,6 +79,7 @@ const recipeColumnKeys = new Set<string>([
 	'time',
 ]);
 const rootKeys = new Set([
+	'chat',
 	'customerCardTagsTooltip',
 	'donationModal',
 	'famousShop',
@@ -84,6 +90,11 @@ const rootKeys = new Set([
 	'table',
 	'tachie',
 	'vibrate',
+]);
+const chatKeys = new Set([
+	'enabled',
+	'nativeNotifications',
+	'pageNotifications',
 ]);
 const donationModalKeys = new Set([
 	'interactionCount',
@@ -121,9 +132,16 @@ function checkGlobalPreferencesExactKeyShape(data: unknown) {
 		return false;
 	}
 
-	const { donationModal, hiddenItems, popularTrend, suggestMeals, table } =
-		data;
+	const {
+		chat,
+		donationModal,
+		hiddenItems,
+		popularTrend,
+		suggestMeals,
+		table,
+	} = data;
 	if (
+		!isPlainObject(chat) ||
 		!isPlainObject(donationModal) ||
 		!isPlainObject(hiddenItems) ||
 		!isPlainObject(popularTrend) ||
@@ -138,6 +156,7 @@ function checkGlobalPreferencesExactKeyShape(data: unknown) {
 
 	return (
 		checkExactKeys(data, rootKeys) &&
+		checkExactKeys(chat, chatKeys) &&
 		checkExactKeys(donationModal, donationModalKeys) &&
 		checkExactKeys(hiddenItems, hiddenItemKeys) &&
 		checkExactKeys(popularTrend, popularTrendKeys) &&
@@ -278,6 +297,11 @@ export const globalPreferencesSerializer = {
 	},
 	getDefaultSnapshot() {
 		return {
+			chat: {
+				enabled: true,
+				nativeNotifications: false,
+				pageNotifications: true,
+			},
 			customerCardTagsTooltip: true,
 			donationModal: {
 				interactionCount: 0,
@@ -324,6 +348,7 @@ export const globalPreferencesSerializer = {
 
 		const snapshot = sanitizeGlobalPreferences(
 			cloneJsonObject({
+				chat: persistence.chat,
 				customerCardTagsTooltip: persistence.customerCardTagsTooltip,
 				donationModal: {
 					interactionCount: donationModal['interactionCount'],
@@ -400,6 +425,7 @@ export const globalPreferencesSerializer = {
 	},
 	setLocalSnapshot(data) {
 		globalStore.persistence.assign({
+			chat: data.chat,
 			customerCardTagsTooltip: data.customerCardTagsTooltip,
 			donationModal: data.donationModal,
 			famousShop: data.famousShop,
@@ -418,6 +444,7 @@ export const globalPreferencesSerializer = {
 		}
 
 		const {
+			chat,
 			donationModal,
 			hiddenItems,
 			popularTrend,
@@ -425,6 +452,7 @@ export const globalPreferencesSerializer = {
 			table,
 		} = data;
 		if (
+			!isPlainObject(chat) ||
 			!isPlainObject(donationModal) ||
 			!isPlainObject(hiddenItems) ||
 			!isPlainObject(popularTrend) ||
@@ -442,6 +470,9 @@ export const globalPreferencesSerializer = {
 
 		return (
 			checkGlobalPreferencesExactKeyShape(data) &&
+			typeof chat['enabled'] === 'boolean' &&
+			typeof chat['nativeNotifications'] === 'boolean' &&
+			typeof chat['pageNotifications'] === 'boolean' &&
 			typeof data['customerCardTagsTooltip'] === 'boolean' &&
 			isNonNegativeSafeInteger(donationModal['interactionCount']) &&
 			isNonNegativeSafeInteger(donationModal['lastMilestoneShown']) &&

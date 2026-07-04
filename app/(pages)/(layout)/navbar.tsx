@@ -586,6 +586,7 @@ export default function Navbar() {
 
 	return (
 		<HeroUINavbar
+			data-app-navbar
 			isBordered
 			shouldBlockScroll={false}
 			disableAnimation={isReducedMotion}

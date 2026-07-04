@@ -12,6 +12,7 @@ import { useMotionProps, useReducedMotion } from '@/design/ui/hooks';
 import DataManager, { type IDataManagerProps } from './dataManager';
 import HiddenItems from './hiddenItems';
 import SwitchItem from './switchItem';
+import ChatSettings from './chatSettings';
 import { trackEvent } from '@/components/analytics';
 import Heading from '@/components/heading';
 import MobileAccountActionButton from '@/components/mobileAccountActionButton';
@@ -302,6 +303,7 @@ export default memo<IProps>(function Content({ onModalClose }) {
 			</div>
 			<Heading as="h3">体验</Heading>
 			<div className="space-y-2">
+				<ChatSettings />
 				<SwitchItem
 					isSelected={isVibrateEnabled}
 					onValueChange={globalStore.persistence.vibrate.set}

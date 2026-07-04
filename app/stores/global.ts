@@ -214,6 +214,11 @@ const state = {
 	popularTags: validPopularTags,
 
 	persistence: {
+		chat: {
+			enabled: true,
+			nativeNotifications: false,
+			pageNotifications: true,
+		},
 		customerCardTagsTooltip: true,
 		hiddenItems: { dlcs: [] as string[] },
 		suggestMeals: {

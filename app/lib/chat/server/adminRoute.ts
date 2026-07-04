@@ -1,0 +1,99 @@
+import { type NextRequest } from 'next/server';
+
+import {
+	checkAccountCookieSecurityRouteResponse,
+	checkAccountFeatureRouteResponse,
+	checkAccountRateLimitRouteResponse,
+	checkSameOriginRouteResponse,
+} from '@/lib/account/server/routeResponses';
+import {
+	authenticateAdminFromRequest,
+	checkAdminCsrfRouteResponse,
+	checkAdminFeatureRouteResponse,
+	createAdminAuthErrorRouteResponse,
+} from '@/lib/account/server/adminRouteResponses';
+import { writeAdminAuditLogBestEffort } from '@/lib/account/server/adminAuditService';
+import { getRequestAuditContext } from '@/lib/account/server/request';
+
+export async function checkAdminChatRequest(
+	request: NextRequest,
+	scope: string,
+	options: {
+		csrf?: boolean;
+		parts?: ReadonlyArray<{ name: string; value: string }>;
+	} = {}
+) {
+	const featureResponse = await checkAccountFeatureRouteResponse();
+	if (featureResponse !== null) {
+		return { response: featureResponse, status: 'error' as const };
+	}
+
+	const adminFeatureResponse = checkAdminFeatureRouteResponse();
+	if (adminFeatureResponse !== null) {
+		return { response: adminFeatureResponse, status: 'error' as const };
+	}
+
+	const sameOriginResponse = checkSameOriginRouteResponse(request);
+	if (sameOriginResponse !== null) {
+		return { response: sameOriginResponse, status: 'error' as const };
+	}
+
+	const cookieSecurityResponse =
+		checkAccountCookieSecurityRouteResponse(request);
+	if (cookieSecurityResponse !== null) {
+		return { response: cookieSecurityResponse, status: 'error' as const };
+	}
+
+	const rateLimitResponse = checkAccountRateLimitRouteResponse(
+		request,
+		scope,
+		'',
+		options.parts === undefined ? {} : { parts: options.parts }
+	);
+	if (rateLimitResponse !== null) {
+		return { response: rateLimitResponse, status: 'error' as const };
+	}
+
+	const auth = await authenticateAdminFromRequest(request);
+	if (auth.status === 'error') {
+		return {
+			response: createAdminAuthErrorRouteResponse(
+				request,
+				auth.message,
+				auth.httpStatus
+			),
+			status: 'error' as const,
+		};
+	}
+
+	if (options.csrf === true) {
+		const csrfResponse = checkAdminCsrfRouteResponse(request, auth.token);
+		if (csrfResponse !== null) {
+			return { response: csrfResponse, status: 'error' as const };
+		}
+	}
+
+	return { auth, status: 'ok' as const };
+}
+
+export async function writeAdminChatAuditLog(
+	request: NextRequest,
+	actorId: string,
+	input: {
+		action: string;
+		metadata?: Record<string, unknown>;
+		targetId: string | null;
+		targetType: string;
+	}
+) {
+	await writeAdminAuditLogBestEffort({
+		action: input.action,
+		actorId,
+		actorType: 'admin',
+		scope: 'chat',
+		targetId: input.targetId,
+		targetType: input.targetType,
+		...(input.metadata === undefined ? {} : { metadata: input.metadata }),
+		...getRequestAuditContext(request),
+	});
+}

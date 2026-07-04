@@ -173,6 +173,7 @@ export default async function RootLayout({
 							<AnnouncementBar />
 							<Navbar />
 							<main className="container mx-auto grid max-w-7xl grow px-6 py-8 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
+								<div id="chat-portal-container" />
 								<div id="modal-portal-container" />
 								{children}
 							</main>

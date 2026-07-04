@@ -3,7 +3,9 @@ interface ParentNode {
 	 * @description To avoid type errors, specify that the return value of the following selector is always non-null.
 	 * @returns {HTMLElement} The element that matches the specified selector.
 	 */
-	querySelector(selectors: 'main' | '#modal-portal-container'): HTMLElement;
+	querySelector(
+		selectors: 'main' | '#chat-portal-container' | '#modal-portal-container'
+	): HTMLElement;
 }
 
 type ReactNodeWithoutBoolean = Exclude<React.ReactNode, boolean>;

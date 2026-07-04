@@ -130,9 +130,16 @@ function validateGlobalPreferences(data: unknown) {
 		return false;
 	}
 
-	const { donationModal, hiddenItems, popularTrend, suggestMeals, table } =
-		data;
+	const {
+		chat,
+		donationModal,
+		hiddenItems,
+		popularTrend,
+		suggestMeals,
+		table,
+	} = data;
 	if (
+		!isPlainObject(chat) ||
 		!isPlainObject(donationModal) ||
 		!isPlainObject(hiddenItems) ||
 		!isPlainObject(popularTrend) ||
@@ -146,6 +153,7 @@ function validateGlobalPreferences(data: unknown) {
 	const tableHiddenItems = table['hiddenItems'];
 	return (
 		hasExactKeys(data, [
+			'chat',
 			'customerCardTagsTooltip',
 			'donationModal',
 			'famousShop',
@@ -156,6 +164,11 @@ function validateGlobalPreferences(data: unknown) {
 			'table',
 			'tachie',
 			'vibrate',
+		]) &&
+		hasExactKeys(chat, [
+			'enabled',
+			'nativeNotifications',
+			'pageNotifications',
 		]) &&
 		hasExactKeys(donationModal, [
 			'interactionCount',
@@ -179,6 +192,9 @@ function validateGlobalPreferences(data: unknown) {
 			'ingredients',
 			'recipes',
 		]) &&
+		typeof chat['enabled'] === 'boolean' &&
+		typeof chat['nativeNotifications'] === 'boolean' &&
+		typeof chat['pageNotifications'] === 'boolean' &&
 		typeof data['customerCardTagsTooltip'] === 'boolean' &&
 		isIntegerInRange(
 			donationModal['interactionCount'],

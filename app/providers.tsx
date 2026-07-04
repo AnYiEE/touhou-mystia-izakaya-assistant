@@ -12,6 +12,7 @@ import { ProgressBar, ProgressBarProvider } from 'react-transition-progress';
 import CompatibleBrowser from '@/components/compatibleBrowser';
 import CustomerRareTutorial from '@/components/customerRareTutorial';
 import DonationModal from '@/components/donationModal';
+import GlobalChat from '@/components/globalChat';
 import AccountInitialStateHydrator from '@/lib/account/client/components/accountInitialStateHydrator';
 import AccountSessionInitialDataHydrator from '@/lib/account/client/components/accountSessionInitialDataHydrator';
 import AccountSsoGrantInitialDataHydrator from '@/lib/account/client/components/accountSsoGrantInitialDataHydrator';
@@ -239,6 +240,7 @@ export default function Providers({
 					data={accountWebauthnInitialData}
 				/>
 				<AccountFeatureModals />
+				<GlobalChat />
 				<CustomerRareTutorial />
 				<DonationModal />
 			</ProgressBarProvider>

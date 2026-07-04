@@ -133,6 +133,21 @@ export function startAccountStoreSyncWatchers() {
 	);
 
 	watch(
+		globalStore.persistence.chat.enabled.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.chat.pageNotifications.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
+		globalStore.persistence.chat.nativeNotifications.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+		})
+	);
+	watch(
 		globalStore.persistence.customerCardTagsTooltip.onChange(() => {
 			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
 		})

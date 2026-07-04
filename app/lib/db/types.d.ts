@@ -30,6 +30,16 @@ export type TSsoCallbackDeliveryStatus =
 	| 'final_failed'
 	| 'succeeded';
 
+export type TChatConversationType = 'public_channel';
+export type TChatConversationVisibility = 'public_authenticated';
+export type TChatConversationJoinPolicy = 'auto';
+export type TChatParticipantRole = 'member' | 'owner';
+export type TChatParticipantState = 'active' | 'banned';
+export type TChatModerationEventType =
+	| 'message_deleted'
+	| 'participant_banned'
+	| 'participant_restored';
+
 interface ITableAnnouncement {
 	audience: TAnnouncementAudience;
 	created_at: number;
@@ -89,6 +99,53 @@ interface ITableBackupImportRecord {
 	results: string;
 	state_epoch: number;
 	user_id: string;
+}
+
+interface ITableChatConversation {
+	archived_at: number | null;
+	created_at: number;
+	created_by_user_id: string | null;
+	description: string;
+	id: string;
+	join_policy: TChatConversationJoinPolicy;
+	last_message_id: number | null;
+	slug: string;
+	title: string;
+	type: TChatConversationType;
+	updated_at: number;
+	visibility: TChatConversationVisibility;
+}
+
+interface ITableChatParticipant {
+	banned_until: number | null;
+	conversation_id: string;
+	joined_at: number;
+	last_read_message_id: number | null;
+	last_seen_at: number | null;
+	muted_until: number | null;
+	role: TChatParticipantRole;
+	state: TChatParticipantState;
+	user_id: string;
+}
+
+interface ITableChatMessage {
+	body_text: string;
+	conversation_id: string;
+	created_at: number;
+	deleted_at: number | null;
+	id: Generated<number>;
+	sender_user_id: string;
+}
+
+interface ITableChatModerationEvent {
+	actor_user_id: string | null;
+	conversation_id: string;
+	created_at: number;
+	event_type: TChatModerationEventType;
+	id: Generated<number>;
+	message_id: number | null;
+	reason: string | null;
+	target_user_id: string | null;
 }
 
 interface ITableUser {
@@ -274,6 +331,22 @@ export type TBackupImportRecord = Selectable<ITableBackupImportRecord>;
 export type TBackupImportRecordNew = Insertable<ITableBackupImportRecord>;
 export type TBackupImportRecordUpdate = Updateable<ITableBackupImportRecord>;
 
+export type TChatConversation = Selectable<ITableChatConversation>;
+export type TChatConversationNew = Insertable<ITableChatConversation>;
+export type TChatConversationUpdate = Updateable<ITableChatConversation>;
+
+export type TChatParticipant = Selectable<ITableChatParticipant>;
+export type TChatParticipantNew = Insertable<ITableChatParticipant>;
+export type TChatParticipantUpdate = Updateable<ITableChatParticipant>;
+
+export type TChatMessage = Selectable<ITableChatMessage>;
+export type TChatMessageNew = Insertable<ITableChatMessage>;
+export type TChatMessageUpdate = Updateable<ITableChatMessage>;
+
+export type TChatModerationEvent = Selectable<ITableChatModerationEvent>;
+export type TChatModerationEventNew = Insertable<ITableChatModerationEvent>;
+export type TChatModerationEventUpdate = Updateable<ITableChatModerationEvent>;
+
 export type TUser = Selectable<ITableUser>;
 export type TUserNew = Insertable<ITableUser>;
 export type TUserUpdate = Updateable<ITableUser>;
@@ -353,6 +426,10 @@ export interface TDatabase {
 	backup_code_locks: ITableBackupCodeLock;
 	backup_files: ITableBackupFileRecord;
 	backup_imports: ITableBackupImportRecord;
+	chat_conversations: ITableChatConversation;
+	chat_messages: ITableChatMessage;
+	chat_moderation_events: ITableChatModerationEvent;
+	chat_participants: ITableChatParticipant;
 	sessions: ITableSession;
 	sso_callback_deliveries: ITableSsoCallbackDelivery;
 	sso_callback_queue: ITableSsoCallbackQueue;
