@@ -1,3 +1,5 @@
+import { type Metadata } from 'next';
+
 import AdminSsoClientsClient, {
 	type IAdminSsoClientsInitialData,
 } from './client';
@@ -17,6 +19,7 @@ import {
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const metadata: Metadata = { title: 'SSO管理' };
 
 function renderClient(initialData: IAdminSsoClientsInitialData) {
 	return <AdminSsoClientsClient initialData={initialData} />;

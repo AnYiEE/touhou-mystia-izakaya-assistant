@@ -1,3 +1,5 @@
+import { type Metadata } from 'next';
+
 import AdminUserDetailClient, {
 	type IAdminUserDetailInitialData,
 } from './client';
@@ -23,6 +25,14 @@ export const dynamic = 'force-dynamic';
 interface IAdminUserDetailPageProps {
 	params: Promise<{ id: string }>;
 	searchParams: Promise<{ page?: string; query?: string; status?: string }>;
+}
+
+export async function generateMetadata({
+	params,
+}: Pick<IAdminUserDetailPageProps, 'params'>): Promise<Metadata> {
+	const { id } = await params;
+
+	return { title: `用户${id}` };
 }
 
 async function readInitialDetail(

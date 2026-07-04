@@ -1,3 +1,5 @@
+import { type Metadata } from 'next';
+
 import AdminSsoCallbacksClient, {
 	type IAdminSsoCallbacksInitialData,
 } from './client';
@@ -17,6 +19,7 @@ import {
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const metadata: Metadata = { title: 'SSO Callback' };
 
 interface IAdminSsoCallbacksPageProps {
 	searchParams: Promise<IAdminSsoSearchParams>;
@@ -88,7 +91,7 @@ export default async function AdminSsoCallbacksPage({
 			message:
 				error instanceof Error
 					? error.message
-					: '读取SSO callback队列失败',
+					: '读取SSO Callback队列失败',
 		});
 	}
 }

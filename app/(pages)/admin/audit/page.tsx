@@ -1,3 +1,5 @@
+import { type Metadata } from 'next';
+
 import AdminAuditClient, { type IAdminAuditInitialData } from './client';
 
 import {
@@ -14,6 +16,7 @@ import {
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const metadata: Metadata = { title: '审计日志' };
 
 type TAdminAuditScope = 'account' | 'sso';
 

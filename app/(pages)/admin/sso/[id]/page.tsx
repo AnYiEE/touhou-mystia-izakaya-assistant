@@ -1,3 +1,5 @@
+import { type Metadata } from 'next';
+
 import AdminSsoClientForm, {
 	type IAdminSsoClientFormInitialData,
 } from '../clientForm';
@@ -16,13 +18,23 @@ import {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+interface IAdminSsoClientEditPageProps {
+	params: Promise<{ id: string }>;
+	searchParams: Promise<IAdminSsoSearchParams>;
+}
+
+export async function generateMetadata({
+	params,
+}: Pick<IAdminSsoClientEditPageProps, 'params'>): Promise<Metadata> {
+	const { id } = await params;
+
+	return { title: `SSO客户端${id}` };
+}
+
 export default async function AdminSsoClientEditPage({
 	params,
 	searchParams,
-}: {
-	params: Promise<{ id: string }>;
-	searchParams: Promise<IAdminSsoSearchParams>;
-}) {
+}: IAdminSsoClientEditPageProps) {
 	const { id } = await params;
 	const resolvedSearchParams = await searchParams;
 	const clientListSearchParams = new URLSearchParams();

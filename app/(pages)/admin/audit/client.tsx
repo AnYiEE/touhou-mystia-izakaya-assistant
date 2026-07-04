@@ -100,10 +100,10 @@ const auditActorTypeLabelMap = {
 
 const auditTargetTypeLabelMap: Record<string, string> = {
 	announcement_records: '通知维护记录',
-	sso_callback_queue: 'SSO Callback 队列',
-	sso_client: 'SSO 客户端',
-	sso_client_secret: 'SSO 客户端密钥',
-	sso_grant: 'SSO 授权关系',
+	sso_callback_queue: 'SSO Callback队列',
+	sso_client: 'SSO客户端',
+	sso_client_secret: 'SSO客户端密钥',
+	sso_grant: 'SSO授权关系',
 	sso_ticket: 'SSO Ticket',
 	user: '用户',
 };

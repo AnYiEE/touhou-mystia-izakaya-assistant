@@ -1,3 +1,5 @@
+import { type Metadata } from 'next';
+
 import AdminSsoCallbackHistoryClient, {
 	type IAdminSsoCallbackHistoryInitialData,
 } from './client';
@@ -17,6 +19,7 @@ import {
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const metadata: Metadata = { title: 'SSO投递历史' };
 
 interface IAdminSsoCallbackHistoryPageProps {
 	searchParams: Promise<IAdminSsoSearchParams>;

@@ -1,3 +1,5 @@
+import { type Metadata } from 'next';
+
 import AdminAnnouncementForm, {
 	type IAdminAnnouncementFormInitialData,
 } from '../form';
@@ -5,6 +7,18 @@ import { readAdminAnnouncementAuthInitialData } from '../server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+interface IAdminAnnouncementEditPageProps {
+	params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({
+	params,
+}: IAdminAnnouncementEditPageProps): Promise<Metadata> {
+	const { id } = await params;
+
+	return { title: `通知${id}` };
+}
 
 async function readInitialAnnouncement(
 	id: string
@@ -28,9 +42,7 @@ async function readInitialAnnouncement(
 
 export default async function AdminAnnouncementEditPage({
 	params,
-}: {
-	params: Promise<{ id: string }>;
-}) {
+}: IAdminAnnouncementEditPageProps) {
 	const { id } = await params;
 	const auth = await readAdminAnnouncementAuthInitialData(
 		`/admin/announcements/${encodeURIComponent(id)}`

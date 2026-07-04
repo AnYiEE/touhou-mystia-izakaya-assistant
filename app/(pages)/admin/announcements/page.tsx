@@ -1,3 +1,5 @@
+import { type Metadata } from 'next';
+
 import AdminAnnouncementsClient, {
 	type IAdminAnnouncementsInitialData,
 } from './client';
@@ -5,6 +7,7 @@ import { readAdminAnnouncementAuthInitialData } from './server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const metadata: Metadata = { title: '站点通知' };
 
 async function readInitialAnnouncements(): Promise<
 	IAdminAnnouncementsInitialData['announcements']

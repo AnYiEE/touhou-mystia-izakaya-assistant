@@ -1,3 +1,5 @@
+import { type Metadata } from 'next';
+
 import AdminSsoTicketsClient, {
 	type IAdminSsoTicketsInitialData,
 } from './client';
@@ -15,6 +17,7 @@ import {
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const metadata: Metadata = { title: 'SSO Tickets' };
 
 interface IAdminSsoTicketsPageProps {
 	searchParams: Promise<IAdminSsoSearchParams>;
@@ -69,7 +72,7 @@ export default async function AdminSsoTicketsPage({
 		return renderClient({
 			...initialData,
 			message:
-				error instanceof Error ? error.message : '读取SSO ticket失败',
+				error instanceof Error ? error.message : '读取SSO Ticket失败',
 		});
 	}
 }

@@ -1,3 +1,5 @@
+import { type Metadata } from 'next';
+
 import AdminPageClient, {
 	type IAdminPageInitialData,
 	type TAdminAuthStatus,
@@ -22,6 +24,7 @@ import { type TUserStatus } from '@/lib/account/shared/types';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const metadata: Metadata = { title: '用户管理' };
 
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE = 10_000;

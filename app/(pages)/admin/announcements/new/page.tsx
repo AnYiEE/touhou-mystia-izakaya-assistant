@@ -1,3 +1,5 @@
+import { type Metadata } from 'next';
+
 import AdminAnnouncementForm, {
 	type IAdminAnnouncementFormInitialData,
 } from '../form';
@@ -5,6 +7,7 @@ import { readAdminAnnouncementAuthInitialData } from '../server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const metadata: Metadata = { title: '新建站点通知' };
 
 export default async function AdminAnnouncementCreatePage() {
 	const auth = await readAdminAnnouncementAuthInitialData(
