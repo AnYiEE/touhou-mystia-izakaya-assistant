@@ -88,6 +88,7 @@ const storeVersion = {
 	mealData: 13,
 	tableShare: 14, // eslint-disable-next-line sort-keys
 	deleteMealIndex: 15,
+	removeCustomerSearchValue: 16,
 } as const;
 
 const state = {
@@ -115,7 +116,6 @@ const state = {
 				excludes: [] as string[],
 			},
 			pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
-			searchValue: '',
 			tabVisibility:
 				tabVisibilityStateMap.collapse as TTabVisibilityState,
 		},
@@ -207,7 +207,7 @@ export const customerNormalStore = store(state, {
 		}),
 		persistMiddleware<typeof state>({
 			name: storeName,
-			version: storeVersion.deleteMealIndex,
+			version: storeVersion.removeCustomerSearchValue,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -411,6 +411,9 @@ export const customerNormalStore = store(state, {
 							delete meal.index;
 						}
 					}
+				}
+				if (version < storeVersion.removeCustomerSearchValue) {
+					delete oldState.persistence.customer.searchValue;
 				}
 				return persistedState as typeof state;
 			},

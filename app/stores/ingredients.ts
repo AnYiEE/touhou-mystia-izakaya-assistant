@@ -26,6 +26,7 @@ const storeVersion = {
 	popular: 1, // eslint-disable-next-line sort-keys
 	filterTypes: 2, // eslint-disable-next-line sort-keys
 	filterPlaces: 3,
+	removeSearchValue: 4,
 } as const;
 
 const getNames = createNamesCache(instance);
@@ -45,7 +46,6 @@ const state = {
 			types: [] as string[],
 		},
 		pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
-		searchValue: '',
 	},
 	shared: {
 		hiddenItems: { dlcs: toSet<TDlc>() },
@@ -59,7 +59,7 @@ export const ingredientsStore = store(state, {
 	middlewares: [
 		persistMiddleware<typeof state>({
 			name: 'page-ingredients-storage',
-			version: storeVersion.filterPlaces,
+			version: storeVersion.removeSearchValue,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -84,6 +84,9 @@ export const ingredientsStore = store(state, {
 					} = oldState;
 					filters.places = [];
 					filters.noPlaces = [];
+				}
+				if (version < storeVersion.removeSearchValue) {
+					delete oldState.persistence.searchValue;
 				}
 				return persistedState as typeof state;
 			},

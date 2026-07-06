@@ -2,12 +2,7 @@
 
 import { useCallback, useMemo } from 'react';
 
-import {
-	useFilteredData,
-	useSearchResult,
-	useSortedData,
-	useThrottle,
-} from '@/hooks';
+import { useFilteredData, useSortedData } from '@/hooks';
 
 import Content from './content';
 import ItemPage from '@/components/itemPage';
@@ -18,9 +13,6 @@ import SideFilterIconButton, {
 import SidePinyinSortIconButton, {
 	type IPinyinSortConfig,
 } from '@/components/sidePinyinSortIconButton';
-import SideSearchIconButton, {
-	type ISearchConfig,
-} from '@/components/sideSearchIconButton';
 
 import { beveragesStore as store } from '@/stores';
 import { checkLengthEmpty, filterItems } from '@/utilities';
@@ -30,15 +22,10 @@ export default function Beverages() {
 
 	const availableDlcs = store.availableDlcs.use();
 	const availableLevels = store.availableLevels.use();
-	const availableNames = store.availableNames.use();
 	const availablePlaces = store.availablePlaces.use();
 	const availableTags = store.availableTags.use();
 
 	const pinyinSortState = store.persistence.pinyinSortState.use();
-	const searchValue = store.persistence.searchValue.use();
-
-	const throttledSearchValue = useThrottle(searchValue);
-	const searchResult = useSearchResult(instance, throttledSearchValue);
 
 	const filterDlcs = store.persistence.filters.dlcs.use();
 	const filterLevels = store.persistence.filters.levels.use();
@@ -49,7 +36,7 @@ export default function Beverages() {
 
 	const filterData = useCallback(
 		() =>
-			filterItems(searchResult, [
+			filterItems(instance.data, [
 				{ field: 'dlc', match: 'in', values: filterDlcs },
 				{ field: 'level', match: 'in', values: filterLevels },
 				{ field: 'tags', match: 'all', values: filterTags },
@@ -68,7 +55,7 @@ export default function Beverages() {
 			filterNoTags,
 			filterPlaces,
 			filterTags,
-			searchResult,
+			instance.data,
 		]
 	);
 
@@ -82,17 +69,6 @@ export default function Beverages() {
 			setPinyinSortState: store.persistence.pinyinSortState.set,
 		}),
 		[pinyinSortState]
-	);
-
-	const searchConfig = useMemo<ISearchConfig>(
-		() => ({
-			label: '选择或输入酒水名称',
-			searchItems: availableNames,
-			searchValue,
-			setSearchValue: store.persistence.searchValue.set,
-			spriteTarget: 'beverage',
-		}),
-		[availableNames, searchValue]
 	);
 
 	const selectConfig = useMemo<TSelectConfig>(
@@ -153,7 +129,6 @@ export default function Beverages() {
 			isEmpty={checkLengthEmpty(sortedData)}
 			sideButton={
 				<SideButtonGroup>
-					<SideSearchIconButton searchConfig={searchConfig} />
 					<SidePinyinSortIconButton
 						pinyinSortConfig={pinyinSortConfig}
 					/>

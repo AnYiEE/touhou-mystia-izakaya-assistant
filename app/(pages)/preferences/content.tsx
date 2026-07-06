@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 
 import { useVibrate } from '@/hooks';
 
@@ -19,12 +19,28 @@ import Sprite from '@/components/sprite';
 
 import { siteConfig } from '@/configs';
 import { DLC_LABEL_MAP, DYNAMIC_TAG_MAP } from '@/data';
+import { type TGlobalSearchPreferenceKey } from '@/lib/globalSearch';
 import { accountStore, customerRareStore, globalStore } from '@/stores';
 import { toSet } from '@/utilities';
 
 const { isAccountFeatureClientEnabled } = siteConfig;
 
 interface IProps extends IDataManagerProps {}
+
+function getPreferenceTargetClassName(
+	key: TGlobalSearchPreferenceKey,
+	highlightedKey: null | TGlobalSearchPreferenceKey
+) {
+	return cn(
+		'rounded-small transition-all motion-reduce:transition-none',
+		highlightedKey === key &&
+			'bg-primary/10 shadow-[0_0_0_1px] shadow-primary/40'
+	);
+}
+
+function getPreferenceTargetDataProps(key: TGlobalSearchPreferenceKey) {
+	return { 'data-preference-key': key };
+}
 
 export default memo<IProps>(function Content({ onModalClose }) {
 	const isReducedMotion = useReducedMotion();
@@ -35,6 +51,10 @@ export default memo<IProps>(function Content({ onModalClose }) {
 		globalStore.shared.preferencesModal.isOpen.use();
 	const preferencesModalOpenSource =
 		globalStore.shared.preferencesModal.openSource.use();
+	const preferencesTargetKey =
+		globalStore.shared.preferencesModal.targetKey.use();
+	const [highlightedPreferenceKey, setHighlightedPreferenceKey] =
+		useState<null | TGlobalSearchPreferenceKey>(null);
 
 	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const accountUser = accountStore.shared.user.use();
@@ -122,6 +142,44 @@ export default memo<IProps>(function Content({ onModalClose }) {
 		[isReducedMotion, onModalClose]
 	);
 
+	useEffect(() => {
+		if (preferencesTargetKey === null) {
+			return;
+		}
+
+		const element = [
+			...document.querySelectorAll<HTMLElement>('[data-preference-key]'),
+		].find(
+			({ dataset }) => dataset['preferenceKey'] === preferencesTargetKey
+		);
+		if (element === undefined) {
+			return;
+		}
+
+		element.scrollIntoView({
+			behavior: isReducedMotion ? 'auto' : 'smooth',
+			block: 'center',
+		});
+		element
+			.querySelector<HTMLElement>(
+				'button, input, select, [tabindex]:not([tabindex="-1"])'
+			)
+			?.focus({ preventScroll: true });
+		setHighlightedPreferenceKey(preferencesTargetKey);
+
+		const timeoutId = setTimeout(
+			() => {
+				setHighlightedPreferenceKey(null);
+				globalStore.shared.preferencesModal.targetKey.set(null);
+			},
+			isReducedMotion ? 800 : 1800
+		);
+
+		return () => {
+			clearTimeout(timeoutId);
+		};
+	}, [isReducedMotion, preferencesTargetKey]);
+
 	return (
 		<div>
 			<Heading isFirst subTitle="以下所有的更改都会即时生效">
@@ -145,9 +203,14 @@ export default memo<IProps>(function Content({ onModalClose }) {
 				数据集
 			</Heading>
 			<div
+				{...getPreferenceTargetDataProps('global-hidden-dlcs')}
 				className={cn(
 					'grid h-min w-full grid-cols-2 content-start justify-items-start gap-2 md:grid-cols-3 md:gap-x-12',
-					{ 'lg:w-1/2': !isPreferencesModalOpen }
+					{ 'lg:w-1/2': !isPreferencesModalOpen },
+					getPreferenceTargetClassName(
+						'global-hidden-dlcs',
+						highlightedPreferenceKey
+					)
 				)}
 			>
 				{allDlcs.map(({ value: dlc }, index) => {
@@ -181,7 +244,16 @@ export default memo<IProps>(function Content({ onModalClose }) {
 			>
 				流行趋势
 			</Heading>
-			<div className="space-y-2">
+			<div
+				{...getPreferenceTargetDataProps('global-popular-trend')}
+				className={cn(
+					'space-y-2',
+					getPreferenceTargetClassName(
+						'global-popular-trend',
+						highlightedPreferenceKey
+					)
+				)}
+			>
 				<div className="flex items-center">
 					<span className="font-medium">类别：</span>
 					{DYNAMIC_TAG_MAP.popularPositive}
@@ -275,61 +347,112 @@ export default memo<IProps>(function Content({ onModalClose }) {
 			</div>
 			<Heading as="h3">外观</Heading>
 			<div className="space-y-2">
-				<SwitchItem
-					isSelected={isHighAppearance}
-					onValueChange={handleIsHighAppearanceChange}
-					aria-label={`${isHighAppearance ? '关闭' : '开启'}平滑滚动和磨砂效果`}
+				<div
+					{...getPreferenceTargetDataProps(
+						'appearance-high-appearance'
+					)}
+					className={getPreferenceTargetClassName(
+						'appearance-high-appearance',
+						highlightedPreferenceKey
+					)}
 				>
-					<span className="flex w-min flex-wrap items-center break-keep md:flex-nowrap">
-						<span>平滑滚动和磨砂效果</span>
-						<span className="text-tiny text-foreground-500">
-							（如因浏览器性能受限而感卡顿可关闭）
-							<br />
-							（开启或关闭平滑滚动需刷新页面生效）
+					<SwitchItem
+						isSelected={isHighAppearance}
+						onValueChange={handleIsHighAppearanceChange}
+						aria-label={`${isHighAppearance ? '关闭' : '开启'}平滑滚动和磨砂效果`}
+					>
+						<span className="flex w-min flex-wrap items-center break-keep md:flex-nowrap">
+							<span>平滑滚动和磨砂效果</span>
+							<span className="text-tiny text-foreground-500">
+								（如因浏览器性能受限而感卡顿可关闭）
+								<br />
+								（开启或关闭平滑滚动需刷新页面生效）
+							</span>
 						</span>
-					</span>
-				</SwitchItem>
-				<SwitchItem
-					isSelected={isShowTachie}
-					onValueChange={globalStore.persistence.tachie.set}
-					aria-label={`${isShowTachie ? '隐藏' : '显示'}顾客页面立绘`}
+					</SwitchItem>
+				</div>
+				<div
+					{...getPreferenceTargetDataProps('appearance-tachie')}
+					className={getPreferenceTargetClassName(
+						'appearance-tachie',
+						highlightedPreferenceKey
+					)}
 				>
-					顾客页面右下角的立绘
-					<span className="text-tiny text-foreground-500">
-						（宽屏可见）
-					</span>
-				</SwitchItem>
+					<SwitchItem
+						isSelected={isShowTachie}
+						onValueChange={globalStore.persistence.tachie.set}
+						aria-label={`${isShowTachie ? '隐藏' : '显示'}顾客页面立绘`}
+					>
+						顾客页面右下角的立绘
+						<span className="text-tiny text-foreground-500">
+							（宽屏可见）
+						</span>
+					</SwitchItem>
+				</div>
 			</div>
 			<Heading as="h3">体验</Heading>
 			<div className="space-y-2">
-				<SwitchItem
-					isSelected={isVibrateEnabled}
-					onValueChange={globalStore.persistence.vibrate.set}
-					aria-label={`${isVibrateEnabled ? '关闭' : '开启'}操作震动反馈`}
+				<div
+					{...getPreferenceTargetDataProps('experience-vibrate')}
+					className={getPreferenceTargetClassName(
+						'experience-vibrate',
+						highlightedPreferenceKey
+					)}
 				>
-					部分操作的震动反馈
-					<span className="text-tiny text-foreground-500">
-						（需设备和浏览器支持）
-					</span>
-				</SwitchItem>
-				<SwitchItem
-					isSelected={isShowTagsTooltip}
-					onValueChange={
-						globalStore.persistence.customerCardTagsTooltip.set
-					}
-					aria-label={`${isShowTagsTooltip ? '隐藏' : '显示'}标签浮动提示`}
+					<SwitchItem
+						isSelected={isVibrateEnabled}
+						onValueChange={globalStore.persistence.vibrate.set}
+						aria-label={`${isVibrateEnabled ? '关闭' : '开启'}操作震动反馈`}
+					>
+						部分操作的震动反馈
+						<span className="text-tiny text-foreground-500">
+							（需设备和浏览器支持）
+						</span>
+					</SwitchItem>
+				</div>
+				<div
+					{...getPreferenceTargetDataProps('experience-tags-tooltip')}
+					className={getPreferenceTargetClassName(
+						'experience-tags-tooltip',
+						highlightedPreferenceKey
+					)}
 				>
-					顾客卡片中标签的浮动提示
-					<span className="text-tiny text-foreground-500">
-						（鼠标悬停可见）
-					</span>
-				</SwitchItem>
+					<SwitchItem
+						isSelected={isShowTagsTooltip}
+						onValueChange={
+							globalStore.persistence.customerCardTagsTooltip.set
+						}
+						aria-label={`${isShowTagsTooltip ? '隐藏' : '显示'}标签浮动提示`}
+					>
+						顾客卡片中标签的浮动提示
+						<span className="text-tiny text-foreground-500">
+							（鼠标悬停可见）
+						</span>
+					</SwitchItem>
+				</div>
 			</div>
 			<Heading as="h2">顾客页面</Heading>
 			<Heading as="h3">酒水、料理和食材</Heading>
 			<div className="space-y-2">
-				<HiddenItems onModalClose={onModalClose} />
-				<div className="space-y-1">
+				<div
+					{...getPreferenceTargetDataProps('customer-hidden-items')}
+					className={getPreferenceTargetClassName(
+						'customer-hidden-items',
+						highlightedPreferenceKey
+					)}
+				>
+					<HiddenItems onModalClose={onModalClose} />
+				</div>
+				<div
+					{...getPreferenceTargetDataProps('customer-suggest-meals')}
+					className={cn(
+						'space-y-1',
+						getPreferenceTargetClassName(
+							'customer-suggest-meals',
+							highlightedPreferenceKey
+						)
+					)}
+				>
 					<SwitchItem
 						isSelected={isSuggestEnabled}
 						onValueChange={
@@ -513,28 +636,56 @@ export default memo<IProps>(function Content({ onModalClose }) {
 			</div>
 			<Heading as="h3">稀客卡片</Heading>
 			<div className="space-y-2">
-				<SwitchItem
-					isSelected={isOrderLinkedFilter}
-					onValueChange={
-						customerRareStore.persistence.customer.orderLinkedFilter
-							.set
-					}
-					aria-label={`选择点单需求标签的同时${isOrderLinkedFilter ? '不' : ''}筛选表格`}
+				<div
+					{...getPreferenceTargetDataProps(
+						'customer-order-linked-filter'
+					)}
+					className={getPreferenceTargetClassName(
+						'customer-order-linked-filter',
+						highlightedPreferenceKey
+					)}
 				>
-					选择点单需求的同时筛选表格
-				</SwitchItem>
-				<SwitchItem
-					isSelected={isShowTagDescription}
-					onValueChange={
-						customerRareStore.persistence.customer
-							.showTagDescription.set
-					}
-					aria-label={`${isShowTagDescription ? '隐藏' : '显示'}料理标签描述`}
+					<SwitchItem
+						isSelected={isOrderLinkedFilter}
+						onValueChange={
+							customerRareStore.persistence.customer
+								.orderLinkedFilter.set
+						}
+						aria-label={`选择点单需求标签的同时${isOrderLinkedFilter ? '不' : ''}筛选表格`}
+					>
+						选择点单需求的同时筛选表格
+					</SwitchItem>
+				</div>
+				<div
+					{...getPreferenceTargetDataProps(
+						'customer-show-tag-description'
+					)}
+					className={getPreferenceTargetClassName(
+						'customer-show-tag-description',
+						highlightedPreferenceKey
+					)}
 				>
-					显示料理标签所对应的关键词
-				</SwitchItem>
+					<SwitchItem
+						isSelected={isShowTagDescription}
+						onValueChange={
+							customerRareStore.persistence.customer
+								.showTagDescription.set
+						}
+						aria-label={`${isShowTagDescription ? '隐藏' : '显示'}料理标签描述`}
+					>
+						显示料理标签所对应的关键词
+					</SwitchItem>
+				</div>
 			</div>
-			<DataManager onModalClose={onModalClose} />
+			<div
+				{...getPreferenceTargetDataProps('data-manager')}
+				className={getPreferenceTargetClassName(
+					'data-manager',
+					highlightedPreferenceKey
+				)}
+			>
+				<DataManager onModalClose={onModalClose} />
+			</div>
 		</div>
 	);
 });

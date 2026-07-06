@@ -2,7 +2,6 @@ import {
 	COLLECTION_LOCATION_REFRESH_TIME_MAP,
 	DARK_MATTER_META_MAP,
 	PLACE_DLC_MAP,
-	PLACE_NAME_REGEX,
 	PLACE_UNLOCK_TIER_MAP,
 	type TBeverageName,
 	type TBeverageTag,
@@ -28,6 +27,7 @@ import {
 	union,
 } from '@/utilities';
 import { Beverage, CustomerRare, Ingredient, Recipe } from '@/utils';
+import { extractPrimaryMapPlaceFromSourceText } from '@/utils/sourcePlaces';
 import type { TItemData } from '@/utils/types';
 
 import { checkRecipeEasterEgg, evaluateMeal } from './evaluateMeal';
@@ -98,13 +98,9 @@ interface IAcquisitionSource {
 }
 
 function getMapWeight(name: string, customerDlc: TDlc, customerPlace: TPlace) {
-	const match = PLACE_NAME_REGEX.exec(name);
-	if (!match?.[1]) {
-		return FALLBACK_MAP_WEIGHT;
-	}
+	const place = extractPrimaryMapPlaceFromSourceText(name);
 
-	const place = match[1] as TPlace;
-	if (!(place in PLACE_DLC_MAP)) {
+	if (place === null) {
 		return FALLBACK_MAP_WEIGHT;
 	}
 

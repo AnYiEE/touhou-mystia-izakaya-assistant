@@ -13,7 +13,7 @@ import { Clothes } from '@/utils';
 
 const instance = Clothes.getInstance();
 
-const storeVersion = { initial: 0 } as const;
+const storeVersion = { initial: 0, removeSearchValue: 1 } as const;
 
 const state = {
 	instance,
@@ -21,7 +21,6 @@ const state = {
 	persistence: {
 		filters: { dlcs: [] as string[] },
 		pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
-		searchValue: '',
 	},
 	shared: { hiddenItems: { dlcs: toSet<TDlc>() } },
 };
@@ -32,8 +31,16 @@ export const clothesStore = store(state, {
 	middlewares: [
 		persistMiddleware<typeof state>({
 			name: 'page-clothes-storage',
-			version: storeVersion.initial,
+			version: storeVersion.removeSearchValue,
 
+			migrate(persistedState, version) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+				const oldState = persistedState as any;
+				if (version < storeVersion.removeSearchValue) {
+					delete oldState.persistence.searchValue;
+				}
+				return persistedState as typeof state;
+			},
 			partialize: (currentStore) =>
 				({
 					persistence: currentStore.persistence,

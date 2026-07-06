@@ -20,19 +20,21 @@ interface IProps {
 
 export default memo<IProps>(function Content({ data }) {
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
-	const [openedPopover] = useOpenedItemPopover(popoverCardRef);
-	const { checkDefaultOpen, checkShouldEffect } =
-		useItemPopoverState(openedPopover);
+	const { defaultOpenedPopover, getPopoverOpenChangeProps } =
+		useOpenedItemPopover(popoverCardRef);
+	const { checkDefaultOpen, checkShouldEffect, getPopoverKey } =
+		useItemPopoverState(defaultOpenedPopover);
 
 	// const isHighAppearance = store.persistence.highAppearance.use();
 
 	return data.map(({ description, dlc, effect, from, id, name }, index) => (
 		<ItemPopoverCard.Popover
-			key={index}
+			key={getPopoverKey(index, name)}
 			showArrow
 			/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/3736} is fixed. */
 			// backdrop={isHighAppearance ? 'blur' : 'opaque'}
-			isOpen={checkDefaultOpen(name)}
+			defaultOpen={checkDefaultOpen(name)}
+			{...getPopoverOpenChangeProps(name)}
 		>
 			<ItemPopoverCard.Trigger>
 				<ItemCard

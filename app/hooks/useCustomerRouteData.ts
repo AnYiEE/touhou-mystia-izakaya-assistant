@@ -1,11 +1,6 @@
 import { useCallback } from 'react';
 
-import {
-	useFilteredData,
-	useSearchResult,
-	useSortedData,
-	useThrottle,
-} from '@/hooks';
+import { useFilteredData, useSortedData } from '@/hooks';
 
 import { customerNormalStore, customerRareStore } from '@/stores';
 import { type CustomerNormal, type CustomerRare } from '@/utils';
@@ -36,13 +31,6 @@ export function useCustomerRouteData(
 ) {
 	const customerPinyinSortState =
 		store.persistence.customer.pinyinSortState.use();
-	const customerSearchValue = store.persistence.customer.searchValue.use();
-	const throttledCustomerSearchValue = useThrottle(customerSearchValue);
-
-	const customerSearchResult = useSearchResult(
-		instance_customer,
-		throttledCustomerSearchValue
-	);
 
 	const customerFilterDlcs = store.persistence.customer.filters.dlcs.use();
 	const customerFilterExcludes =
@@ -57,12 +45,12 @@ export function useCustomerRouteData(
 	const filterData = useCallback(
 		() =>
 			filterCustomerData<TCustomerRouteItem>({
+				customerData: instance_customer.data,
 				customerFilterDlcs,
 				customerFilterExcludes,
 				customerFilterIncludes,
 				customerFilterNoPlaces,
 				customerFilterPlaces,
-				customerSearchResult,
 			}) as TCustomerData,
 		[
 			customerFilterDlcs,
@@ -70,7 +58,7 @@ export function useCustomerRouteData(
 			customerFilterIncludes,
 			customerFilterNoPlaces,
 			customerFilterPlaces,
-			customerSearchResult,
+			instance_customer.data,
 		]
 	);
 

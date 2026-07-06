@@ -173,6 +173,12 @@ const changelog = [
 		],
 	},
 	{ version: 'v2.3', changes: ['新增：支持通行密钥创建和登录账号。'] },
+	{
+		version: 'v2.4',
+		changes: [
+			'新增：支持全局Spotlight搜索，快速查找数据、设置或应用筛选。',
+		],
+	},
 ] as const satisfies Array<{
 	version: `v${string}`;
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;

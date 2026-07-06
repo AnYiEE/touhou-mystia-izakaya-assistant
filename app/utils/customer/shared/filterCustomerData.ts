@@ -7,21 +7,21 @@ interface IFilterableCustomer {
 }
 
 export function filterCustomerData<TCustomer extends IFilterableCustomer>({
+	customerData,
 	customerFilterDlcs,
 	customerFilterExcludes,
 	customerFilterIncludes,
 	customerFilterNoPlaces,
 	customerFilterPlaces,
-	customerSearchResult,
 }: {
+	customerData: ReadonlyArray<TCustomer>;
 	customerFilterDlcs: ReadonlyArray<string>;
 	customerFilterExcludes: ReadonlyArray<string>;
 	customerFilterIncludes: ReadonlyArray<string>;
 	customerFilterNoPlaces: ReadonlyArray<string>;
 	customerFilterPlaces: ReadonlyArray<string>;
-	customerSearchResult: ReadonlyArray<TCustomer>;
 }): TCustomer[] {
-	const filtered = filterItems(customerSearchResult, [
+	const filtered = filterItems(customerData, [
 		{ field: 'name', match: 'excludeIn', values: customerFilterExcludes },
 		{ field: 'dlc', match: 'in', values: customerFilterDlcs },
 		{ field: 'places', match: 'any', values: customerFilterPlaces },
@@ -38,7 +38,7 @@ export function filterCustomerData<TCustomer extends IFilterableCustomer>({
 
 	const filteredNames = new Set(filtered.map(({ name }) => name));
 
-	return customerSearchResult.filter(
+	return customerData.filter(
 		({ name }) =>
 			filteredNames.has(name) || customerFilterIncludes.includes(name)
 	);

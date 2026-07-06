@@ -36,9 +36,6 @@ import SideFilterIconButton, {
 import SidePinyinSortIconButton, {
 	type IPinyinSortConfig,
 } from '@/components/sidePinyinSortIconButton';
-import SideSearchIconButton, {
-	type ISearchConfig,
-} from '@/components/sideSearchIconButton';
 import Tachie from '@/components/tachie';
 
 import {
@@ -121,9 +118,6 @@ export default function Content() {
 	const customerPinyinSortState =
 		customerStore.persistence.customer.pinyinSortState.use();
 
-	const customerSearchValue =
-		customerStore.persistence.customer.searchValue.use();
-
 	const customerFilterDlcs =
 		customerStore.persistence.customer.filters.dlcs.use();
 	const customerFilterPlaces =
@@ -142,17 +136,6 @@ export default function Content() {
 				customerStore.persistence.customer.pinyinSortState.set,
 		}),
 		[customerPinyinSortState]
-	);
-
-	const customerSearchConfig = useMemo<ISearchConfig>(
-		() => ({
-			label: '选择或输入稀客名称',
-			searchItems: availableCustomerNames,
-			searchValue: customerSearchValue,
-			setSearchValue: customerStore.persistence.customer.searchValue.set,
-			spriteTarget: 'customer_rare',
-		}),
-		[availableCustomerNames, customerSearchValue]
 	);
 
 	const customerSelectConfig = useMemo<TSelectConfig>(
@@ -423,7 +406,6 @@ export default function Content() {
 					{ '!hidden': !isCustomerTabFilterVisible }
 				)}
 			>
-				<SideSearchIconButton searchConfig={customerSearchConfig} />
 				<SidePinyinSortIconButton
 					pinyinSortConfig={customerPinyinSortConfig}
 				/>

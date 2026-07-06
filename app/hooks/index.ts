@@ -12,7 +12,6 @@ export * from './useDocumentTitle';
 export * from './useIngredientRouteData';
 export * from './useItemPopoverState';
 export { useOpenedItemPopover } from './useOpenedItemPopover';
-export * from './useSearchResult';
 export * from './useSkipProcessItemData';
 export * from './useSortedData';
 export * from './useSuggestedMealsViewModel';

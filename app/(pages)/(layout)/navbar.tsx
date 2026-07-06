@@ -7,6 +7,7 @@ import {
 	memo,
 	startTransition,
 	useCallback,
+	useEffect,
 	useState,
 } from 'react';
 
@@ -32,6 +33,7 @@ import {
 	faCircleInfo,
 	faDesktop,
 	faGear,
+	faMagnifyingGlass,
 	faMoon,
 	faSun,
 	faUser,
@@ -53,6 +55,7 @@ import {
 import { useReducedMotion } from '@/design/ui/hooks';
 
 import { trackEvent } from '@/components/analytics';
+import GlobalSpotlightSearch from '@/components/globalSpotlightSearch';
 import MobileAccountActionButton from '@/components/mobileAccountActionButton';
 import SiteInfo from '@/components/siteInfo';
 import Sprite from '@/components/sprite';
@@ -60,7 +63,7 @@ import ThemeSwitcher from '@/components/themeSwitcher';
 
 import { siteConfig } from '@/configs';
 import { accountStore, globalStore } from '@/stores';
-import { checkA11yConfirmKey } from '@/utilities';
+import { checkA11yConfirmKey, checkIsApplePlatform } from '@/utilities';
 import type { TSpriteTarget } from '@/utils/sprite/types';
 
 const { isAccountFeatureClientEnabled, links, name, navItems, shortName } =
@@ -154,7 +157,7 @@ const MOBILE_CARD_ACTIVE_CLASS_NAME =
 	'border-primary/40 text-primary-700 dark:text-primary';
 
 const MOBILE_CARD_INACTIVE_CLASS_NAME =
-	'border-default-200/75 text-foreground-700 hover:border-default-300 hover:bg-content1/65 dark:border-default-200/60 dark:hover:bg-default-50/15';
+	'border-default-200/75 text-foreground-700 data-[hover=true]:border-default-300 data-[hover=true]:bg-content1/65 dark:border-default-200/60 dark:data-[hover=true]:bg-default-50/15';
 
 const MOBILE_ICON_FRAME_CLASS_NAME =
 	'flex h-9 w-9 shrink-0 items-center justify-center rounded-small transition-colors motion-reduce:transition-none';
@@ -163,7 +166,7 @@ const MOBILE_ICON_FRAME_ACTIVE_CLASS_NAME =
 	'bg-primary/10 text-primary-700 dark:bg-primary/15 dark:text-primary';
 
 const MOBILE_ICON_FRAME_INACTIVE_CLASS_NAME =
-	'bg-default-100/70 text-foreground-500 group-hover:bg-default-100 group-hover:text-foreground-700 dark:bg-default-50/20';
+	'bg-default-100/70 text-foreground-500 group-data-[hover=true]:bg-default-100 group-data-[hover=true]:text-foreground-700 dark:bg-default-50/20';
 
 export function showProgress(startProgress: () => void) {
 	startTransition(async () => {
@@ -209,6 +212,7 @@ export default function Navbar() {
 	const startProgress = useProgress();
 	const vibrate = useVibrate();
 	const [isMenuOpened, setIsMenuOpened] = useState(false);
+	const [isApplePlatform, setIsApplePlatform] = useState(false);
 	const isReducedMotion = useReducedMotion();
 	const [theme, setTheme] = useTheme();
 
@@ -230,6 +234,7 @@ export default function Navbar() {
 	const accountMenuDisabledKeys =
 		accountBootstrapStatus === 'unknown' ? ['account'] : [];
 	const selectedThemeKeys = [`theme:${theme}`];
+	const searchShortcutLabel = isApplePlatform ? '⌘K' : 'Ctrl+K';
 
 	const handlePress = useCallback(
 		(href?: string, isInNavbarMenu?: boolean) => {
@@ -280,6 +285,35 @@ export default function Navbar() {
 		},
 		[isReducedMotion, vibrate]
 	);
+
+	const handleSearchButtonPress = useCallback(
+		(isInNavbarMenu?: boolean) => {
+			vibrate();
+			trackEvent(
+				trackEvent.category.click,
+				'Global Search Button',
+				isInNavbarMenu ? 'Open From Navbar Menu' : 'Open From Navbar'
+			);
+			const openSearch = () => {
+				globalStore.setGlobalSearchIsOpen(true);
+			};
+			if (isInNavbarMenu) {
+				setIsMenuOpened(false);
+				setTimeout(openSearch, isReducedMotion ? 0 : 300);
+			} else {
+				openSearch();
+			}
+		},
+		[isReducedMotion, vibrate]
+	);
+
+	const handleMobileSearchButtonPress = useCallback(() => {
+		handleSearchButtonPress(isMenuOpened);
+	}, [handleSearchButtonPress, isMenuOpened]);
+
+	useEffect(() => {
+		setIsApplePlatform(checkIsApplePlatform());
+	}, []);
 
 	const handleActionMenu = useCallback(
 		(key: Key, isInNavbarMenu?: boolean) => {
@@ -585,266 +619,349 @@ export default function Navbar() {
 	);
 
 	return (
-		<HeroUINavbar
-			isBordered
-			shouldBlockScroll={false}
-			disableAnimation={isReducedMotion}
-			isBlurred={isHighAppearance}
-			isMenuOpen={isMenuOpened}
-			onMenuOpenChange={setIsMenuOpened}
-			classNames={{
-				base: 'pt-titlebar',
-				wrapper:
-					'max-w-screen-xl 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl',
-			}}
-		>
-			<NavbarContent
-				as="div"
-				justify="start"
-				className="basis-full md:basis-1/5"
+		<>
+			<GlobalSpotlightSearch />
+			<HeroUINavbar
+				isBordered
+				shouldBlockScroll={false}
+				disableAnimation={isReducedMotion}
+				isBlurred={isHighAppearance}
+				isMenuOpen={isMenuOpened}
+				onMenuOpenChange={setIsMenuOpened}
+				classNames={{
+					base: 'pt-titlebar',
+					wrapper:
+						'max-w-screen-xl 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl',
+				}}
 			>
-				<NavbarBrand className="max-w-fit">
-					<Link
-						animationUnderline={false}
-						color="foreground"
-						href={links.index.href}
-						onKeyDown={checkA11yConfirmKey()}
-						onPress={() => {
-							handlePress();
-						}}
-						aria-label={links.index.label}
-						role="button"
-						className="flex select-none items-center justify-start gap-1 rounded-small hover:brightness-100 active:opacity-disabled"
-					>
-						<span
-							aria-hidden
-							title={shortName}
-							className="image-rendering-pixelated h-10 w-10 rounded-full bg-logo bg-cover bg-no-repeat"
-						/>
-						<p className="hidden font-bold lg:inline-block">
-							{name}
-						</p>
-						<SiteInfo
-							aria-hidden="false"
-							fontSize={16}
-							name={shortName}
-							className="pointer-events-auto h-full select-auto font-bold text-foreground lg:hidden"
-						/>
-					</Link>
-				</NavbarBrand>
-				<ul className="hidden justify-start gap-4 pl-2 md:flex">
-					{navItems.map((navItem, navItemIndex) => {
-						if ('href' in navItem) {
-							const { href, label } = navItem;
-							const isActivated = href === basePathname;
-							return href === '/preferences' &&
-								!shouldShowPreferences ? null : (
-								<NavbarItem
-									key={navItemIndex}
-									isActive={isActivated}
-								>
-									<NavbarButtonLink
-										isActivated={isActivated}
-										onPress={() => {
-											handlePress(href);
-										}}
+				<NavbarContent
+					as="div"
+					justify="start"
+					className="basis-full md:basis-1/5"
+				>
+					<NavbarBrand className="max-w-fit">
+						<Link
+							animationUnderline={false}
+							color="foreground"
+							href={links.index.href}
+							onKeyDown={checkA11yConfirmKey()}
+							onPress={() => {
+								handlePress();
+							}}
+							aria-label={links.index.label}
+							role="button"
+							className="flex select-none items-center justify-start gap-1 rounded-small hover:brightness-100 active:opacity-disabled"
+						>
+							<span
+								aria-hidden
+								title={shortName}
+								className="image-rendering-pixelated h-10 w-10 rounded-full bg-logo bg-cover bg-no-repeat"
+							/>
+							<p className="hidden font-bold lg:inline-block">
+								{name}
+							</p>
+							<SiteInfo
+								aria-hidden="false"
+								fontSize={16}
+								name={shortName}
+								className="pointer-events-auto h-full select-auto font-bold text-foreground lg:hidden"
+							/>
+						</Link>
+					</NavbarBrand>
+					<ul className="hidden justify-start gap-4 pl-2 md:flex">
+						{navItems.map((navItem, navItemIndex) => {
+							if ('href' in navItem) {
+								const { href, label } = navItem;
+								const isActivated = href === basePathname;
+								return href === '/preferences' &&
+									!shouldShowPreferences ? null : (
+									<NavbarItem
+										key={navItemIndex}
+										isActive={isActivated}
 									>
-										{label}
-									</NavbarButtonLink>
-								</NavbarItem>
-							);
-						}
-						return Object.entries(navItem).reduce<JSX.Element[]>(
-							(
-								acc,
-								[dropdownLabel, dropdownItems],
-								dropdownIndex
-							) => {
-								const isDropdownActivated = dropdownItems.some(
-									({ href }) => href === basePathname
-								);
-								const dropdownElement = (
-									<Dropdown
-										key={dropdownIndex}
-										shouldCloseOnScroll
-										onOpenChange={vibrate}
-										classNames={{
-											content: cn('p-0', {
-												'bg-background/70 backdrop-saturate-150':
-													isHighAppearance,
-											}),
-										}}
-									>
-										<NavbarItem>
-											<DropdownTrigger>
-												<Button
-													endContent={
-														<FontAwesomeIcon
-															icon={faChevronDown}
-															size="sm"
-														/>
-													}
-													size="sm"
-													variant={
-														isDropdownActivated
-															? 'flat'
-															: 'light'
-													}
-													className="text-base"
-												>
-													{dropdownLabel}
-												</Button>
-											</DropdownTrigger>
-										</NavbarItem>
-										<DropdownMenu
-											items={dropdownItems}
-											onAction={(key) => {
-												handlePress(key as string);
-											}}
-											aria-label={`${dropdownLabel}列表`}
-											itemClasses={{
-												base: 'my-px p-0 transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40 motion-reduce:transition-none',
+										<NavbarButtonLink
+											isActivated={isActivated}
+											onPress={() => {
+												handlePress(href);
 											}}
 										>
-											{({
-												href,
-												label,
-												sprite,
-												spriteIndex,
-											}) => (
-												<DropdownItem
-													key={href}
-													textValue={label}
-												>
-													<NavbarButtonLink
-														fullWidth
-														isActivated={
-															href ===
-															basePathname
-														}
-														startContent={
-															<Sprite
-																target={sprite}
-																index={
-																	spriteIndex
+											{label}
+										</NavbarButtonLink>
+									</NavbarItem>
+								);
+							}
+							return Object.entries(navItem).reduce<
+								JSX.Element[]
+							>(
+								(
+									acc,
+									[dropdownLabel, dropdownItems],
+									dropdownIndex
+								) => {
+									const isDropdownActivated =
+										dropdownItems.some(
+											({ href }) => href === basePathname
+										);
+									const dropdownElement = (
+										<Dropdown
+											key={dropdownIndex}
+											shouldCloseOnScroll
+											onOpenChange={vibrate}
+											classNames={{
+												content: cn('p-0', {
+													'bg-background/70 backdrop-saturate-150':
+														isHighAppearance,
+												}),
+											}}
+										>
+											<NavbarItem>
+												<DropdownTrigger>
+													<Button
+														endContent={
+															<FontAwesomeIcon
+																icon={
+																	faChevronDown
 																}
-																size={1.25}
-																className={cn({
-																	'rounded-full':
-																		href ===
-																		'/partners',
-																})}
+																size="sm"
 															/>
 														}
-														className="justify-start gap-1 text-small hover:brightness-100 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
+														size="sm"
+														variant={
+															isDropdownActivated
+																? 'flat'
+																: 'light'
+														}
+														className="text-base"
 													>
-														{label}
-													</NavbarButtonLink>
-												</DropdownItem>
-											)}
-										</DropdownMenu>
-									</Dropdown>
-								);
-								return [...acc, dropdownElement];
-							},
-							[]
-						);
-					})}
-				</ul>
-			</NavbarContent>
+														{dropdownLabel}
+													</Button>
+												</DropdownTrigger>
+											</NavbarItem>
+											<DropdownMenu
+												items={dropdownItems}
+												onAction={(key) => {
+													handlePress(key as string);
+												}}
+												aria-label={`${dropdownLabel}列表`}
+												itemClasses={{
+													base: 'my-px p-0 transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40 motion-reduce:transition-none',
+												}}
+											>
+												{({
+													href,
+													label,
+													sprite,
+													spriteIndex,
+												}) => (
+													<DropdownItem
+														key={href}
+														textValue={label}
+													>
+														<NavbarButtonLink
+															fullWidth
+															isActivated={
+																href ===
+																basePathname
+															}
+															startContent={
+																<Sprite
+																	target={
+																		sprite
+																	}
+																	index={
+																		spriteIndex
+																	}
+																	size={1.25}
+																	className={cn(
+																		{
+																			'rounded-full':
+																				href ===
+																				'/partners',
+																		}
+																	)}
+																/>
+															}
+															className="justify-start gap-1 text-small hover:brightness-100 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
+														>
+															{label}
+														</NavbarButtonLink>
+													</DropdownItem>
+												)}
+											</DropdownMenu>
+										</Dropdown>
+									);
+									return [...acc, dropdownElement];
+								},
+								[]
+							);
+						})}
+					</ul>
+				</NavbarContent>
 
-			<NavbarContent
-				justify="end"
-				className="hidden basis-full md:flex md:basis-1/5"
-			>
-				{shouldShowAccountAction ? (
-					renderAccountThemeDropdown()
-				) : (
-					<NavbarItem>
-						<ThemeSwitcher />
-					</NavbarItem>
-				)}
-			</NavbarContent>
-
-			<NavbarContent
-				as="div"
-				justify="end"
-				className="basis-1 pl-4 md:hidden"
-			>
-				<Tooltip
-					showArrow
-					content={isMenuOpened ? '收起菜单' : '打开菜单'}
-					placement="left"
+				<NavbarContent
+					justify="end"
+					className="hidden basis-full md:flex md:basis-1/5"
 				>
-					<NavbarMenuToggle
-						onChange={vibrate}
-						srOnlyText={isMenuOpened ? '收起菜单' : '打开菜单'}
-						aria-label={isMenuOpened ? '收起菜单' : '打开菜单'}
-					/>
-				</Tooltip>
-			</NavbarContent>
+					<NavbarItem>
+						<Tooltip
+							showArrow
+							placement="left"
+							content={
+								<span className="flex items-center gap-1">
+									搜索
+									<kbd className="rounded-small bg-default/40 px-1 py-0.5 text-tiny">
+										{searchShortcutLabel}
+									</kbd>
+									<span className="text-tiny text-foreground-400">
+										或
+									</span>
+									<kbd className="rounded-small bg-default/40 px-1 py-0.5 text-tiny">
+										/
+									</kbd>
+								</span>
+							}
+						>
+							<Button
+								isIconOnly
+								size="sm"
+								variant="light"
+								aria-label="搜索"
+								onPress={() => {
+									handleSearchButtonPress();
+								}}
+								className="text-base"
+							>
+								<FontAwesomeIcon
+									icon={faMagnifyingGlass}
+									className="w-4"
+								/>
+							</Button>
+						</Tooltip>
+					</NavbarItem>
+					{shouldShowAccountAction ? (
+						renderAccountThemeDropdown()
+					) : (
+						<NavbarItem>
+							<ThemeSwitcher />
+						</NavbarItem>
+					)}
+				</NavbarContent>
 
-			<NavbarMenu
-				className={cn(
-					'top-[calc(var(--navbar-height)_+_var(--announcement-bar-offset))]',
-					'h-[calc(var(--safe-h-dvh)_-_var(--navbar-height)_-_var(--announcement-bar-offset))]',
-					'mobile-navbar-menu-scroll gap-3.5 overflow-y-auto overflow-x-hidden px-6 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-4 sm:px-8'
-				)}
-			>
-				<NavbarMenuItem>
-					<section className="space-y-2">
-						<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
-							顾客
-						</h2>
-						<div className="grid grid-cols-2 gap-2">
-							{MOBILE_CUSTOMER_NAV_ITEMS.map(
-								renderMobileCustomerNavItem
-							)}
-						</div>
-					</section>
-				</NavbarMenuItem>
-				{MOBILE_QUERY_NAV_GROUPS.map(({ items, label }) => (
-					<NavbarMenuItem key={label}>
+				<NavbarContent
+					as="div"
+					justify="end"
+					className="basis-1 pl-2 md:hidden"
+				>
+					<div
+						className={cn(
+							'flex h-10 items-center gap-0.5 rounded-small border border-default-200/60 bg-default-100/45 p-0.5 text-foreground-600 transition-background motion-reduce:transition-none dark:bg-default-100/20',
+							isHighAppearance && 'bg-default/35 backdrop-blur'
+						)}
+					>
+						<Tooltip showArrow content="搜索" placement="left">
+							<Button
+								isIconOnly
+								size="sm"
+								variant="light"
+								aria-label="搜索"
+								onPress={handleMobileSearchButtonPress}
+								className="h-9 w-9 min-w-9 rounded-small text-base text-foreground-600 transition-background data-[hover=true]:bg-default/40 data-[pressed=true]:bg-default/50 motion-reduce:transition-none"
+							>
+								<FontAwesomeIcon
+									icon={faMagnifyingGlass}
+									className="w-4"
+								/>
+							</Button>
+						</Tooltip>
+						<span className="h-5 w-px bg-default-300/70" />
+						<Tooltip
+							showArrow
+							content={isMenuOpened ? '收起菜单' : '打开菜单'}
+							placement="left"
+						>
+							<NavbarMenuToggle
+								onChange={vibrate}
+								srOnlyText={
+									isMenuOpened ? '收起菜单' : '打开菜单'
+								}
+								aria-label={
+									isMenuOpened ? '收起菜单' : '打开菜单'
+								}
+								className={cn(
+									'h-9 w-9 rounded-small transition-background motion-reduce:transition-none',
+									isMenuOpened
+										? 'bg-default/50'
+										: 'data-[hover=true]:bg-default/40',
+									isHighAppearance &&
+										'data-[hover=true]:bg-default/45'
+								)}
+							/>
+						</Tooltip>
+					</div>
+				</NavbarContent>
+
+				<NavbarMenu
+					className={cn(
+						'top-[calc(var(--navbar-height)_+_var(--announcement-bar-offset))]',
+						'h-[calc(var(--safe-h-dvh)_-_var(--navbar-height)_-_var(--announcement-bar-offset))]',
+						'mobile-navbar-menu-scroll gap-3.5 overflow-y-auto overflow-x-hidden px-6 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-4 sm:px-8'
+					)}
+				>
+					<NavbarMenuItem>
 						<section className="space-y-2">
 							<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
-								{label}
+								顾客
 							</h2>
-							<div className="grid grid-cols-4 gap-2">
-								{items.map(renderMobileQueryNavItem)}
+							<div className="grid grid-cols-2 gap-2">
+								{MOBILE_CUSTOMER_NAV_ITEMS.map(
+									renderMobileCustomerNavItem
+								)}
 							</div>
 						</section>
 					</NavbarMenuItem>
-				))}
-				<NavbarMenuItem>
-					<section className="space-y-2">
-						<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
-							更多
-						</h2>
-						<div className="grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-2">
-							{MOBILE_UTILITY_NAV_ITEMS.map((item) =>
-								renderMobileIconNavItem(item)
-							)}
-						</div>
-					</section>
-				</NavbarMenuItem>
-				<NavbarMenuItem>
-					<section className="space-y-2">
-						<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
-							{mobileActionSectionTitle}
-						</h2>
-						{shouldShowAccountAction && (
-							<div className="space-y-2">
-								{renderMobileAccountActionItem()}
+					{MOBILE_QUERY_NAV_GROUPS.map(({ items, label }) => (
+						<NavbarMenuItem key={label}>
+							<section className="space-y-2">
+								<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
+									{label}
+								</h2>
+								<div className="grid grid-cols-4 gap-2">
+									{items.map(renderMobileQueryNavItem)}
+								</div>
+							</section>
+						</NavbarMenuItem>
+					))}
+					<NavbarMenuItem>
+						<section className="space-y-2">
+							<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
+								更多
+							</h2>
+							<div className="grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-2">
+								{MOBILE_UTILITY_NAV_ITEMS.map((item) =>
+									renderMobileIconNavItem(item)
+								)}
 							</div>
-						)}
-						<div className="grid grid-cols-3 gap-2">
-							{DESKTOP_THEME_MENU_ITEMS.map(
-								renderMobileThemeActionItem
+						</section>
+					</NavbarMenuItem>
+					<NavbarMenuItem>
+						<section className="space-y-2">
+							<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
+								{mobileActionSectionTitle}
+							</h2>
+							{shouldShowAccountAction && (
+								<div className="space-y-2">
+									{renderMobileAccountActionItem()}
+								</div>
 							)}
-						</div>
-					</section>
-				</NavbarMenuItem>
-			</NavbarMenu>
-		</HeroUINavbar>
+							<div className="grid grid-cols-3 gap-2">
+								{DESKTOP_THEME_MENU_ITEMS.map(
+									renderMobileThemeActionItem
+								)}
+							</div>
+						</section>
+					</NavbarMenuItem>
+				</NavbarMenu>
+			</HeroUINavbar>
+		</>
 	);
 }

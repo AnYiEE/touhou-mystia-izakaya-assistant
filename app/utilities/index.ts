@@ -11,6 +11,7 @@ export * from './checkA11yConfirmKey';
 export * from './createBoundedRuntimeCache';
 export * from './getPageTitle';
 export * from './memoize';
+export * from './platform';
 export * from './processJsonFile';
 export * from './setScriptUrlTag';
 export * from './toggleBoolean';

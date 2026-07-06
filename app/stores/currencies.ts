@@ -16,6 +16,7 @@ const instance = Currency.getInstance();
 const storeVersion = {
 	initial: 0, // eslint-disable-next-line sort-keys
 	filterDlcs: 1,
+	removeSearchValue: 2,
 } as const;
 
 const state = {
@@ -24,7 +25,6 @@ const state = {
 	persistence: {
 		filters: { dlcs: [] as string[] },
 		pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
-		searchValue: '',
 	},
 	shared: { hiddenItems: { dlcs: toSet<TDlc>() } },
 };
@@ -35,13 +35,16 @@ export const currenciesStore = store(state, {
 	middlewares: [
 		persistMiddleware<typeof state>({
 			name: 'page-currencies-storage',
-			version: storeVersion.filterDlcs,
+			version: storeVersion.removeSearchValue,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
 				const oldState = persistedState as any;
 				if (version < storeVersion.filterDlcs) {
 					oldState.persistence.filters = { dlcs: [] };
+				}
+				if (version < storeVersion.removeSearchValue) {
+					delete oldState.persistence.searchValue;
 				}
 				return persistedState as typeof state;
 			},

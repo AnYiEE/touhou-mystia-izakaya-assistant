@@ -102,6 +102,7 @@ type TAction =
 	| 'Donation Modal'
 	| 'Error'
 	| 'Export'
+	| 'Global Search'
 	| 'Import'
 	| 'Info'
 	| 'OpenWindow'

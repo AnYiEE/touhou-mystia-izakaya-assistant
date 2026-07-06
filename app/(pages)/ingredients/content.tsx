@@ -48,9 +48,10 @@ interface IProps {
 
 export default memo<IProps>(function Content({ data }) {
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
-	const [openedPopover] = useOpenedItemPopover(popoverCardRef);
-	const { checkDefaultOpen, checkShouldEffect } =
-		useItemPopoverState(openedPopover);
+	const { defaultOpenedPopover, getPopoverOpenChangeProps } =
+		useOpenedItemPopover(popoverCardRef);
+	const { checkDefaultOpen, checkShouldEffect, getPopoverKey } =
+		useItemPopoverState(defaultOpenedPopover);
 	const openWindow = useViewInNewWindow();
 
 	// const isHighAppearance = store.persistence.highAppearance.use();
@@ -65,11 +66,12 @@ export default memo<IProps>(function Content({ data }) {
 			dataIndex
 		) => (
 			<ItemPopoverCard.Popover
-				key={dataIndex}
+				key={getPopoverKey(dataIndex, name)}
 				showArrow
 				/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/3736} is fixed. */
 				// backdrop={isHighAppearance ? 'blur' : 'opaque'}
-				isOpen={checkDefaultOpen(name)}
+				defaultOpen={checkDefaultOpen(name)}
+				{...getPopoverOpenChangeProps(name)}
 			>
 				<ItemPopoverCard.Trigger>
 					<ItemCard

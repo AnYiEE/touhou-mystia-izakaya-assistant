@@ -2,7 +2,6 @@
 
 import {
 	type FC,
-	type MouseEvent,
 	type PropsWithChildren,
 	memo,
 	useCallback,
@@ -11,7 +10,6 @@ import {
 import { debounce, isNil } from 'lodash';
 
 import { useParams } from '@/hooks';
-import { PARAM_SPECIFY } from '@/hooks/useOpenedItemPopover';
 import { PARAM_PREVIEW, useViewInNewWindow } from '@/hooks/useViewInNewWindow';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -37,7 +35,6 @@ import SiteInfo from '@/components/siteInfo';
 import Sprite, { type ISpriteProps } from '@/components/sprite';
 import TagsComponent from '@/components/tags';
 
-import { siteConfig } from '@/configs';
 import {
 	DLC_LABEL_MAP,
 	type ICooker,
@@ -49,43 +46,36 @@ import {
 	type TTag,
 } from '@/data';
 import type { ITagStyle } from '@/data/types';
-import { globalStore as store } from '@/stores';
 import {
-	type TPressEvent,
-	checkA11yConfirmKey,
-	checkLengthEmpty,
-	union,
-} from '@/utilities';
-
-const { name: siteName } = siteConfig;
+	ITEM_SHARE_PARAM_NAME,
+	createItemShareData,
+	createItemShareUrl,
+} from '@/lib/itemShare';
+import { globalStore as store } from '@/stores';
+import { checkA11yConfirmKey, checkLengthEmpty, union } from '@/utilities';
 
 interface ICloseButtonProps {}
 
 const CloseButton: FC<ICloseButtonProps> = () => {
 	const { params, replaceState } = useParams();
-	const { getBackdropProps } = usePopoverContext();
+	const { onClose } = usePopoverContext();
 
 	const isPreviewMode = params.has(PARAM_PREVIEW);
 
-	const handleClose = useCallback(
-		(event: TPressEvent<HTMLButtonElement>) => {
-			getBackdropProps().onClick?.(
-				event as MouseEvent<HTMLButtonElement>
-			);
+	const handleClose = useCallback(() => {
+		onClose();
 
-			if (isPreviewMode) {
-				globalThis.close();
-			}
+		if (isPreviewMode) {
+			globalThis.close();
+		}
 
-			if (params.has(PARAM_SPECIFY)) {
-				const newParams = new URLSearchParams(params);
+		if (params.has(ITEM_SHARE_PARAM_NAME)) {
+			const newParams = new URLSearchParams(params);
 
-				newParams.delete(PARAM_SPECIFY);
-				replaceState(newParams);
-			}
-		},
-		[getBackdropProps, isPreviewMode, params, replaceState]
-	);
+			newParams.delete(ITEM_SHARE_PARAM_NAME);
+			replaceState(newParams);
+		}
+	}, [isPreviewMode, onClose, params, replaceState]);
 
 	const label = `点击：关闭${isPreviewMode ? '窗口' : '弹出框'}`;
 
@@ -116,19 +106,15 @@ interface IShareButtonProps {
 const ShareButton = memo<IShareButtonProps>(function ShareButton({ name }) {
 	const { params } = useParams();
 
-	const generatedUrl = useMemo(() => {
-		const newParams = new URLSearchParams(params);
+	const generatedUrl = useMemo(
+		() => createItemShareUrl({ name, params, pathname: location.pathname }),
+		[name, params]
+	);
 
-		newParams.set(PARAM_SPECIFY, name);
-
-		return `${location.origin}${location.pathname}?${newParams.toString()}`;
-	}, [name, params]);
-
-	const shareObject = useMemo<ShareData>(() => {
-		const text = `在${siteName}上查看【${name}】的详情`;
-
-		return { text, title: text, url: generatedUrl };
-	}, [generatedUrl, name]);
+	const shareObject = useMemo<ShareData>(
+		() => createItemShareData(name, generatedUrl),
+		[generatedUrl, name]
+	);
 
 	const isCanShare = useMemo(() => {
 		try {

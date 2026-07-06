@@ -23,6 +23,7 @@ const storeVersion = {
 	initial: 0,
 	popular: 1, // eslint-disable-next-line sort-keys
 	filterPlaces: 2,
+	removeSearchValue: 3,
 } as const;
 
 const state = {
@@ -38,7 +39,6 @@ const state = {
 			tags: [] as string[],
 		},
 		pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
-		searchValue: '',
 	},
 	shared: { hiddenItems: { dlcs: toSet<TDlc>() } },
 };
@@ -49,7 +49,7 @@ export const beveragesStore = store(state, {
 	middlewares: [
 		persistMiddleware<typeof state>({
 			name: 'page-beverages-storage',
-			version: storeVersion.filterPlaces,
+			version: storeVersion.removeSearchValue,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -66,6 +66,9 @@ export const beveragesStore = store(state, {
 					} = oldState;
 					filters.places = [];
 					filters.noPlaces = [];
+				}
+				if (version < storeVersion.removeSearchValue) {
+					delete oldState.persistence.searchValue;
 				}
 				return persistedState as typeof state;
 			},

@@ -36,9 +36,10 @@ interface IProps {
 
 export default memo<IProps>(function Content({ data }) {
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
-	const [openedPopover] = useOpenedItemPopover(popoverCardRef);
-	const { checkDefaultOpen, checkShouldEffect } =
-		useItemPopoverState(openedPopover);
+	const { defaultOpenedPopover, getPopoverOpenChangeProps } =
+		useOpenedItemPopover(popoverCardRef);
+	const { checkDefaultOpen, checkShouldEffect, getPopoverKey } =
+		useItemPopoverState(defaultOpenedPopover);
 	const openWindow = useViewInNewWindow();
 	const { breakpoint: placement } = useBreakpoint(
 		{ 'right-start': 426, top: -1 },
@@ -52,11 +53,12 @@ export default memo<IProps>(function Content({ data }) {
 	return data.map(
 		({ description, dlc, from, id, izakaya, name }, dataIndex) => (
 			<ItemPopoverCard.Popover
-				key={dataIndex}
+				key={getPopoverKey(dataIndex, name)}
 				showArrow
 				/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/3736} is fixed. */
 				// backdrop={isHighAppearance ? 'blur' : 'opaque'}
-				isOpen={checkDefaultOpen(name)}
+				defaultOpen={checkDefaultOpen(name)}
+				{...getPopoverOpenChangeProps(name)}
 			>
 				<ItemPopoverCard.Trigger>
 					<ItemCard

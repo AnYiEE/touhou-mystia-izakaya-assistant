@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { PARAM_SPECIFY } from '@/hooks/useOpenedItemPopover';
-
 import { trackEvent } from '@/components/analytics';
+
+import { ITEM_SHARE_PARAM_NAME } from '@/lib/itemShare';
 
 import {
 	type TClothesName,
@@ -51,7 +51,7 @@ export function useViewInNewWindow() {
 		windowObjectRef.current = null;
 
 		const pathname = `/${windowItemPath[0]}?${new URLSearchParams({
-			[PARAM_SPECIFY]: windowItemName[0], // eslint-disable-next-line sort-keys
+			[ITEM_SHARE_PARAM_NAME]: windowItemName[0],
 			[PARAM_PREVIEW]: '1',
 		}).toString()}`;
 		const height = 640;

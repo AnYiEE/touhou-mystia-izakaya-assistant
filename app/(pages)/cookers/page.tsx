@@ -2,12 +2,7 @@
 
 import { useCallback, useMemo } from 'react';
 
-import {
-	useFilteredData,
-	useSearchResult,
-	useSortedData,
-	useThrottle,
-} from '@/hooks';
+import { useFilteredData, useSortedData } from '@/hooks';
 
 import Content from './content';
 import ItemPage from '@/components/itemPage';
@@ -18,9 +13,6 @@ import SideFilterIconButton, {
 import SidePinyinSortIconButton, {
 	type IPinyinSortConfig,
 } from '@/components/sidePinyinSortIconButton';
-import SideSearchIconButton, {
-	type ISearchConfig,
-} from '@/components/sideSearchIconButton';
 
 import { cookersStore as store } from '@/stores';
 import { checkLengthEmpty, filterItems } from '@/utilities';
@@ -30,14 +22,9 @@ export default function Cookers() {
 
 	const availableCategories = store.availableCategories.use();
 	const availableDlcs = store.availableDlcs.use();
-	const availableNames = store.availableNames.use();
 	const availableTypes = store.availableTypes.use();
 
 	const pinyinSortState = store.persistence.pinyinSortState.use();
-	const searchValue = store.persistence.searchValue.use();
-
-	const throttledSearchValue = useThrottle(searchValue);
-	const searchResult = useSearchResult(instance, throttledSearchValue);
 
 	const filterDlcs = store.persistence.filters.dlcs.use();
 	const filterCategories = store.persistence.filters.categories.use();
@@ -47,7 +34,7 @@ export default function Cookers() {
 
 	const filterData = useCallback(
 		() =>
-			filterItems(searchResult, [
+			filterItems(instance.data, [
 				{ field: 'dlc', match: 'in', values: filterDlcs },
 				{ field: 'category', match: 'in', values: filterCategories },
 				{
@@ -64,7 +51,7 @@ export default function Cookers() {
 			filterNoCategories,
 			filterNoTypes,
 			filterTypes,
-			searchResult,
+			instance.data,
 		]
 	);
 
@@ -78,17 +65,6 @@ export default function Cookers() {
 			setPinyinSortState: store.persistence.pinyinSortState.set,
 		}),
 		[pinyinSortState]
-	);
-
-	const searchConfig = useMemo<ISearchConfig>(
-		() => ({
-			label: '选择或输入厨具名称',
-			searchItems: availableNames,
-			searchValue,
-			setSearchValue: store.persistence.searchValue.set,
-			spriteTarget: 'cooker',
-		}),
-		[availableNames, searchValue]
 	);
 
 	const selectConfig = useMemo<TSelectConfig>(
@@ -141,7 +117,6 @@ export default function Cookers() {
 			isEmpty={checkLengthEmpty(sortedData)}
 			sideButton={
 				<SideButtonGroup>
-					<SideSearchIconButton searchConfig={searchConfig} />
 					<SidePinyinSortIconButton
 						pinyinSortConfig={pinyinSortConfig}
 					/>

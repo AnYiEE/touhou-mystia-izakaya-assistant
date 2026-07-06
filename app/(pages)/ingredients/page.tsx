@@ -2,12 +2,7 @@
 
 import { useCallback, useMemo } from 'react';
 
-import {
-	useFilteredData,
-	useSearchResult,
-	useSortedData,
-	useThrottle,
-} from '@/hooks';
+import { useFilteredData, useSortedData } from '@/hooks';
 
 import Content from './content';
 import ItemPage from '@/components/itemPage';
@@ -18,9 +13,6 @@ import SideFilterIconButton, {
 import SidePinyinSortIconButton, {
 	type IPinyinSortConfig,
 } from '@/components/sidePinyinSortIconButton';
-import SideSearchIconButton, {
-	type ISearchConfig,
-} from '@/components/sideSearchIconButton';
 
 import { ingredientsStore as store } from '@/stores';
 import { checkLengthEmpty, filterItems } from '@/utilities';
@@ -33,16 +25,11 @@ export default function Ingredients() {
 
 	const availableDlcs = store.availableDlcs.use();
 	const availableLevels = store.availableLevels.use();
-	const availableNames = store.availableNames.use();
 	const availablePlaces = store.availablePlaces.use();
 	const availableTags = store.availableTags.use();
 	const availableTypes = store.availableTypes.use();
 
 	const pinyinSortState = store.persistence.pinyinSortState.use();
-	const searchValue = store.persistence.searchValue.use();
-
-	const throttledSearchValue = useThrottle(searchValue);
-	const searchResult = useSearchResult(instance, throttledSearchValue);
 
 	const filterDlcs = store.persistence.filters.dlcs.use();
 	const filterLevels = store.persistence.filters.levels.use();
@@ -55,15 +42,15 @@ export default function Ingredients() {
 
 	const dataWithTrend = useMemo(
 		() =>
-			searchResult.map((data) => ({
+			instance.data.map((data) => ({
 				...data,
 				tags: instance.calculateTagsWithTrend(
 					data.tags,
 					currentPopularTrend,
 					isFamousShop
 				),
-			})) as unknown as typeof searchResult,
-		[currentPopularTrend, instance, isFamousShop, searchResult]
+			})) as unknown as typeof instance.data,
+		[currentPopularTrend, instance, isFamousShop]
 	);
 
 	const filterData = useCallback(
@@ -105,17 +92,6 @@ export default function Ingredients() {
 			setPinyinSortState: store.persistence.pinyinSortState.set,
 		}),
 		[pinyinSortState]
-	);
-
-	const searchConfig = useMemo<ISearchConfig>(
-		() => ({
-			label: '选择或输入食材名称',
-			searchItems: availableNames,
-			searchValue,
-			setSearchValue: store.persistence.searchValue.set,
-			spriteTarget: 'ingredient',
-		}),
-		[availableNames, searchValue]
 	);
 
 	const selectConfig = useMemo<TSelectConfig>(
@@ -191,7 +167,6 @@ export default function Ingredients() {
 			isEmpty={checkLengthEmpty(sortedData)}
 			sideButton={
 				<SideButtonGroup>
-					<SideSearchIconButton searchConfig={searchConfig} />
 					<SidePinyinSortIconButton
 						pinyinSortConfig={pinyinSortConfig}
 					/>

@@ -19,7 +19,7 @@ import { Cooker } from '@/utils';
 
 const instance = Cooker.getInstance();
 
-const storeVersion = { initial: 0 } as const;
+const storeVersion = { initial: 0, removeSearchValue: 1 } as const;
 
 const state = {
 	instance,
@@ -33,7 +33,6 @@ const state = {
 			noTypes: [] as string[],
 		},
 		pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
-		searchValue: '',
 	},
 	shared: { hiddenItems: { dlcs: toSet<TDlc>() } },
 };
@@ -44,8 +43,16 @@ export const cookersStore = store(state, {
 	middlewares: [
 		persistMiddleware<typeof state>({
 			name: 'page-cookers-storage',
-			version: storeVersion.initial,
+			version: storeVersion.removeSearchValue,
 
+			migrate(persistedState, version) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+				const oldState = persistedState as any;
+				if (version < storeVersion.removeSearchValue) {
+					delete oldState.persistence.searchValue;
+				}
+				return persistedState as typeof state;
+			},
 			partialize: (currentStore) =>
 				({
 					persistence: currentStore.persistence,

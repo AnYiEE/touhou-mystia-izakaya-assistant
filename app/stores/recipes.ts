@@ -26,6 +26,7 @@ const storeVersion = {
 	popular: 1, // eslint-disable-next-line sort-keys
 	cooker: 2,
 	filterPlaces: 3,
+	removeSearchValue: 4,
 } as const;
 
 const state = {
@@ -46,7 +47,6 @@ const state = {
 			positiveTags: [] as string[],
 		},
 		pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
-		searchValue: '',
 	},
 	shared: {
 		hiddenItems: { dlcs: toSet<TDlc>() },
@@ -62,7 +62,7 @@ export const recipesStore = store(state, {
 	middlewares: [
 		persistMiddleware<typeof state>({
 			name: 'page-recipes-storage',
-			version: storeVersion.filterPlaces,
+			version: storeVersion.removeSearchValue,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -86,6 +86,9 @@ export const recipesStore = store(state, {
 					} = oldState;
 					filters.places = [];
 					filters.noPlaces = [];
+				}
+				if (version < storeVersion.removeSearchValue) {
+					delete oldState.persistence.searchValue;
 				}
 				return persistedState as typeof state;
 			},

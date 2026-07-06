@@ -20,6 +20,10 @@ import {
 	type TIngredientName,
 	type TRecipeName,
 } from '@/data';
+import type {
+	IGlobalSearchTransientTarget,
+	TGlobalSearchPreferenceKey,
+} from '@/lib/globalSearch';
 import {
 	beveragesStore,
 	clothesStore,
@@ -283,7 +287,13 @@ const state = {
 		donationModal: { isOpen: false },
 		preferencesModal: {
 			isOpen: false,
-			openSource: null as null | 'sideButton',
+			openSource: null as null | 'sideButton' | 'spotlight',
+			targetKey: null as null | TGlobalSearchPreferenceKey,
+		},
+
+		globalSearch: {
+			isOpen: false,
+			transientTarget: null as null | IGlobalSearchTransientTarget,
 		},
 	},
 };
@@ -561,12 +571,25 @@ export const globalStore = store(state, {
 
 		setPreferencesModalIsOpen(
 			isOpen: boolean,
-			openSource: null | 'sideButton' = null
+			openSource: null | 'sideButton' | 'spotlight' = null,
+			targetKey: null | TGlobalSearchPreferenceKey = null
 		) {
 			currentStore.shared.preferencesModal.isOpen.set(isOpen);
 			currentStore.shared.preferencesModal.openSource.set(
 				isOpen ? openSource : null
 			);
+			currentStore.shared.preferencesModal.targetKey.set(
+				isOpen ? targetKey : null
+			);
+		},
+
+		setGlobalSearchIsOpen(isOpen: boolean) {
+			currentStore.shared.globalSearch.isOpen.set(isOpen);
+		},
+		setGlobalSearchTransientTarget(
+			target: null | IGlobalSearchTransientTarget
+		) {
+			currentStore.shared.globalSearch.transientTarget.set(target);
 		},
 
 		onTableRowsPerPageChange(rows: Selection) {
