@@ -1018,8 +1018,11 @@ export const customerRareStore = store(state, {
 					instance_customer.getValuesByProp(
 						'name',
 						false,
-						instance_customer.data.filter(
-							({ dlc }) => !hiddenDlcs.has(dlc)
+						instance_customer.data.filter((customer) =>
+							instance_customer.isVisibleWithHiddenDlcs(
+								customer,
+								hiddenDlcs
+							)
 						)
 					)
 				).map(toGetValueCollection);
@@ -1030,8 +1033,11 @@ export const customerRareStore = store(state, {
 					.getValuesByProp(
 						'places',
 						true,
-						instance_customer.data.filter(
-							({ dlc }) => !hiddenDlcs.has(dlc)
+						instance_customer.data.filter((customer) =>
+							instance_customer.isVisibleWithHiddenDlcs(
+								customer,
+								hiddenDlcs
+							)
 						)
 					)
 					.sort(pinyinSort);

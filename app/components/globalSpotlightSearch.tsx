@@ -1390,6 +1390,7 @@ export default function GlobalSpotlightSearch() {
 	);
 	const index = useMemo(() => {
 		const isVisibleDlc = ({ dlc }: { dlc: TDlc }) => !hiddenDlcs.has(dlc);
+		const customerRareInstance = CustomerRare.getInstance();
 		const ingredientInstance = Ingredient.getInstance();
 		const recipeInstance = Recipe.getInstance();
 		const ingredients = ingredientInstance.data
@@ -1440,8 +1441,12 @@ export default function GlobalSpotlightSearch() {
 				currencies: Currency.getInstance().data.filter(isVisibleDlc),
 				customerNormal:
 					CustomerNormal.getInstance().data.filter(isVisibleDlc),
-				customerRare:
-					CustomerRare.getInstance().data.filter(isVisibleDlc),
+				customerRare: customerRareInstance.data.filter((customer) =>
+					customerRareInstance.isVisibleWithHiddenDlcs(
+						customer,
+						hiddenDlcs
+					)
+				),
 				ingredients:
 					ingredients as unknown as typeof ingredientInstance.data,
 				ornaments: Ornament.getInstance().data.filter(isVisibleDlc),

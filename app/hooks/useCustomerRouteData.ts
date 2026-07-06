@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 
 import { useFilteredData, useSortedData } from '@/hooks';
 
+import { type TDlc } from '@/data';
 import { customerNormalStore, customerRareStore } from '@/stores';
 import { type CustomerNormal, type CustomerRare } from '@/utils';
 import { filterCustomerData } from '@/utils/customer/shared';
@@ -61,8 +62,27 @@ export function useCustomerRouteData(
 			instance_customer.data,
 		]
 	);
+	const isCustomerVisibleWithHiddenDlcs = useCallback(
+		(item: TCustomerRouteItem, hiddenDlcs: ReadonlySet<TDlc>) => {
+			if ('isVisibleWithHiddenDlcs' in instance_customer) {
+				return instance_customer.isVisibleWithHiddenDlcs(
+					{ dlc: item.dlc, name: item.name } as Parameters<
+						typeof instance_customer.isVisibleWithHiddenDlcs
+					>[0],
+					hiddenDlcs
+				);
+			}
 
-	const customerFilteredData = useFilteredData(instance_customer, filterData);
+			return !hiddenDlcs.has(item.dlc);
+		},
+		[instance_customer]
+	);
+
+	const customerFilteredData = useFilteredData(
+		instance_customer,
+		filterData,
+		isCustomerVisibleWithHiddenDlcs
+	);
 
 	const customerSortedData = useSortedData(
 		instance_customer,

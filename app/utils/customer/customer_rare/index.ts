@@ -8,6 +8,7 @@ import {
 	CUSTOMER_RARE_LIST,
 	type TCustomerRareName,
 	type TCustomerRares,
+	type TDlc,
 	type TPlace,
 } from '@/data';
 import { Clothes } from '@/utils';
@@ -16,6 +17,10 @@ import { siteConfig } from '@/configs';
 import { checkLengthEmpty } from '@/utilities';
 
 const { cdnUrl } = siteConfig;
+
+const BASE_GAME_VISIBLE_RARE_CUSTOMERS = new Set<TCustomerRareName>([
+	'雾雨魔理沙',
+]);
 
 export class CustomerRare extends Customer<TCustomerRares> {
 	private static _instance: CustomerRare | undefined;
@@ -48,6 +53,16 @@ export class CustomerRare extends Customer<TCustomerRares> {
 
 	public evaluateMeal(args: Parameters<typeof evaluateMeal>[number]) {
 		return evaluateMeal(args);
+	}
+
+	public isVisibleWithHiddenDlcs(
+		customer: Pick<TCustomerRares[number], 'dlc' | 'name'>,
+		hiddenDlcs: ReadonlySet<TDlc>
+	) {
+		return (
+			!hiddenDlcs.has(customer.dlc) ||
+			BASE_GAME_VISIBLE_RARE_CUSTOMERS.has(customer.name)
+		);
 	}
 
 	/**
