@@ -65,6 +65,7 @@ import {
 	type IGlobalSearchIndexItem,
 	type IGlobalSearchMatchedField,
 	type IGlobalSearchResult,
+	type TGlobalSearchFieldType,
 	buildGlobalSearchIndex,
 	buildGlobalSearchPreferenceIndex,
 	checkGlobalSearchSectionMatches,
@@ -79,7 +80,12 @@ import {
 	searchGlobalIndex,
 } from '@/lib/globalSearch';
 import { createItemShareData, createItemShareUrl } from '@/lib/itemShare';
-import { accountStore, globalStore as store } from '@/stores';
+import {
+	accountStore,
+	customerNormalStore,
+	customerRareStore,
+	globalStore,
+} from '@/stores';
 import {
 	checkIsApplePlatform,
 	createBoundedRuntimeCache,
@@ -111,6 +117,15 @@ interface IRecentState {
 const EMPTY_RECENT_STATE: IRecentState = { items: [], queries: [] };
 const MAX_RECENT_ITEMS = 8;
 const MAX_RECENT_QUERIES = 8;
+const CUSTOMER_INFO_QUERY_PARAM = 'info';
+const CUSTOMER_INFO_FIELD_TYPES = new Set<TGlobalSearchFieldType>([
+	'description',
+	'chat',
+	'evaluation',
+	'positive-spell-card',
+	'negative-spell-card',
+	'reward',
+]);
 const GLOBAL_SEARCH_TRACK_ACTION = 'Global Search Button';
 
 const SPOTLIGHT_MODAL_MOTION_PROPS = {
@@ -269,7 +284,7 @@ const SpotlightPreviewMotion = memo<IMotionBlockProps>(
 
 const SpotlightScrollMask = memo<PropsWithChildren<{ className?: string }>>(
 	function SpotlightScrollMask({ children, className }) {
-		const isHighAppearance = store.persistence.highAppearance.use();
+		const isHighAppearance = globalStore.persistence.highAppearance.use();
 		const scrollRef = useRef<HTMLDivElement>(null);
 		const contentRef = useRef<HTMLDivElement>(null);
 		const [scrollState, setScrollState] = useState(EMPTY_SCROLL_STATE);
@@ -568,6 +583,55 @@ function getItemShareUrl(item: IGlobalSearchIndexItem) {
 	const path = getGlobalSearchSectionPath(item.section);
 
 	return createItemShareUrl({ name: item.name, pathname: path });
+}
+
+function checkShouldOpenCustomerInfo(
+	item: IGlobalSearchIndexItem,
+	match: IGlobalSearchMatchedField | undefined
+) {
+	return (
+		(item.section === 'customer-normal' ||
+			item.section === 'customer-rare') &&
+		match !== undefined &&
+		CUSTOMER_INFO_FIELD_TYPES.has(match.field.fieldType)
+	);
+}
+
+function getItemNavigationHref(
+	item: IGlobalSearchIndexItem,
+	match?: IGlobalSearchMatchedField
+) {
+	return checkShouldOpenCustomerInfo(item, match)
+		? `${item.href}?${CUSTOMER_INFO_QUERY_PARAM}`
+		: item.href;
+}
+
+function getItemNavigationUrl(
+	item: IGlobalSearchIndexItem,
+	match?: IGlobalSearchMatchedField
+) {
+	if (
+		item.section === 'customer-normal' ||
+		item.section === 'customer-rare'
+	) {
+		const href = getItemNavigationHref(item, match);
+		return typeof location === 'undefined'
+			? href
+			: `${location.origin}${href}`;
+	}
+
+	return getItemShareUrl(item);
+}
+
+function syncCustomerSelectionBeforeNavigation(item: IGlobalSearchIndexItem) {
+	if (item.section === 'customer-normal') {
+		customerNormalStore.onCustomerSelectedChange(item.name as never);
+		return;
+	}
+
+	if (item.section === 'customer-rare') {
+		customerRareStore.onCustomerSelectedChange(item.name as never);
+	}
 }
 
 function canShare(shareObject: ShareData) {
@@ -1373,14 +1437,14 @@ export default function GlobalSpotlightSearch() {
 	const [recentState, setRecentState] =
 		useState<IRecentState>(EMPTY_RECENT_STATE);
 
-	const isOpen = store.shared.globalSearch.isOpen.use();
-	const isHighAppearance = store.persistence.highAppearance.use();
-	const hiddenDlcs = store.hiddenDlcs.use();
-	const hiddenBeverages = store.hiddenBeverages.use();
-	const hiddenIngredients = store.hiddenIngredients.use();
-	const hiddenRecipes = store.hiddenRecipes.use();
-	const isFamousShop = store.persistence.famousShop.use();
-	const popularTrend = store.persistence.popularTrend.use();
+	const isOpen = globalStore.shared.globalSearch.isOpen.use();
+	const isHighAppearance = globalStore.persistence.highAppearance.use();
+	const hiddenDlcs = globalStore.hiddenDlcs.use();
+	const hiddenBeverages = globalStore.hiddenBeverages.use();
+	const hiddenIngredients = globalStore.hiddenIngredients.use();
+	const hiddenRecipes = globalStore.hiddenRecipes.use();
+	const isFamousShop = globalStore.persistence.famousShop.use();
+	const popularTrend = globalStore.persistence.popularTrend.use();
 	const currentSection = getGlobalSearchSectionFromPathname(pathname);
 
 	const visiblePlaceValues = useMemo(
@@ -1661,7 +1725,7 @@ export default function GlobalSpotlightSearch() {
 	}, []);
 
 	const close = useCallback(() => {
-		store.setGlobalSearchIsOpen(false);
+		globalStore.setGlobalSearchIsOpen(false);
 		setIsInputFocused(false);
 		clearCloseResetTimer();
 		closeResetTimerRef.current = setTimeout(
@@ -1682,7 +1746,7 @@ export default function GlobalSpotlightSearch() {
 		trackGlobalSearchAction('Open From Shortcut');
 		clearCloseResetTimer();
 		resetSearchState();
-		store.setGlobalSearchIsOpen(true);
+		globalStore.setGlobalSearchIsOpen(true);
 	}, [
 		clearCloseResetTimer,
 		isOpen,
@@ -1737,7 +1801,7 @@ export default function GlobalSpotlightSearch() {
 	}, [recentState, trackGlobalSearchAction, updateRecentState, vibrate]);
 
 	const handleOpenItem = useCallback(
-		(item: IGlobalSearchIndexItem) => {
+		(item: IGlobalSearchIndexItem, match?: IGlobalSearchMatchedField) => {
 			vibrate();
 			trackGlobalSearchAction(
 				item.section === 'preferences'
@@ -1754,7 +1818,7 @@ export default function GlobalSpotlightSearch() {
 					return;
 				}
 
-				store.setPreferencesModalIsOpen(
+				globalStore.setPreferencesModalIsOpen(
 					true,
 					'spotlight',
 					item.targetName as never
@@ -1766,11 +1830,17 @@ export default function GlobalSpotlightSearch() {
 				item.section === 'customer-normal' ||
 				item.section === 'customer-rare'
 			) {
-				router.push(item.href);
+				syncCustomerSelectionBeforeNavigation(item);
+				if (item.section === 'customer-rare') {
+					globalStore.setGlobalSearchCustomerRareTutorialAllowedPathname(
+						item.href
+					);
+				}
+				router.push(getItemNavigationHref(item, match));
 				return;
 			}
 
-			store.setGlobalSearchTransientTarget({
+			globalStore.setGlobalSearchTransientTarget({
 				name: item.name,
 				section: item.section,
 			});
@@ -1809,14 +1879,14 @@ export default function GlobalSpotlightSearch() {
 	);
 
 	const handleOpenNewWindow = useCallback(
-		(item: IGlobalSearchIndexItem) => {
+		(item: IGlobalSearchIndexItem, match?: IGlobalSearchMatchedField) => {
 			vibrate();
 			trackGlobalSearchAction(
 				'Open Item In New Tab',
 				`${item.section}:${item.name}`
 			);
 			globalThis.open(
-				getItemShareUrl(item),
+				getItemNavigationUrl(item, match),
 				'_blank',
 				'noopener,noreferrer'
 			);
@@ -1956,7 +2026,10 @@ export default function GlobalSpotlightSearch() {
 
 				event.preventDefault();
 				if (selectedResult !== null) {
-					handleOpenItem(selectedResult.item);
+					handleOpenItem(
+						selectedResult.item,
+						getResultPrimaryMatch(selectedResult)
+					);
 				}
 				return;
 			}
@@ -2219,7 +2292,7 @@ export default function GlobalSpotlightSearch() {
 					setSelectedIndex(index);
 				}}
 				onDoubleClick={() => {
-					handleOpenItem(item);
+					handleOpenItem(item, match);
 				}}
 				className={cn(
 					'flex h-auto min-h-14 w-full min-w-0 justify-start gap-3 overflow-hidden rounded-small border px-3 py-2.5 text-left transition motion-reduce:transition-none',
@@ -2605,7 +2678,7 @@ export default function GlobalSpotlightSearch() {
 						size="sm"
 						className="h-9 min-w-0 flex-1 px-2 sm:flex-none sm:px-3"
 						onPress={() => {
-							handleOpenItem(item);
+							handleOpenItem(item, selectedMatch);
 						}}
 					>
 						{item.section === 'preferences'
@@ -2661,7 +2734,7 @@ export default function GlobalSpotlightSearch() {
 									/>
 								}
 								onPress={() => {
-									handleOpenNewWindow(item);
+									handleOpenNewWindow(item, selectedMatch);
 								}}
 							>
 								新标签页打开
@@ -2699,19 +2772,19 @@ export default function GlobalSpotlightSearch() {
 							: 'bg-background/80 dark:bg-content1/45'
 					)}
 				>
-					<div className="flex items-center gap-2">
+					<div className="flex items-center">
 						<motion.div
 							{...(isReducedMotion
 								? {
 										style: {
 											opacity: isQueryEmpty ? 0 : 1,
-											width: isQueryEmpty ? 0 : '3rem',
+											width: isQueryEmpty ? 0 : '3.5rem',
 										},
 									}
 								: {
 										animate: {
 											opacity: isQueryEmpty ? 0 : 1,
-											width: isQueryEmpty ? 0 : '3rem',
+											width: isQueryEmpty ? 0 : '3.5rem',
 										},
 										initial: false,
 										transition:
@@ -2942,9 +3015,9 @@ export default function GlobalSpotlightSearch() {
 									})}
 							className="min-h-0 flex-1"
 						>
-							<SpotlightScrollMask className="max-h-[calc(var(--safe-h-dvh)-9rem)] p-4 sm:p-5 md:h-[30rem] md:max-h-none">
+							<div className="p-4 sm:p-5 md:h-[30rem] md:overflow-y-auto md:overflow-x-hidden md:scrollbar-hide">
 								{renderEmptyQuery()}
-							</SpotlightScrollMask>
+							</div>
 						</motion.div>
 					) : isPrefixSuggestionOnly ? (
 						<motion.div

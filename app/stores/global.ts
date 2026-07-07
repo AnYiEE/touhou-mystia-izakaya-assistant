@@ -292,6 +292,7 @@ const state = {
 		},
 
 		globalSearch: {
+			customerRareTutorialAllowedPathname: null as null | string,
 			isOpen: false,
 			transientTarget: null as null | IGlobalSearchTransientTarget,
 		},
@@ -583,6 +584,13 @@ export const globalStore = store(state, {
 			);
 		},
 
+		setGlobalSearchCustomerRareTutorialAllowedPathname(
+			pathname: null | string
+		) {
+			currentStore.shared.globalSearch.customerRareTutorialAllowedPathname.set(
+				pathname
+			);
+		},
 		setGlobalSearchIsOpen(isOpen: boolean) {
 			currentStore.shared.globalSearch.isOpen.set(isOpen);
 		},

@@ -27,6 +27,10 @@ export default function CustomerRareTutorial() {
 	const accountLastSyncedAt = accountStore.shared.sync.lastSyncedAt.use();
 	const accountUser = accountStore.shared.user.use();
 	const passwordMustChange = accountStore.shared.passwordMustChange.use();
+
+	const globalSearchCustomerRareTutorialAllowedPathname =
+		globalStore.shared.globalSearch.customerRareTutorialAllowedPathname.use();
+
 	const { pathname: currentPathname } = usePathname();
 	const isTargetPage = currentPathname.startsWith(pathname);
 
@@ -75,6 +79,7 @@ export default function CustomerRareTutorial() {
 	>(undefined);
 
 	const shouldSkipCompletionOnDestroy = useRef(false);
+	const allowedGlobalSearchPathname = useRef<null | string>(null);
 	const driverRef = useRef(
 		driver({
 			allowClose: false,
@@ -431,6 +436,22 @@ export default function CustomerRareTutorial() {
 		}
 
 		if (
+			globalSearchCustomerRareTutorialAllowedPathname === currentPathname
+		) {
+			allowedGlobalSearchPathname.current = currentPathname;
+			globalStore.setGlobalSearchCustomerRareTutorialAllowedPathname(
+				null
+			);
+		}
+
+		const isAllowedGlobalSearchPathname =
+			currentPathname !== pathname &&
+			allowedGlobalSearchPathname.current === currentPathname;
+		const isAllowedSharedInfoPathname = new URLSearchParams(
+			location.search
+		).has(PARAM_INFO);
+
+		if (
 			accountBootstrapStatus !== 'unknown' &&
 			isTargetPage &&
 			!isCompleted &&
@@ -445,11 +466,15 @@ export default function CustomerRareTutorial() {
 						'Start'
 					);
 				}, 1000);
-			} else if (!new URLSearchParams(location.search).has(PARAM_INFO)) {
+			} else if (
+				!isAllowedGlobalSearchPathname &&
+				!isAllowedSharedInfoPathname
+			) {
 				location.href = pathname;
 			}
 		}
 		if (!isTargetPage) {
+			allowedGlobalSearchPathname.current = null;
 			driverRef.current.destroy();
 		}
 
@@ -459,6 +484,7 @@ export default function CustomerRareTutorial() {
 	}, [
 		accountBootstrapStatus,
 		currentPathname,
+		globalSearchCustomerRareTutorialAllowedPathname,
 		hasBlockingAccountModal,
 		isAccountSyncReady,
 		isCompleted,
