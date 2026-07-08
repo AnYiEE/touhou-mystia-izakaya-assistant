@@ -51,6 +51,21 @@ const GLOBAL_SEARCH_BASE_PREFERENCE_ITEMS = [
 		label: '隐藏料理/酒水/食材',
 	},
 	{
+		action: 'open-customer-rare-plan-drawer',
+		description: '打开营业预设抽屉，集中查看可能出现的稀客和套餐',
+		key: 'customer-rare-plan-drawer',
+		keywords: [
+			'稀客开店预设',
+			'开店预设',
+			'稀客套餐',
+			'营业预设',
+			'预设管理',
+			'抽屉',
+		],
+		label: '营业预设',
+		sectionLabel: '工具',
+	},
+	{
 		description: '显示或隐藏“猜您想要”套餐推荐卡片',
 		key: 'customer-suggest-meals',
 		keywords: ['套餐推荐', '推荐数量', '评级上限', '加料上限'],
@@ -199,7 +214,7 @@ export function buildGlobalSearchPreferenceIndex(
 			id: `preferences:${item.key}`,
 			name: item.label,
 			section: 'preferences',
-			sectionLabel: '设置',
+			sectionLabel: 'sectionLabel' in item ? item.sectionLabel : '设置',
 			targetName: item.key,
 		};
 	});

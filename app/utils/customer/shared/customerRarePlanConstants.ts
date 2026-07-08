@@ -1,0 +1,2 @@
+export const CUSTOMER_RARE_PLAN_DEFAULT_NAME = '默认预设';
+export const CUSTOMER_RARE_PLAN_MAX_NAME_LENGTH = 32;

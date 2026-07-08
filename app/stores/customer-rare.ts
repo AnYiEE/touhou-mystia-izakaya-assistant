@@ -24,6 +24,7 @@ import {
 	type TDlc,
 	type TIngredientName,
 	type TIngredientTag,
+	type TPlace,
 	type TRatingKey,
 	type TRecipeName,
 	type TRecipeTag,
@@ -38,8 +39,16 @@ import {
 	keepLastTag,
 	reverseVisibilityState,
 } from '@/stores/utils';
-import type { IMealRecipe, IPopularTrend } from '@/types';
+import type {
+	ICustomerRareMeal,
+	ICustomerRarePlansState,
+	IMealRecipe,
+	IPopularTrend,
+	TCustomerRarePlanMealSource,
+	TCustomerRarePlanMode,
+} from '@/types';
 import {
+	checkArrayEqualOf,
 	checkLengthEmpty,
 	getSearchResult,
 	numberSort,
@@ -68,10 +77,18 @@ import {
 	buildBeverageSuitabilityRows,
 	buildRecipeSuitabilityRows,
 	buildSelectionTip,
+	copyCustomerRarePlan,
+	createCustomerRarePlan,
+	dedupeCustomerRarePlanValues,
+	ensureActiveCustomerRarePlan,
 	evaluateRareSavedMeal,
+	getActiveCustomerRarePlanFromState,
 	getBondRewards,
 	getIngredientScoreChanges,
 	getVisibleSavedMeals,
+	normalizeCustomerRarePlanName,
+	resolveCustomerRarePlan,
+	updateActiveCustomerRarePlan,
 } from '@/utils/customer/shared';
 import type { TBeverage, TRecipe } from '@/utils/types';
 
@@ -115,8 +132,30 @@ const storeVersion = {
 	mealData: 18,
 	tableShare: 19, // eslint-disable-next-line sort-keys
 	deleteMealIndex: 20,
+	plans: 22,
 	removeCustomerSearchValue: 21,
 } as const;
+
+function trackCustomerRarePlanFilterChange(
+	name: 'excludes' | 'includes' | 'manualCustomers' | 'places',
+	count: number
+) {
+	trackEvent(
+		trackEvent.category.click,
+		'Customer Rare Plan Filter Button',
+		`${name}:${count}`
+	);
+}
+
+function trackCustomerRarePlanMealSourceChange(
+	source: TCustomerRarePlanMealSource
+) {
+	trackEvent(
+		trackEvent.category.click,
+		'Customer Rare Plan Meal Source Button',
+		source
+	);
+}
 
 const state = {
 	instances: {
@@ -171,17 +210,8 @@ const state = {
 			},
 		},
 
-		meals: {} as Partial<
-			Record<
-				TCustomerRareName,
-				Array<{
-					order: ICustomerOrder;
-					hasMystiaCooker: boolean;
-					beverage: TBeverageName;
-					recipe: IMealRecipe;
-				}>
-			>
-		>,
+		meals: {} as Partial<Record<TCustomerRareName, ICustomerRareMeal[]>>,
+		plans: { activeId: null, items: [] } as ICustomerRarePlansState,
 	},
 	shared: {
 		beverage: {
@@ -217,6 +247,12 @@ const state = {
 		},
 		hiddenItems: { dlcs: toSet<TDlc>() },
 		ingredient: { filterVisibility: false },
+		planDrawer: {
+			expandedCustomerNames:
+				toSet<TCustomerRareName>() as Set<TCustomerRareName>,
+			isControlsCollapsed: false,
+			isOpen: false,
+		},
 		recipe: {
 			data: null as IMealRecipe | null,
 
@@ -257,11 +293,12 @@ export const customerRareStore = store(state, {
 				'persistence.customer.orderLinkedFilter',
 				'persistence.customer.showTagDescription',
 				'persistence.meals',
+				'persistence.plans',
 			],
 		}),
 		persistMiddleware<typeof state>({
 			name: storeName,
-			version: storeVersion.removeCustomerSearchValue,
+			version: storeVersion.plans,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -512,6 +549,9 @@ export const customerRareStore = store(state, {
 				}
 				if (version < storeVersion.removeCustomerSearchValue) {
 					delete oldState.persistence.customer.searchValue;
+				}
+				if (version < storeVersion.plans) {
+					oldState.persistence.plans = { activeId: null, items: [] };
 				}
 				return persistedState as typeof state;
 			},
@@ -939,6 +979,63 @@ export const customerRareStore = store(state, {
 			}));
 		});
 
+		const activeCustomerRarePlan = computed((getOrUse) => {
+			const plans =
+				getOrUse === 'get'
+					? currentStore.persistence.plans.get()
+					: currentStore.persistence.plans.use();
+
+			return getActiveCustomerRarePlanFromState(plans);
+		});
+
+		const resolvedCustomerRarePlan = computed((getOrUse) => {
+			const shouldGet = getOrUse === 'get';
+			const plans = shouldGet
+				? currentStore.persistence.plans.get()
+				: currentStore.persistence.plans.use();
+			const activePlan = getActiveCustomerRarePlanFromState(plans);
+
+			return resolveCustomerRarePlan({
+				hiddenBeverages: shouldGet
+					? currentStore.shared.beverage.table.hiddenBeverages.get()
+					: currentStore.shared.beverage.table.hiddenBeverages.use(),
+				hiddenDlcs: shouldGet
+					? currentStore.shared.hiddenItems.dlcs.get()
+					: currentStore.shared.hiddenItems.dlcs.use(),
+				hiddenIngredients: shouldGet
+					? currentStore.shared.recipe.table.hiddenIngredients.get()
+					: currentStore.shared.recipe.table.hiddenIngredients.use(),
+				hiddenRecipes: shouldGet
+					? currentStore.shared.recipe.table.hiddenRecipes.get()
+					: currentStore.shared.recipe.table.hiddenRecipes.use(),
+				isFamousShop: shouldGet
+					? currentStore.shared.customer.famousShop.get()
+					: currentStore.shared.customer.famousShop.use(),
+				meals: shouldGet
+					? currentStore.persistence.meals.get()
+					: currentStore.persistence.meals.use(),
+				plan: activePlan,
+				popularTrend: shouldGet
+					? currentStore.shared.customer.popularTrend.get()
+					: currentStore.shared.customer.popularTrend.use(),
+			});
+		});
+
+		const customerRarePlanSummary = computed((getOrUse) => {
+			const groups =
+				getOrUse === 'get'
+					? resolvedCustomerRarePlan.get()
+					: resolvedCustomerRarePlan.use();
+
+			return {
+				customerCount: groups.length,
+				mealCount: groups.reduce(
+					(total, group) => total + group.visibleMealCount,
+					0
+				),
+			};
+		});
+
 		const unsatisfiedSelectionTip = computed((getOrUse) => {
 			const shouldGet = getOrUse === 'get';
 			const currentBeverageName = shouldGet
@@ -1170,15 +1267,305 @@ export const customerRareStore = store(state, {
 			recipeTablePagedRows: () => recipeTableRows.use().pagedRows,
 			recipeTableSortedRows: () => recipeTableRows.use().sortedRows,
 
+			activeCustomerRarePlan: () => activeCustomerRarePlan.use(),
 			bondRewards: () => bondRewards.use(),
 			currentMealPrice: () => currentMealPrice.use(),
+			customerRarePlanSummary: () => customerRarePlanSummary.use(),
 			ingredientScoreChanges: () => ingredientScoreChanges.use(),
+			resolvedCustomerRarePlan: () => resolvedCustomerRarePlan.use(),
 			savedCustomerMealsWithEvaluation: () =>
 				savedCustomerMealsWithEvaluation.use(),
 			unsatisfiedSelectionTip: () => unsatisfiedSelectionTip.use(),
 		};
 	})
 	.actions((currentStore) => ({
+		closeCustomerRarePlanDrawer() {
+			if (!currentStore.shared.planDrawer.isOpen.get()) {
+				return;
+			}
+			currentStore.shared.planDrawer.isOpen.set(false);
+			trackEvent(
+				trackEvent.category.click,
+				'Customer Rare Plan Drawer Button',
+				'Close'
+			);
+		},
+		copyCustomerRarePlan(planId: string) {
+			const sourcePlan = currentStore.persistence.plans
+				.get()
+				.items.find(({ id }) => id === planId);
+			if (sourcePlan === undefined) {
+				return;
+			}
+			currentStore.persistence.plans.set((prev) => {
+				const copiedPlan = copyCustomerRarePlan(sourcePlan);
+				prev.items.push(copiedPlan);
+				prev.activeId = copiedPlan.id;
+			});
+			trackEvent(
+				trackEvent.category.click,
+				'Customer Rare Plan Button',
+				'Copy'
+			);
+		},
+		createCustomerRarePlan() {
+			let createdPlanId: string | null = null;
+			currentStore.persistence.plans.set((prev) => {
+				const plan = createCustomerRarePlan();
+				prev.items.push(plan);
+				prev.activeId = plan.id;
+				createdPlanId = plan.id;
+			});
+			trackEvent(
+				trackEvent.category.click,
+				'Customer Rare Plan Button',
+				'Create'
+			);
+			return createdPlanId;
+		},
+		deleteCustomerRarePlan(planId: string) {
+			if (
+				!currentStore.persistence.plans
+					.get()
+					.items.some(({ id }) => id === planId)
+			) {
+				return;
+			}
+			currentStore.persistence.plans.set((prev) => {
+				const nextItems = prev.items.filter(({ id }) => id !== planId);
+				prev.items = nextItems;
+				if (prev.activeId === planId) {
+					prev.activeId = nextItems[0]?.id ?? null;
+				}
+				ensureActiveCustomerRarePlan(prev);
+			});
+			trackEvent(
+				trackEvent.category.click,
+				'Customer Rare Plan Button',
+				'Delete'
+			);
+		},
+		ensureCustomerRarePlan() {
+			const plans = currentStore.persistence.plans.get();
+			const activePlan = getActiveCustomerRarePlanFromState(plans);
+			if (activePlan !== null) {
+				return activePlan.id;
+			}
+			let activePlanId: string | null = null;
+			currentStore.persistence.plans.set((prev) => {
+				activePlanId = ensureActiveCustomerRarePlan(prev);
+			});
+			return activePlanId;
+		},
+		openCustomerRarePlanCustomer(
+			customerName: TCustomerRareName,
+			closeDrawer: boolean,
+			navigationLabel: 'Create Meal' | 'Open Customer' = closeDrawer
+				? 'Create Meal'
+				: 'Open Customer'
+		) {
+			currentStore.shared.customer.name.set(customerName);
+			currentStore.shared.tab.set('customer');
+			currentStore.shared.customer.filterVisibility.set(true);
+			if (closeDrawer) {
+				currentStore.shared.planDrawer.isOpen.set(false);
+			}
+			trackEvent(
+				trackEvent.category.click,
+				'Customer Rare Plan Navigation Button',
+				`${navigationLabel}:${customerName}`
+			);
+		},
+		openCustomerRarePlanDrawer() {
+			const wasOpen = currentStore.shared.planDrawer.isOpen.get();
+			if (
+				getActiveCustomerRarePlanFromState(
+					currentStore.persistence.plans.get()
+				) === null
+			) {
+				currentStore.persistence.plans.set((prev) => {
+					ensureActiveCustomerRarePlan(prev);
+				});
+			}
+			if (wasOpen) {
+				return;
+			}
+			currentStore.shared.planDrawer.isOpen.set(true);
+			trackEvent(
+				trackEvent.category.click,
+				'Customer Rare Plan Drawer Button',
+				'Open'
+			);
+		},
+		renameCustomerRarePlan(planId: string, name: string) {
+			const nextName = normalizeCustomerRarePlanName(name);
+			const currentPlan = currentStore.persistence.plans
+				.get()
+				.items.find(({ id }) => id === planId);
+			if (currentPlan === undefined || currentPlan.name === nextName) {
+				return;
+			}
+			currentStore.persistence.plans.set((prev) => {
+				const plan = prev.items.find(({ id }) => id === planId);
+				if (plan === undefined) {
+					return;
+				}
+
+				plan.name = nextName;
+				plan.updatedAt = Date.now();
+			});
+			trackEvent(
+				trackEvent.category.click,
+				'Customer Rare Plan Button',
+				'Rename'
+			);
+		},
+		setActiveCustomerRarePlan(planId: string) {
+			const plans = currentStore.persistence.plans.get();
+			if (
+				plans.activeId === planId ||
+				!plans.items.some(({ id }) => id === planId)
+			) {
+				return;
+			}
+			currentStore.persistence.plans.set((prev) => {
+				prev.activeId = planId;
+			});
+			trackEvent(
+				trackEvent.category.click,
+				'Customer Rare Plan Button',
+				`Switch:${planId}`
+			);
+		},
+		setCustomerRarePlanExcludes(values: ReadonlyArray<TCustomerRareName>) {
+			const nextValues = dedupeCustomerRarePlanValues(values);
+			const activePlan = getActiveCustomerRarePlanFromState(
+				currentStore.persistence.plans.get()
+			);
+			if (
+				activePlan !== null &&
+				checkArrayEqualOf(activePlan.excludes, nextValues)
+			) {
+				return;
+			}
+			currentStore.persistence.plans.set((prev) => {
+				ensureActiveCustomerRarePlan(prev);
+				updateActiveCustomerRarePlan(prev, (plan) => {
+					plan.excludes = nextValues;
+					return true;
+				});
+			});
+			trackCustomerRarePlanFilterChange('excludes', nextValues.length);
+		},
+		setCustomerRarePlanExpandedCustomers(
+			customerNames: ReadonlyArray<TCustomerRareName>
+		) {
+			currentStore.shared.planDrawer.expandedCustomerNames.set(
+				toSet(customerNames)
+			);
+		},
+		setCustomerRarePlanIncludes(values: ReadonlyArray<TCustomerRareName>) {
+			const nextValues = dedupeCustomerRarePlanValues(values);
+			const activePlan = getActiveCustomerRarePlanFromState(
+				currentStore.persistence.plans.get()
+			);
+			if (
+				activePlan !== null &&
+				checkArrayEqualOf(activePlan.includes, nextValues)
+			) {
+				return;
+			}
+			currentStore.persistence.plans.set((prev) => {
+				ensureActiveCustomerRarePlan(prev);
+				updateActiveCustomerRarePlan(prev, (plan) => {
+					plan.includes = nextValues;
+					return true;
+				});
+			});
+			trackCustomerRarePlanFilterChange('includes', nextValues.length);
+		},
+		setCustomerRarePlanManualCustomers(
+			values: ReadonlyArray<TCustomerRareName>
+		) {
+			const nextValues = dedupeCustomerRarePlanValues(values);
+			const activePlan = getActiveCustomerRarePlanFromState(
+				currentStore.persistence.plans.get()
+			);
+			if (
+				activePlan !== null &&
+				checkArrayEqualOf(activePlan.manualCustomers, nextValues)
+			) {
+				return;
+			}
+			currentStore.persistence.plans.set((prev) => {
+				ensureActiveCustomerRarePlan(prev);
+				updateActiveCustomerRarePlan(prev, (plan) => {
+					plan.manualCustomers = nextValues;
+					return true;
+				});
+			});
+			trackCustomerRarePlanFilterChange(
+				'manualCustomers',
+				nextValues.length
+			);
+		},
+		setCustomerRarePlanMealSource(source: TCustomerRarePlanMealSource) {
+			const activePlan = getActiveCustomerRarePlanFromState(
+				currentStore.persistence.plans.get()
+			);
+			if (activePlan?.mealSource === source) {
+				return;
+			}
+			currentStore.persistence.plans.set((prev) => {
+				ensureActiveCustomerRarePlan(prev);
+				updateActiveCustomerRarePlan(prev, (plan) => {
+					plan.mealSource = source;
+					return true;
+				});
+			});
+			trackCustomerRarePlanMealSourceChange(source);
+		},
+		setCustomerRarePlanMode(mode: TCustomerRarePlanMode) {
+			const activePlan = getActiveCustomerRarePlanFromState(
+				currentStore.persistence.plans.get()
+			);
+			if (activePlan?.mode === mode) {
+				return;
+			}
+			currentStore.persistence.plans.set((prev) => {
+				ensureActiveCustomerRarePlan(prev);
+				updateActiveCustomerRarePlan(prev, (plan) => {
+					plan.mode = mode;
+					return true;
+				});
+			});
+			trackEvent(
+				trackEvent.category.click,
+				'Customer Rare Plan Mode Button',
+				mode
+			);
+		},
+		setCustomerRarePlanPlaces(values: ReadonlyArray<TPlace>) {
+			const nextValues = dedupeCustomerRarePlanValues(values);
+			const activePlan = getActiveCustomerRarePlanFromState(
+				currentStore.persistence.plans.get()
+			);
+			if (
+				activePlan !== null &&
+				checkArrayEqualOf(activePlan.places, nextValues)
+			) {
+				return;
+			}
+			currentStore.persistence.plans.set((prev) => {
+				ensureActiveCustomerRarePlan(prev);
+				updateActiveCustomerRarePlan(prev, (plan) => {
+					plan.places = nextValues;
+					return true;
+				});
+			});
+			trackCustomerRarePlanFilterChange('places', nextValues.length);
+		},
+		// eslint-disable-next-line sort-keys -- Keep customer rare plan actions grouped before the existing page actions.
 		onCustomerFilterBeverageTag(
 			tag: TBeverageTag,
 			hasMystiaCooker: boolean
@@ -1496,6 +1883,36 @@ export const customerRareStore = store(state, {
 					currentStore.shared.tab.set('recipe');
 				}
 			}
+		},
+		toggleCustomerRarePlanControlsCollapsed() {
+			currentStore.shared.planDrawer.isControlsCollapsed.set(
+				(isCollapsed) => !isCollapsed
+			);
+			trackEvent(
+				trackEvent.category.click,
+				'Customer Rare Plan Drawer Button',
+				'Controls Toggle'
+			);
+		},
+		toggleCustomerRarePlanCustomerExpanded(
+			customerName: TCustomerRareName
+		) {
+			const wasExpanded =
+				currentStore.shared.planDrawer.expandedCustomerNames
+					.get()
+					.has(customerName);
+			currentStore.shared.planDrawer.expandedCustomerNames.set((prev) => {
+				if (prev.has(customerName)) {
+					prev.delete(customerName);
+				} else {
+					prev.add(customerName);
+				}
+			});
+			trackEvent(
+				trackEvent.category.click,
+				'Customer Rare Plan Group Button',
+				`${wasExpanded ? 'Collapse' : 'Expand'}:${customerName}`
+			);
 		},
 		toggleCustomerTabVisibilityState() {
 			currentStore.persistence.customer.tabVisibility.set(

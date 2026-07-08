@@ -20,6 +20,7 @@ import { useReducedMotion } from '@/design/ui/hooks';
 
 import BeverageTabContent from '../beverageTabContent';
 import CustomerCard from '../customerCard';
+import CustomerRarePlanDrawer from '../customerRarePlanDrawer';
 import CustomerTabContent from '../customerTabContent';
 import IngredientTabContent from '../ingredientTabContent';
 import RecipeTabContent from '../recipeTabContent';
@@ -304,6 +305,7 @@ export default function Content() {
 				}
 			)}
 		>
+			<CustomerRarePlanDrawer />
 			<div className="px-2 xl:w-full xl:px-0 xl:pt-2">
 				<Tabs
 					fullWidth

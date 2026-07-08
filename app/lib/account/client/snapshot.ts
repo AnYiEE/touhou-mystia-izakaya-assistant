@@ -16,6 +16,7 @@ import {
 import { accountStore } from '@/stores/account';
 import { customerNormalMealsSerializer } from '@/lib/account/sync/serializers/customerNormalMeals';
 import { customerRareMealsSerializer } from '@/lib/account/sync/serializers/customerRareMeals';
+import { customerRarePlansSerializer } from '@/lib/account/sync/serializers/customerRarePlans';
 import { customerRareSettingsSerializer } from '@/lib/account/sync/serializers/customerRareSettings';
 import { globalPreferencesSerializer } from '@/lib/account/sync/serializers/globalPreferences';
 import { themeSerializer } from '@/lib/account/sync/serializers/theme';
@@ -31,6 +32,7 @@ type TStoredAccountSyncMeta = Omit<
 const serializers = {
 	[SYNC_NAMESPACE_MAP.customerNormalMeals]: customerNormalMealsSerializer,
 	[SYNC_NAMESPACE_MAP.customerRareMeals]: customerRareMealsSerializer,
+	[SYNC_NAMESPACE_MAP.customerRarePlans]: customerRarePlansSerializer,
 	[SYNC_NAMESPACE_MAP.customerRareSettings]: customerRareSettingsSerializer,
 	[SYNC_NAMESPACE_MAP.globalPreferences]: globalPreferencesSerializer,
 	[SYNC_NAMESPACE_MAP.theme]: themeSerializer,

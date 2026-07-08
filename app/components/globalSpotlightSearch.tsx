@@ -1817,6 +1817,18 @@ export default function GlobalSpotlightSearch() {
 					accountStore.shared.accountModal.isOpen.set(true);
 					return;
 				}
+				if (item.action === 'open-customer-rare-plan-drawer') {
+					if (
+						pathname !==
+						GLOBAL_SEARCH_SECTION_PATH_MAP['customer-rare']
+					) {
+						router.push(
+							GLOBAL_SEARCH_SECTION_PATH_MAP['customer-rare']
+						);
+					}
+					customerRareStore.openCustomerRarePlanDrawer();
+					return;
+				}
 
 				globalStore.setPreferencesModalIsOpen(
 					true,
@@ -1832,6 +1844,7 @@ export default function GlobalSpotlightSearch() {
 			) {
 				syncCustomerSelectionBeforeNavigation(item);
 				if (item.section === 'customer-rare') {
+					customerRareStore.closeCustomerRarePlanDrawer();
 					globalStore.setGlobalSearchCustomerRareTutorialAllowedPathname(
 						item.href
 					);
@@ -2682,7 +2695,9 @@ export default function GlobalSpotlightSearch() {
 						}}
 					>
 						{item.section === 'preferences'
-							? '打开设置'
+							? item.action === 'open-customer-rare-plan-drawer'
+								? '打开营业预设'
+								: '打开设置'
 							: '查看详情'}
 					</Button>
 					{item.section !== 'preferences' && (

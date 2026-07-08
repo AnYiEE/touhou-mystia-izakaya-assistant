@@ -118,6 +118,11 @@ export function startAccountStoreSyncWatchers() {
 		})
 	);
 	watch(
+		customerRareStore.persistence.plans.onChange(() => {
+			markNamespaceDirty(SYNC_NAMESPACE_MAP.customerRarePlans);
+		})
+	);
+	watch(
 		customerRareStore.persistence.customer.orderLinkedFilter.onChange(
 			() => {
 				markNamespaceDirty(SYNC_NAMESPACE_MAP.customerRareSettings);

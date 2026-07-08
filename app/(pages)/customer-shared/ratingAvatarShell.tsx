@@ -13,6 +13,7 @@ interface IProps {
 	content: ReactNode;
 	placement?: IPopoverProps['placement'];
 	popoverOffset?: IPopoverProps['offset'];
+	popoverProps?: Partial<IPopoverProps>;
 	tooltipOffset?: ITooltipProps['offset'];
 	trigger: ReactElement;
 }
@@ -22,12 +23,14 @@ export default memo<IProps>(function RatingAvatarShell({
 	content,
 	placement,
 	popoverOffset,
+	popoverProps,
 	tooltipOffset,
 	trigger,
 }) {
-	const popoverProps = {
+	const resolvedPopoverProps = {
 		...(placement === undefined ? {} : { placement }),
 		...(popoverOffset === undefined ? {} : { offset: popoverOffset }),
+		...popoverProps,
 	};
 	const tooltipProps = {
 		...(placement === undefined ? {} : { placement }),
@@ -35,7 +38,7 @@ export default memo<IProps>(function RatingAvatarShell({
 	};
 
 	return (
-		<Popover showArrow color={color} {...popoverProps}>
+		<Popover showArrow color={color} {...resolvedPopoverProps}>
 			<Tooltip
 				showArrow
 				color={color}

@@ -179,6 +179,12 @@ const changelog = [
 			'新增：支持全局Spotlight搜索，快速查找数据、设置或应用筛选。',
 		],
 	},
+	{
+		version: 'v2.5',
+		changes: [
+			'新增：稀客页支持营业预设，可集中查看多个稀客的已保存套餐或自动推荐套餐。',
+		],
+	},
 ] as const satisfies Array<{
 	version: `v${string}`;
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;

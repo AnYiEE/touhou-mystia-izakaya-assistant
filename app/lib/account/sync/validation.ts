@@ -1,4 +1,4 @@
-import { DLC_LABEL_MAP } from '@/data';
+import { ALL_PLACES_SET, DLC_LABEL_MAP } from '@/data';
 import { THEME_MAP } from '@/design/hooks/use-theme/constants';
 import {
 	type ISyncStateChange,
@@ -28,6 +28,7 @@ import {
 	Ingredient,
 	Recipe,
 } from '@/utils';
+import { CUSTOMER_RARE_PLAN_MAX_NAME_LENGTH } from '@/utils/customer/shared/customerRarePlanConstants';
 
 const SYNC_NAMESPACE_SET = new Set<TSyncNamespace>(
 	Object.values(SYNC_NAMESPACE_MAP)
@@ -123,6 +124,57 @@ function validateMealSnapshot(
 				meals.every(validateMeal)
 		)
 	);
+}
+
+function validateCustomerRarePlan(data: unknown) {
+	return (
+		isPlainObject(data) &&
+		hasExactKeys(data, [
+			'createdAt',
+			'excludes',
+			'id',
+			'includes',
+			'manualCustomers',
+			'mealSource',
+			'mode',
+			'name',
+			'places',
+			'updatedAt',
+		]) &&
+		isIntegerInRange(data['createdAt'], 0, Number.MAX_SAFE_INTEGER - 1) &&
+		isAllowedStringArray(data['excludes'], customerRareNames) &&
+		typeof data['id'] === 'string' &&
+		data['id'].length > 0 &&
+		data['id'].length <= 128 &&
+		isAllowedStringArray(data['includes'], customerRareNames) &&
+		isAllowedStringArray(data['manualCustomers'], customerRareNames) &&
+		(data['mealSource'] === 'recommended' ||
+			data['mealSource'] === 'saved') &&
+		(data['mode'] === 'manual' || data['mode'] === 'region') &&
+		typeof data['name'] === 'string' &&
+		data['name'].trim().length > 0 &&
+		data['name'].length <= CUSTOMER_RARE_PLAN_MAX_NAME_LENGTH &&
+		isAllowedStringArray(data['places'], ALL_PLACES_SET) &&
+		isIntegerInRange(data['updatedAt'], 0, Number.MAX_SAFE_INTEGER - 1)
+	);
+}
+
+function validateCustomerRarePlans(data: unknown) {
+	if (
+		!isPlainObject(data) ||
+		!hasExactKeys(data, ['activeId', 'items']) ||
+		(data['activeId'] !== null && typeof data['activeId'] !== 'string') ||
+		!Array.isArray(data['items']) ||
+		!data['items'].every(validateCustomerRarePlan)
+	) {
+		return false;
+	}
+
+	const planIds = new Set(
+		data['items'].map((plan) => (plan as Record<string, unknown>)['id'])
+	);
+
+	return data['activeId'] === null || planIds.has(data['activeId']);
 }
 
 function validateGlobalPreferences(data: unknown) {
@@ -237,6 +289,9 @@ export function validateSyncStateData(change: ISyncStateChange) {
 			customerNames: customerRareNames,
 			validateMeal: validateCustomerRareMeal,
 		});
+	}
+	if (change.namespace === SYNC_NAMESPACE_MAP.customerRarePlans) {
+		return validateCustomerRarePlans(change.data);
 	}
 	if (change.namespace === SYNC_NAMESPACE_MAP.customerRareSettings) {
 		return (

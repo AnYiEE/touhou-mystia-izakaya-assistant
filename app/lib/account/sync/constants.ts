@@ -1,6 +1,7 @@
 export const SYNC_NAMESPACE_MAP = {
 	customerNormalMeals: 'customer_normal.meals',
 	customerRareMeals: 'customer_rare.meals',
+	customerRarePlans: 'customer_rare.plans',
 	customerRareSettings: 'customer_rare.settings',
 	globalPreferences: 'global.preferences',
 	theme: 'theme',
@@ -13,6 +14,7 @@ export type TSyncNamespace =
 export const SYNC_SCHEMA_VERSION_MAP = {
 	[SYNC_NAMESPACE_MAP.customerNormalMeals]: 1,
 	[SYNC_NAMESPACE_MAP.customerRareMeals]: 1,
+	[SYNC_NAMESPACE_MAP.customerRarePlans]: 1,
 	[SYNC_NAMESPACE_MAP.customerRareSettings]: 1,
 	[SYNC_NAMESPACE_MAP.globalPreferences]: 1,
 	[SYNC_NAMESPACE_MAP.theme]: 1,

@@ -96,7 +96,7 @@ export interface IGlobalSearchIndexField {
 }
 
 export interface IGlobalSearchIndexItem {
-	action?: 'open-account-modal';
+	action?: 'open-account-modal' | 'open-customer-rare-plan-drawer';
 	description: string;
 	fields: IGlobalSearchIndexField[];
 	href: string;
