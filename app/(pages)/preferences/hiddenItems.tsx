@@ -126,6 +126,8 @@ interface IDataProps {
 type TData<T extends TItemData<TItemInstance> = TItemData<TItemInstance>> =
 	ReadonlyArray<T[number] & IDataProps>;
 
+const SETTINGS_PANEL_RENDER_BATCH_SIZE = 24;
+
 interface ISettingsPanelProps<
 	T extends TData,
 	U extends T[number]['name'],
@@ -134,6 +136,134 @@ interface ISettingsPanelProps<
 	hiddenItems: Set<U>;
 	setHiddenItems: (options: Set<U>) => void;
 	title: string;
+}
+
+interface ISettingsPanelDlcGroupProps<U extends TData[number]> extends Pick<
+	ISpriteProps,
+	'target'
+> {
+	dlc: U['dlc'];
+	getDlcToggleState: (dlc: U['dlc']) => boolean | 'disabled';
+	handleDlcToggle: (dlc: U['dlc']) => void;
+	handleValueChange: (name: U['name']) => void;
+	hiddenItems: Set<U['name']>;
+	index: number;
+	items: U[];
+}
+
+function SettingsPanelDlcGroup<U extends TData[number]>({
+	dlc,
+	getDlcToggleState,
+	handleDlcToggle,
+	handleValueChange,
+	hiddenItems,
+	index,
+	items,
+	target,
+}: ISettingsPanelDlcGroupProps<U>) {
+	const [renderedCount, setRenderedCount] = useState(() =>
+		Math.min(SETTINGS_PANEL_RENDER_BATCH_SIZE, items.length)
+	);
+	const renderedItems = items.slice(0, renderedCount);
+	const dlcToggleState = getDlcToggleState(dlc);
+	const isDlcToggleDisabled = dlcToggleState === 'disabled';
+
+	useEffect(() => {
+		let nextRenderedCount = Math.min(
+			SETTINGS_PANEL_RENDER_BATCH_SIZE,
+			items.length
+		);
+		let timer: ReturnType<typeof setTimeout> | null = null;
+
+		setRenderedCount(nextRenderedCount);
+
+		const renderNextBatch = () => {
+			nextRenderedCount = Math.min(
+				nextRenderedCount + SETTINGS_PANEL_RENDER_BATCH_SIZE,
+				items.length
+			);
+			setRenderedCount(nextRenderedCount);
+
+			if (nextRenderedCount < items.length) {
+				timer = globalThis.setTimeout(renderNextBatch, 0);
+			}
+		};
+
+		if (nextRenderedCount < items.length) {
+			timer = globalThis.setTimeout(renderNextBatch, 0);
+		}
+
+		return () => {
+			if (timer !== null) {
+				globalThis.clearTimeout(timer);
+			}
+		};
+	}, [items]);
+
+	return (
+		<div className="overflow-x-hidden">
+			<div
+				className={cn(
+					'flex gap-2',
+					index === 0 ? 'items-start' : 'items-center'
+				)}
+			>
+				<Heading as="h4" isFirst={index === 0}>
+					{DLC_LABEL_MAP[dlc].label}
+				</Heading>
+				<SwitchItem
+					color="warning"
+					isDisabled={isDlcToggleDisabled}
+					isSelected={isDlcToggleDisabled ? false : dlcToggleState}
+					onValueChange={() => {
+						handleDlcToggle(dlc);
+					}}
+					aria-label={`${dlcToggleState === true ? '隐藏' : '显示'}${DLC_LABEL_MAP[dlc].label}的全部项目`}
+					title={
+						isDlcToggleDisabled
+							? '此分组下的所有料理均因包含已被隐藏的食材而被隐藏'
+							: undefined
+					}
+					className={cn(index !== 0 && 'mt-1')}
+				/>
+			</div>
+			<div className="grid h-min grid-cols-2 content-start justify-items-start gap-4 sm:grid-cols-3 md:gap-2 md:gap-x-12">
+				{renderedItems.map(({ isHiddenByIngredient, name }) => (
+					<div
+						key={name}
+						className="flex w-full items-center justify-between"
+					>
+						<p className="flex items-center text-small">
+							<Sprite
+								target={target}
+								name={name}
+								size={1.25}
+								className="mr-0.5"
+							/>
+							{name}
+						</p>
+						<SwitchItem
+							isDisabled={Boolean(isHiddenByIngredient)}
+							isSelected={
+								isHiddenByIngredient
+									? false
+									: !hiddenItems.has(name)
+							}
+							onValueChange={() => {
+								handleValueChange(name);
+							}}
+							aria-label={`${hiddenItems.has(name) ? '显示' : '隐藏'}${name}`}
+							title={
+								isHiddenByIngredient
+									? '此料理因包含已被隐藏的食材而被隐藏'
+									: undefined
+							}
+						/>
+					</div>
+				))}
+			</div>
+		</div>
+	);
 }
 
 const SettingsPanel = memo(function SettingsPanel<
@@ -236,78 +366,19 @@ const SettingsPanel = memo(function SettingsPanel<
 			<Heading as="h3" isFirst>
 				{title}
 			</Heading>
-			{dataGroupByDlcSorted.map(([dlc, items], index) => {
-				const dlcToggleState = getDlcToggleState(dlc);
-				const isDlcToggleDisabled = dlcToggleState === 'disabled';
-				return (
-					<div key={dlc} className="overflow-x-hidden">
-						<div
-							className={cn(
-								'flex gap-2',
-								index === 0 ? 'items-start' : 'items-center'
-							)}
-						>
-							<Heading as="h4" isFirst={index === 0}>
-								{DLC_LABEL_MAP[dlc].label}
-							</Heading>
-							<SwitchItem
-								color="warning"
-								isDisabled={isDlcToggleDisabled}
-								isSelected={
-									isDlcToggleDisabled ? false : dlcToggleState
-								}
-								onValueChange={() => {
-									handleDlcToggle(dlc);
-								}}
-								aria-label={`${dlcToggleState === true ? '隐藏' : '显示'}${DLC_LABEL_MAP[dlc].label}的全部项目`}
-								title={
-									isDlcToggleDisabled
-										? '此分组下的所有料理均因包含已被隐藏的食材而被隐藏'
-										: undefined
-								}
-								className={cn(index !== 0 && 'mt-1')}
-							/>
-						</div>
-						<div className="grid h-min grid-cols-2 content-start justify-items-start gap-4 sm:grid-cols-3 md:gap-2 md:gap-x-12">
-							{items.map(({ isHiddenByIngredient, name }) => (
-								<div
-									key={name}
-									className="flex w-full items-center justify-between"
-								>
-									<p className="flex items-center text-small">
-										<Sprite
-											target={target}
-											name={name}
-											size={1.25}
-											className="mr-0.5"
-										/>
-										{name}
-									</p>
-									<SwitchItem
-										isDisabled={Boolean(
-											isHiddenByIngredient
-										)}
-										isSelected={
-											isHiddenByIngredient
-												? false
-												: !hiddenItems.has(name)
-										}
-										onValueChange={() => {
-											handleValueChange(name);
-										}}
-										aria-label={`${hiddenItems.has(name) ? '显示' : '隐藏'}${name}`}
-										title={
-											isHiddenByIngredient
-												? '此料理因包含已被隐藏的食材而被隐藏'
-												: undefined
-										}
-									/>
-								</div>
-							))}
-						</div>
-					</div>
-				);
-			})}
+			{dataGroupByDlcSorted.map(([dlc, items], index) => (
+				<SettingsPanelDlcGroup
+					key={dlc}
+					dlc={dlc}
+					getDlcToggleState={getDlcToggleState}
+					handleDlcToggle={handleDlcToggle}
+					handleValueChange={handleValueChange}
+					hiddenItems={hiddenItems}
+					index={index}
+					items={items}
+					target={target}
+				/>
+			))}
 		</div>
 	);
 }) as <T extends TData, U extends T[number]>(
