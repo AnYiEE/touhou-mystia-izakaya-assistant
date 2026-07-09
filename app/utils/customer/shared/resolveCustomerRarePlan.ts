@@ -14,6 +14,7 @@ import type {
 	ICustomerRarePlan,
 	IPopularTrend,
 	IResolvedCustomerRarePlanGroup,
+	TCustomerRarePlanCustomerSort,
 	TRatingKey,
 } from '@/types';
 import { Beverage, Cooker, CustomerRare, Ingredient, Recipe } from '@/utils';
@@ -55,6 +56,9 @@ interface IResolveRecommendedCustomerRarePlanMealBatchParams {
 	hiddenIngredients: ReadonlySet<TIngredientName>;
 	hiddenRecipes: ReadonlySet<TRecipeName>;
 	isFamousShop: boolean;
+	maxExtraIngredients: number | null;
+	maxRating: number;
+	maxResults: number;
 	popularTrend: IPopularTrend;
 	recipeInstance?: Recipe;
 	startIndex: number;
@@ -72,10 +76,11 @@ const RATING_SORT_SCORE_MAP = {
 	good: 3,
 	norm: 2,
 } satisfies Record<TRatingKey, number>;
-const CUSTOMER_RARE_PLAN_RECOMMENDED_MAX_EXTRA_INGREDIENTS = 4;
-const CUSTOMER_RARE_PLAN_RECOMMENDED_MAX_RATING = RATING_SORT_SCORE_MAP.exgood;
-const CUSTOMER_RARE_PLAN_RECOMMENDED_MAX_RESULTS = 1;
 const CUSTOMER_RARE_PLAN_RECOMMENDED_COOKER_CATEGORY = '初始';
+const customerRarePlanCustomerSortMetaCache = new WeakMap<
+	CustomerRare,
+	Map<TCustomerRareName, { dlc: TDlc; index: number }>
+>();
 
 function getRatingSortScore(rating: TRatingKey | null) {
 	return rating === null ? -1 : RATING_SORT_SCORE_MAP[rating];
@@ -170,6 +175,68 @@ function getManualPlanCustomerNames({
 			return false;
 		}
 	});
+}
+
+function getCustomerRarePlanCustomerSortMetaMap(
+	customerInstance: CustomerRare
+) {
+	const cachedMetaMap =
+		customerRarePlanCustomerSortMetaCache.get(customerInstance);
+	if (cachedMetaMap !== undefined) {
+		return cachedMetaMap;
+	}
+
+	const metaMap = new Map(
+		customerInstance.data.map(({ dlc, name }, index) => [
+			name,
+			{ dlc, index },
+		])
+	);
+	customerRarePlanCustomerSortMetaCache.set(customerInstance, metaMap);
+
+	return metaMap;
+}
+
+function sortCustomerRarePlanCustomerNames({
+	customerInstance,
+	customerNames,
+	customerSort,
+}: {
+	customerInstance: CustomerRare;
+	customerNames: TCustomerRareName[];
+	customerSort: TCustomerRarePlanCustomerSort;
+}) {
+	if (customerSort === 'pinyin-asc-flat') {
+		return [...customerNames].sort(pinyinSort);
+	}
+	if (customerSort === 'pinyin-desc-flat') {
+		return [...customerNames].sort((a, b) => pinyinSort(b, a));
+	}
+
+	const customerSortMetaMap =
+		getCustomerRarePlanCustomerSortMetaMap(customerInstance);
+
+	if (customerSort === 'pinyin-asc' || customerSort === 'pinyin-desc') {
+		return [...customerNames].sort((a, b) => {
+			const dlcSort =
+				(customerSortMetaMap.get(a)?.dlc ?? Number.MAX_SAFE_INTEGER) -
+				(customerSortMetaMap.get(b)?.dlc ?? Number.MAX_SAFE_INTEGER);
+			if (dlcSort !== 0) {
+				return dlcSort;
+			}
+
+			return customerSort === 'pinyin-asc'
+				? pinyinSort(a, b)
+				: pinyinSort(b, a);
+		});
+	}
+
+	return [...customerNames].sort(
+		(a, b) =>
+			(customerSortMetaMap.get(a)?.index ?? Number.MAX_SAFE_INTEGER) -
+				(customerSortMetaMap.get(b)?.index ??
+					Number.MAX_SAFE_INTEGER) || pinyinSort(a, b)
+	);
 }
 
 function compareOptionalText(a: string | null, b: string | null) {
@@ -405,6 +472,7 @@ function resolveSavedCustomerRarePlanMeals({
 			recipeData: meal.recipe,
 		}),
 		meal,
+		recommendedSetIndex: null,
 		source: 'saved' as const,
 		visibleIndex,
 	}));
@@ -455,6 +523,9 @@ export function resolveRecommendedCustomerRarePlanMealBatch({
 	hiddenIngredients,
 	hiddenRecipes,
 	isFamousShop,
+	maxExtraIngredients,
+	maxRating,
+	maxResults,
 	popularTrend,
 	recipeInstance = instance_recipe,
 	startIndex,
@@ -467,6 +538,7 @@ export function resolveRecommendedCustomerRarePlanMealBatch({
 	});
 	const safeStartIndex = Math.max(0, startIndex);
 	const safeBatchSize = Math.max(1, batchSize);
+	const safeMaxResults = Math.max(1, maxResults);
 	const batchCombos = combos.slice(
 		safeStartIndex,
 		safeStartIndex + safeBatchSize
@@ -484,12 +556,11 @@ export function resolveRecommendedCustomerRarePlanMealBatch({
 				hiddenIngredients,
 				hiddenRecipes,
 				isFamousShop,
-				maxExtraIngredients:
-					CUSTOMER_RARE_PLAN_RECOMMENDED_MAX_EXTRA_INGREDIENTS,
-				maxRating: CUSTOMER_RARE_PLAN_RECOMMENDED_MAX_RATING,
-				maxResults: CUSTOMER_RARE_PLAN_RECOMMENDED_MAX_RESULTS,
+				maxExtraIngredients,
+				maxRating,
+				maxResults: safeMaxResults,
 				popularTrend,
-			}).map((meal) => ({
+			}).map((meal, recommendedSetIndex) => ({
 				dataIndex: null,
 				evaluation: {
 					isDarkMatter: recipeInstance.checkDarkMatter(meal.recipe)
@@ -503,8 +574,11 @@ export function resolveRecommendedCustomerRarePlanMealBatch({
 					order: { beverageTag, recipeTag },
 					recipe: meal.recipe,
 				},
+				recommendedSetIndex,
 				source: 'recommended' as const,
-				visibleIndex: safeStartIndex + index,
+				visibleIndex:
+					(safeStartIndex + index) * safeMaxResults +
+					recommendedSetIndex,
 			}))
 	);
 	const nextIndex = safeStartIndex + batchCombos.length;
@@ -530,14 +604,22 @@ export function resolveCustomerRarePlan({
 		return [];
 	}
 
-	const customerNames =
-		plan.mode === 'manual'
-			? getManualPlanCustomerNames({ customerInstance, hiddenDlcs, plan })
-			: getRegionPlanCustomerNames({
-					customerInstance,
-					hiddenDlcs,
-					plan,
-				});
+	const customerNames = sortCustomerRarePlanCustomerNames({
+		customerInstance,
+		customerNames:
+			plan.mode === 'manual'
+				? getManualPlanCustomerNames({
+						customerInstance,
+						hiddenDlcs,
+						plan,
+					})
+				: getRegionPlanCustomerNames({
+						customerInstance,
+						hiddenDlcs,
+						plan,
+					}),
+		customerSort: plan.customerSort,
+	});
 
 	const groups = customerNames.flatMap<IResolvedCustomerRarePlanGroup>(
 		(customerName) => {

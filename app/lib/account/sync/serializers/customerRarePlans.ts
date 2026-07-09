@@ -4,6 +4,7 @@ import { customerRareStore } from '@/stores/customer-rare';
 import type {
 	ICustomerRarePlan,
 	ICustomerRarePlansState,
+	TCustomerRarePlanCustomerSort,
 	TCustomerRarePlanMealSource,
 	TCustomerRarePlanMode,
 } from '@/types';
@@ -27,6 +28,13 @@ const defaultSnapshot: TCustomerRarePlansSnapshot = {
 const customerRareNames = new Set<string>(
 	CustomerRare.getInstance().getNames()
 );
+const planCustomerSorts = new Set<TCustomerRarePlanCustomerSort>([
+	'default',
+	'pinyin-asc',
+	'pinyin-asc-flat',
+	'pinyin-desc',
+	'pinyin-desc-flat',
+]);
 const planModes = new Set<TCustomerRarePlanMode>(['manual', 'region']);
 const planMealSources = new Set<TCustomerRarePlanMealSource>([
 	'recommended',
@@ -45,6 +53,15 @@ function checkPlanMode(value: unknown): value is TCustomerRarePlanMode {
 	return (
 		typeof value === 'string' &&
 		planModes.has(value as TCustomerRarePlanMode)
+	);
+}
+
+function checkPlanCustomerSort(
+	value: unknown
+): value is TCustomerRarePlanCustomerSort {
+	return (
+		typeof value === 'string' &&
+		planCustomerSorts.has(value as TCustomerRarePlanCustomerSort)
 	);
 }
 
@@ -82,6 +99,7 @@ function validateCustomerRarePlan(data: unknown): data is ICustomerRarePlan {
 		isPlainObject(data) &&
 		hasExactKeys(data, [
 			'createdAt',
+			'customerSort',
 			'excludes',
 			'id',
 			'includes',
@@ -93,6 +111,7 @@ function validateCustomerRarePlan(data: unknown): data is ICustomerRarePlan {
 			'updatedAt',
 		]) &&
 		checkPlanTimestamp(data['createdAt']) &&
+		checkPlanCustomerSort(data['customerSort']) &&
 		checkStringArrayOf(data['excludes'], checkCustomerRareName) &&
 		typeof data['id'] === 'string' &&
 		data['id'].length > 0 &&
@@ -112,6 +131,7 @@ function validateCustomerRarePlan(data: unknown): data is ICustomerRarePlan {
 function normalizeCustomerRarePlan(plan: ICustomerRarePlan) {
 	return {
 		createdAt: plan.createdAt,
+		customerSort: plan.customerSort,
 		excludes: dedupeValues(plan.excludes),
 		id: plan.id,
 		includes: dedupeValues(plan.includes),
@@ -160,8 +180,60 @@ function sanitizeCustomerRarePlansSnapshot(data: unknown) {
 	});
 }
 
+function migrateCustomerRarePlansSnapshot(data: unknown, version: number) {
+	if (version !== 1 && version !== 2) {
+		throw new Error('unsupported-customer-rare-plans-schema-version');
+	}
+	if (version === 2) {
+		return data;
+	}
+	if (!isPlainObject(data) || !Array.isArray(data['items'])) {
+		return data;
+	}
+
+	return {
+		...data,
+		items: data['items'].map((item) =>
+			isPlainObject(item) && !('customerSort' in item)
+				? { ...item, customerSort: 'default' }
+				: item
+		),
+	};
+}
+
 function createPlanMap(snapshot: TCustomerRarePlansSnapshot) {
 	return new Map(snapshot.items.map((plan) => [plan.id, plan]));
+}
+
+function omitCustomerSort(plan: ICustomerRarePlan) {
+	const { customerSort: _customerSort, ...rest } = plan;
+
+	return rest;
+}
+
+function checkPlanEqualExceptCustomerSort(
+	left: ICustomerRarePlan,
+	right: ICustomerRarePlan
+) {
+	return checkSnapshotEqual(omitCustomerSort(left), omitCustomerSort(right));
+}
+
+function mergeCustomerSortOnlyPlanChange({
+	cloudPlan,
+	localPlan,
+}: {
+	cloudPlan: ICustomerRarePlan | undefined;
+	localPlan: ICustomerRarePlan | undefined;
+}) {
+	if (
+		cloudPlan === undefined ||
+		localPlan === undefined ||
+		!checkPlanEqualExceptCustomerSort(cloudPlan, localPlan)
+	) {
+		return null;
+	}
+
+	return localPlan;
 }
 
 function mergeActivePlanId({
@@ -239,6 +311,14 @@ function mergeCustomerRarePlans({
 				items.push(cloudPlan);
 				continue;
 			}
+			const mergedPlan = mergeCustomerSortOnlyPlanChange({
+				cloudPlan,
+				localPlan,
+			});
+			if (mergedPlan !== null) {
+				items.push(mergedPlan);
+				continue;
+			}
 			hasConflict = true;
 			items.push(cloudPlan);
 			continue;
@@ -269,6 +349,14 @@ function mergeCustomerRarePlans({
 			checkSnapshotEqual(cloudPlan, localPlan)
 		) {
 			items.push(cloudPlan);
+			continue;
+		}
+		const mergedPlan = mergeCustomerSortOnlyPlanChange({
+			cloudPlan,
+			localPlan,
+		});
+		if (mergedPlan !== null) {
+			items.push(mergedPlan);
 			continue;
 		}
 
@@ -369,15 +457,13 @@ export const customerRarePlansSerializer = {
 		});
 	},
 	migrate(data, version) {
-		if (version !== 1) {
-			throw new Error('unsupported-customer-rare-plans-schema-version');
-		}
+		const migratedData = migrateCustomerRarePlansSnapshot(data, version);
 
-		if (!this.validate(data)) {
+		if (!this.validate(migratedData)) {
 			throw new Error('invalid-customer-rare-plans');
 		}
 
-		return normalizeCustomerRarePlansSnapshot(data);
+		return normalizeCustomerRarePlansSnapshot(migratedData);
 	},
 	serialize(data) {
 		return normalizeCustomerRarePlansSnapshot(data);

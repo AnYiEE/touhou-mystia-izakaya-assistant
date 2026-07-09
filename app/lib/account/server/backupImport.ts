@@ -15,6 +15,7 @@ import {
 	SYNC_NAMESPACE_MAP,
 	SYNC_SCHEMA_VERSION_MAP,
 	type TSyncNamespace,
+	checkSupportedSyncSchemaVersion,
 } from '@/lib/account/sync';
 import {
 	checkBeverageName,
@@ -365,7 +366,7 @@ function parseCloudMealRecord(
 	if (record === null) {
 		return null;
 	}
-	if (record.schema_version !== SYNC_SCHEMA_VERSION_MAP[namespace]) {
+	if (!checkSupportedSyncSchemaVersion(namespace, record.schema_version)) {
 		throw new Error('server-misconfigured');
 	}
 

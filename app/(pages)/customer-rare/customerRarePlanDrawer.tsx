@@ -35,6 +35,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
 	Avatar,
 	Button,
+	Card,
 	type IPopoverProps,
 	Input,
 	Link,
@@ -64,18 +65,21 @@ import {
 	DARK_MATTER_META_MAP,
 	RECIPE_TAG_STYLE,
 	type TBeverageName,
+	type TBeverageTag,
 	type TCookerName,
 	type TCustomerRareName,
 	type TDlc,
 	type TIngredientName,
 	type TPlace,
 	type TRecipeName,
+	type TRecipeTag,
 } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
 import type {
 	ICustomerRareMeal,
 	IPopularTrend,
 	IResolvedCustomerRarePlanGroup,
+	TCustomerRarePlanCustomerSort,
 	TCustomerRarePlanMealSource,
 	TCustomerRarePlanMode,
 } from '@/types';
@@ -84,10 +88,7 @@ import {
 	createBoundedRuntimeCache,
 	pinyinSort,
 } from '@/utilities';
-import {
-	prepareResolvedCustomerRarePlanMeals,
-	resolveRecommendedCustomerRarePlanMealBatch,
-} from '@/utils/customer/shared';
+import { resolveRecommendedCustomerRarePlanMealBatch } from '@/utils/customer/shared';
 import { normalizeCustomerRarePlanName } from '@/utils/customer/shared/customerRarePlanState';
 
 const DRAWER_CONTENT_READY_DELAY = 360;
@@ -95,6 +96,8 @@ const DRAWER_RECOMMENDED_MEAL_BATCH_SIZE = 1;
 const DRAWER_RECOMMENDED_MEAL_RENDER_BATCH_SIZE = 12;
 const DRAWER_SKELETON_ROWS = [0, 1, 2, 3, 4, 5] as const;
 const CONTROLS_TOGGLE_CLICK_GUARD_MS = 320;
+const RECOMMENDED_FILTER_ALL_KEY = '__all__';
+const RECOMMENDED_MEAL_CACHE_VERSION = 3;
 const DRAWER_SKELETON_PRIMARY_CLASSNAME =
 	'bg-default/45 dark:bg-foreground/15 animate-pulse';
 const DRAWER_SKELETON_SECONDARY_CLASSNAME =
@@ -104,6 +107,13 @@ const DRAWER_SKELETON_BLOCK_CLASSNAME =
 const DRAWER_SKELETON_MUTED_BLOCK_CLASSNAME =
 	'bg-default/25 dark:bg-foreground/5 animate-pulse';
 const DRAWER_RECOMMENDED_MEAL_CACHE_MAX_SIZE = 256;
+const CUSTOMER_RARE_PLAN_CUSTOMER_SORT_OPTIONS = [
+	{ label: '默认排序', value: 'default' },
+	{ label: '拼音A-Z（按DLC分组）', value: 'pinyin-asc' },
+	{ label: '拼音Z-A（按DLC分组）', value: 'pinyin-desc' },
+	{ label: '拼音A-Z（不按DLC分组）', value: 'pinyin-asc-flat' },
+	{ label: '拼音Z-A（不按DLC分组）', value: 'pinyin-desc-flat' },
+] satisfies Array<{ label: string; value: TCustomerRarePlanCustomerSort }>;
 const CUSTOMER_RARE_PLAN_INTERACTIVE_SELECTOR = [
 	'a[href]',
 	'button',
@@ -138,6 +148,9 @@ function getRecommendedMealCacheKey({
 	hiddenIngredients,
 	hiddenRecipes,
 	isFamousShop,
+	maxExtraIngredients,
+	maxRating,
+	maxResults,
 	popularTrend,
 }: {
 	customerName: TCustomerRareName;
@@ -146,15 +159,22 @@ function getRecommendedMealCacheKey({
 	hiddenIngredients: ReadonlySet<TIngredientName>;
 	hiddenRecipes: ReadonlySet<TRecipeName>;
 	isFamousShop: boolean;
+	maxExtraIngredients: number | null;
+	maxRating: number;
+	maxResults: number;
 	popularTrend: IPopularTrend;
 }) {
 	return JSON.stringify({
+		cacheVersion: RECOMMENDED_MEAL_CACHE_VERSION,
 		customerName,
 		hiddenBeverages: getSortedCacheValues(hiddenBeverages),
 		hiddenDlcs: getSortedCacheValues(hiddenDlcs),
 		hiddenIngredients: getSortedCacheValues(hiddenIngredients),
 		hiddenRecipes: getSortedCacheValues(hiddenRecipes),
 		isFamousShop,
+		maxExtraIngredients,
+		maxRating,
+		maxResults,
 		popularTrendIsNegative: popularTrend.isNegative,
 		popularTrendTag: popularTrend.tag,
 	});
@@ -193,11 +213,19 @@ function getFocusableElements(container: HTMLElement) {
 	);
 }
 
-function isCustomerRarePlanInteractiveTarget(target: EventTarget | null) {
-	return (
-		target instanceof Element &&
-		target.closest(CUSTOMER_RARE_PLAN_INTERACTIVE_SELECTOR) !== null
+function isCustomerRarePlanInteractiveTarget(
+	target: EventTarget | null,
+	root?: Element | null
+) {
+	if (!(target instanceof Element)) {
+		return false;
+	}
+
+	const interactiveElement = target.closest(
+		CUSTOMER_RARE_PLAN_INTERACTIVE_SELECTOR
 	);
+
+	return interactiveElement !== null && interactiveElement !== root;
 }
 
 function getDrawerLayoutClassName() {
@@ -475,6 +503,13 @@ function CustomerGroup({
 	const hiddenRecipes = customerStore.shared.recipe.table.hiddenRecipes.use();
 	const isFamousShop = customerStore.shared.customer.famousShop.use();
 	const popularTrend = customerStore.shared.customer.popularTrend.use();
+	const recommendedMaxExtraIngredients =
+		customerStore.shared.suggestMeals.maxExtraIngredients.use();
+	const recommendedMaxRating =
+		customerStore.shared.suggestMeals.maxRating.use();
+	const recommendedMaxResults =
+		customerStore.shared.suggestMeals.maxResults.use();
+	const cardRef = useRef<HTMLDivElement>(null);
 	const recommendedMealCacheKey = useMemo(
 		() =>
 			getRecommendedMealCacheKey({
@@ -484,6 +519,9 @@ function CustomerGroup({
 				hiddenIngredients,
 				hiddenRecipes,
 				isFamousShop,
+				maxExtraIngredients: recommendedMaxExtraIngredients,
+				maxRating: recommendedMaxRating,
+				maxResults: recommendedMaxResults,
 				popularTrend,
 			}),
 		[
@@ -494,6 +532,9 @@ function CustomerGroup({
 			hiddenRecipes,
 			isFamousShop,
 			popularTrend,
+			recommendedMaxExtraIngredients,
+			recommendedMaxRating,
+			recommendedMaxResults,
 		]
 	);
 	const initialRecommendedMealCacheEntry = useMemo(
@@ -514,21 +555,148 @@ function CustomerGroup({
 		useState(initialRecommendedMealCacheEntry?.isComplete ?? false);
 	const [isRecommendedMealsLoading, setIsRecommendedMealsLoading] =
 		useState(false);
+	const [selectedRecommendedRecipeTag, setSelectedRecommendedRecipeTag] =
+		useState<TRecipeTag | null>(null);
+	const [selectedRecommendedBeverageTag, setSelectedRecommendedBeverageTag] =
+		useState<TBeverageTag | null>(null);
+	const [activeRecommendedSetIndex, setActiveRecommendedSetIndex] =
+		useState(0);
 	const isRecommendedSource = group.mealSource === 'recommended';
 	const displayMeals = isRecommendedSource ? recommendedMeals : group.meals;
+	const availableRecommendedSetIndexes = useMemo(
+		() =>
+			[
+				...new Set(
+					displayMeals.flatMap(({ recommendedSetIndex }) =>
+						recommendedSetIndex === null
+							? []
+							: [recommendedSetIndex]
+					)
+				),
+			].sort((a, b) => a - b),
+		[displayMeals]
+	);
+	const activeRecommendedSetMeals = useMemo(
+		() =>
+			isRecommendedSource
+				? displayMeals.filter(
+						({ recommendedSetIndex }) =>
+							recommendedSetIndex === activeRecommendedSetIndex
+					)
+				: displayMeals,
+		[activeRecommendedSetIndex, displayMeals, isRecommendedSource]
+	);
+	const recommendedRecipeTagOptions = useMemo(
+		() =>
+			[
+				...new Set(
+					activeRecommendedSetMeals.flatMap(({ meal }) =>
+						meal.order.recipeTag === null
+							? []
+							: [meal.order.recipeTag]
+					)
+				),
+			].sort(pinyinSort),
+		[activeRecommendedSetMeals]
+	);
+	const recommendedBeverageTagOptions = useMemo(
+		() =>
+			[
+				...new Set(
+					activeRecommendedSetMeals.flatMap(({ meal }) =>
+						meal.order.beverageTag === null
+							? []
+							: [meal.order.beverageTag]
+					)
+				),
+			].sort(pinyinSort),
+		[activeRecommendedSetMeals]
+	);
+	const recommendedRecipeTagSelectItems = useMemo(
+		() => [
+			{ label: '全部料理需求', value: RECOMMENDED_FILTER_ALL_KEY },
+			...recommendedRecipeTagOptions.map((tag) => ({
+				label: tag,
+				value: tag,
+			})),
+		],
+		[recommendedRecipeTagOptions]
+	);
+	const recommendedBeverageTagSelectItems = useMemo(
+		() => [
+			{ label: '全部酒水需求', value: RECOMMENDED_FILTER_ALL_KEY },
+			...recommendedBeverageTagOptions.map((tag) => ({
+				label: tag,
+				value: tag,
+			})),
+		],
+		[recommendedBeverageTagOptions]
+	);
+	const selectedRecommendedRecipeTagKeys = useMemo(
+		() =>
+			new Set([
+				selectedRecommendedRecipeTag ?? RECOMMENDED_FILTER_ALL_KEY,
+			]),
+		[selectedRecommendedRecipeTag]
+	);
+	const selectedRecommendedBeverageTagKeys = useMemo(
+		() =>
+			new Set([
+				selectedRecommendedBeverageTag ?? RECOMMENDED_FILTER_ALL_KEY,
+			]),
+		[selectedRecommendedBeverageTag]
+	);
+	const recommendedSetSelectItems = useMemo(
+		() =>
+			availableRecommendedSetIndexes.map((index) => ({
+				label: `预设${index + 1}`,
+				value: index.toString(),
+			})),
+		[availableRecommendedSetIndexes]
+	);
+	const selectedRecommendedSetKeys = useMemo(
+		() => new Set([activeRecommendedSetIndex.toString()]),
+		[activeRecommendedSetIndex]
+	);
+	const isRecommendedFilterActive =
+		selectedRecommendedRecipeTag !== null ||
+		selectedRecommendedBeverageTag !== null;
+	const filteredDisplayMeals = useMemo(
+		() =>
+			isRecommendedSource
+				? activeRecommendedSetMeals.filter(
+						({ meal }) =>
+							(selectedRecommendedRecipeTag === null ||
+								meal.order.recipeTag ===
+									selectedRecommendedRecipeTag) &&
+							(selectedRecommendedBeverageTag === null ||
+								meal.order.beverageTag ===
+									selectedRecommendedBeverageTag)
+					)
+				: displayMeals,
+		[
+			activeRecommendedSetMeals,
+			displayMeals,
+			isRecommendedSource,
+			selectedRecommendedBeverageTag,
+			selectedRecommendedRecipeTag,
+		]
+	);
 	const renderedRecommendedMealCount =
-		isRecommendedSource && isExpanded && !checkLengthEmpty(displayMeals)
+		isRecommendedSource &&
+		isExpanded &&
+		!checkLengthEmpty(filteredDisplayMeals)
 			? Math.max(
 					recommendedRenderCount,
 					Math.min(
 						DRAWER_RECOMMENDED_MEAL_RENDER_BATCH_SIZE,
-						displayMeals.length
+						filteredDisplayMeals.length
 					)
 				)
 			: recommendedRenderCount;
 	const renderedMeals = isRecommendedSource
-		? displayMeals.slice(0, renderedRecommendedMealCount)
-		: displayMeals;
+		? filteredDisplayMeals.slice(0, renderedRecommendedMealCount)
+		: filteredDisplayMeals;
 	const isRecommendedMealsPending =
 		isRecommendedSource &&
 		isExpanded &&
@@ -541,13 +709,18 @@ function CustomerGroup({
 				: isRecommendedMealsComplete
 					? '0个套餐'
 					: '自动推荐'
-			: `${displayMeals.length}个套餐`
+			: isRecommendedFilterActive
+				? `${filteredDisplayMeals.length}/${activeRecommendedSetMeals.length}个套餐`
+				: `${activeRecommendedSetMeals.length}个套餐`
 		: `${group.visibleMealCount}个套餐`;
 
 	useEffect(() => {
 		if (!isRecommendedSource) {
 			setRecommendedRenderCount(0);
 			setIsRecommendedMealsLoading(false);
+			setSelectedRecommendedRecipeTag(null);
+			setSelectedRecommendedBeverageTag(null);
+			setActiveRecommendedSetIndex(0);
 			return;
 		}
 
@@ -563,11 +736,55 @@ function CustomerGroup({
 	}, [isRecommendedSource, recommendedMealCacheKey]);
 
 	useEffect(() => {
+		if (!isRecommendedSource || checkLengthEmpty(displayMeals)) {
+			return;
+		}
+
+		if (
+			!availableRecommendedSetIndexes.includes(activeRecommendedSetIndex)
+		) {
+			setRecommendedRenderCount(0);
+			setActiveRecommendedSetIndex(
+				availableRecommendedSetIndexes[0] ?? 0
+			);
+		}
+	}, [
+		activeRecommendedSetIndex,
+		availableRecommendedSetIndexes,
+		displayMeals,
+		isRecommendedSource,
+	]);
+
+	useEffect(() => {
+		if (
+			selectedRecommendedRecipeTag !== null &&
+			!recommendedRecipeTagOptions.includes(selectedRecommendedRecipeTag)
+		) {
+			setRecommendedRenderCount(0);
+			setSelectedRecommendedRecipeTag(null);
+		}
+		if (
+			selectedRecommendedBeverageTag !== null &&
+			!recommendedBeverageTagOptions.includes(
+				selectedRecommendedBeverageTag
+			)
+		) {
+			setRecommendedRenderCount(0);
+			setSelectedRecommendedBeverageTag(null);
+		}
+	}, [
+		recommendedBeverageTagOptions,
+		recommendedRecipeTagOptions,
+		selectedRecommendedBeverageTag,
+		selectedRecommendedRecipeTag,
+	]);
+
+	useEffect(() => {
 		if (!isRecommendedSource || !isExpanded) {
 			setRecommendedRenderCount(0);
 			return;
 		}
-		if (checkLengthEmpty(displayMeals)) {
+		if (checkLengthEmpty(filteredDisplayMeals)) {
 			setRecommendedRenderCount(0);
 			return;
 		}
@@ -578,7 +795,7 @@ function CustomerGroup({
 				recommendedRenderCount,
 				DRAWER_RECOMMENDED_MEAL_RENDER_BATCH_SIZE
 			),
-			displayMeals.length
+			filteredDisplayMeals.length
 		);
 
 		setRecommendedRenderCount(nextRenderCount);
@@ -586,16 +803,16 @@ function CustomerGroup({
 		const renderNextBatch = () => {
 			nextRenderCount = Math.min(
 				nextRenderCount + DRAWER_RECOMMENDED_MEAL_RENDER_BATCH_SIZE,
-				displayMeals.length
+				filteredDisplayMeals.length
 			);
 			setRecommendedRenderCount(nextRenderCount);
 
-			if (nextRenderCount < displayMeals.length) {
+			if (nextRenderCount < filteredDisplayMeals.length) {
 				timer = globalThis.setTimeout(renderNextBatch, 0);
 			}
 		};
 
-		if (nextRenderCount < displayMeals.length) {
+		if (nextRenderCount < filteredDisplayMeals.length) {
 			timer = globalThis.setTimeout(renderNextBatch, 0);
 		}
 
@@ -604,7 +821,12 @@ function CustomerGroup({
 				globalThis.clearTimeout(timer);
 			}
 		};
-	}, [displayMeals, isExpanded, isRecommendedSource, recommendedRenderCount]);
+	}, [
+		filteredDisplayMeals,
+		isExpanded,
+		isRecommendedSource,
+		recommendedRenderCount,
+	]);
 
 	useEffect(() => {
 		if (!isRecommendedSource || !isExpanded) {
@@ -631,6 +853,9 @@ function CustomerGroup({
 				hiddenIngredients,
 				hiddenRecipes,
 				isFamousShop,
+				maxExtraIngredients: recommendedMaxExtraIngredients,
+				maxRating: recommendedMaxRating,
+				maxResults: recommendedMaxResults,
 				popularTrend,
 				startIndex: nextIndex,
 			});
@@ -642,9 +867,7 @@ function CustomerGroup({
 			nextIndex = batch.nextIndex;
 			recommendedNextIndexRef.current = nextIndex;
 			if (!checkLengthEmpty(batch.meals)) {
-				meals = prepareResolvedCustomerRarePlanMeals({
-					meals: [...meals, ...batch.meals],
-				});
+				meals = [...meals, ...batch.meals];
 				recommendedMealsRef.current = meals;
 				setRecommendedMeals(meals);
 			}
@@ -683,25 +906,77 @@ function CustomerGroup({
 		isRecommendedSource,
 		popularTrend,
 		recommendedMealCacheKey,
+		recommendedMaxExtraIngredients,
+		recommendedMaxRating,
+		recommendedMaxResults,
 	]);
 
+	const handleRecommendedRecipeTagFilterChange = useCallback(
+		(selection: Selection) => {
+			const [value] = selectionToValues<string>(selection);
+			setRecommendedRenderCount(0);
+			setSelectedRecommendedRecipeTag(
+				value === undefined || value === RECOMMENDED_FILTER_ALL_KEY
+					? null
+					: (value as TRecipeTag)
+			);
+		},
+		[]
+	);
+
+	const handleRecommendedBeverageTagFilterChange = useCallback(
+		(selection: Selection) => {
+			const [value] = selectionToValues<string>(selection);
+			setRecommendedRenderCount(0);
+			setSelectedRecommendedBeverageTag(
+				value === undefined || value === RECOMMENDED_FILTER_ALL_KEY
+					? null
+					: (value as TBeverageTag)
+			);
+		},
+		[]
+	);
+
+	const handleRecommendedSetChange = useCallback((selection: Selection) => {
+		const [value] = selectionToValues<string>(selection);
+
+		if (value === undefined) {
+			return;
+		}
+
+		setRecommendedRenderCount(0);
+		setActiveRecommendedSetIndex(Number.parseInt(value));
+	}, []);
+
 	return (
-		<section
-			onClick={(event) => {
+		<Card
+			ref={cardRef}
+			disableAnimation
+			disableRipple
+			fullWidth
+			isPressable
+			onPress={(event) => {
 				if (isCustomerGroupToggleGuarded()) {
 					return;
 				}
 
-				if (isCustomerRarePlanInteractiveTarget(event.target)) {
+				if (
+					isCustomerRarePlanInteractiveTarget(
+						event.target,
+						cardRef.current
+					)
+				) {
 					return;
 				}
 
 				onToggleExpanded(group.customerName);
 			}}
-			className={cn(
-				'cursor-pointer rounded-small border border-default-200/80 bg-content1/65 p-3 shadow-small ring-1 ring-default-100/60 transition-all hover:border-default-300/80 hover:bg-content1/75 motion-reduce:transition-none md:p-3.5 dark:bg-content1/30 dark:ring-default-50/10 dark:hover:bg-content1/35',
-				{ 'backdrop-blur': isHighAppearance }
-			)}
+			classNames={{
+				base: cn(
+					'cursor-pointer rounded-small border border-default-200/80 bg-content1/65 p-3 text-left shadow-small ring-1 ring-default-100/60 transition-all data-[pressed=true]:!scale-100 data-[pressed=true]:!transform-none data-[hover=true]:border-default-300/80 data-[hover=true]:bg-content1/75 motion-reduce:transition-none md:p-3.5 dark:bg-content1/30 dark:ring-default-50/10 dark:data-[hover=true]:bg-content1/35',
+					{ 'backdrop-blur': isHighAppearance }
+				),
+			}}
 		>
 			<header className="flex items-center justify-between gap-2">
 				<div className="flex min-w-0 flex-1 items-center gap-2">
@@ -765,21 +1040,128 @@ function CustomerGroup({
 			<AnimatePresence initial={false}>
 				{isExpanded && (
 					<motion.div
-						animate={{ height: 'auto', opacity: 1 }}
-						exit={{ height: 0, opacity: 0 }}
-						initial={{ height: 0, opacity: 0 }}
+						animate={{
+							height: 'auto',
+							opacity: 1,
+							overflow: 'hidden',
+							transitionEnd: { overflow: 'visible' },
+						}}
+						exit={{ height: 0, opacity: 0, overflow: 'hidden' }}
+						initial={{ height: 0, opacity: 0, overflow: 'hidden' }}
 						transition={{ duration: isReducedMotion ? 0 : 0.18 }}
-						className="overflow-hidden"
 					>
 						<div className="pt-3">
+							{isRecommendedSource &&
+								!checkLengthEmpty(displayMeals) && (
+									<div
+										data-customer-rare-plan-interactive="true"
+										className="mb-2 grid grid-cols-1 gap-2 sm:grid-cols-[8rem_minmax(0,1fr)_minmax(0,1fr)]"
+									>
+										<Select
+											disallowEmptySelection
+											isDisabled={
+												availableRecommendedSetIndexes.length <=
+												1
+											}
+											items={recommendedSetSelectItems}
+											label="推荐预设"
+											selectedKeys={
+												selectedRecommendedSetKeys
+											}
+											selectionMode="single"
+											size="sm"
+											onSelectionChange={
+												handleRecommendedSetChange
+											}
+											popoverProps={{
+												...popoverPortalProps,
+												shouldCloseOnScroll: false,
+											}}
+											classNames={{
+												trigger:
+													'bg-default-100/70 data-[hover=true]:bg-default-200/70 dark:bg-default-50/10 dark:data-[hover=true]:bg-default-50/15',
+											}}
+										>
+											{({ label, value }) => (
+												<SelectItem key={value}>
+													{label}
+												</SelectItem>
+											)}
+										</Select>
+										<Select
+											disallowEmptySelection
+											items={
+												recommendedRecipeTagSelectItems
+											}
+											label="料理需求"
+											selectedKeys={
+												selectedRecommendedRecipeTagKeys
+											}
+											selectionMode="single"
+											size="sm"
+											onSelectionChange={
+												handleRecommendedRecipeTagFilterChange
+											}
+											popoverProps={{
+												...popoverPortalProps,
+												shouldCloseOnScroll: false,
+											}}
+											classNames={{
+												trigger:
+													'bg-default-100/70 data-[hover=true]:bg-default-200/70 dark:bg-default-50/10 dark:data-[hover=true]:bg-default-50/15',
+											}}
+										>
+											{({ label, value }) => (
+												<SelectItem key={value}>
+													{label}
+												</SelectItem>
+											)}
+										</Select>
+										<Select
+											disallowEmptySelection
+											items={
+												recommendedBeverageTagSelectItems
+											}
+											label="酒水需求"
+											selectedKeys={
+												selectedRecommendedBeverageTagKeys
+											}
+											selectionMode="single"
+											size="sm"
+											onSelectionChange={
+												handleRecommendedBeverageTagFilterChange
+											}
+											popoverProps={{
+												...popoverPortalProps,
+												shouldCloseOnScroll: false,
+											}}
+											classNames={{
+												trigger:
+													'bg-default-100/70 data-[hover=true]:bg-default-200/70 dark:bg-default-50/10 dark:data-[hover=true]:bg-default-50/15',
+											}}
+										>
+											{({ label, value }) => (
+												<SelectItem key={value}>
+													{label}
+												</SelectItem>
+											)}
+										</Select>
+									</div>
+								)}
 							{isRecommendedMealsPending ? (
 								<Placeholder className="rounded-small border border-dashed border-default-200/80 bg-background/35 px-3 py-5 text-small dark:bg-default-50/5">
 									正在生成推荐套餐
 								</Placeholder>
-							) : checkLengthEmpty(displayMeals) ? (
+							) : checkLengthEmpty(filteredDisplayMeals) ? (
 								<Placeholder className="space-y-3 rounded-small border border-dashed border-default-200/80 bg-background/35 px-3 py-5 text-small dark:bg-default-50/5">
 									{group.mealSource === 'recommended' ? (
-										<p>暂无匹配的推荐套餐</p>
+										<p>
+											{isRecommendedFilterActive
+												? isRecommendedMealsComplete
+													? '暂无符合当前筛选的推荐套餐'
+													: '正在生成更多推荐套餐，稍后可能出现符合筛选的结果'
+												: '暂无匹配的推荐套餐'}
+										</p>
 									) : (
 										<>
 											<p>暂无可见的自定义套餐</p>
@@ -824,7 +1206,7 @@ function CustomerGroup({
 					</motion.div>
 				)}
 			</AnimatePresence>
-		</section>
+		</Card>
 	);
 }
 
@@ -1173,6 +1555,7 @@ export default function CustomerRarePlanDrawer() {
 		'auto'
 	);
 	const normalizedDraftName = normalizeCustomerRarePlanName(draftName);
+	const activePlanCustomerSort = activePlan?.customerSort ?? 'default';
 	const activePlanMealSource = activePlan?.mealSource ?? 'saved';
 	const activePlanMode = activePlan?.mode ?? 'region';
 	const isRenameDisabled =
@@ -1417,7 +1800,7 @@ export default function CustomerRarePlanDrawer() {
 		setIsHelpPopoverOpen(true);
 		globalStore.setPreferencesModalIsOpen(
 			true,
-			null,
+			'sideButton',
 			'customer-hidden-items'
 		);
 	}, [vibrate]);
@@ -1428,7 +1811,7 @@ export default function CustomerRarePlanDrawer() {
 		setIsHelpPopoverOpen(true);
 		globalStore.setPreferencesModalIsOpen(
 			true,
-			null,
+			'sideButton',
 			'global-popular-trend'
 		);
 	}, [vibrate]);
@@ -1524,6 +1907,23 @@ export default function CustomerRarePlanDrawer() {
 		[activePlan, vibrate]
 	);
 
+	const handleCustomerSortChange = useCallback(
+		(selection: Selection) => {
+			const [customerSort] =
+				selectionToValues<TCustomerRarePlanCustomerSort>(selection);
+			if (
+				customerSort === undefined ||
+				activePlan === null ||
+				activePlan.customerSort === customerSort
+			) {
+				return;
+			}
+
+			customerStore.setCustomerRarePlanCustomerSort(customerSort);
+		},
+		[activePlan]
+	);
+
 	const handleToggleControls = useCallback(() => {
 		guardCustomerGroupToggleDuringControlsAnimation();
 		vibrate();
@@ -1566,7 +1966,7 @@ export default function CustomerRarePlanDrawer() {
 		<>
 			<div
 				ref={bookmarkRef}
-				className="fixed left-0 top-[calc(var(--navbar-height,4rem)+var(--announcement-bar-offset,0rem)+2.5rem)] z-30"
+				className="fixed left-0 top-[calc(var(--navbar-height,4rem)+var(--announcement-bar-offset,0rem)+2rem)] z-30 xl:top-[calc(var(--navbar-height,4rem)+var(--announcement-bar-offset,0rem)+2.5rem)]"
 			>
 				<Button
 					color="default"
@@ -2376,6 +2776,41 @@ export default function CustomerRarePlanDrawer() {
 																</Select>
 															</div>
 														</motion.div>
+														<Select
+															disableAnimation={
+																isReducedMotion
+															}
+															disallowEmptySelection
+															items={
+																CUSTOMER_RARE_PLAN_CUSTOMER_SORT_OPTIONS
+															}
+															label="稀客排序"
+															selectedKeys={[
+																activePlanCustomerSort,
+															]}
+															selectionMode="single"
+															size="sm"
+															onSelectionChange={
+																handleCustomerSortChange
+															}
+															popoverProps={
+																selectPopoverProps
+															}
+															classNames={
+																selectClassNames
+															}
+														>
+															{({
+																label,
+																value,
+															}) => (
+																<SelectItem
+																	key={value}
+																>
+																	{label}
+																</SelectItem>
+															)}
+														</Select>
 													</div>
 												</motion.div>
 											</motion.div>
@@ -2582,6 +3017,17 @@ export default function CustomerRarePlanDrawer() {
 															)
 														)}
 													</div>
+													<div
+														className={getDrawerSkeletonClassName(
+															{
+																className:
+																	'h-12 rounded-small',
+																isHighAppearance,
+																toneClassName:
+																	DRAWER_SKELETON_MUTED_BLOCK_CLASSNAME,
+															}
+														)}
+													/>
 												</div>
 											)}
 										</aside>

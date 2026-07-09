@@ -3,9 +3,9 @@ import {
 	type ISyncStateItemConflict,
 	type ISyncStatePutBody,
 	type ISyncStateRecord,
-	SYNC_SCHEMA_VERSION_MAP,
 	type TSyncNamespace,
 	type TSyncStatePutResult,
+	checkSupportedSyncSchemaVersion,
 } from '@/lib/account/sync';
 import {
 	checkSyncNamespace,
@@ -53,7 +53,10 @@ export function parseUserStateData(
 ) {
 	if (
 		!checkSyncNamespace(record.namespace) ||
-		record.schema_version !== SYNC_SCHEMA_VERSION_MAP[record.namespace]
+		!checkSupportedSyncSchemaVersion(
+			record.namespace,
+			record.schema_version
+		)
 	) {
 		throw new Error('invalid-user-state-data');
 	}

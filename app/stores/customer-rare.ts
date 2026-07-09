@@ -44,6 +44,7 @@ import type {
 	ICustomerRarePlansState,
 	IMealRecipe,
 	IPopularTrend,
+	TCustomerRarePlanCustomerSort,
 	TCustomerRarePlanMealSource,
 	TCustomerRarePlanMode,
 } from '@/types';
@@ -132,8 +133,9 @@ const storeVersion = {
 	mealData: 18,
 	tableShare: 19, // eslint-disable-next-line sort-keys
 	deleteMealIndex: 20,
-	plans: 22,
-	removeCustomerSearchValue: 21,
+	removeCustomerSearchValue: 21, // eslint-disable-next-line sort-keys
+	plans: 22, // eslint-disable-next-line sort-keys
+	planCustomerSort: 23,
 } as const;
 
 function trackCustomerRarePlanFilterChange(
@@ -154,6 +156,16 @@ function trackCustomerRarePlanMealSourceChange(
 		trackEvent.category.click,
 		'Customer Rare Plan Meal Source Button',
 		source
+	);
+}
+
+function trackCustomerRarePlanCustomerSortChange(
+	customerSort: TCustomerRarePlanCustomerSort
+) {
+	trackEvent(
+		trackEvent.category.click,
+		'Customer Rare Plan Sort Button',
+		customerSort
 	);
 }
 
@@ -298,7 +310,7 @@ export const customerRareStore = store(state, {
 		}),
 		persistMiddleware<typeof state>({
 			name: storeName,
-			version: storeVersion.plans,
+			version: storeVersion.planCustomerSort,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -552,6 +564,11 @@ export const customerRareStore = store(state, {
 				}
 				if (version < storeVersion.plans) {
 					oldState.persistence.plans = { activeId: null, items: [] };
+				}
+				if (version < storeVersion.planCustomerSort) {
+					for (const plan of oldState.persistence.plans.items) {
+						plan.customerSort = 'default';
+					}
 				}
 				return persistedState as typeof state;
 			},
@@ -1436,6 +1453,24 @@ export const customerRareStore = store(state, {
 				'Customer Rare Plan Button',
 				`Switch:${planId}`
 			);
+		},
+		setCustomerRarePlanCustomerSort(
+			customerSort: TCustomerRarePlanCustomerSort
+		) {
+			const activePlan = getActiveCustomerRarePlanFromState(
+				currentStore.persistence.plans.get()
+			);
+			if (activePlan?.customerSort === customerSort) {
+				return;
+			}
+			currentStore.persistence.plans.set((prev) => {
+				ensureActiveCustomerRarePlan(prev);
+				updateActiveCustomerRarePlan(prev, (plan) => {
+					plan.customerSort = customerSort;
+					return true;
+				});
+			});
+			trackCustomerRarePlanCustomerSortChange(customerSort);
 		},
 		setCustomerRarePlanExcludes(values: ReadonlyArray<TCustomerRareName>) {
 			const nextValues = dedupeCustomerRarePlanValues(values);

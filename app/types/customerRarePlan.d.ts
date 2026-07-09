@@ -8,8 +8,14 @@ import {
 import { type TRatingKey } from './evaluation';
 import { type IMealRecipe } from './meal';
 
-export type TCustomerRarePlanMode = 'manual' | 'region';
+export type TCustomerRarePlanCustomerSort =
+	| 'default'
+	| 'pinyin-asc'
+	| 'pinyin-asc-flat'
+	| 'pinyin-desc'
+	| 'pinyin-desc-flat';
 export type TCustomerRarePlanMealSource = 'recommended' | 'saved';
+export type TCustomerRarePlanMode = 'manual' | 'region';
 
 export interface ICustomerRareMeal {
 	beverage: TBeverageName;
@@ -20,6 +26,7 @@ export interface ICustomerRareMeal {
 
 export interface ICustomerRarePlan {
 	createdAt: number;
+	customerSort: TCustomerRarePlanCustomerSort;
 	excludes: TCustomerRareName[];
 	id: string;
 	includes: TCustomerRareName[];
@@ -44,6 +51,7 @@ export interface IResolvedCustomerRarePlanMeal {
 		rating: TRatingKey | null;
 	};
 	meal: ICustomerRareMeal;
+	recommendedSetIndex: number | null;
 	source: TCustomerRarePlanMealSource;
 	visibleIndex: number;
 }

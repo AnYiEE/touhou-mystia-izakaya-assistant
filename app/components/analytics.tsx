@@ -106,6 +106,7 @@ type TAction =
 	| 'Customer Rare Plan Meal Source'
 	| 'Customer Rare Plan Mode'
 	| 'Customer Rare Plan Navigation'
+	| 'Customer Rare Plan Sort'
 	| 'Donation Modal'
 	| 'Error'
 	| 'Export'

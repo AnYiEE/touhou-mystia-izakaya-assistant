@@ -4,8 +4,8 @@ import {
 	type ISyncStateChange,
 	type ISyncStatePutBody,
 	SYNC_NAMESPACE_MAP,
-	SYNC_SCHEMA_VERSION_MAP,
 	type TSyncNamespace,
+	checkSupportedSyncSchemaVersion,
 } from '@/lib/account/sync';
 import { MAX_SYNC_CHANGE_BYTES } from '@/lib/account/shared/requestLimits';
 import {
@@ -59,6 +59,29 @@ const recipeColumnKeys = new Set([
 	'time',
 ]);
 const themeValues = new Set<string>(Object.values(THEME_MAP));
+const customerRarePlanSortValues = new Set([
+	'default',
+	'pinyin-asc',
+	'pinyin-asc-flat',
+	'pinyin-desc',
+	'pinyin-desc-flat',
+]);
+const customerRarePlanKeys = [
+	'createdAt',
+	'customerSort',
+	'excludes',
+	'id',
+	'includes',
+	'manualCustomers',
+	'mealSource',
+	'mode',
+	'name',
+	'places',
+	'updatedAt',
+];
+const legacyCustomerRarePlanKeys = customerRarePlanKeys.filter(
+	(key) => key !== 'customerSort'
+);
 
 function validateMealRecipe(data: unknown) {
 	return (
@@ -126,22 +149,27 @@ function validateMealSnapshot(
 	);
 }
 
-function validateCustomerRarePlan(data: unknown) {
+function validateCustomerRarePlan(
+	data: unknown,
+	{ allowLegacyCustomerSort = false } = {}
+) {
+	if (!isPlainObject(data)) {
+		return false;
+	}
+
+	const hasCustomerSort = 'customerSort' in data;
+	if (!hasCustomerSort && !allowLegacyCustomerSort) {
+		return false;
+	}
+
 	return (
-		isPlainObject(data) &&
-		hasExactKeys(data, [
-			'createdAt',
-			'excludes',
-			'id',
-			'includes',
-			'manualCustomers',
-			'mealSource',
-			'mode',
-			'name',
-			'places',
-			'updatedAt',
-		]) &&
+		(hasCustomerSort
+			? hasExactKeys(data, customerRarePlanKeys)
+			: hasExactKeys(data, legacyCustomerRarePlanKeys)) &&
 		isIntegerInRange(data['createdAt'], 0, Number.MAX_SAFE_INTEGER - 1) &&
+		(!hasCustomerSort ||
+			(typeof data['customerSort'] === 'string' &&
+				customerRarePlanSortValues.has(data['customerSort']))) &&
 		isAllowedStringArray(data['excludes'], customerRareNames) &&
 		typeof data['id'] === 'string' &&
 		data['id'].length > 0 &&
@@ -159,13 +187,18 @@ function validateCustomerRarePlan(data: unknown) {
 	);
 }
 
-function validateCustomerRarePlans(data: unknown) {
+function validateCustomerRarePlans(
+	data: unknown,
+	{ allowLegacyCustomerSort = false } = {}
+) {
 	if (
 		!isPlainObject(data) ||
 		!hasExactKeys(data, ['activeId', 'items']) ||
 		(data['activeId'] !== null && typeof data['activeId'] !== 'string') ||
 		!Array.isArray(data['items']) ||
-		!data['items'].every(validateCustomerRarePlan)
+		!data['items'].every((plan) =>
+			validateCustomerRarePlan(plan, { allowLegacyCustomerSort })
+		)
 	) {
 		return false;
 	}
@@ -291,7 +324,9 @@ export function validateSyncStateData(change: ISyncStateChange) {
 		});
 	}
 	if (change.namespace === SYNC_NAMESPACE_MAP.customerRarePlans) {
-		return validateCustomerRarePlans(change.data);
+		return validateCustomerRarePlans(change.data, {
+			allowLegacyCustomerSort: change.schema_version === 1,
+		});
 	}
 	if (change.namespace === SYNC_NAMESPACE_MAP.customerRareSettings) {
 		return (
@@ -363,8 +398,10 @@ export function parseSyncStatePutBody(
 			!isNonNegativeSafeInteger(change['revision']) ||
 			change['revision'] >= Number.MAX_SAFE_INTEGER ||
 			!('schema_version' in change) ||
-			change['schema_version'] !==
-				SYNC_SCHEMA_VERSION_MAP[change['namespace']]
+			!checkSupportedSyncSchemaVersion(
+				change['namespace'],
+				change['schema_version']
+			)
 		) {
 			return null;
 		}

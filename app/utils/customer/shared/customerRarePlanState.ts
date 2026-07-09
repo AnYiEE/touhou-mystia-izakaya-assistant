@@ -23,6 +23,7 @@ export function createCustomerRarePlan(
 
 	return {
 		createdAt: now,
+		customerSort: 'default',
 		excludes: [],
 		id: createAccountClientId(),
 		includes: [],
@@ -44,6 +45,7 @@ export function copyCustomerRarePlan(
 	return {
 		...plan,
 		createdAt: now,
+		customerSort: plan.customerSort,
 		excludes: [...plan.excludes],
 		id: createAccountClientId(),
 		includes: [...plan.includes],

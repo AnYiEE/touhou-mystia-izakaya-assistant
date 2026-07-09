@@ -51,6 +51,7 @@ import {
 	SYNC_SCHEMA_VERSION_MAP,
 	type TSyncNamespace,
 	type TSyncStatePutResult,
+	checkSupportedSyncSchemaVersion,
 } from '@/lib/account/sync';
 import { SEND_BEACON_SYNC_BODY_BYTES } from '@/lib/account/shared/requestLimits';
 import {
@@ -146,7 +147,7 @@ function validateRemoteSyncRecord(record: unknown): ISyncStateRecord {
 
 	if (
 		!checkSyncNamespace(namespace) ||
-		schemaVersion !== SYNC_SCHEMA_VERSION_MAP[namespace] ||
+		!checkSupportedSyncSchemaVersion(namespace, schemaVersion) ||
 		!checkRemoteRevision(revision) ||
 		!checkNonNegativeSafeInteger(updatedAt)
 	) {
@@ -217,7 +218,7 @@ function validateSyncPutResult(result: unknown): TSyncStatePutResult {
 		return { namespace, revision, status, updated_at: updatedAt };
 	}
 	const { data, schema_version: schemaVersion } = result;
-	if (schemaVersion !== SYNC_SCHEMA_VERSION_MAP[namespace]) {
+	if (!checkSupportedSyncSchemaVersion(namespace, schemaVersion)) {
 		throw new TypeError('invalid-sync-result');
 	}
 
@@ -566,8 +567,40 @@ function postRemoteAppliedBroadcast({
 	});
 }
 
+function migrateDirtyQueueEntryToCurrentSchema({
+	entry,
+	userId,
+}: {
+	entry: IDirtyQueueEntry;
+	userId: string;
+}) {
+	const schemaVersion = SYNC_SCHEMA_VERSION_MAP[entry.namespace];
+	if (entry.schema_version >= schemaVersion) {
+		return entry;
+	}
+
+	const serializer = getAccountSyncSerializer(entry.namespace);
+	const data = serializer.migrate(entry.data, entry.schema_version);
+	const migratedEntry = {
+		...entry,
+		data,
+		schema_version: schemaVersion,
+		snapshotHash: createSnapshotHash(data),
+	} satisfies IDirtyQueueEntry;
+
+	writeDirtyQueueEntry(userId, migratedEntry);
+
+	return migratedEntry;
+}
+
+function readMigratedDirtyQueueEntries(userId: string) {
+	return readDirtyQueueEntries(userId).map((entry) =>
+		migrateDirtyQueueEntryToCurrentSchema({ entry, userId })
+	);
+}
+
 function getFlushableEntries(userId: string) {
-	return readDirtyQueueEntries(userId).filter(
+	return readMigratedDirtyQueueEntries(userId).filter(
 		(entry) => entry.paused === null
 	);
 }
@@ -691,17 +724,37 @@ function tryResolveInteractionCountOnlyConflict(
 	}
 }
 
+function normalizeRestoredAccountSyncConflict(conflict: ISyncConflictItem) {
+	const serializer = getAccountSyncSerializer(conflict.namespace);
+
+	return {
+		...conflict,
+		cloud: serializer.deserialize(conflict.cloud),
+		local: serializer.deserialize(conflict.local),
+		merged:
+			conflict.merged === null
+				? null
+				: serializer.deserialize(conflict.merged),
+	} satisfies ISyncConflictItem;
+}
+
 function restoreAccountSyncConflict(
 	conflict: ISyncConflictItem,
 	userId: string
 ) {
 	if (tryResolveInteractionCountOnlyConflict(conflict, userId)) {
-		return false;
+		return null;
 	}
 
-	setAccountSyncConflict(conflict);
+	try {
+		return normalizeRestoredAccountSyncConflict(conflict);
+	} catch (error) {
+		console.warn('Failed to restore paused account sync conflict.', {
+			errorCode: getLogSafeErrorCode(error),
+		});
 
-	return true;
+		return null;
+	}
 }
 
 function createConflictFromDirtyEntry({
@@ -718,7 +771,7 @@ function createConflictFromDirtyEntry({
 		record === null
 			? serializer.getDefaultSnapshot()
 			: serializer.migrate(record.data, record.schema_version);
-	const local = serializer.deserialize(entry.data);
+	const local = serializer.migrate(entry.data, entry.schema_version);
 	const mergeResult = serializer.merge({
 		base: null,
 		cloud,
@@ -795,7 +848,7 @@ function checkRemoteStateCleared({
 		return false;
 	}
 
-	return readDirtyQueueEntries(userId).length === 0;
+	return readMigratedDirtyQueueEntries(userId).length === 0;
 }
 
 function applyRemoteStatePreservingDirty({
@@ -825,7 +878,7 @@ function applyRemoteStatePreservingDirty({
 			: records.filter((record) =>
 					targetNamespaceSet.has(record.namespace)
 				);
-	const dirtyEntries = readDirtyQueueEntries(userId).filter(
+	const dirtyEntries = readMigratedDirtyQueueEntries(userId).filter(
 		(entry) =>
 			targetNamespaceSet === null ||
 			targetNamespaceSet.has(entry.namespace)
@@ -836,7 +889,12 @@ function applyRemoteStatePreservingDirty({
 
 	dirtyEntries.forEach((entry) => {
 		if (entry.paused === 'conflict' && entry.conflict !== null) {
-			if (restoreAccountSyncConflict(entry.conflict, userId)) {
+			const restoredConflict = restoreAccountSyncConflict(
+				entry.conflict,
+				userId
+			);
+			if (restoredConflict !== null) {
+				setAccountSyncConflict(restoredConflict);
 				preserveNamespaceSet.add(entry.namespace);
 			}
 			return;
@@ -848,7 +906,7 @@ function applyRemoteStatePreservingDirty({
 			record === undefined
 				? null
 				: serializer.migrate(record.data, record.schema_version);
-		const local = serializer.deserialize(entry.data);
+		const local = serializer.migrate(entry.data, entry.schema_version);
 		const mergeResult = serializer.merge({
 			base: null,
 			cloud,
@@ -913,6 +971,28 @@ function applyRemoteStatePreservingDirty({
 		stateEpoch,
 		userId,
 	});
+	recordsToApply.forEach((record) => {
+		const schemaVersion = SYNC_SCHEMA_VERSION_MAP[record.namespace];
+		if (record.schema_version >= schemaVersion) {
+			return;
+		}
+
+		const serializer = getAccountSyncSerializer(record.namespace);
+		const data = serializer.migrate(record.data, record.schema_version);
+		writeDirtyQueueEntry(userId, {
+			attempts: 0,
+			baseRevision: record.revision,
+			clientMutationId: createAccountClientId(),
+			conflict: null,
+			data,
+			dirtyAt: Date.now(),
+			lastError: null,
+			namespace: record.namespace,
+			paused: null,
+			schema_version: schemaVersion,
+			snapshotHash: createSnapshotHash(data),
+		});
+	});
 	dirtyRemoteRecords.forEach((record) => {
 		const serializer = getAccountSyncSerializer(record.namespace);
 		const data = serializer.migrate(record.data, record.schema_version);
@@ -928,16 +1008,16 @@ function applyRemoteStatePreservingDirty({
 }
 
 export function restoreAccountSyncRuntimeState(userId: string) {
-	const entries = readDirtyQueueEntries(userId);
+	const entries = readMigratedDirtyQueueEntries(userId);
 	accountStore.shared.sync.conflicts.set(
 		entries
-			.map((entry) =>
-				entry.paused === 'conflict' &&
-				entry.conflict !== null &&
-				restoreAccountSyncConflict(entry.conflict, userId)
-					? entry.conflict
-					: null
-			)
+			.map((entry) => {
+				if (entry.paused !== 'conflict' || entry.conflict === null) {
+					return null;
+				}
+
+				return restoreAccountSyncConflict(entry.conflict, userId);
+			})
 			.filter(
 				(conflict): conflict is ISyncConflictItem => conflict !== null
 			)
@@ -972,7 +1052,7 @@ export function resetAccountSyncCloudStateAfterDelete({
 		return false;
 	}
 
-	const dirtyEntries = readDirtyQueueEntries(userId);
+	const dirtyEntries = readMigratedDirtyQueueEntries(userId);
 	const preservedDirtyEntries =
 		deleteStartedAt === undefined || deleteStartedAt <= 0
 			? []
@@ -1017,7 +1097,7 @@ function pauseDirtyEntriesAfterRemoteClear({
 		return false;
 	}
 
-	const dirtyEntries = readDirtyQueueEntries(userId);
+	const dirtyEntries = readMigratedDirtyQueueEntries(userId);
 	if (dirtyEntries.length === 0) {
 		return false;
 	}
@@ -1633,7 +1713,7 @@ export async function takeOverLocalAccountData() {
 		return true;
 	}
 	const recordMap = getRecordMap(remoteState.records);
-	const dirtyEntries = readDirtyQueueEntries(context.user.id);
+	const dirtyEntries = readMigratedDirtyQueueEntries(context.user.id);
 	const dirtyNamespaceSet = new Set(
 		dirtyEntries.map((entry) => entry.namespace)
 	);
@@ -1650,12 +1730,12 @@ export async function takeOverLocalAccountData() {
 				dirtyEntry?.paused === 'conflict' &&
 				dirtyEntry.conflict !== null
 			) {
-				if (
-					restoreAccountSyncConflict(
-						dirtyEntry.conflict,
-						context.user.id
-					)
-				) {
+				const restoredConflict = restoreAccountSyncConflict(
+					dirtyEntry.conflict,
+					context.user.id
+				);
+				if (restoredConflict !== null) {
+					setAccountSyncConflict(restoredConflict);
 					return;
 				}
 			} else {

@@ -17,6 +17,7 @@ import {
 	SYNC_SCHEMA_VERSION_MAP,
 	type TSyncNamespace,
 	type TSyncPausedReason,
+	checkSupportedSyncSchemaVersion,
 } from '@/lib/account/sync';
 import {
 	isNonNegativeSafeInteger,
@@ -152,7 +153,7 @@ function sanitizeDirtyQueueEntry({
 		!isPlainObject(entry) ||
 		!('data' in entry) ||
 		entry['namespace'] !== namespace ||
-		entry['schema_version'] !== SYNC_SCHEMA_VERSION_MAP[namespace] ||
+		!checkSupportedSyncSchemaVersion(namespace, entry['schema_version']) ||
 		!isNonNegativeSafeInteger(entry['attempts']) ||
 		!checkSyncRevision(entry['baseRevision']) ||
 		!isNonNegativeSafeInteger(entry['dirtyAt']) ||
