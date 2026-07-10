@@ -12,6 +12,8 @@ import {
 	useState,
 } from 'react';
 
+import { useCoordinatedOverlay } from '@/hooks';
+
 import {
 	Modal as HeroUIModal,
 	ModalBody,
@@ -23,6 +25,11 @@ import { type InternalForwardRefRenderFunction } from '@heroui/system';
 import { useReducedMotion } from '@/design/ui/hooks';
 import { cn } from '@/design/ui/utils';
 
+import {
+	type IOverlayShortcutDefinition,
+	type TOverlayId,
+} from '@/lib/overlayCoordinator';
+
 import ScrollMask from './scrollMask';
 
 import { globalStore as store } from '@/stores';
@@ -30,9 +37,16 @@ import { globalStore as store } from '@/stores';
 interface IProps extends Omit<ModalProps, 'children'> {
 	children: ReactNode | ((onClose: () => void) => ReactNode);
 	classNames?: ModalProps['classNames'] & { content?: string };
+	coordination?: IModalCoordinationProps;
 	scrollMode?: 'mask' | 'shadow';
 	scrollShadow?: boolean;
 	scrollShadowSize?: number;
+}
+
+interface IModalCoordinationProps {
+	canActivate?: () => boolean;
+	id: TOverlayId;
+	shortcuts?: ReadonlyArray<IOverlayShortcutDefinition>;
 }
 
 interface IModalScrollBodyProps {
@@ -50,6 +64,14 @@ interface IScrollState {
 const SCROLL_EDGE_THRESHOLD = 1;
 
 const DEFAULT_SCROLL_STATE: IScrollState = { bottom: false, top: false };
+
+function getActiveCoordinatedModal(id: TOverlayId) {
+	return [
+		...document.querySelectorAll<HTMLElement>(
+			'[data-coordinated-overlay-id][data-open="true"]'
+		),
+	].find(({ dataset }) => dataset['coordinatedOverlayId'] === id);
+}
 
 function getScrollState(element: HTMLDivElement): IScrollState {
 	const maxScrollTop = element.scrollHeight - element.clientHeight;
@@ -215,7 +237,13 @@ export default memo<IProps>(function Modal({
 	backdrop,
 	children,
 	classNames,
+	coordination,
 	disableAnimation,
+	isDismissable = true,
+	isKeyboardDismissDisabled,
+	isOpen = false,
+	onClose,
+	onOpenChange,
 	portalContainer,
 	scrollBehavior = 'inside',
 	scrollMode = 'shadow',
@@ -227,6 +255,52 @@ export default memo<IProps>(function Modal({
 	const isReducedMotion = useReducedMotion();
 
 	const isHighAppearance = store.persistence.highAppearance.use();
+
+	const coordinationId = coordination?.id;
+
+	const requestBusinessClose = useCallback(() => {
+		onOpenChange?.(false);
+		onClose?.();
+	}, [onClose, onOpenChange]);
+
+	const {
+		isPresentationOpen,
+		presentationState,
+		shouldSuppressBackdropBlur,
+	} = useCoordinatedOverlay({
+		canActivate: coordination?.canActivate,
+		dismissable: isDismissable && !(isKeyboardDismissDisabled ?? false),
+		exitDelayMs:
+			coordination !== undefined && isReducedMotion ? 0 : undefined,
+		getRootElement: () =>
+			coordinationId === undefined
+				? null
+				: (getActiveCoordinatedModal(coordinationId) ?? null),
+		id: coordinationId,
+		isOpen,
+		keepOpenWhenCovered: coordination !== undefined,
+		onRequestClose: requestBusinessClose,
+		shortcuts: coordination?.shortcuts,
+	});
+
+	const isCovered =
+		coordinationId !== undefined && presentationState === 'covered';
+
+	const handleClose = useCallback(() => {
+		if (!isCovered) {
+			onClose?.();
+		}
+	}, [isCovered, onClose]);
+
+	const handleOpenChange = useCallback(
+		(nextIsOpen: boolean) => {
+			if (!isCovered || nextIsOpen) {
+				onOpenChange?.(nextIsOpen);
+			}
+		},
+		[isCovered, onOpenChange]
+	);
+
 	const {
 		body: bodyClassName,
 		content: contentClassName,
@@ -253,11 +327,24 @@ export default memo<IProps>(function Modal({
 	return (
 		<HeroUIModal
 			backdrop={backdrop ?? (isHighAppearance ? 'blur' : 'opaque')}
+			data-coordinated-overlay-id={coordinationId}
 			disableAnimation={disableAnimation ?? isReducedMotion}
+			inert={isCovered}
+			isDismissable={!isCovered && isDismissable}
+			isKeyboardDismissDisabled={
+				isCovered || (isKeyboardDismissDisabled ?? false)
+			}
+			isOpen={isPresentationOpen}
+			onClose={handleClose}
+			onOpenChange={handleOpenChange}
 			scrollBehavior={scrollBehavior}
 			size={size}
 			classNames={{
 				...modalClassNames,
+				backdrop: cn(
+					modalClassNames.backdrop,
+					shouldSuppressBackdropBlur && '!backdrop-blur-none'
+				),
 				base: cn(
 					isHighAppearance
 						? 'bg-blend-mystia'

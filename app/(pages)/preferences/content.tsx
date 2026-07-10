@@ -24,6 +24,8 @@ import { accountStore, customerRareStore, globalStore } from '@/stores';
 import { toSet } from '@/utilities';
 
 const { isAccountFeatureClientEnabled } = siteConfig;
+const PREFERENCES_APPEARANCE_SWITCH_SETTLE_MS = 800;
+const PREFERENCES_MODAL_EXIT_DELAY_MS = 300;
 
 interface IProps extends IDataManagerProps {}
 
@@ -118,25 +120,25 @@ export default memo<IProps>(function Content({ onModalClose }) {
 			'Account Button',
 			'Open Modal From Preferences Modal'
 		);
-		accountStore.shared.accountModal.isOpen.set(true);
+		accountStore.openAccountModal('preferences');
 	}, [vibrate]);
 
 	const handleIsHighAppearanceChange = useCallback(
 		(value: boolean) => {
 			globalStore.persistence.highAppearance.set(value);
-			// Wait for the switch animation to complete (the animate will take 800ms).
+			// Wait for the appearance switch animation to settle before closing.
 			setTimeout(
 				() => {
 					onModalClose?.();
-					// Wait for the modal to close (the animate will take 300ms).
+					// Wait for the preferences modal exit animation before reloading.
 					setTimeout(
 						() => {
 							location.reload();
 						},
-						isReducedMotion ? 0 : 300
+						isReducedMotion ? 0 : PREFERENCES_MODAL_EXIT_DELAY_MS
 					);
 				},
-				isReducedMotion ? 0 : 800
+				isReducedMotion ? 0 : PREFERENCES_APPEARANCE_SWITCH_SETTLE_MS
 			);
 		},
 		[isReducedMotion, onModalClose]

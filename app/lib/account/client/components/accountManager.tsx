@@ -134,6 +134,10 @@ import type {
 	IAccountSsoGrant,
 	IAccountSsoGrantListData,
 } from '@/lib/account/shared/types';
+import {
+	pushOverlayChild,
+	requestOverlayClose,
+} from '@/lib/overlayCoordinator';
 import { accountStore, globalStore } from '@/stores';
 import { downloadJson } from '@/utilities';
 
@@ -619,6 +623,27 @@ export default memo<IProps>(function AccountManager() {
 	const ssoGrantListRequestIdRef = useRef(0);
 	const ssoGrantsFetchRequestedUserIdRef = useRef<string | null>(null);
 
+	const handleOpenLegalModal = useCallback(() => {
+		trackEvent(
+			trackEvent.category.click,
+			'Account Auth Button',
+			'Open Legal Statement'
+		);
+		pushOverlayChild({
+			childId: 'account.legal',
+			onOpenChild: () => {
+				setIsLegalModalOpen(true);
+			},
+			parentId: 'account.main',
+		});
+	}, []);
+
+	const handleCloseLegalModal = useCallback(() => {
+		vibrate();
+		setIsLegalModalOpen(false);
+		requestOverlayClose('account.legal');
+	}, [vibrate]);
+
 	const isRegistrationPasswordInvalid =
 		authMode === 'register' &&
 		password.length > 0 &&
@@ -830,7 +855,7 @@ export default memo<IProps>(function AccountManager() {
 				}
 				if (isSsoContext) {
 					setShouldHideAfterSsoAuth(true);
-					accountStore.shared.accountModal.isOpen.set(false);
+					accountStore.closeAccountModal();
 					router.refresh();
 					return;
 				}
@@ -2415,7 +2440,7 @@ export default memo<IProps>(function AccountManager() {
 			}
 			if (isSsoContext) {
 				setShouldHideAfterSsoAuth(true);
-				accountStore.shared.accountModal.isOpen.set(false);
+				accountStore.closeAccountModal();
 				router.refresh();
 				return;
 			}
@@ -2661,7 +2686,7 @@ export default memo<IProps>(function AccountManager() {
 				}
 				if (isSsoContext) {
 					setShouldHideAfterSsoAuth(true);
-					accountStore.shared.accountModal.isOpen.set(false);
+					accountStore.closeAccountModal();
 					router.refresh();
 					return;
 				}
@@ -3114,14 +3139,7 @@ export default memo<IProps>(function AccountManager() {
 					size="sm"
 					variant="light"
 					className="h-auto min-h-0 min-w-0 overflow-visible p-0 align-baseline text-tiny leading-5 text-primary-600 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent"
-					onPress={() => {
-						trackEvent(
-							trackEvent.category.click,
-							'Account Auth Button',
-							'Open Legal Statement'
-						);
-						setIsLegalModalOpen(true);
-					}}
+					onPress={handleOpenLegalModal}
 				>
 					<span className="group relative inline-block leading-5">
 						法律声明
@@ -4609,11 +4627,10 @@ export default memo<IProps>(function AccountManager() {
 				</div>
 			)}
 			<Modal
+				coordination={{ id: 'account.legal' }}
 				isOpen={isLegalModalOpen}
 				size="2xl"
-				onClose={() => {
-					setIsLegalModalOpen(false);
-				}}
+				onClose={handleCloseLegalModal}
 			>
 				<LegalStatement />
 			</Modal>

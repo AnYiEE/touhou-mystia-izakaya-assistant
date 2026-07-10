@@ -41,6 +41,7 @@ export default function InfoButton() {
 	return (
 		<InfoButtonBase
 			defaultExpandedKeys={getDefaultExpandedKeys()}
+			overlayId="customer-normal.info"
 			onButtonPress={() => {
 				trackEvent(
 					trackEvent.category.click,

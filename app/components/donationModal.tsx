@@ -7,10 +7,6 @@ import { useMounted, usePathname, useVibrate } from '@/hooks';
 import { Button, Modal } from '@/design/ui/components';
 
 import { trackEvent } from '@/components/analytics';
-import {
-	customerRareTutorialPathname,
-	customerRareTutorialStoreKey,
-} from '@/components/customerRareTutorial';
 import Heading from '@/components/heading';
 import QRCode from '@/components/qrCode';
 
@@ -111,19 +107,31 @@ export default function DonationModal() {
 	useDonationModalTrigger();
 
 	const isMounted = useMounted();
-	const { pathname } = usePathname();
 	const vibrate = useVibrate();
 
 	const interactionCount =
 		store.persistence.donationModal.interactionCount.use();
 	const isOpen = store.shared.donationModal.isOpen.use();
+	const lastMilestoneShown =
+		store.persistence.donationModal.lastMilestoneShown.use();
+	const lastShown = store.persistence.donationModal.lastShown.use();
+	const currentMilestone = getCurrentMilestone(interactionCount);
+	const daysSinceLastShown =
+		lastShown === null
+			? null
+			: (Date.now() - lastShown) / (1000 * 60 * 60 * 24);
+	const isRequestValid =
+		currentMilestone > lastMilestoneShown &&
+		currentMilestone > 0 &&
+		(daysSinceLastShown === null ||
+			daysSinceLastShown >= REMIND_LATER_DAYS);
+	const canActivate = useCallback(() => isRequestValid, [isRequestValid]);
 
-	const dirverState = store.persistence.dirver.use();
-	const isTutorialPage = pathname.startsWith(customerRareTutorialPathname);
-	const isTutorialCompleted = dirverState.includes(
-		customerRareTutorialStoreKey
-	);
-	const shouldHideForTutorial = isTutorialPage && !isTutorialCompleted;
+	useEffect(() => {
+		if (isOpen && !isRequestValid) {
+			store.setDonationModalIsOpen(false);
+		}
+	}, [isOpen, isRequestValid]);
 
 	const handleClose = useCallback(() => {
 		vibrate();
@@ -151,12 +159,16 @@ export default function DonationModal() {
 		store.setDonationModalIsOpen(false);
 	}, [vibrate]);
 
-	if (shouldHideForTutorial || !isMounted) {
+	if (!isMounted) {
 		return null;
 	}
 
 	return (
-		<Modal isOpen={isOpen} onClose={handleClose}>
+		<Modal
+			coordination={{ canActivate, id: 'donation' }}
+			isOpen={isOpen}
+			onClose={handleClose}
+		>
 			<div className="space-y-4">
 				<Heading as="h2" isFirst>
 					感谢您使用{name}！

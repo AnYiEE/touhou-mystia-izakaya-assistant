@@ -14,7 +14,7 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { useRouter } from 'next/navigation';
-import { usePathname, useVibrate } from '@/hooks';
+import { useIsOverlayTaskActive, usePathname, useVibrate } from '@/hooks';
 
 import {
 	faArrowLeft,
@@ -87,6 +87,12 @@ import {
 	globalStore,
 } from '@/stores';
 import {
+	type IOverlayShortcutDefinition,
+	SPOTLIGHT_EXIT_DURATION_MS,
+	type TOverlayId,
+	handoffOverlay,
+} from '@/lib/overlayCoordinator';
+import {
 	checkIsApplePlatform,
 	createBoundedRuntimeCache,
 	getPinyin,
@@ -138,7 +144,10 @@ const SPOTLIGHT_MODAL_MOTION_PROPS = {
 		exit: {
 			opacity: 0,
 			scale: 0.985,
-			transition: { duration: 0.12, ease: 'easeIn' },
+			transition: {
+				duration: SPOTLIGHT_EXIT_DURATION_MS / 1000,
+				ease: 'easeIn',
+			},
 		},
 		initial: { opacity: 0, scale: 0.985 },
 	},
@@ -1313,13 +1322,13 @@ export default function GlobalSpotlightSearch() {
 	);
 
 	const [query, setQuery] = useState('');
-	const [isApplePlatform, setIsApplePlatform] = useState(false);
 	const [isInputFocused, setIsInputFocused] = useState(false);
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const [recentState, setRecentState] =
 		useState<IRecentState>(EMPTY_RECENT_STATE);
 
 	const isOpen = globalStore.shared.globalSearch.isOpen.use();
+	const isSearchActive = useIsOverlayTaskActive('global.search');
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 	const hiddenDlcs = globalStore.hiddenDlcs.use();
 	const hiddenBeverages = globalStore.hiddenBeverages.use();
@@ -1637,11 +1646,55 @@ export default function GlobalSpotlightSearch() {
 		vibrate,
 	]);
 
+	const shortcuts = useMemo<ReadonlyArray<IOverlayShortcutDefinition>>(
+		() => [
+			{
+				matches: (event) => {
+					const isApplePlatform = checkIsApplePlatform();
+					const hasPlatformSearchModifier = isApplePlatform
+						? event.metaKey && !event.ctrlKey
+						: event.ctrlKey && !event.metaKey;
+
+					return (
+						event.key.toLowerCase() === 'k' &&
+						hasPlatformSearchModifier &&
+						!event.altKey &&
+						!event.shiftKey
+					);
+				},
+				onTrigger: open,
+			},
+			{
+				canHandle: (event) => !isTextEntryElement(event.target),
+				matches: (event) =>
+					event.key === '/' &&
+					!event.ctrlKey &&
+					!event.metaKey &&
+					!event.altKey &&
+					!event.shiftKey,
+				onTrigger: open,
+			},
+		],
+		[open]
+	);
+
 	const handleCloseRequest = useCallback(() => {
 		vibrate();
 		trackGlobalSearchAction('Close');
 		close();
 	}, [close, trackGlobalSearchAction, vibrate]);
+
+	const handoffFromSearch = useCallback(
+		(toId: TOverlayId, onOpenTarget: () => void, isValid?: () => boolean) =>
+			handoffOverlay({
+				fromId: 'global.search',
+				...(isValid === undefined ? {} : { isValid }),
+				onCloseSource: close,
+				onOpenTarget,
+				toId,
+			}),
+		[close]
+	);
 
 	const updateRecentState = useCallback((nextState: IRecentState) => {
 		setRecentState(nextState);
@@ -1692,33 +1745,47 @@ export default function GlobalSpotlightSearch() {
 				`${item.section}:${item.name}`
 			);
 			addOpenedItemToRecentState(item);
-			close();
 
 			if (item.section === 'preferences') {
 				if (item.action === 'open-account-modal') {
-					accountStore.shared.accountModal.isOpen.set(true);
+					handoffFromSearch('account.main', () => {
+						accountStore.openAccountModal();
+					});
 					return;
 				}
 				if (item.action === 'open-customer-rare-plan-drawer') {
-					if (
-						pathname !==
-						GLOBAL_SEARCH_SECTION_PATH_MAP['customer-rare']
-					) {
-						router.push(
-							GLOBAL_SEARCH_SECTION_PATH_MAP['customer-rare']
-						);
-					}
-					customerRareStore.openCustomerRarePlanDrawer();
+					const sourcePathname = globalThis.location.pathname;
+					handoffFromSearch(
+						'customer-rare.plan-drawer',
+						() => {
+							if (
+								pathname !==
+								GLOBAL_SEARCH_SECTION_PATH_MAP['customer-rare']
+							) {
+								router.push(
+									GLOBAL_SEARCH_SECTION_PATH_MAP[
+										'customer-rare'
+									]
+								);
+							}
+							customerRareStore.openCustomerRarePlanDrawer();
+						},
+						() => globalThis.location.pathname === sourcePathname
+					);
 					return;
 				}
 
-				globalStore.setPreferencesModalIsOpen(
-					true,
-					'spotlight',
-					item.targetName as never
-				);
+				handoffFromSearch('preferences', () => {
+					globalStore.setPreferencesModalIsOpen(
+						true,
+						'spotlight',
+						item.targetName as never
+					);
+				});
 				return;
 			}
+
+			close();
 
 			if (
 				item.section === 'customer-normal' ||
@@ -1748,6 +1815,7 @@ export default function GlobalSpotlightSearch() {
 		[
 			addOpenedItemToRecentState,
 			close,
+			handoffFromSearch,
 			pathname,
 			router,
 			trackGlobalSearchAction,
@@ -1884,13 +1952,6 @@ export default function GlobalSpotlightSearch() {
 		(event: KeyboardEvent<HTMLInputElement>) => {
 			const { isComposing } = event.nativeEvent;
 
-			if (event.key === 'Escape' && !isComposing) {
-				event.preventDefault();
-				event.stopPropagation();
-				handleCloseRequest();
-				return;
-			}
-
 			if (event.key === 'ArrowDown') {
 				event.preventDefault();
 				setSelectedIndex((index) => {
@@ -1959,22 +2020,11 @@ export default function GlobalSpotlightSearch() {
 				});
 			}
 		},
-		[
-			handleCloseRequest,
-			handleOpenItem,
-			query,
-			results.length,
-			selectedResult,
-			vibrate,
-		]
+		[handleOpenItem, query, results.length, selectedResult, vibrate]
 	);
 
 	useEffect(() => {
 		setRecentState(readRecentState());
-	}, []);
-
-	useEffect(() => {
-		setIsApplePlatform(checkIsApplePlatform());
 	}, []);
 
 	useEffect(
@@ -1988,16 +2038,21 @@ export default function GlobalSpotlightSearch() {
 	);
 
 	useEffect(() => {
-		if (isOpen) {
-			if (closeResetTimerRef.current !== null) {
-				clearCloseResetTimer();
-				resetSearchState();
-			}
-			requestAnimationFrame(() => {
-				inputRef.current?.focus();
-			});
+		if (!isOpen || !isSearchActive) {
+			return;
 		}
-	}, [clearCloseResetTimer, isOpen, resetSearchState]);
+		if (closeResetTimerRef.current !== null) {
+			clearCloseResetTimer();
+			resetSearchState();
+		}
+		const focusFrame = requestAnimationFrame(() => {
+			inputRef.current?.focus();
+		});
+
+		return () => {
+			cancelAnimationFrame(focusFrame);
+		};
+	}, [clearCloseResetTimer, isOpen, isSearchActive, resetSearchState]);
 
 	useEffect(() => {
 		setSelectedIndex(0);
@@ -2044,51 +2099,6 @@ export default function GlobalSpotlightSearch() {
 		resolvedSelectedIndex,
 		results.length,
 	]);
-
-	useEffect(() => {
-		const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-			if (isOpen && event.key === 'Escape' && !event.isComposing) {
-				event.preventDefault();
-				handleCloseRequest();
-				return;
-			}
-
-			const hasPlatformSearchModifier = isApplePlatform
-				? event.metaKey && !event.ctrlKey
-				: event.ctrlKey && !event.metaKey;
-			const isCommandSearchShortcut =
-				event.key.toLowerCase() === 'k' &&
-				hasPlatformSearchModifier &&
-				!event.altKey &&
-				!event.shiftKey;
-			if (isCommandSearchShortcut) {
-				event.preventDefault();
-				open();
-				return;
-			}
-
-			const isPlainSlashShortcut =
-				event.key === '/' &&
-				!event.ctrlKey &&
-				!event.metaKey &&
-				!event.altKey &&
-				!event.shiftKey;
-			if (isPlainSlashShortcut && !isTextEntryElement(event.target)) {
-				event.preventDefault();
-				open();
-			}
-		};
-
-		globalThis.addEventListener('keydown', handleKeyDown, {
-			capture: true,
-		});
-
-		return () => {
-			globalThis.removeEventListener('keydown', handleKeyDown, {
-				capture: true,
-			});
-		};
-	}, [handleCloseRequest, isApplePlatform, isOpen, open]);
 
 	const renderItemVisual = (
 		item: IGlobalSearchIndexItem | null | undefined,
@@ -2650,6 +2660,7 @@ export default function GlobalSpotlightSearch() {
 
 	return (
 		<Modal
+			coordination={{ id: 'global.search', shortcuts }}
 			isOpen={isOpen}
 			motionProps={SPOTLIGHT_MODAL_MOTION_PROPS}
 			onClose={handleCloseRequest}

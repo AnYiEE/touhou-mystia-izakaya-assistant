@@ -1,5 +1,6 @@
 export * from './useMounted';
 export * from './useAutoHideTooltip';
+export * from './useCoordinatedOverlay';
 export * from './useParams';
 export * from './usePathname';
 export * from './usePictureInPicture';

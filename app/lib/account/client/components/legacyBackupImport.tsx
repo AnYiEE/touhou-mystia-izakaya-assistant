@@ -189,7 +189,7 @@ export default function LegacyBackupImport() {
 			'Account Button',
 			'Open Modal From Legacy Backup Import'
 		);
-		accountStore.shared.accountModal.isOpen.set(true);
+		accountStore.openAccountModal();
 	}, [vibrate]);
 
 	useEffect(() => {

@@ -738,6 +738,7 @@ export default memo<IProps>(function AccountConflictModal() {
 
 	return (
 		<Modal
+			coordination={{ id: 'account.sync-conflict' }}
 			hideCloseButton
 			isDismissable={false}
 			isKeyboardDismissDisabled

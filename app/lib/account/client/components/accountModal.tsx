@@ -32,11 +32,12 @@ export default function AccountModal() {
 
 	const handleClose = useCallback(() => {
 		vibrate();
-		store.shared.accountModal.isOpen.set(false);
+		store.closeAccountModal();
 	}, [vibrate]);
 
 	return (
 		<Modal
+			coordination={{ id: 'account.main' }}
 			isOpen={isOpen}
 			motionProps={ACCOUNT_MODAL_MOTION_PROPS}
 			onClose={handleClose}

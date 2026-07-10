@@ -12,6 +12,7 @@ import { ProgressBar, ProgressBarProvider } from 'react-transition-progress';
 import CompatibleBrowser from '@/components/compatibleBrowser';
 import CustomerRareTutorial from '@/components/customerRareTutorial';
 import DonationModal from '@/components/donationModal';
+import OverlayCoordinatorHost from '@/components/overlayCoordinatorHost';
 import AccountInitialStateHydrator from '@/lib/account/client/components/accountInitialStateHydrator';
 import AccountSessionInitialDataHydrator from '@/lib/account/client/components/accountSessionInitialDataHydrator';
 import AccountSsoGrantInitialDataHydrator from '@/lib/account/client/components/accountSsoGrantInitialDataHydrator';
@@ -223,6 +224,7 @@ export default function Providers({
 	return (
 		<HeroUIProvider locale={locale} navigate={router.push}>
 			<ProgressBarProvider>
+				<OverlayCoordinatorHost />
 				{children}
 				<ProgressBar className="fixed top-0 z-60 h-1 rounded-2xl bg-primary dark:lg:h-0.5" />
 				<CompatibleBrowser />

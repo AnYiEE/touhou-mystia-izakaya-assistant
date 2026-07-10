@@ -8,6 +8,8 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { Modal, Tooltip } from '@/design/ui/components';
 import { useReducedMotion } from '@/design/ui/hooks';
 
+import { type TOverlayId, requestOverlayClose } from '@/lib/overlayCoordinator';
+
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import { default as SiteInfoBase } from '@/components/siteInfo';
 
@@ -37,12 +39,14 @@ interface IProps extends Pick<
 	'children' | 'defaultExpandedKeys'
 > {
 	onButtonPress?: () => void;
+	overlayId: TOverlayId;
 }
 
 export default memo<IProps>(function InfoButtonBase({
 	children,
 	defaultExpandedKeys,
 	onButtonPress,
+	overlayId,
 }) {
 	const isReducedMotion = useReducedMotion();
 	const { params, replaceState } = useParams();
@@ -52,11 +56,12 @@ export default memo<IProps>(function InfoButtonBase({
 	const handleClose = useCallback(() => {
 		vibrate();
 		setOpened(false);
+		requestOverlayClose(overlayId);
 
 		const newParams = new URLSearchParams(params);
 		newParams.delete(PARAM_INFO);
 		replaceState(newParams);
-	}, [params, replaceState, vibrate]);
+	}, [overlayId, params, replaceState, vibrate]);
 
 	const handlePress = useCallback(() => {
 		vibrate();
@@ -92,7 +97,11 @@ export default memo<IProps>(function InfoButtonBase({
 					transform: `rotate(-90deg) translateX(${fontSize * name.length - 17}px) translateY(20px)`,
 				})}
 			/>
-			<Modal isOpen={isOpened} onClose={handleClose}>
+			<Modal
+				coordination={{ id: overlayId }}
+				isOpen={isOpened}
+				onClose={handleClose}
+			>
 				<Accordion
 					isCompact
 					defaultExpandedKeys={defaultExpandedKeys ?? []}

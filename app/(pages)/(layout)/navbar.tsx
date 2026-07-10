@@ -8,12 +8,13 @@ import {
 	startTransition,
 	useCallback,
 	useEffect,
+	useRef,
 	useState,
 } from 'react';
 
 import { useRouter } from 'next/navigation';
 import { useProgress } from 'react-transition-progress';
-import { usePathname, useVibrate } from '@/hooks';
+import { useCoordinatedOverlay, usePathname, useVibrate } from '@/hooks';
 
 import {
 	Navbar as HeroUINavbar,
@@ -62,6 +63,14 @@ import Sprite from '@/components/sprite';
 import ThemeSwitcher from '@/components/themeSwitcher';
 
 import { siteConfig } from '@/configs';
+import {
+	MOBILE_NAV_MENU_EXIT_DELAY_MS,
+	type TOverlayId,
+	handoffOverlay,
+	requestOverlayClose,
+	requestOverlayCloseAndWait,
+	requestOverlayOpen,
+} from '@/lib/overlayCoordinator';
 import { accountStore, globalStore } from '@/stores';
 import { checkA11yConfirmKey, checkIsApplePlatform } from '@/utilities';
 import type { TSpriteTarget } from '@/utils/sprite/types';
@@ -212,6 +221,7 @@ export default function Navbar() {
 	const startProgress = useProgress();
 	const vibrate = useVibrate();
 	const [isMenuOpened, setIsMenuOpened] = useState(false);
+	const menuCloseActionVersionRef = useRef(0);
 	const [isApplePlatform, setIsApplePlatform] = useState(false);
 	const isReducedMotion = useReducedMotion();
 	const [theme, setTheme] = useTheme();
@@ -236,6 +246,73 @@ export default function Navbar() {
 	const selectedThemeKeys = [`theme:${theme}`];
 	const searchShortcutLabel = isApplePlatform ? '⌘K' : 'Ctrl+K';
 
+	const requestMenuBusinessClose = useCallback(() => {
+		setIsMenuOpened(false);
+		requestOverlayClose('navigation.mobile-menu');
+	}, []);
+
+	const {
+		isActiveTask: isMenuActiveTask,
+		isPresentationOpen: isMenuPresentationOpen,
+		shouldSuppressBackdropBlur,
+	} = useCoordinatedOverlay({
+		dismissable: true,
+		exitDelayMs: isReducedMotion ? 0 : MOBILE_NAV_MENU_EXIT_DELAY_MS,
+		getRootElement: () =>
+			document.querySelector<HTMLElement>(
+				'[data-coordinated-overlay-id="navigation.mobile-menu"]'
+			),
+		id: 'navigation.mobile-menu',
+		isOpen: isMenuOpened,
+		keepOpenWhenCovered: true,
+		onRequestClose: requestMenuBusinessClose,
+	});
+
+	const handleMenuOpenChange = useCallback(
+		(isOpen: boolean) => {
+			if (!isOpen) {
+				if (!isMenuActiveTask) {
+					return;
+				}
+				requestMenuBusinessClose();
+				return;
+			}
+
+			requestOverlayOpen('navigation.mobile-menu', {
+				onActivate: () => {
+					setIsMenuOpened(true);
+				},
+			});
+		},
+		[isMenuActiveTask, requestMenuBusinessClose]
+	);
+
+	const runAfterMobileMenuClose = useCallback((callback: () => void) => {
+		const closeActionVersion = ++menuCloseActionVersionRef.current;
+		setIsMenuOpened(false);
+		void requestOverlayCloseAndWait('navigation.mobile-menu').then(() => {
+			if (menuCloseActionVersionRef.current !== closeActionVersion) {
+				return;
+			}
+			callback();
+		});
+	}, []);
+
+	const handoffFromMobileMenu = useCallback(
+		(toId: TOverlayId, onOpenTarget: () => void) => {
+			menuCloseActionVersionRef.current += 1;
+			return handoffOverlay({
+				fromId: 'navigation.mobile-menu',
+				onCloseSource: () => {
+					setIsMenuOpened(false);
+				},
+				onOpenTarget,
+				toId,
+			});
+		},
+		[]
+	);
+
 	const handlePress = useCallback(
 		(href?: string, isInNavbarMenu?: boolean) => {
 			vibrate();
@@ -253,15 +330,29 @@ export default function Navbar() {
 				}
 			};
 			if (isInNavbarMenu) {
-				setIsMenuOpened(false);
-				// Wait for the menu close animation to complete (the animate will take 300ms).
-				setTimeout(route, isReducedMotion ? 0 : 300);
+				if (
+					href === '/preferences' &&
+					basePathname !== '/preferences'
+				) {
+					handoffFromMobileMenu('preferences', route);
+					return;
+				}
+
+				runAfterMobileMenuClose(route);
 			} else {
-				setIsMenuOpened(false);
+				handleMenuOpenChange(false);
 				route();
 			}
 		},
-		[basePathname, isReducedMotion, router, startProgress, vibrate]
+		[
+			basePathname,
+			handleMenuOpenChange,
+			handoffFromMobileMenu,
+			router,
+			runAfterMobileMenuClose,
+			startProgress,
+			vibrate,
+		]
 	);
 
 	const handleAccountMenuClick = useCallback(
@@ -272,18 +363,17 @@ export default function Navbar() {
 				'Account Button',
 				isInNavbarMenu ? 'Open Modal From Menu' : 'Open Modal'
 			);
-			const openAccountModal = () => {
-				accountStore.shared.accountModal.isOpen.set(true);
+			const openModal = () => {
+				accountStore.openAccountModal();
 			};
 			if (isInNavbarMenu) {
-				setIsMenuOpened(false);
-				setTimeout(openAccountModal, isReducedMotion ? 0 : 300);
+				handoffFromMobileMenu('account.main', openModal);
 			} else {
-				setIsMenuOpened(false);
-				openAccountModal();
+				handleMenuOpenChange(false);
+				openModal();
 			}
 		},
-		[isReducedMotion, vibrate]
+		[handleMenuOpenChange, handoffFromMobileMenu, vibrate]
 	);
 
 	const handleSearchButtonPress = useCallback(
@@ -298,13 +388,13 @@ export default function Navbar() {
 				globalStore.setGlobalSearchIsOpen(true);
 			};
 			if (isInNavbarMenu) {
-				setIsMenuOpened(false);
-				setTimeout(openSearch, isReducedMotion ? 0 : 300);
+				handoffFromMobileMenu('global.search', openSearch);
 			} else {
+				handleMenuOpenChange(false);
 				openSearch();
 			}
 		},
-		[isReducedMotion, vibrate]
+		[handleMenuOpenChange, handoffFromMobileMenu, vibrate]
 	);
 
 	const handleMobileSearchButtonPress = useCallback(() => {
@@ -314,6 +404,13 @@ export default function Navbar() {
 	useEffect(() => {
 		setIsApplePlatform(checkIsApplePlatform());
 	}, []);
+
+	useEffect(
+		() => () => {
+			menuCloseActionVersionRef.current += 1;
+		},
+		[]
+	);
 
 	const handleActionMenu = useCallback(
 		(key: Key, isInNavbarMenu?: boolean) => {
@@ -622,12 +719,13 @@ export default function Navbar() {
 		<>
 			<GlobalSpotlightSearch />
 			<HeroUINavbar
+				data-coordinated-overlay-id="navigation.mobile-menu"
 				isBordered
 				shouldBlockScroll={false}
 				disableAnimation={isReducedMotion}
-				isBlurred={isHighAppearance}
-				isMenuOpen={isMenuOpened}
-				onMenuOpenChange={setIsMenuOpened}
+				isBlurred={isHighAppearance && !shouldSuppressBackdropBlur}
+				isMenuOpen={isMenuPresentationOpen}
+				onMenuOpenChange={handleMenuOpenChange}
 				classNames={{
 					base: 'pt-titlebar',
 					wrapper:
@@ -901,6 +999,7 @@ export default function Navbar() {
 				</NavbarContent>
 
 				<NavbarMenu
+					inert={!isMenuActiveTask}
 					className={cn(
 						'top-[calc(var(--navbar-height)_+_var(--announcement-bar-offset))]',
 						'h-[calc(var(--safe-h-dvh)_-_var(--navbar-height)_-_var(--announcement-bar-offset))]',

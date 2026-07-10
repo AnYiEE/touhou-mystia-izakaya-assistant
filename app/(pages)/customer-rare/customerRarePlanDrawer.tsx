@@ -10,7 +10,12 @@ import {
 } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { usePathname, useVibrate, useViewInNewWindow } from '@/hooks';
+import {
+	useCoordinatedOverlay,
+	usePathname,
+	useVibrate,
+	useViewInNewWindow,
+} from '@/hooks';
 
 import { Divider } from '@heroui/divider';
 import { Select, SelectItem } from '@heroui/select';
@@ -75,6 +80,11 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
+import {
+	CUSTOMER_RARE_PLAN_DRAWER_EXIT_DURATION_MS,
+	requestOverlayClose,
+	requestOverlayOpen,
+} from '@/lib/overlayCoordinator';
 import type {
 	ICustomerRareMeal,
 	IPopularTrend,
@@ -240,14 +250,14 @@ function getDrawerControlsClassName({
 	isHighAppearance: boolean;
 }) {
 	return cn(
-		'min-h-0 overflow-hidden border-b border-divider transition-[width,min-width,max-width,flex-basis,padding,background-color,border-color,backdrop-filter] duration-200 ease-linear scrollbar-hide motion-reduce:transition-none md:border-b-0 md:border-r',
+		'min-h-0 border-b border-divider transition-[width,min-width,max-width,flex-basis,padding,background-color,border-color,backdrop-filter] duration-200 ease-linear scrollbar-hide motion-reduce:transition-none md:border-b-0 md:border-r',
 		isControlsCollapsed
 			? 'md:w-16 md:min-w-16 md:max-w-16 md:flex-none md:basis-16'
 			: 'md:w-[21rem] md:min-w-[21rem] md:max-w-[21rem] md:flex-none md:basis-[21rem]',
 		isHighAppearance
 			? 'bg-content1/38 dark:bg-content1/24 backdrop-blur-md'
 			: 'bg-content1/85 dark:bg-content1/40',
-		isControlsCollapsed ? 'p-4' : 'overflow-y-auto p-4'
+		isControlsCollapsed ? 'overflow-hidden p-4' : 'overflow-y-auto p-4'
 	);
 }
 
@@ -1415,7 +1425,7 @@ function CustomerRarePlanResults({
 
 	return (
 		<main className={getDrawerResultsClassName(isHighAppearance)}>
-			<div className="relative min-h-0 flex-1 overflow-hidden pr-2">
+			<div className="relative min-h-0 flex-1 pr-2">
 				<div
 					ref={scrollContainerRef}
 					className="-mr-2 h-full min-h-0 overflow-y-auto py-4 pl-4 pr-2 [scrollbar-gutter:auto] md:py-5 md:pl-5 md:pr-3"
@@ -1535,9 +1545,6 @@ export default function CustomerRarePlanDrawer() {
 		useState<HTMLElement | null>(null);
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
-	const isGlobalSearchOpen = globalStore.shared.globalSearch.isOpen.use();
-	const isPreferencesModalOpen =
-		globalStore.shared.preferencesModal.isOpen.use();
 	const isStoreOpen = customerStore.shared.planDrawer.isOpen.use();
 	const isControlsCollapsed =
 		customerStore.shared.planDrawer.isControlsCollapsed.use();
@@ -1551,6 +1558,7 @@ export default function CustomerRarePlanDrawer() {
 	const [isDeletePlanPopoverOpen, setIsDeletePlanPopoverOpen] =
 		useState(false);
 	const [isHelpPopoverOpen, setIsHelpPopoverOpen] = useState(false);
+	const [isModePanelAnimating, setIsModePanelAnimating] = useState(false);
 	const [modePanelHeight, setModePanelHeight] = useState<number | 'auto'>(
 		'auto'
 	);
@@ -1560,6 +1568,35 @@ export default function CustomerRarePlanDrawer() {
 	const activePlanMode = activePlan?.mode ?? 'region';
 	const isRenameDisabled =
 		activePlan === null || normalizedDraftName === activePlan.name;
+
+	const requestDrawerBusinessClose = useCallback(() => {
+		helpPopoverDismissLockedRef.current = false;
+		setIsHelpPopoverOpen(false);
+		setIsShellOpen(false);
+		customerStore.closeCustomerRarePlanDrawer();
+		requestOverlayClose('customer-rare.plan-drawer');
+	}, []);
+
+	const handleClose = useCallback(() => {
+		vibrate();
+		requestDrawerBusinessClose();
+	}, [requestDrawerBusinessClose, vibrate]);
+
+	const {
+		isActiveTask,
+		isPresentationOpen: isDrawerPresentationOpen,
+		shouldSuppressBackdropBlur,
+	} = useCoordinatedOverlay({
+		dismissable: true,
+		exitDelayMs: isReducedMotion
+			? 0
+			: CUSTOMER_RARE_PLAN_DRAWER_EXIT_DURATION_MS,
+		getRootElement: () => drawerPanelRef.current,
+		id: 'customer-rare.plan-drawer',
+		isOpen: isShellOpen,
+		keepOpenWhenCovered: true,
+		onRequestClose: handleClose,
+	});
 
 	const setDrawerPanelRef = useCallback((node: HTMLElement | null) => {
 		drawerPanelRef.current = node;
@@ -1671,14 +1708,25 @@ export default function CustomerRarePlanDrawer() {
 		wasOpenRef.current = true;
 		const previousOverflow = document.body.style.overflow;
 		document.body.style.overflow = 'hidden';
-		globalThis.setTimeout(() => {
-			drawerPanelRef.current?.focus();
-		});
 
 		return () => {
 			document.body.style.overflow = previousOverflow;
 		};
 	}, [isShellOpen]);
+
+	useEffect(() => {
+		if (!isActiveTask || !isShellOpen) {
+			return;
+		}
+
+		const timeoutId = globalThis.setTimeout(() => {
+			drawerPanelRef.current?.focus();
+		});
+
+		return () => {
+			clearTimeout(timeoutId);
+		};
+	}, [isActiveTask, isShellOpen]);
 
 	useEffect(() => {
 		if (isStoreOpen) {
@@ -1692,7 +1740,7 @@ export default function CustomerRarePlanDrawer() {
 	}, [isContentReady, isStoreOpen]);
 
 	useEffect(() => {
-		if (isPreferencesModalOpen || !helpPopoverDismissLockedRef.current) {
+		if (!isActiveTask || !helpPopoverDismissLockedRef.current) {
 			return;
 		}
 
@@ -1703,20 +1751,14 @@ export default function CustomerRarePlanDrawer() {
 		return () => {
 			clearTimeout(timeoutId);
 		};
-	}, [isPreferencesModalOpen]);
+	}, [isActiveTask]);
 
 	useEffect(() => {
-		if (!isShellOpen || isGlobalSearchOpen || isPreferencesModalOpen) {
+		if (!isShellOpen || !isActiveTask) {
 			return;
 		}
 
 		const handleKeyDown = (event: KeyboardEvent) => {
-			if (event.key === 'Escape') {
-				setIsShellOpen(false);
-				customerStore.closeCustomerRarePlanDrawer();
-				return;
-			}
-
 			if (event.key !== 'Tab' || drawerPanelRef.current === null) {
 				return;
 			}
@@ -1766,19 +1808,15 @@ export default function CustomerRarePlanDrawer() {
 		return () => {
 			globalThis.removeEventListener('keydown', handleKeyDown);
 		};
-	}, [isGlobalSearchOpen, isPreferencesModalOpen, isShellOpen]);
+	}, [isActiveTask, isShellOpen]);
 
 	const handleOpen = useCallback(() => {
 		vibrate();
-		setIsShellOpen(true);
-	}, [vibrate]);
-
-	const handleClose = useCallback(() => {
-		vibrate();
-		helpPopoverDismissLockedRef.current = false;
-		setIsHelpPopoverOpen(false);
-		setIsShellOpen(false);
-		customerStore.closeCustomerRarePlanDrawer();
+		requestOverlayOpen('customer-rare.plan-drawer', {
+			onActivate: () => {
+				setIsShellOpen(true);
+			},
+		});
 	}, [vibrate]);
 
 	const handleHelpPopoverOpenChange = useCallback((isOpen: boolean) => {
@@ -1801,7 +1839,8 @@ export default function CustomerRarePlanDrawer() {
 		globalStore.setPreferencesModalIsOpen(
 			true,
 			'sideButton',
-			'customer-hidden-items'
+			'customer-hidden-items',
+			'customer-rare.plan-drawer'
 		);
 	}, [vibrate]);
 
@@ -1812,7 +1851,8 @@ export default function CustomerRarePlanDrawer() {
 		globalStore.setPreferencesModalIsOpen(
 			true,
 			'sideButton',
-			'global-popular-trend'
+			'global-popular-trend',
+			'customer-rare.plan-drawer'
 		);
 	}, [vibrate]);
 
@@ -1906,6 +1946,13 @@ export default function CustomerRarePlanDrawer() {
 		},
 		[activePlan, vibrate]
 	);
+	const handleModePanelAnimationStart = useCallback(() => {
+		setIsModePanelAnimating(!isReducedMotion);
+	}, [isReducedMotion]);
+
+	const handleModePanelAnimationComplete = useCallback(() => {
+		setIsModePanelAnimating(false);
+	}, []);
 
 	const handleCustomerSortChange = useCallback(
 		(selection: Selection) => {
@@ -1972,7 +2019,7 @@ export default function CustomerRarePlanDrawer() {
 					color="default"
 					aria-label="打开营业预设"
 					aria-haspopup="dialog"
-					aria-expanded={isShellOpen}
+					aria-expanded={isDrawerPresentationOpen}
 					radius="none"
 					size="sm"
 					variant="flat"
@@ -1992,11 +2039,12 @@ export default function CustomerRarePlanDrawer() {
 			</div>
 
 			<AnimatePresence initial={false}>
-				{isShellOpen && (
+				{isDrawerPresentationOpen && (
 					<motion.div
 						animate={{ opacity: 1 }}
 						className="fixed inset-0 z-[45] bg-transparent"
 						exit={{ opacity: 0 }}
+						inert={!isActiveTask}
 						initial={{ opacity: 0 }}
 						transition={{ duration: isReducedMotion ? 0 : 0.22 }}
 					>
@@ -2005,8 +2053,11 @@ export default function CustomerRarePlanDrawer() {
 							className={cn(
 								'absolute inset-0 h-full w-full cursor-default',
 								isHighAppearance
-									? 'bg-background/45 backdrop-blur-lg'
-									: 'bg-black/45'
+									? 'bg-background/45'
+									: 'bg-black/45',
+								isHighAppearance &&
+									!shouldSuppressBackdropBlur &&
+									'backdrop-blur-lg'
 							)}
 							type="button"
 							onClick={handleClose}
@@ -2016,7 +2067,7 @@ export default function CustomerRarePlanDrawer() {
 							aria-label="稀客营业预设"
 							aria-modal="true"
 							className={cn(
-								'absolute inset-0 flex flex-col overflow-hidden border-r border-divider shadow-2xl ring-1 ring-default-100/70 dark:ring-default-50/10',
+								'absolute inset-0 flex flex-col border-r border-divider shadow-2xl ring-1 ring-default-100/70 dark:ring-default-50/10',
 								isHighAppearance
 									? 'bg-blend-mystia'
 									: 'bg-background dark:bg-content1'
@@ -2033,7 +2084,9 @@ export default function CustomerRarePlanDrawer() {
 									isReducedMotion
 										? { duration: 0 }
 										: {
-												duration: 0.34,
+												duration:
+													CUSTOMER_RARE_PLAN_DRAWER_EXIT_DURATION_MS /
+													1000,
 												ease: [0.22, 1, 0.36, 1],
 												type: 'tween',
 											}
@@ -2237,7 +2290,7 @@ export default function CustomerRarePlanDrawer() {
 															? true
 															: undefined
 													}
-													className="overflow-hidden md:!h-auto md:w-[19rem] md:min-w-[19rem] md:!opacity-100"
+													className="overflow-hidden md:!h-auto md:w-[19rem] md:min-w-[19rem] md:overflow-visible md:!opacity-100"
 												>
 													<div
 														className={cn(
@@ -2549,6 +2602,12 @@ export default function CustomerRarePlanDrawer() {
 																height: modePanelHeight,
 															}}
 															initial={false}
+															onAnimationComplete={
+																handleModePanelAnimationComplete
+															}
+															onAnimationStart={
+																handleModePanelAnimationStart
+															}
 															transition={{
 																duration:
 																	isReducedMotion
@@ -2557,7 +2616,11 @@ export default function CustomerRarePlanDrawer() {
 																ease: 'linear',
 																type: 'tween',
 															}}
-															className="relative overflow-hidden"
+															className={cn(
+																'relative',
+																isModePanelAnimating &&
+																	'overflow-hidden'
+															)}
 														>
 															<div
 																ref={
@@ -3036,7 +3099,7 @@ export default function CustomerRarePlanDrawer() {
 												isHighAppearance
 											)}
 										>
-											<div className="relative min-h-0 flex-1 overflow-hidden pr-2">
+											<div className="relative min-h-0 flex-1 pr-2">
 												<div className="-mr-2 h-full min-h-0 overflow-y-auto py-4 pl-4 pr-2 [scrollbar-gutter:auto] md:py-5 md:pl-5 md:pr-3">
 													<div className="relative min-h-full">
 														<div className="space-y-3 md:space-y-4">

@@ -10,6 +10,12 @@ import {
 	type IAccountUserProfile,
 	type IAccountWebauthnInitialData,
 } from '@/lib/account/shared/types';
+import {
+	type TOverlayId,
+	pushOverlayChild,
+	requestOverlayClose,
+	requestOverlayOpen,
+} from '@/lib/overlayCoordinator';
 import { persist as persistMiddleware } from '@/stores/middlewares';
 
 export type TAccountBootstrapStatus =
@@ -64,4 +70,21 @@ export const accountStore = store(state, {
 			version: storeVersion.initial,
 		}),
 	],
-});
+}).actions((currentStore) => ({
+	closeAccountModal() {
+		currentStore.shared.accountModal.isOpen.set(false);
+		requestOverlayClose('account.main');
+	},
+	openAccountModal(parentId?: TOverlayId) {
+		const onActivate = () => {
+			currentStore.shared.accountModal.isOpen.set(true);
+		};
+		return parentId === undefined
+			? requestOverlayOpen('account.main', { onActivate })
+			: pushOverlayChild({
+					childId: 'account.main',
+					onOpenChild: onActivate,
+					parentId,
+				});
+	},
+}));

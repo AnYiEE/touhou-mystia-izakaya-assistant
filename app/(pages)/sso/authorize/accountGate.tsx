@@ -45,7 +45,7 @@ export const SsoAuthorizeAccountGateButton = memo(
 				'Account Button',
 				'Open Modal From SSO Authorize'
 			);
-			store.shared.accountModal.isOpen.set(true);
+			store.openAccountModal();
 		}, [vibrate]);
 
 		return (

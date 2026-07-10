@@ -25,6 +25,13 @@ import type {
 	TGlobalSearchPreferenceKey,
 } from '@/lib/globalSearch';
 import {
+	type TOverlayId,
+	getActiveOverlayTaskId,
+	pushOverlayChild,
+	requestOverlayClose,
+	requestOverlayOpen,
+} from '@/lib/overlayCoordinator';
+import {
 	beveragesStore,
 	clothesStore,
 	cookersStore,
@@ -573,15 +580,32 @@ export const globalStore = store(state, {
 		setPreferencesModalIsOpen(
 			isOpen: boolean,
 			openSource: null | 'sideButton' | 'spotlight' = null,
-			targetKey: null | TGlobalSearchPreferenceKey = null
+			targetKey: null | TGlobalSearchPreferenceKey = null,
+			parentId?: TOverlayId
 		) {
-			currentStore.shared.preferencesModal.isOpen.set(isOpen);
-			currentStore.shared.preferencesModal.openSource.set(
-				isOpen ? openSource : null
-			);
-			currentStore.shared.preferencesModal.targetKey.set(
-				isOpen ? targetKey : null
-			);
+			const updateState = () => {
+				currentStore.shared.preferencesModal.isOpen.set(isOpen);
+				currentStore.shared.preferencesModal.openSource.set(
+					isOpen ? openSource : null
+				);
+				currentStore.shared.preferencesModal.targetKey.set(
+					isOpen ? targetKey : null
+				);
+			};
+			if (!isOpen) {
+				updateState();
+				requestOverlayClose('preferences');
+				return;
+			}
+			if (parentId !== undefined) {
+				pushOverlayChild({
+					childId: 'preferences',
+					onOpenChild: updateState,
+					parentId,
+				});
+				return;
+			}
+			requestOverlayOpen('preferences', { onActivate: updateState });
 		},
 
 		setGlobalSearchCustomerRareTutorialAllowedPathname(
@@ -592,7 +616,28 @@ export const globalStore = store(state, {
 			);
 		},
 		setGlobalSearchIsOpen(isOpen: boolean) {
-			currentStore.shared.globalSearch.isOpen.set(isOpen);
+			if (!isOpen) {
+				currentStore.shared.globalSearch.isOpen.set(false);
+				requestOverlayClose('global.search');
+				return;
+			}
+			const onActivate = () => {
+				currentStore.shared.globalSearch.isOpen.set(true);
+			};
+			const activeTaskId = getActiveOverlayTaskId();
+			if (activeTaskId === 'global.search') {
+				onActivate();
+				return;
+			}
+			if (activeTaskId !== null) {
+				pushOverlayChild({
+					childId: 'global.search',
+					onOpenChild: onActivate,
+					parentId: activeTaskId,
+				});
+				return;
+			}
+			requestOverlayOpen('global.search', { onActivate });
 		},
 		setGlobalSearchTransientTarget(
 			target: null | IGlobalSearchTransientTarget

@@ -357,6 +357,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 
 	return (
 		<Modal
+			coordination={{ id: 'account.password-required' }}
 			hideCloseButton
 			isKeyboardDismissDisabled
 			isOpen

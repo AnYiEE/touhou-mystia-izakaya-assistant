@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { driver } from 'driver.js';
 
-import { usePathname } from '@/hooks';
+import { useOverlayIdleForTutorial, usePathname } from '@/hooks';
 
 import { PARAM_INFO } from '@/(pages)/customer-shared/infoButtonBase';
 import { trackEvent } from '@/components/analytics';
@@ -14,13 +14,19 @@ import {
 	customerRareStore as customerStore,
 	globalStore,
 } from '@/stores';
+import {
+	type ITutorialLease,
+	tryAcquireTutorial,
+} from '@/lib/overlayCoordinator';
 import { checkLengthEmpty, getPageTitle } from '@/utilities';
 
 const key = 'customer_rare_tutorial';
 const pathname = '/customer-rare';
 const resetLabel = '重新进入稀客套餐搭配教程';
+const TUTORIAL_START_DELAY_MS = 1000;
 
 export default function CustomerRareTutorial() {
+	const isOverlayIdleForTutorial = useOverlayIdleForTutorial();
 	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const accountConflicts = accountStore.shared.sync.conflicts.use();
 	const accountIsLoggedIn = accountStore.shared.isLoggedIn.use();
@@ -80,6 +86,7 @@ export default function CustomerRareTutorial() {
 
 	const shouldSkipCompletionOnDestroy = useRef(false);
 	const allowedGlobalSearchPathname = useRef<null | string>(null);
+	const tutorialLeaseRef = useRef<ITutorialLease | null>(null);
 	const driverRef = useRef(
 		driver({
 			allowClose: false,
@@ -91,6 +98,8 @@ export default function CustomerRareTutorial() {
 			onDestroyed() {
 				clearTimeout(delayedMoveNextHandler.current);
 				delayedMoveNextHandler.current = undefined;
+				tutorialLeaseRef.current?.release();
+				tutorialLeaseRef.current = null;
 
 				if (shouldSkipCompletionOnDestroy.current) {
 					shouldSkipCompletionOnDestroy.current = false;
@@ -402,6 +411,8 @@ export default function CustomerRareTutorial() {
 	useEffect(
 		() => () => {
 			clearTimeout(delayedMoveNextHandler.current);
+			tutorialLeaseRef.current?.release();
+			tutorialLeaseRef.current = null;
 		},
 		[]
 	);
@@ -459,13 +470,32 @@ export default function CustomerRareTutorial() {
 		) {
 			if (currentPathname === pathname) {
 				handler = setTimeout(() => {
-					driverRef.current.drive();
+					if (
+						!isOverlayIdleForTutorial ||
+						driverRef.current.isActive()
+					) {
+						return;
+					}
+
+					const tutorialLease = tryAcquireTutorial();
+					if (tutorialLease === null) {
+						return;
+					}
+
+					tutorialLeaseRef.current = tutorialLease;
+					try {
+						driverRef.current.drive();
+					} catch (error) {
+						tutorialLease.release();
+						tutorialLeaseRef.current = null;
+						throw error;
+					}
 					trackEvent(
 						trackEvent.category.click,
 						'Tutorial Button',
 						'Start'
 					);
-				}, 1000);
+				}, TUTORIAL_START_DELAY_MS);
 			} else if (
 				!isAllowedGlobalSearchPathname &&
 				!isAllowedSharedInfoPathname
@@ -476,6 +506,8 @@ export default function CustomerRareTutorial() {
 		if (!isTargetPage) {
 			allowedGlobalSearchPathname.current = null;
 			driverRef.current.destroy();
+			tutorialLeaseRef.current?.release();
+			tutorialLeaseRef.current = null;
 		}
 
 		return () => {
@@ -488,6 +520,7 @@ export default function CustomerRareTutorial() {
 		hasBlockingAccountModal,
 		isAccountSyncReady,
 		isCompleted,
+		isOverlayIdleForTutorial,
 		isTargetPage,
 	]);
 

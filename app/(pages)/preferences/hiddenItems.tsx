@@ -20,6 +20,12 @@ import Sprite, { type ISpriteProps } from '@/components/sprite';
 
 import { DLC_LABEL_MAP } from '@/data';
 import {
+	type TOverlayId,
+	pushOverlayChild,
+	requestOverlayClose,
+	requestOverlayOpen,
+} from '@/lib/overlayCoordinator';
+import {
 	beveragesStore,
 	globalStore,
 	ingredientsStore,
@@ -68,6 +74,7 @@ interface ISettingsModalProps extends Pick<
 	'children' | 'isOpen' | 'onClose'
 > {
 	isInModal: boolean;
+	overlayId: TOverlayId;
 }
 
 const SettingsModal = memo<ISettingsModalProps>(function SettingsModal({
@@ -75,6 +82,7 @@ const SettingsModal = memo<ISettingsModalProps>(function SettingsModal({
 	isInModal,
 	isOpen = false,
 	onClose,
+	overlayId,
 	...props
 }) {
 	const ref = useRef<HTMLDivElement | null>(null);
@@ -106,7 +114,7 @@ const SettingsModal = memo<ISettingsModalProps>(function SettingsModal({
 	return (
 		<Modal
 			backdrop={isInModal ? 'opaque' : undefined}
-			isDismissable={!isInModal}
+			coordination={{ id: overlayId }}
 			isOpen={isOpen}
 			size="2xl"
 			onClose={handleClose}
@@ -164,6 +172,8 @@ function SettingsPanelDlcGroup<U extends TData[number]>({
 	const [renderedCount, setRenderedCount] = useState(() =>
 		Math.min(SETTINGS_PANEL_RENDER_BATCH_SIZE, items.length)
 	);
+
+	const itemCount = items.length;
 	const renderedItems = items.slice(0, renderedCount);
 	const dlcToggleState = getDlcToggleState(dlc);
 	const isDlcToggleDisabled = dlcToggleState === 'disabled';
@@ -171,7 +181,7 @@ function SettingsPanelDlcGroup<U extends TData[number]>({
 	useEffect(() => {
 		let nextRenderedCount = Math.min(
 			SETTINGS_PANEL_RENDER_BATCH_SIZE,
-			items.length
+			itemCount
 		);
 		let timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -180,16 +190,16 @@ function SettingsPanelDlcGroup<U extends TData[number]>({
 		const renderNextBatch = () => {
 			nextRenderedCount = Math.min(
 				nextRenderedCount + SETTINGS_PANEL_RENDER_BATCH_SIZE,
-				items.length
+				itemCount
 			);
 			setRenderedCount(nextRenderedCount);
 
-			if (nextRenderedCount < items.length) {
+			if (nextRenderedCount < itemCount) {
 				timer = globalThis.setTimeout(renderNextBatch, 0);
 			}
 		};
 
-		if (nextRenderedCount < items.length) {
+		if (nextRenderedCount < itemCount) {
 			timer = globalThis.setTimeout(renderNextBatch, 0);
 		}
 
@@ -198,7 +208,7 @@ function SettingsPanelDlcGroup<U extends TData[number]>({
 				globalThis.clearTimeout(timer);
 			}
 		};
-	}, [items]);
+	}, [itemCount]);
 
 	return (
 		<div className="overflow-x-hidden">
@@ -454,29 +464,53 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 	);
 
 	const isInModal = onModalClose !== undefined;
+	const openSettingsPanel = useCallback(
+		(id: TOverlayId, onOpen: () => void) => {
+			if (isInModal) {
+				pushOverlayChild({
+					childId: id,
+					onOpenChild: onOpen,
+					parentId: 'preferences',
+				});
+				return;
+			}
+
+			requestOverlayOpen(id, { onActivate: onOpen });
+		},
+		[isInModal]
+	);
 
 	const handleBeveragesSettingsButtonPress = useCallback(() => {
-		setBeveragesSettingsPanelOpen(true);
-	}, []);
+		openSettingsPanel('preferences.hidden-beverages', () => {
+			setBeveragesSettingsPanelOpen(true);
+		});
+	}, [openSettingsPanel]);
 
 	const handleIngredientsSettingsButtonPress = useCallback(() => {
-		setIngredientsSettingsPanelOpen(true);
-	}, []);
+		openSettingsPanel('preferences.hidden-ingredients', () => {
+			setIngredientsSettingsPanelOpen(true);
+		});
+	}, [openSettingsPanel]);
 
 	const handleRecipesSettingsButtonPress = useCallback(() => {
-		setRecipesSettingsPanelOpen(true);
-	}, []);
+		openSettingsPanel('preferences.hidden-recipes', () => {
+			setRecipesSettingsPanelOpen(true);
+		});
+	}, [openSettingsPanel]);
 
 	const handleBeveragesSettingsPanelClose = useCallback(() => {
 		setBeveragesSettingsPanelOpen(false);
+		requestOverlayClose('preferences.hidden-beverages');
 	}, []);
 
 	const handleIngredientsSettingsPanelClose = useCallback(() => {
 		setIngredientsSettingsPanelOpen(false);
+		requestOverlayClose('preferences.hidden-ingredients');
 	}, []);
 
 	const handleRecipesSettingsPanelClose = useCallback(() => {
 		setRecipesSettingsPanelOpen(false);
+		requestOverlayClose('preferences.hidden-recipes');
 	}, []);
 
 	return (
@@ -491,6 +525,7 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 					isInModal={isInModal}
 					isOpen={isBeveragesSettingsPanelOpen}
 					onClose={handleBeveragesSettingsPanelClose}
+					overlayId="preferences.hidden-beverages"
 				>
 					<SettingsPanel
 						data={beverageData}
@@ -511,6 +546,7 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 					isInModal={isInModal}
 					isOpen={isRecipesSettingsPanelOpen}
 					onClose={handleRecipesSettingsPanelClose}
+					overlayId="preferences.hidden-recipes"
 				>
 					<SettingsPanel
 						data={recipeData}
@@ -531,6 +567,7 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 					isInModal={isInModal}
 					isOpen={isIngredientsSettingsPanelOpen}
 					onClose={handleIngredientsSettingsPanelClose}
+					overlayId="preferences.hidden-ingredients"
 				>
 					<SettingsPanel
 						data={ingredientData}
