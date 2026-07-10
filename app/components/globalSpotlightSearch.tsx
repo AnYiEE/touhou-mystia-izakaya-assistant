@@ -3,7 +3,6 @@
 import {
 	type KeyboardEvent,
 	type PropsWithChildren,
-	type UIEvent,
 	memo,
 	useCallback,
 	useEffect,
@@ -36,6 +35,7 @@ import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
+	ScrollMask,
 	Snippet,
 	Tooltip,
 	cn,
@@ -188,8 +188,6 @@ const MATCH_FIELD_SPRITE_TARGET_MAP: Partial<
 	Record<IGlobalSearchIndexField['fieldType'], TSpriteTarget>
 > = { cooker: 'cooker', ingredient: 'ingredient' };
 
-const EMPTY_SCROLL_STATE = { bottom: false, top: false };
-const SCROLL_EDGE_THRESHOLD = 1;
 const SEARCH_SYNTAX_TOKEN_CLASS_NAME =
 	'inline-flex max-w-full items-center rounded-small border border-default-200/70 bg-default/30 px-1 py-0.5 align-baseline font-semibold leading-4 text-foreground-600 dark:border-default-100/20 dark:bg-default-100/10 dark:text-foreground-500';
 const GLOBAL_SEARCH_VALUE_SUGGESTION_FIELD_TYPES = new Set<
@@ -212,18 +210,6 @@ const GLOBAL_SEARCH_VALUE_SUGGESTION_FIELD_TYPES = new Set<
 	'type',
 	'working-speed',
 ]);
-
-function getSpotlightScrollState(element: HTMLDivElement) {
-	const maxScrollTop = element.scrollHeight - element.clientHeight;
-	const canScroll = maxScrollTop > SCROLL_EDGE_THRESHOLD;
-
-	return {
-		bottom:
-			canScroll &&
-			element.scrollTop < maxScrollTop - SCROLL_EDGE_THRESHOLD,
-		top: canScroll && element.scrollTop > SCROLL_EDGE_THRESHOLD,
-	};
-}
 
 interface IMotionBlockProps extends PropsWithChildren<object> {
 	className?: string;
@@ -278,110 +264,6 @@ const SpotlightPreviewMotion = memo<IMotionBlockProps>(
 					{children}
 				</motion.div>
 			</AnimatePresence>
-		);
-	}
-);
-
-const SpotlightScrollMask = memo<PropsWithChildren<{ className?: string }>>(
-	function SpotlightScrollMask({ children, className }) {
-		const isHighAppearance = globalStore.persistence.highAppearance.use();
-		const scrollRef = useRef<HTMLDivElement>(null);
-		const contentRef = useRef<HTMLDivElement>(null);
-		const [scrollState, setScrollState] = useState(EMPTY_SCROLL_STATE);
-
-		const updateScrollState = useCallback((element = scrollRef.current) => {
-			if (element === null) {
-				return;
-			}
-
-			const nextScrollState = getSpotlightScrollState(element);
-
-			setScrollState((currentScrollState) =>
-				currentScrollState.bottom === nextScrollState.bottom &&
-				currentScrollState.top === nextScrollState.top
-					? currentScrollState
-					: nextScrollState
-			);
-		}, []);
-
-		const handleScroll = useCallback(
-			(event: UIEvent<HTMLDivElement>) => {
-				updateScrollState(event.currentTarget);
-			},
-			[updateScrollState]
-		);
-
-		useEffect(() => {
-			const scrollElement = scrollRef.current;
-			if (scrollElement === null) {
-				return;
-			}
-
-			const handleResize = () => {
-				updateScrollState(scrollElement);
-			};
-
-			handleResize();
-
-			if (typeof ResizeObserver === 'undefined') {
-				globalThis.addEventListener('resize', handleResize);
-
-				return () => {
-					globalThis.removeEventListener('resize', handleResize);
-				};
-			}
-
-			// eslint-disable-next-line compat/compat -- Progressive enhancement; scroll state still updates on scroll and window resize without ResizeObserver.
-			const resizeObserver = new ResizeObserver(handleResize);
-			resizeObserver.observe(scrollElement);
-
-			const contentElement = contentRef.current;
-
-			if (contentElement !== null) {
-				resizeObserver.observe(contentElement);
-			}
-
-			globalThis.addEventListener('resize', handleResize);
-
-			return () => {
-				resizeObserver.disconnect();
-				globalThis.removeEventListener('resize', handleResize);
-			};
-		}, [updateScrollState]);
-
-		const maskBackgroundClassName = isHighAppearance
-			? 'from-background/90 via-background/50 dark:from-content1/70 dark:via-content1/45'
-			: 'from-background via-background/70 dark:from-content1 dark:via-content1/70';
-
-		return (
-			<div className="relative min-h-0 overflow-hidden">
-				<div
-					ref={scrollRef}
-					onScroll={handleScroll}
-					className={cn(
-						'overflow-y-auto overflow-x-hidden scrollbar-hide',
-						className
-					)}
-				>
-					<div ref={contentRef}>{children}</div>
-				</div>
-				<div
-					aria-hidden
-					className={cn(
-						'pointer-events-none absolute inset-x-0 top-0 z-10 h-4 bg-gradient-to-b to-transparent transition-opacity motion-reduce:transition-none',
-						maskBackgroundClassName,
-						scrollState.top ? 'opacity-100' : 'opacity-0'
-					)}
-				/>
-				<div
-					aria-hidden
-					className={cn(
-						'pointer-events-none absolute inset-x-0 bottom-0 z-10 h-4 bg-gradient-to-t to-transparent transition-opacity motion-reduce:transition-none',
-						maskBackgroundClassName,
-						scrollState.bottom ? 'opacity-100' : 'opacity-0'
-					)}
-				/>
-			</div>
 		);
 	}
 );
@@ -3055,14 +2937,14 @@ export default function GlobalSpotlightSearch() {
 									})}
 							className="min-h-0 flex-1"
 						>
-							<SpotlightScrollMask className="max-h-[calc(var(--safe-h-dvh)-9rem)] p-4 sm:p-5 md:h-[30rem] md:max-h-none">
+							<ScrollMask className="max-h-[calc(var(--safe-h-dvh)-9rem)] p-4 sm:p-5 md:h-[30rem] md:max-h-none">
 								<SpotlightMotionBlock
 									motionKey="prefix-suggestion-only"
 									className="px-0.5 py-0.5"
 								>
 									{renderPrefixSuggestionContent()}
 								</SpotlightMotionBlock>
-							</SpotlightScrollMask>
+							</ScrollMask>
 						</motion.div>
 					) : isFieldValueSuggestionOnly ? (
 						<motion.div
@@ -3080,14 +2962,14 @@ export default function GlobalSpotlightSearch() {
 									})}
 							className="min-h-0 flex-1"
 						>
-							<SpotlightScrollMask className="max-h-[calc(var(--safe-h-dvh)-9rem)] p-4 sm:p-5 md:h-[30rem] md:max-h-none">
+							<ScrollMask className="max-h-[calc(var(--safe-h-dvh)-9rem)] p-4 sm:p-5 md:h-[30rem] md:max-h-none">
 								<SpotlightMotionBlock
 									motionKey="field-value-suggestion-only"
 									className="px-0.5 py-0.5"
 								>
 									{renderFieldValueSuggestionContent()}
 								</SpotlightMotionBlock>
-							</SpotlightScrollMask>
+							</ScrollMask>
 						</motion.div>
 					) : (
 						<motion.div
@@ -3121,7 +3003,7 @@ export default function GlobalSpotlightSearch() {
 										: 'bg-background/40 dark:bg-content1/20'
 								)}
 							>
-								<SpotlightScrollMask className="p-3 md:h-[30rem]">
+								<ScrollMask className="p-3 md:h-[30rem]">
 									{results.length === 0 ? (
 										<SpotlightMotionBlock
 											motionKey="no-results"
@@ -3205,7 +3087,7 @@ export default function GlobalSpotlightSearch() {
 											</motion.div>
 										</AnimatePresence>
 									)}
-								</SpotlightScrollMask>
+								</ScrollMask>
 							</div>
 							{shouldShowPreviewPane && (
 								<div

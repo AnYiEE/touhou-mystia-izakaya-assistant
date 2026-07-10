@@ -23,11 +23,14 @@ import { type InternalForwardRefRenderFunction } from '@heroui/system';
 import { useReducedMotion } from '@/design/ui/hooks';
 import { cn } from '@/design/ui/utils';
 
+import ScrollMask from './scrollMask';
+
 import { globalStore as store } from '@/stores';
 
 interface IProps extends Omit<ModalProps, 'children'> {
 	children: ReactNode | ((onClose: () => void) => ReactNode);
 	classNames?: ModalProps['classNames'] & { content?: string };
+	scrollMode?: 'mask' | 'shadow';
 	scrollShadow?: boolean;
 	scrollShadowSize?: number;
 }
@@ -35,7 +38,7 @@ interface IProps extends Omit<ModalProps, 'children'> {
 interface IModalScrollBodyProps {
 	bodyClassName?: NonNullable<ModalProps['classNames']>['body'];
 	isHighAppearance: boolean;
-	scrollShadow: boolean;
+	scrollMode: 'mask' | 'none' | 'shadow';
 	scrollShadowSize: number;
 }
 
@@ -64,7 +67,7 @@ function ModalScrollBody({
 	bodyClassName,
 	children,
 	isHighAppearance,
-	scrollShadow,
+	scrollMode,
 	scrollShadowSize,
 }: PropsWithChildren<IModalScrollBodyProps>) {
 	const scrollElementRef = useRef<HTMLDivElement>(null);
@@ -102,7 +105,7 @@ function ModalScrollBody({
 	);
 
 	useEffect(() => {
-		if (!scrollShadow) {
+		if (scrollMode !== 'shadow') {
 			setScrollState(DEFAULT_SCROLL_STATE);
 			return;
 		}
@@ -143,7 +146,7 @@ function ModalScrollBody({
 			resizeObserver.disconnect();
 			globalThis.removeEventListener('resize', handleResize);
 		};
-	}, [scrollShadow, updateScrollState]);
+	}, [scrollMode, updateScrollState]);
 
 	const scrollShadowStyle = {
 		height: scrollShadowSize,
@@ -155,23 +158,34 @@ function ModalScrollBody({
 
 	return (
 		<ModalBody className="relative min-h-0 gap-0 overflow-hidden p-0">
-			<div
-				ref={scrollElementRef}
-				className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-hide"
-				onScroll={scrollShadow ? handleScroll : undefined}
-			>
-				<div
-					ref={contentElementRef}
-					className={cn(
-						'flex flex-col gap-3 px-6 py-2',
-						bodyClassName
-					)}
+			{scrollMode === 'mask' ? (
+				<ScrollMask
+					className={cn('min-h-0 flex-1 px-6 py-5', bodyClassName)}
+					containerClassName="flex min-h-0 flex-1 flex-col"
 				>
 					{children}
+				</ScrollMask>
+			) : (
+				<div
+					ref={scrollElementRef}
+					className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-hide"
+					onScroll={
+						scrollMode === 'shadow' ? handleScroll : undefined
+					}
+				>
+					<div
+						ref={contentElementRef}
+						className={cn(
+							'flex flex-col gap-3 px-6 py-2',
+							bodyClassName
+						)}
+					>
+						{children}
+					</div>
 				</div>
-			</div>
+			)}
 
-			{scrollShadow && (
+			{scrollMode === 'shadow' && (
 				<>
 					<div
 						aria-hidden
@@ -204,6 +218,7 @@ export default memo<IProps>(function Modal({
 	disableAnimation,
 	portalContainer,
 	scrollBehavior = 'inside',
+	scrollMode = 'shadow',
 	scrollShadow = true,
 	scrollShadowSize = 16,
 	size = '3xl',
@@ -227,6 +242,7 @@ export default memo<IProps>(function Modal({
 		resolvedPortalContainer === null
 			? {}
 			: { portalContainer: resolvedPortalContainer };
+	const resolvedScrollMode = scrollShadow ? scrollMode : 'none';
 
 	useEffect(() => {
 		setDefaultPortalContainer(
@@ -246,6 +262,7 @@ export default memo<IProps>(function Modal({
 					isHighAppearance
 						? 'bg-blend-mystia'
 						: 'bg-background dark:bg-content1',
+					resolvedScrollMode === 'mask' && 'overflow-hidden',
 					modalClassNames.base
 				),
 				closeButton: cn(
@@ -259,12 +276,17 @@ export default memo<IProps>(function Modal({
 			{...portalContainerProps}
 			{...props}
 		>
-			<ModalContent className={cn('py-3', contentClassName)}>
+			<ModalContent
+				className={cn(
+					props.hideCloseButton ? 'py-0' : 'py-3',
+					contentClassName
+				)}
+			>
 				{(onModalClose) => (
 					<ModalScrollBody
 						bodyClassName={bodyClassName}
 						isHighAppearance={isHighAppearance}
-						scrollShadow={scrollShadow}
+						scrollMode={resolvedScrollMode}
 						scrollShadowSize={scrollShadowSize}
 					>
 						{typeof children === 'function'

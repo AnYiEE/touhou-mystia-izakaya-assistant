@@ -35,6 +35,7 @@ export {
 	default as ScrollShadow,
 	type IScrollShadowProps,
 } from './scrollShadow';
+export { default as ScrollMask, type IScrollMaskProps } from './scrollMask';
 export { default as Snippet, type ISnippetProps } from './snippet';
 export { default as Switch, type ISwitchProps } from './switch';
 export { default as Tooltip, type ITooltipProps } from './tooltip';
