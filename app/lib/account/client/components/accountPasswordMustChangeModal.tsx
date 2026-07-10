@@ -361,8 +361,9 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 			isKeyboardDismissDisabled
 			isOpen
 			isDismissable={false}
+			classNames={{ body: 'px-[18px] py-0.5' }}
 		>
-			<div className="w-full space-y-4">
+			<div className="space-y-4 p-1.5">
 				<Heading
 					as="h2"
 					isFirst
@@ -378,7 +379,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 						: '更新账号密码'}
 				</Heading>
 
-				<div className="grid gap-4 p-1.5 lg:grid-cols-[minmax(0,1fr)_18rem]">
+				<div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
 					<div className="space-y-4">
 						<PasswordChangePanel>
 							<PasswordChangePanelTitle icon={faUser}>

@@ -40,6 +40,7 @@ export default function AccountModal() {
 			isOpen={isOpen}
 			motionProps={ACCOUNT_MODAL_MOTION_PROPS}
 			onClose={handleClose}
+			classNames={{ body: 'px-[18px] py-0.5' }}
 		>
 			<AccountManager />
 		</Modal>
