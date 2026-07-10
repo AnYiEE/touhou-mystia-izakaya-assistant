@@ -2148,7 +2148,12 @@ export default function GlobalSpotlightSearch() {
 				resolvedSelectedIndex.toString()
 		);
 
-		resultElement?.scrollIntoView({ block: 'nearest' });
+		// Some browsers don't support scrollIntoViewOptions
+		try {
+			resultElement?.scrollIntoView({ block: 'nearest' });
+		} catch {
+			resultElement?.scrollIntoView(true);
+		}
 	}, [
 		isOpen,
 		isFieldValueSuggestionOnly,

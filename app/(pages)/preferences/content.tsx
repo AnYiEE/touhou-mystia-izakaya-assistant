@@ -156,10 +156,15 @@ export default memo<IProps>(function Content({ onModalClose }) {
 			return;
 		}
 
-		element.scrollIntoView({
-			behavior: isReducedMotion ? 'auto' : 'smooth',
-			block: 'center',
-		});
+		// Some browsers don't support scrollIntoViewOptions
+		try {
+			element.scrollIntoView({
+				behavior: isReducedMotion ? 'auto' : 'smooth',
+				block: 'center',
+			});
+		} catch {
+			element.scrollIntoView(true);
+		}
 		element
 			.querySelector<HTMLElement>(
 				'button, input, select, [tabindex]:not([tabindex="-1"])'
