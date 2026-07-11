@@ -12,6 +12,7 @@
 /*offline*.zip
 
 # server-side files
+/.site-status-build-operation-id
 /upload
 /sqlite.db*
 

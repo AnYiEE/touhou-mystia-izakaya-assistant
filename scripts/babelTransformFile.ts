@@ -30,6 +30,7 @@ function wrapClassicScriptScope(code: string) {
 }
 
 const filePaths = await fg.glob(['out/**/*.js', 'public/**/*.js']);
+let hasTransformErrors = false;
 
 for (const filePath of filePaths) {
 	try {
@@ -50,8 +51,14 @@ for (const filePath of filePaths) {
 			);
 		} else {
 			logError(filePath, 'No transformation result.');
+			hasTransformErrors = true;
 		}
 	} catch (error) {
 		logError(filePath, error);
+		hasTransformErrors = true;
 	}
+}
+
+if (hasTransformErrors) {
+	throw new Error('babel-transform-failed');
 }

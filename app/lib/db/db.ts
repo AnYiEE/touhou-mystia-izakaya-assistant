@@ -19,7 +19,6 @@ try {
 } catch (error) {
 	console.warn('SQLite database initialization failed.', {
 		errorCode: getLogSafeErrorCode(error),
-		sqliteDatabasePath,
 	});
 	throw error;
 }

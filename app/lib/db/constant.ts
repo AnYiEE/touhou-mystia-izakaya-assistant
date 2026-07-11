@@ -34,6 +34,7 @@ export const TABLE_NAME_MAP = {
 	backupFileRecord: 'backup_files',
 	backupImportRecord: 'backup_imports',
 	session: 'sessions',
+	siteRuntimeState: 'site_runtime_states',
 	ssoCallbackDelivery: 'sso_callback_deliveries',
 	ssoCallbackQueue: 'sso_callback_queue',
 	ssoClient: 'sso_clients',

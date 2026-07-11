@@ -233,6 +233,7 @@ export default defineConfig(
 		files: ['app/**/*.ts', 'app/**/*.tsx'],
 		settings: {
 			polyfills: [
+				'AbortController',
 				'Array.flat',
 				'Array.flatMap',
 				'Object.hasOwn',

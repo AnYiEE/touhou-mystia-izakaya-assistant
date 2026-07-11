@@ -989,7 +989,6 @@ async function dispatchSsoCallback(
 		signingTimestamp,
 		body
 	);
-	// eslint-disable-next-line compat/compat -- SSO callbacks run only in the Node.js route runtime.
 	const abortController = new AbortController();
 	const timeoutId = globalThis.setTimeout(() => {
 		abortController.abort();

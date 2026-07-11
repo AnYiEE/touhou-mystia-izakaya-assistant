@@ -35,6 +35,7 @@ import {
 } from '@/lib/announcements/shared/dismissals';
 import { type IAnnouncementPublicItem } from '@/lib/announcements/shared/types';
 import { fetchServiceApi } from '@/lib/api/serviceClient';
+import { useSiteMaintenance } from '@/lib/siteStatus/client/provider';
 import { accountStore, globalStore } from '@/stores';
 
 const ANNOUNCEMENT_ROTATE_INTERVAL = 5000;
@@ -42,10 +43,10 @@ const ANNOUNCEMENT_SWITCH_MS = 620;
 
 type TAnnouncementTransitionDirection = 'next' | 'previous';
 
-interface IAnnouncementTransitionIndexes {
+interface IAnnouncementTransition {
 	direction: TAnnouncementTransitionDirection;
-	fromIndex: number;
-	toIndex: number;
+	fromItem: IAnnouncementPublicItem;
+	toItem: IAnnouncementPublicItem;
 }
 
 interface IAnnouncementProgressStyle extends CSSProperties {
@@ -147,11 +148,29 @@ const AnnouncementBackgroundLayer = memo<IAnnouncementBackgroundLayerProps>(
 );
 
 interface IProps {
-	announcements: IAnnouncementPublicItem[];
+	serverAnnouncements: IAnnouncementPublicItem[];
 }
 
-export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
+const MAINTENANCE_TOKEN_PREFIX = 'maintenance:';
+
+function findItemByToken(
+	items: IAnnouncementPublicItem[],
+	token: string | null
+) {
+	return token === null
+		? null
+		: (items.find((item) => item.dismissed_token === token) ?? null);
+}
+
+function checkMaintenanceItem(item: IAnnouncementPublicItem) {
+	return item.dismissed_token.startsWith(MAINTENANCE_TOKEN_PREFIX);
+}
+
+export default memo<IProps>(function AnnouncementCarousel({
+	serverAnnouncements,
+}) {
 	const isReducedMotion = useReducedMotion();
+	const maintenance = useSiteMaintenance();
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
 	const csrfToken = accountStore.shared.csrfToken.use();
 	const accountUser = accountStore.shared.user.use();
@@ -160,38 +179,54 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 	const autoRotateTimerRef = useRef<ReturnType<
 		typeof globalThis.setTimeout
 	> | null>(null);
-	const [activeIndex, setActiveIndex] = useState(0);
-	const [displayIndex, setDisplayIndex] = useState(0);
+	const initialToken = serverAnnouncements[0]?.dismissed_token ?? null;
+	const [activeToken, setActiveToken] = useState<string | null>(initialToken);
+	const [displayToken, setDisplayToken] = useState<string | null>(
+		initialToken
+	);
 	const [displayedMarqueeMetrics, setDisplayedMarqueeMetrics] =
 		useState<IDisplayedMarqueeMetrics | null>(null);
-	const [items, setItems] = useState(announcements);
+	const [items, setItems] = useState(serverAnnouncements);
 	const [isPaused, setIsPaused] = useState(false);
 	const [transitionDirection, setTransitionDirection] =
 		useState<TAnnouncementTransitionDirection>('next');
-	const [transitionIndexes, setTransitionIndexes] =
-		useState<IAnnouncementTransitionIndexes | null>(null);
+	const [transition, setTransition] =
+		useState<IAnnouncementTransition | null>(null);
+	const itemsRef = useRef(items);
+	const activeTokenRef = useRef(activeToken);
+	const displayTokenRef = useRef(displayToken);
+	const transitionRef = useRef(transition);
+	const maintenanceTokenRef = useRef<string | null>(null);
+	const pendingRemovalTokenRef = useRef<string | null>(null);
+	const serverAnnouncementTokensRef = useRef(
+		serverAnnouncements.map((item) => item.dismissed_token)
+	);
+	itemsRef.current = items;
+	activeTokenRef.current = activeToken;
+	displayTokenRef.current = displayToken;
+	transitionRef.current = transition;
 
 	const itemCount = items.length;
-	const displayedItem = items[displayIndex] ?? items[0] ?? null;
-	const transitionFromItem =
-		transitionIndexes === null
-			? null
-			: (items[transitionIndexes.fromIndex] ?? null);
-	const transitionToItem =
-		transitionIndexes === null
-			? null
-			: (items[transitionIndexes.toIndex] ?? null);
-	const visualIndex = transitionIndexes?.toIndex ?? displayIndex;
-	const visualItem = transitionToItem ?? displayedItem;
+	const displayedItem =
+		findItemByToken(items, displayToken) ?? items[0] ?? null;
+	const visualItem = transition?.toItem ?? displayedItem;
+	const visualIndex = Math.max(
+		0,
+		visualItem === null
+			? 0
+			: items.findIndex(
+					(item) =>
+						item.dismissed_token === visualItem.dismissed_token
+				)
+	);
 	const levelMeta =
 		visualItem === null
 			? null
 			: ANNOUNCEMENT_LEVEL_PRESENTATION[visualItem.level];
 	const displayedToken = displayedItem?.dismissed_token ?? null;
-	const isTransitioning =
-		transitionIndexes !== null &&
-		transitionFromItem !== null &&
-		transitionToItem !== null;
+	const isTransitioning = transition !== null;
+	const hasVisibleAnnouncement =
+		displayedItem !== null && visualItem !== null;
 	const shouldShowControls = itemCount > 1;
 	const currentMarqueeMetrics =
 		displayedMarqueeMetrics?.token === displayedToken
@@ -212,7 +247,27 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 		}),
 		[playbackDurationMs]
 	);
-	const progressKey = `${displayedToken ?? 'empty'}:${displayIndex}:${playbackDurationMs}`;
+	const progressKey = `${displayedToken ?? 'empty'}:${playbackDurationMs}`;
+	const maintenanceItem = useMemo<IAnnouncementPublicItem | null>(
+		() =>
+			maintenance === null
+				? null
+				: {
+						audience: 'all',
+						dismissed_token: `${MAINTENANCE_TOKEN_PREFIX}${maintenance.id}`,
+						dismissible: false,
+						ends_at: maintenance.expires_at,
+						html: maintenance.message,
+						id: `${MAINTENANCE_TOKEN_PREFIX}${maintenance.id}`,
+						level: maintenance.level,
+						priority: Number.MAX_SAFE_INTEGER,
+						revision: 1,
+						starts_at: maintenance.started_at,
+						title: '系统维护',
+						updated_at: maintenance.started_at,
+					},
+		[maintenance]
+	);
 	const writeAnnouncementBarOffset = useCallback(
 		(rootElement: HTMLElement | null) => {
 			const rect = rootElement?.getBoundingClientRect();
@@ -238,25 +293,271 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 		autoRotateTimerRef.current = null;
 	}, []);
 
+	const updateItems = useCallback(
+		(
+			updater: (
+				current: IAnnouncementPublicItem[]
+			) => IAnnouncementPublicItem[]
+		) => {
+			setItems((current) => {
+				const next = updater(current);
+				itemsRef.current = next;
+				return next;
+			});
+		},
+		[]
+	);
+
+	const switchAnnouncement = useCallback(
+		(direction: TAnnouncementTransitionDirection) => {
+			const pendingRemovalToken = pendingRemovalTokenRef.current;
+			const navigableItems = itemsRef.current.filter(
+				(item) => item.dismissed_token !== pendingRemovalToken
+			);
+
+			if (navigableItems.length <= 1) {
+				return;
+			}
+
+			const sourceToken =
+				transitionRef.current?.toItem.dismissed_token ??
+				displayTokenRef.current;
+			const sourceIndex = navigableItems.findIndex(
+				(item) => item.dismissed_token === sourceToken
+			);
+			const nextIndex =
+				sourceIndex === -1
+					? direction === 'previous'
+						? navigableItems.length - 1
+						: 0
+					: direction === 'previous'
+						? (sourceIndex - 1 + navigableItems.length) %
+							navigableItems.length
+						: (sourceIndex + 1) % navigableItems.length;
+			const nextItem = navigableItems[nextIndex];
+
+			if (nextItem === undefined) {
+				return;
+			}
+
+			clearAutoRotateTimer();
+			setTransitionDirection(direction);
+			setDisplayToken(sourceToken);
+			setActiveToken(nextItem.dismissed_token);
+			setTransition(null);
+		},
+		[clearAutoRotateTimer]
+	);
+
 	const switchToNextAnnouncement = useCallback(() => {
-		if (itemCount <= 1) {
+		switchAnnouncement('next');
+	}, [switchAnnouncement]);
+
+	const finishPendingRemoval = useCallback(() => {
+		const pendingRemovalToken = pendingRemovalTokenRef.current;
+		if (pendingRemovalToken === null) {
+			return;
+		}
+		pendingRemovalTokenRef.current = null;
+		updateItems((current) => {
+			const next = current.filter(
+				(item) => item.dismissed_token !== pendingRemovalToken
+			);
+			const fallbackToken = next[0]?.dismissed_token ?? null;
+			setActiveToken((currentToken) =>
+				currentToken === pendingRemovalToken
+					? fallbackToken
+					: currentToken
+			);
+			setDisplayToken((currentToken) =>
+				currentToken === pendingRemovalToken
+					? fallbackToken
+					: currentToken
+			);
+			return next;
+		});
+	}, [updateItems]);
+
+	useEffect(() => {
+		const nextTokens = serverAnnouncements.map(
+			(item) => item.dismissed_token
+		);
+		const previousTokens = serverAnnouncementTokensRef.current;
+
+		if (
+			nextTokens.length === previousTokens.length &&
+			nextTokens.every((token, index) => token === previousTokens[index])
+		) {
 			return;
 		}
 
-		clearAutoRotateTimer();
-		setTransitionDirection('next');
-		setActiveIndex((displayIndex + 1) % itemCount);
-	}, [clearAutoRotateTimer, displayIndex, itemCount]);
+		serverAnnouncementTokensRef.current = nextTokens;
+
+		const maintenanceItems = itemsRef.current.filter(checkMaintenanceItem);
+		const pendingRemovalToken = pendingRemovalTokenRef.current;
+		let nextItems = [...maintenanceItems, ...serverAnnouncements];
+		let selectableTokens = new Set(
+			nextItems
+				.filter((item) => item.dismissed_token !== pendingRemovalToken)
+				.map((item) => item.dismissed_token)
+		);
+		const currentTransition = transitionRef.current;
+		const transitionTargetInvalid =
+			currentTransition !== null &&
+			!selectableTokens.has(currentTransition.toItem.dismissed_token);
+		const pendingDisplayAllowed =
+			pendingRemovalToken !== null &&
+			currentTransition !== null &&
+			!transitionTargetInvalid &&
+			currentTransition.fromItem.dismissed_token ===
+				pendingRemovalToken &&
+			displayTokenRef.current === pendingRemovalToken;
+		const activeTokenInvalid =
+			activeTokenRef.current !== null &&
+			!selectableTokens.has(activeTokenRef.current);
+		const displayTokenInvalid =
+			displayTokenRef.current !== null &&
+			!selectableTokens.has(displayTokenRef.current) &&
+			!pendingDisplayAllowed;
+
+		if (
+			transitionTargetInvalid ||
+			activeTokenInvalid ||
+			displayTokenInvalid
+		) {
+			clearAutoRotateTimer();
+		}
+		if (transitionTargetInvalid && pendingRemovalToken !== null) {
+			pendingRemovalTokenRef.current = null;
+			nextItems = nextItems.filter(
+				(item) => item.dismissed_token !== pendingRemovalToken
+			);
+			selectableTokens = new Set(
+				nextItems.map((item) => item.dismissed_token)
+			);
+		}
+
+		const currentVisualToken =
+			currentTransition !== null && !transitionTargetInvalid
+				? currentTransition.toItem.dismissed_token
+				: displayTokenRef.current;
+		const fallbackToken =
+			(currentVisualToken !== null &&
+			selectableTokens.has(currentVisualToken)
+				? currentVisualToken
+				: nextItems.find((item) =>
+						selectableTokens.has(item.dismissed_token)
+					)?.dismissed_token) ?? null;
+
+		updateItems(() => nextItems);
+
+		if (transitionTargetInvalid) {
+			setTransition(null);
+		}
+		if (
+			activeTokenRef.current === null ||
+			!selectableTokens.has(activeTokenRef.current)
+		) {
+			setActiveToken(fallbackToken);
+		}
+		if (displayTokenRef.current === null || displayTokenInvalid) {
+			setDisplayToken(fallbackToken);
+		}
+	}, [clearAutoRotateTimer, serverAnnouncements, updateItems]);
 
 	useEffect(() => {
-		setItems(announcements);
-		setActiveIndex(0);
-		setDisplayIndex(0);
-		setDisplayedMarqueeMetrics(null);
-		setTransitionIndexes(null);
-	}, [announcements]);
+		const nextMaintenanceToken = maintenanceItem?.dismissed_token ?? null;
+		const previousMaintenanceToken = maintenanceTokenRef.current;
+
+		if (nextMaintenanceToken === previousMaintenanceToken) {
+			return;
+		}
+
+		maintenanceTokenRef.current = nextMaintenanceToken;
+
+		const currentItems = itemsRef.current;
+		const currentVisualItem =
+			transitionRef.current?.toItem ??
+			findItemByToken(currentItems, displayTokenRef.current);
+		const ordinaryItems = currentItems.filter(
+			(item) => !checkMaintenanceItem(item)
+		);
+
+		if (maintenanceItem !== null) {
+			clearAutoRotateTimer();
+
+			const previousMaintenanceItem =
+				previousMaintenanceToken === null
+					? null
+					: findItemByToken(currentItems, previousMaintenanceToken);
+			const keepPreviousMaintenance =
+				previousMaintenanceItem !== null &&
+				currentVisualItem?.dismissed_token === previousMaintenanceToken;
+
+			updateItems(() => [
+				maintenanceItem,
+				...(keepPreviousMaintenance ? [previousMaintenanceItem] : []),
+				...ordinaryItems,
+			]);
+			pendingRemovalTokenRef.current = keepPreviousMaintenance
+				? previousMaintenanceToken
+				: null;
+
+			if (currentVisualItem === null) {
+				setActiveToken(nextMaintenanceToken);
+				setDisplayToken(nextMaintenanceToken);
+				setTransition(null);
+				return;
+			}
+
+			setDisplayToken(currentVisualItem.dismissed_token);
+			setTransitionDirection('next');
+			setActiveToken(nextMaintenanceToken);
+			setTransition(null);
+
+			return;
+		}
+
+		if (ordinaryItems.length === 0) {
+			updateItems(() => []);
+			pendingRemovalTokenRef.current = null;
+			setActiveToken(null);
+			setDisplayToken(null);
+			setTransition(null);
+			return;
+		}
+
+		if (
+			previousMaintenanceToken !== null &&
+			currentVisualItem?.dismissed_token === previousMaintenanceToken
+		) {
+			clearAutoRotateTimer();
+			pendingRemovalTokenRef.current = previousMaintenanceToken;
+			setDisplayToken(previousMaintenanceToken);
+			setTransitionDirection('next');
+			setActiveToken(ordinaryItems[0]?.dismissed_token ?? null);
+			setTransition(null);
+			return;
+		}
+
+		updateItems(() => ordinaryItems);
+		pendingRemovalTokenRef.current = null;
+
+		if (activeTokenRef.current === previousMaintenanceToken) {
+			setActiveToken(
+				currentVisualItem?.dismissed_token ??
+					ordinaryItems[0]?.dismissed_token ??
+					null
+			);
+		}
+	}, [clearAutoRotateTimer, maintenanceItem, updateItems]);
 
 	useEffect(() => {
+		if (!hasVisibleAnnouncement) {
+			writeAnnouncementBarOffset(null);
+			return;
+		}
+
 		const rootElement = rootRef.current;
 		const updateAnnouncementBarOffset = () => {
 			writeAnnouncementBarOffset(rootElement);
@@ -300,64 +601,67 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 			);
 			writeAnnouncementBarOffset(null);
 		};
-	}, [itemCount, writeAnnouncementBarOffset]);
+	}, [hasVisibleAnnouncement, writeAnnouncementBarOffset]);
 
 	useEffect(() => {
 		setDisplayedMarqueeMetrics(null);
-	}, [displayedToken, itemCount]);
+	}, [displayedToken]);
 
 	useEffect(() => {
-		if (itemCount === 0) {
-			setActiveIndex(0);
-			setDisplayIndex(0);
-			setTransitionIndexes(null);
+		if (displayToken === activeToken) {
+			setTransition(null);
+			finishPendingRemoval();
+			return;
+		}
+		if (displayToken === null || activeToken === null) {
+			setDisplayToken(activeToken);
+			setTransition(null);
 			return;
 		}
 
-		setActiveIndex((current) => Math.min(current, itemCount - 1));
-		setDisplayIndex((current) => Math.min(current, itemCount - 1));
-	}, [itemCount]);
-
-	useEffect(() => {
-		if (displayIndex === activeIndex) {
-			setTransitionIndexes(null);
-			return;
-		}
-		if (isReducedMotion) {
-			setDisplayIndex(activeIndex);
-			setTransitionIndexes(null);
+		const fromItem = findItemByToken(itemsRef.current, displayToken);
+		const toItem = findItemByToken(itemsRef.current, activeToken);
+		if (fromItem === null || toItem === null || isReducedMotion) {
+			setDisplayToken(activeToken);
+			setTransition(null);
+			finishPendingRemoval();
 			return;
 		}
 
-		const nextIndex = Math.min(activeIndex, itemCount - 1);
-		const previousIndex = Math.min(displayIndex, itemCount - 1);
-
-		setTransitionIndexes({
+		const nextTransition: IAnnouncementTransition = {
 			direction: transitionDirection,
-			fromIndex: previousIndex,
-			toIndex: nextIndex,
-		});
+			fromItem,
+			toItem,
+		};
+		transitionRef.current = nextTransition;
+		setTransition(nextTransition);
 
 		const timer = globalThis.setTimeout(() => {
-			setDisplayIndex(nextIndex);
-			setTransitionIndexes(null);
+			setDisplayToken(activeToken);
+			setTransition(null);
+			finishPendingRemoval();
 		}, ANNOUNCEMENT_SWITCH_MS);
 
 		return () => {
 			globalThis.clearTimeout(timer);
 		};
 	}, [
-		activeIndex,
-		displayIndex,
+		activeToken,
+		displayToken,
+		finishPendingRemoval,
 		isReducedMotion,
-		itemCount,
 		transitionDirection,
 	]);
 
 	useEffect(() => {
 		clearAutoRotateTimer();
 
-		if (isReducedMotion || isPaused || isTransitioning || itemCount <= 1) {
+		if (
+			isReducedMotion ||
+			isPaused ||
+			isTransitioning ||
+			itemsRef.current.length <= 1
+		) {
 			return;
 		}
 
@@ -369,10 +673,10 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 		return clearAutoRotateTimer;
 	}, [
 		clearAutoRotateTimer,
+		displayedToken,
 		isPaused,
 		isReducedMotion,
 		isTransitioning,
-		itemCount,
 		playbackDurationMs,
 		switchToNextAnnouncement,
 	]);
@@ -383,7 +687,7 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 			isPaused ||
 			isReducedMotion ||
 			isTransitioning ||
-			itemCount <= 1
+			itemsRef.current.length <= 1
 		) {
 			return;
 		}
@@ -399,7 +703,6 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 		isPaused,
 		isReducedMotion,
 		isTransitioning,
-		itemCount,
 		switchToNextAnnouncement,
 	]);
 
@@ -429,24 +732,9 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 
 	const handleManualSwitch = useCallback(
 		(direction: TAnnouncementTransitionDirection) => {
-			if (itemCount <= 1) {
-				return;
-			}
-
-			clearAutoRotateTimer();
-			setTransitionDirection(direction);
-
-			const sourceIndex = transitionIndexes?.toIndex ?? displayIndex;
-			const nextIndex =
-				direction === 'previous'
-					? (sourceIndex - 1 + itemCount) % itemCount
-					: (sourceIndex + 1) % itemCount;
-
-			setDisplayIndex(sourceIndex);
-			setActiveIndex(nextIndex);
-			setTransitionIndexes(null);
+			switchAnnouncement(direction);
 		},
-		[clearAutoRotateTimer, displayIndex, itemCount, transitionIndexes]
+		[switchAnnouncement]
 	);
 
 	const writeDismissedCookie = useCallback((token: string) => {
@@ -481,28 +769,32 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 		}
 
 		const dismissedItem = visualItem;
+
 		clearAutoRotateTimer();
 		setIsPaused(false);
 		setDisplayedMarqueeMetrics(null);
 		writeDismissedCookie(dismissedItem.dismissed_token);
-		setItems((currentItems) => {
-			const nextItems = currentItems.filter(
-				(item) => item.dismissed_token !== dismissedItem.dismissed_token
-			);
-			setActiveIndex((current) =>
-				nextItems.length === 0
-					? 0
-					: Math.min(current, nextItems.length - 1)
-			);
-			setDisplayIndex((current) =>
-				nextItems.length === 0
-					? 0
-					: Math.min(current, nextItems.length - 1)
-			);
-			setTransitionIndexes(null);
 
-			return nextItems;
-		});
+		const currentItems = itemsRef.current;
+		const dismissedIndex = currentItems.findIndex(
+			(item) => item.dismissed_token === dismissedItem.dismissed_token
+		);
+		const pendingRemovalToken = pendingRemovalTokenRef.current;
+		const nextItems = currentItems.filter(
+			(item) =>
+				item.dismissed_token !== dismissedItem.dismissed_token &&
+				item.dismissed_token !== pendingRemovalToken
+		);
+		const nextItem =
+			nextItems[
+				Math.min(Math.max(dismissedIndex, 0), nextItems.length - 1)
+			] ?? null;
+
+		pendingRemovalTokenRef.current = null;
+		updateItems(() => nextItems);
+		setActiveToken(nextItem?.dismissed_token ?? null);
+		setDisplayToken(nextItem?.dismissed_token ?? null);
+		setTransition(null);
 
 		if (accountUser !== null && csrfToken !== null) {
 			void fetchServiceApi('/api/v1/announcements', {
@@ -523,6 +815,7 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 		accountUser,
 		clearAutoRotateTimer,
 		csrfToken,
+		updateItems,
 		visualItem,
 		writeDismissedCookie,
 	]);
@@ -578,18 +871,17 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 	}
 
 	const shouldTransitionBackground =
-		isTransitioning && transitionFromItem.level !== transitionToItem.level;
+		transition !== null &&
+		transition.fromItem.level !== transition.toItem.level;
 	const slideInClassName =
-		transitionIndexes?.direction === 'previous'
+		transition?.direction === 'previous'
 			? 'announcement-slide-in-from-top'
 			: 'announcement-slide-in-from-bottom';
 	const slideOutClassName =
-		transitionIndexes?.direction === 'previous'
+		transition?.direction === 'previous'
 			? 'announcement-slide-out-to-bottom'
 			: 'announcement-slide-out-to-top';
-	const displayedMarqueeMode =
-		itemCount === 1 ? 'single-loop' : 'rotating-loop';
-	const displayedContentKey = `${displayedToken ?? 'empty'}:${displayedMarqueeMode}`;
+	const displayedContentKey = displayedToken ?? 'empty';
 
 	return (
 		<section
@@ -606,11 +898,11 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 				<>
 					<AnnouncementBackgroundLayer
 						animation="out"
-						item={transitionFromItem}
+						item={transition.fromItem}
 					/>
 					<AnnouncementBackgroundLayer
 						animation="in"
-						item={transitionToItem}
+						item={transition.toItem}
 					/>
 				</>
 			) : (
@@ -621,30 +913,12 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 					className="grid min-w-0 flex-1 overflow-hidden"
 					{...rootHandlers}
 				>
-					{isTransitioning ? (
-						<>
-							<AnnouncementContent
-								item={transitionFromItem}
-								isMarqueeDisabled
-								className={cn(
-									slideOutClassName,
-									'col-start-1 row-start-1'
-								)}
-							/>
-							<AnnouncementContent
-								item={transitionToItem}
-								isMarqueeDisabled
-								className={cn(
-									slideInClassName,
-									'col-start-1 row-start-1'
-								)}
-							/>
-						</>
-					) : (
+					{transition === null ? (
 						<AnnouncementContent
 							key={displayedContentKey}
 							item={displayedItem}
 							className="col-start-1 row-start-1"
+							isMarqueeDisabled={isReducedMotion}
 							isMarqueeLooping
 							isPaused={isPaused}
 							onMarqueeComplete={handleDisplayedMarqueeComplete}
@@ -652,6 +926,25 @@ export default memo<IProps>(function AnnouncementCarousel({ announcements }) {
 								handleDisplayedMarqueeMetricsChange
 							}
 						/>
+					) : (
+						<>
+							<AnnouncementContent
+								item={transition.fromItem}
+								isMarqueeDisabled
+								className={cn(
+									slideOutClassName,
+									'col-start-1 row-start-1'
+								)}
+							/>
+							<AnnouncementContent
+								item={transition.toItem}
+								isMarqueeDisabled
+								className={cn(
+									slideInClassName,
+									'col-start-1 row-start-1'
+								)}
+							/>
+						</>
 					)}
 				</div>
 				{shouldShowControls && (

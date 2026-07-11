@@ -124,6 +124,13 @@ interface ITableSession {
 	user_id: string;
 }
 
+interface ITableSiteRuntimeState {
+	expires_at: number;
+	key: string;
+	operation_id: string;
+	started_at: number;
+}
+
 interface ITableSsoCallbackQueue {
 	attempts: number;
 	client_id: string;
@@ -286,6 +293,10 @@ export type TSession = Selectable<ITableSession>;
 export type TSessionNew = Insertable<ITableSession>;
 export type TSessionUpdate = Updateable<ITableSession>;
 
+export type TSiteRuntimeState = Selectable<ITableSiteRuntimeState>;
+export type TSiteRuntimeStateNew = Insertable<ITableSiteRuntimeState>;
+export type TSiteRuntimeStateUpdate = Updateable<ITableSiteRuntimeState>;
+
 export type TSsoCallbackQueue = Selectable<ITableSsoCallbackQueue>;
 export type TSsoCallbackQueueNew = Insertable<ITableSsoCallbackQueue>;
 export type TSsoCallbackQueueUpdate = Updateable<ITableSsoCallbackQueue>;
@@ -354,6 +365,7 @@ export interface TDatabase {
 	backup_files: ITableBackupFileRecord;
 	backup_imports: ITableBackupImportRecord;
 	sessions: ITableSession;
+	site_runtime_states: ITableSiteRuntimeState;
 	sso_callback_deliveries: ITableSsoCallbackDelivery;
 	sso_callback_queue: ITableSsoCallbackQueue;
 	sso_clients: ITableSsoClient;

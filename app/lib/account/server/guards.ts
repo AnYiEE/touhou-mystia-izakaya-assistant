@@ -130,8 +130,10 @@ export function checkAccountRateLimitGuard(
 	options: {
 		noTrustedIpGate?: boolean;
 		parts?: ReadonlyArray<{ name: string; value: string }>;
+		rateLimit?: Readonly<{ limit: number; windowMs: number }>;
 	} = {}
 ): TAccountGuardResult {
+	const rateLimitOptions = options.rateLimit ?? ACCOUNT_RATE_LIMIT_OPTIONS;
 	const keys: Array<{ capacityGroup: string; key: string }> = [];
 	const trustedRequestIp = getTrustedRequestIp(request);
 	if (trustedRequestIp !== null) {
@@ -245,7 +247,7 @@ export function checkAccountRateLimitGuard(
 	}
 
 	if (keys.length === 0) {
-		const retryAfter = ACCOUNT_RATE_LIMIT_OPTIONS.windowMs / 1000;
+		const retryAfter = rateLimitOptions.windowMs / 1000;
 		warnNoStableRateLimitKey(scope);
 		return {
 			data: { retry_after: retryAfter },
@@ -259,8 +261,8 @@ export function checkAccountRateLimitGuard(
 	let result: ReturnType<typeof checkRateLimit> | undefined;
 	for (const { capacityGroup, key } of keys) {
 		const check = checkRateLimit(key, {
-			...ACCOUNT_RATE_LIMIT_OPTIONS,
 			capacityGroup,
+			...rateLimitOptions,
 		});
 		if (!check.allowed) {
 			result = check;

@@ -246,7 +246,6 @@ export function withAccountSyncOperationLease<T>(
 				}
 			};
 
-			// eslint-disable-next-line compat/compat -- Next.js provides AbortController in supported client runtimes; the signal lets long operations stop after losing the lease.
 			const abortController = new AbortController();
 			let heartbeat: ReturnType<typeof setInterval> | null = null;
 			let currentLease: IAccountSyncOperationLease | null = null;

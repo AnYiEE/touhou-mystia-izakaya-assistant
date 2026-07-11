@@ -6,7 +6,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "next dev --turbopack",
-		"build": "tsx scripts/generateServiceWorker.ts && next build && tsx scripts/babelTransformFile.ts",
+		"build": "tsx scripts/build.ts",
 		"build:offline": "tsx scripts/buildOffline.ts",
 		"sprites": "tsx scripts/generateSprites.ts",
 		"start": "next start",
@@ -114,6 +114,7 @@
 		"@node-rs/argon2": "^2.0.2",
 		"@simplewebauthn/browser": "^13.3.0",
 		"@simplewebauthn/server": "^13.3.2",
+		"abortcontroller-polyfill": "^1.7.8",
 		"better-sqlite3": "^12.11.1",
 		"broadcast-channel": "^7.3.0",
 		"compare-versions": "^6.1.1",

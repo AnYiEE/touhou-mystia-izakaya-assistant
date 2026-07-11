@@ -17,6 +17,7 @@ import AccountInitialStateHydrator from '@/lib/account/client/components/account
 import AccountSessionInitialDataHydrator from '@/lib/account/client/components/accountSessionInitialDataHydrator';
 import AccountSsoGrantInitialDataHydrator from '@/lib/account/client/components/accountSsoGrantInitialDataHydrator';
 import AccountWebauthnInitialDataHydrator from '@/lib/account/client/components/accountWebauthnInitialDataHydrator';
+import SiteStatusProvider from '@/lib/siteStatus/client/provider';
 
 import { siteConfig } from '@/configs';
 import { type TDlc } from '@/data';
@@ -223,27 +224,31 @@ export default function Providers({
 
 	return (
 		<HeroUIProvider locale={locale} navigate={router.push}>
-			<ProgressBarProvider>
-				<OverlayCoordinatorHost />
-				{children}
-				<ProgressBar className="fixed top-0 z-60 h-1 rounded-2xl bg-primary dark:lg:h-0.5" />
-				<CompatibleBrowser />
-				{accountInitialData !== null && (
-					<AccountInitialStateHydrator data={accountInitialData} />
-				)}
-				<AccountSessionInitialDataHydrator
-					data={accountSessionInitialData}
-				/>
-				<AccountSsoGrantInitialDataHydrator
-					data={accountSsoGrantInitialData}
-				/>
-				<AccountWebauthnInitialDataHydrator
-					data={accountWebauthnInitialData}
-				/>
-				<AccountFeatureModals />
-				<CustomerRareTutorial />
-				<DonationModal />
-			</ProgressBarProvider>
+			<SiteStatusProvider>
+				<ProgressBarProvider>
+					<OverlayCoordinatorHost />
+					{children}
+					<ProgressBar className="fixed top-0 z-60 h-1 rounded-2xl bg-primary dark:lg:h-0.5" />
+					<CompatibleBrowser />
+					{accountInitialData !== null && (
+						<AccountInitialStateHydrator
+							data={accountInitialData}
+						/>
+					)}
+					<AccountSessionInitialDataHydrator
+						data={accountSessionInitialData}
+					/>
+					<AccountSsoGrantInitialDataHydrator
+						data={accountSsoGrantInitialData}
+					/>
+					<AccountWebauthnInitialDataHydrator
+						data={accountWebauthnInitialData}
+					/>
+					<AccountFeatureModals />
+					<CustomerRareTutorial />
+					<DonationModal />
+				</ProgressBarProvider>
+			</SiteStatusProvider>
 		</HeroUIProvider>
 	);
 }

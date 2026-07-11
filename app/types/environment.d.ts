@@ -1,4 +1,6 @@
 declare global {
+	const __SITE_STATUS_BUILD_OPERATION_ID__: string | null | undefined;
+
 	namespace NodeJS {
 		interface ProcessEnv {
 			ADMIN_PASSWORD?: string;
@@ -41,9 +43,6 @@ declare global {
 
 	// eslint-disable-next-line vars-on-top
 	var _paq: unknown[] | undefined;
-
-	// eslint-disable-next-line vars-on-top
-	var __visitorCountCacheInitialized: boolean;
 }
 
 export {};
