@@ -6,11 +6,14 @@ import { useMounted } from '@/hooks';
 
 import { checkLengthEmpty, memoize, toArray, waitDomReady } from '@/utilities';
 
-type TFeature = 'flexGap';
+type TFeature = 'flexGap' | 'largeSlidingPanelAnimation';
 type TCompatibility = Record<TFeature, boolean>;
 
 export const checkCompatibility = memoize(function checkCompatibility() {
-	const compatibility: TCompatibility = { flexGap: true };
+	const compatibility: TCompatibility = {
+		flexGap: true,
+		largeSlidingPanelAnimation: true,
+	};
 
 	const {
 		browser: { name: _browserName, version: _browserVersion },
@@ -28,6 +31,20 @@ export const checkCompatibility = memoize(function checkCompatibility() {
 		browserName.includes('edge');
 	const isFirefox = browserName.includes('firefox');
 	const isSafari = browserName.includes('safari') || osName.includes('ios');
+	// iPadOS desktop mode identifies itself as macOS and does not expose a
+	// reliable OS version, so prefer the static large-panel fallback.
+	const isIPadOSDesktopMode =
+		typeof navigator !== 'undefined' &&
+		navigator.platform === 'MacIntel' &&
+		// eslint-disable-next-line compat/compat -- Progressive enhancement for iPadOS desktop-mode detection.
+		navigator.maxTouchPoints > 1;
+	const isIOS16OrEarlier =
+		osName.includes('ios') &&
+		typeof osVersion === 'number' &&
+		osVersion <= 16;
+
+	compatibility.largeSlidingPanelAnimation =
+		!isIOS16OrEarlier && !isIPadOSDesktopMode;
 
 	const isSupportedFlexGapChromium =
 		typeof browserVersion === 'number' && browserVersion > 83;

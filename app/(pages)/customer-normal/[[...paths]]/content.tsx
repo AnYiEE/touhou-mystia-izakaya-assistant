@@ -27,6 +27,7 @@ import ResultCard from '../resultCard';
 import SavedMealCard from '../savedMealCard';
 import CustomerTabSlider from '@/(pages)/customer-shared/customerTabSlider';
 import Loading from '@/loading';
+import { checkCompatibility } from '@/components/compatibleBrowser';
 import Placeholder from '@/components/placeholder';
 import SideButtonGroup from '@/components/sideButtonGroup';
 import SideFilterIconButton, {
@@ -295,6 +296,9 @@ export default function Content() {
 		return <Loading />;
 	}
 
+	const disableTabAnimation =
+		isReducedMotion || !checkCompatibility().largeSlidingPanelAnimation;
+
 	return (
 		<div
 			className={cn(
@@ -309,7 +313,7 @@ export default function Content() {
 				<Tabs
 					fullWidth
 					destroyInactiveTabPanel
-					disableAnimation={isReducedMotion}
+					disableAnimation={disableTabAnimation}
 					size="sm"
 					selectedKey={selectedTabKey}
 					onSelectionChange={onTabSelectionChange}
@@ -319,7 +323,7 @@ export default function Content() {
 							isHighAppearance
 								? 'data-[hover-unselected=true]:bg-default-200/40 data-[pressed=true]:!bg-default-200/40'
 								: 'data-[hover-unselected=true]:bg-default-200 data-[pressed=true]:!bg-default-200',
-							isReducedMotion
+							disableTabAnimation
 								? 'data-[selected=true]:bg-background data-[selected=true]:text-default-foreground dark:data-[selected=true]:bg-default dark:data-[selected=true]:text-foreground'
 								: 'transition'
 						),

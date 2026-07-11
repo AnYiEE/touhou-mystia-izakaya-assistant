@@ -15,6 +15,8 @@ import { motion } from 'framer-motion';
 import { cn } from '@/design/ui/components';
 import { useReducedMotion } from '@/design/ui/hooks';
 
+import { checkCompatibility } from '@/components/compatibleBrowser';
+
 import type { TTab } from '@/(pages)/customer-shared/types';
 
 const tabOrder = ['customer', 'recipe', 'beverage', 'ingredient'] as const;
@@ -30,6 +32,8 @@ export default memo<PropsWithChildren<IProps>>(function CustomerTabSlider({
 	selectedTabKey,
 }) {
 	const isReducedMotion = useReducedMotion();
+	const isLargeSlidingPanelAnimationSupported =
+		checkCompatibility().largeSlidingPanelAnimation;
 	const selectedIndex = tabOrder.indexOf(selectedTabKey);
 	const previousSelectedIndexRef = useRef(selectedIndex);
 	const panelRefs = useRef<Array<HTMLDivElement | null>>([]);
@@ -54,6 +58,13 @@ export default memo<PropsWithChildren<IProps>>(function CustomerTabSlider({
 		: { duration: 0 };
 
 	useEffect(() => {
+		if (!isLargeSlidingPanelAnimationSupported) {
+			previousSelectedIndexRef.current = selectedIndex;
+			setVisibleRange([selectedIndex, selectedIndex]);
+			setIsTabTransitioning(false);
+			return;
+		}
+
 		const previousSelectedIndex = previousSelectedIndexRef.current;
 
 		if (previousSelectedIndex === selectedIndex) {
@@ -68,7 +79,7 @@ export default memo<PropsWithChildren<IProps>>(function CustomerTabSlider({
 		]);
 		previousSelectedIndexRef.current = selectedIndex;
 		setIsTabTransitioning(!isReducedMotion);
-	}, [isReducedMotion, selectedIndex]);
+	}, [isLargeSlidingPanelAnimationSupported, isReducedMotion, selectedIndex]);
 
 	const handleAnimationComplete = useCallback(() => {
 		setVisibleRange([selectedIndex, selectedIndex]);
@@ -76,6 +87,10 @@ export default memo<PropsWithChildren<IProps>>(function CustomerTabSlider({
 	}, [selectedIndex]);
 
 	useLayoutEffect(() => {
+		if (!isLargeSlidingPanelAnimationSupported) {
+			return;
+		}
+
 		const selectedPanel = panelRefs.current[selectedIndex];
 		if (selectedPanel === undefined || selectedPanel === null) {
 			setSelectedPanelHeight(null);
@@ -119,7 +134,32 @@ export default memo<PropsWithChildren<IProps>>(function CustomerTabSlider({
 				);
 			}
 		};
-	}, [heightKey, selectedIndex]);
+	}, [heightKey, isLargeSlidingPanelAnimationSupported, selectedIndex]);
+
+	if (!isLargeSlidingPanelAnimationSupported) {
+		return (
+			<div className="overflow-hidden">
+				{items.map((child, index) => {
+					const tabKey = tabOrder[index];
+					const isSelected = tabKey === selectedTabKey;
+
+					return (
+						<div
+							key={tabKey}
+							aria-hidden={!isSelected}
+							inert={isSelected ? undefined : true}
+							className={cn(
+								'min-h-0 min-w-0 overflow-hidden',
+								isSelected ? 'h-auto' : 'hidden h-0'
+							)}
+						>
+							{child}
+						</div>
+					);
+				})}
+			</div>
+		);
+	}
 
 	return (
 		<motion.div
