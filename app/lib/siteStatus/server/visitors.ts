@@ -1,5 +1,5 @@
 const VISITOR_REFRESH_TTL_MS = 30 * 1000;
-const VISITOR_REQUEST_TIMEOUT_MS = 3000;
+const VISITOR_REQUEST_TIMEOUT_MS = 30 * 1000;
 
 interface IVisitorCountReaderOptions {
 	endpoint: string | undefined;
@@ -9,6 +9,12 @@ interface IVisitorCountReaderOptions {
 	siteId: string | undefined;
 	token: string | undefined;
 }
+
+type TVisitorCountReader = ReturnType<typeof createVisitorCountReader>;
+
+const VISITOR_COUNT_READER_SYMBOL = Symbol.for(
+	'touhou-mystia-izakaya-assistant.site-status.visitor-count-reader'
+);
 
 function hasVisitorConfiguration(
 	configuration: readonly [
@@ -82,12 +88,16 @@ export function createVisitorCountReader({
 			if (
 				first === null ||
 				typeof first !== 'object' ||
-				!('visitors' in first) ||
-				typeof first.visitors !== 'string'
+				!('visitors' in first)
 			) {
 				return;
 			}
-			const visitors = Number.parseInt(first.visitors, 10);
+			const visitors =
+				typeof first.visitors === 'number'
+					? first.visitors
+					: typeof first.visitors === 'string'
+						? Number.parseInt(first.visitors, 10)
+						: Number.NaN;
 			if (Number.isSafeInteger(visitors) && visitors >= 0) {
 				cachedVisitors = visitors;
 			}
@@ -103,20 +113,41 @@ export function createVisitorCountReader({
 	};
 
 	return async () => {
+		const hasCachedVisitors = cachedVisitors !== null;
 		if (now() >= nextRefreshAt) {
 			refreshPromise ??= refresh().finally(() => {
 				refreshPromise = null;
 			});
 		}
-		if (refreshPromise !== null) {
+		if (!hasCachedVisitors && refreshPromise !== null) {
 			await refreshPromise;
 		}
 		return cachedVisitors;
 	};
 }
 
-export const readVisitorCount = createVisitorCountReader({
-	endpoint: process.env.ANALYTICS_API_ENDPOINT,
-	siteId: process.env.ANALYTICS_SITE_ID,
-	token: process.env.ANALYTICS_TOKEN,
-});
+const serverGlobal = globalThis as typeof globalThis &
+	Record<symbol, TVisitorCountReader | undefined>;
+
+function getProductionVisitorCountReader() {
+	const existingReader = serverGlobal[VISITOR_COUNT_READER_SYMBOL];
+	if (existingReader !== undefined) {
+		return existingReader;
+	}
+
+	const reader = createVisitorCountReader({
+		endpoint: process.env.ANALYTICS_API_ENDPOINT,
+		siteId: process.env.ANALYTICS_SITE_ID,
+		token: process.env.ANALYTICS_TOKEN,
+	});
+
+	serverGlobal[VISITOR_COUNT_READER_SYMBOL] = reader;
+
+	return reader;
+}
+
+export const readVisitorCount = getProductionVisitorCountReader();
+
+export function warmVisitorCountCache() {
+	return readVisitorCount();
+}
